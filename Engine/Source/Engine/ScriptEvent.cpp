@@ -1,0 +1,157 @@
+#include "ScriptEvent.h"
+#include "Engine.h"
+#include "Log.h"
+
+#include "Widgets/Widget.h"
+
+#include "Assets/SkeletalMesh.h"
+#include "Components/SkeletalMeshComponent.h"
+
+#include "LuaBindings/Actor_Lua.h"
+#include "LuaBindings/Component_Lua.h"
+#include "LuaBindings/Network_Lua.h"
+#include "LuaBindings/Vector_Lua.h"
+#include "LuaBindings/Widget_Lua.h"
+
+bool PrepFunctionCall(lua_State* L, std::string& tableName, std::string& funcName)
+{
+#if LUA_ENABLED
+    bool success = false;
+
+    if (tableName != "")
+    {
+        // Grab the table
+        lua_getglobal(L, tableName.c_str());
+
+        if (lua_istable(L, -1))
+        {
+            lua_getfield(L, -1, funcName.c_str());
+
+            // Only call the function if it has been defined.
+            if (lua_isfunction(L, -1))
+            {
+                lua_pushvalue(L, -2); // arg1 - self
+                success = true;
+            }
+            else
+            {
+                lua_pop(L, 1);
+            }
+        }
+        else
+        {
+            lua_pop(L, 1);
+        }
+    }
+
+    if (!success)
+    {
+        // Table or function doesn't exist. This is okay.
+        LogDebug("Clearing script callback since the function doens't exist.");
+        tableName = "";
+        funcName = "";
+    }
+
+    // On success, this function will have pushed 3 values onto the stack
+    // (1) Instance table
+    // (2) Function
+    // (3) Instance table again (as arg1)
+    // ExecFunction will restore the stack to the original location.
+    // If not successful, this function will not add anything to the stack.
+    return success;
+#else
+    return false;
+#endif
+}
+
+void ExecFunctionCall(lua_State* L, int argCount)
+{
+    // The self parameter is always passed as arg1
+    assert(argCount >= 1);
+    if (lua_pcall(L, argCount, 0, 0))
+    {
+        LogError("Lua Error: %s\n", lua_tostring(L, -1));
+        lua_pop(L, 1); // Pop the error off?
+    }
+
+    // Pop the initial table that was found in PrepFunctionCall().
+    lua_pop(L, 1);
+}
+
+// SkeletalMeshComponent
+void ScriptEvent::Animation(std::string& tableName, std::string& funcName, const AnimEvent& animEvent)
+{
+    lua_State* L = GetLua();
+    if (PrepFunctionCall(L, tableName, funcName))
+    {
+        Actor_Lua::Create(L, animEvent.mActor);             // arg2 - actor
+        Component_Lua::Create(L, animEvent.mComponent);     // arg3 - component
+        lua_pushstring(L, animEvent.mName.c_str());         // arg4 - event name
+        lua_pushstring(L, animEvent.mAnimation.c_str());    // arg5 - animation name
+        lua_pushnumber(L, animEvent.mTime);                 // arg6 - time
+        Vector_Lua::Create(L, animEvent.mValue);            // arg7 - value
+
+        ExecFunctionCall(L, 7);
+    }
+}
+
+// Widget (Button, Selector, TextField events)
+void ScriptEvent::WidgetState(std::string& tableName, std::string& funcName, Widget* widget)
+{
+    lua_State* L = GetLua();
+    if (PrepFunctionCall(L, tableName, funcName))
+    {
+        Widget_Lua::Create(L, widget);     // arg2 - widget
+        ExecFunctionCall(L, 2);
+    }
+}
+
+// NetworkManager
+void ScriptEvent::NetConnect(std::string& tableName, std::string& funcName, const NetClient& client)
+{
+    lua_State* L = GetLua();
+    if (PrepFunctionCall(L, tableName, funcName))
+    {
+        PushNetHostProfile(L, client);     // arg2 - client table
+        ExecFunctionCall(L, 2);
+    }
+}
+
+void ScriptEvent::NetAccept(std::string& tableName, std::string& funcName)
+{
+    lua_State* L = GetLua();
+    if (PrepFunctionCall(L, tableName, funcName))
+    {
+        ExecFunctionCall(L, 1);
+    }
+}
+
+void ScriptEvent::NetReject(std::string& tableName, std::string& funcName, NetMsgReject::Reason reason)
+{
+    lua_State* L = GetLua();
+    if (PrepFunctionCall(L, tableName, funcName))
+    {
+        lua_pushinteger(L, (int)reason);    // arg2 - reason
+        ExecFunctionCall(L, 2);
+    }
+}
+
+void ScriptEvent::NetDisconnect(std::string& tableName, std::string& funcName, const NetClient& client)
+{
+    lua_State* L = GetLua();
+    if (PrepFunctionCall(L, tableName, funcName))
+    {
+        PushNetHostProfile(L, client);     // arg2 - client table
+        ExecFunctionCall(L, 2);
+    }
+}
+
+void ScriptEvent::NetKick(std::string& tableName, std::string& funcName, NetMsgKick::Reason reason)
+{
+    lua_State* L = GetLua();
+    if (PrepFunctionCall(L, tableName, funcName))
+    {
+        lua_pushinteger(L, (int)reason);    // arg2 - reason
+        ExecFunctionCall(L, 2);
+    }
+}

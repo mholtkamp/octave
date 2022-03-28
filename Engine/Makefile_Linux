@@ -1,0 +1,186 @@
+#---------------------------------------------------------------------------------
+# Clear the implicit built in rules
+#---------------------------------------------------------------------------------
+.SUFFIXES:
+.SECONDARY:
+#---------------------------------------------------------------------------------
+export AS	:=	$(PREFIX)as
+export CC	:=	$(PREFIX)gcc
+export CXX	:=	$(PREFIX)g++
+export AR	:=	$(PREFIX)gcc-ar
+export OBJCOPY	:=	$(PREFIX)objcopy
+export STRIP	:=	$(PREFIX)strip
+export NM	:=	$(PREFIX)gcc-nm
+export RANLIB	:=	$(PREFIX)gcc-ranlib
+
+ifeq ($(V),1)
+    SILENTMSG := @true
+    SILENTCMD :=
+else
+    SILENTMSG := @echo
+    SILENTCMD := @
+endif
+
+#---------------------------------------------------------------------------------
+%.a:
+#---------------------------------------------------------------------------------
+	$(SILENTMSG) $(notdir $@)
+	$(SILENTCMD)rm -f $@
+	$(SILENTCMD)$(AR) -rc $@ $^
+
+#---------------------------------------------------------------------------------
+%.o: %.cpp
+	$(SILENTMSG) $(notdir $<)
+	$(SILENTCMD)$(CXX) -MMD -MP -MF $(DEPSDIR)/$*.d $(CXXFLAGS) -c $< -o $@ $(ERROR_FILTER)
+
+#---------------------------------------------------------------------------------
+%.o: %.c
+	$(SILENTMSG) $(notdir $<)
+	$(SILENTCMD)$(CC) -MMD -MP -MF $(DEPSDIR)/$*.d $(CFLAGS) -c $< -o $@ $(ERROR_FILTER)
+
+
+#---------------------------------------------------------------------------------
+# TARGET is the name of the output
+# BUILD is the directory where object files & intermediate files will be placed
+# SOURCES is a list of directories containing source code
+# INCLUDES is a list of directories containing extra header files
+#---------------------------------------------------------------------------------
+TARGET		:=	$(notdir $(CURDIR))
+SOURCES		:=	Source \
+				Source/Engine \
+				Source/Engine/Widgets \
+				Source/Engine/Components \
+				Source/Engine/Assets \
+				Source/System Source/System/Linux \
+				Source/Graphics \
+				Source/Graphics/Vulkan \
+				Source/Input \
+				Source/Input/Linux \
+				Source/Audio \
+				Source/Audio/Linux \
+				Source/Network \
+				Source/Network/Linux \
+				Source/LuaBindings \
+				../External/Lua
+INCLUDES	:=	Include Include/Engine ../External ../External/Bullet $(VULKAN_SDK)/include 
+OUTPUT_DIR	:=	$(CURDIR)/Build/Linux
+BULLET_DIR	:=	$(CURDIR)/../External/Bullet
+ASSIMP_DIR	:=	$(CURDIR)/../External/Assimp
+
+#---------------------------------------------------------------------------------
+# options for code generation
+#---------------------------------------------------------------------------------
+
+CFLAGS	= -g -O0 -Wall $(MACHDEP) -DPLATFORM_LINUX=1 -DAPI_VULKAN=1 $(INCLUDE)
+
+ifeq ($(strip $(EDITOR)),)
+CFLAGS	+=	-DEDITOR=0
+BUILD		:=	Intermediate/Linux/EngineGame
+TARGET		:= EngineGame
+else
+CFLAGS	+=	-DEDITOR=1
+INCLUDES += ../External/Assimp ../External/IrrXML ../External/Zlib Include/Editor
+SOURCES +=	Source/Editor Source/Editor/Widgets
+TARGET		:= EngineEditor
+BUILD		:=	Intermediate/Linux/EngineEditor
+endif
+
+CXXFLAGS	=	$(CFLAGS)
+
+LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
+
+#---------------------------------------------------------------------------------
+# any extra libraries we wish to link with the project
+#---------------------------------------------------------------------------------
+LIBS	:=	-lvulkan -lxcb -lasound -lpthread -lm
+
+#---------------------------------------------------------------------------------
+# list of directories containing libraries, this must be the top level containing
+# include and lib
+#---------------------------------------------------------------------------------
+LIBDIRS	:= $(VULKAN_SDK)
+
+#---------------------------------------------------------------------------------
+# no real need to edit anything past this point unless you need to add additional
+# rules for different file extensions
+#---------------------------------------------------------------------------------
+ifneq ($(notdir $(BUILD)),$(notdir $(CURDIR)))
+#---------------------------------------------------------------------------------
+
+export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir))
+
+export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+
+#---------------------------------------------------------------------------------
+# automatically build a list of object files for our project
+#---------------------------------------------------------------------------------
+CFILES			:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+CPPFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
+BULLET_OFILES	:=	$(wildcard $(BULLET_DIR)/Intermediate/Linux/*.o)
+
+#---------------------------------------------------------------------------------
+# use CXX for linking C++ projects, CC for standard C
+#---------------------------------------------------------------------------------
+ifeq ($(strip $(CPPFILES)),)
+	export LD	:=	$(CC)
+else
+	export LD	:=	$(CXX)
+endif
+
+export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o)
+export OFILES := $(OFILES_SOURCES)
+export OFILES_EXTRA := $(BULLET_OFILES)
+
+#---------------------------------------------------------------------------------
+# build a list of include paths
+#---------------------------------------------------------------------------------
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+					-I$(CURDIR)/$(BUILD)
+
+#---------------------------------------------------------------------------------
+# build a list of library paths
+#---------------------------------------------------------------------------------
+export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
+
+export OUTPUT	:=	$(OUTPUT_DIR)/lib$(TARGET).a
+.PHONY: $(BUILD) clean
+
+#---------------------------------------------------------------------------------
+all: $(BUILD)
+
+OutputDir:
+	[ -d $(OUTPUT_DIR) ] || mkdir -p $(OUTPUT_DIR)
+
+MakeBullet:
+	@$(MAKE) --no-print-directory -C $(BULLET_DIR) -f $(BULLET_DIR)/Makefile_Linux
+
+MakeAssimp:
+	@$(MAKE) --no-print-directory -C $(ASSIMP_DIR) -f $(ASSIMP_DIR)/Makefile_Linux
+
+$(BUILD): MakeBullet MakeAssimp OutputDir 
+	@[ -d $@ ] || mkdir -p $@
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile_Linux
+
+#---------------------------------------------------------------------------------
+clean:
+	@echo clean ...
+	@rm -fr $(BUILD) $(OUTPUT_DIR)
+
+#---------------------------------------------------------------------------------
+else
+
+#---------------------------------------------------------------------------------
+# main targets
+#---------------------------------------------------------------------------------
+$(OUTPUT): $(OFILES) $(OFILES_EXTRA)
+
+$(OFILES_EXTRA):
+
+$(OFILES_SOURCES) : 
+
+-include $(DEPSDIR)/*.d
+
+#---------------------------------------------------------------------------------
+endif
+#---------------------------------------------------------------------------------

@@ -1,0 +1,101 @@
+; Example PICA200 vertex shader
+
+; Uniforms
+.fvec WorldViewMtx[4]
+.fvec NormalMtx[4]
+.fvec ProjMtx[4]
+.fvec UvOffsetScale
+.fvec BoneMtx[4 * 16]
+
+; Constants
+.constf myconst(0.0, 1.0, -1.0, 0.1)
+.constf myconst2(0.3, 0.003922, 4.0, 0.0)
+.alias  zeros myconst.xxxx ; Vector full of zeros
+.alias  ones  myconst.yyyy ; Vector full of ones
+.alias  half  myconst.wwww
+.alias  rcp255 myconst2.yyyy ; 1/255.0
+
+; Outputs
+.out outpos position
+.out outtc0 texcoord0
+.out outclr color
+.out outview view
+.out outnq normalquat
+
+; Inputs (defined as aliases for convenience)
+.alias inpos v0
+.alias intc0 v1
+.alias innrm v2
+.alias inbid v3
+.alias inbwt v4
+
+.proc main
+	; Force the w component of inpos to be 1.0
+	mov r0.xyz, inpos
+	mov r0.w,   ones
+
+	; Using the bone index, look up the correct matrix.
+	; Only single bone influence for now...
+	mov r2.x, inbid.x
+	mov r3.x, myconst2.z
+	mul r2.x, r2.x, r3.x
+	mova a0.x, r2
+
+	dp4 r2.x, BoneMtx[a0.x + 0], r0
+	dp4 r2.y, BoneMtx[a0.x + 1], r0
+	dp4 r2.z, BoneMtx[a0.x + 2], r0
+	dp4 r2.w, BoneMtx[a0.x + 3], r0
+
+	; r1 = WorldViewMtx * inpos
+	dp4 r1.x, WorldViewMtx[0], r2
+	dp4 r1.y, WorldViewMtx[1], r2
+	dp4 r1.z, WorldViewMtx[2], r2
+	dp4 r1.w, WorldViewMtx[3], r2
+	
+	; outview = -r1
+	mov outview, -r1
+	
+	; outpos = ProjMtx * r1
+	dp4 outpos.x, ProjMtx[0], r1
+	dp4 outpos.y, ProjMtx[1], r1
+	dp4 outpos.z, ProjMtx[2], r1
+	dp4 outpos.w, ProjMtx[3], r1
+
+	; outtc0 = intc0
+	add r1, UvOffsetScale.xyxy, intc0
+	mul r1, UvOffsetScale.zwzw, r1
+	mov outtc0, r1
+
+	; outclr = (1,1,1,1)
+	mov outclr, myconst.yyyy
+
+	; Transform normal using inv transpose of ModelViewMtx (NormalMtx)
+	; But first apply bone transformation
+	dp3 r2.x, BoneMtx[a0.x + 0], innrm
+	dp3 r2.y, BoneMtx[a0.x + 1], innrm
+	dp3 r2.z, BoneMtx[a0.x + 2], innrm
+
+	dp3 r14.x, NormalMtx[0], r2
+	dp3 r14.y, NormalMtx[1], r2
+	dp3 r14.z, NormalMtx[2], r2
+	dp3 r6.x, r14, r14
+	rsq r6.x, r6.x
+	mul r14.xyz, r14.xyz, r6.x
+
+	mov r0, myconst.yxxx
+	add r4, ones, r14.z
+	mul r4, half, r4
+	cmp zeros, ge, ge, r4.x
+	rsq r4, r4.x
+	mul r5, half, r14
+	jmpc cmp.x, degenerate
+
+	rcp r0.z, r4.x
+	mul r0.xy, r5, r4
+
+degenerate:
+	mov outnq, r0
+
+	; We're finished
+	end
+.end

@@ -1,0 +1,110 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${VULKAN_SDK}/include"
+            ],
+            "defines": [
+                "API_VULKAN=1",
+                "PLATFORM_LINUX=1",
+                "EDITOR=1"
+            ],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "linux-gcc-x64"
+        },
+        {
+            "name": "Octave-GCN",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/devkitpro/libogc/include",
+                "/opt/devkitpro/libogc/include/**"
+            ],
+            "defines": [
+                "GEKKO",
+                "PLATFORM_GAMECUBE=1",
+                "PLATFORM_DOLPHIN=1",
+                "API_GX=1"
+            ],
+            "compilerPath": "/opt/devkitpro/devkitPPC/bin/powerpc-eabi-g++",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++11",
+            "intelliSenseMode": "${default}",
+            "compilerArgs": [
+                "-mogc",
+                "-mcpu=750",
+                "-meabi",
+                "-mhard-float",
+                "-g",
+                "-O2",
+                "-Wall"
+            ]
+        },
+        {
+            "name": "Octave-Wii",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/devkitpro/libogc/include",
+                "/opt/devkitpro/libogc/include/**"
+            ],
+            "defines": [
+                "GEKKO",
+                "HW_RVL",
+                "PLATFORM_WII=1",
+                "PLATFORM_DOLPHIN=1",
+                "API_GX=1"
+            ],
+            "compilerPath": "/opt/devkitpro/devkitPPC/bin/powerpc-eabi-g++",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++11",
+            "intelliSenseMode": "${default}",
+            "compilerArgs": [
+                "-mogc",
+                "-mcpu=750",
+                "-meabi",
+                "-mhard-float",
+                "-g",
+                "-O2",
+                "-Wall"
+            ]
+        },
+        {
+            "name": "Octave-3DS",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/devkitpro/libctru/include",
+                "/opt/devkitpro/libctru/include/**"
+            ],
+            "defines": [
+                "PLATFORM_3DS=1",
+                "API_C3D=1"
+            ],
+            "compilerPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-g++",
+            "cStandard": "gnu11",
+            "cppStandard": "c++11",
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerArgs": [
+                "-march=armv6k",
+                "-mtune=mpcore",
+                "-mfloat-abi=hard",
+                "-mtp=soft",
+                "-g",
+                "-Wall",
+                "-O2",
+                "-mword-relocations",
+                "-fomit-frame-pointer",
+                "-ffunction-sections"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
+        }
+    ],
+    "version": 4
+}
