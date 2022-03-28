@@ -1,0 +1,741 @@
+#include "LuaBindings/Input_Lua.h"
+
+#include "InputDevices.h"
+#include "Input/Input.h"
+
+#if LUA_ENABLED
+
+int Input_Lua::IsKeyDown(lua_State* L)
+{
+    KeyCode key = CHECK_KEY(L, 1);
+
+    bool down = ::IsKeyDown(key);
+
+    lua_pushboolean(L, down);
+    return 1;
+}
+
+int Input_Lua::IsKeyJustDownRepeat(lua_State* L)
+{
+    KeyCode key = CHECK_KEY(L, 1);
+
+    bool down = ::IsKeyJustDownRepeat(key);
+
+    lua_pushboolean(L, down);
+    return 1;
+}
+
+int Input_Lua::IsKeyJustDown(lua_State* L)
+{
+    KeyCode key = CHECK_KEY(L, 1);
+
+    bool down = ::IsKeyJustDown(key);
+
+    lua_pushboolean(L, down);
+    return 1;
+}
+
+int Input_Lua::IsKeyJustUp(lua_State* L)
+{
+    KeyCode key = CHECK_KEY(L, 1);
+
+    bool up = ::IsKeyJustUp(key);
+
+    lua_pushboolean(L, up);
+    return 1;
+}
+
+int Input_Lua::IsControlDown(lua_State* L)
+{
+    bool down = ::IsControlDown();
+
+    lua_pushboolean(L, down);
+    return 1;
+}
+
+int Input_Lua::IsShiftDown(lua_State* L)
+{
+    bool down = ::IsShiftDown();
+
+    lua_pushboolean(L, down);
+    return 1;
+}
+
+int Input_Lua::IsMouseButtonDown(lua_State* L)
+{
+    MouseCode mouse = CHECK_MOUSE(L, 1);
+
+    bool down = ::IsMouseButtonDown(mouse);
+
+    lua_pushboolean(L, down);
+    return 1;
+}
+
+int Input_Lua::IsMouseButtonJustDown(lua_State* L)
+{
+    MouseCode mouse = CHECK_MOUSE(L, 1);
+
+    bool ret = ::IsMouseButtonJustDown(mouse);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Input_Lua::IsMouseButtonJustUp(lua_State* L)
+{
+    MouseCode mouse = CHECK_MOUSE(L, 1);
+
+    bool ret = ::IsMouseButtonJustUp(mouse);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Input_Lua::GetMousePosition(lua_State* L)
+{
+    int32_t mouseX = 0;
+    int32_t mouseY = 0;
+    ::GetMousePosition(mouseX, mouseY);
+
+    lua_pushinteger(L, mouseX);
+    lua_pushinteger(L, mouseY);
+    return 2;
+}
+
+int Input_Lua::GetScrollWheelDelta(lua_State* L)
+{
+    int32_t delta = ::GetScrollWheelDelta();
+
+    lua_pushinteger(L, delta);
+    return 1;
+}
+
+int Input_Lua::IsTouchDown(lua_State* L)
+{
+    int index = CHECK_INTEGER(L, 1);
+    --index;
+
+    bool ret = ::IsTouchDown(index);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Input_Lua::IsPointerJustUp(lua_State* L)
+{
+    int index = CHECK_INTEGER(L, 1);
+    --index;
+
+    bool ret = ::IsPointerJustUp(index);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Input_Lua::IsPointerJustDown(lua_State* L)
+{
+    int index = CHECK_INTEGER(L, 1);
+    --index;
+
+    bool ret = ::IsPointerJustDown(index);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Input_Lua::IsPointerDown(lua_State* L)
+{
+    int index = CHECK_INTEGER(L, 1);
+    --index;
+
+    bool ret = ::IsPointerDown(index);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Input_Lua::GetTouchPosition(lua_State* L)
+{
+    int index = CHECK_INTEGER(L, 1);
+    --index;
+    int32_t touchX = 0;
+    int32_t touchY = 0;
+    ::GetTouchPosition(touchX, touchY, index);
+
+    lua_pushinteger(L, touchX);
+    lua_pushinteger(L, touchY);
+    return 2;
+}
+
+int Input_Lua::GetTouchPositionNormalized(lua_State* L)
+{
+    int index = CHECK_INTEGER(L, 1);
+    --index;
+    float touchX = 0;
+    float touchY = 0;
+    ::GetTouchPositionNormalized(touchX, touchY, index);
+
+    lua_pushnumber(L, touchX);
+    lua_pushnumber(L, touchY);
+    return 2;
+}
+
+int Input_Lua::GetPointerPosition(lua_State* L)
+{
+    int index = CHECK_INTEGER(L, 1);
+    --index;
+    int32_t x = 0;
+    int32_t y = 0;
+    ::GetPointerPosition(x, y, index);
+
+    lua_pushinteger(L, x);
+    lua_pushinteger(L, y);
+    return 2;
+}
+
+int Input_Lua::GetPointerPositionNormalized(lua_State* L)
+{
+    int index = CHECK_INTEGER(L, 1);
+    --index;
+    float x = 0;
+    float y = 0;
+    ::GetPointerPositionNormalized(x, y, index);
+
+    lua_pushnumber(L, x);
+    lua_pushnumber(L, y);
+    return 2;
+}
+
+int Input_Lua::IsGamepadButtonDown(lua_State* L)
+{
+    GamepadButtonCode button = CHECK_GAMEPAD(L, 1);
+    int index = lua_isinteger(L, 2) ? lua_tointeger(L, 2) - 1 : 0;
+
+    bool ret = ::IsGamepadButtonDown(button, index);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Input_Lua::IsGamepadButtonJustDown(lua_State* L)
+{
+    GamepadButtonCode button = CHECK_GAMEPAD(L, 1);
+    int index = lua_isinteger(L, 2) ? lua_tointeger(L, 2) - 1 : 0;
+
+    bool ret = ::IsGamepadButtonJustDown(button, index);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Input_Lua::IsGamepadButtonJustUp(lua_State* L)
+{
+    GamepadButtonCode button = CHECK_GAMEPAD(L, 1);
+    int index = lua_isinteger(L, 2) ? lua_tointeger(L, 2) - 1 : 0;
+
+    bool ret = ::IsGamepadButtonJustUp(button, index);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Input_Lua::GetGamepadAxisValue(lua_State* L)
+{
+    GamepadAxisCode axis = CHECK_GAMEPAD_AXIS(L, 1);
+    int index = lua_isinteger(L, 2) ? lua_tointeger(L, 2) - 1 : 0;
+
+    float ret = ::GetGamepadAxisValue(axis, index);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
+int Input_Lua::GetGamepadType(lua_State* L)
+{
+    int index = lua_isinteger(L, 1) ? lua_tointeger(L, 1) - 1: 0;
+
+    GamepadType padType = ::GetGamepadType(index);
+
+    const char* ret = "";
+    switch (padType)
+    {
+    case GamepadType::Standard:
+        ret = "Standard";
+        break;
+    case GamepadType::GameCube:
+        ret = "GameCube";
+        break;
+    case GamepadType::Wiimote:
+        ret = "Wiimote";
+        break;
+    case GamepadType::WiiClassic:
+        ret = "WiiClassic";
+        break;
+
+    default:
+        ret = "Unknown";
+        break;
+    }
+
+    lua_pushstring(L, ret);
+    return 1;
+}
+
+int Input_Lua::IsGamepadConnected(lua_State* L)
+{
+    int index = lua_isinteger(L, 1) ? lua_tointeger(L, 1) - 1 : 0;
+
+    bool ret = ::IsGamepadConnected(index);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+void Input_Lua::Bind()
+{
+    lua_State* L = GetLua();
+    assert(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushcfunction(L, Input_Lua::IsKeyDown);
+    lua_setfield(L, tableIdx, "IsKeyDown");
+
+    lua_pushcfunction(L, Input_Lua::IsKeyJustDownRepeat);
+    lua_setfield(L, tableIdx, "IsKeyJustDownRepeat");
+
+    lua_pushcfunction(L, Input_Lua::IsKeyJustDown);
+    lua_setfield(L, tableIdx, "IsKeyJustDown");
+
+    lua_pushcfunction(L, Input_Lua::IsKeyJustUp);
+    lua_setfield(L, tableIdx, "IsKeyJustUp");
+
+    lua_pushcfunction(L, Input_Lua::IsControlDown);
+    lua_setfield(L, tableIdx, "IsControlDown");
+
+    lua_pushcfunction(L, Input_Lua::IsShiftDown);
+    lua_setfield(L, tableIdx, "IsShiftDown");
+
+    lua_pushcfunction(L, Input_Lua::IsMouseButtonDown);
+    lua_setfield(L, tableIdx, "IsMouseButtonDown");
+
+    lua_pushcfunction(L, Input_Lua::IsMouseButtonJustDown);
+    lua_setfield(L, tableIdx, "IsMouseButtonJustDown");
+
+    lua_pushcfunction(L, Input_Lua::IsMouseButtonJustUp);
+    lua_setfield(L, tableIdx, "IsMouseButtonJustUp");
+
+    lua_pushcfunction(L, Input_Lua::GetMousePosition);
+    lua_setfield(L, tableIdx, "GetMousePosition");
+
+    lua_pushcfunction(L, Input_Lua::GetScrollWheelDelta);
+    lua_setfield(L, tableIdx, "GetScrollWheelDelta");
+
+    lua_pushcfunction(L, Input_Lua::IsTouchDown);
+    lua_setfield(L, tableIdx, "IsTouchDown");
+
+    lua_pushcfunction(L, Input_Lua::IsPointerJustUp);
+    lua_setfield(L, tableIdx, "IsPointerJustUp");
+
+    lua_pushcfunction(L, Input_Lua::IsPointerJustDown);
+    lua_setfield(L, tableIdx, "IsPointerJustDown");
+
+    lua_pushcfunction(L, Input_Lua::IsPointerDown);
+    lua_setfield(L, tableIdx, "IsPointerDown");
+
+    lua_pushcfunction(L, Input_Lua::GetTouchPosition);
+    lua_setfield(L, tableIdx, "GetTouchPosition");
+
+    lua_pushcfunction(L, Input_Lua::GetTouchPositionNormalized);
+    lua_setfield(L, tableIdx, "GetTouchPositionNormalized");
+
+    lua_pushcfunction(L, Input_Lua::GetPointerPosition);
+    lua_setfield(L, tableIdx, "GetPointerPosition");
+
+    lua_pushcfunction(L, Input_Lua::GetPointerPositionNormalized);
+    lua_setfield(L, tableIdx, "GetPointerPositionNormalized");
+
+    lua_pushcfunction(L, Input_Lua::IsGamepadButtonDown);
+    lua_setfield(L, tableIdx, "IsGamepadButtonDown");
+
+    lua_pushcfunction(L, Input_Lua::IsGamepadButtonJustDown);
+    lua_setfield(L, tableIdx, "IsGamepadButtonJustDown");
+
+    lua_pushcfunction(L, Input_Lua::IsGamepadButtonJustUp);
+    lua_setfield(L, tableIdx, "IsGamepadButtonJustUp");
+
+    lua_pushcfunction(L, Input_Lua::GetGamepadAxisValue);
+    lua_setfield(L, tableIdx, "GetGamepadAxisValue");
+
+    lua_pushcfunction(L, Input_Lua::GetGamepadType);
+    lua_setfield(L, tableIdx, "GetGamepadType");
+
+    lua_pushcfunction(L, Input_Lua::IsGamepadConnected);
+    lua_setfield(L, tableIdx, "IsGamepadConnected");
+
+    lua_setglobal(L, INPUT_LUA_NAME);
+    assert(lua_gettop(L) == 0);
+
+    BindKeyTable();
+    BindMouseTable();
+    BindGamepadTable();
+}
+
+void Input_Lua::BindKeyTable()
+{
+    lua_State* L = GetLua();
+    assert(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushinteger(L, KeyCode::KEY_BACK);
+    lua_setfield(L, tableIdx, "Back");
+
+    lua_pushinteger(L, KeyCode::KEY_0);
+    lua_setfield(L, tableIdx, "N0");
+    lua_pushinteger(L, KeyCode::KEY_1);
+    lua_setfield(L, tableIdx, "N1");
+    lua_pushinteger(L, KeyCode::KEY_2);
+    lua_setfield(L, tableIdx, "N2");
+    lua_pushinteger(L, KeyCode::KEY_3);
+    lua_setfield(L, tableIdx, "N3");
+    lua_pushinteger(L, KeyCode::KEY_4);
+    lua_setfield(L, tableIdx, "N4");
+    lua_pushinteger(L, KeyCode::KEY_5);
+    lua_setfield(L, tableIdx, "N5");
+    lua_pushinteger(L, KeyCode::KEY_6);
+    lua_setfield(L, tableIdx, "N6");
+    lua_pushinteger(L, KeyCode::KEY_7);
+    lua_setfield(L, tableIdx, "N7");
+    lua_pushinteger(L, KeyCode::KEY_8);
+    lua_setfield(L, tableIdx, "N8");
+    lua_pushinteger(L, KeyCode::KEY_9);
+    lua_setfield(L, tableIdx, "N9");
+
+    // Alternate number key names
+    lua_pushinteger(L, KeyCode::KEY_0);
+    lua_setfield(L, tableIdx, "Zero");
+    lua_pushinteger(L, KeyCode::KEY_1);
+    lua_setfield(L, tableIdx, "One");
+    lua_pushinteger(L, KeyCode::KEY_2);
+    lua_setfield(L, tableIdx, "Two");
+    lua_pushinteger(L, KeyCode::KEY_3);
+    lua_setfield(L, tableIdx, "Three");
+    lua_pushinteger(L, KeyCode::KEY_4);
+    lua_setfield(L, tableIdx, "Four");
+    lua_pushinteger(L, KeyCode::KEY_5);
+    lua_setfield(L, tableIdx, "Five");
+    lua_pushinteger(L, KeyCode::KEY_6);
+    lua_setfield(L, tableIdx, "Six");
+    lua_pushinteger(L, KeyCode::KEY_7);
+    lua_setfield(L, tableIdx, "Seven");
+    lua_pushinteger(L, KeyCode::KEY_8);
+    lua_setfield(L, tableIdx, "Eight");
+    lua_pushinteger(L, KeyCode::KEY_9);
+    lua_setfield(L, tableIdx, "Nine");
+
+#if PLATFORM_3DS
+    lua_pushinteger(L, 0);
+    lua_setfield(L, tableIdx, "A");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, tableIdx, "B");
+#else
+    lua_pushinteger(L, KeyCode::KEY_A);
+    lua_setfield(L, tableIdx, "A");
+    lua_pushinteger(L, KeyCode::KEY_B);
+    lua_setfield(L, tableIdx, "B");
+#endif
+    lua_pushinteger(L, KeyCode::KEY_C);
+    lua_setfield(L, tableIdx, "C");
+    lua_pushinteger(L, KeyCode::KEY_D);
+    lua_setfield(L, tableIdx, "D");
+    lua_pushinteger(L, KeyCode::KEY_E);
+    lua_setfield(L, tableIdx, "E");
+    lua_pushinteger(L, KeyCode::KEY_F);
+    lua_setfield(L, tableIdx, "F");
+    lua_pushinteger(L, KeyCode::KEY_G);
+    lua_setfield(L, tableIdx, "G");
+    lua_pushinteger(L, KeyCode::KEY_H);
+    lua_setfield(L, tableIdx, "H");
+    lua_pushinteger(L, KeyCode::KEY_I);
+    lua_setfield(L, tableIdx, "I");
+    lua_pushinteger(L, KeyCode::KEY_J);
+    lua_setfield(L, tableIdx, "J");
+    lua_pushinteger(L, KeyCode::KEY_K);
+    lua_setfield(L, tableIdx, "K");
+#if PLATFORM_3DS
+    lua_pushinteger(L, 0);
+    lua_setfield(L, tableIdx, "L");
+#else
+    lua_pushinteger(L, KeyCode::KEY_L);
+    lua_setfield(L, tableIdx, "L");
+#endif
+    lua_pushinteger(L, KeyCode::KEY_M);
+    lua_setfield(L, tableIdx, "M");
+    lua_pushinteger(L, KeyCode::KEY_N);
+    lua_setfield(L, tableIdx, "N");
+    lua_pushinteger(L, KeyCode::KEY_O);
+    lua_setfield(L, tableIdx, "O");
+    lua_pushinteger(L, KeyCode::KEY_P);
+    lua_setfield(L, tableIdx, "P");
+    lua_pushinteger(L, KeyCode::KEY_Q);
+    lua_setfield(L, tableIdx, "Q");
+#if PLATFORM_3DS
+    lua_pushinteger(L, 0);
+    lua_setfield(L, tableIdx, "R");
+#else
+    lua_pushinteger(L, KeyCode::KEY_R);
+    lua_setfield(L, tableIdx, "R");
+#endif
+    lua_pushinteger(L, KeyCode::KEY_S);
+    lua_setfield(L, tableIdx, "S");
+    lua_pushinteger(L, KeyCode::KEY_T);
+    lua_setfield(L, tableIdx, "T");
+    lua_pushinteger(L, KeyCode::KEY_U);
+    lua_setfield(L, tableIdx, "U");
+    lua_pushinteger(L, KeyCode::KEY_V);
+    lua_setfield(L, tableIdx, "V");
+    lua_pushinteger(L, KeyCode::KEY_W);
+    lua_setfield(L, tableIdx, "W");
+#if PLATFORM_3DS
+    lua_pushinteger(L, 0);
+    lua_setfield(L, tableIdx, "X");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, tableIdx, "Y");
+#else
+    lua_pushinteger(L, KeyCode::KEY_X);
+    lua_setfield(L, tableIdx, "X");
+    lua_pushinteger(L, KeyCode::KEY_Y);
+    lua_setfield(L, tableIdx, "Y");
+#endif
+    lua_pushinteger(L, KeyCode::KEY_Z);
+    lua_setfield(L, tableIdx, "Z");
+
+    lua_pushinteger(L, KeyCode::KEY_SPACE);
+    lua_setfield(L, tableIdx, "Space");
+    lua_pushinteger(L, KeyCode::KEY_ENTER);
+    lua_setfield(L, tableIdx, "Enter");
+    lua_pushinteger(L, KeyCode::KEY_BACKSPACE);
+    lua_setfield(L, tableIdx, "Backspace");
+    lua_pushinteger(L, KeyCode::KEY_TAB);
+    lua_setfield(L, tableIdx, "Tab");
+
+    lua_pushinteger(L, KeyCode::KEY_SHIFT_L);
+    lua_setfield(L, tableIdx, "ShiftL");
+    lua_pushinteger(L, KeyCode::KEY_CONTROL_L);
+    lua_setfield(L, tableIdx, "ControlL");
+    lua_pushinteger(L, KeyCode::KEY_SHIFT_R);
+    lua_setfield(L, tableIdx, "ShiftR");
+    lua_pushinteger(L, KeyCode::KEY_CONTROL_R);
+    lua_setfield(L, tableIdx, "ControlR");
+
+    lua_pushinteger(L, KeyCode::KEY_PAGE_UP);
+    lua_setfield(L, tableIdx, "PageUp");
+    lua_pushinteger(L, KeyCode::KEY_PAGE_DOWN);
+    lua_setfield(L, tableIdx, "PageDown");
+
+#if PLATFORM_3DS
+    lua_pushinteger(L, 0);
+    lua_setfield(L, tableIdx, "Up");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, tableIdx, "Down");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, tableIdx, "Left");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, tableIdx, "Right");
+#else
+    lua_pushinteger(L, KeyCode::KEY_UP);
+    lua_setfield(L, tableIdx, "Up");
+    lua_pushinteger(L, KeyCode::KEY_DOWN);
+    lua_setfield(L, tableIdx, "Down");
+    lua_pushinteger(L, KeyCode::KEY_LEFT);
+    lua_setfield(L, tableIdx, "Left");
+    lua_pushinteger(L, KeyCode::KEY_RIGHT);
+    lua_setfield(L, tableIdx, "Right");
+#endif
+
+    lua_pushinteger(L, KeyCode::KEY_NUMPAD0);
+    lua_setfield(L, tableIdx, "Numpad0");
+    lua_pushinteger(L, KeyCode::KEY_NUMPAD1);
+    lua_setfield(L, tableIdx, "Numpad1");
+    lua_pushinteger(L, KeyCode::KEY_NUMPAD2);
+    lua_setfield(L, tableIdx, "Numpad2");
+    lua_pushinteger(L, KeyCode::KEY_NUMPAD3);
+    lua_setfield(L, tableIdx, "Numpad3");
+    lua_pushinteger(L, KeyCode::KEY_NUMPAD4);
+    lua_setfield(L, tableIdx, "Numpad4");
+    lua_pushinteger(L, KeyCode::KEY_NUMPAD5);
+    lua_setfield(L, tableIdx, "Numpad5");
+    lua_pushinteger(L, KeyCode::KEY_NUMPAD6);
+    lua_setfield(L, tableIdx, "Numpad6");
+    lua_pushinteger(L, KeyCode::KEY_NUMPAD7);
+    lua_setfield(L, tableIdx, "Numpad7");
+    lua_pushinteger(L, KeyCode::KEY_NUMPAD8);
+    lua_setfield(L, tableIdx, "Numpad8");
+    lua_pushinteger(L, KeyCode::KEY_NUMPAD9);
+    lua_setfield(L, tableIdx, "Numpad9");
+
+    lua_pushinteger(L, KeyCode::KEY_F1);
+    lua_setfield(L, tableIdx, "F1");
+    lua_pushinteger(L, KeyCode::KEY_F2);
+    lua_setfield(L, tableIdx, "F2");
+    lua_pushinteger(L, KeyCode::KEY_F3);
+    lua_setfield(L, tableIdx, "F3");
+    lua_pushinteger(L, KeyCode::KEY_F4);
+    lua_setfield(L, tableIdx, "F4");
+    lua_pushinteger(L, KeyCode::KEY_F5);
+    lua_setfield(L, tableIdx, "F5");
+    lua_pushinteger(L, KeyCode::KEY_F6);
+    lua_setfield(L, tableIdx, "F6");
+    lua_pushinteger(L, KeyCode::KEY_F7);
+    lua_setfield(L, tableIdx, "F7");
+    lua_pushinteger(L, KeyCode::KEY_F8);
+    lua_setfield(L, tableIdx, "F8");
+    lua_pushinteger(L, KeyCode::KEY_F9);
+    lua_setfield(L, tableIdx, "F9");
+    lua_pushinteger(L, KeyCode::KEY_F10);
+    lua_setfield(L, tableIdx, "F10");
+    lua_pushinteger(L, KeyCode::KEY_F11);
+    lua_setfield(L, tableIdx, "F11");
+    lua_pushinteger(L, KeyCode::KEY_F12);
+    lua_setfield(L, tableIdx, "F12");
+
+    lua_pushinteger(L, KeyCode::KEY_PERIOD);
+    lua_setfield(L, tableIdx, "Period");
+    lua_pushinteger(L, KeyCode::KEY_COMMA);
+    lua_setfield(L, tableIdx, "Comma");
+    lua_pushinteger(L, KeyCode::KEY_PLUS);
+    lua_setfield(L, tableIdx, "Plus");
+    lua_pushinteger(L, KeyCode::KEY_MINUS);
+    lua_setfield(L, tableIdx, "Minus");
+
+    lua_pushinteger(L, KeyCode::KEY_COLON);
+    lua_setfield(L, tableIdx, "Colon");
+    lua_pushinteger(L, KeyCode::KEY_QUESTION);
+    lua_setfield(L, tableIdx, "Question");
+    lua_pushinteger(L, KeyCode::KEY_SQUIGGLE);
+    lua_setfield(L, tableIdx, "Squiggle");
+    lua_pushinteger(L, KeyCode::KEY_LEFT_BRACKET);
+    lua_setfield(L, tableIdx, "LeftBracket");
+    lua_pushinteger(L, KeyCode::KEY_BACK_SLASH);
+    lua_setfield(L, tableIdx, "BackSlash");
+    lua_pushinteger(L, KeyCode::KEY_RIGHT_BRACKET);
+    lua_setfield(L, tableIdx, "RightBracket");
+    lua_pushinteger(L, KeyCode::KEY_QUOTE);
+    lua_setfield(L, tableIdx, "Quote");
+
+    lua_pushinteger(L, KeyCode::KEY_DELETE);
+    lua_setfield(L, tableIdx, "Delete");
+    lua_pushinteger(L, KeyCode::KEY_DECIMAL);
+    lua_setfield(L, tableIdx, "Decimal");
+
+    lua_setglobal(L, "Key");
+    assert(lua_gettop(L) == 0);
+}
+
+void Input_Lua::BindMouseTable()
+{
+    lua_State* L = GetLua();
+    assert(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushinteger(L, MouseCode::MOUSE_LEFT);
+    lua_setfield(L, tableIdx, "1");
+    lua_pushinteger(L, MouseCode::MOUSE_LEFT);
+    lua_setfield(L, tableIdx, "Left");
+
+    lua_pushinteger(L, MouseCode::MOUSE_RIGHT);
+    lua_setfield(L, tableIdx, "2");
+    lua_pushinteger(L, MouseCode::MOUSE_RIGHT);
+    lua_setfield(L, tableIdx, "Right");
+
+    lua_pushinteger(L, MouseCode::MOUSE_MIDDLE);
+    lua_setfield(L, tableIdx, "3");
+    lua_pushinteger(L, MouseCode::MOUSE_MIDDLE);
+    lua_setfield(L, tableIdx, "Middle");
+
+    lua_pushinteger(L, MouseCode::MOUSE_X1);
+    lua_setfield(L, tableIdx, "4");
+    lua_pushinteger(L, MouseCode::MOUSE_X1);
+    lua_setfield(L, tableIdx, "X1");
+
+    lua_pushinteger(L, MouseCode::MOUSE_X2);
+    lua_setfield(L, tableIdx, "5");
+    lua_pushinteger(L, MouseCode::MOUSE_X2);
+    lua_setfield(L, tableIdx, "X2");
+
+    lua_setglobal(L, "Mouse");
+    assert(lua_gettop(L) == 0);
+}
+
+void Input_Lua::BindGamepadTable()
+{
+    lua_State* L = GetLua();
+    assert(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    // Buttons
+    lua_pushinteger(L, GAMEPAD_A);
+    lua_setfield(L, tableIdx, "A");
+    lua_pushinteger(L, GAMEPAD_B);
+    lua_setfield(L, tableIdx, "B");
+    lua_pushinteger(L, GAMEPAD_C);
+    lua_setfield(L, tableIdx, "C");
+    lua_pushinteger(L, GAMEPAD_X);
+    lua_setfield(L, tableIdx, "X");
+    lua_pushinteger(L, GAMEPAD_Y);
+    lua_setfield(L, tableIdx, "Y");
+    lua_pushinteger(L, GAMEPAD_Z);
+    lua_setfield(L, tableIdx, "Z");
+    lua_pushinteger(L, GAMEPAD_L1);
+    lua_setfield(L, tableIdx, "L1");
+    lua_pushinteger(L, GAMEPAD_R1);
+    lua_setfield(L, tableIdx, "R1");
+    lua_pushinteger(L, GAMEPAD_L2);
+    lua_setfield(L, tableIdx, "L2");
+    lua_pushinteger(L, GAMEPAD_R2);
+    lua_setfield(L, tableIdx, "R2");
+    lua_pushinteger(L, GAMEPAD_THUMBL);
+    lua_setfield(L, tableIdx, "L3");
+    lua_pushinteger(L, GAMEPAD_THUMBR);
+    lua_setfield(L, tableIdx, "R3");
+    lua_pushinteger(L, GAMEPAD_START);
+    lua_setfield(L, tableIdx, "Start");
+    lua_pushinteger(L, GAMEPAD_SELECT);
+    lua_setfield(L, tableIdx, "Select");
+    lua_pushinteger(L, GAMEPAD_LEFT);
+    lua_setfield(L, tableIdx, "Left");
+    lua_pushinteger(L, GAMEPAD_RIGHT);
+    lua_setfield(L, tableIdx, "Right");
+    lua_pushinteger(L, GAMEPAD_UP);
+    lua_setfield(L, tableIdx, "Up");
+    lua_pushinteger(L, GAMEPAD_DOWN);
+    lua_setfield(L, tableIdx, "Down");
+    lua_pushinteger(L, GAMEPAD_HOME);
+    lua_setfield(L, tableIdx, "Home");
+
+    // Axes
+    lua_pushinteger(L, GAMEPAD_AXIS_LTRIGGER);
+    lua_setfield(L, tableIdx, "AxisL");
+    lua_pushinteger(L, GAMEPAD_AXIS_RTRIGGER);
+    lua_setfield(L, tableIdx, "AxisR");
+    lua_pushinteger(L, GAMEPAD_AXIS_LTHUMB_X);
+    lua_setfield(L, tableIdx, "AxisLX");
+    lua_pushinteger(L, GAMEPAD_AXIS_LTHUMB_Y);
+    lua_setfield(L, tableIdx, "AxisLY");
+    lua_pushinteger(L, GAMEPAD_AXIS_RTHUMB_X);
+    lua_setfield(L, tableIdx, "AxisRX");
+    lua_pushinteger(L, GAMEPAD_AXIS_RTHUMB_Y);
+    lua_setfield(L, tableIdx, "AxisRY");
+
+    lua_setglobal(L, "Gamepad");
+    assert(lua_gettop(L) == 0);
+}
+
+#endif

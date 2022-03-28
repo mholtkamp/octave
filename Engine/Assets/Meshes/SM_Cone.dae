@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 2.82.7 commit date:2020-03-12, commit time:05:06, hash:375c7dc4caf4</authoring_tool>
+    </contributor>
+    <created>2020-08-16T16:11:36</created>
+    <modified>2020-08-16T16:11:36</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_images/>
+  <library_geometries>
+    <geometry id="Cone-mesh" name="Cone">
+      <mesh>
+        <source id="Cone-mesh-positions">
+          <float_array id="Cone-mesh-positions-array" count="75">0 -1 -1 0.5 -1 -0.8660254 0.8660255 -1 -0.5 1 -1 0 0.8660254 -1 0.5000001 0.5000001 -1 0.8660254 0 1 0 1.50996e-7 -1 1 -0.4999998 -1 0.8660255 -0.8660252 -1 0.5000003 -1 -1 4.64912e-7 -0.8660257 -1 -0.4999995 -0.5000006 -1 -0.8660251 0 -1 -1 0.5 -1 -0.8660254 0.8660255 -1 -0.5 1 -1 0 0.8660254 -1 0.5000001 0.5000001 -1 0.8660254 1.50996e-7 -1 1 -0.4999998 -1 0.8660255 -0.8660252 -1 0.5000003 -1 -1 4.64912e-7 -0.8660257 -1 -0.4999995 -0.5000006 -1 -0.8660251</float_array>
+          <technique_common>
+            <accessor source="#Cone-mesh-positions-array" count="25" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cone-mesh-normals">
+          <float_array id="Cone-mesh-normals-array" count="42">0 0.4472014 -0.8944334 0 1 0 0.4472003 0.4472003 -0.7746121 0.7746121 0.4472003 -0.4472003 0.8944334 0.4472014 0 0.7746121 0.4472003 0.4472003 0.4472003 0.4472003 0.7746121 0 0.4472014 0.8944334 -0.4472003 0.4472003 0.7746121 -0.7746121 0.4472003 0.4472003 -0.8944334 0.4472014 0 -0.7746121 0.4472003 -0.4472003 -0.4472003 0.4472003 -0.7746121 0 -1 0</float_array>
+          <technique_common>
+            <accessor source="#Cone-mesh-normals-array" count="14" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cone-mesh-map-0">
+          <float_array id="Cone-mesh-map-0-array" count="132">0.25 0.49 0.25 0.25 0.37 0.4578461 0.37 0.4578461 0.25 0.25 0.4578461 0.37 0.4578461 0.37 0.25 0.25 0.49 0.25 0.49 0.25 0.25 0.25 0.4578461 0.1299999 0.4578461 0.1299999 0.25 0.25 0.37 0.04215389 0.37 0.04215389 0.25 0.25 0.25 0.00999999 0.25 0.00999999 0.25 0.25 0.13 0.04215383 0.13 0.04215383 0.25 0.25 0.04215395 0.1299999 0.04215395 0.1299999 0.25 0.25 0.00999999 0.2499999 0.00999999 0.2499999 0.25 0.25 0.04215383 0.3699999 0.04215383 0.3699999 0.25 0.25 0.1299998 0.457846 0.1299998 0.457846 0.25 0.25 0.25 0.49 0.51 0.2499999 0.6299999 0.457846 0.99 0.25 0.6299999 0.457846 0.75 0.49 0.87 0.4578461 0.87 0.4578461 0.9578461 0.37 0.99 0.25 0.99 0.25 0.9578461 0.1299999 0.87 0.04215389 0.87 0.04215389 0.7500001 0.00999999 0.6300001 0.04215383 0.6300001 0.04215383 0.542154 0.1299999 0.51 0.2499999 0.51 0.2499999 0.5421538 0.3699999 0.6299999 0.457846 0.6299999 0.457846 0.87 0.4578461 0.99 0.25 0.99 0.25 0.87 0.04215389 0.6300001 0.04215383 0.6300001 0.04215383 0.51 0.2499999 0.99 0.25</float_array>
+          <technique_common>
+            <accessor source="#Cone-mesh-map-0-array" count="66" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Cone-mesh-vertices">
+          <input semantic="POSITION" source="#Cone-mesh-positions"/>
+        </vertices>
+        <triangles count="22">
+          <input semantic="VERTEX" source="#Cone-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cone-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cone-mesh-map-0" offset="2" set="0"/>
+          <p>13 0 0 6 1 1 14 2 2 14 2 3 6 1 4 15 3 5 15 3 6 6 1 7 16 4 8 16 4 9 6 1 10 17 5 11 17 5 12 6 1 13 18 6 14 18 6 15 6 1 16 19 7 17 19 7 18 6 1 19 20 8 20 20 8 21 6 1 22 21 9 23 21 9 24 6 1 25 22 10 26 22 10 27 6 1 28 23 11 29 23 11 30 6 1 31 24 12 32 24 12 33 6 1 34 13 0 35 10 13 36 12 13 37 3 13 38 12 13 39 0 13 40 1 13 41 1 13 42 2 13 43 3 13 44 3 13 45 4 13 46 5 13 47 5 13 48 7 13 49 8 13 50 8 13 51 9 13 52 10 13 53 10 13 54 11 13 55 12 13 56 12 13 57 1 13 58 3 13 59 3 13 60 5 13 61 8 13 62 8 13 63 10 13 64 3 13 65</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="Cone" name="Cone" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <instance_geometry url="#Cone-mesh" name="Cone"/>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>

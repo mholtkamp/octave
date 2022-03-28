@@ -1,0 +1,51 @@
+#pragma once
+
+#include "Widgets/Widget.h"
+#include "Widgets/TextField.h"
+#include "Widgets/Text.h"
+#include "Widgets/Quad.h"
+
+#include "Renderer.h"
+
+class TextEntry : public Widget
+{
+public:
+    TextEntry()
+    {
+        SetDimensions(200.0f, 60.0f);
+
+        mBg = new Quad();
+        mBg->SetColor(glm::vec4(0.0f, 0.1f, 1.0f, 0.7f));
+        mBg->SetAnchorMode(AnchorMode::FullStretch);
+        mBg->SetMargins(0.0f, 0.0f, 0.0f, 0.0f);
+        AddChild(mBg);
+
+        mTitle = new Text();
+        mTitle->SetSize(20.0f);
+        AddChild(mTitle);
+
+        mTextField = new TextField();
+        mTextField->SetTextString("");
+        mTextField->SetAnchorMode(AnchorMode::BottomStretch);
+        mTextField->SetPosition(0.0f, -30.0f);
+        mTextField->SetLeftMargin(0.0f);
+        mTextField->SetRightMargin(0.0f);
+        AddChild(mTextField);
+    }
+
+    void Prompt(const char* title, TextFieldHandlerFP confirmHandler)
+    {
+        mTitle->SetText(title);
+        mTextField->SetTextConfirmHandler(confirmHandler);
+
+        MoveToMousePosition();
+        mTextField->SetTextString("");
+        TextField::SetSelectedTextField(mTextField);
+        Renderer::Get()->SetModalWidget(this);
+    }
+
+    TextField* mTextField = nullptr;
+    Text* mTitle = nullptr;
+    Quad* mBg = nullptr;
+
+};
