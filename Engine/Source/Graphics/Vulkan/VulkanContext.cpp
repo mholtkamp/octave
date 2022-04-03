@@ -2047,6 +2047,8 @@ Actor* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pixe
         BeginRenderPass(RenderPassId::HitCheck);
         std::vector<DebugDraw> debugDraws;
 
+        BindPipeline(PipelineId::HitCheck, VertexType::Vertex);
+
         const std::vector<Actor*>& actors = world->GetActors();
         for (uint32_t i = 0; i < actors.size(); ++i)
         {
