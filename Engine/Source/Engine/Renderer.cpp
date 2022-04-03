@@ -368,6 +368,7 @@ void Renderer::LoadDefaultMeshes()
     mTorusMesh = LoadAsset("SM_Torus");
 
     // Setup collision on several meshes
+    // Did you crash here? Make sure you package the project once from the editor to build .oct files for engine assets.
     mCubeMesh.Get<StaticMesh>()->SetCollisionShape(new btBoxShape(btVector3(1.0f, 1.0f, 1.0f)));
     mSphereMesh.Get<StaticMesh>()->SetCollisionShape(new btSphereShape(1.0f));
 }
