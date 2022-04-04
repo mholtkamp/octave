@@ -464,7 +464,8 @@ void Pipeline::CreatePipelineLayout()
 
     if (vkCreatePipelineLayout(GetVulkanDevice(), &pipelineLayoutInfo, nullptr, &mPipelineLayout) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to create pipeline layout!");
+        LogError("Failed to create pipeline layout!");
+        assert(0);
     }
 }
 
