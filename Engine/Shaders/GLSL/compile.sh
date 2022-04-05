@@ -1,26 +1,24 @@
 mkdir -p bin 
 cd ./src
 
-if [[ "${VULKAN_SDK}" == "" ]] 
+if command -v glslc >/dev/null 2>&1
 then
-    echo "ERROR - Vulkan SDK not detected"
-    exit 1;
-
-else
     for file in *.vert *.frag
     do
-
         echo $VULKAN_SDK/bin/glslc $file -o ../bin/$file
         val= $VULKAN_SDK/bin/glslc $file -o ../bin/$file
 
         if [ val != 0 ]
         then
-            echo Compile Successful
+            echo "Compilation successful!"
         else
             read -n1 -r -p "Press any key to continue..."
         fi
 
     done
+else
+    echo "ERROR: glslc not detected - have you installed Shaderc? Try the LunarG Vulkan SDK!"
+    exit 1;
 fi
 
 cd ..
