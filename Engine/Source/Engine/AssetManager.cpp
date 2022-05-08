@@ -153,7 +153,7 @@ AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type,
     stub->mAsset = nullptr;
     stub->mType = type;
     stub->mEmbeddedData = embeddedAsset;
-    stub->mEngineAsset = directory->mEngineDir;
+    stub->mEngineAsset = directory ? directory->mEngineDir : false;
     stub->mPath = path;
 
     mAssetMap.insert(std::pair<std::string, AssetStub*>(name, stub));
