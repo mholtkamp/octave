@@ -43,8 +43,14 @@ vec4 CalculateLighting(uint shadingModel, vec3 L, vec3 N, vec3 V, vec4 color, fl
     if (shadingModel == SHADING_MODEL_LIT ||
         shadingModel == SHADING_MODEL_FRESNEL)
     {
-        float power = clamp(dot(L, N), 0.0, 1.0) * attenuation;
-        retLighting = power * color;
+        float diffuseIntensity = clamp(dot(L, N), 0.0, 1.0);
+        vec4 diffuseColor = diffuseIntensity * color;
+
+        vec3 reflectDir = reflect(L, N);  
+        float specularIntensity = pow(max(dot(V, reflectDir), 0.0), 32);
+        vec4 specularColor = material.mSpecular * specularIntensity * color;
+
+        retLighting = attenuation * (diffuseColor + specularColor);
     }
     else if (shadingModel == SHADING_MODEL_TOON)
     {
