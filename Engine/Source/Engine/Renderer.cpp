@@ -721,11 +721,6 @@ void Renderer::Render(World* world)
         return;
     }
 
-    // Need to rework local light vector so that it is modified when
-    // a light is spawned or destroyed. And maybe only write the relevant light data (like color/radius)
-    // instead of storing pointers to components so that we can avoid cache misses.
-    world->GatherPointLights();
-
     {
 #if !SYNC_ON_END_FRAME
         SCOPED_CPU_STAT("Vsync");

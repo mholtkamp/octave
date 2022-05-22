@@ -106,28 +106,6 @@ void World::Destroy()
     mCollisionConfig = nullptr;
 }
 
-void World::GatherPointLights()
-{
-    mPointLights.clear();
-
-    for (uint32_t a = 0; a < mActors.size(); ++a)
-    {
-        Actor* actor = mActors[a];
-        const std::vector<Component*>& components = actor->GetComponents();
-        uint32_t numComponents = uint32_t(components.size());
-
-        for (uint32_t c = 0; c < numComponents; ++c)
-        {
-            Component* component = components[c];
-            if (component->GetType() == PointLightComponent::GetStaticType() &&
-                mPointLights.size() < MAX_POINTLIGHTS)
-            {
-                mPointLights.push_back(static_cast<PointLightComponent*>(component));
-            }
-        }
-    }
-}
-
 void World::SetTestDirectionalLight()
 {
     if (mDirectionalLight == nullptr)
@@ -588,21 +566,42 @@ void World::SweepTest(
     }
 }
 
-void World::RegisterAudioComponent(AudioComponent* comp)
+void World::RegisterComponent(Component* comp)
 {
-#if _DEBUG
-    // Make sure a component doesn't get registered twice.
-    assert(std::find(mAudioComponents.begin(), mAudioComponents.end(), comp) == mAudioComponents.end());
-#endif
+    TypeId compType = comp->GetType();
 
-    mAudioComponents.push_back(comp);
+    if (compType == AudioComponent::GetStaticType())
+    {
+#if _DEBUG
+        assert(std::find(mAudioComponents.begin(), mAudioComponents.end(), (AudioComponent*)comp) == mAudioComponents.end());
+#endif
+        mAudioComponents.push_back((AudioComponent*) comp);
+    }
+    else if (compType == PointLightComponent::GetStaticType())
+    {
+#if _DEBUG
+        assert(std::find(mPointLights.begin(), mPointLights.end(), (PointLightComponent*)comp) == mPointLights.end());
+#endif
+        mPointLights.push_back((PointLightComponent*)comp);
+    }
 }
 
-void World::UnregisterAudioComponent(AudioComponent* comp)
+void World::UnregisterComponent(Component* comp)
 {
-    auto it = std::find(mAudioComponents.begin(), mAudioComponents.end(), comp);
-    assert(it != mAudioComponents.end());
-    mAudioComponents.erase(it);
+    TypeId compType = comp->GetType();
+
+    if (compType == AudioComponent::GetStaticType())
+    {
+        auto it = std::find(mAudioComponents.begin(), mAudioComponents.end(), (AudioComponent*)comp);
+        assert(it != mAudioComponents.end());
+        mAudioComponents.erase(it);
+    }
+    else if (compType == PointLightComponent::GetStaticType())
+    {
+        auto it = std::find(mPointLights.begin(), mPointLights.end(), (PointLightComponent*)comp);
+        assert(it != mPointLights.end());
+        mPointLights.erase(it);
+    }
 }
 
 const std::vector<AudioComponent*>& World::GetAudioComponents() const
