@@ -31,6 +31,7 @@ struct MaterialParams
     uint32_t mToonSteps = 2;
     float mOpacity = 1.0f;
     float mMaskCutoff = 0.5f;
+    float mShininess = 32.0f;
     int32_t mSortPriority = 0;
     bool mDisableDepthTest = false;
 };
@@ -99,6 +100,9 @@ public:
 
     float GetMaskCutoff() const;
     void SetMaskCutoff(float cutoff);
+
+    float GetShininess() const;
+    void SetShininess(float shininess);
 
     int32_t GetSortPriority() const;
     void SetSortPriority(int32_t priority);
