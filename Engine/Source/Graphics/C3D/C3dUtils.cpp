@@ -18,6 +18,16 @@ static inline float LinearAttenFunc(float dist, float maxDist, float none)
     return (1.0f - (dist / maxDist));
 }
 
+uint32_t CalculateShininessLevel(float shininess)
+{
+    shininess = glm::max<uint32_t>(shininess, 2);
+    float shinyLog = log2(shininess);
+    uint32_t shinyLevel = uint32_t((shinyLog - 1.0f) + 0.5f);
+    shinyLevel = glm::clamp<uint32_t>(shinyLevel, 0u, NumShininessLevels - 1u);
+    assert(shinyLevel < NumShininessLevels);
+    return shinyLevel;
+}
+
 void CopyMatrixGlmToC3d(C3D_Mtx* dst, const glm::mat4& src)
 {
     glm::mat4 transMat = glm::transpose(src);
@@ -161,6 +171,14 @@ void BindMaterial(Material* material)
             C3D_LightEnvBind(&gC3dContext.mLightEnv);
             C3D_LightEnvMaterial(&gC3dContext.mLightEnv, &c3dMaterial);
 
+            if (specular > 0.0f)
+            {
+                // If we have a specular component, we need to choose the light lut that best matches its shininess.
+                // Otherwise, just leave the light lut as it was since I think it's only used for specular light.
+                uint32_t shininessLevel = CalculateShininessLevel(material->GetShininess());
+                C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D0, GPU_LUTINPUT_NH, false, &gC3dContext.mLightLut[shininessLevel]);
+            }
+
             // Diffuse is in Primary Fragment Color
             // Specular is in Secondary Fragment Color
 
@@ -226,7 +244,7 @@ void SetupLighting()
 
     C3D_LightEnvInit(&gC3dContext.mLightEnv);
     C3D_LightEnvBind(&gC3dContext.mLightEnv);
-    C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D0, GPU_LUTINPUT_NH, false, &gC3dContext.mLightLut);
+    C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D0, GPU_LUTINPUT_NH, false, &gC3dContext.mLightLut[Shininess32]);
 
     CameraComponent* cameraComp = GetWorld()->GetActiveCamera();
     if (cameraComp == nullptr)

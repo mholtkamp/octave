@@ -92,7 +92,12 @@ void GFX_Initialize()
     C3D_RenderTargetSetOutput(gC3dContext.mRenderTargetBottom, GFX_BOTTOM, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
 
     // Setup Light LUT
-    LightLut_Phong(&gC3dContext.mLightLut, 30);
+    LightLut_Phong(&gC3dContext.mLightLut[Shininess2], 2);
+    LightLut_Phong(&gC3dContext.mLightLut[Shininess4], 4);
+    LightLut_Phong(&gC3dContext.mLightLut[Shininess8], 8);
+    LightLut_Phong(&gC3dContext.mLightLut[Shininess16], 16);
+    LightLut_Phong(&gC3dContext.mLightLut[Shininess32], 32);
+    LightLut_Phong(&gC3dContext.mLightLut[Shininess64], 64);
 
     // Load shaders
     for (uint32_t i = 0; i < uint32_t(ShaderId::Count); ++i)

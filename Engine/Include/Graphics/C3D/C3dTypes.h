@@ -20,6 +20,18 @@ enum class ShaderId
     Count
 };
 
+enum Shininess
+{
+    Shininess2,
+    Shininess4,
+    Shininess8,
+    Shininess16,
+    Shininess32,
+    Shininess64,
+
+    NumShininessLevels
+};
+
 // Uniform Location structs.
 // Prefetch the locations for possibly better performance.
 // TODO: Fill in with other primitive uniforms (staticmesh, skeletalmesh, etc)
@@ -73,7 +85,7 @@ struct C3dContext
 
     C3D_LightEnv mLightEnv = {};
     C3D_LightEnv mNoLightEnv = {};
-    C3D_LightLut mLightLut = {};
+    C3D_LightLut mLightLut[NumShininessLevels] = {};
     C3D_LightLutDA mLightAttenuationLuts[8] = {};
     float mLightRadii[8] = {};
     C3D_Light mLights[8] = {};
