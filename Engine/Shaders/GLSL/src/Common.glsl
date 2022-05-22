@@ -96,7 +96,7 @@ struct MaterialUniforms
     float mSpecular;
     float mOpacity;
     float mMaskCutoff;
-    float mPadding0;
+    float mShininess;
 };
 
 const mat4 SHADOW_BIAS_MAT = mat4( 

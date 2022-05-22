@@ -868,6 +868,7 @@ void UpdateMaterialResource(Material* material)
     ubo.mSpecular = material->GetSpecular();
     ubo.mOpacity = material->GetOpacity();
     ubo.mMaskCutoff = material->GetMaskCutoff();
+    ubo.mShininess = material->GetShininess();
 
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 

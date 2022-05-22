@@ -47,7 +47,7 @@ vec4 CalculateLighting(uint shadingModel, vec3 L, vec3 N, vec3 V, vec4 color, fl
         vec4 diffuseColor = diffuseIntensity * color;
 
         vec3 reflectDir = reflect(L, N);  
-        float specularIntensity = pow(max(dot(V, reflectDir), 0.0), 32);
+        float specularIntensity = pow(max(dot(V, reflectDir), 0.0), material.mShininess);
         vec4 specularColor = material.mSpecular * specularIntensity * color;
 
         retLighting = attenuation * (diffuseColor + specularColor);

@@ -106,6 +106,7 @@ void Material::LoadStream(Stream& stream, Platform platform)
     mParams.mToonSteps = stream.ReadUint32();
     mParams.mOpacity = stream.ReadFloat();
     mParams.mMaskCutoff = stream.ReadFloat();
+    //mParams.mShininess = stream.ReadFloat();
     mParams.mSortPriority = stream.ReadInt32();
     mParams.mDisableDepthTest = stream.ReadBool();
 }
@@ -131,6 +132,7 @@ void Material::SaveStream(Stream& stream, Platform platform)
     stream.WriteUint32(mParams.mToonSteps);
     stream.WriteFloat(mParams.mOpacity);
     stream.WriteFloat(mParams.mMaskCutoff);
+    //stream.WriteFloat(mParams.mShininess);
     stream.WriteInt32(mParams.mSortPriority);
     stream.WriteBool(mParams.mDisableDepthTest);
 }
@@ -190,6 +192,7 @@ void Material::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Color, "Fresnel Color", this, &mParams.mFresnelColor, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Fresnel Power", this, &mParams.mFresnelPower, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Specular", this, &mParams.mSpecular, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Shininess", this, &mParams.mShininess, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Integer, "Toon Steps", this, &mParams.mToonSteps, 1, HandlePropChange));
 }
 
@@ -369,6 +372,17 @@ float Material::GetMaskCutoff() const
 void Material::SetMaskCutoff(float cutoff)
 {
     mParams.mMaskCutoff = cutoff;
+    MarkDirty();
+}
+
+float Material::GetShininess() const
+{
+    return mParams.mShininess;
+}
+
+void Material::SetShininess(float shininess)
+{
+    mParams.mShininess = shininess;
     MarkDirty();
 }
 
