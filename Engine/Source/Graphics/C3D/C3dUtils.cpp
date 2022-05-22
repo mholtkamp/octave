@@ -28,6 +28,28 @@ uint32_t CalculateShininessLevel(float shininess)
     return shinyLevel;
 }
 
+uint32_t CalculateFresnelPowerLevel(float fresnelPower)
+{
+    float fresnelLevels[NumFresnelPowerLevels] =
+    {
+        1.0f, 1.5f, 2.0f, 4.0f
+    };
+
+    int32_t closest = -1;
+    float closestDist = FLT_MAX;
+    for (int32_t i = 0; i < NumFresnelPowerLevels; ++i)
+    {
+        float dist = fabs(fresnelLevels[i] - fresnelPower);
+        if (dist < closestDist)
+        {
+            closest = i;
+            closestDist = dist;
+        }
+    }
+
+    return closest;
+}
+
 void CopyMatrixGlmToC3d(C3D_Mtx* dst, const glm::mat4& src)
 {
     glm::mat4 transMat = glm::transpose(src);
@@ -178,26 +200,71 @@ void BindMaterial(Material* material)
                 C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D0, GPU_LUTINPUT_NH, false, &gC3dContext.mLightLut[shininessLevel]);
             }
 
+            bool fresnelEnabled = material->IsFresnelEnabled();
+            uint8_t fresnelColor[4] = {};
+
+            if (fresnelEnabled)
+            {
+                uint32_t fresnelPowerLevel = CalculateFresnelPowerLevel(material->GetFresnelPower());
+                C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_FR, GPU_LUTINPUT_NV, false, &gC3dContext.mFresnelLut[fresnelPowerLevel]);
+                C3D_LightEnvFresnel(&gC3dContext.mLightEnv, GPU_PRI_ALPHA_FRESNEL);
+
+                glm::vec4 fresnelColorFloat = material->GetFresnelColor();
+                fresnelColorFloat = glm::clamp(fresnelColorFloat, 0.0f, 1.0f);
+
+                fresnelColor[0] = uint8_t(fresnelColorFloat.r * 255.0f);
+                fresnelColor[1] = uint8_t(fresnelColorFloat.g * 255.0f);
+                fresnelColor[2] = uint8_t(fresnelColorFloat.b * 255.0f);
+                fresnelColor[3] = uint8_t(255);
+            }
+            else
+            {
+                C3D_LightEnvFresnel(&gC3dContext.mLightEnv, GPU_NO_FRESNEL);
+            }
+
             // Diffuse is in Primary Fragment Color
             // Specular is in Secondary Fragment Color
 
             C3D_TexBind(0, &texture->GetResource()->mTex);
 
-            C3D_TexEnv*env = C3D_GetTexEnv(0);
-            C3D_TexEnvInit(env);
-            C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_FRAGMENT_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
-            C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+            int32_t tevIdx = 0;
+            C3D_TexEnv* env = nullptr;
 
-            env = C3D_GetTexEnv(1);
+            env = C3D_GetTexEnv(tevIdx);
+            C3D_TexEnvInit(env);
+            C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_FRAGMENT_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+            C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
+            C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+            C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+            ++tevIdx;
+
+            env = C3D_GetTexEnv(tevIdx);
             C3D_TexEnvInit(env);
             C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_FRAGMENT_SECONDARY_COLOR, GPU_PRIMARY_COLOR);
             C3D_TexEnvFunc(env, C3D_RGB, GPU_ADD);
+            C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+            C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+            ++tevIdx;
 
-            env = C3D_GetTexEnv(2);
+            env = C3D_GetTexEnv(tevIdx);
             C3D_TexEnvInit(env);
             C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(matColor4));
             C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_CONSTANT, GPU_PRIMARY_COLOR);
             C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+            ++tevIdx;
+
+            if (fresnelEnabled)
+            {
+                env = C3D_GetTexEnv(tevIdx);
+                C3D_TexEnvInit(env);
+                C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(fresnelColor));
+                C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_ALPHA);
+                C3D_TexEnvSrc(env, C3D_RGB, GPU_CONSTANT, GPU_PREVIOUS, GPU_FRAGMENT_PRIMARY_COLOR);
+                C3D_TexEnvFunc(env, C3D_RGB, GPU_INTERPOLATE);
+                C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+                C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+                ++tevIdx;
+            }
         }
 
         bool depthEnabled = !depthless;

@@ -79,6 +79,12 @@ static_assert(uint32_t(ShaderId::Count) == 5, "Need to update shader binary size
 	GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) | \
 	GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO))
 
+
+float FresnelFunc(float input, float power)
+{
+    return powf(1.0f - fabs(input), power);
+}
+
 void GFX_Initialize()
 {
     C3D_Init(0xC0000 /*C3D_DEFAULT_CMDBUF_SIZE*/);
@@ -98,6 +104,12 @@ void GFX_Initialize()
     LightLut_Phong(&gC3dContext.mLightLut[Shininess16], 16);
     LightLut_Phong(&gC3dContext.mLightLut[Shininess32], 32);
     LightLut_Phong(&gC3dContext.mLightLut[Shininess64], 64);
+
+    // Setup Fresnel LUT
+    LightLut_FromFunc(&gC3dContext.mFresnelLut[FresnelPower1], FresnelFunc, 1.0, false);
+    LightLut_FromFunc(&gC3dContext.mFresnelLut[FresnelPower1_5], FresnelFunc, 1.5, false);
+    LightLut_FromFunc(&gC3dContext.mFresnelLut[FresnelPower2], FresnelFunc, 2.0, false);
+    LightLut_FromFunc(&gC3dContext.mFresnelLut[FresnelPower4], FresnelFunc, 4.0, false);
 
     // Load shaders
     for (uint32_t i = 0; i < uint32_t(ShaderId::Count); ++i)
