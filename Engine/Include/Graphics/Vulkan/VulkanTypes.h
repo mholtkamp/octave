@@ -96,6 +96,11 @@ struct MaterialData
     float mOpacity;
     float mMaskCutoff;
     float mShininess;
+
+    uint32_t mFresnelEnabled;
+    float mPadding0;
+    float mPadding1;
+    float mPadding2;
 };
 
 enum class DescriptorSetBinding

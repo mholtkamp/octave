@@ -89,13 +89,14 @@ void main()
 
     outColor = diffuse;
 
+    vec3 N = normalize(inNormal);
+    vec3 V = global.mViewDirection.xyz;
+
     if (shadingModel != SHADING_MODEL_UNLIT)
     {
         outColor = vec4(0, 0, 0, 1);
 
         vec4 totalLight = global.mAmbientLightColor;
-        vec3 N = normalize(inNormal);
-        vec3 V = global.mViewDirection.xyz;
 
         // Directional Light
         {
@@ -124,15 +125,15 @@ void main()
         }
 
         outColor = totalLight * diffuse;
-
-        if (shadingModel == SHADING_MODEL_FRESNEL)
-        {
-            float intensity = pow((1 - abs(dot(N, V))), material.mFresnelPower);
-            outColor += intensity * material.mFresnelColor;
-        }
     }
 
     outColor *= inColor;
+
+    if (material.mFresnelEnabled != 0)
+    {
+        float intensity = pow((1 - abs(dot(N, V))), material.mFresnelPower);
+        outColor += intensity * material.mFresnelColor;
+    }
 
     ApplyFog(outColor, inPosition, global);
 

@@ -16,10 +16,9 @@ static const char* sShadingModelStrings[] =
 {
     "Unlit",
     "Lit",
-    "Fresnel",
     "Toon"
 };
-static_assert(int32_t(ShadingModel::Count) == 4, "Need to update string conversion table");
+static_assert(int32_t(ShadingModel::Count) == 3, "Need to update string conversion table");
 
 
 static const char* sBlendModeStrings[] =
@@ -109,6 +108,7 @@ void Material::LoadStream(Stream& stream, Platform platform)
     //mParams.mShininess = stream.ReadFloat();
     mParams.mSortPriority = stream.ReadInt32();
     mParams.mDisableDepthTest = stream.ReadBool();
+    //mParams.mFresnelEnabled = stream.ReadBool();
 }
 
 void Material::SaveStream(Stream& stream, Platform platform)
@@ -135,6 +135,7 @@ void Material::SaveStream(Stream& stream, Platform platform)
     //stream.WriteFloat(mParams.mShininess);
     stream.WriteInt32(mParams.mSortPriority);
     stream.WriteBool(mParams.mDisableDepthTest);
+    //stream.WriteBool(mParams.mFresnelEnabled);
 }
 
 void Material::Create()
@@ -189,6 +190,7 @@ void Material::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Mask Cutoff", this, &mParams.mMaskCutoff, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Integer, "Sort Priority", this, &mParams.mSortPriority, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Disable Depth Test", this, &mParams.mDisableDepthTest, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Fresnel", this, &mParams.mFresnelEnabled, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Color, "Fresnel Color", this, &mParams.mFresnelColor, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Fresnel Power", this, &mParams.mFresnelPower, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Specular", this, &mParams.mSpecular, 1, HandlePropChange));
@@ -407,3 +409,15 @@ void Material::SetDepthTestDisabled(bool depthTest)
     mParams.mDisableDepthTest = depthTest;
     MarkDirty();
 }
+
+bool Material::IsFresnelEnabled() const
+{
+    return mParams.mFresnelEnabled;
+}
+
+void Material::SetFresnelEnabled(bool enable)
+{
+    mParams.mFresnelEnabled = enable;
+    MarkDirty();
+}
+

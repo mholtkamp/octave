@@ -58,7 +58,6 @@ enum class ShadingModel : uint32_t
 {
     Unlit,
     Lit,
-    Fresnel,
     Toon,
 
     Count

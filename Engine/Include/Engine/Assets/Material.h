@@ -34,6 +34,7 @@ struct MaterialParams
     float mShininess = 32.0f;
     int32_t mSortPriority = 0;
     bool mDisableDepthTest = false;
+    bool mFresnelEnabled = false;
 };
 
 class Material : public Asset
@@ -109,6 +110,9 @@ public:
 
     bool IsDepthTestDisabled() const;
     void SetDepthTestDisabled(bool depthTest);
+
+    bool IsFresnelEnabled() const;
+    void SetFresnelEnabled(bool enable);
 
 protected:
 
