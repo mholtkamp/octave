@@ -146,13 +146,14 @@ void BindMaterial(Material* material)
             Texture* texture = material->GetTexture(TEXTURE_0);
 
             glm::vec4 ambientColor = GetWorld()->GetAmbientLightColor();
+            float specular = material->GetSpecular();
 
             // Material color gets modulated in the TexEnv.
             C3D_Material c3dMaterial =
             {
-                { ambientColor.r, ambientColor.g, ambientColor.b }, //ambient
+                { ambientColor.b, ambientColor.g, ambientColor.r }, //ambient
                 { 1.0f, 1.0f, 1.0f }, //diffuse
-                { 1.0f, 1.0f, 1.0f }, //specular0
+                { specular, specular, specular }, //specular0
                 { 0.0f, 0.0f, 0.0f }, //specular1
                 { 0.0f, 0.0f, 0.0f }, //emission
             };
@@ -160,25 +161,25 @@ void BindMaterial(Material* material)
             C3D_LightEnvBind(&gC3dContext.mLightEnv);
             C3D_LightEnvMaterial(&gC3dContext.mLightEnv, &c3dMaterial);
 
-            //C3D_TexEnv* env = C3D_GetTexEnv(0);
-            //C3D_TexEnvInit(env);
-            //C3D_TexEnvSrc(env, C3D_Both, GPU_FRAGMENT_PRIMARY_COLOR, GPU_FRAGMENT_SECONDARY_COLOR, GPU_FRAGMENT_PRIMARY_COLOR);
-            //C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
-
             // Diffuse is in Primary Fragment Color
             // Specular is in Secondary Fragment Color
 
             C3D_TexBind(0, &texture->GetResource()->mTex);
+
             C3D_TexEnv*env = C3D_GetTexEnv(0);
             C3D_TexEnvInit(env);
-            C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(matColor4));
             C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_FRAGMENT_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
             C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
 
             env = C3D_GetTexEnv(1);
             C3D_TexEnvInit(env);
+            C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_FRAGMENT_SECONDARY_COLOR, GPU_PRIMARY_COLOR);
+            C3D_TexEnvFunc(env, C3D_RGB, GPU_ADD);
+
+            env = C3D_GetTexEnv(2);
+            C3D_TexEnvInit(env);
             C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(matColor4));
-            C3D_TexEnvSrc(env, C3D_Both, GPU_CONSTANT, GPU_PREVIOUS, GPU_PRIMARY_COLOR);
+            C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_CONSTANT, GPU_PRIMARY_COLOR);
             C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
         }
 
@@ -225,7 +226,7 @@ void SetupLighting()
 
     C3D_LightEnvInit(&gC3dContext.mLightEnv);
     C3D_LightEnvBind(&gC3dContext.mLightEnv);
-    C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D0, GPU_LUTINPUT_LN, false, &gC3dContext.mLightLut);
+    C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D0, GPU_LUTINPUT_NH, false, &gC3dContext.mLightLut);
 
     CameraComponent* cameraComp = GetWorld()->GetActiveCamera();
     if (cameraComp == nullptr)
