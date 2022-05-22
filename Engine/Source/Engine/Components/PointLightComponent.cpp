@@ -26,11 +26,13 @@ PointLightComponent::~PointLightComponent()
 void PointLightComponent::Create()
 {
     LightComponent::Create();
+    GetWorld()->RegisterComponent(this);
 }
 
 void PointLightComponent::Destroy()
 {
     LightComponent::Destroy();
+    GetWorld()->UnregisterComponent(this);
 }
 
 const char* PointLightComponent::GetTypeName() const

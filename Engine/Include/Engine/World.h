@@ -94,8 +94,8 @@ public:
         uint32_t numIgnoreObjects = 0,
         btCollisionObject** ignoreObjects = nullptr);
 
-    void RegisterAudioComponent(AudioComponent* comp);
-    void UnregisterAudioComponent(AudioComponent* comp);
+    void RegisterComponent(Component* comp);
+    void UnregisterComponent(Component* comp);
     const std::vector<AudioComponent*>& GetAudioComponents() const;
 
     std::vector<Actor*>& GetReplicatedActorVector(ReplicationRate rate);
@@ -113,8 +113,6 @@ public:
 
     void EnableInternalEdgeSmoothing(bool enable);
     bool IsInternalEdgeSmoothingEnabled() const;
-
-    void GatherPointLights();
 
     template<typename T>
     T* FindActor()
