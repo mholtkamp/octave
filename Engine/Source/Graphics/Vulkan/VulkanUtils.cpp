@@ -869,6 +869,7 @@ void UpdateMaterialResource(Material* material)
     ubo.mOpacity = material->GetOpacity();
     ubo.mMaskCutoff = material->GetMaskCutoff();
     ubo.mShininess = material->GetShininess();
+    ubo.mFresnelEnabled = static_cast<uint32_t>(material->IsFresnelEnabled());
 
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 

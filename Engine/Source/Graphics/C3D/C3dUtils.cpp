@@ -150,8 +150,7 @@ void BindMaterial(Material* material)
             }
         }
         else if (shadingModel == ShadingModel::Lit ||
-                 shadingModel == ShadingModel::Fresnel || // TODO: Support fresnel and toon shading
-                 shadingModel == ShadingModel::Toon)
+                 shadingModel == ShadingModel::Toon) // TODO: Support fresnel and toon shading
         {
             Texture* texture = material->GetTexture(TEXTURE_0);
 

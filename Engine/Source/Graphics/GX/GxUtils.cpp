@@ -228,8 +228,7 @@ void BindMaterial(Material* material, bool useVertexColor)
         }
     }
     else if (shadingModel == ShadingModel::Lit ||
-            shadingModel == ShadingModel::Fresnel || // TODO: Support toon and fresnel
-            shadingModel == ShadingModel::Toon)
+            shadingModel == ShadingModel::Toon) // TODO: Support toon and fresnel
     {
         gGxContext.mLighting.mEnabled = true;
 
