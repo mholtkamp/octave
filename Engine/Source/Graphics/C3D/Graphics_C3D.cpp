@@ -80,9 +80,15 @@ static_assert(uint32_t(ShaderId::Count) == 5, "Need to update shader binary size
 	GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO))
 
 
-float FresnelFunc(float input, float power)
+float FresnelFunc(float x, float power)
 {
-    return powf(1.0f - fabs(input), power);
+    return powf(1.0f - fabs(x), power);
+}
+
+float ToonFunc(float x, float levels)
+{
+    const float factor = levels - 1;
+    return floorf(0.5f + x * factor) / factor;
 }
 
 void GFX_Initialize()
@@ -110,6 +116,10 @@ void GFX_Initialize()
     LightLut_FromFunc(&gC3dContext.mFresnelLut[FresnelPower1_5], FresnelFunc, 1.5, false);
     LightLut_FromFunc(&gC3dContext.mFresnelLut[FresnelPower2], FresnelFunc, 2.0, false);
     LightLut_FromFunc(&gC3dContext.mFresnelLut[FresnelPower4], FresnelFunc, 4.0, false);
+
+    // Toon LUT
+    LightLut_FromFunc(&gC3dContext.mToonLut[ToonLevel2], ToonFunc, 2, false);
+    LightLut_FromFunc(&gC3dContext.mToonLut[ToonLevel3], ToonFunc, 3, false);
 
     // Load shaders
     for (uint32_t i = 0; i < uint32_t(ShaderId::Count); ++i)

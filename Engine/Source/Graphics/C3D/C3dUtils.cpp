@@ -172,25 +172,34 @@ void BindMaterial(Material* material)
             }
         }
         else if (shadingModel == ShadingModel::Lit ||
-                 shadingModel == ShadingModel::Toon) // TODO: Support fresnel and toon shading
+                 shadingModel == ShadingModel::Toon)
         {
             Texture* texture = material->GetTexture(TEXTURE_0);
 
             glm::vec4 ambientColor = GetWorld()->GetAmbientLightColor();
-            float specular = material->GetSpecular();
-
+            bool toon = (shadingModel == ShadingModel::Toon);
+            float specular = toon ? 0.0f : material->GetSpecular();
+            float specular1 = toon ? 1.0f : 0.0f;
             // Material color gets modulated in the TexEnv.
             C3D_Material c3dMaterial =
             {
                 { ambientColor.b, ambientColor.g, ambientColor.r }, //ambient
                 { 1.0f, 1.0f, 1.0f }, //diffuse
                 { specular, specular, specular }, //specular0
-                { 0.0f, 0.0f, 0.0f }, //specular1
+                { specular1, specular1, specular1 }, //specular1
                 { 0.0f, 0.0f, 0.0f }, //emission
             };
 
             C3D_LightEnvBind(&gC3dContext.mLightEnv);
             C3D_LightEnvMaterial(&gC3dContext.mLightEnv, &c3dMaterial);
+
+            if (shadingModel == ShadingModel::Toon)
+            {
+                uint32_t numSteps = material->GetToonSteps();
+                uint32_t toonLevel = numSteps == 3 ? ToonLevel3 : ToonLevel2;
+                C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D1, GPU_LUTINPUT_LN, false, &gC3dContext.mToonLut[toonLevel]);
+                specular = 0.0f;
+            }
 
             if (specular > 0.0f)
             {
@@ -230,21 +239,37 @@ void BindMaterial(Material* material)
             int32_t tevIdx = 0;
             C3D_TexEnv* env = nullptr;
 
-            env = C3D_GetTexEnv(tevIdx);
-            C3D_TexEnvInit(env);
-            C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_FRAGMENT_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
-            C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
-            C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
-            C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
-            ++tevIdx;
+            if (shadingModel == ShadingModel::Toon)
+            {
+                env = C3D_GetTexEnv(tevIdx);
+                C3D_TexEnvInit(env);
+                C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_FRAGMENT_SECONDARY_COLOR, GPU_PRIMARY_COLOR);
+                C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
+                C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+                C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+                ++tevIdx;
+            }
+            else
+            {
+                env = C3D_GetTexEnv(tevIdx);
+                C3D_TexEnvInit(env);
+                C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_FRAGMENT_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+                C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
+                C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+                C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+                ++tevIdx;
+            }
 
-            env = C3D_GetTexEnv(tevIdx);
-            C3D_TexEnvInit(env);
-            C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_FRAGMENT_SECONDARY_COLOR, GPU_PRIMARY_COLOR);
-            C3D_TexEnvFunc(env, C3D_RGB, GPU_ADD);
-            C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
-            C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
-            ++tevIdx;
+            if (specular > 0.0f)
+            {
+                env = C3D_GetTexEnv(tevIdx);
+                C3D_TexEnvInit(env);
+                C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_FRAGMENT_SECONDARY_COLOR, GPU_PRIMARY_COLOR);
+                C3D_TexEnvFunc(env, C3D_RGB, GPU_ADD);
+                C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+                C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+                ++tevIdx;
+            }
 
             env = C3D_GetTexEnv(tevIdx);
             C3D_TexEnvInit(env);

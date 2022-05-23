@@ -40,8 +40,7 @@ vec4 CalculateLighting(uint shadingModel, vec3 L, vec3 N, vec3 V, vec4 color, fl
 {
     vec4 retLighting = vec4(0,0,0,0);
 
-    if (shadingModel == SHADING_MODEL_LIT ||
-        shadingModel == SHADING_MODEL_FRESNEL)
+    if (shadingModel == SHADING_MODEL_LIT)
     {
         float diffuseIntensity = clamp(dot(L, N), 0.0, 1.0);
         vec4 diffuseColor = diffuseIntensity * color;

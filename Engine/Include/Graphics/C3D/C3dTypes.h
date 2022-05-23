@@ -42,6 +42,14 @@ enum FresnelPower
     NumFresnelPowerLevels
 };
 
+enum ToonLevel
+{
+    ToonLevel2,
+    ToonLevel3,
+
+    NumToonLevels
+};
+
 // Uniform Location structs.
 // Prefetch the locations for possibly better performance.
 // TODO: Fill in with other primitive uniforms (staticmesh, skeletalmesh, etc)
@@ -97,6 +105,7 @@ struct C3dContext
     C3D_LightEnv mNoLightEnv = {};
     C3D_LightLut mLightLut[NumShininessLevels] = {};
     C3D_LightLut mFresnelLut[NumFresnelPowerLevels] = {};
+    C3D_LightLut mToonLut[NumToonLevels] = {};
     C3D_LightLutDA mLightAttenuationLuts[8] = {};
     float mLightRadii[8] = {};
     C3D_Light mLights[8] = {};
