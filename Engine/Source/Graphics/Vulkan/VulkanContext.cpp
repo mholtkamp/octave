@@ -1098,7 +1098,7 @@ void VulkanContext::CreateRenderPass()
             // Depth Buffer
             {
                 0,
-                VK_FORMAT_D24_UNORM_S8_UINT,
+				VK_FORMAT_D32_SFLOAT_S8_UINT,
                 VK_SAMPLE_COUNT_1_BIT,
                 VK_ATTACHMENT_LOAD_OP_CLEAR,
                 VK_ATTACHMENT_STORE_OP_STORE,
@@ -1175,7 +1175,7 @@ void VulkanContext::CreateRenderPass()
             // Depth Buffer
             {
                 0,
-                VK_FORMAT_D24_UNORM_S8_UINT,
+				VK_FORMAT_D32_SFLOAT_S8_UINT,
                 VK_SAMPLE_COUNT_1_BIT,
                 VK_ATTACHMENT_LOAD_OP_LOAD,
                 VK_ATTACHMENT_STORE_OP_STORE,
@@ -1252,7 +1252,7 @@ void VulkanContext::CreateRenderPass()
             // Depth Buffer
             {
                 0,
-                VK_FORMAT_D24_UNORM_S8_UINT,
+				VK_FORMAT_D32_SFLOAT_S8_UINT,
                 VK_SAMPLE_COUNT_1_BIT,
                 VK_ATTACHMENT_LOAD_OP_LOAD,
                 VK_ATTACHMENT_STORE_OP_STORE,
@@ -1380,7 +1380,7 @@ void VulkanContext::CreateDepthImage()
     ImageDesc imageDesc;
     imageDesc.mWidth = mSwapchainExtent.width;
     imageDesc.mHeight = mSwapchainExtent.height;
-    imageDesc.mFormat = VK_FORMAT_D24_UNORM_S8_UINT;
+    imageDesc.mFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
     imageDesc.mUsage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
     mDepthImage = new Image(imageDesc, SamplerDesc(), "Depth");
@@ -2159,7 +2159,7 @@ void VulkanContext::CreateHitCheck()
         // Depth attachment
         {
             0,
-            VK_FORMAT_D24_UNORM_S8_UINT,
+			VK_FORMAT_D32_SFLOAT_S8_UINT,
             VK_SAMPLE_COUNT_1_BIT,
             VK_ATTACHMENT_LOAD_OP_CLEAR,
             VK_ATTACHMENT_STORE_OP_DONT_CARE,
