@@ -2,7 +2,9 @@
 #include <time.h>
 #include <stdlib.h>
 
-#define USE_GLM_MATRIX_DECOMPOSE 1
+#define USE_GLM_MATRIX_DECOMPOSE_TRANSLATION 0
+#define USE_GLM_MATRIX_DECOMPOSE_ROTATION 1
+#define USE_GLM_MATRIX_DECOMPOSE_SCALE 1
 
 bool Maths::mRandSeeded = false;
 
@@ -168,7 +170,7 @@ bool Maths::IsPowerOfTwo(uint32_t x)
 
 glm::vec3 Maths::ExtractPosition(const glm::mat4& mat)
 {
-#if USE_GLM_MATRIX_DECOMPOSE
+#if USE_GLM_MATRIX_DECOMPOSE_TRANSLATION
     glm::vec3 translation;
     glm::vec3 scale;
     glm::quat orientation;
@@ -188,7 +190,7 @@ glm::vec3 Maths::ExtractPosition(const glm::mat4& mat)
 
 glm::quat Maths::ExtractRotation(const glm::mat4& mat)
 {
-#if USE_GLM_MATRIX_DECOMPOSE
+#if USE_GLM_MATRIX_DECOMPOSE_ROTATION
     glm::vec3 translation;
     glm::vec3 scale;
     glm::quat orientation;
@@ -234,7 +236,7 @@ glm::quat Maths::ExtractRotation(const glm::mat4& mat)
 
 glm::vec3 Maths::ExtractScale(const glm::mat4& mat)
 {
-#if USE_GLM_MATRIX_DECOMPOSE
+#if USE_GLM_MATRIX_DECOMPOSE_SCALE
     glm::vec3 translation;
     glm::vec3 scale;
     glm::quat orientation;
