@@ -24,6 +24,8 @@ public:
 
     bool operator==(const AssetRef& other) const;
     bool operator!=(const AssetRef& other) const;
+	bool operator==(const Asset* other) const;
+	bool operator!=(const Asset* other) const;
 
     Asset* Get() const;
 
