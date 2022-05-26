@@ -49,6 +49,7 @@ enum class PixelFormat
     RGBA16F,
 
     Depth24Stencil8,
+	Depth32FStencil8,
     Depth16,
     Depth32F,
 

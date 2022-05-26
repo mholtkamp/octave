@@ -48,6 +48,7 @@ VkFormat ConvertPixelFormat(PixelFormat pixelFormat)
     case PixelFormat::RGBA16F: format = VK_FORMAT_R16G16B16A16_SFLOAT; break;
 
     case PixelFormat::Depth24Stencil8: format = VK_FORMAT_D24_UNORM_S8_UINT; break;
+	case PixelFormat::Depth32FStencil8: format = VK_FORMAT_D32_SFLOAT_S8_UINT; break;
     case PixelFormat::Depth16: format = VK_FORMAT_D16_UNORM; break;
     case PixelFormat::Depth32F: format = VK_FORMAT_D32_SFLOAT; break;
 
@@ -131,7 +132,8 @@ void TransitionImageLayout(
         // Shadow maps are a depth-only format. Do not use stencil bit.
         barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
     }
-    else if (format == VK_FORMAT_D24_UNORM_S8_UINT)
+    else if (format == VK_FORMAT_D24_UNORM_S8_UINT ||
+		format == VK_FORMAT_D32_SFLOAT_S8_UINT)
     {
         barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
     }
@@ -380,6 +382,7 @@ uint32_t GetFormatPixelSize(VkFormat format)
 
     // Depth
     case VK_FORMAT_D24_UNORM_S8_UINT: size = 4; break;
+	case VK_FORMAT_D32_SFLOAT_S8_UINT: assert(0); break; // Not sure how to handle this?
     case VK_FORMAT_D16_UNORM: size = 2; break;
     case VK_FORMAT_D32_SFLOAT: size = 4; break;
 
@@ -434,7 +437,8 @@ VkImageAspectFlags GetFormatImageAspect(VkFormat format)
 
     switch (format)
     {
-    case VK_FORMAT_D24_UNORM_S8_UINT: ;
+    case VK_FORMAT_D24_UNORM_S8_UINT:
+	case VK_FORMAT_D32_SFLOAT_S8_UINT:
         flags |= VK_IMAGE_ASPECT_STENCIL_BIT;
         // Intentional fallthrough
     case VK_FORMAT_D16_UNORM:
