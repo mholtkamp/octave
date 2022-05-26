@@ -657,23 +657,29 @@ void SetDebugObjectName(VkObjectType objectType, uint64_t object, const char* na
 void BeginDebugLabel(const char* name, glm::vec4 color)
 {
 #if _DEBUG
-    VkDebugUtilsLabelEXT label;
-    label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-    label.pNext = nullptr;
-    label.pLabelName = name;
-    label.color[0] = color.r;
-    label.color[1] = color.g;
-    label.color[2] = color.b;
-    label.color[3] = color.a;
+	if (GetVulkanContext()->IsValidationEnabled())
+	{
+		VkDebugUtilsLabelEXT label;
+		label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+		label.pNext = nullptr;
+		label.pLabelName = name;
+		label.color[0] = color.r;
+		label.color[1] = color.g;
+		label.color[2] = color.b;
+		label.color[3] = color.a;
 
-    CmdBeginDebugUtilsLabelEXT(GetCommandBuffer(), &label);
+		CmdBeginDebugUtilsLabelEXT(GetCommandBuffer(), &label);
+	}
 #endif
 }
 
 void EndDebugLabel()
 {
 #if _DEBUG
-    CmdEndDebugUtilsLabelEXT(GetCommandBuffer());
+	if (GetVulkanContext()->IsValidationEnabled())
+	{
+		CmdEndDebugUtilsLabelEXT(GetCommandBuffer());
+	}
 #endif
 }
 
