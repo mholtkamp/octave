@@ -149,6 +149,16 @@ bool AssetRef::operator!=(const AssetRef& other) const
     return !operator==(other);
 }
 
+bool AssetRef::operator==(const Asset* other) const
+{
+    return (mAsset == other);
+}
+
+bool AssetRef::operator!=(const Asset* other) const
+{
+    return (mAsset != other);
+}
+
 Asset* AssetRef::Get() const
 {
     // Only return non-nullptr if asset is loaded.
