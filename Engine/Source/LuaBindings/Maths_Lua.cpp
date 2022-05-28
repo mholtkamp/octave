@@ -122,6 +122,18 @@ int Maths_Lua::Clamp(lua_State* L)
     return 1;
 }
 
+int Maths_Lua::Lerp(lua_State* L)
+{
+    float a = CHECK_NUMBER(L, 1);
+    float b = CHECK_NUMBER(L, 2);
+    float alpha = CHECK_NUMBER(L, 3);
+
+    float ret = glm::mix(a, b, alpha);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
 void Maths_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -152,6 +164,9 @@ void Maths_Lua::Bind()
 
     lua_pushcfunction(L, Clamp);
     lua_setfield(L, tableIdx, "Clamp");
+
+    lua_pushcfunction(L, Lerp);
+    lua_setfield(L, tableIdx, "Lerp");
 
     lua_setglobal(L, MATHS_LUA_NAME);
 
