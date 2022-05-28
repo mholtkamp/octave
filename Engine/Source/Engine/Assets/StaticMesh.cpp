@@ -872,6 +872,8 @@ void StaticMesh::Create(
     // Any imported mesh will have a compound collision shape.
     // Engine assets like SM_Cube and SM_Sphere will still use non-compound shapes, as those are 
     // explicitly set up during editor initialization.
+    // Note: Even when a mesh has only one collision shape, we still need to use a compound shape parent
+    // so that it can receive there correct transform. Otherwise it will always be positioned at the origin.
     SetCollisionShapes(numCollisionShapes, collisionShapes, collisionTransforms, true);
 
     mMaterial = Renderer::Get()->GetDefaultMaterial();

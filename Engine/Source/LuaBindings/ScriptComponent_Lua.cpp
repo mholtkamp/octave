@@ -148,6 +148,22 @@ int ScriptComponent_Lua::InvokeNetFunc(lua_State* L)
     return 0;
 }
 
+int ScriptComponent_Lua::GetScript(lua_State* L)
+{
+    ScriptComponent* comp = CHECK_SCRIPT_COMPONENT(L, 1);
+
+    if (comp->GetTableName() != "")
+    {
+        lua_getglobal(L, comp->GetTableName().c_str());
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+
+    return 1;
+}
+
 void ScriptComponent_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -176,6 +192,11 @@ void ScriptComponent_Lua::Bind()
 
     lua_pushcfunction(L, InvokeNetFunc);
     lua_setfield(L, mtIndex, "InvokeNetFunc");
+
+    lua_pushcfunction(L, GetScript);
+    lua_setfield(L, mtIndex, "GetScript");
+    lua_pushcfunction(L, GetScript);
+    lua_setfield(L, mtIndex, "GetTable");
 
     lua_pop(L, 1);
     assert(lua_gettop(L) == 0);
