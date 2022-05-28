@@ -88,6 +88,40 @@ int Maths_Lua::IsPowerOfTwo(lua_State* L)
     return 1;
 }
 
+int Maths_Lua::Min(lua_State* L)
+{
+    float a = CHECK_NUMBER(L, 1);
+    float b = CHECK_NUMBER(L, 2);
+
+    float ret = glm::min(a, b);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
+int Maths_Lua::Max(lua_State* L)
+{
+    float a = CHECK_NUMBER(L, 1);
+    float b = CHECK_NUMBER(L, 2);
+
+    float ret = glm::max(a, b);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
+int Maths_Lua::Clamp(lua_State* L)
+{
+    float x = CHECK_NUMBER(L, 1);
+    float min = CHECK_NUMBER(L, 2);
+    float max = CHECK_NUMBER(L, 3);
+
+    float ret = glm::clamp(x, min, max);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
 void Maths_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -109,6 +143,15 @@ void Maths_Lua::Bind()
 
     lua_pushcfunction(L, IsPowerOfTwo);
     lua_setfield(L, tableIdx, "IsPowerOfTwo");
+
+    lua_pushcfunction(L, Min);
+    lua_setfield(L, tableIdx, "Min");
+
+    lua_pushcfunction(L, Max);
+    lua_setfield(L, tableIdx, "Max");
+
+    lua_pushcfunction(L, Clamp);
+    lua_setfield(L, tableIdx, "Clamp");
 
     lua_setglobal(L, MATHS_LUA_NAME);
 
