@@ -203,10 +203,13 @@ bool Initialize(InitOptions& initOptions)
     Maths::SeedRand((uint32_t)SYS_GetTimeMicroseconds());
 
 #if LUA_ENABLED
+    extern void BindLuaInterface();
+    extern void SetupLuaPath();
+
     sEngineState.mLua = luaL_newstate();
     luaL_openlibs(sEngineState.mLua);
-    extern void BindLuaInterface();
     BindLuaInterface();
+    SetupLuaPath();
 #endif
 
     // We need to force linkage of any class that uses the factory pattern
@@ -360,6 +363,10 @@ void LoadProject(const std::string& path, bool discoverAssets)
     sprintf(windowName, "%s", GetEngineState()->mProjectName.c_str());
     SYS_SetWindowTitle(windowName);
 
+#if LUA_ENABLED
+    extern void UpdateLuaPath();
+    UpdateLuaPath();
+#endif
 }
 
 void EnableConsole(bool enable)

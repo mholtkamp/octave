@@ -58,6 +58,8 @@
 
 #include "LuaBindings/Misc_Lua.h"
 
+static std::string sOriginalPath;
+
 void BindLuaInterface()
 {
     Vector_Lua::Bind();
@@ -127,6 +129,41 @@ void BindLuaInterface()
     lua_State* L = GetLua();
     World_Lua::Create(L, GetWorld());
     lua_setglobal(L, "world");
+}
+
+void UpdateLuaPath()
+{
+    std::string projectScriptPath = GetEngineState()->mProjectDirectory + "Scripts/?.lua;";
+    std::string engineScriptPath = "Engine/Scripts/?.lua;";
+
+    lua_State* L = GetLua();
+    GetLua();
+
+    lua_getglobal(L, "package"); // 1
+    lua_getfield(L, -1, "path"); // 2
+    lua_pushstring(L, projectScriptPath.c_str()); // 3
+    lua_pushstring(L, engineScriptPath.c_str()); // 4
+
+    lua_concat(L, 3); // 2
+    lua_setfield(L, -2, "path"); // 1
+
+    lua_pop(L, 1); // pop package table
+}
+
+void SetupLuaPath()
+{
+    // Grab and save the initial path so we can update it if the project changes.
+    lua_State* L = GetLua();
+
+    lua_getglobal(L, "package"); // 1
+    lua_getfield(L, -1, "path"); // 2
+
+    sOriginalPath = lua_tostring(L, -1);
+
+    lua_pop(L, 2); // pop package table and path string
+
+    // Then update the package.path variable to include our script folders.
+    UpdateLuaPath();
 }
 
 #endif
