@@ -489,6 +489,37 @@ int Actor_Lua::GetScript(lua_State* L)
     return 1;
 }
 
+int Actor_Lua::HasTag(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+    const char* tag = CHECK_STRING(L, 2);
+
+    bool ret = actor->HasTag(tag);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Actor_Lua::AddTag(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+    const char* tag = CHECK_STRING(L, 2);
+
+    actor->AddTag(tag);
+
+    return 0;
+}
+
+int Actor_Lua::RemoveTag(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+    const char* tag = CHECK_STRING(L, 2);
+
+    actor->RemoveTag(tag);
+
+    return 0;
+}
+
 void Actor_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -609,6 +640,15 @@ void Actor_Lua::Bind()
 
     lua_pushcfunction(L, Actor_Lua::GetScript);
     lua_setfield(L, mtIndex, "GetScript");
+
+    lua_pushcfunction(L, Actor_Lua::HasTag);
+    lua_setfield(L, mtIndex, "HasTag");
+
+    lua_pushcfunction(L, Actor_Lua::AddTag);
+    lua_setfield(L, mtIndex, "AddTag");
+
+    lua_pushcfunction(L, Actor_Lua::RemoveTag);
+    lua_setfield(L, mtIndex, "RemoveTag");
 
     lua_pop(L, 1);
     assert(lua_gettop(L) == 0);

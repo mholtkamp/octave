@@ -134,6 +134,10 @@ public:
     ReplicationRate GetReplicationRate() const;
     //void SetReplicationRate(ReplicationRate rate);
 
+    bool HasTag(const std::string& tag);
+    void AddTag(const std::string& tag);
+    void RemoveTag(const std::string& tag);
+
     const std::vector<Component*> GetComponents() const;
     void AddComponent(Component* component);
     void RemoveComponent(Component* component);
@@ -197,6 +201,7 @@ protected:
     std::vector<Component*> mComponents;
     std::vector<ScriptComponent*> mEventHandlerScripts;
     std::vector<NetDatum> mReplicatedData;
+    std::vector<std::string> mTags;
     AssetRef mBlueprintSource;
     NetId mNetId;
     uint32_t mHitCheckId;

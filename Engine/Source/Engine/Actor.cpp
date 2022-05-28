@@ -136,6 +136,17 @@ void Actor::SaveStream(Stream& stream)
     stream.WriteBool(mReplicate);
     stream.WriteBool(mReplicateTransform);
 
+    // TODO: Serialize mTags (once array properties are supported in Properties panel).
+#if 0
+    uint32_t numTags = glm::min((uint32_t)mTags.size(), 255u);
+    stream.WriteUint8(numTags);
+
+    for (uint32_t i = 0; i < numTags; ++i)
+    {
+        stream.WriteString(mTags[i]);
+    }
+#endif
+
     // Components
     std::vector<Component*> compsToSave;
     for (uint32_t i = 0; i < mComponents.size(); ++i)
@@ -195,8 +206,18 @@ void Actor::SaveStream(Stream& stream)
 void Actor::LoadStream(Stream& stream)
 {
     stream.ReadString(mName);
-    stream.WriteBool(mReplicate);
-    stream.WriteBool(mReplicateTransform);
+    mReplicate = stream.ReadBool();
+    mReplicateTransform = stream.ReadBool();
+
+    // TODO: Serialize mTags (once array properties are supported in Properties panel).
+#if 0
+    uint32_t numTags = (uint32_t)stream.ReadUint8();
+    mTags.resize(numTags);
+    for (uint32_t i = 0; i < numTags; ++i)
+    {
+        stream.ReadString(mTags[i]);
+    }
+#endif
 
     // Components
     static std::vector<Component*> compsToLoad;
@@ -808,6 +829,42 @@ bool Actor::NeedsForcedReplication()
 ReplicationRate Actor::GetReplicationRate() const
 {
     return mReplicationRate;
+}
+
+bool Actor::HasTag(const std::string& tag)
+{
+    bool hasTag = false;
+
+    for (uint32_t i = 0; i < mTags.size(); ++i)
+    {
+        if (mTags[i] == tag)
+        {
+            hasTag = true;
+            break;
+        }
+    }
+
+    return hasTag;
+}
+
+void Actor::AddTag(const std::string& tag)
+{
+    if (!HasTag(tag))
+    {
+        mTags.push_back(tag);
+    }
+}
+
+void Actor::RemoveTag(const std::string& tag)
+{
+    for (uint32_t i = 0; i < mTags.size(); ++i)
+    {
+        if (mTags[i] == tag)
+        {
+            mTags.erase(mTags.begin() + i);
+            break;
+        }
+    }
 }
 
 const std::vector<Component*> Actor::GetComponents() const

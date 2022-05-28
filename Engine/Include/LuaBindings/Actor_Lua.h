@@ -71,6 +71,10 @@ struct Actor_Lua
 
     static int GetScript(lua_State* L);
 
+    static int HasTag(lua_State* L);
+    static int AddTag(lua_State* L);
+    static int RemoveTag(lua_State* L);
+
     // TODO-LUA: Add calls to InvokeNetFunc()
 
     static void Bind();
