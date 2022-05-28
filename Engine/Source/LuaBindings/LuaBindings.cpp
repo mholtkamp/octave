@@ -140,7 +140,7 @@ void UpdateLuaPath()
     GetLua();
 
     lua_getglobal(L, "package"); // 1
-    lua_getfield(L, -1, "path"); // 2
+    lua_pushstring(L, sOriginalPath.c_str()); // 2
     lua_pushstring(L, projectScriptPath.c_str()); // 3
     lua_pushstring(L, engineScriptPath.c_str()); // 4
 
@@ -159,6 +159,7 @@ void SetupLuaPath()
     lua_getfield(L, -1, "path"); // 2
 
     sOriginalPath = lua_tostring(L, -1);
+    sOriginalPath += ";";
 
     lua_pop(L, 2); // pop package table and path string
 
