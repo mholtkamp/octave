@@ -24,6 +24,7 @@ struct ScriptComponent_Lua
     static int StopScript(lua_State* L);
     static int ReloadScriptFile(lua_State* L);
     static int InvokeNetFunc(lua_State* L);
+    static int GetScript(lua_State* L);
 
     static void Bind();
 };
