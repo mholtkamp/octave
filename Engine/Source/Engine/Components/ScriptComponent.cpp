@@ -1491,19 +1491,34 @@ void ScriptComponent::CreateScriptInstance()
         {
             // Create a new table
             lua_newtable(L);
+            int instanceTableIdx = lua_gettop(L);
 
             // Retrieve the prototype class table
             lua_getglobal(L, mClassName.c_str());
             assert(lua_istable(L, -1));
+            int classTableIdx = lua_gettop(L);
+
+            // Check if the class table has a New function, if so call it to initialize the object (needed for setting up inheritance).
+            lua_getfield(L, -1, "New");
+            if (lua_isfunction(L, -1))
+            {
+                lua_pushvalue(L, classTableIdx); // push the class table as arg1 (self)
+                lua_pushvalue(L, instanceTableIdx); // push the newly created instance table as arg2 (o)
+                LuaFuncCall(2);
+            }
+            else
+            {
+                lua_pop(L, 1);
+            }
 
             // Assign the new table's metatable to the class table
-            lua_setmetatable(L, -2);
+            lua_setmetatable(L, instanceTableIdx);
 
             Actor_Lua::Create(L, GetOwner());
-            lua_setfield(L, -2, "actor");
+            lua_setfield(L, instanceTableIdx, "actor");
 
             Component_Lua::Create(L, this);
-            lua_setfield(L, -2, "component");
+            lua_setfield(L, instanceTableIdx, "component");
 
             // Save the new table as a global so it doesnt get GCed.
             mTableName = mClassName + "_" + std::to_string(sNumScriptInstances);
