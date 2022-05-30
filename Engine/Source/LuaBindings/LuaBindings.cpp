@@ -133,21 +133,23 @@ void BindLuaInterface()
 
 void UpdateLuaPath()
 {
-    std::string projectScriptPath = GetEngineState()->mProjectDirectory + "Scripts/?.lua;";
-    std::string engineScriptPath = "Engine/Scripts/?.lua;";
-
     lua_State* L = GetLua();
-    GetLua();
 
-    lua_getglobal(L, "package"); // 1
-    lua_pushstring(L, sOriginalPath.c_str()); // 2
-    lua_pushstring(L, projectScriptPath.c_str()); // 3
-    lua_pushstring(L, engineScriptPath.c_str()); // 4
+    if (L != nullptr)
+    {
+        std::string projectScriptPath = GetEngineState()->mProjectDirectory + "Scripts/?.lua;";
+        std::string engineScriptPath = "Engine/Scripts/?.lua;";
 
-    lua_concat(L, 3); // 2
-    lua_setfield(L, -2, "path"); // 1
+        lua_getglobal(L, "package"); // 1
+        lua_pushstring(L, sOriginalPath.c_str()); // 2
+        lua_pushstring(L, projectScriptPath.c_str()); // 3
+        lua_pushstring(L, engineScriptPath.c_str()); // 4
 
-    lua_pop(L, 1); // pop package table
+        lua_concat(L, 3); // 2
+        lua_setfield(L, -2, "path"); // 1
+
+        lua_pop(L, 1); // pop package table
+    }
 }
 
 void SetupLuaPath()
