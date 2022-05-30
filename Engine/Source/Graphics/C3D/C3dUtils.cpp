@@ -278,8 +278,12 @@ void BindMaterial(Material* material)
             C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
             ++tevIdx;
 
+#if 0
             if (fresnelEnabled)
             {
+                // This kind of works, but the fresnel color really should be additive, and not a lerp.
+                // In practice, a fresnel color of (0,0,0) should have no effect on the final color, but currently
+                // the LUT produces the same alpha regardless of the color, so this TEV will lerp towards black.
                 env = C3D_GetTexEnv(tevIdx);
                 C3D_TexEnvInit(env);
                 C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(fresnelColor));
@@ -290,6 +294,7 @@ void BindMaterial(Material* material)
                 C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
                 ++tevIdx;
             }
+#endif
         }
 
         bool depthEnabled = !depthless;
