@@ -5,6 +5,59 @@
 
 #if LUA_ENABLED
 
+void BindBlendMode()
+{
+    lua_State* L = GetLua();
+    assert(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushinteger(L, (int)BlendMode::Opaque);
+    lua_setfield(L, tableIdx, "Opaque");
+
+    lua_pushinteger(L, (int)BlendMode::Masked);
+    lua_setfield(L, tableIdx, "Masked");
+
+    lua_pushinteger(L, (int)BlendMode::Translucent);
+    lua_setfield(L, tableIdx, "Translucent");
+
+    lua_pushinteger(L, (int)BlendMode::Additive);
+    lua_setfield(L, tableIdx, "Additive");
+
+    lua_pushinteger(L, (int)BlendMode::Count);
+    lua_setfield(L, tableIdx, "Count");
+
+    lua_setglobal(L, "BlendMode");
+
+    assert(lua_gettop(L) == 0);
+}
+
+void BindShadingModel()
+{
+    lua_State* L = GetLua();
+    assert(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushinteger(L, (int)ShadingModel::Unlit);
+    lua_setfield(L, tableIdx, "Unlit");
+
+    lua_pushinteger(L, (int)ShadingModel::Lit);
+    lua_setfield(L, tableIdx, "Lit");
+
+    lua_pushinteger(L, (int)ShadingModel::Toon);
+    lua_setfield(L, tableIdx, "Toon");
+
+    lua_pushinteger(L, (int)ShadingModel::Count);
+    lua_setfield(L, tableIdx, "Count");
+
+    lua_setglobal(L, "ShadingModel");
+
+    assert(lua_gettop(L) == 0);
+}
+
 void BindAnchorMode()
 {
     lua_State* L = GetLua();
@@ -168,6 +221,8 @@ void BindNetFuncType()
 
 void Misc_Lua::BindMisc()
 {
+    BindBlendMode();
+    BindShadingModel();
     BindAnchorMode();
     BindButtonState();
     BindDatumType();
