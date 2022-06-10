@@ -5,6 +5,8 @@
 
 #include "ObjectRef.h"
 
+#include "Widgets/TextEntry.h"
+
 class Actor;
 class Component;
 class Asset;
@@ -43,9 +45,12 @@ struct EditorState
     ControlMode mControlMode = ControlMode::Default;
     TransformLock mTransformLock = TransformLock::None;
     ActionList* mActionList = nullptr;
+    TextEntry* mTextEntry = nullptr;
     bool mMouseNeedsRecenter = false;
 };
 
+void InitializeEditorState();
+void DestroyEditorState();
 EditorState* GetEditorState();
 
 void SetSelectedComponent(Component* newComponent);
@@ -63,6 +68,7 @@ std::vector<Actor*> GetSelectedActors();
 bool IsComponentSelected(Component* component);
 bool IsActorSelected(Actor* actor);
 void DeselectComponent(Component* component);
+void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler);
 
 Asset* GetSelectedAsset();
 AssetStub* GetSelectedAssetStub();

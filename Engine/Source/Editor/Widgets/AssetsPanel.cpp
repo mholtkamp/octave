@@ -158,13 +158,13 @@ void AssetsPanel::ActionListHandler(Button* button)
     }
     else if (buttonText == "New Folder")
     {
-        assetsPanel->mTextEntryWidget->Prompt("Create Folder", HandleCreateFolder);
+        ShowTextPrompt("Create Folder", HandleCreateFolder);
         clearContext = false;
         clearModal = false;
     }
     else if (buttonText == "Rename")
     {
-        assetsPanel->mTextEntryWidget->Prompt("Rename", HandleRename);
+        ShowTextPrompt("Rename", HandleRename);
         clearContext = false;
         clearModal = false;
     }
@@ -278,14 +278,11 @@ AssetsPanel::AssetsPanel() :
     SetAnchorMode(AnchorMode::LeftStretch);
     SetYRatio(0.5f);
     SetHeightRatio(0.5f);
-
-    mTextEntryWidget = new TextEntry();
 }
 
 AssetsPanel::~AssetsPanel()
 {
-    delete mTextEntryWidget;
-    mTextEntryWidget = nullptr;
+
 }
 
 void AssetsPanel::Update()
@@ -442,7 +439,7 @@ void AssetsPanel::HandleInput()
 
         if (IsKeyJustDown(KEY_F))
         {
-            mTextEntryWidget->Prompt("Create Folder", HandleCreateFolder);
+            ShowTextPrompt("Create Folder", HandleCreateFolder);
         }
 
         if (IsMouseButtonJustUp(MOUSE_RIGHT) &&

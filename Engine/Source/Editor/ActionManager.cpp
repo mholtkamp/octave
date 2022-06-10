@@ -809,21 +809,25 @@ void ActionManager::DeleteSelectedActors()
     for (uint32_t i = 0; i < actors.size(); ++i)
     {
         Actor* selectedActor = actors[i];
-
-        if (selectedActor != nullptr &&
-            selectedActor != GetWorld()->GetActiveCamera()->GetOwner())
-        {
-            DirectionalLightComponent* dirLightComp = GetWorld()->GetDirectionalLight();
-            if (dirLightComp && selectedActor == dirLightComp->GetOwner())
-            {
-                GetWorld()->SetDirectionalLight(nullptr);
-            }
-
-            GetWorld()->DestroyActor(selectedActor);
-        }
+        DeleteActor(selectedActor);
     }
 
     SetSelectedActor(nullptr);
+}
+
+void ActionManager::DeleteActor(Actor* actor)
+{
+    if (actor != nullptr &&
+        actor != GetWorld()->GetActiveCamera()->GetOwner())
+    {
+        DirectionalLightComponent* dirLightComp = GetWorld()->GetDirectionalLight();
+        if (dirLightComp && actor == dirLightComp->GetOwner())
+        {
+            GetWorld()->SetDirectionalLight(nullptr);
+        }
+
+        GetWorld()->DestroyActor(actor);
+    }
 }
 
 void ActionManager::ImportAsset()
@@ -1182,6 +1186,12 @@ void ActionManager::DeleteAssetDir(AssetDir* dir)
     {
         LogWarning("Can't delete null asset dir.");
     }
+}
+
+void ActionManager::DuplicateActor(Actor* actor)
+{
+    Actor* newActor = GetWorld()->CloneActor(actor);
+    SetSelectedActor(newActor);
 }
 
 #endif

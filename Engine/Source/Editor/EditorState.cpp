@@ -13,8 +13,20 @@
 #include "Assets/Level.h"
 #include "EditorUtils.h"
 #include "Widgets/ActionList.h"
+#include "Widgets/TextEntry.h"
 
 static EditorState sEditorState;
+
+void InitializeEditorState()
+{
+    sEditorState.mTextEntry = new TextEntry();
+}
+
+void DestroyEditorState()
+{
+    delete sEditorState.mTextEntry;
+    sEditorState.mTextEntry = nullptr;
+}
 
 EditorState* GetEditorState()
 {
@@ -225,6 +237,11 @@ void DeselectComponent(Component* component)
             break;
         }
     }
+}
+
+void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler)
+{
+    sEditorState.mTextEntry->Prompt(title, confirmHandler);
 }
 
 Asset* GetSelectedAsset()

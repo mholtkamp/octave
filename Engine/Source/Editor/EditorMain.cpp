@@ -35,6 +35,7 @@
 #include "Grid.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/Font.h"
+#include "EditorState.h"
 
 InitOptions OctPreInitialize();
 extern CommandLineOptions gCommandLineOptions;
@@ -45,6 +46,8 @@ void EditorMain(int32_t argc, char** argv)
     ReadCommandLineArgs(argc, argv);
     InitOptions initOptions = OctPreInitialize();
     Initialize(initOptions);
+
+    InitializeEditorState();
 
     ActionManager::Create();
     InputManager::Create();
@@ -99,6 +102,7 @@ void EditorMain(int32_t argc, char** argv)
     }
     
     PanelManager::Destroy();
+    DestroyEditorState();
     Shutdown();
 }
 
