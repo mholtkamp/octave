@@ -44,5 +44,4 @@ protected:
 
     AssetDir* mCurrentDir;
     std::vector<AssetButton*> mAssetButtons;
-    TextEntry* mTextEntryWidget = nullptr;
 };

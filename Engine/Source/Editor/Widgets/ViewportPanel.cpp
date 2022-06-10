@@ -565,9 +565,7 @@ void ViewportPanel::HandleDefaultControls()
 
             if (selectedActor != nullptr)
             {
-                Actor* newActor = GetWorld()->CloneActor(selectedActor);
-
-                SetSelectedActor(newActor);
+                ActionManager::Get()->DuplicateActor(selectedActor);
                 SetControlMode(ControlMode::Translate);
                 SavePreTransformVector(ControlMode::Translate);
             }

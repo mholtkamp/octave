@@ -4,6 +4,8 @@
 #include <vector>
 
 class ActorButton;
+class Button;
+class TextField;
 
 class OutlinerPanel : public Panel
 {
@@ -14,6 +16,9 @@ public:
     virtual void HandleInput() override;
 
 protected:
+
+    static void ActionListHandler(Button* button);
+    static void HandleRenameActor(TextField* tf);
 
     std::vector<ActorButton*> mActorButtons;
 };

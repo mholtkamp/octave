@@ -51,6 +51,7 @@ public:
     void SaveLevel(bool saveAs);
     void SaveSelectedAsset();
     void DeleteSelectedActors();
+    void DeleteActor(Actor* actor);
     void ImportAsset();
     void ShowBuildDataPrompt();
     void BuildData(Platform platform, bool embedded);
@@ -58,4 +59,5 @@ public:
     void RecaptureAndSaveAllLevels();
     void DeleteAsset(AssetStub* stub);
     void DeleteAssetDir(AssetDir* dir);
+    void DuplicateActor(Actor* actor);
 };
