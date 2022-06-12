@@ -11,3 +11,4 @@
 #define BASIC_PARTICLE "Particle"
 #define BASIC_AUDIO "Audio"
 #define BASIC_BLUEPRINT "Blueprint"
+#define BASIC_CAMERA "Camera"
