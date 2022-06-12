@@ -925,7 +925,7 @@ void World::LoadLevel(const char* name, glm::vec3 offset, glm::vec3 rotation)
 
     if (level != nullptr)
     {
-        level->LoadIntoWorld(this);
+        level->LoadIntoWorld(this, offset, rotation);
     }
     else
     {
