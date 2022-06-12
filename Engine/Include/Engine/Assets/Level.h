@@ -25,7 +25,10 @@ public:
     virtual const char* GetTypeName() override;
 
     void CaptureWorld(World* world);
-    void LoadIntoWorld(World* world);
+    void LoadIntoWorld(
+        World* world,
+        glm::vec3 offset = glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f));
     void UnloadFromWorld(World* world);
 
     bool GetNetLoad() const;

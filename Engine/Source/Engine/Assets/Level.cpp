@@ -7,6 +7,7 @@
 #include "NetworkManager.h"
 #include "Assets/Blueprint.h"
 
+#include <glm/gtx/euler_angles.hpp>
 #include <algorithm>
 
 FORCE_LINK_DEF(Level);
@@ -129,13 +130,18 @@ void Level::CaptureWorld(World* world)
 #endif
 }
 
-void Level::LoadIntoWorld(World* world)
+void Level::LoadIntoWorld(World* world, glm::vec3 offset, glm::vec3 rotation)
 {
     Stream stream((const char*)mData.data(), (uint32_t)mData.size());
 
     uint32_t numActors;
     numActors = stream.ReadUint32();
     LogDebug("Loading Level... %d Actors", numActors);
+
+    glm::vec3 rotRadians = rotation * DEGREES_TO_RADIANS;
+    glm::mat4 transform = glm::mat4(1);
+    transform = glm::translate(transform, offset);
+    transform *= glm::eulerAngleYXZ(rotRadians.y, rotRadians.x, rotRadians.z);
 
     for (uint32_t i = 0; i < numActors; ++i)
     {
@@ -175,6 +181,11 @@ void Level::LoadIntoWorld(World* world)
         if (newActor != nullptr)
         {
             newActor->SetLevel(this);
+
+            glm::vec3 transformedPos = transform * glm::vec4(newActor->GetPosition(), 1.0f);
+            newActor->SetPosition(transformedPos);
+            newActor->SetRotation(rotation);
+
             newActor->UpdateComponentTransforms();
 
             if (NetIsAuthority())

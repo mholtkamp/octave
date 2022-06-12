@@ -18,6 +18,13 @@
 class Component;
 class AudioComponent;
 
+struct QueuedLevel
+{
+    LevelRef mLevel;
+    glm::vec3 mOffset = {};
+    glm::vec3 mRotation = {};
+};
+
 class World
 {
 public:
@@ -107,8 +114,15 @@ public:
     void UnloadAllLevels();
 
     Actor* SpawnBlueprint(const char* name);
-    void LoadLevel(const char* name);
-    void QueueLevelLoad(const char* name, bool clearWorld);
+    void LoadLevel(
+        const char* name,
+        glm::vec3 offset = { 0.0f, 0.0f, 0.0f },
+        glm::vec3 rotation = { 0.0f, 0.0f, 0.0f });
+    void QueueLevelLoad(
+        const char* name,
+        bool clearWorld,
+        glm::vec3 offset = { 0.0f, 0.0f, 0.0f },
+        glm::vec3 rotation = { 0.0f, 0.0f, 0.0f });
     void UnloadLevel(const char* name);
 
     void EnableInternalEdgeSmoothing(bool enable);
@@ -152,7 +166,7 @@ private:
     std::vector<class PointLightComponent*> mPointLights;
     std::vector<class AudioComponent*> mAudioComponents;
     std::vector<LevelRef> mLoadedLevels;
-    std::vector<LevelRef> mQueuedLevels;
+    std::vector<QueuedLevel> mQueuedLevels;
     DirectionalLightComponent* mDirectionalLight;
     glm::vec4 mAmbientLightColor;
     glm::vec4 mShadowColor;
