@@ -422,8 +422,12 @@ int World_Lua::LoadLevel(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
     const char* name = CHECK_STRING(L, 2);
+    glm::vec3 offset = { 0.0f, 0.0f, 0.0f };
+    glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
+    if (!lua_isnone(L, 3)) { offset = CHECK_VECTOR(L, 3); }
+    if (!lua_isnone(L, 4)) { rotation = CHECK_VECTOR(L, 4); }
 
-    world->LoadLevel(name);
+    world->LoadLevel(name, offset, rotation);
 
     return 0;
 }
@@ -434,9 +438,13 @@ int World_Lua::QueueLevelLoad(lua_State* L)
     World* world = CHECK_WORLD(L, 1);
     const char* levelName = CHECK_STRING(L, 2);
     bool clearWorld = false;
-    if (numArgs >= 3) { clearWorld = CHECK_BOOLEAN(L, 3); }
+    glm::vec3 offset = { 0.0f, 0.0f, 0.0f };
+    glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
+    if (!lua_isnone(L, 3)) { clearWorld = CHECK_BOOLEAN(L, 3); }
+    if (!lua_isnone(L, 4)) { offset = CHECK_VECTOR(L, 4); }
+    if (!lua_isnone(L, 5)) { rotation = CHECK_VECTOR(L, 5); }
 
-    world->QueueLevelLoad(levelName, clearWorld);
+    world->QueueLevelLoad(levelName, clearWorld, offset, rotation);
 
     return 0;
 }

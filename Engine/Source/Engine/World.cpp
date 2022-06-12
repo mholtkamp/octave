@@ -681,11 +681,13 @@ void World::Update(float deltaTime)
     {
         for (uint32_t i = 0; i < mQueuedLevels.size(); ++i)
         {
-            Level* level = mQueuedLevels[i].Get<Level>();
+            Level* level = mQueuedLevels[i].mLevel.Get<Level>();
+            glm::vec3 offset = mQueuedLevels[i].mOffset;
+            glm::vec3 rotation = mQueuedLevels[i].mRotation;
 
             if (level)
             {
-                level->LoadIntoWorld(this);
+                level->LoadIntoWorld(this, offset, rotation);
             }
         }
 
@@ -917,7 +919,7 @@ Actor* World::SpawnBlueprint(const char* name)
     return ret;
 }
 
-void World::LoadLevel(const char* name)
+void World::LoadLevel(const char* name, glm::vec3 offset, glm::vec3 rotation)
 {
     Level* level = LoadAsset<Level>(name);
 
@@ -931,7 +933,7 @@ void World::LoadLevel(const char* name)
     }
 }
 
-void World::QueueLevelLoad(const char* name, bool clearWorld)
+void World::QueueLevelLoad(const char* name, bool clearWorld, glm::vec3 offset, glm::vec3 rotation)
 {
     // Load level at the beginning of next frame
     if (clearWorld)
@@ -943,7 +945,11 @@ void World::QueueLevelLoad(const char* name, bool clearWorld)
 
     if (level != nullptr)
     {
-        mQueuedLevels.push_back(level);
+        QueuedLevel queuedLevel;
+        queuedLevel.mLevel = level;
+        queuedLevel.mOffset = offset;
+        queuedLevel.mRotation = rotation;
+        mQueuedLevels.push_back(queuedLevel);
     }
 }
 
