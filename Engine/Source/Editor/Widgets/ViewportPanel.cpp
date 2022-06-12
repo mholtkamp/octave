@@ -1098,6 +1098,7 @@ void ViewportPanel::ShowSpawnActorPrompt(bool basic)
         actions.push_back(BASIC_CAPSULE);
         actions.push_back(BASIC_PARTICLE);
         actions.push_back(BASIC_AUDIO);
+        actions.push_back(BASIC_CAMERA);
 
         actionList->SetActions(actions, HandleSpawnBasicPressed);
     }

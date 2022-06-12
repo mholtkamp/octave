@@ -646,6 +646,12 @@ void ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 position,
             spawnedActor = bp->Instantiate(GetWorld());
         }
     }
+    else if (name == BASIC_CAMERA)
+    {
+        spawnedActor = GetWorld()->SpawnActor<Actor>();
+        CameraComponent* cameraComponent = spawnedActor->CreateComponent<CameraComponent>();
+        spawnedActor->SetRootComponent(cameraComponent);
+    }
 
     if (spawnedActor != nullptr)
     {
