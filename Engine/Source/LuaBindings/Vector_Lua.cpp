@@ -217,18 +217,22 @@ int Vector_Lua::Clone(lua_State* L)
 int Vector_Lua::Add(lua_State* L)
 {
     glm::vec4 result = {};
-    glm::vec4& left = CHECK_VECTOR(L, 1);
 
-    if (lua_isnumber(L, 2))
+    // leftIndex should always be Vector, secondary could be a number or a Vector.
+    int leftIndex = lua_isuserdata(L, 1) ? 1 : 2;
+    int rightIndex = (leftIndex == 1) ? 2 : 1;
+    glm::vec4& left = CHECK_VECTOR(L, leftIndex);
+
+    if (lua_isnumber(L, rightIndex))
     {
         // Scalar add
-        float right = lua_tonumber(L, 2);
+        float right = lua_tonumber(L, rightIndex);
         result = left + right;
     }
     else
     {
         // Vector add
-        glm::vec4& right = CHECK_VECTOR(L, 2);
+        glm::vec4& right = CHECK_VECTOR(L, rightIndex);
         result = left + right;
     }
 
@@ -239,18 +243,22 @@ int Vector_Lua::Add(lua_State* L)
 int Vector_Lua::Subtract(lua_State* L)
 {
     glm::vec4 result = {};
-    glm::vec4& left = CHECK_VECTOR(L, 1);
 
-    if (lua_isnumber(L, 2))
+    // leftIndex should always be Vector, secondary could be a number or a Vector.
+    int leftIndex = lua_isuserdata(L, 1) ? 1 : 2;
+    int rightIndex = (leftIndex == 1) ? 2 : 1;
+    glm::vec4& left = CHECK_VECTOR(L, leftIndex);
+
+    if (lua_isnumber(L, rightIndex))
     {
         // Scalar subtract
-        float right = lua_tonumber(L, 2);
+        float right = lua_tonumber(L, rightIndex);
         result = left - right;
     }
     else
     {
         // Vector subtract
-        glm::vec4& right = CHECK_VECTOR(L, 2);
+        glm::vec4& right = CHECK_VECTOR(L, rightIndex);
         result = left- right;
     }
 
@@ -262,18 +270,21 @@ int Vector_Lua::Multiply(lua_State* L)
 {
     glm::vec4 result = {};
 
-    glm::vec4& left = CHECK_VECTOR(L, 1);
+    // leftIndex should always be Vector, secondary could be a number or a Vector.
+    int leftIndex = lua_isuserdata(L, 1) ? 1 : 2;
+    int rightIndex = (leftIndex == 1) ? 2 : 1;
+    glm::vec4& left = CHECK_VECTOR(L, leftIndex);
 
-    if (lua_isnumber(L, 2))
+    if (lua_isnumber(L, rightIndex))
     {
         // Scalar multiply
-        float right = lua_tonumber(L, 2);
+        float right = lua_tonumber(L, rightIndex);
         result = left * right;
     }
     else
     {
         // Vector multiply
-        glm::vec4& right = CHECK_VECTOR(L, 2);
+        glm::vec4& right = CHECK_VECTOR(L, rightIndex);
         result = left * right;
     }
 
@@ -284,18 +295,23 @@ int Vector_Lua::Multiply(lua_State* L)
 int Vector_Lua::Divide(lua_State* L)
 {
     glm::vec4 result = {};
-    glm::vec4& left = CHECK_VECTOR(L, 1);
 
-    if (lua_isnumber(L, 2))
+    // leftIndex should always be Vector, secondary could be a number or a Vector.
+    int leftIndex = lua_isuserdata(L, 1) ? 1 : 2;
+    int rightIndex = (leftIndex == 1) ? 2 : 1;
+
+    glm::vec4& left = CHECK_VECTOR(L, leftIndex);
+
+    if (lua_isnumber(L, rightIndex))
     {
         // Scalar divide
-        float right = lua_tonumber(L, 2);
+        float right = lua_tonumber(L, rightIndex);
         result = left / right;
     }
     else
     {
         // Vector divide
-        glm::vec4& right = CHECK_VECTOR(L, 2);
+        glm::vec4& right = CHECK_VECTOR(L, rightIndex);
         result = left / right;
     }
 
@@ -303,7 +319,7 @@ int Vector_Lua::Divide(lua_State* L)
     return 1;
 }
 
-int Vector_Lua::Equal(lua_State* L)
+int Vector_Lua::Equals(lua_State* L)
 {
     glm::vec4& left =CHECK_VECTOR(L, 1);
     glm::vec4& right =CHECK_VECTOR(L, 2);
@@ -313,11 +329,6 @@ int Vector_Lua::Equal(lua_State* L)
     lua_pushboolean(L, result);
     return 1;
 }
-
-//int Vector_Lua::NotEqual(lua_State* L)
-//{
-//
-//}
 
 int Vector_Lua::Dot(lua_State* L)
 {
@@ -546,9 +557,9 @@ void Vector_Lua::Bind()
     lua_setfield(L, mtIndex, "Divide");
     lua_setfield(L, mtIndex, "__div");
 
-    lua_pushcfunction(L, Vector_Lua::Equal);
+    lua_pushcfunction(L, Vector_Lua::Equals);
     lua_pushvalue(L, -1);
-    lua_setfield(L, mtIndex, "Equal");
+    lua_setfield(L, mtIndex, "Equals");
     lua_setfield(L, mtIndex, "__eq");
 
     //lua_pushcfunction(L, Vector_Lua::NotEqual);

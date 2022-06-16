@@ -32,8 +32,7 @@ struct Vector_Lua
     static int Subtract(lua_State* L);
     static int Multiply(lua_State* L);
     static int Divide(lua_State* L);
-    static int Equal(lua_State* L);
-    //static int NotEqual(lua_State* L);
+    static int Equals(lua_State* L);
     static int Dot(lua_State* L);
     static int Dot3(lua_State* L);
     static int Cross(lua_State* L);
