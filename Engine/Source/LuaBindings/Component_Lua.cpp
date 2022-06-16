@@ -136,6 +136,22 @@ int Component_Lua::GetWorld(lua_State* L)
     return 1;
 }
 
+int Component_Lua::Equals(lua_State* L)
+{
+    Component* compA = CHECK_COMPONENT(L, 1);
+    Component* compB = nullptr;
+
+    if (lua_isuserdata(L, 2))
+    {
+        compB = CHECK_COMPONENT(L, 2);
+    }
+
+    bool ret = (compA == compB);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Component_Lua::CheckType(lua_State* L)
 {
     bool ret = false;
@@ -191,6 +207,9 @@ void Component_Lua::Bind()
 
     lua_pushcfunction(L, GetWorld);
     lua_setfield(L, mtIndex, "GetWorld");
+
+    lua_pushcfunction(L, Equals);
+    lua_setfield(L, mtIndex, "Equals");
 
     lua_pushcfunction(L, CheckType);
     lua_setfield(L, mtIndex, "CheckType");
