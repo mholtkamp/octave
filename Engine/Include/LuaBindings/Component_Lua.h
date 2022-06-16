@@ -29,6 +29,7 @@ struct Component_Lua
     static int SetVisible(lua_State* L);
     static int IsVisible(lua_State* L);
     static int GetWorld(lua_State* L);
+    static int Equals(lua_State* L);
 
     static int CheckType(lua_State* L);
 
