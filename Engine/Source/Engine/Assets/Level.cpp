@@ -183,8 +183,9 @@ void Level::LoadIntoWorld(World* world, glm::vec3 offset, glm::vec3 rotation)
             newActor->SetLevel(this);
 
             glm::vec3 transformedPos = transform * glm::vec4(newActor->GetPosition(), 1.0f);
+            glm::vec3 transformedRot = rotation + newActor->GetRotationEuler();
             newActor->SetPosition(transformedPos);
-            newActor->SetRotation(rotation);
+            newActor->SetRotation(transformedRot);
 
             newActor->UpdateComponentTransforms();
 
