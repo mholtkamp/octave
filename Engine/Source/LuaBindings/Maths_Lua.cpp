@@ -134,6 +134,16 @@ int Maths_Lua::Lerp(lua_State* L)
     return 1;
 }
 
+int Maths_Lua::Sign(lua_State* L)
+{
+    float number = CHECK_NUMBER(L, 1);
+
+    float ret = (number >= 0.0f) ? 1.0f : -1.0f;
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
 void Maths_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -167,6 +177,9 @@ void Maths_Lua::Bind()
 
     lua_pushcfunction(L, Lerp);
     lua_setfield(L, tableIdx, "Lerp");
+
+    lua_pushcfunction(L, Sign);
+    lua_setfield(L, tableIdx, "Sign");
 
     lua_setglobal(L, MATHS_LUA_NAME);
 

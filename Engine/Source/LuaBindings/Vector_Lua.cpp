@@ -517,6 +517,16 @@ int Vector_Lua::SignedAngle(lua_State* L)
     return 1;
 }
 
+int Vector_Lua::Negate(lua_State* L)
+{
+    glm::vec4 vect = CHECK_VECTOR(L, 1);
+
+    glm::vec4 ret = vect * -1.0f;
+
+    Vector_Lua::Create(L, ret);
+    return 1;
+}
+
 void Vector_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -603,13 +613,18 @@ void Vector_Lua::Bind()
     lua_setfield(L, mtIndex, "Rotate");
 
     lua_pushcfunction(L, Vector_Lua::Length);
+    lua_pushvalue(L, -1);
     lua_setfield(L, mtIndex, "Length");
+    lua_setfield(L, mtIndex, "Magnitude");
 
     lua_pushcfunction(L, Vector_Lua::Angle);
     lua_setfield(L, mtIndex, "Angle");
 
     lua_pushcfunction(L, Vector_Lua::SignedAngle);
     lua_setfield(L, mtIndex, "SignedAngle");
+
+    lua_pushcfunction(L, Vector_Lua::Negate);
+    lua_setfield(L, mtIndex, "__unm");
 
     lua_pushcfunction(L, Vector_Lua::Index);
     lua_setfield(L, mtIndex, "__index");
