@@ -18,6 +18,7 @@ struct Maths_Lua
     static int Max(lua_State* L);
     static int Clamp(lua_State* L);
     static int Lerp(lua_State* L);
+    static int Sign(lua_State* L);
 
     static void Bind();
 };
