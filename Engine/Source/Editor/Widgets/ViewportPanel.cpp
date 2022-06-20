@@ -797,6 +797,11 @@ void ViewportPanel::HandleTransformControls()
             float deltaScale = speed * totalDelta;
             glm::vec3 deltaScale3 = glm::vec3(deltaScale, deltaScale, deltaScale);
 
+            if (GetEditorState()->mTransformLock != TransformLock::None)
+            {
+                deltaScale3 *= GetLockedScaleDelta();
+            }
+
             if (mTransformLocal)
             {
                 for (uint32_t i = 0; i < transComps.size(); ++i)
@@ -809,11 +814,11 @@ void ViewportPanel::HandleTransformControls()
             else
             {
                 glm::vec3 pivot = transComp->GetAbsolutePosition();
-                glm::vec3 scale = transComp->GetScale();
-                glm::vec3 newScale = (deltaScale3 + scale);
 
                 for (uint32_t i = 0; i < transComps.size(); ++i)
                 {
+                    glm::vec3 scale = transComps[i]->GetScale();
+                    glm::vec3 newScale = (deltaScale3 + scale);
 
                     if (glm::length(scale) != 0.0f &&
                         glm::length(newScale) != 0.0f)
@@ -822,8 +827,30 @@ void ViewportPanel::HandleTransformControls()
                         scaleMat *= glm::scale(newScale / scale);
                         scaleMat *= glm::translate(-pivot);
 
-                        glm::mat4 transform = transComps[i]->GetTransform();
-                        transComps[i]->SetTransform(scaleMat * transform);
+                        glm::vec3 scaledPos = scaleMat * glm::vec4(transComps[i]->GetAbsolutePosition(), 1.0f);
+
+                        glm::vec3 newScaleRot = newScale;
+
+                        if (GetEditorState()->mTransformLock != TransformLock::None)
+                        {
+                            glm::quat absRot = transComps[i]->GetAbsoluteRotationQuat();
+                            glm::mat4 rotMat = glm::mat4(absRot);
+                            glm::vec3 deltaScaleRot = rotMat * glm::vec4(deltaScale3, 0.0f);
+
+                            if (deltaScale >= 0.0f)
+                            {
+                                deltaScaleRot = glm::abs(deltaScaleRot);
+                            }
+                            else
+                            {
+                                deltaScaleRot = -glm::abs(deltaScaleRot);
+                            }
+
+                            newScaleRot = scale + deltaScaleRot;
+                        }
+
+                        transComps[i]->SetAbsolutePosition(scaledPos);
+                        transComps[i]->SetScale(newScaleRot);
                     }
                 }
             }
