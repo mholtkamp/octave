@@ -101,6 +101,17 @@ void Component::Copy(Component* srcComp)
             assert(dstProp->mCount == srcProp->mCount);
             dstProp->SetValue(srcProp->mData.vp, 0, srcProp->mCount);
         }
+
+        // For script components... if we first copy over the Filename property,
+        // that will change the number of properties on the script so we need to regather them.
+        // Script component is really the only component that can dynamically change its properties,
+        // so I'm adding a hack now just for script component.
+        if (srcComp->Is(ScriptComponent::ClassRuntimeId()) &&
+            srcProp->mName == "Filename")
+        {
+            dstProps.clear();
+            GatherProperties(dstProps);
+        }
     }
 }
 
