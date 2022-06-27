@@ -338,7 +338,7 @@ int World_Lua::RayTestMulti(lua_State* L)
         lua_pushnumber(L, result.mHitFractions[i]);
         lua_setfield(L, hitTableIdx, "fraction");
 
-        lua_pushinteger(L, (int)i);
+        lua_pushinteger(L, (int)i + 1);
         lua_pushvalue(L, hitTableIdx);
         lua_settable(L, hitListIdx);
 
