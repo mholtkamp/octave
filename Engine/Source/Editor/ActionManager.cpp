@@ -909,6 +909,94 @@ void ActionManager::ImportAsset()
     }
 }
 
+void ActionManager::ImportScene()
+{
+    if (GetEngineState()->mProjectPath == "")
+        return;
+
+    std::string openPath = SYS_OpenFileDialog();
+
+    // Display the Open dialog box. 
+    if (openPath != "")
+    {
+        std::string filename = strrchr(openPath.c_str(), '/') + 1;
+        int32_t dotIndex = int32_t(filename.find_last_of('.'));
+        std::string extension = filename.substr(dotIndex, filename.size() - dotIndex);
+
+        if (extension == ".glb" ||
+            extension == ".gltf")
+        {
+            LogDebug("Begin scene import...");
+            Assimp::Importer importer;
+            const aiScene* scene = importer.ReadFile(filename, aiProcess_FlipUVs);
+
+            if (scene == nullptr)
+            {
+                LogError("Failed to load scene file");
+                return;
+            }
+
+            // Get the current directory in the asset panel (all assets will be saved there)
+            AssetDir* dir = PanelManager::Get()->GetAssetsPanel()->GetDirectory();
+
+            if (dir == nullptr ||
+                dir->mParentDir == nullptr)
+            {
+                LogError("Invalid directory. Use the asset panel to navigate to a valid directory");
+                return;
+            }
+
+            // Create textures assets (and material using the texture)
+            //scene->mTextures[i];
+
+            uint32_t numTextures = scene->mNumTextures;
+            for (uint32_t i = 0; i < numTextures; ++i)
+            {
+                // Create a Texture asset from the aiTexture
+                aiTexture* aTexture = scene->mTextures[i];
+                Texture* newTexture = (Texture*) Asset::CreateInstance(Texture::GetStaticType());
+                std::string textureFileName = aTexture->mFilename.C_Str();
+
+                size_t extPeriod = textureFileName.find_last_of('.');
+                if (extPeriod != std::string::npos)
+                {
+                    textureFileName = textureFileName.substr(0, extPeriod);
+                }
+
+                if (textureFileName.substr(0, 2) != "T_")
+                {
+                    textureFileName = "T_" + textureFileName;
+                }
+
+                newTexture->Init(aTexture->mWidth, aTexture->mHeight, (uint8_t*)aTexture->pcData);
+                newTexture->Create();
+
+                AssetStub* textureStub = AssetManager::Get()->RegisterAsset(textureFileName, newTexture->GetType(), dir, nullptr, true);
+                textureStub->mAsset = newTexture;
+
+                // Create a material and assign Texture0 to texture we just created.
+                std::string materialFileName = textureFileName;
+                materialFileName[0] = 'M';
+                AssetStub* materialStub = AssetManager::Get()->CreateAndRegisterAsset(Material::GetStaticType(), dir, materialFileName, false);
+                static_cast<Material*>(materialStub->mAsset)->SetTexture(TextureSlot::TEXTURE_0, newTexture);
+
+                AssetManager::Get()->SaveAsset(*textureStub);
+                AssetManager::Get()->SaveAsset(*materialStub);
+            }
+
+
+
+
+            // Create static mesh assets (assign corresponding material)
+            
+        }
+        else
+        {
+            LogError("Failed to import scene. File format must be .glb or .gltf");
+        }
+    }
+}
+
 void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*, std::string> >& assets,
     const char* headerPath,
     const char* sourcePath)

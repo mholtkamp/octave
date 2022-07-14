@@ -29,6 +29,8 @@ public:
     virtual const char* GetTypeName() override;
     virtual const char* GetTypeImportExt() override;
 
+    void Init(uint32_t width, uint32_t height, uint8_t* data);
+
     bool IsMipmapped() const;
     bool IsRenderTarget() const;
 
