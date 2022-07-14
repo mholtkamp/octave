@@ -53,6 +53,7 @@ public:
     void DeleteSelectedActors();
     void DeleteActor(Actor* actor);
     void ImportAsset();
+    void ImportScene();
     void ShowBuildDataPrompt();
     void BuildData(Platform platform, bool embedded);
     void ClearWorld();

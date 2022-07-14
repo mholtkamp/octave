@@ -428,6 +428,20 @@ const char* Texture::GetTypeImportExt()
     return ".png";
 }
 
+void Texture::Init(uint32_t width, uint32_t height, uint8_t* data)
+{
+    assert(width > 0);
+    assert(height > 0);
+    assert(data != nullptr);
+
+    mWidth = width;
+    mHeight = height;
+    
+    uint32_t imageSize = width * height * 4;
+    mPixels.resize(imageSize);
+    memcpy(mPixels.data(), data, imageSize);
+}
+
 bool Texture::IsMipmapped() const
 {
     return mMipmapped;
