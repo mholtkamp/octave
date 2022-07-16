@@ -34,6 +34,7 @@
 #include "AssetDir.h"
 #include "EmbeddedFile.h"
 #include "Utilities.h"
+#include "EditorUtils.h"
 #include "Log.h"
 #include "StaticMeshActor.h"
 
@@ -909,6 +910,23 @@ void ActionManager::ImportAsset()
     }
 }
 
+static std::string GetFixedFilename(const char* name, const char* prefix)
+{
+    std::string nameStr = name;
+    size_t extPeriod = nameStr.find_last_of('.');
+    if (extPeriod != std::string::npos)
+    {
+        nameStr = nameStr.substr(0, extPeriod);
+    }
+
+    if (nameStr.substr(0, 2) != prefix)
+    {
+        nameStr = prefix + nameStr;
+    }
+
+    return nameStr;
+}
+
 void ActionManager::ImportScene()
 {
     if (GetEngineState()->mProjectPath == "")
@@ -946,49 +964,97 @@ void ActionManager::ImportScene()
                 return;
             }
 
-            // Create textures assets (and material using the texture)
-            //scene->mTextures[i];
+            std::vector<Texture*> textureList;
+            std::vector<Material*> materialList;
+            std::vector<StaticMesh*> meshList;
 
+            // Create textures assets
             uint32_t numTextures = scene->mNumTextures;
             for (uint32_t i = 0; i < numTextures; ++i)
             {
                 // Create a Texture asset from the aiTexture
                 aiTexture* aTexture = scene->mTextures[i];
+                std::string textureFileName = GetFixedFilename(aTexture->mFilename.C_Str(), "T_");
+
                 Texture* newTexture = (Texture*) Asset::CreateInstance(Texture::GetStaticType());
-                std::string textureFileName = aTexture->mFilename.C_Str();
-
-                size_t extPeriod = textureFileName.find_last_of('.');
-                if (extPeriod != std::string::npos)
-                {
-                    textureFileName = textureFileName.substr(0, extPeriod);
-                }
-
-                if (textureFileName.substr(0, 2) != "T_")
-                {
-                    textureFileName = "T_" + textureFileName;
-                }
-
                 newTexture->Init(aTexture->mWidth, aTexture->mHeight, (uint8_t*)aTexture->pcData);
                 newTexture->Create();
 
-                AssetStub* textureStub = AssetManager::Get()->RegisterAsset(textureFileName, newTexture->GetType(), dir, nullptr, true);
+                AssetStub* textureStub = EditorAddUniqueAsset(textureFileName.c_str(), dir, Texture::GetStaticType(), false);
                 textureStub->mAsset = newTexture;
-
-                // Create a material and assign Texture0 to texture we just created.
-                std::string materialFileName = textureFileName;
-                materialFileName[0] = 'M';
-                AssetStub* materialStub = AssetManager::Get()->CreateAndRegisterAsset(Material::GetStaticType(), dir, materialFileName, false);
-                static_cast<Material*>(materialStub->mAsset)->SetTexture(TextureSlot::TEXTURE_0, newTexture);
+                newTexture->SetName(textureStub->mName);
 
                 AssetManager::Get()->SaveAsset(*textureStub);
-                AssetManager::Get()->SaveAsset(*materialStub);
+                textureList.push_back(newTexture);
             }
 
+            uint32_t numMaterials = scene->mNumMaterials;
+            for (uint32_t i = 0; i < numMaterials; ++i)
+            {
+                aiMaterial* aMaterial = scene->mMaterials[i];
+                std::string materialFileName = GetFixedFilename(aMaterial->GetName().C_Str(), "M_");
 
+                AssetStub* materialStub = EditorAddUniqueAsset(materialFileName.c_str(), dir, Material::GetStaticType(), true);
+                Material* newMaterial = static_cast<Material*>(materialStub->mAsset);
 
+                uint32_t numBaseTextures = aMaterial->GetTextureCount(aiTextureType_BASE_COLOR);
+                numBaseTextures = glm::clamp(numBaseTextures, 0u, 4u);
+
+                for (uint32_t t = 0; t < numBaseTextures; ++t)
+                {
+                    aiString path;
+                    aiReturn ret = aMaterial->GetTexture(aiTextureType::aiTextureType_BASE_COLOR, t, &path);
+
+                    if (ret == aiReturn_SUCCESS)
+                    {
+                        std::string pathStr = path.C_Str();
+                        LogDebug("Scene Texture: %s", pathStr.c_str());
+
+                        int32_t texIdx = -1;
+                        if (pathStr.size() > 1 &&
+                            pathStr[0] == '*')
+                        {
+                            texIdx = atoi(pathStr.c_str() + 1);
+                        }
+
+                        if (texIdx >= 0)
+                        {
+                            assert(texIdx < textureList.size());
+                            Texture* texture = textureList[texIdx];
+                            newMaterial->SetTexture(TextureSlot(TEXTURE_0 + t), texture);
+                        }
+                    }
+                }
+
+                AssetManager::Get()->SaveAsset(*materialStub);
+                materialList.push_back(newMaterial);
+            }
 
             // Create static mesh assets (assign corresponding material)
-            
+            uint32_t numMeshes = scene->mNumMeshes;
+            for (uint32_t i = 0; i < numMeshes; ++i)
+            {
+                aiMesh* aMesh = scene->mMeshes[i];
+                std::string meshName = aMesh->mName.C_Str();
+
+                StaticMesh* newMesh = (StaticMesh*)Asset::CreateInstance(StaticMesh::GetStaticType());
+                newMesh->Create(scene, *aMesh, 0, nullptr); // Collision meshes currently not supported for scene import?
+
+                AssetStub* meshStub = EditorAddUniqueAsset(meshName.c_str(), dir, StaticMesh::GetStaticType(), false);
+                meshStub->mAsset = newMesh;
+                newMesh->SetName(meshName);
+
+                // Find material to use...
+                uint32_t materialIndex = aMesh->mMaterialIndex;
+                assert(materialIndex < materialList.size());
+                newMesh->SetMaterial(materialList[materialIndex]);
+
+                AssetManager::Get()->SaveAsset(*meshStub);
+                meshList.push_back(newMesh);
+            }
+
+            // Iterate through node list?
+            // Find matching meshes and materials (maybe keep an array of Texture*, Material*, StaticMesh*
         }
         else
         {

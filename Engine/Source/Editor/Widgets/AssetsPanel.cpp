@@ -559,40 +559,9 @@ void AssetsPanel::OnProjectDirectorySet()
     SetDirectory(AssetManager::Get()->FindProjectDirectory());
 }
 
-AssetStub* AssetsPanel::AddUniqueAsset(const char* baseName, TypeId assetType, bool autoCreate)
-{
-    AssetStub* stub = nullptr;
-    std::string assetName;
-    for (int32_t i = 0; i < 99; ++i)
-    {
-        assetName = baseName;
-        assetName += std::to_string(i);
-        if (!AssetManager::Get()->DoesAssetExist(assetName))
-        {
-            if (autoCreate)
-            {
-                stub = AssetManager::Get()->CreateAndRegisterAsset(assetType, mCurrentDir, assetName, false);
-            }
-            else
-            {
-                stub = AssetManager::Get()->RegisterAsset(assetName, assetType, mCurrentDir, nullptr, false);
-
-                if (stub != nullptr)
-                {
-                    Asset* newAsset = Asset::CreateInstance(assetType);
-                    stub->mAsset = newAsset;
-                }
-            }
-            break;
-        }
-    }
-
-    return stub;
-}
-
 void AssetsPanel::CreateMaterial()
 {
-    AssetStub* stub = AddUniqueAsset("M_Material", Material::GetStaticType(), true);
+    AssetStub* stub = EditorAddUniqueAsset("M_Material", mCurrentDir, Material::GetStaticType(), true);
 
     if (stub != nullptr &&
         stub->mAsset != nullptr &&
@@ -608,7 +577,7 @@ void AssetsPanel::CreateMaterial()
 
 void AssetsPanel::CreateParticleSystem()
 {
-    AssetStub* stub = AddUniqueAsset("P_Particle", ParticleSystem::GetStaticType(), true);
+    AssetStub* stub = EditorAddUniqueAsset("P_Particle", mCurrentDir, ParticleSystem::GetStaticType(), true);
     AssetManager::Get()->SaveAsset(*stub);
 }
 
@@ -616,7 +585,7 @@ void AssetsPanel::SaveLevel(AssetStub* levelStub)
 {
     if (levelStub == nullptr)
     {
-        levelStub = AddUniqueAsset("L_Level", Level::GetStaticType(), true);
+        levelStub = EditorAddUniqueAsset("L_Level", mCurrentDir, Level::GetStaticType(), true);
     }
 
     if (levelStub->mAsset == nullptr)
@@ -633,7 +602,7 @@ void AssetsPanel::SaveBlueprint(AssetStub* bpStub, Actor* srcActor)
 {
     if (bpStub == nullptr)
     {
-        bpStub = AddUniqueAsset("BP_Blueprint", Blueprint::GetStaticType(), true);
+        bpStub = EditorAddUniqueAsset("BP_Blueprint", mCurrentDir, Blueprint::GetStaticType(), true);
     }
 
     if (bpStub->mAsset == nullptr)
@@ -662,7 +631,7 @@ void AssetsPanel::DuplicateAsset(AssetStub* srcStub)
 
         if (srcAsset != nullptr)
         {
-            AssetStub* stub = AddUniqueAsset(srcAsset->GetName().c_str(), srcAsset->GetType(), false);
+            AssetStub* stub = EditorAddUniqueAsset(srcAsset->GetName().c_str(), mCurrentDir, srcAsset->GetType(), false);
 
             if (stub != nullptr)
             {

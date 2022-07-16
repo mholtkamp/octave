@@ -25,8 +25,6 @@ public:
 
     void OnProjectDirectorySet();
 
-    AssetStub* AddUniqueAsset(const char* baseName, TypeId assetType, bool autoCreate);
-
     void CreateMaterial();
     void CreateParticleSystem();
     void SaveLevel(AssetStub* levelStub);

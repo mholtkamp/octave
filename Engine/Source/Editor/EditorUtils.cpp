@@ -7,6 +7,7 @@
 #include "Components/CameraComponent.h"
 #include "PanelManager.h"
 #include "Widgets/ViewportPanel.h"
+#include "AssetManager.h"
 
 #include "Input/Input.h"
 #include "InputDevices.h"
@@ -42,5 +43,37 @@ glm::vec3 EditorGetFocusPosition()
 
     return focusPos;
 }
+
+AssetStub* EditorAddUniqueAsset(const char* baseName, AssetDir* dir, TypeId assetType, bool autoCreate)
+{
+    AssetStub* stub = nullptr;
+    std::string assetName;
+    for (int32_t i = 0; i < 99; ++i)
+    {
+        assetName = baseName;
+        assetName += std::to_string(i);
+        if (!AssetManager::Get()->DoesAssetExist(assetName))
+        {
+            if (autoCreate)
+            {
+                stub = AssetManager::Get()->CreateAndRegisterAsset(assetType, dir, assetName, false);
+            }
+            else
+            {
+                stub = AssetManager::Get()->RegisterAsset(assetName, assetType, dir, nullptr, false);
+
+                if (stub != nullptr)
+                {
+                    Asset* newAsset = Asset::CreateInstance(assetType);
+                    stub->mAsset = newAsset;
+                }
+            }
+            break;
+        }
+    }
+
+    return stub;
+}
+
 
 #endif
