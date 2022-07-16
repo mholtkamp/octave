@@ -102,7 +102,6 @@ public:
         const aiMesh& meshData,
         uint32_t numCollisionMeshes,
         const aiMesh** collisionMeshes);
-
 #endif
 
 #if CREATE_CONVEX_COLLISION_MESH
