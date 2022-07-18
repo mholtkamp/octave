@@ -52,7 +52,8 @@ public:
     void SaveSelectedAsset();
     void DeleteSelectedActors();
     void DeleteActor(Actor* actor);
-    void ImportAsset();
+    Asset* ImportAsset();
+    Asset* ImportAsset(const std::string& path);
     void ImportScene();
     void ShowBuildDataPrompt();
     void BuildData(Platform platform, bool embedded);

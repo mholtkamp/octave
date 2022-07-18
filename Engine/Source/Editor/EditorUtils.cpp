@@ -51,7 +51,13 @@ AssetStub* EditorAddUniqueAsset(const char* baseName, AssetDir* dir, TypeId asse
     for (int32_t i = 0; i < 99; ++i)
     {
         assetName = baseName;
-        assetName += std::to_string(i);
+
+        if (i > 0)
+        {
+            assetName += "_";
+            assetName += std::to_string(i);
+        }
+
         if (!AssetManager::Get()->DoesAssetExist(assetName))
         {
             if (autoCreate)

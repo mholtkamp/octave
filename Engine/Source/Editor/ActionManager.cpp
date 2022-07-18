@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include <vector>
+#include <unordered_map>
 #include <string>
 #include <functional>
 #include <algorithm>
@@ -837,77 +838,96 @@ void ActionManager::DeleteActor(Actor* actor)
     }
 }
 
-void ActionManager::ImportAsset()
+Asset* ActionManager::ImportAsset()
 {
-    if (GetEngineState()->mProjectPath == "")
-        return;
+    Asset* retAsset = nullptr;
 
-    std::string openPath = SYS_OpenFileDialog();
-
-    // Display the Open dialog box. 
-    if (openPath != "")
+    if (GetEngineState()->mProjectPath != "")
     {
-        std::string filename = strrchr(openPath.c_str(), '/') + 1;
-        int32_t dotIndex = int32_t(filename.find_last_of('.'));
-        std::string extension = filename.substr(dotIndex, filename.size() - dotIndex);
+        std::string openPath = SYS_OpenFileDialog();
 
-        TypeId newType = INVALID_TYPE_ID;
-
-        if (extension == ".png")
+        // Display the Open dialog box. 
+        if (openPath != "")
         {
-            newType = Texture::GetStaticType();
-        }
-        else if (extension == ".dae" ||
-            extension == ".fbx" ||
-            extension == ".glb")
-        {
-            newType = CheckDaeAssetType(openPath.c_str());
-        }
-        else if (extension == ".wav")
-        {
-            newType = SoundWave::GetStaticType();
-        }
-        else if (extension == ".xml")
-        {
-            newType = Font::GetStaticType();
-        }
-
-        if (newType != INVALID_TYPE_ID)
-        {
-            Asset* newAsset = Asset::CreateInstance(newType);
-            newAsset->Import(openPath);
-
-            AssetDir* assetDir = PanelManager::Get()->GetAssetsPanel()->GetDirectory();
-            std::string assetName = filename.substr(0, dotIndex);
-            filename = assetName + ".oct";
-
-#if ASSET_REF_VECTOR
-            // If this asset already exists, then we are about to delete it and replace it.
-            // So let's fix up any references now or else they will be lost (replaced with nullptr).
-            Asset* oldAsset = FetchAsset(assetName.c_str());
-            if (oldAsset != nullptr)
-            {
-                AssetRef::ReplaceReferencesToAsset(oldAsset, newAsset);
-            }
-#endif
-
-            // If asset already exists, overwrite it. So delete existing asset.
-            bool purged = AssetManager::Get()->PurgeAsset(assetName.c_str());
-            if (purged)
-            {
-                LogWarning("Reimporting asset");
-            }
-
-            AssetStub* stub = AssetManager::Get()->RegisterAsset(filename, newAsset->GetType(), assetDir, nullptr, false);
-            stub->mAsset = newAsset;
-            newAsset->SetName(stub->mName);
-            AssetManager::Get()->SaveAsset(*stub);
-        }
-        else
-        {
-            LogError("Failed to import Asset. Unrecognized source asset extension.");
+            retAsset = ImportAsset(openPath);
         }
     }
+    else
+    {
+        LogWarning("Cannot import asset. No project loaded.");
+    }
+
+    return retAsset;
+}
+
+Asset* ActionManager::ImportAsset(const std::string& path)
+{
+    Asset* retAsset = nullptr;
+
+    std::string filename = strrchr(path.c_str(), '/') + 1;
+    int32_t dotIndex = int32_t(filename.find_last_of('.'));
+    std::string extension = filename.substr(dotIndex, filename.size() - dotIndex);
+
+    TypeId newType = INVALID_TYPE_ID;
+
+    if (extension == ".png")
+    {
+        newType = Texture::GetStaticType();
+    }
+    else if (extension == ".dae" ||
+        extension == ".fbx" ||
+        extension == ".glb")
+    {
+        newType = CheckDaeAssetType(path.c_str());
+    }
+    else if (extension == ".wav")
+    {
+        newType = SoundWave::GetStaticType();
+    }
+    else if (extension == ".xml")
+    {
+        newType = Font::GetStaticType();
+    }
+
+    if (newType != INVALID_TYPE_ID)
+    {
+        Asset* newAsset = Asset::CreateInstance(newType);
+        newAsset->Import(path);
+
+        AssetDir* assetDir = PanelManager::Get()->GetAssetsPanel()->GetDirectory();
+        std::string assetName = filename.substr(0, dotIndex);
+        filename = assetName + ".oct";
+
+#if ASSET_REF_VECTOR
+        // If this asset already exists, then we are about to delete it and replace it.
+        // So let's fix up any references now or else they will be lost (replaced with nullptr).
+        Asset* oldAsset = FetchAsset(assetName.c_str());
+        if (oldAsset != nullptr)
+        {
+            AssetRef::ReplaceReferencesToAsset(oldAsset, newAsset);
+        }
+#endif
+
+        // If asset already exists, overwrite it. So delete existing asset.
+        bool purged = AssetManager::Get()->PurgeAsset(assetName.c_str());
+        if (purged)
+        {
+            LogWarning("Reimporting asset");
+        }
+
+        AssetStub* stub = AssetManager::Get()->RegisterAsset(filename, newAsset->GetType(), assetDir, nullptr, false);
+        stub->mAsset = newAsset;
+        newAsset->SetName(stub->mName);
+        AssetManager::Get()->SaveAsset(*stub);
+
+        retAsset = newAsset;
+    }
+    else
+    {
+        LogError("Failed to import Asset. Unrecognized source asset extension.");
+    }
+
+    return retAsset;
 }
 
 static std::string GetFixedFilename(const char* name, const char* prefix)
@@ -927,6 +947,29 @@ static std::string GetFixedFilename(const char* name, const char* prefix)
     return nameStr;
 }
 
+static void SpawnNode(aiNode* node, const glm::mat4& parentTransform, const std::vector<StaticMesh*>& meshList)
+{
+    World* world = GetWorld();
+
+    if (node != nullptr)
+    {
+        glm::mat4 transform = parentTransform * glm::transpose(glm::make_mat4(&node->mTransformation.a1));
+
+        for (uint32_t i = 0; i < node->mNumMeshes; ++i)
+        {
+            uint32_t meshIndex = node->mMeshes[i];
+            StaticMeshActor* newActor = world->SpawnActor<StaticMeshActor>();
+            newActor->GetStaticMeshComponent()->SetStaticMesh(meshList[meshIndex]);
+            newActor->GetRootComponent()->SetTransform(transform);
+        }
+    }
+
+    for (uint32_t i = 0; i < node->mNumChildren; ++i)
+    {
+        SpawnNode(node->mChildren[i], parentTransform, meshList);
+    }
+}
+
 void ActionManager::ImportScene()
 {
     if (GetEngineState()->mProjectPath == "")
@@ -937,12 +980,24 @@ void ActionManager::ImportScene()
     // Display the Open dialog box. 
     if (openPath != "")
     {
-        std::string filename = strrchr(openPath.c_str(), '/') + 1;
+        std::string filename = openPath;
         int32_t dotIndex = int32_t(filename.find_last_of('.'));
         std::string extension = filename.substr(dotIndex, filename.size() - dotIndex);
 
+        std::string importDir;
+        size_t slashPos = openPath.find_last_of("/\\");
+        if (slashPos != std::string::npos)
+        {
+            importDir = openPath.substr(0, slashPos + 1);
+        }
+        else
+        {
+            importDir = "./";
+        }
+
         if (extension == ".glb" ||
-            extension == ".gltf")
+            extension == ".gltf" ||
+            extension == ".dae")
         {
             LogDebug("Begin scene import...");
             Assimp::Importer importer;
@@ -967,25 +1022,32 @@ void ActionManager::ImportScene()
             std::vector<Texture*> textureList;
             std::vector<Material*> materialList;
             std::vector<StaticMesh*> meshList;
+            std::unordered_map<std::string, Texture*> textureMap;
 
-            // Create textures assets
-            uint32_t numTextures = scene->mNumTextures;
-            for (uint32_t i = 0; i < numTextures; ++i)
+            // Don't know how to handle embedded textures since they don't have a name given.
+            const bool useEmbeddedTextures = false;
+
+            if (useEmbeddedTextures)
             {
-                // Create a Texture asset from the aiTexture
-                aiTexture* aTexture = scene->mTextures[i];
-                std::string textureFileName = GetFixedFilename(aTexture->mFilename.C_Str(), "T_");
+                // Create textures assets
+                uint32_t numTextures = scene->mNumTextures;
+                for (uint32_t i = 0; i < numTextures; ++i)
+                {
+                    // Create a Texture asset from the aiTexture
+                    aiTexture* aTexture = scene->mTextures[i];
+                    std::string textureFileName = GetFixedFilename(aTexture->mFilename.C_Str(), "T_");
 
-                Texture* newTexture = (Texture*) Asset::CreateInstance(Texture::GetStaticType());
-                newTexture->Init(aTexture->mWidth, aTexture->mHeight, (uint8_t*)aTexture->pcData);
-                newTexture->Create();
+                    Texture* newTexture = (Texture*)Asset::CreateInstance(Texture::GetStaticType());
+                    newTexture->Init(aTexture->mWidth, aTexture->mHeight, (uint8_t*)aTexture->pcData);
+                    newTexture->Create();
 
-                AssetStub* textureStub = EditorAddUniqueAsset(textureFileName.c_str(), dir, Texture::GetStaticType(), false);
-                textureStub->mAsset = newTexture;
-                newTexture->SetName(textureStub->mName);
+                    AssetStub* textureStub = EditorAddUniqueAsset(textureFileName.c_str(), dir, Texture::GetStaticType(), false);
+                    textureStub->mAsset = newTexture;
+                    newTexture->SetName(textureStub->mName);
 
-                AssetManager::Get()->SaveAsset(*textureStub);
-                textureList.push_back(newTexture);
+                    AssetManager::Get()->SaveAsset(*textureStub);
+                    textureList.push_back(newTexture);
+                }
             }
 
             uint32_t numMaterials = scene->mNumMaterials;
@@ -997,32 +1059,55 @@ void ActionManager::ImportScene()
                 AssetStub* materialStub = EditorAddUniqueAsset(materialFileName.c_str(), dir, Material::GetStaticType(), true);
                 Material* newMaterial = static_cast<Material*>(materialStub->mAsset);
 
-                uint32_t numBaseTextures = aMaterial->GetTextureCount(aiTextureType_BASE_COLOR);
+                uint32_t numBaseTextures = aMaterial->GetTextureCount(aiTextureType_DIFFUSE);
                 numBaseTextures = glm::clamp(numBaseTextures, 0u, 4u);
 
                 for (uint32_t t = 0; t < numBaseTextures; ++t)
                 {
                     aiString path;
-                    aiReturn ret = aMaterial->GetTexture(aiTextureType::aiTextureType_BASE_COLOR, t, &path);
+                    aiReturn ret = aMaterial->GetTexture(aiTextureType::aiTextureType_DIFFUSE, t, &path);
 
                     if (ret == aiReturn_SUCCESS)
                     {
-                        std::string pathStr = path.C_Str();
-                        LogDebug("Scene Texture: %s", pathStr.c_str());
+                        std::string texturePath = path.C_Str();
+                        Texture* textureToAssign = nullptr;
+                        LogDebug("Scene Texture: %s", texturePath.c_str());
 
-                        int32_t texIdx = -1;
-                        if (pathStr.size() > 1 &&
-                            pathStr[0] == '*')
+                        if (useEmbeddedTextures)
                         {
-                            texIdx = atoi(pathStr.c_str() + 1);
+                            // Case 0 - Texture is embedded
+                            int32_t texIdx = -1;
+                            if (texturePath.size() > 1 &&
+                                texturePath[0] == '*')
+                            {
+                                texIdx = atoi(texturePath.c_str() + 1);
+                            }
+
+                            if (texIdx >= 0)
+                            {
+                                assert(texIdx < textureList.size());
+                                textureToAssign = textureList[texIdx];
+                            }
+                        }
+                        else if (textureMap.find(texturePath) != textureMap.end())
+                        {
+                            // Case 1 - Texture has already been loaded by a previous material
+                            textureToAssign = textureMap[texturePath];
+                        }
+                        else
+                        {
+                            // Case 2 - Texture needs to be imported
+                            Asset* importedAsset = ImportAsset(importDir + texturePath);
+                            assert(importedAsset == nullptr || importedAsset->GetType() == Texture::GetStaticType());
+
+                            if (importedAsset == nullptr || importedAsset->GetType() == Texture::GetStaticType())
+                            {
+                                textureToAssign = (Texture*)importedAsset;
+                                textureMap.insert({ texturePath, textureToAssign });
+                            }
                         }
 
-                        if (texIdx >= 0)
-                        {
-                            assert(texIdx < textureList.size());
-                            Texture* texture = textureList[texIdx];
-                            newMaterial->SetTexture(TextureSlot(TEXTURE_0 + t), texture);
-                        }
+                        newMaterial->SetTexture(TextureSlot(TEXTURE_0 + t), textureToAssign);
                     }
                 }
 
@@ -1053,8 +1138,8 @@ void ActionManager::ImportScene()
                 meshList.push_back(newMesh);
             }
 
-            // Iterate through node list?
-            // Find matching meshes and materials (maybe keep an array of Texture*, Material*, StaticMesh*
+            aiNode* node = scene->mRootNode;
+            SpawnNode(node, glm::mat4(1), meshList);
         }
         else
         {
