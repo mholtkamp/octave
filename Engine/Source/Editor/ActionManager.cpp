@@ -961,6 +961,7 @@ static void SpawnNode(aiNode* node, const glm::mat4& parentTransform, const std:
             StaticMeshActor* newActor = world->SpawnActor<StaticMeshActor>();
             newActor->GetStaticMeshComponent()->SetStaticMesh(meshList[meshIndex]);
             newActor->GetRootComponent()->SetTransform(transform);
+            newActor->SetName(node->mName.C_Str());
         }
     }
 
@@ -968,6 +969,20 @@ static void SpawnNode(aiNode* node, const glm::mat4& parentTransform, const std:
     {
         SpawnNode(node->mChildren[i], parentTransform, meshList);
     }
+}
+
+static glm::mat4 GetNodeTransform(aiNode* node)
+{
+    aiMatrix4x4 transform;
+
+    while (node)
+    {
+        transform = transform * node->mTransformation;
+        node = node->mParent;
+    }
+
+    glm::mat4 gMat = glm::transpose(glm::make_mat4(&transform.a1));
+    return gMat;
 }
 
 void ActionManager::ImportScene()
@@ -1058,6 +1073,7 @@ void ActionManager::ImportScene()
 
                 AssetStub* materialStub = EditorAddUniqueAsset(materialFileName.c_str(), dir, Material::GetStaticType(), true);
                 Material* newMaterial = static_cast<Material*>(materialStub->mAsset);
+                newMaterial->SetShadingModel(ShadingModel::Unlit);
 
                 uint32_t numBaseTextures = aMaterial->GetTextureCount(aiTextureType_DIFFUSE);
                 numBaseTextures = glm::clamp(numBaseTextures, 0u, 4u);
@@ -1136,6 +1152,45 @@ void ActionManager::ImportScene()
 
                 AssetManager::Get()->SaveAsset(*meshStub);
                 meshList.push_back(newMesh);
+            }
+
+            // Create Lights
+            uint32_t numLights = scene->mNumLights;
+            for (uint32_t i = 0; i < numLights; ++i)
+            {
+                aiLight* aLight = scene->mLights[i];
+
+                if (aLight->mType == aiLightSource_POINT)
+                {
+                    Actor* lightActor = GetWorld()->SpawnActor<Actor>();
+                    PointLightComponent* pointLight = lightActor->CreateComponent<PointLightComponent>();
+
+                    glm::vec3 lightColor;
+                    lightColor.r = aLight->mColorDiffuse.r;
+                    lightColor.g = aLight->mColorDiffuse.g;
+                    lightColor.b = aLight->mColorDiffuse.b;
+                    lightColor = Maths::SafeNormalize(lightColor);
+                    pointLight->SetColor(glm::vec4(lightColor, 1.0f));
+
+                    // For now, set lights to a default radius to 50.0f.
+                    // Not sure how to convert attenutation data into a radius.
+                    // Maybe I need to rethink how light attenuation is specified.
+                    // Using the constant/linear/quadratic coefficients is how GCN and 3DS do it IIRC.
+                    pointLight->SetRadius(50.0f);
+
+                    glm::mat4 lightTransform(1);
+                    aiNode* lightNode = scene->mRootNode->FindNode(aLight->mName.C_Str());
+
+                    if (lightNode)
+                    {
+                        lightTransform = GetNodeTransform(lightNode);
+                    }
+
+                    pointLight->SetTransform(lightTransform);
+                    lightActor->UpdateComponentTransforms();
+
+                    lightActor->SetName(aLight->mName.C_Str());
+                }
             }
 
             aiNode* node = scene->mRootNode;
