@@ -1039,32 +1039,6 @@ void ActionManager::ImportScene()
             std::vector<StaticMesh*> meshList;
             std::unordered_map<std::string, Texture*> textureMap;
 
-            // Don't know how to handle embedded textures since they don't have a name given.
-            const bool useEmbeddedTextures = false;
-
-            if (useEmbeddedTextures)
-            {
-                // Create textures assets
-                uint32_t numTextures = scene->mNumTextures;
-                for (uint32_t i = 0; i < numTextures; ++i)
-                {
-                    // Create a Texture asset from the aiTexture
-                    aiTexture* aTexture = scene->mTextures[i];
-                    std::string textureFileName = GetFixedFilename(aTexture->mFilename.C_Str(), "T_");
-
-                    Texture* newTexture = (Texture*)Asset::CreateInstance(Texture::GetStaticType());
-                    newTexture->Init(aTexture->mWidth, aTexture->mHeight, (uint8_t*)aTexture->pcData);
-                    newTexture->Create();
-
-                    AssetStub* textureStub = EditorAddUniqueAsset(textureFileName.c_str(), dir, Texture::GetStaticType(), false);
-                    textureStub->mAsset = newTexture;
-                    newTexture->SetName(textureStub->mName);
-
-                    AssetManager::Get()->SaveAsset(*textureStub);
-                    textureList.push_back(newTexture);
-                }
-            }
-
             uint32_t numMaterials = scene->mNumMaterials;
             for (uint32_t i = 0; i < numMaterials; ++i)
             {
@@ -1088,39 +1062,41 @@ void ActionManager::ImportScene()
                         std::string texturePath = path.C_Str();
                         Texture* textureToAssign = nullptr;
                         LogDebug("Scene Texture: %s", texturePath.c_str());
-
-                        if (useEmbeddedTextures)
-                        {
-                            // Case 0 - Texture is embedded
-                            int32_t texIdx = -1;
-                            if (texturePath.size() > 1 &&
-                                texturePath[0] == '*')
-                            {
-                                texIdx = atoi(texturePath.c_str() + 1);
-                            }
-
-                            if (texIdx >= 0)
-                            {
-                                assert(texIdx < textureList.size());
-                                textureToAssign = textureList[texIdx];
-                            }
-                        }
-                        else if (textureMap.find(texturePath) != textureMap.end())
+                        
+                        if (textureMap.find(texturePath) != textureMap.end())
                         {
                             // Case 1 - Texture has already been loaded by a previous material
                             textureToAssign = textureMap[texturePath];
                         }
                         else
                         {
-                            // Case 2 - Texture needs to be imported
-                            Asset* importedAsset = ImportAsset(importDir + texturePath);
-                            assert(importedAsset == nullptr || importedAsset->GetType() == Texture::GetStaticType());
+                            // Case 2 - Texture needs to be loaded.
+                            // To make texturing sharing simpler, we only import the texture if
+                            //  - There is no texture registered
+                            //  - There is a texture registered, and it resides in the current AssetDir
 
-                            if (importedAsset == nullptr || importedAsset->GetType() == Texture::GetStaticType())
+                            bool importTexture = false;
+
+                            std::string assetName = EditorGetAssetNameFromPath(texturePath);
+
+                            AssetStub* existingStub = AssetManager::Get()->GetAssetStub(assetName);
+                            if (existingStub && existingStub->mDirectory != dir)
                             {
-                                textureToAssign = (Texture*)importedAsset;
-                                textureMap.insert({ texturePath, textureToAssign });
+                                textureToAssign = LoadAsset<Texture>(assetName);
                             }
+
+                            if (textureToAssign == nullptr)
+                            {
+                                Asset* importedAsset = ImportAsset(importDir + texturePath);
+                                assert(importedAsset == nullptr || importedAsset->GetType() == Texture::GetStaticType());
+
+                                if (importedAsset == nullptr || importedAsset->GetType() == Texture::GetStaticType())
+                                {
+                                    textureToAssign = (Texture*)importedAsset;
+                                }
+                            }
+
+                            textureMap.insert({ texturePath, textureToAssign });
                         }
 
                         newMaterial->SetTexture(TextureSlot(TEXTURE_0 + t), textureToAssign);
