@@ -81,5 +81,14 @@ AssetStub* EditorAddUniqueAsset(const char* baseName, AssetDir* dir, TypeId asse
     return stub;
 }
 
+std::string EditorGetAssetNameFromPath(const std::string& path)
+{
+    const char* lastSlash = strrchr(path.c_str(), '/');
+    std::string filename = lastSlash ? (lastSlash + 1) : path;
+    int32_t dotIndex = int32_t(filename.find_last_of('.'));
+    std::string assetName = filename.substr(0, dotIndex);
+
+    return assetName;
+}
 
 #endif
