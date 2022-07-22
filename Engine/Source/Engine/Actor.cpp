@@ -208,7 +208,7 @@ void Actor::LoadStream(Stream& stream)
     mReplicate = stream.ReadBool();
     mReplicateTransform = stream.ReadBool();
 
-    // TODO: Serialize mTags (once array properties are supported in Properties panel).
+    // Tags
     uint32_t numTags = (uint32_t)stream.ReadUint8();
     mTags.resize(numTags);
     for (uint32_t i = 0; i < numTags; ++i)
