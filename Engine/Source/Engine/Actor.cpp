@@ -209,14 +209,12 @@ void Actor::LoadStream(Stream& stream)
     mReplicateTransform = stream.ReadBool();
 
     // TODO: Serialize mTags (once array properties are supported in Properties panel).
-#if 0
     uint32_t numTags = (uint32_t)stream.ReadUint8();
     mTags.resize(numTags);
     for (uint32_t i = 0; i < numTags; ++i)
     {
         stream.ReadString(mTags[i]);
     }
-#endif
 
     // Components
     static std::vector<Component*> compsToLoad;
