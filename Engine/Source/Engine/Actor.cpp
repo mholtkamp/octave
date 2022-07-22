@@ -136,8 +136,8 @@ void Actor::SaveStream(Stream& stream)
     stream.WriteBool(mReplicate);
     stream.WriteBool(mReplicateTransform);
 
-    // TODO: Serialize mTags (once array properties are supported in Properties panel).
-#if 0
+    // Tags
+    assert(mTags.size() <= 255);
     uint32_t numTags = glm::min((uint32_t)mTags.size(), 255u);
     stream.WriteUint8(numTags);
 
@@ -145,7 +145,6 @@ void Actor::SaveStream(Stream& stream)
     {
         stream.WriteString(mTags[i]);
     }
-#endif
 
     // Components
     std::vector<Component*> compsToSave;
