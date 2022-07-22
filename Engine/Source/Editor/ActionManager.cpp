@@ -962,6 +962,7 @@ static void SpawnNode(aiNode* node, const glm::mat4& parentTransform, const std:
             newActor->GetStaticMeshComponent()->SetStaticMesh(meshList[meshIndex]);
             newActor->GetRootComponent()->SetTransform(transform);
             newActor->SetName(node->mName.C_Str());
+            newActor->AddTag("Scene");
         }
     }
 
@@ -1032,6 +1033,18 @@ void ActionManager::ImportScene()
             {
                 LogError("Invalid directory. Use the asset panel to navigate to a valid directory");
                 return;
+            }
+
+            // Destroy all actors with a Scene tag.
+            // Kinda hacky, but for now, to mark anything spawned as part of a scene,
+            // I'm adding a Scene tag. This is to make reimporting scenes easier.
+            const std::vector<Actor*>& actors = GetWorld()->GetActors();
+            for (int32_t i = int32_t(actors.size()) - 1; i >= 0; --i)
+            {
+                if (actors[i]->HasTag("Scene"))
+                {
+                    GetWorld()->DestroyActor(i);
+                }
             }
 
             std::vector<Texture*> textureList;
@@ -1166,6 +1179,7 @@ void ActionManager::ImportScene()
                     lightActor->UpdateComponentTransforms();
 
                     lightActor->SetName(aLight->mName.C_Str());
+                    lightActor->AddTag("Scene");
                 }
             }
 
