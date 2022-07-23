@@ -79,6 +79,7 @@ void Button::Update()
                 mState == ButtonState::Pressed)
             {
                 OnPressed();
+                SetState(ButtonState::Hovered);
             }
             else if (mouseJustDown)
             {
