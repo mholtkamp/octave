@@ -203,6 +203,7 @@ void PropertiesPanel::Update()
     if (mPropertiesCanvas != nullptr)
     {
         RefreshPropertyWidgetLayout(mPropertiesCanvas);
+        SetMaxScroll(glm::max(static_cast<int32_t>(mPropertiesCanvas->GetHeight() / mScrollDistance) - 3, 0));
     }
 }
 
