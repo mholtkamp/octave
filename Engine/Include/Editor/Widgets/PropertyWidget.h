@@ -27,11 +27,13 @@ public:
     Property& GetProperty();
     void TabTextField();
     virtual bool IsArray() const { return false; }
+    void MarkArrayElement() { mArrayElement = true; }
 
 protected:
 
     Property mProperty;
     uint32_t mIndex;
+    bool mArrayElement;
 
     Text* mNameText;
 };

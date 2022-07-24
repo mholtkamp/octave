@@ -139,6 +139,7 @@ PropertyWidget* CreatePropWidget(const Property& prop, bool arrayElement)
 
 PropertyWidget::PropertyWidget() :
     mIndex(0),
+    mArrayElement(false),
     mNameText(nullptr)
 {
     mNameText = new Text();
@@ -152,7 +153,15 @@ PropertyWidget::PropertyWidget() :
 void PropertyWidget::Update()
 {
     Widget::Update();
-    mNameText->SetText(mProperty.mName);
+
+    if (mArrayElement)
+    {
+        mNameText->SetText(std::string("  [") + std::to_string(mIndex) + "]");
+    }
+    else
+    {
+        mNameText->SetText(mProperty.mName);
+    }
 }
 
 float PropertyWidget::GetHeight()
@@ -245,6 +254,7 @@ void PropertyArrayWidget::Update()
         {
             mElementWidgets[i] = CreatePropWidget(mProperty, true);
             mElementWidgets[i]->SetPosition(glm::vec2(sIndent1, sVerticalSpacing * 2 + mElementWidgets[i]->GetHeight() * i));
+            mElementWidgets[i]->MarkArrayElement();
             AddChild(mElementWidgets[i]);
         }
 
