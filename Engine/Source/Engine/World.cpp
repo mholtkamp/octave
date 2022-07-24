@@ -232,6 +232,35 @@ Actor* World::FindActor(NetId netId)
     return retActor;
 }
 
+std::vector<Actor*> World::FindActorsByTag(const char* tag)
+{
+    std::vector<Actor*> retActors;
+
+    for (uint32_t i = 0; i < mActors.size(); ++i)
+    {
+        if (mActors[i]->HasTag(tag))
+        {
+            retActors.push_back(mActors[i]);
+        }
+    }
+
+    return retActors;
+}
+
+std::vector<Actor*> World::FindActorsByName(const char* name)
+{
+    std::vector<Actor*> retActors;
+
+    for (uint32_t i = 0; i < mActors.size(); ++i)
+    {
+        if (mActors[i]->GetName() == name)
+        {
+            retActors.push_back(mActors[i]);
+        }
+    }
+
+    return retActors;
+}
 
 Component* World::FindComponent(const std::string& name)
 {

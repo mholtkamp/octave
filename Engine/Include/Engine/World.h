@@ -59,6 +59,8 @@ public:
     const std::vector<Actor*>& GetActors() const;
     Actor* FindActor(const std::string& name);
     Actor* FindActor(NetId netId);
+    std::vector<Actor*> FindActorsByTag(const char* tag);
+    std::vector<Actor*> FindActorsByName(const char* name);
     Component* FindComponent(const std::string& name);
     void PrioritizeActorTick(Actor* actor);
     void AddNetActor(Actor* actor, NetId netId);

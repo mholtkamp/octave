@@ -157,6 +157,46 @@ int World_Lua::FindActor(lua_State* L)
     return 1;
 }
 
+int World_Lua::FindActorsByTag(lua_State* L)
+{
+    World* world = CHECK_WORLD(L, 1);
+    const char* tag = CHECK_STRING(L, 2);
+
+    std::vector<Actor*> actors = world->FindActorsByTag(tag);
+
+    lua_newtable(L);
+    int arrayIdx = lua_gettop(L);
+
+    for (uint32_t i = 0; i < actors.size(); ++i)
+    {
+        lua_pushinteger(L, (int)i + 1);
+        Actor_Lua::Create(L, actors[i]);
+        lua_settable(L, arrayIdx);
+    }
+
+    return 1;
+}
+
+int World_Lua::FindActorsByName(lua_State* L)
+{
+    World* world = CHECK_WORLD(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+
+    std::vector<Actor*> actors = world->FindActorsByName(name);
+
+    lua_newtable(L);
+    int arrayIdx = lua_gettop(L);
+
+    for (uint32_t i = 0; i < actors.size(); ++i)
+    {
+        lua_pushinteger(L, (int)i + 1);
+        Actor_Lua::Create(L, actors[i]);
+        lua_settable(L, arrayIdx);
+    }
+
+    return 1;
+}
+
 int World_Lua::FindComponent(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
@@ -519,6 +559,12 @@ void World_Lua::Bind()
 
     lua_pushcfunction(L, World_Lua::FindActor);
     lua_setfield(L, mtIndex, "FindActor");
+
+    lua_pushcfunction(L, World_Lua::FindActorsByTag);
+    lua_setfield(L, mtIndex, "FindActorsByTag");
+
+    lua_pushcfunction(L, World_Lua::FindActorsByName);
+    lua_setfield(L, mtIndex, "FindActorsByName");
 
     lua_pushcfunction(L, World_Lua::FindComponent);
     lua_setfield(L, mtIndex, "FindComponent");
