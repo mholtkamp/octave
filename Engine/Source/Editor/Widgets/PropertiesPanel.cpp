@@ -199,6 +199,11 @@ void PropertiesPanel::Update()
             mPropertiesCanvas->SetPosition(0.0f, -mScroll * mScrollDistance);
         }
     }
+
+    if (mPropertiesCanvas != nullptr)
+    {
+        RefreshPropertyWidgetLayout(mPropertiesCanvas);
+    }
 }
 
 void PropertiesPanel::HandleInput()
@@ -303,7 +308,6 @@ void PropertiesPanel::UpdateDisplayedCanvas()
 
 void PropertiesPanel::PopulatePropertyWidgets(Canvas* propCanvas, const std::vector<Property>& props)
 {
-    float yPos = 0.0f;
     int32_t widgetIndex = 0;
 
     for (int32_t i = 0; i < int32_t(props.size()); ++i)
@@ -350,13 +354,32 @@ void PropertiesPanel::PopulatePropertyWidgets(Canvas* propCanvas, const std::vec
         if (widget != nullptr)
         {
             widget->SetProperty(prop, 0);
-            widget->SetPosition(0, yPos);
-            yPos += widget->GetHeight();
             ++widgetIndex;
         }
     }
 
-    propCanvas->SetDimensions(Panel::sDefaultWidth, yPos);
+    RefreshPropertyWidgetLayout(propCanvas);
+}
+
+void PropertiesPanel::RefreshPropertyWidgetLayout(Canvas* propCanvas)
+{
+    if (propCanvas != nullptr)
+    {
+        float yPos = 0.0f;
+
+        for (uint32_t i = 0; i < propCanvas->GetNumChildren(); ++i)
+        {
+            PropertyWidget* propWidget = (PropertyWidget*)propCanvas->GetChild(i);
+
+            if (propWidget && propWidget->IsVisible())
+            {
+                propWidget->SetPosition(0, yPos);
+                yPos += propWidget->GetHeight();
+            }
+        }
+
+        propCanvas->SetDimensions(Panel::sDefaultWidth, yPos);
+    }
 }
 
 #endif

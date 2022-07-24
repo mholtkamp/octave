@@ -75,6 +75,12 @@ void HandlePushVectorPressed(Button* button)
     if (prop.IsVector() && prop.GetCount() < 255)
     {
         prop.PushBackVector();
+
+        std::vector<PropertyWidget*>& elements = arrayWidget->GetElementWidgets();
+        for (uint32_t i = 0; i < elements.size(); ++i)
+        {
+            elements[i]->SetProperty(prop, i);
+        }
     }
 }
 
@@ -221,6 +227,8 @@ void PropertyArrayWidget::Update()
 {
     PropertyWidget::Update();
 
+    bool resized = false;
+
     bool vector = mProperty.IsVector();
     mPopButton->SetVisible(vector);
     mPushButton->SetVisible(vector);
@@ -228,6 +236,7 @@ void PropertyArrayWidget::Update()
     if (mElementWidgets.size() < mProperty.GetCount())
     {
         mElementWidgets.resize(mProperty.GetCount());
+        resized = true;
     }
 
     for (uint32_t i = 0; i < mProperty.GetCount(); ++i)
@@ -235,6 +244,7 @@ void PropertyArrayWidget::Update()
         if (mElementWidgets[i] == nullptr)
         {
             mElementWidgets[i] = CreatePropWidget(mProperty, true);
+            mElementWidgets[i]->SetPosition(glm::vec2(sIndent1, sVerticalSpacing * 2 + mElementWidgets[i]->GetHeight() * i));
             AddChild(mElementWidgets[i]);
         }
 
@@ -252,6 +262,12 @@ void PropertyArrayWidget::Update()
         }
 
         mElementWidgets.resize(mProperty.GetCount());
+        resized = true;
+    }
+
+    if (resized)
+    {
+        SetDimensions(Panel::sDefaultWidth, GetHeight());
     }
 }
 

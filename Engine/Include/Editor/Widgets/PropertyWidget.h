@@ -45,6 +45,7 @@ public:
     virtual void SetProperty(const Property& prop, uint32_t index);
     virtual void Write() override { };
     virtual bool IsArray() const override { return true; }
+    std::vector<PropertyWidget*>& GetElementWidgets() { return mElementWidgets; }
 
 protected:
 
