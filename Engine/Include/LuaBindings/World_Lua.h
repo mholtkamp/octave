@@ -31,6 +31,8 @@ struct World_Lua
     static int DestroyActor(lua_State* L);
     static int DestroyAllActors(lua_State* L);
     static int FindActor(lua_State* L);
+    static int FindActorsByTag(lua_State* L);
+    static int FindActorsByName(lua_State* L);
     static int FindComponent(lua_State* L);
     static int PrioritizeActorTick(lua_State* L);
 
