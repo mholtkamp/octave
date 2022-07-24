@@ -32,8 +32,12 @@ public:
     virtual void WriteStream(Stream& stream) const override;
     virtual uint32_t GetSerializationSize() const override;
 
-    virtual bool IsProperty() const;
-    virtual void DeepCopy(const Datum& src, bool forceInternalStorage);
+    virtual bool IsProperty() const override;
+    virtual void DeepCopy(const Datum& src, bool forceInternalStorage) override;
+
+    void PushBackVector(void* value);
+    void EraseVector(uint32_t index);
+    Property& MakeVector(uint8_t minCount = 0, uint8_t maxCount = 255);
 
 protected:
 
@@ -44,6 +48,9 @@ public:
     int32_t mExtra = 0;
     int32_t mEnumCount = 0;
     const char** mEnumStrings = nullptr;
+    void* mVector = nullptr;
+    uint8_t mMinCount = 0;
+    uint8_t mMaxCount = 255;
 };
 
 struct PropertyOverride
