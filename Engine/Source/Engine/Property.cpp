@@ -339,7 +339,7 @@ void Property::ResizeVector(uint32_t count)
         }
         }
 
-        mCount++;
+        mCount = count;
     }
 }
 
