@@ -47,7 +47,6 @@ protected:
 
     void UpdateDisplayedCanvas();
     void PopulatePropertyWidgets(Canvas* propCanvas, const std::vector<Property>& props);
-    PropertyWidget* CreatePropWidget(const Property& prop);
 
     Component* mCurrentComponent;
     Asset* mCurrentAsset;

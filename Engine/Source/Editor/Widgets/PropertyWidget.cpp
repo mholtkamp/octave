@@ -56,6 +56,28 @@ void HandleAssignAssetPressed(Button* button)
     }
 }
 
+void HandlePopVectorPressed(Button* button)
+{
+    PropertyArrayWidget* arrayWidget = (PropertyArrayWidget*) button->GetParent();
+
+    Property& prop = arrayWidget->GetProperty();
+    if (prop.IsVector() && prop.GetCount() > 0)
+    {
+        prop.EraseVector(prop.GetCount() - 1);
+    }
+}
+
+void HandlePushVectorPressed(Button* button)
+{
+    PropertyArrayWidget* arrayWidget = (PropertyArrayWidget*)button->GetParent();
+
+    Property& prop = arrayWidget->GetProperty();
+    if (prop.IsVector() && prop.GetCount() < 255)
+    {
+        prop.PushBackVector();
+    }
+}
+
 void HandleAssetTextFieldChange(TextField* textField)
 {
     // Search for an asset by name, otherwise reset it to what it was.
@@ -64,7 +86,53 @@ void HandleAssetTextFieldChange(TextField* textField)
     propWidget->AssignAsset(textField->GetTextString());
 }
 
+PropertyWidget* CreatePropWidget(const Property& prop, bool arrayElement)
+{
+    PropertyWidget* widget = nullptr;
+
+    if (prop.IsArray() && !arrayElement)
+    {
+        widget = new PropertyArrayWidget();
+    }
+    else
+    {
+        // Create a new property widget
+        switch (prop.mType)
+        {
+        case DatumType::Float: widget = new FloatProp(); break;
+        case DatumType::Integer: widget = new IntegerProp(); break;
+        case DatumType::Vector: widget = new VectorProp(); break;
+        case DatumType::Color: widget = new ColorProp(); break;
+        case DatumType::String: widget = new StringProp(); break;
+        case DatumType::Bool: widget = new BoolProp(); break;
+        case DatumType::Asset: widget = new AssetProp(); break;
+        case DatumType::Enum: widget = new EnumProp(); break;
+        case DatumType::Byte:
+        {
+            if (prop.mExtra == int32_t(ByteExtra::FlagWidget) ||
+                prop.mExtra == int32_t(ByteExtra::ExclusiveFlagWidget))
+            {
+                ByteFlagProp* flagWidget = new ByteFlagProp();
+                // TODO: Handle exclusive flag mode
+                widget = flagWidget;
+            }
+            else
+            {
+                widget = new ByteProp();
+            }
+            break;
+        }
+        case DatumType::Vector2D: widget = new Vector2DProp(); break;
+
+        case DatumType::Count: break;
+        }
+    }
+
+    return widget;
+}
+
 PropertyWidget::PropertyWidget() :
+    mIndex(0),
     mNameText(nullptr)
 {
     mNameText = new Text();
@@ -86,13 +154,19 @@ float PropertyWidget::GetHeight()
     return sVerticalSpacing * 2;
 }
 
-void PropertyWidget::SetProperty(const Property& prop)
+void PropertyWidget::SetProperty(const Property& prop, uint32_t index)
 {
     mProperty = prop;
+    mIndex = index;
     MarkDirty();
 }
 
-const Property& PropertyWidget::GetProperty()
+const Property& PropertyWidget::GetProperty() const
+{
+    return mProperty;
+}
+
+Property& PropertyWidget::GetProperty()
 {
     return mProperty;
 }
@@ -124,6 +198,100 @@ void PropertyWidget::TabTextField()
         // If couldn't tab to the next textfield, just unselect the current textfield as if hitting Enter.
         TextField::SetSelectedTextField(nullptr);
     }
+}
+
+PropertyArrayWidget::PropertyArrayWidget()
+{
+    mPopButton = new Button();
+    mPopButton->SetPosition(sIndent1, sVerticalSpacing);
+    mPopButton->SetDimensions(sHeight, sHeight);
+    mPopButton->SetPressedHandler(HandlePopVectorPressed);
+    mPopButton->SetTextString("  -");
+    AddChild(mPopButton);
+
+    mPushButton = new Button();
+    mPushButton->SetPosition(sIndent1 + sHeight + 3, sVerticalSpacing);
+    mPushButton->SetDimensions(sHeight, sHeight);
+    mPushButton->SetPressedHandler(HandlePushVectorPressed);
+    mPushButton->SetTextString("  +");
+    AddChild(mPushButton);
+}
+
+void PropertyArrayWidget::Update()
+{
+    PropertyWidget::Update();
+
+    bool vector = mProperty.IsVector();
+    mPopButton->SetVisible(vector);
+    mPushButton->SetVisible(vector);
+
+    if (mElementWidgets.size() < mProperty.GetCount())
+    {
+        mElementWidgets.resize(mProperty.GetCount());
+    }
+
+    for (uint32_t i = 0; i < mProperty.GetCount(); ++i)
+    {
+        if (mElementWidgets[i] == nullptr)
+        {
+            mElementWidgets[i] = CreatePropWidget(mProperty, true);
+            AddChild(mElementWidgets[i]);
+        }
+
+        mElementWidgets[i]->SetProperty(mProperty, i);
+    }
+
+    // Remove stale widgets
+    if (mProperty.GetCount() < mElementWidgets.size())
+    {
+        for (uint32_t i = mProperty.GetCount(); i < mElementWidgets.size(); ++i)
+        {
+            mElementWidgets[i]->DetachFromParent();
+            delete mElementWidgets[i];
+            mElementWidgets[i] = nullptr;
+        }
+
+        mElementWidgets.resize(mProperty.GetCount());
+    }
+}
+
+float PropertyArrayWidget::GetHeight()
+{
+    float totalHeight = 0.0f;
+
+    bool isVector = mProperty.IsVector();
+    float headerHeight = isVector ? (sVerticalSpacing * 2) : sVerticalSpacing;
+
+    float bodyHeight = 0.0f;
+    for (uint32_t i = 0; i < mElementWidgets.size(); ++i)
+    {
+        bodyHeight += mElementWidgets[i]->GetHeight();
+    }
+
+    totalHeight = headerHeight + bodyHeight;
+    return totalHeight;
+}
+
+void PropertyArrayWidget::SetProperty(const Property& prop, uint32_t index)
+{
+    assert(index == 0);
+
+    if (mProperty.mType != prop.mType)
+    {
+        // If we change prop types, we gotta kill all of our children.
+        // In the future, I think maybe the optimal thing is to use a widget pool.
+        // And also use that pool for non-array widgets.
+        for (uint32_t i = 0; i < mElementWidgets.size(); ++i)
+        {
+            mElementWidgets[i]->DetachFromParent();
+            delete mElementWidgets[i];
+            mElementWidgets[i] = nullptr;
+        }
+
+        mElementWidgets.clear();
+    }
+
+    PropertyWidget::SetProperty(prop, index);
 }
 
 
@@ -428,17 +596,22 @@ EnumProp::EnumProp() :
     AddChild(mSelector);
 }
 
-void EnumProp::SetProperty(const Property& prop)
+void EnumProp::SetProperty(const Property& prop, uint32_t index)
 {
-    PropertyWidget::SetProperty(prop);
+    bool refreshStrings = (mProperty.mData.vp != prop.mData.vp);
 
-    mSelector->RemoveAllSelections();
+    PropertyWidget::SetProperty(prop, index);
 
-    assert(mProperty.mEnumCount > 0);
-    assert(mProperty.mEnumStrings != nullptr);
-    for (uint32_t i = 0; i < uint32_t(mProperty.mEnumCount); ++i)
+    if (refreshStrings)
     {
-        mSelector->AddSelection(mProperty.mEnumStrings[i]);
+        mSelector->RemoveAllSelections();
+
+        assert(mProperty.mEnumCount > 0);
+        assert(mProperty.mEnumStrings != nullptr);
+        for (uint32_t i = 0; i < uint32_t(mProperty.mEnumCount); ++i)
+        {
+            mSelector->AddSelection(mProperty.mEnumStrings[i]);
+        }
     }
 }
 

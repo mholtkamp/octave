@@ -10,6 +10,9 @@ class CheckBox;
 class Button;
 class Selector;
 class ComboBox;
+class PropertyWidget;
+
+PropertyWidget* CreatePropWidget(const Property& prop, bool arrayElement = false);
 
 class PropertyWidget : public Canvas
 {
@@ -19,15 +22,35 @@ public:
     virtual void Update() override;
     virtual void Write() = 0;
     virtual float GetHeight();
-    virtual void SetProperty(const Property& prop);
-    const Property& GetProperty();
+    virtual void SetProperty(const Property& prop, uint32_t index);
+    const Property& GetProperty() const;
+    Property& GetProperty();
     void TabTextField();
+    virtual bool IsArray() const { return false; }
 
 protected:
 
     Property mProperty;
+    uint32_t mIndex;
 
     Text* mNameText;
+};
+
+class PropertyArrayWidget : public PropertyWidget
+{
+public:
+    PropertyArrayWidget();
+    virtual void Update() override;
+    virtual float GetHeight();
+    virtual void SetProperty(const Property& prop, uint32_t index);
+    virtual void Write() override { };
+    virtual bool IsArray() const override { return true; }
+
+protected:
+
+    Button* mPopButton = nullptr;
+    Button* mPushButton = nullptr;
+    std::vector<PropertyWidget*> mElementWidgets;
 };
 
 class FloatProp : public PropertyWidget
@@ -120,7 +143,7 @@ public:
     EnumProp();
     virtual void Update() override;
     virtual void Write() override;
-    virtual void SetProperty(const Property& prop) override;
+    virtual void SetProperty(const Property& prop, uint32_t index) override;
 protected:
     ComboBox* mSelector;
 };
