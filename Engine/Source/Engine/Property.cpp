@@ -33,6 +33,13 @@ Property::Property(const Property& src) :
     mExtra = src.mExtra;
     mEnumCount = src.mEnumCount;
     mEnumStrings = src.mEnumStrings;
+
+    if (mExternal && src.IsVector())
+    {
+        mVector = src.mVector;
+        mMinCount = src.mMinCount;
+        mMaxCount = src.mMaxCount;
+    }
 }
 
 Property& Property::operator=(const Property& src)
@@ -82,6 +89,13 @@ void Property::DeepCopy(const Datum& src, bool forceInternalStorage)
         mExtra = srcProp.mExtra;
         mEnumCount = srcProp.mEnumCount;
         mEnumStrings = srcProp.mEnumStrings;
+
+        if (mExternal && srcProp.IsVector())
+        {
+            mVector = srcProp.mVector;
+            mMinCount = srcProp.mMinCount;
+            mMaxCount = srcProp.mMaxCount;
+        }
     }
 }
 
@@ -98,62 +112,75 @@ void Property::PushBackVector(void* value)
         case DatumType::Integer:
         {
             std::vector<int32_t>& vect = *((std::vector<int32_t>*) mVector);
-            vect.push_back(*((int32_t*) value));
+            vect.push_back(value ? *((int32_t*) value) : 0);
+            mData.i = vect.data();
             break;
         }
         case DatumType::Float:
         {
             std::vector<float>& vect = *((std::vector<float>*) mVector);
-            vect.push_back(*((float*)value));
+            vect.push_back(value ? *((float*)value) : 0.0f);
+            mData.f = vect.data();
             break;
         }
         case DatumType::Bool:
         {
+            // Bool not supported yet.
+            assert(0);
             break;
         }
         case DatumType::String:
         {
             std::vector<std::string>& vect = *((std::vector<std::string>*) mVector);
-            vect.push_back(*((std::string*)value));
+            vect.push_back(value ? *((std::string*)value) : std::string());
+            mData.s = vect.data();
             break;
         }
         case DatumType::Vector2D:
         {
             std::vector<glm::vec2>& vect = *((std::vector<glm::vec2>*) mVector);
-            vect.push_back(*((glm::vec2*)value));
+            vect.push_back(value ? *((glm::vec2*)value) : glm::vec2());
+            mData.v2 = vect.data();
             break;
         }
         case DatumType::Vector:
         {
             std::vector<glm::vec3>& vect = *((std::vector<glm::vec3>*) mVector);
-            vect.push_back(*((glm::vec3*)value));
+            vect.push_back(value ? *((glm::vec3*)value) : glm::vec3());
+            mData.v3 = vect.data();
             break;
         }
         case DatumType::Color:
         {
             std::vector<glm::vec4>& vect = *((std::vector<glm::vec4>*) mVector);
-            vect.push_back(*((glm::vec4*)value));
+            vect.push_back(value ? *((glm::vec4*)value) : glm::vec4());
+            mData.v4 = vect.data();
             break;
         }
         case DatumType::Asset:
         {
             std::vector<AssetRef>& vect = *((std::vector<AssetRef>*) mVector);
-            vect.push_back(*((AssetRef*)value));
+            vect.push_back(value ? *((AssetRef*)value) : AssetRef());
+            mData.as = vect.data();
             break;
         }
         case DatumType::Enum:
         {
             std::vector<uint32_t>& vect = *((std::vector<uint32_t>*) mVector);
-            vect.push_back(*((uint32_t*)value));
+            vect.push_back(value ? *((uint32_t*)value) : 0);
+            mData.e = vect.data();
             break;
         }
         case DatumType::Byte:
         {
             std::vector<uint8_t>& vect = *((std::vector<uint8_t>*) mVector);
-            vect.push_back(*((uint8_t*)value));
+            vect.push_back(value ? *((uint8_t*)value) : (uint8_t)0);
+            mData.by = vect.data();
             break;
         }
         }
+
+        mCount++;
     }
 }
 
@@ -225,6 +252,8 @@ void Property::EraseVector(uint32_t index)
             break;
         }
         }
+
+        mCount--;
     }
 }
 
@@ -314,6 +343,16 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
     }
 
     return *this;
+}
+
+bool Property::IsVector() const
+{
+    return (mVector != nullptr);
+}
+
+bool Property::IsArray() const
+{
+    return (IsVector() || mCount > 1);
 }
 
 void Property::Reset()

@@ -35,9 +35,11 @@ public:
     virtual bool IsProperty() const override;
     virtual void DeepCopy(const Datum& src, bool forceInternalStorage) override;
 
-    void PushBackVector(void* value);
+    void PushBackVector(void* value = nullptr);
     void EraseVector(uint32_t index);
     Property& MakeVector(uint8_t minCount = 0, uint8_t maxCount = 255);
+    bool IsVector() const;
+    bool IsArray() const;
 
 protected:
 

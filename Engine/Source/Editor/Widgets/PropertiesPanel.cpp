@@ -328,6 +328,7 @@ void PropertiesPanel::PopulatePropertyWidgets(Canvas* propCanvas, const std::vec
             assert(cachedWidget != nullptr);
 
             if (cachedWidget != nullptr &&
+                static_cast<PropertyWidget*>(cachedWidget)->IsArray() == prop.IsArray() && 
                 static_cast<PropertyWidget*>(cachedWidget)->GetProperty().mType == prop.mType)
             {
                 widget = static_cast<PropertyWidget*>(cachedWidget);
@@ -348,7 +349,7 @@ void PropertiesPanel::PopulatePropertyWidgets(Canvas* propCanvas, const std::vec
 
         if (widget != nullptr)
         {
-            widget->SetProperty(prop);
+            widget->SetProperty(prop, 0);
             widget->SetPosition(0, yPos);
             yPos += widget->GetHeight();
             ++widgetIndex;
@@ -356,44 +357,6 @@ void PropertiesPanel::PopulatePropertyWidgets(Canvas* propCanvas, const std::vec
     }
 
     propCanvas->SetDimensions(Panel::sDefaultWidth, yPos);
-}
-
-PropertyWidget* PropertiesPanel::CreatePropWidget(const Property& prop)
-{
-    PropertyWidget* widget = nullptr;
-
-    // Create a new property widget
-    switch (prop.mType)
-    {
-    case DatumType::Float: widget = new FloatProp(); break;
-    case DatumType::Integer: widget = new IntegerProp(); break;
-    case DatumType::Vector: widget = new VectorProp(); break;
-    case DatumType::Color: widget = new ColorProp(); break;
-    case DatumType::String: widget = new StringProp(); break;
-    case DatumType::Bool: widget = new BoolProp(); break;
-    case DatumType::Asset: widget = new AssetProp(); break;
-    case DatumType::Enum: widget = new EnumProp(); break;
-    case DatumType::Byte:
-    {
-        if (prop.mExtra == int32_t(ByteExtra::FlagWidget) ||
-            prop.mExtra == int32_t(ByteExtra::ExclusiveFlagWidget))
-        {
-            ByteFlagProp* flagWidget = new ByteFlagProp();
-            // TODO: Handle exclusive flag mode
-            widget = flagWidget;
-        }
-        else
-        {
-            widget = new ByteProp();
-        }
-        break;
-    }
-    case DatumType::Vector2D: widget = new Vector2DProp(); break;
-
-    case DatumType::Count: break;
-    }
-
-    return widget;
 }
 
 #endif
