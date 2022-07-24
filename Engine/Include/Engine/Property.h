@@ -37,6 +37,7 @@ public:
 
     void PushBackVector(void* value = nullptr);
     void EraseVector(uint32_t index);
+    void ResizeVector(uint32_t count);
     Property& MakeVector(uint8_t minCount = 0, uint8_t maxCount = 255);
     bool IsVector() const;
     bool IsArray() const;

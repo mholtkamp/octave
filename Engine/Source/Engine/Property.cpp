@@ -257,6 +257,92 @@ void Property::EraseVector(uint32_t index)
     }
 }
 
+void Property::ResizeVector(uint32_t count)
+{
+    assert(mExternal);
+    assert(mVector);
+
+    count = glm::clamp(count, 0u, 255u);
+
+    if (mVector)
+    {
+        switch (mType)
+        {
+        case DatumType::Integer:
+        {
+            std::vector<int32_t>& vect = *((std::vector<int32_t>*) mVector);
+            vect.resize(count);
+            mData.i = vect.data();
+            break;
+        }
+        case DatumType::Float:
+        {
+            std::vector<float>& vect = *((std::vector<float>*) mVector);
+            vect.resize(count);
+            mData.f = vect.data();
+            break;
+        }
+        case DatumType::Bool:
+        {
+            // Bool not supported yet.
+            assert(0);
+            break;
+        }
+        case DatumType::String:
+        {
+            std::vector<std::string>& vect = *((std::vector<std::string>*) mVector);
+            vect.resize(count);
+            mData.s = vect.data();
+            break;
+        }
+        case DatumType::Vector2D:
+        {
+            std::vector<glm::vec2>& vect = *((std::vector<glm::vec2>*) mVector);
+            vect.resize(count);
+            mData.v2 = vect.data();
+            break;
+        }
+        case DatumType::Vector:
+        {
+            std::vector<glm::vec3>& vect = *((std::vector<glm::vec3>*) mVector);
+            vect.resize(count);
+            mData.v3 = vect.data();
+            break;
+        }
+        case DatumType::Color:
+        {
+            std::vector<glm::vec4>& vect = *((std::vector<glm::vec4>*) mVector);
+            vect.resize(count);
+            mData.v4 = vect.data();
+            break;
+        }
+        case DatumType::Asset:
+        {
+            std::vector<AssetRef>& vect = *((std::vector<AssetRef>*) mVector);
+            vect.resize(count);
+            mData.as = vect.data();
+            break;
+        }
+        case DatumType::Enum:
+        {
+            std::vector<uint32_t>& vect = *((std::vector<uint32_t>*) mVector);
+            vect.resize(count);
+            mData.e = vect.data();
+            break;
+        }
+        case DatumType::Byte:
+        {
+            std::vector<uint8_t>& vect = *((std::vector<uint8_t>*) mVector);
+            vect.resize(count);
+            mData.by = vect.data();
+            break;
+        }
+        }
+
+        mCount++;
+    }
+}
+
 Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
 {
     // Vector properties should only be used with external data.

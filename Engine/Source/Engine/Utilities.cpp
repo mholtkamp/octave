@@ -252,7 +252,15 @@ void CopyPropertyValues(std::vector<Property>& dstProps, const std::vector<Prope
 
         if (dstProp != nullptr)
         {
-            assert(dstProp->mCount == srcProp->mCount);
+            if (dstProp->IsVector())
+            {
+                dstProp->ResizeVector(srcProp->GetCount());
+            }
+            else
+            {
+                assert(dstProp->mCount == srcProp->mCount);
+            }
+            
             dstProp->SetValue(srcProp->mData.vp, 0, srcProp->mCount);
         }
     }
