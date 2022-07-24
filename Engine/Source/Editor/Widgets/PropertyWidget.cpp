@@ -324,14 +324,14 @@ FloatProp::FloatProp() :
 void FloatProp::Update()
 {
     PropertyWidget::Update();
-    mTextField->SetTextString(std::to_string(mProperty.GetFloat()));
+    mTextField->SetTextString(std::to_string(mProperty.GetFloat(mIndex)));
 }
 
 void FloatProp::Write()
 {
     try
     {
-        mProperty.SetFloat(std::stof(mTextField->GetTextString()));
+        mProperty.SetFloat(std::stof(mTextField->GetTextString()), mIndex);
     }
     catch (...)
     {
@@ -352,14 +352,14 @@ IntegerProp::IntegerProp() :
 void IntegerProp::Update()
 {
     PropertyWidget::Update();
-    mTextField->SetTextString(std::to_string(mProperty.GetInteger()));
+    mTextField->SetTextString(std::to_string(mProperty.GetInteger(mIndex)));
 }
 
 void IntegerProp::Write()
 {
     try
     {
-        mProperty.SetInteger(std::stoi(mTextField->GetTextString()));
+        mProperty.SetInteger(std::stoi(mTextField->GetTextString()), mIndex);
     }
     catch (...)
     {
@@ -408,7 +408,7 @@ VectorProp::VectorProp()
 void VectorProp::Update()
 {
     PropertyWidget::Update();
-    const glm::vec3& vect = mProperty.GetVector();
+    const glm::vec3& vect = mProperty.GetVector(mIndex);
     mTextFieldX->SetTextString(std::to_string(vect.x));
     mTextFieldY->SetTextString(std::to_string(vect.y));
     mTextFieldZ->SetTextString(std::to_string(vect.z));
@@ -422,7 +422,7 @@ void VectorProp::Write()
         vect.x = std::stof(mTextFieldX->GetTextString());
         vect.y = std::stof(mTextFieldY->GetTextString());
         vect.z = std::stof(mTextFieldZ->GetTextString());
-        mProperty.SetVector(vect);
+        mProperty.SetVector(vect, mIndex);
     }
     catch (...)
     {
@@ -461,7 +461,7 @@ ColorProp::ColorProp() :
 void ColorProp::Update()
 {
     PropertyWidget::Update();
-    const glm::vec4& color = mProperty.GetColor();
+    const glm::vec4& color = mProperty.GetColor(mIndex);
     mTextFieldX->SetTextString(std::to_string(color.x));
     mTextFieldY->SetTextString(std::to_string(color.y));
     mTextFieldZ->SetTextString(std::to_string(color.z));
@@ -477,7 +477,7 @@ void ColorProp::Write()
         color.y = std::stof(mTextFieldY->GetTextString());
         color.z = std::stof(mTextFieldZ->GetTextString());
         color.w = std::stof(mTextFieldW->GetTextString());
-        mProperty.SetColor(color);
+        mProperty.SetColor(color, mIndex);
     }
     catch (...)
     {
@@ -502,12 +502,12 @@ StringProp::StringProp()
 void StringProp::Update()
 {
     PropertyWidget::Update();
-    mTextField->SetTextString(mProperty.GetString());
+    mTextField->SetTextString(mProperty.GetString(mIndex));
 }
 
 void StringProp::Write()
 {
-    mProperty.SetString(mTextField->GetTextString());
+    mProperty.SetString(mTextField->GetTextString(), mIndex);
 }
 
 BoolProp::BoolProp()
@@ -526,12 +526,12 @@ BoolProp::BoolProp()
 void BoolProp::Update()
 {
     PropertyWidget::Update();
-    mCheckBox->SetChecked(mProperty.GetBool());
+    mCheckBox->SetChecked(mProperty.GetBool(mIndex));
 }
 
 void BoolProp::Write()
 {
-    mProperty.SetBool(mCheckBox->IsChecked());
+    mProperty.SetBool(mCheckBox->IsChecked(), mIndex);
 }
 
 float BoolProp::GetHeight()
@@ -561,9 +561,9 @@ void AssetProp::Update()
 {
     PropertyWidget::Update();
 
-    Asset* asset = mProperty.GetAsset();
+    Asset* asset = mProperty.GetAsset(mIndex);
     glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor((TypeId)mProperty.mExtra);
-    mTextField->SetTextString(asset ? mProperty.GetAsset()->GetName() : "");
+    mTextField->SetTextString(asset ? mProperty.GetAsset(mIndex)->GetName() : "");
     mTextField->GetText()->SetColor(assetColor);
     mAssignAssetButton->GetText()->SetColor(assetColor);
 }
@@ -579,7 +579,7 @@ void AssetProp::AssignAsset(Asset* asset)
         mProperty.mExtra == 0 ||
         asset->GetType() == TypeId(mProperty.mExtra))
     {
-        mProperty.SetAsset(asset);
+        mProperty.SetAsset(asset, mIndex);
     }
 }
 
@@ -634,14 +634,14 @@ void EnumProp::SetProperty(const Property& prop, uint32_t index)
 void EnumProp::Update()
 {
     PropertyWidget::Update();
-    mSelector->SetSelectionIndex(mProperty.GetEnum());
+    mSelector->SetSelectionIndex(mProperty.GetEnum(mIndex));
 }
 
 void EnumProp::Write()
 {
     try
     {
-        mProperty.SetEnum(uint32_t(mSelector->GetSelectionIndex()));
+        mProperty.SetEnum(uint32_t(mSelector->GetSelectionIndex()), mIndex);
     }
     catch (...)
     {
@@ -662,14 +662,14 @@ ByteProp::ByteProp() :
 void ByteProp::Update()
 {
     PropertyWidget::Update();
-    mTextField->SetTextString(std::to_string(mProperty.GetByte()));
+    mTextField->SetTextString(std::to_string(mProperty.GetByte(mIndex)));
 }
 
 void ByteProp::Write()
 {
     try
     {
-        mProperty.SetByte((uint8_t)std::stoi(mTextField->GetTextString()));
+        mProperty.SetByte((uint8_t)std::stoi(mTextField->GetTextString()), mIndex);
     }
     catch (...)
     {
@@ -693,7 +693,7 @@ void ByteFlagProp::Update()
 {
     PropertyWidget::Update();
 
-    uint8_t value = mProperty.GetByte();
+    uint8_t value = mProperty.GetByte(mIndex);
     for (int32_t i = 0; i < 8; ++i)
     {
         // Check boxes are in reverse order
@@ -712,7 +712,7 @@ void ByteFlagProp::Write()
         value |= ((mCheckBoxes[i]->IsChecked() ? 1 : 0) << bit);
     }
 
-    mProperty.SetByte(value);
+    mProperty.SetByte(value, mIndex);
 }
 
 Vector2DProp::Vector2DProp()
@@ -747,7 +747,7 @@ Vector2DProp::Vector2DProp()
 void Vector2DProp::Update()
 {
     PropertyWidget::Update();
-    const glm::vec2& vect = mProperty.GetVector2D();
+    const glm::vec2& vect = mProperty.GetVector2D(mIndex);
     mTextFieldX->SetTextString(std::to_string(vect.x));
     mTextFieldY->SetTextString(std::to_string(vect.y));
 }
@@ -759,7 +759,7 @@ void Vector2DProp::Write()
         glm::vec2 vect;
         vect.x = std::stof(mTextFieldX->GetTextString());
         vect.y = std::stof(mTextFieldY->GetTextString());
-        mProperty.SetVector2D(vect);
+        mProperty.SetVector2D(vect, mIndex);
     }
     catch (...)
     {
