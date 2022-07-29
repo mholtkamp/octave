@@ -453,7 +453,7 @@ void ViewportPanel::HandleDefaultControls()
             Component* comp = GetSelectedComponent();
             TransformComponent* transComp = (comp && comp->IsTransformComponent()) ? static_cast<TransformComponent*>(comp) : nullptr;
 
-            if (transComp != nullptr)
+            if (transComp != nullptr && transComp != camera)
             {
                 glm::vec3 cameraPos = camera->GetAbsolutePosition();
                 glm::vec3 compPos = transComp->GetAbsolutePosition();
