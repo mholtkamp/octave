@@ -18,14 +18,16 @@ enum class VertexType
 struct Vertex
 {
     glm::vec3 mPosition;
-    glm::vec2 mTexcoord;
+    glm::vec2 mTexcoord0;
+    glm::vec2 mTexcoord1;
     glm::vec3 mNormal;
 };
 
 struct VertexColor
 {
     glm::vec3 mPosition;
-    glm::vec2 mTexcoord;
+    glm::vec2 mTexcoord0;
+    glm::vec2 mTexcoord1;
     glm::vec3 mNormal;
     uint32_t mColor;
 };
@@ -46,7 +48,8 @@ struct VertexColorSimple
 struct VertexSkinned
 {
     glm::vec3 mPosition;
-    glm::vec2 mTexcoord;
+    glm::vec2 mTexcoord0;
+    glm::vec2 mTexcoord1;
     glm::vec3 mNormal;
     uint8_t mBoneIndices[MAX_BONE_INFLUENCES];
     float mBoneWeights[MAX_BONE_INFLUENCES];

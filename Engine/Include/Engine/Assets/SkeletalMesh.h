@@ -145,6 +145,7 @@ private:
     MaterialRef mMaterial;
     uint32_t mNumVertices;
     uint32_t mNumIndices;
+    uint32_t mNumUvMaps;
 
     std::vector<Bone> mBones;
     std::vector<Animation> mAnimations;
