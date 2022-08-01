@@ -23,7 +23,8 @@ DEFINE_ASSET(SkeletalMesh);
 SkeletalMesh::SkeletalMesh() :
     mMaterial(nullptr),
     mNumVertices(0),
-    mNumIndices(0)
+    mNumIndices(0),
+    mNumUvMaps(1)
 {
     mType = SkeletalMesh::GetStaticType();
 }
@@ -54,6 +55,8 @@ void SkeletalMesh::LoadStream(Stream& stream, Platform platform)
 
     mNumVertices = stream.ReadUint32();
     mNumIndices = stream.ReadUint32();
+    // TODO: Handle multiple uv maps
+    //mNumUvMaps = stream.ReadUint32();
 
     stream.ReadAsset(mMaterial);
     if (mMaterial.Get() == nullptr)
@@ -141,7 +144,8 @@ void SkeletalMesh::LoadStream(Stream& stream, Platform platform)
     for (uint32_t i = 0; i < mNumVertices; ++i)
     {
         mVertices[i].mPosition = stream.ReadVec3();
-        mVertices[i].mTexcoord = stream.ReadVec2();
+        mVertices[i].mTexcoord0 = stream.ReadVec2();
+        mVertices[i].mTexcoord1 = { 0.0f, 0.0f };// stream.ReadVec2();
         mVertices[i].mNormal = stream.ReadVec3();
         mVertices[i].mBoneIndices[0] = stream.ReadUint8();
         mVertices[i].mBoneIndices[1] = stream.ReadUint8();
@@ -246,7 +250,8 @@ void SkeletalMesh::SaveStream(Stream& stream, Platform platform)
     for (uint32_t i = 0; i < mNumVertices; ++i)
     {
         stream.WriteVec3(mVertices[i].mPosition);
-        stream.WriteVec2(mVertices[i].mTexcoord);
+        stream.WriteVec2(mVertices[i].mTexcoord0);
+        stream.WriteVec2(mVertices[i].mTexcoord1);
         stream.WriteVec3(mVertices[i].mNormal);
         stream.WriteUint8(mVertices[i].mBoneIndices[0]);
         stream.WriteUint8(mVertices[i].mBoneIndices[1]);
@@ -870,7 +875,8 @@ void SkeletalMesh::SetupResource(const aiMesh& meshData,
 {
     // Get pointers to vertex attributes
     glm::vec3* positions = reinterpret_cast<glm::vec3*>(meshData.mVertices);
-    glm::vec3* texcoords3D = reinterpret_cast<glm::vec3*>(meshData.mTextureCoords[0]);
+    glm::vec3* texcoords0 = meshData.HasTextureCoords(0) ? reinterpret_cast<glm::vec3*>(meshData.mTextureCoords[0]) : nullptr;
+    glm::vec3* texcoords1 = meshData.HasTextureCoords(1) ? reinterpret_cast<glm::vec3*>(meshData.mTextureCoords[1]) : nullptr;
     glm::vec3* normals = reinterpret_cast<glm::vec3*>(meshData.mNormals);
 
     aiFace* faces = meshData.mFaces;
@@ -879,17 +885,15 @@ void SkeletalMesh::SetupResource(const aiMesh& meshData,
     mVertices.resize(mNumVertices);
     mIndices.resize(mNumIndices);
 
+    mNumUvMaps = glm::clamp(meshData.GetNumUVChannels(), 0u, MAX_UV_MAPS - 1u);
+
     // Create an interleaved VBO
     for (uint32_t i = 0; i < meshData.mNumVertices; ++i)
     {
-        mVertices[i].mPosition = glm::vec3(positions[i].x,
-            positions[i].y,
-            positions[i].z);
-        mVertices[i].mTexcoord = glm::vec2(texcoords3D[i].x,
-            texcoords3D[i].y);
-        mVertices[i].mNormal = glm::vec3(normals[i].x,
-            normals[i].y,
-            normals[i].z);
+        mVertices[i].mPosition = glm::vec3(positions[i].x, positions[i].y, positions[i].z);
+        mVertices[i].mTexcoord0 = texcoords0 ? glm::vec2(texcoords0[i].x, texcoords0[i].y) : glm::vec2(0.0f, 0.0f);
+        mVertices[i].mTexcoord1 = texcoords1 ? glm::vec2(texcoords1[i].x, texcoords1[i].y) : glm::vec2(0.0f, 0.0f);
+        mVertices[i].mNormal = glm::vec3(normals[i].x, normals[i].y, normals[i].z);
 
         mVertices[i].mBoneIndices[0] = boneIndices[i * MAX_BONE_INFLUENCES + 0];
         mVertices[i].mBoneIndices[1] = boneIndices[i * MAX_BONE_INFLUENCES + 1];

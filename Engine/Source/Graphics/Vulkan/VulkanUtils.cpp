@@ -499,18 +499,24 @@ std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions(Ve
         attributeDescriptions[0].location = 0;
         attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[0].offset = offsetof(Vertex, mPosition);
-        // Texcoord
+        // Texcoord0
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(Vertex, mTexcoord);
-        // Normal
+        attributeDescriptions[1].offset = offsetof(Vertex, mTexcoord0);
+        // Texcoord1
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[2].binding = 0;
         attributeDescriptions[2].location = 2;
-        attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[2].offset = offsetof(Vertex, mNormal);
+        attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[2].offset = offsetof(Vertex, mTexcoord1);
+        // Normal
+        attributeDescriptions.push_back(VkVertexInputAttributeDescription());
+        attributeDescriptions[3].binding = 0;
+        attributeDescriptions[3].location = 3;
+        attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[3].offset = offsetof(Vertex, mNormal);
         break;
 
     case VertexType::VertexColor:
@@ -520,24 +526,30 @@ std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions(Ve
         attributeDescriptions[0].location = 0;
         attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[0].offset = offsetof(VertexColor, mPosition);
-        // Texcoord
+        // Texcoord0
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(VertexColor, mTexcoord);
-        // Normal
+        attributeDescriptions[1].offset = offsetof(VertexColor, mTexcoord0);
+        // Texcoord1
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[2].binding = 0;
         attributeDescriptions[2].location = 2;
-        attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[2].offset = offsetof(VertexColor, mNormal);
-        // Color
+        attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[2].offset = offsetof(VertexColor, mTexcoord1);
+        // Normal
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[3].binding = 0;
         attributeDescriptions[3].location = 3;
-        attributeDescriptions[3].format = VK_FORMAT_R8G8B8A8_UNORM;
-        attributeDescriptions[3].offset = offsetof(VertexColor, mColor);
+        attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[3].offset = offsetof(VertexColor, mNormal);
+        // Color
+        attributeDescriptions.push_back(VkVertexInputAttributeDescription());
+        attributeDescriptions[4].binding = 0;
+        attributeDescriptions[4].location = 4;
+        attributeDescriptions[4].format = VK_FORMAT_R8G8B8A8_UNORM;
+        attributeDescriptions[4].offset = offsetof(VertexColor, mColor);
         break;
 
     case VertexType::VertexUI:
@@ -583,30 +595,36 @@ std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions(Ve
         attributeDescriptions[0].location = 0;
         attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[0].offset = offsetof(VertexSkinned, mPosition);
-        // Texcoord
+        // Texcoord0
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(VertexSkinned, mTexcoord);
-        // Normal
+        attributeDescriptions[1].offset = offsetof(VertexSkinned, mTexcoord0);
+        // Texcoord1
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[2].binding = 0;
         attributeDescriptions[2].location = 2;
-        attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[2].offset = offsetof(VertexSkinned, mNormal);
-        // Bone Indices
+        attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[2].offset = offsetof(VertexSkinned, mTexcoord1);
+        // Normal
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[3].binding = 0;
         attributeDescriptions[3].location = 3;
-        attributeDescriptions[3].format = VK_FORMAT_R8G8B8A8_UINT;
-        attributeDescriptions[3].offset = offsetof(VertexSkinned, mBoneIndices);
-        // Bone Weights
+        attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[3].offset = offsetof(VertexSkinned, mNormal);
+        // Bone Indices
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[4].binding = 0;
         attributeDescriptions[4].location = 4;
-        attributeDescriptions[4].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-        attributeDescriptions[4].offset = offsetof(VertexSkinned, mBoneWeights);
+        attributeDescriptions[4].format = VK_FORMAT_R8G8B8A8_UINT;
+        attributeDescriptions[4].offset = offsetof(VertexSkinned, mBoneIndices);
+        // Bone Weights
+        attributeDescriptions.push_back(VkVertexInputAttributeDescription());
+        attributeDescriptions[5].binding = 0;
+        attributeDescriptions[5].location = 5;
+        attributeDescriptions[5].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        attributeDescriptions[5].offset = offsetof(VertexSkinned, mBoneWeights);
         break;
 
     case VertexType::VertexParticle:

@@ -29,10 +29,11 @@ layout(set = 2, binding = 3) uniform sampler2D sampler2;
 layout(set = 2, binding = 4) uniform sampler2D sampler3;
 
 layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec2 inTexcoord;
-layout(location = 2) in vec3 inNormal;
-layout(location = 3) in vec4 inShadowCoordinate;
-layout(location = 4) in vec4 inColor;
+layout(location = 1) in vec2 inTexcoord0;
+layout(location = 2) in vec2 inTexcoord1;
+layout(location = 3) in vec3 inNormal;
+layout(location = 4) in vec4 inShadowCoordinate;
+layout(location = 5) in vec4 inColor;
 
 layout(location = 0) out vec4 outColor;
 
@@ -76,10 +77,12 @@ float CalculateShadow(vec4 sc)
 
 void main()
 {
-    vec2 texCoord = (inTexcoord + material.mUvOffset) * material.mUvScale;
+    vec2 texCoord0 = (inTexcoord0 + material.mUvOffset) * material.mUvScale;
+    vec2 texCoord1 = (inTexcoord1 + material.mUvOffset) * material.mUvScale;
 
     uint shadingModel = material.mShadingModel;
-    vec4 diffuse = texture(sampler0, texCoord) * material.mColor;
+    // TODO: Handle multiple uv maps, and also emulate TexEnv
+    vec4 diffuse = texture(sampler0, texCoord0) * material.mColor;
 
     if (material.mBlendMode == BLEND_MODE_MASKED && diffuse.a < material.mMaskCutoff)
     {

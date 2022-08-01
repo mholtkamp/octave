@@ -79,6 +79,7 @@ private:
     MaterialRef mMaterial;
     uint32_t mNumVertices;
     uint32_t mNumIndices;
+    uint32_t mNumUvMaps;
 
     void* mVertices;
     IndexType* mIndices;

@@ -165,7 +165,8 @@ void SkeletalMeshComponent::SetSkeletalMesh(SkeletalMesh* skeletalMesh)
                 {
                     mSkinnedVertices[i].mPosition = srcVerts[i].mPosition;
                     mSkinnedVertices[i].mNormal = srcVerts[i].mNormal;
-                    mSkinnedVertices[i].mTexcoord = srcVerts[i].mTexcoord;
+                    mSkinnedVertices[i].mTexcoord0 = srcVerts[i].mTexcoord0;
+                    mSkinnedVertices[i].mTexcoord1 = srcVerts[i].mTexcoord1;
                 }
 
                 GFX_ReallocateSkeletalMeshCompVertexBuffer(this, skeletalMesh->GetNumVertices());
@@ -795,7 +796,8 @@ void SkeletalMeshComponent::CpuSkinVertices()
 
                 dstVert.mPosition = transform * glm::vec4(srcVert.mPosition, 1.0f);
                 dstVert.mNormal = transform * glm::vec4(srcVert.mNormal, 0.0f);
-                dstVert.mTexcoord = srcVert.mTexcoord;
+                dstVert.mTexcoord0 = srcVert.mTexcoord0;
+                dstVert.mTexcoord1 = srcVert.mTexcoord1;
             }
         }
         else
@@ -813,7 +815,8 @@ void SkeletalMeshComponent::CpuSkinVertices()
 
                 dstVert.mPosition = transform * glm::vec4(srcVert.mPosition, 1.0f);
                 dstVert.mNormal = transform * glm::vec4(srcVert.mNormal, 0.0f);
-                dstVert.mTexcoord = srcVert.mTexcoord;
+                dstVert.mTexcoord0 = srcVert.mTexcoord0;
+                dstVert.mTexcoord1 = srcVert.mTexcoord1;
             }
         }
 

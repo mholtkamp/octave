@@ -25,6 +25,7 @@ StaticMesh::StaticMesh() :
     mMaterial(nullptr),
     mNumVertices(0),
     mNumIndices(0),
+    mNumUvMaps(1),
     mVertices(nullptr),
     mIndices(nullptr),
     mCollisionShape(nullptr),
@@ -81,6 +82,10 @@ void StaticMesh::LoadStream(Stream& stream, Platform platform)
 
     mNumVertices = stream.ReadUint32();
     mNumIndices = stream.ReadUint32();
+    
+    // TODO: Handle multiple UV maps
+    mNumUvMaps = 1;
+    //mNumUvMaps = stream.ReadUint32();
 
     stream.ReadAsset(mMaterial);
 
@@ -100,7 +105,8 @@ void StaticMesh::LoadStream(Stream& stream, Platform platform)
         for (uint32_t i = 0; i < mNumVertices; ++i)
         {
             vertices[i].mPosition = stream.ReadVec3();
-            vertices[i].mTexcoord = stream.ReadVec2();
+            vertices[i].mTexcoord0 = stream.ReadVec2();
+            vertices[i].mTexcoord1 = { 0.0f, 0.0f }; //vertices[i].mTexcoord1 = stream.ReadVec2();
             vertices[i].mNormal = stream.ReadVec3();
             vertices[i].mColor = stream.ReadUint32();
         }
@@ -111,7 +117,8 @@ void StaticMesh::LoadStream(Stream& stream, Platform platform)
         for (uint32_t i = 0; i < mNumVertices; ++i)
         {
             vertices[i].mPosition = stream.ReadVec3();
-            vertices[i].mTexcoord = stream.ReadVec2();
+            vertices[i].mTexcoord0 = stream.ReadVec2();
+            vertices[i].mTexcoord1 = {0.0f, 0.0f}; //vertices[i].mTexcoord1 = stream.ReadVec2();
             vertices[i].mNormal = stream.ReadVec3();
         }
     }
@@ -203,6 +210,7 @@ void StaticMesh::SaveStream(Stream& stream, Platform platform)
 #if EDITOR
     stream.WriteUint32(mNumVertices);
     stream.WriteUint32(mNumIndices);
+    stream.WriteUint32(mNumUvMaps);
 
     stream.WriteAsset(mMaterial);
     stream.WriteBool(mGenerateTriangleCollisionMesh);
@@ -214,7 +222,8 @@ void StaticMesh::SaveStream(Stream& stream, Platform platform)
         for (uint32_t i = 0; i < mNumVertices; ++i)
         {
             stream.WriteVec3(vertices[i].mPosition);
-            stream.WriteVec2(vertices[i].mTexcoord);
+            stream.WriteVec2(vertices[i].mTexcoord0);
+            stream.WriteVec2(vertices[i].mTexcoord1);
             stream.WriteVec3(vertices[i].mNormal);
             stream.WriteUint32(vertices[i].mColor);
         }
@@ -225,7 +234,8 @@ void StaticMesh::SaveStream(Stream& stream, Platform platform)
         for (uint32_t i = 0; i < mNumVertices; ++i)
         {
             stream.WriteVec3(vertices[i].mPosition);
-            stream.WriteVec2(vertices[i].mTexcoord);
+            stream.WriteVec2(vertices[i].mTexcoord0);
+            stream.WriteVec2(vertices[i].mTexcoord1);
             stream.WriteVec3(vertices[i].mNormal);
         }
     }
@@ -746,12 +756,15 @@ void StaticMesh::Create(
 
     mNumVertices = meshData.mNumVertices;
     mNumIndices = meshData.mNumFaces * 3;
+    
+    mNumUvMaps = glm::clamp(meshData.GetNumUVChannels(), 0u, MAX_UV_MAPS - 1u);
 
     mHasVertexColor = meshData.GetNumColorChannels() > 0;
 
     // Get pointers to vertex attributes
     glm::vec3* positions = reinterpret_cast<glm::vec3*>(meshData.mVertices);
-    glm::vec3* texcoords3D = reinterpret_cast<glm::vec3*>(meshData.mTextureCoords[0]);
+    glm::vec3* texcoords0 = meshData.HasTextureCoords(0) ? reinterpret_cast<glm::vec3*>(meshData.mTextureCoords[0]) : nullptr;
+    glm::vec3* texcoords1 = meshData.HasTextureCoords(1) ? reinterpret_cast<glm::vec3*>(meshData.mTextureCoords[1]) : nullptr;
     glm::vec3* normals = reinterpret_cast<glm::vec3*>(meshData.mNormals);
     glm::vec4* colors = mHasVertexColor ? reinterpret_cast<glm::vec4*>(meshData.mColors[0]) : nullptr;
 
@@ -766,14 +779,10 @@ void StaticMesh::Create(
         VertexColor* vertices = GetColorVertices();
         for (uint32_t i = 0; i < mNumVertices; ++i)
         {
-            vertices[i].mPosition = glm::vec3(positions[i].x,
-                positions[i].y,
-                positions[i].z);
-            vertices[i].mTexcoord = glm::vec2(texcoords3D[i].x,
-                texcoords3D[i].y);
-            vertices[i].mNormal = glm::vec3(normals[i].x,
-                normals[i].y,
-                normals[i].z);
+            vertices[i].mPosition = glm::vec3(positions[i].x, positions[i].y, positions[i].z);
+            vertices[i].mTexcoord0 = texcoords0 ? glm::vec2(texcoords0[i].x, texcoords0[i].y) : glm::vec2(0.0f, 0.0f);
+            vertices[i].mTexcoord1 = texcoords1 ? glm::vec2(texcoords1[i].x, texcoords1[i].y) : glm::vec2(0.0f, 0.0f);
+            vertices[i].mNormal = glm::vec3(normals[i].x, normals[i].y, normals[i].z);
 
             glm::vec4 color4f = glm::vec4(colors[i].r, colors[i].g, colors[i].b, colors[i].a);
             vertices[i].mColor = ColorFloat4ToUint32(color4f);
@@ -784,14 +793,10 @@ void StaticMesh::Create(
         Vertex* vertices = GetVertices();
         for (uint32_t i = 0; i < mNumVertices; ++i)
         {
-            vertices[i].mPosition = glm::vec3(positions[i].x,
-                positions[i].y,
-                positions[i].z);
-            vertices[i].mTexcoord = glm::vec2(texcoords3D[i].x,
-                texcoords3D[i].y);
-            vertices[i].mNormal = glm::vec3(normals[i].x,
-                normals[i].y,
-                normals[i].z);
+            vertices[i].mPosition = glm::vec3(positions[i].x, positions[i].y, positions[i].z);
+            vertices[i].mTexcoord0 = texcoords0 ? glm::vec2(texcoords0[i].x, texcoords0[i].y) : glm::vec2(0.0f, 0.0f);
+            vertices[i].mTexcoord1 = texcoords1 ? glm::vec2(texcoords1[i].x, texcoords1[i].y) : glm::vec2(0.0f, 0.0f);
+            vertices[i].mNormal = glm::vec3(normals[i].x, normals[i].y, normals[i].z);
         }
     }
 
