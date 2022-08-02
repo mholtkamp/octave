@@ -22,6 +22,7 @@ struct MaterialParams
     ShadingModel mShadingModel = ShadingModel::Lit;
     BlendMode mBlendMode = BlendMode::Opaque;
     TextureRef mTextures[MATERIAL_MAX_TEXTURES];
+    uint8_t mUvMaps[MATERIAL_MAX_TEXTURES] = { };
     glm::vec2 mUvOffset = { 0.0f, 0.0f };
     glm::vec2 mUvScale = { 1.0f, 1.0f };
     glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -113,6 +114,9 @@ public:
 
     bool IsFresnelEnabled() const;
     void SetFresnelEnabled(bool enable);
+
+    uint32_t GetUvMap(uint32_t textureSlot);
+    void SetUvMap(uint32_t textureSlot, uint32_t uvMapIndex);
 
 protected:
 

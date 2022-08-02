@@ -94,6 +94,7 @@ void Material::LoadStream(Stream& stream, Platform platform)
     for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
     {
         stream.ReadAsset(mParams.mTextures[i]);
+        //mParams.mUvMaps[i] = stream.ReadUint8();
     }
 
     mParams.mUvOffset = stream.ReadVec2();
@@ -121,6 +122,7 @@ void Material::SaveStream(Stream& stream, Platform platform)
     for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
     {
         stream.WriteAsset(mParams.mTextures[i]);
+        //stream.WriteUint8(mParams.mUvMaps[i]);
     }
 
     stream.WriteVec2(mParams.mUvOffset);
@@ -180,9 +182,13 @@ void Material::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Enum, "Shading Model", this, &mParams.mShadingModel, 1, HandlePropChange, 0, int32_t(ShadingModel::Count), sShadingModelStrings));
     outProps.push_back(Property(DatumType::Enum, "Blend Mode", this, &mParams.mBlendMode, 1, HandlePropChange, 0, int32_t(BlendMode::Count), sBlendModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 0", this, &mParams.mTextures[TEXTURE_0], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::Byte, "UV Map 0", this, &mParams.mUvMaps[TEXTURE_0], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Asset, "Texture 1", this, &mParams.mTextures[TEXTURE_1], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::Byte, "UV Map 1", this, &mParams.mUvMaps[TEXTURE_1], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Asset, "Texture 2", this, &mParams.mTextures[TEXTURE_2], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::Byte, "UV Map 2", this, &mParams.mUvMaps[TEXTURE_2], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Asset, "Texture 3", this, &mParams.mTextures[TEXTURE_3], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::Byte, "UV Map 3", this, &mParams.mUvMaps[TEXTURE_3], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "UV Offset", this, &mParams.mUvOffset, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "UV Scale", this, &mParams.mUvScale, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Color, "Color", this, &mParams.mColor, 1, HandlePropChange));
@@ -419,5 +425,27 @@ void Material::SetFresnelEnabled(bool enable)
 {
     mParams.mFresnelEnabled = enable;
     MarkDirty();
+}
+
+uint32_t Material::GetUvMap(uint32_t textureSlot)
+{
+    assert(textureSlot < MATERIAL_MAX_TEXTURES);
+    if (textureSlot < MATERIAL_MAX_TEXTURES)
+    {
+        return mParams.mUvMaps[textureSlot];
+    }
+
+    return 0;
+}
+
+void Material::SetUvMap(uint32_t textureSlot, uint32_t uvMapIndex)
+{
+    assert(textureSlot < MATERIAL_MAX_TEXTURES);
+    assert(uvMapIndex < MAX_UV_MAPS);
+    if (textureSlot < MATERIAL_MAX_TEXTURES &&
+        uvMapIndex < MAX_UV_MAPS)
+    {
+        mParams.mUvMaps[textureSlot] = uvMapIndex;
+    }
 }
 

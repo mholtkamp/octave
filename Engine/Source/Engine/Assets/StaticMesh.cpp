@@ -223,7 +223,7 @@ void StaticMesh::SaveStream(Stream& stream, Platform platform)
         {
             stream.WriteVec3(vertices[i].mPosition);
             stream.WriteVec2(vertices[i].mTexcoord0);
-            stream.WriteVec2(vertices[i].mTexcoord1);
+            //stream.WriteVec2(vertices[i].mTexcoord1);
             stream.WriteVec3(vertices[i].mNormal);
             stream.WriteUint32(vertices[i].mColor);
         }
@@ -235,7 +235,7 @@ void StaticMesh::SaveStream(Stream& stream, Platform platform)
         {
             stream.WriteVec3(vertices[i].mPosition);
             stream.WriteVec2(vertices[i].mTexcoord0);
-            stream.WriteVec2(vertices[i].mTexcoord1);
+            //stream.WriteVec2(vertices[i].mTexcoord1);
             stream.WriteVec3(vertices[i].mNormal);
         }
     }

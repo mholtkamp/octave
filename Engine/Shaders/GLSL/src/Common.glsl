@@ -1,4 +1,5 @@
 #define MAX_POINTLIGHTS 7
+#define MAX_TEXTURES 4
 
 #define SHADING_MODEL_UNLIT 0
 #define SHADING_MODEL_LIT 1
@@ -101,6 +102,8 @@ struct MaterialUniforms
     float mPadding0;
     float mPadding1;
     float mPadding2;
+
+    uint mUvMaps[MAX_TEXTURES];
 };
 
 const mat4 SHADOW_BIAS_MAT = mat4( 

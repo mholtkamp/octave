@@ -101,6 +101,8 @@ struct MaterialData
     float mPadding0;
     float mPadding1;
     float mPadding2;
+
+    uint32_t mUvMaps[MATERIAL_MAX_TEXTURES];
 };
 
 enum class DescriptorSetBinding
