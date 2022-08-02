@@ -82,7 +82,7 @@ void main()
 
     uint shadingModel = material.mShadingModel;
     // TODO: Handle multiple uv maps, and also emulate TexEnv
-    vec4 diffuse = texture(sampler0, texCoord0) * material.mColor;
+    vec4 diffuse = texture(sampler0, material.mUvMaps[0] == 0 ? texCoord0 : texCoord1) * material.mColor;
 
     if (material.mBlendMode == BLEND_MODE_MASKED && diffuse.a < material.mMaskCutoff)
     {

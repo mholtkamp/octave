@@ -251,7 +251,7 @@ void SkeletalMesh::SaveStream(Stream& stream, Platform platform)
     {
         stream.WriteVec3(mVertices[i].mPosition);
         stream.WriteVec2(mVertices[i].mTexcoord0);
-        stream.WriteVec2(mVertices[i].mTexcoord1);
+        //stream.WriteVec2(mVertices[i].mTexcoord1);
         stream.WriteVec3(mVertices[i].mNormal);
         stream.WriteUint8(mVertices[i].mBoneIndices[0]);
         stream.WriteUint8(mVertices[i].mBoneIndices[1]);
