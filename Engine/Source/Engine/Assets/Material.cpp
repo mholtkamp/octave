@@ -30,6 +30,19 @@ static const char* sBlendModeStrings[] =
 };
 static_assert(int32_t(BlendMode::Count) == 4, "Need to update string conversion table");
 
+static const char* sTevModeStrings[] = 
+{
+    "Replace",
+    "Modulate",
+    "Decal",
+    "Add",
+    "Signed Add",
+    "Subtract",
+    "Interpolate",
+    "Pass"
+};
+static_assert(int32_t(TevMode::Count) == 8, "Need to update string conversion table");
+
 FORCE_LINK_DEF(Material);
 DEFINE_ASSET(Material);
 
@@ -95,6 +108,7 @@ void Material::LoadStream(Stream& stream, Platform platform)
     {
         stream.ReadAsset(mParams.mTextures[i]);
         //mParams.mUvMaps[i] = stream.ReadUint8();
+        //mParams.mTevModes[i] = (TevMode) stream.ReadUint8();
     }
 
     mParams.mUvOffset = stream.ReadVec2();
@@ -123,6 +137,7 @@ void Material::SaveStream(Stream& stream, Platform platform)
     {
         stream.WriteAsset(mParams.mTextures[i]);
         //stream.WriteUint8(mParams.mUvMaps[i]);
+        //stream.WriteUint8((uint8_t)mParams.mTevModes[i]);
     }
 
     stream.WriteVec2(mParams.mUvOffset);
@@ -183,12 +198,16 @@ void Material::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Enum, "Blend Mode", this, &mParams.mBlendMode, 1, HandlePropChange, 0, int32_t(BlendMode::Count), sBlendModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 0", this, &mParams.mTextures[TEXTURE_0], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 0", this, &mParams.mUvMaps[TEXTURE_0], 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Enum, "TEV Mode 0", this, &mParams.mTevModes[TEXTURE_0], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 1", this, &mParams.mTextures[TEXTURE_1], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 1", this, &mParams.mUvMaps[TEXTURE_1], 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Enum, "TEV Mode 1", this, &mParams.mTevModes[TEXTURE_1], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 2", this, &mParams.mTextures[TEXTURE_2], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 2", this, &mParams.mUvMaps[TEXTURE_2], 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Enum, "TEV Mode 2", this, &mParams.mTevModes[TEXTURE_2], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 3", this, &mParams.mTextures[TEXTURE_3], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 3", this, &mParams.mUvMaps[TEXTURE_3], 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Enum, "TEV Mode 3", this, &mParams.mTevModes[TEXTURE_3], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
     outProps.push_back(Property(DatumType::Vector2D, "UV Offset", this, &mParams.mUvOffset, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "UV Scale", this, &mParams.mUvScale, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Color, "Color", this, &mParams.mColor, 1, HandlePropChange));
@@ -449,3 +468,25 @@ void Material::SetUvMap(uint32_t textureSlot, uint32_t uvMapIndex)
     }
 }
 
+TevMode Material::GetTevMode(uint32_t textureSlot)
+{
+    assert(textureSlot < MATERIAL_MAX_TEXTURES);
+    if (textureSlot < MATERIAL_MAX_TEXTURES)
+    {
+        return mParams.mTevModes[textureSlot];
+    }
+
+    return TevMode::Count;
+}
+
+void Material::SetTevMode(uint32_t textureSlot, TevMode mode)
+{
+    assert(textureSlot < MATERIAL_MAX_TEXTURES);
+    assert(mode != TevMode::Count);
+
+    if (textureSlot < MATERIAL_MAX_TEXTURES &&
+        mode != TevMode::Count)
+    {
+        mParams.mTevModes[textureSlot] = mode;
+    }
+}

@@ -75,14 +75,50 @@ float CalculateShadow(vec4 sc)
     return visibility;
 }
 
+vec4 BlendTexture(vec4 prevColor, uint texIdx, sampler2D texSampler, vec2 uv0, vec2 uv1)
+{
+    vec4 outColor = prevColor;
+    vec2 uv = (material.mUvMaps[texIdx]) == 0 ? uv0 : uv1;
+    uint tevMode = material.mTevModes[texIdx];
+
+    if (tevMode < TEV_MODE_PASS)
+    {
+        vec4 texColor = texture(texSampler, uv);
+
+        if (tevMode == TEV_MODE_REPLACE)
+            outColor = texColor;
+        else if (tevMode == TEV_MODE_MODULATE)
+            outColor = prevColor * texColor;
+        else if (tevMode == TEV_MODE_DECAL)
+            outColor = prevColor * (1 - texColor.a) + (texColor * texColor.a);
+        else if (tevMode == TEV_MODE_ADD)
+            outColor = prevColor + texColor;
+        else if (tevMode == TEV_MODE_SIGNED_ADD)
+            outColor = prevColor + (texColor - 0.5);
+        else if (tevMode == TEV_MODE_SUBTRACT)
+            outColor = prevColor - texColor;
+        else
+            outColor = texColor;
+    }
+
+    return outColor;
+}
+
 void main()
 {
     vec2 texCoord0 = (inTexcoord0 + material.mUvOffset) * material.mUvScale;
     vec2 texCoord1 = (inTexcoord1 + material.mUvOffset) * material.mUvScale;
 
     uint shadingModel = material.mShadingModel;
-    // TODO: Handle multiple uv maps, and also emulate TexEnv
-    vec4 diffuse = texture(sampler0, material.mUvMaps[0] == 0 ? texCoord0 : texCoord1) * material.mColor;
+
+    vec4 diffuse = vec4(0,0,0,0);
+
+    diffuse = BlendTexture(diffuse, 0, sampler0, texCoord0, texCoord1);
+    diffuse = BlendTexture(diffuse, 1, sampler1, texCoord0, texCoord1);
+    diffuse = BlendTexture(diffuse, 2, sampler2, texCoord0, texCoord1);
+    diffuse = BlendTexture(diffuse, 3, sampler3, texCoord0, texCoord1);
+
+    diffuse *= material.mColor;
 
     if (material.mBlendMode == BLEND_MODE_MASKED && diffuse.a < material.mMaskCutoff)
     {
