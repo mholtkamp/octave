@@ -13,6 +13,15 @@
 #define FOG_FUNC_LINEAR 0
 #define FOG_FUNC_EXPONENTIAL 1
 
+#define TEV_MODE_REPLACE 0
+#define TEV_MODE_MODULATE 1
+#define TEV_MODE_DECAL 2
+#define TEV_MODE_ADD 3
+#define TEV_MODE_SIGNED_ADD 4
+#define TEV_MODE_SUBTRACT 5
+#define TEV_MODE_INTERPOLATE 6
+#define TEV_MODE_PASS 7
+
 #define MAX_BONES 64
 #define MAX_BONE_INFLUENCES 4
 
@@ -103,7 +112,8 @@ struct MaterialUniforms
     float mPadding1;
     float mPadding2;
 
-    uint mUvMaps[MAX_TEXTURES];
+    uvec4 mUvMaps; // MAX_TEXTURES
+    uvec4 mTevModes; // MAX_TEXTURES
 };
 
 const mat4 SHADOW_BIAS_MAT = mat4( 

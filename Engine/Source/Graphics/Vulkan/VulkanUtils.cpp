@@ -883,6 +883,12 @@ void UpdateMaterialResource(Material* material)
 {
     MaterialResource* resource = material->GetResource();
 
+    Texture* textures[4] = {};
+    textures[0] = material->GetTexture((TextureSlot)0);
+    textures[1] = material->GetTexture((TextureSlot)1);
+    textures[2] = material->GetTexture((TextureSlot)2);
+    textures[3] = material->GetTexture((TextureSlot)3);
+
     // Update uniform buffer data
     MaterialData ubo = {};
     ubo.mUvOffset = material->GetUvOffset();
@@ -902,6 +908,10 @@ void UpdateMaterialResource(Material* material)
     ubo.mUvMaps[1] = material->GetUvMap(1);
     ubo.mUvMaps[2] = material->GetUvMap(2);
     ubo.mUvMaps[3] = material->GetUvMap(3);
+    ubo.mTevModes[0] = textures[0] ? (uint32_t) material->GetTevMode(0) : (uint32_t)TevMode::Count;
+    ubo.mTevModes[1] = textures[1] ? (uint32_t) material->GetTevMode(1) : (uint32_t)TevMode::Count;
+    ubo.mTevModes[2] = textures[2] ? (uint32_t) material->GetTevMode(2) : (uint32_t)TevMode::Count;
+    ubo.mTevModes[3] = textures[3] ? (uint32_t) material->GetTevMode(3) : (uint32_t)TevMode::Count;
 
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 
@@ -912,7 +922,7 @@ void UpdateMaterialResource(Material* material)
 
     for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
     {
-        Texture* texture = material->GetTexture((TextureSlot)i);
+        Texture* texture = textures[i];
         if (texture == nullptr)
         {
             texture = renderer->mWhiteTexture.Get<Texture>();
