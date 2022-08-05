@@ -43,6 +43,10 @@ struct Material_Lua
     static int SetSortPriority(lua_State* L);
     static int IsDepthTestDisabled(lua_State* L);
     static int SetDepthTestDisabled(lua_State* L);
+    static int GetUvMap(lua_State* L);
+    static int SetUvMap(lua_State* L);
+    static int GetTevMode(lua_State* L);
+    static int SetTevMode(lua_State* L);
 
     static void Bind();
 };

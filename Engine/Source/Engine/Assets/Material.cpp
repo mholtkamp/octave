@@ -465,6 +465,7 @@ void Material::SetUvMap(uint32_t textureSlot, uint32_t uvMapIndex)
         uvMapIndex < MAX_UV_MAPS)
     {
         mParams.mUvMaps[textureSlot] = uvMapIndex;
+        MarkDirty();
     }
 }
 
@@ -488,5 +489,6 @@ void Material::SetTevMode(uint32_t textureSlot, TevMode mode)
         mode != TevMode::Count)
     {
         mParams.mTevModes[textureSlot] = mode;
+        MarkDirty();
     }
 }

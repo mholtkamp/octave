@@ -279,6 +279,49 @@ int Material_Lua::SetDepthTestDisabled(lua_State* L)
     return 0;
 }
 
+int Material_Lua::GetUvMap(lua_State* L)
+{
+    Material* mat = CHECK_MATERIAL(L, 1);
+    int32_t slot = CHECK_INTEGER(L, 2);
+
+    int32_t ret = mat->GetUvMap((TextureSlot)slot);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+
+int Material_Lua::SetUvMap(lua_State* L)
+{
+    Material* mat = CHECK_MATERIAL(L, 1);
+    int32_t slot = CHECK_INTEGER(L, 2);
+    int32_t uvMapIdx = CHECK_INTEGER(L, 3);
+
+    mat->SetUvMap((TextureSlot)slot, uvMapIdx);
+
+    return 0;
+}
+
+int Material_Lua::GetTevMode(lua_State* L)
+{
+    Material* mat = CHECK_MATERIAL(L, 1);
+    int32_t slot = CHECK_INTEGER(L, 2);
+
+    TevMode ret = mat->GetTevMode((TextureSlot)slot);
+
+    lua_pushinteger(L, (int32_t)ret);
+    return 1;
+}
+
+int Material_Lua::SetTevMode(lua_State* L)
+{
+    Material* mat = CHECK_MATERIAL(L, 1);
+    int32_t slot = CHECK_INTEGER(L, 2);
+    int32_t tevMode = CHECK_INTEGER(L, 3);
+
+    mat->SetTevMode((TextureSlot)slot, (TevMode)tevMode);
+
+    return 0;
+}
 
 void Material_Lua::Bind()
 {
@@ -368,6 +411,18 @@ void Material_Lua::Bind()
 
     lua_pushcfunction(L, SetDepthTestDisabled);
     lua_setfield(L, mtIndex, "SetDepthTestDisabled");
+
+    lua_pushcfunction(L, GetUvMap);
+    lua_setfield(L, mtIndex, "GetUvMap");
+
+    lua_pushcfunction(L, SetUvMap);
+    lua_setfield(L, mtIndex, "SetUvMap");
+
+    lua_pushcfunction(L, GetTevMode);
+    lua_setfield(L, mtIndex, "GetTevMode");
+
+    lua_pushcfunction(L, SetTevMode);
+    lua_setfield(L, mtIndex, "SetTevMode");
 
     lua_pop(L, 1);
     assert(lua_gettop(L) == 0);
