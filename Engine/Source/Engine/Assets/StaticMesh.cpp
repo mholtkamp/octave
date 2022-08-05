@@ -210,7 +210,7 @@ void StaticMesh::SaveStream(Stream& stream, Platform platform)
 #if EDITOR
     stream.WriteUint32(mNumVertices);
     stream.WriteUint32(mNumIndices);
-    stream.WriteUint32(mNumUvMaps);
+    //stream.WriteUint32(mNumUvMaps);
 
     stream.WriteAsset(mMaterial);
     stream.WriteBool(mGenerateTriangleCollisionMesh);

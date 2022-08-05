@@ -58,6 +58,71 @@ void BindShadingModel()
     assert(lua_gettop(L) == 0);
 }
 
+void BindTevMode()
+{
+    lua_State* L = GetLua();
+    assert(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushinteger(L, (int)TevMode::Replace);
+    lua_setfield(L, tableIdx, "Replace");
+
+    lua_pushinteger(L, (int)TevMode::Modulate);
+    lua_setfield(L, tableIdx, "Modulate");
+
+    lua_pushinteger(L, (int)TevMode::Decal);
+    lua_setfield(L, tableIdx, "Decal");
+
+    lua_pushinteger(L, (int)TevMode::Add);
+    lua_setfield(L, tableIdx, "Add");
+
+    lua_pushinteger(L, (int)TevMode::SignedAdd);
+    lua_setfield(L, tableIdx, "SignedAdd");
+
+    lua_pushinteger(L, (int)TevMode::Subtract);
+    lua_setfield(L, tableIdx, "Subtract");
+
+    lua_pushinteger(L, (int)TevMode::Interpolate);
+    lua_setfield(L, tableIdx, "Interpolate");
+
+    lua_pushinteger(L, (int)TevMode::Pass);
+    lua_setfield(L, tableIdx, "Pass");
+
+    lua_pushinteger(L, (int)TevMode::Count);
+    lua_setfield(L, tableIdx, "Count");
+
+    lua_setglobal(L, "TevMode");
+
+    assert(lua_gettop(L) == 0);
+}
+
+void BindTextureSlot()
+{
+    lua_State* L = GetLua();
+    assert(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushinteger(L, (int)TextureSlot::TEXTURE_0);
+    lua_setfield(L, tableIdx, "Slot0");
+
+    lua_pushinteger(L, (int)TextureSlot::TEXTURE_1);
+    lua_setfield(L, tableIdx, "Slot1");
+
+    lua_pushinteger(L, (int)TextureSlot::TEXTURE_2);
+    lua_setfield(L, tableIdx, "Slot2");
+
+    lua_pushinteger(L, (int)TextureSlot::TEXTURE_3);
+    lua_setfield(L, tableIdx, "Slot3");
+
+    lua_setglobal(L, "TextureSlot");
+
+    assert(lua_gettop(L) == 0);
+}
+
 void BindAnchorMode()
 {
     lua_State* L = GetLua();
@@ -223,6 +288,8 @@ void Misc_Lua::BindMisc()
 {
     BindBlendMode();
     BindShadingModel();
+    BindTevMode();
+    BindTextureSlot();
     BindAnchorMode();
     BindButtonState();
     BindDatumType();
