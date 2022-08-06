@@ -4,6 +4,7 @@
 
 #include "Engine.h"
 #include "World.h"
+#include "Renderer.h"
 #include "Log.h"
 #include "Assets/Texture.h"
 
@@ -95,15 +96,16 @@ void BindStaticMesh(StaticMesh* mesh)
     AttrInfo_Init(attrInfo);
     AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 3); // v0=position
     AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // v1=texcoord0
-    AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, 3); // v2=normal
+    AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, 2); // v2=texcoord1
+    AttrInfo_AddLoader(attrInfo, 3, GPU_FLOAT, 3); // v3=normal
     if (hasColor)
     {
-        AttrInfo_AddLoader(attrInfo, 3, GPU_UNSIGNED_BYTE, 4); // v3=color
+        AttrInfo_AddLoader(attrInfo, 4, GPU_UNSIGNED_BYTE, 4); // v4=color
     }
     else
     {
-        AttrInfo_AddFixed(attrInfo, 3); // v3=color
-        C3D_FixedAttribSet(3, 255.0f, 255.0f, 255.0f, 255.0f);
+        AttrInfo_AddFixed(attrInfo, 4); // v4=color
+        C3D_FixedAttribSet(4, 255.0f, 255.0f, 255.0f, 255.0f);
     }
 
     // Setup vertex buffer state
@@ -111,11 +113,11 @@ void BindStaticMesh(StaticMesh* mesh)
     BufInfo_Init(bufInfo);
     if (hasColor)
     {
-        BufInfo_Add(bufInfo, mesh->GetResource()->mVertexData, sizeof(VertexColor), 4, 0x3210);
+        BufInfo_Add(bufInfo, mesh->GetResource()->mVertexData, sizeof(VertexColor), 5, 0x43210);
     }
     else
     {
-        BufInfo_Add(bufInfo, mesh->GetResource()->mVertexData, sizeof(Vertex), 3, 0x210);
+        BufInfo_Add(bufInfo, mesh->GetResource()->mVertexData, sizeof(Vertex), 4, 0x3210);
     }
 }
 
@@ -141,44 +143,14 @@ void BindMaterial(Material* material)
             uint8_t(opacity * 255.0f)
         };
 
-        // Shading
-        if (shadingModel == ShadingModel::Unlit)
+        float specular = 0.0f;
+
+        if (shadingModel == ShadingModel::Lit ||
+            shadingModel == ShadingModel::Toon)
         {
-            // Setup color / texture channel stuff
-            Texture* texture = material->GetTexture(TEXTURE_0);
-
-            if (texture != nullptr)
-            {
-                C3D_TexBind(0, &texture->GetResource()->mTex);
-                C3D_TexEnv* env = C3D_GetTexEnv(0);
-                C3D_TexEnvInit(env);
-                C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
-                C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
-
-                env = C3D_GetTexEnv(1);
-                C3D_TexEnvInit(env);
-                C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(matColor4));
-                C3D_TexEnvSrc(env, C3D_Both, GPU_CONSTANT, GPU_PREVIOUS, GPU_PRIMARY_COLOR);
-                C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
-            }
-            else
-            {
-                C3D_TexEnv* env = C3D_GetTexEnv(0);
-                C3D_TexEnvInit(env);
-                C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(matColor4));
-                C3D_TexEnvSrc(env, C3D_Both, GPU_CONSTANT, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
-                C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
-
-            }
-        }
-        else if (shadingModel == ShadingModel::Lit ||
-                 shadingModel == ShadingModel::Toon)
-        {
-            Texture* texture = material->GetTexture(TEXTURE_0);
-
             glm::vec4 ambientColor = GetWorld()->GetAmbientLightColor();
             bool toon = (shadingModel == ShadingModel::Toon);
-            float specular = toon ? 0.0f : material->GetSpecular();
+            specular = toon ? 0.0f : material->GetSpecular();
             float specular1 = toon ? 1.0f : 0.0f;
             // Material color gets modulated in the TexEnv.
             C3D_Material c3dMaterial =
@@ -192,109 +164,118 @@ void BindMaterial(Material* material)
 
             C3D_LightEnvBind(&gC3dContext.mLightEnv);
             C3D_LightEnvMaterial(&gC3dContext.mLightEnv, &c3dMaterial);
+        }
 
-            if (shadingModel == ShadingModel::Toon)
+        if (shadingModel == ShadingModel::Toon)
+        {
+            uint32_t numSteps = material->GetToonSteps();
+            uint32_t toonLevel = numSteps == 3 ? ToonLevel3 : ToonLevel2;
+            C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D1, GPU_LUTINPUT_LN, false, &gC3dContext.mToonLut[toonLevel]);
+            specular = 0.0f;
+        }
+
+        if (specular > 0.0f)
+        {
+            // If we have a specular component, we need to choose the light lut that best matches its shininess.
+            // Otherwise, just leave the light lut as it was since I think it's only used for specular light.
+            uint32_t shininessLevel = CalculateShininessLevel(material->GetShininess());
+            C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D0, GPU_LUTINPUT_NH, false, &gC3dContext.mLightLut[shininessLevel]);
+        }
+
+        bool fresnelEnabled = material->IsFresnelEnabled();
+        uint8_t fresnelColor[4] = {};
+
+        if (fresnelEnabled)
+        {
+            uint32_t fresnelPowerLevel = CalculateFresnelPowerLevel(material->GetFresnelPower());
+            C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_FR, GPU_LUTINPUT_NV, false, &gC3dContext.mFresnelLut[fresnelPowerLevel]);
+            C3D_LightEnvFresnel(&gC3dContext.mLightEnv, GPU_PRI_ALPHA_FRESNEL);
+
+            glm::vec4 fresnelColorFloat = material->GetFresnelColor();
+            fresnelColorFloat = glm::clamp(fresnelColorFloat, 0.0f, 1.0f);
+
+            fresnelColor[0] = uint8_t(fresnelColorFloat.r * 255.0f);
+            fresnelColor[1] = uint8_t(fresnelColorFloat.g * 255.0f);
+            fresnelColor[2] = uint8_t(fresnelColorFloat.b * 255.0f);
+            fresnelColor[3] = uint8_t(255);
+        }
+        else
+        {
+            C3D_LightEnvFresnel(&gC3dContext.mLightEnv, GPU_NO_FRESNEL);
+        }
+
+        // Diffuse is in Primary Fragment Color
+        // Specular is in Secondary Fragment Color
+
+        int32_t tevIdx = 0;
+        C3D_TexEnv* env = nullptr;
+
+        // Blend textures first
+        for (uint32_t i = 0; i < 3; ++i)
+        {
+            Texture* texture = material->GetTexture((TextureSlot)i);
+            TevMode tevMode = (i == 0) ? TevMode::Replace : material->GetTevMode(i);
+
+            if (i == 0 && texture == nullptr)
+                texture = Renderer::Get()->mWhiteTexture.Get<Texture>();
+
+            if (tevMode != TevMode::Pass &&
+                texture != nullptr)
             {
-                uint32_t numSteps = material->GetToonSteps();
-                uint32_t toonLevel = numSteps == 3 ? ToonLevel3 : ToonLevel2;
-                C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D1, GPU_LUTINPUT_LN, false, &gC3dContext.mToonLut[toonLevel]);
-                specular = 0.0f;
-            }
+                C3D_TexBind(i, &texture->GetResource()->mTex);
 
-            if (specular > 0.0f)
-            {
-                // If we have a specular component, we need to choose the light lut that best matches its shininess.
-                // Otherwise, just leave the light lut as it was since I think it's only used for specular light.
-                uint32_t shininessLevel = CalculateShininessLevel(material->GetShininess());
-                C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D0, GPU_LUTINPUT_NH, false, &gC3dContext.mLightLut[shininessLevel]);
-            }
-
-            bool fresnelEnabled = material->IsFresnelEnabled();
-            uint8_t fresnelColor[4] = {};
-
-            if (fresnelEnabled)
-            {
-                uint32_t fresnelPowerLevel = CalculateFresnelPowerLevel(material->GetFresnelPower());
-                C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_FR, GPU_LUTINPUT_NV, false, &gC3dContext.mFresnelLut[fresnelPowerLevel]);
-                C3D_LightEnvFresnel(&gC3dContext.mLightEnv, GPU_PRI_ALPHA_FRESNEL);
-
-                glm::vec4 fresnelColorFloat = material->GetFresnelColor();
-                fresnelColorFloat = glm::clamp(fresnelColorFloat, 0.0f, 1.0f);
-
-                fresnelColor[0] = uint8_t(fresnelColorFloat.r * 255.0f);
-                fresnelColor[1] = uint8_t(fresnelColorFloat.g * 255.0f);
-                fresnelColor[2] = uint8_t(fresnelColorFloat.b * 255.0f);
-                fresnelColor[3] = uint8_t(255);
-            }
-            else
-            {
-                C3D_LightEnvFresnel(&gC3dContext.mLightEnv, GPU_NO_FRESNEL);
-            }
-
-            // Diffuse is in Primary Fragment Color
-            // Specular is in Secondary Fragment Color
-
-            C3D_TexBind(0, &texture->GetResource()->mTex);
-
-            int32_t tevIdx = 0;
-            C3D_TexEnv* env = nullptr;
-
-            if (shadingModel == ShadingModel::Toon)
-            {
                 env = C3D_GetTexEnv(tevIdx);
                 C3D_TexEnvInit(env);
-                C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_FRAGMENT_SECONDARY_COLOR, GPU_PRIMARY_COLOR);
-                C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
-                C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
-                C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+                ConfigTev(env, i, tevMode);
                 ++tevIdx;
             }
-            else
-            {
-                env = C3D_GetTexEnv(tevIdx);
-                C3D_TexEnvInit(env);
-                C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_FRAGMENT_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
-                C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
-                C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
-                C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
-                ++tevIdx;
-            }
+        }
 
-            if (specular > 0.0f)
-            {
-                env = C3D_GetTexEnv(tevIdx);
-                C3D_TexEnvInit(env);
-                C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_FRAGMENT_SECONDARY_COLOR, GPU_PRIMARY_COLOR);
-                C3D_TexEnvFunc(env, C3D_RGB, GPU_ADD);
-                C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
-                C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
-                ++tevIdx;
-            }
+        GPU_TEVSRC lightSrc = GPU_PRIMARY_COLOR;
+        if (shadingModel == ShadingModel::Toon)
+            lightSrc = GPU_FRAGMENT_SECONDARY_COLOR;
+        else if (shadingModel == ShadingModel::Lit)
+            lightSrc = GPU_FRAGMENT_PRIMARY_COLOR;
 
+        env = C3D_GetTexEnv(tevIdx);
+        C3D_TexEnvInit(env);
+        C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, lightSrc, GPU_PRIMARY_COLOR);
+        C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
+        C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+        C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+        ++tevIdx;
+
+        if (shadingModel == ShadingModel::Lit && specular > 0.0f)
+        {
             env = C3D_GetTexEnv(tevIdx);
             C3D_TexEnvInit(env);
-            C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(matColor4));
-            C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_CONSTANT, GPU_PRIMARY_COLOR);
-            C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+            C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_FRAGMENT_SECONDARY_COLOR, GPU_PRIMARY_COLOR);
+            C3D_TexEnvFunc(env, C3D_RGB, GPU_ADD);
+            C3D_TexEnvSrc(env, C3D_Alpha, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+            C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
             ++tevIdx;
+        }
 
-#if 0
-            if (fresnelEnabled)
-            {
-                // This kind of works, but the fresnel color really should be additive, and not a lerp.
-                // In practice, a fresnel color of (0,0,0) should have no effect on the final color, but currently
-                // the LUT produces the same alpha regardless of the color, so this TEV will lerp towards black.
-                env = C3D_GetTexEnv(tevIdx);
-                C3D_TexEnvInit(env);
-                C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(fresnelColor));
-                C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_ALPHA);
-                C3D_TexEnvSrc(env, C3D_RGB, GPU_CONSTANT, GPU_PREVIOUS, GPU_FRAGMENT_PRIMARY_COLOR);
-                C3D_TexEnvFunc(env, C3D_RGB, GPU_INTERPOLATE);
-                C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
-                C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
-                ++tevIdx;
-            }
-#endif
+        env = C3D_GetTexEnv(tevIdx);
+        C3D_TexEnvInit(env);
+        C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(matColor4));
+        C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_CONSTANT, GPU_PRIMARY_COLOR);
+        C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+        C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_CONSTANT, GPU_PRIMARY_COLOR);
+        C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+        ++tevIdx;
+
+        if (fresnelEnabled)
+        {
+            env = C3D_GetTexEnv(tevIdx);
+            C3D_TexEnvInit(env);
+            C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(fresnelColor));
+            C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_ALPHA, GPU_TEVOP_RGB_SRC_COLOR);
+            C3D_TexEnvSrc(env, C3D_RGB, GPU_CONSTANT, GPU_FRAGMENT_PRIMARY_COLOR, GPU_PREVIOUS);
+            C3D_TexEnvFunc(env, C3D_RGB, GPU_MULTIPLY_ADD);
+            C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+            C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+            ++tevIdx;
         }
 
         bool depthEnabled = !depthless;
@@ -499,5 +480,55 @@ uint32_t GlmColorToRGB8(glm::vec4 color)
 
     return ((b << 16) | (g << 8) | (r << 0));
 }
+
+void ConfigTev(C3D_TexEnv* env, uint32_t textureSlot, TevMode mode)
+{
+    GPU_TEVSRC texSrc = GPU_TEXTURE0;
+
+    switch (textureSlot)
+    {
+        case 0: texSrc = GPU_TEXTURE0; break;
+        case 1: texSrc = GPU_TEXTURE1; break;
+        case 2: texSrc = GPU_TEXTURE2; break;
+    }
+
+    if (textureSlot == 0)
+    {
+        // always replace for tex 0
+        C3D_TexEnvSrc(env, C3D_RGB, texSrc, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+        C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
+        C3D_TexEnvSrc(env, C3D_Alpha, texSrc, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+        C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+    }
+    else 
+    if (mode == TevMode::Decal)
+    {
+        C3D_TexEnvSrc(env, C3D_RGB, texSrc, GPU_PREVIOUS, texSrc);
+        C3D_TexEnvFunc(env, C3D_RGB, GPU_INTERPOLATE);
+        C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PREVIOUS, GPU_PREVIOUS);
+        C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+        C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_ALPHA);
+    }
+    else
+    {
+        GPU_COMBINEFUNC tevFunc = GPU_REPLACE;
+
+        switch (mode)
+        {
+            case TevMode::Replace: tevFunc = GPU_REPLACE; break;
+            case TevMode::Modulate: tevFunc = GPU_MODULATE; break;
+            case TevMode::Add: tevFunc = GPU_ADD; break;
+            case TevMode::SignedAdd: tevFunc = GPU_ADD_SIGNED; break;
+            case TevMode::Subtract: tevFunc = GPU_SUBTRACT; break;
+            default: tevFunc = GPU_REPLACE; break;
+        }
+
+        C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, texSrc, GPU_PRIMARY_COLOR);
+        C3D_TexEnvFunc(env, C3D_RGB, tevFunc);
+        C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, texSrc, GPU_PRIMARY_COLOR);
+        C3D_TexEnvFunc(env, C3D_Alpha, tevFunc);
+    }
+}
+
 
 #endif

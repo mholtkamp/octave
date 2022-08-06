@@ -17,6 +17,8 @@
 ; Outputs
 .out outpos position
 .out outtc0 texcoord0
+.out outtc1 texcoord1
+.out outtc2 texcoord2
 .out outclr color
 .out outview view
 .out outnq normalquat
@@ -24,8 +26,9 @@
 ; Inputs (defined as aliases for convenience)
 .alias inpos v0
 .alias intc0 v1
-.alias innrm v2
-.alias inclr v3
+.alias intc1 v2
+.alias innrm v3
+.alias inclr v4
 
 .proc main
 	; Force the w component of inpos to be 1.0
@@ -51,6 +54,10 @@
 	add r1, UvOffsetScale.xyxy, intc0
 	mul r1, UvOffsetScale.zwzw, r1
 	mov outtc0, r1
+
+	; TODO: Handle multiple uv maps
+	mov outtc1, r1
+	mov outtc2, r1
 
 	; outclr = inclr * 1/255.0
 	mov r1, inclr

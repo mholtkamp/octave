@@ -696,13 +696,14 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
             AttrInfo_Init(attrInfo);
             AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 3); // v0=position
             AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // v1=texcoord0
-            AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, 3); // v2=normal
-            AttrInfo_AddFixed(attrInfo, 3); // v3=color
+            AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, 2); // v2=texcoord1
+            AttrInfo_AddLoader(attrInfo, 3, GPU_FLOAT, 3); // v3=normal
+            AttrInfo_AddFixed(attrInfo, 4); // v4=color
             C3D_FixedAttribSet(3, 255.0f, 255.0f, 255.0f, 255.0f);
 
             C3D_BufInfo* bufInfo = C3D_GetBufInfo();
             BufInfo_Init(bufInfo);
-            BufInfo_Add(bufInfo, skeletalMeshComp->GetResource()->mVertexData.Get(), sizeof(Vertex), 3, 0x210);
+            BufInfo_Add(bufInfo, skeletalMeshComp->GetResource()->mVertexData.Get(), sizeof(Vertex), 4, 0x3210);
 
             worldViewMtxLoc = gC3dContext.mStaticMeshLocs.mWorldViewMtx;
             normalMtxLoc = gC3dContext.mStaticMeshLocs.mNormalMtx;
@@ -718,13 +719,14 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
             AttrInfo_Init(attrInfo);
             AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 3);          // v0=position
             AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2);          // v1=texcoord0
-            AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, 3);          // v2=normal
-            AttrInfo_AddLoader(attrInfo, 3, GPU_UNSIGNED_BYTE, 4);  // v3=boneIndex
-            AttrInfo_AddLoader(attrInfo, 4, GPU_FLOAT, 4);          // v4=boneWeight
+            AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, 2);          // v2=texcoord1
+            AttrInfo_AddLoader(attrInfo, 3, GPU_FLOAT, 3);          // v3=normal
+            AttrInfo_AddLoader(attrInfo, 4, GPU_UNSIGNED_BYTE, 4);  // v4=boneIndex
+            AttrInfo_AddLoader(attrInfo, 5, GPU_FLOAT, 4);          // v5=boneWeight
 
             C3D_BufInfo* bufInfo = C3D_GetBufInfo();
             BufInfo_Init(bufInfo);
-            BufInfo_Add(bufInfo, mesh->GetResource()->mVertexData, sizeof(VertexSkinned), 5, 0x43210);
+            BufInfo_Add(bufInfo, mesh->GetResource()->mVertexData, sizeof(VertexSkinned), 6, 0x543210);
 
             // Setup bone uniforms
             for (uint32_t i = 0; i < skeletalMeshComp->GetNumBones(); ++i)
