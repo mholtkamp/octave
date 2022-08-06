@@ -178,6 +178,8 @@ void Property::PushBackVector(void* value)
             mData.by = vect.data();
             break;
         }
+
+        default: break;
         }
 
         mCount++;
@@ -251,6 +253,8 @@ void Property::EraseVector(uint32_t index)
             vect.erase(vect.begin() + index);
             break;
         }
+
+        default: break;
         }
 
         mCount--;
@@ -262,7 +266,7 @@ void Property::ResizeVector(uint32_t count)
     assert(mExternal);
     assert(mVector);
 
-    count = glm::clamp(count, 0u, 255u);
+    count = glm::clamp<uint32_t>(count, 0u, 255u);
 
     if (mVector)
     {
@@ -337,6 +341,8 @@ void Property::ResizeVector(uint32_t count)
             mData.by = vect.data();
             break;
         }
+
+        default: break;
         }
 
         mCount = count;
@@ -426,6 +432,8 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
         mCount = (uint8_t) vect.size();
         break;
     }
+
+    default: break;
     }
 
     return *this;
