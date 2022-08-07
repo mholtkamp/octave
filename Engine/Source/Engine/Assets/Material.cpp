@@ -30,6 +30,14 @@ static const char* sBlendModeStrings[] =
 };
 static_assert(int32_t(BlendMode::Count) == 4, "Need to update string conversion table");
 
+static const char* sVertexColorModeStrings[] =
+{
+    "None",
+    "Modulate",
+    "TextureBlend"
+};
+static_assert(int32_t(VertexColorMode::Count) == 3, "Need to update string conversion table");
+
 static const char* sTevModeStrings[] = 
 {
     "Replace",
@@ -103,6 +111,7 @@ void Material::LoadStream(Stream& stream, Platform platform)
 
     mParams.mShadingModel = ShadingModel(stream.ReadUint32());
     mParams.mBlendMode = BlendMode(stream.ReadUint32());
+    //mParams.mVertexColorMode = VertexColorMode(stream.ReadUint32());
 
     for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
     {
@@ -132,6 +141,7 @@ void Material::SaveStream(Stream& stream, Platform platform)
 
     stream.WriteUint32(uint32_t(mParams.mShadingModel));
     stream.WriteUint32(uint32_t(mParams.mBlendMode));
+    //stream.WriteUint32(uint32_t(mParams.mVertexColorMode));
 
     for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
     {
@@ -196,6 +206,7 @@ void Material::GatherProperties(std::vector<Property>& outProps)
 
     outProps.push_back(Property(DatumType::Enum, "Shading Model", this, &mParams.mShadingModel, 1, HandlePropChange, 0, int32_t(ShadingModel::Count), sShadingModelStrings));
     outProps.push_back(Property(DatumType::Enum, "Blend Mode", this, &mParams.mBlendMode, 1, HandlePropChange, 0, int32_t(BlendMode::Count), sBlendModeStrings));
+    outProps.push_back(Property(DatumType::Enum, "Vertex Color Mode", this, &mParams.mVertexColorMode, 1, HandlePropChange, 0, int32_t(VertexColorMode::Count), sVertexColorModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 0", this, &mParams.mTextures[TEXTURE_0], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 0", this, &mParams.mUvMaps[TEXTURE_0], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Enum, "TEV Mode 0", this, &mParams.mTevModes[TEXTURE_0], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
@@ -306,6 +317,17 @@ void Material::SetBlendMode(BlendMode blendMode)
 glm::vec2 Material::GetUvOffset() const
 {
     return mParams.mUvOffset;
+}
+
+VertexColorMode Material::GetVertexColorMode() const
+{
+    return mParams.mVertexColorMode;
+}
+
+void Material::SetVertexColorMode(VertexColorMode mode)
+{
+    mParams.mVertexColorMode = mode;
+    MarkDirty();
 }
 
 void Material::SetUvOffset(glm::vec2 offset)

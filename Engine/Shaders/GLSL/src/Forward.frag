@@ -75,17 +75,20 @@ float CalculateShadow(vec4 sc)
     return visibility;
 }
 
-vec4 BlendTexture(vec4 prevColor, uint texIdx, sampler2D texSampler, vec2 uv0, vec2 uv1)
+vec4 BlendTexture(vec4 prevColor, uint texIdx, sampler2D texSampler, vec2 uv0, vec2 uv1, float vertexIntensity)
 {
     vec4 outColor = prevColor;
     vec2 uv = (material.mUvMaps[texIdx]) == 0 ? uv0 : uv1;
     uint tevMode = material.mTevModes[texIdx];
+    uint vertexColorMode = material.mVertexColorMode;
 
     if (tevMode < TEV_MODE_PASS)
     {
         vec4 texColor = texture(texSampler, uv);
 
-        if (tevMode == TEV_MODE_REPLACE)
+        if (vertexColorMode == VERTEX_COLOR_TEXTURE_BLEND && texIdx <= 2)
+            outColor = mix(texIdx == 0 ? texColor : prevColor, texColor, vertexIntensity);
+        else if (tevMode == TEV_MODE_REPLACE)
             outColor = texColor;
         else if (tevMode == TEV_MODE_MODULATE)
             outColor = prevColor * texColor;
@@ -113,10 +116,10 @@ void main()
 
     vec4 diffuse = vec4(0,0,0,0);
 
-    diffuse = BlendTexture(diffuse, 0, sampler0, texCoord0, texCoord1);
-    diffuse = BlendTexture(diffuse, 1, sampler1, texCoord0, texCoord1);
-    diffuse = BlendTexture(diffuse, 2, sampler2, texCoord0, texCoord1);
-    diffuse = BlendTexture(diffuse, 3, sampler3, texCoord0, texCoord1);
+    diffuse = BlendTexture(diffuse, 0, sampler0, texCoord0, texCoord1, inColor.r);
+    diffuse = BlendTexture(diffuse, 1, sampler1, texCoord0, texCoord1, inColor.g);
+    diffuse = BlendTexture(diffuse, 2, sampler2, texCoord0, texCoord1, inColor.b);
+    diffuse = BlendTexture(diffuse, 3, sampler3, texCoord0, texCoord1, 0.0);
 
     diffuse *= material.mColor;
 
@@ -165,7 +168,14 @@ void main()
         outColor = totalLight * diffuse;
     }
 
-    outColor *= inColor;
+    if (material.mVertexColorMode == VERTEX_COLOR_MODULATE)
+    {
+        outColor *= inColor;
+    }
+    else if (material.mVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
+    {
+        outColor *= inColor.a;
+    }
 
     if (material.mFresnelEnabled != 0)
     {

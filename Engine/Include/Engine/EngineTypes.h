@@ -73,6 +73,15 @@ enum class BlendMode : uint32_t
     Count
 };
 
+enum class VertexColorMode : uint32_t
+{
+    None,
+    Modulate,
+    TextureBlend,
+
+    Count
+};
+
 struct Bounds
 {
     glm::vec3 mCenter = { };

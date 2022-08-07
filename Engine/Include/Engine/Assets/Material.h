@@ -35,6 +35,7 @@ struct MaterialParams
 {
     ShadingModel mShadingModel = ShadingModel::Lit;
     BlendMode mBlendMode = BlendMode::Opaque;
+    VertexColorMode mVertexColorMode = VertexColorMode::Modulate;
     TextureRef mTextures[MATERIAL_MAX_TEXTURES];
     uint8_t mUvMaps[MATERIAL_MAX_TEXTURES] = { };
     TevMode mTevModes[MATERIAL_MAX_TEXTURES] = { TevMode::Replace, TevMode::Pass, TevMode::Pass, TevMode::Pass };
@@ -90,6 +91,9 @@ public:
 
     BlendMode GetBlendMode() const;
     void SetBlendMode(BlendMode blendMode);
+
+    VertexColorMode GetVertexColorMode() const;
+    void SetVertexColorMode(VertexColorMode mode);
 
     glm::vec2 GetUvOffset() const;
     void SetUvOffset(glm::vec2 offset);
