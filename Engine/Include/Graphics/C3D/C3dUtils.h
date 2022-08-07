@@ -31,6 +31,6 @@ void ProcessQueuedFrees();
 uint32_t GlmColorToRGBA8(glm::vec4 color);
 uint32_t GlmColorToRGB8(glm::vec4 color);
 
-void ConfigTev(C3D_TexEnv* env, uint32_t slot, TevMode mode);
+void ConfigTev(C3D_TexEnv* env, uint32_t slot, TevMode mode, bool vertexColorBlend);
 
 #endif

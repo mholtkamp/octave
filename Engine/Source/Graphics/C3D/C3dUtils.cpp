@@ -130,6 +130,7 @@ void BindMaterial(Material* material)
 
         ShadingModel shadingModel = material->GetShadingModel();
         BlendMode blendMode = material->GetBlendMode();
+        VertexColorMode vertexColorMode = material->GetVertexColorMode();
         glm::vec4 color = material->GetColor();
         float opacity = material->GetOpacity();
         bool depthless = material->IsDepthTestDisabled();
@@ -211,6 +212,7 @@ void BindMaterial(Material* material)
         C3D_TexEnv* env = nullptr;
 
         // Blend textures first
+        bool vertexColorBlend = (vertexColorMode == VertexColorMode::TextureBlend);
         for (uint32_t i = 0; i < 3; ++i)
         {
             Texture* texture = material->GetTexture((TextureSlot)i);
@@ -226,7 +228,7 @@ void BindMaterial(Material* material)
 
                 env = C3D_GetTexEnv(tevIdx);
                 C3D_TexEnvInit(env);
-                ConfigTev(env, i, tevMode);
+                ConfigTev(env, i, tevMode, vertexColorBlend);
                 ++tevIdx;
             }
         }
@@ -243,6 +245,10 @@ void BindMaterial(Material* material)
         C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
         C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
         C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+        if (vertexColorBlend && shadingModel == ShadingModel::Unlit)
+        {
+            C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_ALPHA, GPU_TEVOP_RGB_SRC_COLOR);
+        }
         ++tevIdx;
 
         if (shadingModel == ShadingModel::Lit && specular > 0.0f)
@@ -481,15 +487,16 @@ uint32_t GlmColorToRGB8(glm::vec4 color)
     return ((b << 16) | (g << 8) | (r << 0));
 }
 
-void ConfigTev(C3D_TexEnv* env, uint32_t textureSlot, TevMode mode)
+void ConfigTev(C3D_TexEnv* env, uint32_t textureSlot, TevMode mode, bool vertexColorBlend)
 {
     GPU_TEVSRC texSrc = GPU_TEXTURE0;
+    GPU_TEVOP_RGB blendColorSrc = GPU_TEVOP_RGB_SRC_R;
 
     switch (textureSlot)
     {
-        case 0: texSrc = GPU_TEXTURE0; break;
-        case 1: texSrc = GPU_TEXTURE1; break;
-        case 2: texSrc = GPU_TEXTURE2; break;
+        case 0: texSrc = GPU_TEXTURE0; blendColorSrc = GPU_TEVOP_RGB_SRC_R; break;
+        case 1: texSrc = GPU_TEXTURE1; blendColorSrc = GPU_TEVOP_RGB_SRC_G; break;
+        case 2: texSrc = GPU_TEXTURE2; blendColorSrc = GPU_TEVOP_RGB_SRC_B; break;
     }
 
     if (textureSlot == 0)
@@ -499,6 +506,14 @@ void ConfigTev(C3D_TexEnv* env, uint32_t textureSlot, TevMode mode)
         C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
         C3D_TexEnvSrc(env, C3D_Alpha, texSrc, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
         C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+    }
+    else if (vertexColorBlend)
+    {
+        C3D_TexEnvSrc(env, C3D_RGB, texSrc, GPU_PREVIOUS, GPU_PRIMARY_COLOR);
+        C3D_TexEnvFunc(env, C3D_RGB, GPU_INTERPOLATE);
+        C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PREVIOUS, GPU_PREVIOUS);
+        C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+        C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, blendColorSrc);
     }
     else if (mode == TevMode::Decal)
     {
