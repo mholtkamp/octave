@@ -56,6 +56,7 @@ void ViewportPanel::HandleFilePressed(Button* button)
         actions.push_back("Save Level");
         actions.push_back("Package Project");
         actions.push_back("Resave All Levels");
+        actions.push_back("Resave All Assets");
         actions.push_back("Import Scene");
         actionList->SetActions(actions, HandleFilePressed);
         hideActionList = false;
@@ -80,6 +81,10 @@ void ViewportPanel::HandleFilePressed(Button* button)
     else if (buttonText == "Resave All Levels")
     {
         am->RecaptureAndSaveAllLevels();
+    }
+    else if (buttonText == "Resave All Assets")
+    {
+        am->ResaveAllAssets();
     }
     else if (buttonText == "Import Scene")
     {

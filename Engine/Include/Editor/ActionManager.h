@@ -59,6 +59,7 @@ public:
     void BuildData(Platform platform, bool embedded);
     void ClearWorld();
     void RecaptureAndSaveAllLevels();
+    void ResaveAllAssets();
     void DeleteAsset(AssetStub* stub);
     void DeleteAssetDir(AssetDir* dir);
     void DuplicateActor(Actor* actor);
