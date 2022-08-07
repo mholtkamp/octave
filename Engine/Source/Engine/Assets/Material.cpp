@@ -120,7 +120,7 @@ void Material::LoadStream(Stream& stream, Platform platform)
         mParams.mTevModes[i] = (TevMode) stream.ReadUint8();
     }
 
-    for (uint32_t i = 0; i < 1 /*MAX_UV_MAPS*/; ++i)
+    for (uint32_t i = 0; i < MAX_UV_MAPS; ++i)
     {
         mParams.mUvOffsets[i] = stream.ReadVec2();
         mParams.mUvScales[i] = stream.ReadVec2();
