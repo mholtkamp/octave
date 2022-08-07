@@ -242,7 +242,7 @@ void BindMaterial(Material* material)
         C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, lightSrc, GPU_PRIMARY_COLOR);
         C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
         C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
-        C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+        C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
         ++tevIdx;
 
         if (shadingModel == ShadingModel::Lit && specular > 0.0f)
@@ -251,7 +251,7 @@ void BindMaterial(Material* material)
             C3D_TexEnvInit(env);
             C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_FRAGMENT_SECONDARY_COLOR, GPU_PRIMARY_COLOR);
             C3D_TexEnvFunc(env, C3D_RGB, GPU_ADD);
-            C3D_TexEnvSrc(env, C3D_Alpha, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+            C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
             C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
             ++tevIdx;
         }
@@ -500,8 +500,7 @@ void ConfigTev(C3D_TexEnv* env, uint32_t textureSlot, TevMode mode)
         C3D_TexEnvSrc(env, C3D_Alpha, texSrc, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
         C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
     }
-    else 
-    if (mode == TevMode::Decal)
+    else if (mode == TevMode::Decal)
     {
         C3D_TexEnvSrc(env, C3D_RGB, texSrc, GPU_PREVIOUS, texSrc);
         C3D_TexEnvFunc(env, C3D_RGB, GPU_INTERPOLATE);
@@ -529,6 +528,5 @@ void ConfigTev(C3D_TexEnv* env, uint32_t textureSlot, TevMode mode)
         C3D_TexEnvFunc(env, C3D_Alpha, tevFunc);
     }
 }
-
 
 #endif
