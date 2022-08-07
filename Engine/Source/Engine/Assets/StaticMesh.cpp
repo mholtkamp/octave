@@ -82,10 +82,7 @@ void StaticMesh::LoadStream(Stream& stream, Platform platform)
 
     mNumVertices = stream.ReadUint32();
     mNumIndices = stream.ReadUint32();
-    
-    // TODO: Handle multiple UV maps
-    mNumUvMaps = 1;
-    //mNumUvMaps = stream.ReadUint32();
+    mNumUvMaps = stream.ReadUint32();
 
     stream.ReadAsset(mMaterial);
 
@@ -106,7 +103,7 @@ void StaticMesh::LoadStream(Stream& stream, Platform platform)
         {
             vertices[i].mPosition = stream.ReadVec3();
             vertices[i].mTexcoord0 = stream.ReadVec2();
-            vertices[i].mTexcoord1 = { 0.0f, 0.0f }; //vertices[i].mTexcoord1 = stream.ReadVec2();
+            vertices[i].mTexcoord1 = stream.ReadVec2();
             vertices[i].mNormal = stream.ReadVec3();
             vertices[i].mColor = stream.ReadUint32();
         }
@@ -118,7 +115,7 @@ void StaticMesh::LoadStream(Stream& stream, Platform platform)
         {
             vertices[i].mPosition = stream.ReadVec3();
             vertices[i].mTexcoord0 = stream.ReadVec2();
-            vertices[i].mTexcoord1 = {0.0f, 0.0f}; //vertices[i].mTexcoord1 = stream.ReadVec2();
+            vertices[i].mTexcoord1 = stream.ReadVec2();
             vertices[i].mNormal = stream.ReadVec3();
         }
     }
