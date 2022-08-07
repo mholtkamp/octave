@@ -1448,6 +1448,22 @@ void ActionManager::RecaptureAndSaveAllLevels()
     ClearWorld();
 }
 
+void ActionManager::ResaveAllAssets()
+{
+    std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
+
+    // This action is really meant for doing project-wide data updates when adding new serialized data to an asset.
+    // It is important that assets are only loaded once if the LoadStream() / WriteStream() funcs are different
+    for (auto& pair : assetMap)
+    {
+        Asset* asset = AssetManager::Get()->LoadAsset(*pair.second);
+        AssetManager::Get()->SaveAsset(*pair.second);
+    }
+
+    // Refsweep afterwards to 
+    AssetManager::Get()->RefSweep();
+}
+
 void ActionManager::DeleteAsset(AssetStub* stub)
 {
     if (stub != nullptr)
