@@ -10,6 +10,10 @@
 #define BLEND_MODE_TRANSLUCENT 2
 #define BLEND_MODE_ADDITIVE 3
 
+#define VERTEX_COLOR_NONE 0
+#define VERTEX_COLOR_MODULATE 1
+#define VERTEX_COLOR_TEXTURE_BLEND 2
+
 #define FOG_FUNC_LINEAR 0
 #define FOG_FUNC_EXPONENTIAL 1
 
@@ -108,9 +112,9 @@ struct MaterialUniforms
     float mShininess;
 
     uint mFresnelEnabled;
+    uint mVertexColorMode;
     float mPadding0;
     float mPadding1;
-    float mPadding2;
 
     uvec4 mUvMaps; // MAX_TEXTURES
     uvec4 mTevModes; // MAX_TEXTURES

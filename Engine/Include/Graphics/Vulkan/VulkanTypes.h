@@ -98,9 +98,9 @@ struct MaterialData
     float mShininess;
 
     uint32_t mFresnelEnabled;
+    uint32_t mVertexColorMode;
     float mPadding0;
     float mPadding1;
-    float mPadding2;
 
     uint32_t mUvMaps[MATERIAL_MAX_TEXTURES];
     uint32_t mTevModes[MATERIAL_MAX_TEXTURES];
