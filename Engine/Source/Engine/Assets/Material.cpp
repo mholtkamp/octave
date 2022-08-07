@@ -120,8 +120,12 @@ void Material::LoadStream(Stream& stream, Platform platform)
         mParams.mTevModes[i] = (TevMode) stream.ReadUint8();
     }
 
-    mParams.mUvOffset = stream.ReadVec2();
-    mParams.mUvScale = stream.ReadVec2();
+    for (uint32_t i = 0; i < 1 /*MAX_UV_MAPS*/; ++i)
+    {
+        mParams.mUvOffsets[i] = stream.ReadVec2();
+        mParams.mUvScales[i] = stream.ReadVec2();
+    }
+
     mParams.mColor = stream.ReadVec4();
     mParams.mFresnelColor = stream.ReadVec4();
     mParams.mFresnelPower = stream.ReadFloat();
@@ -150,8 +154,12 @@ void Material::SaveStream(Stream& stream, Platform platform)
         stream.WriteUint8((uint8_t)mParams.mTevModes[i]);
     }
 
-    stream.WriteVec2(mParams.mUvOffset);
-    stream.WriteVec2(mParams.mUvScale);
+    for (uint32_t i = 0; i < MAX_UV_MAPS; ++i)
+    {
+        stream.WriteVec2(mParams.mUvOffsets[i]);
+        stream.WriteVec2(mParams.mUvScales[i]);
+    }
+
     stream.WriteVec4(mParams.mColor);
     stream.WriteVec4(mParams.mFresnelColor);
     stream.WriteFloat(mParams.mFresnelPower);
@@ -219,8 +227,10 @@ void Material::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Asset, "Texture 3", this, &mParams.mTextures[TEXTURE_3], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 3", this, &mParams.mUvMaps[TEXTURE_3], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Enum, "TEV Mode 3", this, &mParams.mTevModes[TEXTURE_3], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
-    outProps.push_back(Property(DatumType::Vector2D, "UV Offset", this, &mParams.mUvOffset, 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Vector2D, "UV Scale", this, &mParams.mUvScale, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Vector2D, "UV Offset 0", this, &mParams.mUvOffsets[0], 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Vector2D, "UV Scale 0", this, &mParams.mUvScales[0], 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Vector2D, "UV Offset 1", this, &mParams.mUvOffsets[1], 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Vector2D, "UV Scale 1", this, &mParams.mUvScales[1], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Color, "Color", this, &mParams.mColor, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Opacity", this, &mParams.mOpacity, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Mask Cutoff", this, &mParams.mMaskCutoff, 1, HandlePropChange));
@@ -314,11 +324,6 @@ void Material::SetBlendMode(BlendMode blendMode)
     MarkDirty();
 }
 
-glm::vec2 Material::GetUvOffset() const
-{
-    return mParams.mUvOffset;
-}
-
 VertexColorMode Material::GetVertexColorMode() const
 {
     return mParams.mVertexColorMode;
@@ -330,20 +335,29 @@ void Material::SetVertexColorMode(VertexColorMode mode)
     MarkDirty();
 }
 
-void Material::SetUvOffset(glm::vec2 offset)
+glm::vec2 Material::GetUvOffset(uint32_t uvIndex) const
 {
-    mParams.mUvOffset = offset;
+    assert(uvIndex < MAX_UV_MAPS);
+    return mParams.mUvOffsets[uvIndex];
+}
+
+void Material::SetUvOffset(glm::vec2 offset, uint32_t uvIndex)
+{
+    assert(uvIndex < MAX_UV_MAPS);
+    mParams.mUvOffsets[uvIndex] = offset;
     MarkDirty();
 }
 
-glm::vec2 Material::GetUvScale() const
+glm::vec2 Material::GetUvScale(uint32_t uvIndex) const
 {
-    return mParams.mUvScale;
+    assert(uvIndex < MAX_UV_MAPS);
+    return mParams.mUvScales[uvIndex];
 }
 
-void Material::SetUvScale(glm::vec2 scale)
+void Material::SetUvScale(glm::vec2 scale, uint32_t uvIndex)
 {
-    mParams.mUvScale = scale;
+    assert(uvIndex < MAX_UV_MAPS);
+    mParams.mUvScales[uvIndex] = scale;
     MarkDirty();
 }
 

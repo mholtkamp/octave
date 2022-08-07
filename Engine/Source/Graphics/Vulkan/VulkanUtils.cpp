@@ -891,8 +891,10 @@ void UpdateMaterialResource(Material* material)
 
     // Update uniform buffer data
     MaterialData ubo = {};
-    ubo.mUvOffset = material->GetUvOffset();
-    ubo.mUvScale = material->GetUvScale();
+    ubo.mUvOffset0 = material->GetUvOffset(0);
+    ubo.mUvScale0 = material->GetUvScale(0);
+    ubo.mUvOffset1 = material->GetUvOffset(1);
+    ubo.mUvScale1 = material->GetUvScale(1);
     ubo.mColor = material->GetColor();
     ubo.mFresnelColor = material->GetFresnelColor();
     ubo.mShadingModel = static_cast<uint32_t>(material->GetShadingModel());

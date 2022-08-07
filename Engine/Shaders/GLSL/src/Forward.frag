@@ -109,8 +109,8 @@ vec4 BlendTexture(vec4 prevColor, uint texIdx, sampler2D texSampler, vec2 uv0, v
 
 void main()
 {
-    vec2 texCoord0 = (inTexcoord0 + material.mUvOffset) * material.mUvScale;
-    vec2 texCoord1 = (inTexcoord1 + material.mUvOffset) * material.mUvScale;
+    vec2 texCoord0 = (inTexcoord0 + material.mUvOffset0) * material.mUvScale0;
+    vec2 texCoord1 = (inTexcoord1 + material.mUvOffset1) * material.mUvScale1;
 
     uint shadingModel = material.mShadingModel;
 
