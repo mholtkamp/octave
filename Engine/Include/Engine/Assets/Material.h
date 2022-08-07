@@ -39,8 +39,8 @@ struct MaterialParams
     TextureRef mTextures[MATERIAL_MAX_TEXTURES];
     uint8_t mUvMaps[MATERIAL_MAX_TEXTURES] = { };
     TevMode mTevModes[MATERIAL_MAX_TEXTURES] = { TevMode::Replace, TevMode::Pass, TevMode::Pass, TevMode::Pass };
-    glm::vec2 mUvOffset = { 0.0f, 0.0f };
-    glm::vec2 mUvScale = { 1.0f, 1.0f };
+    glm::vec2 mUvOffsets[MAX_UV_MAPS] = { { 0.0f, 0.0f }, {0.0f, 0.0f} };
+    glm::vec2 mUvScales[MAX_UV_MAPS] = { { 1.0f, 1.0f }, {1.0f, 1.0f} };
     glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
     glm::vec4 mFresnelColor = { 1.0f, 0.0f, 0.0f, 0.0f };
     float mFresnelPower = 1.0f;
@@ -95,11 +95,11 @@ public:
     VertexColorMode GetVertexColorMode() const;
     void SetVertexColorMode(VertexColorMode mode);
 
-    glm::vec2 GetUvOffset() const;
-    void SetUvOffset(glm::vec2 offset);
+    glm::vec2 GetUvOffset(uint32_t uvIndex = 0) const;
+    void SetUvOffset(glm::vec2 offset, uint32_t uvIndex = 0);
 
-    glm::vec2 GetUvScale() const;
-    void SetUvScale(glm::vec2 scale);
+    glm::vec2 GetUvScale(uint32_t uvIndex = 0) const;
+    void SetUvScale(glm::vec2 scale, uint32_t uvIndex = 0);
 
     glm::vec4 GetColor() const;
     void SetColor(const glm::vec4& color);

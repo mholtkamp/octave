@@ -81,8 +81,11 @@ struct TextUniformData
 
 struct MaterialData
 {
-    glm::vec2 mUvOffset;
-    glm::vec2 mUvScale;
+    glm::vec2 mUvOffset0;
+    glm::vec2 mUvScale0;
+
+    glm::vec2 mUvOffset1;
+    glm::vec2 mUvScale1;
 
     glm::vec4 mColor;
     glm::vec4 mFresnelColor;

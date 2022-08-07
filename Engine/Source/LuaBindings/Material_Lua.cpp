@@ -82,8 +82,10 @@ int Material_Lua::SetBlendMode(lua_State* L)
 int Material_Lua::GetUvOffset(lua_State* L)
 {
     Material* mat = CHECK_MATERIAL(L, 1);
+    uint32_t uvIndex = 0;
+    if (!lua_isnone(L, 2)) { uvIndex = CHECK_INTEGER(L, 2); }
 
-    glm::vec2 ret = mat->GetUvOffset();
+    glm::vec2 ret = mat->GetUvOffset(uvIndex);
 
     Vector_Lua::Create(L, ret);
     return 1;
@@ -93,8 +95,10 @@ int Material_Lua::SetUvOffset(lua_State* L)
 {
     Material* mat = CHECK_MATERIAL(L, 1);
     glm::vec2 value = CHECK_VECTOR(L, 2);
+    uint32_t uvIndex = 0;
+    if (!lua_isnone(L, 3)) { uvIndex = CHECK_INTEGER(L, 3); }
 
-    mat->SetUvOffset(value);
+    mat->SetUvOffset(value, uvIndex);
 
     return 0;
 }
@@ -102,8 +106,10 @@ int Material_Lua::SetUvOffset(lua_State* L)
 int Material_Lua::GetUvScale(lua_State* L)
 {
     Material* mat = CHECK_MATERIAL(L, 1);
+    uint32_t uvIndex = 0;
+    if (!lua_isnone(L, 2)) { uvIndex = CHECK_INTEGER(L, 2); }
 
-    glm::vec2 ret = mat->GetUvScale();
+    glm::vec2 ret = mat->GetUvScale(uvIndex);
 
     Vector_Lua::Create(L, ret);
     return 1;
@@ -113,8 +119,10 @@ int Material_Lua::SetUvScale(lua_State* L)
 {
     Material* mat = CHECK_MATERIAL(L, 1);
     glm::vec2 value = CHECK_VECTOR(L, 2);
+    uint32_t uvIndex = 0;
+    if (!lua_isnone(L, 3)) { uvIndex = CHECK_INTEGER(L, 3); }
 
-    mat->SetUvScale(value);
+    mat->SetUvScale(value, uvIndex);
 
     return 0;
 }

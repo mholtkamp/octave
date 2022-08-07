@@ -95,8 +95,11 @@ struct SkinnedGeometryUniforms
 
 struct MaterialUniforms
 {
-    vec2 mUvOffset;
-    vec2 mUvScale;
+    vec2 mUvOffset0;
+    vec2 mUvScale0;
+
+    vec2 mUvOffset1;
+    vec2 mUvScale1;
 
     vec4 mColor;
     vec4 mFresnelColor;
