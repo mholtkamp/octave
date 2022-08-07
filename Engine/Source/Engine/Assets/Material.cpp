@@ -141,13 +141,13 @@ void Material::SaveStream(Stream& stream, Platform platform)
 
     stream.WriteUint32(uint32_t(mParams.mShadingModel));
     stream.WriteUint32(uint32_t(mParams.mBlendMode));
-    //stream.WriteUint32(uint32_t(mParams.mVertexColorMode));
+    stream.WriteUint32(uint32_t(mParams.mVertexColorMode));
 
     for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
     {
         stream.WriteAsset(mParams.mTextures[i]);
-        //stream.WriteUint8(mParams.mUvMaps[i]);
-        //stream.WriteUint8((uint8_t)mParams.mTevModes[i]);
+        stream.WriteUint8(mParams.mUvMaps[i]);
+        stream.WriteUint8((uint8_t)mParams.mTevModes[i]);
     }
 
     stream.WriteVec2(mParams.mUvOffset);
@@ -159,10 +159,10 @@ void Material::SaveStream(Stream& stream, Platform platform)
     stream.WriteUint32(mParams.mToonSteps);
     stream.WriteFloat(mParams.mOpacity);
     stream.WriteFloat(mParams.mMaskCutoff);
-    //stream.WriteFloat(mParams.mShininess);
+    stream.WriteFloat(mParams.mShininess);
     stream.WriteInt32(mParams.mSortPriority);
     stream.WriteBool(mParams.mDisableDepthTest);
-    //stream.WriteBool(mParams.mFresnelEnabled);
+    stream.WriteBool(mParams.mFresnelEnabled);
 }
 
 void Material::Create()
