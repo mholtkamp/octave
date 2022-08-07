@@ -111,13 +111,13 @@ void Material::LoadStream(Stream& stream, Platform platform)
 
     mParams.mShadingModel = ShadingModel(stream.ReadUint32());
     mParams.mBlendMode = BlendMode(stream.ReadUint32());
-    //mParams.mVertexColorMode = VertexColorMode(stream.ReadUint32());
+    mParams.mVertexColorMode = VertexColorMode(stream.ReadUint32());
 
     for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
     {
         stream.ReadAsset(mParams.mTextures[i]);
-        //mParams.mUvMaps[i] = stream.ReadUint8();
-        //mParams.mTevModes[i] = (TevMode) stream.ReadUint8();
+        mParams.mUvMaps[i] = stream.ReadUint8();
+        mParams.mTevModes[i] = (TevMode) stream.ReadUint8();
     }
 
     mParams.mUvOffset = stream.ReadVec2();
@@ -129,10 +129,10 @@ void Material::LoadStream(Stream& stream, Platform platform)
     mParams.mToonSteps = stream.ReadUint32();
     mParams.mOpacity = stream.ReadFloat();
     mParams.mMaskCutoff = stream.ReadFloat();
-    //mParams.mShininess = stream.ReadFloat();
+    mParams.mShininess = stream.ReadFloat();
     mParams.mSortPriority = stream.ReadInt32();
     mParams.mDisableDepthTest = stream.ReadBool();
-    //mParams.mFresnelEnabled = stream.ReadBool();
+    mParams.mFresnelEnabled = stream.ReadBool();
 }
 
 void Material::SaveStream(Stream& stream, Platform platform)
