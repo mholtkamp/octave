@@ -410,10 +410,10 @@ void PrepareUiRendering()
     C3D_CullFace(GPU_CULL_NONE);
 }
 
-void UploadUvOffsetScale(int8_t uniformLoc, Material* material)
+void UploadUvOffsetScale(int8_t uniformLoc, Material* material, uint32_t uvIndex)
 {
-    glm::vec2 uvOffset = material->GetUvOffset();
-    glm::vec2 uvScale = material->GetUvScale();
+    glm::vec2 uvOffset = material->GetUvOffset(uvIndex);
+    glm::vec2 uvScale = material->GetUvScale(uvIndex);
     glm::vec4 uvOffsetScale = glm::vec4(uvOffset.x, uvOffset.y, uvScale.x, uvScale.y);
     C3D_FVUnifSet(
         GPU_VERTEX_SHADER,

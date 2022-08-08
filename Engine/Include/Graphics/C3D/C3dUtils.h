@@ -19,7 +19,7 @@ void SetupLighting();
 void PrepareForwardRendering();
 void PrepareUiRendering();
 
-void UploadUvOffsetScale(int8_t uniformLoc, Material* material);
+void UploadUvOffsetScale(int8_t uniformLoc, Material* material, uint32_t uvIndex);
 
 void ResetTexEnv();
 void ResetLightingEnv();

@@ -58,7 +58,9 @@ struct StaticMeshUniformLocations
     int8_t mWorldViewMtx = -1;
     int8_t mNormalMtx = -1;
     int8_t mProjMtx = -1;
-    int8_t mUvOffsetScale = -1;
+    int8_t mUvOffsetScale0 = -1;
+    int8_t mUvOffsetScale1 = -1;
+    int8_t mUvMaps = -1;
 };
 
 struct SkeletalMeshUniformLocations
@@ -67,7 +69,9 @@ struct SkeletalMeshUniformLocations
     int8_t mNormalMtx = -1;
     int8_t mProjMtx = -1;
     int8_t mBoneMtx = -1;
-    int8_t mUvOffsetScale = -1;
+    int8_t mUvOffsetScale0 = -1;
+    int8_t mUvOffsetScale1 = -1;
+    int8_t mUvMaps = -1;
 };
 
 struct ParticleUniformLocations

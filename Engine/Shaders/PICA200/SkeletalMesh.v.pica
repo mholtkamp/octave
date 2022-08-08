@@ -4,7 +4,9 @@
 .fvec WorldViewMtx[4]
 .fvec NormalMtx[4]
 .fvec ProjMtx[4]
-.fvec UvOffsetScale
+.fvec UvOffsetScale0
+.fvec UvOffsetScale1
+.fvec UvMaps
 .fvec BoneMtx[4 * 16]
 
 ; Constants
@@ -64,14 +66,38 @@
 	dp4 outpos.z, ProjMtx[2], r1
 	dp4 outpos.w, ProjMtx[3], r1
 
-	; outtc0 = intc0
-	add r1, UvOffsetScale.xyxy, intc0
-	mul r1, UvOffsetScale.zwzw, r1
-	mov outtc0, r1
+	; Set texture coords depending on selection
+	add r1, UvOffsetScale0.xyxy, intc0
+	mul r1, UvOffsetScale0.zwzw, r1
 
-	; TODO: Handle multiple uv maps
-	mov outtc1, r1
-	mov outtc2, r1
+	add r2, UvOffsetScale1.xyxy, intc1
+	mul r2, UvOffsetScale1.zwzw, r2
+
+	mov r3, UvMaps
+
+	; Assign TC0
+	cmp zeros, eq, eq, r3.x
+	ifc cmp.x
+		mov outtc0, r1
+	.else
+		mov outtc0, r2
+	.end
+	
+	; Assign TC1
+	cmp zeros, eq, eq, r3.y
+	ifc cmp.x
+		mov outtc1, r1
+	.else
+		mov outtc1, r2
+	.end
+
+	; Assign TC2
+	cmp zeros, eq, eq, r3.z
+	ifc cmp.x
+		mov outtc2, r1
+	.else
+		mov outtc2, r2
+	.end
 	
 	; outclr = (1,1,1,1)
 	mov outclr, myconst.yyyy

@@ -137,7 +137,9 @@ void GFX_Initialize()
         gC3dContext.mStaticMeshLocs.mWorldViewMtx = shaderInstanceGetUniformLocation(shader, "WorldViewMtx");
         gC3dContext.mStaticMeshLocs.mNormalMtx = shaderInstanceGetUniformLocation(shader, "NormalMtx");
         gC3dContext.mStaticMeshLocs.mProjMtx = shaderInstanceGetUniformLocation(shader, "ProjMtx");
-        gC3dContext.mStaticMeshLocs.mUvOffsetScale = shaderInstanceGetUniformLocation(shader, "UvOffsetScale");
+        gC3dContext.mStaticMeshLocs.mUvOffsetScale0 = shaderInstanceGetUniformLocation(shader, "UvOffsetScale0");
+        gC3dContext.mStaticMeshLocs.mUvOffsetScale1 = shaderInstanceGetUniformLocation(shader, "UvOffsetScale1");
+        gC3dContext.mStaticMeshLocs.mUvMaps = shaderInstanceGetUniformLocation(shader, "UvMaps");
     }
 
     // SkeletalMesh Uniforms
@@ -146,7 +148,9 @@ void GFX_Initialize()
         gC3dContext.mSkeletalMeshLocs.mWorldViewMtx = shaderInstanceGetUniformLocation(shader, "WorldViewMtx");
         gC3dContext.mSkeletalMeshLocs.mNormalMtx = shaderInstanceGetUniformLocation(shader, "NormalMtx");
         gC3dContext.mSkeletalMeshLocs.mProjMtx = shaderInstanceGetUniformLocation(shader, "ProjMtx");
-        gC3dContext.mSkeletalMeshLocs.mUvOffsetScale = shaderInstanceGetUniformLocation(shader, "UvOffsetScale");
+        gC3dContext.mSkeletalMeshLocs.mUvOffsetScale0 = shaderInstanceGetUniformLocation(shader, "UvOffsetScale0");
+        gC3dContext.mSkeletalMeshLocs.mUvOffsetScale1 = shaderInstanceGetUniformLocation(shader, "UvOffsetScale1");
+        gC3dContext.mSkeletalMeshLocs.mUvMaps = shaderInstanceGetUniformLocation(shader, "UvMaps");
         gC3dContext.mSkeletalMeshLocs.mBoneMtx = shaderInstanceGetUniformLocation(shader, "BoneMtx");
     }
 
@@ -628,7 +632,11 @@ void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* mes
         C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mNormalMtx, &normalMtx);
         C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mProjMtx, &projMtx);
 
-        UploadUvOffsetScale(gC3dContext.mStaticMeshLocs.mUvOffsetScale, material);
+        UploadUvOffsetScale(gC3dContext.mStaticMeshLocs.mUvOffsetScale0, material, 0);
+        UploadUvOffsetScale(gC3dContext.mStaticMeshLocs.mUvOffsetScale1, material, 1);
+        
+        C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mUvMaps, material->GetUvMap(0), material->GetUvMap(1), material->GetUvMap(2), 0);
+
 
         // Draw
         C3D_DrawElements(
@@ -684,7 +692,8 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
         int8_t worldViewMtxLoc = -1;
         int8_t normalMtxLoc = -1;
         int8_t projMtxLoc = -1;
-        int8_t uvOffsetScaleLoc = -1;
+        int8_t uvOffsetScaleLoc0 = -1;
+        int8_t uvOffsetScaleLoc1 = -1;
 
         if (cpuSkinned)
         {
@@ -708,7 +717,8 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
             worldViewMtxLoc = gC3dContext.mStaticMeshLocs.mWorldViewMtx;
             normalMtxLoc = gC3dContext.mStaticMeshLocs.mNormalMtx;
             projMtxLoc = gC3dContext.mStaticMeshLocs.mProjMtx;
-            uvOffsetScaleLoc = gC3dContext.mStaticMeshLocs.mUvOffsetScale;
+            uvOffsetScaleLoc0 = gC3dContext.mStaticMeshLocs.mUvOffsetScale0;
+            uvOffsetScaleLoc1 = gC3dContext.mStaticMeshLocs.mUvOffsetScale1;
         }
         else
         {
@@ -741,7 +751,8 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
             worldViewMtxLoc = gC3dContext.mSkeletalMeshLocs.mWorldViewMtx;
             normalMtxLoc = gC3dContext.mSkeletalMeshLocs.mNormalMtx;
             projMtxLoc = gC3dContext.mSkeletalMeshLocs.mProjMtx;
-            uvOffsetScaleLoc = gC3dContext.mSkeletalMeshLocs.mUvOffsetScale;
+            uvOffsetScaleLoc0 = gC3dContext.mSkeletalMeshLocs.mUvOffsetScale0;
+            uvOffsetScaleLoc1 = gC3dContext.mSkeletalMeshLocs.mUvOffsetScale1;
         }
 
         Material* material = skeletalMeshComp->GetMaterial();
@@ -779,7 +790,9 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
         C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, normalMtxLoc, &normalMtx);
         C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, projMtxLoc, &projMtx);
 
-        UploadUvOffsetScale(uvOffsetScaleLoc, material);
+        UploadUvOffsetScale(uvOffsetScaleLoc0, material, 0);
+        UploadUvOffsetScale(uvOffsetScaleLoc1, material, 1);
+        C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mSkeletalMeshLocs.mUvMaps, material->GetUvMap(0), material->GetUvMap(1), material->GetUvMap(2), 0);
 
         // Draw
         C3D_DrawElements(
@@ -1003,7 +1016,7 @@ void GFX_DrawParticleComp(ParticleComponent* particleComp)
         C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mParticleLocs.mWorldViewMtx, &worldViewMtx);
         C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mParticleLocs.mProjMtx, &projMtx);
 
-        UploadUvOffsetScale(gC3dContext.mParticleLocs.mUvOffsetScale, material);
+        UploadUvOffsetScale(gC3dContext.mParticleLocs.mUvOffsetScale, material, 0);
 
         // Draw
         uint32_t numParticles = particleComp->GetNumParticles();
