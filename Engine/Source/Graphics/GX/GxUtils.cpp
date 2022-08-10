@@ -317,14 +317,14 @@ void BindStaticMesh(StaticMesh* staticMesh)
     uint32_t posOffset = offsetof(Vertex, mPosition);
     uint32_t nrmOffset = offsetof(Vertex, mNormal);
     uint32_t clrOffset = 0;
-    uint32_t texOffset = offsetof(Vertex, mTexcoord);
+    uint32_t texOffset = offsetof(Vertex, mTexcoord0);
 
     if (staticMesh->HasVertexColor())
     {
         posOffset = offsetof(VertexColor, mPosition);
         nrmOffset = offsetof(VertexColor, mNormal);
         clrOffset = offsetof(VertexColor, mColor);
-        texOffset = offsetof(VertexColor, mTexcoord);
+        texOffset = offsetof(VertexColor, mTexcoord0);
     }
 
     // Set Vertex Format
@@ -369,7 +369,7 @@ void BindSkeletalMesh(SkeletalMesh* skeletalMesh)
     //uint32_t mtxOffset = offsetof(VertexSkinned, mBoneIndices);
     uint32_t posOffset = offsetof(VertexSkinned, mPosition);
     uint32_t nrmOffset = offsetof(VertexSkinned, mNormal);
-    uint32_t texOffset = offsetof(VertexSkinned, mTexcoord);
+    uint32_t texOffset = offsetof(VertexSkinned, mTexcoord0);
 
     // Set Vertex Format
     GX_ClearVtxDesc();

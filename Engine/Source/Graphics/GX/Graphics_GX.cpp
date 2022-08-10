@@ -547,7 +547,7 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
 
             GX_SetArray(GX_VA_POS, &vertices[0].mPosition, sizeof(Vertex));
             GX_SetArray(GX_VA_NRM, &vertices[0].mNormal, sizeof(Vertex));
-            GX_SetArray(GX_VA_TEX0, &vertices[0].mTexcoord, sizeof(Vertex));
+            GX_SetArray(GX_VA_TEX0, &vertices[0].mTexcoord0, sizeof(Vertex));
 
             DCFlushRange(vertices, numVertices * sizeof(Vertex));
             GX_InvVtxCache();
