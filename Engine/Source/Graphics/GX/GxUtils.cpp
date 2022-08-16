@@ -205,7 +205,7 @@ void BindMaterial(Material* material, bool useVertexColor)
 
     for (uint32_t i = 0; i < 4; ++i)
     {
-        Texture* texture = material->GetTexture(TEXTURE_0);
+        Texture* texture = material->GetTexture(TextureSlot(TEXTURE_0 + i));
         TevMode tevMode = (i == 0) ? TevMode::Replace : material->GetTevMode(i);
 
         if (i == 0 && texture == nullptr)
@@ -423,7 +423,7 @@ void BindSkeletalMesh(SkeletalMesh* skeletalMesh)
 void ConfigTev(uint32_t textureSlot, TevMode mode, bool vertexColorBlend)
 {
     uint8_t tevStage = (uint8_t) (GX_TEVSTAGE0 + textureSlot);
-    uint8_t texSrc = (uint8_t) (GX_TEXMAP0 + textureSlot);
+    //uint8_t texSrc = (uint8_t) (GX_TEXMAP0 + textureSlot);
 
     switch (textureSlot)
     {
@@ -485,19 +485,42 @@ void ConfigTev(uint32_t textureSlot, TevMode mode, bool vertexColorBlend)
         switch (mode)
         {
             case TevMode::Modulate:
-                GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_ONE, GX_CC_ZERO);
+                GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_APREV, GX_CC_ZERO);
                 GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
                 GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_TEXA, GX_CA_APREV, GX_CA_ZERO);
                 GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
             break;
-            //case TevMode::Decal: tevFunc = GPU_ADD; break;
-            //case TevMode::Add: tevFunc = GPU_ADD; break;
-            //case TevMode::SignedAdd: tevFunc = GPU_ADD_SIGNED; break;
-            //case TevMode::Subtract: tevFunc = GPU_SUBTRACT; break;
+
+            case TevMode::Decal:
+                GX_SetTevColorIn(tevStage, GX_CC_CPREV, GX_CC_TEXC, GX_CC_TEXA, GX_CC_ZERO);
+                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+            break;
+
+            case TevMode::Add:
+                GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_CPREV, GX_CC_ONE, GX_CC_TEXC);
+                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevAlphaIn(tevStage, GX_CA_TEXA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+            break;
+
+            case TevMode::SignedAdd:
+                GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_ONE, GX_CC_CPREV);
+                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_SUBHALF, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevAlphaIn(tevStage, GX_CA_TEXA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_SUBHALF, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+            break;
+            
+            case TevMode::Subtract:
+                GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_ONE, GX_CC_CPREV);
+                GX_SetTevColorOp(tevStage, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevAlphaIn(tevStage, GX_CA_TEXA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+                GX_SetTevAlphaOp(tevStage, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+            break;
 
             case TevMode::Replace:
             default:
-
                 GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
                 GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
                 GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
