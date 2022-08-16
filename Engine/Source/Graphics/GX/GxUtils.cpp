@@ -184,6 +184,7 @@ void BindMaterial(Material* material, bool useVertexColor)
 
     ShadingModel shadingModel = material->GetShadingModel();
     BlendMode blendMode = material->GetBlendMode();
+    VertexColorMode vertexColorMode = material->GetVertexColorMode();
     glm::vec4 color = material->GetColor();
     float opacity = material->GetOpacity();
     bool depthless = material->IsDepthTestDisabled();
@@ -196,8 +197,32 @@ void BindMaterial(Material* material, bool useVertexColor)
     guMtxTransApply(texMatrix, texMatrix, uvOffset.x, uvOffset.y, 0.0f);
     GX_LoadTexMtxImm(texMatrix, GX_TEXMTX0, GX_TG_MTX3x4);
 
-    uint32_t numTevStages = 1;
+    uint32_t tevStage = 0;
+    bool vertexColorBlend = (vertexColorMode == VertexColorMode::TextureBlend);
 
+    GX_SetNumTexGens(1);
+    GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX3x4, GX_TG_TEX0, GX_TEXMTX0);
+
+    for (uint32_t i = 0; i < 4; ++i)
+    {
+        Texture* texture = material->GetTexture(TEXTURE_0);
+        TevMode tevMode = (i == 0) ? TevMode::Replace : material->GetTevMode(i);
+
+        if (i == 0 && texture == nullptr)
+            texture = Renderer::Get()->mWhiteTexture.Get<Texture>();
+
+        if (tevMode != TevMode::Pass &&
+            texture != nullptr)
+        {
+
+            GX_LoadTexObj(&texture->GetResource()->mGxTexObj, GX_TEXMAP0 + i);
+            GX_SetTevOrder(GX_TEVSTAGE0 + i, GX_TEXCOORD0, GX_TEXMAP0 + i, matColorChannel);
+            ConfigTev(i, tevMode, vertexColorBlend);
+            tevStage++;
+        }
+    }
+
+#if 0
     // Shading
     if (shadingModel == ShadingModel::Unlit)
     {
@@ -230,45 +255,44 @@ void BindMaterial(Material* material, bool useVertexColor)
     else if (shadingModel == ShadingModel::Lit ||
             shadingModel == ShadingModel::Toon) // TODO: Support toon and fresnel
     {
-        gGxContext.mLighting.mEnabled = true;
+#endif
 
-        Texture* texture = material->GetTexture(TEXTURE_0);
+    gGxContext.mLighting.mEnabled = !(shadingModel == ShadingModel::Unlit);
 
-        glm::vec4 materialColor = color;
-        materialColor = glm::clamp(materialColor, 0.0f, 1.0f);
-        GX_SetChanMatColor(matColorChannel, { uint8_t(materialColor.r * 255.0f),
-                                          uint8_t(materialColor.g * 255.0f),
-                                          uint8_t(materialColor.b * 255.0f),
-                                          uint8_t(opacity * 255.f) });
+    glm::vec4 materialColor = color;
+    materialColor = glm::clamp(materialColor, 0.0f, 1.0f);
+    GX_SetChanMatColor(matColorChannel, { uint8_t(materialColor.r * 255.0f),
+                                        uint8_t(materialColor.g * 255.0f),
+                                        uint8_t(materialColor.b * 255.0f),
+                                        uint8_t(opacity * 255.f) });
 
-        GX_SetNumTexGens(1);
-        GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX3x4, GX_TG_TEX0, GX_TEXMTX0);
-        GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
-        GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, matColorChannel);
-        GX_LoadTexObj(&texture->GetResource()->mGxTexObj, GX_TEXMAP0);
-    }
+    GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, matColorChannel);
+    GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_CPREV, GX_CC_RASC, GX_CC_ZERO);
+    GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_APREV, GX_CA_RASA, GX_CA_ZERO);
+    GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    tevStage++;
+
 
     // Vertex color modulation
     if (useVertexColor)
     {
-        assert(numTevStages > 0 && numTevStages <= 15);
-        GX_SetNumTevStages(numTevStages + 1);
-        uint8_t vertTevStage = GX_TEVSTAGE0 + numTevStages;
-        GX_SetTevOrder(vertTevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
-
-        GX_SetTevColorIn(vertTevStage, GX_CC_ZERO, GX_CC_RASC, GX_CC_CPREV, GX_CC_ZERO);
-        GX_SetTevAlphaIn(vertTevStage, GX_CA_ZERO, GX_CA_RASA, GX_CA_APREV, GX_CA_ZERO);
-
-        GX_SetTevColorOp(vertTevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
-        GX_SetTevAlphaOp(vertTevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+        GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_RASC, GX_CC_CPREV, GX_CC_ZERO);
+        GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_RASA, GX_CA_APREV, GX_CA_ZERO);
+        GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+        GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+        tevStage++;
 
         gGxContext.mLighting.mColorChannel = true;
     }
     else
     {
-        GX_SetNumTevStages(numTevStages);
         gGxContext.mLighting.mColorChannel = false;
     }
+
+    assert(tevStage <= 16);
+    GX_SetNumTevStages(tevStage);
 
     gGxContext.mLighting.mMaterialSrc = GX_SRC_REG;
 
@@ -394,6 +418,93 @@ void BindSkeletalMesh(SkeletalMesh* skeletalMesh)
     // TODO: Are both of these cache functions necessary to call?
     DCFlushRange(vertBytes, numVertices * vertexSize);
     GX_InvVtxCache();
+}
+
+void ConfigTev(uint32_t textureSlot, TevMode mode, bool vertexColorBlend)
+{
+    uint8_t tevStage = (uint8_t) (GX_TEVSTAGE0 + textureSlot);
+    uint8_t texSrc = (uint8_t) (GX_TEXMAP0 + textureSlot);
+
+    switch (textureSlot)
+    {
+        case 0: /*blendColorSrc = GPU_TEVOP_RGB_SRC_R;*/ break;
+        case 1: /*blendColorSrc = GPU_TEVOP_RGB_SRC_G;*/ break;
+        case 2: /*blendColorSrc = GPU_TEVOP_RGB_SRC_B;*/ break;
+    }
+
+    if (textureSlot == 0)
+    {
+        mode = TevMode::Replace;
+    }
+
+    if (vertexColorBlend)
+    {
+
+    }
+    else
+    {
+     
+
+#if 0
+#define GX_CC_CPREV			0				/*!< Use the color value from previous TEV stage */
+#define GX_CC_APREV			1				/*!< Use the alpha value from previous TEV stage */
+#define GX_CC_C0			2				/*!< Use the color value from the color/output register 0 */
+#define GX_CC_A0			3				/*!< Use the alpha value from the color/output register 0 */
+#define GX_CC_C1			4				/*!< Use the color value from the color/output register 1 */
+#define GX_CC_A1			5				/*!< Use the alpha value from the color/output register 1 */
+#define GX_CC_C2			6				/*!< Use the color value from the color/output register 2 */
+#define GX_CC_A2			7				/*!< Use the alpha value from the color/output register 2 */
+#define GX_CC_TEXC			8				/*!< Use the color value from texture */
+#define GX_CC_TEXA			9				/*!< Use the alpha value from texture */
+#define GX_CC_RASC			10				/*!< Use the color value from rasterizer */
+#define GX_CC_RASA			11				/*!< Use the alpha value from rasterizer */
+#define GX_CC_ONE			12
+#define GX_CC_HALF			13
+#define GX_CC_KONST			14
+#define GX_CC_ZERO			15				/*!< Use to pass zero value */
+
+#define GX_CA_APREV			0				/*!< Use the alpha value from previous TEV stage */
+#define GX_CA_A0			1				/*!< Use the alpha value from the color/output register 0 */
+#define GX_CA_A1			2				/*!< Use the alpha value from the color/output register 1 */
+#define GX_CA_A2			3				/*!< Use the alpha value from the color/output register 2 */
+#define GX_CA_TEXA			4				/*!< Use the alpha value from texture */
+#define GX_CA_RASA			5				/*!< Use the alpha value from rasterizer */
+#define GX_CA_KONST			6
+#define GX_CA_ZERO			7				/*!< Use to pass zero value */
+#endif
+
+        // void GX_SetTevColorIn(u8 tevstage,u8 a,u8 b,u8 c,u8 d);
+        // void GX_SetTevColorOp(u8 tevstage,u8 tevop,u8 tevbias,u8 tevscale,u8 clamp,u8 tevregid);
+        
+        // void GX_SetTevAlphaIn(u8 tevstage,u8 a,u8 b,u8 c,u8 d);
+        // void GX_SetTevAlphaOp(u8 tevstage,u8 tevop,u8 tevbias,u8 tevscale,u8 clamp,u8 tevregid);
+
+
+        // (d (tevop) ((1.0 - c)*a + c*b) + tevbias) * tevscale
+
+        switch (mode)
+        {
+            case TevMode::Modulate:
+                GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_ONE, GX_CC_ZERO);
+                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_TEXA, GX_CA_APREV, GX_CA_ZERO);
+                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+            break;
+            //case TevMode::Decal: tevFunc = GPU_ADD; break;
+            //case TevMode::Add: tevFunc = GPU_ADD; break;
+            //case TevMode::SignedAdd: tevFunc = GPU_ADD_SIGNED; break;
+            //case TevMode::Subtract: tevFunc = GPU_SUBTRACT; break;
+
+            case TevMode::Replace:
+            default:
+
+                GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
+                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+            break;
+        }
+    }
 }
 
 #endif
