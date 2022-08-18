@@ -203,6 +203,7 @@ void BindMaterial(Material* material, bool useVertexColor)
     GX_SetNumTexGens(1);
     GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX3x4, GX_TG_TEX0, GX_TEXMTX0);
 
+    uint32_t texIdx = 0;
     for (uint32_t i = 0; i < 4; ++i)
     {
         Texture* texture = material->GetTexture(TextureSlot(TEXTURE_0 + i));
@@ -214,10 +215,14 @@ void BindMaterial(Material* material, bool useVertexColor)
         if (tevMode != TevMode::Pass &&
             texture != nullptr)
         {
+            // First texture sample is done in TEV 0, if we have to add earlier stages,
+            // then this assertion will need to be modified.
+            assert(texIdx == tevStage);
 
-            GX_LoadTexObj(&texture->GetResource()->mGxTexObj, GX_TEXMAP0 + i);
-            GX_SetTevOrder(GX_TEVSTAGE0 + i, GX_TEXCOORD0, GX_TEXMAP0 + i, matColorChannel);
-            ConfigTev(i, tevMode, vertexColorBlend);
+            GX_LoadTexObj(&texture->GetResource()->mGxTexObj, GX_TEXMAP0 + texIdx);
+            GX_SetTevOrder(GX_TEVSTAGE0 + texIdx, GX_TEXCOORD0, GX_TEXMAP0 + texIdx, matColorChannel);
+            ConfigTev(texIdx, tevMode, vertexColorBlend);
+            texIdx++;
             tevStage++;
         }
     }
@@ -437,7 +442,7 @@ void ConfigTev(uint32_t textureSlot, TevMode mode, bool vertexColorBlend)
         mode = TevMode::Replace;
     }
 
-    if (vertexColorBlend)
+    if (false /*vertexColorBlend*/)
     {
 
     }
