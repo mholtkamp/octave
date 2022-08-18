@@ -370,7 +370,7 @@ void GFX_CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_
 
     // Generate a display list
     uint32_t gxBeginSize = 3;
-    uint32_t elemSize = hasColor ? (2 + 2 + 2 + 2) : (2 + 2 + 2);
+    uint32_t elemSize = hasColor ? (2 + 2 + 2 + 2 + 2) : (2 + 2 + 2 + 2);
     uint32_t allocSize = gxBeginSize + (elemSize * staticMesh->GetNumFaces() * 3);
     allocSize = (allocSize + 0x1f) & (~0x1f); // 32 byte aligned
     allocSize += 64; // Extra space to account for pipe flush
@@ -391,15 +391,18 @@ void GFX_CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_
             GX_Normal1x16(uint16_t(indices[i * 3 + 0]));
             GX_Color1x16(uint16_t(indices[i * 3 + 0]));
             GX_TexCoord1x16(uint16_t(indices[i * 3 + 0]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 0]));
 
             GX_Position1x16(uint16_t(indices[i * 3 + 1]));
             GX_Normal1x16(uint16_t(indices[i * 3 + 1]));
             GX_Color1x16(uint16_t(indices[i * 3 + 1]));
             GX_TexCoord1x16(uint16_t(indices[i * 3 + 1]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 1]));
 
             GX_Position1x16(uint16_t(indices[i * 3 + 2]));
             GX_Normal1x16(uint16_t(indices[i * 3 + 2]));
             GX_Color1x16(uint16_t(indices[i * 3 + 2]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 2]));
             GX_TexCoord1x16(uint16_t(indices[i * 3 + 2]));
         }
     }
@@ -410,13 +413,16 @@ void GFX_CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_
             GX_Position1x16(uint16_t(indices[i * 3 + 0]));
             GX_Normal1x16(uint16_t(indices[i * 3 + 0]));
             GX_TexCoord1x16(uint16_t(indices[i * 3 + 0]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 0]));
 
             GX_Position1x16(uint16_t(indices[i * 3 + 1]));
             GX_Normal1x16(uint16_t(indices[i * 3 + 1]));
             GX_TexCoord1x16(uint16_t(indices[i * 3 + 1]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 1]));
 
             GX_Position1x16(uint16_t(indices[i * 3 + 2]));
             GX_Normal1x16(uint16_t(indices[i * 3 + 2]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 2]));
             GX_TexCoord1x16(uint16_t(indices[i * 3 + 2]));
         }
     }
@@ -540,14 +546,17 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
             GX_SetVtxDesc(GX_VA_POS, GX_INDEX16);
             GX_SetVtxDesc(GX_VA_NRM, GX_INDEX16);
             GX_SetVtxDesc(GX_VA_TEX0, GX_INDEX16);
+            GX_SetVtxDesc(GX_VA_TEX1, GX_INDEX16);
 
             GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
             GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
             GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+            GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX1, GX_TEX_ST, GX_F32, 0);
 
             GX_SetArray(GX_VA_POS, &vertices[0].mPosition, sizeof(Vertex));
             GX_SetArray(GX_VA_NRM, &vertices[0].mNormal, sizeof(Vertex));
             GX_SetArray(GX_VA_TEX0, &vertices[0].mTexcoord0, sizeof(Vertex));
+            GX_SetArray(GX_VA_TEX1, &vertices[0].mTexcoord1, sizeof(Vertex));
 
             DCFlushRange(vertices, numVertices * sizeof(Vertex));
             GX_InvVtxCache();
@@ -622,13 +631,16 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
                 GX_Position1x16(indices[i * 3 + 0]);
                 GX_Normal1x16(indices[i * 3 + 0]);
                 GX_TexCoord1x16(indices[i * 3 + 0]);
+                GX_TexCoord1x16(indices[i * 3 + 0]);
 
                 GX_Position1x16(indices[i * 3 + 1]);
                 GX_Normal1x16(indices[i * 3 + 1]);
                 GX_TexCoord1x16(indices[i * 3 + 1]);
+                GX_TexCoord1x16(indices[i * 3 + 1]);
 
                 GX_Position1x16(indices[i * 3 + 2]);
                 GX_Normal1x16(indices[i * 3 + 2]);
+                GX_TexCoord1x16(indices[i * 3 + 2]);
                 GX_TexCoord1x16(indices[i * 3 + 2]);
             }
         }
@@ -646,15 +658,18 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
                 GX_Position1x16(indices[i * 3 + 0]);
                 GX_Normal1x16(indices[i * 3 + 0]);
                 GX_TexCoord1x16(indices[i * 3 + 0]);
+                GX_TexCoord1x16(indices[i * 3 + 0]);
 
                 GX_MatrixIndex1x8(bone1);
                 GX_Position1x16(indices[i * 3 + 1]);
                 GX_Normal1x16(indices[i * 3 + 1]);
                 GX_TexCoord1x16(indices[i * 3 + 1]);
+                GX_TexCoord1x16(indices[i * 3 + 1]);
 
                 GX_MatrixIndex1x8(bone2);
                 GX_Position1x16(indices[i * 3 + 2]);
                 GX_Normal1x16(indices[i * 3 + 2]);
+                GX_TexCoord1x16(indices[i * 3 + 2]);
                 GX_TexCoord1x16(indices[i * 3 + 2]);
             }
         }

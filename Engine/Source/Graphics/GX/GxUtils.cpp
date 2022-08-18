@@ -207,9 +207,6 @@ void BindMaterial(Material* material, bool useVertexColor)
     uint32_t tevStage = 0;
     bool vertexColorBlend = (vertexColorMode == VertexColorMode::TextureBlend);
 
-    //GX_SetNumTexGens(1);
-    //GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX3x4, GX_TG_TEX0, GX_TEXMTX0);
-
     uint32_t texIdx = 0;
     for (uint32_t i = 0; i < 4; ++i)
     {
@@ -232,7 +229,7 @@ void BindMaterial(Material* material, bool useVertexColor)
             GX_SetTevOrder(GX_TEVSTAGE0 + texIdx, GX_TEXCOORD0 + texIdx, GX_TEXMAP0 + texIdx, matColorChannel);
 
             ConfigTev(texIdx, tevMode, vertexColorBlend);
-            
+
             texIdx++;
             tevStage++;
         }
@@ -359,14 +356,16 @@ void BindStaticMesh(StaticMesh* staticMesh)
     uint32_t posOffset = offsetof(Vertex, mPosition);
     uint32_t nrmOffset = offsetof(Vertex, mNormal);
     uint32_t clrOffset = 0;
-    uint32_t texOffset = offsetof(Vertex, mTexcoord0);
+    uint32_t texOffset0 = offsetof(Vertex, mTexcoord0);
+    uint32_t texOffset1 = offsetof(Vertex, mTexcoord1);
 
     if (staticMesh->HasVertexColor())
     {
         posOffset = offsetof(VertexColor, mPosition);
         nrmOffset = offsetof(VertexColor, mNormal);
         clrOffset = offsetof(VertexColor, mColor);
-        texOffset = offsetof(VertexColor, mTexcoord0);
+        texOffset0 = offsetof(VertexColor, mTexcoord0);
+        texOffset1 = offsetof(VertexColor, mTexcoord1);
     }
 
     // Set Vertex Format
@@ -378,6 +377,7 @@ void BindStaticMesh(StaticMesh* staticMesh)
         GX_SetVtxDesc(GX_VA_CLR0, GX_INDEX16);
     }
     GX_SetVtxDesc(GX_VA_TEX0, GX_INDEX16);
+    GX_SetVtxDesc(GX_VA_TEX1, GX_INDEX16);
 
     // Set Attribute Formats
     GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
@@ -387,6 +387,7 @@ void BindStaticMesh(StaticMesh* staticMesh)
         GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
     }
     GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX1, GX_TEX_ST, GX_F32, 0);
 
     // Set Array
     uint32_t vertexSize = staticMesh->GetVertexSize();
@@ -396,7 +397,8 @@ void BindStaticMesh(StaticMesh* staticMesh)
     {
         GX_SetArray(GX_VA_CLR0, vertBytes + clrOffset, vertexSize);
     }
-    GX_SetArray(GX_VA_TEX0, vertBytes + texOffset, vertexSize);
+    GX_SetArray(GX_VA_TEX0, vertBytes + texOffset0, vertexSize);
+    GX_SetArray(GX_VA_TEX1, vertBytes + texOffset1, vertexSize);
 
     // TODO: Are both of these cache functions necessary to call?
     DCFlushRange(vertBytes, numVertices * vertexSize);
@@ -411,7 +413,8 @@ void BindSkeletalMesh(SkeletalMesh* skeletalMesh)
     //uint32_t mtxOffset = offsetof(VertexSkinned, mBoneIndices);
     uint32_t posOffset = offsetof(VertexSkinned, mPosition);
     uint32_t nrmOffset = offsetof(VertexSkinned, mNormal);
-    uint32_t texOffset = offsetof(VertexSkinned, mTexcoord0);
+    uint32_t texOffset0 = offsetof(VertexSkinned, mTexcoord0);
+    uint32_t texOffset1 = offsetof(VertexSkinned, mTexcoord1);
 
     // Set Vertex Format
     GX_ClearVtxDesc();
@@ -419,19 +422,22 @@ void BindSkeletalMesh(SkeletalMesh* skeletalMesh)
     GX_SetVtxDesc(GX_VA_POS, GX_INDEX16);
     GX_SetVtxDesc(GX_VA_NRM, GX_INDEX16);
     GX_SetVtxDesc(GX_VA_TEX0, GX_INDEX16);
+    GX_SetVtxDesc(GX_VA_TEX1, GX_INDEX16);
 
     // Set Attribute Formats
     GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_PTNMTXIDX, 0, GX_U8, 0);
     GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
     GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
     GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX1, GX_TEX_ST, GX_F32, 0);
 
     // Set Array
     uint32_t vertexSize = sizeof(VertexSkinned);
     //GX_SetArray(GX_VA_PTNMTXIDX, vertBytes + mtxOffset, vertexSize);
     GX_SetArray(GX_VA_POS, vertBytes + posOffset, vertexSize);
     GX_SetArray(GX_VA_NRM, vertBytes + nrmOffset, vertexSize);
-    GX_SetArray(GX_VA_TEX0, vertBytes + texOffset, vertexSize);
+    GX_SetArray(GX_VA_TEX0, vertBytes + texOffset0, vertexSize);
+    GX_SetArray(GX_VA_TEX1, vertBytes + texOffset1, vertexSize);
 
     // TODO: Are both of these cache functions necessary to call?
     DCFlushRange(vertBytes, numVertices * vertexSize);
