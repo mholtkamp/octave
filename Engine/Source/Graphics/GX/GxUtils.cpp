@@ -189,25 +189,33 @@ void BindMaterial(Material* material, bool useVertexColor)
     float opacity = material->GetOpacity();
     bool depthless = material->IsDepthTestDisabled();
 
-    // Setup TexCoord matrix
-    glm::vec2 uvOffset = material->GetUvOffset();
-    glm::vec2 uvScale = material->GetUvScale();
-    Mtx texMatrix;
-    guMtxScale(texMatrix, uvScale.x, uvScale.y, 1.0f);
-    guMtxTransApply(texMatrix, texMatrix, uvOffset.x, uvOffset.y, 0.0f);
-    GX_LoadTexMtxImm(texMatrix, GX_TEXMTX0, GX_TG_MTX3x4);
+    // Setup TexCoord matrices
+    glm::vec2 uvOffset0 = material->GetUvOffset(0);
+    glm::vec2 uvScale0 = material->GetUvScale(0);
+    Mtx texMatrix0;
+    guMtxScale(texMatrix0, uvScale0.x, uvScale0.y, 1.0f);
+    guMtxTransApply(texMatrix0, texMatrix0, uvOffset0.x, uvOffset0.y, 0.0f);
+    GX_LoadTexMtxImm(texMatrix0, GX_TEXMTX0, GX_TG_MTX3x4);
+
+    glm::vec2 uvOffset1 = material->GetUvOffset(1);
+    glm::vec2 uvScale1 = material->GetUvScale(1);
+    Mtx texMatrix1;
+    guMtxScale(texMatrix1, uvScale1.x, uvScale1.y, 1.0f);
+    guMtxTransApply(texMatrix1, texMatrix1, uvOffset1.x, uvOffset1.y, 0.0f);
+    GX_LoadTexMtxImm(texMatrix1, GX_TEXMTX1, GX_TG_MTX3x4);
 
     uint32_t tevStage = 0;
     bool vertexColorBlend = (vertexColorMode == VertexColorMode::TextureBlend);
 
-    GX_SetNumTexGens(1);
-    GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX3x4, GX_TG_TEX0, GX_TEXMTX0);
+    //GX_SetNumTexGens(1);
+    //GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX3x4, GX_TG_TEX0, GX_TEXMTX0);
 
     uint32_t texIdx = 0;
     for (uint32_t i = 0; i < 4; ++i)
     {
         Texture* texture = material->GetTexture(TextureSlot(TEXTURE_0 + i));
         TevMode tevMode = (i == 0) ? TevMode::Replace : material->GetTevMode(i);
+        uint32_t uvMap = material->GetUvMap(TextureSlot(TEXTURE_0 + i));
 
         if (i == 0 && texture == nullptr)
             texture = Renderer::Get()->mWhiteTexture.Get<Texture>();
@@ -219,13 +227,18 @@ void BindMaterial(Material* material, bool useVertexColor)
             // then this assertion will need to be modified.
             assert(texIdx == tevStage);
 
+            GX_SetTexCoordGen(GX_TEXCOORD0 + texIdx, GX_TG_MTX3x4, GX_TG_TEX0 + uvMap, GX_TEXMTX0 + uvMap);
             GX_LoadTexObj(&texture->GetResource()->mGxTexObj, GX_TEXMAP0 + texIdx);
-            GX_SetTevOrder(GX_TEVSTAGE0 + texIdx, GX_TEXCOORD0, GX_TEXMAP0 + texIdx, matColorChannel);
+            GX_SetTevOrder(GX_TEVSTAGE0 + texIdx, GX_TEXCOORD0 + texIdx, GX_TEXMAP0 + texIdx, matColorChannel);
+
             ConfigTev(texIdx, tevMode, vertexColorBlend);
+            
             texIdx++;
             tevStage++;
         }
     }
+
+    GX_SetNumTexGens(texIdx);
 
 #if 0
     // Shading
