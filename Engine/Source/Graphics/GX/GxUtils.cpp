@@ -447,7 +447,6 @@ void BindSkeletalMesh(SkeletalMesh* skeletalMesh)
 void ConfigTev(uint32_t textureSlot, TevMode mode, bool vertexColorBlend)
 {
     uint8_t tevStage = (uint8_t) (GX_TEVSTAGE0 + textureSlot);
-    //uint8_t texSrc = (uint8_t) (GX_TEXMAP0 + textureSlot);
 
     switch (textureSlot)
     {
@@ -467,88 +466,49 @@ void ConfigTev(uint32_t textureSlot, TevMode mode, bool vertexColorBlend)
     }
     else
     {
-     
-
-#if 0
-#define GX_CC_CPREV			0				/*!< Use the color value from previous TEV stage */
-#define GX_CC_APREV			1				/*!< Use the alpha value from previous TEV stage */
-#define GX_CC_C0			2				/*!< Use the color value from the color/output register 0 */
-#define GX_CC_A0			3				/*!< Use the alpha value from the color/output register 0 */
-#define GX_CC_C1			4				/*!< Use the color value from the color/output register 1 */
-#define GX_CC_A1			5				/*!< Use the alpha value from the color/output register 1 */
-#define GX_CC_C2			6				/*!< Use the color value from the color/output register 2 */
-#define GX_CC_A2			7				/*!< Use the alpha value from the color/output register 2 */
-#define GX_CC_TEXC			8				/*!< Use the color value from texture */
-#define GX_CC_TEXA			9				/*!< Use the alpha value from texture */
-#define GX_CC_RASC			10				/*!< Use the color value from rasterizer */
-#define GX_CC_RASA			11				/*!< Use the alpha value from rasterizer */
-#define GX_CC_ONE			12
-#define GX_CC_HALF			13
-#define GX_CC_KONST			14
-#define GX_CC_ZERO			15				/*!< Use to pass zero value */
-
-#define GX_CA_APREV			0				/*!< Use the alpha value from previous TEV stage */
-#define GX_CA_A0			1				/*!< Use the alpha value from the color/output register 0 */
-#define GX_CA_A1			2				/*!< Use the alpha value from the color/output register 1 */
-#define GX_CA_A2			3				/*!< Use the alpha value from the color/output register 2 */
-#define GX_CA_TEXA			4				/*!< Use the alpha value from texture */
-#define GX_CA_RASA			5				/*!< Use the alpha value from rasterizer */
-#define GX_CA_KONST			6
-#define GX_CA_ZERO			7				/*!< Use to pass zero value */
-#endif
-
-        // void GX_SetTevColorIn(u8 tevstage,u8 a,u8 b,u8 c,u8 d);
-        // void GX_SetTevColorOp(u8 tevstage,u8 tevop,u8 tevbias,u8 tevscale,u8 clamp,u8 tevregid);
-        
-        // void GX_SetTevAlphaIn(u8 tevstage,u8 a,u8 b,u8 c,u8 d);
-        // void GX_SetTevAlphaOp(u8 tevstage,u8 tevop,u8 tevbias,u8 tevscale,u8 clamp,u8 tevregid);
-
-
-        // (d (tevop) ((1.0 - c)*a + c*b) + tevbias) * tevscale
-
         switch (mode)
         {
             case TevMode::Modulate:
                 GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_CPREV, GX_CC_ZERO);
-                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
                 GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_TEXA, GX_CA_APREV, GX_CA_ZERO);
-                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
             break;
 
             case TevMode::Decal:
                 GX_SetTevColorIn(tevStage, GX_CC_CPREV, GX_CC_TEXC, GX_CC_TEXA, GX_CC_ZERO);
-                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
                 GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
-                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
             break;
 
             case TevMode::Add:
                 GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_CPREV, GX_CC_ONE, GX_CC_TEXC);
-                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
                 GX_SetTevAlphaIn(tevStage, GX_CA_TEXA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
-                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
             break;
 
             case TevMode::SignedAdd:
                 GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_ONE, GX_CC_CPREV);
-                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_SUBHALF, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_SUBHALF, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
                 GX_SetTevAlphaIn(tevStage, GX_CA_TEXA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
-                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_SUBHALF, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_SUBHALF, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
             break;
             
             case TevMode::Subtract:
                 GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_ONE, GX_CC_CPREV);
-                GX_SetTevColorOp(tevStage, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevColorOp(tevStage, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
                 GX_SetTevAlphaIn(tevStage, GX_CA_TEXA, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
-                GX_SetTevAlphaOp(tevStage, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevAlphaOp(tevStage, GX_TEV_SUB, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
             break;
 
             case TevMode::Replace:
             default:
                 GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
-                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
                 GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
-                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+                GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
             break;
         }
     }
