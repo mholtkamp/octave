@@ -506,6 +506,14 @@ void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* mes
         SetupLightingChannels();
 
         GX_CallDispList(mesh->GetResource()->mDisplayList, mesh->GetResource()->mDisplayListSize);
+
+        if (material->GetVertexColorMode() == VertexColorMode::TextureBlend)
+        {
+            // Reset swap tables used for texture blending.
+            GX_SetTevSwapMode(0, GX_TEV_SWAP0, GX_TEV_SWAP0);
+            GX_SetTevSwapMode(1, GX_TEV_SWAP0, GX_TEV_SWAP0);
+            GX_SetTevSwapMode(2, GX_TEV_SWAP0, GX_TEV_SWAP0);
+        }
     }
 }
 
