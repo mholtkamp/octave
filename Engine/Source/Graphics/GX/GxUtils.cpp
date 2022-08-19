@@ -224,7 +224,7 @@ void BindMaterial(Material* material, bool useVertexColor)
             // then this assertion will need to be modified.
             assert(texIdx == tevStage);
 
-            GX_SetTexCoordGen(GX_TEXCOORD0 + texIdx, GX_TG_MTX3x4, GX_TG_TEX0 + uvMap, GX_TEXMTX0 + uvMap);
+            GX_SetTexCoordGen(GX_TEXCOORD0 + texIdx, GX_TG_MTX3x4, GX_TG_TEX0 + uvMap, GX_TEXMTX0 + uvMap * 3);
             GX_LoadTexObj(&texture->GetResource()->mGxTexObj, GX_TEXMAP0 + texIdx);
             GX_SetTevOrder(GX_TEVSTAGE0 + texIdx, GX_TEXCOORD0 + texIdx, GX_TEXMAP0 + texIdx, GX_COLOR0A0);
 
@@ -236,41 +236,6 @@ void BindMaterial(Material* material, bool useVertexColor)
     }
 
     GX_SetNumTexGens(texIdx);
-
-#if 0
-    // Shading
-    if (shadingModel == ShadingModel::Unlit)
-    {
-        gGxContext.mLighting.mEnabled = false;
-
-        // Setup color / texture channel stuff
-        Texture* texture = material->GetTexture(TEXTURE_0);
-
-        if (texture != nullptr)
-        {
-            GX_SetNumTexGens(1);
-            GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX3x4, GX_TG_TEX0, GX_TEXMTX0);
-            GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
-            GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, matColorChannel);
-            GX_LoadTexObj(&texture->GetResource()->mGxTexObj, GX_TEXMAP0);
-
-            glm::vec4 materialColor = glm::clamp(color, 0.0f, 1.0f);
-            GX_SetChanMatColor(matColorChannel, { uint8_t(materialColor.r * 255.0f),
-                                              uint8_t(materialColor.g * 255.0f),
-                                              uint8_t(materialColor.b * 255.0f),
-                                              uint8_t(opacity * 255.f) });
-        }
-        else
-        {
-            GX_SetNumTexGens(0);
-            GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, matColorChannel);
-            GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
-        }
-    }
-    else if (shadingModel == ShadingModel::Lit ||
-            shadingModel == ShadingModel::Toon) // TODO: Support toon and fresnel
-    {
-#endif
 
     gGxContext.mLighting.mEnabled = !(shadingModel == ShadingModel::Unlit);
 
