@@ -55,6 +55,7 @@ bool NetDatum::ShouldReplicate() const
             case DatumType::Asset: equal = (mPrevData.as[i] == mData.as[i]); break;
             case DatumType::Enum: equal = (mPrevData.e[i] == mData.e[i]); break;
             case DatumType::Byte: equal = (mPrevData.by[i] == mData.by[i]); break;
+            case DatumType::Table: equal = false; assert(0); break; // Table not supported for replication
 
             case DatumType::Count: break;
         }
@@ -102,6 +103,7 @@ void NetDatum::PostReplicate()
             case DatumType::Asset: mPrevData.as[i] = mData.as[i]; break;
             case DatumType::Enum: mPrevData.e[i] = mData.e[i]; break;
             case DatumType::Byte: mPrevData.by[i] = mData.by[i]; break;
+            case DatumType::Table: assert(0); break; // Table not supported for replication
 
             case DatumType::Count: break;
         }

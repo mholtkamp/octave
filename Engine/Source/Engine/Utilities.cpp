@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "Maths.h"
 #include "Engine.h"
+#include "TableDatum.h"
 
 #include <iostream>
 #include <fstream>
@@ -407,7 +408,44 @@ void PostFuncCall(lua_State* L, const char* funcName, const char* selfName)
     }
 }
 
-void PushArgDatum(lua_State* L, const Datum& arg)
+void CreateLuaTable(lua_State* L, const Datum& arg)
+{
+    assert(arg.GetType() == DatumType::Table);
+    if (arg.GetType() == DatumType::Table)
+    {
+        lua_newtable(L);
+
+        // Add all children to the table 
+        for (uint32_t i = 0; i < arg.GetCount(); ++i)
+        {
+            const TableDatum& tableDatum = arg.GetTableDatum(i);
+
+            // Push key first
+            if (tableDatum.IsStringKey())
+            {
+                lua_pushstring(L, tableDatum.GetStringKey());
+            }
+            else
+            {
+                lua_pushinteger(L, tableDatum.GetIntegerKey());
+            }
+
+            // Then push value
+            PushLuaDatum(L, tableDatum);
+
+            // [-1] Value
+            // [-2] Key
+            // [-3] Table
+            lua_settable(L, -3);
+        }
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+}
+
+void PushLuaDatum(lua_State* L, const Datum& arg)
 {
     switch (arg.mType)
     {
@@ -419,6 +457,8 @@ void PushArgDatum(lua_State* L, const Datum& arg)
     case DatumType::Vector: Vector_Lua::Create(L, arg.GetVector()); break;
     case DatumType::Color: Vector_Lua::Create(L, arg.GetColor()); break;
     case DatumType::Asset: Asset_Lua::Create(L, arg.GetAsset()); break;
+    case DatumType::Table: CreateLuaTable(L, arg); break;
+
     default: lua_pushnil(L); assert(0); break;
     }
 }
@@ -460,6 +500,9 @@ void ConvertReturnDatum(lua_State* L, int retIdx, Datum& ret)
             ret.PushBack(asset);
         }
         break;
+    case LUA_TTABLE:
+        // TODO:
+        break;
     }
 
     // If nil, then the ret datum is left uninitialized.
@@ -481,7 +524,7 @@ void CallLuaFunc1(const char* funcName, const char* selfName, Datum arg1)
     lua_State* L = GetLua();
     if (PreFuncCall(L, funcName, selfName))
     {
-        PushArgDatum(L, arg1);
+        PushLuaDatum(L, arg1);
         DoFuncCall(L, selfName, 1, 0);
         PostFuncCall(L, funcName, selfName);
     }

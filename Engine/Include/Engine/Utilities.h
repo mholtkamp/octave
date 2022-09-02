@@ -64,6 +64,9 @@ void AddDebugDraw(
 float RotateYawTowardDirection(float srcYaw, glm::vec3 dir, float speed, float deltaTime);
 
 #if LUA_ENABLED
+void CreateLuaTable(lua_State* L, const Datum& arg);
+void PushLuaDatum(lua_State* L, const Datum& arg);
+
 void CallLuaFunc0(const char* funcName, const char* selfTable);
 void CallLuaFunc1(const char* funcName, const char* selfTable, Datum arg1);
 void CallLuaFunc2(const char* funcName, const char* selfTable, Datum arg1, Datum arg2);

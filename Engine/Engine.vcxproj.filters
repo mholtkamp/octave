@@ -714,6 +714,9 @@
     <ClCompile Include="Source\Editor\Widgets\ActionList.cpp">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\TableDatum.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1279,6 +1282,9 @@
     </ClInclude>
     <ClInclude Include="Include\Editor\Widgets\ActionList.h">
       <Filter>Header Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Engine\TableDatum.h">
+      <Filter>Header Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,5 @@
 #include "Datum.h"
+#include "TableDatum.h"
 #include "Asset.h"
 #include "AssetRef.h"
 #include "Log.h"
@@ -198,6 +199,7 @@ uint32_t Datum::GetDataTypeSize() const
         case DatumType::Asset: size = sizeof(AssetRef); break;
         case DatumType::Enum: size = sizeof(uint32_t); break;
         case DatumType::Byte: size = sizeof(uint8_t); break;
+        case DatumType::Table: size = sizeof(TableDatum); break;
         
         case DatumType::Count: size = 0; break;
     }
@@ -210,27 +212,36 @@ uint32_t Datum::GetDataTypeSerializationSize() const
     uint32_t retSize = 0;
 
     if (mType == DatumType::String ||
-        mType == DatumType::Asset)
+        mType == DatumType::Asset ||
+        mType == DatumType::Table)
     {
         for (uint32_t i = 0; i < mCount; ++i)
         {
             // These use custom serialization so we need to account for that.
-            // Serialized as string size + string data
-            retSize += sizeof(uint32_t);
-            const std::string* stringPtr = nullptr;
-
-            if (mType == DatumType::String)
+            if (mType == DatumType::Table)
             {
-                stringPtr = &mData.s[i];
+                // Tables rely on recursion to determine their total size
+                retSize += mData.t[i].GetDataTypeSerializationSize();
             }
-            else if (mType == DatumType::Asset)
+            else
             {
-                stringPtr = (mData.as[i].Get()) ? &(mData.as[i].Get()->GetName()) : nullptr;
-            }
+                // Both String and Asset datum types are serialized as string size + string data
+                retSize += sizeof(uint32_t);
+                const std::string* stringPtr = nullptr;
 
-            if (stringPtr != nullptr)
-            {
-                retSize += uint32_t(stringPtr->size());
+                if (mType == DatumType::String)
+                {
+                    stringPtr = &mData.s[i];
+                }
+                else if (mType == DatumType::Asset)
+                {
+                    stringPtr = (mData.as[i].Get()) ? &(mData.as[i].Get()->GetName()) : nullptr;
+                }
+
+                if (stringPtr != nullptr)
+                {
+                    retSize += uint32_t(stringPtr->size());
+                }
             }
         }
     }
@@ -298,6 +309,13 @@ void Datum::ReadStream(Stream& stream, bool external)
                 case DatumType::Enum: PushBack(stream.ReadUint32()); break;
                 case DatumType::Byte: PushBack(stream.ReadUint8()); break;
 
+                case DatumType::Table:
+                {
+                    PushBackTableDatum((TableDatum()));
+                    mData.t[i].ReadStream(stream, external);
+                    break;
+                }
+
                 case DatumType::Count: break;
             }
         }
@@ -325,6 +343,7 @@ void Datum::WriteStream(Stream& stream) const
             case DatumType::Asset: stream.WriteAsset(mData.as[i]); break;
             case DatumType::Enum: stream.WriteUint32(mData.e[i]); break;
             case DatumType::Byte: stream.WriteUint8(mData.by[i]); break;
+            case DatumType::Table: mData.t[i].WriteStream(stream); break;
 
             case DatumType::Count: assert(0); break;
         }
@@ -411,6 +430,13 @@ void Datum::SetByte(uint8_t value, uint32_t index)
         mData.by[index] = value;
 }
 
+void Datum::SetTableDatum(const TableDatum& value, uint32_t index)
+{
+    PreSet(index, DatumType::Table);
+    if (!mChangeHandler || !mChangeHandler(this, &value))
+        mData.t[index] = value;
+}
+
 void Datum::SetValue(const void* value, uint32_t index, uint32_t count)
 {
     assert(mType != DatumType::Count);
@@ -437,7 +463,7 @@ void Datum::SetValue(const void* value, uint32_t index, uint32_t count)
             case DatumType::Asset: SetAsset(*(reinterpret_cast<const Asset* const*>(value) + i),      index + i); break;
             case DatumType::Enum: SetEnum(*(reinterpret_cast<const uint32_t*>(value) + i),            index + i); break;
             case DatumType::Byte: SetByte(*(reinterpret_cast<const uint8_t*>(value) + i),             index + i); break;
-
+            case DatumType::Table: SetTableDatum(*(reinterpret_cast<const TableDatum*>(value) + i),   index + i); break;
             case DatumType::Count: break;
             }
         }
@@ -458,6 +484,7 @@ void Datum::SetValueRaw(const void* value, uint32_t index)
     case DatumType::Asset: mData.as[index] = *reinterpret_cast<const Asset* const*>(value); break;
     case DatumType::Enum: mData.e[index] = *reinterpret_cast<const uint32_t*>(value); break;
     case DatumType::Byte: mData.by[index] = *reinterpret_cast<const uint8_t*>(value); break;
+    case DatumType::Table: mData.t[index] = *reinterpret_cast<const TableDatum*>(value); break;
 
     case DatumType::Count: break;
     }
@@ -524,6 +551,13 @@ void Datum::SetExternal(uint8_t* data,  uint32_t count)
     PostSetExternal(DatumType::Byte, count);
 }
 
+void Datum::SetExternal(TableDatum* data, uint32_t count)
+{
+    PreSetExternal(DatumType::Table);
+    mData.t = data;
+    PostSetExternal(DatumType::Table, count);
+}
+
 int32_t Datum::GetInteger(uint32_t index) const
 {
     PreGet(index, DatumType::Integer);
@@ -584,6 +618,12 @@ uint8_t Datum::GetByte(uint32_t index) const
 {
     PreGet(index, DatumType::Byte);
     return mData.by[index];
+}
+
+const TableDatum& Datum::GetTableDatum(uint32_t index) const
+{
+    PreGet(index, DatumType::Table);
+    return mData.t[index];
 }
 
 void Datum::PushBack(int32_t value)
@@ -660,6 +700,13 @@ void Datum::PushBack(uint8_t value)
 {
     PrePushBack(DatumType::Byte);
     new (mData.by + mCount) uint8_t(value);
+    mCount++;
+}
+
+void Datum::PushBackTableDatum(const TableDatum& value)
+{
+    PrePushBack(DatumType::Table);
+    new (mData.t + mCount) TableDatum(value);
     mCount++;
 }
 
@@ -767,6 +814,12 @@ bool Datum::operator==(const Datum& other) const
             }
             break;
         // DatumType::Asset doesn't need this, but DatumType::Actor might? Maybe not if its just a pointer like AssetRef
+        case DatumType::Table:
+            if (mData.t[i] != other.mData.t[i])
+            {
+                return false;
+            }
+            break;
         default:
             if (memcmp(reinterpret_cast<char*>(mData.vp) + (i * dataSize), reinterpret_cast<char*>(other.mData.vp) + (i * dataSize), dataSize) != 0)
             {
@@ -966,6 +1019,11 @@ bool Datum::IsProperty() const
     return false;
 }
 
+bool Datum::IsTableDatum() const
+{
+    return false;
+}
+
 void Datum::Reserve(uint32_t capacity)
 {
     if (capacity > mCapacity)
@@ -1072,6 +1130,9 @@ void Datum::DeepCopy(const Datum& src, bool forceInternalStorage)
                 break;
             case DatumType::Byte:
                 PushBack(*(src.mData.by + i));
+                break;
+            case DatumType::Table:
+                PushBackTableDatum(*(src.mData.t + i));
                 break;
 
             case DatumType::Count:
@@ -1229,6 +1290,9 @@ void Datum::ConstructData(DatumData& dataUnion, uint32_t index)
         break;
     case DatumType::Byte:
         dataUnion.by[index] = 0;
+        break;
+    case DatumType::Table:
+        new (dataUnion.t + index) TableDatum();
         break;
 
     case DatumType::Count:
