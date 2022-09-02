@@ -125,6 +125,7 @@ public:
     Asset* GetAsset(uint32_t index = 0) const;
     uint32_t GetEnum(uint32_t index = 0) const;
     uint8_t GetByte(uint32_t index = 0) const;
+    TableDatum& GetTableDatum(uint32_t index = 0);
     const TableDatum& GetTableDatum(uint32_t index = 0) const;
 
     void PushBack(int32_t value);
