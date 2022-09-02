@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Stream.h"
+#include "EngineTypes.h"
 
 #include <string>
 #include <glm/glm.hpp>
@@ -9,6 +10,7 @@ typedef bool(*DatumChangeHandlerFP)(class Datum* prop, const void* newValue);
 
 class Asset;
 class AssetRef;
+class TableDatum;
 
 enum class DatumType : uint8_t
 {
@@ -22,6 +24,7 @@ enum class DatumType : uint8_t
     Asset,
     Enum,
     Byte,
+    Table,
 
     Count
 };
@@ -39,6 +42,7 @@ union DatumData
     //ActorRef* ac;
     uint32_t* e;
     uint8_t* by;
+    TableDatum* t;
     void* vp;
 };
 
@@ -94,6 +98,7 @@ public:
     void SetAsset(const Asset* value, uint32_t index = 0);
     void SetEnum(uint32_t value, uint32_t index = 0);
     void SetByte(uint8_t value, uint32_t index = 0);
+    void SetTableDatum(const TableDatum& value, uint32_t index = 0);
 
     void SetValue(const void* value, uint32_t index = 0, uint32_t count = 1);
     void SetValueRaw(const void* value, uint32_t index = 0);
@@ -108,6 +113,7 @@ public:
     void SetExternal(AssetRef* data,  uint32_t count = 1);
     void SetExternal(uint32_t* data,  uint32_t count = 1);
     void SetExternal(uint8_t* data,  uint32_t count = 1);
+    void SetExternal(TableDatum* data, uint32_t count = 1);
 
     int32_t GetInteger(uint32_t index = 0) const;
     float GetFloat(uint32_t index = 0) const;
@@ -119,6 +125,7 @@ public:
     Asset* GetAsset(uint32_t index = 0) const;
     uint32_t GetEnum(uint32_t index = 0) const;
     uint8_t GetByte(uint32_t index = 0) const;
+    const TableDatum& GetTableDatum(uint32_t index = 0) const;
 
     void PushBack(int32_t value);
     void PushBack(float value);
@@ -131,6 +138,7 @@ public:
     void PushBack(Asset* value);
     void PushBack(uint32_t value);
     void PushBack(uint8_t value);
+    void PushBackTableDatum(const TableDatum& value);
 
     // Assignment
     Datum& operator=(const Datum& src);
@@ -177,6 +185,7 @@ public:
     bool operator!=(const uint8_t& other) const;
 
     virtual bool IsProperty() const;
+    virtual bool IsTableDatum() const;
     virtual void DeepCopy(const Datum& src, bool forceInternalStorage);
 
 protected:

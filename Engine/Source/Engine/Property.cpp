@@ -178,6 +178,12 @@ void Property::PushBackVector(void* value)
             mData.by = vect.data();
             break;
         }
+        case DatumType::Table:
+        {
+            // Table not supported as vector.
+            assert(0);
+            break;
+        }
 
         default: break;
         }
@@ -209,6 +215,8 @@ void Property::EraseVector(uint32_t index)
         }
         case DatumType::Bool:
         {
+            // Bool not supported as vector
+            assert(0);
             break;
         }
         case DatumType::String:
@@ -251,6 +259,12 @@ void Property::EraseVector(uint32_t index)
         {
             std::vector<uint8_t>& vect = *((std::vector<uint8_t>*) mVector);
             vect.erase(vect.begin() + index);
+            break;
+        }
+        case DatumType::Table:
+        {
+            // Table not supported as Vector
+            assert(0);
             break;
         }
 
@@ -339,6 +353,12 @@ void Property::ResizeVector(uint32_t count)
             std::vector<uint8_t>& vect = *((std::vector<uint8_t>*) mVector);
             vect.resize(count);
             mData.by = vect.data();
+            break;
+        }
+        case DatumType::Table:
+        {
+            // Table not supported as Vector
+            assert(0);
             break;
         }
 
@@ -430,6 +450,12 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
         std::vector<uint8_t>& vect = *((std::vector<uint8_t>*) mVector);
         mData.by = vect.data();
         mCount = (uint8_t) vect.size();
+        break;
+    }
+    case DatumType::Table:
+    {
+        // Table not supported as vector
+        assert(0);
         break;
     }
 

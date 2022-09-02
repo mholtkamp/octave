@@ -421,6 +421,7 @@
     <ClCompile Include="Source\Engine\StaticMeshActor.cpp" />
     <ClCompile Include="Source\Engine\stb_image.cpp" />
     <ClCompile Include="Source\Engine\Stream.cpp" />
+    <ClCompile Include="Source\Engine\TableDatum.cpp" />
     <ClCompile Include="Source\Engine\Utilities.cpp" />
     <ClCompile Include="Source\Engine\Widgets\Button.cpp" />
     <ClCompile Include="Source\Engine\Widgets\Canvas.cpp" />
@@ -539,6 +540,7 @@
     <ClInclude Include="Include\Engine\Assets\Texture.h" />
     <ClInclude Include="Include\Engine\ScriptableFuncPointer.h" />
     <ClInclude Include="Include\Engine\ScriptEvent.h" />
+    <ClInclude Include="Include\Engine\TableDatum.h" />
     <ClInclude Include="Include\LuaBindings\ActorRef_Lua.h" />
     <ClInclude Include="Include\LuaBindings\AudioComponent_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Audio_Lua.h" />
