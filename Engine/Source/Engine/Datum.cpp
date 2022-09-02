@@ -620,6 +620,12 @@ uint8_t Datum::GetByte(uint32_t index) const
     return mData.by[index];
 }
 
+TableDatum& Datum::GetTableDatum(uint32_t index)
+{
+    PreGet(index, DatumType::Table);
+    return mData.t[index];
+}
+
 const TableDatum& Datum::GetTableDatum(uint32_t index) const
 {
     PreGet(index, DatumType::Table);

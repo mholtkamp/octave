@@ -408,17 +408,17 @@ void PostFuncCall(lua_State* L, const char* funcName, const char* selfName)
     }
 }
 
-void CreateLuaTable(lua_State* L, const Datum& arg)
+void CreateTableLua(lua_State* L, const Datum& datum)
 {
-    assert(arg.GetType() == DatumType::Table);
-    if (arg.GetType() == DatumType::Table)
+    assert(datum.GetType() == DatumType::Table);
+    if (datum.GetType() == DatumType::Table)
     {
         lua_newtable(L);
 
         // Add all children to the table 
-        for (uint32_t i = 0; i < arg.GetCount(); ++i)
+        for (uint32_t i = 0; i < datum.GetCount(); ++i)
         {
-            const TableDatum& tableDatum = arg.GetTableDatum(i);
+            const TableDatum& tableDatum = datum.GetTableDatum(i);
 
             // Push key first
             if (tableDatum.IsStringKey())
@@ -445,6 +445,56 @@ void CreateLuaTable(lua_State* L, const Datum& arg)
     }
 }
 
+void CreateTableCpp(lua_State* L, int tableIdx, Datum& datum)
+{
+    assert(datum.GetType() == DatumType::Count ||
+           datum.GetType() == DatumType::Table);
+
+    if (lua_istable(L, tableIdx))
+    {
+        // Push a copy so that we can accept positive/negative indices for tableIdx
+        lua_pushvalue(L, tableIdx); // -1 = table
+
+        // Update tableIdx to be a positive index (needed for recursion)
+        tableIdx = lua_gettop(L);
+
+        // Push the first key to start iterating at, in this case nil
+        lua_pushnil(L); // -1 = nil, -2 = table
+
+        while (lua_next(L, -2))
+        {
+            // Stack is now: -1 = value, -2 = key, -3 = table
+            
+            datum.PushBackTableDatum(TableDatum());
+            TableDatum& tableDatum = datum.GetTableDatum(datum.GetCount());
+
+            // Initialize key first
+            if (lua_isstring(L, -2))
+            {
+                tableDatum.SetStringKey(lua_tostring(L, -2));
+            }
+            else if (lua_isinteger(L, -2))
+            {
+                tableDatum.SetIntegerKey(lua_tointeger(L, -2));
+            }
+
+            // Initialize value
+            ConvertLuaToCpp(L, tableIdx, tableDatum);
+
+            // Pop the value, but leave the key on top of the stack, so it can be
+            // used as the argument for the next lua_next() call.
+            lua_pop(L, 1);
+        }
+
+        // Pop the copy of table
+        lua_pop(L, 1);
+    }
+    else
+    {
+        LogError("CreateTableCpp(): tableIdx is not a table");
+    }
+}
+
 void PushLuaDatum(lua_State* L, const Datum& arg)
 {
     switch (arg.mType)
@@ -457,56 +507,59 @@ void PushLuaDatum(lua_State* L, const Datum& arg)
     case DatumType::Vector: Vector_Lua::Create(L, arg.GetVector()); break;
     case DatumType::Color: Vector_Lua::Create(L, arg.GetColor()); break;
     case DatumType::Asset: Asset_Lua::Create(L, arg.GetAsset()); break;
-    case DatumType::Table: CreateLuaTable(L, arg); break;
+    case DatumType::Table: CreateTableLua(L, arg); break;
 
     default: lua_pushnil(L); assert(0); break;
     }
 }
 
-void ConvertReturnDatum(lua_State* L, int retIdx, Datum& ret)
+void ConvertLuaToCpp(lua_State* L, int idx, Datum& datum)
 {
-    int luaType = lua_type(L, retIdx);
+    int luaType = lua_type(L, idx);
 
     switch (luaType)
     {
     case LUA_TNUMBER:
-        if (lua_isinteger(L, retIdx))
+        if (lua_isinteger(L, idx))
         {
-            ret.PushBack((int32_t)lua_tointeger(L, retIdx));
+            datum.PushBack((int32_t)lua_tointeger(L, idx));
         }
         else
         {
-            ret.PushBack(lua_tonumber(L, retIdx));
+            datum.PushBack(lua_tonumber(L, idx));
         }
         break;
     case LUA_TBOOLEAN:
-        ret.PushBack((bool)lua_toboolean(L, retIdx));
+        datum.PushBack((bool)lua_toboolean(L, idx));
         break;
     case LUA_TSTRING:
-        ret.PushBack(lua_tostring(L, retIdx));
+        datum.PushBack(lua_tostring(L, idx));
         break;
     case LUA_TUSERDATA:
         // 2 main possibilities, Vector or Asset.
         // For Vector types, always return color for all 4 float components.
         // Caller just needs to be aware.
-        if (luaL_testudata(L, retIdx, VECTOR_LUA_NAME))
+        if (luaL_testudata(L, idx, VECTOR_LUA_NAME))
         {
-            glm::vec4 vect = CHECK_VECTOR(L, retIdx);
-            ret.PushBack(vect);
+            glm::vec4 vect = CHECK_VECTOR(L, idx);
+            datum.PushBack(vect);
         }
         else
         {
-            Asset* asset = CHECK_ASSET(L, retIdx);
-            ret.PushBack(asset);
+            Asset* asset = CHECK_ASSET(L, idx);
+            datum.PushBack(asset);
         }
+        // TODO: Support Pointer or RTTI type
         break;
     case LUA_TTABLE:
-        // TODO:
+        CreateTableCpp(L, idx, datum);
+        break;
+
+    default:
+        // If nil, then the datum is initialized as a Byte type with 0
+        datum.PushBack((uint8_t)0);
         break;
     }
-
-    // If nil, then the ret datum is left uninitialized.
-    // Caller can check if (mType == DatumType::Count) or (mCount == 0)
 }
 
 void CallLuaFunc0(const char* funcName, const char* selfName)
