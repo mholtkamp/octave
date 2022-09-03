@@ -10,8 +10,11 @@ class RTTI
 public:
     virtual ~RTTI() = default;
 
-    virtual const char* InstanceRuntimeName() const = 0;
+    virtual const char* RuntimeName() const = 0;
+    virtual const char* RuntimeParentName() const = 0;
     virtual RuntimeId InstanceRuntimeId() const = 0;
+
+    static const char* ClassRuntimeName() { return "RTTI"; }
 
     virtual RTTI* QueryInterface(RuntimeId id) const
     {
@@ -51,7 +54,8 @@ public:
 #define DECLARE_RTTI(Type, ParentType)                                                                      \
     public:                                                                                                 \
         static const char* ClassRuntimeName() { return #Type; }                                             \
-        virtual const char* InstanceRuntimeName() const override { return Type::ClassRuntimeName(); }       \
+        virtual const char* RuntimeName() const override { return Type::ClassRuntimeName(); }               \
+        virtual const char* RuntimeParentName() const override { return ParentType::ClassRuntimeName(); }   \
         static RuntimeId ClassRuntimeId() { return sRuntimeId; }                                            \
         virtual RuntimeId InstanceRuntimeId() const override { return Type::ClassRuntimeId(); }             \
         virtual RTTI* QueryInterface(RuntimeId id) const override                                           \

@@ -8,11 +8,12 @@
 #include "Factory.h"
 #include "NetDatum.h"
 #include "NetFunc.h"
-
+#include "ScriptUtils.h"
 
 #include "Bullet/btBulletCollisionCommon.h"
 
 #include <unordered_map>
+#include <unordered_set>
 
 class World;
 class Level;
@@ -51,6 +52,11 @@ public:
     virtual void GatherNetFuncs(std::vector<NetFunc>& outFuncs);
     void GatherPropertyOverrides(std::vector<PropertyOverride>& outOverrides);
     void ApplyPropertyOverrides(const std::vector<PropertyOverride>& overs);
+
+#if LUA_ENABLED
+    virtual void InitScriptActor(lua_State* L);
+    virtual void RegisterScriptFuncs(lua_State* L, int mtIndex);
+#endif
 
     virtual void BeginOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* otherComp);
     virtual void EndOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* otherComp);
@@ -190,6 +196,7 @@ protected:
     void DestroyAllComponents();
 
     static std::unordered_map<TypeId, NetFuncMap> sTypeNetFuncMap;
+    static std::unordered_set<TypeId> sScriptActorSet;
 
 private:
     TransformComponent* mRootComponent;
