@@ -1058,7 +1058,7 @@ void Datum::Reserve(uint32_t capacity)
         {
             memcpy(mData.vp, previousBuffer, typeSize * mCount);
 
-            free(previousBuffer);
+            SYS_AlignedFree(previousBuffer);
             previousBuffer = nullptr;
         }
     }
