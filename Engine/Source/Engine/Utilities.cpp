@@ -466,7 +466,7 @@ void CreateTableCpp(lua_State* L, int tableIdx, Datum& datum)
             // Stack is now: -1 = value, -2 = key, -3 = table
             
             datum.PushBackTableDatum(TableDatum());
-            TableDatum& tableDatum = datum.GetTableDatum(datum.GetCount());
+            TableDatum& tableDatum = datum.GetTableDatum(datum.GetCount() - 1);
 
             // Initialize key first
             if (lua_isstring(L, -2))
@@ -479,7 +479,7 @@ void CreateTableCpp(lua_State* L, int tableIdx, Datum& datum)
             }
 
             // Initialize value
-            LuaObjectToDatum(L, tableIdx, tableDatum);
+            LuaObjectToDatum(L, -1, tableDatum);
 
             // Pop the value, but leave the key on top of the stack, so it can be
             // used as the argument for the next lua_next() call.
