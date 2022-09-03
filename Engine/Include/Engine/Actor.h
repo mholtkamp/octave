@@ -31,18 +31,19 @@ class ActorFactory;
 #define DEFINE_ACTOR(Base, Parent) \
         DEFINE_FACTORY(Base, Actor); \
         DEFINE_RTTI(Base); \
-        static std::vector<AutoRegData> sAutoRegs_##Base; \
+        typedef Base ScriptActorAlias; \
+        static std::vector<AutoRegData> sAutoRegs; \
         void Base::RegisterScriptFuncs(lua_State* L) { \
             if (AreScriptFuncsRegistered(Base::GetStaticType())) { return; } \
             Parent::RegisterScriptFuncs(L); \
             int mtIndex = CreateActorMetatable(L, #Base, #Parent); \
-            for (AutoRegData& data : sAutoRegs_##Base) { \
+            for (AutoRegData& data : sAutoRegs) { \
                 lua_pushcfunction(L, data.mFunc); \
                 lua_setfield(L, mtIndex, data.mName); \
             } \
             lua_pop(L, 1); \
-            sAutoRegs_##Base.clear(); \
-            sAutoRegs_##Base.shrink_to_fit(); \
+            sAutoRegs.clear(); \
+            sAutoRegs.shrink_to_fit(); \
             SetScriptFuncsRegistered(Base::GetStaticType()); \
         }
 
