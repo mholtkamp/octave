@@ -1,6 +1,6 @@
 #include "StaticMeshActor.h"
 
-DEFINE_ACTOR(StaticMeshActor);
+DEFINE_ACTOR(StaticMeshActor, Actor);
 FORCE_LINK_DEF(StaticMeshActor);
 
 

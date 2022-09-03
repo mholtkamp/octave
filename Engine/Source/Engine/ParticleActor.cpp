@@ -2,7 +2,7 @@
 #include "Log.h"
 #include "World.h"
 
-DEFINE_ACTOR(ParticleActor);
+DEFINE_ACTOR(ParticleActor, Actor);
 
 void ParticleActor::Create()
 {

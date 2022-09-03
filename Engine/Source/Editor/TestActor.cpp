@@ -176,6 +176,6 @@ void TestActor::Tick(float deltaTime)
     }
 }
 
-DEFINE_ACTOR(TestActor);
+DEFINE_ACTOR(TestActor, Actor);
 
 #endif
