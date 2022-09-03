@@ -431,7 +431,7 @@ void CreateTableLua(lua_State* L, const Datum& datum)
             }
 
             // Then push value
-            PushLuaDatum(L, tableDatum);
+            LuaPushDatum(L, tableDatum);
 
             // [-1] Value
             // [-2] Key
@@ -479,7 +479,7 @@ void CreateTableCpp(lua_State* L, int tableIdx, Datum& datum)
             }
 
             // Initialize value
-            ConvertLuaToCpp(L, tableIdx, tableDatum);
+            LuaObjectToDatum(L, tableIdx, tableDatum);
 
             // Pop the value, but leave the key on top of the stack, so it can be
             // used as the argument for the next lua_next() call.
@@ -495,7 +495,7 @@ void CreateTableCpp(lua_State* L, int tableIdx, Datum& datum)
     }
 }
 
-void PushLuaDatum(lua_State* L, const Datum& arg)
+void LuaPushDatum(lua_State* L, const Datum& arg)
 {
     switch (arg.mType)
     {
@@ -513,7 +513,7 @@ void PushLuaDatum(lua_State* L, const Datum& arg)
     }
 }
 
-void ConvertLuaToCpp(lua_State* L, int idx, Datum& datum)
+void LuaObjectToDatum(lua_State* L, int idx, Datum& datum)
 {
     int luaType = lua_type(L, idx);
 
@@ -577,7 +577,7 @@ void CallLuaFunc1(const char* funcName, const char* selfName, Datum arg1)
     lua_State* L = GetLua();
     if (PreFuncCall(L, funcName, selfName))
     {
-        PushLuaDatum(L, arg1);
+        LuaPushDatum(L, arg1);
         DoFuncCall(L, selfName, 1, 0);
         PostFuncCall(L, funcName, selfName);
     }
