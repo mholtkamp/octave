@@ -73,6 +73,20 @@ public:
     Datum(const AssetRef& value);
     Datum(uint8_t value);
 
+    // Conversion operators
+    operator int32_t() const { return GetInteger(); }
+    operator uint32_t() const { return (mType == DatumType::Integer) ? uint32_t(GetInteger()) : GetEnum(); }
+    operator float() const { return GetFloat(); }
+    operator bool() const { return GetBool(); }
+    operator const char*() const { return GetString().c_str(); }
+    operator std::string() const { return GetString(); }
+    operator glm::vec2() const { return (mType == DatumType::Color) ? glm::vec2(GetColor()) : GetVector2D(); }
+    operator glm::vec3() const { return (mType == DatumType::Color) ? glm::vec3(GetColor()) : GetVector(); }
+    operator glm::vec4() const { return GetColor(); }
+    operator Asset*() const { return GetAsset(); }
+    //operator AssetRef() const; Not sure if needed??
+    operator uint8_t() const { return (mType == DatumType::Integer) ? uint8_t(GetInteger()) : GetByte(); }
+
     DatumType GetType() const;
     void SetType(DatumType type);
 

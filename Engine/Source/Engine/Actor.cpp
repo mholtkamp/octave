@@ -479,6 +479,8 @@ void Actor::InitScriptActor(lua_State* L)
 
         RegisterScriptFuncs(L, mtIndex);
 
+        sScriptActorSet.insert(typeId);
+
         // Pop the metatable
         lua_pop(L, 1);
     }
@@ -487,7 +489,8 @@ void Actor::InitScriptActor(lua_State* L)
 void Actor::RegisterScriptFuncs(lua_State* L, int mtIndex)
 {
     // Base class Actor functions are implemented in Actor_Lua.cpp
-    // For user-created actor classes, this function can be overridden.
+    // For user-created actor classes, this function is overridden automatically by DECLARE_ACTOR()
+    // Add user script funcs by using the SCRIPT_FUNC macros in ScriptUtils.h
 }
 
 void Actor::BeginOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* other)
