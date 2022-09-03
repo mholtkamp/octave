@@ -45,6 +45,7 @@ int CreateClassMetatable(
     return lua_gettop(L);
 }
 
+// TODO: Is this function necessary? Seems like a duplicate of LuaPushDatum().
 void PushDatumValue(lua_State* L, DatumType datumType, const void* value)
 {
 #if LUA_ENABLED

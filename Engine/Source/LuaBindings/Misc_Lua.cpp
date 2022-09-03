@@ -251,6 +251,9 @@ void BindDatumType()
     lua_pushinteger(L, (int)DatumType::Byte);
     lua_setfield(L, tableIdx, "Byte");
 
+    lua_pushinteger(L, (int)DatumType::Table);
+    lua_setfield(L, tableIdx, "Table");
+
     lua_pushinteger(L, (int)DatumType::Count);
     lua_setfield(L, tableIdx, "Count");
 

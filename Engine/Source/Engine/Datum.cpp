@@ -161,6 +161,9 @@ void Datum::SetCount(uint32_t count)
             case DatumType::Asset:
                 mData.as[i].~AssetRef();
                 break;
+            case DatumType::Table:
+                mData.t[i].~TableDatum();
+                break;
 
             default: break;
             }
@@ -1315,6 +1318,9 @@ void Datum::DestructData(DatumData& dataUnion, uint32_t index)
         break;
     case DatumType::Asset:
         dataUnion.as[index].AssetRef::~AssetRef();
+        break;
+    case DatumType::Table:
+        dataUnion.t[index].TableDatum::~TableDatum();
         break;
 
     default: break;
