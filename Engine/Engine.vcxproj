@@ -480,6 +480,7 @@
     <ClCompile Include="Source\LuaBindings\LightComponent_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Log_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\LuaBindings.cpp" />
+    <ClCompile Include="Source\LuaBindings\LuaTypeCheck.cpp" />
     <ClCompile Include="Source\LuaBindings\LuaUtils.cpp" />
     <ClCompile Include="Source\LuaBindings\Actor_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Component_Lua.cpp" />
@@ -540,6 +541,7 @@
     <ClInclude Include="Include\Engine\Assets\Texture.h" />
     <ClInclude Include="Include\Engine\ScriptableFuncPointer.h" />
     <ClInclude Include="Include\Engine\ScriptEvent.h" />
+    <ClInclude Include="Include\Engine\ScriptUtils.h" />
     <ClInclude Include="Include\Engine\TableDatum.h" />
     <ClInclude Include="Include\LuaBindings\ActorRef_Lua.h" />
     <ClInclude Include="Include\LuaBindings\AudioComponent_Lua.h" />
@@ -558,6 +560,7 @@
     <ClInclude Include="Include\LuaBindings\Level_Lua.h" />
     <ClInclude Include="Include\LuaBindings\LightComponent_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Log_Lua.h" />
+    <ClInclude Include="Include\LuaBindings\LuaTypeCheck.h" />
     <ClInclude Include="Include\LuaBindings\MaterialInstance_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Material_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Maths_Lua.h" />

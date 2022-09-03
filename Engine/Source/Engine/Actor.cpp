@@ -17,6 +17,10 @@
 
 #include "Graphics/Graphics.h"
 
+#if LUA_ENABLED
+#include "LuaBindings/LuaUtils.h"
+#endif
+
 #include <glm/glm.hpp>
 #include <functional>
 #include <algorithm>
@@ -30,6 +34,9 @@ using namespace std;
     SendNetFunc(netFunc, P, params);
 
 std::unordered_map<TypeId, NetFuncMap> Actor::sTypeNetFuncMap;
+std::unordered_set<TypeId> Actor::sScriptActorSet;
+
+#define ENABLE_SCRIPT_FUNCS 1
 
 bool Actor::OnRep_RootPosition(Datum* datum, const void* newValue)
 {
@@ -89,7 +96,13 @@ Actor::~Actor()
 
 void Actor::Create()
 {
-
+#if LUA_ENABLED
+    lua_State* L = GetLua();
+    if (L != nullptr)
+    {
+        InitScriptActor(L);
+    }
+#endif
 }
 
 void Actor::Destroy()
@@ -449,6 +462,32 @@ void Actor::ApplyPropertyOverrides(const std::vector<PropertyOverride>& overs)
             }
         }
     }
+}
+
+void Actor::InitScriptActor(lua_State* L)
+{
+    TypeId typeId = GetType();
+    if (sScriptActorSet.find(typeId) == sScriptActorSet.end())
+    {
+        char classFlag[128];
+        snprintf(classFlag, 128, "cf%s", RuntimeName());
+
+        int mtIndex = CreateClassMetatable(
+            RuntimeName(),
+            classFlag,
+            RuntimeParentName());
+
+        RegisterScriptFuncs(L, mtIndex);
+
+        // Pop the metatable
+        lua_pop(L, 1);
+    }
+}
+
+void Actor::RegisterScriptFuncs(lua_State* L, int mtIndex)
+{
+    // Base class Actor functions are implemented in Actor_Lua.cpp
+    // For user-created actor classes, this function can be overridden.
 }
 
 void Actor::BeginOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* other)

@@ -717,6 +717,9 @@
     <ClCompile Include="Source\Engine\TableDatum.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\LuaTypeCheck.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1285,6 +1288,12 @@
     </ClInclude>
     <ClInclude Include="Include\Engine\TableDatum.h">
       <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Engine\ScriptUtils.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\LuaBindings\LuaTypeCheck.h">
+      <Filter>Header Files\LuaBindings</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
