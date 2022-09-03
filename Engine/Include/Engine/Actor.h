@@ -23,8 +23,23 @@ class Stream;
 class Blueprint;
 class ActorFactory;
 
-#define DECLARE_ACTOR(Base, Parent) DECLARE_FACTORY(Base, Actor); DECLARE_RTTI(Base, Parent);
-#define DEFINE_ACTOR(Base) DEFINE_FACTORY(Base, Actor); DEFINE_RTTI(Base);
+#define DECLARE_ACTOR(Base, Parent) \
+        DECLARE_FACTORY(Base, Actor); \
+        DECLARE_RTTI(Base, Parent); \
+        virtual void RegisterScriptFuncs(lua_State* L, int mtIndex) override;
+
+#define DEFINE_ACTOR(Base) \
+        DEFINE_FACTORY(Base, Actor); \
+        DEFINE_RTTI(Base); \
+        static std::vector<AutoRegData> sAutoRegs_##Base; \
+        void Base::RegisterScriptFuncs(lua_State* L, int mtIndex) { \
+            for (AutoRegData& data : sAutoRegs_##Base) { \
+                lua_pushcfunction(L, data.mFunc); \
+                lua_setfield(L, mtIndex, data.mName); \
+            } \
+            sAutoRegs_##Base.clear(); \
+            sAutoRegs_##Base.shrink_to_fit(); \
+        }
 
 typedef std::unordered_map<std::string, NetFunc> NetFuncMap;
 

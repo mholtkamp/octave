@@ -97,7 +97,6 @@ Datum::Datum(uint8_t value)
     PushBack(value);
 }
 
-
 DatumType Datum::GetType() const
 {
     return mType;
