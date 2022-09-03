@@ -26,19 +26,24 @@ class ActorFactory;
 #define DECLARE_ACTOR(Base, Parent) \
         DECLARE_FACTORY(Base, Actor); \
         DECLARE_RTTI(Base, Parent); \
-        virtual void RegisterScriptFuncs(lua_State* L, int mtIndex) override;
+        virtual void RegisterScriptFuncs(lua_State* L) override;
 
-#define DEFINE_ACTOR(Base) \
+#define DEFINE_ACTOR(Base, Parent) \
         DEFINE_FACTORY(Base, Actor); \
         DEFINE_RTTI(Base); \
         static std::vector<AutoRegData> sAutoRegs_##Base; \
-        void Base::RegisterScriptFuncs(lua_State* L, int mtIndex) { \
+        void Base::RegisterScriptFuncs(lua_State* L) { \
+            if (AreScriptFuncsRegistered(Base::GetStaticType())) { return; } \
+            Parent::RegisterScriptFuncs(L); \
+            int mtIndex = CreateActorMetatable(L, #Base, #Parent); \
             for (AutoRegData& data : sAutoRegs_##Base) { \
                 lua_pushcfunction(L, data.mFunc); \
                 lua_setfield(L, mtIndex, data.mName); \
             } \
+            lua_pop(L, 1); \
             sAutoRegs_##Base.clear(); \
             sAutoRegs_##Base.shrink_to_fit(); \
+            SetScriptFuncsRegistered(Base::GetStaticType()); \
         }
 
 typedef std::unordered_map<std::string, NetFunc> NetFuncMap;
@@ -69,9 +74,12 @@ public:
     void ApplyPropertyOverrides(const std::vector<PropertyOverride>& overs);
 
 #if LUA_ENABLED
-    virtual void InitScriptActor(lua_State* L);
-    virtual void RegisterScriptFuncs(lua_State* L, int mtIndex);
+    int CreateActorMetatable(lua_State* L, const char* className, const char* parentName);
+    virtual void RegisterScriptFuncs(lua_State* L);
 #endif
+
+    static bool AreScriptFuncsRegistered(TypeId type);
+    static void SetScriptFuncsRegistered(TypeId type);
 
     virtual void BeginOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* otherComp);
     virtual void EndOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* otherComp);
@@ -211,7 +219,7 @@ protected:
     void DestroyAllComponents();
 
     static std::unordered_map<TypeId, NetFuncMap> sTypeNetFuncMap;
-    static std::unordered_set<TypeId> sScriptActorSet;
+    static std::unordered_set<TypeId> sScriptRegisteredSet;
 
 private:
     TransformComponent* mRootComponent;
