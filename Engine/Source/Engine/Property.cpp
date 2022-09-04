@@ -184,6 +184,12 @@ void Property::PushBackVector(void* value)
             assert(0);
             break;
         }
+        case DatumType::Pointer:
+        {
+            // Pointer not supported as vector.
+            assert(0);
+            break;
+        }
 
         default: break;
         }
@@ -264,6 +270,12 @@ void Property::EraseVector(uint32_t index)
         case DatumType::Table:
         {
             // Table not supported as Vector
+            assert(0);
+            break;
+        }
+        case DatumType::Pointer:
+        {
+            // Pointer not supported as Vector
             assert(0);
             break;
         }
@@ -361,6 +373,12 @@ void Property::ResizeVector(uint32_t count)
             assert(0);
             break;
         }
+        case DatumType::Pointer:
+        {
+            // Pointer not supported as Vector
+            assert(0);
+            break;
+        }
 
         default: break;
         }
@@ -455,6 +473,12 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
     case DatumType::Table:
     {
         // Table not supported as vector
+        assert(0);
+        break;
+    }
+    case DatumType::Pointer:
+    {
+        // Pointer not supported as vector
         assert(0);
         break;
     }

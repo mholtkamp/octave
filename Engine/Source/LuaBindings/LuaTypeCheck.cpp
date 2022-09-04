@@ -57,6 +57,7 @@ bool CheckClassFlag(lua_State* L, int arg, const char* flag)
     if (lua_type(L, arg) == LUA_TUSERDATA)
     {
         isClass = (lua_getfield(L, arg, flag) != LUA_TNIL);
+        lua_pop(L, 1);
     }
 
     return isClass;

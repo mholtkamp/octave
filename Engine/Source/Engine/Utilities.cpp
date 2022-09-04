@@ -19,6 +19,8 @@
 #if LUA_ENABLED
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
+#include "LuaBindings/Actor_Lua.h"
+#include "LuaBindings/Component_Lua.h"
 #endif
 
 using namespace std;
@@ -508,6 +510,24 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
     case DatumType::Color: Vector_Lua::Create(L, arg.GetColor()); break;
     case DatumType::Asset: Asset_Lua::Create(L, arg.GetAsset()); break;
     case DatumType::Table: CreateTableLua(L, arg); break;
+    case DatumType::Pointer:
+    {
+        RTTI* pointer = arg.GetPointer();
+        if (pointer->Is(Actor::ClassRuntimeId()))
+        {
+            Actor_Lua::Create(L, (Actor*)pointer);
+        }
+        else if (pointer->Is(Component::ClassRuntimeId()))
+        {
+            Component_Lua::Create(L, (Component*)pointer);
+        }
+        else
+        {
+            LogError("Unsupported pointer type in LuaPushDatum.");
+            lua_pushnil(L);
+        }
+        break;
+    }
 
     default: lua_pushnil(L); assert(0); break;
     }
@@ -544,12 +564,22 @@ void LuaObjectToDatum(lua_State* L, int idx, Datum& datum)
             glm::vec4 vect = CHECK_VECTOR(L, idx);
             datum.PushBack(vect);
         }
-        else
+        else if (CheckClassFlag(L, idx, ACTOR_LUA_FLAG))
         {
+            Actor* actor = CHECK_ACTOR(L, idx);
+            datum.PushBack(actor);
+        }
+        else if (CheckClassFlag(L, idx, COMPONENT_LUA_FLAG))
+        {
+            Component* comp = CHECK_COMPONENT(L, idx);
+            datum.PushBack(comp);
+        }
+        else //if (CheckClassFlag(L, idx, ASSET_LUA_FLAG))
+        {
+            // If the type check failed here, then you an unsupported userdata is being received.
             Asset* asset = CHECK_ASSET(L, idx);
             datum.PushBack(asset);
         }
-        // TODO: Support Pointer or RTTI type
         break;
     case LUA_TTABLE:
         CreateTableCpp(L, idx, datum);
