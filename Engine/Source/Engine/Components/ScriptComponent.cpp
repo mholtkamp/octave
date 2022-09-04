@@ -1374,6 +1374,175 @@ void ScriptComponent::OnCollision(
 #endif
 }
 
+// These functions are kinda nasty, but it's a nice convenience for the game programmer
+void ScriptComponent::CallFunction(const char* name)
+{
+    CallFunction(name, 0, nullptr, nullptr);
+}
+
+void ScriptComponent::CallFunction(const char* name, const Datum& param0)
+{
+    const Datum* params[] = { &param0 };
+    CallFunction(name, 1, params, nullptr);
+}
+
+void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1)
+{
+    const Datum* params[] = { &param0, &param1 };
+    CallFunction(name, 2, params, nullptr);
+}
+
+void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2)
+{
+    const Datum* params[] = { &param0, &param1, &param2 };
+    CallFunction(name, 3, params, nullptr);
+}
+
+void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3)
+{
+    const Datum* params[] = { &param0, &param1, &param2, &param3 };
+    CallFunction(name, 4, params, nullptr);
+}
+
+void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4)
+{
+    const Datum* params[] = { &param0, &param1, &param2, &param3, &param4 };
+    CallFunction(name, 5, params, nullptr);
+}
+
+void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5)
+{
+    const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5 };
+    CallFunction(name, 6, params, nullptr);
+}
+
+void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6)
+{
+    const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6 };
+    CallFunction(name, 7, params, nullptr);
+}
+
+void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6, const Datum& param7)
+{
+    const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6, &param7 };
+    CallFunction(name, 8, params, nullptr);
+}
+
+Datum ScriptComponent::CallFunctionR(const char* name)
+{
+    Datum retDatum;
+    CallFunction(name, 0, nullptr, &retDatum);
+    return retDatum;
+}
+
+Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0)
+{
+    Datum retDatum;
+    const Datum* params[] = { &param0 };
+    CallFunction(name, 1, params, &retDatum);
+    return retDatum;
+}
+
+Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1)
+{
+    Datum retDatum;
+    const Datum* params[] = { &param0, &param1 };
+    CallFunction(name, 2, params, &retDatum);
+    return retDatum;
+}
+
+Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2)
+{
+    Datum retDatum;
+    const Datum* params[] = { &param0, &param1, &param2 };
+    CallFunction(name, 3, params, &retDatum);
+    return retDatum;
+}
+
+Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3)
+{
+    Datum retDatum;
+    const Datum* params[] = { &param0, &param1, &param2, &param3 };
+    CallFunction(name, 4, params, &retDatum);
+    return retDatum;
+}
+
+Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4)
+{
+    Datum retDatum;
+    const Datum* params[] = { &param0, &param1, &param2, &param3, &param4 };
+    CallFunction(name, 5, params, &retDatum);
+    return retDatum;
+}
+
+Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5)
+{
+    Datum retDatum;
+    const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5 };
+    CallFunction(name, 6, params, &retDatum);
+    return retDatum;
+}
+
+Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6)
+{
+    Datum retDatum;
+    const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6 };
+    CallFunction(name, 7, params, &retDatum);
+    return retDatum;
+}
+
+Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6, const Datum& param7)
+{
+    Datum retDatum;
+    const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6, &param7 };
+    CallFunction(name, 8, params, &retDatum);
+    return retDatum;
+}
+
+void ScriptComponent::CallFunction(const char* name, uint32_t numParams, const Datum** params, Datum* ret)
+{
+#if LUA_ENABLED
+    if (mTableName != "")
+    {
+        lua_State* L = GetLua();
+
+        // Grab the script instance table
+        lua_getglobal(L, mTableName.c_str());
+        assert(lua_istable(L, -1));
+        lua_getfield(L, -1, name);
+
+
+        // Only call the function if it has been defined.
+        if (lua_isfunction(L, -1))
+        {
+            // Push self param
+            lua_pushvalue(L, -2);
+
+            for (uint32_t i = 0; i < numParams; ++i)
+            {
+                LuaPushDatum(L, *params[i]);
+            }
+
+            int totalParams = numParams + 1; // Always pass self table
+            int numReturns = (ret != nullptr) ? 1 : 0;
+            bool success = LuaFuncCall(totalParams, numReturns);
+
+            if (ret != nullptr && success)
+            {
+                LuaObjectToDatum(L, -1, *ret);
+                lua_pop(L, 1);
+            }
+        }
+        else
+        {
+            lua_pop(L, 1);
+        }
+
+        lua_pop(L, 1);
+    }
+#endif
+}
+
 ScriptComponent* ScriptComponent::GetExecutingScriptComponent()
 {
     return sExecutingScript;
@@ -1607,51 +1776,21 @@ void ScriptComponent::DestroyScriptInstance()
 #endif
 }
 
-void ScriptComponent::LuaFuncCall(int numArgs, int numResults)
+bool ScriptComponent::LuaFuncCall(int numArgs, int numResults)
 {
 #if LUA_ENABLED
     lua_State* L = GetLua();
+    bool success = true;
     sExecutingScript = this;
     if (lua_pcall(L, numArgs, numResults, 0))
     {
         LogError("Lua Error: %s\n", lua_tostring(L, -1));
+        success = false;
     }
     sExecutingScript = nullptr;
+    return success;
 #endif
 }
-
-void ScriptComponent::CallFunction(const char* name)
-{
-#if LUA_ENABLED
-    if (mTableName != "")
-    {
-        lua_State* L = GetLua();
-
-        // Grab the table
-        lua_getglobal(L, mTableName.c_str());
-        assert(lua_istable(L, -1));
-        lua_getfield(L, -1, name);
-
-        // Only call the function if it has been defined.
-        if (lua_isfunction(L, -1))
-        {
-            lua_pushvalue(L, -2);
-
-            // Instance table at -3
-            // Func at -2
-            // Instance table (as arg0) at -1
-            LuaFuncCall(1);
-        }
-        else
-        {
-            lua_pop(L, 1);
-        }
-
-        lua_pop(L, 1);
-    }
-#endif
-}
-
 
 void ScriptComponent::CallTick(float deltaTime)
 {
