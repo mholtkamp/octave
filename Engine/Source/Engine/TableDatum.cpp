@@ -6,6 +6,115 @@ TableDatum::TableDatum()
 
 }
 
+TableDatum::TableDatum(const char* key, int32_t value)
+{
+    PushBack(value);
+    SetStringKey(key);
+}
+
+TableDatum::TableDatum(const char* key, float value)
+{
+    PushBack(value);
+    SetStringKey(key);
+}
+
+TableDatum::TableDatum(const char* key, bool value)
+{
+    PushBack(value);
+    SetStringKey(key);
+}
+
+TableDatum::TableDatum(const char* key, const char* value)
+{
+    PushBack(value);
+    SetStringKey(key);
+}
+
+TableDatum::TableDatum(const char* key, glm::vec2 value)
+{
+    PushBack(value);
+    SetStringKey(key);
+}
+
+TableDatum::TableDatum(const char* key, glm::vec3 value)
+{
+    PushBack(value);
+    SetStringKey(key);
+}
+
+TableDatum::TableDatum(const char* key, glm::vec4 value)
+{
+    PushBack(value);
+    SetStringKey(key);
+}
+
+TableDatum::TableDatum(const char* key, Asset* value)
+{
+    PushBack(value);
+    SetStringKey(key);
+}
+
+TableDatum::TableDatum(const char* key, uint32_t value)
+{
+    PushBack((int32_t)value);
+    SetStringKey(key);
+}
+
+
+TableDatum::TableDatum(int32_t key, int32_t value)
+{
+    PushBack(value);
+    SetIntegerKey(key);
+}
+
+TableDatum::TableDatum(int32_t key, float value)
+{
+    PushBack(value);
+    SetIntegerKey(key);
+}
+
+TableDatum::TableDatum(int32_t key, bool value)
+{
+    PushBack(value);
+    SetIntegerKey(key);
+}
+
+TableDatum::TableDatum(int32_t key, const char* value)
+{
+    PushBack(value);
+    SetIntegerKey(key);
+}
+
+TableDatum::TableDatum(int32_t key, glm::vec2 value)
+{
+    PushBack(value);
+    SetIntegerKey(key);
+}
+
+TableDatum::TableDatum(int32_t key, glm::vec3 value)
+{
+    PushBack(value);
+    SetIntegerKey(key);
+}
+
+TableDatum::TableDatum(int32_t key, glm::vec4 value)
+{
+    PushBack(value);
+    SetIntegerKey(key);
+}
+
+TableDatum::TableDatum(int32_t key, Asset* value)
+{
+    PushBack(value);
+    SetIntegerKey(key);
+}
+
+TableDatum::TableDatum(int32_t key, uint32_t value)
+{
+    PushBack((int32_t)value);
+    SetIntegerKey(key);
+}
+
 TableDatum::TableDatum(const TableDatum& src) :
     Datum(src)
 {
