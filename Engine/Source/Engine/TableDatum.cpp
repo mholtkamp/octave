@@ -60,6 +60,11 @@ TableDatum::TableDatum(const char* key, uint32_t value)
     SetStringKey(key);
 }
 
+TableDatum::TableDatum(const char* key, RTTI* value)
+{
+    PushBack(value);
+    SetStringKey(key);
+}
 
 TableDatum::TableDatum(int32_t key, int32_t value)
 {
@@ -112,6 +117,12 @@ TableDatum::TableDatum(int32_t key, Asset* value)
 TableDatum::TableDatum(int32_t key, uint32_t value)
 {
     PushBack((int32_t)value);
+    SetIntegerKey(key);
+}
+
+TableDatum::TableDatum(int32_t key, RTTI* value)
+{
+    PushBack(value);
     SetIntegerKey(key);
 }
 

@@ -2,6 +2,8 @@
 
 #include "Datum.h"
 
+class RTTI;
+
 class TableDatum : public Datum
 {
 public:
@@ -17,6 +19,7 @@ public:
     TableDatum(const char* key, glm::vec4 value);
     TableDatum(const char* key, Asset* value);
     TableDatum(const char* key, uint32_t value);
+    TableDatum(const char* key, RTTI* value);
 
     TableDatum(int32_t key, int32_t value);
     TableDatum(int32_t key, float value);
@@ -27,9 +30,7 @@ public:
     TableDatum(int32_t key, glm::vec4 value);
     TableDatum(int32_t key, Asset* value);
     TableDatum(int32_t key, uint32_t value);
-    
-    // DatumType::String - TODO: implement this when Pointer type goes in
-    //TableDatum(const char* key, RTTI* value);
+    TableDatum(int32_t key, RTTI* value);
 
     TableDatum(const TableDatum& src);
     TableDatum& operator=(const TableDatum& src);
