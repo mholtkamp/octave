@@ -8,6 +8,29 @@ public:
 
     TableDatum();
 
+    TableDatum(const char* key, int32_t value);
+    TableDatum(const char* key, float value);
+    TableDatum(const char* key, bool value);
+    TableDatum(const char* key, const char* value);
+    TableDatum(const char* key, glm::vec2 value);
+    TableDatum(const char* key, glm::vec3 value);
+    TableDatum(const char* key, glm::vec4 value);
+    TableDatum(const char* key, Asset* value);
+    TableDatum(const char* key, uint32_t value);
+
+    TableDatum(int32_t key, int32_t value);
+    TableDatum(int32_t key, float value);
+    TableDatum(int32_t key, bool value);
+    TableDatum(int32_t key, const char* value);
+    TableDatum(int32_t key, glm::vec2 value);
+    TableDatum(int32_t key, glm::vec3 value);
+    TableDatum(int32_t key, glm::vec4 value);
+    TableDatum(int32_t key, Asset* value);
+    TableDatum(int32_t key, uint32_t value);
+    
+    // DatumType::String - TODO: implement this when Pointer type goes in
+    //TableDatum(const char* key, RTTI* value);
+
     TableDatum(const TableDatum& src);
     TableDatum& operator=(const TableDatum& src);
 
