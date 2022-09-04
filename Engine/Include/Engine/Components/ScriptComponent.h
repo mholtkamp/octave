@@ -70,6 +70,26 @@ public:
         glm::vec3 impactNormal,
         btPersistentManifold* manifold);
 
+    void CallFunction(const char* name);
+    void CallFunction(const char* name, const Datum& param0);
+    void CallFunction(const char* name, const Datum& param0, const Datum& param1);
+    void CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2);
+    void CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3);
+    void CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4);
+    void CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5);
+    void CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6);
+    void CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6, const Datum& param7);
+    Datum CallFunctionR(const char* name);
+    Datum CallFunctionR(const char* name, const Datum& param0);
+    Datum CallFunctionR(const char* name, const Datum& param0, const Datum& param1);
+    Datum CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2);
+    Datum CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3);
+    Datum CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4);
+    Datum CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5);
+    Datum CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6);
+    Datum CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6, const Datum& param7);
+    void CallFunction(const char* name, uint32_t numParams, const Datum** params, Datum* ret);
+
     static ScriptComponent* GetExecutingScriptComponent();
     static const char* GetExecutingScriptTableName();
     static bool OnRepHandler(Datum* datum, const void* newValue);
@@ -97,8 +117,7 @@ protected:
     bool DownloadDatum(lua_State* L, Datum& datum, int tableIdx, const char* varName);
     void UploadDatum(Datum& datum, const char* varName);
 
-    void LuaFuncCall(int numArgs, int numResults = 0);
-    void CallFunction(const char* name);
+    bool LuaFuncCall(int numArgs, int numResults = 0);
     void CallTick(float deltaTime);
 
     bool CheckIfFunctionExists(const char* funcName);
