@@ -158,20 +158,7 @@ void Datum::SetCount(uint32_t count)
 
         for (uint32_t i = count; i < mCount; i++)
         {
-            switch (mType)
-            {
-            case DatumType::String:
-                mData.s[i].std::string::~string();
-                break;
-            case DatumType::Asset:
-                mData.as[i].~AssetRef();
-                break;
-            case DatumType::Table:
-                mData.t[i].~TableDatum();
-                break;
-
-            default: break;
-            }
+            DestructData(mData, i);
         }
     }
 
@@ -1386,7 +1373,14 @@ void Datum::DestructData(DatumData& dataUnion, uint32_t index)
         dataUnion.as[index].AssetRef::~AssetRef();
         break;
     case DatumType::Table:
-        dataUnion.t[index].TableDatum::~TableDatum();
+        // WARNING! I don't understand why this is happening, but invoking the TableDatum destructor
+        // is causing a crash on GCN / 3DS. If I invoke the ~Datum() destructor then it doesn't crash.
+        // Might have to see if this happens on Linux. Maybe valgrind will provide helpful insight.
+        // ~TableDatum() is still called when invoking ~Datum(), so I'm just leaving it this way for now.
+
+        //dataUnion.t[index].TableDatum::~TableDatum();
+        dataUnion.t[index].Datum::~Datum();
+
         break;
 
     default: break;

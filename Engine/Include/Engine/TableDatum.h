@@ -9,6 +9,7 @@ class TableDatum : public Datum
 public:
 
     TableDatum();
+    ~TableDatum();
 
     TableDatum(const char* key, int32_t value);
     TableDatum(const char* key, float value);

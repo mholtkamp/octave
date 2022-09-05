@@ -1,7 +1,13 @@
 #include "TableDatum.h"
 #include "Utilities.h"
+#include "Log.h"
 
 TableDatum::TableDatum()
+{
+
+}
+
+TableDatum::~TableDatum()
 {
 
 }
