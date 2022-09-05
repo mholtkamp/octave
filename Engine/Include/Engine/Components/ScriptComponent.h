@@ -97,6 +97,7 @@ public:
     static std::string GetClassNameFromFileName(const std::string& fileName);
     static void SetEmbeddedScripts(EmbeddedFile* embeddedScripts, uint32_t numEmbeddedScripts);
     static EmbeddedFile* FindEmbeddedScript(const std::string& className);
+    static bool RunScript(const char* fileName, Datum* ret = nullptr);
 
 protected:
 

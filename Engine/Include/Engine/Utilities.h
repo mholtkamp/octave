@@ -71,11 +71,10 @@ void LuaObjectToDatum(lua_State* L, int idx, Datum& datum);
 
 void CallLuaFunc0(const char* funcName, const char* selfTable);
 void CallLuaFunc1(const char* funcName, const char* selfTable, Datum arg1);
-void CallLuaFunc2(const char* funcName, const char* selfTable, Datum arg1, Datum arg2);
-void CallLuaFunc3(const char* funcName, const char* selfTable, Datum arg1, Datum arg2, Datum arg3);
-void CallLuaFunc4(const char* funcName, const char* selfTable, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
-void CallLuaFunc5(const char* funcName, const char* selfTable, Datum arg1, Datum arg2, Datum arg3, Datum arg4, Datum arg5);
 #endif
+
+bool RunScript(const char* scriptName, Datum* ret = nullptr);
+
 
 inline glm::vec3 BulletToGlm(const btVector3& vector3)
 {
