@@ -5,6 +5,7 @@
 #include "Maths.h"
 #include "Engine.h"
 #include "TableDatum.h"
+#include "Components/ScriptComponent.h"
 
 #include <iostream>
 #include <fstream>
@@ -471,13 +472,13 @@ void CreateTableCpp(lua_State* L, int tableIdx, Datum& datum)
             TableDatum& tableDatum = datum.GetTableDatum(datum.GetCount() - 1);
 
             // Initialize key first
-            if (lua_isstring(L, -2))
-            {
-                tableDatum.SetStringKey(lua_tostring(L, -2));
-            }
-            else if (lua_isinteger(L, -2))
+            if (lua_isinteger(L, -2))
             {
                 tableDatum.SetIntegerKey(lua_tointeger(L, -2));
+            }
+            else if (lua_isstring(L, -2))
+            {
+                tableDatum.SetStringKey(lua_tostring(L, -2));
             }
 
             // Initialize value
@@ -617,24 +618,9 @@ void CallLuaFunc1(const char* funcName, const char* selfName, Datum arg1)
     //return ret;
 }
 
-void CallLuaFunc2(const char* funcName, const char* selfTable, Datum arg1, Datum arg2)
-{
-
-}
-
-void CallLuaFunc3(const char* funcName, const char* selfTable, Datum arg1, Datum arg2, Datum arg3)
-{
-
-}
-
-void CallLuaFunc4(const char* funcName, const char* selfTable, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
-{
-
-}
-
-void CallLuaFunc5(const char* funcName, const char* selfTable, Datum arg1, Datum arg2, Datum arg3, Datum arg4, Datum arg5)
-{
-
-}
-
 #endif
+
+bool RunScript(const char* fileName, Datum* ret)
+{
+    return ScriptComponent::RunScript(fileName, ret);
+}

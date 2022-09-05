@@ -1096,95 +1096,22 @@ bool ScriptComponent::LoadScriptFile(const std::string& fileName)
 
 #if LUA_ENABLED
     lua_State* L = GetLua();
+    successful = ScriptComponent::RunScript(fileName.c_str());
 
-    bool scriptRun = false;
-    std::string relativeFileName = mFileName;
-
-    if (relativeFileName.length() < 4 ||
-        relativeFileName.compare(relativeFileName.length() - 4, 4, ".lua") != 0)
+    if (successful)
     {
-        relativeFileName.append(".lua");
-    }
+        // Assign the __index metamethod to itself, so that tables with the class metatable
+        // will have access to its methods/properties.
+        lua_getglobal(L, mClassName.c_str());
+        assert(lua_istable(L, -1));
 
-    bool fileExists = false;
-    std::string className = GetClassNameFromFileName(fileName);
-    EmbeddedFile* embeddedScript = nullptr;
+        lua_pushvalue(L, -1);
+        lua_setfield(L, -2, "__index");
 
-    if (sEmbeddedScripts != nullptr &&
-        sNumEmbeddedScripts > 0)
-    {
-        embeddedScript = FindEmbeddedScript(className);
-        fileExists = (embeddedScript != nullptr);
-    }
+        lua_pop(L, 1);
 
-    std::string fullFileName = GetEngineState()->mProjectDirectory + "Scripts/" + relativeFileName;
-    
-    if (!fileExists)
-    {
-        fileExists = DoesFileExist(fullFileName.c_str());
-    }
-
-    if (!fileExists)
-    {
-        // Fall back to Engine script directory
-        fullFileName = std::string("Engine/Scripts/") + relativeFileName;
-        fileExists = DoesFileExist(fullFileName.c_str());
-    }
-
-    if (fileExists)
-    {
-        if (embeddedScript != nullptr)
-        {
-            LogDebug("Loading embedded script: %s", className.c_str());
-
-            std::string luaString;
-            luaString.assign(embeddedScript->mData, embeddedScript->mSize);
-
-            if (luaL_dostring(L, luaString.c_str()) == LUA_OK)
-            {
-                scriptRun = true;
-            }
-            else
-            {
-                LogError("Lua Error: %s\n", lua_tostring(L, -1));
-                LogError("Couldn't load embedded script file %s", className.c_str());
-            }
-        }
-        else
-        {
-            if (luaL_loadfile(L, fullFileName.c_str()) == LUA_OK)
-            {
-                if (lua_pcall(L, 0, 0, 0) == LUA_OK)
-                {
-                    scriptRun = true;
-                }
-                else
-                {
-                    LogError("Lua Error: %s\n", lua_tostring(L, -1));
-                }
-            }
-            else
-            {
-                LogError("Lua Error: %s\n", lua_tostring(L, -1));
-                LogError("Couldn't load script file %s", fullFileName.c_str());
-            }
-        }
-
-        if (scriptRun)
-        {
-            // Assign the __index metamethod to itself, so that tables with the class metatable
-            // will have access to its methods/properties.
-            lua_getglobal(L, mClassName.c_str());
-            assert(lua_istable(L, -1));
-
-            lua_pushvalue(L, -1);
-            lua_setfield(L, -2, "__index");
-
-            lua_pop(L, 1);
-
-            sLoadedLuaFiles.insert(mClassName);
-            successful = true;
-        }
+        sLoadedLuaFiles.insert(mClassName);
+        successful = true;
     }
 
     return successful;
@@ -1627,6 +1554,98 @@ EmbeddedFile* ScriptComponent::FindEmbeddedScript(const std::string& className)
     }
 
     return retFile;
+}
+
+bool ScriptComponent::RunScript(const char* fileName, Datum* ret)
+{
+    bool successful = false;
+
+#if LUA_ENABLED
+    lua_State* L = GetLua();
+
+    std::string relativeFileName = fileName;
+
+    if (relativeFileName.length() < 4 ||
+        relativeFileName.compare(relativeFileName.length() - 4, 4, ".lua") != 0)
+    {
+        relativeFileName.append(".lua");
+    }
+
+    bool fileExists = false;
+    std::string className = ScriptComponent::GetClassNameFromFileName(fileName);
+    EmbeddedFile* embeddedScript = nullptr;
+
+    if (sEmbeddedScripts != nullptr &&
+        sNumEmbeddedScripts > 0)
+    {
+        embeddedScript = ScriptComponent::FindEmbeddedScript(className);
+        fileExists = (embeddedScript != nullptr);
+    }
+
+    std::string fullFileName = GetEngineState()->mProjectDirectory + "Scripts/" + relativeFileName;
+
+    if (!fileExists)
+    {
+        fileExists = DoesFileExist(fullFileName.c_str());
+    }
+
+    if (!fileExists)
+    {
+        // Fall back to Engine script directory
+        fullFileName = std::string("Engine/Scripts/") + relativeFileName;
+        fileExists = DoesFileExist(fullFileName.c_str());
+    }
+
+    if (fileExists)
+    {
+        int numResults = (ret != nullptr) ? 1 : 0;
+
+        if (embeddedScript != nullptr)
+        {
+            LogDebug("Loading embedded script: %s", className.c_str());
+
+            std::string luaString;
+            luaString.assign(embeddedScript->mData, embeddedScript->mSize);
+
+            if (luaL_dostring(L, luaString.c_str()) == LUA_OK)
+            {
+                successful = true;
+            }
+            else
+            {
+                LogError("Lua Error: %s\n", lua_tostring(L, -1));
+                LogError("Couldn't load embedded script file %s", className.c_str());
+            }
+        }
+        else
+        {
+            if (luaL_loadfile(L, fullFileName.c_str()) == LUA_OK)
+            {
+                if (lua_pcall(L, 0, numResults, 0) == LUA_OK)
+                {
+                    successful = true;
+                }
+                else
+                {
+                    LogError("Lua Error: %s\n", lua_tostring(L, -1));
+                }
+            }
+            else
+            {
+                LogError("Lua Error: %s\n", lua_tostring(L, -1));
+                LogError("Couldn't load script file %s", fullFileName.c_str());
+            }
+        }
+
+        if (successful && ret != nullptr)
+        {
+            LuaObjectToDatum(L, -1, *ret);
+            lua_pop(L, 1);
+        }
+    }
+#endif
+
+    return successful;
 }
 
 void ScriptComponent::CreateScriptInstance()
