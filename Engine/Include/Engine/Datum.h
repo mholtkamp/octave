@@ -232,6 +232,7 @@ protected:
 
     void ConstructData(DatumData& dataUnion, uint32_t index);
     void DestructData(DatumData& dataUnion, uint32_t index);
+    void CopyData(DatumData& dst, uint32_t dstIndex, DatumData& src, uint32_t srcIndex);
 
     virtual void Reset();
 

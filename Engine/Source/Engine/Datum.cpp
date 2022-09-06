@@ -1137,18 +1137,33 @@ void Datum::Reserve(uint32_t capacity)
             assert(0);
         }
 
-        void* previousBuffer = mData.vp;
+        DatumData prevData = mData;
 
         mCapacity = capacity;
         uint32_t typeSize = GetDataTypeSize();
         mData.vp = SYS_AlignedMalloc(mCapacity * typeSize, 4);
 
-        if (previousBuffer != nullptr)
+        if (prevData.vp != nullptr)
         {
-            memcpy(mData.vp, previousBuffer, typeSize * mCount);
+            if (mType == DatumType::String ||
+                mType == DatumType::Asset ||
+                mType == DatumType::Table)
+            {
+                for (uint32_t i = 0; i < mCount; ++i)
+                {
+                    ConstructData(mData, i);
+                    CopyData(mData, i, prevData, i);
+                    DestructData(prevData, i);
+                }
+            }
+            else
+            {
+                // For primitive types, a dumb memcpy will be fine.
+                memcpy(mData.vp, prevData.vp, typeSize * mCount);
+            }
 
-            SYS_AlignedFree(previousBuffer);
-            previousBuffer = nullptr;
+            SYS_AlignedFree(prevData.vp);
+            prevData.vp = nullptr;
         }
     }
 }
@@ -1426,6 +1441,26 @@ void Datum::DestructData(DatumData& dataUnion, uint32_t index)
         break;
 
     default: break;
+    }
+}
+
+void Datum::CopyData(DatumData& dst, uint32_t dstIndex, DatumData& src, uint32_t srcIndex)
+{
+    switch (mType)
+    {
+    case DatumType::String:
+        dst.s[dstIndex] = src.s[srcIndex];
+        break;
+    case DatumType::Asset:
+        dst.as[dstIndex] = src.as[srcIndex];
+        break;
+    case DatumType::Table:
+        dst.t[dstIndex] = src.t[srcIndex];
+        break;
+
+    default: 
+        memcpy(dst.by + (dstIndex * GetDataTypeSize()), src.by + (srcIndex * GetDataTypeSize()), GetDataTypeSize());
+        break;
     }
 }
 
