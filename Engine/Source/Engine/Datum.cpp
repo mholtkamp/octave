@@ -658,6 +658,48 @@ void Datum::PushBack(int32_t value)
     mCount++;
 }
 
+TableDatum* Datum::FindTableDatum(const char* key)
+{
+    TableDatum* ret = nullptr;
+    if (mType == DatumType::Table)
+    {
+        for (uint32_t i = 0; i < GetCount(); ++i)
+        {
+            TableDatum& td = GetTableDatum(i);
+
+            if (td.IsStringKey() &&
+                strcmp(td.GetStringKey(), key) == 0)
+            {
+                ret = &td;
+                break;
+            }
+        }
+    }
+
+    return ret;
+}
+
+TableDatum* Datum::FindTableDatum(int32_t key)
+{
+    TableDatum* ret = nullptr;
+    if (mType == DatumType::Table)
+    {
+        for (uint32_t i = 0; i < GetCount(); ++i)
+        {
+            TableDatum& td = GetTableDatum(i);
+
+            if (td.IsIntegerKey() &&
+                td.GetIntegerKey() == key)
+            {
+                ret = &td;
+                break;
+            }
+        }
+    }
+
+    return ret;
+}
+
 void Datum::PushBack(float value)
 {
     PrePushBack(DatumType::Float);

@@ -557,9 +557,7 @@ void LuaObjectToDatum(lua_State* L, int idx, Datum& datum)
         datum.PushBack(lua_tostring(L, idx));
         break;
     case LUA_TUSERDATA:
-        // 2 main possibilities, Vector or Asset.
-        // For Vector types, always return color for all 4 float components.
-        // Caller just needs to be aware.
+        // 4 main possibilities: Vector, Actor, Component, Asset
         if (luaL_testudata(L, idx, VECTOR_LUA_NAME))
         {
             glm::vec4 vect = CHECK_VECTOR(L, idx);
@@ -577,7 +575,7 @@ void LuaObjectToDatum(lua_State* L, int idx, Datum& datum)
         }
         else //if (CheckClassFlag(L, idx, ASSET_LUA_FLAG))
         {
-            // If the type check failed here, then you an unsupported userdata is being received.
+            // If the type check failed here, then an unsupported userdata is being received.
             Asset* asset = CHECK_ASSET(L, idx);
             datum.PushBack(asset);
         }
