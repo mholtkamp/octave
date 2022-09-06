@@ -164,6 +164,9 @@ public:
     void PushBackTableDatum(const TableDatum& value);
     void PushBack(RTTI* value);
 
+    TableDatum* FindTableDatum(const char* key);
+    TableDatum* FindTableDatum(int32_t key);
+
     // Assignment
     Datum& operator=(const Datum& src);
 
