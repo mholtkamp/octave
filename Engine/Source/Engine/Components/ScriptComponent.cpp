@@ -446,6 +446,20 @@ void ScriptComponent::GatherScriptProperties()
                                     break;
                                 }
 
+                                case DatumType::Table:
+                                {
+                                    push = false;
+                                    LogError("Table script properties are not supported.");
+                                    break;
+                                }
+
+                                case DatumType::Pointer:
+                                {
+                                    push = false;
+                                    LogError("Pointer script properties are not supported.");
+                                    break;
+                                }
+
                                 case DatumType::Count:
                                 {
                                     push = false;
@@ -659,6 +673,20 @@ void ScriptComponent::GatherReplicatedData()
                                 {
                                     push = false;
                                     LogError("Byte script net data are not supported.");
+                                    break;
+                                }
+
+                                case DatumType::Table:
+                                {
+                                    push = false;
+                                    LogError("Table script properties are not supported.");
+                                    break;
+                                }
+
+                                case DatumType::Pointer:
+                                {
+                                    push = false;
+                                    LogError("Pointer script properties are not supported.");
                                     break;
                                 }
 
@@ -997,6 +1025,20 @@ bool ScriptComponent::DownloadDatum(lua_State* L, Datum& datum, int tableIdx, co
             break;
         }
 
+        case DatumType::Table:
+        {
+            success = false;
+            LogError("Table script properties are not supported.");
+            break;
+        }
+
+        case DatumType::Pointer:
+        {
+            success = false;
+            LogError("Pointer script properties are not supported.");
+            break;
+        }
+
         case DatumType::Count:
         {
             success = false;
@@ -1040,6 +1082,8 @@ void ScriptComponent::UploadDatum(Datum& datum, const char* varName)
 
         case DatumType::Enum:
         case DatumType::Byte:
+        case DatumType::Table:
+        case DatumType::Pointer:
         case DatumType::Count:
             // These datum types are not supported.
             assert(0);
