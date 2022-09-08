@@ -1514,6 +1514,30 @@ void ScriptComponent::CallFunction(const char* name, uint32_t numParams, const D
 #endif
 }
 
+Datum ScriptComponent::GetField(const char* key)
+{
+    Datum ret;
+
+#if LUA_ENABLED
+    if (mTableName != "")
+    {
+        lua_State* L = GetLua();
+
+        // Grab the script instance table
+        lua_getglobal(L, mTableName.c_str());
+        assert(lua_istable(L, -1));
+        lua_getfield(L, -1, key);
+
+        LuaObjectToDatum(L, -1, ret);
+
+        // Pop field and instance table
+        lua_pop(L, 2);
+    }
+#endif
+
+    return ret;
+}
+
 ScriptComponent* ScriptComponent::GetExecutingScriptComponent()
 {
     return sExecutingScript;

@@ -254,6 +254,11 @@ bool Datum::IsExternal() const
     return mExternal;
 }
 
+bool Datum::IsValid() const
+{
+    return (mType != DatumType::Count && mCount > 0);
+}
+
 void Datum::ReadStream(Stream& stream, bool external)
 {
     // If the datum was previously in use, destroy it.
@@ -770,11 +775,13 @@ void Datum::PushBack(uint8_t value)
     mCount++;
 }
 
-void Datum::PushBackTableDatum(const TableDatum& value)
+TableDatum* Datum::PushBackTableDatum(const TableDatum& value)
 {
     PrePushBack(DatumType::Table);
     new (mData.t + mCount) TableDatum(value);
     mCount++;
+
+    return (mData.t + mCount);
 }
 
 void Datum::PushBack(RTTI* value)
@@ -782,6 +789,170 @@ void Datum::PushBack(RTTI* value)
     PrePushBack(DatumType::Pointer);
     new (mData.p + mCount) RTTI*(value);
     mCount++;
+}
+
+#define DEFINE_GET_FIELD(KeyType, DatType, Type, Default)           \
+Type Datum::Get##DatType##Field(KeyType key)                        \
+{                                                                   \
+    Type ret = Default;                                             \
+    if (mType == DatumType::Table)                                  \
+    {                                                               \
+        TableDatum* td = FindTableDatum(key);                       \
+        if (td != nullptr && td->GetType() == DatumType::DatType)   \
+        {                                                           \
+            ret = td->Get##DatType();                               \
+        }                                                           \
+    }                                                               \
+    return ret;                                                     \
+}
+
+DEFINE_GET_FIELD(const char*, Integer, int32_t, 0)
+DEFINE_GET_FIELD(const char*, Float, float, 0.0f)
+DEFINE_GET_FIELD(const char*, Bool, bool, false)
+DEFINE_GET_FIELD(const char*, String, std::string, "")
+DEFINE_GET_FIELD(const char*, Vector2D, glm::vec2, {})
+DEFINE_GET_FIELD(const char*, Vector, glm::vec3, {})
+DEFINE_GET_FIELD(const char*, Color, glm::vec4, {})
+DEFINE_GET_FIELD(const char*, Asset, Asset*, nullptr)
+DEFINE_GET_FIELD(const char*, Pointer, RTTI*, nullptr)
+
+DEFINE_GET_FIELD(int32_t, Integer, int32_t, 0)
+DEFINE_GET_FIELD(int32_t, Float, float, 0.0f)
+DEFINE_GET_FIELD(int32_t, Bool, bool, false)
+DEFINE_GET_FIELD(int32_t, String, std::string, "")
+DEFINE_GET_FIELD(int32_t, Vector2D, glm::vec2, {})
+DEFINE_GET_FIELD(int32_t, Vector, glm::vec3, {})
+DEFINE_GET_FIELD(int32_t, Color, glm::vec4, {})
+DEFINE_GET_FIELD(int32_t, Asset, Asset*, nullptr)
+DEFINE_GET_FIELD(int32_t, Pointer, RTTI*, nullptr)
+
+TableDatum& Datum::GetTableField(const char* key)
+{
+    static TableDatum nullTable;
+    TableDatum* ret = &nullTable;
+
+    if (mType == DatumType::Table)
+    {
+        TableDatum* td = FindTableDatum(key);
+        if (td != nullptr && td->GetType() == DatumType::Table)
+        {
+            ret = td;
+        }
+    }
+
+    return *ret;
+}
+
+TableDatum& Datum::GetTableField(int32_t key)
+{
+    static TableDatum nullTable;
+    TableDatum* ret = &nullTable;
+
+    if (mType == DatumType::Table)
+    {
+        TableDatum* td = FindTableDatum(key);
+        if (td != nullptr && td->GetType() == DatumType::Table)
+        {
+            ret = td;
+        }
+    }
+
+    return *ret;
+}
+
+#define DEFINE_SET_FIELD(KeyType, DatType, Type)                                            \
+void Datum::Set##DatType##Field(KeyType key, Type value)                                    \
+{                                                                                           \
+    if (mType == DatumType::Table)                                                          \
+    {                                                                                       \
+        TableDatum* td = FindTableDatum(key);                                               \
+        if (td == nullptr)                                                                  \
+        {                                                                                   \
+            PushBackTableDatum(TableDatum(key, value));                                     \
+        }                                                                                   \
+        else if (td->GetType() == DatumType::Count || td->GetType() == DatumType::DatType)  \
+        {                                                                                   \
+            td->Set##DatType(value);                                                        \
+        }                                                                                   \
+        else                                                                                \
+        {                                                                                   \
+            LogWarning("SetField() failed because of mismatching types");                   \
+        }                                                                                   \
+    }                                                                                       \
+}
+
+DEFINE_SET_FIELD(const char*, Integer, int32_t)
+DEFINE_SET_FIELD(const char*, Float, float)
+DEFINE_SET_FIELD(const char*, Bool, bool)
+DEFINE_SET_FIELD(const char*, String, const std::string&)
+DEFINE_SET_FIELD(const char*, Vector2D, glm::vec2)
+DEFINE_SET_FIELD(const char*, Vector, glm::vec3)
+DEFINE_SET_FIELD(const char*, Color, glm::vec4)
+DEFINE_SET_FIELD(const char*, Asset, Asset*)
+DEFINE_SET_FIELD(const char*, Pointer, RTTI*)
+
+DEFINE_SET_FIELD(int32_t, Integer, int32_t)
+DEFINE_SET_FIELD(int32_t, Float, float)
+DEFINE_SET_FIELD(int32_t, Bool, bool)
+DEFINE_SET_FIELD(int32_t, String, const std::string&)
+DEFINE_SET_FIELD(int32_t, Vector2D, glm::vec2)
+DEFINE_SET_FIELD(int32_t, Vector, glm::vec3)
+DEFINE_SET_FIELD(int32_t, Color, glm::vec4)
+DEFINE_SET_FIELD(int32_t, Asset, Asset*)
+DEFINE_SET_FIELD(int32_t, Pointer, RTTI*)
+
+void Datum::SetTableField(const char* key, const TableDatum& value)
+{
+    if (mType == DatumType::Table)
+    {
+        TableDatum* td = FindTableDatum(key);
+        if (td == nullptr)
+        {
+            td = PushBackTableDatum(TableDatum());
+            td->SetStringKey(key);
+            td->SetTableDatum(value);
+        }
+        else if (td->GetType() == DatumType::Count || td->GetType() == DatumType::Table)
+        {
+            td->SetTableDatum(value);
+        }
+        else
+        {
+            LogWarning("Failed to SetTableField() because of mismatching type");
+        }
+    }
+}
+
+void Datum::SetTableField(int32_t key, const TableDatum& value)
+{
+    if (mType == DatumType::Table)
+    {
+        TableDatum* td = FindTableDatum(key);
+        if (td == nullptr)
+        {
+            td = PushBackTableDatum(TableDatum());
+            td->SetIntegerKey(key);
+            td->SetTableDatum(value);
+        }
+        else if (td->GetType() == DatumType::Count || td->GetType() == DatumType::Table)
+        {
+            td->SetTableDatum(value);
+        }
+        else
+        {
+            LogWarning("Failed to SetTableField() because of mismatching type");
+        }
+    }
+}
+
+bool Datum::HasField(const char* key)
+{
+    return (mType == DatumType::Table && FindTableDatum(key) != nullptr);
+}
+
+bool Datum::HasField(int32_t key)
+{
+    return (mType == DatumType::Table && FindTableDatum(key) != nullptr);
 }
 
 Datum& Datum::operator=(const Datum& src)

@@ -90,6 +90,8 @@ public:
     Datum CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6, const Datum& param7);
     void CallFunction(const char* name, uint32_t numParams, const Datum** params, Datum* ret);
 
+    Datum GetField(const char* key);
+
     static ScriptComponent* GetExecutingScriptComponent();
     static const char* GetExecutingScriptTableName();
     static bool OnRepHandler(Datum* datum, const void* newValue);
