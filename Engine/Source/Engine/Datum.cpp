@@ -806,8 +806,50 @@ Type Datum::Get##DatType##Field(KeyType key)                        \
     return ret;                                                     \
 }
 
-DEFINE_GET_FIELD(const char*, Integer, int32_t, 0)
-DEFINE_GET_FIELD(const char*, Float, float, 0.0f)
+//DEFINE_GET_FIELD(const char*, Integer, int32_t, 0)
+//DEFINE_GET_FIELD(const char*, Float, float, 0.0f)
+int32_t Datum::GetIntegerField(const char* key)
+{
+    int32_t ret = 0;
+    if (mType == DatumType::Table)
+    {
+        TableDatum* td = FindTableDatum(key);
+        if (td != nullptr)
+        {
+            if (td->GetType() == DatumType::Integer)
+            {
+                ret = td->GetInteger();
+            }
+            else if (td->GetType() == DatumType::Float)
+            {
+                ret = int32_t(td->GetFloat() + 0.5f);
+            }
+        }
+    }
+    return ret;
+}
+
+float Datum::GetFloatField(const char* key)
+{
+    float ret = 0;
+    if (mType == DatumType::Table)
+    {
+        TableDatum* td = FindTableDatum(key);
+        if (td != nullptr)
+        {
+            if (td->GetType() == DatumType::Float)
+            {
+                ret = td->GetFloat();
+            }
+            else if (td->GetType() == DatumType::Integer)
+            {
+                ret = (float)td->GetInteger();
+            }
+        }
+    }
+    return ret;
+}
+
 DEFINE_GET_FIELD(const char*, Bool, bool, false)
 DEFINE_GET_FIELD(const char*, String, std::string, "")
 DEFINE_GET_FIELD(const char*, Vector2D, glm::vec2, {})
@@ -816,8 +858,51 @@ DEFINE_GET_FIELD(const char*, Color, glm::vec4, {})
 DEFINE_GET_FIELD(const char*, Asset, Asset*, nullptr)
 DEFINE_GET_FIELD(const char*, Pointer, RTTI*, nullptr)
 
-DEFINE_GET_FIELD(int32_t, Integer, int32_t, 0)
-DEFINE_GET_FIELD(int32_t, Float, float, 0.0f)
+//DEFINE_GET_FIELD(int32_t, Integer, int32_t, 0)
+//DEFINE_GET_FIELD(int32_t, Float, float, 0.0f)
+
+int32_t Datum::GetIntegerField(int32_t key)
+{
+    int32_t ret = 0;
+    if (mType == DatumType::Table)
+    {
+        TableDatum* td = FindTableDatum(key);
+        if (td != nullptr)
+        {
+            if (td->GetType() == DatumType::Integer)
+            {
+                ret = td->GetInteger();
+            }
+            else if (td->GetType() == DatumType::Float)
+            {
+                ret = int32_t(td->GetFloat() + 0.5f);
+            }
+        }
+    }
+    return ret;
+}
+
+float Datum::GetFloatField(int32_t key)
+{
+    float ret = 0;
+    if (mType == DatumType::Table)
+    {
+        TableDatum* td = FindTableDatum(key);
+        if (td != nullptr)
+        {
+            if (td->GetType() == DatumType::Float)
+            {
+                ret = td->GetFloat();
+            }
+            else if (td->GetType() == DatumType::Integer)
+            {
+                ret = (float)td->GetInteger();
+            }
+        }
+    }
+    return ret;
+}
+
 DEFINE_GET_FIELD(int32_t, Bool, bool, false)
 DEFINE_GET_FIELD(int32_t, String, std::string, "")
 DEFINE_GET_FIELD(int32_t, Vector2D, glm::vec2, {})
