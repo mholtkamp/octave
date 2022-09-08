@@ -36,6 +36,12 @@ TableDatum::TableDatum(const char* key, const char* value)
     SetStringKey(key);
 }
 
+TableDatum::TableDatum(const char* key, const std::string& value)
+{
+    PushBack(value);
+    SetStringKey(key);
+}
+
 TableDatum::TableDatum(const char* key, glm::vec2 value)
 {
     PushBack(value);
@@ -72,6 +78,12 @@ TableDatum::TableDatum(const char* key, RTTI* value)
     SetStringKey(key);
 }
 
+//TableDatum::TableDatum(const char* key, const TableDatum& value)
+//{
+//    PushBackTableDatum(value);
+//    SetStringKey(key);
+//}
+
 TableDatum::TableDatum(int32_t key, int32_t value)
 {
     PushBack(value);
@@ -91,6 +103,12 @@ TableDatum::TableDatum(int32_t key, bool value)
 }
 
 TableDatum::TableDatum(int32_t key, const char* value)
+{
+    PushBack(value);
+    SetIntegerKey(key);
+}
+
+TableDatum::TableDatum(int32_t key, const std::string& value)
 {
     PushBack(value);
     SetIntegerKey(key);
@@ -131,6 +149,12 @@ TableDatum::TableDatum(int32_t key, RTTI* value)
     PushBack(value);
     SetIntegerKey(key);
 }
+
+//TableDatum::TableDatum(int32_t key, const TableDatum& value)
+//{
+//    PushBackTableDatum(value);
+//    SetIntegerKey(key);
+//}
 
 TableDatum::TableDatum(const TableDatum& src) :
     Datum(src)

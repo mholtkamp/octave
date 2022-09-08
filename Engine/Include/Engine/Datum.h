@@ -102,6 +102,7 @@ public:
     uint32_t GetDataTypeSerializationSize() const;
 
     bool IsExternal() const;
+    bool IsValid() const;
 
     virtual void ReadStream(Stream& stream, bool external);
     virtual void WriteStream(Stream& stream) const;
@@ -161,11 +162,59 @@ public:
     void PushBack(Asset* value);
     void PushBack(uint32_t value);
     void PushBack(uint8_t value);
-    void PushBackTableDatum(const TableDatum& value);
+    TableDatum* PushBackTableDatum(const TableDatum& value);
     void PushBack(RTTI* value);
 
     TableDatum* FindTableDatum(const char* key);
     TableDatum* FindTableDatum(int32_t key);
+
+    // Table get/set convenience functions
+    int32_t GetIntegerField(const char* key);
+    float GetFloatField(const char* key);
+    bool GetBoolField(const char* key);
+    std::string GetStringField(const char* key);
+    glm::vec2 GetVector2DField(const char* key);
+    glm::vec3 GetVectorField(const char* key);
+    glm::vec4 GetColorField(const char* key);
+    Asset* GetAssetField(const char* key);
+    RTTI* GetPointerField(const char* key);
+    TableDatum& GetTableField(const char* key);
+
+    int32_t GetIntegerField(int32_t key);
+    float GetFloatField(int32_t key);
+    bool GetBoolField(int32_t key);
+    std::string GetStringField(int32_t key);
+    glm::vec2 GetVector2DField(int32_t key);
+    glm::vec3 GetVectorField(int32_t key);
+    glm::vec4 GetColorField(int32_t key);
+    Asset* GetAssetField(int32_t key);
+    RTTI* GetPointerField(int32_t key);
+    TableDatum& GetTableField(int32_t key);
+
+    void SetIntegerField(const char* key, int32_t value);
+    void SetFloatField(const char* key, float value);
+    void SetBoolField(const char* key, bool value);
+    void SetStringField(const char* key, const std::string& value);
+    void SetVector2DField(const char* key, glm::vec2 value);
+    void SetVectorField(const char* key, glm::vec3 value);
+    void SetColorField(const char* key, glm::vec4 value);
+    void SetAssetField(const char* key, Asset* value);
+    void SetPointerField(const char* key, RTTI* value);
+    void SetTableField(const char* key, const TableDatum& value);
+
+    void SetIntegerField(int32_t key, int32_t value);
+    void SetFloatField(int32_t key, float value);
+    void SetBoolField(int32_t key, bool value);
+    void SetStringField(int32_t key, const std::string& value);
+    void SetVector2DField(int32_t key, glm::vec2 value);
+    void SetVectorField(int32_t key, glm::vec3 value);
+    void SetColorField(int32_t key, glm::vec4 value);
+    void SetAssetField(int32_t key, Asset* value);
+    void SetPointerField(int32_t key, RTTI* value);
+    void SetTableField(int32_t key, const TableDatum& value);
+
+    bool HasField(const char* key);
+    bool HasField(int32_t key);
 
     // Assignment
     Datum& operator=(const Datum& src);
