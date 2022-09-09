@@ -61,8 +61,6 @@ void AddDebugDraw(
     float life = 0.0f,
     Material* material = nullptr);
 
-float RotateYawTowardDirection(float srcYaw, glm::vec3 dir, float speed, float deltaTime);
-
 #if LUA_ENABLED
 void CreateTableLua(lua_State* L, const Datum& datum);
 void CreateTableCpp(lua_State* L, int tableIdx, Datum& datum);

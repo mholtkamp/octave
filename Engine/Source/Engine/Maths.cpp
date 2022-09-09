@@ -259,3 +259,9 @@ void Maths::SeedRand(uint32_t seed)
 {
     srand(seed);
 }
+
+float Maths::RotateYawTowardDirection(float srcYaw, glm::vec3 dir, float speed, float deltaTime)
+{
+    float targetYaw = RADIANS_TO_DEGREES * atan2f(-dir.x, -dir.z);
+    return Maths::ApproachAngle(srcYaw, targetYaw, speed, deltaTime);
+}

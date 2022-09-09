@@ -19,6 +19,8 @@ struct Maths_Lua
     static int Clamp(lua_State* L);
     static int Lerp(lua_State* L);
     static int Sign(lua_State* L);
+    static int RotateYawTowardDirection(lua_State* L);
+    static int Reflect(lua_State* L);
 
     static void Bind();
 };
