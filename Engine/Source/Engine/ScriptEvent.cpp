@@ -84,14 +84,27 @@ void ScriptEvent::Animation(std::string& tableName, std::string& funcName, const
     lua_State* L = GetLua();
     if (PrepFunctionCall(L, tableName, funcName))
     {
-        Actor_Lua::Create(L, animEvent.mActor);             // arg2 - actor
-        Component_Lua::Create(L, animEvent.mComponent);     // arg3 - component
-        lua_pushstring(L, animEvent.mName.c_str());         // arg4 - event name
-        lua_pushstring(L, animEvent.mAnimation.c_str());    // arg5 - animation name
-        lua_pushnumber(L, animEvent.mTime);                 // arg6 - time
-        Vector_Lua::Create(L, animEvent.mValue);            // arg7 - value
+        lua_newtable(L);
 
-        ExecFunctionCall(L, 7);
+        Actor_Lua::Create(L, animEvent.mActor);
+        lua_setfield(L, -2, "actor");
+
+        Component_Lua::Create(L, animEvent.mComponent);
+        lua_setfield(L, -2, "component");
+
+        lua_pushstring(L, animEvent.mName.c_str());
+        lua_setfield(L, -2, "name");
+
+        lua_pushstring(L, animEvent.mAnimation.c_str());
+        lua_setfield(L, -2, "animation");
+
+        lua_pushnumber(L, animEvent.mTime);
+        lua_setfield(L, -2, "time");
+
+        Vector_Lua::Create(L, animEvent.mValue);
+        lua_setfield(L, -2, "value");
+
+        ExecFunctionCall(L, 2);
     }
 }
 

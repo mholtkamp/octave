@@ -144,6 +144,30 @@ int Maths_Lua::Sign(lua_State* L)
     return 1;
 }
 
+int Maths_Lua::RotateYawTowardDirection(lua_State* L)
+{
+    float srcYaw = CHECK_NUMBER(L, 1);
+    glm::vec3 dir = CHECK_VECTOR(L, 2);
+    float speed = CHECK_NUMBER(L, 3);
+    float deltaTime = CHECK_NUMBER(L, 4);
+
+    float ret = Maths::RotateYawTowardDirection(srcYaw, dir, speed, deltaTime);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
+int Maths_Lua::Reflect(lua_State* L)
+{
+    glm::vec3 i = CHECK_VECTOR(L, 1);
+    glm::vec3 n = CHECK_VECTOR(L, 2);
+
+    glm::vec3 ret = glm::reflect(i, n);
+
+    Vector_Lua::Create(L, ret);
+    return 1;
+}
+
 void Maths_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -180,6 +204,12 @@ void Maths_Lua::Bind()
 
     lua_pushcfunction(L, Sign);
     lua_setfield(L, tableIdx, "Sign");
+
+    lua_pushcfunction(L, RotateYawTowardDirection);
+    lua_setfield(L, tableIdx, "RotateYawTowardDirection");
+
+    lua_pushcfunction(L, Reflect);
+    lua_setfield(L, tableIdx, "Reflect");
 
     lua_setglobal(L, MATHS_LUA_NAME);
 

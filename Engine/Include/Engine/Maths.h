@@ -43,6 +43,8 @@ public:
     static glm::quat ExtractRotation(const glm::mat4& mat);
     static glm::vec3 ExtractScale(const glm::mat4& mat);
 
+    static float RotateYawTowardDirection(float srcYaw, glm::vec3 dir, float speed, float deltaTime);
+
 private:
 
     static bool mRandSeeded;

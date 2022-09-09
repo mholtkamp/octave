@@ -352,12 +352,6 @@ void AddDebugDraw(
 #endif
 }
 
-float RotateYawTowardDirection(float srcYaw, glm::vec3 dir, float speed, float deltaTime)
-{
-    float targetYaw = RADIANS_TO_DEGREES * atan2f(-dir.x, -dir.z);
-    return Maths::ApproachAngle(srcYaw, targetYaw, speed, deltaTime);
-}
-
 #if LUA_ENABLED
 
 bool PreFuncCall(lua_State* L, const char* funcName, const char* selfName)
