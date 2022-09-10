@@ -1,15 +1,21 @@
 #include "ScriptAutoReg.h"
 
-std::vector<AutoRegData> gAutoRegScriptFuncs;
+std::vector<AutoRegData>& GetGlobalAutoRegArray()
+{
+    static std::vector<AutoRegData> sAutoRegScriptFuncs;
+    return sAutoRegScriptFuncs;
+}
 
 void InitAutoRegScripts()
 {
     lua_State* L = GetLua();
 
-    for (AutoRegData& data : gAutoRegScriptFuncs)
+    std::vector<AutoRegData>& autoRegArray = GetGlobalAutoRegArray();
+
+    for (AutoRegData& data : autoRegArray)
     {
         if (data.mTableName != nullptr &&
-            data.mTableName != '\0')
+            data.mTableName[0] != '\0')
         {
             // Does the table already exist?
             lua_getglobal(L, data.mTableName);
@@ -41,7 +47,7 @@ void InitAutoRegScripts()
 
     }
 
-    gAutoRegScriptFuncs.clear();
-    gAutoRegScriptFuncs.shrink_to_fit();
+    autoRegArray.clear();
+    autoRegArray.shrink_to_fit();
 }
 
