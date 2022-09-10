@@ -417,6 +417,7 @@
     <ClCompile Include="Source\Engine\Property.cpp" />
     <ClCompile Include="Source\Engine\Rect.cpp" />
     <ClCompile Include="Source\Engine\Renderer.cpp" />
+    <ClCompile Include="Source\Engine\ScriptAutoReg.cpp" />
     <ClCompile Include="Source\Engine\ScriptEvent.cpp" />
     <ClCompile Include="Source\Engine\StaticMeshActor.cpp" />
     <ClCompile Include="Source\Engine\stb_image.cpp" />
@@ -540,6 +541,7 @@
     <ClInclude Include="Include\Engine\Assets\StaticMesh.h" />
     <ClInclude Include="Include\Engine\Assets\Texture.h" />
     <ClInclude Include="Include\Engine\ScriptableFuncPointer.h" />
+    <ClInclude Include="Include\Engine\ScriptAutoReg.h" />
     <ClInclude Include="Include\Engine\ScriptEvent.h" />
     <ClInclude Include="Include\Engine\ScriptUtils.h" />
     <ClInclude Include="Include\Engine\TableDatum.h" />

@@ -720,6 +720,9 @@
     <ClCompile Include="Source\LuaBindings\LuaTypeCheck.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\ScriptAutoReg.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1294,6 +1297,9 @@
     </ClInclude>
     <ClInclude Include="Include\LuaBindings\LuaTypeCheck.h">
       <Filter>Header Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Engine\ScriptAutoReg.h">
+      <Filter>Header Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
