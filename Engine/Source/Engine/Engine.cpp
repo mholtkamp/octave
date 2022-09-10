@@ -13,6 +13,7 @@
 #include "Utilities.h"
 #include "Profiler.h"
 #include "Maths.h"
+#include "ScriptAutoReg.h"
 #include "Components/ScriptComponent.h"
 
 #include "System/System.h"
@@ -208,8 +209,10 @@ bool Initialize(InitOptions& initOptions)
 
     sEngineState.mLua = luaL_newstate();
     luaL_openlibs(sEngineState.mLua);
+
     BindLuaInterface();
     SetupLuaPath();
+    InitAutoRegScripts();
 #endif
 
     // We need to force linkage of any class that uses the factory pattern

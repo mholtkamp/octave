@@ -39,7 +39,7 @@ class ActorFactory;
             int mtIndex = CreateActorMetatable(L, #Base, #Parent); \
             for (AutoRegData& data : sAutoRegs) { \
                 lua_pushcfunction(L, data.mFunc); \
-                lua_setfield(L, mtIndex, data.mName); \
+                lua_setfield(L, mtIndex, data.mFuncName); \
             } \
             lua_pop(L, 1); \
             sAutoRegs.clear(); \
