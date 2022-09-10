@@ -26,6 +26,6 @@ struct ScriptFuncAutoReg
     }
 };
 
-extern std::vector<AutoRegData> gAutoRegScriptFuncs;
+std::vector<AutoRegData>& GetGlobalAutoRegArray();
 
 void InitAutoRegScripts();
