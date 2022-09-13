@@ -65,6 +65,7 @@ void AddDebugDraw(
 void CreateTableLua(lua_State* L, const Datum& datum);
 void CreateTableCpp(lua_State* L, int tableIdx, Datum& datum);
 void LuaPushDatum(lua_State* L, const Datum& arg);
+Datum LuaObjectToDatum(lua_State* L, int idx);
 void LuaObjectToDatum(lua_State* L, int idx, Datum& datum);
 
 void CallLuaFunc0(const char* funcName, const char* selfTable);
