@@ -52,6 +52,14 @@ int Engine_Lua::IsEditor(lua_State* L)
     return 1;
 }
 
+int Engine_Lua::Break(lua_State* L)
+{
+#if PLATFORM_WINDOWS && _DEBUG
+    DebugBreak();
+#endif
+    return 0;
+}
+
 void Engine_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -73,6 +81,9 @@ void Engine_Lua::Bind()
 
     lua_pushcfunction(L, Engine_Lua::IsEditor);
     lua_setfield(L, tableIdx, "IsEditor");
+
+    lua_pushcfunction(L, Engine_Lua::Break);
+    lua_setfield(L, tableIdx, "Break");
 
     lua_setglobal(L, "Engine");
 
