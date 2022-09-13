@@ -508,7 +508,11 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
     case DatumType::Pointer:
     {
         RTTI* pointer = arg.GetPointer();
-        if (pointer->Is(Actor::ClassRuntimeId()))
+        if (pointer == nullptr)
+        {
+            lua_pushnil(L);
+        }
+        else if (pointer->Is(Actor::ClassRuntimeId()))
         {
             Actor_Lua::Create(L, (Actor*)pointer);
         }
