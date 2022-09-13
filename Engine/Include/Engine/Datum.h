@@ -80,7 +80,7 @@ public:
     // Conversion operators
     operator int32_t() const { return GetInteger(); }
     operator uint32_t() const { return (mType == DatumType::Integer) ? uint32_t(GetInteger()) : GetEnum(); }
-    operator float() const { return GetFloat(); }
+    operator float() const { return (mType == DatumType::Integer) ? float(GetInteger()) : GetFloat(); }
     operator bool() const { return GetBool(); }
     operator const char*() const { return GetString().c_str(); }
     operator std::string() const { return GetString(); }
