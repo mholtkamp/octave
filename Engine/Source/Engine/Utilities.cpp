@@ -532,6 +532,14 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
     }
 }
 
+Datum LuaObjectToDatum(lua_State* L, int idx)
+{
+    // Hope return value optimization saves unnecessary copies/alloc/free?
+    Datum ret;
+    LuaObjectToDatum(L, idx, ret);
+    return ret;
+}
+
 void LuaObjectToDatum(lua_State* L, int idx, Datum& datum)
 {
     int luaType = lua_type(L, idx);
