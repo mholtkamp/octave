@@ -11,6 +11,163 @@
 #include "ScriptAutoReg.h"
 
 #define SF_CHECK_ACTOR(L, arg) CheckActorLuaType(L, arg, "Actor", "cfActor")
+#define SF_CHECK_COMPONENT(L, arg) CheckComponentLuaType(L, arg, "Component", "cfComponent")
+
+#define SfActor(idx) SF_CHECK_ACTOR(L, idx)
+#define SfComponent(idx) SF_CHECK_COMPONENT(L, idx)
+#define SfAsset(idx) SF_CHECK_ASSET(L, idx)
+
+#define SfInt(idx) lua_tointeger(L, idx)
+#define SfFloat(idx) lua_tonumber(L, idx)
+#define SfString(idx) lua_tostring(L, idx)
+#define SfBool(idx) lua_toboolean(L, idx)
+
+#define SCRIPT_FUNC_X1(FuncName, P0)                                                                        \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        ScriptActorAlias* actor = SF_CHECK_ACTOR(L, 1)->As<ScriptActorAlias>();                                 \
+        actor->FuncName(P0(2));                                                             \
+        return 0;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define SCRIPT_FUNC_X2(FuncName, P0, P1)                                                                        \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        ScriptActorAlias* actor = SF_CHECK_ACTOR(L, 1)->As<ScriptActorAlias>();                                 \
+        actor->FuncName(P0(2), P1(3));                                                             \
+        return 0;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define SCRIPT_FUNC_X3(FuncName, P0, P1, P2)                                                                        \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        ScriptActorAlias* actor = SF_CHECK_ACTOR(L, 1)->As<ScriptActorAlias>();                                 \
+        actor->FuncName(P0(2), P1(3), P2(4));                                                             \
+        return 0;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define SCRIPT_FUNC_X4(FuncName, P0, P1, P2, P3)                                                                        \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        ScriptActorAlias* actor = SF_CHECK_ACTOR(L, 1)->As<ScriptActorAlias>();                                 \
+        actor->FuncName(P0(2), P1(3), P2(4), P3(5));                                                             \
+        return 0;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define SCRIPT_FUNC_R_X1(FuncName, P0)                                                                        \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        ScriptActorAlias* actor = SF_CHECK_ACTOR(L, 1)->As<ScriptActorAlias>();                                 \
+        Datum ret = actor->FuncName(P0(2));                                                             \
+        LuaPushDatum(L, ret);                                                                                   \
+        return 1;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define SCRIPT_FUNC_R_X2(FuncName, P0, P1)                                                                        \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        ScriptActorAlias* actor = SF_CHECK_ACTOR(L, 1)->As<ScriptActorAlias>();                                 \
+        Datum ret = actor->FuncName(P0(2), P1(3));                                                             \
+        LuaPushDatum(L, ret);                                                                                   \
+        return 1;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define SCRIPT_FUNC_R_X3(FuncName, P0, P1, P2)                                                                  \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        ScriptActorAlias* actor = SF_CHECK_ACTOR(L, 1)->As<ScriptActorAlias>();                                 \
+        Datum ret = actor->FuncName(P0(2), P1(3), P2(4));                                                       \
+        LuaPushDatum(L, ret);                                                                                   \
+        return 1;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define SCRIPT_FUNC_R_X4(FuncName, P0, P1, P2, P3)                                                              \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        ScriptActorAlias* actor = SF_CHECK_ACTOR(L, 1)->As<ScriptActorAlias>();                                 \
+        Datum ret = actor->FuncName(P0(2), P1(3), P2(4), P3(5));                                                \
+        LuaPushDatum(L, ret);                                                                                   \
+        return 1;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+
+#define GLOBAL_SCRIPT_FUNC_X1(FuncName, P0)                                                                        \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        FuncName(P0(1));                                                             \
+        return 0;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define GLOBAL_SCRIPT_FUNC_X2(FuncName, P0, P1)                                                                        \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        FuncName(P0(1), P1(2));                                                             \
+        return 0;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define GLOBAL_SCRIPT_FUNC_X3(FuncName, P0, P1, P2)                                                                        \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        FuncName(P0(1), P1(2), P2(3));                                                             \
+        return 0;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define GLOBAL_SCRIPT_FUNC_X4(FuncName, P0, P1, P2, P3)                                                                        \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        FuncName(P0(1), P1(2), P2(3), P3(4));                                                             \
+        return 0;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define GLOBAL_SCRIPT_FUNC_R_X1(FuncName, P0)                                                                        \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        Datum ret = FuncName(P0(1));                                                             \
+        LuaPushDatum(L, ret);                                                                                   \
+        return 1;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define GLOBAL_SCRIPT_FUNC_R_X2(FuncName, P0, P1)                                                                        \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        Datum ret = FuncName(P0(1), P1(2));                                                             \
+        LuaPushDatum(L, ret);                                                                                   \
+        return 1;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define GLOBAL_SCRIPT_FUNC_R_X3(FuncName, P0, P1, P2)                                                                  \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        Datum ret = FuncName(P0(1), P1(2), P2(3));                                                       \
+        LuaPushDatum(L, ret);                                                                                   \
+        return 1;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+#define GLOBAL_SCRIPT_FUNC_R_X4(FuncName, P0, P1, P2, P3)                                                              \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        Datum ret = FuncName(P0(1), P1(2), P2(3), P3(4));                                                \
+        LuaPushDatum(L, ret);                                                                                   \
+        return 1;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+
+
 
 #define SCRIPT_FUNC(FuncName)                                                                                   \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -543,3 +700,28 @@
 #define GSF_R_7(FuncName) GLOBAL_SCRIPT_FUNC_R_7("", FuncName)
 #define GSF_R_8(FuncName) GLOBAL_SCRIPT_FUNC_R_8("", FuncName)
 
+// Explicit (needed for pointer conversions)
+#define ASF_X1(FuncName) SCRIPT_FUNC_X1(FuncName)
+#define ASF_X2(FuncName) SCRIPT_FUNC_X2(FuncName)
+#define ASF_X3(FuncName) SCRIPT_FUNC_X3(FuncName)
+#define ASF_X4(FuncName) SCRIPT_FUNC_X4(FuncName)
+#define ASF_R_X1(FuncName) SCRIPT_FUNC_R_X1(FuncName)
+#define ASF_R_X2(FuncName) SCRIPT_FUNC_R_X2(FuncName)
+#define ASF_R_X3(FuncName) SCRIPT_FUNC_R_X3(FuncName)
+#define ASF_R_X4(FuncName) SCRIPT_FUNC_R_X4(FuncName)
+#define TSF_X1(TableName, FuncName) GLOBAL_SCRIPT_FUNC_1(TableName, FuncName)
+#define TSF_X2(TableName, FuncName) GLOBAL_SCRIPT_FUNC_2(TableName, FuncName)
+#define TSF_X3(TableName, FuncName) GLOBAL_SCRIPT_FUNC_3(TableName, FuncName)
+#define TSF_X4(TableName, FuncName) GLOBAL_SCRIPT_FUNC_4(TableName, FuncName)
+#define TSF_R_X1(TableName, FuncName) GLOBAL_SCRIPT_FUNC_R_X1(TableName, FuncName)
+#define TSF_R_X2(TableName, FuncName) GLOBAL_SCRIPT_FUNC_R_X2(TableName, FuncName)
+#define TSF_R_X3(TableName, FuncName) GLOBAL_SCRIPT_FUNC_R_X3(TableName, FuncName)
+#define TSF_R_X4(TableName, FuncName) GLOBAL_SCRIPT_FUNC_R_X4(TableName, FuncName)
+#define GSF_X1(FuncName) GLOBAL_SCRIPT_FUNC_X1("", FuncName)
+#define GSF_X2(FuncName) GLOBAL_SCRIPT_FUNC_X2("", FuncName)
+#define GSF_X3(FuncName) GLOBAL_SCRIPT_FUNC_X3("", FuncName)
+#define GSF_X4(FuncName) GLOBAL_SCRIPT_FUNC_X4("", FuncName)
+#define GSF_R_X1(FuncName) GLOBAL_SCRIPT_FUNC_R_X1("", FuncName)
+#define GSF_R_X2(FuncName) GLOBAL_SCRIPT_FUNC_R_X2("", FuncName)
+#define GSF_R_X3(FuncName) GLOBAL_SCRIPT_FUNC_R_X3("", FuncName)
+#define GSF_R_X4(FuncName) GLOBAL_SCRIPT_FUNC_R_X4("", FuncName)
