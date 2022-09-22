@@ -300,3 +300,6 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+
+# Visual Studio Code settings
+.vscode/
