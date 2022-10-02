@@ -107,7 +107,6 @@ void AudioComponent::Destroy()
 
 void AudioComponent::Tick(float deltaTime)
 {
-    // Test
     TransformComponent::Tick(deltaTime);
 
     if (mPlaying)
