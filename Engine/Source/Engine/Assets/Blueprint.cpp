@@ -253,7 +253,7 @@ const Property* Blueprint::GetComponentProperty(int32_t index, const char* name)
 {
     const Property* ret = nullptr;
 
-    if (index >= 0 && index < mComponents.size())
+    if (index >= 0 && index < (int32_t)mComponents.size())
     {
         const std::vector<Property>& props = mComponents[index].mProperties;
 
