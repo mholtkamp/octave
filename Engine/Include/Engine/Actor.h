@@ -31,7 +31,6 @@ class ActorFactory;
 #define DEFINE_ACTOR(Base, Parent) \
         DEFINE_FACTORY(Base, Actor); \
         DEFINE_RTTI(Base); \
-        typedef Base ScriptActorAlias; \
         static std::vector<AutoRegData> sAutoRegs; \
         void Base::RegisterScriptFuncs(lua_State* L) { \
             if (AreScriptFuncsRegistered(Base::GetStaticType())) { return; } \
