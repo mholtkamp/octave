@@ -396,7 +396,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             default: assert(0); break;
             }
 
-            std::string makeCmd = std::string("make -C ") + (standalone ? buildProjName : projectDir) + " -f " + makefilePath;
+            std::string makeCmd = std::string("make -C ") + (standalone ? buildProjName : projectDir) + " -f " + makefilePath + " -j 6";
             SYS_Exec(makeCmd.c_str());
         }
     }
