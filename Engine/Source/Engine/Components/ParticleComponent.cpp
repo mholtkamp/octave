@@ -53,6 +53,7 @@ void ParticleComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Time Multiplier", this, &mTimeMultiplier));
     outProps.push_back(Property(DatumType::Bool, "Use Local Space", this, &mUseLocalSpace));
     outProps.push_back(Property(DatumType::Bool, "Emit", this, &mEmit, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Always Simulate", this, &mAlwaysSimulate));
 }
 
 void ParticleComponent::Create()
@@ -88,6 +89,7 @@ void ParticleComponent::SaveStream(Stream& stream)
     stream.WriteFloat(mTimeMultiplier);
     stream.WriteBool(mUseLocalSpace);
     stream.WriteBool(mEmit);
+    //stream.WriteBool(mAlwaysSimulate);
 }
 
 void ParticleComponent::LoadStream(Stream& stream)
@@ -99,6 +101,7 @@ void ParticleComponent::LoadStream(Stream& stream)
     mTimeMultiplier = stream.ReadFloat();
     mUseLocalSpace = stream.ReadBool();
     mEmit = stream.ReadBool();
+    //mAlwaysSimulate = stream.ReadBool();
 }
 
 DrawData ParticleComponent::GetDrawData()
@@ -126,6 +129,19 @@ void ParticleComponent::Render()
 void ParticleComponent::Tick(float deltaTime)
 {
     PrimitiveComponent::Tick(deltaTime);
+    mHasSimulatedThisFrame = false;
+    mHasUpdatedVerticesThisFrame = false;
+}
+
+VertexType ParticleComponent::GetVertexType() const
+{
+    return VertexType::VertexParticle;
+}
+
+void ParticleComponent::Simulate(float deltaTime)
+{
+    if (mHasSimulatedThisFrame)
+        return;
 
     float modDeltaTime = deltaTime * mTimeMultiplier;
 
@@ -135,13 +151,9 @@ void ParticleComponent::Tick(float deltaTime)
         KillExpiredParticles(modDeltaTime);
         UpdateParticles(modDeltaTime);
         SpawnNewParticles(modDeltaTime);
-        UpdateVertexBuffer();
     }
-}
 
-VertexType ParticleComponent::GetVertexType() const
-{
-    return VertexType::VertexParticle;
+    mHasSimulatedThisFrame = true;
 }
 
 void ParticleComponent::Reset()
@@ -229,6 +241,16 @@ void ParticleComponent::SetUseLocalSpace(bool useLocalSpace)
 bool ParticleComponent::GetUseLocalSpace() const
 {
     return mUseLocalSpace;
+}
+
+void ParticleComponent::SetAlwaysSimulate(bool alwaysSimulate)
+{
+    mAlwaysSimulate = alwaysSimulate;
+}
+
+bool ParticleComponent::ShouldAlwaysSimulate() const
+{
+    return mAlwaysSimulate;
 }
 
 uint32_t ParticleComponent::GetNumParticles()
@@ -386,7 +408,7 @@ void ParticleComponent::UpdateVertexBuffer()
 {
     ParticleSystem* system = mParticleSystem.Get<ParticleSystem>();
 
-    if (system == nullptr)
+    if (system == nullptr || mHasUpdatedVerticesThisFrame)
         return;
 
     uint32_t numParticles = (uint32_t)mParticles.size();
@@ -474,5 +496,7 @@ void ParticleComponent::UpdateVertexBuffer()
     }
 
     GFX_UpdateParticleCompVertexBuffer(this, mVertices);
+
+    mHasUpdatedVerticesThisFrame = true;
 }
 
