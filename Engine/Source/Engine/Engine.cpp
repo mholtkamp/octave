@@ -261,14 +261,18 @@ bool Update()
     NetworkManager::Get()->PreTickUpdate(sClock.DeltaTime());
 
     // Limit delta time in World::Update(). Prevent crazy issues.
-    float worldDeltaTime = glm::min(sClock.DeltaTime(), 0.33333f);
-    sWorld->Update(worldDeltaTime);
+    float realDeltaTime = sClock.DeltaTime();
+    float gameDeltaTime = glm::min(realDeltaTime, 0.33333f);
+    sEngineState.mRealDeltaTime = realDeltaTime;
+    sEngineState.mGameDeltaTime = gameDeltaTime;
 
-    NetworkManager::Get()->PostTickUpdate(sClock.DeltaTime());
+    sWorld->Update(gameDeltaTime);
+
+    NetworkManager::Get()->PostTickUpdate(realDeltaTime);
 
     Renderer::Get()->Render(sWorld);
 
-    AssetManager::Get()->Update(sClock.DeltaTime());
+    AssetManager::Get()->Update(realDeltaTime);
 
     END_CPU_STAT("Frame");
 
