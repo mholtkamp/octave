@@ -41,6 +41,9 @@ public:
 
     virtual VertexType GetVertexType() const override;
 
+    void Simulate(float deltaTime);
+    void UpdateVertexBuffer();
+
     void Reset();
     void EnableEmission(bool enable);
     bool IsEmissionEnabled() const;
@@ -60,6 +63,9 @@ public:
     void SetUseLocalSpace(bool useLocalSpace);
     bool GetUseLocalSpace() const;
 
+    void SetAlwaysSimulate(bool alwaysSimulate);
+    bool ShouldAlwaysSimulate() const;
+
     uint32_t GetNumParticles();
     const std::vector<Particle>& GetParticles();
     const std::vector<VertexParticle>& GetVertices();
@@ -71,7 +77,6 @@ protected:
     void KillExpiredParticles(float deltaTime);
     void UpdateParticles(float deltaTime);
     void SpawnNewParticles(float deltaTime);
-    void UpdateVertexBuffer();
 
     float mElapsedTime = 0.0f;
     bool mEmit = true;
@@ -79,12 +84,15 @@ protected:
     std::vector<VertexParticle> mVertices;
     float mEmissionCounter = 0.0f;
     uint32_t mLoop = 0;
+    bool mHasSimulatedThisFrame = false;
+    bool mHasUpdatedVerticesThisFrame = false;
 
     // Properties
     ParticleSystemRef mParticleSystem;
     MaterialRef mMaterialOverride;
     float mTimeMultiplier = 1.0f;
     bool mUseLocalSpace = false;
+    bool mAlwaysSimulate = true;
 
     // Graphics Resource
     ParticleCompResource mResource;

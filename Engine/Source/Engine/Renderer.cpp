@@ -674,7 +674,17 @@ static inline void HandleCullResult(DrawData& drawData, bool inFrustum)
     }
     else if (drawData.mComponentType == ParticleComponent::GetStaticType())
     {
+        ParticleComponent* pComp = static_cast<ParticleComponent*>(drawData.mComponent);
 
+        if (inFrustum)
+        {
+            pComp->Simulate(GetEngineState()->mGameDeltaTime);
+            pComp->UpdateVertexBuffer();
+        }
+        else if (pComp->ShouldAlwaysSimulate())
+        {
+            pComp->Simulate(GetEngineState()->mGameDeltaTime);
+        }
     }
 }
 
