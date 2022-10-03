@@ -474,7 +474,6 @@ int World_Lua::LoadLevel(lua_State* L)
 
 int World_Lua::QueueLevelLoad(lua_State* L)
 {
-    int numArgs = lua_gettop(L);
     World* world = CHECK_WORLD(L, 1);
     const char* levelName = CHECK_STRING(L, 2);
     bool clearWorld = false;

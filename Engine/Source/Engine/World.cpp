@@ -82,14 +82,13 @@ World::World() :
 
 void World::Destroy()
 {
-    for (uint32_t i = 0; i < mActors.size(); ++i)
+    for (int32_t i = (int32_t)mActors.size() - 1; i >= 0; --i)
     {
         // Actor destructor calls Destroy(). Might change that in the future.
-        //mActors[i]->Destroy();
-        delete mActors[i];
-        mActors[i] = nullptr;
+        DestroyActor(i);
     }
 
+    assert(mActors.size() == 0);
     mActors.clear();
     mActiveCamera = nullptr;
 
