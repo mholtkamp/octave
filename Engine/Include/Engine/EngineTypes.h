@@ -97,6 +97,7 @@ struct DrawData
     glm::vec3 mPosition;
     Bounds mBounds;
     int32_t mSortPriority;
+    TypeId mComponentType;
     bool mDepthless;
 };
 
@@ -205,6 +206,8 @@ struct EngineState
     std::string mProjectName;
     std::string mAssetDirectory;
     std::string mSolutionPath;
+    float mGameDeltaTime = 0.0f;
+    float mRealDeltaTime = 0.0f;
 
 #if LUA_ENABLED
     lua_State* mLua = nullptr;

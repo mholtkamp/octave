@@ -12,6 +12,15 @@ enum class BoneInfluenceMode
     Num
 };
 
+enum class AnimationUpdateMode
+{
+    AlwaysUpdateTimeAndBones,
+    AlwaysUpdateTime,
+    OnlyUpdateWhenRendered,
+
+    Count
+};
+
 class SkeletalMesh;
 struct AnimEvent;
 struct Channel;
@@ -66,6 +75,8 @@ public:
     void SetAnimationPaused(bool paused);
     bool IsAnimationPaused() const;
 
+    bool HasAnimatedThisFrame() const;
+
     ActiveAnimation* FindActiveAnimation(const char* animName);
     std::vector<ActiveAnimation>& GetActiveAnimations();
 
@@ -87,11 +98,16 @@ public:
     uint32_t GetNumBones() const;
     BoneInfluenceMode GetBoneInfluenceMode() const;
 
+    AnimationUpdateMode GetAnimationUpdateMode() const;
+    void SetAnimationUpdateMode(AnimationUpdateMode mode);
+
     Vertex* GetSkinnedVertices();
     uint32_t GetNumSkinnedVertices();
 
     virtual Material* GetMaterial() override;
     virtual void Render() override;
+
+    void UpdateAnimation(float deltaTime, bool updateBones);
 
     virtual Bounds GetLocalBounds() const override;
 
@@ -121,7 +137,6 @@ protected:
     uint32_t FindRotationIndex(float time, const Channel& channel);
     uint32_t FindPositionIndex(float time, const Channel& channel);
 
-    void UpdateAnimation(float deltaTime);
     void UpdateAttachedChildren(float deltaTime);
     void CpuSkinVertices();
 
@@ -134,8 +149,10 @@ protected:
     float mAnimationSpeed = 1.0f;
     std::vector<ActiveAnimation> mActiveAnimations;
     bool mAnimationPaused;
+    bool mHasAnimatedThisFrame;
 
     BoneInfluenceMode mBoneInfluenceMode;
+    AnimationUpdateMode mAnimationUpdateMode;
 
     // Graphics Resource
     SkeletalMeshCompResource mResource;

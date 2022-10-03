@@ -10,6 +10,8 @@
 #include "Assets/Font.h"
 #include "Components/PointLightComponent.h"
 #include "Components/PrimitiveComponent.h"
+#include "Components/ParticleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/ShadowMeshComponent.h"
 #include "Log.h"
 #include "Line.h"
@@ -433,8 +435,10 @@ void Renderer::GatherDrawData(World* world)
                 if (comp->IsPrimitiveComponent())
                 {
                     DrawData data = comp->GetDrawData();
+                    data.mComponentType = comp->GetType();
+
                     PrimitiveComponent* prim = (PrimitiveComponent*)comp;
-                    bool simpleShadow = prim->GetType() == ShadowMeshComponent::GetStaticType();
+                    bool simpleShadow = (data.mComponentType == ShadowMeshComponent::GetStaticType());
 
                     if (data.mComponent != nullptr &&
                         comp->IsVisible())
@@ -645,6 +649,35 @@ void Renderer::FrustumCull(CameraComponent* camera)
 #endif
 }
 
+static inline void HandleCullResult(DrawData& drawData, bool inFrustum)
+{
+    if (drawData.mComponentType == SkeletalMeshComponent::GetStaticType())
+    {
+        SkeletalMeshComponent* skComp = static_cast<SkeletalMeshComponent*>(drawData.mComponent);
+
+        if (inFrustum)
+        {
+            skComp->UpdateAnimation(GetEngineState()->mGameDeltaTime, true);
+        }
+        else
+        {
+            AnimationUpdateMode animMode = skComp->GetAnimationUpdateMode();
+            if (animMode == AnimationUpdateMode::AlwaysUpdateTimeAndBones)
+            {
+                skComp->UpdateAnimation(GetEngineState()->mGameDeltaTime, true);
+            }
+            else if (animMode == AnimationUpdateMode::AlwaysUpdateTime)
+            {
+                skComp->UpdateAnimation(GetEngineState()->mGameDeltaTime, false);
+            }
+        }
+    }
+    else if (drawData.mComponentType == ParticleComponent::GetStaticType())
+    {
+
+    }
+}
+
 int32_t Renderer::FrustumCullDraws(const CameraFrustum& frustum, std::vector<DrawData>& drawData)
 {
     int32_t drawsCulled = 0;
@@ -654,7 +687,10 @@ int32_t Renderer::FrustumCullDraws(const CameraFrustum& frustum, std::vector<Dra
     {
         for (int32_t i = int32_t(drawData.size()) - 1; i >= 0; --i)
         {
-            if (!frustum.IsSphereInFrustumOrtho(drawData[i].mBounds.mCenter, drawData[i].mBounds.mRadius))
+            bool inFrustum = frustum.IsSphereInFrustumOrtho(drawData[i].mBounds.mCenter, drawData[i].mBounds.mRadius);
+            HandleCullResult(drawData[i], inFrustum);
+
+            if (!inFrustum)
             {
                 drawData.erase(drawData.begin() + i);
                 drawsCulled++;
@@ -665,7 +701,10 @@ int32_t Renderer::FrustumCullDraws(const CameraFrustum& frustum, std::vector<Dra
     {
         for (int32_t i = int32_t(drawData.size()) - 1; i >= 0; --i)
         {
-            if (!frustum.IsSphereInFrustum(drawData[i].mBounds.mCenter, drawData[i].mBounds.mRadius))
+            bool inFrustum = frustum.IsSphereInFrustum(drawData[i].mBounds.mCenter, drawData[i].mBounds.mRadius);
+            HandleCullResult(drawData[i], inFrustum);
+
+            if (!inFrustum)
             {
                 drawData.erase(drawData.begin() + i);
                 drawsCulled++;
@@ -728,7 +767,7 @@ void Renderer::Render(World* world)
         BeginFrame();
     }
 
-    BEGIN_CPU_STAT("Render");
+    BEGIN_CPU_STAT("Pre-Render");
 
     mScreenIndex = 0;
     GFX_BeginScreen(0);
@@ -758,6 +797,10 @@ void Renderer::Render(World* world)
     {
         FrustumCull(activeCamera);
     }
+
+    END_CPU_STAT("Pre-Render");
+
+    BEGIN_CPU_STAT("Render");
 
     uint32_t numViews = GFX_GetNumViews();
 

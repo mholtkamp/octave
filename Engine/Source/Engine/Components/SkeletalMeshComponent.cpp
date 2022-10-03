@@ -17,6 +17,14 @@ static const char* sBoneInfluenceModeStrings[] =
 };
 static_assert(int32_t(BoneInfluenceMode::Num) == 2, "Need to update string conversion table");
 
+static const char* sAnimationUpdateModeStrings[] =
+{
+    "Always Update",
+    "Always Update Time",
+    "Only When Rendered"
+};
+static_assert(int32_t(AnimationUpdateMode::Count) == 3, "Need to update string conversion table");
+
 FORCE_LINK_DEF(SkeletalMeshComponent);
 DEFINE_COMPONENT(SkeletalMeshComponent);
 
@@ -56,7 +64,9 @@ SkeletalMeshComponent::SkeletalMeshComponent() :
     mSkeletalMesh(nullptr),
     mAnimationSpeed(1.0f),
     mAnimationPaused(false),
-    mBoneInfluenceMode(BoneInfluenceMode::Four)
+    mHasAnimatedThisFrame(false),
+    mBoneInfluenceMode(BoneInfluenceMode::Four),
+    mAnimationUpdateMode(AnimationUpdateMode::AlwaysUpdateTimeAndBones)
 {
     mName = "Skeletal Mesh";
     mCollisionEnabled = false;
@@ -80,6 +90,7 @@ void SkeletalMeshComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Animation Speed", this, &mAnimationSpeed));
     outProps.push_back(Property(DatumType::Bool, "Animation Paused", this, &mAnimationPaused));
     outProps.push_back(Property(DatumType::Enum, "Bone Influence Mode", this, &mBoneInfluenceMode, 1, nullptr, 0, (int32_t)BoneInfluenceMode::Num, sBoneInfluenceModeStrings));
+    outProps.push_back(Property(DatumType::Enum, "Animation Update Mode", this, &mAnimationUpdateMode, 1, nullptr, 0, (int32_t)AnimationUpdateMode::Count, sAnimationUpdateModeStrings));
 }
 
 void SkeletalMeshComponent::Create()
@@ -113,6 +124,7 @@ void SkeletalMeshComponent::SaveStream(Stream& stream)
     stream.WriteFloat(mAnimationSpeed);
     stream.WriteBool(mAnimationPaused);
     stream.WriteUint32(uint32_t(mBoneInfluenceMode));
+    //stream.WriteUint32(uint32_t(mAnimationUpdateMode));
 }
 
 void SkeletalMeshComponent::LoadStream(Stream& stream)
@@ -129,13 +141,13 @@ void SkeletalMeshComponent::LoadStream(Stream& stream)
     mAnimationSpeed = stream.ReadFloat();
     mAnimationPaused = stream.ReadBool();
     mBoneInfluenceMode = BoneInfluenceMode(stream.ReadUint32());
+    //mAnimationUpdateMode = AnimationUpdateMode(stream.ReadUint32());
 }
 
 void SkeletalMeshComponent::Tick(float deltaTime)
 {
     MeshComponent::Tick(deltaTime);
-    UpdateAnimation(deltaTime);
-    UpdateAttachedChildren(deltaTime);
+    mHasAnimatedThisFrame = false;
 }
 
 bool SkeletalMeshComponent::IsStaticMeshComponent() const
@@ -260,6 +272,11 @@ void SkeletalMeshComponent::SetAnimationPaused(bool paused)
 bool SkeletalMeshComponent::IsAnimationPaused() const
 {
     return mAnimationPaused;
+}
+
+bool SkeletalMeshComponent::HasAnimatedThisFrame() const
+{
+    return mHasAnimatedThisFrame;
 }
 
 ActiveAnimation* SkeletalMeshComponent::FindActiveAnimation(const char* animName)
@@ -580,6 +597,16 @@ BoneInfluenceMode SkeletalMeshComponent::GetBoneInfluenceMode() const
     return mBoneInfluenceMode;
 }
 
+AnimationUpdateMode SkeletalMeshComponent::GetAnimationUpdateMode() const
+{
+    return mAnimationUpdateMode;
+}
+
+void SkeletalMeshComponent::SetAnimationUpdateMode(AnimationUpdateMode mode)
+{
+    mAnimationUpdateMode = mode;
+}
+
 Vertex* SkeletalMeshComponent::GetSkinnedVertices()
 {
     return mSkinnedVertices.data();
@@ -620,8 +647,11 @@ Bounds SkeletalMeshComponent::GetLocalBounds() const
     }
 }
 
-void SkeletalMeshComponent::UpdateAnimation(float deltaTime)
+void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
 {
+    if (mHasAnimatedThisFrame)
+        return;
+
     static std::vector<AnimEvent> sAnimEvents;
     sAnimEvents.clear();
 
@@ -630,7 +660,10 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime)
     if (mesh != nullptr &&
         !mAnimationPaused)
     {
-        mesh->CopyBindPose(mBoneMatrices);
+        if (updateBones)
+        {
+            mesh->CopyBindPose(mBoneMatrices);
+        }
 
         for (int32_t i = 0; i < (int32_t)mActiveAnimations.size(); ++i)
         {
@@ -679,28 +712,31 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime)
                     {
                         float tickTime = animationTime * anim->mTicksPerSecond;
 
-                        // Go through all the channels, and update the relative transform 
-                        // for each bone that exists in the animation.
-                        for (uint32_t i = 0; i < anim->mChannels.size(); ++i)
+                        if (updateBones)
                         {
-                            int32_t boneIndex = anim->mChannels[i].mBoneIndex;
-                            assert(boneIndex != -1 &&
-                                boneIndex >= 0 &&
-                                boneIndex < (int32_t)mesh->GetBones().size());
-
-                            if (boneIndex != -1)
+                            // Go through all the channels, and update the relative transform 
+                            // for each bone that exists in the animation.
+                            for (uint32_t i = 0; i < anim->mChannels.size(); ++i)
                             {
-                                glm::vec3 scale = InterpolateScale(tickTime, anim->mChannels[i]);
-                                glm::quat rotation = InterpolateRotation(tickTime, anim->mChannels[i]);
-                                glm::vec3 position = InterpolatePosition(tickTime, anim->mChannels[i]);
+                                int32_t boneIndex = anim->mChannels[i].mBoneIndex;
+                                assert(boneIndex != -1 &&
+                                    boneIndex >= 0 &&
+                                    boneIndex < (int32_t)mesh->GetBones().size());
 
-                                glm::mat4 transform = glm::mat4(1.0f);
+                                if (boneIndex != -1)
+                                {
+                                    glm::vec3 scale = InterpolateScale(tickTime, anim->mChannels[i]);
+                                    glm::quat rotation = InterpolateRotation(tickTime, anim->mChannels[i]);
+                                    glm::vec3 position = InterpolatePosition(tickTime, anim->mChannels[i]);
 
-                                transform = glm::translate(transform, position);
-                                transform *= glm::toMat4(rotation);
-                                transform = glm::scale(transform, scale);
+                                    glm::mat4 transform = glm::mat4(1.0f);
 
-                                mBoneMatrices[boneIndex] = (weight * transform) + ((1.0f - weight) * mBoneMatrices[boneIndex]);
+                                    transform = glm::translate(transform, position);
+                                    transform *= glm::toMat4(rotation);
+                                    transform = glm::scale(transform, scale);
+
+                                    mBoneMatrices[boneIndex] = (weight * transform) + ((1.0f - weight) * mBoneMatrices[boneIndex]);
+                                }
                             }
                         }
 
@@ -724,11 +760,14 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime)
             }
         }
 
-        mesh->FinalizeBoneTransforms(mBoneMatrices);
-
-        if (GFX_IsCpuSkinningRequired(this))
+        if (updateBones)
         {
-            CpuSkinVertices();
+            mesh->FinalizeBoneTransforms(mBoneMatrices);
+
+            if (GFX_IsCpuSkinningRequired(this))
+            {
+                CpuSkinVertices();
+            }
         }
 
         // Fire off any events that triggered.
@@ -757,6 +796,13 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime)
             }
         }
     }
+
+    if (updateBones)
+    {
+        UpdateAttachedChildren(deltaTime);
+    }
+
+    mHasAnimatedThisFrame = true;
 }
 
 void SkeletalMeshComponent::UpdateAttachedChildren(float deltaTime)
