@@ -35,8 +35,8 @@ protected:
     void HandleAxisLocking();
 
     glm::vec2 GetTransformDelta() const;
-    void SavePreTransformVector(ControlMode mode);
-    void RestorePreTransformVector(ControlMode mode);
+    void SavePreTransforms();
+    void RestorePreTransforms();
     void ToggleTransformMode();
 
     glm::vec3 GetLockedTranslationDelta(glm::vec3 deltaWS) const;
