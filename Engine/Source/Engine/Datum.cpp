@@ -1517,6 +1517,13 @@ void Datum::DeepCopy(const Datum& src, bool forceInternalStorage)
     mCapacity = src.mCapacity;
 }
 
+void* Datum::GetValue(uint32_t index)
+{
+    char* charData = (char*)mData.vp;
+    void* retData = charData + index * GetDataTypeSize();
+    return retData;
+}
+
 void Datum::PreSet(uint32_t index, DatumType type)
 {
     if (index >= mCount)

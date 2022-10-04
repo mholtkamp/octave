@@ -10,6 +10,7 @@
 #include "EngineTypes.h"
 #include "EditorState.h"
 #include "AssetManager.h"
+#include "ActionManager.h"
 #include "Asset.h"
 
 static float sIndent1 = 5.0f;
@@ -138,6 +139,7 @@ PropertyWidget* CreatePropWidget(const Property& prop, bool arrayElement)
 }
 
 PropertyWidget::PropertyWidget() :
+    mOwnerType(PropertyOwnerType::Count),
     mIndex(0),
     mArrayElement(false),
     mNameText(nullptr)
@@ -173,6 +175,20 @@ void PropertyWidget::SetProperty(const Property& prop, uint32_t index)
 {
     mProperty = prop;
     mIndex = index;
+
+    // Determine owner type
+    mOwnerType = PropertyOwnerType::Count;
+    RTTI* rtti = (RTTI*)prop.mOwner;
+    if (rtti)
+    {
+        if (rtti->As<Actor>())
+            mOwnerType = PropertyOwnerType::Actor;
+        else if (rtti->As<Component>())
+            mOwnerType = PropertyOwnerType::Component;
+        else if (rtti->As<Asset>())
+            mOwnerType = PropertyOwnerType::Asset;
+    }
+
     MarkDirty();
 }
 
@@ -341,7 +357,14 @@ void FloatProp::Write()
 {
     try
     {
-        mProperty.SetFloat(std::stof(mTextField->GetTextString()), mIndex);
+        float newValue = std::stof(mTextField->GetTextString());
+
+        ActionManager::Get()->EXE_EditProperty(
+            mProperty.mOwner,
+            mOwnerType,
+            mProperty.mName,
+            mIndex,
+            newValue);
     }
     catch (...)
     {
@@ -369,7 +392,14 @@ void IntegerProp::Write()
 {
     try
     {
-        mProperty.SetInteger(std::stoi(mTextField->GetTextString()), mIndex);
+        int32_t newValue = std::stoi(mTextField->GetTextString());
+
+        ActionManager::Get()->EXE_EditProperty(
+            mProperty.mOwner,
+            mOwnerType,
+            mProperty.mName,
+            mIndex,
+            newValue);
     }
     catch (...)
     {
@@ -432,7 +462,13 @@ void VectorProp::Write()
         vect.x = std::stof(mTextFieldX->GetTextString());
         vect.y = std::stof(mTextFieldY->GetTextString());
         vect.z = std::stof(mTextFieldZ->GetTextString());
-        mProperty.SetVector(vect, mIndex);
+        
+        ActionManager::Get()->EXE_EditProperty(
+            mProperty.mOwner,
+            mOwnerType,
+            mProperty.mName,
+            mIndex,
+            vect);
     }
     catch (...)
     {
@@ -487,7 +523,13 @@ void ColorProp::Write()
         color.y = std::stof(mTextFieldY->GetTextString());
         color.z = std::stof(mTextFieldZ->GetTextString());
         color.w = std::stof(mTextFieldW->GetTextString());
-        mProperty.SetColor(color, mIndex);
+        
+        ActionManager::Get()->EXE_EditProperty(
+            mProperty.mOwner,
+            mOwnerType,
+            mProperty.mName,
+            mIndex,
+            color);
     }
     catch (...)
     {
@@ -517,7 +559,14 @@ void StringProp::Update()
 
 void StringProp::Write()
 {
-    mProperty.SetString(mTextField->GetTextString(), mIndex);
+    std::string newValue = mTextField->GetTextString();
+
+    ActionManager::Get()->EXE_EditProperty(
+        mProperty.mOwner,
+        mOwnerType,
+        mProperty.mName,
+        mIndex,
+        newValue);
 }
 
 BoolProp::BoolProp()
@@ -541,7 +590,14 @@ void BoolProp::Update()
 
 void BoolProp::Write()
 {
-    mProperty.SetBool(mCheckBox->IsChecked(), mIndex);
+    bool newValue = mCheckBox->IsChecked();
+
+    ActionManager::Get()->EXE_EditProperty(
+        mProperty.mOwner,
+        mOwnerType,
+        mProperty.mName,
+        mIndex,
+        newValue);
 }
 
 float BoolProp::GetHeight()
@@ -589,7 +645,12 @@ void AssetProp::AssignAsset(Asset* asset)
         mProperty.mExtra == 0 ||
         asset->GetType() == TypeId(mProperty.mExtra))
     {
-        mProperty.SetAsset(asset, mIndex);
+        ActionManager::Get()->EXE_EditProperty(
+            mProperty.mOwner,
+            mOwnerType,
+            mProperty.mName,
+            mIndex,
+            asset);
     }
 }
 
@@ -651,7 +712,15 @@ void EnumProp::Write()
 {
     try
     {
-        mProperty.SetEnum(uint32_t(mSelector->GetSelectionIndex()), mIndex);
+        Datum newValue;
+        newValue.PushBack(mSelector->GetSelectionIndex());
+
+        ActionManager::Get()->EXE_EditProperty(
+            mProperty.mOwner,
+            mOwnerType,
+            mProperty.mName,
+            mIndex,
+            newValue);
     }
     catch (...)
     {
@@ -679,7 +748,14 @@ void ByteProp::Write()
 {
     try
     {
-        mProperty.SetByte((uint8_t)std::stoi(mTextField->GetTextString()), mIndex);
+        uint8_t newValue = (uint8_t)std::stoi(mTextField->GetTextString());
+
+        ActionManager::Get()->EXE_EditProperty(
+            mProperty.mOwner,
+            mOwnerType,
+            mProperty.mName,
+            mIndex,
+            newValue);
     }
     catch (...)
     {
@@ -722,7 +798,12 @@ void ByteFlagProp::Write()
         value |= ((mCheckBoxes[i]->IsChecked() ? 1 : 0) << bit);
     }
 
-    mProperty.SetByte(value, mIndex);
+    ActionManager::Get()->EXE_EditProperty(
+        mProperty.mOwner,
+        mOwnerType,
+        mProperty.mName,
+        mIndex,
+        value);
 }
 
 Vector2DProp::Vector2DProp()
@@ -769,7 +850,13 @@ void Vector2DProp::Write()
         glm::vec2 vect;
         vect.x = std::stof(mTextFieldX->GetTextString());
         vect.y = std::stof(mTextFieldY->GetTextString());
-        mProperty.SetVector2D(vect, mIndex);
+
+        ActionManager::Get()->EXE_EditProperty(
+            mProperty.mOwner,
+            mOwnerType,
+            mProperty.mName,
+            mIndex,
+            vect);
     }
     catch (...)
     {

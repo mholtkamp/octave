@@ -32,6 +32,7 @@ public:
 protected:
 
     Property mProperty;
+    PropertyOwnerType mOwnerType;
     uint32_t mIndex;
     bool mArrayElement;
 

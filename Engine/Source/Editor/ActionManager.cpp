@@ -666,6 +666,81 @@ void ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 position,
     }
 }
 
+void ActionManager::ExecuteAction(Action* action)
+{
+    assert(std::find(mActionHistory.begin(), mActionHistory.end(), action) == mActionHistory.end());
+    assert(std::find(mActionFuture.begin(), mActionFuture.end(), action) == mActionFuture.end());
+
+    action->Execute();
+
+    mActionHistory.push_back(action);
+    ClearActionFuture();
+}
+
+void ActionManager::Undo()
+{
+    if (mActionHistory.size() > 0)
+    {
+        Action* action = mActionHistory.back();
+        mActionHistory.pop_back();
+
+        LogDebug("Undo %s", action->GetName());
+        action->Reverse();
+
+        mActionFuture.push_back(action);
+    }
+}
+
+void ActionManager::Redo()
+{
+    if (mActionFuture.size() > 0)
+    {
+        Action* action = mActionFuture.back();
+        mActionFuture.pop_back();
+
+        LogDebug("Redo %s", action->GetName());
+        action->Execute();
+
+        mActionHistory.push_back(action);
+    }
+}
+
+void ActionManager::EXE_EditProperty(void* owner, PropertyOwnerType ownerType, const std::string& name, uint32_t index, Datum newValue)
+{
+    ActionEditProperty* action = new ActionEditProperty(owner, ownerType, name, index, newValue);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::ClearActionHistory()
+{
+    for (uint32_t i = 0; i < mActionHistory.size(); ++i)
+    {
+        delete mActionHistory[i];
+        mActionHistory[i] = nullptr;
+    }
+
+    mActionHistory.clear();
+}
+
+void ActionManager::ClearActionFuture()
+{
+    for (uint32_t i = 0; i < mActionFuture.size(); ++i)
+    {
+        delete mActionFuture[i];
+        mActionFuture[i] = nullptr;
+    }
+
+    mActionFuture.clear();
+}
+
+void ActionManager::ResetUndoRedo()
+{
+    ClearActionHistory();
+    ClearActionFuture();
+
+    // TODO: Clear exiled Actors / Components
+}
+
 void ActionManager::CreateNewProject()
 {
     std::string newProjDir = SYS_SelectFolderDialog();
@@ -759,6 +834,8 @@ void ActionManager::OpenLevel()
 void ActionManager::OpenLevel(Level* level)
 {
     ClearWorld();
+
+    ResetUndoRedo();
 
     if (level != nullptr)
     {
@@ -1498,6 +1575,121 @@ void ActionManager::DuplicateActor(Actor* actor)
 {
     Actor* newActor = GetWorld()->CloneActor(actor);
     SetSelectedActor(newActor);
+}
+
+// ---------------------------
+// --------- ACTIONS ---------
+// ---------------------------
+
+void ActionSelectComponent::Execute()
+{
+    if (mComponent)
+    {
+        AddSelectedComponent(mComponent);
+    }
+    else
+    {
+        // Copy all of the currently selected components so we can revert if needed.
+        mPrevComponents = GetSelectedComponents();
+        SetSelectedComponent(nullptr);
+    }
+}
+
+void ActionSelectComponent::Reverse()
+{
+    if (mComponent)
+    {
+        
+    }
+}
+
+ActionEditProperty::ActionEditProperty(
+    void* owner,
+    PropertyOwnerType ownerType,
+    const std::string& propName,
+    uint32_t index,
+    Datum value)
+{
+    mOwner = owner;
+    mOwnerType = ownerType;
+    mPropertyName = propName;
+    mIndex = index;
+    mValue = value;
+
+    // Keep a reference
+    if (mOwnerType == PropertyOwnerType::Asset)
+    {
+        mReferencedAsset = (Asset*)mOwner;
+    }
+}
+
+void ActionEditProperty::GatherProps(std::vector<Property>& props)
+{
+    if (mOwnerType == PropertyOwnerType::Component)
+    {
+        Component* comp = (Component*)mOwner;
+        comp->GatherProperties(props);
+    }
+    else if (mOwnerType == PropertyOwnerType::Actor)
+    {
+        Actor* actor = (Actor*)mOwner;
+        actor->GatherProperties(props);
+    }
+    else if (mOwnerType == PropertyOwnerType::Asset)
+    {
+        Asset* asset = (Asset*)mReferencedAsset.Get<Asset>();
+        if (asset)
+        {
+            asset->GatherProperties(props);
+        }
+    }
+}
+
+Property* ActionEditProperty::FindProp(std::vector<Property>& props, const std::string& name)
+{
+    Property* prop = nullptr;
+
+    for (uint32_t i = 0; i < props.size(); ++i)
+    {
+        if (props[i].mName == name)
+        {
+            prop = &props[i];
+            break;
+        }
+    }
+
+    return prop;
+}
+
+void ActionEditProperty::Execute()
+{
+    std::vector<Property> sProps;
+    GatherProps(sProps);
+
+    Property* prop = FindProp(sProps, mPropertyName);
+
+    if (prop != nullptr)
+    {
+        mPreviousValue.Destroy();
+        mPreviousValue.SetType(prop->GetType());
+        mPreviousValue.SetCount(1);
+        mPreviousValue.SetValue(prop->GetValue(mIndex));
+
+        prop->SetValue(mValue.mData.vp, mIndex, 1);
+    }
+}
+
+void ActionEditProperty::Reverse()
+{
+    std::vector<Property> sProps;
+    GatherProps(sProps);
+
+    Property* prop = FindProp(sProps, mPropertyName);
+
+    if (prop != nullptr)
+    {
+        prop->SetValue(mPreviousValue.GetValue(0), mIndex, 1);
+    }
 }
 
 #endif
