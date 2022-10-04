@@ -236,6 +236,7 @@ void EndPlayInEditor()
     Renderer::Get()->EnableProxyRendering(true);
 
     sEditorState.mPlayInEditor = false;
+    sEditorState.mEjected = false;
 
     // Restore cached editor level
     if (sEditorState.mCachedPieLevel.Get() != nullptr)
