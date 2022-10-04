@@ -114,6 +114,17 @@ void InputManager::UpdateHotkeys()
         {
             EndPlayInEditor();
         }
+        else if (IsKeyJustDown(KEY_F8))
+        {
+            if (GetEditorState()->mEjected)
+            {
+                InjectPlayInEditor();
+            }
+            else
+            {
+                EjectPlayInEditor();
+            }
+        }
     }
     else if (Renderer::Get()->GetModalWidget() == nullptr)
     {

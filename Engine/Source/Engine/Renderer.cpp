@@ -237,13 +237,19 @@ void Renderer::AddWidget(class Widget* widget, int32_t index, int32_t screenInde
 {
     std::vector<Widget*>& widgets = (screenIndex == 1) ? mWidgets1 : mWidgets0;
 
-    if (index >= 0 && index <= (int32_t)widgets.size())
+    // Don't add duplicates of the same Widget.
+    if (std::find(widgets.begin(), widgets.end(), widget) == widgets.end())
     {
-        widgets.insert(widgets.begin() + index, widget);
-    }
-    else
-    {
-        widgets.push_back(widget);
+        if (index >= 0 && index <= (int32_t)widgets.size())
+        {
+            widgets.insert(widgets.begin() + index, widget);
+        }
+        else
+        {
+            widgets.push_back(widget);
+        }
+
+        widget->MarkDirty();
     }
 }
 

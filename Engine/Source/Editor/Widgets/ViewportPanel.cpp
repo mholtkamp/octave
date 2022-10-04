@@ -358,6 +358,7 @@ void ViewportPanel::HandleDefaultControls()
         const int32_t scrollDelta = GetScrollWheelDelta();
         const bool controlDown = IsControlDown();
         const bool shiftDown = IsShiftDown();
+        const bool altDown = IsAltDown();
 
         if (IsMouseButtonJustDown(MOUSE_RIGHT))
         {
@@ -419,7 +420,7 @@ void ViewportPanel::HandleDefaultControls()
             renderer->SetDebugMode((renderer->GetDebugMode() != DEBUG_COLLISION) ? DEBUG_COLLISION : DEBUG_NONE);
         }
 
-        if (!controlDown && IsKeyJustDown(KEY_P))
+        if (!controlDown && !altDown && IsKeyJustDown(KEY_P))
         {
             renderer->EnableProxyRendering(!renderer->IsProxyRenderingEnabled());
         }
