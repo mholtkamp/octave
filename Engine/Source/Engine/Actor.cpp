@@ -1007,7 +1007,7 @@ Component* Actor::GetComponent(const std::string & name)
     return retComponent;
 }
 
-Component* Actor::GetComponent(TypeId type)
+Component* Actor::GetComponentByType(TypeId type)
 {
     Component* retComponent = nullptr;
 

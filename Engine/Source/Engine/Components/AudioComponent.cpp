@@ -95,13 +95,11 @@ void AudioComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 void AudioComponent::Create()
 {
     TransformComponent::Create();
-    GetWorld()->RegisterComponent(this);
 }
 
 void AudioComponent::Destroy()
 {
     AudioManager::StopComponent(this);
-    GetWorld()->UnregisterComponent(this);
     TransformComponent::Destroy();
 }
 

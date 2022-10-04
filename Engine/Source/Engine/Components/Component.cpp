@@ -36,11 +36,13 @@ Component::~Component()
 
 void Component::Create()
 {
-
+    GetWorld()->RegisterComponent(this);
 }
 
 void Component::Destroy()
 {
+    GetWorld()->UnregisterComponent(this);
+
     ComponentRef::EraseReferencesToObject(this);
 
     if (IsPrimitiveComponent() && GetWorld())
