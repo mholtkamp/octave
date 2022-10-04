@@ -1650,6 +1650,7 @@ void ActionManager::DeleteAssetDir(AssetDir* dir)
 void ActionManager::DuplicateActor(Actor* actor)
 {
     Actor* newActor = GetWorld()->CloneActor(actor);
+    EXE_SpawnActor(newActor);
     SetSelectedActor(newActor);
 }
 
