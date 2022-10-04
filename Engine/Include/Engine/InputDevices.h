@@ -12,8 +12,10 @@ bool IsKeyJustUp(int32_t key);
 
 bool IsControlDown();
 bool IsShiftDown();
+bool IsAltDown();
 void ClearControlDown();
 void ClearShiftDown();
+void ClearAltDown();
 
 bool IsMouseButtonDown(int32_t button);
 bool IsMouseButtonJustDown(int32_t button);

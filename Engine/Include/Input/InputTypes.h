@@ -108,6 +108,7 @@ enum GamepadAxisCode
 enum KeyCode
 {
     KEY_BACK = 10,
+    KEY_ESCAPE = 27,
 
     KEY_0 = 48,
     KEY_1 = 49,
@@ -154,8 +155,10 @@ enum KeyCode
 
     KEY_SHIFT_L = 16,
     KEY_CONTROL_L = 17,
+    KEY_ALT_L = 18,
     KEY_SHIFT_R = 16,
     KEY_CONTROL_R = 17,
+    KEY_ALT_R = 18,
 
     KEY_PAGE_UP = 33,
     KEY_PAGE_DOWN = 34,
@@ -211,6 +214,7 @@ enum KeyCode
 enum KeyCode
 {
     KEY_BACK = 4,
+    KEY_ESCAPE = 255,
 
     KEY_0 = 7,
     KEY_1 = 8,
@@ -257,8 +261,10 @@ enum KeyCode
 
     KEY_SHIFT_L = 60,
     KEY_CONTROL_L = 113,
+    KEY_ALT_L = 255,
     KEY_SHIFT_R = 60,
     KEY_CONTROL_R = 113,
+    KEY_ALT_R = 255,
 
     KEY_UP = 19,
     KEY_DOWN = 20,
@@ -346,6 +352,7 @@ enum GamepadCode
 enum KeyCode
 {
     KEY_BACK = 10,
+    KEY_ESCAPE = 255,
 
     KEY_0 = 48,
     KEY_1 = 49,
@@ -392,8 +399,10 @@ enum KeyCode
 
     KEY_SHIFT_L = 16,
     KEY_CONTROL_L = 17,
+    KEY_ALT_L = 255,
     KEY_SHIFT_R = 16,
     KEY_CONTROL_R = 17,
+    KEY_ALT_R = 255,
 
     KEY_PAGE_UP = 33,
     KEY_PAGE_DOWN = 34,
@@ -449,6 +458,7 @@ enum KeyCode
 enum KeyCode
 {
     KEY_BACK = 22,
+    KEY_ESCAPE = 9,
 
     KEY_0 = 19,
     KEY_1 = 10,
@@ -495,8 +505,10 @@ enum KeyCode
 
     KEY_SHIFT_L = 50,
     KEY_CONTROL_L = 37,
+    KEY_ALT_L = 64,
     KEY_SHIFT_R = 62,
     KEY_CONTROL_R = 105,
+    KEY_ALT_R = 113,
 
     KEY_PAGE_UP = 112,
     KEY_PAGE_DOWN = 117,
@@ -552,6 +564,7 @@ enum KeyCode
 enum KeyCode
 {
     KEY_BACK = 10,
+    KEY_ESCAPE = 27,
 
     KEY_0 = 48,
     KEY_1 = 49,
@@ -598,8 +611,10 @@ enum KeyCode
 
     KEY_SHIFT_L = 16,
     KEY_CONTROL_L = 17,
+    KEY_ALT_L = 255,
     KEY_SHIFT_R = 16,
     KEY_CONTROL_R = 17,
+    KEY_ALT_R = 255,
 
     KEY_PAGE_UP = 33,
     KEY_PAGE_DOWN = 34,

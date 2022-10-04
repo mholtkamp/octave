@@ -125,6 +125,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return 0;
     }
 
+    case WM_SYSKEYDOWN:
+    {
+        INP_SetKey((int32_t)wParam);
+        return 0;
+    }
+
+    case WM_SYSKEYUP:
+    {
+        INP_ClearKey((int32_t)wParam);
+        return 0;
+    }
+
+    case WM_MENUCHAR:
+    {
+        return (MNC_CLOSE << 16);
+    }
+
     //case WM_PAINT:
     //    // The validation callback calls MessageBox which can generate paint
     //    // events - don't make more Vulkan calls if we got here from the
