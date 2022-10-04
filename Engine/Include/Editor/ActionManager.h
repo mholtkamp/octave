@@ -7,6 +7,8 @@
 #include "Asset.h"
 #include "AssetRef.h"
 
+class TransformComponent;
+
 class Action
 {
 public:
@@ -39,6 +41,7 @@ public:
 
     // Actions
     void EXE_EditProperty(void* owner, PropertyOwnerType ownerType, const std::string& name, uint32_t index, Datum newValue);
+    void EXE_EditTransforms(const std::vector<TransformComponent*>& transComps, const std::vector<glm::mat4>& newTransforms);
 
     void ClearActionHistory();
     void ClearActionFuture();
@@ -94,6 +97,7 @@ public:
     virtual const char* GetName() { return #Name; }
 
 // Actions
+#if 0
 class ActionSelectComponent : public Action
 {
 public:
@@ -102,23 +106,46 @@ public:
 protected:
     std::vector<Component*> mPrevComponents;
 };
+#endif
 
 class ActionEditProperty : public Action
 {
 public:
     DECLARE_ACTION_INTERFACE(EditProperty)
 
-    ActionEditProperty(void* owner, PropertyOwnerType ownerType, const std::string& propName, uint32_t index, Datum value);
+    ActionEditProperty(
+        void* owner,
+        PropertyOwnerType ownerType,
+        const std::string& propName,
+        uint32_t index,
+        Datum value);
+
+protected:
+
+    void GatherProps(std::vector<Property>& props);
+    Property* FindProp(std::vector<Property>& props, const std::string& name);
 
     void* mOwner = nullptr;
     PropertyOwnerType mOwnerType = PropertyOwnerType::Count;
     std::string mPropertyName;
     uint32_t mIndex = 0;
     Datum mValue;
-protected:
-    void GatherProps(std::vector<Property>& props);
-    Property* FindProp(std::vector<Property>& props, const std::string& name);
 
     AssetRef mReferencedAsset;
     Datum mPreviousValue;
+};
+
+class ActionEditTransforms : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(EditTransforms)
+
+    ActionEditTransforms(
+        const std::vector<TransformComponent*>& transComps,
+        const std::vector<glm::mat4>& newTransforms);
+
+protected:
+    std::vector<TransformComponent*> mTransComps;
+    std::vector<glm::mat4> mNewTransforms;
+    std::vector<glm::mat4> mPrevTransforms;
 };

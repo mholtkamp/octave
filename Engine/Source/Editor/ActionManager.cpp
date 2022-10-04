@@ -711,6 +711,12 @@ void ActionManager::EXE_EditProperty(void* owner, PropertyOwnerType ownerType, c
     ActionManager::Get()->ExecuteAction(action);
 }
 
+void ActionManager::EXE_EditTransforms(const std::vector<TransformComponent*>& transComps, const std::vector<glm::mat4>& newTransforms)
+{
+    ActionEditTransforms* action = new ActionEditTransforms(transComps, newTransforms);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
 void ActionManager::ClearActionHistory()
 {
     for (uint32_t i = 0; i < mActionHistory.size(); ++i)
@@ -1581,28 +1587,6 @@ void ActionManager::DuplicateActor(Actor* actor)
 // --------- ACTIONS ---------
 // ---------------------------
 
-void ActionSelectComponent::Execute()
-{
-    if (mComponent)
-    {
-        AddSelectedComponent(mComponent);
-    }
-    else
-    {
-        // Copy all of the currently selected components so we can revert if needed.
-        mPrevComponents = GetSelectedComponents();
-        SetSelectedComponent(nullptr);
-    }
-}
-
-void ActionSelectComponent::Reverse()
-{
-    if (mComponent)
-    {
-        
-    }
-}
-
 ActionEditProperty::ActionEditProperty(
     void* owner,
     PropertyOwnerType ownerType,
@@ -1689,6 +1673,37 @@ void ActionEditProperty::Reverse()
     if (prop != nullptr)
     {
         prop->SetValue(mPreviousValue.GetValue(0), mIndex, 1);
+    }
+}
+
+ActionEditTransforms::ActionEditTransforms(
+    const std::vector<TransformComponent*>& transComps,
+    const std::vector<glm::mat4>& newTransforms)
+{
+    mTransComps = transComps;
+    mNewTransforms = newTransforms;
+
+    assert(mTransComps.size() == mNewTransforms.size());
+}
+
+void ActionEditTransforms::Execute()
+{
+    mPrevTransforms.clear();
+
+    for (uint32_t i = 0; i < mTransComps.size(); ++i)
+    {
+        mPrevTransforms.push_back(mTransComps[i]->GetTransform());
+        mTransComps[i]->SetTransform(mNewTransforms[i]);
+    }
+}
+
+void ActionEditTransforms::Reverse()
+{
+    assert(mPrevTransforms.size() == mTransComps.size());
+
+    for (uint32_t i = 0; i < mTransComps.size(); ++i)
+    {
+        mTransComps[i]->SetTransform(mPrevTransforms[i]);
     }
 }
 

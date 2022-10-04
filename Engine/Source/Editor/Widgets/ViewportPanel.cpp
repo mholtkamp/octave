@@ -425,19 +425,19 @@ void ViewportPanel::HandleDefaultControls()
             if (!controlDown && IsKeyJustDown(KEY_G))
             {
                 SetControlMode(ControlMode::Translate);
-                SavePreTransformVector(ControlMode::Translate);
+                SavePreTransforms();
             }
 
             if (!controlDown && IsKeyJustDown(KEY_R))
             {
                 SetControlMode(ControlMode::Rotate);
-                SavePreTransformVector(ControlMode::Rotate);
+                SavePreTransforms();
             }
 
             if (!controlDown && IsKeyJustDown(KEY_S))
             {
                 SetControlMode(ControlMode::Scale);
-                SavePreTransformVector(ControlMode::Scale);
+                SavePreTransforms();
             }
         }
 
@@ -609,7 +609,7 @@ void ViewportPanel::HandleDefaultControls()
             {
                 ActionManager::Get()->DuplicateActor(selectedActor);
                 SetControlMode(ControlMode::Translate);
-                SavePreTransformVector(ControlMode::Translate);
+                SavePreTransforms();
             }
         }
 
@@ -906,13 +906,31 @@ void ViewportPanel::HandleTransformControls()
 
     if (IsMouseButtonDown(MOUSE_LEFT))
     {
+        std::vector<glm::mat4> newTransforms;
+
+        for (uint32_t i = 0; i < transComps.size(); ++i)
+        {
+            // Make sure transform isn't dirty.
+            transComps[i]->UpdateTransform(false);
+            newTransforms.push_back(transComps[i]->GetTransform());
+        }
+
+        RestorePreTransforms();
+
+        for (uint32_t i = 0; i < transComps.size(); ++i)
+        {
+            // Make sure transform isn't dirty.
+            transComps[i]->UpdateTransform(false);
+        }
+
+        ActionManager::Get()->EXE_EditTransforms(transComps, newTransforms);
         SetControlMode(ControlMode::Default);
     }
 
     if (IsMouseButtonDown(MOUSE_RIGHT))
     {
         // Cancel transform operation
-        RestorePreTransformVector(controlMode);
+        RestorePreTransforms();
         SetControlMode(ControlMode::Default);
     }
 }
@@ -1038,7 +1056,7 @@ void ViewportPanel::HandleAxisLocking()
 
     if (newLock != TransformLock::None)
     {
-        RestorePreTransformVector(GetControlMode());
+        RestorePreTransforms();
 
         if (newLock != currentLock)
         {
@@ -1066,7 +1084,7 @@ glm::vec2 ViewportPanel::GetTransformDelta() const
     return delta;
 }
 
-void ViewportPanel::SavePreTransformVector(ControlMode mode)
+void ViewportPanel::SavePreTransforms()
 {
     const std::vector<Component*>& selComps = GetSelectedComponents();
     mPreTransforms.clear();
@@ -1082,7 +1100,7 @@ void ViewportPanel::SavePreTransformVector(ControlMode mode)
     }
 }
 
-void ViewportPanel::RestorePreTransformVector(ControlMode mode)
+void ViewportPanel::RestorePreTransforms()
 {
     const std::vector<Component*>& selComps = GetSelectedComponents();
 
