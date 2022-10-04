@@ -295,6 +295,15 @@ ViewportPanel::ViewportPanel() :
     mPlayButton->SetDimensions(40.0f, 24.0f);
     AddChild(mPlayButton);
 
+    mPieWarningText = new Text();
+    mPieWarningText->SetText("PLAYING");
+    mPieWarningText->SetColor({ 1.0f, 0.8f, 0.7f, 0.5f });
+    mPieWarningText->SetSize(72);
+    mPieWarningText->SetAnchorMode(AnchorMode::TopRight);
+    mPieWarningText->SetDimensions(300.0f, 80.0f);
+    mPieWarningText->SetPosition(-310.0f, 4.0f);
+    AddChild(mPieWarningText);
+
 #if CONSOLE_ENABLED
     // Move the console into  viewport region
     Renderer::Get()->GetConsoleWidget()->SetRect(sDefaultWidth + 5.0f, 30, 1280 - sDefaultWidth, 720);
@@ -332,6 +341,7 @@ void ViewportPanel::Update()
     }
 
     mPlayButton->SetTextString(GetEditorState()->mPlayInEditor ? "Stop" : "Play");
+    mPieWarningText->SetVisible(GetEditorState()->mPlayInEditor);
 }
 
 void ViewportPanel::HandleInput()

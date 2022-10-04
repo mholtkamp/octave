@@ -50,6 +50,8 @@ protected:
     Button* mWorldButton = nullptr;
     Button* mPlayButton = nullptr;
 
+    Text* mPieWarningText = nullptr;
+
     float mFirstPersonMoveSpeed;
     float mFirstPersonRotationSpeed;
 
