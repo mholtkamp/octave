@@ -441,7 +441,7 @@ void ViewportPanel::HandleDefaultControls()
             }
         }
 
-        if (IsKeyJustDown(KEY_Z))
+        if (!controlDown && !shiftDown && IsKeyJustDown(KEY_Z))
         {
             renderer->SetDebugMode((renderer->GetDebugMode() != DEBUG_WIREFRAME) ? DEBUG_WIREFRAME : DEBUG_NONE);
         }

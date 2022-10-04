@@ -63,6 +63,7 @@ EditorState* GetEditorState();
 void SetSelectedComponent(Component* newComponent);
 void SetSelectedActor(Actor* newActor);
 void AddSelectedComponent(Component* component);
+void RemoveSelectedComponent(Component* component);
 void AddSelectedActor(Actor* actor, bool addAllChildren);
 void SetSelectedAssetStub(AssetStub* newStub);
 void SetActiveLevel(Level* level);

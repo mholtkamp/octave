@@ -73,6 +73,22 @@ void AddSelectedComponent(Component* component)
     }
 }
 
+void RemoveSelectedComponent(Component* component)
+{
+    if (component != nullptr)
+    {
+        std::vector<Component*>& comps = sEditorState.mSelectedComponents;
+        auto it = std::find(comps.begin(), comps.end(), component);
+
+        if (it != comps.end())
+        {
+            // Move the component to the back of the vector so that 
+            // it is considered the primary selected component.
+            comps.erase(it);
+        }
+    }
+}
+
 void AddSelectedActor(Actor* actor, bool addAllChildren)
 {
     if (addAllChildren)
@@ -165,6 +181,8 @@ void BeginPlayInEditor()
     SetSelectedComponent(nullptr);
     SetSelectedAssetStub(nullptr);
 
+    ActionManager::Get()->ResetUndoRedo();
+
     sEditorState.mPlayInEditor = true;
 
     if (sEditorState.mActiveLevel != nullptr)
@@ -209,6 +227,8 @@ void EndPlayInEditor()
 
     SetSelectedComponent(nullptr);
     SetSelectedAssetStub(nullptr);
+
+    ActionManager::Get()->ResetUndoRedo();
 
     GetWorld()->DestroyAllActors();
 

@@ -82,6 +82,14 @@ enum class VertexColorMode : uint32_t
     Count
 };
 
+enum class PropertyOwnerType
+{
+    Component,
+    Actor,
+    Asset,
+    Count
+};
+
 struct Bounds
 {
     glm::vec3 mCenter = { };

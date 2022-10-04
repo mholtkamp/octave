@@ -5,6 +5,15 @@
 
 #include "EngineTypes.h"
 #include "Asset.h"
+#include "AssetRef.h"
+
+class Action
+{
+public:
+    virtual void Execute() = 0;
+    virtual void Reverse() = 0;
+    virtual const char* GetName() = 0;
+};
 
 class ActionManager
 {
@@ -24,6 +33,17 @@ public:
     void SpawnActor(TypeId actorType, glm::vec3 position);
     void SpawnBasicActor(const std::string& name, glm::vec3 position, Asset* srcAsset = nullptr);
 
+    void ExecuteAction(Action* action);
+    void Undo();
+    void Redo();
+
+    // Actions
+    void EXE_EditProperty(void* owner, PropertyOwnerType ownerType, const std::string& name, uint32_t index, Datum newValue);
+
+    void ClearActionHistory();
+    void ClearActionFuture();
+    void ResetUndoRedo();
+
 protected:
 
     static ActionManager* sInstance;
@@ -40,6 +60,9 @@ protected:
         const char* sourcePath);
 
     void GatherScriptFiles(const std::string& dir, std::vector<std::string>& outFiles);
+
+    std::vector<Action*> mActionHistory;
+    std::vector<Action*> mActionFuture;
 
 public:
 
@@ -63,4 +86,39 @@ public:
     void DeleteAsset(AssetStub* stub);
     void DeleteAssetDir(AssetDir* dir);
     void DuplicateActor(Actor* actor);
+};
+
+#define DECLARE_ACTION_INTERFACE(Name) \
+    virtual void Execute() override; \
+    virtual void Reverse() override; \
+    virtual const char* GetName() { return #Name; }
+
+// Actions
+class ActionSelectComponent : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(SelectComponent)
+    Component* mComponent = nullptr;
+protected:
+    std::vector<Component*> mPrevComponents;
+};
+
+class ActionEditProperty : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(EditProperty)
+
+    ActionEditProperty(void* owner, PropertyOwnerType ownerType, const std::string& propName, uint32_t index, Datum value);
+
+    void* mOwner = nullptr;
+    PropertyOwnerType mOwnerType = PropertyOwnerType::Count;
+    std::string mPropertyName;
+    uint32_t mIndex = 0;
+    Datum mValue;
+protected:
+    void GatherProps(std::vector<Property>& props);
+    Property* FindProp(std::vector<Property>& props, const std::string& name);
+
+    AssetRef mReferencedAsset;
+    Datum mPreviousValue;
 };

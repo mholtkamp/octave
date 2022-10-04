@@ -267,10 +267,12 @@ public:
     virtual bool IsTableDatum() const;
     virtual void DeepCopy(const Datum& src, bool forceInternalStorage);
 
+    void* GetValue(uint32_t index);
+    virtual void Destroy();
+
 protected:
 
     void Reserve(uint32_t capacity);
-    virtual void Destroy();
 
     void PreSet(uint32_t index, DatumType type);
     void PreSetExternal(DatumType type);

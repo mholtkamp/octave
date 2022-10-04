@@ -183,6 +183,14 @@ void InputManager::UpdateHotkeys()
         {
             ActionManager::Get()->RecaptureAndSaveAllLevels();
         }
+        else if (shiftDown && ctrlDown && IsKeyJustDown(KEY_Z))
+        {
+            ActionManager::Get()->Redo();
+        }
+        else if (ctrlDown && IsKeyJustDown(KEY_Z))
+        {
+            ActionManager::Get()->Undo();
+        }
     }
 }
 
