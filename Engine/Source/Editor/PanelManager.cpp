@@ -63,7 +63,7 @@ PanelManager* PanelManager::Get()
 void PanelManager::Update()
 {
     // Handle input
-    if (!GetEditorState()->mPlayInEditor)
+    if (!GetEditorState()->mPlayInEditor || GetEditorState()->mEjected)
     {
         mOutlinerPanel->HandleInput();
         mAssetsPanel->HandleInput();

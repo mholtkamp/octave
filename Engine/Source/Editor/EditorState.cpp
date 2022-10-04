@@ -183,7 +183,7 @@ void BeginPlayInEditor()
     Renderer::Get()->EnableProxyRendering(false);
 
     // Fake-Initialize the Game
-    OctPreInitialize();
+    //OctPreInitialize();
     OctPostInitialize();
 
     if (sEditorState.mCachedPieLevel != nullptr)
@@ -217,6 +217,47 @@ void EndPlayInEditor()
         assert(sEditorState.mActiveLevel != nullptr);
         sEditorState.mCachedPieLevel.Get<Level>()->LoadIntoWorld(GetWorld());
         sEditorState.mCachedPieLevel = nullptr;
+    }
+}
+
+void EjectPlayInEditor()
+{
+    if (sEditorState.mPlayInEditor &&
+        !sEditorState.mEjected)
+    {
+        sEditorState.mInjectedCamera = GetWorld()->GetActiveCamera();
+
+        if (sEditorState.mEjectedCamera == nullptr)
+        {
+            Actor* cameraActor = GetWorld()->SpawnActor<Actor>();
+            cameraActor->SetName("Ejected Camera");
+            sEditorState.mEjectedCamera = cameraActor->CreateComponent<CameraComponent>();
+
+            // Set its transform to match the PIE camera
+            if (GetWorld()->GetActiveCamera())
+            {
+                cameraActor->GetRootComponent()->SetTransform(GetWorld()->GetActiveCamera()->GetTransform());
+            }
+        }
+
+        GetWorld()->SetActiveCamera(sEditorState.mEjectedCamera.Get<CameraComponent>());
+        ShowRootCanvas(true);
+        sEditorState.mEjected = true;
+    }
+}
+
+void InjectPlayInEditor()
+{
+    if (sEditorState.mPlayInEditor &&
+        sEditorState.mEjected)
+    {
+        if (sEditorState.mInjectedCamera != nullptr)
+        {
+            GetWorld()->SetActiveCamera(sEditorState.mInjectedCamera.Get<CameraComponent>());
+        }
+
+        ShowRootCanvas(false);
+        sEditorState.mEjected = false;
     }
 }
 

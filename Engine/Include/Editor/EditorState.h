@@ -50,7 +50,10 @@ struct EditorState
     Canvas* mRootCanvas = nullptr;
     bool mMouseNeedsRecenter = false;
     bool mPlayInEditor = false;
+    bool mEjected = false;
     LevelRef mCachedPieLevel = nullptr;
+    ComponentRef mInjectedCamera = nullptr;
+    ComponentRef mEjectedCamera = nullptr;
 };
 
 void InitializeEditorState();
@@ -67,6 +70,8 @@ void SetControlMode(ControlMode newMode);
 
 void BeginPlayInEditor();
 void EndPlayInEditor();
+void EjectPlayInEditor();
+void InjectPlayInEditor();
 
 Component* GetSelectedComponent();
 Actor* GetSelectedActor();
