@@ -630,6 +630,14 @@ void World::UnregisterComponent(Component* comp)
         assert(it != mPointLights.end());
         mPointLights.erase(it);
     }
+    else if (compType == DirectionalLightComponent::GetStaticType())
+    {
+        DirectionalLightComponent* dirLightComp = GetWorld()->GetDirectionalLight();
+        if (dirLightComp == comp)
+        {
+            GetWorld()->SetDirectionalLight(nullptr);
+        }
+    }
 }
 
 const std::vector<AudioComponent*>& World::GetAudioComponents() const
@@ -700,6 +708,49 @@ DirectionalLightComponent* World::GetDirectionalLight()
 void World::SetDirectionalLight(DirectionalLightComponent* directionalLight)
 {
     mDirectionalLight = directionalLight;
+}
+
+void World::AddActor(Actor* actor)
+{
+#if !EDITOR
+    // This should really only be used in Editor for Undo/Redo reasons.
+    assert(0);
+#endif
+
+    assert(std::find(mActors.begin(), mActors.end(), actor) == mActors.end());
+    mActors.push_back(actor);
+    actor->SetWorld(this);
+
+    // Unregister components from world
+    for (uint32_t i = 0; i < actor->GetNumComponents(); ++i)
+    {
+        GetWorld()->RegisterComponent(actor->GetComponent(i));
+    }
+}
+
+void World::RemoveActor(Actor* actor)
+{
+#if !EDITOR
+    // This should really only be used in Editor for Undo/Redo reasons.
+    assert(0);
+#endif
+
+    for (uint32_t i = 0; i < mActors.size(); ++i)
+    {
+        if (mActors[i] == actor)
+        {
+            mActors.erase(mActors.begin() + i);
+            break;
+        }
+    }
+
+    // Unregister components from world
+    for (uint32_t i = 0; i < actor->GetNumComponents(); ++i)
+    {
+        GetWorld()->UnregisterComponent(actor->GetComponent(i));
+    }
+
+    actor->SetWorld(nullptr);
 }
 
 void World::Update(float deltaTime)

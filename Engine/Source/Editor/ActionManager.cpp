@@ -513,6 +513,7 @@ void ActionManager::SpawnActor(TypeId actorType, glm::vec3 position)
 
     spawnedActor->SetPosition(position);
     SetSelectedActor(spawnedActor);
+    EXE_SpawnActor(spawnedActor);
 }
 
 void ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 position, Asset* srcAsset)
@@ -659,6 +660,7 @@ void ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 position,
     {
         spawnedActor->SetPosition(position);
         SetSelectedActor(spawnedActor);
+        EXE_SpawnActor(spawnedActor);
     }
     else
     {
@@ -717,6 +719,36 @@ void ActionManager::EXE_EditTransforms(const std::vector<TransformComponent*>& t
     ActionManager::Get()->ExecuteAction(action);
 }
 
+void ActionManager::EXE_SpawnActor(Actor* actor)
+{
+    std::vector<Actor*> actors;
+    actors.push_back(actor);
+
+    ActionSpawnActors* action = new ActionSpawnActors(actors);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_DeleteActor(Actor* actor)
+{
+    std::vector<Actor*> actors;
+    actors.push_back(actor);
+
+    ActionDeleteActors* action = new ActionDeleteActors(actors);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_SpawnActors(const std::vector<Actor*>& actors)
+{
+    ActionSpawnActors* action = new ActionSpawnActors(actors);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_DeleteActors(const std::vector<Actor*>& actors)
+{
+    ActionDeleteActors* action = new ActionDeleteActors(actors);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
 void ActionManager::ClearActionHistory()
 {
     for (uint32_t i = 0; i < mActionHistory.size(); ++i)
@@ -744,7 +776,46 @@ void ActionManager::ResetUndoRedo()
     ClearActionHistory();
     ClearActionFuture();
 
+    for (int32_t i = (int32_t)mExiledActors.size() - 1; i >= 0; --i)
+    {
+        GetWorld()->AddActor(mExiledActors[i]);
+        GetWorld()->DestroyActor(mExiledActors[i]);
+        mExiledActors.erase(mExiledActors.begin() + i);
+    }
+
+    for (int32_t i = (int32_t)mExiledComponents.size() - 1; i >= 0; --i)
+    {
+        mExiledComponents[i]->Destroy();
+        mExiledComponents.erase(mExiledComponents.begin() + i);
+    }
+
     // TODO: Clear exiled Actors / Components
+}
+
+void ActionManager::ExileActor(Actor* actor)
+{
+    assert(std::find(mExiledActors.begin(), mExiledActors.end(), actor) == mExiledActors.end());
+    assert(actor->GetWorld());
+    GetWorld()->RemoveActor(actor);
+    mExiledActors.push_back(actor);
+}
+
+void ActionManager::RestoreExiledActor(Actor* actor)
+{
+    bool restored = false;
+
+    for (uint32_t i = 0; i < mExiledActors.size(); ++i)
+    {
+        if (mExiledActors[i] == actor)
+        {
+            GetWorld()->AddActor(actor);
+            mExiledActors.erase(mExiledActors.begin() + i);
+            restored = true;
+            break;
+        }
+    }
+
+    assert(restored);
 }
 
 void ActionManager::CreateNewProject()
@@ -899,10 +970,15 @@ void ActionManager::DeleteSelectedActors()
 
     for (uint32_t i = 0; i < actors.size(); ++i)
     {
-        Actor* selectedActor = actors[i];
-        DeleteActor(selectedActor);
+        if (actors[i] == nullptr ||
+            actors[i] == GetWorld()->GetActiveCamera()->GetOwner())
+        {
+            actors.erase(actors.begin() + i);
+            --i;
+        }
     }
 
+    EXE_DeleteActors(actors);
     SetSelectedActor(nullptr);
 }
 
@@ -911,13 +987,7 @@ void ActionManager::DeleteActor(Actor* actor)
     if (actor != nullptr &&
         actor != GetWorld()->GetActiveCamera()->GetOwner())
     {
-        DirectionalLightComponent* dirLightComp = GetWorld()->GetDirectionalLight();
-        if (dirLightComp && actor == dirLightComp->GetOwner())
-        {
-            GetWorld()->SetDirectionalLight(nullptr);
-        }
-
-        GetWorld()->DestroyActor(actor);
+        EXE_DeleteActor(actor);
     }
 }
 
@@ -1704,6 +1774,54 @@ void ActionEditTransforms::Reverse()
     for (uint32_t i = 0; i < mTransComps.size(); ++i)
     {
         mTransComps[i]->SetTransform(mPrevTransforms[i]);
+    }
+}
+
+ActionSpawnActors::ActionSpawnActors(const std::vector<Actor*>& actors)
+{
+    mActors = actors;
+}
+
+void ActionSpawnActors::Execute()
+{
+    // Actor is already spawned at this point.
+    for (uint32_t i = 0; i < mActors.size(); ++i)
+    {
+        if (mActors[i]->GetWorld() == nullptr)
+        {
+            ActionManager::Get()->RestoreExiledActor(mActors[i]);
+        }
+    }
+}
+
+void ActionSpawnActors::Reverse()
+{
+    for (uint32_t i = 0; i < mActors.size(); ++i)
+    {
+        ActionManager::Get()->ExileActor(mActors[i]);
+    }
+}
+
+ActionDeleteActors::ActionDeleteActors(const std::vector<Actor*>& actors)
+{
+    mActors = actors;
+}
+
+void ActionDeleteActors::Execute()
+{
+    for (uint32_t i = 0; i < mActors.size(); ++i)
+    {
+        // Actor is already spawned at this point.
+        assert(mActors[i]->GetWorld() != nullptr);
+        ActionManager::Get()->ExileActor(mActors[i]);
+    }
+}
+
+void ActionDeleteActors::Reverse()
+{
+    for (uint32_t i = 0; i < mActors.size(); ++i)
+    {
+        ActionManager::Get()->RestoreExiledActor(mActors[i]);
     }
 }
 

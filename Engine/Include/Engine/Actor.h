@@ -173,7 +173,7 @@ public:
     uint32_t GetNumComponents() const;
     Component* GetComponent(int32_t index);
     Component* GetComponent(const std::string& name);
-    Component* GetComponent(TypeId type);
+    Component* GetComponentByType(TypeId type);
     void CopyComponents(const std::vector<Component*>& srcComps);
 
     void SetRootComponent(TransformComponent* component);

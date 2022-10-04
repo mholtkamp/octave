@@ -43,6 +43,9 @@ public:
     void SetAudioReceiver(TransformComponent* newReceiver);
     void SetDirectionalLight(DirectionalLightComponent* directionalLight);
 
+    void AddActor(Actor* actor);
+    void RemoveActor(Actor* actor);
+
     Actor* SpawnActor(TypeId actorType, bool addNetwork = true);
     Actor* SpawnActor(const char* typeName);
     Actor* CloneActor(Actor* srcActor);

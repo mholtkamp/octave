@@ -42,10 +42,16 @@ public:
     // Actions
     void EXE_EditProperty(void* owner, PropertyOwnerType ownerType, const std::string& name, uint32_t index, Datum newValue);
     void EXE_EditTransforms(const std::vector<TransformComponent*>& transComps, const std::vector<glm::mat4>& newTransforms);
+    void EXE_SpawnActor(Actor* actor);
+    void EXE_DeleteActor(Actor* actor);
+    void EXE_SpawnActors(const std::vector<Actor*>& actors);
+    void EXE_DeleteActors(const std::vector<Actor*>& actors);
 
     void ClearActionHistory();
     void ClearActionFuture();
     void ResetUndoRedo();
+    void ExileActor(Actor* actor);
+    void RestoreExiledActor(Actor* actor);
 
 protected:
 
@@ -66,6 +72,8 @@ protected:
 
     std::vector<Action*> mActionHistory;
     std::vector<Action*> mActionFuture;
+    std::vector<Actor*> mExiledActors;
+    std::vector<Component*> mExiledComponents;
 
 public:
 
@@ -148,4 +156,22 @@ protected:
     std::vector<TransformComponent*> mTransComps;
     std::vector<glm::mat4> mNewTransforms;
     std::vector<glm::mat4> mPrevTransforms;
+};
+
+class ActionSpawnActors : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(SpawnActors)
+    ActionSpawnActors(const std::vector<Actor*>& actors);
+protected:
+    std::vector<Actor*> mActors;
+};
+
+class ActionDeleteActors : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(DeleteActors)
+    ActionDeleteActors(const std::vector<Actor*>& actors);
+protected:
+    std::vector<Actor*> mActors;
 };
