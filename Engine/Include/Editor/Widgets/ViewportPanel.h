@@ -23,6 +23,7 @@ protected:
     static void HandleFilePressed(Button* button);
     static void HandleViewPressed(Button* button);
     static void HandleWorldPressed(Button* button);
+    static void HandlePlayPressed(Button* button);
 
     void HandleDefaultControls();
     void HandlePilotControls();
@@ -47,6 +48,7 @@ protected:
     Button* mFileButton = nullptr;
     Button* mViewButton = nullptr;
     Button* mWorldButton = nullptr;
+    Button* mPlayButton = nullptr;
 
     float mFirstPersonMoveSpeed;
     float mFirstPersonRotationSpeed;
