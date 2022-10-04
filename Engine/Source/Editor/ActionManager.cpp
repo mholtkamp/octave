@@ -798,6 +798,11 @@ void ActionManager::ExileActor(Actor* actor)
     assert(actor->GetWorld());
     GetWorld()->RemoveActor(actor);
     mExiledActors.push_back(actor);
+
+    if (GetSelectedActor() == actor)
+    {
+        SetSelectedActor(nullptr);
+    }
 }
 
 void ActionManager::RestoreExiledActor(Actor* actor)
