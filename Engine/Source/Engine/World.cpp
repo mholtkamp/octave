@@ -818,24 +818,34 @@ void World::Update(float deltaTime)
     UpdateLines(deltaTime);
 
     {
+        bool isEditor = false;
+        bool isPlayInEditor = false;
+#if EDITOR
+        isEditor = true;
+        isPlayInEditor = GetEditorState()->mPlayInEditor;
+#endif
+
         SCOPED_CPU_STAT("Tick");
         for (int32_t i = 0; i < (int32_t)mActors.size(); ++i)
         {
-#if !EDITOR
-            if (!mActors[i]->HasBegunPlay())
+            if (!isEditor || isPlayInEditor)
             {
-                mActors[i]->BeginPlay();
+                if (!mActors[i]->HasBegunPlay())
+                {
+                    mActors[i]->BeginPlay();
+                }
+
+                if (mActors[i]->IsTickEnabled())
+                {
+                    mActors[i]->Tick(deltaTime);
+                }
             }
-#endif
-
-            if (mActors[i]->IsTickEnabled()
-#if EDITOR
-                 && mActors[i]->ShouldTickInEditor()
-#endif
-                )
-
+            else
             {
-                mActors[i]->Tick(deltaTime);
+                if (mActors[i]->IsTickEnabled())
+                {
+                    mActors[i]->EditorTick(deltaTime);
+                }
             }
 
             if (mActors[i]->IsPendingDestroy())

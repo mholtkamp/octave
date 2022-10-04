@@ -130,6 +130,11 @@ void Component::Tick(float deltaTime)
     
 }
 
+void Component::EditorTick(float deltaTime)
+{
+    Tick(deltaTime);
+}
+
 void Component::GatherProperties(std::vector<Property>& outProps)
 {
     outProps.push_back({DatumType::String, "Name", this, &mName});

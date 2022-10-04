@@ -47,6 +47,8 @@ struct EditorState
     ActionList* mActionList = nullptr;
     TextEntry* mTextEntry = nullptr;
     bool mMouseNeedsRecenter = false;
+    bool mPlayInEditor = false;
+    LevelRef mCachedPieLevel = nullptr;
 };
 
 void InitializeEditorState();
@@ -60,6 +62,9 @@ void AddSelectedActor(Actor* actor, bool addAllChildren);
 void SetSelectedAssetStub(AssetStub* newStub);
 void SetActiveLevel(Level* level);
 void SetControlMode(ControlMode newMode);
+
+void BeginPlayInEditor();
+void EndPlayInEditor();
 
 Component* GetSelectedComponent();
 Actor* GetSelectedActor();

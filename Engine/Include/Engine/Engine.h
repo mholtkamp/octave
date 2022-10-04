@@ -5,6 +5,13 @@
 
 #include "EngineTypes.h"
 
+extern InitOptions OctPreInitialize();
+extern void OctPostInitialize();
+extern void OctPreUpdate();
+extern void OctPostUpdate();
+extern void OctPreShutdown();
+extern void OctPostShutdown();
+
 bool Initialize(InitOptions& initOptions);
 
 bool Update();
