@@ -69,6 +69,7 @@ void EditorMain(int32_t argc, char** argv)
     rootCanvas->SetRatios(0.0f, 0.0f, 1.0f, 1.0f);
     PanelManager::Get()->AttachPanels(rootCanvas);
     Renderer::Get()->AddWidget(rootCanvas);
+    GetEditorState()->mRootCanvas = rootCanvas;
 
     GetWorld()->GetActiveCamera()->SetPosition(glm::vec3(0, 0, 10.0f));
     GetWorld()->GetActiveCamera()->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
