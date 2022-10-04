@@ -197,6 +197,12 @@ void EndPlayInEditor()
     if (!sEditorState.mPlayInEditor)
         return;
 
+    glm::mat4 cameraTransform(1);
+    if (GetWorld()->GetActiveCamera())
+    {
+        cameraTransform = GetWorld()->GetActiveCamera()->GetTransform();
+    }
+
     // Fake Shutdown
     OctPreShutdown();
     OctPostShutdown();
@@ -217,6 +223,11 @@ void EndPlayInEditor()
         assert(sEditorState.mActiveLevel != nullptr);
         sEditorState.mCachedPieLevel.Get<Level>()->LoadIntoWorld(GetWorld());
         sEditorState.mCachedPieLevel = nullptr;
+    }
+
+    if (GetWorld()->GetActiveCamera())
+    {
+        GetWorld()->GetActiveCamera()->SetTransform(cameraTransform);
     }
 }
 
