@@ -203,6 +203,18 @@ void ViewportPanel::HandleWorldPressed(Button* button)
     }
 }
 
+void ViewportPanel::HandlePlayPressed(Button* button)
+{
+    if (GetEditorState()->mPlayInEditor)
+    {
+        EndPlayInEditor();
+    }
+    else
+    {
+        BeginPlayInEditor();
+    }
+}
+
 void HandleSpawnActorPressed(Button* button)
 {
     const std::string& actorTypeName = button->GetTextString();
@@ -276,6 +288,13 @@ ViewportPanel::ViewportPanel() :
     mWorldButton->SetDimensions(50.0f, 24.0f);
     AddChild(mWorldButton);
 
+    mPlayButton = new Button();
+    mPlayButton->SetTextString("Play");
+    mPlayButton->SetPressedHandler(HandlePlayPressed);
+    mPlayButton->SetPosition(145.0f, 4.0f);
+    mPlayButton->SetDimensions(40.0f, 24.0f);
+    AddChild(mPlayButton);
+
 #if CONSOLE_ENABLED
     // Move the console into  viewport region
     Renderer::Get()->GetConsoleWidget()->SetRect(sDefaultWidth + 5.0f, 30, 1280 - sDefaultWidth, 720);
@@ -311,6 +330,8 @@ void ViewportPanel::Update()
     case ControlMode::Orbit: mHeaderText->SetText("Orbit"); break;
     default: mHeaderText->SetText(""); break;
     }
+
+    mPlayButton->SetTextString(GetEditorState()->mPlayInEditor ? "Stop" : "Play");
 }
 
 void ViewportPanel::HandleInput()
