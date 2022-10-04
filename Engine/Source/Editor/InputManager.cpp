@@ -6,6 +6,7 @@
 #include "Widgets/TextField.h"
 #include "Widgets/Button.h"
 #include "EditorUtils.h"
+#include "EditorState.h"
 #include "Renderer.h"
 
 #include "Input/Input.h"
@@ -102,10 +103,20 @@ void InputManager::Update()
 
 void InputManager::UpdateHotkeys()
 {
-    if (Renderer::Get()->GetModalWidget() == nullptr)
+    const bool ctrlDown = IsControlDown();
+    const bool shiftDown = IsShiftDown();
+    const bool altDown = IsAltDown();
+
+    if (GetEditorState()->mPlayInEditor)
     {
-        const bool ctrlDown = IsControlDown();
-        const bool shiftDown = IsShiftDown();
+        if (IsKeyJustDown(KEY_ESCAPE) ||
+            (IsKeyJustDown(KEY_P) && altDown))
+        {
+            EndPlayInEditor();
+        }
+    }
+    else if (Renderer::Get()->GetModalWidget() == nullptr)
+    {
         const bool textFieldActive = (TextField::GetSelectedTextField() != nullptr);
 
         if (ctrlDown && IsKeyJustDown(KEY_P))
@@ -123,6 +134,10 @@ void InputManager::UpdateHotkeys()
             ClearControlDown();
             ClearShiftDown();
             INP_ClearKey(KEY_P);
+        }
+        else if (altDown && IsKeyJustDown(KEY_P))
+        {
+            BeginPlayInEditor();
         }
         else if (ctrlDown && IsKeyJustDown(KEY_S))
         {

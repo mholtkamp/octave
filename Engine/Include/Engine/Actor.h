@@ -59,6 +59,7 @@ public:
     virtual void Create();
     virtual void Destroy();
     virtual void Tick(float deltaTime);
+    virtual void EditorTick(float deltaTime);
     virtual void BeginPlay();
     virtual void EndPlay();
 
@@ -114,7 +115,6 @@ public:
     bool IsPendingDestroy() const;
 
     bool HasBegunPlay() const;
-    bool ShouldTickInEditor() const;
 
     void EnableTick(bool enable);
     bool IsTickEnabled() const;
@@ -241,7 +241,6 @@ protected:
     bool mForceReplicate;
     bool mBegunPlay;
     bool mPendingDestroy;
-    bool mTickInEditor;
     bool mTickEnabled;
     bool mTransient;
     ReplicationRate mReplicationRate;

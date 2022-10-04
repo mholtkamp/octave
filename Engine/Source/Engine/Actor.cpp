@@ -80,7 +80,6 @@ Actor::Actor() :
     mForceReplicate(false),
     mBegunPlay(false),
     mPendingDestroy(false),
-    mTickInEditor(true),
     mTickEnabled(true),
     mTransient(false),
     mReplicationRate(ReplicationRate::High),
@@ -121,6 +120,19 @@ void Actor::Tick(float deltaTime)
         if (mComponents[i]->IsActive())
         {
             mComponents[i]->Tick(deltaTime);
+        }
+    }
+
+    UpdateComponentTransforms();
+}
+
+void Actor::EditorTick(float deltaTime)
+{
+    for (uint32_t i = 0; i < mComponents.size(); ++i)
+    {
+        if (mComponents[i]->IsActive())
+        {
+            mComponents[i]->EditorTick(deltaTime);
         }
     }
 
@@ -598,11 +610,6 @@ bool Actor::IsPendingDestroy() const
 bool Actor::HasBegunPlay() const
 {
     return mBegunPlay;
-}
-
-bool Actor::ShouldTickInEditor() const
-{
-    return mTickInEditor;
 }
 
 void Actor::EnableTick(bool enable)

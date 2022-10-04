@@ -38,6 +38,7 @@ public:
     virtual void BeginPlay();
     virtual void EndPlay();
     virtual void Tick(float deltaTime);
+    virtual void EditorTick(float deltaTime);
     virtual void GatherProperties(std::vector<Property>& outProps);
 
     virtual void SetOwner(Actor* owner);

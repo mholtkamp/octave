@@ -98,7 +98,20 @@ void EditorMain(int32_t argc, char** argv)
         InputManager::Get()->Update();
         ActionManager::Get()->Update();
         PanelManager::Get()->Update();
+
+        bool playInEditor = GetEditorState()->mPlayInEditor;
+
+        if (playInEditor)
+        {
+            OctPreUpdate();
+        }
+
         ret = Update();
+
+        if (playInEditor)
+        {
+            OctPostUpdate();
+        }
     }
     
     PanelManager::Destroy();

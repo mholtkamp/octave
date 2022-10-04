@@ -19,6 +19,7 @@ public:
     void Update();
 
     void AttachPanels(Widget* parent);
+    void SetPanelsVisible(bool visible);
 
     OutlinerPanel* GetOutlinerPanel();
     AssetsPanel* GetAssetsPanel();

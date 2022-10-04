@@ -157,6 +157,66 @@ void SetControlMode(ControlMode newMode)
     SetTransformLock(TransformLock::None);
 }
 
+void BeginPlayInEditor()
+{
+    if (sEditorState.mPlayInEditor)
+        return;
+
+    SetSelectedComponent(nullptr);
+    SetSelectedAssetStub(nullptr);
+
+    sEditorState.mPlayInEditor = true;
+
+    if (sEditorState.mActiveLevel != nullptr)
+    {
+        assert(sEditorState.mCachedPieLevel == nullptr);
+        Level* cachedLevel = new Level();
+        cachedLevel->Create();
+        cachedLevel->CaptureWorld(GetWorld());
+        AssetManager::Get()->RegisterTransientAsset(cachedLevel);
+        sEditorState.mCachedPieLevel = cachedLevel;
+    }
+
+    GetWorld()->DestroyAllActors();
+
+    PanelManager::Get()->SetPanelsVisible(false);
+    Renderer::Get()->EnableProxyRendering(false);
+
+    // Fake-Initialize the Game
+    OctPreInitialize();
+    OctPostInitialize();
+
+    if (sEditorState.mCachedPieLevel != nullptr)
+    {
+        sEditorState.mCachedPieLevel.Get<Level>()->LoadIntoWorld(GetWorld());
+    }
+}
+
+void EndPlayInEditor()
+{
+    if (!sEditorState.mPlayInEditor)
+        return;
+
+    // Fake Shutdown
+    OctPreShutdown();
+    OctPostShutdown();
+
+    GetWorld()->DestroyAllActors();
+
+    PanelManager::Get()->SetPanelsVisible(true);
+    Renderer::Get()->EnableProxyRendering(true);
+
+    sEditorState.mPlayInEditor = false;
+
+    // Restore cached editor level
+    if (sEditorState.mCachedPieLevel.Get() != nullptr)
+    {
+        assert(sEditorState.mActiveLevel != nullptr);
+        sEditorState.mCachedPieLevel.Get<Level>()->LoadIntoWorld(GetWorld());
+        sEditorState.mCachedPieLevel = nullptr;
+    }
+}
+
 Component* GetSelectedComponent()
 {
     return (sEditorState.mSelectedComponents.size() > 0) ?

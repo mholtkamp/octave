@@ -30,14 +30,6 @@
 #if EDITOR
 // Located in Editor/EditorMain.cpp
 void EditorMain(int32_t argc, char** argv);
-#else
-// Game code hooks
-extern InitOptions OctPreInitialize();
-extern void OctPostInitialize();
-extern void OctPreUpdate();
-extern void OctPostUpdate();
-extern void OctPreShutdown();
-extern void OctPostShutdown();
 #endif
 
 static EngineState sEngineState;

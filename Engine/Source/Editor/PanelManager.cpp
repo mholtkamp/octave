@@ -63,11 +63,14 @@ PanelManager* PanelManager::Get()
 void PanelManager::Update()
 {
     // Handle input
-    mOutlinerPanel->HandleInput();
-    mAssetsPanel->HandleInput();
-    mHierarchyPanel->HandleInput();
-    mPropertiesPanel->HandleInput();
-    mViewportPanel->HandleInput();
+    if (!GetEditorState()->mPlayInEditor)
+    {
+        mOutlinerPanel->HandleInput();
+        mAssetsPanel->HandleInput();
+        mHierarchyPanel->HandleInput();
+        mPropertiesPanel->HandleInput();
+        mViewportPanel->HandleInput();
+    }
 }
 
 void PanelManager::AttachPanels(Widget* parent)
@@ -77,6 +80,15 @@ void PanelManager::AttachPanels(Widget* parent)
     parent->AddChild(mHierarchyPanel);
     parent->AddChild(mPropertiesPanel);
     parent->AddChild(mViewportPanel);
+}
+
+void PanelManager::SetPanelsVisible(bool visible)
+{
+    mOutlinerPanel->SetVisible(visible);
+    mAssetsPanel->SetVisible(visible);
+    mHierarchyPanel->SetVisible(visible);
+    mPropertiesPanel->SetVisible(visible);
+    mViewportPanel->SetVisible(visible);
 }
 
 OutlinerPanel* PanelManager::GetOutlinerPanel()
