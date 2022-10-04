@@ -13,6 +13,7 @@ class Asset;
 class Level;
 struct AssetStub;
 class ActionList;
+class Canvas;
 
 enum class ControlMode
 {
@@ -46,6 +47,7 @@ struct EditorState
     TransformLock mTransformLock = TransformLock::None;
     ActionList* mActionList = nullptr;
     TextEntry* mTextEntry = nullptr;
+    Canvas* mRootCanvas = nullptr;
     bool mMouseNeedsRecenter = false;
     bool mPlayInEditor = false;
     LevelRef mCachedPieLevel = nullptr;
@@ -74,6 +76,7 @@ bool IsComponentSelected(Component* component);
 bool IsActorSelected(Actor* actor);
 void DeselectComponent(Component* component);
 void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler);
+void ShowRootCanvas(bool show);
 
 Asset* GetSelectedAsset();
 AssetStub* GetSelectedAssetStub();

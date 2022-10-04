@@ -179,7 +179,7 @@ void BeginPlayInEditor()
 
     GetWorld()->DestroyAllActors();
 
-    PanelManager::Get()->SetPanelsVisible(false);
+    ShowRootCanvas(false);
     Renderer::Get()->EnableProxyRendering(false);
 
     // Fake-Initialize the Game
@@ -201,9 +201,12 @@ void EndPlayInEditor()
     OctPreShutdown();
     OctPostShutdown();
 
+    SetSelectedComponent(nullptr);
+    SetSelectedAssetStub(nullptr);
+
     GetWorld()->DestroyAllActors();
 
-    PanelManager::Get()->SetPanelsVisible(true);
+    ShowRootCanvas(true);
     Renderer::Get()->EnableProxyRendering(true);
 
     sEditorState.mPlayInEditor = false;
@@ -302,6 +305,21 @@ void DeselectComponent(Component* component)
 void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler)
 {
     sEditorState.mTextEntry->Prompt(title, confirmHandler);
+}
+
+void ShowRootCanvas(bool show)
+{
+    if (sEditorState.mRootCanvas)
+    {
+        if (show)
+        {
+            Renderer::Get()->AddWidget(sEditorState.mRootCanvas);
+        }
+        else
+        {
+            Renderer::Get()->RemoveWidget(sEditorState.mRootCanvas);
+        }
+    }
 }
 
 Asset* GetSelectedAsset()
