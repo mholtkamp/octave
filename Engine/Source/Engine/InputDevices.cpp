@@ -38,6 +38,11 @@ bool IsShiftDown()
     return (IsKeyDown(KEY_SHIFT_L) || IsKeyDown(KEY_SHIFT_R));
 }
 
+bool IsAltDown()
+{
+    return (IsKeyDown(KEY_ALT_L) || IsKeyDown(KEY_ALT_R));
+}
+
 void ClearControlDown()
 {
     INP_ClearKey(KEY_CONTROL_L);
@@ -48,6 +53,12 @@ void ClearShiftDown()
 {
     INP_ClearKey(KEY_SHIFT_L);
     INP_ClearKey(KEY_SHIFT_R);
+}
+
+void ClearAltDown()
+{
+    INP_ClearKey(KEY_ALT_L);
+    INP_ClearKey(KEY_ALT_R);
 }
 
 bool IsMouseButtonDown(int32_t button)
