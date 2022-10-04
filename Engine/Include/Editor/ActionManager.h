@@ -105,16 +105,6 @@ public:
     virtual const char* GetName() { return #Name; }
 
 // Actions
-#if 0
-class ActionSelectComponent : public Action
-{
-public:
-    DECLARE_ACTION_INTERFACE(SelectComponent)
-    Component* mComponent = nullptr;
-protected:
-    std::vector<Component*> mPrevComponents;
-};
-#endif
 
 class ActionEditProperty : public Action
 {
