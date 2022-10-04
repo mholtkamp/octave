@@ -788,8 +788,6 @@ void ActionManager::ResetUndoRedo()
         mExiledComponents[i]->Destroy();
         mExiledComponents.erase(mExiledComponents.begin() + i);
     }
-
-    // TODO: Clear exiled Actors / Components
 }
 
 void ActionManager::ExileActor(Actor* actor)
@@ -1577,6 +1575,8 @@ void ActionManager::ClearWorld()
     SetSelectedComponent(nullptr);
     SetActiveLevel(nullptr);
     GetWorld()->DestroyAllActors();
+
+    ResetUndoRedo();
 }
 
 void ActionManager::RecaptureAndSaveAllLevels()
