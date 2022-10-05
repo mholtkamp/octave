@@ -676,6 +676,13 @@ void ActionManager::ExecuteAction(Action* action)
 
     action->Execute();
 
+    // Limit max number of history?
+    const uint32_t MaxActionHistoryCount = 100;
+    if (mActionHistory.size() >= MaxActionHistoryCount)
+    {
+        mActionHistory.erase(mActionHistory.begin());
+    }
+
     mActionHistory.push_back(action);
     ClearActionFuture();
 }
