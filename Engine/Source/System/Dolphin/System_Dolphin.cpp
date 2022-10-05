@@ -298,6 +298,7 @@ static bool IsMemoryCardMounted()
     return GetEngineState()->mSystem.mMemoryCardMounted;
 }
 
+#if PLATFORM_GAMECUBE
 static void UnmountMemoryCard(int32_t channel, int32_t result)
 {
     LogWarning("Memory Card was removed from Slot %c", (channel == 0) ? 'A' : 'B');
@@ -320,6 +321,7 @@ static void MountMemoryCard()
         }
     }
 }
+#endif
 
 bool SYS_ReadSave(const char* saveName, Stream& outStream)
 {
@@ -333,7 +335,7 @@ bool SYS_ReadSave(const char* saveName, Stream& outStream)
         {
             std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
             outStream.ReadFile(savePath.c_str());
-            sucess = true;
+            success = true;
         }
         else
         {
@@ -382,9 +384,17 @@ bool SYS_WriteSave(const char* saveName, Stream& stream)
 {
     bool success = false;
 #if PLATFORM_WII
+    
     if (GetEngineState()->mProjectDirectory != "")
     {
         std::string saveDir = GetEngineState()->mProjectDirectory + "Saves";
+
+        // In the embedded case, might need to create a Project directory
+        if (!DoesDirExist(GetEngineState()->mProjectDirectory.c_str()))
+        {
+            SYS_CreateDirectory(GetEngineState()->mProjectDirectory.c_str());
+        }
+        
         bool saveDirExists = DoesDirExist(saveDir.c_str());
 
         if (!saveDirExists)
