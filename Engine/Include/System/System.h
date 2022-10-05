@@ -4,6 +4,8 @@
 
 #include <string>
 
+class Stream;
+
 void SYS_Initialize();
 void SYS_Shutdown();
 void SYS_Update();
@@ -43,6 +45,11 @@ void* SYS_AlignedMalloc(uint32_t size, uint32_t alignment);
 void SYS_AlignedFree(void* pointer);
 uint64_t SYS_GetNumBytesFree();
 uint64_t SYS_GetNumBytesAllocated();
+
+// Save / Memcard
+void SYS_ReadSave(const char* saveName, Stream& outStream);
+void SYS_WriteSave(const char* saveName, Stream& stream);
+bool SYS_DoesSaveExist(const char* saveName);
 
 // Misc
 void SYS_UpdateConsole();
