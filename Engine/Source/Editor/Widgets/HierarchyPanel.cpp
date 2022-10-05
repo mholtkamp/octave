@@ -2,6 +2,7 @@
 
 #include "Widgets/HierarchyPanel.h"
 #include "Widgets/HierarchyButton.h"
+#include "ActionManager.h"
 #include "PanelManager.h"
 #include "EditorState.h"
 #include "Actor.h"
@@ -36,6 +37,8 @@ void OnCreateCompButtonPressed(Button* button)
             assert(parentTrans != nullptr);
             newTrans->Attach(parentTrans);
         }
+
+        ActionManager::Get()->EXE_AddComponent(newComp);
 
         // Adding a new component should break the blueprint link.
         // For now, you cannot override blueprint instance components
@@ -133,7 +136,7 @@ void HierarchyPanel::DeleteComponent(Component* comp)
         }
         else
         {
-            actor->DestroyComponent(comp);
+            ActionManager::Get()->EXE_RemoveComponent(comp);
             SetSelectedComponent(actor->GetRootComponent());
 
             // Deleting component should break the blueprint link.
@@ -157,7 +160,7 @@ void HierarchyPanel::AttachSelectedComponent(Component* newParent)
 
         if (child->GetParent() != parent)
         {
-            child->Attach(parent);
+            ActionManager::Get()->EXE_AttachComponent(child, parent);
 
             // Reparenting components should break the blueprint link.
             // For now, you cannot override blueprint instance components

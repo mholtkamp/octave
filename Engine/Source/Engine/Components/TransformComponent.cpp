@@ -142,6 +142,8 @@ void TransformComponent::Attach(TransformComponent* parent)
     {
         parent->AddChild(this);
     }
+
+    MarkTransformDirty();
 }
 
 void TransformComponent::AddChild(TransformComponent* child)

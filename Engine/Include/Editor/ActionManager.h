@@ -46,12 +46,17 @@ public:
     void EXE_DeleteActor(Actor* actor);
     void EXE_SpawnActors(const std::vector<Actor*>& actors);
     void EXE_DeleteActors(const std::vector<Actor*>& actors);
+    void EXE_AddComponent(Component* comp);
+    void EXE_RemoveComponent(Component* comp);
+    void EXE_AttachComponent(TransformComponent* comp, TransformComponent* newParent);
 
     void ClearActionHistory();
     void ClearActionFuture();
     void ResetUndoRedo();
     void ExileActor(Actor* actor);
     void RestoreExiledActor(Actor* actor);
+    void ExileComponent(Component* comp);
+    void RestoreExiledComponent(Component* comp);
 
 protected:
 
@@ -164,4 +169,37 @@ public:
     ActionDeleteActors(const std::vector<Actor*>& actors);
 protected:
     std::vector<Actor*> mActors;
+};
+
+class ActionAddComponent : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(AddComponent)
+    ActionAddComponent(Component* comp);
+protected:
+    Component* mComponent = nullptr;
+    Actor* mOwner = nullptr;
+    TransformComponent* mParent = nullptr;
+};
+
+class ActionRemoveComponent : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(RemoveComponent)
+    ActionRemoveComponent(Component* comp);
+protected:
+    Component* mComponent = nullptr;
+    Actor* mOwner = nullptr;
+    TransformComponent* mParent = nullptr;
+};
+
+class ActionAttachComponent : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(AttachComponent)
+    ActionAttachComponent(TransformComponent* comp, TransformComponent* newParent);
+protected:
+    TransformComponent* mComponent = nullptr;
+    TransformComponent* mNewParent = nullptr;
+    TransformComponent* mPrevParent = nullptr;
 };
