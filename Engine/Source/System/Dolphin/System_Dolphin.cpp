@@ -293,6 +293,209 @@ uint64_t SYS_GetNumBytesAllocated()
     return totalMem - SYS_GetNumBytesFree();
 }
 
+static bool IsMemoryCardMounted()
+{
+    return GetEngineState()->mSystem.mMemoryCardMounted;
+}
+
+static void UnmountMemoryCard(int32_t channel, int32_t result)
+{
+    if (IsMemoryCardMounted())
+    {
+        LogWarning("Memory Card was removed from Slot %c", (channel == 0) ? 'A' : 'B');
+        CARD_Unmount(channel);
+        GetEngineState()->mSystem.mMemoryCardMounted = false;
+        SYS_AlignedFree(GetEngineState()->mSystem.mMemoryCardMountArea);
+        GetEngineState()->mSystem.mMemoryCardMountArea = nullptr;
+    }
+}
+
+static void MountMemoryCard()
+{
+    if (!IsMemoryCardMounted())
+    {
+        LogDebug("Initializing CARD");
+        GetEngineState()->mSystem.mMemoryCardMountArea = SYS_AlignedMalloc(CARD_WORKAREA, 32);
+        CARD_Init("OCTA","00");
+        int errorSlotA = CARD_Mount(CARD_SLOTA, GetEngineState()->mSystem.mMemoryCardMountArea, UnmountMemoryCard);
+        LogDebug("Memory card code: %d", errorSlotA);
+
+        if (errorSlotA >= 0)
+        {
+            GetEngineState()->mSystem.mMemoryCardMounted = true;
+        }
+    }
+}
+
+void SYS_ReadSave(const char* saveName, Stream& outStream)
+{
+    // This needs to be different between GameCube and Wii, since GameCube uses memory cards and Wii uses SD cards.
+
+#if PLATFORM_WII
+    if (GetEngineState()->mProjectDirectory != "")
+    {
+        if (SYS_DoesSaveExist(saveName))
+        {
+            std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
+            outStream.ReadFile(savePath.c_str());
+        }
+        else
+        {
+            LogError("Failed to read save.");
+        }
+    }
+    else
+    {
+        LogError("Failed to read save. Project directory is unset.");
+    }
+#else
+
+    LogDebug("READ SAVE");
+    MountMemoryCard();
+
+    if (IsMemoryCardMounted())
+    {
+        uint32_t sectorSize = 0;
+        CARD_GetSectorSize(CARD_SLOTA, &sectorSize);
+
+        card_file cardFile;
+        int32_t cardError = CARD_Open(CARD_SLOTA, saveName, &cardFile);
+
+        if (cardError >= 0)
+        {
+            int32_t fileSize = ((cardFile.len + sectorSize - 1) / sectorSize) * sectorSize;
+
+            char* cardBuffer = (char*)SYS_AlignedMalloc(fileSize, 32);
+            CARD_Read(&cardFile, cardBuffer, sectorSize, 0);
+
+            outStream.SetPos(0);
+            outStream.WriteBytes((uint8_t*) cardBuffer, fileSize);
+            outStream.SetPos(0);
+            SYS_AlignedFree(cardBuffer);
+
+            CARD_Close(&cardFile);
+        }
+    }
+
+#endif
+}
+
+void SYS_WriteSave(const char* saveName, Stream& stream)
+{
+#if PLATFORM_WII
+    if (GetEngineState()->mProjectDirectory != "")
+    {
+        std::string saveDir = GetEngineState()->mProjectDirectory + "Saves";
+        bool saveDirExists = DoesDirExist(saveDir.c_str());
+
+        if (!saveDirExists)
+        {
+            saveDirExists = SYS_CreateDirectory(saveDir.c_str());
+        }
+
+        if (saveDirExists)
+        {
+            std::string savePath = saveDir + "/" + saveName;
+            stream.WriteFile(savePath.c_str());
+            LogDebug("Game Saved: %s (%d bytes)", saveName, stream.GetSize());
+        }
+        else
+        {
+            LogError("Failed to open Saves directory");
+        }
+    }
+    else
+    {
+        LogError("Failed to write save");
+    }
+#else
+
+    LogDebug("WRITE SAVE");
+    MountMemoryCard();
+
+    if (IsMemoryCardMounted())
+    {
+        uint32_t sectorSize = 0;
+        CARD_GetSectorSize(CARD_SLOTA, &sectorSize);
+
+        int32_t fileSize = ((stream.GetSize() + sectorSize - 1) / sectorSize) * sectorSize;
+
+        card_file cardFile;
+        int32_t cardError = CARD_Open(CARD_SLOTA, saveName, &cardFile);
+
+        if (cardError < 0)
+        {
+            // File not found. Create it.
+            cardError = CARD_Create(CARD_SLOTA, saveName, fileSize, &cardFile);
+
+            if (cardError < 0)
+            {
+                LogError("Failed to create save data on memory card. Error code = %d", cardError);
+            }
+        }
+
+        if (cardError >= 0)
+        {
+            char* cardBuffer = (char*)SYS_AlignedMalloc(fileSize, 32);
+
+            //LogDebug("fileSize = %d, cardFile.len = %d, stream.GetSize() = %d", fileSize, cardFile.len, stream.GetSize());
+            //assert(fileSize == cardFile.len);
+            assert(fileSize >= (int32_t)stream.GetSize());
+            memcpy(cardBuffer, stream.GetData(), stream.GetSize());
+
+            cardError = CARD_Write(&cardFile, cardBuffer, fileSize, 0);
+
+            if (cardError < 0)
+            {
+                LogError("Failed to write save to memory card. Error code = %d", cardError);
+            }
+
+            SYS_AlignedFree(cardBuffer);
+            CARD_Close(&cardFile);
+        }
+    }
+#endif
+}
+
+bool SYS_DoesSaveExist(const char* saveName)
+{
+    bool exists = false;
+
+#if PLATFORM_WII
+    if (GetEngineState()->mProjectDirectory != "")
+    {
+        std::string savePath = GetEngineState()->mProjectDirectory + "/Saves/" + saveName;
+
+        FILE* file = fopen(savePath.c_str(), "rb");
+
+        if (file != nullptr)
+        {
+            exists = true;
+            fclose(file);
+            file = nullptr;
+        }
+    }
+#else
+
+    LogDebug("CHECK SAVE");
+    MountMemoryCard();
+
+    if (IsMemoryCardMounted())
+    {
+        card_file cardFile;
+        int32_t cardError = CARD_Open(CARD_SLOTA, saveName, &cardFile);
+
+        if (cardError >= 0)
+        {
+            exists = true;
+            CARD_Close(&cardFile);
+        }
+    }
+#endif
+
+    return exists;
+}
+
 // Misc
 void SYS_UpdateConsole()
 {
