@@ -605,6 +605,77 @@ uint64_t SYS_GetNumBytesAllocated()
     return counters.WorkingSetSize;
 }
 
+// Save Game
+void SYS_ReadSave(const char* saveName, Stream& outStream)
+{
+    if (GetEngineState()->mProjectDirectory != "")
+    {
+        if (SYS_DoesSaveExist(saveName))
+        {
+            std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
+            outStream.ReadFile(savePath.c_str());
+        }
+        else
+        {
+            LogError("Failed to read save.");
+        }
+    }
+    else
+    {
+        LogError("Failed to read save. Project directory is unset.");
+    }
+}
+
+void SYS_WriteSave(const char* saveName, Stream& stream)
+{
+    if (GetEngineState()->mProjectDirectory != "")
+    {
+        std::string saveDir = GetEngineState()->mProjectDirectory + "Saves";
+        bool saveDirExists = DoesDirExist(saveDir.c_str());
+
+        if (!saveDirExists)
+        {
+            saveDirExists = SYS_CreateDirectory(saveDir.c_str());
+        }
+
+        if (saveDirExists)
+        {
+            std::string savePath = saveDir + "/" + saveName;
+            stream.WriteFile(savePath.c_str());
+            LogDebug("Game Saved: %s (%d bytes)", saveName, stream.GetSize());
+        }
+        else
+        {
+            LogError("Failed to open Saves directory");
+        }
+    }
+    else
+    {
+        LogError("Failed to write save");
+    }
+}
+
+bool SYS_DoesSaveExist(const char* saveName)
+{
+    bool exists = false;
+
+    if (GetEngineState()->mProjectDirectory != "")
+    {
+        std::string savePath = GetEngineState()->mProjectDirectory + "/Saves/" + saveName;
+
+        FILE* file = fopen(savePath.c_str(), "rb");
+
+        if (file != nullptr)
+        {
+            exists = true;
+            fclose(file);
+            file = nullptr;
+        }
+    }
+
+    return exists;
+}
+
 // Misc
 void SYS_UpdateConsole()
 {
