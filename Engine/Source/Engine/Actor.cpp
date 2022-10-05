@@ -968,6 +968,7 @@ void Actor::RemoveComponent(Component* component)
 
             index = int32_t(i);
             comps.erase(comps.begin() + i);
+            component->SetOwner(nullptr);
             break;
         }
     }

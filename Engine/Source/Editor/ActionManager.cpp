@@ -25,6 +25,7 @@
 #include "EditorState.h"
 #include "PanelManager.h"
 #include "Widgets/AssetsPanel.h"
+#include "Widgets/HierarchyPanel.h"
 #include "Widgets/ActionList.h"
 #include "Assets/Texture.h"
 #include "Assets/StaticMesh.h"
@@ -749,6 +750,24 @@ void ActionManager::EXE_DeleteActors(const std::vector<Actor*>& actors)
     ActionManager::Get()->ExecuteAction(action);
 }
 
+void ActionManager::EXE_AddComponent(Component* comp)
+{
+    ActionAddComponent* action = new ActionAddComponent(comp);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_RemoveComponent(Component* comp)
+{
+    ActionRemoveComponent* action = new ActionRemoveComponent(comp);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_AttachComponent(TransformComponent* comp, TransformComponent* newParent)
+{
+    ActionAttachComponent* action = new ActionAttachComponent(comp, newParent);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
 void ActionManager::ClearActionHistory()
 {
     for (uint32_t i = 0; i < mActionHistory.size(); ++i)
@@ -797,7 +816,7 @@ void ActionManager::ExileActor(Actor* actor)
     GetWorld()->RemoveActor(actor);
     mExiledActors.push_back(actor);
 
-    if (GetSelectedActor() == actor)
+    if (IsActorSelected(actor))
     {
         SetSelectedActor(nullptr);
     }
@@ -813,6 +832,34 @@ void ActionManager::RestoreExiledActor(Actor* actor)
         {
             GetWorld()->AddActor(actor);
             mExiledActors.erase(mExiledActors.begin() + i);
+            restored = true;
+            break;
+        }
+    }
+
+    assert(restored);
+}
+
+void ActionManager::ExileComponent(Component* comp)
+{
+    assert(std::find(mExiledComponents.begin(), mExiledComponents.end(), comp) == mExiledComponents.end());
+    mExiledComponents.push_back(comp);
+
+    if (IsComponentSelected(comp))
+    {
+        SetSelectedComponent(nullptr);
+    }
+}
+
+void ActionManager::RestoreExiledComponent(Component* comp)
+{
+    bool restored = false;
+
+    for (uint32_t i = 0; i < mExiledComponents.size(); ++i)
+    {
+        if (mExiledComponents[i] == comp)
+        {
+            mExiledComponents.erase(mExiledComponents.begin() + i);
             restored = true;
             break;
         }
@@ -1829,6 +1876,92 @@ void ActionDeleteActors::Reverse()
     {
         ActionManager::Get()->RestoreExiledActor(mActors[i]);
     }
+}
+
+ActionAddComponent::ActionAddComponent(Component* comp)
+{
+    mComponent = comp;
+    mOwner = comp->GetOwner();
+    mParent = comp->IsTransformComponent() ? ((TransformComponent*)comp)->GetParent() : nullptr;
+    assert(mComponent);
+    assert(mOwner);
+}
+
+void ActionAddComponent::Execute()
+{
+    if (mComponent->GetOwner() == nullptr)
+    {
+        ActionManager::Get()->RestoreExiledComponent(mComponent);
+        mOwner->AddComponent(mComponent);
+
+        if (mParent != nullptr)
+        {
+            assert(mComponent->IsTransformComponent());
+            ((TransformComponent*)mComponent)->Attach(mParent);
+        }
+
+        PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+    }
+}
+
+void ActionAddComponent::Reverse()
+{
+    assert(mComponent->GetOwner());
+    mOwner->RemoveComponent(mComponent);
+    ActionManager::Get()->ExileComponent(mComponent);
+}
+
+ActionRemoveComponent::ActionRemoveComponent(Component* comp)
+{
+    mComponent = comp;
+    mOwner = comp->GetOwner();
+    mParent = comp->IsTransformComponent() ? ((TransformComponent*)comp)->GetParent() : nullptr;
+    assert(mComponent);
+    assert(mOwner);
+}
+
+void ActionRemoveComponent::Execute()
+{
+    assert(mComponent->GetOwner());
+    mOwner->RemoveComponent(mComponent);
+    ActionManager::Get()->ExileComponent(mComponent);
+    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+}
+
+void ActionRemoveComponent::Reverse()
+{
+    assert(mComponent->GetOwner() == nullptr);
+    ActionManager::Get()->RestoreExiledComponent(mComponent);
+    mOwner->AddComponent(mComponent);
+
+    if (mParent != nullptr)
+    {
+        assert(mComponent->IsTransformComponent());
+        ((TransformComponent*)mComponent)->Attach(mParent);
+    }
+
+    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+}
+
+ActionAttachComponent::ActionAttachComponent(TransformComponent* comp, TransformComponent* newParent)
+{
+    mComponent = comp;
+    mNewParent = newParent;
+    mPrevParent = comp->GetParent();
+    assert(mComponent);
+    assert(mNewParent);
+}
+
+void ActionAttachComponent::Execute()
+{
+    mComponent->Attach(mNewParent);
+    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+}
+
+void ActionAttachComponent::Reverse()
+{
+    mComponent->Attach(mPrevParent);
+    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
 #endif
