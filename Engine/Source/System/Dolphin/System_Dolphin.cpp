@@ -300,14 +300,8 @@ static bool IsMemoryCardMounted()
 
 static void UnmountMemoryCard(int32_t channel, int32_t result)
 {
-    if (IsMemoryCardMounted())
-    {
-        LogWarning("Memory Card was removed from Slot %c", (channel == 0) ? 'A' : 'B');
-        CARD_Unmount(channel);
-        GetEngineState()->mSystem.mMemoryCardMounted = false;
-        SYS_AlignedFree(GetEngineState()->mSystem.mMemoryCardMountArea);
-        GetEngineState()->mSystem.mMemoryCardMountArea = nullptr;
-    }
+    LogWarning("Memory Card was removed from Slot %c", (channel == 0) ? 'A' : 'B');
+    SYS_UnmountMemoryCard();
 }
 
 static void MountMemoryCard()
@@ -327,9 +321,10 @@ static void MountMemoryCard()
     }
 }
 
-void SYS_ReadSave(const char* saveName, Stream& outStream)
+bool SYS_ReadSave(const char* saveName, Stream& outStream)
 {
     // This needs to be different between GameCube and Wii, since GameCube uses memory cards and Wii uses SD cards.
+    bool success = false;
 
 #if PLATFORM_WII
     if (GetEngineState()->mProjectDirectory != "")
@@ -338,6 +333,7 @@ void SYS_ReadSave(const char* saveName, Stream& outStream)
         {
             std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
             outStream.ReadFile(savePath.c_str());
+            sucess = true;
         }
         else
         {
@@ -367,6 +363,7 @@ void SYS_ReadSave(const char* saveName, Stream& outStream)
 
             char* cardBuffer = (char*)SYS_AlignedMalloc(fileSize, 32);
             CARD_Read(&cardFile, cardBuffer, sectorSize, 0);
+            success = true;
 
             outStream.SetPos(0);
             outStream.WriteBytes((uint8_t*) cardBuffer, fileSize);
@@ -376,12 +373,14 @@ void SYS_ReadSave(const char* saveName, Stream& outStream)
             CARD_Close(&cardFile);
         }
     }
-
 #endif
+
+    return success;
 }
 
-void SYS_WriteSave(const char* saveName, Stream& stream)
+bool SYS_WriteSave(const char* saveName, Stream& stream)
 {
+    bool success = false;
 #if PLATFORM_WII
     if (GetEngineState()->mProjectDirectory != "")
     {
@@ -397,6 +396,7 @@ void SYS_WriteSave(const char* saveName, Stream& stream)
         {
             std::string savePath = saveDir + "/" + saveName;
             stream.WriteFile(savePath.c_str());
+            success = true;
             LogDebug("Game Saved: %s (%d bytes)", saveName, stream.GetSize());
         }
         else
@@ -444,6 +444,7 @@ void SYS_WriteSave(const char* saveName, Stream& stream)
             memcpy(cardBuffer, stream.GetData(), stream.GetSize());
 
             cardError = CARD_Write(&cardFile, cardBuffer, fileSize, 0);
+            success = true;
 
             if (cardError < 0)
             {
@@ -455,6 +456,8 @@ void SYS_WriteSave(const char* saveName, Stream& stream)
         }
     }
 #endif
+
+    return success;
 }
 
 bool SYS_DoesSaveExist(const char* saveName)
@@ -494,6 +497,47 @@ bool SYS_DoesSaveExist(const char* saveName)
 #endif
 
     return exists;
+}
+
+bool SYS_DeleteSave(const char* saveName)
+{
+    bool success = false;
+
+#if PLATFORM_WII
+    if (GetEngineState()->mProjectDirectory != "")
+    {
+        std::string savePath = GetEngineState()->mProjectDirectory + "/Saves/" + saveName;
+        SYS_RemoveFile(savePath.c_str());
+        success = true;
+    }
+#else
+    LogDebug("DELETE SAVE");
+    MountMemoryCard();
+
+    if (IsMemoryCardMounted())
+    {
+        int32_t cardError = CARD_Delete(CARD_SLOTA, saveName);
+
+        if (cardError >= 0)
+        {
+            success = true;
+        }
+    }
+#endif
+
+    return success;
+}
+
+void SYS_UnmountMemoryCard()
+{
+    LogDebug("Unmounting Memory Card");
+    if (IsMemoryCardMounted())
+    {
+        CARD_Unmount(CARD_SLOTA);
+        GetEngineState()->mSystem.mMemoryCardMounted = false;
+        SYS_AlignedFree(GetEngineState()->mSystem.mMemoryCardMountArea);
+        GetEngineState()->mSystem.mMemoryCardMountArea = nullptr;
+    }
 }
 
 // Misc
