@@ -90,7 +90,7 @@ void OutlinerPanel::HandleRenameActor(TextField* tf)
     if (newName != "" &&
         sActionContextActor != nullptr)
     {
-        sActionContextActor.Get()->SetName(newName);
+        ActionManager::Get()->EXE_EditProperty(sActionContextActor.Get(), PropertyOwnerType::Actor, "Name", 0, newName);
     }
 
     Renderer::Get()->SetModalWidget(nullptr);
