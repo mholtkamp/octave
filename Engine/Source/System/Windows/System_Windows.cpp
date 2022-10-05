@@ -606,14 +606,16 @@ uint64_t SYS_GetNumBytesAllocated()
 }
 
 // Save Game
-void SYS_ReadSave(const char* saveName, Stream& outStream)
+bool SYS_ReadSave(const char* saveName, Stream& outStream)
 {
+    bool success = false;
     if (GetEngineState()->mProjectDirectory != "")
     {
         if (SYS_DoesSaveExist(saveName))
         {
             std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
             outStream.ReadFile(savePath.c_str());
+            success = true;
         }
         else
         {
@@ -624,10 +626,14 @@ void SYS_ReadSave(const char* saveName, Stream& outStream)
     {
         LogError("Failed to read save. Project directory is unset.");
     }
+
+    return success;
 }
 
-void SYS_WriteSave(const char* saveName, Stream& stream)
+bool SYS_WriteSave(const char* saveName, Stream& stream)
 {
+    bool success = false;
+
     if (GetEngineState()->mProjectDirectory != "")
     {
         std::string saveDir = GetEngineState()->mProjectDirectory + "Saves";
@@ -642,6 +648,7 @@ void SYS_WriteSave(const char* saveName, Stream& stream)
         {
             std::string savePath = saveDir + "/" + saveName;
             stream.WriteFile(savePath.c_str());
+            success = true;
             LogDebug("Game Saved: %s (%d bytes)", saveName, stream.GetSize());
         }
         else
@@ -653,6 +660,8 @@ void SYS_WriteSave(const char* saveName, Stream& stream)
     {
         LogError("Failed to write save");
     }
+
+    return success;
 }
 
 bool SYS_DoesSaveExist(const char* saveName)
@@ -674,6 +683,25 @@ bool SYS_DoesSaveExist(const char* saveName)
     }
 
     return exists;
+}
+
+bool SYS_DeleteSave(const char* saveName)
+{
+    bool success = false;
+
+    if (GetEngineState()->mProjectDirectory != "")
+    {
+        std::string savePath = GetEngineState()->mProjectDirectory + "/Saves/" + saveName;
+        SYS_RemoveFile(savePath.c_str());
+        success = true;
+    }
+
+    return success;
+}
+
+void SYS_UnmountMemoryCard()
+{
+
 }
 
 // Misc

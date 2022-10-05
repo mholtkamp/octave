@@ -47,9 +47,11 @@ uint64_t SYS_GetNumBytesFree();
 uint64_t SYS_GetNumBytesAllocated();
 
 // Save / Memcard
-void SYS_ReadSave(const char* saveName, Stream& outStream);
-void SYS_WriteSave(const char* saveName, Stream& stream);
+bool SYS_ReadSave(const char* saveName, Stream& outStream);
+bool SYS_WriteSave(const char* saveName, Stream& stream);
 bool SYS_DoesSaveExist(const char* saveName);
+bool SYS_DeleteSave(const char* saveName);
+void SYS_UnmountMemoryCard();
 
 // Misc
 void SYS_UpdateConsole();
