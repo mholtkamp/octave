@@ -89,6 +89,8 @@ struct SystemState
     void* mConsoleBuffer = nullptr;
     GXRModeObj* mGxrMode = nullptr;
     uint32_t mFrameIndex = 0;
+    void* mMemoryCardMountArea = nullptr;
+    bool mMemoryCardMounted = false;
 #elif PLATFORM_3DS
     PrintConsole mPrintConsole = {};
     float mSlider = 0.0f;
