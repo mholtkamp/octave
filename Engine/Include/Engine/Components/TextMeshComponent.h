@@ -52,6 +52,7 @@ protected:
     void MarkVertexBufferDirty();
     void UpdateVertexData();
     void JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart);
+    void UpdateBounds();
 
     FontRef mFont;
     std::string mText;

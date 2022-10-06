@@ -113,3 +113,39 @@ inline uint32_t ColorFloat4ToUint32(glm::vec4 color)
 
     return color32;
 }
+
+template<typename T>
+Bounds ComputeBounds(const std::vector<T>& vertices)
+{
+    Bounds retBounds;
+
+    if (vertices.size() > 0)
+    {
+        glm::vec3 boxMin = { FLT_MAX, FLT_MAX, FLT_MAX };
+        glm::vec3 boxMax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+        for (uint32_t i = 0; i < vertices.size(); ++i)
+        {
+            glm::vec3 pos = vertices[i].mPosition;
+
+            boxMin = glm::min(boxMin, pos);
+            boxMax = glm::max(boxMax, pos);
+        }
+
+        retBounds.mCenter = (boxMin + boxMax) / 2.0f;
+
+        float maxDist = 0.0f;
+
+        for (uint32_t i = 0; i < vertices.size(); ++i)
+        {
+            glm::vec3 pos = vertices[i].mPosition;
+
+            float dist = glm::distance(pos, retBounds.mCenter);
+            maxDist = glm::max(maxDist, dist);
+        }
+
+        retBounds.mRadius = maxDist;
+    }
+
+    return retBounds;
+}
