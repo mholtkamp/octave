@@ -509,6 +509,7 @@
     <ClCompile Include="Source\LuaBindings\SphereComponent_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\StaticMeshComponent_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\StaticMesh_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Stream_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\TextField_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Texture_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Text_Lua.cpp" />
@@ -582,6 +583,7 @@
     <ClInclude Include="Include\LuaBindings\SoundWave_Lua.h" />
     <ClInclude Include="Include\LuaBindings\SphereComponent_Lua.h" />
     <ClInclude Include="Include\LuaBindings\StaticMesh_Lua.h" />
+    <ClInclude Include="Include\LuaBindings\Stream_Lua.h" />
     <ClInclude Include="Include\LuaBindings\TextField_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Texture_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Text_Lua.h" />
