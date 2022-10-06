@@ -9,15 +9,6 @@
 
 class Font;
 
-enum class Justification
-{
-    Left,
-    Center,
-    Right,
-
-    Count
-};
-
 class Text : public Widget
 {
 public:

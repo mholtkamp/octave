@@ -51,11 +51,13 @@ protected:
 
     void MarkVertexBufferDirty();
     void UpdateVertexData();
+    void JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart);
 
     FontRef mFont;
     std::string mText;
     glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-    Justification mJustification = Justification::Left;
+    float mHorizontalJustification = 0.0f;
+    float mVerticalJustification = 0.0f;
     BlendMode mBlendMode = BlendMode::Masked;
 
     std::vector<Vertex> mVertices;
