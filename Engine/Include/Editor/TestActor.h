@@ -17,6 +17,7 @@ public:
     virtual void Create() override;
     virtual void Destroy() override;
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
 
     DECLARE_ACTOR(TestActor, Actor);
 

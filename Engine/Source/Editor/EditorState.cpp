@@ -185,15 +185,12 @@ void BeginPlayInEditor()
 
     sEditorState.mPlayInEditor = true;
 
-    if (sEditorState.mActiveLevel != nullptr)
-    {
-        assert(sEditorState.mCachedPieLevel == nullptr);
-        Level* cachedLevel = new Level();
-        cachedLevel->Create();
-        cachedLevel->CaptureWorld(GetWorld());
-        AssetManager::Get()->RegisterTransientAsset(cachedLevel);
-        sEditorState.mCachedPieLevel = cachedLevel;
-    }
+    assert(sEditorState.mCachedPieLevel == nullptr);
+    Level* cachedLevel = new Level();
+    cachedLevel->Create();
+    cachedLevel->CaptureWorld(GetWorld());
+    AssetManager::Get()->RegisterTransientAsset(cachedLevel);
+    sEditorState.mCachedPieLevel = cachedLevel;
 
     GetWorld()->DestroyAllActors();
 
@@ -241,7 +238,6 @@ void EndPlayInEditor()
     // Restore cached editor level
     if (sEditorState.mCachedPieLevel.Get() != nullptr)
     {
-        assert(sEditorState.mActiveLevel != nullptr);
         sEditorState.mCachedPieLevel.Get<Level>()->LoadIntoWorld(GetWorld());
         sEditorState.mCachedPieLevel = nullptr;
     }
