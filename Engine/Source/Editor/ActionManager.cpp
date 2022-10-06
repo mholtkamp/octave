@@ -51,6 +51,8 @@
 #include "Components/ParticleComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/ScriptComponent.h"
+#include "Components/ShadowMeshComponent.h"
+#include "Components/TextMeshComponent.h"
 
 #include "System/System.h"
 
@@ -655,6 +657,12 @@ void ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 position,
         spawnedActor = GetWorld()->SpawnActor<Actor>();
         CameraComponent* cameraComponent = spawnedActor->CreateComponent<CameraComponent>();
         spawnedActor->SetRootComponent(cameraComponent);
+    }
+    else if (name == BASIC_TEXT_MESH)
+    {
+        spawnedActor = GetWorld()->SpawnActor<Actor>();
+        TextMeshComponent* textComponent = spawnedActor->CreateComponent<TextMeshComponent>();
+        spawnedActor->SetRootComponent(textComponent);
     }
 
     if (spawnedActor != nullptr)

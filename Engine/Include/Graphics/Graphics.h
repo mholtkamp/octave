@@ -15,6 +15,7 @@ class SkeletalMesh;
 class StaticMeshComponent;
 class SkeletalMeshComponent;
 class ShadowMeshComponent;
+class TextMeshComponent;
 class ParticleComponent;
 class CameraComponent;
 class Quad;
@@ -82,6 +83,12 @@ bool GFX_IsCpuSkinningRequired(SkeletalMeshComponent* skeletalMeshComp);
 // ShadowMeshComp
 // ShadowMeshComponent uses StaticMeshCompResource for now.
 void GFX_DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp);
+
+// TextMeshComp
+void GFX_CreateTextMeshCompResource(TextMeshComponent* textMeshComp);
+void GFX_DestroyTextMeshCompResource(TextMeshComponent* textMeshComp);
+void GFX_UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::vector<Vertex>& vertices);
+void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp);
 
 // ParticleComp
 void GFX_CreateParticleCompResource(ParticleComponent* particleComp);

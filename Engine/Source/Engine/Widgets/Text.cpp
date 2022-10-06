@@ -319,7 +319,7 @@ void Text::UpdateVertexData()
 
         // Update the extents
         mMinExtent.x = glm::min(mMinExtent.x, vertices[0].mPosition.x);
-        mMinExtent.y = glm::min(mMinExtent.x, vertices[0].mPosition.y);
+        mMinExtent.y = glm::min(mMinExtent.y, vertices[0].mPosition.y);
 
         mMaxExtent.x = glm::max(mMaxExtent.x, vertices[5].mPosition.x);
         mMaxExtent.y = glm::max(mMaxExtent.y, vertices[5].mPosition.y);

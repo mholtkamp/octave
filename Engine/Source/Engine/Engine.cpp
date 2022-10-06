@@ -56,6 +56,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(TransformComponent);
     FORCE_LINK_CALL(CapsuleComponent);
     FORCE_LINK_CALL(ShadowMeshComponent);
+    FORCE_LINK_CALL(TextMeshComponent);
 
     // Asset Types
     FORCE_LINK_CALL(Level);

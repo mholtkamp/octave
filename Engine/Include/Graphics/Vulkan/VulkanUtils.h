@@ -22,6 +22,7 @@ class SkeletalMesh;
 class StaticMeshComponent;
 class SkeletalMeshComponent;
 class ShadowMeshComponent;
+class TextMeshComponent;
 class ParticleComponent;
 class Quad;
 class Text;
@@ -123,6 +124,13 @@ bool IsCpuSkinningRequired(SkeletalMeshComponent* skeletalMeshComp);
 
 // ShadowMeshComp
 void DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp);
+
+// TextMeshComp
+void CreateTextMeshCompResource(TextMeshComponent* textMeshComp);
+void DestroyTextMeshCompResource(TextMeshComponent* textMeshComp);
+void UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::vector<Vertex>& vertices);
+void DrawTextMeshComp(TextMeshComponent* textMeshComp);
+void UpdateTextMeshCompUniformBuffer(TextMeshComponent* textMeshComp);
 
 // ParticleComp
 void CreateParticleCompResource(ParticleComponent* particleComp);

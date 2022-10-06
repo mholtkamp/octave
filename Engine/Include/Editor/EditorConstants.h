@@ -12,3 +12,4 @@
 #define BASIC_AUDIO "Audio"
 #define BASIC_BLUEPRINT "Blueprint"
 #define BASIC_CAMERA "Camera"
+#define BASIC_TEXT_MESH "Text Mesh"

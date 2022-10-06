@@ -12,6 +12,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/ShadowMeshComponent.h"
+#include "Components/TextMeshComponent.h"
 #include "Components/ParticleComponent.h"
 #include "Widgets/Quad.h"
 #include "Widgets/Text.h"
@@ -1414,6 +1415,141 @@ void DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp)
         resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, clearPipeline->GetPipelineLayout());
         vkCmdDrawIndexed(cb, mesh->GetNumIndices(), 1, 0, 0, 0);
     }
+}
+
+void CreateTextMeshCompResource(TextMeshComponent* textMeshComp)
+{
+    TextMeshCompResource* resource = textMeshComp->GetResource();
+
+    resource->mUniformBuffer = new UniformBuffer(sizeof(GeometryData), "Text Geometry Uniforms");
+
+    VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(1);
+    resource->mDescriptorSet = new DescriptorSet(layout);
+
+    resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, resource->mUniformBuffer);
+}
+
+void DestroyTextMeshCompResource(TextMeshComponent* textMeshComp)
+{
+    TextMeshCompResource* resource = textMeshComp->GetResource();
+
+    if (resource->mUniformBuffer != nullptr)
+    {
+        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
+        resource->mUniformBuffer = nullptr;
+    }
+
+    if (resource->mDescriptorSet != nullptr)
+    {
+        GetDestroyQueue()->Destroy(resource->mDescriptorSet);
+        resource->mDescriptorSet = nullptr;
+    }
+
+    if (resource->mVertexBuffer != nullptr)
+    {
+        GetDestroyQueue()->Destroy(resource->mVertexBuffer);
+        resource->mVertexBuffer = nullptr;
+    }
+}
+
+void UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::vector<Vertex>& vertices)
+{
+    TextMeshCompResource* resource = textMeshComp->GetResource();
+
+    if (resource->mVertexBuffer != nullptr &&
+        resource->mVertexBuffer->GetSize() < vertices.size() * sizeof(Vertex))
+    {
+        GetDestroyQueue()->Destroy(resource->mVertexBuffer);
+        resource->mVertexBuffer = nullptr;
+    }
+
+    if (resource->mVertexBuffer == nullptr)
+    {
+        resource->mVertexBuffer = new Buffer(BufferType::Vertex, vertices.size() * sizeof(Vertex), "TextMeshComp Vertices");
+
+    }
+
+    if (resource->mVertexBuffer != nullptr)
+    {
+        assert(resource->mVertexBuffer->GetSize() >= vertices.size() * sizeof(Vertex));
+        resource->mVertexBuffer->Update(vertices.data(), vertices.size() * sizeof(Vertex), 0);
+    }
+}
+
+void DrawTextMeshComp(TextMeshComponent* textMeshComp)
+{
+    TextMeshCompResource* resource = textMeshComp->GetResource();
+    if (resource->mVertexBuffer == nullptr)
+        return;
+
+    VkCommandBuffer cb = GetCommandBuffer();
+
+    UpdateTextMeshCompUniformBuffer(textMeshComp);
+
+    VkDeviceSize offset = 0;
+    VkBuffer vertexBuffer = resource->mVertexBuffer->Get();
+    vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
+
+    Material* material = textMeshComp->GetMaterial();
+
+    if (material == nullptr)
+    {
+        material = Renderer::Get()->GetDefaultMaterial();
+        assert(material != nullptr);
+    }
+
+    Pipeline* pipeline = nullptr;
+    if (GetVulkanContext()->GetCurrentRenderPassId() == RenderPassId::Forward)
+    {
+        // During the Forward pass, it is expected that that the material sets the necessary pipeline.
+        // This could be moved up to the Renderer in the future to reduce CPU cost.
+        pipeline = GetMaterialPipeline(material);
+        GetVulkanContext()->BindPipeline(pipeline, VertexType::Vertex);
+    }
+    else
+    {
+        pipeline = GetVulkanContext()->GetCurrentlyBoundPipeline();
+        GetVulkanContext()->RebindPipeline(VertexType::Vertex);
+    }
+
+    assert(pipeline);
+
+    BindMaterialResource(material, pipeline);
+    resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
+
+    vkCmdDraw(cb, TEXT_VERTS_PER_CHAR * textMeshComp->GetNumVisibleCharacters(), 1, 0, 0);
+}
+
+void UpdateTextMeshCompUniformBuffer(TextMeshComponent* textMeshComp)
+{
+    TextMeshCompResource* resource = textMeshComp->GetResource();
+
+    Renderer* renderer = Renderer::Get();
+    OCT_UNUSED(renderer);
+
+    World* world = textMeshComp->GetWorld();
+    GeometryData ubo = {};
+
+    WriteGeometryUniformData(ubo, world, textMeshComp->GetRenderTransform());
+
+    ubo.mHitCheckId = EDITOR ? textMeshComp->GetOwner()->GetHitCheckId() : 0;
+
+#if EDITOR
+    if (renderer->GetDebugMode() == DEBUG_WIREFRAME &&
+        world->IsComponentSelected(textMeshComp))
+    {
+        if (world->GetSelectedComponent() == textMeshComp)
+        {
+            ubo.mColor = SELECTED_COMP_COLOR;
+        }
+        else
+        {
+            ubo.mColor = MULTI_SELECTED_COMP_COLOR;
+        }
+    }
+#endif
+
+    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 }
 
 void CreateParticleCompResource(ParticleComponent* particleComp)
