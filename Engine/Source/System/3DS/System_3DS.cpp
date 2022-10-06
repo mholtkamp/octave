@@ -272,6 +272,113 @@ uint64_t SYS_GetNumBytesAllocated()
     return 0;
 }
 
+bool SYS_ReadSave(const char* saveName, Stream& outStream)
+{
+    bool success = false;
+
+    if (GetEngineState()->mProjectDirectory != "")
+    {
+        if (SYS_DoesSaveExist(saveName))
+        {
+            std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
+            outStream.ReadFile(savePath.c_str());
+            success = true;
+        }
+        else
+        {
+            LogError("Failed to read save.");
+        }
+    }
+    else
+    {
+        LogError("Failed to read save. Project directory is unset.");
+    }
+
+    return success;
+}
+
+bool SYS_WriteSave(const char* saveName, Stream& stream)
+{
+    bool success = false;
+    
+    if (GetEngineState()->mProjectDirectory != "")
+    {
+        std::string saveDir = GetEngineState()->mProjectDirectory + "Saves";
+
+        // In the embedded case, might need to create a Project directory
+        if (!DoesDirExist(GetEngineState()->mProjectDirectory.c_str()))
+        {
+            SYS_CreateDirectory(GetEngineState()->mProjectDirectory.c_str());
+        }
+        
+        bool saveDirExists = DoesDirExist(saveDir.c_str());
+
+        if (!saveDirExists)
+        {
+            saveDirExists = SYS_CreateDirectory(saveDir.c_str());
+        }
+
+        if (saveDirExists)
+        {
+            std::string savePath = saveDir + "/" + saveName;
+            stream.WriteFile(savePath.c_str());
+            success = true;
+            LogDebug("Game Saved: %s (%d bytes)", saveName, stream.GetSize());
+        }
+        else
+        {
+            LogError("Failed to open Saves directory");
+        }
+    }
+    else
+    {
+        LogError("Failed to write save");
+    }
+
+    return success;
+}
+
+bool SYS_DoesSaveExist(const char* saveName)
+{
+    bool exists = false;
+
+    if (GetEngineState()->mProjectDirectory != "")
+    {
+        std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
+
+        FILE* file = fopen(savePath.c_str(), "rb");
+
+        if (file != nullptr)
+        {
+            exists = true;
+            fclose(file);
+            file = nullptr;
+        }
+    }
+
+
+    return exists;
+}
+
+bool SYS_DeleteSave(const char* saveName)
+{
+    bool success = false;
+
+    if (GetEngineState()->mProjectDirectory != "")
+    {
+        std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
+        SYS_RemoveFile(savePath.c_str());
+        success = true;
+    }
+
+    return success;
+}
+
+void SYS_UnmountMemoryCard()
+{
+
+}
+
 // Misc
 void SYS_UpdateConsole()
 {
