@@ -315,8 +315,8 @@ void TextMeshComponent::UpdateVertexData()
             // Transform texcoords into 0-1 UV space
             vertices[i].mTexcoord0 /= glm::vec2(fontWidth, fontHeight);
 
-            // Make a 32 size font approx 1 unit tall.
-            vertices[i].mPosition /= 32.0f;
+            // Put text into approx a 1 unit range
+            vertices[i].mPosition /= fontSize;
         }
 
         // Update the extents
