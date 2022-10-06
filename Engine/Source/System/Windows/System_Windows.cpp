@@ -670,7 +670,7 @@ bool SYS_DoesSaveExist(const char* saveName)
 
     if (GetEngineState()->mProjectDirectory != "")
     {
-        std::string savePath = GetEngineState()->mProjectDirectory + "/Saves/" + saveName;
+        std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
 
         FILE* file = fopen(savePath.c_str(), "rb");
 
@@ -691,7 +691,7 @@ bool SYS_DeleteSave(const char* saveName)
 
     if (GetEngineState()->mProjectDirectory != "")
     {
-        std::string savePath = GetEngineState()->mProjectDirectory + "/Saves/" + saveName;
+        std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
         SYS_RemoveFile(savePath.c_str());
         success = true;
     }
