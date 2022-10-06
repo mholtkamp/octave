@@ -55,6 +55,7 @@
 #include "LuaBindings/VerticalList_Lua.h"
 #include "LuaBindings/ActorRef_Lua.h"
 #include "LuaBindings/ComponentRef_Lua.h"
+#include "LuaBindings/Stream_Lua.h"
 
 #include "LuaBindings/Misc_Lua.h"
 
@@ -76,6 +77,7 @@ void BindLuaInterface()
     Actor_Lua::Bind();
     ActorRef_Lua::Bind();
     ComponentRef_Lua::Bind();
+    Stream_Lua::Bind();
 
     // Components need to be bound in hierarchy order.
     // Derived classes need to come after parent classes.
