@@ -275,7 +275,7 @@ void TextMeshComponent::UpdateVertexData()
         //   |  / / |
         //   | / /  |
         //   1  4---5
-        vertices[0].mPosition.x = cursorX + fontChar.mOriginX;
+        vertices[0].mPosition.x = cursorX - fontChar.mOriginX;
         vertices[0].mPosition.y = cursorY + fontChar.mOriginY;
         vertices[0].mTexcoord0.x = (float)fontChar.mX;
         vertices[0].mTexcoord0.y = (float)fontChar.mY;
@@ -283,7 +283,7 @@ void TextMeshComponent::UpdateVertexData()
         vertices[0].mTexcoord1.y = vertices[0].mPosition.y;
         vertices[0].mNormal = glm::vec3(0.0f, 0.0f, 1.0f);
 
-        vertices[1].mPosition.x = cursorX + fontChar.mOriginX;
+        vertices[1].mPosition.x = cursorX - fontChar.mOriginX;
         vertices[1].mPosition.y = cursorY + fontChar.mOriginY - fontChar.mHeight;
         vertices[1].mTexcoord0.x = (float)fontChar.mX;
         vertices[1].mTexcoord0.y = (float)fontChar.mY + fontChar.mHeight;
@@ -291,7 +291,7 @@ void TextMeshComponent::UpdateVertexData()
         vertices[1].mTexcoord1.y = vertices[1].mPosition.y;
         vertices[1].mNormal = glm::vec3(0.0f, 0.0f, 1.0f);
 
-        vertices[2].mPosition.x = cursorX + fontChar.mOriginX + fontChar.mWidth;
+        vertices[2].mPosition.x = cursorX - fontChar.mOriginX + fontChar.mWidth;
         vertices[2].mPosition.y = cursorY + fontChar.mOriginY;
         vertices[2].mTexcoord0.x = (float)fontChar.mX + fontChar.mWidth;
         vertices[2].mTexcoord0.y = (float)fontChar.mY;
@@ -302,7 +302,7 @@ void TextMeshComponent::UpdateVertexData()
         vertices[3] = vertices[2]; // duplicated
         vertices[4] = vertices[1]; // duplicated
 
-        vertices[5].mPosition.x = cursorX + fontChar.mOriginX + fontChar.mWidth;
+        vertices[5].mPosition.x = cursorX - fontChar.mOriginX + fontChar.mWidth;
         vertices[5].mPosition.y = cursorY + fontChar.mOriginY - fontChar.mHeight;
         vertices[5].mTexcoord0.x = (float)fontChar.mX + fontChar.mWidth;
         vertices[5].mTexcoord0.y = (float)fontChar.mY + fontChar.mHeight;
