@@ -183,6 +183,17 @@ struct SkeletalMeshCompResource
 #endif
 };
 
+struct TextMeshCompResource
+{
+#if API_VULKAN
+    DescriptorSet* mDescriptorSet = nullptr;
+    UniformBuffer* mUniformBuffer = nullptr;
+    Buffer* mVertexBuffer = nullptr;
+#elif API_C3D
+    DoubleBuffer mVertexData;
+#endif
+};
+
 struct QuadResource
 {
 #if API_VULKAN

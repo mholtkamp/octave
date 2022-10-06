@@ -214,6 +214,26 @@ void GFX_DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp)
     DrawShadowMeshComp(shadowMeshComp);
 }
 
+void GFX_CreateTextMeshCompResource(TextMeshComponent* textMeshComp)
+{
+    CreateTextMeshCompResource(textMeshComp);
+}
+
+void GFX_DestroyTextMeshCompResource(TextMeshComponent* textMeshComp)
+{
+    DestroyTextMeshCompResource(textMeshComp);
+}
+
+void GFX_UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::vector<Vertex>& vertices)
+{
+    UpdateTextMeshCompVertexBuffer(textMeshComp, vertices);
+}
+
+void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp)
+{
+    DrawTextMeshComp(textMeshComp);
+}
+
 void GFX_CreateParticleCompResource(ParticleComponent* particleComp)
 {
     CreateParticleCompResource(particleComp);

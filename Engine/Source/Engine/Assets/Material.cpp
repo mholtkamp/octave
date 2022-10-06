@@ -21,7 +21,7 @@ static const char* sShadingModelStrings[] =
 static_assert(int32_t(ShadingModel::Count) == 3, "Need to update string conversion table");
 
 
-static const char* sBlendModeStrings[] =
+const char* gBlendModeStrings[] =
 {
     "Opaque",
     "Masked",
@@ -213,7 +213,7 @@ void Material::GatherProperties(std::vector<Property>& outProps)
     Asset::GatherProperties(outProps);
 
     outProps.push_back(Property(DatumType::Enum, "Shading Model", this, &mParams.mShadingModel, 1, HandlePropChange, 0, int32_t(ShadingModel::Count), sShadingModelStrings));
-    outProps.push_back(Property(DatumType::Enum, "Blend Mode", this, &mParams.mBlendMode, 1, HandlePropChange, 0, int32_t(BlendMode::Count), sBlendModeStrings));
+    outProps.push_back(Property(DatumType::Enum, "Blend Mode", this, &mParams.mBlendMode, 1, HandlePropChange, 0, int32_t(BlendMode::Count), gBlendModeStrings));
     outProps.push_back(Property(DatumType::Enum, "Vertex Color Mode", this, &mParams.mVertexColorMode, 1, HandlePropChange, 0, int32_t(VertexColorMode::Count), sVertexColorModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 0", this, &mParams.mTextures[TEXTURE_0], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 0", this, &mParams.mUvMaps[TEXTURE_0], 1, HandlePropChange));

@@ -28,7 +28,7 @@ public:
 
     virtual Material* GetMaterial() = 0;
     Material* GetMaterialOverride();
-    void SetMaterialOverride(Material* material);
+    virtual void SetMaterialOverride(Material* material);
 
     bool IsBillboard() const;
     void SetBillboard(bool billboard);

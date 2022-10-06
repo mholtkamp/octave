@@ -399,6 +399,7 @@
     <ClCompile Include="Source\Engine\Components\SkeletalMeshComponent.cpp" />
     <ClCompile Include="Source\Engine\Components\SphereComponent.cpp" />
     <ClCompile Include="Source\Engine\Components\StaticMeshComponent.cpp" />
+    <ClCompile Include="Source\Engine\Components\TextMeshComponent.cpp" />
     <ClCompile Include="Source\Engine\Components\TransformComponent.cpp" />
     <ClCompile Include="Source\Engine\Datum.cpp" />
     <ClCompile Include="Source\Engine\Engine.cpp" />
@@ -542,6 +543,7 @@
     <ClInclude Include="Include\Engine\Assets\SoundWave.h" />
     <ClInclude Include="Include\Engine\Assets\StaticMesh.h" />
     <ClInclude Include="Include\Engine\Assets\Texture.h" />
+    <ClInclude Include="Include\Engine\Components\TextMeshComponent.h" />
     <ClInclude Include="Include\Engine\ScriptableFuncPointer.h" />
     <ClInclude Include="Include\Engine\ScriptAutoReg.h" />
     <ClInclude Include="Include\Engine\ScriptEvent.h" />

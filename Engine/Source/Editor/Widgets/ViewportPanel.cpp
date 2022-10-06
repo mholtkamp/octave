@@ -33,6 +33,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/ParticleComponent.h"
 #include "Components/AudioComponent.h"
+#include "Components/TextMeshComponent.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -1186,6 +1187,7 @@ void ViewportPanel::ShowSpawnActorPrompt(bool basic)
         actions.push_back(BASIC_PARTICLE);
         actions.push_back(BASIC_AUDIO);
         actions.push_back(BASIC_CAMERA);
+        actions.push_back(BASIC_TEXT_MESH);
 
         actionList->SetActions(actions, HandleSpawnBasicPressed);
     }
