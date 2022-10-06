@@ -249,14 +249,14 @@ void TextMeshComponent::UpdateVertexData()
 
     const char* characters = mText.c_str();
     float cursorX = 0.0f;
-    float cursorY = 0.0f + font->GetSize();
+    float cursorY = 0.0f;
 
     for (uint32_t i = 0; i < mText.size(); ++i)
     {
         char textChar = characters[i];
         if (textChar == '\n')
         {
-            cursorY += fontSize;
+            cursorY -= fontSize;
             cursorX = 0.0f;
             continue;
         }
@@ -275,24 +275,24 @@ void TextMeshComponent::UpdateVertexData()
         //   |  / / |
         //   | / /  |
         //   1  4---5
-        vertices[0].mPosition.x = cursorX - fontChar.mOriginX;
-        vertices[0].mPosition.y = cursorY - fontChar.mOriginY;
+        vertices[0].mPosition.x = cursorX + fontChar.mOriginX;
+        vertices[0].mPosition.y = cursorY + fontChar.mOriginY;
         vertices[0].mTexcoord0.x = (float)fontChar.mX;
         vertices[0].mTexcoord0.y = (float)fontChar.mY;
         vertices[0].mTexcoord1.x = vertices[0].mPosition.x;
         vertices[0].mTexcoord1.y = vertices[0].mPosition.y;
         vertices[0].mNormal = glm::vec3(0.0f, 0.0f, 1.0f);
 
-        vertices[1].mPosition.x = cursorX - fontChar.mOriginX;
-        vertices[1].mPosition.y = cursorY - fontChar.mOriginY + fontChar.mHeight;
+        vertices[1].mPosition.x = cursorX + fontChar.mOriginX;
+        vertices[1].mPosition.y = cursorY + fontChar.mOriginY - fontChar.mHeight;
         vertices[1].mTexcoord0.x = (float)fontChar.mX;
         vertices[1].mTexcoord0.y = (float)fontChar.mY + fontChar.mHeight;
         vertices[1].mTexcoord1.x = vertices[1].mPosition.x;
         vertices[1].mTexcoord1.y = vertices[1].mPosition.y;
         vertices[1].mNormal = glm::vec3(0.0f, 0.0f, 1.0f);
 
-        vertices[2].mPosition.x = cursorX - fontChar.mOriginX + fontChar.mWidth;
-        vertices[2].mPosition.y = cursorY - fontChar.mOriginY;
+        vertices[2].mPosition.x = cursorX + fontChar.mOriginX + fontChar.mWidth;
+        vertices[2].mPosition.y = cursorY + fontChar.mOriginY;
         vertices[2].mTexcoord0.x = (float)fontChar.mX + fontChar.mWidth;
         vertices[2].mTexcoord0.y = (float)fontChar.mY;
         vertices[2].mTexcoord1.x = vertices[2].mPosition.x;
@@ -302,13 +302,22 @@ void TextMeshComponent::UpdateVertexData()
         vertices[3] = vertices[2]; // duplicated
         vertices[4] = vertices[1]; // duplicated
 
-        vertices[5].mPosition.x = cursorX - fontChar.mOriginX + fontChar.mWidth;
-        vertices[5].mPosition.y = cursorY - fontChar.mOriginY + fontChar.mHeight;
+        vertices[5].mPosition.x = cursorX + fontChar.mOriginX + fontChar.mWidth;
+        vertices[5].mPosition.y = cursorY + fontChar.mOriginY - fontChar.mHeight;
         vertices[5].mTexcoord0.x = (float)fontChar.mX + fontChar.mWidth;
         vertices[5].mTexcoord0.y = (float)fontChar.mY + fontChar.mHeight;
         vertices[5].mTexcoord1.x = vertices[5].mPosition.x;
         vertices[5].mTexcoord1.y = vertices[5].mPosition.y;
         vertices[5].mNormal = glm::vec3(0.0f, 0.0f, 1.0f);
+
+        for (int32_t i = 0; i < 6; ++i)
+        {
+            // Transform texcoords into 0-1 UV space
+            vertices[i].mTexcoord0 /= glm::vec2(fontWidth, fontHeight);
+
+            // Make a 32 size font approx 1 unit tall.
+            vertices[i].mPosition /= 32.0f;
+        }
 
         // Update the extents
         minExtent.x = glm::min(minExtent.x, vertices[0].mPosition.x);
@@ -316,12 +325,6 @@ void TextMeshComponent::UpdateVertexData()
 
         maxExtent.x = glm::max(maxExtent.x, vertices[5].mPosition.x);
         maxExtent.y = glm::max(maxExtent.y, vertices[5].mPosition.y);
-
-        for (int32_t i = 0; i < 6; ++i)
-        {
-            // Transform texcoords into 0-1 UV space
-            vertices[i].mTexcoord0 /= glm::vec2(fontWidth, fontHeight);
-        }
 
         mVisibleCharacters++;
         cursorX += fontChar.mAdvance;
