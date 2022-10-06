@@ -726,6 +726,9 @@
     <ClCompile Include="Source\LuaBindings\Stream_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\System_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1305,6 +1308,9 @@
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Include\LuaBindings\Stream_Lua.h">
+      <Filter>Header Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\LuaBindings\System_Lua.h">
       <Filter>Header Files\LuaBindings</Filter>
     </ClInclude>
   </ItemGroup>
