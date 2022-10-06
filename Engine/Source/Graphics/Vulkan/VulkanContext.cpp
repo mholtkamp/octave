@@ -1655,6 +1655,11 @@ void VulkanContext::RecreateSwapchain()
             1,
             1);
     }
+
+    // If we don't flush the destroy queue, then constantly resizing the window 
+    // may lead to an OOM crash in the VRAM allocator.
+    DeviceWaitIdle();
+    GetDestroyQueue()->FlushAll();
 }
 
 VkDescriptorPool VulkanContext::GetDescriptorPool()
