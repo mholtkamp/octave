@@ -4,7 +4,10 @@
 #include "Clock.h"
 #include "Utilities.h"
 
+#include "System/System.h"
+
 #include "LuaBindings/Engine_Lua.h"
+#include "LuaBindings/Stream_Lua.h"
 
 #if LUA_ENABLED
 

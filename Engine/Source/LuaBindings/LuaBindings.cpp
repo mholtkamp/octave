@@ -10,6 +10,7 @@
 #include "LuaBindings/Maths_Lua.h"
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/Renderer_Lua.h"
+#include "LuaBindings/System_Lua.h"
 #include "LuaBindings/Log_Lua.h"
 #include "LuaBindings/World_Lua.h"
 #include "LuaBindings/Actor_Lua.h"
@@ -72,6 +73,7 @@ void BindLuaInterface()
     Maths_Lua::Bind();
     Network_Lua::Bind();
     Renderer_Lua::Bind();
+    System_Lua::Bind();
     World_Lua::Bind();
     AssetManager_Lua::Bind();
     Actor_Lua::Bind();
