@@ -176,6 +176,12 @@ void TestActor::Tick(float deltaTime)
     }
 }
 
+void TestActor::EditorTick(float deltaTime)
+{
+    Tick(deltaTime);
+}
+
+
 DEFINE_ACTOR(TestActor, Actor);
 
 #endif
