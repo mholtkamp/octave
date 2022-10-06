@@ -133,7 +133,13 @@ void TextField::Update()
         }
     }
 
-    if (IsKeyJustDown(KEY_ENTER) ||
+    if (IsKeyJustDown(KEY_ENTER) && IsShiftDown())
+    {
+        std::string newText = mText->GetText();
+        newText.push_back('\n');
+        mText->SetText(newText);
+    }
+    else if (IsKeyJustDown(KEY_ENTER) ||
         ((IsMouseButtonJustUp(MOUSE_LEFT) || IsMouseButtonJustUp(MOUSE_RIGHT)) && !ContainsMouse()))
     {
         SetSelectedTextField(nullptr);
