@@ -19,7 +19,7 @@ bool TextMeshComponent::HandlePropChange(Datum* datum, const void* newValue)
     assert(prop != nullptr);
     TextMeshComponent* textComp = static_cast<TextMeshComponent*>(prop->mOwner);
 
-    textComp->MarkVertexBufferDirty();
+    textComp->MarkVerticesDirty();
 
     return false;
 }
@@ -31,7 +31,7 @@ TextMeshComponent::TextMeshComponent()
     mFont = LoadAsset<Font>("F_Roboto32");
     mText = "Text";
 
-    MarkVertexBufferDirty();
+    MarkVerticesDirty();
 }
 
 TextMeshComponent::~TextMeshComponent()
@@ -104,6 +104,7 @@ void TextMeshComponent::Tick(float deltaTime)
 {
     MeshComponent::Tick(deltaTime);
     UpdateVertexData();
+    UploadVertexData();
 
     // Update default material instance
     Material* matInst = mDefaultMatInstance.Get<Material>();
@@ -151,7 +152,7 @@ void TextMeshComponent::SetText(const std::string& text)
     if (mText != text)
     {
         mText = text;
-        MarkVertexBufferDirty();
+        MarkVerticesDirty();
     }
 }
 
@@ -166,7 +167,7 @@ void TextMeshComponent::SetFont(Font* font)
     if (mFont != font)
     {
         mFont = font;
-        MarkVertexBufferDirty();
+        MarkVerticesDirty();
     }
 }
 
@@ -190,17 +191,24 @@ Bounds TextMeshComponent::GetLocalBounds() const
     return mBounds;
 }
 
-void TextMeshComponent::MarkVertexBufferDirty()
+void TextMeshComponent::MarkVerticesDirty()
 {
+    mReconstructVertices = true;
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
     {
-        mVertexBufferDirty[i] = true;
+        mUploadVertices[i] = true;
     }
 }
 
-bool TextMeshComponent::IsVertexBufferDirty() const
+void TextMeshComponent::UploadVertexData()
 {
-    return mVertexBufferDirty[Renderer::Get()->GetFrameIndex()];
+    // Upload vertices to GPU
+    uint32_t frameIndex = Renderer::Get()->GetFrameIndex();
+    if (mUploadVertices[frameIndex])
+    {
+        GFX_UpdateTextMeshCompVertexBuffer(this, mVertices);
+        mUploadVertices[frameIndex] = false;
+    }
 }
 
 int32_t TextMeshComponent::GetNumVisibleCharacters() const
@@ -232,7 +240,7 @@ void TextMeshComponent::JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMax
 
 void TextMeshComponent::UpdateVertexData()
 {
-    if (!IsVertexBufferDirty() ||
+    if (!mReconstructVertices ||
         mFont == nullptr)
         return;
 
@@ -373,9 +381,7 @@ void TextMeshComponent::UpdateVertexData()
     }
 
     UpdateBounds();
-
-    GFX_UpdateTextMeshCompVertexBuffer(this, mVertices);
-    mVertexBufferDirty[Renderer::Get()->GetFrameIndex()] = false;
+    mReconstructVertices = false;
 }
 
 void TextMeshComponent::UpdateBounds()

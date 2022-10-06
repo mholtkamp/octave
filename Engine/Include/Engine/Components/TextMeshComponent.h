@@ -42,14 +42,14 @@ public:
 
     virtual Bounds GetLocalBounds() const override;
 
-    bool IsVertexBufferDirty() const;
     int32_t GetNumVisibleCharacters() const;
 
 protected:
 
     static bool HandlePropChange(Datum* datum, const void* newValue);
 
-    void MarkVertexBufferDirty();
+    void MarkVerticesDirty();
+    void UploadVertexData();
     void UpdateVertexData();
     void JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart);
     void UpdateBounds();
@@ -63,7 +63,8 @@ protected:
 
     std::vector<Vertex> mVertices;
     int32_t mVisibleCharacters = 0;
-    bool mVertexBufferDirty[MAX_FRAMES] = {};
+    bool mUploadVertices[MAX_FRAMES] = {};
+    bool mReconstructVertices = false;
     Bounds mBounds;
     MaterialRef mDefaultMatInstance = nullptr;
 
