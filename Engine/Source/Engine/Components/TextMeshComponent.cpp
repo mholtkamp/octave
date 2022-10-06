@@ -239,7 +239,8 @@ void TextMeshComponent::UpdateVertexData()
     // TODO: See about sharing most of this code with Text (widget)
 
     // Check if we need to reallocate a bigger buffer.
-    mVertices.resize(mText.size() * TEXT_VERTS_PER_CHAR);
+    mVertices.clear();
+    mVertices.reserve(mText.size() * TEXT_VERTS_PER_CHAR);
 
     Font* font = mFont.Get<Font>();
     assert(font != nullptr);
@@ -289,6 +290,8 @@ void TextMeshComponent::UpdateVertexData()
         {
             continue;
         }
+
+        mVertices.resize(mVertices.size() + TEXT_VERTS_PER_CHAR);
 
         const Character& fontChar = fontChars[textChar - ' '];
         Vertex* vertices = mVertices.data() + (mVisibleCharacters * TEXT_VERTS_PER_CHAR);
@@ -369,9 +372,13 @@ void TextMeshComponent::UpdateVertexData()
         }
     }
 
-    mBounds.mCenter = glm::vec3((minExtent + maxExtent) / 2.0f, 0.0f);
-    mBounds.mRadius = glm::distance(glm::vec3(maxExtent, 0.0f), mBounds.mCenter);
+    UpdateBounds();
 
     GFX_UpdateTextMeshCompVertexBuffer(this, mVertices);
     mVertexBufferDirty[Renderer::Get()->GetFrameIndex()] = false;
+}
+
+void TextMeshComponent::UpdateBounds()
+{
+    mBounds = ComputeBounds(mVertices);
 }
