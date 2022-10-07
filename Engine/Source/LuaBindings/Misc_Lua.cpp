@@ -2,6 +2,7 @@
 
 #include "Widgets/Widget.h"
 #include "Widgets/Button.h"
+#include "Widgets/Text.h"
 
 #if LUA_ENABLED
 
@@ -286,6 +287,34 @@ void BindNetFuncType()
     lua_setfield(L, tableIdx, "Count");
 
     lua_setglobal(L, "NetFuncType");
+
+    assert(lua_gettop(L) == 0);
+}
+
+void BindJustification()
+{
+    lua_State* L = GetLua();
+    assert(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushinteger(L, (int)Justification::Left);
+    lua_setfield(L, tableIdx, "Left");
+
+    lua_pushinteger(L, (int)Justification::Right);
+    lua_setfield(L, tableIdx, "Right");
+
+    lua_pushinteger(L, (int)Justification::Center);
+    lua_setfield(L, tableIdx, "Center");
+
+    lua_pushinteger(L, (int)Justification::Top);
+    lua_setfield(L, tableIdx, "Top");
+
+    lua_pushinteger(L, (int)Justification::Bottom);
+    lua_setfield(L, tableIdx, "Bottom");
+
+    lua_setglobal(L, "Justification");
 
     assert(lua_gettop(L) == 0);
 }

@@ -33,6 +33,10 @@ struct Text_Lua
     static int GetTextHeight(lua_State* L);
     static int GetScaledMinExtent(lua_State* L);
     static int GetScaledMaxExtent(lua_State* L);
+    static int SetHorizontalJustification(lua_State* L);
+    static int GetHorizontalJustification(lua_State* L);
+    static int SetVerticalJustification(lua_State* L);
+    static int GetVerticalJustification(lua_State* L);
 
     static void Bind();
 };

@@ -172,6 +172,46 @@ int Text_Lua::GetScaledMaxExtent(lua_State* L)
     return 1;
 }
 
+int Text_Lua::SetHorizontalJustification(lua_State* L)
+{
+    Text* text = CHECK_TEXT(L, 1);
+    int32_t value = CHECK_INTEGER(L, 2);
+
+    text->SetHorizontalJustification((Justification)value);
+
+    return 0;
+}
+
+int Text_Lua::GetHorizontalJustification(lua_State* L)
+{
+    Text* text = CHECK_TEXT(L, 1);
+
+    Justification ret = text->GetHorizontalJustification();
+
+    lua_pushinteger(L, (int32_t)ret);
+    return 1;
+}
+
+int Text_Lua::SetVerticalJustification(lua_State* L)
+{
+    Text* text = CHECK_TEXT(L, 1);
+    int32_t value = CHECK_INTEGER(L, 2);
+
+    text->SetVerticalJustification((Justification)value);
+
+    return 0;
+}
+
+int Text_Lua::GetVerticalJustification(lua_State* L)
+{
+    Text* text = CHECK_TEXT(L, 1);
+
+    Justification ret = text->GetVerticalJustification();
+
+    lua_pushinteger(L, (int32_t)ret);
+    return 1;
+}
+
 void Text_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -233,6 +273,18 @@ void Text_Lua::Bind()
 
     lua_pushcfunction(L, GetScaledMaxExtent);
     lua_setfield(L, mtIndex, "GetScaledMaxExtent");
+
+    lua_pushcfunction(L, SetHorizontalJustification);
+    lua_setfield(L, mtIndex, "SetHorizontalJustification");
+
+    lua_pushcfunction(L, GetHorizontalJustification);
+    lua_setfield(L, mtIndex, "GetHorizontalJustification");
+
+    lua_pushcfunction(L, SetVerticalJustification);
+    lua_setfield(L, mtIndex, "SetVerticalJustification");
+
+    lua_pushcfunction(L, GetVerticalJustification);
+    lua_setfield(L, mtIndex, "GetVerticalJustification");
 
     lua_pop(L, 1);
     assert(lua_gettop(L) == 0);
