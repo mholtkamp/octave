@@ -72,6 +72,9 @@ public:
 
     virtual void Render() override;
 
+    glm::vec2 GetJustifiedOffset();
+    static float GetJustificationRatio(Justification just);
+
 protected:
 
     void UpdateVertexData();

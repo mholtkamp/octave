@@ -18,6 +18,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/ShadowMeshComponent.h"
+#include "Components/TextMeshComponent.h"
 #include "Components/ParticleComponent.h"
 
 #include <assert.h>
@@ -894,6 +895,27 @@ void GFX_DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp)
     }
 }
 
+// TextMeshComp
+void GFX_CreateTextMeshCompResource(TextMeshComponent* textMeshComp)
+{
+
+}
+
+void GFX_DestroyTextMeshCompResource(TextMeshComponent* textMeshComp)
+{
+
+}
+
+void GFX_UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::vector<Vertex>& vertices)
+{
+
+}
+
+void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp)
+{
+
+}
+
 // ParticleComp
 void GFX_CreateParticleCompResource(ParticleComponent* particleComp)
 {
@@ -1144,6 +1166,7 @@ void GFX_DrawText(Text* text)
     TextResource* resource = text->GetResource();
 
     Rect rect = text->GetRect();
+    glm::vec2 justOff = text->GetJustifiedOffset();
     Font* font = text->GetFont();
     uint32_t numVisibleChars = text->GetNumVisibleCharacters();
 
@@ -1175,7 +1198,7 @@ void GFX_DrawText(Text* text)
 
     // Upload Uniforms
     C3D_Mtx worldViewMtx;
-    glm::vec2 translation = glm::vec2(rect.mX, rect.mY);
+    glm::vec2 translation = glm::vec2(rect.mX + justOff.x, rect.mY + justOff.y);
     int32_t fontSize = font ? font->GetSize() : 32;
     float textScale = text->GetScaledSize() / fontSize;
 

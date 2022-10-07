@@ -23,6 +23,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/ParticleComponent.h"
 #include "Components/ShadowMeshComponent.h"
+#include "Components/TextMeshComponent.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -768,6 +769,27 @@ void GFX_DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp)
     }
 }
 
+// TextMeshComp
+void GFX_CreateTextMeshCompResource(TextMeshComponent* textMeshComp)
+{
+
+}
+
+void GFX_DestroyTextMeshCompResource(TextMeshComponent* textMeshComp)
+{
+
+}
+
+void GFX_UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::vector<Vertex>& vertices)
+{
+
+}
+
+void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp)
+{
+
+}
+
 // ParticleComp
 void GFX_CreateParticleCompResource(ParticleComponent* particleComp)
 {
@@ -975,9 +997,10 @@ void GFX_DrawText(Text* text)
     Rect rect = text->GetRect();
     Font* font = text->GetFont();
     uint32_t numVisibleChars = text->GetNumVisibleCharacters();
+    glm::vec2 justOff = text->GetJustifiedOffset();
 
     Mtx modelViewUI;
-    glm::vec2 translation = glm::vec2(rect.mX, rect.mY);
+    glm::vec2 translation = glm::vec2(rect.mX + justOff.x, rect.mY + justOff.y);
     int32_t fontSize = font ? font->GetSize() : 32;
     float textScale = text->GetScaledSize() / fontSize;
     guMtxScale(modelViewUI, textScale, textScale, 1.0);

@@ -1894,11 +1894,12 @@ void UpdateTextResourceUniformData(Text* text)
 
     // Uniform Buffer
     int32_t fontSize = text->GetFont() ? text->GetFont()->GetSize() : 32;
+    glm::vec2 justifiedOffset = text->GetJustifiedOffset();
 
     TextUniformData ubo = {};
     ubo.mTransform = glm::mat4(text->GetTransform());
-    ubo.mX = text->GetRect().mX;
-    ubo.mY = text->GetRect().mY;
+    ubo.mX = text->GetRect().mX + justifiedOffset.x;
+    ubo.mY = text->GetRect().mY + justifiedOffset.y;
     ubo.mCutoff = text->GetCutoff();
     ubo.mOutlineSize = text->GetOutlineSize();
     ubo.mScale = text->GetScaledSize() / fontSize;

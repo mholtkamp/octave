@@ -12,7 +12,7 @@ FORCE_LINK_DEF(Text);
 DEFINE_FACTORY(Text, Widget);
 
 
-static float GetJustificationRatio(Justification just)
+float Text::GetJustificationRatio(Justification just)
 {
     float ret = 0.0f;
 
@@ -458,4 +458,13 @@ void Text::Render()
 {
     Widget::Render();
     GFX_DrawText(this);
+}
+
+glm::vec2 Text::GetJustifiedOffset()
+{
+    glm::vec2 offset = glm::vec2(
+        mRect.mWidth * GetJustificationRatio(mHoriJust),
+        mRect.mHeight * GetJustificationRatio(mVertJust));
+
+    return offset;
 }

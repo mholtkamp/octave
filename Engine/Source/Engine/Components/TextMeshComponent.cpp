@@ -112,11 +112,11 @@ void TextMeshComponent::Tick(float deltaTime)
 
     if (font)
     {
-        mDefaultMatInstance.Get<Material>()->SetTexture(TEXTURE_0, font->GetTexture());
+        matInst->SetTexture(TEXTURE_0, font->GetTexture());
     }
 
-    mDefaultMatInstance.Get<Material>()->SetColor(mColor);
-    mDefaultMatInstance.Get<Material>()->SetBlendMode(mBlendMode);
+    matInst->SetColor(mColor);
+    matInst->SetBlendMode(mBlendMode);
 }
 
 
@@ -273,8 +273,6 @@ void TextMeshComponent::UpdateVertexData()
     glm::vec2 lineMinExtent = minExtent;
     glm::vec2 lineMaxExtent = maxExtent;
     int32_t lineVertStart = 0;
-
-    uint32_t color32 = ColorFloat4ToUint32(mColor);
 
     const char* characters = mText.c_str();
     float cursorX = 0.0f;
