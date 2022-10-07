@@ -238,6 +238,8 @@ glm::vec2 Text::GetScaledMinExtent()
 {
     UpdateVertexData();
 
+    // TODO: Need to account for GetJustifiedOffset().
+
     Font* font = mFont.Get<Font>();
     float scale = font ? (mSize / font->GetSize()) : 1.0f;
     return mMinExtent * scale;
@@ -246,6 +248,8 @@ glm::vec2 Text::GetScaledMinExtent()
 glm::vec2 Text::GetScaledMaxExtent()
 {
     UpdateVertexData();
+
+    // TODO: Need to account for GetJustifiedOffset().
 
     Font* font = mFont.Get<Font>();
     float scale = font ? (mSize / font->GetSize()) : 1.0f;
@@ -400,8 +404,9 @@ void Text::UpdateVertexData()
     // Vertical Justification
     if (mVertJust != Justification::Top)
     {
+        float topGap = mMinExtent.y;
         float vertJust = GetJustificationRatio(mVertJust);
-        float deltaY = -(mMaxExtent.y - mMinExtent.y) * vertJust;
+        float deltaY = -(mMaxExtent.y - mMinExtent.y + topGap * 2) * vertJust;
 
         const int32_t numVerts = mVisibleCharacters * TEXT_VERTS_PER_CHAR;
         for (int32_t i = 0; i < numVerts; ++i)
