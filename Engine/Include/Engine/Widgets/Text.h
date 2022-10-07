@@ -9,6 +9,17 @@
 
 class Font;
 
+enum class Justification : uint8_t
+{
+    Left,
+    Center,
+    Right,
+    Top,
+    Bottom,
+
+    Count
+};
+
 class Text : public Widget
 {
 public:
@@ -37,6 +48,11 @@ public:
     float GetSoftness() const;
     float GetCutoff() const;
 
+    void SetHorizontalJustification(Justification just);
+    Justification GetHorizontalJustification() const;
+    void SetVerticalJustification(Justification just);
+    Justification GetVerticalJustification() const;
+
     void SetText(const std::string& text);
     void SetText(const char* text);
     const std::string& GetText() const;
@@ -60,6 +76,7 @@ protected:
 
     void UpdateVertexData();
     void UploadVertexData();
+    void JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart);
 
     FontRef mFont;
     std::string mText;
@@ -74,6 +91,8 @@ protected:
     glm::vec2 mMaxExtent = {};
     int32_t mVisibleCharacters; // ( \n excluded )
     uint32_t mNumCharactersAllocated;
+    Justification mHoriJust = Justification::Left;
+    Justification mVertJust = Justification::Top;
     bool mUploadVertices[MAX_FRAMES] = {};
     bool mReconstructVertices = false;
 

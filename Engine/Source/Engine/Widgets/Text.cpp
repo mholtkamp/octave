@@ -11,6 +11,29 @@
 FORCE_LINK_DEF(Text);
 DEFINE_FACTORY(Text, Widget);
 
+
+static float GetJustificationRatio(Justification just)
+{
+    float ret = 0.0f;
+
+    switch (just)
+    {
+    case Justification::Left:
+    case Justification::Top:
+        ret = 0.0f;
+        break;
+    case Justification::Right:
+    case Justification::Bottom:
+        ret = 1.0f;
+        break;
+    case Justification::Center:
+        ret = 0.5f;
+        break;
+    }
+
+    return ret;
+}
+
 Text::Text() :
     mFont(nullptr),
     mText("Text"),
@@ -121,6 +144,34 @@ float Text::GetSoftness() const
 float Text::GetCutoff() const
 {
     return mCutoff;
+}
+
+void Text::SetHorizontalJustification(Justification just)
+{
+    if (mHoriJust != just)
+    {
+        mHoriJust = just;
+        MarkVerticesDirty();
+    }
+}
+
+Justification Text::GetHorizontalJustification() const
+{
+    return mHoriJust;
+}
+
+void Text::SetVerticalJustification(Justification just)
+{
+    if (mVertJust != just)
+    {
+        mVertJust = just;
+        MarkVerticesDirty();
+    }
+}
+
+Justification Text::GetVerticalJustification() const
+{
+    return mVertJust;
 }
 
 void Text::SetText(const std::string& text)
@@ -264,6 +315,10 @@ void Text::UpdateVertexData()
     mMinExtent = glm::vec2(FLT_MAX, FLT_MAX);
     mMaxExtent = glm::vec2(-FLT_MAX, -FLT_MAX);
 
+    glm::vec2 lineMinExtent = mMinExtent;
+    glm::vec2 lineMaxExtent = mMaxExtent;
+    int32_t lineVertStart = 0;
+
     uint32_t color32 = ColorFloat4ToUint32(mColor);
 
     const char* characters = mText.c_str();
@@ -277,6 +332,8 @@ void Text::UpdateVertexData()
         {
             cursorY += fontSize;
             cursorX = 0.0f;
+
+            JustifyLine(lineMinExtent, lineMaxExtent, lineVertStart);
             continue;
         }
 
@@ -318,11 +375,11 @@ void Text::UpdateVertexData()
         vertices[5].mTexcoord.y = (float)fontChar.mY + fontChar.mHeight;
 
         // Update the extents
-        mMinExtent.x = glm::min(mMinExtent.x, vertices[0].mPosition.x);
-        mMinExtent.y = glm::min(mMinExtent.y, vertices[0].mPosition.y);
+        lineMinExtent.x = glm::min(lineMinExtent.x, vertices[0].mPosition.x);
+        lineMinExtent.y = glm::min(lineMinExtent.y, vertices[0].mPosition.y);
 
-        mMaxExtent.x = glm::max(mMaxExtent.x, vertices[5].mPosition.x);
-        mMaxExtent.y = glm::max(mMaxExtent.y, vertices[5].mPosition.y);
+        lineMaxExtent.x = glm::max(lineMaxExtent.x, vertices[5].mPosition.x);
+        lineMaxExtent.y = glm::max(lineMaxExtent.y, vertices[5].mPosition.y);
 
         for (int32_t i = 0; i < 6; ++i)
         {
@@ -338,6 +395,24 @@ void Text::UpdateVertexData()
         cursorX += fontChar.mAdvance;
     }
 
+    JustifyLine(lineMinExtent, lineMaxExtent, lineVertStart);
+
+    // Vertical Justification
+    if (mVertJust != Justification::Top)
+    {
+        float vertJust = GetJustificationRatio(mVertJust);
+        float deltaY = -(mMaxExtent.y - mMinExtent.y) * vertJust;
+
+        const int32_t numVerts = mVisibleCharacters * TEXT_VERTS_PER_CHAR;
+        for (int32_t i = 0; i < numVerts; ++i)
+        {
+            mVertices[i].mPosition.y += deltaY;
+        }
+
+        mMinExtent.y += deltaY;
+        mMaxExtent.y += deltaY;
+    }
+
     mReconstructVertices = false;
 }
 
@@ -349,6 +424,34 @@ void Text::UploadVertexData()
         GFX_UpdateTextResourceVertexData(this);
         mUploadVertices[frameIndex] = false;
     }
+}
+
+void Text::JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart)
+{
+    const int32_t numVerts = mVisibleCharacters * TEXT_VERTS_PER_CHAR;
+
+    if (mHoriJust != Justification::Left &&
+        lineVertStart < numVerts)
+    {
+        // Clamp to logical range
+        float horiJust = GetJustificationRatio(mHoriJust);
+        float deltaX = -(lineMaxExtent.x - lineMinExtent.x) * horiJust;
+
+        for (int32_t i = lineVertStart; i < numVerts; ++i)
+        {
+            mVertices[i].mPosition.x += deltaX;
+        }
+
+        lineMinExtent.x += deltaX;
+        lineMaxExtent.x += deltaX;
+    }
+
+    mMinExtent = glm::min(mMinExtent, lineMinExtent);
+    mMaxExtent = glm::max(mMaxExtent, lineMaxExtent);
+
+    lineMinExtent = glm::vec2(FLT_MAX, FLT_MAX);
+    lineMaxExtent = glm::vec2(-FLT_MAX, -FLT_MAX);
+    lineVertStart = numVerts;
 }
 
 void Text::Render()
