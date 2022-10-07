@@ -45,8 +45,7 @@ public:
     uint32_t GetNumCharactersAllocated() const;
     uint32_t GetNumVisibleCharacters() const;
 
-    void MarkVertexBufferDirty();
-    bool IsVertexBufferDirty() const;
+    void MarkVerticesDirty();
 
     float GetTextWidth();
     float GetTextHeight();
@@ -60,6 +59,7 @@ public:
 protected:
 
     void UpdateVertexData();
+    void UploadVertexData();
 
     FontRef mFont;
     std::string mText;
@@ -74,7 +74,8 @@ protected:
     glm::vec2 mMaxExtent = {};
     int32_t mVisibleCharacters; // ( \n excluded )
     uint32_t mNumCharactersAllocated;
-    bool mVertexBufferDirty[MAX_FRAMES] = {};
+    bool mUploadVertices[MAX_FRAMES] = {};
+    bool mReconstructVertices = false;
 
     // Graphics Resource
     TextResource mResource;

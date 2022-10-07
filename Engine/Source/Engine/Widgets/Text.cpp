@@ -24,7 +24,7 @@ Text::Text() :
     mNumCharactersAllocated(0)
 {
     mFont = LoadAsset<Font>("F_Roboto32");
-    MarkVertexBufferDirty();
+    MarkVerticesDirty();
     GFX_CreateTextResource(this);
 }
 
@@ -43,6 +43,7 @@ void Text::Update()
     Widget::Update();
 
     UpdateVertexData();
+    UploadVertexData();
 
     if (IsDirty())
     {
@@ -55,7 +56,7 @@ void Text::SetFont(class Font* font)
     if (mFont != font)
     {
         mFont = font;
-        MarkVertexBufferDirty();
+        MarkVerticesDirty();
         MarkDirty();
     }
 }
@@ -70,7 +71,7 @@ void Text::SetColor(glm::vec4 color)
     if (color != mColor)
     {
         Widget::SetColor(color);
-        MarkVertexBufferDirty();
+        MarkVerticesDirty();
     }
 }
 
@@ -132,7 +133,7 @@ void Text::SetText(const char* text)
     if (mText != text)
     {
         mText = text;
-        MarkVertexBufferDirty();
+        MarkVerticesDirty();
         MarkDirty();
     }
 }
@@ -157,17 +158,13 @@ uint32_t Text::GetNumVisibleCharacters() const
     return mVisibleCharacters;
 }
 
-void Text::MarkVertexBufferDirty()
+void Text::MarkVerticesDirty()
 {
+    mReconstructVertices = true;
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
     {
-        mVertexBufferDirty[i] = true;
+        mUploadVertices[i] = true;
     }
-}
-
-bool Text::IsVertexBufferDirty() const
-{
-    return mVertexBufferDirty[Renderer::Get()->GetFrameIndex()];
 }
 
 float Text::GetTextWidth()
@@ -223,7 +220,7 @@ bool Text::ContainsPoint(int32_t x, int32_t y)
 
 void Text::UpdateVertexData()
 {
-    if (!IsVertexBufferDirty() ||
+    if (!mReconstructVertices ||
         mFont == nullptr)
         return;
 
@@ -255,7 +252,10 @@ void Text::UpdateVertexData()
     mMaxExtent = glm::vec2(0.0f, 0.0f);
 
     if (mText.size() == 0)
+    {
+        mReconstructVertices = false;
         return;
+    }
 
     // Run through each of the characters and construct vertices for it.
     // Not using an index buffer currently, so each character is 6 vertices.
@@ -338,8 +338,17 @@ void Text::UpdateVertexData()
         cursorX += fontChar.mAdvance;
     }
 
-    GFX_UpdateTextResourceVertexData(this);
-    mVertexBufferDirty[Renderer::Get()->GetFrameIndex()] = false;
+    mReconstructVertices = false;
+}
+
+void Text::UploadVertexData()
+{
+    uint32_t frameIndex = Renderer::Get()->GetFrameIndex();
+    if (mUploadVertices[frameIndex])
+    {
+        GFX_UpdateTextResourceVertexData(this);
+        mUploadVertices[frameIndex] = false;
+    }
 }
 
 void Text::Render()
