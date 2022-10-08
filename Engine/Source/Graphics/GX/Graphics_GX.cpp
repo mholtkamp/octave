@@ -787,7 +787,6 @@ void GFX_UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const s
 
 void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp)
 {
-
     if (textMeshComp->GetNumVisibleCharacters() == 0)
         return;
 

@@ -116,6 +116,7 @@ void TextMeshComponent::Tick(float deltaTime)
     }
 
     matInst->SetColor(mColor);
+    matInst->SetOpacity(mColor.a);
     matInst->SetBlendMode(mBlendMode);
 }
 

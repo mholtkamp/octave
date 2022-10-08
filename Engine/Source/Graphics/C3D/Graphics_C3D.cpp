@@ -908,12 +908,97 @@ void GFX_DestroyTextMeshCompResource(TextMeshComponent* textMeshComp)
 
 void GFX_UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::vector<Vertex>& vertices)
 {
+    if (vertices.size() == 0)
+        return;
 
+    TextMeshCompResource* resource = textMeshComp->GetResource();
+
+    uint32_t numVertices = uint32_t(textMeshComp->GetNumVisibleCharacters() * 6);
+    assert(numVertices % 6 == 0);
+    assert(numVertices <= vertices.size());
+
+    size_t newBufferSize = numVertices * sizeof(Vertex);
+
+    if (resource->mVertexData.GetSize() < newBufferSize)
+    {
+        resource->mVertexData.Free();
+        resource->mVertexData.Alloc(newBufferSize);
+    }
+
+    resource->mVertexData.Update(vertices.data(), numVertices * sizeof(Vertex));
+
+    // Flush the data cache so the GPU gets the updated data.
+    GSPGPU_FlushDataCache(resource->mVertexData.Get(), numVertices * sizeof(Vertex));
 }
 
 void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp)
 {
+    if (textMeshComp->GetNumVisibleCharacters() == 0)
+        return;
 
+    TextMeshCompResource* resource = textMeshComp->GetResource();
+
+    uint32_t numChars = (uint32_t)textMeshComp->GetNumVisibleCharacters();
+    uint32_t numVertices = numChars * 6;
+
+    // Bind shader program
+    BindVertexShader(ShaderId::StaticMesh);
+
+    // Setup vertex attributes
+    C3D_AttrInfo* attrInfo = C3D_GetAttrInfo();
+    AttrInfo_Init(attrInfo);
+    AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 3); // v0=position
+    AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // v1=texcoord0
+    AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, 2); // v2=texcoord1
+    AttrInfo_AddLoader(attrInfo, 3, GPU_FLOAT, 4); // v3=normal
+
+    // Setup vertex buffer state
+    C3D_BufInfo* bufInfo = C3D_GetBufInfo();
+    BufInfo_Init(bufInfo);
+    BufInfo_Add(bufInfo, resource->mVertexData.Get(), sizeof(Vertex), 4, 0x3210);
+
+    Material* material = textMeshComp->GetMaterial();
+
+    if (material == nullptr)
+    {
+        material = Renderer::Get()->GetDefaultMaterial();
+        assert(material != nullptr);
+    }
+
+    BindMaterial(material);
+
+    // Upload Uniforms
+    C3D_Mtx worldMtx;
+    C3D_Mtx viewMtx;
+    C3D_Mtx worldViewMtx;
+
+    glm::mat4 modelSrc = textMeshComp->GetRenderTransform();
+    glm::mat4 viewSrc = GetWorld()->GetActiveCamera()->GetViewMatrix();
+
+    CopyMatrixGlmToC3d(&worldMtx, modelSrc);
+    CopyMatrixGlmToC3d(&viewMtx, viewSrc);
+    Mtx_Multiply(&worldViewMtx, &viewMtx, &worldMtx);
+
+    C3D_Mtx projMtx;
+    glm::mat4 projSrc = GetWorld()->GetActiveCamera()->GetProjectionMatrix();
+    memcpy(&projMtx, &projSrc, sizeof(float) * 4 * 4);
+
+    C3D_Mtx normalMtx;
+    memcpy(&normalMtx, &worldViewMtx, sizeof(float) * 4 * 4);
+    Mtx_Inverse(&normalMtx);
+    Mtx_Transpose(&normalMtx);
+
+    C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mWorldViewMtx, &worldViewMtx);
+    C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mNormalMtx, &normalMtx);
+    C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mProjMtx, &projMtx);
+
+    UploadUvOffsetScale(gC3dContext.mStaticMeshLocs.mUvOffsetScale0, material, 0);
+    UploadUvOffsetScale(gC3dContext.mStaticMeshLocs.mUvOffsetScale1, material, 1);
+
+    C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mUvMaps, material->GetUvMap(0), material->GetUvMap(1), material->GetUvMap(2), 0);
+
+    // Draw
+    C3D_DrawArrays(GPU_TRIANGLES, 0, numVertices);
 }
 
 // ParticleComp
