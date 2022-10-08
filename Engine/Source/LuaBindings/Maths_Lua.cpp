@@ -168,6 +168,77 @@ int Maths_Lua::Reflect(lua_State* L)
     return 1;
 }
 
+int Maths_Lua::SeedRand(lua_State* L)
+{
+    int32_t seed = CHECK_INTEGER(L, 1);
+
+    Maths::SeedRand(seed);
+
+    return 0;
+}
+
+int Maths_Lua::RandRange(lua_State* L)
+{
+    float fMin = CHECK_NUMBER(L, 1);
+    float fMax = CHECK_NUMBER(L, 2);
+
+    float ret = Maths::RandRange(fMin, fMax);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
+int Maths_Lua::RandRangeInt(lua_State* L)
+{
+    int32_t iMin = CHECK_INTEGER(L, 1);
+    int32_t iMax = CHECK_INTEGER(L, 2);
+
+    int32_t ret = Maths::RandRange(iMin, iMax);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+
+int Maths_Lua::RandRangeVec(lua_State* L)
+{
+    glm::vec4 vMin;
+    glm::vec4 vMax;
+
+    if (lua_isnumber(L, 1))
+    {
+        float fMin = CHECK_NUMBER(L, 1);
+        vMin = { fMin, fMin, fMin, fMin };
+    }
+    else
+    {
+        vMin = CHECK_VECTOR(L, 1);
+    }
+
+    if (lua_isnumber(L, 2))
+    {
+        float fMax = CHECK_NUMBER(L, 2);
+        vMax = { fMax, fMax, fMax, fMax };
+    }
+    else
+    {
+        vMax = CHECK_VECTOR(L, 2);
+    }
+
+    glm::vec4 ret = Maths::RandRange(vMin, vMax);
+
+    Vector_Lua::Create(L, ret);
+    return 1;
+}
+
+int Maths_Lua::Rand(lua_State* L)
+{
+    float ret = Maths::RandRange(0.0f, 1.0f);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
+
 void Maths_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -210,6 +281,21 @@ void Maths_Lua::Bind()
 
     lua_pushcfunction(L, Reflect);
     lua_setfield(L, tableIdx, "Reflect");
+
+    lua_pushcfunction(L, SeedRand);
+    lua_setfield(L, tableIdx, "SeedRand");
+
+    lua_pushcfunction(L, RandRange);
+    lua_setfield(L, tableIdx, "RandRange");
+
+    lua_pushcfunction(L, RandRangeInt);
+    lua_setfield(L, tableIdx, "RandRangeInt");
+
+    lua_pushcfunction(L, RandRangeVec);
+    lua_setfield(L, tableIdx, "RandRangeVec");
+
+    lua_pushcfunction(L, Rand);
+    lua_setfield(L, tableIdx, "Rand");
 
     lua_setglobal(L, MATHS_LUA_NAME);
 
