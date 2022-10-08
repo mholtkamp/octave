@@ -84,7 +84,7 @@ protected:
 
     void UpdateVertexData();
     void UploadVertexData();
-    void JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart, int32_t wordVertStart = 0);
+    void JustifyLine(VertexUI* vertices, Justification just, int32_t& lineVertStart, int32_t numVerts);
 
     FontRef mFont;
     std::string mText;
