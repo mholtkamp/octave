@@ -98,6 +98,16 @@ void Text::SetColor(glm::vec4 color)
     }
 }
 
+void Text::MarkDirty()
+{
+    Widget::MarkDirty();
+
+    if (mWordWrap)
+    {
+        MarkVerticesDirty();
+    }
+}
+
 void Text::SetOutlineColor(glm::vec4 color)
 {
     if (mColor != color)
@@ -477,12 +487,16 @@ void Text::JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32
 {
     const int32_t numVerts = (wordVertStart ? wordVertStart : mVisibleCharacters * TEXT_VERTS_PER_CHAR);
 
+    float horiJust = GetJustificationRatio(mHoriJust);
+    float deltaX = -(mVertices[numVerts - 1].mPosition.x - mVertices[lineVertStart].mPosition.x);
+    deltaX *= horiJust;
+
     if (mHoriJust != Justification::Left &&
         lineVertStart < numVerts)
     {
         // Clamp to logical range
-        float horiJust = GetJustificationRatio(mHoriJust);
-        float deltaX = -(lineMaxExtent.x - lineMinExtent.x) * horiJust;
+        //float horiJust = GetJustificationRatio(mHoriJust);
+        //float deltaX = -(lineMaxExtent.x - lineMinExtent.x) * horiJust;
 
         for (int32_t i = lineVertStart; i < numVerts; ++i)
         {

@@ -34,6 +34,8 @@ public:
     virtual void Update() override;
     virtual void SetColor(glm::vec4 color) override;
 
+    virtual void MarkDirty();
+
     void SetFont(Font* font);
     Font* GetFont();
 
