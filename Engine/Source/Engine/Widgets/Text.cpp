@@ -355,6 +355,7 @@ void Text::UpdateVertexData()
             cursorX = 0.0f;
 
             JustifyLine(lineMinExtent, lineMaxExtent, lineVertStart);
+            wordVertStart = lineVertStart;
             continue;
         }
 
@@ -424,7 +425,7 @@ void Text::UpdateVertexData()
             wordVertStart != lineVertStart &&
             (cursorX - fontChar.mOriginX + fontChar.mWidth) * textScale > mRect.mWidth)
         {
-            // JustifyLine() line start to word start
+            JustifyLine(lineMinExtent, lineMaxExtent, lineVertStart, wordVertStart);
 
             float deltaX = -mVertices[wordVertStart].mPosition.x;
             float deltaY = (float)fontSize;
@@ -472,9 +473,9 @@ void Text::UploadVertexData()
     }
 }
 
-void Text::JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart)
+void Text::JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart, int32_t wordVertStart)
 {
-    const int32_t numVerts = mVisibleCharacters * TEXT_VERTS_PER_CHAR;
+    const int32_t numVerts = (wordVertStart ? wordVertStart : mVisibleCharacters * TEXT_VERTS_PER_CHAR);
 
     if (mHoriJust != Justification::Left &&
         lineVertStart < numVerts)
