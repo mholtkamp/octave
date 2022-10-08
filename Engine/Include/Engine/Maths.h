@@ -19,9 +19,11 @@ public:
     template<typename T>
     static T RandRange(T min, T max)
     {
-        // Max is exclusive
-        assert(max > min);
-        int32_t retRand = min + rand() % (max - min);
+        int32_t retRand = min;
+        if (max >= min)
+        {
+            retRand = min + rand() % (max + 1 - min);
+        }
         return retRand;
     }
 

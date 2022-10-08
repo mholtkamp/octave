@@ -22,6 +22,12 @@ struct Maths_Lua
     static int RotateYawTowardDirection(lua_State* L);
     static int Reflect(lua_State* L);
 
+    static int SeedRand(lua_State* L);
+    static int RandRange(lua_State* L);
+    static int RandRangeInt(lua_State* L);
+    static int RandRangeVec(lua_State* L);
+    static int Rand(lua_State* L);
+
     static void Bind();
 };
 

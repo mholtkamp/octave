@@ -989,7 +989,15 @@ uint32_t Actor::GetNumComponents() const
 
 Component* Actor::GetComponent(int32_t index)
 {
-    return mComponents[index];
+    Component* ret = nullptr;
+
+    if (index >= 0 &&
+        index < (int32_t)mComponents.size())
+    {
+        ret = mComponents[index];
+    }
+
+    return ret;
 }
 
 Component* Actor::GetComponent(const std::string & name)

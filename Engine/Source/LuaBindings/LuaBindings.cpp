@@ -30,6 +30,7 @@
 #include "LuaBindings/ParticleComponent_Lua.h"
 #include "LuaBindings/ScriptComponent_Lua.h"
 #include "LuaBindings/ShadowMeshComponent_Lua.h"
+#include "LuaBindings/TextMeshComponent_Lua.h"
 #include "LuaBindings/SphereComponent_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/Blueprint_Lua.h"
@@ -99,6 +100,7 @@ void BindLuaInterface()
     ParticleComponent_Lua::Bind();
     ScriptComponent_Lua::Bind();
     ShadowMeshComponent_Lua::Bind();
+    TextMeshComponent_Lua::Bind();
     SphereComponent_Lua::Bind();
 
     // Assets need to be bound in hierarchy order.
