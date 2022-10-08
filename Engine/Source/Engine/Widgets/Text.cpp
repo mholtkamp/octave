@@ -174,6 +174,20 @@ Justification Text::GetVerticalJustification() const
     return mVertJust;
 }
 
+bool Text::IsWordWrapEnabled() const
+{
+    return mWordWrap;
+}
+
+void Text::EnableWordWrap(bool wrap)
+{
+    if (mWordWrap != wrap)
+    {
+        mWordWrap = wrap;
+        MarkVerticesDirty();
+    }
+}
+
 void Text::SetText(const std::string& text)
 {
     SetText(text.c_str());
@@ -322,12 +336,15 @@ void Text::UpdateVertexData()
     glm::vec2 lineMinExtent = mMinExtent;
     glm::vec2 lineMaxExtent = mMaxExtent;
     int32_t lineVertStart = 0;
+    int32_t wordVertStart = 0;
 
     uint32_t color32 = ColorFloat4ToUint32(mColor);
 
     const char* characters = mText.c_str();
     float cursorX = 0.0f;
     float cursorY = 0.0f + font->GetSize();
+
+    float textScale = GetScaledSize() / fontSize;
 
     for (uint32_t i = 0; i < mText.size(); ++i)
     {
@@ -397,6 +414,30 @@ void Text::UpdateVertexData()
 
         mVisibleCharacters++;
         cursorX += fontChar.mAdvance;
+
+        // Check for wordwrap
+        if (textChar == ' ')
+        {
+            wordVertStart = (mVisibleCharacters) * TEXT_VERTS_PER_CHAR;
+        }
+        else if (mWordWrap &&
+            wordVertStart != lineVertStart &&
+            (cursorX - fontChar.mOriginX + fontChar.mWidth) * textScale > mRect.mWidth)
+        {
+            // JustifyLine() line start to word start
+
+            float deltaX = -mVertices[wordVertStart].mPosition.x;
+            float deltaY = (float)fontSize;
+
+            for (int32_t i = wordVertStart; i < mVisibleCharacters * TEXT_VERTS_PER_CHAR; ++i)
+            {
+                mVertices[i].mPosition.x += deltaX;
+                mVertices[i].mPosition.y += deltaY;
+            }
+
+            cursorX += deltaX;
+            cursorY += deltaY;
+        }
     }
 
     JustifyLine(lineMinExtent, lineMaxExtent, lineVertStart);
