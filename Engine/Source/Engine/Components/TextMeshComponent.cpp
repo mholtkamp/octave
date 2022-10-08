@@ -254,6 +254,11 @@ int32_t TextMeshComponent::GetNumVisibleCharacters() const
     return mVisibleCharacters;
 }
 
+const Vertex* TextMeshComponent::GetVertices() const
+{
+    return mVertices.data();
+}
+
 void TextMeshComponent::JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart)
 {
     const int32_t numVerts = mVisibleCharacters * TEXT_VERTS_PER_CHAR;
