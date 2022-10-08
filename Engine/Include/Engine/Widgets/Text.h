@@ -53,6 +53,9 @@ public:
     void SetVerticalJustification(Justification just);
     Justification GetVerticalJustification() const;
 
+    bool IsWordWrapEnabled() const;
+    void EnableWordWrap(bool wrap);
+
     void SetText(const std::string& text);
     void SetText(const char* text);
     const std::string& GetText() const;
@@ -89,6 +92,7 @@ protected:
     float mSoftness;
     glm::vec4 mOutlineColor;
     VertexUI* mVertices;
+    bool mWordWrap = false;
 
     glm::vec2 mMinExtent = {};
     glm::vec2 mMaxExtent = {};
