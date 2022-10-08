@@ -40,6 +40,15 @@ public:
     void SetColor(glm::vec4 color);
     glm::vec4 GetColor() const;
 
+    void SetBlendMode(BlendMode blendMode);
+    BlendMode GetBlendMode() const;
+
+    void SetHorizontalJustification(float just);
+    float GetHorizontalJustification() const;
+
+    void SetVerticalJustification(float just);
+    float GetVerticalJustification() const;
+
     virtual Bounds GetLocalBounds() const override;
 
     int32_t GetNumVisibleCharacters() const;

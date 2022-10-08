@@ -732,6 +732,9 @@
     <ClCompile Include="Source\Engine\Components\TextMeshComponent.cpp">
       <Filter>Source Files\Engine\Components</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\TextMeshComponent_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1318,6 +1321,9 @@
     </ClInclude>
     <ClInclude Include="Include\Engine\Components\TextMeshComponent.h">
       <Filter>Header Files\Engine\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\LuaBindings\TextMeshComponent_Lua.h">
+      <Filter>Header Files\LuaBindings</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

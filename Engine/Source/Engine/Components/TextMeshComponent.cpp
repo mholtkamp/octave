@@ -186,6 +186,44 @@ glm::vec4 TextMeshComponent::GetColor() const
     return mColor;
 }
 
+void TextMeshComponent::SetBlendMode(BlendMode blendMode)
+{
+    mBlendMode = blendMode;
+}
+
+BlendMode TextMeshComponent::GetBlendMode() const
+{
+    return mBlendMode;
+}
+
+void TextMeshComponent::SetHorizontalJustification(float just)
+{
+    if (mHorizontalJustification != just)
+    {
+        mHorizontalJustification = just;
+        MarkVerticesDirty();
+    }
+}
+
+float TextMeshComponent::GetHorizontalJustification() const
+{
+    return mHorizontalJustification;
+}
+
+void TextMeshComponent::SetVerticalJustification(float just)
+{
+    if (mVerticalJustification != just)
+    {
+        mVerticalJustification = just;
+        MarkVerticesDirty();
+    }
+}
+
+float TextMeshComponent::GetVerticalJustification() const
+{
+    return mVerticalJustification;
+}
+
 Bounds TextMeshComponent::GetLocalBounds() const
 {
     return mBounds;
