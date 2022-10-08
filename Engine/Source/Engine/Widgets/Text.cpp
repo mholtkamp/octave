@@ -339,12 +339,6 @@ void Text::UpdateVertexData()
     // Run through each of the characters and construct vertices for it.
     // Not using an index buffer currently, so each character is 6 vertices.
     // Topology is triangles.
-
-    mMinExtent = glm::vec2(FLT_MAX, FLT_MAX);
-    mMaxExtent = glm::vec2(-FLT_MAX, -FLT_MAX);
-
-    glm::vec2 lineMinExtent = mMinExtent;
-    glm::vec2 lineMaxExtent = mMaxExtent;
     int32_t lineVertStart = 0;
     int32_t wordVertStart = 0;
 
@@ -364,7 +358,7 @@ void Text::UpdateVertexData()
             cursorY += fontSize;
             cursorX = 0.0f;
 
-            JustifyLine(lineMinExtent, lineMaxExtent, lineVertStart);
+            JustifyLine(mVertices, mHoriJust, lineVertStart, mVisibleCharacters * TEXT_VERTS_PER_CHAR);
             wordVertStart = lineVertStart;
             continue;
         }
@@ -406,13 +400,6 @@ void Text::UpdateVertexData()
         vertices[5].mTexcoord.x = (float)fontChar.mX + fontChar.mWidth;
         vertices[5].mTexcoord.y = (float)fontChar.mY + fontChar.mHeight;
 
-        // Update the extents
-        lineMinExtent.x = glm::min(lineMinExtent.x, vertices[0].mPosition.x);
-        lineMinExtent.y = glm::min(lineMinExtent.y, vertices[0].mPosition.y);
-
-        lineMaxExtent.x = glm::max(lineMaxExtent.x, vertices[5].mPosition.x);
-        lineMaxExtent.y = glm::max(lineMaxExtent.y, vertices[5].mPosition.y);
-
         for (int32_t i = 0; i < 6; ++i)
         {
             // Fill out uniform data first.
@@ -435,7 +422,7 @@ void Text::UpdateVertexData()
             wordVertStart != lineVertStart &&
             (cursorX - fontChar.mOriginX + fontChar.mWidth) * textScale > mRect.mWidth)
         {
-            JustifyLine(lineMinExtent, lineMaxExtent, lineVertStart, wordVertStart);
+            JustifyLine(mVertices, mHoriJust, lineVertStart, wordVertStart);
 
             float deltaX = -mVertices[wordVertStart].mPosition.x;
             float deltaY = (float)fontSize;
@@ -451,7 +438,16 @@ void Text::UpdateVertexData()
         }
     }
 
-    JustifyLine(lineMinExtent, lineMaxExtent, lineVertStart);
+    JustifyLine(mVertices, mHoriJust, lineVertStart, mVisibleCharacters * TEXT_VERTS_PER_CHAR);
+
+    // Update extents
+    mMinExtent = glm::vec2(FLT_MAX, FLT_MAX);
+    mMaxExtent = glm::vec2(-FLT_MAX, -FLT_MAX);
+    for (int32_t i = 0; i < mVisibleCharacters; ++i)
+    {
+        mMinExtent = glm::min(mMinExtent, mVertices[i * TEXT_VERTS_PER_CHAR + 0].mPosition);
+        mMaxExtent = glm::max(mMaxExtent, mVertices[i * TEXT_VERTS_PER_CHAR + 5].mPosition);
+    }
 
     // Vertical Justification
     if (mVertJust != Justification::Top)
@@ -483,35 +479,21 @@ void Text::UploadVertexData()
     }
 }
 
-void Text::JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart, int32_t wordVertStart)
+void Text::JustifyLine(VertexUI* vertices, Justification just, int32_t& lineVertStart, int32_t numVerts)
 {
-    const int32_t numVerts = (wordVertStart ? wordVertStart : mVisibleCharacters * TEXT_VERTS_PER_CHAR);
-
-    float horiJust = GetJustificationRatio(mHoriJust);
-    float deltaX = -(mVertices[numVerts - 1].mPosition.x - mVertices[lineVertStart].mPosition.x);
-    deltaX *= horiJust;
-
-    if (mHoriJust != Justification::Left &&
+    if (just != Justification::Left &&
         lineVertStart < numVerts)
     {
-        // Clamp to logical range
-        //float horiJust = GetJustificationRatio(mHoriJust);
-        //float deltaX = -(lineMaxExtent.x - lineMinExtent.x) * horiJust;
+        float horiJust = GetJustificationRatio(just);
+        float deltaX = -(vertices[numVerts - 1].mPosition.x - vertices[lineVertStart].mPosition.x);
+        deltaX *= horiJust;
 
         for (int32_t i = lineVertStart; i < numVerts; ++i)
         {
-            mVertices[i].mPosition.x += deltaX;
+            vertices[i].mPosition.x += deltaX;
         }
-
-        lineMinExtent.x += deltaX;
-        lineMaxExtent.x += deltaX;
     }
 
-    mMinExtent = glm::min(mMinExtent, lineMinExtent);
-    mMaxExtent = glm::max(mMaxExtent, lineMaxExtent);
-
-    lineMinExtent = glm::vec2(FLT_MAX, FLT_MAX);
-    lineMaxExtent = glm::vec2(-FLT_MAX, -FLT_MAX);
     lineVertStart = numVerts;
 }
 
