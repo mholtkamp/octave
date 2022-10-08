@@ -136,7 +136,7 @@ public:
     void DetachFromParent();
     uint32_t GetNumChildren() const;
 
-    void MarkDirty();
+    virtual void MarkDirty();
     bool IsDirty() const;
 
     static float InterfaceToNormalized(float interfaceCoord, float interfaceSize);
