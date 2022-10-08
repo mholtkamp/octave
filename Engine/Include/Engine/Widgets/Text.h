@@ -82,7 +82,7 @@ protected:
 
     void UpdateVertexData();
     void UploadVertexData();
-    void JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart);
+    void JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart, int32_t wordVertStart = 0);
 
     FontRef mFont;
     std::string mText;
