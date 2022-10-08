@@ -788,6 +788,80 @@ void GFX_UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const s
 void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp)
 {
 
+    if (textMeshComp->GetNumVisibleCharacters() == 0)
+        return;
+
+    const Vertex* vertices = textMeshComp->GetVertices();
+    uint32_t numChars = (uint32_t)textMeshComp->GetNumVisibleCharacters();
+    uint32_t numVertices = numChars * 6;
+
+    GX_ClearVtxDesc();
+    GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GX_SetVtxDesc(GX_VA_NRM, GX_DIRECT);
+    GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GX_SetVtxDesc(GX_VA_TEX1, GX_DIRECT);
+
+    GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
+    GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX1, GX_TEX_ST, GX_F32, 0);
+
+    // TODO: Are both of these cache functions necessary to call?
+    DCFlushRange((void*)vertices, numVertices * sizeof(Vertex));
+    GX_InvVtxCache();
+
+    Material* material = textMeshComp->GetMaterial();
+
+    if (material == nullptr)
+    {
+        material = Renderer::Get()->GetDefaultMaterial();
+        assert(material != nullptr);
+    }
+
+    BindMaterial(material, false);
+
+    Mtx model;
+    Mtx view;
+    Mtx modelView;
+
+    glm::mat4 modelSrc = glm::transpose(textMeshComp->GetRenderTransform());
+    glm::mat4 viewSrc = glm::transpose(GetWorld()->GetActiveCamera()->GetViewMatrix());
+
+    memcpy(model, &modelSrc, sizeof(float) * 4 * 3);
+    memcpy(view, &viewSrc, sizeof(float) * 4 * 3);
+    guMtxConcat(view, model, modelView);
+
+    GX_LoadPosMtxImm(modelView, GX_PNMTX0);
+
+    Mtx modelViewInv;
+    guMtxInverse(modelView, modelViewInv);
+    guMtxTranspose(modelViewInv, modelView);
+    GX_LoadNrmMtxImm(modelView, GX_PNMTX0);
+
+    SetupLightingChannels();
+
+    GX_Begin(GX_TRIANGLES, GX_VTXFMT0, numVertices);
+
+    const Vertex* vert = nullptr;
+
+    for (uint32_t i = 0; i < numVertices; i++)
+    {
+        vert = &vertices[i];
+        GX_Position3f32(vert->mPosition.x, vert->mPosition.y, vert->mPosition.z);
+        GX_Normal3f32(vert->mNormal.x, vert->mNormal.y, vert->mNormal.z);
+        GX_TexCoord2f32(vert->mTexcoord0.x, vert->mTexcoord0.y);
+        GX_TexCoord2f32(vert->mTexcoord1.x, vert->mTexcoord1.y);
+    }
+
+    GX_End();
+
+    if (material->GetVertexColorMode() == VertexColorMode::TextureBlend)
+    {
+        // Reset swap tables used for texture blending.
+        GX_SetTevSwapMode(0, GX_TEV_SWAP0, GX_TEV_SWAP0);
+        GX_SetTevSwapMode(1, GX_TEV_SWAP0, GX_TEV_SWAP0);
+        GX_SetTevSwapMode(2, GX_TEV_SWAP0, GX_TEV_SWAP0);
+    }
 }
 
 // ParticleComp

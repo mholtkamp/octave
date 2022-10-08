@@ -53,6 +53,8 @@ public:
 
     int32_t GetNumVisibleCharacters() const;
 
+    const Vertex* GetVertices() const;
+
 protected:
 
     static bool HandlePropChange(Datum* datum, const void* newValue);
