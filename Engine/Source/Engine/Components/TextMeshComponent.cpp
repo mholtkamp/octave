@@ -226,7 +226,16 @@ float TextMeshComponent::GetVerticalJustification() const
 
 Bounds TextMeshComponent::GetLocalBounds() const
 {
-    return mBounds;
+    Bounds retBounds = mBounds;
+
+    if (IsBillboard())
+    {
+        float horiJust = glm::clamp(mHorizontalJustification, 0.0f, 1.0f);
+        float boundsScale = 1.0f + (fabs(horiJust - 0.5f) * 4);
+        retBounds.mRadius *= boundsScale;
+    }
+
+    return retBounds;
 }
 
 void TextMeshComponent::MarkVerticesDirty()
