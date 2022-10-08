@@ -212,6 +212,26 @@ int Text_Lua::GetVerticalJustification(lua_State* L)
     return 1;
 }
 
+int Text_Lua::EnableWordWrap(lua_State* L)
+{
+    Text* text = CHECK_TEXT(L, 1);
+    bool enable = CHECK_BOOLEAN(L, 2);
+
+    text->EnableWordWrap(enable);
+
+    return 0;
+}
+
+int Text_Lua::IsWordWrapEnabled(lua_State* L)
+{
+    Text* text = CHECK_TEXT(L, 1);
+
+    bool ret = text->IsWordWrapEnabled();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 void Text_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -285,6 +305,12 @@ void Text_Lua::Bind()
 
     lua_pushcfunction(L, GetVerticalJustification);
     lua_setfield(L, mtIndex, "GetVerticalJustification");
+
+    lua_pushcfunction(L, EnableWordWrap);
+    lua_setfield(L, mtIndex, "EnableWordWrap");
+
+    lua_pushcfunction(L, IsWordWrapEnabled);
+    lua_setfield(L, mtIndex, "IsWordWrapEnabled");
 
     lua_pop(L, 1);
     assert(lua_gettop(L) == 0);

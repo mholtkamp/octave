@@ -37,6 +37,8 @@ struct Text_Lua
     static int GetHorizontalJustification(lua_State* L);
     static int SetVerticalJustification(lua_State* L);
     static int GetVerticalJustification(lua_State* L);
+    static int EnableWordWrap(lua_State* L);
+    static int IsWordWrapEnabled(lua_State* L);
 
     static void Bind();
 };
