@@ -172,6 +172,11 @@ void AssetsPanel::ActionListHandler(Button* button)
     {
         assetsPanel->LoadLevel(sActionContextAssetStub);
     }
+    else if (buttonText == "Set Startup Level")
+    {
+        GetEditorState()->mStartupLevelName = sActionContextAssetStub->mName;
+        WriteEditorSave();
+    }
     else if (buttonText == "Import Asset")
     {
         ActionManager::Get()->ImportAsset();
@@ -518,6 +523,7 @@ void AssetsPanel::HandleInput()
                     sActionContextAssetStub->mType == Level::GetStaticType())
                 {
                     actions.push_back("Load Level");
+                    actions.push_back("Set Startup Level");
                 }
             }
 

@@ -368,6 +368,11 @@ void LoadProject(const std::string& path, bool discoverAssets)
     extern void UpdateLuaPath();
     UpdateLuaPath();
 #endif
+
+#if EDITOR
+    ReadEditorSave();
+    LoadStartupLevel();
+#endif
 }
 
 void EnableConsole(bool enable)

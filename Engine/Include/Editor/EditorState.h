@@ -56,11 +56,15 @@ struct EditorState
     LevelRef mCachedPieLevel = nullptr;
     ComponentRef mInjectedCamera = nullptr;
     ComponentRef mEjectedCamera = nullptr;
+    std::string mStartupLevelName;
 };
 
 void InitializeEditorState();
 void DestroyEditorState();
 EditorState* GetEditorState();
+
+void ReadEditorSave();
+void WriteEditorSave();
 
 void SetSelectedComponent(Component* newComponent);
 void SetSelectedActor(Actor* newActor);
@@ -75,6 +79,8 @@ void BeginPlayInEditor();
 void EndPlayInEditor();
 void EjectPlayInEditor();
 void InjectPlayInEditor();
+
+void LoadStartupLevel();
 
 Component* GetSelectedComponent();
 Actor* GetSelectedActor();
