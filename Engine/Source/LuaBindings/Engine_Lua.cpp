@@ -63,6 +63,14 @@ int Engine_Lua::Break(lua_State* L)
     return 0;
 }
 
+int Engine_Lua::IsPlayingInEditor(lua_State* L)
+{
+    bool ret = ::IsPlayingInEditor();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 void Engine_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -87,6 +95,9 @@ void Engine_Lua::Bind()
 
     lua_pushcfunction(L, Engine_Lua::Break);
     lua_setfield(L, tableIdx, "Break");
+
+    lua_pushcfunction(L, Engine_Lua::IsPlayingInEditor);
+    lua_setfield(L, tableIdx, "IsPlayingInEditor");
 
     lua_setglobal(L, "Engine");
 

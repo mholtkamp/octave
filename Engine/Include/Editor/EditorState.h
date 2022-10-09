@@ -1,5 +1,7 @@
 #pragma once
 
+#if EDITOR
+
 #include <string>
 #include <glm/glm.hpp>
 
@@ -91,3 +93,5 @@ ControlMode GetControlMode();
 glm::vec3 GetTransformLockVector(TransformLock lock);
 void SetTransformLock(TransformLock lock);
 ActionList* GetActionList();
+
+#endif
