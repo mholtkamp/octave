@@ -191,6 +191,10 @@ void InputManager::UpdateHotkeys()
         {
             ActionManager::Get()->Undo();
         }
+        else if (altDown && IsKeyJustDown(KEY_R))
+        {
+            ReloadAllScripts();
+        }
     }
 }
 

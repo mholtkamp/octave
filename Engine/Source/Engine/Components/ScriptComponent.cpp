@@ -1134,7 +1134,7 @@ void ScriptComponent::StopScript()
     DestroyScriptInstance();
 }
 
-bool ScriptComponent::LoadScriptFile(const std::string& fileName)
+bool ScriptComponent::LoadScriptFile(const std::string& fileName, const std::string& className)
 {
     bool successful = false;
 
@@ -1146,7 +1146,7 @@ bool ScriptComponent::LoadScriptFile(const std::string& fileName)
     {
         // Assign the __index metamethod to itself, so that tables with the class metatable
         // will have access to its methods/properties.
-        lua_getglobal(L, mClassName.c_str());
+        lua_getglobal(L, className.c_str());
         assert(lua_istable(L, -1));
 
         lua_pushvalue(L, -1);
@@ -1154,12 +1154,12 @@ bool ScriptComponent::LoadScriptFile(const std::string& fileName)
 
         lua_pop(L, 1);
 
-        sLoadedLuaFiles.insert(mClassName);
+        sLoadedLuaFiles.insert(className);
         successful = true;
     }
+#endif
 
     return successful;
-#endif
 }
 
 bool ScriptComponent::ReloadScriptFile(const std::string& fileName, bool restartScript)
@@ -1182,7 +1182,7 @@ bool ScriptComponent::ReloadScriptFile(const std::string& fileName, bool restart
         }
     }
 
-    bool success = LoadScriptFile(fileName);
+    bool success = LoadScriptFile(fileName, className);
 
     if (success && restartScript)
     {
@@ -1190,6 +1190,26 @@ bool ScriptComponent::ReloadScriptFile(const std::string& fileName, bool restart
     }
 
     return success;
+}
+
+void ScriptComponent::ReloadAllScriptFiles()
+{
+    std::vector<std::string> fileNames;
+
+    for (const std::string& fileName : sLoadedLuaFiles)
+    {
+        fileNames.push_back(fileName);
+    }
+
+    sLoadedLuaFiles.clear();
+
+    for (uint32_t i = 0; i < fileNames.size(); ++i)
+    {
+        std::string className = GetClassNameFromFileName(fileNames[i]);
+        LoadScriptFile(fileNames[i], className);
+    }
+
+    // This doesn't re-gather the NetFuncs for this script file.
 }
 
 bool ScriptComponent::ShouldHandleEvents() const
@@ -1736,7 +1756,7 @@ void ScriptComponent::CreateScriptInstance()
 
         if (sLoadedLuaFiles.find(mClassName) == sLoadedLuaFiles.end())
         {
-            classLoaded = LoadScriptFile(mFileName);
+            classLoaded = LoadScriptFile(mFileName, mClassName);
         }
         else
         {

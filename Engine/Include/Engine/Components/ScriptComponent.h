@@ -49,7 +49,6 @@ public:
     void RestartScript();
     void StopScript();
 
-    bool LoadScriptFile(const std::string& fileName);
     bool ReloadScriptFile(const std::string& fileName, bool restartScript = true);
 
     bool ShouldHandleEvents() const;
@@ -100,6 +99,9 @@ public:
     static void SetEmbeddedScripts(EmbeddedFile* embeddedScripts, uint32_t numEmbeddedScripts);
     static EmbeddedFile* FindEmbeddedScript(const std::string& className);
     static bool RunScript(const char* fileName, Datum* ret = nullptr);
+
+    static bool LoadScriptFile(const std::string& fileName, const std::string& className);
+    static void ReloadAllScriptFiles();
 
 protected:
 

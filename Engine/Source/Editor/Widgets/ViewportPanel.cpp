@@ -58,6 +58,7 @@ void ViewportPanel::HandleFilePressed(Button* button)
         actions.push_back("Package Project");
         actions.push_back("Resave All Levels");
         actions.push_back("Resave All Assets");
+        actions.push_back("Reload All Scripts");
         actions.push_back("Import Scene");
         actionList->SetActions(actions, HandleFilePressed);
         hideActionList = false;
@@ -86,6 +87,10 @@ void ViewportPanel::HandleFilePressed(Button* button)
     else if (buttonText == "Resave All Assets")
     {
         am->ResaveAllAssets();
+    }
+    else if (buttonText == "Reload All Scripts")
+    {
+        ReloadAllScripts();
     }
     else if (buttonText == "Import Scene")
     {
@@ -423,19 +428,19 @@ void ViewportPanel::HandleDefaultControls()
         if (GetSelectedComponent() != nullptr &&
             GetSelectedComponent()->IsTransformComponent())
         {
-            if (!controlDown && IsKeyJustDown(KEY_G))
+            if (!controlDown && !altDown && IsKeyJustDown(KEY_G))
             {
                 SetControlMode(ControlMode::Translate);
                 SavePreTransforms();
             }
 
-            if (!controlDown && IsKeyJustDown(KEY_R))
+            if (!controlDown && !altDown && IsKeyJustDown(KEY_R))
             {
                 SetControlMode(ControlMode::Rotate);
                 SavePreTransforms();
             }
 
-            if (!controlDown && IsKeyJustDown(KEY_S))
+            if (!controlDown && !altDown && IsKeyJustDown(KEY_S))
             {
                 SetControlMode(ControlMode::Scale);
                 SavePreTransforms();
