@@ -17,6 +17,9 @@
 
 static EditorState sEditorState;
 
+constexpr const char* kEditorSaveFile = "Editor.sav";
+constexpr int32_t kEditorSaveVersion = 1;
+
 void InitializeEditorState()
 {
     sEditorState.mTextEntry = new TextEntry();
@@ -31,6 +34,35 @@ void DestroyEditorState()
 EditorState* GetEditorState()
 {
     return &sEditorState;
+}
+
+void ReadEditorSave()
+{
+    if (SYS_DoesSaveExist(kEditorSaveFile))
+    {
+        Stream stream;
+        SYS_ReadSave(kEditorSaveFile, stream);
+
+        int32_t version = stream.ReadInt32();
+
+        if (version == kEditorSaveVersion)
+        {
+            stream.ReadString(sEditorState.mStartupLevelName);
+        }
+        else
+        {
+            SYS_DeleteSave(kEditorSaveFile);
+        }
+    }
+}
+
+void WriteEditorSave()
+{
+    Stream stream;
+    stream.WriteInt32(kEditorSaveVersion);
+    stream.WriteString(sEditorState.mStartupLevelName);
+
+    SYS_WriteSave(kEditorSaveFile, stream);
 }
 
 void SetSelectedComponent(Component* newComponent)
@@ -286,6 +318,19 @@ void InjectPlayInEditor()
 
         ShowRootCanvas(false);
         sEditorState.mEjected = false;
+    }
+}
+
+void LoadStartupLevel()
+{
+    if (sEditorState.mStartupLevelName != "")
+    {
+        Level* level = LoadAsset<Level>(sEditorState.mStartupLevelName);
+
+        if (level != nullptr)
+        {
+            ActionManager::Get()->OpenLevel(level);
+        }
     }
 }
 
