@@ -14,6 +14,7 @@
 #include "Profiler.h"
 #include "Maths.h"
 #include "ScriptAutoReg.h"
+#include "EditorState.h"
 #include "Components/ScriptComponent.h"
 
 #include "System/System.h"
@@ -391,6 +392,15 @@ void ResizeWindow(uint32_t width, uint32_t height)
     }
 
     Renderer::Get()->DirtyAllWidgets();
+}
+
+bool IsPlayingInEditor()
+{
+#if EDITOR
+    return GetEditorState()->mPlayInEditor;
+#else
+    return false;
+#endif
 }
 
 #if LUA_ENABLED
