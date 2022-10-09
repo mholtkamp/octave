@@ -309,6 +309,11 @@ glm::vec3 TransformComponent::GetRotationEuler() const
 {
     glm::vec3 eulerAngles = glm::eulerAngles(mRotationQuat) * RADIANS_TO_DEGREES;
 
+    if (eulerAngles.x > 180.0f)
+    {
+        eulerAngles.x -= 360.0f;
+    }
+
     if (eulerAngles.x > 90.0f)
     {
         eulerAngles.x -= 180.f;
