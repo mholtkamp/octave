@@ -1882,6 +1882,20 @@ bool ScriptComponent::LuaFuncCall(int numArgs, int numResults)
 void ScriptComponent::CallTick(float deltaTime)
 {
 #if LUA_ENABLED
+
+#if EDITOR
+    if (mTableName != "")
+    {
+        if (IsPlayingInEditor())
+        {
+            CallFunction("Tick", deltaTime);
+        }
+        else
+        {
+            CallFunction("EditorTick", deltaTime);
+        }
+    }
+#else
     if (mTableName != "" && mTickEnabled)
     {
         lua_State* L = GetLua();
@@ -1909,7 +1923,10 @@ void ScriptComponent::CallTick(float deltaTime)
 
         lua_pop(L, 1);
     }
-#endif
+#endif // EDITOR
+
+#endif // LUA_ENABLED
+
 }
 
 bool ScriptComponent::CheckIfFunctionExists(const char* funcName)
