@@ -42,6 +42,7 @@ ActionList::ActionList()
     AddChild(mArrowBot);
 
     mList = new VerticalList();
+    mList->SetDisplayCount(10);
     AddChild(mList);
 }
 

@@ -403,6 +403,44 @@ bool IsPlayingInEditor()
 #endif
 }
 
+void ReloadAllScripts()
+{
+#if LUA_ENABLED
+    std::vector<ScriptComponent*> scriptComps;
+    const std::vector<Actor*>& actors = GetWorld()->GetActors();
+
+    for (uint32_t i = 0; i < actors.size(); ++i)
+    {
+        for (uint32_t c = 0; c < actors[i]->GetNumComponents(); ++c)
+        {
+            Component* comp = actors[i]->GetComponent(c);
+            if (comp->Is(ScriptComponent::ClassRuntimeId()))
+            {
+                scriptComps.push_back(comp->As<ScriptComponent>());
+            }
+        }
+    }
+
+    // Stop the script instances
+    for (uint32_t i = 0; i < scriptComps.size(); ++i)
+    {
+        scriptComps[i]->StopScript();
+    }
+
+    // Reload script files
+    ScriptComponent::ReloadAllScriptFiles();
+
+    // Start script instances again
+    for (uint32_t i = 0; i < scriptComps.size(); ++i)
+    {
+        scriptComps[i]->StartScript();
+    }
+
+    LogDebug("--Reloaded All Scripts--")
+
+#endif
+}
+
 #if LUA_ENABLED
 lua_State* GetLua()
 {
