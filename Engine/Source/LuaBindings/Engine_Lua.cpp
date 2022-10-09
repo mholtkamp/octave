@@ -71,6 +71,13 @@ int Engine_Lua::IsPlayingInEditor(lua_State* L)
     return 1;
 }
 
+int Engine_Lua::ReloadAllScripts(lua_State* L)
+{
+    ::ReloadAllScripts();
+
+    return 0;
+}
+
 void Engine_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -98,6 +105,9 @@ void Engine_Lua::Bind()
 
     lua_pushcfunction(L, Engine_Lua::IsPlayingInEditor);
     lua_setfield(L, tableIdx, "IsPlayingInEditor");
+
+    lua_pushcfunction(L, Engine_Lua::ReloadAllScripts);
+    lua_setfield(L, tableIdx, "ReloadAllScripts");
 
     lua_setglobal(L, "Engine");
 
