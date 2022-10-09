@@ -571,7 +571,8 @@ namespace detail
         T const y = static_cast<T>(2) * (q.x * q.y + q.w * q.z);
         T const x = q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z;
 
-        if (x == 0 && y == 0)
+        //if (x == 0 && y == 0)
+        if (all(epsilonEqual(tvec2<T, P>(x, y), tvec2<T, P>(0), epsilon<T>())))
             return static_cast<T>(0);
 
         return static_cast<T>(atan(y, x));
@@ -583,9 +584,11 @@ namespace detail
         T const y = static_cast<T>(2) * (q.y * q.z + q.w * q.x);
         T const x = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
 
-        if (x == 0 && y == 0)
+        //if (x == 0 && y == 0)
+        if (all(epsilonEqual(tvec2<T, P>(x, y),tvec2<T, P>(0), epsilon<T>())))
             return static_cast<T>(static_cast<T>(2) * atan(q.x, q.w));
 
+        epsilon<float>();
         return static_cast<T>(atan(y, x));
 	}
 
