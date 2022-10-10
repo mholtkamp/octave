@@ -185,6 +185,7 @@ void ViewportPanel::HandleWorldPressed(Button* button)
         actions.push_back("Spawn Actor");
         actions.push_back("Spawn Basic");
         actions.push_back("Toggle Transform Mode");
+        actions.push_back("Delete All Actors");
         actionList->SetActions(actions, HandleWorldPressed);
         hideActionList = false;
     }
@@ -201,6 +202,10 @@ void ViewportPanel::HandleWorldPressed(Button* button)
     else if (buttonText == "Toggle Transform Mode")
     {
         vp->ToggleTransformMode();
+    }
+    else if (buttonText == "Delete All Actors")
+    {
+        ActionManager::Get()->DeleteAllActors();
     }
 
     if (hideActionList)

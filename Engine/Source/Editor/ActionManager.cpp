@@ -1641,6 +1641,31 @@ void ActionManager::ClearWorld()
     ResetUndoRedo();
 }
 
+void ActionManager::DeleteAllActors()
+{
+    if (!IsPlayingInEditor())
+    {
+        SetSelectedComponent(nullptr);
+
+        const std::vector<Actor*>& worldActors = GetWorld()->GetActors();
+        std::vector<Actor*> deleteActors;
+
+        Actor* cameraActor = GetWorld()->GetActiveCamera() ? GetWorld()->GetActiveCamera()->GetOwner() : nullptr;
+
+        for (uint32_t i = 0; i < worldActors.size(); ++i)
+        {
+            if (cameraActor == nullptr ||
+                worldActors[i] != cameraActor)
+            {
+                deleteActors.push_back(worldActors[i]);
+            }
+        }
+
+        EXE_DeleteActors(deleteActors);
+    }
+
+}
+
 void ActionManager::RecaptureAndSaveAllLevels()
 {
     std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
