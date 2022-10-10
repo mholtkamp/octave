@@ -12,6 +12,7 @@
 #include "AssetManager.h"
 #include "ActionManager.h"
 #include "Asset.h"
+#include "InputDevices.h"
 
 static float sIndent1 = 5.0f;
 static float sIndent2 = 30.0f;
@@ -46,14 +47,27 @@ void HandleSelectorChange(Selector* selector)
 
 void HandleAssignAssetPressed(Button* button)
 {
-    // Check if there is a selected asset, if so, assign it to this property.
-    Asset* selectedAsset = GetSelectedAsset();
+    assert(button->GetParent());
+    AssetProp* propWidget = static_cast<AssetProp*>(button->GetParent());
 
-    if (selectedAsset != nullptr)
+    // Check if there is a selected asset, if so, assign it to this property.
+
+    if (IsControlDown())
     {
-        assert(button->GetParent());
-        AssetProp* propWidget = static_cast<AssetProp*>(button->GetParent());
-        propWidget->AssignAsset(selectedAsset);
+        Asset* propAsset = propWidget->GetProperty().GetAsset();
+        if (propAsset != nullptr)
+        {
+            SetSelectedAssetStub(AssetManager::Get()->GetAssetStub(propAsset->GetName()));
+        }
+    }
+    else 
+    {
+        Asset* selectedAsset = GetSelectedAsset();
+
+        if (selectedAsset != nullptr)
+        {
+            propWidget->AssignAsset(selectedAsset);
+        }
     }
 }
 
@@ -632,6 +646,7 @@ void AssetProp::Update()
     mTextField->SetTextString(asset ? mProperty.GetAsset(mIndex)->GetName() : "");
     mTextField->GetText()->SetColor(assetColor);
     mAssignAssetButton->GetText()->SetColor(assetColor);
+    mAssignAssetButton->SetTextString(IsControlDown() ? "  <" : "  >");
 }
 
 void AssetProp::Write()

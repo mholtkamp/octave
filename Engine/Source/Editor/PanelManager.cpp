@@ -124,7 +124,14 @@ void PanelManager::OnSelectedComponentChanged()
 
 void PanelManager::OnSelectedAssetChanged()
 {
+    AssetStub* selectedAssetStub = GetSelectedAssetStub();
 
+    if (mAssetsPanel != nullptr &&
+        selectedAssetStub != nullptr &&
+        mAssetsPanel->GetDirectory() != selectedAssetStub->mDirectory)
+    {
+        mAssetsPanel->SetDirectory(selectedAssetStub->mDirectory);
+    }
 }
 
 #endif
