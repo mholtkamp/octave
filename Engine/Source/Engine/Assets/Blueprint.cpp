@@ -35,8 +35,11 @@ void Blueprint::LoadStream(Stream& stream, Platform platform)
 
     for (uint32_t c = 0; c < numComps; ++c)
     {
+        stream.ReadString(mComponents[c].mName);
+        stream.ReadString(mComponents[c].mParentName);
         mComponents[c].mType = (TypeId)stream.ReadUint32();
-        mComponents[c].mParent = stream.ReadInt32();
+        mComponents[c].mDefault = stream.ReadBool();
+
         mComponents[c].mProperties.resize(stream.ReadUint32());
 
         for (uint32_t p = 0; p < mComponents[c].mProperties.size(); ++p)
@@ -45,7 +48,7 @@ void Blueprint::LoadStream(Stream& stream, Platform platform)
         }
     }
 
-    mRootComponentIndex = stream.ReadInt32();
+    stream.ReadString(mRootComponentName);
 }
 
 void Blueprint::SaveStream(Stream& stream, Platform platform)
@@ -64,8 +67,11 @@ void Blueprint::SaveStream(Stream& stream, Platform platform)
 
     for (uint32_t c = 0; c < mComponents.size(); ++c)
     {
+        stream.WriteString(mComponents[c].mName);
+        stream.WriteString(mComponents[c].mParentName);
         stream.WriteUint32((uint32_t)mComponents[c].mType);
-        stream.WriteInt32(mComponents[c].mParent);
+        stream.WriteBool(mComponents[c].mDefault);
+
         stream.WriteUint32((uint32_t)mComponents[c].mProperties.size());
 
         for (uint32_t p = 0; p < mComponents[c].mProperties.size(); ++p)
@@ -74,7 +80,7 @@ void Blueprint::SaveStream(Stream& stream, Platform platform)
         }
     }
 
-    stream.WriteInt32(mRootComponentIndex);
+    stream.WriteString(mRootComponentName);
 }
 
 void Blueprint::Create()
@@ -135,7 +141,9 @@ void Blueprint::Create(Actor* srcActor)
 
     for (uint32_t i = 0; i < comps.size(); ++i)
     {
+        mComponents[i].mName = comps[i]->GetName();
         mComponents[i].mType = comps[i]->GetType();
+        mComponents[i].mDefault = comps[i]->IsDefault();
 
         std::vector<Property> compProps;
         comps[i]->GatherProperties(compProps);
@@ -148,17 +156,30 @@ void Blueprint::Create(Actor* srcActor)
 
         if (comps[i]->IsTransformComponent())
         {
-            mComponents[i].mParent = static_cast<TransformComponent*>(comps[i])->FindParentComponentIndex();
+            TransformComponent* transComp = static_cast<TransformComponent*>(comps[i]);
+            if (transComp->GetParent() != nullptr)
+            {
+                mComponents[i].mParentName = transComp->GetParent()->GetName();
+            }
+            else
+            {
+                mComponents[i].mParentName = "";
+            }
         }
         else
         {
-            mComponents[i].mParent = -1;
+            mComponents[i].mParentName = "";
         }
+    }
 
-        if (comps[i]->GetOwner()->GetRootComponent() == comps[i])
-        {
-            mRootComponentIndex = (int32_t)i;
-        }
+    assert(srcActor->GetRootComponent());
+    if (srcActor->GetRootComponent())
+    {
+        mRootComponentName = srcActor->GetRootComponent()->GetName();
+    }
+    else
+    {
+        mRootComponentName = "";
     }
 
     srcActor->SetBlueprintSource(this);
@@ -170,57 +191,170 @@ Actor* Blueprint::Instantiate(World* world)
 
     if (mActorType != INVALID_TYPE_ID)
     {
+        // Spawn actor first, wait until end of function to add to network.
         retActor = world->SpawnActor(mActorType, false);
         retActor->SetBlueprintSource(this);
+
+        uint32_t numDefaultComps = retActor->GetNumComponents();
 
         std::vector<Property> dstProps;
         retActor->GatherProperties(dstProps);
 
         CopyPropertyValues(dstProps, mActorProps);
 
-        // Now we need to add components to the new actor. It is assumed that the native components
-        // created by an actor's class are the first components in the Actor::mComponent array.
-        // So add any extra components that aren't "native" to the actor's class type
-        uint32_t numNativeComps = (uint32_t)retActor->GetComponents().size();
-        for (uint32_t i = numNativeComps; i < mComponents.size(); ++i)
+        // Initialize native components
+        std::vector<bool> copiedComps;
+        std::vector<bool> copiedBpComps;
+        copiedComps.resize(numDefaultComps);
+        copiedBpComps.resize(mComponents.size());
+
+        for (uint32_t i = 0; i < retActor->GetNumComponents(); ++i)
         {
-            retActor->CreateComponent(mComponents[i].mType);
-        }
+            Component* defaultComp = retActor->GetComponent((int32_t)i);
+            int32_t bpCompIdx = -1;
+            BlueprintComp* bpComp = FindBlueprintComp(defaultComp->GetName(), true, &bpCompIdx);
 
-        // Now copy over all of the default components values saved in this Blueprint
-        const std::vector<Component*>& dstComps = retActor->GetComponents();
-        assert(mComponents.size() == dstComps.size());
-
-        uint32_t i = 0;
-        for (i = 0; i < dstComps.size(); ++i)
-        {
-            assert(mComponents[i].mType == dstComps[i]->GetType());
-            std::vector<Property> dstProps;
-            dstComps[i]->GatherProperties(dstProps);
-
-            CopyPropertyValues(dstProps, mComponents[i].mProperties);
-        }
-
-        // Setup transform hierarchy.
-        for (uint32_t i = 0; i < dstComps.size(); ++i)
-        {
-            if (dstComps[i]->IsTransformComponent() &&
-                mComponents[i].mParent != -1)
+            if (bpComp != nullptr)
             {
-                int32_t parentIndex = mComponents[i].mParent;
-                assert(dstComps[parentIndex]->IsTransformComponent());
+                dstProps.clear();
+                defaultComp->GatherProperties(dstProps);
 
-                TransformComponent* comp = static_cast<TransformComponent*>(dstComps[i]);
-                TransformComponent* parentComp = static_cast<TransformComponent*>(dstComps[parentIndex]);
+                CopyPropertyValues(dstProps, bpComp->mProperties);
 
-                comp->Attach(parentComp);
+                copiedComps[i] = true;
+                assert(bpCompIdx >= 0 && !copiedBpComps[bpCompIdx]);
+                copiedBpComps[bpCompIdx] = true;
+            }
+        }
+
+        // Try to fixup renamed default components and make sure to log a warning.
+        for (uint32_t i = 0; i < copiedComps.size(); ++i)
+        {
+            if (!copiedComps[i])
+            {
+                Component* comp = retActor->GetComponent(i);
+
+                for (uint32_t b = 0; b < copiedBpComps.size(); ++b)
+                {
+                    if (!copiedBpComps[b] &&
+                        mComponents[b].mDefault &&
+                        mComponents[b].mType == comp->GetType())
+                    {
+                        LogWarning("Linking BP Component '%s' to Default Component '%s'", mComponents[b].mName.c_str(), comp->GetName().c_str());
+
+                        // If the root component was renamed, we need record that.
+                        if (mRootComponentName == mComponents[b].mName)
+                        {
+                            mRootComponentName = comp->GetName();
+                        }
+
+                        mComponents[b].mName = comp->GetName();
+
+
+                        dstProps.clear();
+                        comp->GatherProperties(dstProps);
+
+                        CopyPropertyValues(dstProps, mComponents[b].mProperties);
+
+                        copiedComps[i] = true;
+                        copiedBpComps[b] = true;
+                    }
+                }
+            }
+        }
+
+#if EDITOR
+        // In the editor, remove any unused default BlueprintComps
+        uint32_t numTrimmedComps = 0;
+        for (int32_t i = int32_t(copiedBpComps.size()) - 1; i >= 0; --i)
+        {
+            if (!copiedBpComps[i] &&
+                mComponents[i].mDefault)
+            {
+                mComponents.erase(mComponents.begin() + i);
+                numTrimmedComps++;
+            }
+        }
+
+        if (numTrimmedComps > 0)
+        {
+            LogWarning("Trimmed %d unused default components saved on Blueprint: %s", numTrimmedComps, GetName().c_str());
+        }
+#endif
+
+        // Create and initialize non-default components
+        for (uint32_t i = 0; i < mComponents.size(); ++i)
+        {
+            if (!mComponents[i].mDefault)
+            {
+                Component* comp = retActor->CreateComponent(mComponents[i].mType);
+
+                dstProps.clear();
+                comp->GatherProperties(dstProps);
+
+                CopyPropertyValues(dstProps, mComponents[i].mProperties);
+            }
+        }
+
+        // Setup transform hierarchy for all non-default components.
+        const std::vector<Component*>& comps = retActor->GetComponents();
+
+        for (uint32_t i = 0; i < comps.size(); ++i)
+        {
+            if (comps[i]->IsTransformComponent() &&
+                !comps[i]->IsDefault())
+            {
+                BlueprintComp* bpComp = FindBlueprintComp(comps[i]->GetName(), false);
+                assert(bpComp);
+
+                if (bpComp->mParentName != "")
+                {
+                    Component* parentComp = retActor->GetComponent(bpComp->mParentName);
+                    assert(parentComp->IsTransformComponent());
+
+                    TransformComponent* transComp = static_cast<TransformComponent*>(comps[i]);
+                    TransformComponent* parentTransComp = static_cast<TransformComponent*>(parentComp);
+
+                    transComp->Attach(parentTransComp);
+                }
             }
         }
 
         // Establish the root component
-        assert(mRootComponentIndex >= 0);
-        assert(dstComps[mRootComponentIndex]->IsTransformComponent());
-        retActor->SetRootComponent((TransformComponent*)dstComps[mRootComponentIndex]);
+        TransformComponent* newRoot = nullptr;
+        if (mRootComponentName != "")
+        {
+            Component* comp = retActor->GetComponent(mRootComponentName);
+            if (comp->IsTransformComponent())
+            {
+                newRoot = static_cast<TransformComponent*>(comp);
+            }
+            else
+            {
+                LogWarning("Blueprint Root Component name is not a TransformComponent");
+            }
+        }
+
+        // No root was specified, so leave the root as is, if there is one.
+        newRoot = retActor->GetRootComponent();
+
+        if (newRoot == nullptr)
+        {
+            // Pick the first transform component as a last resort
+            for (uint32_t i = 0; i < retActor->GetNumComponents(); ++i)
+            {
+                Component* comp = retActor->GetComponent((int32_t)i);
+                if (comp->IsTransformComponent())
+                {
+                    newRoot = static_cast<TransformComponent*>(comp);
+                }
+            }
+        }
+
+        if (newRoot != retActor->GetRootComponent())
+        {
+            retActor->SetRootComponent(newRoot);
+        }
 
         // We had deferred the adding of the actor to the network.
         // Usually this happens on SpawnActor(), but we needed to load all of the saved properties
@@ -271,4 +405,31 @@ const Property* Blueprint::GetComponentProperty(int32_t index, const char* name)
 
     return ret;
 }
+
+BlueprintComp* Blueprint::FindBlueprintComp(const std::string& name, bool isDefault, int32_t* outIndex)
+{
+    BlueprintComp* bpComp = nullptr;
+    int32_t index = -1;
+
+    for (uint32_t i = 0; i < mComponents.size(); ++i)
+    {
+        if (mComponents[i].mDefault != isDefault)
+            continue;
+
+        if (mComponents[i].mName == name)
+        {
+            bpComp = &mComponents[i];
+            index = (int32_t)i;
+            break;
+        }
+    }
+
+    if (outIndex)
+    {
+        *outIndex = index;
+    }
+
+    return bpComp;
+}
+
 

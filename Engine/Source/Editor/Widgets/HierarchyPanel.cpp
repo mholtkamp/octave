@@ -65,6 +65,8 @@ void OnCreateCompButtonPressed(Button* button)
 
         ActionManager::Get()->EXE_AddComponent(newComp);
 
+        SetSelectedComponent(newComp);
+
         // Adding a new component should break the blueprint link.
         // For now, you cannot override blueprint instance components
         actor->SetBlueprintSource(nullptr);
@@ -141,9 +143,11 @@ void HierarchyPanel::DeleteComponent(Component* comp)
     {
         Actor* actor = comp->GetOwner();
         bool isRoot = false;
+        bool isDefault = false;
         bool hasChildren = false;
 
         isRoot = (comp == actor->GetRootComponent());
+        isDefault = comp->IsDefault();
 
         if (comp->IsTransformComponent())
         {
@@ -154,6 +158,10 @@ void HierarchyPanel::DeleteComponent(Component* comp)
         if (isRoot)
         {
             LogError("Cannot delete root component");
+        }
+        else if (isDefault)
+        {
+            LogError("Cannot delete default component (must be changed in code)");
         }
         else if (hasChildren)
         {
@@ -175,25 +183,39 @@ void HierarchyPanel::DeleteComponent(Component* comp)
 
 void HierarchyPanel::AttachSelectedComponent(Component* newParent)
 {
-    if (newParent != nullptr &&
-        newParent->IsTransformComponent() &&
-        GetSelectedComponent() != nullptr &&
-        GetSelectedComponent()->IsTransformComponent())
+    if (newParent == nullptr)
+        return;
+
+    if (!newParent->IsTransformComponent())
+        return;
+
+    Component* selComp = GetSelectedComponent();
+
+    if (selComp == nullptr)
+        return;
+
+    if (!selComp->IsTransformComponent())
+        return;
+
+    if (selComp->IsDefault())
     {
-        TransformComponent* child = (TransformComponent*)GetSelectedComponent();
-        TransformComponent* parent = (TransformComponent*)newParent;
-
-        if (child->GetParent() != parent)
-        {
-            ActionManager::Get()->EXE_AttachComponent(child, parent);
-
-            // Reparenting components should break the blueprint link.
-            // For now, you cannot override blueprint instance components
-            newParent->GetOwner()->SetBlueprintSource(nullptr);
-        }
-
-        PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+        LogError("Cannot re-parent default components. Please change attachment in code.");
+        return;
     }
+
+    TransformComponent* child = (TransformComponent*)GetSelectedComponent();
+    TransformComponent* parent = (TransformComponent*)newParent;
+
+    if (child->GetParent() != parent)
+    {
+        ActionManager::Get()->EXE_AttachComponent(child, parent);
+
+        // Reparenting components should break the blueprint link.
+        // For now, you cannot override blueprint instance components
+        newParent->GetOwner()->SetBlueprintSource(nullptr);
+    }
+
+    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
 HierarchyPanel::HierarchyPanel() :

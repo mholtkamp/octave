@@ -9,8 +9,11 @@ class Actor;
 
 struct BlueprintComp
 {
+    std::string mName;
+    std::string mParentName;
     TypeId mType = INVALID_TYPE_ID;
-    int32_t mParent = -1;
+    bool mDefault = false;
+
     std::vector<Property> mProperties;
 };
 
@@ -40,8 +43,10 @@ public:
 
 protected:
 
+    BlueprintComp* FindBlueprintComp(const std::string& name, bool isDefault, int32_t* outIndex = nullptr);
+
     TypeId mActorType = INVALID_TYPE_ID;
     std::vector<Property> mActorProps;
     std::vector<BlueprintComp> mComponents;
-    int32_t mRootComponentIndex = -1;
+    std::string mRootComponentName;
 };
