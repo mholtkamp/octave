@@ -53,6 +53,9 @@ public:
     void SetTransient(bool transient);
     virtual bool IsTransient() const;
 
+    void SetDefault(bool isDefault);
+    bool IsDefault() const;
+
     World* GetWorld();
 
     virtual const char* GetTypeName() const;
@@ -71,4 +74,5 @@ protected:
     bool mActive;
     bool mVisible;
     bool mTransient;
+    bool mDefault;
 };

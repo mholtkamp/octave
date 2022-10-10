@@ -24,7 +24,8 @@ Component::Component() :
     mOwner(nullptr),
     mActive(true),
     mVisible(true),
-    mTransient(false)
+    mTransient(false),
+    mDefault(false)
 {
     mName = "Component";
 }
@@ -156,6 +157,8 @@ Actor* Component::GetOwner()
 
 void Component::SetName(const std::string& newName)
 {
+    // Default components shouldn't have their name changed.
+    assert(!mDefault);
     mName = newName;
 }
 
@@ -197,6 +200,16 @@ void Component::SetTransient(bool transient)
 bool Component::IsTransient() const
 {
     return mTransient;
+}
+
+void Component::SetDefault(bool isDefault)
+{
+    mDefault = isDefault;
+}
+
+bool Component::IsDefault() const
+{
+    return mDefault;
 }
 
 World* Component::GetWorld()

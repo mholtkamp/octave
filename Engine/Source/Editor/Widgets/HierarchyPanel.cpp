@@ -19,6 +19,29 @@ const float HierarchyPanel::sHierarchyPanelHeight = 240;
 
 static ComponentRef sActionComponent;
 
+static void EnsureUniqueComponentName(Component* comp)
+{
+    Actor* actor = comp->GetOwner();
+    std::string baseName = comp->GetName();
+    uint32_t number = 1;
+
+    for (int32_t i = 0; i < (int32_t)actor->GetNumComponents(); ++i)
+    {
+        if (actor->GetComponent(i) != comp &&
+            actor->GetComponent(i)->GetName() == comp->GetName())
+        {
+            number++;
+            char numStr[32] = {};
+            _itoa_s(number, numStr, 32, 10);
+
+            comp->SetName(baseName + " " + numStr);
+
+            // Restart the check
+            i = -1;
+        }
+    }
+}
+
 void OnCreateCompButtonPressed(Button* button)
 {
     const std::string& className = button->GetTextString();
@@ -29,6 +52,8 @@ void OnCreateCompButtonPressed(Button* button)
     if (actor != nullptr)
     {
         Component* newComp = actor->CreateComponent(className.c_str());
+
+        EnsureUniqueComponentName(newComp);
 
         if (newComp->IsTransformComponent())
         {
