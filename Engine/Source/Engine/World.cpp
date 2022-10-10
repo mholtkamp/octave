@@ -954,6 +954,15 @@ Actor* World::SpawnActor(TypeId actorType, bool addNetwork)
         retActor->SetWorld(this);
         retActor->Create();
 
+        for (uint32_t i = 0; i < retActor->GetNumComponents(); ++i)
+        {
+            retActor->GetComponent(i)->SetDefault(true);
+        }
+
+#if _DEBUG && (PLATFORM_WINDOWS || PLATFORM_LINUX)
+        assert(retActor->DoComponentsHaveUniqueNames());
+#endif
+
         if (addNetwork)
         {
             AddNetActor(retActor, INVALID_NET_ID);

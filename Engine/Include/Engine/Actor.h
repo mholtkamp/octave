@@ -105,6 +105,14 @@ public:
         return (CompClass*) CreateComponent(CompClass::GetStaticType());
     }
 
+    template<class CompClass>
+    CompClass* CreateComponent(const char* name)
+    {
+        CompClass* ret = (CompClass*)CreateComponent(CompClass::GetStaticType());
+        ret->SetName(name);
+        return ret;
+    }
+
     const std::string& GetName() const;
     void SetName(const std::string& name);
 
@@ -186,6 +194,8 @@ public:
     void AddScriptEventHandler(ScriptComponent* scriptComp);
     void RemoveScriptEventHandler(ScriptComponent* scriptComp);
     uint32_t GetNumScriptComponents() const;
+
+    bool DoComponentsHaveUniqueNames() const;
 
     Blueprint* GetBlueprintSource() const;
     void SetBlueprintSource(Blueprint* bp);

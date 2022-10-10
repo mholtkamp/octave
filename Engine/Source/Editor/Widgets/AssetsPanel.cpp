@@ -634,6 +634,18 @@ void AssetsPanel::SaveLevel(AssetStub* levelStub)
 
 void AssetsPanel::SaveBlueprint(AssetStub* bpStub, Actor* srcActor)
 {
+    if (srcActor == nullptr)
+    {
+        LogError("Invalid actor.");
+        return;
+    }
+
+    if (!srcActor->DoComponentsHaveUniqueNames())
+    {
+        LogError("Failed to save Blueprint: Components must have unique names.");
+        return;
+    }
+
     if (bpStub == nullptr)
     {
         bpStub = EditorAddUniqueAsset("BP_Blueprint", mCurrentDir, Blueprint::GetStaticType(), true);

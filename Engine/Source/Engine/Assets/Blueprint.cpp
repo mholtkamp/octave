@@ -113,53 +113,55 @@ void Blueprint::Create(Actor* srcActor)
     mActorProps.clear();
     mComponents.clear();
 
-    if (srcActor != nullptr)
+    if (srcActor == nullptr)
+        return;
+
+    assert(srcActor->DoComponentsHaveUniqueNames());
+
+    mActorType = srcActor->GetType();
+
+    std::vector<Property> actorProps;
+    srcActor->GatherProperties(actorProps);
+
+    mActorProps.resize(actorProps.size());
+    for (uint32_t i = 0; i < actorProps.size(); ++i)
     {
-        mActorType = srcActor->GetType();
-
-        std::vector<Property> actorProps;
-        srcActor->GatherProperties(actorProps);
-
-        mActorProps.resize(actorProps.size());
-        for (uint32_t i = 0; i < actorProps.size(); ++i)
-        {
-            mActorProps[i].DeepCopy(actorProps[i], true);
-        }
-
-        const std::vector<Component*>& comps = srcActor->GetComponents();
-
-        mComponents.resize(comps.size());
-
-        for (uint32_t i = 0; i < comps.size(); ++i)
-        {
-            mComponents[i].mType = comps[i]->GetType();
-
-            std::vector<Property> compProps;
-            comps[i]->GatherProperties(compProps);
-
-            mComponents[i].mProperties.resize(compProps.size());
-            for (uint32_t p = 0; p < compProps.size(); ++p)
-            {
-                mComponents[i].mProperties[p].DeepCopy(compProps[p], true);
-            }
-
-            if (comps[i]->IsTransformComponent())
-            {
-                mComponents[i].mParent = static_cast<TransformComponent*>(comps[i])->FindParentComponentIndex();
-            }
-            else
-            {
-                mComponents[i].mParent = -1;
-            }
-
-            if (comps[i]->GetOwner()->GetRootComponent() == comps[i])
-            {
-                mRootComponentIndex = (int32_t)i;
-            }
-        }
-
-        srcActor->SetBlueprintSource(this);
+        mActorProps[i].DeepCopy(actorProps[i], true);
     }
+
+    const std::vector<Component*>& comps = srcActor->GetComponents();
+
+    mComponents.resize(comps.size());
+
+    for (uint32_t i = 0; i < comps.size(); ++i)
+    {
+        mComponents[i].mType = comps[i]->GetType();
+
+        std::vector<Property> compProps;
+        comps[i]->GatherProperties(compProps);
+
+        mComponents[i].mProperties.resize(compProps.size());
+        for (uint32_t p = 0; p < compProps.size(); ++p)
+        {
+            mComponents[i].mProperties[p].DeepCopy(compProps[p], true);
+        }
+
+        if (comps[i]->IsTransformComponent())
+        {
+            mComponents[i].mParent = static_cast<TransformComponent*>(comps[i])->FindParentComponentIndex();
+        }
+        else
+        {
+            mComponents[i].mParent = -1;
+        }
+
+        if (comps[i]->GetOwner()->GetRootComponent() == comps[i])
+        {
+            mRootComponentIndex = (int32_t)i;
+        }
+    }
+
+    srcActor->SetBlueprintSource(this);
 }
 
 Actor* Blueprint::Instantiate(World* world)

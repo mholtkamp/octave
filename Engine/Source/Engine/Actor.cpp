@@ -1149,6 +1149,27 @@ uint32_t Actor::GetNumScriptComponents() const
     return uint32_t(mNumScriptComps);
 }
 
+bool Actor::DoComponentsHaveUniqueNames() const
+{
+    bool unique = true;
+    std::unordered_set<std::string> names;
+
+    for (uint32_t i = 0; i < mComponents.size(); ++i)
+    {
+        if (names.find(mComponents[i]->GetName()) != names.end())
+        {
+            unique = false;
+            break;
+        }
+        else
+        {
+            names.insert(mComponents[i]->GetName());
+        }
+    }
+
+    return unique;
+}
+
 Blueprint* Actor::GetBlueprintSource() const
 {
     return mBlueprintSource.Get<Blueprint>();
