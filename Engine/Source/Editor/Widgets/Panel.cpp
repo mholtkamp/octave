@@ -135,6 +135,11 @@ int32_t Panel::GetScroll() const
     return mScroll;
 }
 
+void Panel::SetScroll(int32_t scroll)
+{
+    mScroll = glm::clamp(scroll, mMinScroll, mMaxScroll);
+}
+
 void Panel::SetMinScroll(int32_t minScroll)
 {
     mMinScroll = minScroll;

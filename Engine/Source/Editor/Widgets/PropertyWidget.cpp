@@ -1,6 +1,7 @@
 #if EDITOR
 
 #include "Widgets/PropertyWidget.h"
+#include "Widgets/AssetsPanel.h"
 #include "Widgets/Text.h"
 #include "Widgets/TextField.h"
 #include "Widgets/Selector.h"
@@ -11,8 +12,10 @@
 #include "EditorState.h"
 #include "AssetManager.h"
 #include "ActionManager.h"
+#include "PanelManager.h"
 #include "Asset.h"
 #include "InputDevices.h"
+
 
 static float sIndent1 = 5.0f;
 static float sIndent2 = 30.0f;
@@ -57,7 +60,7 @@ void HandleAssignAssetPressed(Button* button)
         Asset* propAsset = propWidget->GetProperty().GetAsset();
         if (propAsset != nullptr)
         {
-            SetSelectedAssetStub(AssetManager::Get()->GetAssetStub(propAsset->GetName()));
+            PanelManager::Get()->GetAssetsPanel()->BrowseToAsset(propAsset->GetName());
         }
     }
     else 
