@@ -23,6 +23,8 @@ public:
     void SetDirectory(AssetDir* dir);
     AssetDir* GetDirectory();
 
+    void BrowseToAsset(const std::string& name);
+
     void OnProjectDirectorySet();
 
     void CreateMaterial();

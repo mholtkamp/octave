@@ -24,6 +24,7 @@ public:
     const bool IsMouseInsidePanel() const;
 
     int32_t GetScroll() const;
+    void SetScroll(int32_t scroll);
     void SetMinScroll(int32_t minScroll);
     void SetMaxScroll(int32_t maxScroll);
 

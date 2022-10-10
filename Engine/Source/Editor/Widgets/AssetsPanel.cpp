@@ -559,6 +559,33 @@ AssetDir* AssetsPanel::GetDirectory()
     return mCurrentDir;
 }
 
+void AssetsPanel::BrowseToAsset(const std::string& name)
+{
+    AssetStub* stub = AssetManager::Get()->GetAssetStub(name);
+
+    if (stub != nullptr)
+    {
+        SetDirectory(stub->mDirectory);
+        SetSelectedAssetStub(stub);
+
+        const std::vector<AssetDir*>& dirs = mCurrentDir->mChildDirs;
+        const std::vector<AssetStub*>& assets = mCurrentDir->mAssetStubs;
+        const int32_t parentDirCount = (mCurrentDir->mParentDir != nullptr) ? 1 : 0;
+        const int32_t numDirs = int32_t(dirs.size());
+        const int32_t numAssets = int32_t(assets.size());
+        SetMaxScroll(int32_t(parentDirCount + numDirs + numAssets) - 1);
+
+        for (uint32_t i = 0; i < assets.size(); ++i)
+        {
+            if (assets[i] == stub)
+            {
+                SetScroll(i + parentDirCount + numDirs);
+                break;
+            }
+        }
+    }
+}
+
 void AssetsPanel::OnProjectDirectorySet()
 {
     // Set the current asset directory to the root directory.
