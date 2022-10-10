@@ -97,6 +97,7 @@ public:
     void ShowBuildDataPrompt();
     void BuildData(Platform platform, bool embedded);
     void ClearWorld();
+    void DeleteAllActors();
     void RecaptureAndSaveAllLevels();
     void ResaveAllAssets();
     void DeleteAsset(AssetStub* stub);
