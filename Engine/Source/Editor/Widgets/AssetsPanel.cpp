@@ -257,6 +257,7 @@ void OnAssetButtonPressed(Button* button)
         if (dir != nullptr)
         {
             assetButton->GetPanel()->SetDirectory(dir);
+            SetSelectedAssetStub(nullptr);
         }
         else if (selectedAssetStub != stub)
         {
@@ -551,7 +552,6 @@ void AssetsPanel::HandleInput()
 void AssetsPanel::SetDirectory(AssetDir* dir)
 {
     mCurrentDir = dir;
-    SetSelectedAssetStub(nullptr);
 }
 
 AssetDir* AssetsPanel::GetDirectory()
@@ -563,6 +563,7 @@ void AssetsPanel::OnProjectDirectorySet()
 {
     // Set the current asset directory to the root directory.
     SetDirectory(AssetManager::Get()->FindProjectDirectory());
+    SetSelectedAssetStub(nullptr);
 }
 
 void AssetsPanel::CreateMaterial()
