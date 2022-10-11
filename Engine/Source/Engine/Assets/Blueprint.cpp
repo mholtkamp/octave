@@ -315,36 +315,12 @@ Actor* Blueprint::Instantiate(World* world)
             }
         }
 
-        // Setup transform hierarchy for all non-default components.
-        const std::vector<Component*>& comps = retActor->GetComponents();
-
-        for (uint32_t i = 0; i < comps.size(); ++i)
-        {
-            if (comps[i]->IsTransformComponent() &&
-                !comps[i]->IsDefault())
-            {
-                BlueprintComp* bpComp = FindBlueprintComp(comps[i]->GetName(), false);
-                assert(bpComp);
-
-                if (bpComp->mParentName != "")
-                {
-                    Component* parentComp = retActor->GetComponent(bpComp->mParentName);
-                    assert(parentComp->IsTransformComponent());
-
-                    TransformComponent* transComp = static_cast<TransformComponent*>(comps[i]);
-                    TransformComponent* parentTransComp = static_cast<TransformComponent*>(parentComp);
-
-                    transComp->Attach(parentTransComp);
-                }
-            }
-        }
-
         // Establish the root component
         TransformComponent* newRoot = nullptr;
         if (mRootComponentName != "")
         {
             Component* comp = retActor->GetComponent(mRootComponentName);
-            if (comp->IsTransformComponent())
+            if (comp && comp->IsTransformComponent())
             {
                 newRoot = static_cast<TransformComponent*>(comp);
             }
@@ -370,9 +346,44 @@ Actor* Blueprint::Instantiate(World* world)
             }
         }
 
-        if (newRoot != retActor->GetRootComponent())
+        // Actor needs a root component?
+        assert(newRoot != nullptr);
+        if (newRoot != nullptr)
         {
-            retActor->SetRootComponent(newRoot);
+            if (newRoot != retActor->GetRootComponent())
+            {
+                retActor->SetRootComponent(newRoot);
+            }
+
+            mRootComponentName = newRoot->GetName();
+        }
+
+        // Setup transform hierarchy for all non-default components.
+        const std::vector<Component*>& comps = retActor->GetComponents();
+
+        for (uint32_t i = 0; i < comps.size(); ++i)
+        {
+            if (comps[i]->IsTransformComponent() &&
+                !comps[i]->IsDefault())
+            {
+                BlueprintComp* bpComp = FindBlueprintComp(comps[i]->GetName(), false);
+                assert(bpComp);
+
+                if (bpComp->mParentName != "")
+                {
+                    Component* parentComp = retActor->GetComponent(bpComp->mParentName);
+
+                    if (parentComp == nullptr || !parentComp->IsTransformComponent())
+                    {
+                        parentComp = newRoot;
+                    }
+
+                    TransformComponent* transComp = static_cast<TransformComponent*>(comps[i]);
+                    TransformComponent* parentTransComp = static_cast<TransformComponent*>(parentComp);
+
+                    transComp->Attach(parentTransComp);
+                }
+            }
         }
 
         // We had deferred the adding of the actor to the network.
