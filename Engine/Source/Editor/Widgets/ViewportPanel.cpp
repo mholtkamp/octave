@@ -451,12 +451,26 @@ void ViewportPanel::HandleDefaultControls()
             {
                 if (selectActor != nullptr)
                 {
-                    AddSelectedActor(selectActor, false);
+                    if (IsActorSelected(selectActor))
+                    {
+                        RemoveSelectedActor(selectActor);
+                    }
+                    else
+                    {
+                        AddSelectedActor(selectActor, false);
+                    }
                 }
             }
             else
             {
-                SetSelectedActor(selectActor);
+                if (GetSelectedActor() != selectActor)
+                {
+                    SetSelectedActor(selectActor);
+                }
+                else
+                {
+                    SetSelectedActor(nullptr);
+                }
             }
         }
 

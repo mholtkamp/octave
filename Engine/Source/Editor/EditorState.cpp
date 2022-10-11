@@ -141,6 +141,19 @@ void AddSelectedActor(Actor* actor, bool addAllChildren)
     }
 }
 
+void RemoveSelectedActor(Actor* actor)
+{
+    std::vector<Component*>& comps = sEditorState.mSelectedComponents;
+    for (int32_t i = int32_t(comps.size()) - 1; i >= 0; --i)
+    {
+        if (comps[i]->GetOwner() == actor)
+        {
+            comps.erase(comps.begin() + i);
+            --i;
+        }
+    }
+}
+
 void SetSelectedAssetStub(AssetStub* newStub)
 {
     if (sEditorState.mSelectedAssetStub != newStub)
