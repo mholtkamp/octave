@@ -260,14 +260,19 @@ bool Update()
 
     gameDeltaTime *= GetTimeDilation();
 
-    if (IsPaused())
-    {
-        gameDeltaTime = 0.0f;
-    }
+    bool doFrameStep = sEngineState.mFrameStep;
 
-    if (IsPlayingInEditor() && IsPlayInEditorPaused())
+    if (!doFrameStep)
     {
-        gameDeltaTime = 0.0f;
+        if (IsPaused())
+        {
+            gameDeltaTime = 0.0f;
+        }
+
+        if (IsPlayingInEditor() && IsPlayInEditorPaused())
+        {
+            gameDeltaTime = 0.0f;
+        }
     }
 
     sEngineState.mRealDeltaTime = realDeltaTime;
@@ -284,6 +289,11 @@ bool Update()
     END_CPU_STAT("Frame");
 
     GetProfiler()->EndFrame();
+
+    if (doFrameStep)
+    {
+        sEngineState.mFrameStep = false;
+    }
 
     return !sEngineState.mQuit;
 }
@@ -424,7 +434,7 @@ bool IsPlayingInEditor()
 bool IsGameTickEnabled()
 {
 #if EDITOR
-    return (IsPlayingInEditor() && !GetEditorState()->mPaused);
+    return (IsPlayingInEditor() && (!GetEditorState()->mPaused || GetEngineState()->mFrameStep));
 #else
     return true;
 #endif
@@ -476,6 +486,11 @@ void SetPaused(bool paused)
 bool IsPaused()
 {
     return sEngineState.mPaused;
+}
+
+void FrameStep()
+{
+    sEngineState.mFrameStep = true;
 }
 
 void SetTimeDilation(float timeDilation)

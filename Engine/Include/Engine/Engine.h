@@ -40,6 +40,7 @@ void ReloadAllScripts();
 
 void SetPaused(bool paused);
 bool IsPaused();
+void FrameStep();
 
 void SetTimeDilation(float timeDilation);
 float GetTimeDilation();

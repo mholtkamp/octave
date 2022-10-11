@@ -218,6 +218,7 @@ struct EngineState
     float mRealDeltaTime = 0.0f;
     float mTimeDilation = 1.0f;
     bool mPaused = false;
+    bool mFrameStep = false;
 
 #if LUA_ENABLED
     lua_State* mLua = nullptr;

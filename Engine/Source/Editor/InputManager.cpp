@@ -129,6 +129,10 @@ void InputManager::UpdateHotkeys()
                 EjectPlayInEditor();
             }
         }
+        else if (IsKeyJustDown(KEY_F9))
+        {
+            FrameStep();
+        }
     }
     else if (Renderer::Get()->GetModalWidget() == nullptr)
     {
