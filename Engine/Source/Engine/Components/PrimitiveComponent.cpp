@@ -184,7 +184,9 @@ void PrimitiveComponent::Tick(float deltaTime)
 {
     TransformComponent::Tick(deltaTime);
 
-    if (mPhysicsEnabled)
+    bool gameTickEnabled = IsGameTickEnabled();
+
+    if (gameTickEnabled && mPhysicsEnabled)
     {
         if (mTransformDirty)
         {
