@@ -1693,6 +1693,33 @@ void ActionManager::RecaptureAndSaveAllLevels()
     ClearWorld();
 }
 
+void ActionManager::RecaptureAndSaveAllBlueprints()
+{
+    std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
+
+    // This will load all assets! 
+    for (auto& pair : assetMap)
+    {
+        if (pair.second->mType == Blueprint::GetStaticType())
+        {
+            Asset* asset = AssetManager::Get()->LoadAsset(*pair.second);
+            Blueprint* bp = static_cast<Blueprint*>(asset);
+            assert(bp != nullptr);
+
+            Actor* spawnedBp = bp->Instantiate(GetWorld());
+
+            if (spawnedBp != nullptr)
+            {
+                spawnedBp->UpdateComponentTransforms();
+                bp->Create(spawnedBp);
+                AssetManager::Get()->SaveAsset(*pair.second);
+            }
+
+            GetWorld()->DestroyActor(spawnedBp);
+        }
+    }
+}
+
 void ActionManager::ResaveAllAssets()
 {
     std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
