@@ -265,10 +265,12 @@ bool Update()
         gameDeltaTime = 0.0f;
     }
 
+#if EDITOR
     if (IsPlayingInEditor() && IsPlayInEditorPaused())
     {
         gameDeltaTime = 0.0f;
     }
+#endif
 
     bool doFrameStep = sEngineState.mFrameStep;
     if (gameDeltaTime == 0.0f && doFrameStep)
