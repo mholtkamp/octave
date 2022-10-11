@@ -628,3 +628,31 @@ bool RunScript(const char* fileName, Datum* ret)
 {
     return ScriptComponent::RunScript(fileName, ret);
 }
+
+glm::vec3 EnforceEulerRange(const glm::vec3& eulerAngles)
+{
+    glm::vec3 retAngles = eulerAngles;
+    if (retAngles.x > 180.0f)
+    {
+        retAngles.x -= 360.0f;
+    }
+    else if (retAngles.x < -180.0f)
+    {
+        retAngles.x += 360.0f;
+    }
+
+    if (retAngles.x > 90.0f)
+    {
+        retAngles.x -= 180.f;
+        retAngles.y = 180.f - retAngles.y;
+        retAngles.z += 180.f;
+    }
+    else if (retAngles.x < -90.0f)
+    {
+        retAngles.x += 180.f;
+        retAngles.y = 180.f - retAngles.y;
+        retAngles.z += 180.f;
+    }
+
+    return retAngles;
+}

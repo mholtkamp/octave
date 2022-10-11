@@ -322,23 +322,7 @@ glm::vec3 TransformComponent::GetRotationEuler() const
 {
     glm::vec3 eulerAngles = glm::eulerAngles(mRotationQuat) * RADIANS_TO_DEGREES;
 
-    if (eulerAngles.x > 180.0f)
-    {
-        eulerAngles.x -= 360.0f;
-    }
-
-    if (eulerAngles.x > 90.0f)
-    {
-        eulerAngles.x -= 180.f;
-        eulerAngles.y = 180.f - eulerAngles.y;
-        eulerAngles.z += 180.f;
-    }
-    else if (eulerAngles.x < -90.0f)
-    {
-        eulerAngles.x += 180.f;
-        eulerAngles.y = 180.f - eulerAngles.y;
-        eulerAngles.z += 180.f;
-    }
+    eulerAngles = EnforceEulerRange(eulerAngles);
 
     return eulerAngles;
 }
@@ -432,18 +416,7 @@ glm::vec3 TransformComponent::GetAbsoluteRotationEuler()
 
     glm::vec3 eulerAngles = glm::eulerAngles(Maths::ExtractRotation(mTransform)) * RADIANS_TO_DEGREES;
 
-    if (eulerAngles.x > 90.0f)
-    {
-        eulerAngles.x -= 180.f;
-        eulerAngles.y = 180.f - eulerAngles.y;
-        eulerAngles.z += 180.f;
-    }
-    else if (eulerAngles.x < -90.0f)
-    {
-        eulerAngles.x += 180.f;
-        eulerAngles.y = 180.f - eulerAngles.y;
-        eulerAngles.z += 180.f;
-    }
+    eulerAngles = EnforceEulerRange(eulerAngles);
 
     return eulerAngles;
 }

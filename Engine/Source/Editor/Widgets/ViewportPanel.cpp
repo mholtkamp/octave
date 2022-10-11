@@ -39,8 +39,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 static float sDefaultFocalDistance = 10.0f;
-
-
+constexpr float sMaxCameraPitch = 89.99f;
 
 void ViewportPanel::HandleFilePressed(Button* button)
 {
@@ -748,7 +747,7 @@ void ViewportPanel::HandlePilotControls()
     cameraRotation.x -= deltaRot.y * mFirstPersonRotationSpeed * deltaTime;
 
     // Clamp x rotation to -90/90
-    cameraRotation.x = glm::clamp(cameraRotation.x, -89.99f, 89.99f);
+    cameraRotation.x = glm::clamp(cameraRotation.x, -sMaxCameraPitch, sMaxCameraPitch);
 
     camera->SetPosition(cameraPosition);
     camera->SetRotation(cameraRotation);
@@ -973,22 +972,27 @@ void ViewportPanel::HandleOrbitControls()
 {
     CameraComponent* camera = GetWorld()->GetActiveCamera();
     glm::vec2 delta = HandleLockedCursor();
-    glm::vec3 cameraPos = camera->GetAbsolutePosition();
-    glm::vec3 cameraRot = camera->GetAbsoluteRotationEuler();
+    glm::vec3 cameraPos = camera->GetPosition();
+    glm::vec3 cameraRot = camera->GetRotationEuler();
     glm::vec3 focus = cameraPos + camera->GetForwardVector() * mFocalDistance;
 
     // Transform the camera into focus space
     float deltaYaw = -delta.x * 0.005f;
     float deltaPitch = -delta.y * 0.005f;
 
+    if (cameraRot.x > sMaxCameraPitch)
+        cameraRot.x = sMaxCameraPitch;
+    else if (cameraRot.x < -sMaxCameraPitch)
+        cameraRot.x = -sMaxCameraPitch;
+
     // clamp pitch changes
     if (cameraRot.x > 0.0f)
     {
-        deltaPitch = glm::min(deltaPitch, (89.9f - cameraRot.x) * DEGREES_TO_RADIANS);
+        deltaPitch = glm::min(deltaPitch, (sMaxCameraPitch - cameraRot.x) * DEGREES_TO_RADIANS);
     }
     else
     {
-        deltaPitch = glm::max(deltaPitch, (-89.9f - cameraRot.x) * DEGREES_TO_RADIANS);
+        deltaPitch = glm::max(deltaPitch, (-sMaxCameraPitch - cameraRot.x) * DEGREES_TO_RADIANS);
     }
 
     glm::mat4 matYaw = glm::rotate(glm::mat4(1), deltaYaw, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -998,9 +1002,8 @@ void ViewportPanel::HandleOrbitControls()
     glm::vec3 newPos = focus + glm::vec3(matPitch * matYaw * rotPoint);
     glm::vec3 newRot = cameraRot + glm::vec3(deltaPitch, deltaYaw, 0.0f) * RADIANS_TO_DEGREES;
 
-    
-    camera->SetAbsolutePosition(newPos);
-    camera->SetAbsoluteRotation(newRot);
+    camera->SetPosition(newPos);
+    camera->SetRotation(newRot);
 
     if (!IsMouseButtonDown(MOUSE_MIDDLE))
     {
