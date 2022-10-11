@@ -27,9 +27,17 @@ int Engine_Lua::GetTime(lua_State* L)
     return 1;
 }
 
-int Engine_Lua::GetDeltaTime(lua_State* L)
+int Engine_Lua::GetGameDeltaTime(lua_State* L)
 {
-    float ret = GetAppClock()->DeltaTime();
+    float ret = GetEngineState()->mGameDeltaTime;
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
+int Engine_Lua::GetRealDeltaTime(lua_State* L)
+{
+    float ret = GetEngineState()->mRealDeltaTime;
 
     lua_pushnumber(L, ret);
     return 1;
@@ -78,6 +86,44 @@ int Engine_Lua::ReloadAllScripts(lua_State* L)
     return 0;
 }
 
+int Engine_Lua::SetPaused(lua_State* L)
+{
+    bool value = CHECK_BOOLEAN(L, 1);
+
+    ::SetPaused(value);
+    return 0;
+}
+
+int Engine_Lua::IsPaused(lua_State* L)
+{
+    bool ret = ::IsPaused();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Engine_Lua::FrameStep(lua_State* L)
+{
+    ::FrameStep();
+    return 0;
+}
+
+int Engine_Lua::SetTimeDilation(lua_State* L)
+{
+    float value = CHECK_NUMBER(L, 1);
+
+    ::SetTimeDilation(value);
+    return 0;
+}
+
+int Engine_Lua::GetTimeDilation(lua_State* L)
+{
+    float ret = ::GetTimeDilation();
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
 void Engine_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -91,8 +137,13 @@ void Engine_Lua::Bind()
     lua_pushcfunction(L, Engine_Lua::GetTime);
     lua_setfield(L, tableIdx, "GetTime");
 
-    lua_pushcfunction(L, Engine_Lua::GetDeltaTime);
+    lua_pushcfunction(L, Engine_Lua::GetGameDeltaTime);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, tableIdx, "GetGameDeltaTime");
     lua_setfield(L, tableIdx, "GetDeltaTime");
+
+    lua_pushcfunction(L, Engine_Lua::GetRealDeltaTime);
+    lua_setfield(L, tableIdx, "GetRealDeltaTime");
 
     lua_pushcfunction(L, Engine_Lua::GetPlatform);
     lua_setfield(L, tableIdx, "GetPlatform");
@@ -108,6 +159,21 @@ void Engine_Lua::Bind()
 
     lua_pushcfunction(L, Engine_Lua::ReloadAllScripts);
     lua_setfield(L, tableIdx, "ReloadAllScripts");
+
+    lua_pushcfunction(L, Engine_Lua::SetPaused);
+    lua_setfield(L, tableIdx, "SetPaused");
+
+    lua_pushcfunction(L, Engine_Lua::IsPaused);
+    lua_setfield(L, tableIdx, "IsPaused");
+
+    lua_pushcfunction(L, Engine_Lua::FrameStep);
+    lua_setfield(L, tableIdx, "FrameStep");
+
+    lua_pushcfunction(L, Engine_Lua::SetTimeDilation);
+    lua_setfield(L, tableIdx, "SetTimeDilation");
+
+    lua_pushcfunction(L, Engine_Lua::GetTimeDilation);
+    lua_setfield(L, tableIdx, "GetTimeDilation");
 
     lua_setglobal(L, "Engine");
 
