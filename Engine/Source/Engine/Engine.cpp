@@ -260,19 +260,21 @@ bool Update()
 
     gameDeltaTime *= GetTimeDilation();
 
-    bool doFrameStep = sEngineState.mFrameStep;
-
-    if (!doFrameStep)
+    if (IsPaused())
     {
-        if (IsPaused())
-        {
-            gameDeltaTime = 0.0f;
-        }
+        gameDeltaTime = 0.0f;
+    }
 
-        if (IsPlayingInEditor() && IsPlayInEditorPaused())
-        {
-            gameDeltaTime = 0.0f;
-        }
+    if (IsPlayingInEditor() && IsPlayInEditorPaused())
+    {
+        gameDeltaTime = 0.0f;
+    }
+
+    bool doFrameStep = sEngineState.mFrameStep;
+    if (gameDeltaTime == 0.0f && doFrameStep)
+    {
+        // Force a 60 fps frame
+        gameDeltaTime = 0.016f;
     }
 
     sEngineState.mRealDeltaTime = realDeltaTime;
