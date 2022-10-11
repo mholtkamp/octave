@@ -142,8 +142,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return (MNC_CLOSE << 16);
     }
 
+    case WM_SETFOCUS:
+    {
+        engineState->mSystem.mWindowHasFocus = true;
+        return 0;
+    }
+
     case WM_KILLFOCUS:
     {
+        engineState->mSystem.mWindowHasFocus = false;
         INP_ClearAllKeys();
         INP_ClearAllMouseButtons();
         return 0;
@@ -725,6 +732,11 @@ int32_t SYS_GetPlatformTier()
 void SYS_SetWindowTitle(const char* title)
 {
     SetWindowText(GetEngineState()->mSystem.mWindow, title);
+}
+
+bool SYS_DoesWindowHaveFocus()
+{
+    return GetEngineState()->mSystem.mWindowHasFocus;
 }
 
 #endif

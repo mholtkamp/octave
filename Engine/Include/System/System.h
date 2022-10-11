@@ -57,6 +57,7 @@ void SYS_UnmountMemoryCard();
 void SYS_UpdateConsole();
 int32_t SYS_GetPlatformTier();
 void SYS_SetWindowTitle(const char* title);
+bool SYS_DoesWindowHaveFocus();
 
 struct ScopedLock
 {
