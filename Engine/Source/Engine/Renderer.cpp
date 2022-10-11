@@ -2,6 +2,7 @@
 #include "AssetManager.h"
 #include "Utilities.h"
 #include "Engine.h"
+#include "EditorState.h"
 #include "Profiler.h"
 #include "Constants.h"
 #include "Widgets/Widget.h"
@@ -953,11 +954,17 @@ void Renderer::RenderShadowCasters(World* world)
 void Renderer::RenderSelectedGeometry(World* world)
 {
 #if EDITOR
-    std::vector<Actor*> selectedActors = world->GetSelectedActors();
-
-    for (uint32_t i = 0; i < selectedActors.size(); ++i)
+    // Rendering selected geometry while playing looks bad,
+    // so just skip rendering selected unless we find a good use-case.
+    if (!GetEditorState()->mPlayInEditor ||
+        GetEditorState()->mEjected)
     {
-        selectedActors[i]->RenderSelected();
+        std::vector<Actor*> selectedActors = world->GetSelectedActors();
+
+        for (uint32_t i = 0; i < selectedActors.size(); ++i)
+        {
+            selectedActors[i]->RenderSelected();
+        }
     }
 #endif
 }
