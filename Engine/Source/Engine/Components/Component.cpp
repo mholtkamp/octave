@@ -157,8 +157,6 @@ Actor* Component::GetOwner()
 
 void Component::SetName(const std::string& newName)
 {
-    // Default components shouldn't have their name changed.
-    assert(!mDefault);
     mName = newName;
 }
 
