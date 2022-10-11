@@ -99,6 +99,7 @@ public:
     void ClearWorld();
     void DeleteAllActors();
     void RecaptureAndSaveAllLevels();
+    void RecaptureAndSaveAllBlueprints();
     void ResaveAllAssets();
     void DeleteAsset(AssetStub* stub);
     void DeleteAssetDir(AssetDir* dir);
