@@ -29,6 +29,7 @@ bool INP_IsMouseButtonDown(int32_t button);
 bool INP_IsMouseButtonJustDown(int32_t button);
 bool INP_IsMouseButtonJustUp(int32_t button);
 int32_t INP_GetScrollWheelDelta();
+void INP_ClearAllMouseButtons();
 
 void INP_SetTouch(int32_t touch);
 void INP_ClearTouch(int32_t touch);
