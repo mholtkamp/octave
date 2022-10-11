@@ -109,10 +109,14 @@ void InputManager::UpdateHotkeys()
 
     if (GetEditorState()->mPlayInEditor)
     {
-        if (IsKeyJustDown(KEY_ESCAPE) ||
-            (IsKeyJustDown(KEY_P) && altDown))
+        if (IsKeyJustDown(KEY_ESCAPE))
         {
             EndPlayInEditor();
+        }
+        else if (IsKeyJustDown(KEY_P) && altDown)
+        {
+            bool pause = !IsPlayInEditorPaused();
+            SetPlayInEditorPaused(pause);
         }
         else if (IsKeyJustDown(KEY_F8))
         {

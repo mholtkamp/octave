@@ -223,11 +223,20 @@ void ViewportPanel::HandlePlayPressed(Button* button)
 {
     if (GetEditorState()->mPlayInEditor)
     {
-        EndPlayInEditor();
+        bool pause = IsPlayInEditorPaused();
+        SetPlayInEditorPaused(!pause);
     }
     else
     {
         BeginPlayInEditor();
+    }
+}
+
+void ViewportPanel::HandleStopPressed(Button* button)
+{
+    if (GetEditorState()->mPlayInEditor)
+    {
+        EndPlayInEditor();
     }
 }
 
@@ -305,11 +314,18 @@ ViewportPanel::ViewportPanel() :
     AddChild(mWorldButton);
 
     mPlayButton = new Button();
-    mPlayButton->SetTextString("Play");
+    mPlayButton->SetTextString(" Play");
     mPlayButton->SetPressedHandler(HandlePlayPressed);
     mPlayButton->SetPosition(145.0f, 4.0f);
-    mPlayButton->SetDimensions(40.0f, 24.0f);
+    mPlayButton->SetDimensions(48.0f, 24.0f);
     AddChild(mPlayButton);
+
+    mStopButton = new Button();
+    mStopButton->SetTextString("Stop");
+    mStopButton->SetPressedHandler(HandleStopPressed);
+    mStopButton->SetPosition(198.0f, 4.0f);
+    mStopButton->SetDimensions(40.0f, 24.0f);
+    AddChild(mStopButton);
 
     mPieWarningText = new Text();
     mPieWarningText->SetText("PLAYING");
@@ -356,8 +372,17 @@ void ViewportPanel::Update()
     default: mHeaderText->SetText(""); break;
     }
 
-    mPlayButton->SetTextString(GetEditorState()->mPlayInEditor ? "Stop" : "Play");
-    mPieWarningText->SetVisible(GetEditorState()->mPlayInEditor);
+    bool isPie = GetEditorState()->mPlayInEditor;
+    bool isPaused = GetEditorState()->mPaused;
+
+    mPlayButton->SetTextString((isPaused || !isPie) ? " Play" : "Pause");
+    mStopButton->SetVisible(isPie);
+    mPieWarningText->SetVisible(isPie);
+    mPieWarningText->SetText(isPaused ? "PAUSED" : "PLAYING");
+    mPieWarningText->SetColor(isPaused ?
+        glm::vec4(0.5f, 0.6f, 1.0f, 0.7f) :
+        glm::vec4(1.0f, 0.8f, 0.7f, 0.5f));
+
 }
 
 void ViewportPanel::HandleInput()

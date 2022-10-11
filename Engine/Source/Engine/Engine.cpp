@@ -257,6 +257,19 @@ bool Update()
     // Limit delta time in World::Update(). Prevent crazy issues.
     float realDeltaTime = sClock.DeltaTime();
     float gameDeltaTime = glm::min(realDeltaTime, 0.33333f);
+
+    gameDeltaTime *= GetTimeDilation();
+
+    if (IsPaused())
+    {
+        gameDeltaTime = 0.0f;
+    }
+
+    if (IsPlayingInEditor() && IsPlayInEditorPaused())
+    {
+        gameDeltaTime = 0.0f;
+    }
+
     sEngineState.mRealDeltaTime = realDeltaTime;
     sEngineState.mGameDeltaTime = gameDeltaTime;
 
@@ -411,7 +424,7 @@ bool IsPlayingInEditor()
 bool IsGameTickEnabled()
 {
 #if EDITOR
-    return IsPlayingInEditor();
+    return (IsPlayingInEditor() && !GetEditorState()->mPaused);
 #else
     return true;
 #endif
@@ -453,6 +466,26 @@ void ReloadAllScripts()
     LogDebug("--Reloaded All Scripts--")
 
 #endif
+}
+
+void SetPaused(bool paused)
+{
+    sEngineState.mPaused = paused;
+}
+
+bool IsPaused()
+{
+    return sEngineState.mPaused;
+}
+
+void SetTimeDilation(float timeDilation)
+{
+    sEngineState.mTimeDilation = timeDilation;
+}
+
+float GetTimeDilation()
+{
+    return sEngineState.mTimeDilation;
 }
 
 #if LUA_ENABLED
