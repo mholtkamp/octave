@@ -219,6 +219,18 @@ int32_t INP_GetScrollWheelDelta()
     return GetEngineState()->mInput.mScrollWheelDelta;
 }
 
+void INP_ClearAllMouseButtons()
+{
+#if INPUT_MOUSE_SUPPORT
+    InputState& input = GetEngineState()->mInput;
+
+    for (uint32_t i = 0; i < INPUT_MAX_MOUSE_BUTTONS; i++)
+    {
+        input.mMouseButtons[i] = false;
+    }
+#endif
+}
+
 void INP_SetTouch(int32_t touch)
 {
     assert(touch >= 0 && touch < INPUT_MAX_TOUCHES);

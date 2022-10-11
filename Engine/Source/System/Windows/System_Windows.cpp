@@ -142,6 +142,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return (MNC_CLOSE << 16);
     }
 
+    case WM_KILLFOCUS:
+    {
+        INP_ClearAllKeys();
+        INP_ClearAllMouseButtons();
+        return 0;
+    }
+
     //case WM_PAINT:
     //    // The validation callback calls MessageBox which can generate paint
     //    // events - don't make more Vulkan calls if we got here from the
