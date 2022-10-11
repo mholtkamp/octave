@@ -118,10 +118,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_MOUSEMOVE:
     {
+        // This is causing issues when locking the cursor (in the Editor for instance)
+        // So as a workaround, we'll try using GetCursorPos() in INP_Update()
+#if 0
         int nX = LOWORD(lParam);
         int nY = HIWORD(lParam);
         INP_SetMousePosition(nX, nY);
-
+#endif
         return 0;
     }
 
