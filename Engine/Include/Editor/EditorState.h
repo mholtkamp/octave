@@ -72,6 +72,7 @@ void SetSelectedActor(Actor* newActor);
 void AddSelectedComponent(Component* component);
 void RemoveSelectedComponent(Component* component);
 void AddSelectedActor(Actor* actor, bool addAllChildren);
+void RemoveSelectedActor(Actor* actor);
 void SetSelectedAssetStub(AssetStub* newStub);
 void SetActiveLevel(Level* level);
 void SetControlMode(ControlMode newMode);
