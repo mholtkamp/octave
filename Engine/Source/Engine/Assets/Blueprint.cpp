@@ -242,14 +242,33 @@ Actor* Blueprint::Instantiate(World* world)
                     {
                         LogWarning("Linking BP Component '%s' to Default Component '%s'", mComponents[b].mName.c_str(), comp->GetName().c_str());
 
+                        std::string oldName = mComponents[b].mName;
+                        std::string newName = comp->GetName();
+                        mComponents[b].mName = newName;
+
                         // If the root component was renamed, we need record that.
                         if (mRootComponentName == mComponents[b].mName)
                         {
-                            mRootComponentName = comp->GetName();
+                            mRootComponentName = newName;
                         }
 
-                        mComponents[b].mName = comp->GetName();
-
+                        // Fix mParentNames for other components
+                        for (uint32_t c = 0; c < mComponents.size(); ++c)
+                        {
+                            if (mComponents[c].mParentName == oldName)
+                            {
+                                mComponents[c].mParentName = newName;
+                            }
+                        }
+                        // Fix this BlueprintComp's Name property
+                        for (uint32_t p = 0; p < mComponents[b].mProperties.size(); ++p)
+                        {
+                            if (mComponents[b].mProperties[p].mName == "Name")
+                            {
+                                mComponents[b].mProperties[p].SetString(newName);
+                                break;
+                            }
+                        }
 
                         dstProps.clear();
                         comp->GatherProperties(dstProps);
