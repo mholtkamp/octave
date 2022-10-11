@@ -239,10 +239,23 @@ void TransformComponent::UpdateTransform(bool updateChildren)
     {
         // Update transform
         mTransform = glm::mat4(1);
+
+        // Force uniform scale if the component has children.
+        // Non-uniform scale was causing problems for children components because shear was 
+        // getting introduced into the child transforms if the parent had any rotation.
+        // Relevant Github issues:
+        // https://github.com/BabylonJS/Babylon.js/issues/10579
+        // https://github.com/mrdoob/three.js/issues/3845
+        // https://github.com/armory3d/armory/issues/2211
+        glm::vec3 scale = mScale;
+        if (GetNumChildren() > 0)
+        {
+            scale = glm::vec3(mScale.x, mScale.x, mScale.x);
+        }
         
         mTransform = glm::translate(mTransform, mPosition);
         mTransform *= glm::toMat4(mRotationQuat);
-        mTransform = glm::scale(mTransform, mScale);
+        mTransform = glm::scale(mTransform, scale);
 
         if (mParent != nullptr)
         {
@@ -499,10 +512,20 @@ void TransformComponent::SetAbsoluteScale(glm::vec3 scale)
 {
     if (mParent != nullptr)
     {
+#if 0
+        // Old code that was causing some problems.
         glm::mat4 invParentTrans = glm::inverse(GetParentTransform());
         glm::vec4 scale4 = glm::vec4(scale, 0.0f);
         glm::vec4 relScale4 = invParentTrans * scale4;
         SetScale(glm::vec3(relScale4.x, relScale4.y, relScale4.z));
+#else
+        glm::vec3 parentScale = mParent->GetAbsoluteScale();
+        glm::vec3 relScale;
+        relScale.x = (parentScale.x != 0.0f) ? scale.x / parentScale.x : 0.0f;
+        relScale.y = (parentScale.y != 0.0f) ? scale.y / parentScale.y : 0.0f;
+        relScale.z = (parentScale.z != 0.0f) ? scale.z / parentScale.z : 0.0f;
+        SetScale(relScale);
+#endif
     }
     else
     {
