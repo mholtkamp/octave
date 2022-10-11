@@ -34,6 +34,8 @@ void ResizeWindow(uint32_t width, uint32_t height);
 
 bool IsPlayingInEditor();
 
+bool IsGameTickEnabled();
+
 void ReloadAllScripts();
 
 #if LUA_ENABLED

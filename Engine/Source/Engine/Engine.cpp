@@ -408,6 +408,15 @@ bool IsPlayingInEditor()
 #endif
 }
 
+bool IsGameTickEnabled()
+{
+#if EDITOR
+    return IsPlayingInEditor();
+#else
+    return true;
+#endif
+}
+
 void ReloadAllScripts()
 {
 #if LUA_ENABLED

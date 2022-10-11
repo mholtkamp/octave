@@ -755,6 +755,8 @@ void World::RemoveActor(Actor* actor)
 
 void World::Update(float deltaTime)
 {
+    bool gameTickEnabled = IsGameTickEnabled();
+
     // Load any queued levels.
     if (mQueuedLevels.size() > 0)
     {
@@ -773,11 +775,13 @@ void World::Update(float deltaTime)
         mQueuedLevels.clear();
     }
 
+    if (gameTickEnabled)
     {
         SCOPED_CPU_STAT("Physics");
         mDynamicsWorld->stepSimulation(deltaTime, 2);
     }
 
+    if (gameTickEnabled)
     {
         SCOPED_CPU_STAT("Collisions");
         mCollisionDispatcher->dispatchAllCollisionPairs(
@@ -869,17 +873,10 @@ void World::Update(float deltaTime)
     UpdateLines(deltaTime);
 
     {
-        bool isEditor = false;
-        bool isPlayInEditor = false;
-#if EDITOR
-        isEditor = true;
-        isPlayInEditor = GetEditorState()->mPlayInEditor;
-#endif
-
         SCOPED_CPU_STAT("Tick");
         for (int32_t i = 0; i < (int32_t)mActors.size(); ++i)
         {
-            if (!isEditor || isPlayInEditor)
+            if (gameTickEnabled)
             {
                 if (!mActors[i]->HasBegunPlay())
                 {
