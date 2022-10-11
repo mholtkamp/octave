@@ -34,6 +34,7 @@
 #include "Components/ParticleComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/TextMeshComponent.h"
+#include "System/System.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -1015,17 +1016,21 @@ glm::vec2 ViewportPanel::HandleLockedCursor()
 {
     // Find mouse delta
     glm::vec2 delta = glm::vec2(0.0f, 0.0f);
-    glm::ivec2 centerPoint;
-    glm::ivec2 curMousePos;
 
-    EditorGetWindowCenter(centerPoint.x, centerPoint.y);
+    if (SYS_DoesWindowHaveFocus())
+    {
+        glm::ivec2 centerPoint;
+        glm::ivec2 curMousePos;
 
-    INP_GetMousePosition(curMousePos.x, curMousePos.y);
+        EditorGetWindowCenter(centerPoint.x, centerPoint.y);
 
-    delta = curMousePos - centerPoint;
+        INP_GetMousePosition(curMousePos.x, curMousePos.y);
 
-    // Reset mouse to center of screen
-    EditorSetCursorPos(centerPoint.x, centerPoint.y);
+        delta = curMousePos - centerPoint;
+
+        // Reset mouse to center of screen
+        EditorSetCursorPos(centerPoint.x, centerPoint.y);
+    }
 
     return delta;
 }

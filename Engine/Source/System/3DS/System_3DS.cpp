@@ -414,4 +414,9 @@ void SYS_SetWindowTitle(const char* title)
 
 }
 
+bool SYS_DoesWindowHaveFocus()
+{
+    return true;
+}
+
 #endif
