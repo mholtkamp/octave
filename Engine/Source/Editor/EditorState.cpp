@@ -266,6 +266,7 @@ void EndPlayInEditor()
 
     sEditorState.mPlayInEditor = false;
     sEditorState.mEjected = false;
+    sEditorState.mPaused = false;
 
     // Restore cached editor level
     if (sEditorState.mCachedPieLevel.Get() != nullptr)
@@ -319,6 +320,16 @@ void InjectPlayInEditor()
         ShowRootCanvas(false);
         sEditorState.mEjected = false;
     }
+}
+
+void SetPlayInEditorPaused(bool paused)
+{
+    sEditorState.mPaused = paused;
+}
+
+bool IsPlayInEditorPaused()
+{
+    return sEditorState.mPaused;
 }
 
 void LoadStartupLevel()

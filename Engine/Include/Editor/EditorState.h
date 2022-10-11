@@ -53,6 +53,7 @@ struct EditorState
     bool mMouseNeedsRecenter = false;
     bool mPlayInEditor = false;
     bool mEjected = false;
+    bool mPaused = false;
     LevelRef mCachedPieLevel = nullptr;
     ComponentRef mInjectedCamera = nullptr;
     ComponentRef mEjectedCamera = nullptr;
@@ -79,6 +80,8 @@ void BeginPlayInEditor();
 void EndPlayInEditor();
 void EjectPlayInEditor();
 void InjectPlayInEditor();
+void SetPlayInEditorPaused(bool paused);
+bool IsPlayInEditorPaused();
 
 void LoadStartupLevel();
 

@@ -24,6 +24,7 @@ protected:
     static void HandleViewPressed(Button* button);
     static void HandleWorldPressed(Button* button);
     static void HandlePlayPressed(Button* button);
+    static void HandleStopPressed(Button* button);
 
     void HandleDefaultControls();
     void HandlePilotControls();
@@ -49,6 +50,7 @@ protected:
     Button* mViewButton = nullptr;
     Button* mWorldButton = nullptr;
     Button* mPlayButton = nullptr;
+    Button* mStopButton = nullptr;
 
     Text* mPieWarningText = nullptr;
 

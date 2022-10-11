@@ -38,6 +38,12 @@ bool IsGameTickEnabled();
 
 void ReloadAllScripts();
 
+void SetPaused(bool paused);
+bool IsPaused();
+
+void SetTimeDilation(float timeDilation);
+float GetTimeDilation();
+
 #if LUA_ENABLED
 lua_State* GetLua();
 #endif
