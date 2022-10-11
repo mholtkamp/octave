@@ -44,6 +44,8 @@ protected:
     glm::vec3 GetLockedRotationAxis() const;
     glm::vec3 GetLockedScaleDelta();
 
+    bool IsMouseOnAnyButton() const;
+
     static void ShowSpawnActorPrompt(bool basic);
 
     Button* mFileButton = nullptr;
@@ -56,6 +58,8 @@ protected:
 
     float mFirstPersonMoveSpeed;
     float mFirstPersonRotationSpeed;
+
+    std::vector<Button*> mButtons;
 
     // Transform Control vars
     int32_t mPrevMouseX;

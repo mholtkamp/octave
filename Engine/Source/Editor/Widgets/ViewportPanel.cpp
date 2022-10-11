@@ -298,6 +298,7 @@ ViewportPanel::ViewportPanel() :
     mFileButton->SetPosition(5.0f, 4.0f);
     mFileButton->SetDimensions(34.0f, 24.0f);
     AddChild(mFileButton);
+    mButtons.push_back(mFileButton);
 
     mViewButton = new Button();
     mViewButton->SetTextString("View");
@@ -305,6 +306,7 @@ ViewportPanel::ViewportPanel() :
     mViewButton->SetPosition(45.0f, 4.0f);
     mViewButton->SetDimensions(40.0f, 24.0f);
     AddChild(mViewButton);
+    mButtons.push_back(mViewButton);
 
     mWorldButton = new Button();
     mWorldButton->SetTextString("World");
@@ -312,6 +314,7 @@ ViewportPanel::ViewportPanel() :
     mWorldButton->SetPosition(90.0f, 4.0f);
     mWorldButton->SetDimensions(50.0f, 24.0f);
     AddChild(mWorldButton);
+    mButtons.push_back(mWorldButton);
 
     mPlayButton = new Button();
     mPlayButton->SetTextString(" Play");
@@ -319,6 +322,7 @@ ViewportPanel::ViewportPanel() :
     mPlayButton->SetPosition(145.0f, 4.0f);
     mPlayButton->SetDimensions(48.0f, 24.0f);
     AddChild(mPlayButton);
+    mButtons.push_back(mPlayButton);
 
     mStopButton = new Button();
     mStopButton->SetTextString("Stop");
@@ -326,6 +330,7 @@ ViewportPanel::ViewportPanel() :
     mStopButton->SetPosition(198.0f, 4.0f);
     mStopButton->SetDimensions(40.0f, 24.0f);
     AddChild(mStopButton);
+    mButtons.push_back(mStopButton);
 
     mPieWarningText = new Text();
     mPieWarningText->SetText("PLAYING");
@@ -438,9 +443,7 @@ void ViewportPanel::HandleDefaultControls()
         }
 
         if (IsMouseButtonJustDown(MOUSE_LEFT) &&
-            !mFileButton->ContainsMouse() &&
-            !mViewButton->ContainsMouse() &&
-            !mWorldButton->ContainsMouse())
+            !IsMouseOnAnyButton())
         {
             int32_t mouseX = 0;
             int32_t mouseY = 0;
@@ -1227,6 +1230,23 @@ glm::vec3 ViewportPanel::GetLockedScaleDelta()
     glm::vec3 retDelta = glm::vec3(1, 1, 1);
     retDelta *= GetTransformLockVector(GetEditorState()->mTransformLock);
     return retDelta;
+}
+
+bool ViewportPanel::IsMouseOnAnyButton() const
+{
+    bool ret = false;
+
+    for (uint32_t i = 0; i < mButtons.size(); ++i)
+    {
+        if (mButtons[i]->IsVisible() &&
+            mButtons[i]->ContainsMouse())
+        {
+            ret = true;
+            break;
+        }
+    }
+
+    return ret;
 }
 
 void ViewportPanel::ShowSpawnActorPrompt(bool basic)
