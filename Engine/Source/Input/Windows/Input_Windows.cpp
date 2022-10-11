@@ -57,6 +57,16 @@ void INP_Update()
             input.mGamepads[i].mConnected = false;
         }
     }
+
+    // Update mouse position
+    if (GetEngineState()->mSystem.mWindowHasFocus)
+    {
+        POINT point;
+        GetCursorPos(&point);
+        ScreenToClient(GetEngineState()->mSystem.mWindow, &point);
+
+        INP_SetMousePosition(point.x, point.y);
+    }
 }
 
 void INP_ShowCursor(bool show)
