@@ -1062,13 +1062,15 @@ glm::vec2 ViewportPanel::HandleLockedCursor()
     if (SYS_DoesWindowHaveFocus())
     {
         glm::ivec2 centerPoint;
-        glm::ivec2 curMousePos;
 
         EditorGetWindowCenter(centerPoint.x, centerPoint.y);
 
-        INP_GetMousePosition(curMousePos.x, curMousePos.y);
+        int32_t iDeltaX;
+        int32_t iDeltaY;
+        INP_GetMouseDelta(iDeltaX, iDeltaY);
 
-        delta = curMousePos - centerPoint;
+        delta.x = (float)iDeltaX;
+        delta.y = (float)iDeltaY;
 
         // Reset mouse to center of screen
         EditorSetCursorPos(centerPoint.x, centerPoint.y);

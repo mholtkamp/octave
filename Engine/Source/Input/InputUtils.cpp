@@ -19,6 +19,8 @@ void InputAdvanceFrame()
 #if INPUT_MOUSE_SUPPORT
     memcpy(input.mPrevMouseButtons, input.mMouseButtons, INPUT_MAX_MOUSE_BUTTONS * sizeof(bool));
     input.mScrollWheelDelta = 0;
+    input.mMouseDeltaX = 0;
+    input.mMouseDeltaY = 0;
 #endif
 
 #if INPUT_TOUCH_SUPPORT

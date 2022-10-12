@@ -77,7 +77,6 @@ struct SystemState
     HINSTANCE mConnection = nullptr;
     HWND mWindow = nullptr;
     POINT mMinSize = {};
-    glm::ivec2 mCursorSet = { -1, -1 };
     bool mWindowHasFocus = true;
 #elif PLATFORM_LINUX
     xcb_connection_t* mXcbConnection = nullptr;
