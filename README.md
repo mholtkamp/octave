@@ -16,14 +16,14 @@ A Simple 3D Game Engine for GameCube, Wii, 3DS, Windows, and Linux
 
 ## Linux Setup
 1. sudo apt-get install g++
-2. sudo apt-get install Make
+2. sudo apt-get install make
 3. sudo apt-get install libx11-dev
 4. sudo apt-get install libasound2-dev
 5. Install Vulkan SDK
-    wget -qO - http://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -
-    sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-focal.list http://packages.lunarg.com/vulkan/lunarg-vulkan-focal.list
-    sudo apt update
-    sudo apt install vulkan-sdk
+    - wget -qO - http://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -
+    - sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-focal.list http://packages.lunarg.com/vulkan/lunarg-vulkan-focal.list
+    - sudo apt update
+    - sudo apt install vulkan-sdk
 6. Install devkitPro Pacman for GameCube/Wii/3DS development (Optional) (https://devkitpro.org/wiki/devkitPro_pacman)
     wget https://apt.devkitpro.org/install-devkitpro-pacman
    chmod +x ./install-devkitpro-pacman
