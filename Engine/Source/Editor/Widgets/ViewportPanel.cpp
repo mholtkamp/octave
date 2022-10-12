@@ -285,7 +285,7 @@ void HandleSpawnBasicPressed(Button* button)
 
 ViewportPanel::ViewportPanel() :
     mFirstPersonMoveSpeed(10.0f),
-    mFirstPersonRotationSpeed(10.0f),
+    mFirstPersonRotationSpeed(0.07f),
     mFocalDistance(sDefaultFocalDistance)
 {
     SetName("Viewport");
@@ -786,8 +786,8 @@ void ViewportPanel::HandlePilotControls()
         cameraPosition.y -= (mFirstPersonMoveSpeed * deltaTime);
     }
 
-    cameraRotation.y -= deltaRot.x * mFirstPersonRotationSpeed * deltaTime;
-    cameraRotation.x -= deltaRot.y * mFirstPersonRotationSpeed * deltaTime;
+    cameraRotation.y -= deltaRot.x * mFirstPersonRotationSpeed;
+    cameraRotation.x -= deltaRot.y * mFirstPersonRotationSpeed;
 
     // Clamp x rotation to -90/90
     cameraRotation.x = glm::clamp(cameraRotation.x, -sMaxCameraPitch, sMaxCameraPitch);
