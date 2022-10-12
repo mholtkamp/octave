@@ -110,6 +110,18 @@ int Input_Lua::GetScrollWheelDelta(lua_State* L)
     return 1;
 }
 
+int Input_Lua::GetMouseDelta(lua_State* L)
+{
+    int32_t deltaX = 0;
+    int32_t deltaY = 0;
+
+    INP_GetMouseDelta(deltaX, deltaY);
+
+    lua_pushinteger(L, deltaX);
+    lua_pushboolean(L, deltaY);
+    return 2;
+}
+
 int Input_Lua::IsTouchDown(lua_State* L)
 {
     int index = CHECK_INTEGER(L, 1);
@@ -291,6 +303,25 @@ int Input_Lua::IsGamepadConnected(lua_State* L)
     return 1;
 }
 
+int Input_Lua::ShowCursor(lua_State* L)
+{
+    bool show = CHECK_BOOLEAN(L, 1);
+
+    INP_ShowCursor(show);
+
+    return 0;
+}
+
+int Input_Lua::SetCursorPosition(lua_State* L)
+{
+    int32_t x = CHECK_INTEGER(L, 1);
+    int32_t y = CHECK_INTEGER(L, 2);
+
+    INP_SetCursorPos(x, y);
+
+    return 0;
+}
+
 void Input_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -331,6 +362,9 @@ void Input_Lua::Bind()
 
     lua_pushcfunction(L, Input_Lua::GetScrollWheelDelta);
     lua_setfield(L, tableIdx, "GetScrollWheelDelta");
+
+    lua_pushcfunction(L, Input_Lua::GetMouseDelta);
+    lua_setfield(L, tableIdx, "GetMouseDelta");
 
     lua_pushcfunction(L, Input_Lua::IsTouchDown);
     lua_setfield(L, tableIdx, "IsTouchDown");
@@ -373,6 +407,12 @@ void Input_Lua::Bind()
 
     lua_pushcfunction(L, Input_Lua::IsGamepadConnected);
     lua_setfield(L, tableIdx, "IsGamepadConnected");
+
+    lua_pushcfunction(L, Input_Lua::ShowCursor);
+    lua_setfield(L, tableIdx, "ShowCursor");
+
+    lua_pushcfunction(L, Input_Lua::SetCursorPosition);
+    lua_setfield(L, tableIdx, "SetCursorPosition");
 
     lua_setglobal(L, INPUT_LUA_NAME);
     assert(lua_gettop(L) == 0);
