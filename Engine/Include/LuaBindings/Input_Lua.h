@@ -26,6 +26,7 @@ struct Input_Lua
     static int IsMouseButtonJustUp(lua_State* L);
     static int GetMousePosition(lua_State* L);
     static int GetScrollWheelDelta(lua_State* L);
+    static int GetMouseDelta(lua_State* L);
 
     static int IsTouchDown(lua_State* L);
     static int IsPointerJustUp(lua_State* L);
@@ -43,6 +44,9 @@ struct Input_Lua
     static int GetGamepadAxisValue(lua_State* L);
     static int GetGamepadType(lua_State* L);
     static int IsGamepadConnected(lua_State* L);
+
+    static int ShowCursor(lua_State* L);
+    static int SetCursorPosition(lua_State* L);
 
     static void Bind();
     static void BindKeyTable();
