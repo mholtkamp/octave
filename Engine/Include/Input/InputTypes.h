@@ -47,6 +47,8 @@ struct InputState
 
     bool mRepeatKeys[INPUT_MAX_KEYS] = { };
     int32_t mScrollWheelDelta = 0;
+    int32_t mMouseDeltaX = 0;
+    int32_t mMouseDeltaY = 0;
 
     int32_t mPointerX[INPUT_MAX_TOUCHES] = { 0 };
     int32_t mPointerY[INPUT_MAX_TOUCHES] = { 0 };

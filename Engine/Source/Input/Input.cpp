@@ -331,6 +331,12 @@ void INP_GetPointerPositionNormalized(float& pointerX, float& pointerY, int32_t 
         pointer);
 }
 
+void INP_GetMouseDelta(int32_t& deltaX, int32_t& deltaY)
+{
+    deltaX = GetEngineState()->mInput.mMouseDeltaX;
+    deltaY = GetEngineState()->mInput.mMouseDeltaY;
+}
+
 bool INP_IsGamepadButtonDown(int32_t gamepadButton, int32_t gamepadIndex)
 {
     InputState& input = GetEngineState()->mInput;

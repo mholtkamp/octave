@@ -4,10 +4,22 @@
 #include "Input/InputUtils.h"
 
 #include "Engine.h"
+#include "Log.h"
 
 void INP_Initialize()
 {
+    RAWINPUTDEVICE Rid;
 
+    // Mouse
+    Rid.usUsagePage = 1;
+    Rid.usUsage = 2;
+    Rid.dwFlags = 0;
+    Rid.hwndTarget = NULL;
+
+    if (!RegisterRawInputDevices(&Rid, 1, sizeof(RAWINPUTDEVICE)))
+    {
+        LogError("Failed to register RawInput device");
+    }
 }
 
 void INP_Shutdown()
@@ -57,16 +69,6 @@ void INP_Update()
             input.mGamepads[i].mConnected = false;
         }
     }
-
-    // Update mouse position
-    if (GetEngineState()->mSystem.mWindowHasFocus)
-    {
-        POINT point;
-        GetCursorPos(&point);
-        ScreenToClient(GetEngineState()->mSystem.mWindow, &point);
-
-        INP_SetMousePosition(point.x, point.y);
-    }
 }
 
 void INP_ShowCursor(bool show)
@@ -80,9 +82,8 @@ void INP_SetCursorPos(int32_t x, int32_t y)
 
     POINT screenPoint = { x, y };
     ClientToScreen(GetEngineState()->mSystem.mWindow, &screenPoint);
-    
-    // Delay the cursor reset until processing mouse events in SYS_Update().
-    GetEngineState()->mSystem.mCursorSet = { screenPoint.x, screenPoint.y };
+
+    SetCursorPos(screenPoint.x, screenPoint.y);
 }
 
 #endif

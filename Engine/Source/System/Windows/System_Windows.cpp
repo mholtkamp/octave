@@ -118,13 +118,48 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_MOUSEMOVE:
     {
-        // This is causing issues when locking the cursor (in the Editor for instance)
-        // So as a workaround, we'll try using GetCursorPos() in INP_Update()
-#if 0
         int nX = LOWORD(lParam);
         int nY = HIWORD(lParam);
         INP_SetMousePosition(nX, nY);
-#endif
+
+        return 0;
+    }
+
+    case WM_INPUT:
+    {
+        uint8_t buffer[128];
+
+        uint32_t bufferSize = 0;
+        GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &bufferSize, sizeof(RAWINPUTHEADER));
+
+        assert(bufferSize < 128);
+
+        GetRawInputData((HRAWINPUT)lParam, RID_INPUT, buffer, &bufferSize, sizeof(RAWINPUTHEADER));
+
+        RAWINPUT *raw = (RAWINPUT*)buffer;
+        if (raw->header.dwType == RIM_TYPEMOUSE)
+        {
+            int32_t x = raw->data.mouse.lLastX;
+            int32_t y = raw->data.mouse.lLastY;
+
+            if (raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE)
+            {
+                static int32_t prevX = x;
+                static int32_t prevY = y;
+
+                engineState->mInput.mMouseDeltaX += (x - prevX);
+                engineState->mInput.mMouseDeltaY += (y - prevY);
+
+                prevX = x;
+                prevY = y;
+            }
+            else
+            {
+                engineState->mInput.mMouseDeltaX += x;
+                engineState->mInput.mMouseDeltaY += y;
+            }
+        }
+
         return 0;
     }
 
@@ -262,22 +297,6 @@ void SYS_Update()
             DispatchMessage(&msg);
         }
     }
-
-    // This is kind of a hacky work-around, but when the editor code calls INP_SetCursorPos() to lock the
-    // cursor to the center of the screen, the updated mouse coordinates are sometimes received in the message update loop.
-    // This means that sometimes the delta mouse position is 0 during the editor update. And this looks and feels jittery and bad.
-    // This doesn't seem to be happening on Linux, but maybe we need to move this out of the windows code and use for all platforms.
-    glm::ivec2& cursorSet = GetEngineState()->mSystem.mCursorSet;
-
-    if (cursorSet.x >= 0 &&
-        cursorSet.y >= 0)
-    {
-        SetCursorPos(cursorSet.x,
-                     cursorSet.y);
-
-        cursorSet = { -1, -1 };
-    }
-    
 }
 
 // Files

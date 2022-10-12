@@ -45,6 +45,7 @@ void INP_GetTouchPosition(int32_t& touchX, int32_t& touchY, int32_t touch);
 void INP_GetTouchPositionNormalized(float& touchX, float& touchY, int32_t touch);
 void INP_GetPointerPosition(int32_t& pointerX, int32_t& pointerY, int32_t pointer = 0);
 void INP_GetPointerPositionNormalized(float& pointerX, float& pointerY, int32_t  pointer = 0);
+void INP_GetMouseDelta(int32_t& deltaX, int32_t& deltaY);
 
 bool INP_IsGamepadButtonDown(int32_t gamepadButton, int32_t gamepadIndex);
 bool INP_IsGamepadButtonJustDown(int32_t gamepadButton, int32_t gamepadIndex);
