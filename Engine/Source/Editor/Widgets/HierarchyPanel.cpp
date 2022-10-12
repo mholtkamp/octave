@@ -32,7 +32,7 @@ static void EnsureUniqueComponentName(Component* comp)
         {
             number++;
             char numStr[32] = {};
-            _itoa_s(number, numStr, 32, 10);
+            snprintf(numStr, 32, "%d", number);
 
             comp->SetName(baseName + " " + numStr);
 
