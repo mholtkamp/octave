@@ -244,6 +244,10 @@ void SYS_Shutdown()
 
 void SYS_Update()
 {
+    int32_t prevMouseX = 0;
+    int32_t prevMouseY = 0;
+    INP_GetMousePosition(prevMouseX, prevMouseY);
+
     SystemState& system = GetEngineState()->mSystem;
     xcb_generic_event_t* event;
     while ((event = xcb_poll_for_event(system.mXcbConnection)))
@@ -252,8 +256,12 @@ void SYS_Update()
         free(event);
     }
 
+    static bool sPrevWarped = false;
+    bool warped = false;
+
     if (gWarpCursor)
     {
+        warped = true;
         SystemState& system = GetEngineState()->mSystem;
         xcb_warp_pointer(
             system.mXcbConnection,
@@ -271,6 +279,23 @@ void SYS_Update()
 
         gWarpCursor = false;
     }
+
+    if (warped != sPrevWarped)
+    {
+        GetEngineState()->mInput.mMouseDeltaX = 0;
+        GetEngineState()->mInput.mMouseDeltaY = 0;
+    }
+    else
+    {
+        int32_t newMouseX = 0;
+        int32_t newMouseY = 0;
+        INP_GetMousePosition(newMouseX, newMouseY);
+
+        GetEngineState()->mInput.mMouseDeltaX = (newMouseX - prevMouseX);
+        GetEngineState()->mInput.mMouseDeltaY = (newMouseY - prevMouseY);
+    }
+
+    sPrevWarped = warped;
 }
 
 // Files
