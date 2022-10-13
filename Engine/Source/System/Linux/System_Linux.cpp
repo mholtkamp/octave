@@ -78,6 +78,12 @@ void HandleXcbEvent(xcb_generic_event_t* event)
         INP_ClearKey(keyEvent->detail);
         break;
     }
+    case XCB_FOCUS_OUT:
+    {
+        INP_ClearAllKeys();
+        INP_ClearAllMouseButtons();
+        break;
+    }
     case XCB_DESTROY_NOTIFY:
     {
         GetEngineState()->mQuit = true;
@@ -135,7 +141,8 @@ void SYS_Initialize()
 		XCB_EVENT_MASK_STRUCTURE_NOTIFY |
 		XCB_EVENT_MASK_POINTER_MOTION |
 		XCB_EVENT_MASK_BUTTON_PRESS |
-		XCB_EVENT_MASK_BUTTON_RELEASE;
+		XCB_EVENT_MASK_BUTTON_RELEASE | 
+        XCB_EVENT_MASK_FOCUS_CHANGE;
 
     xcb_create_window(
                     system.mXcbConnection, 
