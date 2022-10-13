@@ -25,13 +25,13 @@ A Simple 3D Game Engine for GameCube, Wii, 3DS, Windows, and Linux
     - sudo apt update
     - sudo apt install vulkan-sdk
 6. Install devkitPro Pacman for GameCube/Wii/3DS development (Optional) (https://devkitpro.org/wiki/devkitPro_pacman)
-    wget https://apt.devkitpro.org/install-devkitpro-pacman
-   chmod +x ./install-devkitpro-pacman
-   sudo ./install-devkitpro-pacman
+    - wget https://apt.devkitpro.org/install-devkitpro-pacman
+    - chmod +x ./install-devkitpro-pacman
+    - sudo ./install-devkitpro-pacman
 7. Install GameCube/Wii/3DS development libraries (Optional) (https://devkitpro.org/wiki/Getting_Started)
-    sudo dkp-pacman -S gamecube-dev
-    sudo dkp-pacman -S wii-dev
-    sudo dkp-pacman -S 3ds-dev
+    - sudo dkp-pacman -S gamecube-dev
+    - sudo dkp-pacman -S wii-dev
+    - sudo dkp-pacman -S 3ds-dev
 8. Run Engine/Shaders/GLSL/compile.sh
 
 ### Linux Setup (Visual Studio Code)
