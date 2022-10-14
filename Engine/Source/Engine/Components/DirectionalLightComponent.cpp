@@ -8,8 +8,7 @@
 FORCE_LINK_DEF(DirectionalLightComponent);
 DEFINE_COMPONENT(DirectionalLightComponent);
 
-DirectionalLightComponent::DirectionalLightComponent() :
-    mDirection(0, -1, 0)
+DirectionalLightComponent::DirectionalLightComponent()
 {
     mName = "Directional Light";
     mViewProjectionMatrix = glm::mat4(1);
@@ -56,20 +55,54 @@ const char* DirectionalLightComponent::GetTypeName() const
 void DirectionalLightComponent::GatherProperties(std::vector<Property>& outProps)
 {
     LightComponent::GatherProperties(outProps);
+}
 
-    outProps.push_back(Property(DatumType::Vector, "Direction", this, &mDirection));
+void DirectionalLightComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+{
+#if DEBUG_DRAW_ENABLED
+    LightComponent::GatherProxyDraws(inoutDraws);
+
+
+    if (GetType() == DirectionalLightComponent::GetStaticType())
+    {
+        glm::vec4 color = { 0.9f, 0.7f, 0.0f, 1.0f };
+        float scale = 0.3f;
+
+        {
+            // Cylinder
+            DebugDraw debugDraw;
+            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cylinder");
+            debugDraw.mActor = GetOwner();
+            debugDraw.mColor = color;
+            glm::mat4 trans = MakeTransform({}, { -90.0f, 0.0f, 0.0f}, { scale * 0.5, scale, scale * 0.5});
+            debugDraw.mTransform = mTransform * trans; // glm::scale(mTransform, { rScale, hScale, rScale });
+            inoutDraws.push_back(debugDraw);
+        }
+
+        {
+            // Pointer Cone
+            DebugDraw debugDraw;
+            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cone");
+            debugDraw.mActor = GetOwner();
+            debugDraw.mColor = color;
+            glm::mat4 trans = MakeTransform({0.0f, 0.0f, -2.0f * scale}, { -90.0f, 0.0f, 0.0f }, { scale, scale, scale });
+            debugDraw.mTransform = mTransform * trans;
+            inoutDraws.push_back(debugDraw);
+        }
+    }
+#endif
 }
 
 void DirectionalLightComponent::SaveStream(Stream& stream)
 {
     LightComponent::SaveStream(stream);
-    stream.WriteVec3(mDirection);
+    //stream.WriteVec3(mDirection);
 }
 
 void DirectionalLightComponent::LoadStream(Stream& stream)
 {
     LightComponent::LoadStream(stream);
-    mDirection = stream.ReadVec3();
+    SetDirection(stream.ReadVec3());
 }
 
 bool DirectionalLightComponent::IsPointLightComponent() const
@@ -82,14 +115,14 @@ bool DirectionalLightComponent::IsDirectionalLightComponent() const
     return true;
 }
 
-const glm::vec3& DirectionalLightComponent::GetDirection() const
+glm::vec3 DirectionalLightComponent::GetDirection() const
 {
-    return mDirection;
+    return GetForwardVector();
 }
 
 void DirectionalLightComponent::SetDirection(const glm::vec3& dir)
 {
-    mDirection = dir;
+    LookAt(GetAbsolutePosition() + dir, { 0.0f, 1.0f, 0.0f });
 }
 
 const glm::mat4& DirectionalLightComponent::GetViewProjectionMatrix() const
@@ -103,9 +136,10 @@ void DirectionalLightComponent::GenerateViewProjectionMatrix()
     glm::mat4 proj;
 
     glm::vec3 cameraPosition = GetWorld()->GetActiveCamera()->GetAbsolutePosition();
+    glm::vec3 direction = GetDirection();
 
-    glm::vec3 upVector = fabs(mDirection.y) > 0.5f ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-    view = glm::lookAtRH(cameraPosition, cameraPosition + mDirection, upVector);
+    glm::vec3 upVector = fabs(direction.y) > 0.5f ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+    view = glm::lookAtRH(cameraPosition, cameraPosition + direction, upVector);
     proj = glm::orthoRH(-SHADOW_RANGE, SHADOW_RANGE, -SHADOW_RANGE, SHADOW_RANGE, -SHADOW_RANGE_Z, SHADOW_RANGE_Z);
 
     // Needed for adjusting to NDC
