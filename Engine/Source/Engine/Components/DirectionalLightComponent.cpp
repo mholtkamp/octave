@@ -96,13 +96,11 @@ void DirectionalLightComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDr
 void DirectionalLightComponent::SaveStream(Stream& stream)
 {
     LightComponent::SaveStream(stream);
-    //stream.WriteVec3(mDirection);
 }
 
 void DirectionalLightComponent::LoadStream(Stream& stream)
 {
     LightComponent::LoadStream(stream);
-    SetDirection(stream.ReadVec3());
 }
 
 bool DirectionalLightComponent::IsPointLightComponent() const
