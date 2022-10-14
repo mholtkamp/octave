@@ -18,6 +18,7 @@ public:
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
+    virtual void GatherProxyDraws(std::vector<DebugDraw>& inoutDraws) override;
 
     virtual void SaveStream(Stream& stream) override;
 	virtual void LoadStream(Stream& stream) override;
@@ -25,7 +26,7 @@ public:
     virtual bool IsPointLightComponent() const override;
     virtual bool IsDirectionalLightComponent() const override;
 
-    const glm::vec3& GetDirection() const;
+    glm::vec3 GetDirection() const;
     void SetDirection(const glm::vec3& dir);
 
     const glm::mat4& GetViewProjectionMatrix() const;
@@ -34,6 +35,5 @@ protected:
 
     void GenerateViewProjectionMatrix();
 
-    glm::vec3 mDirection;
     glm::mat4 mViewProjectionMatrix;
 };
