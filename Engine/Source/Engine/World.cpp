@@ -674,7 +674,7 @@ std::vector<LevelRef>& World::GetLoadedLevels()
 
 void World::UnloadAllLevels()
 {
-    for (uint32_t i = 0; i < mLoadedLevels.size(); ++i)
+    for (int32_t i = int32_t(mLoadedLevels.size()) - 1; i >= 0; --i)
     {
         mLoadedLevels[i].Get<Level>()->UnloadFromWorld(this);
     }
