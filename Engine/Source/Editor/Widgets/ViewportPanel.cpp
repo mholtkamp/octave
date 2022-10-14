@@ -438,6 +438,7 @@ void ViewportPanel::HandleDefaultControls()
 {
     Renderer* renderer = Renderer::Get();
     CameraComponent* camera = GetWorld()->GetActiveCamera();
+    Actor* cameraActor = camera ? camera->GetOwner() : nullptr;
     glm::vec3 focus = camera->GetAbsolutePosition() + camera->GetForwardVector() * mFocalDistance;
 
     if (IsMouseInsidePanel())
@@ -446,6 +447,7 @@ void ViewportPanel::HandleDefaultControls()
         const bool controlDown = IsControlDown();
         const bool shiftDown = IsShiftDown();
         const bool altDown = IsAltDown();
+        const bool cmdKeyDown = (controlDown || shiftDown || altDown);
 
         if (IsMouseButtonJustDown(MOUSE_RIGHT))
         {
@@ -686,6 +688,22 @@ void ViewportPanel::HandleDefaultControls()
             // Set the spawn actor list as the modal widget.
             const bool basic = IsKeyJustDown(KEY_Q);
             ShowSpawnActorPrompt(basic);
+        }
+
+        if (altDown && IsKeyJustDown(KEY_A))
+        {
+            SetSelectedActor(nullptr);
+        }
+        if (!cmdKeyDown && IsKeyJustDown(KEY_A))
+        {
+            const std::vector<Actor*>& actors = GetWorld()->GetActors();
+            for (uint32_t i = 0; i < actors.size(); ++i)
+            {
+                if (actors[i] != cameraActor)
+                {
+                    AddSelectedActor(actors[i], false);
+                }
+            }
         }
 
         // Handle zoom
