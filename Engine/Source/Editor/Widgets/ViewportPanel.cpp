@@ -189,6 +189,8 @@ void ViewportPanel::HandleWorldPressed(Button* button)
         std::vector<std::string> actions;
         actions.push_back("Spawn Actor");
         actions.push_back("Spawn Basic");
+        actions.push_back("Undo");
+        actions.push_back("Redo");
         actions.push_back("Toggle Transform Mode");
         actions.push_back("Delete All Actors");
         actionList->SetActions(actions, HandleWorldPressed);
@@ -203,6 +205,14 @@ void ViewportPanel::HandleWorldPressed(Button* button)
     {
         ShowSpawnActorPrompt(true);
         hideActionList = false;
+    }
+    else if (buttonText == "Undo")
+    {
+        ActionManager::Get()->Undo();
+    }
+    else if (buttonText == "Redo")
+    {
+        ActionManager::Get()->Redo();
     }
     else if (buttonText == "Toggle Transform Mode")
     {
