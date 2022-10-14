@@ -684,15 +684,24 @@ void ActionManager::ExecuteAction(Action* action)
 
     action->Execute();
 
-    // Limit max number of history?
-    const uint32_t MaxActionHistoryCount = 100;
-    if (mActionHistory.size() >= MaxActionHistoryCount)
+    // Don't record action history while playing in editor. Too chaotic for undo/redo
+    if (IsPlayingInEditor())
     {
-        mActionHistory.erase(mActionHistory.begin());
+        delete action;
+        action = nullptr;
     }
+    else
+    {
+        // Limit max number of history?
+        const uint32_t MaxActionHistoryCount = 100;
+        if (mActionHistory.size() >= MaxActionHistoryCount)
+        {
+            mActionHistory.erase(mActionHistory.begin());
+        }
 
-    mActionHistory.push_back(action);
-    ClearActionFuture();
+        mActionHistory.push_back(action);
+        ClearActionFuture();
+    }
 }
 
 void ActionManager::Undo()
@@ -1933,7 +1942,15 @@ void ActionDeleteActors::Execute()
     {
         // Actor is already spawned at this point.
         assert(mActors[i]->GetWorld() != nullptr);
-        ActionManager::Get()->ExileActor(mActors[i]);
+
+        if (IsPlayingInEditor())
+        {
+            mActors[i]->SetPendingDestroy(true);
+        }
+        else
+        {
+            ActionManager::Get()->ExileActor(mActors[i]);
+        }
     }
 }
 
@@ -1990,8 +2007,17 @@ ActionRemoveComponent::ActionRemoveComponent(Component* comp)
 void ActionRemoveComponent::Execute()
 {
     assert(mComponent->GetOwner());
-    mOwner->RemoveComponent(mComponent);
-    ActionManager::Get()->ExileComponent(mComponent);
+
+    if (IsPlayingInEditor())
+    {
+        mOwner->DestroyComponent(mComponent);
+    }
+    else
+    {
+        mOwner->RemoveComponent(mComponent);
+        ActionManager::Get()->ExileComponent(mComponent);
+    }
+
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
