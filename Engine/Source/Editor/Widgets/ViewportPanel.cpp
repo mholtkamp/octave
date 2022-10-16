@@ -99,7 +99,9 @@ void ViewportPanel::HandleFilePressed(Button* button)
     }
     else if (buttonText == "Import Scene")
     {
-        am->ImportScene();
+        SceneImportWidget* sceneImpWidget = GetSceneImportWidget();
+        Renderer::Get()->SetModalWidget(sceneImpWidget);
+        sceneImpWidget->MoveToMousePosition();
     }
 
     if (hideActionList)

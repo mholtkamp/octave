@@ -29,6 +29,18 @@ void DestroyEditorState()
 {
     delete sEditorState.mTextEntry;
     sEditorState.mTextEntry = nullptr;
+
+    if (sEditorState.mActionList != nullptr)
+    {
+        delete sEditorState.mActionList;
+        sEditorState.mActionList = nullptr;
+    }
+
+    if (sEditorState.mSceneImportWidget != nullptr)
+    {
+        delete sEditorState.mSceneImportWidget;
+        sEditorState.mSceneImportWidget = nullptr;
+    }
 }
 
 EditorState* GetEditorState()
@@ -564,6 +576,16 @@ ActionList* GetActionList()
     }
 
     return sEditorState.mActionList;
+}
+
+SceneImportWidget* GetSceneImportWidget()
+{
+    if (sEditorState.mSceneImportWidget == nullptr)
+    {
+        sEditorState.mSceneImportWidget = new SceneImportWidget();
+    }
+
+    return sEditorState.mSceneImportWidget;
 }
 
 #endif

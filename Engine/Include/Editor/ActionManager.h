@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "EngineTypes.h"
+#include "EditorTypes.h"
 #include "Asset.h"
 #include "AssetRef.h"
 
@@ -93,7 +94,7 @@ public:
     void DeleteActor(Actor* actor);
     Asset* ImportAsset();
     Asset* ImportAsset(const std::string& path);
-    void ImportScene();
+    void ImportScene(const SceneImportOptions& options);
     void ShowBuildDataPrompt();
     void BuildData(Platform platform, bool embedded);
     void ClearWorld();
