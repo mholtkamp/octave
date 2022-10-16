@@ -21,6 +21,23 @@ using namespace std;
 FORCE_LINK_DEF(StaticMesh);
 DEFINE_ASSET(StaticMesh);
 
+bool StaticMesh::HandlePropChange(Datum* datum, const void* newValue)
+{
+    Property* prop = static_cast<Property*>(datum);
+    assert(prop != nullptr);
+    StaticMesh* mesh = static_cast<StaticMesh*>(prop->mOwner);
+
+    bool handled = false;
+
+    if (prop->mName == "Generate Triangle Collision Mesh")
+    {
+        mesh->SetGenerateTriangleCollisionMesh(*((bool*)newValue));
+        handled = true;
+    }
+
+    return handled;
+}
+
 StaticMesh::StaticMesh() :
     mMaterial(nullptr),
     mNumVertices(0),
@@ -352,7 +369,7 @@ void StaticMesh::Create()
 
     if (mGenerateTriangleCollisionMesh)
     {
-        CreateTriangleCollisionShape(mNumVertices, mVertices, mNumIndices, mIndices);
+        CreateTriangleCollisionShape();
     }
 }
 
@@ -376,23 +393,7 @@ void StaticMesh::Destroy()
         mCollisionShape = nullptr;
     }
 
-    if (mTriangleInfoMap != nullptr)
-    {
-        delete mTriangleInfoMap;
-        mTriangleInfoMap = nullptr;
-    }
-
-    if (mTriangleCollisionShape != nullptr)
-    {
-        delete mTriangleCollisionShape;
-        mTriangleCollisionShape = nullptr;
-    }
-
-    if (mTriangleIndexVertexArray != nullptr)
-    {
-        delete mTriangleIndexVertexArray;
-        mTriangleIndexVertexArray = nullptr;
-    }
+    DestroyTriangleCollisionShape();
 
     ResizeVertexArray(0);
     ResizeIndexArray(0);
@@ -469,7 +470,7 @@ void StaticMesh::GatherProperties(std::vector<Property>& outProps)
 {
     Asset::GatherProperties(outProps);
     outProps.push_back(Property(DatumType::Asset, "Material", this, &mMaterial, 1, nullptr, int32_t(Material::GetStaticType())));
-    outProps.push_back(Property(DatumType::Bool, "Generate Triangle Collision Mesh", this, &mGenerateTriangleCollisionMesh));
+    outProps.push_back(Property(DatumType::Bool, "Generate Triangle Collision Mesh", this, &mGenerateTriangleCollisionMesh, 1, HandlePropChange));
 }
 
 glm::vec4 StaticMesh::GetTypeColor()
@@ -597,7 +598,19 @@ void StaticMesh::SetCollisionShapes(uint32_t numCollisionShapes, btCollisionShap
 
 void StaticMesh::SetGenerateTriangleCollisionMesh(bool generate)
 {
-    mGenerateTriangleCollisionMesh = generate;
+    if (mGenerateTriangleCollisionMesh != generate)
+    {
+        mGenerateTriangleCollisionMesh = generate;
+
+        if (generate)
+        {
+            CreateTriangleCollisionShape();
+        }
+        else
+        {
+            DestroyTriangleCollisionShape();
+        }
+    }
 }
 
 uint32_t StaticMesh::GetVertexSize() const
@@ -605,23 +618,20 @@ uint32_t StaticMesh::GetVertexSize() const
     return mHasVertexColor ? sizeof(VertexColor) : sizeof(Vertex);
 }
 
-void StaticMesh::CreateTriangleCollisionShape(uint32_t numVertices,
-                                              void* vertices,
-                                              uint32_t numIndices,
-                                              IndexType* indices)
+void StaticMesh::CreateTriangleCollisionShape()
 {
     assert(mTriangleIndexVertexArray == nullptr);
     assert(mTriangleCollisionShape == nullptr);
-    assert(numIndices % 3 == 0);
+    assert(mNumIndices % 3 == 0);
 
     mTriangleIndexVertexArray = new btTriangleIndexVertexArray();
 
     btIndexedMesh mesh;
-    mesh.m_numTriangles = numIndices / 3;
-    mesh.m_triangleIndexBase = (const unsigned char *)indices;
+    mesh.m_numTriangles = mNumIndices / 3;
+    mesh.m_triangleIndexBase = (const unsigned char *)mIndices;
     mesh.m_triangleIndexStride = sizeof(IndexType) * 3;
-    mesh.m_numVertices = numVertices;
-    mesh.m_vertexBase = (const unsigned char *)vertices;
+    mesh.m_numVertices = mNumVertices;
+    mesh.m_vertexBase = (const unsigned char *)mVertices;
     mesh.m_vertexStride = GetVertexSize();
 
     mTriangleIndexVertexArray->addIndexedMesh(mesh, sizeof(IndexType) == 2 ? PHY_SHORT : PHY_INTEGER);
@@ -633,6 +643,27 @@ void StaticMesh::CreateTriangleCollisionShape(uint32_t numVertices,
     mTriangleCollisionShape = new btBvhTriangleMeshShape(mTriangleIndexVertexArray, useQuantizedAabbCompression, aabbMin, aabbMax);
     mTriangleInfoMap = new btTriangleInfoMap();
     btGenerateInternalEdgeInfo(mTriangleCollisionShape, mTriangleInfoMap);
+}
+
+void StaticMesh::DestroyTriangleCollisionShape()
+{
+    if (mTriangleInfoMap != nullptr)
+    {
+        delete mTriangleInfoMap;
+        mTriangleInfoMap = nullptr;
+    }
+
+    if (mTriangleCollisionShape != nullptr)
+    {
+        delete mTriangleCollisionShape;
+        mTriangleCollisionShape = nullptr;
+    }
+
+    if (mTriangleIndexVertexArray != nullptr)
+    {
+        delete mTriangleIndexVertexArray;
+        mTriangleIndexVertexArray = nullptr;
+    }
 }
 
 void StaticMesh::ResizeVertexArray(uint32_t newSize)
