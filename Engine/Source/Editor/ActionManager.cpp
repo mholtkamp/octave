@@ -1174,7 +1174,7 @@ static std::string GetFixedFilename(const char* name, const char* prefix)
     return nameStr;
 }
 
-static void SpawnNode(aiNode* node, const glm::mat4& parentTransform, const std::vector<StaticMesh*>& meshList)
+static void SpawnNode(aiNode* node, const glm::mat4& parentTransform, const std::vector<StaticMesh*>& meshList, const SceneImportOptions& options)
 {
     World* world = GetWorld();
 
@@ -1188,14 +1188,14 @@ static void SpawnNode(aiNode* node, const glm::mat4& parentTransform, const std:
             StaticMeshActor* newActor = world->SpawnActor<StaticMeshActor>();
             newActor->GetStaticMeshComponent()->SetStaticMesh(meshList[meshIndex]);
             newActor->GetRootComponent()->SetTransform(transform);
-            newActor->SetName(node->mName.C_Str());
+            newActor->SetName(/*options.mPrefix + */node->mName.C_Str());
             newActor->AddTag("Scene");
         }
     }
 
     for (uint32_t i = 0; i < node->mNumChildren; ++i)
     {
-        SpawnNode(node->mChildren[i], parentTransform, meshList);
+        SpawnNode(node->mChildren[i], parentTransform, meshList, options);
     }
 }
 
@@ -1262,16 +1262,31 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                 return;
             }
 
-            // Destroy all actors with a Scene tag.
-            // Kinda hacky, but for now, to mark anything spawned as part of a scene,
-            // I'm adding a Scene tag. This is to make reimporting scenes easier.
-            const std::vector<Actor*>& actors = GetWorld()->GetActors();
-            for (int32_t i = int32_t(actors.size()) - 1; i >= 0; --i)
+            if (options.mCleanDirectory)
             {
-                if (actors[i]->HasTag("Scene"))
+                dir->Purge();
+            }
+
+            if (options.mClearWorld)
+            {
+                DeleteAllActors();
+            }
+            else
+            {
+                // Destroy all actors with a Scene tag.
+                // Kinda hacky, but for now, to mark anything spawned as part of a scene,
+                // I'm adding a Scene tag. This is to make reimporting scenes easier.
+                const std::vector<Actor*>& actors = GetWorld()->GetActors();
+                std::vector<Actor*> delActors;
+                for (int32_t i = int32_t(actors.size()) - 1; i >= 0; --i)
                 {
-                    GetWorld()->DestroyActor(i);
+                    if (actors[i]->HasTag("Scene"))
+                    {
+                        delActors.push_back(actors[i]);
+                    }
                 }
+
+                EXE_DeleteActors(delActors);
             }
 
             std::vector<Texture*> textureList;
@@ -1283,11 +1298,21 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
             for (uint32_t i = 0; i < numMaterials; ++i)
             {
                 aiMaterial* aMaterial = scene->mMaterials[i];
-                std::string materialFileName = GetFixedFilename(aMaterial->GetName().C_Str(), "M_");
+                std::string materialName = options.mPrefix + aMaterial->GetName().C_Str();
 
-                AssetStub* materialStub = EditorAddUniqueAsset(materialFileName.c_str(), dir, Material::GetStaticType(), true);
-                Material* newMaterial = static_cast<Material*>(materialStub->mAsset);
-                newMaterial->SetShadingModel(ShadingModel::Unlit);
+                if (materialName.size() < 2 || (materialName.substr(0, 2) != "M_"))
+                {
+                    materialName = std::string("M_") + materialName;
+                }
+
+                AssetStub* materialStub = nullptr;
+                Material* newMaterial = nullptr;
+                if (options.mImportMaterials)
+                {
+                    materialStub = EditorAddUniqueAsset(materialName.c_str(), dir, Material::GetStaticType(), true);
+                    newMaterial = static_cast<Material*>(materialStub->mAsset);
+                    newMaterial->SetShadingModel(options.mDefaultShadingModel);
+                }
 
                 uint32_t numBaseTextures = aMaterial->GetTextureCount(aiTextureType_DIFFUSE);
                 numBaseTextures = glm::clamp(numBaseTextures, 0u, 4u);
@@ -1308,7 +1333,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                             // Case 1 - Texture has already been loaded by a previous material
                             textureToAssign = textureMap[texturePath];
                         }
-                        else
+                        else if (options.mImportTextures)
                         {
                             // Case 2 - Texture needs to be loaded.
                             // To make texturing sharing simpler, we only import the texture if
@@ -1318,6 +1343,14 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                             bool importTexture = false;
 
                             std::string assetName = EditorGetAssetNameFromPath(texturePath);
+                            if (assetName.size() >= 2 && (strncmp(assetName.c_str(), "T_", 2) == 0))
+                            {
+                                // Remove the T_ prefix, reapply later.
+                                assetName = assetName.substr(2);
+                            }
+
+                            assetName = options.mPrefix + assetName;
+                            assetName = GetFixedFilename(assetName.c_str(), "T_");
 
                             AssetStub* existingStub = AssetManager::Get()->GetAssetStub(assetName);
                             if (existingStub && existingStub->mDirectory != dir)
@@ -1334,84 +1367,141 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                                 {
                                     textureToAssign = (Texture*)importedAsset;
                                 }
+
+                                if (importedAsset != nullptr)
+                                {
+                                    AssetManager::Get()->RenameAsset(importedAsset, assetName);
+                                    AssetManager::Get()->SaveAsset(assetName);
+                                }
                             }
 
                             textureMap.insert({ texturePath, textureToAssign });
                         }
 
-                        newMaterial->SetTexture(TextureSlot(TEXTURE_0 + t), textureToAssign);
+                        if (newMaterial != nullptr && textureToAssign != nullptr)
+                        {
+                            newMaterial->SetTexture(TextureSlot(TEXTURE_0 + t), textureToAssign);
+                        }
                     }
                 }
 
-                AssetManager::Get()->SaveAsset(*materialStub);
-                materialList.push_back(newMaterial);
+                if (materialStub != nullptr)
+                {
+                    AssetManager::Get()->SaveAsset(*materialStub);
+                    materialList.push_back(newMaterial);
+                }
             }
 
             // Create static mesh assets (assign corresponding material)
             uint32_t numMeshes = scene->mNumMeshes;
+            std::string prevMeshName = "";
+            uint32_t matIndex = 0;
+
             for (uint32_t i = 0; i < numMeshes; ++i)
             {
                 aiMesh* aMesh = scene->mMeshes[i];
-                std::string meshName = aMesh->mName.C_Str();
+                std::string meshName = options.mPrefix + aMesh->mName.C_Str();
+                
+                if (meshName.size() < 3 || (meshName.substr(0, 3) != "SM_"))
+                {
+                    meshName = std::string("SM_") + meshName;
+                }
 
-                StaticMesh* newMesh = (StaticMesh*)Asset::CreateInstance(StaticMesh::GetStaticType());
-                newMesh->Create(scene, *aMesh, 0, nullptr); // Collision meshes currently not supported for scene import?
+                // Does the mesh have multiple materials?
+                if (prevMeshName == meshName)
+                {
+                    ++matIndex;
 
-                AssetStub* meshStub = EditorAddUniqueAsset(meshName.c_str(), dir, StaticMesh::GetStaticType(), false);
-                meshStub->mAsset = newMesh;
-                newMesh->SetName(meshName);
+                    char matSpec[16] = {};
+                    snprintf(matSpec, 16, "_Mat_%d", matIndex);
 
-                // Find material to use...
-                uint32_t materialIndex = aMesh->mMaterialIndex;
-                assert(materialIndex < materialList.size());
-                newMesh->SetMaterial(materialList[materialIndex]);
+                    meshName += matSpec;
+                }
+                else
+                {
+                    matIndex = 0;
+                }
 
-                AssetManager::Get()->SaveAsset(*meshStub);
-                meshList.push_back(newMesh);
+                StaticMesh* existingMesh = LoadAsset<StaticMesh>(meshName);
+                StaticMesh* meshToAddToList = existingMesh;
+
+                if (options.mImportMeshes)
+                {
+                    StaticMesh* newMesh = (StaticMesh*)Asset::CreateInstance(StaticMesh::GetStaticType());
+                    newMesh->Create(scene, *aMesh, 0, nullptr); // Collision meshes currently not supported for scene import?
+                    meshToAddToList = newMesh;
+
+                    if (existingMesh)
+                    {
+                        newMesh->SetMaterial(existingMesh->GetMaterial());
+                        AssetManager::Get()->PurgeAsset(existingMesh->GetName().c_str());
+                        existingMesh = nullptr;
+                    }
+
+                    // Find material to use...
+                    uint32_t materialIndex = aMesh->mMaterialIndex;
+                    assert(materialIndex < materialList.size());
+                    newMesh->SetMaterial(materialList[materialIndex]);
+
+                    AssetStub* meshStub = EditorAddUniqueAsset(meshName.c_str(), dir, StaticMesh::GetStaticType(), false);
+                    meshStub->mAsset = newMesh;
+                    newMesh->SetName(meshName);
+                    AssetManager::Get()->SaveAsset(*meshStub);
+                }
+
+                meshList.push_back(meshToAddToList);
+
+                prevMeshName = meshName;
             }
 
             // Create Lights
-            uint32_t numLights = scene->mNumLights;
-            for (uint32_t i = 0; i < numLights; ++i)
+            if (options.mImportLights)
             {
-                aiLight* aLight = scene->mLights[i];
-
-                if (aLight->mType == aiLightSource_POINT)
+                uint32_t numLights = scene->mNumLights;
+                for (uint32_t i = 0; i < numLights; ++i)
                 {
-                    Actor* lightActor = GetWorld()->SpawnActor<Actor>();
-                    PointLightComponent* pointLight = lightActor->CreateComponent<PointLightComponent>();
+                    aiLight* aLight = scene->mLights[i];
 
-                    glm::vec3 lightColor;
-                    lightColor.r = aLight->mColorDiffuse.r;
-                    lightColor.g = aLight->mColorDiffuse.g;
-                    lightColor.b = aLight->mColorDiffuse.b;
-                    lightColor = Maths::SafeNormalize(lightColor);
-                    pointLight->SetColor(glm::vec4(lightColor, 1.0f));
-
-                    // For now, set lights to a default radius to 50.0f.
-                    // Not sure how to convert attenutation data into a radius.
-                    // Maybe I need to rethink how light attenuation is specified.
-                    // Using the constant/linear/quadratic coefficients is how GCN and 3DS do it IIRC.
-                    pointLight->SetRadius(50.0f);
-
-                    glm::mat4 lightTransform(1);
-                    aiNode* lightNode = scene->mRootNode->FindNode(aLight->mName.C_Str());
-
-                    if (lightNode)
+                    if (aLight->mType == aiLightSource_POINT)
                     {
-                        lightTransform = GetNodeTransform(lightNode);
+                        Actor* lightActor = GetWorld()->SpawnActor<Actor>();
+                        PointLightComponent* pointLight = lightActor->CreateComponent<PointLightComponent>();
+
+                        glm::vec3 lightColor;
+                        lightColor.r = aLight->mColorDiffuse.r;
+                        lightColor.g = aLight->mColorDiffuse.g;
+                        lightColor.b = aLight->mColorDiffuse.b;
+                        lightColor = Maths::SafeNormalize(lightColor);
+                        pointLight->SetColor(glm::vec4(lightColor, 1.0f));
+
+                        // For now, set lights to a default radius to 50.0f.
+                        // Not sure how to convert attenutation data into a radius.
+                        // Maybe I need to rethink how light attenuation is specified.
+                        // Using the constant/linear/quadratic coefficients is how GCN and 3DS do it IIRC.
+                        pointLight->SetRadius(50.0f);
+
+                        glm::mat4 lightTransform(1);
+                        aiNode* lightNode = scene->mRootNode->FindNode(aLight->mName.C_Str());
+
+                        if (lightNode)
+                        {
+                            lightTransform = GetNodeTransform(lightNode);
+                        }
+
+                        pointLight->SetTransform(lightTransform);
+                        lightActor->UpdateComponentTransforms();
+
+                        lightActor->SetName(aLight->mName.C_Str());
+                        lightActor->AddTag("Scene");
                     }
-
-                    pointLight->SetTransform(lightTransform);
-                    lightActor->UpdateComponentTransforms();
-
-                    lightActor->SetName(aLight->mName.C_Str());
-                    lightActor->AddTag("Scene");
                 }
             }
 
-            aiNode* node = scene->mRootNode;
-            SpawnNode(node, glm::mat4(1), meshList);
+            if (options.mImportObjects)
+            {
+                aiNode* node = scene->mRootNode;
+                SpawnNode(node, glm::mat4(1), meshList, options);
+            }
         }
         else
         {

@@ -116,7 +116,7 @@ SceneImportWidget::SceneImportWidget()
 
     mCleanDirectoryBox = new CheckBox();
     mCleanDirectoryBox->SetPosition(x, y);
-    mCleanDirectoryBox->SetChecked(false);
+    mCleanDirectoryBox->SetChecked(true);
     mCleanDirectoryBox->SetDimensions(kCheckBoxSize, kCheckBoxSize);
     AddChild(mCleanDirectoryBox);
 
@@ -181,7 +181,7 @@ SceneImportWidget::SceneImportWidget()
 
     mImportTexturesBox = new CheckBox();
     mImportTexturesBox->SetPosition(x, y);
-    mImportTexturesBox->SetChecked(false);
+    mImportTexturesBox->SetChecked(true);
     mImportTexturesBox->SetDimensions(kCheckBoxSize, kCheckBoxSize);
     AddChild(mImportTexturesBox);
 
