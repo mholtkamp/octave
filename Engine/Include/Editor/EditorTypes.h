@@ -8,12 +8,12 @@ struct SceneImportOptions
 {
     std::string mFilePath;
     std::string mPrefix;
-    bool mCleanDirectory = false;
+    bool mCleanDirectory = true;
     bool mClearWorld = true;
     bool mImportMeshes = true;
     bool mImportMaterials = true;
     bool mImportTextures = true;
-    bool mImportLights = false;
+    bool mImportLights = true;
     bool mImportObjects = true;
     ShadingModel mDefaultShadingModel = ShadingModel::Lit;
 };
