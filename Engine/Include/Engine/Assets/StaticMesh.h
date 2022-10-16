@@ -64,12 +64,12 @@ public:
     void SetGenerateTriangleCollisionMesh(bool generate);
     uint32_t GetVertexSize() const;
 
+    static bool HandlePropChange(Datum* datum, const void* newValue);
+
 private:
 
-    void CreateTriangleCollisionShape(uint32_t numVertices,
-                                      void* vertices,
-                                      uint32_t numIndices,
-                                      IndexType* indices);
+    void CreateTriangleCollisionShape();
+    void DestroyTriangleCollisionShape();
 
     void ResizeVertexArray(uint32_t newSize);
     void ResizeIndexArray(uint32_t newSize);
