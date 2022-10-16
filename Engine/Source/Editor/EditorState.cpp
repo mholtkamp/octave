@@ -246,6 +246,7 @@ void BeginPlayInEditor()
     Level* cachedLevel = new Level();
     cachedLevel->Create();
     cachedLevel->CaptureWorld(GetWorld());
+    cachedLevel->SetName("PIE Cached Level");
     AssetManager::Get()->RegisterTransientAsset(cachedLevel);
     sEditorState.mCachedPieLevel = cachedLevel;
 
