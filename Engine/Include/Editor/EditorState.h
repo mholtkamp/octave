@@ -8,6 +8,7 @@
 #include "ObjectRef.h"
 
 #include "Widgets/TextEntry.h"
+#include "Widgets/SceneImportWidget.h"
 
 class Actor;
 class Component;
@@ -48,6 +49,7 @@ struct EditorState
     ControlMode mControlMode = ControlMode::Default;
     TransformLock mTransformLock = TransformLock::None;
     ActionList* mActionList = nullptr;
+    SceneImportWidget* mSceneImportWidget = nullptr;
     TextEntry* mTextEntry = nullptr;
     Canvas* mRootCanvas = nullptr;
     bool mMouseNeedsRecenter = false;
@@ -103,5 +105,6 @@ ControlMode GetControlMode();
 glm::vec3 GetTransformLockVector(TransformLock lock);
 void SetTransformLock(TransformLock lock);
 ActionList* GetActionList();
+SceneImportWidget* GetSceneImportWidget();
 
 #endif

@@ -1213,12 +1213,12 @@ static glm::mat4 GetNodeTransform(aiNode* node)
     return gMat;
 }
 
-void ActionManager::ImportScene()
+void ActionManager::ImportScene(const SceneImportOptions& options)
 {
     if (GetEngineState()->mProjectPath == "")
         return;
 
-    std::string openPath = SYS_OpenFileDialog();
+    std::string openPath = options.mFilePath;
 
     // Display the Open dialog box. 
     if (openPath != "")

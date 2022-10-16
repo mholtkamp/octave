@@ -735,6 +735,9 @@
     <ClCompile Include="Source\LuaBindings\TextMeshComponent_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\Widgets\SceneImportWidget.cpp">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1324,6 +1327,12 @@
     </ClInclude>
     <ClInclude Include="Include\LuaBindings\TextMeshComponent_Lua.h">
       <Filter>Header Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Editor\EditorTypes.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Editor\Widgets\SceneImportWidget.h">
+      <Filter>Header Files\Editor\Widgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
