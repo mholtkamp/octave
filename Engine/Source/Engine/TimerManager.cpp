@@ -48,7 +48,12 @@ void TimerManager::Update(float deltaTime)
                     if (timer->mHandler != nullptr)
                     {
                         ActorTimerHandlerFP handler = (ActorTimerHandlerFP)timer->mHandler;
-                        handler(timer->mActor.Get());
+                        Actor* actor = timer->mActor.Get();
+
+                        if (actor != nullptr)
+                        {
+                            handler(actor);
+                        }
                     }
                     break;
                 }
