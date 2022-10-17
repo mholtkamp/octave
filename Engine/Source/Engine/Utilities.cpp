@@ -353,58 +353,6 @@ void AddDebugDraw(
 }
 
 #if LUA_ENABLED
-
-bool PreFuncCall(lua_State* L, const char* funcName, const char* selfName)
-{
-    int top = lua_gettop(L);
-
-    bool funcPushed = false;
-    if (selfName)
-    {
-        lua_getglobal(L, selfName);
-        if (lua_istable(L, -1))
-        {
-            lua_getfield(L, -1, funcName);
-            if (lua_isfunction(L, -1))
-            {
-                funcPushed = true;
-                // Push arg1 as self param.
-                lua_pushvalue(L, -2);
-            }
-        }
-    }
-    else
-    {
-        lua_getglobal(L, funcName);
-        if (lua_isfunction(L, -1))
-        {
-            funcPushed = true;
-        }
-    }
-
-    if (!funcPushed)
-    {
-        lua_settop(L, top);
-    }
-
-    return funcPushed;
-}
-
-void DoFuncCall(lua_State* L, const char* selfName, int argCount, int retCount)
-{
-    int totalArgCount = selfName ? argCount + 1 : argCount;
-    lua_pcall(L, totalArgCount, retCount, 0);
-}
-
-void PostFuncCall(lua_State* L, const char* funcName, const char* selfName)
-{
-    if (selfName)
-    {
-        // PreFuncCall pushed 
-        lua_pop(L, 1);
-    }
-}
-
 void CreateTableLua(lua_State* L, const Datum& datum)
 {
     assert(datum.GetType() == DatumType::Table);
@@ -596,32 +544,6 @@ void LuaObjectToDatum(lua_State* L, int idx, Datum& datum)
         break;
     }
 }
-
-void CallLuaFunc0(const char* funcName, const char* selfName)
-{
-    lua_State* L = GetLua();
-    if (PreFuncCall(L, funcName, selfName))
-    {
-        DoFuncCall(L, selfName, 0, 0);
-        PostFuncCall(L, funcName, selfName);
-    }
-}
-
-void CallLuaFunc1(const char* funcName, const char* selfName, Datum arg1)
-{
-    lua_State* L = GetLua();
-    if (PreFuncCall(L, funcName, selfName))
-    {
-        LuaPushDatum(L, arg1);
-        DoFuncCall(L, selfName, 1, 0);
-        PostFuncCall(L, funcName, selfName);
-    }
-
-    //Datum ret;
-    //ConvertReturnDatum(L, -1, ret);
-    //return ret;
-}
-
 #endif
 
 bool RunScript(const char* fileName, Datum* ret)

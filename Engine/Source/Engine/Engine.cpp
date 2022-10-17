@@ -15,6 +15,7 @@
 #include "Maths.h"
 #include "ScriptAutoReg.h"
 #include "EditorState.h"
+#include "TimerManager.h"
 #include "Components/ScriptComponent.h"
 
 #include "System/System.h"
@@ -281,6 +282,8 @@ bool Update()
 
     sEngineState.mRealDeltaTime = realDeltaTime;
     sEngineState.mGameDeltaTime = gameDeltaTime;
+
+    GetTimerManager()->Update(gameDeltaTime);
 
     sWorld->Update(gameDeltaTime);
 
