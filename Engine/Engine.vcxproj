@@ -518,6 +518,7 @@
     <ClCompile Include="Source\LuaBindings\TextMeshComponent_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Texture_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Text_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\TimerManager_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\TransformComponent_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Vector_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\VerticalList_Lua.cpp" />
@@ -598,6 +599,7 @@
     <ClInclude Include="Include\LuaBindings\TextMeshComponent_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Texture_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Text_Lua.h" />
+    <ClInclude Include="Include\LuaBindings\TimerManager_Lua.h" />
     <ClInclude Include="Include\LuaBindings\VerticalList_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Widget_Lua.h" />
     <ClInclude Include="Include\ObjectRef.h" />
