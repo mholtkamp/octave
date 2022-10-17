@@ -741,6 +741,9 @@
     <ClCompile Include="Source\Engine\TimerManager.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\TimerManager_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1339,6 +1342,9 @@
     </ClInclude>
     <ClInclude Include="Include\Engine\TimerManager.h">
       <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\LuaBindings\TimerManager_Lua.h">
+      <Filter>Header Files\LuaBindings</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
