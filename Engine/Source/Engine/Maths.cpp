@@ -123,7 +123,9 @@ float Maths::ApproachAngle(float source, float target, float speed, float deltaT
 {
     float ret = source;
 
-    // TODO: Might need to ensure source and target are in -180 to 180 degree range.
+    // Ensure that the angles are in the -180 to 180 range.
+    source = NormalizeRange(source, -180.0f, 180.0f);
+    target = NormalizeRange(target, -180.0f, 180.0f);
 
     // (Source vs Target yaws should be within 180 degrees of each other)
     if (fabs(target - source) <= 180.0f)
@@ -147,6 +149,14 @@ float Maths::ApproachAngle(float source, float target, float speed, float deltaT
         }
     }
 
+    return ret;
+}
+
+float Maths::NormalizeRange(float value, float start, float end)
+{
+    const float width = end - start;
+    const float offset = value - start;
+    float ret = (offset - (floor(offset / width) * width )) + start;
     return ret;
 }
 

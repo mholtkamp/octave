@@ -36,6 +36,7 @@ public:
 
     static float Approach(float source, float target, float speed, float deltaTime);
     static float ApproachAngle(float source, float target, float speed, float deltaTime);
+    static float NormalizeRange(float value, float start, float end);
 
     static glm::vec3 SafeNormalize(glm::vec3 vector);
 
