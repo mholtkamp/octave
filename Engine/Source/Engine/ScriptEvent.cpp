@@ -47,7 +47,7 @@ bool PrepFunctionCall(lua_State* L, std::string& tableName, std::string& funcNam
     if (!success)
     {
         // Table or function doesn't exist. This is okay.
-        LogDebug("Clearing script callback since the function doens't exist.");
+        LogDebug("Clearing script callback since the function doesn't exist.");
         tableName = "";
         funcName = "";
     }
@@ -64,14 +64,20 @@ bool PrepFunctionCall(lua_State* L, std::string& tableName, std::string& funcNam
 #endif
 }
 
-void ExecFunctionCall(lua_State* L, int argCount)
+void ExecFunctionCall(lua_State* L, const std::string& tableName, int argCount)
 {
     // The self parameter is always passed as arg1
     assert(argCount >= 1);
-    if (lua_pcall(L, argCount, 0, 0))
+    ScriptComponent* scriptComp = ScriptComponent::FindScriptCompFromTableName(tableName);
+
+    if (scriptComp)
     {
-        LogError("Lua Error: %s\n", lua_tostring(L, -1));
-        lua_pop(L, 1); // Pop the error off?
+        scriptComp->LuaFuncCall(argCount);
+    }
+    else
+    {
+        LogError("Failed to find script comp for ScriptEvent callback");
+        lua_pop(L, 1 + argCount); // Func + args
     }
 
     // Pop the initial table that was found in PrepFunctionCall().
@@ -104,7 +110,7 @@ void ScriptEvent::Animation(std::string& tableName, std::string& funcName, const
         Vector_Lua::Create(L, animEvent.mValue);
         lua_setfield(L, -2, "value");
 
-        ExecFunctionCall(L, 2);
+        ExecFunctionCall(L, tableName, 2);
     }
 }
 
@@ -115,7 +121,7 @@ void ScriptEvent::WidgetState(std::string& tableName, std::string& funcName, Wid
     if (PrepFunctionCall(L, tableName, funcName))
     {
         Widget_Lua::Create(L, widget);     // arg2 - widget
-        ExecFunctionCall(L, 2);
+        ExecFunctionCall(L, tableName, 2);
     }
 }
 
@@ -126,7 +132,7 @@ void ScriptEvent::NetConnect(std::string& tableName, std::string& funcName, cons
     if (PrepFunctionCall(L, tableName, funcName))
     {
         PushNetHostProfile(L, client);     // arg2 - client table
-        ExecFunctionCall(L, 2);
+        ExecFunctionCall(L, tableName, 2);
     }
 }
 
@@ -135,7 +141,7 @@ void ScriptEvent::NetAccept(std::string& tableName, std::string& funcName)
     lua_State* L = GetLua();
     if (PrepFunctionCall(L, tableName, funcName))
     {
-        ExecFunctionCall(L, 1);
+        ExecFunctionCall(L, tableName, 1);
     }
 }
 
@@ -145,7 +151,7 @@ void ScriptEvent::NetReject(std::string& tableName, std::string& funcName, NetMs
     if (PrepFunctionCall(L, tableName, funcName))
     {
         lua_pushinteger(L, (int)reason);    // arg2 - reason
-        ExecFunctionCall(L, 2);
+        ExecFunctionCall(L, tableName, 2);
     }
 }
 
@@ -155,7 +161,7 @@ void ScriptEvent::NetDisconnect(std::string& tableName, std::string& funcName, c
     if (PrepFunctionCall(L, tableName, funcName))
     {
         PushNetHostProfile(L, client);     // arg2 - client table
-        ExecFunctionCall(L, 2);
+        ExecFunctionCall(L, tableName, 2);
     }
 }
 
@@ -165,6 +171,6 @@ void ScriptEvent::NetKick(std::string& tableName, std::string& funcName, NetMsgK
     if (PrepFunctionCall(L, tableName, funcName))
     {
         lua_pushinteger(L, (int)reason);    // arg2 - reason
-        ExecFunctionCall(L, 2);
+        ExecFunctionCall(L, tableName, 2);
     }
 }

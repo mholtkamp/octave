@@ -21,13 +21,15 @@
 DEFINE_COMPONENT(ScriptComponent)
 
 std::set<std::string> ScriptComponent::sLoadedLuaFiles;
+std::unordered_map<std::string, ScriptComponent*> ScriptComponent::sTableToCompMap;
 std::unordered_map<std::string, ScriptNetFuncMap> ScriptComponent::sScriptNetFuncMap;
 
 EmbeddedFile* ScriptComponent::sEmbeddedScripts = nullptr;
 uint32_t ScriptComponent::sNumEmbeddedScripts = 0;
 
 uint32_t ScriptComponent::sNumScriptInstances = 0;
-ScriptComponent* ScriptComponent::sExecutingScript = nullptr;
+
+std::vector<ScriptComponent*> ScriptComponent::sExecutingScriptStack;
 
 bool ScriptComponent::HandlePropChange(Datum* datum, const void* newValue)
 {
@@ -1212,6 +1214,20 @@ void ScriptComponent::ReloadAllScriptFiles()
     // This doesn't re-gather the NetFuncs for this script file.
 }
 
+ScriptComponent* ScriptComponent::FindScriptCompFromTableName(const std::string& tableName)
+{
+    ScriptComponent* scriptComp = nullptr;
+
+    auto it = sTableToCompMap.find(tableName);
+
+    if (it != sTableToCompMap.end())
+    {
+        scriptComp = it->second;
+    }
+
+    return scriptComp;
+}
+
 bool ScriptComponent::ShouldHandleEvents() const
 {
     return (mHandleBeginOverlap || mHandleEndOverlap || mHandleOnCollision);
@@ -1560,12 +1576,13 @@ Datum ScriptComponent::GetField(const char* key)
 
 ScriptComponent* ScriptComponent::GetExecutingScriptComponent()
 {
-    return sExecutingScript;
+    return sExecutingScriptStack.size() > 0 ? sExecutingScriptStack.back() : nullptr;
 }
 
 const char* ScriptComponent::GetExecutingScriptTableName()
 {
-    return sExecutingScript ? sExecutingScript->GetTableName().c_str() : "";
+    ScriptComponent* exeComp = GetExecutingScriptComponent();
+    return exeComp ? exeComp->GetTableName().c_str() : "";
 }
 
 bool ScriptComponent::OnRepHandler(Datum* datum, const void* newValue)
@@ -1820,6 +1837,9 @@ void ScriptComponent::CreateScriptInstance()
                 RegisterNetFuncs();
             }
 
+            // Register the table to comp map entry so that the script component can be found from a table name.
+            sTableToCompMap[mTableName] = this;
+
             CallFunction("Create");
         }
         else
@@ -1864,6 +1884,8 @@ void ScriptComponent::DestroyScriptInstance()
             lua_setglobal(L, mTableName.c_str());
         }
 
+        sTableToCompMap.erase(mTableName);
+
         mTableName = "";
         mClassName = "";
 
@@ -1888,13 +1910,13 @@ bool ScriptComponent::LuaFuncCall(int numArgs, int numResults)
 #if LUA_ENABLED
     lua_State* L = GetLua();
     bool success = true;
-    sExecutingScript = this;
+    sExecutingScriptStack.push_back(this);
     if (lua_pcall(L, numArgs, numResults, 0))
     {
         LogError("Lua Error: %s\n", lua_tostring(L, -1));
         success = false;
     }
-    sExecutingScript = nullptr;
+    sExecutingScriptStack.pop_back();
     return success;
 #endif
 }

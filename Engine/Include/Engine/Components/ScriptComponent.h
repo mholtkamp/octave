@@ -89,6 +89,8 @@ public:
     Datum CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6, const Datum& param7);
     void CallFunction(const char* name, uint32_t numParams, const Datum** params, Datum* ret);
 
+    bool LuaFuncCall(int numArgs, int numResults = 0);
+
     Datum GetField(const char* key);
 
     static ScriptComponent* GetExecutingScriptComponent();
@@ -102,6 +104,8 @@ public:
 
     static bool LoadScriptFile(const std::string& fileName, const std::string& className);
     static void ReloadAllScriptFiles();
+
+    static ScriptComponent* FindScriptCompFromTableName(const std::string& tableName);
 
 protected:
 
@@ -122,17 +126,17 @@ protected:
     bool DownloadDatum(lua_State* L, Datum& datum, int tableIdx, const char* varName);
     void UploadDatum(Datum& datum, const char* varName);
 
-    bool LuaFuncCall(int numArgs, int numResults = 0);
     void CallTick(float deltaTime);
 
     bool CheckIfFunctionExists(const char* funcName);
 
     static std::set<std::string> sLoadedLuaFiles;
+    static std::unordered_map<std::string, ScriptComponent*> sTableToCompMap;
     static std::unordered_map<std::string, ScriptNetFuncMap> sScriptNetFuncMap;
     static EmbeddedFile* sEmbeddedScripts;
     static uint32_t sNumEmbeddedScripts;
     static uint32_t sNumScriptInstances;
-    static ScriptComponent* sExecutingScript;
+    static std::vector<ScriptComponent*> sExecutingScriptStack;
 
     std::string mFileName;
     std::string mClassName;

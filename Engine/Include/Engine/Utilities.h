@@ -67,9 +67,6 @@ void CreateTableCpp(lua_State* L, int tableIdx, Datum& datum);
 void LuaPushDatum(lua_State* L, const Datum& arg);
 Datum LuaObjectToDatum(lua_State* L, int idx);
 void LuaObjectToDatum(lua_State* L, int idx, Datum& datum);
-
-void CallLuaFunc0(const char* funcName, const char* selfTable);
-void CallLuaFunc1(const char* funcName, const char* selfTable, Datum arg1);
 #endif
 
 bool RunScript(const char* scriptName, Datum* ret = nullptr);

@@ -738,6 +738,9 @@
     <ClCompile Include="Source\Editor\Widgets\SceneImportWidget.cpp">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\TimerManager.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1333,6 +1336,9 @@
     </ClInclude>
     <ClInclude Include="Include\Editor\Widgets\SceneImportWidget.h">
       <Filter>Header Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Engine\TimerManager.h">
+      <Filter>Header Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
