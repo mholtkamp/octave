@@ -14,63 +14,66 @@ void TimerManager::Update(float deltaTime)
 {
     for (int32_t i = 0; i < (int32_t)mTimerData.size(); ++i)
     {
-        TimerData& timer = mTimerData[i];
+        TimerData* timer = &(mTimerData[i]);
 
-        if (!timer.mPaused)
+        if (!timer->mPaused)
         {
-            timer.mTimeRemaining -= deltaTime;
+            timer->mTimeRemaining -= deltaTime;
 
-            if (timer.mTimeRemaining <= 0.0f)
+            if (timer->mTimeRemaining <= 0.0f)
             {
                 // Execute callback handler
-                switch (timer.mType)
+                switch (timer->mType)
                 {
                 case TimerType::Void:
                 {
-                    if (timer.mHandler != nullptr)
+                    if (timer->mHandler != nullptr)
                     {
-                        TimerHandlerFP handler = (TimerHandlerFP)timer.mHandler;
+                        TimerHandlerFP handler = (TimerHandlerFP)timer->mHandler;
                         handler();
                     }
                     break;
                 }
                 case TimerType::Pointer:
                 {
-                    if (timer.mHandler != nullptr)
+                    if (timer->mHandler != nullptr)
                     {
-                        PointerTimerHandlerFP handler = (PointerTimerHandlerFP)timer.mHandler;
-                        handler(timer.mPointer);
+                        PointerTimerHandlerFP handler = (PointerTimerHandlerFP)timer->mHandler;
+                        handler(timer->mPointer);
                     }
                     break;
                 }
                 case TimerType::Actor:
                 {
-                    if (timer.mHandler != nullptr)
+                    if (timer->mHandler != nullptr)
                     {
-                        ActorTimerHandlerFP handler = (ActorTimerHandlerFP)timer.mHandler;
-                        handler(timer.mActor.Get());
+                        ActorTimerHandlerFP handler = (ActorTimerHandlerFP)timer->mHandler;
+                        handler(timer->mActor.Get());
                     }
                     break;
                 }
                 case TimerType::Script:
                 {
-                    if (timer.mScriptTableName != "" &&
-                        timer.mScriptFuncName != "")
+                    if (timer->mScriptTableName != "" &&
+                        timer->mScriptFuncName != "")
                     {
-                        ScriptComponent* scriptComp = ScriptComponent::FindScriptCompFromTableName(timer.mScriptTableName);
+                        ScriptComponent* scriptComp = ScriptComponent::FindScriptCompFromTableName(timer->mScriptTableName);
                         if (scriptComp)
                         {
-                            scriptComp->CallFunction(timer.mScriptFuncName.c_str());
+                            scriptComp->CallFunction(timer->mScriptFuncName.c_str());
                         }
                     }
                     break;
                 }
                 }
 
-                if (timer.mLoop)
+                // Regrab the timer pointer in case a handler function added another timer (and caused vector realloc)
+                timer = &(mTimerData[i]);
+
+                if (timer->mLoop)
                 {
                     // If looping, reset time remaining
-                    timer.mTimeRemaining = timer.mDuration;
+                    timer->mTimeRemaining = timer->mDuration;
                 }
                 else
                 {
