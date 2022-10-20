@@ -530,8 +530,9 @@ void ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 position,
 
     if (name == BASIC_STATIC_MESH)
     {
-        spawnedActor = GetWorld()->SpawnActor<StaticMeshActor>();
-
+        spawnedActor = GetWorld()->SpawnActor<Actor>();
+        StaticMeshComponent* meshComp = spawnedActor->CreateComponent<StaticMeshComponent>();
+        spawnedActor->SetRootComponent(meshComp);
         StaticMesh* mesh = (StaticMesh*) LoadAsset("SM_Cube");
 
         if (srcAsset != nullptr &&
@@ -540,7 +541,13 @@ void ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 position,
             mesh = static_cast<StaticMesh*>(srcAsset);
         }
 
-        static_cast<StaticMeshActor*>(spawnedActor)->GetStaticMeshComponent()->SetStaticMesh(mesh);
+        // When spawned by the editor, static meshes have collision enabled on colgroup1
+        meshComp->SetStaticMesh(mesh);
+        meshComp->EnableOverlaps(false);
+        meshComp->EnableCollision(true);
+        meshComp->EnablePhysics(false);
+        meshComp->SetCollisionGroup(ColGroup1);
+        meshComp->SetCollisionMask(~ColGroup1);
     }
     else if (name == BASIC_POINT_LIGHT)
     {
