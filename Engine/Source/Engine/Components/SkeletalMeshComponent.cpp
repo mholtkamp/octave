@@ -142,6 +142,11 @@ void SkeletalMeshComponent::LoadStream(Stream& stream)
     mAnimationPaused = stream.ReadBool();
     mBoneInfluenceMode = BoneInfluenceMode(stream.ReadUint32());
     //mAnimationUpdateMode = AnimationUpdateMode(stream.ReadUint32());
+
+    if (mDefaultAnimation != "")
+    {
+        PlayAnimation(mDefaultAnimation.c_str(), true);
+    }
 }
 
 void SkeletalMeshComponent::Tick(float deltaTime)
