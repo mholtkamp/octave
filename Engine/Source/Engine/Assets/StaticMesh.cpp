@@ -870,6 +870,10 @@ void StaticMesh::Create(
 
             bTransform = btTransform(bRotation, bPosition);
         }
+        else
+        {
+            LogWarning("Could not find collision mesh node. Please ensure mesh and node have exact same name.");
+        }
 
         if (strncmp(colMesh->mName.C_Str(), "UBX", 3) == 0)
         {
