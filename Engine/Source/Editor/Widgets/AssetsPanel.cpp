@@ -602,8 +602,24 @@ void AssetsPanel::CreateMaterial()
         GetSelectedAsset() != nullptr &&
         GetSelectedAsset()->GetType() == Texture::GetStaticType())
     {
+        Material* material = stub->mAsset->As<Material>();
+        Texture* texture = GetSelectedAsset()->As<Texture>();
+
         // Auto assign the selected texture to Texture_0
-        static_cast<Material*>(stub->mAsset)->SetTexture(TEXTURE_0, (Texture*)GetSelectedAsset());
+        material->SetTexture(TEXTURE_0, texture);
+
+        std::string newMatName = texture->GetName();
+
+        if (newMatName.length() >= 2 && newMatName[0] == 'T' && newMatName[1] == '_')
+        {
+            newMatName[0] = 'M';
+        }
+        else
+        {
+            newMatName = std::string("M_") + newMatName;
+        }
+
+        AssetManager::Get()->RenameAsset(material, newMatName);
     }
 
     AssetManager::Get()->SaveAsset(*stub);
