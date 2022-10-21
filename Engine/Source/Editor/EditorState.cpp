@@ -485,7 +485,7 @@ AssetStub* GetSelectedAssetStub()
 
 Level* GetActiveLevel()
 {
-    return sEditorState.mActiveLevel;
+    return sEditorState.mActiveLevel.Get<Level>();
 }
 
 ControlMode GetControlMode()

@@ -45,7 +45,7 @@ struct EditorState
 {
     std::vector<Component*> mSelectedComponents;
     AssetStub* mSelectedAssetStub = nullptr;
-    Level* mActiveLevel = nullptr;
+    LevelRef mActiveLevel;
     ControlMode mControlMode = ControlMode::Default;
     TransformLock mTransformLock = TransformLock::None;
     ActionList* mActionList = nullptr;
