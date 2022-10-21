@@ -225,7 +225,7 @@ void PropertiesPanel::HandleInput()
             SetMode(PropertiesMode::Component);
         }
     }
-    else if (IsKeyJustDown(KEY_TAB))
+    else if (IsKeyJustDown(KEY_TAB) && mPropertiesCanvas != nullptr)
     {
         // Check if any of our property widgets contain the selected textfield.
         // If they do, then call TabTextField() on the property widget to switch.
