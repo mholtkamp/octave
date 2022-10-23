@@ -721,6 +721,7 @@ void ViewportPanel::HandleDefaultControls()
 
              Component* selComp = GetSelectedComponent();
              TransformComponent* transComp = selComp ? selComp->As<TransformComponent>() : nullptr;
+             PrimitiveComponent* primComp = selComp ? selComp->As<PrimitiveComponent>() : nullptr;
 
              if (transComp)
              {
@@ -754,19 +755,31 @@ void ViewportPanel::HandleDefaultControls()
 
                          float nearZ = camera->GetNearZ();
                          float farZ = camera->GetFarZ();
-                         float aspect = camera->GetAspectRatio();
-                         float fovY = DEGREES_TO_RADIANS * camera->GetFieldOfView();
-                         float fovX = 2 * atanf(tanf(fovY * 0.5f) * aspect);
-                         glm::vec3 camFwd = camera->GetForwardVector();
 
-                         float dx = nearZ * tanf(fovX / 2.0f);
-                         float dy = nearZ * tanf(fovY / 2.0f);
-                         glm::vec3 nearPos = glm::vec3(dx * mouseX, dy * -mouseY, -nearZ);
+                         glm::vec3 rayDir = {};
+                         if (camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC)
+                         {
+                             float x = mouseX * camera->GetOrthoSettings().mWidth;
+                             float y = -mouseY * camera->GetOrthoSettings().mHeight;
+                             glm::vec3 nearPos = glm::vec3(x, y, -nearZ);
+                             startPos = glm::vec3(glm::inverse(camera->GetViewMatrix()) * glm::vec4(nearPos, 1.0f));
+                             rayDir = camera->GetForwardVector();
+                         }
+                         else
+                         {
+                             float aspect = camera->GetAspectRatio();
+                             float fovY = DEGREES_TO_RADIANS * camera->GetFieldOfView();
+                             float fovX = 2 * atanf(tanf(fovY * 0.5f) * aspect);
+                             glm::vec3 camFwd = camera->GetForwardVector();
 
-                         startPos = camera->GetAbsolutePosition();
-                         glm::vec3 rayDir = Maths::SafeNormalize(nearPos);
+                             float dx = nearZ * tanf(fovX / 2.0f);
+                             float dy = nearZ * tanf(fovY / 2.0f);
 
-                         rayDir = glm::vec3(glm::inverse(camera->GetViewMatrix()) * glm::vec4(rayDir, 0.0f));
+                             glm::vec3 nearPos = glm::vec3(dx * mouseX, dy * -mouseY, -nearZ);
+                             startPos = camera->GetAbsolutePosition();
+                             rayDir = Maths::SafeNormalize(nearPos);
+                             rayDir = glm::vec3(glm::inverse(camera->GetViewMatrix()) * glm::vec4(rayDir, 0.0f));
+                         }
 
                          endPos = startPos + rayDir * farZ;
                      }
@@ -779,7 +792,21 @@ void ViewportPanel::HandleDefaultControls()
                      RayTestResult rayResult;
                      // A convention that I've been using in the engine is that 0x02 collision group
                      // should be used for static environment pieces.
+
+                     // Don't intersect with self
+                     bool savedCollisionEnabled = false;
+                     if (primComp)
+                     {
+                         savedCollisionEnabled = primComp->IsCollisionEnabled();
+                         primComp->EnableCollision(false);
+                     }
+
                      GetWorld()->RayTest(startPos, endPos, 0x02, rayResult);
+
+                     if (primComp)
+                     {
+                         primComp->EnableCollision(savedCollisionEnabled);
+                     }
 
                      if (rayResult.mHitComponent != nullptr)
                      {

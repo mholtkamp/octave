@@ -309,14 +309,14 @@ void PrimitiveComponent::UpdateTransform(bool updateChildren)
     
     if (updateRigidBody)
     {
-        // Because updating transform is something that might happen very often
-        // We only sync transform instead of calling Enable/DisableRigidBody
-        btDynamicsWorld* dynamicsWorld = GetWorld()->GetDynamicsWorld();
-        dynamicsWorld->removeRigidBody(mRigidBody);
-        SyncRigidBodyTransform();
-        mRigidBody->activate(true);
-        dynamicsWorld->addRigidBody(mRigidBody, mCollisionGroup, mCollisionMask);
+        FullSyncRigidBodyTransform();
     }
+}
+
+void PrimitiveComponent::SetTransform(const glm::mat4& transform)
+{
+    TransformComponent::SetTransform(transform);
+    FullSyncRigidBodyTransform();
 }
 
 void PrimitiveComponent::EnablePhysics(bool enable)
@@ -605,6 +605,17 @@ void PrimitiveComponent::ClearForces()
     {
         mRigidBody->clearForces();
     }
+}
+
+void PrimitiveComponent::FullSyncRigidBodyTransform()
+{
+    // Because updating transform is something that might happen very often
+    // We only sync transform instead of calling Enable/DisableRigidBody
+    btDynamicsWorld* dynamicsWorld = GetWorld()->GetDynamicsWorld();
+    dynamicsWorld->removeRigidBody(mRigidBody);
+    SyncRigidBodyTransform();
+    mRigidBody->activate(true);
+    dynamicsWorld->addRigidBody(mRigidBody, mCollisionGroup, mCollisionMask);
 }
 
 void PrimitiveComponent::SyncRigidBodyTransform()

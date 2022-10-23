@@ -66,6 +66,7 @@ public:
     virtual void Render();
 
     virtual void UpdateTransform(bool updateChildren) override;
+    virtual void SetTransform(const glm::mat4& transform) override;
 
     void EnablePhysics(bool enable);
     void EnableCollision(bool enable);
@@ -106,6 +107,8 @@ public:
     void AddForce(glm::vec3 force);
     void AddImpulse(glm::vec3 impulse);
     void ClearForces();
+
+    void FullSyncRigidBodyTransform();
 
     void SyncRigidBodyTransform();
     void SyncRigidBodyMass();
