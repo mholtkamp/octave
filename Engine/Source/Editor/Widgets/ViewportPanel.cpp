@@ -762,14 +762,14 @@ void ViewportPanel::HandleDefaultControls()
                              float x = mouseX * camera->GetOrthoSettings().mWidth;
                              float y = -mouseY * camera->GetOrthoSettings().mHeight;
                              glm::vec3 nearPos = glm::vec3(x, y, -nearZ);
-                             startPos = glm::vec3(glm::inverse(camera->GetViewMatrix()) * glm::vec4(nearPos, 1.0f));
+                             startPos = glm::vec3(camera->CalculateInvViewMatrix() * glm::vec4(nearPos, 1.0f));
                              rayDir = camera->GetForwardVector();
                          }
                          else
                          {
                              float aspect = camera->GetAspectRatio();
-                             float fovY = DEGREES_TO_RADIANS * camera->GetFieldOfView();
-                             float fovX = 2 * atanf(tanf(fovY * 0.5f) * aspect);
+                             float fovY = DEGREES_TO_RADIANS * camera->GetFieldOfViewY();
+                             float fovX = DEGREES_TO_RADIANS * camera->GetFieldOfViewX();
                              glm::vec3 camFwd = camera->GetForwardVector();
 
                              float dx = nearZ * tanf(fovX / 2.0f);
@@ -778,7 +778,7 @@ void ViewportPanel::HandleDefaultControls()
                              glm::vec3 nearPos = glm::vec3(dx * mouseX, dy * -mouseY, -nearZ);
                              startPos = camera->GetAbsolutePosition();
                              rayDir = Maths::SafeNormalize(nearPos);
-                             rayDir = glm::vec3(glm::inverse(camera->GetViewMatrix()) * glm::vec4(rayDir, 0.0f));
+                             rayDir = glm::vec3(camera->CalculateInvViewMatrix() * glm::vec4(rayDir, 0.0f));
                          }
 
                          endPos = startPos + rayDir * farZ;

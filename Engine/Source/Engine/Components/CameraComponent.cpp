@@ -211,6 +211,22 @@ float CameraComponent::GetFieldOfView() const
     return mPerspectiveSettings.mFovY;
 }
 
+float CameraComponent::GetFieldOfViewY() const
+{
+    return mPerspectiveSettings.mFovY;
+}
+
+float CameraComponent::GetFieldOfViewX() const
+{
+    float aspectRatio = mPerspectiveSettings.mAspectRatio;
+    float fovRadiansY = mPerspectiveSettings.mFovY * DEGREES_TO_RADIANS;
+
+    float fovRadiansX = 2 * atanf(tanf(fovRadiansY * 0.5f) * aspectRatio);
+    float fovDegreesX = fovRadiansX * RADIANS_TO_DEGREES;
+
+    return fovDegreesX;
+}
+
 float CameraComponent::GetAspectRatio() const
 {
     return mPerspectiveSettings.mAspectRatio;
