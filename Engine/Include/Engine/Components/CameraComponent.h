@@ -84,6 +84,8 @@ public:
     float GetNearZ() const;
     float GetFarZ() const;
     float GetFieldOfView() const;
+    float GetFieldOfViewY() const;
+    float GetFieldOfViewX() const;
     float GetAspectRatio() const;
     float GetWidth() const;
     float GetHeight() const;
