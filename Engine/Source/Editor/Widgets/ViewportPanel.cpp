@@ -732,12 +732,12 @@ void ViewportPanel::HandleDefaultControls()
                      {
                          glm::mat4 rotMat = glm::orientation(sLastNormal, glm::vec3(0.0f, 1.0f, 0.0f));
                          glm::quat rotQuat = glm::quat(rotMat);
-                         transComp->SetAbsoluteRotation(rotQuat);
+                         ActionManager::Get()->EXE_SetAbsoluteRotation(transComp, rotQuat);
                      }
                      else
                      {
                          // Avoid Nans when normal is almost identical to up vector.
-                         transComp->SetAbsoluteRotation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
+                         ActionManager::Get()->EXE_SetAbsoluteRotation(transComp, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
                      }
 
                      sLastPressedTime = 0.0f;
@@ -810,7 +810,7 @@ void ViewportPanel::HandleDefaultControls()
 
                      if (rayResult.mHitComponent != nullptr)
                      {
-                         transComp->SetAbsolutePosition(rayResult.mHitPosition);
+                         ActionManager::Get()->EXE_SetAbsolutePosition(transComp, rayResult.mHitPosition);
                          sLastNormal = rayResult.mHitNormal;
                      }
                  }

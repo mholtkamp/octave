@@ -799,6 +799,24 @@ void ActionManager::EXE_AttachComponent(TransformComponent* comp, TransformCompo
     ActionManager::Get()->ExecuteAction(action);
 }
 
+void ActionManager::EXE_SetAbsoluteRotation(TransformComponent* comp, glm::quat rot)
+{
+    ActionSetAbsoluteRotation* action = new ActionSetAbsoluteRotation(comp, rot);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_SetAbsolutePosition(TransformComponent* comp, glm::vec3 pos)
+{
+    ActionSetAbsolutePosition* action = new ActionSetAbsolutePosition(comp, pos);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_SetAbsoluteScale(TransformComponent* comp, glm::vec3 scale)
+{
+    ActionSetAbsoluteScale* action = new ActionSetAbsoluteScale(comp, scale);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
 void ActionManager::ClearActionHistory()
 {
     for (uint32_t i = 0; i < mActionHistory.size(); ++i)
@@ -2152,6 +2170,60 @@ void ActionAttachComponent::Reverse()
 {
     mComponent->Attach(mPrevParent);
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+}
+
+ActionSetAbsoluteRotation::ActionSetAbsoluteRotation(TransformComponent* comp, glm::quat rot)
+{
+    mComponent = comp;
+    mNewRotation = rot;
+    mPrevRotation = comp->GetAbsoluteRotationQuat();
+    assert(mComponent);
+}
+
+void ActionSetAbsoluteRotation::Execute()
+{
+    mComponent->SetAbsoluteRotation(mNewRotation);
+}
+
+void ActionSetAbsoluteRotation::Reverse()
+{
+    mComponent->SetAbsoluteRotation(mPrevRotation);
+}
+
+ActionSetAbsolutePosition::ActionSetAbsolutePosition(TransformComponent* comp, glm::vec3 pos)
+{
+    mComponent = comp;
+    mNewPosition = pos;
+    mPrevPosition = comp->GetAbsolutePosition();
+    assert(mComponent);
+}
+
+void ActionSetAbsolutePosition::Execute()
+{
+    mComponent->SetAbsolutePosition(mNewPosition);
+}
+
+void ActionSetAbsolutePosition::Reverse()
+{
+    mComponent->SetAbsolutePosition(mPrevPosition);
+}
+
+ActionSetAbsoluteScale::ActionSetAbsoluteScale(TransformComponent* comp, glm::vec3 scale)
+{
+    mComponent = comp;
+    mNewScale = scale;
+    mPrevScale = comp->GetAbsoluteScale();
+    assert(mComponent);
+}
+
+void ActionSetAbsoluteScale::Execute()
+{
+    mComponent->SetAbsoluteScale(mNewScale);
+}
+
+void ActionSetAbsoluteScale::Reverse()
+{
+    mComponent->SetAbsoluteScale(mPrevScale);
 }
 
 #endif
