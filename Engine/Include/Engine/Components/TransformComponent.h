@@ -64,7 +64,7 @@ public:
     void SetRotation(glm::vec3 rotation);
     void SetRotation(glm::quat quat);
     void SetScale(glm::vec3 scale);
-    void SetTransform(const glm::mat4& transform);
+    virtual void SetTransform(const glm::mat4& transform);
 
     glm::vec3 GetAbsolutePosition();
     glm::vec3 GetAbsoluteRotationEuler();
