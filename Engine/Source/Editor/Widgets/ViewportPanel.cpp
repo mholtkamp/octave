@@ -708,6 +708,33 @@ void ViewportPanel::HandleDefaultControls()
             }
         }
 
+        // Actor placement hotkeys
+        if (IsKeyJustDown(KEY_END))
+        {
+             Component* selComp = GetSelectedComponent();
+             TransformComponent* transComp = selComp ? selComp->As<TransformComponent>() : nullptr;
+
+             if (transComp)
+             {
+                 glm::vec3 startPos = transComp->GetAbsolutePosition();
+                 glm::vec3 endPos = startPos + glm::vec3(0.0f, -1000.0f, 0.0f);
+
+                 RayTestResult rayResult;
+                 // A convention that I've been using in the engine is that 0x02 collision group
+                 // should be used for static environment pieces.
+                 GetWorld()->RayTest(startPos, endPos, 0x02, rayResult);
+
+                 if (rayResult.mHitComponent != nullptr)
+                 {
+                     transComp->SetAbsolutePosition(rayResult.mHitPosition);
+                 }
+             }
+        }
+        if (IsKeyJustDown(KEY_INSERT))
+        {
+
+        }
+
         // Handle zoom
         if (scrollDelta != 0)
         {

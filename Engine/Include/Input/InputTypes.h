@@ -162,6 +162,10 @@ enum KeyCode
     KEY_CONTROL_R = 17,
     KEY_ALT_R = 18,
 
+    KEY_INSERT = 0x2D,
+    KEY_DELETE = 0x2E,
+    KEY_HOME = 0x24,
+    KEY_END = 0x23,
     KEY_PAGE_UP = 33,
     KEY_PAGE_DOWN = 34,
 
@@ -207,7 +211,6 @@ enum KeyCode
     KEY_RIGHT_BRACKET = 0xDD,
     KEY_QUOTE = 0xDE,
 
-    KEY_DELETE = 0x2E,
     KEY_DECIMAL = 0x6E
 };
 
@@ -309,7 +312,13 @@ enum KeyCode
     KEY_RIGHT_BRACKET = 72,
     KEY_QUOTE = 218, // Couldnt find keycode
 
+    KEY_INSERT = 255,
     KEY_DELETE = 67,
+    KEY_HOME = 255,
+    KEY_END = 255,
+    KEY_PAGE_UP = 255,
+    KEY_PAGE_DOWN = 255,
+
     KEY_DECIMAL = 255 //???
 };
 
@@ -406,6 +415,10 @@ enum KeyCode
     KEY_CONTROL_R = 17,
     KEY_ALT_R = 255,
 
+    KEY_INSERT = 255,
+    KEY_DELETE = 255,
+    KEY_HOME = 255,
+    KEY_END = 255,
     KEY_PAGE_UP = 33,
     KEY_PAGE_DOWN = 34,
 
@@ -512,6 +525,10 @@ enum KeyCode
     KEY_CONTROL_R = 105,
     KEY_ALT_R = 113,
 
+    KEY_INSERT = 106,
+    KEY_DELETE = 107,
+    KEY_HOME = 97,
+    KEY_END = 103,
     KEY_PAGE_UP = 112,
     KEY_PAGE_DOWN = 117,
 
@@ -557,7 +574,6 @@ enum KeyCode
     KEY_RIGHT_BRACKET = 35,
     KEY_QUOTE = 48,
 
-    KEY_DELETE = 119,
     KEY_DECIMAL = 91
 };
 
@@ -618,6 +634,10 @@ enum KeyCode
     KEY_CONTROL_R = 17,
     KEY_ALT_R = 255,
 
+    KEY_INSERT = 255,
+    KEY_DELETE = 255,
+    KEY_HOME = 255,
+    KEY_END = 255,
     KEY_PAGE_UP = 33,
     KEY_PAGE_DOWN = 34,
 
@@ -663,7 +683,6 @@ enum KeyCode
     KEY_RIGHT_BRACKET = 0xDD,
     KEY_QUOTE = 0xDE,
 
-    KEY_DELETE = 0x2E,
     KEY_DECIMAL = 0x6E
 };
 
