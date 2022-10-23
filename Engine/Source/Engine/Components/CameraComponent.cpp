@@ -285,3 +285,21 @@ void CameraComponent::SetHeight(float height)
 {
     mOrthoSettings.mHeight = height;
 }
+
+glm::vec2 CameraComponent::WorldToScreenPosition(glm::vec3 worldPos)
+{
+    glm::vec2 screenPos = {};
+
+    if (GetWorld())
+    {
+        glm::vec4 clipPos = GetViewProjectionMatrix() * glm::vec4(worldPos, 1.0f);
+        clipPos /= clipPos.w;
+
+        screenPos = glm::vec2(clipPos);
+        screenPos += glm::vec2(1.0f, 1.0f);
+        screenPos *= glm::vec2(0.5f, 0.5f);
+        screenPos *= glm::vec2(GetEngineState()->mWindowWidth, GetEngineState()->mWindowHeight);
+    }
+
+    return screenPos;
+}
