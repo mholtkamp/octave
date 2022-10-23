@@ -50,6 +50,9 @@ public:
     void EXE_AddComponent(Component* comp);
     void EXE_RemoveComponent(Component* comp);
     void EXE_AttachComponent(TransformComponent* comp, TransformComponent* newParent);
+    void EXE_SetAbsoluteRotation(TransformComponent* comp, glm::quat rot);
+    void EXE_SetAbsolutePosition(TransformComponent* comp, glm::vec3 pos);
+    void EXE_SetAbsoluteScale(TransformComponent* comp, glm::vec3 scale);
 
     void ClearActionHistory();
     void ClearActionFuture();
@@ -205,4 +208,37 @@ protected:
     TransformComponent* mComponent = nullptr;
     TransformComponent* mNewParent = nullptr;
     TransformComponent* mPrevParent = nullptr;
+};
+
+class ActionSetAbsoluteRotation : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(SetAbsoluteRotation)
+    ActionSetAbsoluteRotation(TransformComponent* comp, glm::quat rot);
+protected:
+    TransformComponent* mComponent = nullptr;
+    glm::quat mNewRotation;
+    glm::quat mPrevRotation;
+};
+
+class ActionSetAbsolutePosition : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(SetAbsolutePosition)
+    ActionSetAbsolutePosition(TransformComponent* comp, glm::vec3 pos);
+protected:
+    TransformComponent* mComponent = nullptr;
+    glm::vec3 mNewPosition;
+    glm::vec3 mPrevPosition;
+};
+
+class ActionSetAbsoluteScale : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(SetAbsoluteScale)
+    ActionSetAbsoluteScale(TransformComponent* comp, glm::vec3 scale);
+protected:
+    TransformComponent* mComponent = nullptr;
+    glm::vec3 mNewScale;
+    glm::vec3 mPrevScale;
 };
