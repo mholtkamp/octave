@@ -173,6 +173,17 @@ int CameraComponent_Lua::SetHeight(lua_State* L)
     return 0;
 }
 
+int CameraComponent_Lua::WorldToScreenPosition(lua_State* L)
+{
+    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    glm::vec3 worldPos = CHECK_VECTOR(L, 2);
+
+    glm::vec2 ret = comp->WorldToScreenPosition(worldPos);
+
+    Vector_Lua::Create(L, ret);
+    return 1;
+}
+
 void CameraComponent_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -228,6 +239,9 @@ void CameraComponent_Lua::Bind()
 
     lua_pushcfunction(L, SetHeight);
     lua_setfield(L, mtIndex, "SetHeight");
+
+    lua_pushcfunction(L, WorldToScreenPosition);
+    lua_setfield(L, mtIndex, "WorldToScreenPosition");
 
     lua_pop(L, 1);
     assert(lua_gettop(L) == 0);

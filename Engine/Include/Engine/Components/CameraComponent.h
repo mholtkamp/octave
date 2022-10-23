@@ -97,6 +97,8 @@ public:
     void SetWidth(float width);
     void SetHeight(float height);
 
+    glm::vec2 WorldToScreenPosition(glm::vec3 worldPos);
+
 protected:
 
     ProjectionMode mProjectionMode;
