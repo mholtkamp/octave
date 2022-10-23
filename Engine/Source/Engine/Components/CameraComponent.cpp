@@ -293,12 +293,25 @@ glm::vec2 CameraComponent::WorldToScreenPosition(glm::vec3 worldPos)
     if (GetWorld())
     {
         glm::vec4 clipPos = GetViewProjectionMatrix() * glm::vec4(worldPos, 1.0f);
+
+        bool behindCamera = false;
+        if (clipPos.w < 0.0f)
+        {
+            behindCamera = true;
+        }
+
         clipPos /= clipPos.w;
 
         screenPos = glm::vec2(clipPos);
         screenPos += glm::vec2(1.0f, 1.0f);
         screenPos *= glm::vec2(0.5f, 0.5f);
         screenPos *= glm::vec2(GetEngineState()->mWindowWidth, GetEngineState()->mWindowHeight);
+
+        if (behindCamera)
+        {
+            screenPos.x = -9999.0f;
+            screenPos.y = -9999.0f;
+        }
     }
 
     return screenPos;
