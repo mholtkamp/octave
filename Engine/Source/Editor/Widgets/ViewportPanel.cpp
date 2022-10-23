@@ -711,61 +711,104 @@ void ViewportPanel::HandleDefaultControls()
         // Actor placement hotkeys
         if (IsKeyJustDown(KEY_END))
         {
+            static glm::vec3 sLastNormal = { 0.0f, 1.0f, 0.0f };
+            static float sLastPressedTime = 0.0f;
+            float pressedTime = GetAppClock()->GetTime();
+            float deltaPressTime = pressedTime - sLastPressedTime;
+            sLastPressedTime = pressedTime;
+
+            bool orient = deltaPressTime < 0.5f;
+
              Component* selComp = GetSelectedComponent();
              TransformComponent* transComp = selComp ? selComp->As<TransformComponent>() : nullptr;
 
              if (transComp)
              {
-                 glm::vec3 startPos = transComp->GetAbsolutePosition();
-                 glm::vec3 endPos = startPos + glm::vec3(0.0f, -1000.0f, 0.0f);
-
-                 RayTestResult rayResult;
-                 // A convention that I've been using in the engine is that 0x02 collision group
-                 // should be used for static environment pieces.
-                 GetWorld()->RayTest(startPos, endPos, 0x02, rayResult);
-
-                 if (rayResult.mHitComponent != nullptr)
+                 if (orient)
                  {
-                     transComp->SetAbsolutePosition(rayResult.mHitPosition);
+                     // If this is the second tap then orient the component to the surface normal.
+                     glm::mat4 rotMat = glm::orientation(sLastNormal, glm::vec3(0.0f, 1.0f, 0.0f));
+                     glm::quat rotQuat = glm::quat(rotMat);
+                     transComp->SetAbsoluteRotation(rotQuat);
+
+                     sLastPressedTime = 0.0f;
                  }
+                 else
+                 {
+                     glm::vec3 startPos = transComp->GetAbsolutePosition();
+                     glm::vec3 endPos = startPos + glm::vec3(0.0f, -1000.0f, 0.0f);
+
+                     RayTestResult rayResult;
+                     // A convention that I've been using in the engine is that 0x02 collision group
+                     // should be used for static environment pieces.
+                     GetWorld()->RayTest(startPos, endPos, 0x02, rayResult);
+
+                     if (rayResult.mHitComponent != nullptr)
+                     {
+                         transComp->SetAbsolutePosition(rayResult.mHitPosition);
+                         sLastNormal = rayResult.mHitNormal;
+                     }
+                 }
+
              }
         }
 
         if (IsKeyJustDown(KEY_INSERT))
         {
+            static glm::vec3 sLastNormal = { 0.0f, 1.0f, 0.0f };
+            static float sLastPressedTime = 0.0f;
+            float pressedTime = GetAppClock()->GetTime();
+            float deltaPressTime = pressedTime - sLastPressedTime;
+            sLastPressedTime = pressedTime;
+
+            bool orient = deltaPressTime < 0.5f;
+
             Component* selComp = GetSelectedComponent();
             TransformComponent* transComp = selComp ? selComp->As<TransformComponent>() : nullptr;
 
             if (transComp)
             {
-                float mouseX = 0.0f;
-                float mouseY = 0.0f;
-                INP_GetPointerPositionNormalized(mouseX, mouseY);
-
-                float nearZ = camera->GetNearZ();
-                float farZ = camera->GetFarZ();
-                float aspect = camera->GetAspectRatio();
-                float fovY = DEGREES_TO_RADIANS * camera->GetFieldOfView();
-                float fovX = 2 * atanf(tanf(fovY * 0.5f) * aspect);
-                glm::vec3 camFwd = camera->GetForwardVector();
-
-                float dx = nearZ * tanf(fovX / 2.0f);
-                float dy = nearZ * tanf(fovY / 2.0f);
-                glm::vec3 nearPos = glm::vec3(dx * mouseX, dy * -mouseY, -nearZ);
-
-                glm::vec3 startPos = camera->GetAbsolutePosition();
-                glm::vec3 rayDir = Maths::SafeNormalize(nearPos);
-
-                rayDir = glm::vec3(glm::inverse(camera->GetViewMatrix()) * glm::vec4(rayDir, 0.0f));
-
-                glm::vec3 endPos = startPos + rayDir * farZ;
-
-                RayTestResult rayResult;
-                GetWorld()->RayTest(startPos, endPos, 0x02, rayResult);
-
-                if (rayResult.mHitComponent != nullptr)
+                if (orient)
                 {
-                    transComp->SetAbsolutePosition(rayResult.mHitPosition);
+                    // If this is the second tap then orient the component to the surface normal.
+                    glm::mat4 rotMat = glm::orientation(sLastNormal, glm::vec3(0.0f, 1.0f, 0.0f));
+                    glm::quat rotQuat = glm::quat(rotMat);
+                    transComp->SetAbsoluteRotation(rotQuat);
+
+                    sLastPressedTime = 0.0f;
+                }
+                else
+                {
+                    float mouseX = 0.0f;
+                    float mouseY = 0.0f;
+                    INP_GetPointerPositionNormalized(mouseX, mouseY);
+
+                    float nearZ = camera->GetNearZ();
+                    float farZ = camera->GetFarZ();
+                    float aspect = camera->GetAspectRatio();
+                    float fovY = DEGREES_TO_RADIANS * camera->GetFieldOfView();
+                    float fovX = 2 * atanf(tanf(fovY * 0.5f) * aspect);
+                    glm::vec3 camFwd = camera->GetForwardVector();
+
+                    float dx = nearZ * tanf(fovX / 2.0f);
+                    float dy = nearZ * tanf(fovY / 2.0f);
+                    glm::vec3 nearPos = glm::vec3(dx * mouseX, dy * -mouseY, -nearZ);
+
+                    glm::vec3 startPos = camera->GetAbsolutePosition();
+                    glm::vec3 rayDir = Maths::SafeNormalize(nearPos);
+
+                    rayDir = glm::vec3(glm::inverse(camera->GetViewMatrix()) * glm::vec4(rayDir, 0.0f));
+
+                    glm::vec3 endPos = startPos + rayDir * farZ;
+
+                    RayTestResult rayResult;
+                    GetWorld()->RayTest(startPos, endPos, 0x02, rayResult);
+
+                    if (rayResult.mHitComponent != nullptr)
+                    {
+                        transComp->SetAbsolutePosition(rayResult.mHitPosition);
+                        sLastNormal = rayResult.mHitNormal;
+                    }
                 }
             }
         }
