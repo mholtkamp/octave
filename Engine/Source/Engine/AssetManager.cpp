@@ -528,6 +528,18 @@ void AssetManager::ImportEngineAssets()
         // Create a default particle system
         AssetStub* defParticleStub = CreateAndRegisterAsset(ParticleSystem::GetStaticType(), engineParticles, "P_DefaultParticle", true);
         ParticleSystem* defaultParticle = (ParticleSystem*)defParticleStub->mAsset;
+        defaultParticle->GetParams().mPositionMin = { -0.1f, -0.1f, -0.1f };
+        defaultParticle->GetParams().mPositionMax = { 0.1f, 0.1f, 0.1f };
+        defaultParticle->GetParams().mVelocityMin = { 3.0f, 0.0f, 0.0f };
+        defaultParticle->GetParams().mVelocityMax = { 5.0f, 0.0f, 0.0f };
+        defaultParticle->GetParams().mLifetimeMin = 0.3f;
+        defaultParticle->GetParams().mLifetimeMax = 0.5f;
+        defaultParticle->GetParams().mAcceleration = { 0.0f, 0.0f, 0.0f };
+        defaultParticle->GetParams().mAlphaEase = 0.1f;
+        defaultParticle->GetParams().mSizeMin = { 0.5f, 0.5f };
+        defaultParticle->GetParams().mSizeMax = { 0.5f, 0.5f };
+        defaultParticle->SetRadial(true);
+        defaultParticle->SetSpawnRate(100.0f);
         defaultParticle->SetMaterial(defaultUnlitMaterial);
 
         // Import fonts
