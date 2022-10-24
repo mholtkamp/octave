@@ -95,7 +95,7 @@ std::vector<Actor*> GetSelectedActors();
 bool IsComponentSelected(Component* component);
 bool IsActorSelected(Actor* actor);
 void DeselectComponent(Component* component);
-void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler);
+void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler, const char* defaultText = nullptr);
 void ShowRootCanvas(bool show);
 
 Asset* GetSelectedAsset();

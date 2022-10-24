@@ -453,9 +453,9 @@ void DeselectComponent(Component* component)
     }
 }
 
-void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler)
+void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler, const char* defaultText)
 {
-    sEditorState.mTextEntry->Prompt(title, confirmHandler);
+    sEditorState.mTextEntry->Prompt(title, confirmHandler, defaultText);
 }
 
 void ShowRootCanvas(bool show)

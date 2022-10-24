@@ -33,13 +33,13 @@ public:
         AddChild(mTextField);
     }
 
-    void Prompt(const char* title, TextFieldHandlerFP confirmHandler)
+    void Prompt(const char* title, TextFieldHandlerFP confirmHandler, const char* defaultText = nullptr)
     {
         mTitle->SetText(title);
         mTextField->SetTextConfirmHandler(confirmHandler);
 
         MoveToMousePosition();
-        mTextField->SetTextString("");
+        mTextField->SetTextString(defaultText ? defaultText : "");
         TextField::SetSelectedTextField(mTextField);
         Renderer::Get()->SetModalWidget(this);
     }

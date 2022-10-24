@@ -48,7 +48,8 @@ void OutlinerPanel::ActionListHandler(Button* button)
     {
         if (buttonText == "Rename")
         {
-            ShowTextPrompt("Rename", HandleRenameActor);
+            const char* defaultText = sActionContextActor.Get() ? sActionContextActor.Get()->GetName().c_str() : nullptr;
+            ShowTextPrompt("Rename", HandleRenameActor, defaultText);
             clearModal = false;
         }
         else if (buttonText == "Delete")
