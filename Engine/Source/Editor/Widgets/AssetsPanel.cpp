@@ -164,7 +164,18 @@ void AssetsPanel::ActionListHandler(Button* button)
     }
     else if (buttonText == "Rename")
     {
-        ShowTextPrompt("Rename", HandleRename);
+        const char* defaultText = nullptr;
+
+        if (sActionContextAssetStub != nullptr)
+        {
+            defaultText = sActionContextAssetStub->mName.c_str();
+        }
+        else if (sActionContextAssetDir != nullptr)
+        {
+            defaultText = sActionContextAssetDir->mName.c_str();
+        }
+
+        ShowTextPrompt("Rename", HandleRename, defaultText);
         clearContext = false;
         clearModal = false;
     }
