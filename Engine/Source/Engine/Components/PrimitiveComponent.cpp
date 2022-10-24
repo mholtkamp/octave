@@ -316,7 +316,11 @@ void PrimitiveComponent::UpdateTransform(bool updateChildren)
 void PrimitiveComponent::SetTransform(const glm::mat4& transform)
 {
     TransformComponent::SetTransform(transform);
-    FullSyncRigidBodyTransform();
+
+    if (IsRigidBodyInWorld())
+    {
+        FullSyncRigidBodyTransform();
+    }
 }
 
 void PrimitiveComponent::EnablePhysics(bool enable)
