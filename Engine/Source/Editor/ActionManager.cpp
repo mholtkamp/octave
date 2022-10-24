@@ -1179,6 +1179,27 @@ Asset* ActionManager::ImportAsset(const std::string& path)
         LogError("Failed to import Asset. Unrecognized source asset extension.");
     }
 
+    // If a StaticMesh/SkeletalMesh is being imported, and there is a selected material, then assign
+    // the material to that static mesh.
+    if (retAsset != nullptr &&
+        (retAsset->Is(StaticMesh::ClassRuntimeId()) || retAsset->Is(SkeletalMesh::ClassRuntimeId())) &&
+        GetSelectedAsset() != nullptr &&
+        GetSelectedAsset()->Is(Material::ClassRuntimeId()))
+    {
+        Material* material = GetSelectedAsset()->As<Material>();
+
+        if (retAsset->Is(StaticMesh::ClassRuntimeId()))
+        {
+            StaticMesh* mesh = retAsset->As<StaticMesh>();
+            mesh->SetMaterial(material);
+        }
+        else if (retAsset->Is(SkeletalMesh::ClassRuntimeId()))
+        {
+            SkeletalMesh* mesh = retAsset->As<SkeletalMesh>();
+            mesh->SetMaterial(material);
+        }
+    }
+
     return retAsset;
 }
 
