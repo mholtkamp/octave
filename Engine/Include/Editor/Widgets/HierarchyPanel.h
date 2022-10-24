@@ -7,6 +7,7 @@ class Actor;
 class Component;
 class HierarchyButton;
 class Button;
+class TextField;
 
 class HierarchyPanel : public Panel
 {
@@ -26,6 +27,7 @@ protected:
     static void ShowAddComponentPrompt();
     static void DeleteComponent(Component* comp);
     static void AttachSelectedComponent(Component* newParent);
+    static void HandleRenameComponent(TextField* tf);
 
     static const int32_t sNumButtons = 10;
     HierarchyButton* mButtons[sNumButtons];
