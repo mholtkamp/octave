@@ -114,13 +114,20 @@ void HierarchyPanel::ActionHandler(Button* button)
             AttachSelectedComponent(sActionComponent.Get());
         }
     }
+    else if (buttonText == "Rename Component")
+    {
+        const char* defaultText = sActionComponent.Get() ? 
+            sActionComponent.Get()->GetName().c_str() : 
+            nullptr;
+
+        ShowTextPrompt("Rename", HandleRenameComponent, defaultText);
+        hideList = false;
+    }
 
     if (hideList)
     {
         GetActionList()->Hide();
     }
-
-    sActionComponent = nullptr;
 }
 
 void HierarchyPanel::ShowAddComponentPrompt()
@@ -215,6 +222,20 @@ void HierarchyPanel::AttachSelectedComponent(Component* newParent)
         newParent->GetOwner()->SetBlueprintSource(nullptr);
     }
 
+    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+}
+
+void HierarchyPanel::HandleRenameComponent(TextField* tf)
+{
+    const std::string& newName = tf->GetTextString();
+
+    if (newName != "" &&
+        sActionComponent != nullptr)
+    {
+        ActionManager::Get()->EXE_EditProperty(sActionComponent.Get(), PropertyOwnerType::Component, "Name", 0, newName);
+    }
+
+    Renderer::Get()->SetModalWidget(nullptr);
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
@@ -356,6 +377,7 @@ void HierarchyPanel::HandleInput()
             {
                 actions.push_back("Delete Component");
                 actions.push_back("Attach Selected");
+                actions.push_back("Rename Component");
             }
             GetActionList()->SetActions(actions, ActionHandler);
             sActionComponent = comp;
