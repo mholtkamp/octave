@@ -576,6 +576,41 @@ void Widget::UpdateRect()
     }
 }
 
+void Widget::FitInsideParent()
+{
+    if (IsDirty())
+    {
+        UpdateRect();
+    }
+
+    Rect parentRect;
+
+    if (GetParent() != nullptr)
+    {
+        parentRect.mX = 0.0f;
+        parentRect.mY = 0.0f;
+        parentRect.mWidth = GetParent()->GetWidth();
+        parentRect.mHeight = GetParent()->GetHeight();
+    }
+    else
+    {
+        // Fit to screen
+        parentRect.mX = 0.0f;
+        parentRect.mY = 0.0f;
+        parentRect.mWidth = (float)GetEngineState()->mWindowWidth;
+        parentRect.mHeight = (float)GetEngineState()->mWindowHeight;
+    }
+
+    if (mRect.mX < parentRect.mX)
+        SetX(parentRect.mX);
+    if (mRect.mY < parentRect.mY)
+        SetY(parentRect.mY);
+    if (mRect.Right() > parentRect.Right())
+        SetX(parentRect.Right() - mRect.mWidth);
+    if (mRect.Bottom() > parentRect.Bottom())
+        SetY(parentRect.Bottom() - mRect.mHeight);
+}
+
 float Widget::GetParentWidth() const
 {
     return

@@ -123,21 +123,7 @@ void ActionList::SetActions(const std::vector<std::string>& options, ButtonHandl
 
     Renderer::Get()->SetModalWidget(this);
 
-    // Fit to screen
-    Rect screenRect;
-    screenRect.mX = 0.0f;
-    screenRect.mY = 0.0f;
-    screenRect.mWidth = (float) GetEngineState()->mWindowWidth;
-    screenRect.mHeight = (float) GetEngineState()->mWindowHeight;
-
-    if (mRect.mX < screenRect.mX)
-        SetX(screenRect.mX);
-    if (mRect.mY < screenRect.mY)
-        SetY(screenRect.mY);
-    if (mRect.Right() > screenRect.Right())
-        SetX(screenRect.Right() - mRect.mWidth);
-    if (mRect.Bottom() > screenRect.Bottom())
-        SetY(screenRect.Bottom() - mRect.mHeight);
+    FitInsideParent();
 
     mList->SetVisible(false);
     mVisibleDelay = 2;

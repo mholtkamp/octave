@@ -39,6 +39,7 @@ public:
         mTextField->SetTextConfirmHandler(confirmHandler);
 
         MoveToMousePosition();
+        FitInsideParent();
         mTextField->SetTextString(defaultText ? defaultText : "");
         TextField::SetSelectedTextField(mTextField);
         Renderer::Get()->SetModalWidget(this);

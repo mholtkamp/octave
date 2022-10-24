@@ -118,6 +118,7 @@ public:
     glm::vec2 GetDimensions() const;
 
     void UpdateRect();
+    void FitInsideParent();
 
     float GetParentWidth() const;
     float GetParentHeight() const;
