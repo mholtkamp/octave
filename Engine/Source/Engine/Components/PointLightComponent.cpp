@@ -48,7 +48,7 @@ void PointLightComponent::GatherProperties(std::vector<Property>& outProps)
 void PointLightComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    TransformComponent::GatherProxyDraws(inoutDraws);
+    LightComponent::GatherProxyDraws(inoutDraws);
 
     if (GetType() == PointLightComponent::GetStaticType())
     {

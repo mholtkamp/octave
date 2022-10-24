@@ -27,6 +27,7 @@ public:
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
+    virtual void GatherProxyDraws(std::vector<DebugDraw>& inoutDraws) override;
 
     virtual void Create() override;
     virtual void Destroy() override;
