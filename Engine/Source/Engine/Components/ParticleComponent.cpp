@@ -56,6 +56,23 @@ void ParticleComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Always Simulate", this, &mAlwaysSimulate));
 }
 
+void ParticleComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+{
+#if DEBUG_DRAW_ENABLED
+    PrimitiveComponent::GatherProxyDraws(inoutDraws);
+
+    if (GetType() == ParticleComponent::GetStaticType())
+    {
+        DebugDraw debugDraw;
+        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
+        debugDraw.mActor = GetOwner();
+        debugDraw.mColor = glm::vec4(0.2f, 0.2f, 1.0f, 1.0f);
+        debugDraw.mTransform = glm::scale(mTransform, { 0.2f, 0.2f, 0.2f });
+        inoutDraws.push_back(debugDraw);
+    }
+#endif
+}
+
 void ParticleComponent::Create()
 {
     PrimitiveComponent::Create();
