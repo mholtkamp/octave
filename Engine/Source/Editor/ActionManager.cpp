@@ -1170,6 +1170,28 @@ Asset* ActionManager::ImportAsset(const std::string& path)
         AssetStub* stub = AssetManager::Get()->RegisterAsset(filename, newAsset->GetType(), assetDir, nullptr, false);
         stub->mAsset = newAsset;
         newAsset->SetName(stub->mName);
+
+        // If a StaticMesh/SkeletalMesh is being imported, and there is a selected material, then assign
+        // the material to that static mesh.
+        if (newAsset != nullptr &&
+            (newAsset->Is(StaticMesh::ClassRuntimeId()) || newAsset->Is(SkeletalMesh::ClassRuntimeId())) &&
+            GetSelectedAsset() != nullptr &&
+            GetSelectedAsset()->Is(Material::ClassRuntimeId()))
+        {
+            Material* material = GetSelectedAsset()->As<Material>();
+
+            if (newAsset->Is(StaticMesh::ClassRuntimeId()))
+            {
+                StaticMesh* mesh = newAsset->As<StaticMesh>();
+                mesh->SetMaterial(material);
+            }
+            else if (newAsset->Is(SkeletalMesh::ClassRuntimeId()))
+            {
+                SkeletalMesh* mesh = newAsset->As<SkeletalMesh>();
+                mesh->SetMaterial(material);
+            }
+        }
+
         AssetManager::Get()->SaveAsset(*stub);
 
         retAsset = newAsset;
@@ -1177,27 +1199,6 @@ Asset* ActionManager::ImportAsset(const std::string& path)
     else
     {
         LogError("Failed to import Asset. Unrecognized source asset extension.");
-    }
-
-    // If a StaticMesh/SkeletalMesh is being imported, and there is a selected material, then assign
-    // the material to that static mesh.
-    if (retAsset != nullptr &&
-        (retAsset->Is(StaticMesh::ClassRuntimeId()) || retAsset->Is(SkeletalMesh::ClassRuntimeId())) &&
-        GetSelectedAsset() != nullptr &&
-        GetSelectedAsset()->Is(Material::ClassRuntimeId()))
-    {
-        Material* material = GetSelectedAsset()->As<Material>();
-
-        if (retAsset->Is(StaticMesh::ClassRuntimeId()))
-        {
-            StaticMesh* mesh = retAsset->As<StaticMesh>();
-            mesh->SetMaterial(material);
-        }
-        else if (retAsset->Is(SkeletalMesh::ClassRuntimeId()))
-        {
-            SkeletalMesh* mesh = retAsset->As<SkeletalMesh>();
-            mesh->SetMaterial(material);
-        }
     }
 
     return retAsset;
