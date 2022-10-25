@@ -14,7 +14,6 @@
 #include "Profiler.h"
 #include "Maths.h"
 #include "ScriptAutoReg.h"
-#include "EditorState.h"
 #include "TimerManager.h"
 #include "Components/ScriptComponent.h"
 
@@ -30,6 +29,8 @@
 
 
 #if EDITOR
+#include "EditorState.h"
+
 // Located in Editor/EditorMain.cpp
 void EditorMain(int32_t argc, char** argv);
 #endif
