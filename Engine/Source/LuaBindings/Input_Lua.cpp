@@ -566,11 +566,23 @@ void Input_Lua::BindKeyTable()
     lua_setfield(L, tableIdx, "ShiftL");
     lua_pushinteger(L, KeyCode::KEY_CONTROL_L);
     lua_setfield(L, tableIdx, "ControlL");
+    lua_pushinteger(L, KeyCode::KEY_ALT_L);
+    lua_setfield(L, tableIdx, "AltL");
     lua_pushinteger(L, KeyCode::KEY_SHIFT_R);
     lua_setfield(L, tableIdx, "ShiftR");
     lua_pushinteger(L, KeyCode::KEY_CONTROL_R);
     lua_setfield(L, tableIdx, "ControlR");
+    lua_pushinteger(L, KeyCode::KEY_ALT_R);
+    lua_setfield(L, tableIdx, "AltR");
 
+    lua_pushinteger(L, KeyCode::KEY_INSERT);
+    lua_setfield(L, tableIdx, "Insert");
+    lua_pushinteger(L, KeyCode::KEY_DELETE);
+    lua_setfield(L, tableIdx, "Delete");
+    lua_pushinteger(L, KeyCode::KEY_HOME);
+    lua_setfield(L, tableIdx, "Home");
+    lua_pushinteger(L, KeyCode::KEY_END);
+    lua_setfield(L, tableIdx, "End");
     lua_pushinteger(L, KeyCode::KEY_PAGE_UP);
     lua_setfield(L, tableIdx, "PageUp");
     lua_pushinteger(L, KeyCode::KEY_PAGE_DOWN);
@@ -666,8 +678,6 @@ void Input_Lua::BindKeyTable()
     lua_pushinteger(L, KeyCode::KEY_QUOTE);
     lua_setfield(L, tableIdx, "Quote");
 
-    lua_pushinteger(L, KeyCode::KEY_DELETE);
-    lua_setfield(L, tableIdx, "Delete");
     lua_pushinteger(L, KeyCode::KEY_DECIMAL);
     lua_setfield(L, tableIdx, "Decimal");
 
