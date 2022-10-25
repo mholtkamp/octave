@@ -208,7 +208,12 @@ void PrimitiveComponent::Tick(float deltaTime)
             }
 
             physTransform = glm::scale(physTransform, worldScale);
-            SetTransform(physTransform);
+
+            // Do not call PrimitiveComponent's SetTransform, because it will
+            // remove / add the rigidbody to the world, which will mess up its velocity/acceleration.
+            // In this case, we just want to update our position/rotation/scale from the new transform
+            // and also dirty child transforms.
+            TransformComponent::SetTransform(physTransform);
         }
     }
 }
