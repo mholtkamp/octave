@@ -2,7 +2,6 @@
 #include "AssetManager.h"
 #include "Utilities.h"
 #include "Engine.h"
-#include "EditorState.h"
 #include "Profiler.h"
 #include "Constants.h"
 #include "Widgets/Widget.h"
@@ -20,6 +19,10 @@
 
 #include "Graphics/Graphics.h"
 #include "Graphics/GraphicsConstants.h"
+
+#if EDITOR
+#include "EditorState.h"
+#endif
 
 #include <assert.h>
 #include <stdlib.h>
