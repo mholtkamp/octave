@@ -70,6 +70,9 @@ void TimerManager::Update(float deltaTime)
                     }
                     break;
                 }
+                default:
+                    assert(0);
+                    break;
                 }
 
                 // Regrab the timer pointer in case a handler function added another timer (and caused vector realloc)
@@ -97,7 +100,7 @@ int32_t TimerManager::SetTimer(TimerHandlerFP handler, float time, bool loop)
 
     TimerData timerData;
     timerData.mId = id;
-    timerData.mHandler = handler;
+    timerData.mHandler = (void*)handler;
     timerData.mType = TimerType::Void;
     timerData.mDuration = time;
     timerData.mLoop = loop;
@@ -113,7 +116,7 @@ int32_t TimerManager::SetTimer(void* vp, PointerTimerHandlerFP handler, float ti
 
     TimerData timerData;
     timerData.mId = id;
-    timerData.mHandler = handler;
+    timerData.mHandler = (void*)handler;
     timerData.mType = TimerType::Pointer;
     timerData.mPointer = vp;
     timerData.mDuration = time;
@@ -130,7 +133,7 @@ int32_t TimerManager::SetTimer(Actor* actor, ActorTimerHandlerFP handler, float 
 
     TimerData timerData;
     timerData.mId = id;
-    timerData.mHandler = handler;
+    timerData.mHandler = (void*)handler;
     timerData.mType = TimerType::Actor;
     timerData.mActor = actor;
     timerData.mDuration = time;
