@@ -657,6 +657,8 @@ void AssetsPanel::SaveLevel(AssetStub* levelStub)
     Level* newLevel = (Level*)levelStub->mAsset;
     newLevel->CaptureWorld(GetWorld());
     AssetManager::Get()->SaveAsset(*levelStub);
+
+    SetActiveLevel(newLevel);
 }
 
 void AssetsPanel::SaveBlueprint(AssetStub* bpStub, Actor* srcActor)
