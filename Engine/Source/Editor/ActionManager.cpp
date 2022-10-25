@@ -1234,6 +1234,7 @@ static void SpawnNode(aiNode* node, const glm::mat4& parentTransform, const std:
             uint32_t meshIndex = node->mMeshes[i];
             StaticMeshActor* newActor = world->SpawnActor<StaticMeshActor>();
             newActor->GetStaticMeshComponent()->SetStaticMesh(meshList[meshIndex]);
+            newActor->GetStaticMeshComponent()->SetUseTriangleCollision(meshList[meshIndex]->IsTriangleCollisionMeshEnabled());
             newActor->GetRootComponent()->SetTransform(transform);
             newActor->SetName(/*options.mPrefix + */node->mName.C_Str());
             newActor->AddTag("Scene");
@@ -1480,6 +1481,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                     if (existingMesh)
                     {
+                        newMesh->SetGenerateTriangleCollisionMesh(existingMesh->IsTriangleCollisionMeshEnabled());
                         newMesh->SetMaterial(existingMesh->GetMaterial());
                         AssetManager::Get()->PurgeAsset(existingMesh->GetName().c_str());
                         existingMesh = nullptr;

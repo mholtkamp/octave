@@ -62,6 +62,7 @@ public:
     void SetCollisionShapes(uint32_t numCollisionShapes, btCollisionShape** collisionShapes, btTransform* transforms, bool compound);
 
     void SetGenerateTriangleCollisionMesh(bool generate);
+    bool IsTriangleCollisionMeshEnabled() const;
     uint32_t GetVertexSize() const;
 
     static bool HandlePropChange(Datum* datum, const void* newValue);

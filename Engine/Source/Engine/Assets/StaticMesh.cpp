@@ -613,6 +613,11 @@ void StaticMesh::SetGenerateTriangleCollisionMesh(bool generate)
     }
 }
 
+bool StaticMesh::IsTriangleCollisionMeshEnabled() const
+{
+    return mGenerateTriangleCollisionMesh;
+}
+
 uint32_t StaticMesh::GetVertexSize() const
 {
     return mHasVertexColor ? sizeof(VertexColor) : sizeof(Vertex);
