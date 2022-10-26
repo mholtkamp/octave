@@ -760,7 +760,7 @@
       <Project>{3f6a7d22-1e7c-4708-a88b-676674afca7a}</Project>
     </ProjectReference>
     <ProjectReference Include="..\External\Bullet\Bullet.vcxproj">
-      <Project>{6ca0377f-45d1-465c-8758-0b8bda2163fb}</Project>
+      <Project>{62666e6c-3f33-45a2-88a6-7a4dac19e439}</Project>
     </ProjectReference>
     <ProjectReference Include="..\External\Lua\Lua.vcxproj">
       <Project>{76b204c0-0490-46fa-ad50-8030f398a5ba}</Project>
