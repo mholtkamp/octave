@@ -464,7 +464,6 @@ enum KeyCode
     KEY_RIGHT_BRACKET = 0xDD,
     KEY_QUOTE = 0xDE,
 
-    KEY_DELETE = 0x2E,
     KEY_DECIMAL = 0x6E
 };
 
