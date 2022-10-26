@@ -49,6 +49,16 @@ void AssetRef::EraseReferencesToAsset(Asset* asset)
 
 void AssetRef::AddLiveRef(AssetRef* ref)
 {
+    // Ensure that we are not adding this ref a second time to the list.
+    for (uint32_t i = 0; i < sLiveAssetRefs.size(); ++i)
+    {
+        if (sLiveAssetRefs[i] == ref)
+        {
+            LogError("Duplicate Live Asset Ref");
+            assert(0);
+        }
+    }
+
     sLiveAssetRefs.push_back(ref);
 }
 
