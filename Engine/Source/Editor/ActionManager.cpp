@@ -1487,10 +1487,13 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                         existingMesh = nullptr;
                     }
 
-                    // Find material to use...
-                    uint32_t materialIndex = aMesh->mMaterialIndex;
-                    assert(materialIndex < materialList.size());
-                    newMesh->SetMaterial(materialList[materialIndex]);
+                    if (options.mImportMaterials)
+                    {
+                        // Find material to use...
+                        uint32_t materialIndex = aMesh->mMaterialIndex;
+                        assert(materialIndex < materialList.size());
+                        newMesh->SetMaterial(materialList[materialIndex]);
+                    }
 
                     AssetStub* meshStub = EditorAddUniqueAsset(meshName.c_str(), dir, StaticMesh::GetStaticType(), false);
                     meshStub->mAsset = newMesh;
