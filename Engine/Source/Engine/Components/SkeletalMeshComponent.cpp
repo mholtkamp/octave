@@ -66,7 +66,7 @@ SkeletalMeshComponent::SkeletalMeshComponent() :
     mAnimationPaused(false),
     mHasAnimatedThisFrame(false),
     mBoneInfluenceMode(BoneInfluenceMode::Four),
-    mAnimationUpdateMode(AnimationUpdateMode::AlwaysUpdateTimeAndBones)
+    mAnimationUpdateMode(AnimationUpdateMode::OnlyUpdateWhenRendered)
 {
     mName = "Skeletal Mesh";
     mCollisionEnabled = false;
