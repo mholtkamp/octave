@@ -30,7 +30,7 @@
         actor->FuncName(P0(2));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_X2(ClassName, FuncName, P0, P1)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -39,7 +39,7 @@
         actor->FuncName(P0(2), P1(3));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_X3(ClassName, FuncName, P0, P1, P2)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -48,7 +48,7 @@
         actor->FuncName(P0(2), P1(3), P2(4));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_X4(ClassName, FuncName, P0, P1, P2, P3)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -57,7 +57,7 @@
         actor->FuncName(P0(2), P1(3), P2(4), P3(5));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_R_X1(ClassName, FuncName, P0)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -67,7 +67,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_R_X2(ClassName, FuncName, P0, P1)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -77,7 +77,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_R_X3(ClassName, FuncName, P0, P1, P2)                                                                  \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -87,7 +87,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_R_X4(ClassName, FuncName, P0, P1, P2, P3)                                                              \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -97,7 +97,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 
 #define GLOBAL_SCRIPT_FUNC_X1(FuncName, P0)                                                                        \
@@ -106,7 +106,7 @@
         FuncName(P0(1));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
 
 #define GLOBAL_SCRIPT_FUNC_X2(FuncName, P0, P1)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -114,7 +114,7 @@
         FuncName(P0(1), P1(2));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
 
 #define GLOBAL_SCRIPT_FUNC_X3(FuncName, P0, P1, P2)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -122,7 +122,7 @@
         FuncName(P0(1), P1(2), P2(3));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
 
 #define GLOBAL_SCRIPT_FUNC_X4(FuncName, P0, P1, P2, P3)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -130,7 +130,7 @@
         FuncName(P0(1), P1(2), P2(3), P3(4));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
 
 #define GLOBAL_SCRIPT_FUNC_R_X1(FuncName, P0)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -139,7 +139,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
 
 #define GLOBAL_SCRIPT_FUNC_R_X2(FuncName, P0, P1)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -148,7 +148,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
 
 #define GLOBAL_SCRIPT_FUNC_R_X3(FuncName, P0, P1, P2)                                                                  \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -157,7 +157,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
 
 #define GLOBAL_SCRIPT_FUNC_R_X4(FuncName, P0, P1, P2, P3)                                                              \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -166,7 +166,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
 
 
 
@@ -177,7 +177,7 @@
         actor->FuncName();                                                                                      \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_1(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -187,7 +187,7 @@
         actor->FuncName(param0);                                                                                \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_2(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -198,7 +198,7 @@
         actor->FuncName(param0, param1);                                                                        \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_3(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -210,7 +210,7 @@
         actor->FuncName(param0, param1, param2);                                                                \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_4(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -223,7 +223,7 @@
         actor->FuncName(param0, param1, param2, param3);                                                        \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_5(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -237,7 +237,7 @@
         actor->FuncName(param0, param1, param2, param3, param4);                                                \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_6(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -252,7 +252,7 @@
         actor->FuncName(param0, param1, param2, param3, param4, param5);                                        \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_7(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -268,7 +268,7 @@
         actor->FuncName(param0, param1, param2, param3, param4, param5, param6);                                \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_8(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -285,7 +285,7 @@
         actor->FuncName(param0, param1, param2, param3, param4, param5, param6, param7);                        \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_R(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -295,7 +295,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_R_1(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -306,7 +306,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_R_2(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -318,7 +318,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_R_3(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -331,7 +331,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_R_4(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -345,7 +345,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_R_5(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -360,7 +360,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_R_6(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -376,7 +376,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_R_7(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -393,7 +393,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 #define SCRIPT_FUNC_R_8(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
@@ -411,7 +411,7 @@
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs, "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 
 
