@@ -157,6 +157,16 @@ void CameraComponent::ComputeMatrices()
             0.0f, 0.0f, 0.0f, 1.0f);
 
         mViewProjectionMatrix = clip * mProjectionMatrix * mViewMatrix;
+
+        glm::mat4 stdProjMtx = glm::ortho(
+            -mOrthoSettings.mWidth,
+            mOrthoSettings.mWidth,
+            -mOrthoSettings.mHeight,
+            mOrthoSettings.mHeight,
+            mOrthoSettings.mNear,
+            mOrthoSettings.mFar);
+
+        mStandardViewProjectionMatrix = clip * stdProjMtx * mViewMatrix;
     }
     else
     {
@@ -172,6 +182,18 @@ void CameraComponent::ComputeMatrices()
             0.0f, 0.0f, 0.5f, 1.0f);
 
         mViewProjectionMatrix = clip * mProjectionMatrix * mViewMatrix;
+
+        // Because the 3DS projection matrix is wonky and I don't know how to 
+        // derive the clipspace position for World-To-Screen conversions,
+        // just create a standard perspective matrix and we can use it for the conversions.
+        glm::mat4 stdProjMtx = glm::perspectiveFov(
+            glm::radians(mPerspectiveSettings.mFovY),
+            mPerspectiveSettings.mAspectRatio,
+            1.0f,
+            mPerspectiveSettings.mNear,
+            mPerspectiveSettings.mFar);
+
+        mStandardViewProjectionMatrix = clip * stdProjMtx * mViewMatrix;
     }
 }
 
@@ -292,7 +314,7 @@ glm::vec3 CameraComponent::WorldToScreenPosition(glm::vec3 worldPos)
 
     if (GetWorld())
     {
-        glm::vec4 clipPos = GetViewProjectionMatrix() * glm::vec4(worldPos, 1.0f);
+        glm::vec4 clipPos = mStandardViewProjectionMatrix * glm::vec4(worldPos, 1.0f);
 
         float w = clipPos.w;
         clipPos /= w;
