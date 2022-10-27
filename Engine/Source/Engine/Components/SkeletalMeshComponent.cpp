@@ -207,6 +207,12 @@ SkeletalMesh* SkeletalMeshComponent::GetSkeletalMesh()
 
 void SkeletalMeshComponent::PlayAnimation(const char* animName, bool loop, float speed, float weight, uint8_t priority)
 {
+    if (animName == nullptr ||
+        animName[0] == '\0')
+    {
+        return;
+    }
+
     ActiveAnimation* anim = FindActiveAnimation(animName);
 
     if (anim == nullptr)
