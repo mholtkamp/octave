@@ -105,6 +105,7 @@ protected:
     glm::mat4 mViewProjectionMatrix;
     glm::mat4 mViewMatrix;
     glm::mat4 mProjectionMatrix;
+    glm::mat4 mStandardViewProjectionMatrix;
 
     OrthoSettings mOrthoSettings;
     PerspectiveSettings mPerspectiveSettings;
