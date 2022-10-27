@@ -61,3 +61,4 @@ typedef AssetRef ParticleSystemRef;
 typedef AssetRef SoundWaveRef;
 typedef AssetRef LevelRef;
 typedef AssetRef FontRef;
+typedef AssetRef BlueprintRef;
