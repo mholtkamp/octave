@@ -300,6 +300,8 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
         if (registryFile != nullptr)
         {
+            const char* regType = Asset::GetNameFromTypeId(pair.second->mType);
+
             std::string regPath = pair.second->mPath.c_str();
             if (!pair.second->mEngineAsset &&
                 regPath.find(projectDir) != std::string::npos)
@@ -308,7 +310,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 regPath = projectName + "/" + regPath;
             }
 
-            fprintf(registryFile, "%s\n", regPath.c_str());
+            fprintf(registryFile, "%s,%s\n", regType, regPath.c_str());
         }
     }
 

@@ -276,18 +276,25 @@ void AssetManager::DiscoverAssetRegistry(const char* registryPath)
 
     if (regFile != nullptr)
     {
-        char filename[MAX_PATH_SIZE] = {};
+        constexpr uint32_t kLineSize = MAX_PATH_SIZE + 42;
+        char line[kLineSize];
+        char typeString[32];
+        char filename[MAX_PATH_SIZE];
 
-        while (fgets(filename, MAX_PATH_SIZE, regFile) != nullptr)
+        while (fgets(line, kLineSize, regFile) != nullptr)
         {
+            char* comma = strchr(line, ',');
+            assert(comma != nullptr);
+            *comma = '\0';
+
+            strncpy(typeString, line, 31);
+            strncpy(filename, comma + 1, MAX_PATH_SIZE - 1);
+
             // Replace newline with null terminator
             filename[strcspn(filename, "\r\n")] = 0;
 
-            Stream stream;
-            stream.ReadFile(filename, sizeof(AssetHeader));
-
-            AssetHeader header = Asset::ReadHeader(stream);
-            RegisterAsset(filename, header.mType, mRootDirectory, nullptr, false);
+            TypeId assetType = Asset::GetTypeIdFromName(typeString);
+            RegisterAsset(filename, assetType, mRootDirectory, nullptr, false);
         }
 
         fclose(regFile);

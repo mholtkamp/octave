@@ -161,12 +161,15 @@ bool Initialize(InitOptions& initOptions)
         std::string projectName = initOptions.mProjectName;
         std::string projectPath = projectName + "/" + projectName + ".octp";
         LoadProject(projectPath, !initOptions.mUseAssetRegistry);
-
-        if (initOptions.mUseAssetRegistry)
-        {
-            AssetManager::Get()->DiscoverAssetRegistry((projectName + "/AssetRegistry.txt").c_str());
-        }
     }
+
+#if !EDITOR
+    if (GetEngineState()->mProjectDirectory != "" &&
+        initOptions.mUseAssetRegistry)
+    {
+        AssetManager::Get()->DiscoverAssetRegistry((GetEngineState()->mProjectDirectory + "AssetRegistry.txt").c_str());
+    }
+#endif
 
     if (initOptions.mEmbeddedAssetCount > 0 &&
         initOptions.mEmbeddedAssets != nullptr)
