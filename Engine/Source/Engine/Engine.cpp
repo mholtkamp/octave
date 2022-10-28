@@ -118,7 +118,10 @@ bool Initialize(InitOptions& initOptions)
     }
 
     InitializeLog();
+
     CreateProfiler();
+    SCOPED_STAT("Initialize");
+
     Renderer::Create();
     AssetManager::Create();
     NetworkManager::Create();
@@ -134,7 +137,10 @@ bool Initialize(InitOptions& initOptions)
     sEngineState.mGameCode = initOptions.mGameCode;
     sEngineState.mVersion = initOptions.mVersion;
 
-    SYS_Initialize();
+    {
+        SCOPED_STAT("SYS_Initialize");
+        SYS_Initialize();
+    }
 
     if (initOptions.mWorkingDirectory != "")
     {
@@ -184,10 +190,22 @@ bool Initialize(InitOptions& initOptions)
     }
 #endif
 
-    GFX_Initialize();
-    INP_Initialize();
-    AUD_Initialize();
-    NET_Initialize();
+    {
+        SCOPED_STAT("GFX_Initialize");
+        GFX_Initialize();
+    }
+    {
+        SCOPED_STAT("INP_Initialize");
+        INP_Initialize();
+    }
+    {
+        SCOPED_STAT("AUD_Initialize");
+        AUD_Initialize();
+    }
+    {
+        SCOPED_STAT("NET_Initialize");
+        NET_Initialize();
+    }
 
     renderer->Initialize();
     NetworkManager::Get()->Initialize();
@@ -200,15 +218,19 @@ bool Initialize(InitOptions& initOptions)
     Maths::SeedRand((uint32_t)SYS_GetTimeMicroseconds());
 
 #if LUA_ENABLED
-    extern void BindLuaInterface();
-    extern void SetupLuaPath();
+    {
+        SCOPED_STAT("Lua Init")
 
-    sEngineState.mLua = luaL_newstate();
-    luaL_openlibs(sEngineState.mLua);
+        extern void BindLuaInterface();
+        extern void SetupLuaPath();
 
-    BindLuaInterface();
-    SetupLuaPath();
-    InitAutoRegScripts();
+        sEngineState.mLua = luaL_newstate();
+        luaL_openlibs(sEngineState.mLua);
+
+        BindLuaInterface();
+        SetupLuaPath();
+        InitAutoRegScripts();
+    }
 #endif
 
     // We need to force linkage of any class that uses the factory pattern
@@ -236,10 +258,10 @@ bool Update()
 {
     GetProfiler()->BeginFrame();
 
-    BEGIN_CPU_STAT("Frame");
+    BEGIN_FRAME_STAT("Frame");
 
     {
-        SCOPED_CPU_STAT("Audio");
+        SCOPED_FRAME_STAT("Audio");
         AUD_Update();
     }
 
@@ -294,7 +316,7 @@ bool Update()
 
     AssetManager::Get()->Update(realDeltaTime);
 
-    END_CPU_STAT("Frame");
+    END_FRAME_STAT("Frame");
 
     GetProfiler()->EndFrame();
 
@@ -352,6 +374,8 @@ bool IsShuttingDown()
 
 void LoadProject(const std::string& path, bool discoverAssets)
 {
+    SCOPED_STAT("LoadProject");
+
     // Reset asset manager??
     //AssetManager::Get()->Purge();
 

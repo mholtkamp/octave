@@ -7,7 +7,7 @@
 
 #define PROFILING_ENABLED 1
 
-#define STAT_NAME_LENGTH 15
+#define STAT_NAME_LENGTH 31
 #define STAT_NAME_BUFFER_LENGTH (STAT_NAME_LENGTH + 1)
 
 struct CpuStat
@@ -33,18 +33,24 @@ public:
     void BeginFrame();
     void EndFrame();
 
-    void BeginCpuStat(const char* name);
-    void EndCpuStat(const char* name);
+    void BeginCpuStat(const char* name, bool persistent);
+    void EndCpuStat(const char* name, bool persistent);
 
     //void BeginGpuStat(const char* name);
     //void EndGpuStat();
 
-    CpuStat* FindCpuStat(const char* name);
-    const std::vector<CpuStat>& GetCpuStats() const;
+    CpuStat* FindCpuStat(const char* name, bool persistent);
+    const std::vector<CpuStat>& GetCpuFrameStats() const;
+
+    const std::vector<CpuStat>& GetCpuPersistentStats() const;
+
+    void LogPersistentStats();
+    void DumpPersistentStats();
 
 protected:
 
-    std::vector<CpuStat> mCpuStats;
+    std::vector<CpuStat> mCpuFrameStats;
+    std::vector<CpuStat> mCpuPersistentStats;
     //std::vector<GpuStat> mGpuStats;
 };
 
@@ -54,26 +60,36 @@ Profiler* GetProfiler();
 
 struct ScopedCpuStat
 {
-    ScopedCpuStat(const char* name)
+    ScopedCpuStat(const char* name, bool persistent)
     {
         strncpy(mName, name, STAT_NAME_LENGTH);
-        GetProfiler()->BeginCpuStat(mName);
+        mPersistent = persistent;
+        GetProfiler()->BeginCpuStat(mName, mPersistent);
     }
 
     ~ScopedCpuStat()
     {
-        GetProfiler()->EndCpuStat(mName);
+        GetProfiler()->EndCpuStat(mName, mPersistent);
     }
 
     char mName[STAT_NAME_BUFFER_LENGTH] = {};
+    bool mPersistent = false;
 };
 
 #if PROFILING_ENABLED
-#define SCOPED_CPU_STAT(name) ScopedCpuStat scopedStat##__LINE__(name);
-#define BEGIN_CPU_STAT(name) GetProfiler()->BeginCpuStat(name);
-#define END_CPU_STAT(name) GetProfiler()->EndCpuStat(name);
+#define SCOPED_FRAME_STAT(name) ScopedCpuStat scopedStat##__LINE__(name, false);
+#define BEGIN_FRAME_STAT(name) GetProfiler()->BeginCpuStat(name, false);
+#define END_FRAME_STAT(name) GetProfiler()->EndCpuStat(name, false);
+
+#define SCOPED_STAT(name) ScopedCpuStat scopedStat##__LINE__(name, true);
+#define BEGIN_STAT(name) GetProfiler()->BeginCpuStat(name, true);
+#define END_STAT(name) GetProfiler()->EndCpuStat(name, true);
 #else
-#define SCOPED_CPU_STAT(name) 
-#define BEGIN_CPU_STAT(name) 
-#define END_CPU_STAT(name) 
+#define SCOPED_FRAME_STAT(name) 
+#define BEGIN_FRAME_STAT(name) 
+#define END_FRAME_STAT(name) 
+
+#define SCOPED_STAT(name)
+#define BEGIN_STAT(name)
+#define END_STAT(name)
 #endif

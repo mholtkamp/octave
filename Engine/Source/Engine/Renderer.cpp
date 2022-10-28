@@ -87,6 +87,8 @@ Renderer::~Renderer()
 
 void Renderer::Initialize()
 {
+    SCOPED_STAT("Renderer::Initialize")
+
 #if EDITOR
     AssetManager::Get()->ImportEngineAssets();
 #endif
@@ -782,12 +784,12 @@ void Renderer::Render(World* world)
 
     {
 #if !SYNC_ON_END_FRAME
-        SCOPED_CPU_STAT("Vsync");
+        SCOPED_FRAME_STAT("Vsync");
 #endif
         BeginFrame();
     }
 
-    BEGIN_CPU_STAT("Pre-Render");
+    BEGIN_FRAME_STAT("Pre-Render");
 
     mScreenIndex = 0;
     GFX_BeginScreen(0);
@@ -818,9 +820,9 @@ void Renderer::Render(World* world)
         FrustumCull(activeCamera);
     }
 
-    END_CPU_STAT("Pre-Render");
+    END_FRAME_STAT("Pre-Render");
 
-    BEGIN_CPU_STAT("Render");
+    BEGIN_FRAME_STAT("Render");
 
     uint32_t numViews = GFX_GetNumViews();
 
@@ -933,11 +935,11 @@ void Renderer::Render(World* world)
 
     UpdateDebugDraws();
 
-    END_CPU_STAT("Render");
+    END_FRAME_STAT("Render");
 
     {
 #if SYNC_ON_END_FRAME
-        SCOPED_CPU_STAT("Vsync");
+        SCOPED_FRAME_STAT("Vsync");
 #endif
         EndFrame();
     }

@@ -3,6 +3,7 @@
 #include "System/System.h"
 #include "Maths.h"
 #include "Clock.h"
+#include "Log.h"
 
 #include <assert.h>
 
@@ -12,11 +13,11 @@ void Profiler::BeginFrame()
 {
 #if PROFILING_ENABLED
     // Clear out the start/end/elapse time on all stats
-    for (uint32_t i = 0; i < mCpuStats.size(); ++i)
+    for (uint32_t i = 0; i < mCpuFrameStats.size(); ++i)
     {
-        mCpuStats[i].mTime = 0.0f;
-        mCpuStats[i].mStartTime = 0;
-        mCpuStats[i].mEndTime = 0;
+        mCpuFrameStats[i].mTime = 0.0f;
+        mCpuFrameStats[i].mStartTime = 0;
+        mCpuFrameStats[i].mEndTime = 0;
     }
 #endif
 }
@@ -27,34 +28,43 @@ void Profiler::EndFrame()
     float deltaTime = GetAppClock()->DeltaTime();
 
     // Calculate the elapsed time in milliseconds from the start/end microsecond times
-    for (uint32_t i = 0; i < mCpuStats.size(); ++i)
+    for (uint32_t i = 0; i < mCpuFrameStats.size(); ++i)
     {
-        mCpuStats[i].mSmoothedTime = Maths::Damp(mCpuStats[i].mSmoothedTime, mCpuStats[i].mTime, 0.05f, deltaTime);
+        mCpuFrameStats[i].mSmoothedTime = Maths::Damp(mCpuFrameStats[i].mSmoothedTime, mCpuFrameStats[i].mTime, 0.05f, deltaTime);
     }
 #endif
 }
 
-void Profiler::BeginCpuStat(const char* name)
+void Profiler::BeginCpuStat(const char* name, bool persistent)
 {
 #if PROFILING_ENABLED
-    CpuStat* stat = FindCpuStat(name);
+    CpuStat* stat = FindCpuStat(name, persistent);
 
     if (stat == nullptr)
     {
         CpuStat newStat;
         strncpy(newStat.mName, name, STAT_NAME_LENGTH);
-        mCpuStats.push_back(newStat);
-        stat = &mCpuStats.back();
+
+        if (persistent)
+        {
+            mCpuPersistentStats.push_back(newStat);
+            stat = &mCpuPersistentStats.back();
+        }
+        else
+        {
+            mCpuFrameStats.push_back(newStat);
+            stat = &mCpuFrameStats.back();
+        }
     }
 
     stat->mStartTime = SYS_GetTimeMicroseconds();
 #endif
 }
 
-void Profiler::EndCpuStat(const char* name)
+void Profiler::EndCpuStat(const char* name, bool persistent)
 {
 #if PROFILING_ENABLED
-    CpuStat* stat = FindCpuStat(name);
+    CpuStat* stat = FindCpuStat(name, persistent);
     assert(stat);
 
     if (stat)
@@ -65,16 +75,17 @@ void Profiler::EndCpuStat(const char* name)
 #endif
 }
 
-CpuStat* Profiler::FindCpuStat(const char* name)
+CpuStat* Profiler::FindCpuStat(const char* name, bool persistent)
 {
+    std::vector<CpuStat>& stats = persistent ? mCpuPersistentStats : mCpuFrameStats;
     CpuStat* retStat = nullptr;
 
 #if PROFILING_ENABLED
-    for (uint32_t i = 0; i < mCpuStats.size(); ++i)
+    for (uint32_t i = 0; i < stats.size(); ++i)
     {
-        if (strncmp(mCpuStats[i].mName, name, STAT_NAME_LENGTH) == 0)
+        if (strncmp(stats[i].mName, name, STAT_NAME_LENGTH) == 0)
         {
-            retStat = &mCpuStats[i];
+            retStat = &stats[i];
         }
     }
 #endif
@@ -82,9 +93,42 @@ CpuStat* Profiler::FindCpuStat(const char* name)
     return retStat;
 }
 
-const std::vector<CpuStat>& Profiler::GetCpuStats() const
+const std::vector<CpuStat>& Profiler::GetCpuFrameStats() const
 {
-    return mCpuStats;
+    return mCpuFrameStats;
+}
+
+const std::vector<CpuStat>& Profiler::GetCpuPersistentStats() const
+{
+    return mCpuPersistentStats;
+}
+
+void Profiler::LogPersistentStats()
+{
+    LogDebug("----- Persistent Stats -----");
+
+    for (uint32_t i = 0; i < mCpuPersistentStats.size(); ++i)
+    {
+        LogDebug("%s: %f", mCpuPersistentStats[i].mName, mCpuPersistentStats[i].mTime);
+    }
+
+    LogDebug("----------------------------");
+}
+
+void Profiler::DumpPersistentStats()
+{
+    FILE* statFile = fopen("CpuStats.csv", "w");
+
+    if (statFile != nullptr)
+    {
+        for (uint32_t i = 0; i < mCpuPersistentStats.size(); ++i)
+        {
+            fprintf(statFile, "%s, %f\n", mCpuPersistentStats[i].mName, mCpuPersistentStats[i].mTime);
+        }
+
+        fclose(statFile);
+        statFile = nullptr;
+    }
 }
 
 void CreateProfiler()

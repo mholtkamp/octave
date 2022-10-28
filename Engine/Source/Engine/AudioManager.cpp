@@ -200,7 +200,7 @@ void AudioManager::Shutdown()
 
 void AudioManager::Update(float deltaTime)
 {
-    SCOPED_CPU_STAT("Audio");
+    SCOPED_FRAME_STAT("Audio");
 
     // TODO:
     // (1) -- Update Active Sources --
