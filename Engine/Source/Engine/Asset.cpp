@@ -269,3 +269,40 @@ std::string Asset::GetDirectoryFromPath(const std::string& path)
 
     return retDir;
 }
+
+const char* Asset::GetNameFromTypeId(TypeId id)
+{
+    // TODO: Possibly move this into Factory.h
+    const char* retName = "Asset";
+    std::vector<Factory*>& factoryList = GetFactoryList();
+
+    for (uint32_t i = 0; i < factoryList.size(); ++i)
+    {
+        if (id == factoryList[i]->GetType())
+        {
+            retName = factoryList[i]->GetClassName();
+            break;
+        }
+    }
+
+    return retName;
+}
+
+TypeId Asset::GetTypeIdFromName(const char* name)
+{
+    // TODO: Possibly move this into Factory.h
+    TypeId retId = INVALID_TYPE_ID;
+    std::vector<Factory*>& factoryList = GetFactoryList();
+
+    for (uint32_t i = 0; i < factoryList.size(); ++i)
+    {
+        if (strcmp(name, factoryList[i]->GetClassName()) == 0)
+        {
+            retId = factoryList[i]->GetType();
+            break;
+        }
+    }
+
+    return retId;
+}
+

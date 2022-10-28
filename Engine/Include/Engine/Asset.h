@@ -102,6 +102,9 @@ public:
     static std::string GetNameFromPath(const std::string& path);
     static std::string GetDirectoryFromPath(const std::string& path);
 
+    static const char* GetNameFromTypeId(TypeId id);
+    static TypeId GetTypeIdFromName(const char* name);
+
 protected:
 
     uint32_t mVersion = 0;
