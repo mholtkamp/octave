@@ -34,7 +34,7 @@ void StatsOverlay::Update()
         break;
     case StatDisplayMode::CpuStatText:
     case StatDisplayMode::CpuStatBars:
-        numStats = (uint32_t)GetProfiler()->GetCpuStats().size();
+        numStats = (uint32_t)GetProfiler()->GetCpuFrameStats().size();
         break;
     case StatDisplayMode::Memory:
         numStats = 1;
@@ -96,7 +96,7 @@ void StatsOverlay::Update()
     }
     else
     {
-        const std::vector<CpuStat>& stats = GetProfiler()->GetCpuStats();
+        const std::vector<CpuStat>& stats = GetProfiler()->GetCpuFrameStats();
         assert(numStats <= stats.size());
         for (uint32_t i = 0; i < numStats; ++i)
         {

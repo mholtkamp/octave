@@ -69,6 +69,8 @@ World::World() :
     mAudioReceiver(nullptr),
     mNextNetId(1)
 {
+    SCOPED_STAT("World()")
+
     SpawnDefaultCamera();
 
     // Setup physics world
@@ -777,13 +779,13 @@ void World::Update(float deltaTime)
 
     if (gameTickEnabled)
     {
-        SCOPED_CPU_STAT("Physics");
+        SCOPED_FRAME_STAT("Physics");
         mDynamicsWorld->stepSimulation(deltaTime, 2);
     }
 
     if (gameTickEnabled)
     {
-        SCOPED_CPU_STAT("Collisions");
+        SCOPED_FRAME_STAT("Collisions");
         mCollisionDispatcher->dispatchAllCollisionPairs(
             mBroadphase->getOverlappingPairCache(),
             mDynamicsWorld->getDispatchInfo(),
@@ -873,7 +875,7 @@ void World::Update(float deltaTime)
     UpdateLines(deltaTime);
 
     {
-        SCOPED_CPU_STAT("Tick");
+        SCOPED_FRAME_STAT("Tick");
         for (int32_t i = 0; i < (int32_t)mActors.size(); ++i)
         {
             if (gameTickEnabled)

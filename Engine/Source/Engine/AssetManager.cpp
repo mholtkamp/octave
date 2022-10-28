@@ -198,6 +198,8 @@ bool AssetManager::IsPurging() const
 
 void AssetManager::Discover(const char* directoryName, const char* directoryPath)
 {
+    SCOPED_STAT("DiscoverAssets")
+
     // Make sure directory path ends with 
     std::string dirPath = directoryPath;
     if (dirPath.size() > 0 && dirPath[dirPath.size() - 1] != '/')
@@ -267,6 +269,7 @@ void AssetManager::Discover(const char* directoryName, const char* directoryPath
 
 void AssetManager::DiscoverAssetRegistry(const char* registryPath)
 {
+    SCOPED_STAT("DiscoverAssetRegistry");
     // For each line, attempt to open that file.
     // If file is found, read asset header and call RegisterAsset() from header.
     FILE* regFile = fopen(registryPath, "r");
@@ -298,6 +301,7 @@ void AssetManager::DiscoverAssetRegistry(const char* registryPath)
 
 void AssetManager::DiscoverEmbeddedAssets(EmbeddedFile* assets, uint32_t numAssets)
 {
+    SCOPED_STAT("DiscoverEmbeddedAssets");
     if (numAssets > 0)
     {
         for (uint32_t i = 0; i < numAssets; ++i)

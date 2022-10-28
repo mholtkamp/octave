@@ -196,7 +196,7 @@ void NetworkManager::Shutdown()
 
 void NetworkManager::PreTickUpdate(float deltaTime)
 {
-    SCOPED_CPU_STAT("Network");
+    SCOPED_FRAME_STAT("Network");
 
 #if DEBUG_MSG_STATS
     LogDebug("Sent[%d] %d, Recv[%d] %d", sNumPacketsSent, mBytesSent, sNumPacketsReceived, mBytesReceived);
@@ -254,7 +254,7 @@ void NetworkManager::PreTickUpdate(float deltaTime)
 
 void NetworkManager::PostTickUpdate(float deltaTime)
 {
-    SCOPED_CPU_STAT("Network");
+    SCOPED_FRAME_STAT("Network");
 
     if (mNetStatus == NetStatus::Server)
     {
