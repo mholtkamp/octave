@@ -71,7 +71,7 @@ ASSIMP_DIR	:=	$(CURDIR)/../External/Assimp
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS	= -g -O0 -Wall $(MACHDEP) -DPLATFORM_LINUX=1 -DAPI_VULKAN=1 $(INCLUDE)
+CFLAGS	= -g -O2 -Wall $(MACHDEP) -DPLATFORM_LINUX=1 -DAPI_VULKAN=1 $(INCLUDE)
 
 ifeq ($(strip $(EDITOR)),)
 CFLAGS	+=	-DEDITOR=0
