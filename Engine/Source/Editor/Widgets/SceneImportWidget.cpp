@@ -1,3 +1,5 @@
+#if EDITOR
+
 #include "Widgets/SceneImportWidget.h"
 #include "Renderer.h"
 #include "InputDevices.h"
@@ -234,4 +236,4 @@ void SceneImportWidget::Update()
     }
 }
 
-SceneImportOptions mImportOptions;
+#endif
