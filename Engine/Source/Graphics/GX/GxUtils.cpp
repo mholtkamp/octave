@@ -151,6 +151,8 @@ void PrepareForwardRendering()
 void PrepareUiRendering()
 {
     GX_SetCullMode(GX_CULL_NONE);
+    GX_SetColorUpdate(GX_TRUE);
+    GX_SetAlphaUpdate(GX_FALSE);
 
     // Setup matrices
     glm::vec2 res = Renderer::Get()->GetScreenResolution();
