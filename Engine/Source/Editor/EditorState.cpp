@@ -312,6 +312,7 @@ void EjectPlayInEditor()
     if (sEditorState.mPlayInEditor &&
         !sEditorState.mEjected)
     {
+        SetSelectedComponent(nullptr);
         sEditorState.mInjectedCamera = GetWorld()->GetActiveCamera();
 
         if (sEditorState.mEjectedCamera == nullptr)
@@ -338,6 +339,8 @@ void InjectPlayInEditor()
     if (sEditorState.mPlayInEditor &&
         sEditorState.mEjected)
     {
+        SetSelectedComponent(nullptr);
+
         if (sEditorState.mInjectedCamera != nullptr)
         {
             GetWorld()->SetActiveCamera(sEditorState.mInjectedCamera.Get<CameraComponent>());
