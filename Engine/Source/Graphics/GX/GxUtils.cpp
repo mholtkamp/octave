@@ -66,7 +66,8 @@ void SetupLights()
     // Setup point lights
     const std::vector<PointLightComponent*>& pointLights = GetWorld()->GetPointLights();
 
-    for (uint32_t i = 0; i < pointLights.size(); ++i)
+    // Light0 is reserved for directional light, in the future we might allow multiple dir lights.
+    for (uint32_t i = 0; i < pointLights.size() && i < 7; ++i)
     {
         PointLightComponent* pointLightComp = pointLights[i];
         GXLightObj gxPointLight;
@@ -103,14 +104,6 @@ void SetupLightingChannels()
         // If we are using vertex color modulation, then we use the first channel for that
         // since the vertex color can't go as input in the COLOR1A1 unless you have two vertex color attributes.
         GX_SetNumChans(curState.mColorChannel ? 2 : 1);
-        GX_SetChanCtrl(
-            curState.mColorChannel ? GX_COLOR1A1 : GX_COLOR0A0,
-            curState.mEnabled,
-            GX_SRC_REG,
-            curState.mMaterialSrc,
-            curState.mLightMask,
-            curState.mDiffuseFunc,
-            curState.mAttenuationFunc);
 
         if (curState.mColorChannel)
         {
@@ -123,6 +116,28 @@ void SetupLightingChannels()
                 GX_DF_NONE,
                 GX_AF_NONE);
         }
+        else
+        {
+            // I was crashing without "zeroing" the second channel even
+            // when it wasn't in use.
+            GX_SetChanCtrl(
+                GX_COLOR1A1,
+                false,
+                GX_SRC_VTX,
+                GX_SRC_VTX,
+                0,
+                GX_DF_NONE,
+                GX_AF_NONE);
+        }
+
+        GX_SetChanCtrl(
+            curState.mColorChannel ? GX_COLOR1A1 : GX_COLOR0A0,
+            curState.mEnabled,
+            GX_SRC_REG,
+            curState.mMaterialSrc,
+            curState.mLightMask,
+            curState.mDiffuseFunc,
+            curState.mAttenuationFunc);
 
         prevState = curState;
     }
