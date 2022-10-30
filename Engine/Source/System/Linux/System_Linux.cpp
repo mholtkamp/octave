@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string>
 #include <assert.h>
+#include <signal.h>
 
 extern bool gWarpCursor;
 extern int32_t gWarpCursorX;
@@ -665,6 +666,7 @@ void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNum
 {
     const char* fileName = strrchr(fileString, '/') ? strrchr(fileString, '/') + 1 : fileString;
     LogError("[Assert] %s, %s, line %d", exprString, fileName, lineNumber);
+    raise(SIGTRAP);
 }
 
 void SYS_UpdateConsole()
