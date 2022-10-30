@@ -67,7 +67,7 @@ bool PrepFunctionCall(lua_State* L, std::string& tableName, std::string& funcNam
 void ExecFunctionCall(lua_State* L, const std::string& tableName, int argCount)
 {
     // The self parameter is always passed as arg1
-    assert(argCount >= 1);
+    OCT_ASSERT(argCount >= 1);
     ScriptComponent* scriptComp = ScriptComponent::FindScriptCompFromTableName(tableName);
 
     if (scriptComp)

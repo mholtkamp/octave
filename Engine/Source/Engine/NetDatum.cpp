@@ -31,7 +31,7 @@ bool NetDatum::ShouldReplicate() const
         return false;
 
     // NetDatum count should never change after init.
-    assert(mPrevCount == 0 ||
+    OCT_ASSERT(mPrevCount == 0 ||
            mPrevCount == mCount);
 
     if (mAlwaysReplicate)
@@ -55,8 +55,8 @@ bool NetDatum::ShouldReplicate() const
             case DatumType::Asset: equal = (mPrevData.as[i] == mData.as[i]); break;
             case DatumType::Enum: equal = (mPrevData.e[i] == mData.e[i]); break;
             case DatumType::Byte: equal = (mPrevData.by[i] == mData.by[i]); break;
-            case DatumType::Table: equal = false; assert(0); break; // Table not supported for replication
-            case DatumType::Pointer: equal = false; assert(0); break; // Pointers not supported for replication
+            case DatumType::Table: equal = false; OCT_ASSERT(0); break; // Table not supported for replication
+            case DatumType::Pointer: equal = false; OCT_ASSERT(0); break; // Pointers not supported for replication
 
             case DatumType::Count: break;
         }
@@ -72,14 +72,14 @@ bool NetDatum::ShouldReplicate() const
 
 void NetDatum::PostReplicate()
 {
-    assert(mType != DatumType::Count);
+    OCT_ASSERT(mType != DatumType::Count);
 
     // NetDatums should never change size (except at initialization)
     // We could possible get rid off the mPrevCount member, but I'm using it
     // for sanity checking that the size doesn't change. It could be made Debug only?
     if (mPrevData.vp == nullptr)
     {
-        assert(mPrevCount == 0);
+        OCT_ASSERT(mPrevCount == 0);
         mPrevData.vp = malloc(mCount * GetDataTypeSize());
         for (uint32_t i = 0; i < mCount; ++i)
         {
@@ -104,8 +104,8 @@ void NetDatum::PostReplicate()
             case DatumType::Asset: mPrevData.as[i] = mData.as[i]; break;
             case DatumType::Enum: mPrevData.e[i] = mData.e[i]; break;
             case DatumType::Byte: mPrevData.by[i] = mData.by[i]; break;
-            case DatumType::Table: assert(0); break; // Table not supported for replication
-            case DatumType::Pointer: assert(0); break; // Pointer not supported for replication
+            case DatumType::Table: OCT_ASSERT(0); break; // Table not supported for replication
+            case DatumType::Pointer: OCT_ASSERT(0); break; // Pointer not supported for replication
 
             case DatumType::Count: break;
         }

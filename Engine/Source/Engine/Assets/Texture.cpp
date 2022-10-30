@@ -55,7 +55,7 @@ DEFINE_ASSET(Texture);
 bool Texture::HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     Texture* texture = static_cast<Texture*>(prop->mOwner);
     bool success = false;
 
@@ -235,7 +235,7 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
         break;
     }
 
-    default: assert(0); break;
+    default: OCT_ASSERT(0); break;
     }
 
     SYS_Exec(cookCmd.c_str());
@@ -335,7 +335,7 @@ void Texture::SaveStream(Stream& stream, Platform platform)
     else
     {
         // If not using an custom formats, just write out the raw RGBA8 pixels, uncompressed.
-        assert(mPixels.size() == (mWidth * mHeight * RGBA8_SIZE));
+        OCT_ASSERT(mPixels.size() == (mWidth * mHeight * RGBA8_SIZE));
         for (int32_t i = 0; i < int32_t(mPixels.size()); ++i)
         {
             stream.WriteUint8(mPixels[i]);
@@ -383,7 +383,7 @@ void Texture::Import(const std::string& path)
     if (pixels == nullptr)
     {
         LogError("Failed to load texture image");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     mPixels.resize(imageSize);
@@ -430,9 +430,9 @@ const char* Texture::GetTypeImportExt()
 
 void Texture::Init(uint32_t width, uint32_t height, uint8_t* data)
 {
-    assert(width > 0);
-    assert(height > 0);
-    assert(data != nullptr);
+    OCT_ASSERT(width > 0);
+    OCT_ASSERT(height > 0);
+    OCT_ASSERT(data != nullptr);
 
     mWidth = width;
     mHeight = height;

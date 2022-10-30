@@ -18,7 +18,7 @@ int ActorRef_Lua::Create(lua_State* L)
     ActorRef_Lua* newRef = (ActorRef_Lua*)lua_newuserdata(L, sizeof(ActorRef_Lua));
     new (newRef) ActorRef_Lua();
     luaL_getmetatable(L, ACTOR_REF_LUA_NAME);
-    assert(lua_istable(L, -1));
+    OCT_ASSERT(lua_istable(L, -1));
     lua_setmetatable(L, -2);
 
     if (srcActor != nullptr)
@@ -64,7 +64,7 @@ int ActorRef_Lua::Set(lua_State* L)
 void ActorRef_Lua::Bind()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     luaL_newmetatable(L, ACTOR_REF_LUA_NAME);
     int mtIndex = lua_gettop(L);
@@ -87,7 +87,7 @@ void ActorRef_Lua::Bind()
 
     lua_setglobal(L, ACTOR_REF_LUA_NAME);
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

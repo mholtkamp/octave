@@ -36,7 +36,7 @@ bool ScriptComponent::HandlePropChange(Datum* datum, const void* newValue)
 
     Property* prop = static_cast<Property*>(datum);
 
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     ScriptComponent* scriptComp = static_cast<ScriptComponent*>(prop->mOwner);
     bool success = false;
 
@@ -90,8 +90,8 @@ bool ScriptComponent::HandleScriptPropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
 
-    assert(prop != nullptr);
-    assert(!prop->mExternal);
+    OCT_ASSERT(prop != nullptr);
+    OCT_ASSERT(!prop->mExternal);
     ScriptComponent* comp = static_cast<ScriptComponent*>(prop->mOwner);
 
     prop->SetValueRaw(newValue);
@@ -109,8 +109,8 @@ bool ScriptComponent::HandleForeignScriptPropChange(Datum* datum, const void* ne
     // to propagate the changes made to them so that they reflect the ScriptComponent's properties.
     Property* prop = static_cast<Property*>(datum);
 
-    assert(prop != nullptr);
-    assert(!prop->mExternal);
+    OCT_ASSERT(prop != nullptr);
+    OCT_ASSERT(!prop->mExternal);
     ScriptComponent* comp = static_cast<ScriptComponent*>(prop->mOwner);
 
     prop->SetValueRaw(newValue);
@@ -465,7 +465,7 @@ void ScriptComponent::GatherScriptProperties()
                                 case DatumType::Count:
                                 {
                                     push = false;
-                                    assert(0); // Unreachable
+                                    OCT_ASSERT(0); // Unreachable
                                     break;
                                 }
                                 }
@@ -695,7 +695,7 @@ void ScriptComponent::GatherReplicatedData()
                                 case DatumType::Count:
                                 {
                                     push = false;
-                                    assert(0); // Unreachable
+                                    OCT_ASSERT(0); // Unreachable
                                     break;
                                 }
                                 }
@@ -848,7 +848,7 @@ void ScriptComponent::DownloadReplicatedData()
     if (mTableName != "")
     {
         lua_getglobal(L, mTableName.c_str());
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
         int tableIdx = lua_gettop(L);
 
         for (uint32_t i = 0; i < mReplicatedData.size(); ++i)
@@ -1044,7 +1044,7 @@ bool ScriptComponent::DownloadDatum(lua_State* L, Datum& datum, int tableIdx, co
         case DatumType::Count:
         {
             success = false;
-            assert(0); // Unreachable
+            OCT_ASSERT(0); // Unreachable
             break;
         }
         }
@@ -1088,7 +1088,7 @@ void ScriptComponent::UploadDatum(Datum& datum, const char* varName)
         case DatumType::Pointer:
         case DatumType::Count:
             // These datum types are not supported.
-            assert(0);
+            OCT_ASSERT(0);
             break;
         }
 
@@ -1149,7 +1149,7 @@ bool ScriptComponent::LoadScriptFile(const std::string& fileName, const std::str
         // Assign the __index metamethod to itself, so that tables with the class metatable
         // will have access to its methods/properties.
         lua_getglobal(L, className.c_str());
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
 
         lua_pushvalue(L, -1);
         lua_setfield(L, -2, "__index");
@@ -1244,7 +1244,7 @@ void ScriptComponent::InvokeNetFunc(const char* name, std::vector<Datum>& params
     ScriptNetFunc* netFunc = FindNetFunc(name);
     Actor* actor = GetOwner();
 
-    assert(numParams <= MAX_NET_FUNC_PARAMS);
+    OCT_ASSERT(numParams <= MAX_NET_FUNC_PARAMS);
     Datum* paramArray[MAX_NET_FUNC_PARAMS];
     for (uint32_t i = 0; i < MAX_NET_FUNC_PARAMS; ++i)
     {
@@ -1279,7 +1279,7 @@ void ScriptComponent::BeginOverlap(PrimitiveComponent* thisComp, PrimitiveCompon
 
         // Grab the table
         lua_getglobal(L, mTableName.c_str());
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
         int tableIdx = lua_gettop(L);
         lua_getfield(L, tableIdx, "BeginOverlap");
 
@@ -1315,7 +1315,7 @@ void ScriptComponent::EndOverlap(PrimitiveComponent* thisComp, PrimitiveComponen
 
         // Grab the table
         lua_getglobal(L, mTableName.c_str());
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
         int tableIdx = lua_gettop(L);
         lua_getfield(L, tableIdx, "EndOverlap");
 
@@ -1356,7 +1356,7 @@ void ScriptComponent::OnCollision(
 
         // Grab the table
         lua_getglobal(L, mTableName.c_str());
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
         int tableIdx = lua_gettop(L);
         lua_getfield(L, tableIdx, "OnCollision");
 
@@ -1515,7 +1515,7 @@ void ScriptComponent::CallFunction(const char* name, uint32_t numParams, const D
 
         // Grab the script instance table
         lua_getglobal(L, mTableName.c_str());
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
         lua_getfield(L, -1, name);
 
 
@@ -1561,7 +1561,7 @@ Datum ScriptComponent::GetField(const char* key)
 
         // Grab the script instance table
         lua_getglobal(L, mTableName.c_str());
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
         lua_getfield(L, -1, key);
 
         LuaObjectToDatum(L, -1, ret);
@@ -1593,7 +1593,7 @@ bool ScriptComponent::OnRepHandler(Datum* datum, const void* newValue)
 
     lua_State* L = GetLua();
 
-    assert(!NetIsAuthority());
+    OCT_ASSERT(!NetIsAuthority());
     bool onRepFunc = (netDatum->mOnRepFuncName != "");
 
     int oldValueIdx = 0;
@@ -1611,7 +1611,7 @@ bool ScriptComponent::OnRepHandler(Datum* datum, const void* newValue)
     {
         // Grab the table
         lua_getglobal(L, comp->mTableName.c_str());
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
         int tableIdx = lua_gettop(L);
         lua_getfield(L, tableIdx, netDatum->mOnRepFuncName.c_str());
 
@@ -1788,7 +1788,7 @@ void ScriptComponent::CreateScriptInstance()
 
             // Retrieve the prototype class table
             lua_getglobal(L, mClassName.c_str());
-            assert(lua_istable(L, -1));
+            OCT_ASSERT(lua_istable(L, -1));
             int classTableIdx = lua_gettop(L);
 
             // Check if the class table has a New function, if so call it to initialize the object (needed for setting up inheritance).
@@ -1944,7 +1944,7 @@ void ScriptComponent::CallTick(float deltaTime)
 
         // Grab the table
         lua_getglobal(L, mTableName.c_str());
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
         lua_getfield(L, -1, "Tick");
 
         if (lua_isfunction(L, -1))
@@ -1980,7 +1980,7 @@ bool ScriptComponent::CheckIfFunctionExists(const char* funcName)
     {
         lua_State* L = GetLua();
         lua_getglobal(L, mTableName.c_str());
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
         lua_getfield(L, -1, funcName);
 
         if (lua_isfunction(L, -1))

@@ -12,6 +12,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <string>
+#include <assert.h>
 
 extern bool gWarpCursor;
 extern int32_t gWarpCursorX;
@@ -118,7 +119,7 @@ void SYS_Initialize()
     if (error != 0)
     {
         LogError("Failed to open XCB connection");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     LogDebug("XCB connection opened");
@@ -545,7 +546,7 @@ void* SYS_AlignedMalloc(uint32_t size, uint32_t alignment)
 
 void SYS_AlignedFree(void* pointer)
 {
-    assert(pointer != nullptr);
+    OCT_ASSERT(pointer != nullptr);
     free(pointer);
 }
 
@@ -660,6 +661,12 @@ void SYS_UnmountMemoryCard()
 }
 
 // Misc
+void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
+{
+    const char* fileName = strrchr(fileString, '/') ? strrchr(fileString, '/') + 1 : fileString;
+    LogError("[Assert] %s, %s, line %d", exprString, fileName, lineNumber);
+}
+
 void SYS_UpdateConsole()
 {
 

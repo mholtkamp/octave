@@ -81,7 +81,7 @@ void System_Lua::Bind()
 
     lua_setglobal(L, "System");
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

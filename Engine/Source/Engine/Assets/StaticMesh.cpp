@@ -24,7 +24,7 @@ DEFINE_ASSET(StaticMesh);
 bool StaticMesh::HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     StaticMesh* mesh = static_cast<StaticMesh*>(prop->mOwner);
 
     bool handled = false;
@@ -146,7 +146,7 @@ void StaticMesh::LoadStream(Stream& stream, Platform platform)
     // Collision shapes
     bool compound = stream.ReadBool();
     uint32_t numCollisionShapes = stream.ReadUint32();
-    assert(numCollisionShapes <= MAX_COLLISION_SHAPES);
+    OCT_ASSERT(numCollisionShapes <= MAX_COLLISION_SHAPES);
     btCollisionShape* collisionShapes[MAX_COLLISION_SHAPES] = {};
     btTransform collisionTransforms[MAX_COLLISION_SHAPES] = {};
 
@@ -270,7 +270,7 @@ void StaticMesh::SaveStream(Stream& stream, Platform platform)
         {
             compoundShape = static_cast<btCompoundShape*>(mCollisionShape);
             numCollisionShapes = (uint32_t) compoundShape->getNumChildShapes();
-            assert(numCollisionShapes >= 1 && numCollisionShapes < MAX_COLLISION_SHAPES);
+            OCT_ASSERT(numCollisionShapes >= 1 && numCollisionShapes < MAX_COLLISION_SHAPES);
 
             for (uint32_t i = 0; i < numCollisionShapes; ++i)
             {
@@ -358,7 +358,7 @@ void StaticMesh::Create()
 {
     Asset::Create();
 
-    assert(mNumVertices <= MAX_MESH_VERTEX_COUNT); // Vertex index must fit into IndexType width.
+    OCT_ASSERT(mNumVertices <= MAX_MESH_VERTEX_COUNT); // Vertex index must fit into IndexType width.
     GFX_CreateStaticMeshResource(
         this,
         mHasVertexColor,
@@ -510,13 +510,13 @@ bool StaticMesh::HasVertexColor() const
 
 Vertex* StaticMesh::GetVertices()
 {
-    assert(!mHasVertexColor);
+    OCT_ASSERT(!mHasVertexColor);
     return reinterpret_cast<Vertex*>(mVertices);
 }
 
 VertexColor* StaticMesh::GetColorVertices()
 {
-    assert(mHasVertexColor);
+    OCT_ASSERT(mHasVertexColor);
     return reinterpret_cast<VertexColor*>(mVertices);
 }
 
@@ -587,7 +587,7 @@ void StaticMesh::SetCollisionShapes(uint32_t numCollisionShapes, btCollisionShap
         }
 
 #if CREATE_CONVEX_COLLISION_MESH
-        assert(mCollisionMeshes.size() == 0);
+        OCT_ASSERT(mCollisionMeshes.size() == 0);
         for (uint32_t i = 0; i < numCollisionShapes; ++i)
         {
             CreateCollisionMesh(collisionShapes[i]);
@@ -625,9 +625,9 @@ uint32_t StaticMesh::GetVertexSize() const
 
 void StaticMesh::CreateTriangleCollisionShape()
 {
-    assert(mTriangleIndexVertexArray == nullptr);
-    assert(mTriangleCollisionShape == nullptr);
-    assert(mNumIndices % 3 == 0);
+    OCT_ASSERT(mTriangleIndexVertexArray == nullptr);
+    OCT_ASSERT(mTriangleCollisionShape == nullptr);
+    OCT_ASSERT(mNumIndices % 3 == 0);
 
     mTriangleIndexVertexArray = new btTriangleIndexVertexArray();
 
@@ -839,7 +839,7 @@ void StaticMesh::Create(
     for (uint32_t i = 0; i < meshData.mNumFaces; ++i)
     {
         // Enforce triangulated faces
-        assert(faces[i].mNumIndices == 3);
+        OCT_ASSERT(faces[i].mNumIndices == 3);
         mIndices[i * 3 + 0] = (IndexType) faces[i].mIndices[0];
         mIndices[i * 3 + 1] = (IndexType) faces[i].mIndices[1];
         mIndices[i * 3 + 2] = (IndexType) faces[i].mIndices[2];

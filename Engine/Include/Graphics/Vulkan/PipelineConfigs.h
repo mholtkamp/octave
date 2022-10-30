@@ -7,7 +7,7 @@
 
 #include "Graphics/Vulkan/Pipeline.h"
 
-#include <assert.h>
+#include "Assertion.h"
 
 #define ENGINE_SHADER_DIR "Engine/Shaders/GLSL/bin/"
 

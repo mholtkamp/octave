@@ -246,7 +246,7 @@ void SkeletalMesh::SaveStream(Stream& stream, Platform platform)
         }
     }
 
-    assert(mNumVertices == mVertices.size());
+    OCT_ASSERT(mNumVertices == mVertices.size());
     for (uint32_t i = 0; i < mNumVertices; ++i)
     {
         stream.WriteVec3(mVertices[i].mPosition);
@@ -263,7 +263,7 @@ void SkeletalMesh::SaveStream(Stream& stream, Platform platform)
         stream.WriteFloat(mVertices[i].mBoneWeights[3]);
     }
 
-    assert(mNumIndices == mIndices.size());
+    OCT_ASSERT(mNumIndices == mIndices.size());
     for (uint32_t i = 0; i < mNumIndices; ++i)
     {
         stream.WriteUint32(mIndices[i]);
@@ -279,7 +279,7 @@ void SkeletalMesh::Create()
 {
     Asset::Create();
 
-    assert(mNumVertices <= MAX_MESH_VERTEX_COUNT); // Vertex index must fit into IndexType width.
+    OCT_ASSERT(mNumVertices <= MAX_MESH_VERTEX_COUNT); // Vertex index must fit into IndexType width.
 
     GFX_CreateSkeletalMeshResource(this, mNumVertices, mVertices.data(), mNumIndices, mIndices.data());
 
@@ -310,19 +310,19 @@ void SkeletalMesh::Import(const std::string& path)
         if (scene == nullptr)
         {
             LogError("Failed to load dae file");
-            assert(0);
+            OCT_ASSERT(0);
         }
 
         if (scene->mNumMeshes < 1)
         {
             LogError("Failed to find any meshes in dae file");
-            assert(0);
+            OCT_ASSERT(0);
         }
 
         if (!scene->mMeshes[0]->HasBones())
         {
             LogError("Skeletal mesh has no bones");
-            assert(0);
+            OCT_ASSERT(0);
         }
 
         Create(*scene, *scene->mMeshes[0]);
@@ -630,7 +630,7 @@ void SkeletalMesh::Create(const aiScene& scene,
 
             if (insertIndex < MAX_BONE_INFLUENCES)
             {
-                assert(insertIndex >= 0);
+                OCT_ASSERT(insertIndex >= 0);
 
                 // Shift all weights forward one index to make room for the new weight/index.
                 for (int32_t i = MAX_BONE_INFLUENCES - 1; i > insertIndex; --i)
@@ -656,11 +656,11 @@ void SkeletalMesh::Create(const aiScene& scene,
     //{
     //    if (i == 0)
     //    {
-    //        assert(mBones[i].mParentIndex == -1);
+    //        OCT_ASSERT(mBones[i].mParentIndex == -1);
     //    }
     //    else
     //    {
-    //        assert(mBones[i].mParentIndex >= 0 && 
+    //        OCT_ASSERT(mBones[i].mParentIndex >= 0 && 
     //               mBones[i].mParentIndex < mBones.size() &&
     //               mBones[i].mParentIndex != i);
     //    }
@@ -694,7 +694,7 @@ void SkeletalMesh::SetupBoneHierarchy(const aiNode& node, int32_t parentBoneInde
                 {
                     // I'm assuming that all parent bones come before child bones in the mesh bone array.
                     // This makes the bone matrix updates easier since we can iterate linearly from index 0.
-                    assert(parentBoneIndex < (int32_t)i);
+                    OCT_ASSERT(parentBoneIndex < (int32_t)i);
                     mBones[i].mParentIndex = parentBoneIndex;
                     break;
                 }
@@ -715,7 +715,7 @@ void SkeletalMesh::SetupAnimations(const aiScene& scene)
     for (uint32_t animIndex = 0; animIndex < scene.mNumAnimations; ++animIndex)
     {
         const aiAnimation* srcAnim = scene.mAnimations[animIndex];
-        assert(srcAnim);
+        OCT_ASSERT(srcAnim);
 
         mAnimations.push_back(Animation());
         Animation& dstAnim = mAnimations.back();
@@ -728,7 +728,7 @@ void SkeletalMesh::SetupAnimations(const aiScene& scene)
         for (uint32_t channelIndex = 0; channelIndex < srcAnim->mNumChannels; ++channelIndex)
         {
             const aiNodeAnim* srcChannel = srcAnim->mChannels[channelIndex];
-            assert(srcChannel);
+            OCT_ASSERT(srcChannel);
 
             // Find which bone index matches the node name.
             int32_t boneIndex = -1;
@@ -752,7 +752,7 @@ void SkeletalMesh::SetupAnimations(const aiScene& scene)
                 AnimEventTrack newTrack;
                 newTrack.mName = eventName;
 
-                assert(srcChannel->mNumPositionKeys > 0);
+                OCT_ASSERT(srcChannel->mNumPositionKeys > 0);
 
                 if (srcChannel->mNumPositionKeys > 0)
                 {
@@ -774,7 +774,7 @@ void SkeletalMesh::SetupAnimations(const aiScene& scene)
                     for (AnimEventTrack& track : dstAnim.mEventTracks)
                     {
                         // Ensure there is not somehow a duplicate track. Shouldn't happen...
-                        assert(track.mName != newTrack.mName);
+                        OCT_ASSERT(track.mName != newTrack.mName);
                     }
 
                     dstAnim.mEventTracks.push_back(newTrack);
@@ -909,7 +909,7 @@ void SkeletalMesh::SetupResource(const aiMesh& meshData,
     for (uint32_t i = 0; i < meshData.mNumFaces; ++i)
     {
         // Enforce triangulated faces
-        assert(faces[i].mNumIndices == 3);
+        OCT_ASSERT(faces[i].mNumIndices == 3);
         mIndices[i * 3 + 0] = faces[i].mIndices[0];
         mIndices[i * 3 + 1] = faces[i].mIndices[1];
         mIndices[i * 3 + 2] = faces[i].mIndices[2];

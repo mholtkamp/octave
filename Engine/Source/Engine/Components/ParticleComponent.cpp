@@ -17,7 +17,7 @@ DEFINE_COMPONENT(ParticleComponent);
 static bool HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     ParticleComponent* particleComp = static_cast<ParticleComponent*>(prop->mOwner);
     bool success = false;
 

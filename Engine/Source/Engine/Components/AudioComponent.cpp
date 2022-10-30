@@ -20,7 +20,7 @@ DEFINE_COMPONENT(AudioComponent);
 static bool HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     AudioComponent* comp = static_cast<AudioComponent*>(prop->mOwner);
     bool success = false;
 

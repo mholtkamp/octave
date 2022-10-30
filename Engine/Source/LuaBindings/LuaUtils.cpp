@@ -4,7 +4,7 @@
 #include "Constants.h"
 #include "AssetManager.h"
 
-#include <assert.h>
+#include "Assertion.h"
 
 #include "LuaBindings/Actor_Lua.h"
 #include "LuaBindings/Component_Lua.h"

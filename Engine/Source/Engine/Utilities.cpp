@@ -218,7 +218,7 @@ uint32_t OctHashString(const char* key)
 {
     // Using the "CRC" variant from this website:
     // https://www.cs.hmc.edu/~geoff/classes/hmc.cs070.200101/homework10/hashfuncs.html
-    assert(key != nullptr);
+    OCT_ASSERT(key != nullptr);
 
     uint32_t h = 0;
     const char* keyChar = key;
@@ -262,7 +262,7 @@ void CopyPropertyValues(std::vector<Property>& dstProps, const std::vector<Prope
             }
             else
             {
-                assert(dstProp->mCount == srcProp->mCount);
+                OCT_ASSERT(dstProp->mCount == srcProp->mCount);
             }
             
             dstProp->SetValue(srcProp->mData.vp, 0, srcProp->mCount);
@@ -355,7 +355,7 @@ void AddDebugDraw(
 #if LUA_ENABLED
 void CreateTableLua(lua_State* L, const Datum& datum)
 {
-    assert(datum.GetType() == DatumType::Table);
+    OCT_ASSERT(datum.GetType() == DatumType::Table);
     if (datum.GetType() == DatumType::Table)
     {
         lua_newtable(L);
@@ -392,7 +392,7 @@ void CreateTableLua(lua_State* L, const Datum& datum)
 
 void CreateTableCpp(lua_State* L, int tableIdx, Datum& datum)
 {
-    assert(datum.GetType() == DatumType::Count ||
+    OCT_ASSERT(datum.GetType() == DatumType::Count ||
            datum.GetType() == DatumType::Table);
 
     if (lua_istable(L, tableIdx))
@@ -476,7 +476,7 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
         break;
     }
 
-    default: lua_pushnil(L); assert(0); break;
+    default: lua_pushnil(L); OCT_ASSERT(0); break;
     }
 }
 

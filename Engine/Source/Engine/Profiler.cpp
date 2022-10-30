@@ -5,7 +5,7 @@
 #include "Clock.h"
 #include "Log.h"
 
-#include <assert.h>
+#include "Assertion.h"
 
 static Profiler* sProfiler = nullptr;
 
@@ -65,7 +65,7 @@ void Profiler::EndCpuStat(const char* name, bool persistent)
 {
 #if PROFILING_ENABLED
     CpuStat* stat = FindCpuStat(name, persistent);
-    assert(stat);
+    OCT_ASSERT(stat);
 
     if (stat)
     {

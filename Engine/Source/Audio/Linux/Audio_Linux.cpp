@@ -41,7 +41,7 @@ void AUD_Initialize()
     if( err < 0 )
     {
         LogError("Cannot open audio device");
-        assert(0);
+        OCT_ASSERT(0);
         return;
     }
     else
@@ -52,14 +52,14 @@ void AUD_Initialize()
     if ((err = snd_pcm_hw_params_malloc (&hw_params)) < 0)
     {
         LogError("Failed to allocate hardware params");
-        assert(0);
+        OCT_ASSERT(0);
         return;
     }
 
     if ((err = snd_pcm_hw_params_any(sSoundDevice, hw_params)) < 0)
     {
         LogError("Failed to initialize hardware params");
-        assert(0);
+        OCT_ASSERT(0);
         return;
     }
 
@@ -122,7 +122,7 @@ void AUD_Update()
     if (frames > 0)
     {
         // We need to mix an audio buffer
-        //assert(frames * 4  <= int32_t(sMixBufferLen));
+        //OCT_ASSERT(frames * 4  <= int32_t(sMixBufferLen));
         memset(sMixBuffer, 0, frames * 4);
 
         for (uint32_t i = 0; i < AUDIO_MAX_VOICES; ++i)
@@ -130,7 +130,7 @@ void AUD_Update()
             if (sVoices[i].mActive)
             {
                 SoundVoice& voice = sVoices[i];
-                assert(voice.mSrcFrames > 0);
+                OCT_ASSERT(voice.mSrcFrames > 0);
 
                 // If the voice is active, that means we need to mix *frames* number of frames
                 // into the mix buffer. The src voice may move at a faster or slower pace based on the 
@@ -253,7 +253,7 @@ void AUD_Play(
     float startTime,
     bool spatial)
 {
-    assert(!sVoices[voiceIndex].mActive);
+    OCT_ASSERT(!sVoices[voiceIndex].mActive);
 
     sVoices[voiceIndex].mActive = true;
     sVoices[voiceIndex].mBytesPerSample = soundWave->GetBitsPerSample() / 8;
@@ -270,8 +270,8 @@ void AUD_Play(
     int32_t bytesPerFrame = sVoices[voiceIndex].mBytesPerSample * sVoices[voiceIndex].mNumChannels;
     sVoices[voiceIndex].mSrcFrames = sVoices[voiceIndex].mSrcBufferLen / bytesPerFrame;
 
-    assert(sVoices[voiceIndex].mSrcBufferLen % bytesPerFrame == 0);
-    assert(bytesPerFrame > 0 &&
+    OCT_ASSERT(sVoices[voiceIndex].mSrcBufferLen % bytesPerFrame == 0);
+    OCT_ASSERT(bytesPerFrame > 0 &&
            bytesPerFrame <= 4);
 }
 

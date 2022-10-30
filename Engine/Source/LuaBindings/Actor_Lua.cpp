@@ -33,10 +33,10 @@ int Actor_Lua::Create(lua_State* L, Actor* actor)
             luaL_getmetatable(L, ACTOR_LUA_NAME);
         }
 
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
         lua_setmetatable(L, udIndex);
 
-        assert(lua_gettop(L) == udIndex);
+        OCT_ASSERT(lua_gettop(L) == udIndex);
     }
     else
     {
@@ -371,7 +371,7 @@ int Actor_Lua::ForceReplication(lua_State* L)
 int Actor_Lua::GetComponent(lua_State* L)
 {
     Actor* actor = CHECK_ACTOR(L, 1);
-    assert(lua_isstring(L, 2) || lua_isnumber(L, 2));
+    OCT_ASSERT(lua_isstring(L, 2) || lua_isnumber(L, 2));
 
     Component* targetComp = nullptr;
 
@@ -474,7 +474,7 @@ int Actor_Lua::GetScript(lua_State* L)
                 {
                     // Should not happen? The component has a table registered
                     // but it doesn't exist in the lua state.
-                    assert(0);
+                    OCT_ASSERT(0);
                     lua_pop(L, 1);
                 }
             }
@@ -651,7 +651,7 @@ void Actor_Lua::Bind()
     lua_setfield(L, mtIndex, "RemoveTag");
 
     lua_pop(L, 1);
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

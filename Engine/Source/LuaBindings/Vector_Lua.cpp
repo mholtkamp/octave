@@ -15,7 +15,7 @@ int Vector_Lua::Create(lua_State* L)
     Vector_Lua* newVector = (Vector_Lua*)lua_newuserdata(L, sizeof(Vector_Lua));
     new (newVector) Vector_Lua();
     luaL_getmetatable(L, VECTOR_LUA_NAME);
-    assert(lua_istable(L, -1));
+    OCT_ASSERT(lua_istable(L, -1));
     lua_setmetatable(L, -2);
 
     // Initialize members is args were passed
@@ -45,7 +45,7 @@ int Vector_Lua::Create(lua_State* L, glm::vec4 value)
     new (newVector) Vector_Lua();
     newVector->mVector = value;
     luaL_getmetatable(L, VECTOR_LUA_NAME);
-    assert(lua_istable(L, -1));
+    OCT_ASSERT(lua_istable(L, -1));
     lua_setmetatable(L, -2);
 
     return 1;
@@ -183,19 +183,19 @@ int Vector_Lua::ToString(lua_State* L)
 int Vector_Lua::Set(lua_State* L)
 {
     int numArgs = lua_gettop(L);
-    assert(numArgs >= 2);
+    OCT_ASSERT(numArgs >= 2);
     glm::vec4& dstVec = CHECK_VECTOR(L, 1);
 
     if (lua_isuserdata(L, 2))
     {
         // Copy value of arg2 to arg1
-        assert(numArgs == 2);
+        OCT_ASSERT(numArgs == 2);
         glm::vec4& srcVec = CHECK_VECTOR(L, 2);
         dstVec = srcVec;
     }
     else
     {
-        assert(numArgs <= 5);
+        OCT_ASSERT(numArgs <= 5);
         dstVec.x = (numArgs >= 2 && lua_isnumber(L,2)) ? lua_tonumber(L, 2) : dstVec.x;
         dstVec.y = (numArgs >= 3 && lua_isnumber(L,3)) ? lua_tonumber(L, 3) : dstVec.y;
         dstVec.z = (numArgs >= 4 && lua_isnumber(L,4)) ? lua_tonumber(L, 4) : dstVec.z;
@@ -541,7 +541,7 @@ int Vector_Lua::Negate(lua_State* L)
 void Vector_Lua::Bind()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     luaL_newmetatable(L, VECTOR_LUA_NAME);
     int mtIndex = lua_gettop(L);
@@ -655,7 +655,7 @@ void Vector_Lua::Bind()
     lua_pushcfunction(L, Vector_Lua::Create);
     lua_setglobal(L, "Vec");
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

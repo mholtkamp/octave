@@ -25,7 +25,7 @@
 #include "Components/ShadowMeshComponent.h"
 #include "Components/TextMeshComponent.h"
 
-#include <assert.h>
+#include "Assertion.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <malloc.h>
@@ -431,7 +431,7 @@ void GFX_CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_
     GX_End();
 
     resource->mDisplayListSize = GX_EndDispList();
-    assert(resource->mDisplayListSize != 0);
+    OCT_ASSERT(resource->mDisplayListSize != 0);
 }
 
 void GFX_DestroyStaticMeshResource(StaticMesh* staticMesh)
@@ -481,7 +481,7 @@ void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* mes
         if (material == nullptr)
         {
             material = Renderer::Get()->GetDefaultMaterial();
-            assert(material != nullptr);
+            OCT_ASSERT(material != nullptr);
         }
 
         BindMaterial(material, mesh->HasVertexColor());
@@ -580,7 +580,7 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
         if (material == nullptr)
         {
             material = Renderer::Get()->GetDefaultMaterial();
-            assert(material != nullptr);
+            OCT_ASSERT(material != nullptr);
         }
 
         BindMaterial(material, false);
@@ -814,7 +814,7 @@ void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp)
     if (material == nullptr)
     {
         material = Renderer::Get()->GetDefaultMaterial();
-        assert(material != nullptr);
+        OCT_ASSERT(material != nullptr);
     }
 
     BindMaterial(material, false);
@@ -904,7 +904,7 @@ void GFX_DrawParticleComp(ParticleComponent* particleComp)
         if (material == nullptr)
         {
             material = Renderer::Get()->GetDefaultMaterial();
-            assert(material != nullptr);
+            OCT_ASSERT(material != nullptr);
         }
 
         BindMaterial(material, true);
@@ -923,7 +923,7 @@ void GFX_DrawParticleComp(ParticleComponent* particleComp)
         GX_LoadPosMtxImm(modelView, GX_PNMTX0);
 
         uint32_t numParticles = particleComp->GetNumParticles();
-        assert(numParticles * 4 == numVertices);
+        OCT_ASSERT(numParticles * 4 == numVertices);
 
         SetupLightingChannels();
 

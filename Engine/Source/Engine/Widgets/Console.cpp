@@ -34,7 +34,7 @@ void Console::WriteOutput(const char* output, glm::vec4 color)
     if (mNumOutputLines > 0)
     {
         uint32_t numChildren = mOutputCanvas->GetNumChildren();
-        assert(numChildren > 0);
+        OCT_ASSERT(numChildren > 0);
 
         uint32_t lastIndex = numChildren - 1;
         ConsoleOutputText* text = (ConsoleOutputText*)mOutputCanvas->RemoveChild(lastIndex);

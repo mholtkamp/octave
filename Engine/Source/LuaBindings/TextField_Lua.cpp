@@ -84,7 +84,7 @@ void TextField_Lua::Bind()
     lua_setfield(L, mtIndex, "GetSelectedTextField");
 
     lua_pop(L, 1);
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

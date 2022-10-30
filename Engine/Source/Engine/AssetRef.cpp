@@ -10,7 +10,7 @@
 
 #include "AssetManager.h"
 
-#include <assert.h>
+#include "Assertion.h"
 
 #if ASSET_REF_VECTOR
 std::vector<AssetRef*> AssetRef::sLiveAssetRefs;
@@ -55,7 +55,7 @@ void AssetRef::AddLiveRef(AssetRef* ref)
         if (sLiveAssetRefs[i] == ref)
         {
             LogError("Duplicate Live Asset Ref");
-            assert(0);
+            OCT_ASSERT(0);
         }
     }
 

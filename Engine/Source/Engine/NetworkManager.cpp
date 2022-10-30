@@ -153,7 +153,7 @@ NetHostId NetGetHostId()
 
 void NetworkManager::Create()
 {
-    assert(sInstance == nullptr);
+    OCT_ASSERT(sInstance == nullptr);
     sInstance = new NetworkManager();
 }
 
@@ -546,7 +546,7 @@ void NetworkManager::SendMessage(const NetMsg* netMsg, NetHostId receiverId)
         mNetStatus == NetStatus::Connecting)
     {
         // Clients can only send messages to the server, not other clients.
-        assert(receiverId == SERVER_HOST_ID);
+        OCT_ASSERT(receiverId == SERVER_HOST_ID);
         hostProfile = &mServer;
     }
     else if (mNetStatus == NetStatus::Server)
@@ -590,7 +590,7 @@ void NetworkManager::SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfi
 
 void NetworkManager::SendMessageToAllClients(const NetMsg* netMsg)
 {
-    assert(IsServer());
+    OCT_ASSERT(IsServer());
     for (uint32_t i = 0; i < mClients.size(); ++i)
     {
         SendMessage(netMsg, &mClients[i]);
@@ -632,7 +632,7 @@ void NetworkManager::SendMessageImmediate(const NetMsg* netMsg, uint32_t ipAddre
     else
     {
         LogError("SendMessageImmediate: message is too large to send. Type = %d", (int) netMsg->GetType());
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 
@@ -883,7 +883,7 @@ void NetworkManager::HandleDisconnect(NetHost host)
 
         // We should have found a client.
         // ProcessMessages() ensures that only messages from clients are processed.
-        assert(removed);
+        OCT_ASSERT(removed);
     }
 }
 
@@ -934,7 +934,7 @@ void NetworkManager::HandleReady(NetHost host)
     if (NetIsClient())
     {
         // Client needs to confirm that it received the Ready message by sending back a Ready message
-        assert(host.mId == SERVER_HOST_ID);
+        OCT_ASSERT(host.mId == SERVER_HOST_ID);
         NetMsgReady readyMsg;
         SendMessage(&readyMsg, &mServer);
     }
@@ -1019,7 +1019,7 @@ static const uint32_t MaxDatumNetSerializeSize =
 
 void NetworkManager::SendReplicateMsg(NetMsgReplicate& repMsg, uint32_t& numVars, NetHostId hostId)
 {
-    assert(numVars > 0);
+    OCT_ASSERT(numVars > 0);
 
     repMsg.mNumVariables = numVars;
 
@@ -1042,7 +1042,7 @@ void NetworkManager::SendInvokeMsg(NetMsgInvoke& msg, Actor* actor, NetFunc* fun
 {
     NetFuncType type = func->mType;
     bool scriptMsg = msg.GetType() == NetMsgType::InvokeScript;
-    assert(scriptMsg || numParams == func->mNumParams); // Script NetFuncs do not setup num params.
+    OCT_ASSERT(scriptMsg || numParams == func->mNumParams); // Script NetFuncs do not setup num params.
 
     msg.mActorNetId = actor->GetNetId();
     msg.mIndex = func->mIndex;
@@ -1060,15 +1060,15 @@ void NetworkManager::SendInvokeMsg(NetMsgInvoke& msg, Actor* actor, NetFunc* fun
     {
     case NetFuncType::Server:
     {
-        assert(mNetStatus == NetStatus::Client);
+        OCT_ASSERT(mNetStatus == NetStatus::Client);
         SendMessage(&msg, &mServer);
         break;
     }
     case NetFuncType::Client:
     {
-        assert(mNetStatus == NetStatus::Server);
-        assert(actor->GetOwningHost() != INVALID_HOST_ID);
-        assert(actor->GetOwningHost() != SERVER_HOST_ID);
+        OCT_ASSERT(mNetStatus == NetStatus::Server);
+        OCT_ASSERT(actor->GetOwningHost() != INVALID_HOST_ID);
+        OCT_ASSERT(actor->GetOwningHost() != SERVER_HOST_ID);
         SendMessage(&msg, actor->GetOwningHost());
         break;
     }
@@ -1078,7 +1078,7 @@ void NetworkManager::SendInvokeMsg(NetMsgInvoke& msg, Actor* actor, NetFunc* fun
         break;
     }
 
-    case NetFuncType::Count: assert(0); break;
+    case NetFuncType::Count: OCT_ASSERT(0); break;
     }
 }
 
@@ -1178,7 +1178,7 @@ void NetworkManager::FlushSendBuffers()
 
 void NetworkManager::UpdateReplication(float deltaTime)
 {
-    assert(mNetStatus == NetStatus::Server);
+    OCT_ASSERT(mNetStatus == NetStatus::Server);
 
     Actor* incRepActor = nullptr;
 
@@ -1430,7 +1430,7 @@ void NetworkManager::ProcessIncomingPackets(float deltaTime)
                 if (mClients[i].mHost.mIpAddress == sender.mIpAddress &&
                     mClients[i].mHost.mPort == sender.mPort)
                 {
-                    assert(mClients[i].mHost.mId != INVALID_HOST_ID);
+                    OCT_ASSERT(mClients[i].mHost.mId != INVALID_HOST_ID);
                     sender.mId = mClients[i].mHost.mId;
                     mClients[i].mTimeSinceLastMsg = 0.0f;
 
@@ -1445,7 +1445,7 @@ void NetworkManager::ProcessIncomingPackets(float deltaTime)
             if (mServer.mHost.mIpAddress == sender.mIpAddress &&
                 mServer.mHost.mPort == sender.mPort)
             {
-                assert(mServer.mHost.mId == SERVER_HOST_ID);
+                OCT_ASSERT(mServer.mHost.mId == SERVER_HOST_ID);
                 sender.mId = mServer.mHost.mId;
                 mServer.mTimeSinceLastMsg = 0.0f;
 
@@ -1497,7 +1497,7 @@ void NetworkManager::ProcessIncomingPackets(float deltaTime)
                     // The received seq number is ahead of our current expected seq num, so we need to queue it up.
                     const char* data = &(stream.GetData()[stream.GetPos()]);
                     uint32_t size = bytes - stream.GetPos();
-                    assert(size > 0);
+                    OCT_ASSERT(size > 0);
                     senderProfile->mIncomingPackets.emplace_back(seq, data, size);
                     ack = true;
                 }
@@ -1638,7 +1638,7 @@ NetHostId NetworkManager::FindAvailableNetHostId()
         }
     }
 
-    assert(id < 255);
+    OCT_ASSERT(id < 255);
     return id;
 }
 
@@ -1693,7 +1693,7 @@ void NetworkManager::FlushSendBuffer(NetHostProfile* hostProfile, bool reliable)
     {
         // Stackoverflow says that 508 is the maximum safe udp payload.
         // Currently the max msg size is 500 for extra safety and to leave 2 bytes for the sequence number.
-        assert(sendBuffer.size() <= OCT_MAX_MSG_SIZE);
+        OCT_ASSERT(sendBuffer.size() <= OCT_MAX_MSG_SIZE);
 
         if (sendBuffer.size() <= OCT_MAX_MSG_SIZE)
         {
@@ -1703,7 +1703,7 @@ void NetworkManager::FlushSendBuffer(NetHostProfile* hostProfile, bool reliable)
             stream.WriteBool(reliable);
             stream.WriteBytes((uint8_t*)sendBuffer.data(), (uint32_t)sendBuffer.size());
             uint32_t packetSize = stream.GetPos();
-            assert(packetSize == OCT_PACKET_HEADER_SIZE + uint32_t(sendBuffer.size()));
+            OCT_ASSERT(packetSize == OCT_PACKET_HEADER_SIZE + uint32_t(sendBuffer.size()));
 
             // If the client isn't ready yet, then don't send the message.
             // Reliable messages will still be queued and sent once the client is ready.
@@ -1740,7 +1740,7 @@ void NetworkManager::FlushSendBuffer(NetHostProfile* hostProfile, bool reliable)
         else
         {
             LogError("Send buffer overflow");
-            assert(0);
+            OCT_ASSERT(0);
         }
 
         sendBuffer.clear();

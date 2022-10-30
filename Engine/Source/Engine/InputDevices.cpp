@@ -3,7 +3,7 @@
 #include "Engine.h"
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
+#include "Assertion.h"
 #include <glm/glm.hpp>
 
 #include "Input/Input.h"

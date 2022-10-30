@@ -9,7 +9,7 @@ DEFINE_RTTI(MeshComponent);
 static bool HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     MeshComponent* meshComp = static_cast<MeshComponent*>(prop->mOwner);
     bool success = false;
 

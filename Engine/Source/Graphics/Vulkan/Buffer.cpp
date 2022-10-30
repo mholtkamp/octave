@@ -25,7 +25,7 @@ Buffer::Buffer(
     case BufferType::Index: usageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT; break;
     case BufferType::Uniform: usageFlags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT; break;
     case BufferType::Transfer: usageFlags |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; break;
-    default: assert(0); break; // Not valid type
+    default: OCT_ASSERT(0); break; // Not valid type
     }
 
     VkMemoryPropertyFlags memoryFlags = mHostVisible ? (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
@@ -62,7 +62,7 @@ void Buffer::Update(const void* srcData, size_t srcSize, size_t dstOffset)
         srcSize > (mSize - dstOffset))
     {
         LogError("Bad params passed to VertexBuffer::Update()");
-        assert(0);
+        OCT_ASSERT(0);
         return;
     }
 

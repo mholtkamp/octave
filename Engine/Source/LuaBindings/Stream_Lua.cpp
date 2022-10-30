@@ -10,7 +10,7 @@ int Stream_Lua::Create(lua_State* L)
     Stream_Lua* newObject = (Stream_Lua*)lua_newuserdata(L, sizeof(Stream_Lua));
     new (newObject) Stream_Lua();
     luaL_getmetatable(L, STREAM_LUA_NAME);
-    assert(lua_istable(L, -1));
+    OCT_ASSERT(lua_istable(L, -1));
     lua_setmetatable(L, -2);
 
     return 1;
@@ -288,7 +288,7 @@ int Stream_Lua::WriteVec4(lua_State* L)
 void Stream_Lua::Bind()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     luaL_newmetatable(L, STREAM_LUA_NAME);
     int mtIndex = lua_gettop(L);
@@ -380,7 +380,7 @@ void Stream_Lua::Bind()
 
     lua_setglobal(L, STREAM_LUA_NAME);
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

@@ -25,7 +25,7 @@ uint32_t CalculateShininessLevel(float shininess)
     float shinyLog = log2(shininess);
     uint32_t shinyLevel = uint32_t((shinyLog - 1.0f) + 0.5f);
     shinyLevel = glm::clamp<uint32_t>(shinyLevel, 0u, NumShininessLevels - 1u);
-    assert(shinyLevel < NumShininessLevels);
+    OCT_ASSERT(shinyLevel < NumShininessLevels);
     return shinyLevel;
 }
 

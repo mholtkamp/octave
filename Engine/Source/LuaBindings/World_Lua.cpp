@@ -21,7 +21,7 @@ int World_Lua::Create(lua_State* L, World* world)
 
         int udIndex = lua_gettop(L);
         luaL_getmetatable(L, WORLD_LUA_NAME);
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
         lua_setmetatable(L, udIndex);
     }
     else
@@ -390,7 +390,7 @@ int World_Lua::RayTestMulti(lua_State* L)
     lua_pop(L, 1);
 
     // The top table should be on the top of the stack
-    assert(lua_gettop(L) == 5);
+    OCT_ASSERT(lua_gettop(L) == 5);
     return 1;
 }
 
@@ -521,7 +521,7 @@ int World_Lua::IsInternalEdgeSmoothingEnabled(lua_State* L)
 void World_Lua::Bind()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     luaL_newmetatable(L, WORLD_LUA_NAME);
     int mtIndex = lua_gettop(L);
@@ -633,7 +633,7 @@ void World_Lua::Bind()
     lua_setfield(L, mtIndex, "__index");
 
     lua_pop(L, 1);
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

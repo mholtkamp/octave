@@ -59,7 +59,7 @@ void OnCreateCompButtonPressed(Button* button)
         {
             TransformComponent* newTrans = (TransformComponent*)newComp;
             TransformComponent* parentTrans = selectedComp->IsTransformComponent() ? (TransformComponent*)selectedComp : actor->GetRootComponent();
-            assert(parentTrans != nullptr);
+            OCT_ASSERT(parentTrans != nullptr);
             newTrans->Attach(parentTrans);
         }
 
@@ -309,11 +309,11 @@ void HierarchyPanel::RefreshCompButtons()
             {
                 compList.push_back(components[i]);
                 depthList.push_back(0);
-                assert(!components[i]->IsTransformComponent());
+                OCT_ASSERT(!components[i]->IsTransformComponent());
             }
         }
 
-        assert(compList.size() == components.size());
+        OCT_ASSERT(compList.size() == components.size());
 
         mListOffset = glm::min(mListOffset, int32_t(compList.size()) - 1);
         mListOffset = glm::max(mListOffset, 0);

@@ -107,8 +107,8 @@ void PlayAudio(
     bool loop,
     float startTime)
 {
-    assert(sourceIndex < MAX_AUDIO_SOURCES);
-    assert(soundWave != nullptr);
+    OCT_ASSERT(sourceIndex < MAX_AUDIO_SOURCES);
+    OCT_ASSERT(soundWave != nullptr);
 
     sAudioSources[sourceIndex].Set(
         soundWave,

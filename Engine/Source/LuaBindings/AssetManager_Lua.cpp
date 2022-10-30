@@ -56,7 +56,7 @@ int AssetManager_Lua::UnloadAsset(lua_State* L)
 void AssetManager_Lua::Bind()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -77,7 +77,7 @@ void AssetManager_Lua::Bind()
     lua_setfield(L, tableIdx, "UnloadAsset");
 
     lua_setglobal(L, ASSET_MANAGER_LUA_NAME);
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     BindGlobalFunctions();
 }
@@ -85,7 +85,7 @@ void AssetManager_Lua::Bind()
 void AssetManager_Lua::BindGlobalFunctions()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_pushcfunction(L, RefSweep);
     lua_setglobal(L, "RefSweep");
@@ -102,5 +102,5 @@ void AssetManager_Lua::BindGlobalFunctions()
     lua_pushcfunction(L, UnloadAsset);
     lua_setglobal(L, "UnloadAsset");
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }

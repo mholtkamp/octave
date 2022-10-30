@@ -102,8 +102,8 @@ void Property::DeepCopy(const Datum& src, bool forceInternalStorage)
 // TODO: Replace with individual functions for better type safety.
 void Property::PushBackVector(void* value)
 {
-    assert(mExternal);
-    assert(mVector);
+    OCT_ASSERT(mExternal);
+    OCT_ASSERT(mVector);
 
     if (mVector)
     {
@@ -126,7 +126,7 @@ void Property::PushBackVector(void* value)
         case DatumType::Bool:
         {
             // Bool not supported yet.
-            assert(0);
+            OCT_ASSERT(0);
             break;
         }
         case DatumType::String:
@@ -181,13 +181,13 @@ void Property::PushBackVector(void* value)
         case DatumType::Table:
         {
             // Table not supported as vector.
-            assert(0);
+            OCT_ASSERT(0);
             break;
         }
         case DatumType::Pointer:
         {
             // Pointer not supported as vector.
-            assert(0);
+            OCT_ASSERT(0);
             break;
         }
 
@@ -200,8 +200,8 @@ void Property::PushBackVector(void* value)
 
 void Property::EraseVector(uint32_t index)
 {
-    assert(mExternal);
-    assert(mVector);
+    OCT_ASSERT(mExternal);
+    OCT_ASSERT(mVector);
 
     if (mVector)
     {
@@ -222,7 +222,7 @@ void Property::EraseVector(uint32_t index)
         case DatumType::Bool:
         {
             // Bool not supported as vector
-            assert(0);
+            OCT_ASSERT(0);
             break;
         }
         case DatumType::String:
@@ -270,13 +270,13 @@ void Property::EraseVector(uint32_t index)
         case DatumType::Table:
         {
             // Table not supported as Vector
-            assert(0);
+            OCT_ASSERT(0);
             break;
         }
         case DatumType::Pointer:
         {
             // Pointer not supported as Vector
-            assert(0);
+            OCT_ASSERT(0);
             break;
         }
 
@@ -289,8 +289,8 @@ void Property::EraseVector(uint32_t index)
 
 void Property::ResizeVector(uint32_t count)
 {
-    assert(mExternal);
-    assert(mVector);
+    OCT_ASSERT(mExternal);
+    OCT_ASSERT(mVector);
 
     count = glm::clamp<uint32_t>(count, 0u, 255u);
 
@@ -315,7 +315,7 @@ void Property::ResizeVector(uint32_t count)
         case DatumType::Bool:
         {
             // Bool not supported yet.
-            assert(0);
+            OCT_ASSERT(0);
             break;
         }
         case DatumType::String:
@@ -370,13 +370,13 @@ void Property::ResizeVector(uint32_t count)
         case DatumType::Table:
         {
             // Table not supported as Vector
-            assert(0);
+            OCT_ASSERT(0);
             break;
         }
         case DatumType::Pointer:
         {
             // Pointer not supported as Vector
-            assert(0);
+            OCT_ASSERT(0);
             break;
         }
 
@@ -390,9 +390,9 @@ void Property::ResizeVector(uint32_t count)
 Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
 {
     // Vector properties should only be used with external data.
-    assert(mData.vp);
-    assert(mExternal);
-    assert(!mVector);
+    OCT_ASSERT(mData.vp);
+    OCT_ASSERT(mExternal);
+    OCT_ASSERT(!mVector);
 
     mVector = mData.vp;
     mMinCount = minCount;
@@ -418,7 +418,7 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
     {
         // Bool is not supported because std::vector<bool> is dumb.
         // Maybe use byte type instead? Sorry.
-        assert(0);
+        OCT_ASSERT(0);
         break;
     }
     case DatumType::String:
@@ -473,13 +473,13 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
     case DatumType::Table:
     {
         // Table not supported as vector
-        assert(0);
+        OCT_ASSERT(0);
         break;
     }
     case DatumType::Pointer:
     {
         // Pointer not supported as vector
-        assert(0);
+        OCT_ASSERT(0);
         break;
     }
 

@@ -8,7 +8,7 @@
 #include "Utilities.h"
 #include "Assets/Blueprint.h"
 
-#include <assert.h>
+#include "Assertion.h"
 
 DEFINE_FACTORY_MANAGER(Asset);
 DEFINE_FACTORY(Asset, Asset);
@@ -19,8 +19,8 @@ bool HandleAssetNamePropChange(Datum* datum, const void* newValue)
     Property* prop = static_cast<Property*>(datum);
 
     // Handle Name property changes manually.
-    assert(prop->mType == DatumType::String);
-    assert(prop->mName == "Name");
+    OCT_ASSERT(prop->mType == DatumType::String);
+    OCT_ASSERT(prop->mName == "Name");
     std::string newName = *reinterpret_cast<const std::string*>(newValue);
     Asset* asset = reinterpret_cast<Asset*>(prop->mOwner);
     AssetManager::Get()->RenameAsset(asset, newName);
@@ -39,7 +39,7 @@ Asset::~Asset()
 
 void Asset::Create()
 {
-    assert(!mLoaded);
+    OCT_ASSERT(!mLoaded);
     mLoaded = true;
 }
 
@@ -125,7 +125,7 @@ void Asset::IncrementRefCount()
 void Asset::DecrementRefCount()
 {
     mRefCount--;
-    assert(mRefCount >= 0 || AssetManager::Get()->IsPurging());
+    OCT_ASSERT(mRefCount >= 0 || AssetManager::Get()->IsPurging());
 }
 
 void Asset::LoadFile(const char* path, AsyncLoadRequest* request)

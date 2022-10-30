@@ -58,7 +58,7 @@ static bool HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
 
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     Material* material = static_cast<Material*>(prop->mOwner);
     bool success = false;
 
@@ -337,26 +337,26 @@ void Material::SetVertexColorMode(VertexColorMode mode)
 
 glm::vec2 Material::GetUvOffset(uint32_t uvIndex) const
 {
-    assert(uvIndex < MAX_UV_MAPS);
+    OCT_ASSERT(uvIndex < MAX_UV_MAPS);
     return mParams.mUvOffsets[uvIndex];
 }
 
 void Material::SetUvOffset(glm::vec2 offset, uint32_t uvIndex)
 {
-    assert(uvIndex < MAX_UV_MAPS);
+    OCT_ASSERT(uvIndex < MAX_UV_MAPS);
     mParams.mUvOffsets[uvIndex] = offset;
     MarkDirty();
 }
 
 glm::vec2 Material::GetUvScale(uint32_t uvIndex) const
 {
-    assert(uvIndex < MAX_UV_MAPS);
+    OCT_ASSERT(uvIndex < MAX_UV_MAPS);
     return mParams.mUvScales[uvIndex];
 }
 
 void Material::SetUvScale(glm::vec2 scale, uint32_t uvIndex)
 {
-    assert(uvIndex < MAX_UV_MAPS);
+    OCT_ASSERT(uvIndex < MAX_UV_MAPS);
     mParams.mUvScales[uvIndex] = scale;
     MarkDirty();
 }
@@ -484,7 +484,7 @@ void Material::SetFresnelEnabled(bool enable)
 
 uint32_t Material::GetUvMap(uint32_t textureSlot)
 {
-    assert(textureSlot < MATERIAL_MAX_TEXTURES);
+    OCT_ASSERT(textureSlot < MATERIAL_MAX_TEXTURES);
     if (textureSlot < MATERIAL_MAX_TEXTURES)
     {
         return mParams.mUvMaps[textureSlot];
@@ -495,8 +495,8 @@ uint32_t Material::GetUvMap(uint32_t textureSlot)
 
 void Material::SetUvMap(uint32_t textureSlot, uint32_t uvMapIndex)
 {
-    assert(textureSlot < MATERIAL_MAX_TEXTURES);
-    assert(uvMapIndex < MAX_UV_MAPS);
+    OCT_ASSERT(textureSlot < MATERIAL_MAX_TEXTURES);
+    OCT_ASSERT(uvMapIndex < MAX_UV_MAPS);
     if (textureSlot < MATERIAL_MAX_TEXTURES &&
         uvMapIndex < MAX_UV_MAPS)
     {
@@ -507,7 +507,7 @@ void Material::SetUvMap(uint32_t textureSlot, uint32_t uvMapIndex)
 
 TevMode Material::GetTevMode(uint32_t textureSlot)
 {
-    assert(textureSlot < MATERIAL_MAX_TEXTURES);
+    OCT_ASSERT(textureSlot < MATERIAL_MAX_TEXTURES);
     if (textureSlot < MATERIAL_MAX_TEXTURES)
     {
         return mParams.mTevModes[textureSlot];
@@ -518,8 +518,8 @@ TevMode Material::GetTevMode(uint32_t textureSlot)
 
 void Material::SetTevMode(uint32_t textureSlot, TevMode mode)
 {
-    assert(textureSlot < MATERIAL_MAX_TEXTURES);
-    assert(mode != TevMode::Count);
+    OCT_ASSERT(textureSlot < MATERIAL_MAX_TEXTURES);
+    OCT_ASSERT(mode != TevMode::Count);
 
     if (textureSlot < MATERIAL_MAX_TEXTURES &&
         mode != TevMode::Count)

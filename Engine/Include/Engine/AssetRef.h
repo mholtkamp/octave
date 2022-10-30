@@ -3,7 +3,7 @@
 #include "Asset.h"
 #include "Constants.h"
 #include <vector>
-#include <assert.h>
+#include "Assertion.h"
 
 //class Asset;
 class AssetManager;
@@ -32,7 +32,7 @@ public:
     template<typename T>
     T* Get() const
     {
-        assert(!mAsset || mAsset->GetType() == T::GetStaticType() || mAsset->Is(T::ClassRuntimeId()));
+        OCT_ASSERT(!mAsset || mAsset->GetType() == T::GetStaticType() || mAsset->Is(T::ClassRuntimeId()));
         return static_cast<T*>(Get());
     }
 

@@ -4,7 +4,7 @@
 #include "Graphics/C3D/C3dTypes.h"
 #include "Graphics/C3D/C3dUtils.h"
 
-#include <assert.h>
+#include "Assertion.h"
 #include <string.h>
 #include <3ds.h>
 
@@ -12,7 +12,7 @@ void DoubleBuffer::Alloc(size_t size, const void* srcData)
 {
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
     {
-        assert(mData[i] == nullptr);
+        OCT_ASSERT(mData[i] == nullptr);
         mData[i] = linearAlloc(size);
         mSize = size;
 
@@ -43,8 +43,8 @@ void DoubleBuffer::Update(const void* srcData, size_t srcSize, uint32_t frame)
     if (mData[frameIndex] != nullptr)
     {
         // Maybe we want to support partial updates?
-        //assert(srcSize == mSize);
-        assert(frameIndex >= 0 && frameIndex < MAX_FRAMES);
+        //OCT_ASSERT(srcSize == mSize);
+        OCT_ASSERT(frameIndex >= 0 && frameIndex < MAX_FRAMES);
 
         memcpy(mData[frameIndex], srcData, srcSize);
         GSPGPU_FlushDataCache(mData[frameIndex], srcSize);
@@ -62,7 +62,7 @@ void DoubleBuffer::UpdateAllFrames(const void* srcData, size_t srcSize)
 void* DoubleBuffer::Get()
 {
     uint32_t frameIndex = gC3dContext.mFrameIndex;
-    assert(frameIndex >= 0 && frameIndex < MAX_FRAMES);
+    OCT_ASSERT(frameIndex >= 0 && frameIndex < MAX_FRAMES);
     return mData[frameIndex];
 }
 

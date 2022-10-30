@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <string>
-#include <assert.h>
+#include "Assertion.h"
 #include <stdint.h>
 #include <string.h>
 #include <glm/glm.hpp>
@@ -78,7 +78,7 @@ private:
     template<typename T>
     void Swap32(T& dst)
     {
-        assert(sizeof(T) == 4);
+        OCT_ASSERT(sizeof(T) == 4);
 
         uint8_t* charArray = reinterpret_cast<uint8_t*>(&dst);
         uint8_t c0 = charArray[0];
@@ -95,7 +95,7 @@ private:
     template<typename T>
     void Swap16(T& dst)
     {
-        assert(sizeof(T) == 2);
+        OCT_ASSERT(sizeof(T) == 2);
 
         uint8_t* charArray = reinterpret_cast<uint8_t*>(&dst);
         uint8_t c0 = charArray[0];
@@ -108,8 +108,8 @@ private:
     template<typename T>
     void Read(T& dst)
     {
-        assert(sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4);
-        assert(mPos + sizeof(T) <= mSize);
+        OCT_ASSERT(sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4);
+        OCT_ASSERT(mPos + sizeof(T) <= mSize);
         memcpy(&dst, &mData[mPos], sizeof(T));
         mPos += sizeof(T);
 
@@ -128,7 +128,7 @@ private:
     template<typename T>
     void Write(const T& src)
     {
-        assert(sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4);
+        OCT_ASSERT(sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4);
 
         T srcSwapped = src;
 

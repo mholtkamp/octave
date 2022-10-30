@@ -83,7 +83,7 @@ public:
     template<typename S>
     S* Get() const
     {
-        assert(!mObject || mObject->Is(S::ClassRuntimeId()));
+        OCT_ASSERT(!mObject || mObject->Is(S::ClassRuntimeId()));
         return static_cast<S*>(Get());
     }
 

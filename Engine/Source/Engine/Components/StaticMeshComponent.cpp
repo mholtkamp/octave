@@ -16,7 +16,7 @@ DEFINE_COMPONENT(StaticMeshComponent);
 static bool HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     StaticMeshComponent* meshComp = static_cast<StaticMeshComponent*>(prop->mOwner);
     bool success = false;
 

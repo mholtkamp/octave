@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "Log.h"
 #include "Input/Input.h"
+#include "InputDevices.h"
 #include "Constants.h"
 
 #include <3ds.h>
@@ -258,7 +259,7 @@ void* SYS_AlignedMalloc(uint32_t size, uint32_t alignment)
 
 void SYS_AlignedFree(void* pointer)
 {
-    assert(pointer != nullptr);
+    OCT_ASSERT(pointer != nullptr);
     free(pointer);
 }
 
@@ -380,6 +381,28 @@ void SYS_UnmountMemoryCard()
 }
 
 // Misc
+void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
+{
+    consoleInit(GFX_BOTTOM, &GetEngineState()->mSystem.mPrintConsole);
+    consoleSelect(&GetEngineState()->mSystem.mPrintConsole);
+
+    const char* fileName = strrchr(fileString, '/') ? strrchr(fileString, '/') + 1 : fileString;
+    LogError("[Assert] %s, %s, line %d", exprString, fileName, lineNumber);
+
+    // Display assertion in console view and wait for player to hit A button.
+    EnableConsole(true);
+
+    SYS_Sleep(500);
+    INP_Update();
+    while (!IsGamepadButtonJustDown(GAMEPAD_A, 0))
+    {
+        SYS_Sleep(5);
+        INP_Update();
+    }
+
+    EnableConsole(false);
+}
+
 void SYS_UpdateConsole()
 {
 #if 0

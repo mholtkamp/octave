@@ -3,6 +3,7 @@
 #include "Network/Network.h"
 
 #include "Log.h"
+#include "Assertion.h"
 
 #include <malloc.h>
 #include <unistd.h>
@@ -27,7 +28,7 @@ void NET_Initialize()
     if(sSocBuffer == nullptr)
     {
         LogError("Failed to allocate SOC buffer");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     // Now intialise soc service

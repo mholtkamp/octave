@@ -98,7 +98,7 @@ void TimerManager_Lua::Bind()
     lua_setfield(L, tableIdx, "GetTimeRemaining");
 
     lua_setglobal(L, TIMER_MANAGER_LUA_NAME);
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

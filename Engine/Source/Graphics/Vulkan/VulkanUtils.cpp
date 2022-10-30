@@ -59,7 +59,7 @@ VkFormat ConvertPixelFormat(PixelFormat pixelFormat)
     if (format == VK_FORMAT_UNDEFINED)
     {
         LogError("Unsupported PixelFormat in ConvertPixelFormat()");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     return format;
@@ -84,7 +84,7 @@ void CreateBuffer(
     if (vkCreateBuffer(device, &ciBuffer, nullptr, &buffer) != VK_SUCCESS)
     {
         LogError("Failed to create vertex buffer");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     VkMemoryRequirements memRequirements;
@@ -360,7 +360,7 @@ uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
     }
 
     LogError("Failed to find suitable memory type");
-    assert(0);
+    OCT_ASSERT(0);
     return 0;
 }
 
@@ -383,7 +383,7 @@ uint32_t GetFormatPixelSize(VkFormat format)
 
     // Depth
     case VK_FORMAT_D24_UNORM_S8_UINT: size = 4; break;
-	case VK_FORMAT_D32_SFLOAT_S8_UINT: assert(0); break; // Not sure how to handle this?
+	case VK_FORMAT_D32_SFLOAT_S8_UINT: OCT_ASSERT(0); break; // Not sure how to handle this?
     case VK_FORMAT_D16_UNORM: size = 2; break;
     case VK_FORMAT_D32_SFLOAT: size = 4; break;
 
@@ -393,7 +393,7 @@ uint32_t GetFormatPixelSize(VkFormat format)
     if (size == 0)
     {
         LogError("Unsupported format pixel size queried");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     return size;
@@ -413,7 +413,7 @@ uint32_t GetFormatBlockSize(VkFormat format)
     if (size == 0)
     {
         LogError("Unsupported format block size queried");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     return size;
@@ -479,7 +479,7 @@ VkVertexInputBindingDescription GetVertexBindingDescription(VertexType type)
         desc.stride = sizeof(VertexParticle);
         break;
 
-    default: assert(0); break;
+    default: OCT_ASSERT(0); break;
     }
 
     desc.binding = 0;
@@ -649,7 +649,7 @@ std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions(Ve
         attributeDescriptions[2].offset = offsetof(VertexParticle, mColor);
         break;
 
-    default: assert(0); break;
+    default: OCT_ASSERT(0); break;
     }
 
     return attributeDescriptions;
@@ -921,7 +921,7 @@ void UpdateMaterialResource(Material* material)
 
     // Update descriptor bindings
     Renderer* renderer = Renderer::Get();
-    assert(resource->mDescriptorSet != nullptr);
+    OCT_ASSERT(resource->mDescriptorSet != nullptr);
     resource->mDescriptorSet->UpdateUniformDescriptor(MD_UNIFORM_BUFFER, resource->mUniformBuffer);
 
     for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
@@ -930,7 +930,7 @@ void UpdateMaterialResource(Material* material)
         if (texture == nullptr)
         {
             texture = renderer->mWhiteTexture.Get<Texture>();
-            assert(texture != nullptr);
+            OCT_ASSERT(texture != nullptr);
         }
 
         resource->mDescriptorSet->UpdateImageDescriptor(MD_TEXTURE_0 + i, texture->GetResource()->mImage);
@@ -1141,7 +1141,7 @@ void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOve
         if (material == nullptr)
         {
             material = Renderer::Get()->GetDefaultMaterial();
-            assert(material != nullptr);
+            OCT_ASSERT(material != nullptr);
         }
 
         Pipeline* pipeline = nullptr;
@@ -1158,7 +1158,7 @@ void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOve
             GetVulkanContext()->RebindPipeline(mesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex);
         }
 
-        assert(pipeline);
+        OCT_ASSERT(pipeline);
 
         BindMaterialResource(material, pipeline);
         resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
@@ -1230,7 +1230,7 @@ void UpdateSkeletalMeshCompVertexBuffer(SkeletalMeshComponent* skeletalMeshComp,
 
     if (resource->mVertexBuffer != nullptr)
     {
-        assert(resource->mVertexBuffer->GetSize() == skinnedVertices.size() * sizeof(Vertex));
+        OCT_ASSERT(resource->mVertexBuffer->GetSize() == skinnedVertices.size() * sizeof(Vertex));
         resource->mVertexBuffer->Update(skinnedVertices.data(), skinnedVertices.size() * sizeof(Vertex), 0);
     }
 }
@@ -1337,7 +1337,7 @@ void DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
         if (material == nullptr)
         {
             material = Renderer::Get()->GetDefaultMaterial();
-            assert(material != nullptr);
+            OCT_ASSERT(material != nullptr);
         }
 
         Pipeline* pipeline = nullptr;
@@ -1354,7 +1354,7 @@ void DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
             GetVulkanContext()->RebindPipeline(IsCpuSkinningRequired(skeletalMeshComp) ? VertexType::Vertex : VertexType::VertexSkinned);
         }
 
-        assert(pipeline);
+        OCT_ASSERT(pipeline);
 
         BindMaterialResource(material, pipeline);
         resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
@@ -1471,7 +1471,7 @@ void UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::
 
     if (resource->mVertexBuffer != nullptr)
     {
-        assert(resource->mVertexBuffer->GetSize() >= vertices.size() * sizeof(Vertex));
+        OCT_ASSERT(resource->mVertexBuffer->GetSize() >= vertices.size() * sizeof(Vertex));
         resource->mVertexBuffer->Update(vertices.data(), vertices.size() * sizeof(Vertex), 0);
     }
 }
@@ -1495,7 +1495,7 @@ void DrawTextMeshComp(TextMeshComponent* textMeshComp)
     if (material == nullptr)
     {
         material = Renderer::Get()->GetDefaultMaterial();
-        assert(material != nullptr);
+        OCT_ASSERT(material != nullptr);
     }
 
     Pipeline* pipeline = nullptr;
@@ -1512,7 +1512,7 @@ void DrawTextMeshComp(TextMeshComponent* textMeshComp)
         GetVulkanContext()->RebindPipeline(VertexType::Vertex);
     }
 
-    assert(pipeline);
+    OCT_ASSERT(pipeline);
 
     BindMaterialResource(material, pipeline);
     resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
@@ -1646,7 +1646,7 @@ void UpdateParticleCompVertexBuffer(ParticleComponent* particleComp, const std::
     ParticleCompResource* resource = particleComp->GetResource();
 
     uint32_t numVertices = uint32_t(vertices.size());
-    assert(numVertices % 4 == 0);
+    OCT_ASSERT(numVertices % 4 == 0);
     uint32_t numIndices = (3 * numVertices) / 2; // 6 indices per 4 vertices
 
     if (resource->mNumVerticesAllocated < numVertices)
@@ -1715,7 +1715,7 @@ void DrawParticleComp(ParticleComponent* particleComp)
         if (material == nullptr)
         {
             material = Renderer::Get()->GetDefaultMaterial();
-            assert(material != nullptr);
+            OCT_ASSERT(material != nullptr);
         }
 
         Pipeline* pipeline = nullptr;
@@ -1732,7 +1732,7 @@ void DrawParticleComp(ParticleComponent* particleComp)
             GetVulkanContext()->RebindPipeline(VertexType::VertexParticle);
         }
 
-        assert(pipeline);
+        OCT_ASSERT(pipeline);
 
         BindMaterialResource(material, pipeline);
         resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
@@ -1756,13 +1756,13 @@ void CreateQuadResource(Quad* quad)
 {
     QuadResource* resource = quad->GetResource();
 
-    assert(resource->mVertexBuffer == nullptr);
+    OCT_ASSERT(resource->mVertexBuffer == nullptr);
     resource->mVertexBuffer = new Buffer(BufferType::Vertex, 4 * sizeof(VertexUI), "Quad Vertices");
 
-    assert(resource->mUniformBuffer == nullptr);
+    OCT_ASSERT(resource->mUniformBuffer == nullptr);
     resource->mUniformBuffer = new UniformBuffer(sizeof(QuadUniformData), "Quad Uniforms");
     
-    assert(resource->mDescriptorSet == nullptr);
+    OCT_ASSERT(resource->mDescriptorSet == nullptr);
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Quad)->GetDescriptorSetLayout(1);
     resource->mDescriptorSet = new DescriptorSet(layout);
 
@@ -1835,10 +1835,10 @@ void CreateTextResource(Text* text)
 
     CreateTextResourceVertexBuffer(text);
 
-    assert(resource->mUniformBuffer == nullptr);
+    OCT_ASSERT(resource->mUniformBuffer == nullptr);
     resource->mUniformBuffer = new UniformBuffer(sizeof(TextUniformData), "Text Uniforms");
 
-    assert(resource->mDescriptorSet == nullptr);
+    OCT_ASSERT(resource->mDescriptorSet == nullptr);
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Text)->GetDescriptorSetLayout(1);
     resource->mDescriptorSet = new DescriptorSet(layout);
 
@@ -1965,7 +1965,7 @@ void DrawTextWidget(Text* text)
 
 void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& transform, glm::vec4 color, uint32_t hitCheckId)
 {
-    assert(mesh != nullptr);
+    OCT_ASSERT(mesh != nullptr);
     if (mesh != nullptr)
     {
         VkCommandBuffer cb = GetCommandBuffer();
@@ -1984,7 +1984,7 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
         if (material == nullptr)
         {
             material = Renderer::Get()->GetDefaultMaterial();
-            assert(material != nullptr);
+            OCT_ASSERT(material != nullptr);
         }
 
         Pipeline* pipeline = nullptr;
@@ -2001,7 +2001,7 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
             GetVulkanContext()->RebindPipeline(mesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex);
         }
 
-        assert(pipeline);
+        OCT_ASSERT(pipeline);
         BindMaterialResource(material, pipeline);
 
         DescriptorSetArena& descriptorArena = GetVulkanContext()->GetMeshDescriptorSetArena();

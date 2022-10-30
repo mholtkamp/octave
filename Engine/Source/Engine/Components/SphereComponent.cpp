@@ -11,7 +11,7 @@ DEFINE_COMPONENT(SphereComponent);
 static bool HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     SphereComponent* sphereComp = static_cast<SphereComponent*>(prop->mOwner);
     bool success = false;
 

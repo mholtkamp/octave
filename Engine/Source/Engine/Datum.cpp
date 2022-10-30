@@ -25,7 +25,7 @@ Datum::Datum(
     mCount = (uint8_t) count;
     mChangeHandler = changeHandler;
 
-    assert(count <= 255);
+    OCT_ASSERT(count <= 255);
 
     // Datums constructed with this constructor are for external data only right now.
     mExternal = true;
@@ -112,7 +112,7 @@ void Datum::SetType(DatumType type)
     if (type == DatumType::Count)
     {
         LogError("Cannot set datum type to Count");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     if (mType == DatumType::Count ||
@@ -123,7 +123,7 @@ void Datum::SetType(DatumType type)
     else
     {
         LogError("Datum type has already been set and cannot be changed with SetType()")
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 
@@ -138,13 +138,13 @@ void Datum::SetCount(uint32_t count)
     if (mExternal)
     {
         LogError("Cannot set size on Datum with external storage.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     if (mType == DatumType::Count)
     {
         LogError("Cannot set size on a Datum with no type associated with it.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     if (count > mCapacity)
@@ -154,7 +154,7 @@ void Datum::SetCount(uint32_t count)
 
     if (count < mCount)
     {
-        assert(mData.vp != nullptr);
+        OCT_ASSERT(mData.vp != nullptr);
 
         for (uint32_t i = count; i < mCount; i++)
         {
@@ -165,7 +165,7 @@ void Datum::SetCount(uint32_t count)
     // Default construct new elements, using placement new where needed.
     if (count > mCount)
     {
-        assert(mData.vp != nullptr);
+        OCT_ASSERT(mData.vp != nullptr);
 
         for (uint32_t i = mCount; i < count; i++)
         {
@@ -268,7 +268,7 @@ void Datum::ReadStream(Stream& stream, bool external)
     uint8_t count = stream.ReadUint8();
     mExternal = external;
 
-    assert(mType != DatumType::Count);
+    OCT_ASSERT(mType != DatumType::Count);
 
     if (mExternal)
     {
@@ -316,7 +316,7 @@ void Datum::ReadStream(Stream& stream, bool external)
                     break;
                 }
 
-                case DatumType::Pointer: assert(0); break; // Can't serialize pointers
+                case DatumType::Pointer: OCT_ASSERT(0); break; // Can't serialize pointers
 
                 case DatumType::Count: break;
             }
@@ -329,7 +329,7 @@ void Datum::WriteStream(Stream& stream) const
     stream.WriteUint8(uint8_t(mType));
     stream.WriteUint8(mCount);
 
-    assert(mType != DatumType::Count);
+    OCT_ASSERT(mType != DatumType::Count);
 
     for (uint32_t i = 0; i < mCount; ++i)
     {
@@ -346,8 +346,8 @@ void Datum::WriteStream(Stream& stream) const
             case DatumType::Enum: stream.WriteUint32(mData.e[i]); break;
             case DatumType::Byte: stream.WriteUint8(mData.by[i]); break;
             case DatumType::Table: mData.t[i].WriteStream(stream); break;
-            case DatumType::Pointer: assert(0); break; // Can't serialize pointers
-            case DatumType::Count: assert(0); break;
+            case DatumType::Pointer: OCT_ASSERT(0); break; // Can't serialize pointers
+            case DatumType::Count: OCT_ASSERT(0); break;
         }
     }
 }
@@ -448,8 +448,8 @@ void Datum::SetPointer(RTTI* value, uint32_t index)
 
 void Datum::SetValue(const void* value, uint32_t index, uint32_t count)
 {
-    assert(mType != DatumType::Count);
-    assert(index + count <= mCount);
+    OCT_ASSERT(mType != DatumType::Count);
+    OCT_ASSERT(index + count <= mCount);
 
     if (mType != DatumType::Count &&
         value != nullptr)
@@ -628,7 +628,7 @@ uint32_t Datum::GetEnum(uint32_t index) const
 {
     PreGet(index, DatumType::Enum);
     return mData.e[index];
-    //assert(mEnumCount > 0);
+    //OCT_ASSERT(mEnumCount > 0);
     //return *reinterpret_cast<uint32_t*>(mData) % mEnumCount;
 }
 
@@ -1140,7 +1140,7 @@ bool Datum::operator==(const Datum& other) const
 
     for (uint32_t i = 0; i < mCount; i++)
     {
-        assert(mType != DatumType::Count);
+        OCT_ASSERT(mType != DatumType::Count);
 
         switch (mType)
         {
@@ -1384,13 +1384,13 @@ void Datum::Reserve(uint32_t capacity)
         if (mExternal)
         {
             LogError("Cannot reserve internal memory for an external Datum.");
-            assert(0);
+            OCT_ASSERT(0);
         }
 
         if (mType == DatumType::Count)
         {
             LogError("Cannot reserve internal memory for a typeless Datum.");
-            assert(0);
+            OCT_ASSERT(0);
         }
 
         DatumData prevData = mData;
@@ -1430,8 +1430,8 @@ void Datum::Destroy()
     if (!mExternal && 
         mData.vp != nullptr)
     {
-        assert(mType != DatumType::Count);
-        assert(mCount > 0);
+        OCT_ASSERT(mType != DatumType::Count);
+        OCT_ASSERT(mCount > 0);
 
         for (uint32_t i = 0; i < mCount; i++)
         {
@@ -1529,13 +1529,13 @@ void Datum::PreSet(uint32_t index, DatumType type)
     if (index >= mCount)
     {
         LogError("Index out of bounds - Datum::Set().");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     if (mType != type)
     {
         LogError("Type mismatch - Datum::Set()");
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 
@@ -1549,7 +1549,7 @@ void Datum::PreSetExternal(DatumType type)
     if (mType != type)
     {
         LogError("Datum::SetExternal() - type mismatch");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     if (!mExternal &&
@@ -1557,14 +1557,14 @@ void Datum::PreSetExternal(DatumType type)
         mCount > 0))
     {
         LogError("Cannot set storage on Datum with internal storage already allocated.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 
 void Datum::PostSetExternal(DatumType type, uint32_t count)
 {
-    assert(type != DatumType::Count);
-    assert(type == mType);
+    OCT_ASSERT(type != DatumType::Count);
+    OCT_ASSERT(type == mType);
 
     mCount = count;
     mCapacity = count;
@@ -1577,7 +1577,7 @@ void Datum::PrePushBack(DatumType type)
     if (mExternal)
     {
         LogError("Cannot PushBack on Datum with external storage.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     if (mType == DatumType::Count)
@@ -1588,7 +1588,7 @@ void Datum::PrePushBack(DatumType type)
     if (mType != type)
     {
         LogError("Datum::PushBack() - Type mismatch");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     if (mCount == mCapacity)
@@ -1602,13 +1602,13 @@ void Datum::PreGet(uint32_t index, DatumType type) const
     if (index >= mCount)
     {
         LogError("Index out of bounds - Datum::Get().");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     if (mType != type)
     {
         LogError("Type mismatch - Propterty::Get()");
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 
@@ -1622,7 +1622,7 @@ void Datum::PreAssign(DatumType type)
     if (mType != type)
     {
         LogError("Invalid type assignment - Datum::PreAssign()");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     // Make sure we have at least one element, since assign operations only affect index 0.
@@ -1677,7 +1677,7 @@ void Datum::ConstructData(DatumData& dataUnion, uint32_t index)
         break;
 
     case DatumType::Count:
-        assert(0);
+        OCT_ASSERT(0);
         break;
     }
 }

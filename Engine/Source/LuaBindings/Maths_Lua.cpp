@@ -299,7 +299,7 @@ void Maths_Lua::Bind()
 
     lua_setglobal(L, MATHS_LUA_NAME);
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

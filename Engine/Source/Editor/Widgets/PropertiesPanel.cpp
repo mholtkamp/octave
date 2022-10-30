@@ -142,8 +142,8 @@ void PropertiesPanel::OnSelectedComponentChanged()
             if (differentActor)
             {
                 // Any selected component should have an owning actor.
-                assert(mCurrentComponent->GetOwner() != nullptr);
-                assert(mActorCanvas == nullptr);
+                OCT_ASSERT(mCurrentComponent->GetOwner() != nullptr);
+                OCT_ASSERT(mActorCanvas == nullptr);
 
                 mActorCanvas = new Canvas();
 
@@ -330,7 +330,7 @@ void PropertiesPanel::PopulatePropertyWidgets(Canvas* propCanvas, const std::vec
         {
             // Recover the cached widget
             Widget* cachedWidget = propCanvas->GetChild(widgetIndex);
-            assert(cachedWidget != nullptr);
+            OCT_ASSERT(cachedWidget != nullptr);
 
             if (cachedWidget != nullptr &&
                 static_cast<PropertyWidget*>(cachedWidget)->IsArray() == prop.IsArray() && 

@@ -21,7 +21,7 @@
 #include "Components/TextMeshComponent.h"
 #include "Components/ParticleComponent.h"
 
-#include <assert.h>
+#include "Assertion.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <malloc.h>
@@ -603,7 +603,7 @@ void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* mes
         if (material == nullptr)
         {
             material = Renderer::Get()->GetDefaultMaterial();
-            assert(material != nullptr);
+            OCT_ASSERT(material != nullptr);
         }
 
         BindMaterial(material);
@@ -761,7 +761,7 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
         if (material == nullptr)
         {
             material = Renderer::Get()->GetDefaultMaterial();
-            assert(material != nullptr);
+            OCT_ASSERT(material != nullptr);
         }
 
         BindMaterial(material);
@@ -914,8 +914,8 @@ void GFX_UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const s
     TextMeshCompResource* resource = textMeshComp->GetResource();
 
     uint32_t numVertices = uint32_t(textMeshComp->GetNumVisibleCharacters() * 6);
-    assert(numVertices % 6 == 0);
-    assert(numVertices <= vertices.size());
+    OCT_ASSERT(numVertices % 6 == 0);
+    OCT_ASSERT(numVertices <= vertices.size());
 
     size_t newBufferSize = numVertices * sizeof(Vertex);
 
@@ -962,7 +962,7 @@ void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp)
     if (material == nullptr)
     {
         material = Renderer::Get()->GetDefaultMaterial();
-        assert(material != nullptr);
+        OCT_ASSERT(material != nullptr);
     }
 
     BindMaterial(material);
@@ -1023,11 +1023,11 @@ void GFX_UpdateParticleCompVertexBuffer(ParticleComponent* particleComp, const s
     ParticleCompResource* resource = particleComp->GetResource();
 
     uint32_t numVertices = uint32_t(vertices.size());
-    assert(numVertices % 4 == 0);
+    OCT_ASSERT(numVertices % 4 == 0);
     uint32_t numIndices = (3 * numVertices) / 2; // 6 indices per 4 vertices
 
     uint32_t vertexCapacity = uint32_t(vertices.capacity());
-    assert(vertexCapacity % 4 == 0);
+    OCT_ASSERT(vertexCapacity % 4 == 0);
     uint32_t indexCapacity = (3 * vertexCapacity) / 2; // 6 indices per 4 vertices
 
     if (resource->mNumVerticesAllocated < vertexCapacity)
@@ -1099,7 +1099,7 @@ void GFX_DrawParticleComp(ParticleComponent* particleComp)
         if (material == nullptr)
         {
             material = Renderer::Get()->GetDefaultMaterial();
-            assert(material != nullptr);
+            OCT_ASSERT(material != nullptr);
         }
 
         BindMaterial(material);
@@ -1127,7 +1127,7 @@ void GFX_DrawParticleComp(ParticleComponent* particleComp)
 
         // Draw
         uint32_t numParticles = particleComp->GetNumParticles();
-        assert(numParticles * 4 == numVertices);
+        OCT_ASSERT(numParticles * 4 == numVertices);
 
         C3D_DrawElements(
             GPU_TRIANGLES,

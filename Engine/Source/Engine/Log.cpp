@@ -21,13 +21,13 @@ void ShutdownLog()
 
 void LockLog()
 {
-    assert(sInitialized);
+    OCT_ASSERT(sInitialized);
     SYS_LockMutex(sMutex);
 }
 
 void UnlockLog()
 {
-    assert(sInitialized);
+    OCT_ASSERT(sInitialized);
     SYS_UnlockMutex(sMutex);
 }
 

@@ -16,7 +16,7 @@ extern const char* gBlendModeStrings[];
 bool TextMeshComponent::HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     TextMeshComponent* textComp = static_cast<TextMeshComponent*>(prop->mOwner);
 
     textComp->MarkVerticesDirty();
@@ -304,7 +304,7 @@ void TextMeshComponent::UpdateVertexData()
     mVertices.reserve(mText.size() * TEXT_VERTS_PER_CHAR);
 
     Font* font = mFont.Get<Font>();
-    assert(font != nullptr);
+    OCT_ASSERT(font != nullptr);
     int32_t fontSize = font->GetSize();
     int32_t fontWidth = font->GetWidth();
     int32_t fontHeight = font->GetHeight();

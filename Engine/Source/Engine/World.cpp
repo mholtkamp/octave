@@ -90,7 +90,7 @@ void World::Destroy()
         DestroyActor(i);
     }
 
-    assert(mActors.size() == 0);
+    OCT_ASSERT(mActors.size() == 0);
     mActors.clear();
     mActiveCamera = nullptr;
 
@@ -149,13 +149,13 @@ void World::DestroyActor(Actor* actor)
 
 void World::DestroyActor(uint32_t index)
 {
-    assert(index < mActors.size());
+    OCT_ASSERT(index < mActors.size());
     Actor* actor = mActors[index];
 
     if (actor->GetNetId() != INVALID_NET_ID)
     {
         // This actor was assigned a net id, so it should exist in our net actor map.
-        assert(mNetActorMap.find(actor->GetNetId()) != mNetActorMap.end());
+        OCT_ASSERT(mNetActorMap.find(actor->GetNetId()) != mNetActorMap.end());
         mNetActorMap.erase(actor->GetNetId());
 
         // Remove the destroyed actor from their assigned replication vector.
@@ -299,8 +299,8 @@ void World::PrioritizeActorTick(Actor* actor)
 
 void World::AddNetActor(Actor* actor, NetId netId)
 {
-    assert(actor != nullptr);
-    assert(actor->GetNetId() == INVALID_NET_ID);
+    OCT_ASSERT(actor != nullptr);
+    OCT_ASSERT(actor->GetNetId() == INVALID_NET_ID);
 
     if (actor->IsReplicated())
     {
@@ -603,14 +603,14 @@ void World::RegisterComponent(Component* comp)
     if (compType == AudioComponent::GetStaticType())
     {
 #if _DEBUG
-        assert(std::find(mAudioComponents.begin(), mAudioComponents.end(), (AudioComponent*)comp) == mAudioComponents.end());
+        OCT_ASSERT(std::find(mAudioComponents.begin(), mAudioComponents.end(), (AudioComponent*)comp) == mAudioComponents.end());
 #endif
         mAudioComponents.push_back((AudioComponent*) comp);
     }
     else if (compType == PointLightComponent::GetStaticType())
     {
 #if _DEBUG
-        assert(std::find(mPointLights.begin(), mPointLights.end(), (PointLightComponent*)comp) == mPointLights.end());
+        OCT_ASSERT(std::find(mPointLights.begin(), mPointLights.end(), (PointLightComponent*)comp) == mPointLights.end());
 #endif
         mPointLights.push_back((PointLightComponent*)comp);
     }
@@ -623,13 +623,13 @@ void World::UnregisterComponent(Component* comp)
     if (compType == AudioComponent::GetStaticType())
     {
         auto it = std::find(mAudioComponents.begin(), mAudioComponents.end(), (AudioComponent*)comp);
-        assert(it != mAudioComponents.end());
+        OCT_ASSERT(it != mAudioComponents.end());
         mAudioComponents.erase(it);
     }
     else if (compType == PointLightComponent::GetStaticType())
     {
         auto it = std::find(mPointLights.begin(), mPointLights.end(), (PointLightComponent*)comp);
-        assert(it != mPointLights.end());
+        OCT_ASSERT(it != mPointLights.end());
         mPointLights.erase(it);
     }
     else if (compType == DirectionalLightComponent::GetStaticType())
@@ -649,13 +649,13 @@ const std::vector<AudioComponent*>& World::GetAudioComponents() const
 
 std::vector<Actor*>& World::GetReplicatedActorVector(ReplicationRate rate)
 {
-    assert(rate != ReplicationRate::Count);
+    OCT_ASSERT(rate != ReplicationRate::Count);
     return mRepActors[(uint32_t)rate];
 }
 
 uint32_t& World::GetReplicatedActorIndex(ReplicationRate rate)
 {
-    assert(rate != ReplicationRate::Count);
+    OCT_ASSERT(rate != ReplicationRate::Count);
     return mRepIndices[(uint32_t)rate];
 }
 
@@ -716,10 +716,10 @@ void World::AddActor(Actor* actor)
 {
 #if !EDITOR
     // This should really only be used in Editor for Undo/Redo reasons.
-    assert(0);
+    OCT_ASSERT(0);
 #endif
 
-    assert(std::find(mActors.begin(), mActors.end(), actor) == mActors.end());
+    OCT_ASSERT(std::find(mActors.begin(), mActors.end(), actor) == mActors.end());
     mActors.push_back(actor);
     actor->SetWorld(this);
 
@@ -734,7 +734,7 @@ void World::RemoveActor(Actor* actor)
 {
 #if !EDITOR
     // This should really only be used in Editor for Undo/Redo reasons.
-    assert(0);
+    OCT_ASSERT(0);
 #endif
 
     for (uint32_t i = 0; i < mActors.size(); ++i)
@@ -959,7 +959,7 @@ Actor* World::SpawnActor(TypeId actorType, bool addNetwork)
         }
 
 #if _DEBUG && (PLATFORM_WINDOWS || PLATFORM_LINUX)
-        assert(retActor->DoComponentsHaveUniqueNames());
+        OCT_ASSERT(retActor->DoComponentsHaveUniqueNames());
 #endif
 
         if (addNetwork)

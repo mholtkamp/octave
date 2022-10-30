@@ -30,7 +30,7 @@ int Component_Lua::Create(lua_State* L, Component* component)
             luaL_getmetatable(L, COMPONENT_LUA_NAME);
         }
 
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
         lua_setmetatable(L, udIndex);
     }
     else
@@ -215,7 +215,7 @@ void Component_Lua::Bind()
     lua_setfield(L, mtIndex, "CheckType");
 
     lua_pop(L, 1);
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

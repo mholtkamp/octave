@@ -134,7 +134,7 @@ AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type,
             foundAsset->second->mEmbeddedData == embeddedAsset)
         {
             LogDebug("Asset name conflict: %s", name.c_str());
-            assert(false);
+            OCT_ASSERT(false);
         }
         else
         {
@@ -284,7 +284,7 @@ void AssetManager::DiscoverAssetRegistry(const char* registryPath)
         while (fgets(line, kLineSize, regFile) != nullptr)
         {
             char* comma = strchr(line, ',');
-            assert(comma != nullptr);
+            OCT_ASSERT(comma != nullptr);
             *comma = '\0';
 
             strncpy(typeString, line, 31);
@@ -483,7 +483,7 @@ Asset* AssetManager::ImportEngineAsset(TypeId type, AssetDir* dir, const std::st
 void AssetManager::ImportEngineAssets()
 {
     static bool imported = false;
-    assert(!imported);
+    OCT_ASSERT(!imported);
 
     if (!imported)
     {
@@ -803,8 +803,8 @@ bool AssetManager::DoesAssetExist(const std::string& name)
 bool AssetManager::RenameAsset(Asset* asset, const std::string& newName)
 {
     bool success = false;
-    assert(asset != nullptr);
-    assert(newName.size() > 0);
+    OCT_ASSERT(asset != nullptr);
+    OCT_ASSERT(newName.size() > 0);
 
     if (asset != nullptr &&
         newName.size() > 0)
@@ -960,7 +960,7 @@ ThreadFuncRet AssetManager::AsyncLoadThreadFunc(void* in)
             // We have a request, so we need to
             // (1) Create the Asset type
             Asset* newAsset = Asset::CreateInstance(request->mType);
-            assert(newAsset);
+            OCT_ASSERT(newAsset);
 
             // (2) Load the file into a stream
             // (3) Call asset->LoadStream()
@@ -1044,7 +1044,7 @@ void AssetManager::UpdateEndLoadQueue()
                 else
                 {
                     // Finish the load on the main thread and assign the stub's mAsset so that it is officially "Loaded"
-                    assert(loadRequest->mAsset != nullptr);
+                    OCT_ASSERT(loadRequest->mAsset != nullptr);
                     loadRequest->mAsset->Create();
                     stub->mAsset = loadRequest->mAsset;
 
@@ -1054,7 +1054,7 @@ void AssetManager::UpdateEndLoadQueue()
                         // The load request of the target ref should match this load request but...
                         // We need to make sure we handle the case where an AssetRef is assigned twice to an async load
                         // before the first one finishes. Might mean Canceling the request if one already exists in AsyncLoadAsset()
-                        assert(loadRequest->mTargetRefs[i]->mLoadRequest == loadRequest);
+                        OCT_ASSERT(loadRequest->mTargetRefs[i]->mLoadRequest == loadRequest);
 
                         (*loadRequest->mTargetRefs[i]) = loadRequest->mAsset;
                         loadRequest->mTargetRefs[i]->mLoadRequest = nullptr;

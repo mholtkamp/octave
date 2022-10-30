@@ -9,7 +9,7 @@
 void BindBlendMode()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -31,13 +31,13 @@ void BindBlendMode()
 
     lua_setglobal(L, "BlendMode");
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 void BindShadingModel()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -56,13 +56,13 @@ void BindShadingModel()
 
     lua_setglobal(L, "ShadingModel");
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 void BindTevMode()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -96,13 +96,13 @@ void BindTevMode()
 
     lua_setglobal(L, "TevMode");
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 void BindTextureSlot()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -121,13 +121,13 @@ void BindTextureSlot()
 
     lua_setglobal(L, "TextureSlot");
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 void BindAnchorMode()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -182,13 +182,13 @@ void BindAnchorMode()
 
     lua_setglobal(L, "AnchorMode");
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 void BindButtonState()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -210,14 +210,14 @@ void BindButtonState()
 
     lua_setglobal(L, "ButtonState");
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 
 void BindDatumType()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -263,13 +263,13 @@ void BindDatumType()
 
     lua_setglobal(L, "DatumType");
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 void BindNetFuncType()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -288,13 +288,13 @@ void BindNetFuncType()
 
     lua_setglobal(L, "NetFuncType");
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 void BindJustification()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -316,7 +316,7 @@ void BindJustification()
 
     lua_setglobal(L, "Justification");
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 void Misc_Lua::BindMisc()

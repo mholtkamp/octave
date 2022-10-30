@@ -122,7 +122,7 @@ void Blueprint::Create(Actor* srcActor)
     if (srcActor == nullptr)
         return;
 
-    assert(srcActor->DoComponentsHaveUniqueNames());
+    OCT_ASSERT(srcActor->DoComponentsHaveUniqueNames());
 
     mActorType = srcActor->GetType();
 
@@ -172,7 +172,7 @@ void Blueprint::Create(Actor* srcActor)
         }
     }
 
-    assert(srcActor->GetRootComponent());
+    OCT_ASSERT(srcActor->GetRootComponent());
     if (srcActor->GetRootComponent())
     {
         mRootComponentName = srcActor->GetRootComponent()->GetName();
@@ -222,7 +222,7 @@ Actor* Blueprint::Instantiate(World* world)
                 CopyPropertyValues(dstProps, bpComp->mProperties);
 
                 copiedComps[i] = true;
-                assert(bpCompIdx >= 0 && !copiedBpComps[bpCompIdx]);
+                OCT_ASSERT(bpCompIdx >= 0 && !copiedBpComps[bpCompIdx]);
                 copiedBpComps[bpCompIdx] = true;
             }
         }
@@ -347,7 +347,7 @@ Actor* Blueprint::Instantiate(World* world)
         }
 
         // Actor needs a root component?
-        assert(newRoot != nullptr);
+        OCT_ASSERT(newRoot != nullptr);
         if (newRoot != nullptr)
         {
             if (newRoot != retActor->GetRootComponent())
@@ -367,7 +367,7 @@ Actor* Blueprint::Instantiate(World* world)
                 !comps[i]->IsDefault())
             {
                 BlueprintComp* bpComp = FindBlueprintComp(comps[i]->GetName(), false);
-                assert(bpComp);
+                OCT_ASSERT(bpComp);
 
                 if (bpComp->mParentName != "")
                 {

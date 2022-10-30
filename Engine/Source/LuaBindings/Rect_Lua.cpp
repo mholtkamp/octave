@@ -15,7 +15,7 @@ int Rect_Lua::Create(lua_State* L)
     Rect_Lua* newRect = (Rect_Lua*)lua_newuserdata(L, sizeof(Rect_Lua));
     new (newRect) Rect_Lua();
     luaL_getmetatable(L, RECT_LUA_NAME);
-    assert(lua_istable(L, -1));
+    OCT_ASSERT(lua_istable(L, -1));
     lua_setmetatable(L, -2);
 
     // Initialize members is args were passed
@@ -48,7 +48,7 @@ int Rect_Lua::Create(lua_State* L, Rect value)
     new (newRect) Rect_Lua();
     newRect->mRect = value;
     luaL_getmetatable(L, RECT_LUA_NAME);
-    assert(lua_istable(L, -1));
+    OCT_ASSERT(lua_istable(L, -1));
     lua_setmetatable(L, -2);
 
     return 1;
@@ -265,7 +265,7 @@ int Rect_Lua::Right(lua_State* L)
 void Rect_Lua::Bind()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     luaL_newmetatable(L, RECT_LUA_NAME);
     int mtIndex = lua_gettop(L);
@@ -305,7 +305,7 @@ void Rect_Lua::Bind()
 
     lua_setglobal(L, RECT_LUA_NAME);
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

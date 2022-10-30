@@ -29,28 +29,28 @@ static float sVerticalSpacing = sHeight + 2;
 
 void HandleTextFieldChange(TextField* textField)
 {
-    assert(textField->GetParent());
+    OCT_ASSERT(textField->GetParent());
     PropertyWidget* propWidget = static_cast<PropertyWidget*>(textField->GetParent());
     propWidget->Write();
 }
 
 void HandleCheckBoxPressed(Button* checkBox)
 {
-    assert(checkBox->GetParent());
+    OCT_ASSERT(checkBox->GetParent());
     PropertyWidget* propWidget = static_cast<PropertyWidget*>(checkBox->GetParent());
     propWidget->Write();
 }
 
 void HandleSelectorChange(Selector* selector)
 {
-    assert(selector->GetParent());
+    OCT_ASSERT(selector->GetParent());
     PropertyWidget* propWidget = static_cast<PropertyWidget*>(selector->GetParent());
     propWidget->Write();
 }
 
 void HandleAssignAssetPressed(Button* button)
 {
-    assert(button->GetParent());
+    OCT_ASSERT(button->GetParent());
     AssetProp* propWidget = static_cast<AssetProp*>(button->GetParent());
 
     // Check if there is a selected asset, if so, assign it to this property.
@@ -105,7 +105,7 @@ void HandlePushVectorPressed(Button* button)
 void HandleAssetTextFieldChange(TextField* textField)
 {
     // Search for an asset by name, otherwise reset it to what it was.
-    assert(textField->GetParent());
+    OCT_ASSERT(textField->GetParent());
     AssetProp* propWidget = static_cast<AssetProp*>(textField->GetParent());
     propWidget->AssignAsset(textField->GetTextString());
 }
@@ -333,7 +333,7 @@ float PropertyArrayWidget::GetHeight()
 
 void PropertyArrayWidget::SetProperty(const Property& prop, uint32_t index)
 {
-    assert(index == 0);
+    OCT_ASSERT(index == 0);
 
     if (mProperty.mType != prop.mType)
     {
@@ -711,8 +711,8 @@ void EnumProp::SetProperty(const Property& prop, uint32_t index)
     {
         mSelector->RemoveAllSelections();
 
-        assert(mProperty.mEnumCount > 0);
-        assert(mProperty.mEnumStrings != nullptr);
+        OCT_ASSERT(mProperty.mEnumCount > 0);
+        OCT_ASSERT(mProperty.mEnumStrings != nullptr);
         for (uint32_t i = 0; i < uint32_t(mProperty.mEnumCount); ++i)
         {
             mSelector->AddSelection(mProperty.mEnumStrings[i]);

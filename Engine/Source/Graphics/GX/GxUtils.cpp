@@ -239,7 +239,7 @@ void BindMaterial(Material* material, bool useVertexColor)
         {
             // First texture sample is done in TEV 0, if we have to add earlier stages,
             // then this assertion will need to be modified.
-            assert(texIdx == tevStage);
+            OCT_ASSERT(texIdx == tevStage);
 
             GX_SetTexCoordGen(GX_TEXCOORD0 + texIdx, GX_TG_MTX3x4, GX_TG_TEX0 + uvMap, GX_TEXMTX0 + uvMap * 3);
             GX_LoadTexObj(&texture->GetResource()->mGxTexObj, GX_TEXMAP0 + texIdx);
@@ -291,7 +291,7 @@ void BindMaterial(Material* material, bool useVertexColor)
         gGxContext.mLighting.mColorChannel = false;
     }
 
-    assert(tevStage <= 16);
+    OCT_ASSERT(tevStage <= 16);
     GX_SetNumTevStages(tevStage);
 
     gGxContext.mLighting.mMaterialSrc = GX_SRC_REG;

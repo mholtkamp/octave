@@ -13,7 +13,7 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Components/PointLightComponent.h"
 
-#include <assert.h>
+#include "Assertion.h"
 #include <string>
 #include <algorithm>
 #include <set>
@@ -33,13 +33,13 @@ PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
 
 void CreateVulkanContext()
 {
-    assert(gVulkanContext == nullptr);
+    OCT_ASSERT(gVulkanContext == nullptr);
     gVulkanContext = new VulkanContext();
 }
 
 void DestroyVulkanContext()
 {
-    assert(gVulkanContext != nullptr);
+    OCT_ASSERT(gVulkanContext != nullptr);
     delete gVulkanContext;
     gVulkanContext = nullptr;
 }
@@ -169,8 +169,8 @@ void VulkanContext::Destroy()
 void VulkanContext::BeginFrame()
 {
     // These should always be equivalent, or else we need a way to sync them.
-    assert(uint32_t(mFrameNumber) == Renderer::Get()->GetFrameNumber());
-    assert(uint32_t(mFrameIndex) == Renderer::Get()->GetFrameIndex());
+    OCT_ASSERT(uint32_t(mFrameNumber) == Renderer::Get()->GetFrameNumber());
+    OCT_ASSERT(uint32_t(mFrameIndex) == Renderer::Get()->GetFrameIndex());
 
     if (mCommandBuffers.size() == 0)
     {
@@ -188,7 +188,7 @@ void VulkanContext::BeginFrame()
              result != VK_SUBOPTIMAL_KHR)
     {
         LogError("Failed to acquire swapchain image");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     VkCommandBuffer cb = mCommandBuffers[mFrameIndex];
@@ -215,7 +215,7 @@ void VulkanContext::EndFrame()
     if (vkEndCommandBuffer(cb) != VK_SUCCESS)
     {
         LogError("Failed to record command buffer");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     UpdateGlobalUniformData();
@@ -239,7 +239,7 @@ void VulkanContext::EndFrame()
     if (vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, mWaitFences[mFrameIndex]) != VK_SUCCESS)
     {
         LogError("Failed to submit draw command buffer");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     VkPresentInfoKHR presentInfo = {};
@@ -273,7 +273,7 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
     if (mCurrentRenderPassId != RenderPassId::Count)
     {
         LogError("BeginRenderPass called while a render pass is already active.");
-        assert(0);
+        OCT_ASSERT(0);
         return;
     }
 
@@ -368,7 +368,7 @@ void VulkanContext::EndRenderPass()
 void VulkanContext::BindPipeline(PipelineId id, VertexType vertexType)
 {
     Pipeline* pipeline = GetPipeline(id);
-    assert(pipeline != nullptr &&
+    OCT_ASSERT(pipeline != nullptr &&
         pipeline->GetId() == id);
     BindPipeline(pipeline, vertexType);
 }
@@ -562,7 +562,7 @@ void VulkanContext::CreateSwapchain()
     if (vkCreateSwapchainKHR(mDevice, &ciSwapchain, nullptr, &mSwapchain) != VK_SUCCESS)
     {
         LogError("Failed to create swapchain");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     vkGetSwapchainImagesKHR(mDevice, mSwapchain, &imageCount, nullptr);
@@ -583,7 +583,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
 {
     char prefix[64];
     char* message = (char*) malloc(strlen(callbackData->pMessage) + 500);
-    assert(message);
+    OCT_ASSERT(message);
 
     // Severity
     if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
@@ -684,18 +684,18 @@ void VulkanContext::CreateInstance()
         CheckValidationLayerSupport(sValidationLayers, sNumValidationLayers) == false)
     {
         LogError("Validation layers enabled but the configured layers are not supported.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     result = vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
-    assert(result == VK_SUCCESS);
+    OCT_ASSERT(result == VK_SUCCESS);
 
     if (extensionCount > 0)
     {
         VkExtensionProperties* extensions = reinterpret_cast<VkExtensionProperties*>(malloc(sizeof(VkExtensionProperties) * extensionCount));
         
         result = vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, extensions);
-        assert(result == VK_SUCCESS);
+        OCT_ASSERT(result == VK_SUCCESS);
 
         for (uint32_t i = 0; i < extensionCount; i++)
         {
@@ -727,7 +727,7 @@ void VulkanContext::CreateInstance()
                     debugUtilsExtFound = true;
                 }
             }
-            assert(mEnabledExtensionCount < MAX_ENABLED_EXTENSIONS);
+            OCT_ASSERT(mEnabledExtensionCount < MAX_ENABLED_EXTENSIONS);
         }
 
         free(extensions);
@@ -737,12 +737,12 @@ void VulkanContext::CreateInstance()
     if (!surfaceExtFound)
     {
         LogError("Failed to find surface extension");
-        assert(0);
+        OCT_ASSERT(0);
     }
     if (!platformSurfaceExtFound)
     {
         LogError("Failed to find platform surface extension");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     VkApplicationInfo appInfo = {};
@@ -767,7 +767,7 @@ void VulkanContext::CreateInstance()
     if (result != VK_SUCCESS)
     {
         LogDebug("Failed to create instance.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     // Setup the function pointers
@@ -799,14 +799,14 @@ void VulkanContext::CreateDebugCallback()
         return;
     }
 
-    assert(mDebugMessenger == VK_NULL_HANDLE);
+    OCT_ASSERT(mDebugMessenger == VK_NULL_HANDLE);
 
     PFN_vkCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT =
         (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
             mInstance,
             "vkCreateDebugUtilsMessengerEXT");
 
-    assert(CreateDebugUtilsMessengerEXT != nullptr);
+    OCT_ASSERT(CreateDebugUtilsMessengerEXT != nullptr);
 
     VkDebugUtilsMessengerCreateInfoEXT ciDebugMessenger;
     ciDebugMessenger.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -830,7 +830,7 @@ void VulkanContext::CreateDebugCallback()
     if (result != VK_SUCCESS)
     {
         LogError("Failed to setup debug callback!");
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 
@@ -839,7 +839,7 @@ void VulkanContext::CreateSurface()
 #if PLATFORM_WINDOWS
     PFN_vkCreateWin32SurfaceKHR pfnCreateWin32Surface = (PFN_vkCreateWin32SurfaceKHR)vkGetInstanceProcAddr(mInstance, "vkCreateWin32SurfaceKHR");
 
-    assert(pfnCreateWin32Surface != nullptr);
+    OCT_ASSERT(pfnCreateWin32Surface != nullptr);
 
     VkWin32SurfaceCreateInfoKHR ciSurface = {};
     ciSurface.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
@@ -849,7 +849,7 @@ void VulkanContext::CreateSurface()
     if (pfnCreateWin32Surface(mInstance, &ciSurface, nullptr, &mSurface) != VK_SUCCESS)
     {
         LogError("Failed to create window surface.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 #elif PLATFORM_LINUX
     VkXcbSurfaceCreateInfoKHR ciSurface = {};
@@ -861,7 +861,7 @@ void VulkanContext::CreateSurface()
     if (res != VK_SUCCESS)
     {
         LogError("Failed to create window surface.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 #endif
 }
@@ -874,7 +874,7 @@ void VulkanContext::PickPhysicalDevice()
     if (deviceCount == 0)
     {
         LogError("No physical device found.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -892,7 +892,7 @@ void VulkanContext::PickPhysicalDevice()
     if (mPhysicalDevice == VK_NULL_HANDLE)
     {
         LogError("Failed to find a suitable GPU.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 
@@ -945,7 +945,7 @@ void VulkanContext::CreateLogicalDevice()
     if (result != VK_SUCCESS)
     {
         LogError("Failed to create logical device.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     vkGetDeviceQueue(mDevice, indices.mGraphicsFamily, 0, &mGraphicsQueue);
@@ -974,7 +974,7 @@ void VulkanContext::CreateImageViews()
         if (vkCreateImageView(mDevice, &ciImageView, nullptr, &mSwapchainImageViews[i]) != VK_SUCCESS)
         {
             LogError("Failed to create swapchain image view");
-            assert(0);
+            OCT_ASSERT(0);
         }
 
         SetDebugObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)mSwapchainImageViews[i], "Swapchain Image View");
@@ -1074,7 +1074,7 @@ void VulkanContext::CreateRenderPass()
         if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mShadowRenderPass) != VK_SUCCESS)
         {
             LogError("Failed to create shadow renderpass");
-            assert(0);
+            OCT_ASSERT(0);
         }
     }
 
@@ -1151,7 +1151,7 @@ void VulkanContext::CreateRenderPass()
         if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mForwardRenderPass) != VK_SUCCESS)
         {
             LogError("Failed to create forward render pass");
-            assert(0);
+            OCT_ASSERT(0);
         }
     }
 
@@ -1228,7 +1228,7 @@ void VulkanContext::CreateRenderPass()
         if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mPostprocessRenderPass) != VK_SUCCESS)
         {
             LogError("Failed to create postprocess render pass");
-            assert(0);
+            OCT_ASSERT(0);
         }
     }
 
@@ -1305,7 +1305,7 @@ void VulkanContext::CreateRenderPass()
         if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mUIRenderPass) != VK_SUCCESS)
         {
             LogError("Failed to create forward  render pass");
-            assert(0);
+            OCT_ASSERT(0);
         }
     }
 }
@@ -1330,12 +1330,12 @@ void VulkanContext::CreateFramebuffers()
         if (vkCreateFramebuffer(mDevice, &ciFramebuffer, nullptr, &mSwapchainFramebuffers[i]) != VK_SUCCESS)
         {
             LogError("Failed to create framebuffer.");
-            assert(0);
+            OCT_ASSERT(0);
         }
     }
 
     {
-        assert(mShadowRenderPass != VK_NULL_HANDLE);
+        OCT_ASSERT(mShadowRenderPass != VK_NULL_HANDLE);
 
         VkImageView shadowMapImageView = GetShadowMapImage()->GetView();
 
@@ -1351,7 +1351,7 @@ void VulkanContext::CreateFramebuffers()
         if (vkCreateFramebuffer(mDevice, &ciFramebuffer, nullptr, &mShadowFramebuffer) != VK_SUCCESS)
         {
             LogError("Failed to create shadow framebuffer.");
-            assert(0);
+            OCT_ASSERT(0);
         }
     }
 
@@ -1370,7 +1370,7 @@ void VulkanContext::CreateFramebuffers()
         if (vkCreateFramebuffer(mDevice, &ciFramebuffer, nullptr, &mSceneColorFramebuffer) != VK_SUCCESS)
         {
             LogError("Failed to create framebuffer.");
-            assert(0);
+            OCT_ASSERT(0);
         }
     }
 }
@@ -1511,7 +1511,7 @@ void VulkanContext::CreateCommandPool()
     if (vkCreateCommandPool(mDevice, &ciCommandPool, nullptr, &mCommandPool))
     {
         LogError("Failed to create command pool");
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 
@@ -1530,7 +1530,7 @@ void VulkanContext::CreateCommandBuffers()
         if (vkAllocateCommandBuffers(mDevice, &allocInfo, mCommandBuffers.data()) != VK_SUCCESS)
         {
             LogError("Failed to create command buffers");
-            assert(0);
+            OCT_ASSERT(0);
         }
     }
 }
@@ -1574,7 +1574,7 @@ void VulkanContext::CreateSemaphores()
         vkCreateSemaphore(mDevice, &ciSemaphore, nullptr, &mRenderFinishedSemaphore) != VK_SUCCESS)
     {
         LogError("Failed to create semaphores");
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 
@@ -1615,7 +1615,7 @@ void VulkanContext::CreateDescriptorPool()
     if (vkCreateDescriptorPool(mDevice, &ciPool, nullptr, &mDescriptorPool) != VK_SUCCESS)
     {
         LogError("Failed to create descriptor pool");
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 
@@ -1700,7 +1700,7 @@ VkSurfaceFormatKHR VulkanContext::ChooseSwapSurfaceFormat(const std::vector<VkSu
     if (availableFormats.size() == 0)
     {
         LogError("No available formats for swap surface.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     if (availableFormats.size() == 1 &&
@@ -1737,7 +1737,7 @@ VkPresentModeKHR VulkanContext::ChooseSwapPresentMode(const std::vector<VkPresen
     }
 
     LogError("Could not find a valid present mode for swapchain.");
-    assert(0);
+    OCT_ASSERT(0);
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
@@ -1919,7 +1919,7 @@ VkExtent2D& VulkanContext::GetSwapchainExtent()
 Pipeline* VulkanContext::GetPipeline(PipelineId id)
 {
     uint32_t index = uint32_t(id);
-    assert(index < (uint32_t)PipelineId::Count);
+    OCT_ASSERT(index < (uint32_t)PipelineId::Count);
     return mPipelines[index];
 }
 
@@ -2218,7 +2218,7 @@ void VulkanContext::CreateHitCheck()
     if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mHitCheckRenderPass) != VK_SUCCESS)
     {
         LogError("Failed to create renderpass");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     // Create Framebuffer
@@ -2236,7 +2236,7 @@ void VulkanContext::CreateHitCheck()
     if (vkCreateFramebuffer(mDevice, &ciFramebuffer, nullptr, &mHitCheckFramebuffer) != VK_SUCCESS)
     {
         LogError("Failed to create framebuffer.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 

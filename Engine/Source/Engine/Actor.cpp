@@ -29,7 +29,7 @@ using namespace std;
 
 #define INVOKE_NET_FUNC_BODY(P) \
     NetFunc* netFunc = FindNetFunc(name); \
-    assert(netFunc->mNumParams == P); \
+    OCT_ASSERT(netFunc->mNumParams == P); \
     bool shouldExecute = ShouldExecuteNetFunc(netFunc->mType, this); \
     SendNetFunc(netFunc, P, params);
 
@@ -41,7 +41,7 @@ std::unordered_set<TypeId> Actor::sScriptRegisteredSet;
 bool Actor::OnRep_RootPosition(Datum* datum, const void* newValue)
 {
     Actor* actor = (Actor*) datum->mOwner;
-    assert(actor != nullptr);
+    OCT_ASSERT(actor != nullptr);
     glm::vec3* newPos = (glm::vec3*) newValue;
     actor->GetRootComponent()->SetPosition(*newPos);
     return true;
@@ -50,7 +50,7 @@ bool Actor::OnRep_RootPosition(Datum* datum, const void* newValue)
 bool Actor::OnRep_RootRotation(Datum* datum, const void* newValue)
 {
     Actor* actor = (Actor*) datum->mOwner;
-    assert(actor != nullptr);
+    OCT_ASSERT(actor != nullptr);
         
     glm::vec3* newRot = (glm::vec3*) newValue;
     actor->GetRootComponent()->SetRotation(*newRot);
@@ -61,7 +61,7 @@ bool Actor::OnRep_RootRotation(Datum* datum, const void* newValue)
 bool Actor::OnRep_RootScale(Datum* datum, const void* newValue)
 {
     Actor* actor = (Actor*) datum->mOwner;
-    assert(actor != nullptr);
+    OCT_ASSERT(actor != nullptr);
     glm::vec3* newScale = (glm::vec3*) newValue;
     actor->GetRootComponent()->SetScale(*newScale);
     return true;
@@ -165,7 +165,7 @@ void Actor::SaveStream(Stream& stream)
     stream.WriteBool(mReplicateTransform);
 
     // Tags
-    assert(mTags.size() <= 255);
+    OCT_ASSERT(mTags.size() <= 255);
     uint32_t numTags = glm::min((uint32_t)mTags.size(), 255u);
     stream.WriteUint8(numTags);
 
@@ -224,7 +224,7 @@ void Actor::SaveStream(Stream& stream)
 
 
         // Could not find a parent for this transform comp.
-        assert(parent >= -1);
+        OCT_ASSERT(parent >= -1);
         stream.WriteInt32(parent);
     }
 #endif
@@ -270,7 +270,7 @@ void Actor::LoadStream(Stream& stream)
 
             // The component type should match. Default components should
             // always come first in the mComponents vector.
-            assert(type == comp->GetType());
+            OCT_ASSERT(type == comp->GetType());
         }
         else
         {
@@ -292,8 +292,8 @@ void Actor::LoadStream(Stream& stream)
         int32_t compIndex = stream.ReadInt32();
         int32_t parentIndex = stream.ReadInt32();
 
-        assert(compsToLoad[compIndex]->IsTransformComponent());
-        assert(parentIndex == -1 || compsToLoad[parentIndex]->IsTransformComponent());
+        OCT_ASSERT(compsToLoad[compIndex]->IsTransformComponent());
+        OCT_ASSERT(parentIndex == -1 || compsToLoad[parentIndex]->IsTransformComponent());
 
         TransformComponent* transComp = static_cast<TransformComponent*>(compsToLoad[compIndex]);
 
@@ -510,14 +510,14 @@ void Actor::RegisterScriptFuncs(lua_State* L)
 
 bool Actor::AreScriptFuncsRegistered(TypeId type)
 {
-    assert(type != INVALID_TYPE_ID);
+    OCT_ASSERT(type != INVALID_TYPE_ID);
     bool registered = (sScriptRegisteredSet.find(type) != sScriptRegisteredSet.end());
     return registered;
 }
 
 void Actor::SetScriptFuncsRegistered(TypeId type)
 {
-    assert(sScriptRegisteredSet.find(type) == sScriptRegisteredSet.end());
+    OCT_ASSERT(sScriptRegisteredSet.find(type) == sScriptRegisteredSet.end());
     sScriptRegisteredSet.insert(type);
 }
 
@@ -937,8 +937,8 @@ const std::vector<Component*> Actor::GetComponents() const
 
 void Actor::AddComponent(Component* component)
 {
-    assert(component);
-    assert(component->GetOwner() == nullptr);
+    OCT_ASSERT(component);
+    OCT_ASSERT(component->GetOwner() == nullptr);
 
     mComponents.push_back(component);
 
@@ -975,11 +975,11 @@ void Actor::RemoveComponent(Component* component)
 
     if (component->GetStaticType() == ScriptComponent::GetStaticType())
     {
-        assert(mNumScriptComps >= 1);
+        OCT_ASSERT(mNumScriptComps >= 1);
         --mNumScriptComps;
     }
 
-    assert(index != -1); // Component not found?
+    OCT_ASSERT(index != -1); // Component not found?
 }
 
 uint32_t Actor::GetNumComponents() const
@@ -1059,7 +1059,7 @@ void Actor::CopyComponents(const std::vector<Component*>& srcComps)
         {
             TransformComponent* srcTransComp = static_cast<TransformComponent*>(srcComps[c]);
             TransformComponent* dstTransComp = static_cast<TransformComponent*>(mComponents[c]);
-            assert(mComponents[c]->IsTransformComponent());
+            OCT_ASSERT(mComponents[c]->IsTransformComponent());
 
             int32_t parentIndex = -1;
 
@@ -1077,7 +1077,7 @@ void Actor::CopyComponents(const std::vector<Component*>& srcComps)
 
             if (parentIndex != -1)
             {
-                assert(mComponents[parentIndex]->IsTransformComponent());
+                OCT_ASSERT(mComponents[parentIndex]->IsTransformComponent());
                 dstTransComp->Attach((TransformComponent*)mComponents[parentIndex]);
             }
 
@@ -1133,14 +1133,14 @@ uint32_t Actor::GetHitCheckId() const
 
 void Actor::AddScriptEventHandler(ScriptComponent* scriptComp)
 {
-    assert(std::find(mEventHandlerScripts.begin(), mEventHandlerScripts.end(), scriptComp) == mEventHandlerScripts.end());
+    OCT_ASSERT(std::find(mEventHandlerScripts.begin(), mEventHandlerScripts.end(), scriptComp) == mEventHandlerScripts.end());
     mEventHandlerScripts.push_back(scriptComp);
 }
 
 void Actor::RemoveScriptEventHandler(ScriptComponent* scriptComp)
 {
     auto it = std::find(mEventHandlerScripts.begin(), mEventHandlerScripts.end(), scriptComp);
-    assert(it != mEventHandlerScripts.end());
+    OCT_ASSERT(it != mEventHandlerScripts.end());
     mEventHandlerScripts.erase(it);
 }
 
@@ -1278,7 +1278,7 @@ NetFunc* Actor::FindNetFunc(const char* name)
 
     // The map should have been added when the first instanced of this class was spawned.
     // Checkout RegisterNetFuncs()
-    assert(mapIt != sTypeNetFuncMap.end());
+    OCT_ASSERT(mapIt != sTypeNetFuncMap.end());
 
     if (mapIt != sTypeNetFuncMap.end())
     {
@@ -1286,7 +1286,7 @@ NetFunc* Actor::FindNetFunc(const char* name)
 
         // Did you remember to register the net func in GatherNetFuncs().
         // Is the function name spelled correctly?
-        assert(funcIt != mapIt->second.end());
+        OCT_ASSERT(funcIt != mapIt->second.end());
 
         if (funcIt != mapIt->second.end())
         {
@@ -1306,7 +1306,7 @@ NetFunc* Actor::FindNetFunc(uint16_t index)
 
     // The map should have been added when the first instanced of this class was spawned.
     // Checkout RegisterNetFuncs()
-    assert(mapIt != sTypeNetFuncMap.end());
+    OCT_ASSERT(mapIt != sTypeNetFuncMap.end());
 
     if (mapIt != sTypeNetFuncMap.end())
     {

@@ -177,7 +177,7 @@ void Engine_Lua::Bind()
 
     lua_setglobal(L, "Engine");
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

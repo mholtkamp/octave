@@ -181,7 +181,7 @@ void Selector_Lua::Bind()
     lua_setfield(L, mtIndex, "SetSelectionChangeHandler");
 
     lua_pop(L, 1);
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

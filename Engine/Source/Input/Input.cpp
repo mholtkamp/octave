@@ -3,13 +3,13 @@
 #include "Engine.h"
 #include "Log.h"
 
-#include <assert.h>
+#include "Assertion.h"
 
 // Platform Agnostic
 void INP_SetKey(int32_t key)
 {
 #if INPUT_KEYBOARD_SUPPORT
-    assert(key >= 0 && key < INPUT_MAX_KEYS);
+    OCT_ASSERT(key >= 0 && key < INPUT_MAX_KEYS);
     InputState& input = GetEngineState()->mInput;
     input.mKeys[key] = true;
     input.mRepeatKeys[key] = true;
@@ -20,7 +20,7 @@ void INP_SetKey(int32_t key)
 void INP_ClearKey(int32_t key)
 {
 #if INPUT_KEYBOARD_SUPPORT
-    assert(key >= 0 && key < INPUT_MAX_KEYS);
+    OCT_ASSERT(key >= 0 && key < INPUT_MAX_KEYS);
     InputState& input = GetEngineState()->mInput;
     input.mKeys[key] = false;
 #endif
@@ -49,7 +49,7 @@ void INP_ClearAllKeys()
 bool INP_IsKeyDown(int32_t key)
 {
 #if INPUT_KEYBOARD_SUPPORT
-    assert(key >= 0 && key < INPUT_MAX_KEYS);
+    OCT_ASSERT(key >= 0 && key < INPUT_MAX_KEYS);
     return GetEngineState()->mInput.mKeys[key];
 #else
     return false;
@@ -59,7 +59,7 @@ bool INP_IsKeyDown(int32_t key)
 bool INP_IsKeyJustDownRepeat(int32_t key)
 {
 #if INPUT_KEYBOARD_SUPPORT
-    assert(key >= 0 && key < INPUT_MAX_KEYS);
+    OCT_ASSERT(key >= 0 && key < INPUT_MAX_KEYS);
     return GetEngineState()->mInput.mRepeatKeys[key];
 #else
     return false;
@@ -69,7 +69,7 @@ bool INP_IsKeyJustDownRepeat(int32_t key)
 bool INP_IsKeyJustDown(int32_t key)
 {
 #if INPUT_KEYBOARD_SUPPORT
-    assert(key >= 0 && key < INPUT_MAX_KEYS);
+    OCT_ASSERT(key >= 0 && key < INPUT_MAX_KEYS);
     InputState& input = GetEngineState()->mInput;
     return input.mKeys[key] && !input.mPrevKeys[key];
 #else
@@ -80,7 +80,7 @@ bool INP_IsKeyJustDown(int32_t key)
 bool INP_IsKeyJustUp(int32_t key)
 {
 #if INPUT_KEYBOARD_SUPPORT
-    assert(key >= 0 && key < INPUT_MAX_KEYS);
+    OCT_ASSERT(key >= 0 && key < INPUT_MAX_KEYS);
     InputState& input = GetEngineState()->mInput;
     return input.mPrevKeys[key] && !input.mKeys[key];
 #else
@@ -167,7 +167,7 @@ char INP_ConvertKeyCodeToChar(int32_t key)
 
 void INP_SetMouseButton(int32_t button)
 {
-    assert(button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS);
+    OCT_ASSERT(button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS);
     InputState& input = GetEngineState()->mInput;
     input.mMouseButtons[button] = true;
 
@@ -179,7 +179,7 @@ void INP_SetMouseButton(int32_t button)
 
 void INP_ClearMouseButton(int32_t button)
 {
-    assert(button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS);
+    OCT_ASSERT(button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS);
     InputState& input = GetEngineState()->mInput;
     input.mMouseButtons[button] = false;
 
@@ -196,20 +196,20 @@ void INP_SetScrollWheelDelta(int32_t delta)
 
 bool INP_IsMouseButtonDown(int32_t button)
 {
-    assert(button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS);
+    OCT_ASSERT(button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS);
     return GetEngineState()->mInput.mMouseButtons[button];
 }
 
 bool INP_IsMouseButtonJustDown(int32_t button)
 {
-    assert(button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS);
+    OCT_ASSERT(button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS);
     InputState& input = GetEngineState()->mInput;
     return input.mMouseButtons[button] && !input.mPrevMouseButtons[button];
 }
 
 bool INP_IsMouseButtonJustUp(int32_t button)
 {
-    assert(button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS);
+    OCT_ASSERT(button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS);
     InputState& input = GetEngineState()->mInput;
     return !input.mMouseButtons[button] && input.mPrevMouseButtons[button];
 }
@@ -233,19 +233,19 @@ void INP_ClearAllMouseButtons()
 
 void INP_SetTouch(int32_t touch)
 {
-    assert(touch >= 0 && touch < INPUT_MAX_TOUCHES);
+    OCT_ASSERT(touch >= 0 && touch < INPUT_MAX_TOUCHES);
     GetEngineState()->mInput.mTouches[touch] = true;
 }
 
 void INP_ClearTouch(int32_t touch)
 {
-    assert(touch >= 0 && touch < INPUT_MAX_TOUCHES);
+    OCT_ASSERT(touch >= 0 && touch < INPUT_MAX_TOUCHES);
     GetEngineState()->mInput.mTouches[touch] = false;
 }
 
 bool INP_IsTouchDown(int32_t touch)
 {
-    assert(touch >= 0 && touch < INPUT_MAX_TOUCHES);
+    OCT_ASSERT(touch >= 0 && touch < INPUT_MAX_TOUCHES);
     return GetEngineState()->mInput.mTouches[touch];
 }
 
@@ -253,7 +253,7 @@ bool INP_IsPointerDown(int32_t pointer)
 {
     // If either the left mouse button is down or the specified
     // touch index is down, then return 1.
-    assert(pointer >= 0 && pointer < INPUT_MAX_TOUCHES);
+    OCT_ASSERT(pointer >= 0 && pointer < INPUT_MAX_TOUCHES);
     InputState& input = GetEngineState()->mInput;
     return input.mTouches[pointer];
 }
@@ -262,7 +262,7 @@ bool INP_IsPointerJustUp(int32_t pointer)
 {
     // If either the left mouse button is down or the specified
     // touch index is down, then return 1.
-    assert(pointer >= 0 && pointer < INPUT_MAX_TOUCHES);
+    OCT_ASSERT(pointer >= 0 && pointer < INPUT_MAX_TOUCHES);
     InputState& input = GetEngineState()->mInput;
     return (!input.mTouches[pointer] && input.mPrevTouches[pointer]);
 }
@@ -271,7 +271,7 @@ bool INP_IsPointerJustDown(int32_t pointer)
 {
     // If either the left mouse button is down or the specified
     // touch index is down, then return 1.
-    assert(pointer >= 0 && pointer < INPUT_MAX_TOUCHES);
+    OCT_ASSERT(pointer >= 0 && pointer < INPUT_MAX_TOUCHES);
     InputState& input = GetEngineState()->mInput;
     return (input.mTouches[pointer] && !input.mPrevTouches[pointer]);
 }
@@ -286,7 +286,7 @@ void INP_SetMousePosition(int32_t mouseX, int32_t mouseY)
 
 void INP_SetTouchPosition(int32_t touchX, int32_t touchY, int32_t touch)
 {
-    assert(touch >= 0 && touch < INPUT_MAX_TOUCHES);
+    OCT_ASSERT(touch >= 0 && touch < INPUT_MAX_TOUCHES);
     InputState& input = GetEngineState()->mInput;
     input.mPointerX[touch] = touchX;
     input.mPointerY[touch] = touchY;
@@ -302,7 +302,7 @@ void INP_GetMousePosition(int32_t& mouseX, int32_t& mouseY)
 
 void INP_GetTouchPosition(int32_t& touchX, int32_t& touchY, int32_t touch)
 {
-    assert(touch >= 0 && touch < INPUT_MAX_TOUCHES);
+    OCT_ASSERT(touch >= 0 && touch < INPUT_MAX_TOUCHES);
     InputState& input = GetEngineState()->mInput;
     touchX = input.mPointerX[touch];
     touchY = input.mPointerY[touch];
@@ -310,7 +310,7 @@ void INP_GetTouchPosition(int32_t& touchX, int32_t& touchY, int32_t touch)
 
 void INP_GetTouchPositionNormalized(float& touchX, float& touchY, int32_t touch)
 {
-    assert(touch >= 0 && touch < INPUT_MAX_TOUCHES);
+    OCT_ASSERT(touch >= 0 && touch < INPUT_MAX_TOUCHES);
     const EngineState* engineState = GetEngineState();
     const InputState* inputState = &engineState->mInput;
     touchX = (inputState->mPointerX[touch] - (engineState->mWindowWidth / 2.0f)) / (engineState->mWindowWidth / 2.0f);
@@ -340,16 +340,16 @@ void INP_GetMouseDelta(int32_t& deltaX, int32_t& deltaY)
 bool INP_IsGamepadButtonDown(int32_t gamepadButton, int32_t gamepadIndex)
 {
     InputState& input = GetEngineState()->mInput;
-    assert(gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS);
-    assert(gamepadButton >= 0 && gamepadButton < INPUT_MAX_GAMEPAD_BUTTONS);
+    OCT_ASSERT(gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS);
+    OCT_ASSERT(gamepadButton >= 0 && gamepadButton < INPUT_MAX_GAMEPAD_BUTTONS);
     return input.mGamepads[gamepadIndex].mButtons[gamepadButton];
 }
 
 bool INP_IsGamepadButtonJustDown(int32_t gamepadButton, int32_t gamepadIndex)
 {
     InputState& input = GetEngineState()->mInput;
-    assert(gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS);
-    assert(gamepadButton >= 0 && gamepadButton < INPUT_MAX_GAMEPAD_BUTTONS);
+    OCT_ASSERT(gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS);
+    OCT_ASSERT(gamepadButton >= 0 && gamepadButton < INPUT_MAX_GAMEPAD_BUTTONS);
     return input.mGamepads[gamepadIndex].mButtons[gamepadButton] &&
         !input.mPrevGamepads[gamepadIndex].mButtons[gamepadButton];
 }
@@ -357,8 +357,8 @@ bool INP_IsGamepadButtonJustDown(int32_t gamepadButton, int32_t gamepadIndex)
 bool INP_IsGamepadButtonJustUp(int32_t gamepadButton, int32_t gamepadIndex)
 {
     InputState& input = GetEngineState()->mInput;
-    assert(gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS);
-    assert(gamepadButton >= 0 && gamepadButton < INPUT_MAX_GAMEPAD_BUTTONS);
+    OCT_ASSERT(gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS);
+    OCT_ASSERT(gamepadButton >= 0 && gamepadButton < INPUT_MAX_GAMEPAD_BUTTONS);
     return !input.mGamepads[gamepadIndex].mButtons[gamepadButton] &&
         input.mPrevGamepads[gamepadIndex].mButtons[gamepadButton];
 }
@@ -366,21 +366,21 @@ bool INP_IsGamepadButtonJustUp(int32_t gamepadButton, int32_t gamepadIndex)
 float INP_GetGamepadAxisValue(int32_t gamepadAxis, int32_t gamepadIndex)
 {
     InputState& input = GetEngineState()->mInput;
-    assert(gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS);
-    assert(gamepadAxis >= 0 && gamepadAxis < INPUT_MAX_GAMEPAD_AXES);
+    OCT_ASSERT(gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS);
+    OCT_ASSERT(gamepadAxis >= 0 && gamepadAxis < INPUT_MAX_GAMEPAD_AXES);
     return input.mGamepads[gamepadIndex].mAxes[gamepadAxis];
 }
 
 GamepadType INP_GetGamepadType(int32_t gamepadIndex)
 {
-    assert(gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS);
+    OCT_ASSERT(gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS);
     InputState& input = GetEngineState()->mInput;
     return input.mGamepads[gamepadIndex].mType;
 }
 
 bool INP_IsGamepadConnected(int32_t gamepadIndex)
 {
-    assert(gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS);
+    OCT_ASSERT(gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS);
     InputState& input = GetEngineState()->mInput;
     return input.mGamepads[gamepadIndex].mConnected;
 }

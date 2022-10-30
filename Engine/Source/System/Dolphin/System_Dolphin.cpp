@@ -7,6 +7,7 @@
 #include "Log.h"
 #include "Input/Input.h"
 #include "Constants.h"
+#include "InputDevices.h"
 
 #include <gccore.h>
 #include <unistd.h>
@@ -272,7 +273,7 @@ void* SYS_AlignedMalloc(uint32_t size, uint32_t alignment)
 
 void SYS_AlignedFree(void* pointer)
 {
-    assert(pointer != nullptr);
+    OCT_ASSERT(pointer != nullptr);
     free(pointer);
 }
 
@@ -449,8 +450,8 @@ bool SYS_WriteSave(const char* saveName, Stream& stream)
             char* cardBuffer = (char*)SYS_AlignedMalloc(fileSize, 32);
 
             //LogDebug("fileSize = %d, cardFile.len = %d, stream.GetSize() = %d", fileSize, cardFile.len, stream.GetSize());
-            //assert(fileSize == cardFile.len);
-            assert(fileSize >= (int32_t)stream.GetSize());
+            //OCT_ASSERT(fileSize == cardFile.len);
+            OCT_ASSERT(fileSize >= (int32_t)stream.GetSize());
             memcpy(cardBuffer, stream.GetData(), stream.GetSize());
 
             cardError = CARD_Write(&cardFile, cardBuffer, fileSize, 0);
@@ -551,6 +552,24 @@ void SYS_UnmountMemoryCard()
 }
 
 // Misc
+void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
+{
+    const char* fileName = strrchr(fileString, '/') ? strrchr(fileString, '/') + 1 : fileString;
+    LogError("[Assert] %s, %s, line %d", exprString, fileName, lineNumber);
+
+    // Display assertion in console view and wait for player to hit A button.
+    EnableConsole(true);
+    SYS_Sleep(500);
+    INP_Update();
+    while (!IsGamepadButtonJustDown(GAMEPAD_A, 0))
+    {
+        SYS_Sleep(5);
+        INP_Update();
+    }
+
+    EnableConsole(false);
+}
+
 void SYS_UpdateConsole()
 {
     SystemState& system = GetEngineState()->mSystem;
