@@ -856,6 +856,7 @@ void ActionManager::ResetUndoRedo()
     for (int32_t i = (int32_t)mExiledComponents.size() - 1; i >= 0; --i)
     {
         mExiledComponents[i]->Destroy();
+        delete mExiledComponents[i];
         mExiledComponents.erase(mExiledComponents.begin() + i);
     }
 }

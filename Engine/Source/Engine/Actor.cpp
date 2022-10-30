@@ -1338,6 +1338,7 @@ void Actor::DestroyAllComponents()
     for (int32_t i = int32_t(mComponents.size()) - 1; i >= 0; --i)
     {
         mComponents[i]->Destroy();
+        mComponents[i]->SetOwner(nullptr);
     }
 
     for (int32_t i = int32_t(mComponents.size()) - 1; i >= 0; --i)

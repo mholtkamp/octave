@@ -37,13 +37,11 @@ Component::~Component()
 
 void Component::Create()
 {
-    GetWorld()->RegisterComponent(this);
+
 }
 
 void Component::Destroy()
 {
-    GetWorld()->UnregisterComponent(this);
-
     ComponentRef::EraseReferencesToObject(this);
 
     if (IsPrimitiveComponent() && GetWorld())
@@ -147,7 +145,22 @@ void Component::GatherProperties(std::vector<Property>& outProps)
 
 void Component::SetOwner(Actor* owner)
 {
+    World* prevWorld = mOwner ? mOwner->GetWorld() : nullptr;
     mOwner = owner;
+    World* newWorld = mOwner ? mOwner->GetWorld() : nullptr;
+
+    if (prevWorld != newWorld)
+    {
+        if (prevWorld != nullptr)
+        {
+            prevWorld->UnregisterComponent(this);
+        }
+
+        if (newWorld != nullptr)
+        {
+            newWorld->RegisterComponent(this);
+        }
+    }
 }
 
 Actor* Component::GetOwner()
