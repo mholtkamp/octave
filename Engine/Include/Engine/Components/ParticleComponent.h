@@ -68,6 +68,7 @@ public:
     bool ShouldAlwaysSimulate() const;
 
     uint32_t GetNumParticles();
+    uint32_t GetNumVertices();
     const std::vector<Particle>& GetParticles();
     const std::vector<VertexParticle>& GetVertices();
 

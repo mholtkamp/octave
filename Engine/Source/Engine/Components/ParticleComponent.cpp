@@ -275,6 +275,11 @@ uint32_t ParticleComponent::GetNumParticles()
     return (uint32_t)mParticles.size();
 }
 
+uint32_t ParticleComponent::GetNumVertices()
+{
+    return (uint32_t)mVertices.size();
+}
+
 const std::vector<Particle>& ParticleComponent::GetParticles()
 {
     return mParticles;

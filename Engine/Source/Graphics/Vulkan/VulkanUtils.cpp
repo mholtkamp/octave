@@ -1703,7 +1703,8 @@ void UpdateParticleCompVertexBuffer(ParticleComponent* particleComp, const std::
 
 void DrawParticleComp(ParticleComponent* particleComp)
 {
-    if (particleComp->GetNumParticles() > 0)
+    if (particleComp->GetNumParticles() > 0 &&
+        particleComp->GetNumVertices() > 0)
     {
         ParticleCompResource* resource = particleComp->GetResource();
         VkCommandBuffer cb = GetCommandBuffer();
@@ -1742,9 +1743,14 @@ void DrawParticleComp(ParticleComponent* particleComp)
         vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
         vkCmdBindIndexBuffer(cb, resource->mIndexBuffer->Get(), 0, VK_INDEX_TYPE_UINT32);
 
+        // Note: because in the editor, selected components and hitcheck rendering will render things
+        // that would normally be frustum culled, the number of vertices might not match what is expected
+        // based on the number of particles, so use vertex count here to determine the number of indices.
+        uint32_t numIndices = (particleComp->GetNumVertices() / 2) * 3; // 6 indices per particle (two triangles)
+
         vkCmdDrawIndexed(
             cb,
-            particleComp->GetNumParticles() * 6, // 6 indices per particle (two triangles)
+            numIndices,
             1,
             0,
             0,
