@@ -71,7 +71,7 @@ void Stream::SetPos(uint32_t pos)
 
 void Stream::ReadFile(const char* path, int32_t maxSize)
 {
-    assert(!mExternal);
+    OCT_ASSERT(!mExternal);
     if (mExternal)
     {
         LogError("Cannot ReadFile() using an external Stream");
@@ -79,7 +79,7 @@ void Stream::ReadFile(const char* path, int32_t maxSize)
     }
 
     FILE* file = fopen(path, "rb");
-    assert(file != nullptr);
+    OCT_ASSERT(file != nullptr);
 
     if (file != nullptr)
     {
@@ -93,7 +93,7 @@ void Stream::ReadFile(const char* path, int32_t maxSize)
             fileSize = glm::min(fileSize, maxSize);
         }
 
-        assert(fileSize <= MAX_FILE_SIZE);
+        OCT_ASSERT(fileSize <= MAX_FILE_SIZE);
         Reserve(fileSize);
         fread(mData, fileSize, 1, file);
 
@@ -112,7 +112,7 @@ void Stream::ReadFile(const char* path, int32_t maxSize)
 void Stream::WriteFile(const char* path)
 {
     FILE* file = fopen(path, "wb");
-    assert(file != nullptr);
+    OCT_ASSERT(file != nullptr);
 
     if (file != nullptr)
     {
@@ -192,14 +192,14 @@ void Stream::WriteAsset(const AssetRef& asset)
 void Stream::ReadString(std::string& dst)
 {
     // If updating the integer size for string length, please update STREAM_STRING_LEN_BYTES
-    assert(mPos + sizeof(uint32_t) <= mSize);
+    OCT_ASSERT(mPos + sizeof(uint32_t) <= mSize);
     uint32_t stringSize = ReadUint32();
-    assert(stringSize <= MAX_STRING_SIZE);
+    OCT_ASSERT(stringSize <= MAX_STRING_SIZE);
     dst.resize(stringSize);
 
     if (stringSize > 0)
     {
-        assert(mPos + stringSize <= mSize);
+        OCT_ASSERT(mPos + stringSize <= mSize);
         dst.assign(&mData[mPos], stringSize);
         mPos += stringSize;
     }
@@ -211,7 +211,7 @@ void Stream::ReadString(std::string& dst)
 
 void Stream::WriteString(const std::string& src)
 {
-    assert(src.size() <= MAX_STRING_SIZE);
+    OCT_ASSERT(src.size() <= MAX_STRING_SIZE);
     uint32_t deltaSize = uint32_t(sizeof(uint32_t) + src.size());
 
     if (mPos + deltaSize > mSize)
@@ -232,7 +232,7 @@ void Stream::WriteString(const std::string& src)
 void Stream::ReadBytes(uint8_t* dst, uint32_t length)
 {
     // If updating the integer size for string length, please update STREAM_STRING_LEN_BYTES
-    assert(mPos + length <= mSize);
+    OCT_ASSERT(mPos + length <= mSize);
 
     if (length > 0)
     {
@@ -452,7 +452,7 @@ void Stream::Grow(uint32_t newSize)
     }
     else
     {
-        assert(newSize <= mCapacity);
+        OCT_ASSERT(newSize <= mCapacity);
     }
 
     mSize = newSize;
@@ -463,7 +463,7 @@ void Stream::Reserve(uint32_t capacity)
     if (mExternal)
     {
         LogError("Cannot Reserve() external stream. Capacity is locked at construction time.");
-        assert(0);
+        OCT_ASSERT(0);
         return;
     }
 

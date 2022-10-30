@@ -27,10 +27,10 @@
         if (typeId == 0) { typeId++; } \
         for (uint32_t i = 0; i < factoryList.size(); ++i) { \
             if (strncmp(factoryList[i]->GetClassName(), name, MAX_PATH_SIZE) == 0) { \
-                LogError("Conflicting class name found in factory's RegisterClass() - %s", name); assert(0); typeId = 0; break; } \
+                LogError("Conflicting class name found in factory's RegisterClass() - %s", name); OCT_ASSERT(0); typeId = 0; break; } \
             if (factoryList[i]->GetType() == typeId) { \
                 LogError("Conflicting TypeId %x encountered in " #Base " factory manager's RegisterClass() - [%s] and [%s]", (uint32_t)typeId, factoryList[i]->GetClassName(), name); \
-                LogError("Use special case of XXXXX_FACTORY() with hash add number to avoid conflict."); assert(0); typeId = 0; break; } \
+                LogError("Use special case of XXXXX_FACTORY() with hash add number to avoid conflict."); OCT_ASSERT(0); typeId = 0; break; } \
         } \
         if (typeId != 0) { factoryList.push_back(factory); } \
         return typeId; \

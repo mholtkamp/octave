@@ -12,6 +12,7 @@
 #include <chrono>
 #include <psapi.h>
 #include <Shlobj.h>
+#include <assert.h>
 
 // MS-Windows event handling function:
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -132,7 +133,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         uint32_t bufferSize = 0;
         GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &bufferSize, sizeof(RAWINPUTHEADER));
 
-        assert(bufferSize < 128);
+        OCT_ASSERT(bufferSize < 128);
 
         GetRawInputData((HRAWINPUT)lParam, RID_INPUT, buffer, &bufferSize, sizeof(RAWINPUTHEADER));
 
@@ -623,7 +624,7 @@ void* SYS_AlignedMalloc(uint32_t size, uint32_t alignment)
 
 void SYS_AlignedFree(void* pointer)
 {
-    assert(pointer != nullptr);
+    OCT_ASSERT(pointer != nullptr);
     _aligned_free(pointer);
 }
 
@@ -741,6 +742,14 @@ void SYS_UnmountMemoryCard()
 }
 
 // Misc
+
+void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
+{
+    const char* fileName = strrchr(fileString, '\\') ? strrchr(fileString, '\\') + 1 : fileString;
+    LogError("[Assert] %s, %s, line %d", exprString, fileName, lineNumber);
+    DebugBreak();
+}
+
 void SYS_UpdateConsole()
 {
 

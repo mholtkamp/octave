@@ -538,6 +538,7 @@
     <ClInclude Include="Include\Editor\Widgets\ActionList.h" />
     <ClInclude Include="Include\Editor\Widgets\SceneImportWidget.h" />
     <ClInclude Include="Include\Editor\Widgets\TextEntry.h" />
+    <ClInclude Include="Include\Engine\Assertion.h" />
     <ClInclude Include="Include\Engine\Assets\Blueprint.h" />
     <ClInclude Include="Include\Engine\Assets\Font.h" />
     <ClInclude Include="Include\Engine\Assets\Level.h" />

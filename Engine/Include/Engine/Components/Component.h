@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include <assert.h>
+#include "Assertion.h"
 
 #include "RTTI.h"
 #include "EngineTypes.h"

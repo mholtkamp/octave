@@ -53,7 +53,7 @@ void VerticalList::Update()
 void VerticalList::AddListItem(Widget* widget)
 {
     // Make sure this is not a duplicate item. Or else bad things will happen (like double delete)
-    assert(std::find(mWidgets.begin(), mWidgets.end(), widget) == mWidgets.end());
+    OCT_ASSERT(std::find(mWidgets.begin(), mWidgets.end(), widget) == mWidgets.end());
 
     mWidgets.push_back(widget);
     mRebuildDisplay = true;
@@ -146,7 +146,7 @@ void VerticalList::RebuildDisplay()
         RemoveChild(i);
     }
 
-    assert(mChildren.size() == 0);
+    OCT_ASSERT(mChildren.size() == 0);
 
     uint32_t numDisplayed = 0;
     uint32_t curIndex = uint32_t(mDisplayOffset);

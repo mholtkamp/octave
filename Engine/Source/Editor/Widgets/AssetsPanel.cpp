@@ -307,7 +307,7 @@ void AssetsPanel::Update()
     float canvasHeight = mBodyCanvas->GetHeight();
     float buttonHeight = AssetButton::sAssetButtonHeight;
     int32_t numAvailableButtons = int32_t(canvasHeight / buttonHeight);
-    assert(numAvailableButtons < 100); // Something might be wrong?
+    OCT_ASSERT(numAvailableButtons < 100); // Something might be wrong?
 
     while (mAssetButtons.size() < numAvailableButtons)
     {
@@ -478,7 +478,7 @@ void AssetsPanel::HandleInput()
                     assetButton = true;
                     stub = mAssetButtons[i]->GetAssetStub();
                     dir = mAssetButtons[i]->GetAssetDir();
-                    assert(stub != nullptr || dir != nullptr);
+                    OCT_ASSERT(stub != nullptr || dir != nullptr);
                     break;
                 }
             }

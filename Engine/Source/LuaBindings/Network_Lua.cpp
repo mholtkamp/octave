@@ -546,7 +546,7 @@ void Network_Lua::Bind()
 
     lua_setglobal(L, NETWORK_LUA_NAME);
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

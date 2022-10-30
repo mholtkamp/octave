@@ -112,7 +112,7 @@ void OutlinerPanel::Update()
     float canvasHeight = mBodyCanvas->GetHeight();
     float buttonHeight = ActorButton::sActorButtonHeight;
     int32_t numAvailableButtons = int32_t(canvasHeight / buttonHeight);
-    assert(numAvailableButtons < 100); // Something might be wrong?
+    OCT_ASSERT(numAvailableButtons < 100); // Something might be wrong?
 
     while (mActorButtons.size() < numAvailableButtons)
     {

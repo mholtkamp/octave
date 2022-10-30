@@ -71,7 +71,7 @@ void TimerManager::Update(float deltaTime)
                     break;
                 }
                 default:
-                    assert(0);
+                    OCT_ASSERT(0);
                     break;
                 }
 

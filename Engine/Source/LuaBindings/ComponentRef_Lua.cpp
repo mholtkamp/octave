@@ -18,7 +18,7 @@ int ComponentRef_Lua::Create(lua_State* L)
     ComponentRef_Lua* newRef = (ComponentRef_Lua*)lua_newuserdata(L, sizeof(ComponentRef_Lua));
     new (newRef) ComponentRef_Lua();
     luaL_getmetatable(L, COMPONENT_REF_LUA_NAME);
-    assert(lua_istable(L, -1));
+    OCT_ASSERT(lua_istable(L, -1));
     lua_setmetatable(L, -2);
 
     if (srcComponent != nullptr)
@@ -64,7 +64,7 @@ int ComponentRef_Lua::Set(lua_State* L)
 void ComponentRef_Lua::Bind()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     luaL_newmetatable(L, COMPONENT_REF_LUA_NAME);
     int mtIndex = lua_gettop(L);
@@ -87,7 +87,7 @@ void ComponentRef_Lua::Bind()
 
     lua_setglobal(L, COMPONENT_REF_LUA_NAME);
 
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

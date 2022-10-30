@@ -48,7 +48,7 @@ void StatsOverlay::Update()
     }
 
     // (2) Hide excess stats
-    assert(mStatKeyTexts.size() == mStatValueTexts.size());
+    OCT_ASSERT(mStatKeyTexts.size() == mStatValueTexts.size());
     for (uint32_t i = numStats; i < mStatKeyTexts.size(); ++i)
     {
         mStatKeyTexts[i]->SetVisible(false);
@@ -97,7 +97,7 @@ void StatsOverlay::Update()
     else
     {
         const std::vector<CpuStat>& stats = GetProfiler()->GetCpuFrameStats();
-        assert(numStats <= stats.size());
+        OCT_ASSERT(numStats <= stats.size());
         for (uint32_t i = 0; i < numStats; ++i)
         {
             SetStatText(i, stats[i].mName, stats[i].mSmoothedTime, statY);

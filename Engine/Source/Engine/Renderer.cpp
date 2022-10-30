@@ -24,7 +24,7 @@
 #include "EditorState.h"
 #endif
 
-#include <assert.h>
+#include "Assertion.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <vector>

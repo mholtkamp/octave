@@ -6,6 +6,7 @@
 #include <iphlpapi.h>
 
 #include "Network/Network.h"
+#include "Assertion.h"
 
 #include "Log.h"
 
@@ -21,7 +22,7 @@ void NET_Initialize()
     if (error)
     {
         LogError("Error initializing winsock library.");
-        assert(0);
+        OCT_ASSERT(0);
         sActive = false;
         return;
     }
@@ -31,7 +32,7 @@ void NET_Initialize()
     {
         WSACleanup(); //Clean up Winsock
         LogError("Could not init correct winsock version.");
-        assert(0);
+        OCT_ASSERT(0);
         sActive = false;
         return;
     }
@@ -191,7 +192,7 @@ uint32_t NET_GetIpAddress()
     else
     {
         LogError("Failed to get ip address.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     free(adapterInfo);
@@ -244,7 +245,7 @@ uint32_t NET_GetSubnetMask()
     else
     {
         LogError("Failed to get ip address.");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     free(adapterInfo);

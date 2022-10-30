@@ -95,14 +95,14 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
     {
         if (strcmp(argv[i], "-project") == 0)
         {
-            assert(i + 1 < argc);
+            OCT_ASSERT(i + 1 < argc);
             gCommandLineOptions.mProjectPath = argv[i + 1];
             ++i;
         }
 
         if (strcmp(argv[i], "-level") == 0)
         {
-            assert(i + 1 < argc);
+            OCT_ASSERT(i + 1 < argc);
             gCommandLineOptions.mDefaultLevel = argv[i + 1];
             ++i;
         }

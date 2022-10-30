@@ -21,7 +21,7 @@ void NetMsg::Read(Stream& stream)
     if (GetType() != type)
     {
         LogError("NetMsg struct/type mismatch");
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 
@@ -294,7 +294,7 @@ void NetMsgReplicate::Read(Stream& stream)
     mNumVariables = stream.ReadUint16();
 
     // Limiting max variables per message to 64.
-    assert(mNumVariables <= 64);
+    OCT_ASSERT(mNumVariables <= 64);
 
     mIndices.clear();
     mData.clear();
@@ -319,8 +319,8 @@ void NetMsgReplicate::Write(Stream& stream) const
     stream.WriteUint32(mActorNetId);
     stream.WriteUint16(mNumVariables);
 
-    assert(mIndices.size() == mNumVariables);
-    assert(mData.size() == mNumVariables);
+    OCT_ASSERT(mIndices.size() == mNumVariables);
+    OCT_ASSERT(mData.size() == mNumVariables);
 
     for (uint32_t i = 0; i < mNumVariables; ++i)
     {
@@ -330,7 +330,7 @@ void NetMsgReplicate::Write(Stream& stream) const
 
     // Multiple replicate messages will need to be send for an actor
     // if it exceeds the message size limit.
-    assert(stream.GetPos() < OCT_MAX_MSG_SIZE);
+    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_SIZE);
 }
 
 void NetMsgReplicate::Execute(NetHost sender)
@@ -346,12 +346,12 @@ void NetMsgReplicate::Execute(NetHost sender)
         for (uint32_t i = 0; i < mNumVariables; ++i)
         {
             uint16_t dstIndex = mIndices[i];
-            assert(dstIndex < repData.size());
+            OCT_ASSERT(dstIndex < repData.size());
 
             if (mIndices[i] < repData.size())
             {
-                assert(repData[dstIndex].mType == mData[i].mType);
-                assert(repData[dstIndex].mCount == mData[i].mCount);
+                OCT_ASSERT(repData[dstIndex].mType == mData[i].mType);
+                OCT_ASSERT(repData[dstIndex].mCount == mData[i].mCount);
 
                 if (repData[dstIndex] != mData[i])
                 {
@@ -384,7 +384,7 @@ void NetMsgReplicateScript::Write(Stream& stream) const
 
     // Multiple replicate messages will need to be sent for an actor
     // if it exceeds the message size limit.
-    assert(stream.GetPos() < OCT_MAX_MSG_SIZE);
+    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_SIZE);
 }
 
 ScriptComponent* FindScriptComponent(Actor* actor, const std::string& scriptName)
@@ -424,12 +424,12 @@ void NetMsgReplicateScript::Execute(NetHost sender)
             for (uint32_t i = 0; i < mNumVariables; ++i)
             {
                 uint16_t dstIndex = mIndices[i];
-                assert(dstIndex < repData.size());
+                OCT_ASSERT(dstIndex < repData.size());
 
                 if (mIndices[i] < repData.size())
                 {
-                    assert(repData[dstIndex].mType == mData[i].mType);
-                    assert(repData[dstIndex].mCount == mData[i].mCount);
+                    OCT_ASSERT(repData[dstIndex].mType == mData[i].mType);
+                    OCT_ASSERT(repData[dstIndex].mCount == mData[i].mCount);
 
                     if (repData[dstIndex] != mData[i])
                     {
@@ -473,14 +473,14 @@ void NetMsgInvoke::Write(Stream& stream) const
     stream.WriteUint16(mIndex);
     stream.WriteUint8(mNumParams);
 
-    assert(mParams.size() == mNumParams);
+    OCT_ASSERT(mParams.size() == mNumParams);
 
     for (uint32_t i = 0; i < mNumParams; ++i)
     {
         mParams[i].WriteStream(stream);
     }
 
-    assert(stream.GetPos() < OCT_MAX_MSG_SIZE);
+    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_SIZE);
 }
 
 void NetMsgInvoke::Execute(NetHost sender)
@@ -537,7 +537,7 @@ void NetMsgInvokeScript::Write(Stream& stream) const
     NetMsgInvoke::Write(stream);
     stream.WriteString(mScriptName);
 
-    assert(stream.GetPos() < OCT_MAX_MSG_SIZE);
+    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_SIZE);
 }
 
 void NetMsgInvokeScript::Execute(NetHost sender)

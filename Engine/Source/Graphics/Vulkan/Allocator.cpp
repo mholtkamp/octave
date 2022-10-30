@@ -7,7 +7,7 @@
 #include "Graphics/Vulkan/VulkanContext.h"
 #include "Graphics/Vulkan/VulkanUtils.h"
 
-#include <assert.h>
+#include "Assertion.h"
 
 std::vector<MemoryBlock> Allocator::sBlocks;
 const uint64_t Allocator::sDefaultBlockSize = 16777216; // 16 MB Blocks
@@ -45,7 +45,7 @@ MemoryChunk* MemoryBlock::AllocateChunk(uint64_t size)
             mChunks[j].mFree = false;
             mChunks[j].mID = sNumChunksAllocated++;
 
-            assert(mChunks[j].mID >= 0); // Did we overflow int64_t?
+            OCT_ASSERT(mChunks[j].mID >= 0); // Did we overflow int64_t?
 
             // make sure we grab the pointer after inserting the new chunk (as it may reallocate the data).
             chunk = &mChunks[j];
@@ -115,12 +115,12 @@ void Allocator::Alloc(uint64_t size, uint64_t alignment, uint32_t memoryType, Al
     {
         uint64_t newBlockSize = maxAlignSize > sDefaultBlockSize ? maxAlignSize : sDefaultBlockSize;
         block = AllocateBlock(newBlockSize, memoryType);
-        assert(block);
+        OCT_ASSERT(block);
 
         chunk = block->AllocateChunk(maxAlignSize);
     }
 
-    assert(chunk);
+    OCT_ASSERT(chunk);
 
     outAllocation.mDeviceMemory = block->mDeviceMemory;
     outAllocation.mID = chunk->mID;
@@ -154,7 +154,7 @@ void Allocator::Free(Allocation& allocation)
                 // If the block is entirely free, deallocate the memory.
                 if (sBlocks[i].mChunks.size() == 1)
                 {
-                    assert(sBlocks[i].mChunks[0].mFree);
+                    OCT_ASSERT(sBlocks[i].mChunks[0].mFree);
                     FreeBlock(sBlocks[i]);
                 }
                 break;
@@ -162,7 +162,7 @@ void Allocator::Free(Allocation& allocation)
         }
     }
 
-    assert(bFreed);
+    OCT_ASSERT(bFreed);
 
     allocation.mDeviceMemory = VK_NULL_HANDLE;
     allocation.mID = -1;
@@ -205,7 +205,7 @@ MemoryBlock* Allocator::AllocateBlock(uint64_t newBlockSize, uint32_t memoryType
     if (vkAllocateMemory(GetVulkanDevice(), &allocInfo, nullptr, &newBlock.mDeviceMemory) != VK_SUCCESS)
     {
         LogError("Failed to allocate image memory");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     // Initialize the starting chunk.
@@ -231,7 +231,7 @@ void Allocator::FreeBlock(MemoryBlock& block)
         }
     }
 
-    assert(index < int32_t(sBlocks.size()));
+    OCT_ASSERT(index < int32_t(sBlocks.size()));
 
     vkFreeMemory(GetVulkanDevice(), sBlocks[index].mDeviceMemory, nullptr);
     sBlocks.erase(sBlocks.begin() + index);

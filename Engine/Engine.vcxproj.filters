@@ -1346,6 +1346,9 @@
     <ClInclude Include="Include\LuaBindings\TimerManager_Lua.h">
       <Filter>Header Files\LuaBindings</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Engine\Assertion.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">

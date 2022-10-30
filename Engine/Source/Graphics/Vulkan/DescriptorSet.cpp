@@ -6,7 +6,7 @@
 
 #include "Renderer.h"
 
-#include <assert.h>
+#include "Assertion.h"
 
 using namespace std;
 
@@ -27,7 +27,7 @@ DescriptorSet::DescriptorSet(VkDescriptorSetLayout layout)
         if (vkAllocateDescriptorSets(device, &allocInfo, &mDescriptorSets[i]) != VK_SUCCESS)
         {
             LogError("Failed to allocate descriptor set");
-            assert(0);
+            OCT_ASSERT(0);
         }
     }
 }
@@ -46,7 +46,7 @@ DescriptorSet::~DescriptorSet()
 
 void DescriptorSet::UpdateImageDescriptor(int32_t binding, Image* image)
 {
-    assert(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
+    OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
     mBindings[binding].mType = DescriptorType::Image;
     mBindings[binding].mObject = image;
     MarkDirty();
@@ -54,7 +54,7 @@ void DescriptorSet::UpdateImageDescriptor(int32_t binding, Image* image)
 
 void DescriptorSet::UpdateUniformDescriptor(int32_t binding, UniformBuffer* uniformBuffer)
 {
-    assert(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
+    OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
     mBindings[binding].mType = DescriptorType::Uniform;
     mBindings[binding].mObject = uniformBuffer;
     MarkDirty();

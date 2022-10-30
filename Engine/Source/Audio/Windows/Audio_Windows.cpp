@@ -68,7 +68,7 @@ void AUD_Play(
     float startTime,
     bool spatial)
 {
-    assert(sSourceVoices[voiceIndex] == nullptr);
+    OCT_ASSERT(sSourceVoices[voiceIndex] == nullptr);
 
     float startPercent = startTime / soundWave->GetDuration();
     startPercent = glm::clamp(startPercent, 0.0f, 1.0f);
@@ -105,13 +105,13 @@ void AUD_Play(
     else
     {
         LogError("Error creating XAUDIO2 source voice");
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 
 void AUD_Stop(uint32_t voiceIndex)
 {
-    assert(sSourceVoices[voiceIndex] != nullptr);
+    OCT_ASSERT(sSourceVoices[voiceIndex] != nullptr);
     sSourceVoices[voiceIndex]->Stop();
     sSourceVoices[voiceIndex]->DestroyVoice();
     sSourceVoices[voiceIndex] = nullptr;
@@ -120,7 +120,7 @@ void AUD_Stop(uint32_t voiceIndex)
 
 bool AUD_IsPlaying(uint32_t voiceIndex)
 {
-    assert(sSourceVoices[voiceIndex] != nullptr);
+    OCT_ASSERT(sSourceVoices[voiceIndex] != nullptr);
     XAUDIO2_VOICE_STATE state;
     sSourceVoices[voiceIndex]->GetState(&state, XAUDIO2_VOICE_NOSAMPLESPLAYED);
     return (state.BuffersQueued != 0);
@@ -128,13 +128,13 @@ bool AUD_IsPlaying(uint32_t voiceIndex)
 
 void AUD_SetVolume(uint32_t voiceIndex, float leftVolume, float rightVolume)
 {
-    assert(sSourceVoices[voiceIndex] != nullptr);
+    OCT_ASSERT(sSourceVoices[voiceIndex] != nullptr);
     sSourceVoices[voiceIndex]->SetVolume((leftVolume + rightVolume) / 2.0f);
 }
 
 void AUD_SetPitch(uint32_t voiceIndex, float pitch)
 {
-    assert(sSourceVoices[voiceIndex] != nullptr);
+    OCT_ASSERT(sSourceVoices[voiceIndex] != nullptr);
     sSourceVoices[voiceIndex]->SetFrequencyRatio(pitch);
 }
 

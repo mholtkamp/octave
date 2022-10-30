@@ -115,7 +115,7 @@ bool ShouldExecuteNetFunc(NetFuncType type, Actor* actor)
             netStatus == NetStatus::Client);
         break;
 
-    default: assert(0); break;
+    default: OCT_ASSERT(0); break;
     }
 
     return execute;
@@ -146,7 +146,7 @@ bool ShouldSendNetFunc(NetFuncType type, Actor* actor)
         send = (netStatus == NetStatus::Server);
         break;
 
-    default: assert(0); break;
+    default: OCT_ASSERT(0); break;
     }
 
     return send;

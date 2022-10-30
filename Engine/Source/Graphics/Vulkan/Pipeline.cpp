@@ -81,7 +81,7 @@ VkDescriptorSetLayout Pipeline::GetDescriptorSetLayout(uint32_t index)
     if (index > mDescriptorSetLayouts.size())
     {
         LogError("Accessing invalid descriptor set");
-        assert(0);
+        OCT_ASSERT(0);
     }
     return mDescriptorSetLayouts[index];
 }
@@ -202,7 +202,7 @@ void Pipeline::CreateGraphicsPipeline()
     ciPipeline.basePipelineIndex = -1;
 
     // Must have at least one vertex config, even if not using vertex buffers.
-    assert(mVertexConfigs.size() > 0);
+    OCT_ASSERT(mVertexConfigs.size() > 0);
     mPipelines.resize((uint32_t) VertexType::Max, VK_NULL_HANDLE);
 
     for (uint32_t i = 0; i < mVertexConfigs.size(); ++i)
@@ -255,7 +255,7 @@ void Pipeline::CreateGraphicsPipeline()
             &mPipelines[pipelineIndex]) != VK_SUCCESS)
         {
             LogError("Failed to create graphics pipeline");
-            assert(0);
+            OCT_ASSERT(0);
         }
 
         SetDebugObjectName(VK_OBJECT_TYPE_PIPELINE, (uint64_t)mPipelines[pipelineIndex], mName.c_str());
@@ -304,7 +304,7 @@ void Pipeline::CreateComputePipeline()
         &mPipelines[0]) != VK_SUCCESS)
     {
         LogError("Failed to create compute pipeline");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     vkDestroyShaderModule(device, computeShaderModule, nullptr);
@@ -314,8 +314,8 @@ void Pipeline::Create(VkRenderPass renderPass)
 {
     // Ensure that a renderpass has been set before creating the pipeline.
     mRenderpass = renderPass;
-    assert(mRenderpass != VK_NULL_HANDLE);
-    assert(mPipelineId != PipelineId::Count);
+    OCT_ASSERT(mRenderpass != VK_NULL_HANDLE);
+    OCT_ASSERT(mPipelineId != PipelineId::Count);
 
     PopulateLayoutBindings();
     CreateDescriptorSetLayouts();
@@ -383,7 +383,7 @@ VkShaderModule Pipeline::CreateShaderModule(const std::vector<char>& code)
     if (vkCreateShaderModule(device, &ciModule, nullptr, &module) != VK_SUCCESS)
     {
         LogError("Failed to create shader module");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     SetDebugObjectName(VK_OBJECT_TYPE_SHADER_MODULE, (uint64_t)module, mName.c_str());
@@ -465,7 +465,7 @@ void Pipeline::CreatePipelineLayout()
     if (vkCreatePipelineLayout(GetVulkanDevice(), &pipelineLayoutInfo, nullptr, &mPipelineLayout) != VK_SUCCESS)
     {
         LogError("Failed to create pipeline layout!");
-        assert(0);
+        OCT_ASSERT(0);
     }
 }
 
@@ -486,7 +486,7 @@ void Pipeline::CreateDescriptorSetLayouts()
             &mDescriptorSetLayouts[i]) != VK_SUCCESS)
         {
             LogError("Failed to create descriptor set layout");
-            assert(0);
+            OCT_ASSERT(0);
         }
     }
 }

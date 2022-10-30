@@ -242,7 +242,7 @@ void BeginPlayInEditor()
 
     sEditorState.mPlayInEditor = true;
 
-    assert(sEditorState.mCachedPieLevel == nullptr);
+    OCT_ASSERT(sEditorState.mCachedPieLevel == nullptr);
     Level* cachedLevel = new Level();
     cachedLevel->Create();
     cachedLevel->CaptureWorld(GetWorld());

@@ -18,7 +18,7 @@ DEFINE_COMPONENT(TransformComponent);
 bool HandleTransformPropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     TransformComponent* transformComp = static_cast<TransformComponent*>(prop->mOwner);
     bool success = false;
 
@@ -127,7 +127,7 @@ bool TransformComponent::IsTransformComponent() const
 void TransformComponent::Attach(TransformComponent* parent)
 {
     // Can't attach to self.
-    assert(parent != this);
+    OCT_ASSERT(parent != this);
 
     // Detach from parent first
     if (mParent != nullptr)
@@ -161,7 +161,7 @@ void TransformComponent::AddChild(TransformComponent* child)
             }
         }
 
-        assert(!childFound); // Child already parented to this component?
+        OCT_ASSERT(!childFound); // Child already parented to this component?
         if (!childFound)
         {
             mChildren.push_back(child);
@@ -184,7 +184,7 @@ void TransformComponent::RemoveChild(TransformComponent* child)
             }
         }
 
-        assert(childIndex != -1); // Could not find the component to remove
+        OCT_ASSERT(childIndex != -1); // Could not find the component to remove
         if (childIndex != -1)
         {
             mChildren.erase(mChildren.begin() + childIndex);

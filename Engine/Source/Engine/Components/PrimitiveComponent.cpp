@@ -29,7 +29,7 @@ static btEmptyShape* sEmptyCollisionShape = nullptr;
 bool HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     PrimitiveComponent* primComponent = static_cast<PrimitiveComponent*>(prop->mOwner);
     bool success = false;
 
@@ -657,7 +657,7 @@ void PrimitiveComponent::SyncRigidBodyTransform()
 
             if (mPhysicsEnabled)
             {
-                assert(mMotionState != nullptr);
+                OCT_ASSERT(mMotionState != nullptr);
                 mMotionState->setWorldTransform(worldTransform);
             }
 
@@ -928,7 +928,7 @@ void PrimitiveComponent::EnableRigidBody(bool enable)
         {
             // This primitive component requires a rigidbody.
             btVector3 localInertia(0, 0, 0);
-            assert(mCollisionShape != nullptr);
+            OCT_ASSERT(mCollisionShape != nullptr);
 
             float rigidBodyMass = mPhysicsEnabled ? mMass : 0.0f;
 
@@ -939,7 +939,7 @@ void PrimitiveComponent::EnableRigidBody(bool enable)
             }
 
             // A motion state should be created when physics is enabled.
-            assert(mMotionState || !mPhysicsEnabled);
+            OCT_ASSERT(mMotionState || !mPhysicsEnabled);
 
             btRigidBody::btRigidBodyConstructionInfo rbInfo(rigidBodyMass, mMotionState, mCollisionShape, localInertia);
             mRigidBody = new btRigidBody(rbInfo);

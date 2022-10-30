@@ -11,7 +11,7 @@ DEFINE_COMPONENT(BoxComponent);
 static bool HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     BoxComponent* boxComp = static_cast<BoxComponent*>(prop->mOwner);
     bool success = false;
 

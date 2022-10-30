@@ -325,7 +325,7 @@ int Input_Lua::SetCursorPosition(lua_State* L)
 void Input_Lua::Bind()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -415,7 +415,7 @@ void Input_Lua::Bind()
     lua_setfield(L, tableIdx, "SetCursorPosition");
 
     lua_setglobal(L, INPUT_LUA_NAME);
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     BindKeyTable();
     BindMouseTable();
@@ -425,7 +425,7 @@ void Input_Lua::Bind()
 void Input_Lua::BindKeyTable()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -682,13 +682,13 @@ void Input_Lua::BindKeyTable()
     lua_setfield(L, tableIdx, "Decimal");
 
     lua_setglobal(L, "Key");
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 void Input_Lua::BindMouseTable()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -719,13 +719,13 @@ void Input_Lua::BindMouseTable()
     lua_setfield(L, tableIdx, "X2");
 
     lua_setglobal(L, "Mouse");
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 void Input_Lua::BindGamepadTable()
 {
     lua_State* L = GetLua();
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -785,7 +785,7 @@ void Input_Lua::BindGamepadTable()
     lua_setfield(L, tableIdx, "AxisRY");
 
     lua_setglobal(L, "Gamepad");
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

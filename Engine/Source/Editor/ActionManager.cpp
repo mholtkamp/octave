@@ -398,7 +398,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             case Platform::GameCube: makefilePath += "GCN"; break;
             case Platform::Wii: makefilePath += "Wii"; break;
             case Platform::N3DS: makefilePath += "3DS"; break;
-            default: assert(0); break;
+            default: OCT_ASSERT(0); break;
             }
 
             std::string makeCmd = std::string("make -C ") + (standalone ? buildProjName : projectDir) + " -f " + makefilePath + " -j 6";
@@ -432,7 +432,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     case Platform::GameCube: exeSrc += "GCN/"; break;
     case Platform::Wii: exeSrc += "Wii/"; break;
     case Platform::N3DS: exeSrc += "3DS/"; break;
-    default: assert(0); break;
+    default: OCT_ASSERT(0); break;
     }
 
     exeSrc += standalone ? "Octave" : projectName;
@@ -446,7 +446,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     case Platform::GameCube: extension = ".dol"; break;
     case Platform::Wii: extension = ".dol"; break;
     case Platform::N3DS: extension = ".3dsx"; break;
-    default: assert(0); break;
+    default: OCT_ASSERT(0); break;
     }
 
     exeSrc += extension;
@@ -688,8 +688,8 @@ void ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 position,
 
 void ActionManager::ExecuteAction(Action* action)
 {
-    assert(std::find(mActionHistory.begin(), mActionHistory.end(), action) == mActionHistory.end());
-    assert(std::find(mActionFuture.begin(), mActionFuture.end(), action) == mActionFuture.end());
+    OCT_ASSERT(std::find(mActionHistory.begin(), mActionHistory.end(), action) == mActionHistory.end());
+    OCT_ASSERT(std::find(mActionFuture.begin(), mActionFuture.end(), action) == mActionFuture.end());
 
     action->Execute();
 
@@ -862,8 +862,8 @@ void ActionManager::ResetUndoRedo()
 
 void ActionManager::ExileActor(Actor* actor)
 {
-    assert(std::find(mExiledActors.begin(), mExiledActors.end(), actor) == mExiledActors.end());
-    assert(actor->GetWorld());
+    OCT_ASSERT(std::find(mExiledActors.begin(), mExiledActors.end(), actor) == mExiledActors.end());
+    OCT_ASSERT(actor->GetWorld());
     GetWorld()->RemoveActor(actor);
     mExiledActors.push_back(actor);
 
@@ -888,12 +888,12 @@ void ActionManager::RestoreExiledActor(Actor* actor)
         }
     }
 
-    assert(restored);
+    OCT_ASSERT(restored);
 }
 
 void ActionManager::ExileComponent(Component* comp)
 {
-    assert(std::find(mExiledComponents.begin(), mExiledComponents.end(), comp) == mExiledComponents.end());
+    OCT_ASSERT(std::find(mExiledComponents.begin(), mExiledComponents.end(), comp) == mExiledComponents.end());
     mExiledComponents.push_back(comp);
 
     if (IsComponentSelected(comp))
@@ -916,7 +916,7 @@ void ActionManager::RestoreExiledComponent(Component* comp)
         }
     }
 
-    assert(restored);
+    OCT_ASSERT(restored);
 }
 
 void ActionManager::CreateNewProject()
@@ -1411,7 +1411,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                             if (textureToAssign == nullptr)
                             {
                                 Asset* importedAsset = ImportAsset(importDir + texturePath);
-                                assert(importedAsset == nullptr || importedAsset->GetType() == Texture::GetStaticType());
+                                OCT_ASSERT(importedAsset == nullptr || importedAsset->GetType() == Texture::GetStaticType());
 
                                 if (importedAsset == nullptr || importedAsset->GetType() == Texture::GetStaticType())
                                 {
@@ -1493,7 +1493,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                     {
                         // Find material to use...
                         uint32_t materialIndex = aMesh->mMaterialIndex;
-                        assert(materialIndex < materialList.size());
+                        OCT_ASSERT(materialIndex < materialList.size());
                         newMesh->SetMaterial(materialList[materialIndex]);
                     }
 
@@ -1571,7 +1571,7 @@ void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*,
     FILE* headerFile = fopen(headerPath, "w");
     FILE* sourceFile = fopen(sourcePath, "w");
 
-    assert(headerFile != nullptr && sourceFile != nullptr);
+    OCT_ASSERT(headerFile != nullptr && sourceFile != nullptr);
 
     if (headerFile != nullptr && sourceFile != nullptr)
     {
@@ -1658,7 +1658,7 @@ void ActionManager::GenerateEmbeddedScriptFiles(
     FILE* headerFile = fopen(headerPath, "w");
     FILE* sourceFile = fopen(sourcePath, "w");
 
-    assert(headerFile != nullptr && sourceFile != nullptr);
+    OCT_ASSERT(headerFile != nullptr && sourceFile != nullptr);
 
     if (headerFile != nullptr && sourceFile != nullptr)
     {
@@ -1830,7 +1830,7 @@ void ActionManager::RecaptureAndSaveAllLevels()
         {
             Asset* asset = AssetManager::Get()->LoadAsset(*pair.second);
             Level* level = static_cast<Level*>(asset);
-            assert(level != nullptr);
+            OCT_ASSERT(level != nullptr);
 
             OpenLevel(level);
 
@@ -1857,7 +1857,7 @@ void ActionManager::RecaptureAndSaveAllBlueprints()
         {
             Asset* asset = AssetManager::Get()->LoadAsset(*pair.second);
             Blueprint* bp = static_cast<Blueprint*>(asset);
-            assert(bp != nullptr);
+            OCT_ASSERT(bp != nullptr);
 
             Actor* spawnedBp = bp->Instantiate(GetWorld());
 
@@ -2026,7 +2026,7 @@ ActionEditTransforms::ActionEditTransforms(
     mTransComps = transComps;
     mNewTransforms = newTransforms;
 
-    assert(mTransComps.size() == mNewTransforms.size());
+    OCT_ASSERT(mTransComps.size() == mNewTransforms.size());
 }
 
 void ActionEditTransforms::Execute()
@@ -2042,7 +2042,7 @@ void ActionEditTransforms::Execute()
 
 void ActionEditTransforms::Reverse()
 {
-    assert(mPrevTransforms.size() == mTransComps.size());
+    OCT_ASSERT(mPrevTransforms.size() == mTransComps.size());
 
     for (uint32_t i = 0; i < mTransComps.size(); ++i)
     {
@@ -2085,7 +2085,7 @@ void ActionDeleteActors::Execute()
     for (uint32_t i = 0; i < mActors.size(); ++i)
     {
         // Actor is already spawned at this point.
-        assert(mActors[i]->GetWorld() != nullptr);
+        OCT_ASSERT(mActors[i]->GetWorld() != nullptr);
 
         if (IsPlayingInEditor())
         {
@@ -2111,8 +2111,8 @@ ActionAddComponent::ActionAddComponent(Component* comp)
     mComponent = comp;
     mOwner = comp->GetOwner();
     mParent = comp->IsTransformComponent() ? ((TransformComponent*)comp)->GetParent() : nullptr;
-    assert(mComponent);
-    assert(mOwner);
+    OCT_ASSERT(mComponent);
+    OCT_ASSERT(mOwner);
 }
 
 void ActionAddComponent::Execute()
@@ -2124,7 +2124,7 @@ void ActionAddComponent::Execute()
 
         if (mParent != nullptr)
         {
-            assert(mComponent->IsTransformComponent());
+            OCT_ASSERT(mComponent->IsTransformComponent());
             ((TransformComponent*)mComponent)->Attach(mParent);
         }
 
@@ -2134,7 +2134,7 @@ void ActionAddComponent::Execute()
 
 void ActionAddComponent::Reverse()
 {
-    assert(mComponent->GetOwner());
+    OCT_ASSERT(mComponent->GetOwner());
     mOwner->RemoveComponent(mComponent);
     ActionManager::Get()->ExileComponent(mComponent);
 }
@@ -2144,13 +2144,13 @@ ActionRemoveComponent::ActionRemoveComponent(Component* comp)
     mComponent = comp;
     mOwner = comp->GetOwner();
     mParent = comp->IsTransformComponent() ? ((TransformComponent*)comp)->GetParent() : nullptr;
-    assert(mComponent);
-    assert(mOwner);
+    OCT_ASSERT(mComponent);
+    OCT_ASSERT(mOwner);
 }
 
 void ActionRemoveComponent::Execute()
 {
-    assert(mComponent->GetOwner());
+    OCT_ASSERT(mComponent->GetOwner());
 
     if (IsPlayingInEditor())
     {
@@ -2167,13 +2167,13 @@ void ActionRemoveComponent::Execute()
 
 void ActionRemoveComponent::Reverse()
 {
-    assert(mComponent->GetOwner() == nullptr);
+    OCT_ASSERT(mComponent->GetOwner() == nullptr);
     ActionManager::Get()->RestoreExiledComponent(mComponent);
     mOwner->AddComponent(mComponent);
 
     if (mParent != nullptr)
     {
-        assert(mComponent->IsTransformComponent());
+        OCT_ASSERT(mComponent->IsTransformComponent());
         ((TransformComponent*)mComponent)->Attach(mParent);
     }
 
@@ -2185,8 +2185,8 @@ ActionAttachComponent::ActionAttachComponent(TransformComponent* comp, Transform
     mComponent = comp;
     mNewParent = newParent;
     mPrevParent = comp->GetParent();
-    assert(mComponent);
-    assert(mNewParent);
+    OCT_ASSERT(mComponent);
+    OCT_ASSERT(mNewParent);
 }
 
 void ActionAttachComponent::Execute()
@@ -2206,7 +2206,7 @@ ActionSetAbsoluteRotation::ActionSetAbsoluteRotation(TransformComponent* comp, g
     mComponent = comp;
     mNewRotation = rot;
     mPrevRotation = comp->GetAbsoluteRotationQuat();
-    assert(mComponent);
+    OCT_ASSERT(mComponent);
 }
 
 void ActionSetAbsoluteRotation::Execute()
@@ -2224,7 +2224,7 @@ ActionSetAbsolutePosition::ActionSetAbsolutePosition(TransformComponent* comp, g
     mComponent = comp;
     mNewPosition = pos;
     mPrevPosition = comp->GetAbsolutePosition();
-    assert(mComponent);
+    OCT_ASSERT(mComponent);
 }
 
 void ActionSetAbsolutePosition::Execute()
@@ -2242,7 +2242,7 @@ ActionSetAbsoluteScale::ActionSetAbsoluteScale(TransformComponent* comp, glm::ve
     mComponent = comp;
     mNewScale = scale;
     mPrevScale = comp->GetAbsoluteScale();
-    assert(mComponent);
+    OCT_ASSERT(mComponent);
 }
 
 void ActionSetAbsoluteScale::Execute()

@@ -39,12 +39,12 @@ bool MaterialInstance::IsMaterialInstance() const
 
 void MaterialInstance::SaveStream(Stream& stream)
 {
-    assert(0);
+    OCT_ASSERT(0);
     // Should not be saved
 }
 
 void MaterialInstance::LoadStream(Stream& stream)
 {
-    assert(0);
+    OCT_ASSERT(0);
     // Should not be loaded.
 }

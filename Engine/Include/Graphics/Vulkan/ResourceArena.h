@@ -17,7 +17,7 @@ public:
     ~ResourceArena()
     {
         // User needs to call Destroy();
-        assert(mResources.size() == 0);
+        OCT_ASSERT(mResources.size() == 0);
     }
 
     ResourceArena(const ResourceArena&) = delete;

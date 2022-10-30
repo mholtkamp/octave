@@ -14,7 +14,7 @@ void Level_Lua::Bind()
         ASSET_LUA_NAME);
 
     lua_pop(L, 1);
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }
 
 #endif

@@ -34,7 +34,7 @@ void HandleComboBoxButtonPress(Button* button)
         }
     }
 
-    assert(i < list->GetNumListItems());
+    OCT_ASSERT(i < list->GetNumListItems());
 }
 
 ComboBox::ComboBox()

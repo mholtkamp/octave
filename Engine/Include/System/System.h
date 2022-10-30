@@ -54,6 +54,7 @@ bool SYS_DeleteSave(const char* saveName);
 void SYS_UnmountMemoryCard();
 
 // Misc
+void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber);
 void SYS_UpdateConsole();
 int32_t SYS_GetPlatformTier();
 void SYS_SetWindowTitle(const char* title);

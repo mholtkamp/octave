@@ -31,7 +31,7 @@ DEFINE_COMPONENT(SkeletalMeshComponent);
 bool SkeletalMeshComponent::HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     SkeletalMeshComponent* meshComp = static_cast<SkeletalMeshComponent*>(prop->mOwner);
     bool success = false;
 
@@ -225,7 +225,7 @@ void SkeletalMeshComponent::PlayAnimation(const char* animName, bool loop, float
         anim = &mActiveAnimations[index];
     }
 
-    assert(anim != nullptr);
+    OCT_ASSERT(anim != nullptr);
 
     anim->mName = animName;
     anim->mTime = loop ? anim->mTime : 0.0f;
@@ -351,12 +351,12 @@ glm::vec3 SkeletalMeshComponent::InterpolateScale(float time, const Channel& cha
 
     uint32_t index = FindScaleIndex(time, channel);
     uint32_t nextIndex = index + 1;
-    assert(nextIndex < channel.mScaleKeys.size());
+    OCT_ASSERT(nextIndex < channel.mScaleKeys.size());
 
     float deltaTime = channel.mScaleKeys[nextIndex].mTime - channel.mScaleKeys[index].mTime;
     float factor = (time - channel.mScaleKeys[index].mTime) / deltaTime;
     factor = glm::clamp(factor, 0.0f, 1.0f);
-    assert(factor >= 0.0f && factor <= 1.0f);
+    OCT_ASSERT(factor >= 0.0f && factor <= 1.0f);
 
     glm::vec3 startScale = channel.mScaleKeys[index].mValue;
     glm::vec3 endScale = channel.mScaleKeys[nextIndex].mValue;
@@ -373,12 +373,12 @@ glm::quat SkeletalMeshComponent::InterpolateRotation(float time, const Channel& 
 
     uint32_t index = FindRotationIndex(time, channel);
     uint32_t nextIndex = index + 1;
-    assert(nextIndex < channel.mRotationKeys.size());
+    OCT_ASSERT(nextIndex < channel.mRotationKeys.size());
 
     float deltaTime = channel.mRotationKeys[nextIndex].mTime - channel.mRotationKeys[index].mTime;
     float factor = (time - channel.mRotationKeys[index].mTime) / deltaTime;
     factor = glm::clamp(factor, 0.0f, 1.0f);
-    assert(factor >= 0.0f && factor <= 1.0f);
+    OCT_ASSERT(factor >= 0.0f && factor <= 1.0f);
 
     glm::quat startQuat = channel.mRotationKeys[index].mValue;
     glm::quat endQuat = channel.mRotationKeys[nextIndex].mValue;
@@ -396,12 +396,12 @@ glm::vec3 SkeletalMeshComponent::InterpolatePosition(float time, const Channel& 
 
     uint32_t index = FindPositionIndex(time, channel);
     uint32_t nextIndex = index + 1;
-    assert(nextIndex < channel.mPositionKeys.size());
+    OCT_ASSERT(nextIndex < channel.mPositionKeys.size());
 
     float deltaTime = channel.mPositionKeys[nextIndex].mTime - channel.mPositionKeys[index].mTime;
     float factor = (time - channel.mPositionKeys[index].mTime) / deltaTime;
     factor = glm::clamp(factor, 0.0f, 1.0f);
-    assert(factor >= 0.0f && factor <= 1.0f);
+    OCT_ASSERT(factor >= 0.0f && factor <= 1.0f);
 
     glm::vec3 startPos = channel.mPositionKeys[index].mValue;
     glm::vec3 endPos = channel.mPositionKeys[nextIndex].mValue;
@@ -443,7 +443,7 @@ void SkeletalMeshComponent::DetectTriggeredAnimEvents(
 
 uint32_t SkeletalMeshComponent::FindScaleIndex(float time, const Channel& channel)
 {
-    assert(channel.mScaleKeys.size() > 0);
+    OCT_ASSERT(channel.mScaleKeys.size() > 0);
 
     for (uint32_t i = 0; i < channel.mScaleKeys.size() - 1; ++i)
     {
@@ -458,7 +458,7 @@ uint32_t SkeletalMeshComponent::FindScaleIndex(float time, const Channel& channe
 
 uint32_t SkeletalMeshComponent::FindRotationIndex(float time, const Channel& channel)
 {
-    assert(channel.mRotationKeys.size() > 0);
+    OCT_ASSERT(channel.mRotationKeys.size() > 0);
 
     for (uint32_t i = 0; i < channel.mRotationKeys.size() - 1; ++i)
     {
@@ -473,7 +473,7 @@ uint32_t SkeletalMeshComponent::FindRotationIndex(float time, const Channel& cha
 
 uint32_t SkeletalMeshComponent::FindPositionIndex(float time, const Channel& channel)
 {
-    assert(channel.mPositionKeys.size() > 0);
+    OCT_ASSERT(channel.mPositionKeys.size() > 0);
 
     for (uint32_t i = 0; i < channel.mPositionKeys.size() - 1; ++i)
     {
@@ -556,7 +556,7 @@ void SkeletalMeshComponent::SetBoneTransform(int32_t boneIndex, const glm::mat4&
 {
     // TODO: This function probably isn't working as intended. Please fix.
 #if 1
-    assert(boneIndex >= 0 && boneIndex < int32_t(mBoneMatrices.size()));
+    OCT_ASSERT(boneIndex >= 0 && boneIndex < int32_t(mBoneMatrices.size()));
 
     SkeletalMesh* mesh = mSkeletalMesh.Get<SkeletalMesh>();
     const std::vector<Bone>& bones = mesh->GetBones();
@@ -567,7 +567,7 @@ void SkeletalMeshComponent::SetBoneTransform(int32_t boneIndex, const glm::mat4&
     SkeletalMesh* mesh = mSkeletalMesh.GetSkeletalMesh();
     if (mesh != nullptr)
     {
-        assert(boneIndex >= 0 && boneIndex < int32_t(mBoneMatrices.size()));
+        OCT_ASSERT(boneIndex >= 0 && boneIndex < int32_t(mBoneMatrices.size()));
         mBoneMatrices[boneIndex] = transform;
 
         const std::vector<Bone>& bones = mesh->GetBones();
@@ -730,7 +730,7 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
                             for (uint32_t i = 0; i < anim->mChannels.size(); ++i)
                             {
                                 int32_t boneIndex = anim->mChannels[i].mBoneIndex;
-                                assert(boneIndex != -1 &&
+                                OCT_ASSERT(boneIndex != -1 &&
                                     boneIndex >= 0 &&
                                     boneIndex < (int32_t)mesh->GetBones().size());
 

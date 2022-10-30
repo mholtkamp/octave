@@ -19,7 +19,7 @@ int Asset_Lua::Create(lua_State* L, const Asset* asset, bool allowNull)
             luaL_getmetatable(L, ASSET_LUA_NAME);
         }
 
-        assert(lua_istable(L, -1));
+        OCT_ASSERT(lua_istable(L, -1));
         lua_setmetatable(L, udIndex);
     }
     else
@@ -133,5 +133,5 @@ void Asset_Lua::Bind()
     lua_setfield(L, mtIndex, "IsLoaded");
 
     lua_pop(L, 1);
-    assert(lua_gettop(L) == 0);
+    OCT_ASSERT(lua_gettop(L) == 0);
 }

@@ -101,10 +101,10 @@ void SoundWave::Import(const std::string& path)
 
     char fileFormat[5] = {};
     memcpy(fileFormat, wavData + 8, 4);
-    assert(strncmp(fileFormat, "WAVE", 4) == 0);
+    OCT_ASSERT(strncmp(fileFormat, "WAVE", 4) == 0);
 
     uint16_t audioFormat = *((uint16_t*)(wavData + 20));
-    assert(audioFormat == 1);
+    OCT_ASSERT(audioFormat == 1);
 
     uint16_t numChannels = *((uint16_t*)(wavData + 22));
     uint32_t sampleRate = *((uint32_t*)(wavData + 24));
@@ -125,7 +125,7 @@ void SoundWave::Import(const std::string& path)
     {
         mWaveDataSize = numSamples * bytesPerSample;
         mWaveData = (uint8_t*)SYS_AlignedMalloc(mWaveDataSize, 32);
-        assert(mWaveDataSize == wavSampleDataSize);
+        OCT_ASSERT(mWaveDataSize == wavSampleDataSize);
         memcpy(mWaveData, wavSampleData, wavSampleDataSize);
     }
     else

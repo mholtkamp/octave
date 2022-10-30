@@ -75,8 +75,8 @@ void Component::LoadStream(Stream& stream)
 
 void Component::Copy(Component* srcComp)
 {
-    assert(srcComp);
-    assert(srcComp->GetType() == GetType());
+    OCT_ASSERT(srcComp);
+    OCT_ASSERT(srcComp->GetType() == GetType());
 
     // Copy actor properties
     std::vector<Property> srcProps;
@@ -101,7 +101,7 @@ void Component::Copy(Component* srcComp)
 
         if (dstProp != nullptr)
         {
-            assert(dstProp->mCount == srcProp->mCount);
+            OCT_ASSERT(dstProp->mCount == srcProp->mCount);
             dstProp->SetValue(srcProp->mData.vp, 0, srcProp->mCount);
         }
 

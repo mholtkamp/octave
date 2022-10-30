@@ -31,7 +31,7 @@ void InitAutoRegScripts()
                 lua_getglobal(L, data.mTableName);
             }
 
-            assert(lua_istable(L, -1));
+            OCT_ASSERT(lua_istable(L, -1));
             lua_pushcfunction(L, data.mFunc);
             lua_setfield(L, -2, data.mFuncName);
 

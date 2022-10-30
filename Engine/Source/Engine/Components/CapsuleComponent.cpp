@@ -11,7 +11,7 @@ DEFINE_COMPONENT(CapsuleComponent);
 static bool HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
-    assert(prop != nullptr);
+    OCT_ASSERT(prop != nullptr);
     CapsuleComponent* capsuleComp = static_cast<CapsuleComponent*>(prop->mOwner);
     bool success = false;
 

@@ -4,7 +4,7 @@
 #include "Graphics/Vulkan/VulkanUtils.h"
 #include "Graphics/Vulkan/VulkanContext.h"
 
-#include <assert.h>
+#include "Assertion.h"
 
 // TODO: Remove the renderer include
 #include "Renderer.h"
@@ -18,12 +18,12 @@ Image::Image(ImageDesc imageDesc, SamplerDesc samplerDesc, const char* debugObje
     mMipLevels = imageDesc.mMipLevels;
     mLayers = imageDesc.mLayers;
 
-    assert(mWidth > 0);
-    assert(mHeight > 0);
-    assert(mFormat != VK_FORMAT_UNDEFINED);
-    assert(mUsage != 0);
-    assert(mMipLevels > 0);
-    assert(mLayers > 0);
+    OCT_ASSERT(mWidth > 0);
+    OCT_ASSERT(mHeight > 0);
+    OCT_ASSERT(mFormat != VK_FORMAT_UNDEFINED);
+    OCT_ASSERT(mUsage != 0);
+    OCT_ASSERT(mMipLevels > 0);
+    OCT_ASSERT(mLayers > 0);
 
     mMagFilter = samplerDesc.mMagFilter;
     mMinFilter = samplerDesc.mMinFilter;
@@ -62,7 +62,7 @@ Image::Image(ImageDesc imageDesc, SamplerDesc samplerDesc, const char* debugObje
     if (vkCreateImage(device, &ciImage, nullptr, &mImage) != VK_SUCCESS)
     {
         LogError("Failed to create image");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     VkMemoryRequirements memRequirements;
@@ -88,7 +88,7 @@ Image::Image(ImageDesc imageDesc, SamplerDesc samplerDesc, const char* debugObje
     if (vkCreateImageView(device, &ciImageView, nullptr, &mImageView) != VK_SUCCESS)
     {
         LogError("Failed to create image view");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     // Sampler
@@ -112,7 +112,7 @@ Image::Image(ImageDesc imageDesc, SamplerDesc samplerDesc, const char* debugObje
     if (vkCreateSampler(device, &ciSampler, nullptr, &mSampler) != VK_SUCCESS)
     {
         LogError("Failed to create sampler");
-        assert(0);
+        OCT_ASSERT(0);
     }
 
     if (debugObjectName != nullptr)
@@ -161,8 +161,8 @@ VkFormat Image::GetFormat() const
 
 void Image::Update(const void* srcData)
 {
-    assert(srcData != nullptr);
-    assert(mImage != VK_NULL_HANDLE);
+    OCT_ASSERT(srcData != nullptr);
+    OCT_ASSERT(mImage != VK_NULL_HANDLE);
 
     uint32_t imageSize = 0;
     if (IsFormatBlockCompressed(mFormat))
