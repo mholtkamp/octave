@@ -674,8 +674,11 @@ void Renderer::FrustumCull(CameraComponent* camera)
     //LogDebug("Draws culled: %d", drawsCulled);
 
     int32_t lightsCulled = 0;
-    lightsCulled += FrustumCullLights(frustum, mLightData);
-    LogDebug("Lights culled: %d", lightsCulled);
+    if (GFX_ShouldCullLights())
+    {
+        lightsCulled += FrustumCullLights(frustum, mLightData);
+    }
+    //LogDebug("Lights culled: %d", lightsCulled);
 
 #if DEBUG_DRAW_ENABLED
     drawsCulled = 0;
@@ -841,6 +844,27 @@ void Renderer::Render(World* world)
         return;
     }
 
+    CameraComponent* activeCamera = world->GetActiveCamera();
+
+    // On 3DS especially, we want to cull before syncing with the GPU
+    // otherwise it increases GPU idle time.
+    {
+        SCOPED_FRAME_STAT("Culling");
+
+        if (activeCamera != nullptr)
+        {
+            activeCamera->ComputeMatrices();
+        }
+
+        GatherDrawData(world);
+        GatherLightData(world);
+
+        if (mFrustumCulling)
+        {
+            FrustumCull(activeCamera);
+        }
+    }
+
     {
 #if !SYNC_ON_END_FRAME
         SCOPED_FRAME_STAT("Vsync");
@@ -867,28 +891,7 @@ void Renderer::Render(World* world)
         mInModalWidgetUpdate = false;
     }
 
-    CameraComponent* activeCamera = world->GetActiveCamera();
-
-    {
-        SCOPED_FRAME_STAT("Culling");
-
-        if (activeCamera != nullptr)
-        {
-            activeCamera->ComputeMatrices();
-        }
-
-        GatherDrawData(world);
-        GatherLightData(world);
-
-        if (mFrustumCulling)
-        {
-            FrustumCull(activeCamera);
-        }
-    }
-
     BEGIN_FRAME_STAT("Render");
-
-    GFX_PostCulling();
 
     uint32_t numViews = GFX_GetNumViews();
 

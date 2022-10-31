@@ -146,11 +146,6 @@ bool GFX_ShouldCullLights()
     return true;
 }
 
-void GFX_PostCulling()
-{
-
-}
-
 void GFX_BeginRenderPass(RenderPassId renderPassId)
 {
     switch (renderPassId)

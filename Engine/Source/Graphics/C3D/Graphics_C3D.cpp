@@ -191,10 +191,17 @@ void GFX_Shutdown()
 
 void GFX_BeginFrame()
 {
+    // According to Oreo:
+    // C3D_GetDrawingTime() is the time in miliseconds between C3D_FrameEnd() and the callback when the gpu finishes processing the commands.
+    // C3D_GetProcessingTime() is the time in miliseconds between C3D_FrameBegin() and C3D_FrameEnd()
+    //LogDebug("Draw: %.2f, Proc: %.2f", C3D_GetDrawingTime(), C3D_GetProcessingTime());
+
     C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
 
     // Take care of pending deletes.
     ProcessQueuedFrees();
+
+    SetupLighting();
 
     gC3dContext.mLastBoundShaderId = ShaderId::Count;
     gC3dContext.mLastBoundMaterial = nullptr;
@@ -254,11 +261,6 @@ void GFX_BeginView(uint32_t viewIndex)
 bool GFX_ShouldCullLights()
 {
     return true;
-}
-
-void GFX_PostCulling()
-{
-    SetupLighting();
 }
 
 void GFX_BeginRenderPass(RenderPassId renderPassId)
