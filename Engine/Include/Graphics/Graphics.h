@@ -32,7 +32,6 @@ void GFX_BeginScreen(uint32_t screenIndex);
 void GFX_BeginView(uint32_t viewIndex);
 
 bool GFX_ShouldCullLights();
-void GFX_PostCulling();
 
 void GFX_BeginRenderPass(RenderPassId renderPassId);
 void GFX_EndRenderPass();

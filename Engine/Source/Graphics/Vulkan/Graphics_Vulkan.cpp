@@ -47,11 +47,6 @@ bool GFX_ShouldCullLights()
     return true;
 }
 
-void GFX_PostCulling()
-{
-
-}
-
 void GFX_BeginRenderPass(RenderPassId renderPassId)
 {
     gVulkanContext->BeginRenderPass(renderPassId);
