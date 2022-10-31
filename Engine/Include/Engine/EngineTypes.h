@@ -90,6 +90,15 @@ enum class PropertyOwnerType
     Count
 };
 
+enum class LightType
+{
+    Point,
+    Spot,
+    Directional,
+
+    Count
+};
+
 struct Bounds
 {
     glm::vec3 mCenter = { };
@@ -107,6 +116,14 @@ struct DrawData
     int32_t mSortPriority;
     TypeId mComponentType;
     bool mDepthless;
+};
+
+struct LightData
+{
+    LightType mType;
+    glm::vec3 mPosition;
+    glm::vec4 mColor;
+    float mRadius;
 };
 
 struct DebugDraw

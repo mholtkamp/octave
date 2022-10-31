@@ -579,6 +579,26 @@ void Renderer::GatherDrawData(World* world)
     }
 }
 
+void Renderer::GatherLightData(World* world)
+{
+    mLightData.clear();
+    const std::vector<PointLightComponent*>& comps = world->GetPointLights();
+
+    for (uint32_t i = 0; i < comps.size(); ++i)
+    {
+        if (comps[i]->IsVisible())
+        {
+            LightData lightData;
+            lightData.mType = LightType::Point;
+            lightData.mPosition = comps[i]->GetAbsolutePosition();
+            lightData.mColor = comps[i]->GetColor();
+            lightData.mRadius = comps[i]->GetRadius();
+
+            mLightData.push_back(lightData);
+        }
+    }
+}
+
 void Renderer::RenderDraws(const std::vector<DrawData>& drawData)
 {
     for (uint32_t i = 0; i < drawData.size(); ++i)
@@ -652,6 +672,10 @@ void Renderer::FrustumCull(CameraComponent* camera)
     drawsCulled += FrustumCullDraws(frustum, mTranslucentDraws);
     drawsCulled += FrustumCullDraws(frustum, mWireframeDraws);
     //LogDebug("Draws culled: %d", drawsCulled);
+
+    int32_t lightsCulled = 0;
+    lightsCulled += FrustumCullLights(frustum, mLightData);
+    LogDebug("Lights culled: %d", lightsCulled);
 
 #if DEBUG_DRAW_ENABLED
     drawsCulled = 0;
@@ -772,6 +796,41 @@ int32_t Renderer::FrustumCullDraws(const CameraFrustum& frustum, std::vector<Deb
     return drawsCulled;
 }
 
+int32_t Renderer::FrustumCullLights(const CameraFrustum& frustum, std::vector<LightData>& lightData)
+{
+    int32_t lightsCulled = 0;
+
+    // Some code duplication below, but I'm doing this to make sure the branching on ortho doesn't impact performance so much.
+    if (frustum.mOrtho)
+    {
+        for (int32_t i = int32_t(lightData.size()) - 1; i >= 0; --i)
+        {
+            bool inFrustum = frustum.IsSphereInFrustumOrtho(lightData[i].mPosition, lightData[i].mRadius);
+
+            if (!inFrustum)
+            {
+                lightData.erase(lightData.begin() + i);
+                lightsCulled++;
+            }
+        }
+    }
+    else
+    {
+        for (int32_t i = int32_t(lightData.size()) - 1; i >= 0; --i)
+        {
+            bool inFrustum = frustum.IsSphereInFrustum(lightData[i].mPosition, lightData[i].mRadius);
+
+            if (!inFrustum)
+            {
+                lightData.erase(lightData.begin() + i);
+                lightsCulled++;
+            }
+        }
+    }
+
+    return lightsCulled;
+}
+
 void Renderer::Render(World* world)
 {
     if (world == nullptr || 
@@ -789,40 +848,47 @@ void Renderer::Render(World* world)
         BeginFrame();
     }
 
-    BEGIN_FRAME_STAT("Pre-Render");
-
-    mScreenIndex = 0;
-    GFX_BeginScreen(0);
-
-    for (uint32_t i = 0; i < mWidgets0.size(); ++i)
     {
-        mWidgets0[i]->RecursiveUpdate();
+        SCOPED_FRAME_STAT("Widgets");
+
+        mScreenIndex = 0;
+        GFX_BeginScreen(0);
+
+        for (uint32_t i = 0; i < mWidgets0.size(); ++i)
+        {
+            mWidgets0[i]->RecursiveUpdate();
+        }
+
+        if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->RecursiveUpdate(); }
+        if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->RecursiveUpdate(); }
+
+        mInModalWidgetUpdate = true;
+        if (mModalWidget != nullptr && mModalWidget->IsVisible()) {  mModalWidget->RecursiveUpdate(); }
+        mInModalWidgetUpdate = false;
     }
-
-    if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->RecursiveUpdate(); }
-    if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->RecursiveUpdate(); }
-
-    mInModalWidgetUpdate = true;
-    if (mModalWidget != nullptr && mModalWidget->IsVisible()) {  mModalWidget->RecursiveUpdate(); }
-    mInModalWidgetUpdate = false;
 
     CameraComponent* activeCamera = world->GetActiveCamera();
 
-    if (activeCamera != nullptr)
     {
-        activeCamera->ComputeMatrices();
+        SCOPED_FRAME_STAT("Culling");
+
+        if (activeCamera != nullptr)
+        {
+            activeCamera->ComputeMatrices();
+        }
+
+        GatherDrawData(world);
+        GatherLightData(world);
+
+        if (mFrustumCulling)
+        {
+            FrustumCull(activeCamera);
+        }
     }
-
-    GatherDrawData(world);
-
-    if (mFrustumCulling)
-    {
-        FrustumCull(activeCamera);
-    }
-
-    END_FRAME_STAT("Pre-Render");
 
     BEGIN_FRAME_STAT("Render");
+
+    GFX_PostCulling();
 
     uint32_t numViews = GFX_GetNumViews();
 
@@ -920,10 +986,16 @@ void Renderer::Render(World* world)
     GFX_SetViewport(0, 0, mEngineState->mSecondWindowWidth, mEngineState->mSecondWindowHeight);
     GFX_SetScissor(0, 0, mEngineState->mSecondWindowWidth, mEngineState->mSecondWindowHeight);
 
-    for (uint32_t i = 0; i < mWidgets1.size(); ++i)
+    END_FRAME_STAT("Render");
     {
-        mWidgets1[i]->RecursiveUpdate();
+        SCOPED_FRAME_STAT("Widgets");
+
+        for (uint32_t i = 0; i < mWidgets1.size(); ++i)
+        {
+            mWidgets1[i]->RecursiveUpdate();
+        }
     }
+    BEGIN_FRAME_STAT("Render");
 
     for (uint32_t i = 0; i < mWidgets1.size(); ++i)
     {
@@ -988,4 +1060,9 @@ void Renderer::UpdateDebugDraws()
         }
     }
 #endif
+}
+
+const std::vector<LightData>& Renderer::GetLightData() const
+{
+    return mLightData;
 }
