@@ -844,6 +844,33 @@ void Renderer::Render(World* world)
         return;
     }
 
+    // Update widgets first. (It's possible a widget destroys an actor or loads a level
+    // so make sure this happens before gathering/culling objects.)
+    {
+        SCOPED_FRAME_STAT("Widgets");
+
+        for (uint32_t i = 0; i < mWidgets0.size(); ++i)
+        {
+            mWidgets0[i]->RecursiveUpdate();
+        }
+
+        if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->RecursiveUpdate(); }
+        if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->RecursiveUpdate(); }
+
+        mInModalWidgetUpdate = true;
+        if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->RecursiveUpdate(); }
+        mInModalWidgetUpdate = false;
+
+#if SUPPORTS_SECOND_SCREEN
+        mScreenIndex = 1;
+        for (uint32_t i = 0; i < mWidgets1.size(); ++i)
+        {
+            mWidgets1[i]->RecursiveUpdate();
+        }
+        mScreenIndex = 0;
+#endif
+    }
+
     CameraComponent* activeCamera = world->GetActiveCamera();
 
     // On 3DS especially, we want to cull before syncing with the GPU
@@ -872,26 +899,9 @@ void Renderer::Render(World* world)
         BeginFrame();
     }
 
-    {
-        SCOPED_FRAME_STAT("Widgets");
-
-        mScreenIndex = 0;
-        GFX_BeginScreen(0);
-
-        for (uint32_t i = 0; i < mWidgets0.size(); ++i)
-        {
-            mWidgets0[i]->RecursiveUpdate();
-        }
-
-        if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->RecursiveUpdate(); }
-        if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->RecursiveUpdate(); }
-
-        mInModalWidgetUpdate = true;
-        if (mModalWidget != nullptr && mModalWidget->IsVisible()) {  mModalWidget->RecursiveUpdate(); }
-        mInModalWidgetUpdate = false;
-    }
-
     BEGIN_FRAME_STAT("Render");
+
+    GFX_BeginScreen(0);
 
     uint32_t numViews = GFX_GetNumViews();
 
@@ -988,17 +998,6 @@ void Renderer::Render(World* world)
 
     GFX_SetViewport(0, 0, mEngineState->mSecondWindowWidth, mEngineState->mSecondWindowHeight);
     GFX_SetScissor(0, 0, mEngineState->mSecondWindowWidth, mEngineState->mSecondWindowHeight);
-
-    END_FRAME_STAT("Render");
-    {
-        SCOPED_FRAME_STAT("Widgets");
-
-        for (uint32_t i = 0; i < mWidgets1.size(); ++i)
-        {
-            mWidgets1[i]->RecursiveUpdate();
-        }
-    }
-    BEGIN_FRAME_STAT("Render");
 
     for (uint32_t i = 0; i < mWidgets1.size(); ++i)
     {
