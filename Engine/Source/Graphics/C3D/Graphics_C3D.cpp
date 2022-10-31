@@ -196,8 +196,6 @@ void GFX_BeginFrame()
     // Take care of pending deletes.
     ProcessQueuedFrees();
 
-    SetupLighting();
-
     gC3dContext.mLastBoundShaderId = ShaderId::Count;
     gC3dContext.mLastBoundMaterial = nullptr;
 }
@@ -251,6 +249,16 @@ void GFX_BeginView(uint32_t viewIndex)
         CameraComponent* camera = GetWorld()->GetActiveCamera();
         camera->ComputeMatrices();
     }
+}
+
+bool GFX_ShouldCullLights()
+{
+    return true;
+}
+
+void GFX_PostCulling()
+{
+    SetupLighting();
 }
 
 void GFX_BeginRenderPass(RenderPassId renderPassId)

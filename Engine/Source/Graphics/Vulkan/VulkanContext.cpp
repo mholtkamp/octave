@@ -1427,17 +1427,16 @@ void VulkanContext::UpdateGlobalUniformData()
 
         mGlobalUniformData.mAmbientLightColor = world->GetAmbientLightColor();
 
-        const std::vector<PointLightComponent*>& pointLights = world->GetPointLights();
-        mGlobalUniformData.mNumPointLights = int32_t(pointLights.size());
+        const std::vector<LightData>& lightData = Renderer::Get()->GetLightData();
+        mGlobalUniformData.mNumPointLights = int32_t(lightData.size());
         
         for (uint32_t i = 0; i < MAX_POINTLIGHTS; ++i)
         {
-            PointLightComponent* pointLight = (i < pointLights.size()) ? pointLights[i] : nullptr;
-
-            if (pointLight != nullptr)
+            if (i < lightData.size())
             {
-                mGlobalUniformData.mPointLightPositions[i] = glm::vec4(pointLight->GetAbsolutePosition(), pointLight->GetRadius());
-                mGlobalUniformData.mPointLightColors[i] = pointLight->GetColor();
+                const LightData& pointLight = lightData[i];
+                mGlobalUniformData.mPointLightPositions[i] = glm::vec4(pointLight.mPosition, pointLight.mRadius);
+                mGlobalUniformData.mPointLightColors[i] = pointLight.mColor;
             }
             else
             {

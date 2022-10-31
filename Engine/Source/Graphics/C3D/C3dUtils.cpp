@@ -5,7 +5,9 @@
 #include "Engine.h"
 #include "World.h"
 #include "Renderer.h"
+#include "Constants.h"
 #include "Log.h"
+#include "Assertion.h"
 #include "Assets/Texture.h"
 
 #include "Components/PointLightComponent.h"
@@ -357,38 +359,35 @@ void SetupLighting()
     }
 
     // Setup point lights
-    const std::vector<PointLightComponent*>& pointLights = GetWorld()->GetPointLights();
+    const std::vector<LightData>& lightArray = Renderer::Get()->GetLightData();
 
-    for (uint32_t i = 0; i < pointLights.size() && lightIndex < 8; ++i)
+    for (uint32_t i = 0; i < lightArray.size() && lightIndex < 8; ++i)
     {
-        PointLightComponent* pointLightComp = pointLights[i];
+        const LightData& lightData = lightArray[i];
         C3D_Light& light = gC3dContext.mLights[lightIndex];
 
-        if (pointLightComp)
+        glm::vec3 lightPosWS = lightData.mPosition;
+        glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
+        float lightRadius = lightData.mRadius;
+
+        glm::vec4 lightColor = lightData.mColor;
+        C3D_FVec lightVec = FVec4_New(lightPosVS.x, lightPosVS.y, lightPosVS.z, 1.0f);
+
+        C3D_LightInit(&light, &gC3dContext.mLightEnv);
+        C3D_LightColor(&light, lightColor.r, lightColor.g, lightColor.b);
+        C3D_LightPosition(&light, &lightVec);
+        C3D_LightDistAttnEnable(&light, true);
+
+        // Generate a new Lut if the light radius is different than last frame.
+        if (gC3dContext.mLightRadii[lightIndex] != lightRadius)
         {
-            glm::vec3 lightPosWS = pointLightComp->GetAbsolutePosition();
-            glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
-            float lightRadius = pointLightComp->GetRadius();
-
-            glm::vec4 lightColor = pointLightComp->GetColor();
-            C3D_FVec lightVec = FVec4_New(lightPosVS.x, lightPosVS.y, lightPosVS.z, 1.0f);
-
-            C3D_LightInit(&light, &gC3dContext.mLightEnv);
-            C3D_LightColor(&light, lightColor.r, lightColor.g, lightColor.b);
-            C3D_LightPosition(&light, &lightVec);
-            C3D_LightDistAttnEnable(&light, true);
-
-            // Generate a new Lut if the light radius is different than last frame.
-            if (gC3dContext.mLightRadii[lightIndex] != lightRadius)
-            {
-                gC3dContext.mLightRadii[lightIndex] = lightRadius;
-                LightLutDA_Create(&gC3dContext.mLightAttenuationLuts[lightIndex], LinearAttenFunc, 0.0f, lightRadius, lightRadius, 0.0f);
-            }
-
-            C3D_LightDistAttn(&light, &gC3dContext.mLightAttenuationLuts[lightIndex]);
-
-            lightIndex++;
+            gC3dContext.mLightRadii[lightIndex] = lightRadius;
+            LightLutDA_Create(&gC3dContext.mLightAttenuationLuts[lightIndex], LinearAttenFunc, 0.0f, lightRadius, lightRadius, 0.0f);
         }
+
+        C3D_LightDistAttn(&light, &gC3dContext.mLightAttenuationLuts[lightIndex]);
+
+        lightIndex++;
     }
 }
 

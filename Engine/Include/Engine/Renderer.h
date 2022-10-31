@@ -86,6 +86,8 @@ public:
     void RemoveDebugDrawsForActor(Actor* actor);
     const std::vector<DebugDraw>& GetDebugDraws() const;
 
+    const std::vector<LightData>& GetLightData() const;
+
     // Default Textures
     TextureRef mWhiteTexture;
     TextureRef mBlackTexture;
@@ -121,12 +123,14 @@ private:
     void EndFrame();
 
     void GatherDrawData(World* world);
+    void GatherLightData(World* world);
     void RenderDraws(const std::vector<DrawData>& drawData);
     void RenderDraws(const std::vector<DrawData>& drawData, PipelineId pipelineId);
     void RenderDebugDraws(const std::vector<DebugDraw>& draws, PipelineId pipelineId = PipelineId::Count);
     void FrustumCull(CameraComponent* camera);
     int32_t FrustumCullDraws(const CameraFrustum& frustum, std::vector<DrawData>& drawData);
     int32_t FrustumCullDraws(const CameraFrustum& frustum, std::vector<DebugDraw>& drawData);
+    int32_t FrustumCullLights(const CameraFrustum& frustum, std::vector<LightData>& lightData);
 
     void RenderShadowCasters(World* world);
     void RenderSelectedGeometry(World* world);
@@ -150,6 +154,8 @@ private:
     std::vector<DrawData> mPostShadowOpaqueDraws; // (post-simple-shadow opaques. not talking about shadow mapping)
     std::vector<DrawData> mTranslucentDraws;
     std::vector<DrawData> mWireframeDraws;
+
+    std::vector<LightData> mLightData;
 
     std::vector<DebugDraw> mDebugDraws;
     std::vector<DebugDraw> mCollisionDraws;
