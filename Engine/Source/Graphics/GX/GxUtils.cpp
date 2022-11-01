@@ -64,33 +64,30 @@ void SetupLights()
                                       uint8_t(ambientColor.a * 255.0f) });
 
     // Setup point lights
-    const std::vector<PointLightComponent*>& pointLights = GetWorld()->GetPointLights();
+    const std::vector<LightData>& lightArray = Renderer::Get()->GetLightData();
 
     // Light0 is reserved for directional light, in the future we might allow multiple dir lights.
-    for (uint32_t i = 0; i < pointLights.size() && i < 7; ++i)
+    for (uint32_t i = 0; i < lightArray.size() && i < MAX_POINTLIGHTS; ++i)
     {
-        PointLightComponent* pointLightComp = pointLights[i];
+        const LightData& lightData = lightArray[i];
         GXLightObj gxPointLight;
 
-        if (pointLightComp)
-        {
-            glm::vec3 lightPosWS = pointLightComp->GetAbsolutePosition();
-            glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
+        glm::vec3 lightPosWS = lightData.mPosition;
+        glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
 
-            glm::vec4 lightColor = pointLightComp->GetColor();
-            lightColor = glm::clamp(lightColor, 0.0f, 1.0f);
-            GXColor gxLightColor = { uint8_t(lightColor.r * 255.0f),
-                                     uint8_t(lightColor.g * 255.0f),
-                                     uint8_t(lightColor.b * 255.0f),
-                                     uint8_t(lightColor.a * 255.0f) };
+        glm::vec4 lightColor = lightData.mColor;
+        lightColor = glm::clamp(lightColor, 0.0f, 1.0f);
+        GXColor gxLightColor = { uint8_t(lightColor.r * 255.0f),
+                                    uint8_t(lightColor.g * 255.0f),
+                                    uint8_t(lightColor.b * 255.0f),
+                                    uint8_t(lightColor.a * 255.0f) };
 
-            GX_InitLightPos(&gxPointLight, lightPosVS.x, lightPosVS.y, lightPosVS.z);
-            GX_InitLightColor(&gxPointLight, gxLightColor);
-            GX_InitLightDistAttn(&gxPointLight, pointLightComp->GetRadius(), 0.25f, GX_DA_MEDIUM);
-            GX_InitLightSpot(&gxPointLight, 0.0f, GX_SP_OFF);
-            GX_LoadLightObj(&gxPointLight, GX_LIGHT1 << i);
-            gGxContext.mLighting.mLightMask |= (GX_LIGHT1 << i);
-        }
+        GX_InitLightPos(&gxPointLight, lightPosVS.x, lightPosVS.y, lightPosVS.z);
+        GX_InitLightColor(&gxPointLight, gxLightColor);
+        GX_InitLightDistAttn(&gxPointLight, lightData.mRadius, 0.25f, GX_DA_MEDIUM);
+        GX_InitLightSpot(&gxPointLight, 0.0f, GX_SP_OFF);
+        GX_LoadLightObj(&gxPointLight, GX_LIGHT1 << i);
+        gGxContext.mLighting.mLightMask |= (GX_LIGHT1 << i);
     }
 }
 

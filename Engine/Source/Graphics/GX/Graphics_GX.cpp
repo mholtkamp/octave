@@ -143,7 +143,7 @@ void GFX_BeginView(uint32_t viewIndex)
 
 bool GFX_ShouldCullLights()
 {
-    return true;
+    return false;
 }
 
 void GFX_BeginRenderPass(RenderPassId renderPassId)
