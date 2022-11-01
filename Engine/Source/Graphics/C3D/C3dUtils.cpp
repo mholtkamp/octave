@@ -136,6 +136,7 @@ void BindMaterial(Material* material)
         glm::vec4 color = material->GetColor();
         float opacity = material->GetOpacity();
         bool depthless = material->IsDepthTestDisabled();
+        bool alphaBlend = (blendMode == BlendMode::Additive || blendMode == BlendMode::Translucent);
 
         glm::vec4 materialColor = glm::clamp(color, 0.0f, 1.0f);
         uint8_t matColor4[4] =
@@ -246,7 +247,7 @@ void BindMaterial(Material* material)
         C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, lightSrc, GPU_PRIMARY_COLOR);
         C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
         C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
-        C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+        C3D_TexEnvFunc(env, C3D_Alpha, alphaBlend ? GPU_MODULATE : GPU_REPLACE);
         if (vertexColorBlend && shadingModel == ShadingModel::Unlit)
         {
             C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_ALPHA, GPU_TEVOP_RGB_SRC_COLOR);
