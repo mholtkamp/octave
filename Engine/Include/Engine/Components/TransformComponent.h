@@ -33,6 +33,7 @@ public:
     void Attach(TransformComponent* parent);
     void AddChild(TransformComponent* child);
     void RemoveChild(TransformComponent* child);
+    void RemoveChild(int32_t index);
 
     void AttachToBone(SkeletalMeshComponent* parent, const char* boneName);
     void AttachToBone(SkeletalMeshComponent* parent, int32_t boneIndex);

@@ -133,6 +133,15 @@ int Actor_Lua::Attach(lua_State* L)
     return 0;
 }
 
+int Actor_Lua::Detach(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+
+    actor->Detach();
+
+    return 0;
+}
+
 int Actor_Lua::SetPendingDestroy(lua_State* L)
 {
     Actor* actor = CHECK_ACTOR(L, 1);
@@ -548,6 +557,9 @@ void Actor_Lua::Bind()
 
     lua_pushcfunction(L, Actor_Lua::Attach);
     lua_setfield(L, mtIndex, "Attach");
+
+    lua_pushcfunction(L, Actor_Lua::Detach);
+    lua_setfield(L, mtIndex, "Detach");
 
     lua_pushcfunction(L, Actor_Lua::SetPendingDestroy);
     lua_setfield(L, mtIndex, "SetPendingDestroy");

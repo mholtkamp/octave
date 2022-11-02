@@ -597,6 +597,11 @@ void Actor::Attach(TransformComponent* comp)
     GetRootComponent()->Attach(comp);
 }
 
+void Actor::Detach()
+{
+    GetRootComponent()->Attach(nullptr);
+}
+
 void Actor::SetPendingDestroy(bool pendingDestroy)
 {
     mPendingDestroy = pendingDestroy;

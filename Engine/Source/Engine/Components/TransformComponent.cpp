@@ -89,9 +89,9 @@ void TransformComponent::Destroy()
     // Detach children from this component, in case another 
     // actor's components are attached to this. Don't want to leave
     // an invalid pointer on the other actor.
-    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
     {
-        RemoveChild(mChildren[i]);
+        RemoveChild(i);
     }
 
     // Detach from parent. If this component is attached to another actor's component,
@@ -187,11 +187,16 @@ void TransformComponent::RemoveChild(TransformComponent* child)
         OCT_ASSERT(childIndex != -1); // Could not find the component to remove
         if (childIndex != -1)
         {
-            mChildren.erase(mChildren.begin() + childIndex);
+            RemoveChild(childIndex);
         }
-
-        child->mParent = nullptr;
     }
+}
+
+void TransformComponent::RemoveChild(int32_t index)
+{
+    OCT_ASSERT(index >= 0 && index < int32_t(mChildren.size()));
+    mChildren[index]->mParent = nullptr;
+    mChildren.erase(mChildren.begin() + index);
 }
 
 void TransformComponent::AttachToBone(SkeletalMeshComponent* parent, const char* boneName)

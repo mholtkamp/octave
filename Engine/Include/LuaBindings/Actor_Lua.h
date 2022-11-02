@@ -30,6 +30,7 @@ struct Actor_Lua
     static int GetName(lua_State* L);
     static int SetName(lua_State* L);
     static int Attach(lua_State* L);
+    static int Detach(lua_State* L);
     static int SetPendingDestroy(lua_State* L);
     static int IsPendingDestroy(lua_State* L);
     static int EnableTick(lua_State* L);
