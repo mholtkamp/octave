@@ -118,6 +118,7 @@ public:
 
     void Attach(Actor* actor);
     void Attach(TransformComponent* comp);
+    void Detach();
 
     void SetPendingDestroy(bool pendingDestroy);
     bool IsPendingDestroy() const;
