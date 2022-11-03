@@ -111,11 +111,19 @@ AssetRef::AssetRef(const AssetRef& src)
     if (mLoadRequest != nullptr)
     {
         AssetManager::Get()->EraseAsyncLoadRef(*this);
+        mLoadRequest = nullptr;
     }
 }
 
 AssetRef::~AssetRef()
 {
+    // Make sure an async load request isn't referencing deleted memory
+    if (mLoadRequest != nullptr)
+    {
+        AssetManager::Get()->EraseAsyncLoadRef(*this);
+        mLoadRequest = nullptr;
+    }
+
     if (!IsShuttingDown() && mAsset != nullptr)
     {
         mAsset->DecrementRefCount();
