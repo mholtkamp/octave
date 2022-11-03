@@ -793,6 +793,8 @@ void AssetManager::EraseAsyncLoadRef(AssetRef& assetRef)
 
     eraseRef(mBeginLoadQueue, assetRef);
     eraseRef(mEndLoadQueue, assetRef);
+
+    assetRef.mLoadRequest = nullptr;
 }
 
 bool AssetManager::DoesAssetExist(const std::string& name)
