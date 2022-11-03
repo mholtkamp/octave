@@ -1381,6 +1381,32 @@ void ScriptComponent::OnCollision(
 #endif
 }
 
+bool ScriptComponent::HasFunction(const char* name) const
+{
+    bool ret = false;
+
+    if (mTableName != "")
+    {
+        lua_State* L = GetLua();
+
+        // Grab the script instance table
+        lua_getglobal(L, mTableName.c_str());
+        OCT_ASSERT(lua_istable(L, -1));
+        lua_getfield(L, -1, name);
+
+        // Only call the function if it has been defined.
+        if (lua_isfunction(L, -1))
+        {
+            ret = true;
+        }
+
+        // Pop table and function
+        lua_pop(L, 2);
+    }
+
+    return ret;
+}
+
 // These functions are kinda nasty, but it's a nice convenience for the game programmer
 void ScriptComponent::CallFunction(const char* name)
 {

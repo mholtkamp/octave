@@ -69,6 +69,8 @@ public:
         glm::vec3 impactNormal,
         btPersistentManifold* manifold);
 
+    bool HasFunction(const char* name) const;
+
     void CallFunction(const char* name);
     void CallFunction(const char* name, const Datum& param0);
     void CallFunction(const char* name, const Datum& param0, const Datum& param1);
