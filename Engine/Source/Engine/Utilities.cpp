@@ -406,6 +406,8 @@ void CreateTableCpp(lua_State* L, int tableIdx, Datum& datum)
         // Push the first key to start iterating at, in this case nil
         lua_pushnil(L); // -1 = nil, -2 = table
 
+        datum.SetType(DatumType::Table);
+
         while (lua_next(L, -2))
         {
             // Stack is now: -1 = value, -2 = key, -3 = table
