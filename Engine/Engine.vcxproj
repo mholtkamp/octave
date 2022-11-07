@@ -421,6 +421,7 @@
     <ClCompile Include="Source\Engine\Renderer.cpp" />
     <ClCompile Include="Source\Engine\ScriptAutoReg.cpp" />
     <ClCompile Include="Source\Engine\ScriptEvent.cpp" />
+    <ClCompile Include="Source\Engine\ScriptUtils.cpp" />
     <ClCompile Include="Source\Engine\StaticMeshActor.cpp" />
     <ClCompile Include="Source\Engine\stb_image.cpp" />
     <ClCompile Include="Source\Engine\Stream.cpp" />
@@ -434,6 +435,7 @@
     <ClCompile Include="Source\Engine\Widgets\Console.cpp" />
     <ClCompile Include="Source\Engine\Widgets\ModalList.cpp" />
     <ClCompile Include="Source\Engine\Widgets\Quad.cpp" />
+    <ClCompile Include="Source\Engine\Widgets\ScriptWidget.cpp" />
     <ClCompile Include="Source\Engine\Widgets\Selector.cpp" />
     <ClCompile Include="Source\Engine\Widgets\StatsOverlay.cpp" />
     <ClCompile Include="Source\Engine\Widgets\Text.cpp" />
@@ -554,9 +556,11 @@
     <ClInclude Include="Include\Engine\ScriptableFuncPointer.h" />
     <ClInclude Include="Include\Engine\ScriptAutoReg.h" />
     <ClInclude Include="Include\Engine\ScriptEvent.h" />
+    <ClInclude Include="Include\Engine\ScriptMacros.h" />
     <ClInclude Include="Include\Engine\ScriptUtils.h" />
     <ClInclude Include="Include\Engine\TableDatum.h" />
     <ClInclude Include="Include\Engine\TimerManager.h" />
+    <ClInclude Include="Include\Engine\Widgets\ScriptWidget.h" />
     <ClInclude Include="Include\LuaBindings\ActorRef_Lua.h" />
     <ClInclude Include="Include\LuaBindings\AudioComponent_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Audio_Lua.h" />

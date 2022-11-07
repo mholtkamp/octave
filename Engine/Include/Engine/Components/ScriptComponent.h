@@ -99,14 +99,6 @@ public:
     static const char* GetExecutingScriptTableName();
     static bool OnRepHandler(Datum* datum, const void* newValue);
 
-    static std::string GetClassNameFromFileName(const std::string& fileName);
-    static void SetEmbeddedScripts(EmbeddedFile* embeddedScripts, uint32_t numEmbeddedScripts);
-    static EmbeddedFile* FindEmbeddedScript(const std::string& className);
-    static bool RunScript(const char* fileName, Datum* ret = nullptr);
-
-    static bool LoadScriptFile(const std::string& fileName, const std::string& className);
-    static void ReloadAllScriptFiles();
-
     static ScriptComponent* FindScriptCompFromTableName(const std::string& tableName);
 
 protected:
@@ -132,12 +124,9 @@ protected:
 
     bool CheckIfFunctionExists(const char* funcName);
 
-    static std::set<std::string> sLoadedLuaFiles;
     static std::unordered_map<std::string, ScriptComponent*> sTableToCompMap;
     static std::unordered_map<std::string, ScriptNetFuncMap> sScriptNetFuncMap;
-    static EmbeddedFile* sEmbeddedScripts;
-    static uint32_t sNumEmbeddedScripts;
-    static uint32_t sNumScriptInstances;
+
     static std::vector<ScriptComponent*> sExecutingScriptStack;
 
     std::string mFileName;

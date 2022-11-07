@@ -180,7 +180,7 @@ bool Initialize(InitOptions& initOptions)
     if (initOptions.mEmbeddedScriptCount > 0 &&
         initOptions.mEmbeddedScripts != nullptr)
     {
-        ScriptComponent::SetEmbeddedScripts(initOptions.mEmbeddedScripts, initOptions.mEmbeddedScriptCount);
+        ScriptUtils::SetEmbeddedScripts(initOptions.mEmbeddedScripts, initOptions.mEmbeddedScriptCount);
     }
 
 #if !EDITOR
@@ -500,7 +500,7 @@ void ReloadAllScripts()
     }
 
     // Reload script files
-    ScriptComponent::ReloadAllScriptFiles();
+    ScriptUtils::ReloadAllScriptFiles();
 
     // Start script instances again
     for (uint32_t i = 0; i < scriptComps.size(); ++i)

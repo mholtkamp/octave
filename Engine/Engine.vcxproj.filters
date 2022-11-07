@@ -744,6 +744,12 @@
     <ClCompile Include="Source\LuaBindings\TimerManager_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Widgets\ScriptWidget.cpp">
+      <Filter>Source Files\Engine\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\ScriptUtils.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1313,9 +1319,6 @@
     <ClInclude Include="Include\Engine\TableDatum.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Engine\ScriptUtils.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="Include\LuaBindings\LuaTypeCheck.h">
       <Filter>Header Files\LuaBindings</Filter>
     </ClInclude>
@@ -1347,6 +1350,15 @@
       <Filter>Header Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Include\Engine\Assertion.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Engine\Widgets\ScriptWidget.h">
+      <Filter>Header Files\Engine\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Engine\ScriptMacros.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Engine\ScriptUtils.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>

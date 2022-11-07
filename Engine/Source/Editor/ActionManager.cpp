@@ -1677,7 +1677,7 @@ void ActionManager::GenerateEmbeddedScriptFiles(
         for (int32_t i = 0; i < int32_t(files.size()); ++i)
         {
             std::string luaFile = files[i];
-            std::string luaClass = ScriptComponent::GetClassNameFromFileName(luaFile);
+            std::string luaClass = ScriptUtils::GetClassNameFromFileName(luaFile);
 
             Stream stream;
 
