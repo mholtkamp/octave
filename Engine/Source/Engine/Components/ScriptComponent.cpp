@@ -1452,46 +1452,12 @@ Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, cons
 
 void ScriptComponent::CallFunction(const char* name, uint32_t numParams, const Datum** params, Datum* ret)
 {
-#if LUA_ENABLED
     if (mTableName != "")
     {
-        lua_State* L = GetLua();
-
-        // Grab the script instance table
-        lua_getglobal(L, mTableName.c_str());
-        OCT_ASSERT(lua_istable(L, -1));
-        lua_getfield(L, -1, name);
-
-
-        // Only call the function if it has been defined.
-        if (lua_isfunction(L, -1))
-        {
-            // Push self param
-            lua_pushvalue(L, -2);
-
-            for (uint32_t i = 0; i < numParams; ++i)
-            {
-                LuaPushDatum(L, *params[i]);
-            }
-
-            int totalParams = numParams + 1; // Always pass self table
-            int numReturns = (ret != nullptr) ? 1 : 0;
-            bool success = LuaFuncCall(totalParams, numReturns);
-
-            if (ret != nullptr && success)
-            {
-                LuaObjectToDatum(L, -1, *ret);
-                lua_pop(L, 1);
-            }
-        }
-        else
-        {
-            lua_pop(L, 1);
-        }
-
-        lua_pop(L, 1);
+        sExecutingScriptStack.push_back(this);
+        ScriptUtils::CallMethod(mTableName.c_str(), name, numParams, params, ret);
+        sExecutingScriptStack.pop_back();
     }
-#endif
 }
 
 Datum ScriptComponent::GetField(const char* key)

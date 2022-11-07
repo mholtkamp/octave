@@ -84,6 +84,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(Text);
     FORCE_LINK_CALL(TextField);
     FORCE_LINK_CALL(VerticalList);
+    FORCE_LINK_CALL(ScriptWidget);
     FORCE_LINK_CALL(Widget);
 }
 

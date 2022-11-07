@@ -227,3 +227,46 @@ uint32_t ScriptUtils::GetNextScriptInstanceNumber()
     ++sNumScriptInstances;
     return retNum;
 }
+
+void ScriptUtils::CallMethod(const char* tableName, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret)
+{
+#if LUA_ENABLED
+    lua_State* L = GetLua();
+
+    OCT_ASSERT(tableName != nullptr);
+    OCT_ASSERT(*tableName != '\0');
+
+    // Grab the script instance table
+    lua_getglobal(L, tableName);
+    OCT_ASSERT(lua_istable(L, -1));
+    lua_getfield(L, -1, funcName);
+
+    // Only call the function if it has been defined.
+    if (lua_isfunction(L, -1))
+    {
+        // Push self param
+        lua_pushvalue(L, -2);
+
+        for (uint32_t i = 0; i < numParams; ++i)
+        {
+            LuaPushDatum(L, *params[i]);
+        }
+
+        int totalParams = numParams + 1; // Always pass self table
+        int numReturns = (ret != nullptr) ? 1 : 0;
+        bool success = CallLuaFunc(totalParams, numReturns);
+
+        if (ret != nullptr && success)
+        {
+            LuaObjectToDatum(L, -1, *ret);
+            lua_pop(L, 1);
+        }
+    }
+    else
+    {
+        lua_pop(L, 1);
+    }
+
+    lua_pop(L, 1);
+#endif
+}

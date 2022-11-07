@@ -19,6 +19,9 @@ public:
     static bool RunScript(const char* fileName, Datum* ret = nullptr);
 
     static uint32_t GetNextScriptInstanceNumber();
+
+    static void CallMethod(const char* tableName, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret);
+
 private:
 
     static std::unordered_set<std::string> sLoadedLuaFiles;
