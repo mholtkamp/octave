@@ -36,10 +36,21 @@ Widget::Widget() :
 
 Widget::~Widget()
 {
-    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
     {
-        delete mChildren[i];
-        mChildren[i] = nullptr;
+        // Script-owned widgets are managed by Lua.
+        // It's possible that this could cause some weird chain
+        // of references that take multiple garbage collection iterations
+        // to fully free up the memory held by child script widgets.
+        if (mChildren[i]->IsScriptOwned())
+        {
+            RemoveChild(i);
+        }
+        else
+        {
+            delete mChildren[i];
+            mChildren[i] = nullptr;
+        }
     }
 
     mChildren.clear();

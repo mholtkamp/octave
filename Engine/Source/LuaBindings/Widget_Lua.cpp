@@ -56,7 +56,7 @@ int Widget_Lua::CreateNew(lua_State* L)
     return CreateNew(L, className);
 }
 
-int Widget_Lua::CreateNew(lua_State* L, const char* className)
+int Widget_Lua::CreateNew(lua_State* L, const char* className, Widget** outWidget)
 {
     Widget* widget = Widget::CreateInstance(className);
 
@@ -71,6 +71,11 @@ int Widget_Lua::CreateNew(lua_State* L, const char* className)
     {
         LogError("Failed to instantiate widget class %s", className);
         lua_pushnil(L);
+    }
+
+    if (outWidget != nullptr)
+    {
+        *outWidget = widget;
     }
 
     return 1;
@@ -93,6 +98,23 @@ int Widget_Lua::Destroy(lua_State* L)
     }
 
     return 0;
+}
+
+int Widget_Lua::CreateChildWidget(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+    const char* typeName = CHECK_STRING(L, 2);
+
+    Widget* childWidget =  Widget::CreateInstance(typeName);
+
+    if (childWidget != nullptr)
+    {
+        widget->AddChild(childWidget);
+    }
+
+    Widget_Lua::Create(L, childWidget);
+
+    return 1;
 }
 
 int Widget_Lua::GetRect(lua_State* L)
@@ -766,6 +788,9 @@ void Widget_Lua::Bind()
 
     lua_pushcfunction(L, Destroy);
     lua_setfield(L, mtIndex, "__gc");
+
+    lua_pushcfunction(L, CreateChildWidget);
+    lua_setfield(L, mtIndex, "CreateChildWidget");
 
     lua_pushcfunction(L, GetRect);
     lua_setfield(L, mtIndex, "GetRect");

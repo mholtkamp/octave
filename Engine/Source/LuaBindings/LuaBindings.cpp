@@ -55,6 +55,7 @@
 #include "LuaBindings/Selector_Lua.h"
 #include "LuaBindings/TextField_Lua.h"
 #include "LuaBindings/VerticalList_Lua.h"
+#include "LuaBindings/ScriptWidget_Lua.h"
 #include "LuaBindings/ActorRef_Lua.h"
 #include "LuaBindings/ComponentRef_Lua.h"
 #include "LuaBindings/Stream_Lua.h"
@@ -130,6 +131,7 @@ void BindLuaInterface()
     ComboBox_Lua::Bind();
     TextField_Lua::Bind();
     VerticalList_Lua::Bind();
+    ScriptWidget_Lua::Bind();
 
     Misc_Lua::BindMisc();
 

@@ -16,9 +16,10 @@ struct Widget_Lua
 
     static int Create(lua_State* L, Widget* widget);
     static int CreateNew(lua_State* L);
-    static int CreateNew(lua_State* L, const char* className);
+    static int CreateNew(lua_State* L, const char* className, Widget** outWidget = nullptr);
     static int Destroy(lua_State* L);
 
+    static int CreateChildWidget(lua_State* L);
     static int GetRect(lua_State* L);
     static int SetX(lua_State* L);
     static int SetY(lua_State* L);
