@@ -69,8 +69,6 @@ Datum LuaObjectToDatum(lua_State* L, int idx);
 void LuaObjectToDatum(lua_State* L, int idx, Datum& datum);
 #endif
 
-bool RunScript(const char* scriptName, Datum* ret = nullptr);
-
 glm::vec3 EnforceEulerRange(const glm::vec3& eulerAngles);
 
 inline glm::vec3 BulletToGlm(const btVector3& vector3)

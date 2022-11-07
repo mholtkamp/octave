@@ -548,11 +548,6 @@ void LuaObjectToDatum(lua_State* L, int idx, Datum& datum)
 }
 #endif
 
-bool RunScript(const char* fileName, Datum* ret)
-{
-    return ScriptComponent::RunScript(fileName, ret);
-}
-
 glm::vec3 EnforceEulerRange(const glm::vec3& eulerAngles)
 {
     glm::vec3 retAngles = eulerAngles;

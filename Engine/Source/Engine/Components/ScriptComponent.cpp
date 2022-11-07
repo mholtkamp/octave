@@ -20,14 +20,8 @@
 
 DEFINE_COMPONENT(ScriptComponent)
 
-std::set<std::string> ScriptComponent::sLoadedLuaFiles;
 std::unordered_map<std::string, ScriptComponent*> ScriptComponent::sTableToCompMap;
 std::unordered_map<std::string, ScriptNetFuncMap> ScriptComponent::sScriptNetFuncMap;
-
-EmbeddedFile* ScriptComponent::sEmbeddedScripts = nullptr;
-uint32_t ScriptComponent::sNumEmbeddedScripts = 0;
-
-uint32_t ScriptComponent::sNumScriptInstances = 0;
 
 std::vector<ScriptComponent*> ScriptComponent::sExecutingScriptStack;
 
@@ -66,24 +60,6 @@ bool ScriptComponent::HandlePropChange(Datum* datum, const void* newValue)
 #endif
 
     return success;
-}
-
-std::string ScriptComponent::GetClassNameFromFileName(const std::string& fileName)
-{
-    std::string className = fileName;
-    size_t dotLoc = className.find_last_of('.');
-    if (dotLoc != std::string::npos)
-    {
-        className = className.substr(0, dotLoc);
-    }
-
-    size_t slashLoc = className.find_last_of('/');
-    if (slashLoc != std::string::npos)
-    {
-        className = className.substr(slashLoc + 1);
-    }
-
-    return className;
 }
 
 bool ScriptComponent::HandleScriptPropChange(Datum* datum, const void* newValue)
@@ -1136,55 +1112,17 @@ void ScriptComponent::StopScript()
     DestroyScriptInstance();
 }
 
-bool ScriptComponent::LoadScriptFile(const std::string& fileName, const std::string& className)
-{
-    bool successful = false;
-
-#if LUA_ENABLED
-    lua_State* L = GetLua();
-    successful = ScriptComponent::RunScript(fileName.c_str());
-
-    if (successful)
-    {
-        // Assign the __index metamethod to itself, so that tables with the class metatable
-        // will have access to its methods/properties.
-        lua_getglobal(L, className.c_str());
-        OCT_ASSERT(lua_istable(L, -1));
-
-        lua_pushvalue(L, -1);
-        lua_setfield(L, -2, "__index");
-
-        lua_pop(L, 1);
-
-        sLoadedLuaFiles.insert(className);
-        successful = true;
-    }
-#endif
-
-    return successful;
-}
-
 bool ScriptComponent::ReloadScriptFile(const std::string& fileName, bool restartScript)
 {
-    std::string className = GetClassNameFromFileName(fileName);
+    bool success = ScriptUtils::ReloadScriptFile(fileName);
 
+    std::string className = ScriptUtils::GetClassNameFromFileName(fileName);
+
+    auto it = sScriptNetFuncMap.find(className);
+    if (it != sScriptNetFuncMap.end())
     {
-        auto it = sLoadedLuaFiles.find(className);
-        if (it != sLoadedLuaFiles.end())
-        {
-            sLoadedLuaFiles.erase(it);
-        }
+        sScriptNetFuncMap.erase(it);
     }
-
-    {
-        auto it = sScriptNetFuncMap.find(className);
-        if (it != sScriptNetFuncMap.end())
-        {
-            sScriptNetFuncMap.erase(it);
-        }
-    }
-
-    bool success = LoadScriptFile(fileName, className);
 
     if (success && restartScript)
     {
@@ -1192,26 +1130,6 @@ bool ScriptComponent::ReloadScriptFile(const std::string& fileName, bool restart
     }
 
     return success;
-}
-
-void ScriptComponent::ReloadAllScriptFiles()
-{
-    std::vector<std::string> fileNames;
-
-    for (const std::string& fileName : sLoadedLuaFiles)
-    {
-        fileNames.push_back(fileName);
-    }
-
-    sLoadedLuaFiles.clear();
-
-    for (uint32_t i = 0; i < fileNames.size(); ++i)
-    {
-        std::string className = GetClassNameFromFileName(fileNames[i]);
-        LoadScriptFile(fileNames[i], className);
-    }
-
-    // This doesn't re-gather the NetFuncs for this script file.
 }
 
 ScriptComponent* ScriptComponent::FindScriptCompFromTableName(const std::string& tableName)
@@ -1665,120 +1583,6 @@ bool ScriptComponent::OnRepHandler(Datum* datum, const void* newValue)
     return true;
 }
 
-void ScriptComponent::SetEmbeddedScripts(EmbeddedFile* embeddedScripts, uint32_t numEmbeddedScripts)
-{
-    sEmbeddedScripts = embeddedScripts;
-    sNumEmbeddedScripts = numEmbeddedScripts;
-}
-
-EmbeddedFile* ScriptComponent::FindEmbeddedScript(const std::string& className)
-{
-    EmbeddedFile* retFile = nullptr;
-
-    for (uint32_t i = 0; i < sNumEmbeddedScripts; ++i)
-    {
-        if (className == sEmbeddedScripts[i].mName)
-        {
-            retFile = &sEmbeddedScripts[i];
-            break;
-        }
-    }
-
-    return retFile;
-}
-
-bool ScriptComponent::RunScript(const char* fileName, Datum* ret)
-{
-    bool successful = false;
-
-#if LUA_ENABLED
-    lua_State* L = GetLua();
-
-    std::string relativeFileName = fileName;
-
-    if (relativeFileName.length() < 4 ||
-        relativeFileName.compare(relativeFileName.length() - 4, 4, ".lua") != 0)
-    {
-        relativeFileName.append(".lua");
-    }
-
-    bool fileExists = false;
-    std::string className = ScriptComponent::GetClassNameFromFileName(fileName);
-    EmbeddedFile* embeddedScript = nullptr;
-
-    if (sEmbeddedScripts != nullptr &&
-        sNumEmbeddedScripts > 0)
-    {
-        embeddedScript = ScriptComponent::FindEmbeddedScript(className);
-        fileExists = (embeddedScript != nullptr);
-    }
-
-    std::string fullFileName = GetEngineState()->mProjectDirectory + "Scripts/" + relativeFileName;
-
-    if (!fileExists)
-    {
-        fileExists = DoesFileExist(fullFileName.c_str());
-    }
-
-    if (!fileExists)
-    {
-        // Fall back to Engine script directory
-        fullFileName = std::string("Engine/Scripts/") + relativeFileName;
-        fileExists = DoesFileExist(fullFileName.c_str());
-    }
-
-    if (fileExists)
-    {
-        int numResults = (ret != nullptr) ? 1 : 0;
-
-        if (embeddedScript != nullptr)
-        {
-            LogDebug("Loading embedded script: %s", className.c_str());
-
-            std::string luaString;
-            luaString.assign(embeddedScript->mData, embeddedScript->mSize);
-
-            if (luaL_dostring(L, luaString.c_str()) == LUA_OK)
-            {
-                successful = true;
-            }
-            else
-            {
-                LogError("Lua Error: %s\n", lua_tostring(L, -1));
-                LogError("Couldn't load embedded script file %s", className.c_str());
-            }
-        }
-        else
-        {
-            if (luaL_loadfile(L, fullFileName.c_str()) == LUA_OK)
-            {
-                if (lua_pcall(L, 0, numResults, 0) == LUA_OK)
-                {
-                    successful = true;
-                }
-                else
-                {
-                    LogError("Lua Error: %s\n", lua_tostring(L, -1));
-                }
-            }
-            else
-            {
-                LogError("Lua Error: %s\n", lua_tostring(L, -1));
-                LogError("Couldn't load script file %s", fullFileName.c_str());
-            }
-        }
-
-        if (successful && ret != nullptr)
-        {
-            LuaObjectToDatum(L, -1, *ret);
-            lua_pop(L, 1);
-        }
-    }
-#endif
-
-    return successful;
-}
-
 void ScriptComponent::CreateScriptInstance()
 {
 #if LUA_ENABLED
@@ -1795,15 +1599,12 @@ void ScriptComponent::CreateScriptInstance()
         // Determine the class name the script should use
         // For instance, if the filename is Characters/Monster/Goblin.lua,
         // then the classname should be Goblin.
-        mClassName = GetClassNameFromFileName(mFileName);
+        mClassName = ScriptUtils::GetClassNameFromFileName(mFileName);
 
-        if (sLoadedLuaFiles.find(mClassName) == sLoadedLuaFiles.end())
+        classLoaded = ScriptUtils::IsScriptLoaded(mClassName);
+        if (!classLoaded)
         {
-            classLoaded = LoadScriptFile(mFileName, mClassName);
-        }
-        else
-        {
-            classLoaded = true;
+            classLoaded = ScriptUtils::LoadScriptFile(mFileName, mClassName);
         }
 
         if (classLoaded)
@@ -1840,8 +1641,7 @@ void ScriptComponent::CreateScriptInstance()
             lua_setfield(L, instanceTableIdx, "component");
 
             // Save the new table as a global so it doesnt get GCed.
-            mTableName = mClassName + "_" + std::to_string(sNumScriptInstances);
-            ++sNumScriptInstances;
+            mTableName = mClassName + "_" + std::to_string(ScriptUtils::GetNextScriptInstanceNumber());
             lua_setglobal(L, mTableName.c_str());
 
             mTickEnabled = CheckIfFunctionExists("Tick");
@@ -1933,18 +1733,11 @@ void ScriptComponent::DestroyScriptInstance()
 
 bool ScriptComponent::LuaFuncCall(int numArgs, int numResults)
 {
-#if LUA_ENABLED
-    lua_State* L = GetLua();
     bool success = true;
     sExecutingScriptStack.push_back(this);
-    if (lua_pcall(L, numArgs, numResults, 0))
-    {
-        LogError("Lua Error: %s\n", lua_tostring(L, -1));
-        success = false;
-    }
+    ScriptUtils::CallLuaFunc(numArgs, numResults);
     sExecutingScriptStack.pop_back();
     return success;
-#endif
 }
 
 void ScriptComponent::CallTick(float deltaTime)
