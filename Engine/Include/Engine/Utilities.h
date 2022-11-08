@@ -35,6 +35,7 @@ void DestroyCollisionShape(btCollisionShape* shape);
 
 uint32_t OctHashString(const char* key);
 
+Property* FindProperty(std::vector<Property>& props, const std::string& name);
 void CopyPropertyValues(std::vector<Property>& dstProps, const std::vector<Property>& srcProps);
 
 uint32_t GetStringSerializationSize(const std::string& str);

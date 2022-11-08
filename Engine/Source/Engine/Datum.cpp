@@ -1150,7 +1150,12 @@ bool Datum::operator==(const Datum& other) const
                 return false;
             }
             break;
-        // DatumType::Asset doesn't need this, but DatumType::Actor might? Maybe not if its just a pointer like AssetRef
+        case DatumType::Asset:
+            if (mData.as[i] != other.mData.as[i])
+            {
+                return false;
+            }
+            break;
         case DatumType::Table:
             if (mData.t[i] != other.mData.t[i])
             {
