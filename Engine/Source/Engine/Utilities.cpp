@@ -237,6 +237,22 @@ uint32_t OctHashString(const char* key)
     return h;
 }
 
+Property* FindProperty(std::vector<Property>& props, const std::string& name)
+{
+    Property* prop = nullptr;
+
+    for (uint32_t i = 0; i < props.size(); ++i)
+    {
+        if (props[i].mName == name)
+        {
+            prop = &props[i];
+            break;
+        }
+    }
+
+    return prop;
+}
+
 void CopyPropertyValues(std::vector<Property>& dstProps, const std::vector<Property>& srcProps)
 {
     for (uint32_t i = 0; i < srcProps.size(); ++i)

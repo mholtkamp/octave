@@ -129,10 +129,30 @@ void Blueprint::Create(Actor* srcActor)
     std::vector<Property> actorProps;
     srcActor->GatherProperties(actorProps);
 
-    mActorProps.resize(actorProps.size());
-    for (uint32_t i = 0; i < actorProps.size(); ++i)
+    // Create a default actor so that we only save non-default properties.
+    // This reduces the size of the blueprint and reduces Instantiate time.
     {
-        mActorProps[i].DeepCopy(actorProps[i], true);
+        Actor* defaultActor = Actor::CreateInstance(mActorType);
+        std::vector<Property> defaultActorProps;
+        defaultActor->GatherProperties(defaultActorProps);
+
+        mActorProps.reserve(actorProps.size());
+        for (uint32_t i = 0; i < actorProps.size(); ++i)
+        {
+            Property* defaultProp = FindProperty(defaultActorProps, actorProps[i].mName);
+
+            if (defaultProp == nullptr ||
+                actorProps[i].mType == DatumType::Asset ||
+                actorProps[i] != *defaultProp)
+            {
+                // Always save asset properties since they are needed to dependency loading.
+                mActorProps.push_back(Property());
+                mActorProps.back().DeepCopy(actorProps[i], true);
+            }
+        }
+
+        delete defaultActor;
+        defaultActor = nullptr;
     }
 
     const std::vector<Component*>& comps = srcActor->GetComponents();
@@ -145,13 +165,25 @@ void Blueprint::Create(Actor* srcActor)
         mComponents[i].mType = comps[i]->GetType();
         mComponents[i].mDefault = comps[i]->IsDefault();
 
+        Component* defaultComp = Component::CreateInstance(mComponents[i].mType);
+        std::vector<Property> defaultCompProps;
+        defaultComp->GatherProperties(defaultCompProps);
+
         std::vector<Property> compProps;
         comps[i]->GatherProperties(compProps);
 
-        mComponents[i].mProperties.resize(compProps.size());
+        mComponents[i].mProperties.reserve(compProps.size());
         for (uint32_t p = 0; p < compProps.size(); ++p)
         {
-            mComponents[i].mProperties[p].DeepCopy(compProps[p], true);
+            Property* defaultProp = FindProperty(defaultCompProps, compProps[p].mName);
+            if (defaultProp == nullptr ||
+                compProps[p].mType == DatumType::Asset ||
+                compProps[p] != *defaultProp)
+            {
+                // Always save asset properties since they are needed to dependency loading.
+                mComponents[i].mProperties.push_back(Property());
+                mComponents[i].mProperties.back().DeepCopy(compProps[p], true);
+            }
         }
 
         if (comps[i]->IsTransformComponent())
@@ -170,6 +202,9 @@ void Blueprint::Create(Actor* srcActor)
         {
             mComponents[i].mParentName = "";
         }
+
+        delete defaultComp;
+        defaultComp = nullptr;
     }
 
     OCT_ASSERT(srcActor->GetRootComponent());
