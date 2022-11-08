@@ -580,26 +580,26 @@ void Actor::SetName(const std::string& name)
     mName = name;
 }
 
-void Actor::Attach(Actor* actor)
+void Actor::Attach(Actor* actor, bool keepWorldTransform)
 {
     if (actor != nullptr)
     {
-        GetRootComponent()->Attach(actor->GetRootComponent());
+        GetRootComponent()->Attach(actor->GetRootComponent(), keepWorldTransform);
     }
     else
     {
-        GetRootComponent()->Attach(nullptr);
+        GetRootComponent()->Attach(nullptr, keepWorldTransform);
     }
 }
 
-void Actor::Attach(TransformComponent* comp)
+void Actor::Attach(TransformComponent* comp, bool keepWorldTransform)
 {
-    GetRootComponent()->Attach(comp);
+    GetRootComponent()->Attach(comp, keepWorldTransform);
 }
 
-void Actor::Detach()
+void Actor::Detach(bool keepWorldTransform)
 {
-    GetRootComponent()->Attach(nullptr);
+    GetRootComponent()->Attach(nullptr, keepWorldTransform);
 }
 
 void Actor::SetPendingDestroy(bool pendingDestroy)
