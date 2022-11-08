@@ -118,16 +118,22 @@ int Actor_Lua::Attach(lua_State* L)
 {
     Actor* actor = CHECK_ACTOR(L, 1);
     luaL_checktype(L, 2, LUA_TUSERDATA);
+    bool keepWorldTransform = false;
+
+    if (!lua_isnone(L, 3))
+    {
+        keepWorldTransform = CHECK_BOOLEAN(L, 3);
+    }
 
     if (CheckClassFlag(L, 2, ACTOR_LUA_FLAG))
     {
         Actor* otherActor = CHECK_ACTOR(L, 2);
-        actor->Attach(otherActor);
+        actor->Attach(otherActor, keepWorldTransform);
     }
     else
     {
         TransformComponent* comp = CHECK_TRANSFORM_COMPONENT(L, 2);
-        actor->Attach(comp);
+        actor->Attach(comp, keepWorldTransform);
     }
 
     return 0;
@@ -136,8 +142,13 @@ int Actor_Lua::Attach(lua_State* L)
 int Actor_Lua::Detach(lua_State* L)
 {
     Actor* actor = CHECK_ACTOR(L, 1);
+    bool keepWorldTransform = false;
+    if (!lua_isnone(L, 2))
+    {
+        keepWorldTransform = CHECK_BOOLEAN(L, 2);
+    }
 
-    actor->Detach();
+    actor->Detach(keepWorldTransform);
 
     return 0;
 }

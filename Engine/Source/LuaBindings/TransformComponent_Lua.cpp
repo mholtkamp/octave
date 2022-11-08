@@ -10,12 +10,18 @@ int TransformComponent_Lua::Attach(lua_State* L)
 {
     TransformComponent* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
     TransformComponent* newParent = nullptr;
+    bool keepWorldTransform = false;
+
     if (!lua_isnil(L, 2))
     {
         newParent = CHECK_TRANSFORM_COMPONENT(L, 2);
     }
+    if (!lua_isnone(L, 3))
+    {
+        keepWorldTransform = CHECK_BOOLEAN(L, 3);
+    }
 
-    comp->Attach(newParent);
+    comp->Attach(newParent, keepWorldTransform);
 
     return 0;
 }
@@ -25,8 +31,14 @@ int TransformComponent_Lua::AttachToBone(lua_State* L)
     TransformComponent* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
     SkeletalMeshComponent* newParent = CHECK_SKELETAL_MESH_COMPONENT(L, 2);
     const char* boneName = CHECK_STRING(L, 3);
+    bool keepWorldTransform = false;
 
-    comp->AttachToBone(newParent, boneName);
+    if (!lua_isnone(L, 4))
+    {
+        keepWorldTransform = CHECK_BOOLEAN(L, 4);
+    }
+
+    comp->AttachToBone(newParent, boneName, keepWorldTransform);
 
     return 0;
 }

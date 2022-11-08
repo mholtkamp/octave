@@ -116,9 +116,9 @@ public:
     const std::string& GetName() const;
     void SetName(const std::string& name);
 
-    void Attach(Actor* actor);
-    void Attach(TransformComponent* comp);
-    void Detach();
+    void Attach(Actor* actor, bool keepWorldTransform = false);
+    void Attach(TransformComponent* comp, bool keepWorldTransform = false);
+    void Detach(bool keepWorldTransform = false);
 
     void SetPendingDestroy(bool pendingDestroy);
     bool IsPendingDestroy() const;
