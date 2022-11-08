@@ -91,7 +91,18 @@ void TransformComponent::Destroy()
     // an invalid pointer on the other actor.
     for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
     {
-        RemoveChild(i);
+        if (mChildren[i]->GetOwner() != GetOwner())
+        {
+            // I think in most cases, when a component is attached from a different actor,
+            // and this component is being destroyed, we want to keep the orphaned component
+            // where it is in world space. Snapping back to the origin looks pretty bad :/
+            mChildren[i]->Attach(nullptr, true);
+        }
+        else
+        {
+            // Simpler version which doesn't worry about preserving world transform.
+            RemoveChild(i);
+        }
     }
 
     // Detach from parent. If this component is attached to another actor's component,
@@ -124,7 +135,7 @@ bool TransformComponent::IsTransformComponent() const
     return true;
 }
 
-void TransformComponent::Attach(TransformComponent* parent)
+void TransformComponent::Attach(TransformComponent* parent, bool keepWorldTransform)
 {
     // Can't attach to self.
     OCT_ASSERT(parent != this);
@@ -132,7 +143,16 @@ void TransformComponent::Attach(TransformComponent* parent)
     // Detach from parent first
     if (mParent != nullptr)
     {
-        mParent->RemoveChild(this);
+        if (keepWorldTransform)
+        {
+            glm::mat4 transform = GetTransform();
+            mParent->RemoveChild(this);
+            SetTransform(transform);
+        }
+        else
+        {
+            mParent->RemoveChild(this);
+        }
     }
 
     mParentBoneIndex = -1;
@@ -140,7 +160,16 @@ void TransformComponent::Attach(TransformComponent* parent)
     // Attach to new parent
     if (parent != nullptr)
     {
-        parent->AddChild(this);
+        if (keepWorldTransform)
+        {
+            glm::mat4 transform = GetTransform();
+            parent->AddChild(this);
+            SetTransform(transform);
+        }
+        else
+        {
+            parent->AddChild(this);
+        }
     }
 
     MarkTransformDirty();
@@ -199,16 +228,27 @@ void TransformComponent::RemoveChild(int32_t index)
     mChildren.erase(mChildren.begin() + index);
 }
 
-void TransformComponent::AttachToBone(SkeletalMeshComponent* parent, const char* boneName)
+void TransformComponent::AttachToBone(SkeletalMeshComponent* parent, const char* boneName, bool keepWorldTransform)
 {
-    Attach(parent);
-    mParentBoneIndex = parent->FindBoneIndex(boneName);
+    int32_t parentBoneIndex = parent->FindBoneIndex(boneName);
+    AttachToBone(parent, parentBoneIndex, keepWorldTransform);
 }
 
-void TransformComponent::AttachToBone(SkeletalMeshComponent* parent, int32_t boneIndex)
+void TransformComponent::AttachToBone(SkeletalMeshComponent* parent, int32_t boneIndex, bool keepWorldTransform)
 {
+    glm::mat4 origWorldTransform;
+    if (keepWorldTransform)
+    {
+        origWorldTransform = GetTransform();
+    }
+
     Attach(parent);
     mParentBoneIndex = boneIndex;
+
+    if (keepWorldTransform)
+    {
+        SetTransform(origWorldTransform);
+    }
 }
 
 TransformComponent * TransformComponent::GetParent()

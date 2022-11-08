@@ -30,13 +30,13 @@ public:
 
     virtual bool IsTransformComponent() const override;
 
-    void Attach(TransformComponent* parent);
+    void Attach(TransformComponent* parent, bool keepWorldTransform = false);
     void AddChild(TransformComponent* child);
     void RemoveChild(TransformComponent* child);
     void RemoveChild(int32_t index);
 
-    void AttachToBone(SkeletalMeshComponent* parent, const char* boneName);
-    void AttachToBone(SkeletalMeshComponent* parent, int32_t boneIndex);
+    void AttachToBone(SkeletalMeshComponent* parent, const char* boneName, bool keepWorldTransform = false);
+    void AttachToBone(SkeletalMeshComponent* parent, int32_t boneIndex, bool keepWorldTransform = false);
 
     TransformComponent* GetParent();
     const std::vector<TransformComponent*>& GetChildren() const;
