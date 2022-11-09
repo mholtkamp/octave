@@ -34,6 +34,9 @@ void SphereComponent_Lua::Bind()
         SPHERE_COMPONENT_LUA_FLAG,
         PRIMITIVE_COMPONENT_LUA_NAME);
 
+    lua_pushcfunction(L, Component_Lua::Destroy);
+    lua_setfield(L, mtIndex, "__gc");
+
     lua_pushcfunction(L, GetRadius);
     lua_setfield(L, mtIndex, "GetRadius");
 

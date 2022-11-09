@@ -41,6 +41,14 @@ int Component_Lua::Create(lua_State* L, Component* component)
     return 1;
 }
 
+int Component_Lua::Destroy(lua_State* L)
+{
+    CHECK_COMPONENT(L, 1);
+    Component_Lua* compLua = (Component_Lua*)lua_touserdata(L, 1);
+    compLua->~Component_Lua();
+    return 0;
+}
+
 int Component_Lua::IsValid(lua_State* L)
 {
 #if LUA_SAFE_COMPONENT
@@ -180,6 +188,9 @@ void Component_Lua::Bind()
         COMPONENT_LUA_NAME,
         COMPONENT_LUA_FLAG,
         nullptr);
+
+    lua_pushcfunction(L, Destroy);
+    lua_setfield(L, mtIndex, "__gc");
 
     lua_pushcfunction(L, IsValid);
     lua_setfield(L, mtIndex, "IsValid");

@@ -58,6 +58,9 @@ void StaticMeshComponent_Lua::Bind()
         STATIC_MESH_COMPONENT_LUA_FLAG,
         MESH_COMPONENT_LUA_NAME);
 
+    lua_pushcfunction(L, Component_Lua::Destroy);
+    lua_setfield(L, mtIndex, "__gc");
+
     lua_pushcfunction(L, SetStaticMesh);
     lua_setfield(L, mtIndex, "SetStaticMesh");
 

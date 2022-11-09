@@ -33,6 +33,9 @@ void DirectionalLightComponent_Lua::Bind()
         DIRECTIONAL_LIGHT_COMPONENT_LUA_FLAG,
         LIGHT_COMPONENT_LUA_NAME);
 
+    lua_pushcfunction(L, Component_Lua::Destroy);
+    lua_setfield(L, mtIndex, "__gc");
+
     lua_pushcfunction(L, GetDirection);
     lua_setfield(L, mtIndex, "GetDirection");
 

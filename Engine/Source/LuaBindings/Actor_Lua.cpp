@@ -46,6 +46,14 @@ int Actor_Lua::Create(lua_State* L, Actor* actor)
     return 1;
 }
 
+int Actor_Lua::Destroy(lua_State* L)
+{
+    CHECK_ACTOR(L, 1);
+    Actor_Lua* actorLua = (Actor_Lua*)lua_touserdata(L, 1);
+    actorLua->~Actor_Lua();
+    return 0;
+}
+
 int Actor_Lua::IsValid(lua_State* L)
 {
 #if LUA_SAFE_ACTOR
@@ -547,6 +555,9 @@ void Actor_Lua::Bind()
         ACTOR_LUA_NAME,
         ACTOR_LUA_FLAG, 
         nullptr);
+
+    lua_pushcfunction(L, Destroy);
+    lua_setfield(L, mtIndex, "__gc");
 
     lua_pushcfunction(L, Actor_Lua::CreateComponent);
     lua_setfield(L, mtIndex, "CreateComponent");
