@@ -9,6 +9,7 @@
 #include "Engine.h"
 #include "ObjectRef.h"
 #include "NetworkManager.h"
+#include "LuaBindings/Actor_Lua.h"
 #include "Assets/Blueprint.h"
 
 #include "Components/PrimitiveComponent.h"
@@ -491,6 +492,9 @@ int Actor::CreateActorMetatable(lua_State* L, const char* className, const char*
             className,
             classFlag,
             parentName);
+
+        lua_pushcfunction(L, Actor_Lua::Destroy);
+        lua_setfield(L, mtIndex, "__gc");
 
         return mtIndex;
 

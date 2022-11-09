@@ -9,10 +9,13 @@
 void ShadowMeshComponent_Lua::Bind()
 {
     lua_State* L = GetLua();
-    CreateClassMetatable(
+    int mtIndex = CreateClassMetatable(
         SHADOW_MESH_COMPONENT_LUA_NAME,
         SHADOW_MESH_COMPONENT_LUA_FLAG,
         STATIC_MESH_COMPONENT_LUA_NAME);
+
+    lua_pushcfunction(L, Component_Lua::Destroy);
+    lua_setfield(L, mtIndex, "__gc");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

@@ -448,6 +448,9 @@ void PrimitiveComponent_Lua::Bind()
         PRIMITIVE_COMPONENT_LUA_FLAG,
         TRANSFORM_COMPONENT_LUA_NAME);
 
+    lua_pushcfunction(L, Component_Lua::Destroy);
+    lua_setfield(L, mtIndex, "__gc");
+
     lua_pushcfunction(L, EnablePhysics);
     lua_setfield(L, mtIndex, "EnablePhysics");
 

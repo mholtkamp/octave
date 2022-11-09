@@ -20,6 +20,7 @@ struct Actor_Lua
 #endif
 
     static int Create(lua_State* L, Actor* actor);
+    static int Destroy(lua_State* L);
 
     static int IsValid(lua_State* L);
 
