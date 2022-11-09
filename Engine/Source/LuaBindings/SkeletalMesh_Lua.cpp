@@ -124,6 +124,9 @@ void SkeletalMesh_Lua::Bind()
         SKELETAL_MESH_LUA_FLAG,
         ASSET_LUA_NAME);
 
+    lua_pushcfunction(L, Asset_Lua::Destroy);
+    lua_setfield(L, mtIndex, "__gc");
+
     lua_pushcfunction(L, GetMaterial);
     lua_setfield(L, mtIndex, "GetMaterial");
 
