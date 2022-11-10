@@ -21,6 +21,7 @@ public:
     static uint32_t GetNextScriptInstanceNumber();
 
     static void CallMethod(const char* tableName, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret);
+    static void SetBreakOnScriptError(bool enableBreak);
 
 private:
 
@@ -28,4 +29,6 @@ private:
     static EmbeddedFile* sEmbeddedScripts;
     static uint32_t sNumEmbeddedScripts;
     static uint32_t sNumScriptInstances;
+
+    static bool sBreakOnScriptError;
 };

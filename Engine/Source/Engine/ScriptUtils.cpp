@@ -4,6 +4,7 @@ std::unordered_set<std::string> ScriptUtils::sLoadedLuaFiles;
 EmbeddedFile* ScriptUtils::sEmbeddedScripts = nullptr;
 uint32_t ScriptUtils::sNumEmbeddedScripts = 0;
 uint32_t ScriptUtils::sNumScriptInstances = 0;
+bool ScriptUtils::sBreakOnScriptError = false;
 
 bool ScriptUtils::IsScriptLoaded(const std::string& className)
 {
@@ -34,6 +35,7 @@ bool ScriptUtils::CallLuaFunc(int numArgs, int numResults)
     if (lua_pcall(L, numArgs, numResults, 0))
     {
         LogError("Lua Error: %s\n", lua_tostring(L, -1));
+        if (sBreakOnScriptError) { OCT_ASSERT(0); }
         success = false;
     }
 #endif
@@ -187,6 +189,8 @@ bool ScriptUtils::RunScript(const char* fileName, Datum* ret)
             else
             {
                 LogError("Lua Error: %s\n", lua_tostring(L, -1));
+                if (sBreakOnScriptError) { OCT_ASSERT(0); }
+
                 LogError("Couldn't load embedded script file %s", className.c_str());
             }
         }
@@ -201,11 +205,14 @@ bool ScriptUtils::RunScript(const char* fileName, Datum* ret)
                 else
                 {
                     LogError("Lua Error: %s\n", lua_tostring(L, -1));
+                    if (sBreakOnScriptError) { OCT_ASSERT(0); }
                 }
             }
             else
             {
                 LogError("Lua Error: %s\n", lua_tostring(L, -1));
+                if (sBreakOnScriptError) { OCT_ASSERT(0); }
+
                 LogError("Couldn't load script file %s", fullFileName.c_str());
             }
         }
@@ -270,3 +277,9 @@ void ScriptUtils::CallMethod(const char* tableName, const char* funcName, uint32
     lua_pop(L, 1);
 #endif
 }
+
+void ScriptUtils::SetBreakOnScriptError(bool enableBreak)
+{
+    sBreakOnScriptError = enableBreak;
+}
+

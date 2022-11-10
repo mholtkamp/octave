@@ -14,6 +14,7 @@ struct Engine_Lua
     static int GetPlatform(lua_State* L);
     static int IsEditor(lua_State* L);
     static int Break(lua_State* L);
+    static int SetBreakOnScriptError(lua_State* L);
     static int IsPlayingInEditor(lua_State* L);
     static int ReloadAllScripts(lua_State* L);
     static int SetPaused(lua_State* L);
