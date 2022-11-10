@@ -12,18 +12,22 @@
 
 #include "Assertion.h"
 
-#if ASSET_REF_VECTOR
-std::vector<AssetRef*> AssetRef::sLiveAssetRefs;
+#if ASSET_LIVE_REF_TRACKING
+std::unordered_set<AssetRef*>& GetLiveRefMap()
+{
+    static std::unordered_set<AssetRef*> sLiveAssetRefs;
+    return sLiveAssetRefs;
+}
 
 void AssetRef::ReplaceReferencesToAsset(Asset* oldAsset, Asset* newAsset)
 {
     if (oldAsset != nullptr)
     {
-        for (uint32_t i = 0; i < sLiveAssetRefs.size(); ++i)
+        for (AssetRef* ref : GetLiveRefMap())
         {
-            if (sLiveAssetRefs[i]->mAsset == oldAsset)
+            if (ref->Get() == oldAsset)
             {
-                (*sLiveAssetRefs[i]) = newAsset;
+                *ref = newAsset;
             }
         }
     }
@@ -50,34 +54,20 @@ void AssetRef::EraseReferencesToAsset(Asset* asset)
 void AssetRef::AddLiveRef(AssetRef* ref)
 {
     // Ensure that we are not adding this ref a second time to the list.
-    for (uint32_t i = 0; i < sLiveAssetRefs.size(); ++i)
-    {
-        if (sLiveAssetRefs[i] == ref)
-        {
-            LogError("Duplicate Live Asset Ref");
-            OCT_ASSERT(0);
-        }
-    }
+    OCT_ASSERT(GetLiveRefMap().find(ref) == GetLiveRefMap().end());
 
-    sLiveAssetRefs.push_back(ref);
+    GetLiveRefMap().insert(ref);
 }
 
 void AssetRef::RemoveLiveRef(AssetRef* ref)
 {
-    for (uint32_t i = 0; i < sLiveAssetRefs.size(); ++i)
-    {
-        if (sLiveAssetRefs[i] == ref)
-        {
-            sLiveAssetRefs.erase(sLiveAssetRefs.begin() + i);
-            break;
-        }
-    }
+    GetLiveRefMap().erase(ref);
 }
 #endif
 
 AssetRef::AssetRef()
 {
-#if ASSET_REF_VECTOR
+#if ASSET_LIVE_REF_TRACKING
     AddLiveRef(this);
 #endif
 }
@@ -85,7 +75,7 @@ AssetRef::AssetRef()
 AssetRef::AssetRef(Asset* asset) :
     mAsset(asset)
 {
-#if ASSET_REF_VECTOR
+#if ASSET_LIVE_REF_TRACKING
     AddLiveRef(this);
 #endif
 
@@ -99,7 +89,7 @@ AssetRef::AssetRef(const AssetRef& src)
 {
     mAsset = src.mAsset;
 
-#if ASSET_REF_VECTOR
+#if ASSET_LIVE_REF_TRACKING
     AddLiveRef(this);
 #endif
 
@@ -129,7 +119,7 @@ AssetRef::~AssetRef()
         mAsset->DecrementRefCount();
     }
 
-#if ASSET_REF_VECTOR
+#if ASSET_LIVE_REF_TRACKING
     RemoveLiveRef(this);
 #endif
 }

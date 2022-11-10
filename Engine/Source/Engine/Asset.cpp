@@ -45,7 +45,7 @@ void Asset::Create()
 
 void Asset::Destroy()
 {
-#if ASSET_REF_VECTOR
+#if ASSET_LIVE_REF_TRACKING
     AssetRef::EraseReferencesToAsset(this);
 #endif
 }
