@@ -26,6 +26,22 @@ int ScriptWidget_Lua::CreateNew(lua_State* L)
     return 1;
 }
 
+int ScriptWidget_Lua::GetScript(lua_State* L)
+{
+    ScriptWidget* scriptWidget = CHECK_SCRIPT_WIDGET(L, 1);
+
+    if (scriptWidget->GetTableName() != "")
+    {
+        lua_getglobal(L, scriptWidget->GetTableName().c_str());
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+
+    return 1;
+}
+
 int ScriptWidget_Lua::SetFile(lua_State* L)
 {
     ScriptWidget* scriptWidget = CHECK_SCRIPT_WIDGET(L, 1);
@@ -76,6 +92,9 @@ void ScriptWidget_Lua::Bind()
 
     lua_pushcfunction(L, Widget_Lua::Destroy);
     lua_setfield(L, mtIndex, "__gc");
+
+    lua_pushcfunction(L, GetScript);
+    lua_setfield(L, mtIndex, "GetScript");
 
     lua_pushcfunction(L, SetFile);
     lua_setfield(L, mtIndex, "SetFile");
