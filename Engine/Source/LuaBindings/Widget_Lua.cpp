@@ -252,7 +252,7 @@ int Widget_Lua::SetPosition(lua_State* L)
     Widget* widget = CHECK_WIDGET(L, 1);
     glm::vec2 pos = { 0.0 , 0.0 };
     int numArgs = lua_gettop(L);
-    if (numArgs >= 2)
+    if (numArgs >= 3)
     {
         pos.x = CHECK_NUMBER(L, 2);
         pos.y = CHECK_NUMBER(L, 3);
@@ -272,7 +272,7 @@ int Widget_Lua::SetDimensions(lua_State* L)
     Widget* widget = CHECK_WIDGET(L, 1);
     glm::vec2 dim = { 0.0 , 0.0 };
     int numArgs = lua_gettop(L);
-    if (numArgs >= 2)
+    if (numArgs >= 3)
     {
         dim.x = CHECK_NUMBER(L, 2);
         dim.y = CHECK_NUMBER(L, 3);
@@ -328,7 +328,7 @@ int Widget_Lua::SetOffset(lua_State* L)
     Widget* widget = CHECK_WIDGET(L, 1);
     glm::vec2 off = { 0.0 , 0.0 };
     int numArgs = lua_gettop(L);
-    if (numArgs >= 2)
+    if (numArgs >= 3)
     {
         off.x = CHECK_NUMBER(L, 2);
         off.y = CHECK_NUMBER(L, 3);
@@ -358,7 +358,7 @@ int Widget_Lua::SetSize(lua_State* L)
     Widget* widget = CHECK_WIDGET(L, 1);
     glm::vec2 size = { 0.0 , 0.0 };
     int numArgs = lua_gettop(L);
-    if (numArgs >= 2)
+    if (numArgs >= 3)
     {
         size.x = CHECK_NUMBER(L, 2);
         size.y = CHECK_NUMBER(L, 3);
@@ -679,7 +679,7 @@ int Widget_Lua::SetPivot(lua_State* L)
     Widget* widget = CHECK_WIDGET(L, 1);
     glm::vec2 value = { 0.0 , 0.0 };
     int numArgs = lua_gettop(L);
-    if (numArgs >= 2)
+    if (numArgs >= 3)
     {
         value.x = CHECK_NUMBER(L, 2);
         value.y = CHECK_NUMBER(L, 3);
@@ -709,7 +709,7 @@ int Widget_Lua::SetScale(lua_State* L)
     Widget* widget = CHECK_WIDGET(L, 1);
     glm::vec2 value = { 0.0 , 0.0 };
     int numArgs = lua_gettop(L);
-    if (numArgs >= 2)
+    if (numArgs >= 3)
     {
         value.x = CHECK_NUMBER(L, 2);
         value.y = CHECK_NUMBER(L, 3);
