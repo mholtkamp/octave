@@ -47,9 +47,9 @@
 #define LARGE_BOUNDS 10000.0f
 
 #if EDITOR
-#define ASSET_REF_VECTOR 1
+#define ASSET_LIVE_REF_TRACKING 1
 #else
-#define ASSET_REF_VECTOR 0
+#define ASSET_LIVE_REF_TRACKING 0
 #endif
 
 #define LUA_ENABLED 1

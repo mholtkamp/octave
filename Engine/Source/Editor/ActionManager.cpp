@@ -1153,7 +1153,7 @@ Asset* ActionManager::ImportAsset(const std::string& path)
         std::string assetName = filename.substr(0, dotIndex);
         filename = assetName + ".oct";
 
-#if ASSET_REF_VECTOR
+#if ASSET_LIVE_REF_TRACKING
         // If this asset already exists, then we are about to delete it and replace it.
         // So let's fix up any references now or else they will be lost (replaced with nullptr).
         Asset* oldAsset = FetchAsset(assetName.c_str());

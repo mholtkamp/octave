@@ -5,6 +5,8 @@
 #include <vector>
 #include "Assertion.h"
 
+#include <unordered_set>
+
 //class Asset;
 class AssetManager;
 struct AsyncLoadRequest;
@@ -41,14 +43,13 @@ private:
     Asset* mAsset = nullptr;
     AsyncLoadRequest* mLoadRequest = nullptr;
 
-#if ASSET_REF_VECTOR
+#if ASSET_LIVE_REF_TRACKING
 public:
     static void ReplaceReferencesToAsset(Asset* oldAsset, Asset* newAsset);
     static void EraseReferencesToAsset(Asset* asset);
 private:
     static void AddLiveRef(AssetRef* ref);
     static void RemoveLiveRef(AssetRef* ref);
-    static std::vector<AssetRef*> sLiveAssetRefs;
 #endif
 
 };
