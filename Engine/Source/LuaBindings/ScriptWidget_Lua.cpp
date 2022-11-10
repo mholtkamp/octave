@@ -26,6 +26,40 @@ int ScriptWidget_Lua::CreateNew(lua_State* L)
     return 1;
 }
 
+int ScriptWidget_Lua::CustomIndex(lua_State* L)
+{
+    ScriptWidget* scriptWidget = (ScriptWidget*) ((Widget_Lua*)lua_touserdata(L, 1))->mWidget;
+    const char* key = lua_tostring(L, 2);
+
+    bool fieldFound = false;
+
+    if (scriptWidget->GetTableName() != "")
+    {
+        // Grab the instance table first
+        lua_getglobal(L, scriptWidget->GetTableName().c_str());
+
+        // Then try to grab the field we are looking for.
+        lua_getfield(L, -1, key);
+
+        if (!lua_isnil(L, -1))
+        {
+            fieldFound = true;
+        }
+        else
+        {
+            lua_pop(L, 1);
+        }
+    }
+
+    if (!fieldFound)
+    {
+        lua_getglobal(L, SCRIPT_WIDGET_LUA_NAME);
+        lua_getfield(L, -1, key);
+    }
+
+    return 1;
+}
+
 int ScriptWidget_Lua::GetScript(lua_State* L)
 {
     ScriptWidget* scriptWidget = CHECK_SCRIPT_WIDGET(L, 1);
@@ -89,6 +123,10 @@ void ScriptWidget_Lua::Bind()
 
     lua_pushcfunction(L, CreateNew);
     lua_setfield(L, mtIndex, "Create");
+
+    // Override __index to query owned script also
+    lua_pushcfunction(L, CustomIndex);
+    lua_setfield(L, mtIndex, "__index");
 
     lua_pushcfunction(L, Widget_Lua::Destroy);
     lua_setfield(L, mtIndex, "__gc");
