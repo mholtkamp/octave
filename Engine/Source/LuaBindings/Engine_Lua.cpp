@@ -71,6 +71,15 @@ int Engine_Lua::Break(lua_State* L)
     return 0;
 }
 
+int Engine_Lua::SetBreakOnScriptError(lua_State* L)
+{
+    bool enableBreak = CHECK_BOOLEAN(L, 1);
+
+    ScriptUtils::SetBreakOnScriptError(enableBreak);
+
+    return 0;
+}
+
 int Engine_Lua::IsPlayingInEditor(lua_State* L)
 {
     bool ret = ::IsPlayingInEditor();
@@ -153,6 +162,9 @@ void Engine_Lua::Bind()
 
     lua_pushcfunction(L, Engine_Lua::Break);
     lua_setfield(L, tableIdx, "Break");
+
+    lua_pushcfunction(L, Engine_Lua::SetBreakOnScriptError);
+    lua_setfield(L, tableIdx, "SetBreakOnScriptError");
 
     lua_pushcfunction(L, Engine_Lua::IsPlayingInEditor);
     lua_setfield(L, tableIdx, "IsPlayingInEditor");
