@@ -65,6 +65,7 @@ public:
 
     // Conversion constructors
     Datum(int32_t value);
+    Datum(uint32_t value);
     Datum(float value);
     Datum(bool value);
     Datum(const char* value);
