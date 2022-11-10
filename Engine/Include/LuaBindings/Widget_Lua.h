@@ -21,6 +21,7 @@ struct Widget_Lua
 
     static int CreateChildWidget(lua_State* L);
     static int GetRect(lua_State* L);
+    static int UpdateRect(lua_State* L);
     static int SetX(lua_State* L);
     static int SetY(lua_State* L);
     static int SetWidth(lua_State* L);

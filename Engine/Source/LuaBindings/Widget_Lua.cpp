@@ -127,6 +127,15 @@ int Widget_Lua::GetRect(lua_State* L)
     return 1;
 }
 
+int Widget_Lua::UpdateRect(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+
+    widget->UpdateRect();
+
+    return 0;
+}
+
 int Widget_Lua::SetX(lua_State* L)
 {
     Widget* widget = CHECK_WIDGET(L, 1);
@@ -794,6 +803,9 @@ void Widget_Lua::Bind()
 
     lua_pushcfunction(L, GetRect);
     lua_setfield(L, mtIndex, "GetRect");
+
+    lua_pushcfunction(L, UpdateRect);
+    lua_setfield(L, mtIndex, "UpdateRect");
 
     lua_pushcfunction(L, SetX);
     lua_setfield(L, mtIndex, "SetX");
