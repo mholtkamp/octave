@@ -12,6 +12,8 @@ public:
     ScriptWidget(const char* scriptName);
 
     void SetFile(const char* filename);
+    const std::string& GetFile();
+    const std::string& GetTableName();
 
     virtual void Update() override;
 

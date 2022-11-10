@@ -32,6 +32,16 @@ void ScriptWidget::SetFile(const char* filename)
     }
 }
 
+const std::string& ScriptWidget::GetFile()
+{
+    return mFileName;
+}
+
+const std::string& ScriptWidget::GetTableName()
+{
+    return mTableName;
+}
+
 void ScriptWidget::Update()
 {
     Widget::Update();
