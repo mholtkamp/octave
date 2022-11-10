@@ -46,6 +46,11 @@ Datum::Datum(int32_t value)
     PushBack(value);
 }
 
+Datum::Datum(uint32_t value)
+{
+    PushBack(int32_t(value));
+}
+
 Datum::Datum(float value)
 {
     PushBack(value);
