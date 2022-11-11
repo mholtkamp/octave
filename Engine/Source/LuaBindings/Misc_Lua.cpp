@@ -329,6 +329,7 @@ void Misc_Lua::BindMisc()
     BindButtonState();
     BindDatumType();
     BindNetFuncType();
+    BindJustification();
 }
 
 #endif
