@@ -49,7 +49,7 @@ public:
     int32_t SetTimer(TimerHandlerFP handler, float time, bool loop = false);
     int32_t SetTimer(void* vp, PointerTimerHandlerFP handler, float time, bool loop = false);
     int32_t SetTimer(Actor* actor, ActorTimerHandlerFP handler, float time, bool loop = false);
-    int32_t SetTimer(ScriptComponent* scriptComp, const char* funcName, float time, bool loop = false);
+    int32_t SetTimer(const char* tableName, const char* funcName, float time, bool loop = false);
 
     void ClearAllTimers();
     void ClearTimer(int32_t id);

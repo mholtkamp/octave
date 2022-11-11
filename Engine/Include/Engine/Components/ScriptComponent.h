@@ -95,8 +95,6 @@ public:
 
     Datum GetField(const char* key);
 
-    static ScriptComponent* GetExecutingScriptComponent();
-    static const char* GetExecutingScriptTableName();
     static bool OnRepHandler(Datum* datum, const void* newValue);
 
     static ScriptComponent* FindScriptCompFromTableName(const std::string& tableName);
@@ -126,8 +124,6 @@ protected:
 
     static std::unordered_map<std::string, ScriptComponent*> sTableToCompMap;
     static std::unordered_map<std::string, ScriptNetFuncMap> sScriptNetFuncMap;
-
-    static std::vector<ScriptComponent*> sExecutingScriptStack;
 
     std::string mFileName;
     std::string mClassName;

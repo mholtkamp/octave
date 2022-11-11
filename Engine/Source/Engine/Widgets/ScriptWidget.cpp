@@ -254,8 +254,14 @@ void ScriptWidget::CreateScriptInstance()
             Widget_Lua::Create(L, this);
             lua_setfield(L, instanceTableIdx, "widget");
 
-            // Save the new table as a global so it doesnt get GCed.
             mTableName = mClassName + "_" + std::to_string(ScriptUtils::GetNextScriptInstanceNumber());
+
+            // Register the global name on to the script itself, so that native functions can
+            // identify what script they are working with.
+            lua_pushstring(L, mTableName.c_str());
+            lua_setfield(L, instanceTableIdx, "tableName");
+
+            // Save the new table as a global so it doesnt get GCed.
             lua_setglobal(L, mTableName.c_str());
 
             CallFunction("Create");

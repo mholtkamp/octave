@@ -50,6 +50,29 @@ Component* CheckComponentLuaType(lua_State* L, int arg, const char* className, c
 #endif
 }
 
+const char* CheckTableName(lua_State* L, int arg)
+{
+    const char* tableName = "";
+
+    if (lua_istable(L, arg))
+    {
+        lua_getfield(L, arg, "tableName");
+
+        // Script tables must have tableName assigned to them.
+        // This is the name that should be used to access it from global space.
+        luaL_checktype(L, -1, LUA_TSTRING);
+        tableName = lua_tostring(L, -1);
+
+        lua_pop(L, 1);
+    }
+    else if (lua_isstring(L, arg))
+    {
+        tableName = lua_tostring(L, arg);
+    }
+
+    return tableName;
+}
+
 bool CheckClassFlag(lua_State* L, int arg, const char* flag)
 {
     bool isClass = false;

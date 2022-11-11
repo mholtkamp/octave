@@ -117,18 +117,12 @@ int Selector_Lua::GetSelectionIndex(lua_State* L)
 int Selector_Lua::SetSelectionChangeHandler(lua_State* L)
 {
     Selector* sel = CHECK_SELECTOR(L, 1);
-    const char* funcName = CHECK_STRING(L, 2);
+    const char* tableName = CheckTableName(L, 2);
+    const char* funcName = CHECK_STRING(L, 3);
 
-    if (strcmp(funcName, "") != 0)
-    {
-        sel->SetScriptSelectionChangeHandler(
-            ScriptComponent::GetExecutingScriptTableName(),
-            funcName);
-    }
-    else
-    {
-        sel->SetScriptSelectionChangeHandler("", "");
-    }
+    sel->SetScriptSelectionChangeHandler(
+        tableName,
+        funcName);
 
     return 0;
 }

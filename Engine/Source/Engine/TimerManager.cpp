@@ -144,14 +144,14 @@ int32_t TimerManager::SetTimer(Actor* actor, ActorTimerHandlerFP handler, float 
     return id;
 }
 
-int32_t TimerManager::SetTimer(ScriptComponent* scriptComp, const char* funcName, float time, bool loop)
+int32_t TimerManager::SetTimer(const char* tableName, const char* funcName, float time, bool loop)
 {
     int32_t id = mNextTimerId++;
 
     TimerData timerData;
     timerData.mId = id;
     timerData.mType = TimerType::Script;
-    timerData.mScriptTableName = scriptComp->GetTableName();
+    timerData.mScriptTableName = tableName;
     timerData.mScriptFuncName = funcName;
     timerData.mDuration = time;
     timerData.mLoop = loop;
