@@ -23,8 +23,6 @@ DEFINE_COMPONENT(ScriptComponent)
 std::unordered_map<std::string, ScriptComponent*> ScriptComponent::sTableToCompMap;
 std::unordered_map<std::string, ScriptNetFuncMap> ScriptComponent::sScriptNetFuncMap;
 
-std::vector<ScriptComponent*> ScriptComponent::sExecutingScriptStack;
-
 bool ScriptComponent::HandlePropChange(Datum* datum, const void* newValue)
 {
 
@@ -1454,9 +1452,7 @@ void ScriptComponent::CallFunction(const char* name, uint32_t numParams, const D
 {
     if (mTableName != "")
     {
-        sExecutingScriptStack.push_back(this);
         ScriptUtils::CallMethod(mTableName.c_str(), name, numParams, params, ret);
-        sExecutingScriptStack.pop_back();
     }
 }
 
@@ -1482,17 +1478,6 @@ Datum ScriptComponent::GetField(const char* key)
 #endif
 
     return ret;
-}
-
-ScriptComponent* ScriptComponent::GetExecutingScriptComponent()
-{
-    return sExecutingScriptStack.size() > 0 ? sExecutingScriptStack.back() : nullptr;
-}
-
-const char* ScriptComponent::GetExecutingScriptTableName()
-{
-    ScriptComponent* exeComp = GetExecutingScriptComponent();
-    return exeComp ? exeComp->GetTableName().c_str() : "";
 }
 
 bool ScriptComponent::OnRepHandler(Datum* datum, const void* newValue)
@@ -1606,8 +1591,14 @@ void ScriptComponent::CreateScriptInstance()
             Component_Lua::Create(L, this);
             lua_setfield(L, instanceTableIdx, "component");
 
-            // Save the new table as a global so it doesnt get GCed.
             mTableName = mClassName + "_" + std::to_string(ScriptUtils::GetNextScriptInstanceNumber());
+
+            // Register the global name on to the script itself, so that native functions can
+            // identify what script they are working with.
+            lua_pushstring(L, mTableName.c_str());
+            lua_setfield(L, instanceTableIdx, "tableName");
+
+            // Save the new table as a global so it doesnt get GCed.
             lua_setglobal(L, mTableName.c_str());
 
             mTickEnabled = CheckIfFunctionExists("Tick");
@@ -1700,9 +1691,7 @@ void ScriptComponent::DestroyScriptInstance()
 bool ScriptComponent::LuaFuncCall(int numArgs, int numResults)
 {
     bool success = true;
-    sExecutingScriptStack.push_back(this);
-    ScriptUtils::CallLuaFunc(numArgs, numResults);
-    sExecutingScriptStack.pop_back();
+    success = ScriptUtils::CallLuaFunc(numArgs, numResults);
     return success;
 }
 

@@ -58,6 +58,8 @@ T* CheckAssetLuaType(lua_State* L, int arg, const char* className, const char* c
 Actor* CheckActorLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
 Component* CheckComponentLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
 
+const char* CheckTableName(lua_State* L, int arg);
+
 #define CHECK_STRING(L, Arg) lua_tostring(L, Arg); luaL_checktype(L, Arg, LUA_TSTRING);
 #define CHECK_NUMBER(L, Arg) lua_tonumber(L, Arg); luaL_checktype(L, Arg, LUA_TNUMBER);
 #define CHECK_INTEGER(L, Arg) lua_tointeger(L, Arg); luaL_checktype(L, Arg, LUA_TNUMBER);

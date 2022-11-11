@@ -155,17 +155,10 @@ int Button_Lua::SetHandleMouseInput(lua_State* L)
 int Button_Lua::SetHoverHandler(lua_State* L)
 {
     Button* button = CHECK_BUTTON(L, 1);
-    const char* funcName = CHECK_STRING(L, 2);
+    const char* tableName = CheckTableName(L, 2);
+    const char* funcName = CHECK_STRING(L, 3);
 
-    if (strcmp(funcName, "") != 0)
-    {
-        const char* tableName = ScriptComponent::GetExecutingScriptTableName();
-        button->SetScriptHoverHandler(tableName, funcName);
-    }
-    else
-    {
-        button->SetScriptHoverHandler("", "");
-    }
+    button->SetScriptHoverHandler(tableName, funcName);
 
     return 0;
 }
@@ -173,17 +166,10 @@ int Button_Lua::SetHoverHandler(lua_State* L)
 int Button_Lua::SetPressedHandler(lua_State* L)
 {
     Button* button = CHECK_BUTTON(L, 1);
-    const char* funcName = CHECK_STRING(L, 2);
+    const char* tableName = CheckTableName(L, 2);
+    const char* funcName = CHECK_STRING(L, 3);
 
-    if (strcmp(funcName, "") != 0)
-    {
-        const char* tableName = ScriptComponent::GetExecutingScriptTableName();
-        button->SetScriptPressedHandler(tableName, funcName);
-    }
-    else
-    {
-        button->SetScriptPressedHandler("", "");
-    }
+    button->SetScriptPressedHandler(tableName, funcName);
 
     return 0;
 }
