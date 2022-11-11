@@ -90,7 +90,10 @@ int Engine_Lua::IsPlayingInEditor(lua_State* L)
 
 int Engine_Lua::ReloadAllScripts(lua_State* L)
 {
-    ::ReloadAllScripts();
+    bool restartScripts = true;
+    if (!lua_isnone(L, 1)) { restartScripts = CHECK_BOOLEAN(L, 1); }
+
+    ::ReloadAllScripts(restartScripts);
 
     return 0;
 }

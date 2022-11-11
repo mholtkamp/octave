@@ -476,37 +476,43 @@ bool IsGameTickEnabled()
 #endif
 }
 
-void ReloadAllScripts()
+void ReloadAllScripts(bool restartComponents)
 {
 #if LUA_ENABLED
     std::vector<ScriptComponent*> scriptComps;
     const std::vector<Actor*>& actors = GetWorld()->GetActors();
 
-    for (uint32_t i = 0; i < actors.size(); ++i)
+    if (restartComponents)
     {
-        for (uint32_t c = 0; c < actors[i]->GetNumComponents(); ++c)
+        for (uint32_t i = 0; i < actors.size(); ++i)
         {
-            Component* comp = actors[i]->GetComponent(c);
-            if (comp->Is(ScriptComponent::ClassRuntimeId()))
+            for (uint32_t c = 0; c < actors[i]->GetNumComponents(); ++c)
             {
-                scriptComps.push_back(comp->As<ScriptComponent>());
+                Component* comp = actors[i]->GetComponent(c);
+                if (comp->Is(ScriptComponent::ClassRuntimeId()))
+                {
+                    scriptComps.push_back(comp->As<ScriptComponent>());
+                }
             }
         }
-    }
 
-    // Stop the script instances
-    for (uint32_t i = 0; i < scriptComps.size(); ++i)
-    {
-        scriptComps[i]->StopScript();
+        // Stop the script instances
+        for (uint32_t i = 0; i < scriptComps.size(); ++i)
+        {
+            scriptComps[i]->StopScript();
+        }
     }
 
     // Reload script files
     ScriptUtils::ReloadAllScriptFiles();
 
-    // Start script instances again
-    for (uint32_t i = 0; i < scriptComps.size(); ++i)
+    if (restartComponents)
     {
-        scriptComps[i]->StartScript();
+        // Start script instances again
+        for (uint32_t i = 0; i < scriptComps.size(); ++i)
+        {
+            scriptComps[i]->StartScript();
+        }
     }
 
     LogDebug("--Reloaded All Scripts--")

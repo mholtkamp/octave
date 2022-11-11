@@ -36,7 +36,7 @@ bool IsPlayingInEditor();
 
 bool IsGameTickEnabled();
 
-void ReloadAllScripts();
+void ReloadAllScripts(bool restartComponents = true);
 
 void SetPaused(bool paused);
 bool IsPaused();
