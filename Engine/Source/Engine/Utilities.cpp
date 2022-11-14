@@ -558,7 +558,8 @@ void LuaObjectToDatum(lua_State* L, int idx, Datum& datum)
 
     default:
         // If nil, then the datum is initialized as a Byte type with 0
-        datum.PushBack((uint8_t)0);
+        // Actually... Leave as DatumType::Count?
+        //datum.PushBack((uint8_t)0);
         break;
     }
 }
