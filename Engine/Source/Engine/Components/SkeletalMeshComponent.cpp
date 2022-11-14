@@ -64,6 +64,7 @@ SkeletalMeshComponent::SkeletalMeshComponent() :
     mSkeletalMesh(nullptr),
     mAnimationSpeed(1.0f),
     mAnimationPaused(false),
+    mRevertToBindPose(true),
     mHasAnimatedThisFrame(false),
     mBoneInfluenceMode(BoneInfluenceMode::Four),
     mAnimationUpdateMode(AnimationUpdateMode::OnlyUpdateWhenRendered)
@@ -89,6 +90,7 @@ void SkeletalMeshComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::String, "Default Animation", this, &mDefaultAnimation, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Animation Speed", this, &mAnimationSpeed));
     outProps.push_back(Property(DatumType::Bool, "Animation Paused", this, &mAnimationPaused));
+    outProps.push_back(Property(DatumType::Bool, "Revert To Bind Pose", this, &mRevertToBindPose));
     outProps.push_back(Property(DatumType::Enum, "Bone Influence Mode", this, &mBoneInfluenceMode, 1, nullptr, 0, (int32_t)BoneInfluenceMode::Num, sBoneInfluenceModeStrings));
     outProps.push_back(Property(DatumType::Enum, "Animation Update Mode", this, &mAnimationUpdateMode, 1, nullptr, 0, (int32_t)AnimationUpdateMode::Count, sAnimationUpdateModeStrings));
 }
@@ -123,6 +125,7 @@ void SkeletalMeshComponent::SaveStream(Stream& stream)
     stream.WriteString(mDefaultAnimation);
     stream.WriteFloat(mAnimationSpeed);
     stream.WriteBool(mAnimationPaused);
+    //stream.WriteBool(mRevertToBindPose);
     stream.WriteUint32(uint32_t(mBoneInfluenceMode));
     //stream.WriteUint32(uint32_t(mAnimationUpdateMode));
 }
@@ -140,6 +143,7 @@ void SkeletalMeshComponent::LoadStream(Stream& stream)
     stream.ReadString(mDefaultAnimation);
     mAnimationSpeed = stream.ReadFloat();
     mAnimationPaused = stream.ReadBool();
+    //mRevertToBindPose = stream.ReadBool();
     mBoneInfluenceMode = BoneInfluenceMode(stream.ReadUint32());
     //mAnimationUpdateMode = AnimationUpdateMode(stream.ReadUint32());
 
@@ -669,7 +673,8 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
     SkeletalMesh* mesh = mSkeletalMesh.Get<SkeletalMesh>();
 
     if (mesh != nullptr &&
-        !mAnimationPaused)
+        !mAnimationPaused &&
+        (mActiveAnimations.size() > 0 || mRevertToBindPose))
     {
         if (updateBones)
         {

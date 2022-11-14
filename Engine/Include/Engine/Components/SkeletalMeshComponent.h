@@ -149,6 +149,7 @@ protected:
     float mAnimationSpeed = 1.0f;
     std::vector<ActiveAnimation> mActiveAnimations;
     bool mAnimationPaused;
+    bool mRevertToBindPose;
     bool mHasAnimatedThisFrame;
 
     BoneInfluenceMode mBoneInfluenceMode;
