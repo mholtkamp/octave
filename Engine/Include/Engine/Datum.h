@@ -168,6 +168,8 @@ public:
 
     TableDatum* FindTableDatum(const char* key);
     TableDatum* FindTableDatum(int32_t key);
+    TableDatum* GetField(const char* key);
+    TableDatum* GetField(int32_t key);
 
     // Table get/set convenience functions
     int32_t GetIntegerField(const char* key);
