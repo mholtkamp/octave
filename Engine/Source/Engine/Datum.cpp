@@ -710,6 +710,16 @@ TableDatum* Datum::FindTableDatum(int32_t key)
     return ret;
 }
 
+TableDatum* Datum::GetField(const char* key)
+{
+    return FindTableDatum(key);
+}
+
+TableDatum* Datum::GetField(int32_t key)
+{
+    return FindTableDatum(key);
+}
+
 void Datum::PushBack(float value)
 {
     PrePushBack(DatumType::Float);
@@ -953,7 +963,7 @@ TableDatum& Datum::GetTableField(int32_t key)
 #define DEFINE_SET_FIELD(KeyType, DatType, Type)                                            \
 void Datum::Set##DatType##Field(KeyType key, Type value)                                    \
 {                                                                                           \
-    if (mType == DatumType::Table)                                                          \
+    if (mType == DatumType::Table || mType == DatumType::Count)                             \
     {                                                                                       \
         TableDatum* td = FindTableDatum(key);                                               \
         if (td == nullptr)                                                                  \
@@ -993,7 +1003,7 @@ DEFINE_SET_FIELD(int32_t, Pointer, RTTI*)
 
 void Datum::SetTableField(const char* key, const TableDatum& value)
 {
-    if (mType == DatumType::Table)
+    if (mType == DatumType::Table || mType == DatumType::Count)
     {
         TableDatum* td = FindTableDatum(key);
         if (td == nullptr)
@@ -1015,7 +1025,7 @@ void Datum::SetTableField(const char* key, const TableDatum& value)
 
 void Datum::SetTableField(int32_t key, const TableDatum& value)
 {
-    if (mType == DatumType::Table)
+    if (mType == DatumType::Table || mType == DatumType::Count)
     {
         TableDatum* td = FindTableDatum(key);
         if (td == nullptr)
