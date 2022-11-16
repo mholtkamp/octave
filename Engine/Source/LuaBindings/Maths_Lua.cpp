@@ -90,35 +90,75 @@ int Maths_Lua::IsPowerOfTwo(lua_State* L)
 
 int Maths_Lua::Min(lua_State* L)
 {
-    float a = CHECK_NUMBER(L, 1);
-    float b = CHECK_NUMBER(L, 2);
+    if (lua_isinteger(L, 1))
+    {
+        int32_t a = CHECK_INTEGER(L, 1);
+        int32_t b = CHECK_INTEGER(L, 2);
 
-    float ret = glm::min(a, b);
+        int32_t ret = glm::min(a, b);
 
-    lua_pushnumber(L, ret);
+        lua_pushinteger(L, ret);
+    }
+    else
+    {
+        float a = CHECK_NUMBER(L, 1);
+        float b = CHECK_NUMBER(L, 2);
+
+        float ret = glm::min(a, b);
+
+        lua_pushnumber(L, ret);
+    }
+
     return 1;
 }
 
 int Maths_Lua::Max(lua_State* L)
 {
-    float a = CHECK_NUMBER(L, 1);
-    float b = CHECK_NUMBER(L, 2);
+    if (lua_isinteger(L, 1))
+    {
+        int32_t a = CHECK_INTEGER(L, 1);
+        int32_t b = CHECK_INTEGER(L, 2);
 
-    float ret = glm::max(a, b);
+        int32_t ret = glm::max(a, b);
 
-    lua_pushnumber(L, ret);
+        lua_pushinteger(L, ret);
+    }
+    else
+    {
+        float a = CHECK_NUMBER(L, 1);
+        float b = CHECK_NUMBER(L, 2);
+
+        float ret = glm::max(a, b);
+
+        lua_pushnumber(L, ret);
+    }
+
     return 1;
 }
 
 int Maths_Lua::Clamp(lua_State* L)
 {
-    float x = CHECK_NUMBER(L, 1);
-    float min = CHECK_NUMBER(L, 2);
-    float max = CHECK_NUMBER(L, 3);
+    if (lua_isinteger(L, 1))
+    {
+        int32_t x = CHECK_INTEGER(L, 1);
+        int32_t min = CHECK_INTEGER(L, 2);
+        int32_t max = CHECK_INTEGER(L, 3);
 
-    float ret = glm::clamp(x, min, max);
+        int32_t ret = glm::clamp(x, min, max);
 
-    lua_pushnumber(L, ret);
+        lua_pushinteger(L, ret);
+    }
+    else
+    {
+        float x = CHECK_NUMBER(L, 1);
+        float min = CHECK_NUMBER(L, 2);
+        float max = CHECK_NUMBER(L, 3);
+
+        float ret = glm::clamp(x, min, max);
+
+        lua_pushnumber(L, ret);
+    }
+
     return 1;
 }
 
@@ -136,11 +176,22 @@ int Maths_Lua::Lerp(lua_State* L)
 
 int Maths_Lua::Sign(lua_State* L)
 {
-    float number = CHECK_NUMBER(L, 1);
+    if (lua_isinteger(L, 1))
+    {
+        int32_t number = CHECK_INTEGER(L, 1);
 
-    float ret = (number >= 0.0f) ? 1.0f : -1.0f;
+        int32_t ret = (number >= 0) ? 1 : -1;
 
-    lua_pushnumber(L, ret);
+        lua_pushinteger(L, ret);
+    }
+    else
+    {
+        float number = CHECK_NUMBER(L, 1);
+
+        float ret = (number >= 0.0f) ? 1.0f : -1.0f;
+
+        lua_pushnumber(L, ret);
+    }
     return 1;
 }
 

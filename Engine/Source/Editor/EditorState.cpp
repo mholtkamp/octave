@@ -276,6 +276,8 @@ void EndPlayInEditor()
         cameraTransform = GetWorld()->GetActiveCamera()->GetTransform();
     }
 
+    GetWorld()->DestroyAllActors();
+
     // Fake Shutdown
     OctPreShutdown();
     OctPostShutdown();
@@ -284,8 +286,6 @@ void EndPlayInEditor()
     SetSelectedAssetStub(nullptr);
 
     ActionManager::Get()->ResetUndoRedo();
-
-    GetWorld()->DestroyAllActors();
 
     ShowRootCanvas(true);
     Renderer::Get()->EnableProxyRendering(true);
