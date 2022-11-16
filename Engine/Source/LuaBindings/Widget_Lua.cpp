@@ -327,7 +327,7 @@ int Widget_Lua::SetMargins(lua_State* L)
     float right = CHECK_NUMBER(L, 4);
     float bottom = CHECK_NUMBER(L, 5);
 
-    widget->SetRatios(left, top, right, bottom);
+    widget->SetMargins(left, top, right, bottom);
 
     return 0;
 }
