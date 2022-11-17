@@ -130,8 +130,13 @@ void Level::CaptureWorld(World* world)
 #endif
 }
 
-void Level::LoadIntoWorld(World* world, glm::vec3 offset, glm::vec3 rotation)
+void Level::LoadIntoWorld(World* world, bool clear, glm::vec3 offset, glm::vec3 rotation)
 {
+    if (clear)
+    {
+        GetWorld()->Clear();
+    }
+
     Stream stream((const char*)mData.data(), (uint32_t)mData.size());
 
     uint32_t numActors;

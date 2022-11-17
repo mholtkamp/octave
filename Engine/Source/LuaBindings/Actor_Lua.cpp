@@ -548,6 +548,27 @@ int Actor_Lua::RemoveTag(lua_State* L)
     return 0;
 }
 
+
+int Actor_Lua::SetPersistent(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    actor->SetPersitent(value);
+
+    return 0;
+}
+
+int Actor_Lua::IsPersistent(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+
+    bool ret = actor->IsPersistent();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 void Actor_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -683,6 +704,12 @@ void Actor_Lua::Bind()
 
     lua_pushcfunction(L, Actor_Lua::RemoveTag);
     lua_setfield(L, mtIndex, "RemoveTag");
+
+    lua_pushcfunction(L, Actor_Lua::SetPersistent);
+    lua_setfield(L, mtIndex, "SetPersistent");
+
+    lua_pushcfunction(L, Actor_Lua::IsPersistent);
+    lua_setfield(L, mtIndex, "IsPersistent");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

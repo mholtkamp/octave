@@ -69,6 +69,7 @@ public:
     void AddNetActor(Actor* actor, NetId netId);
     const std::unordered_map<NetId, Actor*>& GetNetActorMap() const;
 
+    void Clear();
 
     void AddLine(const Line& line);
     void RemoveLine(const Line& line);
@@ -121,6 +122,7 @@ public:
     Actor* SpawnBlueprint(const char* name);
     void LoadLevel(
         const char* name,
+        bool clear,
         glm::vec3 offset = { 0.0f, 0.0f, 0.0f },
         glm::vec3 rotation = { 0.0f, 0.0f, 0.0f });
     void QueueLevelLoad(
@@ -179,7 +181,7 @@ private:
     CameraComponent* mActiveCamera;
     TransformComponent* mAudioReceiver;
     NetId mNextNetId;
-    bool mPendingDestroyAllActors = false;
+    bool mPendingClear = false;
 
     // Replication tiers
     std::vector<Actor*> mRepActors[(uint32_t)ReplicationRate::Count];

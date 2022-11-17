@@ -132,6 +132,7 @@ void World::SpawnDefaultCamera()
     mActiveCamera = cameraActor->CreateComponent<CameraComponent>();
     cameraActor->SetRootComponent(mActiveCamera);
     cameraActor->SetName("Default Camera");
+    cameraActor->SetPersitent(true);
     mActiveCamera->SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
 }
 
@@ -339,6 +340,21 @@ void World::AddNetActor(Actor* actor, NetId netId)
 const std::unordered_map<NetId, Actor*>& World::GetNetActorMap() const
 {
     return mNetActorMap;
+}
+
+void World::Clear()
+{
+    // Unload all levels
+    UnloadAllLevels();
+
+    // Destroy all non-persistent actors.
+    for (int32_t i = int32_t(mActors.size()) - 1; i >= 0; --i)
+    {
+        if (!mActors[i]->IsPersistent())
+        {
+            DestroyActor(i);
+        }
+    }
 }
 
 void World::AddLine(const Line& line)
@@ -770,7 +786,7 @@ void World::Update(float deltaTime)
 
             if (level)
             {
-                level->LoadIntoWorld(this, offset, rotation);
+                level->LoadIntoWorld(this, false, offset, rotation);
             }
         }
 
@@ -906,10 +922,10 @@ void World::Update(float deltaTime)
         }
     }
 
-    if (mPendingDestroyAllActors)
+    if (mPendingClear)
     {
-        DestroyAllActors();
-        mPendingDestroyAllActors = false;
+        Clear();
+        mPendingClear = false;
     }
 }
 
@@ -1016,13 +1032,13 @@ Actor* World::SpawnBlueprint(const char* name)
     return ret;
 }
 
-void World::LoadLevel(const char* name, glm::vec3 offset, glm::vec3 rotation)
+void World::LoadLevel(const char* name, bool clear, glm::vec3 offset, glm::vec3 rotation)
 {
     Level* level = LoadAsset<Level>(name);
 
     if (level != nullptr)
     {
-        level->LoadIntoWorld(this, offset, rotation);
+        level->LoadIntoWorld(this, clear, offset, rotation);
     }
     else
     {
@@ -1035,7 +1051,7 @@ void World::QueueLevelLoad(const char* name, bool clearWorld, glm::vec3 offset, 
     // Load level at the beginning of next frame
     if (clearWorld)
     {
-        mPendingDestroyAllActors = true;
+        mPendingClear = true;
     }
 
     Level* level = LoadAsset<Level>(name);

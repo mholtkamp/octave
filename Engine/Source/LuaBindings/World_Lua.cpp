@@ -462,12 +462,14 @@ int World_Lua::LoadLevel(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
     const char* name = CHECK_STRING(L, 2);
+    bool clear = false;
     glm::vec3 offset = { 0.0f, 0.0f, 0.0f };
     glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
-    if (!lua_isnone(L, 3)) { offset = CHECK_VECTOR(L, 3); }
-    if (!lua_isnone(L, 4)) { rotation = CHECK_VECTOR(L, 4); }
+    if (!lua_isnone(L, 3)) { clear = CHECK_BOOLEAN(L, 3); }
+    if (!lua_isnone(L, 4)) { offset = CHECK_VECTOR(L, 4); }
+    if (!lua_isnone(L, 5)) { rotation = CHECK_VECTOR(L, 5); }
 
-    world->LoadLevel(name, offset, rotation);
+    world->LoadLevel(name, clear, offset, rotation);
 
     return 0;
 }
