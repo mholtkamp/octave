@@ -13,7 +13,14 @@
 #include "Assertion.h"
 
 #if ASSET_LIVE_REF_TRACKING
-std::unordered_set<AssetRef*>& GetLiveRefMap()
+// Need a mutex so that newly added AssetRefs during async load won't mess up operations.
+static MutexHandle GetLiveRefMutex()
+{
+    static MutexHandle sLiveRefMutex = SYS_CreateMutex();
+    return sLiveRefMutex;
+}
+
+static std::unordered_set<AssetRef*>& GetLiveRefMap()
 {
     static std::unordered_set<AssetRef*> sLiveAssetRefs;
     return sLiveAssetRefs;
@@ -21,6 +28,8 @@ std::unordered_set<AssetRef*>& GetLiveRefMap()
 
 void AssetRef::ReplaceReferencesToAsset(Asset* oldAsset, Asset* newAsset)
 {
+    SCOPED_LOCK(GetLiveRefMutex());
+
     if (oldAsset != nullptr)
     {
         for (AssetRef* ref : GetLiveRefMap())
@@ -53,6 +62,8 @@ void AssetRef::EraseReferencesToAsset(Asset* asset)
 
 void AssetRef::AddLiveRef(AssetRef* ref)
 {
+    SCOPED_LOCK(GetLiveRefMutex());
+
     // Ensure that we are not adding this ref a second time to the list.
     OCT_ASSERT(GetLiveRefMap().find(ref) == GetLiveRefMap().end());
 
@@ -61,6 +72,8 @@ void AssetRef::AddLiveRef(AssetRef* ref)
 
 void AssetRef::RemoveLiveRef(AssetRef* ref)
 {
+    SCOPED_LOCK(GetLiveRefMutex());
+
     GetLiveRefMap().erase(ref);
 }
 #endif
