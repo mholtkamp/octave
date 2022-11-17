@@ -77,6 +77,9 @@ struct Actor_Lua
     static int AddTag(lua_State* L);
     static int RemoveTag(lua_State* L);
 
+    static int SetPersistent(lua_State* L);
+    static int IsPersistent(lua_State* L);
+
     // TODO-LUA: Add calls to InvokeNetFunc()
 
     static void Bind();

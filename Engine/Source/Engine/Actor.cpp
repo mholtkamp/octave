@@ -641,6 +641,16 @@ bool Actor::IsTransient() const
     return mTransient;
 }
 
+void Actor::SetPersitent(bool persistent)
+{
+    mPersistent = persistent;
+}
+
+bool Actor::IsPersistent() const
+{
+    return mPersistent;
+}
+
 glm::vec3 Actor::GetPosition() const
 {
     glm::vec3 position(0);

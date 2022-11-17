@@ -131,6 +131,9 @@ public:
     void SetTransient(bool transient);
     bool IsTransient() const;
 
+    void SetPersitent(bool persistent);
+    bool IsPersistent() const;
+
     glm::vec3 GetPosition() const;
     glm::quat GetRotationQuat() const;
     glm::vec3 GetRotationEuler() const;
@@ -254,6 +257,7 @@ protected:
     bool mPendingDestroy;
     bool mTickEnabled;
     bool mTransient;
+    bool mPersistent;
     ReplicationRate mReplicationRate;
     uint8_t mNumScriptComps;
 };
