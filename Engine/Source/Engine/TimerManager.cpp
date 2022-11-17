@@ -12,6 +12,9 @@ TimerManager* GetTimerManager()
 
 void TimerManager::Update(float deltaTime)
 {
+    static std::vector<TimerData> sTimersToExecute;
+    sTimersToExecute.clear();
+
     for (int32_t i = 0; i < (int32_t)mTimerData.size(); ++i)
     {
         TimerData* timer = &(mTimerData[i]);
@@ -22,61 +25,10 @@ void TimerManager::Update(float deltaTime)
 
             if (timer->mTimeRemaining <= 0.0f)
             {
-                // Execute callback handler
-                switch (timer->mType)
-                {
-                case TimerType::Void:
-                {
-                    if (timer->mHandler != nullptr)
-                    {
-                        TimerHandlerFP handler = (TimerHandlerFP)timer->mHandler;
-                        handler();
-                    }
-                    break;
-                }
-                case TimerType::Pointer:
-                {
-                    if (timer->mHandler != nullptr)
-                    {
-                        PointerTimerHandlerFP handler = (PointerTimerHandlerFP)timer->mHandler;
-                        handler(timer->mPointer);
-                    }
-                    break;
-                }
-                case TimerType::Actor:
-                {
-                    if (timer->mHandler != nullptr)
-                    {
-                        ActorTimerHandlerFP handler = (ActorTimerHandlerFP)timer->mHandler;
-                        Actor* actor = timer->mActor.Get();
-
-                        if (actor != nullptr)
-                        {
-                            handler(actor);
-                        }
-                    }
-                    break;
-                }
-                case TimerType::Script:
-                {
-                    if (timer->mScriptTableName != "" &&
-                        timer->mScriptFuncName != "")
-                    {
-                        ScriptComponent* scriptComp = ScriptComponent::FindScriptCompFromTableName(timer->mScriptTableName);
-                        if (scriptComp)
-                        {
-                            scriptComp->CallFunction(timer->mScriptFuncName.c_str());
-                        }
-                    }
-                    break;
-                }
-                default:
-                    OCT_ASSERT(0);
-                    break;
-                }
-
-                // Regrab the timer pointer in case a handler function added another timer (and caused vector realloc)
-                timer = &(mTimerData[i]);
+                // Add this to the list of timers to execute.
+                // This has to be done after iterating, otherwise these timer
+                // handler functions could add/remove timers from the timer array.
+                sTimersToExecute.push_back(*timer);
 
                 if (timer->mLoop)
                 {
@@ -90,6 +42,64 @@ void TimerManager::Update(float deltaTime)
                     --i;
                 }
             }
+        }
+    }
+
+    for (uint32_t i = 0; i < sTimersToExecute.size(); ++i)
+    {
+        TimerData* timer = &(sTimersToExecute[i]);
+
+        // Execute callback handler
+        switch (timer->mType)
+        {
+        case TimerType::Void:
+        {
+            if (timer->mHandler != nullptr)
+            {
+                TimerHandlerFP handler = (TimerHandlerFP)timer->mHandler;
+                handler();
+            }
+            break;
+        }
+        case TimerType::Pointer:
+        {
+            if (timer->mHandler != nullptr)
+            {
+                PointerTimerHandlerFP handler = (PointerTimerHandlerFP)timer->mHandler;
+                handler(timer->mPointer);
+            }
+            break;
+        }
+        case TimerType::Actor:
+        {
+            if (timer->mHandler != nullptr)
+            {
+                ActorTimerHandlerFP handler = (ActorTimerHandlerFP)timer->mHandler;
+                Actor* actor = timer->mActor.Get();
+
+                if (actor != nullptr)
+                {
+                    handler(actor);
+                }
+            }
+            break;
+        }
+        case TimerType::Script:
+        {
+            if (timer->mScriptTableName != "" &&
+                timer->mScriptFuncName != "")
+            {
+                ScriptComponent* scriptComp = ScriptComponent::FindScriptCompFromTableName(timer->mScriptTableName);
+                if (scriptComp)
+                {
+                    scriptComp->CallFunction(timer->mScriptFuncName.c_str());
+                }
+            }
+            break;
+        }
+        default:
+            OCT_ASSERT(0);
+            break;
         }
     }
 }
