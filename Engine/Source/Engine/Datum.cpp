@@ -720,6 +720,20 @@ TableDatum* Datum::GetField(int32_t key)
     return FindTableDatum(key);
 }
 
+TableDatum* Datum::AddTableField(int32_t key)
+{
+    TableDatum* td = PushBackTableDatum(TableDatum());
+    td->SetIntegerKey(key);
+    return td;
+}
+
+TableDatum* Datum::AddTableField(const char* key)
+{
+    TableDatum* td = PushBackTableDatum(TableDatum());
+    td->SetStringKey(key);
+    return td;
+}
+
 void Datum::PushBack(float value)
 {
     PrePushBack(DatumType::Float);
@@ -796,7 +810,7 @@ TableDatum* Datum::PushBackTableDatum(const TableDatum& value)
     new (mData.t + mCount) TableDatum(value);
     mCount++;
 
-    return (mData.t + mCount);
+    return (mData.t + (mCount - 1));
 }
 
 void Datum::PushBack(RTTI* value)
