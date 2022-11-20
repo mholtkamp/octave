@@ -23,6 +23,8 @@ public:
     static void CallMethod(const char* tableName, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret);
     static void SetBreakOnScriptError(bool enableBreak);
 
+    static void GarbageCollect();
+
 private:
 
     static std::unordered_set<std::string> sLoadedLuaFiles;
