@@ -283,3 +283,16 @@ void ScriptUtils::SetBreakOnScriptError(bool enableBreak)
     sBreakOnScriptError = enableBreak;
 }
 
+void ScriptUtils::GarbageCollect()
+{
+#if LUA_ENABLED
+    lua_State* L = GetLua();
+
+    lua_getglobal(L, "collectgarbage");
+    OCT_ASSERT(lua_isfunction(L, -1));
+
+    lua_pushstring(L, "collect");
+
+    CallLuaFunc(1);
+#endif
+}
