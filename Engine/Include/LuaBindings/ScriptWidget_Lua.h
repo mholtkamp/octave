@@ -18,6 +18,7 @@ struct ScriptWidget_Lua
     static int CreateNew(lua_State* L);
 
     static int CustomIndex(lua_State* L);
+    static int CustomNewIndex(lua_State* L);
 
     static int GetScript(lua_State* L);
     static int SetFile(lua_State* L);
