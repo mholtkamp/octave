@@ -100,73 +100,73 @@
     static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
 
-#define GLOBAL_SCRIPT_FUNC_X1(FuncName, P0)                                                                        \
+#define GLOBAL_SCRIPT_FUNC_X1(TableName, FuncName, P0)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
         FuncName(P0(1));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), TableName, #FuncName, ScriptFunc_##FuncName);
 
-#define GLOBAL_SCRIPT_FUNC_X2(FuncName, P0, P1)                                                                        \
+#define GLOBAL_SCRIPT_FUNC_X2(TableName, FuncName, P0, P1)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
         FuncName(P0(1), P1(2));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), TableName, #FuncName, ScriptFunc_##FuncName);
 
-#define GLOBAL_SCRIPT_FUNC_X3(FuncName, P0, P1, P2)                                                                        \
+#define GLOBAL_SCRIPT_FUNC_X3(TableName, FuncName, P0, P1, P2)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
         FuncName(P0(1), P1(2), P2(3));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), TableName, #FuncName, ScriptFunc_##FuncName);
 
-#define GLOBAL_SCRIPT_FUNC_X4(FuncName, P0, P1, P2, P3)                                                                        \
+#define GLOBAL_SCRIPT_FUNC_X4(TableName, FuncName, P0, P1, P2, P3)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
         FuncName(P0(1), P1(2), P2(3), P3(4));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), TableName, #FuncName, ScriptFunc_##FuncName);
 
-#define GLOBAL_SCRIPT_FUNC_R_X1(FuncName, P0)                                                                        \
+#define GLOBAL_SCRIPT_FUNC_R_X1(TableName, FuncName, P0)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
         Datum ret = FuncName(P0(1));                                                             \
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), TableName, #FuncName, ScriptFunc_##FuncName);
 
-#define GLOBAL_SCRIPT_FUNC_R_X2(FuncName, P0, P1)                                                                        \
+#define GLOBAL_SCRIPT_FUNC_R_X2(TableName, FuncName, P0, P1)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
         Datum ret = FuncName(P0(1), P1(2));                                                             \
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), TableName, #FuncName, ScriptFunc_##FuncName);
 
-#define GLOBAL_SCRIPT_FUNC_R_X3(FuncName, P0, P1, P2)                                                                  \
+#define GLOBAL_SCRIPT_FUNC_R_X3(TableName, FuncName, P0, P1, P2)                                                                  \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
         Datum ret = FuncName(P0(1), P1(2), P2(3));                                                       \
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), TableName, #FuncName, ScriptFunc_##FuncName);
 
-#define GLOBAL_SCRIPT_FUNC_R_X4(FuncName, P0, P1, P2, P3)                                                              \
+#define GLOBAL_SCRIPT_FUNC_R_X4(TableName, FuncName, P0, P1, P2, P3)                                                              \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
         Datum ret = FuncName(P0(1), P1(2), P2(3), P3(4));                                                \
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
     }                                                                                                           \
-    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), "", #FuncName, ScriptFunc_##FuncName);
+    static ScriptFuncAutoReg AutoReg_##FuncName(GetGlobalAutoRegArray(), TableName, #FuncName, ScriptFunc_##FuncName);
 
 
 
