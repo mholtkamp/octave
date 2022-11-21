@@ -494,7 +494,7 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
         break;
     }
 
-    default: lua_pushnil(L); OCT_ASSERT(0); break;
+    default: lua_pushnil(L); break;
     }
 }
 
