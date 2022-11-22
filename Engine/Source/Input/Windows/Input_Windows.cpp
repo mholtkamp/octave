@@ -63,6 +63,10 @@ void INP_Update()
             input.mGamepads[i].mAxes[GAMEPAD_AXIS_LTHUMB_Y] = (float)input.mXinputStates[i].Gamepad.sThumbLY / 32767;
             input.mGamepads[i].mAxes[GAMEPAD_AXIS_RTHUMB_X] = (float)input.mXinputStates[i].Gamepad.sThumbRX / 32767;
             input.mGamepads[i].mAxes[GAMEPAD_AXIS_RTHUMB_Y] = (float)input.mXinputStates[i].Gamepad.sThumbRY / 32767;
+
+            // Set digital inputs for analog triggers
+            input.mGamepads[i].mButtons[GAMEPAD_L2] = input.mGamepads[i].mAxes[GAMEPAD_AXIS_LTRIGGER] > 0.2f;
+            input.mGamepads[i].mButtons[GAMEPAD_R2] = input.mGamepads[i].mAxes[GAMEPAD_AXIS_RTRIGGER] > 0.2f;
         }
         else
         {
