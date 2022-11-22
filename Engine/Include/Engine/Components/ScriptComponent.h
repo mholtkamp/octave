@@ -94,6 +94,7 @@ public:
     bool LuaFuncCall(int numArgs, int numResults = 0);
 
     Datum GetField(const char* key);
+    void SetField(const char* key, const Datum& value);
 
     static bool OnRepHandler(Datum* datum, const void* newValue);
 

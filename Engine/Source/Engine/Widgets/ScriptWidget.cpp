@@ -200,6 +200,27 @@ void ScriptWidget::CallFunction(const char* name, uint32_t numParams, const Datu
     }
 }
 
+Datum ScriptWidget::GetField(const char* key)
+{
+    Datum ret;
+
+    if (mTableName != "")
+    {
+        ret = ScriptUtils::GetField(mTableName.c_str(), key);
+    }
+
+    return ret;
+}
+
+void ScriptWidget::SetField(const char* key, const Datum& value)
+{
+    if (mTableName != "")
+    {
+        ScriptUtils::SetField(mTableName.c_str(), key, value);
+    }
+}
+
+
 void ScriptWidget::CreateScriptInstance()
 {
 #if LUA_ENABLED
