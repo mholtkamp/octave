@@ -1460,25 +1460,23 @@ Datum ScriptComponent::GetField(const char* key)
 {
     Datum ret;
 
-#if LUA_ENABLED
     if (mTableName != "")
     {
-        lua_State* L = GetLua();
-
-        // Grab the script instance table
-        lua_getglobal(L, mTableName.c_str());
-        OCT_ASSERT(lua_istable(L, -1));
-        lua_getfield(L, -1, key);
-
-        LuaObjectToDatum(L, -1, ret);
-
-        // Pop field and instance table
-        lua_pop(L, 2);
+        ret = ScriptUtils::GetField(mTableName.c_str(), key);
     }
-#endif
 
     return ret;
 }
+
+
+void ScriptComponent::SetField(const char* key, const Datum& value)
+{
+    if (mTableName != "")
+    {
+        ScriptUtils::SetField(mTableName.c_str(), key, value);
+    }
+}
+
 
 bool ScriptComponent::OnRepHandler(Datum* datum, const void* newValue)
 {
