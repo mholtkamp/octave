@@ -40,6 +40,8 @@ public:
 
     void InspectAsset(Asset* asset);
 
+    void RefreshProperties();
+
     void SetMode(PropertiesMode mode);
     PropertiesMode GetMode() const;
 

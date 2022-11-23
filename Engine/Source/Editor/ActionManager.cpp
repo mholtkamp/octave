@@ -26,6 +26,7 @@
 #include "PanelManager.h"
 #include "Widgets/AssetsPanel.h"
 #include "Widgets/HierarchyPanel.h"
+#include "Widgets/PropertiesPanel.h"
 #include "Widgets/ActionList.h"
 #include "Assets/Texture.h"
 #include "Assets/StaticMesh.h"
@@ -2004,6 +2005,13 @@ void ActionEditProperty::Execute()
         mPreviousValue.SetValue(prop->GetValue(mIndex));
 
         prop->SetValue(mValue.mData.vp, mIndex, 1);
+
+        // Script properties are stored internally and propagated to scripts
+        // so after setting the value we need to refresh property widgets.
+        if (!prop->IsExternal())
+        {
+            PanelManager::Get()->GetPropertiesPanel()->RefreshProperties();
+        }
     }
 }
 
@@ -2017,6 +2025,13 @@ void ActionEditProperty::Reverse()
     if (prop != nullptr)
     {
         prop->SetValue(mPreviousValue.GetValue(0), mIndex, 1);
+
+        // Script properties are stored internally and propagated to scripts
+        // so after setting the value we need to refresh property widgets.
+        if (!prop->IsExternal())
+        {
+            PanelManager::Get()->GetPropertiesPanel()->RefreshProperties();
+        }
     }
 }
 
