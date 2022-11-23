@@ -116,6 +116,22 @@ int Actor_Lua::IsA(lua_State* L)
     return 1;
 }
 
+int Actor_Lua::Equals(lua_State* L)
+{
+    Actor* actorA = CHECK_ACTOR(L, 1);
+    Actor* actorB = nullptr;
+
+    if (lua_isuserdata(L, 2))
+    {
+        actorB = CHECK_ACTOR(L, 2);
+    }
+
+    bool ret = (actorA == actorB);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Actor_Lua::GetName(lua_State* L)
 {
     Actor* actor = CHECK_ACTOR(L, 1);
@@ -583,6 +599,15 @@ int Actor_Lua::IsPersistent(lua_State* L)
     return 1;
 }
 
+void Actor_Lua::BindCommon(lua_State* L, int mtIndex)
+{
+    lua_pushcfunction(L, Destroy);
+    lua_setfield(L, mtIndex, "__gc");
+
+    lua_pushcfunction(L, Equals);
+    lua_setfield(L, mtIndex, "__eq");
+}
+
 void Actor_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -591,8 +616,7 @@ void Actor_Lua::Bind()
         ACTOR_LUA_FLAG, 
         nullptr);
 
-    lua_pushcfunction(L, Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, Actor_Lua::CreateComponent);
     lua_setfield(L, mtIndex, "CreateComponent");
@@ -608,6 +632,9 @@ void Actor_Lua::Bind()
 
     lua_pushcfunction(L, Actor_Lua::IsA);
     lua_setfield(L, mtIndex, "IsA");
+
+    lua_pushcfunction(L, Actor_Lua::Equals);
+    lua_setfield(L, mtIndex, "Equals");
 
     lua_pushcfunction(L, Actor_Lua::GetName);
     lua_setfield(L, mtIndex, "GetName");

@@ -493,8 +493,7 @@ void ParticleSystem_Lua::Bind()
         PARTICLE_SYSTEM_LUA_FLAG,
         ASSET_LUA_NAME);
 
-    lua_pushcfunction(L, Asset_Lua::Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    Asset_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, SetMaterial);
     lua_setfield(L, mtIndex, "SetMaterial");

@@ -74,8 +74,7 @@ void Font_Lua::Bind()
         FONT_LUA_FLAG,
         ASSET_LUA_NAME);
 
-    lua_pushcfunction(L, Asset_Lua::Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    Asset_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, GetSize);
     lua_setfield(L, mtIndex, "GetSize");

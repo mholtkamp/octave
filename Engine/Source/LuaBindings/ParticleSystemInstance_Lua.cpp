@@ -27,8 +27,7 @@ void ParticleSystemInstance_Lua::Bind()
     lua_pushcfunction(L, CreateNew);
     lua_setfield(L, mtIndex, "Create");
 
-    lua_pushcfunction(L, Asset_Lua::Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    Asset_Lua::BindCommon(L, mtIndex);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

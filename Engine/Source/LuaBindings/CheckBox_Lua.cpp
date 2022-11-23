@@ -39,11 +39,10 @@ void CheckBox_Lua::Bind()
         CHECK_BOX_LUA_FLAG,
         SELECTOR_LUA_NAME);
 
+    Widget_Lua::BindCommon(L, mtIndex);
+
     lua_pushcfunction(L, CreateNew);
     lua_setfield(L, mtIndex, "Create");
-
-    lua_pushcfunction(L, Widget_Lua::Destroy);
-    lua_setfield(L, mtIndex, "__gc");
 
     lua_pushcfunction(L, IsChecked);
     lua_setfield(L, mtIndex, "IsChecked");

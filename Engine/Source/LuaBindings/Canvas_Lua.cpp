@@ -19,11 +19,10 @@ void Canvas_Lua::Bind()
         CANVAS_LUA_FLAG,
         WIDGET_LUA_NAME);
 
+    Widget_Lua::BindCommon(L, mtIndex);
+
     lua_pushcfunction(L, CreateNew);
     lua_setfield(L, mtIndex, "Create");
-
-    lua_pushcfunction(L, Widget_Lua::Destroy);
-    lua_setfield(L, mtIndex, "__gc");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

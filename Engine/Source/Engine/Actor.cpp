@@ -493,8 +493,7 @@ int Actor::CreateActorMetatable(lua_State* L, const char* className, const char*
             classFlag,
             parentName);
 
-        lua_pushcfunction(L, Actor_Lua::Destroy);
-        lua_setfield(L, mtIndex, "__gc");
+        Actor_Lua::BindCommon(L, mtIndex);
 
         return mtIndex;
 
