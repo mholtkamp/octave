@@ -102,6 +102,20 @@ int Actor_Lua::DestroyComponent(lua_State* L)
     return 0;
 }
 
+int Actor_Lua::IsA(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+    const char* className = CHECK_STRING(L, 2);
+
+    char classFlag[64];
+    snprintf(classFlag, 64, "cf%s", className);
+
+    bool ret = CheckClassFlag(L, 1, classFlag);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Actor_Lua::GetName(lua_State* L)
 {
     Actor* actor = CHECK_ACTOR(L, 1);
@@ -591,6 +605,9 @@ void Actor_Lua::Bind()
 
     lua_pushcfunction(L, Actor_Lua::DestroyComponent);
     lua_setfield(L, mtIndex, "DestroyComponent");
+
+    lua_pushcfunction(L, Actor_Lua::IsA);
+    lua_setfield(L, mtIndex, "IsA");
 
     lua_pushcfunction(L, Actor_Lua::GetName);
     lua_setfield(L, mtIndex, "GetName");
