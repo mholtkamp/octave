@@ -27,6 +27,8 @@ struct Actor_Lua
     static int CreateComponent(lua_State* L);
     static int CloneComponent(lua_State* L);
     static int DestroyComponent(lua_State* L);
+
+    static int IsA(lua_State* L);
     
     static int GetName(lua_State* L);
     static int SetName(lua_State* L);
