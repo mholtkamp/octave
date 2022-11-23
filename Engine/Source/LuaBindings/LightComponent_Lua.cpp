@@ -73,8 +73,7 @@ void LightComponent_Lua::Bind()
         LIGHT_COMPONENT_LUA_FLAG,
         TRANSFORM_COMPONENT_LUA_NAME);
 
-    lua_pushcfunction(L, Component_Lua::Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    Component_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, SetColor);
     lua_setfield(L, mtIndex, "SetColor");

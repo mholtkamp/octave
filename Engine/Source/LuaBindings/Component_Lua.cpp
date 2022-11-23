@@ -181,6 +181,15 @@ int Component_Lua::CheckType(lua_State* L)
     return ret;
 }
 
+void Component_Lua::BindCommon(lua_State* L, int mtIndex)
+{
+    lua_pushcfunction(L, Destroy);
+    lua_setfield(L, mtIndex, "__gc");
+
+    lua_pushcfunction(L, Equals);
+    lua_setfield(L, mtIndex, "__eq");
+}
+
 void Component_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -189,8 +198,7 @@ void Component_Lua::Bind()
         COMPONENT_LUA_FLAG,
         nullptr);
 
-    lua_pushcfunction(L, Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, IsValid);
     lua_setfield(L, mtIndex, "IsValid");

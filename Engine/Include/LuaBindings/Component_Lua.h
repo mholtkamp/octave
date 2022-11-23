@@ -34,6 +34,7 @@ struct Component_Lua
 
     static int CheckType(lua_State* L);
 
+    static void BindCommon(lua_State* L, int mtIndex);
     static void Bind();
 };
 
