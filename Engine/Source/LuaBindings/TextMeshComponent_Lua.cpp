@@ -135,8 +135,7 @@ void TextMeshComponent_Lua::Bind()
         TEXT_MESH_COMPONENT_LUA_FLAG,
         STATIC_MESH_COMPONENT_LUA_NAME);
 
-    lua_pushcfunction(L, Component_Lua::Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    Component_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, SetText);
     lua_setfield(L, mtIndex, "SetText");

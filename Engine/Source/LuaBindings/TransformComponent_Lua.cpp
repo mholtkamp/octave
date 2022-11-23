@@ -365,8 +365,7 @@ void TransformComponent_Lua::Bind()
         TRANSFORM_COMPONENT_LUA_FLAG,
         COMPONENT_LUA_NAME);
 
-    lua_pushcfunction(L, Component_Lua::Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    Component_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, TransformComponent_Lua::Attach);
     lua_setfield(L, mtIndex, "Attach");

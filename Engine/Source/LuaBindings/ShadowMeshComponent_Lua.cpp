@@ -14,8 +14,7 @@ void ShadowMeshComponent_Lua::Bind()
         SHADOW_MESH_COMPONENT_LUA_FLAG,
         STATIC_MESH_COMPONENT_LUA_NAME);
 
-    lua_pushcfunction(L, Component_Lua::Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    Component_Lua::BindCommon(L, mtIndex);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

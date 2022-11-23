@@ -172,8 +172,7 @@ void ScriptComponent_Lua::Bind()
         SCRIPT_COMPONENT_LUA_FLAG,
         COMPONENT_LUA_NAME);
 
-    lua_pushcfunction(L, Component_Lua::Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    Component_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, SetFile);
     lua_setfield(L, mtIndex, "SetFile");
