@@ -10,6 +10,7 @@
 #include "Components/TransformComponent.h"
 #include "Engine.h"
 #include "World.h"
+#include "TimerManager.h"
 #include "Assets/Level.h"
 #include "EditorUtils.h"
 #include "Widgets/ActionList.h"
@@ -277,6 +278,7 @@ void EndPlayInEditor()
     }
 
     GetWorld()->DestroyAllActors();
+    GetTimerManager()->ClearAllTimers();
 
     // Fake Shutdown
     OctPreShutdown();
