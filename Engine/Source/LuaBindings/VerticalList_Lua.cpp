@@ -121,11 +121,10 @@ void VerticalList_Lua::Bind()
         VERTICAL_LIST_LUA_FLAG,
         CANVAS_LUA_NAME);
 
+    Widget_Lua::BindCommon(L, mtIndex);
+
     lua_pushcfunction(L, CreateNew);
     lua_setfield(L, mtIndex, "Create");
-
-    lua_pushcfunction(L, Widget_Lua::Destroy);
-    lua_setfield(L, mtIndex, "__gc");
 
     lua_pushcfunction(L, AddListItem);
     lua_setfield(L, mtIndex, "AddListItem");

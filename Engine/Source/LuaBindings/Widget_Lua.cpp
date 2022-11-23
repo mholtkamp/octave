@@ -100,6 +100,22 @@ int Widget_Lua::Destroy(lua_State* L)
     return 0;
 }
 
+int Widget_Lua::Equals(lua_State* L)
+{
+    Widget* widgetA = CHECK_WIDGET(L, 1);
+    Widget* widgetB = nullptr;
+
+    if (lua_isuserdata(L, 2))
+    {
+        widgetB = CHECK_WIDGET(L, 2);
+    }
+
+    bool ret = (widgetA == widgetB);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Widget_Lua::CreateChildWidget(lua_State* L)
 {
     Widget* widget = CHECK_WIDGET(L, 1);
@@ -784,6 +800,15 @@ int Widget_Lua::CheckType(lua_State* L)
     return ret;
 }
 
+void Widget_Lua::BindCommon(lua_State* L, int mtIndex)
+{
+    lua_pushcfunction(L, Destroy);
+    lua_setfield(L, mtIndex, "__gc");
+
+    lua_pushcfunction(L, Equals);
+    lua_setfield(L, mtIndex, "__eq");
+}
+
 void Widget_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -792,11 +817,13 @@ void Widget_Lua::Bind()
         WIDGET_LUA_FLAG,
         nullptr);
 
+    BindCommon(L, mtIndex);
+
     lua_pushcfunction(L, CreateNew);
     lua_setfield(L, mtIndex, "Create");
 
-    lua_pushcfunction(L, Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    lua_pushcfunction(L, Equals);
+    lua_setfield(L, mtIndex, "Equals");
 
     lua_pushcfunction(L, CreateChildWidget);
     lua_setfield(L, mtIndex, "CreateChildWidget");

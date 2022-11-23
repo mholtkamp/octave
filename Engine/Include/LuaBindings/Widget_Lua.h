@@ -19,6 +19,8 @@ struct Widget_Lua
     static int CreateNew(lua_State* L, const char* className, Widget** outWidget = nullptr);
     static int Destroy(lua_State* L);
 
+    static int Equals(lua_State* L);
+
     static int CreateChildWidget(lua_State* L);
     static int GetRect(lua_State* L);
     static int UpdateRect(lua_State* L);
@@ -80,6 +82,7 @@ struct Widget_Lua
 
     static int CheckType(lua_State* L);
 
+    static void BindCommon(lua_State* L, int mtIndex);
     static void Bind();
 };
 

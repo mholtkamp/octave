@@ -29,6 +29,7 @@ struct Actor_Lua
     static int DestroyComponent(lua_State* L);
 
     static int IsA(lua_State* L);
+    static int Equals(lua_State* L);
     
     static int GetName(lua_State* L);
     static int SetName(lua_State* L);
@@ -84,6 +85,7 @@ struct Actor_Lua
 
     // TODO-LUA: Add calls to InvokeNetFunc()
 
+    static void BindCommon(lua_State* L, int mtIndex);
     static void Bind();
 };
 

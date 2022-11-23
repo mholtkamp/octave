@@ -13,8 +13,7 @@ void Level_Lua::Bind()
         LEVEL_LUA_FLAG,
         ASSET_LUA_NAME);
 
-    lua_pushcfunction(L, Asset_Lua::Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    Asset_Lua::BindCommon(L, mtIndex);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

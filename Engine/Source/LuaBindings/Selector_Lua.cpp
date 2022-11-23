@@ -135,11 +135,10 @@ void Selector_Lua::Bind()
         SELECTOR_LUA_FLAG,
         BUTTON_LUA_NAME);
 
+    Widget_Lua::BindCommon(L, mtIndex);
+
     lua_pushcfunction(L, CreateNew);
     lua_setfield(L, mtIndex, "Create");
-
-    lua_pushcfunction(L, Widget_Lua::Destroy);
-    lua_setfield(L, mtIndex, "__gc");
 
     lua_pushcfunction(L, AddSelection);
     lua_setfield(L, mtIndex, "AddSelection");

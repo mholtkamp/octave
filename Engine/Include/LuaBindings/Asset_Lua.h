@@ -21,6 +21,8 @@ struct Asset_Lua
     static int Create(lua_State* L, const Asset* asset, bool allowNull = false);
     static int Destroy(lua_State* L);
 
+    static int Equals(lua_State* L);
+
     static int GetName(lua_State* L);
     static int IsRefCounted(lua_State* L);
     static int GetRefCount(lua_State* L);
@@ -30,6 +32,7 @@ struct Asset_Lua
 
     static int IsLoaded(lua_State* L);
 
+    static void BindCommon(lua_State* L, int mtIndex);
     static void Bind();
 };
 

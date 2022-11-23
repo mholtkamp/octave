@@ -38,6 +38,22 @@ int Asset_Lua::Destroy(lua_State* L)
     return 0;
 }
 
+int Asset_Lua::Equals(lua_State* L)
+{
+    Asset* assetA = CHECK_ASSET(L, 1);
+    Asset* assetB = nullptr;
+
+    if (lua_isuserdata(L, 2))
+    {
+        assetB = CHECK_ASSET(L, 2);
+    }
+
+    bool ret = (assetA == assetB);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Asset_Lua::GetName(lua_State* L)
 {
     Asset* asset = CHECK_ASSET(L, 1);
@@ -103,6 +119,15 @@ int Asset_Lua::IsLoaded(lua_State* L)
     return 1;
 }
 
+void Asset_Lua::BindCommon(lua_State* L, int mtIndex)
+{
+    lua_pushcfunction(L, Destroy);
+    lua_setfield(L, mtIndex, "__gc");
+
+    lua_pushcfunction(L, Equals);
+    lua_setfield(L, mtIndex, "__eq");
+}
+
 void Asset_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -111,8 +136,10 @@ void Asset_Lua::Bind()
         ASSET_LUA_FLAG,
         nullptr);
 
-    lua_pushcfunction(L, Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    BindCommon(L, mtIndex);
+
+    lua_pushcfunction(L, Equals);
+    lua_setfield(L, mtIndex, "Equals");
 
     lua_pushcfunction(L, GetName);
     lua_setfield(L, mtIndex, "GetName");
