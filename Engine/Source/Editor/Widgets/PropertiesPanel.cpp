@@ -188,6 +188,23 @@ void PropertiesPanel::InspectAsset(Asset* asset)
     UpdateDisplayedCanvas();
 }
 
+void PropertiesPanel::RefreshProperties()
+{
+    if (GetSelectedComponent() != nullptr)
+    {
+        Component* selComp = GetSelectedComponent();
+        mCurrentComponent = nullptr;
+        OnSelectedComponentChanged();
+    }
+
+    if (mCurrentAsset != nullptr)
+    {
+        Asset* asset = mCurrentAsset;
+        mCurrentAsset = nullptr;
+        InspectAsset(asset);
+    }
+}
+
 void PropertiesPanel::Update()
 {
     Panel::Update();
