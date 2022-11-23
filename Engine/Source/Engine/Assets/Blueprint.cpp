@@ -4,6 +4,7 @@
 #include "Log.h"
 #include "Engine.h"
 #include "NetworkManager.h"
+#include "Components/ScriptComponent.h"
 
 FORCE_LINK_DEF(Blueprint);
 DEFINE_ASSET(Blueprint);
@@ -253,8 +254,19 @@ Actor* Blueprint::Instantiate(World* world)
             {
                 dstProps.clear();
                 defaultComp->GatherProperties(dstProps);
-
                 CopyPropertyValues(dstProps, bpComp->mProperties);
+
+                if (defaultComp->GetType() == ScriptComponent::GetStaticType() &&
+                    static_cast<ScriptComponent*>(defaultComp)->GetFile() != "")
+                {
+                    // If this is a script component, then it may have script properties
+                    // that can only be copied once the script has been started, which should
+                    // have happened once the Filename property was copied.
+                    // So gather + copy the properies a second time.
+                    dstProps.clear();
+                    defaultComp->GatherProperties(dstProps);
+                    CopyPropertyValues(dstProps, bpComp->mProperties);
+                }
 
                 copiedComps[i] = true;
                 OCT_ASSERT(bpCompIdx >= 0 && !copiedBpComps[bpCompIdx]);
@@ -345,8 +357,16 @@ Actor* Blueprint::Instantiate(World* world)
 
                 dstProps.clear();
                 comp->GatherProperties(dstProps);
-
                 CopyPropertyValues(dstProps, mComponents[i].mProperties);
+
+                if (comp->GetType() == ScriptComponent::GetStaticType() &&
+                    static_cast<ScriptComponent*>(comp)->GetFile() != "")
+                {
+                    // Script might have just been started, need to refetch and recopy script props.
+                    dstProps.clear();
+                    comp->GatherProperties(dstProps);
+                    CopyPropertyValues(dstProps, mComponents[i].mProperties);
+                }
             }
         }
 

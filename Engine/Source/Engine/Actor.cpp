@@ -394,11 +394,18 @@ void Actor::GatherPropertyOverrides(std::vector<PropertyOverride>& outOverrides)
         std::vector<Property> actorProps;
         GatherProperties(actorProps);
 
+        Actor* defaultActor = Actor::CreateInstance(GetType());
+        std::vector<Property> defaultActorProps;
+        defaultActor->GatherProperties(defaultActorProps);
+
         for (uint32_t i = 0; i < actorProps.size(); ++i)
         {
             const Property* bpProp = bp->GetActorProperty(actorProps[i].mName.c_str());
-            if (bpProp == nullptr ||
-                actorProps[i] != *bpProp)
+            const Property* defaultProp = FindProperty(defaultActorProps, actorProps[i].mName);
+
+            if ((bpProp == nullptr && defaultProp == nullptr) ||           // Prop doesnt exist in BP or default
+                (bpProp != nullptr && actorProps[i] != *bpProp) ||         // Prop exists on bp but it's different
+                (bpProp == nullptr && defaultProp != nullptr && actorProps[i] != *defaultProp)) // Prop exists on the default actor but it's different
             {
                 PropertyOverride over;
                 over.mIndex = -1; // Actor
@@ -407,20 +414,29 @@ void Actor::GatherPropertyOverrides(std::vector<PropertyOverride>& outOverrides)
             }
         }
 
+        delete defaultActor;
+        defaultActor = nullptr;
+
         // Next, iterate over component properties.
         for (int32_t c = 0; c < int32_t(mComponents.size()); ++c)
         {
             std::vector<Property> compProps;
             mComponents[c]->GatherProperties(compProps);
 
+            Component* defaultComp = Component::CreateInstance(mComponents[c]->GetType());
+            std::vector<Property> defaultCompProps;
+            defaultComp->GatherProperties(defaultCompProps);
+
             for (uint32_t i = 0; i < compProps.size(); ++i)
             {
                 const Property* bpProp = bp->GetComponentProperty(c, compProps[i].mName.c_str());
+                const Property* defaultProp = FindProperty(defaultCompProps, compProps[i].mName);
 
                 bool rootPos = (mComponents[c] == GetRootComponent()) && (compProps[i].mName == "Position");
 
-                if (bpProp == nullptr ||
-                    compProps[i] != *bpProp ||
+                if ((bpProp == nullptr && defaultProp == nullptr) || 
+                    (bpProp != nullptr && compProps[i] != *bpProp) || 
+                    (bpProp == nullptr && defaultProp != nullptr && compProps[i] != *defaultProp) ||
                     rootPos)
                 {
                     PropertyOverride over;
@@ -429,6 +445,9 @@ void Actor::GatherPropertyOverrides(std::vector<PropertyOverride>& outOverrides)
                     outOverrides.push_back(over);
                 }
             }
+
+            delete defaultComp;
+            defaultComp = nullptr;
         }
     }
 }
