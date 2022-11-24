@@ -55,7 +55,8 @@ struct Actor_Lua
     static int GetUpVector(lua_State* L);
 
     static int SweepToPosition(lua_State* L);
-    
+    static int GetLevel(lua_State* L);
+
     static int GetNetId(lua_State* L);
     static int GetOwningHost(lua_State* L);
     static int SetOwningHost(lua_State* L);

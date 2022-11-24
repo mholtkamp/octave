@@ -3,6 +3,7 @@
 #include "Engine.h"
 
 #include "Actor.h"
+#include "Assets/Level.h"
 #include "Components/Component.h"
 #include "Components/PrimitiveComponent.h"
 #include "Components/ScriptComponent.h"
@@ -367,6 +368,16 @@ int Actor_Lua::SweepToPosition(lua_State* L)
     return 1;
 }
 
+int Actor_Lua::GetLevel(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+
+    Asset* asset = actor->GetLevel();
+
+    Asset_Lua::Create(L, asset);
+    return 1;
+}
+
 int Actor_Lua::GetNetId(lua_State* L)
 {
     Actor* actor = CHECK_ACTOR(L, 1);
@@ -697,6 +708,9 @@ void Actor_Lua::Bind()
 
     lua_pushcfunction(L, Actor_Lua::SweepToPosition);
     lua_setfield(L, mtIndex, "SweepToPosition");
+
+    lua_pushcfunction(L, Actor_Lua::GetLevel);
+    lua_setfield(L, mtIndex, "GetLevel");
 
     lua_pushcfunction(L, Actor_Lua::GetNetId);
     lua_setfield(L, mtIndex, "GetNetId");
