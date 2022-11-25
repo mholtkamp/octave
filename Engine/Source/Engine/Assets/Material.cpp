@@ -212,21 +212,21 @@ void Material::GatherProperties(std::vector<Property>& outProps)
 {
     Asset::GatherProperties(outProps);
 
-    outProps.push_back(Property(DatumType::Enum, "Shading Model", this, &mParams.mShadingModel, 1, HandlePropChange, 0, int32_t(ShadingModel::Count), sShadingModelStrings));
-    outProps.push_back(Property(DatumType::Enum, "Blend Mode", this, &mParams.mBlendMode, 1, HandlePropChange, 0, int32_t(BlendMode::Count), gBlendModeStrings));
-    outProps.push_back(Property(DatumType::Enum, "Vertex Color Mode", this, &mParams.mVertexColorMode, 1, HandlePropChange, 0, int32_t(VertexColorMode::Count), sVertexColorModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "Shading Model", this, &mParams.mShadingModel, 1, HandlePropChange, 0, int32_t(ShadingModel::Count), sShadingModelStrings));
+    outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mParams.mBlendMode, 1, HandlePropChange, 0, int32_t(BlendMode::Count), gBlendModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "Vertex Color Mode", this, &mParams.mVertexColorMode, 1, HandlePropChange, 0, int32_t(VertexColorMode::Count), sVertexColorModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 0", this, &mParams.mTextures[TEXTURE_0], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 0", this, &mParams.mUvMaps[TEXTURE_0], 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Enum, "TEV Mode 0", this, &mParams.mTevModes[TEXTURE_0], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "TEV Mode 0", this, &mParams.mTevModes[TEXTURE_0], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 1", this, &mParams.mTextures[TEXTURE_1], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 1", this, &mParams.mUvMaps[TEXTURE_1], 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Enum, "TEV Mode 1", this, &mParams.mTevModes[TEXTURE_1], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "TEV Mode 1", this, &mParams.mTevModes[TEXTURE_1], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 2", this, &mParams.mTextures[TEXTURE_2], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 2", this, &mParams.mUvMaps[TEXTURE_2], 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Enum, "TEV Mode 2", this, &mParams.mTevModes[TEXTURE_2], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "TEV Mode 2", this, &mParams.mTevModes[TEXTURE_2], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 3", this, &mParams.mTextures[TEXTURE_3], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 3", this, &mParams.mUvMaps[TEXTURE_3], 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Enum, "TEV Mode 3", this, &mParams.mTevModes[TEXTURE_3], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "TEV Mode 3", this, &mParams.mTevModes[TEXTURE_3], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
     outProps.push_back(Property(DatumType::Vector2D, "UV Offset 0", this, &mParams.mUvOffsets[0], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "UV Scale 0", this, &mParams.mUvScales[0], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "UV Offset 1", this, &mParams.mUvOffsets[1], 1, HandlePropChange));

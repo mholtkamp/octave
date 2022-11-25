@@ -23,7 +23,6 @@ enum class DatumType : uint8_t
     Vector,
     Color,
     Asset,
-    Enum,
     Byte,
     Table,
     Pointer,
@@ -42,7 +41,6 @@ union DatumData
     glm::vec4* v4;
     AssetRef* as;
     //ActorRef* ac;
-    uint32_t* e;
     uint8_t* by;
     TableDatum* t;
     RTTI** p;
@@ -80,7 +78,7 @@ public:
 
     // Conversion operators
     operator int32_t() const { return GetInteger(); }
-    operator uint32_t() const { return (mType == DatumType::Integer) ? uint32_t(GetInteger()) : GetEnum(); }
+    operator uint32_t() const { return (uint32_t)GetInteger(); }
     operator float() const { return (mType == DatumType::Integer) ? float(GetInteger()) : GetFloat(); }
     operator bool() const { return GetBool(); }
     operator const char*() const { return GetString().c_str(); }
@@ -117,7 +115,6 @@ public:
     void SetVector(const glm::vec3& value, uint32_t index = 0);
     void SetColor(const glm::vec4& value, uint32_t index = 0);
     void SetAsset(const Asset* value, uint32_t index = 0);
-    void SetEnum(uint32_t value, uint32_t index = 0);
     void SetByte(uint8_t value, uint32_t index = 0);
     void SetTableDatum(const TableDatum& value, uint32_t index = 0);
     void SetPointer(RTTI* value, uint32_t index = 0);
@@ -146,7 +143,6 @@ public:
     const glm::vec3& GetVector(uint32_t index = 0) const;
     const glm::vec4& GetColor(uint32_t index = 0) const;
     Asset* GetAsset(uint32_t index = 0) const;
-    uint32_t GetEnum(uint32_t index = 0) const;
     uint8_t GetByte(uint32_t index = 0) const;
     TableDatum& GetTableDatum(uint32_t index = 0);
     const TableDatum& GetTableDatum(uint32_t index = 0) const;
@@ -233,7 +229,6 @@ public:
     Datum& operator=(const glm::vec3& src);
     Datum& operator=(const glm::vec4& src);
     Datum& operator=(Asset* src);
-    // No operator= for enum value since it conflicts with int32_t
     Datum& operator=(uint8_t src);
     Datum& operator=(RTTI* srC);
 

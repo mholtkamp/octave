@@ -409,12 +409,6 @@ void ScriptComponent::GatherScriptProperties()
                                     newProp.PushBack(asset);
                                     break;
                                 }
-                                case DatumType::Enum:
-                                {
-                                    push = false;
-                                    LogError("Enum script properties are not supported.");
-                                    break;
-                                }
                                 case DatumType::Byte:
                                 {
                                     push = false;
@@ -637,12 +631,6 @@ void ScriptComponent::GatherReplicatedData()
                                         asset = CHECK_ASSET(L, -1);
                                     }
                                     newDatum.PushBack(asset);
-                                    break;
-                                }
-                                case DatumType::Enum:
-                                {
-                                    push = false;
-                                    LogError("Enum script net data are not supported.");
                                     break;
                                 }
                                 case DatumType::Byte:
@@ -988,12 +976,6 @@ bool ScriptComponent::DownloadDatum(lua_State* L, Datum& datum, int tableIdx, co
             datum.SetAsset(asset);
             break;
         }
-        case DatumType::Enum:
-        {
-            success = false;
-            LogError("Enum script datum are not supported.");
-            break;
-        }
         case DatumType::Byte:
         {
             success = false;
@@ -1056,7 +1038,6 @@ void ScriptComponent::UploadDatum(Datum& datum, const char* varName)
         case DatumType::Color: Vector_Lua::Create(L, datum.GetColor()); break;
         case DatumType::Asset: Asset_Lua::Create(L, datum.GetAsset()); break;
 
-        case DatumType::Enum:
         case DatumType::Byte:
         case DatumType::Table:
         case DatumType::Pointer:

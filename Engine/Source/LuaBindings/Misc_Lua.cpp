@@ -246,9 +246,6 @@ void BindDatumType()
     lua_pushinteger(L, (int)DatumType::Asset);
     lua_setfield(L, tableIdx, "Asset");
 
-    lua_pushinteger(L, (int)DatumType::Enum);
-    lua_setfield(L, tableIdx, "Enum");
-
     lua_pushinteger(L, (int)DatumType::Byte);
     lua_setfield(L, tableIdx, "Byte");
 

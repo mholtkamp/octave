@@ -53,7 +53,6 @@ bool NetDatum::ShouldReplicate() const
             case DatumType::Vector: equal = (mPrevData.v3[i] == mData.v3[i]); break;
             case DatumType::Color: equal = (mPrevData.v4[i] == mData.v4[i]); break;
             case DatumType::Asset: equal = (mPrevData.as[i] == mData.as[i]); break;
-            case DatumType::Enum: equal = (mPrevData.e[i] == mData.e[i]); break;
             case DatumType::Byte: equal = (mPrevData.by[i] == mData.by[i]); break;
             case DatumType::Table: equal = false; OCT_ASSERT(0); break; // Table not supported for replication
             case DatumType::Pointer: equal = false; OCT_ASSERT(0); break; // Pointers not supported for replication
@@ -102,7 +101,6 @@ void NetDatum::PostReplicate()
             case DatumType::Vector: mPrevData.v3[i] = mData.v3[i]; break;
             case DatumType::Color: mPrevData.v4[i] = mData.v4[i]; break;
             case DatumType::Asset: mPrevData.as[i] = mData.as[i]; break;
-            case DatumType::Enum: mPrevData.e[i] = mData.e[i]; break;
             case DatumType::Byte: mPrevData.by[i] = mData.by[i]; break;
             case DatumType::Table: OCT_ASSERT(0); break; // Table not supported for replication
             case DatumType::Pointer: OCT_ASSERT(0); break; // Pointer not supported for replication

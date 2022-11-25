@@ -196,7 +196,6 @@ uint32_t Datum::GetDataTypeSize() const
         case DatumType::Vector: size = sizeof(glm::vec3); break;
         case DatumType::Color: size = sizeof(glm::vec4); break;
         case DatumType::Asset: size = sizeof(AssetRef); break;
-        case DatumType::Enum: size = sizeof(uint32_t); break;
         case DatumType::Byte: size = sizeof(uint8_t); break;
         case DatumType::Table: size = sizeof(TableDatum); break;
         case DatumType::Pointer: size = sizeof(RTTI*); break;
@@ -311,7 +310,6 @@ void Datum::ReadStream(Stream& stream, bool external)
                     stream.ReadAsset(mData.as[i]);
                     break;
                 }
-                case DatumType::Enum: PushBack(stream.ReadUint32()); break;
                 case DatumType::Byte: PushBack(stream.ReadUint8()); break;
 
                 case DatumType::Table:
@@ -348,7 +346,6 @@ void Datum::WriteStream(Stream& stream) const
             case DatumType::Vector: stream.WriteVec3(mData.v3[i]); break;
             case DatumType::Color: stream.WriteVec4(mData.v4[i]); break;
             case DatumType::Asset: stream.WriteAsset(mData.as[i]); break;
-            case DatumType::Enum: stream.WriteUint32(mData.e[i]); break;
             case DatumType::Byte: stream.WriteUint8(mData.by[i]); break;
             case DatumType::Table: mData.t[i].WriteStream(stream); break;
             case DatumType::Pointer: OCT_ASSERT(0); break; // Can't serialize pointers
@@ -423,13 +420,6 @@ void Datum::SetAsset(const Asset* value, uint32_t index)
         mData.as[index] = value;
 }
 
-void Datum::SetEnum(uint32_t value, uint32_t index)
-{
-    PreSet(index, DatumType::Enum);
-    if (!mChangeHandler || !mChangeHandler(this, &value))
-        mData.e[index] = value;
-}
-
 void Datum::SetByte(uint8_t value, uint32_t index)
 {
     PreSet(index, DatumType::Byte);
@@ -475,7 +465,6 @@ void Datum::SetValue(const void* value, uint32_t index, uint32_t count)
             case DatumType::Vector2D: SetVector2D(*(reinterpret_cast<const glm::vec2*>(value) + i),   index + i); break;
             case DatumType::Vector: SetVector(*(reinterpret_cast<const glm::vec3*>(value) + i),       index + i); break;
             case DatumType::Asset: SetAsset(*(reinterpret_cast<const Asset* const*>(value) + i),      index + i); break;
-            case DatumType::Enum: SetEnum(*(reinterpret_cast<const uint32_t*>(value) + i),            index + i); break;
             case DatumType::Byte: SetByte(*(reinterpret_cast<const uint8_t*>(value) + i),             index + i); break;
             case DatumType::Table: SetTableDatum(*(reinterpret_cast<const TableDatum*>(value) + i),   index + i); break;
             case DatumType::Pointer: SetPointer(*(((RTTI**)value) + i),                               index + i); break;
@@ -497,7 +486,6 @@ void Datum::SetValueRaw(const void* value, uint32_t index)
     case DatumType::Vector2D: mData.v2[index] = *reinterpret_cast<const glm::vec2*>(value); break;
     case DatumType::Vector: mData.v3[index] = *reinterpret_cast<const glm::vec3*>(value); break;
     case DatumType::Asset: mData.as[index] = *reinterpret_cast<const Asset* const*>(value); break;
-    case DatumType::Enum: mData.e[index] = *reinterpret_cast<const uint32_t*>(value); break;
     case DatumType::Byte: mData.by[index] = *reinterpret_cast<const uint8_t*>(value); break;
     case DatumType::Table: mData.t[index] = *reinterpret_cast<const TableDatum*>(value); break;
     case DatumType::Pointer: mData.p[index] = *((RTTI**)value); break;
@@ -553,12 +541,6 @@ void Datum::SetExternal(AssetRef* data,  uint32_t count)
     PreSetExternal(DatumType::Asset);
     mData.as = data;
     PostSetExternal(DatumType::Asset, count);
-}
-void Datum::SetExternal(uint32_t* data,  uint32_t count)
-{
-    PreSetExternal(DatumType::Enum);
-    mData.e = data;
-    PostSetExternal(DatumType::Enum, count);
 }
 void Datum::SetExternal(uint8_t* data,  uint32_t count)
 {
@@ -627,14 +609,6 @@ Asset* Datum::GetAsset(uint32_t index) const
 {
     PreGet(index, DatumType::Asset);
     return mData.as[index].Get();
-}
-
-uint32_t Datum::GetEnum(uint32_t index) const
-{
-    PreGet(index, DatumType::Enum);
-    return mData.e[index];
-    //OCT_ASSERT(mEnumCount > 0);
-    //return *reinterpret_cast<uint32_t*>(mData) % mEnumCount;
 }
 
 uint8_t Datum::GetByte(uint32_t index) const
@@ -787,13 +761,6 @@ void Datum::PushBack(Asset* value)
 {
     PrePushBack(DatumType::Asset);
     new (mData.as + mCount) AssetRef(value);
-    mCount++;
-}
-
-void Datum::PushBack(uint32_t value)
-{
-    PrePushBack(DatumType::Enum);
-    new (mData.e + mCount) uint32_t(value);
     mCount++;
 }
 
@@ -1214,6 +1181,17 @@ bool Datum::operator==(const int32_t& other) const
     return mData.i[0] == other;
 }
 
+bool Datum::operator==(const uint32_t& other) const
+{
+    if (mCount == 0 ||
+        mType != DatumType::Integer)
+    {
+        return false;
+    }
+
+    return mData.i[0] == (int32_t)other;
+}
+
 bool Datum::operator==(const float& other) const
 {
     if (mCount == 0 ||
@@ -1301,17 +1279,6 @@ bool Datum::operator==(const Asset*& other) const
     }
 
     return mData.as[0].Get() == other;
-}
-
-bool Datum::operator==(const uint32_t& other) const
-{
-    if (mCount == 0 ||
-        mType != DatumType::Enum)
-    {
-        return false;
-    }
-
-    return mData.e[0] == other;
 }
 
 bool Datum::operator==(const uint8_t& other) const
@@ -1527,9 +1494,6 @@ void Datum::DeepCopy(const Datum& src, bool forceInternalStorage)
             case DatumType::Asset:
                 PushBack((src.mData.as + i)->Get());
                 break;
-            case DatumType::Enum:
-                PushBack(*(src.mData.e + i));
-                break;
             case DatumType::Byte:
                 PushBack(*(src.mData.by + i));
                 break;
@@ -1696,9 +1660,6 @@ void Datum::ConstructData(DatumData& dataUnion, uint32_t index)
         break;
     case DatumType::Asset:
         new (dataUnion.as + index) AssetRef();
-        break;
-    case DatumType::Enum:
-        dataUnion.e[index] = 0;
         break;
     case DatumType::Byte:
         dataUnion.by[index] = 0;
