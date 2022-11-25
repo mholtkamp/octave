@@ -53,7 +53,7 @@ void TextMeshComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Color, "Color", this, &mColor, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Horizontal Justification", this, &mHorizontalJustification, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Vertical Justification", this, &mVerticalJustification, 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Enum, "Blend Mode", this, &mBlendMode, 1, HandlePropChange, 0, (int32_t)BlendMode::Count, gBlendModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mBlendMode, 1, HandlePropChange, 0, (int32_t)BlendMode::Count, gBlendModeStrings));
 }
 
 void TextMeshComponent::Create()

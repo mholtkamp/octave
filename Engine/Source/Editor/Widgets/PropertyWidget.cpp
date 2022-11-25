@@ -124,16 +124,31 @@ PropertyWidget* CreatePropWidget(const Property& prop, bool arrayElement)
         switch (prop.mType)
         {
         case DatumType::Float: widget = new FloatProp(); break;
-        case DatumType::Integer: widget = new IntegerProp(); break;
+        case DatumType::Integer:
+        {
+            if (prop.mEnumCount > 0)
+            {
+                widget = new EnumProp();
+            }
+            else
+            {
+                widget = new IntegerProp();
+            }
+            
+            break;
+        }
         case DatumType::Vector: widget = new VectorProp(); break;
         case DatumType::Color: widget = new ColorProp(); break;
         case DatumType::String: widget = new StringProp(); break;
         case DatumType::Bool: widget = new BoolProp(); break;
         case DatumType::Asset: widget = new AssetProp(); break;
-        case DatumType::Enum: widget = new EnumProp(); break;
         case DatumType::Byte:
         {
-            if (prop.mExtra == int32_t(ByteExtra::FlagWidget) ||
+            if (prop.mEnumCount > 0)
+            {
+                widget = new EnumProp();
+            }
+            else if (prop.mExtra == int32_t(ByteExtra::FlagWidget) ||
                 prop.mExtra == int32_t(ByteExtra::ExclusiveFlagWidget))
             {
                 ByteFlagProp* flagWidget = new ByteFlagProp();
@@ -723,7 +738,7 @@ void EnumProp::SetProperty(const Property& prop, uint32_t index)
 void EnumProp::Update()
 {
     PropertyWidget::Update();
-    mSelector->SetSelectionIndex(mProperty.GetEnum(mIndex));
+    mSelector->SetSelectionIndex(mProperty.GetType() == DatumType::Byte ? mProperty.GetByte(mIndex) : mProperty.GetInteger(mIndex));
 }
 
 void EnumProp::Write()

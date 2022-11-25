@@ -164,13 +164,6 @@ void Property::PushBackVector(void* value)
             mData.as = vect.data();
             break;
         }
-        case DatumType::Enum:
-        {
-            std::vector<uint32_t>& vect = *((std::vector<uint32_t>*) mVector);
-            vect.push_back(value ? *((uint32_t*)value) : 0);
-            mData.e = vect.data();
-            break;
-        }
         case DatumType::Byte:
         {
             std::vector<uint8_t>& vect = *((std::vector<uint8_t>*) mVector);
@@ -252,12 +245,6 @@ void Property::EraseVector(uint32_t index)
         case DatumType::Asset:
         {
             std::vector<AssetRef>& vect = *((std::vector<AssetRef>*) mVector);
-            vect.erase(vect.begin() + index);
-            break;
-        }
-        case DatumType::Enum:
-        {
-            std::vector<uint32_t>& vect = *((std::vector<uint32_t>*) mVector);
             vect.erase(vect.begin() + index);
             break;
         }
@@ -353,13 +340,6 @@ void Property::ResizeVector(uint32_t count)
             mData.as = vect.data();
             break;
         }
-        case DatumType::Enum:
-        {
-            std::vector<uint32_t>& vect = *((std::vector<uint32_t>*) mVector);
-            vect.resize(count);
-            mData.e = vect.data();
-            break;
-        }
         case DatumType::Byte:
         {
             std::vector<uint8_t>& vect = *((std::vector<uint8_t>*) mVector);
@@ -453,13 +433,6 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
     {
         std::vector<AssetRef>& vect = *((std::vector<AssetRef>*) mVector);
         mData.as = vect.data();
-        mCount = (uint8_t) vect.size();
-        break;
-    }
-    case DatumType::Enum:
-    {
-        std::vector<uint32_t>& vect = *((std::vector<uint32_t>*) mVector);
-        mData.e = vect.data();
         mCount = (uint8_t) vect.size();
         break;
     }
