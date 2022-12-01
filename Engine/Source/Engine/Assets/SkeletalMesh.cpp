@@ -59,6 +59,7 @@ void SkeletalMesh::LoadStream(Stream& stream, Platform platform)
     //mNumUvMaps = stream.ReadUint32();
 
     stream.ReadAsset(mMaterial);
+    //stream.ReadAsset(mAnimationLookupMesh);
     if (mMaterial.Get() == nullptr)
     {
         mMaterial = Renderer::Get()->GetDefaultMaterial();
@@ -177,6 +178,7 @@ void SkeletalMesh::SaveStream(Stream& stream, Platform platform)
     stream.WriteUint32(mNumIndices);
 
     stream.WriteAsset(mMaterial);
+    //stream.WriteAsset(mAnimationLookupMesh);
     stream.WriteMatrix(mInvRootTransform);
 
     stream.WriteUint32(uint32_t(mBones.size()));
@@ -334,6 +336,7 @@ void SkeletalMesh::GatherProperties(std::vector<Property>& outProps)
 {
     Asset::GatherProperties(outProps);
     outProps.push_back(Property(DatumType::Asset, "Material", this, &mMaterial, 1, nullptr, int32_t(Material::GetStaticType())));
+    outProps.push_back(Property(DatumType::Asset, "Animation Lookup", this, &mAnimationLookupMesh, 1, nullptr, int32_t(SkeletalMesh::GetStaticType())));
     outProps.push_back(Property(DatumType::Float, "Bounds Scale", this, &mBoundsScale));
 
     // TODO: Do we want default animations?
@@ -430,6 +433,12 @@ const Animation* SkeletalMesh::GetAnimation(const char* name)
         }
     }
 
+    if (mAnimationLookupMesh != nullptr)
+    {
+        SkeletalMesh* animLookup = mAnimationLookupMesh.Get<SkeletalMesh>();
+        retAnim = animLookup->GetAnimation(name);
+    }
+
     return retAnim;
 }
 
@@ -501,6 +510,16 @@ Bounds SkeletalMesh::GetBounds() const
 const glm::mat4 SkeletalMesh::GetBindPoseMatrix(int32_t boneIndex) const
 {
     return mBindPoseMatrices[boneIndex];
+}
+
+SkeletalMesh* SkeletalMesh::GetAnimationLookupMesh()
+{
+    return mAnimationLookupMesh.Get<SkeletalMesh>();
+}
+
+void SkeletalMesh::SetAnimationLookupMesh(SkeletalMesh* lookupMesh)
+{
+    mAnimationLookupMesh = lookupMesh;
 }
 
 void SkeletalMesh::InitBindPose()
