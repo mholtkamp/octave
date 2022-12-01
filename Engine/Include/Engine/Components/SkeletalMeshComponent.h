@@ -35,6 +35,17 @@ struct ActiveAnimation
     bool mLoop = false;
 };
 
+struct QueuedAnimation
+{
+    std::string mName;
+    std::string mDependentAnim;
+    float mTime = 0.0f;
+    float mSpeed = 1.0f;;
+    float mWeight = 0.0f;
+    bool mLoop = false;
+    uint8_t mPriority = 255;
+};
+
 typedef void(*AnimEventHandlerFP)(const AnimEvent& animEvent);
 
 class SkeletalMeshComponent : public MeshComponent
@@ -65,8 +76,11 @@ public:
     SkeletalMesh* GetSkeletalMesh();
 
     void PlayAnimation(const char* animName, bool loop, float speed = 1.0f, float weight = 1.0f, uint8_t priority = 255);
-    void StopAnimation(const char* animName);
-    void StopAllAnimations();
+    void QueueAnimation(const char* animName, bool loop, const char* targetAnim = nullptr, float speed = 1.0f, float weight = 1.0f, uint8_t priority = 255);
+    void StopAnimation(const char* animName, bool cancelQueued = false);
+    void StopAllAnimations(bool cancelQueued = false);
+    void CancelQueuedAnimation(const char* animName);
+    void CancelAllQueuedAnimations();
     bool IsAnimationPlaying(const char* animName);
     void ResetAnimation();
     float GetAnimationSpeed() const;
@@ -82,6 +96,9 @@ public:
 
     ActiveAnimation* FindActiveAnimation(const char* animName);
     std::vector<ActiveAnimation>& GetActiveAnimations();
+
+    QueuedAnimation* FindQueuedAnimation(const char* animName);
+    std::vector<QueuedAnimation>& GetQueuedAnimations();
 
     glm::mat4 GetBoneTransform(const std::string& name) const;
     glm::vec3 GetBonePosition(const std::string& name) const;
@@ -151,6 +168,7 @@ protected:
     std::string mDefaultAnimation;
     float mAnimationSpeed = 1.0f;
     std::vector<ActiveAnimation> mActiveAnimations;
+    std::vector<QueuedAnimation> mQueuedAnimations;
     bool mAnimationPaused;
     bool mRevertToBindPose;
     bool mInheritPose;
