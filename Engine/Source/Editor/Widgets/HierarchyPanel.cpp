@@ -313,7 +313,8 @@ void HierarchyPanel::RefreshCompButtons()
             }
         }
 
-        OCT_ASSERT(compList.size() == components.size());
+        // This assertion is not true if another actor is attached.
+        //OCT_ASSERT(compList.size() == components.size());
 
         mListOffset = glm::min(mListOffset, int32_t(compList.size()) - 1);
         mListOffset = glm::max(mListOffset, 0);

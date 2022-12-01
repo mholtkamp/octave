@@ -293,6 +293,16 @@ bool SkeletalMeshComponent::IsAnimationPaused() const
     return mAnimationPaused;
 }
 
+void SkeletalMeshComponent::SetInheritPose(bool inherit)
+{
+    mInheritPose = inherit;
+}
+
+bool SkeletalMeshComponent::IsInheritPoseEnabled() const
+{
+    return mInheritPose;
+}
+
 bool SkeletalMeshComponent::HasAnimatedThisFrame() const
 {
     return mHasAnimatedThisFrame;
