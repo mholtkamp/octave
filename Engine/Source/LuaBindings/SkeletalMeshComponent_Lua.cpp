@@ -54,8 +54,11 @@ int SkeletalMeshComponent_Lua::StopAnimation(lua_State* L)
 {
     SkeletalMeshComponent* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* animName = CHECK_STRING(L, 2);
+    bool cancelQueued = false;
 
-    comp->StopAnimation(animName);
+    if (!lua_isnone(L, 3)) { cancelQueued = CHECK_BOOLEAN(L, 3); }
+
+    comp->StopAnimation(animName, cancelQueued);
 
     return 0;
 }
@@ -63,8 +66,11 @@ int SkeletalMeshComponent_Lua::StopAnimation(lua_State* L)
 int SkeletalMeshComponent_Lua::StopAllAnimations(lua_State* L)
 {
     SkeletalMeshComponent* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
+    bool cancelQueued = false;
 
-    comp->StopAllAnimations();
+    if (!lua_isnone(L, 2)) { cancelQueued = CHECK_BOOLEAN(L, 2); }
+
+    comp->StopAllAnimations(cancelQueued);
 
     return 0;
 }
@@ -75,6 +81,66 @@ int SkeletalMeshComponent_Lua::IsAnimationPlaying(lua_State* L)
     const char* animName = CHECK_STRING(L, 2);
 
     bool ret = comp->IsAnimationPlaying(animName);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int SkeletalMeshComponent_Lua::QueueAnimation(lua_State* L)
+{
+    SkeletalMeshComponent* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
+    const char* animName = CHECK_STRING(L, 2);
+    bool loop = CHECK_BOOLEAN(L, 3);
+    const char* dependentAnimName = nullptr;
+
+    float speed = 1.0f;
+    float weight = 1.0f;
+    uint8_t priority = 255;
+
+    if (!lua_isnone(L, 4)) { dependentAnimName = CHECK_STRING(L, 4); }
+    if (!lua_isnone(L, 5)) { speed = CHECK_NUMBER(L, 5); }
+    if (!lua_isnone(L, 6)) { weight = CHECK_NUMBER(L, 6); }
+    if (!lua_isnone(L, 7)) { priority = (uint8_t)CHECK_INTEGER(L, 7); }
+
+    comp->QueueAnimation(animName, loop, dependentAnimName, speed, weight, priority);
+
+    return 0;
+}
+
+int SkeletalMeshComponent_Lua::CancelQueuedAnimation(lua_State* L)
+{
+    SkeletalMeshComponent* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
+    const char* animName = CHECK_STRING(L, 2);
+
+    comp->CancelQueuedAnimation(animName);
+
+    return 0;
+}
+
+int SkeletalMeshComponent_Lua::CancelAllQueuedAnimations(lua_State* L)
+{
+    SkeletalMeshComponent* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
+
+    comp->CancelAllQueuedAnimations();
+
+    return 0;
+}
+
+int SkeletalMeshComponent_Lua::SetInheritPose(lua_State* L)
+{
+    SkeletalMeshComponent* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    comp->SetInheritPose(value);
+
+    return 0;
+}
+
+int SkeletalMeshComponent_Lua::IsInheritPoseEnabled(lua_State* L)
+{
+    SkeletalMeshComponent* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
+
+    bool ret = comp->IsInheritPoseEnabled();
 
     lua_pushboolean(L, ret);
     return 1;
@@ -248,6 +314,21 @@ void SkeletalMeshComponent_Lua::Bind()
 
     lua_pushcfunction(L, IsAnimationPlaying);
     lua_setfield(L, mtIndex, "IsAnimationPlaying");
+
+    lua_pushcfunction(L, QueueAnimation);
+    lua_setfield(L, mtIndex, "QueueAnimation");
+
+    lua_pushcfunction(L, CancelQueuedAnimation);
+    lua_setfield(L, mtIndex, "CancelQueuedAnimation");
+
+    lua_pushcfunction(L, CancelAllQueuedAnimations);
+    lua_setfield(L, mtIndex, "CancelAllQueuedAnimations");
+
+    lua_pushcfunction(L, SetInheritPose);
+    lua_setfield(L, mtIndex, "SetInheritPose");
+
+    lua_pushcfunction(L, IsInheritPoseEnabled);
+    lua_setfield(L, mtIndex, "IsInheritPoseEnabled");
 
     lua_pushcfunction(L, ResetAnimation);
     lua_setfield(L, mtIndex, "ResetAnimation");

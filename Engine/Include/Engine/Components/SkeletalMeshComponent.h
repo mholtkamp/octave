@@ -97,7 +97,7 @@ public:
     ActiveAnimation* FindActiveAnimation(const char* animName);
     std::vector<ActiveAnimation>& GetActiveAnimations();
 
-    QueuedAnimation* FindQueuedAnimation(const char* animName);
+    QueuedAnimation* FindQueuedAnimation(const char* animName, const char* dependName = nullptr);
     std::vector<QueuedAnimation>& GetQueuedAnimations();
 
     glm::mat4 GetBoneTransform(const std::string& name) const;
