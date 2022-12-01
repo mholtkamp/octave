@@ -242,7 +242,56 @@ void SkeletalMeshComponent::PlayAnimation(const char* animName, bool loop, float
     anim->mLoop = loop;
 }
 
-void SkeletalMeshComponent::StopAnimation(const char* animName)
+void SkeletalMeshComponent::QueueAnimation(const char* animName, bool loop, const char* targetAnim, float speed, float weight, uint8_t priority)
+{
+    if (animName == nullptr ||
+        animName[0] == '\0')
+    {
+        return;
+    }
+
+    ActiveAnimation* dependentAnim = nullptr;
+    QueuedAnimation* dependentQueuedAnim = nullptr;
+
+    if (targetAnim == nullptr)
+    {
+        if (mActiveAnimations.size() == 0)
+        {
+            // Default queued, just play it immediately.
+            PlayAnimation(animName, loop, speed, weight, priority);
+        }
+        else
+        {
+            dependentAnim = &mActiveAnimations.back();
+        }
+    }
+    else
+    {
+        dependentAnim = FindActiveAnimation(targetAnim);
+    }
+
+    // Check queued anims for dependent anim (so you could make a chain of animations if you needed).
+    if (dependentAnim == nullptr)
+    {
+        dependentQueuedAnim = FindQueuedAnimation(targetAnim);
+    }
+
+    if (dependentAnim != nullptr ||
+        dependentQueuedAnim != nullptr)
+    {
+        mQueuedAnimations.push_back(QueuedAnimation());
+        QueuedAnimation& queuedAnim = mQueuedAnimations.back();
+        queuedAnim.mName = animName;
+        queuedAnim.mDependentAnim = dependentAnim ? dependentAnim->mName : dependentQueuedAnim->mName;
+        queuedAnim.mLoop = loop;
+        queuedAnim.mSpeed = speed;
+        queuedAnim.mWeight = weight;
+        queuedAnim.mPriority = priority;
+
+    }
+}
+
+void SkeletalMeshComponent::StopAnimation(const char* animName, bool cancelQueued)
 {
     for (uint32_t i = 0; i < mActiveAnimations.size(); ++i)
     {
@@ -252,11 +301,45 @@ void SkeletalMeshComponent::StopAnimation(const char* animName)
             break;
         }
     }
+
+    if (cancelQueued)
+    {
+        // I think it's possible for multiple queued animations to exist with different dependent animations
+        // So just to be safe, iterate through all queued vector.
+        for (int32_t i = int32_t(mQueuedAnimations.size()) - 1; i >= 0; --i)
+        {
+            if (mQueuedAnimations[i].mName == animName)
+            {
+                mQueuedAnimations.erase(mQueuedAnimations.begin() + i);
+            }
+        }
+    }
 }
 
-void SkeletalMeshComponent::StopAllAnimations()
+void SkeletalMeshComponent::StopAllAnimations(bool cancelQueued)
 {
     mActiveAnimations.clear();
+
+    if (cancelQueued)
+    {
+        mQueuedAnimations.clear();
+    }
+}
+
+void SkeletalMeshComponent::CancelQueuedAnimation(const char* animName)
+{
+    for (int32_t i = int32_t(mQueuedAnimations.size()) - 1; i >= 0; --i)
+    {
+        if (mQueuedAnimations[i].mName == animName)
+        {
+            mQueuedAnimations.erase(mQueuedAnimations.begin() + i);
+        }
+    }
+}
+
+void SkeletalMeshComponent::CancelAllQueuedAnimations()
+{
+    mQueuedAnimations.clear();
 }
 
 bool SkeletalMeshComponent::IsAnimationPlaying(const char* animName)
@@ -327,6 +410,27 @@ ActiveAnimation* SkeletalMeshComponent::FindActiveAnimation(const char* animName
 std::vector<ActiveAnimation>& SkeletalMeshComponent::GetActiveAnimations()
 {
     return mActiveAnimations;
+}
+
+QueuedAnimation* SkeletalMeshComponent::FindQueuedAnimation(const char* animName)
+{
+    QueuedAnimation* anim = nullptr;
+
+    for (uint32_t i = 0; i < mQueuedAnimations.size(); ++i)
+    {
+        if (mQueuedAnimations[i].mName == animName)
+        {
+            anim = &mQueuedAnimations[i];
+            break;
+        }
+    }
+
+    return anim;
+}
+
+std::vector<QueuedAnimation>& SkeletalMeshComponent::GetQueuedAnimations()
+{
+    return mQueuedAnimations;
 }
 
 int32_t SkeletalMeshComponent::FindBoneIndex(const std::string& name) const
@@ -813,6 +917,24 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
 
             if (animFinished)
             {
+                const std::string& animName = mActiveAnimations[i].mName;
+
+                for (int32_t q = int32_t(mQueuedAnimations.size()) - 1; q >= 0; --q)
+                {
+                    if (mQueuedAnimations[q].mDependentAnim == animName)
+                    {
+                        QueuedAnimation& queuedAnim = mQueuedAnimations[q];
+                        PlayAnimation(
+                            queuedAnim.mName.c_str(),
+                            queuedAnim.mLoop,
+                            queuedAnim.mSpeed,
+                            queuedAnim.mWeight,
+                            queuedAnim.mPriority);
+
+                        mQueuedAnimations.erase(mQueuedAnimations.begin() + q);
+                    }
+                }
+
                 mActiveAnimations.erase(mActiveAnimations.begin() + i);
                 --i;
             }
