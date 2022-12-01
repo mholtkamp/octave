@@ -75,6 +75,9 @@ public:
     void SetAnimationPaused(bool paused);
     bool IsAnimationPaused() const;
 
+    void SetInheritPose(bool inherit);
+    bool IsInheritPoseEnabled() const;
+
     bool HasAnimatedThisFrame() const;
 
     ActiveAnimation* FindActiveAnimation(const char* animName);
