@@ -137,12 +137,16 @@ public:
 
     const glm::mat4 GetBindPoseMatrix(int32_t boneIndex) const;
 
+    SkeletalMesh* GetAnimationLookupMesh();
+    void SetAnimationLookupMesh(SkeletalMesh* lookupMesh);
+
 private:
 
     void InitBindPose();
     void ComputeBounds();
 
     MaterialRef mMaterial;
+    SkeletalMeshRef mAnimationLookupMesh;
     uint32_t mNumVertices;
     uint32_t mNumIndices;
     uint32_t mNumUvMaps;
