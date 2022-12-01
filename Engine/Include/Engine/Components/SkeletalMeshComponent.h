@@ -150,6 +150,7 @@ protected:
     std::vector<ActiveAnimation> mActiveAnimations;
     bool mAnimationPaused;
     bool mRevertToBindPose;
+    bool mInheritPose;
     bool mHasAnimatedThisFrame;
 
     BoneInfluenceMode mBoneInfluenceMode;

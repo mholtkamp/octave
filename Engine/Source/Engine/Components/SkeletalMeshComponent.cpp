@@ -65,6 +65,7 @@ SkeletalMeshComponent::SkeletalMeshComponent() :
     mAnimationSpeed(1.0f),
     mAnimationPaused(false),
     mRevertToBindPose(true),
+    mInheritPose(false),
     mHasAnimatedThisFrame(false),
     mBoneInfluenceMode(BoneInfluenceMode::Four),
     mAnimationUpdateMode(AnimationUpdateMode::OnlyUpdateWhenRendered)
@@ -91,6 +92,7 @@ void SkeletalMeshComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Animation Speed", this, &mAnimationSpeed));
     outProps.push_back(Property(DatumType::Bool, "Animation Paused", this, &mAnimationPaused));
     outProps.push_back(Property(DatumType::Bool, "Revert To Bind Pose", this, &mRevertToBindPose));
+    outProps.push_back(Property(DatumType::Bool, "Inherit Pose", this, &mInheritPose));
     outProps.push_back(Property(DatumType::Integer, "Bone Influence Mode", this, &mBoneInfluenceMode, 1, nullptr, 0, (int32_t)BoneInfluenceMode::Num, sBoneInfluenceModeStrings));
     outProps.push_back(Property(DatumType::Integer, "Animation Update Mode", this, &mAnimationUpdateMode, 1, nullptr, 0, (int32_t)AnimationUpdateMode::Count, sAnimationUpdateModeStrings));
 }
@@ -126,6 +128,7 @@ void SkeletalMeshComponent::SaveStream(Stream& stream)
     stream.WriteFloat(mAnimationSpeed);
     stream.WriteBool(mAnimationPaused);
     //stream.WriteBool(mRevertToBindPose);
+    //stream.WriteBool(mInheritPose);
     stream.WriteUint32(uint32_t(mBoneInfluenceMode));
     //stream.WriteUint32(uint32_t(mAnimationUpdateMode));
 }
@@ -144,6 +147,7 @@ void SkeletalMeshComponent::LoadStream(Stream& stream)
     mAnimationSpeed = stream.ReadFloat();
     mAnimationPaused = stream.ReadBool();
     //mRevertToBindPose = stream.ReadBool();
+    //mInheritPose = stream.ReadBool();
     mBoneInfluenceMode = BoneInfluenceMode(stream.ReadUint32());
     //mAnimationUpdateMode = AnimationUpdateMode(stream.ReadUint32());
 
@@ -672,8 +676,36 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
 
     SkeletalMesh* mesh = mSkeletalMesh.Get<SkeletalMesh>();
 
+    bool inheritPose = mInheritPose && 
+        mParent != nullptr && 
+        mParent->GetType() == SkeletalMeshComponent::GetStaticType();
+
+    if (inheritPose)
+    {
+        // It's definitely possible to make this better by referencing the parent bone transforms
+        // instead of copying them, but that would probably require some refactoring in the GFX layer.
+        SkeletalMeshComponent* parentMesh = mParent->As<SkeletalMeshComponent>();
+
+        uint32_t numBones = parentMesh->GetNumBones();
+
+        // Inherited mesh should have the same skeleton.
+        if (numBones == GetNumBones())
+        {
+            for (uint32_t i = 0; i < numBones; ++i)
+            {
+                mBoneMatrices[i] = parentMesh->GetBoneTransform((int32_t)i);
+            }
+        }
+        else
+        {
+            LogError("Cannot inherit pose because number of bones differs between components.");
+            OCT_ASSERT(0);
+        }
+    }
+
     if (mesh != nullptr &&
-        !mAnimationPaused &&
+        !mAnimationPaused && 
+        !inheritPose && 
         (mActiveAnimations.size() > 0 || mRevertToBindPose))
     {
         if (updateBones)
