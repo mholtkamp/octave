@@ -59,7 +59,7 @@ void SkeletalMesh::LoadStream(Stream& stream, Platform platform)
     //mNumUvMaps = stream.ReadUint32();
 
     stream.ReadAsset(mMaterial);
-    //stream.ReadAsset(mAnimationLookupMesh);
+    stream.ReadAsset(mAnimationLookupMesh);
     if (mMaterial.Get() == nullptr)
     {
         mMaterial = Renderer::Get()->GetDefaultMaterial();
