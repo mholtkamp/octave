@@ -279,15 +279,29 @@ void SkeletalMeshComponent::QueueAnimation(const char* animName, bool loop, cons
     if (dependentAnim != nullptr ||
         dependentQueuedAnim != nullptr)
     {
-        mQueuedAnimations.push_back(QueuedAnimation());
-        QueuedAnimation& queuedAnim = mQueuedAnimations.back();
-        queuedAnim.mName = animName;
-        queuedAnim.mDependentAnim = dependentAnim ? dependentAnim->mName : dependentQueuedAnim->mName;
-        queuedAnim.mLoop = loop;
-        queuedAnim.mSpeed = speed;
-        queuedAnim.mWeight = weight;
-        queuedAnim.mPriority = priority;
+        QueuedAnimation* queuedAnim = nullptr;
 
+        {
+            // dependName may be invalid if vector resize happens
+            const char* dependName = dependentAnim ? dependentAnim->mName.c_str() : dependentQueuedAnim->mName.c_str();
+            queuedAnim = FindQueuedAnimation(animName, dependName);
+        }
+
+        if (queuedAnim == nullptr)
+        {
+            // No queuedAnim exists yet so create a new one.
+            mQueuedAnimations.push_back(QueuedAnimation());
+            queuedAnim = &(mQueuedAnimations.back());
+        }
+
+        OCT_ASSERT(queuedAnim);
+
+        queuedAnim->mName = animName;
+        queuedAnim->mDependentAnim = dependentAnim ? dependentAnim->mName : dependentQueuedAnim->mName;
+        queuedAnim->mLoop = loop;
+        queuedAnim->mSpeed = speed;
+        queuedAnim->mWeight = weight;
+        queuedAnim->mPriority = priority;
     }
 }
 
@@ -412,13 +426,14 @@ std::vector<ActiveAnimation>& SkeletalMeshComponent::GetActiveAnimations()
     return mActiveAnimations;
 }
 
-QueuedAnimation* SkeletalMeshComponent::FindQueuedAnimation(const char* animName)
+QueuedAnimation* SkeletalMeshComponent::FindQueuedAnimation(const char* animName, const char* dependName)
 {
     QueuedAnimation* anim = nullptr;
 
     for (uint32_t i = 0; i < mQueuedAnimations.size(); ++i)
     {
-        if (mQueuedAnimations[i].mName == animName)
+        if (mQueuedAnimations[i].mName == animName &&
+            (dependName == nullptr || mQueuedAnimations[i].mDependentAnim == dependName))
         {
             anim = &mQueuedAnimations[i];
             break;

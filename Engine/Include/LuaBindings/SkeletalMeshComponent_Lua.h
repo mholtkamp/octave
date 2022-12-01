@@ -23,6 +23,11 @@ struct SkeletalMeshComponent_Lua
     static int StopAnimation(lua_State* L);
     static int StopAllAnimations(lua_State* L);
     static int IsAnimationPlaying(lua_State* L);
+    static int QueueAnimation(lua_State* L);
+    static int CancelQueuedAnimation(lua_State* L);
+    static int CancelAllQueuedAnimations(lua_State* L);
+    static int SetInheritPose(lua_State* L);
+    static int IsInheritPoseEnabled(lua_State* L);
     static int ResetAnimation(lua_State* L);
     static int GetAnimationSpeed(lua_State* L);
     static int SetAnimationSpeed(lua_State* L);
