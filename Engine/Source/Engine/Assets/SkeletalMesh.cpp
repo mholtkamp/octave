@@ -178,7 +178,7 @@ void SkeletalMesh::SaveStream(Stream& stream, Platform platform)
     stream.WriteUint32(mNumIndices);
 
     stream.WriteAsset(mMaterial);
-    //stream.WriteAsset(mAnimationLookupMesh);
+    stream.WriteAsset(mAnimationLookupMesh);
     stream.WriteMatrix(mInvRootTransform);
 
     stream.WriteUint32(uint32_t(mBones.size()));
