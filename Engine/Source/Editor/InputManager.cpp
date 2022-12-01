@@ -129,7 +129,7 @@ void InputManager::UpdateHotkeys()
                 EjectPlayInEditor();
             }
         }
-        else if (IsKeyJustDown(KEY_F9))
+        else if (IsKeyJustDown(KEY_F10))
         {
             FrameStep();
         }
