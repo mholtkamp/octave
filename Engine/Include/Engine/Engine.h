@@ -18,6 +18,8 @@ bool Update();
 
 void Shutdown();
 
+void Quit();
+
 class World* GetWorld();
 
 struct EngineState* GetEngineState();
