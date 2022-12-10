@@ -817,6 +817,20 @@ void ViewportPanel::HandleDefaultControls()
              }
         }
 
+        // Position selected component at camera transform
+        if (IsKeyJustDown(KEY_NUMPAD0))
+        {
+            glm::mat4 camTransform = camera->GetTransform();
+
+            Component* selComp = GetSelectedComponent();
+            TransformComponent* transComp = selComp ? selComp->As<TransformComponent>() : nullptr;
+
+            if (transComp)
+            {
+                transComp->SetTransform(camTransform);
+            }
+        }
+
         // Handle zoom
         if (scrollDelta != 0)
         {
