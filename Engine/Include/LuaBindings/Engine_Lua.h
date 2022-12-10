@@ -7,6 +7,7 @@
 
 struct Engine_Lua
 {
+    static int Quit(lua_State* L);
     static int IsShuttingDown(lua_State* L);
     static int GetTime(lua_State* L);
     static int GetGameDeltaTime(lua_State* L);
@@ -17,6 +18,8 @@ struct Engine_Lua
     static int SetBreakOnScriptError(lua_State* L);
     static int IsPlayingInEditor(lua_State* L);
     static int ReloadAllScripts(lua_State* L);
+    static int LoadScript(lua_State* L);
+    static int RunScript(lua_State* L);
     static int SetPaused(lua_State* L);
     static int IsPaused(lua_State* L);
     static int FrameStep(lua_State* L);

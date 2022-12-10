@@ -356,6 +356,11 @@ void Shutdown()
     ShutdownLog();
 }
 
+void Quit()
+{
+    sEngineState.mQuit = true;
+}
+
 World* GetWorld()
 {
     return sWorld;
