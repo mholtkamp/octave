@@ -184,7 +184,7 @@ void ScriptComponent::BeginPlay()
 
 void ScriptComponent::EndPlay()
 {
-    Component::BeginPlay();
+    Component::EndPlay();
     CallFunction("EndPlay");
 }
 

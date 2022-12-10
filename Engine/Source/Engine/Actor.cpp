@@ -110,6 +110,11 @@ void Actor::Create()
 
 void Actor::Destroy()
 {
+    if (mBegunPlay)
+    {
+        EndPlay();
+    }
+
     ActorRef::EraseReferencesToObject(this);
     DestroyAllComponents();
 }
