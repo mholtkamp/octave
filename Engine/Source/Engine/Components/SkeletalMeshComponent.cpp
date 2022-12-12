@@ -806,6 +806,7 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
     SkeletalMesh* mesh = mSkeletalMesh.Get<SkeletalMesh>();
 
     bool inheritPose = mInheritPose && 
+        updateBones &&
         mParent != nullptr && 
         mParent->GetType() == SkeletalMeshComponent::GetStaticType();
 
@@ -815,6 +816,11 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
         // It's definitely possible to make this better by referencing the parent bone transforms
         // instead of copying them, but that would probably require some refactoring in the GFX layer.
         SkeletalMeshComponent* parentMesh = mParent->As<SkeletalMeshComponent>();
+
+        if (!parentMesh->mHasAnimatedThisFrame)
+        {
+            parentMesh->UpdateAnimation(deltaTime, true);
+        }
 
         uint32_t numBones = parentMesh->GetNumBones();
 
