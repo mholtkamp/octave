@@ -342,7 +342,7 @@ const std::unordered_map<NetId, Actor*>& World::GetNetActorMap() const
     return mNetActorMap;
 }
 
-void World::Clear()
+void World::Clear(bool clearPersistent)
 {
     // Unload all levels
     UnloadAllLevels();
@@ -350,7 +350,8 @@ void World::Clear()
     // Destroy all non-persistent actors.
     for (int32_t i = int32_t(mActors.size()) - 1; i >= 0; --i)
     {
-        if (!mActors[i]->IsPersistent())
+        if (clearPersistent ||
+            !mActors[i]->IsPersistent())
         {
             DestroyActor(i);
         }
@@ -1076,6 +1077,22 @@ void World::UnloadLevel(const char* name)
             mLoadedLevels.erase(mLoadedLevels.begin() + i);
         }
     }
+}
+
+bool World::IsLevelLoaded(const char* levelName)
+{
+    bool loaded = false;
+
+    for (uint32_t i = 0; i < mLoadedLevels.size(); ++i)
+    {
+        if (mLoadedLevels[i].Get()->GetName() == levelName)
+        {
+            loaded = true;
+            break;
+        }
+    }
+
+    return loaded;
 }
 
 void World::EnableInternalEdgeSmoothing(bool enable)

@@ -69,7 +69,7 @@ public:
     void AddNetActor(Actor* actor, NetId netId);
     const std::unordered_map<NetId, Actor*>& GetNetActorMap() const;
 
-    void Clear();
+    void Clear(bool clearPersistent = false);
 
     void AddLine(const Line& line);
     void RemoveLine(const Line& line);
@@ -131,6 +131,7 @@ public:
         glm::vec3 offset = { 0.0f, 0.0f, 0.0f },
         glm::vec3 rotation = { 0.0f, 0.0f, 0.0f });
     void UnloadLevel(const char* name);
+    bool IsLevelLoaded(const char* levelName);
 
     void EnableInternalEdgeSmoothing(bool enable);
     bool IsInternalEdgeSmoothingEnabled() const;
