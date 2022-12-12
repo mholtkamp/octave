@@ -809,7 +809,8 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
         mParent != nullptr && 
         mParent->GetType() == SkeletalMeshComponent::GetStaticType();
 
-    if (inheritPose)
+    if (inheritPose &&
+        mesh != nullptr)
     {
         // It's definitely possible to make this better by referencing the parent bone transforms
         // instead of copying them, but that would probably require some refactoring in the GFX layer.
