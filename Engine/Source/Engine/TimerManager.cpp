@@ -89,11 +89,12 @@ void TimerManager::Update(float deltaTime)
             if (timer->mScriptTableName != "" &&
                 timer->mScriptFuncName != "")
             {
-                ScriptComponent* scriptComp = ScriptComponent::FindScriptCompFromTableName(timer->mScriptTableName);
-                if (scriptComp)
-                {
-                    scriptComp->CallFunction(timer->mScriptFuncName.c_str());
-                }
+                ScriptUtils::CallMethod(
+                    timer->mScriptTableName.c_str(),
+                    timer->mScriptFuncName.c_str(),
+                    0,
+                    nullptr,
+                    nullptr);
             }
             break;
         }
