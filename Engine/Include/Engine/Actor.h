@@ -134,6 +134,9 @@ public:
     void SetPersitent(bool persistent);
     bool IsPersistent() const;
 
+    void SetVisible(bool visible);
+    bool IsVisible() const;
+
     glm::vec3 GetPosition() const;
     glm::quat GetRotationQuat() const;
     glm::vec3 GetRotationEuler() const;
@@ -258,6 +261,7 @@ protected:
     bool mTickEnabled;
     bool mTransient;
     bool mPersistent;
+    bool mVisible;
     ReplicationRate mReplicationRate;
     uint8_t mNumScriptComps;
 };

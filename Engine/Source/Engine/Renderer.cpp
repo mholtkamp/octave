@@ -438,6 +438,9 @@ void Renderer::GatherDrawData(World* world)
 
         for (uint32_t i = 0; i < actors.size(); ++i)
         {
+            if (!actors[i]->IsVisible())
+                continue;
+
             const std::vector<Component*>& components = actors[i]->GetComponents();
 
             for (uint32_t c = 0; c < components.size(); ++c)
