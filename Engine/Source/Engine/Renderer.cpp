@@ -854,7 +854,10 @@ void Renderer::Render(World* world)
 
         for (uint32_t i = 0; i < mWidgets0.size(); ++i)
         {
-            mWidgets0[i]->RecursiveUpdate();
+            if (mWidgets0[i]->IsVisible())
+            {
+                mWidgets0[i]->RecursiveUpdate();
+            }
         }
 
         if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->RecursiveUpdate(); }
@@ -868,7 +871,10 @@ void Renderer::Render(World* world)
         mScreenIndex = 1;
         for (uint32_t i = 0; i < mWidgets1.size(); ++i)
         {
-            mWidgets1[i]->RecursiveUpdate();
+            if (mWidgets1[i]->IsVisible())
+            {
+                mWidgets1[i]->RecursiveUpdate();
+            }
         }
         mScreenIndex = 0;
 #endif
@@ -985,7 +991,10 @@ void Renderer::Render(World* world)
 
         for (uint32_t i = 0; i < mWidgets0.size(); ++i)
         {
-            mWidgets0[i]->RecursiveRender();
+            if (mWidgets0[i]->IsVisible())
+            {
+                mWidgets0[i]->RecursiveRender();
+            }
         }
 
         if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->RecursiveRender(); }
@@ -1004,7 +1013,10 @@ void Renderer::Render(World* world)
 
     for (uint32_t i = 0; i < mWidgets1.size(); ++i)
     {
-        mWidgets1[i]->RecursiveRender();
+        if (mWidgets1[i]->IsVisible())
+        {
+            mWidgets1[i]->RecursiveRender();
+        }
     }
 
     mScreenIndex = 0;
