@@ -198,6 +198,8 @@ void World::DestroyAllActors()
         DestroyActor(i);
     }
 
+    mLoadedLevels.clear();
+
     mNextNetId = 1;
     SpawnDefaultCamera();
 }
