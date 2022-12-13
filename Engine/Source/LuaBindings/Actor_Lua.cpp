@@ -521,7 +521,10 @@ int Actor_Lua::UpdateComponentTransforms(lua_State* L)
 int Actor_Lua::GetScript(lua_State* L)
 {
     Actor* actor = CHECK_ACTOR(L, 1);
-    const char* name = CHECK_STRING(L, 2);
+    const char* name = nullptr;
+    
+    // If no script name is supplied, just get the first script.
+    if (!lua_isnone(L, 2)) { name = CHECK_STRING(L, 2); }
     bool found = false;
 
     const std::vector<Component*>& comps = actor->GetComponents();
@@ -531,7 +534,7 @@ int Actor_Lua::GetScript(lua_State* L)
         {
             ScriptComponent* sc = static_cast<ScriptComponent*>(comps[i]);
 
-            if (sc->GetScriptClassName() == name)
+            if (name == nullptr || sc->GetScriptClassName() == name)
             {
                 lua_getglobal(L, sc->GetTableName().c_str());
                 if (lua_istable(L, -1))
@@ -608,6 +611,26 @@ int Actor_Lua::IsPersistent(lua_State* L)
 
     lua_pushboolean(L, ret);
     return 1;
+}
+
+int Actor_Lua::IsVisible(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+
+    bool ret = actor->IsVisible();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Actor_Lua::SetVisible(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    actor->SetVisible(value);
+
+    return 0;
 }
 
 void Actor_Lua::BindCommon(lua_State* L, int mtIndex)
@@ -768,6 +791,12 @@ void Actor_Lua::Bind()
 
     lua_pushcfunction(L, Actor_Lua::IsPersistent);
     lua_setfield(L, mtIndex, "IsPersistent");
+
+    lua_pushcfunction(L, Actor_Lua::SetVisible);
+    lua_setfield(L, mtIndex, "SetVisible");
+
+    lua_pushcfunction(L, Actor_Lua::IsVisible);
+    lua_setfield(L, mtIndex, "IsVisible");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);
