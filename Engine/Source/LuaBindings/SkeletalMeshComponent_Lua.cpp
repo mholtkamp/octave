@@ -287,6 +287,26 @@ int SkeletalMeshComponent_Lua::SetAnimEventHandler(lua_State* L)
     return 0;
 }
 
+int SkeletalMeshComponent_Lua::SetBoundsRadiusOverride(lua_State* L)
+{
+    SkeletalMeshComponent* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
+    float radius = CHECK_NUMBER(L, 2);
+
+    comp->SetBoundsRadiusOverride(radius);
+
+    return 0;
+}
+
+int SkeletalMeshComponent_Lua::GetBoundsRadiusOverride(lua_State* L)
+{
+    SkeletalMeshComponent* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
+
+    float radius = comp->GetBoundsRadiusOverride();
+
+    lua_pushnumber(L, radius);
+    return 1;
+}
+
 void SkeletalMeshComponent_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -368,6 +388,12 @@ void SkeletalMeshComponent_Lua::Bind()
 
     lua_pushcfunction(L, SetAnimEventHandler);
     lua_setfield(L, mtIndex, "SetAnimEventHandler");
+
+    lua_pushcfunction(L, SetBoundsRadiusOverride);
+    lua_setfield(L, mtIndex, "SetBoundsRadiusOverride");
+
+    lua_pushcfunction(L, GetBoundsRadiusOverride);
+    lua_setfield(L, mtIndex, "GetBoundsRadiusOverride");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);
