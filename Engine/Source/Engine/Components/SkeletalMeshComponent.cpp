@@ -95,6 +95,7 @@ void SkeletalMeshComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Inherit Pose", this, &mInheritPose));
     outProps.push_back(Property(DatumType::Integer, "Bone Influence Mode", this, &mBoneInfluenceMode, 1, nullptr, 0, (int32_t)BoneInfluenceMode::Num, sBoneInfluenceModeStrings));
     outProps.push_back(Property(DatumType::Integer, "Animation Update Mode", this, &mAnimationUpdateMode, 1, nullptr, 0, (int32_t)AnimationUpdateMode::Count, sAnimationUpdateModeStrings));
+    outProps.push_back(Property(DatumType::Float, "Bounds Radius Override", this, &mBoundsRadiusOverride));
 }
 
 void SkeletalMeshComponent::Create()
@@ -398,6 +399,16 @@ void SkeletalMeshComponent::SetInheritPose(bool inherit)
 bool SkeletalMeshComponent::IsInheritPoseEnabled() const
 {
     return mInheritPose;
+}
+
+void SkeletalMeshComponent::SetBoundsRadiusOverride(float radius)
+{
+    mBoundsRadiusOverride = radius;
+}
+
+float SkeletalMeshComponent::GetBoundsRadiusOverride() const
+{
+    return mBoundsRadiusOverride;
 }
 
 bool SkeletalMeshComponent::HasAnimatedThisFrame() const
@@ -784,15 +795,23 @@ void SkeletalMeshComponent::Render()
 
 Bounds SkeletalMeshComponent::GetLocalBounds() const
 {
+    Bounds retBounds;
     if (mSkeletalMesh != nullptr)
     {
-        return mSkeletalMesh.Get<SkeletalMesh>()->GetBounds();
+        retBounds = mSkeletalMesh.Get<SkeletalMesh>()->GetBounds();
 
     }
     else
     {
-        return MeshComponent::GetLocalBounds();
+        retBounds = MeshComponent::GetLocalBounds();
     }
+
+    if (mBoundsRadiusOverride > 0.0f)
+    {
+        retBounds.mRadius = mBoundsRadiusOverride;
+    }
+
+    return retBounds;
 }
 
 void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)

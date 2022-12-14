@@ -92,6 +92,9 @@ public:
     void SetInheritPose(bool inherit);
     bool IsInheritPoseEnabled() const;
 
+    void SetBoundsRadiusOverride(float radius);
+    float GetBoundsRadiusOverride() const;
+
     bool HasAnimatedThisFrame() const;
 
     ActiveAnimation* FindActiveAnimation(const char* animName);
@@ -169,6 +172,7 @@ protected:
     float mAnimationSpeed = 1.0f;
     std::vector<ActiveAnimation> mActiveAnimations;
     std::vector<QueuedAnimation> mQueuedAnimations;
+    float mBoundsRadiusOverride = 0.0f;
     bool mAnimationPaused;
     bool mRevertToBindPose;
     bool mInheritPose;
