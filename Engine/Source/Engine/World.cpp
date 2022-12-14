@@ -346,16 +346,22 @@ const std::unordered_map<NetId, Actor*>& World::GetNetActorMap() const
 
 void World::Clear(bool clearPersistent)
 {
-    // Unload all levels
-    UnloadAllLevels();
-
-    // Destroy all non-persistent actors.
-    for (int32_t i = int32_t(mActors.size()) - 1; i >= 0; --i)
+    if (clearPersistent)
     {
-        if (clearPersistent ||
-            !mActors[i]->IsPersistent())
+        DestroyAllActors();
+    }
+    else
+    {
+        // Unload all levels
+        UnloadAllLevels();
+
+        // Destroy all non-persistent actors.
+        for (int32_t i = int32_t(mActors.size()) - 1; i >= 0; --i)
         {
-            DestroyActor(i);
+            if (!mActors[i]->IsPersistent())
+            {
+                DestroyActor(i);
+            }
         }
     }
 }
