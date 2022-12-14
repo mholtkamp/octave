@@ -280,6 +280,8 @@ void EndPlayInEditor()
     GetWorld()->DestroyAllActors();
     GetTimerManager()->ClearAllTimers();
 
+    Renderer::Get()->RemoveAllWidgets();
+
     // Fake Shutdown
     OctPreShutdown();
     OctPostShutdown();
