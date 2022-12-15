@@ -1018,6 +1018,14 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
         }
     }
 
+    if (inheritPose &&
+        mesh != nullptr &&
+        !mAnimationPaused &&
+        GFX_IsCpuSkinningRequired(this))
+    {
+        CpuSkinVertices();
+    }
+
     if (updateBones)
     {
         UpdateAttachedChildren(deltaTime);
