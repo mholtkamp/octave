@@ -536,13 +536,18 @@ void ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 position,
         spawnedActor = GetWorld()->SpawnActor<Actor>();
         StaticMeshComponent* meshComp = spawnedActor->CreateComponent<StaticMeshComponent>();
         spawnedActor->SetRootComponent(meshComp);
+
+        std::string actorName = "Static Mesh";
         StaticMesh* mesh = (StaticMesh*) LoadAsset("SM_Cube");
 
         if (srcAsset != nullptr &&
             srcAsset->GetType() == StaticMesh::GetStaticType())
         {
             mesh = static_cast<StaticMesh*>(srcAsset);
+            actorName = mesh->GetName();
         }
+
+        spawnedActor->SetName(actorName);
 
         // When spawned by the editor, static meshes have collision enabled on colgroup1
         meshComp->SetStaticMesh(mesh);

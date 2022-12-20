@@ -241,8 +241,6 @@ void BeginPlayInEditor()
 
     ActionManager::Get()->ResetUndoRedo();
 
-    sEditorState.mPlayInEditor = true;
-
     OCT_ASSERT(sEditorState.mCachedPieLevel == nullptr);
     Level* cachedLevel = new Level();
     cachedLevel->Create();
@@ -255,6 +253,8 @@ void BeginPlayInEditor()
 
     ShowRootCanvas(false);
     Renderer::Get()->EnableProxyRendering(false);
+
+    sEditorState.mPlayInEditor = true;
 
     // Fake-Initialize the Game
     //OctPreInitialize();
