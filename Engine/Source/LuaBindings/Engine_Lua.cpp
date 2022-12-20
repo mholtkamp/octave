@@ -94,6 +94,14 @@ int Engine_Lua::IsPlayingInEditor(lua_State* L)
     return 1;
 }
 
+int Engine_Lua::IsPlaying(lua_State* L)
+{
+    bool ret = ::IsPlaying();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Engine_Lua::ReloadAllScripts(lua_State* L)
 {
     bool restartScripts = true;
@@ -203,6 +211,9 @@ void Engine_Lua::Bind()
 
     lua_pushcfunction(L, Engine_Lua::IsPlayingInEditor);
     lua_setfield(L, tableIdx, "IsPlayingInEditor");
+
+    lua_pushcfunction(L, Engine_Lua::IsPlaying);
+    lua_setfield(L, tableIdx, "IsPlaying");
 
     lua_pushcfunction(L, Engine_Lua::ReloadAllScripts);
     lua_setfield(L, tableIdx, "ReloadAllScripts");

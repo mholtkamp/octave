@@ -35,6 +35,7 @@ void EnableConsole(bool enable);
 void ResizeWindow(uint32_t width, uint32_t height);
 
 bool IsPlayingInEditor();
+bool IsPlaying();
 
 bool IsGameTickEnabled();
 

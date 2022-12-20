@@ -472,6 +472,15 @@ bool IsPlayingInEditor()
 #endif
 }
 
+bool IsPlaying()
+{
+#if EDITOR
+    return GetEditorState()->mPlayInEditor;
+#else
+    return true;
+#endif
+}
+
 bool IsGameTickEnabled()
 {
 #if EDITOR
