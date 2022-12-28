@@ -807,6 +807,12 @@ void ActionManager::EXE_AttachComponent(TransformComponent* comp, TransformCompo
     ActionManager::Get()->ExecuteAction(action);
 }
 
+void ActionManager::EXE_SetRootComponent(TransformComponent* newRoot)
+{
+    ActionSetRootComponent* action = new ActionSetRootComponent(newRoot);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
 void ActionManager::EXE_SetAbsoluteRotation(TransformComponent* comp, glm::quat rot)
 {
     ActionSetAbsoluteRotation* action = new ActionSetAbsoluteRotation(comp, rot);
@@ -2219,6 +2225,28 @@ void ActionAttachComponent::Execute()
 void ActionAttachComponent::Reverse()
 {
     mComponent->Attach(mPrevParent);
+    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+}
+
+ActionSetRootComponent::ActionSetRootComponent(TransformComponent* newRoot)
+{
+    mNewRoot = newRoot;
+    mOldRoot = newRoot->GetOwner()->GetRootComponent();
+
+    OCT_ASSERT(mNewRoot != mOldRoot);
+}
+
+void ActionSetRootComponent::Execute()
+{
+    Actor* actor = mNewRoot->GetOwner();
+    actor->SetRootComponent(mNewRoot);
+    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+}
+
+void ActionSetRootComponent::Reverse()
+{
+    Actor* actor = mOldRoot->GetOwner();
+    actor->SetRootComponent(mOldRoot);
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
