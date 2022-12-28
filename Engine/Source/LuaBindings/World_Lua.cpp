@@ -7,6 +7,8 @@
 #include "LuaBindings/PrimitiveComponent_Lua.h"
 #include "LuaBindings/CameraComponent_Lua.h"
 #include "LuaBindings/DirectionalLightComponent_Lua.h"
+#include "LuaBindings/ParticleSystem_Lua.h"
+#include "ParticleActor.h"
 
 #include "Components/PrimitiveComponent.h"
 
@@ -520,6 +522,18 @@ int World_Lua::IsInternalEdgeSmoothingEnabled(lua_State* L)
     return 1;
 }
 
+int World_Lua::SpawnParticle(lua_State* L)
+{
+    World* world = CHECK_WORLD(L, 1);
+    ParticleSystem* particleSys = CHECK_PARTICLE_SYSTEM(L, 2);
+    glm::vec3 pos = CHECK_VECTOR(L, 3);
+
+    ParticleActor* ret = ParticleActor::SpawnParticleActor(GetWorld(), pos, particleSys);
+
+    Actor_Lua::Create(L, ret);
+    return 1;
+}
+
 void World_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -629,6 +643,9 @@ void World_Lua::Bind()
 
     lua_pushcfunction(L, World_Lua::IsInternalEdgeSmoothingEnabled);
     lua_setfield(L, mtIndex, "IsInternalEdgeSmoothingEnabled");
+
+    lua_pushcfunction(L, World_Lua::SpawnParticle);
+    lua_setfield(L, mtIndex, "SpawnParticle");
 
     // Set the __index metamethod to itself
     lua_pushvalue(L, mtIndex);
