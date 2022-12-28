@@ -575,6 +575,8 @@ void PrimitiveComponent_Lua::Bind()
 
     lua_pushcfunction(L, SweepToWorldPosition);
     lua_setfield(L, mtIndex, "SweepToWorldPosition");
+    lua_pushcfunction(L, SweepToWorldPosition);
+    lua_setfield(L, mtIndex, "SweepToPosition"); // Alias
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

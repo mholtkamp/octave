@@ -114,6 +114,13 @@ void HierarchyPanel::ActionHandler(Button* button)
             AttachSelectedComponent(sActionComponent.Get());
         }
     }
+    else if (buttonText == "Set Root Component")
+    {
+        if (sActionComponent != nullptr)
+        {
+            SetRootComponent(sActionComponent.Get());
+        }
+    }
     else if (buttonText == "Rename Component")
     {
         const char* defaultText = sActionComponent.Get() ? 
@@ -220,6 +227,36 @@ void HierarchyPanel::AttachSelectedComponent(Component* newParent)
         // Reparenting components should break the blueprint link.
         // For now, you cannot override blueprint instance components
         newParent->GetOwner()->SetBlueprintSource(nullptr);
+    }
+
+    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+}
+
+void HierarchyPanel::SetRootComponent(Component* newRoot)
+{
+    if (newRoot == nullptr)
+        return;
+
+    if (!newRoot->IsTransformComponent())
+        return;
+
+    TransformComponent* newRootTrans = (TransformComponent*)newRoot;
+    TransformComponent* oldRootTrans = newRoot->GetOwner()->GetRootComponent();
+
+    if (newRoot->IsDefault() ||
+        oldRootTrans->IsDefault())
+    {
+        LogError("Cannot adjust root for default components. Please root in code.");
+        return;
+    }
+
+    if (newRootTrans != oldRootTrans)
+    {
+        ActionManager::Get()->EXE_SetRootComponent(newRootTrans);
+
+        // Reparenting components should break the blueprint link.
+        // For now, you cannot override blueprint instance components
+        newRoot->GetOwner()->SetBlueprintSource(nullptr);
     }
 
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
@@ -378,6 +415,7 @@ void HierarchyPanel::HandleInput()
             {
                 actions.push_back("Delete Component");
                 actions.push_back("Attach Selected");
+                actions.push_back("Set Root Component");
                 actions.push_back("Rename Component");
             }
             GetActionList()->SetActions(actions, ActionHandler);

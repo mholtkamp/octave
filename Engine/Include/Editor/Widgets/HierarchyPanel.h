@@ -27,6 +27,7 @@ protected:
     static void ShowAddComponentPrompt();
     static void DeleteComponent(Component* comp);
     static void AttachSelectedComponent(Component* newParent);
+    static void SetRootComponent(Component* newParent);
     static void HandleRenameComponent(TextField* tf);
 
     static const int32_t sNumButtons = 10;
