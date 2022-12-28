@@ -1681,7 +1681,7 @@ void ScriptComponent::CallTick(float deltaTime)
 #if EDITOR
     if (mTableName != "")
     {
-        if (IsPlayingInEditor())
+        if (IsGameTickEnabled())
         {
             CallFunction("Tick", deltaTime);
         }
