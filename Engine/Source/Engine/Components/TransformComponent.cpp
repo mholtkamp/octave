@@ -140,6 +140,11 @@ void TransformComponent::Attach(TransformComponent* parent, bool keepWorldTransf
     // Can't attach to self.
     OCT_ASSERT(parent != this);
 
+    if (keepWorldTransform && IsTransformDirty())
+    {
+        UpdateTransform(false);
+    }
+
     // Detach from parent first
     if (mParent != nullptr)
     {
