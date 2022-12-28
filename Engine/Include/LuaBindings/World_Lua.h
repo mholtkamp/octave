@@ -61,6 +61,8 @@ struct World_Lua
     static int EnableInternalEdgeSmoothing(lua_State* L);
     static int IsInternalEdgeSmoothingEnabled(lua_State* L);
 
+    static int SpawnParticle(lua_State* L);
+
     static void Bind();
 };
 
