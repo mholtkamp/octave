@@ -332,7 +332,12 @@ void HierarchyPanel::RefreshCompButtons()
 
                 for (uint32_t i = 0; i < comp->GetNumChildren(); ++i)
                 {
-                    AddTransComp(comp->GetChild(i), depth + 1);
+                    TransformComponent* child = comp->GetChild(i);
+
+                    if (child->GetOwner() == selectedActor)
+                    {
+                        AddTransComp(child, depth + 1);
+                    }
                 }
             }
         };
@@ -346,7 +351,8 @@ void HierarchyPanel::RefreshCompButtons()
             {
                 compList.push_back(components[i]);
                 depthList.push_back(0);
-                OCT_ASSERT(!components[i]->IsTransformComponent());
+                OCT_ASSERT(!components[i]->IsTransformComponent() ||
+                    static_cast<TransformComponent*>(components[i])->GetParent()->GetOwner() != selectedActor);
             }
         }
 
