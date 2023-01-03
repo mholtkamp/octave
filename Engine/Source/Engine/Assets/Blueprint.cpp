@@ -221,7 +221,7 @@ void Blueprint::Create(Actor* srcActor)
     srcActor->SetBlueprintSource(this);
 }
 
-Actor* Blueprint::Instantiate(World* world)
+Actor* Blueprint::Instantiate(World* world, bool addNetwork)
 {
     Actor* retActor = nullptr;
 
@@ -441,10 +441,13 @@ Actor* Blueprint::Instantiate(World* world)
             }
         }
 
-        // We had deferred the adding of the actor to the network.
-        // Usually this happens on SpawnActor(), but we needed to load all of the saved properties
-        // first before we could tell if the mReplicate flag was set.
-        GetWorld()->AddNetActor(retActor, INVALID_NET_ID);
+        if (addNetwork)
+        {
+            // We had deferred the adding of the actor to the network.
+            // Usually this happens on SpawnActor(), but we needed to load all of the saved properties
+            // first before we could tell if the mReplicate flag was set.
+            GetWorld()->AddNetActor(retActor, INVALID_NET_ID);
+        }
     }
     else
     {

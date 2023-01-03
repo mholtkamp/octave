@@ -341,6 +341,9 @@ void ScriptComponent::GatherScriptProperties()
                                     case DatumType::Vector2D: Vector_Lua::Create(L, glm::vec2(0.0f, 0.0f)); break;
                                     case DatumType::Vector: Vector_Lua::Create(L, glm::vec3(0.0f, 0.0f, 0.0f)); break;
                                     case DatumType::Color: Vector_Lua::Create(L, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)); break;
+                                    case DatumType::Byte: lua_pushinteger(L, 0); break;
+                                    case DatumType::Short: lua_pushinteger(L, 0); break;
+
 
                                     default:
                                         lua_pushnil(L);
@@ -411,8 +414,8 @@ void ScriptComponent::GatherScriptProperties()
                                 }
                                 case DatumType::Byte:
                                 {
-                                    push = false;
-                                    LogError("Byte script properties are not supported.");
+                                    int32_t value = CHECK_INTEGER(L, -1);
+                                    newProp.PushBack((uint8_t)value);
                                     break;
                                 }
 
@@ -432,8 +435,8 @@ void ScriptComponent::GatherScriptProperties()
 
                                 case DatumType::Short:
                                 {
-                                    push = false;
-                                    LogError("Short script properties are not supported.");
+                                    int32_t value = CHECK_INTEGER(L, -1);
+                                    newProp.PushBack((int16_t)value);
                                     break;
                                 }
 
@@ -572,6 +575,8 @@ void ScriptComponent::GatherReplicatedData()
                                     case DatumType::Vector2D: Vector_Lua::Create(L, glm::vec2(0.0f, 0.0f)); break;
                                     case DatumType::Vector: Vector_Lua::Create(L, glm::vec3(0.0f, 0.0f, 0.0f)); break;
                                     case DatumType::Color: Vector_Lua::Create(L, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)); break;
+                                    case DatumType::Byte: lua_pushinteger(L, 0); break;
+                                    case DatumType::Short: lua_pushinteger(L, 0); break;
 
                                     default:
                                         lua_pushnil(L);
@@ -642,8 +647,8 @@ void ScriptComponent::GatherReplicatedData()
                                 }
                                 case DatumType::Byte:
                                 {
-                                    push = false;
-                                    LogError("Byte script net data are not supported.");
+                                    int32_t value = CHECK_INTEGER(L, -1);
+                                    newDatum.PushBack((uint8_t)value);
                                     break;
                                 }
 
@@ -663,8 +668,8 @@ void ScriptComponent::GatherReplicatedData()
 
                                 case DatumType::Short:
                                 {
-                                    push = false;
-                                    LogError("Short script net data are not supported.");
+                                    int32_t value = CHECK_INTEGER(L, -1);
+                                    newDatum.PushBack((int16_t)value);
                                     break;
                                 }
 
@@ -992,8 +997,8 @@ bool ScriptComponent::DownloadDatum(lua_State* L, Datum& datum, int tableIdx, co
         }
         case DatumType::Byte:
         {
-            success = false;
-            LogError("Byte script datum are not supported.");
+            int32_t value = CHECK_INTEGER(L, -1);
+            datum.SetByte((uint8_t)value);
             break;
         }
 
@@ -1013,8 +1018,8 @@ bool ScriptComponent::DownloadDatum(lua_State* L, Datum& datum, int tableIdx, co
 
         case DatumType::Short:
         {
-            success = false;
-            LogError("Short script datum are not supported.");
+            int32_t value = CHECK_INTEGER(L, -1);
+            datum.SetShort((int16_t)value);
             break;
         }
 
@@ -1058,11 +1063,11 @@ void ScriptComponent::UploadDatum(Datum& datum, const char* varName)
         case DatumType::Vector: Vector_Lua::Create(L, datum.GetVector()); break;
         case DatumType::Color: Vector_Lua::Create(L, datum.GetColor()); break;
         case DatumType::Asset: Asset_Lua::Create(L, datum.GetAsset()); break;
+        case DatumType::Byte: lua_pushinteger(L, (int32_t) datum.GetByte()); break;
+        case DatumType::Short: lua_pushinteger(L, (int32_t)datum.GetShort()); break;
 
-        case DatumType::Byte:
         case DatumType::Table:
         case DatumType::Pointer:
-        case DatumType::Short:
         case DatumType::Count:
             // These datum types are not supported.
             OCT_ASSERT(0);
