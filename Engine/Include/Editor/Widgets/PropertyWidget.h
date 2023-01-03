@@ -185,3 +185,13 @@ protected:
     TextField* mTextFieldX;
     TextField* mTextFieldY;
 };
+
+class ShortProp : public PropertyWidget
+{
+public:
+    ShortProp();
+    virtual void Update() override;
+    virtual void Write() override;
+protected:
+    TextField* mTextField;
+};

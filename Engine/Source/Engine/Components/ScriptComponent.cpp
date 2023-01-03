@@ -430,6 +430,13 @@ void ScriptComponent::GatherScriptProperties()
                                     break;
                                 }
 
+                                case DatumType::Short:
+                                {
+                                    push = false;
+                                    LogError("Short script properties are not supported.");
+                                    break;
+                                }
+
                                 case DatumType::Count:
                                 {
                                     push = false;
@@ -651,6 +658,13 @@ void ScriptComponent::GatherReplicatedData()
                                 {
                                     push = false;
                                     LogError("Pointer script properties are not supported.");
+                                    break;
+                                }
+
+                                case DatumType::Short:
+                                {
+                                    push = false;
+                                    LogError("Short script net data are not supported.");
                                     break;
                                 }
 
@@ -997,6 +1011,13 @@ bool ScriptComponent::DownloadDatum(lua_State* L, Datum& datum, int tableIdx, co
             break;
         }
 
+        case DatumType::Short:
+        {
+            success = false;
+            LogError("Short script datum are not supported.");
+            break;
+        }
+
         case DatumType::Count:
         {
             success = false;
@@ -1041,6 +1062,7 @@ void ScriptComponent::UploadDatum(Datum& datum, const char* varName)
         case DatumType::Byte:
         case DatumType::Table:
         case DatumType::Pointer:
+        case DatumType::Short:
         case DatumType::Count:
             // These datum types are not supported.
             OCT_ASSERT(0);

@@ -107,6 +107,11 @@ Datum::Datum(RTTI* value)
     PushBack(value);
 }
 
+Datum::Datum(int16_t value)
+{
+    PushBack(value);
+}
+
 DatumType Datum::GetType() const
 {
     return mType;
@@ -199,6 +204,7 @@ uint32_t Datum::GetDataTypeSize() const
         case DatumType::Byte: size = sizeof(uint8_t); break;
         case DatumType::Table: size = sizeof(TableDatum); break;
         case DatumType::Pointer: size = sizeof(RTTI*); break;
+        case DatumType::Short: size = sizeof(int16_t); break;
         
         case DatumType::Count: size = 0; break;
     }
@@ -320,6 +326,7 @@ void Datum::ReadStream(Stream& stream, bool external)
                 }
 
                 case DatumType::Pointer: OCT_ASSERT(0); break; // Can't serialize pointers
+                case DatumType::Short: PushBack(stream.ReadInt16()); break;
 
                 case DatumType::Count: break;
             }
@@ -350,6 +357,7 @@ void Datum::WriteStream(Stream& stream) const
             case DatumType::Table: mData.t[i].WriteStream(stream); break;
             case DatumType::Pointer: OCT_ASSERT(0); break; // Can't serialize pointers
             case DatumType::Count: OCT_ASSERT(0); break;
+            case DatumType::Short: stream.WriteInt16(mData.sh[i]); break;
         }
     }
 }
@@ -441,6 +449,13 @@ void Datum::SetPointer(RTTI* value, uint32_t index)
         mData.p[index] = value;
 }
 
+void Datum::SetShort(int16_t value, uint32_t index)
+{
+    PreSet(index, DatumType::Short);
+    if (!mChangeHandler || !mChangeHandler(this, &value))
+        mData.sh[index] = value;
+}
+
 void Datum::SetValue(const void* value, uint32_t index, uint32_t count)
 {
     OCT_ASSERT(mType != DatumType::Count);
@@ -468,6 +483,7 @@ void Datum::SetValue(const void* value, uint32_t index, uint32_t count)
             case DatumType::Byte: SetByte(*(reinterpret_cast<const uint8_t*>(value) + i),             index + i); break;
             case DatumType::Table: SetTableDatum(*(reinterpret_cast<const TableDatum*>(value) + i),   index + i); break;
             case DatumType::Pointer: SetPointer(*(((RTTI**)value) + i),                               index + i); break;
+            case DatumType::Short: SetShort(*(reinterpret_cast<const int16_t*>(value) + i),           index + i); break;
             case DatumType::Count: break;
             }
         }
@@ -489,6 +505,7 @@ void Datum::SetValueRaw(const void* value, uint32_t index)
     case DatumType::Byte: mData.by[index] = *reinterpret_cast<const uint8_t*>(value); break;
     case DatumType::Table: mData.t[index] = *reinterpret_cast<const TableDatum*>(value); break;
     case DatumType::Pointer: mData.p[index] = *((RTTI**)value); break;
+    case DatumType::Short: mData.sh[index] = *reinterpret_cast<const int16_t*>(value); break;
 
     case DatumType::Count: break;
     }
@@ -563,6 +580,13 @@ void Datum::SetExternal(RTTI** data, uint32_t count)
     PostSetExternal(DatumType::Pointer, count);
 }
 
+void Datum::SetExternal(int16_t* data, uint32_t count)
+{
+    PreSetExternal(DatumType::Short);
+    mData.sh = data;
+    PostSetExternal(DatumType::Short, count);
+}
+
 int32_t Datum::GetInteger(uint32_t index) const
 {
     PreGet(index, DatumType::Integer);
@@ -633,6 +657,12 @@ RTTI* Datum::GetPointer(uint32_t index) const
 {
     PreGet(index, DatumType::Pointer);
     return mData.p[index];
+}
+
+int16_t Datum::GetShort(uint32_t index) const
+{
+    PreGet(index, DatumType::Short);
+    return mData.sh[index];
 }
 
 void Datum::PushBack(int32_t value)
@@ -784,6 +814,13 @@ void Datum::PushBack(RTTI* value)
 {
     PrePushBack(DatumType::Pointer);
     new (mData.p + mCount) RTTI*(value);
+    mCount++;
+}
+
+void Datum::PushBack(int16_t value)
+{
+    PrePushBack(DatumType::Short);
+    new (mData.sh + mCount) int16_t(value);
     mCount++;
 }
 
@@ -1124,6 +1161,13 @@ Datum& Datum::operator=(RTTI* src)
     return *this;
 }
 
+Datum& Datum::operator=(int16_t src)
+{
+    PreAssign(DatumType::Short);
+    mData.sh[0] = src;
+    return *this;
+}
+
 bool Datum::operator==(const Datum& other) const
 {
     if (mType != other.mType ||
@@ -1303,6 +1347,17 @@ bool Datum::operator==(const RTTI*& other) const
     return mData.p[0] == other;
 }
 
+bool Datum::operator==(const int16_t& other) const
+{
+    if (mCount == 0 ||
+        mType != DatumType::Short)
+    {
+        return false;
+    }
+
+    return mData.sh[0] == other;
+}
+
 bool Datum::operator!=(const Datum& other) const
 {
     return !operator==(other);
@@ -1364,6 +1419,11 @@ bool Datum::operator!=(const uint8_t& other) const
 }
 
 bool Datum::operator!=(const RTTI*& other) const
+{
+    return !operator==(other);
+}
+
+bool Datum::operator!=(const int16_t& other) const
 {
     return !operator==(other);
 }
@@ -1502,6 +1562,9 @@ void Datum::DeepCopy(const Datum& src, bool forceInternalStorage)
                 break;
             case DatumType::Pointer:
                 PushBack(*(src.mData.p + i));
+                break;
+            case DatumType::Short:
+                PushBack(*(src.mData.sh + i));
                 break;
 
             case DatumType::Count:
@@ -1669,6 +1732,9 @@ void Datum::ConstructData(DatumData& dataUnion, uint32_t index)
         break;
     case DatumType::Pointer:
         dataUnion.p = nullptr;
+        break;
+    case DatumType::Short:
+        dataUnion.sh[index] = 0;
         break;
 
     case DatumType::Count:
