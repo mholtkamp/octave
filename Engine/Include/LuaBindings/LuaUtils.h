@@ -37,6 +37,4 @@ int CreateClassMetatable(
     const char* classFlag,
     const char* parentClassName);
 
-void PushDatumValue(lua_State* L, DatumType datumType, const void* value);
-
 #endif

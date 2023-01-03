@@ -45,30 +45,4 @@ int CreateClassMetatable(
     return lua_gettop(L);
 }
 
-// TODO: Is this function necessary? Seems like a duplicate of LuaPushDatum().
-void PushDatumValue(lua_State* L, DatumType datumType, const void* value)
-{
-#if LUA_ENABLED
-    switch (datumType)
-    {
-    case DatumType::Integer: lua_pushinteger(L, *reinterpret_cast<const int32_t*>(value)); break;
-    case DatumType::Float: lua_pushnumber(L, *reinterpret_cast<const float*>(value)); break;
-    case DatumType::Bool: lua_pushboolean(L, *reinterpret_cast<const bool*>(value)); break;
-    case DatumType::String: lua_pushstring(L, reinterpret_cast<const std::string*>(value)->c_str()); break;
-    case DatumType::Vector2D: Vector_Lua::Create(L, *reinterpret_cast<const glm::vec2*>(value)); break;
-    case DatumType::Vector: Vector_Lua::Create(L, *reinterpret_cast<const glm::vec3*>(value)); break;
-    case DatumType::Color: Vector_Lua::Create(L, *reinterpret_cast<const glm::vec4*>(value)); break;
-    case DatumType::Asset: Asset_Lua::Create(L, *reinterpret_cast<const Asset* const*>(value)); break;
-    case DatumType::Byte: lua_pushinteger(L, (uint8_t) (*reinterpret_cast<const uint8_t*>(value))); break;
-    case DatumType::Short: lua_pushinteger(L, (int16_t) (*reinterpret_cast<const int16_t*>(value))); break;
-
-
-    default:
-        LogError("Invalid script datum type");
-        break;
-    }
-#endif
-}
-
-
 #endif

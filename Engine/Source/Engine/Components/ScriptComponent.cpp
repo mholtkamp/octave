@@ -908,7 +908,7 @@ void ScriptComponent::ExecuteNetFunc(uint16_t index, uint32_t numParams, std::ve
 
                     for (uint32_t i = 0; i < numParams; ++i)
                     {
-                        PushDatumValue(L, params[i].mType, params[i].mData.vp);
+                        LuaPushDatum(L, params[i]);
                     }
 
                     uint32_t totalArgCount = 1 + numParams;
@@ -1501,7 +1501,7 @@ bool ScriptComponent::OnRepHandler(Datum* datum, const void* newValue)
 
     if (onRepFunc)
     {
-        PushDatumValue(L, netDatum->mType, netDatum->mData.vp);
+        LuaPushDatum(L, *netDatum);
         oldValueIdx = lua_gettop(L);
     }
 
