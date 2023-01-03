@@ -1408,7 +1408,7 @@ void NetworkManager::ProcessIncomingPackets(float deltaTime)
     while ((bytes =  NET_SocketRecvFrom(mSocket, sRecvBuffer, OCT_RECV_BUFFER_SIZE, address, port)) > 0)
     {   
         Stream stream(sRecvBuffer, bytes);
-        NetMsgType msgType = (NetMsgType) sRecvBuffer[0];
+        NetMsgType msgType = (NetMsgType) sRecvBuffer[OCT_PACKET_HEADER_SIZE];
 
         // Find which NetHost the message was from.
         // if there is no matching NetHost then ignore this message (unless it is a "Connect" message)
