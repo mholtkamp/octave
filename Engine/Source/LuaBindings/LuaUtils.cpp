@@ -59,6 +59,9 @@ void PushDatumValue(lua_State* L, DatumType datumType, const void* value)
     case DatumType::Vector: Vector_Lua::Create(L, *reinterpret_cast<const glm::vec3*>(value)); break;
     case DatumType::Color: Vector_Lua::Create(L, *reinterpret_cast<const glm::vec4*>(value)); break;
     case DatumType::Asset: Asset_Lua::Create(L, *reinterpret_cast<const Asset* const*>(value)); break;
+    case DatumType::Byte: lua_pushinteger(L, (uint8_t) (*reinterpret_cast<const uint8_t*>(value))); break;
+    case DatumType::Short: lua_pushinteger(L, (int16_t) (*reinterpret_cast<const int16_t*>(value))); break;
+
 
     default:
         LogError("Invalid script datum type");

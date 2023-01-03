@@ -36,7 +36,7 @@ public:
     virtual const char* GetTypeName() override;
 
     void Create(Actor* srcActor);
-    Actor* Instantiate(World* world);
+    Actor* Instantiate(World* world, bool addNetwork = true);
 
     const Property* GetActorProperty(const char* name);
     const Property* GetComponentProperty(int32_t index, const char* name);

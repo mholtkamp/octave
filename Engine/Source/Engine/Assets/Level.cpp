@@ -148,6 +148,8 @@ void Level::LoadIntoWorld(World* world, bool clear, glm::vec3 offset, glm::vec3 
     transform = glm::translate(transform, offset);
     transform *= glm::eulerAngleYXZ(rotRadians.y, rotRadians.x, rotRadians.z);
 
+    bool isAuthority = NetIsAuthority();
+
     for (uint32_t i = 0; i < numActors; ++i)
     {
         bool bp = stream.ReadBool();
@@ -172,14 +174,14 @@ void Level::LoadIntoWorld(World* world, bool clear, glm::vec3 offset, glm::vec3 
 
             if (bp != nullptr)
             {
-                newActor = bp->Instantiate(GetWorld());
+                newActor = bp->Instantiate(GetWorld(), isAuthority);
                 newActor->ApplyPropertyOverrides(overs);
             }
         }
         else
         {
             TypeId actorType = (TypeId)stream.ReadUint32();
-            newActor = GetWorld()->SpawnActor(actorType, false);
+            newActor = GetWorld()->SpawnActor(actorType, isAuthority);
             newActor->LoadStream(stream);
         }
 
@@ -193,12 +195,8 @@ void Level::LoadIntoWorld(World* world, bool clear, glm::vec3 offset, glm::vec3 
             newActor->SetRotation(transformedRot);
 
             newActor->UpdateComponentTransforms();
-
-            if (NetIsAuthority())
-            {
-                world->AddNetActor(newActor, INVALID_NET_ID);
-            }
-            else if (newActor->IsReplicated())
+            
+            if (!isAuthority && newActor->IsReplicated())
             {
                 // There should be a better way to do this, but the client should not 
                 // instantiate network actors. Let the server send down the SpawnActor messages.
