@@ -219,6 +219,7 @@ public:
     void InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5);
     void InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5, Datum param6);
     void InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5, Datum param6, Datum param7);
+    void InvokeNetFunc(const char* name, const std::vector<Datum>& params);
 
     static bool OnRep_RootPosition(Datum* datum, const void* newValue);
     static bool OnRep_RootRotation(Datum* datum, const void* newValue);

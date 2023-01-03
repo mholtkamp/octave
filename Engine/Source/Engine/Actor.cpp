@@ -1298,6 +1298,29 @@ void Actor::InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum pa
     if (shouldExecute) { netFunc->mFuncPointer.p8(this, param0, param1, param2, param3, param4, param5, param6, param7);}
 }
 
+void Actor::InvokeNetFunc(const char* name, const std::vector<Datum>& params)
+{
+    uint32_t numParams = (uint32_t)params.size();
+    if (numParams > 8)
+    {
+        LogError("Too many params for NetFunc, truncating to 8.");
+        numParams = 8;
+    }
+
+    switch (numParams)
+    {
+    case 0: InvokeNetFunc(name); break;
+    case 1: InvokeNetFunc(name, params[0]); break;
+    case 2: InvokeNetFunc(name, params[0], params[1]); break;
+    case 3: InvokeNetFunc(name, params[0], params[1], params[2]); break;
+    case 4: InvokeNetFunc(name, params[0], params[1], params[2], params[3]); break;
+    case 5: InvokeNetFunc(name, params[0], params[1], params[2], params[3], params[4]); break;
+    case 6: InvokeNetFunc(name, params[0], params[1], params[2], params[3], params[4], params[5]); break;
+    case 7: InvokeNetFunc(name, params[0], params[1], params[2], params[3], params[4], params[5], params[6]); break;
+    case 8: InvokeNetFunc(name, params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7]); break;
+    }
+}
+
 void Actor::RegisterNetFuncs(Actor* actor)
 {
     TypeId actorType = actor->GetType();
