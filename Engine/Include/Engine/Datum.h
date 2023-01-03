@@ -26,6 +26,7 @@ enum class DatumType : uint8_t
     Byte,
     Table,
     Pointer,
+    Short,
 
     Count
 };
@@ -44,6 +45,7 @@ union DatumData
     uint8_t* by;
     TableDatum* t;
     RTTI** p;
+    int16_t* sh;
     void* vp;
 };
 
@@ -75,6 +77,7 @@ public:
     Datum(const AssetRef& value);
     Datum(uint8_t value);
     Datum(RTTI* value);
+    Datum(int16_t value);
 
     // Conversion operators
     operator int32_t() const { return GetInteger(); }
@@ -90,6 +93,7 @@ public:
     //operator AssetRef() const; Not sure if needed??
     operator uint8_t() const { return (mType == DatumType::Integer) ? uint8_t(GetInteger()) : GetByte(); }
     operator RTTI*() const { return (mType == DatumType::Asset) ? ((RTTI*)GetAsset()) : GetPointer(); }
+    operator int16_t() const { return (mType == DatumType::Integer) ? int16_t(GetInteger()) : GetShort(); }
 
     DatumType GetType() const;
     void SetType(DatumType type);
@@ -118,6 +122,7 @@ public:
     void SetByte(uint8_t value, uint32_t index = 0);
     void SetTableDatum(const TableDatum& value, uint32_t index = 0);
     void SetPointer(RTTI* value, uint32_t index = 0);
+    void SetShort(int16_t value, uint32_t index = 0);
 
     void SetValue(const void* value, uint32_t index = 0, uint32_t count = 1);
     void SetValueRaw(const void* value, uint32_t index = 0);
@@ -134,6 +139,7 @@ public:
     void SetExternal(uint8_t* data,  uint32_t count = 1);
     void SetExternal(TableDatum* data, uint32_t count = 1);
     void SetExternal(RTTI** data, uint32_t count = 1);
+    void SetExternal(int16_t* data, uint32_t count = 1);
 
     int32_t GetInteger(uint32_t index = 0) const;
     float GetFloat(uint32_t index = 0) const;
@@ -147,6 +153,7 @@ public:
     TableDatum& GetTableDatum(uint32_t index = 0);
     const TableDatum& GetTableDatum(uint32_t index = 0) const;
     RTTI* GetPointer(uint32_t index = 0) const;
+    int16_t GetShort(uint32_t index = 0) const;
 
     void PushBack(int32_t value);
     void PushBack(float value);
@@ -161,6 +168,7 @@ public:
     void PushBack(uint8_t value);
     TableDatum* PushBackTableDatum(const TableDatum& value);
     void PushBack(RTTI* value);
+    void PushBack(int16_t value);
 
     TableDatum* FindTableDatum(const char* key);
     TableDatum* FindTableDatum(int32_t key);
@@ -231,6 +239,7 @@ public:
     Datum& operator=(Asset* src);
     Datum& operator=(uint8_t src);
     Datum& operator=(RTTI* srC);
+    Datum& operator=(int16_t src);
 
     // Equivalence
     bool operator==(const Datum& other) const;
@@ -247,6 +256,7 @@ public:
     bool operator==(const uint32_t& other) const;
     bool operator==(const uint8_t& other) const;
     bool operator==(const RTTI*& other) const;
+    bool operator==(const int16_t& other) const;
 
     bool operator!=(const Datum& other) const;
 
@@ -262,6 +272,7 @@ public:
     bool operator!=(const uint32_t& other) const;
     bool operator!=(const uint8_t& other) const;
     bool operator!=(const RTTI*& other) const;
+    bool operator!=(const int16_t& other) const;
 
     virtual bool IsProperty() const;
     virtual bool IsTableDatum() const;

@@ -183,6 +183,13 @@ void Property::PushBackVector(void* value)
             OCT_ASSERT(0);
             break;
         }
+        case DatumType::Short:
+        {
+            std::vector<int16_t>& vect = *((std::vector<int16_t>*) mVector);
+            vect.push_back(value ? *((int16_t*)value) : (int16_t)0);
+            mData.sh = vect.data();
+            break;
+        }
 
         default: break;
         }
@@ -264,6 +271,12 @@ void Property::EraseVector(uint32_t index)
         {
             // Pointer not supported as Vector
             OCT_ASSERT(0);
+            break;
+        }
+        case DatumType::Short:
+        {
+            std::vector<int16_t>& vect = *((std::vector<int16_t>*) mVector);
+            vect.erase(vect.begin() + index);
             break;
         }
 
@@ -357,6 +370,13 @@ void Property::ResizeVector(uint32_t count)
         {
             // Pointer not supported as Vector
             OCT_ASSERT(0);
+            break;
+        }
+        case DatumType::Short:
+        {
+            std::vector<int16_t>& vect = *((std::vector<int16_t>*) mVector);
+            vect.resize(count);
+            mData.sh = vect.data();
             break;
         }
 
@@ -453,6 +473,13 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
     {
         // Pointer not supported as vector
         OCT_ASSERT(0);
+        break;
+    }
+    case DatumType::Short:
+    {
+        std::vector<int16_t>& vect = *((std::vector<int16_t>*) mVector);
+        mData.sh = vect.data();
+        mCount = (uint8_t)vect.size();
         break;
     }
 

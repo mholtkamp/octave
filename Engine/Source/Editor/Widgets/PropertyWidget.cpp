@@ -162,6 +162,7 @@ PropertyWidget* CreatePropWidget(const Property& prop, bool arrayElement)
             break;
         }
         case DatumType::Vector2D: widget = new Vector2DProp(); break;
+        case DatumType::Short: widget = new ShortProp(); break;
 
         case DatumType::Count: break;
         }
@@ -901,5 +902,42 @@ float Vector2DProp::GetHeight()
 {
     return sVerticalSpacing * 3;
 }
+
+
+ShortProp::ShortProp() :
+    mTextField(nullptr)
+{
+    mTextField = new TextField();
+    mTextField->SetPosition(sIndent2, sVerticalSpacing);
+    mTextField->SetDimensions(sWidth, sHeight);
+    mTextField->SetTextConfirmHandler(HandleTextFieldChange);
+    AddChild(mTextField);
+}
+
+void ShortProp::Update()
+{
+    PropertyWidget::Update();
+    mTextField->SetTextString(std::to_string(mProperty.GetShort(mIndex)));
+}
+
+void ShortProp::Write()
+{
+    try
+    {
+        int16_t newValue = (int16_t) std::stoi(mTextField->GetTextString());
+
+        ActionManager::Get()->EXE_EditProperty(
+            mProperty.mOwner,
+            mOwnerType,
+            mProperty.mName,
+            mIndex,
+            newValue);
+    }
+    catch (...)
+    {
+
+    }
+}
+
 
 #endif
