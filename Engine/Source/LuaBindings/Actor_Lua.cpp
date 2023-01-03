@@ -633,6 +633,40 @@ int Actor_Lua::SetVisible(lua_State* L)
     return 0;
 }
 
+int Actor_Lua::InvokeNetFunc(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+    const char* funcName = CHECK_STRING(L, 2);
+
+    uint32_t numParams = lua_gettop(L) - 2;
+
+    if (numParams > 8)
+    {
+        LogError("Too many params for net func. Truncating to 8 params.");
+        numParams = 8;
+    }
+
+    if (numParams >= 1)
+    {
+        std::vector<Datum> params;
+        params.resize(numParams);
+
+        for (uint32_t i = 0; i < numParams; ++i)
+        {
+            // First param starts at index 3
+            params[i] = LuaObjectToDatum(L, 3 + i);
+        }
+
+        actor->InvokeNetFunc(funcName, params);
+    }
+    else
+    {
+        actor->InvokeNetFunc(funcName);
+    }
+
+    return 0;
+}
+
 void Actor_Lua::BindCommon(lua_State* L, int mtIndex)
 {
     lua_pushcfunction(L, Destroy);
@@ -797,6 +831,9 @@ void Actor_Lua::Bind()
 
     lua_pushcfunction(L, Actor_Lua::IsVisible);
     lua_setfield(L, mtIndex, "IsVisible");
+
+    lua_pushcfunction(L, Actor_Lua::InvokeNetFunc);
+    lua_setfield(L, mtIndex, "InvokeNetFunc");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

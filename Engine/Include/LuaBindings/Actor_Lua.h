@@ -87,7 +87,7 @@ struct Actor_Lua
     static int IsVisible(lua_State* L);
     static int SetVisible(lua_State* L);
 
-    // TODO-LUA: Add calls to InvokeNetFunc()
+    static int InvokeNetFunc(lua_State* L);
 
     static void BindCommon(lua_State* L, int mtIndex);
     static void Bind();
