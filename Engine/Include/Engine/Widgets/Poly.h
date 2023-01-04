@@ -33,12 +33,16 @@ public:
     void SetTexture(Texture* texture);
     Texture* GetTexture();
 
+    float GetLineWidth() const;
+    void SetLineWidth(float width);
+
 protected:
 
     std::vector<VertexUI> mVertices;
     TextureRef mTexture; // TODO: Add support for filled polygons
+    float mLineWidth = 2.0f;
+    
     bool mUploadVertices[MAX_FRAMES] = {};
-
     PolyResource mResource;
 };
 

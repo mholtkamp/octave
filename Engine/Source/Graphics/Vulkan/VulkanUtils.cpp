@@ -2083,6 +2083,8 @@ void DrawPoly(Poly* poly)
 
         resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Poly, polygonPipeline->GetPipelineLayout());
 
+        vkCmdSetLineWidth(cb, poly->GetLineWidth());
+
         vkCmdDraw(cb, numVerts, 1, 0, 0);
     }
 }

@@ -27,6 +27,7 @@ Pipeline::Pipeline() :
     mCullMode(VK_CULL_MODE_BACK_BIT),
     mFrontFace(VK_FRONT_FACE_COUNTER_CLOCKWISE),
     mDepthBias(0.0f),
+    mDynamicLineWidth(false),
     mDepthTestEnabled(VK_TRUE),
     mDepthWriteEnabled(VK_TRUE),
     mDepthCompareOp(VK_COMPARE_OP_LESS)
@@ -177,11 +178,16 @@ void Pipeline::CreateGraphicsPipeline()
     colorBlending.blendConstants[2] = 0.0f;
     colorBlending.blendConstants[3] = 0.0f;
 
-    VkDynamicState dynamicStates[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+    std::vector<VkDynamicState> dynStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+    if (mDynamicLineWidth)
+    {
+        dynStates.push_back(VK_DYNAMIC_STATE_LINE_WIDTH);
+    }
+
     VkPipelineDynamicStateCreateInfo dynamicState = {};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.dynamicStateCount = 2;
-    dynamicState.pDynamicStates = dynamicStates;
+    dynamicState.dynamicStateCount = (uint32_t)dynStates.size();
+    dynamicState.pDynamicStates = dynStates.data();
 
     CreatePipelineLayout();
 

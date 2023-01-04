@@ -97,3 +97,13 @@ Texture* Poly::GetTexture()
 {
     return mTexture.Get<Texture>();
 }
+
+float Poly::GetLineWidth() const
+{
+    return mLineWidth;
+}
+
+void Poly::SetLineWidth(float width)
+{
+    mLineWidth = width;
+}

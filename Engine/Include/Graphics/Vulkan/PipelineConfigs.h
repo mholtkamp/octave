@@ -352,6 +352,7 @@ public:
         mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
         mCullMode = VK_CULL_MODE_NONE;
         mDepthTestEnabled = VK_FALSE;
+        mDynamicLineWidth = true;
 
         mBlendAttachments[0].blendEnable = VK_TRUE;
         mBlendAttachments[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
