@@ -20,6 +20,7 @@ class ParticleComponent;
 class CameraComponent;
 class Quad;
 class Text;
+class Poly;
 
 struct FogSettings;
 
@@ -110,6 +111,13 @@ void GFX_DestroyTextResource(Text* text);
 void GFX_UpdateTextResourceUniformData(Text* text);
 void GFX_UpdateTextResourceVertexData(Text* text);
 void GFX_DrawText(Text* text);
+
+// Polygon
+void GFX_CreatePolyResource(Poly* poly);
+void GFX_DestroyPolyResource(Poly* poly);
+void GFX_UpdatePolyResourceUniformData(Poly* poly);
+void GFX_UpdatePolyResourceVertexData(Poly* poly);
+void GFX_DrawPoly(Poly* poly);
 
 // Arbitrary mesh draw (for debug drawing)
 void GFX_DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& transform, glm::vec4 color);

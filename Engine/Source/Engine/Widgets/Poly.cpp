@@ -1,0 +1,99 @@
+#include "Widgets/Poly.h"
+#include "Renderer.h"
+#include "Log.h"
+#include "Utilities.h"
+
+#include "Graphics/Graphics.h"
+
+#include "Widgets/Poly.h"
+
+FORCE_LINK_DEF(Poly);
+DEFINE_FACTORY(Poly, Widget);
+
+Poly::Poly()
+{
+    GFX_CreatePolyResource(this);
+}
+
+Poly::~Poly()
+{
+    GFX_DestroyPolyResource(this);
+}
+
+PolyResource* Poly::GetResource()
+{
+    return &mResource;
+}
+
+void Poly::Update()
+{
+    Widget::Update();
+
+    uint32_t frameIndex = Renderer::Get()->GetFrameIndex();
+    if (mUploadVertices[frameIndex])
+    {
+        GFX_UpdatePolyResourceVertexData(this);
+        mUploadVertices[frameIndex] = false;
+    }
+
+    if (IsDirty())
+    {
+        GFX_UpdatePolyResourceUniformData(this);
+    }
+}
+
+void Poly::Render()
+{
+    Widget::Render();
+    GFX_DrawPoly(this);
+}
+
+void Poly::MarkVerticesDirty()
+{
+    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    {
+        mUploadVertices[i] = true;
+    }
+}
+
+VertexUI* Poly::GetVertices()
+{
+    return mVertices.data();
+}
+
+void Poly::AddVertex(glm::vec2 position,
+    glm::vec4 color,
+    glm::vec2 uv)
+{
+    uint32_t color32 = ColorFloat4ToUint32(color);
+    mVertices.push_back({ position, uv, color32 });
+
+    MarkVerticesDirty();
+}
+
+void Poly::ClearVertices()
+{
+    mVertices.clear();
+    MarkVerticesDirty();
+}
+
+uint32_t Poly::GetNumVertices()
+{
+    return uint32_t(mVertices.size());
+}
+
+VertexUI Poly::GetVertex(uint32_t index)
+{
+    return mVertices[index];
+}
+
+void Poly::SetTexture(Texture* texture)
+{
+    mTexture = texture;
+    MarkDirty();
+}
+
+Texture* Poly::GetTexture()
+{
+    return mTexture.Get<Texture>();
+}

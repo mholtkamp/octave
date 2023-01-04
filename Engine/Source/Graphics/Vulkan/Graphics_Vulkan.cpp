@@ -304,6 +304,31 @@ void GFX_DrawText(Text* text)
     DrawTextWidget(text);
 }
 
+void GFX_CreatePolyResource(Poly* poly)
+{
+    CreatePolyResource(poly);
+}
+
+void GFX_DestroyPolyResource(Poly* poly)
+{
+    DestroyPolyResource(poly);
+}
+
+void GFX_UpdatePolyResourceUniformData(Poly* poly)
+{
+    UpdatePolyResourceUniformData(poly);
+}
+
+void GFX_UpdatePolyResourceVertexData(Poly* poly)
+{
+    UpdatePolyResourceVertexData(poly);
+}
+
+void GFX_DrawPoly(Poly* poly)
+{
+    DrawPoly(poly);
+}
+
 void GFX_DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& transform, glm::vec4 color)
 {
     DrawStaticMesh(mesh, material, transform, color);

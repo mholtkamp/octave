@@ -79,6 +79,17 @@ struct TextUniformData
     int32_t mEffect;
 };
 
+struct PolyUniformData
+{
+    glm::mat4 mTransform;
+    glm::vec4 mColor;
+
+    float mX;
+    float mY;
+    float mPad0;
+    float mPad1;
+};
+
 struct MaterialData
 {
     glm::vec2 mUvOffset0;
@@ -117,6 +128,7 @@ enum class DescriptorSetBinding
     PostProcess = 1,
     Quad = 1,
     Text = 1,
+    Poly = 1,
 
     Material = 2
 };

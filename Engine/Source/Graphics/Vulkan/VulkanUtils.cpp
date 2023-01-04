@@ -16,6 +16,7 @@
 #include "Components/ParticleComponent.h"
 #include "Widgets/Quad.h"
 #include "Widgets/Text.h"
+#include "Widgets/Poly.h"
 #include "Utilities.h"
 
 #include <glm/glm.hpp>
@@ -1966,6 +1967,123 @@ void DrawTextWidget(Text* text)
         resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Text, textPipeline->GetPipelineLayout());
 
         vkCmdDraw(cb, 6 * text->GetNumVisibleCharacters(), 1, 0, 0);
+    }
+}
+
+void CreatePolyResource(Poly* poly)
+{
+    PolyResource* resource = poly->GetResource();
+
+    uint32_t numVerts = poly->GetNumVertices();
+    if (numVerts > 0)
+    {
+        OCT_ASSERT(resource->mVertexBuffer == nullptr);
+        resource->mVertexBuffer = new Buffer(BufferType::Vertex, numVerts * sizeof(VertexUI), "Poly Vertices");
+        resource->mNumVerts = numVerts;
+    }
+
+    OCT_ASSERT(resource->mUniformBuffer == nullptr);
+    resource->mUniformBuffer = new UniformBuffer(sizeof(PolyUniformData), "Poly Uniforms");
+
+    OCT_ASSERT(resource->mDescriptorSet == nullptr);
+    VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Poly)->GetDescriptorSetLayout(1);
+    resource->mDescriptorSet = new DescriptorSet(layout);
+
+    UpdatePolyResourceVertexData(poly);
+    UpdatePolyResourceUniformData(poly);
+}
+
+void DestroyPolyResource(Poly* poly)
+{
+    PolyResource* resource = poly->GetResource();
+
+    if (resource->mVertexBuffer != nullptr)
+    {
+        GetDestroyQueue()->Destroy(resource->mVertexBuffer);
+        resource->mVertexBuffer = nullptr;
+        resource->mNumVerts = 0;
+    }
+
+    if (resource->mUniformBuffer != nullptr)
+    {
+        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
+        resource->mUniformBuffer = nullptr;
+    }
+
+    if (resource->mDescriptorSet != nullptr)
+    {
+        GetDestroyQueue()->Destroy(resource->mDescriptorSet);
+        resource->mDescriptorSet = nullptr;
+    }
+}
+
+void UpdatePolyResourceUniformData(Poly* poly)
+{
+    PolyResource* resource = poly->GetResource();
+
+    // Uniform Buffer
+    PolyUniformData ubo = {};
+    ubo.mTransform = glm::mat4(poly->GetTransform());
+    ubo.mColor = poly->GetColor();
+    ubo.mX = poly->GetRect().mX;
+    ubo.mY = poly->GetRect().mY;
+    ubo.mPad0 = 1337.0f;
+    ubo.mPad1 = 1337.0f;
+    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+
+    // Descriptor Set
+    Renderer* renderer = Renderer::Get();
+    Texture* texture = poly->GetTexture() ? poly->GetTexture() : renderer->mWhiteTexture.Get<Texture>();
+    resource->mDescriptorSet->UpdateUniformDescriptor(0, resource->mUniformBuffer);
+    resource->mDescriptorSet->UpdateImageDescriptor(1, texture->GetResource()->mImage);
+}
+
+void UpdatePolyResourceVertexData(Poly* poly)
+{
+    // Vertex Buffer
+    PolyResource* resource = poly->GetResource();
+    uint32_t numVerts = poly->GetNumVertices();
+    uint32_t vbSize = numVerts * sizeof(VertexUI);
+
+    if (resource->mVertexBuffer != nullptr &&
+        resource->mVertexBuffer->GetSize() < vbSize)
+    {
+        GetDestroyQueue()->Destroy(resource->mVertexBuffer);
+        resource->mVertexBuffer = nullptr;
+        resource->mNumVerts = 0;
+    }
+
+    if (numVerts > 0)
+    {
+        if (resource->mVertexBuffer == nullptr)
+        {
+            resource->mVertexBuffer = new Buffer(BufferType::Vertex, numVerts * sizeof(VertexUI), "Poly Vertices");
+            resource->mNumVerts = numVerts;
+        }
+
+        resource->mVertexBuffer->Update(poly->GetVertices(), numVerts * sizeof(VertexUI), 0);
+    }
+}
+
+void DrawPoly(Poly* poly)
+{
+    PolyResource* resource = poly->GetResource();
+    uint32_t numVerts = resource->mNumVerts;
+
+    if (numVerts > 0)
+    {
+        VkCommandBuffer cb = GetCommandBuffer();
+
+        Pipeline* polygonPipeline = GetVulkanContext()->GetPipeline(PipelineId::Poly);
+        GetVulkanContext()->BindPipeline(polygonPipeline, VertexType::VertexUI);
+
+        VkDeviceSize offset = 0;
+        VkBuffer vertexBuffer = resource->mVertexBuffer->Get();
+        vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
+
+        resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Poly, polygonPipeline->GetPipelineLayout());
+
+        vkCmdDraw(cb, numVerts, 1, 0, 0);
     }
 }
 

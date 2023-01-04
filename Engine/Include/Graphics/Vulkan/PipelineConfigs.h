@@ -340,6 +340,37 @@ public:
     }
 };
 
+class PolyPipeline : public Pipeline
+{
+public:
+
+    PolyPipeline()
+    {
+        mName = "Poly Pipeline";
+        SetVertexConfig(VertexType::VertexUI, ENGINE_SHADER_DIR "Poly.vert");
+        mFragmentShaderPath = ENGINE_SHADER_DIR "Poly.frag";
+        mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+        mCullMode = VK_CULL_MODE_NONE;
+        mDepthTestEnabled = VK_FALSE;
+
+        mBlendAttachments[0].blendEnable = VK_TRUE;
+        mBlendAttachments[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        mBlendAttachments[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+        mPipelineId = PipelineId::Poly;
+    }
+
+    virtual void PopulateLayoutBindings() override
+    {
+        Pipeline::PopulateLayoutBindings();
+
+        PushSet();
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    }
+};
+
+
 class SelectedGeometryPipeline : public ForwardPipeline
 {
 public:

@@ -1142,6 +1142,32 @@ void GFX_DrawText(Text* text)
     //GX_SetTevSwapModeTable(GX_TEV_SWAP1, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_ALPHA);
 }
 
+// Poly
+void GFX_CreatePolyResource(Poly* poly)
+{
+
+}
+
+void GFX_DestroyPolyResource(Poly* poly)
+{
+
+}
+
+void GFX_UpdatePolyResourceUniformData(Poly* poly)
+{
+
+}
+
+void GFX_UpdatePolyResourceVertexData(Poly* poly)
+{
+
+}
+
+void GFX_DrawPoly(Poly* poly)
+{
+
+}
+
 void GFX_DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& transform, glm::vec4 color)
 {
     // TODO: For debug drawing

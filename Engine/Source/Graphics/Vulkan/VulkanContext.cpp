@@ -1962,6 +1962,7 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::NullPostProcess] = new NullPostProcessPipeline();
     mPipelines[(size_t)PipelineId::Quad] = new QuadPipeline();
     mPipelines[(size_t)PipelineId::Text] = new TextPipeline();
+    mPipelines[(size_t)PipelineId::Poly] = new PolyPipeline();
 
 #if EDITOR
     mPipelines[(size_t)PipelineId::HitCheck] = new HitCheckPipeline();
@@ -1985,6 +1986,7 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::NullPostProcess]->Create(mPostprocessRenderPass);
     mPipelines[(size_t)PipelineId::Quad]->Create(mUIRenderPass);
     mPipelines[(size_t)PipelineId::Text]->Create(mUIRenderPass);
+    mPipelines[(size_t)PipelineId::Poly]->Create(mUIRenderPass);
 
 #if EDITOR
     mPipelines[(size_t)PipelineId::HitCheck]->Create(mHitCheckRenderPass);

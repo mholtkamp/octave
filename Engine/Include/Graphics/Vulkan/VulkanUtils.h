@@ -26,6 +26,7 @@ class TextMeshComponent;
 class ParticleComponent;
 class Quad;
 class Text;
+class Poly;
 
 VkFormat ConvertPixelFormat(PixelFormat pixelFormat);
 
@@ -153,6 +154,13 @@ void DestroyTextResourceVertexBuffer(Text* text);
 void UpdateTextResourceUniformData(Text* text);
 void UpdateTextResourceVertexData(Text* text);
 void DrawTextWidget(Text* text);
+
+// Poly
+void CreatePolyResource(Poly* poly);
+void DestroyPolyResource(Poly* poly);
+void UpdatePolyResourceUniformData(Poly* poly);
+void UpdatePolyResourceVertexData(Poly* poly);
+void DrawPoly(Poly* poly);
 
 // Arbitrary mesh draw
 void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& transform, glm::vec4 color, uint32_t hitCheckId = 0);

@@ -1317,6 +1317,32 @@ void GFX_DrawText(Text* text)
     C3D_DrawArrays(GPU_TRIANGLES, 0, 6 * numVisibleChars);
 }
 
+// Poly
+void GFX_CreatePolyResource(Poly* poly)
+{
+
+}
+
+void GFX_DestroyPolyResource(Poly* poly)
+{
+
+}
+
+void GFX_UpdatePolyResourceUniformData(Poly* poly)
+{
+
+}
+
+void GFX_UpdatePolyResourceVertexData(Poly* poly)
+{
+
+}
+
+void GFX_DrawPoly(Poly* poly)
+{
+
+}
+
 void GFX_DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& transform, glm::vec4 color)
 {
     // TODO: For debug drawing
