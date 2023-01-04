@@ -94,6 +94,7 @@ public:
     VkCullModeFlags mCullMode;
     VkFrontFace mFrontFace;
     float mDepthBias;
+    bool mDynamicLineWidth;
 
     // Depth Stencil state
     VkBool32 mDepthTestEnabled;
