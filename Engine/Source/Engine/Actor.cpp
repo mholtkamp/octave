@@ -1235,6 +1235,16 @@ void Actor::SetBlueprintSource(Blueprint* bp)
     mBlueprintSource = bp;
 }
 
+bool Actor::HasAuthority() const
+{
+    return NetIsAuthority();
+}
+
+bool Actor::IsOwned() const
+{
+    return (NetIsLocal() || mOwningHost == NetGetHostId());
+}
+
 void Actor::InvokeNetFunc(const char* name)
 {
     Datum** params = nullptr;

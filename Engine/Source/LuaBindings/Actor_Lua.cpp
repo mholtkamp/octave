@@ -633,6 +633,26 @@ int Actor_Lua::SetVisible(lua_State* L)
     return 0;
 }
 
+int Actor_Lua::HasAuthority(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+
+    bool ret = actor->HasAuthority();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Actor_Lua::IsOwned(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+
+    bool ret = actor->IsOwned();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Actor_Lua::InvokeNetFunc(lua_State* L)
 {
     Actor* actor = CHECK_ACTOR(L, 1);
@@ -831,6 +851,12 @@ void Actor_Lua::Bind()
 
     lua_pushcfunction(L, Actor_Lua::IsVisible);
     lua_setfield(L, mtIndex, "IsVisible");
+
+    lua_pushcfunction(L, Actor_Lua::HasAuthority);
+    lua_setfield(L, mtIndex, "HasAuthority");
+
+    lua_pushcfunction(L, Actor_Lua::IsOwned);
+    lua_setfield(L, mtIndex, "IsOwned");
 
     lua_pushcfunction(L, Actor_Lua::InvokeNetFunc);
     lua_setfield(L, mtIndex, "InvokeNetFunc");

@@ -87,6 +87,9 @@ struct Actor_Lua
     static int IsVisible(lua_State* L);
     static int SetVisible(lua_State* L);
 
+    static int HasAuthority(lua_State* L);
+    static int IsOwned(lua_State* L);
+
     static int InvokeNetFunc(lua_State* L);
 
     static void BindCommon(lua_State* L, int mtIndex);
