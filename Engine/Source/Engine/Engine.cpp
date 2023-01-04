@@ -70,6 +70,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(StaticMesh);
     FORCE_LINK_CALL(Texture);
     FORCE_LINK_CALL(Blueprint);
+    FORCE_LINK_CALL(WidgetMap);
 
     // Widget Types
     FORCE_LINK_CALL(Button);

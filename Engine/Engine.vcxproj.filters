@@ -756,6 +756,9 @@
     <ClCompile Include="Source\Engine\Widgets\Poly.cpp">
       <Filter>Source Files\Engine\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Widgets\WidgetMap.cpp">
+      <Filter>Source Files\Engine\Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1372,6 +1375,9 @@
     </ClInclude>
     <ClInclude Include="Include\Engine\Widgets\Poly.h">
       <Filter>Header Files\Engine\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Engine\Assets\WidgetMap.h">
+      <Filter>Header Files\Engine\Assets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

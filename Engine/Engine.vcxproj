@@ -443,6 +443,7 @@
     <ClCompile Include="Source\Engine\Widgets\TextField.cpp" />
     <ClCompile Include="Source\Engine\Widgets\VerticalList.cpp" />
     <ClCompile Include="Source\Engine\Widgets\Widget.cpp" />
+    <ClCompile Include="Source\Engine\Widgets\WidgetMap.cpp" />
     <ClCompile Include="Source\Engine\World.cpp" />
     <ClCompile Include="Source\Graphics\C3D\C3dUtils.cpp" />
     <ClCompile Include="Source\Graphics\C3D\DoubleBuffer.cpp" />
@@ -554,6 +555,7 @@
     <ClInclude Include="Include\Engine\Assets\SoundWave.h" />
     <ClInclude Include="Include\Engine\Assets\StaticMesh.h" />
     <ClInclude Include="Include\Engine\Assets\Texture.h" />
+    <ClInclude Include="Include\Engine\Assets\WidgetMap.h" />
     <ClInclude Include="Include\Engine\Components\TextMeshComponent.h" />
     <ClInclude Include="Include\Engine\ScriptableFuncPointer.h" />
     <ClInclude Include="Include\Engine\ScriptAutoReg.h" />
