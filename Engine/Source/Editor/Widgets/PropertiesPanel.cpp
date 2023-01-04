@@ -72,7 +72,7 @@ PropertiesPanel::PropertiesPanel() :
     mScrollDistance(80.0f),
     mMode(PropertiesMode::Component)
 {
-    SetName("Properties");
+    SetTitle("Properties");
     SetAnchorMode(AnchorMode::RightStretch);
     SetX(-sDefaultWidth);
     SetTopMargin(HierarchyPanel::sHierarchyPanelHeight);

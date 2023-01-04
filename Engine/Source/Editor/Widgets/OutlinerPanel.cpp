@@ -99,7 +99,7 @@ void OutlinerPanel::HandleRenameActor(TextField* tf)
 
 OutlinerPanel::OutlinerPanel()
 {
-    SetName("Outliner");
+    SetTitle("Outliner");
     SetAnchorMode(AnchorMode::LeftStretch);
     SetYRatio(0.0f);
     SetHeightRatio(0.5f);

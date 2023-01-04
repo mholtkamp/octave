@@ -12,6 +12,65 @@ FORCE_LINK_DEF(Widget);
 DEFINE_FACTORY_MANAGER(Widget);
 DEFINE_FACTORY(Widget, Widget);
 
+static const char* sAnchorModeStrings[] =
+{
+    "Top Left",
+    "Top Mid",
+    "Top Right",
+    "Mid Left",
+    "Mid",
+    "Mid Right",
+    "Bottom Left",
+    "Bottom Mid",
+    "Bottom Right",
+
+    "Top Stretch",
+    "Mid Horizontal Stretch",
+    "Bottom Stretch",
+
+    "Left Stretch",
+    "Mid Vertical Stretch",
+    "Right Stretch",
+
+    "Full Stretch"
+};
+static_assert(int32_t(AnchorMode::Count) == 16, "Need to update string conversion table");
+
+
+bool Widget::HandlePropChange(Datum* datum, const void* newValue)
+{
+    Property* prop = static_cast<Property*>(datum);
+
+    OCT_ASSERT(prop != nullptr);
+    Widget* widget = static_cast<Widget*>(prop->mOwner);
+    bool success = false;
+
+    if (prop->mName == "X")
+    {
+        widget->SetX(*(float*)newValue);
+    }
+    else if (prop->mName == "Y")
+    {
+        widget->SetY(*(float*)newValue);
+    }
+    else if (prop->mName == "Width")
+    {
+        widget->SetWidth(*(float*)newValue);
+    }
+    else if (prop->mName == "Height")
+    {
+        widget->SetHeight(*(float*)newValue);
+    }
+    else if (prop->mName == "Anchor")
+    {
+        widget->SetAnchorMode(*(AnchorMode*)newValue);
+    }
+
+    widget->MarkDirty();
+
+    return success;
+}
+
 Widget::Widget() :
     mParent(nullptr),
     mTransform(1.0f),
@@ -31,7 +90,7 @@ Widget::Widget() :
     MarkDirty();
 
     mCachedScissorRect = Rect(0.0f, 0.0f, 10000.0f, 10000.0f);
-    mCachedParentScissorRect = Rect(0.0f, 0.0f, 10000.0f, 10000.0f);;
+    mCachedParentScissorRect = Rect(0.0f, 0.0f, 10000.0f, 10000.0f);
 }
 
 Widget::~Widget()
@@ -54,6 +113,23 @@ Widget::~Widget()
     }
 
     mChildren.clear();
+}
+
+void Widget::GatherProperties(std::vector<Property>& outProps)
+{
+    outProps.push_back(Property(DatumType::String, "Name", this, &mName, 1, Widget::HandlePropChange));
+    outProps.push_back(Property(DatumType::Byte, "Anchor", this, &mAnchorMode, 1, Widget::HandlePropChange, 0, int32_t(AnchorMode::Count), sAnchorModeStrings));
+    outProps.push_back(Property(DatumType::Bool, "Visible", this, &mVisible, 1, Widget::HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Scissor", this, &mUseScissor, 1, Widget::HandlePropChange));
+
+    outProps.push_back(Property(DatumType::Float, "X", this, &mRect.mX, 1, Widget::HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Y", this, &mRect.mY, 1, Widget::HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Width", this, &mRect.mWidth, 1, Widget::HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Height", this, &mRect.mHeight, 1, Widget::HandlePropChange));
+    outProps.push_back(Property(DatumType::Color, "Color", this, &mColor, 1, Widget::HandlePropChange));
+    outProps.push_back(Property(DatumType::Vector2D, "Pivot", this, &mPivot, 1, Widget::HandlePropChange));
+    outProps.push_back(Property(DatumType::Vector2D, "Scale", this, &mScale, 1, Widget::HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Rotation", this, &mRotation, 1, Widget::HandlePropChange));
 }
 
 // Issue gpu commands to display the widget.
@@ -108,6 +184,16 @@ void Widget::Update()
     {
         UpdateRect();
     }
+}
+
+void Widget::SetName(const std::string& name)
+{
+    mName = name;
+}
+
+const std::string& Widget::GetName() const
+{
+    return mName;
 }
 
 Rect Widget::GetRect()

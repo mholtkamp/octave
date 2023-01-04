@@ -291,7 +291,7 @@ void OnAssetButtonPressed(Button* button)
 AssetsPanel::AssetsPanel() :
     mCurrentDir(nullptr)
 {
-    SetName("Assets");
+    SetTitle("Assets");
     SetAnchorMode(AnchorMode::LeftStretch);
     SetYRatio(0.5f);
     SetHeightRatio(0.5f);
