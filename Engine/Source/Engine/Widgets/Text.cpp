@@ -11,6 +11,34 @@
 FORCE_LINK_DEF(Text);
 DEFINE_FACTORY(Text, Widget);
 
+static const char* sHoriJustStrings[] =
+{
+    "Left",
+    "Center",
+    "Right"
+};
+static_assert(int32_t(Justification::Count) == 3, "Need to update string conversion table");
+
+static const char* sVertJustStrings[] =
+{
+    "Top",
+    "Center",
+    "Bottom"
+};
+static_assert(int32_t(Justification::Count) == 3, "Need to update string conversion table");
+
+bool Text::HandlePropChange(Datum* datum, const void* newValue)
+{
+    Property* prop = static_cast<Property*>(datum);
+
+    OCT_ASSERT(prop != nullptr);
+    Text* text = static_cast<Text*>(prop->mOwner);
+    bool success = false;
+
+    text->MarkDirty();
+
+    return success;
+}
 
 float Text::GetJustificationRatio(Justification just)
 {
@@ -19,11 +47,9 @@ float Text::GetJustificationRatio(Justification just)
     switch (just)
     {
     case Justification::Left:
-    case Justification::Top:
         ret = 0.0f;
         break;
     case Justification::Right:
-    case Justification::Bottom:
         ret = 1.0f;
         break;
     case Justification::Center:
@@ -59,6 +85,18 @@ Text::~Text()
 TextResource* Text::GetResource()
 {
     return &mResource;
+}
+
+void Text::GatherProperties(std::vector<Property>& outProps)
+{
+    Widget::GatherProperties(outProps);
+
+    outProps.push_back(Property(DatumType::Asset, "Font", this, &mFont, 1, Text::HandlePropChange, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::String, "Text", this, &mText, 1, Text::HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Size", this, &mSize, 1, Text::HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Word Wrap", this, &mWordWrap, 1, Text::HandlePropChange));
+    outProps.push_back(Property(DatumType::Byte, "Hori Justification", this, &mHoriJust, 1, Text::HandlePropChange, 0, int32_t(Justification::Count), sHoriJustStrings));
+    outProps.push_back(Property(DatumType::Byte, "Vert Justification", this, &mVertJust, 1, Text::HandlePropChange, 0, int32_t(Justification::Count), sVertJustStrings));
 }
 
 void Text::Update()

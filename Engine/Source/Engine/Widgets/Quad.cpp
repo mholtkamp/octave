@@ -8,6 +8,23 @@
 FORCE_LINK_DEF(Quad);
 DEFINE_FACTORY(Quad, Widget);
 
+bool Quad::HandlePropChange(Datum* datum, const void* newValue)
+{
+    Property* prop = static_cast<Property*>(datum);
+
+    OCT_ASSERT(prop != nullptr);
+    Quad* quad = static_cast<Quad*>(prop->mOwner);
+    bool success = false;
+
+    if (prop->mName == "Texture")
+    {
+        quad->SetTexture(*(Texture**)newValue);
+        success = true;
+    }
+
+    return success;
+}
+
 Quad::Quad() :
     mTexture(nullptr),
     mTint(glm::vec4(1, 1, 1, 1)),
@@ -26,6 +43,16 @@ Quad::~Quad()
 QuadResource* Quad::GetResource()
 {
     return &mResource;
+}
+
+void Quad::GatherProperties(std::vector<Property>& outProps)
+{
+    Widget::GatherProperties(outProps);
+
+    outProps.push_back(Property(DatumType::Asset, "Texture", this, &mTexture, 1, Quad::HandlePropChange, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::Color, "Tint", this, &mTint, 1, Quad::HandlePropChange));
+    outProps.push_back(Property(DatumType::Vector2D, "UV Scale", this, &mUvScale, 1, Quad::HandlePropChange));
+    outProps.push_back(Property(DatumType::Vector2D, "UV Offset", this, &mUvOffset, 1, Quad::HandlePropChange));
 }
 
 void Quad::Update()

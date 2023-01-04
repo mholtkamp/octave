@@ -279,7 +279,7 @@ void HierarchyPanel::HandleRenameComponent(TextField* tf)
 HierarchyPanel::HierarchyPanel() :
     mListOffset(0)
 {
-    SetName("Hierarchy");
+    SetTitle("Hierarchy");
     SetAnchorMode(AnchorMode::TopRight);
     SetPosition(-sDefaultWidth, 0.0f);
     SetDimensions(Panel::sDefaultWidth, sHierarchyPanelHeight);

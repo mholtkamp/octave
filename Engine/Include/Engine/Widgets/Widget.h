@@ -30,7 +30,9 @@ enum class AnchorMode : uint8_t
     MidVerticalStretch,
     RightStretch,
 
-    FullStretch
+    FullStretch,
+
+    Count
 };
 
 enum MarginFlag : uint8_t
@@ -51,6 +53,8 @@ public:
     Widget();
     virtual ~Widget();
 
+    virtual void GatherProperties(std::vector<Property>& outProps);
+
     // Issue gpu commands to display the widget.
     // Recursively render children.
     void RecursiveRender();
@@ -60,6 +64,9 @@ public:
     // Recursively update children.
     void RecursiveUpdate();
     virtual void Update();
+
+    void SetName(const std::string& name);
+    const std::string& GetName() const;
 
     Rect GetRect();
 
@@ -174,6 +181,8 @@ public:
 
 protected:
 
+    static bool HandlePropChange(Datum* datum, const void* newValue);
+
     float PixelsToRatioX(float x) const;
     float PixelsToRatioY(float y) const;
     float RatioToPixelsX(float x) const;
@@ -185,6 +194,7 @@ protected:
 
     Widget* mParent;
     std::vector<Widget*> mChildren;
+    std::string mName;
 
     Rect mRect; // The screen pos/dimensions that are computed on Update().
     Rect mCachedScissorRect;

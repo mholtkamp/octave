@@ -18,6 +18,8 @@ public:
 
     QuadResource* GetResource();
 
+    virtual void GatherProperties(std::vector<Property>& outProps) override;
+
     virtual void Update() override;
 
     void SetTexture(class Texture* texture);
@@ -45,6 +47,8 @@ public:
     VertexUI* GetVertices();
 
 protected:
+
+    static bool HandlePropChange(Datum* datum, const void* newValue);
 
     void InitVertexData();
     void UpdateVertexData();

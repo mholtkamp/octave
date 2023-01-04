@@ -13,7 +13,7 @@ public:
     Panel();
     ~Panel();
 
-    void SetName(const std::string& name);
+    void SetTitle(const std::string& name);
     const std::string& GetName() const;
 
     virtual bool ShouldHandleInput() override;
@@ -39,8 +39,6 @@ public:
     static const glm::vec4 sBodyColorBot;
 
 protected:
-
-    std::string mName;
 
     Canvas* mHeaderCanvas;
     Canvas* mBodyCanvas;

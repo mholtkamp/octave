@@ -14,8 +14,8 @@ enum class Justification : uint8_t
     Left,
     Center,
     Right,
-    Top,
-    Bottom,
+    Top = 0,
+    Bottom = 2,
 
     Count
 };
@@ -30,6 +30,8 @@ public:
     virtual ~Text();
 
     TextResource* GetResource();
+
+    virtual void GatherProperties(std::vector<Property>& outProps) override;
 
     virtual void Update() override;
     virtual void SetColor(glm::vec4 color) override;
@@ -81,6 +83,8 @@ public:
     static float GetJustificationRatio(Justification just);
 
 protected:
+
+    static bool HandlePropChange(Datum* datum, const void* newValue);
 
     void UpdateVertexData();
     void UploadVertexData();

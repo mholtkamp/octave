@@ -19,7 +19,6 @@ const glm::vec4 Panel::sBodyColorTop = sHeaderColorLeft * 0.5f;
 const glm::vec4 Panel::sBodyColorBot = sHeaderColorRight * 0.5f;
 
 Panel::Panel() :
-    mName("Panel"),
     mHeaderCanvas(nullptr),
     mBodyCanvas(nullptr),
     mHeaderText(nullptr),
@@ -60,10 +59,10 @@ Panel::~Panel()
     // Children automatically deleted by ~Widget().
 }
 
-void Panel::SetName(const std::string& name)
+void Panel::SetTitle(const std::string& title)
 {
-    mName = name;
-    mHeaderText->SetText(name);
+    SetName(title);
+    mHeaderText->SetText(title);
 }
 
 const std::string& Panel::GetName() const

@@ -300,7 +300,7 @@ ViewportPanel::ViewportPanel() :
     mFirstPersonRotationSpeed(0.07f),
     mFocalDistance(sDefaultFocalDistance)
 {
-    SetName("Viewport");
+    SetTitle("Viewport");
     SetAnchorMode(AnchorMode::FullStretch);
     SetMargins(sDefaultWidth, 0.0f, sDefaultWidth, 0.0f);
 
