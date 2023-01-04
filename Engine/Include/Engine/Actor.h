@@ -207,6 +207,9 @@ public:
     Blueprint* GetBlueprintSource() const;
     void SetBlueprintSource(Blueprint* bp);
 
+    bool HasAuthority() const;
+    bool IsOwned() const;
+
     NetFunc* FindNetFunc(const char* name);
     NetFunc* FindNetFunc(uint16_t index);
 
