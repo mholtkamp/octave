@@ -753,6 +753,9 @@
     <ClCompile Include="Source\LuaBindings\ScriptWidget_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Widgets\Poly.cpp">
+      <Filter>Source Files\Engine\Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1366,6 +1369,9 @@
     </ClInclude>
     <ClInclude Include="Include\LuaBindings\ScriptWidget_Lua.h">
       <Filter>Header Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Engine\Widgets\Poly.h">
+      <Filter>Header Files\Engine\Widgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

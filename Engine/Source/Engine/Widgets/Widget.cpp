@@ -654,6 +654,11 @@ void Widget::SetColor(glm::vec4 color)
     MarkDirty();
 }
 
+glm::vec4 Widget::GetColor() const
+{
+    return mColor;
+}
+
 bool Widget::ShouldHandleInput()
 {
     Widget* modal = Renderer::Get()->GetModalWidget();

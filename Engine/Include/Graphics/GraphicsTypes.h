@@ -76,6 +76,7 @@ enum class PipelineId
     NullPostProcess,
     Quad,
     Text,
+    Poly,
 
     HitCheck,
 
@@ -200,6 +201,18 @@ struct QuadResource
     Buffer* mVertexBuffer = nullptr;
     UniformBuffer* mUniformBuffer = nullptr;
     DescriptorSet* mDescriptorSet = nullptr;
+#elif API_C3D
+    DoubleBuffer mVertexData;
+#endif
+};
+
+struct PolyResource
+{
+#if API_VULKAN
+    Buffer* mVertexBuffer = nullptr;
+    UniformBuffer* mUniformBuffer = nullptr;
+    DescriptorSet* mDescriptorSet = nullptr;
+    uint32_t mNumVerts = 0;
 #elif API_C3D
     DoubleBuffer mVertexData;
 #endif
