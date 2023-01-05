@@ -36,6 +36,8 @@ protected:
     static const int32_t sNumButtons = 10;
     HierarchyButton* mButtons[sNumButtons];
 
+    uint32_t mCachedNumWidgets = 0;
+
     Widget* mRootWidget = nullptr;
 
     int32_t mListOffset;
