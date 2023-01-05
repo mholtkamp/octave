@@ -18,9 +18,6 @@ public:
     virtual void HandleInput() override;
     virtual void Update() override;
 
-    Widget* GetRootWidget();
-    void SetRootWidget(Widget* widget);
-
     static const float sPanelHeight;
 
 protected:
@@ -37,8 +34,6 @@ protected:
     HierarchyButton* mButtons[sNumButtons];
 
     uint32_t mCachedNumWidgets = 0;
-
-    Widget* mRootWidget = nullptr;
 
     int32_t mListOffset;
 };

@@ -63,6 +63,7 @@ struct EditorState
     SceneImportWidget* mSceneImportWidget = nullptr;
     TextEntry* mTextEntry = nullptr;
     Canvas* mRootCanvas = nullptr;
+    Widget* mEditRootWidget = nullptr;
     bool mMouseNeedsRecenter = false;
     bool mPlayInEditor = false;
     bool mEjected = false;
@@ -114,6 +115,8 @@ void ShowRootCanvas(bool show);
 
 Widget* GetSelectedWidget();
 void SetSelectedWidget(Widget* widget);
+Widget* GetEditRootWidget();
+void SetEditRootWidget(Widget* widget);
 
 Asset* GetSelectedAsset();
 AssetStub* GetSelectedAssetStub();

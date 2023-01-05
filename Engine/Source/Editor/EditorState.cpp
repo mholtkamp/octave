@@ -511,6 +511,16 @@ void SetSelectedWidget(Widget* widget)
     }
 }
 
+Widget* GetEditRootWidget()
+{
+    return sEditorState.mEditRootWidget;
+}
+
+void SetEditRootWidget(Widget* widget)
+{
+    sEditorState.mEditRootWidget = widget;
+}
+
 Asset* GetSelectedAsset()
 {
     return  sEditorState.mSelectedAssetStub ? sEditorState.mSelectedAssetStub->mAsset : nullptr;

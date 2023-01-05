@@ -25,7 +25,7 @@ void OnCreateNativeWidgetButtonPressed(Button* button)
 
     if (parentWidget == nullptr)
     {
-        parentWidget = hierPanel->GetRootWidget();
+        parentWidget = GetEditRootWidget();
     }
 
     Widget* widget = Widget::CreateInstance(className.c_str());
@@ -37,7 +37,7 @@ void OnCreateNativeWidgetButtonPressed(Button* button)
     }
     else
     {
-        hierPanel->SetRootWidget(widget);
+        SetEditRootWidget(widget);
     }
 
     ActionManager::Get()->EXE_AddWidget(widget);
@@ -57,7 +57,7 @@ void OnCreateMappedWidgetButtonPressed(Button* button)
 
     if (parentWidget == nullptr)
     {
-        parentWidget = hierPanel->GetRootWidget();
+        parentWidget = GetEditRootWidget();
     }
 
     WidgetMap* widgetMap = LoadAsset<WidgetMap>(mapName);
@@ -71,7 +71,7 @@ void OnCreateMappedWidgetButtonPressed(Button* button)
     }
     else
     {
-        hierPanel->SetRootWidget(widget);
+        SetEditRootWidget(widget);
     }
 
     ActionManager::Get()->EXE_AddWidget(widget);
@@ -190,7 +190,7 @@ void WidgetHierarchyPanel::DeleteWidget(Widget* widget)
     WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
     if (widget != nullptr)
     {
-        Widget* rootWidget = panel->GetRootWidget();
+        Widget* rootWidget = GetEditRootWidget();
 
         bool isRoot = (widget == rootWidget);
         bool hasChildren = (widget->GetNumChildren() > 0);
@@ -237,16 +237,6 @@ void WidgetHierarchyPanel::AttachSelectedWidget(Widget* newParent)
     panel->RefreshButtons();
 }
 
-Widget* WidgetHierarchyPanel::GetRootWidget()
-{
-    return mRootWidget;
-}
-
-void WidgetHierarchyPanel::SetRootWidget(Widget* newRoot)
-{
-    mRootWidget = newRoot;
-}
-
 void WidgetHierarchyPanel::SetRootWidgetAction(Widget* newRoot)
 {
     WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
@@ -254,7 +244,7 @@ void WidgetHierarchyPanel::SetRootWidgetAction(Widget* newRoot)
     if (newRoot == nullptr)
         return;
 
-    Widget* oldRoot = panel->GetRootWidget();
+    Widget* oldRoot = GetEditRootWidget();
 
     if (newRoot != oldRoot)
     {
@@ -305,7 +295,7 @@ void WidgetHierarchyPanel::OnSelectedWidgetChanged()
 
 void WidgetHierarchyPanel::RefreshButtons()
 {
-    Widget* rootWidget = GetRootWidget();
+    Widget* rootWidget = GetEditRootWidget();
 
     if (rootWidget != nullptr)
     {
