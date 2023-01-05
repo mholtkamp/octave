@@ -82,7 +82,7 @@ void OnCreateMappedWidgetButtonPressed(Button* button)
     Renderer::Get()->SetModalWidget(nullptr);
 }
 
-void OnHierarchyButtonPressed(Button* button)
+static void OnHierarchyButtonPressed(Button* button)
 {
     if (button != nullptr)
     {

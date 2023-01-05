@@ -136,7 +136,13 @@ void WidgetViewportPanel::HandleDefaultControls()
             int32_t mouseY = 0;
             GetMousePosition(mouseX, mouseY);
 
-            Widget* hoveredWidget = FindHoveredWidget(mouseX, mouseY);
+            Widget* hoveredWidget = nullptr;
+            
+            if (mEditRootWidget)
+            {
+                uint32_t maxDepth = 0;
+                hoveredWidget = FindHoveredWidget(mEditRootWidget, maxDepth, mouseX, mouseY);
+            }
 
             if (GetSelectedWidget() != hoveredWidget)
             {
@@ -334,3 +340,29 @@ void WidgetViewportPanel::RestorePreTransforms()
     }
 }
 
+Widget* WidgetViewportPanel::FindHoveredWidget(Widget* widget, uint32_t& maxDepth, int32_t mouseX, int32_t mouseY, uint32_t depth)
+{
+    Widget* retWidget = nullptr;
+
+    Rect rect = widget->GetRect();
+
+    if (rect.ContainsPoint(float(mouseX), float(mouseY)) &&
+        depth > maxDepth)
+    {
+        retWidget = widget;
+        maxDepth = depth;
+    }
+
+    for (uint32_t i = 0; i < widget->GetNumChildren(); ++i)
+    {
+        Widget* child = widget->GetChild(i);
+        Widget* childFound = FindHoveredWidget(child, maxDepth, mouseX, mouseY, depth + 1);
+
+        if (childFound)
+        {
+            retWidget = childFound;
+        }
+    }
+
+    return retWidget;
+}

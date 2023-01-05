@@ -164,6 +164,11 @@ void PropertiesPanel::OnSelectedComponentChanged()
     }
 }
 
+void PropertiesPanel::OnSelectedWidgetChanged()
+{
+
+}
+
 void PropertiesPanel::InspectAsset(Asset* asset)
 {
     mCurrentAsset = asset;

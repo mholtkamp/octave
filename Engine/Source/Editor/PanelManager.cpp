@@ -155,10 +155,10 @@ void PanelManager::OnEditorModeChanged()
     switch (mode)
     {
     case EditorMode::Level:
-#error Do Level Mode
+//#error Do Level Mode
         break;
     case EditorMode::Widget:
-#error Do Widget Mode
+//#error Do Widget Mode
 
         break;
     case EditorMode::Blueprint:
