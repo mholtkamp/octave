@@ -27,6 +27,7 @@
 #include "Widgets/AssetsPanel.h"
 #include "Widgets/HierarchyPanel.h"
 #include "Widgets/PropertiesPanel.h"
+#include "Widgets/WidgetHierarchyPanel.h"
 #include "Widgets/ActionList.h"
 #include "Assets/Texture.h"
 #include "Assets/StaticMesh.h"
@@ -831,6 +832,30 @@ void ActionManager::EXE_SetAbsoluteScale(TransformComponent* comp, glm::vec3 sca
     ActionManager::Get()->ExecuteAction(action);
 }
 
+void ActionManager::EXE_AddWidget(Widget* widget)
+{
+    ActionAddWidget* action = new ActionAddWidget(widget);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_RemoveWidget(Widget* widget)
+{
+    ActionRemoveWidget* action = new ActionRemoveWidget(widget);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_AttachWidget(Widget* widget, Widget* newParent)
+{
+    ActionAttachWidget* action = new ActionAttachWidget(widget, newParent);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_SetRootWidget(Widget* newRoot)
+{
+    ActionSetRootWidget* action = new ActionSetRootWidget(newRoot);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
 void ActionManager::ClearActionHistory()
 {
     for (uint32_t i = 0; i < mActionHistory.size(); ++i)
@@ -870,6 +895,12 @@ void ActionManager::ResetUndoRedo()
         mExiledComponents[i]->Destroy();
         delete mExiledComponents[i];
         mExiledComponents.erase(mExiledComponents.begin() + i);
+    }
+
+    for (int32_t i = (int32_t)mExiledWidgets.size() - 1; i >= 0; --i)
+    {
+        delete mExiledWidgets[i];
+        mExiledWidgets.erase(mExiledWidgets.begin() + i);
     }
 }
 
@@ -924,6 +955,34 @@ void ActionManager::RestoreExiledComponent(Component* comp)
         if (mExiledComponents[i] == comp)
         {
             mExiledComponents.erase(mExiledComponents.begin() + i);
+            restored = true;
+            break;
+        }
+    }
+
+    OCT_ASSERT(restored);
+}
+
+void ActionManager::ExileWidget(Widget* widget)
+{
+    OCT_ASSERT(std::find(mExiledWidgets.begin(), mExiledWidgets.end(), widget) == mExiledWidgets.end());
+    mExiledWidgets.push_back(widget);
+
+    if (GetSelectedWidget() == widget)
+    {
+        SetSelectedWidget(nullptr);
+    }
+}
+
+void ActionManager::RestoreExiledWidget(Widget* widget)
+{
+    bool restored = false;
+
+    for (uint32_t i = 0; i < mExiledWidgets.size(); ++i)
+    {
+        if (mExiledWidgets[i] == widget)
+        {
+            mExiledWidgets.erase(mExiledWidgets.begin() + i);
             restored = true;
             break;
         }
@@ -2302,6 +2361,140 @@ void ActionSetAbsoluteScale::Execute()
 void ActionSetAbsoluteScale::Reverse()
 {
     mComponent->SetAbsoluteScale(mPrevScale);
+}
+
+ActionAddWidget::ActionAddWidget(Widget* widget)
+{
+    mWidget = widget;
+    mParent = widget->GetParent();
+    OCT_ASSERT(mWidget);
+}
+
+void ActionAddWidget::Execute()
+{
+    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
+
+    if (mHasExecuted)
+    {
+        ActionManager::Get()->RestoreExiledWidget(mWidget);
+
+        if (mParent != nullptr)
+        {
+            mParent->AddChild(mWidget);
+        }
+        else
+        {
+            // No parent? This must have been the root widget.
+            panel->SetRootWidget(mWidget);
+        }
+
+        panel->RefreshButtons();
+    }
+
+    mHasExecuted = true;
+}
+
+void ActionAddWidget::Reverse()
+{
+    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
+
+    if (mParent != nullptr)
+    {
+        mParent->RemoveChild(mWidget);
+    }
+    else
+    {
+        panel->SetRootWidget(nullptr);
+    }
+
+    ActionManager::Get()->ExileWidget(mWidget);
+}
+
+ActionRemoveWidget::ActionRemoveWidget(Widget* widget)
+{
+    mWidget = widget;
+    mParent = widget->GetParent();
+    OCT_ASSERT(mWidget);
+}
+
+void ActionRemoveWidget::Execute()
+{
+    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
+
+    if (mParent != nullptr)
+    {
+        mParent->RemoveChild(mWidget);
+    }
+    else
+    {
+        panel->SetRootWidget(nullptr);
+    }
+
+    ActionManager::Get()->ExileWidget(mWidget);
+}
+
+void ActionRemoveWidget::Reverse()
+{
+    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
+
+    ActionManager::Get()->RestoreExiledWidget(mWidget);
+
+    if (mParent != nullptr)
+    {
+        mParent->AddChild(mWidget);
+    }
+    else
+    {
+        // No parent? This must have been the root widget.
+        panel->SetRootWidget(mWidget);
+    }
+
+    panel->RefreshButtons();
+}
+
+ActionAttachWidget::ActionAttachWidget(Widget* widget, Widget* newParent)
+{
+    mWidget = widget;
+    mNewParent = newParent;
+    mPrevParent = widget->GetParent();
+    OCT_ASSERT(mWidget);
+    OCT_ASSERT(mNewParent);
+}
+
+void ActionAttachWidget::Execute()
+{
+    mNewParent->AddChild(mWidget);
+    PanelManager::Get()->GetWidgetHierarchyPanel()->RefreshButtons();
+}
+
+void ActionAttachWidget::Reverse()
+{
+    mPrevParent->AddChild(mWidget);
+    PanelManager::Get()->GetWidgetHierarchyPanel()->RefreshButtons();
+}
+
+ActionSetRootWidget::ActionSetRootWidget(Widget* newRoot)
+{
+    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
+
+    mNewRoot = newRoot;
+    mOldRoot = panel->GetRootWidget();
+
+    OCT_ASSERT(mNewRoot != mOldRoot);
+}
+
+void ActionSetRootWidget::Execute()
+{
+    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
+    panel->SetRootWidget(mNewRoot);
+    panel->RefreshButtons();
+}
+
+void ActionSetRootWidget::Reverse()
+{
+    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
+    panel->SetRootWidget(mOldRoot);
+    panel->RefreshButtons();
 }
 
 #endif

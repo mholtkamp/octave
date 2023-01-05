@@ -55,6 +55,10 @@ public:
     void EXE_SetAbsoluteRotation(TransformComponent* comp, glm::quat rot);
     void EXE_SetAbsolutePosition(TransformComponent* comp, glm::vec3 pos);
     void EXE_SetAbsoluteScale(TransformComponent* comp, glm::vec3 scale);
+    void EXE_AddWidget(Widget* widget);
+    void EXE_RemoveWidget(Widget* widget);
+    void EXE_AttachWidget(Widget* widget, Widget* newParent);
+    void EXE_SetRootWidget(Widget* newRoot);
 
     void ClearActionHistory();
     void ClearActionFuture();
@@ -63,6 +67,8 @@ public:
     void RestoreExiledActor(Actor* actor);
     void ExileComponent(Component* comp);
     void RestoreExiledComponent(Component* comp);
+    void ExileWidget(Widget* widget);
+    void RestoreExiledWidget(Widget* widget);
 
 protected:
 
@@ -85,6 +91,7 @@ protected:
     std::vector<Action*> mActionFuture;
     std::vector<Actor*> mExiledActors;
     std::vector<Component*> mExiledComponents;
+    std::vector<Widget*> mExiledWidgets;
 
 public:
 
@@ -253,4 +260,46 @@ protected:
     TransformComponent* mComponent = nullptr;
     glm::vec3 mNewScale;
     glm::vec3 mPrevScale;
+};
+
+class ActionAddWidget : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(AddWidget)
+    ActionAddWidget(Widget* widget);
+protected:
+    Widget* mWidget = nullptr;
+    Widget* mParent = nullptr;
+    bool mHasExecuted = false;
+};
+
+class ActionRemoveWidget : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(RemoveWidget)
+    ActionRemoveWidget(Widget* widget);
+protected:
+    Widget* mWidget = nullptr;
+    Widget* mParent = nullptr;
+};
+
+class ActionAttachWidget : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(AttachWidget)
+    ActionAttachWidget(Widget* widget, Widget* newParent);
+protected:
+    Widget* mWidget = nullptr;
+    Widget* mNewParent = nullptr;
+    Widget* mPrevParent = nullptr;
+};
+
+class ActionSetRootWidget : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(SetRootWidget)
+    ActionSetRootWidget(Widget* newRoot);
+protected:
+    Widget* mNewRoot = nullptr;
+    Widget* mOldRoot = nullptr;
 };

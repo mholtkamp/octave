@@ -30,7 +30,7 @@ protected:
     static void ShowAddMappedWidgetPrompt();
     static void DeleteWidget(Widget* widget);
     static void AttachSelectedWidget(Widget* newParent);
-    static void SetRootWidget(Widget* newRoot);
+    static void SetRootWidgetAction(Widget* newRoot);
     static void HandleRenameWidget(TextField* tf);
 
     static const int32_t sNumButtons = 10;
