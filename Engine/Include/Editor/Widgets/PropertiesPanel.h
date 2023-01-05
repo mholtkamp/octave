@@ -13,6 +13,7 @@ enum class PropertiesMode
     Component,
     Actor,
     Asset,
+    Widget,
 
     Count
 };
@@ -32,6 +33,9 @@ public:
 
     PropertiesPanel();
     ~PropertiesPanel();
+
+    void OnEditorModeChanged();
+
     void OnSelectedComponentChanged();
     void OnSelectedWidgetChanged();
 
@@ -54,13 +58,16 @@ protected:
 
     Component* mCurrentComponent;
     Asset* mCurrentAsset;
+    Widget* mCurrentWidget;
     Canvas* mComponentCanvas;
     Canvas* mActorCanvas;
     Canvas* mAssetCanvas;
+    Canvas* mWidgetCanvas;
     Canvas* mPropertiesCanvas;
     ComboBox* mModeBox;
     float mScrollDistance;
     CanvasCache mComponentCanvasCache;
     CanvasCache mAssetCanvasCache;
+    CanvasCache mWidgetCanvasCache;
     PropertiesMode mMode;
 };

@@ -152,6 +152,8 @@ void PanelManager::OnEditorModeChanged()
 {
     EditorMode mode = GetEditorMode();
 
+    mPropertiesPanel->OnEditorModeChanged();
+
     switch (mode)
     {
     case EditorMode::Level:
