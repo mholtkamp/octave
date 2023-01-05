@@ -134,7 +134,7 @@ void WidgetHierarchyPanel::ActionHandler(Button* button)
     {
         if (sActionWidget != nullptr)
         {
-            hierPanel->SetRootWidget(sActionWidget);
+            SetRootWidgetAction(sActionWidget);
         }
     }
     else if (buttonText == "Rename")
@@ -237,7 +237,17 @@ void WidgetHierarchyPanel::AttachSelectedWidget(Widget* newParent)
     panel->RefreshButtons();
 }
 
+Widget* WidgetHierarchyPanel::GetRootWidget()
+{
+    return mRootWidget;
+}
+
 void WidgetHierarchyPanel::SetRootWidget(Widget* newRoot)
+{
+    mRootWidget = newRoot;
+}
+
+void WidgetHierarchyPanel::SetRootWidgetAction(Widget* newRoot)
 {
     WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
 
