@@ -33,6 +33,7 @@ public:
     PropertiesPanel();
     ~PropertiesPanel();
     void OnSelectedComponentChanged();
+    void OnSelectedWidgetChanged();
 
     virtual void Update() override;
     virtual void HandleInput() override;

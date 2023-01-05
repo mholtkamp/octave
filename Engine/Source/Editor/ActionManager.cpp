@@ -2390,7 +2390,7 @@ void ActionAddWidget::Execute()
         else
         {
             // No parent? This must have been the root widget.
-            panel->SetRootWidget(mWidget);
+            SetEditRootWidget(mWidget);
         }
 
         panel->RefreshButtons();
@@ -2409,7 +2409,7 @@ void ActionAddWidget::Reverse()
     }
     else
     {
-        panel->SetRootWidget(nullptr);
+        SetEditRootWidget(nullptr);
     }
 
     ActionManager::Get()->ExileWidget(mWidget);
@@ -2432,7 +2432,7 @@ void ActionRemoveWidget::Execute()
     }
     else
     {
-        panel->SetRootWidget(nullptr);
+        SetEditRootWidget(nullptr);
     }
 
     ActionManager::Get()->ExileWidget(mWidget);
@@ -2451,7 +2451,7 @@ void ActionRemoveWidget::Reverse()
     else
     {
         // No parent? This must have been the root widget.
-        panel->SetRootWidget(mWidget);
+        SetEditRootWidget(mWidget);
     }
 
     panel->RefreshButtons();
@@ -2483,7 +2483,7 @@ ActionSetRootWidget::ActionSetRootWidget(Widget* newRoot)
     WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
 
     mNewRoot = newRoot;
-    mOldRoot = panel->GetRootWidget();
+    mOldRoot = GetEditRootWidget();
 
     OCT_ASSERT(mNewRoot != mOldRoot);
 }
@@ -2491,14 +2491,14 @@ ActionSetRootWidget::ActionSetRootWidget(Widget* newRoot)
 void ActionSetRootWidget::Execute()
 {
     WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
-    panel->SetRootWidget(mNewRoot);
+    SetEditRootWidget(mNewRoot);
     panel->RefreshButtons();
 }
 
 void ActionSetRootWidget::Reverse()
 {
     WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
-    panel->SetRootWidget(mOldRoot);
+    SetEditRootWidget(mOldRoot);
     panel->RefreshButtons();
 }
 

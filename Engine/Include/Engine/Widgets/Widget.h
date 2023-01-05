@@ -61,6 +61,7 @@ public:
 
     DECLARE_FACTORY_MANAGER(Widget);
     DECLARE_FACTORY(Widget, Widget);
+    DECLARE_RTTI(Widget, RTTI);
 
     Widget();
     virtual ~Widget();
