@@ -87,6 +87,7 @@ enum class PropertyOwnerType
     Component,
     Actor,
     Asset,
+    Widget,
     Count
 };
 

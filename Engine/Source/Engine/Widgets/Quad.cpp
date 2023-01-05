@@ -31,6 +31,7 @@ Quad::Quad() :
     mUvScale(glm::vec2(1, 1)),
     mUvOffset(glm::vec2(0, 0))
 {
+    SetName("Quad");
     InitVertexData();
     GFX_CreateQuadResource(this);
 }

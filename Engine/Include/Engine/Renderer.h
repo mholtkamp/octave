@@ -74,6 +74,9 @@ public:
     void EnableFrustumCulling(bool enable);
     bool IsFrustumCullingEnabled() const;
 
+    void EnableWorldRendering(bool enable);
+    bool IsWorldRenderingEnabled() const;
+
     Texture* GetBlackTexture();
     Material* GetDefaultMaterial();
 
@@ -168,5 +171,6 @@ private:
     BoundsDebugMode mBoundsDebugMode = BoundsDebugMode::Off;
     bool mFrustumCulling = true;
     bool mEnableProxyRendering = false;
+    bool mEnableWorldRendering = true;
     bool mInModalWidgetUpdate = false;
 };

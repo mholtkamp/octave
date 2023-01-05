@@ -7,6 +7,7 @@
 #include "Widgets/HierarchyPanel.h"
 #include "Widgets/PropertiesPanel.h"
 #include "Widgets/ViewportPanel.h"
+#include "Widgets/WidgetHierarchyPanel.h"
 
 PanelManager* PanelManager::sInstance = nullptr;
 
@@ -53,6 +54,9 @@ PanelManager::PanelManager()
     mHierarchyPanel = new HierarchyPanel();
     mPropertiesPanel = new PropertiesPanel();
     mViewportPanel = new ViewportPanel();
+
+    mWidgetHierarchyPanel = new WidgetHierarchyPanel();
+    mWidgetViewportPanel = new WidgetViewportPanel();
 }
 
 PanelManager* PanelManager::Get()
@@ -116,6 +120,16 @@ ViewportPanel* PanelManager::GetViewportPanel()
     return mViewportPanel;
 }
 
+WidgetHierarchyPanel* PanelManager::GetWidgetHierarchyPanel()
+{
+    return mWidgetHierarchyPanel;
+}
+
+WidgetViewportPanel* PanelManager::GetWidgetViewportPanel()
+{
+    return mWidgetViewportPanel;
+}
+
 void PanelManager::OnSelectedComponentChanged()
 {
     mHierarchyPanel->OnSelectedComponentChanged();
@@ -125,6 +139,34 @@ void PanelManager::OnSelectedComponentChanged()
 void PanelManager::OnSelectedAssetChanged()
 {
 
+}
+
+void PanelManager::OnSelectedWidgetChanged()
+{
+    mWidgetHierarchyPanel->OnSelectedWidgetChanged();
+    mPropertiesPanel->OnSelectedWidgetChanged();
+}
+
+void PanelManager::OnEditorModeChanged()
+{
+    EditorMode mode = GetEditorMode();
+
+    switch (mode)
+    {
+    case EditorMode::Level:
+#error Do Level Mode
+        break;
+    case EditorMode::Widget:
+#error Do Widget Mode
+
+        break;
+    case EditorMode::Blueprint:
+        // TODO
+        break;
+    default:
+        OCT_ASSERT(0);
+        break;
+    }
 }
 
 #endif

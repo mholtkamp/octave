@@ -21,6 +21,22 @@ static EditorState sEditorState;
 constexpr const char* kEditorSaveFile = "Editor.sav";
 constexpr int32_t kEditorSaveVersion = 1;
 
+void SetEditorMode(EditorMode mode)
+{
+    if (sEditorState.mMode != mode)
+    {
+        sEditorState.mMode = mode;
+        PanelManager::Get()->SetEditorMode(mode);
+
+        Renderer::Get()->EnableWorldRendering(mode != EditorMode::Widget);
+    }
+}
+
+EditorMode GetEditorMode()
+{
+    return sEditorState.mMode;
+}
+
 void InitializeEditorState()
 {
     sEditorState.mTextEntry = new TextEntry();
@@ -477,6 +493,21 @@ void ShowRootCanvas(bool show)
         {
             Renderer::Get()->RemoveWidget(sEditorState.mRootCanvas);
         }
+    }
+}
+
+
+Widget* GetSelectedWidget()
+{
+    return sEditorState.mSelectedWidget;
+}
+
+void SetSelectedWidget(Widget* widget)
+{
+    if (sEditorState.mSelectedWidget != widget)
+    {
+        sEditorState.mSelectedWidget = widget;
+        PanelManager::Get()->OnSelectedWidgetChanged();
     }
 }
 

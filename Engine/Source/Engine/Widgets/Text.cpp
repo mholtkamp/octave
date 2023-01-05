@@ -72,6 +72,7 @@ Text::Text() :
     mVisibleCharacters(0),
     mNumCharactersAllocated(0)
 {
+    SetName("Text");
     mFont = LoadAsset<Font>("F_Roboto32");
     MarkVerticesDirty();
     GFX_CreateTextResource(this);
