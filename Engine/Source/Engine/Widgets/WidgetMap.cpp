@@ -123,7 +123,7 @@ Widget* WidgetMap::Instantiate()
             OCT_ASSERT(newWidget);
 
             std::vector<Property> dstProps;
-            rootWidget->GatherProperties(dstProps, false);
+            newWidget->GatherProperties(dstProps, false);
             CopyPropertyValues(dstProps, mWidgetDefs[i].mProperties);
 
             if (i > 0)
