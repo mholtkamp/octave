@@ -18,7 +18,7 @@ public:
 
     QuadResource* GetResource();
 
-    virtual void GatherProperties(std::vector<Property>& outProps) override;
+    virtual void GatherProperties(std::vector<Property>& outProps, bool editor) override;
 
     virtual void Update() override;
 

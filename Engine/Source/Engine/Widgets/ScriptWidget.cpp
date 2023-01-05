@@ -17,6 +17,13 @@ ScriptWidget::ScriptWidget(const char* scriptName)
     SetFile(scriptName);
 }
 
+void ScriptWidget::GatherProperties(std::vector<Property>& outProps, bool editor)
+{
+    Widget::GatherProperties(outProps, editor);
+
+    outProps.push_back(Property(DatumType::String, "File", this, &mFileName));
+}
+
 void ScriptWidget::SetFile(const char* filename)
 {
     if (mFileName != "")

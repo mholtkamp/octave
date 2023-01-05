@@ -3,6 +3,7 @@
 #include "InputDevices.h"
 #include "Engine.h"
 #include "Log.h"
+#include "Assets/WidgetMap.h"
 
 #include "Graphics/Graphics.h"
 
@@ -115,21 +116,32 @@ Widget::~Widget()
     mChildren.clear();
 }
 
-void Widget::GatherProperties(std::vector<Property>& outProps)
+void Widget::GatherProperties(std::vector<Property>& outProps, bool editor)
 {
     outProps.push_back(Property(DatumType::String, "Name", this, &mName, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Byte, "Anchor", this, &mAnchorMode, 1, Widget::HandlePropChange, 0, int32_t(AnchorMode::Count), sAnchorModeStrings));
     outProps.push_back(Property(DatumType::Bool, "Visible", this, &mVisible, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Scissor", this, &mUseScissor, 1, Widget::HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Float, "X", this, &mRect.mX, 1, Widget::HandlePropChange));
-    outProps.push_back(Property(DatumType::Float, "Y", this, &mRect.mY, 1, Widget::HandlePropChange));
-    outProps.push_back(Property(DatumType::Float, "Width", this, &mRect.mWidth, 1, Widget::HandlePropChange));
-    outProps.push_back(Property(DatumType::Float, "Height", this, &mRect.mHeight, 1, Widget::HandlePropChange));
+    if (editor)
+    {
+        outProps.push_back(Property(DatumType::Float, "X", this, &mRect.mX, 1, Widget::HandlePropChange));
+        outProps.push_back(Property(DatumType::Float, "Y", this, &mRect.mY, 1, Widget::HandlePropChange));
+        outProps.push_back(Property(DatumType::Float, "Width", this, &mRect.mWidth, 1, Widget::HandlePropChange));
+        outProps.push_back(Property(DatumType::Float, "Height", this, &mRect.mHeight, 1, Widget::HandlePropChange));
+    }
+    else
+    {
+        outProps.push_back(Property(DatumType::Vector2D, "Offset", this, &mOffset, 1, Widget::HandlePropChange));
+        outProps.push_back(Property(DatumType::Vector2D, "Size", this, &mSize, 1, Widget::HandlePropChange));
+    }
+
     outProps.push_back(Property(DatumType::Color, "Color", this, &mColor, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "Pivot", this, &mPivot, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "Scale", this, &mScale, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Rotation", this, &mRotation, 1, Widget::HandlePropChange));
+
+    //outProps.push_back(Property(DatumType::Asset, "Widget Map", this, &mWidgetMap, 1, Widget::HandlePropChange, int32_t(WidgetMap::GetStaticType())))
 }
 
 // Issue gpu commands to display the widget.
@@ -996,3 +1008,15 @@ void Widget::SetScissor(Rect& area)
                    int32_t(area.mWidth + 0.5f),
                    int32_t(area.mHeight + 0.5f));
 }
+
+#if EDITOR
+WidgetMap* Widget::GetWidgetMap()
+{
+    return mWidgetMap.Get<WidgetMap>();
+}
+
+void Widget::SetWidgetMap(WidgetMap* map)
+{
+    mWidgetMap = map;
+}
+#endif

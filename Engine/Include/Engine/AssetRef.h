@@ -63,3 +63,4 @@ typedef AssetRef SoundWaveRef;
 typedef AssetRef LevelRef;
 typedef AssetRef FontRef;
 typedef AssetRef BlueprintRef;
+typedef AssetRef WidgetMapRef;
