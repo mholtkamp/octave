@@ -2,6 +2,7 @@
 
 #include "Widgets/WidgetHierarchyPanel.h"
 #include "Widgets/HierarchyButton.h"
+#include "Assets/WidgetMap.h"
 #include "ActionManager.h"
 #include "PanelManager.h"
 #include "EditorState.h"
@@ -29,6 +30,40 @@ void OnCreateNativeWidgetButtonPressed(Button* button)
 
     Widget* widget = Widget::CreateInstance(className.c_str());
     OCT_ASSERT(widget != nullptr);
+
+    if (parentWidget != nullptr)
+    {
+        parentWidget->AddChild(widget);
+    }
+    else
+    {
+        hierPanel->SetRootWidget(widget);
+    }
+
+    ActionManager::Get()->EXE_AddWidget(widget);
+
+    SetSelectedWidget(widget);
+    hierPanel->RefreshButtons();
+
+    Renderer::Get()->SetModalWidget(nullptr);
+}
+
+void OnCreateMappedWidgetButtonPressed(Button* button)
+{
+    const std::string& mapName = button->GetTextString();
+
+    Widget* parentWidget = GetSelectedWidget();
+    WidgetHierarchyPanel* hierPanel = PanelManager::Get()->GetWidgetHierarchyPanel();
+
+    if (parentWidget == nullptr)
+    {
+        parentWidget = hierPanel->GetRootWidget();
+    }
+
+    WidgetMap* widgetMap = LoadAsset<WidgetMap>(mapName);
+    Widget* widget = widgetMap->Instantiate();
+    OCT_ASSERT(widget != nullptr);
+    widget->SetWidgetMap(widgetMap);
 
     if (parentWidget != nullptr)
     {
@@ -130,6 +165,24 @@ void WidgetHierarchyPanel::ShowAddNativeWidgetPrompt()
 
     ActionList* actionList = GetActionList();
     actionList->SetActions(actions, OnCreateNativeWidgetButtonPressed);
+}
+
+void WidgetHierarchyPanel::ShowAddMappedWidgetPrompt()
+{
+    std::vector<std::string> actions;
+
+    auto& assetMap = AssetManager::Get()->GetAssetMap();
+
+    for (auto& pair : assetMap)
+    {
+        if (pair.second->mType == WidgetMap::GetStaticType())
+        {
+            actions.push_back(pair.second->mName);
+        }
+    }
+
+    ActionList* actionList = GetActionList();
+    actionList->SetActions(actions, OnCreateMappedWidgetButtonPressed);
 }
 
 void WidgetHierarchyPanel::DeleteWidget(Widget* widget)
@@ -246,67 +299,53 @@ void WidgetHierarchyPanel::RefreshButtons()
 
     if (rootWidget != nullptr)
     {
-
         //const std::vector<Component*>& components = selectedActor->GetComponents();
 
         // Rearrange by hierarchy
         std::vector<Widget*> widgetList;
         std::vector<uint32_t> depthList;
 
-        std::function<void(TransformComponent*, uint32_t)> AddTransComp = [&](TransformComponent* comp, uint32_t depth)
+        std::function<void(Widget*, uint32_t)> AddWidget = [&](Widget* widget, uint32_t depth)
         {
-            if (comp != nullptr)
+            if (widget != nullptr)
             {
-                compList.push_back(comp);
+                widgetList.push_back(widget);
                 depthList.push_back(depth);
 
-                for (uint32_t i = 0; i < comp->GetNumChildren(); ++i)
+                for (uint32_t i = 0; i < widget->GetNumChildren(); ++i)
                 {
-                    TransformComponent* child = comp->GetChild(i);
+                    Widget* child = widget->GetChild(i);
 
-                    if (child->GetOwner() == selectedActor)
+                    if (child->GetWidgetMap() == nullptr)
                     {
-                        AddTransComp(child, depth + 1);
+                        AddWidget(child, depth + 1);
                     }
                 }
             }
         };
 
-        AddTransComp(selectedActor->GetRootComponent(), 0);
+        AddWidget(rootWidget, 0);
 
-        // Add rest of the items.
-        for (uint32_t i = 0; i < components.size(); ++i)
-        {
-            if (std::find(compList.begin(), compList.end(), components[i]) == compList.end())
-            {
-                compList.push_back(components[i]);
-                depthList.push_back(0);
-                OCT_ASSERT(!components[i]->IsTransformComponent() ||
-                    static_cast<TransformComponent*>(components[i])->GetParent()->GetOwner() != selectedActor);
-            }
-        }
-
-        // This assertion is not true if another actor is attached.
-        //OCT_ASSERT(compList.size() == components.size());
-
-        mListOffset = glm::min(mListOffset, int32_t(compList.size()) - 1);
+        mListOffset = glm::min(mListOffset, int32_t(widgetList.size()) - 1);
         mListOffset = glm::max(mListOffset, 0);
 
         for (int32_t i = 0; i < sNumButtons; ++i)
         {
             int32_t index = mListOffset + i;
 
-            if (index < int32_t(compList.size()))
+            if (index < int32_t(widgetList.size()))
             {
-                mButtons[i]->SetComponent(compList[index]);
+                mButtons[i]->SetWidget(widgetList[index]);
                 mButtons[i]->SetX(depthList[index] * 10.0f);
             }
             else
             {
-                mButtons[i]->SetComponent(nullptr);
+                mButtons[i]->SetWidget(nullptr);
                 mButtons[i]->SetX(0.0f);
             }
         }
+
+        mCachedNumWidgets = (uint32_t)widgetList.size();
     }
     else
     {
@@ -314,10 +353,12 @@ void WidgetHierarchyPanel::RefreshButtons()
         {
             mButtons[i]->SetWidget(nullptr);
         }
+
+        mCachedNumWidgets = 0;
     }
 }
 
-void HierarchyPanel::HandleInput()
+void WidgetHierarchyPanel::HandleInput()
 {
     Panel::HandleInput();
 
@@ -328,68 +369,64 @@ void HierarchyPanel::HandleInput()
 
         if (IsMouseButtonJustUp(MOUSE_RIGHT))
         {
-            Component* comp = nullptr;
+            Widget* widget = nullptr;
 
             // Check if asset button is selected
             for (uint32_t i = 0; i < sNumButtons; ++i)
             {
                 if (mButtons[i]->IsVisible() &&
                     mButtons[i]->ContainsMouse() &&
-                    mButtons[i]->GetComponent() != nullptr)
+                    mButtons[i]->GetWidget() != nullptr)
                 {
-                    comp = mButtons[i]->GetComponent();
+                    widget = mButtons[i]->GetWidget();
                     break;
                 }
             }
 
             std::vector<std::string> actions;
-            actions.push_back("Add Component");
+            actions.push_back("Add Native Widget");
+            actions.push_back("Add Mapped Widget");
 
-            if (comp != nullptr)
+            if (widget != nullptr)
             {
-                actions.push_back("Delete Component");
+                actions.push_back("Delete Widget");
                 actions.push_back("Attach Selected");
-                actions.push_back("Set Root Component");
-                actions.push_back("Rename Component");
+                actions.push_back("Set Root Widget");
+                actions.push_back("Rename");
             }
             GetActionList()->SetActions(actions, ActionHandler);
-            sActionComponent = comp;
+            sActionWidget = widget;
         }
 
         if (shiftDown && IsKeyJustDown(KEY_A))
         {
-            ShowAddComponentPrompt();
+            ShowAddNativeWidgetPrompt();
+        }
+
+        if (shiftDown && IsKeyJustDown(KEY_Q))
+        {
+            ShowAddMappedWidgetPrompt();
         }
 
         if (IsKeyJustDown(KEY_DELETE) || IsKeyJustDown(KEY_X))
         {
-            DeleteComponent(GetSelectedComponent());
+            DeleteWidget(GetSelectedWidget());
         }
     }
 }
 
-void HierarchyPanel::Update()
+void WidgetHierarchyPanel::Update()
 {
     Panel::Update();
 
-    Actor* actor = GetSelectedActor();
-
-    if (actor != nullptr)
-    {
-        const std::vector<Component*>& components = actor->GetComponents();
-        SetMaxScroll(glm::max(0, int32_t(components.size()) - 1));
-    }
-    else
-    {
-        SetMaxScroll(0);
-    }
+    SetMaxScroll(glm::max(0, int32_t(mCachedNumWidgets) - 1));
 
     int32_t listOffset = mScroll;
 
     if (listOffset != mListOffset)
     {
         mListOffset = listOffset;
-        RefreshCompButtons();
+        RefreshButtons();
     }
 }
 
