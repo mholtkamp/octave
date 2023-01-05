@@ -64,9 +64,11 @@ Canvas* CanvasCache::FindOrCreateCanvas(TypeId type)
 PropertiesPanel::PropertiesPanel() :
     mCurrentComponent(nullptr),
     mCurrentAsset(nullptr),
+    mCurrentWidget(nullptr),
     mComponentCanvas(nullptr),
     mActorCanvas(nullptr),
     mAssetCanvas(nullptr),
+    mWidgetCanvas(nullptr),
     mPropertiesCanvas(nullptr),
     mModeBox(nullptr),
     mScrollDistance(80.0f),
@@ -94,12 +96,27 @@ PropertiesPanel::PropertiesPanel() :
     mModeBox->AddSelection("Component");
     mModeBox->AddSelection("Actor");
     mModeBox->AddSelection("Asset");
+    mModeBox->AddSelection("Widget");
     mHeaderCanvas->AddChild(mModeBox);
 }
 
 PropertiesPanel::~PropertiesPanel()
 {
 
+}
+
+void PropertiesPanel::OnEditorModeChanged()
+{
+    if (GetEditorMode() != EditorMode::Widget)
+    {
+        mCurrentWidget = nullptr;
+        mWidgetCanvas = nullptr;
+
+        if (mMode == PropertiesMode::Widget)
+        {
+            SetMode(PropertiesMode::Component);
+        }
+    }
 }
 
 void PropertiesPanel::OnSelectedComponentChanged()
@@ -166,7 +183,25 @@ void PropertiesPanel::OnSelectedComponentChanged()
 
 void PropertiesPanel::OnSelectedWidgetChanged()
 {
+    if (mCurrentWidget != GetSelectedWidget())
+    {
+        mCurrentWidget = GetSelectedWidget();
 
+        if (mCurrentWidget)
+        {
+            mWidgetCanvas = mWidgetCanvasCache.FindOrCreateCanvas(mCurrentWidget->GetType());
+
+            std::vector<Property> props;
+            mCurrentWidget->GatherProperties(props, true);
+            PopulatePropertyWidgets(mWidgetCanvas, props);
+
+            SetMode(PropertiesMode::Widget);
+        }
+        else
+        {
+            mWidgetCanvas = nullptr;
+        }
+    }
 }
 
 void PropertiesPanel::InspectAsset(Asset* asset)
@@ -317,6 +352,7 @@ void PropertiesPanel::UpdateDisplayedCanvas()
     case PropertiesMode::Component: mPropertiesCanvas = mComponentCanvas; break;
     case PropertiesMode::Actor: mPropertiesCanvas = mActorCanvas; break;
     case PropertiesMode::Asset: mPropertiesCanvas = mAssetCanvas; break;
+    case PropertiesMode::Widget: mPropertiesCanvas = mWidgetCanvas; break;
 
     default: break;
     }
