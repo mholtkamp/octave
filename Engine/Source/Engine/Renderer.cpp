@@ -156,6 +156,16 @@ bool Renderer::IsFrustumCullingEnabled() const
     return mFrustumCulling;
 }
 
+void Renderer::EnableWorldRendering(bool enable)
+{
+    mEnableWorldRendering = enable;
+}
+
+bool Renderer::IsWorldRenderingEnabled() const
+{
+    return mEnableWorldRendering;
+}
+
 Texture* Renderer::GetBlackTexture()
 {
     return mBlackTexture.Get<Texture>();
@@ -884,6 +894,7 @@ void Renderer::Render(World* world)
 
     // On 3DS especially, we want to cull before syncing with the GPU
     // otherwise it increases GPU idle time.
+    if (mEnableWorldRendering)
     {
         SCOPED_FRAME_STAT("Culling");
 
@@ -918,71 +929,79 @@ void Renderer::Render(World* world)
     {
         GFX_BeginView(view);
 
-        // ***************
-        //  Shadow Depths
-        // ***************
-        GFX_SetViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
-        GFX_SetScissor(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
-
-        GFX_BeginRenderPass(RenderPassId::Shadows);
-
-        DirectionalLightComponent* dirLight = world->GetDirectionalLight();
-
-        if (dirLight && dirLight->ShouldCastShadows())
+        if (mEnableWorldRendering)
         {
-            RenderDraws(mShadowDraws, PipelineId::Shadow);
-        }
+            // ***************
+            //  Shadow Depths
+            // ***************
+            GFX_SetViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+            GFX_SetScissor(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
 
-        GFX_EndRenderPass();
+            GFX_BeginRenderPass(RenderPassId::Shadows);
 
-        GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
-        GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+            DirectionalLightComponent* dirLight = world->GetDirectionalLight();
 
-        // ******************
-        //  Forward Pass
-        // ******************
-        GFX_BeginRenderPass(RenderPassId::Forward);
+            if (dirLight && dirLight->ShouldCastShadows())
+            {
+                RenderDraws(mShadowDraws, PipelineId::Shadow);
+            }
 
-        if (GetDebugMode() != DEBUG_WIREFRAME)
-        {
-            RenderDraws(mOpaqueDraws);
-            RenderDraws(mSimpleShadowDraws);
-            RenderDraws(mPostShadowOpaqueDraws);
+            GFX_EndRenderPass();
 
-            RenderDraws(mTranslucentDraws);
+            GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+            GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
 
-            RenderDebugDraws(mDebugDraws);
-        }
+            // ******************
+            //  Forward Pass
+            // ******************
+            GFX_BeginRenderPass(RenderPassId::Forward);
 
-        GFX_EndRenderPass();
+            if (GetDebugMode() != DEBUG_WIREFRAME)
+            {
+                RenderDraws(mOpaqueDraws);
+                RenderDraws(mSimpleShadowDraws);
+                RenderDraws(mPostShadowOpaqueDraws);
 
-        // ******************
-        //  Post Process
-        // ******************
+                RenderDraws(mTranslucentDraws);
 
-        GFX_BeginRenderPass(RenderPassId::PostProcess);
+                RenderDebugDraws(mDebugDraws);
+            }
 
-        // Tonemapping does not look good.
-        // Disabling it for now. Also need to totally rewrite postprocessing system.
-        // Make it smarter so that it can pingpong between render targets.
-        GFX_BindPipeline(/*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess :*/ PipelineId::NullPostProcess);
-        GFX_DrawFullscreen();
+            GFX_EndRenderPass();
 
-        RenderDraws(mWireframeDraws, PipelineId::Wireframe);
-        RenderDebugDraws(mDebugDraws, PipelineId::Wireframe);
+            // ******************
+            //  Post Process
+            // ******************
 
-        if (GetDebugMode() == DEBUG_COLLISION)
-        {
-            RenderDebugDraws(mCollisionDraws, PipelineId::Collision);
-        }
+            GFX_BeginRenderPass(RenderPassId::PostProcess);
 
-        GFX_DrawLines(world->GetLines());
+            // Tonemapping does not look good.
+            // Disabling it for now. Also need to totally rewrite postprocessing system.
+            // Make it smarter so that it can pingpong between render targets.
+            GFX_BindPipeline(/*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess :*/ PipelineId::NullPostProcess);
+            GFX_DrawFullscreen();
+
+            RenderDraws(mWireframeDraws, PipelineId::Wireframe);
+            RenderDebugDraws(mDebugDraws, PipelineId::Wireframe);
+
+            if (GetDebugMode() == DEBUG_COLLISION)
+            {
+                RenderDebugDraws(mCollisionDraws, PipelineId::Collision);
+            }
+
+            GFX_DrawLines(world->GetLines());
 
 #if EDITOR
-        RenderSelectedGeometry(world);
+            RenderSelectedGeometry(world);
 #endif
 
-        GFX_EndRenderPass();
+            GFX_EndRenderPass();
+        }
+        else
+        {
+            GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+            GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+        }
 
         // ******************
         //  UI

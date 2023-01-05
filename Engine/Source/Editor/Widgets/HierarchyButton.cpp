@@ -7,9 +7,7 @@
 #include "EditorState.h"
 #include "Widgets/Quad.h"
 
-HierarchyButton::HierarchyButton() :
-    mComponent(nullptr),
-    mPrevSelectedComponent(false)
+HierarchyButton::HierarchyButton()
 {
     SetDimensions(Panel::sDefaultWidth, 22);
 }
@@ -23,6 +21,21 @@ void HierarchyButton::SetComponent(Component* component)
     {
         SetTextString(mComponent->GetName());
     }
+
+    mWidgetMode = false;
+}
+
+void HierarchyButton::SetWidget(Widget* widget)
+{
+    mWidget = widget;
+    SetVisible(mWidget != nullptr);
+
+    if (mWidget != nullptr)
+    {
+        SetTextString(mWidget->GetName());
+    }
+
+    mWidgetMode = true;
 }
 
 Component* HierarchyButton::GetComponent()
@@ -30,30 +43,53 @@ Component* HierarchyButton::GetComponent()
     return mComponent;
 }
 
+Widget* HierarchyButton::GetWidget()
+{
+    return mWidget;
+}
+
+bool HierarchyButton::IsSelected() const
+{
+    bool selected = false;
+
+    if (mWidgetMode)
+    {
+        Widget* selectedWidget = GetSelectedWidget();
+        selected = (mWidget == selectedWidget);
+    }
+    else
+    {
+        Component* selectedComponent = GetSelectedComponent();
+        selected = (mComponent == selectedComponent);
+    }
+
+    return selected;
+}
+
 void HierarchyButton::Update()
 {
     Component* selectedComponent = GetSelectedComponent();
     if (mComponent == selectedComponent)
     {
-        if (!mPrevSelectedComponent)
+        if (!mPrevSelected)
         {
             GetQuad()->SetColor({ 0.8f, 0.2f, 0.9f, 1.0f },
                 { 0.8f, 0.2f, 0.9f, 1.0f },
                 { 1.0f, 0.2f, 0.9f, 1.0f },
                 { 1.0f, 0.2f, 0.9f, 1.0f });
         }
-        mPrevSelectedComponent = true;
+        mPrevSelected = true;
     }
     else
     {
-        if (mPrevSelectedComponent)
+        if (mPrevSelected)
         {
             GetQuad()->SetColor({ 0.2f, 0.2f, 0.8f, 1.0f },
                 { 0.2f, 0.2f, 0.8f, 1.0f },
                 { 0.5f, 0.2f, 0.8f, 0.5f },
                 { 0.5f, 0.2f, 0.8f, 0.5f });
         }
-        mPrevSelectedComponent = false;
+        mPrevSelected = false;
     }
 
     Button::Update();

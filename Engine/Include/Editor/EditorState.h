@@ -41,9 +41,20 @@ enum class TransformLock
     Count
 };
 
+enum class EditorMode
+{
+    Level,
+    Widget,
+    Blueprint,
+
+    Count
+};
+
 struct EditorState
 {
+    EditorMode mMode;
     std::vector<Component*> mSelectedComponents;
+    Widget* mSelectedWidget = nullptr;
     AssetStub* mSelectedAssetStub = nullptr;
     LevelRef mActiveLevel;
     ControlMode mControlMode = ControlMode::Default;
@@ -61,6 +72,9 @@ struct EditorState
     ComponentRef mEjectedCamera = nullptr;
     std::string mStartupLevelName;
 };
+
+void SetEditorMode(EditorMode mode);
+EditorMode GetEditorMode();
 
 void InitializeEditorState();
 void DestroyEditorState();
@@ -97,6 +111,9 @@ bool IsActorSelected(Actor* actor);
 void DeselectComponent(Component* component);
 void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler, const char* defaultText = nullptr);
 void ShowRootCanvas(bool show);
+
+Widget* GetSelectedWidget();
+void SetSelectedWidget(Widget* widget);
 
 Asset* GetSelectedAsset();
 AssetStub* GetSelectedAssetStub();

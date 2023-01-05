@@ -90,6 +90,8 @@ Widget::Widget() :
 {
     MarkDirty();
 
+    SetName("Widget");
+
     mCachedScissorRect = Rect(0.0f, 0.0f, 10000.0f, 10000.0f);
     mCachedParentScissorRect = Rect(0.0f, 0.0f, 10000.0f, 10000.0f);
 }

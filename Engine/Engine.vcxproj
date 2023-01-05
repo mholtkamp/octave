@@ -366,6 +366,7 @@
     <ClCompile Include="Source\Editor\Widgets\PropertyWidget.cpp" />
     <ClCompile Include="Source\Editor\Widgets\SceneImportWidget.cpp" />
     <ClCompile Include="Source\Editor\Widgets\ViewportPanel.cpp" />
+    <ClCompile Include="Source\Editor\Widgets\WidgetHierarchyPanel.cpp" />
     <ClCompile Include="Source\Engine\Actor.cpp" />
     <ClCompile Include="Source\Engine\Asset.cpp" />
     <ClCompile Include="Source\Engine\AssetDir.cpp" />
@@ -543,6 +544,7 @@
     <ClInclude Include="Include\Editor\Widgets\ActionList.h" />
     <ClInclude Include="Include\Editor\Widgets\SceneImportWidget.h" />
     <ClInclude Include="Include\Editor\Widgets\TextEntry.h" />
+    <ClInclude Include="Include\Editor\Widgets\WidgetHierarchyPanel.h" />
     <ClInclude Include="Include\Engine\Assertion.h" />
     <ClInclude Include="Include\Engine\Assets\Blueprint.h" />
     <ClInclude Include="Include\Engine\Assets\Font.h" />
