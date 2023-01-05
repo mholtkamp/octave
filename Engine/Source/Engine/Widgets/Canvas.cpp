@@ -2,7 +2,7 @@
 #include "Renderer.h"
 
 FORCE_LINK_DEF(Canvas);
-DEFINE_FACTORY(Canvas, Widget);
+DEFINE_WIDGET(Canvas, Widget);
 
 Canvas::Canvas()
 {

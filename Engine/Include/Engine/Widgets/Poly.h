@@ -9,7 +9,7 @@ class Poly : public Widget
 {
 public:
 
-    DECLARE_FACTORY(Poly, Widget);
+    DECLARE_WIDGET(Poly, Widget);
 
     Poly();
     virtual ~Poly();

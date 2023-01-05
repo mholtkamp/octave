@@ -10,7 +10,7 @@
 #include "Components/ScriptComponent.h"
 
 FORCE_LINK_DEF(Button);
-DEFINE_FACTORY(Button, Widget);
+DEFINE_WIDGET(Button, Widget);
 
 Button::Button() :
     mNormalTexture(nullptr),

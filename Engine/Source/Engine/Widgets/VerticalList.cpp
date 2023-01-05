@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 
 FORCE_LINK_DEF(VerticalList);
-DEFINE_FACTORY(VerticalList, Widget);
+DEFINE_WIDGET(VerticalList, Canvas);
 
 VerticalList::VerticalList()
 {

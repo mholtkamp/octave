@@ -24,7 +24,7 @@ class Text : public Widget
 {
 public:
 
-    DECLARE_FACTORY(Text, Widget);
+    DECLARE_WIDGET(Text, Widget);
 
     Text();
     virtual ~Text();

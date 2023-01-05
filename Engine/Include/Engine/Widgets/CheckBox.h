@@ -6,7 +6,7 @@ class CheckBox : public Selector
 {
 public:
 
-    DECLARE_FACTORY(CheckBox, Widget);
+    DECLARE_WIDGET(CheckBox, Selector);
 
     CheckBox();
     ~CheckBox();

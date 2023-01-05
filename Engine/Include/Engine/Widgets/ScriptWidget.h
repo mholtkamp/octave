@@ -6,7 +6,7 @@ class ScriptWidget : public Widget
 {
 public:
 
-    DECLARE_FACTORY(ScriptWidget, Widget);
+    DECLARE_WIDGET(ScriptWidget, Widget);
 
     ScriptWidget();
     ScriptWidget(const char* scriptName);

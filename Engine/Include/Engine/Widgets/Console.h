@@ -13,7 +13,7 @@ class Console : public Canvas
 {
 public:
 
-    DECLARE_FACTORY(Console, Widget);
+    DECLARE_WIDGET(Console, Canvas);
 
     Console();
 

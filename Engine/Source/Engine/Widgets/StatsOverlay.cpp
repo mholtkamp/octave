@@ -9,7 +9,7 @@
 #include "System/System.h"
 
 FORCE_LINK_DEF(StatsOverlay);
-DEFINE_FACTORY(StatsOverlay, Widget);
+DEFINE_WIDGET(StatsOverlay, Canvas);
 
 StatsOverlay::StatsOverlay()
 {

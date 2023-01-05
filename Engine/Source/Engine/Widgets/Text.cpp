@@ -9,7 +9,7 @@
 #include "Graphics/Graphics.h"
 
 FORCE_LINK_DEF(Text);
-DEFINE_FACTORY(Text, Widget);
+DEFINE_WIDGET(Text, Widget);
 
 static const char* sHoriJustStrings[] =
 {

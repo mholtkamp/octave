@@ -19,7 +19,7 @@ class StatsOverlay : public Canvas
 {
 public:
 
-    DECLARE_FACTORY(StatsOverlay, Widget);
+    DECLARE_WIDGET(StatsOverlay, Canvas);
 
     StatsOverlay();
 

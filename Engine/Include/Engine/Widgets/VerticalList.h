@@ -6,7 +6,7 @@ class VerticalList : public Canvas
 {
 public:
 
-    DECLARE_FACTORY(VerticalList, Widget);
+    DECLARE_WIDGET(VerticalList, Canvas);
 
     VerticalList();
     virtual ~VerticalList();

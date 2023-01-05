@@ -6,7 +6,7 @@ class Canvas : public Widget
 {
 public:
 
-    DECLARE_FACTORY(Canvas, Widget);
+    DECLARE_WIDGET(Canvas, Widget);
 
     Canvas();
     virtual ~Canvas();

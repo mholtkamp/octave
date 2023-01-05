@@ -5,7 +5,7 @@
 #include "LuaBindings/Widget_Lua.h"
 
 FORCE_LINK_DEF(ScriptWidget);
-DEFINE_FACTORY(ScriptWidget, Widget);
+DEFINE_WIDGET(ScriptWidget, Widget);
 
 ScriptWidget::ScriptWidget()
 {

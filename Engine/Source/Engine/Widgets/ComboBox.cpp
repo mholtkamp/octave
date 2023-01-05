@@ -7,7 +7,7 @@
 #include "InputDevices.h"
 
 FORCE_LINK_DEF(ComboBox);
-DEFINE_FACTORY(ComboBox, Widget);
+DEFINE_WIDGET(ComboBox, Selector);
 
 void HandleComboBoxButtonPress(Button* button)
 {

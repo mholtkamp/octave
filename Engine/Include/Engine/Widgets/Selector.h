@@ -12,7 +12,7 @@ class Selector : public Button
 {
 public:
 
-    DECLARE_FACTORY(Selector, Widget);
+    DECLARE_WIDGET(Selector, Button);
 
     Selector();
     ~Selector();

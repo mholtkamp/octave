@@ -2042,6 +2042,11 @@ void ActionEditProperty::GatherProps(std::vector<Property>& props)
             asset->GatherProperties(props);
         }
     }
+    else if (mOwnerType == PropertyOwnerType::Widget)
+    {
+        Widget* widget = (Widget*)mOwner;
+        widget->GatherProperties(props, true);
+    }
 }
 
 Property* ActionEditProperty::FindProp(std::vector<Property>& props, const std::string& name)

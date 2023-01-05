@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 
 FORCE_LINK_DEF(ModalList);
-DEFINE_FACTORY(ModalList, Widget);
+DEFINE_WIDGET(ModalList, VerticalList);
 
 ModalList::ModalList()
 {

@@ -11,7 +11,7 @@ class TextField : public Button
 {
 public:
 
-    DECLARE_FACTORY(TextField, Widget);
+    DECLARE_WIDGET(TextField, Button);
 
     TextField();
     ~TextField();
