@@ -9,11 +9,14 @@ struct WidgetDef
 {
     TypeId mType = INVALID_TYPE_ID;
     int32_t mParentIndex = -1;
+    WidgetMapRef mWidgetMap;
     std::vector<Property> mProperties;
 };
 
 class WidgetMap : public Asset
 {
+public:
+
     DECLARE_ASSET(WidgetMap, Asset);
 
     WidgetMap();

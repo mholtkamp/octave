@@ -11,6 +11,8 @@ public:
     ScriptWidget();
     ScriptWidget(const char* scriptName);
 
+    virtual void GatherProperties(std::vector<Property>& outProps, bool editor) override;
+
     void SetFile(const char* filename);
     const std::string& GetFile();
     const std::string& GetTableName();

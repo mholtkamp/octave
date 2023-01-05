@@ -4,11 +4,15 @@
 #include "EngineTypes.h"
 #include "Factory.h"
 
+#include "AssetRef.h"
+
 #include <glm/glm.hpp>
 #include <vector>
 #include <string>
 
 #include "Graphics/GraphicsConstants.h"
+
+class WidgetMap;
 
 enum class AnchorMode : uint8_t
 {
@@ -53,7 +57,7 @@ public:
     Widget();
     virtual ~Widget();
 
-    virtual void GatherProperties(std::vector<Property>& outProps);
+    virtual void GatherProperties(std::vector<Property>& outProps, bool editor);
 
     // Issue gpu commands to display the widget.
     // Recursively render children.
@@ -215,4 +219,15 @@ protected:
 
 private:
     bool mDirty[MAX_FRAMES] = {};
+
+
+#if EDITOR
+public:
+    WidgetMap* GetWidgetMap();
+    void SetWidgetMap(WidgetMap* map);
+protected:
+    // This is only used by the Widget editor.
+    WidgetMapRef mWidgetMap;
+
+#endif
 };

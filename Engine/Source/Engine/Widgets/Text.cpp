@@ -87,9 +87,9 @@ TextResource* Text::GetResource()
     return &mResource;
 }
 
-void Text::GatherProperties(std::vector<Property>& outProps)
+void Text::GatherProperties(std::vector<Property>& outProps, bool editor)
 {
-    Widget::GatherProperties(outProps);
+    Widget::GatherProperties(outProps, editor);
 
     outProps.push_back(Property(DatumType::Asset, "Font", this, &mFont, 1, Text::HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::String, "Text", this, &mText, 1, Text::HandlePropChange));

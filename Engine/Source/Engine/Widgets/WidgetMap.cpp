@@ -31,6 +31,8 @@ void WidgetMap::LoadStream(Stream& stream, Platform platform)
 
         def.mType = (TypeId)stream.ReadUint32();
         def.mParentIndex = stream.ReadInt32();
+        
+        stream.ReadAsset(def.mWidgetMap);
 
         uint32_t numProps = stream.ReadUint32();
         def.mProperties.resize(numProps);
@@ -52,6 +54,8 @@ void WidgetMap::SaveStream(Stream& stream, Platform platform)
         WidgetDef& def = mWidgetDefs[i];
         stream.WriteUint32((uint32_t)def.mType);
         stream.WriteInt32(def.mParentIndex);
+
+        stream.WriteAsset(def.mWidgetMap);
 
         stream.WriteUint32((uint32_t)def.mProperties.size());
         for (uint32_t p = 0; p < def.mProperties.size(); ++p)
@@ -105,14 +109,21 @@ Widget* WidgetMap::Instantiate()
     {
         std::vector<Widget*> widgetList;
 
-
         for (uint32_t i = 0; i < mWidgetDefs.size(); ++i)
         {
-            Widget* newWidget = Widget::CreateInstance(mWidgetDefs[i].mType);
+            Widget* newWidget = nullptr;
+            if (mWidgetDefs[i].mWidgetMap != nullptr)
+            {
+                newWidget = mWidgetDefs[i].mWidgetMap.Get<WidgetMap>()->Instantiate();
+            }
+            else
+            {
+                newWidget = Widget::CreateInstance(mWidgetDefs[i].mType);
+            }
             OCT_ASSERT(newWidget);
 
             std::vector<Property> dstProps;
-            rootWidget->GatherProperties(dstProps);
+            rootWidget->GatherProperties(dstProps, false);
             CopyPropertyValues(dstProps, mWidgetDefs[i].mProperties);
 
             if (i > 0)
@@ -147,15 +158,30 @@ void WidgetMap::AddWidgetDef(Widget* widget, std::vector<Widget*>& widgetList)
     if (widget != nullptr)
     {
         widgetList.push_back(widget);
-        
+
         mWidgetDefs.push_back(WidgetDef());
         WidgetDef& widgetDef = mWidgetDefs.back();
 
         widgetDef.mType = widget->GetType();
         widgetDef.mParentIndex = FindWidgetIndex(widget->GetParent(), widgetList);
 
+        WidgetMap* widgetMap = nullptr;
+#if EDITOR
+        widgetMap = widget->GetWidgetMap();
+#endif
+        widgetDef.mWidgetMap = widgetMap;
+
         // TODO: ONLY SAVE NON-DEFAULT properties
         widget->GatherProperties(widgetDef.mProperties, false);
+
+        // Recursively add children. Do not add children of widgets spawned via maps.
+        if (widgetMap == nullptr)
+        {
+            for (uint32_t i = 0; i < widget->GetNumChildren(); ++i)
+            {
+                AddWidgetDef(widget->GetChild(i), widgetList);
+            }
+        }
     }
 }
 
