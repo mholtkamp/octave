@@ -8,6 +8,7 @@
 #include "Widgets/PropertiesPanel.h"
 #include "Widgets/ViewportPanel.h"
 #include "Widgets/WidgetHierarchyPanel.h"
+#include "Widgets/WidgetViewportPanel.h"
 
 PanelManager* PanelManager::sInstance = nullptr;
 

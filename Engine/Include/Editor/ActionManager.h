@@ -7,6 +7,7 @@
 #include "EditorTypes.h"
 #include "Asset.h"
 #include "AssetRef.h"
+#include "Widgets/Widget.h"
 
 class TransformComponent;
 

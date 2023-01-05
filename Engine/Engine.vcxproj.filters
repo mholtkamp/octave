@@ -762,6 +762,9 @@
     <ClCompile Include="Source\Editor\Widgets\WidgetHierarchyPanel.cpp">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\Widgets\WidgetViewportPanel.cpp">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1383,6 +1386,9 @@
       <Filter>Header Files\Engine\Assets</Filter>
     </ClInclude>
     <ClInclude Include="Include\Editor\Widgets\WidgetHierarchyPanel.h">
+      <Filter>Header Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Editor\Widgets\WidgetViewportPanel.h">
       <Filter>Header Files\Editor\Widgets</Filter>
     </ClInclude>
   </ItemGroup>
