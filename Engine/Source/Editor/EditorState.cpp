@@ -26,7 +26,7 @@ void SetEditorMode(EditorMode mode)
     if (sEditorState.mMode != mode)
     {
         sEditorState.mMode = mode;
-        PanelManager::Get()->SetEditorMode(mode);
+        PanelManager::Get()->OnEditorModeChanged();
 
         Renderer::Get()->EnableWorldRendering(mode != EditorMode::Widget);
     }

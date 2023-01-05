@@ -6,7 +6,7 @@
 #include "Graphics/Graphics.h"
 
 FORCE_LINK_DEF(Quad);
-DEFINE_FACTORY(Quad, Widget);
+DEFINE_WIDGET(Quad, Widget);
 
 bool Quad::HandlePropChange(Datum* datum, const void* newValue)
 {

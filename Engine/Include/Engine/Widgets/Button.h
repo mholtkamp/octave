@@ -22,7 +22,7 @@ class Button : public Widget
 {
 public:
 
-    DECLARE_FACTORY(Button, Widget);
+    DECLARE_WIDGET(Button, Widget);
 
     Button();
     virtual ~Button();

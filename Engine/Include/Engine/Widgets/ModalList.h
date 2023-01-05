@@ -6,7 +6,7 @@ class ModalList : public VerticalList
 {
 public:
 
-    DECLARE_FACTORY(ModalList, Widget);
+    DECLARE_WIDGET(ModalList, VerticalList);
 
     ModalList();
 

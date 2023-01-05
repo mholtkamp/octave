@@ -10,7 +10,7 @@
 #include "Components/ScriptComponent.h"
 
 FORCE_LINK_DEF(TextField);
-DEFINE_FACTORY(TextField, Widget);
+DEFINE_WIDGET(TextField, Button);
 
 TextField* TextField::sSelectedTextField = nullptr;
 float TextField::sCursorBlinkTime = 0.0f;

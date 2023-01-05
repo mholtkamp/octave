@@ -6,7 +6,7 @@
 #include "Components/ScriptComponent.h"
 
 FORCE_LINK_DEF(Selector);
-DEFINE_FACTORY(Selector, Widget);
+DEFINE_WIDGET(Selector, Button);
 
 Selector::Selector() :
     mSelectionIndex(0)

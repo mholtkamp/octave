@@ -14,6 +14,14 @@
 
 class WidgetMap;
 
+#define DECLARE_WIDGET(Base, Parent) \
+        DECLARE_FACTORY(Base, Widget); \
+        DECLARE_RTTI(Base, Parent);
+
+#define DEFINE_WIDGET(Base, Parent) \
+        DEFINE_FACTORY(Base, Widget); \
+        DEFINE_RTTI(Base);
+
 enum class AnchorMode : uint8_t
 {
     TopLeft,
@@ -47,7 +55,7 @@ enum MarginFlag : uint8_t
     MF_Bottom       = 1 << 3
 };
 
-class Widget
+class Widget : public RTTI
 {
 public:
 

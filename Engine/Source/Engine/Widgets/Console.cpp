@@ -6,7 +6,7 @@
 #include "AssetManager.h"
 
 FORCE_LINK_DEF(Console);
-DEFINE_FACTORY(Console, Widget);
+DEFINE_WIDGET(Console, Canvas);
 
 Console::Console()
 {

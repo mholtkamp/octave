@@ -14,7 +14,7 @@ class ComboBox : public Selector
 {
 public:
 
-    DECLARE_FACTORY(ComboBox, Widget);
+    DECLARE_WIDGET(ComboBox, Selector);
 
     ComboBox();
     ~ComboBox();

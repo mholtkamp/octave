@@ -11,7 +11,7 @@ class Quad : public Widget
 {
 public:
 
-    DECLARE_FACTORY(Quad, Widget);
+    DECLARE_WIDGET(Quad, Widget);
 
     Quad();
     virtual ~Quad();

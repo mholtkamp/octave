@@ -8,7 +8,7 @@
 #include "Widgets/Poly.h"
 
 FORCE_LINK_DEF(Poly);
-DEFINE_FACTORY(Poly, Widget);
+DEFINE_WIDGET(Poly, Widget);
 
 Poly::Poly()
 {

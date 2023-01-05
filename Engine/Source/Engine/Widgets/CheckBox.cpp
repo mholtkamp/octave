@@ -1,7 +1,7 @@
 #include "Widgets/CheckBox.h"
 
 FORCE_LINK_DEF(CheckBox);
-DEFINE_FACTORY(CheckBox, Widget);
+DEFINE_WIDGET(CheckBox, Selector);
 
 CheckBox::CheckBox()
 {

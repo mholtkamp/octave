@@ -220,6 +220,8 @@ void PropertyWidget::SetProperty(const Property& prop, uint32_t index)
             mOwnerType = PropertyOwnerType::Component;
         else if (rtti->As<Asset>())
             mOwnerType = PropertyOwnerType::Asset;
+        else if (rtti->As<Widget>())
+            mOwnerType = PropertyOwnerType::Widget;
     }
 
     MarkDirty();

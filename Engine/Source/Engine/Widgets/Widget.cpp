@@ -12,6 +12,7 @@
 FORCE_LINK_DEF(Widget);
 DEFINE_FACTORY_MANAGER(Widget);
 DEFINE_FACTORY(Widget, Widget);
+DEFINE_RTTI(Widget);
 
 static const char* sAnchorModeStrings[] =
 {
