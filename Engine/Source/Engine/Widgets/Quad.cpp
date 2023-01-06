@@ -80,16 +80,19 @@ Texture* Quad::GetTexture()
 
 void Quad::SetColor(glm::vec4 color)
 {
-    uint32_t color32 = ColorFloat4ToUint32(color);
-
-    for (int32_t i = 0; i < 4; ++i)
+    if (mColor != color)
     {
-        mVertices[i].mColor = color32;
+        Widget::SetColor(color);
+
+        uint32_t color32 = ColorFloat4ToUint32(color);
+
+        for (int32_t i = 0; i < 4; ++i)
+        {
+            mVertices[i].mColor = color32;
+        }
+
+        MarkDirty();
     }
-
-
-
-    MarkDirty();
 }
 
 void Quad::SetColor(glm::vec4 colors[4])

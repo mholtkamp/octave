@@ -34,6 +34,7 @@ protected:
     HierarchyButton* mButtons[sNumButtons];
 
     uint32_t mCachedNumWidgets = 0;
+    Widget* mCachedEditRoot = nullptr;
 
     int32_t mListOffset;
 };

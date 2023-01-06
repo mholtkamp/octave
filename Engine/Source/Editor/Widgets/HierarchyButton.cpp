@@ -68,8 +68,7 @@ bool HierarchyButton::IsSelected() const
 
 void HierarchyButton::Update()
 {
-    Component* selectedComponent = GetSelectedComponent();
-    if (mComponent == selectedComponent)
+    if (IsSelected())
     {
         if (!mPrevSelected)
         {
