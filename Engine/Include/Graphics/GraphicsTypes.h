@@ -89,6 +89,7 @@ enum class RenderPassId
     Forward,
     PostProcess,
     Ui,
+    Clear,
 
     HitCheck,
 

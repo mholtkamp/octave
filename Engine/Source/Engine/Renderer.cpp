@@ -1001,6 +1001,8 @@ void Renderer::Render(World* world)
         {
             GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
             GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+            GFX_BeginRenderPass(RenderPassId::Clear);
+            GFX_EndRenderPass();
         }
 
         // ******************

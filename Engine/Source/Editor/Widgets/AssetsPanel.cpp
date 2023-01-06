@@ -199,6 +199,7 @@ void AssetsPanel::ActionListHandler(Button* button)
         std::vector<std::string> actions;
         actions.push_back("Material");
         actions.push_back("Particle System");
+        actions.push_back("Widget Map");
         actionList->SetActions(actions, HandleCreateAsset);
 
         clearModal = false;
@@ -264,6 +265,10 @@ void AssetsPanel::HandleCreateAsset(Button* button)
     else if (buttonText == "Particle System")
     {
         assetsPanel->CreateParticleSystem();
+    }
+    else if (buttonText == "Widget Map")
+    {
+        assetsPanel->CreateWidgetMap();
     }
 
     ClearContext();
@@ -660,6 +665,12 @@ void AssetsPanel::CreateMaterial()
 void AssetsPanel::CreateParticleSystem()
 {
     AssetStub* stub = EditorAddUniqueAsset("P_Particle", mCurrentDir, ParticleSystem::GetStaticType(), true);
+    AssetManager::Get()->SaveAsset(*stub);
+}
+
+void AssetsPanel::CreateWidgetMap()
+{
+    AssetStub* stub = EditorAddUniqueAsset("W_Widget", mCurrentDir, WidgetMap::GetStaticType(), true);
     AssetManager::Get()->SaveAsset(*stub);
 }
 

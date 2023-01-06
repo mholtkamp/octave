@@ -29,6 +29,7 @@ public:
 
     void CreateMaterial();
     void CreateParticleSystem();
+    void CreateWidgetMap();
     void SaveLevel(AssetStub* levelStub);
     void SaveBlueprint(AssetStub* bpStub, Actor* srcActor);
     void DuplicateAsset(AssetStub* srcStub);

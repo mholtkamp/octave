@@ -26,6 +26,10 @@ WidgetViewportPanel::WidgetViewportPanel()
     mHoveredRect->SetVisible(false);
     mHoveredRect->SetColor({ 0.0f, 1.0f, 1.0f, 1.0f });
     AddChild(mHoveredRect);
+
+    mHeaderText->SetVisible(false);
+    mHeaderQuad->SetVisible(false);
+    mBodyQuad->SetVisible(false);
 }
 
 WidgetViewportPanel::~WidgetViewportPanel()
