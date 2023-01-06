@@ -64,7 +64,7 @@ protected:
     int32_t mPrevMouseX = 0;
     int32_t mPrevMouseY = 0;
 
-    glm::vec2 mSavedPosition;
-    glm::vec2 mSavedDimensions;
+    glm::vec2 mSavedOffset;
+    glm::vec2 mSavedSize;
     float mSavedRotation;
 };
