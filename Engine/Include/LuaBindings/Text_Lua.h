@@ -21,9 +21,9 @@ struct Text_Lua
     static int GetFont(lua_State* L);
     static int SetOutlineColor(lua_State* L);
     static int GetOutlineColor(lua_State* L);
-    static int SetSize(lua_State* L);
-    static int GetSize(lua_State* L);
-    static int GetScaledSize(lua_State* L);
+    static int SetTextSize(lua_State* L);
+    static int GetTextSize(lua_State* L);
+    static int GetScaledTextSize(lua_State* L);
     static int GetOutlineSize(lua_State* L);
     static int GetSoftness(lua_State* L);
     static int GetCutoff(lua_State* L);

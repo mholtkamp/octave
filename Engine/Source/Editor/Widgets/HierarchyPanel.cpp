@@ -297,7 +297,7 @@ HierarchyPanel::HierarchyPanel() :
     mBlueprintText->SetText("BP");
     mBlueprintText->SetColor(glm::vec4(0.1f, 0.0f, 1.0f, 1.0f));
     mBlueprintText->SetAnchorMode(AnchorMode::TopRight);
-    mBlueprintText->SetSize(24.0f);
+    mBlueprintText->SetTextSize(24.0f);
     mBlueprintText->SetPosition(-35.0f, -2.0f);
     mBlueprintText->SetVisible(false);
     mHeaderCanvas->AddChild(mBlueprintText);

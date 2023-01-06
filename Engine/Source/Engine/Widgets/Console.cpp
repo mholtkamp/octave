@@ -58,7 +58,7 @@ void Console::Update()
         {
             ConsoleOutputText* text = (ConsoleOutputText*)mOutputCanvas->GetChild(i);
             text->SetPosition(xPos, yPos);
-            text->SetSize(mTextSize);
+            text->SetTextSize(mTextSize);
             text->SetFont(mFont.Get<Font>());
 
             yPos += mTextSize;

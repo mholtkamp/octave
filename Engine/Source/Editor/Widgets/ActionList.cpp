@@ -19,7 +19,7 @@ ActionList::ActionList()
     AddChild(mBg);
 
     mTitle = new Text();
-    mTitle->SetSize(20.0f);
+    mTitle->SetTextSize(20.0f);
     mTitle->SetText("");
     mTitle->SetVisible(false);
     AddChild(mTitle);
@@ -106,7 +106,7 @@ void ActionList::SetActions(const std::vector<std::string>& options, ButtonHandl
             Button* button = mButtons.back();
             button->SetHeight(22.0f);
             button->SetWidth(kListWidth);
-            button->GetText()->SetSize(16.0f);
+            button->GetText()->SetTextSize(16.0f);
         }
     }
 

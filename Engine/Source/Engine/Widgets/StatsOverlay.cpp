@@ -134,8 +134,8 @@ void StatsOverlay::SetStatText(uint32_t index, const char* key, float value, flo
 
     keyText->SetPosition(keyX, y);
     valueText->SetPosition(valueX, y);
-    keyText->SetSize(mTextSize);
-    valueText->SetSize(mTextSize);
+    keyText->SetTextSize(mTextSize);
+    valueText->SetTextSize(mTextSize);
 
     y += mTextSize;
 }

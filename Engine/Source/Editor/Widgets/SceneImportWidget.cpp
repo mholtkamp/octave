@@ -83,14 +83,14 @@ SceneImportWidget::SceneImportWidget()
 
     mFileText = new Text();
     mFileText->SetPosition(x + kDeltaX, y);
-    mFileText->SetSize(kTextSize);
+    mFileText->SetTextSize(kTextSize);
     mFileText->SetText("");
     AddChild(mFileText);
     y += kDeltaY;
 
     mPrefixLabel = new Text();
     mPrefixLabel->SetPosition(x, y);
-    mPrefixLabel->SetSize(kTextSize);
+    mPrefixLabel->SetTextSize(kTextSize);
     mPrefixLabel->SetText("Prefix:");
     AddChild(mPrefixLabel);
     y += kDeltaY;
@@ -104,7 +104,7 @@ SceneImportWidget::SceneImportWidget()
 
     mDefaultShadingLabel = new Text();
     mDefaultShadingLabel->SetPosition(x + kDeltaX, y);
-    mDefaultShadingLabel->SetSize(kTextSize);
+    mDefaultShadingLabel->SetTextSize(kTextSize);
     mDefaultShadingLabel->SetText("Default Shading");
     AddChild(mDefaultShadingLabel);
     y += kDeltaY;
@@ -124,7 +124,7 @@ SceneImportWidget::SceneImportWidget()
 
     mCleanDirectoryLabel = new Text();
     mCleanDirectoryLabel->SetPosition(x + kDeltaX, y);
-    mCleanDirectoryLabel->SetSize(kTextSize);
+    mCleanDirectoryLabel->SetTextSize(kTextSize);
     mCleanDirectoryLabel->SetText("Clean Directory");
     AddChild(mCleanDirectoryLabel);
     y += kDeltaY;
@@ -137,7 +137,7 @@ SceneImportWidget::SceneImportWidget()
 
     mClearWorldLabel = new Text();
     mClearWorldLabel->SetPosition(x + kDeltaX, y);
-    mClearWorldLabel->SetSize(kTextSize);
+    mClearWorldLabel->SetTextSize(kTextSize);
     mClearWorldLabel->SetText("Clear World");
     AddChild(mClearWorldLabel);
     y += kDeltaY;
@@ -150,7 +150,7 @@ SceneImportWidget::SceneImportWidget()
 
     mImportObjectsLabel = new Text();
     mImportObjectsLabel->SetPosition(x + kDeltaX, y);
-    mImportObjectsLabel->SetSize(kTextSize);
+    mImportObjectsLabel->SetTextSize(kTextSize);
     mImportObjectsLabel->SetText("Import Objects");
     AddChild(mImportObjectsLabel);
     y += kDeltaY;
@@ -163,7 +163,7 @@ SceneImportWidget::SceneImportWidget()
 
     mImportMeshesLabel = new Text();
     mImportMeshesLabel->SetPosition(x + kDeltaX, y);
-    mImportMeshesLabel->SetSize(kTextSize);
+    mImportMeshesLabel->SetTextSize(kTextSize);
     mImportMeshesLabel->SetText("Import Meshes");
     AddChild(mImportMeshesLabel);
     y += kDeltaY;
@@ -176,7 +176,7 @@ SceneImportWidget::SceneImportWidget()
 
     mImportMaterialsLabel = new Text();
     mImportMaterialsLabel->SetPosition(x + kDeltaX, y);
-    mImportMaterialsLabel->SetSize(kTextSize);
+    mImportMaterialsLabel->SetTextSize(kTextSize);
     mImportMaterialsLabel->SetText("Import Materials");
     AddChild(mImportMaterialsLabel);
     y += kDeltaY;
@@ -189,7 +189,7 @@ SceneImportWidget::SceneImportWidget()
 
     mImportTexturesLabel = new Text();
     mImportTexturesLabel->SetPosition(x + kDeltaX, y);
-    mImportTexturesLabel->SetSize(kTextSize);
+    mImportTexturesLabel->SetTextSize(kTextSize);
     mImportTexturesLabel->SetText("Import Textures");
     AddChild(mImportTexturesLabel);
     y += kDeltaY;
@@ -202,7 +202,7 @@ SceneImportWidget::SceneImportWidget()
 
     mImportLightsLabel = new Text();
     mImportLightsLabel->SetPosition(x + kDeltaX, y);
-    mImportLightsLabel->SetSize(kTextSize);
+    mImportLightsLabel->SetTextSize(kTextSize);
     mImportLightsLabel->SetText("Import Lights");
     AddChild(mImportLightsLabel);
     y += kDeltaY;

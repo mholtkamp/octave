@@ -159,7 +159,7 @@ void Button::SetDimensions(float width, float height)
     {
         const float textScaleFactor = 0.75f;
         const float textSize = textScaleFactor * height * (1 - 2 * mTextPaddingRatio.y);
-        mText->SetSize(textSize);
+        mText->SetTextSize(textSize);
     }
 
     mText->SetPosition(width * mTextPaddingRatio.x, height * mTextPaddingRatio.y);
