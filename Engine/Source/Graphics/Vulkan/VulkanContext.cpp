@@ -63,6 +63,7 @@ VulkanContext::VulkanContext()
     mForwardRenderPass = VK_NULL_HANDLE;
     mPostprocessRenderPass = VK_NULL_HANDLE;
     mUIRenderPass = VK_NULL_HANDLE;
+    mClearSwapchainPass = VK_NULL_HANDLE;
     mSceneColorFramebuffer = VK_NULL_HANDLE;
     mImageAvailableSemaphore = 0;
     mRenderFinishedSemaphore = 0;
@@ -314,6 +315,10 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         renderPassInfo.renderPass = mUIRenderPass;
         renderPassInfo.framebuffer = mSwapchainFramebuffers[mSwapchainImageIndex];
         break;
+    case RenderPassId::Clear:
+        renderPassInfo.renderPass = mClearSwapchainPass;
+        renderPassInfo.framebuffer = mSwapchainFramebuffers[mSwapchainImageIndex];
+        break;
 #if EDITOR
     case RenderPassId::HitCheck:
         renderPassInfo.renderPass = mHitCheckRenderPass;
@@ -477,6 +482,7 @@ void VulkanContext::DestroySwapchain()
     vkDestroyRenderPass(mDevice, mForwardRenderPass, nullptr);
     vkDestroyRenderPass(mDevice, mPostprocessRenderPass, nullptr);
     vkDestroyRenderPass(mDevice, mUIRenderPass, nullptr);
+    vkDestroyRenderPass(mDevice, mClearSwapchainPass, nullptr);
 
     GetDestroyQueue()->Destroy(mShadowMapImage);
     mShadowMapImage = nullptr;
@@ -1304,7 +1310,84 @@ void VulkanContext::CreateRenderPass()
 
         if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mUIRenderPass) != VK_SUCCESS)
         {
-            LogError("Failed to create forward  render pass");
+            LogError("Failed to create UI render pass");
+            OCT_ASSERT(0);
+        }
+    }
+
+    // Clear Swapchain Pass
+    {
+        VkAttachmentDescription attachments[] =
+        {
+            // Swapchain Image
+            {
+                0,
+                mSwapchainImageFormat,
+                VK_SAMPLE_COUNT_1_BIT,
+                VK_ATTACHMENT_LOAD_OP_CLEAR,
+                VK_ATTACHMENT_STORE_OP_STORE,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            },
+
+            // Depth Buffer
+            {
+                0,
+                VK_FORMAT_D32_SFLOAT_S8_UINT,
+                VK_SAMPLE_COUNT_1_BIT,
+                VK_ATTACHMENT_LOAD_OP_CLEAR,
+                VK_ATTACHMENT_STORE_OP_STORE,
+                VK_ATTACHMENT_LOAD_OP_CLEAR,
+                VK_ATTACHMENT_STORE_OP_STORE,
+                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+            }
+        };
+
+        VkAttachmentReference colorRef =
+        {
+            0,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+        };
+
+        VkAttachmentReference depthRef =
+        {
+            1,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+        };
+
+        VkSubpassDescription subpass =
+        {
+            0, // flags
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            0, // input attachments
+            nullptr,
+            1, // color attachments
+            &colorRef,
+            nullptr,
+            &depthRef, // depth attachment
+            0,
+            nullptr
+        };
+
+        VkRenderPassCreateInfo ciRenderPass =
+        {
+            VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+            nullptr,
+            0,
+            OCT_ARRAY_SIZE(attachments),
+            attachments,
+            1,
+            &subpass,
+            0,
+            nullptr
+        };
+
+        if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mClearSwapchainPass) != VK_SUCCESS)
+        {
+            LogError("Failed to create ClearSwapchain pass");
             OCT_ASSERT(0);
         }
     }

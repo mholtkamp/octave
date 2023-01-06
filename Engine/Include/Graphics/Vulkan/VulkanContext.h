@@ -187,6 +187,7 @@ private:
     VkRenderPass mForwardRenderPass = VK_NULL_HANDLE;
     VkRenderPass mPostprocessRenderPass = VK_NULL_HANDLE;
     VkRenderPass mUIRenderPass = VK_NULL_HANDLE;
+    VkRenderPass mClearSwapchainPass = VK_NULL_HANDLE;
 
     // Framebuffers
     VkFramebuffer mSceneColorFramebuffer = VK_NULL_HANDLE;

@@ -56,6 +56,8 @@ PanelManager::PanelManager()
     mPanels.push_back(mViewportPanel);
     mPanels.push_back(mWidgetHierarchyPanel);
     mPanels.push_back(mWidgetViewportPanel);
+
+    OnEditorModeChanged();
 }
 
 PanelManager* PanelManager::Get()
@@ -68,11 +70,28 @@ void PanelManager::Update()
     // Handle input
     if (!GetEditorState()->mPlayInEditor || GetEditorState()->mEjected)
     {
-        mOutlinerPanel->HandleInput();
-        mAssetsPanel->HandleInput();
-        mHierarchyPanel->HandleInput();
-        mPropertiesPanel->HandleInput();
-        mViewportPanel->HandleInput();
+        switch (GetEditorMode())
+        {
+        case EditorMode::Level:
+            mOutlinerPanel->HandleInput();
+            mAssetsPanel->HandleInput();
+            mHierarchyPanel->HandleInput();
+            mPropertiesPanel->HandleInput();
+            mViewportPanel->HandleInput();
+            break;
+        case EditorMode::Widget:
+            mAssetsPanel->HandleInput();
+            mWidgetHierarchyPanel->HandleInput();
+            mPropertiesPanel->HandleInput();
+            mWidgetViewportPanel->HandleInput();
+            break;
+        case EditorMode::Blueprint:
+            break;
+
+        default:
+            OCT_ASSERT(0);
+            break;
+        }
     }
 }
 
