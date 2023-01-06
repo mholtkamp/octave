@@ -12,6 +12,7 @@
 #include "World.h"
 #include "TimerManager.h"
 #include "Assets/Level.h"
+#include "Assets/WidgetMap.h"
 #include "EditorUtils.h"
 #include "Widgets/ActionList.h"
 #include "Widgets/TextEntry.h"
@@ -519,6 +520,31 @@ Widget* GetEditRootWidget()
 void SetEditRootWidget(Widget* widget)
 {
     sEditorState.mEditRootWidget = widget;
+}
+
+void SetActiveWidgetMap(WidgetMap* widgetMap)
+{
+    if (sEditorState.mActiveWidgetMap.Get<WidgetMap>() != widgetMap)
+    {
+        sEditorState.mActiveWidgetMap = widgetMap;
+
+        // Destroy what was previously being edited. Hope you saved.
+        if (sEditorState.mEditRootWidget != nullptr)
+        {
+            delete sEditorState.mEditRootWidget;
+            sEditorState.mEditRootWidget = nullptr;
+        }
+
+        // Attempt to instantiate a widget from the map. This may return nullptr
+        // if the map was just created and has no widgets. In this case,
+        // The hierarchy panel will set it when the first widget is created.
+        sEditorState.mEditRootWidget = widgetMap->Instantiate();
+    }
+}
+
+WidgetMap* GetActiveWidgetMap()
+{
+    return sEditorState.mActiveWidgetMap.Get<WidgetMap>();
 }
 
 Asset* GetSelectedAsset()
