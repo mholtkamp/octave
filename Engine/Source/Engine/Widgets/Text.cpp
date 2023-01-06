@@ -66,7 +66,7 @@ Text::Text() :
     mText("Text"),
     mCutoff(0.55f),
     mOutlineSize(0.0f),
-    mSize(16.0f),
+    mTextSize(16.0f),
     mSoftness(0.125f),
     mOutlineColor(0.0f, 0.0f, 0.0, 1.0f),
     mVertices(nullptr),
@@ -95,7 +95,7 @@ void Text::GatherProperties(std::vector<Property>& outProps, bool editor)
 
     outProps.push_back(Property(DatumType::Asset, "Font", this, &mFont, 1, Text::HandlePropChange, int32_t(Font::GetStaticType())));
     outProps.push_back(Property(DatumType::String, "Text", this, &mText, 1, Text::HandlePropChange));
-    outProps.push_back(Property(DatumType::Float, "Size", this, &mSize, 1, Text::HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Text Size", this, &mTextSize, 1, Text::HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Word Wrap", this, &mWordWrap, 1, Text::HandlePropChange));
     outProps.push_back(Property(DatumType::Byte, "Hori Justification", this, &mHoriJust, 1, Text::HandlePropChange, 0, int32_t(Justification::Count), sHoriJustStrings));
     outProps.push_back(Property(DatumType::Byte, "Vert Justification", this, &mVertJust, 1, Text::HandlePropChange, 0, int32_t(Justification::Count), sVertJustStrings));
@@ -162,23 +162,23 @@ glm::vec4 Text::GetOutlineColor() const
     return mOutlineColor;
 }
 
-void Text::SetSize(float size)
+void Text::SetTextSize(float size)
 {
-    if (mSize != size)
+    if (mTextSize != size)
     {
-        mSize = size;
+        mTextSize = size;
         MarkDirty();
     }
 }
 
-float Text::GetSize() const
+float Text::GetTextSize() const
 {
-    return mSize;
+    return mTextSize;
 }
 
-float Text::GetScaledSize() const
+float Text::GetScaledTextSize() const
 {
-    return mSize * glm::min(mAbsoluteScale.x, mAbsoluteScale.y);
+    return mTextSize * glm::min(mAbsoluteScale.x, mAbsoluteScale.y);
 }
 
 float Text::GetOutlineSize() const
@@ -305,7 +305,7 @@ glm::vec2 Text::GetScaledMinExtent()
     // TODO: Need to account for GetJustifiedOffset().
 
     Font* font = mFont.Get<Font>();
-    float scale = font ? (mSize / font->GetSize()) : 1.0f;
+    float scale = font ? (mTextSize / font->GetSize()) : 1.0f;
     return mMinExtent * scale;
 }
 
@@ -316,7 +316,7 @@ glm::vec2 Text::GetScaledMaxExtent()
     // TODO: Need to account for GetJustifiedOffset().
 
     Font* font = mFont.Get<Font>();
-    float scale = font ? (mSize / font->GetSize()) : 1.0f;
+    float scale = font ? (mTextSize / font->GetSize()) : 1.0f;
     return mMaxExtent * scale;
 }
 
@@ -388,7 +388,7 @@ void Text::UpdateVertexData()
     float cursorX = 0.0f;
     float cursorY = 0.0f + font->GetSize();
 
-    float textScale = GetScaledSize() / fontSize;
+    float textScale = GetScaledTextSize() / fontSize;
 
     for (uint32_t i = 0; i < mText.size(); ++i)
     {

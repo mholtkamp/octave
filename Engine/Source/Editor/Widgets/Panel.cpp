@@ -48,7 +48,7 @@ Panel::Panel() :
     mBodyQuad->SetColor(sBodyColorTop, sBodyColorTop, sBodyColorBot, sBodyColorBot);
     mBodyQuad->SetMargins(0.0f, 0.0f, 0.0f, 0.0f);
 
-    mHeaderText->SetSize(18.0f);
+    mHeaderText->SetTextSize(18.0f);
     mHeaderText->SetPosition(4.0f, 0.0f);
 
     SetupDimensions(sDefaultWidth, sDefaultHeight);

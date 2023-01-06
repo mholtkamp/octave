@@ -347,7 +347,7 @@ ViewportPanel::ViewportPanel() :
     mPieWarningText = new Text();
     mPieWarningText->SetText("PLAYING");
     mPieWarningText->SetColor({ 1.0f, 0.8f, 0.7f, 0.5f });
-    mPieWarningText->SetSize(72);
+    mPieWarningText->SetTextSize(72);
     mPieWarningText->SetAnchorMode(AnchorMode::TopRight);
     mPieWarningText->SetDimensions(300.0f, 80.0f);
     mPieWarningText->SetPosition(-310.0f, 4.0f);

@@ -21,7 +21,7 @@ public:
         AddChild(mBg);
 
         mTitle = new Text();
-        mTitle->SetSize(20.0f);
+        mTitle->SetTextSize(20.0f);
         AddChild(mTitle);
 
         mTextField = new TextField();

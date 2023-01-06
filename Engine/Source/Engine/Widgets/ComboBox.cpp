@@ -102,7 +102,7 @@ void ComboBox::AddSelection(const std::string& selection)
     ComboBoxButton* button = new ComboBoxButton();
     button->mComboBox = this;
     button->SetTextString(selection);
-    button->GetText()->SetSize(mTextSize);
+    button->GetText()->SetTextSize(mTextSize);
     button->SetDimensions(buttonWidth, buttonHeight);
     button->SetPressedHandler(HandleComboBoxButtonPress);
     button->GetQuad()->SetColor({0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f},
@@ -173,12 +173,12 @@ void ComboBox::SetTextSize(float size)
 {
     mTextSize = size;
 
-    mText->SetSize(size);
+    mText->SetTextSize(size);
 
     for (uint32_t i = 0; i < mList->GetNumListItems(); ++i)
     {
         Button* button = (Button*)mList->GetListItem(i);
-        button->GetText()->SetSize(mTextSize);
+        button->GetText()->SetTextSize(mTextSize);
     }
 }
 

@@ -44,9 +44,9 @@ public:
     void SetOutlineColor(glm::vec4 color);
     glm::vec4 GetOutlineColor() const;
 
-    void SetSize(float size);
-    float GetSize() const;
-    float GetScaledSize() const;
+    void SetTextSize(float size);
+    float GetTextSize() const;
+    float GetScaledTextSize() const;
 
     float GetOutlineSize() const;
     float GetSoftness() const;
@@ -94,7 +94,7 @@ protected:
     std::string mText;
     float mCutoff;
     float mOutlineSize;
-    float mSize;
+    float mTextSize;
     float mSoftness;
     glm::vec4 mOutlineColor;
     VertexUI* mVertices;

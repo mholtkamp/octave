@@ -1909,7 +1909,7 @@ void UpdateTextResourceUniformData(Text* text)
     ubo.mY = text->GetRect().mY + justifiedOffset.y;
     ubo.mCutoff = text->GetCutoff();
     ubo.mOutlineSize = text->GetOutlineSize();
-    ubo.mScale = text->GetScaledSize() / fontSize;
+    ubo.mScale = text->GetScaledTextSize() / fontSize;
     ubo.mSoftness = text->GetSoftness();
     ubo.mPadding1 = 1337;
     ubo.mPadding2 = 1337;

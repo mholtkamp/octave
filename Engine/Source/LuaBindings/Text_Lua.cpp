@@ -52,31 +52,31 @@ int Text_Lua::GetOutlineColor(lua_State* L)
     return 1;
 }
 
-int Text_Lua::SetSize(lua_State* L)
+int Text_Lua::SetTextSize(lua_State* L)
 {
     Text* text = CHECK_TEXT(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
-    text->SetSize(value);
+    text->SetTextSize(value);
 
     return 0;
 }
 
-int Text_Lua::GetSize(lua_State* L)
+int Text_Lua::GetTextSize(lua_State* L)
 {
     Text* text = CHECK_TEXT(L, 1);
 
-    float ret = text->GetSize();
+    float ret = text->GetTextSize();
 
     lua_pushnumber(L, ret);
     return 1;
 }
 
-int Text_Lua::GetScaledSize(lua_State* L)
+int Text_Lua::GetScaledTextSize(lua_State* L)
 {
     Text* text = CHECK_TEXT(L, 1);
 
-    float ret = text->GetScaledSize();
+    float ret = text->GetScaledTextSize();
 
     lua_pushnumber(L, ret);
     return 1;
@@ -257,14 +257,14 @@ void Text_Lua::Bind()
     lua_pushcfunction(L, GetOutlineColor);
     lua_setfield(L, mtIndex, "GetOutlineColor");
 
-    lua_pushcfunction(L, SetSize);
-    lua_setfield(L, mtIndex, "SetSize");
+    lua_pushcfunction(L, SetTextSize);
+    lua_setfield(L, mtIndex, "SetTextSize");
 
-    lua_pushcfunction(L, GetSize);
-    lua_setfield(L, mtIndex, "GetSize");
+    lua_pushcfunction(L, GetTextSize);
+    lua_setfield(L, mtIndex, "GetTextSize");
 
-    lua_pushcfunction(L, GetScaledSize);
-    lua_setfield(L, mtIndex, "GetScaledSize");
+    lua_pushcfunction(L, GetScaledTextSize);
+    lua_setfield(L, mtIndex, "GetScaledTextSize");
 
     lua_pushcfunction(L, GetOutlineSize);
     lua_setfield(L, mtIndex, "GetOutlineSize");

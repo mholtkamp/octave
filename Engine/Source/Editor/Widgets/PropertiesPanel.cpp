@@ -91,7 +91,7 @@ PropertiesPanel::PropertiesPanel() :
     mModeBox->SetY(3.0f);
     mModeBox->SetWidth(80.0f);
     mModeBox->SetHeight(20.0f);
-    mModeBox->GetText()->SetSize(14.0f);
+    mModeBox->GetText()->SetTextSize(14.0f);
     mModeBox->SetTextSize(14.0f);
     mModeBox->AddSelection("Component");
     mModeBox->AddSelection("Actor");
