@@ -62,7 +62,7 @@ void WidgetViewportPanel::Update()
 
     if (mEditRootWidget)
     {
-        mEditRootWidget->SetPosition(mOffset);
+        mEditRootWidget->SetPosition(mRootOffset);
         mEditRootWidget->SetScale({ mZoom, mZoom });
     }
 
@@ -247,7 +247,7 @@ void WidgetViewportPanel::HandleDefaultControls()
         {
             LogDebug("Reset viewport");
             mZoom = 1.0f;
-            mOffset = { 0.0f, 0.0f };
+            mRootOffset = { 0.0f, 0.0f };
         }
 
         if (scrollDelta != 0)
@@ -359,7 +359,7 @@ void WidgetViewportPanel::HandlePanControls()
 {
     glm::vec2 delta = HandleLockedCursor();
     float speed = 0.1f;
-    mOffset += speed * delta;
+    mRootOffset += speed * delta;
 
     if (!IsMouseButtonDown(MOUSE_RIGHT) &&
         !IsMouseButtonDown(MOUSE_MIDDLE))

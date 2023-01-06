@@ -19,8 +19,8 @@ void PolyRect::Update()
 
     if (IsDirty())
     {
-        float width = GetWidth();
-        float height = GetHeight();
+        float width = mRect.mWidth;
+        float height = mRect.mHeight;
 
         ClearVertices();
         AddVertex({ 0.0f, 0.0f }, mColor);

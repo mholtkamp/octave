@@ -52,7 +52,7 @@ protected:
     Widget* FindHoveredWidget(Widget* widget, uint32_t& maxDepth, int32_t mouseX, int32_t mouseY, uint32_t depth = 0);
 
     float mZoom = 1.0f;
-    glm::vec2 mOffset = { 0.0f, 0.0f };
+    glm::vec2 mRootOffset = { 0.0f, 0.0f };
     WidgetControlMode mControlMode = WidgetControlMode::Default;
     WidgetAxisLock mAxisLock = WidgetAxisLock::None;
 
