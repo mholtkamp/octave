@@ -56,7 +56,7 @@ void WidgetViewportPanel::Update()
 
         if (mEditRootWidget != nullptr)
         {
-            AddChild(mEditRootWidget);
+            AddChild(mEditRootWidget, 0);
         }
     }
 
@@ -79,6 +79,7 @@ void WidgetViewportPanel::Update()
         overRect.mX -= GetX();
 
         mSelectedRect->SetRect(overRect);
+        mSelectedRect->Update();
     }
     else
     {
@@ -109,6 +110,7 @@ void WidgetViewportPanel::Update()
         overRect.mX -= GetX();
 
         mHoveredRect->SetRect(overRect);
+        mHoveredRect->Update();
     }
     else
     {
@@ -450,14 +452,17 @@ Widget* WidgetViewportPanel::FindHoveredWidget(Widget* widget, uint32_t& maxDept
         maxDepth = depth;
     }
 
-    for (uint32_t i = 0; i < widget->GetNumChildren(); ++i)
+    if (widget->GetWidgetMap() == nullptr)
     {
-        Widget* child = widget->GetChild(i);
-        Widget* childFound = FindHoveredWidget(child, maxDepth, mouseX, mouseY, depth + 1);
-
-        if (childFound)
+        for (uint32_t i = 0; i < widget->GetNumChildren(); ++i)
         {
-            retWidget = childFound;
+            Widget* child = widget->GetChild(i);
+            Widget* childFound = FindHoveredWidget(child, maxDepth, mouseX, mouseY, depth + 1);
+
+            if (childFound)
+            {
+                retWidget = childFound;
+            }
         }
     }
 

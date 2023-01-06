@@ -316,7 +316,7 @@ void WidgetHierarchyPanel::RefreshButtons()
                 {
                     Widget* child = widget->GetChild(i);
 
-                    if (child->GetWidgetMap() == nullptr)
+                    if (widget->GetWidgetMap() == nullptr)
                     {
                         AddWidget(child, depth + 1);
                     }
@@ -419,6 +419,14 @@ void WidgetHierarchyPanel::Update()
 {
     Panel::Update();
 
+    bool refresh = false;
+
+    if (GetEditRootWidget() != mCachedEditRoot)
+    {
+        mCachedEditRoot = GetEditRootWidget();
+        refresh = true;
+    }
+
     SetMaxScroll(glm::max(0, int32_t(mCachedNumWidgets) - 1));
 
     int32_t listOffset = mScroll;
@@ -426,6 +434,11 @@ void WidgetHierarchyPanel::Update()
     if (listOffset != mListOffset)
     {
         mListOffset = listOffset;
+        refresh = true;
+    }
+
+    if (refresh)
+    {
         RefreshButtons();
     }
 }
