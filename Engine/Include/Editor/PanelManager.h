@@ -1,5 +1,7 @@
 #pragma once
 
+#include "EngineTypes.h"
+
 class Widget;
 class OutlinerPanel;
 class AssetsPanel;
@@ -8,6 +10,7 @@ class PropertiesPanel;
 class ViewportPanel;
 class WidgetHierarchyPanel;
 class WidgetViewportPanel;
+class Panel;
 
 class PanelManager
 {
@@ -22,6 +25,7 @@ public:
 
     void AttachPanels(Widget* parent);
     void SetPanelsVisible(bool visible);
+    void UpdatePanelVisibility();
 
     OutlinerPanel* GetOutlinerPanel();
     AssetsPanel* GetAssetsPanel();
@@ -49,4 +53,8 @@ protected:
 
     WidgetHierarchyPanel* mWidgetHierarchyPanel = nullptr;
     WidgetViewportPanel* mWidgetViewportPanel = nullptr;
+
+    std::vector<Panel*> mPanels;
+
+    bool mPanelsVisible = true;
 };

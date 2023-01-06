@@ -14,23 +14,14 @@ PanelManager* PanelManager::sInstance = nullptr;
 
 PanelManager::~PanelManager()
 {
-    mOutlinerPanel->DetachFromParent();
-    mAssetsPanel->DetachFromParent();
-    mHierarchyPanel->DetachFromParent();
-    mPropertiesPanel->DetachFromParent();
-    mViewportPanel->DetachFromParent();
+    for (uint32_t i = 0; i < mPanels.size(); ++i)
+    {
+        mPanels[i]->DetachFromParent();
+        delete mPanels[i];
+        mPanels[i] = nullptr;
+    }
 
-    delete mOutlinerPanel;
-    delete mAssetsPanel;
-    delete mHierarchyPanel;
-    delete mPropertiesPanel;
-    delete mViewportPanel;
-
-    mOutlinerPanel = nullptr;
-    mAssetsPanel = nullptr;
-    mHierarchyPanel = nullptr;
-    mPropertiesPanel = nullptr;
-    mViewportPanel = nullptr;
+    mPanels.clear();
 }
 
 void PanelManager::Create()
@@ -55,9 +46,16 @@ PanelManager::PanelManager()
     mHierarchyPanel = new HierarchyPanel();
     mPropertiesPanel = new PropertiesPanel();
     mViewportPanel = new ViewportPanel();
-
     mWidgetHierarchyPanel = new WidgetHierarchyPanel();
     mWidgetViewportPanel = new WidgetViewportPanel();
+
+    mPanels.push_back(mOutlinerPanel);
+    mPanels.push_back(mAssetsPanel);
+    mPanels.push_back(mHierarchyPanel);
+    mPanels.push_back(mPropertiesPanel);
+    mPanels.push_back(mViewportPanel);
+    mPanels.push_back(mWidgetHierarchyPanel);
+    mPanels.push_back(mWidgetViewportPanel);
 }
 
 PanelManager* PanelManager::Get()
@@ -80,20 +78,46 @@ void PanelManager::Update()
 
 void PanelManager::AttachPanels(Widget* parent)
 {
-    parent->AddChild(mOutlinerPanel);
-    parent->AddChild(mAssetsPanel);
-    parent->AddChild(mHierarchyPanel);
-    parent->AddChild(mPropertiesPanel);
-    parent->AddChild(mViewportPanel);
+    for (uint32_t i = 0; i < mPanels.size(); ++i)
+    {
+        parent->AddChild(mPanels[i]);
+    }
 }
 
 void PanelManager::SetPanelsVisible(bool visible)
 {
-    mOutlinerPanel->SetVisible(visible);
-    mAssetsPanel->SetVisible(visible);
-    mHierarchyPanel->SetVisible(visible);
-    mPropertiesPanel->SetVisible(visible);
-    mViewportPanel->SetVisible(visible);
+    mPanelsVisible = visible;
+    UpdatePanelVisibility();
+}
+
+void PanelManager::UpdatePanelVisibility()
+{
+    for (uint32_t i = 0; i < mPanels.size(); ++i)
+    {
+        mPanels[i]->SetVisible(false);
+    }
+
+
+    bool visible = mPanelsVisible;
+
+    switch (GetEditorMode())
+    {
+    case EditorMode::Level:
+    case EditorMode::Blueprint:
+        mOutlinerPanel->SetVisible(visible);
+        mAssetsPanel->SetVisible(visible);
+        mHierarchyPanel->SetVisible(visible);
+        mPropertiesPanel->SetVisible(visible);
+        mViewportPanel->SetVisible(visible);
+        break;
+    case EditorMode::Widget:
+        mAssetsPanel->SetVisible(visible);
+        mPropertiesPanel->SetVisible(visible);
+        mWidgetHierarchyPanel->SetVisible(visible);
+        mWidgetViewportPanel->SetVisible(visible);
+        break;
+    }
+
 }
 
 OutlinerPanel* PanelManager::GetOutlinerPanel()
@@ -152,24 +176,9 @@ void PanelManager::OnEditorModeChanged()
 {
     EditorMode mode = GetEditorMode();
 
+    UpdatePanelVisibility();
+
     mPropertiesPanel->OnEditorModeChanged();
-
-    switch (mode)
-    {
-    case EditorMode::Level:
-//#error Do Level Mode
-        break;
-    case EditorMode::Widget:
-//#error Do Widget Mode
-
-        break;
-    case EditorMode::Blueprint:
-        // TODO
-        break;
-    default:
-        OCT_ASSERT(0);
-        break;
-    }
 }
 
 #endif
