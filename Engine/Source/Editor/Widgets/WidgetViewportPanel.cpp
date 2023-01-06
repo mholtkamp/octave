@@ -69,6 +69,7 @@ void WidgetViewportPanel::Update()
     Widget* selWidget = GetSelectedWidget();
     if (selWidget)
     {
+        selWidget->Update();
         mSelectedRect->SetVisible(true);
         Rect overRect = selWidget->GetRect();
 
@@ -95,8 +96,10 @@ void WidgetViewportPanel::Update()
         hoverWidget = FindHoveredWidget(mEditRootWidget, maxDepth, mouseX, mouseY);
     }
 
-    if (hoverWidget)
+    if (hoverWidget &&
+        hoverWidget != selWidget)
     {
+        hoverWidget->Update();
         mHoveredRect->SetVisible(true);
         Rect overRect = hoverWidget->GetRect();
 
@@ -271,7 +274,7 @@ void WidgetViewportPanel::HandleTransformControls()
     {
         if (mControlMode == WidgetControlMode::Translate)
         {
-            const float translateSpeed = 0.025f;
+            const float translateSpeed = 0.1f;
             float speed = shiftDown ? (shiftSpeedMult * translateSpeed) : translateSpeed;
             
             if (mAxisLock == WidgetAxisLock::AxisX)
@@ -287,7 +290,7 @@ void WidgetViewportPanel::HandleTransformControls()
         {
             const float rotateSpeed = 0.025f;
             float speed = shiftDown ? (shiftSpeedMult * rotateSpeed) : rotateSpeed;
-            float totalDelta = delta.x - delta.y;
+            float totalDelta = -(delta.x - delta.y);
 
             float rotation = widget->GetRotation();
             rotation += speed * totalDelta;
@@ -295,7 +298,7 @@ void WidgetViewportPanel::HandleTransformControls()
         }
         else if (mControlMode == WidgetControlMode::Scale)
         {
-            const float scaleSpeed = 0.025f;
+            const float scaleSpeed = 0.050f;
             float speed = shiftDown ? (shiftSpeedMult * scaleSpeed) : scaleSpeed;
 
             if (mAxisLock == WidgetAxisLock::AxisX)
@@ -308,12 +311,44 @@ void WidgetViewportPanel::HandleTransformControls()
             widget->SetDimensions(dim);
         }
     }
+
+    if (IsMouseButtonDown(MOUSE_LEFT))
+    {
+        if (mControlMode == WidgetControlMode::Translate)
+        {
+            glm::vec2 pos = widget->GetPosition();
+            RestorePreTransforms();
+            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "X", 0, pos.x);
+            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "Y", 0, pos.y);
+        }
+        else if (mControlMode == WidgetControlMode::Rotate)
+        {
+            float rotation = widget->GetRotation();
+            RestorePreTransforms();
+            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "Rotation", 0, rotation);
+        }
+        else if (mControlMode == WidgetControlMode::Scale)
+        {
+            glm::vec2 dims = widget->GetDimensions();
+            RestorePreTransforms();
+            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "Width", 0, dims.x);
+            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "Height", 0, dims.y);
+        }
+
+        SetWidetControlMode(WidgetControlMode::Default);
+    }
+
+    if (IsMouseButtonDown(MOUSE_RIGHT))
+    {
+        RestorePreTransforms();
+        SetWidetControlMode(WidgetControlMode::Default);
+    }
 }
 
 void WidgetViewportPanel::HandlePanControls()
 {
     glm::vec2 delta = HandleLockedCursor();
-    float speed = 0.005f;
+    float speed = 0.1f;
     mOffset += speed * delta;
 
     if (!IsMouseButtonDown(MOUSE_RIGHT) &&
