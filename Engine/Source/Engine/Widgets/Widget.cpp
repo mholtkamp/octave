@@ -136,7 +136,7 @@ void Widget::GatherProperties(std::vector<Property>& outProps, bool editor)
     outProps.push_back(Property(DatumType::Bool, "Visible", this, &mVisible, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Scissor", this, &mUseScissor, 1, Widget::HandlePropChange));
 
-    if (editor)
+    if (false /*editor*/)
     {
         outProps.push_back(Property(DatumType::Float, "X", this, &mRect.mX, 1, Widget::HandlePropChange));
         outProps.push_back(Property(DatumType::Float, "Y", this, &mRect.mY, 1, Widget::HandlePropChange));

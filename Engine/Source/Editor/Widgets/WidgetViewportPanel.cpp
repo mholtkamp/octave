@@ -272,21 +272,31 @@ void WidgetViewportPanel::HandleTransformControls()
     const bool shiftDown = IsShiftDown();
     const float shiftSpeedMult = 0.1f;
 
+    glm::vec2 stretchScale = { 1.0f, 1.0f };
+    if (widget->StretchX())
+    {
+        stretchScale.x = 0.002f;
+    }
+    if (widget->StretchY())
+    {
+        stretchScale.y = 0.002f;
+    }
+
     if (delta != glm::vec2(0.0f, 0.0f))
     {
         if (mControlMode == WidgetControlMode::Translate)
         {
             const float translateSpeed = 0.1f;
             float speed = shiftDown ? (shiftSpeedMult * translateSpeed) : translateSpeed;
-            
+
             if (mAxisLock == WidgetAxisLock::AxisX)
                 delta.y = 0.0f;
             else if (mAxisLock == WidgetAxisLock::AxisY)
                 delta.x = 0.0f;
-            
-            glm::vec2 pos = widget->GetPosition();
-            pos += translateSpeed * delta;
-            widget->SetPosition(pos);
+
+            glm::vec2 offset = widget->GetOffset();
+            offset += speed * stretchScale * delta;
+            widget->SetOffset(offset.x, offset.y);
         }
         else if (mControlMode == WidgetControlMode::Rotate)
         {
@@ -308,9 +318,9 @@ void WidgetViewportPanel::HandleTransformControls()
             else if (mAxisLock == WidgetAxisLock::AxisY)
                 delta.x = 0.0f;
 
-            glm::vec2 dim = widget->GetDimensions();
-            dim += scaleSpeed * delta;
-            widget->SetDimensions(dim);
+            glm::vec2 size = widget->GetSize();
+            size += speed * stretchScale * delta;
+            widget->SetSize(size.x, size.y);
         }
     }
 
@@ -318,10 +328,9 @@ void WidgetViewportPanel::HandleTransformControls()
     {
         if (mControlMode == WidgetControlMode::Translate)
         {
-            glm::vec2 pos = widget->GetPosition();
+            glm::vec2 offset = widget->GetOffset();
             RestorePreTransforms();
-            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "X", 0, pos.x);
-            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "Y", 0, pos.y);
+            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "Offset", 0, offset);
         }
         else if (mControlMode == WidgetControlMode::Rotate)
         {
@@ -331,10 +340,9 @@ void WidgetViewportPanel::HandleTransformControls()
         }
         else if (mControlMode == WidgetControlMode::Scale)
         {
-            glm::vec2 dims = widget->GetDimensions();
+            glm::vec2 size = widget->GetSize();
             RestorePreTransforms();
-            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "Width", 0, dims.x);
-            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "Height", 0, dims.y);
+            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "Size", 0, size);
         }
 
         SetWidetControlMode(WidgetControlMode::Default);
@@ -421,8 +429,8 @@ void WidgetViewportPanel::SavePreTransforms()
 
     if (widget)
     {
-        mSavedPosition = widget->GetPosition();
-        mSavedDimensions = widget->GetDimensions();
+        mSavedOffset = widget->GetOffset();
+        mSavedSize = widget->GetSize();
         mSavedRotation = widget->GetRotation();
     }
 }
@@ -433,8 +441,8 @@ void WidgetViewportPanel::RestorePreTransforms()
 
     if (widget)
     {
-        widget->SetPosition(mSavedPosition);
-        widget->SetDimensions(mSavedDimensions);
+        widget->SetOffset(mSavedOffset.x, mSavedOffset.y);
+        widget->SetSize(mSavedSize.x, mSavedSize.y);
         widget->SetRotation(mSavedRotation);
     }
 }
