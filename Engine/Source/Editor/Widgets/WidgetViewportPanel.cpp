@@ -1,3 +1,5 @@
+#if EDITOR
+
 #include "Widgets/WidgetViewportPanel.h"
 #include "InputDevices.h"
 #include "EditorState.h"
@@ -422,3 +424,5 @@ Widget* WidgetViewportPanel::FindHoveredWidget(Widget* widget, uint32_t& maxDept
 
     return retWidget;
 }
+
+#endif
