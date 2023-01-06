@@ -50,22 +50,32 @@ bool Widget::HandlePropChange(Datum* datum, const void* newValue)
     if (prop->mName == "X")
     {
         widget->SetX(*(float*)newValue);
+        success = true;
     }
     else if (prop->mName == "Y")
     {
         widget->SetY(*(float*)newValue);
+        success = true;
     }
     else if (prop->mName == "Width")
     {
         widget->SetWidth(*(float*)newValue);
+        success = true;
     }
     else if (prop->mName == "Height")
     {
         widget->SetHeight(*(float*)newValue);
+        success = true;
     }
     else if (prop->mName == "Anchor")
     {
         widget->SetAnchorMode(*(AnchorMode*)newValue);
+        success = true;
+    }
+    else if (prop->mName == "Color")
+    {
+        widget->SetColor(*(glm::vec4*)newValue);
+        success = true;
     }
 
     widget->MarkDirty();

@@ -36,6 +36,7 @@ bool Text::HandlePropChange(Datum* datum, const void* newValue)
     bool success = false;
 
     text->MarkDirty();
+    text->MarkVerticesDirty();
 
     return success;
 }
@@ -92,7 +93,7 @@ void Text::GatherProperties(std::vector<Property>& outProps, bool editor)
 {
     Widget::GatherProperties(outProps, editor);
 
-    outProps.push_back(Property(DatumType::Asset, "Font", this, &mFont, 1, Text::HandlePropChange, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::Asset, "Font", this, &mFont, 1, Text::HandlePropChange, int32_t(Font::GetStaticType())));
     outProps.push_back(Property(DatumType::String, "Text", this, &mText, 1, Text::HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Size", this, &mSize, 1, Text::HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Word Wrap", this, &mWordWrap, 1, Text::HandlePropChange));
