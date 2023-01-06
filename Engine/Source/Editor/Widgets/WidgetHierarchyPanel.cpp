@@ -274,9 +274,9 @@ WidgetHierarchyPanel::WidgetHierarchyPanel() :
     mListOffset(0)
 {
     SetTitle("Hierarchy");
-    SetAnchorMode(AnchorMode::TopRight);
-    SetPosition(-sDefaultWidth, 0.0f);
-    SetDimensions(Panel::sDefaultWidth, sPanelHeight);
+    SetAnchorMode(AnchorMode::LeftStretch);
+    SetYRatio(0.0f);
+    SetHeightRatio(0.5f);
 
     for (int32_t i = 0; i < sNumButtons; ++i)
     {
