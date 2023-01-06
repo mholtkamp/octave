@@ -3,6 +3,7 @@
 #include "Panel.h"
 #include "EditorState.h"
 #include "Widgets/ModalList.h"
+#include "Widgets/PolyRect.h"
 
 class Button;
 
@@ -56,6 +57,9 @@ protected:
     WidgetAxisLock mAxisLock = WidgetAxisLock::None;
 
     Widget* mEditRootWidget = nullptr;
+
+    PolyRect* mSelectedRect = nullptr;
+    PolyRect* mHoveredRect = nullptr;
 
     int32_t mPrevMouseX = 0;
     int32_t mPrevMouseY = 0;
