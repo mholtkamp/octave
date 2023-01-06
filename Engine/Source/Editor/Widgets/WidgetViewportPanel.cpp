@@ -14,6 +14,16 @@ WidgetViewportPanel::WidgetViewportPanel()
     SetTitle("Widget Viewport");
     SetAnchorMode(AnchorMode::FullStretch);
     SetMargins(sDefaultWidth, 0.0f, sDefaultWidth, 0.0f);
+
+    mSelectedRect = new PolyRect();
+    mSelectedRect->SetVisible(false);
+    mSelectedRect->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f });
+    AddChild(mSelectedRect);
+
+    mHoveredRect = new PolyRect();
+    mHoveredRect->SetVisible(false);
+    mHoveredRect->SetColor({ 0.0f, 1.0f, 1.0f, 1.0f });
+    AddChild(mHoveredRect);
 }
 
 WidgetViewportPanel::~WidgetViewportPanel()
@@ -48,6 +58,52 @@ void WidgetViewportPanel::Update()
     {
         mEditRootWidget->SetPosition(mOffset);
         mEditRootWidget->SetScale({ mZoom, mZoom });
+    }
+
+    Widget* selWidget = GetSelectedWidget();
+    if (selWidget)
+    {
+        mSelectedRect->SetVisible(true);
+        Rect overRect = selWidget->GetRect();
+
+        // Viewport panel is pushed over to the right a bit,
+        // so to translated the absolute rect position to the relative rect
+        // position, we need to subtract the parent X;
+        overRect.mX -= GetX();
+
+        mSelectedRect->SetRect(overRect);
+    }
+    else
+    {
+        mSelectedRect->SetVisible(false);
+    }
+
+    Widget* hoverWidget = nullptr;
+    if (mEditRootWidget)
+    {
+        int32_t mouseX = 0;
+        int32_t mouseY = 0;
+        GetMousePosition(mouseX, mouseY);
+
+        uint32_t maxDepth = 0;
+        hoverWidget = FindHoveredWidget(mEditRootWidget, maxDepth, mouseX, mouseY);
+    }
+
+    if (hoverWidget)
+    {
+        mHoveredRect->SetVisible(true);
+        Rect overRect = hoverWidget->GetRect();
+
+        // Viewport panel is pushed over to the right a bit,
+        // so to translated the absolute rect position to the relative rect
+        // position, we need to subtract the parent X;
+        overRect.mX -= GetX();
+
+        mHoveredRect->SetRect(overRect);
+    }
+    else
+    {
+        mHoveredRect->SetVisible(false);
     }
 }
 
