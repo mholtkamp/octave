@@ -24,6 +24,7 @@
 #include "Assets/Blueprint.h"
 #include "Assets/SoundWave.h"
 #include "Assets/SkeletalMesh.h"
+#include "Assets/WidgetMap.h"
 
 static AssetStub* sActionContextAssetStub = nullptr;
 static AssetDir* sActionContextAssetDir = nullptr;
@@ -202,6 +203,20 @@ void AssetsPanel::ActionListHandler(Button* button)
 
         clearModal = false;
         clearContext = false;
+    }
+    else if (buttonText == "Edit")
+    {
+        if (sActionContextAssetStub->mType == WidgetMap::GetStaticType())
+        {
+            AssetStub* stub = sActionContextAssetStub;
+            Asset* asset = AssetManager::Get()->LoadAsset(*stub);
+            WidgetMap* widgetMap = asset->As<WidgetMap>();
+
+            OCT_ASSERT(widgetMap);
+            SetActiveWidgetMap(widgetMap);
+
+            SetEditorMode(EditorMode::Widget);
+        }
     }
     else if (buttonText == "Spawn Actor")
     {
@@ -512,6 +527,12 @@ void AssetsPanel::HandleInput()
                 if (sActionContextAssetStub)
                 {
                     actions.push_back("Properties");
+                }
+
+                if (sActionContextAssetStub &&
+                    sActionContextAssetStub->mType == WidgetMap::GetStaticType())
+                {
+                    actions.push_back("Edit");
                 }
 
                 if (!engineFile)

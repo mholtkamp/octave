@@ -57,6 +57,7 @@ struct EditorState
     Widget* mSelectedWidget = nullptr;
     AssetStub* mSelectedAssetStub = nullptr;
     LevelRef mActiveLevel;
+    WidgetMapRef mActiveWidgetMap;
     ControlMode mControlMode = ControlMode::Default;
     TransformLock mTransformLock = TransformLock::None;
     ActionList* mActionList = nullptr;
@@ -117,6 +118,8 @@ Widget* GetSelectedWidget();
 void SetSelectedWidget(Widget* widget);
 Widget* GetEditRootWidget();
 void SetEditRootWidget(Widget* widget);
+void SetActiveWidgetMap(WidgetMap* widgetMap);
+WidgetMap* GetActiveWidgetMap();
 
 Asset* GetSelectedAsset();
 AssetStub* GetSelectedAssetStub();

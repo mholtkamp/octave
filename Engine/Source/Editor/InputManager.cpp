@@ -8,6 +8,8 @@
 #include "EditorUtils.h"
 #include "EditorState.h"
 #include "Renderer.h"
+#include "Assets/WidgetMap.h"
+#include "AssetManager.h"
 
 #include "Input/Input.h"
 
@@ -160,11 +162,25 @@ void InputManager::UpdateHotkeys()
         }
         else if (ctrlDown && IsKeyJustDown(KEY_S))
         {
-            const bool saveAs = IsShiftDown();
-            ActionManager::Get()->SaveLevel(saveAs);
-            ClearControlDown();
-            ClearShiftDown();
-            INP_ClearKey(KEY_S);
+            if (GetEditorMode() == EditorMode::Level)
+            {
+                const bool saveAs = IsShiftDown();
+                ActionManager::Get()->SaveLevel(saveAs);
+                ClearControlDown();
+                ClearShiftDown();
+                INP_ClearKey(KEY_S);
+            }
+            else if (GetEditorMode() == EditorMode::Widget)
+            {
+                WidgetMap* widgetMap = GetActiveWidgetMap();
+
+                if (widgetMap)
+                {
+                    widgetMap->Create(GetEditRootWidget());
+                    AssetManager::Get()->SaveAsset(widgetMap->GetName());
+                    LogDebug("WidgetMap Saved: %s", widgetMap->GetName().c_str());
+                }
+            }
         }
         else if (shiftDown && IsKeyJustDown(KEY_S) && !textFieldActive)
         {
@@ -202,6 +218,13 @@ void InputManager::UpdateHotkeys()
         else if (altDown && IsKeyJustDown(KEY_R))
         {
             ReloadAllScripts();
+        }
+
+        if (IsKeyJustDown(KEY_ESCAPE) &&
+            GetEditorMode() != EditorMode::Level)
+        {
+            // TODO: Show save prompt if edited asset has unsaved changes?
+            SetEditorMode(EditorMode::Level);
         }
     }
 }
