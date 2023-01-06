@@ -80,6 +80,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(Console);
     FORCE_LINK_CALL(ModalList);
     FORCE_LINK_CALL(Quad);
+    FORCE_LINK_CALL(PolyRect);
     FORCE_LINK_CALL(Poly);
     FORCE_LINK_CALL(Selector);
     FORCE_LINK_CALL(StatsOverlay);

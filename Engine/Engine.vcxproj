@@ -437,6 +437,7 @@
     <ClCompile Include="Source\Engine\Widgets\Console.cpp" />
     <ClCompile Include="Source\Engine\Widgets\ModalList.cpp" />
     <ClCompile Include="Source\Engine\Widgets\Poly.cpp" />
+    <ClCompile Include="Source\Engine\Widgets\PolyRect.cpp" />
     <ClCompile Include="Source\Engine\Widgets\Quad.cpp" />
     <ClCompile Include="Source\Engine\Widgets\ScriptWidget.cpp" />
     <ClCompile Include="Source\Engine\Widgets\Selector.cpp" />
@@ -569,6 +570,7 @@
     <ClInclude Include="Include\Engine\TableDatum.h" />
     <ClInclude Include="Include\Engine\TimerManager.h" />
     <ClInclude Include="Include\Engine\Widgets\Poly.h" />
+    <ClInclude Include="Include\Engine\Widgets\PolyRect.h" />
     <ClInclude Include="Include\Engine\Widgets\ScriptWidget.h" />
     <ClInclude Include="Include\LuaBindings\ActorRef_Lua.h" />
     <ClInclude Include="Include\LuaBindings\AudioComponent_Lua.h" />

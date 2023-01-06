@@ -765,6 +765,9 @@
     <ClCompile Include="Source\Editor\Widgets\WidgetViewportPanel.cpp">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Widgets\PolyRect.cpp">
+      <Filter>Source Files\Engine\Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1390,6 +1393,9 @@
     </ClInclude>
     <ClInclude Include="Include\Editor\Widgets\WidgetViewportPanel.h">
       <Filter>Header Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Engine\Widgets\PolyRect.h">
+      <Filter>Header Files\Engine\Widgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
