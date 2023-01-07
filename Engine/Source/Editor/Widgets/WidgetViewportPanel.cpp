@@ -476,7 +476,7 @@ Widget* WidgetViewportPanel::FindHoveredWidget(Widget* widget, uint32_t& maxDept
     Rect rect = widget->GetRect();
 
     if (rect.ContainsPoint(float(mouseX), float(mouseY)) &&
-        depth > maxDepth)
+        depth >= maxDepth)
     {
         retWidget = widget;
         maxDepth = depth;
