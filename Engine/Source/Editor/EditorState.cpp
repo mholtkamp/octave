@@ -519,7 +519,18 @@ Widget* GetEditRootWidget()
 
 void SetEditRootWidget(Widget* widget)
 {
-    sEditorState.mEditRootWidget = widget;
+    if (widget != sEditorState.mEditRootWidget)
+    {
+        // Destroy what was previously being edited. Hope you saved.
+        if (sEditorState.mEditRootWidget != nullptr)
+        {
+            delete sEditorState.mEditRootWidget;
+            sEditorState.mEditRootWidget = nullptr;
+        }
+
+        sEditorState.mEditRootWidget = widget;
+        SetSelectedWidget(widget);
+    }
 }
 
 void SetActiveWidgetMap(WidgetMap* widgetMap)
@@ -528,18 +539,10 @@ void SetActiveWidgetMap(WidgetMap* widgetMap)
     {
         sEditorState.mActiveWidgetMap = widgetMap;
 
-        // Destroy what was previously being edited. Hope you saved.
-        if (sEditorState.mEditRootWidget != nullptr)
-        {
-            delete sEditorState.mEditRootWidget;
-            sEditorState.mEditRootWidget = nullptr;
-        }
-
         // Attempt to instantiate a widget from the map. This may return nullptr
         // if the map was just created and has no widgets. In this case,
         // The hierarchy panel will set it when the first widget is created.
-        sEditorState.mEditRootWidget = widgetMap->Instantiate();
-        SetSelectedWidget(sEditorState.mEditRootWidget);
+        SetEditRootWidget(widgetMap->Instantiate());
     }
 }
 
