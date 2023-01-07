@@ -87,7 +87,8 @@ void WidgetViewportPanel::Update()
     }
 
     Widget* hoverWidget = nullptr;
-    if (mEditRootWidget)
+    if (mEditRootWidget &&
+        mControlMode == WidgetControlMode::Default)
     {
         int32_t mouseX = 0;
         int32_t mouseY = 0;
