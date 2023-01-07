@@ -37,6 +37,8 @@ public:
 
     void SetWidetControlMode(WidgetControlMode newMode);
 
+    void OnSelectedWidgetChanged();
+
 protected:
 
     void HandleDefaultControls();
@@ -48,6 +50,8 @@ protected:
 
     void SavePreTransforms();
     void RestorePreTransforms();
+
+    void SyncEditRootWidget();
 
     Widget* FindHoveredWidget(Widget* widget, uint32_t& maxDepth, int32_t mouseX, int32_t mouseY, uint32_t depth = 0);
 

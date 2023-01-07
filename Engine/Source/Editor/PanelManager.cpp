@@ -187,6 +187,7 @@ void PanelManager::OnSelectedAssetChanged()
 
 void PanelManager::OnSelectedWidgetChanged()
 {
+    mWidgetViewportPanel->OnSelectedWidgetChanged();
     mWidgetHierarchyPanel->OnSelectedWidgetChanged();
     mPropertiesPanel->OnSelectedWidgetChanged();
 }
