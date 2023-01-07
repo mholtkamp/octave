@@ -976,6 +976,24 @@ void Widget::SetScriptOwned(bool scriptOwned)
     mScriptOwned = scriptOwned;
 }
 
+bool Widget::HasParent(Widget* widget)
+{
+    bool hasParent = false;
+    if (mParent != nullptr)
+    {
+        if (mParent == widget)
+        {
+            hasParent = true;
+        }
+        else
+        {
+            hasParent = mParent->HasParent(widget);
+        }
+    }
+
+    return hasParent;
+}
+
 float Widget::PixelsToRatioX(float x) const
 {
     float parentWidth = GetParentWidth();
