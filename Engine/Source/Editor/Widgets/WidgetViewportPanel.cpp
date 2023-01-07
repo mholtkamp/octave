@@ -252,9 +252,20 @@ void WidgetViewportPanel::HandleDefaultControls()
 
         if (scrollDelta != 0)
         {
-            float deltaZoom = scrollDelta * 0.1f;
-            mZoom += deltaZoom;
+            float prevZoom = mZoom;
+            mZoom += (scrollDelta * 0.1f);
             mZoom = glm::clamp(mZoom, 0.05f, 10.0f);
+            float deltaZoom = mZoom - prevZoom;
+
+            int32_t mouseX = 0;
+            int32_t mouseY = 0;
+            GetMousePosition(mouseX, mouseY);
+            float fMouseX = float(mouseX) - mRect.mX;
+            float fMouseY = float(mouseY) - mRect.mY;
+            
+            float dx = fMouseX / mZoom - fMouseX / prevZoom;
+            float dy = fMouseY / mZoom - fMouseY / prevZoom;
+            mRootOffset += glm::vec2(dx, dy);
         }
     }
 }
