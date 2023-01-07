@@ -521,11 +521,23 @@ void SetEditRootWidget(Widget* widget)
 {
     if (widget != sEditorState.mEditRootWidget)
     {
-        // Destroy what was previously being edited. Hope you saved.
-        if (sEditorState.mEditRootWidget != nullptr)
+        // If we are switching to a child widget (reordering hierarchy)
+        // then we don't want to delete the current editroot, but we want
+        // to reparent it to the new edit root.
+        if (widget->HasParent(sEditorState.mEditRootWidget))
         {
-            delete sEditorState.mEditRootWidget;
+            widget->DetachFromParent();
+            widget->AddChild(sEditorState.mEditRootWidget);
             sEditorState.mEditRootWidget = nullptr;
+        }
+        else
+        {
+            // Destroy what was previously being edited. Hope you saved.
+            if (sEditorState.mEditRootWidget != nullptr)
+            {
+                delete sEditorState.mEditRootWidget;
+                sEditorState.mEditRootWidget = nullptr;
+            }
         }
 
         sEditorState.mEditRootWidget = widget;

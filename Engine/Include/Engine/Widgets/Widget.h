@@ -184,6 +184,8 @@ public:
     bool IsScriptOwned() const;
     void SetScriptOwned(bool scriptOwned);
 
+    bool HasParent(Widget* widget);
+
     template<typename T>
     T* CreateChildWidget()
     {
