@@ -42,29 +42,7 @@ void WidgetViewportPanel::Update()
 {
     Panel::Update();
 
-    // Sync the edit root widget.
-    Widget* editRoot = GetEditRootWidget();
-
-    if (editRoot != mEditRootWidget)
-    {
-        if (mEditRootWidget != nullptr)
-        {
-            RemoveChild(mEditRootWidget);
-        }
-
-        mEditRootWidget = editRoot;
-
-        if (mEditRootWidget != nullptr)
-        {
-            AddChild(mEditRootWidget, 0);
-        }
-    }
-
-    if (mEditRootWidget)
-    {
-        mEditRootWidget->SetPosition(mRootOffset);
-        mEditRootWidget->SetScale({ mZoom, mZoom });
-    }
+    SyncEditRootWidget();
 
     Widget* selWidget = GetSelectedWidget();
     if (selWidget)
@@ -180,6 +158,11 @@ void WidgetViewportPanel::SetWidetControlMode(WidgetControlMode newMode)
 
     // Always reset transform lock when switching control modes.
     mAxisLock = WidgetAxisLock::None;
+}
+
+void WidgetViewportPanel::OnSelectedWidgetChanged()
+{
+    SyncEditRootWidget();
 }
 
 void WidgetViewportPanel::HandleDefaultControls()
@@ -456,6 +439,33 @@ void WidgetViewportPanel::RestorePreTransforms()
         widget->SetOffset(mSavedOffset.x, mSavedOffset.y);
         widget->SetSize(mSavedSize.x, mSavedSize.y);
         widget->SetRotation(mSavedRotation);
+    }
+}
+
+void WidgetViewportPanel::SyncEditRootWidget()
+{
+    // Sync the edit root widget.
+    Widget* editRoot = GetEditRootWidget();
+
+    if (editRoot != mEditRootWidget)
+    {
+        if (mEditRootWidget != nullptr)
+        {
+            RemoveChild(mEditRootWidget);
+        }
+
+        mEditRootWidget = editRoot;
+
+        if (mEditRootWidget != nullptr)
+        {
+            AddChild(mEditRootWidget, 0);
+        }
+    }
+
+    if (mEditRootWidget)
+    {
+        mEditRootWidget->SetPosition(mRootOffset);
+        mEditRootWidget->SetScale({ mZoom, mZoom });
     }
 }
 

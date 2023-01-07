@@ -539,6 +539,7 @@ void SetActiveWidgetMap(WidgetMap* widgetMap)
         // if the map was just created and has no widgets. In this case,
         // The hierarchy panel will set it when the first widget is created.
         sEditorState.mEditRootWidget = widgetMap->Instantiate();
+        SetSelectedWidget(sEditorState.mEditRootWidget);
     }
 }
 
