@@ -32,6 +32,15 @@ WidgetViewportPanel::WidgetViewportPanel()
     mHoveredRect->SetColor({ 0.0f, 1.0f, 1.0f, 1.0f });
     AddChild(mHoveredRect);
 
+    mEditorLabel = new Text();
+    mEditorLabel->SetText("WIDGET");
+    mEditorLabel->SetColor({ 1.0f, 1.0f, 1.0f, 0.5f });
+    mEditorLabel->SetTextSize(72);
+    mEditorLabel->SetAnchorMode(AnchorMode::TopRight);
+    mEditorLabel->SetDimensions(300.0f, 80.0f);
+    mEditorLabel->SetPosition(-310.0f, 4.0f);
+    AddChild(mEditorLabel);
+
     mHeaderText->SetVisible(false);
     mHeaderQuad->SetVisible(false);
     mBodyQuad->SetVisible(false);
