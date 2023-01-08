@@ -118,6 +118,7 @@ Widget* GetSelectedWidget();
 void SetSelectedWidget(Widget* widget);
 Widget* GetEditRootWidget();
 void SetEditRootWidget(Widget* widget);
+void DestroyEditRootWidget();
 void SetActiveWidgetMap(WidgetMap* widgetMap);
 WidgetMap* GetActiveWidgetMap();
 

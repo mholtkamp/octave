@@ -2371,7 +2371,16 @@ void ActionSetAbsoluteScale::Reverse()
 ActionAddWidget::ActionAddWidget(Widget* widget)
 {
     mWidget = widget;
-    mParent = widget->GetParent();
+
+    if (GetEditRootWidget() == widget)
+    {
+        mParent = nullptr;
+    }
+    else
+    {
+        mParent = widget->GetParent();
+    }
+
     OCT_ASSERT(mWidget);
 }
 
@@ -2419,7 +2428,15 @@ void ActionAddWidget::Reverse()
 ActionRemoveWidget::ActionRemoveWidget(Widget* widget)
 {
     mWidget = widget;
-    mParent = widget->GetParent();
+
+    if (GetEditRootWidget() == widget)
+    {
+        mParent = nullptr;
+    }
+    else
+    {
+        mParent = widget->GetParent();
+    }
     OCT_ASSERT(mWidget);
 }
 
@@ -2427,16 +2444,20 @@ void ActionRemoveWidget::Execute()
 {
     WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
 
-    if (mParent != nullptr)
+    if (GetEditRootWidget() == mWidget)
     {
-        mParent->RemoveChild(mWidget);
+        OCT_ASSERT(mParent == nullptr);
+        SetEditRootWidget(nullptr);
+        mWasRoot = true;
     }
     else
     {
-        SetEditRootWidget(nullptr);
+        OCT_ASSERT(mParent != nullptr);
+        mParent->RemoveChild(mWidget);
     }
 
     ActionManager::Get()->ExileWidget(mWidget);
+    panel->RefreshButtons();
 }
 
 void ActionRemoveWidget::Reverse()
@@ -2445,14 +2466,14 @@ void ActionRemoveWidget::Reverse()
 
     ActionManager::Get()->RestoreExiledWidget(mWidget);
 
-    if (mParent != nullptr)
+    if (mWasRoot)
     {
-        mParent->AddChild(mWidget);
+        SetEditRootWidget(mWidget);
     }
     else
     {
-        // No parent? This must have been the root widget.
-        SetEditRootWidget(mWidget);
+        OCT_ASSERT(mParent != nullptr);
+        mParent->AddChild(mWidget);
     }
 
     panel->RefreshButtons();

@@ -282,6 +282,7 @@ public:
 protected:
     Widget* mWidget = nullptr;
     Widget* mParent = nullptr;
+    bool mWasRoot = false;
 };
 
 class ActionAttachWidget : public Action

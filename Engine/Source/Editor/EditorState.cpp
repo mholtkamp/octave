@@ -30,6 +30,7 @@ void SetEditorMode(EditorMode mode)
         PanelManager::Get()->OnEditorModeChanged();
 
         Renderer::Get()->EnableWorldRendering(mode != EditorMode::Widget);
+        ActionManager::Get()->ResetUndoRedo();
     }
 }
 
@@ -524,24 +525,27 @@ void SetEditRootWidget(Widget* widget)
         // If we are switching to a child widget (reordering hierarchy)
         // then we don't want to delete the current editroot, but we want
         // to reparent it to the new edit root.
-        if (widget->HasParent(sEditorState.mEditRootWidget))
+        if (widget != nullptr &&
+            widget->HasParent(sEditorState.mEditRootWidget))
         {
             widget->DetachFromParent();
             widget->AddChild(sEditorState.mEditRootWidget);
             sEditorState.mEditRootWidget = nullptr;
         }
-        else
-        {
-            // Destroy what was previously being edited. Hope you saved.
-            if (sEditorState.mEditRootWidget != nullptr)
-            {
-                delete sEditorState.mEditRootWidget;
-                sEditorState.mEditRootWidget = nullptr;
-            }
-        }
 
         sEditorState.mEditRootWidget = widget;
         SetSelectedWidget(widget);
+    }
+}
+
+void DestroyEditRootWidget()
+{
+    if (sEditorState.mEditRootWidget != nullptr)
+    {
+        delete sEditorState.mEditRootWidget;
+        sEditorState.mEditRootWidget = nullptr;
+
+        SetSelectedWidget(nullptr);
     }
 }
 
@@ -554,6 +558,8 @@ void SetActiveWidgetMap(WidgetMap* widgetMap)
         // Attempt to instantiate a widget from the map. This may return nullptr
         // if the map was just created and has no widgets. In this case,
         // The hierarchy panel will set it when the first widget is created.
+        DestroyEditRootWidget();
+        ActionManager::Get()->ResetUndoRedo();
         SetEditRootWidget(widgetMap->Instantiate());
     }
 }
