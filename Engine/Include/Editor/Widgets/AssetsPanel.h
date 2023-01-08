@@ -32,6 +32,7 @@ public:
     void CreateWidgetMap();
     void SaveLevel(AssetStub* levelStub);
     void SaveBlueprint(AssetStub* bpStub, Actor* srcActor);
+    void SaveWidgetMap(AssetStub* stub, Widget* srcWidget);
     void DuplicateAsset(AssetStub* srcStub);
     void LoadLevel(AssetStub* stub);
 

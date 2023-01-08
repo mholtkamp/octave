@@ -232,6 +232,20 @@ void AssetsPanel::ActionListHandler(Button* button)
             EditorInstantiateMappedWidget(widgetMap);
         }
     }
+    else if (buttonText == "Save Widget Map")
+    {
+        if (GetEditorMode() == EditorMode::Widget)
+        {
+            AssetStub* saveStub = nullptr;
+            if (sActionContextAssetStub != nullptr &&
+                sActionContextAssetStub->mType == WidgetMap::GetStaticType())
+            {
+                saveStub = sActionContextAssetStub;
+            }
+
+            assetsPanel->SaveWidgetMap(saveStub, GetEditRootWidget());
+        }
+    }
     else if (buttonText == "Spawn Actor")
     {
         if (sActionContextAssetStub)
@@ -588,11 +602,27 @@ void AssetsPanel::HandleInput()
                 actions.push_back("Import Asset");
                 actions.push_back("Create Asset");
                 actions.push_back("New Folder");
-                actions.push_back("Save Level");
 
-                if (GetSelectedActor() != nullptr)
+                EditorMode editorMode = GetEditorMode();
+
+                switch (editorMode)
                 {
-                    actions.push_back("Save Blueprint");
+                case EditorMode::Level:
+                    actions.push_back("Save Level");
+
+                    if (GetSelectedActor() != nullptr)
+                    {
+                        actions.push_back("Save Blueprint");
+                    }
+                    break;
+                case EditorMode::Widget:
+                    actions.push_back("Save Widget Map");
+                    break;
+
+                case EditorMode::Blueprint:
+
+                    break;
+                default: break;
                 }
             }
 
@@ -740,6 +770,25 @@ void AssetsPanel::SaveBlueprint(AssetStub* bpStub, Actor* srcActor)
     // Create will overwrite existing data
     bp->Create(srcActor);
     AssetManager::Get()->SaveAsset(*bpStub);
+}
+
+void AssetsPanel::SaveWidgetMap(AssetStub* stub, Widget* srcWidget)
+{
+    if (stub == nullptr)
+    {
+        stub = EditorAddUniqueAsset("W_Widget", mCurrentDir, WidgetMap::GetStaticType(), true);
+    }
+
+    if (stub->mAsset == nullptr)
+    {
+        AssetManager::Get()->LoadAsset(*stub);
+    }
+
+    WidgetMap* newMap = (WidgetMap*)stub->mAsset;
+    newMap->Create(srcWidget);
+    AssetManager::Get()->SaveAsset(*stub);
+
+    SetActiveWidgetMap(newMap);
 }
 
 void AssetsPanel::DuplicateAsset(AssetStub* srcStub)
