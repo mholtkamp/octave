@@ -114,7 +114,9 @@ Widget* WidgetMap::Instantiate()
             Widget* newWidget = nullptr;
             if (mWidgetDefs[i].mWidgetMap != nullptr)
             {
-                newWidget = mWidgetDefs[i].mWidgetMap.Get<WidgetMap>()->Instantiate();
+                WidgetMap* widgetMap = mWidgetDefs[i].mWidgetMap.Get<WidgetMap>();
+                newWidget = widgetMap->Instantiate();
+                newWidget->SetWidgetMap(widgetMap);
             }
             else
             {
