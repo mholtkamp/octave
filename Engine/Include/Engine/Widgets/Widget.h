@@ -196,6 +196,8 @@ public:
         return ret;
     }
 
+    static void ResetScissor();
+
 protected:
 
     static bool HandlePropChange(Datum* datum, const void* newValue);

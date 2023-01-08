@@ -84,6 +84,12 @@ bool Widget::HandlePropChange(Datum* datum, const void* newValue)
     return success;
 }
 
+void Widget::ResetScissor()
+{
+    glm::vec2 res = Renderer::Get()->GetActiveScreenResolution();
+    sCurrentScissor = { 0.0f, 0.0f, res.x, res.y };
+}
+
 Widget::Widget() :
     mParent(nullptr),
     mTransform(1.0f),
