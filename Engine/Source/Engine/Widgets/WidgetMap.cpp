@@ -116,7 +116,10 @@ Widget* WidgetMap::Instantiate()
             {
                 WidgetMap* widgetMap = mWidgetDefs[i].mWidgetMap.Get<WidgetMap>();
                 newWidget = widgetMap->Instantiate();
+
+#if EDITOR
                 newWidget->SetWidgetMap(widgetMap);
+#endif
             }
             else
             {
@@ -158,12 +161,14 @@ void WidgetMap::AddWidgetDef(Widget* widget, std::vector<Widget*>& widgetList)
 {
     OCT_ASSERT(widget != nullptr);
 
+#if EDITOR
     if (widget && 
         widget->GetWidgetMap() == this)
     {
         LogWarning("Recursive WidgetMap chain found.");
         return;
     }
+#endif
 
     if (widget != nullptr)
     {
