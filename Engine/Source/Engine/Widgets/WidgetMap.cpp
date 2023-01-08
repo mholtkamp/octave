@@ -157,6 +157,14 @@ Widget* WidgetMap::Instantiate()
 void WidgetMap::AddWidgetDef(Widget* widget, std::vector<Widget*>& widgetList)
 {
     OCT_ASSERT(widget != nullptr);
+
+    if (widget && 
+        widget->GetWidgetMap() == this)
+    {
+        LogWarning("Recursive WidgetMap chain found.");
+        return;
+    }
+
     if (widget != nullptr)
     {
         widgetList.push_back(widget);
