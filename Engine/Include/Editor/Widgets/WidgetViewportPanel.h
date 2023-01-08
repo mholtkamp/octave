@@ -61,6 +61,7 @@ protected:
     WidgetAxisLock mAxisLock = WidgetAxisLock::None;
 
     Widget* mEditRootWidget = nullptr;
+    Widget* mWrapperWidget = nullptr;
 
     PolyRect* mSelectedRect = nullptr;
     PolyRect* mHoveredRect = nullptr;
