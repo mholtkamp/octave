@@ -204,7 +204,7 @@ void WidgetHierarchyPanel::SetRootWidgetAction(Widget* newRoot)
 {
     WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
 
-    if (newRoot == nullptr)
+    if (newRoot == nullptr || newRoot->GetWidgetMap() != nullptr)
         return;
 
     Widget* oldRoot = GetEditRootWidget();
@@ -353,8 +353,13 @@ void WidgetHierarchyPanel::HandleInput()
             if (widget != nullptr)
             {
                 actions.push_back("Delete Widget");
-                actions.push_back("Attach Selected");
-                actions.push_back("Set Root Widget");
+
+                if (widget->GetWidgetMap() == nullptr)
+                {
+                    actions.push_back("Attach Selected");
+                    actions.push_back("Set Root Widget");
+                }
+
                 actions.push_back("Rename");
             }
             GetActionList()->SetActions(actions, ActionHandler);

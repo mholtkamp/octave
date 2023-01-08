@@ -105,22 +105,29 @@ void EditorInstantiateMappedWidget(WidgetMap* widgetMap)
             parentWidget = GetEditRootWidget();
         }
 
-        Widget* widget = widgetMap->Instantiate();
-        OCT_ASSERT(widget != nullptr);
-        widget->SetWidgetMap(widgetMap);
-
         if (parentWidget != nullptr)
         {
-            parentWidget->AddChild(widget);
+            Widget* widget = widgetMap->Instantiate();
+            OCT_ASSERT(widget != nullptr);
+            widget->SetWidgetMap(widgetMap);
+
+            if (parentWidget != nullptr)
+            {
+                parentWidget->AddChild(widget);
+            }
+            else
+            {
+                SetEditRootWidget(widget);
+            }
+
+            ActionManager::Get()->EXE_AddWidget(widget);
+
+            SetSelectedWidget(widget);
         }
         else
         {
-            SetEditRootWidget(widget);
+            LogError("Cannot instantiate mapped widget as root widget. Add a native widget first.");
         }
-
-        ActionManager::Get()->EXE_AddWidget(widget);
-
-        SetSelectedWidget(widget);
     }
 }
 
