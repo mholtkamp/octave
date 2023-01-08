@@ -2454,6 +2454,7 @@ void ActionRemoveWidget::Execute()
     {
         OCT_ASSERT(mParent != nullptr);
         mParent->RemoveChild(mWidget);
+        SetSelectedWidget(nullptr);
     }
 
     ActionManager::Get()->ExileWidget(mWidget);
