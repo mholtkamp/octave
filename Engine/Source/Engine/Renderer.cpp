@@ -1009,6 +1009,7 @@ void Renderer::Render(World* world)
         //  UI
         // ******************
         GFX_BeginRenderPass(RenderPassId::Ui);
+        Widget::ResetScissor();
 
         for (uint32_t i = 0; i < mWidgets0.size(); ++i)
         {
@@ -1031,6 +1032,8 @@ void Renderer::Render(World* world)
 
     GFX_SetViewport(0, 0, mEngineState->mSecondWindowWidth, mEngineState->mSecondWindowHeight);
     GFX_SetScissor(0, 0, mEngineState->mSecondWindowWidth, mEngineState->mSecondWindowHeight);
+
+    Widget::ResetScissor();
 
     for (uint32_t i = 0; i < mWidgets1.size(); ++i)
     {
