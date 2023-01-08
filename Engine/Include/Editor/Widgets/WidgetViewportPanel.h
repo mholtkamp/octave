@@ -66,6 +66,8 @@ protected:
     PolyRect* mSelectedRect = nullptr;
     PolyRect* mHoveredRect = nullptr;
 
+    Text* mEditorLabel = nullptr;
+
     int32_t mPrevMouseX = 0;
     int32_t mPrevMouseY = 0;
 
