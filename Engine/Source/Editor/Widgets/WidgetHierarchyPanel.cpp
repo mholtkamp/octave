@@ -190,27 +190,12 @@ void WidgetHierarchyPanel::DeleteWidget(Widget* widget)
     WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
     if (widget != nullptr)
     {
+        ActionManager::Get()->EXE_RemoveWidget(widget);
+
         Widget* rootWidget = GetEditRootWidget();
+        SetSelectedWidget(rootWidget);
 
-        bool isRoot = (widget == rootWidget);
-        bool hasChildren = (widget->GetNumChildren() > 0);
-
-        if (isRoot)
-        {
-            LogError("Cannot delete root widget");
-        }
-        else if (hasChildren)
-        {
-            // TODO: Fix this. No reason we can't delete all children.
-            LogError("Cannot delete component with children");
-        }
-        else
-        {
-            ActionManager::Get()->EXE_RemoveWidget(widget);
-            SetSelectedWidget(rootWidget);
-
-            panel->RefreshButtons();
-        }
+        panel->RefreshButtons();
     }
 }
 

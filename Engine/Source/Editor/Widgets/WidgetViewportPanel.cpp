@@ -18,6 +18,7 @@ WidgetViewportPanel::WidgetViewportPanel()
     SetMargins(sDefaultWidth, 0.0f, sDefaultWidth, 0.0f);
 
     mWrapperWidget = new Widget();
+    mWrapperWidget->SetName("Wrapper");
     mWrapperWidget->SetPosition(0, 0);
     AddChild(mWrapperWidget);
 

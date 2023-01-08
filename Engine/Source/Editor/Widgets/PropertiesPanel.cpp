@@ -207,6 +207,8 @@ void PropertiesPanel::OnSelectedWidgetChanged()
         {
             mWidgetCanvas = nullptr;
         }
+
+        UpdateDisplayedCanvas();
     }
 }
 
