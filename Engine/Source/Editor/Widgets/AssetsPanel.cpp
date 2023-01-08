@@ -207,7 +207,8 @@ void AssetsPanel::ActionListHandler(Button* button)
     }
     else if (buttonText == "Edit")
     {
-        if (sActionContextAssetStub->mType == WidgetMap::GetStaticType())
+        if (sActionContextAssetStub->mType == WidgetMap::GetStaticType() &&
+            !IsPlayingInEditor())
         {
             AssetStub* stub = sActionContextAssetStub;
             Asset* asset = AssetManager::Get()->LoadAsset(*stub);
