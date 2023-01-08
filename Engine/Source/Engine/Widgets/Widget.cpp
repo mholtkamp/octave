@@ -157,6 +157,41 @@ void Widget::GatherProperties(std::vector<Property>& outProps, bool editor)
     //outProps.push_back(Property(DatumType::Asset, "Widget Map", this, &mWidgetMap, 1, Widget::HandlePropChange, int32_t(WidgetMap::GetStaticType())))
 }
 
+Widget* Widget::Clone()
+{
+    Widget* newWidget = nullptr;
+    
+#if EDITOR
+    if (mWidgetMap != nullptr)
+    {
+        newWidget = mWidgetMap.Get<WidgetMap>()->Instantiate();
+        newWidget->mWidgetMap = mWidgetMap;
+    }
+    else
+    {
+        newWidget = Widget::CreateInstance(GetType());
+    }
+#else
+    newWidget = Widget::CreateInstance(GetType());
+#endif
+
+    std::vector<Property> srcProps;
+    GatherProperties(srcProps, false);
+
+    std::vector<Property> dstProps;
+    newWidget->GatherProperties(dstProps, false);
+
+    CopyPropertyValues(dstProps, srcProps);
+
+    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    {
+        Widget* newChild = mChildren[i]->Clone();
+        newWidget->AddChild(newChild);
+    }
+
+    return newWidget;
+}
+
 // Issue gpu commands to display the widget.
 // Recursively render children.
 void Widget::RecursiveRender()

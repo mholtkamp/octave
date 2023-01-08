@@ -2413,6 +2413,7 @@ void ActionAddWidget::Reverse()
     }
 
     ActionManager::Get()->ExileWidget(mWidget);
+    panel->RefreshButtons();
 }
 
 ActionRemoveWidget::ActionRemoveWidget(Widget* widget)

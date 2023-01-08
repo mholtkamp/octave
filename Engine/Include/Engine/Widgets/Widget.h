@@ -68,6 +68,8 @@ public:
 
     virtual void GatherProperties(std::vector<Property>& outProps, bool editor);
 
+    Widget* Clone();
+
     // Issue gpu commands to display the widget.
     // Recursively render children.
     void RecursiveRender();
