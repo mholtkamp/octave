@@ -1298,7 +1298,7 @@ void GFX_DrawText(Text* text)
     C3D_Mtx worldViewMtx;
     glm::vec2 translation = glm::vec2(rect.mX + justOff.x, rect.mY + justOff.y);
     int32_t fontSize = font ? font->GetSize() : 32;
-    float textScale = text->GetScaledSize() / fontSize;
+    float textScale = text->GetScaledTextSize() / fontSize;
 
     Mtx_Identity(&worldViewMtx);
     Mtx_Scale(&worldViewMtx, textScale, textScale, 1.0f);

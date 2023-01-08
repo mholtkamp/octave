@@ -1080,7 +1080,7 @@ void GFX_DrawText(Text* text)
     Mtx modelViewUI;
     glm::vec2 translation = glm::vec2(rect.mX + justOff.x, rect.mY + justOff.y);
     int32_t fontSize = font ? font->GetSize() : 32;
-    float textScale = text->GetScaledSize() / fontSize;
+    float textScale = text->GetScaledTextSize() / fontSize;
     guMtxScale(modelViewUI, textScale, textScale, 1.0);
     guMtxTransApply(modelViewUI, modelViewUI, translation.x, translation.y, 0.0f);
     GX_LoadPosMtxImm(modelViewUI, GX_PNMTX0);
