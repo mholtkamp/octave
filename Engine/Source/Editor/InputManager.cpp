@@ -178,7 +178,6 @@ void InputManager::UpdateHotkeys()
                 {
                     widgetMap->Create(GetEditRootWidget());
                     AssetManager::Get()->SaveAsset(widgetMap->GetName());
-                    LogDebug("WidgetMap Saved: %s", widgetMap->GetName().c_str());
                 }
             }
         }
