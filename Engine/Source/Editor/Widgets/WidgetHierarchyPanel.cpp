@@ -6,6 +6,7 @@
 #include "ActionManager.h"
 #include "PanelManager.h"
 #include "EditorState.h"
+#include "EditorUtils.h"
 #include "InputDevices.h"
 #include "Widgets/ActionList.h"
 #include "Renderer.h"
@@ -52,32 +53,9 @@ void OnCreateMappedWidgetButtonPressed(Button* button)
 {
     const std::string& mapName = button->GetTextString();
 
-    Widget* parentWidget = GetSelectedWidget();
-    WidgetHierarchyPanel* hierPanel = PanelManager::Get()->GetWidgetHierarchyPanel();
-
-    if (parentWidget == nullptr)
-    {
-        parentWidget = GetEditRootWidget();
-    }
-
     WidgetMap* widgetMap = LoadAsset<WidgetMap>(mapName);
-    Widget* widget = widgetMap->Instantiate();
-    OCT_ASSERT(widget != nullptr);
-    widget->SetWidgetMap(widgetMap);
 
-    if (parentWidget != nullptr)
-    {
-        parentWidget->AddChild(widget);
-    }
-    else
-    {
-        SetEditRootWidget(widget);
-    }
-
-    ActionManager::Get()->EXE_AddWidget(widget);
-
-    SetSelectedWidget(widget);
-    hierPanel->RefreshButtons();
+    EditorInstantiateMappedWidget(widgetMap);
 
     Renderer::Get()->SetModalWidget(nullptr);
 }

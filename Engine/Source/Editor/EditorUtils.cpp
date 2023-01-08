@@ -7,7 +7,10 @@
 #include "Components/CameraComponent.h"
 #include "PanelManager.h"
 #include "Widgets/ViewportPanel.h"
+#include "Widgets/WidgetHierarchyPanel.h"
 #include "AssetManager.h"
+#include "Assets/WidgetMap.h"
+#include "ActionManager.h"
 
 #include "Input/Input.h"
 #include "InputDevices.h"
@@ -89,6 +92,36 @@ std::string EditorGetAssetNameFromPath(const std::string& path)
     std::string assetName = filename.substr(0, dotIndex);
 
     return assetName;
+}
+
+void EditorInstantiateMappedWidget(WidgetMap* widgetMap)
+{
+    if (widgetMap != nullptr &&
+        GetEditorMode() == EditorMode::Widget)
+    {
+        Widget* parentWidget = GetSelectedWidget();
+        if (parentWidget == nullptr)
+        {
+            parentWidget = GetEditRootWidget();
+        }
+
+        Widget* widget = widgetMap->Instantiate();
+        OCT_ASSERT(widget != nullptr);
+        widget->SetWidgetMap(widgetMap);
+
+        if (parentWidget != nullptr)
+        {
+            parentWidget->AddChild(widget);
+        }
+        else
+        {
+            SetEditRootWidget(widget);
+        }
+
+        ActionManager::Get()->EXE_AddWidget(widget);
+
+        SetSelectedWidget(widget);
+    }
 }
 
 #endif

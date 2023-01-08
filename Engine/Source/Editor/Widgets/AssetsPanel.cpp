@@ -219,6 +219,19 @@ void AssetsPanel::ActionListHandler(Button* button)
             SetEditorMode(EditorMode::Widget);
         }
     }
+    else if (buttonText == "Instantiate")
+    {
+        if (sActionContextAssetStub &&
+            GetEditorMode() == EditorMode::Widget)
+        {
+            AssetStub* stub = sActionContextAssetStub;
+            Asset* asset = AssetManager::Get()->LoadAsset(*stub);
+            WidgetMap* widgetMap = asset->As<WidgetMap>();
+            OCT_ASSERT(widgetMap);
+
+            EditorInstantiateMappedWidget(widgetMap);
+        }
+    }
     else if (buttonText == "Spawn Actor")
     {
         if (sActionContextAssetStub)
@@ -538,6 +551,11 @@ void AssetsPanel::HandleInput()
                     sActionContextAssetStub->mType == WidgetMap::GetStaticType())
                 {
                     actions.push_back("Edit");
+
+                    if (GetEditorMode() == EditorMode::Widget)
+                    {
+                        actions.push_back("Instantiate");
+                    }
                 }
 
                 if (!engineFile)
