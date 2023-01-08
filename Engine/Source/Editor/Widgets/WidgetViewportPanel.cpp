@@ -267,6 +267,14 @@ void WidgetViewportPanel::HandleDefaultControls()
             }
         }
 
+        if (IsKeyJustDown(KEY_DELETE))
+        {
+            if (GetSelectedWidget())
+            {
+                ActionManager::Get()->EXE_RemoveWidget(GetSelectedWidget());
+            }
+        }
+
         if (scrollDelta != 0)
         {
             float prevZoom = mZoom;
