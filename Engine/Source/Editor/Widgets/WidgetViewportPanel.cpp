@@ -23,16 +23,19 @@ WidgetViewportPanel::WidgetViewportPanel()
     AddChild(mWrapperWidget);
 
     mSelectedRect = new PolyRect();
+    mSelectedRect->SetName("Select Rect");
     mSelectedRect->SetVisible(false);
     mSelectedRect->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f });
     AddChild(mSelectedRect);
 
     mHoveredRect = new PolyRect();
+    mHoveredRect->SetName("Hover Rect");
     mHoveredRect->SetVisible(false);
     mHoveredRect->SetColor({ 0.0f, 1.0f, 1.0f, 1.0f });
     AddChild(mHoveredRect);
 
     mEditorLabel = new Text();
+    mEditorLabel->SetName("Label");
     mEditorLabel->SetText("WIDGET");
     mEditorLabel->SetColor({ 1.0f, 1.0f, 1.0f, 0.5f });
     mEditorLabel->SetTextSize(72);

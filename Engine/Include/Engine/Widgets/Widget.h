@@ -199,6 +199,7 @@ public:
 protected:
 
     static bool HandlePropChange(Datum* datum, const void* newValue);
+    static Rect sCurrentScissor;
 
     float PixelsToRatioX(float x) const;
     float PixelsToRatioY(float y) const;
