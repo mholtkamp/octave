@@ -35,7 +35,7 @@ public:
     virtual void Update() override;
     virtual void HandleInput() override;
 
-    void SetWidetControlMode(WidgetControlMode newMode);
+    void SetWidgetControlMode(WidgetControlMode newMode);
 
     void OnSelectedWidgetChanged();
 

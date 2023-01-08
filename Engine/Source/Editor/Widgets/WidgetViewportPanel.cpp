@@ -130,7 +130,7 @@ void WidgetViewportPanel::HandleInput()
     INP_GetMousePosition(mPrevMouseX, mPrevMouseY);
 }
 
-void WidgetViewportPanel::SetWidetControlMode(WidgetControlMode newMode)
+void WidgetViewportPanel::SetWidgetControlMode(WidgetControlMode newMode)
 {
     if (mControlMode == newMode)
     {
@@ -186,7 +186,7 @@ void WidgetViewportPanel::HandleDefaultControls()
         if (IsMouseButtonJustDown(MOUSE_RIGHT) ||
             IsMouseButtonJustDown(MOUSE_MIDDLE))
         {
-            SetWidetControlMode(WidgetControlMode::Pan);
+            SetWidgetControlMode(WidgetControlMode::Pan);
         }
 
         if (IsMouseButtonJustDown(MOUSE_LEFT))
@@ -217,19 +217,19 @@ void WidgetViewportPanel::HandleDefaultControls()
         {
             if (!controlDown && !altDown && IsKeyJustDown(KEY_G))
             {
-                SetWidetControlMode(WidgetControlMode::Translate);
+                SetWidgetControlMode(WidgetControlMode::Translate);
                 SavePreTransforms();
             }
 
             if (!controlDown && !altDown && IsKeyJustDown(KEY_R))
             {
-                SetWidetControlMode(WidgetControlMode::Rotate);
+                SetWidgetControlMode(WidgetControlMode::Rotate);
                 SavePreTransforms();
             }
 
             if (!controlDown && !altDown && IsKeyJustDown(KEY_S))
             {
-                SetWidetControlMode(WidgetControlMode::Scale);
+                SetWidgetControlMode(WidgetControlMode::Scale);
                 SavePreTransforms();
             }
         }
@@ -240,6 +240,30 @@ void WidgetViewportPanel::HandleDefaultControls()
             LogDebug("Reset viewport");
             mZoom = 1.0f;
             mRootOffset = { 0.0f, 0.0f };
+        }
+
+        if (controlDown && IsKeyJustDown(KEY_D))
+        {
+            // Duplicate selected widget
+            Widget* selWidget = GetSelectedWidget();
+            if (selWidget)
+            {
+                Widget* newWidget = selWidget->Clone();
+                if (selWidget->GetParent() != mWrapperWidget)
+                {
+                    selWidget->GetParent()->AddChild(newWidget);
+                }
+                else
+                {
+                    mEditRootWidget->AddChild(newWidget);
+                }
+
+                SetSelectedWidget(newWidget);
+
+                ActionManager::Get()->EXE_AddWidget(newWidget);
+                SetWidgetControlMode(WidgetControlMode::Translate);
+                SavePreTransforms();
+            }
         }
 
         if (scrollDelta != 0)
@@ -348,13 +372,13 @@ void WidgetViewportPanel::HandleTransformControls()
             ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "Size", 0, size);
         }
 
-        SetWidetControlMode(WidgetControlMode::Default);
+        SetWidgetControlMode(WidgetControlMode::Default);
     }
 
     if (IsMouseButtonDown(MOUSE_RIGHT))
     {
         RestorePreTransforms();
-        SetWidetControlMode(WidgetControlMode::Default);
+        SetWidgetControlMode(WidgetControlMode::Default);
     }
 }
 
@@ -367,7 +391,7 @@ void WidgetViewportPanel::HandlePanControls()
     if (!IsMouseButtonDown(MOUSE_RIGHT) &&
         !IsMouseButtonDown(MOUSE_MIDDLE))
     {
-        SetWidetControlMode(WidgetControlMode::Default);
+        SetWidgetControlMode(WidgetControlMode::Default);
     }
 }
 

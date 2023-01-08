@@ -30,7 +30,7 @@ protected:
     static void SetRootWidgetAction(Widget* newRoot);
     static void HandleRenameWidget(TextField* tf);
 
-    static const int32_t sNumButtons = 10;
+    static const int32_t sNumButtons = 15;
     HierarchyButton* mButtons[sNumButtons];
 
     uint32_t mCachedNumWidgets = 0;
