@@ -65,6 +65,7 @@ void EditorMain(int32_t argc, char** argv)
     GetWorld()->SpawnActor<TestActor>();
 
     Canvas* rootCanvas = new Canvas();
+    rootCanvas->SetName("Root Canvas");
     rootCanvas->SetAnchorMode(AnchorMode::FullStretch);
     rootCanvas->SetRatios(0.0f, 0.0f, 1.0f, 1.0f);
     PanelManager::Get()->AttachPanels(rootCanvas);

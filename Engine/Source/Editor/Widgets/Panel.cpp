@@ -36,9 +36,11 @@ Panel::Panel() :
 
     AddChild(mHeaderCanvas);
     AddChild(mBodyCanvas);
+    mBodyCanvas->SetName("Body");
     mBodyCanvas->SetAnchorMode(AnchorMode::FullStretch);
     mBodyCanvas->SetMargins(0.0f, sDefaultHeaderHeight, 0.0f, 0.0f);
 
+    mHeaderCanvas->SetName("Header");
     mHeaderCanvas->AddChild(mHeaderQuad);
     mHeaderCanvas->AddChild(mHeaderText);
     mBodyCanvas->AddChild(mBodyQuad);

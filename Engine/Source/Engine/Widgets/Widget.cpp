@@ -38,6 +38,7 @@ static const char* sAnchorModeStrings[] =
 };
 static_assert(int32_t(AnchorMode::Count) == 16, "Need to update string conversion table");
 
+Rect Widget::sCurrentScissor = { 0.0f, 0.0f, LARGE_BOUNDS, LARGE_BOUNDS };
 
 bool Widget::HandlePropChange(Datum* datum, const void* newValue)
 {
@@ -1055,8 +1056,7 @@ void Widget::PushScissor()
 {
     mCachedScissorRect = mRect;
 
-    glm::vec2 res = Renderer::Get()->GetActiveScreenResolution();
-    mCachedParentScissorRect = (mParent != nullptr) ? mParent->mCachedScissorRect : Rect(0, 0, res.x, res.y);
+    mCachedParentScissorRect = sCurrentScissor;
 
     mCachedScissorRect.Clamp(mCachedParentScissorRect);
     SetScissor(mCachedScissorRect);
@@ -1069,6 +1069,7 @@ void Widget::PopScissor()
 
 void Widget::SetScissor(Rect& area)
 {
+    sCurrentScissor = area;
     GFX_SetScissor(int32_t(area.mX + 0.5f),
                    int32_t(area.mY + 0.5f),
                    int32_t(area.mWidth + 0.5f),
