@@ -17,6 +17,10 @@ WidgetViewportPanel::WidgetViewportPanel()
     SetAnchorMode(AnchorMode::FullStretch);
     SetMargins(sDefaultWidth, 0.0f, sDefaultWidth, 0.0f);
 
+    mWrapperWidget = new Widget();
+    mWrapperWidget->SetPosition(0, 0);
+    AddChild(mWrapperWidget);
+
     mSelectedRect = new PolyRect();
     mSelectedRect->SetVisible(false);
     mSelectedRect->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f });
@@ -43,6 +47,10 @@ void WidgetViewportPanel::Update()
     Panel::Update();
 
     SyncEditRootWidget();
+
+    mWrapperWidget->SetPosition(mRootOffset);
+    mWrapperWidget->SetScale({ mZoom, mZoom });
+    mWrapperWidget->SetDimensions(GetWidth(), GetHeight());
 
     Widget* selWidget = GetSelectedWidget();
     if (selWidget)
@@ -451,21 +459,15 @@ void WidgetViewportPanel::SyncEditRootWidget()
     {
         if (mEditRootWidget != nullptr)
         {
-            RemoveChild(mEditRootWidget);
+            mWrapperWidget->RemoveChild(mEditRootWidget);
         }
 
         mEditRootWidget = editRoot;
 
         if (mEditRootWidget != nullptr)
         {
-            AddChild(mEditRootWidget, 0);
+            mWrapperWidget->AddChild(mEditRootWidget, 0);
         }
-    }
-
-    if (mEditRootWidget)
-    {
-        mEditRootWidget->SetPosition(mRootOffset);
-        mEditRootWidget->SetScale({ mZoom, mZoom });
     }
 }
 
