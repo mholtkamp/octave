@@ -181,16 +181,30 @@ void WidgetMap::AddWidgetDef(Widget* widget, std::vector<Widget*>& widgetList)
 #endif
         widgetDef.mWidgetMap = widgetMap;
 
-        // TODO: ONLY SAVE NON-DEFAULT properties
         std::vector<Property> extProps;
         widget->GatherProperties(extProps, false);
 
-        widgetDef.mProperties.reserve(extProps.size());
-
-        for (uint32_t i = 0; i < extProps.size(); ++i)
         {
-            widgetDef.mProperties.push_back(Property());
-            widgetDef.mProperties.back().DeepCopy(extProps[i], true);
+            Widget* defaultWidget = Widget::CreateInstance(widget->GetType());
+            std::vector<Property> defaultProps;
+            defaultWidget->GatherProperties(defaultProps, false);
+
+            widgetDef.mProperties.reserve(extProps.size());
+            for (uint32_t i = 0; i < extProps.size(); ++i)
+            {
+                Property* defaultProp = FindProperty(defaultProps, extProps[i].mName);
+
+                if (defaultProp == nullptr ||
+                    extProps[i].mType == DatumType::Asset ||
+                    extProps[i] != *defaultProp)
+                {
+                    widgetDef.mProperties.push_back(Property());
+                    widgetDef.mProperties.back().DeepCopy(extProps[i], true);
+                }
+            }
+
+            delete defaultWidget;
+            defaultWidget = nullptr;
         }
 
         // Recursively add children. Do not add children of widgets spawned via maps.

@@ -24,6 +24,12 @@ constexpr int32_t kEditorSaveVersion = 1;
 
 void SetEditorMode(EditorMode mode)
 {
+    // Only allow level editing in PIE for now.
+    if (IsPlayingInEditor())
+    {
+        mode = EditorMode::Level;
+    }
+
     if (sEditorState.mMode != mode)
     {
         sEditorState.mMode = mode;
@@ -256,6 +262,7 @@ void BeginPlayInEditor()
 
     SetSelectedComponent(nullptr);
     SetSelectedAssetStub(nullptr);
+    SetEditorMode(EditorMode::Level);
 
     ActionManager::Get()->ResetUndoRedo();
 
