@@ -1,6 +1,7 @@
 #if EDITOR
 
 #include "EditorState.h"
+#include "EditorConstants.h"
 #include "PanelManager.h"
 #include "ActionManager.h"
 #include "Actor.h"
@@ -9,9 +10,11 @@
 #include "Components/Component.h"
 #include "Components/TransformComponent.h"
 #include "Engine.h"
+#include "Grid.h"
 #include "World.h"
 #include "TimerManager.h"
 #include "Assets/Level.h"
+#include "Assets/Blueprint.h"
 #include "Assets/WidgetMap.h"
 #include "EditorUtils.h"
 #include "Widgets/ActionList.h"
@@ -32,9 +35,35 @@ void SetEditorMode(EditorMode mode)
 
     if (sEditorState.mMode != mode)
     {
+        EditorMode prevMode = sEditorState.mMode;
         sEditorState.mMode = mode;
-        PanelManager::Get()->OnEditorModeChanged();
 
+        SetSelectedActor(nullptr);
+
+        if (prevMode == EditorMode::Blueprint)
+        {
+            sEditorState.mEditBlueprintActor = nullptr;
+        }
+
+        if (mode == EditorMode::Level)
+        {
+            if (prevMode == EditorMode::Blueprint)
+            {
+                RestoreLevel();
+            }
+        }
+        if (mode == EditorMode::Blueprint)
+        {
+            if (prevMode == EditorMode::Level)
+            {
+                CacheLevel();
+            }
+
+            SetupBlueprintEditor();
+        }
+
+        PanelManager::Get()->OnEditorModeChanged();
+        EnableGrid(mode == EditorMode::Blueprint);
         Renderer::Get()->EnableWorldRendering(mode != EditorMode::Widget);
         ActionManager::Get()->ResetUndoRedo();
     }
@@ -266,13 +295,7 @@ void BeginPlayInEditor()
 
     ActionManager::Get()->ResetUndoRedo();
 
-    OCT_ASSERT(sEditorState.mCachedPieLevel == nullptr);
-    Level* cachedLevel = new Level();
-    cachedLevel->Create();
-    cachedLevel->CaptureWorld(GetWorld());
-    cachedLevel->SetName("PIE Cached Level");
-    AssetManager::Get()->RegisterTransientAsset(cachedLevel);
-    sEditorState.mCachedPieLevel = cachedLevel;
+    CacheLevel();
 
     GetWorld()->DestroyAllActors();
 
@@ -285,10 +308,7 @@ void BeginPlayInEditor()
     //OctPreInitialize();
     OctPostInitialize();
 
-    if (sEditorState.mCachedPieLevel != nullptr)
-    {
-        sEditorState.mCachedPieLevel.Get<Level>()->LoadIntoWorld(GetWorld());
-    }
+    RestoreLevel();
 }
 
 void EndPlayInEditor()
@@ -324,11 +344,7 @@ void EndPlayInEditor()
     sEditorState.mPaused = false;
 
     // Restore cached editor level
-    if (sEditorState.mCachedPieLevel.Get() != nullptr)
-    {
-        sEditorState.mCachedPieLevel.Get<Level>()->LoadIntoWorld(GetWorld());
-        sEditorState.mCachedPieLevel = nullptr;
-    }
+    RestoreLevel();
 
     if (GetWorld()->GetActiveCamera())
     {
@@ -574,6 +590,74 @@ void SetActiveWidgetMap(WidgetMap* widgetMap)
 WidgetMap* GetActiveWidgetMap()
 {
     return sEditorState.mActiveWidgetMap.Get<WidgetMap>();
+}
+
+void SetActiveBlueprint(Blueprint* bp)
+{
+    if (sEditorState.mActiveBlueprint != bp)
+    {
+        sEditorState.mActiveBlueprint = bp;
+
+        if (GetEditorMode() == EditorMode::Blueprint)
+        {
+            SetupBlueprintEditor();
+        }
+    }
+}
+
+Blueprint* GetActiveBlueprint()
+{
+    return sEditorState.mActiveBlueprint.Get<Blueprint>();
+}
+
+void SetupBlueprintEditor()
+{
+    sEditorState.mEditBlueprintActor = nullptr;
+
+    GetWorld()->Clear(true);
+    Actor* dirLightActor = ActionManager::Get()->SpawnBasicActor(BASIC_DIRECTIONAL_LIGHT, { 0.0f, 0.0f, 0.0f });
+    DirectionalLightComponent * dirLight = dirLightActor->GetComponentByType(DirectionalLightComponent::GetStaticType())->As<DirectionalLightComponent>();
+    dirLight->SetDirection(Maths::SafeNormalize(glm::vec3(1.0f, -1.0f, -1.0f)));
+
+    Blueprint* activeBp = GetActiveBlueprint();
+    if (activeBp)
+    {
+        sEditorState.mEditBlueprintActor = activeBp->Instantiate(GetWorld());
+    }
+    else
+    {
+        sEditorState.mEditBlueprintActor = GetWorld()->SpawnActor<Actor>();
+    }
+
+    SetSelectedActor(sEditorState.mEditBlueprintActor);
+}
+
+Actor* GetEditBlueprintActor()
+{
+    return sEditorState.mEditBlueprintActor;
+}
+
+void CacheLevel()
+{
+    if (sEditorState.mCachedLevel == nullptr)
+    {
+        Level* cachedLevel = new Level();
+        cachedLevel->Create();
+        cachedLevel->SetName("Cached Level");
+        AssetManager::Get()->RegisterTransientAsset(cachedLevel);
+        sEditorState.mCachedLevel = cachedLevel;
+    }
+
+    sEditorState.mCachedLevel.Get<Level>()->CaptureWorld(GetWorld());
+}
+
+void RestoreLevel()
+{
+    if (sEditorState.mCachedLevel != nullptr)
+    {
+        GetWorld()->Clear(true);
+        sEditorState.mCachedLevel.Get<Level>()->LoadIntoWorld(GetWorld());
+    }
 }
 
 Asset* GetSelectedAsset()

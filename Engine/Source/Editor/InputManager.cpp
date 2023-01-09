@@ -9,6 +9,7 @@
 #include "EditorState.h"
 #include "Renderer.h"
 #include "Assets/WidgetMap.h"
+#include "Assets/Blueprint.h"
 #include "AssetManager.h"
 
 #include "Input/Input.h"
@@ -139,8 +140,9 @@ void InputManager::UpdateHotkeys()
     else if (Renderer::Get()->GetModalWidget() == nullptr)
     {
         const bool textFieldActive = (TextField::GetSelectedTextField() != nullptr);
+        const bool isLevel = (GetEditorMode() == EditorMode::Level);
 
-        if (ctrlDown && IsKeyJustDown(KEY_P))
+        if (ctrlDown && IsKeyJustDown(KEY_P) && isLevel)
         {
             if (shiftDown)
             {
@@ -156,7 +158,7 @@ void InputManager::UpdateHotkeys()
             ClearShiftDown();
             INP_ClearKey(KEY_P);
         }
-        else if (altDown && IsKeyJustDown(KEY_P))
+        else if (altDown && IsKeyJustDown(KEY_P) && isLevel)
         {
             BeginPlayInEditor();
         }
@@ -180,12 +182,21 @@ void InputManager::UpdateHotkeys()
                     AssetManager::Get()->SaveAsset(widgetMap->GetName());
                 }
             }
+            else if (GetEditorMode() == EditorMode::Blueprint)
+            {
+                Blueprint* activeBp = GetActiveBlueprint();
+                if (activeBp)
+                {
+                    activeBp->Create(GetEditBlueprintActor());
+                    AssetManager::Get()->SaveAsset(activeBp->GetName());
+                }
+            }
         }
         else if (shiftDown && IsKeyJustDown(KEY_S) && !textFieldActive)
         {
             ActionManager::Get()->SaveSelectedAsset();
         }
-        else if (ctrlDown && IsKeyJustDown(KEY_O))
+        else if (ctrlDown && IsKeyJustDown(KEY_O) && isLevel)
         {
             ActionManager::Get()->OpenLevel();
             ClearControlDown();
@@ -197,14 +208,10 @@ void InputManager::UpdateHotkeys()
             ClearControlDown();
             INP_ClearKey(KEY_I);
         }
-        else if (ctrlDown && IsKeyJustDown(KEY_B))
+        else if (ctrlDown && IsKeyJustDown(KEY_B) && isLevel)
         {
             Renderer::Get()->SetModalWidget(mBuildPlatformList);
             mBuildPlatformList->MoveToMousePosition();
-        }
-        else if (ctrlDown && IsKeyJustDown(KEY_K))
-        {
-            ActionManager::Get()->RecaptureAndSaveAllLevels();
         }
         else if (shiftDown && ctrlDown && IsKeyJustDown(KEY_Z))
         {

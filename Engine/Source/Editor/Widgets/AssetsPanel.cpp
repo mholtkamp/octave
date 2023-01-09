@@ -139,9 +139,17 @@ void AssetsPanel::ActionListHandler(Button* button)
     }
     else if (buttonText == "Save Blueprint")
     {
-        Actor* selectedActor = GetSelectedActor();
+        Actor* bpActor = nullptr;
+        if (GetEditorMode() == EditorMode::Blueprint)
+        {
+            bpActor = GetEditBlueprintActor();
+        }
+        else
+        {
+            bpActor = GetSelectedActor();
+        }
 
-        if (selectedActor != nullptr)
+        if (bpActor != nullptr)
         {
             AssetStub* saveStub = nullptr;
             if (sActionContextAssetStub != nullptr &&
@@ -150,7 +158,7 @@ void AssetsPanel::ActionListHandler(Button* button)
                 saveStub = sActionContextAssetStub;
             }
 
-            assetsPanel->SaveBlueprint(saveStub, selectedActor);
+            assetsPanel->SaveBlueprint(saveStub, bpActor);
         }
     }
     else if (buttonText == "Duplicate")
@@ -207,18 +215,31 @@ void AssetsPanel::ActionListHandler(Button* button)
     }
     else if (buttonText == "Edit")
     {
-        if (sActionContextAssetStub->mType == WidgetMap::GetStaticType() &&
-            !IsPlayingInEditor())
+        if (!IsPlayingInEditor() && sActionContextAssetStub)
         {
             AssetStub* stub = sActionContextAssetStub;
             Asset* asset = AssetManager::Get()->LoadAsset(*stub);
-            WidgetMap* widgetMap = asset->As<WidgetMap>();
 
-            OCT_ASSERT(widgetMap);
-            SetActiveWidgetMap(widgetMap);
+            if (stub->mType == WidgetMap::GetStaticType())
+            {
+                WidgetMap* widgetMap = asset->As<WidgetMap>();
 
-            SetEditorMode(EditorMode::Widget);
+                OCT_ASSERT(widgetMap);
+                SetActiveWidgetMap(widgetMap);
+
+                SetEditorMode(EditorMode::Widget);
+            }
+            else if (stub->mType == Blueprint::GetStaticType())
+            {
+                Blueprint* bp = asset->As<Blueprint>();
+
+                OCT_ASSERT(bp);
+                SetActiveBlueprint(bp);
+
+                SetEditorMode(EditorMode::Blueprint);
+            }
         }
+
     }
     else if (buttonText == "Instantiate")
     {
@@ -563,11 +584,13 @@ void AssetsPanel::HandleInput()
                 }
 
                 if (sActionContextAssetStub &&
-                    sActionContextAssetStub->mType == WidgetMap::GetStaticType())
+                    sActionContextAssetStub->mType == WidgetMap::GetStaticType() ||
+                    sActionContextAssetStub->mType == Blueprint::GetStaticType())
                 {
                     actions.push_back("Edit");
 
-                    if (GetEditorMode() == EditorMode::Widget)
+                    if (GetEditorMode() == EditorMode::Widget && 
+                        sActionContextAssetStub->mType == WidgetMap::GetStaticType())
                     {
                         actions.push_back("Instantiate");
                     }
@@ -621,7 +644,7 @@ void AssetsPanel::HandleInput()
                     break;
 
                 case EditorMode::Blueprint:
-
+                    actions.push_back("Save Blueprint");
                     break;
                 default: break;
                 }

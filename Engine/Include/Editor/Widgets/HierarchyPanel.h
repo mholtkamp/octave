@@ -19,6 +19,9 @@ public:
 
     virtual void HandleInput() override;
     virtual void Update() override;
+
+    void OnEditorModeChanged();
+
     static const float sHierarchyPanelHeight;
 
 protected:

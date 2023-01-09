@@ -52,15 +52,22 @@ void ViewportPanel::HandleFilePressed(Button* button)
     if (buttonText == "File")
     {
         std::vector<std::string> actions;
-        actions.push_back("Open Project");
-        actions.push_back("New Project");
-        actions.push_back("Save Level");
-        actions.push_back("Package Project");
-        actions.push_back("Recapture Levels");
-        actions.push_back("Recapture Blueprints");
-        actions.push_back("Resave All Assets");
-        actions.push_back("Reload All Scripts");
-        actions.push_back("Import Scene");
+        if (GetEditorMode() == EditorMode::Blueprint)
+        {
+            actions.push_back("Reload All Scripts");
+        }
+        else
+        {
+            actions.push_back("Open Project");
+            actions.push_back("New Project");
+            actions.push_back("Save Level");
+            actions.push_back("Package Project");
+            actions.push_back("Recapture Levels");
+            actions.push_back("Recapture Blueprints");
+            actions.push_back("Resave All Assets");
+            actions.push_back("Reload All Scripts");
+            actions.push_back("Import Scene");
+        }
         actionList->SetActions(actions, HandleFilePressed);
         hideActionList = false;
     }
@@ -189,12 +196,18 @@ void ViewportPanel::HandleWorldPressed(Button* button)
     if (buttonText == "World")
     {
         std::vector<std::string> actions;
-        actions.push_back("Spawn Actor");
-        actions.push_back("Spawn Basic");
+
+        if (GetEditorMode() == EditorMode::Level)
+        {
+            actions.push_back("Spawn Actor");
+            actions.push_back("Spawn Basic");
+            actions.push_back("Delete All Actors");
+        }
+
         actions.push_back("Undo");
         actions.push_back("Redo");
         actions.push_back("Toggle Transform Mode");
-        actions.push_back("Delete All Actors");
+
         actionList->SetActions(actions, HandleWorldPressed);
         hideActionList = false;
     }
@@ -353,6 +366,16 @@ ViewportPanel::ViewportPanel() :
     mPieWarningText->SetPosition(-310.0f, 4.0f);
     AddChild(mPieWarningText);
 
+    mBlueprintLabel = new Text();
+    mBlueprintLabel->SetName("Label");
+    mBlueprintLabel->SetText("BLUEPRINT");
+    mBlueprintLabel->SetColor({ 1.0f, 1.0f, 1.0f, 0.5f });
+    mBlueprintLabel->SetTextSize(72);
+    mBlueprintLabel->SetAnchorMode(AnchorMode::TopRight);
+    mBlueprintLabel->SetDimensions(300.0f, 80.0f);
+    mBlueprintLabel->SetPosition(-380.0f, 4.0f);
+    AddChild(mBlueprintLabel);
+
 #if CONSOLE_ENABLED
     // Move the console into  viewport region
     Renderer::Get()->GetConsoleWidget()->SetRect(sDefaultWidth + 5.0f, 30, 1280 - sDefaultWidth, 720);
@@ -391,7 +414,11 @@ void ViewportPanel::Update()
 
     bool isPie = GetEditorState()->mPlayInEditor;
     bool isPaused = GetEditorState()->mPaused;
+    bool isBp = (GetEditorMode() == EditorMode::Blueprint);
+    bool isLevel = (GetEditorMode() == EditorMode::Level);
 
+    mBlueprintLabel->SetVisible(isBp);
+    mPlayButton->SetVisible(isLevel);
     mPlayButton->SetTextString((isPaused || !isPie) ? " Play" : "Pause");
     mStopButton->SetVisible(isPie);
     mPieWarningText->SetVisible(isPie);
@@ -400,6 +427,11 @@ void ViewportPanel::Update()
         glm::vec4(0.5f, 0.6f, 1.0f, 0.7f) :
         glm::vec4(1.0f, 0.8f, 0.7f, 0.5f));
 
+    // Lock bpactor to origin.
+    if (isBp)
+    {
+        GetEditBlueprintActor()->SetPosition({ 0.0f, 0.0f, 0.0f });
+    }
 }
 
 void ViewportPanel::HandleInput()
@@ -624,72 +656,75 @@ void ViewportPanel::HandleDefaultControls()
             }
         }
 
-        glm::vec3 spawnPos = camera->GetAbsolutePosition() + mFocalDistance * camera->GetForwardVector();
-        if (controlDown && IsKeyJustDown(KEY_1))
+        if (GetEditorMode() == EditorMode::Level)
         {
-            ActionManager::Get()->SpawnBasicActor(BASIC_STATIC_MESH, spawnPos);
-        }
-        else if (controlDown && IsKeyJustDown(KEY_2))
-        {
-            ActionManager::Get()->SpawnBasicActor(BASIC_POINT_LIGHT, spawnPos);
-        }
-        else if (controlDown && IsKeyJustDown(KEY_3))
-        {
-            ActionManager::Get()->SpawnBasicActor(BASIC_TRANSFORM, spawnPos);
-        }
-        else if (controlDown && IsKeyJustDown(KEY_4) && GetWorld()->GetDirectionalLight() == nullptr)
-        {
-            ActionManager::Get()->SpawnBasicActor(BASIC_DIRECTIONAL_LIGHT, spawnPos);
-        }
-        else if (controlDown && IsKeyJustDown(KEY_5))
-        {
-            ActionManager::Get()->SpawnBasicActor(BASIC_SKELETAL_MESH, spawnPos);
-        }
-        else if (controlDown && IsKeyJustDown(KEY_6))
-        {
-            ActionManager::Get()->SpawnBasicActor(BASIC_BOX, spawnPos);
-        }
-        else if (controlDown && IsKeyJustDown(KEY_7))
-        {
-            ActionManager::Get()->SpawnBasicActor(BASIC_SPHERE, spawnPos);
-        }
-        else if (controlDown && IsKeyJustDown(KEY_8))
-        {
-            ActionManager::Get()->SpawnBasicActor(BASIC_PARTICLE, spawnPos);
-        }
-        else if (controlDown && IsKeyJustDown(KEY_9))
-        {
-            ActionManager::Get()->SpawnBasicActor(BASIC_AUDIO, spawnPos);
-        }
-        else if (controlDown && IsKeyJustDown(KEY_0))
-        {
-            ActionManager::Get()->SpawnBasicActor(BASIC_BLUEPRINT, spawnPos);
-        }
-
-
-        if (IsKeyJustDown(KEY_DELETE))
-        {
-            ActionManager::Get()->DeleteSelectedActors();
-        }
-
-        if (controlDown && IsKeyJustDown(KEY_D))
-        {
-            // Duplicate actor
-            Actor* selectedActor = GetSelectedActor();
-
-            if (selectedActor != nullptr)
+            glm::vec3 spawnPos = camera->GetAbsolutePosition() + mFocalDistance * camera->GetForwardVector();
+            if (controlDown && IsKeyJustDown(KEY_1))
             {
-                ActionManager::Get()->DuplicateActor(selectedActor);
-                SetControlMode(ControlMode::Translate);
-                SavePreTransforms();
+                ActionManager::Get()->SpawnBasicActor(BASIC_STATIC_MESH, spawnPos);
             }
-        }
+            else if (controlDown && IsKeyJustDown(KEY_2))
+            {
+                ActionManager::Get()->SpawnBasicActor(BASIC_POINT_LIGHT, spawnPos);
+            }
+            else if (controlDown && IsKeyJustDown(KEY_3))
+            {
+                ActionManager::Get()->SpawnBasicActor(BASIC_TRANSFORM, spawnPos);
+            }
+            else if (controlDown && IsKeyJustDown(KEY_4) && GetWorld()->GetDirectionalLight() == nullptr)
+            {
+                ActionManager::Get()->SpawnBasicActor(BASIC_DIRECTIONAL_LIGHT, spawnPos);
+            }
+            else if (controlDown && IsKeyJustDown(KEY_5))
+            {
+                ActionManager::Get()->SpawnBasicActor(BASIC_SKELETAL_MESH, spawnPos);
+            }
+            else if (controlDown && IsKeyJustDown(KEY_6))
+            {
+                ActionManager::Get()->SpawnBasicActor(BASIC_BOX, spawnPos);
+            }
+            else if (controlDown && IsKeyJustDown(KEY_7))
+            {
+                ActionManager::Get()->SpawnBasicActor(BASIC_SPHERE, spawnPos);
+            }
+            else if (controlDown && IsKeyJustDown(KEY_8))
+            {
+                ActionManager::Get()->SpawnBasicActor(BASIC_PARTICLE, spawnPos);
+            }
+            else if (controlDown && IsKeyJustDown(KEY_9))
+            {
+                ActionManager::Get()->SpawnBasicActor(BASIC_AUDIO, spawnPos);
+            }
+            else if (controlDown && IsKeyJustDown(KEY_0))
+            {
+                ActionManager::Get()->SpawnBasicActor(BASIC_BLUEPRINT, spawnPos);
+            }
 
-        if (shiftDown && (IsKeyJustDown(KEY_A) || IsKeyJustDown(KEY_Q)))
-        {
-            // Set the spawn actor list as the modal widget.
-            const bool basic = IsKeyJustDown(KEY_Q);
-            ShowSpawnActorPrompt(basic);
+
+            if (IsKeyJustDown(KEY_DELETE))
+            {
+                ActionManager::Get()->DeleteSelectedActors();
+            }
+
+            if (controlDown && IsKeyJustDown(KEY_D))
+            {
+                // Duplicate actor
+                Actor* selectedActor = GetSelectedActor();
+
+                if (selectedActor != nullptr)
+                {
+                    ActionManager::Get()->DuplicateActor(selectedActor);
+                    SetControlMode(ControlMode::Translate);
+                    SavePreTransforms();
+                }
+            }
+
+            if (shiftDown && (IsKeyJustDown(KEY_A) || IsKeyJustDown(KEY_Q)))
+            {
+                // Set the spawn actor list as the modal widget.
+                const bool basic = IsKeyJustDown(KEY_Q);
+                ShowSpawnActorPrompt(basic);
+            }
         }
 
         if (altDown && IsKeyJustDown(KEY_A))
