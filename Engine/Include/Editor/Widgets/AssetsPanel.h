@@ -30,6 +30,7 @@ public:
     void CreateMaterial();
     void CreateParticleSystem();
     void CreateWidgetMap();
+    void CreateBlueprint();
     void SaveLevel(AssetStub* levelStub);
     void SaveBlueprint(AssetStub* bpStub, Actor* srcActor);
     void SaveWidgetMap(AssetStub* stub, Widget* srcWidget);
