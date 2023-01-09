@@ -62,7 +62,7 @@ public:
     float GetGlobalUiScale() const;
     void SetGlobalUiScale(float scale);
 
-    Actor* ProcessHitCheck(World* world, int32_t x, int32_t y);
+    TransformComponent* ProcessHitCheck(World* world, int32_t x, int32_t y);
 
     void SetDebugMode(DebugMode mode);
     DebugMode GetDebugMode() const;

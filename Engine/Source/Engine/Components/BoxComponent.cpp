@@ -64,6 +64,7 @@ void BoxComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
         DebugDraw debugDraw;
         debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cube");
         debugDraw.mActor = GetOwner();
+        debugDraw.mComponent = this;
         debugDraw.mColor = color;
         debugDraw.mTransform = glm::scale(mTransform, extentScale);
         inoutDraws.push_back(debugDraw);

@@ -494,9 +494,21 @@ void ViewportPanel::HandleDefaultControls()
             int32_t mouseX = 0;
             int32_t mouseY = 0;
             GetMousePosition(mouseX, mouseY);
-            Actor* selectActor = Renderer::Get()->ProcessHitCheck(GetWorld(), mouseX, mouseY);
+            TransformComponent* selectComp = Renderer::Get()->ProcessHitCheck(GetWorld(), mouseX, mouseY);
+            Actor* selectActor = selectComp ? selectComp->GetOwner() : nullptr;
 
-            if (shiftDown)
+            if (GetEditorMode() == EditorMode::Blueprint)
+            {
+                if (GetSelectedComponent() == selectComp)
+                {
+                    SetSelectedComponent(nullptr);
+                }
+                else
+                {
+                    SetSelectedComponent(selectComp);
+                }
+            }
+            else if (shiftDown)
             {
                 if (selectActor != nullptr)
                 {

@@ -2114,7 +2114,7 @@ void VulkanContext::SetScissor(int32_t x, int32_t y, int32_t width, int32_t heig
 }
 
 #if EDITOR
-Actor* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pixelY)
+TransformComponent* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pixelY)
 {
     if (world == nullptr)
     {
@@ -2163,15 +2163,13 @@ Actor* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pixe
         // Issue proxy draws
         for (uint32_t i = 0; i < debugDraws.size(); ++i)
         {
-
             bool proxyActorEnabled = true;
-#if  EDITOR
+
             if (GetEditorMode() == EditorMode::Blueprint &&
                 debugDraws[i].mActor != GetEditBlueprintActor())
             {
                 proxyActorEnabled = false;
             }
-#endif
 
             if (debugDraws[i].mActor != nullptr &&
                 proxyActorEnabled)
@@ -2181,7 +2179,7 @@ Actor* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pixe
                     nullptr,
                     debugDraws[i].mTransform,
                     { 1.0f, 1.0f, 1.0f, 1.0f },
-                    debugDraws[i].mActor->GetHitCheckId());
+                    GetHitCheckId(debugDraws[i].mComponent));
             }
         }
 
@@ -2219,8 +2217,25 @@ Actor* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pixe
     hitId = hitData[pixelX + pixelY * mSwapchainExtent.width];
     mHitCheckBuffer->Unmap();
 
-    Actor* retActor = (hitId != 0) ? world->GetActors()[hitId - 1] : nullptr;
-    return retActor;
+    uint32_t actorId = (hitId >> 16);
+    uint32_t compId = (hitId & 0x0000ffff);
+    Actor* hitActor = (actorId != 0) ? world->GetActors()[actorId - 1] : nullptr;
+
+    TransformComponent* retComp = nullptr;
+    if (hitActor)
+    {
+        if (compId < hitActor->GetNumComponents())
+        {
+            Component* hitComp = hitActor->GetComponent(compId);
+            retComp = hitComp->As<TransformComponent>();
+        }
+        else
+        {
+            LogError("Invalid component hit during HitCheck.");
+        }
+    }
+
+    return retComp;
 }
 
 VkRenderPass VulkanContext::GetHitCheckRenderPass()

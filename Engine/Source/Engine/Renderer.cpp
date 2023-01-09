@@ -108,7 +108,7 @@ void Renderer::Initialize()
 #endif
 }
 
-Actor* Renderer::ProcessHitCheck(World* world, int32_t x, int32_t y)
+TransformComponent* Renderer::ProcessHitCheck(World* world, int32_t x, int32_t y)
 {
     return GFX_ProcessHitCheck(world, x, y);
 }

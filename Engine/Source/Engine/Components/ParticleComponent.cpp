@@ -66,6 +66,7 @@ void ParticleComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
         DebugDraw debugDraw;
         debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
         debugDraw.mActor = GetOwner();
+        debugDraw.mComponent = this;
         debugDraw.mColor = glm::vec4(0.2f, 0.2f, 1.0f, 1.0f);
         debugDraw.mTransform = glm::scale(mTransform, { 0.2f, 0.2f, 0.2f });
         inoutDraws.push_back(debugDraw);
