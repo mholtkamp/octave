@@ -55,6 +55,7 @@ protected:
     Button* mStopButton = nullptr;
 
     Text* mPieWarningText = nullptr;
+    Text* mBlueprintLabel = nullptr;
 
     float mFirstPersonMoveSpeed;
     float mFirstPersonRotationSpeed;

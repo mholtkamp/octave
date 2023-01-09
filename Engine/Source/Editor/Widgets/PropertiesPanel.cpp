@@ -116,12 +116,16 @@ void PropertiesPanel::OnEditorModeChanged()
         {
             SetMode(PropertiesMode::Component);
         }
+    }
 
-        SetTopMargin(HierarchyPanel::sHierarchyPanelHeight);
+    if (GetEditorMode() == EditorMode::Widget ||
+        GetEditorMode() == EditorMode::Blueprint)
+    {
+        SetTopMargin(0.0f);
     }
     else
     {
-        SetTopMargin(0.0f);
+        SetTopMargin(HierarchyPanel::sHierarchyPanelHeight);
     }
 }
 

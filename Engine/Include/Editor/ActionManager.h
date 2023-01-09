@@ -35,8 +35,8 @@ public:
     void OnSelectedActorChanged();
     void OnSelectedComponentChanged();
 
-    void SpawnActor(TypeId actorType, glm::vec3 position);
-    void SpawnBasicActor(const std::string& name, glm::vec3 position, Asset* srcAsset = nullptr);
+    Actor* SpawnActor(TypeId actorType, glm::vec3 position);
+    Actor* SpawnBasicActor(const std::string& name, glm::vec3 position, Asset* srcAsset = nullptr);
 
     void ExecuteAction(Action* action);
     void Undo();

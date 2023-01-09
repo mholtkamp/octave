@@ -86,6 +86,10 @@ void PanelManager::Update()
             mWidgetViewportPanel->HandleInput();
             break;
         case EditorMode::Blueprint:
+            mAssetsPanel->HandleInput();
+            mHierarchyPanel->HandleInput();
+            mPropertiesPanel->HandleInput();
+            mViewportPanel->HandleInput();
             break;
 
         default:
@@ -116,14 +120,18 @@ void PanelManager::UpdatePanelVisibility()
         mPanels[i]->SetVisible(false);
     }
 
-
     bool visible = mPanelsVisible;
 
     switch (GetEditorMode())
     {
     case EditorMode::Level:
-    case EditorMode::Blueprint:
         mOutlinerPanel->SetVisible(visible);
+        mAssetsPanel->SetVisible(visible);
+        mHierarchyPanel->SetVisible(visible);
+        mPropertiesPanel->SetVisible(visible);
+        mViewportPanel->SetVisible(visible);
+        break;
+    case EditorMode::Blueprint:
         mAssetsPanel->SetVisible(visible);
         mHierarchyPanel->SetVisible(visible);
         mPropertiesPanel->SetVisible(visible);
@@ -199,6 +207,7 @@ void PanelManager::OnEditorModeChanged()
     UpdatePanelVisibility();
 
     mPropertiesPanel->OnEditorModeChanged();
+    mHierarchyPanel->OnEditorModeChanged();
 }
 
 #endif

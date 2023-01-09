@@ -507,7 +507,8 @@ void ActionManager::OnSelectedComponentChanged()
 
 }
 
-void ActionManager::SpawnActor(TypeId actorType, glm::vec3 position)
+
+Actor* ActionManager::SpawnActor(TypeId actorType, glm::vec3 position)
 {
     Actor* spawnedActor = GetWorld()->SpawnActor(actorType);
 
@@ -521,9 +522,11 @@ void ActionManager::SpawnActor(TypeId actorType, glm::vec3 position)
     spawnedActor->SetPosition(position);
     SetSelectedActor(spawnedActor);
     EXE_SpawnActor(spawnedActor);
+
+    return spawnedActor;
 }
 
-void ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 position, Asset* srcAsset)
+Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 position, Asset* srcAsset)
 {
     Actor* spawnedActor = nullptr;
 
@@ -691,6 +694,8 @@ void ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 position,
     {
         LogError("Failed to spawn basic actor: %s", name.c_str());
     }
+
+    return spawnedActor;
 }
 
 void ActionManager::ExecuteAction(Action* action)

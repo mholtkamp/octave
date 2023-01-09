@@ -22,6 +22,10 @@
 #include "LuaBindings/LuaUtils.h"
 #endif
 
+#if EDITOR
+#include "EditorState.h"
+#endif
+
 #include <glm/glm.hpp>
 #include <functional>
 #include <algorithm>
@@ -1440,7 +1444,8 @@ void Actor::DestroyAllComponents()
 void Actor::RenderSelected()
 {
 #if EDITOR
-    const bool renderAll = (mWorld->IsComponentSelected(GetRootComponent()));
+    bool isBpMode = (GetEditorMode() == EditorMode::Blueprint);
+    const bool renderAll = (mWorld->IsComponentSelected(GetRootComponent()) && !isBpMode);
     const bool proxyEnabled = Renderer::Get()->IsProxyRenderingEnabled();
 
     for (int32_t i = 0; i < int32_t(mComponents.size()); ++i)

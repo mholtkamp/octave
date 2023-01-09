@@ -19,6 +19,22 @@ const float HierarchyPanel::sHierarchyPanelHeight = 240;
 
 static ComponentRef sActionComponent;
 
+static Actor* GetTargetActor()
+{
+    Actor* actor = nullptr;
+
+    if (GetEditorMode() == EditorMode::Blueprint)
+    {
+        actor = GetEditBlueprintActor();
+    }
+    else
+    {
+        actor = GetSelectedActor();
+    }
+
+    return actor;
+}
+
 static void EnsureUniqueComponentName(Component* comp)
 {
     Actor* actor = comp->GetOwner();
@@ -46,7 +62,7 @@ void OnCreateCompButtonPressed(Button* button)
 {
     const std::string& className = button->GetTextString();
 
-    Actor* actor = GetSelectedActor();
+    Actor* actor = GetTargetActor();
     Component* selectedComp = GetSelectedComponent();
 
     if (actor != nullptr)
@@ -310,7 +326,7 @@ void HierarchyPanel::OnSelectedComponentChanged()
 
 void HierarchyPanel::RefreshCompButtons()
 {
-    Actor* selectedActor = GetSelectedActor();
+    Actor* selectedActor = GetTargetActor();
 
     if (selectedActor != nullptr)
     {
@@ -444,7 +460,7 @@ void HierarchyPanel::Update()
 {
     Panel::Update();
 
-    Actor* actor = GetSelectedActor();
+    Actor* actor = GetTargetActor();
 
     if (actor != nullptr)
     {
@@ -462,6 +478,25 @@ void HierarchyPanel::Update()
     {
         mListOffset = listOffset;
         RefreshCompButtons();
+    }
+}
+
+void HierarchyPanel::OnEditorModeChanged()
+{
+    EditorMode mode = GetEditorMode();
+
+    if (mode == EditorMode::Blueprint)
+    {
+        SetAnchorMode(AnchorMode::LeftStretch);
+        SetX(0);
+        SetYRatio(0.0f);
+        SetHeightRatio(0.5f);
+    }
+    else
+    {
+        SetAnchorMode(AnchorMode::TopRight);
+        SetPosition(-sDefaultWidth, 0.0f);
+        SetDimensions(Panel::sDefaultWidth, sHierarchyPanelHeight);
     }
 }
 

@@ -57,6 +57,7 @@ struct EditorState
     Widget* mSelectedWidget = nullptr;
     AssetStub* mSelectedAssetStub = nullptr;
     LevelRef mActiveLevel;
+    BlueprintRef mActiveBlueprint;
     WidgetMapRef mActiveWidgetMap;
     ControlMode mControlMode = ControlMode::Default;
     TransformLock mTransformLock = TransformLock::None;
@@ -69,9 +70,10 @@ struct EditorState
     bool mPlayInEditor = false;
     bool mEjected = false;
     bool mPaused = false;
-    LevelRef mCachedPieLevel = nullptr;
+    LevelRef mCachedLevel = nullptr;
     ComponentRef mInjectedCamera = nullptr;
     ComponentRef mEjectedCamera = nullptr;
+    Actor* mEditBlueprintActor = nullptr;
     std::string mStartupLevelName;
 };
 
@@ -121,6 +123,14 @@ void SetEditRootWidget(Widget* widget);
 void DestroyEditRootWidget();
 void SetActiveWidgetMap(WidgetMap* widgetMap);
 WidgetMap* GetActiveWidgetMap();
+
+void SetActiveBlueprint(Blueprint* bp);
+Blueprint* GetActiveBlueprint();
+void SetupBlueprintEditor();
+Actor* GetEditBlueprintActor();
+
+void CacheLevel();
+void RestoreLevel();
 
 Asset* GetSelectedAsset();
 AssetStub* GetSelectedAssetStub();
