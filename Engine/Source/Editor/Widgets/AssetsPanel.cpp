@@ -570,6 +570,11 @@ void AssetsPanel::HandleInput()
                 canInstantiate = true;
             }
 
+            if (GetEditorMode() == EditorMode::Blueprint)
+            {
+                canInstantiate = false;
+            }
+
             sActionContextAssetStub = stub;
             sActionContextAssetDir = dir;
 
@@ -794,6 +799,11 @@ void AssetsPanel::SaveBlueprint(AssetStub* bpStub, Actor* srcActor)
     // Create will overwrite existing data
     bp->Create(srcActor);
     AssetManager::Get()->SaveAsset(*bpStub);
+
+    if (GetEditorMode() == EditorMode::Blueprint)
+    {
+        SetActiveBlueprint(bp);
+    }
 }
 
 void AssetsPanel::SaveWidgetMap(AssetStub* stub, Widget* srcWidget)
