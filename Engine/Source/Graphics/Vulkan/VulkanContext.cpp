@@ -7,6 +7,10 @@
 #include "World.h"
 #include "Renderer.h"
 
+#if EDITOR
+#include "EditorState.h"
+#endif
+
 #include "Graphics/GraphicsUtils.h"
 
 #include "Components/CameraComponent.h"
@@ -2159,7 +2163,18 @@ Actor* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pixe
         // Issue proxy draws
         for (uint32_t i = 0; i < debugDraws.size(); ++i)
         {
-            if (debugDraws[i].mActor != nullptr)
+
+            bool proxyActorEnabled = true;
+#if  EDITOR
+            if (GetEditorMode() == EditorMode::Blueprint &&
+                debugDraws[i].mActor != GetEditBlueprintActor())
+            {
+                proxyActorEnabled = false;
+            }
+#endif
+
+            if (debugDraws[i].mActor != nullptr &&
+                proxyActorEnabled)
             {
                 DrawStaticMesh(
                     debugDraws[i].mMesh,
