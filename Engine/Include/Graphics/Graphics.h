@@ -18,6 +18,7 @@ class ShadowMeshComponent;
 class TextMeshComponent;
 class ParticleComponent;
 class CameraComponent;
+class TransformComponent;
 class Quad;
 class Text;
 class Poly;
@@ -49,7 +50,7 @@ void GFX_DrawLines(const std::vector<Line>& lines);
 void GFX_DrawFullscreen();
 
 void GFX_ResizeWindow();
-Actor* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y);
+TransformComponent* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y);
 uint32_t GFX_GetNumViews();
 
 void GFX_SetFrameRate(int32_t frameRate);

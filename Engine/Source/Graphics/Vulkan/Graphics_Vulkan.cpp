@@ -110,7 +110,7 @@ void GFX_ResizeWindow()
     }
 }
 
-Actor* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y)
+TransformComponent* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y)
 {
 #if EDITOR
     return gVulkanContext->ProcessHitCheck(world, x, y);

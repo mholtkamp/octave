@@ -73,6 +73,7 @@ void DirectionalLightComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDr
             DebugDraw debugDraw;
             debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cylinder");
             debugDraw.mActor = GetOwner();
+            debugDraw.mComponent = this;
             debugDraw.mColor = color;
             glm::mat4 trans = MakeTransform({}, { -90.0f, 0.0f, 0.0f}, { scale * 0.5, scale, scale * 0.5});
             debugDraw.mTransform = mTransform * trans; // glm::scale(mTransform, { rScale, hScale, rScale });
@@ -84,6 +85,7 @@ void DirectionalLightComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDr
             DebugDraw debugDraw;
             debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cone");
             debugDraw.mActor = GetOwner();
+            debugDraw.mComponent = this;
             debugDraw.mColor = color;
             glm::mat4 trans = MakeTransform({0.0f, 0.0f, -2.0f * scale}, { -90.0f, 0.0f, 0.0f }, { scale, scale, scale });
             debugDraw.mTransform = mTransform * trans;

@@ -241,7 +241,7 @@ private:
 
 #if EDITOR
 public:
-    class Actor* ProcessHitCheck(World* world, int32_t pixelX, int32_t pixelY);
+    class TransformComponent* ProcessHitCheck(World* world, int32_t pixelX, int32_t pixelY);
     VkRenderPass GetHitCheckRenderPass();
 private:
     void CreateHitCheck();

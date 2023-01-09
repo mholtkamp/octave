@@ -1092,6 +1092,28 @@ void DestroyStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
     }
 }
 
+uint32_t GetHitCheckId(TransformComponent* comp)
+{
+    uint32_t retId = 0;
+#if EDITOR
+    Actor* owner = comp->GetOwner();
+    uint32_t actorId = owner->GetHitCheckId();
+    uint32_t compId = 0;
+
+    for (uint32_t i = 0; i < owner->GetNumComponents(); ++i)
+    {
+        if (owner->GetComponent(i) == comp)
+        {
+            compId = i;
+            break;
+        }
+    }
+
+    retId = (actorId << 16) | compId;
+#endif
+    return retId;
+}
+
 void UpdateStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
 {
     StaticMeshCompResource* resource = staticMeshComp->GetResource();
@@ -1104,7 +1126,7 @@ void UpdateStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
 
     WriteGeometryUniformData(ubo, world, staticMeshComp->GetRenderTransform());
 
-    ubo.mHitCheckId = EDITOR ? staticMeshComp->GetOwner()->GetHitCheckId() : 0;
+    ubo.mHitCheckId = GetHitCheckId(staticMeshComp);
 
 #if EDITOR
     if (renderer->GetDebugMode() == DEBUG_WIREFRAME &&
@@ -1285,7 +1307,7 @@ void UpdateSkeletalMeshCompUniformBuffer(SkeletalMeshComponent* skeletalMeshComp
         ubo.mBase.mNormalMatrix = glm::transpose(glm::inverse(transform));
         ubo.mBase.mLightWVPMatrix = dirLight ? (dirLight->GetViewProjectionMatrix() * transform) : glm::mat4(1);
         ubo.mBase.mColor = uniformColor; // Currently used for wireframe only.
-        ubo.mBase.mHitCheckId = EDITOR ? skeletalMeshComp->GetOwner()->GetHitCheckId() : 0;
+        ubo.mBase.mHitCheckId = GetHitCheckId(skeletalMeshComp);
 
         for (uint32_t i = 0; i < skeletalMeshComp->GetNumBones(); ++i)
         {
@@ -1303,7 +1325,7 @@ void UpdateSkeletalMeshCompUniformBuffer(SkeletalMeshComponent* skeletalMeshComp
         ubo.mNormalMatrix = glm::transpose(glm::inverse(transform));
         ubo.mLightWVPMatrix = dirLight ? (dirLight->GetViewProjectionMatrix() * transform) : glm::mat4(1);
         ubo.mColor = uniformColor; // Currently used for wireframe only.
-        ubo.mHitCheckId = EDITOR ? skeletalMeshComp->GetOwner()->GetHitCheckId() : 0;
+        ubo.mHitCheckId = GetHitCheckId(skeletalMeshComp);
 
         resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
     }
@@ -1533,7 +1555,7 @@ void UpdateTextMeshCompUniformBuffer(TextMeshComponent* textMeshComp)
 
     WriteGeometryUniformData(ubo, world, textMeshComp->GetRenderTransform());
 
-    ubo.mHitCheckId = EDITOR ? textMeshComp->GetOwner()->GetHitCheckId() : 0;
+    ubo.mHitCheckId = GetHitCheckId(textMeshComp);
 
 #if EDITOR
     if (renderer->GetDebugMode() == DEBUG_WIREFRAME &&
@@ -1634,7 +1656,7 @@ void UpdateParticleCompResource(ParticleComponent* particleComp)
     ubo.mNormalMatrix = glm::transpose(glm::inverse(transform));
     ubo.mLightWVPMatrix = dirLight ? (dirLight->GetViewProjectionMatrix() * transform) : glm::mat4(1);
     ubo.mColor = uniformColor;
-    ubo.mHitCheckId = EDITOR ? particleComp->GetOwner()->GetHitCheckId() : 0;
+    ubo.mHitCheckId = GetHitCheckId(particleComp);
 
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 }

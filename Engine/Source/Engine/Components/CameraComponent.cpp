@@ -54,6 +54,7 @@ void CameraComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
         DebugDraw debugDraw;
         debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cone");
         debugDraw.mActor = GetOwner();
+        debugDraw.mComponent = this;
         debugDraw.mColor = glm::vec4(0.0f, 0.85f, 0.25f, 1.0f);
         debugDraw.mTransform = glm::scale(transform, { 0.5f, 0.5f, 0.5f });
         inoutDraws.push_back(debugDraw);

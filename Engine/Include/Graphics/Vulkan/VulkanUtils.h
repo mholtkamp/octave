@@ -24,6 +24,7 @@ class SkeletalMeshComponent;
 class ShadowMeshComponent;
 class TextMeshComponent;
 class ParticleComponent;
+class TransformComponent;
 class Quad;
 class Text;
 class Poly;
@@ -79,6 +80,8 @@ std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions(Ve
 void SetDebugObjectName(VkObjectType objectType, uint64_t object, const char* name);
 void BeginDebugLabel(const char* name, glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f });
 void EndDebugLabel();
+
+uint32_t GetHitCheckId(TransformComponent* comp);
 
 void WriteGeometryUniformData(GeometryData& outData, World* world, const glm::mat4& transform);
 

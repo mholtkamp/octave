@@ -18,6 +18,7 @@
 
 class Level;
 class PrimitiveComponent;
+class TransformComponent;
 class Actor;
 
 class StaticMesh;
@@ -132,6 +133,7 @@ struct DebugDraw
     StaticMesh* mMesh = nullptr;
     Material* mMaterial = nullptr;
     Actor* mActor = nullptr;
+    TransformComponent* mComponent = nullptr;
     glm::mat4 mTransform = glm::mat4(1);
     glm::vec4 mColor = { 0.25f, 0.25f, 1.0f, 1.0f };
     float mLife = 0.0f;

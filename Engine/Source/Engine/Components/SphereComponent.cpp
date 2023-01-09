@@ -64,6 +64,7 @@ void SphereComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
         DebugDraw debugDraw;
         debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
         debugDraw.mActor = GetOwner();
+        debugDraw.mComponent = this;
         debugDraw.mColor = color;
         debugDraw.mTransform = glm::scale(mTransform, { radiusScale, radiusScale, radiusScale });
 
