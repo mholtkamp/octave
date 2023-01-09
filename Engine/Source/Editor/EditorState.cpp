@@ -624,9 +624,11 @@ void SetupBlueprintEditor()
     {
         sEditorState.mEditBlueprintActor = activeBp->Instantiate(GetWorld());
     }
-    else
+    
+    if (sEditorState.mEditBlueprintActor == nullptr)
     {
         sEditorState.mEditBlueprintActor = GetWorld()->SpawnActor<Actor>();
+        sEditorState.mEditBlueprintActor->CreateComponent<TransformComponent>("Root");
     }
 
     SetSelectedActor(sEditorState.mEditBlueprintActor);

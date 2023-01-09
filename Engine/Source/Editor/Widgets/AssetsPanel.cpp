@@ -208,6 +208,7 @@ void AssetsPanel::ActionListHandler(Button* button)
         actions.push_back("Material");
         actions.push_back("Particle System");
         actions.push_back("Widget Map");
+        actions.push_back("Blueprint");
         actionList->SetActions(actions, HandleCreateAsset);
 
         clearModal = false;
@@ -318,6 +319,10 @@ void AssetsPanel::HandleCreateAsset(Button* button)
     else if (buttonText == "Widget Map")
     {
         assetsPanel->CreateWidgetMap();
+    }
+    else if (buttonText == "Blueprint")
+    {
+        assetsPanel->CreateBlueprint();
     }
 
     ClearContext();
@@ -748,6 +753,12 @@ void AssetsPanel::CreateParticleSystem()
 void AssetsPanel::CreateWidgetMap()
 {
     AssetStub* stub = EditorAddUniqueAsset("W_Widget", mCurrentDir, WidgetMap::GetStaticType(), true);
+    AssetManager::Get()->SaveAsset(*stub);
+}
+
+void AssetsPanel::CreateBlueprint()
+{
+    AssetStub* stub = EditorAddUniqueAsset("BP_Blueprint", mCurrentDir, Blueprint::GetStaticType(), true);
     AssetManager::Get()->SaveAsset(*stub);
 }
 
