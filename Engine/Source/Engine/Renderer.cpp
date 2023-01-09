@@ -509,9 +509,19 @@ void Renderer::GatherDrawData(World* world)
                 }
 
 #if DEBUG_DRAW_ENABLED
+                bool proxyActorEnabled = true;
+#if  EDITOR
+                if (GetEditorMode() == EditorMode::Blueprint &&
+                    comp->GetOwner() != GetEditBlueprintActor())
+                {
+                    proxyActorEnabled = false;
+                }
+#endif
+
                 if (mEnableProxyRendering &&
                     mDebugMode != DEBUG_COLLISION &&
-                    comp->IsTransformComponent())
+                    comp->IsTransformComponent() &&
+                    proxyActorEnabled)
                 {
                     TransformComponent* trans = (TransformComponent*)comp;
                     trans->GatherProxyDraws(mDebugDraws);
