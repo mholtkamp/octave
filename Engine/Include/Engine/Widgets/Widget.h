@@ -66,7 +66,7 @@ public:
     Widget();
     virtual ~Widget();
 
-    virtual void GatherProperties(std::vector<Property>& outProps, bool editor);
+    virtual void GatherProperties(std::vector<Property>& outProps);
 
     Widget* Clone();
 
@@ -159,6 +159,7 @@ public:
     Widget* GetParent();
     void DetachFromParent();
     uint32_t GetNumChildren() const;
+    Widget* FindChild(const std::string& name, bool recurse = false);
 
     virtual void MarkDirty();
     bool IsDirty() const;
@@ -241,9 +242,13 @@ private:
 public:
     WidgetMap* GetWidgetMap();
     void SetWidgetMap(WidgetMap* map);
+
+    bool ShouldExposeVariable() const;
+    void SetExposeVariable(bool expose);
 protected:
     // This is only used by the Widget editor.
     WidgetMapRef mWidgetMap;
+    bool mExposeVariable = false;
 
 #endif
 };

@@ -3,6 +3,7 @@
 #include "Actor.h"
 #include "Log.h"
 #include "Engine.h"
+#include "Widgets/ScriptWidget.h"
 
 FORCE_LINK_DEF(WidgetMap);
 DEFINE_ASSET(WidgetMap);
@@ -33,6 +34,7 @@ void WidgetMap::LoadStream(Stream& stream, Platform platform)
         def.mParentIndex = stream.ReadInt32();
         
         stream.ReadAsset(def.mWidgetMap);
+        def.mExposeVariable = stream.ReadBool();
 
         uint32_t numProps = stream.ReadUint32();
         def.mProperties.resize(numProps);
@@ -56,6 +58,7 @@ void WidgetMap::SaveStream(Stream& stream, Platform platform)
         stream.WriteInt32(def.mParentIndex);
 
         stream.WriteAsset(def.mWidgetMap);
+        stream.WriteBool(def.mExposeVariable);
 
         stream.WriteUint32((uint32_t)def.mProperties.size());
         for (uint32_t p = 0; p < def.mProperties.size(); ++p)
@@ -119,6 +122,7 @@ Widget* WidgetMap::Instantiate()
 
 #if EDITOR
                 newWidget->SetWidgetMap(widgetMap);
+                newWidget->SetExposeVariable(mWidgetDefs[i].mExposeVariable);
 #endif
             }
             else
@@ -128,13 +132,29 @@ Widget* WidgetMap::Instantiate()
             OCT_ASSERT(newWidget);
 
             std::vector<Property> dstProps;
-            newWidget->GatherProperties(dstProps, false);
+            newWidget->GatherProperties(dstProps);
             CopyPropertyValues(dstProps, mWidgetDefs[i].mProperties);
 
             if (i > 0)
             {
                 Widget* parent = widgetList[mWidgetDefs[i].mParentIndex];
                 parent->AddChild(newWidget);
+
+                if (mWidgetDefs[i].mExposeVariable &&
+                    widgetList[0]->As<ScriptWidget>())
+                {
+                    widgetList[0]->As<ScriptWidget>()->SetField(newWidget->GetName().c_str(), newWidget);
+                }
+            }
+            else
+            {
+                ScriptWidget* scriptWidget = newWidget->As<ScriptWidget>();
+                if (scriptWidget)
+                {
+                    // Start the script so that any children marked as "Expose Variable"
+                    // can have their variable set on the script table.
+                    scriptWidget->StartScript();
+                }
             }
 
             widgetList.push_back(newWidget);
@@ -182,17 +202,18 @@ void WidgetMap::AddWidgetDef(Widget* widget, std::vector<Widget*>& widgetList)
 
         WidgetMap* widgetMap = nullptr;
 #if EDITOR
+        widgetDef.mExposeVariable = widget->ShouldExposeVariable();
         widgetMap = widget->GetWidgetMap();
 #endif
         widgetDef.mWidgetMap = widgetMap;
 
         std::vector<Property> extProps;
-        widget->GatherProperties(extProps, false);
+        widget->GatherProperties(extProps);
 
         {
             Widget* defaultWidget = Widget::CreateInstance(widget->GetType());
             std::vector<Property> defaultProps;
-            defaultWidget->GatherProperties(defaultProps, false);
+            defaultWidget->GatherProperties(defaultProps);
 
             widgetDef.mProperties.reserve(extProps.size());
             for (uint32_t i = 0; i < extProps.size(); ++i)

@@ -31,7 +31,7 @@ public:
 
     TextResource* GetResource();
 
-    virtual void GatherProperties(std::vector<Property>& outProps, bool editor) override;
+    virtual void GatherProperties(std::vector<Property>& outProps) override;
 
     virtual void Update() override;
     virtual void SetColor(glm::vec4 color) override;
