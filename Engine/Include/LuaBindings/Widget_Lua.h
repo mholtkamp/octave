@@ -21,6 +21,9 @@ struct Widget_Lua
 
     static int Equals(lua_State* L);
 
+    static int GetName(lua_State* L);
+    static int SetName(lua_State* L);
+    static int FindChild(lua_State* L);
     static int CreateChildWidget(lua_State* L);
     static int GetRect(lua_State* L);
     static int UpdateRect(lua_State* L);
