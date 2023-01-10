@@ -22,6 +22,7 @@
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/Actor_Lua.h"
 #include "LuaBindings/Component_Lua.h"
+#include "LuaBindings/Widget_Lua.h"
 #endif
 
 using namespace std;
@@ -486,6 +487,10 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
         {
             Component_Lua::Create(L, (Component*)pointer);
         }
+        else if (pointer->Is(Widget::ClassRuntimeId()))
+        {
+            Widget_Lua::Create(L, (Widget*)pointer);
+        }
         else
         {
             LogError("Unsupported pointer type in LuaPushDatum.");
@@ -529,7 +534,7 @@ void LuaObjectToDatum(lua_State* L, int idx, Datum& datum)
         datum.PushBack(lua_tostring(L, idx));
         break;
     case LUA_TUSERDATA:
-        // 4 main possibilities: Vector, Actor, Component, Asset
+        // 5 main possibilities: Vector, Actor, Component, Widget, Asset
         if (luaL_testudata(L, idx, VECTOR_LUA_NAME))
         {
             glm::vec4 vect = CHECK_VECTOR(L, idx);
@@ -544,6 +549,11 @@ void LuaObjectToDatum(lua_State* L, int idx, Datum& datum)
         {
             Component* comp = CHECK_COMPONENT(L, idx);
             datum.PushBack(comp);
+        }
+        else if (CheckClassFlag(L, idx, WIDGET_LUA_FLAG))
+        {
+            Widget* widget = CHECK_WIDGET(L, idx);
+            datum.PushBack(widget);
         }
         else //if (CheckClassFlag(L, idx, ASSET_LUA_FLAG))
         {

@@ -11,6 +11,7 @@ struct WidgetDef
     int32_t mParentIndex = -1;
     WidgetMapRef mWidgetMap;
     std::vector<Property> mProperties;
+    bool mExposeVariable = false;
 };
 
 class WidgetMap : public Asset

@@ -202,7 +202,7 @@ void PropertiesPanel::OnSelectedWidgetChanged()
             mWidgetCanvas = mWidgetCanvasCache.FindOrCreateCanvas(mCurrentWidget->GetType());
 
             std::vector<Property> props;
-            mCurrentWidget->GatherProperties(props, true);
+            mCurrentWidget->GatherProperties(props);
             PopulatePropertyWidgets(mWidgetCanvas, props);
 
             SetMode(PropertiesMode::Widget);

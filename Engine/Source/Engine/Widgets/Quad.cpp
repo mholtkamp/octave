@@ -46,9 +46,9 @@ QuadResource* Quad::GetResource()
     return &mResource;
 }
 
-void Quad::GatherProperties(std::vector<Property>& outProps, bool editor)
+void Quad::GatherProperties(std::vector<Property>& outProps)
 {
-    Widget::GatherProperties(outProps, editor);
+    Widget::GatherProperties(outProps);
 
     outProps.push_back(Property(DatumType::Asset, "Texture", this, &mTexture, 1, Quad::HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Color, "Tint", this, &mTint, 1, Quad::HandlePropChange));

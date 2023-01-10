@@ -2050,7 +2050,7 @@ void ActionEditProperty::GatherProps(std::vector<Property>& props)
     else if (mOwnerType == PropertyOwnerType::Widget)
     {
         Widget* widget = (Widget*)mOwner;
-        widget->GatherProperties(props, true);
+        widget->GatherProperties(props);
     }
 }
 

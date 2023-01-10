@@ -136,25 +136,19 @@ Widget::~Widget()
     mChildren.clear();
 }
 
-void Widget::GatherProperties(std::vector<Property>& outProps, bool editor)
+void Widget::GatherProperties(std::vector<Property>& outProps)
 {
     outProps.push_back(Property(DatumType::String, "Name", this, &mName, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Byte, "Anchor", this, &mAnchorMode, 1, Widget::HandlePropChange, 0, int32_t(AnchorMode::Count), sAnchorModeStrings));
+    
+#if EDITOR
+    outProps.push_back(Property(DatumType::Bool, "Expose Variable", this, &mExposeVariable, 1, Widget::HandlePropChange));
+#endif
     outProps.push_back(Property(DatumType::Bool, "Visible", this, &mVisible, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Scissor", this, &mUseScissor, 1, Widget::HandlePropChange));
 
-    if (false /*editor*/)
-    {
-        outProps.push_back(Property(DatumType::Float, "X", this, &mRect.mX, 1, Widget::HandlePropChange));
-        outProps.push_back(Property(DatumType::Float, "Y", this, &mRect.mY, 1, Widget::HandlePropChange));
-        outProps.push_back(Property(DatumType::Float, "Width", this, &mRect.mWidth, 1, Widget::HandlePropChange));
-        outProps.push_back(Property(DatumType::Float, "Height", this, &mRect.mHeight, 1, Widget::HandlePropChange));
-    }
-    else
-    {
-        outProps.push_back(Property(DatumType::Vector2D, "Offset", this, &mOffset, 1, Widget::HandlePropChange));
-        outProps.push_back(Property(DatumType::Vector2D, "Size", this, &mSize, 1, Widget::HandlePropChange));
-    }
+    outProps.push_back(Property(DatumType::Vector2D, "Offset", this, &mOffset, 1, Widget::HandlePropChange));
+    outProps.push_back(Property(DatumType::Vector2D, "Size", this, &mSize, 1, Widget::HandlePropChange));
 
     outProps.push_back(Property(DatumType::Color, "Color", this, &mColor, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "Pivot", this, &mPivot, 1, Widget::HandlePropChange));
@@ -183,10 +177,10 @@ Widget* Widget::Clone()
 #endif
 
     std::vector<Property> srcProps;
-    GatherProperties(srcProps, false);
+    GatherProperties(srcProps);
 
     std::vector<Property> dstProps;
-    newWidget->GatherProperties(dstProps, false);
+    newWidget->GatherProperties(dstProps);
 
     CopyPropertyValues(dstProps, srcProps);
 
@@ -898,6 +892,36 @@ uint32_t Widget::GetNumChildren() const
     return uint32_t(mChildren.size());
 }
 
+Widget* Widget::FindChild(const std::string& name, bool recurse)
+{
+    Widget* retWidget = nullptr;
+
+    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    {
+        if (mChildren[i]->GetName() == name)
+        {
+            retWidget = mChildren[i];
+            break;
+        }
+    }
+
+    if (recurse &&
+        retWidget == nullptr)
+    {
+        for (uint32_t i = 0; i < mChildren.size(); ++i)
+        {
+            retWidget = mChildren[i]->FindChild(name, recurse);
+
+            if (retWidget != nullptr)
+            {
+                break;
+            }
+        }
+    }
+
+    return retWidget;
+}
+
 void Widget::MarkDirty()
 {
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
@@ -1092,4 +1116,15 @@ void Widget::SetWidgetMap(WidgetMap* map)
 {
     mWidgetMap = map;
 }
+
+bool Widget::ShouldExposeVariable() const
+{
+    return mExposeVariable;
+}
+
+void Widget::SetExposeVariable(bool expose)
+{
+    mExposeVariable = expose;
+}
+
 #endif

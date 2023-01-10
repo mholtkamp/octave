@@ -4,6 +4,10 @@
 
 #include "LuaBindings/Widget_Lua.h"
 
+#if EDITOR
+#include "EditorState.h"
+#endif
+
 FORCE_LINK_DEF(ScriptWidget);
 DEFINE_WIDGET(ScriptWidget, Widget);
 
@@ -17,9 +21,9 @@ ScriptWidget::ScriptWidget(const char* scriptName)
     SetFile(scriptName);
 }
 
-void ScriptWidget::GatherProperties(std::vector<Property>& outProps, bool editor)
+void ScriptWidget::GatherProperties(std::vector<Property>& outProps)
 {
-    Widget::GatherProperties(outProps, editor);
+    Widget::GatherProperties(outProps);
 
     outProps.push_back(Property(DatumType::String, "File", this, &mFileName));
 }
@@ -52,7 +56,12 @@ const std::string& ScriptWidget::GetTableName()
 void ScriptWidget::Update()
 {
     Widget::Update();
-    CallFunction("Update");
+
+    // To prevent updating in Widget editor.
+    if (IsPlaying())
+    {
+        CallFunction("Update");
+    }
 }
 
 void ScriptWidget::StartScript()
@@ -292,7 +301,10 @@ void ScriptWidget::CreateScriptInstance()
             // Save the new table as a global so it doesnt get GCed.
             lua_setglobal(L, mTableName.c_str());
 
-            CallFunction("Create");
+            if (IsPlaying())
+            {
+                CallFunction("Create");
+            }
         }
         else
         {
@@ -311,7 +323,10 @@ void ScriptWidget::DestroyScriptInstance()
         lua_State* L = GetLua();
         if (L != nullptr)
         {
-            CallFunction("Destroy");
+            if (IsPlaying())
+            {
+                CallFunction("Destroy");
+            }
 
             // Clear the actor and component fields of the table in case anything else tries to access it.
             // Also set a destroyed field that can be queried.
