@@ -33,9 +33,10 @@ protected:
     static void SetRootComponent(Component* newParent);
     static void HandleRenameComponent(TextField* tf);
 
-    static const int32_t sNumButtons = 10;
-    HierarchyButton* mButtons[sNumButtons];
+    static const int32_t sMaxButtons = 15;
+    HierarchyButton* mButtons[sMaxButtons];
     Text* mBlueprintText = nullptr;
 
     int32_t mListOffset;
+    int32_t mNumButtons = sMaxButtons;
 };

@@ -65,7 +65,15 @@ void OnCreateCompButtonPressed(Button* button)
     Actor* actor = GetTargetActor();
     Component* selectedComp = GetSelectedComponent();
 
-    if (actor != nullptr)
+    if (selectedComp == nullptr &&
+        GetEditorMode() == EditorMode::Blueprint &&
+        GetEditBlueprintActor())
+    {
+        selectedComp = GetEditBlueprintActor()->GetRootComponent();
+    }
+
+    if (actor != nullptr &&
+        selectedComp != nullptr)
     {
         Component* newComp = actor->CreateComponent(className.c_str());
 
@@ -300,7 +308,7 @@ HierarchyPanel::HierarchyPanel() :
     SetPosition(-sDefaultWidth, 0.0f);
     SetDimensions(Panel::sDefaultWidth, sHierarchyPanelHeight);
 
-    for (int32_t i = 0; i < sNumButtons; ++i)
+    for (int32_t i = 0; i < sMaxButtons; ++i)
     {
         mButtons[i] = new HierarchyButton();
         mButtons[i]->SetComponent(nullptr);
@@ -378,11 +386,12 @@ void HierarchyPanel::RefreshCompButtons()
         mListOffset = glm::min(mListOffset, int32_t(compList.size()) - 1);
         mListOffset = glm::max(mListOffset, 0);
 
-        for (int32_t i = 0; i < sNumButtons; ++i)
+        for (int32_t i = 0; i < sMaxButtons; ++i)
         {
             int32_t index = mListOffset + i;
 
-            if (index < int32_t(compList.size()))
+            if (i < mNumButtons &&
+                index < int32_t(compList.size()))
             {
                 mButtons[i]->SetComponent(compList[index]);
                 mButtons[i]->SetX(depthList[index] * 10.0f);
@@ -398,7 +407,7 @@ void HierarchyPanel::RefreshCompButtons()
     {
         mBlueprintText->SetVisible(false);
 
-        for (int32_t i = 0; i < sNumButtons; ++i)
+        for (int32_t i = 0; i < sMaxButtons; ++i)
         {
             mButtons[i]->SetComponent(nullptr);
         }
@@ -419,7 +428,7 @@ void HierarchyPanel::HandleInput()
             Component* comp = nullptr;
 
             // Check if asset button is selected
-            for (uint32_t i = 0; i < sNumButtons; ++i)
+            for (uint32_t i = 0; i < sMaxButtons; ++i)
             {
                 if (mButtons[i]->IsVisible() &&
                     mButtons[i]->ContainsMouse() &&
@@ -491,12 +500,16 @@ void HierarchyPanel::OnEditorModeChanged()
         SetX(0);
         SetYRatio(0.0f);
         SetHeightRatio(0.5f);
+
+        mNumButtons = sMaxButtons;
     }
     else
     {
         SetAnchorMode(AnchorMode::TopRight);
         SetPosition(-sDefaultWidth, 0.0f);
         SetDimensions(Panel::sDefaultWidth, sHierarchyPanelHeight);
+
+        mNumButtons = 10;
     }
 }
 
