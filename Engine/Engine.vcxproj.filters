@@ -768,6 +768,15 @@
     <ClCompile Include="Source\Engine\Widgets\PolyRect.cpp">
       <Filter>Source Files\Engine\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\WidgetMap_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Poly_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\PolyRect_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1396,6 +1405,15 @@
     </ClInclude>
     <ClInclude Include="Include\Engine\Widgets\PolyRect.h">
       <Filter>Header Files\Engine\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\LuaBindings\Poly_Lua.h">
+      <Filter>Header Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\LuaBindings\WidgetMap_Lua.h">
+      <Filter>Header Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\LuaBindings\PolyRect_Lua.h">
+      <Filter>Header Files\LuaBindings</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
