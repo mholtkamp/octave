@@ -506,6 +506,8 @@
     <ClCompile Include="Source\LuaBindings\ParticleSystemInstance_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\ParticleSystem_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\PointLightComponent_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\PolyRect_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Poly_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\PrimitiveComponent_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Quad_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Rect_Lua.cpp" />
@@ -530,6 +532,7 @@
     <ClCompile Include="Source\LuaBindings\TransformComponent_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Vector_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\VerticalList_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\WidgetMap_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Widget_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\World_Lua.cpp" />
     <ClCompile Include="Source\Network\3DS\Network_3DS.cpp" />
@@ -599,6 +602,8 @@
     <ClInclude Include="Include\LuaBindings\ParticleSystemInstance_Lua.h" />
     <ClInclude Include="Include\LuaBindings\ParticleSystem_Lua.h" />
     <ClInclude Include="Include\LuaBindings\PointLightComponent_Lua.h" />
+    <ClInclude Include="Include\LuaBindings\PolyRect_Lua.h" />
+    <ClInclude Include="Include\LuaBindings\Poly_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Quad_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Rect_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Renderer_Lua.h" />
@@ -618,6 +623,7 @@
     <ClInclude Include="Include\LuaBindings\Text_Lua.h" />
     <ClInclude Include="Include\LuaBindings\TimerManager_Lua.h" />
     <ClInclude Include="Include\LuaBindings\VerticalList_Lua.h" />
+    <ClInclude Include="Include\LuaBindings\WidgetMap_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Widget_Lua.h" />
     <ClInclude Include="Include\ObjectRef.h" />
     <ClInclude Include="Include\Audio\Audio.h" />

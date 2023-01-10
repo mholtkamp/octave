@@ -34,6 +34,7 @@
 #include "LuaBindings/SphereComponent_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/Blueprint_Lua.h"
+#include "LuaBindings/WidgetMap_Lua.h"
 #include "LuaBindings/Level_Lua.h"
 #include "LuaBindings/Material_Lua.h"
 #include "LuaBindings/MaterialInstance_Lua.h"
@@ -56,6 +57,8 @@
 #include "LuaBindings/TextField_Lua.h"
 #include "LuaBindings/VerticalList_Lua.h"
 #include "LuaBindings/ScriptWidget_Lua.h"
+#include "LuaBindings/Poly_Lua.h"
+#include "LuaBindings/PolyRect_Lua.h"
 #include "LuaBindings/ActorRef_Lua.h"
 #include "LuaBindings/ComponentRef_Lua.h"
 #include "LuaBindings/Stream_Lua.h"
@@ -109,6 +112,7 @@ void BindLuaInterface()
     // Assets need to be bound in hierarchy order.
     Asset_Lua::Bind();
     Blueprint_Lua::Bind();
+    WidgetMap_Lua::Bind();
     Level_Lua::Bind();
     Material_Lua::Bind();
     MaterialInstance_Lua::Bind();
@@ -132,6 +136,8 @@ void BindLuaInterface()
     TextField_Lua::Bind();
     VerticalList_Lua::Bind();
     ScriptWidget_Lua::Bind();
+    Poly_Lua::Bind();
+    PolyRect_Lua::Bind();
 
     Misc_Lua::BindMisc();
 
