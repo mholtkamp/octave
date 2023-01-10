@@ -116,6 +116,39 @@ int Widget_Lua::Equals(lua_State* L)
     return 1;
 }
 
+int Widget_Lua::GetName(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+
+    const char* ret = widget->GetName().c_str();
+
+    lua_pushstring(L, ret);
+    return 1;
+}
+
+int Widget_Lua::SetName(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+
+    widget->SetName(name);
+
+    return 0;
+}
+
+int Widget_Lua::FindChild(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    bool recurse = false;
+    if (!lua_isnone(L,3)) { recurse = CHECK_BOOLEAN(L, 3); }
+
+    Widget* ret = widget->FindChild(name, recurse);
+
+    Widget_Lua::Create(L, ret);
+    return 1;
+}
+
 int Widget_Lua::CreateChildWidget(lua_State* L)
 {
     Widget* widget = CHECK_WIDGET(L, 1);
@@ -824,6 +857,15 @@ void Widget_Lua::Bind()
 
     lua_pushcfunction(L, Equals);
     lua_setfield(L, mtIndex, "Equals");
+
+    lua_pushcfunction(L, GetName);
+    lua_setfield(L, mtIndex, "GetName");
+
+    lua_pushcfunction(L, SetName);
+    lua_setfield(L, mtIndex, "SetName");
+
+    lua_pushcfunction(L, FindChild);
+    lua_setfield(L, mtIndex, "FindChild");
 
     lua_pushcfunction(L, CreateChildWidget);
     lua_setfield(L, mtIndex, "CreateChildWidget");

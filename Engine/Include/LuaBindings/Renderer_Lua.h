@@ -34,6 +34,8 @@ struct Renderer_Lua
     static int IsFrustumCullingEnabled(lua_State* L);
     static int AddDebugDraw(lua_State* L);
     static int AddDebugLine(lua_State* L);
+    static int EnableWorldRendering(lua_State* L);
+    static int IsWorldRenderingEnabled(lua_State* L);
 
     static void Bind();
 };

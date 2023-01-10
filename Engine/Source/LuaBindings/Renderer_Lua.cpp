@@ -256,6 +256,24 @@ int Renderer_Lua::AddDebugLine(lua_State* L)
     return 0;
 }
 
+int Renderer_Lua::EnableWorldRendering(lua_State* L)
+{
+    bool enable = CHECK_BOOLEAN(L, 1);
+
+    Renderer::Get()->EnableWorldRendering(enable);
+
+    return 0;
+}
+
+int Renderer_Lua::IsWorldRenderingEnabled(lua_State* L)
+{
+    bool ret = Renderer::Get()->IsWorldRenderingEnabled();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+
 void Renderer_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -337,6 +355,12 @@ void Renderer_Lua::Bind()
 
     lua_pushcfunction(L, AddDebugLine);
     lua_setfield(L, tableIdx, "AddDebugLine");
+
+    lua_pushcfunction(L, EnableWorldRendering);
+    lua_setfield(L, tableIdx, "EnableWorldRendering");
+
+    lua_pushcfunction(L, IsWorldRenderingEnabled);
+    lua_setfield(L, tableIdx, "IsWorldRenderingEnabled");
 
     lua_setglobal(L, RENDERER_LUA_NAME);
 
