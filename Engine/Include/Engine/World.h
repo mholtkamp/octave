@@ -146,6 +146,8 @@ public:
                 return static_cast<T*>(mActors[i]);
             }
         }
+
+        return nullptr;
     }
 
     template<typename T>
