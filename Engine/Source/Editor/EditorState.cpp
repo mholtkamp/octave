@@ -19,6 +19,7 @@
 #include "EditorUtils.h"
 #include "Widgets/ActionList.h"
 #include "Widgets/TextEntry.h"
+#include "Widgets/WidgetViewportPanel.h"
 
 static EditorState sEditorState;
 
@@ -39,6 +40,7 @@ void SetEditorMode(EditorMode mode)
         sEditorState.mMode = mode;
 
         SetSelectedActor(nullptr);
+        SetSelectedWidget(nullptr);
 
         if (prevMode == EditorMode::Blueprint)
         {
@@ -584,6 +586,7 @@ void SetActiveWidgetMap(WidgetMap* widgetMap)
         DestroyEditRootWidget();
         ActionManager::Get()->ResetUndoRedo();
         SetEditRootWidget(widgetMap->Instantiate());
+        PanelManager::Get()->GetWidgetViewportPanel()->SyncEditRootWidget();
     }
 }
 
