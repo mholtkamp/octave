@@ -162,6 +162,11 @@ Widget* WidgetMap::Instantiate()
 
         rootWidget = widgetList[0];
         OCT_ASSERT(rootWidget);
+
+        for (uint32_t i = 0; i < widgetList.size(); ++i)
+        {
+            widgetList[i]->Start();
+        }
     }
 
     return rootWidget;

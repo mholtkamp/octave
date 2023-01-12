@@ -247,6 +247,16 @@ void Widget::Update()
     }
 }
 
+void Widget::Start()
+{
+
+}
+
+void Widget::Stop()
+{
+
+}
+
 void Widget::SetName(const std::string& name)
 {
     mName = name;

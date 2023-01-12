@@ -80,6 +80,9 @@ public:
     void RecursiveUpdate();
     virtual void Update();
 
+    virtual void Start();
+    virtual void Stop();
+
     void SetName(const std::string& name);
     const std::string& GetName() const;
 
