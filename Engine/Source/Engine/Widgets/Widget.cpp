@@ -40,6 +40,28 @@ static_assert(int32_t(AnchorMode::Count) == 16, "Need to update string conversio
 
 Rect Widget::sCurrentScissor = { 0.0f, 0.0f, LARGE_BOUNDS, LARGE_BOUNDS };
 
+Widget* CreateWidget(TypeId widgetType, bool start)
+{
+    Widget* retWidget = Widget::CreateInstance(widgetType);
+
+    if (start)
+    {
+        retWidget->Start();
+    }
+
+    return retWidget;
+}
+
+void DestroyWidget(Widget* widget)
+{
+    OCT_ASSERT(widget);
+    if (widget)
+    {
+        widget->Stop();
+        delete widget;
+    }
+}
+
 bool Widget::HandlePropChange(Datum* datum, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
@@ -249,12 +271,18 @@ void Widget::Update()
 
 void Widget::Start()
 {
-
+    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    {
+        mChildren[i]->Start();
+    }
 }
 
 void Widget::Stop()
 {
-
+    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    {
+        mChildren[i]->Stop();
+    }
 }
 
 void Widget::SetName(const std::string& name)
