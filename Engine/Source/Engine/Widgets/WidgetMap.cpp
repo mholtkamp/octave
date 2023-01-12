@@ -127,7 +127,8 @@ Widget* WidgetMap::Instantiate()
             }
             else
             {
-                newWidget = Widget::CreateInstance(mWidgetDefs[i].mType);
+                newWidget = CreateWidget(mWidgetDefs[i].mType, false);
+                //newWidget = Widget::CreateInstance(mWidgetDefs[i].mType);
             }
             OCT_ASSERT(newWidget);
 

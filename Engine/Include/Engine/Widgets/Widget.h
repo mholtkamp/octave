@@ -255,3 +255,13 @@ protected:
 
 #endif
 };
+
+Widget* CreateWidget(TypeId widgetType, bool start = true);
+void DestroyWidget(Widget* widget);
+
+template<typename WidgetClass>
+inline WidgetClass* CreateWidget(bool start = true)
+{
+    WidgetClass* retWidget = CreateWidget(WidgetClass::GetStaticType(), start);
+    return retWidget;
+}
