@@ -133,7 +133,10 @@ AssetRef::~AssetRef()
     }
 
 #if ASSET_LIVE_REF_TRACKING
-    RemoveLiveRef(this);
+    if (!IsShuttingDown())
+    {
+        RemoveLiveRef(this);
+    }
 #endif
 }
 
