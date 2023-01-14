@@ -46,7 +46,10 @@ void Asset::Create()
 void Asset::Destroy()
 {
 #if ASSET_LIVE_REF_TRACKING
-    AssetRef::EraseReferencesToAsset(this);
+    if (!IsShuttingDown())
+    {
+        AssetRef::EraseReferencesToAsset(this);
+    }
 #endif
 }
 
