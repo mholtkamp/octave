@@ -126,7 +126,8 @@ Widget::Widget() :
     mActiveMargins(0),
     mUseScissor(false),
     mVisible(true),
-    mScriptOwned(false)
+    mScriptOwned(false),
+    mStarted(false)
 {
     MarkDirty();
 
@@ -271,9 +272,19 @@ void Widget::Update()
 
 void Widget::Start()
 {
-    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    // This function is mainly so that C++ widgets have a point to setup things
+    // after a WidgetMap has been instantiated. It can look for child widgets by name for instance.
+    if (mStarted)
     {
-        mChildren[i]->Start();
+        for (uint32_t i = 0; i < mChildren.size(); ++i)
+        {
+            if (!mChildren[i]->mStarted)
+            {
+                mChildren[i]->Start();
+            }
+        }
+
+        mStarted = true;
     }
 }
 

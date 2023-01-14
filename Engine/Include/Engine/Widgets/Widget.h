@@ -236,6 +236,7 @@ protected:
     bool mUseScissor;
     bool mVisible;
     bool mScriptOwned;
+    bool mStarted;
 
 private:
     bool mDirty[MAX_FRAMES] = {};
