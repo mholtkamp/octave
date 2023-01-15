@@ -375,6 +375,7 @@ void Actor::GatherProperties(std::vector<Property>& outProps)
 {
     outProps.push_back(Property(DatumType::String, "Name", this, &mName));
     outProps.push_back(Property(DatumType::Bool, "Visible", this, &mVisible));
+    outProps.push_back(Property(DatumType::Bool, "Persistent", this, &mPersistent));
     outProps.push_back(Property(DatumType::Bool, "Replicate", this, &mReplicate));
     outProps.push_back(Property(DatumType::Bool, "Replicate Transform", this, &mReplicateTransform));
     outProps.push_back(Property(DatumType::String, "Tags", this, &mTags).MakeVector());
