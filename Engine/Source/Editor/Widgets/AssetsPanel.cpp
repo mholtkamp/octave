@@ -594,8 +594,8 @@ void AssetsPanel::HandleInput()
                 }
 
                 if (sActionContextAssetStub &&
-                    sActionContextAssetStub->mType == WidgetMap::GetStaticType() ||
-                    sActionContextAssetStub->mType == Blueprint::GetStaticType())
+                    (sActionContextAssetStub->mType == WidgetMap::GetStaticType() ||
+                    sActionContextAssetStub->mType == Blueprint::GetStaticType()))
                 {
                     actions.push_back("Edit");
 
