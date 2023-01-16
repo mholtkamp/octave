@@ -89,6 +89,7 @@ Actor::Actor() :
     mTransient(false),
     mPersistent(false),
     mVisible(true),
+    mActive(true),
     mReplicationRate(ReplicationRate::High),
     mNumScriptComps(0)
 {
@@ -127,15 +128,18 @@ void Actor::Destroy()
 
 void Actor::Tick(float deltaTime)
 {
-    for (uint32_t i = 0; i < mComponents.size(); ++i)
+    if (mActive)
     {
-        if (mComponents[i]->IsActive())
+        for (uint32_t i = 0; i < mComponents.size(); ++i)
         {
-            mComponents[i]->Tick(deltaTime);
+            if (mComponents[i]->IsActive())
+            {
+                mComponents[i]->Tick(deltaTime);
+            }
         }
-    }
 
-    UpdateComponentTransforms();
+        UpdateComponentTransforms();
+    }
 }
 
 void Actor::EditorTick(float deltaTime)
@@ -692,6 +696,16 @@ bool Actor::IsVisible() const
     return mVisible;
 }
 
+void Actor::SetActive(bool active)
+{
+    mActive = active;
+}
+
+bool Actor::IsActive() const
+{
+    return mActive;
+}
+
 glm::vec3 Actor::GetPosition() const
 {
     glm::vec3 position(0);
@@ -1207,6 +1221,31 @@ void Actor::RemoveScriptEventHandler(ScriptComponent* scriptComp)
 uint32_t Actor::GetNumScriptComponents() const
 {
     return uint32_t(mNumScriptComps);
+}
+
+ScriptComponent* Actor::GetScript(int32_t index)
+{
+    ScriptComponent* retComp = nullptr;
+
+    int32_t s = 0;
+
+    for (uint32_t i = 0; i < mComponents.size(); ++i)
+    {
+        if (mComponents[i]->GetType() == ScriptComponent::GetStaticType())
+        {
+            if (index == s)
+            {
+                retComp = (ScriptComponent*)mComponents[i];
+                break;
+            }
+            else
+            {
+                ++s;
+            }
+        }
+    }
+
+    return retComp;
 }
 
 bool Actor::DoComponentsHaveUniqueNames() const

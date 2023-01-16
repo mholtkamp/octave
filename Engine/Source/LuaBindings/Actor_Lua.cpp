@@ -633,6 +633,26 @@ int Actor_Lua::SetVisible(lua_State* L)
     return 0;
 }
 
+int Actor_Lua::IsActive(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+
+    bool ret = actor->IsActive();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Actor_Lua::SetActive(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    actor->SetActive(value);
+
+    return 0;
+}
+
 int Actor_Lua::HasAuthority(lua_State* L)
 {
     Actor* actor = CHECK_ACTOR(L, 1);
@@ -851,6 +871,12 @@ void Actor_Lua::Bind()
 
     lua_pushcfunction(L, Actor_Lua::IsVisible);
     lua_setfield(L, mtIndex, "IsVisible");
+
+    lua_pushcfunction(L, Actor_Lua::SetActive);
+    lua_setfield(L, mtIndex, "SetActive");
+
+    lua_pushcfunction(L, Actor_Lua::IsActive);
+    lua_setfield(L, mtIndex, "IsActive");
 
     lua_pushcfunction(L, Actor_Lua::HasAuthority);
     lua_setfield(L, mtIndex, "HasAuthority");

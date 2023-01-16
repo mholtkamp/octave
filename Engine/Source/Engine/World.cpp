@@ -1035,7 +1035,7 @@ Actor* World::SpawnBlueprint(const char* name)
     }
     else
     {
-        LogError("Failed to load blueprint.");
+        LogError("Failed to load blueprint: %s", name);
     }
 
     return ret;
