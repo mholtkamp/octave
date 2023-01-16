@@ -137,6 +137,9 @@ public:
     void SetVisible(bool visible);
     bool IsVisible() const;
 
+    void SetActive(bool active);
+    bool IsActive() const;
+
     glm::vec3 GetPosition() const;
     glm::quat GetRotationQuat() const;
     glm::vec3 GetRotationEuler() const;
@@ -201,6 +204,7 @@ public:
     void AddScriptEventHandler(ScriptComponent* scriptComp);
     void RemoveScriptEventHandler(ScriptComponent* scriptComp);
     uint32_t GetNumScriptComponents() const;
+    ScriptComponent* GetScript(int32_t index = 0);
 
     bool DoComponentsHaveUniqueNames() const;
 
@@ -266,6 +270,7 @@ protected:
     bool mTransient;
     bool mPersistent;
     bool mVisible;
+    bool mActive;
     ReplicationRate mReplicationRate;
     uint8_t mNumScriptComps;
 };
