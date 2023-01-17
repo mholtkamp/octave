@@ -89,7 +89,6 @@ Actor::Actor() :
     mTransient(false),
     mPersistent(false),
     mVisible(true),
-    mActive(true),
     mReplicationRate(ReplicationRate::High),
     mNumScriptComps(0)
 {
@@ -128,18 +127,15 @@ void Actor::Destroy()
 
 void Actor::Tick(float deltaTime)
 {
-    if (mActive)
+    for (uint32_t i = 0; i < mComponents.size(); ++i)
     {
-        for (uint32_t i = 0; i < mComponents.size(); ++i)
+        if (mComponents[i]->IsActive())
         {
-            if (mComponents[i]->IsActive())
-            {
-                mComponents[i]->Tick(deltaTime);
-            }
+            mComponents[i]->Tick(deltaTime);
         }
-
-        UpdateComponentTransforms();
     }
+
+    UpdateComponentTransforms();
 }
 
 void Actor::EditorTick(float deltaTime)
@@ -694,16 +690,6 @@ void Actor::SetVisible(bool visible)
 bool Actor::IsVisible() const
 {
     return mVisible;
-}
-
-void Actor::SetActive(bool active)
-{
-    mActive = active;
-}
-
-bool Actor::IsActive() const
-{
-    return mActive;
 }
 
 glm::vec3 Actor::GetPosition() const

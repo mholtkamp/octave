@@ -137,9 +137,6 @@ public:
     void SetVisible(bool visible);
     bool IsVisible() const;
 
-    void SetActive(bool active);
-    bool IsActive() const;
-
     glm::vec3 GetPosition() const;
     glm::quat GetRotationQuat() const;
     glm::vec3 GetRotationEuler() const;
@@ -270,7 +267,6 @@ protected:
     bool mTransient;
     bool mPersistent;
     bool mVisible;
-    bool mActive;
     ReplicationRate mReplicationRate;
     uint8_t mNumScriptComps;
 };
