@@ -1477,13 +1477,7 @@ void ViewportPanel::ShowSpawnActorPrompt(bool basic)
     }
     else
     {
-        const std::vector<Factory*>& actorFactories = Actor::GetFactoryList();
-
-        for (uint32_t i = 0; i < actorFactories.size(); ++i)
-        {
-            actions.push_back(actorFactories[i]->GetClassName());
-        }
-
+        GatherAllClassNames(actions);
         actionList->SetActions(actions, HandleSpawnActorPressed);
     }
 }

@@ -35,6 +35,9 @@ public:
     virtual glm::vec4 GetTypeColor() override;
     virtual const char* GetTypeName() override;
 
+    void ChangeActorType(TypeId newType);
+    TypeId GetActorType() const;
+
     void Create(Actor* srcActor);
     Actor* Instantiate(World* world, bool addNetwork = true);
 

@@ -114,6 +114,18 @@ const char* Blueprint::GetTypeName()
     return "Blueprint";
 }
 
+void Blueprint::ChangeActorType(TypeId newType)
+{
+#if EDITOR
+    mActorType = newType;
+#endif
+}
+
+TypeId Blueprint::GetActorType() const
+{
+    return mActorType;
+}
+
 void Blueprint::Create(Actor* srcActor)
 {
     mActorType = INVALID_TYPE_ID;
