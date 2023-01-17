@@ -84,6 +84,54 @@ void AssetsPanel::HandleRename(TextField* tf)
     ClearModal();
 }
 
+void AssetsPanel::HandleChangeClass(Button* button)
+{
+    const std::string& className = button->GetTextString();
+
+    const std::vector<Factory*>& actorFactories = Actor::GetFactoryList();
+
+    TypeId newType = INVALID_TYPE_ID;
+    for (uint32_t i = 0; i < actorFactories.size(); ++i)
+    {
+        if (className == actorFactories[i]->GetClassName())
+        {
+            newType = actorFactories[i]->GetType();
+            break;
+        }
+    }
+
+    if (newType != INVALID_TYPE_ID)
+    {
+        Asset* asset = AssetManager::Get()->LoadAsset(*sActionContextAssetStub);
+        Blueprint* blueprint = asset ? asset->As<Blueprint>() : nullptr;
+
+        if (blueprint)
+        {
+            TypeId prevType = blueprint->GetActorType();
+            std::string prevName = "???";
+            for (uint32_t i = 0; i < actorFactories.size(); ++i)
+            {
+                if (actorFactories[i]->GetType() == prevType)
+                {
+                    prevName = actorFactories[i]->GetClassName();
+                    break;
+                }
+            }
+
+            blueprint->ChangeActorType(newType);
+            LogDebug("Changed actor class from [%s] to [%s]", prevName.c_str(), className.c_str());
+        }
+    }
+    else
+    {
+        LogError("Failed to change class, invalid type id.");
+    }
+
+    ClearContext();
+    Renderer::Get()->SetModalWidget(nullptr);
+}
+
+
 void AssetsPanel::ActionListHandler(Button* button)
 {
     bool clearContext = true;
@@ -290,6 +338,16 @@ void AssetsPanel::ActionListHandler(Button* button)
             else if (stub->mType == ParticleSystem::GetStaticType())
                 am->SpawnBasicActor(BASIC_PARTICLE, spawnPos, asset);
         }
+    }
+    else if (buttonText == "Change Class")
+    {
+        std::vector<std::string> actions;
+
+        GatherAllClassNames(actions);
+        GetActionList()->SetActions(actions, HandleChangeClass);
+
+        clearContext = false;
+        clearModal = false;
     }
 
     if (clearContext)
@@ -628,6 +686,11 @@ void AssetsPanel::HandleInput()
                 {
                     actions.push_back("Load Level");
                     actions.push_back("Set Startup Level");
+                }
+
+                if (sActionContextAssetStub->mType == Blueprint::GetStaticType())
+                {
+                    actions.push_back("Change Class");
                 }
             }
 

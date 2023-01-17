@@ -238,6 +238,17 @@ uint32_t OctHashString(const char* key)
     return h;
 }
 
+void GatherAllClassNames(std::vector<std::string>& outNames)
+{
+    outNames.clear();
+    const std::vector<Factory*>& actorFactories = Actor::GetFactoryList();
+
+    for (uint32_t i = 0; i < actorFactories.size(); ++i)
+    {
+        outNames.push_back(actorFactories[i]->GetClassName());
+    }
+}
+
 Property* FindProperty(std::vector<Property>& props, const std::string& name)
 {
     Property* prop = nullptr;

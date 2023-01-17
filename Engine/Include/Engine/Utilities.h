@@ -34,6 +34,7 @@ btCollisionShape* CloneCollisionShape(btCollisionShape* srcShape);
 void DestroyCollisionShape(btCollisionShape* shape);
 
 uint32_t OctHashString(const char* key);
+void GatherAllClassNames(std::vector<std::string>& outNames);
 
 Property* FindProperty(std::vector<Property>& props, const std::string& name);
 void CopyPropertyValues(std::vector<Property>& dstProps, const std::vector<Property>& srcProps);

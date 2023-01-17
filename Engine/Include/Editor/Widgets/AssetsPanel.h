@@ -42,6 +42,7 @@ protected:
     static void HandleCreateFolder(TextField* tf);
     static void HandleCreateAsset(Button* button);
     static void HandleRename(TextField* tf);
+    static void HandleChangeClass(Button* button);
     static void ActionListHandler(Button* button);
 
 
