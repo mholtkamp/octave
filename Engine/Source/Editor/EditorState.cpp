@@ -211,14 +211,22 @@ void AddSelectedActor(Actor* actor, bool addAllChildren)
 
 void RemoveSelectedActor(Actor* actor)
 {
+    bool erased = false;
     std::vector<Component*>& comps = sEditorState.mSelectedComponents;
     for (int32_t i = int32_t(comps.size()) - 1; i >= 0; --i)
     {
         if (comps[i]->GetOwner() == actor)
         {
             comps.erase(comps.begin() + i);
+            erased = true;
             --i;
         }
+    }
+
+    if (erased)
+    {
+        PanelManager::Get()->OnSelectedComponentChanged();
+        ActionManager::Get()->OnSelectedComponentChanged();
     }
 }
 
@@ -493,13 +501,21 @@ bool IsActorSelected(Actor* actor)
 
 void DeselectComponent(Component* component)
 {
+    bool erased = false;
     for (uint32_t i = 0; i < sEditorState.mSelectedComponents.size(); ++i)
     {
         if (sEditorState.mSelectedComponents[i] == component)
         {
             sEditorState.mSelectedComponents.erase(sEditorState.mSelectedComponents.begin() + i);
+            erased = true;
             break;
         }
+    }
+
+    if (erased)
+    {
+        PanelManager::Get()->OnSelectedComponentChanged();
+        ActionManager::Get()->OnSelectedComponentChanged();
     }
 }
 

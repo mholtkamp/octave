@@ -50,10 +50,7 @@ void Component::Destroy()
     }
 
 #if EDITOR
-    if (GetWorld()->GetSelectedComponent() == this)
-    {
-        GetWorld()->DeselectComponent(this);
-    }
+    GetWorld()->DeselectComponent(this);
 #endif
 }
 
