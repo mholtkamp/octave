@@ -688,7 +688,8 @@ void AssetsPanel::HandleInput()
                     actions.push_back("Set Startup Level");
                 }
 
-                if (sActionContextAssetStub->mType == Blueprint::GetStaticType())
+                if (sActionContextAssetStub &&
+                    sActionContextAssetStub->mType == Blueprint::GetStaticType())
                 {
                     actions.push_back("Change Class");
                 }
