@@ -12,6 +12,7 @@
 
 #include "Graphics/GraphicsConstants.h"
 
+class Widget;
 class WidgetMap;
 
 #define DECLARE_WIDGET(Base, Parent) \
@@ -54,6 +55,17 @@ enum MarginFlag : uint8_t
     MF_Right        = 1 << 2,
     MF_Bottom       = 1 << 3
 };
+
+Widget* CreateWidget(TypeId widgetType, bool start = true);
+void DestroyWidget(Widget* widget);
+
+template<typename WidgetClass>
+inline WidgetClass* CreateWidget(bool start = true)
+{
+    WidgetClass* retWidget = (WidgetClass*)CreateWidget(WidgetClass::GetStaticType(), start);
+    return retWidget;
+}
+
 
 class Widget : public RTTI
 {
@@ -196,6 +208,7 @@ public:
     T* CreateChildWidget()
     {
         T* ret = new T();
+        ret->Start();
         AddChild(ret);
         return ret;
     }
@@ -256,13 +269,3 @@ protected:
 
 #endif
 };
-
-Widget* CreateWidget(TypeId widgetType, bool start = true);
-void DestroyWidget(Widget* widget);
-
-template<typename WidgetClass>
-inline WidgetClass* CreateWidget(bool start = true)
-{
-    WidgetClass* retWidget = CreateWidget(WidgetClass::GetStaticType(), start);
-    return retWidget;
-}
