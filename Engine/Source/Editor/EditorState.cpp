@@ -145,8 +145,11 @@ void SetSelectedComponent(Component* newComponent)
             sEditorState.mSelectedComponents.push_back(newComponent);
         }
 
-        PanelManager::Get()->OnSelectedComponentChanged();
-        ActionManager::Get()->OnSelectedComponentChanged();
+        if (!IsShuttingDown())
+        {
+            PanelManager::Get()->OnSelectedComponentChanged();
+            ActionManager::Get()->OnSelectedComponentChanged();
+        }
     }
 }
 
@@ -223,7 +226,7 @@ void RemoveSelectedActor(Actor* actor)
         }
     }
 
-    if (erased)
+    if (erased && !IsShuttingDown())
     {
         PanelManager::Get()->OnSelectedComponentChanged();
         ActionManager::Get()->OnSelectedComponentChanged();
@@ -512,7 +515,7 @@ void DeselectComponent(Component* component)
         }
     }
 
-    if (erased)
+    if (erased && !IsShuttingDown())
     {
         PanelManager::Get()->OnSelectedComponentChanged();
         ActionManager::Get()->OnSelectedComponentChanged();
