@@ -19,6 +19,8 @@ public:
     virtual void Update() override;
     virtual void Render() override;
 
+    virtual void GatherProperties(std::vector<Property>& outProps) override;
+
     void MarkVerticesDirty();
 
     VertexUI* GetVertices();
