@@ -48,6 +48,13 @@ void Poly::Render()
     GFX_DrawPoly(this);
 }
 
+void Poly::GatherProperties(std::vector<Property>& outProps)
+{
+    Widget::GatherProperties(outProps);
+    outProps.push_back(Property(DatumType::Float, "Line Width", this, &mLineWidth));
+}
+
+
 void Poly::MarkVerticesDirty()
 {
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)

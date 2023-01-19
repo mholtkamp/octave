@@ -312,6 +312,7 @@ bool Update()
 
     sEngineState.mRealDeltaTime = realDeltaTime;
     sEngineState.mGameDeltaTime = gameDeltaTime;
+    sEngineState.mElapsedTime = sClock.GetTime();
 
     GetTimerManager()->Update(gameDeltaTime);
 
