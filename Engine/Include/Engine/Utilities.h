@@ -157,3 +157,20 @@ Bounds ComputeBounds(const std::vector<T>& vertices)
 
     return retBounds;
 }
+
+template<typename T>
+void ShuffleVector(std::vector<T>& vect)
+{
+    uint32_t vectSize = (uint32_t)vect.size();
+
+    if (vectSize > 1)
+    {
+        for (uint32_t i = 0; i < vectSize; ++i)
+        {
+            uint32_t p = Maths::RandRange<uint32_t>(0u, vectSize - 1);
+            T temp = vect[p];
+            vect[p] = vect[i];
+            vect[i] = temp;
+        }
+    }
+}
