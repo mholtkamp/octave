@@ -29,7 +29,7 @@ void OnCreateNativeWidgetButtonPressed(Button* button)
         parentWidget = GetEditRootWidget();
     }
 
-    Widget* widget = Widget::CreateInstance(className.c_str());
+    Widget* widget = CreateWidget(className);
     OCT_ASSERT(widget != nullptr);
 
     if (parentWidget != nullptr)

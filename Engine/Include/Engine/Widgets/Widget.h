@@ -57,6 +57,7 @@ enum MarginFlag : uint8_t
 };
 
 Widget* CreateWidget(TypeId widgetType, bool start = true);
+Widget* CreateWidget(const std::string& className, bool start = true);
 void DestroyWidget(Widget* widget);
 
 template<typename WidgetClass>
