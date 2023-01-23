@@ -206,10 +206,14 @@ public:
     bool HasParent(Widget* widget);
 
     template<typename T>
-    T* CreateChildWidget()
+    T* CreateChildWidget(const char* name = nullptr)
     {
         T* ret = new T();
         ret->Start();
+        if (name != nullptr)
+        {
+            ret->SetName(name);
+        }
         AddChild(ret);
         return ret;
     }
