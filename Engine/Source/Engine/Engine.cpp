@@ -73,6 +73,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(WidgetMap);
 
     // Widget Types
+    FORCE_LINK_CALL(ArrayWidget);
     FORCE_LINK_CALL(Button);
     FORCE_LINK_CALL(Canvas);
     FORCE_LINK_CALL(CheckBox);

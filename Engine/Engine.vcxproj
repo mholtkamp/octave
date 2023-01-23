@@ -430,6 +430,7 @@
     <ClCompile Include="Source\Engine\TableDatum.cpp" />
     <ClCompile Include="Source\Engine\TimerManager.cpp" />
     <ClCompile Include="Source\Engine\Utilities.cpp" />
+    <ClCompile Include="Source\Engine\Widgets\ArrayWidget.cpp" />
     <ClCompile Include="Source\Engine\Widgets\Button.cpp" />
     <ClCompile Include="Source\Engine\Widgets\Canvas.cpp" />
     <ClCompile Include="Source\Engine\Widgets\Checkbox.cpp" />
@@ -572,6 +573,7 @@
     <ClInclude Include="Include\Engine\ScriptUtils.h" />
     <ClInclude Include="Include\Engine\TableDatum.h" />
     <ClInclude Include="Include\Engine\TimerManager.h" />
+    <ClInclude Include="Include\Engine\Widgets\ArrayWidget.h" />
     <ClInclude Include="Include\Engine\Widgets\Poly.h" />
     <ClInclude Include="Include\Engine\Widgets\PolyRect.h" />
     <ClInclude Include="Include\Engine\Widgets\ScriptWidget.h" />

@@ -20,7 +20,7 @@ typedef void (*NetFunc6FP)(Actor* actor, Datum& param0, Datum& param1, Datum& pa
 typedef void (*NetFunc7FP)(Actor* actor, Datum& param0, Datum& param1, Datum& param2, Datum& param3, Datum& param4, Datum& param5, Datum& param6);
 typedef void (*NetFunc8FP)(Actor* actor, Datum& param0, Datum& param1, Datum& param2, Datum& param3, Datum& param4, Datum& param5, Datum& param6, Datum& param7);
 
-enum NetFuncType : uint8_t
+enum class NetFuncType : uint8_t
 {
     Server,
     Client,
