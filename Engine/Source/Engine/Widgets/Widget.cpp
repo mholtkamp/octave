@@ -52,6 +52,18 @@ Widget* CreateWidget(TypeId widgetType, bool start)
     return retWidget;
 }
 
+Widget* CreateWidget(const std::string& className, bool start)
+{
+    Widget* retWidget = Widget::CreateInstance(className.c_str());
+
+    if (start)
+    {
+        retWidget->Start();
+    }
+
+    return retWidget;
+}
+
 void DestroyWidget(Widget* widget)
 {
     OCT_ASSERT(widget);
@@ -274,7 +286,7 @@ void Widget::Start()
 {
     // This function is mainly so that C++ widgets have a point to setup things
     // after a WidgetMap has been instantiated. It can look for child widgets by name for instance.
-    if (mStarted)
+    if (!mStarted)
     {
         for (uint32_t i = 0; i < mChildren.size(); ++i)
         {
