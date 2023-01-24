@@ -784,6 +784,12 @@ void World::Update(float deltaTime)
 {
     bool gameTickEnabled = IsGameTickEnabled();
 
+    if (mPendingClear)
+    {
+        Clear();
+        mPendingClear = false;
+    }
+
     // Load any queued levels.
     if (mQueuedLevels.size() > 0)
     {
@@ -929,12 +935,6 @@ void World::Update(float deltaTime)
                 --i;
             }
         }
-    }
-
-    if (mPendingClear)
-    {
-        Clear();
-        mPendingClear = false;
     }
 }
 
