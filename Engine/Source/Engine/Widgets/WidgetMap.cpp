@@ -166,7 +166,10 @@ Widget* WidgetMap::Instantiate()
 
         for (uint32_t i = 0; i < widgetList.size(); ++i)
         {
-            widgetList[i]->Start();
+            if (!widgetList[i]->HasStarted())
+            {
+                widgetList[i]->Start();
+            }
         }
     }
 
