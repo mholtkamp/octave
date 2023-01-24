@@ -4,6 +4,7 @@
 #include "AssetRef.h"
 #include "Log.h"
 #include "Stream.h"
+#include "World.h"
 
 #include "System/System.h"
 
@@ -325,7 +326,15 @@ void Datum::ReadStream(Stream& stream, bool external)
                     break;
                 }
 
-                case DatumType::Pointer: OCT_ASSERT(0); break; // Can't serialize pointers
+                case DatumType::Pointer:
+                {
+                    // Pointers can only be serialized if it is an actor AND we
+                    // are serializing across the network.
+                    NetId netId = (NetId)stream.ReadUint32();
+                    Actor* localActor = GetWorld()->FindActor(netId);
+                    PushBack(localActor);
+                    break;
+                }
                 case DatumType::Short: PushBack(stream.ReadInt16()); break;
 
                 case DatumType::Count: break;
@@ -355,9 +364,24 @@ void Datum::WriteStream(Stream& stream) const
             case DatumType::Asset: stream.WriteAsset(mData.as[i]); break;
             case DatumType::Byte: stream.WriteUint8(mData.by[i]); break;
             case DatumType::Table: mData.t[i].WriteStream(stream); break;
-            case DatumType::Pointer: OCT_ASSERT(0); break; // Can't serialize pointers
-            case DatumType::Count: OCT_ASSERT(0); break;
+            case DatumType::Pointer:
+            {
+                // Pointers can only be serialized if it is an actor AND we
+                // are serializing across the network.
+                NetId netId = INVALID_NET_ID; 
+                RTTI* rtti = mData.p[i];
+                Actor* actor = rtti ? rtti->As<Actor>() : nullptr;
+
+                if (actor != nullptr)
+                {
+                    netId = actor->GetNetId();
+                }
+
+                stream.WriteUint32((uint32_t)netId);
+                break;
+            }
             case DatumType::Short: stream.WriteInt16(mData.sh[i]); break;
+            case DatumType::Count: OCT_ASSERT(0); break;
         }
     }
 }
