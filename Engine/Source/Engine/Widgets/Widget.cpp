@@ -1121,6 +1121,11 @@ bool Widget::HasParent(Widget* widget)
     return hasParent;
 }
 
+bool Widget::HasStarted() const
+{
+    return mStarted;
+}
+
 float Widget::PixelsToRatioX(float x) const
 {
     float parentWidth = GetParentWidth();

@@ -204,6 +204,7 @@ public:
     void SetScriptOwned(bool scriptOwned);
 
     bool HasParent(Widget* widget);
+    bool HasStarted() const;
 
     template<typename T>
     T* CreateChildWidget(const char* name = nullptr)
@@ -215,6 +216,19 @@ public:
             ret->SetName(name);
         }
         AddChild(ret);
+        return ret;
+    }
+
+    template<typename T>
+    T* FindChild(const std::string& name, bool recurse)
+    {
+        T* ret = nullptr;
+        Widget* child = FindChild(name, recurse);
+        if (child != nullptr)
+        {
+            ret = child->As<T>();
+        }
+
         return ret;
     }
 
