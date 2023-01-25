@@ -154,6 +154,12 @@ void World::DestroyActor(uint32_t index)
 
     if (actor->GetNetId() != INVALID_NET_ID)
     {
+        // Send destroy message
+        if (NetIsServer())
+        {
+            NetworkManager::Get()->SendDestroyMessage(actor, nullptr);
+        }
+
         // This actor was assigned a net id, so it should exist in our net actor map.
         OCT_ASSERT(mNetActorMap.find(actor->GetNetId()) != mNetActorMap.end());
         mNetActorMap.erase(actor->GetNetId());

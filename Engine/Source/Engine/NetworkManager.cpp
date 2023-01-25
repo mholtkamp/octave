@@ -1130,6 +1130,22 @@ void NetworkManager::SendSpawnMessage(Actor* actor, NetClient* client)
     }
 }
 
+void NetworkManager::SendDestroyMessage(Actor* actor, NetClient* client)
+{
+    OCT_ASSERT(actor != nullptr);
+    NetMsgDestroyActor destroyMsg;
+    destroyMsg.mNetId = actor->GetNetId();
+
+    if (client == nullptr)
+    {
+        SendMessageToAllClients(&destroyMsg);
+    }
+    else
+    {
+        SendMessage(&destroyMsg, client);
+    }
+}
+
 void NetworkManager::ResendPacket(NetHostProfile* hostProfile, ReliablePacket& packet)
 {
     // Resend the packet
