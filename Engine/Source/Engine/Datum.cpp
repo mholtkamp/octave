@@ -1761,7 +1761,7 @@ void Datum::ConstructData(DatumData& dataUnion, uint32_t index)
         new (dataUnion.t + index) TableDatum();
         break;
     case DatumType::Pointer:
-        dataUnion.p = nullptr;
+        dataUnion.p[index] = nullptr;
         break;
     case DatumType::Short:
         dataUnion.sh[index] = 0;

@@ -55,7 +55,7 @@ bool NetDatum::ShouldReplicate() const
             case DatumType::Asset: equal = (mPrevData.as[i] == mData.as[i]); break;
             case DatumType::Byte: equal = (mPrevData.by[i] == mData.by[i]); break;
             case DatumType::Table: equal = false; OCT_ASSERT(0); break; // Table not supported for replication
-            case DatumType::Pointer: equal = false; OCT_ASSERT(0); break; // Pointers not supported for replication
+            case DatumType::Pointer: equal = (mPrevData.p[i] == mData.p[i]); break;
             case DatumType::Short: equal = (mPrevData.sh[i] == mData.sh[i]); break;
 
             case DatumType::Count: break;
@@ -104,7 +104,7 @@ void NetDatum::PostReplicate()
             case DatumType::Asset: mPrevData.as[i] = mData.as[i]; break;
             case DatumType::Byte: mPrevData.by[i] = mData.by[i]; break;
             case DatumType::Table: OCT_ASSERT(0); break; // Table not supported for replication
-            case DatumType::Pointer: OCT_ASSERT(0); break; // Pointer not supported for replication
+            case DatumType::Pointer: mPrevData.p[i] = mData.p[i]; break;
             case DatumType::Short: mPrevData.sh[i] = mData.sh[i]; break;
 
             case DatumType::Count: break;
