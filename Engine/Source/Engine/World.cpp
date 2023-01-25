@@ -84,10 +84,9 @@ World::World() :
 
 void World::Destroy()
 {
-    for (int32_t i = (int32_t)mActors.size() - 1; i >= 0; --i)
+    while (mActors.size() > 0)
     {
-        // Actor destructor calls Destroy(). Might change that in the future.
-        DestroyActor(i);
+        DestroyActor(int32_t(mActors.size() - 1));
     }
 
     OCT_ASSERT(mActors.size() == 0);
