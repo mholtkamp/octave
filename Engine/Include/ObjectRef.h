@@ -79,6 +79,11 @@ public:
         return mObject;
     }
 
+    T*& GetRef()
+    {
+        return mObject;
+    }
+
     // For getting a subclass. T must support RTTI
     template<typename S>
     S* Get() const
