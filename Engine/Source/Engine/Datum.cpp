@@ -251,6 +251,12 @@ uint32_t Datum::GetDataTypeSerializationSize() const
             }
         }
     }
+    else if (mType == DatumType::Pointer)
+    {
+        // Pointers are serialized as NetId's, which are 32 bits.
+        // So this will be different from sizeof(RTTI*) on 64 bit architectures.
+        retSize += (mCount * sizeof(NetId));
+    }
     else
     {
         // Other types are basic and their serialization size is equivalent to their data type size * count;
