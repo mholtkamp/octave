@@ -1347,7 +1347,9 @@ bool ReplicateData(std::vector<T>& repData, NetMsgReplicate& msg, NetId hostId, 
 bool NetworkManager::ReplicateActor(Actor* actor, NetId hostId, bool force, bool reliable)
 {
     bool actorReplicated = false;
-    force = (force || actor->NeedsForcedReplication());
+    bool needsForcedRep = actor->NeedsForcedReplication();
+    force = (force || needsForcedRep);
+    reliable = (reliable || needsForcedRep);
     sMsgReplicate.mActorNetId = actor->GetNetId();
 
     std::vector<NetDatum>& repData = actor->GetReplicatedData();

@@ -159,6 +159,14 @@ void Actor::BeginPlay()
     {
         mComponents[i]->BeginPlay();
     }
+
+    if (mReplicate &&
+        NetIsServer())
+    {
+        // Send a reliable forced replication message to ensure the initial state
+        // is received by the clients.
+        ForceReplication();
+    }
 }
 
 void Actor::EndPlay()
