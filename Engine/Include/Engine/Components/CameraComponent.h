@@ -50,6 +50,7 @@ public:
     ~CameraComponent();
 
     virtual const char* GetTypeName() const override;
+    virtual void Destroy() override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
     virtual void GatherProxyDraws(std::vector<DebugDraw>& inoutDraws) override;
 

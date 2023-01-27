@@ -368,6 +368,9 @@ void World::Clear(bool clearPersistent)
                 DestroyActor(i);
             }
         }
+
+        mNextNetId = 1;
+        SpawnDefaultCamera();
     }
 }
 
