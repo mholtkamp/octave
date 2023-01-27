@@ -22,16 +22,23 @@ CameraComponent::CameraComponent() :
 
 CameraComponent::~CameraComponent()
 {
-    if (GetWorld() &&
-        GetWorld()->GetActiveCamera() == this)
-    {
-        GetWorld()->SetActiveCamera(nullptr);
-    }
+
 }
 
 const char* CameraComponent::GetTypeName() const
 {
     return "Camera";
+}
+
+void CameraComponent::Destroy()
+{
+    if (GetWorld() &&
+        GetWorld()->GetActiveCamera() == this)
+    {
+        GetWorld()->SetActiveCamera(nullptr);
+    }
+
+    Component::Destroy();
 }
 
 void CameraComponent::GatherProperties(std::vector<Property>& outProps)
