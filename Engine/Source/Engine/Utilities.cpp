@@ -475,6 +475,8 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
     switch (arg.mType)
     {
     case DatumType::Integer: lua_pushinteger(L, arg.GetInteger()); break;
+    case DatumType::Short: lua_pushinteger(L, (int) arg.GetShort()); break;
+    case DatumType::Byte: lua_pushinteger(L, (int) arg.GetByte()); break;
     case DatumType::Float: lua_pushnumber(L, arg.GetFloat()); break;
     case DatumType::Bool: lua_pushboolean(L, arg.GetBool()); break;
     case DatumType::String: lua_pushstring(L, arg.GetString().c_str()); break;
