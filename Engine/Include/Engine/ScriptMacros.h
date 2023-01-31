@@ -59,6 +59,15 @@
     }                                                                                                           \
     static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
 
+#define SCRIPT_FUNC_X5(ClassName, FuncName, P0, P1, P2, P3, P4)                                                                        \
+    static int ScriptFunc_##FuncName(lua_State* L)                                                              \
+    {                                                                                                           \
+        ClassName* actor = SF_CHECK_ACTOR(L, 1)->As<ClassName>();                                 \
+        actor->FuncName(P0(2), P1(3), P2(4), P3(5), P4(6));                                                             \
+        return 0;                                                                                               \
+    }                                                                                                           \
+    static ScriptFuncAutoReg AutoReg_##FuncName(sAutoRegs_##ClassName, "", #FuncName, ScriptFunc_##FuncName);
+
 #define SCRIPT_FUNC_R_X1(ClassName, FuncName, P0)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
@@ -706,10 +715,12 @@
 #define ASF_X2(ClassName, FuncName, P0, P1) SCRIPT_FUNC_X2(ClassName, FuncName, P0, P1)
 #define ASF_X3(ClassName, FuncName, P0, P1, P2) SCRIPT_FUNC_X3(ClassName, FuncName, P0, P1, P2)
 #define ASF_X4(ClassName, FuncName, P0, P1, P2, P3) SCRIPT_FUNC_X4(ClassName, FuncName, P0, P1, P2, P3)
+#define ASF_X5(ClassName, FuncName, P0, P1, P2, P3, P4) SCRIPT_FUNC_X5(ClassName, FuncName, P0, P1, P2, P3, P4)
 #define ASF_R_X1(ClassName, FuncName, P0) SCRIPT_FUNC_R_X1(ClassName, FuncName, P0)
 #define ASF_R_X2(ClassName, FuncName, P0, P1) SCRIPT_FUNC_R_X2(ClassName, FuncName, P0, P1)
 #define ASF_R_X3(ClassName, FuncName, P0, P1, P2) SCRIPT_FUNC_R_X3(ClassName, FuncName,P0, P1, P2)
 #define ASF_R_X4(ClassName, FuncName, P0, P1, P2, P3) SCRIPT_FUNC_R_X4(ClassName, FuncName, P0, P1, P2, P3)
+#define ASF_R_X5(ClassName, FuncName, P0, P1, P2, P3, P4) SCRIPT_FUNC_R_X5(ClassName, FuncName, P0, P1, P2, P3, P4)
 
 #define TSF_X1(TableName, FuncName, P0) GLOBAL_SCRIPT_FUNC_X1(TableName, FuncName, P0)
 #define TSF_X2(TableName, FuncName, P0, P1) GLOBAL_SCRIPT_FUNC_X2(TableName, FuncName, P0, P1)
