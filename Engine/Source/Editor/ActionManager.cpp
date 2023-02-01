@@ -2233,6 +2233,7 @@ void ActionAddComponent::Reverse()
     OCT_ASSERT(mComponent->GetOwner());
     mOwner->RemoveComponent(mComponent);
     ActionManager::Get()->ExileComponent(mComponent);
+    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
 ActionRemoveComponent::ActionRemoveComponent(Component* comp)

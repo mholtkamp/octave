@@ -147,12 +147,44 @@ void HierarchyPanel::ActionHandler(Button* button)
     }
     else if (buttonText == "Rename Component")
     {
-        const char* defaultText = sActionComponent.Get() ? 
-            sActionComponent.Get()->GetName().c_str() : 
+        const char* defaultText = sActionComponent.Get() ?
+            sActionComponent.Get()->GetName().c_str() :
             nullptr;
 
         ShowTextPrompt("Rename", HandleRenameComponent, defaultText);
         hideList = false;
+    }
+    else if (buttonText == "Duplicate Component")
+    {
+        Component* actionComp = sActionComponent.Get();
+        TransformComponent* actionTrans = actionComp->As<TransformComponent>();
+        Actor* owner = actionComp->GetOwner();
+        OCT_ASSERT(owner);
+
+        Component* newComp = owner->CreateComponent(actionComp->GetType());
+        if (newComp->IsTransformComponent())
+        {
+            OCT_ASSERT(actionTrans);
+            TransformComponent* newTrans = newComp->As<TransformComponent>();
+            TransformComponent* actionParent = actionTrans->GetParent();
+
+            if (actionParent != nullptr)
+            {
+                newTrans->Attach(actionParent);
+            }
+            else
+            {
+                newTrans->Attach(actionTrans);
+            }
+        }
+
+        // Copy all properties.
+        newComp->Copy(actionComp);
+
+        // Refresh buttons
+        PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+
+        ActionManager::Get()->EXE_AddComponent(newComp);
     }
 
     if (hideList)
@@ -448,6 +480,7 @@ void HierarchyPanel::HandleInput()
                 actions.push_back("Attach Selected");
                 actions.push_back("Set Root Component");
                 actions.push_back("Rename Component");
+                actions.push_back("Duplicate Component");
             }
             GetActionList()->SetActions(actions, ActionHandler);
             sActionComponent = comp;
