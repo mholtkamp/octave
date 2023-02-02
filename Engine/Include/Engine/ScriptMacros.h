@@ -12,10 +12,11 @@
 
 #define SF_CHECK_ACTOR(L, arg) CheckActorLuaType(L, arg, "Actor", "cfActor")
 #define SF_CHECK_COMPONENT(L, arg) CheckComponentLuaType(L, arg, "Component", "cfComponent")
+#define SF_CHECK_ASSET(L, Arg) CheckAssetLuaType<Asset>(L, Arg, "Asset", "cfAsset")
 
 #define SfActor(idx) SF_CHECK_ACTOR(L, idx)
 #define SfComponent(idx) SF_CHECK_COMPONENT(L, idx)
-#define SfAsset(idx) LuaObjectToDatum(L, idx)
+#define SfAsset(idx) SF_CHECK_ASSET(L, idx)
 #define SfVector(idx) LuaObjectToDatum(L, idx)
 
 #define SfInt(idx) lua_tointeger(L, idx)
