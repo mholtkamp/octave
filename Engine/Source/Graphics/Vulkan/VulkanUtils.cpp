@@ -1492,7 +1492,7 @@ void UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::
 
     }
 
-    if (resource->mVertexBuffer != nullptr)
+    if (resource->mVertexBuffer != nullptr && vertices.size() > 0)
     {
         OCT_ASSERT(resource->mVertexBuffer->GetSize() >= vertices.size() * sizeof(Vertex));
         resource->mVertexBuffer->Update(vertices.data(), vertices.size() * sizeof(Vertex), 0);
@@ -1502,7 +1502,7 @@ void UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::
 void DrawTextMeshComp(TextMeshComponent* textMeshComp)
 {
     TextMeshCompResource* resource = textMeshComp->GetResource();
-    if (resource->mVertexBuffer == nullptr)
+    if (resource->mVertexBuffer == nullptr || textMeshComp->GetNumVisibleCharacters() == 0)
         return;
 
     VkCommandBuffer cb = GetCommandBuffer();
