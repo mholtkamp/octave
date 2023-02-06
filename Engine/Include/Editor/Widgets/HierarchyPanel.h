@@ -29,9 +29,10 @@ protected:
     static void ActionHandler(Button* button);
     static void ShowAddComponentPrompt();
     static void DeleteComponent(Component* comp);
-    static void AttachSelectedComponent(Component* newParent);
+    static void AttachSelectedComponent(Component* newParent, int32_t boneIdx);
     static void SetRootComponent(Component* newParent);
     static void HandleRenameComponent(TextField* tf);
+    static void HandleBonePrompt(TextField* tf);
 
     static const int32_t sMaxButtons = 15;
     HierarchyButton* mButtons[sMaxButtons];

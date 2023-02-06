@@ -11,6 +11,8 @@
 #include "Renderer.h"
 #include "Components/Component.h"
 #include "Components/TransformComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Assets/SkeletalMesh.h"
 #include "ObjectRef.h"
 
 #include <functional>
@@ -135,7 +137,15 @@ void HierarchyPanel::ActionHandler(Button* button)
     {
         if (sActionComponent != nullptr)
         {
-            AttachSelectedComponent(sActionComponent.Get());
+            AttachSelectedComponent(sActionComponent.Get(), -1);
+        }
+    }
+    else if (buttonText == "Attach To Bone")
+    {
+        if (sActionComponent != nullptr)
+        {
+            ShowTextPrompt("Bone Name", HandleBonePrompt);
+            hideList = false;
         }
     }
     else if (buttonText == "Set Root Component")
@@ -251,7 +261,7 @@ void HierarchyPanel::DeleteComponent(Component* comp)
     }
 }
 
-void HierarchyPanel::AttachSelectedComponent(Component* newParent)
+void HierarchyPanel::AttachSelectedComponent(Component* newParent, int32_t boneIdx)
 {
     if (newParent == nullptr)
         return;
@@ -276,9 +286,10 @@ void HierarchyPanel::AttachSelectedComponent(Component* newParent)
     TransformComponent* child = (TransformComponent*)GetSelectedComponent();
     TransformComponent* parent = (TransformComponent*)newParent;
 
-    if (child->GetParent() != parent)
+    if (child->GetParent() != parent ||
+        boneIdx != child->GetParentBoneIndex())
     {
-        ActionManager::Get()->EXE_AttachComponent(child, parent);
+        ActionManager::Get()->EXE_AttachComponent(child, parent, boneIdx);
 
         // Reparenting components should break the blueprint link.
         // For now, you cannot override blueprint instance components
@@ -326,6 +337,26 @@ void HierarchyPanel::HandleRenameComponent(TextField* tf)
         sActionComponent != nullptr)
     {
         ActionManager::Get()->EXE_EditProperty(sActionComponent.Get(), PropertyOwnerType::Component, "Name", 0, newName);
+    }
+
+    Renderer::Get()->SetModalWidget(nullptr);
+    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+}
+
+void HierarchyPanel::HandleBonePrompt(TextField* tf)
+{
+    const std::string& boneName = tf->GetTextString();
+    Component* selComp = GetSelectedComponent();
+
+    TransformComponent* selTrans = selComp ? selComp->As<TransformComponent>() : nullptr;
+    SkeletalMeshComponent* parentSk = (sActionComponent != nullptr) ? sActionComponent.Get<SkeletalMeshComponent>() : nullptr;
+
+    if (boneName != "" &&
+        parentSk != nullptr &&
+        parentSk->GetSkeletalMesh() != nullptr)
+    {
+        int32_t boneIndex = parentSk->GetSkeletalMesh()->FindBoneIndex(boneName);
+        AttachSelectedComponent(parentSk, boneIndex);
     }
 
     Renderer::Get()->SetModalWidget(nullptr);
@@ -478,6 +509,11 @@ void HierarchyPanel::HandleInput()
             {
                 actions.push_back("Delete Component");
                 actions.push_back("Attach Selected");
+                if (comp->As<SkeletalMeshComponent>())
+                {
+                    actions.push_back("Attach To Bone");
+                }
+
                 actions.push_back("Set Root Component");
                 actions.push_back("Rename Component");
                 actions.push_back("Duplicate Component");
