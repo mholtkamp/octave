@@ -696,7 +696,6 @@ glm::vec3 SkeletalMeshComponent::GetBonePosition(int32_t boneIndex) const
 
 glm::quat SkeletalMeshComponent::GetBoneRotationQuat(int32_t boneIndex) const
 {
-    //TODO
     glm::quat retRotation(0.0f, 0.0f, 0.0f, 1.0f);
 
     SkeletalMesh* mesh = mSkeletalMesh.Get<SkeletalMesh>();
@@ -715,7 +714,6 @@ glm::quat SkeletalMeshComponent::GetBoneRotationQuat(int32_t boneIndex) const
 
 glm::vec3 SkeletalMeshComponent::GetBoneRotationEuler(int32_t boneIndex) const
 {
-    //TODO
     glm::vec3 retRotation(0.0f, 0.0f, 0.0f);
 
     glm::quat retQuat = GetBoneRotationQuat(boneIndex);
@@ -726,9 +724,20 @@ glm::vec3 SkeletalMeshComponent::GetBoneRotationEuler(int32_t boneIndex) const
 
 glm::vec3 SkeletalMeshComponent::GetBoneScale(int32_t boneIndex) const
 {
-    //TODO
-    LogWarning("SkeletalMeshComponent::GetBoneScale() not yet implemented");
-    return glm::vec3(0, 0, 0);
+    glm::vec3 retScale = glm::vec3(0, 0, 0);
+
+    SkeletalMesh* mesh = mSkeletalMesh.Get<SkeletalMesh>();
+    if (mesh != nullptr &&
+        boneIndex >= 0 &&
+        boneIndex < (int32_t)mBoneMatrices.size())
+    {
+        glm::mat4 offset = glm::inverse(mesh->GetBone(boneIndex).mOffsetMatrix);
+        glm::mat4 transform = mTransform * mBoneMatrices[boneIndex] * offset;
+
+        retScale = Maths::ExtractScale(transform);
+    }
+
+    return retScale;
 }
 
 void SkeletalMeshComponent::SetBoneTransform(int32_t boneIndex, const glm::mat4& transform)
