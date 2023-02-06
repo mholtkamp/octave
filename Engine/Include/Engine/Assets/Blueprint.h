@@ -12,6 +12,7 @@ struct BlueprintComp
     std::string mName;
     std::string mParentName;
     TypeId mType = INVALID_TYPE_ID;
+    int8_t mParentBone = -1;
     bool mDefault = false;
 
     std::vector<Property> mProperties;
