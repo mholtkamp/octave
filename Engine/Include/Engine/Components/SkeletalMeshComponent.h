@@ -105,12 +105,14 @@ public:
 
     glm::mat4 GetBoneTransform(const std::string& name) const;
     glm::vec3 GetBonePosition(const std::string& name) const;
-    glm::vec3 GetBoneRotation(const std::string& name) const;
+    glm::quat GetBoneRotationQuat(const std::string& name) const;
+    glm::vec3 GetBoneRotationEuler(const std::string& name) const;
     glm::vec3 GetBoneScale(const std::string& name) const;
 
     glm::mat4 GetBoneTransform(int32_t index) const;
     glm::vec3 GetBonePosition(int32_t boneIndex) const;
-    glm::vec3 GetBoneRotation(int32_t boneIndex) const;
+    glm::quat GetBoneRotationQuat(int32_t boneIndex) const;
+    glm::vec3 GetBoneRotationEuler(int32_t boneIndex) const;
     glm::vec3 GetBoneScale(int32_t boneIndex) const;
 
     void SetBoneTransform(int32_t boneIndex, const glm::mat4& transform);

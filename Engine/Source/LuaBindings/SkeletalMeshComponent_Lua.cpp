@@ -211,7 +211,7 @@ int SkeletalMeshComponent_Lua::GetBoneRotation(lua_State* L)
     SkeletalMeshComponent* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* boneName = CHECK_STRING(L, 2);
 
-    glm::vec3 ret = comp->GetBoneRotation(boneName);
+    glm::vec3 ret = comp->GetBoneRotationEuler(boneName);
 
     Vector_Lua::Create(L, ret);
     return 1;
