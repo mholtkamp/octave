@@ -5,6 +5,7 @@
 #include "AssetManager.h"
 #include "ScriptEvent.h"
 #include "Log.h"
+#include "Utilities.h"
 
 #include "Graphics/Graphics.h"
 
@@ -645,10 +646,17 @@ glm::vec3 SkeletalMeshComponent::GetBonePosition(const std::string& name) const
     int32_t index = FindBoneIndex(name);
     return GetBonePosition(index);
 }
-glm::vec3 SkeletalMeshComponent::GetBoneRotation(const std::string& name) const
+
+glm::quat SkeletalMeshComponent::GetBoneRotationQuat(const std::string& name) const
 {
     int32_t index = FindBoneIndex(name);
-    return GetBoneRotation(index);
+    return GetBoneRotationQuat(index);
+}
+
+glm::vec3 SkeletalMeshComponent::GetBoneRotationEuler(const std::string& name) const
+{
+    int32_t index = FindBoneIndex(name);
+    return GetBoneRotationEuler(index);
 }
 
 glm::vec3 SkeletalMeshComponent::GetBoneScale(const std::string& name) const
@@ -686,11 +694,34 @@ glm::vec3 SkeletalMeshComponent::GetBonePosition(int32_t boneIndex) const
     return retPosition;
 }
 
-glm::vec3 SkeletalMeshComponent::GetBoneRotation(int32_t boneIndex) const
+glm::quat SkeletalMeshComponent::GetBoneRotationQuat(int32_t boneIndex) const
 {
     //TODO
-    LogWarning("SkeletalMeshComponent::GetBoneRotation() not yet implemented");
-    return glm::vec3(0, 0, 0);
+    glm::quat retRotation(0.0f, 0.0f, 0.0f, 1.0f);
+
+    SkeletalMesh* mesh = mSkeletalMesh.Get<SkeletalMesh>();
+    if (mesh != nullptr &&
+        boneIndex >= 0 &&
+        boneIndex < (int32_t)mBoneMatrices.size())
+    {
+        glm::mat4 offset = glm::inverse(mesh->GetBone(boneIndex).mOffsetMatrix);
+        glm::mat4 transform = mTransform * mBoneMatrices[boneIndex] * offset;
+
+        retRotation = Maths::ExtractRotation(transform);
+    }
+
+    return retRotation;
+}
+
+glm::vec3 SkeletalMeshComponent::GetBoneRotationEuler(int32_t boneIndex) const
+{
+    //TODO
+    glm::vec3 retRotation(0.0f, 0.0f, 0.0f);
+
+    glm::quat retQuat = GetBoneRotationQuat(boneIndex);
+    retRotation = glm::eulerAngles(retQuat) * RADIANS_TO_DEGREES;
+
+    return retRotation;
 }
 
 glm::vec3 SkeletalMeshComponent::GetBoneScale(int32_t boneIndex) const

@@ -518,7 +518,7 @@ void TransformComponent::SetAbsoluteRotation(glm::quat rotation)
             mParent->GetType() == SkeletalMeshComponent::GetStaticType())
         {
             SkeletalMeshComponent* skComp = (SkeletalMeshComponent*) mParent;
-            parentWorldRot = parentWorldRot * skComp->GetBoneRotation(mParentBoneIndex);
+            parentWorldRot = parentWorldRot * skComp->GetBoneRotationQuat(mParentBoneIndex);
         }
 
         newRelativeRot = glm::inverse(parentWorldRot) * rotation;
