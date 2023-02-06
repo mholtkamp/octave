@@ -1,9 +1,11 @@
 #include "Assets/Blueprint.h"
+#include "Assets/SkeletalMesh.h"
 #include "World.h"
 #include "Actor.h"
 #include "Log.h"
 #include "Engine.h"
 #include "NetworkManager.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/ScriptComponent.h"
 
 FORCE_LINK_DEF(Blueprint);
@@ -39,6 +41,7 @@ void Blueprint::LoadStream(Stream& stream, Platform platform)
         stream.ReadString(mComponents[c].mName);
         stream.ReadString(mComponents[c].mParentName);
         mComponents[c].mType = (TypeId)stream.ReadUint32();
+        mComponents[c].mParentBone = stream.ReadInt8();
         mComponents[c].mDefault = stream.ReadBool();
 
         mComponents[c].mProperties.resize(stream.ReadUint32());
@@ -71,6 +74,7 @@ void Blueprint::SaveStream(Stream& stream, Platform platform)
         stream.WriteString(mComponents[c].mName);
         stream.WriteString(mComponents[c].mParentName);
         stream.WriteUint32((uint32_t)mComponents[c].mType);
+        stream.WriteInt8(mComponents[c].mParentBone);
         stream.WriteBool(mComponents[c].mDefault);
 
         stream.WriteUint32((uint32_t)mComponents[c].mProperties.size());
@@ -205,6 +209,14 @@ void Blueprint::Create(Actor* srcActor)
             if (transComp->GetParent() != nullptr)
             {
                 mComponents[i].mParentName = transComp->GetParent()->GetName();
+
+                if (transComp->GetParent()->Is(SkeletalMeshComponent::ClassRuntimeId()) &&
+                    transComp->GetParentBoneIndex() >= 0)
+                {
+                    // Storing bone index as int8
+                    OCT_ASSERT(transComp->GetParentBoneIndex() < 128);
+                    mComponents[i].mParentBone = transComp->GetParentBoneIndex();
+                }
             }
             else
             {
@@ -448,7 +460,18 @@ Actor* Blueprint::Instantiate(World* world, bool addNetwork)
                     TransformComponent* transComp = static_cast<TransformComponent*>(comps[i]);
                     TransformComponent* parentTransComp = static_cast<TransformComponent*>(parentComp);
 
-                    transComp->Attach(parentTransComp);
+                    SkeletalMeshComponent* parentSkComp = parentTransComp->As<SkeletalMeshComponent>();
+                    if (parentSkComp &&
+                        bpComp->mParentBone >= 0 &&
+                        parentSkComp->GetSkeletalMesh() != nullptr &&
+                        uint32_t(bpComp->mParentBone) < parentSkComp->GetSkeletalMesh()->GetNumBones())
+                    {
+                        transComp->AttachToBone(parentSkComp, (int32_t)bpComp->mParentBone, false);
+                    }
+                    else
+                    {
+                        transComp->Attach(parentTransComp);
+                    }
                 }
             }
         }
