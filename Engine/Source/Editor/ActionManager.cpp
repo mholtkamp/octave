@@ -807,9 +807,9 @@ void ActionManager::EXE_RemoveComponent(Component* comp)
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_AttachComponent(TransformComponent* comp, TransformComponent* newParent)
+void ActionManager::EXE_AttachComponent(TransformComponent* comp, TransformComponent* newParent, int32_t boneIndex)
 {
-    ActionAttachComponent* action = new ActionAttachComponent(comp, newParent);
+    ActionAttachComponent* action = new ActionAttachComponent(comp, newParent, boneIndex);
     ActionManager::Get()->ExecuteAction(action);
 }
 
@@ -2277,24 +2277,46 @@ void ActionRemoveComponent::Reverse()
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
-ActionAttachComponent::ActionAttachComponent(TransformComponent* comp, TransformComponent* newParent)
+ActionAttachComponent::ActionAttachComponent(TransformComponent* comp, TransformComponent* newParent, int32_t boneIndex)
 {
     mComponent = comp;
     mNewParent = newParent;
     mPrevParent = comp->GetParent();
+    mBoneIndex = boneIndex;
+    mPrevBoneIndex = comp->GetParentBoneIndex();
     OCT_ASSERT(mComponent);
     OCT_ASSERT(mNewParent);
 }
 
 void ActionAttachComponent::Execute()
 {
-    mComponent->Attach(mNewParent);
+    if (mBoneIndex >= 0 &&
+        mNewParent != nullptr &&
+        mNewParent->As<SkeletalMeshComponent>())
+    {
+        SkeletalMeshComponent* skParent = mNewParent->As<SkeletalMeshComponent>();
+        mComponent->AttachToBone(skParent, mBoneIndex);
+    }
+    else
+    {
+        mComponent->Attach(mNewParent);
+    }
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
 void ActionAttachComponent::Reverse()
 {
-    mComponent->Attach(mPrevParent);
+    if (mPrevBoneIndex >= 0 &&
+        mPrevParent != nullptr &&
+        mPrevParent->As<SkeletalMeshComponent>())
+    {
+        SkeletalMeshComponent* skParent = mPrevParent->As<SkeletalMeshComponent>();
+        mComponent->AttachToBone(skParent, mPrevBoneIndex);
+    }
+    else
+    {
+        mComponent->Attach(mPrevParent);
+    }
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 

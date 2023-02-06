@@ -51,7 +51,7 @@ public:
     void EXE_DeleteActors(const std::vector<Actor*>& actors);
     void EXE_AddComponent(Component* comp);
     void EXE_RemoveComponent(Component* comp);
-    void EXE_AttachComponent(TransformComponent* comp, TransformComponent* newParent);
+    void EXE_AttachComponent(TransformComponent* comp, TransformComponent* newParent, int32_t boneIndex);
     void EXE_SetRootComponent(TransformComponent* newRoot);
     void EXE_SetAbsoluteRotation(TransformComponent* comp, glm::quat rot);
     void EXE_SetAbsolutePosition(TransformComponent* comp, glm::vec3 pos);
@@ -213,11 +213,13 @@ class ActionAttachComponent : public Action
 {
 public:
     DECLARE_ACTION_INTERFACE(AttachComponent)
-    ActionAttachComponent(TransformComponent* comp, TransformComponent* newParent);
+    ActionAttachComponent(TransformComponent* comp, TransformComponent* newParent, int32_t boneIndex);
 protected:
     TransformComponent* mComponent = nullptr;
     TransformComponent* mNewParent = nullptr;
     TransformComponent* mPrevParent = nullptr;
+    int32_t mBoneIndex = -1;
+    int32_t mPrevBoneIndex = -1;
 };
 
 class ActionSetRootComponent : public Action
