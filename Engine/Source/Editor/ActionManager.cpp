@@ -515,7 +515,7 @@ Actor* ActionManager::SpawnActor(TypeId actorType, glm::vec3 position)
     if (spawnedActor->GetRootComponent() == nullptr)
     {
         TransformComponent* defaultRoot = spawnedActor->CreateComponent<TransformComponent>();
-        defaultRoot->SetName("Default Root");
+        defaultRoot->SetName("Root");
         spawnedActor->SetRootComponent(defaultRoot);
     }
 
