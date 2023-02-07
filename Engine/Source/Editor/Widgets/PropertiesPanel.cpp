@@ -381,7 +381,8 @@ void PropertiesPanel::PopulatePropertyWidgets(Canvas* propCanvas, const std::vec
 {
     int32_t widgetIndex = 0;
 
-    for (int32_t i = 0; i < int32_t(props.size()); ++i)
+    int32_t i = 0;
+    for (i = 0; i < int32_t(props.size()); ++i)
     {
         const Property& prop = props[i];
         PropertyWidget* widget = nullptr;
@@ -407,6 +408,7 @@ void PropertiesPanel::PopulatePropertyWidgets(Canvas* propCanvas, const std::vec
                 static_cast<PropertyWidget*>(cachedWidget)->GetProperty().mType == prop.mType)
             {
                 widget = static_cast<PropertyWidget*>(cachedWidget);
+                widget->SetVisible(true);
             }
             else
             {
@@ -427,6 +429,12 @@ void PropertiesPanel::PopulatePropertyWidgets(Canvas* propCanvas, const std::vec
             widget->SetProperty(prop, 0);
             ++widgetIndex;
         }
+    }
+
+    // Hide unused properties
+    for (; i < int32_t(propCanvas->GetNumChildren()); ++i)
+    {
+        propCanvas->GetChild(i)->SetVisible(false);
     }
 
     RefreshPropertyWidgetLayout(propCanvas);
