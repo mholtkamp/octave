@@ -53,6 +53,7 @@ void ParticleComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Time Multiplier", this, &mTimeMultiplier));
     outProps.push_back(Property(DatumType::Bool, "Use Local Space", this, &mUseLocalSpace));
     outProps.push_back(Property(DatumType::Bool, "Emit", this, &mEmit, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Auto Emit", this, &mAutoEmit, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Always Simulate", this, &mAlwaysSimulate));
 }
 
@@ -93,6 +94,16 @@ void ParticleComponent::Destroy()
     mParticles.shrink_to_fit();
 }
 
+void ParticleComponent::BeginPlay()
+{
+    PrimitiveComponent::BeginPlay();
+
+    if (mAutoEmit)
+    {
+        EnableEmission(true);
+    }
+}
+
 ParticleCompResource* ParticleComponent::GetResource()
 {
     return &mResource;
@@ -107,6 +118,7 @@ void ParticleComponent::SaveStream(Stream& stream)
     stream.WriteFloat(mTimeMultiplier);
     stream.WriteBool(mUseLocalSpace);
     stream.WriteBool(mEmit);
+    //stream.WriteBool(mAutoEmit);
     //stream.WriteBool(mAlwaysSimulate);
 }
 
@@ -119,6 +131,7 @@ void ParticleComponent::LoadStream(Stream& stream)
     mTimeMultiplier = stream.ReadFloat();
     mUseLocalSpace = stream.ReadBool();
     mEmit = stream.ReadBool();
+    //mAutoEmit = stream.ReadBool();
     //mAlwaysSimulate = stream.ReadBool();
 }
 

@@ -31,6 +31,7 @@ public:
 
     virtual void Create() override;
     virtual void Destroy() override;
+    virtual void BeginPlay() override;
     ParticleCompResource* GetResource();
 
     virtual void SaveStream(Stream& stream) override;
@@ -90,6 +91,7 @@ protected:
 
     float mElapsedTime = 0.0f;
     bool mEmit = true;
+    bool mAutoEmit = true;
     std::vector<Particle> mParticles;
     std::vector<VertexParticle> mVertices;
     float mEmissionCounter = 0.0f;
