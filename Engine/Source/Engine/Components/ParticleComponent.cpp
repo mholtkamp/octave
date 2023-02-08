@@ -131,8 +131,8 @@ void ParticleComponent::LoadStream(Stream& stream)
     mTimeMultiplier = stream.ReadFloat();
     mUseLocalSpace = stream.ReadBool();
     mEmit = stream.ReadBool();
-    //mAutoEmit = stream.ReadBool();
-    //mAlwaysSimulate = stream.ReadBool();
+    mAutoEmit = stream.ReadBool();
+    mAlwaysSimulate = stream.ReadBool();
 }
 
 DrawData ParticleComponent::GetDrawData()
