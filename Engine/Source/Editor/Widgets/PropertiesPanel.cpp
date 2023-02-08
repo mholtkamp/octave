@@ -248,13 +248,6 @@ void PropertiesPanel::RefreshProperties()
         mCurrentComponent = nullptr;
         OnSelectedComponentChanged();
     }
-
-    if (mCurrentAsset != nullptr)
-    {
-        Asset* asset = mCurrentAsset;
-        mCurrentAsset = nullptr;
-        InspectAsset(asset);
-    }
 }
 
 void PropertiesPanel::Update()
