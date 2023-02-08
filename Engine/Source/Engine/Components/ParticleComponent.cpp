@@ -118,8 +118,8 @@ void ParticleComponent::SaveStream(Stream& stream)
     stream.WriteFloat(mTimeMultiplier);
     stream.WriteBool(mUseLocalSpace);
     stream.WriteBool(mEmit);
-    //stream.WriteBool(mAutoEmit);
-    //stream.WriteBool(mAlwaysSimulate);
+    stream.WriteBool(mAutoEmit);
+    stream.WriteBool(mAlwaysSimulate);
 }
 
 void ParticleComponent::LoadStream(Stream& stream)
