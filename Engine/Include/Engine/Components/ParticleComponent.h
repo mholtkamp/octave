@@ -72,6 +72,14 @@ public:
     const std::vector<Particle>& GetParticles();
     const std::vector<VertexParticle>& GetVertices();
 
+    void SetParticleVelocity(int32_t index, glm::vec3 velocity);
+    glm::vec3 GetParticleVelocity(int32_t index);
+
+    void SetParticlePosition(int32_t index, glm::vec3 position);
+    glm::vec3 GetParticlePosition(int32_t index);
+
+    void SetParticleSpeed(int32_t index, float speed);
+
     virtual Bounds GetLocalBounds() const override;
 
 protected:

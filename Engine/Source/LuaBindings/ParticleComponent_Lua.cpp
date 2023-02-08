@@ -151,6 +151,61 @@ int ParticleComponent_Lua::GetNumParticles(lua_State* L)
     return 1;
 }
 
+int ParticleComponent_Lua::SetParticleVelocity(lua_State* L)
+{
+    ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    int32_t index = CHECK_INTEGER(L, 2);
+    glm::vec3 velocity = CHECK_VECTOR(L, 3);
+
+    comp->SetParticleVelocity(index, velocity);
+
+    return 0;
+}
+
+int ParticleComponent_Lua::GetParticleVelocity(lua_State* L)
+{
+    ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    int32_t index = CHECK_INTEGER(L, 2);
+
+    glm::vec3 ret = comp->GetParticleVelocity(index);
+
+    Vector_Lua::Create(L, ret);
+    return 1;
+}
+
+int ParticleComponent_Lua::SetParticlePosition(lua_State* L)
+{
+    ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    int32_t index = CHECK_INTEGER(L, 2);
+    glm::vec3 position = CHECK_VECTOR(L, 3);
+
+    comp->SetParticlePosition(index, position);
+
+    return 0;
+}
+
+int ParticleComponent_Lua::GetParticlePosition(lua_State* L)
+{
+    ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    int32_t index = CHECK_INTEGER(L, 2);
+
+    glm::vec3 ret = comp->GetParticlePosition(index);
+
+    Vector_Lua::Create(L, ret);
+    return 1;
+}
+
+int ParticleComponent_Lua::SetParticleSpeed(lua_State* L)
+{
+    ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    int32_t index = CHECK_INTEGER(L, 2);
+    float speed = CHECK_NUMBER(L, 3);
+
+    comp->SetParticleSpeed(index, speed);
+
+    return 0;
+}
+
 void ParticleComponent_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -202,6 +257,21 @@ void ParticleComponent_Lua::Bind()
 
     lua_pushcfunction(L, GetNumParticles);
     lua_setfield(L, mtIndex, "GetNumParticles");
+
+    lua_pushcfunction(L, SetParticleVelocity);
+    lua_setfield(L, mtIndex, "SetParticleVelocity");
+
+    lua_pushcfunction(L, GetParticleVelocity);
+    lua_setfield(L, mtIndex, "GetParticleVelocity");
+
+    lua_pushcfunction(L, SetParticlePosition);
+    lua_setfield(L, mtIndex, "SetParticlePosition");
+
+    lua_pushcfunction(L, GetParticlePosition);
+    lua_setfield(L, mtIndex, "GetParticlePosition");
+
+    lua_pushcfunction(L, SetParticleSpeed);
+    lua_setfield(L, mtIndex, "SetParticleSpeed");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);
