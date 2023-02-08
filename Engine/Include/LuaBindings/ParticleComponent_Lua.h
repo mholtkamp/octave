@@ -32,6 +32,12 @@ struct ParticleComponent_Lua
     static int GetUseLocalSpace(lua_State* L);
     static int GetNumParticles(lua_State* L);
 
+    static int SetParticleVelocity(lua_State* L);
+    static int GetParticleVelocity(lua_State* L);
+    static int SetParticlePosition(lua_State* L);
+    static int GetParticlePosition(lua_State* L);
+    static int SetParticleSpeed(lua_State* L);
+
     static void Bind();
 };
 

@@ -291,6 +291,72 @@ const std::vector<VertexParticle>& ParticleComponent::GetVertices()
     return mVertices;
 }
 
+void ParticleComponent::SetParticleVelocity(int32_t index, glm::vec3 velocity)
+{
+    if (index == -1)
+    {
+        for (uint32_t i = 0; i < mParticles.size(); ++i)
+        {
+            mParticles[i].mVelocity = velocity;
+        }
+    }
+    else if (index >= 0 && index < mParticles.size())
+    {
+        mParticles[index].mVelocity = velocity;
+    }
+}
+
+glm::vec3 ParticleComponent::GetParticleVelocity(int32_t index)
+{
+    glm::vec3 ret = { 0.0f, 0.0f, 0.0f };
+    if (index >= 0 && index < mParticles.size())
+    {
+        ret = mParticles[index].mVelocity;
+    }
+    return ret;
+}
+
+
+void ParticleComponent::SetParticlePosition(int32_t index, glm::vec3 position)
+{
+    if (index == -1)
+    {
+        for (uint32_t i = 0; i < mParticles.size(); ++i)
+        {
+            mParticles[i].mPosition = position;
+        }
+    }
+    else if (index >= 0 && index < mParticles.size())
+    {
+        mParticles[index].mPosition = position;
+    }
+}
+
+glm::vec3 ParticleComponent::GetParticlePosition(int32_t index)
+{
+    glm::vec3 ret = { 0.0f, 0.0f, 0.0f };
+    if (index >= 0 && index < mParticles.size())
+    {
+        ret = mParticles[index].mPosition;
+    }
+    return ret;
+}
+
+void ParticleComponent::SetParticleSpeed(int32_t index, float speed)
+{
+    if (index == -1)
+    {
+        for (uint32_t i = 0; i < mParticles.size(); ++i)
+        {
+            mParticles[i].mVelocity = Maths::SafeNormalize(mParticles[i].mVelocity) * speed;
+        }
+    }
+    else if (index >= 0 && index < mParticles.size())
+    {
+        mParticles[index].mVelocity = Maths::SafeNormalize(mParticles[index].mVelocity) * speed;
+    }
+}
+
 Bounds ParticleComponent::GetLocalBounds() const
 {
     if (mParticleSystem != nullptr)
