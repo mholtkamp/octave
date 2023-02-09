@@ -125,14 +125,15 @@ void World::SetTestDirectionalLight()
 
 void World::SpawnDefaultCamera()
 {
-    // TODO: Active camera should point to one of the
-    // cameras loaded from the .dae file.
-    Actor* cameraActor = SpawnActor<Actor>();
-    mActiveCamera = cameraActor->CreateComponent<CameraComponent>();
-    cameraActor->SetRootComponent(mActiveCamera);
-    cameraActor->SetName("Default Camera");
-    cameraActor->SetPersitent(true);
-    mActiveCamera->SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
+    if (GetActiveCamera() == nullptr)
+    {
+        Actor* cameraActor = SpawnActor<Actor>();
+        mActiveCamera = cameraActor->CreateComponent<CameraComponent>();
+        cameraActor->SetRootComponent(mActiveCamera);
+        cameraActor->SetName("Default Camera");
+        cameraActor->SetPersitent(true);
+        mActiveCamera->SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
+    }
 }
 
 void World::DestroyActor(Actor* actor)
