@@ -53,7 +53,7 @@ void ParticleComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Time Multiplier", this, &mTimeMultiplier));
     outProps.push_back(Property(DatumType::Bool, "Use Local Space", this, &mUseLocalSpace));
     outProps.push_back(Property(DatumType::Bool, "Emit", this, &mEmit, 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Bool, "Auto Emit", this, &mAutoEmit, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Auto Emit", this, &mAutoEmit));
     outProps.push_back(Property(DatumType::Bool, "Always Simulate", this, &mAlwaysSimulate));
 }
 
@@ -98,10 +98,8 @@ void ParticleComponent::BeginPlay()
 {
     PrimitiveComponent::BeginPlay();
 
-    if (mAutoEmit)
-    {
-        EnableEmission(true);
-    }
+    // Have auto emit determine starting emission.
+    EnableEmission(mAutoEmit);
 }
 
 ParticleCompResource* ParticleComponent::GetResource()
@@ -208,6 +206,16 @@ void ParticleComponent::EnableEmission(bool enable)
 bool ParticleComponent::IsEmissionEnabled() const
 {
     return mEmit;
+}
+
+void ParticleComponent::EnableAutoEmit(bool enable)
+{
+    mAutoEmit = enable;
+}
+
+bool ParticleComponent::IsAutoEmitEnabled() const
+{
+    return mAutoEmit;
 }
 
 float ParticleComponent::GetElapsedTime() const

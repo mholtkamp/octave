@@ -39,6 +39,26 @@ int ParticleComponent_Lua::IsEmissionEnabled(lua_State* L)
     return 1;
 }
 
+int ParticleComponent_Lua::EnableAutoEmit(lua_State* L)
+{
+    ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    comp->EnableAutoEmit(value);
+
+    return 0;
+}
+
+int ParticleComponent_Lua::IsAutoEmitEnabled(lua_State* L)
+{
+    ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+
+    bool ret = comp->IsAutoEmitEnabled();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int ParticleComponent_Lua::GetElapsedTime(lua_State* L)
 {
     ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
@@ -272,6 +292,12 @@ void ParticleComponent_Lua::Bind()
 
     lua_pushcfunction(L, SetParticleSpeed);
     lua_setfield(L, mtIndex, "SetParticleSpeed");
+
+    lua_pushcfunction(L, EnableAutoEmit);
+    lua_setfield(L, mtIndex, "EnableAutoEmit");
+
+    lua_pushcfunction(L, IsAutoEmitEnabled);
+    lua_setfield(L, mtIndex, "IsAutoEmitEnabled");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

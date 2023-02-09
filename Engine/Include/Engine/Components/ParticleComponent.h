@@ -50,6 +50,9 @@ public:
     void EnableEmission(bool enable);
     bool IsEmissionEnabled() const;
 
+    void EnableAutoEmit(bool enable);
+    bool IsAutoEmitEnabled() const;
+
     float GetElapsedTime() const;
 
     void SetParticleSystem(ParticleSystem* particleSystem);
