@@ -502,6 +502,17 @@ int Vector_Lua::Distance(lua_State* L)
     return 1;
 }
 
+int Vector_Lua::Distance2(lua_State* L)
+{
+    glm::vec4 a = CHECK_VECTOR(L, 1);
+    glm::vec4 b = CHECK_VECTOR(L, 2);
+
+    float ret = glm::distance2(a, b);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
 int Vector_Lua::Angle(lua_State* L)
 {
     glm::vec3 a = CHECK_VECTOR(L, 1);
@@ -630,6 +641,9 @@ void Vector_Lua::Bind()
 
     lua_pushcfunction(L, Vector_Lua::Distance);
     lua_setfield(L, mtIndex, "Distance");
+
+    lua_pushcfunction(L, Vector_Lua::Distance2);
+    lua_setfield(L, mtIndex, "Distance2");
 
     lua_pushcfunction(L, Vector_Lua::Angle);
     lua_setfield(L, mtIndex, "Angle");

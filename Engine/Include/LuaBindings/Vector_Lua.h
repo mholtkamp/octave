@@ -47,6 +47,7 @@ struct Vector_Lua
     static int Rotate(lua_State* L);
     static int Length(lua_State* L);
     static int Distance(lua_State* L);
+    static int Distance2(lua_State* L);
     static int Angle(lua_State* L);
     static int SignedAngle(lua_State* L);
     static int Negate(lua_State* L);
