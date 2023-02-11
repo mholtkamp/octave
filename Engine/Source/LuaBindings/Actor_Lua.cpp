@@ -720,6 +720,8 @@ void Actor_Lua::Bind()
 
     lua_pushcfunction(L, Actor_Lua::IsA);
     lua_setfield(L, mtIndex, "IsA");
+    lua_pushcfunction(L, Actor_Lua::IsA);
+    lua_setfield(L, mtIndex, "Is"); // Alias
 
     lua_pushcfunction(L, Actor_Lua::Equals);
     lua_setfield(L, mtIndex, "Equals");
