@@ -156,7 +156,12 @@ void ScriptComponent::LoadStream(Stream& stream)
             if (mScriptProps[j].mName == savedProps[i].mName &&
                 mScriptProps[j].mType == savedProps[i].mType)
             {
-                uint32_t count = glm::min(mScriptProps[j].mCount, savedProps[i].mCount);
+                if (mScriptProps[i].mCount < savedProps[i].mCount)
+                {
+                    mScriptProps[i].SetCount(savedProps[i].mCount);
+                }
+
+                uint32_t count = savedProps[i].mCount;
                 mScriptProps[j].SetValue(savedProps[i].mData.vp, 0, count);
                 break;
             }
