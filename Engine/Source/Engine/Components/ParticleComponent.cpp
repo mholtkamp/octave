@@ -131,7 +131,7 @@ void ParticleComponent::SaveStream(Stream& stream)
     stream.WriteBool(mEmit);
     stream.WriteBool(mAutoEmit);
     stream.WriteBool(mAlwaysSimulate);
-    //stream.WriteUint8((uint8_t)mOrientation);
+    stream.WriteUint8((uint8_t)mOrientation);
 }
 
 void ParticleComponent::LoadStream(Stream& stream)
