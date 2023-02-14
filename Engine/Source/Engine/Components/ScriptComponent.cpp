@@ -1106,16 +1106,16 @@ void ScriptComponent::UploadDatum(Datum& datum, const char* varName)
             // Push the value we want to update, dependent on the datum type.
             switch (datum.mType)
             {
-            case DatumType::Integer: lua_pushinteger(L, datum.GetInteger()); break;
-            case DatumType::Float: lua_pushnumber(L, datum.GetFloat()); break;
-            case DatumType::Bool: lua_pushboolean(L, datum.GetBool()); break;
-            case DatumType::String: lua_pushstring(L, datum.GetString().c_str()); break;
-            case DatumType::Vector2D: Vector_Lua::Create(L, datum.GetVector2D()); break;
-            case DatumType::Vector: Vector_Lua::Create(L, datum.GetVector()); break;
-            case DatumType::Color: Vector_Lua::Create(L, datum.GetColor()); break;
-            case DatumType::Asset: Asset_Lua::Create(L, datum.GetAsset()); break;
-            case DatumType::Byte: lua_pushinteger(L, (int32_t)datum.GetByte()); break;
-            case DatumType::Short: lua_pushinteger(L, (int32_t)datum.GetShort()); break;
+            case DatumType::Integer: lua_pushinteger(L, datum.GetInteger(i)); break;
+            case DatumType::Float: lua_pushnumber(L, datum.GetFloat(i)); break;
+            case DatumType::Bool: lua_pushboolean(L, datum.GetBool(i)); break;
+            case DatumType::String: lua_pushstring(L, datum.GetString(i).c_str()); break;
+            case DatumType::Vector2D: Vector_Lua::Create(L, datum.GetVector2D(i)); break;
+            case DatumType::Vector: Vector_Lua::Create(L, datum.GetVector(i)); break;
+            case DatumType::Color: Vector_Lua::Create(L, datum.GetColor(i)); break;
+            case DatumType::Asset: Asset_Lua::Create(L, datum.GetAsset(i)); break;
+            case DatumType::Byte: lua_pushinteger(L, (int32_t)datum.GetByte(i)); break;
+            case DatumType::Short: lua_pushinteger(L, (int32_t)datum.GetShort(i)); break;
 
             case DatumType::Table:
             case DatumType::Pointer:

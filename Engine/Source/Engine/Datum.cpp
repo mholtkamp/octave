@@ -509,7 +509,7 @@ void Datum::SetValue(const void* value, uint32_t index, uint32_t count)
             case DatumType::String: SetString(*(reinterpret_cast<const std::string*>(value) + i),     index + i); break;
             case DatumType::Vector2D: SetVector2D(*(reinterpret_cast<const glm::vec2*>(value) + i),   index + i); break;
             case DatumType::Vector: SetVector(*(reinterpret_cast<const glm::vec3*>(value) + i),       index + i); break;
-            case DatumType::Asset: SetAsset(*(reinterpret_cast<const Asset* const*>(value) + i),      index + i); break;
+            case DatumType::Asset: SetAsset((reinterpret_cast<const AssetRef*>(value) + i)->Get(),    index + i); break;
             case DatumType::Byte: SetByte(*(reinterpret_cast<const uint8_t*>(value) + i),             index + i); break;
             case DatumType::Table: SetTableDatum(*(reinterpret_cast<const TableDatum*>(value) + i),   index + i); break;
             case DatumType::Pointer: SetPointer(*(((RTTI**)value) + i),                               index + i); break;
