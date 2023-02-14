@@ -3,6 +3,19 @@
 #include "Components/PrimitiveComponent.h"
 #include "Assets/ParticleSystem.h"
 
+enum class ParticleOrientation : uint8_t
+{
+    X,
+    Y,
+    Z,
+    NX,
+    NY,
+    NZ,
+    Billboard,
+
+    Count
+};
+
 struct Particle
 {
     glm::vec3 mPosition = {};
@@ -108,6 +121,7 @@ protected:
     float mTimeMultiplier = 1.0f;
     bool mUseLocalSpace = false;
     bool mAlwaysSimulate = true;
+    ParticleOrientation mOrientation = ParticleOrientation::Billboard;
 
     // Graphics Resource
     ParticleCompResource mResource;

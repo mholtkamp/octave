@@ -14,6 +14,18 @@
 FORCE_LINK_DEF(ParticleComponent);
 DEFINE_COMPONENT(ParticleComponent);
 
+const char* sParticleOrientationStrings[] =
+{
+    "X",
+    "Y",
+    "Z",
+    "-X",
+    "-Y",
+    "-Z",
+    "Billboard"
+};
+static_assert(int32_t(ParticleOrientation::Count) == 7, "Need to update string conversion table");
+
 static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
@@ -55,6 +67,7 @@ void ParticleComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Emit", this, &mEmit, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Auto Emit", this, &mAutoEmit));
     outProps.push_back(Property(DatumType::Bool, "Always Simulate", this, &mAlwaysSimulate));
+    outProps.push_back(Property(DatumType::Byte, "Orientation", this, &mOrientation, 1, nullptr, 0, int32_t(ParticleOrientation::Count), sParticleOrientationStrings));
 }
 
 void ParticleComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
@@ -118,6 +131,7 @@ void ParticleComponent::SaveStream(Stream& stream)
     stream.WriteBool(mEmit);
     stream.WriteBool(mAutoEmit);
     stream.WriteBool(mAlwaysSimulate);
+    //stream.WriteUint8((uint8_t)mOrientation);
 }
 
 void ParticleComponent::LoadStream(Stream& stream)
@@ -131,6 +145,7 @@ void ParticleComponent::LoadStream(Stream& stream)
     mEmit = stream.ReadBool();
     mAutoEmit = stream.ReadBool();
     mAlwaysSimulate = stream.ReadBool();
+    //mOrientation = (ParticleOrientation)stream.ReadUint8();
 }
 
 DrawData ParticleComponent::GetDrawData()
@@ -532,10 +547,55 @@ void ParticleComponent::UpdateVertexBuffer()
     const float invAlphaEase2 = (alphaEase != 0.0f) ? (0.5f / alphaEase) : 1.0f;
     const float invScaleEase2 = (scaleEase != 0.0f) ? (0.5f / scaleEase) : 1.0f;
 
-    const glm::mat4& view = GetWorld()->GetActiveCamera()->GetViewMatrix();
-    const glm::vec3 cameraRight = { view[0][0], view[1][0], view[2][0] };
-    const glm::vec3 cameraUp = { view[0][1], view[1][1], view[2][1] };
-    const glm::vec3 cameraForward = { view[0][2], view[1][2], view[2][2] };
+    glm::vec3 right = { 1.0f, 0.0f, 0.0f };
+    glm::vec3 up = { 0.0f, 1.0f, 0.0f };
+    glm::vec3 forward = { 0.0f, 0.0f, -1.0f };
+
+    switch (mOrientation)
+    {
+    case ParticleOrientation::X:
+        right = { 0.0f, 0.0f, -1.0f };
+        up = { 0.0f, 1.0f, 0.0f };
+        forward = { -1.0f, 0.0f, 0.0f };
+        break;
+
+    case ParticleOrientation::Y:
+        right = { 1.0f, 0.0f, 0.0f };
+        up = { 0.0f, 0.0f, -1.0f };
+        forward = { 0.0f, -1.0f, 0.0f };
+        break;
+
+    case ParticleOrientation::Z:
+        right = { 1.0f, 0.0f, 0.0f };
+        up = { 0.0f, 1.0f, 0.0f };
+        forward = { 0.0f, 0.0f, -1.0f };
+        break;
+
+    case ParticleOrientation::NX:
+        right = { 0.0f, 0.0f, 1.0f };
+        up = { 0.0f, 1.0f, 0.0f };
+        forward = { 1.0f, 0.0f, 0.0f };
+        break;
+
+    case ParticleOrientation::NY:
+        right = { -1.0f, 0.0f, 0.0f };
+        up = { 0.0f, 0.0f, -1.0f };
+        forward = { 0.0f, 1.0f, 0.0f };
+        break;
+
+    case ParticleOrientation::NZ:
+        right = { -1.0f, 0.0f, 0.0f };
+        up = { 0.0f, 1.0f, 0.0f };
+        forward = { 0.0f, 0.0f, 1.0f };
+        break;
+
+    case ParticleOrientation::Billboard:
+        const glm::mat4& view = GetWorld()->GetActiveCamera()->GetViewMatrix();
+        right = { view[0][0], view[1][0], view[2][0] };
+        up = { view[0][1], view[1][1], view[2][1] };
+        forward = { view[0][2], view[1][2], view[2][2] };
+        break;
+    }
 
     for (uint32_t i = 0; i < numParticles; ++i)
     {
@@ -575,10 +635,10 @@ void ParticleComponent::UpdateVertexBuffer()
             (colors[2] << 16) |
             (colors[3] << 24);
 
-        glm::vec3 rightAxis = glm::rotate(cameraRight, mParticles[i].mRotation, cameraForward);
-        glm::vec3 upAxis = glm::rotate(cameraUp, mParticles[i].mRotation, cameraForward);
+        glm::vec3 rightAxis = glm::rotate(right, mParticles[i].mRotation, forward);
+        glm::vec3 upAxis = glm::rotate(up, mParticles[i].mRotation, forward);
 
-        if (mUseLocalSpace)
+        if (mUseLocalSpace && mOrientation == ParticleOrientation::Billboard)
         {
             rightAxis = glm::vec4(rightAxis, 0.0f) * mTransform;
             upAxis = glm::vec4(upAxis, 0.0f) * mTransform;
