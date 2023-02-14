@@ -55,6 +55,10 @@ void Property::ReadStream(Stream& stream, bool external)
     Datum::ReadStream(stream, external);
     stream.ReadString(mName);
     mExtra = stream.ReadInt32();
+
+    // We don't really need to write mIsVector since the values are copied
+    // over to the script property which already has mIsVector set.
+    //mIsVector = stream.ReadBool();
 }
 
 void Property::WriteStream(Stream& stream) const
@@ -62,6 +66,10 @@ void Property::WriteStream(Stream& stream) const
     Datum::WriteStream(stream);
     stream.WriteString(mName);
     stream.WriteInt32(mExtra);
+
+    // We don't really need to write mIsVector since the values are copied
+    // over to the script property which already has mIsVector set.
+    //stream.WriteBool(mIsVector);
 }
 
 uint32_t Property::GetSerializationSize() const
