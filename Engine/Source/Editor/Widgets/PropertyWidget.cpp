@@ -293,6 +293,8 @@ void PropertyArrayWidget::Update()
     mPopButton->SetVisible(vector);
     mPushButton->SetVisible(vector);
 
+    float headerHeight = vector ? (sVerticalSpacing * 2) : sVerticalSpacing;
+
     if (mElementWidgets.size() < mProperty.GetCount())
     {
         mElementWidgets.resize(mProperty.GetCount());
@@ -304,7 +306,7 @@ void PropertyArrayWidget::Update()
         if (mElementWidgets[i] == nullptr)
         {
             mElementWidgets[i] = CreatePropWidget(mProperty, true);
-            mElementWidgets[i]->SetPosition(glm::vec2(sIndent1, sVerticalSpacing * 2 + mElementWidgets[i]->GetHeight() * i));
+            mElementWidgets[i]->SetPosition(glm::vec2(sIndent1, headerHeight + mElementWidgets[i]->GetHeight() * i));
             mElementWidgets[i]->MarkArrayElement();
             AddChild(mElementWidgets[i]);
         }
