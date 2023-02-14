@@ -43,7 +43,7 @@ std::unordered_set<TypeId> Actor::sScriptRegisteredSet;
 
 #define ENABLE_SCRIPT_FUNCS 1
 
-bool Actor::OnRep_RootPosition(Datum* datum, const void* newValue)
+bool Actor::OnRep_RootPosition(Datum* datum, uint32_t index, const void* newValue)
 {
     Actor* actor = (Actor*) datum->mOwner;
     OCT_ASSERT(actor != nullptr);
@@ -52,7 +52,7 @@ bool Actor::OnRep_RootPosition(Datum* datum, const void* newValue)
     return true;
 }
 
-bool Actor::OnRep_RootRotation(Datum* datum, const void* newValue)
+bool Actor::OnRep_RootRotation(Datum* datum, uint32_t index, const void* newValue)
 {
     Actor* actor = (Actor*) datum->mOwner;
     OCT_ASSERT(actor != nullptr);
@@ -63,7 +63,7 @@ bool Actor::OnRep_RootRotation(Datum* datum, const void* newValue)
     return true;
 }
 
-bool Actor::OnRep_RootScale(Datum* datum, const void* newValue)
+bool Actor::OnRep_RootScale(Datum* datum, uint32_t index, const void* newValue)
 {
     Actor* actor = (Actor*) datum->mOwner;
     OCT_ASSERT(actor != nullptr);

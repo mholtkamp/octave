@@ -146,7 +146,7 @@ public:
 
 protected:
 
-    static bool HandlePropChange(Datum* datum, const void* newValue);
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
     glm::vec3 InterpolateScale(float time, const Channel& channel);
     glm::quat InterpolateRotation(float time, const Channel& channel);

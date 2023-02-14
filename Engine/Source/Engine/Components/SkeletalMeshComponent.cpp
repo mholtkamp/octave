@@ -29,7 +29,7 @@ static_assert(int32_t(AnimationUpdateMode::Count) == 3, "Need to update string c
 FORCE_LINK_DEF(SkeletalMeshComponent);
 DEFINE_COMPONENT(SkeletalMeshComponent);
 
-bool SkeletalMeshComponent::HandlePropChange(Datum* datum, const void* newValue)
+bool SkeletalMeshComponent::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);

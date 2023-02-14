@@ -14,7 +14,7 @@ DEFINE_FACTORY_MANAGER(Asset);
 DEFINE_FACTORY(Asset, Asset);
 DEFINE_RTTI(Asset);
 
-bool HandleAssetNamePropChange(Datum* datum, const void* newValue)
+bool HandleAssetNamePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
 

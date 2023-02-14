@@ -52,7 +52,7 @@ static_assert(uint32_t(WrapMode::Count) == 3, "Need to update wrap mode enum str
 FORCE_LINK_DEF(Texture);
 DEFINE_ASSET(Texture);
 
-bool Texture::HandlePropChange(Datum* datum, const void* newValue)
+bool Texture::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);

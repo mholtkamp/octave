@@ -74,7 +74,7 @@ void DestroyWidget(Widget* widget)
     }
 }
 
-bool Widget::HandlePropChange(Datum* datum, const void* newValue)
+bool Widget::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
 

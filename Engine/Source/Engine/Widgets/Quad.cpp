@@ -8,7 +8,7 @@
 FORCE_LINK_DEF(Quad);
 DEFINE_WIDGET(Quad, Widget);
 
-bool Quad::HandlePropChange(Datum* datum, const void* newValue)
+bool Quad::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
 

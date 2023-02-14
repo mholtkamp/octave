@@ -236,7 +236,7 @@ public:
 
 protected:
 
-    static bool HandlePropChange(Datum* datum, const void* newValue);
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
     static Rect sCurrentScissor;
 
     float PixelsToRatioX(float x) const;
