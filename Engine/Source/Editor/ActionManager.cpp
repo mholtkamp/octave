@@ -2079,6 +2079,15 @@ void ActionEditProperty::Execute()
 
     if (prop != nullptr)
     {
+        if (prop->IsVector() && !prop->IsExternal() && mIndex >= prop->GetCount())
+        {
+            // In the case of Asset properties, they will be nil if not set, thus
+            // when we regather script properties at the start of this function, the count will not include
+            // those nil values.
+            mIndex = prop->GetCount();
+            prop->SetCount(prop->GetCount() + 1);
+        }
+
         mPreviousValue.Destroy();
         mPreviousValue.SetType(prop->GetType());
         mPreviousValue.SetCount(1);

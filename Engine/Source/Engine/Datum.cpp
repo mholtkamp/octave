@@ -854,6 +854,24 @@ void Datum::PushBack(int16_t value)
     mCount++;
 }
 
+void Datum::Erase(uint32_t index)
+{
+    if (index >= 0 && index < mCount)
+    {
+        char* data = (char*)mData.vp;
+
+        uint32_t numElementsToShift = (mCount - 1) - index;
+        uint32_t dataSize = GetDataTypeSize();
+
+        for (uint32_t i = 0; i < numElementsToShift; ++i)
+        {
+            CopyData(mData, index + i, mData, index + i + 1);
+        }
+
+        SetCount(mCount - 1);
+    }
+}
+
 #define DEFINE_GET_FIELD(KeyType, DatType, Type, Default)           \
 Type Datum::Get##DatType##Field(KeyType key)                        \
 {                                                                   \

@@ -8,6 +8,7 @@
 #include "Widgets/ComboBox.h"
 #include "Widgets/CheckBox.h"
 #include "Widgets/Panel.h"
+#include "Components/ScriptComponent.h"
 #include "EngineTypes.h"
 #include "EditorState.h"
 #include "AssetManager.h"
@@ -79,9 +80,23 @@ void HandlePopVectorPressed(Button* button)
     PropertyArrayWidget* arrayWidget = (PropertyArrayWidget*) button->GetParent();
 
     Property& prop = arrayWidget->GetProperty();
-    if (prop.IsVector() && prop.GetCount() > 0)
+    if (prop.GetCount() > 0)
     {
-        prop.EraseVector(prop.GetCount() - 1);
+        OCT_ASSERT(prop.IsVector());
+        if (prop.IsExternal())
+        {
+            prop.EraseVector(prop.GetCount() - 1);
+        }
+        else
+        {
+            prop.Erase(prop.GetCount() - 1);
+        }
+
+        RTTI* owner = (RTTI*)prop.mOwner;
+        if (owner && owner->As<ScriptComponent>())
+        {
+            owner->As<ScriptComponent>()->SetArrayScriptPropCount(prop.mName, prop.GetCount());
+        }
     }
 }
 
@@ -90,14 +105,28 @@ void HandlePushVectorPressed(Button* button)
     PropertyArrayWidget* arrayWidget = (PropertyArrayWidget*)button->GetParent();
 
     Property& prop = arrayWidget->GetProperty();
-    if (prop.IsVector() && prop.GetCount() < 255)
+    if (prop.GetCount() < 255)
     {
-        prop.PushBackVector();
+        OCT_ASSERT(prop.IsVector());
+        if (prop.IsExternal())
+        {
+            prop.PushBackVector();
+        }
+        else
+        {
+            prop.SetCount(prop.GetCount() + 1);
+        }
 
         std::vector<PropertyWidget*>& elements = arrayWidget->GetElementWidgets();
         for (uint32_t i = 0; i < elements.size(); ++i)
         {
             elements[i]->SetProperty(prop, i);
+        }
+
+        RTTI* owner = (RTTI*)prop.mOwner;
+        if (owner && owner->As<ScriptComponent>())
+        {
+            owner->As<ScriptComponent>()->SetArrayScriptPropCount(prop.mName, prop.GetCount());
         }
     }
 }
