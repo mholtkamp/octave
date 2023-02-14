@@ -6,7 +6,7 @@
 #include <string>
 #include <glm/glm.hpp>
 
-typedef bool(*DatumChangeHandlerFP)(class Datum* prop, const void* newValue);
+typedef bool(*DatumChangeHandlerFP)(class Datum* prop, uint32_t index, const void* newValue);
 
 class Asset;
 class AssetRef;
