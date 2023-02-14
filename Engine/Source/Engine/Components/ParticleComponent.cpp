@@ -145,7 +145,7 @@ void ParticleComponent::LoadStream(Stream& stream)
     mEmit = stream.ReadBool();
     mAutoEmit = stream.ReadBool();
     mAlwaysSimulate = stream.ReadBool();
-    //mOrientation = (ParticleOrientation)stream.ReadUint8();
+    mOrientation = (ParticleOrientation)stream.ReadUint8();
 }
 
 DrawData ParticleComponent::GetDrawData()
