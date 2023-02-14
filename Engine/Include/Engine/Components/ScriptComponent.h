@@ -96,6 +96,9 @@ public:
     Datum GetField(const char* key);
     void SetField(const char* key, const Datum& value);
 
+    void SetArrayScriptPropCount(const std::string& name, uint32_t count);
+    void UploadScriptProperties();
+
     static bool OnRepHandler(Datum* datum, uint32_t index, const void* newValue);
 
     static ScriptComponent* FindScriptCompFromTableName(const std::string& tableName);
@@ -109,7 +112,6 @@ protected:
     void CreateScriptInstance();
     void DestroyScriptInstance();
 
-    void UploadScriptProperties();
     void GatherScriptProperties();
     void GatherReplicatedData();
     void RegisterNetFuncs();

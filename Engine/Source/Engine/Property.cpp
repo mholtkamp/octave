@@ -34,12 +34,10 @@ Property::Property(const Property& src) :
     mEnumCount = src.mEnumCount;
     mEnumStrings = src.mEnumStrings;
 
-    if (mExternal && src.IsVector())
-    {
-        mVector = src.mVector;
-        mMinCount = src.mMinCount;
-        mMaxCount = src.mMaxCount;
-    }
+    mVector = src.mVector;
+    mMinCount = src.mMinCount;
+    mMaxCount = src.mMaxCount;
+    mIsVector = src.mIsVector;
 }
 
 Property& Property::operator=(const Property& src)
@@ -90,12 +88,10 @@ void Property::DeepCopy(const Datum& src, bool forceInternalStorage)
         mEnumCount = srcProp.mEnumCount;
         mEnumStrings = srcProp.mEnumStrings;
 
-        if (mExternal && srcProp.IsVector())
-        {
-            mVector = srcProp.mVector;
-            mMinCount = srcProp.mMinCount;
-            mMaxCount = srcProp.mMaxCount;
-        }
+        mVector = srcProp.mVector;
+        mMinCount = srcProp.mMinCount;
+        mMaxCount = srcProp.mMaxCount;
+        mIsVector = srcProp.mIsVector;
     }
 }
 
@@ -389,101 +385,105 @@ void Property::ResizeVector(uint32_t count)
 
 Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
 {
-    // Vector properties should only be used with external data.
-    OCT_ASSERT(mData.vp);
-    OCT_ASSERT(mExternal);
-    OCT_ASSERT(!mVector);
-
-    mVector = mData.vp;
+    mIsVector = true;
     mMinCount = minCount;
     mMaxCount = maxCount;
 
-    switch (mType)
+    if (mExternal)
     {
-    case DatumType::Integer: 
-    {
-        std::vector<int32_t>& vect = *((std::vector<int32_t>*) mVector);
-        mData.i = vect.data();
-        mCount = (uint8_t) vect.size();
-        break;
-    }
-    case DatumType::Float:
-    {
-        std::vector<float>& vect = *((std::vector<float>*) mVector);
-        mData.f = vect.data();
-        mCount = (uint8_t) vect.size();
-        break;
-    }
-    case DatumType::Bool:
-    {
-        // Bool is not supported because std::vector<bool> is dumb.
-        // Maybe use byte type instead? Sorry.
-        OCT_ASSERT(0);
-        break;
-    }
-    case DatumType::String:
-    {
-        std::vector<std::string>& vect = *((std::vector<std::string>*) mVector);
-        mData.s = vect.data();
-        mCount = (uint8_t) vect.size();
-        break;
-    }
-    case DatumType::Vector2D:
-    {
-        std::vector<glm::vec2>& vect = *((std::vector<glm::vec2>*) mVector);
-        mData.v2 = vect.data();
-        mCount = (uint8_t) vect.size();
-        break;
-    }
-    case DatumType::Vector:
-    {
-        std::vector<glm::vec3>& vect = *((std::vector<glm::vec3>*) mVector);
-        mData.v3 = vect.data();
-        mCount = (uint8_t) vect.size();
-        break;
-    }
-    case DatumType::Color:
-    {
-        std::vector<glm::vec4>& vect = *((std::vector<glm::vec4>*) mVector);
-        mData.v4 = vect.data();
-        mCount = (uint8_t) vect.size();
-        break;
-    }
-    case DatumType::Asset:
-    {
-        std::vector<AssetRef>& vect = *((std::vector<AssetRef>*) mVector);
-        mData.as = vect.data();
-        mCount = (uint8_t) vect.size();
-        break;
-    }
-    case DatumType::Byte:
-    {
-        std::vector<uint8_t>& vect = *((std::vector<uint8_t>*) mVector);
-        mData.by = vect.data();
-        mCount = (uint8_t) vect.size();
-        break;
-    }
-    case DatumType::Table:
-    {
-        // Table not supported as vector
-        OCT_ASSERT(0);
-        break;
-    }
-    case DatumType::Pointer:
-    {
-        // Pointer not supported as vector
-        OCT_ASSERT(0);
-        break;
-    }
-    case DatumType::Short:
-    {
-        std::vector<int16_t>& vect = *((std::vector<int16_t>*) mVector);
-        mData.sh = vect.data();
-        mCount = (uint8_t)vect.size();
-        break;
-    }
+        // Vector properties should only be used with external data.
+        OCT_ASSERT(mData.vp);
+        OCT_ASSERT(!mVector);
 
-    default: break;
+        mVector = mData.vp;
+
+        switch (mType)
+        {
+        case DatumType::Integer:
+        {
+            std::vector<int32_t>& vect = *((std::vector<int32_t>*) mVector);
+            mData.i = vect.data();
+            mCount = (uint8_t)vect.size();
+            break;
+        }
+        case DatumType::Float:
+        {
+            std::vector<float>& vect = *((std::vector<float>*) mVector);
+            mData.f = vect.data();
+            mCount = (uint8_t)vect.size();
+            break;
+        }
+        case DatumType::Bool:
+        {
+            // Bool is not supported because std::vector<bool> is dumb.
+            // Maybe use byte type instead? Sorry.
+            OCT_ASSERT(0);
+            break;
+        }
+        case DatumType::String:
+        {
+            std::vector<std::string>& vect = *((std::vector<std::string>*) mVector);
+            mData.s = vect.data();
+            mCount = (uint8_t)vect.size();
+            break;
+        }
+        case DatumType::Vector2D:
+        {
+            std::vector<glm::vec2>& vect = *((std::vector<glm::vec2>*) mVector);
+            mData.v2 = vect.data();
+            mCount = (uint8_t)vect.size();
+            break;
+        }
+        case DatumType::Vector:
+        {
+            std::vector<glm::vec3>& vect = *((std::vector<glm::vec3>*) mVector);
+            mData.v3 = vect.data();
+            mCount = (uint8_t)vect.size();
+            break;
+        }
+        case DatumType::Color:
+        {
+            std::vector<glm::vec4>& vect = *((std::vector<glm::vec4>*) mVector);
+            mData.v4 = vect.data();
+            mCount = (uint8_t)vect.size();
+            break;
+        }
+        case DatumType::Asset:
+        {
+            std::vector<AssetRef>& vect = *((std::vector<AssetRef>*) mVector);
+            mData.as = vect.data();
+            mCount = (uint8_t)vect.size();
+            break;
+        }
+        case DatumType::Byte:
+        {
+            std::vector<uint8_t>& vect = *((std::vector<uint8_t>*) mVector);
+            mData.by = vect.data();
+            mCount = (uint8_t)vect.size();
+            break;
+        }
+        case DatumType::Table:
+        {
+            // Table not supported as vector
+            OCT_ASSERT(0);
+            break;
+        }
+        case DatumType::Pointer:
+        {
+            // Pointer not supported as vector
+            OCT_ASSERT(0);
+            break;
+        }
+        case DatumType::Short:
+        {
+            std::vector<int16_t>& vect = *((std::vector<int16_t>*) mVector);
+            mData.sh = vect.data();
+            mCount = (uint8_t)vect.size();
+            break;
+        }
+
+        default: break;
+        }
     }
 
     return *this;
@@ -491,7 +491,10 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
 
 bool Property::IsVector() const
 {
-    return (mVector != nullptr);
+    // External props should have mVector allocated if mIsVector is true.
+    // Internal props should NOT have mVector allocated.
+    OCT_ASSERT(!mIsVector || (mExternal == (mVector != nullptr)));
+    return mIsVector;
 }
 
 bool Property::IsArray() const
@@ -509,4 +512,5 @@ void Property::Reset()
     mVector = nullptr;
     mMinCount = 0;
     mMaxCount = 255;
+    mIsVector = false;
 }

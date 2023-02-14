@@ -54,6 +54,7 @@ public:
     void* mVector = nullptr;
     uint8_t mMinCount = 0;
     uint8_t mMaxCount = 255;
+    bool mIsVector = false;
 };
 
 struct PropertyOverride

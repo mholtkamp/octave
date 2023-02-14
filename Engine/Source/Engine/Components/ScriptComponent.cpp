@@ -256,6 +256,20 @@ void ScriptComponent::UploadScriptProperties()
     }
 }
 
+void ScriptComponent::SetArrayScriptPropCount(const std::string& name, uint32_t count)
+{
+    for (uint32_t i = 0; i < mScriptProps.size(); ++i)
+    {
+        if (mScriptProps[i].mName == name)
+        {
+            mScriptProps[i].SetCount(count);
+            break;
+        }
+    }
+
+    UploadScriptProperties();
+}
+
 void ScriptComponent::GatherScriptProperties()
 {
 #if LUA_ENABLED
@@ -310,17 +324,28 @@ void ScriptComponent::GatherScriptProperties()
                             newProp.mType = type;
                             lua_pop(L, 1);
 
-                            int32_t count = 1;
-                            lua_getfield(L, propIdx, "count");
-                            if (lua_isinteger(L, -1))
-                            {
-                                count = lua_tointeger(L, -1);
-                            }
+                            // In the future, possibly support "count", "minCount", and "maxCount"
+                            //int32_t count = 1;
+                            //lua_getfield(L, propIdx, "count");
+                            //if (lua_isinteger(L, -1))
+                            //{
+                            //    count = lua_tointeger(L, -1);
+                            //}
+                            //lua_pop(L, 1);
+
+                            bool isArray = false;
+                            lua_getfield(L, propIdx, "array");
+                            isArray = lua_toboolean(L, -1);
                             lua_pop(L, 1);
 
                             newProp.mOwner = this;
                             newProp.mExternal = false;
                             newProp.mChangeHandler = HandleScriptPropChange;
+
+                            if (isArray)
+                            {
+                                newProp.MakeVector();
+                            }
 
                             // Setup initial value and push it onto the outProps vector.
                             // Table and pointer datum types are not supported for script props.
@@ -329,8 +354,10 @@ void ScriptComponent::GatherScriptProperties()
                                 type != DatumType::Table &&
                                 type != DatumType::Pointer)
                             {
+                                int32_t count = 1;
                                 int tableIdx = -1;
-                                if (count > 1)
+
+                                if (isArray)
                                 {
                                     lua_getfield(L, scriptIdx, name);
 
@@ -349,11 +376,15 @@ void ScriptComponent::GatherScriptProperties()
                                     {
                                         tableIdx = lua_gettop(L);
                                     }
+
+                                    lua_len(L, tableIdx);
+                                    count = lua_tointeger(L, -1);
+                                    lua_pop(L, 1);
                                 }
 
                                 for (int32_t i = 0; i < count; ++i)
                                 {
-                                    lua_getfield(L, tableIdx == -1 ? scriptIdx : tableIdx, name);
+                                    lua_getfield(L, isArray ? tableIdx : scriptIdx, name);
 
                                     if (lua_isnil(L, -1) &&
                                         type != DatumType::Asset)
@@ -384,7 +415,7 @@ void ScriptComponent::GatherScriptProperties()
                                         // Put a duplicate of the value on the stack so it will remain after setting the field.
                                         lua_pushvalue(L, -1);
 
-                                        if (tableIdx != -1)
+                                        if (isArray)
                                         {
                                             lua_seti(L, tableIdx, int(i + 1));
                                         }
@@ -1095,7 +1126,8 @@ void ScriptComponent::UploadDatum(Datum& datum, const char* varName)
         int arrayTableIdx = -1;
         uint32_t count = datum.GetCount();
 
-        if (count > 1)
+        if (datum.IsProperty() &&
+            static_cast<Property&>(datum).IsVector())
         {
             lua_getfield(L, instTableIdx, varName);
             arrayTableIdx = lua_gettop(L);
@@ -1137,6 +1169,10 @@ void ScriptComponent::UploadDatum(Datum& datum, const char* varName)
 
         if (arrayTableIdx != -1)
         {
+            // Set value at count + 1 to nil
+            lua_pushnil(L);
+            lua_seti(L, arrayTableIdx, count + 1);
+
             // Pop array table.
             lua_pop(L, 1);
         }

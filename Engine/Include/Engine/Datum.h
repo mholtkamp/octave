@@ -170,6 +170,8 @@ public:
     void PushBack(RTTI* value);
     void PushBack(int16_t value);
 
+    void Erase(uint32_t index);
+
     TableDatum* FindTableDatum(const char* key);
     TableDatum* FindTableDatum(int32_t key);
     TableDatum* GetField(const char* key);
