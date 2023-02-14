@@ -405,84 +405,84 @@ uint32_t Datum::GetSerializationSize() const
 void Datum::SetInteger(int32_t value, uint32_t index)
 {
     PreSet(index, DatumType::Integer);
-    if (!mChangeHandler || !mChangeHandler(this, &value))
+    if (!mChangeHandler || !mChangeHandler(this, index, &value))
         mData.i[index] = value;
 }
 
 void Datum::SetFloat(float value, uint32_t index)
 {
     PreSet(index, DatumType::Float);
-    if (!mChangeHandler || !mChangeHandler(this, &value))
+    if (!mChangeHandler || !mChangeHandler(this, index, &value))
         mData.f[index] = value;
 }
 
 void Datum::SetBool(bool value, uint32_t index)
 {
     PreSet(index, DatumType::Bool);
-    if (!mChangeHandler || !mChangeHandler(this, &value))
+    if (!mChangeHandler || !mChangeHandler(this, index, &value))
         mData.b[index] = value;
 }
 
 void Datum::SetString(const std::string& value, uint32_t index)
 {
     PreSet(index, DatumType::String);
-    if (!mChangeHandler || !mChangeHandler(this, &value))
+    if (!mChangeHandler || !mChangeHandler(this, index, &value))
         mData.s[index] = value;
 }
 
 void Datum::SetVector2D(const glm::vec2& value, uint32_t index)
 {
     PreSet(index, DatumType::Vector2D);
-    if (!mChangeHandler || !mChangeHandler(this, &value))
+    if (!mChangeHandler || !mChangeHandler(this, index, &value))
         mData.v2[index] = value;
 }
 
 void Datum::SetVector(const glm::vec3& value, uint32_t index)
 {
     PreSet(index, DatumType::Vector);
-    if (!mChangeHandler || !mChangeHandler(this, &value))
+    if (!mChangeHandler || !mChangeHandler(this, index, &value))
         mData.v3[index] = value;
 }
 
 void Datum::SetColor(const glm::vec4& value, uint32_t index)
 {
     PreSet(index, DatumType::Color);
-    if (!mChangeHandler || !mChangeHandler(this, &value))
+    if (!mChangeHandler || !mChangeHandler(this, index, &value))
         mData.v4[index] = value;
 }
 
 void Datum::SetAsset(const Asset* value, uint32_t index)
 {
     PreSet(index, DatumType::Asset);
-    if (!mChangeHandler || !mChangeHandler(this, const_cast<Asset**>(&value)))
+    if (!mChangeHandler || !mChangeHandler(this, index, const_cast<Asset**>(&value)))
         mData.as[index] = value;
 }
 
 void Datum::SetByte(uint8_t value, uint32_t index)
 {
     PreSet(index, DatumType::Byte);
-    if (!mChangeHandler || !mChangeHandler(this, &value))
+    if (!mChangeHandler || !mChangeHandler(this, index, &value))
         mData.by[index] = value;
 }
 
 void Datum::SetTableDatum(const TableDatum& value, uint32_t index)
 {
     PreSet(index, DatumType::Table);
-    if (!mChangeHandler || !mChangeHandler(this, &value))
+    if (!mChangeHandler || !mChangeHandler(this, index, &value))
         mData.t[index] = value;
 }
 
 void Datum::SetPointer(RTTI* value, uint32_t index)
 {
     PreSet(index, DatumType::Pointer);
-    if (!mChangeHandler || !mChangeHandler(this, &value))
+    if (!mChangeHandler || !mChangeHandler(this, index, &value))
         mData.p[index] = value;
 }
 
 void Datum::SetShort(int16_t value, uint32_t index)
 {
     PreSet(index, DatumType::Short);
-    if (!mChangeHandler || !mChangeHandler(this, &value))
+    if (!mChangeHandler || !mChangeHandler(this, index, &value))
         mData.sh[index] = value;
 }
 

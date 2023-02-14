@@ -310,151 +310,191 @@ void ScriptComponent::GatherScriptProperties()
                             newProp.mType = type;
                             lua_pop(L, 1);
 
-                            // TODO: Handle array properties
-                            //lua_getfield(L, propIdx, "count");
-                            //int32_t count= lua_isinteger(L, -1) ? lua_tointeger(L, -1) : 1;
+                            int32_t count = 1;
+                            lua_getfield(L, propIdx, "count");
+                            if (lua_isinteger(L, -1))
+                            {
+                                count = lua_tointeger(L, -1);
+                            }
+                            lua_pop(L, 1);
 
                             newProp.mOwner = this;
                             newProp.mExternal = false;
                             newProp.mChangeHandler = HandleScriptPropChange;
 
                             // Setup initial value and push it onto the outProps vector.
+                            // Table and pointer datum types are not supported for script props.
                             if (newProp.mName != "" &&
-                                type != DatumType::Count)
+                                type != DatumType::Count &&
+                                type != DatumType::Table &&
+                                type != DatumType::Pointer)
                             {
-                                lua_getfield(L, scriptIdx, name);
-
-                                if (lua_isnil(L, -1) &&
-                                    type != DatumType::Asset)
+                                int tableIdx = -1;
+                                if (count > 1)
                                 {
-                                    // Pop nil
-                                    lua_pop(L, 1);
+                                    lua_getfield(L, scriptIdx, name);
 
-                                    // Add a defaulted member to the table and leave the it on the stack
-                                    // so that we can initialize the Property correctly later.
+                                    if (!lua_istable(L, -1))
+                                    {
+                                        lua_pop(L, 1);
+                                        lua_newtable(L);
+                                        tableIdx = lua_gettop(L);
+
+                                        // Push a copy of the arraytable on the stack so it can be used later.
+                                        lua_pushvalue(L, -1);
+
+                                        lua_setfield(L, scriptIdx, name);
+                                    }
+                                    else
+                                    {
+                                        tableIdx = lua_gettop(L);
+                                    }
+                                }
+
+                                for (int32_t i = 0; i < count; ++i)
+                                {
+                                    lua_getfield(L, tableIdx == -1 ? scriptIdx : tableIdx, name);
+
+                                    if (lua_isnil(L, -1) &&
+                                        type != DatumType::Asset)
+                                    {
+                                        // Pop nil
+                                        lua_pop(L, 1);
+
+                                        // Add a defaulted member to the table and leave the it on the stack
+                                        // so that we can initialize the Property correctly later.
+                                        switch (type)
+                                        {
+                                        case DatumType::Integer: lua_pushinteger(L, 0); break;
+                                        case DatumType::Float: lua_pushnumber(L, 0.0f); break;
+                                        case DatumType::Bool: lua_pushboolean(L, false); break;
+                                        case DatumType::String: lua_pushstring(L, ""); break;
+                                        case DatumType::Vector2D: Vector_Lua::Create(L, glm::vec2(0.0f, 0.0f)); break;
+                                        case DatumType::Vector: Vector_Lua::Create(L, glm::vec3(0.0f, 0.0f, 0.0f)); break;
+                                        case DatumType::Color: Vector_Lua::Create(L, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)); break;
+                                        case DatumType::Byte: lua_pushinteger(L, 0); break;
+                                        case DatumType::Short: lua_pushinteger(L, 0); break;
+
+
+                                        default:
+                                            lua_pushnil(L);
+                                            break;
+                                        }
+
+                                        // Put a duplicate of the value on the stack so it will remain after setting the field.
+                                        lua_pushvalue(L, -1);
+
+                                        if (tableIdx != -1)
+                                        {
+                                            lua_seti(L, tableIdx, int(i + 1));
+                                        }
+                                        else
+                                        {
+                                            lua_setfield(L, scriptIdx, name);
+                                        }
+                                    }
+
                                     switch (type)
                                     {
-                                    case DatumType::Integer: lua_pushinteger(L, 0); break;
-                                    case DatumType::Float: lua_pushnumber(L, 0.0f); break;
-                                    case DatumType::Bool: lua_pushboolean(L, false); break;
-                                    case DatumType::String: lua_pushstring(L, ""); break;
-                                    case DatumType::Vector2D: Vector_Lua::Create(L, glm::vec2(0.0f, 0.0f)); break;
-                                    case DatumType::Vector: Vector_Lua::Create(L, glm::vec3(0.0f, 0.0f, 0.0f)); break;
-                                    case DatumType::Color: Vector_Lua::Create(L, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)); break;
-                                    case DatumType::Byte: lua_pushinteger(L, 0); break;
-                                    case DatumType::Short: lua_pushinteger(L, 0); break;
-
-
-                                    default:
-                                        lua_pushnil(L);
+                                    case DatumType::Integer:
+                                    {
+                                        int32_t value = CHECK_INTEGER(L, -1);
+                                        newProp.PushBack(value);
+                                        break;
+                                    }
+                                    case DatumType::Float:
+                                    {
+                                        float value = CHECK_NUMBER(L, -1);
+                                        newProp.PushBack(value);
+                                        break;
+                                    }
+                                    case DatumType::Bool:
+                                    {
+                                        bool value = CHECK_BOOLEAN(L, -1);
+                                        newProp.PushBack(value);
+                                        break;
+                                    }
+                                    case DatumType::String:
+                                    {
+                                        const char* value = CHECK_STRING(L, -1);
+                                        newProp.PushBack(value);
+                                        break;
+                                    }
+                                    case DatumType::Vector2D:
+                                    {
+                                        glm::vec2 value = CHECK_VECTOR(L, -1);
+                                        newProp.PushBack(value);
+                                        break;
+                                    }
+                                    case DatumType::Vector:
+                                    {
+                                        glm::vec3 value = CHECK_VECTOR(L, -1);
+                                        newProp.PushBack(value);
+                                        break;
+                                    }
+                                    case DatumType::Color:
+                                    {
+                                        glm::vec4 value = CHECK_VECTOR(L, -1);
+                                        newProp.PushBack(value);
+                                        break;
+                                    }
+                                    case DatumType::Asset:
+                                    {
+                                        Asset* asset = nullptr;
+                                        if (!lua_isnil(L, -1))
+                                        {
+                                            asset = CHECK_ASSET(L, -1);
+                                        }
+                                        newProp.PushBack(asset);
+                                        break;
+                                    }
+                                    case DatumType::Byte:
+                                    {
+                                        int32_t value = CHECK_INTEGER(L, -1);
+                                        newProp.PushBack((uint8_t)value);
                                         break;
                                     }
 
-                                    // Put a duplicate of the value on the stack so it will remain after setting the field.
-                                    lua_pushvalue(L, -1);
-
-                                    lua_setfield(L, scriptIdx, name);
-                                }
-
-                                bool push = true;
-
-                                switch (type)
-                                {
-                                case DatumType::Integer:
-                                {
-                                    int32_t value = CHECK_INTEGER(L, -1);
-                                    newProp.PushBack(value);
-                                    break;
-                                }
-                                case DatumType::Float:
-                                {
-                                    float value = CHECK_NUMBER(L, -1);
-                                    newProp.PushBack(value);
-                                    break;
-                                }
-                                case DatumType::Bool:
-                                {
-                                    bool value = CHECK_BOOLEAN(L, -1);
-                                    newProp.PushBack(value);
-                                    break;
-                                }
-                                case DatumType::String:
-                                {
-                                    const char* value = CHECK_STRING(L, -1);
-                                    newProp.PushBack(value);
-                                    break;
-                                }
-                                case DatumType::Vector2D:
-                                {
-                                    glm::vec2 value = CHECK_VECTOR(L, -1);
-                                    newProp.PushBack(value);
-                                    break;
-                                }
-                                case DatumType::Vector:
-                                {
-                                    glm::vec3 value = CHECK_VECTOR(L, -1);
-                                    newProp.PushBack(value);
-                                    break;
-                                }
-                                case DatumType::Color:
-                                {
-                                    glm::vec4 value = CHECK_VECTOR(L, -1);
-                                    newProp.PushBack(value);
-                                    break;
-                                }
-                                case DatumType::Asset:
-                                {
-                                    Asset* asset = nullptr;
-                                    if (!lua_isnil(L, -1))
+                                    case DatumType::Table:
                                     {
-                                        asset = CHECK_ASSET(L, -1);
+                                        LogError("Table script properties are not supported.");
+                                        OCT_ASSERT(0);
+                                        break;
                                     }
-                                    newProp.PushBack(asset);
-                                    break;
-                                }
-                                case DatumType::Byte:
-                                {
-                                    int32_t value = CHECK_INTEGER(L, -1);
-                                    newProp.PushBack((uint8_t)value);
-                                    break;
+
+                                    case DatumType::Pointer:
+                                    {
+                                        LogError("Pointer script properties are not supported.");
+                                        OCT_ASSERT(0);
+                                        break;
+                                    }
+
+                                    case DatumType::Short:
+                                    {
+                                        int32_t value = CHECK_INTEGER(L, -1);
+                                        newProp.PushBack((int16_t)value);
+                                        break;
+                                    }
+
+                                    case DatumType::Count:
+                                    {
+                                        OCT_ASSERT(0); // Unreachable
+                                        break;
+                                    }
+                                    }
+
+                                    // Pop initial value
+                                    lua_pop(L, 1);
                                 }
 
-                                case DatumType::Table:
-                                {
-                                    push = false;
-                                    LogError("Table script properties are not supported.");
-                                    break;
-                                }
 
-                                case DatumType::Pointer:
-                                {
-                                    push = false;
-                                    LogError("Pointer script properties are not supported.");
-                                    break;
-                                }
+                                mScriptProps.push_back(newProp);
 
-                                case DatumType::Short:
+                                if (tableIdx != -1)
                                 {
-                                    int32_t value = CHECK_INTEGER(L, -1);
-                                    newProp.PushBack((int16_t)value);
-                                    break;
+                                    // pop the array table
+                                    lua_pop(L, 1);
                                 }
-
-                                case DatumType::Count:
-                                {
-                                    push = false;
-                                    OCT_ASSERT(0); // Unreachable
-                                    break;
-                                }
-                                }
-
-                                if (push)
-                                {
-                                    mScriptProps.push_back(newProp);
-                                }
-
-                                // Pop initial value
-                                lua_pop(L, 1);
                             }
                             else
                             {
@@ -661,8 +701,9 @@ void ScriptComponent::GatherReplicatedData()
 
                                 case DatumType::Pointer:
                                 {
-                                    push = false;
-                                    LogError("Pointer script properties are not supported.");
+                                    // Only actor pointers are supported right now.
+                                    Actor* actorPointer = CHECK_ACTOR(L, -1);
+                                    newDatum.PushBack(actorPointer);
                                     break;
                                 }
 
@@ -1050,32 +1091,59 @@ void ScriptComponent::UploadDatum(Datum& datum, const char* varName)
     lua_getglobal(L, mTableName.c_str());
     if (lua_istable(L, -1))
     {
-        int tableIdx = lua_gettop(L);
+        int instTableIdx = lua_gettop(L);
+        int arrayTableIdx = -1;
+        uint32_t count = datum.GetCount();
 
-        // Push the value we want to update, dependent on the datum type.
-        switch (datum.mType)
+        if (count > 1)
         {
-        case DatumType::Integer: lua_pushinteger(L, datum.GetInteger()); break;
-        case DatumType::Float: lua_pushnumber(L, datum.GetFloat()); break;
-        case DatumType::Bool: lua_pushboolean(L, datum.GetBool()); break;
-        case DatumType::String: lua_pushstring(L, datum.GetString().c_str()); break;
-        case DatumType::Vector2D: Vector_Lua::Create(L, datum.GetVector2D()); break;
-        case DatumType::Vector: Vector_Lua::Create(L, datum.GetVector()); break;
-        case DatumType::Color: Vector_Lua::Create(L, datum.GetColor()); break;
-        case DatumType::Asset: Asset_Lua::Create(L, datum.GetAsset()); break;
-        case DatumType::Byte: lua_pushinteger(L, (int32_t) datum.GetByte()); break;
-        case DatumType::Short: lua_pushinteger(L, (int32_t)datum.GetShort()); break;
-
-        case DatumType::Table:
-        case DatumType::Pointer:
-        case DatumType::Count:
-            // These datum types are not supported.
-            OCT_ASSERT(0);
-            break;
+            lua_getfield(L, instTableIdx, varName);
+            arrayTableIdx = lua_gettop(L);
         }
 
-        lua_setfield(L, tableIdx, varName);
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            // Push the value we want to update, dependent on the datum type.
+            switch (datum.mType)
+            {
+            case DatumType::Integer: lua_pushinteger(L, datum.GetInteger()); break;
+            case DatumType::Float: lua_pushnumber(L, datum.GetFloat()); break;
+            case DatumType::Bool: lua_pushboolean(L, datum.GetBool()); break;
+            case DatumType::String: lua_pushstring(L, datum.GetString().c_str()); break;
+            case DatumType::Vector2D: Vector_Lua::Create(L, datum.GetVector2D()); break;
+            case DatumType::Vector: Vector_Lua::Create(L, datum.GetVector()); break;
+            case DatumType::Color: Vector_Lua::Create(L, datum.GetColor()); break;
+            case DatumType::Asset: Asset_Lua::Create(L, datum.GetAsset()); break;
+            case DatumType::Byte: lua_pushinteger(L, (int32_t)datum.GetByte()); break;
+            case DatumType::Short: lua_pushinteger(L, (int32_t)datum.GetShort()); break;
+
+            case DatumType::Table:
+            case DatumType::Pointer:
+            case DatumType::Count:
+                // These datum types are not supported.
+                OCT_ASSERT(0);
+                break;
+            }
+
+            if (arrayTableIdx != -1)
+            {
+                lua_seti(L, arrayTableIdx, i + 1);
+            }
+            else
+            {
+                lua_setfield(L, instTableIdx, varName);
+            }
+        }
+
+        if (arrayTableIdx != -1)
+        {
+            // Pop array table.
+            lua_pop(L, 1);
+        }
     }
+
+    // Pop instance table
+    lua_pop(L, 1);
 #endif
 }
 

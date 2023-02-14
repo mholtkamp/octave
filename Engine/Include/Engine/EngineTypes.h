@@ -240,6 +240,7 @@ struct EngineState
     float mTimeDilation = 1.0f;
     bool mPaused = false;
     bool mFrameStep = false;
+    bool mInitialized = false;
 
 #if LUA_ENABLED
     lua_State* mLua = nullptr;

@@ -238,6 +238,9 @@ bool Initialize(InitOptions& initOptions)
         BindLuaInterface();
         SetupLuaPath();
         InitAutoRegScripts();
+
+        // Run Startup.lua if it exists.
+        ScriptUtils::RunScript("Startup.lua");
     }
 #endif
 
@@ -258,6 +261,8 @@ bool Initialize(InitOptions& initOptions)
         }
     }
 #endif 
+
+    sEngineState.mInitialized = true;
 
     return true;
 }
@@ -359,6 +364,8 @@ void Shutdown()
 
     LogDebug("Shutdown Complete");
     ShutdownLog();
+
+    sEngineState.mInitialized = false;
 }
 
 void Quit()
@@ -436,6 +443,13 @@ void LoadProject(const std::string& path, bool discoverAssets)
 #if LUA_ENABLED
     extern void UpdateLuaPath();
     UpdateLuaPath();
+
+    if (GetEngineState()->mInitialized)
+    {
+        // If the engine is already initialized, then run the new startup script.
+        // Otherwise, it will get run on Initialize().
+        ScriptUtils::RunScript("Startup.lua");
+    }
 #endif
 
 #if EDITOR
