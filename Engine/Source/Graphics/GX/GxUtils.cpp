@@ -29,7 +29,7 @@ void SetupLights()
     DirectionalLightComponent* dirLightComp = GetWorld()->GetDirectionalLight();
 
     // Setup directional light
-    if (dirLightComp)
+    if (dirLightComp && dirLightComp->IsVisible())
     {
         GXLightObj gxDirLight;
 

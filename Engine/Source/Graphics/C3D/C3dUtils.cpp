@@ -342,7 +342,7 @@ void SetupLighting()
     DirectionalLightComponent* dirLightComp = GetWorld()->GetDirectionalLight();
 
     // Setup directional light
-    if (dirLightComp)
+    if (dirLightComp && dirLightComp->IsVisible())
     {
         glm::vec3 lightPosWS = -dirLightComp->GetDirection() * 10000.0f;
         glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
