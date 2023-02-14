@@ -27,7 +27,7 @@ static const char* sVertJustStrings[] =
 };
 static_assert(int32_t(Justification::Count) == 3, "Need to update string conversion table");
 
-bool Text::HandlePropChange(Datum* datum, const void* newValue)
+bool Text::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
 

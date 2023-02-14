@@ -14,7 +14,7 @@
 FORCE_LINK_DEF(ParticleComponent);
 DEFINE_COMPONENT(ParticleComponent);
 
-static bool HandlePropChange(Datum* datum, const void* newValue)
+static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);

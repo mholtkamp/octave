@@ -23,7 +23,7 @@ DEFINE_COMPONENT(ScriptComponent)
 std::unordered_map<std::string, ScriptComponent*> ScriptComponent::sTableToCompMap;
 std::unordered_map<std::string, ScriptNetFuncMap> ScriptComponent::sScriptNetFuncMap;
 
-bool ScriptComponent::HandlePropChange(Datum* datum, const void* newValue)
+bool ScriptComponent::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
 
     Property* prop = static_cast<Property*>(datum);
@@ -60,7 +60,7 @@ bool ScriptComponent::HandlePropChange(Datum* datum, const void* newValue)
     return success;
 }
 
-bool ScriptComponent::HandleScriptPropChange(Datum* datum, const void* newValue)
+bool ScriptComponent::HandleScriptPropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
 
@@ -68,7 +68,7 @@ bool ScriptComponent::HandleScriptPropChange(Datum* datum, const void* newValue)
     OCT_ASSERT(!prop->mExternal);
     ScriptComponent* comp = static_cast<ScriptComponent*>(prop->mOwner);
 
-    prop->SetValueRaw(newValue);
+    prop->SetValueRaw(newValue, index);
 
     // Now that the value has been updated (prop->SetValue()),
     // We want to propagate that new value to the script instance table.
@@ -77,7 +77,7 @@ bool ScriptComponent::HandleScriptPropChange(Datum* datum, const void* newValue)
     return true;
 }
 
-bool ScriptComponent::HandleForeignScriptPropChange(Datum* datum, const void* newValue)
+bool ScriptComponent::HandleForeignScriptPropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     // This is ridiculous, but for the Property's that are passed to the editor, we need
     // to propagate the changes made to them so that they reflect the ScriptComponent's properties.
@@ -87,7 +87,7 @@ bool ScriptComponent::HandleForeignScriptPropChange(Datum* datum, const void* ne
     OCT_ASSERT(!prop->mExternal);
     ScriptComponent* comp = static_cast<ScriptComponent*>(prop->mOwner);
 
-    prop->SetValueRaw(newValue);
+    prop->SetValueRaw(newValue, index);
 
     Property* compProp = nullptr;
     for (uint32_t i = 0; i < comp->mScriptProps.size(); ++i)
@@ -101,7 +101,7 @@ bool ScriptComponent::HandleForeignScriptPropChange(Datum* datum, const void* ne
 
     if (compProp != nullptr)
     {
-        compProp->SetValue(newValue);
+        compProp->SetValue(newValue, index);
     }
 
     return true;
@@ -1554,7 +1554,7 @@ void ScriptComponent::SetField(const char* key, const Datum& value)
 }
 
 
-bool ScriptComponent::OnRepHandler(Datum* datum, const void* newValue)
+bool ScriptComponent::OnRepHandler(Datum* datum, uint32_t index, const void* newValue)
 {
 #if LUA_ENABLED
     ScriptNetDatum* netDatum = (ScriptNetDatum*)datum;

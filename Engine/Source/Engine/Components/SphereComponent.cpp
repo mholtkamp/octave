@@ -8,7 +8,7 @@
 FORCE_LINK_DEF(SphereComponent);
 DEFINE_COMPONENT(SphereComponent);
 
-static bool HandlePropChange(Datum* datum, const void* newValue)
+static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);

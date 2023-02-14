@@ -54,7 +54,7 @@ static_assert(int32_t(TevMode::Count) == 8, "Need to update string conversion ta
 FORCE_LINK_DEF(Material);
 DEFINE_ASSET(Material);
 
-static bool HandlePropChange(Datum* datum, const void* newValue)
+static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
 

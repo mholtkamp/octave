@@ -42,7 +42,7 @@ public:
     FilterType GetFilterType() const;
     WrapMode GetWrapMode() const;
 
-    static bool HandlePropChange(class Datum* datum, const void* newValue);
+    static bool HandlePropChange(class Datum* datum, uint32_t index, const void* newValue);
 
 protected:
 

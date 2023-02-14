@@ -15,7 +15,7 @@
 FORCE_LINK_DEF(TransformComponent);
 DEFINE_COMPONENT(TransformComponent);
 
-bool HandleTransformPropChange(Datum* datum, const void* newValue)
+bool HandleTransformPropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);

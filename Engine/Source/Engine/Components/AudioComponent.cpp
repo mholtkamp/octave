@@ -17,7 +17,7 @@ static_assert(int32_t(AttenuationFunc::Count) == 2, "Need to update string conve
 FORCE_LINK_DEF(AudioComponent);
 DEFINE_COMPONENT(AudioComponent);
 
-static bool HandlePropChange(Datum* datum, const void* newValue)
+static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);

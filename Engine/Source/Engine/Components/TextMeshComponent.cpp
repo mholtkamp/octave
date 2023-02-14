@@ -13,7 +13,7 @@ DEFINE_COMPONENT(TextMeshComponent);
 
 extern const char* gBlendModeStrings[];
 
-bool TextMeshComponent::HandlePropChange(Datum* datum, const void* newValue)
+bool TextMeshComponent::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);

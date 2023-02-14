@@ -84,7 +84,7 @@ public:
 
 protected:
 
-    static bool HandlePropChange(Datum* datum, const void* newValue);
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
     void UpdateVertexData();
     void UploadVertexData();
