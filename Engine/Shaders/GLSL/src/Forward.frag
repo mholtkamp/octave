@@ -46,7 +46,7 @@ vec4 CalculateLighting(uint shadingModel, vec3 L, vec3 N, vec3 V, vec4 color, fl
         float diffuseIntensity = clamp(dot(L, N), 0.0, 1.0);
         vec4 diffuseColor = diffuseIntensity * color;
 
-        vec3 reflectDir = reflect(L, N);  
+        vec3 reflectDir = reflect(-L, N);  
         float specularIntensity = pow(max(dot(V, reflectDir), 0.0), material.mShininess);
         vec4 specularColor = material.mSpecular * specularIntensity * color;
 
@@ -131,7 +131,7 @@ void main()
     outColor = diffuse;
 
     vec3 N = normalize(inNormal);
-    vec3 V = global.mViewDirection.xyz;
+    vec3 V = normalize(global.mViewPosition.xyz - inPosition);
 
     if (shadingModel != SHADING_MODEL_UNLIT)
     {
