@@ -2,6 +2,7 @@
 
 #include "Widgets/PropertyWidget.h"
 #include "Widgets/AssetsPanel.h"
+#include "Widgets/PropertiesPanel.h"
 #include "Widgets/Text.h"
 #include "Widgets/TextField.h"
 #include "Widgets/Selector.h"
@@ -62,6 +63,14 @@ void HandleAssignAssetPressed(Button* button)
         if (propAsset != nullptr)
         {
             PanelManager::Get()->GetAssetsPanel()->BrowseToAsset(propAsset->GetName());
+        }
+    }
+    else if (IsAltDown())
+    {
+        Asset* propAsset = propWidget->GetProperty().GetAsset();
+        if (propAsset != nullptr)
+        {
+            PanelManager::Get()->GetPropertiesPanel()->InspectAsset(propAsset);
         }
     }
     else 
@@ -698,7 +707,16 @@ void AssetProp::Update()
     mTextField->SetTextString(asset ? mProperty.GetAsset(mIndex)->GetName() : "");
     mTextField->GetText()->SetColor(assetColor);
     mAssignAssetButton->GetText()->SetColor(assetColor);
-    mAssignAssetButton->SetTextString(IsControlDown() ? "  <" : "  >");
+    const char* buttonText = "  >";
+    if (IsControlDown())
+    {
+        buttonText = "  <";
+    }
+    else if (IsAltDown())
+    {
+        buttonText = "  ^";
+    }
+    mAssignAssetButton->SetTextString(buttonText);
 }
 
 void AssetProp::Write()
