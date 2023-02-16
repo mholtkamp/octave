@@ -18,6 +18,8 @@ public:
     const std::string& GetTableName();
 
     virtual void Update() override;
+    virtual void Start() override;
+    virtual void Stop() override;
 
     void StartScript();
     void RestartScript();

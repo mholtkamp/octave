@@ -64,6 +64,32 @@ void ScriptWidget::Update()
     }
 }
 
+void ScriptWidget::Start()
+{
+    bool started = mStarted;
+
+    Widget::Start();
+
+    // To prevent updating in Widget editor.
+    if (!started && IsPlaying())
+    {
+        CallFunction("Start");
+    }
+
+}
+
+void ScriptWidget::Stop()
+{
+    Widget::Stop();
+
+    // To prevent updating in Widget editor.
+    if (IsPlaying())
+    {
+        CallFunction("Stop");
+    }
+}
+
+
 void ScriptWidget::StartScript()
 {
     if (mTableName == "")
