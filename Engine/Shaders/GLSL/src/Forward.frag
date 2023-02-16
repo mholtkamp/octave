@@ -183,7 +183,10 @@ void main()
         outColor += intensity * material.mFresnelColor;
     }
 
-    ApplyFog(outColor, inPosition, global);
+    if (material.mApplyFog != 0)
+    {
+        ApplyFog(outColor, inPosition, global);
+    }
 
     outColor.a = inColor.a * diffuse.a * material.mOpacity;
 }
