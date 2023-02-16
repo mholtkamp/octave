@@ -909,6 +909,7 @@ void UpdateMaterialResource(Material* material)
     ubo.mShininess = material->GetShininess();
     ubo.mFresnelEnabled = static_cast<uint32_t>(material->IsFresnelEnabled());
     ubo.mVertexColorMode = static_cast<uint32_t>(material->GetVertexColorMode());
+    ubo.mApplyFog = static_cast<uint32_t>(material->ShouldApplyFog());
     ubo.mUvMaps[0] = material->GetUvMap(0);
     ubo.mUvMaps[1] = material->GetUvMap(1);
     ubo.mUvMaps[2] = material->GetUvMap(2);

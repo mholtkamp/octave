@@ -52,6 +52,7 @@ struct MaterialParams
     int32_t mSortPriority = 0;
     bool mDisableDepthTest = false;
     bool mFresnelEnabled = false;
+    bool mApplyFog = true;
 };
 
 class Material : public Asset
@@ -133,6 +134,9 @@ public:
 
     bool IsFresnelEnabled() const;
     void SetFresnelEnabled(bool enable);
+
+    bool ShouldApplyFog() const;
+    void SetApplyFog(bool applyFog);
 
     uint32_t GetUvMap(uint32_t textureSlot);
     void SetUvMap(uint32_t textureSlot, uint32_t uvMapIndex);

@@ -137,6 +137,7 @@ void Material::LoadStream(Stream& stream, Platform platform)
     mParams.mSortPriority = stream.ReadInt32();
     mParams.mDisableDepthTest = stream.ReadBool();
     mParams.mFresnelEnabled = stream.ReadBool();
+    //mParams.mApplyFog = stream.ReadBool();
 }
 
 void Material::SaveStream(Stream& stream, Platform platform)
@@ -171,6 +172,7 @@ void Material::SaveStream(Stream& stream, Platform platform)
     stream.WriteInt32(mParams.mSortPriority);
     stream.WriteBool(mParams.mDisableDepthTest);
     stream.WriteBool(mParams.mFresnelEnabled);
+    //stream.WriteBool(mParams.mApplyFog);
 }
 
 void Material::Create()
@@ -242,6 +244,7 @@ void Material::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Specular", this, &mParams.mSpecular, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Shininess", this, &mParams.mShininess, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Integer, "Toon Steps", this, &mParams.mToonSteps, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Apply Fog", this, &mParams.mApplyFog, 1, HandlePropChange));
 }
 
 glm::vec4 Material::GetTypeColor()
@@ -479,6 +482,17 @@ bool Material::IsFresnelEnabled() const
 void Material::SetFresnelEnabled(bool enable)
 {
     mParams.mFresnelEnabled = enable;
+    MarkDirty();
+}
+
+bool Material::ShouldApplyFog() const
+{
+    return mParams.mApplyFog;
+}
+
+void Material::SetApplyFog(bool applyFog)
+{
+    mParams.mApplyFog = applyFog;
     MarkDirty();
 }
 
