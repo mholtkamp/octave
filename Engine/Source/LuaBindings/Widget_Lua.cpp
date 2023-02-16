@@ -636,6 +636,9 @@ int Widget_Lua::GetChild(lua_State* L)
     Widget* widget = CHECK_WIDGET(L, 1);
     int32_t index = CHECK_INTEGER(L, 2);
 
+    // Convert index from 1 based to 0 based.
+    --index;
+
     Widget* child = widget->GetChild(index);
 
     Widget_Lua::Create(L, child);

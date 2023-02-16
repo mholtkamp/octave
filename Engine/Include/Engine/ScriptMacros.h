@@ -20,6 +20,7 @@
 #define SpAsset(idx) SF_CHECK_ASSET(L, idx)
 #define SpVector(idx) LuaObjectToDatum(L, idx)
 #define SpInt(idx) lua_tointeger(L, idx)
+#define SpIndex(idx) (lua_tointeger(L, idx) - 1)
 #define SpFloat(idx) lua_tonumber(L, idx)
 #define SpString(idx) lua_tostring(L, idx)
 #define SpBool(idx) lua_toboolean(L, idx)
