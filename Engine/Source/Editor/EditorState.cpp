@@ -251,6 +251,11 @@ void SetSelectedAssetStub(AssetStub* newStub)
 void SetActiveLevel(Level* level)
 {
     sEditorState.mActiveLevel = level;
+
+    if (level != nullptr)
+    {
+        level->ApplySettings(true);
+    }
 }
 
 void SetControlMode(ControlMode newMode)

@@ -23,6 +23,9 @@
 #define MAX_COLLISION_SHAPES 16
 #define MAX_UV_MAPS 2
 
+#define DEFAULT_AMBIENT_LIGHT_COLOR glm::vec4(0.1f, 0.1f, 0.1f, 1.0f)
+#define DEFAULT_SHADOW_COLOR glm::vec4(0.0f, 0.0f, 0.0f, 0.8f)
+
 #define SHADOW_MAP_RESOLUTION 2048
 #define SHADOW_RANGE 50.0f
 #define SHADOW_RANGE_Z 400.0f

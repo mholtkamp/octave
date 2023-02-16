@@ -63,8 +63,8 @@ bool ContactAddedHandler(btManifoldPoint& cp,
 
 World::World() :
     mDirectionalLight(nullptr),
-    mAmbientLightColor(0.1f, 0.1f, 0.1f, 1.0f),
-    mShadowColor(0.0f, 0.0f, 0.0f, 0.8f),
+    mAmbientLightColor(DEFAULT_AMBIENT_LIGHT_COLOR),
+    mShadowColor(DEFAULT_SHADOW_COLOR),
     mActiveCamera(nullptr),
     mAudioReceiver(nullptr),
     mNextNetId(1)

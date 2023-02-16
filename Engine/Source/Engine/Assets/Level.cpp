@@ -7,11 +7,41 @@
 #include "NetworkManager.h"
 #include "Assets/Blueprint.h"
 
+#if EDITOR
+#include "EditorState.h"
+#endif
+
 #include <glm/gtx/euler_angles.hpp>
 #include <algorithm>
 
 FORCE_LINK_DEF(Level);
 DEFINE_ASSET(Level);
+
+static const char* sFogDensityStrings[] =
+{
+    "Linear",
+    "Exponential",
+};
+static_assert(int32_t(FogDensityFunc::Count) == 2, "Need to update string conversion table");
+
+bool Level::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+{
+    bool success = false;
+#if EDITOR
+    Property* prop = static_cast<Property*>(datum);
+    Level* level = (Level*)prop->mOwner;
+
+    // Just set value anyway
+    datum->SetValueRaw(newValue, index);
+
+    if (GetEditorState()->mActiveLevel == level)
+    {
+        level->ApplySettings(true);
+    }
+
+#endif
+    return success;
+}
 
 Level::Level()
 {
@@ -30,6 +60,17 @@ void Level::LoadStream(Stream& stream, Platform platform)
 
     mNetLoad = stream.ReadBool();
 
+    //mSetAmbientLightColor = stream.ReadBool();
+    //mSetShadowColor = stream.ReadBool();
+    //mSetFog = stream.ReadBool();
+    //mAmbientLightColor = stream.ReadVec4();
+    //mShadowColor = stream.ReadVec4();
+    //mFogEnabled = stream.ReadBool();
+    //mFogColor = stream.ReadVec4();
+    //mFogDensityFunc = (FogDensityFunc)stream.ReadUint8();
+    //mFogNear = stream.ReadFloat();
+    //mFogFar = stream.ReadFloat();
+
     uint32_t dataSize = stream.ReadUint32();
     mData.resize(dataSize);
     stream.ReadBytes(mData.data(), dataSize);
@@ -42,6 +83,18 @@ void Level::SaveStream(Stream& stream, Platform platform)
 
 #if EDITOR
     stream.WriteBool(mNetLoad);
+
+    //stream.WriteBool(mSetAmbientLightColor);
+    //stream.WriteBool(mSetShadowColor);
+    //stream.WriteBool(mSetFog);
+    //stream.WriteVec4(mAmbientLightColor);
+    //stream.WriteVec4(mShadowColor);
+    //stream.WriteBool(mFogEnabled);
+    //stream.WriteVec4(mFogColor);
+    //stream.WriteUint8(uint8_t(mFogDensityFunc));
+    //stream.WriteFloat(mFogNear);
+    //stream.WriteFloat(mFogFar);
+
     stream.WriteUint32((uint32_t)mData.size());
     stream.WriteBytes(mData.data(), (uint32_t)mData.size());
 #endif
@@ -66,6 +119,18 @@ void Level::GatherProperties(std::vector<Property>& outProps)
 {
     Asset::GatherProperties(outProps);
     outProps.push_back(Property(DatumType::Bool, "Net Load", this, &mNetLoad));
+
+    // Settings
+    outProps.push_back(Property(DatumType::Bool, "Set Ambient Light Color", this, &mSetAmbientLightColor, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Color, "Ambient Light Color", this, &mAmbientLightColor, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Set Shadow Color", this, &mSetShadowColor, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Color, "Shadow Color", this, &mShadowColor, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Set Fog", this, &mSetFog, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Fog Enabled", this, &mFogEnabled, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Color, "Fog Color", this, &mFogColor, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Byte, "Fog Density", this, &mFogDensityFunc, 1, HandlePropChange, 0, int32_t(FogDensityFunc::Count), sFogDensityStrings));
+    outProps.push_back(Property(DatumType::Float, "Fog Near", this, &mFogNear, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Fog Far", this, &mFogFar, 1, HandlePropChange));
 }
 
 glm::vec4 Level::GetTypeColor()
@@ -209,6 +274,8 @@ void Level::LoadIntoWorld(World* world, bool clear, glm::vec3 offset, glm::vec3 
         }
     }
 
+    ApplySettings(false);
+
     std::vector<LevelRef>& loadedLevels = world->GetLoadedLevels();
     if (std::find(loadedLevels.begin(), loadedLevels.end(), this) == loadedLevels.end())
     {
@@ -239,12 +306,70 @@ void Level::UnloadFromWorld(World* world)
                 world->DestroyActor(i);
             }
         }
+
+        RemoveSettings(false);
     }
 }
 
 bool Level::GetNetLoad() const
 {
     return mNetLoad;
+}
+
+void Level::ApplySettings(bool force)
+{
+    if (force || mSetAmbientLightColor)
+    {
+        glm::vec4 ambientLight = DEFAULT_AMBIENT_LIGHT_COLOR;
+        if (mSetAmbientLightColor)
+        {
+            ambientLight = mAmbientLightColor;
+        }
+        GetWorld()->SetAmbientLightColor(ambientLight);
+    }
+
+    if (force || mSetShadowColor)
+    {
+        glm::vec4 shadowColor = DEFAULT_SHADOW_COLOR;
+        if (mSetShadowColor)
+        {
+            shadowColor = mShadowColor;
+        }
+        GetWorld()->SetShadowColor(shadowColor);
+    }
+
+    if (force || mSetFog)
+    {
+        FogSettings fogSettings;
+        if (mSetFog)
+        {
+            fogSettings.mEnabled = mFogEnabled;
+            fogSettings.mColor = mFogColor;
+            fogSettings.mDensityFunc = mFogDensityFunc;
+            fogSettings.mNear = mFogNear;
+            fogSettings.mFar = mFogFar;
+        }
+        GetWorld()->SetFogSettings(fogSettings);
+    }
+}
+
+void Level::RemoveSettings(bool force)
+{
+    if (force || mSetAmbientLightColor)
+    {
+        GetWorld()->SetAmbientLightColor(DEFAULT_AMBIENT_LIGHT_COLOR);
+    }
+
+    if (force || mSetShadowColor)
+    {
+        GetWorld()->SetShadowColor(DEFAULT_SHADOW_COLOR);
+    }
+
+    if (force || mSetFog)
+    {
+        FogSettings fogSettings;
+        GetWorld()->SetFogSettings(fogSettings);
+    }
 }
 
 bool Level::ShouldSaveActor(Actor* actor) const
