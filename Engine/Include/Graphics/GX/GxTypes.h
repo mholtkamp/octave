@@ -53,6 +53,15 @@ struct GxContext
 
     // Lighting/Channel control
     LightingState mLighting;
+
+    // Fog
+    bool mApplyFog = true;
+    uint8_t mFogType = 0;
+    float mFogStartZ = 0.0f;
+    float mFogEndZ = 0.0f;
+    float mFogNearZ = 0.0f;
+    float mFogFarZ = 0.0f;
+    GXColor mFogColor = {0,0,0,0};
 };
 
 #endif

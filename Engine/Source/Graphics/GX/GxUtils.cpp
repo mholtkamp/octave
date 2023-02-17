@@ -328,6 +328,35 @@ void BindMaterial(Material* material, bool useVertexColor)
         GX_SetZCompLoc(GX_TRUE);
         GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
     }
+
+    bool matApplyFog = material->ShouldApplyFog();
+    if (gGxContext.mFogType != GX_FOG_NONE && 
+        gGxContext.mApplyFog != matApplyFog)
+    {
+        gGxContext.mApplyFog = matApplyFog;
+
+        // Need to enable/disable fog because of material property
+        if (material->ShouldApplyFog())
+        {
+            GX_SetFog(
+                gGxContext.mFogType,
+                gGxContext.mFogStartZ,
+                gGxContext.mFogEndZ,
+                gGxContext.mFogNearZ,
+                gGxContext.mFogFarZ,
+                gGxContext.mFogColor);
+        }
+        else
+        {
+            GX_SetFog(
+                GX_FOG_NONE,
+                0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                {0,0,0,0});
+        }
+    }
 }
 
 void BindStaticMesh(StaticMesh* staticMesh)

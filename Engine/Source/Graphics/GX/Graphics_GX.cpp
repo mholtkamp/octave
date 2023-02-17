@@ -241,13 +241,21 @@ void GFX_SetFog(const FogSettings& fogSettings)
         uint8_t(clampedColor.a * 255.0f)
     };
 
+    // Save off the fog state so that we can enable/disable on a per-material basis if needed.
+    gGxContext.mFogType = fogSettings.mEnabled ? fogType : GX_FOG_NONE;
+    gGxContext.mFogStartZ = fogSettings.mNear;
+    gGxContext.mFogEndZ = fogSettings.mFar;
+    gGxContext.mFogNearZ = cameraNear;
+    gGxContext.mFogFarZ = cameraFar;
+    gGxContext.mFogColor = fogColor;
+
     GX_SetFog(
-        fogSettings.mEnabled ? fogType : GX_FOG_NONE,
-        fogSettings.mNear,
-        fogSettings.mFar,
-        cameraNear,
-        cameraFar,
-        fogColor);
+        gGxContext.mFogType,
+        gGxContext.mFogStartZ,
+        gGxContext.mFogEndZ,
+        gGxContext.mFogNearZ,
+        gGxContext.mFogFarZ,
+        gGxContext.mFogColor);
 }
 
 void GFX_DrawLines(const std::vector<Line>& lines)
