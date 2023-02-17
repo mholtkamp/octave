@@ -319,6 +319,21 @@ void BindMaterial(Material* material)
             C3D_AlphaBlend(GPU_BLEND_ADD, GPU_BLEND_ADD, GPU_SRC_ALPHA, GPU_ONE, GPU_ZERO, GPU_ZERO);
         }
 
+        bool matApplyFog = material->ShouldApplyFog();
+        if (gC3dContext.mMaterialApplyFog != matApplyFog)
+        {
+            gC3dContext.mMaterialApplyFog = matApplyFog;
+
+            if (matApplyFog)
+            {
+                C3D_FogGasMode(GPU_FOG, GPU_DEPTH_DENSITY, false);
+            }
+            else
+            {
+                C3D_FogGasMode(GPU_NO_FOG, GPU_PLAIN_DENSITY, false);
+            }
+        }
+
         gC3dContext.mLastBoundMaterial = material;
     }
 }

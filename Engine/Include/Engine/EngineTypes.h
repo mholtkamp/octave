@@ -298,7 +298,7 @@ struct IgnoreConvexResultCallback : btCollisionWorld::ClosestConvexResultCallbac
     btCollisionObject** mIgnoreObjects = nullptr;
 };
 
-enum class FogDensityFunc
+enum class FogDensityFunc : uint8_t
 {
     Linear,
     Exponential,

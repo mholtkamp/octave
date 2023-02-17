@@ -118,6 +118,7 @@ struct C3dContext
     float mFogNear = 0.0f;
     float mFogFar = 0.0f;
     FogDensityFunc mFogDensityFunc = FogDensityFunc::Count;
+    bool mMaterialApplyFog = true;
 
     ShaderId mLastBoundShaderId = ShaderId::Count;
     Material* mLastBoundMaterial = nullptr;
