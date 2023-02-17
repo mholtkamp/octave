@@ -137,7 +137,7 @@ void Material::LoadStream(Stream& stream, Platform platform)
     mParams.mSortPriority = stream.ReadInt32();
     mParams.mDisableDepthTest = stream.ReadBool();
     mParams.mFresnelEnabled = stream.ReadBool();
-    //mParams.mApplyFog = stream.ReadBool();
+    mParams.mApplyFog = stream.ReadBool();
 }
 
 void Material::SaveStream(Stream& stream, Platform platform)

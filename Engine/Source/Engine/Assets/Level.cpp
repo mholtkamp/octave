@@ -60,16 +60,16 @@ void Level::LoadStream(Stream& stream, Platform platform)
 
     mNetLoad = stream.ReadBool();
 
-    //mSetAmbientLightColor = stream.ReadBool();
-    //mSetShadowColor = stream.ReadBool();
-    //mSetFog = stream.ReadBool();
-    //mAmbientLightColor = stream.ReadVec4();
-    //mShadowColor = stream.ReadVec4();
-    //mFogEnabled = stream.ReadBool();
-    //mFogColor = stream.ReadVec4();
-    //mFogDensityFunc = (FogDensityFunc)stream.ReadUint8();
-    //mFogNear = stream.ReadFloat();
-    //mFogFar = stream.ReadFloat();
+    mSetAmbientLightColor = stream.ReadBool();
+    mSetShadowColor = stream.ReadBool();
+    mSetFog = stream.ReadBool();
+    mAmbientLightColor = stream.ReadVec4();
+    mShadowColor = stream.ReadVec4();
+    mFogEnabled = stream.ReadBool();
+    mFogColor = stream.ReadVec4();
+    mFogDensityFunc = (FogDensityFunc)stream.ReadUint8();
+    mFogNear = stream.ReadFloat();
+    mFogFar = stream.ReadFloat();
 
     uint32_t dataSize = stream.ReadUint32();
     mData.resize(dataSize);
