@@ -84,16 +84,16 @@ void Level::SaveStream(Stream& stream, Platform platform)
 #if EDITOR
     stream.WriteBool(mNetLoad);
 
-    //stream.WriteBool(mSetAmbientLightColor);
-    //stream.WriteBool(mSetShadowColor);
-    //stream.WriteBool(mSetFog);
-    //stream.WriteVec4(mAmbientLightColor);
-    //stream.WriteVec4(mShadowColor);
-    //stream.WriteBool(mFogEnabled);
-    //stream.WriteVec4(mFogColor);
-    //stream.WriteUint8(uint8_t(mFogDensityFunc));
-    //stream.WriteFloat(mFogNear);
-    //stream.WriteFloat(mFogFar);
+    stream.WriteBool(mSetAmbientLightColor);
+    stream.WriteBool(mSetShadowColor);
+    stream.WriteBool(mSetFog);
+    stream.WriteVec4(mAmbientLightColor);
+    stream.WriteVec4(mShadowColor);
+    stream.WriteBool(mFogEnabled);
+    stream.WriteVec4(mFogColor);
+    stream.WriteUint8(uint8_t(mFogDensityFunc));
+    stream.WriteFloat(mFogNear);
+    stream.WriteFloat(mFogFar);
 
     stream.WriteUint32((uint32_t)mData.size());
     stream.WriteBytes(mData.data(), (uint32_t)mData.size());

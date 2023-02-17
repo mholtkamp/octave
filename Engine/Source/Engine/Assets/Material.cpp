@@ -172,7 +172,7 @@ void Material::SaveStream(Stream& stream, Platform platform)
     stream.WriteInt32(mParams.mSortPriority);
     stream.WriteBool(mParams.mDisableDepthTest);
     stream.WriteBool(mParams.mFresnelEnabled);
-    //stream.WriteBool(mParams.mApplyFog);
+    stream.WriteBool(mParams.mApplyFog);
 }
 
 void Material::Create()
