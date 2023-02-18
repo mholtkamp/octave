@@ -97,6 +97,14 @@ void WidgetHierarchyPanel::ActionHandler(Button* button)
         ShowAddMappedWidgetPrompt();
         hideList = false;
     }
+    else if (buttonText == "Move Up")
+    {
+        MoveWidgetSlot(sActionWidget, -1);
+    }
+    else if (buttonText == "Move Down")
+    {
+        MoveWidgetSlot(sActionWidget, 1);
+    }
     else if (buttonText == "Delete Widget")
     {
         DeleteWidget(sActionWidget);
@@ -161,6 +169,35 @@ void WidgetHierarchyPanel::ShowAddMappedWidgetPrompt()
 
     ActionList* actionList = GetActionList();
     actionList->SetActions(actions, OnCreateMappedWidgetButtonPressed);
+}
+
+void WidgetHierarchyPanel::MoveWidgetSlot(Widget* widget, int32_t delta)
+{
+    if (widget != nullptr &&
+        widget->GetParent() != nullptr)
+    {
+        Widget* parent = widget->GetParent();
+
+        int32_t index = -1;
+        for (uint32_t i = 0; i < parent->GetNumChildren(); ++i)
+        {
+            if (parent->GetChild(i) == widget)
+            {
+                index = int32_t(i);
+                break;
+            }
+        }
+
+        index += delta;
+        index = glm::clamp<int32_t>(index, 0, int32_t(parent->GetNumChildren()) - 1);
+
+        parent->RemoveChild(widget);
+
+        parent->AddChild(widget, index);
+
+        WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
+        panel->RefreshButtons();
+    }
 }
 
 void WidgetHierarchyPanel::DeleteWidget(Widget* widget)
@@ -352,6 +389,8 @@ void WidgetHierarchyPanel::HandleInput()
 
             if (widget != nullptr)
             {
+                actions.push_back("Move Up");
+                actions.push_back("Move Down");
                 actions.push_back("Delete Widget");
 
                 if (widget->GetWidgetMap() == nullptr)
@@ -379,6 +418,16 @@ void WidgetHierarchyPanel::HandleInput()
         if (IsKeyJustDown(KEY_DELETE) || IsKeyJustDown(KEY_X))
         {
             DeleteWidget(GetSelectedWidget());
+        }
+
+        if (IsKeyJustDown(KEY_MINUS) && GetSelectedWidget())
+        {
+            MoveWidgetSlot(GetSelectedWidget(), -1);
+        }
+
+        if (IsKeyJustDown(KEY_PLUS) && GetSelectedWidget())
+        {
+            MoveWidgetSlot(GetSelectedWidget(), 1);
         }
     }
 }

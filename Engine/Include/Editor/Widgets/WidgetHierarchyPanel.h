@@ -25,6 +25,7 @@ protected:
     static void ActionHandler(Button* button);
     static void ShowAddNativeWidgetPrompt();
     static void ShowAddMappedWidgetPrompt();
+    static void MoveWidgetSlot(Widget* widget, int32_t delta);
     static void DeleteWidget(Widget* widget);
     static void AttachSelectedWidget(Widget* newParent);
     static void SetRootWidgetAction(Widget* newRoot);
