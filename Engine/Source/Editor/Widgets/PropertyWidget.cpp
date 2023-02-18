@@ -797,15 +797,23 @@ void EnumProp::Write()
 {
     try
     {
-        Datum newValue;
-        newValue.PushBack(mSelector->GetSelectionIndex());
+        int32_t newEnum = mSelector->GetSelectionIndex();
+        int32_t curEnum = (mProperty.GetType() == DatumType::Integer) ? mProperty.GetInteger() : int32_t(mProperty.GetByte());
 
-        ActionManager::Get()->EXE_EditProperty(
-            mProperty.mOwner,
-            mOwnerType,
-            mProperty.mName,
-            mIndex,
-            newValue);
+        // Only fire a new action if it's different.
+        // Otherwise we will pollute our action history with NOPs.
+        if (newEnum != curEnum)
+        {
+            Datum newValue;
+            newValue.PushBack(newEnum);
+
+            ActionManager::Get()->EXE_EditProperty(
+                mProperty.mOwner,
+                mOwnerType,
+                mProperty.mName,
+                mIndex,
+                newValue);
+        }
     }
     catch (...)
     {

@@ -188,15 +188,16 @@ void WidgetHierarchyPanel::MoveWidgetSlot(Widget* widget, int32_t delta)
             }
         }
 
-        index += delta;
-        index = glm::clamp<int32_t>(index, 0, int32_t(parent->GetNumChildren()) - 1);
+        int32_t newIndex = index + delta;
+        newIndex = glm::clamp<int32_t>(newIndex, 0, int32_t(parent->GetNumChildren()) - 1);
 
-        parent->RemoveChild(widget);
+        if (newIndex != index)
+        {
+            ActionManager::Get()->EXE_AttachWidget(widget, parent, newIndex);
 
-        parent->AddChild(widget, index);
-
-        WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
-        panel->RefreshButtons();
+            WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
+            panel->RefreshButtons();
+        }
     }
 }
 

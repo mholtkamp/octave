@@ -58,7 +58,7 @@ public:
     void EXE_SetAbsoluteScale(TransformComponent* comp, glm::vec3 scale);
     void EXE_AddWidget(Widget* widget);
     void EXE_RemoveWidget(Widget* widget);
-    void EXE_AttachWidget(Widget* widget, Widget* newParent);
+    void EXE_AttachWidget(Widget* widget, Widget* newParent, int32_t index = -1);
     void EXE_SetRootWidget(Widget* newRoot);
 
     void ClearActionHistory();
@@ -284,6 +284,7 @@ public:
 protected:
     Widget* mWidget = nullptr;
     Widget* mParent = nullptr;
+    int32_t mPrevIndex = -1;
     bool mWasRoot = false;
 };
 
@@ -291,11 +292,13 @@ class ActionAttachWidget : public Action
 {
 public:
     DECLARE_ACTION_INTERFACE(AttachWidget)
-    ActionAttachWidget(Widget* widget, Widget* newParent);
+    ActionAttachWidget(Widget* widget, Widget* newParent, int32_t index);
 protected:
     Widget* mWidget = nullptr;
     Widget* mNewParent = nullptr;
+    int32_t mNewIndex = -1;
     Widget* mPrevParent = nullptr;
+    int32_t mPrevIndex = -1;
 };
 
 class ActionSetRootWidget : public Action

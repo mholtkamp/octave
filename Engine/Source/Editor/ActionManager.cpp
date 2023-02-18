@@ -849,9 +849,9 @@ void ActionManager::EXE_RemoveWidget(Widget* widget)
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_AttachWidget(Widget* widget, Widget* newParent)
+void ActionManager::EXE_AttachWidget(Widget* widget, Widget* newParent, int32_t index)
 {
-    ActionAttachWidget* action = new ActionAttachWidget(widget, newParent);
+    ActionAttachWidget* action = new ActionAttachWidget(widget, newParent, index);
     ActionManager::Get()->ExecuteAction(action);
 }
 
@@ -2475,6 +2475,19 @@ ActionRemoveWidget::ActionRemoveWidget(Widget* widget)
         mParent = widget->GetParent();
     }
     OCT_ASSERT(mWidget);
+
+    // Find current index.
+    if (mParent)
+    {
+        for (uint32_t i = 0; i < mParent->GetNumChildren(); ++i)
+        {
+            if (mParent->GetChild(i) == widget)
+            {
+                mPrevIndex = int32_t(i);
+                break;
+            }
+        }
+    }
 }
 
 void ActionRemoveWidget::Execute()
@@ -2511,30 +2524,45 @@ void ActionRemoveWidget::Reverse()
     else
     {
         OCT_ASSERT(mParent != nullptr);
-        mParent->AddChild(mWidget);
+        mParent->AddChild(mWidget, mPrevIndex);
     }
 
     panel->RefreshButtons();
 }
 
-ActionAttachWidget::ActionAttachWidget(Widget* widget, Widget* newParent)
+ActionAttachWidget::ActionAttachWidget(Widget* widget, Widget* newParent, int32_t index)
 {
     mWidget = widget;
     mNewParent = newParent;
+    mNewIndex = index;
     mPrevParent = widget->GetParent();
+
+    // Find current index.
+    if (mPrevParent)
+    {
+        for (uint32_t i = 0; i < mPrevParent->GetNumChildren(); ++i)
+        {
+            if (mPrevParent->GetChild(i) == widget)
+            {
+                mPrevIndex = int32_t(i);
+                break;
+            }
+        }
+    }
+
     OCT_ASSERT(mWidget);
     OCT_ASSERT(mNewParent);
 }
 
 void ActionAttachWidget::Execute()
 {
-    mNewParent->AddChild(mWidget);
+    mNewParent->AddChild(mWidget, mNewIndex);
     PanelManager::Get()->GetWidgetHierarchyPanel()->RefreshButtons();
 }
 
 void ActionAttachWidget::Reverse()
 {
-    mPrevParent->AddChild(mWidget);
+    mPrevParent->AddChild(mWidget, mPrevIndex);
     PanelManager::Get()->GetWidgetHierarchyPanel()->RefreshButtons();
 }
 
