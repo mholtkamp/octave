@@ -111,6 +111,19 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
             gCommandLineOptions.mDefaultLevel = argv[i + 1];
             ++i;
         }
+
+        if (strcmp(argv[i], "-res") == 0)
+        {
+            OCT_ASSERT(i + 2 < argc);
+            int32_t width = atoi(argv[i + 1]);
+            int32_t height = atoi(argv[i + 2]);
+
+            width = glm::clamp(width, 100, 3840);
+            height = glm::clamp(height, 100, 2160);
+
+            gCommandLineOptions.mWindowWidth = width;
+            gCommandLineOptions.mWindowHeight = height;
+        }
     }
 }
 
@@ -120,6 +133,13 @@ bool Initialize(InitOptions& initOptions)
     if (gCommandLineOptions.mDefaultLevel != "")
     {
         initOptions.mDefaultLevel = gCommandLineOptions.mDefaultLevel;
+    }
+
+    if (gCommandLineOptions.mWindowWidth > 0 &&
+        gCommandLineOptions.mWindowHeight > 0)
+    {
+        initOptions.mWidth = gCommandLineOptions.mWindowWidth;
+        initOptions.mHeight = gCommandLineOptions.mWindowHeight;
     }
 
     InitializeLog();

@@ -212,6 +212,8 @@ struct CommandLineOptions
 {
     std::string mProjectPath;
     std::string mDefaultLevel;
+    int32_t mWindowWidth = 0;
+    int32_t mWindowHeight = 0;
 };
 
 enum class ConsoleMode
