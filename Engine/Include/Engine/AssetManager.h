@@ -84,7 +84,7 @@ public:
 
     void RegisterTransientAsset(Asset* asset);
 
-    Asset* ImportEngineAsset(TypeId assetType, AssetDir* dir, const std::string& filename);
+    Asset* ImportEngineAsset(TypeId assetType, AssetDir* dir, const std::string& filename, ImportOptions* options = nullptr);
     void ImportEngineAssets();
 
     AssetStub* GetAssetStub(const std::string& name);

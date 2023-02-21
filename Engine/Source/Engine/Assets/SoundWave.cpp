@@ -90,9 +90,9 @@ void SoundWave::Destroy()
 }
 
 
-void SoundWave::Import(const std::string& path)
+void SoundWave::Import(const std::string& path, ImportOptions* options)
 {
-    Asset::Import(path);
+    Asset::Import(path, options);
 
 #if EDITOR
     Stream wavStream;

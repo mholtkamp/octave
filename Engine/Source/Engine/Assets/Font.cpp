@@ -81,9 +81,9 @@ void Font::Destroy()
     Asset::Destroy();
 }
 
-void Font::Import(const std::string& path)
+void Font::Import(const std::string& path, ImportOptions* options)
 {
-    Asset::Import(path);
+    Asset::Import(path, options);
 
 #if EDITOR
     // This xml reading code is taken from the sample in irrXML.h

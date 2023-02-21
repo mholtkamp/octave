@@ -110,7 +110,7 @@ void Level::Destroy()
     Asset::Destroy();
 }
 
-void Level::Import(const std::string& path)
+void Level::Import(const std::string& path, ImportOptions* options)
 {
     LogWarning("Level::Import() not implemented.")
 }

@@ -23,7 +23,7 @@ public:
     virtual void SaveStream(Stream& stream, Platform platform) override;
     virtual void Create() override;
     virtual void Destroy() override;
-    virtual void Import(const std::string& path) override;
+    virtual void Import(const std::string& path, ImportOptions* options) override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
     virtual glm::vec4 GetTypeColor() override;
     virtual const char* GetTypeName() override;
@@ -31,6 +31,7 @@ public:
 
     void Init(uint32_t width, uint32_t height, uint8_t* data);
 
+    void SetMipmapped(bool mipmapped);
     bool IsMipmapped() const;
     bool IsRenderTarget() const;
 

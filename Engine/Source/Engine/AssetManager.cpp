@@ -398,6 +398,12 @@ void AssetManager::RefSweep()
 
         for (auto it = mAssetMap.begin(); it != mAssetMap.end(); ++it)
         {
+#if EDITOR
+            // Don't ref sweep engine assets. They might not be saved as an OCT file yet.
+            if (it->second->mEngineAsset)
+                continue;
+#endif
+
             if (it->second->mAsset != nullptr &&
                 it->second->mAsset->IsLoaded() &&
                 it->second->mAsset->GetRefCount() == 0)
@@ -445,11 +451,11 @@ void AssetManager::RegisterTransientAsset(Asset* asset)
     mTransientAssets.push_back(asset);
 }
 
-Asset* AssetManager::ImportEngineAsset(TypeId type, AssetDir* dir, const std::string& filename)
+Asset* AssetManager::ImportEngineAsset(TypeId type, AssetDir* dir, const std::string& filename, ImportOptions* options)
 {
     Asset* newAsset = Asset::CreateInstance(type);
     std::string importPath = dir->mPath + filename + newAsset->GetTypeImportExt();
-    newAsset->Import(importPath);
+    newAsset->Import(importPath, options);
     newAsset->SetName(filename);
     AssetStub* stub = RegisterAsset(filename + ".oct", newAsset->GetType(), dir, nullptr, true);
 
@@ -506,15 +512,25 @@ void AssetManager::ImportEngineAssets()
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_DefaultColorAlpha");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_DefaultNormal");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_DefaultORM");
-        Texture* roboto16Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Roboto16");
-        Texture* roboto32Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Roboto32");
-        Texture* robotoMono8Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_RobotoMono8");
-        Texture* robotoMono16Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_RobotoMono16");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Radial");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Ring");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Circle");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_TriShape");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_MiniArrow");
+
+        ImportOptions fontOptions;
+        // Do we want to disable mip maps? Mipmaps can cause artifacts on edges of characters
+        // But if we disable mipmaps, then large fonts look coarse and aliased at smaller sizes.
+        //fontOptions.SetOptionValue("mipmapped", false);
+        Texture* roboto16Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Roboto16", &fontOptions);
+        roboto16Tex->SetMipmapped(false);
+        Texture* roboto32Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Roboto32", &fontOptions);
+        roboto32Tex->SetMipmapped(false);
+        Texture* robotoMono8Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_RobotoMono8", &fontOptions);
+        robotoMono8Tex->SetMipmapped(false);
+        Texture* robotoMono16Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_RobotoMono16", &fontOptions);
+        robotoMono16Tex->SetMipmapped(false);
+
         // Need to fetch these loaded textures so that the default materials can use them.
         Renderer::Get()->LoadDefaultTextures();
 
