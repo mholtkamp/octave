@@ -401,10 +401,10 @@ void StaticMesh::Destroy()
     mMaterial = nullptr;
 }
 
-void StaticMesh::Import(const std::string& path)
+void StaticMesh::Import(const std::string& path, ImportOptions* options)
 {
 #if EDITOR
-    Asset::Import(path);
+    Asset::Import(path, options);
 
     // Loads a .DAE file and loads the first mesh in the mesh library.
     if (mResource.mVertexBuffer == VK_NULL_HANDLE)

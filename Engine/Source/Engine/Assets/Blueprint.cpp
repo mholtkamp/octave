@@ -98,9 +98,9 @@ void Blueprint::Destroy()
     Asset::Destroy();
 }
 
-void Blueprint::Import(const std::string& path)
+void Blueprint::Import(const std::string& path, ImportOptions* options)
 {
-    Asset::Import(path);
+    Asset::Import(path, options);
 }
 
 void Blueprint::GatherProperties(std::vector<Property>& outProps)

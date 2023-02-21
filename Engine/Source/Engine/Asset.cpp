@@ -27,6 +27,29 @@ bool HandleAssetNamePropChange(Datum* datum, uint32_t index, const void* newValu
     return true;
 }
 
+bool ImportOptions::HasOption(const std::string& key)
+{
+    auto it = mOptions.find(key);
+    bool hasOption = (it != mOptions.end());
+    return hasOption;
+}
+
+Datum ImportOptions::GetOptionValue(const std::string& key)
+{
+    Datum ret;
+    if (HasOption(key))
+    {
+        ret = mOptions[key];
+    }
+
+    return ret;
+}
+
+void ImportOptions::SetOptionValue(const std::string& key, const Datum& value)
+{
+    mOptions[key] = value;
+}
+
 Asset::Asset()
 {
 
@@ -193,7 +216,7 @@ void Asset::SaveStream(Stream& stream, Platform platform)
 #endif
 }
 
-void Asset::Import(const std::string& path)
+void Asset::Import(const std::string& path, ImportOptions* options)
 {
 
 }

@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <glm/glm.hpp>
 
 class Stream;
@@ -51,6 +52,17 @@ struct AssetStub
 #endif
 };
 
+class ImportOptions
+{
+public:
+    bool HasOption(const std::string& key);
+    Datum GetOptionValue(const std::string& key);
+    void SetOptionValue(const std::string& key, const Datum& value);
+
+protected:
+    std::unordered_map<std::string, Datum> mOptions;
+};
+
 class Asset : public RTTI
 {
 public:
@@ -88,7 +100,7 @@ public:
 
     virtual void LoadStream(Stream& stream, Platform platform);
 	virtual void SaveStream(Stream& stream, Platform platform);
-    virtual void Import(const std::string& path);
+    virtual void Import(const std::string& path, ImportOptions* options = nullptr);
 
     virtual void GatherProperties(std::vector<Property>& outProps);
     virtual glm::vec4 GetTypeColor();

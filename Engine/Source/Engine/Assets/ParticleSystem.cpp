@@ -130,9 +130,9 @@ void ParticleSystem::Destroy()
     Asset::Destroy();
 }
 
-void ParticleSystem::Import(const std::string& path)
+void ParticleSystem::Import(const std::string& path, ImportOptions* options)
 {
-    Asset::Import(path);
+    Asset::Import(path, options);
 }
 
 void ParticleSystem::GatherProperties(std::vector<Property>& outProps)

@@ -205,9 +205,9 @@ void Material::Destroy()
     }
 }
 
-void Material::Import(const std::string& path)
+void Material::Import(const std::string& path, ImportOptions* options)
 {
-    Asset::Import(path);
+    Asset::Import(path, options);
 }
 
 void Material::GatherProperties(std::vector<Property>& outProps)

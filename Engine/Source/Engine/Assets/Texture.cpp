@@ -366,9 +366,9 @@ void Texture::Destroy()
     GFX_DestroyTextureResource(this);
 }
 
-void Texture::Import(const std::string& path)
+void Texture::Import(const std::string& path, ImportOptions* options)
 {
-    Asset::Import(path);
+    Asset::Import(path, options);
 
 #if EDITOR
     int32_t texWidth;
@@ -396,6 +396,19 @@ void Texture::Import(const std::string& path)
     mRenderTarget = false;
     mMipmapped = true;
     mMipLevels = mMipmapped ? static_cast<int32_t>(floor(log2(std::max(mWidth, mHeight))) + 1) : 1;
+
+    if (options != nullptr)
+    {
+        if (options->HasOption("mipmapped"))
+        {
+            mMipmapped = options->GetOptionValue("mipmapped");
+
+            if (!mMipmapped)
+            {
+                mMipLevels = 1;
+            }
+        }
+    }
 
     Create();
 
@@ -440,6 +453,11 @@ void Texture::Init(uint32_t width, uint32_t height, uint8_t* data)
     uint32_t imageSize = width * height * 4;
     mPixels.resize(imageSize);
     memcpy(mPixels.data(), data, imageSize);
+}
+
+void Texture::SetMipmapped(bool mipmapped)
+{
+    mMipmapped = mipmapped;
 }
 
 bool Texture::IsMipmapped() const
