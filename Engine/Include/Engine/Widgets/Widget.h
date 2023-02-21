@@ -60,11 +60,17 @@ Widget* CreateWidget(TypeId widgetType, bool start = true);
 Widget* CreateWidget(const std::string& className, bool start = true);
 void DestroyWidget(Widget* widget);
 
-template<typename WidgetClass>
-inline WidgetClass* CreateWidget(bool start = true)
+template<typename T>
+inline T* CreateWidget(bool start = true)
 {
-    WidgetClass* retWidget = (WidgetClass*)CreateWidget(WidgetClass::GetStaticType(), start);
-    return retWidget;
+    T* ret = new T();
+
+    if (start)
+    {
+        ret->Start();
+    }
+
+    return ret;
 }
 
 
