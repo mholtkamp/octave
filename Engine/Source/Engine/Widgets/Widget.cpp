@@ -893,7 +893,7 @@ uint8_t Widget::GetOpacity() const
 void Widget::SetOpacityFloat(float opacity)
 {
     uint8_t byteOpacity = uint8_t(glm::clamp(opacity * 255.0f, 0.0f, 255.0f) + 0.5f);
-    mOpacity = byteOpacity;
+    SetOpacity(byteOpacity);
 }
 
 float Widget::GetOpacityFloat() const
