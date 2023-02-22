@@ -96,6 +96,9 @@ void Quad::SetColor(glm::vec4 color)
 
 void Quad::SetColor(glm::vec4 colors[4])
 {
+    // Override uniform color
+    Widget::SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
     for (int32_t i = 0; i < 4; ++i)
     {
         uint32_t color32 = ColorFloat4ToUint32(colors[i]);
