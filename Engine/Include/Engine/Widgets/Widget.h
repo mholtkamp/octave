@@ -162,6 +162,7 @@ public:
     glm::vec2 GetDimensions() const;
 
     void UpdateRect();
+    void UpdateColor();
     void FitInsideParent();
 
     float GetParentWidth() const;
@@ -171,6 +172,12 @@ public:
     bool IsVisible() const;
     virtual void SetColor(glm::vec4 color);
     glm::vec4 GetColor() const;
+
+    void SetOpacity(uint8_t opacity);
+    uint8_t GetOpacity() const;
+
+    void SetOpacityFloat(float opacity);
+    float GetOpacityFloat() const;
     
     virtual bool ShouldHandleInput();
 
@@ -275,6 +282,7 @@ protected:
     bool mVisible;
     bool mScriptOwned;
     bool mStarted;
+    uint8_t mOpacity;
 
 private:
     bool mDirty[MAX_FRAMES] = {};

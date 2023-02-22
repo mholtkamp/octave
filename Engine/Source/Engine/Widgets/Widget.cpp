@@ -139,7 +139,8 @@ Widget::Widget() :
     mUseScissor(false),
     mVisible(true),
     mScriptOwned(false),
-    mStarted(false)
+    mStarted(false),
+    mOpacity(255)
 {
     MarkDirty();
 
@@ -186,6 +187,7 @@ void Widget::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Vector2D, "Size", this, &mSize, 1, Widget::HandlePropChange));
 
     outProps.push_back(Property(DatumType::Color, "Color", this, &mColor, 1, Widget::HandlePropChange));
+    outProps.push_back(Property(DatumType::Byte, "Opacity", this, &mOpacity, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "Pivot", this, &mPivot, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "Scale", this, &mScale, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Rotation", this, &mRotation, 1, Widget::HandlePropChange));
@@ -279,6 +281,7 @@ void Widget::Update()
     if (IsDirty())
     {
         UpdateRect();
+        UpdateColor();
     }
 }
 
@@ -795,6 +798,13 @@ void Widget::UpdateRect()
     }
 }
 
+void Widget::UpdateColor()
+{
+    float parentAlpha = mParent ? mParent->mColor.a : 1.0f;
+    float thisOpacity = GetOpacityFloat();
+    mColor.a = (parentAlpha * thisOpacity);
+}
+
 void Widget::FitInsideParent()
 {
     if (IsDirty())
@@ -859,12 +869,37 @@ bool Widget::IsVisible() const
 void Widget::SetColor(glm::vec4 color)
 {
     mColor = color;
+    mColor.a = 1.0f; // Alpha is determined during UpdateColor().
+    SetOpacityFloat(color.a);
     MarkDirty();
 }
 
 glm::vec4 Widget::GetColor() const
 {
     return mColor;
+}
+
+void Widget::SetOpacity(uint8_t opacity)
+{
+    mOpacity = opacity;
+    MarkDirty();
+}
+
+uint8_t Widget::GetOpacity() const
+{
+    return mOpacity;
+}
+
+void Widget::SetOpacityFloat(float opacity)
+{
+    uint8_t byteOpacity = uint8_t(glm::clamp(opacity * 255.0f, 0.0f, 255.0f) + 0.5f);
+    mOpacity = byteOpacity;
+}
+
+float Widget::GetOpacityFloat() const
+{
+    float floatOpacity = mOpacity / 255.0f;
+    return floatOpacity;
 }
 
 bool Widget::ShouldHandleInput()
