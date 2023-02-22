@@ -1006,18 +1006,25 @@ void GFX_DrawQuad(Quad* quad)
     Renderer* renderer = Renderer::Get();
     Texture* texture = quad->GetTexture() ? quad->GetTexture() : renderer->mWhiteTexture.Get<Texture>();
 
-    GX_SetNumTevStages(1);
+    GX_SetNumTevStages(2);
     GX_SetNumTexGens(1);
     GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
     GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
     GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
     GX_LoadTexObj(&texture->GetResource()->mGxTexObj, GX_TEXMAP0);
 
-    glm::vec4 tintColor = glm::clamp(quad->GetTint(), 0.0f, 1.0f);
-    GX_SetChanMatColor(GX_COLOR0A0, { uint8_t(tintColor.r * 255.0f),
-                                      uint8_t(tintColor.g * 255.0f),
-                                      uint8_t(tintColor.b * 255.0f),
-                                      uint8_t(tintColor.a * 255.0f) });
+    // TEV1 applies uniform color modulation
+    glm::vec4 uniColor = glm::clamp(quad->GetTint() * quad->GetColor(), 0.0f, 1.0f);
+    GX_SetTevColor(GX_TEVREG0, { uint8_t(uniColor.r * 255.0f),
+                                 uint8_t(uniColor.g * 255.0f),
+                                 uint8_t(uniColor.b * 255.0f),
+                                 uint8_t(uniColor.a * 255.0f) });
+
+    GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_C0, GX_CC_CPREV, GX_CC_ZERO);
+    GX_SetTevAlphaIn(GX_TEVSTAGE1, GX_CA_ZERO, GX_CA_A0, GX_CA_APREV, GX_CA_ZERO);
+    GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GX_SetTevAlphaOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORDNULL, GX_TEXMAP_DISABLE, GX_COLOR0A0);
 
     GX_SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
     GX_SetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
@@ -1102,11 +1109,23 @@ void GFX_DrawText(Text* text)
         texture = font->GetTexture();
     }
 
-    GX_SetNumTevStages(1);
+    GX_SetNumTevStages(2);
     GX_SetNumTexGens(1);
     GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
     GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
     GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+
+    glm::vec4 uniColor = glm::clamp(text->GetColor(), 0.0f, 1.0f);
+    GX_SetTevColor(GX_TEVREG0, { uint8_t(uniColor.r * 255.0f),
+                                 uint8_t(uniColor.g * 255.0f),
+                                 uint8_t(uniColor.b * 255.0f),
+                                 uint8_t(uniColor.a * 255.0f) });
+
+    GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_C0, GX_CC_CPREV, GX_CC_ZERO);
+    GX_SetTevAlphaIn(GX_TEVSTAGE1, GX_CA_ZERO, GX_CA_A0, GX_CA_APREV, GX_CA_ZERO);
+    GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GX_SetTevAlphaOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORDNULL, GX_TEXMAP_DISABLE, GX_COLOR0A0);
 
     // Font's used to be RGB, but they are now stored RGBA so we don't need to swizzle.
     // Keeping the code here as a reference in case swizzling comes in handy in the future.
