@@ -84,11 +84,10 @@ void Quad::SetColor(glm::vec4 color)
     {
         Widget::SetColor(color);
 
-        uint32_t color32 = ColorFloat4ToUint32(color);
-
+        // Overriding vertex colors.
         for (int32_t i = 0; i < 4; ++i)
         {
-            mVertices[i].mColor = color32;
+            mVertices[i].mColor = 0xffffffff;
         }
 
         MarkDirty();

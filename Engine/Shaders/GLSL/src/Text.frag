@@ -11,6 +11,7 @@ layout (set = 0, binding = 0) uniform GlobalUniformBuffer
 layout (set = 1, binding = 0) uniform TextUniformBuffer
 {
     mat4 mTransform;
+    vec4 mColor;
     
     float mX;
     float mY;
@@ -48,5 +49,5 @@ void main()
         fontColor.a = clamp(signedDistance + cutoff + scale * fadeDist, 0.0, 1.0);
     }
     
-    outFinalColor = inColor * fontColor;
+    outFinalColor = inColor * textData.mColor * fontColor;
 }

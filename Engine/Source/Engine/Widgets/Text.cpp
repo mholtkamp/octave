@@ -154,11 +154,11 @@ Font* Text::GetFont()
 
 void Text::SetColor(glm::vec4 color)
 {
-    if (color != mColor)
-    {
-        Widget::SetColor(color);
-        MarkVerticesDirty();
-    }
+    Widget::SetColor(color);
+
+    // No longer need to mark vertices dirty, as text color is applied as a uniform.
+    // The text vertex data still includes vertex colors, but that is so inline coloring
+    // can be used like `FC8`.
 }
 
 void Text::MarkDirty()
@@ -405,7 +405,7 @@ void Text::UpdateVertexData()
     int32_t lineVertStart = 0;
     int32_t wordVertStart = 0;
 
-    uint32_t color32 = ColorFloat4ToUint32(mColor); //0xffffffff;
+    uint32_t color32 = 0xffffffff;
 
     const char* characters = mText.c_str();
     float cursorX = 0.0f;
@@ -447,7 +447,7 @@ void Text::UpdateVertexData()
                 uint32_t R = HexCharToColorComp(mText[i + 1]);
                 uint32_t G = HexCharToColorComp(mText[i + 2]);
                 uint32_t B = HexCharToColorComp(mText[i + 3]);
-                uint32_t A = (color32 & 0xff000000) >> 24; // 255;
+                uint32_t A = 255;
 
                 color32 = R | (G << 8) | (B << 16) | (A << 24);
 

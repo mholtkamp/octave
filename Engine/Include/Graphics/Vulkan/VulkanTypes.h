@@ -58,12 +58,14 @@ struct SkinnedGeometryData
 struct QuadUniformData
 {
     glm::mat4 mTransform;
+    glm::vec4 mColor;
     glm::vec4 mTint;
 };
 
 struct TextUniformData
 {
     glm::mat4 mTransform;
+    glm::vec4 mColor;
 
     float mX;
     float mY;
