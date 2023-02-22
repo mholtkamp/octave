@@ -87,6 +87,11 @@ void WidgetHierarchyPanel::ActionHandler(Button* button)
 
     WidgetHierarchyPanel* hierPanel = PanelManager::Get()->GetWidgetHierarchyPanel();
 
+    if (buttonText == "Add Basic Widget")
+    {
+        ShowAddBasicWidgetPrompt();
+        hideList = false;
+    }
     if (buttonText == "Add Native Widget")
     {
         ShowAddNativeWidgetPrompt();
@@ -137,6 +142,21 @@ void WidgetHierarchyPanel::ActionHandler(Button* button)
     {
         GetActionList()->Hide();
     }
+}
+
+void WidgetHierarchyPanel::ShowAddBasicWidgetPrompt()
+{
+    std::vector<std::string> actions;
+
+    actions.push_back("Widget");
+    actions.push_back("ScriptWidget");
+    actions.push_back("Quad");
+    actions.push_back("Text");
+    actions.push_back("PolyRect");
+    actions.push_back("ArrayWidget");
+
+    ActionList* actionList = GetActionList();
+    actionList->SetActions(actions, OnCreateNativeWidgetButtonPressed);
 }
 
 void WidgetHierarchyPanel::ShowAddNativeWidgetPrompt()
@@ -385,6 +405,7 @@ void WidgetHierarchyPanel::HandleInput()
             }
 
             std::vector<std::string> actions;
+            actions.push_back("Add Basic Widget");
             actions.push_back("Add Native Widget");
             actions.push_back("Add Mapped Widget");
 
@@ -412,6 +433,11 @@ void WidgetHierarchyPanel::HandleInput()
         }
 
         if (shiftDown && IsKeyJustDown(KEY_Q))
+        {
+            ShowAddBasicWidgetPrompt();
+        }
+
+        if (shiftDown && IsKeyJustDown(KEY_W))
         {
             ShowAddMappedWidgetPrompt();
         }
