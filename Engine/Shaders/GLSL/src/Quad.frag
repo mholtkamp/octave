@@ -11,7 +11,8 @@ layout (set = 0, binding = 0) uniform GlobalUniformBuffer
 layout (set = 1, binding = 0) uniform QuadUniformBuffer
 {
     mat4 mTransform;
-    vec4 mTint;
+    vec4 mColor;
+    vec4 mTint; // Keeping Tint for legacy reasons right now, but it's an extra color multiply.
 
 } quadData;
 layout (set = 1, binding = 1) uniform sampler2D quadSampler;
@@ -24,5 +25,5 @@ layout (location = 0) out vec4 outFinalColor;
 void main()
 {
     vec4 textureColor = texture(quadSampler, inTexcoord).rgba;
-    outFinalColor = textureColor * inColor * quadData.mTint;
+    outFinalColor = textureColor * inColor * quadData.mTint * quadData.mColor;
 }

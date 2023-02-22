@@ -1831,6 +1831,7 @@ void UpdateQuadResource(Quad* quad)
     // Uniform Buffer
     QuadUniformData ubo = {};
     ubo.mTransform = glm::mat4(quad->GetTransform());
+    ubo.mColor = quad->GetColor();
     ubo.mTint = quad->GetTint();
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 
@@ -1928,6 +1929,7 @@ void UpdateTextResourceUniformData(Text* text)
 
     TextUniformData ubo = {};
     ubo.mTransform = glm::mat4(text->GetTransform());
+    ubo.mColor = text->GetColor();
     ubo.mX = text->GetRect().mX + justifiedOffset.x;
     ubo.mY = text->GetRect().mY + justifiedOffset.y;
     ubo.mCutoff = text->GetCutoff();

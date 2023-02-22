@@ -11,6 +11,7 @@ layout (set = 0, binding = 0) uniform GlobalUniformBuffer
 layout (set = 1, binding = 0) uniform QuadUniformBuffer
 {    
     mat4 mTransform;
+    vec4 mColor;
     vec4 mTint;
 
 } quadData;
