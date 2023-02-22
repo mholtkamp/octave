@@ -27,6 +27,29 @@ static const char* sVertJustStrings[] =
 };
 static_assert(int32_t(Justification::Count) == 3, "Need to update string conversion table");
 
+static uint32_t HexCharToInt(char c)
+{
+    uint32_t ret = 255;
+
+    if (c >= '0' && c <= '9')
+        ret = c - '0';
+    else if (c >= 'A' && c <= 'F')
+        ret = (c - 'A') + 10;
+    else if (c >= 'a' && c <= 'f')
+        ret = (c - 'a') + 10;
+
+    return ret;
+}
+
+static uint32_t HexCharToColorComp(char c)
+{
+    uint32_t value = HexCharToInt(c);
+    float alpha = value / 15.0f;
+    float fValue = glm::mix(0.0f, 255.0f, alpha);
+    uint32_t ret = glm::clamp<uint32_t>(uint32_t(fValue + 0.5f), 0, 255);
+    return ret;
+}
+
 bool Text::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
@@ -382,7 +405,7 @@ void Text::UpdateVertexData()
     int32_t lineVertStart = 0;
     int32_t wordVertStart = 0;
 
-    uint32_t color32 = ColorFloat4ToUint32(mColor);
+    uint32_t color32 = ColorFloat4ToUint32(mColor); //0xffffffff;
 
     const char* characters = mText.c_str();
     float cursorX = 0.0f;
@@ -408,6 +431,33 @@ void Text::UpdateVertexData()
             textChar > '~')
         {
             continue;
+        }
+
+        // Inline color
+        if (textChar == '`')
+        {
+            if (i + 1 < mText.size() && mText[i + 1] == '`')
+            {
+                // Because ` is used for inline color, doing two `` in a row is an escape for one ` character.
+                i++;
+            }
+            else if (i + 4 < mText.size() && mText[i + 4] == '`')
+            {
+                // We are encoding an inline color change in the format `RGB`
+                uint32_t R = HexCharToColorComp(mText[i + 1]);
+                uint32_t G = HexCharToColorComp(mText[i + 2]);
+                uint32_t B = HexCharToColorComp(mText[i + 3]);
+                uint32_t A = (color32 & 0xff000000) >> 24; // 255;
+
+                color32 = R | (G << 8) | (B << 16) | (A << 24);
+
+                i += 4;
+                continue;
+            }
+            else
+            {
+                // Bad formatting? Just continue as is and create vertex data for ` character.
+            }
         }
 
         const Character& fontChar = fontChars[textChar - ' '];
