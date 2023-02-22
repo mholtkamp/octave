@@ -23,6 +23,7 @@ public:
 protected:
 
     static void ActionHandler(Button* button);
+    static void ShowAddBasicWidgetPrompt();
     static void ShowAddNativeWidgetPrompt();
     static void ShowAddMappedWidgetPrompt();
     static void MoveWidgetSlot(Widget* widget, int32_t delta);
