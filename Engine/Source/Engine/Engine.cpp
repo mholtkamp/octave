@@ -118,8 +118,8 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
             int32_t width = atoi(argv[i + 1]);
             int32_t height = atoi(argv[i + 2]);
 
-            width = glm::clamp(width, 100, 3840);
-            height = glm::clamp(height, 100, 2160);
+            width = glm::clamp<int32_t>(width, 100, 3840);
+            height = glm::clamp<int32_t>(height, 100, 2160);
 
             gCommandLineOptions.mWindowWidth = width;
             gCommandLineOptions.mWindowHeight = height;
