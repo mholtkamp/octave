@@ -1194,11 +1194,27 @@ void GFX_DrawQuad(Quad* quad)
     BufInfo_Add(bufInfo, resource->mVertexData.Get(), sizeof(VertexUI), 3, 0x210);
 
     // Setup Texture Environment
+    // TEV 0 = Texture sample + vertex color modulation
     C3D_TexBind(0, &texture->GetResource()->mTex);
     C3D_TexEnv* env = C3D_GetTexEnv(0);
     C3D_TexEnvInit(env);
     C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
     C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+
+    // TEV 1 = Constant color modulation
+    env = C3D_GetTexEnv(1);
+    C3D_TexEnvInit(env);
+    C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_CONSTANT, GPU_PRIMARY_COLOR);
+    C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+    glm::vec4 uniColor = glm::clamp(quad->GetColor() * quad->GetTint(), 0.0f, 1.0f);
+    uint8_t uniColor4[4] =
+    {
+        uint8_t(uniColor.r * 255.0f),
+        uint8_t(uniColor.g * 255.0f),
+        uint8_t(uniColor.b * 255.0f),
+        uint8_t(uniColor.a * 255.0f)
+    };
+    C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(uniColor4));
 
     // Setup Light Environment
 
@@ -1284,6 +1300,7 @@ void GFX_DrawText(Text* text)
     BufInfo_Add(bufInfo, resource->mVertexData.Get(), sizeof(VertexUI), 3, 0x210);
 
     // Setup Texture Environment
+    // TEV 0 = Font texture + vertex color modulation
     C3D_TexBind(0, &font->GetTexture()->GetResource()->mTex);
     C3D_TexEnv* env = C3D_GetTexEnv(0);
     C3D_TexEnvInit(env);
@@ -1291,6 +1308,21 @@ void GFX_DrawText(Text* text)
     C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
     C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR);
     C3D_TexEnvOpAlpha(env, GPU_TEVOP_A_SRC_ALPHA, GPU_TEVOP_A_SRC_ALPHA, GPU_TEVOP_A_SRC_ALPHA);
+
+    // TEV 1 = Constant color modulation
+    env = C3D_GetTexEnv(1);
+    C3D_TexEnvInit(env);
+    C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_CONSTANT, GPU_PRIMARY_COLOR);
+    C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+    glm::vec4 uniColor = glm::clamp(text->GetColor(), 0.0f, 1.0f);
+    uint8_t uniColor4[4] =
+    {
+        uint8_t(uniColor.r * 255.0f),
+        uint8_t(uniColor.g * 255.0f),
+        uint8_t(uniColor.b * 255.0f),
+        uint8_t(uniColor.a * 255.0f)
+    };
+    C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(uniColor4));
 
     // Setup Light Environment
 
