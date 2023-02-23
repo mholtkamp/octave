@@ -300,11 +300,11 @@ void GFX_SetScissor(int32_t x, int32_t y, int32_t width, int32_t height)
 
     if (gC3dContext.mCurrentScreen == 0)
     {
-        C3D_SetScissor(GPU_SCISSOR_NORMAL, 240 - uint32_t(y + height), 400 - uint32_t(x + width), 240 - uint32_t(y), 400 - uint32_t(x + width));
+        C3D_SetScissor(GPU_SCISSOR_NORMAL, 240 - uint32_t(y + height), 400 - uint32_t(x + width), 240 - uint32_t(y), 400 - uint32_t(x));
     }
     else
     {
-        C3D_SetScissor(GPU_SCISSOR_NORMAL, 240 - uint32_t(y + height), 320 - uint32_t(x + width), 240 - uint32_t(y), 320 - uint32_t(x + width));
+        C3D_SetScissor(GPU_SCISSOR_NORMAL, 240 - uint32_t(y + height), 320 - uint32_t(x + width), 240 - uint32_t(y), 320 - uint32_t(x));
     }
 }
 
