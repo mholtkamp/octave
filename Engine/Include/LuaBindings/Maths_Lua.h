@@ -13,6 +13,7 @@ struct Maths_Lua
     static int DampAngle(lua_State* L);
     static int Approach(lua_State* L);
     static int ApproachAngle(lua_State* L);
+    static int NormalizeRange(lua_State* L);
     static int IsPowerOfTwo(lua_State* L);
     static int Min(lua_State* L);
     static int Max(lua_State* L);

@@ -74,6 +74,18 @@ int Maths_Lua::ApproachAngle(lua_State* L)
     return 1;
 }
 
+int Maths_Lua::NormalizeRange(lua_State* L)
+{
+    float value = CHECK_NUMBER(L, 1);
+    float start = CHECK_NUMBER(L, 2);
+    float end = CHECK_NUMBER(L, 3);
+
+    float ret = Maths::NormalizeRange(value, start, end);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
 int Maths_Lua::IsPowerOfTwo(lua_State* L)
 {
     bool ret = false;
@@ -308,6 +320,9 @@ void Maths_Lua::Bind()
 
     lua_pushcfunction(L, ApproachAngle);
     lua_setfield(L, tableIdx, "ApproachAngle");
+
+    lua_pushcfunction(L, NormalizeRange);
+    lua_setfield(L, tableIdx, "NormalizeRange");
 
     lua_pushcfunction(L, IsPowerOfTwo);
     lua_setfield(L, tableIdx, "IsPowerOfTwo");
