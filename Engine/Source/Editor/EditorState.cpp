@@ -20,6 +20,7 @@
 #include "Widgets/ActionList.h"
 #include "Widgets/TextEntry.h"
 #include "Widgets/WidgetViewportPanel.h"
+#include "Widgets/PropertiesPanel.h"
 
 static EditorState sEditorState;
 
@@ -310,6 +311,7 @@ void BeginPlayInEditor()
     SetSelectedComponent(nullptr);
     SetSelectedAssetStub(nullptr);
     SetEditorMode(EditorMode::Level);
+    PanelManager::Get()->GetPropertiesPanel()->InspectAsset(nullptr);
 
     ActionManager::Get()->ResetUndoRedo();
 
@@ -351,6 +353,7 @@ void EndPlayInEditor()
 
     SetSelectedComponent(nullptr);
     SetSelectedAssetStub(nullptr);
+    PanelManager::Get()->GetPropertiesPanel()->InspectAsset(nullptr);
 
     ActionManager::Get()->ResetUndoRedo();
 
