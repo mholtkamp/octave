@@ -10,7 +10,8 @@
 
 Datum::Datum()
 {
-
+    mForceScriptArray = false;
+    mExternal = false;
 }
 
 Datum::Datum(
@@ -25,6 +26,7 @@ Datum::Datum(
     mData.vp = data;
     mCount = (uint8_t) count;
     mChangeHandler = changeHandler;
+    mForceScriptArray = false;
 
     OCT_ASSERT(count <= 255);
 
@@ -1558,6 +1560,7 @@ void Datum::DeepCopy(const Datum& src, bool forceInternalStorage)
 {
     mType = src.mType;
     mExternal = src.mExternal;
+    mForceScriptArray = src.mForceScriptArray;
     mOwner = src.mOwner;
     mChangeHandler = src.mChangeHandler;
 
@@ -1840,6 +1843,7 @@ void Datum::Reset()
 {
     mType = DatumType::Count;
     mExternal = false;
+    mForceScriptArray = false;
     mOwner = nullptr;
     mData.vp = nullptr;
     mChangeHandler = nullptr;

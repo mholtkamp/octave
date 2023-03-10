@@ -79,6 +79,17 @@ public:
     Datum(RTTI* value);
     Datum(int16_t value);
 
+    template<typename T>
+    Datum(const std::vector<T>& arr)
+    {
+        for (uint32_t i = 0; i < arr.size(); ++i)
+        {
+            PushBack(arr[i]);
+        }
+
+        mForceScriptArray = true;
+    }
+
     // Conversion operators
     operator int32_t() const { return GetInteger(); }
     operator uint32_t() const { return (uint32_t)GetInteger(); }
@@ -135,7 +146,6 @@ public:
     void SetExternal(glm::vec3* data,  uint32_t count = 1);
     void SetExternal(glm::vec4* data,  uint32_t count = 1);
     void SetExternal(AssetRef* data,  uint32_t count = 1);
-    void SetExternal(uint32_t* data,  uint32_t count = 1);
     void SetExternal(uint8_t* data,  uint32_t count = 1);
     void SetExternal(TableDatum* data, uint32_t count = 1);
     void SetExternal(RTTI** data, uint32_t count = 1);
@@ -164,7 +174,6 @@ public:
     void PushBack(const glm::vec3& value);
     void PushBack(const glm::vec4& value);
     void PushBack(Asset* value);
-    void PushBack(uint32_t value);
     void PushBack(uint8_t value);
     TableDatum* PushBackTableDatum(const TableDatum& value);
     void PushBack(RTTI* value);
@@ -303,7 +312,8 @@ protected:
 public:
 
     DatumType mType = DatumType::Count;
-    bool mExternal = false;
+    bool mExternal : 1;
+    bool mForceScriptArray : 1;
     void* mOwner = nullptr;
     DatumData mData = {};
     DatumChangeHandlerFP mChangeHandler = nullptr;

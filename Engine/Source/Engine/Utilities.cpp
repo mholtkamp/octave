@@ -472,47 +472,78 @@ void CreateTableCpp(lua_State* L, int tableIdx, Datum& datum)
 
 void LuaPushDatum(lua_State* L, const Datum& arg)
 {
-    switch (arg.mType)
+    uint32_t count = arg.GetCount();
+
+    if (count == 0 && !arg.mForceScriptArray)
     {
-    case DatumType::Integer: lua_pushinteger(L, arg.GetInteger()); break;
-    case DatumType::Short: lua_pushinteger(L, (int) arg.GetShort()); break;
-    case DatumType::Byte: lua_pushinteger(L, (int) arg.GetByte()); break;
-    case DatumType::Float: lua_pushnumber(L, arg.GetFloat()); break;
-    case DatumType::Bool: lua_pushboolean(L, arg.GetBool()); break;
-    case DatumType::String: lua_pushstring(L, arg.GetString().c_str()); break;
-    case DatumType::Vector2D: Vector_Lua::Create(L, arg.GetVector2D()); break;
-    case DatumType::Vector: Vector_Lua::Create(L, arg.GetVector()); break;
-    case DatumType::Color: Vector_Lua::Create(L, arg.GetColor()); break;
-    case DatumType::Asset: Asset_Lua::Create(L, arg.GetAsset()); break;
-    case DatumType::Table: CreateTableLua(L, arg); break;
-    case DatumType::Pointer:
-    {
-        RTTI* pointer = arg.GetPointer();
-        if (pointer == nullptr)
-        {
-            lua_pushnil(L);
-        }
-        else if (pointer->Is(Actor::ClassRuntimeId()))
-        {
-            Actor_Lua::Create(L, (Actor*)pointer);
-        }
-        else if (pointer->Is(Component::ClassRuntimeId()))
-        {
-            Component_Lua::Create(L, (Component*)pointer);
-        }
-        else if (pointer->Is(Widget::ClassRuntimeId()))
-        {
-            Widget_Lua::Create(L, (Widget*)pointer);
-        }
-        else
-        {
-            LogError("Unsupported pointer type in LuaPushDatum.");
-            lua_pushnil(L);
-        }
-        break;
+        lua_pushnil(L);
+        return;
     }
 
-    default: lua_pushnil(L); break;
+    int32_t arrIdx = -1;
+
+    if (count > 1 || arg.mForceScriptArray)
+    {
+        lua_newtable(L);
+        arrIdx = lua_gettop(L);
+    }
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        switch (arg.mType)
+        {
+        case DatumType::Integer: lua_pushinteger(L, arg.GetInteger(i)); break;
+        case DatumType::Short: lua_pushinteger(L, (int)arg.GetShort(i)); break;
+        case DatumType::Byte: lua_pushinteger(L, (int)arg.GetByte(i)); break;
+        case DatumType::Float: lua_pushnumber(L, arg.GetFloat(i)); break;
+        case DatumType::Bool: lua_pushboolean(L, arg.GetBool(i)); break;
+        case DatumType::String: lua_pushstring(L, arg.GetString(i).c_str()); break;
+        case DatumType::Vector2D: Vector_Lua::Create(L, arg.GetVector2D(i)); break;
+        case DatumType::Vector: Vector_Lua::Create(L, arg.GetVector(i)); break;
+        case DatumType::Color: Vector_Lua::Create(L, arg.GetColor(i)); break;
+        case DatumType::Asset: Asset_Lua::Create(L, arg.GetAsset(i)); break;
+        case DatumType::Table: CreateTableLua(L, arg); break;
+        case DatumType::Pointer:
+        {
+            RTTI* pointer = arg.GetPointer(i);
+            if (pointer == nullptr)
+            {
+                lua_pushnil(L);
+            }
+            else if (pointer->Is(Actor::ClassRuntimeId()))
+            {
+                Actor_Lua::Create(L, (Actor*)pointer);
+            }
+            else if (pointer->Is(Component::ClassRuntimeId()))
+            {
+                Component_Lua::Create(L, (Component*)pointer);
+            }
+            else if (pointer->Is(Widget::ClassRuntimeId()))
+            {
+                Widget_Lua::Create(L, (Widget*)pointer);
+            }
+            else
+            {
+                LogError("Unsupported pointer type in LuaPushDatum.");
+                lua_pushnil(L);
+            }
+            break;
+        }
+
+        default: lua_pushnil(L); break;
+        }
+    }
+
+    // Need to insert elements into array table
+    if (arrIdx != -1)
+    {
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            lua_seti(L, arrIdx, int32_t(i) + 1);
+        }
+
+        // The array table should be top on the stack, now that has lua_seti has removed count elements.
+        OCT_ASSERT(lua_gettop(L) == arrIdx);
     }
 }
 
