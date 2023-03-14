@@ -13,6 +13,7 @@
 #include "Grid.h"
 #include "World.h"
 #include "TimerManager.h"
+#include "AudioManager.h"
 #include "Assets/Level.h"
 #include "Assets/Blueprint.h"
 #include "Assets/WidgetMap.h"
@@ -346,6 +347,7 @@ void EndPlayInEditor()
     GetTimerManager()->ClearAllTimers();
 
     Renderer::Get()->RemoveAllWidgets();
+    AudioManager::StopAllSounds();
 
     // Fake Shutdown
     OctPreShutdown();
