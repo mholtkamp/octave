@@ -46,72 +46,86 @@ Datum::~Datum()
 
 Datum::Datum(int32_t value)
 {
+    Reset();
     PushBack(value);
 }
 
 Datum::Datum(uint32_t value)
 {
+    Reset();
     PushBack(int32_t(value));
 }
 
 Datum::Datum(float value)
 {
+    Reset();
     PushBack(value);
 }
 
 Datum::Datum(bool value)
 {
+    Reset();
     PushBack(value);
 }
 
 Datum::Datum(const char* value)
 {
+    Reset();
     std::string stringVal = value;
     PushBack(stringVal);
 }
 
 Datum::Datum(const std::string& value)
 {
+    Reset();
     PushBack(value);
 }
 
 Datum::Datum(glm::vec2 value)
 {
+    Reset();
     PushBack(value);
 }
 
 Datum::Datum(glm::vec3 value)
 {
+    Reset();
     PushBack(value);
 }
 
 Datum::Datum(glm::vec4 value)
 {
+    Reset();
     PushBack(value);
 }
 
 Datum::Datum(Asset* value)
 {
+    Reset();
     PushBack(value);
 }
 
 Datum::Datum(const AssetRef& value)
 {
+    Reset();
     PushBack(value.Get());
 }
 
 Datum::Datum(uint8_t value)
 {
+    Reset();
     PushBack(value);
 }
 
 Datum::Datum(RTTI* value)
 {
+    Reset();
     PushBack(value);
 }
 
 Datum::Datum(int16_t value)
 {
+    Reset();
     PushBack(value);
 }
 
