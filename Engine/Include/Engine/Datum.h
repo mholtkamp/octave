@@ -82,6 +82,8 @@ public:
     template<typename T>
     Datum(const std::vector<T>& arr)
     {
+        Reset();
+        
         for (uint32_t i = 0; i < arr.size(); ++i)
         {
             PushBack(arr[i]);
