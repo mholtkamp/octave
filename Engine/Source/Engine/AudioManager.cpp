@@ -431,6 +431,19 @@ void AudioManager::StopSounds(SoundWave* soundWave)
     }
 }
 
+void AudioManager::StopSound(const std::string& name)
+{
+    for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
+    {
+        SoundWave* soundWave = sAudioSources[i].mSoundWave.Get<SoundWave>();
+
+        if (soundWave && soundWave->GetName() == name)
+        {
+            StopAudio(i);
+        }
+    }
+}
+
 void AudioManager::StopAllSounds()
 {
     for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)

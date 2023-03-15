@@ -35,5 +35,6 @@ public:
 
     static void StopComponent(AudioComponent* comp);
     static void StopSounds(SoundWave* soundWave);
+    static void StopSound(const std::string& name);
     static void StopAllSounds();
 };
