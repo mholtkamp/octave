@@ -40,6 +40,8 @@ public:
 
 protected:
 
+    static bool HandlePreviewPropChange(Datum* datum, uint32_t index, const void* newValue);
+
     uint8_t* mWaveData = nullptr;
     uint32_t mWaveDataSize = 0;
 

@@ -11,6 +11,23 @@
 FORCE_LINK_DEF(SoundWave);
 DEFINE_ASSET(SoundWave);
 
+bool SoundWave::HandlePreviewPropChange(Datum* datum, uint32_t index, const void* newValue)
+{
+    Property* prop = static_cast<Property*>(datum);
+    SoundWave* soundWave = (SoundWave*)prop->mOwner;
+
+    if (prop->mName == "Play")
+    {
+        AudioManager::PlaySound2D(soundWave);
+    }
+    else if (prop->mName == "Stop")
+    {
+        AudioManager::StopSounds(soundWave);
+    }
+
+    return true;
+}
+
 SoundWave::SoundWave()
 {
     mType = SoundWave::GetStaticType();
@@ -149,6 +166,12 @@ void SoundWave::Import(const std::string& path, ImportOptions* options)
 void SoundWave::GatherProperties(std::vector<Property>& outProps)
 {
     Asset::GatherProperties(outProps);
+
+    static bool sFakePlay = false;
+    outProps.push_back(Property(DatumType::Bool, "Play", this, &sFakePlay, 1, HandlePreviewPropChange));
+
+    static bool sFakeStop = false;
+    outProps.push_back(Property(DatumType::Bool, "Stop", this, &sFakeStop, 1, HandlePreviewPropChange));
 
     outProps.push_back(Property(DatumType::Float, "Volume Multiplier", this, &mVolumeMultiplier));
     outProps.push_back(Property(DatumType::Float, "Pitch Multiplier", this, &mPitchMultiplier));
