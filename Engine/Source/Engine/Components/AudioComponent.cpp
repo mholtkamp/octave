@@ -7,6 +7,10 @@
 #include "AudioManager.h"
 #include "AssetManager.h"
 
+#if EDITOR
+#include "EditorState.h"
+#endif
+
 static const char* sAttenuationFuncStrings[] =
 {
     "Constant",
@@ -82,15 +86,44 @@ void AudioComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 
     if (GetType() == AudioComponent::GetStaticType())
     {
-        DebugDraw debugDraw;
-        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
-        debugDraw.mActor = GetOwner();
-        debugDraw.mComponent = this;
-        debugDraw.mColor = glm::vec4(0.3f, 0.8f, 0.8f, 1.0f);
-        debugDraw.mTransform = glm::scale(mTransform, { 0.2f, 0.2f, 0.2f });
-        inoutDraws.push_back(debugDraw);
+        {
+            DebugDraw debugDraw;
+            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
+            debugDraw.mActor = GetOwner();
+            debugDraw.mComponent = this;
+            debugDraw.mColor = glm::vec4(0.3f, 0.8f, 0.8f, 1.0f);
+            debugDraw.mTransform = glm::scale(mTransform, { 0.2f, 0.2f, 0.2f });
+            inoutDraws.push_back(debugDraw);
+        }
+
+#if EDITOR
+        if (GetSelectedComponent() == this)
+        {
+            {
+                // Inner Radius
+                DebugDraw debugDraw;
+                debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
+                debugDraw.mActor = GetOwner();
+                debugDraw.mComponent = this;
+                debugDraw.mColor = glm::vec4(0.3f, 0.8f, 0.8f, 1.0f);
+                debugDraw.mTransform = glm::scale(mTransform, { mInnerRadius, mInnerRadius, mInnerRadius });
+                inoutDraws.push_back(debugDraw);
+            }
+
+            {
+                // Outer Radius
+                DebugDraw debugDraw;
+                debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
+                debugDraw.mActor = GetOwner();
+                debugDraw.mComponent = this;
+                debugDraw.mColor = glm::vec4(0.3f, 0.8f, 0.8f, 1.0f);
+                debugDraw.mTransform = glm::scale(mTransform, { mOuterRadius, mOuterRadius, mOuterRadius });
+                inoutDraws.push_back(debugDraw);
+            }
+        }
+#endif // EDITOR
     }
-#endif
+#endif // DEBUG_DRAW_ENABLED
 }
 
 void AudioComponent::Create()
