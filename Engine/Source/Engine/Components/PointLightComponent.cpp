@@ -7,6 +7,10 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#if EDITOR
+#include "EditorState.h"
+#endif
+
 #undef min
 #undef max
 
@@ -52,15 +56,30 @@ void PointLightComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 
     if (GetType() == PointLightComponent::GetStaticType())
     {
-        DebugDraw debugDraw;
-        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
-        debugDraw.mActor = GetOwner();
-        debugDraw.mComponent = this;
-        debugDraw.mColor = glm::vec4(0.8f, 0.8f, 0.3f, 1.0f);
-        debugDraw.mTransform = glm::scale(mTransform, { 0.2f, 0.2f, 0.2f });
-        inoutDraws.push_back(debugDraw);
+        {
+            DebugDraw debugDraw;
+            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
+            debugDraw.mActor = GetOwner();
+            debugDraw.mComponent = this;
+            debugDraw.mColor = glm::vec4(0.8f, 0.8f, 0.3f, 1.0f);
+            debugDraw.mTransform = glm::scale(mTransform, { 0.2f, 0.2f, 0.2f });
+            inoutDraws.push_back(debugDraw);
+        }
+
+#if EDITOR
+        if (GetSelectedComponent() == this)
+        {
+            DebugDraw debugDraw;
+            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
+            debugDraw.mActor = GetOwner();
+            debugDraw.mComponent = this;
+            debugDraw.mColor = glm::vec4(0.8f, 0.8f, 0.3f, 1.0f);
+            debugDraw.mTransform = glm::scale(mTransform, { mRadius, mRadius, mRadius });
+            inoutDraws.push_back(debugDraw);
+        }
+#endif // EDITOR
     }
-#endif
+#endif // DEBUG_DRAW_ENABLED
 }
 
 void PointLightComponent::SaveStream(Stream& stream)
