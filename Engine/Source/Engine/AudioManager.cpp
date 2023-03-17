@@ -405,6 +405,36 @@ void AudioManager::PlaySound3D(
     }
 }
 
+void AudioManager::UpdateSound(
+    SoundWave* soundWave,
+    float volume,
+    float pitch,
+    bool loop,
+    int32_t priority)
+{
+    if (soundWave != nullptr)
+    {
+        for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
+        {
+            if (sAudioSources[i].mSoundWave == soundWave)
+            {
+                SoundWave* soundWave = sAudioSources[i].mSoundWave.Get<SoundWave>();
+                bool stopped = false;
+
+                sAudioSources[i].mVolumeMult = volume;
+                sAudioSources[i].mPitchMult = pitch;
+                //sAudioSources[i].mLoop = loop;
+                sAudioSources[i].mPriority = priority;
+                
+                AUD_SetVolume(i, volume, volume);
+                AUD_SetPitch(i, pitch);
+
+                break;
+            }
+        }
+    }
+}
+
 void AudioManager::StopComponent(AudioComponent* comp)
 {
     for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
