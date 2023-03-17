@@ -33,6 +33,13 @@ public:
         bool loop = false,
         int32_t priority = 0);
 
+    static void UpdateSound(
+        SoundWave* soundWave,
+        float volume,
+        float pitch,
+        bool loop = false,
+        int32_t priority = 0);
+
     static void StopComponent(AudioComponent* comp);
     static void StopSounds(SoundWave* soundWave);
     static void StopSound(const std::string& name);
