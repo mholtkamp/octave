@@ -253,7 +253,6 @@ void AudioManager::Update(float deltaTime)
                     AudioComponent* comp = sAudioSources[i].mComponent;
                     sAudioSources[i].mPosition = comp->GetAbsolutePosition();
                     sAudioSources[i].mVolumeMult = comp->GetVolume();
-                    sAudioSources[i].mPitchMult = comp->GetPitch();
                 }
 
                 float dist = glm::distance(listenerPos, sAudioSources[i].mPosition);
