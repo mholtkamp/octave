@@ -250,7 +250,10 @@ void AudioManager::Update(float deltaTime)
                 // Update attenuation of the 3D sound
                 if (sAudioSources[i].mComponent != nullptr)
                 {
-                    sAudioSources[i].mPosition = sAudioSources[i].mComponent->GetAbsolutePosition();
+                    AudioComponent* comp = sAudioSources[i].mComponent;
+                    sAudioSources[i].mPosition = comp->GetAbsolutePosition();
+                    sAudioSources[i].mVolumeMult = comp->GetVolume();
+                    sAudioSources[i].mPitchMult = comp->GetPitch();
                 }
 
                 float dist = glm::distance(listenerPos, sAudioSources[i].mPosition);
