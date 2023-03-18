@@ -137,6 +137,16 @@ void AudioComponent::Destroy()
     TransformComponent::Destroy();
 }
 
+void AudioComponent::BeginPlay()
+{
+    TransformComponent::BeginPlay();
+
+    if (mAutoPlay)
+    {
+        Play();
+    }
+}
+
 void AudioComponent::Tick(float deltaTime)
 {
     TransformComponent::Tick(deltaTime);
@@ -177,11 +187,6 @@ void AudioComponent::LoadStream(Stream& stream)
     mAttenuationFunc = (AttenuationFunc)stream.ReadUint32();
     mLoop = stream.ReadBool();
     mAutoPlay = stream.ReadBool();
-
-    if (mAutoPlay)
-    {
-        Play();
-    }
 }
 
 void AudioComponent::SetSoundWave(SoundWave* soundWave)
