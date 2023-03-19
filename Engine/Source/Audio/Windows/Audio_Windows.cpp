@@ -13,6 +13,7 @@ static IXAudio2* sXAudio2 = nullptr;
 static IXAudio2MasteringVoice* sMasterVoice = nullptr;
 static IXAudio2SourceVoice* sSourceVoices[AUDIO_MAX_VOICES] = { };
 static XAUDIO2_BUFFER sSourceBuffers[AUDIO_MAX_VOICES] = { };
+static uint8_t* sStereoConvertedBuffers[AUDIO_MAX_VOICES] = { };
 
 // An attempt to reuse source voices?
 //struct WaveFormat
@@ -70,6 +71,28 @@ void AUD_Play(
 {
     OCT_ASSERT(sSourceVoices[voiceIndex] == nullptr);
 
+    bool monoInput = (soundWave->GetNumChannels() == 1);
+    if (monoInput)
+    {
+        OCT_ASSERT(sStereoConvertedBuffers[voiceIndex] == nullptr);
+        sStereoConvertedBuffers[voiceIndex] = new uint8_t[soundWave->GetWaveDataSize() * 2];
+
+        uint32_t numSamples = soundWave->GetNumSamples();
+        uint32_t sampleSize = (soundWave->GetBitsPerSample() == 8) ? 1 : 2;
+
+        uint8_t* srcData = soundWave->GetWaveData();
+        uint8_t* dstData = sStereoConvertedBuffers[voiceIndex];
+
+        for (uint32_t i = 0; i < numSamples; ++i)
+        {
+            memcpy(dstData, srcData, sampleSize);
+            memcpy(dstData + sampleSize, srcData, sampleSize);
+
+            srcData += sampleSize;
+            dstData += (sampleSize * 2);
+        }
+    }
+
     float startPercent = startTime / soundWave->GetDuration();
     startPercent = glm::clamp(startPercent, 0.0f, 1.0f);
     uint32_t startingSample = uint32_t(startPercent * soundWave->GetNumSamples());
@@ -91,6 +114,16 @@ void AUD_Play(
     waveFormat.nBlockAlign = soundWave->GetBlockAlign();
     waveFormat.nAvgBytesPerSec = soundWave->GetByteRate();
     waveFormat.cbSize = 0;
+
+    if (monoInput)
+    {
+        // Use ephemeral stereo buffer
+        sSourceBuffers[voiceIndex].AudioBytes *= 2;
+        sSourceBuffers[voiceIndex].pAudioData = sStereoConvertedBuffers[voiceIndex];
+        waveFormat.nAvgBytesPerSec *= 2;
+        waveFormat.nBlockAlign *= 2;
+        waveFormat.nChannels = 2;
+    }
 
     if (sXAudio2->CreateSourceVoice(&sSourceVoices[voiceIndex], &waveFormat) >= 0)
     {
@@ -116,6 +149,11 @@ void AUD_Stop(uint32_t voiceIndex)
     sSourceVoices[voiceIndex]->DestroyVoice();
     sSourceVoices[voiceIndex] = nullptr;
 
+    if (sStereoConvertedBuffers[voiceIndex] != nullptr)
+    {
+        delete sStereoConvertedBuffers[voiceIndex];
+        sStereoConvertedBuffers[voiceIndex] = nullptr;
+    }
 }
 
 bool AUD_IsPlaying(uint32_t voiceIndex)
@@ -131,7 +169,7 @@ void AUD_SetVolume(uint32_t voiceIndex, float leftVolume, float rightVolume)
     OCT_ASSERT(sSourceVoices[voiceIndex] != nullptr);
 
     // Use this version to set volume of all channels
-    //sSourceVoices[voiceIndex]->SetVolume((leftVolume + rightVolume) / 2.0f);
+    // sSourceVoices[voiceIndex]->SetVolume((leftVolume + rightVolume) / 2.0f);
 
     // Use this version to set volume of left/right ear
     sSourceVoices[voiceIndex]->SetVolume(1.0f);
