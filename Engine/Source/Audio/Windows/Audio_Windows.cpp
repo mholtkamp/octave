@@ -129,7 +129,14 @@ bool AUD_IsPlaying(uint32_t voiceIndex)
 void AUD_SetVolume(uint32_t voiceIndex, float leftVolume, float rightVolume)
 {
     OCT_ASSERT(sSourceVoices[voiceIndex] != nullptr);
-    sSourceVoices[voiceIndex]->SetVolume((leftVolume + rightVolume) / 2.0f);
+
+    // Use this version to set volume of all channels
+    //sSourceVoices[voiceIndex]->SetVolume((leftVolume + rightVolume) / 2.0f);
+
+    // Use this version to set volume of left/right ear
+    sSourceVoices[voiceIndex]->SetVolume(1.0f);
+    float volumes[2] = { leftVolume, rightVolume };
+    sSourceVoices[voiceIndex]->SetChannelVolumes(2, volumes);
 }
 
 void AUD_SetPitch(uint32_t voiceIndex, float pitch)
