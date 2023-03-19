@@ -93,6 +93,54 @@ float CalcVolumeAttenuation(AttenuationFunc func, float innerRadius, float outer
     return ret;
 }
 
+void CalcVolumeAttenuationLR(
+    AttenuationFunc func,
+    float innerRadius,
+    float outerRadius,
+    glm::vec3 srcPos,
+    glm::vec3 listenerPos,
+    glm::vec3 listenerRight,
+    float distance,
+    float& outLeft,
+    float& outRight)
+{
+    float volume = 1.0f;
+
+    float x = glm::max(0.0f, distance - innerRadius) / (outerRadius - innerRadius);
+    x = glm::clamp(x, 0.0f, 1.0f);
+    x = (1.0f - x);
+
+    switch (func)
+    {
+    case AttenuationFunc::Linear:
+        volume = x;
+        break;
+
+    default:
+        break;
+    }
+
+    glm::vec3 toSrc = Maths::SafeNormalize(srcPos - listenerPos);
+    float dot = glm::dot(listenerRight, toSrc);
+
+    float minAttenAlpha = glm::clamp((distance - 1.0f) / 5.0f, 0.0f, 1.0f);
+    float MinDirAtten = glm::mix(1.0f, 0.2f, minAttenAlpha);
+    if (dot > 0)
+    {
+        outRight = 1.0f;
+        outLeft = glm::mix(1.0f, MinDirAtten, dot);
+    }
+    else
+    {
+        outLeft = 1.0f;
+        outRight = glm::mix(1.0f, MinDirAtten, -dot);
+    }
+
+    outLeft *= volume;
+    outRight *= volume;
+}
+
+
 void PlayAudio(
     uint32_t sourceIndex,
     SoundWave* soundWave,
@@ -216,6 +264,7 @@ void AudioManager::Update(float deltaTime)
     // (1) Update Active Sources
     TransformComponent* listener = GetWorld()->GetAudioReceiver();
     glm::vec3 listenerPos = listener ? listener->GetAbsolutePosition() : glm::vec3(0,0,0);
+    glm::vec3 listenerRight = listener ? listener->GetRightVector() : glm::vec3(1.0f, 0.0f, 0.0f);
 
     for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
     {
@@ -267,6 +316,8 @@ void AudioManager::Update(float deltaTime)
                 }
                 else
                 {
+
+#if 0
                     // Otherwise update the new volume
                     float volume = CalcVolumeAttenuation(
                         sAudioSources[i].mAttenuationFunc,
@@ -276,6 +327,24 @@ void AudioManager::Update(float deltaTime)
 
                     volume = volume * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier();
                     AUD_SetVolume(i, volume, volume);
+#else
+                    float volLeft = 1.0f;
+                    float volRight = 1.0f;
+
+                    CalcVolumeAttenuationLR(sAudioSources[i].mAttenuationFunc,
+                        sAudioSources[i].mInnerRadius,
+                        sAudioSources[i].mOuterRadius,
+                        sAudioSources[i].mPosition,
+                        listenerPos,
+                        listenerRight,
+                        dist,
+                        volLeft,
+                        volRight);
+
+                    volLeft = volLeft * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier();
+                    volRight = volRight * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier();
+                    AUD_SetVolume(i, volLeft, volRight);
+#endif
                 }
 
                 if (!stopped &&
