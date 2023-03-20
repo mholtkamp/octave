@@ -426,7 +426,8 @@ void AudioManager::PlaySound2D(
 {
     uint32_t sourceIndex = FindAvailableAudioSourceIndex(priority);
 
-    if (sourceIndex < MAX_AUDIO_SOURCES)
+    if (soundWave != nullptr && 
+        sourceIndex < MAX_AUDIO_SOURCES)
     {
         PlayAudio(
             sourceIndex,
@@ -458,7 +459,8 @@ void AudioManager::PlaySound3D(
 {
     uint32_t sourceIndex = FindAvailableAudioSourceIndex(priority);
 
-    if (sourceIndex != MAX_AUDIO_SOURCES)
+    if (soundWave != nullptr && 
+        sourceIndex != MAX_AUDIO_SOURCES)
     {
         PlayAudio(
             sourceIndex,
