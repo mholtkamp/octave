@@ -73,19 +73,121 @@ void SoundWave::SaveStream(Stream& stream, Platform platform)
     stream.WriteFloat(mVolumeMultiplier);
     stream.WriteFloat(mPitchMultiplier);
 
-    // Waveform Format
-    stream.WriteUint32(mNumChannels);
-    stream.WriteUint32(mBitsPerSample);
-    stream.WriteUint32(mSampleRate);
-    stream.WriteUint32(mNumSamples);
-    stream.WriteUint32(mBlockAlign);
-    stream.WriteUint32(mByteRate);
-
-    // Waveform
-    stream.WriteUint32(mWaveDataSize);
-    for (uint32_t i = 0; i < mWaveDataSize; ++i)
+#if 1
+    if (platform == Platform::GameCube ||
+        platform == Platform::Wii ||
+        platform == Platform::N3DS)
     {
-        stream.WriteUint8(mWaveData[i]);
+        // Maybe only temporary, these platforms will use low-quality audio.
+        // In the future allow compressing to OGG
+
+        uint8_t* compWaveData = new uint8_t[mNumSamples];
+        memset(compWaveData, 0, mNumSamples);
+
+        const uint8_t* srcData = mWaveData;
+        uint8_t* dstData = compWaveData;
+
+        uint32_t numSamples = mNumSamples;
+        uint32_t wavDataSize = mWaveDataSize;
+
+        // First convert all samples to 8 bit
+        for (uint32_t i = 0; i < numSamples; ++i)
+        {
+            if (mBitsPerSample == 8)
+            {
+                *dstData = *srcData;
+
+                dstData++;
+                srcData++;
+            }
+            else
+            {
+                int16_t sample16;
+                memcpy(&sample16, srcData, sizeof(int16_t));
+                uint8_t sample8 = (uint8_t)((sample16 + 32768) >> 8);
+                *dstData = sample8;
+
+                dstData++;
+                srcData += 2;
+            }
+        }
+
+        if (mBitsPerSample == 16)
+        {
+            wavDataSize /= 2;
+        }
+
+        // Then convert to mono by averaging left + right channels
+        if (mNumChannels == 2)
+        {
+            for (uint32_t i = 0; i < numSamples / 2; ++i)
+            {
+                uint8_t sample1 = compWaveData[i * 2 + 0];
+                uint8_t sample2 = compWaveData[i * 2 + 1];
+
+                float sampleAvg = (float(sample1) + float(sample2)) / 2.0f;
+                compWaveData[i] = uint8_t(sampleAvg + 0.5);
+            }
+
+            numSamples /= 2;
+            wavDataSize /= 2;
+        }
+
+        // Lastly merge samples to make 22050 Hz (if original is 44100 Hz).
+        uint32_t lowSampleRate = mSampleRate;
+        if (mSampleRate == 44100)
+        {
+            lowSampleRate = 22050;
+
+            for (uint32_t i = 0; i < numSamples / 2; ++i)
+            {
+                uint8_t sample1 = compWaveData[i * 2 + 0];
+                uint8_t sample2 = compWaveData[i * 2 + 1];
+
+                float sampleAvg = (float(sample1) + float(sample2)) / 2.0f;
+                compWaveData[i] = uint8_t(sampleAvg + 0.5);
+            }
+
+            numSamples /= 2;
+            wavDataSize /= 2;
+        }
+
+        // Then write the data to stream (using mono, 8-bit, 22050 Hz settings)
+        stream.WriteUint32(1);
+        stream.WriteUint32(8);
+        stream.WriteUint32(lowSampleRate);
+        stream.WriteUint32(numSamples);
+        stream.WriteUint32(1);
+        stream.WriteUint32(lowSampleRate);
+
+        // Waveform
+        stream.WriteUint32(wavDataSize);
+        for (uint32_t i = 0; i < wavDataSize; ++i)
+        {
+            stream.WriteUint8(compWaveData[i]);
+        }
+
+        // Delete temporary array for low-quality waveform
+        delete compWaveData;
+        compWaveData = nullptr;
+    }
+    else
+#endif
+    {
+        // Waveform Format
+        stream.WriteUint32(mNumChannels);
+        stream.WriteUint32(mBitsPerSample);
+        stream.WriteUint32(mSampleRate);
+        stream.WriteUint32(mNumSamples);
+        stream.WriteUint32(mBlockAlign);
+        stream.WriteUint32(mByteRate);
+
+        // Waveform
+        stream.WriteUint32(mWaveDataSize);
+        for (uint32_t i = 0; i < mWaveDataSize; ++i)
+        {
+            stream.WriteUint8(mWaveData[i]);
+        }
     }
 }
 
