@@ -240,6 +240,7 @@ struct EngineState
     float mRealDeltaTime = 0.0f;
     float mElapsedTime = 0.0f;
     float mTimeDilation = 1.0f;
+    float mAspectRatioScale = 1.0f;
     bool mPaused = false;
     bool mFrameStep = false;
     bool mInitialized = false;

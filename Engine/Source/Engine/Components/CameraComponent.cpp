@@ -142,6 +142,9 @@ void CameraComponent::ComputeMatrices()
     EngineState* engineState = GetEngineState();
     mPerspectiveSettings.mAspectRatio = static_cast<float>(engineState->mWindowWidth) / engineState->mWindowHeight;
 
+    // Use the scaling factor to address Wii widescreen stretching
+    mPerspectiveSettings.mAspectRatio *= engineState->mAspectRatioScale;
+
     mViewMatrix = CalculateViewMatrix();
     mViewMatrix = glm::toMat4(glm::conjugate(GetAbsoluteRotationQuat()));
 
