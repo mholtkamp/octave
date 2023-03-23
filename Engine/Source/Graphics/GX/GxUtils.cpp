@@ -8,6 +8,7 @@
 #include "Engine.h"
 #include "Renderer.h"
 #include "Vertex.h"
+#include "Widgets/Widget.h"
 #include "Assets/SkeletalMesh.h"
 
 #include "Components/CameraComponent.h"
@@ -534,6 +535,32 @@ void ConfigTev(uint32_t textureSlot, TevMode mode, bool vertexColorBlend)
             break;
         }
     }
+}
+
+void ApplyWidgetRotation(Mtx& mtx, Widget* widget)
+{
+    // Ok the position / rotation / scaling of widgets is in a weird place now.
+    // I think everything could be calculated and stored in the widget transform.
+    // I think the reason this wasn't the case was because I wanted to batch quad draws together
+    // so I needed to have all of there vertices precomputed. But I'm not sure if that will ever be 
+    // a possibility, so perhaps just fix the widget transform so that it stores the entire true transform
+    // and just let Quads use a static vertex buffer.
+
+    Mtx rotMat;
+    guMtxIdentity(rotMat);
+
+    const glm::mat3& trans3 = widget->GetTransform();
+    rotMat[0][0] = trans3[0][0];
+    rotMat[0][1] = trans3[1][0];
+    rotMat[1][0] = trans3[0][1];
+    rotMat[1][1] = trans3[1][1];
+    rotMat[0][3] = trans3[2][0];
+    rotMat[1][3] = trans3[2][1];
+
+    Mtx srcMat;
+    memcpy(srcMat, &mtx, sizeof(float) * 4 * 3);
+
+    guMtxConcat(rotMat, srcMat, mtx);
 }
 
 #endif

@@ -1036,6 +1036,7 @@ void GFX_DrawQuad(Quad* quad)
 
     Mtx modelViewUI;
     guMtxIdentity(modelViewUI);
+    ApplyWidgetRotation(modelViewUI, quad);
     GX_LoadPosMtxImm(modelViewUI, GX_PNMTX0);
 
     VertexUI* vertices = quad->GetVertices();
@@ -1093,11 +1094,13 @@ void GFX_DrawText(Text* text)
     glm::vec2 justOff = text->GetJustifiedOffset();
 
     Mtx modelViewUI;
+    guMtxIdentity(modelViewUI);
     glm::vec2 translation = glm::vec2(rect.mX + justOff.x, rect.mY + justOff.y);
     int32_t fontSize = font ? font->GetSize() : 32;
     float textScale = text->GetScaledTextSize() / fontSize;
     guMtxScale(modelViewUI, textScale, textScale, 1.0);
     guMtxTransApply(modelViewUI, modelViewUI, translation.x, translation.y, 0.0f);
+    ApplyWidgetRotation(modelViewUI, text);
     GX_LoadPosMtxImm(modelViewUI, GX_PNMTX0);
 
     // Setup render state / TEVs
