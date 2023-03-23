@@ -559,4 +559,23 @@ void ConfigTev(C3D_TexEnv* env, uint32_t textureSlot, TevMode mode, bool vertexC
     }
 }
 
+void ApplyWidgetRotation(C3D_Mtx& mtx, Widget* widget)
+{
+    C3D_Mtx rotMat;
+    Mtx_Identity(&rotMat);
+
+    const glm::mat3& trans3 = widget->GetTransform();
+    rotMat.r[0].x = trans3[0][0];
+    rotMat.r[0].y = trans3[1][0];
+    rotMat.r[1].x = trans3[0][1];
+    rotMat.r[1].y = trans3[1][1];
+    rotMat.r[0].w = trans3[2][0];
+    rotMat.r[1].w = trans3[2][1];
+
+    C3D_Mtx srcMat;
+    memcpy(&srcMat, &mtx, sizeof(float) * 4 * 4);
+
+    Mtx_Multiply(&mtx, &rotMat, &srcMat);
+}
+
 #endif

@@ -1219,10 +1219,15 @@ void GFX_DrawQuad(Quad* quad)
     // Setup Light Environment
 
     // Upload Uniforms
+    C3D_Mtx modelViewMtx;
+    Mtx_Identity(&modelViewMtx);
+    ApplyWidgetRotation(modelViewMtx, quad);
     C3D_Mtx projMtx;
     glm::vec2 ires = Renderer::Get()->GetScreenResolution(gC3dContext.mCurrentScreen);
     Mtx_OrthoTilt(&projMtx, 0.0, ires.x, ires.y, 0.0f, -1.0, 1.0, false);
-    C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mQuadLocs.mProjMtx, &projMtx);
+    C3D_Mtx mvpMtx;
+    Mtx_Multiply(&mvpMtx, &projMtx, &modelViewMtx);
+    C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mQuadLocs.mProjMtx, &mvpMtx);
 
     C3D_CullFace(GPU_CULL_NONE);
     C3D_DepthTest(false, GPU_ALWAYS, GPU_WRITE_COLOR);
@@ -1335,6 +1340,7 @@ void GFX_DrawText(Text* text)
     Mtx_Identity(&worldViewMtx);
     Mtx_Scale(&worldViewMtx, textScale, textScale, 1.0f);
     Mtx_Translate(&worldViewMtx, translation.x, translation.y, 0.0f, false);
+    ApplyWidgetRotation(worldViewMtx, text);
     C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mTextLocs.mWorldViewMtx, &worldViewMtx);
 
     C3D_Mtx projMtx;

@@ -5,6 +5,7 @@
 #include "Graphics/C3D/C3dTypes.h"
 
 #include "Assets/Material.h"
+#include "Widgets/Widget.h"
 
 #include <glm/glm.hpp>
 
@@ -32,5 +33,6 @@ uint32_t GlmColorToRGBA8(glm::vec4 color);
 uint32_t GlmColorToRGB8(glm::vec4 color);
 
 void ConfigTev(C3D_TexEnv* env, uint32_t slot, TevMode mode, bool vertexColorBlend);
+void ApplyWidgetRotation(C3D_Mtx& mtx, Widget* widget);
 
 #endif
