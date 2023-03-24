@@ -30,6 +30,7 @@ void SYS_Initialize()
     engine.mWindowWidth = rmode->fbWidth;
     engine.mWindowHeight = rmode->efbHeight;
 
+#if PLATFORM_WII
     CONF_Init();
     int32_t aspectRatio = CONF_GetAspectRatio();
     if (aspectRatio == CONF_ASPECT_16_9)
@@ -39,6 +40,7 @@ void SYS_Initialize()
         // So save off an aspect ratio scale that we can use to adjust the camera's aspect ratio.
         engine.mAspectRatioScale = (16.0f / 9.0f) / (4.0f / 3.0f);
     }
+#endif
 
     // Initialize the console, required for printf
     system.mConsoleBuffer = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
