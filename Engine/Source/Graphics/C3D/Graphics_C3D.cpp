@@ -395,6 +395,9 @@ void GFX_SetFog(const FogSettings& fogSettings)
     {
         C3D_FogGasMode(GPU_NO_FOG, GPU_PLAIN_DENSITY, false);
     }
+
+    gC3dContext.mFogEnabled = fogSettings.mEnabled;
+    gC3dContext.mMaterialApplyFog = fogSettings.mEnabled;
 }
 
 void GFX_DrawLines(const std::vector<Line>& lines)

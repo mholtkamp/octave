@@ -320,7 +320,8 @@ void BindMaterial(Material* material)
         }
 
         bool matApplyFog = material->ShouldApplyFog();
-        if (gC3dContext.mMaterialApplyFog != matApplyFog)
+        if (gC3dContext.mFogEnabled &&
+            gC3dContext.mMaterialApplyFog != matApplyFog)
         {
             gC3dContext.mMaterialApplyFog = matApplyFog;
 
