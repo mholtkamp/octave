@@ -208,15 +208,15 @@ void BindMaterial(Material* material, bool useVertexColor)
     glm::vec2 uvOffset0 = material->GetUvOffset(0);
     glm::vec2 uvScale0 = material->GetUvScale(0);
     Mtx texMatrix0;
-    guMtxScale(texMatrix0, uvScale0.x, uvScale0.y, 1.0f);
-    guMtxTransApply(texMatrix0, texMatrix0, uvOffset0.x, uvOffset0.y, 0.0f);
+    guMtxTrans(texMatrix0, uvOffset0.x, uvOffset0.y, 0.0f);
+    guMtxScaleApply(texMatrix0, texMatrix0, uvScale0.x, uvScale0.y, 1.0f);
     GX_LoadTexMtxImm(texMatrix0, GX_TEXMTX0, GX_TG_MTX3x4);
 
     glm::vec2 uvOffset1 = material->GetUvOffset(1);
     glm::vec2 uvScale1 = material->GetUvScale(1);
     Mtx texMatrix1;
-    guMtxScale(texMatrix1, uvScale1.x, uvScale1.y, 1.0f);
-    guMtxTransApply(texMatrix1, texMatrix1, uvOffset1.x, uvOffset1.y, 0.0f);
+    guMtxTrans(texMatrix1, uvOffset1.x, uvOffset1.y, 0.0f);
+    guMtxScaleApply(texMatrix1, texMatrix1, uvScale1.x, uvScale1.y, 1.0f);
     GX_LoadTexMtxImm(texMatrix1, GX_TEXMTX1, GX_TG_MTX3x4);
 
     uint32_t tevStage = 0;
