@@ -315,7 +315,10 @@ void TextMeshComponent::UpdateVertexData()
     mBounds.mRadius = 0.0f;
 
     if (mText.size() == 0)
+    {
+        mReconstructVertices = false;
         return;
+    }
 
     // Run through each of the characters and construct vertices for it.
     // Not using an index buffer currently, so each character is 6 vertices.

@@ -924,8 +924,11 @@ void GFX_DestroyTextMeshCompResource(TextMeshComponent* textMeshComp)
 
 void GFX_UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::vector<Vertex>& vertices)
 {
-    if (vertices.size() == 0)
+    if (vertices.size() == 0 ||
+        textMeshComp->GetNumVisibleCharacters() == 0)
+    {
         return;
+    }
 
     TextMeshCompResource* resource = textMeshComp->GetResource();
 
@@ -1273,7 +1276,9 @@ void GFX_UpdateTextResourceVertexData(Text* text)
         }
     }
 
-    if (resource->mVertexData.Get() != nullptr)
+    if (resource->mVertexData.Get() != nullptr && 
+        text->GetNumVisibleCharacters() > 0 &&
+        resource->mNumBufferCharsAllocated > 0)
     {
         // Copy over the data
         resource->mVertexData.Update(text->GetVertices(), sizeof(VertexUI) * TEXT_VERTS_PER_CHAR * resource->mNumBufferCharsAllocated);
@@ -1282,6 +1287,11 @@ void GFX_UpdateTextResourceVertexData(Text* text)
 
 void GFX_DrawText(Text* text)
 {
+    uint32_t numVisibleChars = text->GetNumVisibleCharacters();
+
+    if (numVisibleChars == 0)
+        return;
+
     ResetTexEnv();
     ResetLightingEnv();
 
@@ -1290,7 +1300,6 @@ void GFX_DrawText(Text* text)
     Rect rect = text->GetRect();
     glm::vec2 justOff = text->GetJustifiedOffset();
     Font* font = text->GetFont();
-    uint32_t numVisibleChars = text->GetNumVisibleCharacters();
 
     // Bind shader program
     BindVertexShader(ShaderId::Text);
