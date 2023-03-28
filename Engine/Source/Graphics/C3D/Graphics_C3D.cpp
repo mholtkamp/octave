@@ -969,7 +969,9 @@ void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp)
     AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 3); // v0=position
     AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // v1=texcoord0
     AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, 2); // v2=texcoord1
-    AttrInfo_AddLoader(attrInfo, 3, GPU_FLOAT, 4); // v3=normal
+    AttrInfo_AddLoader(attrInfo, 3, GPU_FLOAT, 3); // v3=normal
+    AttrInfo_AddFixed(attrInfo, 4); // v4=color
+    C3D_FixedAttribSet(4, 255.0f, 255.0f, 255.0f, 255.0f);
 
     // Setup vertex buffer state
     C3D_BufInfo* bufInfo = C3D_GetBufInfo();
