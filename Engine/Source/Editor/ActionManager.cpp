@@ -907,6 +907,9 @@ void ActionManager::ResetUndoRedo()
         delete mExiledWidgets[i];
         mExiledWidgets.erase(mExiledWidgets.begin() + i);
     }
+
+    // Clear property inspection history also.
+    PanelManager::Get()->GetPropertiesPanel()->ClearInspectHistory();
 }
 
 void ActionManager::ExileActor(Actor* actor)

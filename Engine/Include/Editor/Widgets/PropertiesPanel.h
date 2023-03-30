@@ -27,6 +27,12 @@ struct CanvasCache
     std::vector<TypeId> mTypes;
 };
 
+struct InspectTarget
+{
+    PropertiesMode mMode = PropertiesMode::Count;
+    RTTI* mObject = nullptr;
+};
+
 class PropertiesPanel : public Panel
 {
 public:
@@ -50,11 +56,19 @@ public:
     void SetMode(PropertiesMode mode);
     PropertiesMode GetMode() const;
 
+    RTTI* GetCurrentObject();
+
+    void ClearInspectHistory();
+
 protected:
 
     void UpdateDisplayedCanvas();
     void PopulatePropertyWidgets(Canvas* propCanvas, const std::vector<Property>& props);
     void RefreshPropertyWidgetLayout(Canvas* propCanvas);
+
+    void RecordInspectionHistory();
+    void ProgressInspectFuture();
+    void RegressInspectPast();
 
     Component* mCurrentComponent;
     Asset* mCurrentAsset;
@@ -70,4 +84,9 @@ protected:
     CanvasCache mAssetCanvasCache;
     CanvasCache mWidgetCanvasCache;
     PropertiesMode mMode;
+
+    std::vector<InspectTarget> mInspectPast;
+    std::vector<InspectTarget> mInspectFuture;
+    RTTI* mPrevInspectObject = nullptr;
+    PropertiesMode mPrevInspectMode = PropertiesMode::Count;
 };
