@@ -254,6 +254,8 @@ void PropertiesPanel::Update()
 {
     Panel::Update();
 
+    RecordInspectionHistory();
+
     if (IsDirty())
     {
         if (mPropertiesCanvas != nullptr)
@@ -285,6 +287,15 @@ void PropertiesPanel::HandleInput()
         else if (controlDown && IsKeyJustDown(KEY_C))
         {
             SetMode(PropertiesMode::Component);
+        }
+
+        if (IsMouseButtonJustDown(MOUSE_X1))
+        {
+            RegressInspectPast();
+        }
+        else if (IsMouseButtonJustDown(MOUSE_X2))
+        {
+            ProgressInspectFuture();
         }
     }
     else if (IsKeyJustDown(KEY_TAB) && mPropertiesCanvas != nullptr)
@@ -342,6 +353,28 @@ void PropertiesPanel::SetMode(PropertiesMode mode)
 PropertiesMode PropertiesPanel::GetMode() const
 {
     return mMode;
+}
+
+RTTI* PropertiesPanel::GetCurrentObject()
+{
+    RTTI* retObj = nullptr;
+    switch (mMode)
+    {
+    case PropertiesMode::Actor:
+        retObj = mCurrentComponent ? mCurrentComponent->GetOwner() : nullptr;
+        break;
+    case PropertiesMode::Component:
+        retObj = mCurrentComponent;
+        break;
+    case PropertiesMode::Asset:
+        retObj = mCurrentAsset;
+        break;
+    case PropertiesMode::Widget:
+        retObj = mCurrentWidget;
+        break;
+    }
+
+    return retObj;
 }
 
 void PropertiesPanel::UpdateDisplayedCanvas()
@@ -453,5 +486,166 @@ void PropertiesPanel::RefreshPropertyWidgetLayout(Canvas* propCanvas)
         propCanvas->SetDimensions(Panel::sDefaultWidth, yPos);
     }
 }
+
+void PropertiesPanel::RecordInspectionHistory()
+{
+    RTTI* curObject = nullptr;
+
+    switch (mMode)
+    {
+    case PropertiesMode::Actor:
+        curObject = mCurrentComponent ? mCurrentComponent->GetOwner() : nullptr;
+        break;
+    case PropertiesMode::Component:
+        curObject = mCurrentComponent;
+        break;
+    case PropertiesMode::Asset:
+        curObject = mCurrentAsset;
+        break;
+    case PropertiesMode::Widget:
+        curObject = mCurrentWidget;
+        break;
+    }
+
+    if (mPrevInspectObject != curObject)
+    {
+        if (mPrevInspectObject != nullptr)
+        {
+            InspectTarget target;
+            target.mMode = mPrevInspectMode;
+            target.mObject = mPrevInspectObject;
+            mInspectPast.push_back(target);
+            mInspectFuture.clear();
+        }
+
+        mPrevInspectMode = mMode;
+        mPrevInspectObject = curObject;
+    }
+}
+
+void PropertiesPanel::ClearInspectHistory()
+{
+    mInspectPast.clear();
+    mInspectFuture.clear();
+    mPrevInspectObject = nullptr;
+    mPrevInspectMode = PropertiesMode::Count;
+}
+
+void PropertiesPanel::ProgressInspectFuture()
+{
+    if (mInspectFuture.size() > 0)
+    {
+        InspectTarget curTarget;
+        curTarget.mMode = mMode;
+
+        switch (mMode)
+        {
+        case PropertiesMode::Actor:
+            curTarget.mObject = mCurrentComponent ? mCurrentComponent->GetOwner() : nullptr;
+            break;
+        case PropertiesMode::Component:
+            curTarget.mObject = mCurrentComponent;
+            break;
+        case PropertiesMode::Asset:
+            curTarget.mObject = mCurrentAsset;
+            break;
+        case PropertiesMode::Widget:
+            curTarget.mObject = mCurrentWidget;
+            break;
+        }
+
+        if (mMode != PropertiesMode::Count &&
+            curTarget.mObject != nullptr)
+        {
+            mInspectPast.push_back(curTarget);
+        }
+
+        InspectTarget target = mInspectFuture.back();
+        OCT_ASSERT(target.mMode != PropertiesMode::Count);
+        OCT_ASSERT(target.mObject != nullptr);
+        mInspectFuture.pop_back();
+
+        switch (target.mMode)
+        {
+        case PropertiesMode::Actor:
+            SetSelectedActor(target.mObject->As<Actor>());
+            break;
+        case PropertiesMode::Component:
+            SetSelectedComponent(target.mObject->As<Component>());
+            break;
+        case PropertiesMode::Asset:
+            InspectAsset(target.mObject->As<Asset>());
+            break;
+        case PropertiesMode::Widget:
+            SetSelectedWidget(target.mObject->As<Widget>());
+            break;
+        }
+
+        SetMode(target.mMode);
+
+        // Update these so we don't detect an inspection change.
+        mPrevInspectMode = mMode;
+        mPrevInspectObject = GetCurrentObject();
+    }
+}
+
+void PropertiesPanel::RegressInspectPast()
+{
+    if (mInspectPast.size() > 0)
+    {
+        InspectTarget curTarget;
+        curTarget.mMode = mMode;
+
+        switch (mMode)
+        {
+        case PropertiesMode::Actor:
+            curTarget.mObject = mCurrentComponent ? mCurrentComponent->GetOwner() : nullptr;
+            break;
+        case PropertiesMode::Component:
+            curTarget.mObject = mCurrentComponent;
+            break;
+        case PropertiesMode::Asset:
+            curTarget.mObject = mCurrentAsset;
+            break;
+        case PropertiesMode::Widget:
+            curTarget.mObject = mCurrentWidget;
+            break;
+        }
+
+        if (mMode != PropertiesMode::Count &&
+            curTarget.mObject != nullptr)
+        {
+            mInspectFuture.push_back(curTarget);
+        }
+
+        InspectTarget target = mInspectPast.back();
+        OCT_ASSERT(target.mMode != PropertiesMode::Count);
+        OCT_ASSERT(target.mObject != nullptr);
+        mInspectPast.pop_back();
+
+        switch (target.mMode)
+        {
+        case PropertiesMode::Actor:
+            SetSelectedActor(target.mObject->As<Actor>());
+            break;
+        case PropertiesMode::Component:
+            SetSelectedComponent(target.mObject->As<Component>());
+            break;
+        case PropertiesMode::Asset:
+            InspectAsset(target.mObject->As<Asset>());
+            break;
+        case PropertiesMode::Widget:
+            SetSelectedWidget(target.mObject->As<Widget>());
+            break;
+        }
+
+        SetMode(target.mMode);
+
+        // Update these so we don't detect an inspection change.
+        mPrevInspectMode = mMode;
+        mPrevInspectObject = GetCurrentObject();
+    }
+}
+
 
 #endif

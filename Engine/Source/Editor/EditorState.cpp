@@ -137,6 +137,12 @@ void WriteEditorSave()
 
 void SetSelectedComponent(Component* newComponent)
 {
+    // Check if the component is actually exiled (only exists in the undo history).
+    if (newComponent != nullptr && newComponent->GetWorld() == nullptr)
+    {
+        return;
+    }
+
     if (sEditorState.mSelectedComponents.size() != 1 ||
         sEditorState.mSelectedComponents[0] != newComponent)
     {
