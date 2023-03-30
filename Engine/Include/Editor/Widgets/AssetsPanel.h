@@ -20,7 +20,7 @@ public:
     virtual void Update() override;
     virtual void HandleInput() override;
 
-    void SetDirectory(AssetDir* dir);
+    void SetDirectory(AssetDir* dir, bool recordHistory = true);
     AssetDir* GetDirectory();
 
     void BrowseToAsset(const std::string& name);
@@ -37,6 +37,8 @@ public:
     void DuplicateAsset(AssetStub* srcStub);
     void LoadLevel(AssetStub* stub);
 
+    void ClearDirHistory();
+
 protected:
 
     static void HandleCreateFolder(TextField* tf);
@@ -45,7 +47,13 @@ protected:
     static void HandleChangeClass(Button* button);
     static void ActionListHandler(Button* button);
 
+    void ProgressDirFuture();
+    void RegressDirPast();
+
 
     AssetDir* mCurrentDir;
     std::vector<AssetButton*> mAssetButtons;
+
+    std::vector<AssetDir*> mDirPast;
+    std::vector<AssetDir*> mDirFuture;
 };

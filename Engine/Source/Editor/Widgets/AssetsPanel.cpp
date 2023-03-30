@@ -172,6 +172,7 @@ void AssetsPanel::ActionListHandler(Button* button)
         else if (sActionContextAssetDir != nullptr)
         {
             ActionManager::Get()->DeleteAssetDir(sActionContextAssetDir);
+            assetsPanel->ClearDirHistory();
         }
     }
     else if (buttonText == "Save Level")
@@ -729,12 +730,30 @@ void AssetsPanel::HandleInput()
                 actionList->SetActions(actions, ActionListHandler);
             }
         }
+
+        if (IsMouseButtonJustDown(MOUSE_X1))
+        {
+            RegressDirPast();
+        }
+        else if (IsMouseButtonJustDown(MOUSE_X2))
+        {
+            ProgressDirFuture();
+        }
     }
 }
 
-void AssetsPanel::SetDirectory(AssetDir* dir)
+void AssetsPanel::SetDirectory(AssetDir* dir, bool recordHistory)
 {
-    mCurrentDir = dir;
+    if (mCurrentDir != dir)
+    {
+        if (recordHistory && mCurrentDir != nullptr)
+        {
+            mDirPast.push_back(mCurrentDir);
+            mDirFuture.clear();
+        }
+
+        mCurrentDir = dir;
+    }
 }
 
 AssetDir* AssetsPanel::GetDirectory()
@@ -772,6 +791,7 @@ void AssetsPanel::BrowseToAsset(const std::string& name)
 void AssetsPanel::OnProjectDirectorySet()
 {
     // Set the current asset directory to the root directory.
+    ClearDirHistory();
     SetDirectory(AssetManager::Get()->FindProjectDirectory());
     SetSelectedAssetStub(nullptr);
 }
@@ -939,5 +959,45 @@ void AssetsPanel::LoadLevel(AssetStub* stub)
     }
 }
 
+void AssetsPanel::ClearDirHistory()
+{
+    mDirFuture.clear();
+    mDirPast.clear();
+}
+
+void AssetsPanel::ProgressDirFuture()
+{
+    if (mDirFuture.size() > 0)
+    {
+        if (mCurrentDir != nullptr)
+        {
+            mDirPast.push_back(mCurrentDir);
+        }
+
+        AssetDir* dir = mDirFuture.back();
+        OCT_ASSERT(dir);
+        mDirFuture.pop_back();
+
+        SetDirectory(dir, false);
+    }
+}
+
+void AssetsPanel::RegressDirPast()
+{
+    if (mDirPast.size() > 0)
+    {
+        if (mCurrentDir != nullptr)
+        {
+            // Record the current dir.
+            mDirFuture.push_back(mCurrentDir);
+        }
+
+        AssetDir* dir = mDirPast.back();
+        OCT_ASSERT(dir);
+        mDirPast.pop_back();
+
+        SetDirectory(dir, false);
+    }
+}
 
 #endif
