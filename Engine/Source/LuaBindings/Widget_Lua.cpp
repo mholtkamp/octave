@@ -90,6 +90,12 @@ int Widget_Lua::Destroy(lua_State* L)
     if (widgetLua->mAlloced)
     {
         Widget* widget = widgetLua->mWidget;
+
+        if (widget->GetParent() != nullptr)
+        {
+            LogWarning("Detaching script-owned widget from parent because it is beging GC'd.");
+        }
+
         Renderer::Get()->RemoveWidget(widget, 0);
         Renderer::Get()->RemoveWidget(widget, 1);
         widgetLua->mWidget->DetachFromParent();
