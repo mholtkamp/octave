@@ -7,6 +7,7 @@
 
 class Actor;
 class Component;
+class Widget;
 
 #if LUA_ENABLED
 
@@ -57,6 +58,7 @@ T* CheckAssetLuaType(lua_State* L, int arg, const char* className, const char* c
 
 Actor* CheckActorLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
 Component* CheckComponentLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
+Widget* CheckWidgetLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
 
 const char* CheckTableName(lua_State* L, int arg);
 

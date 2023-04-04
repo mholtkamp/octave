@@ -13,11 +13,13 @@
 #define SF_CHECK_ACTOR(L, arg) CheckActorLuaType(L, arg, "Actor", "cfActor")
 #define SF_CHECK_COMPONENT(L, arg) CheckComponentLuaType(L, arg, "Component", "cfComponent")
 #define SF_CHECK_ASSET(L, Arg) CheckAssetLuaType<Asset>(L, Arg, "Asset", "cfAsset")
+#define SF_CHECK_WIDGET(L, Arg) CheckWidgetLuaType(L, Arg, "Widget", "cfWidget")
 
 // Parameter macros
 #define SpActor(idx) SF_CHECK_ACTOR(L, idx)
 #define SpComponent(idx) SF_CHECK_COMPONENT(L, idx)
 #define SpAsset(idx) SF_CHECK_ASSET(L, idx)
+#define SpWidget(idx) SF_CHECK_WIDGET(L, idx)
 #define SpVector(idx) LuaObjectToDatum(L, idx)
 #define SpInt(idx) lua_tointeger(L, idx)
 #define SpIndex(idx) (lua_tointeger(L, idx) - 1)
@@ -30,6 +32,7 @@
 #define SrActor (Actor*)
 #define SrComponent (Component*)
 #define SrAsset (Asset*)
+#define SrWidget (Widget*)
 #define SrInt (int32_t)
 
 #define SCRIPT_FUNC_X_1(ClassName, FuncName, P0)                                                                        \
