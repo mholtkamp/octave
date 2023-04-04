@@ -3,6 +3,7 @@
 #include "LuaBindings/Actor_Lua.h"
 #include "LuaBindings/Component_Lua.h"
 #include "LuaBindings/TransformComponent_Lua.h"
+#include "LuaBindings/Widget_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 
@@ -48,6 +49,19 @@ Component* CheckComponentLuaType(lua_State* L, int arg, const char* className, c
 #else
     return CheckHierarchyLuaType<Component_Lua>(L, arg, className, classFlag)->mComponent;
 #endif
+}
+
+Widget* CheckWidgetLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
+{
+    Widget* ret = nullptr;
+    Widget_Lua* luaObj = static_cast<Widget_Lua*>(CheckHierarchyLuaType<Widget_Lua>(L, arg, className, classFlag));
+
+    if (luaObj != nullptr)
+    {
+        ret = luaObj->mWidget;
+    }
+
+    return ret;
 }
 
 const char* CheckTableName(lua_State* L, int arg)
