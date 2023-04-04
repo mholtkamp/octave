@@ -82,6 +82,10 @@ struct Widget_Lua
     static int GetScale(lua_State* L);
     static int IsScissorEnabled(lua_State* L);
     static int EnableScissor(lua_State* L);
+    static int SetOpacity(lua_State* L);
+    static int SetOpacityFloat(lua_State* L);
+    static int GetOpacity(lua_State* L);
+    static int GetOpacityFloat(lua_State* L);
 
     static int CheckType(lua_State* L);
 

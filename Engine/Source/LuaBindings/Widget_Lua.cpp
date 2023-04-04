@@ -815,6 +815,46 @@ int Widget_Lua::EnableScissor(lua_State* L)
     return 0;
 }
 
+int Widget_Lua::SetOpacity(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+    uint8_t value = (uint8_t) CHECK_INTEGER(L, 2);
+
+    widget->SetOpacity(value);
+
+    return 0;
+}
+
+int Widget_Lua::SetOpacityFloat(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+    float value = CHECK_NUMBER(L, 2);
+
+    widget->SetOpacityFloat(value);
+
+    return 0;
+}
+
+int Widget_Lua::GetOpacity(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+
+    uint8_t ret = widget->GetOpacity();
+
+    lua_pushinteger(L, int32_t(ret));
+    return 1;
+}
+
+int Widget_Lua::GetOpacityFloat(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+
+    float ret = widget->GetOpacityFloat();
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
 int Widget_Lua::CheckType(lua_State* L)
 {
     bool ret = false;
@@ -1043,6 +1083,18 @@ void Widget_Lua::Bind()
 
     lua_pushcfunction(L, EnableScissor);
     lua_setfield(L, mtIndex, "EnableScissor");
+
+    lua_pushcfunction(L, SetOpacity);
+    lua_setfield(L, mtIndex, "SetOpacity");
+
+    lua_pushcfunction(L, SetOpacityFloat);
+    lua_setfield(L, mtIndex, "SetOpacityFloat");
+
+    lua_pushcfunction(L, GetOpacity);
+    lua_setfield(L, mtIndex, "GetOpacity");
+
+    lua_pushcfunction(L, GetOpacityFloat);
+    lua_setfield(L, mtIndex, "GetOpacityFloat");
 
     lua_pushcfunction(L, CheckType);
     lua_setfield(L, mtIndex, "CheckType");
