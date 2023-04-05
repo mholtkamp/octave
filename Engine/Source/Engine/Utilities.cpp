@@ -474,6 +474,12 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
 {
     uint32_t count = arg.GetCount();
 
+    if (arg.GetType() == DatumType::Table)
+    {
+        CreateTableLua(L, arg);
+        return;
+    }
+
     if (count == 0 && !arg.mForceScriptArray)
     {
         lua_pushnil(L);
@@ -502,7 +508,10 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
         case DatumType::Vector: Vector_Lua::Create(L, arg.GetVector(i)); break;
         case DatumType::Color: Vector_Lua::Create(L, arg.GetColor(i)); break;
         case DatumType::Asset: Asset_Lua::Create(L, arg.GetAsset(i)); break;
-        case DatumType::Table: CreateTableLua(L, arg); break;
+        case DatumType::Table: 
+            // This should be handled by CreateTableLua().
+            OCT_ASSERT(0);
+            break;
         case DatumType::Pointer:
         {
             RTTI* pointer = arg.GetPointer(i);
