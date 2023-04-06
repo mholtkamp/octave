@@ -60,6 +60,8 @@ Actor* CheckActorLuaType(lua_State* L, int arg, const char* className, const cha
 Component* CheckComponentLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
 Widget* CheckWidgetLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
 
+RTTI* CheckRttiLuaType(lua_State* L, int arg);
+
 const char* CheckTableName(lua_State* L, int arg);
 
 #define CHECK_STRING(L, Arg) lua_tostring(L, Arg); luaL_checktype(L, Arg, LUA_TSTRING);

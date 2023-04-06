@@ -64,6 +64,38 @@ Widget* CheckWidgetLuaType(lua_State* L, int arg, const char* className, const c
     return ret;
 }
 
+RTTI* CheckRttiLuaType(lua_State* L, int arg)
+{
+    RTTI* rtti = nullptr;
+    luaL_checktype(L, arg, LUA_TUSERDATA);
+
+    // There are only two RTTI types that support script-to-native function calls: Actor and Widget
+    // Check actor first
+    bool isActor = (lua_getfield(L, arg, "cfActor") != LUA_TNIL);
+    lua_pop(L, 1);
+
+    if (isActor)
+    {
+        rtti = ((Actor_Lua*)lua_touserdata(L, arg))->mActor;
+    }
+    else
+    {
+        bool isWidget = (lua_getfield(L, arg, "cfWidget") != LUA_TNIL);
+        lua_pop(L, 1);
+
+        if (isWidget)
+        {
+            rtti = ((Widget_Lua*)lua_touserdata(L, arg))->mWidget;
+        }
+        else
+        {
+            luaL_error(L, "Error: Arg #%d: Expected Actor or Widget", arg);
+        }
+    }
+
+    return rtti;
+}
+
 const char* CheckTableName(lua_State* L, int arg)
 {
     const char* tableName = "";
