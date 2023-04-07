@@ -515,6 +515,7 @@
     <ClCompile Include="Source\LuaBindings\Renderer_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\ScriptComponent_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\ScriptWidget_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Script_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Selector_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\ShadowMeshComponent_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\SkeletalMeshComponent_Lua.cpp" />
@@ -611,6 +612,7 @@
     <ClInclude Include="Include\LuaBindings\Renderer_Lua.h" />
     <ClInclude Include="Include\LuaBindings\ScriptComponent_Lua.h" />
     <ClInclude Include="Include\LuaBindings\ScriptWidget_Lua.h" />
+    <ClInclude Include="Include\LuaBindings\Script_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Selector_Lua.h" />
     <ClInclude Include="Include\LuaBindings\ShadowMeshComponent_Lua.h" />
     <ClInclude Include="Include\LuaBindings\SkeletalMesh_Lua.h" />

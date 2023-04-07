@@ -780,6 +780,9 @@
     <ClCompile Include="Source\Engine\Widgets\ArrayWidget.cpp">
       <Filter>Source Files\Engine\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Script_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1420,6 +1423,9 @@
     </ClInclude>
     <ClInclude Include="Include\Engine\Widgets\ArrayWidget.h">
       <Filter>Header Files\Engine\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\LuaBindings\Script_Lua.h">
+      <Filter>Header Files\LuaBindings</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
