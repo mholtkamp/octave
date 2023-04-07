@@ -3,6 +3,7 @@
 #include "Rect.h"
 #include "EngineTypes.h"
 #include "Factory.h"
+#include "ScriptAutoReg.h"
 
 #include "AssetRef.h"
 
@@ -17,11 +18,13 @@ class WidgetMap;
 
 #define DECLARE_WIDGET(Base, Parent) \
         DECLARE_FACTORY(Base, Widget); \
-        DECLARE_RTTI(Base, Parent);
+        DECLARE_RTTI(Base, Parent); \
+        DECLARE_SCRIPT_LINK(Base, Parent, Widget);
 
 #define DEFINE_WIDGET(Base, Parent) \
         DEFINE_FACTORY(Base, Widget); \
-        DEFINE_RTTI(Base);
+        DEFINE_RTTI(Base); \
+        DEFINE_SCRIPT_LINK(Base, Parent, Widget);
 
 enum class AnchorMode : uint8_t
 {
@@ -81,6 +84,8 @@ public:
     DECLARE_FACTORY_MANAGER(Widget);
     DECLARE_FACTORY(Widget, Widget);
     DECLARE_RTTI(Widget, RTTI);
+
+    DECLARE_SCRIPT_LINK_BASE(Widget);
 
     Widget();
     virtual ~Widget();

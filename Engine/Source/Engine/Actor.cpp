@@ -39,9 +39,10 @@ using namespace std;
     SendNetFunc(netFunc, P, params);
 
 std::unordered_map<TypeId, NetFuncMap> Actor::sTypeNetFuncMap;
-std::unordered_set<TypeId> Actor::sScriptRegisteredSet;
 
 #define ENABLE_SCRIPT_FUNCS 1
+
+DEFINE_SCRIPT_LINK_BASE(Actor);
 
 bool Actor::OnRep_RootPosition(Datum* datum, uint32_t index, const void* newValue)
 {
@@ -102,16 +103,7 @@ Actor::~Actor()
 
 void Actor::Create()
 {
-#if LUA_ENABLED
-    lua_State* L = GetLua();
-    if (L != nullptr)
-    {
-        if (!AreScriptFuncsRegistered(GetType()))
-        {
-            RegisterScriptFuncs(L);
-        }
-    }
-#endif
+    REGISTER_SCRIPT_FUNCS();
 }
 
 void Actor::Destroy()
@@ -518,50 +510,6 @@ void Actor::ApplyPropertyOverrides(const std::vector<PropertyOverride>& overs)
             }
         }
     }
-}
-
-int Actor::CreateActorMetatable(lua_State* L, const char* className, const char* parentName)
-{
-    //TypeId typeId = GetType();
-    //if (sScriptActorSet.find(typeId) == sScriptActorSet.end())
-    {
-        char classFlag[128];
-        snprintf(classFlag, 128, "cf%s", className);
-
-        int mtIndex = CreateClassMetatable(
-            className,
-            classFlag,
-            parentName);
-
-        Actor_Lua::BindCommon(L, mtIndex);
-
-        return mtIndex;
-
-     //   sScriptActorSet.insert(typeId);
-
-        // Pop the metatable
-        //lua_pop(L, 1);
-    }
-}
-
-void Actor::RegisterScriptFuncs(lua_State* L)
-{
-    // Base class Actor functions are implemented in Actor_Lua.cpp
-    // For user-created actor classes, this function is overridden automatically by DECLARE_ACTOR()
-    // Add user script funcs by using the SCRIPT_FUNC macros in ScriptUtils.h
-}
-
-bool Actor::AreScriptFuncsRegistered(TypeId type)
-{
-    OCT_ASSERT(type != INVALID_TYPE_ID);
-    bool registered = (sScriptRegisteredSet.find(type) != sScriptRegisteredSet.end());
-    return registered;
-}
-
-void Actor::SetScriptFuncsRegistered(TypeId type)
-{
-    OCT_ASSERT(sScriptRegisteredSet.find(type) == sScriptRegisteredSet.end());
-    sScriptRegisteredSet.insert(type);
 }
 
 void Actor::BeginOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* other)

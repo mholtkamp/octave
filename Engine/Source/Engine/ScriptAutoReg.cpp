@@ -1,4 +1,5 @@
 #include "ScriptAutoReg.h"
+#include "LuaBindings/LuaTypeCheck.h"
 
 std::vector<AutoRegData>& GetGlobalAutoRegArray()
 {
