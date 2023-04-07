@@ -73,6 +73,8 @@ void ScriptWidget::Start()
     // To prevent updating in Widget editor.
     if (!started && IsPlaying())
     {
+        StartScript();
+
         CallFunction("Start");
     }
 

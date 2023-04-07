@@ -2,8 +2,11 @@
 
 #include "Utilities.h"
 #include "EngineTypes.h"
+#include "ScriptAutoReg.h"
 #include <string>
 #include <stdint.h>
+
+int CreateClassMetatable(const char* className, const char* classFlag, const char* parentClassName);
 
 class RTTI
 {

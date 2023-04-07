@@ -884,11 +884,13 @@ int Widget_Lua::CheckType(lua_State* L)
 
 void Widget_Lua::BindCommon(lua_State* L, int mtIndex)
 {
+    lua_pushstring(L, "__gc");
     lua_pushcfunction(L, Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    lua_rawset(L, mtIndex);
 
+    lua_pushstring(L, "__eq");
     lua_pushcfunction(L, Equals);
-    lua_setfield(L, mtIndex, "__eq");
+    lua_rawset(L, mtIndex);
 }
 
 void Widget_Lua::Bind()

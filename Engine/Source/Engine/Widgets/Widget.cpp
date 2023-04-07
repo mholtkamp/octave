@@ -5,6 +5,8 @@
 #include "Log.h"
 #include "Assets/WidgetMap.h"
 
+#include "LuaBindings/Widget_Lua.h"
+
 #include "Graphics/Graphics.h"
 
 #include <glm/gtx/matrix_transform_2d.hpp>
@@ -13,6 +15,7 @@ FORCE_LINK_DEF(Widget);
 DEFINE_FACTORY_MANAGER(Widget);
 DEFINE_FACTORY(Widget, Widget);
 DEFINE_RTTI(Widget);
+DEFINE_SCRIPT_LINK_BASE(Widget);
 
 static const char* sAnchorModeStrings[] =
 {
@@ -291,6 +294,8 @@ void Widget::Start()
     // after a WidgetMap has been instantiated. It can look for child widgets by name for instance.
     if (!mStarted)
     {
+        REGISTER_SCRIPT_FUNCS();
+
         for (uint32_t i = 0; i < mChildren.size(); ++i)
         {
             if (!mChildren[i]->mStarted)
