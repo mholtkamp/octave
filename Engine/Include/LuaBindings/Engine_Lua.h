@@ -20,8 +20,6 @@ struct Engine_Lua
     static int IsPlayingInEditor(lua_State* L);
     static int IsPlaying(lua_State* L);
     static int ReloadAllScripts(lua_State* L);
-    static int LoadScript(lua_State* L);
-    static int RunScript(lua_State* L);
     static int SetPaused(lua_State* L);
     static int IsPaused(lua_State* L);
     static int FrameStep(lua_State* L);

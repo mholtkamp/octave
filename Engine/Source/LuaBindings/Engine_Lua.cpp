@@ -120,29 +120,6 @@ int Engine_Lua::ReloadAllScripts(lua_State* L)
     return 0;
 }
 
-int Engine_Lua::LoadScript(lua_State* L)
-{
-    const char* filename = CHECK_STRING(L, 1);
-
-    std::string className = ScriptUtils::GetClassNameFromFileName(filename);
-
-    if (!ScriptUtils::IsScriptLoaded(className))
-    {
-        ScriptUtils::LoadScriptFile(filename, className);
-    }
-
-    return 0;
-}
-
-int Engine_Lua::RunScript(lua_State* L)
-{
-    const char* filename = CHECK_STRING(L, 1);
-
-    ScriptUtils::RunScript(filename);
-
-    return 0;
-}
-
 int Engine_Lua::SetPaused(lua_State* L)
 {
     bool value = CHECK_BOOLEAN(L, 1);
@@ -228,12 +205,6 @@ void Engine_Lua::Bind()
 
     lua_pushcfunction(L, Engine_Lua::ReloadAllScripts);
     lua_setfield(L, tableIdx, "ReloadAllScripts");
-
-    lua_pushcfunction(L, Engine_Lua::LoadScript);
-    lua_setfield(L, tableIdx, "LoadScript");
-
-    lua_pushcfunction(L, Engine_Lua::RunScript);
-    lua_setfield(L, tableIdx, "RunScript");
 
     lua_pushcfunction(L, Engine_Lua::SetPaused);
     lua_setfield(L, tableIdx, "SetPaused");

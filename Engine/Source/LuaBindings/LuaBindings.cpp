@@ -5,6 +5,7 @@
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Rect_Lua.h"
 #include "LuaBindings/Engine_Lua.h"
+#include "LuaBindings/Script_Lua.h"
 #include "LuaBindings/Input_Lua.h"
 #include "LuaBindings/Audio_Lua.h"
 #include "LuaBindings/Maths_Lua.h"
@@ -73,6 +74,7 @@ void BindLuaInterface()
     Vector_Lua::Bind();
     Rect_Lua::Bind();
     Engine_Lua::Bind();
+    Script_Lua::Bind();
     Input_Lua::Bind();
     Audio_Lua::Bind();
     Log_Lua::Bind();
