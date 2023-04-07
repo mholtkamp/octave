@@ -4,12 +4,14 @@
 #include "Log.h"
 
 #define DECLARE_SCRIPT_LINK(Type, ParentType, TopType) \
+    static bool sRegisteredScriptFuncs_##Type; \
     virtual void RegisterScriptFuncs(lua_State* L) override;
 
 #define DEFINE_SCRIPT_LINK(Type, ParentType, TopType) \
+        bool Type::sRegisteredScriptFuncs_##Type = false; \
         static std::vector<AutoRegData> sAutoRegs_##Type; \
         void Type::RegisterScriptFuncs(lua_State* L) { \
-            if (AreScriptFuncsRegistered(Type::GetStaticType())) { return; } \
+            if (Type::sRegisteredScriptFuncs_##Type) { return; } \
             ParentType::RegisterScriptFuncs(L); \
             int mtIndex = CreateClassMetatable(#Type, "cf" #Type, #ParentType); \
             TopType::BindCommonLuaFuncs(L, mtIndex); \
@@ -21,40 +23,22 @@
             lua_pop(L, 1); \
             sAutoRegs_##Type.clear(); \
             sAutoRegs_##Type.shrink_to_fit(); \
-            SetScriptFuncsRegistered(Type::GetStaticType()); \
+            Type::sRegisteredScriptFuncs_##Type = true; \
         }
 
 #define DECLARE_SCRIPT_LINK_BASE(Base) \
     virtual void RegisterScriptFuncs(lua_State* L); \
-    static void BindCommonLuaFuncs(lua_State* L, int mtIndex); \
-    static bool AreScriptFuncsRegistered(TypeId type); \
-    static void SetScriptFuncsRegistered(TypeId type); \
-    static std::unordered_set<TypeId> sScriptRegisteredSet;
+    static void BindCommonLuaFuncs(lua_State* L, int mtIndex);
 
 #define DEFINE_SCRIPT_LINK_BASE(Base) \
-    std::unordered_set<TypeId> Base::sScriptRegisteredSet; \
     void Base::RegisterScriptFuncs(lua_State* L){ } \
-    void Base::BindCommonLuaFuncs(lua_State* L, int mtIndex) { Base##_Lua::BindCommon(L, mtIndex); } \
-    bool Base::AreScriptFuncsRegistered(TypeId type) \
-    { \
-        OCT_ASSERT(type != INVALID_TYPE_ID); \
-        bool registered = (sScriptRegisteredSet.find(type) != sScriptRegisteredSet.end()); \
-        return registered; \
-    } \
-    void Base::SetScriptFuncsRegistered(TypeId type) \
-    { \
-        OCT_ASSERT(sScriptRegisteredSet.find(type) == sScriptRegisteredSet.end()); \
-        sScriptRegisteredSet.insert(type); \
-    }
+    void Base::BindCommonLuaFuncs(lua_State* L, int mtIndex) { Base##_Lua::BindCommon(L, mtIndex); }
 
 #define REGISTER_SCRIPT_FUNCS() \
     lua_State* L = GetLua(); \
     if (L != nullptr) \
     { \
-        if (!AreScriptFuncsRegistered(GetType())) \
-        { \
-            RegisterScriptFuncs(L); \
-        } \
+        RegisterScriptFuncs(L); \
     }
 
 struct AutoRegData
