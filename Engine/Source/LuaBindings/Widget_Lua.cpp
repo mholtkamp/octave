@@ -8,6 +8,7 @@
 #include "LuaBindings/LuaUtils.h"
 #include "LuaBindings/Rect_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
+#include "LuaBindings/ScriptWidget_Lua.h"
 
 #if  LUA_ENABLED
 
@@ -891,6 +892,22 @@ void Widget_Lua::BindCommon(lua_State* L, int mtIndex)
     lua_pushstring(L, "__eq");
     lua_pushcfunction(L, Equals);
     lua_rawset(L, mtIndex);
+
+    bool isScriptWidget = (lua_getfield(L, mtIndex, SCRIPT_WIDGET_LUA_FLAG) != LUA_TNIL);
+    if (isScriptWidget)
+    {
+        // If this is a ScriptWidget, then we need to set its __index and __newIndex
+        // This lets use invoke script fuctions directly from the ScriptWidget userdata, and we don't
+        // need to write code like: myWidget:GetScript():MyNativeFunc()
+        // instead it's just myWidget:MyNativeFunc()
+        lua_pushcfunction(L, ScriptWidget_Lua::CustomIndex);
+        lua_setfield(L, mtIndex, "__index");
+
+        lua_pushcfunction(L, ScriptWidget_Lua::CustomNewIndex);
+        lua_setfield(L, mtIndex, "__newindex");
+    }
+
+    lua_pop(L, 1);
 }
 
 void Widget_Lua::Bind()
