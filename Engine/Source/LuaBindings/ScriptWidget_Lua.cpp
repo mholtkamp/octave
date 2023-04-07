@@ -28,33 +28,59 @@ int ScriptWidget_Lua::CreateNew(lua_State* L)
 
 int ScriptWidget_Lua::CustomIndex(lua_State* L)
 {
-    ScriptWidget* scriptWidget = (ScriptWidget*) ((Widget_Lua*)lua_touserdata(L, 1))->mWidget;
+    int luaType = lua_type(L, 1);
     const char* key = lua_tostring(L, 2);
 
-    bool fieldFound = false;
-
-    if (scriptWidget->GetTableName() != "")
+    if (luaType == LUA_TUSERDATA)
     {
-        // Grab the instance table first
-        lua_getglobal(L, scriptWidget->GetTableName().c_str());
+        ScriptWidget* scriptWidget = (ScriptWidget*)((Widget_Lua*)lua_touserdata(L, 1))->mWidget;
 
-        // Then try to grab the field we are looking for.
-        lua_getfield(L, -1, key);
+        bool fieldFound = false;
 
-        if (!lua_isnil(L, -1))
+        if (scriptWidget->GetTableName() != "")
         {
-            fieldFound = true;
+            // Grab the instance table first
+            lua_getglobal(L, scriptWidget->GetTableName().c_str());
+
+            // Then try to grab the field we are looking for.
+            lua_getfield(L, -1, key);
+
+            if (!lua_isnil(L, -1))
+            {
+                fieldFound = true;
+            }
+            else
+            {
+                lua_pop(L, 1);
+            }
         }
-        else
+
+        if (!fieldFound)
         {
-            lua_pop(L, 1);
+            lua_getglobal(L, scriptWidget->RuntimeName());
+            OCT_ASSERT(!lua_isnil(L, -1));
+            lua_getfield(L, -1, key);
         }
     }
-
-    if (!fieldFound)
+    else
     {
-        lua_getglobal(L, SCRIPT_WIDGET_LUA_NAME);
-        lua_getfield(L, -1, key);
+        OCT_ASSERT(luaType == LUA_TTABLE);
+
+        lua_pushstring(L, key);
+        lua_rawget(L, 1);
+
+        if (lua_isnil(L, -1)) 
+        {
+            // Pop the nil value
+            lua_pop(L, 1);
+
+            // Get the field from the table's metatable.
+            lua_getmetatable(L, 1);
+            OCT_ASSERT(lua_type(L, -1) == LUA_TTABLE);
+            lua_getfield(L, -1, key);
+        }
+
+        // The indexed value should be on the top of the stack now.
     }
 
     return 1;
@@ -62,23 +88,36 @@ int ScriptWidget_Lua::CustomIndex(lua_State* L)
 
 int ScriptWidget_Lua::CustomNewIndex(lua_State* L)
 {
-    ScriptWidget* scriptWidget = (ScriptWidget*)((Widget_Lua*)lua_touserdata(L, 1))->mWidget;
+    int luaType = lua_type(L, 1);
     const char* key = lua_tostring(L, 2);
     OCT_ASSERT(!lua_isnone(L, 3));
 
-    bool fieldFound = false;
-
-    if (scriptWidget->GetTableName() != "")
+    if (luaType == LUA_TUSERDATA)
     {
-        // Grab the instance table first
-        lua_getglobal(L, scriptWidget->GetTableName().c_str());
+        ScriptWidget* scriptWidget = (ScriptWidget*)((Widget_Lua*)lua_touserdata(L, 1))->mWidget;
+        bool fieldFound = false;
 
-        // Then try to grab the field we are looking for.
+        if (scriptWidget->GetTableName() != "")
+        {
+            // Grab the instance table first
+            lua_getglobal(L, scriptWidget->GetTableName().c_str());
+
+            // Then try to grab the field we are looking for.
+            lua_pushvalue(L, 2); // key
+            lua_pushvalue(L, 3); // value
+            lua_rawset(L, -3);
+
+            lua_pop(L, 1);
+        }
+    }
+    else
+    {
+        OCT_ASSERT(luaType == LUA_TTABLE);
+
+        // Just do a normal set
         lua_pushvalue(L, 2); // key
         lua_pushvalue(L, 3); // value
-        lua_rawset(L, -3);
-
-        lua_pop(L, 1);
+        lua_rawset(L, 1);
     }
 
     return 0;
@@ -149,13 +188,6 @@ void ScriptWidget_Lua::Bind()
 
     lua_pushcfunction(L, CreateNew);
     lua_setfield(L, mtIndex, "Create");
-
-    // Override __index to query owned script also
-    lua_pushcfunction(L, CustomIndex);
-    lua_setfield(L, mtIndex, "__index");
-
-    lua_pushcfunction(L, CustomNewIndex);
-    lua_setfield(L, mtIndex, "__newindex");
 
     lua_pushcfunction(L, GetScript);
     lua_setfield(L, mtIndex, "GetScript");
