@@ -33,10 +33,42 @@ int Script_Lua::Run(lua_State* L)
 
 int Script_Lua::Inherit(lua_State* L)
 {
-    // TODO
+    luaL_checktype(L, 1, LUA_TTABLE); // Derived Table
+    luaL_checktype(L, 2, LUA_TTABLE); // Parent Table
+
+    // Set index to same table for both derived and parent
+    lua_pushvalue(L, 1);
+    lua_setfield(L, 1, "__index");
+    lua_pushvalue(L, 2);
+    lua_setfield(L, 2, "__index");
+
+    // Assign the parent table as the metatable for the child table
+    lua_pushvalue(L, 2); // Not sure if needed
+    lua_setmetatable(L, 1);
+
     return 0;
 }
 
+int Script_Lua::New(lua_State* L)
+{
+    // Create a table that inherits from a parent table.
+    luaL_checktype(L, 1, LUA_TTABLE); // Parent Table
+
+    // Create a new table which will be an "instance" of parent type
+    lua_newtable(L);
+    int newTableIdx = lua_gettop(L);
+
+    lua_pushvalue(L, 1);
+    lua_setfield(L, 1, "__index");
+    lua_pushvalue(L, newTableIdx);
+    lua_setfield(L, newTableIdx, "__index");
+
+    // Assign metatable
+    lua_pushvalue(L, 1);
+    lua_setmetatable(L, newTableIdx);
+
+    return 1;
+}
 
 void Script_Lua::Bind()
 {
@@ -53,6 +85,9 @@ void Script_Lua::Bind()
 
     lua_pushcfunction(L, Script_Lua::Inherit);
     lua_setfield(L, tableIdx, "Inherit");
+
+    lua_pushcfunction(L, Script_Lua::New);
+    lua_setfield(L, tableIdx, "New");
 
     lua_setglobal(L, SCRIPT_LUA_NAME);
 
