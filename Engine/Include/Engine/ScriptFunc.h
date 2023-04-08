@@ -26,7 +26,7 @@ public:
     void Call(uint32_t numParams = 0, Datum* params = nullptr);
     Datum CallR(uint32_t numParams = 0, Datum* params = nullptr);
 
-    //void PushRef() const;
+    bool IsValid() const;
 
     static void CreateRefTable();
 
