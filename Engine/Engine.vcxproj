@@ -423,6 +423,7 @@
     <ClCompile Include="Source\Engine\Renderer.cpp" />
     <ClCompile Include="Source\Engine\ScriptAutoReg.cpp" />
     <ClCompile Include="Source\Engine\ScriptEvent.cpp" />
+    <ClCompile Include="Source\Engine\ScriptFunc.cpp" />
     <ClCompile Include="Source\Engine\ScriptUtils.cpp" />
     <ClCompile Include="Source\Engine\StaticMeshActor.cpp" />
     <ClCompile Include="Source\Engine\stb_image.cpp" />
@@ -567,7 +568,7 @@
     <ClInclude Include="Include\Engine\Assets\Texture.h" />
     <ClInclude Include="Include\Engine\Assets\WidgetMap.h" />
     <ClInclude Include="Include\Engine\Components\TextMeshComponent.h" />
-    <ClInclude Include="Include\Engine\ScriptableFuncPointer.h" />
+    <ClInclude Include="Include\Engine\ScriptFunc.h" />
     <ClInclude Include="Include\Engine\ScriptAutoReg.h" />
     <ClInclude Include="Include\Engine\ScriptEvent.h" />
     <ClInclude Include="Include\Engine\ScriptMacros.h" />

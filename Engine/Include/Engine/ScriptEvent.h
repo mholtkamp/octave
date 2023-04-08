@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ScriptableFuncPointer.h"
+#include "ScriptFunc.h"
 
 #include "NetMsg.h"
 

@@ -3,7 +3,7 @@
 #include "EngineTypes.h"
 #include "NetMsg.h"
 #include "NetFunc.h"
-#include "ScriptableFuncPointer.h"
+#include "ScriptFunc.h"
 
 #include "Network/Network.h"
 #include "Network/NetworkConstants.h"

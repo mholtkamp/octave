@@ -2,7 +2,7 @@
 
 #include "Components/Component.h"
 #include "ObjectRef.h"
-#include "ScriptableFuncPointer.h"
+#include "ScriptFunc.h"
 #include "NetFunc.h"
 
 #include "NetworkManager.h"
