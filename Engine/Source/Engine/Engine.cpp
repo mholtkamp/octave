@@ -14,6 +14,7 @@
 #include "Profiler.h"
 #include "Maths.h"
 #include "ScriptAutoReg.h"
+#include "ScriptFunc.h"
 #include "TimerManager.h"
 #include "Components/ScriptComponent.h"
 
@@ -258,6 +259,7 @@ bool Initialize(InitOptions& initOptions)
         BindLuaInterface();
         SetupLuaPath();
         InitAutoRegScripts();
+        ScriptFunc::CreateRefTable();
 
         // Run Startup.lua if it exists.
         ScriptUtils::RunScript("Startup.lua");
@@ -369,6 +371,11 @@ void Shutdown()
     sWorld->Destroy();
     delete sWorld;
     sWorld = nullptr;
+
+#if LUA_ENABLED
+    lua_close(sEngineState.mLua);
+    sEngineState.mLua = nullptr;
+#endif
 
     NetworkManager::Destroy();
     Renderer::Destroy();

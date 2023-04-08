@@ -3,7 +3,7 @@
 #include "Widgets/Button.h"
 #include "Widgets/Quad.h"
 
-#include "ScriptableFuncPointer.h"
+#include "ScriptFunc.h"
 
 typedef void(*TextFieldHandlerFP)(class TextField* textField);
 

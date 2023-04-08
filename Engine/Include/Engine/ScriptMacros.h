@@ -9,6 +9,7 @@
 #include "Utilities.h"
 #include "LuaBindings/LuaTypeCheck.h"
 #include "ScriptAutoReg.h"
+#include "ScriptFunc.h"
 
 #define SF_CHECK_ACTOR(L, arg) CheckActorLuaType(L, arg, "Actor", "cfActor")
 #define SF_CHECK_COMPONENT(L, arg) CheckComponentLuaType(L, arg, "Component", "cfComponent")
@@ -27,6 +28,7 @@
 #define SpFloat(idx) lua_tonumber(L, idx)
 #define SpString(idx) lua_tostring(L, idx)
 #define SpBool(idx) lua_toboolean(L, idx)
+#define SpFunction(idx) ScriptFunc(L, idx)
 
 // Return macros
 #define SrReturn 

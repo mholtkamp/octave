@@ -783,6 +783,9 @@
     <ClCompile Include="Source\LuaBindings\Script_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\ScriptFunc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1226,9 +1229,6 @@
     <ClInclude Include="Include\LuaBindings\Audio_Lua.h">
       <Filter>Header Files\LuaBindings</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Engine\ScriptableFuncPointer.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="Include\LuaBindings\Widget_Lua.h">
       <Filter>Header Files\LuaBindings</Filter>
     </ClInclude>
@@ -1426,6 +1426,9 @@
     </ClInclude>
     <ClInclude Include="Include\LuaBindings\Script_Lua.h">
       <Filter>Header Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Engine\ScriptFunc.h">
+      <Filter>Header Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

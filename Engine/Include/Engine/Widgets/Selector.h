@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "ScriptableFuncPointer.h"
+#include "ScriptFunc.h"
 
 typedef void(*SelectorHandlerFP)(class Selector* selector);
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Widgets/Widget.h"
-#include "ScriptableFuncPointer.h"
+#include "ScriptFunc.h"
 
 class Texture;
 class Quad;

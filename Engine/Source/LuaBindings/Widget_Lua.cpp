@@ -84,11 +84,24 @@ int Widget_Lua::CreateNew(lua_State* L, const char* className, Widget** outWidge
 
 int Widget_Lua::Destroy(lua_State* L)
 {
-    // We need to delete the mWidget data if this wrapper allocated the data.
-    CHECK_WIDGET(L, 1);
-    Widget_Lua* widgetLua = (Widget_Lua*)lua_touserdata(L, 1);
+    // This function will be called when garbage collecting widget userdata but
+    // ALSO when garbage collecting the Widget metatables during shutdown.
+    // So first check if we are Destroy()ing a Widget userdata.
 
-    if (widgetLua->mAlloced)
+    Widget_Lua* widgetLua = nullptr;
+    if (lua_isuserdata(L, 1))
+    {
+        // Calling CHECK_WIDGET() here may cause a crash if the widget was managed by native code
+        // and was already deleted. So here... just assume we are only working on Widgets.
+        // And hopefully we crash if whatever is being Destroy()'d isn't actually a widget.
+
+        //CHECK_WIDGET(L, 1);
+        widgetLua = (Widget_Lua*)lua_touserdata(L, 1);
+    }
+
+    // We need to delete the mWidget data if this wrapper allocated the data.
+    if (widgetLua && 
+        widgetLua->mAlloced)
     {
         Widget* widget = widgetLua->mWidget;
 

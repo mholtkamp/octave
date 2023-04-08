@@ -4,6 +4,9 @@
 #include "Widgets/Button.h"
 #include "Widgets/Text.h"
 
+#include "Assets/Material.h"
+#include "NetFunc.h"
+
 #if LUA_ENABLED
 
 void BindBlendMode()
