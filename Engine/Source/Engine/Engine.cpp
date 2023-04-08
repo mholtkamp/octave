@@ -605,6 +605,12 @@ float GetTimeDilation()
     return sEngineState.mTimeDilation;
 }
 
+void GarbageCollect()
+{
+    ScriptUtils::GarbageCollect();
+    AssetManager::Get()->RefSweep();
+}
+
 #if LUA_ENABLED
 lua_State* GetLua()
 {

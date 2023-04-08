@@ -70,6 +70,13 @@ int Script_Lua::New(lua_State* L)
     return 1;
 }
 
+int Script_Lua::GarbageCollect(lua_State* L)
+{
+    ScriptUtils::GarbageCollect();
+
+    return 0;
+}
+
 void Script_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -88,6 +95,9 @@ void Script_Lua::Bind()
 
     lua_pushcfunction(L, Script_Lua::New);
     lua_setfield(L, tableIdx, "New");
+
+    lua_pushcfunction(L, Script_Lua::GarbageCollect);
+    lua_setfield(L, tableIdx, "GarbageCollect");
 
     lua_setglobal(L, SCRIPT_LUA_NAME);
 

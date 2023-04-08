@@ -25,6 +25,7 @@ struct Engine_Lua
     static int FrameStep(lua_State* L);
     static int SetTimeDilation(lua_State* L);
     static int GetTimeDilation(lua_State* L);
+    static int GarbageCollect(lua_State* L);
 
     static void Bind();
 };
