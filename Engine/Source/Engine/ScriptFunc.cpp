@@ -90,17 +90,10 @@ Datum ScriptFunc::CallR(uint32_t numParams, Datum* params)
     return retDatum;
 }
 
-//void ScriptFunc::PushRef()
-//{
-//    lua_State* L = GetLua();
-//    if (L != nullptr && 
-//        mRef != LUA_REFNIL)
-//    {
-//        lua_getfield(L, LUA_REGISTRYINDEX, REF_TABLE_NAME);
-//        OCT_ASSERT(lua_istable(L, -1));
-//        lua_geti(L, -1, mRef);
-//    }
-//}
+bool ScriptFunc::IsValid() const
+{
+    return (mRef != LUA_REFNIL);
+}
 
 void ScriptFunc::RegisterRef(lua_State* L, int arg)
 {
