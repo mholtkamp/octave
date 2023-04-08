@@ -48,6 +48,8 @@ void FrameStep();
 void SetTimeDilation(float timeDilation);
 float GetTimeDilation();
 
+void GarbageCollect();
+
 #if LUA_ENABLED
 lua_State* GetLua();
 #endif

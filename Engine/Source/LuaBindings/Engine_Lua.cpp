@@ -158,6 +158,13 @@ int Engine_Lua::GetTimeDilation(lua_State* L)
     return 1;
 }
 
+int Engine_Lua::GarbageCollect(lua_State* L)
+{
+    ::GarbageCollect();
+
+    return 0;
+}
+
 void Engine_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -220,6 +227,9 @@ void Engine_Lua::Bind()
 
     lua_pushcfunction(L, Engine_Lua::GetTimeDilation);
     lua_setfield(L, tableIdx, "GetTimeDilation");
+
+    lua_pushcfunction(L, Engine_Lua::GarbageCollect);
+    lua_setfield(L, tableIdx, "GarbageCollect");
 
     lua_setglobal(L, "Engine");
 
