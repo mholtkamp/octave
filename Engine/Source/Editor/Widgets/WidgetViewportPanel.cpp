@@ -281,9 +281,17 @@ void WidgetViewportPanel::HandleDefaultControls()
 
         if (IsKeyJustDown(KEY_DELETE))
         {
-            if (GetSelectedWidget())
+            Widget* selWidget = GetSelectedWidget();
+            if (selWidget != nullptr)
             {
-                ActionManager::Get()->EXE_RemoveWidget(GetSelectedWidget());
+                if (!selWidget->IsNativeChild())
+                {
+                    ActionManager::Get()->EXE_RemoveWidget(GetSelectedWidget());
+                }
+                else
+                {
+                    LogWarning("Cannot delete native child widget.")
+                }
             }
         }
 
