@@ -32,6 +32,8 @@ void WidgetMap::LoadStream(Stream& stream, Platform platform)
 
         def.mType = (TypeId)stream.ReadUint32();
         def.mParentIndex = stream.ReadInt32();
+        def.mChildSlot = stream.ReadInt32();
+        def.mNativeChildSlot = stream.ReadInt32();
         
         stream.ReadAsset(def.mWidgetMap);
         def.mExposeVariable = stream.ReadBool();
