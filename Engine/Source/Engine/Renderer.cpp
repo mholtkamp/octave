@@ -282,6 +282,26 @@ void Renderer::RemoveWidget(class Widget* widget, int32_t screenIndex)
     }
 }
 
+bool Renderer::HasWidget(const Widget* widget, int32_t screenIndex)
+{
+    bool hasWidget = false;
+
+    if (screenIndex == 0 || screenIndex == -1)
+    {
+        hasWidget = std::find(mWidgets0.begin(), mWidgets0.end(), widget) != mWidgets0.end();
+    }
+
+    if (!hasWidget)
+    {
+        if (screenIndex == 1 || screenIndex == -1)
+        {
+            hasWidget = std::find(mWidgets1.begin(), mWidgets1.end(), widget) != mWidgets1.end();
+        }
+    }
+
+    return hasWidget;
+}
+
 void Renderer::RemoveAllWidgets(int32_t screenIndex)
 {
     if (screenIndex == -1)

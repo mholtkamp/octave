@@ -227,6 +227,16 @@ void TextField::SetSelectedTextField(TextField * newField)
     }
 }
 
+void TextField::StaticUpdate()
+{
+    // We really shouldn't be handling text input if the selected text field isn't visible.
+    // So if this is the case, then just unselect the text field.
+    if (sSelectedTextField != nullptr && !sSelectedTextField->IsVisibleRecursive())
+    {
+        SetSelectedTextField(nullptr);
+    }
+}
+
 uint8_t TextField::ConvertKeyCodeToChar(uint8_t keyCode, bool shiftDown)
 {
     uint8_t retChar = 0;

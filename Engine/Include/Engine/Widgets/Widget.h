@@ -175,6 +175,7 @@ public:
 
     virtual void SetVisible(bool visible);
     bool IsVisible() const;
+    bool IsVisibleRecursive() const;
     virtual void SetColor(glm::vec4 color);
     glm::vec4 GetColor() const;
 

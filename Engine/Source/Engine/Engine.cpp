@@ -346,6 +346,8 @@ bool Update()
 
     sWorld->Update(gameDeltaTime);
 
+    TextField::StaticUpdate();
+
     NetworkManager::Get()->PostTickUpdate(realDeltaTime);
 
     Renderer::Get()->Render(sWorld);

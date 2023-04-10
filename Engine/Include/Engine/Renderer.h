@@ -35,6 +35,7 @@ public:
 
     void AddWidget(class Widget* widget, int32_t index = -1, int32_t screenIndex = 0);
     void RemoveWidget(class Widget* widget, int32_t screenIndex = 0);
+    bool HasWidget(const class Widget* widget, int32_t screenIndex = 0);
     void RemoveAllWidgets(int32_t screenIndex = -1);
     void EnableStatsOverlay(bool enable);
     bool IsStatsOverlayEnabled() const;
