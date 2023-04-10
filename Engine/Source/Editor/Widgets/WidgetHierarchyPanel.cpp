@@ -226,12 +226,19 @@ void WidgetHierarchyPanel::DeleteWidget(Widget* widget)
     WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
     if (widget != nullptr)
     {
-        ActionManager::Get()->EXE_RemoveWidget(widget);
+        if (!widget->IsNativeChild())
+        {
+            ActionManager::Get()->EXE_RemoveWidget(widget);
 
-        Widget* rootWidget = GetEditRootWidget();
-        SetSelectedWidget(rootWidget);
+            Widget* rootWidget = GetEditRootWidget();
+            SetSelectedWidget(rootWidget);
 
-        panel->RefreshButtons();
+            panel->RefreshButtons();
+        }
+        else
+        {
+            LogWarning("Cannot delete native child widget.")
+        }
     }
 }
 
