@@ -56,6 +56,8 @@ void WidgetMap::SaveStream(Stream& stream, Platform platform)
         WidgetDef& def = mWidgetDefs[i];
         stream.WriteUint32((uint32_t)def.mType);
         stream.WriteInt32(def.mParentIndex);
+        stream.WriteInt32(def.mChildSlot);
+        stream.WriteInt32(def.mNativeChildSlot);
 
         stream.WriteAsset(def.mWidgetMap);
         stream.WriteBool(def.mExposeVariable);
