@@ -47,6 +47,16 @@ Widget* CreateWidget(TypeId widgetType, bool start)
 {
     Widget* retWidget = Widget::CreateInstance(widgetType);
 
+#if EDITOR
+    // Mark native children. This is for the case where you add a Button to the map.
+    // You don't want to instantiate a new Text + Quad when you load the widget map.
+    // Instead you want to copy properties to the existing Text and Quad children.
+    for (uint32_t i = 0; i < retWidget->GetNumChildren(); ++i)
+    {
+        retWidget->GetChild(int32_t(i))->SetNativeChildSlot((int32_t) i);
+    }
+#endif
+
     if (start)
     {
         retWidget->Start();
@@ -58,6 +68,16 @@ Widget* CreateWidget(TypeId widgetType, bool start)
 Widget* CreateWidget(const std::string& className, bool start)
 {
     Widget* retWidget = Widget::CreateInstance(className.c_str());
+
+#if EDITOR
+    // Mark native children. This is for the case where you add a Button to the map.
+    // You don't want to instantiate a new Text + Quad when you load the widget map.
+    // Instead you want to copy properties to the existing Text and Quad children.
+    for (uint32_t i = 0; i < retWidget->GetNumChildren(); ++i)
+    {
+        retWidget->GetChild(int32_t(i))->SetNativeChildSlot((int32_t)i);
+    }
+#endif
 
     if (start)
     {
@@ -210,10 +230,10 @@ Widget* Widget::Clone()
     }
     else
     {
-        newWidget = Widget::CreateInstance(GetType());
+        newWidget = CreateWidget(GetType(), false);
     }
 #else
-    newWidget = Widget::CreateInstance(GetType());
+    newWidget = CreateWidget(GetType(), false);
 #endif
 
     std::vector<Property> srcProps;
@@ -224,11 +244,50 @@ Widget* Widget::Clone()
 
     CopyPropertyValues(dstProps, srcProps);
 
+#if EDITOR
+
+    std::vector<Widget*> arrangedNativeWidgets;
+
+    // Copy properties for native children first.
+    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    {
+        if (mChildren[i]->IsNativeChild())
+        {
+            std::vector<Property> nativeSrcProps;
+            mChildren[i]->GatherProperties(nativeSrcProps);
+
+            Widget* dstChild = newWidget->GetChild(mChildren[i]->GetNativeChildSlot());
+            std::vector<Property> nativeDstProps;
+            dstChild->GatherProperties(nativeDstProps);
+
+            CopyPropertyValues(nativeDstProps, nativeSrcProps);
+
+            arrangedNativeWidgets.push_back(dstChild);
+        }
+    }
+
+    // Possibly rearrange native children
+    for (uint32_t i = 0; i < arrangedNativeWidgets.size(); ++i)
+    {
+        newWidget->AddChild(arrangedNativeWidgets[i], i);
+    }
+
+    // Then duplicate the rest of the children
+    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    {
+        if (!mChildren[i]->IsNativeChild())
+        {
+            Widget* newChild = mChildren[i]->Clone();
+            newWidget->AddChild(newChild, i);
+        }
+    }
+#else
     for (uint32_t i = 0; i < mChildren.size(); ++i)
     {
         Widget* newChild = mChildren[i]->Clone();
         newWidget->AddChild(newChild);
     }
+#endif
 
     return newWidget;
 }
@@ -1043,6 +1102,22 @@ Widget* Widget::FindChild(const std::string& name, bool recurse)
     return retWidget;
 }
 
+int32_t Widget::FindChildIndex(Widget* widget)
+{
+    int32_t retIdx = -1;
+
+    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    {
+        if (mChildren[i] == widget)
+        {
+            retIdx = (int32_t)i;
+            break;
+        }
+    }
+
+    return retIdx;
+}
+
 void Widget::MarkDirty()
 {
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
@@ -1251,6 +1326,21 @@ bool Widget::ShouldExposeVariable() const
 void Widget::SetExposeVariable(bool expose)
 {
     mExposeVariable = expose;
+}
+
+bool Widget::IsNativeChild() const
+{
+    return mNativeChildSlot != -1;
+}
+
+int32_t Widget::GetNativeChildSlot() const
+{
+    return mNativeChildSlot;
+}
+
+void Widget::SetNativeChildSlot(int32_t slot)
+{
+    mNativeChildSlot = slot;
 }
 
 #endif

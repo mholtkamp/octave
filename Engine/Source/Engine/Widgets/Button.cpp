@@ -33,6 +33,7 @@ Button::Button() :
     mText(nullptr)
 
 {
+    SetName("Button");
     mUseScissor = true;
 
     mQuad = new Quad();

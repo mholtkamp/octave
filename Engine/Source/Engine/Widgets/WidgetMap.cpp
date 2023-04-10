@@ -115,20 +115,42 @@ Widget* WidgetMap::Instantiate()
         for (uint32_t i = 0; i < mWidgetDefs.size(); ++i)
         {
             Widget* newWidget = nullptr;
-            if (mWidgetDefs[i].mWidgetMap != nullptr)
+
+            if (mWidgetDefs[i].mNativeChildSlot == -1)
             {
-                WidgetMap* widgetMap = mWidgetDefs[i].mWidgetMap.Get<WidgetMap>();
-                newWidget = widgetMap->Instantiate();
+                if (mWidgetDefs[i].mWidgetMap != nullptr)
+                {
+                    WidgetMap* widgetMap = mWidgetDefs[i].mWidgetMap.Get<WidgetMap>();
+                    newWidget = widgetMap->Instantiate();
 
 #if EDITOR
-                newWidget->SetWidgetMap(widgetMap);
-                newWidget->SetExposeVariable(mWidgetDefs[i].mExposeVariable);
+                    newWidget->SetWidgetMap(widgetMap);
+                    newWidget->SetExposeVariable(mWidgetDefs[i].mExposeVariable);
 #endif
+                }
+                else
+                {
+                    newWidget = CreateWidget(mWidgetDefs[i].mType, false);
+                }
             }
             else
             {
-                newWidget = CreateWidget(mWidgetDefs[i].mType, false);
-                //newWidget = Widget::CreateInstance(mWidgetDefs[i].mType);
+                // For things like Buttons where the constructor spawns child widgets.
+                Widget* parent = widgetList[mWidgetDefs[i].mParentIndex];
+                
+                // Root widget should always be created.
+                OCT_ASSERT(parent != nullptr);
+
+                // Find the native child we are going to fill out.
+                for (uint32_t w = 0; w < parent->GetNumChildren(); ++w)
+                {
+                    Widget* child = parent->GetChild(int32_t(w));
+                    if (child->GetNativeChildSlot() == mWidgetDefs[i].mNativeChildSlot)
+                    {
+                        newWidget = child;
+                        break;
+                    }
+                }
             }
             OCT_ASSERT(newWidget);
 
@@ -139,7 +161,8 @@ Widget* WidgetMap::Instantiate()
             if (i > 0)
             {
                 Widget* parent = widgetList[mWidgetDefs[i].mParentIndex];
-                parent->AddChild(newWidget);
+
+                parent->AddChild(newWidget, mWidgetDefs[i].mChildSlot);
 
                 if (mWidgetDefs[i].mExposeVariable &&
                     widgetList[0]->As<ScriptWidget>())
@@ -203,24 +226,42 @@ void WidgetMap::AddWidgetDef(Widget* widget, std::vector<Widget*>& widgetList)
     {
         widgetList.push_back(widget);
 
+        Widget* parent = widget->GetParent();
+
         mWidgetDefs.push_back(WidgetDef());
         WidgetDef& widgetDef = mWidgetDefs.back();
 
         widgetDef.mType = widget->GetType();
-        widgetDef.mParentIndex = FindWidgetIndex(widget->GetParent(), widgetList);
+        widgetDef.mParentIndex = FindWidgetIndex(parent, widgetList);
 
         WidgetMap* widgetMap = nullptr;
 #if EDITOR
         widgetDef.mExposeVariable = widget->ShouldExposeVariable();
         widgetMap = widget->GetWidgetMap();
+        widgetDef.mNativeChildSlot = widget->GetNativeChildSlot();
 #endif
         widgetDef.mWidgetMap = widgetMap;
+
+        // Find child slot
+        if (parent != nullptr)
+        {
+            for (uint32_t i = 0; i < parent->GetNumChildren(); ++i)
+            {
+                if (parent->GetChild(int32_t(i)) == widget)
+                {
+                    widgetDef.mChildSlot = (int32_t)i;
+                    break;
+                }
+            }
+
+            OCT_ASSERT(widgetDef.mChildSlot != -1);
+        }
 
         std::vector<Property> extProps;
         widget->GatherProperties(extProps);
 
         {
-            Widget* defaultWidget = Widget::CreateInstance(widget->GetType());
+            Widget* defaultWidget = CreateWidget(widget->GetType(), false);
             std::vector<Property> defaultProps;
             defaultWidget->GatherProperties(defaultProps);
 
