@@ -9,6 +9,8 @@ struct WidgetDef
 {
     TypeId mType = INVALID_TYPE_ID;
     int32_t mParentIndex = -1;
+    int32_t mChildSlot = -1;
+    int32_t mNativeChildSlot = -1;
     WidgetMapRef mWidgetMap;
     std::vector<Property> mProperties;
     bool mExposeVariable = false;

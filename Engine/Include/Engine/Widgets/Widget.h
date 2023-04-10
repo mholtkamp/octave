@@ -195,6 +195,7 @@ public:
     void DetachFromParent();
     uint32_t GetNumChildren() const;
     Widget* FindChild(const std::string& name, bool recurse = false);
+    int32_t FindChildIndex(Widget* widget);
 
     virtual void MarkDirty();
     bool IsDirty() const;
@@ -301,10 +302,14 @@ public:
 
     bool ShouldExposeVariable() const;
     void SetExposeVariable(bool expose);
+
+    bool IsNativeChild() const;
+    int32_t GetNativeChildSlot() const;
+    void SetNativeChildSlot(int32_t slot);
 protected:
     // This is only used by the Widget editor.
     WidgetMapRef mWidgetMap;
+    int32_t mNativeChildSlot = -1;
     bool mExposeVariable = false;
-
 #endif
 };

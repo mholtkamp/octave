@@ -59,7 +59,7 @@ int Widget_Lua::CreateNew(lua_State* L)
 
 int Widget_Lua::CreateNew(lua_State* L, const char* className, Widget** outWidget)
 {
-    Widget* widget = Widget::CreateInstance(className);
+    Widget* widget = CreateWidget(className);
 
     if (widget != nullptr)
     {
@@ -174,7 +174,7 @@ int Widget_Lua::CreateChildWidget(lua_State* L)
     Widget* widget = CHECK_WIDGET(L, 1);
     const char* typeName = CHECK_STRING(L, 2);
 
-    Widget* childWidget =  Widget::CreateInstance(typeName);
+    Widget* childWidget =  CreateWidget(typeName);
 
     if (childWidget != nullptr)
     {
