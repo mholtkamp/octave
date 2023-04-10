@@ -27,6 +27,7 @@ public:
 
     static TextField* GetSelectedTextField();
     static void SetSelectedTextField(TextField* newField);
+    static void StaticUpdate();
 
 protected:
 

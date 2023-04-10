@@ -871,6 +871,26 @@ bool Widget::IsVisible() const
     return mVisible;
 }
 
+bool Widget::IsVisibleRecursive() const
+{
+    bool visible = mVisible;
+
+    if (visible)
+    {
+        if (mParent != nullptr)
+        {
+            visible = mParent->IsVisibleRecursive();
+        }
+        else
+        {
+            visible = Renderer::Get()->HasWidget(this, -1);
+        }
+    }
+
+    return visible;
+}
+
+
 void Widget::SetColor(glm::vec4 color)
 {
     mColor = color;
