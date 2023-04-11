@@ -29,7 +29,9 @@ int Actor_Lua::Create(lua_State* L, Actor* actor)
         luaL_getmetatable(L, actor->GetClassName());
         if (lua_isnil(L, -1))
         {
-            // Could not find this type's metatable, so just use Component
+            LogWarning("Could not find object's metatable, so the top-level metatable will be used.")
+
+            // Could not find this type's metatable, so just use Actor
             lua_pop(L, 1);
             luaL_getmetatable(L, ACTOR_LUA_NAME);
         }

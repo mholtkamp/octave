@@ -45,6 +45,13 @@ int CreateClassMetatable(
         {
             // Set this metatable's metatable to the parent class.
             luaL_getmetatable(L, parentClassName);
+
+            if (lua_isnil(L, -1))
+            {
+                LogError("Missing parent metatable??");
+                OCT_ASSERT(0);
+            }
+
             lua_setmetatable(L, mtIndex);
         }
 
