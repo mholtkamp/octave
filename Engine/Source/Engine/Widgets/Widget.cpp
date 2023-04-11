@@ -47,6 +47,8 @@ Widget* CreateWidget(TypeId widgetType, bool start)
 {
     Widget* retWidget = Widget::CreateInstance(widgetType);
 
+    retWidget->RegisterScriptFuncs(GetLua());
+
 #if EDITOR
     // Mark native children. This is for the case where you add a Button to the map.
     // You don't want to instantiate a new Text + Quad when you load the widget map.
@@ -353,8 +355,6 @@ void Widget::Start()
     // after a WidgetMap has been instantiated. It can look for child widgets by name for instance.
     if (!mStarted)
     {
-        REGISTER_SCRIPT_FUNCS();
-
         for (uint32_t i = 0; i < mChildren.size(); ++i)
         {
             if (!mChildren[i]->mStarted)

@@ -25,7 +25,9 @@ int Widget_Lua::Create(lua_State* L, Widget* widget)
         luaL_getmetatable(L, widget->GetClassName());
         if (lua_isnil(L, -1))
         {
-            // Could not find this type's metatable, so just use Component
+            // Could not find this type's metatable, so just use top level
+            LogWarning("Could not find object's metatable, so the top-level metatable will be used.")
+
             lua_pop(L, 1);
             luaL_getmetatable(L, WIDGET_LUA_NAME);
         }
@@ -913,11 +915,13 @@ void Widget_Lua::BindCommon(lua_State* L, int mtIndex)
         // This lets use invoke script fuctions directly from the ScriptWidget userdata, and we don't
         // need to write code like: myWidget:GetScript():MyNativeFunc()
         // instead it's just myWidget:MyNativeFunc()
+        lua_pushstring(L, "__index");
         lua_pushcfunction(L, ScriptWidget_Lua::CustomIndex);
-        lua_setfield(L, mtIndex, "__index");
+        lua_rawset(L, mtIndex);
 
+        lua_pushstring(L, "__newindex");
         lua_pushcfunction(L, ScriptWidget_Lua::CustomNewIndex);
-        lua_setfield(L, mtIndex, "__newindex");
+        lua_rawset(L, mtIndex);
     }
 
     lua_pop(L, 1);
