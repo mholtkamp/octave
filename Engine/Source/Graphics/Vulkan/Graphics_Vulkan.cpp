@@ -129,6 +129,11 @@ void GFX_SetFrameRate(int32_t frameRate)
 
 }
 
+void GFX_PathTrace()
+{
+    gVulkanContext->PathTraceWorld();
+}
+
 void GFX_CreateTextureResource(Texture* texture, std::vector<uint8_t>& data)
 {
     CreateTextureResource(texture, data.data());

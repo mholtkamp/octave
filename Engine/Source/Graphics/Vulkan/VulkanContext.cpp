@@ -16,6 +16,7 @@
 #include "Components/CameraComponent.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/PointLightComponent.h"
+#include "Components/StaticMeshComponent.h"
 
 #include "Assertion.h"
 #include <string>
@@ -487,6 +488,8 @@ void VulkanContext::DestroySwapchain()
     vkDestroyRenderPass(mDevice, mPostprocessRenderPass, nullptr);
     vkDestroyRenderPass(mDevice, mUIRenderPass, nullptr);
     vkDestroyRenderPass(mDevice, mClearSwapchainPass, nullptr);
+
+    DestroyPathTraceResources();
 
     GetDestroyQueue()->Destroy(mShadowMapImage);
     mShadowMapImage = nullptr;
@@ -999,7 +1002,7 @@ void VulkanContext::CreateSceneColorImage()
     VkImageLayout layout;
     
     format = mSceneColorImageFormat;
-    usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
     //aspect = VK_IMAGE_ASPECT_COLOR_BIT;
     layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -1037,6 +1040,28 @@ void VulkanContext::CreateShadowMapImage()
     mShadowMapImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     DeviceWaitIdle();
+}
+
+
+void VulkanContext::CreatePathTraceResources()
+{
+    // Buffers
+    mPathTraceTriangleBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceTriangle), "Path Trace Triangle Buffer", nullptr, false);
+    mPathTraceMeshBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceMesh), "Path Trace Mesh Buffer", nullptr, false);
+    mPathTraceLightBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceLight), "Path Trace Light Buffer", nullptr, false);
+
+    // Descriptor Set
+    VkDescriptorSetLayout layout = GetPipeline(PipelineId::PathTrace)->GetDescriptorSetLayout(1);
+    mPathTraceDescriptorSet = new DescriptorSet(layout);
+    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(0, mPathTraceTriangleBuffer);
+    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceMeshBuffer);
+    mPathTraceDescriptorSet->UpdateStorageImageDescriptor(2, mSceneColorImage);
+}
+
+void VulkanContext::DestroyPathTraceResources()
+{
+    GetDestroyQueue()->Destroy(mPathTraceDescriptorSet);
+    mPathTraceDescriptorSet = nullptr;
 }
 
 DestroyQueue* VulkanContext::GetDestroyQueue()
@@ -1725,6 +1750,7 @@ void VulkanContext::RecreateSwapchain()
     CreateFramebuffers();
     CreateGlobalDescriptorSet();
     CreatePostProcessDescriptorSet();
+    CreatePathTraceResources();
 
 #if EDITOR
     CreateHitCheck();
@@ -1997,6 +2023,72 @@ UniformBufferArena& VulkanContext::GetMeshUniformBufferArena()
     return mMeshUniformBufferArena;
 }
 
+void VulkanContext::PathTraceWorld()
+{
+    World* world = GetWorld();
+
+    if (world != nullptr)
+    {
+        // Update triangle + mesh + light buffers
+        std::vector<PathTraceTriangle> triangleData;
+        std::vector<PathTraceMesh> meshData;
+        std::vector<PathTraceLight> lightData;
+
+        const std::vector<Actor*>& actors = world->GetActors();
+
+        for (uint32_t i = 0; i < actors.size(); ++i)
+        {
+            if (!actors[i]->IsVisible())
+                continue;
+
+            const std::vector<Component*>& components = actors[i]->GetComponents();
+
+            for (uint32_t c = 0; c < components.size(); ++c)
+            {
+                if (components[c]->IsVisible())
+                {
+
+                }
+                
+                StaticMeshComponent* meshComp = components[c]->As<StaticMeshComponent>();
+                LightComponent* lightComp = components[c]->As<LightComponent>();
+                if (meshComp != nullptr)
+                {
+
+                }
+                else if (lightComp)
+                {
+                    if (lightComp->Is(PointLightComponent::ClassRuntimeId()))
+                    {
+                        PointLightComponent* pointLightComp = lightComp->As<PointLightComponent>();
+
+                        lightData.push_back(PathTraceLight());
+                        PathTraceLight& light = lightData.back();
+                        light.mPosition = pointLightComp->GetAbsolutePosition();
+                        light.mRadius = pointLightComp->GetRadius();
+                        light.mColor = pointLightComp->GetColor();
+                        light.mLightType = uint32_t(PathTraceLightType::Point);
+                        light.mDirection = { 1.0f, 0.0f, 0.0f };
+
+                    }
+                    else if (lightComp->Is(DirectionalLightComponent::ClassRuntimeId()))
+                    {
+                        DirectionalLightComponent* dirLightComp = lightComp->As<DirectionalLightComponent>();
+
+                        lightData.push_back(PathTraceLight());
+                        PathTraceLight& light = lightData.back();
+                        light.mPosition = dirLightComp->GetAbsolutePosition();
+                        light.mRadius = 10000.0f;
+                        light.mColor = dirLightComp->GetColor();
+                        light.mLightType = uint32_t(PathTraceLightType::Directional);
+                        light.mDirection = dirLightComp->GetDirection();
+                    }
+                }
+            }
+        }
+    }
+}
+
 VkExtent2D& VulkanContext::GetSwapchainExtent()
 {
     return mSwapchainExtent;
@@ -2050,6 +2142,7 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::Quad] = new QuadPipeline();
     mPipelines[(size_t)PipelineId::Text] = new TextPipeline();
     mPipelines[(size_t)PipelineId::Poly] = new PolyPipeline();
+    mPipelines[(size_t)PipelineId::PathTrace] = new PathTracePipeline();
 
 #if EDITOR
     mPipelines[(size_t)PipelineId::HitCheck] = new HitCheckPipeline();
@@ -2074,6 +2167,7 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::Quad]->Create(mUIRenderPass);
     mPipelines[(size_t)PipelineId::Text]->Create(mUIRenderPass);
     mPipelines[(size_t)PipelineId::Poly]->Create(mUIRenderPass);
+    mPipelines[(size_t)PipelineId::PathTrace]->Create(VK_NULL_HANDLE);
 
 #if EDITOR
     mPipelines[(size_t)PipelineId::HitCheck]->Create(mHitCheckRenderPass);

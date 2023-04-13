@@ -14,6 +14,7 @@ enum class BufferType
     Index,
     Uniform,
     Transfer,
+    Storage,
 
     Count
 };

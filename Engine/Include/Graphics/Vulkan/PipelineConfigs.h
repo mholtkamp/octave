@@ -454,6 +454,23 @@ public:
     }
 };
 
+class BakedLightVisPipeline : public ForwardPipeline
+{
+public:
+
+    BakedLightVisPipeline()
+    {
+        mName = "BakedLightVis Pipeline";
+        mDepthTestEnabled = true;
+        mFragmentShaderPath = ENGINE_SHADER_DIR "BakedLightVis.frag";
+
+        mBlendAttachments.clear(); // Clear all geometry blends
+        AddOpaqueBlendAttachmentState();
+
+        mPipelineId = PipelineId::BakedLightVis;
+    }
+};
+
 class LineGeometryPipeline : public Pipeline
 {
 public:
@@ -472,6 +489,48 @@ public:
         mFragmentShaderPath = ENGINE_SHADER_DIR "Line.frag";
 
         mPipelineId = PipelineId::Line;
+    }
+};
+
+class PathTracePipeline : public Pipeline
+{
+public:
+
+    PathTracePipeline()
+    {
+        mComputePipeline = true;
+        mComputeShaderPath = ENGINE_SHADER_DIR "PathTrace.comp";
+    }
+
+    virtual void PopulateLayoutBindings() override
+    {
+        Pipeline::PopulateLayoutBindings();
+
+        PushSet();
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Triangle data
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Mesh (+ Material) data
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT); // Output image
+    }
+};
+
+class LightBakePipeline : public Pipeline
+{
+public:
+
+    LightBakePipeline()
+    {
+        mComputePipeline = true;
+        mComputeShaderPath = ENGINE_SHADER_DIR "LightBake.comp";
+    }
+
+    virtual void PopulateLayoutBindings() override
+    {
+        Pipeline::PopulateLayoutBindings();
+
+        PushSet();
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Triangle data
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Mesh (+ Material) data
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Output vertex color data
     }
 };
 

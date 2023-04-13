@@ -58,6 +58,7 @@ enum class PixelFormat
 
 enum class PipelineId
 {
+    // Graphics
     Shadow,
     Opaque,
     Translucent,
@@ -71,6 +72,7 @@ enum class PipelineId
     Selected,
     Wireframe,
     Collision,
+    BakedLightVis,
     Line,
     PostProcess,
     NullPostProcess,
@@ -78,6 +80,11 @@ enum class PipelineId
     Text,
     Poly,
 
+    // Compute
+    PathTrace,
+    LightBake,
+
+    // Editor
     HitCheck,
 
     Count

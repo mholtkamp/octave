@@ -110,6 +110,8 @@ public:
     DescriptorSetArena& GetMeshDescriptorSetArena();
     UniformBufferArena& GetMeshUniformBufferArena();
 
+    void PathTraceWorld();
+
 private:
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -137,6 +139,9 @@ private:
     void CreatePostProcessDescriptorSet();
     void CreateSceneColorImage();
     void CreateShadowMapImage();
+
+    void CreatePathTraceResources();
+    void DestroyPathTraceResources();
 
     void PickPhysicalDevice();
     bool IsDeviceSuitable(VkPhysicalDevice device);
@@ -214,6 +219,12 @@ private:
     DescriptorSet* mDebugDescriptorSet = nullptr;
     DescriptorSet* mPostProcessDescriptorSet = nullptr;
     GlobalUniformData mGlobalUniformData;
+
+    // Path Tracing Resources
+    DescriptorSet* mPathTraceDescriptorSet = nullptr;
+    Buffer* mPathTraceTriangleBuffer = nullptr;
+    Buffer* mPathTraceMeshBuffer = nullptr;
+    Buffer* mPathTraceLightBuffer = nullptr;
 
     // Destroy Queue
     DestroyQueue mDestroyQueue;

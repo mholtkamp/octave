@@ -320,7 +320,7 @@ void Pipeline::Create(VkRenderPass renderPass)
 {
     // Ensure that a renderpass has been set before creating the pipeline.
     mRenderpass = renderPass;
-    OCT_ASSERT(mRenderpass != VK_NULL_HANDLE);
+    OCT_ASSERT(mRenderpass != VK_NULL_HANDLE || mComputePipeline);
     OCT_ASSERT(mPipelineId != PipelineId::Count);
 
     PopulateLayoutBindings();
