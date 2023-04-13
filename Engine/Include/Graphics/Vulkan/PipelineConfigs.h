@@ -500,6 +500,8 @@ public:
     {
         mComputePipeline = true;
         mComputeShaderPath = ENGINE_SHADER_DIR "PathTrace.comp";
+
+        mPipelineId = PipelineId::PathTrace;
     }
 
     virtual void PopulateLayoutBindings() override
@@ -509,6 +511,7 @@ public:
         PushSet();
         AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Triangle data
         AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Mesh (+ Material) data
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Light data
         AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT); // Output image
     }
 };
@@ -521,6 +524,8 @@ public:
     {
         mComputePipeline = true;
         mComputeShaderPath = ENGINE_SHADER_DIR "LightBake.comp";
+
+        mPipelineId = PipelineId::LightBake;
     }
 
     virtual void PopulateLayoutBindings() override
@@ -530,6 +535,7 @@ public:
         PushSet();
         AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Triangle data
         AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Mesh (+ Material) data
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Light data
         AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Output vertex color data
     }
 };

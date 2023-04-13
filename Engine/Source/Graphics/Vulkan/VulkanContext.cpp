@@ -124,6 +124,8 @@ void VulkanContext::Initialize()
     CreateSemaphores();
     CreateFences();
 
+    CreatePathTraceResources();
+
     // Transition the swapchain image to swapchain present format before hitting render loop
     // or else the image transitions won't use expected initial layout.
     for (uint32_t i = 0; i < mSwapchainImages.size(); ++i)
@@ -392,7 +394,8 @@ void VulkanContext::BindPipeline(Pipeline* pipeline, VertexType vertexType)
     mCurrentlyBoundPipeline = pipeline;
 
     // Always rebind Global Descriptor (might not need to do this)
-    mGlobalDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Global, pipelineLayout);
+    VkPipelineBindPoint bindPoint = pipeline->IsComputePipeline() ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS;
+    mGlobalDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Global, pipelineLayout, bindPoint);
 
     // Handle pipeline-specific functionality
     switch (pipeline->GetId())
@@ -1055,7 +1058,8 @@ void VulkanContext::CreatePathTraceResources()
     mPathTraceDescriptorSet = new DescriptorSet(layout);
     mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(0, mPathTraceTriangleBuffer);
     mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceMeshBuffer);
-    mPathTraceDescriptorSet->UpdateStorageImageDescriptor(2, mSceneColorImage);
+    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceLightBuffer);
+    mPathTraceDescriptorSet->UpdateStorageImageDescriptor(3, mSceneColorImage);
 }
 
 void VulkanContext::DestroyPathTraceResources()
@@ -2077,8 +2081,8 @@ void VulkanContext::PathTraceWorld()
                     // Add triangle data.
                     bool hasColor = meshAsset->HasVertexColor();
                     IndexType* indices = meshAsset->GetIndices();
-                    Vertex* verts = meshAsset->GetVertices();
-                    VertexColor* colorVerts = meshAsset->GetColorVertices();
+                    Vertex* verts = hasColor ? nullptr : meshAsset->GetVertices();
+                    VertexColor* colorVerts = hasColor ? meshAsset->GetColorVertices() : nullptr;
 
                     for (uint32_t t = 0; t < mesh.mNumTriangles; ++t)
                     {
@@ -2141,31 +2145,39 @@ void VulkanContext::PathTraceWorld()
         }
     
         // Reallocate storage buffers if needed.
-        uint32_t triangleSize = triangleData.size() * sizeof(PathTraceTriangle);
-        uint32_t meshSize = meshData.size() * sizeof(PathTraceMesh);
-        uint32_t lightSize = lightData.size() * sizeof(PathTraceLight);
+        size_t triangleSize = triangleData.size() * sizeof(PathTraceTriangle);
+        size_t meshSize = meshData.size() * sizeof(PathTraceMesh);
+        size_t lightSize = lightData.size() * sizeof(PathTraceLight);
 
         if (triangleSize > mPathTraceTriangleBuffer->GetSize())
         {
             GetDestroyQueue()->Destroy(mPathTraceTriangleBuffer);
+            mPathTraceTriangleBuffer = nullptr;
             mPathTraceTriangleBuffer = new Buffer(BufferType::Storage, triangleSize, "Path Trace Triangle Buffer", nullptr, false);
         }
 
         if (meshSize > mPathTraceMeshBuffer->GetSize())
         {
             GetDestroyQueue()->Destroy(mPathTraceMeshBuffer);
-            mPathTraceMeshBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceMesh), "Path Trace Mesh Buffer", nullptr, false);
+            mPathTraceMeshBuffer = nullptr;
+            mPathTraceMeshBuffer = new Buffer(BufferType::Storage, meshSize, "Path Trace Mesh Buffer", nullptr, false);
         }
 
         if (lightSize > mPathTraceLightBuffer->GetSize())
         {
             GetDestroyQueue()->Destroy(mPathTraceLightBuffer);
-            mPathTraceLightBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceLight), "Path Trace Light Buffer", nullptr, false);
+            mPathTraceLightBuffer = nullptr;
+            mPathTraceLightBuffer = new Buffer(BufferType::Storage, lightSize, "Path Trace Light Buffer", nullptr, false);
         }
 
-        mPathTraceTriangleBuffer->Update(triangleData.data(), triangleSize);
-        mPathTraceMeshBuffer->Update(meshData.data(), meshSize);
-        mPathTraceLightBuffer->Update(lightData.data(),lightSize);
+        if (triangleSize > 0)
+            mPathTraceTriangleBuffer->Update(triangleData.data(), triangleSize);
+       
+        if (meshSize > 0)
+            mPathTraceMeshBuffer->Update(meshData.data(), meshSize);
+        
+        if (lightSize > 0)
+            mPathTraceLightBuffer->Update(lightData.data(), lightSize);
 
         VkCommandBuffer cb = GetCommandBuffer();
 
@@ -2174,13 +2186,14 @@ void VulkanContext::PathTraceWorld()
         Pipeline* pathTracePipeline = GetPipeline(PipelineId::PathTrace);
         BindPipeline(pathTracePipeline, VertexType::Max);
         
-        mPathTraceDescriptorSet->Bind(cb, 1, pathTracePipeline->GetPipelineLayout());
+        mPathTraceDescriptorSet->Bind(cb, 1, pathTracePipeline->GetPipelineLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
 
         uint32_t width = GetEngineState()->mWindowWidth;
         uint32_t height = GetEngineState()->mWindowHeight;
 
         vkCmdDispatch(cb, (width + 7) / 8, (height + 7) / 8, 1);
 
+#if 0
         // Insert a barrier before the water rendering reads from the texture.
         VkImageMemoryBarrier imageMemoryBarrier = {};
         imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -2205,8 +2218,9 @@ void VulkanContext::PathTraceWorld()
             nullptr,
             1,                                     // imageMemoryBarrierCount
             &imageMemoryBarrier);                   // pImageMemoryBarriers
+#endif
 
-        mSceneColorImage->Transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, cb);
+        mSceneColorImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, cb);
 
     }
 }

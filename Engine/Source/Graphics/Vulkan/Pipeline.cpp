@@ -373,6 +373,11 @@ PipelineId Pipeline::GetId() const
     return mPipelineId;
 }
 
+bool Pipeline::IsComputePipeline() const
+{
+    return mComputePipeline;
+}
+
 VkShaderModule Pipeline::CreateShaderModule(const std::vector<char>& code)
 {
     VkDevice device = GetVulkanDevice();
@@ -501,7 +506,7 @@ void Pipeline::PopulateLayoutBindings()
 {
     // Global descriptor set
     PushSet();
-    AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+    AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT);
     AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 }
 

@@ -47,6 +47,8 @@ public:
 
     PipelineId GetId() const;
 
+    bool IsComputePipeline() const;
+
 protected:
 
     void CreateGraphicsPipeline();

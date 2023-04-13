@@ -76,7 +76,7 @@ void DescriptorSet::UpdateStorageImageDescriptor(int32_t binding, Image* storage
     MarkDirty();
 }
 
-void DescriptorSet::Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pipelineLayout)
+void DescriptorSet::Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pipelineLayout, VkPipelineBindPoint bindPoint)
 {
     uint32_t frameIndex = GetFrameIndex();
 
@@ -88,7 +88,7 @@ void DescriptorSet::Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pi
 
     vkCmdBindDescriptorSets(
         cb,
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        bindPoint,
         pipelineLayout,
         index,
         1,

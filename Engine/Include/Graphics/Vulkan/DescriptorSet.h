@@ -40,7 +40,7 @@ public:
     void UpdateStorageBufferDescriptor(int32_t binding, Buffer* storageBuffer);
     void UpdateStorageImageDescriptor(int32_t binding, Image* storageImage);
 
-    void Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pipelineLayout);
+    void Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pipelineLayout, VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
 
     VkDescriptorSet Get();
     VkDescriptorSet Get(uint32_t frameIndex);
