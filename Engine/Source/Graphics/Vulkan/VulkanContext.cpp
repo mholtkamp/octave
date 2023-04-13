@@ -2038,12 +2038,12 @@ void VulkanContext::PathTraceWorld()
 
         const std::vector<Actor*>& actors = world->GetActors();
 
-        for (uint32_t i = 0; i < actors.size(); ++i)
+        for (uint32_t a = 0; a < actors.size(); ++a)
         {
-            if (!actors[i]->IsVisible())
+            if (!actors[a]->IsVisible())
                 continue;
 
-            const std::vector<Component*>& components = actors[i]->GetComponents();
+            const std::vector<Component*>& components = actors[a]->GetComponents();
 
             for (uint32_t c = 0; c < components.size(); ++c)
             {
@@ -2073,6 +2073,39 @@ void VulkanContext::PathTraceWorld()
                     mesh.mStartTriangleIndex = totalTriangles;
                     mesh.mNumTriangles = meshAsset->GetNumFaces();
                     WriteMaterialUniformData(mesh.mMaterial, material);
+
+                    // Add triangle data.
+                    bool hasColor = meshAsset->HasVertexColor();
+                    IndexType* indices = meshAsset->GetIndices();
+                    Vertex* verts = meshAsset->GetVertices();
+                    VertexColor* colorVerts = meshAsset->GetColorVertices();
+
+                    for (uint32_t t = 0; t < mesh.mNumTriangles; ++t)
+                    {
+                        triangleData.push_back(PathTraceTriangle());
+                        PathTraceTriangle& triangle = triangleData.back();
+
+                        for (uint32_t v = 0; v < 3; ++v)
+                        {
+                            uint32_t index = t * 3 + v;
+                            if (hasColor)
+                            {
+                                triangle.mVertices[v].mPosition = colorVerts[index].mPosition;
+                                triangle.mVertices[v].mTexcoord0 = colorVerts[index].mTexcoord0;
+                                triangle.mVertices[v].mTexcoord1 = colorVerts[index].mTexcoord1;
+                                triangle.mVertices[v].mNormal = colorVerts[index].mNormal;
+                                triangle.mVertices[v].mColor = colorVerts[index].mColor;
+                            }
+                            else
+                            {
+                                triangle.mVertices[v].mPosition = verts[index].mPosition;
+                                triangle.mVertices[v].mTexcoord0 = verts[index].mTexcoord0;
+                                triangle.mVertices[v].mTexcoord1 = verts[index].mTexcoord1;
+                                triangle.mVertices[v].mNormal = verts[index].mNormal;
+                                triangle.mVertices[v].mColor = 0xffffffff;
+                            }
+                        }
+                    }
 
                     totalTriangles += mesh.mNumTriangles;
                 }
@@ -2106,6 +2139,37 @@ void VulkanContext::PathTraceWorld()
                 }
             }
         }
+    
+        // Reallocate storage buffers if needed.
+        uint32_t triangleSize = triangleData.size() * sizeof(PathTraceTriangle);
+        uint32_t meshSize = meshData.size() * sizeof(PathTraceMesh);
+        uint32_t lightSize = lightData.size() * sizeof(PathTraceLight);
+
+        if (triangleSize > mPathTraceTriangleBuffer->GetSize())
+        {
+            GetDestroyQueue()->Destroy(mPathTraceTriangleBuffer);
+            mPathTraceTriangleBuffer = new Buffer(BufferType::Storage, triangleSize, "Path Trace Triangle Buffer", nullptr, false);
+        }
+
+        if (meshSize > mPathTraceMeshBuffer->GetSize())
+        {
+            GetDestroyQueue()->Destroy(mPathTraceMeshBuffer);
+            mPathTraceMeshBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceMesh), "Path Trace Mesh Buffer", nullptr, false);
+        }
+
+        if (lightSize > mPathTraceLightBuffer->GetSize())
+        {
+            GetDestroyQueue()->Destroy(mPathTraceLightBuffer);
+            mPathTraceLightBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceLight), "Path Trace Light Buffer", nullptr, false);
+        }
+
+        mPathTraceTriangleBuffer->Update(triangleData.data(), triangleSize);
+        mPathTraceMeshBuffer->Update(meshData.data(), meshSize);
+        mPathTraceLightBuffer->Update(lightData.data(),lightSize);
+
+
+
+
     }
 }
 
