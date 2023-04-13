@@ -25,6 +25,7 @@ Buffer::Buffer(
     case BufferType::Index: usageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT; break;
     case BufferType::Uniform: usageFlags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT; break;
     case BufferType::Transfer: usageFlags |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; break;
+    case BufferType::Storage: usageFlags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; break;
     default: OCT_ASSERT(0); break; // Not valid type
     }
 

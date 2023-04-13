@@ -55,6 +55,8 @@ uint32_t GFX_GetNumViews();
 
 void GFX_SetFrameRate(int32_t frameRate);
 
+void GFX_PathTrace();
+
 // Texture
 void GFX_CreateTextureResource(Texture* texture, std::vector<uint8_t>& data);
 void GFX_DestroyTextureResource(Texture* texture);

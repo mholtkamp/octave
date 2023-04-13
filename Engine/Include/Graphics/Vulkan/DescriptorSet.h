@@ -16,6 +16,8 @@ enum class DescriptorType
 {
     Uniform,
     Image,
+    StorageBuffer,
+    StorageImage,
 
     Count
 };
@@ -35,6 +37,8 @@ public:
     // Updates the current frame's descriptor.
     void UpdateImageDescriptor(int32_t binding, Image* image);
     void UpdateUniformDescriptor(int32_t binding, UniformBuffer* uniformBuffer);
+    void UpdateStorageBufferDescriptor(int32_t binding, Buffer* storageBuffer);
+    void UpdateStorageImageDescriptor(int32_t binding, Image* storageImage);
 
     void Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pipelineLayout);
 

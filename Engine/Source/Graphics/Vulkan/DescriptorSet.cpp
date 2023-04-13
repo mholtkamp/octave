@@ -60,6 +60,22 @@ void DescriptorSet::UpdateUniformDescriptor(int32_t binding, UniformBuffer* unif
     MarkDirty();
 }
 
+void DescriptorSet::UpdateStorageBufferDescriptor(int32_t binding, Buffer* storageBuffer)
+{
+    OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
+    mBindings[binding].mType = DescriptorType::StorageBuffer;
+    mBindings[binding].mObject = storageBuffer;
+    MarkDirty();
+}
+
+void DescriptorSet::UpdateStorageImageDescriptor(int32_t binding, Image* storageImage)
+{
+    OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
+    mBindings[binding].mType = DescriptorType::StorageImage;
+    mBindings[binding].mObject = storageImage;
+    MarkDirty();
+}
+
 void DescriptorSet::Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pipelineLayout)
 {
     uint32_t frameIndex = GetFrameIndex();
@@ -146,6 +162,46 @@ void DescriptorSet::RefreshBindings(uint32_t frameIndex)
                 descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                 descriptorWrite.descriptorCount = 1;
                 descriptorWrite.pBufferInfo = &bufferInfo;
+
+                vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+            }
+            else if (binding.mType == DescriptorType::StorageBuffer)
+            {
+                Buffer* buffer = reinterpret_cast<Buffer*>(binding.mObject);
+
+                VkDescriptorBufferInfo bufferInfo = {};
+                bufferInfo.buffer = buffer->Get();
+                bufferInfo.range = buffer->GetSize();
+                bufferInfo.offset = 0;
+
+                VkWriteDescriptorSet descriptorWrite = {};
+                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrite.dstSet = mDescriptorSets[frameIndex];
+                descriptorWrite.dstBinding = i;
+                descriptorWrite.dstArrayElement = 0;
+                descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                descriptorWrite.descriptorCount = 1;
+                descriptorWrite.pBufferInfo = &bufferInfo;
+
+                vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+            }
+            else if (binding.mType == DescriptorType::StorageImage)
+            {
+                Image* image = reinterpret_cast<Image*>(binding.mObject);
+
+                VkDescriptorImageInfo imageInfo = {};
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                imageInfo.imageView = image->GetView();
+                imageInfo.sampler = image->GetSampler();
+
+                VkWriteDescriptorSet descriptorWrite = {};
+                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrite.dstSet = mDescriptorSets[frameIndex];
+                descriptorWrite.dstBinding = i;
+                descriptorWrite.dstArrayElement = 0;
+                descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                descriptorWrite.descriptorCount = 1;
+                descriptorWrite.pImageInfo = &imageInfo;
 
                 vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
             }

@@ -122,6 +122,54 @@ struct MaterialData
     uint32_t mTevModes[MATERIAL_MAX_TEXTURES];
 };
 
+struct PathTraceVertex
+{
+    glm::vec3 mPosition;
+    float mPad0;
+
+    glm::vec2 mTexcoord0;
+    glm::vec2 mTexcoord1;
+
+    glm::vec3 mNormal;
+    uint32_t mColor;
+};
+
+struct PathTraceTriangle
+{
+    PathTraceVertex mVertices[3];
+};
+
+struct PathTraceMesh
+{
+    glm::vec4 mBounds;
+
+    uint32_t mStartTriangleIndex;
+    uint32_t mNumTriangles;
+    uint32_t mPad0;
+    uint32_t mPad1;
+
+    MaterialData mMaterial;
+};
+
+struct PathTraceLight
+{
+    glm::vec3 mPosition;
+    float mRadius;
+
+    glm::vec4 mColor;
+
+    uint32_t mLightType;
+    glm::vec3 mDirection;
+};
+
+enum class PathTraceLightType
+{
+    Point,
+    Directional,
+
+    Count
+};
+
 enum class DescriptorSetBinding
 {
     Global = 0,

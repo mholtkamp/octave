@@ -78,6 +78,9 @@ public:
     void EnableWorldRendering(bool enable);
     bool IsWorldRenderingEnabled() const;
 
+    void EnablePathTracing(bool enable);
+    bool IsPathTracingEnabled() const;
+
     Texture* GetBlackTexture();
     Material* GetDefaultMaterial();
 
@@ -173,5 +176,6 @@ private:
     bool mFrustumCulling = true;
     bool mEnableProxyRendering = false;
     bool mEnableWorldRendering = true;
+    bool mEnablePathTracing = false;
     bool mInModalWidgetUpdate = false;
 };

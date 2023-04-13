@@ -166,6 +166,16 @@ bool Renderer::IsWorldRenderingEnabled() const
     return mEnableWorldRendering;
 }
 
+void Renderer::EnablePathTracing(bool enable)
+{
+    mEnablePathTracing = enable;
+}
+
+bool Renderer::IsPathTracingEnabled() const
+{
+    return mEnablePathTracing;
+}
+
 Texture* Renderer::GetBlackTexture()
 {
     return mBlackTexture.Get<Texture>();
@@ -969,43 +979,54 @@ void Renderer::Render(World* world)
 
         if (mEnableWorldRendering)
         {
-            // ***************
-            //  Shadow Depths
-            // ***************
-            GFX_SetViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
-            GFX_SetScissor(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
-
-            GFX_BeginRenderPass(RenderPassId::Shadows);
-
-            DirectionalLightComponent* dirLight = world->GetDirectionalLight();
-
-            if (dirLight && dirLight->ShouldCastShadows())
+            if (mEnablePathTracing)
             {
-                RenderDraws(mShadowDraws, PipelineId::Shadow);
+                GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+                GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+
+                LogDebug("Path Tracing!");
+                GFX_PathTrace();
             }
-
-            GFX_EndRenderPass();
-
-            GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
-            GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
-
-            // ******************
-            //  Forward Pass
-            // ******************
-            GFX_BeginRenderPass(RenderPassId::Forward);
-
-            if (GetDebugMode() != DEBUG_WIREFRAME)
+            else
             {
-                RenderDraws(mOpaqueDraws);
-                RenderDraws(mSimpleShadowDraws);
-                RenderDraws(mPostShadowOpaqueDraws);
+                // ***************
+                //  Shadow Depths
+                // ***************
+                GFX_SetViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+                GFX_SetScissor(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
 
-                RenderDraws(mTranslucentDraws);
+                GFX_BeginRenderPass(RenderPassId::Shadows);
 
-                RenderDebugDraws(mDebugDraws);
+                DirectionalLightComponent* dirLight = world->GetDirectionalLight();
+
+                if (dirLight && dirLight->ShouldCastShadows())
+                {
+                    RenderDraws(mShadowDraws, PipelineId::Shadow);
+                }
+
+                GFX_EndRenderPass();
+
+                GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+                GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+
+                // ******************
+                //  Forward Pass
+                // ******************
+                GFX_BeginRenderPass(RenderPassId::Forward);
+
+                if (GetDebugMode() != DEBUG_WIREFRAME)
+                {
+                    RenderDraws(mOpaqueDraws);
+                    RenderDraws(mSimpleShadowDraws);
+                    RenderDraws(mPostShadowOpaqueDraws);
+
+                    RenderDraws(mTranslucentDraws);
+
+                    RenderDebugDraws(mDebugDraws);
+                }
+
+                GFX_EndRenderPass();
             }
-
-            GFX_EndRenderPass();
 
             // ******************
             //  Post Process
