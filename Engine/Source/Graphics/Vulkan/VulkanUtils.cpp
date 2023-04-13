@@ -716,6 +716,41 @@ void WriteGeometryUniformData(GeometryData& outData, World* world, const glm::ma
     outData.mHitCheckId = 0;
 }
 
+void WriteMaterialUniformData(MaterialData& outData, Material* material)
+{
+    Texture* textures[4] = {};
+    textures[0] = material->GetTexture((TextureSlot)0);
+    textures[1] = material->GetTexture((TextureSlot)1);
+    textures[2] = material->GetTexture((TextureSlot)2);
+    textures[3] = material->GetTexture((TextureSlot)3);
+
+    outData.mUvOffset0 = material->GetUvOffset(0);
+    outData.mUvScale0 = material->GetUvScale(0);
+    outData.mUvOffset1 = material->GetUvOffset(1);
+    outData.mUvScale1 = material->GetUvScale(1);
+    outData.mColor = material->GetColor();
+    outData.mFresnelColor = material->GetFresnelColor();
+    outData.mShadingModel = static_cast<uint32_t>(material->GetShadingModel());
+    outData.mBlendMode = static_cast<uint32_t>(material->GetBlendMode());
+    outData.mToonSteps = material->GetToonSteps();
+    outData.mFresnelPower = material->GetFresnelPower();
+    outData.mSpecular = material->GetSpecular();
+    outData.mOpacity = material->GetOpacity();
+    outData.mMaskCutoff = material->GetMaskCutoff();
+    outData.mShininess = material->GetShininess();
+    outData.mFresnelEnabled = static_cast<uint32_t>(material->IsFresnelEnabled());
+    outData.mVertexColorMode = static_cast<uint32_t>(material->GetVertexColorMode());
+    outData.mApplyFog = static_cast<uint32_t>(material->ShouldApplyFog());
+    outData.mUvMaps[0] = material->GetUvMap(0);
+    outData.mUvMaps[1] = material->GetUvMap(1);
+    outData.mUvMaps[2] = material->GetUvMap(2);
+    outData.mUvMaps[3] = material->GetUvMap(3);
+    outData.mTevModes[0] = textures[0] ? (uint32_t)material->GetTevMode(0) : (uint32_t)TevMode::Count;
+    outData.mTevModes[1] = textures[1] ? (uint32_t)material->GetTevMode(1) : (uint32_t)TevMode::Count;
+    outData.mTevModes[2] = textures[2] ? (uint32_t)material->GetTevMode(2) : (uint32_t)TevMode::Count;
+    outData.mTevModes[3] = textures[3] ? (uint32_t)material->GetTevMode(3) : (uint32_t)TevMode::Count;
+}
+
 #if _DEBUG
 void FullPipelineBarrier()
 {
@@ -893,31 +928,7 @@ void UpdateMaterialResource(Material* material)
 
     // Update uniform buffer data
     MaterialData ubo = {};
-    ubo.mUvOffset0 = material->GetUvOffset(0);
-    ubo.mUvScale0 = material->GetUvScale(0);
-    ubo.mUvOffset1 = material->GetUvOffset(1);
-    ubo.mUvScale1 = material->GetUvScale(1);
-    ubo.mColor = material->GetColor();
-    ubo.mFresnelColor = material->GetFresnelColor();
-    ubo.mShadingModel = static_cast<uint32_t>(material->GetShadingModel());
-    ubo.mBlendMode = static_cast<uint32_t>(material->GetBlendMode());
-    ubo.mToonSteps = material->GetToonSteps();
-    ubo.mFresnelPower = material->GetFresnelPower();
-    ubo.mSpecular = material->GetSpecular();
-    ubo.mOpacity = material->GetOpacity();
-    ubo.mMaskCutoff = material->GetMaskCutoff();
-    ubo.mShininess = material->GetShininess();
-    ubo.mFresnelEnabled = static_cast<uint32_t>(material->IsFresnelEnabled());
-    ubo.mVertexColorMode = static_cast<uint32_t>(material->GetVertexColorMode());
-    ubo.mApplyFog = static_cast<uint32_t>(material->ShouldApplyFog());
-    ubo.mUvMaps[0] = material->GetUvMap(0);
-    ubo.mUvMaps[1] = material->GetUvMap(1);
-    ubo.mUvMaps[2] = material->GetUvMap(2);
-    ubo.mUvMaps[3] = material->GetUvMap(3);
-    ubo.mTevModes[0] = textures[0] ? (uint32_t) material->GetTevMode(0) : (uint32_t)TevMode::Count;
-    ubo.mTevModes[1] = textures[1] ? (uint32_t) material->GetTevMode(1) : (uint32_t)TevMode::Count;
-    ubo.mTevModes[2] = textures[2] ? (uint32_t) material->GetTevMode(2) : (uint32_t)TevMode::Count;
-    ubo.mTevModes[3] = textures[3] ? (uint32_t) material->GetTevMode(3) : (uint32_t)TevMode::Count;
+    WriteMaterialUniformData(ubo, material);
 
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 

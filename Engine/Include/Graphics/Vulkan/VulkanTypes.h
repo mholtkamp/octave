@@ -122,16 +122,24 @@ struct MaterialData
     uint32_t mTevModes[MATERIAL_MAX_TEXTURES];
 };
 
+enum class PathTraceLightType
+{
+    Point,
+    Directional,
+
+    Count
+};
+
 struct PathTraceVertex
 {
-    glm::vec3 mPosition;
-    float mPad0;
+    glm::vec3 mPosition = { 0.0f, 0.0f, 0.0f };
+    float mPad0 = 1337.0f;
 
-    glm::vec2 mTexcoord0;
-    glm::vec2 mTexcoord1;
+    glm::vec2 mTexcoord0 = { 0.0f, 0.0f };
+    glm::vec2 mTexcoord1 = { 0.0f, 0.0f };
 
-    glm::vec3 mNormal;
-    uint32_t mColor;
+    glm::vec3 mNormal = { 0.0f, 0.0f, 1.0f };
+    uint32_t mColor = 0xffffffff;
 };
 
 struct PathTraceTriangle
@@ -141,33 +149,25 @@ struct PathTraceTriangle
 
 struct PathTraceMesh
 {
-    glm::vec4 mBounds;
+    glm::vec4 mBounds = { 0.0f, 0.0f, 0.0f, 10000.0f };
 
-    uint32_t mStartTriangleIndex;
-    uint32_t mNumTriangles;
-    uint32_t mPad0;
-    uint32_t mPad1;
+    uint32_t mStartTriangleIndex = 0;
+    uint32_t mNumTriangles = 0;
+    uint32_t mPad0 = 1337;
+    uint32_t mPad1 = 1337;
 
     MaterialData mMaterial;
 };
 
 struct PathTraceLight
 {
-    glm::vec3 mPosition;
-    float mRadius;
+    glm::vec3 mPosition = { 0.0f, 0.0f, 0.0f };
+    float mRadius = 0.0f;
 
-    glm::vec4 mColor;
+    glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-    uint32_t mLightType;
-    glm::vec3 mDirection;
-};
-
-enum class PathTraceLightType
-{
-    Point,
-    Directional,
-
-    Count
+    uint32_t mLightType = uint32_t(PathTraceLightType::Point);
+    glm::vec3 mDirection = { 0.0f, 0.0f, -1.0f };
 };
 
 enum class DescriptorSetBinding

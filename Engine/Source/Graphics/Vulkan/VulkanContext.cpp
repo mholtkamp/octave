@@ -2034,6 +2034,8 @@ void VulkanContext::PathTraceWorld()
         std::vector<PathTraceMesh> meshData;
         std::vector<PathTraceLight> lightData;
 
+        uint32_t totalTriangles = 0;
+
         const std::vector<Actor*>& actors = world->GetActors();
 
         for (uint32_t i = 0; i < actors.size(); ++i)
@@ -2045,16 +2047,34 @@ void VulkanContext::PathTraceWorld()
 
             for (uint32_t c = 0; c < components.size(); ++c)
             {
-                if (components[c]->IsVisible())
-                {
-
-                }
+                if (!components[c]->IsVisible())
+                    continue;
                 
                 StaticMeshComponent* meshComp = components[c]->As<StaticMeshComponent>();
                 LightComponent* lightComp = components[c]->As<LightComponent>();
                 if (meshComp != nullptr)
                 {
+                    StaticMesh* meshAsset = meshComp->GetStaticMesh();
+                    if (meshAsset == nullptr)
+                    {
+                        continue;
+                    }
 
+                    Material* material = meshComp->GetMaterial();
+                    if (material == nullptr)
+                    {
+                        material = Renderer::Get()->GetDefaultMaterial();
+                    }
+
+                    meshData.push_back(PathTraceMesh());
+                    PathTraceMesh& mesh = meshData.back();
+                    Bounds bounds = meshComp->GetBounds();
+                    mesh.mBounds = glm::vec4(bounds.mCenter.x, bounds.mCenter.y, bounds.mCenter.z, bounds.mRadius);
+                    mesh.mStartTriangleIndex = totalTriangles;
+                    mesh.mNumTriangles = meshAsset->GetNumFaces();
+                    WriteMaterialUniformData(mesh.mMaterial, material);
+
+                    totalTriangles += mesh.mNumTriangles;
                 }
                 else if (lightComp)
                 {
@@ -2068,7 +2088,7 @@ void VulkanContext::PathTraceWorld()
                         light.mRadius = pointLightComp->GetRadius();
                         light.mColor = pointLightComp->GetColor();
                         light.mLightType = uint32_t(PathTraceLightType::Point);
-                        light.mDirection = { 1.0f, 0.0f, 0.0f };
+                        light.mDirection = { 0.0f, 0.0f, -1.0f };
 
                     }
                     else if (lightComp->Is(DirectionalLightComponent::ClassRuntimeId()))
