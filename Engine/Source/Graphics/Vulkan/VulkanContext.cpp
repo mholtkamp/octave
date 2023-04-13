@@ -598,8 +598,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
     void* userData)
 {
     char prefix[64];
-    char* message = (char*) malloc(strlen(callbackData->pMessage) + 500);
+    char* message = (char*)malloc(strlen(callbackData->pMessage) + 500);
     OCT_ASSERT(message);
+
+    bool isError = false;
 
     // Severity
     if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
@@ -617,6 +619,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
     else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
     {
         strcpy(prefix, "[ERROR] ");
+        isError = true;
     }
 
     // Type
@@ -676,7 +679,14 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
         }
     }
 
-    LogDebug("%s\n", message);
+    if (isError)
+    {
+        LogError("%s\n", message);
+    }
+    else
+    {
+        LogWarning("%s\n", message);
+    }
 
 #if PLATFORM_WINDOWS
     OutputDebugString(message);
@@ -2154,6 +2164,7 @@ void VulkanContext::PathTraceWorld()
             GetDestroyQueue()->Destroy(mPathTraceTriangleBuffer);
             mPathTraceTriangleBuffer = nullptr;
             mPathTraceTriangleBuffer = new Buffer(BufferType::Storage, triangleSize, "Path Trace Triangle Buffer", nullptr, false);
+            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(0, mPathTraceTriangleBuffer);
         }
 
         if (meshSize > mPathTraceMeshBuffer->GetSize())
@@ -2161,6 +2172,7 @@ void VulkanContext::PathTraceWorld()
             GetDestroyQueue()->Destroy(mPathTraceMeshBuffer);
             mPathTraceMeshBuffer = nullptr;
             mPathTraceMeshBuffer = new Buffer(BufferType::Storage, meshSize, "Path Trace Mesh Buffer", nullptr, false);
+            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceMeshBuffer);
         }
 
         if (lightSize > mPathTraceLightBuffer->GetSize())
@@ -2168,6 +2180,7 @@ void VulkanContext::PathTraceWorld()
             GetDestroyQueue()->Destroy(mPathTraceLightBuffer);
             mPathTraceLightBuffer = nullptr;
             mPathTraceLightBuffer = new Buffer(BufferType::Storage, lightSize, "Path Trace Light Buffer", nullptr, false);
+            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceLightBuffer);
         }
 
         if (triangleSize > 0)
@@ -2221,7 +2234,6 @@ void VulkanContext::PathTraceWorld()
 #endif
 
         mSceneColorImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, cb);
-
     }
 }
 
