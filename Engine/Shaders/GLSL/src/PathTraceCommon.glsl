@@ -16,7 +16,7 @@ struct PathTraceVertex
 
 struct PathTraceTriangle
 {
-    VertexDatum mVertices[3];
+    PathTraceVertex mVertices[3];
 };
 
 struct PathTraceMesh
@@ -40,5 +40,5 @@ struct PathTraceLight
 
     uint mLightType;
     vec3 mDirection;
-}
+};
 

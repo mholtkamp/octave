@@ -572,6 +572,11 @@ void ViewportPanel::HandleDefaultControls()
             renderer->EnableProxyRendering(!renderer->IsProxyRenderingEnabled());
         }
 
+        if (IsKeyJustDown(KEY_L))
+        {
+            renderer->EnablePathTracing(!renderer->IsPathTracingEnabled());
+        }
+
         if (!controlDown && IsKeyJustDown(KEY_B))
         {
             uint32_t boundsMode = (uint32_t) renderer->GetBoundsDebugMode();

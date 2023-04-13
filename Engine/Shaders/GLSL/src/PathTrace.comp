@@ -27,6 +27,8 @@ layout(std140, set = 1, binding = 2) buffer LightData
 
 layout (set = 1, binding = 3, rgba8) uniform image2D outputImage;
 
+layout (local_size_x = 8, local_size_y = 8) in;
+
 void main()
 {
     vec2 uv = gl_GlobalInvocationID.xy / global.mScreenDimensions;

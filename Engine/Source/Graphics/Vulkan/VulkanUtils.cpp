@@ -156,7 +156,13 @@ void TransitionImageLayout(
         barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     }
-    else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+    else if ((oldLayout == VK_IMAGE_LAYOUT_UNDEFINED || oldLayout == VK_IMAGE_LAYOUT_PREINITIALIZED) &&
+        newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+    {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    }
+    else if ((oldLayout == VK_IMAGE_LAYOUT_UNDEFINED || oldLayout == VK_IMAGE_LAYOUT_PREINITIALIZED) &&
         newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
     {
         barrier.srcAccessMask = 0;
@@ -168,13 +174,13 @@ void TransitionImageLayout(
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
     }
-    else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+    else if ((oldLayout == VK_IMAGE_LAYOUT_UNDEFINED || oldLayout == VK_IMAGE_LAYOUT_PREINITIALIZED) && 
         newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
     {
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
     }
-    else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+    else if ((oldLayout == VK_IMAGE_LAYOUT_UNDEFINED || oldLayout == VK_IMAGE_LAYOUT_PREINITIALIZED) &&
         newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
     {
         barrier.srcAccessMask = 0;
@@ -220,7 +226,7 @@ void TransitionImageLayout(
     {
         //throw std::invalid_argument("Unsupported layout transition!");
         LogWarning("Unsupported layout transition.");
-        OCT_ASSERT(0);
+        //OCT_ASSERT(0);
 
         barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
