@@ -219,6 +219,9 @@ void TransitionImageLayout(
     else
     {
         //throw std::invalid_argument("Unsupported layout transition!");
+        LogWarning("Unsupported layout transition.");
+        OCT_ASSERT(0);
+
         barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
     }

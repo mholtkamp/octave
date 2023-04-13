@@ -2167,8 +2167,46 @@ void VulkanContext::PathTraceWorld()
         mPathTraceMeshBuffer->Update(meshData.data(), meshSize);
         mPathTraceLightBuffer->Update(lightData.data(),lightSize);
 
+        VkCommandBuffer cb = GetCommandBuffer();
 
+        mSceneColorImage->Transition(VK_IMAGE_LAYOUT_GENERAL, cb);
 
+        Pipeline* pathTracePipeline = GetPipeline(PipelineId::PathTrace);
+        BindPipeline(pathTracePipeline, VertexType::Max);
+        
+        mPathTraceDescriptorSet->Bind(cb, 1, pathTracePipeline->GetPipelineLayout());
+
+        uint32_t width = GetEngineState()->mWindowWidth;
+        uint32_t height = GetEngineState()->mWindowHeight;
+
+        vkCmdDispatch(cb, (width + 7) / 8, (height + 7) / 8, 1);
+
+        // Insert a barrier before the water rendering reads from the texture.
+        VkImageMemoryBarrier imageMemoryBarrier = {};
+        imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+        imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+        imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageMemoryBarrier.image = mSceneColorImage->Get();
+        imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+        imageMemoryBarrier.subresourceRange.levelCount = 1;
+        imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+        imageMemoryBarrier.subresourceRange.layerCount = 1;
+
+        vkCmdPipelineBarrier(cb,
+            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,  // srcStageMask
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, // dstStageMask
+            0,
+            0,
+            nullptr,
+            0,
+            nullptr,
+            1,                                     // imageMemoryBarrierCount
+            &imageMemoryBarrier);                   // pImageMemoryBarriers
+
+        mSceneColorImage->Transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, cb);
 
     }
 }
