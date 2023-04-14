@@ -36,6 +36,14 @@ struct GlobalUniformData
     uint32_t mFrameNumber;
 };
 
+struct PathTraceUniforms
+{
+    uint32_t mNumTriangles;
+    uint32_t mNumMeshes;
+    uint32_t mNumLights;
+    uint32_t mPadding0;
+};
+
 struct GeometryData
 {
     glm::mat4 mWVPMatrix;

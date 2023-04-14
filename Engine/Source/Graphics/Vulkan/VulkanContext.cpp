@@ -1058,6 +1058,9 @@ void VulkanContext::CreateShadowMapImage()
 
 void VulkanContext::CreatePathTraceResources()
 {
+    // Uniform Buffer
+    mPathTraceUniformBuffer = new UniformBuffer(sizeof(PathTraceUniforms), "Path Trace Uniforms");
+
     // Buffers
     mPathTraceTriangleBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceTriangle), "Path Trace Triangle Buffer", nullptr, false);
     mPathTraceMeshBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceMesh), "Path Trace Mesh Buffer", nullptr, false);
@@ -1066,10 +1069,11 @@ void VulkanContext::CreatePathTraceResources()
     // Descriptor Set
     VkDescriptorSetLayout layout = GetPipeline(PipelineId::PathTrace)->GetDescriptorSetLayout(1);
     mPathTraceDescriptorSet = new DescriptorSet(layout);
-    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(0, mPathTraceTriangleBuffer);
-    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceMeshBuffer);
-    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceLightBuffer);
-    mPathTraceDescriptorSet->UpdateStorageImageDescriptor(3, mSceneColorImage);
+    mPathTraceDescriptorSet->UpdateUniformDescriptor(0, mPathTraceUniformBuffer);
+    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceTriangleBuffer);
+    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceMeshBuffer);
+    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mPathTraceLightBuffer);
+    mPathTraceDescriptorSet->UpdateStorageImageDescriptor(4, mSceneColorImage);
 }
 
 void VulkanContext::DestroyPathTraceResources()
@@ -2175,7 +2179,7 @@ void VulkanContext::PathTraceWorld()
             GetDestroyQueue()->Destroy(mPathTraceTriangleBuffer);
             mPathTraceTriangleBuffer = nullptr;
             mPathTraceTriangleBuffer = new Buffer(BufferType::Storage, triangleSize, "Path Trace Triangle Buffer", nullptr, false);
-            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(0, mPathTraceTriangleBuffer);
+            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceTriangleBuffer);
         }
 
         if (meshSize > mPathTraceMeshBuffer->GetSize())
@@ -2183,7 +2187,7 @@ void VulkanContext::PathTraceWorld()
             GetDestroyQueue()->Destroy(mPathTraceMeshBuffer);
             mPathTraceMeshBuffer = nullptr;
             mPathTraceMeshBuffer = new Buffer(BufferType::Storage, meshSize, "Path Trace Mesh Buffer", nullptr, false);
-            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceMeshBuffer);
+            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceMeshBuffer);
         }
 
         if (lightSize > mPathTraceLightBuffer->GetSize())
@@ -2191,7 +2195,7 @@ void VulkanContext::PathTraceWorld()
             GetDestroyQueue()->Destroy(mPathTraceLightBuffer);
             mPathTraceLightBuffer = nullptr;
             mPathTraceLightBuffer = new Buffer(BufferType::Storage, lightSize, "Path Trace Light Buffer", nullptr, false);
-            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceLightBuffer);
+            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mPathTraceLightBuffer);
         }
 
         if (triangleSize > 0)
@@ -2202,6 +2206,13 @@ void VulkanContext::PathTraceWorld()
         
         if (lightSize > 0)
             mPathTraceLightBuffer->Update(lightData.data(), lightSize);
+
+        // Write uniform data.
+        PathTraceUniforms uniforms;
+        uniforms.mNumTriangles = (uint32_t)triangleData.size();
+        uniforms.mNumMeshes = (uint32_t)meshData.size();
+        uniforms.mNumLights = (uint32_t)lightData.size();
+        mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();
 

@@ -10,22 +10,27 @@ layout (set = 0, binding = 0) uniform GlobalUniformBuffer
     GlobalUniforms global;
 };
 
-layout(std140, set = 1, binding = 0) buffer TriangleData  
+layout (set = 1, binding = 0) uniform PathTraceUniformBuffer 
+{
+	PathTraceUniforms pathTrace;
+};
+
+layout(std140, set = 1, binding = 1) buffer TriangleData  
 {
    PathTraceTriangle triangles[];
 };
 
-layout(std140, set = 1, binding = 1) buffer MeshData  
+layout(std140, set = 1, binding = 2) buffer MeshData  
 {
    PathTraceMesh meshes[];
 };
 
-layout(std140, set = 1, binding = 2) buffer LightData  
+layout(std140, set = 1, binding = 3) buffer LightData  
 {
    PathTraceLight lights[];
 };
 
-layout (set = 1, binding = 3, rgba8) uniform image2D outputImage;
+layout (set = 1, binding = 4, rgba8) uniform image2D outputImage;
 
 layout (local_size_x = 8, local_size_y = 8) in;
 
@@ -40,24 +45,23 @@ void main()
     ray.mOrigin = global.mViewPosition.xyz;
     ray.mDirection = normalize(viewPoint - ray.mOrigin);
 
-    // Test sphere
-#if 1
-    float t = global.mRealElapsedTime;
-    float speed = 3.0;
-    vec3 sphereCenter = vec3(cos(t * speed), sin(t * speed), 1.0);
-    float sphereRadius = 1.0 + 0.3 * cos(t);
-#else
-    vec3 sphereCenter = vec3(0.0, 0.0, 0.0);
-    float sphereRadius = 1.0;
-#endif
+    // Trace bounding spheres of all meshes
+    HitInfo closestHit = CreateHitInfo();
+    closestHit.mDistance = 1e20;
+    closestHit.mMaterial.mColor = vec4(0,0,0,1);
 
-    HitInfo hitInfo = RaySphereTest(ray, sphereCenter, sphereRadius);
 
-    vec4 outColor = vec4(0,0,0,1);
-    if (hitInfo.mHit)
+    for (uint i = 0; i < pathTrace.mNumMeshes; ++i)
     {
-        outColor = vec4(hitInfo.mNormal, 1.0);
+        PathTraceMesh mesh = meshes[i];
+        HitInfo boundsHit = RaySphereTest(ray, mesh.mBounds.xyz, mesh.mBounds.w);
+
+        if (boundsHit.mHit && boundsHit.mDistance < closestHit.mDistance)
+        {
+            closestHit = boundsHit;
+            closestHit.mMaterial = mesh.mMaterial;
+        }
     }
 
-	imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), outColor);
+	imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), closestHit.mMaterial.mColor);
 }

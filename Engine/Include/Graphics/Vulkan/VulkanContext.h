@@ -225,6 +225,7 @@ private:
     Buffer* mPathTraceTriangleBuffer = nullptr;
     Buffer* mPathTraceMeshBuffer = nullptr;
     Buffer* mPathTraceLightBuffer = nullptr;
+    UniformBuffer* mPathTraceUniformBuffer = nullptr;
 
     // Destroy Queue
     DestroyQueue mDestroyQueue;
