@@ -66,7 +66,7 @@ struct PathTraceUniforms
     uint mMaxBounces;
 
     uint mRaysPerPixel;
-    uint mPad0;
+    uint mAccumulatedFrames;
     uint mPad1;
     uint mPad2;
 };

@@ -2214,6 +2214,7 @@ void VulkanContext::PathTraceWorld()
         uniforms.mNumLights = (uint32_t)lightData.size();
         uniforms.mMaxBounces = Renderer::Get()->GetMaxBounces();
         uniforms.mRaysPerPixel = Renderer::Get()->GetRaysPerPixel();
+        uniforms.mAccumulatedFrames = mPathTraceAccumulatedFrames;
         mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();
@@ -2231,6 +2232,8 @@ void VulkanContext::PathTraceWorld()
         vkCmdDispatch(cb, (width + 7) / 8, (height + 7) / 8, 1);
 
         mSceneColorImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, cb);
+
+        mPathTraceAccumulatedFrames++;
     }
 }
 
