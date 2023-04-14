@@ -63,7 +63,7 @@ struct PathTraceUniforms
     uint mNumTriangles;
     uint mNumMeshes;
     uint mNumLights;
-    uint mPadding0;
+    uint mMaxBounces;
 };
 
 HitInfo CreateHitInfo()
@@ -83,6 +83,27 @@ float Rand(inout uint state)
 	uint result = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
 	result = (result >> 22u) ^ result;
     return result / 4294967295.0;
+}
+
+float RandomValueNormalDistribution(inout uint state)
+{
+    float theta = 2 * 3.1415926 * Rand(state);
+    float rho = sqrt(-2 * log(Rand(state)));
+    return rho * cos(theta);
+}
+
+vec3 RandomDirection(inout uint state)
+{
+    float x = RandomValueNormalDistribution(state);
+    float y = RandomValueNormalDistribution(state);
+    float z = RandomValueNormalDistribution(state);
+    return normalize(vec3(x,y,z));
+}
+
+vec3 RandomHemisphereDirection(vec3 normal, inout uint state)
+{
+    vec3 dir = RandomDirection(state);
+    return dir * sign(dot(normal, dir));
 }
 
 HitInfo RaySphereTest(Ray ray, vec3 sphereCenter, float sphereRadius)

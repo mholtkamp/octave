@@ -34,18 +34,8 @@ layout (set = 1, binding = 4, rgba8) uniform image2D outputImage;
 
 layout (local_size_x = 8, local_size_y = 8) in;
 
-void main()
+HitInfo CalculateRayCollision(Ray ray)
 {
-    uint threadIndex = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * uint(global.mScreenDimensions.x + 0.5);
-    vec2 uv = gl_GlobalInvocationID.xy / global.mScreenDimensions;
-
-    vec3 viewPointVS = vec3(2.0 * (uv - 0.5) * vec2(global.mNearHalfWidth, -global.mNearHalfHeight), -global.mNearDist);
-    vec3 viewPoint = (global.mViewToWorld * vec4(viewPointVS, 1.0)).xyz;
-
-    Ray ray;
-    ray.mOrigin = global.mViewPosition.xyz;
-    ray.mDirection = normalize(viewPoint - ray.mOrigin);
-
     // Trace bounding spheres of all meshes
     HitInfo closestHit = CreateHitInfo();
     closestHit.mDistance = 1e20;
@@ -63,10 +53,79 @@ void main()
         }
     }
 
+    return closestHit;
+} 
+
+vec3 PathTrace(Ray ray, inout uint rngState)
+{
+    vec3 incomingLight = vec3(0,0,0);
+    vec3 rayColor = vec3(1,1,1);
+
+    for (uint i = 0; i < pathTrace.mMaxBounces; ++i)
+    {
+        HitInfo hitInfo = CalculateRayCollision(ray);
+        if (hitInfo.mHit)
+        {
+            ray.mOrigin = hitInfo.mPosition;
+            ray.mDirection = RandomHemisphereDirection(hitInfo.mNormal, rngState);
+
+            MaterialUniforms material = hitInfo.mMaterial;
+            bool emit = (material.mShadingModel == SHADING_MODEL_UNLIT);
+            vec3 emittedLight = emit ? material.mColor.rgb : vec3(0, 0, 0);
+            incomingLight += (emittedLight * rayColor);
+            rayColor *= (emit ? vec3(1,1,1) : material.mColor.rgb);
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return incomingLight;
+}
+
+void main()
+{
+    uint threadIndex = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * uint(global.mScreenDimensions.x + 0.5);
+    uint rngState = threadIndex;
+
+    vec2 uv = gl_GlobalInvocationID.xy / global.mScreenDimensions;
+
+    vec3 viewPointVS = vec3(2.0 * (uv - 0.5) * vec2(global.mNearHalfWidth, -global.mNearHalfHeight), -global.mNearDist);
+    vec3 viewPoint = (global.mViewToWorld * vec4(viewPointVS, 1.0)).xyz;
+
+    Ray ray;
+    ray.mOrigin = global.mViewPosition.xyz;
+    ray.mDirection = normalize(viewPoint - ray.mOrigin);
+
+#if 0
+    // Trace bounding spheres of all meshes
+    HitInfo closestHit = CreateHitInfo();
+    closestHit.mDistance = 1e20;
+    closestHit.mMaterial.mColor = vec4(0,0,0,1);
+
+    for (uint i = 0; i < pathTrace.mNumMeshes; ++i)
+    {
+        PathTraceMesh mesh = meshes[i];
+        HitInfo boundsHit = RaySphereTest(ray, mesh.mBounds.xyz, mesh.mBounds.w);
+
+        if (boundsHit.mHit && boundsHit.mDistance < closestHit.mDistance)
+        {
+            closestHit = boundsHit;
+            closestHit.mMaterial = mesh.mMaterial;
+        }
+    }
+#endif
+
+    vec3 outColor = PathTrace(ray, rngState);
+    imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(outColor,1));
+    
+
+
 	//imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), closestHit.mMaterial.mColor);
 	
-    float r = Rand(threadIndex);
-    float g = Rand(threadIndex);
-    float b = Rand(threadIndex);
-    imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(r,g,b,1));
+    // float r = Rand(threadIndex);
+    // float g = Rand(threadIndex);
+    // float b = Rand(threadIndex);
+    // imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(r,g,b,1));
 }
