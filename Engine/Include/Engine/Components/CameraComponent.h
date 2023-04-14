@@ -91,6 +91,9 @@ public:
     float GetWidth() const;
     float GetHeight() const;
 
+    float GetNearWidth() const;
+    float GetNearHeight() const;
+
     void SetNearZ(float nearZ);
     void SetFarZ(float farZ);
     void SetFieldOfView(float fovY);

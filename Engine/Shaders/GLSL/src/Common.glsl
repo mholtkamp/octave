@@ -33,6 +33,7 @@ struct GlobalUniforms
 {
     mat4 mViewProj;
     mat4 mDirectionalLightVP;
+    mat4 mViewToWorld;
 
     vec4 mDirectionalLightDirection;
     vec4 mDirectionalLightColor;
@@ -56,6 +57,11 @@ struct GlobalUniforms
     int mFogDensityFunc;
     float mFogNear;
     float mFogFar;
+
+    float mNearHalfWidth;
+    float mNearHalfHeight;
+    float mNearDist;
+    float mPadding2;
 };
 
 struct GeometryUniforms 

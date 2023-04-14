@@ -32,5 +32,13 @@ layout (local_size_x = 8, local_size_y = 8) in;
 void main()
 {
     vec2 uv = gl_GlobalInvocationID.xy / global.mScreenDimensions;
-	imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(uv.x, uv.y, 0.0, 1.0));
+
+    vec3 viewPointVS = vec3(2.0 * (uv - 0.5) * vec2(global.mNearHalfWidth, -global.mNearHalfHeight), -global.mNearDist);
+    vec3 viewPoint = (global.mViewToWorld * vec4(viewPointVS, 1.0)).xyz;
+
+    Ray ray;
+    ray.mOrigin = global.mViewPosition.xyz;
+    ray.mDirection = normalize(viewPoint - ray.mOrigin);
+
+	imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(ray.mDirection, 1.0));
 }

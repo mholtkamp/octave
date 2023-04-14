@@ -1536,6 +1536,8 @@ void VulkanContext::UpdateGlobalUniformData()
         mGlobalUniformData.mViewPosition = glm::vec4(camera->GetAbsolutePosition(), 1.0f);
         mGlobalUniformData.mViewDirection = glm::vec4(camera->GetForwardVector(), 0.0f);
 
+        mGlobalUniformData.mViewToWorld = glm::inverse(camera->GetViewMatrix());
+
         if (dirLight && dirLight->IsVisible())
         {
             mGlobalUniformData.mDirectionalLightDirection = glm::vec4(dirLight->GetDirection(), 0.0f);
@@ -1579,6 +1581,10 @@ void VulkanContext::UpdateGlobalUniformData()
         mGlobalUniformData.mFogDensityFunc = int32_t(fog.mDensityFunc);
         mGlobalUniformData.mFogNear = fog.mNear;
         mGlobalUniformData.mFogFar = fog.mFar;
+
+        mGlobalUniformData.mNearHalfWidth = 0.5f * camera->GetNearWidth();
+        mGlobalUniformData.mNearHalfHeight = 0.5f * camera->GetNearHeight();
+        mGlobalUniformData.mNearDist = camera->GetNearZ();
     }
 
     mGlobalUniformData.mInterfaceResolution = Renderer::Get()->GetScreenResolution();
