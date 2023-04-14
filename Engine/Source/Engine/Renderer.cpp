@@ -112,6 +112,7 @@ void Renderer::GatherProperties(std::vector<Property>& props)
 {
     props.push_back(Property(DatumType::Integer, "Rays Per Pixel", nullptr, &mRaysPerPixel));
     props.push_back(Property(DatumType::Integer, "Max Bounces", nullptr, &mMaxBounces));
+    props.push_back(Property(DatumType::Bool, "Accumulate", nullptr, &mPathTraceAccumulate));
 }
 
 TransformComponent* Renderer::ProcessHitCheck(World* world, int32_t x, int32_t y)
@@ -1182,5 +1183,10 @@ uint32_t Renderer::GetRaysPerPixel() const
 uint32_t Renderer::GetMaxBounces() const
 {
     return mMaxBounces;
+}
+
+bool Renderer::IsPathTraceAccumulationEnabled() const
+{
+    return mPathTraceAccumulate;
 }
 
