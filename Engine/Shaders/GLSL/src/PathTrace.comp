@@ -86,7 +86,7 @@ vec3 PathTrace(Ray ray, inout uint rngState)
 
 void main()
 {
-    uint threadIndex = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * uint(global.mScreenDimensions.x + 0.5);
+    uint threadIndex = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * uint(global.mScreenDimensions.x + 0.5) + global.mFrameNumber * 719393;
     uint rngState = threadIndex;
 
     vec2 uv = gl_GlobalInvocationID.xy / global.mScreenDimensions;
@@ -106,7 +106,11 @@ void main()
         totalLight += PathTrace(ray, rngState);
     }
 
-    vec3 outColor = totalLight / numRays;
+    vec3 newColor = totalLight / numRays;
+    vec3 oldColor = imageLoad(outputImage, ivec2(gl_GlobalInvocationID.xy)).rgb;
+
+    float newWeight = 1.0 / (pathTrace.mAccumulatedFrames + 1);
+    vec3 outColor = mix(oldColor, newColor, newWeight);
 
     imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(outColor,1));
 }

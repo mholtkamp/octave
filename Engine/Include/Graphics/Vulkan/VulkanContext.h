@@ -250,6 +250,7 @@ private:
     bool mInitialized = false;
     EngineState* mEngineState = nullptr;
     Pipeline* mCurrentlyBoundPipeline = nullptr;
+    uint32_t mPathTraceAccumulatedFrames = 0;
 
 #if EDITOR
 public:
