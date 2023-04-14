@@ -118,13 +118,13 @@ void VulkanContext::Initialize()
     CreatePipelines();
 
     CreateGlobalDescriptorSet();
+    CreatePathTraceResources();
     CreatePostProcessDescriptorSet();
     CreateFramebuffers();
     CreateCommandBuffers();
     CreateSemaphores();
     CreateFences();
 
-    CreatePathTraceResources();
 
     // Transition the swapchain image to swapchain present format before hitting render loop
     // or else the image transitions won't use expected initial layout.
@@ -1066,6 +1066,18 @@ void VulkanContext::CreatePathTraceResources()
     mPathTraceMeshBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceMesh), "Path Trace Mesh Buffer", nullptr, false);
     mPathTraceLightBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceLight), "Path Trace Light Buffer", nullptr, false);
 
+    // Images
+    ImageDesc imageDesc;
+    imageDesc.mWidth = mSwapchainExtent.width;
+    imageDesc.mHeight = mSwapchainExtent.height;
+    imageDesc.mFormat = mSceneColorImageFormat;
+    imageDesc.mUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+
+    SamplerDesc samplerDesc;
+    samplerDesc.mAddressMode = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+
+    mPathTraceImage = new Image(imageDesc, samplerDesc, "Path Trace Image");
+
     // Descriptor Set
     VkDescriptorSetLayout layout = GetPipeline(PipelineId::PathTrace)->GetDescriptorSetLayout(1);
     mPathTraceDescriptorSet = new DescriptorSet(layout);
@@ -1073,7 +1085,9 @@ void VulkanContext::CreatePathTraceResources()
     mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceTriangleBuffer);
     mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceMeshBuffer);
     mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mPathTraceLightBuffer);
-    mPathTraceDescriptorSet->UpdateStorageImageDescriptor(4, mSceneColorImage);
+    mPathTraceDescriptorSet->UpdateStorageImageDescriptor(4, mPathTraceImage);
+
+    mPathTraceImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 void VulkanContext::DestroyPathTraceResources()
@@ -1594,6 +1608,8 @@ void VulkanContext::UpdateGlobalUniformData()
         mGlobalUniformData.mGameTime = engineState->mGameElapsedTime;
         mGlobalUniformData.mRealTime = engineState->mRealElapsedTime;
         mGlobalUniformData.mFrameNumber = Renderer::Get()->GetFrameNumber();
+
+        mGlobalUniformData.mPathTracingEnabled = Renderer::Get()->IsPathTracingEnabled();
     }
 
     mGlobalUniformData.mInterfaceResolution = Renderer::Get()->GetScreenResolution();
@@ -1637,6 +1653,7 @@ void VulkanContext::CreatePostProcessDescriptorSet()
     VkDescriptorSetLayout layout = GetPipeline(PipelineId::PostProcess)->GetDescriptorSetLayout(1);
     mPostProcessDescriptorSet = new DescriptorSet(layout);
     mPostProcessDescriptorSet->UpdateImageDescriptor(0, mSceneColorImage);
+    mPostProcessDescriptorSet->UpdateImageDescriptor(1, mPathTraceImage);
 }
 
 void VulkanContext::CreateCommandPool()
@@ -1778,8 +1795,8 @@ void VulkanContext::RecreateSwapchain()
     CreateRenderPass();
     CreateFramebuffers();
     CreateGlobalDescriptorSet();
-    CreatePostProcessDescriptorSet();
     CreatePathTraceResources();
+    CreatePostProcessDescriptorSet();
 
 #if EDITOR
     CreateHitCheck();
@@ -2219,7 +2236,7 @@ void VulkanContext::PathTraceWorld()
 
         VkCommandBuffer cb = GetCommandBuffer();
 
-        mSceneColorImage->Transition(VK_IMAGE_LAYOUT_GENERAL, cb);
+        mPathTraceImage->Transition(VK_IMAGE_LAYOUT_GENERAL, cb);
 
         Pipeline* pathTracePipeline = GetPipeline(PipelineId::PathTrace);
         BindPipeline(pathTracePipeline, VertexType::Max);
@@ -2231,7 +2248,7 @@ void VulkanContext::PathTraceWorld()
 
         vkCmdDispatch(cb, (width + 7) / 8, (height + 7) / 8, 1);
 
-        mSceneColorImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, cb);
+        mPathTraceImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, cb);
 
         mPathTraceAccumulatedFrames++;
     }

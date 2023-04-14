@@ -204,6 +204,7 @@ private:
     Image* mSceneColorImage = nullptr;
     VkFormat mSceneColorImageFormat;
     Image* mDepthImage = nullptr;
+    Image* mPathTraceImage = nullptr;
 
     // Synchronization
     VkSemaphore mImageAvailableSemaphore = VK_NULL_HANDLE;
