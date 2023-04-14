@@ -21,8 +21,8 @@ struct GlobalUniformData
 
     int32_t mNumPointLights;
     int32_t mVisualizationMode;
-    int32_t mPadding0;
-    int32_t mPadding1;
+    float mGameTime;
+    float mRealTime;
 
     glm::vec4 mFogColor;
     int mFogEnabled;
@@ -33,7 +33,7 @@ struct GlobalUniformData
     float mNearHalfWidth;
     float mNearHalfHeight;
     float mNearDist;
-    float mPadding2;
+    uint32_t mFrameNumber;
 };
 
 struct GeometryData

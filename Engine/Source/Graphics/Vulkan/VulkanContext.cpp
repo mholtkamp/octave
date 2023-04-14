@@ -1531,6 +1531,7 @@ void VulkanContext::UpdateGlobalUniformData()
     {
         DirectionalLightComponent* dirLight = world->GetDirectionalLight();
         CameraComponent* camera = world->GetActiveCamera();
+        EngineState* engineState = GetEngineState();
 
         mGlobalUniformData.mViewProjMatrix = camera->GetViewProjectionMatrix();
         mGlobalUniformData.mViewPosition = glm::vec4(camera->GetAbsolutePosition(), 1.0f);
@@ -1585,6 +1586,10 @@ void VulkanContext::UpdateGlobalUniformData()
         mGlobalUniformData.mNearHalfWidth = 0.5f * camera->GetNearWidth();
         mGlobalUniformData.mNearHalfHeight = 0.5f * camera->GetNearHeight();
         mGlobalUniformData.mNearDist = camera->GetNearZ();
+
+        mGlobalUniformData.mGameTime = engineState->mGameElapsedTime;
+        mGlobalUniformData.mRealTime = engineState->mRealElapsedTime;
+        mGlobalUniformData.mFrameNumber = Renderer::Get()->GetFrameNumber();
     }
 
     mGlobalUniformData.mInterfaceResolution = Renderer::Get()->GetScreenResolution();

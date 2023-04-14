@@ -49,9 +49,17 @@ int Engine_Lua::GetRealDeltaTime(lua_State* L)
     return 1;
 }
 
-int Engine_Lua::GetElapsedTime(lua_State* L)
+int Engine_Lua::GetGameElapsedTime(lua_State* L)
 {
-    float ret = GetEngineState()->mElapsedTime;
+    float ret = GetEngineState()->mRealElapsedTime;
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
+int Engine_Lua::GetRealElapsedTime(lua_State* L)
+{
+    float ret = GetEngineState()->mRealElapsedTime;
 
     lua_pushnumber(L, ret);
     return 1;
@@ -189,8 +197,13 @@ void Engine_Lua::Bind()
     lua_pushcfunction(L, Engine_Lua::GetRealDeltaTime);
     lua_setfield(L, tableIdx, "GetRealDeltaTime");
 
-    lua_pushcfunction(L, Engine_Lua::GetElapsedTime);
+    lua_pushcfunction(L, Engine_Lua::GetGameElapsedTime);
+    lua_setfield(L, tableIdx, "GetGameElapsedTime");
+
+    lua_pushcfunction(L, Engine_Lua::GetRealElapsedTime);
+    lua_pushvalue(L, -1);
     lua_setfield(L, tableIdx, "GetElapsedTime");
+    lua_setfield(L, tableIdx, "GetRealElapsedTime");
 
     lua_pushcfunction(L, Engine_Lua::GetPlatform);
     lua_setfield(L, tableIdx, "GetPlatform");

@@ -48,8 +48,8 @@ struct GlobalUniforms
 
     int mNumPointLights;
     int mVisualizationMode;
-    int mPadding0;
-    int mPadding1;
+    float mGameElapsedTime;
+    float mRealElapsedTime;
 
     vec4 mFogColor;
 
@@ -61,7 +61,7 @@ struct GlobalUniforms
     float mNearHalfWidth;
     float mNearHalfHeight;
     float mNearDist;
-    float mPadding2;
+    uint mFrameNumber;
 };
 
 struct GeometryUniforms 

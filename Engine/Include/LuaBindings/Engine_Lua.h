@@ -12,7 +12,8 @@ struct Engine_Lua
     static int GetTime(lua_State* L);
     static int GetGameDeltaTime(lua_State* L);
     static int GetRealDeltaTime(lua_State* L);
-    static int GetElapsedTime(lua_State* L);
+    static int GetGameElapsedTime(lua_State* L);
+    static int GetRealElapsedTime(lua_State* L);
     static int GetPlatform(lua_State* L);
     static int IsEditor(lua_State* L);
     static int Break(lua_State* L);
