@@ -2055,6 +2055,10 @@ void ActionEditProperty::GatherProps(std::vector<Property>& props)
         Widget* widget = (Widget*)mOwner;
         widget->GatherProperties(props);
     }
+    else if (mOwnerType == PropertyOwnerType::Global)
+    {
+        GatherGlobalProperties(props);
+    }
 }
 
 Property* ActionEditProperty::FindProp(std::vector<Property>& props, const std::string& name)

@@ -261,6 +261,10 @@ void PropertyWidget::SetProperty(const Property& prop, uint32_t index)
         else if (rtti->As<Widget>())
             mOwnerType = PropertyOwnerType::Widget;
     }
+    else
+    {
+        mOwnerType = PropertyOwnerType::Global;
+    }
 
     MarkDirty();
 }

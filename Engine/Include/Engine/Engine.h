@@ -4,6 +4,7 @@
 #include <string>
 
 #include "EngineTypes.h"
+#include "Property.h"
 
 extern InitOptions OctPreInitialize();
 extern void OctPostInitialize();
@@ -49,6 +50,8 @@ void SetTimeDilation(float timeDilation);
 float GetTimeDilation();
 
 void GarbageCollect();
+
+void GatherGlobalProperties(std::vector<Property>& props);
 
 #if LUA_ENABLED
 lua_State* GetLua();

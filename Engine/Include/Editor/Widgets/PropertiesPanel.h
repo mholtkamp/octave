@@ -14,6 +14,7 @@ enum class PropertiesMode
     Actor,
     Asset,
     Widget,
+    Global,
 
     Count
 };
@@ -77,6 +78,7 @@ protected:
     Canvas* mActorCanvas;
     Canvas* mAssetCanvas;
     Canvas* mWidgetCanvas;
+    Canvas* mGlobalCanvas;
     Canvas* mPropertiesCanvas;
     ComboBox* mModeBox;
     float mScrollDistance;

@@ -33,6 +33,8 @@ public:
     ~Renderer();
     void Initialize();
 
+    void GatherProperties(std::vector<Property>& props);
+
     void AddWidget(class Widget* widget, int32_t index = -1, int32_t screenIndex = 0);
     void RemoveWidget(class Widget* widget, int32_t screenIndex = 0);
     bool HasWidget(const class Widget* widget, int32_t screenIndex = 0);
@@ -94,6 +96,10 @@ public:
     const std::vector<DebugDraw>& GetDebugDraws() const;
 
     const std::vector<LightData>& GetLightData() const;
+
+    // Property Getters
+    uint32_t GetRaysPerPixel() const;
+    uint32_t GetMaxBounces() const;
 
     // Default Textures
     TextureRef mWhiteTexture;
@@ -178,4 +184,8 @@ private:
     bool mEnableWorldRendering = true;
     bool mEnablePathTracing = false;
     bool mInModalWidgetUpdate = false;
+
+    // Path tracing
+    uint32_t mRaysPerPixel = 4;
+    uint32_t mMaxBounces = 4;
 };

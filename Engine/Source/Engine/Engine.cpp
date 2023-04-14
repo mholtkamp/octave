@@ -614,6 +614,11 @@ void GarbageCollect()
     AssetManager::Get()->RefSweep();
 }
 
+void GatherGlobalProperties(std::vector<Property>& props)
+{
+    Renderer::Get()->GatherProperties(props);
+}
+
 #if LUA_ENABLED
 lua_State* GetLua()
 {
