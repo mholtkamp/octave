@@ -36,6 +36,7 @@ layout (local_size_x = 8, local_size_y = 8) in;
 
 void main()
 {
+    uint threadIndex = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * uint(global.mScreenDimensions.x + 0.5);
     vec2 uv = gl_GlobalInvocationID.xy / global.mScreenDimensions;
 
     vec3 viewPointVS = vec3(2.0 * (uv - 0.5) * vec2(global.mNearHalfWidth, -global.mNearHalfHeight), -global.mNearDist);
@@ -50,7 +51,6 @@ void main()
     closestHit.mDistance = 1e20;
     closestHit.mMaterial.mColor = vec4(0,0,0,1);
 
-
     for (uint i = 0; i < pathTrace.mNumMeshes; ++i)
     {
         PathTraceMesh mesh = meshes[i];
@@ -63,5 +63,10 @@ void main()
         }
     }
 
-	imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), closestHit.mMaterial.mColor);
+	//imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), closestHit.mMaterial.mColor);
+	
+    float r = Rand(threadIndex);
+    float g = Rand(threadIndex);
+    float b = Rand(threadIndex);
+    imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(r,g,b,1));
 }
