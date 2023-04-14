@@ -77,6 +77,14 @@ HitInfo CreateHitInfo()
     return hitInfo;
 }
 
+float Rand(inout uint state)
+{
+    state = state * 747796405u + 2891336453u;
+	uint result = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+	result = (result >> 22u) ^ result;
+    return result / 4294967295.0;
+}
+
 HitInfo RaySphereTest(Ray ray, vec3 sphereCenter, float sphereRadius)
 {
     HitInfo hitInfo = CreateHitInfo();
