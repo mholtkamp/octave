@@ -98,34 +98,15 @@ void main()
     ray.mOrigin = global.mViewPosition.xyz;
     ray.mDirection = normalize(viewPoint - ray.mOrigin);
 
-#if 0
-    // Trace bounding spheres of all meshes
-    HitInfo closestHit = CreateHitInfo();
-    closestHit.mDistance = 1e20;
-    closestHit.mMaterial.mColor = vec4(0,0,0,1);
+    vec3 totalLight = vec3(0,0,0);
+    uint numRays = pathTrace.mRaysPerPixel;
 
-    for (uint i = 0; i < pathTrace.mNumMeshes; ++i)
+    for (uint i = 0; i < numRays; ++i)
     {
-        PathTraceMesh mesh = meshes[i];
-        HitInfo boundsHit = RaySphereTest(ray, mesh.mBounds.xyz, mesh.mBounds.w);
-
-        if (boundsHit.mHit && boundsHit.mDistance < closestHit.mDistance)
-        {
-            closestHit = boundsHit;
-            closestHit.mMaterial = mesh.mMaterial;
-        }
+        totalLight += PathTrace(ray, rngState);
     }
-#endif
 
-    vec3 outColor = PathTrace(ray, rngState);
+    vec3 outColor = totalLight / numRays;
+
     imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(outColor,1));
-    
-
-
-	//imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), closestHit.mMaterial.mColor);
-	
-    // float r = Rand(threadIndex);
-    // float g = Rand(threadIndex);
-    // float b = Rand(threadIndex);
-    // imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(r,g,b,1));
 }
