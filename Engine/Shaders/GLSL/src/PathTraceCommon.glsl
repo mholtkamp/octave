@@ -14,6 +14,8 @@ struct HitInfo
     float mDistance;
     vec3 mPosition;
     vec3 mNormal;
+
+    MaterialUniforms mMaterial;
 };
 
 struct PathTraceVertex
@@ -56,7 +58,15 @@ struct PathTraceLight
     vec3 mDirection;
 };
 
-HitInfo EmptyHit()
+struct PathTraceUniforms
+{
+    uint mNumTriangles;
+    uint mNumMeshes;
+    uint mNumLights;
+    uint mPadding0;
+};
+
+HitInfo CreateHitInfo()
 {
     HitInfo hitInfo;
     hitInfo.mHit = false;
@@ -69,7 +79,7 @@ HitInfo EmptyHit()
 
 HitInfo RaySphereTest(Ray ray, vec3 sphereCenter, float sphereRadius)
 {
-    HitInfo hitInfo = EmptyHit();
+    HitInfo hitInfo = CreateHitInfo();
 
     vec3 offsetRayOrigin = ray.mOrigin - sphereCenter;
 
