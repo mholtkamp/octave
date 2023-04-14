@@ -248,7 +248,7 @@ public:
     {
         mName = "PostProcess Pipeline";
         SetVertexConfig(VertexType::Max, ENGINE_SHADER_DIR "ScreenRect.vert");
-        mFragmentShaderPath = ENGINE_SHADER_DIR "Tonemap.frag";
+        mFragmentShaderPath = ENGINE_SHADER_DIR "PostProcess.frag";
         mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         mCullMode = VK_CULL_MODE_NONE;
         mDepthTestEnabled = VK_FALSE;
@@ -261,6 +261,7 @@ public:
         Pipeline::PopulateLayoutBindings();
 
         PushSet();
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
         AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     }
 };

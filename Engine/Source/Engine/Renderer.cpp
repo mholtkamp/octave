@@ -1044,7 +1044,7 @@ void Renderer::Render(World* world)
             // Tonemapping does not look good.
             // Disabling it for now. Also need to totally rewrite postprocessing system.
             // Make it smarter so that it can pingpong between render targets.
-            GFX_BindPipeline(/*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess :*/ PipelineId::NullPostProcess);
+            GFX_BindPipeline(PipelineId::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess : PipelineId::NullPostProcess*/);
             GFX_DrawFullscreen();
 
             RenderDraws(mWireframeDraws, PipelineId::Wireframe);

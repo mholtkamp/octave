@@ -34,6 +34,11 @@ struct GlobalUniformData
     float mNearHalfHeight;
     float mNearDist;
     uint32_t mFrameNumber;
+
+    uint32_t mPathTracingEnabled;
+    uint32_t mPad0;
+    uint32_t mPad1;
+    uint32_t mPad2;
 };
 
 struct PathTraceUniforms

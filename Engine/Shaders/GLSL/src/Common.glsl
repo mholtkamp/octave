@@ -62,6 +62,11 @@ struct GlobalUniforms
     float mNearHalfHeight;
     float mNearDist;
     uint mFrameNumber;
+
+    uint mPathTracingEnabled;
+    uint mPad0;
+    uint mPad1;
+    uint mPad2;
 };
 
 struct GeometryUniforms 
