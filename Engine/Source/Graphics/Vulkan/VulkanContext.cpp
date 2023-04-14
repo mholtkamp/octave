@@ -2075,6 +2075,35 @@ void VulkanContext::PathTraceWorld()
 
     if (world != nullptr)
     {
+        // Check to see if camera moved. If so we need to reset our accumulated image data.
+
+        CameraComponent* camera = GetWorld()->GetActiveCamera();
+        if (camera != nullptr)
+        {
+            glm::vec3 camPos = camera->GetAbsolutePosition();
+            glm::vec3 camRot = camera->GetAbsoluteRotationEuler();
+
+            bool posChanged = glm::any(glm::epsilonNotEqual(mPathTracePrevCameraPos, camPos, 0.00001f));
+            bool rotChanged = glm::any(glm::epsilonNotEqual(mPathTracePrevCameraRot, camRot, 0.00001f));
+
+            if (posChanged || rotChanged)
+            {
+                mPathTraceAccumulatedFrames = 0;
+            }
+
+            mPathTracePrevCameraPos = camPos;
+            mPathTracePrevCameraRot = camRot;
+        }
+        else
+        {
+            mPathTraceAccumulatedFrames = 0;
+        }
+
+        if (!Renderer::Get()->IsPathTraceAccumulationEnabled())
+        {
+            mPathTraceAccumulatedFrames = 0;
+        }
+
         // Update triangle + mesh + light buffers
         std::vector<PathTraceTriangle> triangleData;
         std::vector<PathTraceMesh> meshData;

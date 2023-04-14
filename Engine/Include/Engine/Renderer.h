@@ -100,6 +100,7 @@ public:
     // Property Getters
     uint32_t GetRaysPerPixel() const;
     uint32_t GetMaxBounces() const;
+    bool IsPathTraceAccumulationEnabled() const;
 
     // Default Textures
     TextureRef mWhiteTexture;
@@ -188,4 +189,5 @@ private:
     // Path tracing
     uint32_t mRaysPerPixel = 4;
     uint32_t mMaxBounces = 4;
+    bool mPathTraceAccumulate = true;
 };

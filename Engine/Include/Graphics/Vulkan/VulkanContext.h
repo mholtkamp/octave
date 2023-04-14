@@ -252,6 +252,8 @@ private:
     EngineState* mEngineState = nullptr;
     Pipeline* mCurrentlyBoundPipeline = nullptr;
     uint32_t mPathTraceAccumulatedFrames = 0;
+    glm::vec3 mPathTracePrevCameraPos = { 0.0f, 0.0f, 0.0f };
+    glm::vec3 mPathTracePrevCameraRot = { 0.0f, 0.0f, 0.0f };
 
 #if EDITOR
 public:
