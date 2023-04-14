@@ -69,6 +69,7 @@ PropertiesPanel::PropertiesPanel() :
     mActorCanvas(nullptr),
     mAssetCanvas(nullptr),
     mWidgetCanvas(nullptr),
+    mGlobalCanvas(nullptr),
     mPropertiesCanvas(nullptr),
     mModeBox(nullptr),
     mScrollDistance(80.0f),
@@ -97,7 +98,13 @@ PropertiesPanel::PropertiesPanel() :
     mModeBox->AddSelection("Actor");
     mModeBox->AddSelection("Asset");
     mModeBox->AddSelection("Widget");
+    mModeBox->AddSelection("Global");
     mHeaderCanvas->AddChild(mModeBox);
+
+    std::vector<Property> globalProps;
+    GatherGlobalProperties(globalProps);
+    mGlobalCanvas = new Canvas();
+    PopulatePropertyWidgets(mGlobalCanvas, globalProps);
 }
 
 PropertiesPanel::~PropertiesPanel()
@@ -391,6 +398,7 @@ void PropertiesPanel::UpdateDisplayedCanvas()
     case PropertiesMode::Actor: mPropertiesCanvas = mActorCanvas; break;
     case PropertiesMode::Asset: mPropertiesCanvas = mAssetCanvas; break;
     case PropertiesMode::Widget: mPropertiesCanvas = mWidgetCanvas; break;
+    case PropertiesMode::Global: mPropertiesCanvas = mGlobalCanvas; break;
 
     default: break;
     }

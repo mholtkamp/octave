@@ -108,6 +108,12 @@ void Renderer::Initialize()
 #endif
 }
 
+void Renderer::GatherProperties(std::vector<Property>& props)
+{
+    props.push_back(Property(DatumType::Integer, "Rays Per Pixel", nullptr, &mRaysPerPixel));
+    props.push_back(Property(DatumType::Integer, "Max Bounces", nullptr, &mMaxBounces));
+}
+
 TransformComponent* Renderer::ProcessHitCheck(World* world, int32_t x, int32_t y)
 {
     return GFX_ProcessHitCheck(world, x, y);
@@ -1167,3 +1173,14 @@ const std::vector<LightData>& Renderer::GetLightData() const
 {
     return mLightData;
 }
+
+uint32_t Renderer::GetRaysPerPixel() const
+{
+    return mRaysPerPixel;
+}
+
+uint32_t Renderer::GetMaxBounces() const
+{
+    return mMaxBounces;
+}
+

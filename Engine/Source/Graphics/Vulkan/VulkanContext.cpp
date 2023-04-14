@@ -2212,8 +2212,8 @@ void VulkanContext::PathTraceWorld()
         uniforms.mNumTriangles = (uint32_t)triangleData.size();
         uniforms.mNumMeshes = (uint32_t)meshData.size();
         uniforms.mNumLights = (uint32_t)lightData.size();
-        uniforms.mMaxBounces = 4;
-        uniforms.mRaysPerPixel = 4;
+        uniforms.mMaxBounces = Renderer::Get()->GetMaxBounces();
+        uniforms.mRaysPerPixel = Renderer::Get()->GetRaysPerPixel();
         mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();
