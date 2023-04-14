@@ -8,6 +8,14 @@ struct Ray
     vec3 mDirection;
 };
 
+struct HitInfo
+{
+    bool mHit;
+    float mDistance;
+    vec3 mPosition;
+    vec3 mNormal;
+};
+
 struct PathTraceVertex
 {
     vec3 mPosition;
@@ -48,3 +56,43 @@ struct PathTraceLight
     vec3 mDirection;
 };
 
+HitInfo EmptyHit()
+{
+    HitInfo hitInfo;
+    hitInfo.mHit = false;
+    hitInfo.mDistance = 0.0;
+    hitInfo.mPosition = vec3(0,0,0);
+    hitInfo.mNormal = vec3(0,0,0);
+
+    return hitInfo;
+}
+
+HitInfo RaySphereTest(Ray ray, vec3 sphereCenter, float sphereRadius)
+{
+    HitInfo hitInfo = EmptyHit();
+
+    vec3 offsetRayOrigin = ray.mOrigin - sphereCenter;
+
+    // Ray intersects sphere when the distance from the origin of a point along the ray 
+    // is less than the radius of the sphere.
+    // length(Pos + Dir * Distance)^2 == r^2
+    float a = dot(ray.mDirection, ray.mDirection);
+    float b = 2 * dot(offsetRayOrigin, ray.mDirection);
+    float c = dot(offsetRayOrigin, offsetRayOrigin) - sphereRadius * sphereRadius;
+    float discriminant = b * b - 4 * a * c;
+
+    if (discriminant >= 0)
+    {
+        float dist = (-b - sqrt(discriminant)) / (2 * a);
+
+        if (dist >= 0)
+        {
+            hitInfo.mHit = true;
+            hitInfo.mDistance = dist;
+            hitInfo.mPosition = ray.mOrigin + ray.mDirection * dist;
+            hitInfo.mNormal = normalize(hitInfo.mPosition - sphereCenter);
+        }
+    }
+
+    return hitInfo;
+}

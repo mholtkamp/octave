@@ -238,7 +238,8 @@ struct EngineState
     std::string mSolutionPath;
     float mGameDeltaTime = 0.0f;
     float mRealDeltaTime = 0.0f;
-    float mElapsedTime = 0.0f;
+    float mGameElapsedTime = 0.0f;
+    float mRealElapsedTime = 0.0f;
     float mTimeDilation = 1.0f;
     float mAspectRatioScale = 1.0f;
     bool mPaused = false;

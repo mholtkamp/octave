@@ -277,34 +277,34 @@ float CameraComponent::GetHeight() const
 
 float CameraComponent::GetNearWidth() const
 {
-    float halfWidth = 0.0f;
+    float width = 0.0f;
 
     if (mProjectionMode == ProjectionMode::PERSPECTIVE)
     {
-        halfWidth = 2.0f * mPerspectiveSettings.mNear * tanf(mPerspectiveSettings.mFovY * 0.5f * DEGREES_TO_RADIANS);
+        width = GetNearHeight() * mPerspectiveSettings.mAspectRatio;
     }
     else
     {
-        halfWidth = mOrthoSettings.mWidth / 2.0f;
+        width = mOrthoSettings.mWidth / 2.0f;
     }
 
-    return halfWidth;
+    return width;
 }
 
 float CameraComponent::GetNearHeight() const
 {
-    float halfHeight = 0.0f;
+    float height = 0.0f;
 
     if (mProjectionMode == ProjectionMode::PERSPECTIVE)
     {
-        halfHeight = GetNearWidth() * mPerspectiveSettings.mAspectRatio;
+        height = 2.0f * mPerspectiveSettings.mNear * tanf(mPerspectiveSettings.mFovY * 0.5f * DEGREES_TO_RADIANS);
     }
     else
     {
-        halfHeight = mOrthoSettings.mHeight / 2.0f;
+        height = mOrthoSettings.mHeight / 2.0f;
     }
 
-    return halfHeight;
+    return height;
 }
 
 void CameraComponent::SetNearZ(float nearZ)
