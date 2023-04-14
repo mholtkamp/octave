@@ -140,3 +140,18 @@ HitInfo RaySphereTest(Ray ray, vec3 sphereCenter, float sphereRadius)
 
     return hitInfo;
 }
+
+vec3 GetEnvironmentLight(Ray ray)
+{
+    const vec3 kSkyHorizonColor = vec3(0.5, 0.5, 0.8);
+    const vec3 kSkyZenithColor = vec3(0.0, 0.2, 0.6);
+    const vec3 kGroundColor = vec3(0.3, 0.35, 0.32);
+
+    float skyAlpha = pow(smoothstep(0, 0.4, ray.mDirection.y), 0.35);
+    vec3 skyColor = mix(kSkyHorizonColor, kSkyZenithColor, skyAlpha);
+
+    float groundAlpha = smoothstep(-0.01, 0.0, ray.mDirection.y);
+    vec3 envColor = mix(kGroundColor, skyColor, groundAlpha);
+
+    return envColor;
+}
