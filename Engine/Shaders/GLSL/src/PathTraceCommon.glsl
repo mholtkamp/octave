@@ -64,6 +64,11 @@ struct PathTraceUniforms
     uint mNumMeshes;
     uint mNumLights;
     uint mMaxBounces;
+
+    uint mRaysPerPixel;
+    uint mPad0;
+    uint mPad1;
+    uint mPad2;
 };
 
 HitInfo CreateHitInfo()

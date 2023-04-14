@@ -42,6 +42,11 @@ struct PathTraceUniforms
     uint32_t mNumMeshes;
     uint32_t mNumLights;
     uint32_t mMaxBounces;
+
+    uint32_t mRaysPerPixel;
+    uint32_t mPad0;
+    uint32_t mPad1;
+    uint32_t mPad2;
 };
 
 struct GeometryData
