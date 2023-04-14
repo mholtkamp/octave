@@ -6,6 +6,8 @@ struct GlobalUniformData
 {
     glm::mat4 mViewProjMatrix;
     glm::mat4 mDirectionalLightVP;
+    glm::mat4 mViewToWorld;
+
     glm::vec4 mDirectionalLightDirection;
     glm::vec4 mDirectionalLightColor;
     glm::vec4 mAmbientLightColor;
@@ -27,6 +29,11 @@ struct GlobalUniformData
     int mFogDensityFunc;
     float mFogNear;
     float mFogFar;
+
+    float mNearHalfWidth;
+    float mNearHalfHeight;
+    float mNearDist;
+    float mPadding2;
 };
 
 struct GeometryData

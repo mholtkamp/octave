@@ -2,6 +2,12 @@
 #define PATH_TRACE_LIGHT_POINT 0
 #define PATH_TRACE_LIGHT_DIRECTIONAL 1
 
+struct Ray
+{
+    vec3 mOrigin;
+    vec3 mDirection;
+};
+
 struct PathTraceVertex
 {
     vec3 mPosition;
