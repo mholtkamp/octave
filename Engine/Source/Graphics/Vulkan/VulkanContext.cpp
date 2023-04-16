@@ -2141,6 +2141,9 @@ void VulkanContext::PathTraceWorld()
                         material = Renderer::Get()->GetDefaultMaterial();
                     }
 
+                    glm::mat4 transform = meshComp->GetRenderTransform();
+                    glm::mat4 normalTransform = glm::transpose(glm::inverse(transform));
+
                     meshData.push_back(PathTraceMesh());
                     PathTraceMesh& mesh = meshData.back();
                     Bounds bounds = meshComp->GetBounds();
@@ -2165,18 +2168,18 @@ void VulkanContext::PathTraceWorld()
                             uint32_t index = t * 3 + v;
                             if (hasColor)
                             {
-                                triangle.mVertices[v].mPosition = colorVerts[index].mPosition;
+                                triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[index].mPosition, 1));
                                 triangle.mVertices[v].mTexcoord0 = colorVerts[index].mTexcoord0;
                                 triangle.mVertices[v].mTexcoord1 = colorVerts[index].mTexcoord1;
-                                triangle.mVertices[v].mNormal = colorVerts[index].mNormal;
+                                triangle.mVertices[v].mNormal = glm::vec3(normalTransform * glm::vec4(colorVerts[index].mNormal, 0));
                                 triangle.mVertices[v].mColor = colorVerts[index].mColor;
                             }
                             else
                             {
-                                triangle.mVertices[v].mPosition = verts[index].mPosition;
+                                triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(verts[index].mPosition, 1));
                                 triangle.mVertices[v].mTexcoord0 = verts[index].mTexcoord0;
                                 triangle.mVertices[v].mTexcoord1 = verts[index].mTexcoord1;
-                                triangle.mVertices[v].mNormal = verts[index].mNormal;
+                                triangle.mVertices[v].mNormal = glm::vec3(normalTransform * glm::vec4(verts[index].mNormal, 0));
                                 triangle.mVertices[v].mColor = 0xffffffff;
                             }
                         }

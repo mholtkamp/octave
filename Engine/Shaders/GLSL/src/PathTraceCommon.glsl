@@ -148,6 +148,30 @@ vec3 RandomHemisphereDirectionCos(vec3 normal, inout uint state)
     return normalize(hemiPoint);
 }
 
+HitInfo RayTriangleTest(Ray ray, PathTraceTriangle tri)
+{
+    vec3 edgeAB = tri.mVertices[1].mPosition - tri.mVertices[0].mPosition;
+    vec3 edgeAC = tri.mVertices[2].mPosition - tri.mVertices[0].mPosition;
+    vec3 normal = cross(edgeAB, edgeAC);
+    vec3 ao = ray.mOrigin - tri.mVertices[0].mPosition;
+    vec3 dao = cross(ao, ray.mDirection);
+
+    float determinant = -dot(ray.mDirection, normal);
+    float invDet = 1.0 / determinant;
+
+    float dist = dot(ao, normal) * invDet;
+    float u = dot(edgeAC, dao) * invDet;
+    float v = -dot(edgeAB, dao) * invDet;
+    float w = 1.0 - u - v;
+
+    HitInfo hitInfo;
+    hitInfo.mHit = determinant >= 1e-6 && dist >= 0.0 && u >= 0.0 && v >= 0.0 && w >= 0.0;
+    hitInfo.mPosition = ray.mOrigin + ray.mDirection * dist;
+    hitInfo.mNormal = normalize(tri.mVertices[0].mNormal * w + tri.mVertices[1].mNormal * u + tri.mVertices[2].mNormal * v);
+    hitInfo.mDistance = dist;
+    return hitInfo;
+}
+
 HitInfo RaySphereTest(Ray ray, vec3 sphereCenter, float sphereRadius)
 {
     HitInfo hitInfo = CreateHitInfo();
@@ -176,6 +200,29 @@ HitInfo RaySphereTest(Ray ray, vec3 sphereCenter, float sphereRadius)
     }
 
     return hitInfo;
+}
+
+bool RayOverlapsSphere(Ray ray, vec3 sphereCenter, float sphereRadius)
+{
+    bool insideSphere = false;
+    bool intersectSphere = false;
+
+    // Check if ray is inside sphere
+    vec3 distVect = (ray.mOrigin - sphereCenter);
+    float dist2 = dot(distVect, distVect);
+
+    if (dist2 < sphereRadius * sphereRadius)
+    {
+        insideSphere = true;
+    }
+
+    if (!insideSphere)
+    {
+        HitInfo boundsHit = RaySphereTest(ray, sphereCenter, sphereRadius);
+        intersectSphere = boundsHit.mHit;
+    }
+
+    return (insideSphere || intersectSphere);
 }
 
 vec3 GetEnvironmentLight(Ray ray)
