@@ -8,16 +8,6 @@ struct Ray
     vec3 mDirection;
 };
 
-struct HitInfo
-{
-    bool mHit;
-    float mDistance;
-    vec3 mPosition;
-    vec3 mNormal;
-
-    MaterialUniforms mMaterial;
-};
-
 struct PathTraceVertex
 {
     vec3 mPosition;
@@ -71,6 +61,19 @@ struct PathTraceUniforms
     uint mAccumulatedFrames;
     uint mPad1;
     uint mPad2;
+};
+
+struct HitInfo
+{
+    bool mHit;
+    float mDistance;
+    vec3 mPosition;
+    vec3 mNormal;
+    vec2 mUv0;
+    vec2 mUv1;
+    vec4 mColor;
+
+    PathTraceMesh mMesh;
 };
 
 HitInfo CreateHitInfo()
@@ -170,6 +173,9 @@ HitInfo RayTriangleTest(Ray ray, PathTraceTriangle tri)
     hitInfo.mHit = determinant >= 1e-6 && dist >= 0.0 && u >= 0.0 && v >= 0.0 && w >= 0.0;
     hitInfo.mPosition = ray.mOrigin + ray.mDirection * dist;
     hitInfo.mNormal = normalize(tri.mVertices[0].mNormal * w + tri.mVertices[1].mNormal * u + tri.mVertices[2].mNormal * v);
+    hitInfo.mUv0 = tri.mVertices[0].mTexcoord0 * w + tri.mVertices[1].mTexcoord0 * u + tri.mVertices[2].mTexcoord0 * v;
+    hitInfo.mUv1 = tri.mVertices[0].mTexcoord1 * w + tri.mVertices[1].mTexcoord1 * u + tri.mVertices[2].mTexcoord1 * v;
+    hitInfo.mColor = vec4(1,1,1,1); //normalize(tri.mVertices[0].mColor * w + tri.mVertices[1].mColor * u + tri.mVertices[2].mColor * v);
     hitInfo.mDistance = dist;
     return hitInfo;
 }

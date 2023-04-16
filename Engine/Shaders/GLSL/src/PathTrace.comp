@@ -42,7 +42,7 @@ HitInfo CalculateRayCollision(Ray ray)
     // Trace bounding spheres of all meshes
     HitInfo closestHit = CreateHitInfo();
     closestHit.mDistance = 1e20;
-    closestHit.mMaterial.mColor = vec4(0,0,0,1);
+    closestHit.mMesh.mMaterial.mColor = vec4(0,0,0,1);
 
     for (uint m = 0; m < pathTrace.mNumMeshes; ++m)
     {
@@ -62,7 +62,7 @@ HitInfo CalculateRayCollision(Ray ray)
                 if (hitInfo.mHit && hitInfo.mDistance < closestHit.mDistance)
                 {
                     closestHit = hitInfo;
-                    closestHit.mMaterial = mesh.mMaterial;
+                    closestHit.mMesh = mesh;
                 }
             }
         }
@@ -78,17 +78,34 @@ vec3 PathTrace(Ray ray, inout uint rngState)
 
     for (uint i = 0; i < pathTrace.mMaxBounces; ++i)
     {
-        HitInfo hitInfo = CalculateRayCollision(ray);
-        if (hitInfo.mHit)
+        HitInfo hit = CalculateRayCollision(ray);
+        if (hit.mHit)
         {
-            ray.mOrigin = hitInfo.mPosition;
-            ray.mDirection = normalize(hitInfo.mNormal + RandomDirection(rngState));
+            ray.mOrigin = hit.mPosition;
+            ray.mDirection = normalize(hit.mNormal + RandomDirection(rngState));
 
-            MaterialUniforms material = hitInfo.mMaterial;
+            PathTraceMesh mesh = hit.mMesh;
+            MaterialUniforms material = mesh.mMaterial;
+
+            vec4 surfaceColor = vec4(0,0,0,0);
+
+            surfaceColor = BlendTexture(material, surfaceColor, 0, textures[mesh.mTextures[0]], hit.mUv0, hit.mUv1, hit.mColor.r);
+            surfaceColor = BlendTexture(material, surfaceColor, 1, textures[mesh.mTextures[1]], hit.mUv0, hit.mUv1, hit.mColor.g);
+            surfaceColor = BlendTexture(material, surfaceColor, 2, textures[mesh.mTextures[2]], hit.mUv0, hit.mUv1, hit.mColor.b);
+            surfaceColor = BlendTexture(material, surfaceColor, 3, textures[mesh.mTextures[3]], hit.mUv0, hit.mUv1, 0.0);
+
+            surfaceColor *= material.mColor;
+
+            // if (material.mBlendMode == BLEND_MODE_MASKED && diffuse.a < material.mMaskCutoff)
+            // {
+            //     discard;
+            // }
+
+
             bool emit = (material.mShadingModel == SHADING_MODEL_UNLIT);
-            vec3 emittedLight = emit ? material.mColor.rgb : vec3(0, 0, 0);
+            vec3 emittedLight = emit ? surfaceColor.rgb : vec3(0, 0, 0);
             incomingLight += (emittedLight * rayColor);
-            rayColor *= (emit ? vec3(1,1,1) : material.mColor.rgb);
+            rayColor *= (emit ? vec3(1,1,1) : surfaceColor.rgb);
         }
         else
         {
