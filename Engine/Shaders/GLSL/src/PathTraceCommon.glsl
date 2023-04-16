@@ -111,6 +111,43 @@ vec3 RandomHemisphereDirection(vec3 normal, inout uint state)
     return dir * sign(dot(normal, dir));
 }
 
+// https://www.rorydriscoll.com/2009/01/07/better-sampling/
+vec3 CosineSampleHemisphere(float u1, float u2)
+{
+    const float r = sqrt(u1);
+    const float theta = 2 * PI * u2;
+ 
+    const float x = r * cos(theta);
+    const float y = r * sin(theta);
+ 
+    return vec3(x, y, sqrt(max(0.0, 1.0 - u1)));
+}
+
+void CreateCoordinateSystem(vec3 N, inout vec3 Nt, inout vec3 Nb) 
+{ 
+    if (abs(N.x) > abs(N.y))
+        Nt = vec3(N.z, 0, -N.x) / sqrt(N.x * N.x + N.z * N.z);
+    else
+        Nt = vec3(0, -N.z, N.y) / sqrt(N.y * N.y + N.z * N.z);
+    Nb = cross(N, Nt);
+}
+
+vec3 RandomHemisphereDirectionCos(vec3 normal, inout uint state)
+{
+    float u1 = Rand(state);
+    float u2 = Rand(state);
+
+    vec3 hemiPoint = CosineSampleHemisphere(u1, u2);
+
+    vec3 tangent;
+    vec3 bitangent;
+    CreateCoordinateSystem(normal, tangent, bitangent);
+    mat3 transMat = mat3(tangent, bitangent, normal);
+
+    hemiPoint = transMat * hemiPoint;
+    return normalize(hemiPoint);
+}
+
 HitInfo RaySphereTest(Ray ray, vec3 sphereCenter, float sphereRadius)
 {
     HitInfo hitInfo = CreateHitInfo();

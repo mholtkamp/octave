@@ -67,7 +67,10 @@ vec3 PathTrace(Ray ray, inout uint rngState)
         if (hitInfo.mHit)
         {
             ray.mOrigin = hitInfo.mPosition;
-            ray.mDirection = RandomHemisphereDirection(hitInfo.mNormal, rngState);
+            
+            //ray.mDirection = RandomHemisphereDirectionCos(hitInfo.mNormal, rngState);
+            //ray.mDirection = RandomHemisphereDirection(hitInfo.mNormal, rngState);
+            ray.mDirection = normalize(hitInfo.mNormal + RandomDirection(rngState));
 
             MaterialUniforms material = hitInfo.mMaterial;
             bool emit = (material.mShadingModel == SHADING_MODEL_UNLIT);

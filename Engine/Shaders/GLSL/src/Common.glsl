@@ -29,6 +29,8 @@
 #define MAX_BONES 64
 #define MAX_BONE_INFLUENCES 4
 
+#define PI 3.14159265359
+
 struct GlobalUniforms
 {
     mat4 mViewProj;
