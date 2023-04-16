@@ -181,6 +181,8 @@ struct PathTraceMesh
     uint32_t mPad0 = 1337;
     uint32_t mPad1 = 1337;
 
+    glm::uvec4 mTextures;
+
     MaterialData mMaterial;
 };
 

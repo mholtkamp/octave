@@ -31,6 +31,8 @@
 
 #define PI 3.14159265359
 
+#define PATH_TRACE_MAX_TEXTURES 4096
+
 struct GlobalUniforms
 {
     mat4 mViewProj;

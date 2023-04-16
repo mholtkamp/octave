@@ -43,6 +43,8 @@ struct PathTraceMesh
     uint mNumTriangles;
     uint mPad0;
     uint mPad1;
+
+    uvec4 mTextures;
     
     MaterialUniforms mMaterial;
 };

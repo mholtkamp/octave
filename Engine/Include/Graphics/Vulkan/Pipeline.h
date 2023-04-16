@@ -55,7 +55,7 @@ protected:
     void CreateComputePipeline();
 
     void PushSet();
-    void AddLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags);
+    void AddLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t descriptorCount = 1);
 
     VkShaderModule CreateShaderModule(const std::vector<char>& code);
 

@@ -30,7 +30,10 @@ layout(std140, set = 1, binding = 3) buffer LightData
    PathTraceLight lights[];
 };
 
-layout (set = 1, binding = 4, rgba8) uniform image2D outputImage;
+layout (set = 1, binding = 4) uniform sampler2D textures[PATH_TRACE_MAX_TEXTURES];
+
+layout (set = 1, binding = 5, rgba8) uniform image2D outputImage;
+
 
 layout (local_size_x = 8, local_size_y = 8) in;
 

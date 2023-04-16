@@ -3,7 +3,6 @@
 #if API_VULKAN
 
 #include "Allocator.h"
-#include "Graphics/GraphicsTypes.h"
 
 #include <vulkan/vulkan.h>
 
