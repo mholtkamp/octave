@@ -81,11 +81,14 @@ vec3 PathTrace(Ray ray, inout uint rngState)
         HitInfo hit = CalculateRayCollision(ray);
         if (hit.mHit)
         {
-            ray.mOrigin = hit.mPosition;
-            ray.mDirection = normalize(hit.mNormal + RandomDirection(rngState));
-
             PathTraceMesh mesh = hit.mMesh;
             MaterialUniforms material = mesh.mMaterial;
+
+            // Determine new bounced ray direction.
+            ray.mOrigin = hit.mPosition;
+            vec3 diffuseDir = normalize(hit.mNormal + RandomDirection(rngState));
+            vec3 specularDir = reflect(ray.mDirection, hit.mNormal);
+            ray.mDirection = mix(diffuseDir, specularDir, material.mSpecular);
 
             vec4 surfaceColor = vec4(0,0,0,0);
 
