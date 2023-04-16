@@ -408,7 +408,9 @@ StatsOverlay* Renderer::GetStatsWidget()
 
 Renderer::Renderer()
 {
-
+    // TEMP
+    mRaysPerPixel = 1;
+    mMaxBounces = 3;
 }
 
 void Renderer::LoadDefaultTextures()

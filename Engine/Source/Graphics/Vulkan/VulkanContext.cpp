@@ -1085,7 +1085,7 @@ void VulkanContext::CreatePathTraceResources()
     mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceTriangleBuffer);
     mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceMeshBuffer);
     mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mPathTraceLightBuffer);
-    mPathTraceDescriptorSet->UpdateStorageImageDescriptor(4, mPathTraceImage);
+    mPathTraceDescriptorSet->UpdateStorageImageDescriptor(5, mPathTraceImage);
 
     mPathTraceImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
@@ -2108,6 +2108,14 @@ void VulkanContext::PathTraceWorld()
         std::vector<PathTraceTriangle> triangleData;
         std::vector<PathTraceMesh> meshData;
         std::vector<PathTraceLight> lightData;
+        std::vector<Image*> images;
+
+        images.reserve(PATH_TRACE_MAX_TEXTURES);
+        Texture* whiteTex = LoadAsset<Texture>("T_White");
+        OCT_ASSERT(whiteTex);
+        Image* whiteImg = whiteTex->GetResource()->mImage;
+        OCT_ASSERT(whiteImg);
+        images.push_back(whiteImg);
 
         uint32_t totalTriangles = 0;
 
@@ -2124,7 +2132,7 @@ void VulkanContext::PathTraceWorld()
             {
                 if (!components[c]->IsVisible())
                     continue;
-                
+
                 StaticMeshComponent* meshComp = components[c]->As<StaticMeshComponent>();
                 LightComponent* lightComp = components[c]->As<LightComponent>();
                 if (meshComp != nullptr)
@@ -2151,6 +2159,44 @@ void VulkanContext::PathTraceWorld()
                     mesh.mStartTriangleIndex = totalTriangles;
                     mesh.mNumTriangles = meshAsset->GetNumFaces();
                     WriteMaterialUniformData(mesh.mMaterial, material);
+
+                    // Add textures and record indices.
+                    for (uint32_t t = 0; t < MATERIAL_MAX_TEXTURES; ++t)
+                    {
+                        Texture* tex = material->GetTexture((TextureSlot)t);
+                        Image* img = tex ? tex->GetResource()->mImage : nullptr;
+
+                        if (img != nullptr)
+                        {
+                            int32_t index = -1;
+
+                            // Look through already added textures for match
+                            for (uint32_t i = 0; i < images.size(); ++i)
+                            {
+                                if (images[i] == img)
+                                {
+                                    index = (int32_t)i;
+                                    break;
+                                }
+                            }
+
+                            // If texture wasn't found, then add it to the list.
+                            if (index == -1)
+                            {
+                                images.push_back(img);
+                                index = int32_t(images.size() - 1);
+                            }
+
+                            OCT_ASSERT(images.size() < PATH_TRACE_MAX_TEXTURES);
+                            OCT_ASSERT(index >= 0 && index < PATH_TRACE_MAX_TEXTURES);
+
+                            mesh.mTextures[t] = (uint32_t)index;
+                        }
+                        else
+                        {
+                            mesh.mTextures[t] = 0;
+                        }
+                    }
 
                     // Add triangle data.
                     bool hasColor = meshAsset->HasVertexColor();
@@ -2217,7 +2263,7 @@ void VulkanContext::PathTraceWorld()
                 }
             }
         }
-    
+
         // Reallocate storage buffers if needed.
         size_t triangleSize = triangleData.size() * sizeof(PathTraceTriangle);
         size_t meshSize = meshData.size() * sizeof(PathTraceMesh);
@@ -2249,12 +2295,20 @@ void VulkanContext::PathTraceWorld()
 
         if (triangleSize > 0)
             mPathTraceTriangleBuffer->Update(triangleData.data(), triangleSize);
-       
+
         if (meshSize > 0)
             mPathTraceMeshBuffer->Update(meshData.data(), meshSize);
-        
+
         if (lightSize > 0)
             mPathTraceLightBuffer->Update(lightData.data(), lightSize);
+
+        // Update texture array descriptor.
+        // Fill in any unused texture slots with the T_White texture
+        while (images.size() < PATH_TRACE_MAX_TEXTURES)
+        {
+            images.push_back(whiteImg);
+        }
+        mPathTraceDescriptorSet->UpdateImageArrayDescriptor(4, images);
 
         // Write uniform data.
         PathTraceUniforms uniforms;

@@ -49,7 +49,16 @@ void DescriptorSet::UpdateImageDescriptor(int32_t binding, Image* image)
     OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
     mBindings[binding].mType = DescriptorType::Image;
     mBindings[binding].mObject = image;
+    mBindings[binding].mImageArray.clear();
     MarkDirty();
+}
+
+void DescriptorSet::UpdateImageArrayDescriptor(int32_t binding, const std::vector<Image*>& imageArray)
+{
+    OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
+    mBindings[binding].mType = DescriptorType::ImageArray;
+    mBindings[binding].mObject = nullptr;
+    mBindings[binding].mImageArray = imageArray;
 }
 
 void DescriptorSet::UpdateUniformDescriptor(int32_t binding, UniformBuffer* uniformBuffer)
@@ -57,6 +66,7 @@ void DescriptorSet::UpdateUniformDescriptor(int32_t binding, UniformBuffer* unif
     OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
     mBindings[binding].mType = DescriptorType::Uniform;
     mBindings[binding].mObject = uniformBuffer;
+    mBindings[binding].mImageArray.clear();
     MarkDirty();
 }
 
@@ -65,6 +75,7 @@ void DescriptorSet::UpdateStorageBufferDescriptor(int32_t binding, Buffer* stora
     OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
     mBindings[binding].mType = DescriptorType::StorageBuffer;
     mBindings[binding].mObject = storageBuffer;
+    mBindings[binding].mImageArray.clear();
     MarkDirty();
 }
 
@@ -73,6 +84,7 @@ void DescriptorSet::UpdateStorageImageDescriptor(int32_t binding, Image* storage
     OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
     mBindings[binding].mType = DescriptorType::StorageImage;
     mBindings[binding].mObject = storageImage;
+    mBindings[binding].mImageArray.clear();
     MarkDirty();
 }
 
@@ -144,6 +156,33 @@ void DescriptorSet::RefreshBindings(uint32_t frameIndex)
                 descriptorWrite.pImageInfo = &imageInfo;
 
                 vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+            }
+            else if (binding.mType == DescriptorType::ImageArray)
+            {
+                static std::vector<VkDescriptorImageInfo> sDescImageInfo;
+                sDescImageInfo.resize(binding.mImageArray.size());
+
+                if (binding.mImageArray.size() > 0)
+                {
+                    for (uint32_t i = 0; i < binding.mImageArray.size(); ++i)
+                    {
+                        VkDescriptorImageInfo& imageInfo = sDescImageInfo[i];
+                        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        imageInfo.imageView = binding.mImageArray[i]->GetView();
+                        imageInfo.sampler = binding.mImageArray[i]->GetSampler();
+                    }
+
+                    VkWriteDescriptorSet descriptorWrite = {};
+                    descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrite.dstSet = mDescriptorSets[frameIndex];
+                    descriptorWrite.dstBinding = i;
+                    descriptorWrite.dstArrayElement = 0;
+                    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    descriptorWrite.descriptorCount = (uint32_t)binding.mImageArray.size();
+                    descriptorWrite.pImageInfo = sDescImageInfo.data();
+
+                    vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+                }
             }
             else if (binding.mType == DescriptorType::Uniform)
             {

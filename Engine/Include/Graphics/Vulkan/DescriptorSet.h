@@ -5,10 +5,11 @@
 #include "Graphics/GraphicsConstants.h"
 #include "Graphics/Vulkan/VulkanConstants.h"
 
+#include "Graphics/Vulkan/Image.h"
+
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-class Image;
 class Buffer;
 class UniformBuffer;
 
@@ -16,6 +17,7 @@ enum class DescriptorType
 {
     Uniform,
     Image,
+    ImageArray,
     StorageBuffer,
     StorageImage,
 
@@ -26,6 +28,7 @@ struct DescriptorBinding
 {
     DescriptorType mType = DescriptorType::Count;
     void* mObject = nullptr;
+    std::vector<Image*> mImageArray;
 };
 
 class DescriptorSet
@@ -36,6 +39,7 @@ public:
 
     // Updates the current frame's descriptor.
     void UpdateImageDescriptor(int32_t binding, Image* image);
+    void UpdateImageArrayDescriptor(int32_t binding, const std::vector<Image*>& imageArray);
     void UpdateUniformDescriptor(int32_t binding, UniformBuffer* uniformBuffer);
     void UpdateStorageBufferDescriptor(int32_t binding, Buffer* storageBuffer);
     void UpdateStorageImageDescriptor(int32_t binding, Image* storageImage);

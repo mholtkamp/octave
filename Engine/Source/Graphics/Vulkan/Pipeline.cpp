@@ -447,10 +447,10 @@ void Pipeline::AddAdditiveBlendAttachmentState()
     mBlendAttachments.push_back(colorBlendAttachment);
 }
 
-void Pipeline::AddLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags)
+void Pipeline::AddLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t descriptorCount)
 {
     VkDescriptorSetLayoutBinding layoutBinding = {};
-    layoutBinding.descriptorCount = 1;
+    layoutBinding.descriptorCount = descriptorCount;
     layoutBinding.descriptorType = type;
     layoutBinding.pImmutableSamplers = nullptr;
     layoutBinding.stageFlags = stageFlags;
