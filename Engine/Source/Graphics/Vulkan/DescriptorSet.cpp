@@ -59,6 +59,7 @@ void DescriptorSet::UpdateImageArrayDescriptor(int32_t binding, const std::vecto
     mBindings[binding].mType = DescriptorType::ImageArray;
     mBindings[binding].mObject = nullptr;
     mBindings[binding].mImageArray = imageArray;
+    MarkDirty();
 }
 
 void DescriptorSet::UpdateUniformDescriptor(int32_t binding, UniformBuffer* uniformBuffer)
