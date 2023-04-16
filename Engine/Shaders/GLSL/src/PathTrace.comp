@@ -41,15 +41,27 @@ HitInfo CalculateRayCollision(Ray ray)
     closestHit.mDistance = 1e20;
     closestHit.mMaterial.mColor = vec4(0,0,0,1);
 
-    for (uint i = 0; i < pathTrace.mNumMeshes; ++i)
+    for (uint m = 0; m < pathTrace.mNumMeshes; ++m)
     {
-        PathTraceMesh mesh = meshes[i];
-        HitInfo boundsHit = RaySphereTest(ray, mesh.mBounds.xyz, mesh.mBounds.w);
+        PathTraceMesh mesh = meshes[m];
+        //HitInfo boundsHit = RaySphereTest(ray, mesh.mBounds.xyz, mesh.mBounds.w);
+        bool overlapsBounds = RayOverlapsSphere(ray, mesh.mBounds.xyz, mesh.mBounds.w);
 
-        if (boundsHit.mHit && boundsHit.mDistance < closestHit.mDistance)
+        if (overlapsBounds)
         {
-            closestHit = boundsHit;
-            closestHit.mMaterial = mesh.mMaterial;
+            // Loop through triangles
+            for (uint t = 0; t < mesh.mNumTriangles; ++t)
+            {
+                uint triIndex = mesh.mStartTriangleIndex + t;
+                PathTraceTriangle tri = triangles[triIndex];
+                HitInfo hitInfo = RayTriangleTest(ray, tri);
+
+                if (hitInfo.mHit && hitInfo.mDistance < closestHit.mDistance)
+                {
+                    closestHit = hitInfo;
+                    closestHit.mMaterial = mesh.mMaterial;
+                }
+            }
         }
     }
 
@@ -67,9 +79,6 @@ vec3 PathTrace(Ray ray, inout uint rngState)
         if (hitInfo.mHit)
         {
             ray.mOrigin = hitInfo.mPosition;
-            
-            //ray.mDirection = RandomHemisphereDirectionCos(hitInfo.mNormal, rngState);
-            //ray.mDirection = RandomHemisphereDirection(hitInfo.mNormal, rngState);
             ray.mDirection = normalize(hitInfo.mNormal + RandomDirection(rngState));
 
             MaterialUniforms material = hitInfo.mMaterial;
