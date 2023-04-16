@@ -143,3 +143,35 @@ const mat4 SHADOW_BIAS_MAT = mat4(
 	0.0, 0.5, 0.0, 0.0,
 	0.0, 0.0, 1.0, 0.0,
 	0.5, 0.5, 0.0, 1.0 );
+
+vec4 BlendTexture(MaterialUniforms material, vec4 prevColor, uint texIdx, sampler2D texSampler, vec2 uv0, vec2 uv1, float vertexIntensity)
+{
+    vec4 outColor = prevColor;
+    vec2 uv = (material.mUvMaps[texIdx]) == 0 ? uv0 : uv1;
+    uint tevMode = material.mTevModes[texIdx];
+    uint vertexColorMode = material.mVertexColorMode;
+
+    if (tevMode < TEV_MODE_PASS)
+    {
+        vec4 texColor = texture(texSampler, uv);
+
+        if (vertexColorMode == VERTEX_COLOR_TEXTURE_BLEND && texIdx <= 2)
+            outColor = mix(texIdx == 0 ? texColor : prevColor, texColor, vertexIntensity);
+        else if (tevMode == TEV_MODE_REPLACE)
+            outColor = texColor;
+        else if (tevMode == TEV_MODE_MODULATE)
+            outColor = prevColor * texColor;
+        else if (tevMode == TEV_MODE_DECAL)
+            outColor = prevColor * (1 - texColor.a) + (texColor * texColor.a);
+        else if (tevMode == TEV_MODE_ADD)
+            outColor = prevColor + texColor;
+        else if (tevMode == TEV_MODE_SIGNED_ADD)
+            outColor = prevColor + (texColor - 0.5);
+        else if (tevMode == TEV_MODE_SUBTRACT)
+            outColor = prevColor - texColor;
+        else
+            outColor = texColor;
+    }
+
+    return outColor;
+}

@@ -135,7 +135,7 @@ void DescriptorSet::RefreshBindings(uint32_t frameIndex)
     for (uint32_t i = 0; i < MAX_DESCRIPTORS_PER_SET; ++i)
     {
         DescriptorBinding& binding = mBindings[i];
-        if (binding.mObject != nullptr)
+        if (binding.mObject != nullptr || binding.mType == DescriptorType::ImageArray)
         {
             if (binding.mType == DescriptorType::Image)
             {
