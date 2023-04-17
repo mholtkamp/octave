@@ -76,19 +76,16 @@ vec3 PathTrace(Ray ray, inout uint rngState)
     vec3 incomingLight = vec3(0,0,0);
     vec3 rayColor = vec3(1,1,1);
 
-    for (uint i = 0; i < pathTrace.mMaxBounces; ++i)
+    uint maxBounces = pathTrace.mMaxBounces;
+    uint numAlphaPasses = 0;
+
+    for (int i = 0; i < maxBounces; ++i)
     {
         HitInfo hit = CalculateRayCollision(ray);
         if (hit.mHit)
         {
             PathTraceMesh mesh = hit.mMesh;
             MaterialUniforms material = mesh.mMaterial;
-
-            // Determine new bounced ray direction.
-            ray.mOrigin = hit.mPosition;
-            vec3 diffuseDir = normalize(hit.mNormal + RandomDirection(rngState));
-            vec3 specularDir = reflect(ray.mDirection, hit.mNormal);
-            ray.mDirection = mix(diffuseDir, specularDir, material.mSpecular);
 
             vec4 surfaceColor = vec4(0,0,0,0);
 
@@ -102,16 +99,32 @@ vec3 PathTrace(Ray ray, inout uint rngState)
 
             surfaceColor *= material.mColor;
 
-            // if (material.mBlendMode == BLEND_MODE_MASKED && diffuse.a < material.mMaskCutoff)
-            // {
-            //     discard;
-            // }
-
+            if (material.mBlendMode == BLEND_MODE_MASKED && surfaceColor.a < material.mMaskCutoff && numAlphaPasses < 5)
+            {
+                // Instead of bouncing the ray, continue forward since it didn't really hit the surface.
+                // Move the ray slightly pass the hit point so that we don't reintersect with the same triangle?
+                ray.mOrigin = hit.mPosition + ray.mDirection * 0.001;
+                --i;
+                numAlphaPasses++;
+                continue;
+            }
 
             bool emit = (material.mShadingModel == SHADING_MODEL_UNLIT);
             vec3 emittedLight = emit ? surfaceColor.rgb : vec3(0, 0, 0);
             incomingLight += (emittedLight * rayColor);
             rayColor *= (emit ? vec3(1,1,1) : surfaceColor.rgb);
+
+            // If this was an unlit object, then end the bouncing there.
+            if (material.mShadingModel == SHADING_MODEL_UNLIT)
+            {
+                break;
+            }
+
+            // Determine new bounced ray direction.
+            ray.mOrigin = hit.mPosition;
+            vec3 diffuseDir = normalize(hit.mNormal + RandomDirection(rngState));
+            vec3 specularDir = reflect(ray.mDirection, hit.mNormal);
+            ray.mDirection = mix(diffuseDir, specularDir, material.mSpecular);
         }
         else
         {
