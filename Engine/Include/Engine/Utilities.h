@@ -115,9 +115,9 @@ inline uint32_t ColorFloat4ToUint32(glm::vec4 color)
 inline glm::vec4 ColorUint32ToFloat4(uint32_t color)
 {
     float r = float(color & 0x000000ff) / 255.0f;
-    float g = float(color & 0x0000ff00) / 255.0f;
-    float b = float(color & 0x00ff0000) / 255.0f;
-    float a = float(color & 0xff000000) / 255.0f;
+    float g = float((color & 0x0000ff00) >> 8) / 255.0f;
+    float b = float((color & 0x00ff0000) >> 16) / 255.0f;
+    float a = float((color & 0xff000000) >> 24) / 255.0f;
 
     return glm::vec4(r, g, b, a);
 }

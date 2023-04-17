@@ -17,7 +17,9 @@ struct PathTraceVertex
     vec2 mTexcoord1;
 
     vec3 mNormal;
-    uint mColor;
+    float mPad1;
+    
+    vec4 mColor;
 };
 
 struct PathTraceTriangle
@@ -175,7 +177,7 @@ HitInfo RayTriangleTest(Ray ray, PathTraceTriangle tri)
     hitInfo.mNormal = normalize(tri.mVertices[0].mNormal * w + tri.mVertices[1].mNormal * u + tri.mVertices[2].mNormal * v);
     hitInfo.mUv0 = tri.mVertices[0].mTexcoord0 * w + tri.mVertices[1].mTexcoord0 * u + tri.mVertices[2].mTexcoord0 * v;
     hitInfo.mUv1 = tri.mVertices[0].mTexcoord1 * w + tri.mVertices[1].mTexcoord1 * u + tri.mVertices[2].mTexcoord1 * v;
-    hitInfo.mColor = vec4(1,1,1,1); //normalize(tri.mVertices[0].mColor * w + tri.mVertices[1].mColor * u + tri.mVertices[2].mColor * v);
+    hitInfo.mColor = tri.mVertices[0].mColor * w + tri.mVertices[1].mColor * u + tri.mVertices[2].mColor * v;
     hitInfo.mDistance = dist;
     return hitInfo;
 }
