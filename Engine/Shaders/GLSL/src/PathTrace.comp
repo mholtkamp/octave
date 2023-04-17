@@ -76,6 +76,7 @@ vec3 PathTrace(Ray ray, inout uint rngState)
     vec3 incomingLight = vec3(0,0,0);
     vec3 rayColor = vec3(1,1,1);
 
+    const uint kMaxAlphaSkips = 5;
     uint maxBounces = pathTrace.mMaxBounces;
     uint numAlphaSkips = 0;
 
@@ -86,6 +87,10 @@ vec3 PathTrace(Ray ray, inout uint rngState)
         {
             PathTraceMesh mesh = hit.mMesh;
             MaterialUniforms material = mesh.mMaterial;
+
+            bool transparent = (material.mBlendMode == BLEND_MODE_TRANSLUCENT || material.mBlendMode == BLEND_MODE_ADDITIVE);
+            bool additive = (material.mBlendMode == BLEND_MODE_ADDITIVE);
+            bool unlit = (material.mShadingModel == SHADING_MODEL_UNLIT);
 
             vec4 surfaceColor = vec4(0,0,0,0);
 
@@ -99,7 +104,12 @@ vec3 PathTrace(Ray ray, inout uint rngState)
 
             surfaceColor *= material.mColor;
 
-            if (material.mBlendMode == BLEND_MODE_MASKED && surfaceColor.a < material.mMaskCutoff && numAlphaSkips < 5)
+            if (transparent)
+            {
+                surfaceColor.a *= material.mOpacity;
+            }
+
+            if (material.mBlendMode == BLEND_MODE_MASKED && surfaceColor.a < material.mMaskCutoff && numAlphaSkips < kMaxAlphaSkips)
             {
                 // Instead of bouncing the ray, continue forward since it didn't really hit the surface.
                 // Move the ray slightly pass the hit point so that we don't reintersect with the same triangle?
@@ -110,9 +120,13 @@ vec3 PathTrace(Ray ray, inout uint rngState)
             }
 
             // For now, only unlit objects can emit light.
-            bool unlit = (material.mShadingModel == SHADING_MODEL_UNLIT);
-            float emission = material.mEmission * (unlit ? 1.0 : 0.0);
+            float emission = material.mEmission * ((unlit || additive) ? 1.0 : 0.0);
             vec3 emittedLight = emission * surfaceColor.rgb;
+
+            if (transparent)
+            {
+                emittedLight = mix(vec3(0,0,0), emittedLight, surfaceColor.a);
+            }
 
             // The primary ray should just return unlit color without emission scaling. 
             // TODO: Handle this differently for indirect light baking.
@@ -122,19 +136,39 @@ vec3 PathTrace(Ray ray, inout uint rngState)
             }
 
             incomingLight += (emittedLight * rayColor);
-            rayColor *= surfaceColor.rgb;
+
+            if (transparent)
+            {
+                if (!additive)
+                {
+                    rayColor *= mix(vec3(1,1,1), surfaceColor.rgb, surfaceColor.a);
+                }
+            }
+            else
+            {
+                rayColor *= surfaceColor.rgb;
+            }
 
             // If this was an unlit object, then end the bouncing there.
-            if (material.mShadingModel == SHADING_MODEL_UNLIT)
+            if (material.mShadingModel == SHADING_MODEL_UNLIT && !transparent)
             {
                 break;
             }
 
             // Determine new bounced ray direction.
-            ray.mOrigin = hit.mPosition;
-            vec3 diffuseDir = normalize(hit.mNormal + RandomDirection(rngState));
-            vec3 specularDir = reflect(ray.mDirection, hit.mNormal);
-            ray.mDirection = mix(diffuseDir, specularDir, material.mSpecular);
+            if (transparent && numAlphaSkips < kMaxAlphaSkips)
+            {
+                ray.mOrigin = hit.mPosition + ray.mDirection * 0.001;
+                --i;
+                ++numAlphaSkips;
+            }
+            else
+            {
+                ray.mOrigin = hit.mPosition;
+                vec3 diffuseDir = normalize(hit.mNormal + RandomDirection(rngState));
+                vec3 specularDir = reflect(ray.mDirection, hit.mNormal);
+                ray.mDirection = mix(diffuseDir, specularDir, material.mSpecular);
+            }
         }
         else
         {
