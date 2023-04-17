@@ -132,7 +132,7 @@ struct MaterialUniforms
     uint mFresnelEnabled;
     uint mVertexColorMode;
     uint mApplyFog;
-    float mPadding0;
+    float mEmission;
 
     uvec4 mUvMaps; // MAX_TEXTURES
     uvec4 mTevModes; // MAX_TEXTURES

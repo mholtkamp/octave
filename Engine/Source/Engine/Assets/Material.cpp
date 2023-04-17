@@ -244,6 +244,7 @@ void Material::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Specular", this, &mParams.mSpecular, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Shininess", this, &mParams.mShininess, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Integer, "Toon Steps", this, &mParams.mToonSteps, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Emission", this, &mParams.mEmission, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Apply Fog", this, &mParams.mApplyFog, 1, HandlePropChange));
 }
 
@@ -383,6 +384,17 @@ glm::vec4 Material::GetFresnelColor() const
 void Material::SetFresnelColor(const glm::vec4& color)
 {
     mParams.mFresnelColor = color;
+    MarkDirty();
+}
+
+float Material::GetEmission() const
+{
+    return mParams.mEmission;
+}
+
+void Material::SetEmission(float emission)
+{
+    mParams.mEmission = emission;
     MarkDirty();
 }
 
