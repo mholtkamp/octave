@@ -109,10 +109,20 @@ vec3 PathTrace(Ray ray, inout uint rngState)
                 continue;
             }
 
-            bool emit = (material.mShadingModel == SHADING_MODEL_UNLIT);
-            vec3 emittedLight = emit ? surfaceColor.rgb : vec3(0, 0, 0);
+            // For now, only unlit objects can emit light.
+            bool unlit = (material.mShadingModel == SHADING_MODEL_UNLIT);
+            float emission = material.mEmission * (unlit ? 1.0 : 0.0);
+            vec3 emittedLight = emission * surfaceColor.rgb;
+
+            // The primary ray should just return unlit color without emission scaling. 
+            // TODO: Handle this differently for indirect light baking.
+            if (unlit && i == 0)
+            {
+                emittedLight = surfaceColor.rgb;
+            }
+
             incomingLight += (emittedLight * rayColor);
-            rayColor *= (emit ? vec3(1,1,1) : surfaceColor.rgb);
+            rayColor *= surfaceColor.rgb;
 
             // If this was an unlit object, then end the bouncing there.
             if (material.mShadingModel == SHADING_MODEL_UNLIT)

@@ -43,6 +43,7 @@ struct MaterialParams
     glm::vec2 mUvScales[MAX_UV_MAPS] = { { 1.0f, 1.0f }, {1.0f, 1.0f} };
     glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
     glm::vec4 mFresnelColor = { 1.0f, 0.0f, 0.0f, 0.0f };
+    float mEmission = 1.0f;
     float mFresnelPower = 1.0f;
     float mSpecular = 0.0f;
     uint32_t mToonSteps = 2;
@@ -107,6 +108,9 @@ public:
 
     glm::vec4 GetFresnelColor() const;
     void SetFresnelColor(const glm::vec4& color);
+
+    float GetEmission() const;
+    void SetEmission(float emission);
 
     float GetFresnelPower() const;
     void SetFresnelPower(float power);
