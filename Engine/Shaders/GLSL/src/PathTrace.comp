@@ -77,7 +77,7 @@ vec3 PathTrace(Ray ray, inout uint rngState)
     vec3 rayColor = vec3(1,1,1);
 
     uint maxBounces = pathTrace.mMaxBounces;
-    uint numAlphaPasses = 0;
+    uint numAlphaSkips = 0;
 
     for (int i = 0; i < maxBounces; ++i)
     {
@@ -99,13 +99,13 @@ vec3 PathTrace(Ray ray, inout uint rngState)
 
             surfaceColor *= material.mColor;
 
-            if (material.mBlendMode == BLEND_MODE_MASKED && surfaceColor.a < material.mMaskCutoff && numAlphaPasses < 5)
+            if (material.mBlendMode == BLEND_MODE_MASKED && surfaceColor.a < material.mMaskCutoff && numAlphaSkips < 5)
             {
                 // Instead of bouncing the ray, continue forward since it didn't really hit the surface.
                 // Move the ray slightly pass the hit point so that we don't reintersect with the same triangle?
                 ray.mOrigin = hit.mPosition + ray.mDirection * 0.001;
                 --i;
-                numAlphaPasses++;
+                ++numAlphaSkips;
                 continue;
             }
 
