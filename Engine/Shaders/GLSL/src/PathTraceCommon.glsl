@@ -1,83 +1,3 @@
-
-#define PATH_TRACE_LIGHT_POINT 0
-#define PATH_TRACE_LIGHT_DIRECTIONAL 1
-
-struct Ray
-{
-    vec3 mOrigin;
-    vec3 mDirection;
-};
-
-struct PathTraceVertex
-{
-    vec3 mPosition;
-    float mPad0;
-
-    vec2 mTexcoord0;
-    vec2 mTexcoord1;
-
-    vec3 mNormal;
-    float mPad1;
-    
-    vec4 mColor;
-};
-
-struct PathTraceTriangle
-{
-    PathTraceVertex mVertices[3];
-};
-
-struct PathTraceMesh
-{
-    vec4 mBounds;
-
-    uint mStartTriangleIndex;
-    uint mNumTriangles;
-    uint mPad0;
-    uint mPad1;
-
-    uvec4 mTextures;
-    
-    MaterialUniforms mMaterial;
-};
-
-struct PathTraceLight
-{
-    vec3 mPosition;
-    float mRadius;
-
-    vec4 mColor;
-
-    uint mLightType;
-    vec3 mDirection;
-};
-
-struct PathTraceUniforms
-{
-    uint mNumTriangles;
-    uint mNumMeshes;
-    uint mNumLights;
-    uint mMaxBounces;
-
-    uint mRaysPerPixel;
-    uint mAccumulatedFrames;
-    uint mPad1;
-    uint mPad2;
-};
-
-struct HitInfo
-{
-    bool mHit;
-    float mDistance;
-    vec3 mPosition;
-    vec3 mNormal;
-    vec2 mUv0;
-    vec2 mUv1;
-    vec4 mColor;
-
-    PathTraceMesh mMesh;
-};
-
 HitInfo CreateHitInfo()
 {
     HitInfo hitInfo;
@@ -248,4 +168,157 @@ vec3 GetEnvironmentLight(Ray ray)
     vec3 envColor = mix(kGroundColor, skyColor, groundAlpha);
 
     return envColor;
+}
+
+
+HitInfo CalculateRayCollision(Ray ray)
+{
+    // Trace bounding spheres of all meshes
+    HitInfo closestHit = CreateHitInfo();
+    closestHit.mDistance = 1e20;
+    closestHit.mMesh.mMaterial.mColor = vec4(0,0,0,1);
+
+    for (uint m = 0; m < pathTrace.mNumMeshes; ++m)
+    {
+        PathTraceMesh mesh = meshes[m];
+        //HitInfo boundsHit = RaySphereTest(ray, mesh.mBounds.xyz, mesh.mBounds.w);
+        bool overlapsBounds = RayOverlapsSphere(ray, mesh.mBounds.xyz, mesh.mBounds.w);
+
+        if (overlapsBounds)
+        {
+            // Loop through triangles
+            for (uint t = 0; t < mesh.mNumTriangles; ++t)
+            {
+                uint triIndex = mesh.mStartTriangleIndex + t;
+                PathTraceTriangle tri = triangles[triIndex];
+                HitInfo hitInfo = RayTriangleTest(ray, tri);
+
+                if (hitInfo.mHit && hitInfo.mDistance < closestHit.mDistance)
+                {
+                    closestHit = hitInfo;
+                    closestHit.mMesh = mesh;
+                }
+            }
+        }
+    }
+
+    return closestHit;
+} 
+
+vec3 PathTrace(Ray ray, inout uint rngState)
+{
+    vec3 incomingLight = vec3(0,0,0);
+    vec3 rayColor = vec3(1,1,1);
+
+    const uint kMaxAlphaSkips = 5;
+    uint maxBounces = pathTrace.mMaxBounces;
+    uint numAlphaSkips = 0;
+
+    for (int i = 0; i < maxBounces; ++i)
+    {
+        HitInfo hit = CalculateRayCollision(ray);
+        if (hit.mHit)
+        {
+            PathTraceMesh mesh = hit.mMesh;
+            MaterialUniforms material = mesh.mMaterial;
+
+            bool transparent = (material.mBlendMode == BLEND_MODE_TRANSLUCENT || material.mBlendMode == BLEND_MODE_ADDITIVE);
+            bool additive = (material.mBlendMode == BLEND_MODE_ADDITIVE);
+            bool unlit = (material.mShadingModel == SHADING_MODEL_UNLIT);
+
+            vec4 surfaceColor = vec4(0,0,0,0);
+
+            vec2 uv0 = (hit.mUv0 + material.mUvOffset0) * material.mUvScale0;
+            vec2 uv1 = (hit.mUv1 + material.mUvOffset1) * material.mUvScale1;
+
+            surfaceColor = BlendTexture(material, surfaceColor, 0, textures[mesh.mTextures[0]], uv0, uv1, hit.mColor.r);
+            surfaceColor = BlendTexture(material, surfaceColor, 1, textures[mesh.mTextures[1]], uv0, uv1, hit.mColor.g);
+            surfaceColor = BlendTexture(material, surfaceColor, 2, textures[mesh.mTextures[2]], uv0, uv1, hit.mColor.b);
+            surfaceColor = BlendTexture(material, surfaceColor, 3, textures[mesh.mTextures[3]], uv0, uv1, 0.0);
+
+            surfaceColor *= material.mColor;
+
+            if (material.mVertexColorMode == VERTEX_COLOR_MODULATE)
+            {
+                surfaceColor *= hit.mColor;
+            }
+            else if (material.mVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
+            {
+                surfaceColor *= hit.mColor.a;
+            }
+
+            if (transparent)
+            {
+                surfaceColor.a *= material.mOpacity;
+            }
+
+            if (material.mBlendMode == BLEND_MODE_MASKED && surfaceColor.a < material.mMaskCutoff && numAlphaSkips < kMaxAlphaSkips)
+            {
+                // Instead of bouncing the ray, continue forward since it didn't really hit the surface.
+                // Move the ray slightly pass the hit point so that we don't reintersect with the same triangle?
+                ray.mOrigin = hit.mPosition + ray.mDirection * 0.001;
+                --i;
+                ++numAlphaSkips;
+                continue;
+            }
+
+            // For now, only unlit objects can emit light.
+            float emission = material.mEmission * ((unlit || additive) ? 1.0 : 0.0);
+            vec3 emittedLight = emission * surfaceColor.rgb;
+
+            if (transparent)
+            {
+                emittedLight = mix(vec3(0,0,0), emittedLight, surfaceColor.a);
+            }
+
+            // The primary ray should just return unlit color without emission scaling. 
+            // TODO: Handle this differently for indirect light baking.
+            if (unlit && i == 0)
+            {
+                emittedLight = surfaceColor.rgb;
+            }
+
+            incomingLight += (emittedLight * rayColor);
+
+            if (transparent)
+            {
+                if (!additive)
+                {
+                    rayColor *= mix(vec3(1,1,1), surfaceColor.rgb, surfaceColor.a);
+                }
+            }
+            else
+            {
+                rayColor *= surfaceColor.rgb;
+            }
+
+            // If this was an unlit object, then end the bouncing there.
+            if (material.mShadingModel == SHADING_MODEL_UNLIT && !transparent)
+            {
+                break;
+            }
+
+            // Determine new bounced ray direction.
+            if (transparent && numAlphaSkips < kMaxAlphaSkips)
+            {
+                ray.mOrigin = hit.mPosition + ray.mDirection * 0.001;
+                --i;
+                ++numAlphaSkips;
+            }
+            else
+            {
+                ray.mOrigin = hit.mPosition;
+                vec3 diffuseDir = normalize(hit.mNormal + RandomDirection(rngState));
+                vec3 specularDir = reflect(ray.mDirection, hit.mNormal);
+                ray.mDirection = mix(diffuseDir, specularDir, material.mSpecular);
+            }
+        }
+        else
+        {
+            incomingLight += GetEnvironmentLight(ray) * rayColor;
+            break;
+        }
+    }
+
+    return incomingLight;
 }
