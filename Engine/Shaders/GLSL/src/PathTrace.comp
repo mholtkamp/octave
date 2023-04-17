@@ -104,6 +104,15 @@ vec3 PathTrace(Ray ray, inout uint rngState)
 
             surfaceColor *= material.mColor;
 
+            if (material.mVertexColorMode == VERTEX_COLOR_MODULATE)
+            {
+                surfaceColor *= hit.mColor;
+            }
+            else if (material.mVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
+            {
+                surfaceColor *= hit.mColor.a;
+            }
+
             if (transparent)
             {
                 surfaceColor.a *= material.mOpacity;

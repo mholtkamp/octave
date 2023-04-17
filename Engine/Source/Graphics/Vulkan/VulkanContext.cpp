@@ -2218,7 +2218,7 @@ void VulkanContext::PathTraceWorld()
                                 triangle.mVertices[v].mTexcoord0 = colorVerts[index].mTexcoord0;
                                 triangle.mVertices[v].mTexcoord1 = colorVerts[index].mTexcoord1;
                                 triangle.mVertices[v].mNormal = glm::vec3(normalTransform * glm::vec4(colorVerts[index].mNormal, 0));
-                                triangle.mVertices[v].mColor = colorVerts[index].mColor;
+                                triangle.mVertices[v].mColor = ColorUint32ToFloat4(colorVerts[index].mColor);
                             }
                             else
                             {
@@ -2226,7 +2226,7 @@ void VulkanContext::PathTraceWorld()
                                 triangle.mVertices[v].mTexcoord0 = verts[index].mTexcoord0;
                                 triangle.mVertices[v].mTexcoord1 = verts[index].mTexcoord1;
                                 triangle.mVertices[v].mNormal = glm::vec3(normalTransform * glm::vec4(verts[index].mNormal, 0));
-                                triangle.mVertices[v].mColor = 0xffffffff;
+                                triangle.mVertices[v].mColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
                             }
                         }
                     }

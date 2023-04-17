@@ -164,7 +164,9 @@ struct PathTraceVertex
     glm::vec2 mTexcoord1 = { 0.0f, 0.0f };
 
     glm::vec3 mNormal = { 0.0f, 0.0f, 1.0f };
-    uint32_t mColor = 0xffffffff;
+    float mPad1 = 1337.1f;
+
+    glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 };
 
 struct PathTraceTriangle
