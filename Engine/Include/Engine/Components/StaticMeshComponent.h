@@ -36,6 +36,9 @@ public:
     void SetUseTriangleCollision(bool triangleCol);
     bool GetUseTriangleCollision() const;
 
+    void SetBakeLighting(bool bake);
+    bool GetBakeLighting() const;
+
     virtual Material* GetMaterial() override;
     virtual void Render() override;
 
@@ -50,7 +53,9 @@ protected:
     virtual void RecreateCollisionShape();
 
     StaticMeshRef mStaticMesh;
+    std::vector<uint32_t> mInstanceColors; // e.g. baked lighting color
     bool mUseTriangleCollision;
+    bool mBakeLighting;
 
     // Graphics Resource
     StaticMeshCompResource mResource;

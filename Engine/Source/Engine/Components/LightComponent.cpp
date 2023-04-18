@@ -2,9 +2,18 @@
 
 DEFINE_RTTI(LightComponent);
 
+static const char* sLightingDomainStrings[] =
+{
+    "Static",
+    "Dynamic",
+    "All"
+};
+static_assert(int32_t(LightingDomain::Count) == 3, "Need to update string conversion table");
+
 LightComponent::LightComponent() :
     mColor(1,1,1,1),
     mIntensity(1),
+    mDomain(LightingDomain::All),
     mCastShadows(true)
 {
 
@@ -25,6 +34,7 @@ void LightComponent::GatherProperties(std::vector<Property>& outProps)
     TransformComponent::GatherProperties(outProps);
 
     outProps.push_back(Property(DatumType::Color, "Color", this, &mColor));
+    outProps.push_back(Property(DatumType::Byte, "Lighting Domain", this, &mDomain, 1, nullptr, 0, int32_t(LightingDomain::Count), sLightingDomainStrings));
     outProps.push_back(Property(DatumType::Bool, "Cast Shadows", this, &mCastShadows));
 }
 
@@ -67,6 +77,16 @@ void LightComponent::SetIntensity(float intensity)
 float LightComponent::GetIntensity() const
 {
     return mIntensity;
+}
+
+void LightComponent::SetLightingDomain(LightingDomain domain)
+{
+    mDomain = domain;
+}
+
+LightingDomain LightComponent::GetLightingDomain() const
+{
+    return mDomain;
 }
 
 void LightComponent::SetCastShadows(bool castShadows)
