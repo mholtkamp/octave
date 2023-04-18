@@ -6,6 +6,7 @@
 #include "Log.h"
 #include "NetworkManager.h"
 #include "Assets/Blueprint.h"
+#include "Components/LightComponent.h"
 
 #if EDITOR
 #include "EditorState.h"
@@ -266,7 +267,22 @@ void Level::LoadIntoWorld(World* world, bool clear, glm::vec3 offset, glm::vec3 
                 // There should be a better way to do this, but the client should not 
                 // instantiate network actors. Let the server send down the SpawnActor messages.
                 GetWorld()->DestroyActor(newActor);
+                newActor = nullptr;
             }
+
+#if EDITOR
+            // Delete any actors that are solely a baked light when in Non-Editor config
+            if (newActor->GetNumComponents() == 1 &&
+                newActor->GetComponent(0)->Is(LightComponent::ClassRuntimeId()))
+            {
+                LightComponent* lightComp = newActor->GetComponent(0)->As<LightComponent>();
+                if (lightComp->GetLightingDomain() == LightingDomain::Static)
+                {
+                    GetWorld()->DestroyActor(newActor);
+                    newActor = nullptr;
+                }
+            }
+#endif
         }
         else
         {

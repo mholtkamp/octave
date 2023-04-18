@@ -27,6 +27,9 @@ public:
     void SetIntensity(float intensity);
     float GetIntensity() const;
 
+    void SetLightingDomain(LightingDomain domain);
+    LightingDomain GetLightingDomain() const;
+
     void SetCastShadows(bool castShadows);
     bool ShouldCastShadows() const;
 
@@ -34,5 +37,6 @@ protected:
 
     glm::vec4 mColor;
     float mIntensity;
+    LightingDomain mDomain;
     bool mCastShadows;
 };

@@ -102,6 +102,15 @@ enum class LightType
     Count
 };
 
+enum class LightingDomain : uint8_t
+{
+    Static,
+    Dynamic,
+    All,
+
+    Count
+};
+
 struct Bounds
 {
     glm::vec3 mCenter = { };

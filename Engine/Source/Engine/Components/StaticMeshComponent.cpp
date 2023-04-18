@@ -43,7 +43,8 @@ static StaticMesh* GetDefaultMesh()
 
 StaticMeshComponent::StaticMeshComponent() :
     mStaticMesh(nullptr),
-    mUseTriangleCollision(false)
+    mUseTriangleCollision(false),
+    mBakeLighting(true)
 {
     mName = "Static Mesh";
 }
@@ -63,6 +64,7 @@ void StaticMeshComponent::GatherProperties(std::vector<Property>& outProps)
     MeshComponent::GatherProperties(outProps);
     outProps.push_back(Property(DatumType::Asset, "Static Mesh", this, &mStaticMesh, 1, HandlePropChange, int32_t(StaticMesh::GetStaticType())));
     outProps.push_back(Property(DatumType::Bool, "Use Triangle Collision", this, &mUseTriangleCollision, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Bake Lighting", this, &mBakeLighting, 1, HandlePropChange));
 }
 
 void StaticMeshComponent::Create()
@@ -141,6 +143,16 @@ void StaticMeshComponent::SetUseTriangleCollision(bool triangleCol)
 bool StaticMeshComponent::GetUseTriangleCollision() const
 {
     return mUseTriangleCollision;
+}
+
+void StaticMeshComponent::SetBakeLighting(bool bake)
+{
+    mBakeLighting = bake;
+}
+
+bool StaticMeshComponent::GetBakeLighting() const
+{
+    return mBakeLighting;
 }
 
 Material* StaticMeshComponent::GetMaterial()

@@ -656,7 +656,8 @@ void Renderer::GatherLightData(World* world)
 
     for (uint32_t i = 0; i < comps.size(); ++i)
     {
-        if (comps[i]->IsVisible())
+        if (comps[i]->IsVisible() && 
+            comps[i]->GetLightingDomain() != LightingDomain::Static)
         {
             LightData lightData;
             lightData.mType = LightType::Point;
