@@ -50,8 +50,8 @@ struct PathTraceUniforms
 
     uint32_t mRaysPerPixel;
     uint32_t mAccumulatedFrames;
-    uint32_t mPad1;
-    uint32_t mPad2;
+    uint32_t mNumBakeVertices;
+    uint32_t mPad0;
 };
 
 struct GeometryData
@@ -197,6 +197,25 @@ struct PathTraceLight
 
     uint32_t mLightType = uint32_t(PathTraceLightType::Point);
     glm::vec3 mDirection = { 0.0f, 0.0f, -1.0f };
+};
+
+struct LightBakeVertex
+{
+    glm::vec3 mPosition = { 0.0f, 0.0f, 0.0f };
+    float mPad0 = 1337.0f;
+
+    glm::vec3 mNormal = { 0.0f, 1.0f, 0.0f };
+    float mPad1 = 1337.1f;
+
+    glm::vec4 mDirectLight = { 0.0f, 0.0f, 0.0f, 0.0f };
+    glm::vec4 mIndirectLight = { 0.0f, 0.0f, 0.0f, 0.0f };
+};
+
+enum class LightBakePhase : uint8_t
+{
+    Direct,
+    Indirect,
+    Count
 };
 
 enum class DescriptorSetBinding

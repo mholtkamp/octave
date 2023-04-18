@@ -134,6 +134,32 @@ void GFX_PathTrace()
     gVulkanContext->PathTraceWorld();
 }
 
+void GFX_BeginLightBake()
+{
+    return gVulkanContext->BeginLightBake();
+}
+
+void GFX_UpdateLightBake()
+{
+    gVulkanContext->UpdateLightBake();
+}
+
+void GFX_CancelLightBake()
+{
+    gVulkanContext->CancelLightBake();
+}
+
+
+bool GFX_IsLightBakeInProgress()
+{
+    return gVulkanContext->IsLightBakeInProgress();
+}
+
+float GFX_GetLightBakeProgress()
+{
+    return gVulkanContext->GetLightBakeProgress();
+}
+
 void GFX_CreateTextureResource(Texture* texture, std::vector<uint8_t>& data)
 {
     CreateTextureResource(texture, data.data());

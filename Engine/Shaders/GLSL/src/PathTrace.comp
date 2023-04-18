@@ -39,8 +39,8 @@ layout (set = 1, binding = 5, rgba8) uniform image2D outputImage;
 layout (local_size_x = 8, local_size_y = 8) in;
 void main()
 {
-    uint threadIndex = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * uint(global.mScreenDimensions.x + 0.5) + global.mFrameNumber * 719393;
-    uint rngState = threadIndex;
+    uint threadIndex = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * uint(global.mScreenDimensions.x + 0.5);
+    uint rngState = threadIndex + (global.mFrameNumber * 719393);
 
     vec2 uv = gl_GlobalInvocationID.xy / global.mScreenDimensions;
 

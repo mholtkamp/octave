@@ -16,6 +16,7 @@
 #include "Image.h"
 #include "Line.h"
 #include "ResourceArena.h"
+#include "ObjectRef.h"
 
 #if PLATFORM_LINUX
 #include <xcb/xcb.h>
@@ -112,6 +113,12 @@ public:
 
     void PathTraceWorld();
 
+    void BeginLightBake();
+    void UpdateLightBake();
+    void CancelLightBake();
+    bool IsLightBakeInProgress();
+    float GetLightBakeProgress();
+
 private:
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -161,6 +168,11 @@ private:
 
     void DestroySwapchain();
     void DestroyDebugCallback();
+
+    void UpdatePathTracingScene(
+        std::vector<PathTraceTriangle>& triangleData,
+        std::vector<PathTraceMesh>& meshData,
+        std::vector<PathTraceLight>& lightData);
 
 private:
 
@@ -227,6 +239,7 @@ private:
     Buffer* mPathTraceMeshBuffer = nullptr;
     Buffer* mPathTraceLightBuffer = nullptr;
     UniformBuffer* mPathTraceUniformBuffer = nullptr;
+    Buffer* mLightBakeVertexBuffer = nullptr;
 
     // Destroy Queue
     DestroyQueue mDestroyQueue;
@@ -254,6 +267,10 @@ private:
     uint32_t mPathTraceAccumulatedFrames = 0;
     glm::vec3 mPathTracePrevCameraPos = { 0.0f, 0.0f, 0.0f };
     glm::vec3 mPathTracePrevCameraRot = { 0.0f, 0.0f, 0.0f };
+    LightBakePhase mLightBakePhase = LightBakePhase::Count;
+    std::vector<ComponentRef> mLightBakeComps;
+    int32_t mBakingCompIndex = -1;
+    int32_t mNextBakingCompIndex = 0;
 
 #if EDITOR
 public:

@@ -82,7 +82,8 @@ enum class PipelineId
 
     // Compute
     PathTrace,
-    LightBake,
+    LightBakeDirect,
+    LightBakeIndirect,
 
     // Editor
     HitCheck,
