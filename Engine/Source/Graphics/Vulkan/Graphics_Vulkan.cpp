@@ -144,11 +144,10 @@ void GFX_UpdateLightBake()
     gVulkanContext->UpdateLightBake();
 }
 
-void GFX_CancelLightBake()
+void GFX_EndLightBake()
 {
-    gVulkanContext->CancelLightBake();
+    gVulkanContext->EndLightBake();
 }
-
 
 bool GFX_IsLightBakeInProgress()
 {
