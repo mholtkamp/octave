@@ -52,6 +52,18 @@ struct PathTraceLight
     vec3 mDirection;
 };
 
+struct LightBakeVertex
+{
+    vec3 mPosition;
+    float mPad0;
+
+    vec3 mNormal;
+    float mPad1;
+
+    vec4 mDirectLight;
+    vec4 mIndirectLight;
+};
+
 struct PathTraceUniforms
 {
     uint mNumTriangles;
@@ -61,8 +73,8 @@ struct PathTraceUniforms
 
     uint mRaysPerPixel;
     uint mAccumulatedFrames;
-    uint mPad1;
-    uint mPad2;
+    uint mNumBakeVertices;
+    uint mPad0;
 };
 
 struct HitInfo

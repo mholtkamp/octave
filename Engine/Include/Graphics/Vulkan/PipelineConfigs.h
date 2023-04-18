@@ -516,32 +516,27 @@ public:
         AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Light data
         AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT, PATH_TRACE_MAX_TEXTURES); // Texture Array
         AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT); // Output image
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // In/Out baked vertex data
     }
 };
 
-class LightBakePipeline : public Pipeline
+class LightBakeDirectPipeline : public PathTracePipeline
 {
 public:
 
-    LightBakePipeline()
+    LightBakeDirectPipeline()
     {
-        mComputePipeline = true;
-        mComputeShaderPath = ENGINE_SHADER_DIR "LightBake.comp";
-
-        mPipelineId = PipelineId::LightBake;
+        mComputeShaderPath = ENGINE_SHADER_DIR "LightBakeDirect.comp";
+        mPipelineId = PipelineId::LightBakeDirect;
     }
+};
 
-    virtual void PopulateLayoutBindings() override
+class LightBakeIndirectPipeline : public LightBakeDirectPipeline
+{
+    LightBakeIndirectPipeline()
     {
-        Pipeline::PopulateLayoutBindings();
-
-        PushSet();
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Uniform data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Triangle data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Mesh (+ Material) data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Light data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT, PATH_TRACE_MAX_TEXTURES); // Texture Array
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Output vertex color data
+        mComputeShaderPath = ENGINE_SHADER_DIR "LightBakeIndirect.comp";
+        mPipelineId = PipelineId::LightBakeIndirect;
     }
 };
 

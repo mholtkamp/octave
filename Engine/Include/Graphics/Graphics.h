@@ -57,6 +57,12 @@ void GFX_SetFrameRate(int32_t frameRate);
 
 void GFX_PathTrace();
 
+void GFX_BeginLightBake();
+void GFX_UpdateLightBake();
+void GFX_CancelLightBake();
+bool GFX_IsLightBakeInProgress();
+float GFX_GetLightBakeProgress();
+
 // Texture
 void GFX_CreateTextureResource(Texture* texture, std::vector<uint8_t>& data);
 void GFX_DestroyTextureResource(Texture* texture);

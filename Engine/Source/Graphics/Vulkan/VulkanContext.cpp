@@ -1065,6 +1065,7 @@ void VulkanContext::CreatePathTraceResources()
     mPathTraceTriangleBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceTriangle), "Path Trace Triangle Buffer", nullptr, false);
     mPathTraceMeshBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceMesh), "Path Trace Mesh Buffer", nullptr, false);
     mPathTraceLightBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceLight), "Path Trace Light Buffer", nullptr, false);
+    mLightBakeVertexBuffer = new Buffer(BufferType::Storage, sizeof(LightBakeVertex), "Light Bake Vertex Buffer", nullptr, true);
 
     // Images
     ImageDesc imageDesc;
@@ -1086,6 +1087,7 @@ void VulkanContext::CreatePathTraceResources()
     mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceMeshBuffer);
     mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mPathTraceLightBuffer);
     mPathTraceDescriptorSet->UpdateStorageImageDescriptor(5, mPathTraceImage);
+    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(6, mLightBakeVertexBuffer);
 
     mPathTraceImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
@@ -2069,8 +2071,227 @@ UniformBufferArena& VulkanContext::GetMeshUniformBufferArena()
     return mMeshUniformBufferArena;
 }
 
+void VulkanContext::UpdatePathTracingScene(
+    std::vector<PathTraceTriangle>& triangleData,
+    std::vector<PathTraceMesh>& meshData,
+    std::vector<PathTraceLight>& lightData)
+{
+    World* world = GetWorld();
+
+    if (world == nullptr)
+        return;
+
+    triangleData.clear();
+    meshData.clear();
+    lightData.clear();
+
+    // Update triangle + mesh + light buffers
+    std::vector<Image*> images;
+
+    images.reserve(PATH_TRACE_MAX_TEXTURES);
+    Texture* whiteTex = LoadAsset<Texture>("T_White");
+    OCT_ASSERT(whiteTex);
+    Image* whiteImg = whiteTex->GetResource()->mImage;
+    OCT_ASSERT(whiteImg);
+    images.push_back(whiteImg);
+
+    uint32_t totalTriangles = 0;
+
+    const std::vector<Actor*>& actors = world->GetActors();
+
+    for (uint32_t a = 0; a < actors.size(); ++a)
+    {
+        if (!actors[a]->IsVisible())
+            continue;
+
+        const std::vector<Component*>& components = actors[a]->GetComponents();
+
+        for (uint32_t c = 0; c < components.size(); ++c)
+        {
+            if (!components[c]->IsVisible())
+                continue;
+
+            StaticMeshComponent* meshComp = components[c]->As<StaticMeshComponent>();
+            LightComponent* lightComp = components[c]->As<LightComponent>();
+            if (meshComp != nullptr)
+            {
+                StaticMesh* meshAsset = meshComp->GetStaticMesh();
+                if (meshAsset == nullptr)
+                {
+                    continue;
+                }
+
+                Material* material = meshComp->GetMaterial();
+                if (material == nullptr)
+                {
+                    material = Renderer::Get()->GetDefaultMaterial();
+                }
+
+                glm::mat4 transform = meshComp->GetRenderTransform();
+                glm::mat4 normalTransform = glm::transpose(glm::inverse(transform));
+
+                meshData.push_back(PathTraceMesh());
+                PathTraceMesh& mesh = meshData.back();
+                Bounds bounds = meshComp->GetBounds();
+                mesh.mBounds = glm::vec4(bounds.mCenter.x, bounds.mCenter.y, bounds.mCenter.z, bounds.mRadius);
+                mesh.mStartTriangleIndex = totalTriangles;
+                mesh.mNumTriangles = meshAsset->GetNumFaces();
+                WriteMaterialUniformData(mesh.mMaterial, material);
+
+                // Add textures and record indices.
+                for (uint32_t t = 0; t < MATERIAL_MAX_TEXTURES; ++t)
+                {
+                    Texture* tex = material->GetTexture((TextureSlot)t);
+                    Image* img = tex ? tex->GetResource()->mImage : nullptr;
+
+                    if (img != nullptr)
+                    {
+                        int32_t index = -1;
+
+                        // Look through already added textures for match
+                        for (uint32_t i = 0; i < images.size(); ++i)
+                        {
+                            if (images[i] == img)
+                            {
+                                index = (int32_t)i;
+                                break;
+                            }
+                        }
+
+                        // If texture wasn't found, then add it to the list.
+                        if (index == -1)
+                        {
+                            images.push_back(img);
+                            index = int32_t(images.size() - 1);
+                        }
+
+                        OCT_ASSERT(images.size() < PATH_TRACE_MAX_TEXTURES);
+                        OCT_ASSERT(index >= 0 && index < PATH_TRACE_MAX_TEXTURES);
+
+                        mesh.mTextures[t] = (uint32_t)index;
+                    }
+                    else
+                    {
+                        mesh.mTextures[t] = 0;
+                    }
+                }
+
+                // Add triangle data.
+                bool hasColor = meshAsset->HasVertexColor();
+                IndexType* indices = meshAsset->GetIndices();
+                Vertex* verts = hasColor ? nullptr : meshAsset->GetVertices();
+                VertexColor* colorVerts = hasColor ? meshAsset->GetColorVertices() : nullptr;
+
+                for (uint32_t t = 0; t < mesh.mNumTriangles; ++t)
+                {
+                    triangleData.push_back(PathTraceTriangle());
+                    PathTraceTriangle& triangle = triangleData.back();
+
+                    for (uint32_t v = 0; v < 3; ++v)
+                    {
+                        uint32_t index = t * 3 + v;
+                        if (hasColor)
+                        {
+                            triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[index].mPosition, 1));
+                            triangle.mVertices[v].mTexcoord0 = colorVerts[index].mTexcoord0;
+                            triangle.mVertices[v].mTexcoord1 = colorVerts[index].mTexcoord1;
+                            triangle.mVertices[v].mNormal = glm::vec3(normalTransform * glm::vec4(colorVerts[index].mNormal, 0));
+                            triangle.mVertices[v].mColor = ColorUint32ToFloat4(colorVerts[index].mColor);
+                        }
+                        else
+                        {
+                            triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(verts[index].mPosition, 1));
+                            triangle.mVertices[v].mTexcoord0 = verts[index].mTexcoord0;
+                            triangle.mVertices[v].mTexcoord1 = verts[index].mTexcoord1;
+                            triangle.mVertices[v].mNormal = glm::vec3(normalTransform * glm::vec4(verts[index].mNormal, 0));
+                            triangle.mVertices[v].mColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+                        }
+                    }
+                }
+
+                totalTriangles += mesh.mNumTriangles;
+            }
+            else if (lightComp)
+            {
+                if (lightComp->Is(PointLightComponent::ClassRuntimeId()))
+                {
+                    PointLightComponent* pointLightComp = lightComp->As<PointLightComponent>();
+
+                    lightData.push_back(PathTraceLight());
+                    PathTraceLight& light = lightData.back();
+                    light.mPosition = pointLightComp->GetAbsolutePosition();
+                    light.mRadius = pointLightComp->GetRadius();
+                    light.mColor = pointLightComp->GetColor();
+                    light.mLightType = uint32_t(PathTraceLightType::Point);
+                    light.mDirection = { 0.0f, 0.0f, -1.0f };
+
+                }
+                else if (lightComp->Is(DirectionalLightComponent::ClassRuntimeId()))
+                {
+                    DirectionalLightComponent* dirLightComp = lightComp->As<DirectionalLightComponent>();
+
+                    lightData.push_back(PathTraceLight());
+                    PathTraceLight& light = lightData.back();
+                    light.mPosition = dirLightComp->GetAbsolutePosition();
+                    light.mRadius = 10000.0f;
+                    light.mColor = dirLightComp->GetColor();
+                    light.mLightType = uint32_t(PathTraceLightType::Directional);
+                    light.mDirection = dirLightComp->GetDirection();
+                }
+            }
+        }
+    }
+
+    // Reallocate storage buffers if needed.
+    size_t triangleSize = triangleData.size() * sizeof(PathTraceTriangle);
+    size_t meshSize = meshData.size() * sizeof(PathTraceMesh);
+    size_t lightSize = lightData.size() * sizeof(PathTraceLight);
+
+    if (triangleSize > mPathTraceTriangleBuffer->GetSize())
+    {
+        GetDestroyQueue()->Destroy(mPathTraceTriangleBuffer);
+        mPathTraceTriangleBuffer = nullptr;
+        mPathTraceTriangleBuffer = new Buffer(BufferType::Storage, triangleSize, "Path Trace Triangle Buffer", nullptr, false);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceTriangleBuffer);
+    }
+
+    if (meshSize > mPathTraceMeshBuffer->GetSize())
+    {
+        GetDestroyQueue()->Destroy(mPathTraceMeshBuffer);
+        mPathTraceMeshBuffer = nullptr;
+        mPathTraceMeshBuffer = new Buffer(BufferType::Storage, meshSize, "Path Trace Mesh Buffer", nullptr, false);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceMeshBuffer);
+    }
+
+    if (lightSize > mPathTraceLightBuffer->GetSize())
+    {
+        GetDestroyQueue()->Destroy(mPathTraceLightBuffer);
+        mPathTraceLightBuffer = nullptr;
+        mPathTraceLightBuffer = new Buffer(BufferType::Storage, lightSize, "Path Trace Light Buffer", nullptr, false);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mPathTraceLightBuffer);
+    }
+
+    if (triangleSize > 0)
+        mPathTraceTriangleBuffer->Update(triangleData.data(), triangleSize);
+
+    if (meshSize > 0)
+        mPathTraceMeshBuffer->Update(meshData.data(), meshSize);
+
+    if (lightSize > 0)
+        mPathTraceLightBuffer->Update(lightData.data(), lightSize);
+
+    // Update texture array descriptor.
+    // Fill in any unused texture slots with the T_White texture
+    while (images.size() < PATH_TRACE_MAX_TEXTURES)
+    {
+        images.push_back(whiteImg);
+    }
+    mPathTraceDescriptorSet->UpdateImageArrayDescriptor(4, images);
+}
+
 void VulkanContext::PathTraceWorld()
 {
+    OCT_ASSERT(!IsLightBakeInProgress());
     World* world = GetWorld();
 
     if (world != nullptr)
@@ -2104,211 +2325,10 @@ void VulkanContext::PathTraceWorld()
             mPathTraceAccumulatedFrames = 0;
         }
 
-        // Update triangle + mesh + light buffers
         std::vector<PathTraceTriangle> triangleData;
         std::vector<PathTraceMesh> meshData;
         std::vector<PathTraceLight> lightData;
-        std::vector<Image*> images;
-
-        images.reserve(PATH_TRACE_MAX_TEXTURES);
-        Texture* whiteTex = LoadAsset<Texture>("T_White");
-        OCT_ASSERT(whiteTex);
-        Image* whiteImg = whiteTex->GetResource()->mImage;
-        OCT_ASSERT(whiteImg);
-        images.push_back(whiteImg);
-
-        uint32_t totalTriangles = 0;
-
-        const std::vector<Actor*>& actors = world->GetActors();
-
-        for (uint32_t a = 0; a < actors.size(); ++a)
-        {
-            if (!actors[a]->IsVisible())
-                continue;
-
-            const std::vector<Component*>& components = actors[a]->GetComponents();
-
-            for (uint32_t c = 0; c < components.size(); ++c)
-            {
-                if (!components[c]->IsVisible())
-                    continue;
-
-                StaticMeshComponent* meshComp = components[c]->As<StaticMeshComponent>();
-                LightComponent* lightComp = components[c]->As<LightComponent>();
-                if (meshComp != nullptr)
-                {
-                    StaticMesh* meshAsset = meshComp->GetStaticMesh();
-                    if (meshAsset == nullptr)
-                    {
-                        continue;
-                    }
-
-                    Material* material = meshComp->GetMaterial();
-                    if (material == nullptr)
-                    {
-                        material = Renderer::Get()->GetDefaultMaterial();
-                    }
-
-                    glm::mat4 transform = meshComp->GetRenderTransform();
-                    glm::mat4 normalTransform = glm::transpose(glm::inverse(transform));
-
-                    meshData.push_back(PathTraceMesh());
-                    PathTraceMesh& mesh = meshData.back();
-                    Bounds bounds = meshComp->GetBounds();
-                    mesh.mBounds = glm::vec4(bounds.mCenter.x, bounds.mCenter.y, bounds.mCenter.z, bounds.mRadius);
-                    mesh.mStartTriangleIndex = totalTriangles;
-                    mesh.mNumTriangles = meshAsset->GetNumFaces();
-                    WriteMaterialUniformData(mesh.mMaterial, material);
-
-                    // Add textures and record indices.
-                    for (uint32_t t = 0; t < MATERIAL_MAX_TEXTURES; ++t)
-                    {
-                        Texture* tex = material->GetTexture((TextureSlot)t);
-                        Image* img = tex ? tex->GetResource()->mImage : nullptr;
-
-                        if (img != nullptr)
-                        {
-                            int32_t index = -1;
-
-                            // Look through already added textures for match
-                            for (uint32_t i = 0; i < images.size(); ++i)
-                            {
-                                if (images[i] == img)
-                                {
-                                    index = (int32_t)i;
-                                    break;
-                                }
-                            }
-
-                            // If texture wasn't found, then add it to the list.
-                            if (index == -1)
-                            {
-                                images.push_back(img);
-                                index = int32_t(images.size() - 1);
-                            }
-
-                            OCT_ASSERT(images.size() < PATH_TRACE_MAX_TEXTURES);
-                            OCT_ASSERT(index >= 0 && index < PATH_TRACE_MAX_TEXTURES);
-
-                            mesh.mTextures[t] = (uint32_t)index;
-                        }
-                        else
-                        {
-                            mesh.mTextures[t] = 0;
-                        }
-                    }
-
-                    // Add triangle data.
-                    bool hasColor = meshAsset->HasVertexColor();
-                    IndexType* indices = meshAsset->GetIndices();
-                    Vertex* verts = hasColor ? nullptr : meshAsset->GetVertices();
-                    VertexColor* colorVerts = hasColor ? meshAsset->GetColorVertices() : nullptr;
-
-                    for (uint32_t t = 0; t < mesh.mNumTriangles; ++t)
-                    {
-                        triangleData.push_back(PathTraceTriangle());
-                        PathTraceTriangle& triangle = triangleData.back();
-
-                        for (uint32_t v = 0; v < 3; ++v)
-                        {
-                            uint32_t index = t * 3 + v;
-                            if (hasColor)
-                            {
-                                triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[index].mPosition, 1));
-                                triangle.mVertices[v].mTexcoord0 = colorVerts[index].mTexcoord0;
-                                triangle.mVertices[v].mTexcoord1 = colorVerts[index].mTexcoord1;
-                                triangle.mVertices[v].mNormal = glm::vec3(normalTransform * glm::vec4(colorVerts[index].mNormal, 0));
-                                triangle.mVertices[v].mColor = ColorUint32ToFloat4(colorVerts[index].mColor);
-                            }
-                            else
-                            {
-                                triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(verts[index].mPosition, 1));
-                                triangle.mVertices[v].mTexcoord0 = verts[index].mTexcoord0;
-                                triangle.mVertices[v].mTexcoord1 = verts[index].mTexcoord1;
-                                triangle.mVertices[v].mNormal = glm::vec3(normalTransform * glm::vec4(verts[index].mNormal, 0));
-                                triangle.mVertices[v].mColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-                            }
-                        }
-                    }
-
-                    totalTriangles += mesh.mNumTriangles;
-                }
-                else if (lightComp)
-                {
-                    if (lightComp->Is(PointLightComponent::ClassRuntimeId()))
-                    {
-                        PointLightComponent* pointLightComp = lightComp->As<PointLightComponent>();
-
-                        lightData.push_back(PathTraceLight());
-                        PathTraceLight& light = lightData.back();
-                        light.mPosition = pointLightComp->GetAbsolutePosition();
-                        light.mRadius = pointLightComp->GetRadius();
-                        light.mColor = pointLightComp->GetColor();
-                        light.mLightType = uint32_t(PathTraceLightType::Point);
-                        light.mDirection = { 0.0f, 0.0f, -1.0f };
-
-                    }
-                    else if (lightComp->Is(DirectionalLightComponent::ClassRuntimeId()))
-                    {
-                        DirectionalLightComponent* dirLightComp = lightComp->As<DirectionalLightComponent>();
-
-                        lightData.push_back(PathTraceLight());
-                        PathTraceLight& light = lightData.back();
-                        light.mPosition = dirLightComp->GetAbsolutePosition();
-                        light.mRadius = 10000.0f;
-                        light.mColor = dirLightComp->GetColor();
-                        light.mLightType = uint32_t(PathTraceLightType::Directional);
-                        light.mDirection = dirLightComp->GetDirection();
-                    }
-                }
-            }
-        }
-
-        // Reallocate storage buffers if needed.
-        size_t triangleSize = triangleData.size() * sizeof(PathTraceTriangle);
-        size_t meshSize = meshData.size() * sizeof(PathTraceMesh);
-        size_t lightSize = lightData.size() * sizeof(PathTraceLight);
-
-        if (triangleSize > mPathTraceTriangleBuffer->GetSize())
-        {
-            GetDestroyQueue()->Destroy(mPathTraceTriangleBuffer);
-            mPathTraceTriangleBuffer = nullptr;
-            mPathTraceTriangleBuffer = new Buffer(BufferType::Storage, triangleSize, "Path Trace Triangle Buffer", nullptr, false);
-            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceTriangleBuffer);
-        }
-
-        if (meshSize > mPathTraceMeshBuffer->GetSize())
-        {
-            GetDestroyQueue()->Destroy(mPathTraceMeshBuffer);
-            mPathTraceMeshBuffer = nullptr;
-            mPathTraceMeshBuffer = new Buffer(BufferType::Storage, meshSize, "Path Trace Mesh Buffer", nullptr, false);
-            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceMeshBuffer);
-        }
-
-        if (lightSize > mPathTraceLightBuffer->GetSize())
-        {
-            GetDestroyQueue()->Destroy(mPathTraceLightBuffer);
-            mPathTraceLightBuffer = nullptr;
-            mPathTraceLightBuffer = new Buffer(BufferType::Storage, lightSize, "Path Trace Light Buffer", nullptr, false);
-            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mPathTraceLightBuffer);
-        }
-
-        if (triangleSize > 0)
-            mPathTraceTriangleBuffer->Update(triangleData.data(), triangleSize);
-
-        if (meshSize > 0)
-            mPathTraceMeshBuffer->Update(meshData.data(), meshSize);
-
-        if (lightSize > 0)
-            mPathTraceLightBuffer->Update(lightData.data(), lightSize);
-
-        // Update texture array descriptor.
-        // Fill in any unused texture slots with the T_White texture
-        while (images.size() < PATH_TRACE_MAX_TEXTURES)
-        {
-            images.push_back(whiteImg);
-        }
-        mPathTraceDescriptorSet->UpdateImageArrayDescriptor(4, images);
+        UpdatePathTracingScene(triangleData, meshData, lightData);
 
         // Write uniform data.
         PathTraceUniforms uniforms;
@@ -2338,6 +2358,35 @@ void VulkanContext::PathTraceWorld()
 
         mPathTraceAccumulatedFrames++;
     }
+}
+
+void VulkanContext::BeginLightBake()
+{
+    if (GetWorld() != nullptr &&
+        mLightBakePhase == LightBakePhase::Count)
+    {
+
+    }
+}
+
+void VulkanContext::UpdateLightBake()
+{
+
+}
+
+void VulkanContext::CancelLightBake()
+{
+
+}
+
+bool VulkanContext::IsLightBakeInProgress()
+{
+    return (mLightBakePhase != LightBakePhase::Count);
+}
+
+float VulkanContext::GetLightBakeProgress()
+{
+    return 0.0f;
 }
 
 VkExtent2D& VulkanContext::GetSwapchainExtent()
