@@ -71,7 +71,7 @@ struct PathTraceUniforms
     uint mNumLights;
     uint mMaxBounces;
 
-    uint mRaysPerPixel;
+    uint mRaysPerThread;
     uint mAccumulatedFrames;
     uint mNumBakeVertices;
     uint mPad0;

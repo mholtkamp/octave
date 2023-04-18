@@ -52,7 +52,7 @@ void main()
     ray.mDirection = normalize(viewPoint - ray.mOrigin);
 
     vec3 totalLight = vec3(0,0,0);
-    uint numRays = pathTrace.mRaysPerPixel;
+    uint numRays = pathTrace.mRaysPerThread;
 
     for (uint i = 0; i < numRays; ++i)
     {

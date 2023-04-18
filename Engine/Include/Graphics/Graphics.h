@@ -59,7 +59,7 @@ void GFX_PathTrace();
 
 void GFX_BeginLightBake();
 void GFX_UpdateLightBake();
-void GFX_CancelLightBake();
+void GFX_EndLightBake();
 bool GFX_IsLightBakeInProgress();
 float GFX_GetLightBakeProgress();
 

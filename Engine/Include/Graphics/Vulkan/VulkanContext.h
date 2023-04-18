@@ -115,7 +115,7 @@ public:
 
     void BeginLightBake();
     void UpdateLightBake();
-    void CancelLightBake();
+    void EndLightBake();
     bool IsLightBakeInProgress();
     float GetLightBakeProgress();
 
@@ -173,6 +173,10 @@ private:
         std::vector<PathTraceTriangle>& triangleData,
         std::vector<PathTraceMesh>& meshData,
         std::vector<PathTraceLight>& lightData);
+
+    void DispatchNextLightBake();
+    void ReadbackLightBakeResults();
+    void FinalizeLightBake();
 
 private:
 
@@ -264,13 +268,17 @@ private:
     bool mInitialized = false;
     EngineState* mEngineState = nullptr;
     Pipeline* mCurrentlyBoundPipeline = nullptr;
+
+    // Path Tracing and Light Baking state
     uint32_t mPathTraceAccumulatedFrames = 0;
     glm::vec3 mPathTracePrevCameraPos = { 0.0f, 0.0f, 0.0f };
     glm::vec3 mPathTracePrevCameraRot = { 0.0f, 0.0f, 0.0f };
     LightBakePhase mLightBakePhase = LightBakePhase::Count;
     std::vector<ComponentRef> mLightBakeComps;
+    std::vector<LightBakeResult> mLightBakeResults;
     int32_t mBakingCompIndex = -1;
     int32_t mNextBakingCompIndex = 0;
+    int64_t mBakedFrame = -1;
 
 #if EDITOR
 public:

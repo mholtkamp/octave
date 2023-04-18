@@ -48,7 +48,7 @@ struct PathTraceUniforms
     uint32_t mNumLights;
     uint32_t mMaxBounces;
 
-    uint32_t mRaysPerPixel;
+    uint32_t mRaysPerThread;
     uint32_t mAccumulatedFrames;
     uint32_t mNumBakeVertices;
     uint32_t mPad0;
@@ -209,6 +209,12 @@ struct LightBakeVertex
 
     glm::vec4 mDirectLight = { 0.0f, 0.0f, 0.0f, 0.0f };
     glm::vec4 mIndirectLight = { 0.0f, 0.0f, 0.0f, 0.0f };
+};
+
+struct LightBakeResult
+{
+    std::vector<glm::vec4> mDirectColors;
+    std::vector<glm::vec4> mIndirectColors;
 };
 
 enum class LightBakePhase : uint8_t

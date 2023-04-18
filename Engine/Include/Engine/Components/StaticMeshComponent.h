@@ -48,6 +48,10 @@ public:
 
     virtual Bounds GetLocalBounds() const override;
 
+    void ClearInstanceColors();
+    void SetInstanceColors(const std::vector<uint32_t>& colors);
+    std::vector<uint32_t>& GetInstanceColors();
+
 protected:
 
     virtual void RecreateCollisionShape();

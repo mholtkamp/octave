@@ -322,6 +322,21 @@ Bounds StaticMeshComponent::GetLocalBounds() const
     }
 }
 
+void StaticMeshComponent::ClearInstanceColors()
+{
+    mInstanceColors.clear();
+}
+
+void StaticMeshComponent::SetInstanceColors(const std::vector<uint32_t>& colors)
+{
+    mInstanceColors = colors;
+}
+
+std::vector<uint32_t>& StaticMeshComponent::GetInstanceColors()
+{
+    return mInstanceColors;
+}
+
 void StaticMeshComponent::RecreateCollisionShape()
 {
     StaticMesh* staticMesh = mStaticMesh.Get<StaticMesh>();

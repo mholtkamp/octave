@@ -274,6 +274,11 @@ void VulkanContext::EndFrame()
 
     mFrameIndex = nextFrameIndex;
     mFrameNumber++;
+
+    if (mLightBakePhase != LightBakePhase::Count)
+    {
+        ReadbackLightBakeResults();
+    }
 }
 
 void VulkanContext::BeginRenderPass(RenderPassId id)
@@ -2336,7 +2341,7 @@ void VulkanContext::PathTraceWorld()
         uniforms.mNumMeshes = (uint32_t)meshData.size();
         uniforms.mNumLights = (uint32_t)lightData.size();
         uniforms.mMaxBounces = Renderer::Get()->GetMaxBounces();
-        uniforms.mRaysPerPixel = Renderer::Get()->GetRaysPerPixel();
+        uniforms.mRaysPerThread = Renderer::Get()->GetRaysPerPixel();
         uniforms.mAccumulatedFrames = mPathTraceAccumulatedFrames;
         mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
 
@@ -2362,21 +2367,94 @@ void VulkanContext::PathTraceWorld()
 
 void VulkanContext::BeginLightBake()
 {
-    if (GetWorld() != nullptr &&
+    World* world = GetWorld();
+
+    if (world != nullptr &&
         mLightBakePhase == LightBakePhase::Count)
     {
+        mLightBakeComps.clear();
 
+        const std::vector<Actor*>& actors = world->GetActors();
+        for (uint32_t a = 0; a < actors.size(); ++a)
+        {
+            Actor* actor = actors[a];
+
+            for (uint32_t c = 0; c < actor->GetNumComponents(); ++c)
+            {
+                StaticMeshComponent* meshComp = actor->GetComponent((int32_t)c)->As<StaticMeshComponent>();
+            
+                if (meshComp != nullptr &&
+                    meshComp->IsVisible() &&
+                    meshComp->GetBakeLighting())
+                {
+                    meshComp->ClearInstanceColors();
+                    mLightBakeComps.push_back(meshComp);
+                }
+            }
+        }
+
+        if (mLightBakeComps.size() > 0)
+        {
+            mLightBakePhase = LightBakePhase::Direct;
+            mBakingCompIndex = -1;
+            mNextBakingCompIndex = 0;
+            mBakedFrame = -1;
+        }
     }
 }
 
 void VulkanContext::UpdateLightBake()
 {
+    // Check if we can dispatch a new bake job.
+    if (mLightBakePhase == LightBakePhase::Direct)
+    {
+        // Are we currently baking a mesh or can we move to the next one?
+        if (mBakingCompIndex == -1)
+        {
+            // Do we have more meshes to bake?
+            if (mNextBakingCompIndex < mLightBakeComps.size())
+            {
+                StaticMeshComponent* meshComp = mLightBakeComps[mNextBakingCompIndex].Get<StaticMeshComponent>();
+                if (meshComp != nullptr &&
+                    meshComp->GetOwner() != nullptr &&
+                    meshComp->GetWorld() == GetWorld())
+                {
+                    DispatchNextLightBake();
+                }
+                else
+                {
+                    // Component was deleted? Or exiled from world?
+                    ++mNextBakingCompIndex;
+                }
+            }
+            else
+            {
+                // Finished baking direct light, move on to Indirect phase
+                mLightBakePhase = LightBakePhase::Indirect;
+                mBakingCompIndex = -1;
+                mNextBakingCompIndex = 0;
+                mBakedFrame = -1;
+            }
+        }
+    }
+    else if (mLightBakePhase == LightBakePhase::Indirect)
+    {
+        LogDebug("TODO: Implement Indirect light baking.");
 
+        FinalizeLightBake();
+        EndLightBake();
+    }
 }
 
-void VulkanContext::CancelLightBake()
+void VulkanContext::EndLightBake()
 {
+    mLightBakePhase = LightBakePhase::Count;
+    mLightBakeComps.clear();
+    mLightBakeResults.clear();
 
+    mBakingCompIndex = -1;
+    mNextBakingCompIndex = 0;
+    mBakedFrame = -1;
 }
 
 bool VulkanContext::IsLightBakeInProgress()
@@ -2387,6 +2465,220 @@ bool VulkanContext::IsLightBakeInProgress()
 float VulkanContext::GetLightBakeProgress()
 {
     return 0.0f;
+}
+
+void VulkanContext::DispatchNextLightBake()
+{
+    if (mBakingCompIndex == -1)
+    {
+        mBakingCompIndex = mNextBakingCompIndex;
+        mPathTraceAccumulatedFrames = 0;
+
+        ++mNextBakingCompIndex;
+    }
+
+    if (mBakingCompIndex >= mLightBakeComps.size())
+        return;
+
+    StaticMeshComponent* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMeshComponent>();
+
+    if (meshComp != nullptr &&
+        meshComp->GetStaticMesh() != nullptr &&
+        meshComp->GetOwner() != nullptr &&
+        meshComp->GetWorld() == GetWorld())
+    {
+        // Update path tracing scene
+        std::vector<PathTraceTriangle> triangleData;
+        std::vector<PathTraceMesh> meshData;
+        std::vector<PathTraceLight> lightData;
+        UpdatePathTracingScene(triangleData, meshData, lightData);
+
+        // Update light bake vertex buffer
+        std::vector<LightBakeVertex> lightBakeVertexData;
+
+        StaticMesh* meshAsset = meshComp->GetStaticMesh();
+
+        Material* material = meshComp->GetMaterial();
+        if (material == nullptr)
+        {
+            material = Renderer::Get()->GetDefaultMaterial();
+        }
+
+        glm::mat4 transform = meshComp->GetRenderTransform();
+        glm::mat4 normalTransform = glm::transpose(glm::inverse(transform));
+
+        uint32_t numVerts = meshAsset->GetNumVertices();
+        lightBakeVertexData.resize(numVerts);
+
+        // Add triangle data.
+        bool hasColor = meshAsset->HasVertexColor();
+        IndexType* indices = meshAsset->GetIndices();
+        Vertex* verts = hasColor ? nullptr : meshAsset->GetVertices();
+        VertexColor* colorVerts = hasColor ? meshAsset->GetColorVertices() : nullptr;
+
+        for (uint32_t v = 0; v < numVerts; ++v)
+        {
+            if (hasColor)
+            {
+                lightBakeVertexData[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[v].mPosition, 1));
+                lightBakeVertexData[v].mNormal = glm::vec3(normalTransform * glm::vec4(colorVerts[v].mNormal, 0));
+            }
+            else
+            {
+                lightBakeVertexData[v].mPosition = glm::vec3(transform * glm::vec4(verts[v].mPosition, 1));
+                lightBakeVertexData[v].mNormal = glm::vec3(normalTransform * glm::vec4(verts[v].mNormal, 0));
+            }
+        }
+
+        // If the vertex data is larger than our currently allocated storage buffer, create a new larger buffer
+        size_t vertBufferSize = sizeof(LightBakeVertex) * lightBakeVertexData.size();
+        if (mLightBakeVertexBuffer->GetSize() < vertBufferSize)
+        {
+            GetDestroyQueue()->Destroy(mLightBakeVertexBuffer);
+            mLightBakeVertexBuffer = nullptr;
+            mLightBakeVertexBuffer = new Buffer(BufferType::Storage, vertBufferSize, "Light Bake Vertex Buffer", nullptr, true);
+            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(6, mLightBakeVertexBuffer);
+
+        }
+
+        // Upload vertex data
+        if (vertBufferSize > 0)
+        {
+            mLightBakeVertexBuffer->Update(lightBakeVertexData.data(), vertBufferSize);
+        }
+
+        // Update uniform buffer
+        PathTraceUniforms uniforms;
+        uniforms.mNumTriangles = (uint32_t)triangleData.size();
+        uniforms.mNumMeshes = (uint32_t)meshData.size();
+        uniforms.mNumLights = (uint32_t)lightData.size();
+        uniforms.mMaxBounces = Renderer::Get()->GetBakeMaxBounces();
+        uniforms.mRaysPerThread = Renderer::Get()->GetBakeRaysPerVertex();
+        uniforms.mAccumulatedFrames = mPathTraceAccumulatedFrames;
+        uniforms.mNumBakeVertices = numVerts;
+        mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
+
+        VkCommandBuffer cb = GetCommandBuffer();
+
+        Pipeline* bakePipeline = nullptr;
+
+        if (mLightBakePhase == LightBakePhase::Direct)
+        {
+            bakePipeline = GetPipeline(PipelineId::LightBakeDirect);
+        }
+        else if (mLightBakePhase == LightBakePhase::Indirect)
+        {
+            bakePipeline = GetPipeline(PipelineId::LightBakeIndirect);
+        }
+
+        BindPipeline(bakePipeline, VertexType::Max);
+
+        mPathTraceDescriptorSet->Bind(cb, 1, bakePipeline->GetPipelineLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
+
+        vkCmdDispatch(cb, (numVerts + 31) / 32, 1, 1);
+
+        mBakedFrame = (int64_t)Renderer::Get()->GetFrameNumber();
+        mPathTraceAccumulatedFrames++;
+    }
+}
+
+void VulkanContext::ReadbackLightBakeResults()
+{
+    uint32_t curFrame = Renderer::Get()->GetFrameNumber();
+    bool resultsReady = (mBakedFrame != -1) && (curFrame - MAX_FRAMES >= mBakedFrame);
+
+    if (resultsReady)
+    {
+        StaticMeshComponent* meshComp = nullptr;
+
+        if (mBakingCompIndex >= 0 && mBakingCompIndex < mLightBakeComps.size())
+        {
+            meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMeshComponent>();
+        }
+
+        // Assuming the component still exists, readback the baked light data.
+        if (meshComp != nullptr &&
+            meshComp->GetStaticMesh() != nullptr)
+        {
+            uint32_t numVerts = meshComp->GetStaticMesh()->GetNumVertices();
+            OCT_ASSERT(mLightBakeVertexBuffer->GetSize() >= numVerts * sizeof(LightBakeVertex));
+
+            bool direct = (mLightBakePhase == LightBakePhase::Direct);
+            LightBakeVertex* verts = (LightBakeVertex*)mLightBakeVertexBuffer->Map();
+            std::vector<glm::vec4>& resColors = direct ?
+                mLightBakeResults[mBakingCompIndex].mDirectColors :
+                mLightBakeResults[mBakingCompIndex].mIndirectColors;
+
+            resColors.clear();
+
+            for (uint32_t i = 0; i < numVerts; ++i)
+            {
+                LightBakeVertex& vert = verts[i];
+                resColors.push_back(direct ? vert.mDirectLight : vert.mIndirectLight);
+            }
+
+            mLightBakeVertexBuffer->Unmap();
+
+            // Go ahead and apply the instance colors to the static mesh if we finished a direct bake.
+            // It is important that the direct lighting is applied to the mesh before entering the indirect light pass.
+            if (direct)
+            {
+                std::vector<uint32_t> instanceColors;
+
+                for (uint32_t v = 0; v < numVerts; ++v)
+                {
+                    glm::vec4 directClamped = glm::clamp(
+                        resColors[v], 
+                        glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 
+                        glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+                    uint32_t color32 = ColorFloat4ToUint32(directClamped);
+                    instanceColors.push_back(color32);
+                }
+
+                meshComp->SetInstanceColors(instanceColors);
+            }
+        }
+
+        mBakedFrame = -1;
+        mBakingCompIndex = -1;
+        mPathTraceAccumulatedFrames = 0;
+    }
+}
+
+void VulkanContext::FinalizeLightBake()
+{
+    // Add the direct and indirect light colors and convert the result to uint32_t format.
+
+    for (uint32_t c = 0; c < mLightBakeComps.size(); ++c)
+    {
+        StaticMeshComponent* meshComp = mLightBakeComps[c].Get<StaticMeshComponent>();
+
+        if (meshComp != nullptr &&
+            meshComp->GetStaticMesh() != nullptr)
+        {
+            const LightBakeResult& result = mLightBakeResults[c];
+            uint32_t numVerts = meshComp->GetStaticMesh()->GetNumVertices();
+            
+            // Ensure the vertex counts match
+            if (numVerts == result.mDirectColors.size() &&
+                numVerts == result.mIndirectColors.size())
+            {
+                std::vector<uint32_t> instanceColors;
+
+                for (uint32_t v = 0; v < numVerts; ++v)
+                {
+                    glm::vec4 combined = result.mDirectColors[v] + result.mIndirectColors[v];
+                    combined = glm::clamp(combined, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+                    uint32_t color32 = ColorFloat4ToUint32(combined);
+                    instanceColors.push_back(color32);
+                }
+
+                meshComp->SetInstanceColors(instanceColors);
+            }
+        }
+    }
 }
 
 VkExtent2D& VulkanContext::GetSwapchainExtent()
