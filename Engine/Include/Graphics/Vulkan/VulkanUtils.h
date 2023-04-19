@@ -74,7 +74,7 @@ uint32_t GetFormatBlockSize(VkFormat format);
 bool IsFormatBlockCompressed(VkFormat format);
 VkImageAspectFlags GetFormatImageAspect(VkFormat format);
 
-VkVertexInputBindingDescription GetVertexBindingDescription(VertexType type);
+std::vector<VkVertexInputBindingDescription> GetVertexBindingDescription(VertexType type);
 std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions(VertexType type);
 
 void SetDebugObjectName(VkObjectType objectType, uint64_t object, const char* name);

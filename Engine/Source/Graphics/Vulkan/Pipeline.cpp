@@ -230,18 +230,18 @@ void Pipeline::CreateGraphicsPipeline()
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-        VkVertexInputBindingDescription bindingDescription;
-        std::vector<VkVertexInputAttributeDescription> attributeDescription;
+        std::vector<VkVertexInputBindingDescription> bindingDescriptions;
+        std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
         if (vertexConfig.mVertexType != VertexType::Max)
         {
-            bindingDescription = GetVertexBindingDescription(vertexConfig.mVertexType);
-            attributeDescription = GetVertexAttributeDescriptions(vertexConfig.mVertexType);
+            bindingDescriptions = GetVertexBindingDescription(vertexConfig.mVertexType);
+            attributeDescriptions = GetVertexAttributeDescriptions(vertexConfig.mVertexType);
 
-            vertexInputInfo.vertexBindingDescriptionCount = 1;
-            vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-            vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescription.size());
-            vertexInputInfo.pVertexAttributeDescriptions = attributeDescription.data();
+            vertexInputInfo.vertexBindingDescriptionCount = (uint32_t)bindingDescriptions.size();
+            vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
+            vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+            vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
         }
         else
         {

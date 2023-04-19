@@ -18,6 +18,7 @@
 #include "Widgets/Text.h"
 #include "Widgets/Poly.h"
 #include "Utilities.h"
+#include "Vertex.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -463,37 +464,57 @@ VkImageAspectFlags GetFormatImageAspect(VkFormat format)
     return flags;
 }
 
-VkVertexInputBindingDescription GetVertexBindingDescription(VertexType type)
+std::vector<VkVertexInputBindingDescription> GetVertexBindingDescription(VertexType type)
 {
-    VkVertexInputBindingDescription desc = {};
+    std::vector<VkVertexInputBindingDescription> bindings;
 
-    switch (type)
+    // Binding 0
     {
-    case VertexType::Vertex:
-        desc.stride = sizeof(Vertex);
-        break;
-    case VertexType::VertexColor:
-        desc.stride = sizeof(VertexColor);
-        break;
-    case VertexType::VertexUI:
-        desc.stride = sizeof(VertexUI);
-        break;
-    case VertexType::VertexColorSimple:
-        desc.stride = sizeof(VertexColorSimple);
-        break;
-    case VertexType::VertexSkinned:
-        desc.stride = sizeof(VertexSkinned);
-        break;
-    case VertexType::VertexParticle:
-        desc.stride = sizeof(VertexParticle);
-        break;
+        VkVertexInputBindingDescription desc;
 
-    default: OCT_ASSERT(0); break;
+        switch (type)
+        {
+        case VertexType::Vertex:
+            desc.stride = sizeof(Vertex);
+            break;
+        case VertexType::VertexColor:
+            desc.stride = sizeof(VertexColor);
+            break;
+        case VertexType::VertexColorInstance:
+            desc.stride = sizeof(VertexColor);
+            break;
+        case VertexType::VertexUI:
+            desc.stride = sizeof(VertexUI);
+            break;
+        case VertexType::VertexColorSimple:
+            desc.stride = sizeof(VertexColorSimple);
+            break;
+        case VertexType::VertexSkinned:
+            desc.stride = sizeof(VertexSkinned);
+            break;
+        case VertexType::VertexParticle:
+            desc.stride = sizeof(VertexParticle);
+            break;
+
+        default: OCT_ASSERT(0); break;
+        }
+
+        desc.binding = 0;
+        desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        bindings.push_back(desc);
     }
 
-    desc.binding = 0;
-    desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    return desc;
+    // Binding 1
+    if (type == VertexType::VertexColorInstance)
+    {
+        VkVertexInputBindingDescription desc;
+        desc.stride = sizeof(uint32_t);
+        desc.binding = 1;
+        desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        bindings.push_back(desc);
+    }
+
+    return bindings;
 }
 
 std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions(VertexType type)
@@ -560,6 +581,39 @@ std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions(Ve
         attributeDescriptions[4].location = 4;
         attributeDescriptions[4].format = VK_FORMAT_R8G8B8A8_UNORM;
         attributeDescriptions[4].offset = offsetof(VertexColor, mColor);
+        break;
+
+    case VertexType::VertexColorInstance:
+        // Position
+        attributeDescriptions.push_back(VkVertexInputAttributeDescription());
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[0].offset = offsetof(VertexColor, mPosition);
+        // Texcoord0
+        attributeDescriptions.push_back(VkVertexInputAttributeDescription());
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(VertexColor, mTexcoord0);
+        // Texcoord1
+        attributeDescriptions.push_back(VkVertexInputAttributeDescription());
+        attributeDescriptions[2].binding = 0;
+        attributeDescriptions[2].location = 2;
+        attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[2].offset = offsetof(VertexColor, mTexcoord1);
+        // Normal
+        attributeDescriptions.push_back(VkVertexInputAttributeDescription());
+        attributeDescriptions[3].binding = 0;
+        attributeDescriptions[3].location = 3;
+        attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[3].offset = offsetof(VertexColor, mNormal);
+        // Color
+        attributeDescriptions.push_back(VkVertexInputAttributeDescription());
+        attributeDescriptions[4].binding = 1;
+        attributeDescriptions[4].location = 4;
+        attributeDescriptions[4].format = VK_FORMAT_R8G8B8A8_UNORM;
+        attributeDescriptions[4].offset = 0;
         break;
 
     case VertexType::VertexUI:
@@ -1180,6 +1234,19 @@ void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOve
 
         BindStaticMeshResource(mesh);
 
+        bool forwardPass = (GetVulkanContext()->GetCurrentRenderPassId() == RenderPassId::Forward);
+
+        // Determine vertex type for binding appropriate pipeline
+        VertexType vertexType = VertexType::Vertex;
+        if (forwardPass && staticMeshComp->GetInstanceColors().size() == mesh->GetNumVertices())
+        {
+            vertexType = VertexType::VertexColorInstance;
+        }
+        else if (mesh->HasVertexColor())
+        {
+            vertexType = VertexType::VertexColor;
+        }
+
         Material* material = staticMeshComp->GetMaterial();
 
         if (material == nullptr)
@@ -1189,17 +1256,17 @@ void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOve
         }
 
         Pipeline* pipeline = nullptr;
-        if (GetVulkanContext()->GetCurrentRenderPassId() == RenderPassId::Forward)
+        if (forwardPass)
         {
             // During the Forward pass, it is expected that that the material sets the necessary pipeline.
             // This could be moved up to the Renderer in the future to reduce CPU cost.
             pipeline = GetMaterialPipeline(material);
-            GetVulkanContext()->BindPipeline(pipeline, mesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex);
+            GetVulkanContext()->BindPipeline(pipeline, vertexType);
         }
         else
         {
             pipeline = GetVulkanContext()->GetCurrentlyBoundPipeline();
-            GetVulkanContext()->RebindPipeline(mesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex);
+            GetVulkanContext()->RebindPipeline(vertexType);
         }
 
         OCT_ASSERT(pipeline);

@@ -62,6 +62,9 @@ public:
             ENGINE_SHADER_DIR "ForwardColor.vert",
             ENGINE_SHADER_DIR "ForwardSkinned.vert",
             ENGINE_SHADER_DIR "ForwardParticle.vert");
+
+        AddVertexConfig(VertexType::VertexColorInstance, ENGINE_SHADER_DIR "ForwardColor.vert");
+
         mFragmentShaderPath = ENGINE_SHADER_DIR "Forward.frag";
         mDepthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
         mDepthWriteEnabled = true;
