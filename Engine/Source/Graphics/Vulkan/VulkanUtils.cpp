@@ -1221,6 +1221,44 @@ void UpdateStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 }
 
+void UpdateStaticMeshCompResourceColors(StaticMeshComponent* staticMeshComp)
+{
+    StaticMeshCompResource* resource = staticMeshComp->GetResource();
+
+    const std::vector<uint32_t>& instanceColors = staticMeshComp->GetInstanceColors();
+    uint32_t colorBufferSize = sizeof(uint32_t) * uint32_t(instanceColors.size());
+    if (instanceColors.size() == 0)
+    {
+        if (resource->mColorVertexBuffer != nullptr)
+        {
+            GetDestroyQueue()->Destroy(resource->mColorVertexBuffer);
+            resource->mColorVertexBuffer = nullptr;
+        }
+    }
+    else
+    {
+        if (resource->mColorVertexBuffer != nullptr &&
+            resource->mColorVertexBuffer->GetSize() < colorBufferSize)
+        {
+            // Need to reallocate to handle more vertices, so delete the current buffer.
+            GetDestroyQueue()->Destroy(resource->mColorVertexBuffer);
+            resource->mColorVertexBuffer = nullptr;
+        }
+
+        if (resource->mColorVertexBuffer == nullptr)
+        {
+            resource->mColorVertexBuffer = new Buffer(
+                BufferType::Vertex,
+                colorBufferSize,
+                "Static Mesh Instance Colors",
+                nullptr,
+                false);
+        }
+
+        resource->mColorVertexBuffer->Update(instanceColors.data(), colorBufferSize);
+    }
+}
+
 void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOverride)
 {
     StaticMesh* mesh = meshOverride ? meshOverride : staticMeshComp->GetStaticMesh();
@@ -1238,9 +1276,16 @@ void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOve
 
         // Determine vertex type for binding appropriate pipeline
         VertexType vertexType = VertexType::Vertex;
-        if (forwardPass && staticMeshComp->GetInstanceColors().size() == mesh->GetNumVertices())
+        if (forwardPass && 
+            staticMeshComp->GetInstanceColors().size() == mesh->GetNumVertices() &&
+            resource->mColorVertexBuffer != nullptr)
         {
             vertexType = VertexType::VertexColorInstance;
+
+            // Bind color instance buffer at binding #1
+            VkBuffer vertexBuffers[] = { resource->mColorVertexBuffer->Get() };
+            VkDeviceSize offsets[] = { 0 };
+            vkCmdBindVertexBuffers(cb, 1, 1, vertexBuffers, offsets);
         }
         else if (mesh->HasVertexColor())
         {

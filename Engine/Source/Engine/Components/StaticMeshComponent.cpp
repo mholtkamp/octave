@@ -325,11 +325,13 @@ Bounds StaticMeshComponent::GetLocalBounds() const
 void StaticMeshComponent::ClearInstanceColors()
 {
     mInstanceColors.clear();
+    GFX_UpdateStaticMeshCompResourceColors(this);
 }
 
 void StaticMeshComponent::SetInstanceColors(const std::vector<uint32_t>& colors)
 {
     mInstanceColors = colors;
+    GFX_UpdateStaticMeshCompResourceColors(this);
 }
 
 std::vector<uint32_t>& StaticMeshComponent::GetInstanceColors()

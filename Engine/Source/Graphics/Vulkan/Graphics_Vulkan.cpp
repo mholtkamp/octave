@@ -209,6 +209,11 @@ void GFX_DestroyStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
     DestroyStaticMeshCompResource(staticMeshComp);
 }
 
+void GFX_UpdateStaticMeshCompResourceColors(StaticMeshComponent* staticMeshComp)
+{
+    UpdateStaticMeshCompResourceColors(staticMeshComp);
+}
+
 void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOverride)
 {
     DrawStaticMeshComp(staticMeshComp, meshOverride);
