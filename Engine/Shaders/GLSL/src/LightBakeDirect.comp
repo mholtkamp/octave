@@ -45,47 +45,51 @@ void main()
     uint threadIndex = gl_GlobalInvocationID.x;
     uint rngState = threadIndex + (global.mFrameNumber * 719393);
 
-    vec2 uv = gl_GlobalInvocationID.xy / global.mScreenDimensions;
-
-    LightBakeVertex bakeVert = bakeVertices[threadIndex];
-
-    vec3 totalLight = vec3(0,0,0);
-
-    for (int i = 0; i < pathTrace.mNumLights; ++i)
+    if (threadIndex < pathTrace.mNumBakeVertices)
     {
-        PathTraceLight light = lights[i];
+        LightBakeVertex bakeVert = bakeVertices[threadIndex];
 
-        if (light.mLightType == PATH_TRACE_LIGHT_POINT)
+        vec3 totalLight = vec3(0,0,0);
+
+        for (int i = 0; i < pathTrace.mNumLights; ++i)
         {
-            vec3 toLight = light.mPosition - bakeVert.mPosition;
-            float dist2 = dot(toLight, toLight);
+            PathTraceLight light = lights[i];
 
-            // Light is out of bounds
-            if (dist2 > light.mRadius)
+            if (light.mLightType == PATH_TRACE_LIGHT_POINT)
             {
-                continue;
+                vec3 toLight = light.mPosition - bakeVert.mPosition;
+                float dist2 = dot(toLight, toLight);
+
+                // Light is out of bounds
+                if (dist2 > light.mRadius)
+                {
+                    continue;
+                }
+
+                float dist = sqrt(dist2);
+
+                vec3 L = toLight / dist;
+                vec3 N = bakeVert.mNormal;
+                float attenuation =  1.0 - clamp(dist / light.mRadius, 0.0, 1.0);
+                float intensity = clamp(dot(L, N), 0.0, 1.0);
+                totalLight += (intensity * attenuation * light.mColor).rgb;
             }
-
-            float dist = sqrt(dist2);
-
-            vec3 L = toLight / dist;
-            vec3 N = bakeVert.mNormal;
-            float attenuation =  1.0 - clamp(dist / light.mRadius, 0.0, 1.0);
-            float intensity = clamp(dot(L, N), 0.0, 1.0);
-            totalLight += (intensity * attenuation * light.mColor).rgb;
+            else if (light.mLightType == PATH_TRACE_LIGHT_DIRECTIONAL)
+            {
+                vec3 L = -normalize(light.mDirection);
+                vec3 N = bakeVert.mNormal;
+                float intensity = clamp(dot(L, N), 0.0, 1.0);
+                totalLight += (intensity * light.mColor).rgb;
+            }
         }
-        else if (light.mLightType == PATH_TRACE_LIGHT_DIRECTIONAL)
-        {
-            vec3 L = -normalize(light.mDirection);
-            vec3 N = bakeVert.mNormal;
-            float intensity = clamp(dot(L, N), 0.0, 1.0);
-            totalLight += (intensity * light.mColor).rgb;
-        }
+
+        //bakeVertices[threadIndex].mDirectLight = vec4(totalLight, 1.0);
+
+        float r = Rand(rngState);
+        float g = Rand(rngState);
+        float b = Rand(rngState);
+        bakeVertices[threadIndex].mDirectLight = vec4(r, g, b, 1.0);
     }
-
-    bakeVertices[threadIndex].mDirectLight = vec4(totalLight, 1.0);
-
-
 
 
 
