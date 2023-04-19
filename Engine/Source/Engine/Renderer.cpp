@@ -1180,6 +1180,26 @@ const std::vector<LightData>& Renderer::GetLightData() const
     return mLightData;
 }
 
+void Renderer::BeginLightBake()
+{
+    GFX_BeginLightBake();
+}
+
+void Renderer::EndLightBake()
+{
+    GFX_EndLightBake();
+}
+
+bool Renderer::IsLightBakeInProgress() const
+{
+    return GFX_IsLightBakeInProgress();
+}
+
+float Renderer::GetLightBakeProgress() const
+{
+    return GFX_GetLightBakeProgress();
+}
+
 uint32_t Renderer::GetRaysPerPixel() const
 {
     return mRaysPerPixel;

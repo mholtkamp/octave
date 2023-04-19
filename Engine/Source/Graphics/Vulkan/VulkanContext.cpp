@@ -2399,6 +2399,8 @@ void VulkanContext::BeginLightBake()
             mBakingCompIndex = -1;
             mNextBakingCompIndex = 0;
             mBakedFrame = -1;
+
+            mLightBakeResults.resize(mLightBakeComps.size());
         }
     }
 }
@@ -2441,13 +2443,14 @@ void VulkanContext::UpdateLightBake()
     {
         LogDebug("TODO: Implement Indirect light baking.");
 
-        FinalizeLightBake();
         EndLightBake();
     }
 }
 
 void VulkanContext::EndLightBake()
 {
+    FinalizeLightBake();
+
     mLightBakePhase = LightBakePhase::Count;
     mLightBakeComps.clear();
     mLightBakeResults.clear();
@@ -2464,7 +2467,7 @@ bool VulkanContext::IsLightBakeInProgress()
 
 float VulkanContext::GetLightBakeProgress()
 {
-    return 0.0f;
+    return 0.5f;
 }
 
 void VulkanContext::DispatchNextLightBake()
