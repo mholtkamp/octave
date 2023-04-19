@@ -33,8 +33,8 @@ struct PathTraceMesh
 
     uint mStartTriangleIndex;
     uint mNumTriangles;
+    uint mCastShadows;
     uint mPad0;
-    uint mPad1;
 
     uvec4 mTextures;
     

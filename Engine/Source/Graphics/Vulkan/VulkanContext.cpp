@@ -2141,6 +2141,7 @@ void VulkanContext::UpdatePathTracingScene(
                 mesh.mBounds = glm::vec4(bounds.mCenter.x, bounds.mCenter.y, bounds.mCenter.z, bounds.mRadius);
                 mesh.mStartTriangleIndex = totalTriangles;
                 mesh.mNumTriangles = meshAsset->GetNumFaces();
+                mesh.mCastShadows = meshComp->ShouldCastShadows();
                 WriteMaterialUniformData(mesh.mMaterial, material);
 
                 // Add textures and record indices.
@@ -2200,7 +2201,7 @@ void VulkanContext::UpdatePathTracingScene(
                             triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[index].mPosition, 1));
                             triangle.mVertices[v].mTexcoord0 = colorVerts[index].mTexcoord0;
                             triangle.mVertices[v].mTexcoord1 = colorVerts[index].mTexcoord1;
-                            triangle.mVertices[v].mNormal = glm::vec3(normalTransform * glm::vec4(colorVerts[index].mNormal, 0));
+                            triangle.mVertices[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(colorVerts[index].mNormal, 0)));
                             triangle.mVertices[v].mColor = ColorUint32ToFloat4(colorVerts[index].mColor);
                         }
                         else
@@ -2208,7 +2209,7 @@ void VulkanContext::UpdatePathTracingScene(
                             triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(verts[index].mPosition, 1));
                             triangle.mVertices[v].mTexcoord0 = verts[index].mTexcoord0;
                             triangle.mVertices[v].mTexcoord1 = verts[index].mTexcoord1;
-                            triangle.mVertices[v].mNormal = glm::vec3(normalTransform * glm::vec4(verts[index].mNormal, 0));
+                            triangle.mVertices[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(verts[index].mNormal, 0)));
                             triangle.mVertices[v].mColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
                         }
                     }
@@ -2529,12 +2530,12 @@ void VulkanContext::DispatchNextLightBake()
             if (hasColor)
             {
                 lightBakeVertexData[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[v].mPosition, 1));
-                lightBakeVertexData[v].mNormal = glm::vec3(normalTransform * glm::vec4(colorVerts[v].mNormal, 0));
+                lightBakeVertexData[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(colorVerts[v].mNormal, 0)));
             }
             else
             {
                 lightBakeVertexData[v].mPosition = glm::vec3(transform * glm::vec4(verts[v].mPosition, 1));
-                lightBakeVertexData[v].mNormal = glm::vec3(normalTransform * glm::vec4(verts[v].mNormal, 0));
+                lightBakeVertexData[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(verts[v].mNormal, 0)));
             }
         }
 

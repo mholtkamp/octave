@@ -78,7 +78,7 @@ void main()
                     ray.mOrigin = light.mPosition;
                     ray.mDirection = -L;
 
-                    HitInfo hit = CalculateRayCollision(ray);
+                    HitInfo hit = CalculateRayCollision(ray, true);
 
                     if (hit.mHit && hit.mDistance < (dist - 0.001))
                     {
@@ -112,7 +112,7 @@ void main()
                     ray.mOrigin = bakeVert.mPosition + L * traceDistance;
                     ray.mDirection = -L;
 
-                    HitInfo hit = CalculateRayCollision(ray);
+                    HitInfo hit = CalculateRayCollision(ray, true);
 
                     // Is the hit position basically at the bake vertex location?
                     // If not, then it was obstructed.
