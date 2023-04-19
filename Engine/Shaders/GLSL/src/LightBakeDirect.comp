@@ -101,11 +101,10 @@ void main()
                 vec3 L = -normalize(light.mDirection);
                 vec3 N = bakeVert.mNormal;
 
-
                 // Check if the light is being obstructed
                 if (light.mCastShadows != 0)
                 {
-                    const float traceDistance = 1000;
+                    const float traceDistance = 10000.0;
 
                     // Trace a ray from very far away toward vertex.
                     Ray ray;
@@ -114,8 +113,6 @@ void main()
 
                     HitInfo hit = CalculateRayCollision(ray, true);
 
-                    // Is the hit position basically at the bake vertex location?
-                    // If not, then it was obstructed.
                     if (hit.mHit && hit.mDistance < (traceDistance - pathTrace.mShadowBias))
                     {
                         // We hit something closer than the light. This light is being shadowed by something.
