@@ -195,8 +195,8 @@ struct PathTraceLight
 
     glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-    uint32_t mLightType = uint32_t(PathTraceLightType::Point);
     glm::vec3 mDirection = { 0.0f, 0.0f, -1.0f };
+    uint32_t mLightType = uint32_t(PathTraceLightType::Point);
 };
 
 struct LightBakeVertex

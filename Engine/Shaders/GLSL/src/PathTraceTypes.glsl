@@ -48,8 +48,8 @@ struct PathTraceLight
 
     vec4 mColor;
 
-    uint mLightType;
     vec3 mDirection;
+    uint mLightType;
 };
 
 struct LightBakeVertex
