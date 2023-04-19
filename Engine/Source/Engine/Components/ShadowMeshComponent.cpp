@@ -7,6 +7,7 @@ DEFINE_COMPONENT(ShadowMeshComponent);
 ShadowMeshComponent::ShadowMeshComponent()
 {
     mName = "Shadow Mesh";
+    mBakeLighting = false;
 }
 
 ShadowMeshComponent::~ShadowMeshComponent()

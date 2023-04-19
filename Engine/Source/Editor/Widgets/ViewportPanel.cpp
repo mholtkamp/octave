@@ -203,6 +203,7 @@ void ViewportPanel::HandleWorldPressed(Button* button)
             actions.push_back("Spawn Basic");
             actions.push_back("Delete All Actors");
             actions.push_back("Bake Lighting");
+            actions.push_back("Clear Baked Lighting");
         }
 
         actions.push_back("Undo");
@@ -241,6 +242,21 @@ void ViewportPanel::HandleWorldPressed(Button* button)
     else if (buttonText == "Bake Lighting")
     {
         Renderer::Get()->BeginLightBake();
+    }
+    else if (buttonText == "Clear Baked Lighting")
+    {
+        const std::vector<Actor*>& actors = GetWorld()->GetActors();
+        for (uint32_t a = 0; a < actors.size(); ++a)
+        {
+            for (uint32_t c = 0; c < actors[a]->GetNumComponents(); ++c)
+            {
+                StaticMeshComponent* meshComp = actors[a]->GetComponent((uint32_t)c)->As<StaticMeshComponent>();
+                if (meshComp != nullptr)
+                {
+                    meshComp->ClearInstanceColors();
+                }
+            }
+        }
     }
 
     if (hideActionList)
