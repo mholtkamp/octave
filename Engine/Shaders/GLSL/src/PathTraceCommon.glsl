@@ -171,7 +171,7 @@ vec3 GetEnvironmentLight(Ray ray)
 }
 
 
-HitInfo CalculateRayCollision(Ray ray)
+HitInfo CalculateRayCollision(Ray ray, bool shadowRay)
 {
     // Trace bounding spheres of all meshes
     HitInfo closestHit = CreateHitInfo();
@@ -181,6 +181,12 @@ HitInfo CalculateRayCollision(Ray ray)
     for (uint m = 0; m < pathTrace.mNumMeshes; ++m)
     {
         PathTraceMesh mesh = meshes[m];
+
+        if (shadowRay && (mesh.mCastShadows == 0))
+        {
+            continue;
+        }
+
         //HitInfo boundsHit = RaySphereTest(ray, mesh.mBounds.xyz, mesh.mBounds.w);
         bool overlapsBounds = RayOverlapsSphere(ray, mesh.mBounds.xyz, mesh.mBounds.w);
 
@@ -216,7 +222,7 @@ vec3 PathTrace(Ray ray, inout uint rngState)
 
     for (int i = 0; i < maxBounces; ++i)
     {
-        HitInfo hit = CalculateRayCollision(ray);
+        HitInfo hit = CalculateRayCollision(ray, false);
         if (hit.mHit)
         {
             PathTraceMesh mesh = hit.mMesh;
