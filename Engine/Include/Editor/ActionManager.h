@@ -44,6 +44,7 @@ public:
 
     // Actions
     void EXE_EditProperty(void* owner, PropertyOwnerType ownerType, const std::string& name, uint32_t index, Datum newValue);
+    void EXE_EditTransform(TransformComponent* transComp, const glm::mat4& transform);
     void EXE_EditTransforms(const std::vector<TransformComponent*>& transComps, const std::vector<glm::mat4>& newTransforms);
     void EXE_SpawnActor(Actor* actor);
     void EXE_DeleteActor(Actor* actor);
