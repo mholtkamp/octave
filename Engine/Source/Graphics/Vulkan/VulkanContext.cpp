@@ -2227,9 +2227,8 @@ void VulkanContext::UpdatePathTracingScene(
                     light.mPosition = pointLightComp->GetAbsolutePosition();
                     light.mRadius = pointLightComp->GetRadius();
                     light.mColor = pointLightComp->GetColor();
-                    light.mLightType = uint32_t(PathTraceLightType::Point);
                     light.mDirection = { 0.0f, 0.0f, -1.0f };
-
+                    light.mLightType = uint32_t(PathTraceLightType::Point);
                 }
                 else if (lightComp->Is(DirectionalLightComponent::ClassRuntimeId()))
                 {
@@ -2240,8 +2239,8 @@ void VulkanContext::UpdatePathTracingScene(
                     light.mPosition = dirLightComp->GetAbsolutePosition();
                     light.mRadius = 10000.0f;
                     light.mColor = dirLightComp->GetColor();
-                    light.mLightType = uint32_t(PathTraceLightType::Directional);
                     light.mDirection = dirLightComp->GetDirection();
+                    light.mLightType = uint32_t(PathTraceLightType::Directional);
                 }
             }
         }
