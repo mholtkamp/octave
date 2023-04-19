@@ -67,9 +67,29 @@ void main()
                 }
 
                 float dist = sqrt(dist2);
-
                 vec3 L = toLight / dist;
                 vec3 N = bakeVert.mNormal;
+
+                // Check if the light is being obstructed
+                if (light.mCastShadows != 0)
+                {
+                    // Trace a ray from the vertex position (slightly pushed toward light)
+                    // that is directed toward the center of the light.
+                    // If the ray doesn't hit anything, or the hit distance is greater than
+                    // the distance to the light, then that means the light isn't obstructed.
+                    Ray ray;
+                    ray.mOrigin = bakeVert.mPosition + L * 0.0001;
+                    ray.mDirection = L;
+
+                    HitInfo hit = CalculateRayCollision(ray);
+
+                    if (hit.mHit && hit.mDistance < dist)
+                    {
+                        // We hit something closer than the light. This light is being shadowed by something.
+                        continue;
+                    }
+                }
+
                 float attenuation =  1.0 - clamp(dist / light.mRadius, 0.0, 1.0);
                 float intensity = clamp(dot(L, N), 0.0, 1.0);
                 vec3 lightColor = (intensity * attenuation * light.mColor).rgb;

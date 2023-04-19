@@ -197,6 +197,11 @@ struct PathTraceLight
 
     glm::vec3 mDirection = { 0.0f, 0.0f, -1.0f };
     uint32_t mLightType = uint32_t(PathTraceLightType::Point);
+
+    uint32_t mCastShadows = true;
+    uint32_t mPad0 = 1337;
+    uint32_t mPad1 = 1338;
+    uint32_t mPad2 = 1339;
 };
 
 struct LightBakeVertex
