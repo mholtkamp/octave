@@ -50,6 +50,11 @@ struct PathTraceLight
 
     vec3 mDirection;
     uint mLightType;
+
+    uint mCastShadows;
+    uint mPad0;
+    uint mPad1;
+    uint mPad2;
 };
 
 struct LightBakeVertex
