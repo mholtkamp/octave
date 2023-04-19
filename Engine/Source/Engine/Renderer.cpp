@@ -981,6 +981,11 @@ void Renderer::Render(World* world)
 
     BEGIN_FRAME_STAT("Render");
 
+    if (GFX_IsLightBakeInProgress())
+    {
+        GFX_UpdateLightBake();
+    }
+
     GFX_BeginScreen(0);
 
     uint32_t numViews = GFX_GetNumViews();

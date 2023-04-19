@@ -2462,7 +2462,11 @@ void VulkanContext::EndLightBake()
 
 bool VulkanContext::IsLightBakeInProgress()
 {
+#if EDITOR
     return (mLightBakePhase != LightBakePhase::Count);
+#else
+    return false;
+#endif
 }
 
 float VulkanContext::GetLightBakeProgress()
@@ -2563,6 +2567,9 @@ void VulkanContext::DispatchNextLightBake()
 
         VkCommandBuffer cb = GetCommandBuffer();
 
+        // Apparently still need to transition this image or validation gets mad.
+        mPathTraceImage->Transition(VK_IMAGE_LAYOUT_GENERAL, cb);
+
         Pipeline* bakePipeline = nullptr;
 
         if (mLightBakePhase == LightBakePhase::Direct)
@@ -2579,6 +2586,8 @@ void VulkanContext::DispatchNextLightBake()
         mPathTraceDescriptorSet->Bind(cb, 1, bakePipeline->GetPipelineLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
 
         vkCmdDispatch(cb, (numVerts + 31) / 32, 1, 1);
+
+        mPathTraceImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, cb);
 
         mBakedFrame = (int64_t)Renderer::Get()->GetFrameNumber();
         mPathTraceAccumulatedFrames++;
@@ -2664,10 +2673,15 @@ void VulkanContext::FinalizeLightBake()
             uint32_t numVerts = meshComp->GetStaticMesh()->GetNumVertices();
             
             // Ensure the vertex counts match
-            if (numVerts == result.mDirectColors.size() &&
-                numVerts == result.mIndirectColors.size())
+            if (numVerts == result.mDirectColors.size() /*&&
+                numVerts == result.mIndirectColors.size()*/)
             {
                 std::vector<uint32_t> instanceColors;
+
+                // DELETE! ONCE THE INDIRECT PHASE IS IMPLEMENTED
+                //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                mLightBakeResults[c].mIndirectColors.resize(numVerts);
+                //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                 for (uint32_t v = 0; v < numVerts; ++v)
                 {
@@ -2738,6 +2752,8 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::Text] = new TextPipeline();
     mPipelines[(size_t)PipelineId::Poly] = new PolyPipeline();
     mPipelines[(size_t)PipelineId::PathTrace] = new PathTracePipeline();
+    mPipelines[(size_t)PipelineId::LightBakeDirect] = new PathTracePipeline();
+    mPipelines[(size_t)PipelineId::LightBakeIndirect] = new PathTracePipeline();
 
 #if EDITOR
     mPipelines[(size_t)PipelineId::HitCheck] = new HitCheckPipeline();
@@ -2763,6 +2779,8 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::Text]->Create(mUIRenderPass);
     mPipelines[(size_t)PipelineId::Poly]->Create(mUIRenderPass);
     mPipelines[(size_t)PipelineId::PathTrace]->Create(VK_NULL_HANDLE);
+    mPipelines[(size_t)PipelineId::LightBakeDirect]->Create(VK_NULL_HANDLE);
+    mPipelines[(size_t)PipelineId::LightBakeIndirect]->Create(VK_NULL_HANDLE);
 
 #if EDITOR
     mPipelines[(size_t)PipelineId::HitCheck]->Create(mHitCheckRenderPass);
