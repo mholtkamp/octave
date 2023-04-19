@@ -202,6 +202,7 @@ void ViewportPanel::HandleWorldPressed(Button* button)
             actions.push_back("Spawn Actor");
             actions.push_back("Spawn Basic");
             actions.push_back("Delete All Actors");
+            actions.push_back("Bake Lighting");
         }
 
         actions.push_back("Undo");
@@ -236,6 +237,10 @@ void ViewportPanel::HandleWorldPressed(Button* button)
     else if (buttonText == "Delete All Actors")
     {
         ActionManager::Get()->DeleteAllActors();
+    }
+    else if (buttonText == "Bake Lighting")
+    {
+        Renderer::Get()->BeginLightBake();
     }
 
     if (hideActionList)
@@ -376,6 +381,29 @@ ViewportPanel::ViewportPanel() :
     mBlueprintLabel->SetPosition(-380.0f, 4.0f);
     AddChild(mBlueprintLabel);
 
+    mLightBakeBar = new Widget();
+    mLightBakeBar->SetName("LightBakeBar");
+    mLightBakeBar->SetAnchorMode(AnchorMode::BottomStretch);
+    mLightBakeBar->SetXRatio(0.05f);
+    mLightBakeBar->SetWidthRatio(0.9f);
+    mLightBakeBar->SetY(-100.0f);
+    mLightBakeBar->SetHeight(50.0f);
+    mLightBakeBar->SetVisible(false);
+    AddChild(mLightBakeBar);
+    Quad* lightBakeBg = new Quad();
+    lightBakeBg->SetName("Bg");
+    lightBakeBg->SetAnchorMode(AnchorMode::FullStretch);
+    lightBakeBg->SetColor(glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
+    lightBakeBg->SetRatios(0.0f, 0.0f, 1.0f, 1.0f);
+    mLightBakeBar->AddChild(lightBakeBg);
+    Quad* lightBakeFg = new Quad();
+    lightBakeFg->SetName("Fg");
+    lightBakeFg->SetAnchorMode(AnchorMode::FullStretch);
+    lightBakeFg->SetColor(glm::vec4(0.5f, 0.9f, 0.6f, 1.0f));
+    lightBakeFg->SetRatios(0.0f, 0.0f, 0.25f, 1.0f);
+    mLightBakeBar->AddChild(lightBakeFg);
+
+
 #if CONSOLE_ENABLED
     // Move the console into  viewport region
     Renderer::Get()->GetConsoleWidget()->SetRect(sDefaultWidth + 5.0f, 30, 1280 - sDefaultWidth, 720);
@@ -431,6 +459,17 @@ void ViewportPanel::Update()
     if (isBp)
     {
         GetEditBlueprintActor()->SetPosition({ 0.0f, 0.0f, 0.0f });
+    }
+
+    if (Renderer::Get()->IsLightBakeInProgress())
+    {
+        mLightBakeBar->SetVisible(true);
+        float progress = Renderer::Get()->GetLightBakeProgress();
+        mLightBakeBar->FindChild("Fg")->As<Quad>()->SetWidthRatio(progress);
+    }
+    else
+    {
+        mLightBakeBar->SetVisible(false);
     }
 }
 

@@ -57,6 +57,8 @@ protected:
     Text* mPieWarningText = nullptr;
     Text* mBlueprintLabel = nullptr;
 
+    Widget* mLightBakeBar = nullptr;
+
     float mFirstPersonMoveSpeed;
     float mFirstPersonRotationSpeed;
 

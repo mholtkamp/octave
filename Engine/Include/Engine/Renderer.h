@@ -97,6 +97,11 @@ public:
 
     const std::vector<LightData>& GetLightData() const;
 
+    void BeginLightBake();
+    void EndLightBake();
+    bool IsLightBakeInProgress() const;
+    float GetLightBakeProgress() const;
+
     // Property Getters
     uint32_t GetRaysPerPixel() const;
     uint32_t GetMaxBounces() const;
