@@ -8,6 +8,7 @@ enum class VertexType
 {
     Vertex,
     VertexColor,
+    VertexColorInstance,
     VertexUI,
     VertexColorSimple,
     VertexSkinned,
