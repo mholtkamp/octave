@@ -477,10 +477,13 @@ std::vector<VkVertexInputBindingDescription> GetVertexBindingDescription(VertexT
         case VertexType::Vertex:
             desc.stride = sizeof(Vertex);
             break;
+        case VertexType::VertexInstanceColor:
+            desc.stride = sizeof(Vertex);
+            break;
         case VertexType::VertexColor:
             desc.stride = sizeof(VertexColor);
             break;
-        case VertexType::VertexColorInstance:
+        case VertexType::VertexColorInstanceColor:
             desc.stride = sizeof(VertexColor);
             break;
         case VertexType::VertexUI:
@@ -505,7 +508,8 @@ std::vector<VkVertexInputBindingDescription> GetVertexBindingDescription(VertexT
     }
 
     // Binding 1
-    if (type == VertexType::VertexColorInstance)
+    if (type == VertexType::VertexInstanceColor ||
+        type == VertexType::VertexColorInstanceColor)
     {
         VkVertexInputBindingDescription desc;
         desc.stride = sizeof(uint32_t);
@@ -550,6 +554,39 @@ std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions(Ve
         attributeDescriptions[3].offset = offsetof(Vertex, mNormal);
         break;
 
+    case VertexType::VertexInstanceColor:
+        // Position
+        attributeDescriptions.push_back(VkVertexInputAttributeDescription());
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[0].offset = offsetof(Vertex, mPosition);
+        // Texcoord0
+        attributeDescriptions.push_back(VkVertexInputAttributeDescription());
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(Vertex, mTexcoord0);
+        // Texcoord1
+        attributeDescriptions.push_back(VkVertexInputAttributeDescription());
+        attributeDescriptions[2].binding = 0;
+        attributeDescriptions[2].location = 2;
+        attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[2].offset = offsetof(Vertex, mTexcoord1);
+        // Normal
+        attributeDescriptions.push_back(VkVertexInputAttributeDescription());
+        attributeDescriptions[3].binding = 0;
+        attributeDescriptions[3].location = 3;
+        attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[3].offset = offsetof(Vertex, mNormal);
+        // Color
+        attributeDescriptions.push_back(VkVertexInputAttributeDescription());
+        attributeDescriptions[4].binding = 1;
+        attributeDescriptions[4].location = 4;
+        attributeDescriptions[4].format = VK_FORMAT_R8G8B8A8_UNORM;
+        attributeDescriptions[4].offset = 0;
+        break;
+
     case VertexType::VertexColor:
         // Position
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
@@ -583,7 +620,7 @@ std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions(Ve
         attributeDescriptions[4].offset = offsetof(VertexColor, mColor);
         break;
 
-    case VertexType::VertexColorInstance:
+    case VertexType::VertexColorInstanceColor:
         // Position
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[0].binding = 0;
@@ -1280,7 +1317,14 @@ void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOve
             staticMeshComp->GetInstanceColors().size() == mesh->GetNumVertices() &&
             resource->mColorVertexBuffer != nullptr)
         {
-            vertexType = VertexType::VertexColorInstance;
+            if (mesh->HasVertexColor())
+            {
+                vertexType = VertexType::VertexColorInstanceColor;
+            }
+            else
+            {
+                vertexType = VertexType::VertexInstanceColor;
+            }
 
             // Bind color instance buffer at binding #1
             VkBuffer vertexBuffers[] = { resource->mColorVertexBuffer->Get() };
