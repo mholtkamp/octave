@@ -78,12 +78,12 @@ void main()
                     // If the ray doesn't hit anything, or the hit distance is greater than
                     // the distance to the light, then that means the light isn't obstructed.
                     Ray ray;
-                    ray.mOrigin = bakeVert.mPosition + L * 0.0001;
-                    ray.mDirection = L;
+                    ray.mOrigin = light.mPosition;
+                    ray.mDirection = -L;
 
                     HitInfo hit = CalculateRayCollision(ray);
 
-                    if (hit.mHit && hit.mDistance < dist)
+                    if (hit.mHit && hit.mDistance < (dist - 0.001))
                     {
                         // We hit something closer than the light. This light is being shadowed by something.
                         continue;
