@@ -108,6 +108,7 @@ public:
     bool IsPathTraceAccumulationEnabled() const;
     uint32_t GetBakeRaysPerVertex() const;
     uint32_t GetBakeMaxBounces() const;
+    float GetBakeShadowBias() const;
 
     // Default Textures
     TextureRef mWhiteTexture;
@@ -201,4 +202,5 @@ private:
     // Light Bake
     uint32_t mBakeRaysPerVertex = 4;
     uint32_t mBakeMaxBounces = 4;
+    float mBakeShadowBias = 0.001f;
 };

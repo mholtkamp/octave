@@ -113,8 +113,9 @@ void Renderer::GatherProperties(std::vector<Property>& props)
     props.push_back(Property(DatumType::Integer, "Rays Per Pixel", nullptr, &mRaysPerPixel));
     props.push_back(Property(DatumType::Integer, "Max Bounces", nullptr, &mMaxBounces));
     props.push_back(Property(DatumType::Bool, "Accumulate", nullptr, &mPathTraceAccumulate));
-    props.push_back(Property(DatumType::Integer, "Bake Rays Per Vertex", nullptr, &mRaysPerPixel));
-    props.push_back(Property(DatumType::Integer, "Bake Max Bounces", nullptr, &mMaxBounces));
+    props.push_back(Property(DatumType::Integer, "Bake Rays Per Vertex", nullptr, &mBakeRaysPerVertex));
+    props.push_back(Property(DatumType::Integer, "Bake Max Bounces", nullptr, &mBakeMaxBounces));
+    props.push_back(Property(DatumType::Float, "Bake Shadow Bias", nullptr, &mBakeShadowBias));
 }
 
 TransformComponent* Renderer::ProcessHitCheck(World* world, int32_t x, int32_t y)
@@ -1228,4 +1229,9 @@ uint32_t Renderer::GetBakeRaysPerVertex() const
 uint32_t Renderer::GetBakeMaxBounces() const
 {
     return mBakeMaxBounces;
+}
+
+float Renderer::GetBakeShadowBias() const
+{
+    return mBakeShadowBias;
 }

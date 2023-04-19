@@ -2565,6 +2565,7 @@ void VulkanContext::DispatchNextLightBake()
         uniforms.mRaysPerThread = Renderer::Get()->GetBakeRaysPerVertex();
         uniforms.mAccumulatedFrames = mPathTraceAccumulatedFrames;
         uniforms.mNumBakeVertices = numVerts;
+        uniforms.mShadowBias = Renderer::Get()->GetBakeShadowBias();
         mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();
