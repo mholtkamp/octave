@@ -79,7 +79,7 @@ struct PathTraceUniforms
     uint mRaysPerThread;
     uint mAccumulatedFrames;
     uint mNumBakeVertices;
-    uint mPad0;
+    float mShadowBias;
 };
 
 struct HitInfo

@@ -51,7 +51,7 @@ struct PathTraceUniforms
     uint32_t mRaysPerThread;
     uint32_t mAccumulatedFrames;
     uint32_t mNumBakeVertices;
-    uint32_t mPad0;
+    float mShadowBias;
 };
 
 struct GeometryData

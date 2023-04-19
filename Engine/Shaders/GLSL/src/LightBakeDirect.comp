@@ -80,7 +80,7 @@ void main()
 
                     HitInfo hit = CalculateRayCollision(ray, true);
 
-                    if (hit.mHit && hit.mDistance < (dist - 0.001))
+                    if (hit.mHit && hit.mDistance < (dist - pathTrace.mShadowBias))
                     {
                         // We hit something closer than the light. This light is being shadowed by something.
                         continue;
@@ -116,7 +116,7 @@ void main()
 
                     // Is the hit position basically at the bake vertex location?
                     // If not, then it was obstructed.
-                    if (hit.mHit && hit.mDistance < (traceDistance - 0.001))
+                    if (hit.mHit && hit.mDistance < (traceDistance - pathTrace.mShadowBias))
                     {
                         // We hit something closer than the light. This light is being shadowed by something.
                         continue;
