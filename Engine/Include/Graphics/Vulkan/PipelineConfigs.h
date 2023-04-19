@@ -536,6 +536,8 @@ public:
 
 class LightBakeIndirectPipeline : public LightBakeDirectPipeline
 {
+public:
+
     LightBakeIndirectPipeline()
     {
         mComputeShaderPath = ENGINE_SHADER_DIR "LightBakeIndirect.comp";

@@ -2752,8 +2752,8 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::Text] = new TextPipeline();
     mPipelines[(size_t)PipelineId::Poly] = new PolyPipeline();
     mPipelines[(size_t)PipelineId::PathTrace] = new PathTracePipeline();
-    mPipelines[(size_t)PipelineId::LightBakeDirect] = new PathTracePipeline();
-    mPipelines[(size_t)PipelineId::LightBakeIndirect] = new PathTracePipeline();
+    mPipelines[(size_t)PipelineId::LightBakeDirect] = new LightBakeDirectPipeline();
+    mPipelines[(size_t)PipelineId::LightBakeIndirect] = new LightBakeIndirectPipeline();
 
 #if EDITOR
     mPipelines[(size_t)PipelineId::HitCheck] = new HitCheckPipeline();
