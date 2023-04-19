@@ -918,7 +918,7 @@ void ViewportPanel::HandleDefaultControls()
 
             if (transComp)
             {
-                transComp->SetTransform(camTransform);
+                ActionManager::Get()->EXE_EditTransform(transComp, camTransform);
             }
         }
 

@@ -759,6 +759,18 @@ void ActionManager::EXE_EditProperty(void* owner, PropertyOwnerType ownerType, c
     ActionManager::Get()->ExecuteAction(action);
 }
 
+void ActionManager::EXE_EditTransform(TransformComponent* transComp, const glm::mat4& transform)
+{
+    std::vector<TransformComponent*> transComps;
+    transComps.push_back(transComp);
+
+    std::vector<glm::mat4> transforms;
+    transforms.push_back(transform);
+
+    ActionEditTransforms* action = new ActionEditTransforms(transComps, transforms);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
 void ActionManager::EXE_EditTransforms(const std::vector<TransformComponent*>& transComps, const std::vector<glm::mat4>& newTransforms)
 {
     ActionEditTransforms* action = new ActionEditTransforms(transComps, newTransforms);
