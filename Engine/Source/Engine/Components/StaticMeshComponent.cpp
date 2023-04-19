@@ -30,6 +30,11 @@ static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
         meshComp->SetUseTriangleCollision(*(bool*)newValue);
         success = true;
     }
+    else if (prop->mName == "Clear Baked Lighting")
+    {
+        meshComp->ClearInstanceColors();
+        success = true;
+    }
 
     return success;
 }
@@ -62,9 +67,11 @@ const char* StaticMeshComponent::GetTypeName() const
 void StaticMeshComponent::GatherProperties(std::vector<Property>& outProps)
 {
     MeshComponent::GatherProperties(outProps);
+    static bool sFakeBool = false;
     outProps.push_back(Property(DatumType::Asset, "Static Mesh", this, &mStaticMesh, 1, HandlePropChange, int32_t(StaticMesh::GetStaticType())));
     outProps.push_back(Property(DatumType::Bool, "Use Triangle Collision", this, &mUseTriangleCollision, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Bake Lighting", this, &mBakeLighting, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Clear Baked Lighting", this, &sFakeBool, 1, HandlePropChange));
 }
 
 void StaticMeshComponent::Create()
