@@ -116,6 +116,7 @@ void BindSkeletalMeshResourceIndices(SkeletalMesh* skeletalMesh);
 void CreateStaticMeshCompResource(StaticMeshComponent* staticMeshComp);
 void DestroyStaticMeshCompResource(StaticMeshComponent* staticMeshComp);
 void UpdateStaticMeshCompResource(StaticMeshComponent* staticMeshComp);
+void UpdateStaticMeshCompResourceColors(StaticMeshComponent* staticMeshComp);
 void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOverride = nullptr);
 
 // SkeletalMeshComp

@@ -82,6 +82,7 @@ void GFX_DestroySkeletalMeshResource(SkeletalMesh* skeletalMesh);
 // StaticMeshComp
 void GFX_CreateStaticMeshCompResource(StaticMeshComponent* staticMeshComp);
 void GFX_DestroyStaticMeshCompResource(StaticMeshComponent* staticMeshComp);
+void GFX_UpdateStaticMeshCompResourceColors(StaticMeshComponent* staticMeshComp);
 void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOverride = nullptr);
 
 // SkeletalMeshComp

@@ -179,6 +179,7 @@ struct StaticMeshCompResource
 #if API_VULKAN
     DescriptorSet* mDescriptorSet = nullptr;
     UniformBuffer* mUniformBuffer = nullptr;
+    Buffer* mColorVertexBuffer = nullptr;
 #endif
 };
 
