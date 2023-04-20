@@ -147,8 +147,10 @@ private:
     void CreateSceneColorImage();
     void CreateShadowMapImage();
 
-    void CreatePathTraceResources();
-    void DestroyPathTraceResources();
+    void CreateStaticRayTraceResources();
+    void DestroyStaticRayTraceResources();
+    void CreateDynamicRayTraceResources();
+    void DestroyDynamicRayTraceResources();
 
     void PickPhysicalDevice();
     bool IsDeviceSuitable(VkPhysicalDevice device);
@@ -237,7 +239,7 @@ private:
     DescriptorSet* mPostProcessDescriptorSet = nullptr;
     GlobalUniformData mGlobalUniformData;
 
-    // Path Tracing Resources
+    // Ray Tracing Resources
     DescriptorSet* mPathTraceDescriptorSet = nullptr;
     Buffer* mPathTraceTriangleBuffer = nullptr;
     Buffer* mPathTraceMeshBuffer = nullptr;

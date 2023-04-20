@@ -118,7 +118,10 @@ void VulkanContext::Initialize()
     CreatePipelines();
 
     CreateGlobalDescriptorSet();
-    CreatePathTraceResources();
+
+    CreateStaticRayTraceResources();
+    CreateDynamicRayTraceResources();
+
     CreatePostProcessDescriptorSet();
     CreateFramebuffers();
     CreateCommandBuffers();
@@ -148,6 +151,8 @@ void VulkanContext::Destroy()
 
     mMeshDescriptorSetArena.Destroy();
     mMeshUniformBufferArena.Destroy();
+
+    DestroyStaticRayTraceResources();
 
     DestroySwapchain();
 
@@ -497,7 +502,7 @@ void VulkanContext::DestroySwapchain()
     vkDestroyRenderPass(mDevice, mUIRenderPass, nullptr);
     vkDestroyRenderPass(mDevice, mClearSwapchainPass, nullptr);
 
-    DestroyPathTraceResources();
+    DestroyDynamicRayTraceResources();
 
     GetDestroyQueue()->Destroy(mShadowMapImage);
     mShadowMapImage = nullptr;
@@ -1060,8 +1065,7 @@ void VulkanContext::CreateShadowMapImage()
     DeviceWaitIdle();
 }
 
-
-void VulkanContext::CreatePathTraceResources()
+void VulkanContext::CreateStaticRayTraceResources()
 {
     // Uniform Buffer
     mPathTraceUniformBuffer = new UniformBuffer(sizeof(PathTraceUniforms), "Path Trace Uniforms");
@@ -1072,6 +1076,39 @@ void VulkanContext::CreatePathTraceResources()
     mPathTraceLightBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceLight), "Path Trace Light Buffer", nullptr, false);
     mLightBakeVertexBuffer = new Buffer(BufferType::Storage, sizeof(LightBakeVertex), "Light Bake Vertex Buffer", nullptr, true);
 
+    // Descriptor Set
+    VkDescriptorSetLayout layout = GetPipeline(PipelineId::PathTrace)->GetDescriptorSetLayout(1);
+    mPathTraceDescriptorSet = new DescriptorSet(layout);
+    mPathTraceDescriptorSet->UpdateUniformDescriptor(0, mPathTraceUniformBuffer);
+    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceTriangleBuffer);
+    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceMeshBuffer);
+    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mPathTraceLightBuffer);
+    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(6, mLightBakeVertexBuffer);
+}
+
+void VulkanContext::DestroyStaticRayTraceResources()
+{
+    GetDestroyQueue()->Destroy(mPathTraceDescriptorSet);
+    mPathTraceDescriptorSet = nullptr;
+
+    GetDestroyQueue()->Destroy(mPathTraceUniformBuffer);
+    mPathTraceUniformBuffer = nullptr;
+
+    GetDestroyQueue()->Destroy(mPathTraceTriangleBuffer);
+    mPathTraceTriangleBuffer = nullptr;
+
+    GetDestroyQueue()->Destroy(mPathTraceMeshBuffer);
+    mPathTraceMeshBuffer = nullptr;
+
+    GetDestroyQueue()->Destroy(mPathTraceLightBuffer);
+    mPathTraceLightBuffer = nullptr;
+
+    GetDestroyQueue()->Destroy(mLightBakeVertexBuffer);
+    mLightBakeVertexBuffer = nullptr;
+}
+
+void VulkanContext::CreateDynamicRayTraceResources()
+{
     // Images
     ImageDesc imageDesc;
     imageDesc.mWidth = mSwapchainExtent.width;
@@ -1084,23 +1121,15 @@ void VulkanContext::CreatePathTraceResources()
 
     mPathTraceImage = new Image(imageDesc, samplerDesc, "Path Trace Image");
 
-    // Descriptor Set
-    VkDescriptorSetLayout layout = GetPipeline(PipelineId::PathTrace)->GetDescriptorSetLayout(1);
-    mPathTraceDescriptorSet = new DescriptorSet(layout);
-    mPathTraceDescriptorSet->UpdateUniformDescriptor(0, mPathTraceUniformBuffer);
-    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceTriangleBuffer);
-    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceMeshBuffer);
-    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mPathTraceLightBuffer);
     mPathTraceDescriptorSet->UpdateStorageImageDescriptor(5, mPathTraceImage);
-    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(6, mLightBakeVertexBuffer);
 
     mPathTraceImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
-void VulkanContext::DestroyPathTraceResources()
+void VulkanContext::DestroyDynamicRayTraceResources()
 {
-    GetDestroyQueue()->Destroy(mPathTraceDescriptorSet);
-    mPathTraceDescriptorSet = nullptr;
+    GetDestroyQueue()->Destroy(mPathTraceImage);
+    mPathTraceImage = nullptr;
 }
 
 DestroyQueue* VulkanContext::GetDestroyQueue()
@@ -1802,7 +1831,7 @@ void VulkanContext::RecreateSwapchain()
     CreateRenderPass();
     CreateFramebuffers();
     CreateGlobalDescriptorSet();
-    CreatePathTraceResources();
+    CreateDynamicRayTraceResources();
     CreatePostProcessDescriptorSet();
 
 #if EDITOR
