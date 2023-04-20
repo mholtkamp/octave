@@ -82,9 +82,9 @@ struct GeometryUniforms
 	vec4 mColor;
 
 	uint mHitCheckId;
+    uint mHasBakedLighting;
     uint mPadding0;
     uint mPadding1;
-    uint mPadding2;
 };
 
 struct SkinnedGeometryUniforms 

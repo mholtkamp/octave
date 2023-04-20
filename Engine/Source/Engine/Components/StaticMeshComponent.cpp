@@ -346,6 +346,11 @@ std::vector<uint32_t>& StaticMeshComponent::GetInstanceColors()
     return mInstanceColors;
 }
 
+bool StaticMeshComponent::HasBakedLighting() const
+{
+    return (mBakeLighting && mInstanceColors.size() > 0);
+}
+
 void StaticMeshComponent::RecreateCollisionShape()
 {
     StaticMesh* staticMesh = mStaticMesh.Get<StaticMesh>();
