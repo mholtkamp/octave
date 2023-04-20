@@ -63,9 +63,9 @@ struct GeometryData
     glm::vec4 mColor;
 
     uint32_t mHitCheckId;
+    uint32_t mHasBakedLighting;
     uint32_t mPadding0;
     uint32_t mPadding1;
-    uint32_t mPadding2;
 };
 
 struct SkinnedGeometryData

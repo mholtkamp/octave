@@ -813,6 +813,7 @@ void WriteGeometryUniformData(GeometryData& outData, World* world, const glm::ma
     outData.mLightWVPMatrix = dirLight ? (dirLight->GetViewProjectionMatrix() * transform) : glm::mat4(1);
     outData.mColor = glm::vec4(0.25f, 0.25f, 1.0f, 1.0f);
     outData.mHitCheckId = 0;
+    outData.mHasBakedLighting = false;
 }
 
 void WriteMaterialUniformData(MaterialData& outData, Material* material)
@@ -1237,8 +1238,8 @@ void UpdateStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
     GeometryData ubo = {};
 
     WriteGeometryUniformData(ubo, world, staticMeshComp->GetRenderTransform());
-
     ubo.mHitCheckId = GetHitCheckId(staticMeshComp);
+    ubo.mHasBakedLighting = staticMeshComp->HasBakedLighting();
 
 #if EDITOR
     if (renderer->GetDebugMode() == DEBUG_WIREFRAME &&
@@ -1503,6 +1504,7 @@ void UpdateSkeletalMeshCompUniformBuffer(SkeletalMeshComponent* skeletalMeshComp
         ubo.mLightWVPMatrix = dirLight ? (dirLight->GetViewProjectionMatrix() * transform) : glm::mat4(1);
         ubo.mColor = uniformColor; // Currently used for wireframe only.
         ubo.mHitCheckId = GetHitCheckId(skeletalMeshComp);
+        ubo.mHasBakedLighting = false;
 
         resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
     }
@@ -1834,6 +1836,7 @@ void UpdateParticleCompResource(ParticleComponent* particleComp)
     ubo.mLightWVPMatrix = dirLight ? (dirLight->GetViewProjectionMatrix() * transform) : glm::mat4(1);
     ubo.mColor = uniformColor;
     ubo.mHitCheckId = GetHitCheckId(particleComp);
+    ubo.mHasBakedLighting = false;
 
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 }
@@ -2304,6 +2307,7 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
         WriteGeometryUniformData(ubo, GetWorld(), transform);
         ubo.mColor = color;
         ubo.mHitCheckId = hitCheckId;
+        ubo.mHasBakedLighting = false;
         uniformBuffer->Update(&ubo, sizeof(ubo));
 
         BindStaticMeshResource(mesh);

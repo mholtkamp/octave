@@ -51,6 +51,7 @@ public:
     void ClearInstanceColors();
     void SetInstanceColors(const std::vector<uint32_t>& colors);
     std::vector<uint32_t>& GetInstanceColors();
+    bool HasBakedLighting() const;
 
 protected:
 
