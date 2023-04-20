@@ -2443,9 +2443,23 @@ void VulkanContext::UpdateLightBake()
     }
     else if (mLightBakePhase == LightBakePhase::Indirect)
     {
-        LogDebug("TODO: Implement Indirect light baking.");
+        if (mBakingCompIndex == -1)
+        {
+            mBakingCompIndex = mNextBakingCompIndex;
+            mPathTraceAccumulatedFrames = 0;
 
-        EndLightBake();
+            ++mNextBakingCompIndex;
+        }
+
+        if (mBakingCompIndex < mLightBakeComps.size())
+        {
+            DispatchNextLightBake();
+        }
+        else
+        {
+            // We've passed the end of the vector. Everything should be baked.
+            EndLightBake();
+        }
     }
 }
 
@@ -2486,7 +2500,8 @@ void VulkanContext::DispatchNextLightBake()
         ++mNextBakingCompIndex;
     }
 
-    if (mBakingCompIndex >= mLightBakeComps.size())
+    if (mBakingCompIndex >= mLightBakeComps.size() ||
+        mPathTraceAccumulatedFrames >= Renderer::Get()->GetBakeIndirectIterations())
         return;
 
     StaticMeshComponent* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMeshComponent>();
@@ -2506,54 +2521,53 @@ void VulkanContext::DispatchNextLightBake()
         std::vector<LightBakeVertex> lightBakeVertexData;
 
         StaticMesh* meshAsset = meshComp->GetStaticMesh();
-
-        Material* material = meshComp->GetMaterial();
-        if (material == nullptr)
-        {
-            material = Renderer::Get()->GetDefaultMaterial();
-        }
-
-        glm::mat4 transform = meshComp->GetRenderTransform();
-        glm::mat4 normalTransform = glm::transpose(glm::inverse(transform));
-
         uint32_t numVerts = meshAsset->GetNumVertices();
-        lightBakeVertexData.resize(numVerts);
 
-        // Add triangle data.
-        bool hasColor = meshAsset->HasVertexColor();
-        IndexType* indices = meshAsset->GetIndices();
-        Vertex* verts = hasColor ? nullptr : meshAsset->GetVertices();
-        VertexColor* colorVerts = hasColor ? meshAsset->GetColorVertices() : nullptr;
-
-        for (uint32_t v = 0; v < numVerts; ++v)
+        // On the first iteration of the bake, we need to upload bake vertex data.
+        // During the indirect bake, previous dispatch results are accumulated.
+        if (mPathTraceAccumulatedFrames == 0)
         {
-            if (hasColor)
+            glm::mat4 transform = meshComp->GetRenderTransform();
+            glm::mat4 normalTransform = glm::transpose(glm::inverse(transform));
+
+            lightBakeVertexData.resize(numVerts);
+
+            // Add triangle data.
+            bool hasColor = meshAsset->HasVertexColor();
+            IndexType* indices = meshAsset->GetIndices();
+            Vertex* verts = hasColor ? nullptr : meshAsset->GetVertices();
+            VertexColor* colorVerts = hasColor ? meshAsset->GetColorVertices() : nullptr;
+
+            for (uint32_t v = 0; v < numVerts; ++v)
             {
-                lightBakeVertexData[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[v].mPosition, 1));
-                lightBakeVertexData[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(colorVerts[v].mNormal, 0)));
+                if (hasColor)
+                {
+                    lightBakeVertexData[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[v].mPosition, 1));
+                    lightBakeVertexData[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(colorVerts[v].mNormal, 0)));
+                }
+                else
+                {
+                    lightBakeVertexData[v].mPosition = glm::vec3(transform * glm::vec4(verts[v].mPosition, 1));
+                    lightBakeVertexData[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(verts[v].mNormal, 0)));
+                }
             }
-            else
+
+            // If the vertex data is larger than our currently allocated storage buffer, create a new larger buffer
+            size_t vertBufferSize = sizeof(LightBakeVertex) * lightBakeVertexData.size();
+            if (mLightBakeVertexBuffer->GetSize() < vertBufferSize)
             {
-                lightBakeVertexData[v].mPosition = glm::vec3(transform * glm::vec4(verts[v].mPosition, 1));
-                lightBakeVertexData[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(verts[v].mNormal, 0)));
+                GetDestroyQueue()->Destroy(mLightBakeVertexBuffer);
+                mLightBakeVertexBuffer = nullptr;
+                mLightBakeVertexBuffer = new Buffer(BufferType::Storage, vertBufferSize, "Light Bake Vertex Buffer", nullptr, true);
+                mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(6, mLightBakeVertexBuffer);
+
             }
-        }
 
-        // If the vertex data is larger than our currently allocated storage buffer, create a new larger buffer
-        size_t vertBufferSize = sizeof(LightBakeVertex) * lightBakeVertexData.size();
-        if (mLightBakeVertexBuffer->GetSize() < vertBufferSize)
-        {
-            GetDestroyQueue()->Destroy(mLightBakeVertexBuffer);
-            mLightBakeVertexBuffer = nullptr;
-            mLightBakeVertexBuffer = new Buffer(BufferType::Storage, vertBufferSize, "Light Bake Vertex Buffer", nullptr, true);
-            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(6, mLightBakeVertexBuffer);
-
-        }
-
-        // Upload vertex data
-        if (vertBufferSize > 0)
-        {
-            mLightBakeVertexBuffer->Update(lightBakeVertexData.data(), vertBufferSize);
+            // Upload vertex data
+            if (vertBufferSize > 0)
+            {
+                mLightBakeVertexBuffer->Update(lightBakeVertexData.data(), vertBufferSize);
+            }
         }
 
         // Update uniform buffer
@@ -2676,15 +2690,10 @@ void VulkanContext::FinalizeLightBake()
             uint32_t numVerts = meshComp->GetStaticMesh()->GetNumVertices();
             
             // Ensure the vertex counts match
-            if (numVerts == result.mDirectColors.size() /*&&
-                numVerts == result.mIndirectColors.size()*/)
+            if (numVerts == result.mDirectColors.size() &&
+                numVerts == result.mIndirectColors.size())
             {
                 std::vector<uint32_t> instanceColors;
-
-                // DELETE! ONCE THE INDIRECT PHASE IS IMPLEMENTED
-                //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                mLightBakeResults[c].mIndirectColors.resize(numVerts);
-                //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                 for (uint32_t v = 0; v < numVerts; ++v)
                 {
