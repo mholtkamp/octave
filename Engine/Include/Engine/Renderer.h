@@ -109,6 +109,7 @@ public:
     uint32_t GetBakeRaysPerVertex() const;
     uint32_t GetBakeMaxBounces() const;
     float GetBakeShadowBias() const;
+    uint32_t GetBakeIndirectIterations() const;
 
     // Default Textures
     TextureRef mWhiteTexture;
@@ -203,4 +204,5 @@ private:
     uint32_t mBakeRaysPerVertex = 4;
     uint32_t mBakeMaxBounces = 4;
     float mBakeShadowBias = 0.001f;
+    uint32_t mBakeIndirectIterations = 20;
 };
