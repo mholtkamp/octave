@@ -44,70 +44,32 @@ void main()
 {
     uint threadIndex = gl_GlobalInvocationID.x;
     uint rngState = threadIndex + (global.mFrameNumber * 719393);
-
-    vec2 uv = gl_GlobalInvocationID.xy / global.mScreenDimensions;
-
+    
     LightBakeVertex bakeVert = bakeVertices[threadIndex];
 
+    //Path trace indirect light
+    Ray ray;
+    ray.mOrigin = bakeVert.mPosition + bakeVert.mNormal * 0.1;
+    ray.mDirection = normalize(bakeVert.mNormal  + RandomDirection(rngState));
+
     vec3 totalLight = vec3(0,0,0);
+    uint numRays = pathTrace.mRaysPerThread;
 
-    for (int i = 0; i < pathTrace.mNumLights; ++i)
+    for (uint i = 0; i < numRays; ++i)
     {
-        PathTraceLight light = lights[i];
-
-        if (light.mLightType == PATH_TRACE_LIGHT_POINT)
-        {
-            vec3 toLight = light.mPosition - bakeVert.mPosition;
-            float dist2 = dot(toLight, toLight);
-
-            // Light is out of bounds
-            if (dist2 > light.mRadius)
-            {
-                continue;
-            }
-
-            float dist = sqrt(dist2);
-
-            vec3 L = toLight / dist;
-            vec3 N = bakeVert.mNormal;
-            float attenuation =  1.0 - clamp(dist / light.mRadius, 0.0, 1.0);
-            float intensity = clamp(dot(L, N), 0.0, 1.0);
-            totalLight += (intensity * attenuation * light.mColor).rgb;
-        }
-        else if (light.mLightType == PATH_TRACE_LIGHT_DIRECTIONAL)
-        {
-            vec3 L = -normalize(light.mDirection);
-            vec3 N = bakeVert.mNormal;
-            float intensity = clamp(dot(L, N), 0.0, 1.0);
-            totalLight += (intensity * light.mColor).rgb;
-        }
+        totalLight += PathTrace(ray, rngState);
     }
 
-    bakeVertices[threadIndex].mDirectLight = vec4(totalLight, 1.0);
+    vec3 newColor = totalLight / numRays;
 
-
-
-
-
-
-
-
-    // Path trace indirect light!
-    // Ray ray;
-    // ray.mOrigin = bakeVert.mPosition;
-    // ray.mDirection = normalize(bakeVert.mNormal + RandomDirection(rngState));
-
-    // vec3 totalLight = vec3(0,0,0);
-    // uint numRays = pathTrace.mRaysPerThread;
-
-    // for (uint i = 0; i < numRays; ++i)
-    // {
-    //     totalLight += PathTrace(ray, rngState);
-    // }
-
-    //vec3 newColor = totalLight / numRays;
-    //vec3 oldColor = bakeVert.mIndirectLight;
-
-    //float newWeight = 1.0 / (pathTrace.mAccumulatedFrames + 1);
-    //bakeVertices[threadIndex].mIndirectLight = vec4(mix(oldColor, newColor, newWeight), 1.0);
+    if (pathTrace.mAccumulatedFrames == 0)
+    {
+        bakeVertices[threadIndex].mIndirectLight = vec4(newColor, 1.0);
+    }
+    else
+    {
+        vec3 oldColor = bakeVert.mIndirectLight.rgb;
+        float newWeight = 1.0 / (pathTrace.mAccumulatedFrames + 1);
+        bakeVertices[threadIndex].mIndirectLight = vec4(mix(oldColor, newColor, newWeight), 1.0);
+    }
 }
