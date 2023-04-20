@@ -415,6 +415,7 @@ Renderer::Renderer()
     // TEMP
     mRaysPerPixel = 1;
     mMaxBounces = 3;
+    mBakeIndirectIterations = 3;
 }
 
 void Renderer::LoadDefaultTextures()

@@ -2512,7 +2512,32 @@ bool VulkanContext::IsLightBakeInProgress()
 
 float VulkanContext::GetLightBakeProgress()
 {
-    return 0.5f;
+    float ret = 1.0f;
+
+    if (mLightBakePhase != LightBakePhase::Count)
+    {
+        uint32_t numComps = (uint32_t)mLightBakeComps.size();
+        uint32_t numIndirectIterations = Renderer::Get()->GetBakeIndirectIterations();
+        uint32_t totalDirectDispatches = numComps;
+        uint32_t totalIndirectDispatches = numComps * numIndirectIterations;
+        uint32_t totalDispatches = totalDirectDispatches + totalIndirectDispatches;
+
+        uint32_t curDispatch = 0;
+        if (mLightBakePhase == LightBakePhase::Direct)
+        {
+            int32_t compIndex = glm::clamp<int32_t>(mNextBakingCompIndex - 1, 0, (int32_t)numComps);
+            curDispatch = uint32_t(compIndex);
+        }
+        else if (mLightBakePhase == LightBakePhase::Indirect)
+        {
+            int32_t compIndex = glm::clamp<int32_t>(mNextBakingCompIndex - 1, 0, (int32_t)numComps);
+            curDispatch = uint32_t(compIndex) * numIndirectIterations + mPathTraceAccumulatedFrames + totalDirectDispatches;
+        }
+
+        ret = float(curDispatch) / float(totalDispatches);
+    }
+
+    return ret;
 }
 
 void VulkanContext::DispatchNextLightBake()
