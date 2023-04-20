@@ -233,7 +233,7 @@ vec3 PathTrace(Ray ray, inout uint rngState)
             bool unlit = (material.mShadingModel == SHADING_MODEL_UNLIT);
 
             vec4 surfaceColor = vec4(0,0,0,0);
-
+            vec4 surfaceLitColor = vec4(0,0,0,0);
             vec2 uv0 = (hit.mUv0 + material.mUvOffset0) * material.mUvScale0;
             vec2 uv1 = (hit.mUv1 + material.mUvOffset1) * material.mUvScale1;
 
@@ -244,18 +244,20 @@ vec3 PathTrace(Ray ray, inout uint rngState)
 
             surfaceColor *= material.mColor;
 
+            surfaceLitColor = surfaceColor;
+            
             if (material.mVertexColorMode == VERTEX_COLOR_MODULATE)
             {
-                surfaceColor *= hit.mColor;
+                surfaceLitColor *= hit.mColor;
             }
             else if (material.mVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
             {
-                surfaceColor *= hit.mColor.a;
+                surfaceLitColor *= hit.mColor.a;
             }
 
             if (transparent)
             {
-                surfaceColor.a *= material.mOpacity;
+                surfaceLitColor.a *= material.mOpacity;
             }
 
             if (material.mBlendMode == BLEND_MODE_MASKED && surfaceColor.a < material.mMaskCutoff && numAlphaSkips < kMaxAlphaSkips)
@@ -269,19 +271,17 @@ vec3 PathTrace(Ray ray, inout uint rngState)
             }
 
             // For now, only unlit objects can emit light.
-            float emission = material.mEmission * ((unlit || additive) ? 1.0 : 0.0);
-            vec3 emittedLight = emission * surfaceColor.rgb;
+            float emission = material.mEmission;
+            if (unlit)
+            {
+                emission = max(emission, 1.0);
+            }
+            
+            vec3 emittedLight = emission * surfaceLitColor.rgb;
 
             if (transparent)
             {
-                emittedLight = mix(vec3(0,0,0), emittedLight, surfaceColor.a);
-            }
-
-            // The primary ray should just return unlit color without emission scaling. 
-            // TODO: Handle this differently for indirect light baking.
-            if (unlit && i == 0)
-            {
-                emittedLight = surfaceColor.rgb;
+                emittedLight = mix(vec3(0,0,0), emittedLight, surfaceLitColor.a);
             }
 
             incomingLight += (emittedLight * rayColor);
@@ -296,12 +296,6 @@ vec3 PathTrace(Ray ray, inout uint rngState)
             else
             {
                 rayColor *= surfaceColor.rgb;
-            }
-
-            // If this was an unlit object, then end the bouncing there.
-            if (material.mShadingModel == SHADING_MODEL_UNLIT && !transparent)
-            {
-                break;
             }
 
             // Determine new bounced ray direction.

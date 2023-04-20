@@ -1564,7 +1564,7 @@ void VulkanContext::UpdateGlobalUniformData()
 
         mGlobalUniformData.mViewToWorld = glm::inverse(camera->GetViewMatrix());
 
-        if (dirLight && dirLight->IsVisible())
+        if (dirLight && dirLight->IsVisible() && dirLight->GetLightingDomain() != LightingDomain::Static)
         {
             mGlobalUniformData.mDirectionalLightDirection = glm::vec4(dirLight->GetDirection(), 0.0f);
             mGlobalUniformData.mDirectionalLightColor = dirLight->GetColor();
@@ -2187,6 +2187,22 @@ void VulkanContext::UpdatePathTracingScene(
                 IndexType* indices = meshAsset->GetIndices();
                 Vertex* verts = hasColor ? nullptr : meshAsset->GetVertices();
                 VertexColor* colorVerts = hasColor ? meshAsset->GetColorVertices() : nullptr;
+                const std::vector<uint32_t>& instanceColors = meshComp->GetInstanceColors();
+                uint32_t numVerts = meshAsset->GetNumVertices();
+
+                std::vector<glm::vec4>* directLightColors = nullptr;
+                if (mLightBakePhase == LightBakePhase::Indirect)
+                {
+                    // See if we have baked direct lighting for this mesh. (This is higher precision than instance colors)
+                    for (uint32_t i = 0; i < mLightBakeComps.size(); ++i)
+                    {
+                        if (mLightBakeComps[i] == meshComp)
+                        {
+                            directLightColors = &(mLightBakeResults[i].mDirectColors);
+                            break;
+                        }
+                    }
+                }
 
                 for (uint32_t t = 0; t < mesh.mNumTriangles; ++t)
                 {
@@ -2195,22 +2211,31 @@ void VulkanContext::UpdatePathTracingScene(
 
                     for (uint32_t v = 0; v < 3; ++v)
                     {
-                        uint32_t index = t * 3 + v;
+                        uint32_t vertIndex = indices[t * 3 + v];
                         if (hasColor)
                         {
-                            triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[index].mPosition, 1));
-                            triangle.mVertices[v].mTexcoord0 = colorVerts[index].mTexcoord0;
-                            triangle.mVertices[v].mTexcoord1 = colorVerts[index].mTexcoord1;
-                            triangle.mVertices[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(colorVerts[index].mNormal, 0)));
-                            triangle.mVertices[v].mColor = ColorUint32ToFloat4(colorVerts[index].mColor);
+                            triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[vertIndex].mPosition, 1));
+                            triangle.mVertices[v].mTexcoord0 = colorVerts[vertIndex].mTexcoord0;
+                            triangle.mVertices[v].mTexcoord1 = colorVerts[vertIndex].mTexcoord1;
+                            triangle.mVertices[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(colorVerts[vertIndex].mNormal, 0)));
+                            triangle.mVertices[v].mColor = ColorUint32ToFloat4(colorVerts[vertIndex].mColor);
                         }
                         else
                         {
-                            triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(verts[index].mPosition, 1));
-                            triangle.mVertices[v].mTexcoord0 = verts[index].mTexcoord0;
-                            triangle.mVertices[v].mTexcoord1 = verts[index].mTexcoord1;
-                            triangle.mVertices[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(verts[index].mNormal, 0)));
+                            triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(verts[vertIndex].mPosition, 1));
+                            triangle.mVertices[v].mTexcoord0 = verts[vertIndex].mTexcoord0;
+                            triangle.mVertices[v].mTexcoord1 = verts[vertIndex].mTexcoord1;
+                            triangle.mVertices[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(verts[vertIndex].mNormal, 0)));
                             triangle.mVertices[v].mColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+                        }
+
+                        if (directLightColors != nullptr && directLightColors->size() == numVerts)
+                        {
+                            triangle.mVertices[v].mColor = directLightColors->at(vertIndex);
+                        }
+                        else if (instanceColors.size() == numVerts)
+                        {
+                            triangle.mVertices[v].mColor = ColorUint32ToFloat4(instanceColors[vertIndex]);
                         }
                     }
                 }
