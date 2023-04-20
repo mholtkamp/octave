@@ -11,6 +11,7 @@
 #include "Widgets/Quad.h"
 #include "Widgets/Text.h"
 #include "Widgets/Button.h"
+#include "Widgets/PolyRect.h"
 #include "Widgets/ActionList.h"
 #include "Log.h"
 #include "Renderer.h"
@@ -412,10 +413,15 @@ ViewportPanel::ViewportPanel() :
     Quad* lightBakeFg = new Quad();
     lightBakeFg->SetName("Fg");
     lightBakeFg->SetAnchorMode(AnchorMode::FullStretch);
-    lightBakeFg->SetColor(glm::vec4(0.1f, 0.5f, 1.0f, 1.0f));
+    lightBakeFg->SetColor(glm::vec4(0.1f, 0.3f, 1.0f, 1.0f));
     lightBakeFg->SetRatios(0.0f, 0.0f, 0.25f, 1.0f);
     mLightBakeBar->AddChild(lightBakeFg);
-
+    PolyRect* lightBakeBorder = new PolyRect();
+    lightBakeBorder->SetName("Border");
+    lightBakeBorder->SetAnchorMode(AnchorMode::FullStretch);
+    lightBakeBorder->SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    lightBakeBorder->SetRatios(0.0f, 0.0f, 1.0f, 1.0f);
+    mLightBakeBar->AddChild(lightBakeBorder);
 
 #if CONSOLE_ENABLED
     // Move the console into  viewport region
