@@ -399,23 +399,20 @@ ViewportPanel::ViewportPanel() :
 
     mLightBakeBar = new Widget();
     mLightBakeBar->SetName("LightBakeBar");
-    mLightBakeBar->SetAnchorMode(AnchorMode::BottomStretch);
-    mLightBakeBar->SetXRatio(0.05f);
-    mLightBakeBar->SetWidthRatio(0.9f);
-    mLightBakeBar->SetY(-100.0f);
-    mLightBakeBar->SetHeight(50.0f);
+    mLightBakeBar->SetAnchorMode(AnchorMode::FullStretch);
+    mLightBakeBar->SetRatios(0.05f, 0.90f, 0.90f, 0.03f);
     mLightBakeBar->SetVisible(false);
     AddChild(mLightBakeBar);
     Quad* lightBakeBg = new Quad();
     lightBakeBg->SetName("Bg");
     lightBakeBg->SetAnchorMode(AnchorMode::FullStretch);
-    lightBakeBg->SetColor(glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
+    lightBakeBg->SetColor(glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
     lightBakeBg->SetRatios(0.0f, 0.0f, 1.0f, 1.0f);
     mLightBakeBar->AddChild(lightBakeBg);
     Quad* lightBakeFg = new Quad();
     lightBakeFg->SetName("Fg");
     lightBakeFg->SetAnchorMode(AnchorMode::FullStretch);
-    lightBakeFg->SetColor(glm::vec4(0.5f, 0.9f, 0.6f, 1.0f));
+    lightBakeFg->SetColor(glm::vec4(0.1f, 0.5f, 1.0f, 1.0f));
     lightBakeFg->SetRatios(0.0f, 0.0f, 0.25f, 1.0f);
     mLightBakeBar->AddChild(lightBakeFg);
 
