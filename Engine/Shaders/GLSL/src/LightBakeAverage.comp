@@ -47,8 +47,8 @@ void main()
         {
             LightBakeVertex vert = bakeVertices[i];
 
-            vec3 posDiff = targetPosition - vert.mPosition;
-            vec3 normDiff = targetNormal - vert.mNormal;
+            vec3 posDiff = abs(targetPosition - vert.mPosition);
+            vec3 normDiff = abs(targetNormal - vert.mNormal);
 
             bool posEqual = all(lessThan(posDiff, thresh3));
             bool normEqual = all(lessThan(normDiff, thresh3));
