@@ -54,9 +54,9 @@ struct PathTraceUniforms
     uint32_t mNumBakeTriangles;
 
     float mShadowBias;
+    uint32_t mDiffuseDirect;
+    uint32_t mDiffuseIndirect;
     float mPad0;
-    float mPad1;
-    float mPad2;
 };
 
 struct GeometryData
