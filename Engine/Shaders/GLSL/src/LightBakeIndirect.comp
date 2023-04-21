@@ -49,7 +49,7 @@ void main()
 
     //Path trace indirect light
     Ray ray;
-    ray.mOrigin = bakeVert.mPosition + bakeVert.mNormal * 0.1;
+    ray.mOrigin = bakeVert.mPosition + bakeVert.mNormal * 0.01;
     ray.mDirection = normalize(bakeVert.mNormal  + RandomDirection(rngState));
 
     vec3 totalLight = vec3(0,0,0);
