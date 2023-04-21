@@ -2823,6 +2823,8 @@ void VulkanContext::DispatchNextBakeDiffuse()
         uniforms.mNumBakeVertices = numVerts;
         uniforms.mNumBakeTriangles = numTriangles;
         uniforms.mShadowBias = Renderer::Get()->GetBakeShadowBias();
+        uniforms.mDiffuseDirect = (mPathTraceAccumulatedFrames < Renderer::Get()->GetBakeDiffuseDirectPasses());
+        uniforms.mDiffuseIndirect = (mPathTraceAccumulatedFrames < Renderer::Get()->GetBakeDiffuseIndirectPasses());
         mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();

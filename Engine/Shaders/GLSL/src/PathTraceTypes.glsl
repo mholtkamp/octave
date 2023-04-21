@@ -94,9 +94,9 @@ struct PathTraceUniforms
     uint mNumBakeTriangles;
 
     float mShadowBias;
+    uint mDiffuseDirect;
+    uint mDiffuseIndirect;
     float mPad0;
-    float mPad1;
-    float mPad2;
 };
 
 struct HitInfo
