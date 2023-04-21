@@ -2573,7 +2573,6 @@ void VulkanContext::UpdateLightBake()
                 mBakingCompIndex = -1;
                 mNextBakingCompIndex = 0;
                 mBakedFrame = -1;
-                mTotalDiffusePasses = 1;
             }
         }
     }
@@ -2722,6 +2721,7 @@ void VulkanContext::DispatchNextLightBake()
         uniforms.mRaysPerThread = Renderer::Get()->GetBakeRaysPerVertex();
         uniforms.mAccumulatedFrames = mPathTraceAccumulatedFrames;
         uniforms.mNumBakeVertices = numVerts;
+        uniforms.mNumBakeTriangles = meshAsset->GetNumFaces();
         uniforms.mShadowBias = Renderer::Get()->GetBakeShadowBias();
         mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
 
@@ -2769,6 +2769,7 @@ void VulkanContext::DispatchNextBakeDiffuse()
     {
         StaticMesh* meshAsset = meshComp->GetStaticMesh();
         uint32_t numVerts = meshAsset->GetNumVertices();
+        uint32_t numTriangles = meshAsset->GetNumFaces();
 
         // On the first iteration of the bake, we need to upload bake vertex data.
         // During the indirect bake, previous dispatch results are accumulated.
@@ -2779,7 +2780,6 @@ void VulkanContext::DispatchNextBakeDiffuse()
             // Update triangle vertex indices
             std::vector<DiffuseTriangle> triangles;
 
-            uint32_t numTriangles = meshAsset->GetNumFaces();
             IndexType* indices = meshAsset->GetIndices();
 
             for (uint32_t f = 0; f < numTriangles; ++f)
@@ -2800,6 +2800,8 @@ void VulkanContext::DispatchNextBakeDiffuse()
                 mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(2, mBakeDiffuseTriangleBuffer);
             }
 
+            mBakeDiffuseTriangleBuffer->Update(triangles.data(), triBufferSize);
+
             size_t avgBufferSize = sizeof(VertexLightData) * numVerts;
             if (mBakeAverageBuffer->GetSize() < avgBufferSize)
             {
@@ -2819,6 +2821,7 @@ void VulkanContext::DispatchNextBakeDiffuse()
         uniforms.mRaysPerThread = Renderer::Get()->GetBakeRaysPerVertex();
         uniforms.mAccumulatedFrames = mPathTraceAccumulatedFrames;
         uniforms.mNumBakeVertices = numVerts;
+        uniforms.mNumBakeTriangles = numTriangles;
         uniforms.mShadowBias = Renderer::Get()->GetBakeShadowBias();
         mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
 

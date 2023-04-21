@@ -35,14 +35,53 @@ void main()
 {
     uint threadIndex = gl_GlobalInvocationID.x;
     uint numVerts = pathTrace.mNumBakeVertices;
+    uint numTriangles = pathTrace.mNumBakeTriangles;
 
     if (threadIndex < numVerts)
     {
         uint vertCount = 0;
-        vec3 totalDirect = avgData[threadIndex].mDirectLight.rgb;
-        vec3 totalIndirect = avgData[threadIndex].mIndirectLight.rgb;
+        vec3 totalDirect = vec3(0,0,0);
+        vec3 totalIndirect = vec3(0,0,0);
 
-        bakeVertices[threadIndex].mDirectLight = vec4(totalDirect, 1.0);
-        bakeVertices[threadIndex].mIndirectLight = vec4(totalIndirect, 1.0);
+        // Add this own thread's vert data to the totals
+        ++vertCount;
+        totalDirect = avgData[threadIndex].mDirectLight.rgb;
+        totalIndirect = avgData[threadIndex].mIndirectLight.rgb;
+
+        for (uint i = 0; i < numTriangles; ++i)
+        {
+            bool isThreadTri = false;
+            DiffuseTriangle tri = triangles[i];
+
+            for (uint v = 0; v < 3; ++v)
+            {
+                if (tri.mVertexIndices[v] == threadIndex)
+                {
+                    isThreadTri = true;
+                    break;
+                }
+            }
+
+            // This thread's vertex is contained in the triangle, so add the other verts' lighting values.
+            if (isThreadTri)
+            {
+                for (uint v = 0; v < 3; ++v)
+                {
+                    if (tri.mVertexIndices[v] != threadIndex)
+                    {
+                        uint vertIndex = tri.mVertexIndices[v];
+                        totalDirect += avgData[vertIndex].mDirectLight.rgb;
+                        totalIndirect += avgData[vertIndex].mIndirectLight.rgb;
+                        ++vertCount;
+                    }
+                }
+            }
+        }
+
+        vec3 avgDirect = totalDirect / vertCount;
+        vec3 avgIndirect = totalIndirect / vertCount;
+
+        bakeVertices[threadIndex].mDirectLight = vec4(avgDirect, 1.0);
+        bakeVertices[threadIndex].mIndirectLight = vec4(avgIndirect, 1.0);
     }
 }
