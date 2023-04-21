@@ -175,8 +175,10 @@ private:
         std::vector<PathTraceTriangle>& triangleData,
         std::vector<PathTraceMesh>& meshData,
         std::vector<PathTraceLight>& lightData);
+    void UpdateBakeVertexData();
 
     void DispatchNextLightBake();
+    void DispatchNextBakeDiffuse();
     void ReadbackLightBakeResults();
     void FinalizeLightBake();
 
@@ -246,6 +248,9 @@ private:
     Buffer* mPathTraceLightBuffer = nullptr;
     UniformBuffer* mPathTraceUniformBuffer = nullptr;
     Buffer* mLightBakeVertexBuffer = nullptr;
+    DescriptorSet* mBakeDiffuseDescriptorSet = nullptr;
+    Buffer* mBakeAverageBuffer = nullptr;
+    Buffer* mBakeDiffuseTriangleBuffer = nullptr;
 
     // Destroy Queue
     DestroyQueue mDestroyQueue;
@@ -281,6 +286,7 @@ private:
     int32_t mBakingCompIndex = -1;
     int32_t mNextBakingCompIndex = 0;
     int64_t mBakedFrame = -1;
+    uint32_t mTotalDiffusePasses = 1;
 
 #if EDITOR
 public:

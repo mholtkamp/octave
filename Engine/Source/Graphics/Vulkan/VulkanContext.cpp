@@ -1076,14 +1076,28 @@ void VulkanContext::CreateStaticRayTraceResources()
     mPathTraceLightBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceLight), "Path Trace Light Buffer", nullptr, false);
     mLightBakeVertexBuffer = new Buffer(BufferType::Storage, sizeof(LightBakeVertex), "Light Bake Vertex Buffer", nullptr, true);
 
-    // Descriptor Set
-    VkDescriptorSetLayout layout = GetPipeline(PipelineId::PathTrace)->GetDescriptorSetLayout(1);
-    mPathTraceDescriptorSet = new DescriptorSet(layout);
-    mPathTraceDescriptorSet->UpdateUniformDescriptor(0, mPathTraceUniformBuffer);
-    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceTriangleBuffer);
-    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceMeshBuffer);
-    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mPathTraceLightBuffer);
-    mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(6, mLightBakeVertexBuffer);
+    mBakeDiffuseTriangleBuffer = new Buffer(BufferType::Storage, sizeof(DiffuseTriangle), "Bake Triangle Buffer", nullptr, false);
+    mBakeAverageBuffer = new Buffer(BufferType::Storage, sizeof(VertexLightData), "Bake Average Buffer", nullptr, true);
+
+    // Descriptor Sets
+    {
+        VkDescriptorSetLayout layout = GetPipeline(PipelineId::PathTrace)->GetDescriptorSetLayout(1);
+        mPathTraceDescriptorSet = new DescriptorSet(layout);
+        mPathTraceDescriptorSet->UpdateUniformDescriptor(0, mPathTraceUniformBuffer);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceTriangleBuffer);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceMeshBuffer);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mPathTraceLightBuffer);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(6, mLightBakeVertexBuffer);
+    }
+
+    {
+        VkDescriptorSetLayout layout = GetPipeline(PipelineId::LightBakeAverage)->GetDescriptorSetLayout(1);
+        mBakeDiffuseDescriptorSet = new DescriptorSet(layout);
+        mBakeDiffuseDescriptorSet->UpdateUniformDescriptor(0, mPathTraceUniformBuffer);
+        mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(1, mLightBakeVertexBuffer);
+        mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(2, mBakeDiffuseTriangleBuffer);
+        mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(3, mBakeAverageBuffer);
+    }
 }
 
 void VulkanContext::DestroyStaticRayTraceResources()
@@ -2350,6 +2364,66 @@ void VulkanContext::UpdatePathTracingScene(
     mPathTraceDescriptorSet->UpdateImageArrayDescriptor(4, images);
 }
 
+void VulkanContext::UpdateBakeVertexData()
+{
+    StaticMeshComponent* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMeshComponent>();
+    StaticMesh* meshAsset = meshComp->GetStaticMesh();
+    uint32_t numVerts = meshAsset->GetNumVertices();
+
+    // Update light bake vertex buffer
+    std::vector<LightBakeVertex> lightBakeVertexData;
+
+    glm::mat4 transform = meshComp->GetRenderTransform();
+    glm::mat4 normalTransform = glm::transpose(glm::inverse(transform));
+
+    lightBakeVertexData.resize(numVerts);
+
+    // Add triangle data.
+    bool hasColor = meshAsset->HasVertexColor();
+    IndexType* indices = meshAsset->GetIndices();
+    Vertex* verts = hasColor ? nullptr : meshAsset->GetVertices();
+    VertexColor* colorVerts = hasColor ? meshAsset->GetColorVertices() : nullptr;
+    const LightBakeResult& bakeResult = mLightBakeResults[mBakingCompIndex];
+
+    for (uint32_t v = 0; v < numVerts; ++v)
+    {
+        if (hasColor)
+        {
+            lightBakeVertexData[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[v].mPosition, 1));
+            lightBakeVertexData[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(colorVerts[v].mNormal, 0)));
+        }
+        else
+        {
+            lightBakeVertexData[v].mPosition = glm::vec3(transform * glm::vec4(verts[v].mPosition, 1));
+            lightBakeVertexData[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(verts[v].mNormal, 0)));
+        }
+
+        // During the diffusion phase, we want to upload the resulting light data
+        if (mLightBakePhase == LightBakePhase::Diffuse)
+        {
+            lightBakeVertexData[v].mDirectLight = bakeResult.mDirectColors[v];
+            lightBakeVertexData[v].mIndirectLight = bakeResult.mIndirectColors[v];
+        }
+    }
+
+    // If the vertex data is larger than our currently allocated storage buffer, create a new larger buffer
+    size_t vertBufferSize = sizeof(LightBakeVertex) * lightBakeVertexData.size();
+    if (mLightBakeVertexBuffer->GetSize() < vertBufferSize)
+    {
+        GetDestroyQueue()->Destroy(mLightBakeVertexBuffer);
+        mLightBakeVertexBuffer = nullptr;
+        mLightBakeVertexBuffer = new Buffer(BufferType::Storage, vertBufferSize, "Light Bake Vertex Buffer", nullptr, true);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(6, mLightBakeVertexBuffer);
+        mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(1, mLightBakeVertexBuffer);
+    }
+
+    // Upload vertex data
+    if (vertBufferSize > 0)
+    {
+        mLightBakeVertexBuffer->Update(lightBakeVertexData.data(), vertBufferSize);
+    }
+}
+
 void VulkanContext::PathTraceWorld()
 {
     OCT_ASSERT(!IsLightBakeInProgress());
@@ -2456,6 +2530,13 @@ void VulkanContext::BeginLightBake()
             mNextBakingCompIndex = 0;
             mBakedFrame = -1;
 
+            uint32_t directDiffusals = Renderer::Get()->GetBakeDiffuseDirectPasses();
+            uint32_t indirectDiffusals = Renderer::Get()->GetBakeDiffuseIndirectPasses();
+            mTotalDiffusePasses = glm::max<uint32_t>(directDiffusals, indirectDiffusals);
+
+            // Add an extra diffusal pass for the final deduplication averaging.
+            ++mTotalDiffusePasses;
+
             mLightBakeResults.resize(mLightBakeComps.size());
         }
     }
@@ -2492,6 +2573,7 @@ void VulkanContext::UpdateLightBake()
                 mBakingCompIndex = -1;
                 mNextBakingCompIndex = 0;
                 mBakedFrame = -1;
+                mTotalDiffusePasses = 1;
             }
         }
     }
@@ -2511,7 +2593,29 @@ void VulkanContext::UpdateLightBake()
         }
         else
         {
-            // We've passed the end of the vector. Everything should be baked.
+            // Light has baked, now diffuse the light to blur result slightly.
+            mLightBakePhase = LightBakePhase::Diffuse;
+            mBakingCompIndex = -1;
+            mNextBakingCompIndex = 0;
+            mBakedFrame = -1;
+        }
+    }
+    else if (mLightBakePhase == LightBakePhase::Diffuse)
+    {
+        if (mBakingCompIndex == -1)
+        {
+            mBakingCompIndex = mNextBakingCompIndex;
+            mPathTraceAccumulatedFrames = 0;
+
+            ++mNextBakingCompIndex;
+        }
+
+        if (mBakingCompIndex < mLightBakeComps.size())
+        {
+            DispatchNextBakeDiffuse();
+        }
+        else
+        {
             EndLightBake();
         }
     }
@@ -2606,47 +2710,7 @@ void VulkanContext::DispatchNextLightBake()
         // During the indirect bake, previous dispatch results are accumulated.
         if (mPathTraceAccumulatedFrames == 0)
         {
-            glm::mat4 transform = meshComp->GetRenderTransform();
-            glm::mat4 normalTransform = glm::transpose(glm::inverse(transform));
-
-            lightBakeVertexData.resize(numVerts);
-
-            // Add triangle data.
-            bool hasColor = meshAsset->HasVertexColor();
-            IndexType* indices = meshAsset->GetIndices();
-            Vertex* verts = hasColor ? nullptr : meshAsset->GetVertices();
-            VertexColor* colorVerts = hasColor ? meshAsset->GetColorVertices() : nullptr;
-
-            for (uint32_t v = 0; v < numVerts; ++v)
-            {
-                if (hasColor)
-                {
-                    lightBakeVertexData[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[v].mPosition, 1));
-                    lightBakeVertexData[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(colorVerts[v].mNormal, 0)));
-                }
-                else
-                {
-                    lightBakeVertexData[v].mPosition = glm::vec3(transform * glm::vec4(verts[v].mPosition, 1));
-                    lightBakeVertexData[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(verts[v].mNormal, 0)));
-                }
-            }
-
-            // If the vertex data is larger than our currently allocated storage buffer, create a new larger buffer
-            size_t vertBufferSize = sizeof(LightBakeVertex) * lightBakeVertexData.size();
-            if (mLightBakeVertexBuffer->GetSize() < vertBufferSize)
-            {
-                GetDestroyQueue()->Destroy(mLightBakeVertexBuffer);
-                mLightBakeVertexBuffer = nullptr;
-                mLightBakeVertexBuffer = new Buffer(BufferType::Storage, vertBufferSize, "Light Bake Vertex Buffer", nullptr, true);
-                mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(6, mLightBakeVertexBuffer);
-
-            }
-
-            // Upload vertex data
-            if (vertBufferSize > 0)
-            {
-                mLightBakeVertexBuffer->Update(lightBakeVertexData.data(), vertBufferSize);
-            }
+            UpdateBakeVertexData();
         }
 
         // Update uniform buffer
@@ -2690,6 +2754,110 @@ void VulkanContext::DispatchNextLightBake()
     }
 }
 
+void VulkanContext::DispatchNextBakeDiffuse()
+{
+    if (mBakingCompIndex >= mLightBakeComps.size() ||
+        mPathTraceAccumulatedFrames >= mTotalDiffusePasses)
+        return;
+
+    StaticMeshComponent* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMeshComponent>();
+
+    if (meshComp != nullptr &&
+        meshComp->GetStaticMesh() != nullptr &&
+        meshComp->GetOwner() != nullptr &&
+        meshComp->GetWorld() == GetWorld())
+    {
+        StaticMesh* meshAsset = meshComp->GetStaticMesh();
+        uint32_t numVerts = meshAsset->GetNumVertices();
+
+        // On the first iteration of the bake, we need to upload bake vertex data.
+        // During the indirect bake, previous dispatch results are accumulated.
+        if (mPathTraceAccumulatedFrames == 0)
+        {
+            UpdateBakeVertexData();
+
+            // Update triangle vertex indices
+            std::vector<DiffuseTriangle> triangles;
+
+            uint32_t numTriangles = meshAsset->GetNumFaces();
+            IndexType* indices = meshAsset->GetIndices();
+
+            for (uint32_t f = 0; f < numTriangles; ++f)
+            {
+                uint32_t i = f * 3;
+
+                DiffuseTriangle tri;
+                tri.mVertexIndices = glm::uvec3(indices[i], indices[i + 1], indices[i + 2]);
+                triangles.push_back(tri);
+            }
+
+            size_t triBufferSize = sizeof(DiffuseTriangle) * triangles.size();
+            if (mBakeDiffuseTriangleBuffer->GetSize() < triBufferSize)
+            {
+                GetDestroyQueue()->Destroy(mBakeDiffuseTriangleBuffer);
+                mBakeDiffuseTriangleBuffer = nullptr;
+                mBakeDiffuseTriangleBuffer = new Buffer(BufferType::Storage, triBufferSize, "Bake Diffuse Triangle Buffer", nullptr, false);
+                mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(2, mBakeDiffuseTriangleBuffer);
+            }
+        }
+
+        // Update uniform buffer
+        PathTraceUniforms uniforms;
+        uniforms.mNumTriangles = 0;
+        uniforms.mNumMeshes = 0;
+        uniforms.mNumLights = 0;
+        uniforms.mMaxBounces = Renderer::Get()->GetBakeMaxBounces();
+        uniforms.mRaysPerThread = Renderer::Get()->GetBakeRaysPerVertex();
+        uniforms.mAccumulatedFrames = mPathTraceAccumulatedFrames;
+        uniforms.mNumBakeVertices = numVerts;
+        uniforms.mShadowBias = Renderer::Get()->GetBakeShadowBias();
+        mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
+
+        VkCommandBuffer cb = GetCommandBuffer();
+
+
+        // Average First
+        {
+            Pipeline* averagePipeline = GetPipeline(PipelineId::LightBakeAverage);
+
+            BindPipeline(averagePipeline, VertexType::Max);
+            mBakeDiffuseDescriptorSet->Bind(cb, 1, averagePipeline->GetPipelineLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
+
+            vkCmdDispatch(cb, (numVerts + 31) / 32, 1, 1);
+        }
+
+        // Barrier so we can safely read the averages during the diffuse dispatch
+        {
+            VkBufferMemoryBarrier bufferBarrier = {};
+            bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+            bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            bufferBarrier.buffer = mBakeAverageBuffer->Get();
+            bufferBarrier.offset = 0;
+            bufferBarrier.size = VK_WHOLE_SIZE;
+            vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0,
+                0, nullptr,
+                1, &bufferBarrier,
+                0, nullptr);
+        }
+
+        // Diffuse Second
+        {
+            Pipeline* diffusePipeline = GetPipeline(PipelineId::LightBakeDiffuse);
+
+            BindPipeline(diffusePipeline, VertexType::Max);
+            mBakeDiffuseDescriptorSet->Bind(cb, 1, diffusePipeline->GetPipelineLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
+
+            vkCmdDispatch(cb, (numVerts + 31) / 32, 1, 1);
+        }
+
+        mBakedFrame = (int64_t)Renderer::Get()->GetFrameNumber();
+        mPathTraceAccumulatedFrames++;
+    }
+}
+
 void VulkanContext::ReadbackLightBakeResults()
 {
     uint32_t curFrame = Renderer::Get()->GetFrameNumber();
@@ -2711,32 +2879,50 @@ void VulkanContext::ReadbackLightBakeResults()
             uint32_t numVerts = meshComp->GetStaticMesh()->GetNumVertices();
             OCT_ASSERT(mLightBakeVertexBuffer->GetSize() >= numVerts * sizeof(LightBakeVertex));
 
-            bool direct = (mLightBakePhase == LightBakePhase::Direct);
             LightBakeVertex* verts = (LightBakeVertex*)mLightBakeVertexBuffer->Map();
-            std::vector<glm::vec4>& resColors = direct ?
-                mLightBakeResults[mBakingCompIndex].mDirectColors :
-                mLightBakeResults[mBakingCompIndex].mIndirectColors;
+            std::vector<glm::vec4>& directColors = mLightBakeResults[mBakingCompIndex].mDirectColors;
+            std::vector<glm::vec4>& indirectColors = mLightBakeResults[mBakingCompIndex].mIndirectColors;
 
-            resColors.clear();
+            bool writeDirect = (mLightBakePhase == LightBakePhase::Direct || mLightBakePhase == LightBakePhase::Diffuse);
+            bool writeIndirect = (mLightBakePhase == LightBakePhase::Indirect || mLightBakePhase == LightBakePhase::Diffuse);
+
+            if (writeDirect)
+            {
+                directColors.clear();
+            }
+
+            if (writeIndirect)
+            {
+                indirectColors.clear();
+            }
 
             for (uint32_t i = 0; i < numVerts; ++i)
             {
                 LightBakeVertex& vert = verts[i];
-                resColors.push_back(direct ? vert.mDirectLight : vert.mIndirectLight);
+
+                if (writeDirect)
+                {
+                    directColors.push_back(vert.mDirectLight);
+                }
+
+                if (writeIndirect)
+                {
+                    indirectColors.push_back(vert.mIndirectLight);
+                }
             }
 
             mLightBakeVertexBuffer->Unmap();
 
             // Go ahead and apply the instance colors to the static mesh if we finished a direct bake.
             // It is important that the direct lighting is applied to the mesh before entering the indirect light pass.
-            if (direct)
+            if (mLightBakePhase == LightBakePhase::Direct)
             {
                 std::vector<uint32_t> instanceColors;
 
                 for (uint32_t v = 0; v < numVerts; ++v)
                 {
                     glm::vec4 directClamped = glm::clamp(
-                        resColors[v], 
+                        directColors[v],
                         glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 
                         glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
@@ -2845,6 +3031,8 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::PathTrace] = new PathTracePipeline();
     mPipelines[(size_t)PipelineId::LightBakeDirect] = new LightBakeDirectPipeline();
     mPipelines[(size_t)PipelineId::LightBakeIndirect] = new LightBakeIndirectPipeline();
+    mPipelines[(size_t)PipelineId::LightBakeAverage] = new LightBakeAveragePipeline();
+    mPipelines[(size_t)PipelineId::LightBakeDiffuse] = new LightBakeDiffusePipeline();
 
 #if EDITOR
     mPipelines[(size_t)PipelineId::HitCheck] = new HitCheckPipeline();
@@ -2872,6 +3060,8 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::PathTrace]->Create(VK_NULL_HANDLE);
     mPipelines[(size_t)PipelineId::LightBakeDirect]->Create(VK_NULL_HANDLE);
     mPipelines[(size_t)PipelineId::LightBakeIndirect]->Create(VK_NULL_HANDLE);
+    mPipelines[(size_t)PipelineId::LightBakeAverage]->Create(VK_NULL_HANDLE);
+    mPipelines[(size_t)PipelineId::LightBakeDiffuse]->Create(VK_NULL_HANDLE);
 
 #if EDITOR
     mPipelines[(size_t)PipelineId::HitCheck]->Create(mHitCheckRenderPass);

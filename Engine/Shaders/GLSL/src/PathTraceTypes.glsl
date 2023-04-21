@@ -69,6 +69,18 @@ struct LightBakeVertex
     vec4 mIndirectLight;
 };
 
+struct VertexLightData
+{
+    vec4 mDirectLight;
+    vec4 mIndirectLight;
+};
+
+struct DiffuseTriangle
+{
+    uvec3 mVertexIndices;
+    uint mPad0;
+};
+
 struct PathTraceUniforms
 {
     uint mNumTriangles;

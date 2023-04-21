@@ -110,6 +110,8 @@ public:
     uint32_t GetBakeMaxBounces() const;
     float GetBakeShadowBias() const;
     uint32_t GetBakeIndirectIterations() const;
+    uint32_t GetBakeDiffuseDirectPasses() const;
+    uint32_t GetBakeDiffuseIndirectPasses() const;
 
     // Default Textures
     TextureRef mWhiteTexture;
@@ -205,4 +207,6 @@ private:
     uint32_t mBakeMaxBounces = 4;
     float mBakeShadowBias = 0.001f;
     uint32_t mBakeIndirectIterations = 20;
+    uint32_t mBakeDiffuseDirectPasses = 2;
+    uint32_t mBakeDiffuseIndirectPasses = 2;
 };

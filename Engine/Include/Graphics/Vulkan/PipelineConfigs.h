@@ -546,4 +546,52 @@ public:
     }
 };
 
+class LightBakeAveragePipeline : public Pipeline
+{
+public:
+
+    LightBakeAveragePipeline()
+    {
+        mComputePipeline = true;
+        mComputeShaderPath = ENGINE_SHADER_DIR "LightBakeAverage.comp";
+
+        mPipelineId = PipelineId::LightBakeAverage;
+    }
+
+    virtual void PopulateLayoutBindings() override
+    {
+        Pipeline::PopulateLayoutBindings();
+
+        PushSet();
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Uniform data
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Baked vertex data
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Triangle data
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Output average light data
+    }
+};
+
+class LightBakeDiffusePipeline : public Pipeline
+{
+public:
+
+    LightBakeDiffusePipeline()
+    {
+        mComputePipeline = true;
+        mComputeShaderPath = ENGINE_SHADER_DIR "LightBakeDiffuse.comp";
+
+        mPipelineId = PipelineId::LightBakeDiffuse;
+    }
+
+    virtual void PopulateLayoutBindings() override
+    {
+        Pipeline::PopulateLayoutBindings();
+
+        PushSet();
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Uniform data
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Baked vertex data
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Triangle data
+        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Output average light data
+    }
+};
+
 #endif
