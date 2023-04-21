@@ -216,6 +216,18 @@ struct LightBakeVertex
     glm::vec4 mIndirectLight = { 0.0f, 0.0f, 0.0f, 0.0f };
 };
 
+struct VertexLightData
+{
+    glm::vec4 mDirectLight = { 0.0f, 0.0f, 0.0f, 0.0f };
+    glm::vec4 mIndirectLight = { 0.0f, 0.0f, 0.0f, 0.0f };
+};
+
+struct DiffuseTriangle
+{
+    glm::uvec3 mVertexIndices = { 0, 0, 0 };
+    uint32_t mPad0 = 1337;
+};
+
 struct LightBakeResult
 {
     std::vector<glm::vec4> mDirectColors;
@@ -226,6 +238,7 @@ enum class LightBakePhase : uint8_t
 {
     Direct,
     Indirect,
+    Diffuse,
     Count
 };
 

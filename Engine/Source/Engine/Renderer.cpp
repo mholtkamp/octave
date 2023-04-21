@@ -117,6 +117,8 @@ void Renderer::GatherProperties(std::vector<Property>& props)
     props.push_back(Property(DatumType::Integer, "Bake Max Bounces", nullptr, &mBakeMaxBounces));
     props.push_back(Property(DatumType::Float, "Bake Shadow Bias", nullptr, &mBakeShadowBias));
     props.push_back(Property(DatumType::Integer, "Bake Indirect Iterations", nullptr, &mBakeIndirectIterations));
+    props.push_back(Property(DatumType::Integer, "Bake Direct Diffusals", nullptr, &mBakeDiffuseDirectPasses));
+    props.push_back(Property(DatumType::Integer, "Bake Indirect Diffusals", nullptr, &mBakeDiffuseIndirectPasses));
 }
 
 TransformComponent* Renderer::ProcessHitCheck(World* world, int32_t x, int32_t y)
@@ -1241,5 +1243,15 @@ float Renderer::GetBakeShadowBias() const
 uint32_t Renderer::GetBakeIndirectIterations() const
 {
     return mBakeIndirectIterations;
+}
+
+uint32_t Renderer::GetBakeDiffuseDirectPasses() const
+{
+    return mBakeDiffuseDirectPasses;
+}
+
+uint32_t Renderer::GetBakeDiffuseIndirectPasses() const
+{
+    return mBakeDiffuseIndirectPasses;
 }
 
