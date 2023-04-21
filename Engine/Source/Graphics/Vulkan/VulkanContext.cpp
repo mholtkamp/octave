@@ -2799,6 +2799,15 @@ void VulkanContext::DispatchNextBakeDiffuse()
                 mBakeDiffuseTriangleBuffer = new Buffer(BufferType::Storage, triBufferSize, "Bake Diffuse Triangle Buffer", nullptr, false);
                 mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(2, mBakeDiffuseTriangleBuffer);
             }
+
+            size_t avgBufferSize = sizeof(VertexLightData) * numVerts;
+            if (mBakeAverageBuffer->GetSize() < avgBufferSize)
+            {
+                GetDestroyQueue()->Destroy(mBakeAverageBuffer);
+                mBakeAverageBuffer = nullptr;
+                mBakeAverageBuffer = new Buffer(BufferType::Storage, avgBufferSize, "Light Bake Vertex Buffer", nullptr, true);
+                mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(3, mBakeAverageBuffer);
+            }
         }
 
         // Update uniform buffer
