@@ -264,7 +264,7 @@ vec3 PathTrace(Ray ray, inout uint rngState)
             {
                 // Instead of bouncing the ray, continue forward since it didn't really hit the surface.
                 // Move the ray slightly pass the hit point so that we don't reintersect with the same triangle?
-                ray.mOrigin = hit.mPosition + ray.mDirection * 0.001;
+                ray.mOrigin = hit.mPosition + ray.mDirection * 0.01;
                 --i;
                 ++numAlphaSkips;
                 continue;
@@ -301,13 +301,13 @@ vec3 PathTrace(Ray ray, inout uint rngState)
             // Determine new bounced ray direction.
             if (transparent && numAlphaSkips < kMaxAlphaSkips)
             {
-                ray.mOrigin = hit.mPosition + ray.mDirection * 0.001;
+                ray.mOrigin = hit.mPosition + ray.mDirection * 0.01;
                 --i;
                 ++numAlphaSkips;
             }
             else
             {
-                ray.mOrigin = hit.mPosition;
+                ray.mOrigin = hit.mPosition + hit.mNormal * 0.01;
                 vec3 diffuseDir = normalize(hit.mNormal + RandomDirection(rngState));
                 vec3 specularDir = reflect(ray.mDirection, hit.mNormal);
                 ray.mDirection = mix(diffuseDir, specularDir, material.mSpecular);

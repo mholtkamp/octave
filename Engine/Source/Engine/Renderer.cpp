@@ -418,6 +418,7 @@ Renderer::Renderer()
     mRaysPerPixel = 1;
     mMaxBounces = 3;
     mBakeIndirectIterations = 3;
+    mBakeShadowBias = 0.01f;
 }
 
 void Renderer::LoadDefaultTextures()
