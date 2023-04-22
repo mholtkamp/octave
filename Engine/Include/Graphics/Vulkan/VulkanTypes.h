@@ -186,7 +186,7 @@ struct PathTraceMesh
     uint32_t mStartTriangleIndex = 0;
     uint32_t mNumTriangles = 0;
     uint32_t mCastShadows = 1;
-    uint32_t mPad0 = 1337;
+    uint32_t mHasBakedLighting = 0;
 
     glm::uvec4 mTextures;
 
