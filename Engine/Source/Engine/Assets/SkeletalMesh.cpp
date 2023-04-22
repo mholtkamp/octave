@@ -307,7 +307,7 @@ void SkeletalMesh::Import(const std::string& path, ImportOptions* options)
     {
         Assimp::Importer importer;
 
-        const aiScene* scene = importer.ReadFile(path, aiProcess_FlipUVs);
+        const aiScene* scene = importer.ReadFile(path, aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
 
         if (scene == nullptr)
         {
