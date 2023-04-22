@@ -2286,7 +2286,7 @@ void VulkanContext::UpdatePathTracingScene(
 
                 totalTriangles += mesh.mNumTriangles;
             }
-            else if (lightComp)
+            else if (lightComp && lightComp->GetLightingDomain() != LightingDomain::Dynamic)
             {
                 if (lightComp->Is(PointLightComponent::ClassRuntimeId()))
                 {
