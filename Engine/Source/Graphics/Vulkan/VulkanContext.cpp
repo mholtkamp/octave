@@ -2650,20 +2650,29 @@ float VulkanContext::GetLightBakeProgress()
     {
         uint32_t numComps = (uint32_t)mLightBakeComps.size();
         uint32_t numIndirectIterations = Renderer::Get()->GetBakeIndirectIterations();
+        uint32_t numDirectDiffuses = Renderer::Get()->GetBakeDiffuseDirectPasses();
+        uint32_t numIndirectDiffuses = Renderer::Get()->GetBakeDiffuseIndirectPasses();
+        uint32_t numDiffuseIterations = glm::max<uint32_t>(numDirectDiffuses, numIndirectDiffuses) + 1;
+
         uint32_t totalDirectDispatches = numComps;
         uint32_t totalIndirectDispatches = numComps * numIndirectIterations;
-        uint32_t totalDispatches = totalDirectDispatches + totalIndirectDispatches;
+        uint32_t totalDiffuseDispatches = numComps * numDiffuseIterations;
+        uint32_t totalDispatches = totalDirectDispatches + totalIndirectDispatches + totalDiffuseDispatches;
 
         uint32_t curDispatch = 0;
+        uint32_t compIndex = (uint32_t)glm::clamp<int32_t>(mNextBakingCompIndex - 1, 0, (int32_t)numComps);
+
         if (mLightBakePhase == LightBakePhase::Direct)
         {
-            int32_t compIndex = glm::clamp<int32_t>(mNextBakingCompIndex - 1, 0, (int32_t)numComps);
             curDispatch = uint32_t(compIndex);
         }
         else if (mLightBakePhase == LightBakePhase::Indirect)
         {
-            int32_t compIndex = glm::clamp<int32_t>(mNextBakingCompIndex - 1, 0, (int32_t)numComps);
             curDispatch = uint32_t(compIndex) * numIndirectIterations + mPathTraceAccumulatedFrames + totalDirectDispatches;
+        }
+        else if (mLightBakePhase == LightBakePhase::Diffuse)
+        {
+            curDispatch = uint32_t(compIndex) * numDiffuseIterations + mPathTraceAccumulatedFrames + totalDirectDispatches + totalIndirectDispatches;
         }
 
         ret = float(curDispatch) / float(totalDispatches);
@@ -2950,7 +2959,6 @@ void VulkanContext::ReadbackLightBakeResults()
 
         mBakedFrame = -1;
         mBakingCompIndex = -1;
-        mPathTraceAccumulatedFrames = 0;
     }
 }
 
