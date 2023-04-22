@@ -2945,7 +2945,7 @@ void VulkanContext::ReadbackLightBakeResults()
                 for (uint32_t v = 0; v < numVerts; ++v)
                 {
                     glm::vec4 directClamped = glm::clamp(
-                        directColors[v],
+                        directColors[v] / LIGHT_BAKE_SCALE,
                         glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 
                         glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
@@ -2984,7 +2984,7 @@ void VulkanContext::FinalizeLightBake()
 
                 for (uint32_t v = 0; v < numVerts; ++v)
                 {
-                    glm::vec4 combined = result.mDirectColors[v] + result.mIndirectColors[v];
+                    glm::vec4 combined = (result.mDirectColors[v] + result.mIndirectColors[v]) / LIGHT_BAKE_SCALE;
                     combined = glm::clamp(combined, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
                     uint32_t color32 = ColorFloat4ToUint32(combined);
