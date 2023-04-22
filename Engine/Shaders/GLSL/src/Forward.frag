@@ -138,11 +138,22 @@ void main()
 
     if (material.mVertexColorMode == VERTEX_COLOR_MODULATE)
     {
-        outColor *= inColor;
+        vec4 modColor = inColor;
+        if (geometry.mHasBakedLighting != 0)
+        {
+            modColor *= LIGHT_BAKE_SCALE;
+        }
+        outColor *= modColor;
     }
     else if (material.mVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
     {
-        outColor *= inColor.a;
+        float modValue = inColor.a;
+        if (geometry.mHasBakedLighting != 0)
+        {
+            modValue *= LIGHT_BAKE_SCALE;
+        }
+
+        outColor *= modValue;
     }
 
     if (material.mFresnelEnabled != 0)
