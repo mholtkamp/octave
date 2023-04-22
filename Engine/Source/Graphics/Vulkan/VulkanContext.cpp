@@ -2185,6 +2185,7 @@ void VulkanContext::UpdatePathTracingScene(
                 mesh.mStartTriangleIndex = totalTriangles;
                 mesh.mNumTriangles = meshAsset->GetNumFaces();
                 mesh.mCastShadows = meshComp->ShouldCastShadows();
+                mesh.mHasBakedLighting = meshComp->HasBakedLighting();
                 WriteMaterialUniformData(mesh.mMaterial, material);
 
                 // Add textures and record indices.

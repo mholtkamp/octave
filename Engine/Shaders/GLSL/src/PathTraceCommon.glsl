@@ -231,7 +231,8 @@ vec3 PathTrace(Ray ray, inout uint rngState)
             bool transparent = (material.mBlendMode == BLEND_MODE_TRANSLUCENT || material.mBlendMode == BLEND_MODE_ADDITIVE);
             bool additive = (material.mBlendMode == BLEND_MODE_ADDITIVE);
             bool unlit = (material.mShadingModel == SHADING_MODEL_UNLIT);
-
+            bool hasBakedLighting = (mesh.mHasBakedLighting != 0);
+            
             vec4 surfaceColor = vec4(0,0,0,0);
             vec4 surfaceLitColor = vec4(0,0,0,0);
             vec2 uv0 = (hit.mUv0 + material.mUvOffset0) * material.mUvScale0;
@@ -272,7 +273,7 @@ vec3 PathTrace(Ray ray, inout uint rngState)
 
             // For now, only unlit objects can emit light.
             float emission = material.mEmission;
-            if (unlit)
+            if (unlit || hasBakedLighting)
             {
                 emission = max(emission, 1.0);
             }

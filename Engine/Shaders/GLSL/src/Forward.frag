@@ -98,12 +98,41 @@ void main()
 
     outColor = diffuse;
 
+    bool hasBakedLighting = (geometry.mHasBakedLighting != 0);
+
+    // Apply baked lighting modulation first
+    if (hasBakedLighting)
+    {
+        if (material.mVertexColorMode == VERTEX_COLOR_MODULATE)
+        {
+            vec4 modColor = inColor;
+            if (geometry.mHasBakedLighting != 0)
+            {
+                modColor *= LIGHT_BAKE_SCALE;
+            }
+            outColor *= modColor;
+        }
+        else if (material.mVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
+        {
+            float modValue = inColor.a;
+            if (geometry.mHasBakedLighting != 0)
+            {
+                modValue *= LIGHT_BAKE_SCALE;
+            }
+
+            outColor *= modValue;
+        }
+    }
+
     vec3 N = normalize(inNormal);
     vec3 V = normalize(global.mViewPosition.xyz - inPosition);
 
     if (shadingModel != SHADING_MODEL_UNLIT)
     {
-        outColor = vec4(0, 0, 0, 1);
+        if (!hasBakedLighting)
+        {
+            outColor = vec4(0, 0, 0, 1);
+        }
 
         vec4 totalLight = global.mAmbientLightColor;
 
@@ -133,27 +162,19 @@ void main()
             totalLight += CalculateLighting(shadingModel, L, N, V, lightColor, attenuation);
         }
 
-        outColor = totalLight * diffuse;
+        outColor += totalLight * diffuse;
     }
 
-    if (material.mVertexColorMode == VERTEX_COLOR_MODULATE)
+    if (!hasBakedLighting)
     {
-        vec4 modColor = inColor;
-        if (geometry.mHasBakedLighting != 0)
+        if (material.mVertexColorMode == VERTEX_COLOR_MODULATE)
         {
-            modColor *= LIGHT_BAKE_SCALE;
+            outColor *= inColor;
         }
-        outColor *= modColor;
-    }
-    else if (material.mVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
-    {
-        float modValue = inColor.a;
-        if (geometry.mHasBakedLighting != 0)
+        else if (material.mVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
         {
-            modValue *= LIGHT_BAKE_SCALE;
+            outColor *= inColor.a;
         }
-
-        outColor *= modValue;
     }
 
     if (material.mFresnelEnabled != 0)
