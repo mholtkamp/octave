@@ -43,7 +43,7 @@ vec4 CalculateLighting(uint shadingModel, vec3 L, vec3 N, vec3 V, vec4 color, fl
 
     if (shadingModel == SHADING_MODEL_LIT)
     {
-        float diffuseIntensity = clamp(dot(L, N), 0.0, 1.0);
+        float diffuseIntensity = CalcLightIntensity(N, L, material.mWrapLighting);
         vec4 diffuseColor = diffuseIntensity * color;
 
         vec3 reflectDir = reflect(-L, N);  

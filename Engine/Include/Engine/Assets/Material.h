@@ -44,6 +44,7 @@ struct MaterialParams
     glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
     glm::vec4 mFresnelColor = { 1.0f, 0.0f, 0.0f, 0.0f };
     float mEmission = 0.0f;
+    float mWrapLighting = 0.0f;
     float mFresnelPower = 1.0f;
     float mSpecular = 0.0f;
     uint32_t mToonSteps = 2;
@@ -111,6 +112,9 @@ public:
 
     float GetEmission() const;
     void SetEmission(float emission);
+
+    float GetWrapLighting() const;
+    void SetWrapLighting(float wrapLighting);
 
     float GetFresnelPower() const;
     void SetFresnelPower(float power);

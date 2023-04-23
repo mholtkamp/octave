@@ -842,6 +842,7 @@ void WriteMaterialUniformData(MaterialData& outData, Material* material)
     outData.mVertexColorMode = static_cast<uint32_t>(material->GetVertexColorMode());
     outData.mApplyFog = static_cast<uint32_t>(material->ShouldApplyFog());
     outData.mEmission = material->GetEmission();
+    outData.mWrapLighting = material->GetWrapLighting();
     outData.mUvMaps[0] = material->GetUvMap(0);
     outData.mUvMaps[1] = material->GetUvMap(1);
     outData.mUvMaps[2] = material->GetUvMap(2);
