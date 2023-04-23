@@ -54,16 +54,6 @@ int World_Lua::GetAudioReceiver(lua_State* L)
     return 1;
 }
 
-int World_Lua::GetDirectionalLight(lua_State* L)
-{
-    World* world = CHECK_WORLD(L, 1);
-
-    DirectionalLightComponent* dirLightComp = world->GetDirectionalLight();
-
-    Component_Lua::Create(L, dirLightComp);
-    return 1;
-}
-
 int World_Lua::SetActiveCamera(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
@@ -85,20 +75,6 @@ int World_Lua::SetAudioReceiver(lua_State* L)
 
     world->SetAudioReceiver(transformComp);
 
-    return 0;
-}
-
-int World_Lua::SetDirectionalLight(lua_State* L)
-{
-    World* world = CHECK_WORLD(L, 1);
-    DirectionalLightComponent* lightComp = nullptr;
-    if (!lua_isnil(L, 2))
-    {
-        lightComp = CHECK_DIRECTIONAL_LIGHT_COMPONENT(L, 2);
-    }
-
-    world->SetDirectionalLight(lightComp);
- 
     return 0;
 }
 
@@ -548,17 +524,11 @@ void World_Lua::Bind()
     lua_pushcfunction(L, World_Lua::GetAudioReceiver);
     lua_setfield(L, mtIndex, "GetAudioReceiver");
 
-    lua_pushcfunction(L, World_Lua::GetDirectionalLight);
-    lua_setfield(L, mtIndex, "GetDirectionalLight");
-
     lua_pushcfunction(L, World_Lua::SetActiveCamera);
     lua_setfield(L, mtIndex, "SetActiveCamera");
 
     lua_pushcfunction(L, World_Lua::SetAudioReceiver);
     lua_setfield(L, mtIndex, "SetAudioReceiver");
-
-    lua_pushcfunction(L, World_Lua::SetDirectionalLight);
-    lua_setfield(L, mtIndex, "SetDirectionalLight");
 
     lua_pushcfunction(L, World_Lua::SpawnActor);
     lua_setfield(L, mtIndex, "SpawnActor");

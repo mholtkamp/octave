@@ -2,21 +2,28 @@
 
 #include <glm/glm.hpp>
 
+struct LightUniformData
+{
+    glm::vec4 mColor;
+
+    glm::vec3 mPosition;
+    float mRadius;
+
+    glm::vec3 mDirection;
+    uint32_t mType;
+};
+
 struct GlobalUniformData
 {
     glm::mat4 mViewProjMatrix;
-    glm::mat4 mDirectionalLightVP;
     glm::mat4 mViewToWorld;
+    glm::mat4 mShadowViewProj;
 
-    glm::vec4 mDirectionalLightDirection;
-    glm::vec4 mDirectionalLightColor;
     glm::vec4 mAmbientLightColor;
     glm::vec4 mViewPosition;
     glm::vec4 mViewDirection;
     glm::vec2 mScreenDimensions;
     glm::vec2 mInterfaceResolution;
-    glm::vec4 mPointLightPositions[MAX_POINTLIGHTS];
-    glm::vec4 mPointLightColors[MAX_POINTLIGHTS];
     glm::vec4 mShadowColor;
 
     int32_t mNumPointLights;
@@ -39,6 +46,8 @@ struct GlobalUniformData
     uint32_t mPad0;
     uint32_t mPad1;
     uint32_t mPad2;
+
+    LightUniformData mLights[MAX_LIGHTS_PER_FRAME];
 };
 
 struct PathTraceUniforms
@@ -64,13 +73,17 @@ struct GeometryData
     glm::mat4 mWVPMatrix;
     glm::mat4 mWorldMatrix;
     glm::mat4 mNormalMatrix;
-    glm::mat4 mLightWVPMatrix;
     glm::vec4 mColor;
 
     uint32_t mHitCheckId;
     uint32_t mHasBakedLighting;
-    uint32_t mPadding0;
-    uint32_t mPadding1;
+    uint32_t mPad0;
+    uint32_t mPad1;
+
+    uint32_t mNumLights;
+    uint32_t mLights0;
+    uint32_t mLights1;
+    uint32_t mPad2;
 };
 
 struct SkinnedGeometryData

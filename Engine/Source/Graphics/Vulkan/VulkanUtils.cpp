@@ -802,18 +802,99 @@ void EndDebugLabel()
 #endif
 }
 
-void WriteGeometryUniformData(GeometryData& outData, World* world, const glm::mat4& transform)
+void WriteGeometryUniformData(GeometryData& outData, World* world, TransformComponent* comp, const glm::mat4& transform)
 {
     CameraComponent* camera = world->GetActiveCamera();
-    DirectionalLightComponent* dirLight = world->GetDirectionalLight();
 
     outData.mWVPMatrix = camera->GetViewProjectionMatrix() * transform;
     outData.mWorldMatrix = transform;
     outData.mNormalMatrix = glm::transpose(glm::inverse(transform));
-    outData.mLightWVPMatrix = dirLight ? (dirLight->GetViewProjectionMatrix() * transform) : glm::mat4(1);
     outData.mColor = glm::vec4(0.25f, 0.25f, 1.0f, 1.0f);
     outData.mHitCheckId = 0;
     outData.mHasBakedLighting = false;
+    outData.mNumLights = 0;
+
+    if (comp != nullptr)
+    {
+        outData.mHitCheckId = GetHitCheckId(comp);
+
+#if EDITOR
+        if (Renderer::Get()->GetDebugMode() == DEBUG_WIREFRAME &&
+            world->IsComponentSelected(comp))
+        {
+            if (world->GetSelectedComponent() == comp)
+            {
+                outData.mColor = SELECTED_COMP_COLOR;
+            }
+            else
+            {
+                outData.mColor = MULTI_SELECTED_COMP_COLOR;
+            }
+        }
+#endif
+    }
+}
+
+void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds)
+{
+    // Find overlapping point lights
+    uint32_t numLights = 0;
+
+    if (material != nullptr && material->GetShadingModel() != ShadingModel::Unlit)
+    {
+        const std::vector<LightData>& lights = Renderer::Get()->GetLightData();
+        uint32_t lightIndices[MAX_LIGHTS_PER_DRAW] = {};
+
+        // Don't worry about sorting for now. Just choose the first X overlapping lights.
+        for (uint32_t i = 0; i < lights.size() && i < MAX_LIGHTS_PER_FRAME; ++i)
+        {
+            bool overlaps = false;
+            if (lights[i].mType == LightType::Directional)
+            {
+                // Global light always overlaps.
+                overlaps = true;
+            }
+            else
+            {
+                // If the local light is overlapping the geometry bounds, then just add it to the list.
+                float dist2 = glm::distance2(lights[i].mPosition, bounds.mCenter);
+
+                float maxDist = (bounds.mRadius + lights[i].mRadius);
+                float maxDist2 = maxDist * maxDist;
+
+                // Overlap!
+                if (dist2 < maxDist2)
+                {
+                    overlaps = true;
+                }
+            }
+
+            if (overlaps)
+            {
+                // Light indices are packed as bytes into 32-bit uints.
+                // Lights0 contains indices for lights 0 - 3
+                // Lights1 contains indices for lights 4 - 7
+                uint32_t lightIndex = numLights;
+                uint32_t& lightIndexInt = (lightIndex >= 4) ? outData.mLights1 : outData.mLights0;
+                uint32_t shiftedIdx = 0;
+
+                if (lightIndex >= 4)
+                {
+                    shiftedIdx = i << (8 * (i - 4));
+                }
+                else
+                {
+                    shiftedIdx = i << (8 * i);
+                }
+
+                lightIndexInt |= shiftedIdx;
+
+                ++numLights;
+            }
+        }
+    }
+
+    outData.mNumLights = numLights;
 }
 
 void WriteMaterialUniformData(MaterialData& outData, Material* material)
@@ -1238,24 +1319,10 @@ void UpdateStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
     World* world = staticMeshComp->GetWorld();
     GeometryData ubo = {};
 
-    WriteGeometryUniformData(ubo, world, staticMeshComp->GetRenderTransform());
-    ubo.mHitCheckId = GetHitCheckId(staticMeshComp);
+    WriteGeometryUniformData(ubo, world, staticMeshComp, staticMeshComp->GetRenderTransform());
     ubo.mHasBakedLighting = staticMeshComp->HasBakedLighting();
 
-#if EDITOR
-    if (renderer->GetDebugMode() == DEBUG_WIREFRAME &&
-        world->IsComponentSelected(staticMeshComp))
-    {
-        if (world->GetSelectedComponent() == staticMeshComp)
-        {
-            ubo.mColor = SELECTED_COMP_COLOR;
-        }
-        else
-        {
-            ubo.mColor = MULTI_SELECTED_COMP_COLOR;
-        }
-    }
-#endif
+    GatherGeometryLightUniformData(ubo, staticMeshComp->GetMaterial(), staticMeshComp->GetBounds());
 
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 }
@@ -1446,7 +1513,6 @@ void UpdateSkeletalMeshCompUniformBuffer(SkeletalMeshComponent* skeletalMeshComp
 
     World* world = skeletalMeshComp->GetWorld();
     CameraComponent* camera = world->GetActiveCamera();
-    DirectionalLightComponent* dirLight = world->GetDirectionalLight();
     uint32_t numBoneInfluences = 1;
 
     switch (skeletalMeshComp->GetBoneInfluenceMode())
@@ -1457,36 +1523,12 @@ void UpdateSkeletalMeshCompUniformBuffer(SkeletalMeshComponent* skeletalMeshComp
     }
 
     glm::mat4 transform = skeletalMeshComp->GetRenderTransform();
-    glm::vec4 uniformColor = glm::vec4(0);
-
-#if EDITOR
-    if (renderer->GetDebugMode() == DEBUG_WIREFRAME)
-    {
-        uniformColor = glm::vec4(0.25f, 0.25f, 1.0f, 1.0f);
-
-        if (world->IsComponentSelected(skeletalMeshComp))
-        {
-            if (world->GetSelectedComponent() == skeletalMeshComp)
-            {
-                uniformColor = SELECTED_COMP_COLOR;
-            }
-            else
-            {
-                uniformColor = MULTI_SELECTED_COMP_COLOR;
-            }
-        }
-    }
-#endif
 
     if (!IsCpuSkinningRequired(skeletalMeshComp))
     {
         SkinnedGeometryData ubo = {};
-        ubo.mBase.mWVPMatrix = camera->GetViewProjectionMatrix() * transform;
-        ubo.mBase.mWorldMatrix = transform;
-        ubo.mBase.mNormalMatrix = glm::transpose(glm::inverse(transform));
-        ubo.mBase.mLightWVPMatrix = dirLight ? (dirLight->GetViewProjectionMatrix() * transform) : glm::mat4(1);
-        ubo.mBase.mColor = uniformColor; // Currently used for wireframe only.
-        ubo.mBase.mHitCheckId = GetHitCheckId(skeletalMeshComp);
+        WriteGeometryUniformData(ubo.mBase, world, skeletalMeshComp, transform);
+        GatherGeometryLightUniformData(ubo.mBase, skeletalMeshComp->GetMaterial(), skeletalMeshComp->GetBounds());
 
         for (uint32_t i = 0; i < skeletalMeshComp->GetNumBones(); ++i)
         {
@@ -1499,13 +1541,8 @@ void UpdateSkeletalMeshCompUniformBuffer(SkeletalMeshComponent* skeletalMeshComp
     else
     {
         GeometryData ubo = {};
-        ubo.mWVPMatrix = camera->GetViewProjectionMatrix() * transform;
-        ubo.mWorldMatrix = transform;
-        ubo.mNormalMatrix = glm::transpose(glm::inverse(transform));
-        ubo.mLightWVPMatrix = dirLight ? (dirLight->GetViewProjectionMatrix() * transform) : glm::mat4(1);
-        ubo.mColor = uniformColor; // Currently used for wireframe only.
-        ubo.mHitCheckId = GetHitCheckId(skeletalMeshComp);
-        ubo.mHasBakedLighting = false;
+        WriteGeometryUniformData(ubo, world, skeletalMeshComp, transform);
+        GatherGeometryLightUniformData(ubo, skeletalMeshComp->GetMaterial(), skeletalMeshComp->GetBounds());
 
         resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
     }
@@ -1733,24 +1770,8 @@ void UpdateTextMeshCompUniformBuffer(TextMeshComponent* textMeshComp)
     World* world = textMeshComp->GetWorld();
     GeometryData ubo = {};
 
-    WriteGeometryUniformData(ubo, world, textMeshComp->GetRenderTransform());
-
-    ubo.mHitCheckId = GetHitCheckId(textMeshComp);
-
-#if EDITOR
-    if (renderer->GetDebugMode() == DEBUG_WIREFRAME &&
-        world->IsComponentSelected(textMeshComp))
-    {
-        if (world->GetSelectedComponent() == textMeshComp)
-        {
-            ubo.mColor = SELECTED_COMP_COLOR;
-        }
-        else
-        {
-            ubo.mColor = MULTI_SELECTED_COMP_COLOR;
-        }
-    }
-#endif
+    WriteGeometryUniformData(ubo, world, textMeshComp, textMeshComp->GetRenderTransform());
+    GatherGeometryLightUniformData(ubo, textMeshComp->GetMaterial(), textMeshComp->GetBounds());
 
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 }
@@ -1806,38 +1827,12 @@ void UpdateParticleCompResource(ParticleComponent* particleComp)
 
     World* world = particleComp->GetWorld();
     CameraComponent* camera = world->GetActiveCamera();
-    DirectionalLightComponent* dirLight = world->GetDirectionalLight();
 
     const glm::mat4 transform = particleComp->GetUseLocalSpace() ? particleComp->GetTransform() : glm::mat4(1);
-    glm::vec4 uniformColor = glm::vec4(0.25f, 0.25f, 1.0f, 1.0f);
-
-#if EDITOR
-    if (renderer->GetDebugMode() == DEBUG_WIREFRAME)
-    {
-        uniformColor = glm::vec4(0.25f, 0.25f, 1.0f, 1.0f);
-
-        if (world->IsComponentSelected(particleComp))
-        {
-            if (world->GetSelectedComponent() == particleComp)
-            {
-                uniformColor = SELECTED_COMP_COLOR;
-            }
-            else
-            {
-                uniformColor = MULTI_SELECTED_COMP_COLOR;
-            }
-        }
-    }
-#endif
 
     GeometryData ubo = {};
-    ubo.mWVPMatrix = camera->GetViewProjectionMatrix() * transform;
-    ubo.mWorldMatrix = transform;
-    ubo.mNormalMatrix = glm::transpose(glm::inverse(transform));
-    ubo.mLightWVPMatrix = dirLight ? (dirLight->GetViewProjectionMatrix() * transform) : glm::mat4(1);
-    ubo.mColor = uniformColor;
-    ubo.mHitCheckId = GetHitCheckId(particleComp);
-    ubo.mHasBakedLighting = false;
+    WriteGeometryUniformData(ubo, world, particleComp, transform);
+    GatherGeometryLightUniformData(ubo, particleComp->GetMaterial(), particleComp->GetBounds());
 
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 }
@@ -2305,10 +2300,9 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
         UniformBufferArena& uniformArena = GetVulkanContext()->GetMeshUniformBufferArena();
         UniformBuffer* uniformBuffer = uniformArena.Alloc(sizeof(GeometryData), "DrawStaticMesh Uniforms");
         GeometryData ubo = {};
-        WriteGeometryUniformData(ubo, GetWorld(), transform);
+        WriteGeometryUniformData(ubo, GetWorld(), nullptr, transform);
         ubo.mColor = color;
         ubo.mHitCheckId = hitCheckId;
-        ubo.mHasBakedLighting = false;
         uniformBuffer->Update(&ubo, sizeof(ubo));
 
         BindStaticMeshResource(mesh);

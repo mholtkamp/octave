@@ -136,30 +136,46 @@ void main()
 
         vec4 totalLight = global.mAmbientLightColor;
 
-        // Directional Light
+        uint numLights = geometry.mNumLights;
+
+        for (uint i = 0; i < numLights; ++i)
         {
-            vec3 L = -1.0 * normalize(global.mDirectionalLightDirection.xyz);
-            vec4 lightColor = global.mDirectionalLightColor;
+            uint lightIndex = 0;
 
-            vec4 dirLighting = CalculateLighting(shadingModel, L, N, V, lightColor, 1.0);
-            float shadowVis = 1.0f; //CalculateShadow(inShadowCoordinate);
-            totalLight += dirLighting * shadowVis;
-        }
+            if (i < 4)
+            {
+                lightIndex = (geometry.mLights0 >> (i * 8)) & 0xff;
+            }
+            else
+            {
+                lightIndex = (geometry.mLights1 >> ((i - 4) * 8)) & 0xff;
+            }
 
-        //Point Lights
-        for (int i = 0; i < global.mNumPointLights; ++i)
-        {
-            vec3 lightPos = global.mPointLightPositions[i].xyz;
-            vec4 lightColor = global.mPointLightColors[i];
-            float lightRadius = global.mPointLightPositions[i].w;
+            LightData light = global.mLights[lightIndex];
 
-            vec3 toLight = lightPos - inPosition;
-            float dist = length(toLight);
+            if (light.mType == LIGHT_TYPE_POINT)
+            {
+                vec3 L = -1.0 * normalize(light.mDirection);
+                vec4 lightColor = light.mColor;
 
-            vec3 L = normalize(toLight);
-            float attenuation =  1.0 - clamp(dist / lightRadius, 0.0, 1.0);
+                vec4 dirLighting = CalculateLighting(shadingModel, L, N, V, lightColor, 1.0);
+                float shadowVis = 1.0; //CalculateShadow(inShadowCoordinate);
+                totalLight += dirLighting * shadowVis;
+            }
+            else if (light.mType == LIGHT_TYPE_DIRECTIONAL)
+            {
+                vec3 lightPos = light.mPosition;
+                vec4 lightColor = light.mColor;
+                float lightRadius = light.mRadius;
 
-            totalLight += CalculateLighting(shadingModel, L, N, V, lightColor, attenuation);
+                vec3 toLight = lightPos - inPosition;
+                float dist = length(toLight);
+
+                vec3 L = normalize(toLight);
+                float attenuation =  1.0 - clamp(dist / lightRadius, 0.0, 1.0);
+
+                totalLight += CalculateLighting(shadingModel, L, N, V, lightColor, attenuation);
+            }
         }
 
         outColor += totalLight * diffuse;

@@ -660,7 +660,7 @@ void Renderer::GatherDrawData(World* world)
 void Renderer::GatherLightData(World* world)
 {
     mLightData.clear();
-    const std::vector<PointLightComponent*>& comps = world->GetPointLights();
+    const std::vector<LightComponent*>& comps = world->GetLightComponents();
 
     for (uint32_t i = 0; i < comps.size(); ++i)
     {
@@ -668,10 +668,24 @@ void Renderer::GatherLightData(World* world)
             comps[i]->GetLightingDomain() != LightingDomain::Static)
         {
             LightData lightData;
-            lightData.mType = LightType::Point;
             lightData.mPosition = comps[i]->GetAbsolutePosition();
             lightData.mColor = comps[i]->GetColor();
-            lightData.mRadius = comps[i]->GetRadius();
+
+            RuntimeId id = comps[i]->InstanceRuntimeId();
+
+            if (id == PointLightComponent::ClassRuntimeId())
+            {
+                PointLightComponent* pointComp = comps[i]->As<PointLightComponent>();
+                lightData.mType = LightType::Point;
+                lightData.mRadius = pointComp->GetRadius();
+
+            }
+            else if (id == DirectionalLightComponent::ClassRuntimeId())
+            {
+                DirectionalLightComponent* dirComp = comps[i]->As<DirectionalLightComponent>();
+                lightData.mType = LightType::Directional;
+                lightData.mDirection = dirComp->GetDirection();
+            }
 
             mLightData.push_back(lightData);
         }
@@ -1021,12 +1035,15 @@ void Renderer::Render(World* world)
 
                 GFX_BeginRenderPass(RenderPassId::Shadows);
 
+                // TODO: Reimplement shadow maps. Possibly for multiple light sources.
+#if 0
                 DirectionalLightComponent* dirLight = world->GetDirectionalLight();
 
                 if (dirLight && dirLight->ShouldCastShadows())
                 {
                     RenderDraws(mShadowDraws, PipelineId::Shadow);
                 }
+#endif
 
                 GFX_EndRenderPass();
 

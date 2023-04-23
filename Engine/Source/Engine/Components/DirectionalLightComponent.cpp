@@ -22,23 +22,11 @@ DirectionalLightComponent::~DirectionalLightComponent()
 void DirectionalLightComponent::SetOwner(Actor* newOwner)
 {
     LightComponent::SetOwner(newOwner);
-
-    if (mOwner != nullptr &&
-        mOwner->GetWorld()->GetDirectionalLight() == nullptr)
-    {
-        mOwner->GetWorld()->SetDirectionalLight(this);
-    }
 }
 
 void DirectionalLightComponent::Destroy()
 {
     LightComponent::Destroy();
-
-    if (mOwner != nullptr &&
-        mOwner->GetWorld()->GetDirectionalLight() == this)
-    {
-        mOwner->GetWorld()->SetDirectionalLight(nullptr);
-    }
 }
 
 void DirectionalLightComponent::Tick(float deltaTime)

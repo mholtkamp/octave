@@ -15,17 +15,17 @@ layout (set = 1, binding = 0) uniform PathTraceUniformBuffer
 	PathTraceUniforms pathTrace;
 };
 
-layout(std140, set = 1, binding = 1) buffer TriangleData  
+layout(std140, set = 1, binding = 1) buffer RtTriangleData  
 {
    PathTraceTriangle triangles[];
 };
 
-layout(std140, set = 1, binding = 2) buffer MeshData  
+layout(std140, set = 1, binding = 2) buffer RtMeshData  
 {
    PathTraceMesh meshes[];
 };
 
-layout(std140, set = 1, binding = 3) buffer LightData  
+layout(std140, set = 1, binding = 3) buffer RtLightData  
 {
    PathTraceLight lights[];
 };

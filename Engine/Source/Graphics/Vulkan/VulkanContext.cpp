@@ -74,8 +74,6 @@ VulkanContext::VulkanContext()
     mRenderFinishedSemaphore = 0;
     mSceneColorImageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
 
-    mGlobalUniformData.mDirectionalLightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    mGlobalUniformData.mDirectionalLightDirection = glm::vec4(2.0f, -4.0f, -8.0f, 0.0f);
     mGlobalUniformData.mScreenDimensions = glm::vec2(800.0f, 600.0f);
     mGlobalUniformData.mVisualizationMode = 0;
 }
@@ -1597,48 +1595,39 @@ void VulkanContext::UpdateGlobalUniformData()
     if (world != nullptr &&
         world->GetActiveCamera() != nullptr)
     {
-        DirectionalLightComponent* dirLight = world->GetDirectionalLight();
         CameraComponent* camera = world->GetActiveCamera();
         EngineState* engineState = GetEngineState();
 
         mGlobalUniformData.mViewProjMatrix = camera->GetViewProjectionMatrix();
         mGlobalUniformData.mViewPosition = glm::vec4(camera->GetAbsolutePosition(), 1.0f);
         mGlobalUniformData.mViewDirection = glm::vec4(camera->GetForwardVector(), 0.0f);
-
         mGlobalUniformData.mViewToWorld = glm::inverse(camera->GetViewMatrix());
-
-        if (dirLight && dirLight->IsVisible() && dirLight->GetLightingDomain() != LightingDomain::Static)
-        {
-            mGlobalUniformData.mDirectionalLightDirection = glm::vec4(dirLight->GetDirection(), 0.0f);
-            mGlobalUniformData.mDirectionalLightColor = dirLight->GetColor();
-            mGlobalUniformData.mDirectionalLightVP = dirLight->GetViewProjectionMatrix();
-            //mGlobalUniformData.mShadowIntensity = 0.0f; // (GetShadowMapImageView() != VK_NULL_HANDLE && world->GetDirectionalLight()->ShouldCastShadows()) ? 1.0f : 0.0f;
-        }
-        else
-        {
-            mGlobalUniformData.mDirectionalLightDirection = glm::vec4(1);
-            mGlobalUniformData.mDirectionalLightColor = glm::vec4(0);
-            mGlobalUniformData.mDirectionalLightVP = glm::mat4(1);
-            //mGlobalUniformData.mShadowIntensity = 0.0;
-        }
 
         mGlobalUniformData.mAmbientLightColor = world->GetAmbientLightColor();
 
         const std::vector<LightData>& lightData = Renderer::Get()->GetLightData();
-        mGlobalUniformData.mNumPointLights = int32_t(lightData.size());
+        mGlobalUniformData.mNumPointLights = glm::min<int32_t>(int32_t(lightData.size()), MAX_LIGHTS_PER_FRAME);
         
-        for (uint32_t i = 0; i < MAX_POINTLIGHTS; ++i)
+        for (uint32_t i = 0; i < MAX_LIGHTS_PER_FRAME; ++i)
         {
+            LightUniformData& lightUni = mGlobalUniformData.mLights[i];
+
             if (i < lightData.size())
             {
-                const LightData& pointLight = lightData[i];
-                mGlobalUniformData.mPointLightPositions[i] = glm::vec4(pointLight.mPosition, pointLight.mRadius);
-                mGlobalUniformData.mPointLightColors[i] = pointLight.mColor;
+                const LightData& light = lightData[i];
+                lightUni.mPosition = light.mPosition;
+                lightUni.mRadius = light.mRadius;
+                lightUni.mColor = light.mColor;
+                lightUni.mDirection = light.mDirection;
+                lightUni.mType = (uint32_t)light.mType;
             }
             else
             {
-                mGlobalUniformData.mPointLightPositions[i] = glm::vec4(0,0,0,0);
-                mGlobalUniformData.mPointLightColors[i] = glm::vec4(0,0,0,1);
+                lightUni.mPosition = glm::vec3(0,0,0);
+                lightUni.mRadius = 0.0f;
+                lightUni.mColor = glm::vec4(0, 0, 0, 1);
+                lightUni.mDirection = glm::vec3(1.0f, 0.0f, 0.0f);
+                lightUni.mType = (uint32_t)LightType::Count;
             }
         }
 

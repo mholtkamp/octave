@@ -135,6 +135,7 @@ struct LightData
     LightType mType;
     glm::vec3 mPosition;
     glm::vec4 mColor;
+    glm::vec3 mDirection;
     float mRadius;
 };
 

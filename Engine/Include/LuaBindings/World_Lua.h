@@ -20,11 +20,9 @@ struct World_Lua
 
     static int GetActiveCamera(lua_State* L);
     static int GetAudioReceiver(lua_State* L);
-    static int GetDirectionalLight(lua_State* L);
 
     static int SetActiveCamera(lua_State* L);
     static int SetAudioReceiver(lua_State* L);
-    static int SetDirectionalLight(lua_State* L);
 
     static int SpawnActor(lua_State* L);
     static int CloneActor(lua_State* L);

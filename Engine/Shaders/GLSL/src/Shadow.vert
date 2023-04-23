@@ -3,6 +3,11 @@
 
 #include "Common.glsl"
 
+layout (set = 0, binding = 0) uniform GlobalUniformBuffer 
+{
+    GlobalUniforms global;
+};
+
 layout (set = 1, binding = 0) uniform GeometryUniformBuffer 
 {
 	GeometryUniforms geometry;
@@ -20,6 +25,6 @@ out gl_PerVertex
 
 void main()
 {
-    gl_Position = geometry.mLightWVP * vec4(inPosition, 1.0);
+    gl_Position = global.mShadowViewProj * geometry.mWorldMatrix * vec4(inPosition, 1.0);
     outTexcoord = inTexcoord;
 }
