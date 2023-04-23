@@ -1,4 +1,5 @@
-#define MAX_POINTLIGHTS 7
+#define MAX_LIGHTS_PER_FRAME 32
+#define MAX_LIGHTS_PER_DRAW 8
 #define MAX_TEXTURES 4
 
 #define SHADING_MODEL_UNLIT 0
@@ -26,6 +27,10 @@
 #define TEV_MODE_INTERPOLATE 6
 #define TEV_MODE_PASS 7
 
+#define LIGHT_TYPE_POINT 0
+#define LIGHT_TYPE_SPOT 1
+#define LIGHT_TYPE_DIRECTIONAL 2
+
 #define MAX_BONES 64
 #define MAX_BONE_INFLUENCES 4
 
@@ -35,24 +40,31 @@
 
 #define PATH_TRACE_MAX_TEXTURES 1024
 
+struct LightData 
+{
+    vec4 mColor;
+
+    vec3 mPosition;
+    float mRadius;
+    
+    vec3 mDirection;
+    uint mType;
+};
+
 struct GlobalUniforms
 {
     mat4 mViewProj;
-    mat4 mDirectionalLightVP;
     mat4 mViewToWorld;
+    mat4 mShadowViewProj;
 
-    vec4 mDirectionalLightDirection;
-    vec4 mDirectionalLightColor;
     vec4 mAmbientLightColor;
     vec4 mViewPosition;
     vec4 mViewDirection;
     vec2 mScreenDimensions;
     vec2 mInterfaceResolution;
-    vec4 mPointLightPositions[MAX_POINTLIGHTS];
-    vec4 mPointLightColors[MAX_POINTLIGHTS];
     vec4 mShadowColor;
 
-    int mNumPointLights;
+    uint mFrameNumber;
     int mVisualizationMode;
     float mGameElapsedTime;
     float mRealElapsedTime;
@@ -67,12 +79,14 @@ struct GlobalUniforms
     float mNearHalfWidth;
     float mNearHalfHeight;
     float mNearDist;
-    uint mFrameNumber;
-
     uint mPathTracingEnabled;
+
+    int mNumLights;
     uint mPad0;
     uint mPad1;
     uint mPad2;
+
+    LightData mLights[MAX_LIGHTS_PER_FRAME];
 };
 
 struct GeometryUniforms 
@@ -80,13 +94,17 @@ struct GeometryUniforms
     mat4 mWVP;
     mat4 mWorldMatrix;
     mat4 mNormalMatrix;
-    mat4 mLightWVP;
 	vec4 mColor;
 
 	uint mHitCheckId;
     uint mHasBakedLighting;
-    uint mPadding0;
-    uint mPadding1;
+    uint mPad0;
+    uint mPad1;
+
+    uint mNumLights;
+    uint mLights0;
+    uint mLights1;
+    uint mPad2;
 };
 
 struct SkinnedGeometryUniforms 
@@ -94,13 +112,17 @@ struct SkinnedGeometryUniforms
     mat4 mWVP;
     mat4 mWorldMatrix;
     mat4 mNormalMatrix;
-    mat4 mLightWVP;
 	vec4 mColor;
 
 	uint mHitCheckId;
-    uint mPadding0;
+    uint mHasBakedLighting;
     uint mPadding1;
     uint mPadding2;
+
+    uint mNumLights;
+    uint mLights0;
+    uint mLights1;
+    uint mPad2;
 
     mat4 mBoneMatrices[MAX_BONES];
 

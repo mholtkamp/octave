@@ -581,7 +581,6 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
         spawnedActor = GetWorld()->SpawnActor<Actor>();
         DirectionalLightComponent* dirLightComp = spawnedActor->CreateComponent<DirectionalLightComponent>();
         spawnedActor->SetRootComponent(dirLightComp);
-        GetWorld()->SetDirectionalLight(dirLightComp);
     }
     else if (name == BASIC_SKELETAL_MESH)
     {

@@ -37,11 +37,9 @@ public:
 
     CameraComponent* GetActiveCamera();
     TransformComponent* GetAudioReceiver();
-    DirectionalLightComponent* GetDirectionalLight();
 
     void SetActiveCamera(CameraComponent* activeCamera);
     void SetAudioReceiver(TransformComponent* newReceiver);
-    void SetDirectionalLight(DirectionalLightComponent* directionalLight);
 
     void AddActor(Actor* actor);
     void RemoveActor(Actor* actor);
@@ -76,7 +74,7 @@ public:
     void RemoveAllLines();
     const std::vector<Line>& GetLines() const;
 
-    const std::vector<class PointLightComponent*>& GetPointLights();
+    const std::vector<class LightComponent*>& GetLightComponents();
 
     void SetAmbientLightColor(glm::vec4 color);
     glm::vec4 GetAmbientLightColor() const;
@@ -173,7 +171,7 @@ private:
     std::vector<Actor*> mActors;
     std::unordered_map<NetId, Actor*> mNetActorMap;
     std::vector<Line> mLines;
-    std::vector<class PointLightComponent*> mPointLights;
+    std::vector<class LightComponent*> mLightComponents;
     std::vector<class AudioComponent*> mAudioComponents;
     std::vector<LevelRef> mLoadedLevels;
     std::vector<QueuedLevel> mQueuedLevels;

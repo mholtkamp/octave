@@ -746,7 +746,7 @@ void ViewportPanel::HandleDefaultControls()
             {
                 ActionManager::Get()->SpawnBasicActor(BASIC_TRANSFORM, spawnPos);
             }
-            else if (controlDown && IsKeyJustDown(KEY_4) && GetWorld()->GetDirectionalLight() == nullptr)
+            else if (controlDown && IsKeyJustDown(KEY_4))
             {
                 ActionManager::Get()->SpawnBasicActor(BASIC_DIRECTIONAL_LIGHT, spawnPos);
             }

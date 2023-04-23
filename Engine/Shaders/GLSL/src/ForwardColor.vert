@@ -42,7 +42,7 @@ void main()
     outColor = inColor;
 
     // Shadow map coordinate computation
-    vec4 shadowCoord = (SHADOW_BIAS_MAT * global.mDirectionalLightVP) * vec4(outPosition, 1.0);
+    vec4 shadowCoord = (SHADOW_BIAS_MAT * global.mShadowViewProj) * vec4(outPosition, 1.0);
     shadowCoord = shadowCoord / shadowCoord.w;
     outShadowCoordinate = shadowCoord;
 }

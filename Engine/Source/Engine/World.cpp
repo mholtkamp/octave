@@ -422,9 +422,9 @@ const std::vector<Line>& World::GetLines() const
     return mLines;
 }
 
-const std::vector<PointLightComponent*>& World::GetPointLights()
+const std::vector<LightComponent*>& World::GetLightComponents()
 {
-    return mPointLights;
+    return mLightComponents;
 }
 
 void World::SetAmbientLightColor(glm::vec4 color)
@@ -641,12 +641,12 @@ void World::RegisterComponent(Component* comp)
 #endif
         mAudioComponents.push_back((AudioComponent*) comp);
     }
-    else if (compType == PointLightComponent::GetStaticType())
+    else if (comp->IsLightComponent())
     {
 #if _DEBUG
-        OCT_ASSERT(std::find(mPointLights.begin(), mPointLights.end(), (PointLightComponent*)comp) == mPointLights.end());
+        OCT_ASSERT(std::find(mLightComponents.begin(), mLightComponents.end(), (LightComponent*)comp) == mLightComponents.end());
 #endif
-        mPointLights.push_back((PointLightComponent*)comp);
+        mLightComponents.push_back((LightComponent*)comp);
     }
 }
 
@@ -660,19 +660,11 @@ void World::UnregisterComponent(Component* comp)
         OCT_ASSERT(it != mAudioComponents.end());
         mAudioComponents.erase(it);
     }
-    else if (compType == PointLightComponent::GetStaticType())
+    else if (comp->IsLightComponent())
     {
-        auto it = std::find(mPointLights.begin(), mPointLights.end(), (PointLightComponent*)comp);
-        OCT_ASSERT(it != mPointLights.end());
-        mPointLights.erase(it);
-    }
-    else if (compType == DirectionalLightComponent::GetStaticType())
-    {
-        DirectionalLightComponent* dirLightComp = GetWorld()->GetDirectionalLight();
-        if (dirLightComp == comp)
-        {
-            GetWorld()->SetDirectionalLight(nullptr);
-        }
+        auto it = std::find(mLightComponents.begin(), mLightComponents.end(), (LightComponent*)comp);
+        OCT_ASSERT(it != mLightComponents.end());
+        mLightComponents.erase(it);
     }
 }
 
@@ -734,16 +726,6 @@ void World::UpdateLines(float deltaTime)
             }
         }
     }
-}
-
-DirectionalLightComponent* World::GetDirectionalLight()
-{
-    return mDirectionalLight;
-}
-
-void World::SetDirectionalLight(DirectionalLightComponent* directionalLight)
-{
-    mDirectionalLight = directionalLight;
 }
 
 void World::AddActor(Actor* actor)

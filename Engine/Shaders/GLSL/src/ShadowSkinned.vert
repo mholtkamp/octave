@@ -4,6 +4,11 @@
 #include "Common.glsl"
 #include "Skinning.glsl"
 
+layout (set = 0, binding = 0) uniform GlobalUniformBuffer 
+{
+    GlobalUniforms global;
+};
+
 layout (set = 1, binding = 0) uniform GeometryUniformBuffer 
 {
 	SkinnedGeometryUniforms geometry;
@@ -29,6 +34,6 @@ void main()
     vec3 skinnedNormal = inNormal;
     SkinVertex(skinnedPosition, skinnedNormal, inBoneIndices, inBoneWeights, geometry);
 
-    gl_Position = geometry.mLightWVP * vec4(skinnedPosition, 1.0);
+    gl_Position = global.mShadowViewProj * geometry.mWorldMatrix * vec4(skinnedPosition, 1.0);
     outTexcoord = inTexcoord0;
 }
