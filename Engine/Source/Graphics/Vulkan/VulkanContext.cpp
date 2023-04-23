@@ -2474,6 +2474,8 @@ void VulkanContext::PathTraceWorld()
         uniforms.mMaxBounces = Renderer::Get()->GetMaxBounces();
         uniforms.mRaysPerThread = Renderer::Get()->GetRaysPerPixel();
         uniforms.mAccumulatedFrames = mPathTraceAccumulatedFrames;
+        uniforms.mShadowBias = 0.01f;
+        uniforms.mBakeMeshIndex = -1;
         mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();
@@ -2733,6 +2735,7 @@ void VulkanContext::DispatchNextLightBake()
         uniforms.mNumBakeVertices = numVerts;
         uniforms.mNumBakeTriangles = meshAsset->GetNumFaces();
         uniforms.mShadowBias = Renderer::Get()->GetBakeShadowBias();
+        uniforms.mBakeMeshIndex = mBakingCompIndex;
         mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();

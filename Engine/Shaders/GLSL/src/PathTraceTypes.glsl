@@ -96,7 +96,7 @@ struct PathTraceUniforms
     float mShadowBias;
     uint mDiffuseDirect;
     uint mDiffuseIndirect;
-    float mPad0;
+    int mBakeMeshIndex;
 };
 
 struct HitInfo

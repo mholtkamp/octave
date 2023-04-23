@@ -136,6 +136,11 @@ struct MaterialUniforms
     uint mApplyFog;
     float mEmission;
 
+    float mWrapLighting;
+    float mPad0;
+    float mPad1;
+    float mPad2;
+
     uvec4 mUvMaps; // MAX_TEXTURES
     uvec4 mTevModes; // MAX_TEXTURES
 };
@@ -176,4 +181,10 @@ vec4 BlendTexture(MaterialUniforms material, vec4 prevColor, uint texIdx, sample
     }
 
     return outColor;
+}
+
+float CalcLightIntensity(vec3 N, vec3 L, float wrap)
+{
+    float intensity = max(0.0, (dot(L, N) + wrap) / (1.0 + wrap));
+    return intensity;
 }

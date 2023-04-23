@@ -56,7 +56,7 @@ struct PathTraceUniforms
     float mShadowBias;
     uint32_t mDiffuseDirect;
     uint32_t mDiffuseIndirect;
-    float mPad0;
+    int32_t mBakeMeshIndex;
 };
 
 struct GeometryData
@@ -147,6 +147,11 @@ struct MaterialData
     uint32_t mVertexColorMode;
     uint32_t mApplyFog;
     float mEmission;
+
+    float mWrapLighting;
+    float mPad0;
+    float mPad1;
+    float mPad2;
 
     uint32_t mUvMaps[MATERIAL_MAX_TEXTURES];
     uint32_t mTevModes[MATERIAL_MAX_TEXTURES];

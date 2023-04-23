@@ -245,6 +245,7 @@ void Material::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Shininess", this, &mParams.mShininess, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Integer, "Toon Steps", this, &mParams.mToonSteps, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Emission", this, &mParams.mEmission, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Wrap Lighting", this, &mParams.mWrapLighting, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Apply Fog", this, &mParams.mApplyFog, 1, HandlePropChange));
 }
 
@@ -395,6 +396,17 @@ float Material::GetEmission() const
 void Material::SetEmission(float emission)
 {
     mParams.mEmission = emission;
+    MarkDirty();
+}
+
+float Material::GetWrapLighting() const
+{
+    return mParams.mWrapLighting;
+}
+
+void Material::SetWrapLighting(float wrapLighting)
+{
+    mParams.mWrapLighting = wrapLighting;
     MarkDirty();
 }
 
