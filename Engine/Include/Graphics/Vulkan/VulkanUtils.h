@@ -29,6 +29,8 @@ class Quad;
 class Text;
 class Poly;
 
+struct Bounds;
+
 VkFormat ConvertPixelFormat(PixelFormat pixelFormat);
 
 void CreateBuffer(
@@ -85,6 +87,7 @@ uint32_t GetHitCheckId(TransformComponent* comp);
 
 void WriteGeometryUniformData(GeometryData& outData, World* world, TransformComponent* comp, const glm::mat4& transform);
 void WriteMaterialUniformData(MaterialData& outData, Material* material);
+void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds);
 
 #if _DEBUG
 void FullPipelineBarrier();

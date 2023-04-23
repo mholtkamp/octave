@@ -678,6 +678,7 @@ void Renderer::GatherLightData(World* world)
                 PointLightComponent* pointComp = comps[i]->As<PointLightComponent>();
                 lightData.mType = LightType::Point;
                 lightData.mRadius = pointComp->GetRadius();
+                lightData.mDirection = { 0.0f, 0.0f, 0.0f };
 
             }
             else if (id == DirectionalLightComponent::ClassRuntimeId())
@@ -685,6 +686,7 @@ void Renderer::GatherLightData(World* world)
                 DirectionalLightComponent* dirComp = comps[i]->As<DirectionalLightComponent>();
                 lightData.mType = LightType::Directional;
                 lightData.mDirection = dirComp->GetDirection();
+                lightData.mRadius = 0.0f;
             }
 
             mLightData.push_back(lightData);
@@ -901,7 +903,8 @@ int32_t Renderer::FrustumCullLights(const CameraFrustum& frustum, std::vector<Li
     {
         for (int32_t i = int32_t(lightData.size()) - 1; i >= 0; --i)
         {
-            bool inFrustum = frustum.IsSphereInFrustumOrtho(lightData[i].mPosition, lightData[i].mRadius);
+            bool directional = (lightData[i].mType == LightType::Directional);
+            bool inFrustum = directional || frustum.IsSphereInFrustumOrtho(lightData[i].mPosition, lightData[i].mRadius);
 
             if (!inFrustum)
             {
@@ -914,7 +917,8 @@ int32_t Renderer::FrustumCullLights(const CameraFrustum& frustum, std::vector<Li
     {
         for (int32_t i = int32_t(lightData.size()) - 1; i >= 0; --i)
         {
-            bool inFrustum = frustum.IsSphereInFrustum(lightData[i].mPosition, lightData[i].mRadius);
+            bool directional = (lightData[i].mType == LightType::Directional);
+            bool inFrustum = directional || frustum.IsSphereInFrustum(lightData[i].mPosition, lightData[i].mRadius);
 
             if (!inFrustum)
             {

@@ -153,7 +153,7 @@ void main()
 
             LightData light = global.mLights[lightIndex];
 
-            if (light.mType == LIGHT_TYPE_POINT)
+            if (light.mType == LIGHT_TYPE_DIRECTIONAL)
             {
                 vec3 L = -1.0 * normalize(light.mDirection);
                 vec4 lightColor = light.mColor;
@@ -162,7 +162,7 @@ void main()
                 float shadowVis = 1.0; //CalculateShadow(inShadowCoordinate);
                 totalLight += dirLighting * shadowVis;
             }
-            else if (light.mType == LIGHT_TYPE_DIRECTIONAL)
+            else if (light.mType == LIGHT_TYPE_POINT)
             {
                 vec3 lightPos = light.mPosition;
                 vec4 lightColor = light.mColor;

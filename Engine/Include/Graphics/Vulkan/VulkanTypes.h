@@ -26,12 +26,13 @@ struct GlobalUniformData
     glm::vec2 mInterfaceResolution;
     glm::vec4 mShadowColor;
 
-    int32_t mNumPointLights;
+    uint32_t mFrameNumber;
     int32_t mVisualizationMode;
     float mGameTime;
     float mRealTime;
 
     glm::vec4 mFogColor;
+
     int mFogEnabled;
     int mFogDensityFunc;
     float mFogNear;
@@ -40,9 +41,9 @@ struct GlobalUniformData
     float mNearHalfWidth;
     float mNearHalfHeight;
     float mNearDist;
-    uint32_t mFrameNumber;
-
     uint32_t mPathTracingEnabled;
+
+    uint32_t mNumLights;
     uint32_t mPad0;
     uint32_t mPad1;
     uint32_t mPad2;

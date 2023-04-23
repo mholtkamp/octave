@@ -1606,7 +1606,7 @@ void VulkanContext::UpdateGlobalUniformData()
         mGlobalUniformData.mAmbientLightColor = world->GetAmbientLightColor();
 
         const std::vector<LightData>& lightData = Renderer::Get()->GetLightData();
-        mGlobalUniformData.mNumPointLights = glm::min<int32_t>(int32_t(lightData.size()), MAX_LIGHTS_PER_FRAME);
+        mGlobalUniformData.mNumLights = glm::min<uint32_t>(uint32_t(lightData.size()), MAX_LIGHTS_PER_FRAME);
         
         for (uint32_t i = 0; i < MAX_LIGHTS_PER_FRAME; ++i)
         {
