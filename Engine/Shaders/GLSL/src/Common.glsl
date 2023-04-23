@@ -109,6 +109,7 @@ struct GeometryUniforms
 
 struct SkinnedGeometryUniforms 
 {
+    // Duplicate of GeometryUniforms (so Forward.frag can still use geometry.mNumLights, etc)
     mat4 mWVP;
     mat4 mWorldMatrix;
     mat4 mNormalMatrix;

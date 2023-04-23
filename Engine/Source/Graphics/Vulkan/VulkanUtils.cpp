@@ -874,22 +874,27 @@ void GatherGeometryLightUniformData(GeometryData& outData, Material* material, c
                 // Light indices are packed as bytes into 32-bit uints.
                 // Lights0 contains indices for lights 0 - 3
                 // Lights1 contains indices for lights 4 - 7
-                uint32_t lightIndex = numLights;
-                uint32_t& lightIndexInt = (lightIndex >= 4) ? outData.mLights1 : outData.mLights0;
+                uint32_t lightNum = numLights;
+                uint32_t& lightIndexInt = (lightNum >= 4) ? outData.mLights1 : outData.mLights0;
                 uint32_t shiftedIdx = 0;
 
-                if (lightIndex >= 4)
+                if (lightNum >= 4)
                 {
-                    shiftedIdx = i << (8 * (i - 4));
+                    shiftedIdx = i << (8 * (lightNum - 4));
                 }
                 else
                 {
-                    shiftedIdx = i << (8 * i);
+                    shiftedIdx = i << (8 * lightNum);
                 }
 
                 lightIndexInt |= shiftedIdx;
 
                 ++numLights;
+
+                if (numLights >= MAX_LIGHTS_PER_DRAW)
+                {
+                    break;
+                }
             }
         }
     }
