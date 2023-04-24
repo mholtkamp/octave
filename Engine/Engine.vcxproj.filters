@@ -786,6 +786,9 @@
     <ClCompile Include="Source\Engine\ScriptFunc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Vulkan\RayTracer.cpp">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1429,6 +1432,9 @@
     </ClInclude>
     <ClInclude Include="Include\Engine\ScriptFunc.h">
       <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\Vulkan\RayTracer.h">
+      <Filter>Header Files\Graphics\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

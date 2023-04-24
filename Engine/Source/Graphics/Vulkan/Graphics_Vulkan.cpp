@@ -131,32 +131,32 @@ void GFX_SetFrameRate(int32_t frameRate)
 
 void GFX_PathTrace()
 {
-    gVulkanContext->PathTraceWorld();
+    gVulkanContext->GetRayTracer()->PathTraceWorld();
 }
 
 void GFX_BeginLightBake()
 {
-    return gVulkanContext->BeginLightBake();
+    return gVulkanContext->GetRayTracer()->BeginLightBake();
 }
 
 void GFX_UpdateLightBake()
 {
-    gVulkanContext->UpdateLightBake();
+    gVulkanContext->GetRayTracer()->UpdateLightBake();
 }
 
 void GFX_EndLightBake()
 {
-    gVulkanContext->EndLightBake();
+    gVulkanContext->GetRayTracer()->EndLightBake();
 }
 
 bool GFX_IsLightBakeInProgress()
 {
-    return gVulkanContext->IsLightBakeInProgress();
+    return gVulkanContext->GetRayTracer()->IsLightBakeInProgress();
 }
 
 float GFX_GetLightBakeProgress()
 {
-    return gVulkanContext->GetLightBakeProgress();
+    return gVulkanContext->GetRayTracer()->GetLightBakeProgress();
 }
 
 void GFX_CreateTextureResource(Texture* texture, std::vector<uint8_t>& data)
