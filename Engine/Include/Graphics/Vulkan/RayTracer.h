@@ -35,10 +35,11 @@ public:
 
 protected:
 
-    void UpdatePathTracingScene(
+    void UpdateRayTracingScene(
         std::vector<RayTraceTriangle>& triangleData,
         std::vector<RayTraceMesh>& meshData,
-        std::vector<RayTraceLight>& lightData);
+        std::vector<RayTraceLight>& lightData,
+        int32_t* outBakeMeshIndex = nullptr);
     void UpdateBakeVertexData();
 
     void DispatchNextLightBake();
