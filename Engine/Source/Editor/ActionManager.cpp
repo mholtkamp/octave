@@ -560,6 +560,7 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
         meshComp->EnablePhysics(false);
         meshComp->SetCollisionGroup(ColGroup1);
         meshComp->SetCollisionMask(~ColGroup1);
+        meshComp->SetBakeLighting(true);
     }
     else if (name == BASIC_POINT_LIGHT)
     {
