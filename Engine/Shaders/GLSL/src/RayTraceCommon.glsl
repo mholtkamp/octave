@@ -75,7 +75,7 @@ vec3 RandomHemisphereDirectionCos(vec3 normal, inout uint state)
     return normalize(hemiPoint);
 }
 
-HitInfo RayTriangleTest(Ray ray, PathTraceTriangle tri)
+HitInfo RayTriangleTest(Ray ray, RayTraceTriangle tri)
 {
     vec3 edgeAB = tri.mVertices[1].mPosition - tri.mVertices[0].mPosition;
     vec3 edgeAC = tri.mVertices[2].mPosition - tri.mVertices[0].mPosition;
@@ -178,9 +178,9 @@ HitInfo CalculateRayCollision(Ray ray, bool shadowRay)
     closestHit.mDistance = 1e20;
     closestHit.mMesh.mMaterial.mColor = vec4(0,0,0,1);
 
-    for (uint m = 0; m < pathTrace.mNumMeshes; ++m)
+    for (uint m = 0; m < rayTrace.mNumMeshes; ++m)
     {
-        PathTraceMesh mesh = meshes[m];
+        RayTraceMesh mesh = meshes[m];
 
         if (shadowRay && (mesh.mCastShadows == 0))
         {
@@ -196,7 +196,7 @@ HitInfo CalculateRayCollision(Ray ray, bool shadowRay)
             for (uint t = 0; t < mesh.mNumTriangles; ++t)
             {
                 uint triIndex = mesh.mStartTriangleIndex + t;
-                PathTraceTriangle tri = triangles[triIndex];
+                RayTraceTriangle tri = triangles[triIndex];
                 HitInfo hitInfo = RayTriangleTest(ray, tri);
 
                 if (hitInfo.mHit && hitInfo.mDistance < closestHit.mDistance)
@@ -217,7 +217,7 @@ vec3 PathTrace(Ray ray, inout uint rngState)
     vec3 rayColor = vec3(1,1,1);
 
     const uint kMaxAlphaSkips = 5;
-    uint maxBounces = pathTrace.mMaxBounces;
+    uint maxBounces = rayTrace.mMaxBounces;
     uint numAlphaSkips = 0;
 
     for (int i = 0; i < maxBounces; ++i)
@@ -225,7 +225,7 @@ vec3 PathTrace(Ray ray, inout uint rngState)
         HitInfo hit = CalculateRayCollision(ray, false);
         if (hit.mHit)
         {
-            PathTraceMesh mesh = hit.mMesh;
+            RayTraceMesh mesh = hit.mMesh;
             MaterialUniforms material = mesh.mMaterial;
 
             bool transparent = (material.mBlendMode == BLEND_MODE_TRANSLUCENT || material.mBlendMode == BLEND_MODE_ADDITIVE);

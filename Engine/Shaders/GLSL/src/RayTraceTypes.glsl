@@ -1,6 +1,6 @@
 
-#define PATH_TRACE_LIGHT_POINT 0
-#define PATH_TRACE_LIGHT_DIRECTIONAL 1
+#define RAY_TRACE_LIGHT_POINT 0
+#define RAY_TRACE_LIGHT_DIRECTIONAL 1
 
 struct Ray
 {
@@ -8,7 +8,7 @@ struct Ray
     vec3 mDirection;
 };
 
-struct PathTraceVertex
+struct RayTraceVertex
 {
     vec3 mPosition;
     float mPad0;
@@ -22,12 +22,12 @@ struct PathTraceVertex
     vec4 mColor;
 };
 
-struct PathTraceTriangle
+struct RayTraceTriangle
 {
-    PathTraceVertex mVertices[3];
+    RayTraceVertex mVertices[3];
 };
 
-struct PathTraceMesh
+struct RayTraceMesh
 {
     vec4 mBounds;
 
@@ -41,7 +41,7 @@ struct PathTraceMesh
     MaterialUniforms mMaterial;
 };
 
-struct PathTraceLight
+struct RayTraceLight
 {
     vec3 mPosition;
     float mRadius;
@@ -81,7 +81,7 @@ struct DiffuseTriangle
     uint mPad0;
 };
 
-struct PathTraceUniforms
+struct RayTraceUniforms
 {
     uint mNumTriangles;
     uint mNumMeshes;
@@ -109,5 +109,5 @@ struct HitInfo
     vec2 mUv1;
     vec4 mColor;
 
-    PathTraceMesh mMesh;
+    RayTraceMesh mMesh;
 };

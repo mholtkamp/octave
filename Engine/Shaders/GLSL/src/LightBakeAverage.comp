@@ -3,16 +3,16 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 #include "Common.glsl"
-#include "PathTraceTypes.glsl"
+#include "RayTraceTypes.glsl"
 
 layout (set = 0, binding = 0) uniform GlobalUniformBuffer 
 {
     GlobalUniforms global;
 };
 
-layout (set = 1, binding = 0) uniform PathTraceUniformBuffer 
+layout (set = 1, binding = 0) uniform RayTraceUniformBuffer 
 {
-	PathTraceUniforms pathTrace;
+	RayTraceUniforms rayTrace;
 };
 
 layout(std140, set = 1, binding = 1) buffer BakeVertexData  
@@ -29,7 +29,7 @@ layout (local_size_x = 32) in;
 void main()
 {
     uint threadIndex = gl_GlobalInvocationID.x;
-    uint numVerts = pathTrace.mNumBakeVertices;
+    uint numVerts = rayTrace.mNumBakeVertices;
 
     if (threadIndex < numVerts)
     {
