@@ -117,12 +117,11 @@ void StaticMeshComponent::LoadStream(Stream& stream)
         meshRef = GetDefaultMesh();
 
     mUseTriangleCollision = stream.ReadBool();
-    mBakeLighting = true; // stream.ReadBool();
+    mBakeLighting = stream.ReadBool();
 
     // Set mesh only after determining if we need to use triangle collision.
     SetStaticMesh(meshRef.Get<StaticMesh>());
 
-#if 0
     // Load instance colors after setting the static mesh. Otherwise it will clear.
     uint32_t numInstanceColors = stream.ReadUint32();
     mInstanceColors.resize(numInstanceColors);
@@ -130,8 +129,8 @@ void StaticMeshComponent::LoadStream(Stream& stream)
     {
         mInstanceColors[i] = stream.ReadUint32();
     }
-#endif
 
+    GFX_UpdateStaticMeshCompResourceColors(this);
 }
 
 bool StaticMeshComponent::IsStaticMeshComponent() const
