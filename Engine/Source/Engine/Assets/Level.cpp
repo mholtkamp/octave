@@ -270,7 +270,7 @@ void Level::LoadIntoWorld(World* world, bool clear, glm::vec3 offset, glm::vec3 
                 newActor = nullptr;
             }
 
-#if EDITOR
+#if !EDITOR
             // Delete any actors that are solely a baked light when in Non-Editor config
             if (newActor->GetNumComponents() == 1 &&
                 newActor->GetComponent(0)->Is(LightComponent::ClassRuntimeId()))
