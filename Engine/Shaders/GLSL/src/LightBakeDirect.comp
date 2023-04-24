@@ -98,11 +98,6 @@ void main()
                     lightColor = pow(lightColor, vec3(power, power, power));
 
                     totalLight += lightColor;
-
-                    if (mesh.mMaterial.mWrapLighting > 100.0)
-                    {
-                        totalLight = vec3(100.0, 0, 0);
-                    }
                 }
                 else if (light.mLightType == RAY_TRACE_LIGHT_DIRECTIONAL)
                 {
