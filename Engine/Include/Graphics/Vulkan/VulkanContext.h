@@ -109,6 +109,7 @@ public:
     GlobalUniformData& GetGlobalUniformData();
 
     bool IsValidationEnabled() const;
+    bool IsRayTracingSupported() const;
 
     DescriptorSetArena& GetMeshDescriptorSetArena();
     UniformBufferArena& GetMeshUniformBufferArena();
@@ -244,6 +245,7 @@ private:
     int32_t mNumLinesAllocated = 0;
     Buffer* mLineVertexBuffer = nullptr;
     bool mInitialized = false;
+    bool mSupportsRayTracing = false;
     EngineState* mEngineState = nullptr;
     Pipeline* mCurrentlyBoundPipeline = nullptr;
 
