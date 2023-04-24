@@ -130,6 +130,7 @@ void StaticMeshComponent::SetStaticMesh(StaticMesh* staticMesh)
     {
         mStaticMesh = staticMesh;
         RecreateCollisionShape();
+        ClearInstanceColors();
     }
 }
 

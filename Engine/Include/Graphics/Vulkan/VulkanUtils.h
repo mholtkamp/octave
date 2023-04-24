@@ -87,7 +87,7 @@ uint32_t GetHitCheckId(TransformComponent* comp);
 
 void WriteGeometryUniformData(GeometryData& outData, World* world, TransformComponent* comp, const glm::mat4& transform);
 void WriteMaterialUniformData(MaterialData& outData, Material* material);
-void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds);
+void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds, StaticMeshComponent* staticMeshComp = nullptr);
 
 #if _DEBUG
 void FullPipelineBarrier();

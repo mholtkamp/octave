@@ -835,10 +835,23 @@ void WriteGeometryUniformData(GeometryData& outData, World* world, TransformComp
     }
 }
 
-void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds)
+void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds, StaticMeshComponent* staticMeshComp)
 {
     // Find overlapping point lights
     uint32_t numLights = 0;
+
+    bool useAllDomain = true;
+    bool useStaticDomain = false;
+
+    if (staticMeshComp != nullptr)
+    {
+        bool useBakedLighting = staticMeshComp->GetBakeLighting();
+        bool hasBakedColor = (staticMeshComp->GetInstanceColors().size() > 0);
+
+        // Don't reapply static/all lighting if the mesh already has baked lighting.
+        useAllDomain = !useBakedLighting || !hasBakedColor;
+        useStaticDomain = useBakedLighting && !hasBakedColor;
+    }
 
     if (material != nullptr && material->GetShadingModel() != ShadingModel::Unlit)
     {
@@ -848,6 +861,14 @@ void GatherGeometryLightUniformData(GeometryData& outData, Material* material, c
         // Don't worry about sorting for now. Just choose the first X overlapping lights.
         for (uint32_t i = 0; i < lights.size() && i < MAX_LIGHTS_PER_FRAME; ++i)
         {
+            LightingDomain domain = lights[i].mDomain;
+
+            if ((domain == LightingDomain::Static && !useStaticDomain) ||
+                (domain == LightingDomain::All && !useAllDomain))
+            {
+                continue;
+            }
+
             bool overlaps = false;
             if (lights[i].mType == LightType::Directional)
             {
@@ -1327,7 +1348,7 @@ void UpdateStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
     WriteGeometryUniformData(ubo, world, staticMeshComp, staticMeshComp->GetRenderTransform());
     ubo.mHasBakedLighting = staticMeshComp->HasBakedLighting();
 
-    GatherGeometryLightUniformData(ubo, staticMeshComp->GetMaterial(), staticMeshComp->GetBounds());
+    GatherGeometryLightUniformData(ubo, staticMeshComp->GetMaterial(), staticMeshComp->GetBounds(), staticMeshComp);
 
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 }
