@@ -81,7 +81,7 @@ struct GlobalUniforms
     float mNearDist;
     uint mPathTracingEnabled;
 
-    int mNumLights;
+    uint mNumLights;
     uint mPad0;
     uint mPad1;
     uint mPad2;

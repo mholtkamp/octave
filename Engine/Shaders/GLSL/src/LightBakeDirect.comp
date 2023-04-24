@@ -3,31 +3,31 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 #include "Common.glsl"
-#include "PathTraceTypes.glsl"
+#include "RayTraceTypes.glsl"
 
 layout (set = 0, binding = 0) uniform GlobalUniformBuffer 
 {
     GlobalUniforms global;
 };
 
-layout (set = 1, binding = 0) uniform PathTraceUniformBuffer 
+layout (set = 1, binding = 0) uniform RayTraceUniformBuffer 
 {
-	PathTraceUniforms pathTrace;
+	RayTraceUniforms rayTrace;
 };
 
 layout(std140, set = 1, binding = 1) buffer RtTriangleData  
 {
-   PathTraceTriangle triangles[];
+   RayTraceTriangle triangles[];
 };
 
 layout(std140, set = 1, binding = 2) buffer RtMeshData  
 {
-   PathTraceMesh meshes[];
+   RayTraceMesh meshes[];
 };
 
 layout(std140, set = 1, binding = 3) buffer RtLightData  
 {
-   PathTraceLight lights[];
+   RayTraceLight lights[];
 };
 
 layout (set = 1, binding = 4) uniform sampler2D textures[PATH_TRACE_MAX_TEXTURES];
@@ -37,7 +37,7 @@ layout(std140, set = 1, binding = 6) buffer BakeVertexData
    LightBakeVertex bakeVertices[];
 };
 
-#include "PathTraceCommon.glsl"
+#include "RayTraceCommon.glsl"
 
 layout (local_size_x = 32) in;
 void main()
@@ -46,18 +46,18 @@ void main()
     uint rngState = threadIndex + (global.mFrameNumber * 719393);
 
 
-    if (threadIndex < pathTrace.mNumBakeVertices)
+    if (threadIndex < rayTrace.mNumBakeVertices)
     {
-        PathTraceMesh mesh = meshes[pathTrace.mBakeMeshIndex];
+        RayTraceMesh mesh = meshes[rayTrace.mBakeMeshIndex];
         LightBakeVertex bakeVert = bakeVertices[threadIndex];
 
         vec3 totalLight = vec3(0,0,0);
 
-        for (int i = 0; i < pathTrace.mNumLights; ++i)
+        for (int i = 0; i < rayTrace.mNumLights; ++i)
         {
-            PathTraceLight light = lights[i];
+            RayTraceLight light = lights[i];
 
-            if (light.mLightType == PATH_TRACE_LIGHT_POINT)
+            if (light.mLightType == RAY_TRACE_LIGHT_POINT)
             {
                 vec3 toLight = light.mPosition - bakeVert.mPosition;
                 float dist2 = dot(toLight, toLight);
@@ -82,7 +82,7 @@ void main()
 
                     HitInfo hit = CalculateRayCollision(ray, true);
 
-                    if (hit.mHit && hit.mDistance < (dist - pathTrace.mShadowBias))
+                    if (hit.mHit && hit.mDistance < (dist - rayTrace.mShadowBias))
                     {
                         // We hit something closer than the light. This light is being shadowed by something.
                         continue;
@@ -98,7 +98,7 @@ void main()
 
                 totalLight += lightColor;
             }
-            else if (light.mLightType == PATH_TRACE_LIGHT_DIRECTIONAL)
+            else if (light.mLightType == RAY_TRACE_LIGHT_DIRECTIONAL)
             {
                 vec3 L = -normalize(light.mDirection);
                 vec3 N = bakeVert.mNormal;
@@ -115,7 +115,7 @@ void main()
 
                     HitInfo hit = CalculateRayCollision(ray, true);
 
-                    if (hit.mHit && hit.mDistance < (traceDistance - pathTrace.mShadowBias))
+                    if (hit.mHit && hit.mDistance < (traceDistance - rayTrace.mShadowBias))
                     {
                         // We hit something closer than the light. This light is being shadowed by something.
                         continue;
