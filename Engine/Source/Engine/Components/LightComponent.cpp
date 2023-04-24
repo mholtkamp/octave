@@ -44,6 +44,7 @@ void LightComponent::SaveStream(Stream& stream)
     stream.WriteVec4(mColor);
     stream.WriteFloat(mIntensity);
     stream.WriteBool(mCastShadows);
+    stream.WriteUint8((uint8_t)mDomain);
 }
 
 void LightComponent::LoadStream(Stream& stream)
@@ -52,6 +53,7 @@ void LightComponent::LoadStream(Stream& stream)
     mColor = stream.ReadVec4();
     mIntensity = stream.ReadFloat();
     mCastShadows = stream.ReadBool();
+    //mDomain = (LightingDomain) stream.ReadUint8();
 }
 
 bool LightComponent::IsLightComponent() const

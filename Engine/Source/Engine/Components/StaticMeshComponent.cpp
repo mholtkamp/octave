@@ -49,7 +49,7 @@ static StaticMesh* GetDefaultMesh()
 StaticMeshComponent::StaticMeshComponent() :
     mStaticMesh(nullptr),
     mUseTriangleCollision(false),
-    mBakeLighting(true)
+    mBakeLighting(false)
 {
     mName = "Static Mesh";
 }
@@ -97,6 +97,14 @@ void StaticMeshComponent::SaveStream(Stream& stream)
     MeshComponent::SaveStream(stream);
     stream.WriteAsset(mStaticMesh);
     stream.WriteBool(mUseTriangleCollision);
+    stream.WriteBool(mBakeLighting);
+
+    uint32_t numInstanceColors = (uint32_t)mInstanceColors.size();
+    stream.WriteUint32(numInstanceColors);
+    for (uint32_t i = 0; i < numInstanceColors; ++i)
+    {
+        stream.WriteUint32(mInstanceColors[i]);
+    }
 }
 
 void StaticMeshComponent::LoadStream(Stream& stream)
@@ -109,9 +117,21 @@ void StaticMeshComponent::LoadStream(Stream& stream)
         meshRef = GetDefaultMesh();
 
     mUseTriangleCollision = stream.ReadBool();
+    mBakeLighting = true; // stream.ReadBool();
 
-    // Set mesh only after loading everything else (like mUseTriangleCollision)
+    // Set mesh only after determining if we need to use triangle collision.
     SetStaticMesh(meshRef.Get<StaticMesh>());
+
+#if 0
+    // Load instance colors after setting the static mesh. Otherwise it will clear.
+    uint32_t numInstanceColors = stream.ReadUint32();
+    mInstanceColors.resize(numInstanceColors);
+    for (uint32_t i = 0; i < numInstanceColors; ++i)
+    {
+        mInstanceColors[i] = stream.ReadUint32();
+    }
+#endif
+
 }
 
 bool StaticMeshComponent::IsStaticMeshComponent() const

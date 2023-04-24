@@ -2578,7 +2578,8 @@ void VulkanContext::UpdateLightBake()
             ++mNextBakingCompIndex;
         }
 
-        if (mBakingCompIndex < mLightBakeComps.size())
+        if (mBakingCompIndex < mLightBakeComps.size() &&
+            Renderer::Get()->GetBakeIndirectIterations() > 0)
         {
             DispatchNextLightBake();
         }
@@ -2684,7 +2685,7 @@ void VulkanContext::DispatchNextLightBake()
     }
 
     if (mBakingCompIndex >= mLightBakeComps.size() ||
-        mPathTraceAccumulatedFrames >= Renderer::Get()->GetBakeIndirectIterations())
+        (mLightBakePhase == LightBakePhase::Indirect && mPathTraceAccumulatedFrames >= Renderer::Get()->GetBakeIndirectIterations()))
         return;
 
     StaticMeshComponent* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMeshComponent>();
@@ -2933,6 +2934,10 @@ void VulkanContext::ReadbackLightBakeResults()
             // It is important that the direct lighting is applied to the mesh before entering the indirect light pass.
             if (mLightBakePhase == LightBakePhase::Direct)
             {
+                // In case we don't bake indirect light (0 iterations), then just allocate
+                // default constructed colors so we don't get an access violation.
+                indirectColors.resize(directColors.size());
+
                 std::vector<uint32_t> instanceColors;
 
                 for (uint32_t v = 0; v < numVerts; ++v)
