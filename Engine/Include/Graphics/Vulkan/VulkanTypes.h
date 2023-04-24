@@ -51,7 +51,7 @@ struct GlobalUniformData
     LightUniformData mLights[MAX_LIGHTS_PER_FRAME];
 };
 
-struct PathTraceUniforms
+struct RayTraceUniforms
 {
     uint32_t mNumTriangles;
     uint32_t mNumMeshes;
@@ -171,7 +171,7 @@ struct MaterialData
     uint32_t mTevModes[MATERIAL_MAX_TEXTURES];
 };
 
-enum class PathTraceLightType
+enum class RayTraceLightType
 {
     Point,
     Directional,
@@ -179,7 +179,7 @@ enum class PathTraceLightType
     Count
 };
 
-struct PathTraceVertex
+struct RayTraceVertex
 {
     glm::vec3 mPosition = { 0.0f, 0.0f, 0.0f };
     float mPad0 = 1337.0f;
@@ -193,12 +193,12 @@ struct PathTraceVertex
     glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 };
 
-struct PathTraceTriangle
+struct RayTraceTriangle
 {
-    PathTraceVertex mVertices[3];
+    RayTraceVertex mVertices[3];
 };
 
-struct PathTraceMesh
+struct RayTraceMesh
 {
     glm::vec4 mBounds = { 0.0f, 0.0f, 0.0f, 10000.0f };
 
@@ -212,7 +212,7 @@ struct PathTraceMesh
     MaterialData mMaterial;
 };
 
-struct PathTraceLight
+struct RayTraceLight
 {
     glm::vec3 mPosition = { 0.0f, 0.0f, 0.0f };
     float mRadius = 0.0f;
@@ -220,7 +220,7 @@ struct PathTraceLight
     glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
     glm::vec3 mDirection = { 0.0f, 0.0f, -1.0f };
-    uint32_t mLightType = uint32_t(PathTraceLightType::Point);
+    uint32_t mLightType = uint32_t(RayTraceLightType::Point);
 
     uint32_t mCastShadows = 1;
     uint32_t mPad0 = 1337;
