@@ -664,10 +664,14 @@ void Renderer::GatherLightData(World* world)
 
     for (uint32_t i = 0; i < comps.size(); ++i)
     {
-        if (comps[i]->IsVisible() && 
-            comps[i]->GetLightingDomain() != LightingDomain::Static)
+        if (comps[i]->IsVisible() 
+#if !EDITOR
+            && comps[i]->GetLightingDomain() != LightingDomain::Static
+#endif
+            )
         {
             LightData lightData;
+            lightData.mDomain = comps[i]->GetLightingDomain();
             lightData.mPosition = comps[i]->GetAbsolutePosition();
             lightData.mColor = comps[i]->GetColor();
 

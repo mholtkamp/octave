@@ -93,7 +93,7 @@ enum class PropertyOwnerType
     Count
 };
 
-enum class LightType
+enum class LightType : uint8_t
 {
     Point,
     Spot,
@@ -133,6 +133,7 @@ struct DrawData
 struct LightData
 {
     LightType mType;
+    LightingDomain mDomain;
     glm::vec3 mPosition;
     glm::vec4 mColor;
     glm::vec3 mDirection;
