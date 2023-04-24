@@ -1066,12 +1066,12 @@ void VulkanContext::CreateShadowMapImage()
 void VulkanContext::CreateStaticRayTraceResources()
 {
     // Uniform Buffer
-    mPathTraceUniformBuffer = new UniformBuffer(sizeof(PathTraceUniforms), "Path Trace Uniforms");
+    mRayTraceUniformBuffer = new UniformBuffer(sizeof(RayTraceUniforms), "Path Trace Uniforms");
 
     // Buffers
-    mPathTraceTriangleBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceTriangle), "Path Trace Triangle Buffer", nullptr, false);
-    mPathTraceMeshBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceMesh), "Path Trace Mesh Buffer", nullptr, false);
-    mPathTraceLightBuffer = new Buffer(BufferType::Storage, sizeof(PathTraceLight), "Path Trace Light Buffer", nullptr, false);
+    mRayTraceTriangleBuffer = new Buffer(BufferType::Storage, sizeof(RayTraceTriangle), "Path Trace Triangle Buffer", nullptr, false);
+    mRayTraceMeshBuffer = new Buffer(BufferType::Storage, sizeof(RayTraceMesh), "Path Trace Mesh Buffer", nullptr, false);
+    mRayTraceLightBuffer = new Buffer(BufferType::Storage, sizeof(RayTraceLight), "Path Trace Light Buffer", nullptr, false);
     mLightBakeVertexBuffer = new Buffer(BufferType::Storage, sizeof(LightBakeVertex), "Light Bake Vertex Buffer", nullptr, true);
 
     mBakeDiffuseTriangleBuffer = new Buffer(BufferType::Storage, sizeof(DiffuseTriangle), "Bake Triangle Buffer", nullptr, false);
@@ -1081,17 +1081,17 @@ void VulkanContext::CreateStaticRayTraceResources()
     {
         VkDescriptorSetLayout layout = GetPipeline(PipelineId::PathTrace)->GetDescriptorSetLayout(1);
         mPathTraceDescriptorSet = new DescriptorSet(layout);
-        mPathTraceDescriptorSet->UpdateUniformDescriptor(0, mPathTraceUniformBuffer);
-        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceTriangleBuffer);
-        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceMeshBuffer);
-        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mPathTraceLightBuffer);
+        mPathTraceDescriptorSet->UpdateUniformDescriptor(0, mRayTraceUniformBuffer);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mRayTraceTriangleBuffer);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mRayTraceMeshBuffer);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mRayTraceLightBuffer);
         mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(6, mLightBakeVertexBuffer);
     }
 
     {
         VkDescriptorSetLayout layout = GetPipeline(PipelineId::LightBakeAverage)->GetDescriptorSetLayout(1);
         mBakeDiffuseDescriptorSet = new DescriptorSet(layout);
-        mBakeDiffuseDescriptorSet->UpdateUniformDescriptor(0, mPathTraceUniformBuffer);
+        mBakeDiffuseDescriptorSet->UpdateUniformDescriptor(0, mRayTraceUniformBuffer);
         mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(1, mLightBakeVertexBuffer);
         mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(2, mBakeDiffuseTriangleBuffer);
         mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(3, mBakeAverageBuffer);
@@ -1103,17 +1103,17 @@ void VulkanContext::DestroyStaticRayTraceResources()
     GetDestroyQueue()->Destroy(mPathTraceDescriptorSet);
     mPathTraceDescriptorSet = nullptr;
 
-    GetDestroyQueue()->Destroy(mPathTraceUniformBuffer);
-    mPathTraceUniformBuffer = nullptr;
+    GetDestroyQueue()->Destroy(mRayTraceUniformBuffer);
+    mRayTraceUniformBuffer = nullptr;
 
-    GetDestroyQueue()->Destroy(mPathTraceTriangleBuffer);
-    mPathTraceTriangleBuffer = nullptr;
+    GetDestroyQueue()->Destroy(mRayTraceTriangleBuffer);
+    mRayTraceTriangleBuffer = nullptr;
 
-    GetDestroyQueue()->Destroy(mPathTraceMeshBuffer);
-    mPathTraceMeshBuffer = nullptr;
+    GetDestroyQueue()->Destroy(mRayTraceMeshBuffer);
+    mRayTraceMeshBuffer = nullptr;
 
-    GetDestroyQueue()->Destroy(mPathTraceLightBuffer);
-    mPathTraceLightBuffer = nullptr;
+    GetDestroyQueue()->Destroy(mRayTraceLightBuffer);
+    mRayTraceLightBuffer = nullptr;
 
     GetDestroyQueue()->Destroy(mLightBakeVertexBuffer);
     mLightBakeVertexBuffer = nullptr;
@@ -2109,9 +2109,9 @@ UniformBufferArena& VulkanContext::GetMeshUniformBufferArena()
 }
 
 void VulkanContext::UpdatePathTracingScene(
-    std::vector<PathTraceTriangle>& triangleData,
-    std::vector<PathTraceMesh>& meshData,
-    std::vector<PathTraceLight>& lightData)
+    std::vector<RayTraceTriangle>& triangleData,
+    std::vector<RayTraceMesh>& meshData,
+    std::vector<RayTraceLight>& lightData)
 {
     World* world = GetWorld();
 
@@ -2167,8 +2167,8 @@ void VulkanContext::UpdatePathTracingScene(
                 glm::mat4 transform = meshComp->GetRenderTransform();
                 glm::mat4 normalTransform = glm::transpose(glm::inverse(transform));
 
-                meshData.push_back(PathTraceMesh());
-                PathTraceMesh& mesh = meshData.back();
+                meshData.push_back(RayTraceMesh());
+                RayTraceMesh& mesh = meshData.back();
                 Bounds bounds = meshComp->GetBounds();
                 mesh.mBounds = glm::vec4(bounds.mCenter.x, bounds.mCenter.y, bounds.mCenter.z, bounds.mRadius);
                 mesh.mStartTriangleIndex = totalTriangles;
@@ -2239,8 +2239,8 @@ void VulkanContext::UpdatePathTracingScene(
 
                 for (uint32_t t = 0; t < mesh.mNumTriangles; ++t)
                 {
-                    triangleData.push_back(PathTraceTriangle());
-                    PathTraceTriangle& triangle = triangleData.back();
+                    triangleData.push_back(RayTraceTriangle());
+                    RayTraceTriangle& triangle = triangleData.back();
 
                     for (uint32_t v = 0; v < 3; ++v)
                     {
@@ -2281,26 +2281,26 @@ void VulkanContext::UpdatePathTracingScene(
                 {
                     PointLightComponent* pointLightComp = lightComp->As<PointLightComponent>();
 
-                    lightData.push_back(PathTraceLight());
-                    PathTraceLight& light = lightData.back();
+                    lightData.push_back(RayTraceLight());
+                    RayTraceLight& light = lightData.back();
                     light.mPosition = pointLightComp->GetAbsolutePosition();
                     light.mRadius = pointLightComp->GetRadius();
                     light.mColor = pointLightComp->GetColor();
                     light.mDirection = { 0.0f, 0.0f, -1.0f };
-                    light.mLightType = uint32_t(PathTraceLightType::Point);
+                    light.mLightType = uint32_t(RayTraceLightType::Point);
                     light.mCastShadows = (uint32_t)pointLightComp->ShouldCastShadows();
                 }
                 else if (lightComp->Is(DirectionalLightComponent::ClassRuntimeId()))
                 {
                     DirectionalLightComponent* dirLightComp = lightComp->As<DirectionalLightComponent>();
 
-                    lightData.push_back(PathTraceLight());
-                    PathTraceLight& light = lightData.back();
+                    lightData.push_back(RayTraceLight());
+                    RayTraceLight& light = lightData.back();
                     light.mPosition = dirLightComp->GetAbsolutePosition();
                     light.mRadius = 10000.0f;
                     light.mColor = dirLightComp->GetColor();
                     light.mDirection = dirLightComp->GetDirection();
-                    light.mLightType = uint32_t(PathTraceLightType::Directional);
+                    light.mLightType = uint32_t(RayTraceLightType::Directional);
                     light.mCastShadows = (uint32_t)dirLightComp->ShouldCastShadows();
                 }
             }
@@ -2308,42 +2308,42 @@ void VulkanContext::UpdatePathTracingScene(
     }
 
     // Reallocate storage buffers if needed.
-    size_t triangleSize = triangleData.size() * sizeof(PathTraceTriangle);
-    size_t meshSize = meshData.size() * sizeof(PathTraceMesh);
-    size_t lightSize = lightData.size() * sizeof(PathTraceLight);
+    size_t triangleSize = triangleData.size() * sizeof(RayTraceTriangle);
+    size_t meshSize = meshData.size() * sizeof(RayTraceMesh);
+    size_t lightSize = lightData.size() * sizeof(RayTraceLight);
 
-    if (triangleSize > mPathTraceTriangleBuffer->GetSize())
+    if (triangleSize > mRayTraceTriangleBuffer->GetSize())
     {
-        GetDestroyQueue()->Destroy(mPathTraceTriangleBuffer);
-        mPathTraceTriangleBuffer = nullptr;
-        mPathTraceTriangleBuffer = new Buffer(BufferType::Storage, triangleSize, "Path Trace Triangle Buffer", nullptr, false);
-        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mPathTraceTriangleBuffer);
+        GetDestroyQueue()->Destroy(mRayTraceTriangleBuffer);
+        mRayTraceTriangleBuffer = nullptr;
+        mRayTraceTriangleBuffer = new Buffer(BufferType::Storage, triangleSize, "Path Trace Triangle Buffer", nullptr, false);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mRayTraceTriangleBuffer);
     }
 
-    if (meshSize > mPathTraceMeshBuffer->GetSize())
+    if (meshSize > mRayTraceMeshBuffer->GetSize())
     {
-        GetDestroyQueue()->Destroy(mPathTraceMeshBuffer);
-        mPathTraceMeshBuffer = nullptr;
-        mPathTraceMeshBuffer = new Buffer(BufferType::Storage, meshSize, "Path Trace Mesh Buffer", nullptr, false);
-        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mPathTraceMeshBuffer);
+        GetDestroyQueue()->Destroy(mRayTraceMeshBuffer);
+        mRayTraceMeshBuffer = nullptr;
+        mRayTraceMeshBuffer = new Buffer(BufferType::Storage, meshSize, "Path Trace Mesh Buffer", nullptr, false);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mRayTraceMeshBuffer);
     }
 
-    if (lightSize > mPathTraceLightBuffer->GetSize())
+    if (lightSize > mRayTraceLightBuffer->GetSize())
     {
-        GetDestroyQueue()->Destroy(mPathTraceLightBuffer);
-        mPathTraceLightBuffer = nullptr;
-        mPathTraceLightBuffer = new Buffer(BufferType::Storage, lightSize, "Path Trace Light Buffer", nullptr, false);
-        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mPathTraceLightBuffer);
+        GetDestroyQueue()->Destroy(mRayTraceLightBuffer);
+        mRayTraceLightBuffer = nullptr;
+        mRayTraceLightBuffer = new Buffer(BufferType::Storage, lightSize, "Path Trace Light Buffer", nullptr, false);
+        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mRayTraceLightBuffer);
     }
 
     if (triangleSize > 0)
-        mPathTraceTriangleBuffer->Update(triangleData.data(), triangleSize);
+        mRayTraceTriangleBuffer->Update(triangleData.data(), triangleSize);
 
     if (meshSize > 0)
-        mPathTraceMeshBuffer->Update(meshData.data(), meshSize);
+        mRayTraceMeshBuffer->Update(meshData.data(), meshSize);
 
     if (lightSize > 0)
-        mPathTraceLightBuffer->Update(lightData.data(), lightSize);
+        mRayTraceLightBuffer->Update(lightData.data(), lightSize);
 
     // Update texture array descriptor.
     // Fill in any unused texture slots with the T_White texture
@@ -2434,7 +2434,7 @@ void VulkanContext::PathTraceWorld()
 
             if (posChanged || rotChanged)
             {
-                mPathTraceAccumulatedFrames = 0;
+                mAccumulatedFrames = 0;
             }
 
             mPathTracePrevCameraPos = camPos;
@@ -2442,30 +2442,30 @@ void VulkanContext::PathTraceWorld()
         }
         else
         {
-            mPathTraceAccumulatedFrames = 0;
+            mAccumulatedFrames = 0;
         }
 
         if (!Renderer::Get()->IsPathTraceAccumulationEnabled())
         {
-            mPathTraceAccumulatedFrames = 0;
+            mAccumulatedFrames = 0;
         }
 
-        std::vector<PathTraceTriangle> triangleData;
-        std::vector<PathTraceMesh> meshData;
-        std::vector<PathTraceLight> lightData;
+        std::vector<RayTraceTriangle> triangleData;
+        std::vector<RayTraceMesh> meshData;
+        std::vector<RayTraceLight> lightData;
         UpdatePathTracingScene(triangleData, meshData, lightData);
 
         // Write uniform data.
-        PathTraceUniforms uniforms;
+        RayTraceUniforms uniforms;
         uniforms.mNumTriangles = (uint32_t)triangleData.size();
         uniforms.mNumMeshes = (uint32_t)meshData.size();
         uniforms.mNumLights = (uint32_t)lightData.size();
         uniforms.mMaxBounces = Renderer::Get()->GetMaxBounces();
         uniforms.mRaysPerThread = Renderer::Get()->GetRaysPerPixel();
-        uniforms.mAccumulatedFrames = mPathTraceAccumulatedFrames;
+        uniforms.mAccumulatedFrames = mAccumulatedFrames;
         uniforms.mShadowBias = 0.01f;
         uniforms.mBakeMeshIndex = -1;
-        mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
+        mRayTraceUniformBuffer->Update(&uniforms, sizeof(RayTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();
 
@@ -2483,7 +2483,7 @@ void VulkanContext::PathTraceWorld()
 
         mPathTraceImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, cb);
 
-        mPathTraceAccumulatedFrames++;
+        mAccumulatedFrames++;
     }
 }
 
@@ -2573,7 +2573,7 @@ void VulkanContext::UpdateLightBake()
         if (mBakingCompIndex == -1)
         {
             mBakingCompIndex = mNextBakingCompIndex;
-            mPathTraceAccumulatedFrames = 0;
+            mAccumulatedFrames = 0;
 
             ++mNextBakingCompIndex;
         }
@@ -2597,7 +2597,7 @@ void VulkanContext::UpdateLightBake()
         if (mBakingCompIndex == -1)
         {
             mBakingCompIndex = mNextBakingCompIndex;
-            mPathTraceAccumulatedFrames = 0;
+            mAccumulatedFrames = 0;
 
             ++mNextBakingCompIndex;
         }
@@ -2661,11 +2661,11 @@ float VulkanContext::GetLightBakeProgress()
         }
         else if (mLightBakePhase == LightBakePhase::Indirect)
         {
-            curDispatch = uint32_t(compIndex) * numIndirectIterations + mPathTraceAccumulatedFrames + totalDirectDispatches;
+            curDispatch = uint32_t(compIndex) * numIndirectIterations + mAccumulatedFrames + totalDirectDispatches;
         }
         else if (mLightBakePhase == LightBakePhase::Diffuse)
         {
-            curDispatch = uint32_t(compIndex) * numDiffuseIterations + mPathTraceAccumulatedFrames + totalDirectDispatches + totalIndirectDispatches;
+            curDispatch = uint32_t(compIndex) * numDiffuseIterations + mAccumulatedFrames + totalDirectDispatches + totalIndirectDispatches;
         }
 
         ret = float(curDispatch) / float(totalDispatches);
@@ -2679,13 +2679,13 @@ void VulkanContext::DispatchNextLightBake()
     if (mBakingCompIndex == -1)
     {
         mBakingCompIndex = mNextBakingCompIndex;
-        mPathTraceAccumulatedFrames = 0;
+        mAccumulatedFrames = 0;
 
         ++mNextBakingCompIndex;
     }
 
     if (mBakingCompIndex >= mLightBakeComps.size() ||
-        (mLightBakePhase == LightBakePhase::Indirect && mPathTraceAccumulatedFrames >= Renderer::Get()->GetBakeIndirectIterations()))
+        (mLightBakePhase == LightBakePhase::Indirect && mAccumulatedFrames >= Renderer::Get()->GetBakeIndirectIterations()))
         return;
 
     StaticMeshComponent* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMeshComponent>();
@@ -2696,9 +2696,9 @@ void VulkanContext::DispatchNextLightBake()
         meshComp->GetWorld() == GetWorld())
     {
         // Update path tracing scene
-        std::vector<PathTraceTriangle> triangleData;
-        std::vector<PathTraceMesh> meshData;
-        std::vector<PathTraceLight> lightData;
+        std::vector<RayTraceTriangle> triangleData;
+        std::vector<RayTraceMesh> meshData;
+        std::vector<RayTraceLight> lightData;
         UpdatePathTracingScene(triangleData, meshData, lightData);
 
         // Update light bake vertex buffer
@@ -2709,24 +2709,24 @@ void VulkanContext::DispatchNextLightBake()
 
         // On the first iteration of the bake, we need to upload bake vertex data.
         // During the indirect bake, previous dispatch results are accumulated.
-        if (mPathTraceAccumulatedFrames == 0)
+        if (mAccumulatedFrames == 0)
         {
             UpdateBakeVertexData();
         }
 
         // Update uniform buffer
-        PathTraceUniforms uniforms;
+        RayTraceUniforms uniforms;
         uniforms.mNumTriangles = (uint32_t)triangleData.size();
         uniforms.mNumMeshes = (uint32_t)meshData.size();
         uniforms.mNumLights = (uint32_t)lightData.size();
         uniforms.mMaxBounces = Renderer::Get()->GetBakeMaxBounces();
         uniforms.mRaysPerThread = Renderer::Get()->GetBakeRaysPerVertex();
-        uniforms.mAccumulatedFrames = mPathTraceAccumulatedFrames;
+        uniforms.mAccumulatedFrames = mAccumulatedFrames;
         uniforms.mNumBakeVertices = numVerts;
         uniforms.mNumBakeTriangles = meshAsset->GetNumFaces();
         uniforms.mShadowBias = Renderer::Get()->GetBakeShadowBias();
         uniforms.mBakeMeshIndex = mBakingCompIndex;
-        mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
+        mRayTraceUniformBuffer->Update(&uniforms, sizeof(RayTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();
 
@@ -2753,14 +2753,14 @@ void VulkanContext::DispatchNextLightBake()
         mPathTraceImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, cb);
 
         mBakedFrame = (int64_t)Renderer::Get()->GetFrameNumber();
-        mPathTraceAccumulatedFrames++;
+        mAccumulatedFrames++;
     }
 }
 
 void VulkanContext::DispatchNextBakeDiffuse()
 {
     if (mBakingCompIndex >= mLightBakeComps.size() ||
-        mPathTraceAccumulatedFrames >= mTotalDiffusePasses)
+        mAccumulatedFrames >= mTotalDiffusePasses)
         return;
 
     StaticMeshComponent* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMeshComponent>();
@@ -2776,7 +2776,7 @@ void VulkanContext::DispatchNextBakeDiffuse()
 
         // On the first iteration of the bake, we need to upload bake vertex data.
         // During the indirect bake, previous dispatch results are accumulated.
-        if (mPathTraceAccumulatedFrames == 0)
+        if (mAccumulatedFrames == 0)
         {
             UpdateBakeVertexData();
 
@@ -2816,19 +2816,19 @@ void VulkanContext::DispatchNextBakeDiffuse()
         }
 
         // Update uniform buffer
-        PathTraceUniforms uniforms;
+        RayTraceUniforms uniforms;
         uniforms.mNumTriangles = 0;
         uniforms.mNumMeshes = 0;
         uniforms.mNumLights = 0;
         uniforms.mMaxBounces = Renderer::Get()->GetBakeMaxBounces();
         uniforms.mRaysPerThread = Renderer::Get()->GetBakeRaysPerVertex();
-        uniforms.mAccumulatedFrames = mPathTraceAccumulatedFrames;
+        uniforms.mAccumulatedFrames = mAccumulatedFrames;
         uniforms.mNumBakeVertices = numVerts;
         uniforms.mNumBakeTriangles = numTriangles;
         uniforms.mShadowBias = Renderer::Get()->GetBakeShadowBias();
-        uniforms.mDiffuseDirect = (mPathTraceAccumulatedFrames < Renderer::Get()->GetBakeDiffuseDirectPasses());
-        uniforms.mDiffuseIndirect = (mPathTraceAccumulatedFrames < Renderer::Get()->GetBakeDiffuseIndirectPasses());
-        mPathTraceUniformBuffer->Update(&uniforms, sizeof(PathTraceUniforms));
+        uniforms.mDiffuseDirect = (mAccumulatedFrames < Renderer::Get()->GetBakeDiffuseDirectPasses());
+        uniforms.mDiffuseIndirect = (mAccumulatedFrames < Renderer::Get()->GetBakeDiffuseIndirectPasses());
+        mRayTraceUniformBuffer->Update(&uniforms, sizeof(RayTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();
 
@@ -2871,7 +2871,7 @@ void VulkanContext::DispatchNextBakeDiffuse()
         }
 
         mBakedFrame = (int64_t)Renderer::Get()->GetFrameNumber();
-        mPathTraceAccumulatedFrames++;
+        mAccumulatedFrames++;
     }
 }
 

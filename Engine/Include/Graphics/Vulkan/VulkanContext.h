@@ -172,9 +172,9 @@ private:
     void DestroyDebugCallback();
 
     void UpdatePathTracingScene(
-        std::vector<PathTraceTriangle>& triangleData,
-        std::vector<PathTraceMesh>& meshData,
-        std::vector<PathTraceLight>& lightData);
+        std::vector<RayTraceTriangle>& triangleData,
+        std::vector<RayTraceMesh>& meshData,
+        std::vector<RayTraceLight>& lightData);
     void UpdateBakeVertexData();
 
     void DispatchNextLightBake();
@@ -243,10 +243,10 @@ private:
 
     // Ray Tracing Resources
     DescriptorSet* mPathTraceDescriptorSet = nullptr;
-    Buffer* mPathTraceTriangleBuffer = nullptr;
-    Buffer* mPathTraceMeshBuffer = nullptr;
-    Buffer* mPathTraceLightBuffer = nullptr;
-    UniformBuffer* mPathTraceUniformBuffer = nullptr;
+    Buffer* mRayTraceTriangleBuffer = nullptr;
+    Buffer* mRayTraceMeshBuffer = nullptr;
+    Buffer* mRayTraceLightBuffer = nullptr;
+    UniformBuffer* mRayTraceUniformBuffer = nullptr;
     Buffer* mLightBakeVertexBuffer = nullptr;
     DescriptorSet* mBakeDiffuseDescriptorSet = nullptr;
     Buffer* mBakeAverageBuffer = nullptr;
@@ -277,7 +277,7 @@ private:
     Pipeline* mCurrentlyBoundPipeline = nullptr;
 
     // Path Tracing and Light Baking state
-    uint32_t mPathTraceAccumulatedFrames = 0;
+    uint32_t mAccumulatedFrames = 0;
     glm::vec3 mPathTracePrevCameraPos = { 0.0f, 0.0f, 0.0f };
     glm::vec3 mPathTracePrevCameraRot = { 0.0f, 0.0f, 0.0f };
     LightBakePhase mLightBakePhase = LightBakePhase::Count;
