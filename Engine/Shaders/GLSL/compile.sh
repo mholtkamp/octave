@@ -3,7 +3,7 @@ cd ./src
 
 if command -v glslc >/dev/null 2>&1
 then
-    for file in *.vert *.frag
+    for file in *.vert *.frag *.comp
     do
         echo $VULKAN_SDK/bin/glslc $file -o ../bin/$file
         val= $VULKAN_SDK/bin/glslc $file -o ../bin/$file
