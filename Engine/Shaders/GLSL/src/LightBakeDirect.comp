@@ -45,88 +45,95 @@ void main()
     uint threadIndex = gl_GlobalInvocationID.x;
     uint rngState = threadIndex + (global.mFrameNumber * 719393);
 
-
     if (threadIndex < rayTrace.mNumBakeVertices)
     {
-        RayTraceMesh mesh = meshes[rayTrace.mBakeMeshIndex];
-        LightBakeVertex bakeVert = bakeVertices[threadIndex];
-
         vec3 totalLight = vec3(0,0,0);
 
-        for (int i = 0; i < rayTrace.mNumLights; ++i)
+        if (rayTrace.mBakeMeshIndex >= 0)
         {
-            RayTraceLight light = lights[i];
+            RayTraceMesh mesh = meshes[rayTrace.mBakeMeshIndex];
+            LightBakeVertex bakeVert = bakeVertices[threadIndex];
 
-            if (light.mLightType == RAY_TRACE_LIGHT_POINT)
+            for (int i = 0; i < rayTrace.mNumLights; ++i)
             {
-                vec3 toLight = light.mPosition - bakeVert.mPosition;
-                float dist2 = dot(toLight, toLight);
+                RayTraceLight light = lights[i];
 
-                // Light is out of bounds
-                if (dist2 > (light.mRadius * light.mRadius))
+                if (light.mLightType == RAY_TRACE_LIGHT_POINT)
                 {
-                    continue;
-                }
+                    vec3 toLight = light.mPosition - bakeVert.mPosition;
+                    float dist2 = dot(toLight, toLight);
 
-                float dist = sqrt(dist2);
-                vec3 L = toLight / dist;
-                vec3 N = bakeVert.mNormal;
-
-                // Check if the light is being obstructed
-                if (light.mCastShadows != 0)
-                {
-                    // Trace a ray from the light position to the bake vertex position
-                    Ray ray;
-                    ray.mOrigin = light.mPosition;
-                    ray.mDirection = -L;
-
-                    HitInfo hit = CalculateRayCollision(ray, true);
-
-                    if (hit.mHit && hit.mDistance < (dist - rayTrace.mShadowBias))
+                    // Light is out of bounds
+                    if (dist2 > (light.mRadius * light.mRadius))
                     {
-                        // We hit something closer than the light. This light is being shadowed by something.
                         continue;
                     }
-                }
 
-                float attenuation =  1.0 - clamp(dist / light.mRadius, 0.0, 1.0);
-                float intensity = CalcLightIntensity(N, L, mesh.mMaterial.mWrapLighting);
-                vec3 lightColor = (intensity * attenuation * light.mColor).rgb;
+                    float dist = sqrt(dist2);
+                    vec3 L = toLight / dist;
+                    vec3 N = bakeVert.mNormal;
 
-                const float power = 1.0 / 2.0;
-                lightColor = pow(lightColor, vec3(power, power, power));
-
-                totalLight += lightColor;
-            }
-            else if (light.mLightType == RAY_TRACE_LIGHT_DIRECTIONAL)
-            {
-                vec3 L = -normalize(light.mDirection);
-                vec3 N = bakeVert.mNormal;
-
-                // Check if the light is being obstructed
-                if (light.mCastShadows != 0)
-                {
-                    const float traceDistance = 10000.0;
-
-                    // Trace a ray from very far away toward vertex.
-                    Ray ray;
-                    ray.mOrigin = bakeVert.mPosition + L * traceDistance;
-                    ray.mDirection = -L;
-
-                    HitInfo hit = CalculateRayCollision(ray, true);
-
-                    if (hit.mHit && hit.mDistance < (traceDistance - rayTrace.mShadowBias))
+                    // Check if the light is being obstructed
+                    if (light.mCastShadows != 0)
                     {
-                        // We hit something closer than the light. This light is being shadowed by something.
-                        continue;
+                        // Trace a ray from the light position to the bake vertex position
+                        Ray ray;
+                        ray.mOrigin = light.mPosition;
+                        ray.mDirection = -L;
+
+                        HitInfo hit = CalculateRayCollision(ray, true);
+
+                        if (hit.mHit && hit.mDistance < (dist - rayTrace.mShadowBias))
+                        {
+                            // We hit something closer than the light. This light is being shadowed by something.
+                            continue;
+                        }
+                    }
+
+                    float attenuation =  1.0 - clamp(dist / light.mRadius, 0.0, 1.0);
+                    float intensity = CalcLightIntensity(N, L, mesh.mMaterial.mWrapLighting);
+                    vec3 lightColor = (intensity * attenuation * light.mColor).rgb;
+
+                    const float power = 1.0 / 2.0;
+                    lightColor = pow(lightColor, vec3(power, power, power));
+
+                    totalLight += lightColor;
+
+                    if (mesh.mMaterial.mWrapLighting > 100.0)
+                    {
+                        totalLight = vec3(100.0, 0, 0);
                     }
                 }
+                else if (light.mLightType == RAY_TRACE_LIGHT_DIRECTIONAL)
+                {
+                    vec3 L = -normalize(light.mDirection);
+                    vec3 N = bakeVert.mNormal;
 
-                float intensity = CalcLightIntensity(N, L, mesh.mMaterial.mWrapLighting);
-                totalLight += (intensity * light.mColor).rgb;
+                    // Check if the light is being obstructed
+                    if (light.mCastShadows != 0)
+                    {
+                        const float traceDistance = 10000.0;
+
+                        // Trace a ray from very far away toward vertex.
+                        Ray ray;
+                        ray.mOrigin = bakeVert.mPosition + L * traceDistance;
+                        ray.mDirection = -L;
+
+                        HitInfo hit = CalculateRayCollision(ray, true);
+
+                        if (hit.mHit && hit.mDistance < (traceDistance - rayTrace.mShadowBias))
+                        {
+                            // We hit something closer than the light. This light is being shadowed by something.
+                            continue;
+                        }
+                    }
+
+                    float intensity = CalcLightIntensity(N, L, mesh.mMaterial.mWrapLighting);
+                    totalLight += (intensity * light.mColor).rgb;
+                }
             }
         }
-
+        
         bakeVertices[threadIndex].mDirectLight = vec4(totalLight, 1.0);
     }
 }

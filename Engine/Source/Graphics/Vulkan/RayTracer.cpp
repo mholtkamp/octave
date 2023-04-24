@@ -111,10 +111,11 @@ void RayTracer::DestroyDynamicRayTraceResources()
     }
 }
 
-void RayTracer::UpdatePathTracingScene(
+void RayTracer::UpdateRayTracingScene(
     std::vector<RayTraceTriangle>& triangleData,
     std::vector<RayTraceMesh>& meshData,
-    std::vector<RayTraceLight>& lightData)
+    std::vector<RayTraceLight>& lightData,
+    int32_t* outBakeMeshIndex)
 {
     World* world = GetWorld();
 
@@ -159,6 +160,12 @@ void RayTracer::UpdatePathTracingScene(
                 if (meshAsset == nullptr)
                 {
                     continue;
+                }
+
+                if (outBakeMeshIndex != nullptr &&
+                    meshComp == mLightBakeComps[mBakingCompIndex].Get())
+                {
+                    *outBakeMeshIndex = (int32_t)meshData.size();
                 }
 
                 Material* material = meshComp->GetMaterial();
@@ -456,7 +463,7 @@ void RayTracer::PathTraceWorld()
         std::vector<RayTraceTriangle> triangleData;
         std::vector<RayTraceMesh> meshData;
         std::vector<RayTraceLight> lightData;
-        UpdatePathTracingScene(triangleData, meshData, lightData);
+        UpdateRayTracingScene(triangleData, meshData, lightData);
 
         // Write uniform data.
         RayTraceUniforms uniforms;
@@ -709,10 +716,11 @@ void RayTracer::DispatchNextLightBake()
         meshComp->GetWorld() == GetWorld())
     {
         // Update path tracing scene
+        int32_t bakeMeshIndex = -1;
         std::vector<RayTraceTriangle> triangleData;
         std::vector<RayTraceMesh> meshData;
         std::vector<RayTraceLight> lightData;
-        UpdatePathTracingScene(triangleData, meshData, lightData);
+        UpdateRayTracingScene(triangleData, meshData, lightData, &bakeMeshIndex);
 
         // Update light bake vertex buffer
         std::vector<LightBakeVertex> lightBakeVertexData;
@@ -738,7 +746,7 @@ void RayTracer::DispatchNextLightBake()
         uniforms.mNumBakeVertices = numVerts;
         uniforms.mNumBakeTriangles = meshAsset->GetNumFaces();
         uniforms.mShadowBias = Renderer::Get()->GetBakeShadowBias();
-        uniforms.mBakeMeshIndex = mBakingCompIndex;
+        uniforms.mBakeMeshIndex = bakeMeshIndex;
         mRayTraceUniformBuffer->Update(&uniforms, sizeof(RayTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();
