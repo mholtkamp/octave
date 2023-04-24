@@ -131,32 +131,62 @@ void GFX_SetFrameRate(int32_t frameRate)
 
 void GFX_PathTrace()
 {
-    gVulkanContext->GetRayTracer()->PathTraceWorld();
+    if (gVulkanContext->IsRayTracingSupported())
+    {
+        gVulkanContext->GetRayTracer()->PathTraceWorld();
+    }
 }
 
 void GFX_BeginLightBake()
 {
-    return gVulkanContext->GetRayTracer()->BeginLightBake();
+    if (gVulkanContext->IsRayTracingSupported())
+    {
+        gVulkanContext->GetRayTracer()->BeginLightBake();
+    }
+    else
+    {
+        LogError("GPU cannot bake light because maxPerStageDescriptorSampledImages < %d", PATH_TRACE_MAX_TEXTURES);
+    }
 }
 
 void GFX_UpdateLightBake()
 {
-    gVulkanContext->GetRayTracer()->UpdateLightBake();
+    if (gVulkanContext->IsRayTracingSupported())
+    {
+        gVulkanContext->GetRayTracer()->UpdateLightBake();
+    }
 }
 
 void GFX_EndLightBake()
 {
-    gVulkanContext->GetRayTracer()->EndLightBake();
+    if (gVulkanContext->IsRayTracingSupported())
+    {
+        gVulkanContext->GetRayTracer()->EndLightBake();
+    }
 }
 
 bool GFX_IsLightBakeInProgress()
 {
-    return gVulkanContext->GetRayTracer()->IsLightBakeInProgress();
+    bool ret = false;
+
+    if (gVulkanContext->IsRayTracingSupported())
+    {
+        ret = gVulkanContext->GetRayTracer()->IsLightBakeInProgress();
+    }
+
+    return ret;
 }
 
 float GFX_GetLightBakeProgress()
 {
-    return gVulkanContext->GetRayTracer()->GetLightBakeProgress();
+    float ret = 0.0f;
+
+    if (gVulkanContext->IsRayTracingSupported())
+    {
+        ret = gVulkanContext->GetRayTracer()->GetLightBakeProgress();
+    }
+    
+    return ret;
 }
 
 void GFX_CreateTextureResource(Texture* texture, std::vector<uint8_t>& data)

@@ -16,87 +16,99 @@
 
 void RayTracer::CreateStaticRayTraceResources()
 {
-    // Uniform Buffer
-    mRayTraceUniformBuffer = new UniformBuffer(sizeof(RayTraceUniforms), "Path Trace Uniforms");
-
-    // Buffers
-    mRayTraceTriangleBuffer = new Buffer(BufferType::Storage, sizeof(RayTraceTriangle), "Path Trace Triangle Buffer", nullptr, false);
-    mRayTraceMeshBuffer = new Buffer(BufferType::Storage, sizeof(RayTraceMesh), "Path Trace Mesh Buffer", nullptr, false);
-    mRayTraceLightBuffer = new Buffer(BufferType::Storage, sizeof(RayTraceLight), "Path Trace Light Buffer", nullptr, false);
-    mLightBakeVertexBuffer = new Buffer(BufferType::Storage, sizeof(LightBakeVertex), "Light Bake Vertex Buffer", nullptr, true);
-
-    mBakeDiffuseTriangleBuffer = new Buffer(BufferType::Storage, sizeof(DiffuseTriangle), "Bake Triangle Buffer", nullptr, false);
-    mBakeAverageBuffer = new Buffer(BufferType::Storage, sizeof(VertexLightData), "Bake Average Buffer", nullptr, true);
-
-    // Descriptor Sets
+    if (GetVulkanContext()->IsRayTracingSupported())
     {
-        VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::PathTrace)->GetDescriptorSetLayout(1);
-        mPathTraceDescriptorSet = new DescriptorSet(layout);
-        mPathTraceDescriptorSet->UpdateUniformDescriptor(0, mRayTraceUniformBuffer);
-        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mRayTraceTriangleBuffer);
-        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mRayTraceMeshBuffer);
-        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mRayTraceLightBuffer);
-        mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(6, mLightBakeVertexBuffer);
-    }
+        // Uniform Buffer
+        mRayTraceUniformBuffer = new UniformBuffer(sizeof(RayTraceUniforms), "Path Trace Uniforms");
 
-    {
-        VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::LightBakeAverage)->GetDescriptorSetLayout(1);
-        mBakeDiffuseDescriptorSet = new DescriptorSet(layout);
-        mBakeDiffuseDescriptorSet->UpdateUniformDescriptor(0, mRayTraceUniformBuffer);
-        mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(1, mLightBakeVertexBuffer);
-        mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(2, mBakeDiffuseTriangleBuffer);
-        mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(3, mBakeAverageBuffer);
+        // Buffers
+        mRayTraceTriangleBuffer = new Buffer(BufferType::Storage, sizeof(RayTraceTriangle), "Path Trace Triangle Buffer", nullptr, false);
+        mRayTraceMeshBuffer = new Buffer(BufferType::Storage, sizeof(RayTraceMesh), "Path Trace Mesh Buffer", nullptr, false);
+        mRayTraceLightBuffer = new Buffer(BufferType::Storage, sizeof(RayTraceLight), "Path Trace Light Buffer", nullptr, false);
+        mLightBakeVertexBuffer = new Buffer(BufferType::Storage, sizeof(LightBakeVertex), "Light Bake Vertex Buffer", nullptr, true);
+
+        mBakeDiffuseTriangleBuffer = new Buffer(BufferType::Storage, sizeof(DiffuseTriangle), "Bake Triangle Buffer", nullptr, false);
+        mBakeAverageBuffer = new Buffer(BufferType::Storage, sizeof(VertexLightData), "Bake Average Buffer", nullptr, true);
+
+        // Descriptor Sets
+        {
+            VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::PathTrace)->GetDescriptorSetLayout(1);
+            mPathTraceDescriptorSet = new DescriptorSet(layout);
+            mPathTraceDescriptorSet->UpdateUniformDescriptor(0, mRayTraceUniformBuffer);
+            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(1, mRayTraceTriangleBuffer);
+            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(2, mRayTraceMeshBuffer);
+            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(3, mRayTraceLightBuffer);
+            mPathTraceDescriptorSet->UpdateStorageBufferDescriptor(6, mLightBakeVertexBuffer);
+        }
+
+        {
+            VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::LightBakeAverage)->GetDescriptorSetLayout(1);
+            mBakeDiffuseDescriptorSet = new DescriptorSet(layout);
+            mBakeDiffuseDescriptorSet->UpdateUniformDescriptor(0, mRayTraceUniformBuffer);
+            mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(1, mLightBakeVertexBuffer);
+            mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(2, mBakeDiffuseTriangleBuffer);
+            mBakeDiffuseDescriptorSet->UpdateStorageBufferDescriptor(3, mBakeAverageBuffer);
+        }
     }
 }
 
 void RayTracer::DestroyStaticRayTraceResources()
 {
-    GetDestroyQueue()->Destroy(mPathTraceDescriptorSet);
-    mPathTraceDescriptorSet = nullptr;
+    if (GetVulkanContext()->IsRayTracingSupported())
+    {
+        GetDestroyQueue()->Destroy(mPathTraceDescriptorSet);
+        mPathTraceDescriptorSet = nullptr;
 
-    GetDestroyQueue()->Destroy(mRayTraceUniformBuffer);
-    mRayTraceUniformBuffer = nullptr;
+        GetDestroyQueue()->Destroy(mRayTraceUniformBuffer);
+        mRayTraceUniformBuffer = nullptr;
 
-    GetDestroyQueue()->Destroy(mRayTraceTriangleBuffer);
-    mRayTraceTriangleBuffer = nullptr;
+        GetDestroyQueue()->Destroy(mRayTraceTriangleBuffer);
+        mRayTraceTriangleBuffer = nullptr;
 
-    GetDestroyQueue()->Destroy(mRayTraceMeshBuffer);
-    mRayTraceMeshBuffer = nullptr;
+        GetDestroyQueue()->Destroy(mRayTraceMeshBuffer);
+        mRayTraceMeshBuffer = nullptr;
 
-    GetDestroyQueue()->Destroy(mRayTraceLightBuffer);
-    mRayTraceLightBuffer = nullptr;
+        GetDestroyQueue()->Destroy(mRayTraceLightBuffer);
+        mRayTraceLightBuffer = nullptr;
 
-    GetDestroyQueue()->Destroy(mLightBakeVertexBuffer);
-    mLightBakeVertexBuffer = nullptr;
+        GetDestroyQueue()->Destroy(mLightBakeVertexBuffer);
+        mLightBakeVertexBuffer = nullptr;
+    }
 }
 
 void RayTracer::CreateDynamicRayTraceResources()
 {
-    // Images
-    ImageDesc imageDesc;
+    if (GetVulkanContext()->IsRayTracingSupported())
+    {
+        // Images
+        ImageDesc imageDesc;
 
-    const VkExtent2D& swapchainExtent = GetVulkanContext()->GetSwapchainExtent();
-    VkFormat sceneColorImageFormat = GetVulkanContext()->GetSceneColorFormat();
+        const VkExtent2D& swapchainExtent = GetVulkanContext()->GetSwapchainExtent();
+        VkFormat sceneColorImageFormat = GetVulkanContext()->GetSceneColorFormat();
 
-    imageDesc.mWidth = swapchainExtent.width;
-    imageDesc.mHeight = swapchainExtent.height;
-    imageDesc.mFormat = sceneColorImageFormat;
-    imageDesc.mUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+        imageDesc.mWidth = swapchainExtent.width;
+        imageDesc.mHeight = swapchainExtent.height;
+        imageDesc.mFormat = sceneColorImageFormat;
+        imageDesc.mUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
 
-    SamplerDesc samplerDesc;
-    samplerDesc.mAddressMode = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        SamplerDesc samplerDesc;
+        samplerDesc.mAddressMode = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 
-    mPathTraceImage = new Image(imageDesc, samplerDesc, "Path Trace Image");
+        mPathTraceImage = new Image(imageDesc, samplerDesc, "Path Trace Image");
 
-    mPathTraceDescriptorSet->UpdateStorageImageDescriptor(5, mPathTraceImage);
+        mPathTraceDescriptorSet->UpdateStorageImageDescriptor(5, mPathTraceImage);
 
-    mPathTraceImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        mPathTraceImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
 }
 
 void RayTracer::DestroyDynamicRayTraceResources()
 {
-    GetDestroyQueue()->Destroy(mPathTraceImage);
-    mPathTraceImage = nullptr;
+    if (GetVulkanContext()->IsRayTracingSupported())
+    {
+        GetDestroyQueue()->Destroy(mPathTraceImage);
+        mPathTraceImage = nullptr;
+    }
 }
 
 void RayTracer::UpdatePathTracingScene(

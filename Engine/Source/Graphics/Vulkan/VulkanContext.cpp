@@ -278,7 +278,8 @@ void VulkanContext::EndFrame()
     mFrameIndex = nextFrameIndex;
     mFrameNumber++;
 
-    if (mRayTracer.GetLightBakePhase() != LightBakePhase::Count)
+    if (mSupportsRayTracing && 
+        mRayTracer.GetLightBakePhase() != LightBakePhase::Count)
     {
         mRayTracer.ReadbackLightBakeResults();
     }
@@ -927,6 +928,16 @@ void VulkanContext::PickPhysicalDevice()
     {
         LogError("Failed to find a suitable GPU.");
         OCT_ASSERT(0);
+    }
+
+    // Check properties to see what features we have. In the future, possibly
+    // check these properties while picking a physical device.
+    VkPhysicalDeviceProperties properties;
+    vkGetPhysicalDeviceProperties(mPhysicalDevice, &properties);
+
+    if (properties.limits.maxPerStageDescriptorSampledImages >= PATH_TRACE_MAX_TEXTURES)
+    {
+        mSupportsRayTracing = true;
     }
 }
 
@@ -1593,6 +1604,11 @@ bool VulkanContext::IsValidationEnabled() const
     return mValidate;
 }
 
+bool VulkanContext::IsRayTracingSupported() const
+{
+    return mSupportsRayTracing;
+}
+
 void VulkanContext::UpdateGlobalDescriptorSet()
 {
     mGlobalUniformBuffer->Update(&mGlobalUniformData, sizeof(GlobalUniformData));
@@ -1616,7 +1632,7 @@ void VulkanContext::CreatePostProcessDescriptorSet()
     VkDescriptorSetLayout layout = GetPipeline(PipelineId::PostProcess)->GetDescriptorSetLayout(1);
     mPostProcessDescriptorSet = new DescriptorSet(layout);
     mPostProcessDescriptorSet->UpdateImageDescriptor(0, mSceneColorImage);
-    mPostProcessDescriptorSet->UpdateImageDescriptor(1, mRayTracer.GetPathTraceImage());
+    mPostProcessDescriptorSet->UpdateImageDescriptor(1, mSupportsRayTracing ? mRayTracer.GetPathTraceImage() : mSceneColorImage);
 }
 
 void VulkanContext::CreateCommandPool()
@@ -2090,11 +2106,15 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::Quad] = new QuadPipeline();
     mPipelines[(size_t)PipelineId::Text] = new TextPipeline();
     mPipelines[(size_t)PipelineId::Poly] = new PolyPipeline();
-    mPipelines[(size_t)PipelineId::PathTrace] = new PathTracePipeline();
-    mPipelines[(size_t)PipelineId::LightBakeDirect] = new LightBakeDirectPipeline();
-    mPipelines[(size_t)PipelineId::LightBakeIndirect] = new LightBakeIndirectPipeline();
-    mPipelines[(size_t)PipelineId::LightBakeAverage] = new LightBakeAveragePipeline();
-    mPipelines[(size_t)PipelineId::LightBakeDiffuse] = new LightBakeDiffusePipeline();
+
+    if (mSupportsRayTracing)
+    {
+        mPipelines[(size_t)PipelineId::PathTrace] = new PathTracePipeline();
+        mPipelines[(size_t)PipelineId::LightBakeDirect] = new LightBakeDirectPipeline();
+        mPipelines[(size_t)PipelineId::LightBakeIndirect] = new LightBakeIndirectPipeline();
+        mPipelines[(size_t)PipelineId::LightBakeAverage] = new LightBakeAveragePipeline();
+        mPipelines[(size_t)PipelineId::LightBakeDiffuse] = new LightBakeDiffusePipeline();
+    }
 
 #if EDITOR
     mPipelines[(size_t)PipelineId::HitCheck] = new HitCheckPipeline();
@@ -2119,11 +2139,15 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::Quad]->Create(mUIRenderPass);
     mPipelines[(size_t)PipelineId::Text]->Create(mUIRenderPass);
     mPipelines[(size_t)PipelineId::Poly]->Create(mUIRenderPass);
-    mPipelines[(size_t)PipelineId::PathTrace]->Create(VK_NULL_HANDLE);
-    mPipelines[(size_t)PipelineId::LightBakeDirect]->Create(VK_NULL_HANDLE);
-    mPipelines[(size_t)PipelineId::LightBakeIndirect]->Create(VK_NULL_HANDLE);
-    mPipelines[(size_t)PipelineId::LightBakeAverage]->Create(VK_NULL_HANDLE);
-    mPipelines[(size_t)PipelineId::LightBakeDiffuse]->Create(VK_NULL_HANDLE);
+
+    if (mSupportsRayTracing)
+    {
+        mPipelines[(size_t)PipelineId::PathTrace]->Create(VK_NULL_HANDLE);
+        mPipelines[(size_t)PipelineId::LightBakeDirect]->Create(VK_NULL_HANDLE);
+        mPipelines[(size_t)PipelineId::LightBakeIndirect]->Create(VK_NULL_HANDLE);
+        mPipelines[(size_t)PipelineId::LightBakeAverage]->Create(VK_NULL_HANDLE);
+        mPipelines[(size_t)PipelineId::LightBakeDiffuse]->Create(VK_NULL_HANDLE);
+    }
 
 #if EDITOR
     mPipelines[(size_t)PipelineId::HitCheck]->Create(mHitCheckRenderPass);
