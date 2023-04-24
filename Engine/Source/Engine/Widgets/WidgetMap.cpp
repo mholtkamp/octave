@@ -8,6 +8,12 @@
 FORCE_LINK_DEF(WidgetMap);
 DEFINE_ASSET(WidgetMap);
 
+struct NativeWidgetEntry
+{
+    Widget* mWidget = nullptr;
+    int32_t mNativeSlot = -1;
+};
+
 WidgetMap::WidgetMap()
 {
     mType = WidgetMap::GetStaticType();
@@ -115,6 +121,7 @@ Widget* WidgetMap::Instantiate()
     if (mWidgetDefs.size() > 0)
     {
         std::vector<Widget*> widgetList;
+        std::vector<NativeWidgetEntry> nativeWidgets;
 
         for (uint32_t i = 0; i < mWidgetDefs.size(); ++i)
         {
@@ -135,6 +142,14 @@ Widget* WidgetMap::Instantiate()
                 else
                 {
                     newWidget = CreateWidget(mWidgetDefs[i].mType, false);
+
+                    for (uint32_t i = 0; i < newWidget->GetNumChildren(); ++i)
+                    {
+                        NativeWidgetEntry entry;
+                        entry.mWidget = newWidget->GetChild(i);
+                        entry.mNativeSlot = (int32_t)i;
+                        nativeWidgets.push_back(entry);
+                    }
                 }
             }
             else
@@ -146,12 +161,12 @@ Widget* WidgetMap::Instantiate()
                 OCT_ASSERT(parent != nullptr);
 
                 // Find the native child we are going to fill out.
-                for (uint32_t w = 0; w < parent->GetNumChildren(); ++w)
+                for (uint32_t w = 0; w < nativeWidgets.size(); ++w)
                 {
-                    Widget* child = parent->GetChild(int32_t(w));
-                    if (child->GetNativeChildSlot() == mWidgetDefs[i].mNativeChildSlot)
+                    if (nativeWidgets[w].mWidget->GetParent() == parent &&
+                        nativeWidgets[w].mNativeSlot == mWidgetDefs[i].mNativeChildSlot)
                     {
-                        newWidget = child;
+                        newWidget = nativeWidgets[w].mWidget;
                         break;
                     }
                 }
