@@ -17,6 +17,7 @@
 #include "Line.h"
 #include "ResourceArena.h"
 #include "ObjectRef.h"
+#include "RayTracer.h"
 
 #if PLATFORM_LINUX
 #include <xcb/xcb.h>
@@ -77,6 +78,7 @@ public:
 
     VkExtent2D& GetSwapchainExtent();
     VkFormat GetSwapchainFormat();
+    VkFormat GetSceneColorFormat();
 
     Pipeline* GetPipeline(PipelineId id);
     Pipeline* GetCurrentlyBoundPipeline();
@@ -111,13 +113,7 @@ public:
     DescriptorSetArena& GetMeshDescriptorSetArena();
     UniformBufferArena& GetMeshUniformBufferArena();
 
-    void PathTraceWorld();
-
-    void BeginLightBake();
-    void UpdateLightBake();
-    void EndLightBake();
-    bool IsLightBakeInProgress();
-    float GetLightBakeProgress();
+    RayTracer* GetRayTracer();
 
 private:
 
@@ -147,11 +143,6 @@ private:
     void CreateSceneColorImage();
     void CreateShadowMapImage();
 
-    void CreateStaticRayTraceResources();
-    void DestroyStaticRayTraceResources();
-    void CreateDynamicRayTraceResources();
-    void DestroyDynamicRayTraceResources();
-
     void PickPhysicalDevice();
     bool IsDeviceSuitable(VkPhysicalDevice device);
     VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -170,17 +161,6 @@ private:
 
     void DestroySwapchain();
     void DestroyDebugCallback();
-
-    void UpdatePathTracingScene(
-        std::vector<RayTraceTriangle>& triangleData,
-        std::vector<RayTraceMesh>& meshData,
-        std::vector<RayTraceLight>& lightData);
-    void UpdateBakeVertexData();
-
-    void DispatchNextLightBake();
-    void DispatchNextBakeDiffuse();
-    void ReadbackLightBakeResults();
-    void FinalizeLightBake();
 
 private:
 
@@ -224,7 +204,6 @@ private:
     Image* mSceneColorImage = nullptr;
     VkFormat mSceneColorImageFormat;
     Image* mDepthImage = nullptr;
-    Image* mPathTraceImage = nullptr;
 
     // Synchronization
     VkSemaphore mImageAvailableSemaphore = VK_NULL_HANDLE;
@@ -241,19 +220,11 @@ private:
     DescriptorSet* mPostProcessDescriptorSet = nullptr;
     GlobalUniformData mGlobalUniformData;
 
-    // Ray Tracing Resources
-    DescriptorSet* mPathTraceDescriptorSet = nullptr;
-    Buffer* mRayTraceTriangleBuffer = nullptr;
-    Buffer* mRayTraceMeshBuffer = nullptr;
-    Buffer* mRayTraceLightBuffer = nullptr;
-    UniformBuffer* mRayTraceUniformBuffer = nullptr;
-    Buffer* mLightBakeVertexBuffer = nullptr;
-    DescriptorSet* mBakeDiffuseDescriptorSet = nullptr;
-    Buffer* mBakeAverageBuffer = nullptr;
-    Buffer* mBakeDiffuseTriangleBuffer = nullptr;
-
     // Destroy Queue
     DestroyQueue mDestroyQueue;
+
+    // Ray Tracer
+    RayTracer mRayTracer;
 
     // Debug
     bool mValidate;
@@ -275,18 +246,6 @@ private:
     bool mInitialized = false;
     EngineState* mEngineState = nullptr;
     Pipeline* mCurrentlyBoundPipeline = nullptr;
-
-    // Path Tracing and Light Baking state
-    uint32_t mAccumulatedFrames = 0;
-    glm::vec3 mPathTracePrevCameraPos = { 0.0f, 0.0f, 0.0f };
-    glm::vec3 mPathTracePrevCameraRot = { 0.0f, 0.0f, 0.0f };
-    LightBakePhase mLightBakePhase = LightBakePhase::Count;
-    std::vector<ComponentRef> mLightBakeComps;
-    std::vector<LightBakeResult> mLightBakeResults;
-    int32_t mBakingCompIndex = -1;
-    int32_t mNextBakingCompIndex = 0;
-    int64_t mBakedFrame = -1;
-    uint32_t mTotalDiffusePasses = 1;
 
 #if EDITOR
 public:

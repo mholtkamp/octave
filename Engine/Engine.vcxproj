@@ -462,6 +462,7 @@
     <ClCompile Include="Source\Graphics\Vulkan\DestroyQueue.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Image.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Pipeline.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\RayTracer.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\UniformBuffer.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Graphics_Vulkan.cpp" />
@@ -579,6 +580,7 @@
     <ClInclude Include="Include\Engine\Widgets\Poly.h" />
     <ClInclude Include="Include\Engine\Widgets\PolyRect.h" />
     <ClInclude Include="Include\Engine\Widgets\ScriptWidget.h" />
+    <ClInclude Include="Include\Graphics\Vulkan\RayTracer.h" />
     <ClInclude Include="Include\LuaBindings\ActorRef_Lua.h" />
     <ClInclude Include="Include\LuaBindings\AudioComponent_Lua.h" />
     <ClInclude Include="Include\LuaBindings\Audio_Lua.h" />
