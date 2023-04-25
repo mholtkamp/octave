@@ -504,7 +504,7 @@ int World_Lua::SpawnParticle(lua_State* L)
     ParticleSystem* particleSys = CHECK_PARTICLE_SYSTEM(L, 2);
     glm::vec3 pos = CHECK_VECTOR(L, 3);
 
-    ParticleActor* ret = ParticleActor::SpawnParticleActor(GetWorld(), pos, particleSys);
+    ParticleActor* ret = ParticleActor::SpawnParticleActor(world, pos, particleSys);
 
     Actor_Lua::Create(L, ret);
     return 1;

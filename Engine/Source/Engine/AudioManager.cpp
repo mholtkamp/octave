@@ -491,9 +491,6 @@ void AudioManager::UpdateSound(
         {
             if (sAudioSources[i].mSoundWave == soundWave)
             {
-                SoundWave* soundWave = sAudioSources[i].mSoundWave.Get<SoundWave>();
-                bool stopped = false;
-
                 sAudioSources[i].mVolumeMult = volume;
                 sAudioSources[i].mPitchMult = pitch;
                 //sAudioSources[i].mLoop = loop;

@@ -27,30 +27,6 @@ void SetupLights()
     }
 
     gGxContext.mLighting.mLightMask = 0;
-    DirectionalLightComponent* dirLightComp = GetWorld()->GetDirectionalLight();
-
-    // Setup directional light
-    if (dirLightComp && dirLightComp->IsVisible())
-    {
-        GXLightObj gxDirLight;
-
-        glm::vec3 lightPosWS = -dirLightComp->GetDirection() * 10000.0f;
-        glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
-
-        glm::vec4 lightColor = dirLightComp->GetColor();
-        lightColor = glm::clamp(lightColor, 0.0f, 1.0f);
-        GXColor gxLightColor = { uint8_t(lightColor.r * 255.0f),
-                                 uint8_t(lightColor.g * 255.0f),
-                                 uint8_t(lightColor.b * 255.0f),
-                                 uint8_t(lightColor.a * 255.0f) };
-
-        GX_InitLightPos(&gxDirLight, lightPosVS.x, lightPosVS.y, lightPosVS.z);
-        GX_InitLightColor(&gxDirLight, gxLightColor);
-        GX_InitLightDistAttn(&gxDirLight, 0.0f, 1.0f, GX_DA_OFF);
-        GX_InitLightSpot(&gxDirLight, 0.0f, GX_SP_OFF);
-        GX_LoadLightObj(&gxDirLight, GX_LIGHT0);
-        gGxContext.mLighting.mLightMask |= GX_LIGHT0;
-    }
 
     glm::vec4 ambientColor = GetWorld()->GetAmbientLightColor();
     ambientColor = glm::clamp(ambientColor, 0.0f, 1.0f);
@@ -68,12 +44,16 @@ void SetupLights()
     const std::vector<LightData>& lightArray = Renderer::Get()->GetLightData();
 
     // Light0 is reserved for directional light, in the future we might allow multiple dir lights.
-    for (uint32_t i = 0; i < lightArray.size() && i < MAX_POINTLIGHTS; ++i)
+    for (uint32_t i = 0; i < lightArray.size() && i < MAX_LIGHTS_PER_DRAW; ++i)
     {
         const LightData& lightData = lightArray[i];
-        GXLightObj gxPointLight;
+        GXLightObj gxLight;
 
         glm::vec3 lightPosWS = lightData.mPosition;
+        if (lightData.mType == LightType::Directional)
+        {
+            lightPosWS = cameraComp->GetAbsolutePosition() + -lightData.mDirection * 10000.0f;
+        }
         glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
 
         glm::vec4 lightColor = lightData.mColor;
@@ -83,12 +63,21 @@ void SetupLights()
                                     uint8_t(lightColor.b * 255.0f),
                                     uint8_t(lightColor.a * 255.0f) };
 
-        GX_InitLightPos(&gxPointLight, lightPosVS.x, lightPosVS.y, lightPosVS.z);
-        GX_InitLightColor(&gxPointLight, gxLightColor);
-        GX_InitLightDistAttn(&gxPointLight, lightData.mRadius, 0.25f, GX_DA_MEDIUM);
-        GX_InitLightSpot(&gxPointLight, 0.0f, GX_SP_OFF);
-        GX_LoadLightObj(&gxPointLight, GX_LIGHT1 << i);
-        gGxContext.mLighting.mLightMask |= (GX_LIGHT1 << i);
+        GX_InitLightPos(&gxLight, lightPosVS.x, lightPosVS.y, lightPosVS.z);
+        GX_InitLightColor(&gxLight, gxLightColor);
+        GX_InitLightSpot(&gxLight, 0.0f, GX_SP_OFF);
+
+        if (lightData.mType == LightType::Directional)
+        {
+            GX_InitLightDistAttn(&gxLight, 0.0f, 1.0f, GX_DA_OFF);
+        }
+        else
+        {
+            GX_InitLightDistAttn(&gxLight, lightData.mRadius, 0.25f, GX_DA_MEDIUM);
+        }
+
+        GX_LoadLightObj(&gxLight, GX_LIGHT0 << i);
+        gGxContext.mLighting.mLightMask |= (GX_LIGHT0 << i);
     }
 }
 

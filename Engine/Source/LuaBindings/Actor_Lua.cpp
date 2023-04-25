@@ -107,7 +107,7 @@ int Actor_Lua::DestroyComponent(lua_State* L)
 
 int Actor_Lua::IsA(lua_State* L)
 {
-    Actor* actor = CHECK_ACTOR(L, 1);
+    CHECK_ACTOR(L, 1);
     const char* className = CHECK_STRING(L, 2);
 
     char classFlag[64];

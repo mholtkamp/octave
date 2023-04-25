@@ -288,6 +288,36 @@ void GFX_SetFrameRate(int32_t frameRate)
 
 }
 
+void GFX_PathTrace()
+{
+
+}
+
+void GFX_BeginLightBake()
+{
+
+}
+
+void GFX_UpdateLightBake()
+{
+
+}
+
+void GFX_EndLightBake()
+{
+
+}
+
+bool GFX_IsLightBakeInProgress()
+{
+    return false;
+}
+
+float GFX_GetLightBakeProgress()
+{
+    return 0.0f;
+}
+
 // Texture
 void GFX_CreateTextureResource(Texture* texture, std::vector<uint8_t>& data)
 {
@@ -477,6 +507,11 @@ void GFX_CreateStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
 }
 
 void GFX_DestroyStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
+{
+
+}
+
+void GFX_UpdateStaticMeshCompResourceColors(StaticMeshComponent* staticMeshComp)
 {
 
 }
