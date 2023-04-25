@@ -496,7 +496,7 @@ void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* mes
             OCT_ASSERT(material != nullptr);
         }
 
-        BindMaterial(material, mesh->HasVertexColor());
+        BindMaterial(material, hasColor);
 
         Mtx model;
         Mtx view;
