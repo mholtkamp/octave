@@ -182,7 +182,7 @@ bool IsCpuSkinningRequired(SkeletalMeshComponent* component)
     }
 }
 
-void BindMaterial(Material* material, bool useVertexColor)
+void BindMaterial(Material* material, bool useVertexColor, bool useBakedLighting)
 {
     // If we are using vertex color modulation, then we need to use the first channel
     // since there is only one color vertex attribute.
@@ -268,8 +268,8 @@ void BindMaterial(Material* material, bool useVertexColor)
             GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
             GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_RASC, GX_CC_CPREV, GX_CC_ZERO);
             GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_RASA, GX_CA_APREV, GX_CA_ZERO);
-            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
-            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, useBakedLighting ? GX_CS_SCALE_4 : GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, useBakedLighting ? GX_CS_SCALE_4 : GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
             tevStage++;
         }
 

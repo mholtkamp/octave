@@ -487,7 +487,7 @@ void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* mes
             OCT_ASSERT(material != nullptr);
         }
 
-        BindMaterial(material, hasColor);
+        BindMaterial(material, hasColor, hasBakedLighting);
 
         Mtx model;
         Mtx view;
@@ -601,8 +601,7 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
             OCT_ASSERT(material != nullptr);
         }
 
-        BindMaterial(material, false);
-
+        BindMaterial(material, false, false);
 
         Mtx model;
         Mtx view;
@@ -835,7 +834,7 @@ void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp)
         OCT_ASSERT(material != nullptr);
     }
 
-    BindMaterial(material, false);
+    BindMaterial(material, false, false);
 
     Mtx model;
     Mtx view;
@@ -925,7 +924,7 @@ void GFX_DrawParticleComp(ParticleComponent* particleComp)
             OCT_ASSERT(material != nullptr);
         }
 
-        BindMaterial(material, true);
+        BindMaterial(material, true, false);
 
         Mtx model;
         Mtx view;

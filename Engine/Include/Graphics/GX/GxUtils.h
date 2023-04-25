@@ -21,7 +21,7 @@ void PrepareUiRendering();
 
 bool IsCpuSkinningRequired(SkeletalMeshComponent* component);
 
-void BindMaterial(Material* material, bool useVertexColor);
+void BindMaterial(Material* material, bool useVertexColor, bool useBakedLighting);
 void BindStaticMesh(StaticMesh* staticMesh, uint32_t* instanceColors);
 void BindSkeletalMesh(SkeletalMesh* skeletalMesh);
 
