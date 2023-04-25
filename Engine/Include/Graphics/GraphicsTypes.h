@@ -159,6 +159,8 @@ struct StaticMeshResource
 #elif API_GX
     void* mDisplayList = nullptr;
     uint32_t mDisplayListSize = 0;
+    void* mColorDisplayList = nullptr;
+    uint32_t mColorDisplayListSize = 0;
 #elif API_C3D
     void* mVertexData = nullptr;
     void* mIndexData = nullptr;

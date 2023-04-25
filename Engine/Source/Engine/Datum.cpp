@@ -875,7 +875,6 @@ void Datum::Erase(uint32_t index)
     if (index >= 0 && index < mCount)
     {
         uint32_t numElementsToShift = (mCount - 1) - index;
-        uint32_t dataSize = GetDataTypeSize();
 
         for (uint32_t i = 0; i < numElementsToShift; ++i)
         {
