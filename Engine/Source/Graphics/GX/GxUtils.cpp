@@ -16,6 +16,8 @@
 #include "Components/PointLightComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 
+#include <malloc.h>
+
 extern GxContext gGxContext;
 
 void SetupLights()
@@ -550,6 +552,87 @@ void ApplyWidgetRotation(Mtx& mtx, Widget* widget)
     memcpy(srcMat, &mtx, sizeof(float) * 4 * 3);
 
     guMtxConcat(rotMat, srcMat, mtx);
+}
+
+void* CreateMeshDisplayList(StaticMesh* staticMesh, bool useColor, uint32_t& outSize)
+{
+    void* displayList = nullptr;
+
+    IndexType* indices = staticMesh->GetIndices();
+
+    // Generate a display list
+    uint32_t gxBeginSize = 3;
+    uint32_t elemSize = useColor ? (2 + 2 + 2 + 2 + 2) : (2 + 2 + 2 + 2);
+    uint32_t allocSize = gxBeginSize + (elemSize * staticMesh->GetNumFaces() * 3);
+    allocSize = (allocSize + 0x1f) & (~0x1f); // 32 byte aligned
+    allocSize += 64; // Extra space to account for pipe flush
+    displayList = memalign(32, allocSize);
+
+    // This invalidate is needed because the write-gather pipe does not use the cache.
+    DCInvalidateRange(displayList, allocSize);
+
+    GX_BeginDispList(displayList, allocSize);
+
+    GX_Begin(GX_TRIANGLES, GX_VTXFMT0, staticMesh->GetNumIndices());
+
+    if (useColor)
+    {
+        for (uint32_t i = 0; i < staticMesh->GetNumFaces(); ++i)
+        {
+            GX_Position1x16(uint16_t(indices[i * 3 + 0]));
+            GX_Normal1x16(uint16_t(indices[i * 3 + 0]));
+            GX_Color1x16(uint16_t(indices[i * 3 + 0]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 0]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 0]));
+
+            GX_Position1x16(uint16_t(indices[i * 3 + 1]));
+            GX_Normal1x16(uint16_t(indices[i * 3 + 1]));
+            GX_Color1x16(uint16_t(indices[i * 3 + 1]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 1]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 1]));
+
+            GX_Position1x16(uint16_t(indices[i * 3 + 2]));
+            GX_Normal1x16(uint16_t(indices[i * 3 + 2]));
+            GX_Color1x16(uint16_t(indices[i * 3 + 2]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 2]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 2]));
+        }
+    }
+    else
+    {
+        for (uint32_t i = 0; i < staticMesh->GetNumFaces(); ++i)
+        {
+            GX_Position1x16(uint16_t(indices[i * 3 + 0]));
+            GX_Normal1x16(uint16_t(indices[i * 3 + 0]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 0]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 0]));
+
+            GX_Position1x16(uint16_t(indices[i * 3 + 1]));
+            GX_Normal1x16(uint16_t(indices[i * 3 + 1]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 1]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 1]));
+
+            GX_Position1x16(uint16_t(indices[i * 3 + 2]));
+            GX_Normal1x16(uint16_t(indices[i * 3 + 2]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 2]));
+            GX_TexCoord1x16(uint16_t(indices[i * 3 + 2]));
+        }
+    }
+
+    GX_End();
+
+    outSize = GX_EndDispList();
+    OCT_ASSERT(outSize != 0);
+
+    return displayList;
+}
+
+void DestroyMeshDisplayList(void* displayList)
+{
+    if (displayList != nullptr)
+    {
+        free(displayList);
+    }
 }
 
 #endif

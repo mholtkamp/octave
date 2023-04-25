@@ -394,6 +394,7 @@ void GFX_CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_
 
     // We need to rearrange the vertex color data?
     // Apparently dolphin expects rgba reversed
+    // TODO: Do this when cooking assets for Dolphin platforms.
     if (hasColor)
     {
         VertexColor* vertices = staticMesh->GetColorVertices();
@@ -411,70 +412,15 @@ void GFX_CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_
             charArray[3] = c0;
         }
     }
-
-    // Generate a display list
-    uint32_t gxBeginSize = 3;
-    uint32_t elemSize = hasColor ? (2 + 2 + 2 + 2 + 2) : (2 + 2 + 2 + 2);
-    uint32_t allocSize = gxBeginSize + (elemSize * staticMesh->GetNumFaces() * 3);
-    allocSize = (allocSize + 0x1f) & (~0x1f); // 32 byte aligned
-    allocSize += 64; // Extra space to account for pipe flush
-    resource->mDisplayList = memalign(32, allocSize);
-
-    // This invalidate is needed because the write-gather pipe does not use the cache.
-    DCInvalidateRange(resource->mDisplayList, allocSize);
-
-    GX_BeginDispList(resource->mDisplayList, allocSize);
-
-    GX_Begin(GX_TRIANGLES, GX_VTXFMT0, staticMesh->GetNumIndices());
-
+    
     if (hasColor)
     {
-        for (uint32_t i = 0; i < staticMesh->GetNumFaces(); ++i)
-        {
-            GX_Position1x16(uint16_t(indices[i * 3 + 0]));
-            GX_Normal1x16(uint16_t(indices[i * 3 + 0]));
-            GX_Color1x16(uint16_t(indices[i * 3 + 0]));
-            GX_TexCoord1x16(uint16_t(indices[i * 3 + 0]));
-            GX_TexCoord1x16(uint16_t(indices[i * 3 + 0]));
-
-            GX_Position1x16(uint16_t(indices[i * 3 + 1]));
-            GX_Normal1x16(uint16_t(indices[i * 3 + 1]));
-            GX_Color1x16(uint16_t(indices[i * 3 + 1]));
-            GX_TexCoord1x16(uint16_t(indices[i * 3 + 1]));
-            GX_TexCoord1x16(uint16_t(indices[i * 3 + 1]));
-
-            GX_Position1x16(uint16_t(indices[i * 3 + 2]));
-            GX_Normal1x16(uint16_t(indices[i * 3 + 2]));
-            GX_Color1x16(uint16_t(indices[i * 3 + 2]));
-            GX_TexCoord1x16(uint16_t(indices[i * 3 + 2]));
-            GX_TexCoord1x16(uint16_t(indices[i * 3 + 2]));
-        }
+        resource->mColorDisplayList = CreateMeshDisplayList(staticMesh, true, resource->mColorDisplayListSize);
     }
     else
     {
-        for (uint32_t i = 0; i < staticMesh->GetNumFaces(); ++i)
-        {
-            GX_Position1x16(uint16_t(indices[i * 3 + 0]));
-            GX_Normal1x16(uint16_t(indices[i * 3 + 0]));
-            GX_TexCoord1x16(uint16_t(indices[i * 3 + 0]));
-            GX_TexCoord1x16(uint16_t(indices[i * 3 + 0]));
-
-            GX_Position1x16(uint16_t(indices[i * 3 + 1]));
-            GX_Normal1x16(uint16_t(indices[i * 3 + 1]));
-            GX_TexCoord1x16(uint16_t(indices[i * 3 + 1]));
-            GX_TexCoord1x16(uint16_t(indices[i * 3 + 1]));
-
-            GX_Position1x16(uint16_t(indices[i * 3 + 2]));
-            GX_Normal1x16(uint16_t(indices[i * 3 + 2]));
-            GX_TexCoord1x16(uint16_t(indices[i * 3 + 2]));
-            GX_TexCoord1x16(uint16_t(indices[i * 3 + 2]));
-        }
+        resource->mDisplayList = CreateMeshDisplayList(staticMesh, false, resource->mDisplayListSize);
     }
-
-    GX_End();
-
-    resource->mDisplayListSize = GX_EndDispList();
-    OCT_ASSERT(resource->mDisplayListSize != 0);
 }
 
 void GFX_DestroyStaticMeshResource(StaticMesh* staticMesh)
@@ -483,9 +429,16 @@ void GFX_DestroyStaticMeshResource(StaticMesh* staticMesh)
 
     if (resource->mDisplayList != nullptr)
     {
-        free(resource->mDisplayList);
+        DestroyMeshDisplayList(resource->mDisplayList);
         resource->mDisplayList = nullptr;
         resource->mDisplayListSize = 0;
+    }
+
+    if (resource->mColorDisplayList != nullptr)
+    {
+        DestroyMeshDisplayList(resource->mColorDisplayList);
+        resource->mColorDisplayList = nullptr;
+        resource->mColorDisplayListSize = 0;
     }
 }
 
@@ -522,7 +475,11 @@ void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* mes
 
     if (mesh != nullptr)
     {
+        StaticMeshResource* meshResource = mesh->GetResource();
+
         BindStaticMesh(mesh);
+
+        bool hasColor = mesh->HasVertexColor();
 
         Material* material = staticMeshComp->GetMaterial();
 
@@ -554,7 +511,22 @@ void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* mes
 
         SetupLightingChannels();
 
-        GX_CallDispList(mesh->GetResource()->mDisplayList, mesh->GetResource()->mDisplayListSize);
+        if (hasColor)
+        {
+            // Allow lazily creating display lists to convserve memory unless needed.
+            // This scenario can happen when a static mesh asset has no vertex colors, but it
+            // is being used by a component that has instance colors for baked lighting.
+            if (meshResource->mColorDisplayList == nullptr)
+            {
+                meshResource->mColorDisplayList = CreateMeshDisplayList(mesh, true, meshResource->mColorDisplayListSize);
+            }
+
+            GX_CallDispList(meshResource->mColorDisplayList, meshResource->mColorDisplayListSize);
+        }
+        else
+        {
+            GX_CallDispList(meshResource->mDisplayList, meshResource->mDisplayListSize);
+        }
 
         if (material->GetVertexColorMode() == VertexColorMode::TextureBlend)
         {
