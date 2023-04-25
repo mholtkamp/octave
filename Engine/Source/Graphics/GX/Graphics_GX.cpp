@@ -477,9 +477,16 @@ void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* mes
     {
         StaticMeshResource* meshResource = mesh->GetResource();
 
-        BindStaticMesh(mesh);
+        bool hasBakedLighting = staticMeshComp->HasBakedLighting();
+        bool hasColor = mesh->HasVertexColor() || hasBakedLighting;
+        
+        uint32_t* instanceColors = nullptr;
+        if (hasBakedLighting)
+        {
+            instanceColors = staticMeshComp->GetInstanceColors().data();
+        }
 
-        bool hasColor = mesh->HasVertexColor();
+        BindStaticMesh(mesh, instanceColors);
 
         Material* material = staticMeshComp->GetMaterial();
 
@@ -719,7 +726,7 @@ void GFX_DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp)
 
     if (mesh != nullptr)
     {
-        BindStaticMesh(mesh);
+        BindStaticMesh(mesh, nullptr);
 
         // Shading
         gGxContext.mLighting.mEnabled = false;

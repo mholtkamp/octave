@@ -351,7 +351,7 @@ void BindMaterial(Material* material, bool useVertexColor)
     }
 }
 
-void BindStaticMesh(StaticMesh* staticMesh)
+void BindStaticMesh(StaticMesh* staticMesh, uint32_t* instanceColors)
 {
     uint8_t* vertBytes = staticMesh->HasVertexColor() ? (uint8_t*)staticMesh->GetColorVertices() : (uint8_t*)staticMesh->GetVertices();
     uint32_t numVertices = staticMesh->GetNumVertices();
@@ -371,11 +371,13 @@ void BindStaticMesh(StaticMesh* staticMesh)
         texOffset1 = offsetof(VertexColor, mTexcoord1);
     }
 
+    bool hasColor = (staticMesh->HasVertexColor() || instanceColors != nullptr);
+
     // Set Vertex Format
     GX_ClearVtxDesc();
     GX_SetVtxDesc(GX_VA_POS, GX_INDEX16);
     GX_SetVtxDesc(GX_VA_NRM, GX_INDEX16);
-    if (staticMesh->HasVertexColor())
+    if (hasColor)
     {
         GX_SetVtxDesc(GX_VA_CLR0, GX_INDEX16);
     }
@@ -385,7 +387,7 @@ void BindStaticMesh(StaticMesh* staticMesh)
     // Set Attribute Formats
     GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
     GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
-    if (staticMesh->HasVertexColor())
+    if (hasColor)
     {
         GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
     }
@@ -396,15 +398,28 @@ void BindStaticMesh(StaticMesh* staticMesh)
     uint32_t vertexSize = staticMesh->GetVertexSize();
     GX_SetArray(GX_VA_POS, vertBytes + posOffset, vertexSize);
     GX_SetArray(GX_VA_NRM, vertBytes + nrmOffset, vertexSize);
-    if (staticMesh->HasVertexColor())
+    if (hasColor)
     {
-        GX_SetArray(GX_VA_CLR0, vertBytes + clrOffset, vertexSize);
+        if (instanceColors != nullptr)
+        {
+            GX_SetArray(GX_VA_CLR0, instanceColors, sizeof(uint32_t));
+        }
+        else
+        {
+            GX_SetArray(GX_VA_CLR0, vertBytes + clrOffset, vertexSize);
+        }
     }
     GX_SetArray(GX_VA_TEX0, vertBytes + texOffset0, vertexSize);
     GX_SetArray(GX_VA_TEX1, vertBytes + texOffset1, vertexSize);
 
     // TODO: Are both of these cache functions necessary to call?
     DCFlushRange(vertBytes, numVertices * vertexSize);
+
+    if (instanceColors != nullptr)
+    {
+        DCFlushRange(instanceColors, numVertices * sizeof(uint32_t));
+    }
+
     GX_InvVtxCache();
 }
 

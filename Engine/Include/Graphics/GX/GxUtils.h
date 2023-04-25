@@ -22,7 +22,7 @@ void PrepareUiRendering();
 bool IsCpuSkinningRequired(SkeletalMeshComponent* component);
 
 void BindMaterial(Material* material, bool useVertexColor);
-void BindStaticMesh(StaticMesh* staticMesh);
+void BindStaticMesh(StaticMesh* staticMesh, uint32_t* instanceColors);
 void BindSkeletalMesh(SkeletalMesh* skeletalMesh);
 
 void ConfigTev(uint32_t textureSlot, TevMode mode, bool vertexColorBlend);
