@@ -400,16 +400,7 @@ void GFX_CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_
         VertexColor* vertices = staticMesh->GetColorVertices();
         for (uint32_t i = 0; i < numVertices; ++i)
         {
-            uint8_t* charArray = reinterpret_cast<uint8_t*>(&vertices[i].mColor);
-            uint8_t c0 = charArray[0];
-            uint8_t c1 = charArray[1];
-            uint8_t c2 = charArray[2];
-            uint8_t c3 = charArray[3];
-
-            charArray[0] = c3;
-            charArray[1] = c2;
-            charArray[2] = c1;
-            charArray[3] = c0;
+            ReverseColorUint32(vertices[i].mColor);
         }
     }
     

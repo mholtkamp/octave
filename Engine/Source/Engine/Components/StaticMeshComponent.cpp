@@ -128,6 +128,10 @@ void StaticMeshComponent::LoadStream(Stream& stream)
     for (uint32_t i = 0; i < numInstanceColors; ++i)
     {
         mInstanceColors[i] = stream.ReadUint32();
+
+#if PLATFORM_DOLPHIN
+        ReverseColorUint32(mInstanceColors[i]);
+#endif
     }
 
     GFX_UpdateStaticMeshCompResourceColors(this);
