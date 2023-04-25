@@ -336,7 +336,7 @@ void ParticleComponent::SetParticleVelocity(int32_t index, glm::vec3 velocity)
             mParticles[i].mVelocity = velocity;
         }
     }
-    else if (index >= 0 && index < mParticles.size())
+    else if (index >= 0 && index < (int32_t)mParticles.size())
     {
         mParticles[index].mVelocity = velocity;
     }
@@ -345,7 +345,7 @@ void ParticleComponent::SetParticleVelocity(int32_t index, glm::vec3 velocity)
 glm::vec3 ParticleComponent::GetParticleVelocity(int32_t index)
 {
     glm::vec3 ret = { 0.0f, 0.0f, 0.0f };
-    if (index >= 0 && index < mParticles.size())
+    if (index >= 0 && index < (int32_t)mParticles.size())
     {
         ret = mParticles[index].mVelocity;
     }
@@ -590,10 +590,15 @@ void ParticleComponent::UpdateVertexBuffer()
         break;
 
     case ParticleOrientation::Billboard:
+    {
         const glm::mat4& view = GetWorld()->GetActiveCamera()->GetViewMatrix();
         right = { view[0][0], view[1][0], view[2][0] };
         up = { view[0][1], view[1][1], view[2][1] };
         forward = { view[0][2], view[1][2], view[2][2] };
+        break;
+    }
+
+    default:
         break;
     }
 

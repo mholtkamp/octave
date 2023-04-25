@@ -79,6 +79,9 @@ float Text::GetJustificationRatio(Justification just)
     case Justification::Center:
         ret = 0.5f;
         break;
+
+    default:
+        break;
     }
 
     return ret;

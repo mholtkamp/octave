@@ -89,13 +89,12 @@ int ScriptWidget_Lua::CustomIndex(lua_State* L)
 int ScriptWidget_Lua::CustomNewIndex(lua_State* L)
 {
     int luaType = lua_type(L, 1);
-    const char* key = lua_tostring(L, 2);
+    //OCT_ASSERT(lua_isstring(L, 2) || lua_isinteger(L, 2));
     OCT_ASSERT(!lua_isnone(L, 3));
 
     if (luaType == LUA_TUSERDATA)
     {
         ScriptWidget* scriptWidget = (ScriptWidget*)((Widget_Lua*)lua_touserdata(L, 1))->mWidget;
-        bool fieldFound = false;
 
         if (scriptWidget->GetTableName() != "")
         {
