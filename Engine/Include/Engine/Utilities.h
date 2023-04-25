@@ -122,6 +122,20 @@ inline glm::vec4 ColorUint32ToFloat4(uint32_t color)
     return glm::vec4(r, g, b, a);
 }
 
+inline void ReverseColorUint32(uint32_t& color)
+{
+    uint8_t* charArray = reinterpret_cast<uint8_t*>(&color);
+    uint8_t c0 = charArray[0];
+    uint8_t c1 = charArray[1];
+    uint8_t c2 = charArray[2];
+    uint8_t c3 = charArray[3];
+
+    charArray[0] = c3;
+    charArray[1] = c2;
+    charArray[2] = c1;
+    charArray[3] = c0;
+}
+
 template<typename T>
 Bounds ComputeBounds(const std::vector<T>& vertices)
 {
