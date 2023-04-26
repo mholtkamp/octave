@@ -507,6 +507,7 @@ void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* mes
         guMtxTranspose(modelViewInv, modelView);
         GX_LoadNrmMtxImm(modelView, GX_PNMTX0);
 
+        SetupLightMask(material->GetShadingModel(), hasBakedLighting);
         SetupLightingChannels();
 
         if (hasColor)
@@ -644,6 +645,7 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
             }
         }
 
+        SetupLightMask(material->GetShadingModel(), false);
         SetupLightingChannels();
 
         GX_Begin(GX_TRIANGLES, GX_VTXFMT0, mesh->GetNumIndices());
@@ -854,6 +856,7 @@ void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp)
     guMtxTranspose(modelViewInv, modelView);
     GX_LoadNrmMtxImm(modelView, GX_PNMTX0);
 
+    SetupLightMask(material->GetShadingModel(), false);
     SetupLightingChannels();
 
     GX_Begin(GX_TRIANGLES, GX_VTXFMT0, numVertices);
@@ -942,6 +945,7 @@ void GFX_DrawParticleComp(ParticleComponent* particleComp)
         uint32_t numParticles = particleComp->GetNumParticles();
         OCT_ASSERT(numParticles * 4 == numVertices);
 
+        SetupLightMask(material->GetShadingModel(), false);
         SetupLightingChannels();
 
         GX_Begin(GX_TRIANGLES, GX_VTXFMT0, numParticles * 6);

@@ -31,7 +31,7 @@ void SetupLights()
     gGxContext.mLighting.mLightMask = 0;
 
     glm::vec4 ambientColor = GetWorld()->GetAmbientLightColor();
-    ambientColor = glm::clamp(ambientColor, 0.0f, 1.0f);
+    ambientColor = glm::clamp(ambientColor / GX_DYNAMIC_LIGHT_SCALE, 0.0f, 1.0f);
     GX_SetChanAmbColor(GX_COLOR0A0, { uint8_t(ambientColor.r * 255.0f),
                                       uint8_t(ambientColor.g * 255.0f),
                                       uint8_t(ambientColor.b * 255.0f),
@@ -42,8 +42,11 @@ void SetupLights()
                                       uint8_t(ambientColor.b * 255.0f),
                                       uint8_t(ambientColor.a * 255.0f) });
 
-    // Setup point lights
+    // Setup lights
     const std::vector<LightData>& lightArray = Renderer::Get()->GetLightData();
+
+    gGxContext.mSceneLightMask = 0;
+    gGxContext.mSceneNumLights = 0;
 
     // Light0 is reserved for directional light, in the future we might allow multiple dir lights.
     for (uint32_t i = 0; i < lightArray.size() && i < MAX_LIGHTS_PER_DRAW; ++i)
@@ -58,7 +61,7 @@ void SetupLights()
         }
         glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
 
-        glm::vec4 lightColor = lightData.mColor;
+        glm::vec4 lightColor = lightData.mColor / GX_DYNAMIC_LIGHT_SCALE;
         lightColor = glm::clamp(lightColor, 0.0f, 1.0f);
         GXColor gxLightColor = { uint8_t(lightColor.r * 255.0f),
                                     uint8_t(lightColor.g * 255.0f),
@@ -78,9 +81,39 @@ void SetupLights()
             GX_InitLightDistAttn(&gxLight, lightData.mRadius, 0.25f, GX_DA_MEDIUM);
         }
 
-        GX_LoadLightObj(&gxLight, GX_LIGHT0 << i);
-        gGxContext.mLighting.mLightMask |= (GX_LIGHT0 << i);
+        GX_LoadLightObj(&gxLight, GX_LIGHT0 << gGxContext.mSceneNumLights);
+        gGxContext.mSceneLightMask |= (GX_LIGHT0 << gGxContext.mSceneNumLights);
+        gGxContext.mLightData[gGxContext.mSceneNumLights] = lightData;
+        gGxContext.mSceneNumLights++;
     }
+}
+
+void SetupLightMask(ShadingModel shadingModel, bool useBakedLight)
+{
+    uint8_t lightMask = 0;
+
+    if (shadingModel != ShadingModel::Unlit)
+    {
+        // This step needs to determine which light types should affect the primitive being drawn.
+        // For instance, an All domain light should not affect a static mesh that has baked lighting.
+        for (uint32_t i = 0; i < gGxContext.mSceneNumLights; ++i)
+        {
+            const LightData& lightData = gGxContext.mLightData[i];
+
+            if ((lightData.mDomain == LightingDomain::All) && useBakedLight)
+            {
+                continue;
+            }
+
+            // In the future, use distance checking to determine which lights should affect a draw.
+            // This is slightly tough right now because of the weird attenuation functions.
+            // There isn't a point where the light intensity reaches 0 exactly.
+
+            lightMask |= (GX_LIGHT0 << i);
+        }
+    }
+
+    gGxContext.mLighting.mLightMask = lightMask;
 }
 
 void SetupLightingChannels()
@@ -243,7 +276,8 @@ void BindMaterial(Material* material, bool useVertexColor, bool useBakedLighting
 
     GX_SetNumTexGens(texIdx);
 
-    gGxContext.mLighting.mEnabled = !(shadingModel == ShadingModel::Unlit);
+    bool unlit = (shadingModel == ShadingModel::Unlit);
+    gGxContext.mLighting.mEnabled = !unlit;
 
     if (useBakedLighting)
     {
@@ -251,6 +285,7 @@ void BindMaterial(Material* material, bool useVertexColor, bool useBakedLighting
         // After resolving the final (dynamically lit) color, add this baked color to it.
         bool fullBake = (vertexColorMode != VertexColorMode::TextureBlend);
 
+        // If adjusting LIGHT_BAKE_SCALE, need to adjust GX_CS_SCALE_4 below.
         GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
         GX_SetTevColorIn(tevStage, GX_CC_ZERO, fullBake ? GX_CC_RASC : GX_CC_RASA, GX_CC_CPREV, GX_CC_ZERO);
         GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_RASA, GX_CA_APREV, GX_CA_ZERO);
@@ -266,9 +301,10 @@ void BindMaterial(Material* material, bool useVertexColor, bool useBakedLighting
                                         uint8_t(materialColor.b * 255.0f),
                                         uint8_t(opacity * 255.f) });
 
+    // If adjusting GX_DYNAMIC_LIGHT_SCALE, need to update GX_CS_SCALE_4 below.
     GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, matColorChannel);
     GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_CPREV, GX_CC_RASC, GX_CC_ZERO);
-    GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, unlit ? GX_CS_SCALE_1 : GX_CS_SCALE_4, GX_TRUE, GX_TEVPREV);
     GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_APREV, GX_CA_RASA, GX_CA_ZERO);
     GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
     tevStage++;

@@ -4,6 +4,9 @@
 
 #include <gccore.h>
 #include <stdint.h>
+#include "EngineTypes.h"
+
+#define GX_DYNAMIC_LIGHT_SCALE 4.0f
 
 struct LightingState
 {
@@ -53,6 +56,9 @@ struct GxContext
 
     // Lighting/Channel control
     LightingState mLighting;
+    uint8_t mSceneLightMask = 0;
+    uint8_t mSceneNumLights = 0;
+    LightData mLightData[MAX_LIGHTS_PER_DRAW];
 
     // Fog
     bool mApplyFog = true;
