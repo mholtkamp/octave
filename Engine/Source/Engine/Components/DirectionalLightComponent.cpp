@@ -53,7 +53,17 @@ void DirectionalLightComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDr
 
     if (GetType() == DirectionalLightComponent::GetStaticType())
     {
-        glm::vec4 color = { 0.9f, 0.7f, 0.0f, 1.0f };
+        glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.3f, 1.0f);
+
+        if (mDomain == LightingDomain::Static)
+        {
+            color = glm::vec4(0.8f, 0.5f, 0.3f, 1.0f);
+        }
+        else if (mDomain == LightingDomain::Dynamic)
+        {
+            color = glm::vec4(0.8f, 0.8f, 0.6f, 1.0f);
+        }
+
         float scale = 0.3f;
 
         {
