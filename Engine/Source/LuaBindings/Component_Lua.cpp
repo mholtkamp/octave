@@ -233,7 +233,11 @@ void Component_Lua::Bind()
     lua_setfield(L, mtIndex, "Equals");
 
     lua_pushcfunction(L, CheckType);
+    lua_pushcfunction(L, CheckType);
+    lua_pushcfunction(L, CheckType);
     lua_setfield(L, mtIndex, "CheckType");
+    lua_setfield(L, mtIndex, "Is");
+    lua_setfield(L, mtIndex, "IsA");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);
