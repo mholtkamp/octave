@@ -32,6 +32,7 @@ void SetupLights()
 
     glm::vec4 ambientColor = GetWorld()->GetAmbientLightColor();
     ambientColor = glm::clamp(ambientColor / GX_DYNAMIC_LIGHT_SCALE, 0.0f, 1.0f);
+    ambientColor.a = 1.0f;
     GX_SetChanAmbColor(GX_COLOR0A0, { uint8_t(ambientColor.r * 255.0f),
                                       uint8_t(ambientColor.g * 255.0f),
                                       uint8_t(ambientColor.b * 255.0f),
@@ -62,6 +63,7 @@ void SetupLights()
         glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
 
         glm::vec4 lightColor = lightData.mColor / GX_DYNAMIC_LIGHT_SCALE;
+        lightColor.a = 1.0f;
         lightColor = glm::clamp(lightColor, 0.0f, 1.0f);
         GXColor gxLightColor = { uint8_t(lightColor.r * 255.0f),
                                     uint8_t(lightColor.g * 255.0f),
@@ -288,9 +290,9 @@ void BindMaterial(Material* material, bool useVertexColor, bool useBakedLighting
         // If adjusting LIGHT_BAKE_SCALE, need to adjust GX_CS_SCALE_4 below.
         GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
         GX_SetTevColorIn(tevStage, GX_CC_ZERO, fullBake ? GX_CC_RASC : GX_CC_RASA, GX_CC_CPREV, GX_CC_ZERO);
-        GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_RASA, GX_CA_APREV, GX_CA_ZERO);
+        GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
         GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_4, GX_TRUE, GX_TEVREG0);
-        GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_4, GX_TRUE, GX_TEVREG0);
+        GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
         tevStage++;
     }
 
@@ -318,7 +320,7 @@ void BindMaterial(Material* material, bool useVertexColor, bool useBakedLighting
             // Add in the previously computed baked color to the dynamically lit result.
             GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
             GX_SetTevColorIn(tevStage, GX_CC_CPREV, GX_CC_ZERO, GX_CC_ZERO, GX_CC_C0);
-            GX_SetTevAlphaIn(tevStage, GX_CA_APREV, GX_CA_ZERO, GX_CA_ZERO, GX_CC_A0);
+            GX_SetTevAlphaIn(tevStage, GX_CA_APREV, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
             GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
             GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
             tevStage++;
