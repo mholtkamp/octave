@@ -570,6 +570,7 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
         spawnedActor->SetRootComponent(pointLightComp);
         pointLightComp->SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
         pointLightComp->SetRadius(10.0f);
+        pointLightComp->SetLightingDomain(LightingDomain::All);
     }
     else if (name == BASIC_TRANSFORM)
     {
@@ -581,6 +582,7 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
     {
         spawnedActor = GetWorld()->SpawnActor<Actor>();
         DirectionalLightComponent* dirLightComp = spawnedActor->CreateComponent<DirectionalLightComponent>();
+        dirLightComp->SetLightingDomain(LightingDomain::All);
         spawnedActor->SetRootComponent(dirLightComp);
     }
     else if (name == BASIC_SKELETAL_MESH)

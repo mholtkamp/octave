@@ -13,7 +13,7 @@ static_assert(int32_t(LightingDomain::Count) == 3, "Need to update string conver
 LightComponent::LightComponent() :
     mColor(1,1,1,1),
     mIntensity(1),
-    mDomain(LightingDomain::All),
+    mDomain(LightingDomain::Dynamic),
     mCastShadows(true)
 {
 
