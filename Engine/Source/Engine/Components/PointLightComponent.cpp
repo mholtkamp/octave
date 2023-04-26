@@ -56,12 +56,23 @@ void PointLightComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 
     if (GetType() == PointLightComponent::GetStaticType())
     {
+        glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.3f, 1.0f);
+
+        if (mDomain == LightingDomain::Static)
+        {
+            color = glm::vec4(0.8f, 0.5f, 0.3f, 1.0f);
+        }
+        else if (mDomain == LightingDomain::Dynamic)
+        {
+            color = glm::vec4(0.8f, 0.8f, 0.6f, 1.0f);
+        }
+
         {
             DebugDraw debugDraw;
             debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
             debugDraw.mActor = GetOwner();
             debugDraw.mComponent = this;
-            debugDraw.mColor = glm::vec4(0.8f, 0.8f, 0.3f, 1.0f);
+            debugDraw.mColor = color;
             debugDraw.mTransform = glm::scale(mTransform, { 0.2f, 0.2f, 0.2f });
             inoutDraws.push_back(debugDraw);
         }
@@ -73,7 +84,7 @@ void PointLightComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
             debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
             debugDraw.mActor = GetOwner();
             debugDraw.mComponent = this;
-            debugDraw.mColor = glm::vec4(0.8f, 0.8f, 0.3f, 1.0f);
+            debugDraw.mColor = color;
             debugDraw.mTransform = glm::scale(mTransform, { mRadius, mRadius, mRadius });
             inoutDraws.push_back(debugDraw);
         }
