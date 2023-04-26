@@ -896,6 +896,48 @@ void RayTracer::DispatchNextBakeDiffuse()
     }
 }
 
+static void AssignInstanceColors(StaticMeshComponent* meshComp, std::vector<glm::vec4>& colors)
+{
+    std::vector<uint32_t> instanceColors;
+    uint32_t numVerts = (uint32_t)colors.size();
+
+    bool texBlend = false;
+    StaticMesh* mesh = meshComp->GetStaticMesh();
+    VertexColor* colorVerts = (mesh && mesh->HasVertexColor()) ? mesh->GetColorVertices() : nullptr;
+    Material* material = meshComp->GetMaterial();
+    if (material && mesh && colorVerts && mesh->GetNumVertices() == numVerts)
+    {
+        texBlend = material->GetVertexColorMode() == VertexColorMode::TextureBlend;
+    }
+
+    for (uint32_t v = 0; v < numVerts; ++v)
+    {
+        glm::vec4 directClamped = glm::clamp(
+            colors[v] / LIGHT_BAKE_SCALE,
+            glm::vec4(0.0f, 0.0f, 0.0f, 0.0f),
+            glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+        // Alpha should be the average of R/G/B
+        // R G B components should remain as they are on the mesh
+        if (texBlend)
+        {
+            float luminance = (directClamped.r + directClamped.g + directClamped.b) / 3.0f;
+            directClamped.a = luminance;
+        }
+
+        uint32_t color32 = ColorFloat4ToUint32(directClamped);
+
+        if (texBlend)
+        {
+            color32 = (color32 & (0xff000000)) | (colorVerts[v].mColor & (0x00ffffff));
+        }
+
+        instanceColors.push_back(color32);
+    }
+
+    meshComp->SetInstanceColors(instanceColors);
+}
+
 void RayTracer::ReadbackLightBakeResults()
 {
     uint32_t curFrame = Renderer::Get()->GetFrameNumber();
@@ -959,20 +1001,7 @@ void RayTracer::ReadbackLightBakeResults()
                 // default constructed colors so we don't get an access violation.
                 indirectColors.resize(directColors.size());
 
-                std::vector<uint32_t> instanceColors;
-
-                for (uint32_t v = 0; v < numVerts; ++v)
-                {
-                    glm::vec4 directClamped = glm::clamp(
-                        directColors[v] / LIGHT_BAKE_SCALE,
-                        glm::vec4(0.0f, 0.0f, 0.0f, 0.0f),
-                        glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-
-                    uint32_t color32 = ColorFloat4ToUint32(directClamped);
-                    instanceColors.push_back(color32);
-                }
-
-                meshComp->SetInstanceColors(instanceColors);
+                AssignInstanceColors(meshComp, directColors);
             }
         }
 
@@ -999,18 +1028,15 @@ void RayTracer::FinalizeLightBake()
             if (numVerts == result.mDirectColors.size() &&
                 numVerts == result.mIndirectColors.size())
             {
-                std::vector<uint32_t> instanceColors;
 
+                std::vector<glm::vec4> combinedColors;
+                combinedColors.resize(numVerts);
                 for (uint32_t v = 0; v < numVerts; ++v)
                 {
-                    glm::vec4 combined = (result.mDirectColors[v] + result.mIndirectColors[v]) / LIGHT_BAKE_SCALE;
-                    combined = glm::clamp(combined, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-
-                    uint32_t color32 = ColorFloat4ToUint32(combined);
-                    instanceColors.push_back(color32);
+                    combinedColors[v] = result.mDirectColors[v] + result.mIndirectColors[v];
                 }
 
-                meshComp->SetInstanceColors(instanceColors);
+                AssignInstanceColors(meshComp, combinedColors);
             }
         }
     }
