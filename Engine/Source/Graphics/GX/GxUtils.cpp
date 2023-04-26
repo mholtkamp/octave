@@ -245,6 +245,18 @@ void BindMaterial(Material* material, bool useVertexColor, bool useBakedLighting
 
     gGxContext.mLighting.mEnabled = !(shadingModel == ShadingModel::Unlit);
 
+    if (useBakedLighting)
+    {
+        // Compute the baked color first and save it out to a scratch register. 
+        // After resolving the final (dynamically lit) color, add this baked color to it.
+        GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+        GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_RASC, GX_CC_CPREV, GX_CC_ZERO);
+        GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_RASA, GX_CA_APREV, GX_CA_ZERO);
+        GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_4, GX_TRUE, GX_TEVREG0);
+        GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_4, GX_TRUE, GX_TEVREG0);
+        tevStage++;
+    }
+
     glm::vec4 materialColor = color;
     materialColor = glm::clamp(materialColor, 0.0f, 1.0f);
     GX_SetChanMatColor(matColorChannel, { uint8_t(materialColor.r * 255.0f),
@@ -263,13 +275,23 @@ void BindMaterial(Material* material, bool useVertexColor, bool useBakedLighting
     // Vertex color modulation
     if (useVertexColor)
     {
-        if (vertexColorMode == VertexColorMode::Modulate)
+        if (useBakedLighting)
+        {
+            // Add in the previously computed baked color to the dynamically lit result.
+            GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+            GX_SetTevColorIn(tevStage, GX_CC_CPREV, GX_CC_ZERO, GX_CC_ZERO, GX_CC_C0);
+            GX_SetTevAlphaIn(tevStage, GX_CA_APREV, GX_CA_ZERO, GX_CA_ZERO, GX_CC_A0);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            tevStage++;
+        }
+        else if (vertexColorMode == VertexColorMode::Modulate)
         {
             GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
             GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_RASC, GX_CC_CPREV, GX_CC_ZERO);
             GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_RASA, GX_CA_APREV, GX_CA_ZERO);
-            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, useBakedLighting ? GX_CS_SCALE_4 : GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
-            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, useBakedLighting ? GX_CS_SCALE_4 : GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
             tevStage++;
         }
 
