@@ -141,6 +141,7 @@ void GFX_Initialize()
         gC3dContext.mStaticMeshLocs.mUvOffsetScale0 = shaderInstanceGetUniformLocation(shader, "UvOffsetScale0");
         gC3dContext.mStaticMeshLocs.mUvOffsetScale1 = shaderInstanceGetUniformLocation(shader, "UvOffsetScale1");
         gC3dContext.mStaticMeshLocs.mUvMaps = shaderInstanceGetUniformLocation(shader, "UvMaps");
+        gC3dContext.mStaticMeshLocs.mColorParams = shaderInstanceGetUniformLocation(shader, "ColorParams");
     }
 
     // SkeletalMesh Uniforms
@@ -635,16 +636,57 @@ void GFX_DestroyStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
 
 void GFX_UpdateStaticMeshCompResourceColors(StaticMeshComponent* staticMeshComp)
 {
+    StaticMeshCompResource* resource = staticMeshComp->GetResource();
 
+    const std::vector<uint32_t>& instanceColors = staticMeshComp->GetInstanceColors();
+    uint32_t colorBufferSize = sizeof(uint32_t) * uint32_t(instanceColors.size());
+
+    if (instanceColors.size() == 0)
+    {
+        if (resource->mColorVertexData != nullptr)
+        {
+            QueueLinearFree(resource->mColorVertexData);
+            resource->mColorVertexData = nullptr;
+        }
+    }
+    else
+    {
+        if (resource->mColorVertexData != nullptr)
+        {
+            QueueLinearFree(resource->mColorVertexData);
+            resource->mColorVertexData = nullptr;
+        }
+
+        if (resource->mColorVertexData == nullptr)
+        {
+            resource->mColorVertexData = linearAlloc(colorBufferSize);
+            memcpy(resource->mColorVertexData, instanceColors.data(), colorBufferSize);
+            GSPGPU_FlushDataCache(resource->mColorVertexData, colorBufferSize);
+        }
+    }
 }
 
 void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOverride)
 {
+    StaticMeshCompResource* meshCompResource = staticMeshComp->GetResource();
     StaticMesh* mesh = meshOverride ? meshOverride : staticMeshComp->GetStaticMesh();
 
     if (mesh != nullptr)
     {
-        BindStaticMesh(mesh);
+        bool useBakedLighting = staticMeshComp->HasBakedLighting();
+
+        const void* instanceColors = nullptr;
+        if (useBakedLighting)
+        {
+            const std::vector<uint32_t>& colVec = staticMeshComp->GetInstanceColors();
+            if (colVec.size() == mesh->GetNumVertices() &&
+                meshCompResource->mColorVertexData != nullptr)
+            {
+                instanceColors = meshCompResource->mColorVertexData;
+            }
+        }
+
+        BindStaticMesh(mesh, instanceColors);
 
         Material* material = staticMeshComp->GetMaterial();
 
@@ -654,7 +696,7 @@ void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* mes
             OCT_ASSERT(material != nullptr);
         }
 
-        BindMaterial(material);
+        BindMaterial(material, useBakedLighting);
 
         // Upload Uniforms
         C3D_Mtx worldMtx;
@@ -685,7 +727,7 @@ void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* mes
         UploadUvOffsetScale(gC3dContext.mStaticMeshLocs.mUvOffsetScale1, material, 1);
         
         C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mUvMaps, material->GetUvMap(0), material->GetUvMap(1), material->GetUvMap(2), 0);
-
+        C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mColorParams, useBakedLighting ? 4.0f : 1.0f, 0.0f, 0.0f, 0.0f);
 
         // Draw
         C3D_DrawElements(
@@ -770,6 +812,8 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
             uvOffsetScaleLoc0 = gC3dContext.mStaticMeshLocs.mUvOffsetScale0;
             uvOffsetScaleLoc1 = gC3dContext.mStaticMeshLocs.mUvOffsetScale1;
             uvMapsLoc = gC3dContext.mStaticMeshLocs.mUvMaps;
+
+            C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mColorParams, 1.0f, 0.0f, 0.0f, 0.0f);
         }
         else
         {
@@ -815,7 +859,7 @@ void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
             OCT_ASSERT(material != nullptr);
         }
 
-        BindMaterial(material);
+        BindMaterial(material, false);
 
         // Upload Uniforms
         C3D_Mtx worldMtx;
@@ -874,7 +918,7 @@ void GFX_DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp)
 
     if (mesh != nullptr)
     {
-        BindStaticMesh(mesh);
+        BindStaticMesh(mesh, nullptr);
 
         // Upload Uniforms
         C3D_Mtx worldMtx;
@@ -1021,7 +1065,7 @@ void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp)
         OCT_ASSERT(material != nullptr);
     }
 
-    BindMaterial(material);
+    BindMaterial(material, false);
 
     // Upload Uniforms
     C3D_Mtx worldMtx;
@@ -1052,6 +1096,7 @@ void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp)
     UploadUvOffsetScale(gC3dContext.mStaticMeshLocs.mUvOffsetScale1, material, 1);
 
     C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mUvMaps, material->GetUvMap(0), material->GetUvMap(1), material->GetUvMap(2), 0);
+    C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mColorParams, 1.0f, 0.0f, 0.0f, 0.0f);
 
     // Draw
     C3D_DrawArrays(GPU_TRIANGLES, 0, numVertices);
@@ -1158,7 +1203,7 @@ void GFX_DrawParticleComp(ParticleComponent* particleComp)
             OCT_ASSERT(material != nullptr);
         }
 
-        BindMaterial(material);
+        BindMaterial(material, false);
 
         // Upload Uniforms
         C3D_Mtx worldMtx;

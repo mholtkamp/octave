@@ -7,6 +7,7 @@
 .fvec UvOffsetScale0
 .fvec UvOffsetScale1
 .fvec UvMaps
+.fvec ColorParams
 
 ; Constants
 .constf myconst(0.0, 1.0, -1.0, 0.1)
@@ -87,6 +88,8 @@
 
 	; outclr = inclr * 1/255.0
 	mov r1, inclr
+	mov r2, ColorParams ; x comp has scale (needed for baked light)
+	mul r1, r1, r2.x
 	mov r2, rcp255
 	mul r2, r1, r2
 	mov outclr, r2

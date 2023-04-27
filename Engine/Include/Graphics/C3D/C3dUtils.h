@@ -14,9 +14,10 @@ class StaticMesh;
 void CopyMatrixGlmToC3d(C3D_Mtx* dst, const glm::mat4& src);
 
 void BindVertexShader(ShaderId shaderId);
-void BindStaticMesh(StaticMesh* mesh);
-void BindMaterial(Material* material);
+void BindStaticMesh(StaticMesh* mesh, const void* instanceColors);
+void BindMaterial(Material* material, bool useBakedLighting);
 void SetupLighting();
+void SetupLightEnv(LightEnv& lightEnv, bool dynamicOnly);
 void PrepareForwardRendering();
 void PrepareUiRendering();
 

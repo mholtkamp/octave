@@ -61,6 +61,7 @@ struct StaticMeshUniformLocations
     int8_t mUvOffsetScale0 = -1;
     int8_t mUvOffsetScale1 = -1;
     int8_t mUvMaps = -1;
+    int8_t mColorParams = -1;
 };
 
 struct SkeletalMeshUniformLocations
@@ -92,6 +93,14 @@ struct TextUniformLocations
     int8_t mProjMtx = -1;
 };
 
+struct LightEnv
+{
+    C3D_LightEnv mLightEnv = {};
+    C3D_LightLutDA mLightAttenuationLuts[8] = {};
+    float mLightRadii[8] = {};
+    C3D_Light mLights[8] = {};
+};
+
 struct C3dContext
 {
     C3D_RenderTarget* mRenderTargetLeft = nullptr;
@@ -105,14 +114,12 @@ struct C3dContext
     DVLB_s* mShaderDvlbs[uint32_t(ShaderId::Count)] = {};
     shaderProgram_s mShaderPrograms[uint32_t(ShaderId::Count)] = {};
 
-    C3D_LightEnv mLightEnv = {};
+    LightEnv mLightEnv;
+    LightEnv mBakedLightEnv;
     C3D_LightEnv mNoLightEnv = {};
     C3D_LightLut mLightLut[NumShininessLevels] = {};
     C3D_LightLut mFresnelLut[NumFresnelPowerLevels] = {};
     C3D_LightLut mToonLut[NumToonLevels] = {};
-    C3D_LightLutDA mLightAttenuationLuts[8] = {};
-    float mLightRadii[8] = {};
-    C3D_Light mLights[8] = {};
 
     C3D_FogLut mFogLut = {};
     float mFogNear = 0.0f;

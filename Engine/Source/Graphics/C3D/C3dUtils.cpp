@@ -3,6 +3,7 @@
 #include "Graphics/C3D/C3dUtils.h"
 
 #include "Engine.h"
+#include "EngineTypes.h"
 #include "World.h"
 #include "Renderer.h"
 #include "Constants.h"
@@ -87,11 +88,13 @@ void BindVertexShader(ShaderId shaderId)
     }
 }
 
-void BindStaticMesh(StaticMesh* mesh)
+void BindStaticMesh(StaticMesh* mesh, const void* instanceColors)
 {
     // Bind shader program
     BindVertexShader(ShaderId::StaticMesh);
-    bool hasColor = mesh->HasVertexColor();
+    bool hasInstanceColors = (instanceColors != nullptr);
+    bool meshHasColors = mesh->HasVertexColor();
+    bool hasColor = hasInstanceColors || meshHasColors;
 
     // Setup vertex attributes
     C3D_AttrInfo* attrInfo = C3D_GetAttrInfo();
@@ -115,7 +118,15 @@ void BindStaticMesh(StaticMesh* mesh)
     BufInfo_Init(bufInfo);
     if (hasColor)
     {
-        BufInfo_Add(bufInfo, mesh->GetResource()->mVertexData, sizeof(VertexColor), 5, 0x43210);
+        if (hasInstanceColors)
+        {
+            BufInfo_Add(bufInfo, mesh->GetResource()->mVertexData, meshHasColors ? sizeof(VertexColor) : sizeof(Vertex), 4, 0x3210);
+            BufInfo_Add(bufInfo, instanceColors, sizeof(uint32_t), 1, 0x4);
+        }
+        else
+        {
+            BufInfo_Add(bufInfo, mesh->GetResource()->mVertexData, sizeof(VertexColor), 5, 0x43210);
+        }
     }
     else
     {
@@ -123,7 +134,7 @@ void BindStaticMesh(StaticMesh* mesh)
     }
 }
 
-void BindMaterial(Material* material)
+void BindMaterial(Material* material, bool useBakedLighting)
 {
     if (material != gC3dContext.mLastBoundMaterial)
     {
@@ -137,6 +148,9 @@ void BindMaterial(Material* material)
         float opacity = material->GetOpacity();
         bool depthless = material->IsDepthTestDisabled();
         bool alphaBlend = (blendMode == BlendMode::Additive || blendMode == BlendMode::Translucent);
+
+        //C3D_LightEnv* lightEnv = useBakedLighting ? &gC3dContext.mBakedLightEnv.mLightEnv : &gC3dContext.mLightEnv.mLightEnv;
+        C3D_LightEnv* lightEnv = &gC3dContext.mLightEnv.mLightEnv;
 
         glm::vec4 materialColor = glm::clamp(color, 0.0f, 1.0f);
         uint8_t matColor4[4] =
@@ -166,15 +180,15 @@ void BindMaterial(Material* material)
                 { 0.0f, 0.0f, 0.0f }, //emission
             };
 
-            C3D_LightEnvBind(&gC3dContext.mLightEnv);
-            C3D_LightEnvMaterial(&gC3dContext.mLightEnv, &c3dMaterial);
+            C3D_LightEnvBind(lightEnv);
+            C3D_LightEnvMaterial(lightEnv, &c3dMaterial);
         }
 
         if (shadingModel == ShadingModel::Toon)
         {
             uint32_t numSteps = material->GetToonSteps();
             uint32_t toonLevel = numSteps == 3 ? ToonLevel3 : ToonLevel2;
-            C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D1, GPU_LUTINPUT_LN, false, &gC3dContext.mToonLut[toonLevel]);
+            C3D_LightEnvLut(lightEnv, GPU_LUT_D1, GPU_LUTINPUT_LN, false, &gC3dContext.mToonLut[toonLevel]);
             specular = 0.0f;
         }
 
@@ -183,7 +197,7 @@ void BindMaterial(Material* material)
             // If we have a specular component, we need to choose the light lut that best matches its shininess.
             // Otherwise, just leave the light lut as it was since I think it's only used for specular light.
             uint32_t shininessLevel = CalculateShininessLevel(material->GetShininess());
-            C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D0, GPU_LUTINPUT_NH, false, &gC3dContext.mLightLut[shininessLevel]);
+            C3D_LightEnvLut(lightEnv, GPU_LUT_D0, GPU_LUTINPUT_NH, false, &gC3dContext.mLightLut[shininessLevel]);
         }
 
         bool fresnelEnabled = material->IsFresnelEnabled();
@@ -192,8 +206,8 @@ void BindMaterial(Material* material)
         if (fresnelEnabled)
         {
             uint32_t fresnelPowerLevel = CalculateFresnelPowerLevel(material->GetFresnelPower());
-            C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_FR, GPU_LUTINPUT_NV, false, &gC3dContext.mFresnelLut[fresnelPowerLevel]);
-            C3D_LightEnvFresnel(&gC3dContext.mLightEnv, GPU_PRI_ALPHA_FRESNEL);
+            C3D_LightEnvLut(lightEnv, GPU_LUT_FR, GPU_LUTINPUT_NV, false, &gC3dContext.mFresnelLut[fresnelPowerLevel]);
+            C3D_LightEnvFresnel(lightEnv, GPU_PRI_ALPHA_FRESNEL);
 
             glm::vec4 fresnelColorFloat = material->GetFresnelColor();
             fresnelColorFloat = glm::clamp(fresnelColorFloat, 0.0f, 1.0f);
@@ -205,7 +219,7 @@ void BindMaterial(Material* material)
         }
         else
         {
-            C3D_LightEnvFresnel(&gC3dContext.mLightEnv, GPU_NO_FRESNEL);
+            C3D_LightEnvFresnel(lightEnv, GPU_NO_FRESNEL);
         }
 
         // Diffuse is in Primary Fragment Color
@@ -344,9 +358,15 @@ void SetupLighting()
     // Create a null light environment?
     C3D_LightEnvInit(&gC3dContext.mNoLightEnv);
 
-    C3D_LightEnvInit(&gC3dContext.mLightEnv);
-    C3D_LightEnvBind(&gC3dContext.mLightEnv);
-    C3D_LightEnvLut(&gC3dContext.mLightEnv, GPU_LUT_D0, GPU_LUTINPUT_NH, false, &gC3dContext.mLightLut[Shininess32]);
+    SetupLightEnv(gC3dContext.mLightEnv, false);
+    SetupLightEnv(gC3dContext.mBakedLightEnv, true);
+}
+
+void SetupLightEnv(LightEnv& lightEnv, bool dynamicOnly)
+{
+    C3D_LightEnvInit(&lightEnv.mLightEnv);
+    C3D_LightEnvBind(&lightEnv.mLightEnv);
+    C3D_LightEnvLut(&lightEnv.mLightEnv, GPU_LUT_D0, GPU_LUTINPUT_NH, false, &gC3dContext.mLightLut[Shininess32]);
 
     CameraComponent* cameraComp = GetWorld()->GetActiveCamera();
     if (cameraComp == nullptr)
@@ -355,54 +375,54 @@ void SetupLighting()
     }
 
     uint32_t lightIndex = 0;
-    DirectionalLightComponent* dirLightComp = GetWorld()->GetDirectionalLight();
 
-    // Setup directional light
-    if (dirLightComp && dirLightComp->IsVisible())
-    {
-        glm::vec3 lightPosWS = -dirLightComp->GetDirection() * 10000.0f;
-        glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
-
-        C3D_FVec lightVec = FVec4_New(lightPosVS.x, lightPosVS.y, lightPosVS.z, 1.0f);
-        glm::vec4 lightColor = dirLightComp->GetColor();
-
-        C3D_Light& light = gC3dContext.mLights[0];
-        C3D_LightInit(&light, &gC3dContext.mLightEnv);
-        C3D_LightColor(&light, lightColor.r, lightColor.g, lightColor.b);
-        C3D_LightPosition(&light, &lightVec);
-        C3D_LightDistAttnEnable(&light, false);
-
-        lightIndex++;
-    }
-
-    // Setup point lights
+    // Setup lights
     const std::vector<LightData>& lightArray = Renderer::Get()->GetLightData();
 
     for (uint32_t i = 0; i < lightArray.size() && lightIndex < 8; ++i)
     {
         const LightData& lightData = lightArray[i];
-        C3D_Light& light = gC3dContext.mLights[lightIndex];
+
+        if (dynamicOnly && (lightData.mDomain != LightingDomain::Dynamic))
+        {
+            continue;
+        }
+
+        C3D_Light& light = lightEnv.mLights[lightIndex];
 
         glm::vec3 lightPosWS = lightData.mPosition;
+        if (lightData.mType == LightType::Directional)
+        {
+            lightPosWS = cameraComp->GetAbsolutePosition() + -lightData.mDirection * 10000.0f;
+        }
+
         glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
         float lightRadius = lightData.mRadius;
 
         glm::vec4 lightColor = lightData.mColor;
         C3D_FVec lightVec = FVec4_New(lightPosVS.x, lightPosVS.y, lightPosVS.z, 1.0f);
 
-        C3D_LightInit(&light, &gC3dContext.mLightEnv);
+        C3D_LightInit(&light, &lightEnv.mLightEnv);
         C3D_LightColor(&light, lightColor.r, lightColor.g, lightColor.b);
         C3D_LightPosition(&light, &lightVec);
-        C3D_LightDistAttnEnable(&light, true);
 
-        // Generate a new Lut if the light radius is different than last frame.
-        if (gC3dContext.mLightRadii[lightIndex] != lightRadius)
+        if (lightData.mType == LightType::Directional)
         {
-            gC3dContext.mLightRadii[lightIndex] = lightRadius;
-            LightLutDA_Create(&gC3dContext.mLightAttenuationLuts[lightIndex], LinearAttenFunc, 0.0f, lightRadius, lightRadius, 0.0f);
+            C3D_LightDistAttnEnable(&light, false);
         }
+        else
+        {
+            C3D_LightDistAttnEnable(&light, true);
 
-        C3D_LightDistAttn(&light, &gC3dContext.mLightAttenuationLuts[lightIndex]);
+            // Generate a new Lut if the light radius is different than last frame.
+            if (lightEnv.mLightRadii[lightIndex] != lightRadius)
+            {
+                lightEnv.mLightRadii[lightIndex] = lightRadius;
+                LightLutDA_Create(&lightEnv.mLightAttenuationLuts[lightIndex], LinearAttenFunc, 0.0f, lightRadius, lightRadius, 0.0f);
+            }
+
+            C3D_LightDistAttn(&light, &lightEnv.mLightAttenuationLuts[lightIndex]);
+        }
 
         lightIndex++;
     }
