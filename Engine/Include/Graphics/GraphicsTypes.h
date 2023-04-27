@@ -184,6 +184,8 @@ struct StaticMeshCompResource
     DescriptorSet* mDescriptorSet = nullptr;
     UniformBuffer* mUniformBuffer = nullptr;
     Buffer* mColorVertexBuffer = nullptr;
+#elif API_C3D
+    void* mColorVertexData = nullptr;
 #endif
 };
 
