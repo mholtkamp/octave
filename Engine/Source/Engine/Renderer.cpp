@@ -119,6 +119,10 @@ void Renderer::GatherProperties(std::vector<Property>& props)
     props.push_back(Property(DatumType::Integer, "Bake Indirect Iterations", nullptr, &mBakeIndirectIterations));
     props.push_back(Property(DatumType::Integer, "Bake Direct Diffusals", nullptr, &mBakeDiffuseDirectPasses));
     props.push_back(Property(DatumType::Integer, "Bake Indirect Diffusals", nullptr, &mBakeDiffuseIndirectPasses));
+    props.push_back(Property(DatumType::Color, "Sky Zenith Color", nullptr, &mSkyZenithColor));
+    props.push_back(Property(DatumType::Color, "Sky Horizon Color", nullptr, &mSkyHorizonColor));
+    props.push_back(Property(DatumType::Color, "Ground Color", nullptr, &mGroundColor));
+
 }
 
 TransformComponent* Renderer::ProcessHitCheck(World* world, int32_t x, int32_t y)
@@ -1279,5 +1283,20 @@ uint32_t Renderer::GetBakeDiffuseDirectPasses() const
 uint32_t Renderer::GetBakeDiffuseIndirectPasses() const
 {
     return mBakeDiffuseIndirectPasses;
+}
+
+glm::vec4 Renderer::GetSkyZenithColor() const
+{
+    return mSkyZenithColor;
+}
+
+glm::vec4 Renderer::GetSkyHorizonColor() const
+{
+    return mSkyHorizonColor;
+}
+
+glm::vec4 Renderer::GetGroundColor() const
+{
+    return mGroundColor;
 }
 

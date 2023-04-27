@@ -475,6 +475,9 @@ void RayTracer::PathTraceWorld()
         uniforms.mAccumulatedFrames = mAccumulatedFrames;
         uniforms.mShadowBias = 0.01f;
         uniforms.mBakeMeshIndex = -1;
+        uniforms.mSkyZenithColor = Renderer::Get()->GetSkyZenithColor();
+        uniforms.mSkyHorizonColor = Renderer::Get()->GetSkyHorizonColor();
+        uniforms.mGroundColor = Renderer::Get()->GetGroundColor();
         mRayTraceUniformBuffer->Update(&uniforms, sizeof(RayTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();
@@ -747,6 +750,9 @@ void RayTracer::DispatchNextLightBake()
         uniforms.mNumBakeTriangles = meshAsset->GetNumFaces();
         uniforms.mShadowBias = Renderer::Get()->GetBakeShadowBias();
         uniforms.mBakeMeshIndex = bakeMeshIndex;
+        uniforms.mSkyZenithColor = Renderer::Get()->GetSkyZenithColor();
+        uniforms.mSkyHorizonColor = Renderer::Get()->GetSkyHorizonColor();
+        uniforms.mGroundColor = Renderer::Get()->GetGroundColor();
         mRayTraceUniformBuffer->Update(&uniforms, sizeof(RayTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();
@@ -849,6 +855,9 @@ void RayTracer::DispatchNextBakeDiffuse()
         uniforms.mShadowBias = Renderer::Get()->GetBakeShadowBias();
         uniforms.mDiffuseDirect = (mAccumulatedFrames < Renderer::Get()->GetBakeDiffuseDirectPasses());
         uniforms.mDiffuseIndirect = (mAccumulatedFrames < Renderer::Get()->GetBakeDiffuseIndirectPasses());
+        uniforms.mSkyZenithColor = Renderer::Get()->GetSkyZenithColor();
+        uniforms.mSkyHorizonColor = Renderer::Get()->GetSkyHorizonColor();
+        uniforms.mGroundColor = Renderer::Get()->GetGroundColor();
         mRayTraceUniformBuffer->Update(&uniforms, sizeof(RayTraceUniforms));
 
         VkCommandBuffer cb = GetCommandBuffer();

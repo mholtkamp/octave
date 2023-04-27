@@ -157,9 +157,9 @@ bool RayOverlapsSphere(Ray ray, vec3 sphereCenter, float sphereRadius)
 
 vec3 GetEnvironmentLight(Ray ray)
 {
-    const vec3 kSkyHorizonColor = vec3(0.5, 0.5, 0.8);
-    const vec3 kSkyZenithColor = vec3(0.0, 0.2, 0.6);
-    const vec3 kGroundColor = vec3(0.3, 0.35, 0.32);
+    const vec3 kSkyHorizonColor = rayTrace.mSkyHorizonColor.rgb;
+    const vec3 kSkyZenithColor = rayTrace.mSkyZenithColor.rgb;
+    const vec3 kGroundColor = rayTrace.mGroundColor.rgb;
 
     float skyAlpha = pow(smoothstep(0, 0.4, ray.mDirection.y), 0.35);
     vec3 skyColor = mix(kSkyHorizonColor, kSkyZenithColor, skyAlpha);

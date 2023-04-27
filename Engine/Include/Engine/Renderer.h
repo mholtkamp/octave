@@ -112,6 +112,9 @@ public:
     uint32_t GetBakeIndirectIterations() const;
     uint32_t GetBakeDiffuseDirectPasses() const;
     uint32_t GetBakeDiffuseIndirectPasses() const;
+    glm::vec4 GetSkyZenithColor() const;
+    glm::vec4 GetSkyHorizonColor() const;
+    glm::vec4 GetGroundColor() const;
 
     // Default Textures
     TextureRef mWhiteTexture;
@@ -201,6 +204,9 @@ private:
     uint32_t mRaysPerPixel = 4;
     uint32_t mMaxBounces = 4;
     bool mPathTraceAccumulate = true;
+    glm::vec4 mSkyZenithColor = { 0.0f, 0.2f, 0.6f, 1.0f };
+    glm::vec4 mSkyHorizonColor = { 0.5f, 0.5f, 0.8f, 1.0f };
+    glm::vec4 mGroundColor = { 0.3f, 0.35f, 0.32f, 1.0f };
 
     // Light Bake
     uint32_t mBakeRaysPerVertex = 4;

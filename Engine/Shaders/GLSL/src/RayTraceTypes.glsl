@@ -97,6 +97,10 @@ struct RayTraceUniforms
     uint mDiffuseDirect;
     uint mDiffuseIndirect;
     int mBakeMeshIndex;
+
+    vec4 mSkyZenithColor;
+    vec4 mSkyHorizonColor;
+    vec4 mGroundColor;
 };
 
 struct HitInfo
