@@ -167,6 +167,7 @@ void BindMaterial(Material* material, bool useBakedLighting)
             shadingModel == ShadingModel::Toon)
         {
             glm::vec4 ambientColor = GetWorld()->GetAmbientLightColor();
+            ambientColor /= C3D_DYNAMIC_LIGHT_SCALE;
             bool toon = (shadingModel == ShadingModel::Toon);
             specular = toon ? 0.0f : material->GetSpecular();
             float specular1 = toon ? 1.0f : 0.0f;
@@ -250,30 +251,37 @@ void BindMaterial(Material* material, bool useBakedLighting)
             }
         }
 
+        bool unlit = (shadingModel == ShadingModel::Unlit);
+
         GPU_TEVSRC lightSrc = GPU_PRIMARY_COLOR;
         if (shadingModel == ShadingModel::Toon)
             lightSrc = GPU_FRAGMENT_SECONDARY_COLOR;
         else if (shadingModel == ShadingModel::Lit)
             lightSrc = GPU_FRAGMENT_PRIMARY_COLOR;
 
-        if (useBakedLighting)
-        {
-            lightSrc = GPU_PRIMARY_COLOR;
-        }
-
         env = C3D_GetTexEnv(tevIdx);
         C3D_TexEnvInit(env);
-        C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, lightSrc, GPU_PRIMARY_COLOR);
-        C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
+        
+        if (useBakedLighting && !unlit)
+        {
+            C3D_TexEnvSrc(env, C3D_RGB, GPU_PRIMARY_COLOR, lightSrc, GPU_PREVIOUS);
+            C3D_TexEnvFunc(env, C3D_RGB, GPU_ADD_MULTIPLY);
+        }
+        else
+        {
+            C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, useBakedLighting ? GPU_PRIMARY_COLOR : lightSrc, GPU_PRIMARY_COLOR);
+            C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
+        }
+
         C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
         C3D_TexEnvFunc(env, C3D_Alpha, alphaBlend ? GPU_MODULATE : GPU_REPLACE);
 
-        if (useBakedLighting)
+        if (!unlit || useBakedLighting)
         {
             C3D_TexEnvScale(env, C3D_RGB, GPU_TEVSCALE_4);
         }
 
-        if (vertexColorBlend && shadingModel == ShadingModel::Unlit)
+        if (vertexColorBlend && unlit)
         {
             C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_ALPHA, GPU_TEVOP_RGB_SRC_COLOR);
         }
@@ -410,7 +418,8 @@ void SetupLightEnv(LightEnv& lightEnv, bool dynamicOnly)
         glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
         float lightRadius = lightData.mRadius;
 
-        glm::vec4 lightColor = lightData.mColor;
+        glm::vec4 lightColor = lightData.mColor / C3D_DYNAMIC_LIGHT_SCALE;
+
         C3D_FVec lightVec = FVec4_New(lightPosVS.x, lightPosVS.y, lightPosVS.z, 1.0f);
 
         C3D_LightInit(&light, &lightEnv.mLightEnv);
