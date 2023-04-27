@@ -187,6 +187,46 @@ int Material_Lua::SetFresnelPower(lua_State* L)
     return 0;
 }
 
+int Material_Lua::GetEmission(lua_State* L)
+{
+    Material* mat = CHECK_MATERIAL(L, 1);
+
+    float ret = mat->GetEmission();
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
+int Material_Lua::SetEmission(lua_State* L)
+{
+    Material* mat = CHECK_MATERIAL(L, 1);
+    float value = CHECK_NUMBER(L, 2);
+
+    mat->SetEmission(value);
+
+    return 0;
+}
+
+int Material_Lua::GetWrapLighting(lua_State* L)
+{
+    Material* mat = CHECK_MATERIAL(L, 1);
+
+    float ret = mat->GetWrapLighting();
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
+int Material_Lua::SetWrapLighting(lua_State* L)
+{
+    Material* mat = CHECK_MATERIAL(L, 1);
+    float value = CHECK_NUMBER(L, 2);
+
+    mat->SetWrapLighting(value);
+
+    return 0;
+}
+
 int Material_Lua::GetSpecular(lua_State* L)
 {
     Material* mat = CHECK_MATERIAL(L, 1);
@@ -391,6 +431,18 @@ void Material_Lua::Bind()
 
     lua_pushcfunction(L, SetFresnelPower);
     lua_setfield(L, mtIndex, "SetFresnelPower");
+
+    lua_pushcfunction(L, GetEmission);
+    lua_setfield(L, mtIndex, "GetEmission");
+
+    lua_pushcfunction(L, SetEmission);
+    lua_setfield(L, mtIndex, "SetEmission");
+
+    lua_pushcfunction(L, GetWrapLighting);
+    lua_setfield(L, mtIndex, "GetWrapLighting");
+
+    lua_pushcfunction(L, SetWrapLighting);
+    lua_setfield(L, mtIndex, "SetWrapLighting");
 
     lua_pushcfunction(L, GetSpecular);
     lua_setfield(L, mtIndex, "GetSpecular");

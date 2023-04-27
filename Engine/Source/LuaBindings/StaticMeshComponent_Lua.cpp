@@ -50,6 +50,16 @@ int StaticMeshComponent_Lua::GetUseTriangleCollision(lua_State* L)
     return 1;
 }
 
+int StaticMeshComponent_Lua::GetBakeLighting(lua_State* L)
+{
+    StaticMeshComponent* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
+
+    bool ret = comp->GetBakeLighting();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 void StaticMeshComponent_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -71,6 +81,9 @@ void StaticMeshComponent_Lua::Bind()
 
     lua_pushcfunction(L, GetUseTriangleCollision);
     lua_setfield(L, mtIndex, "GetUseTriangleCollision");
+
+    lua_pushcfunction(L, GetBakeLighting);
+    lua_setfield(L, mtIndex, "GetBakeLighting");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);
