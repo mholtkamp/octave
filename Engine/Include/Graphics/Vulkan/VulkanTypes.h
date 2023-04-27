@@ -67,6 +67,10 @@ struct RayTraceUniforms
     uint32_t mDiffuseDirect;
     uint32_t mDiffuseIndirect;
     int32_t mBakeMeshIndex;
+
+    glm::vec4 mSkyZenithColor;
+    glm::vec4 mSkyHorizonColor;
+    glm::vec4 mGroundColor;
 };
 
 struct GeometryData
