@@ -678,12 +678,8 @@ void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* mes
         const void* instanceColors = nullptr;
         if (useBakedLighting)
         {
-            const std::vector<uint32_t>& colVec = staticMeshComp->GetInstanceColors();
-            if (colVec.size() == mesh->GetNumVertices() &&
-                meshCompResource->mColorVertexData != nullptr)
-            {
-                instanceColors = meshCompResource->mColorVertexData;
-            }
+            OCT_ASSERT(meshCompResource->mColorVertexData != nullptr);
+            instanceColors = meshCompResource->mColorVertexData;
         }
 
         BindStaticMesh(mesh, instanceColors);

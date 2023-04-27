@@ -256,6 +256,11 @@ void BindMaterial(Material* material, bool useBakedLighting)
         else if (shadingModel == ShadingModel::Lit)
             lightSrc = GPU_FRAGMENT_PRIMARY_COLOR;
 
+        if (useBakedLighting)
+        {
+            lightSrc = GPU_PRIMARY_COLOR;
+        }
+
         env = C3D_GetTexEnv(tevIdx);
         C3D_TexEnvInit(env);
         C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, lightSrc, GPU_PRIMARY_COLOR);
