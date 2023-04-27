@@ -129,6 +129,8 @@ void Material::LoadStream(Stream& stream, Platform platform)
     mParams.mColor = stream.ReadVec4();
     mParams.mFresnelColor = stream.ReadVec4();
     mParams.mFresnelPower = stream.ReadFloat();
+    //mParams.mEmission = stream.ReadFloat();
+    //mParams.mWrapLighting = stream.ReadFloat();
     mParams.mSpecular = stream.ReadFloat();
     mParams.mToonSteps = stream.ReadUint32();
     mParams.mOpacity = stream.ReadFloat();
@@ -164,6 +166,8 @@ void Material::SaveStream(Stream& stream, Platform platform)
     stream.WriteVec4(mParams.mColor);
     stream.WriteVec4(mParams.mFresnelColor);
     stream.WriteFloat(mParams.mFresnelPower);
+    stream.WriteFloat(mParams.mEmission);
+    stream.WriteFloat(mParams.mWrapLighting);
     stream.WriteFloat(mParams.mSpecular);
     stream.WriteUint32(mParams.mToonSteps);
     stream.WriteFloat(mParams.mOpacity);
