@@ -65,6 +65,16 @@ int LightComponent_Lua::ShouldCastShadows(lua_State* L)
     return 1;
 }
 
+int LightComponent_Lua::GetDomain(lua_State* L)
+{
+    LightComponent* comp = CHECK_LIGHT_COMPONENT(L, 2);
+
+    int32_t ret = (int32_t)comp->GetLightingDomain();
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+
 void LightComponent_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -92,6 +102,9 @@ void LightComponent_Lua::Bind()
 
     lua_pushcfunction(L, ShouldCastShadows);
     lua_setfield(L, mtIndex, "ShouldCastShadows");
+
+    lua_pushcfunction(L, GetDomain);
+    lua_setfield(L, mtIndex, "GetDomain");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

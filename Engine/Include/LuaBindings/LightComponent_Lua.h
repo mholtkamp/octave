@@ -23,6 +23,7 @@ struct LightComponent_Lua
     static int GetIntensity(lua_State* L);
     static int SetCastShadows(lua_State* L);
     static int ShouldCastShadows(lua_State* L);
+    static int GetDomain(lua_State* L);
 
     static void Bind();
 };

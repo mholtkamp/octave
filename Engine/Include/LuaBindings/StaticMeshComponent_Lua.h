@@ -23,6 +23,8 @@ struct StaticMeshComponent_Lua
     static int SetUseTriangleCollision(lua_State* L);
     static int GetUseTriangleCollision(lua_State* L);
 
+    static int GetBakeLighting(lua_State* L);
+
     static void Bind();
 };
 
