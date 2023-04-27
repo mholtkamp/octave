@@ -129,8 +129,8 @@ void Material::LoadStream(Stream& stream, Platform platform)
     mParams.mColor = stream.ReadVec4();
     mParams.mFresnelColor = stream.ReadVec4();
     mParams.mFresnelPower = stream.ReadFloat();
-    //mParams.mEmission = stream.ReadFloat();
-    //mParams.mWrapLighting = stream.ReadFloat();
+    mParams.mEmission = stream.ReadFloat();
+    mParams.mWrapLighting = stream.ReadFloat();
     mParams.mSpecular = stream.ReadFloat();
     mParams.mToonSteps = stream.ReadUint32();
     mParams.mOpacity = stream.ReadFloat();
