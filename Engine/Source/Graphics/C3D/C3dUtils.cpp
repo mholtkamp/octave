@@ -149,8 +149,7 @@ void BindMaterial(Material* material, bool useBakedLighting)
         bool depthless = material->IsDepthTestDisabled();
         bool alphaBlend = (blendMode == BlendMode::Additive || blendMode == BlendMode::Translucent);
 
-        //C3D_LightEnv* lightEnv = useBakedLighting ? &gC3dContext.mBakedLightEnv.mLightEnv : &gC3dContext.mLightEnv.mLightEnv;
-        C3D_LightEnv* lightEnv = &gC3dContext.mLightEnv.mLightEnv;
+        C3D_LightEnv* lightEnv = useBakedLighting ? &gC3dContext.mBakedLightEnv.mLightEnv : &gC3dContext.mLightEnv.mLightEnv;
 
         glm::vec4 materialColor = glm::clamp(color, 0.0f, 1.0f);
         uint8_t matColor4[4] =
@@ -378,7 +377,7 @@ void SetupLighting()
     C3D_LightEnvInit(&gC3dContext.mNoLightEnv);
 
     SetupLightEnv(gC3dContext.mLightEnv, false);
-    //SetupLightEnv(gC3dContext.mBakedLightEnv, true);
+    SetupLightEnv(gC3dContext.mBakedLightEnv, true);
 }
 
 void SetupLightEnv(LightEnv& lightEnv, bool dynamicOnly)
