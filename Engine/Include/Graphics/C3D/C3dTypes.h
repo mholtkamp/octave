@@ -61,7 +61,6 @@ struct StaticMeshUniformLocations
     int8_t mUvOffsetScale0 = -1;
     int8_t mUvOffsetScale1 = -1;
     int8_t mUvMaps = -1;
-    int8_t mColorParams = -1;
 };
 
 struct SkeletalMeshUniformLocations
