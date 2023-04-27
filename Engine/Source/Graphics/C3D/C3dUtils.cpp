@@ -378,7 +378,7 @@ void SetupLighting()
     C3D_LightEnvInit(&gC3dContext.mNoLightEnv);
 
     SetupLightEnv(gC3dContext.mLightEnv, false);
-    SetupLightEnv(gC3dContext.mBakedLightEnv, true);
+    //SetupLightEnv(gC3dContext.mBakedLightEnv, true);
 }
 
 void SetupLightEnv(LightEnv& lightEnv, bool dynamicOnly)
@@ -445,6 +445,16 @@ void SetupLightEnv(LightEnv& lightEnv, bool dynamicOnly)
         }
 
         lightIndex++;
+    }
+
+    if (lightIndex == 0)
+    {
+        // I'm seeing weird results when using fragment lighting if there are no defined lights.
+        // So try just making a black light that has no effect on the scene.
+        C3D_Light& light = lightEnv.mLights[lightIndex];
+        C3D_LightInit(&light, &lightEnv.mLightEnv);
+        C3D_LightColor(&light, 0.0f, 0.0f, 0.0f);
+        C3D_LightDistAttnEnable(&light, false);
     }
 }
 
