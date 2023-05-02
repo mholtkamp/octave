@@ -6,12 +6,25 @@
 
 int TimerManager_Lua::SetTimer(lua_State* L)
 {
-    const char* tableName = CheckTableName(L, 1);
-    const char* funcName = CHECK_STRING(L, 2);
-    float time = CHECK_NUMBER(L, 3);
-    bool loop = lua_isboolean(L, 4) ? lua_toboolean(L, 4) : false;
+    int32_t id = 0;
 
-    int32_t id = GetTimerManager()->SetTimer(tableName, funcName, time, loop);
+    if (lua_isfunction(L, 1))
+    {
+        ScriptFunc scriptFunc(L, 1);
+        float time = CHECK_NUMBER(L, 2);
+        bool loop = lua_isboolean(L, 3) ? lua_toboolean(L, 3) : false;
+
+        id = GetTimerManager()->SetTimer(scriptFunc, time, loop);
+    }
+    else
+    {
+        const char* tableName = CheckTableName(L, 1);
+        const char* funcName = CHECK_STRING(L, 2);
+        float time = CHECK_NUMBER(L, 3);
+        bool loop = lua_isboolean(L, 4) ? lua_toboolean(L, 4) : false;
+
+        id = GetTimerManager()->SetTimer(tableName, funcName, time, loop);
+    }
 
     lua_pushinteger(L, id);
     return 1;

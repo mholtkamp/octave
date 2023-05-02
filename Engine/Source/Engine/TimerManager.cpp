@@ -98,6 +98,14 @@ void TimerManager::Update(float deltaTime)
             }
             break;
         }
+        case TimerType::ScriptFunc:
+        {
+            if (timer->mScriptFunc.IsValid())
+            {
+                timer->mScriptFunc.Call();
+            }
+            break;
+        }
         default:
             OCT_ASSERT(0);
             break;
@@ -172,6 +180,21 @@ int32_t TimerManager::SetTimer(const char* tableName, const char* funcName, floa
     return id;
 }
 
+int32_t TimerManager::SetTimer(ScriptFunc scriptFunc, float time, bool loop)
+{
+    int32_t id = mNextTimerId++;
+
+    TimerData timerData;
+    timerData.mId = id;
+    timerData.mType = TimerType::ScriptFunc;
+    timerData.mScriptFunc = scriptFunc;
+    timerData.mDuration = time;
+    timerData.mLoop = loop;
+    timerData.mTimeRemaining = time;
+    mTimerData.push_back(timerData);
+
+    return id;
+}
 
 void TimerManager::ClearAllTimers()
 {

@@ -17,6 +17,7 @@ enum class TimerType
     Pointer,
     Actor,
     Script,
+    ScriptFunc,
 
     Count
 };
@@ -29,6 +30,7 @@ struct TimerData
     ActorRef mActor;
     std::string mScriptTableName;
     std::string mScriptFuncName;
+    ScriptFunc mScriptFunc;
 
     int32_t mId = -1;
     void* mHandler = nullptr;
@@ -50,6 +52,7 @@ public:
     int32_t SetTimer(void* vp, PointerTimerHandlerFP handler, float time, bool loop = false);
     int32_t SetTimer(Actor* actor, ActorTimerHandlerFP handler, float time, bool loop = false);
     int32_t SetTimer(const char* tableName, const char* funcName, float time, bool loop = false);
+    int32_t SetTimer(ScriptFunc scriptFunc, float time, bool loop = false);
 
     void ClearAllTimers();
     void ClearTimer(int32_t id);
