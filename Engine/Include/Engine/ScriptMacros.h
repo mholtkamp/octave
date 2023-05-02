@@ -37,6 +37,7 @@
 #define SrAsset (Asset*)
 #define SrWidget (Widget*)
 #define SrInt (int32_t)
+#define SrIndex 1 + 
 
 #define SCRIPT_FUNC_X_1(ClassName, FuncName, P0)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
