@@ -920,7 +920,7 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
             mesh->CopyBindPose(mBoneMatrices);
         }
 
-        bool firstWeightAnim = true;
+        bool bonesUpdated = false;
 
         for (int32_t i = 0; i < (int32_t)mActiveAnimations.size(); ++i)
         {
@@ -986,17 +986,18 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
                                     glm::quat rotation = InterpolateRotation(tickTime, anim->mChannels[i]);
                                     glm::vec3 position = InterpolatePosition(tickTime, anim->mChannels[i]);
 
-                                    if (firstWeightAnim)
-                                    {
-                                        sDecompTransforms[boneIndex].mPosition = position;
-                                        sDecompTransforms[boneIndex].mRotation = rotation;
-                                        sDecompTransforms[boneIndex].mScale = scale;
-                                    }
-                                    else
+                                    if (bonesUpdated)
                                     {
                                         sDecompTransforms[boneIndex].mPosition = glm::mix(sDecompTransforms[boneIndex].mPosition, position, weight);
                                         sDecompTransforms[boneIndex].mRotation = glm::slerp(sDecompTransforms[boneIndex].mRotation, rotation, weight);
                                         sDecompTransforms[boneIndex].mScale = glm::mix(sDecompTransforms[boneIndex].mScale, scale, weight);
+                                    }
+                                    else
+                                    {
+                                        // First animation doesn't need lerps.
+                                        sDecompTransforms[boneIndex].mPosition = position;
+                                        sDecompTransforms[boneIndex].mRotation = rotation;
+                                        sDecompTransforms[boneIndex].mScale = scale;
                                     }
                                 }
                             }
@@ -1007,7 +1008,7 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
                             DetectTriggeredAnimEvents(*anim, prevTickTime, tickTime, animationSpeed, sAnimEvents);
                         }
 
-                        firstWeightAnim = false;
+                        bonesUpdated = true;
                     }
                 }
             }
@@ -1044,16 +1045,21 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
 
         if (updateBones)
         {
-            // Create matrices from lerped pos/rot/scale
-            for (uint32_t i = 0; i < numBones; ++i)
+            // Unless no animations were computed, create bone matrices for all the bones
+            // from the decomposed parts (position / rotation / scale);
+            if (bonesUpdated)
             {
-                glm::mat4& transform = mBoneMatrices[i];
+                // Create matrices from lerped pos/rot/scale
+                for (uint32_t i = 0; i < numBones; ++i)
+                {
+                    glm::mat4& transform = mBoneMatrices[i];
 
-                transform = glm::mat4(1.0f);
+                    transform = glm::mat4(1.0f);
 
-                transform = glm::translate(transform, sDecompTransforms[i].mPosition);
-                transform *= glm::toMat4(sDecompTransforms[i].mRotation);
-                transform = glm::scale(transform, sDecompTransforms[i].mScale);
+                    transform = glm::translate(transform, sDecompTransforms[i].mPosition);
+                    transform *= glm::toMat4(sDecompTransforms[i].mRotation);
+                    transform = glm::scale(transform, sDecompTransforms[i].mScale);
+                }
             }
 
             mesh->FinalizeBoneTransforms(mBoneMatrices);
