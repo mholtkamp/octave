@@ -29,6 +29,13 @@ static_assert(int32_t(AnimationUpdateMode::Count) == 3, "Need to update string c
 FORCE_LINK_DEF(SkeletalMeshComponent);
 DEFINE_COMPONENT(SkeletalMeshComponent);
 
+struct DecompTransform
+{
+    glm::vec3 mPosition = { 0.0f, 0.0f, 0.0f };
+    glm::quat mRotation = { 0.0f, 0.0f, 0.0f, 1.0f };
+    glm::vec3 mScale = { 1.0f, 1.0f, 1.0f };
+};
+
 bool SkeletalMeshComponent::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
@@ -859,8 +866,10 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
     if (mHasAnimatedThisFrame)
         return;
 
+    static std::vector<DecompTransform> sDecompTransforms;
     static std::vector<AnimEvent> sAnimEvents;
     sAnimEvents.clear();
+    sDecompTransforms.clear();
 
     SkeletalMesh* mesh = mSkeletalMesh.Get<SkeletalMesh>();
 
@@ -903,10 +912,15 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
         !inheritPose && 
         (mActiveAnimations.size() > 0 || mRevertToBindPose))
     {
+        uint32_t numBones = GetNumBones();
+        sDecompTransforms.resize(numBones);
+
         if (updateBones)
         {
             mesh->CopyBindPose(mBoneMatrices);
         }
+
+        bool firstWeightAnim = true;
 
         for (int32_t i = 0; i < (int32_t)mActiveAnimations.size(); ++i)
         {
@@ -972,13 +986,18 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
                                     glm::quat rotation = InterpolateRotation(tickTime, anim->mChannels[i]);
                                     glm::vec3 position = InterpolatePosition(tickTime, anim->mChannels[i]);
 
-                                    glm::mat4 transform = glm::mat4(1.0f);
-
-                                    transform = glm::translate(transform, position);
-                                    transform *= glm::toMat4(rotation);
-                                    transform = glm::scale(transform, scale);
-
-                                    mBoneMatrices[boneIndex] = (weight * transform) + ((1.0f - weight) * mBoneMatrices[boneIndex]);
+                                    if (firstWeightAnim)
+                                    {
+                                        sDecompTransforms[boneIndex].mPosition = position;
+                                        sDecompTransforms[boneIndex].mRotation = rotation;
+                                        sDecompTransforms[boneIndex].mScale = scale;
+                                    }
+                                    else
+                                    {
+                                        sDecompTransforms[boneIndex].mPosition = glm::mix(sDecompTransforms[boneIndex].mPosition, position, weight);
+                                        sDecompTransforms[boneIndex].mRotation = glm::slerp(sDecompTransforms[boneIndex].mRotation, rotation, weight);
+                                        sDecompTransforms[boneIndex].mScale = glm::mix(sDecompTransforms[boneIndex].mScale, scale, weight);
+                                    }
                                 }
                             }
                         }
@@ -987,6 +1006,8 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
                         {
                             DetectTriggeredAnimEvents(*anim, prevTickTime, tickTime, animationSpeed, sAnimEvents);
                         }
+
+                        firstWeightAnim = false;
                     }
                 }
             }
@@ -1023,6 +1044,18 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
 
         if (updateBones)
         {
+            // Create matrices from lerped pos/rot/scale
+            for (uint32_t i = 0; i < numBones; ++i)
+            {
+                glm::mat4& transform = mBoneMatrices[i];
+
+                transform = glm::mat4(1.0f);
+
+                transform = glm::translate(transform, sDecompTransforms[i].mPosition);
+                transform *= glm::toMat4(sDecompTransforms[i].mRotation);
+                transform = glm::scale(transform, sDecompTransforms[i].mScale);
+            }
+
             mesh->FinalizeBoneTransforms(mBoneMatrices);
 
             if (GFX_IsCpuSkinningRequired(this))
