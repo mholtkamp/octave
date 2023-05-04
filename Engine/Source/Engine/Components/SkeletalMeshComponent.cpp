@@ -80,6 +80,7 @@ SkeletalMeshComponent::SkeletalMeshComponent() :
 {
     mName = "Skeletal Mesh";
     mCollisionEnabled = false;
+    mReceiveSimpleShadows = false;
 }
 
 SkeletalMeshComponent::~SkeletalMeshComponent()
