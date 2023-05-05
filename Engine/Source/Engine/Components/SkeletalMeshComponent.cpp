@@ -34,6 +34,7 @@ struct DecompTransform
     glm::vec3 mPosition = { 0.0f, 0.0f, 0.0f };
     glm::quat mRotation = { 0.0f, 0.0f, 0.0f, 1.0f };
     glm::vec3 mScale = { 1.0f, 1.0f, 1.0f };
+    bool mValid = false;
 };
 
 bool SkeletalMeshComponent::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
@@ -1000,6 +1001,8 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
                                         sDecompTransforms[boneIndex].mRotation = rotation;
                                         sDecompTransforms[boneIndex].mScale = scale;
                                     }
+
+                                    sDecompTransforms[boneIndex].mValid = true;
                                 }
                             }
                         }
@@ -1053,13 +1056,16 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
                 // Create matrices from lerped pos/rot/scale
                 for (uint32_t i = 0; i < numBones; ++i)
                 {
-                    glm::mat4& transform = mBoneMatrices[i];
+                    if (sDecompTransforms[i].mValid)
+                    {
+                        glm::mat4& transform = mBoneMatrices[i];
 
-                    transform = glm::mat4(1.0f);
+                        transform = glm::mat4(1.0f);
 
-                    transform = glm::translate(transform, sDecompTransforms[i].mPosition);
-                    transform *= glm::toMat4(sDecompTransforms[i].mRotation);
-                    transform = glm::scale(transform, sDecompTransforms[i].mScale);
+                        transform = glm::translate(transform, sDecompTransforms[i].mPosition);
+                        transform *= glm::toMat4(sDecompTransforms[i].mRotation);
+                        transform = glm::scale(transform, sDecompTransforms[i].mScale);
+                    }
                 }
             }
 
