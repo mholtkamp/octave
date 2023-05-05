@@ -134,7 +134,7 @@ void main()
             outColor = vec4(0, 0, 0, 1);
         }
 
-        vec4 totalLight = global.mAmbientLightColor;
+        vec4 totalLight = hasBakedLighting ? vec4(0, 0, 0, 1) : global.mAmbientLightColor;
 
         uint numLights = geometry.mNumLights;
 

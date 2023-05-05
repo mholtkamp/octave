@@ -30,19 +30,6 @@ void SetupLights()
 
     gGxContext.mLighting.mLightMask = 0;
 
-    glm::vec4 ambientColor = GetWorld()->GetAmbientLightColor();
-    ambientColor = glm::clamp(ambientColor / GX_DYNAMIC_LIGHT_SCALE, 0.0f, 1.0f);
-    ambientColor.a = 1.0f;
-    GX_SetChanAmbColor(GX_COLOR0A0, { uint8_t(ambientColor.r * 255.0f),
-                                      uint8_t(ambientColor.g * 255.0f),
-                                      uint8_t(ambientColor.b * 255.0f),
-                                      uint8_t(ambientColor.a * 255.0f) });
-
-    GX_SetChanAmbColor(GX_COLOR1A1, { uint8_t(ambientColor.r * 255.0f),
-                                      uint8_t(ambientColor.g * 255.0f),
-                                      uint8_t(ambientColor.b * 255.0f),
-                                      uint8_t(ambientColor.a * 255.0f) });
-
     // Setup lights
     const std::vector<LightData>& lightArray = Renderer::Get()->GetLightData();
 
@@ -302,6 +289,14 @@ void BindMaterial(Material* material, bool useVertexColor, bool useBakedLighting
                                         uint8_t(materialColor.g * 255.0f),
                                         uint8_t(materialColor.b * 255.0f),
                                         uint8_t(opacity * 255.f) });
+
+    glm::vec4 ambientColor = useBakedLighting ? glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) : GetWorld()->GetAmbientLightColor();
+    ambientColor = glm::clamp(ambientColor / GX_DYNAMIC_LIGHT_SCALE, 0.0f, 1.0f);
+    ambientColor.a = 1.0f;
+    GX_SetChanAmbColor(matColorChannel, { uint8_t(ambientColor.r * 255.0f),
+                                      uint8_t(ambientColor.g * 255.0f),
+                                      uint8_t(ambientColor.b * 255.0f),
+                                      uint8_t(ambientColor.a * 255.0f) });
 
     // If adjusting GX_DYNAMIC_LIGHT_SCALE, need to update GX_CS_SCALE_4 below.
     GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, matColorChannel);

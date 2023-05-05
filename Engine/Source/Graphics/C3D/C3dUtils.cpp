@@ -165,7 +165,7 @@ void BindMaterial(Material* material, bool useBakedLighting)
         if (shadingModel == ShadingModel::Lit ||
             shadingModel == ShadingModel::Toon)
         {
-            glm::vec4 ambientColor = GetWorld()->GetAmbientLightColor();
+            glm::vec4 ambientColor = useBakedLighting ? glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) : GetWorld()->GetAmbientLightColor();
             ambientColor /= C3D_DYNAMIC_LIGHT_SCALE;
             bool toon = (shadingModel == ShadingModel::Toon);
             specular = toon ? 0.0f : material->GetSpecular();
