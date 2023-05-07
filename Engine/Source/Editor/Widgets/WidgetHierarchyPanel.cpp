@@ -128,6 +128,15 @@ void WidgetHierarchyPanel::ActionHandler(Button* button)
             SetRootWidgetAction(sActionWidget);
         }
     }
+    else if (buttonText == "Unlink Map")
+    {
+        if (sActionWidget != nullptr &&
+            sActionWidget->GetWidgetMap() != nullptr)
+        {
+            sActionWidget->SetWidgetMap(nullptr);
+            hierPanel->RefreshButtons();
+        }
+    }
     else if (buttonText == "Rename")
     {
         const char* defaultText = sActionWidget ?
@@ -426,6 +435,10 @@ void WidgetHierarchyPanel::HandleInput()
                 {
                     actions.push_back("Attach Selected");
                     actions.push_back("Set Root Widget");
+                }
+                else
+                {
+                    actions.push_back("Unlink Map");
                 }
 
                 actions.push_back("Rename");
