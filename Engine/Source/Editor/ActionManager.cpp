@@ -1333,6 +1333,8 @@ static void SpawnNode(aiNode* node, const glm::mat4& parentTransform, const std:
             newActor->GetStaticMeshComponent()->SetUseTriangleCollision(meshList[meshIndex]->IsTriangleCollisionMeshEnabled());
             newActor->GetRootComponent()->SetTransform(transform);
             newActor->SetName(/*options.mPrefix + */node->mName.C_Str());
+            newActor->GetStaticMeshComponent()->EnableCastShadows(true);
+            newActor->GetStaticMeshComponent()->SetBakeLighting(true);
             newActor->AddTag("Scene");
         }
     }
@@ -1538,8 +1540,6 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
             // Create static mesh assets (assign corresponding material)
             uint32_t numMeshes = scene->mNumMeshes;
-            std::string prevMeshName = "";
-            uint32_t matIndex = 0;
 
             for (uint32_t i = 0; i < numMeshes; ++i)
             {
@@ -1551,20 +1551,19 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                     meshName = std::string("SM_") + meshName;
                 }
 
-                // Does the mesh have multiple materials?
-                if (prevMeshName == meshName)
+                // Ensure unique name (this normally happens when model has multiple materials).
+                std::string uniqueName = meshName;
+                int32_t uniqueNum = 1;
+                for (int32_t u = 0; u < (int32_t)meshList.size(); ++u)
                 {
-                    ++matIndex;
-
-                    char matSpec[16] = {};
-                    snprintf(matSpec, 16, "_Mat_%d", matIndex);
-
-                    meshName += matSpec;
+                    if (meshList[u]->GetName() == uniqueName)
+                    {
+                        uniqueName = meshName + "_" + std::to_string(uniqueNum);
+                        uniqueNum++;
+                        u = -1;
+                    }
                 }
-                else
-                {
-                    matIndex = 0;
-                }
+                meshName = uniqueName;
 
                 StaticMesh* existingMesh = LoadAsset<StaticMesh>(meshName);
                 StaticMesh* meshToAddToList = existingMesh;
@@ -1598,8 +1597,6 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                 }
 
                 meshList.push_back(meshToAddToList);
-
-                prevMeshName = meshName;
             }
 
             // Create Lights
