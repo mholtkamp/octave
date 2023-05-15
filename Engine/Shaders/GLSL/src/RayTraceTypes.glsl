@@ -98,6 +98,11 @@ struct RayTraceUniforms
     uint mDiffuseIndirect;
     int mBakeMeshIndex;
 
+    uint mReceiveShadows;
+    uint mPad0;
+    uint mPad1;
+    uint mPad2;
+
     vec4 mSkyZenithColor;
     vec4 mSkyHorizonColor;
     vec4 mGroundColor;

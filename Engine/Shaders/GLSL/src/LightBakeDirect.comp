@@ -74,7 +74,8 @@ void main()
                     vec3 N = bakeVert.mNormal;
 
                     // Check if the light is being obstructed
-                    if (light.mCastShadows != 0)
+                    if (light.mCastShadows != 0 &&
+                        rayTrace.mReceiveShadows != 0)
                     {
                         // Trace a ray from the light position to the bake vertex position
                         Ray ray;
@@ -105,7 +106,8 @@ void main()
                     vec3 N = bakeVert.mNormal;
 
                     // Check if the light is being obstructed
-                    if (light.mCastShadows != 0)
+                    if (light.mCastShadows != 0 &&
+                        rayTrace.mReceiveShadows != 0)
                     {
                         const float traceDistance = 10000.0;
 

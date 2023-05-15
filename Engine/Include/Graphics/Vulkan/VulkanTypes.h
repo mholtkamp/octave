@@ -68,6 +68,11 @@ struct RayTraceUniforms
     uint32_t mDiffuseIndirect;
     int32_t mBakeMeshIndex;
 
+    uint32_t mReceiveShadows;
+    uint32_t mPad0;
+    uint32_t mPad1;
+    uint32_t mPad2;
+
     glm::vec4 mSkyZenithColor;
     glm::vec4 mSkyHorizonColor;
     glm::vec4 mGroundColor;
