@@ -475,6 +475,7 @@ void RayTracer::PathTraceWorld()
         uniforms.mAccumulatedFrames = mAccumulatedFrames;
         uniforms.mShadowBias = 0.01f;
         uniforms.mBakeMeshIndex = -1;
+        uniforms.mReceiveShadows = true;
         uniforms.mSkyZenithColor = Renderer::Get()->GetSkyZenithColor();
         uniforms.mSkyHorizonColor = Renderer::Get()->GetSkyHorizonColor();
         uniforms.mGroundColor = Renderer::Get()->GetGroundColor();
@@ -750,6 +751,7 @@ void RayTracer::DispatchNextLightBake()
         uniforms.mNumBakeTriangles = meshAsset->GetNumFaces();
         uniforms.mShadowBias = Renderer::Get()->GetBakeShadowBias();
         uniforms.mBakeMeshIndex = bakeMeshIndex;
+        uniforms.mReceiveShadows = (uint32_t)meshComp->ShouldReceiveShadows();
         uniforms.mSkyZenithColor = Renderer::Get()->GetSkyZenithColor();
         uniforms.mSkyHorizonColor = Renderer::Get()->GetSkyHorizonColor();
         uniforms.mGroundColor = Renderer::Get()->GetGroundColor();
