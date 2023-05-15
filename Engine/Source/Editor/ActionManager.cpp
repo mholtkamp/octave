@@ -1335,6 +1335,7 @@ static void SpawnNode(aiNode* node, const glm::mat4& parentTransform, const std:
             newActor->SetName(/*options.mPrefix + */node->mName.C_Str());
             newActor->GetStaticMeshComponent()->EnableCastShadows(true);
             newActor->GetStaticMeshComponent()->SetBakeLighting(true);
+            newActor->GetStaticMeshComponent()->SetUseTriangleCollision(true);
             newActor->AddTag("Scene");
         }
     }
@@ -1593,6 +1594,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                     AssetStub* meshStub = EditorAddUniqueAsset(meshName.c_str(), dir, StaticMesh::GetStaticType(), false);
                     meshStub->mAsset = newMesh;
                     newMesh->SetName(meshName);
+                    newMesh->SetGenerateTriangleCollisionMesh(true);
                     AssetManager::Get()->SaveAsset(*meshStub);
                 }
 
