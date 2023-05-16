@@ -232,7 +232,7 @@ void PropertiesPanel::InspectAsset(Asset* asset)
         mAssetCanvas = mAssetCanvasCache.FindOrCreateCanvas(asset->GetType());
 
         std::vector<Property> props;
-        mCurrentAsset->GatherProperties(props);
+        mCurrentAsset.Get()->GatherProperties(props);
         PopulatePropertyWidgets(mAssetCanvas, props);
     }
     else
@@ -245,6 +245,11 @@ void PropertiesPanel::InspectAsset(Asset* asset)
     SetMode(PropertiesMode::Asset);
 
     UpdateDisplayedCanvas();
+}
+
+Asset* PropertiesPanel::GetInspectedAsset()
+{
+    return mCurrentAsset.Get();
 }
 
 void PropertiesPanel::RefreshProperties()
@@ -374,7 +379,7 @@ RTTI* PropertiesPanel::GetCurrentObject()
         retObj = mCurrentComponent;
         break;
     case PropertiesMode::Asset:
-        retObj = mCurrentAsset;
+        retObj = mCurrentAsset.Get();
         break;
     case PropertiesMode::Widget:
         retObj = mCurrentWidget;
@@ -508,7 +513,7 @@ void PropertiesPanel::RecordInspectionHistory()
         curObject = mCurrentComponent;
         break;
     case PropertiesMode::Asset:
-        curObject = mCurrentAsset;
+        curObject = mCurrentAsset.Get();
         break;
     case PropertiesMode::Widget:
         curObject = mCurrentWidget;
@@ -555,7 +560,7 @@ void PropertiesPanel::ProgressInspectFuture()
             curTarget.mObject = mCurrentComponent;
             break;
         case PropertiesMode::Asset:
-            curTarget.mObject = mCurrentAsset;
+            curTarget.mObject = mCurrentAsset.Get();
             break;
         case PropertiesMode::Widget:
             curTarget.mObject = mCurrentWidget;
@@ -613,7 +618,7 @@ void PropertiesPanel::RegressInspectPast()
             curTarget.mObject = mCurrentComponent;
             break;
         case PropertiesMode::Asset:
-            curTarget.mObject = mCurrentAsset;
+            curTarget.mObject = mCurrentAsset.Get();
             break;
         case PropertiesMode::Widget:
             curTarget.mObject = mCurrentWidget;

@@ -51,6 +51,7 @@ public:
     virtual void Render() override;
 
     void InspectAsset(Asset* asset);
+    Asset* GetInspectedAsset();
 
     void RefreshProperties();
 
@@ -72,7 +73,7 @@ protected:
     void RegressInspectPast();
 
     Component* mCurrentComponent;
-    Asset* mCurrentAsset;
+    AssetRef mCurrentAsset;
     Widget* mCurrentWidget;
     Canvas* mComponentCanvas;
     Canvas* mActorCanvas;
