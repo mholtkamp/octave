@@ -1986,6 +1986,18 @@ void ActionManager::DeleteAsset(AssetStub* stub)
 {
     if (stub != nullptr)
     {
+        if (GetSelectedAssetStub() == stub)
+        {
+            SetSelectedAssetStub(nullptr);
+        }
+
+        PropertiesPanel* propsPanel = PanelManager::Get()->GetPropertiesPanel();
+
+        if (propsPanel->GetInspectedAsset() == stub->mAsset)
+        {
+            propsPanel->InspectAsset(nullptr);
+        }
+
         std::string path = stub->mPath;
         AssetManager::Get()->PurgeAsset(stub->mName.c_str());
         SYS_RemoveFile(path.c_str());
