@@ -1246,10 +1246,21 @@ Asset* ActionManager::ImportAsset(const std::string& path)
         std::string assetName = filename.substr(0, dotIndex);
         filename = assetName + ".oct";
 
+        // Clear inspected asset if we are reimporting that same asset.
+        Asset* oldAsset = FetchAsset(assetName.c_str());
+
+        if (oldAsset != nullptr)
+        {
+            PropertiesPanel* propsPanel = PanelManager::Get()->GetPropertiesPanel();
+            if (propsPanel->GetInspectedAsset() == oldAsset)
+            {
+                propsPanel->InspectAsset(nullptr);
+            }
+        }
+
 #if ASSET_LIVE_REF_TRACKING
         // If this asset already exists, then we are about to delete it and replace it.
         // So let's fix up any references now or else they will be lost (replaced with nullptr).
-        Asset* oldAsset = FetchAsset(assetName.c_str());
         if (oldAsset != nullptr)
         {
             AssetRef::ReplaceReferencesToAsset(oldAsset, newAsset);
