@@ -428,6 +428,8 @@ AssetsPanel::AssetsPanel() :
     SetAnchorMode(AnchorMode::LeftStretch);
     SetYRatio(0.5f);
     SetHeightRatio(0.5f);
+
+    mScrollMultiplier = 5;
 }
 
 AssetsPanel::~AssetsPanel()

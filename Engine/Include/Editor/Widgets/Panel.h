@@ -49,4 +49,5 @@ protected:
     int32_t mScroll;
     int32_t mMinScroll;
     int32_t mMaxScroll;
+    int32_t mScrollMultiplier;
 };
