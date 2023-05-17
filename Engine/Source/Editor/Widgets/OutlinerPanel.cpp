@@ -103,6 +103,8 @@ OutlinerPanel::OutlinerPanel()
     SetAnchorMode(AnchorMode::LeftStretch);
     SetYRatio(0.0f);
     SetHeightRatio(0.5f);
+
+    mScrollMultiplier = 5;
 }
 
 void OutlinerPanel::Update()

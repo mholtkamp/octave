@@ -26,7 +26,8 @@ Panel::Panel() :
     mBodyQuad(nullptr),
     mScroll(0),
     mMinScroll(0),
-    mMaxScroll(10)
+    mMaxScroll(10),
+    mScrollMultiplier(1)
 {
     mHeaderCanvas = new Canvas();
     mBodyCanvas = new Canvas();
@@ -111,6 +112,8 @@ void Panel::HandleInput()
         {
             deltaScroll = 1;
         }
+
+        deltaScroll *= mScrollMultiplier;
 
         if (deltaScroll != 0)
         {
