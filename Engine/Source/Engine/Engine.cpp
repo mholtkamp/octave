@@ -544,6 +544,8 @@ void ReloadAllScripts(bool restartComponents)
 {
 #if LUA_ENABLED
     std::vector<ScriptComponent*> scriptComps;
+    std::vector<std::vector<Property> > scriptProps;
+
     const std::vector<Actor*>& actors = GetWorld()->GetActors();
 
     if (restartComponents)
@@ -555,7 +557,9 @@ void ReloadAllScripts(bool restartComponents)
                 Component* comp = actors[i]->GetComponent(c);
                 if (comp->Is(ScriptComponent::ClassRuntimeId()))
                 {
-                    scriptComps.push_back(comp->As<ScriptComponent>());
+                    ScriptComponent* scriptComp = comp->As<ScriptComponent>();
+                    scriptComps.push_back(scriptComp);
+                    scriptProps.push_back(scriptComp->GetScriptProperties());
                 }
             }
         }
@@ -576,6 +580,7 @@ void ReloadAllScripts(bool restartComponents)
         for (uint32_t i = 0; i < scriptComps.size(); ++i)
         {
             scriptComps[i]->StartScript();
+            scriptComps[i]->SetScriptProperties(scriptProps[i]);
         }
     }
 
