@@ -559,6 +559,16 @@ void ScriptComponent::GatherScriptProperties()
 #endif
 }
 
+const std::vector<Property>& ScriptComponent::GetScriptProperties() const
+{
+    return mScriptProps;
+}
+
+void ScriptComponent::SetScriptProperties(const std::vector<Property>& srcProps)
+{
+    CopyPropertyValues(mScriptProps, srcProps);
+}
+
 void ScriptComponent::GatherReplicatedData()
 {
 #if LUA_ENABLED

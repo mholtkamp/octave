@@ -98,6 +98,8 @@ public:
 
     void SetArrayScriptPropCount(const std::string& name, uint32_t count);
     void UploadScriptProperties();
+    const std::vector<Property>& GetScriptProperties() const;
+    void SetScriptProperties(const std::vector<Property>& srcProps);
 
     static bool OnRepHandler(Datum* datum, uint32_t index, const void* newValue);
 
