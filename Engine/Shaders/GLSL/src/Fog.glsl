@@ -9,6 +9,7 @@ void ApplyFog(inout vec4 ioColor,
         float fragDepth = distance(fragmentPos, global.mViewPosition.xyz);
         float fogLength = (global.mFogFar - global.mFogNear);
         float fogAlpha = clamp((fragDepth - global.mFogNear) / fogLength, 0.0, 1.0);
+        fogAlpha *= global.mFogColor.a;
         float fogFactor = 0.0;
 
         if (global.mFogDensityFunc == FOG_FUNC_LINEAR)
