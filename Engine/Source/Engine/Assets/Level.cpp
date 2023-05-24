@@ -203,6 +203,8 @@ void Level::LoadIntoWorld(World* world, bool clear, glm::vec3 offset, glm::vec3 
         GetWorld()->Clear();
     }
 
+    ApplySettings(false);
+
     Stream stream((const char*)mData.data(), (uint32_t)mData.size());
 
     uint32_t numActors;
@@ -289,8 +291,6 @@ void Level::LoadIntoWorld(World* world, bool clear, glm::vec3 offset, glm::vec3 
             LogWarning("Failed to instantiate in Level::LoadIntoWorld()");
         }
     }
-
-    ApplySettings(false);
 
     std::vector<LevelRef>& loadedLevels = world->GetLoadedLevels();
     if (std::find(loadedLevels.begin(), loadedLevels.end(), this) == loadedLevels.end())
