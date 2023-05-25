@@ -51,6 +51,14 @@ static const char* sTevModeStrings[] =
 };
 static_assert(int32_t(TevMode::Count) == 8, "Need to update string conversion table");
 
+static const char* sCullModeStrings[] =
+{
+    "None",
+    "Back",
+    "Front"
+};
+static_assert(int32_t(CullMode::Count) == 3, "Need to update string conversion table");
+
 FORCE_LINK_DEF(Material);
 DEFINE_ASSET(Material);
 
@@ -251,6 +259,7 @@ void Material::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Emission", this, &mParams.mEmission, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Wrap Lighting", this, &mParams.mWrapLighting, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Apply Fog", this, &mParams.mApplyFog, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Byte, "Cull Mode", this, &mParams.mCullMode, 1, HandlePropChange, 0, int32_t(CullMode::Count), sCullModeStrings));
 }
 
 glm::vec4 Material::GetTypeColor()
@@ -521,6 +530,17 @@ bool Material::ShouldApplyFog() const
 void Material::SetApplyFog(bool applyFog)
 {
     mParams.mApplyFog = applyFog;
+    MarkDirty();
+}
+
+CullMode Material::GetCullMode() const
+{
+    return mParams.mCullMode;
+}
+
+void Material::SetCullMode(CullMode cullMode)
+{
+    mParams.mCullMode = cullMode;
     MarkDirty();
 }
 
