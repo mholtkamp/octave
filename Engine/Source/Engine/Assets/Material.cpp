@@ -148,6 +148,7 @@ void Material::LoadStream(Stream& stream, Platform platform)
     mParams.mDisableDepthTest = stream.ReadBool();
     mParams.mFresnelEnabled = stream.ReadBool();
     mParams.mApplyFog = stream.ReadBool();
+    //mParams.mCullMode = (CullMode)stream.ReadUint8();
 }
 
 void Material::SaveStream(Stream& stream, Platform platform)
@@ -185,6 +186,7 @@ void Material::SaveStream(Stream& stream, Platform platform)
     stream.WriteBool(mParams.mDisableDepthTest);
     stream.WriteBool(mParams.mFresnelEnabled);
     stream.WriteBool(mParams.mApplyFog);
+    stream.WriteUint8((uint8_t)mParams.mCullMode);
 }
 
 void Material::Create()
