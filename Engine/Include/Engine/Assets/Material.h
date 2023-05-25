@@ -55,6 +55,7 @@ struct MaterialParams
     bool mDisableDepthTest = false;
     bool mFresnelEnabled = false;
     bool mApplyFog = true;
+    CullMode mCullMode = CullMode::Back;
 };
 
 class Material : public Asset
@@ -145,6 +146,9 @@ public:
 
     bool ShouldApplyFog() const;
     void SetApplyFog(bool applyFog);
+
+    CullMode GetCullMode() const;
+    void SetCullMode(CullMode cullMode);
 
     uint32_t GetUvMap(uint32_t textureSlot);
     void SetUvMap(uint32_t textureSlot, uint32_t uvMapIndex);

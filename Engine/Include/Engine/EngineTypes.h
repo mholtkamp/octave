@@ -83,6 +83,15 @@ enum class VertexColorMode : uint32_t
     Count
 };
 
+enum class CullMode : uint8_t
+{
+    None,
+    Back,
+    Front,
+
+    Count
+};
+
 enum class PropertyOwnerType
 {
     Component,

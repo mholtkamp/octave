@@ -129,39 +129,6 @@ public:
     }
 };
 
-class DepthlessOpaquePipeline : public OpaquePipeline
-{
-public:
-    DepthlessOpaquePipeline()
-    {
-        mDepthTestEnabled = false;
-        mDepthWriteEnabled = false;
-        mPipelineId = PipelineId::DepthlessOpaque;
-    }
-};
-
-class DepthlessTranslucentPipeline : public TranslucentPipeline
-{
-public:
-    DepthlessTranslucentPipeline()
-    {
-        mDepthTestEnabled = false;
-        mDepthWriteEnabled = false;
-        mPipelineId = PipelineId::DepthlessTranslucent;
-    }
-};
-
-class DepthlessAdditivePipeline : public AdditivePipeline
-{
-public:
-    DepthlessAdditivePipeline()
-    {
-        mDepthTestEnabled = false;
-        mDepthWriteEnabled = false;
-        mPipelineId = PipelineId::DepthlessAdditive;
-    }
-};
-
 class ShadowMeshBackPipeline : public OpaquePipeline
 {
 public:

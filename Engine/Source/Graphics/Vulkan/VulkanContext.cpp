@@ -2091,9 +2091,15 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::Opaque] = new OpaquePipeline();
     mPipelines[(size_t)PipelineId::Translucent] = new TranslucentPipeline();
     mPipelines[(size_t)PipelineId::Additive] = new AdditivePipeline();
-    mPipelines[(size_t)PipelineId::DepthlessOpaque] = new DepthlessOpaquePipeline();
-    mPipelines[(size_t)PipelineId::DepthlessTranslucent] = new DepthlessTranslucentPipeline();
-    mPipelines[(size_t)PipelineId::DepthlessAdditive] = new DepthlessAdditivePipeline();
+    mPipelines[(size_t)PipelineId::DepthlessOpaque] = new OpaquePipeline();
+    mPipelines[(size_t)PipelineId::DepthlessTranslucent] = new TranslucentPipeline();
+    mPipelines[(size_t)PipelineId::DepthlessAdditive] = new AdditivePipeline();
+    mPipelines[(size_t)PipelineId::CullFrontOpaque] = new OpaquePipeline();
+    mPipelines[(size_t)PipelineId::CullFrontTranslucent] = new TranslucentPipeline();
+    mPipelines[(size_t)PipelineId::CullFrontAdditive] = new AdditivePipeline();
+    mPipelines[(size_t)PipelineId::CullNoneOpaque] = new OpaquePipeline();
+    mPipelines[(size_t)PipelineId::CullNoneTranslucent] = new TranslucentPipeline();
+    mPipelines[(size_t)PipelineId::CullNoneAdditive] = new AdditivePipeline();
     mPipelines[(size_t)PipelineId::ShadowMeshBack] = new ShadowMeshBackPipeline();
     mPipelines[(size_t)PipelineId::ShadowMeshFront] = new ShadowMeshFrontPipeline();
     mPipelines[(size_t)PipelineId::ShadowMeshClear] = new ShadowMeshClearPipeline();
@@ -2120,6 +2126,28 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::HitCheck] = new HitCheckPipeline();
 #endif
 
+    // Modified Foward Pipelines
+    for (uint32_t i = 0; i < 3; ++i)
+    {
+        uint32_t pipelineIdx = (uint32_t)PipelineId::DepthlessOpaque + i;
+        mPipelines[pipelineIdx]->mPipelineId = PipelineId(pipelineIdx);
+        mPipelines[pipelineIdx]->mDepthTestEnabled = false;
+        mPipelines[pipelineIdx]->mDepthWriteEnabled = false;
+    }
+    for (uint32_t i = 0; i < 3; ++i)
+    {
+        uint32_t pipelineIdx = (uint32_t)PipelineId::CullFrontOpaque + i;
+        mPipelines[pipelineIdx]->mPipelineId = PipelineId(pipelineIdx);
+        mPipelines[pipelineIdx]->mCullMode = VK_CULL_MODE_FRONT_BIT;
+    }
+    for (uint32_t i = 0; i < 3; ++i)
+    {
+        uint32_t pipelineIdx = (uint32_t)PipelineId::CullNoneOpaque + i;
+        mPipelines[pipelineIdx]->mPipelineId = PipelineId(pipelineIdx);
+        mPipelines[pipelineIdx]->mCullMode = VK_CULL_MODE_NONE;
+    }
+
+    // Create Pipelines
     mPipelines[(size_t)PipelineId::Shadow]->Create(mShadowRenderPass);
     mPipelines[(size_t)PipelineId::Opaque]->Create(mForwardRenderPass);
     mPipelines[(size_t)PipelineId::Translucent]->Create(mForwardRenderPass);
@@ -2127,6 +2155,12 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::DepthlessOpaque]->Create(mForwardRenderPass);
     mPipelines[(size_t)PipelineId::DepthlessTranslucent]->Create(mForwardRenderPass);
     mPipelines[(size_t)PipelineId::DepthlessAdditive]->Create(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::CullFrontOpaque]->Create(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::CullFrontTranslucent]->Create(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::CullFrontAdditive]->Create(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::CullNoneOpaque]->Create(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::CullNoneTranslucent]->Create(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::CullNoneAdditive]->Create(mForwardRenderPass);
     mPipelines[(size_t)PipelineId::ShadowMeshBack]->Create(mForwardRenderPass);
     mPipelines[(size_t)PipelineId::ShadowMeshFront]->Create(mForwardRenderPass);
     mPipelines[(size_t)PipelineId::ShadowMeshClear]->Create(mForwardRenderPass);

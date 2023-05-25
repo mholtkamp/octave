@@ -1166,6 +1166,7 @@ Pipeline* GetMaterialPipeline(Material* material)
     Pipeline* pipeline = nullptr;
     VulkanContext* context = GetVulkanContext();
     bool depthless = material->IsDepthTestDisabled();
+    CullMode cullMode = material->GetCullMode();
 
     // Right now, only blend mode determines pipeline selection.
     // After adding vertex coloured meshes or skeletal meshes, pipeline
@@ -1176,23 +1177,28 @@ Pipeline* GetMaterialPipeline(Material* material)
     // If we have to add another permutation... we'll need to create some sort of 
     // pipeline cache system, and only create them as needed.
 
-    PipelineId pipelineId = PipelineId::Count;
+    PipelineId pipelineId = PipelineId::Opaque;
+
+    if (depthless)
+        pipelineId = PipelineId::DepthlessOpaque;
+    else if (cullMode == CullMode::Front)
+        pipelineId = PipelineId::CullFrontOpaque;
+    else if (cullMode == CullMode::None)
+        pipelineId = PipelineId::CullNoneOpaque;
 
     switch (material->GetBlendMode())
     {
     case BlendMode::Opaque:
     case BlendMode::Masked:
-        pipelineId = depthless ? PipelineId::DepthlessOpaque : PipelineId::Opaque;
         break;
     case BlendMode::Translucent:
-        pipelineId = depthless ? PipelineId::DepthlessTranslucent : PipelineId::Translucent;
+        pipelineId = PipelineId((uint32_t)pipelineId + 1);
         break;
     case BlendMode::Additive:
-        pipelineId = depthless ? PipelineId::DepthlessAdditive : PipelineId::Additive;
+        pipelineId = PipelineId((uint32_t)pipelineId + 2);
         break;
 
     default:
-        pipeline = context->GetPipeline(PipelineId::Opaque);
         break;
     }
 
