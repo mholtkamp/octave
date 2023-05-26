@@ -186,7 +186,7 @@ bool Initialize(InitOptions& initOptions)
     {
 #if !EDITOR
         // Editor uses ActionManager::OpenProject()
-        LoadProject(gCommandLineOptions.mProjectPath, !initOptions.mUseAssetRegistry);
+        LoadProject(sEngineConfig.mProjectPath, !initOptions.mUseAssetRegistry);
 #endif
     }
     else if (initOptions.mProjectName != "")
