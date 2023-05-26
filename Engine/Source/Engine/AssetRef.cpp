@@ -127,7 +127,11 @@ AssetRef::~AssetRef()
         mLoadRequest = nullptr;
     }
 
-    if (!IsShuttingDown() && mAsset != nullptr)
+    AssetManager* am = AssetManager::Get();
+    bool purging = am && am->IsPurging();
+    bool decrement = !(purging || IsShuttingDown());
+
+    if (decrement && mAsset != nullptr)
     {
         mAsset->DecrementRefCount();
     }
@@ -147,7 +151,11 @@ AssetRef& AssetRef::operator=(const AssetRef& src)
 
 AssetRef& AssetRef::operator=(const Asset* srcAsset)
 {
-    if (mAsset != nullptr)
+    AssetManager* am = AssetManager::Get();
+    bool purging = am && am->IsPurging();
+    bool decrement = !(purging || IsShuttingDown());
+
+    if (decrement && mAsset != nullptr)
     {
         mAsset->DecrementRefCount();
     }
