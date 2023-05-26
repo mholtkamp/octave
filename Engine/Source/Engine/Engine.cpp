@@ -38,6 +38,8 @@ void EditorMain(int32_t argc, char** argv);
 #endif
 
 static EngineState sEngineState;
+static EngineConfig sEngineConfig;
+
 static World* sWorld = nullptr;
 static Clock sClock;
 
@@ -94,8 +96,6 @@ void ForceLinkage()
     FORCE_LINK_CALL(Widget);
 }
 
-CommandLineOptions gCommandLineOptions;
-
 void ReadCommandLineArgs(int32_t argc, char** argv)
 {
     for (int32_t i = 0; i < argc; ++i)
@@ -103,18 +103,16 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
         if (strcmp(argv[i], "-project") == 0)
         {
             OCT_ASSERT(i + 1 < argc);
-            gCommandLineOptions.mProjectPath = argv[i + 1];
+            sEngineConfig.mProjectPath = argv[i + 1];
             ++i;
         }
-
-        if (strcmp(argv[i], "-level") == 0)
+        else if (strcmp(argv[i], "-level") == 0)
         {
             OCT_ASSERT(i + 1 < argc);
-            gCommandLineOptions.mDefaultLevel = argv[i + 1];
+            sEngineConfig.mDefaultLevel = argv[i + 1];
             ++i;
         }
-
-        if (strcmp(argv[i], "-res") == 0)
+        else if (strcmp(argv[i], "-res") == 0)
         {
             OCT_ASSERT(i + 2 < argc);
             int32_t width = atoi(argv[i + 1]);
@@ -123,8 +121,16 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
             width = glm::clamp<int32_t>(width, 100, 3840);
             height = glm::clamp<int32_t>(height, 100, 2160);
 
-            gCommandLineOptions.mWindowWidth = width;
-            gCommandLineOptions.mWindowHeight = height;
+            sEngineConfig.mWindowWidth = width;
+            sEngineConfig.mWindowHeight = height;
+            i += 2;
+        }
+        else if (strcmp(argv[i], "-validate") == 0)
+        {
+            OCT_ASSERT(i + 1 < argc);
+            int32_t validate = atoi(argv[i + 1]);
+            sEngineConfig.mValidateGraphics = (validate != 0);
+            ++i;
         }
     }
 }
@@ -132,16 +138,16 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
 bool Initialize(InitOptions& initOptions)
 {
     // Override initOptions with commandline options
-    if (gCommandLineOptions.mDefaultLevel != "")
+    if (sEngineConfig.mDefaultLevel != "")
     {
-        initOptions.mDefaultLevel = gCommandLineOptions.mDefaultLevel;
+        initOptions.mDefaultLevel = sEngineConfig.mDefaultLevel;
     }
 
-    if (gCommandLineOptions.mWindowWidth > 0 &&
-        gCommandLineOptions.mWindowHeight > 0)
+    if (sEngineConfig.mWindowWidth > 0 &&
+        sEngineConfig.mWindowHeight > 0)
     {
-        initOptions.mWidth = gCommandLineOptions.mWindowWidth;
-        initOptions.mHeight = gCommandLineOptions.mWindowHeight;
+        initOptions.mWidth = sEngineConfig.mWindowWidth;
+        initOptions.mHeight = sEngineConfig.mWindowHeight;
     }
 
     InitializeLog();
@@ -176,7 +182,7 @@ bool Initialize(InitOptions& initOptions)
 
     AssetManager::Get()->Initialize();
 
-    if (gCommandLineOptions.mProjectPath != "")
+    if (sEngineConfig.mProjectPath != "")
     {
 #if !EDITOR
         // Editor uses ActionManager::OpenProject()
@@ -412,6 +418,11 @@ World* GetWorld()
 EngineState* GetEngineState()
 {
     return &sEngineState;
+}
+
+EngineConfig* GetEngineConfig()
+{
+    return &sEngineConfig;
 }
 
 const Clock* GetAppClock()
