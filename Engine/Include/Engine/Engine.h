@@ -24,6 +24,7 @@ void Quit();
 class World* GetWorld();
 
 struct EngineState* GetEngineState();
+struct EngineConfig* GetEngineConfig();
 
 const class Clock* GetAppClock();
 

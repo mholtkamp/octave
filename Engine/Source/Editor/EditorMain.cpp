@@ -38,7 +38,6 @@
 #include "EditorState.h"
 
 InitOptions OctPreInitialize();
-extern CommandLineOptions gCommandLineOptions;
 extern void ReadCommandLineArgs(int32_t argc, char** argv);
 
 void EditorMain(int32_t argc, char** argv)
@@ -83,9 +82,10 @@ void EditorMain(int32_t argc, char** argv)
     //    ActionManager::Get()->OpenProject(projectFile.c_str());
     //}
 
-    if (gCommandLineOptions.mProjectPath != "")
+    EngineConfig* engineConfig = GetEngineConfig();
+    if (engineConfig->mProjectPath != "")
     {
-        ActionManager::Get()->OpenProject(gCommandLineOptions.mProjectPath.c_str());
+        ActionManager::Get()->OpenProject(engineConfig->mProjectPath.c_str());
     }
 
     // Update asset panel to reflect our current project.

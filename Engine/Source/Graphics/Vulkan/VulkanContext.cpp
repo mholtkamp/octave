@@ -87,12 +87,7 @@ void VulkanContext::Initialize()
 {
     mEngineState = GetEngineState();
 
-    // TODO: Consider commandline arg for validation
-#ifdef _DEBUG
-    mValidate = true;
-#else
-    mValidate = false;
-#endif
+    mValidate = GetEngineConfig()->mValidateGraphics;
 
     CreateInstance();
     CreateDebugCallback();
