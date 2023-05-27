@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Widgets/Canvas.h"
-#include <glm/glm.hpp>
+#include "Maths.h"
 
 class Text;
 class Quad;

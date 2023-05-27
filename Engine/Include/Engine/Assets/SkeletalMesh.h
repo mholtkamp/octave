@@ -11,7 +11,7 @@
 #include "Graphics/GraphicsTypes.h"
 #include "Graphics/GraphicsConstants.h"
 
-#include <glm/gtc/quaternion.hpp>
+#include "Maths.h"
 
 #if EDITOR
 #include <assimp/scene.h>

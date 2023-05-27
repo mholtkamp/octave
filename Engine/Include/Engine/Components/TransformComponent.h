@@ -3,8 +3,7 @@
 #include "Component.h"
 #include "EngineTypes.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include "Maths.h"
 
 #include "AssetRef.h"
 

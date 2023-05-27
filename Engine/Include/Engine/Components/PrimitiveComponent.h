@@ -4,7 +4,7 @@
 #include "Assets/StaticMesh.h"
 
 #include <Bullet/btBulletDynamicsCommon.h>
-#include <glm/gtc/type_ptr.hpp>
+#include "Maths.h"
 
 #include <vector>
 

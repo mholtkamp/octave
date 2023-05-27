@@ -6,8 +6,7 @@
 
 #include "Assets/Material.h"
 #include "Widgets/Widget.h"
-
-#include <glm/glm.hpp>
+#include "Maths.h"
 
 class StaticMesh;
 

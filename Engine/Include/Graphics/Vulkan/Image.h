@@ -3,10 +3,9 @@
 #if API_VULKAN
 
 #include "Allocator.h"
+#include "Maths.h"
 
 #include <vulkan/vulkan.h>
-
-#include <glm/glm.hpp>
 
 class DestroyQueue;
 

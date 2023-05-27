@@ -8,14 +8,13 @@
 #include "Renderer.h"
 #include "Constants.h"
 #include "Log.h"
+#include "Maths.h"
 #include "Assertion.h"
 #include "Assets/Texture.h"
 
 #include "Components/PointLightComponent.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/CameraComponent.h"
-
-#include <glm/gtc/matrix_transform.hpp>
 
 static inline float LinearAttenFunc(float dist, float maxDist, float none)
 {

@@ -6,6 +6,7 @@
 #include "Engine.h"
 #include "Renderer.h"
 #include "Log.h"
+#include "Maths.h"
 #include "Assets/Material.h"
 #include "Assets/SkeletalMesh.h"
 #include "Assets/StaticMesh.h"
@@ -26,10 +27,6 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <vector>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 #include <3ds.h>
 #include <citro3d.h>

@@ -19,9 +19,8 @@
 #include "Widgets/Poly.h"
 #include "Utilities.h"
 #include "Vertex.h"
+#include "Maths.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
 
 extern PFN_vkCmdBeginDebugUtilsLabelEXT CmdBeginDebugUtilsLabelEXT;
 extern PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT;

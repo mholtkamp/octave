@@ -1,5 +1,5 @@
 #include "Rect.h"
-#include <glm/glm.hpp>
+#include "Maths.h"
 
 Rect::Rect() :
     mX(0.0f),

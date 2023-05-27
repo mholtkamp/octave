@@ -37,9 +37,6 @@
 #include "Components/TextMeshComponent.h"
 #include "System/System.h"
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
-
 static float sDefaultFocalDistance = 10.0f;
 constexpr float sMaxCameraPitch = 89.99f;
 

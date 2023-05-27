@@ -4,7 +4,7 @@
 #include "Enums.h"
 #include "CameraFrustum.h"
 
-#include <glm/glm.hpp>
+#include "Maths.h"
 
 struct OrthoSettings
 {

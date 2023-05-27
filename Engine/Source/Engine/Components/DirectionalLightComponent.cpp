@@ -1,9 +1,7 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Renderer.h"
 #include "Constants.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "Maths.h"
 
 FORCE_LINK_DEF(DirectionalLightComponent);
 DEFINE_COMPONENT(DirectionalLightComponent);

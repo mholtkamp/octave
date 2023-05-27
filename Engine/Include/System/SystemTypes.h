@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Constants.h"
-
-#include <glm/glm.hpp>
+#include "Maths.h"
 
 #if PLATFORM_WINDOWS
 #include <Windows.h>

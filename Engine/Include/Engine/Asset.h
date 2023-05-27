@@ -4,11 +4,11 @@
 #include "EmbeddedFile.h"
 #include "Factory.h"
 #include "RTTI.h"
+#include "Maths.h"
 
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <glm/glm.hpp>
 
 class Stream;
 class Property;

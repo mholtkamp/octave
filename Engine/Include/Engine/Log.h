@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdio.h>
-#include <glm/glm.hpp>
+#include "Maths.h"
 #include "Constants.h"
 
 void InitializeLog();

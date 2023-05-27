@@ -5,11 +5,10 @@
 #include "AssetManager.h"
 #include "ScriptEvent.h"
 #include "Log.h"
+#include "Maths.h"
 #include "Utilities.h"
 
 #include "Graphics/Graphics.h"
-
-#include <glm/gtx/transform.hpp>
 
 static const char* sBoneInfluenceModeStrings[] =
 {

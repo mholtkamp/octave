@@ -4,13 +4,13 @@
 #include <string.h>
 
 #include "Constants.h"
+#include "Maths.h"
 
 #include "System/SystemTypes.h"
 #include "Graphics/GraphicsTypes.h"
 #include "Input/InputTypes.h"
 
 #include <Bullet/BulletCollision/CollisionDispatch/btCollisionWorld.h>
-#include <glm/glm.hpp>
 
 #if LUA_ENABLED
 #include <Lua/lua.hpp>

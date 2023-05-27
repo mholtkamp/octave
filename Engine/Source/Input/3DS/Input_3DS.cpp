@@ -5,8 +5,7 @@
 
 #include "Engine.h"
 #include "Log.h"
-
-#include <glm/glm.hpp>
+#include "Maths.h"
 
 #include <3ds.h>
 

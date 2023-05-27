@@ -3,7 +3,7 @@
 #if EDITOR
 
 #include <string>
-#include <glm/glm.hpp>
+#include "Maths.h"
 
 #include "ObjectRef.h"
 

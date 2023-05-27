@@ -4,8 +4,7 @@
 #include "Assets/StaticMesh.h"
 #include "Engine.h"
 #include "AssetManager.h"
-
-#include <glm/gtc/matrix_transform.hpp>
+#include "Maths.h"
 
 #if EDITOR
 #include "EditorState.h"

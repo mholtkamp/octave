@@ -3,13 +3,12 @@
 #include "InputDevices.h"
 #include "Engine.h"
 #include "Log.h"
+#include "Maths.h"
 #include "Assets/WidgetMap.h"
 
 #include "LuaBindings/Widget_Lua.h"
 
 #include "Graphics/Graphics.h"
-
-#include <glm/gtx/matrix_transform_2d.hpp>
 
 FORCE_LINK_DEF(Widget);
 DEFINE_FACTORY_MANAGER(Widget);

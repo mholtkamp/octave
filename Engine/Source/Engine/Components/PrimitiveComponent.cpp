@@ -2,12 +2,10 @@
 #include "World.h"
 #include "Utilities.h"
 #include "Log.h"
+#include "Maths.h"
 #include "Renderer.h"
 #include "AssetManager.h"
 #include "Assets/StaticMesh.h"
-
-#include <algorithm>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <btBulletDynamicsCommon.h>
 
