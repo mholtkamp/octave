@@ -6,9 +6,9 @@
 
 #include "Assets/SoundWave.h"
 #include "Log.h"
+#include "Maths.h"
 
 #include <alsa/asoundlib.h>
-#include <glm/glm.hpp>
 
 snd_pcm_t* sSoundDevice = nullptr;
 snd_pcm_uframes_t sPlaybackFrames = 0;

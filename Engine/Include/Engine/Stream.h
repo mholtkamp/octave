@@ -3,10 +3,9 @@
 #include <vector>
 #include <string>
 #include "Assertion.h"
+#include "Maths.h"
 #include <stdint.h>
 #include <string.h>
-#include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 #include "System/SystemConstants.h"
 

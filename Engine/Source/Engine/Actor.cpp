@@ -5,6 +5,7 @@
 #include "Components/CameraComponent.h"
 #include "Enums.h"
 #include "Log.h"
+#include "Maths.h"
 #include "Utilities.h"
 #include "Engine.h"
 #include "ObjectRef.h"
@@ -26,7 +27,6 @@
 #include "EditorState.h"
 #endif
 
-#include <glm/glm.hpp>
 #include <functional>
 #include <algorithm>
 

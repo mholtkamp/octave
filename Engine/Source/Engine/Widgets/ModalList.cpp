@@ -1,9 +1,9 @@
 #include "Widgets/ModalList.h"
 #include "InputDevices.h"
 #include "Renderer.h"
+#include "Maths.h"
 
 #include <algorithm>
-#include <glm/glm.hpp>
 
 FORCE_LINK_DEF(ModalList);
 DEFINE_WIDGET(ModalList, VerticalList);

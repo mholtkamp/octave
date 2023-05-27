@@ -13,8 +13,6 @@
 #include "EditorState.h"
 #endif
 
-#include <glm/gtx/rotate_vector.hpp>
-
 FORCE_LINK_DEF(ParticleComponent);
 DEFINE_COMPONENT(ParticleComponent);
 

@@ -1,8 +1,8 @@
 #include "Widgets/VerticalList.h"
 #include "InputDevices.h"
+#include "Maths.h"
 
 #include <algorithm>
-#include <glm/glm.hpp>
 
 FORCE_LINK_DEF(VerticalList);
 DEFINE_WIDGET(VerticalList, Canvas);

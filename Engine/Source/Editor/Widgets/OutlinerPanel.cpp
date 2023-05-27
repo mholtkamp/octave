@@ -12,8 +12,7 @@
 #include "PanelManager.h"
 #include "InputDevices.h"
 #include "Log.h"
-
-#include <glm/glm.hpp>
+#include "Maths.h"
 
 static ActorRef sActionContextActor;
 

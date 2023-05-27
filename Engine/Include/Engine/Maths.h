@@ -6,7 +6,11 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/matrix_transform_2d.hpp>
 #include <glm/gtx/vector_angle.hpp>
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #define PI 3.14159265359f
 #define DEGREES_TO_RADIANS (PI / 180)

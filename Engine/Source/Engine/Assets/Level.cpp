@@ -4,6 +4,7 @@
 #include "World.h"
 #include "Engine.h"
 #include "Log.h"
+#include "Maths.h"
 #include "NetworkManager.h"
 #include "Assets/Blueprint.h"
 #include "Components/LightComponent.h"
@@ -12,7 +13,6 @@
 #include "EditorState.h"
 #endif
 
-#include <glm/gtx/euler_angles.hpp>
 #include <algorithm>
 
 FORCE_LINK_DEF(Level);

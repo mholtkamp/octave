@@ -1,8 +1,4 @@
 #include "Components/TransformComponent.h"
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/euler_angles.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 #include "AssetManager.h"
 #include "Actor.h"

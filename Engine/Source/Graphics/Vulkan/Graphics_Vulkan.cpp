@@ -4,9 +4,7 @@
 #include "Graphics/Vulkan/VulkanContext.h"
 #include "Graphics/Vulkan/VulkanUtils.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include "Maths.h"
 
 extern VulkanContext* gVulkanContext;
 

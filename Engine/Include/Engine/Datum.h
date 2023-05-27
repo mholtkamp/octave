@@ -2,9 +2,9 @@
 
 #include "Stream.h"
 #include "EngineTypes.h"
+#include "Maths.h"
 
 #include <string>
-#include <glm/glm.hpp>
 
 typedef bool(*DatumChangeHandlerFP)(class Datum* prop, uint32_t index, const void* newValue);
 

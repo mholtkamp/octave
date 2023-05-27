@@ -2,7 +2,7 @@
 
 #include "RTTI.h"
 #include "Assets/StaticMesh.h"
-#include <glm/glm.hpp>
+#include "Maths.h"
 #include "Components/Component.h"
 #include "Property.h"
 #include "Factory.h"

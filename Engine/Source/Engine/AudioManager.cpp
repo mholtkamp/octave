@@ -2,6 +2,7 @@
 #include "Assets/SoundWave.h"
 #include "Asset.h"
 #include "Log.h"
+#include "Maths.h"
 #include "Engine.h"
 #include "World.h"
 #include "Profiler.h"
@@ -11,8 +12,6 @@
 
 #include "Audio/Audio.h"
 #include "Audio/AudioConstants.h"
-
-#include <glm/glm.hpp>
 
 // TODO: define max audio sources as AUDIO_MAX_VOICES
 #define MAX_AUDIO_SOURCES AUDIO_MAX_VOICES

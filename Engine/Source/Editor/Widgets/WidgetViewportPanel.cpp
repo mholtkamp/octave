@@ -8,8 +8,7 @@
 #include "Widgets/ActionList.h"
 #include "ActionManager.h"
 #include "PanelManager.h"
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include "Maths.h"
 
 WidgetViewportPanel::WidgetViewportPanel()
 {

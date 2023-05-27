@@ -3,11 +3,11 @@
 #include "AssetRef.h"
 #include "AssetManager.h"
 #include "Log.h"
+#include "Maths.h"
 
 #include <malloc.h>
 #include <stdio.h>
 #include <string.h>
-#include <glm/gtc/type_ptr.hpp>
 
 #define MAX_FILE_SIZE (1024 * 1024 * 1024)
 #define MAX_STRING_SIZE (1024 * 16)

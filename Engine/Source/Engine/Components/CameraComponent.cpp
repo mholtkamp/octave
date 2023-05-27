@@ -4,11 +4,9 @@
 #include "World.h"
 #include "Renderer.h"
 #include "AssetManager.h"
+#include "Maths.h"
 
 #include "Graphics/Graphics.h"
-
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 FORCE_LINK_DEF(CameraComponent);
 DEFINE_COMPONENT(CameraComponent);
