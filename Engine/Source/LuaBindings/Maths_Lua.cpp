@@ -231,6 +231,47 @@ int Maths_Lua::Reflect(lua_State* L)
     return 1;
 }
 
+int Maths_Lua::VectorToRotation(lua_State* L)
+{
+    glm::vec3 vect = CHECK_VECTOR(L, 1);
+
+    glm::vec3 rot = Maths::VectorToRotation(vect);
+
+    Vector_Lua::Create(L, rot);
+    return 1;
+}
+
+int Maths_Lua::VectorToQuat(lua_State* L)
+{
+    glm::vec3 vect = CHECK_VECTOR(L, 1);
+
+    glm::quat quat = Maths::VectorToQuat(vect);
+
+    Vector_Lua::Create(L, LuaQuatToVector(quat));
+    return 1;
+}
+
+int Maths_Lua::RotationToVector(lua_State* L)
+{
+    glm::vec3 rotVec = CHECK_VECTOR(L, 1);
+
+    glm::vec3 retVec = Maths::RotationToVector(rotVec);
+
+    Vector_Lua::Create(L, retVec);
+    return 1;
+}
+
+int Maths_Lua::QuatToVector(lua_State* L)
+{
+    glm::vec4 quatVect = CHECK_VECTOR(L, 1);
+    glm::quat quat = LuaVectorToQuat(quatVect);
+
+    glm::vec3 retVec = Maths::QuatToVector(quat);
+
+    Vector_Lua::Create(L, retVec);
+    return 1;
+}
+
 int Maths_Lua::SeedRand(lua_State* L)
 {
     int32_t seed = CHECK_INTEGER(L, 1);
@@ -347,6 +388,18 @@ void Maths_Lua::Bind()
 
     lua_pushcfunction(L, Reflect);
     lua_setfield(L, tableIdx, "Reflect");
+
+    lua_pushcfunction(L, VectorToRotation);
+    lua_setfield(L, tableIdx, "VectorToRotation");
+
+    lua_pushcfunction(L, VectorToQuat);
+    lua_setfield(L, tableIdx, "VectorToQuat");
+
+    lua_pushcfunction(L, RotationToVector);
+    lua_setfield(L, tableIdx, "RotationToVector");
+
+    lua_pushcfunction(L, QuatToVector);
+    lua_setfield(L, tableIdx, "QuatToVector");
 
     lua_pushcfunction(L, SeedRand);
     lua_setfield(L, tableIdx, "SeedRand");

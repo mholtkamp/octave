@@ -12,7 +12,7 @@
 
 #if LUA_ENABLED
 
-inline glm::quat VectorToQuat(glm::vec4 vec)
+inline glm::quat LuaVectorToQuat(glm::vec4 vec)
 {
     glm::quat retQuat;
     retQuat.x = vec.x;
@@ -22,7 +22,7 @@ inline glm::quat VectorToQuat(glm::vec4 vec)
     return retQuat;
 }
 
-inline glm::vec4 QuatToVector(glm::quat quat)
+inline glm::vec4 LuaQuatToVector(glm::quat quat)
 {
     glm::vec4 retVec;
     retVec.x = quat.x;

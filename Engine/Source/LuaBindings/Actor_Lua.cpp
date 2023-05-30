@@ -250,7 +250,7 @@ int Actor_Lua::GetRotationQuat(lua_State* L)
 
     glm::quat rotQuat = actor->GetRotationQuat();
 
-    Vector_Lua::Create(L, QuatToVector(rotQuat));
+    Vector_Lua::Create(L, LuaQuatToVector(rotQuat));
     return 1;
 }
 
@@ -289,7 +289,7 @@ int Actor_Lua::SetRotationQuat(lua_State* L)
     Actor* actor = CHECK_ACTOR(L, 1);
     glm::vec4 rotVec = CHECK_VECTOR(L, 2);
 
-    glm::quat rotQuat = VectorToQuat(rotVec);
+    glm::quat rotQuat = LuaVectorToQuat(rotVec);
     actor->SetRotation(rotQuat);
 
     return 0;

@@ -275,3 +275,47 @@ float Maths::RotateYawTowardDirection(float srcYaw, glm::vec3 dir, float speed, 
     float targetYaw = RADIANS_TO_DEGREES * atan2f(-dir.x, -dir.z);
     return Maths::ApproachAngle(srcYaw, targetYaw, speed, deltaTime);
 }
+
+glm::vec3 Maths::VectorToRotation(glm::vec3 direction)
+{
+    float x = direction.x;
+    float y = direction.y;
+    float z = direction.z;
+
+    float yaw = RADIANS_TO_DEGREES * atan2f(-x, -z);
+    float pitch = RADIANS_TO_DEGREES * atan2f(y, sqrtf(x*x + z * z));
+
+    return glm::vec3(pitch, yaw, 0.0f);
+}
+
+glm::quat Maths::VectorToQuat(glm::vec3 direction)
+{
+    // I'm just going to convert the euler rotation from VectorToRotation() to quat through glm
+    // But also consider using this method:
+    // https://math.stackexchange.com/questions/2356649/how-to-find-the-quaternion-representing-the-rotation-between-two-3-d-vectors
+    glm::vec3 rotationEuler = VectorToRotation(direction);
+    glm::quat retQuat = glm::quat(rotationEuler * DEGREES_TO_RADIANS);
+    return retQuat;
+}
+
+glm::vec3 Maths::QuatToVector(glm::quat quat)
+{
+    glm::vec3 eulerRot = glm::eulerAngles(quat) * RADIANS_TO_DEGREES;
+    return RotationToVector(eulerRot);
+}
+
+glm::vec3 Maths::RotationToVector(glm::vec3 rotation)
+{
+    float pitch = rotation.x;
+    float yaw = rotation.y;
+
+    float sP = sinf(DEGREES_TO_RADIANS * pitch);
+    float cP = cosf(DEGREES_TO_RADIANS * pitch);
+
+    float sY = sinf(DEGREES_TO_RADIANS * yaw);
+    float cY = cosf(DEGREES_TO_RADIANS * yaw);
+
+    glm::vec3 retVec = glm::vec3(-cP * sY, sP, -cP * cY);
+    return retVec;
+}
+
