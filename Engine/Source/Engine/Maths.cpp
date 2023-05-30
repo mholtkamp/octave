@@ -300,8 +300,8 @@ glm::quat Maths::VectorToQuat(glm::vec3 direction)
 
 glm::vec3 Maths::QuatToVector(glm::quat quat)
 {
-    glm::vec3 eulerRot = glm::eulerAngles(quat) * RADIANS_TO_DEGREES;
-    return RotationToVector(eulerRot);
+    glm::vec3 dir = quat * glm::vec3(0.0f, 0.0f, -1.0f);
+    return dir;
 }
 
 glm::vec3 Maths::RotationToVector(glm::vec3 rotation)
