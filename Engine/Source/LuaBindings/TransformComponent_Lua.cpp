@@ -124,7 +124,7 @@ int TransformComponent_Lua::GetRotationQuat(lua_State* L)
 
     glm::quat rotQuat = comp->GetRotationQuat();
 
-    Vector_Lua::Create(L, QuatToVector(rotQuat));
+    Vector_Lua::Create(L, LuaQuatToVector(rotQuat));
     return 1;
 }
 
@@ -163,7 +163,7 @@ int TransformComponent_Lua::SetRotationQuat(lua_State* L)
     TransformComponent* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
     glm::vec4& rotQuat = CHECK_VECTOR(L, 2);
 
-    comp->SetRotation(VectorToQuat(rotQuat));
+    comp->SetRotation(LuaVectorToQuat(rotQuat));
 
     return 0;
 }
@@ -216,7 +216,7 @@ int TransformComponent_Lua::GetAbsoluteRotationQuat(lua_State* L)
 
     glm::quat absQuatEuler = comp->GetAbsoluteRotationQuat();
 
-    Vector_Lua::Create(L, QuatToVector(absQuatEuler));
+    Vector_Lua::Create(L, LuaQuatToVector(absQuatEuler));
     return 1;
 }
 
@@ -255,7 +255,7 @@ int TransformComponent_Lua::SetAbsoluteRotationQuat(lua_State* L)
     TransformComponent* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
     glm::vec4& rotQuat = CHECK_VECTOR(L, 2);
 
-    comp->SetAbsoluteRotation(VectorToQuat(rotQuat));
+    comp->SetAbsoluteRotation(LuaVectorToQuat(rotQuat));
 
     return 0;
 }
@@ -285,7 +285,7 @@ int TransformComponent_Lua::AddRotationQuat(lua_State* L)
     TransformComponent* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
     glm::vec4 deltaVec = CHECK_VECTOR(L, 2);
 
-    glm::quat deltaQuat = VectorToQuat(deltaVec);
+    glm::quat deltaQuat = LuaVectorToQuat(deltaVec);
     comp->AddRotation(deltaQuat);
 
     return 0;
@@ -306,7 +306,7 @@ int TransformComponent_Lua::AddAbsoluteRotationQuat(lua_State* L)
     TransformComponent* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
     glm::vec4 deltaVec = CHECK_VECTOR(L, 2);
 
-    glm::quat deltaQuat = VectorToQuat(deltaVec);
+    glm::quat deltaQuat = LuaVectorToQuat(deltaVec);
     comp->AddAbsoluteRotation(deltaQuat);
 
     return 0;

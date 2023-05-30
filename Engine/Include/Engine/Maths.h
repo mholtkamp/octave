@@ -52,6 +52,11 @@ public:
 
     static float RotateYawTowardDirection(float srcYaw, glm::vec3 dir, float speed, float deltaTime);
 
+    static glm::vec3 VectorToRotation(glm::vec3 direction);
+    static glm::quat VectorToQuat(glm::vec3 direction);
+    static glm::vec3 QuatToVector(glm::quat quat);
+    static glm::vec3 RotationToVector(glm::vec3 rotation);
+
 private:
 
     static bool mRandSeeded;
