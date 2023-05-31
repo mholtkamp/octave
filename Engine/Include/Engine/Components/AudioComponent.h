@@ -49,6 +49,9 @@ public:
     void SetAttenuationFunc(AttenuationFunc func);
     AttenuationFunc GetAttenuationFunc() const;
 
+    void SetAudioClass(int8_t audioClass);
+    int8_t GetAudioClass() const;
+
     void SetLoop(bool loop);
     bool GetLoop() const;
 
@@ -77,6 +80,7 @@ protected:
     float mStartOffset = 0.0f;
     int32_t mPriority = 0;
     AttenuationFunc mAttenuationFunc = AttenuationFunc::Linear;
+    int8_t mAudioClass = -1;
     bool mLoop = false;
     bool mAutoPlay = false;
 

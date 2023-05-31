@@ -15,6 +15,13 @@
 
 // TODO: define max audio sources as AUDIO_MAX_VOICES
 #define MAX_AUDIO_SOURCES AUDIO_MAX_VOICES
+#define MAX_AUDIO_CLASSES 16
+
+struct AudioClassData
+{
+    float mVolume = 1.0f;
+    float mPitch = 1.0f;
+};
 
 struct AudioSource
 {
@@ -27,6 +34,7 @@ struct AudioSource
     float mInnerRadius;
     float mOuterRadius;
     AttenuationFunc mAttenuationFunc;
+    int8_t mAudioClass;
 
     AudioSource()
     {
@@ -42,7 +50,8 @@ struct AudioSource
         glm::vec3 position,
         float innerRadius,
         float outerRadius,
-        AttenuationFunc attenFunc)
+        AttenuationFunc attenFunc,
+        int8_t audioClass)
     {
         mSoundWave = soundWave;
         mComponent = component;
@@ -53,6 +62,7 @@ struct AudioSource
         mInnerRadius = innerRadius;
         mOuterRadius = outerRadius;
         mAttenuationFunc = attenFunc;
+        mAudioClass = glm::clamp<int8_t>(audioClass, 0, MAX_AUDIO_CLASSES - 1);
     }
 
     void Reset()
@@ -66,9 +76,16 @@ struct AudioSource
         mInnerRadius = -1.0f;
         mOuterRadius = -1.0f;
         mAttenuationFunc = AttenuationFunc::Count;
+        mAudioClass = 0;
+    }
+
+    bool IsSpatial() const
+    {
+        return (mInnerRadius >= 0.0f && mOuterRadius > 0.0f);
     }
 };
 
+static AudioClassData sAudioClassData[MAX_AUDIO_CLASSES];
 static AudioSource sAudioSources[MAX_AUDIO_SOURCES];
 
 float CalcVolumeAttenuation(AttenuationFunc func, float innerRadius, float outerRadius, float distance)
@@ -151,11 +168,14 @@ void PlayAudio(
     float innerRadius,
     float outerRadius,
     AttenuationFunc attenFunc,
+    int32_t audioClass,
     bool loop,
     float startTime)
 {
     OCT_ASSERT(sourceIndex < MAX_AUDIO_SOURCES);
     OCT_ASSERT(soundWave != nullptr);
+
+    audioClass = glm::clamp<int8_t>(audioClass, 0, MAX_AUDIO_CLASSES - 1);
 
     sAudioSources[sourceIndex].Set(
         soundWave,
@@ -166,19 +186,21 @@ void PlayAudio(
         position,
         innerRadius,
         outerRadius,
-        attenFunc);
+        attenFunc,
+        audioClass);
 
-    float volume = volumeMult * soundWave->GetVolumeMultiplier();
-    float pitch = pitchMult * soundWave->GetPitchMultiplier();
+    float classVolume = sAudioClassData[audioClass].mVolume;
+    float classPitch = sAudioClassData[audioClass].mPitch;
+
+    float volume = volumeMult * soundWave->GetVolumeMultiplier() * classVolume;
+    float pitch = pitchMult * soundWave->GetPitchMultiplier() * classPitch;
 
     if (component != nullptr)
     {
         component->NotifyAudible(true);
     }
 
-    bool spatial = (innerRadius >= 0.0f &&
-        outerRadius > 0.0f &&
-        attenFunc != AttenuationFunc::Count);
+    bool spatial = sAudioSources[sourceIndex].IsSpatial();
 
     AUD_Play(
         sourceIndex,
@@ -267,6 +289,10 @@ void AudioManager::Update(float deltaTime)
 
     for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
     {
+        int8_t audioClass = sAudioSources[i].mAudioClass;
+        float classVolume = sAudioClassData[audioClass].mVolume;
+        float classPitch = sAudioClassData[audioClass].mPitch;
+
         if (sAudioSources[i].mSoundWave.Get() != nullptr)
         {
             SoundWave* soundWave = sAudioSources[i].mSoundWave.Get<SoundWave>();
@@ -291,9 +317,7 @@ void AudioManager::Update(float deltaTime)
                 StopAudio(i);
                 stopped = true;
             }
-            else if (sAudioSources[i].mInnerRadius >= 0.0f &&
-                sAudioSources[i].mOuterRadius > 0.0f &&
-                sAudioSources[i].mAttenuationFunc != AttenuationFunc::Count)
+            else if (sAudioSources[i].IsSpatial())
             {
                 // Update attenuation of the 3D sound
                 if (sAudioSources[i].mComponent != nullptr)
@@ -324,7 +348,7 @@ void AudioManager::Update(float deltaTime)
                         sAudioSources[i].mOuterRadius,
                         dist);
 
-                    volume = volume * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier();
+                    volume = volume * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier() * classVolume;
                     AUD_SetVolume(i, volume, volume);
 #else
                     float volLeft = 1.0f;
@@ -340,8 +364,8 @@ void AudioManager::Update(float deltaTime)
                         volLeft,
                         volRight);
 
-                    volLeft = volLeft * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier();
-                    volRight = volRight * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier();
+                    volLeft = volLeft * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier() * classVolume;
+                    volRight = volRight * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier() * classVolume;
                     AUD_SetVolume(i, volLeft, volRight);
 #endif
                 }
@@ -406,6 +430,7 @@ void AudioManager::Update(float deltaTime)
                             comp->GetInnerRadius(),
                             comp->GetOuterRadius(),
                             comp->GetAttenuationFunc(),
+                            comp->GetAudioClass(),
                             comp->GetLoop(),
                             startTime);
                     }
@@ -439,6 +464,7 @@ void AudioManager::PlaySound2D(
             -1.0f,
             -1.0f,
             AttenuationFunc::Count,
+            soundWave->GetAudioClass(),
             loop,
             startTime);
     }
@@ -472,6 +498,7 @@ void AudioManager::PlaySound3D(
             innerRadius,
             outerRadius,
             attenFunc,
+            soundWave->GetAudioClass(),
             loop,
             startTime);
     }
@@ -553,3 +580,76 @@ void AudioManager::StopAllSounds()
         }
     }
 }
+
+void AudioManager::SetAudioClassVolume(int8_t audioClass, float volume)
+{
+    if (audioClass >= 0 && audioClass < MAX_AUDIO_CLASSES)
+    {
+        sAudioClassData[audioClass].mVolume = volume;
+
+        // Refresh volume for 2D sounds (3D sounds will naturally adjust their volume on Update()).
+        for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
+        {
+            if (sAudioSources[i].mSoundWave != nullptr &&
+                sAudioSources[i].mAudioClass == audioClass &&
+                !sAudioSources[i].IsSpatial())
+            {
+                float sourceVolume = sAudioSources[i].mVolumeMult;
+                float waveVolume = sAudioSources[i].mSoundWave.Get<SoundWave>()->GetVolumeMultiplier();
+                float classVolume = sAudioClassData[audioClass].mVolume;
+
+                float volume = sourceVolume * waveVolume * classVolume;
+                AUD_SetVolume(i, volume, volume);
+            }
+        }
+    }
+}
+
+void AudioManager::SetAudioClassPitch(int8_t audioClass, float pitch)
+{
+    if (audioClass >= 0 && audioClass < MAX_AUDIO_CLASSES)
+    {
+        sAudioClassData[audioClass].mPitch = pitch;
+
+        // Refresh pitch for 2D sounds (3D sounds will naturally adjust their volume on Update()).
+        for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
+        {
+            if (sAudioSources[i].mSoundWave != nullptr &&
+                sAudioSources[i].mAudioClass == audioClass &&
+                !sAudioSources[i].IsSpatial())
+            {
+                float sourcePitch = sAudioSources[i].mPitchMult;
+                float wavePitch = sAudioSources[i].mSoundWave.Get<SoundWave>()->GetPitchMultiplier();
+                float classPitch = sAudioClassData[audioClass].mPitch;
+
+                float pitch = sourcePitch * wavePitch * classPitch;
+                AUD_SetPitch(i, pitch);
+            }
+        }
+    }
+}
+
+float AudioManager::GetAudioClassVolume(int8_t audioClass)
+{
+    float ret = 1.0f;
+
+    if (audioClass >= 0 && audioClass < MAX_AUDIO_CLASSES)
+    {
+        ret = sAudioClassData[audioClass].mVolume;
+    }
+
+    return ret;
+}
+
+float AudioManager::GetAudioClassPitch(int8_t audioClass)
+{
+    float ret = 1.0f;
+
+    if (audioClass >= 0 && audioClass < MAX_AUDIO_CLASSES)
+    {
+        ret = sAudioClassData[audioClass].mPitch;
+    }
+
+    return ret;
+}
+

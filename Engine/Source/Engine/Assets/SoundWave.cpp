@@ -45,6 +45,7 @@ void SoundWave::LoadStream(Stream& stream, Platform platform)
     // Properties
     mVolumeMultiplier = stream.ReadFloat();
     mPitchMultiplier = stream.ReadFloat();
+    //mAudioClass = stream.ReadInt8();
 
     // Waveform Format
     mNumChannels = stream.ReadUint32();
@@ -72,6 +73,7 @@ void SoundWave::SaveStream(Stream& stream, Platform platform)
     // Properties
     stream.WriteFloat(mVolumeMultiplier);
     stream.WriteFloat(mPitchMultiplier);
+    //stream.WriteInt8(mAudioClass);
 
 #if 1
     if (platform == Platform::GameCube ||
@@ -277,6 +279,7 @@ void SoundWave::GatherProperties(std::vector<Property>& outProps)
 
     outProps.push_back(Property(DatumType::Float, "Volume Multiplier", this, &mVolumeMultiplier));
     outProps.push_back(Property(DatumType::Float, "Pitch Multiplier", this, &mPitchMultiplier));
+    outProps.push_back(Property(DatumType::Byte, "Audio Class", this, &mAudioClass));
 }
 
 glm::vec4 SoundWave::GetTypeColor()
@@ -302,6 +305,16 @@ void SoundWave::SetPitchMultiplier(float pitch)
 float SoundWave::GetPitchMultiplier() const
 {
     return mPitchMultiplier;
+}
+
+void SoundWave::SetAudioClass(int8_t audioClass)
+{
+    mAudioClass = audioClass;
+}
+
+int8_t SoundWave::GetAudioClass() const
+{
+    return mAudioClass;
 }
 
 void SoundWave::SetVolumeMultiplier(float volume)

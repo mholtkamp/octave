@@ -75,6 +75,7 @@ void AudioComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Start Offset", this, &mStartOffset));
     outProps.push_back(Property(DatumType::Integer, "Priority", this, &mPriority));
     outProps.push_back(Property(DatumType::Integer, "Attenuation Func", this, &mAttenuationFunc, 1, nullptr, 0, int32_t(AttenuationFunc::Count), sAttenuationFuncStrings));
+    outProps.push_back(Property(DatumType::Byte, "Audio Class", this, &mAudioClass));
     outProps.push_back(Property(DatumType::Bool, "Loop", this, &mLoop));
     outProps.push_back(Property(DatumType::Bool, "Auto Play", this, &mAutoPlay));
 }
@@ -169,6 +170,7 @@ void AudioComponent::SaveStream(Stream& stream)
     stream.WriteFloat(mStartOffset);
     stream.WriteInt32(mPriority);
     stream.WriteUint32((uint32_t)mAttenuationFunc);
+    //stream.WriteInt8((int8_t)mAudioClass);
     stream.WriteBool(mLoop);
     stream.WriteBool(mAutoPlay);
 }
@@ -185,6 +187,7 @@ void AudioComponent::LoadStream(Stream& stream)
     mStartOffset = stream.ReadFloat();
     mPriority = stream.ReadInt32();
     mAttenuationFunc = (AttenuationFunc)stream.ReadUint32();
+    //mAudioClass = stream.ReadInt8();
     mLoop = stream.ReadBool();
     mAutoPlay = stream.ReadBool();
 }
@@ -267,6 +270,30 @@ void AudioComponent::SetAttenuationFunc(AttenuationFunc func)
 AttenuationFunc AudioComponent::GetAttenuationFunc() const
 {
     return mAttenuationFunc;
+}
+
+void AudioComponent::SetAudioClass(int8_t audioClass)
+{
+    mAudioClass = audioClass;
+}
+
+int8_t AudioComponent::GetAudioClass() const
+{
+    int8_t audioClass = 0;
+    if (mAudioClass < 0)
+    {
+        // Defer to sound wave property
+        if (mSoundWave != nullptr)
+        {
+            audioClass = mSoundWave.Get<SoundWave>()->GetAudioClass();
+        }
+    }
+    else
+    {
+        audioClass = mAudioClass;
+    }
+
+    return audioClass;
 }
 
 void AudioComponent::SetLoop(bool loop)
