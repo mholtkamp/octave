@@ -87,6 +87,8 @@ struct AudioSource
 
 static AudioClassData sAudioClassData[MAX_AUDIO_CLASSES];
 static AudioSource sAudioSources[MAX_AUDIO_SOURCES];
+static float sMasterVolume = 1.0f;
+static float sMasterPitch = 1.0f;
 
 float CalcVolumeAttenuation(AttenuationFunc func, float innerRadius, float outerRadius, float distance)
 {
@@ -192,8 +194,8 @@ void PlayAudio(
     float classVolume = sAudioClassData[audioClass].mVolume;
     float classPitch = sAudioClassData[audioClass].mPitch;
 
-    float volume = volumeMult * soundWave->GetVolumeMultiplier() * classVolume;
-    float pitch = pitchMult * soundWave->GetPitchMultiplier() * classPitch;
+    float volume = volumeMult * soundWave->GetVolumeMultiplier() * classVolume * sMasterVolume;
+    float pitch = pitchMult * soundWave->GetPitchMultiplier() * classPitch * sMasterPitch;
 
     if (component != nullptr)
     {
@@ -348,7 +350,7 @@ void AudioManager::Update(float deltaTime)
                         sAudioSources[i].mOuterRadius,
                         dist);
 
-                    volume = volume * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier() * classVolume;
+                    volume = volume * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier() * classVolume * sMasterVolume;
                     AUD_SetVolume(i, volume, volume);
 #else
                     float volLeft = 1.0f;
@@ -364,8 +366,8 @@ void AudioManager::Update(float deltaTime)
                         volLeft,
                         volRight);
 
-                    volLeft = volLeft * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier() * classVolume;
-                    volRight = volRight * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier() * classVolume;
+                    volLeft = volLeft * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier() * classVolume * sMasterVolume;
+                    volRight = volRight * sAudioSources[i].mVolumeMult * soundWave->GetVolumeMultiplier() * classVolume * sMasterVolume;
                     AUD_SetVolume(i, volLeft, volRight);
 #endif
                 }
@@ -581,27 +583,50 @@ void AudioManager::StopAllSounds()
     }
 }
 
+static void RefreshAudioVolume()
+{
+    // Refresh volume for 2D sounds (3D sounds will naturally adjust their volume on Update()).
+    for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
+    {
+        if (sAudioSources[i].mSoundWave != nullptr)
+        {
+            int8_t audioClass = sAudioSources[i].mAudioClass;
+
+            float sourceVolume = sAudioSources[i].mVolumeMult;
+            float waveVolume = sAudioSources[i].mSoundWave.Get<SoundWave>()->GetVolumeMultiplier();
+            float classVolume = sAudioClassData[audioClass].mVolume;
+
+            float volume = sourceVolume * waveVolume * classVolume * sMasterVolume;
+            AUD_SetVolume(i, volume, volume);
+        }
+    }
+}
+
+static void RefreshAudioPitch()
+{
+    // Refresh pitch for 2D sounds (3D sounds will naturally adjust their volume on Update()).
+    for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
+    {
+        if (sAudioSources[i].mSoundWave != nullptr)
+        {
+            int8_t audioClass = sAudioSources[i].mAudioClass;
+
+            float sourcePitch = sAudioSources[i].mPitchMult;
+            float wavePitch = sAudioSources[i].mSoundWave.Get<SoundWave>()->GetPitchMultiplier();
+            float classPitch = sAudioClassData[audioClass].mPitch;
+
+            float pitch = sourcePitch * wavePitch * classPitch * sMasterPitch;
+            AUD_SetPitch(i, pitch);
+        }
+    }
+}
+
 void AudioManager::SetAudioClassVolume(int8_t audioClass, float volume)
 {
     if (audioClass >= 0 && audioClass < MAX_AUDIO_CLASSES)
     {
         sAudioClassData[audioClass].mVolume = volume;
-
-        // Refresh volume for 2D sounds (3D sounds will naturally adjust their volume on Update()).
-        for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
-        {
-            if (sAudioSources[i].mSoundWave != nullptr &&
-                sAudioSources[i].mAudioClass == audioClass &&
-                !sAudioSources[i].IsSpatial())
-            {
-                float sourceVolume = sAudioSources[i].mVolumeMult;
-                float waveVolume = sAudioSources[i].mSoundWave.Get<SoundWave>()->GetVolumeMultiplier();
-                float classVolume = sAudioClassData[audioClass].mVolume;
-
-                float volume = sourceVolume * waveVolume * classVolume;
-                AUD_SetVolume(i, volume, volume);
-            }
-        }
+        RefreshAudioVolume();
     }
 }
 
@@ -610,22 +635,7 @@ void AudioManager::SetAudioClassPitch(int8_t audioClass, float pitch)
     if (audioClass >= 0 && audioClass < MAX_AUDIO_CLASSES)
     {
         sAudioClassData[audioClass].mPitch = pitch;
-
-        // Refresh pitch for 2D sounds (3D sounds will naturally adjust their volume on Update()).
-        for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
-        {
-            if (sAudioSources[i].mSoundWave != nullptr &&
-                sAudioSources[i].mAudioClass == audioClass &&
-                !sAudioSources[i].IsSpatial())
-            {
-                float sourcePitch = sAudioSources[i].mPitchMult;
-                float wavePitch = sAudioSources[i].mSoundWave.Get<SoundWave>()->GetPitchMultiplier();
-                float classPitch = sAudioClassData[audioClass].mPitch;
-
-                float pitch = sourcePitch * wavePitch * classPitch;
-                AUD_SetPitch(i, pitch);
-            }
-        }
+        RefreshAudioPitch();
     }
 }
 
@@ -651,5 +661,33 @@ float AudioManager::GetAudioClassPitch(int8_t audioClass)
     }
 
     return ret;
+}
+
+void AudioManager::SetMasterVolume(float volume)
+{
+    if (sMasterVolume != volume)
+    {
+        sMasterVolume = volume;
+        RefreshAudioVolume();
+    }
+}
+
+void AudioManager::SetMasterPitch(float pitch)
+{
+    if (sMasterPitch != pitch)
+    {
+        sMasterPitch = pitch;
+        RefreshAudioPitch();
+    }
+}
+
+float AudioManager::GetMasterVolume()
+{
+    return sMasterVolume;
+}
+
+float AudioManager::GetMasterPitch()
+{
+    return sMasterPitch;
 }
 

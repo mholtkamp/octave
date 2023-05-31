@@ -129,6 +129,40 @@ int Audio_Lua::GetAudioClassPitch(lua_State* L)
     return 1;
 }
 
+int Audio_Lua::SetMasterVolume(lua_State* L)
+{
+    float value = CHECK_NUMBER(L, 1);
+
+    AudioManager::SetMasterVolume(value);
+
+    return 0;
+}
+
+int Audio_Lua::GetMasterVolume(lua_State* L)
+{
+    float ret = AudioManager::GetMasterVolume();
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
+int Audio_Lua::SetMasterPitch(lua_State* L)
+{
+    float value = CHECK_NUMBER(L, 1);
+
+    AudioManager::SetMasterPitch(value);
+
+    return 0;
+}
+
+int Audio_Lua::GetMasterPitch(lua_State* L)
+{
+    float ret = AudioManager::GetMasterPitch();
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
 void Audio_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -159,6 +193,18 @@ void Audio_Lua::Bind()
 
     lua_pushcfunction(L, GetAudioClassPitch);
     lua_setfield(L, tableIdx, "GetAudioClassPitch");
+
+    lua_pushcfunction(L, SetMasterVolume);
+    lua_setfield(L, tableIdx, "SetMasterVolume");
+
+    lua_pushcfunction(L, GetMasterVolume);
+    lua_setfield(L, tableIdx, "GetMasterVolume");
+
+    lua_pushcfunction(L, SetMasterPitch);
+    lua_setfield(L, tableIdx, "SetMasterPitch");
+
+    lua_pushcfunction(L, GetMasterPitch);
+    lua_setfield(L, tableIdx, "GetMasterPitch");
 
     lua_setglobal(L, AUDIO_LUA_NAME);
 
