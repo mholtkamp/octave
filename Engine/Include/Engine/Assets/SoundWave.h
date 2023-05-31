@@ -27,6 +27,9 @@ public:
     void SetPitchMultiplier(float pitch);
     float GetPitchMultiplier() const;
 
+    void SetAudioClass(int8_t audioClass);
+    int8_t GetAudioClass() const;
+
     uint8_t* GetWaveData() const;
     uint32_t GetWaveDataSize() const;
     uint32_t GetNumChannels() const;
@@ -48,6 +51,7 @@ protected:
     // Properties
     float mVolumeMultiplier = 1.0f;
     float mPitchMultiplier = 1.0f;
+    int8_t mAudioClass = 0;
 
     // Soundwave Format
     uint32_t mNumChannels = 1;

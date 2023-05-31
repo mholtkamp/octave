@@ -14,6 +14,11 @@ struct Audio_Lua
     static int StopSounds(lua_State* L);
     static int StopAllSounds(lua_State* L);
 
+    static int SetAudioClassVolume(lua_State* L);
+    static int GetAudioClassVolume(lua_State* L);
+    static int SetAudioClassPitch(lua_State* L);
+    static int GetAudioClassPitch(lua_State* L);
+
     static void Bind();
 };
 

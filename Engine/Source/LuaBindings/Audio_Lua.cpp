@@ -89,6 +89,46 @@ int Audio_Lua::StopAllSounds(lua_State* L)
     return 0;
 }
 
+int Audio_Lua::SetAudioClassVolume(lua_State* L)
+{
+    int32_t audioClass = CHECK_INTEGER(L, 1);
+    float volume = CHECK_NUMBER(L, 2);
+
+    AudioManager::SetAudioClassVolume(audioClass, volume);
+
+    return 0;
+}
+
+int Audio_Lua::GetAudioClassVolume(lua_State* L)
+{
+    int32_t audioClass = CHECK_INTEGER(L, 1);
+
+    float volume = AudioManager::GetAudioClassVolume(audioClass);
+
+    lua_pushnumber(L, volume);
+    return 1;
+}
+
+int Audio_Lua::SetAudioClassPitch(lua_State* L)
+{
+    int32_t audioClass = CHECK_INTEGER(L, 1);
+    float pitch = CHECK_NUMBER(L, 2);
+
+    AudioManager::SetAudioClassPitch(audioClass, pitch);
+
+    return 0;
+}
+
+int Audio_Lua::GetAudioClassPitch(lua_State* L)
+{
+    int32_t audioClass = CHECK_INTEGER(L, 1);
+
+    float pitch = AudioManager::GetAudioClassPitch(audioClass);
+
+    lua_pushnumber(L, pitch);
+    return 1;
+}
+
 void Audio_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -107,6 +147,18 @@ void Audio_Lua::Bind()
 
     lua_pushcfunction(L, StopAllSounds);
     lua_setfield(L, tableIdx, "StopAllSounds");
+
+    lua_pushcfunction(L, SetAudioClassVolume);
+    lua_setfield(L, tableIdx, "SetAudioClassVolume");
+
+    lua_pushcfunction(L, GetAudioClassVolume);
+    lua_setfield(L, tableIdx, "GetAudioClassVolume");
+
+    lua_pushcfunction(L, SetAudioClassPitch);
+    lua_setfield(L, tableIdx, "SetAudioClassPitch");
+
+    lua_pushcfunction(L, GetAudioClassPitch);
+    lua_setfield(L, tableIdx, "GetAudioClassPitch");
 
     lua_setglobal(L, AUDIO_LUA_NAME);
 
