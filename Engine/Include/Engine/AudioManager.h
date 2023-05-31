@@ -49,4 +49,9 @@ public:
     static void SetAudioClassPitch(int8_t audioClass, float pitch);
     static float GetAudioClassVolume(int8_t audioClass);
     static float GetAudioClassPitch(int8_t audioClass);
+
+    static void SetMasterVolume(float volume);
+    static void SetMasterPitch(float pitch);
+    static float GetMasterVolume();
+    static float GetMasterPitch();
 };

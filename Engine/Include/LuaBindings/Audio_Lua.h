@@ -19,6 +19,11 @@ struct Audio_Lua
     static int SetAudioClassPitch(lua_State* L);
     static int GetAudioClassPitch(lua_State* L);
 
+    static int SetMasterVolume(lua_State* L);
+    static int GetMasterVolume(lua_State* L);
+    static int SetMasterPitch(lua_State* L);
+    static int GetMasterPitch(lua_State* L);
+
     static void Bind();
 };
 
