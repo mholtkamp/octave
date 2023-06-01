@@ -1,6 +1,11 @@
 #pragma once
 
 #include <stdint.h>
+
+#if PLATFORM_WINDOWS && _DEBUG
+#define GLM_FORCE_INLINE
+#endif
+
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/quaternion.hpp>
