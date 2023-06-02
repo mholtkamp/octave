@@ -93,6 +93,15 @@ int Engine_Lua::Break(lua_State* L)
     return 0;
 }
 
+int Engine_Lua::Alert(lua_State* L)
+{
+    const char* msg = CHECK_STRING(L, 1);
+
+    SYS_Alert(msg);
+
+    return 0;
+}
+
 int Engine_Lua::SetBreakOnScriptError(lua_State* L)
 {
     bool enableBreak = CHECK_BOOLEAN(L, 1);
@@ -213,6 +222,9 @@ void Engine_Lua::Bind()
 
     lua_pushcfunction(L, Engine_Lua::Break);
     lua_setfield(L, tableIdx, "Break");
+
+    lua_pushcfunction(L, Engine_Lua::Alert);
+    lua_setfield(L, tableIdx, "Alert");
 
     lua_pushcfunction(L, Engine_Lua::SetBreakOnScriptError);
     lua_setfield(L, tableIdx, "SetBreakOnScriptError");

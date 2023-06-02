@@ -387,9 +387,17 @@ void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNum
     consoleSelect(&GetEngineState()->mSystem.mPrintConsole);
 
     const char* fileName = strrchr(fileString, '/') ? strrchr(fileString, '/') + 1 : fileString;
-    LogError("[Assert] %s, %s, line %d", exprString, fileName, lineNumber);
+    char str[256];
+    snprintf(str, 256, "[Assert] %s, %s, line %d", exprString, fileName, lineNumber);
 
-    // Display assertion in console view and wait for player to hit A button.
+    SYS_Alert(str);
+}
+
+void SYS_Alert(const char* message)
+{
+    LogError("%s", message);
+
+    // Display alert message in console view and wait for player to hit A button.
     EnableConsole(true);
 
     SYS_Sleep(500);

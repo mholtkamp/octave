@@ -669,6 +669,12 @@ void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNum
     raise(SIGTRAP);
 }
 
+void SYS_Alert(const char* message)
+{
+    LogError("%s", message);
+    raise(SIGTRAP);
+}
+
 void SYS_UpdateConsole()
 {
 

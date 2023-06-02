@@ -750,6 +750,12 @@ void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNum
     DebugBreak();
 }
 
+void SYS_Alert(const char* message)
+{
+    LogError("%s", message);
+    DebugBreak();
+}
+
 void SYS_UpdateConsole()
 {
 
