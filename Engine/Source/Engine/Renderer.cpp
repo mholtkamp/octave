@@ -109,6 +109,9 @@ void Renderer::Initialize()
 void Renderer::GatherProperties(std::vector<Property>& props)
 {
     props.push_back(Property(DatumType::Bool, "Light Fade", nullptr, &mEnableLightFade));
+    props.push_back(Property(DatumType::Integer, "Light Fade Limit", nullptr, &mLightFadeLimit));
+    props.push_back(Property(DatumType::Float, "Light Fade Speed", nullptr, &mLightFadeSpeed));
+
     props.push_back(Property(DatumType::Integer, "Rays Per Pixel", nullptr, &mRaysPerPixel));
     props.push_back(Property(DatumType::Integer, "Max Bounces", nullptr, &mMaxBounces));
     props.push_back(Property(DatumType::Bool, "Accumulate", nullptr, &mPathTraceAccumulate));
@@ -695,7 +698,6 @@ void Renderer::GatherLightData(World* world)
 
     if (mEnableLightFade)
     {
-        const float kFadeSpeed = 1.0f;
         float deltaTime = GetEngineState()->mGameDeltaTime;
         uint32_t lightLimit = glm::min<uint32_t>(mLightFadeLimit, MAX_LIGHTS_PER_DRAW);
         glm::vec3 camPos = GetWorld()->GetActiveCamera()->GetAbsolutePosition();
@@ -794,6 +796,7 @@ void Renderer::GatherLightData(World* world)
                     // Ok, this light is still in the closest N lights.
                     active = true;
                     SetLightData(fadingLight.mData, light);
+                    fadingLight.mColor = fadingLight.mData.mColor;
                     break;
                 }
             }
@@ -801,16 +804,16 @@ void Renderer::GatherLightData(World* world)
             // Step 4 - Fade in/out lights. Adjust alpha and update light color based on alpha.
             if (active)
             {
-                fadingLight.mAlpha += kFadeSpeed * deltaTime;
+                fadingLight.mAlpha += mLightFadeSpeed * deltaTime;
                 fadingLight.mAlpha = glm::min(fadingLight.mAlpha, 1.0f);
             }
             else
             {
-                fadingLight.mAlpha -= kFadeSpeed * deltaTime;
+                fadingLight.mAlpha -= mLightFadeSpeed * deltaTime;
                 fadingLight.mAlpha = glm::max(fadingLight.mAlpha, 0.0f);
             }
 
-            fadingLight.mData.mColor = glm::mix(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), fadingLight.mData.mColor, fadingLight.mAlpha);
+            fadingLight.mData.mColor = glm::mix(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), fadingLight.mColor, fadingLight.mAlpha);
 
             // Step 5 - Copy persistent light data to mLightData if alpha > 0, otherwise remove it from fading light vector
             if (fadingLight.mAlpha <= 0.0f)
