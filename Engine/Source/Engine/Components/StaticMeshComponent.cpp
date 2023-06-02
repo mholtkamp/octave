@@ -236,6 +236,7 @@ void StaticMeshComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
             OCT_UNUSED(collisionMeshIndex); // Only used in EDITOR
 
             btCompoundShape* compoundShape = nullptr;
+            glm::vec3 invScale = 1.0f / GetAbsoluteScale();
 
             if (mCollisionShape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE)
             {
@@ -287,7 +288,7 @@ void StaticMeshComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
                     btBoxShape* boxShape = static_cast<btBoxShape*>(collisionShape);
                     btVector3 halfExtents = boxShape->getHalfExtentsWithMargin();
 
-                    glm::mat4 scale = glm::scale(glm::vec3(1 / mScale.x, 1 / mScale.y, 1 / mScale.z));
+                    glm::mat4 scale = glm::scale(invScale);
                     collisionTransforms[i] = scale * collisionTransforms[i];
                     collisionTransforms[i] = glm::scale(collisionTransforms[i], { halfExtents.x(), halfExtents.y(), halfExtents.z()});
 
@@ -301,7 +302,7 @@ void StaticMeshComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
                     btSphereShape* sphereShape = static_cast<btSphereShape*>(collisionShape);
                     float radius = sphereShape->getRadius();
 
-                    glm::mat4 scale = glm::scale(glm::vec3(1 / mScale.x, 1 / mScale.y, 1 / mScale.z));
+                    glm::mat4 scale = glm::scale(invScale);
                     collisionTransforms[i] = scale * collisionTransforms[i];
                     collisionTransforms[i] = glm::scale(collisionTransforms[i], {radius, radius, radius});
 
