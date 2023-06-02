@@ -273,6 +273,39 @@ int Renderer_Lua::IsWorldRenderingEnabled(lua_State* L)
     return 1;
 }
 
+int Renderer_Lua::IsLightFadeEnabled(lua_State* L)
+{
+    bool ret = Renderer::Get()->IsLightFadeEnabled();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Renderer_Lua::EnableLightFade(lua_State* L)
+{
+    bool value = CHECK_BOOLEAN(L, 1);
+
+    Renderer::Get()->EnableLightFade(value);
+
+    return 0;
+}
+
+int Renderer_Lua::SetLightFadeLimit(lua_State* L)
+{
+    int32_t value = CHECK_INTEGER(L, 1);
+
+    Renderer::Get()->SetLightFadeLimit((uint32_t)value);
+
+    return 0;
+}
+
+int Renderer_Lua::GetLightFadeLimit(lua_State* L)
+{
+    int32_t ret = (int32_t) Renderer::Get()->GetLightFadeLimit();
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
 
 void Renderer_Lua::Bind()
 {
@@ -361,6 +394,18 @@ void Renderer_Lua::Bind()
 
     lua_pushcfunction(L, IsWorldRenderingEnabled);
     lua_setfield(L, tableIdx, "IsWorldRenderingEnabled");
+
+    lua_pushcfunction(L, IsLightFadeEnabled);
+    lua_setfield(L, tableIdx, "IsLightFadeEnabled");
+
+    lua_pushcfunction(L, EnableLightFade);
+    lua_setfield(L, tableIdx, "EnableLightFade");
+
+    lua_pushcfunction(L, SetLightFadeLimit);
+    lua_setfield(L, tableIdx, "SetLightFadeLimit");
+
+    lua_pushcfunction(L, GetLightFadeLimit);
+    lua_setfield(L, tableIdx, "GetLightFadeLimit");
 
     lua_setglobal(L, RENDERER_LUA_NAME);
 

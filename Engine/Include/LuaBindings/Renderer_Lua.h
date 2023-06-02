@@ -36,6 +36,10 @@ struct Renderer_Lua
     static int AddDebugLine(lua_State* L);
     static int EnableWorldRendering(lua_State* L);
     static int IsWorldRenderingEnabled(lua_State* L);
+    static int IsLightFadeEnabled(lua_State* L);
+    static int EnableLightFade(lua_State* L);
+    static int SetLightFadeLimit(lua_State* L);
+    static int GetLightFadeLimit(lua_State* L);
 
     static void Bind();
 };
