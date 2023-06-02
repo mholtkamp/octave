@@ -21,6 +21,24 @@ class CameraFrustum;
 
 struct EngineState;
 
+struct FadingLight
+{
+    // mComponent should only be used for comparisons!! If deleted, we want to fade it out, not crash.
+    LightComponent* mComponent = nullptr;
+    LightData mData = {};
+    float mAlpha = 0.0f;
+
+    FadingLight(LightComponent* comp) : mComponent(comp) {}
+};
+
+struct LightDistance2
+{
+    LightComponent* mComponent = nullptr;
+    float mDistance2 = 0.0f;
+
+    LightDistance2(LightComponent* comp, float dist2) : mComponent(comp), mDistance2(dist2) {}
+};
+
 class Renderer
 {
 public:
@@ -101,6 +119,11 @@ public:
     void EndLightBake();
     bool IsLightBakeInProgress() const;
     float GetLightBakeProgress() const;
+
+    bool IsLightFadeEnabled() const;
+    void EnableLightFade(bool enable);
+    void SetLightFadeLimit(uint32_t limit);
+    uint32_t GetLightFadeLimit() const;
 
     // Property Getters
     uint32_t GetRaysPerPixel() const;
@@ -199,6 +222,9 @@ private:
     bool mEnableWorldRendering = true;
     bool mEnablePathTracing = false;
     bool mInModalWidgetUpdate = false;
+    bool mEnableLightFade = false;
+    uint32_t mLightFadeLimit = 4;
+    std::vector<FadingLight> mFadingLights;
 
     // Path tracing
     uint32_t mRaysPerPixel = 4;

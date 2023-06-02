@@ -108,6 +108,7 @@ void Renderer::Initialize()
 
 void Renderer::GatherProperties(std::vector<Property>& props)
 {
+    props.push_back(Property(DatumType::Bool, "Light Fade", nullptr, &mEnableLightFade));
     props.push_back(Property(DatumType::Integer, "Rays Per Pixel", nullptr, &mRaysPerPixel));
     props.push_back(Property(DatumType::Integer, "Max Bounces", nullptr, &mMaxBounces));
     props.push_back(Property(DatumType::Bool, "Accumulate", nullptr, &mPathTraceAccumulate));
@@ -659,43 +660,183 @@ void Renderer::GatherDrawData(World* world)
     }
 }
 
+static void SetLightData(LightData& lightData, LightComponent* comp)
+{
+    lightData.mDomain = comp->GetLightingDomain();
+    lightData.mPosition = comp->GetAbsolutePosition();
+    lightData.mColor = comp->GetColor();
+
+    RuntimeId id = comp->InstanceRuntimeId();
+
+    if (id == PointLightComponent::ClassRuntimeId())
+    {
+        PointLightComponent* pointComp = comp->As<PointLightComponent>();
+        lightData.mType = LightType::Point;
+        lightData.mRadius = pointComp->GetRadius();
+        lightData.mDirection = { 0.0f, 0.0f, 0.0f };
+
+    }
+    else if (id == DirectionalLightComponent::ClassRuntimeId())
+    {
+        DirectionalLightComponent* dirComp = comp->As<DirectionalLightComponent>();
+        lightData.mType = LightType::Directional;
+        lightData.mDirection = dirComp->GetDirection();
+        lightData.mRadius = 0.0f;
+    }
+}
+
 void Renderer::GatherLightData(World* world)
 {
+    static std::vector<LightDistance2> sClosestLights;
+    sClosestLights.clear();
+
     mLightData.clear();
     const std::vector<LightComponent*>& comps = world->GetLightComponents();
 
-    for (uint32_t i = 0; i < comps.size(); ++i)
+    if (mEnableLightFade)
     {
-        if (comps[i]->IsVisible() 
-#if !EDITOR
-            && comps[i]->GetLightingDomain() != LightingDomain::Static
-#endif
-            )
+        const float kFadeSpeed = 1.0f;
+        float deltaTime = GetEngineState()->mGameDeltaTime;
+        uint32_t lightLimit = glm::min<uint32_t>(mLightFadeLimit, MAX_LIGHTS_PER_DRAW);
+        glm::vec3 camPos = GetWorld()->GetActiveCamera()->GetAbsolutePosition();
+
+        // Step 1 - Determine the closest N lights
+        for (uint32_t i = 0; i < comps.size(); ++i)
         {
-            LightData lightData;
-            lightData.mDomain = comps[i]->GetLightingDomain();
-            lightData.mPosition = comps[i]->GetAbsolutePosition();
-            lightData.mColor = comps[i]->GetColor();
-
-            RuntimeId id = comps[i]->InstanceRuntimeId();
-
-            if (id == PointLightComponent::ClassRuntimeId())
+            if (!comps[i]->IsVisible()
+#if !EDITOR
+                || comps[i]->GetLightingDomain() == LightingDomain::Static
+#endif
+                )
             {
-                PointLightComponent* pointComp = comps[i]->As<PointLightComponent>();
-                lightData.mType = LightType::Point;
-                lightData.mRadius = pointComp->GetRadius();
-                lightData.mDirection = { 0.0f, 0.0f, 0.0f };
-
-            }
-            else if (id == DirectionalLightComponent::ClassRuntimeId())
-            {
-                DirectionalLightComponent* dirComp = comps[i]->As<DirectionalLightComponent>();
-                lightData.mType = LightType::Directional;
-                lightData.mDirection = dirComp->GetDirection();
-                lightData.mRadius = 0.0f;
+                continue;
             }
 
-            mLightData.push_back(lightData);
+            glm::vec3 lightPos = comps[i]->GetAbsolutePosition();
+            bool directional = comps[i]->IsDirectionalLightComponent();
+
+            float dist2 = directional ? 0.0f : glm::distance2(lightPos, camPos);
+
+            if (sClosestLights.size() < lightLimit)
+            {
+                sClosestLights.push_back({ comps[i], dist2 });
+            }
+            else
+            {
+                // We need to evict the farthest light (if it is farther than this cur light)
+                int32_t farthestIdx = -1;
+                float farthestDist = 0.0f;
+
+                for (uint32_t j = 0; j < sClosestLights.size(); ++j)
+                {
+                    if (sClosestLights[j].mDistance2 > dist2 &&
+                        sClosestLights[j].mDistance2 > farthestDist)
+                    {
+                        farthestIdx = (int32_t)j;
+                        farthestDist = sClosestLights[j].mDistance2;
+                    }
+                }
+
+                // We found a light to evict.
+                if (farthestIdx >= 0)
+                {
+                    sClosestLights[farthestIdx] = { comps[i], dist2 };
+                }
+            }
+        }
+
+        // Step 2 - If there is space, add the closest lights to the fading light list (if not already in it).
+        std::sort(sClosestLights.begin(),
+            sClosestLights.end(),
+            [](const LightDistance2& l, const LightDistance2& r)
+            {
+                return l.mDistance2 < r.mDistance2;
+            });
+
+        for (uint32_t i = 0; i < sClosestLights.size(); ++i)
+        {
+            if (mFadingLights.size() < lightLimit)
+            {
+                bool alreadyFading = false;
+                for (uint32_t j = 0; j < mFadingLights.size(); ++j)
+                {
+                    if (mFadingLights[j].mComponent == sClosestLights[i].mComponent)
+                    {
+                        alreadyFading = true;
+                        break;
+                    }
+                }
+
+                if (!alreadyFading)
+                {
+                    mFadingLights.push_back(FadingLight(sClosestLights[i].mComponent));
+                }
+            }
+            else
+            {
+                // FadingLights vector is full.
+                break;
+            }
+        }
+
+        for (int32_t i = int32_t(mFadingLights.size()) - 1; i >= 0; --i)
+        {
+            // Step 3 - Determine which of the persistent N lights need to be faded out.
+            bool active = false;
+            FadingLight& fadingLight = mFadingLights[i];
+
+            for (uint32_t j = 0; j < sClosestLights.size(); ++j)
+            {
+                if (fadingLight.mComponent == sClosestLights[j].mComponent)
+                {
+                    LightComponent* light = sClosestLights[j].mComponent;
+
+                    // Ok, this light is still in the closest N lights.
+                    active = true;
+                    SetLightData(fadingLight.mData, light);
+                    break;
+                }
+            }
+
+            // Step 4 - Fade in/out lights. Adjust alpha and update light color based on alpha.
+            if (active)
+            {
+                fadingLight.mAlpha += kFadeSpeed * deltaTime;
+                fadingLight.mAlpha = glm::min(fadingLight.mAlpha, 1.0f);
+            }
+            else
+            {
+                fadingLight.mAlpha -= kFadeSpeed * deltaTime;
+                fadingLight.mAlpha = glm::max(fadingLight.mAlpha, 0.0f);
+            }
+
+            fadingLight.mData.mColor = glm::mix(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), fadingLight.mData.mColor, fadingLight.mAlpha);
+
+            // Step 5 - Copy persistent light data to mLightData if alpha > 0, otherwise remove it from fading light vector
+            if (fadingLight.mAlpha <= 0.0f)
+            {
+                mFadingLights.erase(mFadingLights.begin() + i);
+            }
+            else
+            {
+                mLightData.push_back(fadingLight.mData);
+            }
+        }
+    }
+    else
+    {
+        for (uint32_t i = 0; i < comps.size(); ++i)
+        {
+            if (comps[i]->IsVisible()
+#if !EDITOR
+                && comps[i]->GetLightingDomain() != LightingDomain::Static
+#endif
+                )
+            {
+                LightData lightData;
+                SetLightData(lightData, comps[i]);
+                mLightData.push_back(lightData);
+            }
         }
     }
 }
@@ -1236,6 +1377,26 @@ bool Renderer::IsLightBakeInProgress() const
 float Renderer::GetLightBakeProgress() const
 {
     return GFX_GetLightBakeProgress();
+}
+
+bool Renderer::IsLightFadeEnabled() const
+{
+    return mEnableLightFade;
+}
+
+void Renderer::EnableLightFade(bool enable)
+{
+    mEnableLightFade = enable;
+}
+
+void Renderer::SetLightFadeLimit(uint32_t limit)
+{
+    mLightFadeLimit = limit;
+}
+
+uint32_t Renderer::GetLightFadeLimit() const
+{
+    return mLightFadeLimit;
 }
 
 uint32_t Renderer::GetRaysPerPixel() const
