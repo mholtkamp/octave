@@ -26,6 +26,7 @@ struct FadingLight
     // mComponent should only be used for comparisons!! If deleted, we want to fade it out, not crash.
     LightComponent* mComponent = nullptr;
     LightData mData = {};
+    glm::vec4 mColor = { 0.0f, 0.0f, 0.0f, 0.0f };
     float mAlpha = 0.0f;
 
     FadingLight(LightComponent* comp) : mComponent(comp) {}
@@ -224,6 +225,7 @@ private:
     bool mInModalWidgetUpdate = false;
     bool mEnableLightFade = false;
     uint32_t mLightFadeLimit = 4;
+    float mLightFadeSpeed = 1.0f;
     std::vector<FadingLight> mFadingLights;
 
     // Path tracing
