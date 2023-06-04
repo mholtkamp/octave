@@ -273,7 +273,7 @@ vec3 PathTrace(Ray ray, inout uint rngState)
 
             // For now, only unlit objects can emit light.
             float emission = material.mEmission;
-            if (unlit || hasBakedLighting)
+            if (/*unlit ||*/ hasBakedLighting)
             {
                 emission = max(emission, 1.0);
             }
