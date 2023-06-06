@@ -226,7 +226,7 @@ void ParticleComponent::Simulate(float deltaTime)
     float modDeltaTime = deltaTime * mTimeMultiplier;
 
     // This is the COMPONENT active var... not mEmit
-    if (mActive)
+    if (mActive && mEnableSimulation)
     {
         KillExpiredParticles(modDeltaTime);
         UpdateParticles(modDeltaTime);
@@ -341,6 +341,16 @@ void ParticleComponent::SetAlwaysSimulate(bool alwaysSimulate)
 bool ParticleComponent::ShouldAlwaysSimulate() const
 {
     return mAlwaysSimulate;
+}
+
+void ParticleComponent::EnableSimulation(bool simulate)
+{
+    mEnableSimulation = simulate;
+}
+
+bool ParticleComponent::IsSimulationEnabled() const
+{
+    return mEnableSimulation;
 }
 
 uint32_t ParticleComponent::GetNumParticles()

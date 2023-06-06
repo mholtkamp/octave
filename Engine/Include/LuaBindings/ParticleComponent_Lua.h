@@ -20,6 +20,8 @@ struct ParticleComponent_Lua
     static int Reset(lua_State* L);
     static int EnableEmission(lua_State* L);
     static int IsEmissionEnabled(lua_State* L);
+    static int EnableSimulation(lua_State* L);
+    static int IsSimulationEnabled(lua_State* L);
     static int EnableAutoEmit(lua_State* L);
     static int IsAutoEmitEnabled(lua_State* L);
     static int GetElapsedTime(lua_State* L);
