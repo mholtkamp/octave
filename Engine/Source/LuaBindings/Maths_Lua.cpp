@@ -86,6 +86,34 @@ int Maths_Lua::NormalizeRange(lua_State* L)
     return 1;
 }
 
+int Maths_Lua::Map(lua_State* L)
+{
+    float inX = CHECK_NUMBER(L, 1);
+    float inMin = CHECK_NUMBER(L, 2);
+    float inMax = CHECK_NUMBER(L, 3);
+    float outMin = CHECK_NUMBER(L, 4);
+    float outMax = CHECK_NUMBER(L, 5);
+
+    float outX = Maths::Map(inX, inMin, inMax, outMin, outMax);
+
+    lua_pushnumber(L, outX);
+    return 1;
+}
+
+int Maths_Lua::MapClamped(lua_State* L)
+{
+    float inX = CHECK_NUMBER(L, 1);
+    float inMin = CHECK_NUMBER(L, 2);
+    float inMax = CHECK_NUMBER(L, 3);
+    float outMin = CHECK_NUMBER(L, 4);
+    float outMax = CHECK_NUMBER(L, 5);
+
+    float outX = Maths::MapClamped(inX, inMin, inMax, outMin, outMax);
+
+    lua_pushnumber(L, outX);
+    return 1;
+}
+
 int Maths_Lua::IsPowerOfTwo(lua_State* L)
 {
     bool ret = false;
@@ -364,6 +392,12 @@ void Maths_Lua::Bind()
 
     lua_pushcfunction(L, NormalizeRange);
     lua_setfield(L, tableIdx, "NormalizeRange");
+
+    lua_pushcfunction(L, Map);
+    lua_setfield(L, tableIdx, "Map");
+
+    lua_pushcfunction(L, MapClamped);
+    lua_setfield(L, tableIdx, "MapClamped");
 
     lua_pushcfunction(L, IsPowerOfTwo);
     lua_setfield(L, tableIdx, "IsPowerOfTwo");
