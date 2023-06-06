@@ -204,11 +204,12 @@ void Property::PushBackVector(void* value)
 
 void Property::EraseVector(uint32_t index)
 {
-    OCT_ASSERT(mExternal);
-    OCT_ASSERT(mVector);
+    OCT_ASSERT((mExternal == (mVector != nullptr)));
+    OCT_ASSERT(mIsVector);
 
-    if (mVector)
+    if (mExternal)
     {
+        OCT_ASSERT(mVector != nullptr);
         switch (mType)
         {
         case DatumType::Integer:
@@ -289,17 +290,23 @@ void Property::EraseVector(uint32_t index)
 
         mCount--;
     }
+    else
+    {
+        Erase(index);
+    }
 }
 
 void Property::ResizeVector(uint32_t count)
 {
-    OCT_ASSERT(mExternal);
-    OCT_ASSERT(mVector);
+    OCT_ASSERT((mExternal == (mVector != nullptr)));
+    OCT_ASSERT(mIsVector);
 
     count = glm::clamp<uint32_t>(count, 0u, 255u);
 
-    if (mVector)
+    if (mExternal)
     {
+        OCT_ASSERT(mVector != nullptr);
+
         switch (mType)
         {
         case DatumType::Integer:
@@ -389,6 +396,10 @@ void Property::ResizeVector(uint32_t count)
 
         mCount = count;
     }
+    else
+    {
+        SetCount(count);
+    }
 }
 
 Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
@@ -399,7 +410,6 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
 
     if (mExternal)
     {
-        // Vector properties should only be used with external data.
         OCT_ASSERT(mData.vp);
         OCT_ASSERT(!mVector);
 
