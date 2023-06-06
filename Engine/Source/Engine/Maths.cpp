@@ -160,6 +160,25 @@ float Maths::NormalizeRange(float value, float start, float end)
     return ret;
 }
 
+float Maths::Map(float inX, float inMin, float inMax, float outMin, float outMax)
+{
+    return outMin + ((inX - inMin) / (inMax - inMin)) * (outMax - outMin);
+}
+
+float Maths::MapClamped(float inX, float inMin, float inMax, float outMin, float outMax)
+{
+    float outX = Maths::Map(inX, inMin, inMax, outMin, outMax);
+    if (outMin <= outMax)
+    {
+        outX = glm::clamp(outX, outMin, outMax);
+    }
+    else
+    {
+        outX = glm::clamp(outX, outMax, outMin);
+    }
+    return outX;
+}
+
 glm::vec3 Maths::SafeNormalize(glm::vec3 vector)
 {
     glm::vec3 normalizedVector = glm::vec3(0.0f, 0.0f, 0.0f);
