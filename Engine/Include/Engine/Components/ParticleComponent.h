@@ -84,6 +84,9 @@ public:
     void SetAlwaysSimulate(bool alwaysSimulate);
     bool ShouldAlwaysSimulate() const;
 
+    void EnableSimulation(bool simulate);
+    bool IsSimulationEnabled() const;
+
     uint32_t GetNumParticles();
     uint32_t GetNumVertices();
     const std::vector<Particle>& GetParticles();
@@ -121,6 +124,7 @@ protected:
     float mTimeMultiplier = 1.0f;
     bool mUseLocalSpace = false;
     bool mAlwaysSimulate = true;
+    bool mEnableSimulation = true;
     ParticleOrientation mOrientation = ParticleOrientation::Billboard;
 
     // Graphics Resource

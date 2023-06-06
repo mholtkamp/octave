@@ -39,6 +39,26 @@ int ParticleComponent_Lua::IsEmissionEnabled(lua_State* L)
     return 1;
 }
 
+int ParticleComponent_Lua::EnableSimulation(lua_State* L)
+{
+    ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    comp->EnableSimulation(value);
+
+    return 0;
+}
+
+int ParticleComponent_Lua::IsSimulationEnabled(lua_State* L)
+{
+    ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+
+    bool ret = comp->IsSimulationEnabled();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int ParticleComponent_Lua::EnableAutoEmit(lua_State* L)
 {
     ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
@@ -244,6 +264,12 @@ void ParticleComponent_Lua::Bind()
 
     lua_pushcfunction(L, IsEmissionEnabled);
     lua_setfield(L, mtIndex, "IsEmissionEnabled");
+
+    lua_pushcfunction(L, EnableSimulation);
+    lua_setfield(L, mtIndex, "EnableSimulation");
+
+    lua_pushcfunction(L, IsSimulationEnabled);
+    lua_setfield(L, mtIndex, "IsSimulationEnabled");
 
     lua_pushcfunction(L, GetElapsedTime);
     lua_setfield(L, mtIndex, "GetElapsedTime");
