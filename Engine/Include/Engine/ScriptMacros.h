@@ -17,11 +17,21 @@
 #define SF_CHECK_WIDGET(L, Arg) CheckWidgetLuaType(L, Arg, "Widget", "cfWidget")
 #define SF_CHECK_RTTI(L, Arg) CheckRttiLuaType(L, Arg)
 
+#define SF_CHECK_ACTOR_OR_NIL(L, arg) CheckActorOrNilLuaType(L, arg, "Actor", "cfActor")
+#define SF_CHECK_COMPONENT_OR_NIL(L, arg) CheckComponentOrNilLuaType(L, arg, "Component", "cfComponent")
+#define SF_CHECK_ASSET_OR_NIL(L, Arg) CheckAssetOrNilLuaType<Asset>(L, Arg, "Asset", "cfAsset")
+#define SF_CHECK_WIDGET_OR_NIL(L, Arg) CheckWidgetOrNilLuaType(L, Arg, "Widget", "cfWidget")
+#define SF_CHECK_RTTI_OR_NIL(L, Arg) CheckRttiOrNilLuaType(L, Arg)
+
 // Parameter macros
 #define SpActor(idx) SF_CHECK_ACTOR(L, idx)
 #define SpComponent(idx) SF_CHECK_COMPONENT(L, idx)
 #define SpAsset(idx) SF_CHECK_ASSET(L, idx)
 #define SpWidget(idx) SF_CHECK_WIDGET(L, idx)
+#define SpActorOrNil(idx) SF_CHECK_ACTOR_OR_NIL(L, idx)
+#define SpComponentOrNil(idx) SF_CHECK_COMPONENT_OR_NIL(L, idx)
+#define SpAssetOrNil(idx) SF_CHECK_ASSET_OR_NIL(L, idx)
+#define SpWidgetOrNil(idx) SF_CHECK_WIDGET_OR_NIL(L, idx)
 #define SpVector(idx) LuaObjectToDatum(L, idx)
 #define SpInt(idx) lua_tointeger(L, idx)
 #define SpIndex(idx) (lua_tointeger(L, idx) - 1)
