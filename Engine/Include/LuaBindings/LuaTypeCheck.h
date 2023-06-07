@@ -59,8 +59,14 @@ T* CheckAssetLuaType(lua_State* L, int arg, const char* className, const char* c
 Actor* CheckActorLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
 Component* CheckComponentLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
 Widget* CheckWidgetLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
-
 RTTI* CheckRttiLuaType(lua_State* L, int arg);
+
+Asset* CheckAssetOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
+Actor* CheckActorOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
+Component* CheckComponentOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
+Widget* CheckWidgetOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
+RTTI* CheckRttiOrNilLuaType(lua_State* L, int arg);
+
 
 const char* CheckTableName(lua_State* L, int arg);
 

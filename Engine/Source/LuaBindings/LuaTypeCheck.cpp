@@ -96,6 +96,31 @@ RTTI* CheckRttiLuaType(lua_State* L, int arg)
     return rtti;
 }
 
+Asset* CheckAssetOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
+{
+    return lua_isnil(L, arg) ? nullptr : CheckAssetLuaType<Asset>(L, arg, className, classFlag);
+}
+
+Actor* CheckActorOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
+{
+    return lua_isnil(L, arg) ? nullptr : CheckActorLuaType(L, arg, className, classFlag);
+}
+
+Component* CheckComponentOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
+{
+    return lua_isnil(L, arg) ? nullptr : CheckComponentLuaType(L, arg, className, classFlag);
+}
+
+Widget* CheckWidgetOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
+{
+    return lua_isnil(L, arg) ? nullptr : CheckWidgetLuaType(L, arg, className, classFlag);
+}
+
+RTTI* CheckRttiOrNilLuaType(lua_State* L, int arg)
+{
+    return lua_isnil(L, arg) ? nullptr : CheckRttiLuaType(L, arg);
+}
+
 const char* CheckTableName(lua_State* L, int arg)
 {
     const char* tableName = "";
