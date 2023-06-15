@@ -2,6 +2,7 @@
 
 #include "Components/PrimitiveComponent.h"
 #include "Assets/Material.h"
+#include "Assets/MaterialInstance.h"
 
 #if EDITOR
 #include <assimp/scene.h>
@@ -29,6 +30,7 @@ public:
     virtual Material* GetMaterial() = 0;
     Material* GetMaterialOverride();
     virtual void SetMaterialOverride(Material* material);
+    MaterialInstance* InstantiateMaterial();
 
     bool IsBillboard() const;
     void SetBillboard(bool billboard);

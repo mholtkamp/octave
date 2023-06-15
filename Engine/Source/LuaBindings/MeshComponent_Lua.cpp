@@ -44,6 +44,16 @@ int MeshComponent_Lua::SetMaterialOverride(lua_State* L)
     return 0;
 }
 
+int MeshComponent_Lua::InstantiateMaterial(lua_State* L)
+{
+    MeshComponent* comp = CHECK_MESH_COMPONENT(L, 1);
+
+    MaterialInstance* matInst = comp->InstantiateMaterial();
+
+    Asset_Lua::Create(L, matInst);
+    return 1;
+}
+
 int MeshComponent_Lua::IsBillboard(lua_State* L)
 {
     MeshComponent* comp = CHECK_MESH_COMPONENT(L, 1);
@@ -82,6 +92,9 @@ void MeshComponent_Lua::Bind()
 
     lua_pushcfunction(L, SetMaterialOverride);
     lua_setfield(L, mtIndex, "SetMaterialOverride");
+
+    lua_pushcfunction(L, InstantiateMaterial);
+    lua_setfield(L, mtIndex, "InstantiateMaterial");
 
     lua_pushcfunction(L, IsBillboard);
     lua_setfield(L, mtIndex, "IsBillboard");

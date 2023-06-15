@@ -1,6 +1,7 @@
 #include "Components/MeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Assets/MaterialInstance.h"
 #include "Engine.h"
 #include "World.h"
 
@@ -72,6 +73,14 @@ Material* MeshComponent::GetMaterialOverride()
 void MeshComponent::SetMaterialOverride(Material* material)
 {
     mMaterialOverride = material;
+}
+
+MaterialInstance* MeshComponent::InstantiateMaterial()
+{
+    Material* mat = GetMaterial();
+    MaterialInstance* matInst = MaterialInstance::New(mat);
+    SetMaterialOverride(matInst);
+    return matInst;
 }
 
 bool MeshComponent::IsBillboard() const
