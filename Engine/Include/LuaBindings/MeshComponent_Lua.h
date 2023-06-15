@@ -20,6 +20,7 @@ struct MeshComponent_Lua
     static int GetMaterial(lua_State* L);
     static int GetMaterialOverride(lua_State* L);
     static int SetMaterialOverride(lua_State* L);
+    static int InstantiateMaterial(lua_State* L);
 
     static int IsBillboard(lua_State* L);
     static int SetBillboard(lua_State* L);
