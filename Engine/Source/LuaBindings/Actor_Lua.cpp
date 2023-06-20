@@ -105,6 +105,28 @@ int Actor_Lua::DestroyComponent(lua_State* L)
     return 0;
 }
 
+int Actor_Lua::BeginPlay(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+
+    if (!actor->HasBegunPlay())
+    {
+        actor->BeginPlay();
+    }
+
+    return 0;
+}
+
+int Actor_Lua::HasBegunPlay(lua_State* L)
+{
+    Actor* actor = CHECK_ACTOR(L, 1);
+
+    bool ret = actor->HasBegunPlay();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Actor_Lua::IsA(lua_State* L)
 {
     CHECK_ACTOR(L, 1);
@@ -719,6 +741,12 @@ void Actor_Lua::Bind()
 
     lua_pushcfunction(L, Actor_Lua::DestroyComponent);
     lua_setfield(L, mtIndex, "DestroyComponent");
+
+    lua_pushcfunction(L, Actor_Lua::BeginPlay);
+    lua_setfield(L, mtIndex, "BeginPlay");
+
+    lua_pushcfunction(L, Actor_Lua::HasBegunPlay);
+    lua_setfield(L, mtIndex, "HasBegunPlay");
 
     lua_pushcfunction(L, Actor_Lua::IsA);
     lua_setfield(L, mtIndex, "IsA");
