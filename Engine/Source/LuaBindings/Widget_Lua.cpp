@@ -26,7 +26,7 @@ int Widget_Lua::Create(lua_State* L, Widget* widget)
         if (lua_isnil(L, -1))
         {
             // Could not find this type's metatable, so just use top level
-            LogWarning("Could not find object's metatable, so the top-level metatable will be used.")
+            LogWarning("Could not find object's metatable, so the top-level metatable will be used.");
 
             lua_pop(L, 1);
             luaL_getmetatable(L, WIDGET_LUA_NAME);
