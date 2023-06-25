@@ -747,6 +747,12 @@ void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 {
     vprintf(format, arg);
     printf("\n");
+
+    // Also print to visual studio
+    char msg[1024];
+    vsnprintf(msg, 1024, format, arg);
+    OutputDebugString(msg);
+    OutputDebugString("\n");
 }
 
 void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
