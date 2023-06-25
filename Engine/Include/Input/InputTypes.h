@@ -323,6 +323,9 @@ enum KeyCode
 };
 
 // TODO: Use these button values in INP_Update()
+
+/*
+TODO: ANDROID-PLAT - These enum names conflict with the GamepadButtonCode enum above.
 enum GamepadCode
 {
     GAMEPAD_A = 96,
@@ -353,6 +356,7 @@ enum GamepadCode
     GAMEPAD_AXIS_LTRIGGER = 17,
     GAMEPAD_AXIS_RTRIGGER = 18
 };
+*/
 
 #elif PLATFORM_3DS
 

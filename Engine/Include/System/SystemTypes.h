@@ -13,6 +13,13 @@
 #include <unistd.h>
 #include <xcb/xcb.h>
 #include <pthread.h>
+#elif PLATFORM_ANDROID
+#include <stdio.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <pthread.h>
 #elif PLATFORM_DOLPHIN
 #include <gccore.h>
 #include <dirent.h>
@@ -29,7 +36,7 @@
 typedef HANDLE ThreadHandle;
 typedef HANDLE MutexHandle;
 typedef DWORD ThreadFuncRet;
-#elif PLATFORM_LINUX
+#elif (PLATFORM_LINUX || PLATFORM_ANDROID)
 typedef pthread_t ThreadHandle;
 typedef pthread_mutex_t MutexHandle;
 typedef void* ThreadFuncRet;
@@ -61,7 +68,7 @@ struct DirEntry
 #if PLATFORM_WINDOWS
     WIN32_FIND_DATA mFindData = { };
     HANDLE mFindHandle = nullptr;
-#elif PLATFORM_LINUX
+#elif (PLATFORM_LINUX || PLATFORM_ANDROID)
     DIR* mDir = nullptr;
 #elif PLATFORM_DOLPHIN
     DIR* mDir = nullptr;
