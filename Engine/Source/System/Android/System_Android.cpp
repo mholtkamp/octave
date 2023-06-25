@@ -15,9 +15,10 @@
 #include <assert.h>
 #include <signal.h>
 
-#include <android_native_app_glue.h>
+//#include <android_native_app_glue.h>
 #include <android/input.h>
 #include <android/window.h>
+#include <android/log.h>
 
 void SYS_Initialize()
 {
@@ -358,8 +359,21 @@ void SYS_UnmountMemoryCard()
 // Misc
 void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 {
-    vprintf(format, arg);
-    printf("\n");
+    int logPrio = ANDROID_LOG_INFO;
+    switch (severity)
+    {
+        case LogSeverity::Warning:
+            logPrio = ANDROID_LOG_WARN;
+            break;
+        case LogSeverity::Error:
+            logPrio = ANDROID_LOG_ERROR;
+            break;
+        default:
+            logPrio = ANDROID_LOG_INFO;
+            break;
+    }
+
+    __android_log_vprint(logPrio, "Octave", format, arg);
 }
 
 void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
