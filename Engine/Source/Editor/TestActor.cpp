@@ -84,7 +84,7 @@ void TestActor::Create()
 
     // Print out all Actor factories.
     {
-        LogDebug("----Actor Types----")
+        LogDebug("----Actor Types----");
         std::vector<Factory*>& factoryList = GetFactoryList();
         
         for (uint32_t i = 0; i < factoryList.size(); ++i)
@@ -94,7 +94,7 @@ void TestActor::Create()
     }
 
     {
-        LogDebug("----Component Types----")
+        LogDebug("----Component Types----");
         std::vector<Factory*>& factoryList = Component::GetFactoryList();
         
         for (uint32_t i = 0; i < factoryList.size(); ++i)
@@ -105,7 +105,7 @@ void TestActor::Create()
 
 
     {
-        LogDebug("----Asset Types----")
+        LogDebug("----Asset Types----");
         std::vector<Factory*>& factoryList = Asset::GetFactoryList();
         
         for (uint32_t i = 0; i < factoryList.size(); ++i)

@@ -113,7 +113,7 @@ void Level::Destroy()
 
 void Level::Import(const std::string& path, ImportOptions* options)
 {
-    LogWarning("Level::Import() not implemented.")
+    LogWarning("Level::Import() not implemented.");
 }
 
 void Level::GatherProperties(std::vector<Property>& outProps)

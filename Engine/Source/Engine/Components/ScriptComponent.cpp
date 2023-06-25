@@ -534,7 +534,7 @@ void ScriptComponent::GatherScriptProperties()
                             }
                             else
                             {
-                                LogWarning("Invalid script property found.")
+                                LogWarning("Invalid script property found.");
                             }
                         }
 
@@ -778,7 +778,7 @@ void ScriptComponent::GatherReplicatedData()
                             }
                             else
                             {
-                                LogWarning("Invalid script net datum found.")
+                                LogWarning("Invalid script net datum found.");
                             }
                         }
 

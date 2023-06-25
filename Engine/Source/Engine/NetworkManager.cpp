@@ -488,7 +488,7 @@ void NetworkManager::Disconnect()
     }
     else
     {
-        LogWarning("NetworkManager::Disconnect() called but not connected/connecting to a remote session.")
+        LogWarning("NetworkManager::Disconnect() called but not connected/connecting to a remote session.");
     }
 }
 
@@ -1773,7 +1773,7 @@ void NetworkManager::UpdateReliablePackets(float deltaTime)
         {
             if (!UpdateReliablePackets(&mClients[i], deltaTime))
             {
-                LogWarning("Kicking client because of undeliverable reliable message.")
+                LogWarning("Kicking client because of undeliverable reliable message.");
                 Kick(mClients[i].mHost.mId, NetMsgKick::Reason::Timeout);
                 --i;
             }
@@ -1784,7 +1784,7 @@ void NetworkManager::UpdateReliablePackets(float deltaTime)
     {
         if (!UpdateReliablePackets(&mServer, deltaTime))
         {
-            LogWarning("Disconnecting from server because of undeliverable reliable message.")
+            LogWarning("Disconnecting from server because of undeliverable reliable message.");
             Disconnect();
         }
     }

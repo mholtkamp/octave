@@ -246,7 +246,7 @@ void WidgetHierarchyPanel::DeleteWidget(Widget* widget)
         }
         else
         {
-            LogWarning("Cannot delete native child widget.")
+            LogWarning("Cannot delete native child widget.");
         }
     }
 }

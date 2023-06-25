@@ -15,6 +15,10 @@
 #include <assert.h>
 #include <signal.h>
 
+#include <android_native_app_glue.h>
+#include <android/input.h>
+#include <android/window.h>
+
 void SYS_Initialize()
 {
 
@@ -352,6 +356,12 @@ void SYS_UnmountMemoryCard()
 }
 
 // Misc
+void SYS_Log(LogSeverity severity, const char* format, va_list arg)
+{
+    vprintf(format, arg);
+    printf("\n");
+}
+
 void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
 {
     const char* fileName = strrchr(fileString, '/') ? strrchr(fileString, '/') + 1 : fileString;

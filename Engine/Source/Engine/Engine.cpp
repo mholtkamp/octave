@@ -595,7 +595,7 @@ void ReloadAllScripts(bool restartComponents)
         }
     }
 
-    LogDebug("--Reloaded All Scripts--")
+    LogDebug("--Reloaded All Scripts--");
 
 #endif
 }

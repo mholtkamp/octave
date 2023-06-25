@@ -289,7 +289,7 @@ void WidgetViewportPanel::HandleDefaultControls()
                 }
                 else
                 {
-                    LogWarning("Cannot delete native child widget.")
+                    LogWarning("Cannot delete native child widget.");
                 }
             }
         }

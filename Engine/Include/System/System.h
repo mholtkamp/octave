@@ -3,6 +3,7 @@
 #include "System/SystemTypes.h"
 
 #include <string>
+#include <stdarg.h>
 
 class Stream;
 
@@ -54,6 +55,7 @@ bool SYS_DeleteSave(const char* saveName);
 void SYS_UnmountMemoryCard();
 
 // Misc
+void SYS_Log(LogSeverity severity, const char* format, va_list arg);
 void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber);
 void SYS_Alert(const char* message);
 void SYS_UpdateConsole();

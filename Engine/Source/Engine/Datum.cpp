@@ -149,7 +149,7 @@ void Datum::SetType(DatumType type)
     }
     else
     {
-        LogError("Datum type has already been set and cannot be changed with SetType()")
+        LogError("Datum type has already been set and cannot be changed with SetType()");
         OCT_ASSERT(0);
     }
 }

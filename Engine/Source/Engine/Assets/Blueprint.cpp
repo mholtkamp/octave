@@ -486,7 +486,7 @@ Actor* Blueprint::Instantiate(World* world, bool addNetwork)
     }
     else
     {
-        LogError("Failed to instantiate blueprint. Invalid Type.")
+        LogError("Failed to instantiate blueprint. Invalid Type.");
     }
 
     return retActor;

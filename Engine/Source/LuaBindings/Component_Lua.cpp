@@ -25,7 +25,7 @@ int Component_Lua::Create(lua_State* L, Component* component)
         luaL_getmetatable(L, component->GetClassName());
         if (lua_isnil(L, -1))
         {
-            LogWarning("Could not find object's metatable, so the top-level metatable will be used.")
+            LogWarning("Could not find object's metatable, so the top-level metatable will be used.");
 
             // Could not find this type's metatable, so just use Component
             lua_pop(L, 1);

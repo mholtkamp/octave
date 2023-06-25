@@ -90,6 +90,11 @@ struct SystemState
     xcb_window_t mXcbWindow = 0;
     xcb_intern_atom_reply_t* mAtomDeleteWindow = nullptr;
     xcb_cursor_t mNullCursor = XCB_NONE;
+#elif PLATFORM_ANDROID
+    struct android_app* mAndroidApp = nullptr;
+    ANativeWindow* mWindow = nullptr;
+    ANativeActivity* mActivity = nullptr;
+    
 #elif PLATFORM_DOLPHIN
     void* mFrameBuffers[2] = { };
     void* mConsoleBuffer = nullptr;
@@ -104,3 +109,11 @@ struct SystemState
 #endif
 };
 
+enum class LogSeverity : uint32_t
+{
+    Debug,
+    Warning,
+    Error,
+
+    Count
+};
