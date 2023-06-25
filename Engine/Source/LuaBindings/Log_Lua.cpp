@@ -11,7 +11,7 @@ int Log_Lua::Debug(lua_State* L)
 {
     const char* string = CHECK_STRING(L, 1);
 
-    LogDebug(string);
+    LogDebug("%s", string);
 
     return 0;
 }
@@ -20,7 +20,7 @@ int Log_Lua::Warning(lua_State* L)
 {
     const char* string = CHECK_STRING(L, 1);
 
-    LogWarning(string);
+    LogWarning("%s", string);
 
     return 0;
 }
@@ -29,7 +29,7 @@ int Log_Lua::Error(lua_State* L)
 {
     const char* string = CHECK_STRING(L, 1);
 
-    LogError(string);
+    LogError("%s", string);
 
     return 0;
 }
@@ -39,7 +39,7 @@ int Log_Lua::Console(lua_State* L)
     const char* string = CHECK_STRING(L, 1);
     glm::vec4 color = CHECK_VECTOR(L, 2);
 
-    LogConsole(color, string);
+    LogConsole(color, "%s", string);
 
     return 0;
 }

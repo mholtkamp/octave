@@ -1,3 +1,5 @@
+#if EDITOR
+
 #include "Widgets/ActionList.h"
 
 #include "Renderer.h"
@@ -136,3 +138,5 @@ void ActionList::Hide()
         Renderer::Get()->SetModalWidget(nullptr);
     }
 }
+
+#endif
