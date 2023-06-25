@@ -172,6 +172,18 @@
     <Filter Include="Header Files\Engine\Assets">
       <UniqueIdentifier>{394964a1-e36b-418f-b50d-b9b7fa351d6b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Audio\Android">
+      <UniqueIdentifier>{e10803b1-23e8-4d48-8b3a-6b7b43f7b3bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input\Android">
+      <UniqueIdentifier>{9bc64031-2f4c-4939-844b-19ce40796422}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Network\Android">
+      <UniqueIdentifier>{e4823e5d-4725-4144-8daa-71c3edbfd79c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\System\Android">
+      <UniqueIdentifier>{357599d0-a3f2-48cb-8918-ad140e561af9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Graphics\Vulkan\VulkanUtils.cpp">
@@ -788,6 +800,18 @@
     </ClCompile>
     <ClCompile Include="Source\Graphics\Vulkan\RayTracer.cpp">
       <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Audio\Android\Audio_Android.cpp">
+      <Filter>Source Files\Audio\Android</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Input\Android\Input_Android.cpp">
+      <Filter>Source Files\Input\Android</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Network\Android\Network_Android.cpp">
+      <Filter>Source Files\Network\Android</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\System\Android\System_Android.cpp">
+      <Filter>Source Files\System\Android</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
