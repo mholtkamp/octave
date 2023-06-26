@@ -53,3 +53,7 @@ bool INP_IsGamepadButtonJustUp(int32_t gamepadButton, int32_t gamepadIndex);
 float INP_GetGamepadAxisValue(int32_t gamepadAxis, int32_t gamepadIndex);
 GamepadType INP_GetGamepadType(int32_t gamepadIndex);
 bool INP_IsGamepadConnected(int32_t gamepadIndex);
+int32_t INP_GetGamepadIndex(int32_t inputDevice);
+void INP_SetGamepadAxisValue(GamepadAxisCode axisCode, float axisValue, int32_t gamepadIndex);
+void INP_SetGamepadButton(GamepadButtonCode buttonCode, int32_t gamepadIndex);
+void INP_ClearGamepadButton(GamepadButtonCode buttonCode, int32_t gamepadIndex);

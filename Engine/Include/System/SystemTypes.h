@@ -102,6 +102,7 @@ struct SystemState
     //EGLContext mContext = ???;
     int32_t mWidth= 100;
     int32_t mHeight = 100;
+    bool mWindowInitialized = false;
 #elif PLATFORM_DOLPHIN
     void* mFrameBuffers[2] = { };
     void* mConsoleBuffer = nullptr;

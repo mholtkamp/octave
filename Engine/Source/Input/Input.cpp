@@ -384,3 +384,59 @@ bool INP_IsGamepadConnected(int32_t gamepadIndex)
     InputState& input = GetEngineState()->mInput;
     return input.mGamepads[gamepadIndex].mConnected;
 }
+
+int32_t INP_GetGamepadIndex(int32_t inputDevice)
+{
+    // This is really only used for Android right now? Possibly move into Input_Android.cpp
+    int32_t i = 0;
+    InputState& input = GetEngineState()->mInput;
+
+    for (i = 0; i < INPUT_MAX_GAMEPADS; i++)
+    {
+        if (input.mGamepads[i].mDevice == inputDevice)
+        {
+            return i;
+        }
+        else if (input.mGamepads[i].mDevice == -1)
+        {
+            // We didn't find the gamepad, and this slot isn't used, so assign it.
+            // On android, I'm currently doing a simple implementation where once a controller is
+            // detected for the first time, it is always connected.
+            input.mGamepads[i].mDevice = inputDevice;
+            input.mGamepads[i].mConnected = true;
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+void INP_SetGamepadAxisValue(GamepadAxisCode axisCode, float axisValue, int32_t gamepadIndex)
+{
+    if (gamepadIndex >= 0 &&
+        gamepadIndex < INPUT_MAX_GAMEPADS)
+    {
+        InputState& input = GetEngineState()->mInput;
+        input.mGamepads[gamepadIndex].mAxes[(int32_t)axisCode] = axisValue;
+    }
+}
+
+void INP_SetGamepadButton(GamepadButtonCode buttonCode, int32_t gamepadIndex)
+{
+    if (gamepadIndex >= 0 &&
+        gamepadIndex < INPUT_MAX_GAMEPADS)
+    {
+        InputState& input = GetEngineState()->mInput;
+        input.mGamepads[gamepadIndex].mButtons[(int32_t)buttonCode] = 1;
+    }
+}
+
+void INP_ClearGamepadButton(GamepadButtonCode buttonCode, int32_t gamepadIndex)
+{
+    if (gamepadIndex >= 0 &&
+        gamepadIndex < INPUT_MAX_GAMEPADS)
+    {
+        InputState& input = GetEngineState()->mInput;
+        input.mGamepads[gamepadIndex].mButtons[(int32_t)buttonCode] = 0;
+    }
+}
