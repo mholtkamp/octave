@@ -20,15 +20,32 @@
 #include <android/log.h>
 #include <android/asset_manager.h>
 
-
 static GamepadButtonCode GetGamepadButtonCodeFromKey(int key)
 {
-    GamepadButtonCode buttonCode = GamepadButtonCode::GAMEPAD_A;
+    // Setting default value (if somehow the key doesn't match) to C?
+    GamepadButtonCode code = GamepadButtonCode::GAMEPAD_C;
 
-    //switch (key)
-    //{
-    //    case 
-    //}
+    switch (key)
+    {
+        case 96: code = GamepadButtonCode::GAMEPAD_A; break;
+        case 97: code = GamepadButtonCode::GAMEPAD_B; break;
+        case 98: code = GamepadButtonCode::GAMEPAD_C; break;
+        case 99: code = GamepadButtonCode::GAMEPAD_X; break;
+        case 100: code = GamepadButtonCode::GAMEPAD_Y; break;
+        case 101: code = GamepadButtonCode::GAMEPAD_Z; break;
+        case 102: code = GamepadButtonCode::GAMEPAD_L1; break;
+        case 103: code = GamepadButtonCode::GAMEPAD_R1; break;
+        case 104: code = GamepadButtonCode::GAMEPAD_L2; break;
+        case 105: code = GamepadButtonCode::GAMEPAD_R2; break;
+        case 106: code = GamepadButtonCode::GAMEPAD_THUMBL; break;
+        case 107: code = GamepadButtonCode::GAMEPAD_THUMBR; break;
+        case 108: code = GamepadButtonCode::GAMEPAD_START; break;
+        case 109: code = GamepadButtonCode::GAMEPAD_SELECT; break;
+
+        default: break;
+    }
+
+    return code;
 }
 
 static void HandleCommand(struct android_app* app,
@@ -207,7 +224,7 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
             if (source & AINPUT_SOURCE_GAMEPAD)
             {
                 int gamepadIndex = INP_GetGamepadIndex(device);
-                INP_SetGamepadButton(GetGamepadCodeFromKey(key), gamepadIndex);
+                INP_SetGamepadButton(GetGamepadButtonCodeFromKey(key), gamepadIndex);
             }
             else
             {
@@ -223,7 +240,7 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
             if (source & AINPUT_SOURCE_GAMEPAD)
             {
                 int gamepadIndex = INP_GetGamepadIndex(device);
-                INP_ClearGamepadButton(GetGamepadCodeFromKey(key), gamepadIndex);
+                INP_ClearGamepadButton(GetGamepadButtonCodeFromKey(key), gamepadIndex);
             }
             else
             {
