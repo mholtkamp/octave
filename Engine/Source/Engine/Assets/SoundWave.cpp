@@ -217,7 +217,7 @@ void SoundWave::Import(const std::string& path, ImportOptions* options)
 
 #if EDITOR
     Stream wavStream;
-    wavStream.ReadFile(path.c_str());
+    wavStream.ReadFile(path.c_str(), false);
     uint8_t* wavData = (uint8_t*) wavStream.GetData();
 
     char fileFormat[5] = {};

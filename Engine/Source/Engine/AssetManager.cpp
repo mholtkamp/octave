@@ -245,7 +245,7 @@ void AssetManager::Discover(const char* directoryName, const char* directoryPath
                 {
                     Stream stream;
                     std::string path = directory->mPath + dirEntry.mFilename;
-                    stream.ReadFile(path.c_str(), sizeof(AssetHeader));
+                    stream.ReadFile(path.c_str(), true, sizeof(AssetHeader));
 
                     AssetHeader header = Asset::ReadHeader(stream);
                     RegisterAsset(dirEntry.mFilename, header.mType, directory, nullptr, engineDir);

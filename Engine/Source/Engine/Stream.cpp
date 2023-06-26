@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define ACQUIRE_FILE_DIRECTLY 1
+
 #define MAX_FILE_SIZE (1024 * 1024 * 1024)
 #define MAX_STRING_SIZE (1024 * 16)
 
@@ -39,6 +41,8 @@ Stream::~Stream()
 {
     if (!mExternal && mData != nullptr)
     {
+        // We need to use free() here because SYS_AcquireFileData() calls malloc().
+        // And we use that allocated data directly when ACQUIRE_FILE_DIRECTLY is enabled.
         free(mData);
         mData = nullptr;
     }
@@ -69,7 +73,7 @@ void Stream::SetPos(uint32_t pos)
     }
 }
 
-void Stream::ReadFile(const char* path, int32_t maxSize)
+void Stream::ReadFile(const char* path, bool isAsset, int32_t maxSize)
 {
     OCT_ASSERT(!mExternal);
     if (mExternal)
@@ -78,27 +82,36 @@ void Stream::ReadFile(const char* path, int32_t maxSize)
         return;
     }
 
-    FILE* file = fopen(path, "rb");
-    OCT_ASSERT(file != nullptr);
-
-    if (file != nullptr)
+#if ACQUIRE_FILE_DIRECTLY
+    // This method avoids the extra allocation and copy.
+    if (mData != nullptr)
     {
-        int32_t fileSize = 0;
-        fseek(file, 0, SEEK_END);
-        fileSize = ftell(file);
-        fseek(file, 0, SEEK_SET);
+        free(mData);
+        mData = nullptr;
+        mSize = 0;
+        mCapacity = 0;
+    }
+    SYS_AcquireFileData(path, isAsset, maxSize, mData, mSize);
+    mCapacity = mSize;
+    mPos = 0;
 
-        if (maxSize > 0)
-        {
-            fileSize = glm::min(fileSize, maxSize);
-        }
+    if (mData == nullptr)
+    {
+        LogError("Stream failed to read file: %s", path);
+    }
+#else
+    char* fileData = nullptr;
+    uint32_t fileSize = 0;
+    SYS_AcquireFileData(path, isAsset, maxSize, fileData, fileSize);
 
+    if (fileData != nullptr)
+    {
         OCT_ASSERT(fileSize <= MAX_FILE_SIZE);
         Reserve(fileSize);
-        fread(mData, fileSize, 1, file);
+        memcpy(mData, fileData, fileSize);
 
-        fclose(file);
-        file = nullptr;
+        SYS_ReleaseFileData(fileData);
+        fileData = nullptr;
 
         mSize = fileSize;
         mPos = 0;
@@ -107,6 +120,7 @@ void Stream::ReadFile(const char* path, int32_t maxSize)
     {
         LogError("Stream failed to read file: %s", path);
     }
+#endif
 }
 
 void Stream::WriteFile(const char* path)
@@ -437,6 +451,24 @@ void Stream::WriteMatrix(const glm::mat4& src)
     {
         Write(srcArray[i]);
     }
+}
+
+std::string Stream::GetLine()
+{
+    const char* line = nullptr;
+
+    if (mPos < mSize)
+    {
+
+    }
+
+    return "";
+}
+
+int32_t Stream::ScanLine(const char* format, ...)
+{
+    // Use vsscanf()
+    return 0;
 }
 
 void Stream::Grow(uint32_t newSize)

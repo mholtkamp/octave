@@ -242,7 +242,7 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
 
     // (3) Use a stream to read the converted file, and copy all the data into outData
     Stream stream;
-    stream.ReadFile(outPath.c_str());
+    stream.ReadFile(outPath.c_str(), false);
     outData.resize(stream.GetSize());
     memcpy(outData.data(), stream.GetData(), stream.GetSize());
 #endif

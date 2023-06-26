@@ -5,6 +5,7 @@
 #include "Assertion.h"
 #include "Maths.h"
 #include <stdint.h>
+#include <stdarg.h>
 #include <string.h>
 
 #include "System/SystemConstants.h"
@@ -27,7 +28,7 @@ public:
     uint32_t GetPos();
     void SetPos(uint32_t pos);
 
-    void ReadFile(const char* path, int32_t maxSize = 0);
+    void ReadFile(const char* path, bool isAsset, int32_t maxSize = 0);
     void WriteFile(const char* path);
 
     void SetAsyncRequest(AsyncLoadRequest* request);
@@ -68,6 +69,9 @@ public:
     void WriteVec4(const glm::vec4& src);
     void WriteQuat(const glm::quat& src);
     void WriteMatrix(const glm::mat4& src);
+
+    std::string GetLine();
+    int32_t ScanLine(const char* format, ...);
 
 private:
 

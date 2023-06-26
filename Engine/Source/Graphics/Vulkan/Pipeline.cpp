@@ -97,7 +97,7 @@ void Pipeline::CreateGraphicsPipeline()
     if (mFragmentShaderPath != "")
     {
         Stream stream;
-        stream.ReadFile(mFragmentShaderPath.c_str());
+        stream.ReadFile(mFragmentShaderPath.c_str(), true);
         fragShaderModule = CreateShaderModule(stream.GetData(), stream.GetSize());
     }
 
@@ -217,7 +217,7 @@ void Pipeline::CreateGraphicsPipeline()
         const VertexConfig vertexConfig = mVertexConfigs[i];
 
         Stream stream;
-        stream.ReadFile(vertexConfig.mVertexShaderPath.c_str());
+        stream.ReadFile(vertexConfig.mVertexShaderPath.c_str(), true);
 
         VkShaderModule vertShaderModule;
         vertShaderModule = CreateShaderModule(stream.GetData(), stream.GetSize());
@@ -283,7 +283,7 @@ void Pipeline::CreateComputePipeline()
     VkDevice device = GetVulkanDevice();
 
     Stream stream;
-    stream.ReadFile(mComputeShaderPath.c_str());
+    stream.ReadFile(mComputeShaderPath.c_str(), true);
 
     VkShaderModule computeShaderModule;
     computeShaderModule = CreateShaderModule(stream.GetData(), stream.GetSize());
