@@ -259,14 +259,19 @@ void SYS_Initialize()
     LogDebug("ANDROID --- SYS_Initialize()!");
     app_dummy();
 
-    SystemState& system = GetEngineState()->mSystem;
+    EngineState* engineState = GetEngineState();
+    SystemState& system = engineState->mSystem;
     android_app* state = system.mState;
     system.mWindow = state->window;
     system.mActivity = state->activity;
 
+    engineState->mWindowWidth = ANativeWindow_getWidth(state->window);
+    engineState->mWindowHeight = ANativeWindow_getHeight(state->window);
+
     state->onAppCmd = HandleCommand;
     state->onInputEvent = HandleInput;
     
+#if 0
     // Keep processing events until window is initialized.
     while (true)
     {
@@ -281,6 +286,7 @@ void SYS_Initialize()
             }
         }
     }
+#endif
 
 }
 
@@ -291,7 +297,22 @@ void SYS_Shutdown()
 
 void SYS_Update()
 {
+    // Read all pending events.
+    int ident;
+    int events;
+    android_poll_source* source;
 
+    // If not animating, we will block forever waiting for events.
+    // If animating, we loop until all events are read, then continue
+    // to draw the next frame of animation.
+    while ((ident = ALooper_pollAll(0, nullptr, &events, (void**)&source)) >= 0)
+    {
+        // Process this event.
+        if (source != nullptr)
+        {
+            source->process(GetEngineState()->mSystem.mState, source);
+        }
+    }
 }
 
 // Files
