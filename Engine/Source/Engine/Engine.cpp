@@ -676,6 +676,7 @@ int32_t WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdL
 void android_main(struct android_app* state)
 {
     sEngineState.mSystem.mState = state;
+
     int32_t argc = 0;
     char** argv = nullptr;
 #else

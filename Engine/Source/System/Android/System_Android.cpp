@@ -20,10 +20,251 @@
 #include <android/log.h>
 #include <android/asset_manager.h>
 
+
+static GamepadButtonCode GetGamepadButtonCodeFromKey(int key)
+{
+    GamepadButtonCode buttonCode = GamepadButtonCode::GAMEPAD_A;
+
+    //switch (key)
+    //{
+    //    case 
+    //}
+}
+
+static void HandleCommand(struct android_app* app,
+    int cmd)
+{
+    switch (cmd)
+    {
+    case APP_CMD_INIT_WINDOW:
+    {
+        LogDebug("APP_CMD_INIT_WINDOW");
+        // The window is being shown, get it ready.
+        if (app->window != NULL)
+        {
+            InitializeGraphics(app->window);
+            nInitialized = 1;
+            Render();
+        }
+        break;
+    }
+    case APP_CMD_TERM_WINDOW:
+    {
+        LogDebug("APP_CMD_TERM_WINDOW");
+        // The window is being hidden or closed, clean it up.
+        //Shutdown();
+        break;
+    }
+    case APP_CMD_GAINED_FOCUS:
+    {
+        LogDebug("APP_CMD_GAINED_FOCUS");
+        // Enable rendering again.
+        s_ucStatus |= VAKZ_ACTIVE;
+        break;
+    }
+    case APP_CMD_LOST_FOCUS:
+    {
+        LogDebug("APP_CMD_LOST_FOCUS");
+        // Disable rendering.
+        s_ucStatus &= (~VAKZ_ACTIVE);
+        break;
+    }
+    case APP_CMD_START:
+    {
+        LogDebug("APP_CMD_START");
+        break;
+    }
+    case APP_CMD_RESUME:
+    {
+        LogDebug("APP_CMD_RESUME");
+        break;
+    }
+    case APP_CMD_PAUSE:
+    {
+        LogDebug("APP_CMD_PAUSE");
+        break;
+    }
+    case APP_CMD_STOP:
+    {
+        LogDebug("APP_CMD_STOP");
+        s_ucStatus |= VAKZ_QUIT;
+        break;
+    }
+    case APP_CMD_DESTROY:
+    {
+        LogDebug("APP_CMD_DESTROY");
+        s_ucStatus |= VAKZ_QUIT;
+        break;
+    }
+
+    }
+}
+
+static int HandleInput(struct android_app* app, AInputEvent* event)
+{
+    int device = 0;
+    int source = 0;
+
+    device = AInputEvent_getDeviceId(event);
+    source = AInputEvent_getSource(event) & 0xffffff00;
+
+    EngineState* engineState = GetEngineState();
+
+    if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION)
+    {
+        int action = AMotionEvent_getAction(event);
+        int pointer = (0xff00 & action) >> 8;
+        action = 0x00ff & action;
+
+        if (action == AMOTION_EVENT_ACTION_DOWN)
+        {
+            INP_SetTouch(pointer);
+            INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, pointer)),
+                (engineState->mWindowHeight - 1) - static_cast<int>(AMotionEvent_getY(event, pointer)),
+                pointer);
+            return 1;
+        }
+        else if (action == AMOTION_EVENT_ACTION_UP)
+        {
+            INP_ClearTouch(pointer);
+            INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, pointer)),
+                (engineState->mWindowHeight - 1) - static_cast<int>(AMotionEvent_getY(event, pointer)),
+                pointer);
+            return 1;
+        }
+        else if (action == AMOTION_EVENT_ACTION_POINTER_DOWN)
+        {
+            INP_SetTouch(pointer);
+            INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, pointer)),
+                (engineState->mWindowHeight - 1) - static_cast<int>(AMotionEvent_getY(event, pointer)),
+                pointer);
+            return 1;
+        }
+        else if (action == AMOTION_EVENT_ACTION_POINTER_UP)
+        {
+            INP_ClearTouch(pointer);
+            INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, pointer)),
+                (engineState->mWindowHeight - 1) - static_cast<int>(AMotionEvent_getY(event, pointer)),
+                pointer);
+            return 1;
+        }
+        else if (action == AMOTION_EVENT_ACTION_MOVE)
+        {
+            for (int ptr = 0; ptr < INPUT_MAX_TOUCHES; ptr++)
+            {
+                INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, ptr)),
+                    (engineState->mWindowHeight - 1) - static_cast<int>(AMotionEvent_getY(event, ptr)),
+                    ptr);
+            }
+
+            if (source & AINPUT_SOURCE_JOYSTICK)
+            {
+                int gamepadIndex = INP_GetGamepadIndex(device);
+
+                float axisX = AMotionEvent_getAxisValue(event,
+                    AMOTION_EVENT_AXIS_X,
+                    0);
+                float axisY = AMotionEvent_getAxisValue(event,
+                    AMOTION_EVENT_AXIS_Y,
+                    0);
+                float axisZ = AMotionEvent_getAxisValue(event,
+                    AMOTION_EVENT_AXIS_Z,
+                    0);
+                float axisRZ = AMotionEvent_getAxisValue(event,
+                    AMOTION_EVENT_AXIS_RZ,
+                    0);
+                //float axisHatX = AMotionEvent_getAxisValue(event,
+                //    AMOTION_EVENT_AXIS_HAT_X,
+                //    0);
+                //float axisHatY = AMotionEvent_getAxisValue(event,
+                //    AMOTION_EVENT_AXIS_HAT_Y,
+                //    0);
+                float axisTriggerL = AMotionEvent_getAxisValue(event,
+                    AMOTION_EVENT_AXIS_LTRIGGER,
+                    0);
+                float axisTriggerR = AMotionEvent_getAxisValue(event,
+                    AMOTION_EVENT_AXIS_RTRIGGER,
+                    0);
+
+                INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_LTHUMB_X, axisX, gamepadIndex);
+                INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_LTHUMB_Y, axisY, gamepadIndex);
+                INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_RTHUMB_X, axisZ, gamepadIndex);
+                INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_RTHUMB_Y, axisRZ, gamepadIndex);
+                INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_LTRIGGER, axisTriggerL, gamepadIndex);
+                INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_RTRIGGER, axisTriggerR, gamepadIndex);
+            }
+            return 1;
+        }
+    }
+    else if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY)
+    {
+        int action = AKeyEvent_getAction(event);
+
+        if (action == AKEY_EVENT_ACTION_DOWN)
+        {
+            int key = AKeyEvent_getKeyCode(event);
+
+            if (source & AINPUT_SOURCE_GAMEPAD)
+            {
+                int gamepadIndex = INP_GetGamepadIndex(device);
+                INP_SetGamepadButton(GetGamepadCodeFromKey(key), gamepadIndex);
+            }
+            else
+            {
+                INP_SetKey(key);
+            }
+
+            return 1;
+        }
+        else if (action == AKEY_EVENT_ACTION_UP)
+        {
+            int key = AKeyEvent_getKeyCode(event);
+
+            if (source & AINPUT_SOURCE_GAMEPAD)
+            {
+                int gamepadIndex = INP_GetGamepadIndex(device);
+                INP_ClearGamepadButton(GetGamepadCodeFromKey(key), gamepadIndex);
+            }
+            else
+            {
+                INP_ClearKey(key);
+            }
+
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 void SYS_Initialize()
 {
     LogDebug("ANDROID --- SYS_Initialize()!");
     app_dummy();
+
+    SystemState& system = GetEngineState()->mSystem;
+    android_app* state = system.mState;
+    system.mWindow = state->window;
+    system.mActivity = state->activity;
+
+    state->onAppCmd = HandleCommand;
+    state->onInputEvent = HandleInput;
+    
+    // Keep processing events until window is initialized.
+    while (true)
+    {
+        int ident;
+        int events;
+        android_poll_source* source;
+        while ((ident = ALooper_pollAll(system.mWindowInitialized ? 0 : -1, nullptr, &events, (void **)&source)) >= 0)
+        {
+            if (source != nullptr)
+            {
+                source->process(state, source);
+            }
+        }
+    }
+
 }
 
 void SYS_Shutdown()
