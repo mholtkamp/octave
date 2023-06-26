@@ -59,7 +59,7 @@ static void HandleCommand(struct android_app* app,
         // The window is being shown, get it ready.
         if (app->window != NULL)
         {
-            InitializeGraphics(app->window);
+            //InitializeGraphics(app->window);
             GetEngineState()->mSystem.mWindowInitialized = true;
             //Render();
         }
