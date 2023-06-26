@@ -1698,7 +1698,7 @@ void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*,
             Stream stream;
             
             // Handle special case for level
-            stream.ReadFile(packPath.c_str());
+            stream.ReadFile(packPath.c_str(), false);
             uint32_t size = uint32_t(stream.GetSize());
             char* data = stream.GetData();
 
@@ -1785,7 +1785,7 @@ void ActionManager::GenerateEmbeddedScriptFiles(
             Stream stream;
 
             // Handle special case for level
-            stream.ReadFile(luaFile.c_str());
+            stream.ReadFile(luaFile.c_str(), false);
             uint32_t size = uint32_t(stream.GetSize());
             char* data = stream.GetData();
 

@@ -161,7 +161,7 @@ void Asset::LoadFile(const char* path, AsyncLoadRequest* request)
 
     Stream stream;
     stream.SetAsyncRequest(request);
-    stream.ReadFile(path);
+    stream.ReadFile(path, true);
     LoadStream(stream, GetPlatform());
 
     // Only "finish" the load if not async.
