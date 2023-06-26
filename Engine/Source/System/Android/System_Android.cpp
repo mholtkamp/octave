@@ -18,6 +18,7 @@
 #include <android/input.h>
 #include <android/window.h>
 #include <android/log.h>
+#include <android/asset_manager.h>
 
 void SYS_Initialize()
 {
