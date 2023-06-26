@@ -22,7 +22,6 @@ class Component;
 Platform GetPlatform();
 
 bool DoesFileExist(const char* filename);
-std::vector<char> ReadFile(const std::string& filename);
 
 std::string GetCurrentDirectoryPath();
 void SetWorkingDirectory(const std::string& dirPath);

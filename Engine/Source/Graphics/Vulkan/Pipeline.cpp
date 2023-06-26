@@ -96,8 +96,9 @@ void Pipeline::CreateGraphicsPipeline()
 
     if (mFragmentShaderPath != "")
     {
-        vector<char> fragShaderCode = ReadFile(mFragmentShaderPath);
-        fragShaderModule = CreateShaderModule(fragShaderCode);
+        Stream stream;
+        stream.ReadFile(mFragmentShaderPath.c_str());
+        fragShaderModule = CreateShaderModule(stream.GetData(), stream.GetSize());
     }
 
     VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
@@ -214,10 +215,12 @@ void Pipeline::CreateGraphicsPipeline()
     for (uint32_t i = 0; i < mVertexConfigs.size(); ++i)
     {
         const VertexConfig vertexConfig = mVertexConfigs[i];
-        vector<char> vertShaderCode = ReadFile(vertexConfig.mVertexShaderPath);
+
+        Stream stream;
+        stream.ReadFile(vertexConfig.mVertexShaderPath.c_str());
 
         VkShaderModule vertShaderModule;
-        vertShaderModule = CreateShaderModule(vertShaderCode);
+        vertShaderModule = CreateShaderModule(stream.GetData(), stream.GetSize());
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -279,11 +282,11 @@ void Pipeline::CreateComputePipeline()
 {
     VkDevice device = GetVulkanDevice();
 
-    vector<char> computeShaderCode = ReadFile(mComputeShaderPath);
+    Stream stream;
+    stream.ReadFile(mComputeShaderPath.c_str());
 
     VkShaderModule computeShaderModule;
-
-    computeShaderModule = CreateShaderModule(computeShaderCode);
+    computeShaderModule = CreateShaderModule(stream.GetData(), stream.GetSize());
 
     VkPipelineShaderStageCreateInfo computeShaderStageInfo = {};
     computeShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -378,15 +381,15 @@ bool Pipeline::IsComputePipeline() const
     return mComputePipeline;
 }
 
-VkShaderModule Pipeline::CreateShaderModule(const std::vector<char>& code)
+VkShaderModule Pipeline::CreateShaderModule(const char* codeData, uint32_t codeSize)
 {
     VkDevice device = GetVulkanDevice();
     VkShaderModuleCreateInfo ciModule = {};
     ciModule.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    ciModule.codeSize = code.size();
+    ciModule.codeSize = codeSize;
 
-    vector<uint32_t> codeLong(code.size() / sizeof(uint32_t) + 1);
-    memcpy(codeLong.data(), code.data(), code.size());
+    vector<uint32_t> codeLong(codeSize / sizeof(uint32_t) + 1);
+    memcpy(codeLong.data(), codeData, codeSize);
     ciModule.pCode = codeLong.data();
 
     VkShaderModule module;
