@@ -455,20 +455,58 @@ void Stream::WriteMatrix(const glm::mat4& src)
 
 std::string Stream::GetLine()
 {
-    const char* line = nullptr;
+    std::string line;
+
+    if (mPos < mSize && mSize > 0)
+    {
+        uint32_t endPos = mPos;
+
+        while (endPos < mSize)
+        {
+            if (mData[endPos] == '\0' ||
+                mData[endPos] == '\n')
+            {
+                endPos++;
+                break;
+            }
+
+            endPos++;
+        }
+
+        uint32_t strSize = (endPos - mPos);
+        for (uint32_t i = mPos; i < endPos; ++i)
+        {
+            if (mData[i] != '\0' &&
+                mData[i] != '\n' &&
+                mData[i] != '\r')
+            {
+                line.push_back(mData[i]);
+            }
+        }
+
+        SetPos(endPos);
+    }
+
+    return line;
+}
+
+int32_t Stream::Scan(const char* format, ...)
+{
+    int32_t ret = -1;
 
     if (mPos < mSize)
     {
+        va_list argptr;
+        va_start(argptr, format);
 
+        std::string line = GetLine();
+        if (line != "")
+        {
+            ret = vsscanf(line.data(), format, argptr);
+        }
     }
 
-    return "";
-}
-
-int32_t Stream::ScanLine(const char* format, ...)
-{
-    // Use vsscanf()
-    return 0;
+    return ret;
 }
 
 void Stream::Grow(uint32_t newSize)

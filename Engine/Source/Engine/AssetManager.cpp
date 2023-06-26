@@ -274,17 +274,27 @@ void AssetManager::DiscoverAssetRegistry(const char* registryPath)
     SCOPED_STAT("DiscoverAssetRegistry");
     // For each line, attempt to open that file.
     // If file is found, read asset header and call RegisterAsset() from header.
-    FILE* regFile = fopen(registryPath, "r");
+    Stream regStream;
+    regStream.ReadFile(registryPath, true);
 
-    if (regFile != nullptr)
+    if (regStream.GetData() != nullptr)
     {
         constexpr uint32_t kLineSize = MAX_PATH_SIZE + 42;
         char line[kLineSize];
         char typeString[32];
         char filename[MAX_PATH_SIZE];
 
-        while (fgets(line, kLineSize, regFile) != nullptr)
+        std::string lineStr;
+        while (true)
         {
+            lineStr = regStream.GetLine();
+            if (lineStr == "")
+            {
+                break;
+            }
+
+            strncpy(line, lineStr.c_str(), kLineSize);
+
             char* comma = strchr(line, ',');
             OCT_ASSERT(comma != nullptr);
             *comma = '\0';
@@ -298,9 +308,6 @@ void AssetManager::DiscoverAssetRegistry(const char* registryPath)
             TypeId assetType = Asset::GetTypeIdFromName(typeString);
             RegisterAsset(filename, assetType, mRootDirectory, nullptr, false);
         }
-
-        fclose(regFile);
-        regFile = nullptr;
     }
     else
     {

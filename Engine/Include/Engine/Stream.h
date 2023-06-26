@@ -71,7 +71,7 @@ public:
     void WriteMatrix(const glm::mat4& src);
 
     std::string GetLine();
-    int32_t ScanLine(const char* format, ...);
+    int32_t Scan(const char* format, ...);
 
 private:
 
