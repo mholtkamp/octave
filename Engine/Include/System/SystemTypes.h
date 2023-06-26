@@ -94,9 +94,14 @@ struct SystemState
     xcb_intern_atom_reply_t* mAtomDeleteWindow = nullptr;
     xcb_cursor_t mNullCursor = XCB_NONE;
 #elif PLATFORM_ANDROID
-    struct android_app* mAndroidApp = nullptr;
+    android_app* mState = nullptr;
     ANativeWindow* mWindow = nullptr;
     ANativeActivity* mActivity = nullptr;
+    //EGLDisplay mDisplay = ??? is this a pointer?;
+    //EGLSurface mSurface = ???;
+    //EGLContext mContext = ???;
+    int32_t mWidth= 100;
+    int32_t mHeight = 100;
 #elif PLATFORM_DOLPHIN
     void* mFrameBuffers[2] = { };
     void* mConsoleBuffer = nullptr;
