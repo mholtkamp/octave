@@ -445,14 +445,15 @@ void LoadProject(const std::string& path, bool discoverAssets)
     sEngineState.mProjectPath = path;
     sEngineState.mProjectDirectory = path.substr(0, path.find_last_of("/\\") + 1);
 
-    FILE* file = fopen(path.c_str(), "r");
+    Stream projFileStream;
+    projFileStream.ReadFile(path.c_str(), true);
 
-    if (file != nullptr)
+    if (projFileStream.GetData() != nullptr)
     {
         char key[MAX_PATH_SIZE] = {};
         char value[MAX_PATH_SIZE] = {};
 
-        while (fscanf(file, "%[^=]=%s\n", key, value) != -1)
+        while (projFileStream.Scan("%[^=]=%s\n", key, value) != -1)
         {
             if (strncmp(key, "name", MAX_PATH_SIZE) == 0)
             {
@@ -467,9 +468,6 @@ void LoadProject(const std::string& path, bool discoverAssets)
                 sEngineState.mSolutionPath = sEngineState.mProjectDirectory + value;
             }
         }
-
-        fclose(file);
-        file = nullptr;
     }
 
     if (discoverAssets &&
