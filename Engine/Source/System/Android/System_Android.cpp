@@ -60,8 +60,8 @@ static void HandleCommand(struct android_app* app,
         if (app->window != NULL)
         {
             InitializeGraphics(app->window);
-            nInitialized = 1;
-            Render();
+            GetEngineState()->mSystem.mWindowInitialized = true;
+            //Render();
         }
         break;
     }
@@ -76,14 +76,14 @@ static void HandleCommand(struct android_app* app,
     {
         LogDebug("APP_CMD_GAINED_FOCUS");
         // Enable rendering again.
-        s_ucStatus |= VAKZ_ACTIVE;
+        GetEngineState()->mSystem.mWindowHasFocus = true;
         break;
     }
     case APP_CMD_LOST_FOCUS:
     {
         LogDebug("APP_CMD_LOST_FOCUS");
         // Disable rendering.
-        s_ucStatus &= (~VAKZ_ACTIVE);
+        GetEngineState()->mSystem.mWindowHasFocus = false;
         break;
     }
     case APP_CMD_START:
@@ -104,13 +104,13 @@ static void HandleCommand(struct android_app* app,
     case APP_CMD_STOP:
     {
         LogDebug("APP_CMD_STOP");
-        s_ucStatus |= VAKZ_QUIT;
+        GetEngineState()->mQuit = true;
         break;
     }
     case APP_CMD_DESTROY:
     {
         LogDebug("APP_CMD_DESTROY");
-        s_ucStatus |= VAKZ_QUIT;
+        GetEngineState()->mQuit = true;
         break;
     }
 

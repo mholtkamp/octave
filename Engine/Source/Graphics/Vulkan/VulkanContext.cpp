@@ -748,11 +748,11 @@ void VulkanContext::CreateInstance()
                 mEnabledExtensions[mEnabledExtensionCount++] = VK_KHR_XCB_SURFACE_EXTENSION_NAME;
             }
 #elif PLATFORM_ANDROID
-            //if (!strcmp(XXX, extensions[i].extensionName))
-            //{
-            //    platformSurfaceExtFound = 1;
-            //    mEnabledExtensions[mEnabledExtensionCount++] = XXX;
-            //}
+            if (!strcmp(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, extensions[i].extensionName))
+            {
+                platformSurfaceExtFound = 1;
+                mEnabledExtensions[mEnabledExtensionCount++] = VK_KHR_ANDROID_SURFACE_EXTENSION_NAME;
+            }
 #endif
 
             if (!strcmp(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, extensions[i].extensionName))
