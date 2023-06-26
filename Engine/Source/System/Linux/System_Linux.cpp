@@ -308,6 +308,47 @@ void SYS_Update()
 }
 
 // Files
+void SYS_AcquireFileData(const char* path, bool isAsset, int32_t maxSize, char*& outData, uint32_t& outSize)
+{
+    outData = nullptr;
+    outSize = 0;
+
+    FILE* file = fopen(path, "rb");
+    OCT_ASSERT(file != nullptr);
+
+    if (file != nullptr)
+    {
+        int32_t fileSize = 0;
+        fseek(file, 0, SEEK_END);
+        fileSize = ftell(file);
+        fseek(file, 0, SEEK_SET);
+
+        if (maxSize > 0)
+        {
+            fileSize = glm::min(fileSize, maxSize);
+        }
+
+        outData = (char*)malloc(fileSize);
+        outSize = uint32_t(fileSize);
+        fread(outData, fileSize, 1, file);
+
+        fclose(file);
+        file = nullptr;
+    }
+    else
+    {
+        LogError("Failed to open file: %s", path);
+    }
+}
+
+void SYS_ReleaseFileData(char* data)
+{
+    if (data != nullptr)
+    {
+        free(data);
+    }
+}
+
 std::string SYS_GetCurrentDirectoryPath()
 {
     char path[MAX_PATH_SIZE] = {};
@@ -571,7 +612,7 @@ bool SYS_ReadSave(const char* saveName, Stream& outStream)
         if (SYS_DoesSaveExist(saveName))
         {
             std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
-            outStream.ReadFile(savePath.c_str());
+            outStream.ReadFile(savePath.c_str(), false);
             success = true;
         }
         else
