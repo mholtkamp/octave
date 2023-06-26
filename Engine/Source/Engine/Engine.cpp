@@ -674,6 +674,12 @@ int32_t WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdL
 {
     int32_t argc = __argc;
     char** argv = __argv;
+#elif PLATFORM_ANDROID
+void android_main(struct android_app* state)
+{
+    sEngineState.mSystem.mState = state;
+    int32_t argc = 0;
+    char** argv = nullptr;
 #else
 int main(int argc, char** argv)
 {
@@ -685,5 +691,7 @@ int main(int argc, char** argv)
     GameMain(argc, argv);
 #endif
 
+#if !PLATFORM_ANDROID
     return 0;
+#endif
 }

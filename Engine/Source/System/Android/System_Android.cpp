@@ -15,14 +15,14 @@
 #include <assert.h>
 #include <signal.h>
 
-//#include <android_native_app_glue.h>
 #include <android/input.h>
 #include <android/window.h>
 #include <android/log.h>
 
 void SYS_Initialize()
 {
-
+    LogDebug("ANDROID --- SYS_Initialize()!");
+    app_dummy();
 }
 
 void SYS_Shutdown()
@@ -132,7 +132,7 @@ std::string SYS_OpenFileDialog()
 
 std::string SYS_SaveFileDialog()
 {
-
+    return "";
 }
 
 std::string SYS_SelectFolderDialog()
