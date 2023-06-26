@@ -302,7 +302,7 @@
       <WarningLevel>EnableWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Include/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Include/Editor;$(ProjectDir)../External/Lua</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Include/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Include/Editor;$(ProjectDir)../External/Lua;$(AndroidSdk)/ndk/$(AndroidNdkVersion)/sources/android/native_app_glue</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_ANDROID=1;API_VULKAN=1;EDITOR=0;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_ANDROID_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <TreatWarningAsError>false</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -351,7 +351,7 @@
       <WarningLevel>EnableWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Include/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Include/Editor;$(ProjectDir)../External/Lua</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Include/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Include/Editor;$(ProjectDir)../External/Lua;$(AndroidSdk)/ndk/$(AndroidNdkVersion)/sources/android/native_app_glue</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_ANDROID=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_ANDROID_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <TreatWarningAsError>false</TreatWarningAsError>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -453,7 +453,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Include/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Include/Editor;$(ProjectDir)../External/Lua</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Include/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Include/Editor;$(ProjectDir)../External/Lua;$(AndroidSdk)/ndk/$(AndroidNdkVersion)/sources/android/native_app_glue</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_ANDROID=1;API_VULKAN=1;EDITOR=0;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_ANDROID_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -499,7 +499,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Include/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Include/Editor;$(ProjectDir)../External/Lua</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Include/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Include/Editor;$(ProjectDir)../External/Lua;$(AndroidSdk)/ndk/$(AndroidNdkVersion)/sources/android/native_app_glue</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_ANDROID=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_ANDROID_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
     </ClCompile>
     <Link>

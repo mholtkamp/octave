@@ -20,6 +20,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <android/native_window.h>
+#include <android/native_activity.h>
+#include <android_native_app_glue.h>
 #elif PLATFORM_DOLPHIN
 #include <gccore.h>
 #include <dirent.h>
@@ -91,9 +94,9 @@ struct SystemState
     xcb_intern_atom_reply_t* mAtomDeleteWindow = nullptr;
     xcb_cursor_t mNullCursor = XCB_NONE;
 #elif PLATFORM_ANDROID
-    //struct android_app* mAndroidApp = nullptr;
-    //ANativeWindow* mWindow = nullptr;
-    //ANativeActivity* mActivity = nullptr;
+    struct android_app* mAndroidApp = nullptr;
+    ANativeWindow* mWindow = nullptr;
+    ANativeActivity* mActivity = nullptr;
 #elif PLATFORM_DOLPHIN
     void* mFrameBuffers[2] = { };
     void* mConsoleBuffer = nullptr;
