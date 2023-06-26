@@ -1,0 +1,2 @@
+These files are just so that we can compile in Visual Studio.
+The android studio cmake file will compile these from the SDK.
