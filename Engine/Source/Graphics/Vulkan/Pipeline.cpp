@@ -191,7 +191,7 @@ void Pipeline::CreateGraphicsPipeline()
     colorBlending.blendConstants[3] = 0.0f;
 
     std::vector<VkDynamicState> dynStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
-    if (mDynamicLineWidth)
+    if (mDynamicLineWidth && context->HasFeatureWideLines())
     {
         dynStates.push_back(VK_DYNAMIC_STATE_LINE_WIDTH);
     }
