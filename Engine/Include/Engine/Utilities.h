@@ -21,8 +21,6 @@ class Component;
 
 Platform GetPlatform();
 
-bool DoesFileExist(const char* filename);
-
 std::string GetCurrentDirectoryPath();
 void SetWorkingDirectory(const std::string& dirPath);
 bool DoesDirExist(const char* dirPath);

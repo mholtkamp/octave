@@ -12,6 +12,7 @@ void SYS_Shutdown();
 void SYS_Update();
 
 // Files
+bool SYS_DoesFileExist(const char* path, bool isAsset);
 void SYS_AcquireFileData(const char* path, bool isAsset, int32_t maxSize, char*& outData, uint32_t& outSize);
 void SYS_ReleaseFileData(char* data);
 std::string SYS_GetCurrentDirectoryPath();

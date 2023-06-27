@@ -42,7 +42,7 @@ void AUD_Stop(uint32_t voiceIndex)
 
 bool AUD_IsPlaying(uint32_t voiceIndex)
 {
-
+    return false;
 }
 
 void AUD_SetVolume(uint32_t voiceIndex, float leftVolume, float rightVolume)
@@ -56,12 +56,12 @@ void AUD_SetPitch(uint32_t voiceIndex, float pitch)
 
 uint8_t* AUD_AllocWaveBuffer(uint32_t size)
 {
-    return nullptr;
+    return (uint8_t*)SYS_AlignedMalloc(size, 32);
 }
 
 void AUD_FreeWaveBuffer(void* buffer)
 {
-
+    SYS_AlignedFree(buffer);
 }
 
 void AUD_ProcessWaveBuffer(SoundWave* soundWave)

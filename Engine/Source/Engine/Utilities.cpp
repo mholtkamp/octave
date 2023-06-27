@@ -44,22 +44,6 @@ Platform GetPlatform()
 #endif
 }
 
-bool DoesFileExist(const char* filename)
-{
-    struct stat info;
-    bool exists = false;
-
-    int32_t retStatus = stat(filename, &info);
-
-    if (retStatus == 0)
-    {
-        // If the file is actually a directory, than return false.
-        exists = !(info.st_mode & S_IFDIR);
-    }
-
-    return exists;
-}
-
 std::string GetCurrentDirectoryPath()
 {
     return SYS_GetCurrentDirectoryPath();
