@@ -538,6 +538,8 @@ void VulkanContext::CreateSwapchain()
     VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
     VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
 
+    mPreTransformFlag = swapChainSupport.capabilities.currentTransform;
+
     uint32_t imageCount = 2;
 
     if (imageCount < swapChainSupport.capabilities.minImageCount)
@@ -573,8 +575,14 @@ void VulkanContext::CreateSwapchain()
         ciSwapchain.pQueueFamilyIndices = nullptr;
     }
 
-    ciSwapchain.preTransform = swapChainSupport.capabilities.currentTransform;
-    ciSwapchain.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    VkCompositeAlphaFlagBitsKHR alphaFlags = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    if ((swapChainSupport.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) == 0)
+    {
+        alphaFlags = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
+    }
+
+    ciSwapchain.preTransform = mPreTransformFlag;
+    ciSwapchain.compositeAlpha = alphaFlags;
     ciSwapchain.presentMode = presentMode;
     ciSwapchain.clipped = VK_TRUE;
     ciSwapchain.oldSwapchain = VK_NULL_HANDLE;
@@ -1631,6 +1639,16 @@ bool VulkanContext::IsRayTracingSupported() const
     return mSupportsRayTracing;
 }
 
+bool VulkanContext::HasFeatureWideLines() const
+{
+    return mFeatureWideLines;
+}
+
+bool VulkanContext::HasFeatureFillModeNonSolid() const
+{
+    return mFeatureFillModeNonSolid;
+}
+
 void VulkanContext::UpdateGlobalDescriptorSet()
 {
     mGlobalUniformBuffer->Update(&mGlobalUniformData, sizeof(GlobalUniformData));
@@ -1904,6 +1922,21 @@ VkExtent2D VulkanContext::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capab
 {
     VkExtent2D retExtent = capabilities.currentExtent;
 
+#if PLATFORM_ANDROID
+    retExtent.width = capabilities.currentExtent.width;
+    retExtent.height = capabilities.currentExtent.height;
+
+    if (capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
+        capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR)
+    {
+        // Swap to get identity width and height
+        uint32_t oldWidth = retExtent.width;
+        uint32_t oldHeight = retExtent.height;
+        retExtent.height = oldWidth;
+        retExtent.width = oldHeight;
+}
+#else
+
     // Not entirely sure what this if statement is doing yet.
     if (retExtent.width == std::numeric_limits<uint32_t>::max())
     {
@@ -1912,6 +1945,7 @@ VkExtent2D VulkanContext::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capab
         retExtent.width = glm::clamp(retExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
         retExtent.height = glm::clamp(retExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
     }
+#endif
 
     return retExtent;
 }
@@ -2075,6 +2109,11 @@ RayTracer* VulkanContext::GetRayTracer()
     return &mRayTracer;
 }
 
+VkSurfaceTransformFlagBitsKHR VulkanContext::GetPreTransformFlag() const
+{
+    return mPreTransformFlag;
+}
+
 VkExtent2D& VulkanContext::GetSwapchainExtent()
 {
     return mSwapchainExtent;
@@ -2225,11 +2264,37 @@ void VulkanContext::DestroyPipelines()
 
 void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t height)
 {
+    float bufferWidth = (float)GetEngineState()->mWindowWidth;
+    float bufferHeight = (float)GetEngineState()->mWindowHeight;
+
+    float fX = static_cast<float>(x);
+    float fY = static_cast<float>(y);
+    float fW = static_cast<float>(width);
+    float fH = static_cast<float>(height);
+
+    glm::vec4 viewportData;
+
+    switch (mPreTransformFlag)
+    {
+    case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
+        viewportData = { bufferWidth - fH - fY, fX, fH, fW };
+        break;
+    case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
+        viewportData = { bufferWidth - fW - fX, bufferHeight - fH - fY, fW, fH };
+        break;
+    case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
+        viewportData = { fY, bufferHeight - fW - fX, fH, fW };
+        break;
+    default:
+        viewportData = { fX, fY, fW, fH };
+        break;
+    }
+
     VkViewport viewport = {};
-    viewport.x = static_cast<float>(x);
-    viewport.y = static_cast<float>(y);
-    viewport.width = static_cast<float>(width);
-    viewport.height = static_cast<float>(height);
+    viewport.x = viewportData.x;
+    viewport.y = viewportData.y;
+    viewport.width = viewportData.z;
+    viewport.height = viewportData.w;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(GetCommandBuffer(), 0, 1, &viewport);
@@ -2237,9 +2302,37 @@ void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t hei
 
 void VulkanContext::SetScissor(int32_t x, int32_t y, int32_t width, int32_t height)
 {
+    float bufferWidth = (float)GetEngineState()->mWindowWidth;
+    float bufferHeight = (float)GetEngineState()->mWindowHeight;
+
+    float fX = static_cast<float>(x);
+    float fY = static_cast<float>(y);
+    float fW = static_cast<float>(width);
+    float fH = static_cast<float>(height);
+
+    glm::vec4 scissorData;
+
+    switch (mPreTransformFlag)
+    {
+    case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
+        scissorData = { bufferWidth - fH - fY, fX, fH, fW };
+        break;
+    case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
+        scissorData = { bufferWidth - fW - fX, bufferHeight - fH - fY, fW, fH };
+        break;
+    case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
+        scissorData = { fY, bufferHeight - fW - fX, fH, fW };
+        break;
+    default:
+        scissorData = { fX, fY, fW, fH };
+        break;
+    }
+
+    // Should the offset and extent be rounded to nearest integer?
+    // Or just rewrite the transform code to use integer math?
     VkRect2D scissorRect = {};
-    scissorRect.offset = { x, y };
-    scissorRect.extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+    scissorRect.offset = { int32_t(scissorData.x), int32_t(scissorData.y )};
+    scissorRect.extent = { uint32_t(scissorData.z), uint32_t(scissorData.w )};
     vkCmdSetScissor(GetCommandBuffer(), 0, 1, &scissorRect);
 }
 

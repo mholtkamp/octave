@@ -94,6 +94,18 @@ void Pipeline::CreateGraphicsPipeline()
 
     VkShaderModule fragShaderModule = VK_NULL_HANDLE;
 
+
+    // Limit features
+    if (!context->HasFeatureWideLines())
+    {
+        mLineWidth = 1.0f;
+    }
+
+    if (!context->HasFeatureFillModeNonSolid())
+    {
+        mPolygonMode = VK_POLYGON_MODE_FILL;
+    }
+
     if (mFragmentShaderPath != "")
     {
         Stream stream;
