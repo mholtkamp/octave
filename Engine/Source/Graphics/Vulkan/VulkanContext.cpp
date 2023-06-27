@@ -2264,8 +2264,8 @@ void VulkanContext::DestroyPipelines()
 
 void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t height)
 {
-    float bufferWidth = (float)GetEngineState()->mWindowWidth;
-    float bufferHeight = (float)GetEngineState()->mWindowHeight;
+    float bufferWidth = mSwapchainExtent.width;
+    float bufferHeight = mSwapchainExtent.height;
 
     float fX = static_cast<float>(x);
     float fY = static_cast<float>(y);
@@ -2302,8 +2302,8 @@ void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t hei
 
 void VulkanContext::SetScissor(int32_t x, int32_t y, int32_t width, int32_t height)
 {
-    float bufferWidth = (float)GetEngineState()->mWindowWidth;
-    float bufferHeight = (float)GetEngineState()->mWindowHeight;
+    float bufferWidth = mSwapchainExtent.width;
+    float bufferHeight = mSwapchainExtent.height;
 
     float fX = static_cast<float>(x);
     float fY = static_cast<float>(y);
