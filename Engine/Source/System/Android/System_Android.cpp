@@ -273,7 +273,7 @@ void SYS_Initialize()
     state->onInputEvent = HandleInput;
 
     // Keep processing events until window is initialized.
-    while (true)
+    while (!system.mWindowInitialized)
     {
         int ident;
         int events;

@@ -10,8 +10,12 @@ extern VulkanContext* gVulkanContext;
 
 void GFX_Initialize()
 {
-    CreateVulkanContext();
-    gVulkanContext->Initialize();
+    // On Android, it's possible that GFX_Initialize() was already called.
+    if (gVulkanContext == nullptr)
+    {
+        CreateVulkanContext();
+        gVulkanContext->Initialize();
+    }
 }
 
 void GFX_Shutdown()
