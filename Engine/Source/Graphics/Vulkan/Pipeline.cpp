@@ -94,7 +94,6 @@ void Pipeline::CreateGraphicsPipeline()
 
     VkShaderModule fragShaderModule = VK_NULL_HANDLE;
 
-
     // Limit features
     if (!context->HasFeatureWideLines())
     {
