@@ -949,6 +949,11 @@ void VulkanContext::PickPhysicalDevice()
 
     // Check properties to see what features we have. In the future, possibly
     // check these properties while picking a physical device.
+    VkPhysicalDeviceFeatures deviceFeatures;
+    vkGetPhysicalDeviceFeatures(mPhysicalDevice, &deviceFeatures);
+    mFeatureWideLines = deviceFeatures.wideLines;
+    mFeatureFillModeNonSolid = deviceFeatures.fillModeNonSolid;
+
     VkPhysicalDeviceProperties properties;
     vkGetPhysicalDeviceProperties(mPhysicalDevice, &properties);
 
@@ -981,8 +986,8 @@ void VulkanContext::CreateLogicalDevice()
     ciDeviceQueues[QUEUE_PRESENT].pQueuePriorities = &priorities;
 
     VkPhysicalDeviceFeatures deviceFeatures = {};
-    deviceFeatures.fillModeNonSolid = true;
-    deviceFeatures.wideLines = true;
+    deviceFeatures.fillModeNonSolid = mFeatureFillModeNonSolid;
+    deviceFeatures.wideLines = mFeatureWideLines;
 
     VkDeviceCreateInfo ciDevice = {};
     ciDevice.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
