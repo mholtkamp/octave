@@ -1,4 +1,5 @@
 #include "ScriptUtils.h"
+#include "System/System.h"
 
 std::unordered_set<std::string> ScriptUtils::sLoadedLuaFiles;
 EmbeddedFile* ScriptUtils::sEmbeddedScripts = nullptr;
@@ -161,60 +162,45 @@ bool ScriptUtils::RunScript(const char* fileName, Datum* ret)
 
     if (!fileExists)
     {
-        fileExists = DoesFileExist(fullFileName.c_str());
+        fileExists = SYS_DoesFileExist(fullFileName.c_str(), true);
     }
 
     if (!fileExists)
     {
         // Fall back to Engine script directory
         fullFileName = std::string("Engine/Scripts/") + relativeFileName;
-        fileExists = DoesFileExist(fullFileName.c_str());
+        fileExists = SYS_DoesFileExist(fullFileName.c_str(), true);
     }
 
     if (fileExists)
     {
+        LogDebug("Loading script: %s", className.c_str());
+
         int numResults = (ret != nullptr) ? 1 : 0;
+
+        std::string luaString;
 
         if (embeddedScript != nullptr)
         {
-            LogDebug("Loading embedded script: %s", className.c_str());
-
-            std::string luaString;
             luaString.assign(embeddedScript->mData, embeddedScript->mSize);
-
-            if (luaL_dostring(L, luaString.c_str()) == LUA_OK)
-            {
-                successful = true;
-            }
-            else
-            {
-                LogError("Lua Error: %s\n", lua_tostring(L, -1));
-                if (sBreakOnScriptError) { OCT_ASSERT(0); }
-
-                LogError("Couldn't load embedded script file %s", className.c_str());
-            }
         }
         else
         {
-            if (luaL_loadfile(L, fullFileName.c_str()) == LUA_OK)
-            {
-                if (lua_pcall(L, 0, numResults, 0) == LUA_OK)
-                {
-                    successful = true;
-                }
-                else
-                {
-                    LogError("Lua Error: %s\n", lua_tostring(L, -1));
-                    if (sBreakOnScriptError) { OCT_ASSERT(0); }
-                }
-            }
-            else
-            {
-                LogError("Lua Error: %s\n", lua_tostring(L, -1));
-                if (sBreakOnScriptError) { OCT_ASSERT(0); }
+            Stream luaStream;
+            luaStream.ReadFile(fullFileName.c_str(), true);
+            luaString.assign(luaStream.GetData(), luaStream.GetSize());
+        }
 
-                LogError("Couldn't load script file %s", fullFileName.c_str());
-            }
+        if (luaL_dostring(L, luaString.c_str()) == LUA_OK)
+        {
+            successful = true;
+        }
+        else
+        {
+            LogError("Lua Error: %s\n", lua_tostring(L, -1));
+            if (sBreakOnScriptError) { OCT_ASSERT(0); }
+
+            LogError("Couldn't script file %s", className.c_str());
         }
 
         if (successful && ret != nullptr)

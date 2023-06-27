@@ -315,6 +315,36 @@ void SYS_Update()
 }
 
 // Files
+bool SYS_DoesFileExist(const char* path, bool isAsset)
+{
+    bool exists = false;
+
+    if (isAsset)
+    {
+        AAssetManager* assetManager = GetEngineState()->mSystem.mState->activity->assetManager;
+        AAsset* asset = AAssetManager_open(assetManager, path, AASSET_MODE_BUFFER);
+
+        if (asset != nullptr)
+        {
+            exists = true;
+            AAsset_close(asset);
+        }
+    }
+    else
+    {
+        struct stat info;
+
+        int32_t retStatus = stat(path, &info);
+
+        if (retStatus == 0)
+        {
+            // If the file is actually a directory, than return false.
+            exists = !(info.st_mode & S_IFDIR);
+        }
+    }
+    return exists;
+}
+
 void SYS_AcquireFileData(const char* path, bool isAsset, int32_t maxSize, char*& outData, uint32_t& outSize)
 {
     outData = nullptr;

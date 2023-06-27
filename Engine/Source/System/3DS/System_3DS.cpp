@@ -56,6 +56,22 @@ void SYS_Update()
 }
 
 // Files
+bool SYS_DoesFileExist(const char* path, bool isAsset)
+{
+    struct stat info;
+    bool exists = false;
+
+    int32_t retStatus = stat(path, &info);
+
+    if (retStatus == 0)
+    {
+        // If the file is actually a directory, than return false.
+        exists = !(info.st_mode & S_IFDIR);
+    }
+
+    return exists;
+}
+
 void SYS_AcquireFileData(const char* path, bool isAsset, int32_t maxSize, char*& outData, uint32_t& outSize)
 {
     outData = nullptr;
