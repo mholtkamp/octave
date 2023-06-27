@@ -59,7 +59,12 @@ static void HandleCommand(struct android_app* app,
         // The window is being shown, get it ready.
         if (app->window != NULL)
         {
-            //InitializeGraphics(app->window);
+            EngineState* engineState = GetEngineState();
+            engineState->mSystem.mWindow = app->window;
+            engineState->mWindowWidth = ANativeWindow_getWidth(app->window);
+            engineState->mWindowHeight = ANativeWindow_getHeight(app->window);
+
+            GFX_Initialize();
             GetEngineState()->mSystem.mWindowInitialized = true;
             //Render();
         }
@@ -262,16 +267,11 @@ void SYS_Initialize()
     EngineState* engineState = GetEngineState();
     SystemState& system = engineState->mSystem;
     android_app* state = system.mState;
-    system.mWindow = state->window;
     system.mActivity = state->activity;
-
-    engineState->mWindowWidth = ANativeWindow_getWidth(state->window);
-    engineState->mWindowHeight = ANativeWindow_getHeight(state->window);
 
     state->onAppCmd = HandleCommand;
     state->onInputEvent = HandleInput;
-    
-#if 0
+
     // Keep processing events until window is initialized.
     while (true)
     {
@@ -286,7 +286,6 @@ void SYS_Initialize()
             }
         }
     }
-#endif
 
 }
 

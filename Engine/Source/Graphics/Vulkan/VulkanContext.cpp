@@ -899,6 +899,22 @@ void VulkanContext::CreateSurface()
         LogError("Failed to create window surface.");
         OCT_ASSERT(0);
     }
+#elif PLATFORM_ANDROID
+    EngineState* engineState = GetEngineState();
+    OCT_ASSERT(engineState->mSystem.mWindow != nullptr);
+
+    VkAndroidSurfaceCreateInfoKHR ciSurface = {};
+    ciSurface.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+    ciSurface.pNext = nullptr;
+    ciSurface.flags = 0;
+    ciSurface.window = engineState->mSystem.mWindow;
+
+    VkResult res = vkCreateAndroidSurfaceKHR(mInstance, &ciSurface, nullptr, &mSurface);
+    if (res != VK_SUCCESS)
+    {
+        LogError("Failed to create window surface.");
+        OCT_ASSERT(0);
+    }
 #endif
 }
 
