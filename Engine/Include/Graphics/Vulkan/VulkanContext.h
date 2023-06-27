@@ -246,6 +246,8 @@ private:
     Buffer* mLineVertexBuffer = nullptr;
     bool mInitialized = false;
     bool mSupportsRayTracing = false;
+    bool mFeatureWideLines = false;
+    bool mFeatureFillModeNonSolid = false;
     EngineState* mEngineState = nullptr;
     Pipeline* mCurrentlyBoundPipeline = nullptr;
 
