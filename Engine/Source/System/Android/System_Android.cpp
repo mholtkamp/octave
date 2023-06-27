@@ -68,6 +68,9 @@ static void HandleCommand(struct android_app* app,
             engineState->mWindowWidth = ANativeWindow_getWidth(app->window);
             engineState->mWindowHeight = ANativeWindow_getHeight(app->window);
 
+            LogDebug("Window Width = %d", engineState->mWindowWidth);
+            LogDebug("Window Height = %d", engineState->mWindowHeight);
+
             GFX_Initialize();
             GetEngineState()->mSystem.mWindowInitialized = true;
             //Render();
@@ -78,7 +81,7 @@ static void HandleCommand(struct android_app* app,
     {
         LogDebug("APP_CMD_TERM_WINDOW");
         // The window is being hidden or closed, clean it up.
-        //Shutdown();
+        GetEngineState()->mQuit = true;
         break;
     }
     case APP_CMD_GAINED_FOCUS:
@@ -286,6 +289,11 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
     return 0;
 }
 
+void HandleResize(ANativeActivity *activity, ANativeWindow *window)
+{
+    GetEngineState()->mSystem.mOrientationChanged = true;
+}
+
 void SYS_Initialize()
 {
     LogDebug("ANDROID --- SYS_Initialize()!");
@@ -298,6 +306,7 @@ void SYS_Initialize()
 
     state->onAppCmd = HandleCommand;
     state->onInputEvent = HandleInput;
+    state->activity->callbacks->onNativeWindowResized = HandleResize;
 
     // Keep processing events until window is initialized.
     while (!system.mWindowInitialized)
@@ -323,6 +332,8 @@ void SYS_Shutdown()
 
 void SYS_Update()
 {
+    SystemState& system = GetEngineState()->mSystem;
+
     // Read all pending events.
     int ident;
     int events;
@@ -336,8 +347,17 @@ void SYS_Update()
         // Process this event.
         if (source != nullptr)
         {
-            source->process(GetEngineState()->mSystem.mState, source);
+            source->process(system.mState, source);
         }
+    }
+
+    if (system.mOrientationChanged)
+    {
+        uint32_t newWidth = ANativeWindow_getWidth(system.mWindow);
+        uint32_t newHeight = ANativeWindow_getHeight(system.mWindow);
+
+        ResizeWindow(newWidth, newHeight);
+        system.mOrientationChanged = false;
     }
 }
 

@@ -76,12 +76,52 @@ void GFX_SetScissor(int32_t x, int32_t y, int32_t width, int32_t height)
 
 glm::mat4 GFX_MakePerspectiveMatrix(float fovyDegrees, float aspectRatio, float zNear, float zFar)
 {
-    return glm::perspectiveFov(glm::radians(fovyDegrees), aspectRatio, 1.0f, zNear, zFar);
+    VkSurfaceTransformFlagBitsKHR preTransformFlag = gVulkanContext->GetPreTransformFlag();
+
+    glm::mat4 preRotateMat = glm::mat4(1.0f);
+    glm::vec3 rotationAxis = glm::vec3(0.0f, 0.0f, 1.0f);
+
+    if (preTransformFlag & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) {
+        preRotateMat = glm::rotate(preRotateMat, glm::radians(90.0f), rotationAxis);
+    }
+
+    else if (preTransformFlag & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
+        preRotateMat = glm::rotate(preRotateMat, glm::radians(270.0f), rotationAxis);
+    }
+
+    else if (preTransformFlag & VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR) {
+        preRotateMat = glm::rotate(preRotateMat, glm::radians(180.0f), rotationAxis);
+    }
+
+    glm::mat4 perspMat = glm::perspectiveFov(glm::radians(fovyDegrees), aspectRatio, 1.0f, zNear, zFar);
+    perspMat = preRotateMat * perspMat;
+
+    return perspMat;
 }
 
 glm::mat4 GFX_MakeOrthographicMatrix(float left, float right, float bottom, float top, float zNear, float zFar)
 {
-    return glm::ortho(left, right, bottom, top, zNear, zFar);
+    VkSurfaceTransformFlagBitsKHR preTransformFlag = gVulkanContext->GetPreTransformFlag();
+
+    glm::mat4 preRotateMat = glm::mat4(1.0f);
+    glm::vec3 rotationAxis = glm::vec3(0.0f, 0.0f, 1.0f);
+
+    if (preTransformFlag & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) {
+        preRotateMat = glm::rotate(preRotateMat, glm::radians(90.0f), rotationAxis);
+    }
+
+    else if (preTransformFlag & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
+        preRotateMat = glm::rotate(preRotateMat, glm::radians(270.0f), rotationAxis);
+    }
+
+    else if (preTransformFlag & VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR) {
+        preRotateMat = glm::rotate(preRotateMat, glm::radians(180.0f), rotationAxis);
+    }
+
+    glm::mat4 orthoMat = glm::ortho(left, right, bottom, top, zNear, zFar);
+    orthoMat = preRotateMat * orthoMat;
+
+    return orthoMat;
 }
 
 void GFX_SetFog(const FogSettings& fogSettings)

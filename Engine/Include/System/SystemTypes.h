@@ -104,6 +104,7 @@ struct SystemState
     int32_t mHeight = 100;
     bool mWindowInitialized = false;
     bool mWindowHasFocus = false;
+    bool mOrientationChanged = false;
 #elif PLATFORM_DOLPHIN
     void* mFrameBuffers[2] = { };
     void* mConsoleBuffer = nullptr;

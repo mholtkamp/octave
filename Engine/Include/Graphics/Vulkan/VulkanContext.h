@@ -110,11 +110,15 @@ public:
 
     bool IsValidationEnabled() const;
     bool IsRayTracingSupported() const;
+    bool HasFeatureWideLines() const;
+    bool HasFeatureFillModeNonSolid() const;
 
     DescriptorSetArena& GetMeshDescriptorSetArena();
     UniformBufferArena& GetMeshUniformBufferArena();
 
     RayTracer* GetRayTracer();
+
+    VkSurfaceTransformFlagBitsKHR GetPreTransformFlag() const;
 
 private:
 
@@ -250,6 +254,7 @@ private:
     bool mFeatureFillModeNonSolid = false;
     EngineState* mEngineState = nullptr;
     Pipeline* mCurrentlyBoundPipeline = nullptr;
+    VkSurfaceTransformFlagBitsKHR mPreTransformFlag = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 
 #if EDITOR
 public:
