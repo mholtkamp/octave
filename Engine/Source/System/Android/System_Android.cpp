@@ -27,6 +27,10 @@ static GamepadButtonCode GetGamepadButtonCodeFromKey(int key)
 
     switch (key)
     {
+        case 19: code = GamepadButtonCode::GAMEPAD_UP; break;
+        case 20: code = GamepadButtonCode::GAMEPAD_DOWN; break;
+        case 21: code = GamepadButtonCode::GAMEPAD_LEFT; break;
+        case 22: code = GamepadButtonCode::GAMEPAD_RIGHT; break;
         case 96: code = GamepadButtonCode::GAMEPAD_A; break;
         case 97: code = GamepadButtonCode::GAMEPAD_B; break;
         case 98: code = GamepadButtonCode::GAMEPAD_C; break;
@@ -195,12 +199,12 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
                 float axisRZ = AMotionEvent_getAxisValue(event,
                     AMOTION_EVENT_AXIS_RZ,
                     0);
-                //float axisHatX = AMotionEvent_getAxisValue(event,
-                //    AMOTION_EVENT_AXIS_HAT_X,
-                //    0);
-                //float axisHatY = AMotionEvent_getAxisValue(event,
-                //    AMOTION_EVENT_AXIS_HAT_Y,
-                //    0);
+                float axisHatX = AMotionEvent_getAxisValue(event,
+                    AMOTION_EVENT_AXIS_HAT_X,
+                    0);
+                float axisHatY = AMotionEvent_getAxisValue(event,
+                    AMOTION_EVENT_AXIS_HAT_Y,
+                    0);
                 float axisTriggerL = AMotionEvent_getAxisValue(event,
                     AMOTION_EVENT_AXIS_LTRIGGER,
                     0);
@@ -209,11 +213,33 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
                     0);
 
                 INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_LTHUMB_X, axisX, gamepadIndex);
-                INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_LTHUMB_Y, axisY, gamepadIndex);
+                INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_LTHUMB_Y, -axisY, gamepadIndex);
                 INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_RTHUMB_X, axisZ, gamepadIndex);
-                INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_RTHUMB_Y, axisRZ, gamepadIndex);
+                INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_RTHUMB_Y, -axisRZ, gamepadIndex);
                 INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_LTRIGGER, axisTriggerL, gamepadIndex);
                 INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_RTRIGGER, axisTriggerR, gamepadIndex);
+
+                // Convert hat axis to DPad buttons
+                if (axisHatY < 0.0)
+                    INP_SetGamepadButton(GamepadButtonCode::GAMEPAD_UP, gamepadIndex);
+                else 
+                    INP_ClearGamepadButton(GamepadButtonCode::GAMEPAD_UP, gamepadIndex);
+
+                if (axisHatY > 0.0)
+                    INP_SetGamepadButton(GamepadButtonCode::GAMEPAD_DOWN, gamepadIndex);
+                else
+                    INP_ClearGamepadButton(GamepadButtonCode::GAMEPAD_DOWN, gamepadIndex);
+
+                if (axisHatX < 0.0)
+                    INP_SetGamepadButton(GamepadButtonCode::GAMEPAD_LEFT, gamepadIndex);
+                else
+                    INP_ClearGamepadButton(GamepadButtonCode::GAMEPAD_LEFT, gamepadIndex);
+
+                if (axisHatX > 0.0)
+                    INP_SetGamepadButton(GamepadButtonCode::GAMEPAD_RIGHT, gamepadIndex);
+                else
+                    INP_ClearGamepadButton(GamepadButtonCode::GAMEPAD_RIGHT, gamepadIndex);
+
             }
             return 1;
         }
@@ -229,6 +255,7 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
             if (source & AINPUT_SOURCE_GAMEPAD)
             {
                 int gamepadIndex = INP_GetGamepadIndex(device);
+                LogDebug("Gamepad Key: %d", key);
                 INP_SetGamepadButton(GetGamepadButtonCodeFromKey(key), gamepadIndex);
             }
             else
