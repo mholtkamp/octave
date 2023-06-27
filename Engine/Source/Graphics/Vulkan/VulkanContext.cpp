@@ -962,6 +962,54 @@ void VulkanContext::PickPhysicalDevice()
     mFeatureWideLines = deviceFeatures.wideLines;
     mFeatureFillModeNonSolid = deviceFeatures.fillModeNonSolid;
 
+    {
+        bool formatFound = false;
+        if (!formatFound)
+        {
+            VkResult res;
+            VkImageFormatProperties imageFormatProps;
+            res = vkGetPhysicalDeviceImageFormatProperties(
+                mPhysicalDevice,
+                VK_FORMAT_D32_SFLOAT_S8_UINT,
+                VK_IMAGE_TYPE_2D,
+                VK_IMAGE_TILING_OPTIMAL,
+                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                0,
+                &imageFormatProps);
+
+            if (res == VK_SUCCESS)
+            {
+                mDepthImageFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
+                formatFound = true;
+            }
+        }
+
+        if (!formatFound)
+        {
+            VkResult res;
+            VkImageFormatProperties imageFormatProps;
+            res = vkGetPhysicalDeviceImageFormatProperties(
+                mPhysicalDevice,
+                VK_FORMAT_D24_UNORM_S8_UINT,
+                VK_IMAGE_TYPE_2D,
+                VK_IMAGE_TILING_OPTIMAL,
+                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                0,
+                &imageFormatProps);
+
+            if (res == VK_SUCCESS)
+            {
+                mDepthImageFormat = VK_FORMAT_D24_UNORM_S8_UINT;
+                formatFound = true;
+            }
+        }
+
+        if (!formatFound)
+        {
+            mDepthImageFormat = VK_FORMAT_D32_SFLOAT;
+        }
+    }
+
     VkPhysicalDeviceProperties properties;
     vkGetPhysicalDeviceProperties(mPhysicalDevice, &properties);
 
@@ -1178,7 +1226,7 @@ void VulkanContext::CreateRenderPass()
             // Depth Buffer
             {
                 0,
-				VK_FORMAT_D32_SFLOAT_S8_UINT,
+				mDepthImageFormat,
                 VK_SAMPLE_COUNT_1_BIT,
                 VK_ATTACHMENT_LOAD_OP_CLEAR,
                 VK_ATTACHMENT_STORE_OP_STORE,
@@ -1255,7 +1303,7 @@ void VulkanContext::CreateRenderPass()
             // Depth Buffer
             {
                 0,
-				VK_FORMAT_D32_SFLOAT_S8_UINT,
+                mDepthImageFormat,
                 VK_SAMPLE_COUNT_1_BIT,
                 VK_ATTACHMENT_LOAD_OP_LOAD,
                 VK_ATTACHMENT_STORE_OP_STORE,
@@ -1332,7 +1380,7 @@ void VulkanContext::CreateRenderPass()
             // Depth Buffer
             {
                 0,
-				VK_FORMAT_D32_SFLOAT_S8_UINT,
+                mDepthImageFormat,
                 VK_SAMPLE_COUNT_1_BIT,
                 VK_ATTACHMENT_LOAD_OP_LOAD,
                 VK_ATTACHMENT_STORE_OP_STORE,
@@ -1409,7 +1457,7 @@ void VulkanContext::CreateRenderPass()
             // Depth Buffer
             {
                 0,
-                VK_FORMAT_D32_SFLOAT_S8_UINT,
+                mDepthImageFormat,
                 VK_SAMPLE_COUNT_1_BIT,
                 VK_ATTACHMENT_LOAD_OP_CLEAR,
                 VK_ATTACHMENT_STORE_OP_STORE,
@@ -1537,7 +1585,7 @@ void VulkanContext::CreateDepthImage()
     ImageDesc imageDesc;
     imageDesc.mWidth = mSwapchainExtent.width;
     imageDesc.mHeight = mSwapchainExtent.height;
-    imageDesc.mFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
+    imageDesc.mFormat = mDepthImageFormat;
     imageDesc.mUsage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
     mDepthImage = new Image(imageDesc, SamplerDesc(), "Depth");
@@ -2264,8 +2312,8 @@ void VulkanContext::DestroyPipelines()
 
 void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t height)
 {
-    float bufferWidth = mSwapchainExtent.width;
-    float bufferHeight = mSwapchainExtent.height;
+    float bufferWidth = (float)mSwapchainExtent.width;
+    float bufferHeight = (float)mSwapchainExtent.height;
 
     float fX = static_cast<float>(x);
     float fY = static_cast<float>(y);
@@ -2302,8 +2350,8 @@ void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t hei
 
 void VulkanContext::SetScissor(int32_t x, int32_t y, int32_t width, int32_t height)
 {
-    float bufferWidth = mSwapchainExtent.width;
-    float bufferHeight = mSwapchainExtent.height;
+    float bufferWidth = (float)mSwapchainExtent.width;
+    float bufferHeight = (float)mSwapchainExtent.height;
 
     float fX = static_cast<float>(x);
     float fY = static_cast<float>(y);
@@ -2501,7 +2549,7 @@ void VulkanContext::CreateHitCheck()
         // Depth attachment
         {
             0,
-			VK_FORMAT_D32_SFLOAT_S8_UINT,
+			mDepthImageFormat,
             VK_SAMPLE_COUNT_1_BIT,
             VK_ATTACHMENT_LOAD_OP_CLEAR,
             VK_ATTACHMENT_STORE_OP_DONT_CARE,

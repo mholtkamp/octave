@@ -209,6 +209,7 @@ private:
     Image* mSceneColorImage = nullptr;
     VkFormat mSceneColorImageFormat;
     Image* mDepthImage = nullptr;
+    VkFormat mDepthImageFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
 
     // Synchronization
     VkSemaphore mImageAvailableSemaphore = VK_NULL_HANDLE;
