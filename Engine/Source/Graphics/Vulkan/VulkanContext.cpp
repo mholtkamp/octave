@@ -12,6 +12,7 @@
 #endif
 
 #include "Graphics/GraphicsUtils.h"
+#include "System/System.h"
 
 #include "Components/CameraComponent.h"
 #include "Components/DirectionalLightComponent.h"
@@ -1013,10 +1014,12 @@ void VulkanContext::PickPhysicalDevice()
     VkPhysicalDeviceProperties properties;
     vkGetPhysicalDeviceProperties(mPhysicalDevice, &properties);
 
+#if (PLATFORM_WINDOWS || PLATFORM_LINUX)
     if (properties.limits.maxPerStageDescriptorSampledImages >= PATH_TRACE_MAX_TEXTURES)
     {
         mSupportsRayTracing = true;
     }
+#endif
 }
 
 void VulkanContext::CreateLogicalDevice()
@@ -2194,6 +2197,41 @@ VkRenderPass VulkanContext::GetUIRenderPass()
     return mUIRenderPass;
 }
 
+static ThreadFuncRet CreatePipelineThread(void* arg)
+{
+    PipelineCreateJobArgs* jobArgs = (PipelineCreateJobArgs*)arg;
+
+    std::vector<Pipeline*>& pipelines = *(jobArgs->mPipelines);
+    MutexHandle mutex = jobArgs->mMutex;
+
+    while (true)
+    {
+        Pipeline* pipeline = nullptr;
+
+        SYS_LockMutex(mutex);
+
+        if (pipelines.size() > 0)
+        {
+            pipeline = pipelines.back();
+            pipelines.pop_back();
+        }
+
+        SYS_UnlockMutex(mutex);
+
+        if (pipeline != nullptr)
+        {
+            pipeline->Create();
+        }
+        else
+        {
+            break;
+        }
+    }
+
+
+    THREAD_RETURN();
+}
+
 void VulkanContext::CreatePipelines()
 {
     mPipelines[(size_t)PipelineId::Shadow] = new ShadowPipeline();
@@ -2257,44 +2295,75 @@ void VulkanContext::CreatePipelines()
     }
 
     // Create Pipelines
-    mPipelines[(size_t)PipelineId::Shadow]->Create(mShadowRenderPass);
-    mPipelines[(size_t)PipelineId::Opaque]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::Translucent]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::Additive]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::DepthlessOpaque]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::DepthlessTranslucent]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::DepthlessAdditive]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullFrontOpaque]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullFrontTranslucent]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullFrontAdditive]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullNoneOpaque]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullNoneTranslucent]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullNoneAdditive]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::ShadowMeshBack]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::ShadowMeshFront]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::ShadowMeshClear]->Create(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::Selected]->Create(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::Wireframe]->Create(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::Collision]->Create(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::Line]->Create(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::PostProcess]->Create(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::NullPostProcess]->Create(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::Quad]->Create(mUIRenderPass);
-    mPipelines[(size_t)PipelineId::Text]->Create(mUIRenderPass);
-    mPipelines[(size_t)PipelineId::Poly]->Create(mUIRenderPass);
+    mPipelines[(size_t)PipelineId::Shadow]->SetRenderPass(mShadowRenderPass);
+    mPipelines[(size_t)PipelineId::Opaque]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::Translucent]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::Additive]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::DepthlessOpaque]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::DepthlessTranslucent]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::DepthlessAdditive]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::CullFrontOpaque]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::CullFrontTranslucent]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::CullFrontAdditive]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::CullNoneOpaque]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::CullNoneTranslucent]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::CullNoneAdditive]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::ShadowMeshBack]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::ShadowMeshFront]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::ShadowMeshClear]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::Selected]->SetRenderPass(mPostprocessRenderPass);
+    mPipelines[(size_t)PipelineId::Wireframe]->SetRenderPass(mPostprocessRenderPass);
+    mPipelines[(size_t)PipelineId::Collision]->SetRenderPass(mPostprocessRenderPass);
+    mPipelines[(size_t)PipelineId::Line]->SetRenderPass(mPostprocessRenderPass);
+    mPipelines[(size_t)PipelineId::PostProcess]->SetRenderPass(mPostprocessRenderPass);
+    mPipelines[(size_t)PipelineId::NullPostProcess]->SetRenderPass(mPostprocessRenderPass);
+    mPipelines[(size_t)PipelineId::Quad]->SetRenderPass(mUIRenderPass);
+    mPipelines[(size_t)PipelineId::Text]->SetRenderPass(mUIRenderPass);
+    mPipelines[(size_t)PipelineId::Poly]->SetRenderPass(mUIRenderPass);
 
-    if (mSupportsRayTracing)
-    {
-        mPipelines[(size_t)PipelineId::PathTrace]->Create(VK_NULL_HANDLE);
-        mPipelines[(size_t)PipelineId::LightBakeDirect]->Create(VK_NULL_HANDLE);
-        mPipelines[(size_t)PipelineId::LightBakeIndirect]->Create(VK_NULL_HANDLE);
-        mPipelines[(size_t)PipelineId::LightBakeAverage]->Create(VK_NULL_HANDLE);
-        mPipelines[(size_t)PipelineId::LightBakeDiffuse]->Create(VK_NULL_HANDLE);
-    }
+    // Compute pipelines don't need to set a RenderPass.
 
 #if EDITOR
-    mPipelines[(size_t)PipelineId::HitCheck]->Create(mHitCheckRenderPass);
+    mPipelines[(size_t)PipelineId::HitCheck]->SetRenderPass(mHitCheckRenderPass);
 #endif
+
+    // Create pipelines across multiple threads to use all CPU cores.
+    std::vector<Pipeline*> pipelines;
+    pipelines.reserve((size_t)PipelineId::Count);
+    MutexHandle mutex = SYS_CreateMutex();
+
+    PipelineCreateJobArgs jobArgs;
+    jobArgs.mPipelines = &pipelines;
+    jobArgs.mMutex = mutex;
+
+    // Gather pipelines that we need to create.
+    for (uint32_t i = 0; i < (uint32_t)PipelineId::Count; ++i)
+    {
+        if (mPipelines[i] != nullptr)
+        {
+            pipelines.push_back(mPipelines[i]);
+        }
+    }
+
+    // Dispatch threads
+    constexpr uint32_t kNumThreads = 8;
+    ThreadHandle threads[kNumThreads] = {};
+
+    for (uint32_t i = 0; i < kNumThreads; ++i)
+    {
+        threads[i] = SYS_CreateThread(CreatePipelineThread, &jobArgs);
+    }
+
+    // Join threads
+    for (uint32_t i = 0; i < kNumThreads; ++i)
+    {
+        SYS_JoinThread(threads[i]);
+        SYS_DestroyThread(threads[i]);
+    }
+
+    // All pipeslines should be created now. Delete the shader modules we used.
+    OCT_ASSERT(pipelines.size() == 0);
+    SYS_DestroyMutex(mutex);
 }
 
 void VulkanContext::DestroyPipelines()
