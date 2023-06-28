@@ -330,10 +330,9 @@ void Pipeline::CreateComputePipeline()
     vkDestroyShaderModule(device, computeShaderModule, nullptr);
 }
 
-void Pipeline::Create(VkRenderPass renderPass)
+void Pipeline::Create()
 {
     // Ensure that a renderpass has been set before creating the pipeline.
-    mRenderpass = renderPass;
     OCT_ASSERT(mRenderpass != VK_NULL_HANDLE || mComputePipeline);
     OCT_ASSERT(mPipelineId != PipelineId::Count);
 
@@ -390,6 +389,11 @@ PipelineId Pipeline::GetId() const
 bool Pipeline::IsComputePipeline() const
 {
     return mComputePipeline;
+}
+
+void Pipeline::SetRenderPass(VkRenderPass renderPass)
+{
+    mRenderpass = renderPass;
 }
 
 VkShaderModule Pipeline::CreateShaderModule(const char* codeData, uint32_t codeSize)

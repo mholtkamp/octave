@@ -1,6 +1,13 @@
 #pragma once
 
 #include "Maths.h"
+#include "System/SystemTypes.h"
+
+struct PipelineCreateJobArgs
+{
+    std::vector<class Pipeline*>* mPipelines;
+    MutexHandle mMutex = {};
+};
 
 struct LightUniformData
 {

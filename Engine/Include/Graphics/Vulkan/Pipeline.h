@@ -9,6 +9,7 @@
 #include "Vertex.h"
 
 #include "Graphics/GraphicsTypes.h"
+#include "Graphics/Vulkan/VulkanTypes.h"
 
 struct VertexConfig
 {
@@ -25,7 +26,7 @@ public:
 
     virtual ~Pipeline();
 
-    void Create(VkRenderPass renderPass);
+    void Create();
     void Destroy();
 
     void SetVertexConfig(VertexType vertexType, const std::string& path);
@@ -48,6 +49,8 @@ public:
     PipelineId GetId() const;
 
     bool IsComputePipeline() const;
+
+    void SetRenderPass(VkRenderPass renderPass);
 
 protected:
 
