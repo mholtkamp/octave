@@ -371,7 +371,7 @@ void VulkanContext::EndRenderPass()
     // TODO: Remove this after finding out how to avoid double-updating GeometryUniform buffers between shadow and forward passes.
     if (mCurrentRenderPassId == RenderPassId::Shadows)
     {
-        DeviceWaitIdle();
+        //DeviceWaitIdle();
     }
 
     if (mCurrentRenderPassId != RenderPassId::Count)

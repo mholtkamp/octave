@@ -681,7 +681,7 @@ void android_main(struct android_app* state)
     char** argv = nullptr;
 
     // For now, just enable validation
-    GetEngineConfig()->mValidateGraphics = true;
+    //GetEngineConfig()->mValidateGraphics = true;
 
 #else
 int main(int argc, char** argv)
