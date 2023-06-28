@@ -29,13 +29,13 @@ std::string SYS_SaveFileDialog();
 std::string SYS_SelectFolderDialog();
 
 // Threading
-ThreadHandle SYS_CreateThread(ThreadFuncFP func, void* arg);
-void SYS_JoinThread(ThreadHandle thread);
-void SYS_DestroyThread(ThreadHandle thread);
-MutexHandle SYS_CreateMutex();
-void SYS_LockMutex(MutexHandle mutex);
-void SYS_UnlockMutex(MutexHandle mutex);
-void SYS_DestroyMutex(MutexHandle mutex);
+ThreadObject* SYS_CreateThread(ThreadFuncFP func, void* arg);
+void SYS_JoinThread(ThreadObject* thread);
+void SYS_DestroyThread(ThreadObject* thread);
+MutexObject* SYS_CreateMutex();
+void SYS_LockMutex(MutexObject* mutex);
+void SYS_UnlockMutex(MutexObject* mutex);
+void SYS_DestroyMutex(MutexObject* mutex);
 void SYS_Sleep(uint32_t milliseconds);
 
 // Time
@@ -68,7 +68,7 @@ bool SYS_DoesWindowHaveFocus();
 
 struct ScopedLock
 {
-    ScopedLock(MutexHandle mutex)
+    ScopedLock(MutexObject* mutex)
     {
         mMutex = mutex;
         SYS_LockMutex(mMutex);
@@ -79,7 +79,7 @@ struct ScopedLock
         SYS_UnlockMutex(mMutex);
     }
 
-    MutexHandle mMutex;
+    MutexObject* mMutex = nullptr;
 };
 
 #define SCOPED_LOCK(mutex) ScopedLock scopedLock(mutex)

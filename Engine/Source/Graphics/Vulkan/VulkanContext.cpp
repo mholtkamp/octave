@@ -2202,7 +2202,7 @@ static ThreadFuncRet CreatePipelineThread(void* arg)
     PipelineCreateJobArgs* jobArgs = (PipelineCreateJobArgs*)arg;
 
     std::vector<Pipeline*>& pipelines = *(jobArgs->mPipelines);
-    MutexHandle mutex = jobArgs->mMutex;
+    MutexObject* mutex = jobArgs->mMutex;
 
     while (true)
     {
@@ -2330,7 +2330,7 @@ void VulkanContext::CreatePipelines()
     // Create pipelines across multiple threads to use all CPU cores.
     std::vector<Pipeline*> pipelines;
     pipelines.reserve((size_t)PipelineId::Count);
-    MutexHandle mutex = SYS_CreateMutex();
+    MutexObject* mutex = SYS_CreateMutex();
 
     PipelineCreateJobArgs jobArgs;
     jobArgs.mPipelines = &pipelines;
@@ -2347,7 +2347,7 @@ void VulkanContext::CreatePipelines()
 
     // Dispatch threads
     constexpr uint32_t kNumThreads = 8;
-    ThreadHandle threads[kNumThreads] = {};
+    ThreadObject* threads[kNumThreads] = {};
 
     for (uint32_t i = 0; i < kNumThreads; ++i)
     {
@@ -2359,11 +2359,13 @@ void VulkanContext::CreatePipelines()
     {
         SYS_JoinThread(threads[i]);
         SYS_DestroyThread(threads[i]);
+        threads[i] = nullptr;
     }
 
     // All pipeslines should be created now. Delete the shader modules we used.
     OCT_ASSERT(pipelines.size() == 0);
     SYS_DestroyMutex(mutex);
+    mutex = nullptr;
 }
 
 void VulkanContext::DestroyPipelines()

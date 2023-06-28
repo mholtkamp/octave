@@ -129,8 +129,8 @@ protected:
     bool mDestructing = false;
     std::deque<AsyncLoadRequest*> mBeginLoadQueue;
     std::deque<AsyncLoadRequest*> mEndLoadQueue;
-    ThreadHandle mAsyncLoadThread = {};
-    MutexHandle mMutex = {};
+    ThreadObject* mAsyncLoadThread = {};
+    MutexObject* mMutex = {};
 
 #if EDITOR
 public:
