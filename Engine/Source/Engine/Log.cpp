@@ -56,16 +56,24 @@ void LogDebug(const char* format, ...)
 #if LOGGING_ENABLED
     LockLog();
 
-    va_list argptr;
-    va_start(argptr, format);
+    {
+        va_list argptr;
+        va_start(argptr, format);
 
-    // Pass to SYS interface
-    SYS_Log(LogSeverity::Debug, format, argptr);
+        // Pass to SYS interface
+        SYS_Log(LogSeverity::Debug, format, argptr);
+        va_end(argptr);
+    }
 
-    // Write to in-game console
-    WriteConsoleMessage({0.5f, 1.0f, 0.5f, 1.0f}, format, argptr);
+    {
+        va_list argptr;
+        va_start(argptr, format);
 
-    va_end(argptr);
+        // Write to in-game console
+        WriteConsoleMessage({0.5f, 1.0f, 0.5f, 1.0f}, format, argptr);
+
+        va_end(argptr);
+    }
     
     UnlockLog();
 #endif
@@ -77,16 +85,24 @@ void LogWarning(const char* format, ...)
 #if LOGGING_ENABLED
     LockLog();
 
-    va_list argptr;
-    va_start(argptr, format);
+    {
+        va_list argptr;
+        va_start(argptr, format);
 
-    // Pass to SYS interface
-    SYS_Log(LogSeverity::Warning, format, argptr);
+        // Pass to SYS interface
+        SYS_Log(LogSeverity::Warning, format, argptr);
+        va_end(argptr);
+    }
 
-    // Write to in-game console
-    WriteConsoleMessage({1.0f, 1.0f, 0.5f, 1.0f}, format, argptr);
+    {
+        va_list argptr;
+        va_start(argptr, format);
 
-    va_end(argptr);
+        // Write to in-game console
+        WriteConsoleMessage({1.0f, 1.0f, 0.5f, 1.0f}, format, argptr);
+
+        va_end(argptr);
+    }
     
     UnlockLog();
 #endif
@@ -98,16 +114,24 @@ void LogError(const char* format, ...)
 
     LockLog();
 
-    va_list argptr;
-    va_start(argptr, format);
+    {
+        va_list argptr;
+        va_start(argptr, format);
 
-    // Pass to SYS interface
-    SYS_Log(LogSeverity::Error, format, argptr);
+        // Pass to SYS interface
+        SYS_Log(LogSeverity::Error, format, argptr);
+        va_end(argptr);
+    }
 
-    // Write to in-game console
-    WriteConsoleMessage({1.0f, 0.5f, 0.5f, 1.0f}, format, argptr);
+    {
+        va_list argptr;
+        va_start(argptr, format);
 
-    va_end(argptr);
+        // Write to in-game console
+        WriteConsoleMessage({1.0f, 0.5f, 0.5f, 1.0f}, format, argptr);
+
+        va_end(argptr);
+    }
     
     UnlockLog();
 
