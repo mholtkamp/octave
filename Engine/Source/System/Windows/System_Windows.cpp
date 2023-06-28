@@ -583,9 +583,11 @@ std::string SYS_SelectFolderDialog()
 
 
 // Threads
-ThreadHandle SYS_CreateThread(ThreadFuncFP func, void* arg)
+ThreadObject* SYS_CreateThread(ThreadFuncFP func, void* arg)
 {
-    ThreadHandle retThread = CreateThread(
+    ThreadObject* retThread = new ThreadObject();
+
+    *retThread = CreateThread(
         NULL,                   // default security attributes
         0,                      // use default stack size  
         func,                   // thread function name
@@ -593,7 +595,7 @@ ThreadHandle SYS_CreateThread(ThreadFuncFP func, void* arg)
         0,                      // use default creation flags 
         nullptr);               // returns the thread identifier 
 
-    if (retThread == 0)
+    if (*retThread == 0)
     {
         LogError("Failed to create Thread");
     }
@@ -601,51 +603,55 @@ ThreadHandle SYS_CreateThread(ThreadFuncFP func, void* arg)
     return retThread;
 }
 
-void SYS_JoinThread(ThreadHandle thread)
+void SYS_JoinThread(ThreadObject* thread)
 {
-    WaitForSingleObject(thread, INFINITE);
+    WaitForSingleObject(*thread, INFINITE);
 }
 
-void SYS_DestroyThread(ThreadHandle thread)
+void SYS_DestroyThread(ThreadObject* thread)
 {
-    CloseHandle(thread);
+    CloseHandle(*thread);
+    delete thread;
 }
 
-MutexHandle SYS_CreateMutex()
+MutexObject* SYS_CreateMutex()
 {
-    MutexHandle retHandle = CreateMutex(
+    MutexObject* retMutex = new MutexObject();
+
+    *retMutex = CreateMutex(
         NULL,              // default security attributes
         FALSE,             // initially not owned
         NULL);             // unnamed mutex
 
-    if (retHandle == 0)
+    if (*retMutex == 0)
     {
         LogError("Failed to create Mutex");
     }
 
-    return retHandle;
+    return retMutex;
 }
 
-void SYS_LockMutex(MutexHandle mutex)
+void SYS_LockMutex(MutexObject* mutex)
 {
     DWORD dwWaitResult = WaitForSingleObject(
-        mutex,      // handle to mutex
+        *mutex,      // handle to mutex
         INFINITE);  // no time-out interval
 
     OCT_UNUSED(dwWaitResult);
 }
 
-void SYS_UnlockMutex(MutexHandle mutex)
+void SYS_UnlockMutex(MutexObject* mutex)
 {
-    if (!ReleaseMutex(mutex))
+    if (!ReleaseMutex(*mutex))
     {
         LogError("Error releasing mutex");
     }
 }
 
-void SYS_DestroyMutex(MutexHandle mutex)
+void SYS_DestroyMutex(MutexObject* mutex)
 {
-    CloseHandle(mutex);
+    CloseHandle(*mutex);
+    delete mutex;
 }
 
 void SYS_Sleep(uint32_t milliseconds)

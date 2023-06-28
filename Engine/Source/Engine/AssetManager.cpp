@@ -96,8 +96,10 @@ AssetManager::~AssetManager()
 
     SYS_JoinThread(mAsyncLoadThread);
     SYS_DestroyThread(mAsyncLoadThread);
+    mAsyncLoadThread = nullptr;
 
     SYS_DestroyMutex(mMutex);
+    mMutex = nullptr;
 }
 
 void AssetManager::Initialize()

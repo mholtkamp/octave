@@ -248,14 +248,14 @@ std::string SYS_SelectFolderDialog()
 }
 
 // Threads
-ThreadHandle SYS_CreateThread(ThreadFuncFP func, void* arg)
+ThreadObject* SYS_CreateThread(ThreadFuncFP func, void* arg)
 {
-    ThreadHandle retThread;
+    ThreadObject* retThread = new ThreadObject();
 
     int32_t createStatus = 0;
 
     createStatus = LWP_CreateThread(
-        &retThread,     /* thread handle */
+        retThread,     /* thread handle */
         func,           /* code */
         arg,            /* arg pointer for thread */
         nullptr,        /* stack base */
@@ -270,52 +270,53 @@ ThreadHandle SYS_CreateThread(ThreadFuncFP func, void* arg)
     return retThread;
 }
 
-void SYS_JoinThread(ThreadHandle thread)
+void SYS_JoinThread(ThreadObject* thread)
 {
     void* retValue = nullptr;
-    LWP_JoinThread(thread, &retValue);
+    LWP_JoinThread(*thread, &retValue);
 }
 
-void SYS_DestroyThread(ThreadHandle thread)
+void SYS_DestroyThread(ThreadObject* thread)
 {
-    // Not sure if this is needed?
+    delete thread;
 }
 
-MutexHandle SYS_CreateMutex()
+MutexObject* SYS_CreateMutex()
 {
-    MutexHandle retHandle;
+    MutexObject* retMutex = new MutexObject();
 
     // Pass true in second param to allow recursive locking
-    int32_t status = LWP_MutexInit(&retHandle, true);
+    int32_t status = LWP_MutexInit(retMutex, true);
 
     if (status < 0)
     {
         LogError("Failed to create Mutex");
     }
 
-    return retHandle;
+    return retMutex;
 }
 
-void SYS_LockMutex(MutexHandle mutex)
+void SYS_LockMutex(MutexObject* mutex)
 {
-    LWP_MutexLock(mutex);
+    LWP_MutexLock(*mutex);
 }
 
-void SYS_UnlockMutex(MutexHandle mutex)
+void SYS_UnlockMutex(MutexObject* mutex)
 {
-    LWP_MutexUnlock(mutex);
+    LWP_MutexUnlock(*mutex);
 }
 
-void SYS_DestroyMutex(MutexHandle mutex)
+void SYS_DestroyMutex(MutexObject* mutex)
 {
-    LWP_MutexDestroy(mutex);
+    LWP_MutexDestroy(*mutex);
+    delete mutex;
 }
 
 void SYS_Sleep(uint32_t milliseconds)
 {
     // Uh... not sure how to sleep for a given duration.
     // But this sleep function at least yields to other threads I think...
-    ThreadHandle thisThread = LWP_GetSelf();
+    lwp_t thisThread = LWP_GetSelf();
     LWP_ThreadSleep(thisThread);
 
     OCT_UNUSED(milliseconds);

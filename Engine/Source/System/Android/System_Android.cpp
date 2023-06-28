@@ -570,12 +570,12 @@ std::string SYS_SelectFolderDialog()
 }
 
 // Threads
-ThreadHandle SYS_CreateThread(ThreadFuncFP func, void* arg)
+ThreadObject* SYS_CreateThread(ThreadFuncFP func, void* arg)
 {
-    ThreadHandle retThread = 0;
+    ThreadObject* retThread = new ThreadObject();
 
     int status = pthread_create(
-        &retThread,
+        retThread,
         nullptr,
         func,
         arg
@@ -589,32 +589,32 @@ ThreadHandle SYS_CreateThread(ThreadFuncFP func, void* arg)
     return retThread;
 }
 
-void SYS_JoinThread(ThreadHandle thread)
+void SYS_JoinThread(ThreadObject* thread)
 {
-    pthread_join(thread, nullptr);
+    pthread_join(*thread, nullptr);
 }
 
-void SYS_DestroyThread(ThreadHandle thread)
+void SYS_DestroyThread(ThreadObject* thread)
 {
-    // Doesn't appear to be needed. Join is sufficient.
+    delete thread;
 }
 
-MutexHandle SYS_CreateMutex()
+MutexObject* SYS_CreateMutex()
 {
-    MutexHandle retHandle;
-    int status = pthread_mutex_init(&retHandle, nullptr);
+    MutexObject* retMutex = new MutexObject();
+    int status = pthread_mutex_init(retMutex, nullptr);
 
     if (status != 0)
     {
         LogError("Failed to create Mutex");
     }
 
-    return retHandle;
+    return retMutex;
 }
 
-void SYS_LockMutex(MutexHandle mutex)
+void SYS_LockMutex(MutexObject* mutex)
 {
-    int status = pthread_mutex_lock(&mutex);
+    int status = pthread_mutex_lock(mutex);
 
     if (status != 0)
     {
@@ -622,9 +622,9 @@ void SYS_LockMutex(MutexHandle mutex)
     }
 }
 
-void SYS_UnlockMutex(MutexHandle mutex)
+void SYS_UnlockMutex(MutexObject* mutex)
 {
-    int status = pthread_mutex_unlock(&mutex);
+    int status = pthread_mutex_unlock(mutex);
 
     if (status != 0)
     {
@@ -632,9 +632,10 @@ void SYS_UnlockMutex(MutexHandle mutex)
     }
 }
 
-void SYS_DestroyMutex(MutexHandle mutex)
+void SYS_DestroyMutex(MutexObject* mutex)
 {
-    pthread_mutex_destroy(&mutex);
+    pthread_mutex_destroy(mutex);
+    delete mutex;
 }
 
 void SYS_Sleep(uint32_t milliseconds)

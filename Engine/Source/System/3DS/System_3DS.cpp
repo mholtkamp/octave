@@ -217,15 +217,17 @@ std::string SYS_SelectFolderDialog()
 }
 
 // Threads
-ThreadHandle SYS_CreateThread(ThreadFuncFP func, void* arg)
+ThreadObject* SYS_CreateThread(ThreadFuncFP func, void* arg)
 {
+    ThreadObject* retThread = new ThreadObject();
+
     int32_t priority = 0x30;
     svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
     priority -= 1;
     priority = priority < 0x18 ? 0x18 : priority;
     priority = priority > 0x3F ? 0x3F : priority;
 
-    ThreadHandle retThread = threadCreate(
+    *retThread = threadCreate(
         func,
         arg,
         16 * 1024,
@@ -233,7 +235,7 @@ ThreadHandle SYS_CreateThread(ThreadFuncFP func, void* arg)
         -1,
         false);
 
-    if (retThread == 0)
+    if (*retThread == 0)
     {
         LogError("Failed to create Thread");
     }
@@ -241,21 +243,22 @@ ThreadHandle SYS_CreateThread(ThreadFuncFP func, void* arg)
     return retThread;
 }
 
-void SYS_JoinThread(ThreadHandle thread)
+void SYS_JoinThread(ThreadObject* thread)
 {
-    threadJoin(thread, UINT64_MAX);
+    threadJoin(*thread, UINT64_MAX);
 }
 
-void SYS_DestroyThread(ThreadHandle thread)
+void SYS_DestroyThread(ThreadObject* thread)
 {
-    threadFree(thread);
+    threadFree(*thread);
+    delete thread;
 }
 
-MutexHandle SYS_CreateMutex()
+MutexObject* SYS_CreateMutex()
 {
-    MutexHandle retMutex = 0;
+    MutexObject* retMutex = new MutexObject();
 
-    int32_t result = svcCreateMutex(&retMutex, false);
+    int32_t result = svcCreateMutex(retMutex, false);
 
     if (result < 0)
     {
@@ -265,9 +268,9 @@ MutexHandle SYS_CreateMutex()
     return retMutex;
 }
 
-void SYS_LockMutex(MutexHandle mutex)
+void SYS_LockMutex(MutexObject* mutex)
 {
-    int32_t result = svcWaitSynchronization(mutex, UINT64_MAX);
+    int32_t result = svcWaitSynchronization(*mutex, UINT64_MAX);
 
     if (result < 0)
     {
@@ -275,17 +278,18 @@ void SYS_LockMutex(MutexHandle mutex)
     }
 }
 
-void SYS_UnlockMutex(MutexHandle mutex)
+void SYS_UnlockMutex(MutexObject* mutex)
 {
-    if (svcReleaseMutex(mutex) < 0)
+    if (svcReleaseMutex(*mutex) < 0)
     {
         LogError("Error releasing mutex");
     }
 }
 
-void SYS_DestroyMutex(MutexHandle mutex)
+void SYS_DestroyMutex(MutexObject* mutex)
 {
-    svcCloseHandle(mutex);
+    svcCloseHandle(*mutex);
+    delete mutex;
 }
 
 void SYS_Sleep(uint32_t milliseconds)

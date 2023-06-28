@@ -36,20 +36,20 @@
 #endif
 
 #if PLATFORM_WINDOWS
-typedef HANDLE ThreadHandle;
-typedef HANDLE MutexHandle;
+typedef HANDLE ThreadObject;
+typedef HANDLE MutexObject;
 typedef DWORD ThreadFuncRet;
 #elif (PLATFORM_LINUX || PLATFORM_ANDROID)
-typedef pthread_t ThreadHandle;
-typedef pthread_mutex_t MutexHandle;
+typedef pthread_t ThreadObject;
+typedef pthread_mutex_t MutexObject;
 typedef void* ThreadFuncRet;
 #elif PLATFORM_DOLPHIN
-typedef lwp_t ThreadHandle;
-typedef uint32_t MutexHandle;
+typedef lwp_t ThreadObject;
+typedef uint32_t MutexObject;
 typedef void* ThreadFuncRet;
 #elif PLATFORM_3DS
-typedef Thread ThreadHandle;
-typedef uint32_t MutexHandle;
+typedef Thread ThreadObject;
+typedef uint32_t MutexObject;
 typedef void ThreadFuncRet;
 #endif
 

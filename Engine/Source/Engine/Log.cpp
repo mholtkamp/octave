@@ -7,7 +7,7 @@
 #include "EngineTypes.h"
 
 static bool sInitialized = false;
-static MutexHandle sMutex = {};
+static MutexObject* sMutex = nullptr;
 
 void InitializeLog()
 {
@@ -19,6 +19,7 @@ void ShutdownLog()
 {
     sInitialized = false;
     SYS_DestroyMutex(sMutex);
+    sMutex = nullptr;
 }
 
 void LockLog()

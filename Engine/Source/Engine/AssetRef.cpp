@@ -14,9 +14,9 @@
 
 #if ASSET_LIVE_REF_TRACKING
 // Need a mutex so that newly added AssetRefs during async load won't mess up operations.
-static MutexHandle GetLiveRefMutex()
+static MutexObject* GetLiveRefMutex()
 {
-    static MutexHandle sLiveRefMutex = SYS_CreateMutex();
+    static MutexObject* sLiveRefMutex = SYS_CreateMutex();
     return sLiveRefMutex;
 }
 

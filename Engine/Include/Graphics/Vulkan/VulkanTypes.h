@@ -6,7 +6,7 @@
 struct PipelineCreateJobArgs
 {
     std::vector<class Pipeline*>* mPipelines;
-    MutexHandle mMutex = {};
+    MutexObject* mMutex = nullptr;
 };
 
 struct LightUniformData
