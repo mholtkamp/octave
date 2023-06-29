@@ -387,6 +387,7 @@ bool INP_IsGamepadConnected(int32_t gamepadIndex)
 
 int32_t INP_GetGamepadIndex(int32_t inputDevice)
 {
+#if 0
     // This is really only used for Android right now? Possibly move into Input_Android.cpp
     int32_t i = 0;
     InputState& input = GetEngineState()->mInput;
@@ -407,6 +408,12 @@ int32_t INP_GetGamepadIndex(int32_t inputDevice)
             return i;
         }
     }
+#else
+    // Possibly only support 1 gamepad on android. Since unplugging / plugging in controll
+    // will switch to a new device id. Only allowing one gamepad will simplify the experience.
+    // Don't need to restart game if you plug in a diff controller.
+    return 0;
+#endif
 
     return -1;
 }
