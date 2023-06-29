@@ -480,7 +480,7 @@ bool SYS_WriteSave(const char* saveName, Stream& stream)
             std::string savePath = saveDir + "/" + saveName;
             stream.WriteFile(savePath.c_str());
             success = true;
-            LogDebug("Game Saved: %s (%d bytes)", saveName, stream.GetSize());
+            LogDebug("Save written: %s (%d bytes)", saveName, stream.GetSize());
         }
         else
         {

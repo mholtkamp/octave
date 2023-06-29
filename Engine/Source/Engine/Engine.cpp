@@ -184,7 +184,13 @@ bool Initialize(InitOptions& initOptions)
 
     if (sEngineConfig.mProjectPath != "")
     {
-#if !EDITOR
+#if EDITOR
+        // Even though we aren't loading the project immediately, set the project path so 
+        // graphics initialization can load shader cache correctly.
+        const std::string& path = sEngineConfig.mProjectPath;
+        sEngineState.mProjectPath = path;
+        sEngineState.mProjectDirectory = path.substr(0, path.find_last_of("/\\") + 1);
+#else
         // Editor uses ActionManager::OpenProject()
         LoadProject(sEngineConfig.mProjectPath, !initOptions.mUseAssetRegistry);
 #endif

@@ -82,6 +82,8 @@ public:
 
     Pipeline* GetPipeline(PipelineId id);
     Pipeline* GetCurrentlyBoundPipeline();
+    VkPipelineCache GetPipelineCache() const;
+    void SavePipelineCacheToFile();
 
     VkRenderPass GetForwardRenderPass();
     VkRenderPass GetPostprocessRenderPass();
@@ -136,6 +138,8 @@ private:
     void CreateGlobalUniformBuffer();
     void CreateGlobalDescriptorSet();
     void CreateRenderPass();
+    void CreatePipelineCache();
+    void DestroyPipelineCache();
     void CreatePipelines();
     void DestroyPipelines();
     void CreateFramebuffers();
@@ -217,6 +221,7 @@ private:
     VkFence mWaitFences[MAX_FRAMES] = {};
 
     // Pipelines
+    VkPipelineCache mPipelineCache = VK_NULL_HANDLE;
     Pipeline* mPipelines[(size_t)PipelineId::Count] = {};
 
     // Shader Data

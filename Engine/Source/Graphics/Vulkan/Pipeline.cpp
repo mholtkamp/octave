@@ -91,6 +91,7 @@ void Pipeline::CreateGraphicsPipeline()
 {
     VulkanContext* context = GetVulkanContext();
     VkDevice device = context->GetDevice();
+    VkPipelineCache cache = GetVulkanContext()->GetPipelineCache();
 
     VkShaderModule fragShaderModule = VK_NULL_HANDLE;
 
@@ -268,7 +269,7 @@ void Pipeline::CreateGraphicsPipeline()
         uint32_t pipelineIndex = vertexConfig.mVertexType == VertexType::Max ? 0 : uint32_t(vertexConfig.mVertexType);
 
         if (vkCreateGraphicsPipelines(GetVulkanDevice(),
-            VK_NULL_HANDLE,
+            cache,
             1,
             &ciPipeline,
             nullptr,
@@ -292,6 +293,7 @@ void Pipeline::CreateGraphicsPipeline()
 void Pipeline::CreateComputePipeline()
 {
     VkDevice device = GetVulkanDevice();
+    VkPipelineCache cache = GetVulkanContext()->GetPipelineCache();
 
     Stream stream;
     stream.ReadFile(mComputeShaderPath.c_str(), true);
@@ -317,7 +319,7 @@ void Pipeline::CreateComputePipeline()
     mPipelines.resize(1, VK_NULL_HANDLE);
 
     if (vkCreateComputePipelines(device,
-        VK_NULL_HANDLE,
+        cache,
         1,
         &ci,
         nullptr,
