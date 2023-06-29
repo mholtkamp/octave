@@ -2238,16 +2238,19 @@ void VulkanContext::SavePipelineCacheToFile()
         VkResult res = vkGetPipelineCacheData(mDevice, mPipelineCache, &cacheSize, nullptr);
         OCT_ASSERT(res == VK_SUCCESS);
 
-        char* cacheData = (char*)malloc(sizeof(char) * cacheSize);
-        OCT_ASSERT(cacheData);
+        if (cacheSize > 0)
+        {
+            char* cacheData = (char*)malloc(sizeof(char) * cacheSize);
+            OCT_ASSERT(cacheData);
 
-        res = vkGetPipelineCacheData(mDevice, mPipelineCache, &cacheSize, cacheData);
-        OCT_ASSERT(res == VK_SUCCESS);
+            res = vkGetPipelineCacheData(mDevice, mPipelineCache, &cacheSize, cacheData);
+            OCT_ASSERT(res == VK_SUCCESS);
 
-        Stream stream;
-        stream.WriteBytes((uint8_t*)cacheData, (uint32_t)cacheSize);
-        
-        SYS_WriteSave(PIPELINE_CACHE_SAVE_NAME, stream);
+            Stream stream;
+            stream.WriteBytes((uint8_t*)cacheData, (uint32_t)cacheSize);
+
+            SYS_WriteSave(PIPELINE_CACHE_SAVE_NAME, stream);
+        }
     }
 }
 
