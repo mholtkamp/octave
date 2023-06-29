@@ -323,6 +323,8 @@ void SYS_Initialize()
         }
     }
 
+    system.mInternalDataPath = system.mActivity->internalDataPath;
+    system.mInternalDataPath += "/";
 }
 
 void SYS_Shutdown()
@@ -690,11 +692,14 @@ uint64_t SYS_GetNumBytesAllocated()
 bool SYS_ReadSave(const char* saveName, Stream& outStream)
 {
     bool success = false;
+    
+    const std::string& dataPath = GetEngineState()->mSystem.mInternalDataPath;
+
     if (GetEngineState()->mProjectDirectory != "")
     {
         if (SYS_DoesSaveExist(saveName))
         {
-            std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
+            std::string savePath = dataPath + "Saves/" + saveName;
             outStream.ReadFile(savePath.c_str(), false);
             success = true;
         }
@@ -715,9 +720,11 @@ bool SYS_WriteSave(const char* saveName, Stream& stream)
 {
     bool success = false;
 
+    const std::string& dataPath = GetEngineState()->mSystem.mInternalDataPath;
+
     if (GetEngineState()->mProjectDirectory != "")
     {
-        std::string saveDir = GetEngineState()->mProjectDirectory + "Saves";
+        std::string saveDir = dataPath + "Saves";
         bool saveDirExists = DoesDirExist(saveDir.c_str());
 
         if (!saveDirExists)
@@ -749,9 +756,11 @@ bool SYS_DoesSaveExist(const char* saveName)
 {
     bool exists = false;
 
+    const std::string& dataPath = GetEngineState()->mSystem.mInternalDataPath;
+
     if (GetEngineState()->mProjectDirectory != "")
     {
-        std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
+        std::string savePath = dataPath + "Saves/" + saveName;
 
         FILE* file = fopen(savePath.c_str(), "rb");
 
@@ -770,9 +779,11 @@ bool SYS_DeleteSave(const char* saveName)
 {
     bool success = false;
 
+    const std::string& dataPath = GetEngineState()->mSystem.mInternalDataPath;
+
     if (GetEngineState()->mProjectDirectory != "")
     {
-        std::string savePath = GetEngineState()->mProjectDirectory + "Saves/" + saveName;
+        std::string savePath = dataPath + "Saves/" + saveName;
         SYS_RemoveFile(savePath.c_str());
         success = true;
     }
