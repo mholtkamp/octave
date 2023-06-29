@@ -2,6 +2,7 @@
 
 #include "Constants.h"
 #include "Maths.h"
+#include <string>
 
 #if PLATFORM_WINDOWS
 #include <Windows.h>
@@ -100,6 +101,7 @@ struct SystemState
     //EGLDisplay mDisplay = ??? is this a pointer?;
     //EGLSurface mSurface = ???;
     //EGLContext mContext = ???;
+    std::string mInternalDataPath;
     int32_t mWidth= 100;
     int32_t mHeight = 100;
     bool mWindowInitialized = false;

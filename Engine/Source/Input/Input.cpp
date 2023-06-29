@@ -409,9 +409,9 @@ int32_t INP_GetGamepadIndex(int32_t inputDevice)
         }
     }
 #else
-    // Possibly only support 1 gamepad on android. Since unplugging / plugging in controll
+    // Possibly only support 1 gamepad on android. Since unplugging / plugging in controller
     // will switch to a new device id. Only allowing one gamepad will simplify the experience.
-    // Don't need to restart game if you plug in a diff controller.
+    // Don't need to restart game if you plug in a different controller.
     return 0;
 #endif
 
