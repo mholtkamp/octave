@@ -308,6 +308,9 @@ void SYS_Initialize()
     state->onInputEvent = HandleInput;
     state->activity->callbacks->onNativeWindowResized = HandleResize;
 
+    system.mInternalDataPath = system.mActivity->internalDataPath;
+    system.mInternalDataPath += "/";
+
     // Keep processing events until window is initialized.
     while (!system.mWindowInitialized)
     {
@@ -322,9 +325,6 @@ void SYS_Initialize()
             }
         }
     }
-
-    system.mInternalDataPath = system.mActivity->internalDataPath;
-    system.mInternalDataPath += "/";
 }
 
 void SYS_Shutdown()
@@ -695,7 +695,7 @@ bool SYS_ReadSave(const char* saveName, Stream& outStream)
     
     const std::string& dataPath = GetEngineState()->mSystem.mInternalDataPath;
 
-    if (GetEngineState()->mProjectDirectory != "")
+    if (dataPath != "")
     {
         if (SYS_DoesSaveExist(saveName))
         {
@@ -722,7 +722,7 @@ bool SYS_WriteSave(const char* saveName, Stream& stream)
 
     const std::string& dataPath = GetEngineState()->mSystem.mInternalDataPath;
 
-    if (GetEngineState()->mProjectDirectory != "")
+    if (dataPath != "")
     {
         std::string saveDir = dataPath + "Saves";
         bool saveDirExists = DoesDirExist(saveDir.c_str());
@@ -737,7 +737,7 @@ bool SYS_WriteSave(const char* saveName, Stream& stream)
             std::string savePath = saveDir + "/" + saveName;
             stream.WriteFile(savePath.c_str());
             success = true;
-            LogDebug("Game Saved: %s (%d bytes)", saveName, stream.GetSize());
+            LogDebug("Save written: %s (%d bytes)", saveName, stream.GetSize());
         }
         else
         {
@@ -758,7 +758,7 @@ bool SYS_DoesSaveExist(const char* saveName)
 
     const std::string& dataPath = GetEngineState()->mSystem.mInternalDataPath;
 
-    if (GetEngineState()->mProjectDirectory != "")
+    if (dataPath != "")
     {
         std::string savePath = dataPath + "Saves/" + saveName;
 
@@ -781,7 +781,7 @@ bool SYS_DeleteSave(const char* saveName)
 
     const std::string& dataPath = GetEngineState()->mSystem.mInternalDataPath;
 
-    if (GetEngineState()->mProjectDirectory != "")
+    if (dataPath != "")
     {
         std::string savePath = dataPath + "Saves/" + saveName;
         SYS_RemoveFile(savePath.c_str());

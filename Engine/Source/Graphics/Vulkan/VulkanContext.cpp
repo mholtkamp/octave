@@ -37,6 +37,8 @@ PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT = nullptr;
 PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT = nullptr;
 PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
 
+#define PIPELINE_CACHE_SAVE_NAME "PipelineCache.sav"
+
 void CreateVulkanContext()
 {
     OCT_ASSERT(gVulkanContext == nullptr);
@@ -109,7 +111,9 @@ void VulkanContext::Initialize()
     CreateHitCheck();
 #endif
 
+    CreatePipelineCache();
     CreatePipelines();
+    SavePipelineCacheToFile();
 
     CreateGlobalDescriptorSet();
 
@@ -135,6 +139,9 @@ void VulkanContext::Initialize()
             1);
     }
 
+    mFrameIndex = Renderer::Get()->GetFrameIndex();
+    mFrameNumber = Renderer::Get()->GetFrameNumber();
+
     DeviceWaitIdle();
     mInitialized = true;
 }
@@ -151,6 +158,7 @@ void VulkanContext::Destroy()
     DestroySwapchain();
 
     DestroyPipelines();
+    DestroyPipelineCache();
 
     mDestroyQueue.FlushAll();
 
@@ -1518,6 +1526,41 @@ void VulkanContext::CreateRenderPass()
     }
 }
 
+void VulkanContext::CreatePipelineCache()
+{
+    const char* initData = nullptr;
+    size_t initSize = 0;
+
+    Stream pipelineData;
+    if (SYS_DoesSaveExist(PIPELINE_CACHE_SAVE_NAME))
+    {
+        if (SYS_ReadSave(PIPELINE_CACHE_SAVE_NAME, pipelineData))
+        {
+            initData = pipelineData.GetData();
+            initSize = (size_t)pipelineData.GetSize();
+        }
+    }
+
+    OCT_ASSERT(mPipelineCache == VK_NULL_HANDLE);
+    VkPipelineCacheCreateInfo ciCache = {};
+    ciCache.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+    ciCache.pInitialData = (void*)initData;
+    ciCache.initialDataSize = initSize;
+    ciCache.flags = 0;
+    
+    if (vkCreatePipelineCache(mDevice, &ciCache, nullptr, &mPipelineCache) != VK_SUCCESS)
+    {
+        LogError("Failed to create pipeline cache");
+        OCT_ASSERT(0);
+    }
+}
+
+void VulkanContext::DestroyPipelineCache()
+{
+    OCT_ASSERT(mPipelineCache != VK_NULL_HANDLE);
+    vkDestroyPipelineCache(mDevice, mPipelineCache, nullptr);
+}
+
 void VulkanContext::CreateFramebuffers()
 {
     mSwapchainFramebuffers.resize(mSwapchainImageViews.size());
@@ -2180,6 +2223,32 @@ Pipeline* VulkanContext::GetPipeline(PipelineId id)
 Pipeline* VulkanContext::GetCurrentlyBoundPipeline()
 {
     return mCurrentlyBoundPipeline;
+}
+
+VkPipelineCache VulkanContext::GetPipelineCache() const
+{
+    return mPipelineCache;
+}
+
+void VulkanContext::SavePipelineCacheToFile()
+{
+    if (mPipelineCache != VK_NULL_HANDLE)
+    {
+        size_t cacheSize = 0;
+        VkResult res = vkGetPipelineCacheData(mDevice, mPipelineCache, &cacheSize, nullptr);
+        OCT_ASSERT(res == VK_SUCCESS);
+
+        char* cacheData = (char*)malloc(sizeof(char) * cacheSize);
+        OCT_ASSERT(cacheData);
+
+        res = vkGetPipelineCacheData(mDevice, mPipelineCache, &cacheSize, cacheData);
+        OCT_ASSERT(res == VK_SUCCESS);
+
+        Stream stream;
+        stream.WriteBytes((uint8_t*)cacheData, (uint32_t)cacheSize);
+        
+        SYS_WriteSave(PIPELINE_CACHE_SAVE_NAME, stream);
+    }
 }
 
 VkRenderPass VulkanContext::GetForwardRenderPass()
