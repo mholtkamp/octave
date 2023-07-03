@@ -291,7 +291,17 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
 
 void HandleResize(ANativeActivity *activity, ANativeWindow *window)
 {
-    GetEngineState()->mSystem.mOrientationChanged = true;
+    SystemState& system = GetEngineState()->mSystem;
+    system.mOrientationChanged = true;
+
+    if (ANativeWindow_getWidth(window) >= ANativeWindow_getHeight(window))
+    {
+        system.mActiveOrientation = ScreenOrientation::Landscape;
+    }
+    else
+    {
+        system.mActiveOrientation = ScreenOrientation::Portrait;
+    }
 }
 
 void SYS_Initialize()
@@ -847,6 +857,44 @@ void SYS_SetWindowTitle(const char* title)
 bool SYS_DoesWindowHaveFocus()
 {
     return true;
+}
+
+void SYS_SetScreenOrientation(ScreenOrientation orientation)
+{
+    SystemState& system = GetEngineState()->mSystem;
+
+    if (system.mOrientationMode != orientation)
+    {
+        system.mOrientationMode = orientation;
+
+        JNIEnv* env = nullptr;
+        JavaVM* vm = system.mActivity->vm;
+        vm->AttachCurrentThread(&env, nullptr);
+
+        jobject octActivity = system.mActivity->clazz;
+        jclass octClass = env->GetObjectClass(octActivity);
+        jmethodID orientationMethod = env->GetMethodID(octClass, "setSystemOrientation", "(I)V");
+
+        env->CallVoidMethod(octActivity, orientationMethod, (int32_t)orientation);
+
+        vm->DetachCurrentThread();
+    }
+}
+
+ScreenOrientation SYS_GetScreenOrientation()
+{
+    ScreenOrientation orientation = ScreenOrientation::Count;
+    SystemState& system = GetEngineState()->mSystem;
+    if (system.mOrientationMode != ScreenOrientation::Auto)
+    {
+        orientation = system.mOrientationMode;
+    }
+    else
+    {
+        orientation = system.mActiveOrientation;
+    }
+
+    return orientation;
 }
 
 #endif

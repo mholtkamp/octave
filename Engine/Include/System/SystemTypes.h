@@ -62,6 +62,15 @@ typedef ThreadFuncRet(*ThreadFuncFP)(void*);
 #define THREAD_RETURN() return 0;
 #endif
 
+enum class ScreenOrientation : uint8_t
+{
+    Landscape,
+    Portrait,
+    Auto,
+
+    Count
+};
+
 struct DirEntry
 {
     char mDirectoryPath[MAX_PATH_SIZE + 1] = { };
@@ -107,6 +116,8 @@ struct SystemState
     bool mWindowInitialized = false;
     bool mWindowHasFocus = false;
     bool mOrientationChanged = false;
+    ScreenOrientation mOrientationMode = ScreenOrientation::Auto;
+    ScreenOrientation mActiveOrientation = ScreenOrientation::Auto;
 #elif PLATFORM_DOLPHIN
     void* mFrameBuffers[2] = { };
     void* mConsoleBuffer = nullptr;
