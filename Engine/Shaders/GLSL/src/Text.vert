@@ -52,6 +52,8 @@ void main()
     position.xy /= global.mInterfaceResolution;
     position.xy *= 2.0f;
     position.xy -= 1.0f;
+
+    position = (mat3(global.mPreRotationMatrix) * vec3(position, 1.0)).xy;
     
     gl_Position = vec4(position.xy, 0.0, 1.0);
 }

@@ -94,6 +94,7 @@ glm::mat4 GFX_MakePerspectiveMatrix(float fovyDegrees, float aspectRatio, float 
     }
 
     glm::mat4 perspMat = glm::perspectiveFov(glm::radians(fovyDegrees), aspectRatio, 1.0f, zNear, zFar);
+    perspMat[1][1] *= -1.0f;
     perspMat = preRotateMat * perspMat;
 
     return perspMat;
@@ -119,6 +120,7 @@ glm::mat4 GFX_MakeOrthographicMatrix(float left, float right, float bottom, floa
     }
 
     glm::mat4 orthoMat = glm::ortho(left, right, bottom, top, zNear, zFar);
+    orthoMat[1][1] *= -1.0f;
     orthoMat = preRotateMat * orthoMat;
 
     return orthoMat;

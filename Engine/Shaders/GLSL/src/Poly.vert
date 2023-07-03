@@ -42,6 +42,7 @@ void main()
     
     mat3 transform = mat3(polyData.mTransform);
     vec2 outPos = (transform * vec3(position, 1.0)).xy;
-    outPos = (outPos / global.mInterfaceResolution) * 2.0f - 1.0f ;
+    outPos = (outPos / global.mInterfaceResolution) * 2.0 - 1.0;
+    outPos = (mat3(global.mPreRotationMatrix) * vec3(outPos, 1.0)).xy;
     gl_Position = vec4(outPos, 0.0, 1.0);
 }
