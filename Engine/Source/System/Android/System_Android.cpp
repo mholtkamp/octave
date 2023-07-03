@@ -149,7 +149,7 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
         {
             INP_SetTouch(pointer);
             INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, pointer)),
-                (engineState->mWindowHeight - 1) - static_cast<int>(AMotionEvent_getY(event, pointer)),
+                static_cast<int>(AMotionEvent_getY(event, pointer)),
                 pointer);
             return 1;
         }
@@ -157,7 +157,7 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
         {
             INP_ClearTouch(pointer);
             INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, pointer)),
-                (engineState->mWindowHeight - 1) - static_cast<int>(AMotionEvent_getY(event, pointer)),
+                static_cast<int>(AMotionEvent_getY(event, pointer)),
                 pointer);
             return 1;
         }
@@ -165,7 +165,7 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
         {
             INP_SetTouch(pointer);
             INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, pointer)),
-                (engineState->mWindowHeight - 1) - static_cast<int>(AMotionEvent_getY(event, pointer)),
+                static_cast<int>(AMotionEvent_getY(event, pointer)),
                 pointer);
             return 1;
         }
@@ -173,7 +173,7 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
         {
             INP_ClearTouch(pointer);
             INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, pointer)),
-                (engineState->mWindowHeight - 1) - static_cast<int>(AMotionEvent_getY(event, pointer)),
+                static_cast<int>(AMotionEvent_getY(event, pointer)),
                 pointer);
             return 1;
         }
@@ -182,7 +182,7 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
             for (int ptr = 0; ptr < INPUT_MAX_TOUCHES; ptr++)
             {
                 INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, ptr)),
-                    (engineState->mWindowHeight - 1) - static_cast<int>(AMotionEvent_getY(event, ptr)),
+                    static_cast<int>(AMotionEvent_getY(event, ptr)),
                     ptr);
             }
 
