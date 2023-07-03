@@ -116,8 +116,8 @@ struct SystemState
     bool mWindowInitialized = false;
     bool mWindowHasFocus = false;
     bool mOrientationChanged = false;
-    ScreenOrientation mOrientationMode = ScreenOrientation::Auto;
-    ScreenOrientation mActiveOrientation = ScreenOrientation::Auto;
+    ScreenOrientation mOrientationMode = ScreenOrientation::Landscape;
+    ScreenOrientation mActiveOrientation = ScreenOrientation::Landscape;
 #elif PLATFORM_DOLPHIN
     void* mFrameBuffers[2] = { };
     void* mConsoleBuffer = nullptr;

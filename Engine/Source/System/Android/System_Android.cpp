@@ -863,22 +863,19 @@ void SYS_SetScreenOrientation(ScreenOrientation orientation)
 {
     SystemState& system = GetEngineState()->mSystem;
 
-    if (system.mOrientationMode != orientation)
-    {
-        system.mOrientationMode = orientation;
+    system.mOrientationMode = orientation;
 
-        JNIEnv* env = nullptr;
-        JavaVM* vm = system.mActivity->vm;
-        vm->AttachCurrentThread(&env, nullptr);
+    JNIEnv* env = nullptr;
+    JavaVM* vm = system.mActivity->vm;
+    vm->AttachCurrentThread(&env, nullptr);
 
-        jobject octActivity = system.mActivity->clazz;
-        jclass octClass = env->GetObjectClass(octActivity);
-        jmethodID orientationMethod = env->GetMethodID(octClass, "setSystemOrientation", "(I)V");
+    jobject octActivity = system.mActivity->clazz;
+    jclass octClass = env->GetObjectClass(octActivity);
+    jmethodID orientationMethod = env->GetMethodID(octClass, "setSystemOrientation", "(I)V");
 
-        env->CallVoidMethod(octActivity, orientationMethod, (int32_t)orientation);
+    env->CallVoidMethod(octActivity, orientationMethod, (int32_t)orientation);
 
-        vm->DetachCurrentThread();
-    }
+    vm->DetachCurrentThread();
 }
 
 ScreenOrientation SYS_GetScreenOrientation()

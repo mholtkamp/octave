@@ -322,6 +322,28 @@ void BindJustification()
     OCT_ASSERT(lua_gettop(L) == 0);
 }
 
+void BindScreenOrientation()
+{
+    lua_State* L = GetLua();
+    OCT_ASSERT(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushinteger(L, (int)ScreenOrientation::Landscape);
+    lua_setfield(L, tableIdx, "Landscape");
+
+    lua_pushinteger(L, (int)ScreenOrientation::Portrait);
+    lua_setfield(L, tableIdx, "Portrait");
+
+    lua_pushinteger(L, (int)ScreenOrientation::Auto);
+    lua_setfield(L, tableIdx, "Auto");
+
+    lua_setglobal(L, "ScreenOrientation");
+
+    OCT_ASSERT(lua_gettop(L) == 0);
+}
+
 void Misc_Lua::BindMisc()
 {
     BindBlendMode();
@@ -333,6 +355,7 @@ void Misc_Lua::BindMisc()
     BindDatumType();
     BindNetFuncType();
     BindJustification();
+    BindScreenOrientation();
 }
 
 #endif
