@@ -18,6 +18,7 @@ void INP_Shutdown()
 
 void INP_Update()
 {
+    InputAdvanceFrame();
 
 }
 
