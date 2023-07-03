@@ -57,6 +57,25 @@ int System_Lua::UnmountMemoryCard(lua_State* L)
     return 0;
 }
 
+int System_Lua::SetScreenOrientation(lua_State* L)
+{
+    int value = CHECK_INTEGER(L, 1);
+    ScreenOrientation orientation = (ScreenOrientation)value;
+
+    ::SetScreenOrientation(orientation);
+
+    return 0;
+}
+
+int System_Lua::GetScreenOrientation(lua_State* L)
+{
+    ScreenOrientation ori = ::GetScreenOrientation();
+    int32_t ret = (int32_t)ori;
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+
 void System_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -78,6 +97,12 @@ void System_Lua::Bind()
 
     lua_pushcfunction(L, UnmountMemoryCard);
     lua_setfield(L, tableIdx, "UnmountMemoryCard");
+
+    lua_pushcfunction(L, SetScreenOrientation);
+    lua_setfield(L, tableIdx, "SetScreenOrientation");
+
+    lua_pushcfunction(L, GetScreenOrientation);
+    lua_setfield(L, tableIdx, "GetScreenOrientation");
 
     lua_setglobal(L, "System");
 
