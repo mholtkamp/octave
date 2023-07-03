@@ -640,6 +640,17 @@ void GatherGlobalProperties(std::vector<Property>& props)
     Renderer::Get()->GatherProperties(props);
 }
 
+void SetScreenOrientation(ScreenOrientation mode)
+{
+    SYS_SetScreenOrientation(mode);
+}
+
+ScreenOrientation GetScreenOrientation()
+{
+    return SYS_GetScreenOrientation();
+}
+
+
 #if LUA_ENABLED
 lua_State* GetLua()
 {

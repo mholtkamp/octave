@@ -54,6 +54,9 @@ void GarbageCollect();
 
 void GatherGlobalProperties(std::vector<Property>& props);
 
+void SetScreenOrientation(ScreenOrientation mode);
+ScreenOrientation GetScreenOrientation();
+
 #if LUA_ENABLED
 lua_State* GetLua();
 #endif
