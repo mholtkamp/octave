@@ -1662,6 +1662,26 @@ void VulkanContext::UpdateGlobalUniformData()
         mGlobalUniformData.mViewDirection = glm::vec4(camera->GetForwardVector(), 0.0f);
         mGlobalUniformData.mViewToWorld = glm::inverse(camera->GetViewMatrix());
 
+        // Determine pre-rotation matrix. This matrix is used in widget shaders to rotate them.
+        // 3D objects already have their prerotation baked into their WVP matrix.
+        glm::mat3 preRotateMat = glm::mat3(1.0f);
+        glm::vec3 rotationAxis = glm::vec3(0.0f, 0.0f, 1.0f);
+
+        if (mPreTransformFlag & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) 
+        {
+            preRotateMat = glm::rotate(preRotateMat, glm::radians(90.0f));
+        }
+        else if (mPreTransformFlag & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR)
+        {
+            preRotateMat = glm::rotate(preRotateMat, glm::radians(270.0f));
+        }
+        else if (mPreTransformFlag & VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR)
+        {
+            preRotateMat = glm::rotate(preRotateMat, glm::radians(180.0f));
+        }
+
+        mGlobalUniformData.mPreRotationMatrix = glm::mat4(preRotateMat);
+
         mGlobalUniformData.mAmbientLightColor = world->GetAmbientLightColor();
 
         const std::vector<LightData>& lightData = Renderer::Get()->GetLightData();

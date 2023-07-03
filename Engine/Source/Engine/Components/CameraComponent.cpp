@@ -158,14 +158,7 @@ void CameraComponent::ComputeMatrices()
             mOrthoSettings.mNear,
             mOrthoSettings.mFar);
 
-        // The perspective clip matrix was causing geometry behind the camera to render.
-        // For ortho, I don't think there's a need to convert Z to 0-1, I think it's already in that range.
-        const glm::mat4 clip(1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, -1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f);
-
-        mViewProjectionMatrix = clip * mProjectionMatrix * mViewMatrix;
+        mViewProjectionMatrix = mProjectionMatrix * mViewMatrix;
 
         glm::mat4 stdProjMtx = glm::ortho(
             -mOrthoSettings.mWidth,
@@ -175,7 +168,9 @@ void CameraComponent::ComputeMatrices()
             mOrthoSettings.mNear,
             mOrthoSettings.mFar);
 
-        mStandardViewProjectionMatrix = clip * stdProjMtx * mViewMatrix;
+        stdProjMtx[1][1] *= -1.0f;
+
+        mStandardViewProjectionMatrix = stdProjMtx * mViewMatrix;
     }
     else
     {
@@ -184,13 +179,7 @@ void CameraComponent::ComputeMatrices()
             mPerspectiveSettings.mNear,
             mPerspectiveSettings.mFar);
 
-        // Needed for adjusting to NDC
-        const glm::mat4 clip(1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, -1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.5f, 0.0f,
-            0.0f, 0.0f, 0.5f, 1.0f);
-
-        mViewProjectionMatrix = clip * mProjectionMatrix * mViewMatrix;
+        mViewProjectionMatrix = mProjectionMatrix * mViewMatrix;
 
         // Because the 3DS projection matrix is wonky and I don't know how to 
         // derive the clipspace position for World-To-Screen conversions,
@@ -202,7 +191,9 @@ void CameraComponent::ComputeMatrices()
             mPerspectiveSettings.mNear,
             mPerspectiveSettings.mFar);
 
-        mStandardViewProjectionMatrix = clip * stdProjMtx * mViewMatrix;
+        stdProjMtx[1][1] *= -1.0f;
+
+        mStandardViewProjectionMatrix = stdProjMtx * mViewMatrix;
     }
 }
 

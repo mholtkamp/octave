@@ -56,6 +56,7 @@ struct GlobalUniforms
     mat4 mViewProj;
     mat4 mViewToWorld;
     mat4 mShadowViewProj;
+    mat4 mPreRotationMatrix;
 
     vec4 mAmbientLightColor;
     vec4 mViewPosition;

@@ -25,6 +25,7 @@ struct GlobalUniformData
     glm::mat4 mViewProjMatrix;
     glm::mat4 mViewToWorld;
     glm::mat4 mShadowViewProj;
+    glm::mat4 mPreRotationMatrix;
 
     glm::vec4 mAmbientLightColor;
     glm::vec4 mViewPosition;
