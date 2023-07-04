@@ -759,4 +759,14 @@ bool SYS_DoesWindowHaveFocus()
     return true;
 }
 
+void SYS_SetScreenOrientation(ScreenOrientation orientation)
+{
+
+}
+
+ScreenOrientation SYS_GetScreenOrientation()
+{
+    return ScreenOrientation::Landscape;
+}
+
 #endif
