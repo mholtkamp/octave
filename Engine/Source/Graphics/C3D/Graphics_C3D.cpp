@@ -285,13 +285,13 @@ void GFX_BindPipeline(PipelineId pipelineId, VertexType vertexType)
 
 }
 
-void GFX_SetViewport(int32_t x, int32_t y, int32_t width, int32_t height)
+void GFX_SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation)
 {
     // Reverse width and height on 3ds?
     C3D_SetViewport(uint32_t(y), uint32_t(x), uint32_t(height), uint32_t(width));
 }
 
-void GFX_SetScissor(int32_t x, int32_t y, int32_t width, int32_t height)
+void GFX_SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation)
 {
     //C3D_SetScissor(GPU_SCISSOR_NORMAL, uint32_t(y), uint32_t(x), uint32_t(y + height), uint32_t(x + width));
 

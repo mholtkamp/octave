@@ -64,14 +64,14 @@ void GFX_BindPipeline(PipelineId pipelineId, VertexType vertexType)
     gVulkanContext->BindPipeline(pipelineId, vertexType);
 }
 
-void GFX_SetViewport(int32_t x, int32_t y, int32_t width, int32_t height)
+void GFX_SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation)
 {
-    gVulkanContext->SetViewport(x, y, width, height);
+    gVulkanContext->SetViewport(x, y, width, height, handlePrerotation);
 }
 
-void GFX_SetScissor(int32_t x, int32_t y, int32_t width, int32_t height)
+void GFX_SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation)
 {
-    gVulkanContext->SetScissor(x, y, width, height);
+    gVulkanContext->SetScissor(x, y, width, height, handlePrerotation);
 }
 
 glm::mat4 GFX_MakePerspectiveMatrix(float fovyDegrees, float aspectRatio, float zNear, float zFar)

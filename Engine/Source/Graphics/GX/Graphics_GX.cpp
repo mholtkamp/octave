@@ -168,12 +168,12 @@ void GFX_BindPipeline(PipelineId pipelineId, VertexType vertexType)
 
 }
 
-void GFX_SetViewport(int32_t x, int32_t y, int32_t width, int32_t height)
+void GFX_SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation)
 {
     GX_SetViewport((float) x, float(y), (float) width, float(height), 0, 1);
 }
 
-void GFX_SetScissor(int32_t x, int32_t y, int32_t width, int32_t height)
+void GFX_SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation)
 {
     GX_SetScissor(x, y, width, height);
 }
