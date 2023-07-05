@@ -412,6 +412,11 @@ void GFX_ResizeWindow()
 
 }
 
+void GFX_Reset()
+{
+
+}
+
 TransformComponent* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y)
 {
     return nullptr;

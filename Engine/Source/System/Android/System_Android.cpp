@@ -59,42 +59,52 @@ static void HandleCommand(struct android_app* app,
     {
     case APP_CMD_INIT_WINDOW:
     {
+        static bool sGraphicsInit = false;
         LogDebug("APP_CMD_INIT_WINDOW");
         // The window is being shown, get it ready.
-        if (app->window != NULL)
+        if (app->window != nullptr)
         {
             EngineState* engineState = GetEngineState();
-            engineState->mSystem.mWindow = app->window;
-            engineState->mWindowWidth = ANativeWindow_getWidth(app->window);
-            engineState->mWindowHeight = ANativeWindow_getHeight(app->window);
 
-            LogDebug("Window Width = %d", engineState->mWindowWidth);
-            LogDebug("Window Height = %d", engineState->mWindowHeight);
+            if (sGraphicsInit)
+            {
+                engineState->mSystem.mWindow = app->window;
+                GFX_Reset();
+            }
+            else
+            {
+                engineState->mSystem.mWindow = app->window;
+                engineState->mWindowWidth = ANativeWindow_getWidth(app->window);
+                engineState->mWindowHeight = ANativeWindow_getHeight(app->window);
 
-            GFX_Initialize();
-            GetEngineState()->mSystem.mWindowInitialized = true;
-            //Render();
+                LogDebug("Window Width = %d", engineState->mWindowWidth);
+                LogDebug("Window Height = %d", engineState->mWindowHeight);
+
+                GFX_Initialize();
+                GetEngineState()->mSystem.mWindowInitialized = true;
+
+                sGraphicsInit = true;
+            }
+
+            GetEngineState()->mWindowMinimized = false;
         }
         break;
     }
     case APP_CMD_TERM_WINDOW:
     {
         LogDebug("APP_CMD_TERM_WINDOW");
-        // The window is being hidden or closed, clean it up.
-        GetEngineState()->mQuit = true;
+        GetEngineState()->mWindowMinimized = true;
         break;
     }
     case APP_CMD_GAINED_FOCUS:
     {
         LogDebug("APP_CMD_GAINED_FOCUS");
-        // Enable rendering again.
         GetEngineState()->mSystem.mWindowHasFocus = true;
         break;
     }
     case APP_CMD_LOST_FOCUS:
     {
         LogDebug("APP_CMD_LOST_FOCUS");
-        // Disable rendering.
         GetEngineState()->mSystem.mWindowHasFocus = false;
         break;
     }
@@ -116,7 +126,6 @@ static void HandleCommand(struct android_app* app,
     case APP_CMD_STOP:
     {
         LogDebug("APP_CMD_STOP");
-        GetEngineState()->mQuit = true;
         break;
     }
     case APP_CMD_DESTROY:

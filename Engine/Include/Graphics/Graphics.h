@@ -50,6 +50,7 @@ void GFX_DrawLines(const std::vector<Line>& lines);
 void GFX_DrawFullscreen();
 
 void GFX_ResizeWindow();
+void GFX_Reset();
 TransformComponent* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y);
 uint32_t GFX_GetNumViews();
 

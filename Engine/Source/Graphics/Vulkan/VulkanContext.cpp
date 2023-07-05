@@ -1953,6 +1953,16 @@ void VulkanContext::RecreateSwapchain()
     GetDestroyQueue()->FlushAll();
 }
 
+void VulkanContext::RecreateSurface()
+{
+    if (mSurface != VK_NULL_HANDLE)
+    {
+        vkDestroySurfaceKHR(mInstance, mSurface, nullptr);
+    }
+
+    CreateSurface();
+}
+
 VkDescriptorPool VulkanContext::GetDescriptorPool()
 {
     return mDescriptorPool;
