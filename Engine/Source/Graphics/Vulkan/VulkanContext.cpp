@@ -38,6 +38,7 @@ PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT = nullptr;
 PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
 
 #define PIPELINE_CACHE_SAVE_NAME "PipelineCache.sav"
+#define ENABLE_FULL_VALIDATION 1
 
 void CreateVulkanContext()
 {
@@ -806,6 +807,12 @@ void VulkanContext::CreateInstance()
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
+    VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT, VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT };
+    VkValidationFeaturesEXT features = {};
+    features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+    features.enabledValidationFeatureCount = 2;
+    features.pEnabledValidationFeatures = enables;
+
     VkInstanceCreateInfo ciInstance = {};
     ciInstance.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     ciInstance.pApplicationInfo = &appInfo;
@@ -813,7 +820,10 @@ void VulkanContext::CreateInstance()
     ciInstance.ppEnabledExtensionNames = mEnabledExtensions;
     ciInstance.enabledLayerCount = mEnabledLayersCount;
     ciInstance.ppEnabledLayerNames = mEnabledLayers;
-    ciInstance.pNext = nullptr;
+
+#if ENABLE_FULL_VALIDATION
+    ciInstance.pNext = &features;
+#endif
 
     result = vkCreateInstance(&ciInstance, nullptr, &mInstance);
 
