@@ -2483,7 +2483,7 @@ void VulkanContext::DestroyPipelines()
     }
 }
 
-void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t height)
+void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation)
 {
     float bufferWidth = (float)mSwapchainExtent.width;
     float bufferHeight = (float)mSwapchainExtent.height;
@@ -2495,20 +2495,27 @@ void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t hei
 
     glm::vec4 viewportData;
 
-    switch (mPreTransformFlag)
+    if (!handlePrerotation)
     {
-    case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
-        viewportData = { bufferWidth - fH - fY, fX, fH, fW };
-        break;
-    case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
-        viewportData = { bufferWidth - fW - fX, bufferHeight - fH - fY, fW, fH };
-        break;
-    case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
-        viewportData = { fY, bufferHeight - fW - fX, fH, fW };
-        break;
-    default:
         viewportData = { fX, fY, fW, fH };
-        break;
+    }
+    else
+    {
+        switch (mPreTransformFlag)
+        {
+        case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
+            viewportData = { bufferWidth - fH - fY, fX, fH, fW };
+            break;
+        case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
+            viewportData = { bufferWidth - fW - fX, bufferHeight - fH - fY, fW, fH };
+            break;
+        case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
+            viewportData = { fY, bufferHeight - fW - fX, fH, fW };
+            break;
+        default:
+            viewportData = { fX, fY, fW, fH };
+            break;
+        }
     }
 
     VkViewport viewport = {};
@@ -2521,7 +2528,7 @@ void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t hei
     vkCmdSetViewport(GetCommandBuffer(), 0, 1, &viewport);
 }
 
-void VulkanContext::SetScissor(int32_t x, int32_t y, int32_t width, int32_t height)
+void VulkanContext::SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation)
 {
     float bufferWidth = (float)mSwapchainExtent.width;
     float bufferHeight = (float)mSwapchainExtent.height;
@@ -2533,20 +2540,27 @@ void VulkanContext::SetScissor(int32_t x, int32_t y, int32_t width, int32_t heig
 
     glm::vec4 scissorData;
 
-    switch (mPreTransformFlag)
+    if (!handlePrerotation)
     {
-    case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
-        scissorData = { bufferWidth - fH - fY, fX, fH, fW };
-        break;
-    case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
-        scissorData = { bufferWidth - fW - fX, bufferHeight - fH - fY, fW, fH };
-        break;
-    case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
-        scissorData = { fY, bufferHeight - fW - fX, fH, fW };
-        break;
-    default:
         scissorData = { fX, fY, fW, fH };
-        break;
+    }
+    else
+    {
+        switch (mPreTransformFlag)
+        {
+        case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
+            scissorData = { bufferWidth - fH - fY, fX, fH, fW };
+            break;
+        case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
+            scissorData = { bufferWidth - fW - fX, bufferHeight - fH - fY, fW, fH };
+            break;
+        case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
+            scissorData = { fY, bufferHeight - fW - fX, fH, fW };
+            break;
+        default:
+            scissorData = { fX, fY, fW, fH };
+            break;
+        }
     }
 
     // Should the offset and extent be rounded to nearest integer?
@@ -2578,8 +2592,8 @@ TransformComponent* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX,
         UpdateGlobalUniformData();
         UpdateGlobalDescriptorSet();
 
-        SetViewport(0, 0, mSwapchainExtent.width, mSwapchainExtent.height);
-        SetScissor(0, 0, mSwapchainExtent.width, mSwapchainExtent.height);
+        SetViewport(0, 0, mSwapchainExtent.width, mSwapchainExtent.height, true);
+        SetScissor(0, 0, mSwapchainExtent.width, mSwapchainExtent.height, true);
 
         BeginRenderPass(RenderPassId::HitCheck);
         std::vector<DebugDraw> debugDraws;

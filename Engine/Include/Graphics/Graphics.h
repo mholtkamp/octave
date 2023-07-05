@@ -39,8 +39,8 @@ void GFX_BeginRenderPass(RenderPassId renderPassId);
 void GFX_EndRenderPass();
 void GFX_BindPipeline(PipelineId pipelineId, VertexType vertexType = VertexType::Max);
 
-void GFX_SetViewport(int32_t x, int32_t y, int32_t width, int32_t height);
-void GFX_SetScissor(int32_t x, int32_t y, int32_t width, int32_t height);
+void GFX_SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation = true);
+void GFX_SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation = true);
 glm::mat4 GFX_MakePerspectiveMatrix(float fovyDegrees, float aspectRatio, float zNear, float zFar);
 glm::mat4 GFX_MakeOrthographicMatrix(float left, float right, float bottom, float top, float zNear, float zFar);
 

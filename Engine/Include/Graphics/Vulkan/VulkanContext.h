@@ -90,8 +90,8 @@ public:
     VkRenderPass GetPostprocessRenderPass();
     VkRenderPass GetUIRenderPass();
 
-    void SetViewport(int32_t x, int32_t y, int32_t width, int32_t height);
-    void SetScissor(int32_t x, int32_t y, int32_t width, int32_t height);
+    void SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation);
+    void SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation);
 
     DescriptorSet* GetGlobalDescriptorSet();
 

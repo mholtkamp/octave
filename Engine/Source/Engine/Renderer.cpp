@@ -1184,8 +1184,8 @@ void Renderer::Render(World* world)
                 // ***************
                 //  Shadow Depths
                 // ***************
-                GFX_SetViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
-                GFX_SetScissor(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+                GFX_SetViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION, false);
+                GFX_SetScissor(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION, false);
 
                 GFX_BeginRenderPass(RenderPassId::Shadows);
 
