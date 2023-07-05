@@ -116,6 +116,7 @@ static void HandleCommand(struct android_app* app,
     case APP_CMD_RESUME:
     {
         LogDebug("APP_CMD_RESUME");
+        GetEngineState()->mSuspended = false;
         break;
     }
     case APP_CMD_PAUSE:
@@ -126,6 +127,7 @@ static void HandleCommand(struct android_app* app,
     case APP_CMD_STOP:
     {
         LogDebug("APP_CMD_STOP");
+        GetEngineState()->mSuspended = true;
         break;
     }
     case APP_CMD_DESTROY:
