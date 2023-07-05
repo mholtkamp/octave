@@ -304,6 +304,12 @@ bool Initialize(InitOptions& initOptions)
 
 bool Update()
 {
+    if (sEngineState.mSuspended)
+    {
+        SYS_Update();
+        return !sEngineState.mQuit;
+    }
+
     GetProfiler()->BeginFrame();
 
     BEGIN_FRAME_STAT("Frame");
