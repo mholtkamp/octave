@@ -1190,6 +1190,21 @@ VkFormat VulkanContext::GetSceneColorFormat()
 
 void VulkanContext::CreateRenderPass()
 {
+    // I was getting SYNC-HAZARD-READ-AFTER-WRITE validation warnings 
+    // (and was getting incorrect rendering results on the RG552). I thought
+    // render passes were supposed to automatically handle the transition
+    // to the final output (which it seems to do) but unless I add this external 
+    // subpass dependency, I get the read after write warnings.
+    VkSubpassDependency extDependency = {};
+    extDependency.srcSubpass = 0;
+    extDependency.dstSubpass = VK_SUBPASS_EXTERNAL;
+    extDependency.srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+    extDependency.dstStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    extDependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    extDependency.dstAccessMask = 0;
+    extDependency.dependencyFlags = 0;
+
     // Shadow Pass
     {
         VkAttachmentDescription attachmentDesc = {};
@@ -1219,12 +1234,16 @@ void VulkanContext::CreateRenderPass()
         ciRenderPass.pAttachments = &attachmentDesc;
         ciRenderPass.subpassCount = 1;
         ciRenderPass.pSubpasses = &subpass;
+        ciRenderPass.dependencyCount = 1;
+        ciRenderPass.pDependencies = &extDependency;
 
         if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mShadowRenderPass) != VK_SUCCESS)
         {
             LogError("Failed to create shadow renderpass");
             OCT_ASSERT(0);
         }
+
+        SetDebugObjectName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t)mShadowRenderPass, "Shadow RenderPass");
     }
 
     // Forward Pass
@@ -1293,8 +1312,8 @@ void VulkanContext::CreateRenderPass()
             attachments,
             1,
             &subpass,
-            0,
-            nullptr
+            1,
+            &extDependency
         };
 
         if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mForwardRenderPass) != VK_SUCCESS)
@@ -1302,6 +1321,8 @@ void VulkanContext::CreateRenderPass()
             LogError("Failed to create forward render pass");
             OCT_ASSERT(0);
         }
+
+        SetDebugObjectName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t)mForwardRenderPass, "Forward RenderPass");
     }
 
     // Postprocess Pass
@@ -1370,8 +1391,8 @@ void VulkanContext::CreateRenderPass()
             attachments,
             1,
             &subpass,
-            0,
-            nullptr
+            1,
+            &extDependency
         };
 
         if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mPostprocessRenderPass) != VK_SUCCESS)
@@ -1379,6 +1400,8 @@ void VulkanContext::CreateRenderPass()
             LogError("Failed to create postprocess render pass");
             OCT_ASSERT(0);
         }
+
+        SetDebugObjectName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t)mPostprocessRenderPass, "PostProcess RenderPass");
     }
 
     // UI Pass
@@ -1447,8 +1470,8 @@ void VulkanContext::CreateRenderPass()
             attachments,
             1,
             &subpass,
-            0,
-            nullptr
+            1,
+            &extDependency
         };
 
         if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mUIRenderPass) != VK_SUCCESS)
@@ -1456,6 +1479,8 @@ void VulkanContext::CreateRenderPass()
             LogError("Failed to create UI render pass");
             OCT_ASSERT(0);
         }
+
+        SetDebugObjectName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t)mUIRenderPass, "UI RenderPass");
     }
 
     // Clear Swapchain Pass
@@ -1524,8 +1549,8 @@ void VulkanContext::CreateRenderPass()
             attachments,
             1,
             &subpass,
-            0,
-            nullptr
+            1,
+            &extDependency
         };
 
         if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mClearSwapchainPass) != VK_SUCCESS)
@@ -1533,6 +1558,8 @@ void VulkanContext::CreateRenderPass()
             LogError("Failed to create ClearSwapchain pass");
             OCT_ASSERT(0);
         }
+
+        SetDebugObjectName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t)mClearSwapchainPass, "ClearSwapchain RenderPass");
     }
 }
 
