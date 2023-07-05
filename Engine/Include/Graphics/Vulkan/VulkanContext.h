@@ -70,6 +70,7 @@ public:
     VkDevice GetDevice();
     void CreateSwapchain();
     void RecreateSwapchain();
+    void RecreateSurface();
 
     VkPhysicalDevice GetPhysicalDevice();
     VkDescriptorPool GetDescriptorPool();

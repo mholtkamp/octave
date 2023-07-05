@@ -154,6 +154,15 @@ void GFX_ResizeWindow()
     }
 }
 
+void GFX_Reset()
+{
+    if (gVulkanContext != nullptr)
+    {
+        gVulkanContext->RecreateSurface();
+        gVulkanContext->RecreateSwapchain();
+    }
+}
+
 TransformComponent* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y)
 {
 #if EDITOR
