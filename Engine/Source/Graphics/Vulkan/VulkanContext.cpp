@@ -39,6 +39,8 @@ PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
 
 #define PIPELINE_CACHE_SAVE_NAME "PipelineCache.sav"
 #define ENABLE_FULL_VALIDATION 1
+#define MAX_GPU_TIMESPANS 64
+#define MAX_GPU_TIMESTAMPS (MAX_GPU_TIMESPANS * 2)
 
 void CreateVulkanContext()
 {
@@ -127,6 +129,7 @@ void VulkanContext::Initialize()
     CreateSemaphores();
     CreateFences();
 
+    CreateQueryPools();
 
     // Transition the swapchain image to swapchain present format before hitting render loop
     // or else the image transitions won't use expected initial layout.
@@ -150,6 +153,8 @@ void VulkanContext::Initialize()
 void VulkanContext::Destroy()
 {
     DeviceWaitIdle();
+
+    DestroyQueryPools();
 
     mMeshDescriptorSetArena.Destroy();
     mMeshUniformBufferArena.Destroy();
@@ -219,6 +224,8 @@ void VulkanContext::BeginFrame()
 
     vkBeginCommandBuffer(cb, &beginInfo);
     SetDebugObjectName(VK_OBJECT_TYPE_COMMAND_BUFFER, (uint64_t)cb, "FrameCommandBuffer");
+
+    ReadTimeQueryResults();
 
     mMeshDescriptorSetArena.Reset();
     mMeshUniformBufferArena.Reset();
@@ -371,6 +378,9 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
     }
 
     BeginDebugLabel(GetRenderPassName(id));
+
+    BeginGpuTimestamp(GetRenderPassName(mCurrentRenderPassId));
+
     vkCmdBeginRenderPass(mCommandBuffers[mFrameIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
@@ -387,6 +397,9 @@ void VulkanContext::EndRenderPass()
     {
         vkCmdEndRenderPass(mCommandBuffers[mFrameIndex]);
         EndDebugLabel();
+
+        EndGpuTimestamp(GetRenderPassName(mCurrentRenderPassId));
+
         mCurrentRenderPassId = RenderPassId::Count;
     }
 }
@@ -1038,6 +1051,8 @@ void VulkanContext::PickPhysicalDevice()
         mSupportsRayTracing = true;
     }
 #endif
+
+    mTimestampPeriod = properties.limits.timestampPeriod;
 }
 
 void VulkanContext::CreateLogicalDevice()
@@ -1171,6 +1186,43 @@ void VulkanContext::CreateShadowMapImage()
     mShadowMapImage->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     DeviceWaitIdle();
+}
+
+void VulkanContext::CreateQueryPools()
+{
+#if PROFILING_ENABLED
+    VkCommandBuffer cb = BeginCommandBuffer();
+
+    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    {
+        VkQueryPoolCreateInfo ci = {};
+        ci.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+        ci.flags = 0;
+        ci.queryType = VK_QUERY_TYPE_TIMESTAMP;
+        ci.queryCount = MAX_GPU_TIMESTAMPS;
+
+        VkResult res = vkCreateQueryPool(mDevice, &ci, nullptr, &mTimeQueryPools[i]);
+        if (res != VK_SUCCESS)
+        {
+            LogError("Failed to create timestamp query pool.");
+            OCT_ASSERT(0);
+        }
+
+        vkCmdResetQueryPool(cb, mTimeQueryPools[i], 0, MAX_GPU_TIMESTAMPS);
+    }
+
+    EndCommandBuffer(cb);
+#endif
+}
+
+void VulkanContext::DestroyQueryPools()
+{
+#if PROFILING_ENABLED
+    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    {
+        vkDestroyQueryPool(mDevice, mTimeQueryPools[i], nullptr);
+    }
+#endif
 }
 
 DestroyQueue* VulkanContext::GetDestroyQueue()
@@ -2263,6 +2315,108 @@ DescriptorSetArena& VulkanContext::GetMeshDescriptorSetArena()
 UniformBufferArena& VulkanContext::GetMeshUniformBufferArena()
 {
     return mMeshUniformBufferArena;
+}
+
+void VulkanContext::BeginGpuTimestamp(const char* name)
+{
+#if PROFILING_ENABLED
+    GpuTimespan* timeSpan = nullptr;
+    for (uint32_t i = 0; i < mGpuTimespans[mFrameIndex].size(); ++i)
+    {
+        if (mGpuTimespans[mFrameIndex][i].mName == name)
+        {
+            timeSpan = &mGpuTimespans[mFrameIndex][i];
+            break;
+        }
+    }
+
+    if (timeSpan == nullptr)
+    {
+        mGpuTimespans[mFrameIndex].push_back(GpuTimespan());
+        timeSpan = &(mGpuTimespans[mFrameIndex].back());
+        timeSpan->mName = name;
+    }
+
+    timeSpan->mStartIndex = mNumTimestamps[mFrameIndex];
+    mNumTimestamps[mFrameIndex]++;
+
+    OCT_ASSERT(timeSpan->mStartIndex < MAX_GPU_TIMESTAMPS);
+
+    vkCmdWriteTimestamp(
+        GetCommandBuffer(),
+        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+        mTimeQueryPools[mFrameIndex],
+        (uint32_t) timeSpan->mStartIndex);
+#endif
+}
+
+void VulkanContext::EndGpuTimestamp(const char* name)
+{
+#if PROFILING_ENABLED
+    GpuTimespan* timeSpan = nullptr;
+    for (uint32_t i = 0; i < mGpuTimespans[mFrameIndex].size(); ++i)
+    {
+        if (mGpuTimespans[mFrameIndex][i].mName == name)
+        {
+            timeSpan = &mGpuTimespans[mFrameIndex][i];
+            break;
+        }
+    }
+
+    // A BeginGpuTimestamp() call should have been made.
+    OCT_ASSERT(timeSpan != nullptr);
+
+    timeSpan->mEndIndex = mNumTimestamps[mFrameIndex];
+    mNumTimestamps[mFrameIndex]++;
+
+    OCT_ASSERT(timeSpan->mEndIndex < MAX_GPU_TIMESTAMPS);
+
+    vkCmdWriteTimestamp(
+        GetCommandBuffer(),
+        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+        mTimeQueryPools[mFrameIndex],
+        (uint32_t)timeSpan->mEndIndex);
+#endif
+}
+
+void VulkanContext::ReadTimeQueryResults()
+{
+#if PROFILING_ENABLED
+    if (mNumTimestamps[mFrameIndex] <= 0)
+    {
+        return;
+    }
+
+    uint64_t buffer[MAX_GPU_TIMESTAMPS];
+
+    VkResult res = vkGetQueryPoolResults(mDevice, mTimeQueryPools[mFrameIndex], 0, mNumTimestamps[mFrameIndex], MAX_GPU_TIMESTAMPS * sizeof(uint64_t), buffer, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+    if (res == VK_NOT_READY)
+    {
+        LogWarning("Timestamps not ready");
+    }
+    else if (res == VK_SUCCESS)
+    {
+        // We have the timestamp values in buffer. Now we just need to determine the timespans and send it to the Profiler
+        for (int32_t i = 0; i < (int32_t)mGpuTimespans[mFrameIndex].size(); ++i)
+        {
+            uint64_t start = buffer[mGpuTimespans[mFrameIndex][i].mStartIndex];
+            uint64_t end = buffer[mGpuTimespans[mFrameIndex][i].mEndIndex];
+            float timeNs = (end - start) * mTimestampPeriod;
+            float timeMs = timeNs / 1000000.0f;
+
+            LogDebug("[%s] %.3f", mGpuTimespans[mFrameIndex][i].mName.c_str(), timeMs);
+        }
+    }
+    else
+    {
+        LogError("Failed to read timestamp queries");
+        OCT_ASSERT(0);
+    }
+
+    vkCmdResetQueryPool(GetCommandBuffer(), mTimeQueryPools[mFrameIndex], 0, MAX_GPU_TIMESTAMPS);
+    mNumTimestamps[mFrameIndex] = 0;
+
+#endif
 }
 
 RayTracer* VulkanContext::GetRayTracer()

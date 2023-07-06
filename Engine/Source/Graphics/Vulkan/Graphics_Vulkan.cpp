@@ -242,6 +242,16 @@ float GFX_GetLightBakeProgress()
     return ret;
 }
 
+void GFX_BeginGpuTimestamp(const char* name)
+{
+    gVulkanContext->BeginGpuTimestamp(name);
+}
+
+void GFX_EndGpuTimestamp(const char* name)
+{
+    gVulkanContext->EndGpuTimestamp(name);
+}
+
 void GFX_CreateTextureResource(Texture* texture, std::vector<uint8_t>& data)
 {
     CreateTextureResource(texture, data.data());

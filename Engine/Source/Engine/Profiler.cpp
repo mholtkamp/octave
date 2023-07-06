@@ -4,8 +4,9 @@
 #include "Maths.h"
 #include "Clock.h"
 #include "Log.h"
-
 #include "Assertion.h"
+
+#include "Graphics/Graphics.h"
 
 static Profiler* sProfiler = nullptr;
 
@@ -31,6 +32,11 @@ void Profiler::EndFrame()
     for (uint32_t i = 0; i < mCpuFrameStats.size(); ++i)
     {
         mCpuFrameStats[i].mSmoothedTime = Maths::Damp(mCpuFrameStats[i].mSmoothedTime, mCpuFrameStats[i].mTime, 0.05f, deltaTime);
+    }
+
+    for (uint32_t i = 0; i < mGpuStats.size(); ++i)
+    {
+        mGpuStats[i].mSmoothedTime = Maths::Damp(mGpuStats[i].mSmoothedTime, mGpuStats[i].mTime, 0.05f, deltaTime);
     }
 #endif
 }
@@ -75,6 +81,45 @@ void Profiler::EndCpuStat(const char* name, bool persistent)
 #endif
 }
 
+void Profiler::BeginGpuStat(const char* name)
+{
+#if PROFILING_ENABLED
+    GFX_BeginGpuTimestamp(name);
+#endif
+}
+
+void Profiler::EndGpuStat(const char* name)
+{
+#if PROFILING_ENABLED
+    GFX_EndGpuTimestamp(name);
+#endif
+}
+
+void Profiler::SetGpuStatTime(const char* name, float time)
+{
+    // The GFX implementation is responsible for calling this on all GPU stats at Frame's end.
+#if PROFILING_ENABLED
+    GpuStat* gpuStat = nullptr;
+    for (uint32_t i = 0; i < mGpuStats.size(); ++i)
+    {
+        if (strncmp(mGpuStats[i].mName, name, STAT_NAME_LENGTH) == 0)
+        {
+            gpuStat = &mGpuStats[i];
+            break;
+        }
+    }
+
+    if (gpuStat == nullptr)
+    {
+        mGpuStats.push_back(GpuStat());
+        gpuStat = &(mGpuStats.back());
+        strncpy(gpuStat->mName, name, STAT_NAME_LENGTH);
+    }
+
+    gpuStat->mTime = time;
+#endif
+}
+
 CpuStat* Profiler::FindCpuStat(const char* name, bool persistent)
 {
     std::vector<CpuStat>& stats = persistent ? mCpuPersistentStats : mCpuFrameStats;
@@ -86,6 +131,7 @@ CpuStat* Profiler::FindCpuStat(const char* name, bool persistent)
         if (strncmp(stats[i].mName, name, STAT_NAME_LENGTH) == 0)
         {
             retStat = &stats[i];
+            break;
         }
     }
 #endif
