@@ -140,89 +140,91 @@ static void HandleCommand(struct android_app* app,
     }
 }
 
-static int HandleInput(struct android_app* app, AInputEvent* event)
+static int HandleInput(struct android_app* app, AInputEvent* inputEvent)
 {
     int device = 0;
     int source = 0;
 
-    device = AInputEvent_getDeviceId(event);
-    source = AInputEvent_getSource(event) & 0xffffff00;
+    device = AInputEvent_getDeviceId(inputEvent);
+    source = AInputEvent_getSource(inputEvent) & 0xffffff00;
 
     EngineState* engineState = GetEngineState();
 
-    if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION)
+    if (AInputEvent_getType(inputEvent) == AINPUT_EVENT_TYPE_MOTION)
     {
-        int action = AMotionEvent_getAction(event);
+        int action = AMotionEvent_getAction(inputEvent);
         int pointer = (0xff00 & action) >> 8;
         action = 0x00ff & action;
 
         if (action == AMOTION_EVENT_ACTION_DOWN)
         {
             INP_SetTouch(pointer);
-            INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, pointer)),
-                static_cast<int>(AMotionEvent_getY(event, pointer)),
+            INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(inputEvent, pointer)),
+                static_cast<int>(AMotionEvent_getY(inputEvent, pointer)),
                 pointer);
             return 1;
         }
         else if (action == AMOTION_EVENT_ACTION_UP)
         {
             INP_ClearTouch(pointer);
-            INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, pointer)),
-                static_cast<int>(AMotionEvent_getY(event, pointer)),
+            INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(inputEvent, pointer)),
+                static_cast<int>(AMotionEvent_getY(inputEvent, pointer)),
                 pointer);
             return 1;
         }
         else if (action == AMOTION_EVENT_ACTION_POINTER_DOWN)
         {
             INP_SetTouch(pointer);
-            INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, pointer)),
-                static_cast<int>(AMotionEvent_getY(event, pointer)),
+            INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(inputEvent, pointer)),
+                static_cast<int>(AMotionEvent_getY(inputEvent, pointer)),
                 pointer);
             return 1;
         }
         else if (action == AMOTION_EVENT_ACTION_POINTER_UP)
         {
             INP_ClearTouch(pointer);
-            INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, pointer)),
-                static_cast<int>(AMotionEvent_getY(event, pointer)),
+            INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(inputEvent, pointer)),
+                static_cast<int>(AMotionEvent_getY(inputEvent, pointer)),
                 pointer);
             return 1;
         }
         else if (action == AMOTION_EVENT_ACTION_MOVE)
         {
-            for (int ptr = 0; ptr < INPUT_MAX_TOUCHES; ptr++)
+            int numPointers = AMotionEvent_getPointerCount(inputEvent);
+            for (int ptr = 0; ptr < numPointers && ptr < INPUT_MAX_TOUCHES; ptr++)
             {
-                INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(event, ptr)),
-                    static_cast<int>(AMotionEvent_getY(event, ptr)),
-                    ptr);
+                int x = static_cast<int>(AMotionEvent_getX(inputEvent, ptr));
+                int y = static_cast<int>(AMotionEvent_getY(inputEvent, ptr));
+
+                INP_SetTouchPosition(x, y, ptr);
             }
 
             if (source & AINPUT_SOURCE_JOYSTICK)
             {
                 int gamepadIndex = INP_GetGamepadIndex(device);
 
-                float axisX = AMotionEvent_getAxisValue(event,
+                float axisX = AMotionEvent_getAxisValue(inputEvent,
                     AMOTION_EVENT_AXIS_X,
                     0);
-                float axisY = AMotionEvent_getAxisValue(event,
+                float axisY = AMotionEvent_getAxisValue(inputEvent,
                     AMOTION_EVENT_AXIS_Y,
                     0);
-                float axisZ = AMotionEvent_getAxisValue(event,
+                float axisZ = AMotionEvent_getAxisValue(inputEvent,
                     AMOTION_EVENT_AXIS_Z,
                     0);
-                float axisRZ = AMotionEvent_getAxisValue(event,
+                float axisRZ = AMotionEvent_getAxisValue(inputEvent,
                     AMOTION_EVENT_AXIS_RZ,
                     0);
-                float axisHatX = AMotionEvent_getAxisValue(event,
+                float axisHatX = AMotionEvent_getAxisValue(inputEvent,
                     AMOTION_EVENT_AXIS_HAT_X,
                     0);
-                float axisHatY = AMotionEvent_getAxisValue(event,
+                float axisHatY = AMotionEvent_getAxisValue(inputEvent,
                     AMOTION_EVENT_AXIS_HAT_Y,
                     0);
-                float axisTriggerL = AMotionEvent_getAxisValue(event,
+                float axisTriggerL = AMotionEvent_getAxisValue(inputEvent,
                     AMOTION_EVENT_AXIS_LTRIGGER,
                     0);
-                float axisTriggerR = AMotionEvent_getAxisValue(event,
+                float axisTriggerR = AMotionEvent_getAxisValue(inputEvent,
                     AMOTION_EVENT_AXIS_RTRIGGER,
                     0);
 
@@ -258,18 +260,17 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
             return 1;
         }
     }
-    else if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY)
+    else if (AInputEvent_getType(inputEvent) == AINPUT_EVENT_TYPE_KEY)
     {
-        int action = AKeyEvent_getAction(event);
+        int action = AKeyEvent_getAction(inputEvent);
 
         if (action == AKEY_EVENT_ACTION_DOWN)
         {
-            int key = AKeyEvent_getKeyCode(event);
+            int key = AKeyEvent_getKeyCode(inputEvent);
 
             if (source & AINPUT_SOURCE_GAMEPAD)
             {
                 int gamepadIndex = INP_GetGamepadIndex(device);
-                LogDebug("Gamepad Key: %d", key);
                 INP_SetGamepadButton(GetGamepadButtonCodeFromKey(key), gamepadIndex);
             }
             else
@@ -281,7 +282,7 @@ static int HandleInput(struct android_app* app, AInputEvent* event)
         }
         else if (action == AKEY_EVENT_ACTION_UP)
         {
-            int key = AKeyEvent_getKeyCode(event);
+            int key = AKeyEvent_getKeyCode(inputEvent);
 
             if (source & AINPUT_SOURCE_GAMEPAD)
             {
