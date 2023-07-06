@@ -1520,7 +1520,7 @@ void ReallocateSkeletalMeshCompVertexBuffer(SkeletalMeshComponent* skeletalMeshC
             resource->mVertexBuffer = nullptr;
         }
 
-        resource->mVertexBuffer = new Buffer(BufferType::Vertex, numVertices * sizeof(Vertex), "SkeletalMeshComponent Skinned Vertices");
+        resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, numVertices * sizeof(Vertex), "SkeletalMeshComponent Skinned Vertices");
     }
 }
 
@@ -1530,7 +1530,7 @@ void UpdateSkeletalMeshCompVertexBuffer(SkeletalMeshComponent* skeletalMeshComp,
 
     if (resource->mVertexBuffer != nullptr)
     {
-        OCT_ASSERT(resource->mVertexBuffer->GetSize() == skinnedVertices.size() * sizeof(Vertex));
+        OCT_ASSERT(resource->mVertexBuffer->GetBuffer()->GetSize() == skinnedVertices.size() * sizeof(Vertex));
         resource->mVertexBuffer->Update(skinnedVertices.data(), skinnedVertices.size() * sizeof(Vertex), 0);
     }
 }

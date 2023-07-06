@@ -1103,9 +1103,11 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
         }
     }
 
-    if (inheritPose &&
+    // CPU skinned characters need to update their verts even if they are paused
+    // because vertex data is double buffered for MAX_FRAMES.
+    if (updateBones &&
+        (inheritPose || mAnimationPaused) &&
         mesh != nullptr &&
-        !mAnimationPaused &&
         GFX_IsCpuSkinningRequired(this))
     {
         CpuSkinVertices();

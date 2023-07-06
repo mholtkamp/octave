@@ -200,7 +200,7 @@ struct SkeletalMeshCompResource
 #if API_VULKAN
     DescriptorSet* mDescriptorSet = nullptr;
     UniformBuffer* mUniformBuffer = nullptr;
-    Buffer* mVertexBuffer = nullptr;
+    MultiBuffer* mVertexBuffer = nullptr;
 #elif API_C3D
     DoubleBuffer mVertexData;
 #endif
