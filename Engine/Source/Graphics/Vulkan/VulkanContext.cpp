@@ -379,7 +379,10 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
 
     BeginDebugLabel(GetRenderPassName(id));
 
-    BeginGpuTimestamp(GetRenderPassName(mCurrentRenderPassId));
+    if (mCurrentRenderPassId != RenderPassId::HitCheck)
+    {
+        BeginGpuTimestamp(GetRenderPassName(mCurrentRenderPassId));
+    }
 
     vkCmdBeginRenderPass(mCommandBuffers[mFrameIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
@@ -398,7 +401,10 @@ void VulkanContext::EndRenderPass()
         vkCmdEndRenderPass(mCommandBuffers[mFrameIndex]);
         EndDebugLabel();
 
-        EndGpuTimestamp(GetRenderPassName(mCurrentRenderPassId));
+        if (mCurrentRenderPassId != RenderPassId::HitCheck)
+        {
+            EndGpuTimestamp(GetRenderPassName(mCurrentRenderPassId));
+        }
 
         mCurrentRenderPassId = RenderPassId::Count;
     }
