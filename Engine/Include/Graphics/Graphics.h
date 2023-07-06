@@ -64,6 +64,9 @@ void GFX_EndLightBake();
 bool GFX_IsLightBakeInProgress();
 float GFX_GetLightBakeProgress();
 
+void GFX_BeginGpuTimestamp(const char* name);
+void GFX_EndGpuTimestamp(const char* name);
+
 // Texture
 void GFX_CreateTextureResource(Texture* texture, std::vector<uint8_t>& data);
 void GFX_DestroyTextureResource(Texture* texture);

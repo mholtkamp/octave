@@ -18,6 +18,7 @@
 #include "ResourceArena.h"
 #include "ObjectRef.h"
 #include "RayTracer.h"
+#include "Profiler.h"
 
 #if PLATFORM_LINUX
 #include <xcb/xcb.h>
@@ -44,6 +45,13 @@ struct SwapChainSupportDetails
     VkSurfaceCapabilitiesKHR capabilities;
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> presentModes;
+};
+
+struct GpuTimespan
+{
+    std::string mName;
+    int32_t mStartIndex = -1;
+    int32_t mEndIndex = -1;
 };
 
 class VulkanContext
@@ -119,6 +127,10 @@ public:
     DescriptorSetArena& GetMeshDescriptorSetArena();
     UniformBufferArena& GetMeshUniformBufferArena();
 
+    void BeginGpuTimestamp(const char* name);
+    void EndGpuTimestamp(const char* name);
+    void ReadTimeQueryResults();
+
     RayTracer* GetRayTracer();
 
     VkSurfaceTransformFlagBitsKHR GetPreTransformFlag() const;
@@ -152,6 +164,8 @@ private:
     void CreatePostProcessDescriptorSet();
     void CreateSceneColorImage();
     void CreateShadowMapImage();
+    void CreateQueryPools();
+    void DestroyQueryPools();
 
     void PickPhysicalDevice();
     bool IsDeviceSuitable(VkPhysicalDevice device);
@@ -247,6 +261,12 @@ private:
     const char* mEnabledLayers[MAX_ENABLED_LAYERS] = { };
     DescriptorSetArena mMeshDescriptorSetArena;
     UniformBufferArena mMeshUniformBufferArena;
+
+    // Timestamp Queries
+    std::vector<GpuTimespan> mGpuTimespans[MAX_FRAMES];
+    VkQueryPool mTimeQueryPools[MAX_FRAMES] = { };
+    int32_t mNumTimestamps[MAX_FRAMES] = { };
+    float mTimestampPeriod = 0.0f;
 
     // Misc
     int32_t mFrameIndex = 0;

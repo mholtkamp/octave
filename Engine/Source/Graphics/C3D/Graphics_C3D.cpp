@@ -463,6 +463,16 @@ float GFX_GetLightBakeProgress()
     return 0.0f;
 }
 
+void GFX_BeginGpuTimestamp(const char* name)
+{
+
+}
+
+void GFX_EndGpuTimestamp(const char* name)
+{
+
+}
+
 // Texture
 void GFX_CreateTextureResource(Texture* texture, std::vector<uint8_t>& data)
 {
