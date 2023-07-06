@@ -267,6 +267,7 @@ private:
     VkQueryPool mTimeQueryPools[MAX_FRAMES] = { };
     int32_t mNumTimestamps[MAX_FRAMES] = { };
     float mTimestampPeriod = 0.0f;
+    bool mTimestampsSupported = false;
 
     // Misc
     int32_t mFrameIndex = 0;

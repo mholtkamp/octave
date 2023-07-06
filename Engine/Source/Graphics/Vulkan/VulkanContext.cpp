@@ -1191,6 +1191,9 @@ void VulkanContext::CreateShadowMapImage()
 void VulkanContext::CreateQueryPools()
 {
 #if PROFILING_ENABLED
+    if (!mTimestampsSupported)
+        return;
+
     VkCommandBuffer cb = BeginCommandBuffer();
 
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
@@ -1218,6 +1221,9 @@ void VulkanContext::CreateQueryPools()
 void VulkanContext::DestroyQueryPools()
 {
 #if PROFILING_ENABLED
+    if (!mTimestampsSupported)
+        return;
+
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
     {
         vkDestroyQueryPool(mDevice, mTimeQueryPools[i], nullptr);
@@ -2182,6 +2188,11 @@ QueueFamilyIndices VulkanContext::FindQueueFamilies(VkPhysicalDevice device)
             (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)*/)
         {
             indices.mGraphicsFamily = i;
+
+            if (queueFamily.timestampValidBits > 0)
+            {
+                mTimestampsSupported = true;
+            }
         }
 
         VkBool32 presentSupport = false;
@@ -2320,6 +2331,10 @@ UniformBufferArena& VulkanContext::GetMeshUniformBufferArena()
 void VulkanContext::BeginGpuTimestamp(const char* name)
 {
 #if PROFILING_ENABLED
+
+    if (!mTimestampsSupported)
+        return;
+
     GpuTimespan* timeSpan = nullptr;
     for (uint32_t i = 0; i < mGpuTimespans[mFrameIndex].size(); ++i)
     {
@@ -2353,6 +2368,10 @@ void VulkanContext::BeginGpuTimestamp(const char* name)
 void VulkanContext::EndGpuTimestamp(const char* name)
 {
 #if PROFILING_ENABLED
+
+    if (!mTimestampsSupported)
+        return;
+
     GpuTimespan* timeSpan = nullptr;
     for (uint32_t i = 0; i < mGpuTimespans[mFrameIndex].size(); ++i)
     {
@@ -2382,10 +2401,12 @@ void VulkanContext::EndGpuTimestamp(const char* name)
 void VulkanContext::ReadTimeQueryResults()
 {
 #if PROFILING_ENABLED
-    if (mNumTimestamps[mFrameIndex] <= 0)
-    {
+
+    if (!mTimestampsSupported)
         return;
-    }
+
+    if (mNumTimestamps[mFrameIndex] <= 0)
+        return;
 
     uint64_t buffer[MAX_GPU_TIMESTAMPS];
 
