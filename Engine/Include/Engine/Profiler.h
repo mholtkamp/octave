@@ -44,6 +44,7 @@ public:
     const std::vector<CpuStat>& GetCpuFrameStats() const;
 
     const std::vector<CpuStat>& GetCpuPersistentStats() const;
+    const std::vector<GpuStat>& GetGpuStats() const;
 
     void LogPersistentStats();
     void DumpPersistentStats();

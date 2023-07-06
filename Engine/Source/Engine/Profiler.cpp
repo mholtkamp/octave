@@ -149,6 +149,11 @@ const std::vector<CpuStat>& Profiler::GetCpuPersistentStats() const
     return mCpuPersistentStats;
 }
 
+const std::vector<GpuStat>& Profiler::GetGpuStats() const
+{
+    return mGpuStats;
+}
+
 void Profiler::LogPersistentStats()
 {
     LogDebug("----- Persistent Stats -----");
