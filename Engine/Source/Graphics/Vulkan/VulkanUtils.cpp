@@ -1893,13 +1893,12 @@ void UpdateParticleCompVertexBuffer(ParticleComponent* particleComp, const std::
             resource->mIndexBuffer = nullptr;
         }
 
-
-        resource->mVertexBuffer = new Buffer(
+        resource->mVertexBuffer = new MultiBuffer(
             BufferType::Vertex,
             numVertices * sizeof(VertexParticle),
             "Particle Vertex Buffer");
 
-        resource->mIndexBuffer = new Buffer(
+        resource->mIndexBuffer = new MultiBuffer(
             BufferType::Index,
             numIndices * sizeof(IndexType),
             "Particle Index Buffer");
@@ -1909,7 +1908,7 @@ void UpdateParticleCompVertexBuffer(ParticleComponent* particleComp, const std::
 
     resource->mVertexBuffer->Update(vertices.data(), numVertices * sizeof(VertexParticle));
 
-    IndexType* indices = (IndexType*)resource->mIndexBuffer->Map();
+    IndexType* indices = (IndexType*)resource->mIndexBuffer->GetBuffer()->Map();
     uint32_t i = 0;
     uint32_t v = 0;
 
@@ -1928,7 +1927,7 @@ void UpdateParticleCompVertexBuffer(ParticleComponent* particleComp, const std::
         v += 4;
         i += 6;
     }
-    resource->mIndexBuffer->Unmap();
+    resource->mIndexBuffer->GetBuffer()->Unmap();
 }
 
 void DrawParticleComp(ParticleComponent* particleComp)

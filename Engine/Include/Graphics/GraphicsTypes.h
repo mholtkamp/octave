@@ -6,7 +6,7 @@
 #if API_VULKAN
 #include "Graphics/Vulkan/Buffer.h"
 #include "Graphics/Vulkan/Image.h"
-#include "Graphics/Vulkan/UniformBuffer.h"
+#include "Graphics/Vulkan/MultiBuffer.h"
 #include "Graphics/Vulkan/DescriptorSet.h"
 #elif API_GX
 #include <gccore.h>
@@ -258,8 +258,8 @@ struct ParticleCompResource
 #if API_VULKAN
     DescriptorSet* mDescriptorSet = nullptr;
     UniformBuffer* mUniformBuffer = nullptr;
-    Buffer* mVertexBuffer = nullptr;
-    Buffer* mIndexBuffer = nullptr;
+    MultiBuffer* mVertexBuffer = nullptr;
+    MultiBuffer* mIndexBuffer = nullptr;
     uint32_t mNumVerticesAllocated = 0;
 #elif API_C3D
     DoubleBuffer mVertexData;

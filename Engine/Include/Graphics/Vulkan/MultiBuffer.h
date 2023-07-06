@@ -7,11 +7,11 @@
 
 class DestroyQueue;
 
-class UniformBuffer
+class MultiBuffer
 {
 public:
 
-    UniformBuffer(size_t size, const char* debugName, const void* srcData = nullptr);
+    MultiBuffer(BufferType bufferType, size_t size, const char* debugName, const void* srcData = nullptr);
 
     void Update(const void* srcData, size_t srcSize);
 
@@ -21,12 +21,19 @@ public:
     Buffer* GetBuffer();
     Buffer* GetBuffer(uint32_t frameIndex);
 
-private:
+protected:
 
     friend class DestroyQueue;
-    ~UniformBuffer();
+    virtual ~MultiBuffer();
 
     Buffer* mBuffers[MAX_FRAMES] = {};
+};
+
+class UniformBuffer : public MultiBuffer
+{
+public:
+
+    UniformBuffer(size_t size, const char* debugName, const void* srcData = nullptr);
 };
 
 #endif

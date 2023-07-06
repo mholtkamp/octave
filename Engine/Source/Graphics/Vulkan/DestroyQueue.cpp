@@ -33,10 +33,10 @@ void DestroyQueue::Destroy(Buffer* buffer)
     mBuffers[frameIndex].push_back(buffer);
 }
 
-void DestroyQueue::Destroy(UniformBuffer* uniformBuffer)
+void DestroyQueue::Destroy(MultiBuffer* multiBuffer)
 {
     uint32_t frameIndex = GetFrameIndex();
-    mUniformBuffers[frameIndex].push_back(uniformBuffer);
+    mMultiBuffers[frameIndex].push_back(multiBuffer);
 }
 
 void DestroyQueue::Destroy(DescriptorSet* descriptorSet)
@@ -66,9 +66,9 @@ void DestroyQueue::Flush(uint32_t frameIndex)
         delete mDescriptorSets[frameIndex][i];
     }
 
-    for (uint32_t i = 0; i < mUniformBuffers[frameIndex].size(); ++i)
+    for (uint32_t i = 0; i < mMultiBuffers[frameIndex].size(); ++i)
     {
-        delete mUniformBuffers[frameIndex][i];
+        delete mMultiBuffers[frameIndex][i];
     }
 
     for (uint32_t i = 0; i < mImages[frameIndex].size(); ++i)
@@ -83,7 +83,7 @@ void DestroyQueue::Flush(uint32_t frameIndex)
 
     mCommandBuffers[frameIndex].clear();
     mDescriptorSets[frameIndex].clear();
-    mUniformBuffers[frameIndex].clear();
+    mMultiBuffers[frameIndex].clear();
     mImages[frameIndex].clear();
     mBuffers[frameIndex].clear();
 }

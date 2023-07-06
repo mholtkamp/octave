@@ -1198,7 +1198,7 @@ void VulkanContext::CreateRenderPass()
     VkSubpassDependency extDependency = {};
     extDependency.srcSubpass = 0;
     extDependency.dstSubpass = VK_SUBPASS_EXTERNAL;
-    extDependency.srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+    extDependency.srcStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
     extDependency.dstStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     extDependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
         VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
