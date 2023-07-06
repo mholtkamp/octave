@@ -13,7 +13,7 @@ public:
 
     MultiBuffer(BufferType bufferType, size_t size, const char* debugName, const void* srcData = nullptr);
 
-    void Update(const void* srcData, size_t srcSize);
+    void Update(const void* srcData, size_t srcSize, size_t dstOffset = 0);
 
     VkBuffer Get();
     VkBuffer Get(uint32_t frameIndex);

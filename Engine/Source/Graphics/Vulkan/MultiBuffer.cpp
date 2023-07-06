@@ -21,13 +21,13 @@ MultiBuffer::~MultiBuffer()
     }
 }
 
-void MultiBuffer::Update(const void* srcData, size_t srcSize)
+void MultiBuffer::Update(const void* srcData, size_t srcSize, size_t dstOffset)
 {
     // Uniform buffers can only update the current frames buffer because
     // the previous frame that was submitted to the GPU might still be
     // using its uniform buffer.
     uint32_t frameIndex = GetFrameIndex();
-    mBuffers[frameIndex]->Update(srcData, srcSize);
+    mBuffers[frameIndex]->Update(srcData, srcSize, dstOffset);
 }
 
 VkBuffer MultiBuffer::Get()
