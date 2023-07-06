@@ -11,6 +11,8 @@
 FORCE_LINK_DEF(StatsOverlay);
 DEFINE_WIDGET(StatsOverlay, Canvas);
 
+#define DEFAULT_STAT_COLOR glm::vec4(0.4f, 1.0f, 0.4f, 1.0f)
+
 StatsOverlay::StatsOverlay()
 {
     const float width = 200.0f;
@@ -35,6 +37,14 @@ void StatsOverlay::Update()
     case StatDisplayMode::CpuStatText:
     case StatDisplayMode::CpuStatBars:
         numStats = (uint32_t)GetProfiler()->GetCpuFrameStats().size();
+        break;
+    case StatDisplayMode::GpuStatText:
+    case StatDisplayMode::GpuStatBars:
+        numStats = (uint32_t)GetProfiler()->GetGpuStats().size();
+        break;
+    case StatDisplayMode::AllStatText:
+        numStats = (uint32_t)GetProfiler()->GetCpuFrameStats().size();
+        numStats += (uint32_t)GetProfiler()->GetGpuStats().size();
         break;
     case StatDisplayMode::Memory:
         numStats = 1;
@@ -64,12 +74,12 @@ void StatsOverlay::Update()
         for (uint32_t i = 0; i < numToAlloc; ++i)
         {
             Text* newKeyText = new Text();
-            newKeyText->SetColor(glm::vec4(0.4f, 1.0f, 0.4f, 1.0f));
+            newKeyText->SetColor(DEFAULT_STAT_COLOR);
             newKeyText->SetFont(font);
             AddChild(newKeyText);
 
             Text* newValueText = new Text();
-            newValueText->SetColor(glm::vec4(0.4f, 1.0f, 0.4f, 1.0f));
+            newValueText->SetColor(DEFAULT_STAT_COLOR);
             newValueText->SetFont(font);
             AddChild(newValueText);
 
@@ -83,24 +93,46 @@ void StatsOverlay::Update()
     if (mDisplayMode == StatDisplayMode::Memory)
     {
 #if PLATFORM_WINDOWS || PLATFORM_LINUX
-        SetStatText(0, "Used Memory", SYS_GetNumBytesAllocated() / static_cast<float>(1024 * 1024), statY);
+        SetStatText(0, "Used Memory", SYS_GetNumBytesAllocated() / static_cast<float>(1024 * 1024), DEFAULT_STAT_COLOR, statY);
 #else
-        SetStatText(0, "Free Memory", SYS_GetNumBytesFree() / static_cast<float>(1024 * 1024), statY);
+        SetStatText(0, "Free Memory", SYS_GetNumBytesFree() / static_cast<float>(1024 * 1024), DEFAULT_STAT_COLOR, statY);
 #endif
     }
     else if (mDisplayMode == StatDisplayMode::Network)
     {
         NetworkManager* netMan = NetworkManager::Get();
-        SetStatText(0, "Upload", netMan->GetUploadRate() / 1024, statY);
-        SetStatText(1, "Download", netMan->GetDownloadRate() / 1024, statY);
+        SetStatText(0, "Upload", netMan->GetUploadRate() / 1024, DEFAULT_STAT_COLOR, statY);
+        SetStatText(1, "Download", netMan->GetDownloadRate() / 1024, DEFAULT_STAT_COLOR, statY);
     }
     else
     {
-        const std::vector<CpuStat>& stats = GetProfiler()->GetCpuFrameStats();
-        OCT_ASSERT(numStats <= stats.size());
-        for (uint32_t i = 0; i < numStats; ++i)
+        const std::vector<CpuStat>& cpuStats = GetProfiler()->GetCpuFrameStats();
+        const std::vector<GpuStat>& gpuStats = GetProfiler()->GetGpuStats();
+        OCT_ASSERT(numStats <= (cpuStats.size() + gpuStats.size()));
+        uint32_t uStat = 0;
+
+        if (mDisplayMode == StatDisplayMode::CpuStatBars ||
+            mDisplayMode == StatDisplayMode::CpuStatText ||
+            mDisplayMode == StatDisplayMode::AllStatText)
         {
-            SetStatText(i, stats[i].mName, stats[i].mSmoothedTime, statY);
+            // Cpu Stats first
+            for (uint32_t i = 0; i < cpuStats.size(); ++i)
+            {
+                SetStatText(uStat, cpuStats[i].mName, cpuStats[i].mSmoothedTime, DEFAULT_STAT_COLOR, statY);
+                ++uStat;
+            }
+        }
+
+        if (mDisplayMode == StatDisplayMode::GpuStatBars ||
+            mDisplayMode == StatDisplayMode::GpuStatText ||
+            mDisplayMode == StatDisplayMode::AllStatText)
+        {
+            // Gpu Stats second
+            for (uint32_t i = 0; i < gpuStats.size(); ++i)
+            {
+                SetStatText(uStat, gpuStats[i].mName, gpuStats[i].mSmoothedTime, glm::vec4(1.0f, 0.4f, 0.4f, 1.0f), statY);
+                ++uStat;
+            }
         }
     }
 
@@ -117,7 +149,7 @@ StatDisplayMode StatsOverlay::GetDisplayMode() const
     return mDisplayMode;
 }
 
-void StatsOverlay::SetStatText(uint32_t index, const char* key, float value, float& y)
+void StatsOverlay::SetStatText(uint32_t index, const char* key, float value, glm::vec4 color, float& y)
 {
     float keyX = 0.0f;
     float valueX = 150.0f;
@@ -126,6 +158,8 @@ void StatsOverlay::SetStatText(uint32_t index, const char* key, float value, flo
     Text* valueText = mStatValueTexts[index];
     keyText->SetVisible(true);
     valueText->SetVisible(true);
+    keyText->SetColor(color);
+    valueText->SetColor(color);
 
     keyText->SetText(key);
     char valueString[16];

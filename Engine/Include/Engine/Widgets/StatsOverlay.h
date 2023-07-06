@@ -9,6 +9,9 @@ enum class StatDisplayMode
     FrameText,
     CpuStatText,
     CpuStatBars,
+    GpuStatText,
+    GpuStatBars,
+    AllStatText,
     Memory,
     Network,
 
@@ -28,11 +31,11 @@ public:
     void SetDisplayMode(StatDisplayMode mode);
     StatDisplayMode GetDisplayMode() const;
 
-    void SetStatText(uint32_t index, const char* key, float value, float& y);
+    void SetStatText(uint32_t index, const char* key, float value, glm::vec4 color, float& y);
 
     float mTextSize = 14.0f;
 
     std::vector<Text*> mStatKeyTexts;
     std::vector<Text*> mStatValueTexts;
-    StatDisplayMode mDisplayMode = StatDisplayMode::CpuStatText;
+    StatDisplayMode mDisplayMode = StatDisplayMode::AllStatText;
 };

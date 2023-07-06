@@ -2404,7 +2404,8 @@ void VulkanContext::ReadTimeQueryResults()
             float timeNs = (end - start) * mTimestampPeriod;
             float timeMs = timeNs / 1000000.0f;
 
-            LogDebug("[%s] %.3f", mGpuTimespans[mFrameIndex][i].mName.c_str(), timeMs);
+            GetProfiler()->SetGpuStatTime(mGpuTimespans[mFrameIndex][i].mName.c_str(), timeMs);
+            //LogDebug("[%s] %.3f", mGpuTimespans[mFrameIndex][i].mName.c_str(), timeMs);
         }
     }
     else
