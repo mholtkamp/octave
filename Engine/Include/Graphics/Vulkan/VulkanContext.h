@@ -6,7 +6,7 @@
 #include <stb_image.h>
 
 #include "VulkanUtils.h"
-#include "UniformBuffer.h"
+#include "MultiBuffer.h"
 #include "DescriptorSet.h"
 #include "Pipeline.h"
 #include "PipelineConfigs.h"

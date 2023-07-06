@@ -1,18 +1,18 @@
 #if API_VULKAN
 
-#include "Graphics/Vulkan/UniformBuffer.h"
+#include "Graphics/Vulkan/MultiBuffer.h"
 #include "Graphics/Vulkan/VulkanUtils.h"
 #include "Graphics/Vulkan/DestroyQueue.h"
 
-UniformBuffer::UniformBuffer(size_t size, const char* debugName, const void* srcData)
+MultiBuffer::MultiBuffer(BufferType bufferType, size_t size, const char* debugName, const void* srcData)
 {
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
     {
-        mBuffers[i] = new Buffer(BufferType::Uniform, size, debugName, srcData, true);
+        mBuffers[i] = new Buffer(bufferType, size, debugName, srcData, true);
     }
 }
 
-UniformBuffer::~UniformBuffer()
+MultiBuffer::~MultiBuffer()
 {
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
     {
@@ -21,7 +21,7 @@ UniformBuffer::~UniformBuffer()
     }
 }
 
-void UniformBuffer::Update(const void* srcData, size_t srcSize)
+void MultiBuffer::Update(const void* srcData, size_t srcSize)
 {
     // Uniform buffers can only update the current frames buffer because
     // the previous frame that was submitted to the GPU might still be
@@ -30,26 +30,32 @@ void UniformBuffer::Update(const void* srcData, size_t srcSize)
     mBuffers[frameIndex]->Update(srcData, srcSize);
 }
 
-VkBuffer UniformBuffer::Get()
+VkBuffer MultiBuffer::Get()
 {
     uint32_t frameIndex = GetFrameIndex();
     return Get(frameIndex);
 }
 
-VkBuffer UniformBuffer::Get(uint32_t frameIndex)
+VkBuffer MultiBuffer::Get(uint32_t frameIndex)
 {
     return mBuffers[frameIndex]->Get();
 }
 
-Buffer* UniformBuffer::GetBuffer()
+Buffer* MultiBuffer::GetBuffer()
 {
     uint32_t frameIndex = GetFrameIndex();
     return GetBuffer(frameIndex);
 }
 
-Buffer* UniformBuffer::GetBuffer(uint32_t frameIndex)
+Buffer* MultiBuffer::GetBuffer(uint32_t frameIndex)
 {
     return mBuffers[frameIndex];
+}
+
+UniformBuffer::UniformBuffer(size_t size, const char* debugName, const void* srcData) : 
+    MultiBuffer(BufferType::Uniform, size, debugName, srcData)
+{
+
 }
 
 #endif

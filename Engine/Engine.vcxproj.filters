@@ -198,9 +198,6 @@
     <ClCompile Include="Source\Graphics\Vulkan\Image.cpp">
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\Vulkan\UniformBuffer.cpp">
-      <Filter>Source Files\Graphics\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Graphics\Vulkan\DescriptorSet.cpp">
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClCompile>
@@ -813,6 +810,9 @@
     <ClCompile Include="Source\System\Android\System_Android.cpp">
       <Filter>Source Files\System\Android</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Vulkan\MultiBuffer.cpp">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -832,9 +832,6 @@
     </ClInclude>
     <ClInclude Include="Include\Graphics\GraphicsTypes.h">
       <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\UniformBuffer.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="Include\Graphics\GraphicsConstants.h">
       <Filter>Header Files\Graphics</Filter>
@@ -1458,6 +1455,9 @@
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Include\Graphics\Vulkan\RayTracer.h">
+      <Filter>Header Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\Vulkan\MultiBuffer.h">
       <Filter>Header Files\Graphics\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
