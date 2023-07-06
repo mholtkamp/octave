@@ -78,7 +78,7 @@ VulkanContext::VulkanContext()
     mSceneColorFramebuffer = VK_NULL_HANDLE;
     mImageAvailableSemaphore = 0;
     mRenderFinishedSemaphore = 0;
-    mSceneColorImageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+    mSceneColorImageFormat = VK_FORMAT_R8G8B8A8_UNORM;
 
     mGlobalUniformData.mScreenDimensions = glm::vec2(800.0f, 600.0f);
     mGlobalUniformData.mVisualizationMode = 0;
