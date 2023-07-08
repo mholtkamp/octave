@@ -1641,6 +1641,15 @@ void DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
 
 bool IsCpuSkinningRequired(SkeletalMeshComponent* skeletalMeshComp)
 {
+#if PLATFORM_ANDROID
+    // GPU skinning is really slow on Android because of the massive vertex data size.
+    // It can be optimized for sure, but for now, just don't use it on Android.
+    // Ways to optimize:
+    // - Use one Uint for bone weights
+    // - Use different shader with only one texcoord if second isn't used.
+    // - Use variant that doesn't take bone weights and does single-bone skinning.
+    return true;
+#else
     if (skeletalMeshComp->GetSkeletalMesh() == nullptr)
     {
         return false;
@@ -1649,6 +1658,7 @@ bool IsCpuSkinningRequired(SkeletalMeshComponent* skeletalMeshComp)
     {
         return skeletalMeshComp->GetSkeletalMesh()->GetNumBones() > MAX_GPU_BONES;
     }
+#endif
 }
 
 void DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp)
