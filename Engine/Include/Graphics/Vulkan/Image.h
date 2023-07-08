@@ -39,6 +39,8 @@ public:
     VkSampler GetSampler() const;
 
     VkFormat GetFormat() const;
+    uint32_t GetWidth() const;
+    uint32_t GetHeight() const;
 
     void Update(const void* srcData);
 

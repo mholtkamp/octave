@@ -126,6 +126,9 @@ public:
     void SetLightFadeLimit(uint32_t limit);
     uint32_t GetLightFadeLimit() const;
 
+    void SetResolutionScale(float scale);
+    float GetResolutionScale() const;
+
     // Property Getters
     uint32_t GetRaysPerPixel() const;
     uint32_t GetMaxBounces() const;

@@ -33,6 +33,8 @@ struct GraphicsState
 #elif API_C3D
     struct C3dContext* mC3dContext = &gC3dContext;
 #endif
+
+    float mResolutionScale = 1.0f;
 };
 
 enum class PixelFormat

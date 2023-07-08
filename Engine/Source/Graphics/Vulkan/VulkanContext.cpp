@@ -193,6 +193,13 @@ void VulkanContext::BeginFrame()
     OCT_ASSERT(uint32_t(mFrameNumber) == Renderer::Get()->GetFrameNumber());
     OCT_ASSERT(uint32_t(mFrameIndex) == Renderer::Get()->GetFrameIndex());
 
+    float resScale = GetEngineState()->mGraphics.mResolutionScale;
+    if (mResolutionScale != resScale)
+    {
+        mResolutionScale = resScale;
+        RecreateSwapchain(false);
+    }
+
     if (mCommandBuffers.size() == 0)
     {
         CreateCommandBuffers();
@@ -331,6 +338,8 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         clearValues[0].depthStencil = { 1.0f, 0 };
         break;
     case RenderPassId::Forward:
+        renderPassInfo.renderArea.extent.width = mSceneWidth;
+        renderPassInfo.renderArea.extent.height = mSceneHeight;
         renderPassInfo.renderPass = mForwardRenderPass;
         renderPassInfo.framebuffer = mSceneColorFramebuffer;
         break;
@@ -349,6 +358,8 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         break;
 #if EDITOR
     case RenderPassId::HitCheck:
+        renderPassInfo.renderArea.extent.width = mSceneWidth;
+        renderPassInfo.renderArea.extent.height = mSceneHeight;
         renderPassInfo.renderPass = mHitCheckRenderPass;
         renderPassInfo.framebuffer = mHitCheckFramebuffer;
         break;
@@ -384,6 +395,15 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         BeginGpuTimestamp(GetRenderPassName(mCurrentRenderPassId));
     }
 
+    if (mCurrentRenderPassId == RenderPassId::Forward)
+    {
+        // Forward pass may render to a different resolution than other passes because of Render Scale setting.
+        int32_t w = (int32_t)mSceneWidth;
+        int32_t h = (int32_t)mSceneHeight;
+        SetViewport(0, 0, w, h, false, true);
+        SetScissor(0, 0, w, h, false, true);
+    }
+
     vkCmdBeginRenderPass(mCommandBuffers[mFrameIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
@@ -394,6 +414,13 @@ void VulkanContext::EndRenderPass()
     if (mCurrentRenderPassId == RenderPassId::Shadows)
     {
         //DeviceWaitIdle();
+    }
+
+    if (mCurrentRenderPassId == RenderPassId::Forward)
+    {
+        // Restore the viewport and scissor in case we were rendering at a different resolution scale.
+        SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight, true, false);
+        SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight, true, false);
     }
 
     if (mCurrentRenderPassId != RenderPassId::Count)
@@ -629,6 +656,11 @@ void VulkanContext::CreateSwapchain()
     mSwapchainImageFormat = surfaceFormat.format;
     mSwapchainExtent = extent;
 
+    // Update scene/width height based on resolution scale.
+    float resScale = GetEngineState()->mGraphics.mResolutionScale;
+    mSceneWidth = uint32_t(mSwapchainExtent.width * resScale + 0.5f);
+    mSceneHeight = uint32_t(mSwapchainExtent.height * resScale + 0.5f);
+
     mGlobalUniformData.mScreenDimensions = glm::vec2(extent.width, extent.height);
 }
 
@@ -728,10 +760,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
     {
         LogWarning("%s\n", message);
     }
-
-#if PLATFORM_WINDOWS
-    OutputDebugString(message);
-#endif
 
     fflush(stdout);
     free(message);
@@ -1159,8 +1187,8 @@ void VulkanContext::CreateSceneColorImage()
     layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     ImageDesc imageDesc;
-    imageDesc.mWidth = mSwapchainExtent.width;
-    imageDesc.mHeight = mSwapchainExtent.height;
+    imageDesc.mWidth = mSceneWidth;
+    imageDesc.mHeight = mSceneHeight;
     imageDesc.mFormat = format;
     imageDesc.mUsage = usage;
 
@@ -1404,19 +1432,6 @@ void VulkanContext::CreateRenderPass()
                 VK_ATTACHMENT_STORE_OP_DONT_CARE,
                 VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-            },
-
-            // Depth Buffer
-            {
-                0,
-                mDepthImageFormat,
-                VK_SAMPLE_COUNT_1_BIT,
-                VK_ATTACHMENT_LOAD_OP_LOAD,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_ATTACHMENT_LOAD_OP_LOAD,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
             }
         };
 
@@ -1424,12 +1439,6 @@ void VulkanContext::CreateRenderPass()
         {
             0,
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-        };
-
-        VkAttachmentReference depthRef =
-        {
-            1,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
         };
 
         VkSubpassDescription subpass =
@@ -1441,7 +1450,7 @@ void VulkanContext::CreateRenderPass()
             1, // color attachments
             &colorRef,
             nullptr,
-            &depthRef, // depth attachment
+            nullptr, // depth attachment
             0,
             nullptr
         };
@@ -1483,19 +1492,6 @@ void VulkanContext::CreateRenderPass()
                 VK_ATTACHMENT_STORE_OP_DONT_CARE,
                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                 VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-            },
-
-            // Depth Buffer
-            {
-                0,
-                mDepthImageFormat,
-                VK_SAMPLE_COUNT_1_BIT,
-                VK_ATTACHMENT_LOAD_OP_LOAD,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_ATTACHMENT_LOAD_OP_LOAD,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
             }
         };
 
@@ -1503,12 +1499,6 @@ void VulkanContext::CreateRenderPass()
         {
             0,
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-        };
-
-        VkAttachmentReference depthRef =
-        {
-            1,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
         };
 
         VkSubpassDescription subpass =
@@ -1520,7 +1510,7 @@ void VulkanContext::CreateRenderPass()
             1, // color attachments
             &colorRef,
             nullptr,
-            &depthRef, // depth attachment
+            nullptr, // depth attachment
             0,
             nullptr
         };
@@ -1562,19 +1552,6 @@ void VulkanContext::CreateRenderPass()
                 VK_ATTACHMENT_STORE_OP_DONT_CARE,
                 VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-            },
-
-            // Depth Buffer
-            {
-                0,
-                mDepthImageFormat,
-                VK_SAMPLE_COUNT_1_BIT,
-                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
             }
         };
 
@@ -1582,12 +1559,6 @@ void VulkanContext::CreateRenderPass()
         {
             0,
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-        };
-
-        VkAttachmentReference depthRef =
-        {
-            1,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
         };
 
         VkSubpassDescription subpass =
@@ -1599,7 +1570,7 @@ void VulkanContext::CreateRenderPass()
             1, // color attachments
             &colorRef,
             nullptr,
-            &depthRef, // depth attachment
+            nullptr, // depth attachment
             0,
             nullptr
         };
@@ -1668,7 +1639,7 @@ void VulkanContext::CreateFramebuffers()
 
     for (size_t i = 0; i < mSwapchainImageViews.size(); ++i)
     {
-        VkImageView attachmentViews[] = { mSwapchainImageViews[i], mDepthImage->GetView() };
+        VkImageView attachmentViews[] = { mSwapchainImageViews[i] };
 
         VkFramebufferCreateInfo ciFramebuffer = {};
         ciFramebuffer.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -1715,8 +1686,8 @@ void VulkanContext::CreateFramebuffers()
         ciFramebuffer.renderPass = mForwardRenderPass;
         ciFramebuffer.attachmentCount = OCT_ARRAY_SIZE(attachmentViews);
         ciFramebuffer.pAttachments = attachmentViews;
-        ciFramebuffer.width = mSwapchainExtent.width;
-        ciFramebuffer.height = mSwapchainExtent.height;
+        ciFramebuffer.width = mSceneWidth;
+        ciFramebuffer.height = mSceneHeight;
         ciFramebuffer.layers = 1;
 
         if (vkCreateFramebuffer(mDevice, &ciFramebuffer, nullptr, &mSceneColorFramebuffer) != VK_SUCCESS)
@@ -1730,8 +1701,8 @@ void VulkanContext::CreateFramebuffers()
 void VulkanContext::CreateDepthImage()
 {
     ImageDesc imageDesc;
-    imageDesc.mWidth = mSwapchainExtent.width;
-    imageDesc.mHeight = mSwapchainExtent.height;
+    imageDesc.mWidth = mSceneWidth;
+    imageDesc.mHeight = mSceneHeight;
     imageDesc.mFormat = mDepthImageFormat;
     imageDesc.mUsage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
@@ -2707,10 +2678,10 @@ void VulkanContext::DestroyPipelines()
     }
 }
 
-void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation)
+void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes)
 {
-    float bufferWidth = (float)mSwapchainExtent.width;
-    float bufferHeight = (float)mSwapchainExtent.height;
+    float bufferWidth = (float)(useSceneRes ? mSceneWidth : mSwapchainExtent.width);
+    float bufferHeight = (float)(useSceneRes ? mSceneHeight : mSwapchainExtent.height);
 
     float fX = static_cast<float>(x);
     float fY = static_cast<float>(y);
@@ -2752,10 +2723,10 @@ void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t hei
     vkCmdSetViewport(GetCommandBuffer(), 0, 1, &viewport);
 }
 
-void VulkanContext::SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation)
+void VulkanContext::SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes)
 {
-    float bufferWidth = (float)mSwapchainExtent.width;
-    float bufferHeight = (float)mSwapchainExtent.height;
+    float bufferWidth = (float)(useSceneRes ? mSceneWidth : mSwapchainExtent.width);
+    float bufferHeight = (float)(useSceneRes ? mSceneHeight : mSwapchainExtent.height);
 
     float fX = static_cast<float>(x);
     float fY = static_cast<float>(y);
@@ -2805,6 +2776,12 @@ TransformComponent* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX,
 
     DeviceWaitIdle();
 
+    // Convert pixelX and pixelY to scene-resolution coordinates
+    pixelX = (int32_t)(pixelX * mResolutionScale + 0.5f);
+    pixelY = (int32_t)(pixelY * mResolutionScale + 0.5f);
+    pixelX = glm::clamp<int32_t>(pixelX, 0, int32_t(mSceneWidth) - 1);
+    pixelY = glm::clamp<int32_t>(pixelY, 0, int32_t(mSceneHeight) - 1);
+
     // Render to image
     {
         VkCommandBuffer cb = BeginCommandBuffer();
@@ -2816,8 +2793,8 @@ TransformComponent* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX,
         UpdateGlobalUniformData();
         UpdateGlobalDescriptorSet();
 
-        SetViewport(0, 0, mSwapchainExtent.width, mSwapchainExtent.height, true);
-        SetScissor(0, 0, mSwapchainExtent.width, mSwapchainExtent.height, true);
+        SetViewport(0, 0, mSceneWidth, mSceneHeight, false, true);
+        SetScissor(0, 0, mSceneWidth, mSceneHeight, false, true);
 
         BeginRenderPass(RenderPassId::HitCheck);
         std::vector<DebugDraw> debugDraws;
@@ -2879,9 +2856,9 @@ TransformComponent* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX,
         VkCommandBuffer cb = BeginCommandBuffer();
         VkBufferImageCopy copy = {};
         copy.bufferOffset = 0;
-        copy.bufferRowLength = mSwapchainExtent.width;
-        copy.bufferImageHeight = mSwapchainExtent.height;
-        copy.imageExtent = { mSwapchainExtent.width, mSwapchainExtent.height, 1 };
+        copy.bufferRowLength = mSceneWidth;
+        copy.bufferImageHeight = mSceneHeight;
+        copy.imageExtent = { mSceneWidth, mSceneHeight, 1 };
         copy.imageOffset = { 0, 0, 0 };
         copy.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
 
@@ -2896,7 +2873,7 @@ TransformComponent* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX,
     uint32_t hitId = 0;
     void* bufferData = mHitCheckBuffer->Map();
     uint32_t* hitData = reinterpret_cast<uint32_t*>(bufferData);
-    hitId = hitData[pixelX + pixelY * mSwapchainExtent.width];
+    hitId = hitData[pixelX + pixelY * mSceneWidth];
     mHitCheckBuffer->Unmap();
 
     uint32_t actorId = (hitId >> 16);
@@ -2929,8 +2906,8 @@ void VulkanContext::CreateHitCheck()
 {
     // Create Image
     ImageDesc imageDesc;
-    imageDesc.mWidth = mSwapchainExtent.width;
-    imageDesc.mHeight = mSwapchainExtent.height;
+    imageDesc.mWidth = mSceneWidth;
+    imageDesc.mHeight = mSceneHeight;
     imageDesc.mFormat = VK_FORMAT_R32_UINT;
     imageDesc.mUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     mHitCheckImage = new Image(imageDesc, SamplerDesc(), "Hit Check");
@@ -2938,7 +2915,7 @@ void VulkanContext::CreateHitCheck()
     mHitCheckImage->Transition(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
     // Create Buffer
-    uint32_t bufferSize = 4 * mSwapchainExtent.width * mSwapchainExtent.height; // 4 bytes per pixel. 32 uint format.
+    uint32_t bufferSize = 4 * mSceneWidth * mSceneHeight; // 4 bytes per pixel. 32 uint format.
     mHitCheckBuffer = new Buffer(BufferType::Transfer, bufferSize, "Hit Check");
 
     // Create Render Pass
@@ -3025,8 +3002,8 @@ void VulkanContext::CreateHitCheck()
     ciFramebuffer.renderPass = mHitCheckRenderPass;
     ciFramebuffer.attachmentCount = 2;
     ciFramebuffer.pAttachments = imageAttachments;
-    ciFramebuffer.width = mSwapchainExtent.width;
-    ciFramebuffer.height = mSwapchainExtent.height;
+    ciFramebuffer.width = mSceneWidth;
+    ciFramebuffer.height = mSceneHeight;
     ciFramebuffer.layers = 1;
 
     if (vkCreateFramebuffer(mDevice, &ciFramebuffer, nullptr, &mHitCheckFramebuffer) != VK_SUCCESS)

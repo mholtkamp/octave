@@ -108,6 +108,7 @@ void Renderer::Initialize()
 
 void Renderer::GatherProperties(std::vector<Property>& props)
 {
+    props.push_back(Property(DatumType::Float, "Resolution Scale", nullptr, &(GetEngineState()->mGraphics.mResolutionScale)));
     props.push_back(Property(DatumType::Bool, "Light Fade", nullptr, &mEnableLightFade));
     props.push_back(Property(DatumType::Integer, "Light Fade Limit", nullptr, &mLightFadeLimit));
     props.push_back(Property(DatumType::Float, "Light Fade Speed", nullptr, &mLightFadeSpeed));
@@ -1400,6 +1401,17 @@ void Renderer::SetLightFadeLimit(uint32_t limit)
 uint32_t Renderer::GetLightFadeLimit() const
 {
     return mLightFadeLimit;
+}
+
+void Renderer::SetResolutionScale(float scale)
+{
+    scale = glm::clamp(scale, 0.1f, 2.0f);
+    GetEngineState()->mGraphics.mResolutionScale = scale;
+}
+
+float Renderer::GetResolutionScale() const
+{
+    return GetEngineState()->mGraphics.mResolutionScale;
 }
 
 uint32_t Renderer::GetRaysPerPixel() const
