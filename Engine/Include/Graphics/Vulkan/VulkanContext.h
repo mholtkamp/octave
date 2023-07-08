@@ -77,8 +77,7 @@ public:
 
     VkDevice GetDevice();
     void CreateSwapchain();
-    void RecreateSwapchain();
-    void RecreateSurface();
+    void RecreateSwapchain(bool recreateSurface);
 
     VkPhysicalDevice GetPhysicalDevice();
     VkDescriptorPool GetDescriptorPool();
@@ -166,6 +165,7 @@ private:
     void CreateShadowMapImage();
     void CreateQueryPools();
     void DestroyQueryPools();
+    void RecreateSurface();
 
     void PickPhysicalDevice();
     bool IsDeviceSuitable(VkPhysicalDevice device);

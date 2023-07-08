@@ -202,7 +202,7 @@ void VulkanContext::BeginFrame()
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        RecreateSwapchain();
+        RecreateSwapchain(false);
         return;
     }
     else if (result != VK_SUCCESS &&
@@ -2010,7 +2010,7 @@ void VulkanContext::CreateDescriptorPool()
     }
 }
 
-void VulkanContext::RecreateSwapchain()
+void VulkanContext::RecreateSwapchain(bool recreateSurface)
 {
     if (!mInitialized)
     {
@@ -2020,6 +2020,11 @@ void VulkanContext::RecreateSwapchain()
     DeviceWaitIdle();
 
     DestroySwapchain();
+
+    if (recreateSurface)
+    {
+        RecreateSurface();
+    }
 
     CreateSwapchain();
     CreateImageViews();
