@@ -97,8 +97,8 @@ public:
     VkRenderPass GetPostprocessRenderPass();
     VkRenderPass GetUIRenderPass();
 
-    void SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation);
-    void SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation);
+    void SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes);
+    void SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes);
 
     DescriptorSet* GetGlobalDescriptorSet();
 
@@ -283,6 +283,9 @@ private:
     EngineState* mEngineState = nullptr;
     Pipeline* mCurrentlyBoundPipeline = nullptr;
     VkSurfaceTransformFlagBitsKHR mPreTransformFlag = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    float mResolutionScale = 1.0f;
+    uint32_t mSceneWidth = 0;
+    uint32_t mSceneHeight = 0;
 
 #if EDITOR
 public:

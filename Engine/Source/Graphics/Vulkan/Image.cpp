@@ -159,6 +159,16 @@ VkFormat Image::GetFormat() const
     return mFormat;
 }
 
+uint32_t Image::GetWidth() const
+{
+    return mWidth;
+}
+
+uint32_t Image::GetHeight() const
+{
+    return mHeight;
+}
+
 void Image::Update(const void* srcData)
 {
     OCT_ASSERT(srcData != nullptr);
