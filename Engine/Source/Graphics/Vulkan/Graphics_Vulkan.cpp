@@ -150,7 +150,7 @@ void GFX_ResizeWindow()
 {
     if (gVulkanContext != nullptr)
     {
-        gVulkanContext->RecreateSwapchain();
+        gVulkanContext->RecreateSwapchain(false);
     }
 }
 
@@ -158,8 +158,7 @@ void GFX_Reset()
 {
     if (gVulkanContext != nullptr)
     {
-        gVulkanContext->RecreateSurface();
-        gVulkanContext->RecreateSwapchain();
+        gVulkanContext->RecreateSwapchain(true);
     }
 }
 
