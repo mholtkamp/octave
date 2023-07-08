@@ -1185,22 +1185,22 @@ void Renderer::Render(World* world)
                 // ***************
                 //  Shadow Depths
                 // ***************
+                // TODO: Reimplement shadow maps. Possibly for multiple light sources.
+#if 0
                 GFX_SetViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION, false);
                 GFX_SetScissor(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION, false);
 
                 GFX_BeginRenderPass(RenderPassId::Shadows);
 
-                // TODO: Reimplement shadow maps. Possibly for multiple light sources.
-#if 0
                 DirectionalLightComponent* dirLight = world->GetDirectionalLight();
 
                 if (dirLight && dirLight->ShouldCastShadows())
                 {
                     RenderDraws(mShadowDraws, PipelineId::Shadow);
                 }
-#endif
 
                 GFX_EndRenderPass();
+#endif
 
                 GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
                 GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
