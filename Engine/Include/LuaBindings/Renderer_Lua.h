@@ -40,6 +40,8 @@ struct Renderer_Lua
     static int EnableLightFade(lua_State* L);
     static int SetLightFadeLimit(lua_State* L);
     static int GetLightFadeLimit(lua_State* L);
+    static int SetResolutionScale(lua_State* L);
+    static int GetResolutionScale(lua_State* L);
 
     static void Bind();
 };

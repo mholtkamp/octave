@@ -307,6 +307,23 @@ int Renderer_Lua::GetLightFadeLimit(lua_State* L)
     return 1;
 }
 
+int Renderer_Lua::SetResolutionScale(lua_State* L)
+{
+    float value = CHECK_NUMBER(L, 1);
+
+    Renderer::Get()->SetResolutionScale(value);
+
+    return 0;
+}
+
+int Renderer_Lua::GetResolutionScale(lua_State* L)
+{
+    float ret = Renderer::Get()->GetResolutionScale();
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
 void Renderer_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -406,6 +423,12 @@ void Renderer_Lua::Bind()
 
     lua_pushcfunction(L, GetLightFadeLimit);
     lua_setfield(L, tableIdx, "GetLightFadeLimit");
+
+    lua_pushcfunction(L, SetResolutionScale);
+    lua_setfield(L, tableIdx, "SetResolutionScale");
+
+    lua_pushcfunction(L, GetResolutionScale);
+    lua_setfield(L, tableIdx, "GetResolutionScale");
 
     lua_setglobal(L, RENDERER_LUA_NAME);
 
