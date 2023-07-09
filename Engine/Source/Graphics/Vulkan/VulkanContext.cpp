@@ -146,6 +146,12 @@ void VulkanContext::Initialize()
     mFrameIndex = Renderer::Get()->GetFrameIndex();
     mFrameNumber = Renderer::Get()->GetFrameNumber();
 
+    mMaterialPipelineCache.Create();
+
+#if 1 //PLATFORM_ANDROID
+    EnableMaterialPipelineCache(true);
+#endif
+
     DeviceWaitIdle();
     mInitialized = true;
 }
@@ -153,6 +159,8 @@ void VulkanContext::Initialize()
 void VulkanContext::Destroy()
 {
     DeviceWaitIdle();
+
+    mMaterialPipelineCache.Destroy();
 
     DestroyQueryPools();
 
@@ -236,6 +244,11 @@ void VulkanContext::BeginFrame()
 
     mMeshDescriptorSetArena.Reset();
     mMeshUniformBufferArena.Reset();
+
+    if (mEnableMaterialPipelineCache)
+    {
+        mMaterialPipelineCache.Update();
+    }
 }
 
 void VulkanContext::EndFrame()
@@ -1988,6 +2001,12 @@ void VulkanContext::RecreateSwapchain(bool recreateSurface)
         return;
     }
 
+    if (mEnableMaterialPipelineCache)
+    {
+        // Need to stop thread temporarily while resizing to avoid data access hazards.
+        mMaterialPipelineCache.Enable(false);
+    }
+
     DeviceWaitIdle();
 
     DestroySwapchain();
@@ -2028,6 +2047,11 @@ void VulkanContext::RecreateSwapchain(bool recreateSurface)
     // may lead to an OOM crash in the VRAM allocator.
     DeviceWaitIdle();
     GetDestroyQueue()->FlushAll();
+
+    if (mEnableMaterialPipelineCache)
+    {
+        mMaterialPipelineCache.Enable(true);
+    }
 }
 
 void VulkanContext::RecreateSurface()
@@ -2431,6 +2455,25 @@ RayTracer* VulkanContext::GetRayTracer()
 VkSurfaceTransformFlagBitsKHR VulkanContext::GetPreTransformFlag() const
 {
     return mPreTransformFlag;
+}
+
+void VulkanContext::EnableMaterialPipelineCache(bool enable)
+{
+    if (mEnableMaterialPipelineCache != enable)
+    {
+        mEnableMaterialPipelineCache = enable;
+        mMaterialPipelineCache.Enable(enable);
+    }
+}
+
+bool VulkanContext::IsMaterialPipelineCacheEnabled() const
+{
+    return mEnableMaterialPipelineCache;
+}
+
+MaterialPipelineCache* VulkanContext::GetMaterialPipelineCache()
+{
+    return &mMaterialPipelineCache;
 }
 
 VkExtent2D& VulkanContext::GetSwapchainExtent()

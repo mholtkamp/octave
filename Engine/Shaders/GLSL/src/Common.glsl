@@ -175,12 +175,10 @@ const mat4 SHADOW_BIAS_MAT = mat4(
 	0.0, 0.0, 1.0, 0.0,
 	0.5, 0.5, 0.0, 1.0 );
 
-vec4 BlendTexture(MaterialUniforms material, vec4 prevColor, uint texIdx, sampler2D texSampler, vec2 uv0, vec2 uv1, float vertexIntensity)
+vec4 BlendTexture(MaterialUniforms material, vec4 prevColor, uint texIdx, sampler2D texSampler, vec2 uv0, vec2 uv1, float vertexIntensity, uint tevMode, uint vertexColorMode)
 {
     vec4 outColor = prevColor;
     vec2 uv = (material.mUvMaps[texIdx]) == 0 ? uv0 : uv1;
-    uint tevMode = material.mTevModes[texIdx];
-    uint vertexColorMode = material.mVertexColorMode;
 
     if (tevMode < TEV_MODE_PASS)
     {

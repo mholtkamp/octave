@@ -1160,50 +1160,59 @@ void UpdateMaterialResource(Material* material)
     material->ClearDirty(GetFrameIndex());
 }
 
-Pipeline* GetMaterialPipeline(Material* material)
+Pipeline* GetMaterialPipeline(Material* material, VertexType vertType)
 {
     Pipeline* pipeline = nullptr;
     VulkanContext* context = GetVulkanContext();
-    bool depthless = material->IsDepthTestDisabled();
-    CullMode cullMode = material->GetCullMode();
 
-    // Right now, only blend mode determines pipeline selection.
-    // After adding vertex coloured meshes or skeletal meshes, pipeline
-    // selection may become slightly more complicated.
-    // 
-    // Update: Skeletal/Coloured vertex permutations are stored internally inside Pipeline
-    // but depthless is stored as separate PipelineId.
-    // If we have to add another permutation... we'll need to create some sort of 
-    // pipeline cache system, and only create them as needed.
-
-    PipelineId pipelineId = PipelineId::Opaque;
-
-    if (depthless)
-        pipelineId = PipelineId::DepthlessOpaque;
-    else if (cullMode == CullMode::Front)
-        pipelineId = PipelineId::CullFrontOpaque;
-    else if (cullMode == CullMode::None)
-        pipelineId = PipelineId::CullNoneOpaque;
-
-    switch (material->GetBlendMode())
+    if (context->IsMaterialPipelineCacheEnabled())
     {
-    case BlendMode::Opaque:
-    case BlendMode::Masked:
-        break;
-    case BlendMode::Translucent:
-        pipelineId = PipelineId((uint32_t)pipelineId + 1);
-        break;
-    case BlendMode::Additive:
-        pipelineId = PipelineId((uint32_t)pipelineId + 2);
-        break;
-
-    default:
-        break;
+        pipeline = context->GetMaterialPipelineCache()->GetPipeline(material, vertType);
     }
 
-    if (pipelineId != PipelineId::Count)
+    if (pipeline == nullptr)
     {
-        pipeline = context->GetPipeline(pipelineId);
+        bool depthless = material->IsDepthTestDisabled();
+        CullMode cullMode = material->GetCullMode();
+
+        // Right now, only blend mode determines pipeline selection.
+        // After adding vertex coloured meshes or skeletal meshes, pipeline
+        // selection may become slightly more complicated.
+        // 
+        // Update: Skeletal/Coloured vertex permutations are stored internally inside Pipeline
+        // but depthless is stored as separate PipelineId.
+        // If we have to add another permutation... we'll need to create some sort of 
+        // pipeline cache system, and only create them as needed.
+
+        PipelineId pipelineId = PipelineId::Opaque;
+
+        if (depthless)
+            pipelineId = PipelineId::DepthlessOpaque;
+        else if (cullMode == CullMode::Front)
+            pipelineId = PipelineId::CullFrontOpaque;
+        else if (cullMode == CullMode::None)
+            pipelineId = PipelineId::CullNoneOpaque;
+
+        switch (material->GetBlendMode())
+        {
+        case BlendMode::Opaque:
+        case BlendMode::Masked:
+            break;
+        case BlendMode::Translucent:
+            pipelineId = PipelineId((uint32_t)pipelineId + 1);
+            break;
+        case BlendMode::Additive:
+            pipelineId = PipelineId((uint32_t)pipelineId + 2);
+            break;
+
+        default:
+            break;
+        }
+
+        if (pipelineId != PipelineId::Count)
+        {
+            pipeline = context->GetPipeline(pipelineId);
+        }
     }
 
     return pipeline;
@@ -1449,7 +1458,7 @@ void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOve
         {
             // During the Forward pass, it is expected that that the material sets the necessary pipeline.
             // This could be moved up to the Renderer in the future to reduce CPU cost.
-            pipeline = GetMaterialPipeline(material);
+            pipeline = GetMaterialPipeline(material, vertexType);
             GetVulkanContext()->BindPipeline(pipeline, vertexType);
         }
         else
@@ -1616,8 +1625,9 @@ void DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
         {
             // During the Forward pass, it is expected that that the material sets the necessary pipeline.
             // This could be moved up to the Renderer in the future to reduce CPU cost.
-            pipeline = GetMaterialPipeline(material);
-            GetVulkanContext()->BindPipeline(pipeline, IsCpuSkinningRequired(skeletalMeshComp) ? VertexType::Vertex : VertexType::VertexSkinned);
+            VertexType vertType = IsCpuSkinningRequired(skeletalMeshComp) ? VertexType::Vertex : VertexType::VertexSkinned;
+            pipeline = GetMaterialPipeline(material, vertType);
+            GetVulkanContext()->BindPipeline(pipeline, vertType);
         }
         else
         {
@@ -1784,7 +1794,7 @@ void DrawTextMeshComp(TextMeshComponent* textMeshComp)
     {
         // During the Forward pass, it is expected that that the material sets the necessary pipeline.
         // This could be moved up to the Renderer in the future to reduce CPU cost.
-        pipeline = GetMaterialPipeline(material);
+        pipeline = GetMaterialPipeline(material, VertexType::Vertex);
         GetVulkanContext()->BindPipeline(pipeline, VertexType::Vertex);
     }
     else
@@ -1963,7 +1973,7 @@ void DrawParticleComp(ParticleComponent* particleComp)
         {
             // During the Forward pass, it is expected that that the material sets the necessary pipeline.
             // This could be moved up to the Renderer in the future to reduce CPU cost.
-            pipeline = GetMaterialPipeline(material);
+            pipeline = GetMaterialPipeline(material, VertexType::VertexParticle);
             GetVulkanContext()->BindPipeline(pipeline, VertexType::VertexParticle);
         }
         else
@@ -2361,8 +2371,9 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
         {
             // During the Forward pass, it is expected that that the material sets the necessary pipeline.
             // This could be moved up to the Renderer in the future to reduce CPU cost.
-            pipeline = GetMaterialPipeline(material);
-            GetVulkanContext()->BindPipeline(pipeline, mesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex);
+            VertexType vertType = mesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex;
+            pipeline = GetMaterialPipeline(material, vertType);
+            GetVulkanContext()->BindPipeline(pipeline, vertType);
         }
         else
         {

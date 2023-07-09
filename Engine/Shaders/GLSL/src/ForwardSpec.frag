@@ -6,6 +6,21 @@
 
 const float SHADAOW_DEPTH_BIAS = 0.0005f;
 
+layout (constant_id = 0) const uint kShadingModel = SHADING_MODEL_LIT;
+layout (constant_id = 1) const uint kBlendMode = BLEND_MODE_OPAQUE;
+layout (constant_id = 2) const uint kVertexColorMode = VERTEX_COLOR_NONE;
+layout (constant_id = 3) const bool kHasSpecular = false;
+layout (constant_id = 4) const bool kHasUv1 = false;
+layout (constant_id = 5) const bool kHasFresnel = false;
+layout (constant_id = 6) const bool kHasFog = false;
+layout (constant_id = 7) const bool kHasWrapLighting = false;
+layout (constant_id = 8) const uint kNumTextures = 1;
+
+layout (constant_id = 9) const uint kTev0 = TEV_MODE_REPLACE;
+layout (constant_id = 10) const uint kTev1 = TEV_MODE_PASS;
+layout (constant_id = 11) const uint kTev2 = TEV_MODE_PASS;
+layout (constant_id = 12) const uint kTev3 = TEV_MODE_PASS;
+
 layout (set = 0, binding = 0) uniform GlobalUniformBuffer 
 {
     GlobalUniforms global;
@@ -42,14 +57,18 @@ vec4 CalculateLighting(uint shadingModel, vec3 L, vec3 N, vec3 V, vec4 color, fl
 
     if (shadingModel == SHADING_MODEL_LIT)
     {
-        float diffuseIntensity = CalcLightIntensity(N, L, material.mWrapLighting);
-        vec4 diffuseColor = diffuseIntensity * color;
+        float diffuseIntensity = CalcLightIntensity(N, L, kHasWrapLighting ? material.mWrapLighting : 0.0);
+        vec4 lightColor = diffuseIntensity * color;
 
-        vec3 reflectDir = reflect(-L, N);  
-        float specularIntensity = pow(max(dot(V, reflectDir), 0.0), material.mShininess);
-        vec4 specularColor = material.mSpecular * specularIntensity * color;
+        if (kHasSpecular)
+        {
+            vec3 reflectDir = reflect(-L, N);  
+            float specularIntensity = pow(max(dot(V, reflectDir), 0.0), material.mShininess);
+            vec4 specularColor = material.mSpecular * specularIntensity * color;
+            lightColor += specularColor;
+        }
 
-        retLighting = attenuation * (diffuseColor + specularColor);
+        retLighting = attenuation * lightColor;
     }
     else if (shadingModel == SHADING_MODEL_TOON)
     {
@@ -77,44 +96,52 @@ float CalculateShadow(vec4 sc)
 void main()
 {
     vec2 texCoord0 = (inTexcoord0 + material.mUvOffset0) * material.mUvScale0;
-    vec2 texCoord1 = (inTexcoord1 + material.mUvOffset1) * material.mUvScale1;
+    vec2 texCoord1 = kHasUv1 ? ((inTexcoord1 + material.mUvOffset1) * material.mUvScale1) : inTexcoord0;
 
-    uint shadingModel = material.mShadingModel;
+    uint shadingModel = kShadingModel;
 
+    vec4 vertColor = (kVertexColorMode == VERTEX_COLOR_NONE) ? vec4(1,1,1,1) : inColor;
     vec4 diffuse = vec4(0,0,0,0);
 
-    diffuse = BlendTexture(material, diffuse, 0, sampler0, texCoord0, texCoord1, inColor.r, material.mTevModes[0], material.mVertexColorMode);
-    diffuse = BlendTexture(material, diffuse, 1, sampler1, texCoord0, texCoord1, inColor.g, material.mTevModes[1], material.mVertexColorMode);
-    diffuse = BlendTexture(material, diffuse, 2, sampler2, texCoord0, texCoord1, inColor.b, material.mTevModes[2], material.mVertexColorMode);
-    diffuse = BlendTexture(material, diffuse, 3, sampler3, texCoord0, texCoord1, 0.0, material.mTevModes[3], material.mVertexColorMode);
+    if (kNumTextures >= 1)
+        diffuse = BlendTexture(material, diffuse, 0, sampler0, texCoord0, texCoord1, vertColor.r, kTev0, kVertexColorMode);
+
+    if (kNumTextures >= 2)
+        diffuse = BlendTexture(material, diffuse, 1, sampler1, texCoord0, texCoord1, vertColor.g, kTev1, kVertexColorMode);
+
+    if (kNumTextures >= 3)
+        diffuse = BlendTexture(material, diffuse, 2, sampler2, texCoord0, texCoord1, vertColor.b, kTev2, kVertexColorMode);
+
+    if (kNumTextures >= 4)
+        diffuse = BlendTexture(material, diffuse, 3, sampler3, texCoord0, texCoord1, 0.0, kTev3, kVertexColorMode);
 
     diffuse *= material.mColor;
 
-    if (material.mBlendMode == BLEND_MODE_MASKED && diffuse.a < material.mMaskCutoff)
+    if (kBlendMode == BLEND_MODE_MASKED && diffuse.a < material.mMaskCutoff)
     {
         discard;
     }
 
     outColor = diffuse;
 
-    bool hasBakedLighting = (geometry.mHasBakedLighting != 0);
+    bool hasBakedLighting = (geometry.mHasBakedLighting != 0); // kHasBakedLighting
 
     // Apply baked lighting modulation first
     if (hasBakedLighting)
     {
-        if (material.mVertexColorMode == VERTEX_COLOR_MODULATE)
+        if (kVertexColorMode == VERTEX_COLOR_MODULATE)
         {
-            vec4 modColor = inColor;
-            if (geometry.mHasBakedLighting != 0)
+            vec4 modColor = vertColor;
+            if (hasBakedLighting)
             {
                 modColor *= LIGHT_BAKE_SCALE;
             }
             outColor *= modColor;
         }
-        else if (material.mVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
+        else if (kVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
         {
-            float modValue = inColor.a;
-            if (geometry.mHasBakedLighting != 0)
+            float modValue = vertColor.a;
+            if (hasBakedLighting)
             {
                 modValue *= LIGHT_BAKE_SCALE;
             }
@@ -182,26 +209,30 @@ void main()
 
     if (!hasBakedLighting)
     {
-        if (material.mVertexColorMode == VERTEX_COLOR_MODULATE)
+        if (kVertexColorMode == VERTEX_COLOR_MODULATE)
         {
-            outColor *= inColor;
+            outColor *= vertColor;
         }
-        else if (material.mVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
+        else if (kVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
         {
-            outColor *= inColor.a;
+            outColor *= vertColor.a;
         }
     }
 
-    if (material.mFresnelEnabled != 0)
+    if (kHasFresnel)
     {
         float intensity = pow((1 - abs(dot(N, V))), material.mFresnelPower);
         outColor += intensity * material.mFresnelColor;
     }
 
-    if (material.mApplyFog != 0)
+    if (kHasFog)
     {
         ApplyFog(outColor, inPosition, global);
     }
 
-    outColor.a = inColor.a * diffuse.a * material.mOpacity;
+    if (kBlendMode == BLEND_MODE_TRANSLUCENT ||
+        kBlendMode == BLEND_MODE_ADDITIVE)
+    {
+        outColor.a = vertColor.a * diffuse.a * material.mOpacity;
+    }
 }

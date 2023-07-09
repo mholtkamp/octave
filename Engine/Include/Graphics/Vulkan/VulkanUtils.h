@@ -102,7 +102,7 @@ void CreateMaterialResource(Material* material);
 void DestroyMaterialResource(Material* material);
 void BindMaterialResource(Material* material, Pipeline* pipeline);
 void UpdateMaterialResource(Material* material);
-Pipeline* GetMaterialPipeline(Material* material);
+Pipeline* GetMaterialPipeline(Material* material, VertexType vertType);
 
 // StaticMesh
 void CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_t numVertices, void* vertices, uint32_t numIndices, IndexType* indices);

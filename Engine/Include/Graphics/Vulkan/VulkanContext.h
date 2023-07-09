@@ -19,6 +19,7 @@
 #include "ObjectRef.h"
 #include "RayTracer.h"
 #include "Profiler.h"
+#include "MaterialPipelineCache.h"
 
 #if PLATFORM_LINUX
 #include <xcb/xcb.h>
@@ -133,6 +134,10 @@ public:
     RayTracer* GetRayTracer();
 
     VkSurfaceTransformFlagBitsKHR GetPreTransformFlag() const;
+
+    void EnableMaterialPipelineCache(bool enable);
+    bool IsMaterialPipelineCacheEnabled() const;
+    MaterialPipelineCache* GetMaterialPipelineCache();
 
 private:
 
@@ -269,6 +274,9 @@ private:
     float mTimestampPeriod = 0.0f;
     bool mTimestampsSupported = false;
 
+    // Material Pipelines
+    MaterialPipelineCache mMaterialPipelineCache;
+
     // Misc
     int32_t mFrameIndex = 0;
     int32_t mFrameNumber = 0;
@@ -278,6 +286,7 @@ private:
     Buffer* mLineVertexBuffer = nullptr;
     bool mInitialized = false;
     bool mSupportsRayTracing = false;
+    bool mEnableMaterialPipelineCache = false;
     bool mFeatureWideLines = false;
     bool mFeatureFillModeNonSolid = false;
     EngineState* mEngineState = nullptr;
