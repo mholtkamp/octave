@@ -294,18 +294,21 @@ Pipeline* MaterialPipelineCache::GetPipeline(uint32_t id, VertexType vertexType)
     // If no pipeline in the map, create a request for the pipeline and return null.
     if (it == mPipelines.end())
     {
-        // Insert nullptr
-        mPipelines[id] = nullptr;
+        if (mPipelines.size() < mMaxPipelines)
+        {
+            // Insert nullptr
+            mPipelines[id] = nullptr;
 
-        // Enqueue request
-        MaterialPipelineRequest request;
-        request.mId = id;
+            // Enqueue request
+            MaterialPipelineRequest request;
+            request.mId = id;
 
-        LogWarning("Request Pipeline: %d", id);
+            LogWarning("Request Pipeline: %d", id);
 
-        SYS_LockMutex(mMutex);
-        mRequests.push_back(request);
-        SYS_UnlockMutex(mMutex);
+            SYS_LockMutex(mMutex);
+            mRequests.push_back(request);
+            SYS_UnlockMutex(mMutex);
+        }
     }
     else
     {
@@ -409,3 +412,14 @@ void MaterialPipelineCache::Enable(bool enable)
         }
     }
 }
+
+uint32_t MaterialPipelineCache::GetMaxPipelines() const
+{
+    return mMaxPipelines;
+}
+
+void MaterialPipelineCache::SetMaxPipelines(uint32_t maxPipelines)
+{
+    mMaxPipelines = maxPipelines;
+}
+

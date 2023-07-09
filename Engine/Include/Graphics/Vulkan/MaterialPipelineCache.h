@@ -34,12 +34,16 @@ public:
     void Update();
     void Enable(bool enable);
 
+    uint32_t GetMaxPipelines() const;
+    void SetMaxPipelines(uint32_t maxPipelines);
+
 protected:
 
     static ThreadFuncRet BuildThreadFunc(void* arg);
 
     // These two data structures can be queried on main thread without locking mutex.
     std::unordered_map<uint32_t, Pipeline*> mPipelines;
+    uint32_t mMaxPipelines = 256;
 
     MutexObject* mMutex = nullptr;
     //CondObject* mWorkCondition = nullptr;
