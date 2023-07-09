@@ -867,12 +867,12 @@ void Renderer::RenderDebugDraws(const std::vector<DebugDraw>& draws, PipelineId 
 #if DEBUG_DRAW_ENABLED
     for (uint32_t i = 0; i < draws.size(); ++i)
     {
-        bool forward = pipelineId == PipelineId::Count;
+        bool drawMaterials = pipelineId == PipelineId::Count;
 
-        if ((!forward && draws[i].mMaterial == nullptr) ||
-            (forward && draws[i].mMaterial != nullptr))
+        if ((!drawMaterials && draws[i].mMaterial == nullptr) ||
+            (drawMaterials && draws[i].mMaterial != nullptr))
         {
-            if (!forward)
+            if (!drawMaterials)
             {
                 GFX_BindPipeline(pipelineId, draws[i].mMesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex);
             }
@@ -1212,6 +1212,8 @@ void Renderer::Render(World* world)
 
                 if (GetDebugMode() != DEBUG_WIREFRAME)
                 {
+                    GFX_EnableMaterials(true);
+
                     RenderDraws(mOpaqueDraws);
                     RenderDraws(mSimpleShadowDraws);
                     RenderDraws(mPostShadowOpaqueDraws);
@@ -1219,7 +1221,19 @@ void Renderer::Render(World* world)
                     RenderDraws(mTranslucentDraws);
 
                     RenderDebugDraws(mDebugDraws);
+
+                    GFX_EnableMaterials(false);
                 }
+
+                RenderDraws(mWireframeDraws, PipelineId::Wireframe);
+                RenderDebugDraws(mDebugDraws, PipelineId::Wireframe);
+
+                if (GetDebugMode() == DEBUG_COLLISION)
+                {
+                    RenderDebugDraws(mCollisionDraws, PipelineId::Collision);
+                }
+
+                GFX_DrawLines(world->GetLines());
 
                 GFX_EndRenderPass();
             }
@@ -1235,16 +1249,6 @@ void Renderer::Render(World* world)
             // Make it smarter so that it can pingpong between render targets.
             GFX_BindPipeline(PipelineId::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess : PipelineId::NullPostProcess*/);
             GFX_DrawFullscreen();
-
-            RenderDraws(mWireframeDraws, PipelineId::Wireframe);
-            RenderDebugDraws(mDebugDraws, PipelineId::Wireframe);
-
-            if (GetDebugMode() == DEBUG_COLLISION)
-            {
-                RenderDebugDraws(mCollisionDraws, PipelineId::Collision);
-            }
-
-            GFX_DrawLines(world->GetLines());
 
 #if EDITOR
             RenderSelectedGeometry(world);

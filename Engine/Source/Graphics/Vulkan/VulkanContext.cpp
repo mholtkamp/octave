@@ -1848,6 +1848,16 @@ bool VulkanContext::HasFeatureFillModeNonSolid() const
     return mFeatureFillModeNonSolid;
 }
 
+bool VulkanContext::AreMaterialsEnabled() const
+{
+    return mEnableMaterials;
+}
+
+void VulkanContext::EnableMaterials(bool enable)
+{
+    mEnableMaterials = enable;
+}
+
 void VulkanContext::UpdateGlobalDescriptorSet()
 {
     mGlobalUniformBuffer->Update(&mGlobalUniformData, sizeof(GlobalUniformData));
@@ -2652,9 +2662,9 @@ void VulkanContext::CreatePipelines()
     mPipelines[(size_t)PipelineId::ShadowMeshFront]->SetRenderPass(mForwardRenderPass);
     mPipelines[(size_t)PipelineId::ShadowMeshClear]->SetRenderPass(mForwardRenderPass);
     mPipelines[(size_t)PipelineId::Selected]->SetRenderPass(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::Wireframe]->SetRenderPass(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::Collision]->SetRenderPass(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::Line]->SetRenderPass(mPostprocessRenderPass);
+    mPipelines[(size_t)PipelineId::Wireframe]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::Collision]->SetRenderPass(mForwardRenderPass);
+    mPipelines[(size_t)PipelineId::Line]->SetRenderPass(mForwardRenderPass);
     mPipelines[(size_t)PipelineId::PostProcess]->SetRenderPass(mPostprocessRenderPass);
     mPipelines[(size_t)PipelineId::NullPostProcess]->SetRenderPass(mPostprocessRenderPass);
     mPipelines[(size_t)PipelineId::Quad]->SetRenderPass(mUIRenderPass);
