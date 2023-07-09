@@ -238,10 +238,10 @@ vec3 PathTrace(Ray ray, inout uint rngState)
             vec2 uv0 = (hit.mUv0 + material.mUvOffset0) * material.mUvScale0;
             vec2 uv1 = (hit.mUv1 + material.mUvOffset1) * material.mUvScale1;
 
-            surfaceColor = BlendTexture(material, surfaceColor, 0, textures[mesh.mTextures[0]], uv0, uv1, hit.mColor.r);
-            surfaceColor = BlendTexture(material, surfaceColor, 1, textures[mesh.mTextures[1]], uv0, uv1, hit.mColor.g);
-            surfaceColor = BlendTexture(material, surfaceColor, 2, textures[mesh.mTextures[2]], uv0, uv1, hit.mColor.b);
-            surfaceColor = BlendTexture(material, surfaceColor, 3, textures[mesh.mTextures[3]], uv0, uv1, 0.0);
+            surfaceColor = BlendTexture(material, surfaceColor, 0, textures[mesh.mTextures[0]], uv0, uv1, hit.mColor.r, material.mTevModes[0], material.mVertexColorMode);
+            surfaceColor = BlendTexture(material, surfaceColor, 1, textures[mesh.mTextures[1]], uv0, uv1, hit.mColor.g, material.mTevModes[1], material.mVertexColorMode);
+            surfaceColor = BlendTexture(material, surfaceColor, 2, textures[mesh.mTextures[2]], uv0, uv1, hit.mColor.b, material.mTevModes[2], material.mVertexColorMode);
+            surfaceColor = BlendTexture(material, surfaceColor, 3, textures[mesh.mTextures[3]], uv0, uv1, 0.0, material.mTevModes[3], material.mVertexColorMode);
 
             surfaceColor *= material.mColor;
 

@@ -87,7 +87,7 @@ VkDescriptorSetLayout Pipeline::GetDescriptorSetLayout(uint32_t index)
     return mDescriptorSetLayouts[index];
 }
 
-void Pipeline::CreateGraphicsPipeline()
+void Pipeline::CreateGraphicsPipeline(VkSpecializationInfo* specInfo)
 {
     VulkanContext* context = GetVulkanContext();
     VkDevice device = context->GetDevice();
@@ -118,26 +118,16 @@ void Pipeline::CreateGraphicsPipeline()
     fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
     fragShaderStageInfo.module = fragShaderModule;
     fragShaderStageInfo.pName = "main";
+    fragShaderStageInfo.pSpecializationInfo = specInfo;
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssembly.topology = mPrimitiveTopology;
     inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-    VkExtent2D& swapchainExtent = context->GetSwapchainExtent();
-
+    // These are dynamic now.
     VkViewport viewport = {};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = (float)((mViewportWidth == 0) ? swapchainExtent.width : mViewportWidth);
-    viewport.height = (float)((mViewportHeight == 0) ? swapchainExtent.height : mViewportHeight);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-
     VkRect2D scissor = {};
-    scissor.offset = { 0, 0 };
-    scissor.extent.width = (mViewportWidth == 0) ? swapchainExtent.width : mViewportWidth;
-    scissor.extent.height = (mViewportHeight == 0) ? swapchainExtent.height : mViewportHeight;
 
     VkPipelineViewportStateCreateInfo viewportState = {};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -290,7 +280,7 @@ void Pipeline::CreateGraphicsPipeline()
     }
 }
 
-void Pipeline::CreateComputePipeline()
+void Pipeline::CreateComputePipeline(VkSpecializationInfo* specInfo)
 {
     VkDevice device = GetVulkanDevice();
     VkPipelineCache cache = GetVulkanContext()->GetPipelineCache();
@@ -332,7 +322,7 @@ void Pipeline::CreateComputePipeline()
     vkDestroyShaderModule(device, computeShaderModule, nullptr);
 }
 
-void Pipeline::Create()
+void Pipeline::Create(VkSpecializationInfo* specInfo)
 {
     // Ensure that a renderpass has been set before creating the pipeline.
     OCT_ASSERT(mRenderpass != VK_NULL_HANDLE || mComputePipeline);
@@ -343,11 +333,11 @@ void Pipeline::Create()
 
     if (mComputePipeline)
     {
-        CreateComputePipeline();
+        CreateComputePipeline(specInfo);
     }
     else
     {
-        CreateGraphicsPipeline();
+        CreateGraphicsPipeline(specInfo);
     }
 }
 
@@ -370,6 +360,25 @@ void Pipeline::Destroy()
 
     mDescriptorSetLayouts.clear();
     mLayoutBindings.clear();
+}
+
+VkPipeline Pipeline::GetVkPipeline(VertexType vertType) const
+{
+    VkPipeline retPipe = VK_NULL_HANDLE;
+
+    if (mPipelines.size() > 0)
+    {
+        if (mComputePipeline)
+        {
+            retPipe = mPipelines[0];
+        }
+        else
+        {
+            retPipe = vertType == VertexType::Max ? mPipelines[0] : mPipelines[(uint32_t)vertType];
+        }
+    }
+
+    return retPipe;
 }
 
 void Pipeline::BindPipeline(VkCommandBuffer commandBuffer, VertexType vertexType)

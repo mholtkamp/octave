@@ -26,8 +26,10 @@ public:
 
     virtual ~Pipeline();
 
-    void Create();
+    void Create(VkSpecializationInfo* specInfo = nullptr);
     void Destroy();
+
+    VkPipeline GetVkPipeline(VertexType vertType) const;
 
     void SetVertexConfig(VertexType vertexType, const std::string& path);
     void AddVertexConfig(VertexType vertexType, const std::string& path);
@@ -54,8 +56,8 @@ public:
 
 protected:
 
-    void CreateGraphicsPipeline();
-    void CreateComputePipeline();
+    void CreateGraphicsPipeline(VkSpecializationInfo* specInfo);
+    void CreateComputePipeline(VkSpecializationInfo* specInfo);
 
     void PushSet();
     void AddLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t descriptorCount = 1);

@@ -813,6 +813,9 @@
     <ClCompile Include="Source\Graphics\Vulkan\MultiBuffer.cpp">
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Vulkan\MaterialPipelineCache.cpp">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
@@ -1458,6 +1461,9 @@
       <Filter>Header Files\Graphics\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="Include\Graphics\Vulkan\MultiBuffer.h">
+      <Filter>Header Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\Vulkan\MaterialPipelineCache.h">
       <Filter>Header Files\Graphics\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
