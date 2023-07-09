@@ -124,6 +124,9 @@ public:
     bool HasFeatureWideLines() const;
     bool HasFeatureFillModeNonSolid() const;
 
+    bool AreMaterialsEnabled() const;
+    void EnableMaterials(bool enable);
+
     DescriptorSetArena& GetMeshDescriptorSetArena();
     UniformBufferArena& GetMeshUniformBufferArena();
 
@@ -285,6 +288,7 @@ private:
     int32_t mNumLinesAllocated = 0;
     Buffer* mLineVertexBuffer = nullptr;
     bool mInitialized = false;
+    bool mEnableMaterials = false;
     bool mSupportsRayTracing = false;
     bool mEnableMaterialPipelineCache = false;
     bool mFeatureWideLines = false;

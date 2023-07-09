@@ -1418,11 +1418,11 @@ void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOve
 
         BindStaticMeshResource(mesh);
 
-        bool forwardPass = (GetVulkanContext()->GetCurrentRenderPassId() == RenderPassId::Forward);
+        bool bindMaterialPipeline = GetVulkanContext()->AreMaterialsEnabled();
 
         // Determine vertex type for binding appropriate pipeline
         VertexType vertexType = VertexType::Vertex;
-        if (forwardPass && 
+        if (bindMaterialPipeline &&
             staticMeshComp->GetInstanceColors().size() == mesh->GetNumVertices() &&
             resource->mColorVertexBuffer != nullptr)
         {
@@ -1454,9 +1454,8 @@ void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOve
         }
 
         Pipeline* pipeline = nullptr;
-        if (forwardPass)
+        if (bindMaterialPipeline)
         {
-            // During the Forward pass, it is expected that that the material sets the necessary pipeline.
             // This could be moved up to the Renderer in the future to reduce CPU cost.
             pipeline = GetMaterialPipeline(material, vertexType);
             GetVulkanContext()->BindPipeline(pipeline, vertexType);
@@ -1621,7 +1620,7 @@ void DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
         }
 
         Pipeline* pipeline = nullptr;
-        if (GetVulkanContext()->GetCurrentRenderPassId() == RenderPassId::Forward)
+        if (GetVulkanContext()->AreMaterialsEnabled())
         {
             // During the Forward pass, it is expected that that the material sets the necessary pipeline.
             // This could be moved up to the Renderer in the future to reduce CPU cost.
@@ -1677,7 +1676,7 @@ void DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp)
     StaticMesh* mesh = shadowMeshComp->GetStaticMesh();
     StaticMeshCompResource* resource = shadowMeshComp->GetResource();
 
-    if (GetVulkanContext()->GetCurrentRenderPassId() == RenderPassId::Forward &&
+    if (GetVulkanContext()->AreMaterialsEnabled() &&
         mesh != nullptr)
     {
         VkCommandBuffer cb = GetCommandBuffer();
@@ -1790,7 +1789,7 @@ void DrawTextMeshComp(TextMeshComponent* textMeshComp)
     }
 
     Pipeline* pipeline = nullptr;
-    if (GetVulkanContext()->GetCurrentRenderPassId() == RenderPassId::Forward)
+    if (GetVulkanContext()->AreMaterialsEnabled())
     {
         // During the Forward pass, it is expected that that the material sets the necessary pipeline.
         // This could be moved up to the Renderer in the future to reduce CPU cost.
@@ -1969,7 +1968,7 @@ void DrawParticleComp(ParticleComponent* particleComp)
         }
 
         Pipeline* pipeline = nullptr;
-        if (GetVulkanContext()->GetCurrentRenderPassId() == RenderPassId::Forward)
+        if (GetVulkanContext()->AreMaterialsEnabled())
         {
             // During the Forward pass, it is expected that that the material sets the necessary pipeline.
             // This could be moved up to the Renderer in the future to reduce CPU cost.
@@ -2367,7 +2366,7 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
         }
 
         Pipeline* pipeline = nullptr;
-        if (GetVulkanContext()->GetCurrentRenderPassId() == RenderPassId::Forward)
+        if (GetVulkanContext()->AreMaterialsEnabled())
         {
             // During the Forward pass, it is expected that that the material sets the necessary pipeline.
             // This could be moved up to the Renderer in the future to reduce CPU cost.

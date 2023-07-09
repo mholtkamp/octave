@@ -64,6 +64,8 @@ void GFX_EndLightBake();
 bool GFX_IsLightBakeInProgress();
 float GFX_GetLightBakeProgress();
 
+void GFX_EnableMaterials(bool enable);
+
 void GFX_BeginGpuTimestamp(const char* name);
 void GFX_EndGpuTimestamp(const char* name);
 

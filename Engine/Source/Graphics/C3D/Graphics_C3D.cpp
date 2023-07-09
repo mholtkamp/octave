@@ -463,6 +463,11 @@ float GFX_GetLightBakeProgress()
     return 0.0f;
 }
 
+void GFX_EnableMaterials(bool enable)
+{
+
+}
+
 void GFX_BeginGpuTimestamp(const char* name)
 {
 

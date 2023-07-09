@@ -241,6 +241,14 @@ float GFX_GetLightBakeProgress()
     return ret;
 }
 
+void GFX_EnableMaterials(bool enable)
+{
+    // This function is used to signal whether draws should bind their material pipelines.
+    // Otherwise, just use the current pipeline.
+    // This is kinda hacky.
+    gVulkanContext->EnableMaterials(enable);
+}
+
 void GFX_BeginGpuTimestamp(const char* name)
 {
     gVulkanContext->BeginGpuTimestamp(name);
