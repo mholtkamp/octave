@@ -264,10 +264,21 @@ static int HandleInput(struct android_app* app, AInputEvent* inputEvent)
     {
         int action = AKeyEvent_getAction(inputEvent);
 
+        int key = AKeyEvent_getKeyCode(inputEvent);
+
+        if (key == AKEYCODE_VOLUME_DOWN ||
+            key == AKEYCODE_VOLUME_UP ||
+            key == AKEYCODE_VOLUME_MUTE ||
+            key == AKEYCODE_BACK ||
+            key == AKEYCODE_HOME ||
+            key == AKEYCODE_MENU)
+        {
+            // Let the system handle these.
+            return 0;
+        }
+
         if (action == AKEY_EVENT_ACTION_DOWN)
         {
-            int key = AKeyEvent_getKeyCode(inputEvent);
-
             if (source & AINPUT_SOURCE_GAMEPAD)
             {
                 int gamepadIndex = INP_GetGamepadIndex(device);
@@ -282,8 +293,6 @@ static int HandleInput(struct android_app* app, AInputEvent* inputEvent)
         }
         else if (action == AKEY_EVENT_ACTION_UP)
         {
-            int key = AKeyEvent_getKeyCode(inputEvent);
-
             if (source & AINPUT_SOURCE_GAMEPAD)
             {
                 int gamepadIndex = INP_GetGamepadIndex(device);
