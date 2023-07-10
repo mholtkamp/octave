@@ -123,9 +123,14 @@ void AUD_Initialize()
         dataSink.pLocator = &dataLocatorOut;
         dataSink.pFormat = 0;
 
-        const SLuint32 soundPlayerIIDCount = 4;
-        const SLInterfaceID soundPlayerIIDs[] = { SL_IID_PLAY, SL_IID_BUFFERQUEUE, SL_IID_VOLUME, SL_IID_PITCH };
-        const SLboolean soundPlayerReqs[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_FALSE };
+
+        // Note: Apparently SL_IID_PITCH and SL_IID_RATEPITCH are not mandatory?
+        // My Pixel 3A does not support these. So for now, pitch adjustment isn't possible.
+        // I suppose a solution to this (and also for exceeding 0db volume limit) is to adjust the 
+        // perform processing on the wave buffer? Need to research how other engines do this.
+        const SLuint32 soundPlayerIIDCount = 3;
+        const SLInterfaceID soundPlayerIIDs[] = { SL_IID_PLAY, SL_IID_BUFFERQUEUE, SL_IID_VOLUME };
+        const SLboolean soundPlayerReqs[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE };
 
         for (int i = 0; i < AUDIO_MAX_VOICES; i++)
         {
@@ -190,20 +195,6 @@ void AUD_Initialize()
                 OCT_ASSERT(0);
                 return;
             }
-
-#if 0
-            // Pitch Interface
-            result = (*(sPlayerObjs[i]))->GetInterface(sPlayerObjs[i],
-                SL_IID_PITCH,
-                &(sPitches[i]));
-
-            if (result != SL_RESULT_SUCCESS)
-            {
-                LogError("Error creating pitch interface.");
-                OCT_ASSERT(0);
-                return;
-            }
-#endif
 
             result = (*(sPlayers[i]))->SetPlayState(sPlayers[i], SL_PLAYSTATE_PLAYING);
 
