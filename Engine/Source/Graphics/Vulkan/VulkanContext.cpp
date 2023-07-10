@@ -148,7 +148,7 @@ void VulkanContext::Initialize()
 
     mMaterialPipelineCache.Create();
 
-#if 1 //PLATFORM_ANDROID
+#if PLATFORM_ANDROID
     EnableMaterialPipelineCache(true);
 #endif
 
