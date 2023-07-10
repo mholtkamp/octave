@@ -11,26 +11,25 @@
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
-static int s_nInitialized = 0;
-static android_app* s_pApp = 0;
-static SLObjectItf s_slEngineObj = 0;
-static SLEngineItf s_slEngine = 0;
-static SLObjectItf s_slOutputMixObj = 0;
+static bool sInitialized = false;
+static SLObjectItf sEngineObj = 0;
+static SLEngineItf sEngine = 0;
+static SLObjectItf sOutputMixObj = 0;
 
-static SLObjectItf      s_arPlayerObjs[AUDIO_MAX_VOICES] = { 0 };
-static SLPlayItf        s_arPlayers[AUDIO_MAX_VOICES] = { 0 };
-static SLBufferQueueItf s_arPlayerQueues[AUDIO_MAX_VOICES];
+static SLObjectItf      sPlayerObjs[AUDIO_MAX_VOICES] = { 0 };
+static SLPlayItf        sPlayers[AUDIO_MAX_VOICES] = { 0 };
+static SLBufferQueueItf sBufferQueues[AUDIO_MAX_VOICES];
 
 void AUD_Initialize()
 {
-    if (s_nInitialized == 0)
+    if (!sInitialized)
     {
         // Set initialization flag immediately.
         // If there is an error initializing, then initializing multiple
         // times won't result in a memory leak.
-        s_nInitialized = 1;
+        sInitialized = true;
 
-        LogDebug("Initializing Sound class.");
+        LogDebug("Initializing Android Audio.");
 
         SLresult result;
         const SLuint32      engineMixIIDCount = 1;
@@ -41,7 +40,7 @@ void AUD_Initialize()
         const SLboolean     outputMixReqs[] = {};
 
         // Create the engine object
-        result = slCreateEngine(&s_slEngineObj,
+        result = slCreateEngine(&sEngineObj,
             0,
             0,
             engineMixIIDCount,
@@ -56,7 +55,7 @@ void AUD_Initialize()
         }
 
         // Realize the engine object to allocate memory
-        result = (*s_slEngineObj)->Realize(s_slEngineObj, SL_BOOLEAN_FALSE);
+        result = (*sEngineObj)->Realize(sEngineObj, SL_BOOLEAN_FALSE);
 
         if (result != SL_RESULT_SUCCESS)
         {
@@ -65,7 +64,7 @@ void AUD_Initialize()
         }
 
         // Get engine object interface
-        result = (*s_slEngineObj)->GetInterface(s_slEngineObj, SL_IID_ENGINE, &s_slEngine);
+        result = (*sEngineObj)->GetInterface(sEngineObj, SL_IID_ENGINE, &sEngine);
 
         if (result != SL_RESULT_SUCCESS)
         {
@@ -74,8 +73,8 @@ void AUD_Initialize()
         }
 
         // Create audio output object
-        result = (*s_slEngine)->CreateOutputMix(s_slEngine,
-            &s_slOutputMixObj,
+        result = (*sEngine)->CreateOutputMix(sEngine,
+            &sOutputMixObj,
             outputMixIIDCount,
             outputMixIIDs,
             outputMixReqs);
@@ -87,7 +86,7 @@ void AUD_Initialize()
         }
 
         // Realize the output mix object
-        result = (*s_slOutputMixObj)->Realize(s_slOutputMixObj, SL_BOOLEAN_FALSE);
+        result = (*sOutputMixObj)->Realize(sOutputMixObj, SL_BOOLEAN_FALSE);
 
         if (result != SL_RESULT_SUCCESS)
         {
@@ -116,7 +115,7 @@ void AUD_Initialize()
 
         SLDataLocator_OutputMix dataLocatorOut;
         dataLocatorOut.locatorType = SL_DATALOCATOR_OUTPUTMIX;
-        dataLocatorOut.outputMix = s_slOutputMixObj;
+        dataLocatorOut.outputMix = sOutputMixObj;
 
         SLDataSink dataSink;
         dataSink.pLocator = &dataLocatorOut;
@@ -129,8 +128,8 @@ void AUD_Initialize()
         for (int i = 0; i < AUDIO_MAX_VOICES; i++)
         {
             // Create
-            result = (*s_slEngine)->CreateAudioPlayer(s_slEngine,
-                &s_arPlayerObjs[i],
+            result = (*sEngine)->CreateAudioPlayer(sEngine,
+                &sPlayerObjs[i],
                 &dataSource,
                 &dataSink,
                 soundPlayerIIDCount,
@@ -144,7 +143,7 @@ void AUD_Initialize()
             }
 
             // Realize
-            result = (*(s_arPlayerObjs[i]))->Realize(s_arPlayerObjs[i], SL_BOOLEAN_FALSE);
+            result = (*(sPlayerObjs[i]))->Realize(sPlayerObjs[i], SL_BOOLEAN_FALSE);
 
             if (result != SL_RESULT_SUCCESS)
             {
@@ -153,9 +152,9 @@ void AUD_Initialize()
             }
 
             // Player Interface
-            result = (*(s_arPlayerObjs[i]))->GetInterface(s_arPlayerObjs[i],
+            result = (*(sPlayerObjs[i]))->GetInterface(sPlayerObjs[i],
                 SL_IID_PLAY,
-                &(s_arPlayers[i]));
+                &(sPlayers[i]));
 
             if (result != SL_RESULT_SUCCESS)
             {
@@ -164,9 +163,9 @@ void AUD_Initialize()
             }
 
             // Buffer Queue Interface
-            result = (*(s_arPlayerObjs[i]))->GetInterface(s_arPlayerObjs[i],
+            result = (*(sPlayerObjs[i]))->GetInterface(sPlayerObjs[i],
                 SL_IID_BUFFERQUEUE,
-                &(s_arPlayerQueues[i]));
+                &(sBufferQueues[i]));
 
             if (result != SL_RESULT_SUCCESS)
             {
@@ -174,7 +173,7 @@ void AUD_Initialize()
                 return;
             }
 
-            result = (*(s_arPlayers[i]))->SetPlayState(s_arPlayers[i], SL_PLAYSTATE_PLAYING);
+            result = (*(sPlayers[i]))->SetPlayState(sPlayers[i], SL_PLAYSTATE_PLAYING);
 
             if (result != SL_RESULT_SUCCESS)
             {
@@ -187,36 +186,36 @@ void AUD_Initialize()
 
 void AUD_Shutdown()
 {
-    if (s_nInitialized != 0)
+    if (sInitialized != 0)
     {
         LogDebug("Shutting down Sound class.");
 
         // Destroy the audio players first
         for (int i = 0; i < AUDIO_MAX_VOICES; i++)
         {
-            if (s_arPlayerObjs[i] != 0)
+            if (sPlayerObjs[i] != 0)
             {
-                (*(s_arPlayerObjs[i]))->Destroy(s_arPlayerObjs[i]);
-                s_arPlayerObjs[i] = 0;
-                s_arPlayers[i] = 0;
-                s_arPlayerQueues[i] = 0;
+                (*(sPlayerObjs[i]))->Destroy(sPlayerObjs[i]);
+                sPlayerObjs[i] = 0;
+                sPlayers[i] = 0;
+                sBufferQueues[i] = 0;
             }
         }
 
-        if (s_slOutputMixObj != 0)
+        if (sOutputMixObj != 0)
         {
-            (*s_slOutputMixObj)->Destroy(s_slOutputMixObj);
-            s_slOutputMixObj = 0;
+            (*sOutputMixObj)->Destroy(sOutputMixObj);
+            sOutputMixObj = 0;
         }
 
-        if (s_slEngineObj != 0)
+        if (sEngineObj != 0)
         {
-            (*s_slEngineObj)->Destroy(s_slEngineObj);
-            s_slEngineObj = 0;
-            s_slEngine = 0;
+            (*sEngineObj)->Destroy(sEngineObj);
+            sEngineObj = 0;
+            sEngine = 0;
         }
 
-        s_nInitialized = 0;
+        sInitialized = 0;
     }
 }
 
@@ -246,12 +245,12 @@ void AUD_Play(
 
     LogDebug("Play Sound %s", soundWave->GetName().c_str());
 
-    (*(s_arPlayerObjs[voiceIndex]))->GetState(s_arPlayerObjs[voiceIndex], &playerState);
+    (*(sPlayerObjs[voiceIndex]))->GetState(sPlayerObjs[voiceIndex], &playerState);
 
     if (playerState == SL_OBJECT_STATE_REALIZED)
     {
         // Clear any sound that was there before
-        result = (*(s_arPlayerQueues[voiceIndex]))->Clear(s_arPlayerQueues[voiceIndex]);
+        result = (*(sBufferQueues[voiceIndex]))->Clear(sBufferQueues[voiceIndex]);
 
         if (result != SL_RESULT_SUCCESS)
         {
@@ -260,7 +259,7 @@ void AUD_Play(
         }
 
         // Add the new sound buffer to queue
-        result = (*(s_arPlayerQueues[voiceIndex]))->Enqueue(s_arPlayerQueues[voiceIndex],
+        result = (*(sBufferQueues[voiceIndex]))->Enqueue(sBufferQueues[voiceIndex],
             soundWave->GetWaveData(),
             soundWave->GetWaveDataSize());
 
@@ -274,7 +273,7 @@ void AUD_Play(
 
 void AUD_Stop(uint32_t voiceIndex)
 {
-    SLresult result = (*(s_arPlayerQueues[voiceIndex]))->Clear(s_arPlayerQueues[voiceIndex]);
+    SLresult result = (*(sBufferQueues[voiceIndex]))->Clear(sBufferQueues[voiceIndex]);
 
     if (result != SL_RESULT_SUCCESS)
     {
@@ -287,7 +286,7 @@ bool AUD_IsPlaying(uint32_t voiceIndex)
 {
     bool playing = false;
     SLBufferQueueState queueState;
-    SLresult result = (*(s_arPlayerQueues[voiceIndex]))->GetState(s_arPlayerQueues[voiceIndex], &queueState);
+    SLresult result = (*(sBufferQueues[voiceIndex]))->GetState(sBufferQueues[voiceIndex], &queueState);
 
     if (result != SL_RESULT_SUCCESS)
     {
@@ -295,7 +294,6 @@ bool AUD_IsPlaying(uint32_t voiceIndex)
     }
     else
     {
-        LogDebug("QueueState: index %d, count %d", queueState.playIndex, queueState.count);
         playing = (queueState.count > 0);
     }
 
