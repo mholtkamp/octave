@@ -89,6 +89,16 @@ int Audio_Lua::StopAllSounds(lua_State* L)
     return 0;
 }
 
+int Audio_Lua::IsSoundPlaying(lua_State* L)
+{
+    SoundWave* soundWave = CHECK_SOUND_WAVE(L, 1);
+
+    bool ret = AudioManager::IsSoundPlaying(soundWave);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Audio_Lua::SetAudioClassVolume(lua_State* L)
 {
     int32_t audioClass = CHECK_INTEGER(L, 1);
@@ -178,9 +188,14 @@ void Audio_Lua::Bind()
 
     lua_pushcfunction(L, StopSounds);
     lua_setfield(L, tableIdx, "StopSounds");
+    lua_pushcfunction(L, StopSounds);
+    lua_setfield(L, tableIdx, "StopSound");
 
     lua_pushcfunction(L, StopAllSounds);
     lua_setfield(L, tableIdx, "StopAllSounds");
+
+    lua_pushcfunction(L, IsSoundPlaying);
+    lua_setfield(L, tableIdx, "IsSoundPlaying");
 
     lua_pushcfunction(L, SetAudioClassVolume);
     lua_setfield(L, tableIdx, "SetAudioClassVolume");
