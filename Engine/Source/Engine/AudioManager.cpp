@@ -583,6 +583,26 @@ void AudioManager::StopAllSounds()
     }
 }
 
+bool AudioManager::IsSoundPlaying(SoundWave* soundWave)
+{
+    bool playing = false;
+
+    if (soundWave != nullptr)
+    {
+        for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
+        {
+            if (sAudioSources[i].mSoundWave == soundWave)
+            {
+                playing = true;
+                LogDebug("Sound %s is playing at voice %d", soundWave->GetName().c_str(), i);
+                break;
+            }
+        }
+    }
+
+    return playing;
+}
+
 static void RefreshAudioVolume()
 {
     // Refresh volume for 2D sounds (3D sounds will naturally adjust their volume on Update()).

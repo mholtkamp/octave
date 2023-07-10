@@ -45,6 +45,8 @@ public:
     static void StopSound(const std::string& name);
     static void StopAllSounds();
 
+    static bool IsSoundPlaying(SoundWave* soundWave);
+
     static void SetAudioClassVolume(int8_t audioClass, float volume);
     static void SetAudioClassPitch(int8_t audioClass, float pitch);
     static float GetAudioClassVolume(int8_t audioClass);
