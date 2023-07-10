@@ -19,6 +19,8 @@ static SLObjectItf sOutputMixObj = 0;
 static SLObjectItf      sPlayerObjs[AUDIO_MAX_VOICES] = { 0 };
 static SLPlayItf        sPlayers[AUDIO_MAX_VOICES] = { 0 };
 static SLBufferQueueItf sBufferQueues[AUDIO_MAX_VOICES];
+static SLVolumeItf      sVolumes[AUDIO_MAX_VOICES] = { 0 };
+static SLPitchItf      sPitches[AUDIO_MAX_VOICES] = { 0 };
 
 void AUD_Initialize()
 {
@@ -121,9 +123,9 @@ void AUD_Initialize()
         dataSink.pLocator = &dataLocatorOut;
         dataSink.pFormat = 0;
 
-        const SLuint32 soundPlayerIIDCount = 2;
-        const SLInterfaceID soundPlayerIIDs[] = { SL_IID_PLAY, SL_IID_BUFFERQUEUE };
-        const SLboolean soundPlayerReqs[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE };
+        const SLuint32 soundPlayerIIDCount = 4;
+        const SLInterfaceID soundPlayerIIDs[] = { SL_IID_PLAY, SL_IID_BUFFERQUEUE, SL_IID_VOLUME, SL_IID_PITCH };
+        const SLboolean soundPlayerReqs[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_FALSE };
 
         for (int i = 0; i < AUDIO_MAX_VOICES; i++)
         {
@@ -139,6 +141,7 @@ void AUD_Initialize()
             if (result != SL_RESULT_SUCCESS)
             {
                 LogError("Error creating audio player.");
+                OCT_ASSERT(0);
                 return;
             }
 
@@ -148,6 +151,7 @@ void AUD_Initialize()
             if (result != SL_RESULT_SUCCESS)
             {
                 LogError("Error realizing audio player.");
+                OCT_ASSERT(0);
                 return;
             }
 
@@ -159,6 +163,7 @@ void AUD_Initialize()
             if (result != SL_RESULT_SUCCESS)
             {
                 LogError("Error creating player interface.");
+                OCT_ASSERT(0);
                 return;
             }
 
@@ -170,14 +175,42 @@ void AUD_Initialize()
             if (result != SL_RESULT_SUCCESS)
             {
                 LogError("Error creating buffer queue interface.");
+                OCT_ASSERT(0);
                 return;
             }
+
+            // Volume Interface
+            result = (*(sPlayerObjs[i]))->GetInterface(sPlayerObjs[i],
+                SL_IID_VOLUME,
+                &(sVolumes[i]));
+
+            if (result != SL_RESULT_SUCCESS)
+            {
+                LogError("Error creating volume interface.");
+                OCT_ASSERT(0);
+                return;
+            }
+
+#if 0
+            // Pitch Interface
+            result = (*(sPlayerObjs[i]))->GetInterface(sPlayerObjs[i],
+                SL_IID_PITCH,
+                &(sPitches[i]));
+
+            if (result != SL_RESULT_SUCCESS)
+            {
+                LogError("Error creating pitch interface.");
+                OCT_ASSERT(0);
+                return;
+            }
+#endif
 
             result = (*(sPlayers[i]))->SetPlayState(sPlayers[i], SL_PLAYSTATE_PLAYING);
 
             if (result != SL_RESULT_SUCCESS)
             {
                 LogError("Error setting audio player to play state.");
+                OCT_ASSERT(0);
                 return;
             }
         }
@@ -268,6 +301,9 @@ void AUD_Play(
             LogError("Could not enqueue sound buffer to queue.");
             return;
         }
+
+        AUD_SetVolume(voiceIndex, volume, volume);
+        AUD_SetPitch(voiceIndex, pitch);
     }
 }
 
@@ -302,7 +338,26 @@ bool AUD_IsPlaying(uint32_t voiceIndex)
 
 void AUD_SetVolume(uint32_t voiceIndex, float leftVolume, float rightVolume)
 {
+    float volume = (leftVolume + rightVolume) / 2.0f;
 
+    // Convert volume from 0.0 to 1.0 range to millibels
+    SLmillibel volMillibels = SL_MILLIBEL_MIN;
+    if (volume < 0.00001)
+    {
+        volMillibels = SL_MILLIBEL_MIN;
+    }
+    else
+    {
+        volMillibels = (SLmillibel)(2000.f * log10f(volume) + 0.5f);
+    }
+
+    volMillibels = glm::clamp<SLmillibel>(volMillibels, SL_MILLIBEL_MIN, 0);
+
+    SLresult result = (*(sVolumes[voiceIndex]))->SetVolumeLevel(sVolumes[voiceIndex], volMillibels);
+    if (result != SL_RESULT_SUCCESS)
+    {
+        LogError("Error setting volume.");
+    }
 }
 
 void AUD_SetPitch(uint32_t voiceIndex, float pitch)
