@@ -45,7 +45,9 @@ void SoundWave::LoadStream(Stream& stream, Platform platform)
     // Properties
     mVolumeMultiplier = stream.ReadFloat();
     mPitchMultiplier = stream.ReadFloat();
-    //mAudioClass = stream.ReadInt8();
+    mAudioClass = stream.ReadInt8();
+    mCompress = stream.ReadBool();
+    mCompressInternal = stream.ReadBool();
 
     // Waveform Format
     mNumChannels = stream.ReadUint32();
@@ -55,12 +57,26 @@ void SoundWave::LoadStream(Stream& stream, Platform platform)
     mBlockAlign = stream.ReadUint32();
     mByteRate = stream.ReadUint32();
 
-    // Waveform
-    mWaveDataSize = stream.ReadUint32();
-    mWaveData = AUD_AllocWaveBuffer(mWaveDataSize);
-    for (uint32_t i = 0; i < mWaveDataSize; ++i)
+    bool compressed = stream.ReadBool();
+
+    if (compressed)
     {
-        mWaveData[i] = stream.ReadUint8();
+        Stream outStream;
+        AUD_DecodeVorbis(stream, outStream);
+
+        mWaveDataSize = outStream.GetSize();
+        mWaveData = AUD_AllocWaveBuffer(mWaveDataSize);
+        memcpy(mWaveData, outStream.GetData(), mWaveDataSize);
+    }
+    else
+    {
+        // Waveform
+        mWaveDataSize = stream.ReadUint32();
+        mWaveData = AUD_AllocWaveBuffer(mWaveDataSize);
+        for (uint32_t i = 0; i < mWaveDataSize; ++i)
+        {
+            mWaveData[i] = stream.ReadUint8();
+        }
     }
 
     AUD_ProcessWaveBuffer(this);
@@ -73,7 +89,9 @@ void SoundWave::SaveStream(Stream& stream, Platform platform)
     // Properties
     stream.WriteFloat(mVolumeMultiplier);
     stream.WriteFloat(mPitchMultiplier);
-    //stream.WriteInt8(mAudioClass);
+    stream.WriteInt8(mAudioClass);
+    stream.WriteBool(mCompress);
+    stream.WriteBool(mCompressInternal);
 
 #if 1
     if (platform == Platform::GameCube ||
@@ -176,6 +194,14 @@ void SoundWave::SaveStream(Stream& stream, Platform platform)
     else
 #endif
     {
+        // Waveform Format
+        stream.WriteUint32(mNumChannels);
+        stream.WriteUint32(mBitsPerSample);
+        stream.WriteUint32(mSampleRate);
+        stream.WriteUint32(mNumSamples);
+        stream.WriteUint32(mBlockAlign);
+        stream.WriteUint32(mByteRate);
+
         bool compress = mCompress;
         if (platform == Platform::Count)
         {
@@ -185,24 +211,22 @@ void SoundWave::SaveStream(Stream& stream, Platform platform)
             compress = (mCompress && mCompressInternal);
         }
 
+        stream.WriteBool(compress);
+
         if (compress)
         {
-            AUD_EncodeVorbis(this);
+            Stream inStream((char*)GetWaveData(), GetWaveDataSize());
+
+            AUD_EncodeVorbis(inStream, stream);
         }
-
-        // Waveform Format
-        stream.WriteUint32(mNumChannels);
-        stream.WriteUint32(mBitsPerSample);
-        stream.WriteUint32(mSampleRate);
-        stream.WriteUint32(mNumSamples);
-        stream.WriteUint32(mBlockAlign);
-        stream.WriteUint32(mByteRate);
-
-        // Waveform
-        stream.WriteUint32(mWaveDataSize);
-        for (uint32_t i = 0; i < mWaveDataSize; ++i)
+        else
         {
-            stream.WriteUint8(mWaveData[i]);
+            // Waveform
+            stream.WriteUint32(mWaveDataSize);
+            for (uint32_t i = 0; i < mWaveDataSize; ++i)
+            {
+                stream.WriteUint8(mWaveData[i]);
+            }
         }
     }
 }
