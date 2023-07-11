@@ -2,6 +2,7 @@
 
 #include "EngineTypes.h"
 
+class Stream;
 class SoundWave;
 class AudioComponent;
 
@@ -28,5 +29,5 @@ void AUD_FreeWaveBuffer(void* buffer);
 void AUD_ProcessWaveBuffer(SoundWave* soundWave);
 
 // Platform Independent
-void AUD_EncodeVorbis(SoundWave* soundWave);
-void AUD_DecodeVorbis(SoundWave* soundWave);
+void AUD_EncodeVorbis(Stream& inStream, Stream& outStream);
+void AUD_DecodeVorbis(Stream& inStream, Stream& outStream);
