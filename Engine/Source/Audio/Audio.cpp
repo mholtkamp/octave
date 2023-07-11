@@ -421,8 +421,11 @@ void AUD_DecodeVorbis(Stream& inStream, Stream& outStream, PcmFormat format)
                                         }
                                     }
 
-                                    if (clipflag)
+                                    // Disabling this. Remove false to log clipping frames.
+                                    if (clipflag && false)
+                                    {
                                         LogWarning("Clipping in frame %ld", (long)(vd.sequence));
+                                    }
 
                                     uint8_t* srcBuffer = (uint8_t*)convbuffer;
 
