@@ -62,7 +62,11 @@ void SoundWave::LoadStream(Stream& stream, Platform platform)
     if (compressed)
     {
         Stream outStream;
-        AUD_DecodeVorbis(stream, outStream);
+        PcmFormat format;
+        format.mBytesPerSample = (mBitsPerSample / 8);
+        format.mNumChannels = mNumChannels;
+        format.mSampleRate = mSampleRate;
+        AUD_DecodeVorbis(stream, outStream, format);
 
         mWaveDataSize = outStream.GetSize();
         mWaveData = AUD_AllocWaveBuffer(mWaveDataSize);
@@ -217,7 +221,12 @@ void SoundWave::SaveStream(Stream& stream, Platform platform)
         {
             Stream inStream((char*)GetWaveData(), GetWaveDataSize());
 
-            AUD_EncodeVorbis(inStream, stream);
+            PcmFormat format;
+            format.mBytesPerSample = (mBitsPerSample / 8);
+            format.mNumChannels = mNumChannels;
+            format.mSampleRate = mSampleRate;
+
+            AUD_EncodeVorbis(inStream, stream, format);
         }
         else
         {

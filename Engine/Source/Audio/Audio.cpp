@@ -15,7 +15,7 @@
 #define READ 1024
 static signed char readbuffer[READ * 4 + 44]; /* out of the data segment, not the stack */
 
-void AUD_EncodeVorbis(Stream& inStream, Stream& outStream)
+void AUD_EncodeVorbis(Stream& inStream, Stream& outStream, PcmFormat format)
 {
     ogg_stream_state os; /* take physical pages, weld into a logical
                         stream of packets */
@@ -31,10 +31,11 @@ void AUD_EncodeVorbis(Stream& inStream, Stream& outStream)
 
     int eos = 0, ret;
 
-
-
     vorbis_info_init(&vi);
-    ret = vorbis_encode_init_vbr(&vi, 2, 44100, 0.1f);
+    ret = vorbis_encode_init_vbr(&vi, (long)format.mNumChannels, (long) format.mSampleRate, 0.1f);
+
+    int bytesPerSample = (int)format.mBytesPerSample;
+    int bytesPerFrame = (int)(format.mNumChannels * format.mBytesPerSample);
 
     if (ret)
         exit(1);
@@ -86,7 +87,7 @@ void AUD_EncodeVorbis(Stream& inStream, Stream& outStream)
 
     while (!eos) {
         long i;
-        long bytes = (long)inStream.ReadBytesMax((uint8_t*)readbuffer, READ * 4);
+        long bytes = (long)inStream.ReadBytesMax((uint8_t*)readbuffer, READ * bytesPerFrame);
 
         if (bytes == 0) {
             /* end of file.  this can be done implicitly in the mainline,
@@ -102,12 +103,22 @@ void AUD_EncodeVorbis(Stream& inStream, Stream& outStream)
             /* expose the buffer to submit data */
             float **buffer = vorbis_analysis_buffer(&vd, READ);
 
-            /* uninterleave samples */
-            for (i = 0; i < bytes / 4; i++) {
-                buffer[0][i] = ((readbuffer[i * 4 + 1] << 8) |
-                    (0x00ff & (int)readbuffer[i * 4])) / 32768.f;
-                buffer[1][i] = ((readbuffer[i * 4 + 3] << 8) |
-                    (0x00ff & (int)readbuffer[i * 4 + 2])) / 32768.f;
+            if (format.mNumChannels == 1)
+            {
+                for (i = 0; i < bytes / 2; i++) {
+                    buffer[0][i] = ((readbuffer[i * 2 + 1] << 8) |
+                        (0x00ff & (int)readbuffer[i * 2])) / 32768.f;
+                }
+            }
+            else
+            {
+                /* uninterleave samples */
+                for (i = 0; i < bytes / 4; i++) {
+                    buffer[0][i] = ((readbuffer[i * 4 + 1] << 8) |
+                        (0x00ff & (int)readbuffer[i * 4])) / 32768.f;
+                    buffer[1][i] = ((readbuffer[i * 4 + 3] << 8) |
+                        (0x00ff & (int)readbuffer[i * 4 + 2])) / 32768.f;
+                }
             }
 
             /* tell the library how much we actually submitted */
@@ -161,7 +172,7 @@ void AUD_EncodeVorbis(Stream& inStream, Stream& outStream)
 static ogg_int16_t convbuffer[4096]; /* take 8k out of the data segment, not the stack */
 static int convsize = 4096;
 
-void AUD_DecodeVorbis(Stream& inStream, Stream& outStream)
+void AUD_DecodeVorbis(Stream& inStream, Stream& outStream, PcmFormat format)
 {
     ogg_sync_state   oy; /* sync and verify incoming physical bitstream */
     ogg_stream_state os; /* take physical pages, weld into a logical
@@ -202,8 +213,8 @@ void AUD_DecodeVorbis(Stream& inStream, Stream& outStream)
             if (bytes < 4096)break;
 
             /* error case.  Must not be Vorbis data */
-            fprintf(stderr, "Input does not appear to be an Ogg bitstream.\n");
-            exit(1);
+            LogError("Input does not appear to be an Ogg bitstream.");
+            OCT_ASSERT(0);
         }
 
         /* Get the serial number and set up the rest of decode. */
@@ -222,21 +233,20 @@ void AUD_DecodeVorbis(Stream& inStream, Stream& outStream)
         vorbis_comment_init(&vc);
         if (ogg_stream_pagein(&os, &og) < 0) {
             /* error; stream version mismatch perhaps */
-            fprintf(stderr, "Error reading first page of Ogg bitstream data.\n");
-            exit(1);
+            LogError("Error reading first page of Ogg bitstream data.");
+            OCT_ASSERT(0);
         }
 
         if (ogg_stream_packetout(&os, &op) != 1) {
             /* no page? must not be vorbis */
-            fprintf(stderr, "Error reading initial header packet.\n");
-            exit(1);
+            LogError("Error reading initial header packet.");
+            OCT_ASSERT(0);
         }
 
         if (vorbis_synthesis_headerin(&vi, &vc, &op) < 0) {
             /* error case; not a vorbis header */
-            fprintf(stderr, "This Ogg bitstream does not contain Vorbis "
-                "audio data.\n");
-            exit(1);
+            LogError("This Ogg bitstream does not contain Vorbis audio data.");
+            OCT_ASSERT(0);
         }
 
         /* At this point, we're sure we're Vorbis. We've set up the logical
@@ -266,13 +276,13 @@ void AUD_DecodeVorbis(Stream& inStream, Stream& outStream)
                         if (result < 0) {
                             /* Uh oh; data at some point was corrupted or missing!
                                We can't tolerate that in a header.  Die. */
-                            fprintf(stderr, "Corrupt secondary header.  Exiting.\n");
-                            exit(1);
+                            LogError("Corrupt secondary header.");
+                            OCT_ASSERT(0);
                         }
                         result = vorbis_synthesis_headerin(&vi, &vc, &op);
                         if (result < 0) {
-                            fprintf(stderr, "Corrupt secondary header.  Exiting.\n");
-                            exit(1);
+                            LogError("Corrupt secondary header.");
+                            OCT_ASSERT(0);
                         }
                         i++;
                     }
@@ -282,8 +292,8 @@ void AUD_DecodeVorbis(Stream& inStream, Stream& outStream)
             buffer = ogg_sync_buffer(&oy, 4096);
             bytes = inStream.ReadBytesMax((uint8_t*)buffer, 4096);
             if (bytes == 0 && i < 2) {
-                fprintf(stderr, "End of file before finding all Vorbis headers!\n");
-                exit(1);
+                LogError("End of file before finding all Vorbis headers!");
+                OCT_ASSERT(0);
             }
             ogg_sync_wrote(&oy, bytes);
         }
@@ -293,11 +303,14 @@ void AUD_DecodeVorbis(Stream& inStream, Stream& outStream)
         {
             char **ptr = vc.user_comments;
             while (*ptr) {
-                fprintf(stderr, "%s\n", *ptr);
+                LogDebug("%s", *ptr);
                 ++ptr;
             }
-            fprintf(stderr, "\nBitstream is %d channel, %ldHz\n", vi.channels, vi.rate);
-            fprintf(stderr, "Encoded by: %s\n\n", vc.vendor);
+            LogDebug("Bitstream is %d channel, %ldHz", vi.channels, vi.rate);
+            LogDebug("Encoded by: %s", vc.vendor);
+
+            OCT_ASSERT(vi.channels == (int)format.mNumChannels);
+            OCT_ASSERT(vi.rate == (int)format.mSampleRate);
         }
 
         convsize = 4096 / vi.channels;
@@ -317,8 +330,7 @@ void AUD_DecodeVorbis(Stream& inStream, Stream& outStream)
                     int result = ogg_sync_pageout(&oy, &og);
                     if (result == 0)break; /* need more data */
                     if (result < 0) { /* missing or corrupt data at this page position */
-                        fprintf(stderr, "Corrupt or missing data in bitstream; "
-                            "continuing...\n");
+                        LogError("Corrupt or missing data in bitstream; continuing...");
                     }
                     else {
                         ogg_stream_pagein(&os, &og); /* can safely ignore errors at
@@ -375,10 +387,10 @@ void AUD_DecodeVorbis(Stream& inStream, Stream& outStream)
                                     }
 
                                     if (clipflag)
-                                        fprintf(stderr, "Clipping in frame %ld\n", (long)(vd.sequence));
+                                        LogWarning("Clipping in frame %ld", (long)(vd.sequence));
 
 
-                                    outStream.WriteBytes((uint8_t*) convbuffer, 2 * vi.channels * bout);
+                                    outStream.WriteBytes((uint8_t*) convbuffer, format.mBytesPerSample * vi.channels * bout);
 
                                     vorbis_synthesis_read(&vd, bout); /* tell libvorbis how
                                                                         many samples we
@@ -404,7 +416,7 @@ void AUD_DecodeVorbis(Stream& inStream, Stream& outStream)
             vorbis_dsp_clear(&vd);
         }
         else {
-            fprintf(stderr, "Error: Corrupt header during playback initialization.\n");
+            LogError("Error: Corrupt header during playback initialization.");
         }
 
         /* clean up this logical bitstream; before exit we see if we're
