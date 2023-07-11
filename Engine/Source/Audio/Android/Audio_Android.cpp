@@ -7,20 +7,22 @@
 #include "Assets/SoundWave.h"
 #include "Log.h"
 #include "Maths.h"
+#include "Engine.h"
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
 static bool sInitialized = false;
+static bool sPlaying = false;
 static SLObjectItf sEngineObj = 0;
 static SLEngineItf sEngine = 0;
 static SLObjectItf sOutputMixObj = 0;
 
-static SLObjectItf      sPlayerObjs[AUDIO_MAX_VOICES] = { 0 };
-static SLPlayItf        sPlayers[AUDIO_MAX_VOICES] = { 0 };
+static SLObjectItf sPlayerObjs[AUDIO_MAX_VOICES] = { 0 };
+static SLPlayItf sPlayers[AUDIO_MAX_VOICES] = { 0 };
 static SLBufferQueueItf sBufferQueues[AUDIO_MAX_VOICES] = { 0 };
-static SLVolumeItf      sVolumes[AUDIO_MAX_VOICES] = { 0 };
-static SLPitchItf      sPitches[AUDIO_MAX_VOICES] = { 0 };
+static SLVolumeItf sVolumes[AUDIO_MAX_VOICES] = { 0 };
+static SLPitchItf sPitches[AUDIO_MAX_VOICES] = { 0 };
 
 static bool sLoop[AUDIO_MAX_VOICES] = { };
 static void* sSoundData[AUDIO_MAX_VOICES] = { };
@@ -233,6 +235,8 @@ void AUD_Initialize()
                 OCT_ASSERT(0);
                 return;
             }
+
+            sPlaying = true;
         }
     }
 }
@@ -274,7 +278,19 @@ void AUD_Shutdown()
 
 void AUD_Update()
 {   
+    bool minimized = GetEngineState()->mWindowMinimized;
 
+    if (minimized == sPlaying)
+    {
+        // If we are minimized we shouldn't be played.
+        // If we are not minimized, we should be playing.
+        sPlaying = !minimized;
+
+        for (uint32_t i = 0; i < AUDIO_MAX_VOICES; ++i)
+        {
+            (*sPlayers[i])->SetPlayState(sPlayers[i], sPlaying ? SL_PLAYSTATE_PLAYING : SL_PLAYSTATE_PAUSED);
+        }
+    }
 }
 
 void AUD_Play(
