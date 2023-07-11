@@ -6,6 +6,13 @@ class Stream;
 class SoundWave;
 class AudioComponent;
 
+struct PcmFormat
+{
+    uint32_t mNumChannels = 2;
+    uint32_t mSampleRate = 44100;
+    uint32_t mBytesPerSample = 2;
+};
+
 void AUD_Initialize();
 void AUD_Shutdown();
 void AUD_Update();
@@ -29,5 +36,5 @@ void AUD_FreeWaveBuffer(void* buffer);
 void AUD_ProcessWaveBuffer(SoundWave* soundWave);
 
 // Platform Independent
-void AUD_EncodeVorbis(Stream& inStream, Stream& outStream);
-void AUD_DecodeVorbis(Stream& inStream, Stream& outStream);
+void AUD_EncodeVorbis(Stream& inStream, Stream& outStream, PcmFormat format);
+void AUD_DecodeVorbis(Stream& inStream, Stream& outStream, PcmFormat format);
