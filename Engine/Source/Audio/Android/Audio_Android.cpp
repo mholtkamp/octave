@@ -18,9 +18,36 @@ static SLObjectItf sOutputMixObj = 0;
 
 static SLObjectItf      sPlayerObjs[AUDIO_MAX_VOICES] = { 0 };
 static SLPlayItf        sPlayers[AUDIO_MAX_VOICES] = { 0 };
-static SLBufferQueueItf sBufferQueues[AUDIO_MAX_VOICES];
+static SLBufferQueueItf sBufferQueues[AUDIO_MAX_VOICES] = { 0 };
 static SLVolumeItf      sVolumes[AUDIO_MAX_VOICES] = { 0 };
 static SLPitchItf      sPitches[AUDIO_MAX_VOICES] = { 0 };
+
+static bool sLoop[AUDIO_MAX_VOICES] = { };
+static void* sSoundData[AUDIO_MAX_VOICES] = { };
+static uint32_t sSoundSizes[AUDIO_MAX_VOICES] = { };
+
+
+static void QueueCallback(SLBufferQueueItf caller, void *pContext)
+{
+    int32_t index = (int32_t)((size_t)pContext);
+
+    if (index >= 0 && index < AUDIO_MAX_VOICES)
+    {
+        if (sLoop[index])
+        {
+            // Resubmit the same sound buffer
+            (*(sBufferQueues[index]))->Clear(sBufferQueues[index]);
+
+            (*(sBufferQueues[index]))->Enqueue(sBufferQueues[index],
+                sSoundData[index],
+                sSoundSizes[index]);
+        }
+    }
+    else
+    {
+        LogError("Unknown buffer queue callback received");
+    }
+}
 
 void AUD_Initialize()
 {
@@ -126,7 +153,7 @@ void AUD_Initialize()
 
         // Note: Apparently SL_IID_PITCH and SL_IID_RATEPITCH are not mandatory?
         // My Pixel 3A does not support these. So for now, pitch adjustment isn't possible.
-        // I suppose a solution to this (and also for exceeding 0db volume limit) is to adjust the 
+        // I suppose a solution to this (and also for exceeding 0db volume limit) is to 
         // perform processing on the wave buffer? Need to research how other engines do this.
         const SLuint32 soundPlayerIIDCount = 3;
         const SLInterfaceID soundPlayerIIDs[] = { SL_IID_PLAY, SL_IID_BUFFERQUEUE, SL_IID_VOLUME };
@@ -183,6 +210,8 @@ void AUD_Initialize()
                 OCT_ASSERT(0);
                 return;
             }
+
+            (*(sBufferQueues[i]))->RegisterCallback(sBufferQueues[i], QueueCallback, (void*)i);
 
             // Volume Interface
             result = (*(sPlayerObjs[i]))->GetInterface(sPlayerObjs[i],
@@ -282,6 +311,10 @@ void AUD_Play(
             return;
         }
 
+        sLoop[voiceIndex] = loop;
+        sSoundData[voiceIndex] = soundWave->GetWaveData();
+        sSoundSizes[voiceIndex] = soundWave->GetWaveDataSize();
+
         // Add the new sound buffer to queue
         result = (*(sBufferQueues[voiceIndex]))->Enqueue(sBufferQueues[voiceIndex],
             soundWave->GetWaveData(),
@@ -301,6 +334,10 @@ void AUD_Play(
 void AUD_Stop(uint32_t voiceIndex)
 {
     SLresult result = (*(sBufferQueues[voiceIndex]))->Clear(sBufferQueues[voiceIndex]);
+
+    sLoop[voiceIndex] = false;
+    sSoundData[voiceIndex] = nullptr;
+    sSoundSizes[voiceIndex] = 0;
 
     if (result != SL_RESULT_SUCCESS)
     {
