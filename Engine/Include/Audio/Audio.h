@@ -26,3 +26,7 @@ void AUD_SetPitch(uint32_t voiceIndex, float pitch);
 uint8_t* AUD_AllocWaveBuffer(uint32_t size);
 void AUD_FreeWaveBuffer(void* buffer);
 void AUD_ProcessWaveBuffer(SoundWave* soundWave);
+
+// Platform Independent
+void AUD_EncodeVorbis(SoundWave* soundWave);
+void AUD_DecodeVorbis(SoundWave* soundWave);
