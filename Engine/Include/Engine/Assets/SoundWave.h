@@ -52,6 +52,8 @@ protected:
     float mVolumeMultiplier = 1.0f;
     float mPitchMultiplier = 1.0f;
     int8_t mAudioClass = 0;
+    bool mCompress = false;
+    bool mCompressInternal = false;
 
     // Soundwave Format
     uint32_t mNumChannels = 1;

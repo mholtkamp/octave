@@ -176,6 +176,20 @@ void SoundWave::SaveStream(Stream& stream, Platform platform)
     else
 #endif
     {
+        bool compress = mCompress;
+        if (platform == Platform::Count)
+        {
+            // In editor, we only compress the data (destructive) if the compress internal flag is set.
+            // This feature is to reduce file sizes for big sounds like music. But once you compress internally,
+            // storing the data uncompressed later will not result in any better audio. Use only when needed.
+            compress = (mCompress && mCompressInternal);
+        }
+
+        if (compress)
+        {
+            AUD_EncodeVorbis(this);
+        }
+
         // Waveform Format
         stream.WriteUint32(mNumChannels);
         stream.WriteUint32(mBitsPerSample);
@@ -280,6 +294,8 @@ void SoundWave::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Volume Multiplier", this, &mVolumeMultiplier));
     outProps.push_back(Property(DatumType::Float, "Pitch Multiplier", this, &mPitchMultiplier));
     outProps.push_back(Property(DatumType::Byte, "Audio Class", this, &mAudioClass));
+    outProps.push_back(Property(DatumType::Bool, "Compress", this, &mCompress));
+    outProps.push_back(Property(DatumType::Bool, "Compress Internal", this, &mCompressInternal));
 }
 
 glm::vec4 SoundWave::GetTypeColor()
