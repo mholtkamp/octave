@@ -184,11 +184,27 @@ void SoundWave::SaveStream(Stream& stream, Platform platform)
         stream.WriteUint32(1);
         stream.WriteUint32(lowSampleRate);
 
-        // Waveform
-        stream.WriteUint32(wavDataSize);
-        for (uint32_t i = 0; i < wavDataSize; ++i)
+        stream.WriteBool(mCompress);
+
+        if (mCompress)
         {
-            stream.WriteUint8(compWaveData[i]);
+            Stream inStream((char*)compWaveData, wavDataSize);
+
+            PcmFormat format;
+            format.mBytesPerSample = 1;
+            format.mNumChannels = 1;
+            format.mSampleRate = lowSampleRate;
+
+            AUD_EncodeVorbis(inStream, stream, format);
+        }
+        else
+        {
+            // Waveform
+            stream.WriteUint32(wavDataSize);
+            for (uint32_t i = 0; i < wavDataSize; ++i)
+            {
+                stream.WriteUint8(compWaveData[i]);
+            }
         }
 
         // Delete temporary array for low-quality waveform
