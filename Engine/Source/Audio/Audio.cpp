@@ -12,6 +12,8 @@
 
 #include <vorbis/vorbisenc.h>
 
+// Most of this vorbis encoding / decoding code was taken from the official libvorbis samples.
+
 #define READ 1024
 static signed char readbuffer[READ * 4 + 44]; /* out of the data segment, not the stack */
 
@@ -105,19 +107,51 @@ void AUD_EncodeVorbis(Stream& inStream, Stream& outStream, PcmFormat format)
 
             if (format.mNumChannels == 1)
             {
-                for (i = 0; i < bytes / 2; i++) {
-                    buffer[0][i] = ((readbuffer[i * 2 + 1] << 8) |
-                        (0x00ff & (int)readbuffer[i * 2])) / 32768.f;
+                if (format.mBytesPerSample == 1)
+                {
+                    for (i = 0; i < bytes; i++) {
+                        int16_t samp16 = (int16_t) readbuffer[i];
+                        samp16 = (samp16 - 0x80) << 8;
+
+                        char* pSamp16 = (char*)&samp16;
+                        buffer[0][i] = ((pSamp16[1] << 8) |
+                            (0x00ff & (int)pSamp16[0])) / 32768.f;
+                    }
+                }
+                else
+                {
+                    for (i = 0; i < bytes / 2; i++) {
+                        buffer[0][i] = ((readbuffer[i * 2 + 1] << 8) |
+                            (0x00ff & (int)readbuffer[i * 2])) / 32768.f;
+                    }
                 }
             }
             else
             {
                 /* uninterleave samples */
-                for (i = 0; i < bytes / 4; i++) {
-                    buffer[0][i] = ((readbuffer[i * 4 + 1] << 8) |
-                        (0x00ff & (int)readbuffer[i * 4])) / 32768.f;
-                    buffer[1][i] = ((readbuffer[i * 4 + 3] << 8) |
-                        (0x00ff & (int)readbuffer[i * 4 + 2])) / 32768.f;
+                if (format.mBytesPerSample == 1)
+                {
+                    for (i = 0; i < bytes / 2; i++) {
+                        int16_t samps16[2] = { (int16_t)readbuffer[i * 2], (int16_t)readbuffer[i * 2 + 1] };
+                        samps16[0] = (samps16[0] - 0x80) << 8;
+                        samps16[1] = (samps16[1] - 0x80) << 8;
+
+                        char* pSamp16 = (char*)samps16;
+
+                        buffer[0][i] = ((pSamp16[1] << 8) |
+                            (0x00ff & (int)pSamp16[0])) / 32768.f;
+                        buffer[1][i] = ((pSamp16[3] << 8) |
+                            (0x00ff & (int)pSamp16[2])) / 32768.f;
+                    }
+                }
+                else
+                {
+                    for (i = 0; i < bytes / 4; i++) {
+                        buffer[0][i] = ((readbuffer[i * 4 + 1] << 8) |
+                            (0x00ff & (int)readbuffer[i * 4])) / 32768.f;
+                        buffer[1][i] = ((readbuffer[i * 4 + 3] << 8) |
+                            (0x00ff & (int)readbuffer[i * 4 + 2])) / 32768.f;
+                    }
                 }
             }
 
@@ -170,6 +204,7 @@ void AUD_EncodeVorbis(Stream& inStream, Stream& outStream, PcmFormat format)
 }
 
 static ogg_int16_t convbuffer[4096]; /* take 8k out of the data segment, not the stack */
+static uint8_t convbuffer8[4096];
 static int convsize = 4096;
 
 void AUD_DecodeVorbis(Stream& inStream, Stream& outStream, PcmFormat format)
@@ -389,8 +424,20 @@ void AUD_DecodeVorbis(Stream& inStream, Stream& outStream, PcmFormat format)
                                     if (clipflag)
                                         LogWarning("Clipping in frame %ld", (long)(vd.sequence));
 
+                                    uint8_t* srcBuffer = (uint8_t*)convbuffer;
 
-                                    outStream.WriteBytes((uint8_t*) convbuffer, format.mBytesPerSample * vi.channels * bout);
+                                    if (format.mBytesPerSample == 1)
+                                    {
+                                        // Need to convert 16 bit signed to 8 bit unsigned.
+                                        for (int32_t i = 0; i < vi.channels * bout; ++i)
+                                        {
+                                            convbuffer8[i] = (uint8_t)((convbuffer[i] + 32768) >> 8);
+                                        }
+
+                                        srcBuffer = convbuffer8;
+                                    }
+
+                                    outStream.WriteBytes(srcBuffer, format.mBytesPerSample * vi.channels * bout);
 
                                     vorbis_synthesis_read(&vd, bout); /* tell libvorbis how
                                                                         many samples we
