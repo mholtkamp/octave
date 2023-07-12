@@ -21,6 +21,9 @@ class Component;
 
 Platform GetPlatform();
 
+std::string StringToLower(const std::string& str);
+std::string StringToUpper(const std::string& str);
+
 std::string GetCurrentDirectoryPath();
 void SetWorkingDirectory(const std::string& dirPath);
 bool DoesDirExist(const char* dirPath);

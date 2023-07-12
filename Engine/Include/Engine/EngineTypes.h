@@ -435,6 +435,7 @@ enum class Platform
 {
     Windows,
     Linux,
+    Android,
     GameCube,
     Wii,
     N3DS,
