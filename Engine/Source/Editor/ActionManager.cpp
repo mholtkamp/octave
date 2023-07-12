@@ -368,6 +368,36 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         SYS_Exec(copyOctpCmd.c_str());
     }
 
+    // Write out an Engine.ini file which is used by Standalone game exe.
+    FILE* engineIni = fopen(std::string(packagedDir + "Engine.ini").c_str(), "w");
+    if (engineIni != nullptr)
+    {
+        fprintf(engineIni, "project=%s", projectName.c_str());
+
+        fclose(engineIni);
+        engineIni = nullptr;
+    }
+
+    // Handle SpirV shaders on Vulkan platforms
+    // Make sure to do this before copying everything to "assets/" directory in the Android build.
+    if (platform == Platform::Windows ||
+        platform == Platform::Linux ||
+        platform == Platform::Android)
+    {
+        // Compile shaders
+#if PLATFORM_WINDOWS
+        SYS_Exec("cd Engine/Shaders/GLSL && \"./compile.bat\"");
+#else
+        SYS_Exec("cd Engine/Shaders/GLSL && \"./compile.sh\"");
+#endif
+
+        // Then copy over the binaries.
+        CreateDir((packagedDir + "Engine/Shaders/").c_str());
+        CreateDir((packagedDir + "Engine/Shaders/GLSL/").c_str());
+
+        SYS_Exec(std::string("cp -R Engine/Shaders/GLSL/bin " + packagedDir + "Engine/Shaders/GLSL/bin").c_str());
+    }
+
     // ( ) Run the makefile to compile the game.
 #if STANDALONE_RELEASE
     bool needCompile = !standalone || embedded || platform == Platform::Android;
@@ -490,35 +520,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         // Rename the executable to the project name
         std::string renameCmd = std::string("mv ") + packagedDir + "Octave" + extension + " " + packagedDir + projectName + extension;
         SYS_Exec(renameCmd.c_str());
-    }
-
-    // Write out an Engine.ini file which is used by Standalone game exe.
-    FILE* engineIni = fopen(std::string(packagedDir + "Engine.ini").c_str(), "w");
-    if (engineIni != nullptr)
-    {
-        fprintf(engineIni, "project=%s", projectName.c_str());
-
-        fclose(engineIni);
-        engineIni = nullptr;
-    }
-
-    // Handle SpirV shaders on Vulkan platforms
-    if (platform == Platform::Windows ||
-        platform == Platform::Linux ||
-        platform == Platform::Android)
-    {
-        // Compile shaders
-#if PLATFORM_WINDOWS
-        SYS_Exec("cd Engine/Shaders/GLSL && \"./compile.bat\"");
-#else
-        SYS_Exec("cd Engine/Shaders/GLSL && \"./compile.sh\"");
-#endif
-
-        // Then copy over the binaries.
-        CreateDir((packagedDir + "Engine/Shaders/").c_str());
-        CreateDir((packagedDir + "Engine/Shaders/GLSL/").c_str());
-
-        SYS_Exec(std::string("cp -R Engine/Shaders/GLSL/bin " + packagedDir + "Engine/Shaders/GLSL/bin").c_str());
     }
 
     LogDebug("Build Finished");
