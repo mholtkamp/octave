@@ -50,6 +50,9 @@ protected:
     uint8_t* mWaveData = nullptr;
     uint32_t mWaveDataSize = 0;
 
+    uint8_t* mCompressedData = nullptr;
+    uint32_t mCompressedSize = 0;
+
     // Properties
     float mVolumeMultiplier = 1.0f;
     float mPitchMultiplier = 1.0f;

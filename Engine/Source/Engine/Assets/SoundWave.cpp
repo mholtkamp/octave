@@ -11,6 +11,8 @@
 FORCE_LINK_DEF(SoundWave);
 DEFINE_ASSET(SoundWave);
 
+#define LQ_CONSOLE_AUDIO 1
+
 bool SoundWave::HandlePreviewPropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
@@ -61,6 +63,16 @@ void SoundWave::LoadStream(Stream& stream, Platform platform)
 
     if (compressed)
     {
+        uint32_t compressedSize = stream.ReadUint32();
+
+#if EDITOR
+        // In Editor, we want to keep the compressed data around so in case we save the file again,
+        // we won't be recompressing the sound a second time (adding more artifacts / distortion).
+        mCompressedData = new uint8_t[compressedSize];
+        mCompressedSize = compressedSize;
+        memcpy(mCompressedData, stream.GetData() + stream.GetPos(), compressedSize);
+#endif
+
         Stream outStream;
         PcmFormat format;
         format.mBytesPerSample = (mBitsPerSample / 8);
@@ -97,22 +109,36 @@ void SoundWave::SaveStream(Stream& stream, Platform platform)
     stream.WriteBool(mCompress);
     stream.WriteBool(mCompressInternal);
 
-#if 1
+    uint32_t numChannels = mNumChannels;
+    uint32_t bitsPerSample = mBitsPerSample;
+    uint32_t sampleRate = mSampleRate;
+    uint32_t numSamples = mNumSamples;
+    uint32_t blockAlign = mBlockAlign;
+    uint32_t byteRate = mByteRate;
+
+    uint8_t* waveData = mWaveData;
+    uint32_t waveDataSize = mWaveDataSize;
+
+    uint8_t* lqWaveData = nullptr;
+    bool lqConvert = false;
+
+#if LQ_CONSOLE_AUDIO
     if (platform == Platform::GameCube ||
         platform == Platform::Wii ||
         platform == Platform::N3DS)
     {
         // Maybe only temporary, these platforms will use low-quality audio.
         // In the future allow compressing to OGG
+        lqConvert = true;
 
-        uint8_t* compWaveData = new uint8_t[mNumSamples];
-        memset(compWaveData, 0, mNumSamples);
+        lqWaveData = new uint8_t[mNumSamples];
+        memset(lqWaveData, 0, mNumSamples);
 
         const uint8_t* srcData = mWaveData;
-        uint8_t* dstData = compWaveData;
+        uint8_t* dstData = lqWaveData;
 
         uint32_t numSamples = mNumSamples;
-        uint32_t wavDataSize = mWaveDataSize;
+        uint32_t lqWaveDataSize = mWaveDataSize;
 
         // First convert all samples to 8 bit
         for (uint32_t i = 0; i < numSamples; ++i)
@@ -138,7 +164,7 @@ void SoundWave::SaveStream(Stream& stream, Platform platform)
 
         if (mBitsPerSample == 16)
         {
-            wavDataSize /= 2;
+            lqWaveDataSize /= 2;
         }
 
         // Then convert to mono by averaging left + right channels
@@ -146,15 +172,15 @@ void SoundWave::SaveStream(Stream& stream, Platform platform)
         {
             for (uint32_t i = 0; i < numSamples / 2; ++i)
             {
-                uint8_t sample1 = compWaveData[i * 2 + 0];
-                uint8_t sample2 = compWaveData[i * 2 + 1];
+                uint8_t sample1 = lqWaveData[i * 2 + 0];
+                uint8_t sample2 = lqWaveData[i * 2 + 1];
 
                 float sampleAvg = (float(sample1) + float(sample2)) / 2.0f;
-                compWaveData[i] = uint8_t(sampleAvg + 0.5);
+                lqWaveData[i] = uint8_t(sampleAvg + 0.5);
             }
 
             numSamples /= 2;
-            wavDataSize /= 2;
+            lqWaveDataSize /= 2;
         }
 
         // Lastly merge samples to make 22050 Hz (if original is 44100 Hz).
@@ -165,94 +191,89 @@ void SoundWave::SaveStream(Stream& stream, Platform platform)
 
             for (uint32_t i = 0; i < numSamples / 2; ++i)
             {
-                uint8_t sample1 = compWaveData[i * 2 + 0];
-                uint8_t sample2 = compWaveData[i * 2 + 1];
+                uint8_t sample1 = lqWaveData[i * 2 + 0];
+                uint8_t sample2 = lqWaveData[i * 2 + 1];
 
                 float sampleAvg = (float(sample1) + float(sample2)) / 2.0f;
-                compWaveData[i] = uint8_t(sampleAvg + 0.5);
+                lqWaveData[i] = uint8_t(sampleAvg + 0.5);
             }
 
             numSamples /= 2;
-            wavDataSize /= 2;
+            lqWaveDataSize /= 2;
         }
 
         // Then write the data to stream (using mono, 8-bit, 22050 Hz settings)
-        stream.WriteUint32(1);
-        stream.WriteUint32(8);
-        stream.WriteUint32(lowSampleRate);
-        stream.WriteUint32(numSamples);
-        stream.WriteUint32(1);
-        stream.WriteUint32(lowSampleRate);
+        numChannels = 1;
+        bitsPerSample = 8;
+        sampleRate = lowSampleRate;
+        numSamples = numSamples;
+        blockAlign = 1;
+        byteRate = lowSampleRate;
 
-        stream.WriteBool(mCompress);
+        waveData = lqWaveData;
+        waveDataSize = lqWaveDataSize;
+    }
+#endif
 
-        if (mCompress)
+    // Waveform Format
+    stream.WriteUint32(numChannels);
+    stream.WriteUint32(bitsPerSample);
+    stream.WriteUint32(sampleRate);
+    stream.WriteUint32(numSamples);
+    stream.WriteUint32(blockAlign);
+    stream.WriteUint32(byteRate);
+
+    bool compress = mCompress;
+    if (platform == Platform::Count)
+    {
+        // In editor, we only compress the data (destructive) if the compress internal flag is set.
+        // This feature is to reduce file sizes for big sounds like music. But once you compress internally,
+        // storing the data uncompressed later will not result in any better audio. Use only when needed.
+        compress = (mCompress && mCompressInternal);
+    }
+
+    stream.WriteBool(compress);
+
+    if (compress)
+    {
+        if (mCompressedData != nullptr && !lqConvert)
         {
-            Stream inStream((char*)compWaveData, wavDataSize);
-
-            PcmFormat format;
-            format.mBytesPerSample = 1;
-            format.mNumChannels = 1;
-            format.mSampleRate = lowSampleRate;
-
-            AUD_EncodeVorbis(inStream, stream, format);
+            // Writeout the already-computed compressed OGG data
+            stream.WriteUint32(mCompressedSize);
+            stream.WriteBytes(mCompressedData, mCompressedSize);
         }
         else
         {
-            // Waveform
-            stream.WriteUint32(wavDataSize);
-            for (uint32_t i = 0; i < wavDataSize; ++i)
-            {
-                stream.WriteUint8(compWaveData[i]);
-            }
-        }
+            // Output to a separate stream so we can determine the total size of the compressed data.
+            Stream outStream;
+            Stream inStream((char*)waveData, waveDataSize);
 
-        // Delete temporary array for low-quality waveform
-        delete compWaveData;
-        compWaveData = nullptr;
+            PcmFormat format;
+            format.mBytesPerSample = (bitsPerSample / 8);
+            format.mNumChannels = numChannels;
+            format.mSampleRate = sampleRate;
+
+            AUD_EncodeVorbis(inStream, outStream, format);
+
+            uint32_t compressedSize = outStream.GetSize();
+            stream.WriteUint32(compressedSize);
+            stream.WriteBytes((uint8_t*)outStream.GetData(), outStream.GetSize());
+        }
     }
     else
-#endif
     {
-        // Waveform Format
-        stream.WriteUint32(mNumChannels);
-        stream.WriteUint32(mBitsPerSample);
-        stream.WriteUint32(mSampleRate);
-        stream.WriteUint32(mNumSamples);
-        stream.WriteUint32(mBlockAlign);
-        stream.WriteUint32(mByteRate);
-
-        bool compress = mCompress;
-        if (platform == Platform::Count)
+        // Waveform
+        stream.WriteUint32(waveDataSize);
+        for (uint32_t i = 0; i < waveDataSize; ++i)
         {
-            // In editor, we only compress the data (destructive) if the compress internal flag is set.
-            // This feature is to reduce file sizes for big sounds like music. But once you compress internally,
-            // storing the data uncompressed later will not result in any better audio. Use only when needed.
-            compress = (mCompress && mCompressInternal);
+            stream.WriteUint8(waveData[i]);
         }
+    }
 
-        stream.WriteBool(compress);
-
-        if (compress)
-        {
-            Stream inStream((char*)GetWaveData(), GetWaveDataSize());
-
-            PcmFormat format;
-            format.mBytesPerSample = (mBitsPerSample / 8);
-            format.mNumChannels = mNumChannels;
-            format.mSampleRate = mSampleRate;
-
-            AUD_EncodeVorbis(inStream, stream, format);
-        }
-        else
-        {
-            // Waveform
-            stream.WriteUint32(mWaveDataSize);
-            for (uint32_t i = 0; i < mWaveDataSize; ++i)
-            {
-                stream.WriteUint8(mWaveData[i]);
-            }
-        }
+    if (lqWaveData != nullptr)
+    {
+        delete lqWaveData;
+        lqWaveData = nullptr;
     }
 }
 
@@ -270,6 +291,15 @@ void SoundWave::Destroy()
         AudioManager::StopSounds(this);
         AUD_FreeWaveBuffer(mWaveData);
         mWaveData = nullptr;
+    }
+
+    if (mCompressedData != nullptr)
+    {
+#if !EDITOR
+        // We should only have compressed data in EDITOR.
+        OCT_ASSERT(0);
+#endif
+        delete mCompressedData;
     }
 }
 
