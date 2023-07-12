@@ -21,7 +21,7 @@ public:
     virtual const char* GetTypeName() override;
     virtual const char* GetTypeImportExt() override;
 
-    void SetPcmData(uint8_t* data, uint32_t size, uint32_t bitsPerSample, uint32_t numChannels, uint32_t sampleRate);
+    void SetPcmData(uint8_t* data, uint32_t size, uint32_t numSamples, uint32_t bitsPerSample, uint32_t numChannels, uint32_t sampleRate);
 
     void SetVolumeMultiplier(float volume);
     float GetVolumeMultiplier() const;

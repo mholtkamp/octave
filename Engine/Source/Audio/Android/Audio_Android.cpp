@@ -487,6 +487,9 @@ void AUD_ProcessWaveBuffer(SoundWave* soundWave)
                     samples[i * 2 + 1] = int16_t((samples[i] + samples[i + 1]) + 0.5f);
                 }
             }
+
+            // We just doubled our sample count.
+            numSamples *= 2;
         }
 
         // Duplicate to stereo
@@ -499,9 +502,12 @@ void AUD_ProcessWaveBuffer(SoundWave* soundWave)
                 samples[i * 2] = samples[i];
                 samples[i * 2 + 1] = samples[i];
             }
+
+            // We just doubled our sample count.
+            numSamples *= 2;
         }
 
-        soundWave->SetPcmData(newWave, newSize, 16, 2, 44100);
+        soundWave->SetPcmData(newWave, newSize, numSamples, 16, 2, 44100);
 
         AUD_FreeWaveBuffer(oldWave);
         oldWave = nullptr;
