@@ -396,6 +396,9 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         }
         else if (platform == Platform::Android)
         {
+            // Copy contents of Packaged/Android folder into Android/app/src/main/assets folder so they get put into the APK.
+            SYS_Exec(std::string("cp -R " + packagedDir + "/* " + projectDir + "Android/app/src/main/assets/").c_str());
+
             // Invoke the gradle build
             std::string gradleDir = projectDir + "Android/";
 #if PLATFORM_WINDOWS
