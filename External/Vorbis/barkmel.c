@@ -1,3 +1,5 @@
+#if 0
+
 /********************************************************************
  *                                                                  *
  * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
@@ -61,3 +63,4 @@ int main(){
   return(0);
 }
 
+#endif

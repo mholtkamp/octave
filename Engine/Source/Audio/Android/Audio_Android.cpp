@@ -421,7 +421,91 @@ void AUD_FreeWaveBuffer(void* buffer)
 
 void AUD_ProcessWaveBuffer(SoundWave* soundWave)
 {
+    if (soundWave->GetBitsPerSample() != 16 ||
+        soundWave->GetSampleRate() != 44100 ||
+        soundWave->GetNumChannels() != 2)
+    {
+        // Our OpenSL audio players are set to use 2-channel, 16-bit samples at 44100 Hz.
+        // So if our source sound wave is different, we need to convert it to that format.
 
+        uint32_t numSamples = soundWave->GetNumSamples();
+        uint32_t numChannels = soundWave->GetNumChannels();
+        uint32_t sampleRate = soundWave->GetSampleRate();
+        uint32_t bytesPerSample = soundWave->GetBitsPerSample() / 8;
+
+        uint32_t oldSize = numSamples * bytesPerSample;
+        uint32_t newSize = numSamples * 2; // 2 bytes per sample
+
+        if (numChannels == 1)
+        {
+            // Need to add samples for second channel
+            newSize *= 2;
+        }
+
+        if (sampleRate == 22050)
+        {
+            // Need to interpolate extra samples so it sounds normal at 44100 Hz.
+            newSize *= 2;
+        }
+
+        uint8_t* newWave = AUD_AllocWaveBuffer(newSize);
+        uint8_t* oldWave = soundWave->GetWaveData();
+
+        // (1) Convert to 16 bit
+        if (bytesPerSample == 1)
+        {
+            for (int32_t i = int32_t(numSamples) - 1; i >= 0; --i)
+            {
+                int16_t sample = (int16_t)oldWave[i];
+                sample = sample * 256 - 32767;
+                *((int16_t*)(newWave + i * 2)) = sample;
+            }
+        }
+        else
+        {
+            // Copy the samples to newWave since the next two loops work in-place on newWave buffer.
+            memcpy(newWave, oldWave, oldSize);
+        }
+
+        //  Interpolate to 44100
+        if (sampleRate == 22050)
+        {
+            int16_t* samples = (int16_t*)newWave;
+
+            // Work backwards so we don't overwrite samples
+            for (int32_t i = int32_t(numSamples) - 1; i >= 0; --i)
+            {
+                if (i == (numSamples - 1))
+                {
+                    samples[i * 2] = samples[i];
+                    // Interpolate with 0? Essentially multiply 0.5f.
+                    samples[i * 2 + 1] = int16_t((samples[i] * 0.5f) + 0.5f);
+                }
+                else
+                {
+                    samples[i * 2] = samples[i];
+                    samples[i * 2 + 1] = int16_t((samples[i] + samples[i + 1]) + 0.5f);
+                }
+            }
+        }
+
+        // Duplicate to stereo
+        if (numChannels == 1)
+        {
+            int16_t* samples = (int16_t*)newWave;
+
+            for (int32_t i = int32_t(numSamples) - 1; i >= 0; --i)
+            {
+                samples[i * 2] = samples[i];
+                samples[i * 2 + 1] = samples[i];
+            }
+        }
+
+        soundWave->SetPcmData(newWave, newSize, 16, 2, 44100);
+
+        AUD_FreeWaveBuffer(oldWave);
+        oldWave = nullptr;
+    }
 }
 
 #endif
