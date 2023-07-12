@@ -387,6 +387,18 @@ void SoundWave::SetVolumeMultiplier(float volume)
     mVolumeMultiplier = volume;
 }
 
+void SoundWave::SetPcmData(uint8_t* data, uint32_t size, uint32_t bitsPerSample, uint32_t numChannels, uint32_t sampleRate)
+{
+    // Caller should make sure data is allocated with AUD_AllocWaveBuffer and freeing the previous buffer.
+    mWaveData = data;
+    mWaveDataSize = size;
+    mBitsPerSample = bitsPerSample;
+    mNumChannels = numChannels;
+    mSampleRate = sampleRate;
+    mBlockAlign = (sampleRate * numChannels * bitsPerSample) / 8;
+    mByteRate = (numChannels * bitsPerSample) / 8;
+}
+
 float SoundWave::GetVolumeMultiplier() const
 {
     return mVolumeMultiplier;
