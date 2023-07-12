@@ -91,11 +91,10 @@ ThreadFuncRet MaterialPipelineCache::BuildThreadFunc(void* arg)
             pipeline->SetFragmentShader(ENGINE_SHADER_DIR "ForwardSpec.frag");
 
             // Set depth / cull pipeline properties
-            if (blendMode == BlendMode::Opaque ||
-                blendMode == BlendMode::Masked)
+            if (depthless)
             {
-                pipeline->mDepthTestEnabled = !depthless;
-                pipeline->mDepthWriteEnabled = !depthless;
+                pipeline->mDepthTestEnabled = false;
+                pipeline->mDepthWriteEnabled = false;
             }
 
             switch (cullMode)
