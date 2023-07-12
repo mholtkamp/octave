@@ -397,7 +397,12 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         else if (platform == Platform::Android)
         {
             // Invoke the gradle build
-            std::string gradleCmd = "\"" + projectDir + "Android/gradlew.bat\" assembleRelease -p " + projectDir + "Android/";
+            std::string gradleDir = projectDir + "Android/";
+#if PLATFORM_WINDOWS
+            std::string gradleCmd = "cd " + gradleDir + " && gradlew.bat assembleRelease";
+#else
+            std::string gradleCmd = "cd " + gradleDir + " && \"./gradlew assembleRelease\"";
+#endif
             SYS_Exec(gradleCmd.c_str());
 
             // Rename the executable
