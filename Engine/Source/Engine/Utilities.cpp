@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <ctype.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -33,6 +34,8 @@ Platform GetPlatform()
     return Platform::Windows;
 #elif PLATFORM_LINUX
     return Platform::Linux;
+#elif PLATFORM_ANDROID
+    return Platform::Android;
 #elif PLATFORM_GAMECUBE
     return Platform::GameCube;
 #elif PLATFORM_WII
@@ -42,6 +45,28 @@ Platform GetPlatform()
 #else
     return Platform::Count;
 #endif
+}
+
+std::string StringToLower(const std::string& str)
+{
+    std::string ret;
+    for (uint32_t i = 0; i < str.size(); ++i)
+    {
+        ret.push_back(tolower(str[i]));
+    }
+
+    return ret;
+}
+
+std::string StringToUpper(const std::string& str)
+{
+    std::string ret;
+    for (uint32_t i = 0; i < str.size(); ++i)
+    {
+        ret.push_back(toupper(str[i]));
+    }
+
+    return ret;
 }
 
 std::string GetCurrentDirectoryPath()
@@ -277,6 +302,7 @@ const char* GetPlatformString(Platform platform)
     {
     case Platform::Windows: retString = "Windows"; break;
     case Platform::Linux: retString = "Linux"; break;
+    case Platform::Android: retString = "Android"; break;
     case Platform::GameCube: retString = "GameCube"; break;
     case Platform::Wii: retString = "Wii"; break;
     case Platform::N3DS: retString = "3DS"; break;

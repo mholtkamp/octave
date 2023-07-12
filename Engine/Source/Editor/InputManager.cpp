@@ -76,6 +76,7 @@ InputManager::InputManager()
 #elif PLATFORM_LINUX
     addPlatform("Linux", Platform::Linux, false);
 #endif
+    addPlatform("Android", Platform::Android, false);
     addPlatform("GameCube", Platform::GameCube, false);
     addPlatform("Wii", Platform::Wii, false);
     addPlatform("3DS", Platform::N3DS, false);

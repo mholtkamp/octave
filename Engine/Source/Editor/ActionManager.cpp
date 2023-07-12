@@ -127,11 +127,14 @@ void HandleBuildButtonPressed(Button* button)
     if (buttonText == "Windows")
     {
         am->BuildData(Platform::Windows, false);
-
     }
     else if (buttonText == "Linux")
     {
         am->BuildData(Platform::Linux, false);
+    }
+    else if (buttonText == "Android")
+    {
+        am->BuildData(Platform::Android, false);
     }
     else if (buttonText == "GameCube")
     {
@@ -169,6 +172,7 @@ void ActionManager::ShowBuildDataPrompt()
 #elif PLATFORM_LINUX
     actions.push_back("Linux");
 #endif
+    actions.push_back("Android");
     actions.push_back("GameCube");
     actions.push_back("Wii");
     actions.push_back("3DS");
@@ -366,7 +370,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     // ( ) Run the makefile to compile the game.
 #if STANDALONE_RELEASE
-    bool needCompile = !standalone || embedded;
+    bool needCompile = !standalone || embedded || platform == Platform::Android;
 #else
     bool needCompile = true;
 #endif
@@ -389,6 +393,21 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             std::string devenvCmd = std::string("devenv ") + solutionPath + " /Build \"Release|x64\" /Project " + buildProjName;
 
             SYS_Exec(devenvCmd.c_str());
+        }
+        else if (platform == Platform::Android)
+        {
+            // Invoke the gradle build
+            std::string gradleCmd = "\"" + projectDir + "Android/gradlew.bat\" assembleRelease -p " + projectDir + "Android/";
+            SYS_Exec(gradleCmd.c_str());
+
+            // Rename the executable
+            std::string srcExeName = StringToLower(projectName);
+            srcExeName += "-release.apk";
+
+            std::string dstExeName = projectName + ".apk";
+
+            std::string renameCmd = std::string("mv ") + projectDir + "/Android/app/build/outputs/apk/release/" + srcExeName + " " + projectDir + "/Android/app/build/outputs/apk/release/" + dstExeName;
+            SYS_Exec(renameCmd.c_str());
         }
         else
         {
@@ -431,6 +450,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     {
     case Platform::Windows: exeSrc += "Windows/x64/Release/"; break;
     case Platform::Linux: exeSrc += "Linux/"; break;
+    case Platform::Android: exeSrc += "../Android/app/build/outputs/apk/release/"; break;
     case Platform::GameCube: exeSrc += "GCN/"; break;
     case Platform::Wii: exeSrc += "Wii/"; break;
     case Platform::N3DS: exeSrc += "3DS/"; break;
@@ -445,6 +465,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     {
     case Platform::Windows: extension = ".exe"; break;
     case Platform::Linux: extension = ".out"; break;
+    case Platform::Android: extension = ".apk"; break;
     case Platform::GameCube: extension = ".dol"; break;
     case Platform::Wii: extension = ".dol"; break;
     case Platform::N3DS: extension = ".3dsx"; break;
@@ -475,17 +496,15 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     // Handle SpirV shaders on Vulkan platforms
     if (platform == Platform::Windows ||
-        platform == Platform::Linux)
+        platform == Platform::Linux ||
+        platform == Platform::Android)
     {
         // Compile shaders
-        if (platform == Platform::Windows)
-        {
-            SYS_Exec("cd Engine/Shaders/GLSL && \"./compile.bat\"");
-        }
-        else
-        {
-            SYS_Exec("cd Engine/Shaders/GLSL && \"./compile.sh\"");
-        }
+#if PLATFORM_WINDOWS
+        SYS_Exec("cd Engine/Shaders/GLSL && \"./compile.bat\"");
+#else
+        SYS_Exec("cd Engine/Shaders/GLSL && \"./compile.sh\"");
+#endif
 
         // Then copy over the binaries.
         CreateDir((packagedDir + "Engine/Shaders/").c_str());
