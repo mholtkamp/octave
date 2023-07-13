@@ -323,7 +323,6 @@ void SYS_AcquireFileData(const char* path, bool isAsset, int32_t maxSize, char*&
     outSize = 0;
 
     FILE* file = fopen(path, "rb");
-    OCT_ASSERT(file != nullptr);
 
     if (file != nullptr)
     {
