@@ -21,17 +21,43 @@
 extern uint32_t gNumEmbeddedAssets;
 #endif
 
+static std::string sProjectName;
+static std::string sDefaultLevel;
+
+void ReadIni()
+{
+    Stream iniStream;
+    iniStream.ReadFile("Engine.ini", true);
+
+    if (iniStream.GetSize() > 0)
+    {
+        char key[MAX_PATH_SIZE] = {};
+        char value[MAX_PATH_SIZE] = {};
+
+        while (iniStream.Scan("%[^=]=%s\n", key, value) != -1)
+        {
+            if (strncmp(key, "project", MAX_PATH_SIZE) == 0)
+            {
+                sProjectName = value;
+            }
+            else if (strncmp(key, "defaultLevel", MAX_PATH_SIZE) == 0)
+            {
+                sDefaultLevel = value;
+            }
+        }
+    }
+}
+
 InitOptions OctPreInitialize()
 {
     InitOptions initOptions;
 
-#if 1
-
     initOptions.mStandalone = true;
+
+#if !EDITOR
 
     initOptions.mWidth = 1280;
     initOptions.mHeight = 720;
-    //initOptions.mProjectName;
     initOptions.mUseAssetRegistry = false;
     initOptions.mVersion = 1;
 
@@ -61,13 +87,7 @@ InitOptions OctPreInitialize()
     initOptions.mWorkingDirectory = "sd://apps/RetroLeagueSD";
 #endif
 
-#endif
 
-    return initOptions;
-}
-
-void OctPostInitialize()
-{
     // Open Engine.ini and check for project name
     bool embedded = false;
 #if EMBEDDED_ENABLED
@@ -76,38 +96,20 @@ void OctPostInitialize()
 
     if (!embedded)
     {
-        std::string projName = "";
+        ReadIni();
 
-        FILE* file = fopen("Engine.ini", "r");
-
-        if (file != nullptr)
-        {
-            char key[MAX_PATH_SIZE] = {};
-            char value[MAX_PATH_SIZE] = {};
-
-            while (fscanf(file, "%[^=]=%s\n", key, value) != -1)
-            {
-                if (strncmp(key, "project", MAX_PATH_SIZE) == 0)
-                {
-                    projName = value;
-                }
-            }
-        }
-
-        if (projName != "")
-        {
-            LoadProject(projName + "/" + projName + ".octp");
-        }
+        initOptions.mProjectName = sProjectName;
+        initOptions.mDefaultLevel = (sDefaultLevel != "") ? sDefaultLevel : "L_Default";
     }
 
-    if (GetEngineConfig()->mDefaultLevel == "")
-    {
-        Level* defaultLevel = LoadAsset<Level>("L_Default");
-        if (defaultLevel != nullptr)
-        {
-            defaultLevel->LoadIntoWorld(GetWorld());
-        }
-    }
+#endif
+
+    return initOptions;
+}
+
+void OctPostInitialize()
+{
+
 }
 
 void OctPreUpdate()

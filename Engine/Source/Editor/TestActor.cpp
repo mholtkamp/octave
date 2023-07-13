@@ -117,6 +117,9 @@ void TestActor::Create()
     mScript = CreateComponent<ScriptComponent>();
     //mScript->SetFile("Engine/Scripts/Test.lua");
     //mScript->Create();
+
+    // Test actor only exists in the EDITOR builds. Don't allow saving it to a level.
+    SetTransient(true);
 }
 
 void TestActor::Destroy()
