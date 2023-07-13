@@ -11,20 +11,30 @@ static MutexObject* sMutex = nullptr;
 
 void InitializeLog()
 {
-    sMutex = SYS_CreateMutex();
-    sInitialized = true;
+    if (!sInitialized)
+    {
+        sMutex = SYS_CreateMutex();
+        sInitialized = true;
+    }
 }
 
 void ShutdownLog()
 {
-    sInitialized = false;
-    SYS_DestroyMutex(sMutex);
-    sMutex = nullptr;
+    if (sInitialized)
+    {
+        sInitialized = false;
+        SYS_DestroyMutex(sMutex);
+        sMutex = nullptr;
+    }
 }
 
 void LockLog()
 {
-    OCT_ASSERT(sInitialized);
+    if (!sInitialized)
+    {
+        InitializeLog();
+    }
+
     SYS_LockMutex(sMutex);
 }
 
