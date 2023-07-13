@@ -405,6 +405,8 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     bool needCompile = true;
 #endif
     std::string buildProjName = standalone ? "Standalone" : projectName;
+    std::string buildProjDir = standalone ? "Standalone/" : projectDir;
+    std::string buildDstExeName = standalone ? "Octave" : projectName;
 
     if (needCompile)
     {
@@ -427,7 +429,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         else if (platform == Platform::Android)
         {
             // Copy contents of Packaged/Android folder into Android/app/src/main/assets folder so they get put into the APK.
-            std::string androidAssetsDir = projectDir + "Android/app/src/main/assets/";
+            std::string androidAssetsDir = buildProjDir + "Android/app/src/main/assets/";
             if (!DoesDirExist(androidAssetsDir.c_str()))
             {
                 CreateDir(androidAssetsDir.c_str());
@@ -436,7 +438,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             SYS_Exec(std::string("cp -R " + packagedDir + "/* " + androidAssetsDir).c_str());
 
             // Invoke the gradle build
-            std::string gradleDir = projectDir + "Android/";
+            std::string gradleDir = buildProjDir + "Android/";
 #if PLATFORM_WINDOWS
             std::string gradleCmd = "cd " + gradleDir + " && gradlew.bat assembleRelease";
 #else
@@ -445,12 +447,12 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             SYS_Exec(gradleCmd.c_str());
 
             // Rename the executable
-            std::string srcExeName = StringToLower(projectName);
+            std::string srcExeName = StringToLower(buildProjName);
             srcExeName += "-release.apk";
 
-            std::string dstExeName = projectName + ".apk";
+            std::string dstExeName = buildDstExeName + ".apk";
 
-            std::string renameCmd = std::string("mv ") + projectDir + "/Android/app/build/outputs/apk/release/" + srcExeName + " " + projectDir + "/Android/app/build/outputs/apk/release/" + dstExeName;
+            std::string renameCmd = std::string("mv ") + buildProjDir + "/Android/app/build/outputs/apk/release/" + srcExeName + " " + buildProjDir + "/Android/app/build/outputs/apk/release/" + dstExeName;
             SYS_Exec(renameCmd.c_str());
         }
         else
@@ -466,7 +468,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             default: OCT_ASSERT(0); break;
             }
 
-            std::string makeCmd = std::string("make -C ") + (standalone ? buildProjName : projectDir) + " -f " + makefilePath + " -j 6";
+            std::string makeCmd = std::string("make -C ") + (buildProjDir) + " -f " + makefilePath + " -j 6";
             SYS_Exec(makeCmd.c_str());
         }
     }
@@ -478,7 +480,12 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     }
 
     // ( ) Copy the executable into the Packaged folder.
-    std::string exeSrc = (standalone ? buildProjName : projectDir) + "/Build/";
+    std::string exeSrc = buildProjDir + "/Build/";
+
+    if (platform == Platform::Android)
+    {
+        exeSrc = buildProjDir;
+    }
 
     if (!needCompile)
     {
@@ -494,7 +501,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     {
     case Platform::Windows: exeSrc += "Windows/x64/Release/"; break;
     case Platform::Linux: exeSrc += "Linux/"; break;
-    case Platform::Android: exeSrc += "../Android/app/build/outputs/apk/release/"; break;
+    case Platform::Android: exeSrc += "Android/app/build/outputs/apk/release/"; break;
     case Platform::GameCube: exeSrc += "GCN/"; break;
     case Platform::Wii: exeSrc += "Wii/"; break;
     case Platform::N3DS: exeSrc += "3DS/"; break;
