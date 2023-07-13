@@ -21,8 +21,6 @@
 extern uint32_t gNumEmbeddedAssets;
 #endif
 
-extern CommandLineOptions gCommandLineOptions;
-
 InitOptions OctPreInitialize()
 {
     InitOptions initOptions;
@@ -102,7 +100,7 @@ void OctPostInitialize()
         }
     }
 
-    if (gCommandLineOptions.mDefaultLevel == "")
+    if (GetEngineConfig()->mDefaultLevel == "")
     {
         Level* defaultLevel = LoadAsset<Level>("L_Default");
         if (defaultLevel != nullptr)
