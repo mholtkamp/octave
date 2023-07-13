@@ -150,6 +150,12 @@ bool Initialize(InitOptions& initOptions)
         initOptions.mHeight = sEngineConfig.mWindowHeight;
     }
 
+    if (GetPlatform() == Platform::Android)
+    {
+        // Android is required to use the asset registry because you can't (easily) iterate directories.
+        initOptions.mUseAssetRegistry = true;
+    }
+
     InitializeLog();
 
     CreateProfiler();
