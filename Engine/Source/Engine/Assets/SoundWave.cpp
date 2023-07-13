@@ -47,9 +47,9 @@ void SoundWave::LoadStream(Stream& stream, Platform platform)
     // Properties
     mVolumeMultiplier = stream.ReadFloat();
     mPitchMultiplier = stream.ReadFloat();
-    //mAudioClass = stream.ReadInt8();
-    //mCompress = stream.ReadBool();
-    //mCompressInternal = stream.ReadBool();
+    mAudioClass = stream.ReadInt8();
+    mCompress = stream.ReadBool();
+    mCompressInternal = stream.ReadBool();
 
     // Waveform Format
     mNumChannels = stream.ReadUint32();
@@ -59,7 +59,7 @@ void SoundWave::LoadStream(Stream& stream, Platform platform)
     mBlockAlign = stream.ReadUint32();
     mByteRate = stream.ReadUint32();
 
-    bool compressed = false; // stream.ReadBool();
+    bool compressed = stream.ReadBool();
 
     if (compressed)
     {
