@@ -227,7 +227,16 @@ static int HandleInput(struct android_app* app, AInputEvent* inputEvent)
                 float axisTriggerR = AMotionEvent_getAxisValue(inputEvent,
                     AMOTION_EVENT_AXIS_RTRIGGER,
                     0);
+                float axisGas = AMotionEvent_getAxisValue(inputEvent,
+                    AMOTION_EVENT_AXIS_GAS,
+                    0);
+                float axisBrake = AMotionEvent_getAxisValue(inputEvent,
+                    AMOTION_EVENT_AXIS_BRAKE,
+                    0);
 
+                axisTriggerL = glm::max(axisTriggerL, axisBrake);
+                axisTriggerR = glm::max(axisTriggerR, axisGas);
+                
                 INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_LTHUMB_X, axisX, gamepadIndex);
                 INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_LTHUMB_Y, -axisY, gamepadIndex);
                 INP_SetGamepadAxisValue(GamepadAxisCode::GAMEPAD_AXIS_RTHUMB_X, axisZ, gamepadIndex);
