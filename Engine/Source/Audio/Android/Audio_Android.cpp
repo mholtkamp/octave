@@ -484,7 +484,7 @@ void AUD_ProcessWaveBuffer(SoundWave* soundWave)
                 else
                 {
                     samples[i * 2] = samples[i];
-                    samples[i * 2 + 1] = int16_t((samples[i] + samples[i + 1]) + 0.5f);
+                    samples[i * 2 + 1] = int16_t((samples[i] + samples[i + 1]) * 0.5f + 0.5f);
                 }
             }
 
