@@ -582,7 +582,7 @@ void AssetManager::ImportEngineAssets()
         defaultParticle->GetParams().mAlphaEase = 0.1f;
         defaultParticle->GetParams().mSizeMin = { 0.5f, 0.5f };
         defaultParticle->GetParams().mSizeMax = { 0.5f, 0.5f };
-        defaultParticle->SetRadial(true);
+        defaultParticle->SetRadialVelocity(true);
         defaultParticle->SetSpawnRate(100.0f);
         defaultParticle->SetMaterial(defaultUnlitMaterial);
 

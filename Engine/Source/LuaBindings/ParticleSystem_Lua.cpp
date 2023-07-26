@@ -147,21 +147,41 @@ int ParticleSystem_Lua::GetLoops(lua_State* L)
     return 1;
 }
 
-int ParticleSystem_Lua::SetRadial(lua_State* L)
+int ParticleSystem_Lua::SetRadialVelocity(lua_State* L)
 {
     ParticleSystem* sys = CHECK_PARTICLE_SYSTEM(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
 
-    sys->SetRadial(value);
+    sys->SetRadialVelocity(value);
 
     return 0;
 }
 
-int ParticleSystem_Lua::IsRadial(lua_State* L)
+int ParticleSystem_Lua::IsRadialVelocity(lua_State* L)
 {
     ParticleSystem* sys = CHECK_PARTICLE_SYSTEM(L, 1);
 
-    bool ret = sys->IsRadial();
+    bool ret = sys->IsRadialVelocity();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int ParticleSystem_Lua::SetRadialSpawn(lua_State* L)
+{
+    ParticleSystem* sys = CHECK_PARTICLE_SYSTEM(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    sys->SetRadialSpawn(value);
+
+    return 0;
+}
+
+int ParticleSystem_Lua::IsRadialSpawn(lua_State* L)
+{
+    ParticleSystem* sys = CHECK_PARTICLE_SYSTEM(L, 1);
+
+    bool ret = sys->IsRadialSpawn();
 
     lua_pushboolean(L, ret);
     return 1;
@@ -537,11 +557,17 @@ void ParticleSystem_Lua::Bind()
     lua_pushcfunction(L, GetLoops);
     lua_setfield(L, mtIndex, "GetLoops");
 
-    lua_pushcfunction(L, SetRadial);
-    lua_setfield(L, mtIndex, "SetRadial");
+    lua_pushcfunction(L, SetRadialVelocity);
+    lua_setfield(L, mtIndex, "SetRadialVelocity");
 
-    lua_pushcfunction(L, IsRadial);
-    lua_setfield(L, mtIndex, "IsRadial");
+    lua_pushcfunction(L, IsRadialVelocity);
+    lua_setfield(L, mtIndex, "IsRadialVelocity");
+
+    lua_pushcfunction(L, SetRadialSpawn);
+    lua_setfield(L, mtIndex, "SetRadialSpawn");
+
+    lua_pushcfunction(L, IsRadialSpawn);
+    lua_setfield(L, mtIndex, "IsRadialSpawn");
 
     lua_pushcfunction(L, SetLockedRatio);
     lua_setfield(L, mtIndex, "SetLockedRatio");

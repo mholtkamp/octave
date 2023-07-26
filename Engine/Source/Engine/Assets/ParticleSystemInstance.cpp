@@ -40,7 +40,8 @@ void ParticleSystemInstance::CopyParticleSystem(const ParticleSystem* src)
     mBurstWindow = src->GetBurstWindow();
     mMaxParticles = src->GetMaxParticles();
     mLoops = src->GetLoops();
-    mRadial = src->IsRadial();
+    mRadialVelocity = src->IsRadialVelocity();
+    mRadialSpawn = src->IsRadialSpawn();
     mLockedRatio = src->IsRatioLocked();
 
     mMaterial = src->GetMaterial();

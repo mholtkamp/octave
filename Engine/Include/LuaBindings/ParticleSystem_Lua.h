@@ -30,8 +30,10 @@ struct ParticleSystem_Lua
     static int GetMaxParticles(lua_State* L);
     static int SetLoops(lua_State* L);
     static int GetLoops(lua_State* L);
-    static int SetRadial(lua_State* L);
-    static int IsRadial(lua_State* L);
+    static int SetRadialVelocity(lua_State* L);
+    static int IsRadialVelocity(lua_State* L);
+    static int SetRadialSpawn(lua_State* L);
+    static int IsRadialSpawn(lua_State* L);
     static int SetLockedRatio(lua_State* L);
     static int IsRatioLocked(lua_State* L);
 

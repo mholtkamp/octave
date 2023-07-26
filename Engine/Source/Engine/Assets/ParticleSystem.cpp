@@ -32,7 +32,8 @@ void ParticleSystem::LoadStream(Stream& stream, Platform platform)
     mBurstWindow = stream.ReadFloat();
     mMaxParticles = stream.ReadUint32();
     mLoops = stream.ReadUint32();
-    mRadial = stream.ReadBool();
+    mRadialVelocity = stream.ReadBool();
+    //mRadialSpawn = stream.ReadBool();
     mLockedRatio = stream.ReadBool();
 
     stream.ReadAsset(mMaterial);
@@ -81,7 +82,8 @@ void ParticleSystem::SaveStream(Stream& stream, Platform platform)
     stream.WriteFloat(mBurstWindow);
     stream.WriteUint32(mMaxParticles);
     stream.WriteUint32(mLoops);
-    stream.WriteBool(mRadial);
+    stream.WriteBool(mRadialVelocity);
+    //stream.WriteBool(mRadialSpawn);
     stream.WriteBool(mLockedRatio);
 
     stream.WriteAsset(mMaterial);
@@ -145,7 +147,8 @@ void ParticleSystem::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Burst Window", this, &mBurstWindow));
     outProps.push_back(Property(DatumType::Integer, "Max Particles", this, &mMaxParticles));
     outProps.push_back(Property(DatumType::Integer, "Loops", this, &mLoops));
-    outProps.push_back(Property(DatumType::Bool, "Radial", this, &mRadial));
+    outProps.push_back(Property(DatumType::Bool, "Radial Velocity", this, &mRadialVelocity));
+    outProps.push_back(Property(DatumType::Bool, "Radial Spawn", this, &mRadialSpawn));
     outProps.push_back(Property(DatumType::Bool, "Locked Ratio", this, &mLockedRatio));
 
     outProps.push_back(Property(DatumType::Vector, "Bounds Center", this, &mBounds.mCenter));
@@ -278,14 +281,24 @@ uint32_t ParticleSystem::GetLoops() const
     return mLoops;
 }
 
-void ParticleSystem::SetRadial(bool radial)
+void ParticleSystem::SetRadialVelocity(bool radial)
 {
-    mRadial = radial;
+    mRadialVelocity = radial;
 }
 
-bool ParticleSystem::IsRadial() const
+bool ParticleSystem::IsRadialVelocity() const
 {
-    return mRadial;
+    return mRadialVelocity;
+}
+
+void ParticleSystem::SetRadialSpawn(bool radial)
+{
+    mRadialSpawn = radial;
+}
+
+bool ParticleSystem::IsRadialSpawn() const
+{
+    return mRadialSpawn;
 }
 
 void ParticleSystem::SetLockedRatio(bool lockedRatio)
