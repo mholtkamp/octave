@@ -542,7 +542,20 @@ void ParticleComponent::SpawnNewParticles(float deltaTime)
             Particle newParticle;
 
             newParticle.mLifetime = Maths::RandRange(params.mLifetimeMin, params.mLifetimeMax);
-            newParticle.mPosition = Maths::RandRange(params.mPositionMin, params.mPositionMax);
+            if (system->IsRadialSpawn())
+            {
+                float dist = Maths::RandRange(params.mPositionMin.x, params.mPositionMax.x);
+                float yaw = Maths::RandRange(0.0f, PI * 2.0f);
+                float pitch = Maths::RandRange(-PI/2.0f, PI/2.0f);
+                glm::vec3 newPos = glm::vec3(0.0f, 0.0f, dist);
+                newPos = glm::rotate(newPos, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+                newPos = glm::rotate(newPos, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+                newParticle.mPosition = newPos;
+            }
+            else
+            {
+                newParticle.mPosition = Maths::RandRange(params.mPositionMin, params.mPositionMax);
+            }
             newParticle.mVelocity = Maths::RandRange(params.mVelocityMin, params.mVelocityMax);
             newParticle.mSize = Maths::RandRange(params.mSizeMin, params.mSizeMax);
             newParticle.mRotation = Maths::RandRange(params.mRotationMin, params.mRotationMax);
@@ -555,7 +568,7 @@ void ParticleComponent::SpawnNewParticles(float deltaTime)
                 newParticle.mSize.y = ratioYX * newParticle.mSize.x;
             }
 
-            if (system->IsRadial())
+            if (system->IsRadialVelocity())
             {
                 // Velocity will be oriented away from origin.
                 float speed = newParticle.mVelocity.x;

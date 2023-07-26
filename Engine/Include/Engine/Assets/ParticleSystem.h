@@ -96,8 +96,11 @@ public:
     void SetLoops(uint32_t loops);
     uint32_t GetLoops() const;
 
-    void SetRadial(bool radial);
-    bool IsRadial() const;
+    void SetRadialVelocity(bool radial);
+    bool IsRadialVelocity() const;
+
+    void SetRadialSpawn(bool radial);
+    bool IsRadialSpawn() const;
 
     void SetLockedRatio(bool lockedRatio);
     bool IsRatioLocked() const;
@@ -112,7 +115,8 @@ protected:
     float mBurstWindow = 0.1f;
     uint32_t mMaxParticles = 0;
     uint32_t mLoops = 0;
-    bool mRadial = false;
+    bool mRadialVelocity = false;
+    bool mRadialSpawn = false;
     bool mLockedRatio = true;
 
     MaterialRef mMaterial = nullptr;
