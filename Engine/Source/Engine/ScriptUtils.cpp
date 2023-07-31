@@ -191,16 +191,17 @@ bool ScriptUtils::RunScript(const char* fileName, Datum* ret)
             luaString.assign(luaStream.GetData(), luaStream.GetSize());
         }
 
-        if (luaL_dostring(L, luaString.c_str()) == LUA_OK)
-        {
-            successful = true;
-        }
-        else
+        std::string chunkName = "@" + className + ".lua";
+        if (luaL_loadbuffer(L, luaString.c_str(), luaString.size(), chunkName.c_str()) || lua_pcall(L, 0, 1, LUA_MULTRET))
         {
             LogError("Lua Error: %s\n", lua_tostring(L, -1));
             if (sBreakOnScriptError) { OCT_ASSERT(0); }
 
             LogError("Couldn't script file %s", className.c_str());
+        }
+        else
+        {
+            successful = true;
         }
 
         if (successful && ret != nullptr)
