@@ -960,7 +960,7 @@ void Actor::AddComponent(Component* component)
 
     component->SetOwner(this);
 
-    if (component->GetStaticType() == ScriptComponent::GetStaticType())
+    if (component->GetType() == ScriptComponent::GetStaticType())
     {
         ++mNumScriptComps;
     }
