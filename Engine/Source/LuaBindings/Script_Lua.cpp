@@ -86,6 +86,8 @@ void Script_Lua::Bind()
 
     lua_pushcfunction(L, Script_Lua::Load);
     lua_setfield(L, tableIdx, "Load");
+    lua_pushcfunction(L, Script_Lua::Load);
+    lua_setfield(L, tableIdx, "Require");
 
     lua_pushcfunction(L, Script_Lua::Run);
     lua_setfield(L, tableIdx, "Run");
