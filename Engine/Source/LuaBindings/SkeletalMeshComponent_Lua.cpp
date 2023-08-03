@@ -36,11 +36,12 @@ int SkeletalMeshComponent_Lua::PlayAnimation(lua_State* L)
 {
     SkeletalMeshComponent* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* animName = CHECK_STRING(L, 2);
-    bool loop = CHECK_BOOLEAN(L, 3);
+    bool loop = false;
     float speed = 1.0f;
     float weight = 1.0f;
     uint8_t priority = 255;
 
+    if (!lua_isnone(L, 3)) { loop = CHECK_BOOLEAN(L, 3); }
     if (!lua_isnone(L, 4)) { speed = CHECK_NUMBER(L, 4); }
     if (!lua_isnone(L, 5)) { weight = CHECK_NUMBER(L, 5); }
     if (!lua_isnone(L, 6)) { priority = (uint8_t) CHECK_INTEGER(L, 6); }

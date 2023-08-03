@@ -450,7 +450,10 @@ void Maths_Lua::Bind()
     lua_pushcfunction(L, Rand);
     lua_setfield(L, tableIdx, "Rand");
 
+    lua_pushvalue(L, -1);
     lua_setglobal(L, MATHS_LUA_NAME);
+
+    lua_setglobal(L, "Math");
 
     OCT_ASSERT(lua_gettop(L) == 0);
 }
