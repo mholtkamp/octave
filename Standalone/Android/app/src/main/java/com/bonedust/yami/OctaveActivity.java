@@ -1,7 +1,10 @@
 package com.bonedust.standalone;
 
 import android.app.NativeActivity;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -16,6 +19,9 @@ public class OctaveActivity extends NativeActivity {
     }
 
     private ActivityMainBinding binding;
+
+    private WifiManager wifiManager;
+    private MulticastLock multicastLock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +55,35 @@ public class OctaveActivity extends NativeActivity {
             setImmersiveSticky();
         }
         super.onResume();
+
+        // Acquire multicast lock. In the future, maybe only do this when searching for LAN sessions.
+        // If we don't acquire a multicast lock then we won't be able to receive LAN session broadcasts.
+        if (wifiManager == null)
+        {
+            wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        }
+
+        if (multicastLock == null)
+        {
+            multicastLock = wifiManager.createMulticastLock("Octave");
+            multicastLock.setReferenceCounted(true);
+        }
+
+        if (multicastLock != null && !multicastLock.isHeld())
+        {
+            multicastLock.acquire();
+        }
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+
+        if (multicastLock != null && multicastLock.isHeld())
+        {
+            multicastLock.release();
+        }
     }
 
     void setImmersiveSticky() {
@@ -74,10 +109,4 @@ public class OctaveActivity extends NativeActivity {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
         }
     }
-
-    /**
-     * A native method that is implemented by the 'standalone' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI();
 }
