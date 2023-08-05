@@ -354,6 +354,7 @@ void NetworkManager::BeginSessionSearch()
     mSessions.shrink_to_fit();
     mSearchSocket = NET_SocketCreate();
     NET_SocketSetBlocking(mSearchSocket, false);
+    NET_SocketSetBroadcast(mSearchSocket, true);
 
     if (mSearchSocket >= 0)
     {
