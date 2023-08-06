@@ -312,8 +312,6 @@ void AUD_Play(
         LogDebug("Skipping sound %s", soundWave->GetName().c_str());
     }
 
-    LogDebug("Play Sound %s", soundWave->GetName().c_str());
-
     (*(sPlayerObjs[voiceIndex]))->GetState(sPlayerObjs[voiceIndex], &playerState);
 
     if (playerState == SL_OBJECT_STATE_REALIZED)

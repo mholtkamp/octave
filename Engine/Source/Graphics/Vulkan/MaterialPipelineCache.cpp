@@ -302,8 +302,6 @@ Pipeline* MaterialPipelineCache::GetPipeline(uint32_t id, VertexType vertexType)
             MaterialPipelineRequest request;
             request.mId = id;
 
-            LogWarning("Request Pipeline: %d", id);
-
             SYS_LockMutex(mMutex);
             mRequests.push_back(request);
             SYS_UnlockMutex(mMutex);
@@ -380,8 +378,6 @@ void MaterialPipelineCache::Update()
         }
 
         mPipelines[id] = mResults[i].mPipeline;
-
-        LogDebug("Received Pipeline: %d", id);
     }
 
     mResults.clear();
