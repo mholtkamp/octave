@@ -50,9 +50,10 @@ SOURCES		:=	Source \
 				Source/Network/3DS \
 				Source/LuaBindings \
 				../External/Lua \
+				../External/Vorbis \
 				Shaders/PICA200
 DATA		:=	Data
-INCLUDES	:=	Include Include/Engine ../External ../External/Bullet
+INCLUDES	:=	Include Include/Engine ../External ../External/Bullet ../External/Vorbis 
 GRAPHICS	:=	Graphics
 GFXBUILD	:=	$(BUILD)
 #ROMFS		:=	romfs
