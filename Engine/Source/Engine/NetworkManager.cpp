@@ -309,14 +309,14 @@ void NetworkManager::OpenSession(uint16_t port)
             // Broadcasting using subnet mask wasn't working on android
             // (Probably because the subnet mask was incorrect)
             // Need to check this on other platforms, but 255.255.255.255 works fine?
-#if 0
+#if PLATFORM_ANDROID
+            mBroadcastIp = NET_IpStringToUint32("255.255.255.255");
+#else
             // Determine the broadcast IP based on the subnet mask.
             uint32_t subnetMask = NET_GetSubnetMask();
             uint32_t localIp = NET_GetIpAddress();
             uint32_t netIp = localIp & subnetMask;
             mBroadcastIp = netIp | (~subnetMask);
-#else
-            mBroadcastIp = NET_IpStringToUint32("255.255.255.255");
 #endif
 
             LogDebug("Broadcast IP: %08x", mBroadcastIp);
