@@ -544,13 +544,21 @@ void ParticleComponent::SpawnNewParticles(float deltaTime)
             newParticle.mLifetime = Maths::RandRange(params.mLifetimeMin, params.mLifetimeMax);
             if (system->IsRadialSpawn())
             {
-                float dist = Maths::RandRange(params.mPositionMin.x, params.mPositionMax.x);
+                // Doing the powf(x,1/3) seems to be important for getting a uniform distribution in sphere.
+                float distUnit = Maths::RandRange(params.mPositionMin.x, params.mPositionMax.x);
+                distUnit = Maths::Map(distUnit, params.mPositionMin.x, params.mPositionMax.x, 0.0f, 1.0f);
+                distUnit = powf(distUnit, 1 / 3.0f);
+                distUnit = Maths::Map(distUnit, 0.0f, 1.0f, params.mPositionMin.x, params.mPositionMax.x);
+
                 float yaw = Maths::RandRange(0.0f, PI * 2.0f);
                 float pitch = Maths::RandRange(-PI/2.0f, PI/2.0f);
-                glm::vec3 newPos = glm::vec3(0.0f, 0.0f, dist);
+                glm::vec3 newPos = glm::vec3(0.0f, 0.0f, distUnit);
                 newPos = glm::rotate(newPos, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
                 newPos = glm::rotate(newPos, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
                 newParticle.mPosition = newPos;
+
+                float dist = powf(distUnit, 1 / 3.0f);
+
             }
             else
             {
