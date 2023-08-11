@@ -197,7 +197,7 @@ bool ScriptUtils::RunScript(const char* fileName, Datum* ret)
             LogError("Lua Error: %s\n", lua_tostring(L, -1));
             if (sBreakOnScriptError) { OCT_ASSERT(0); }
 
-            LogError("Couldn't script file %s", className.c_str());
+            LogError("Couldn't load script file %s", className.c_str());
         }
         else
         {
