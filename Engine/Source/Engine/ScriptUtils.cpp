@@ -192,7 +192,7 @@ bool ScriptUtils::RunScript(const char* fileName, Datum* ret)
         }
 
         std::string chunkName = "@" + className + ".lua";
-        if (luaL_loadbuffer(L, luaString.c_str(), luaString.size(), chunkName.c_str()) || lua_pcall(L, 0, 1, LUA_MULTRET))
+        if (luaL_loadbuffer(L, luaString.c_str(), luaString.size(), chunkName.c_str()) || lua_pcall(L, 0, LUA_MULTRET, 0))
         {
             LogError("Lua Error: %s\n", lua_tostring(L, -1));
             if (sBreakOnScriptError) { OCT_ASSERT(0); }
