@@ -57,6 +57,7 @@ public:
     void DestroyActor(Actor* actor);
     void DestroyActor(uint32_t index);
     void DestroyAllActors();
+    void FlushPendingDestroys();
     const std::vector<Actor*>& GetActors() const;
     Actor* FindActor(const std::string& name);
     Actor* FindActor(NetId netId);
