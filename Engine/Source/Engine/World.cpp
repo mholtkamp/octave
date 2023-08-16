@@ -210,6 +210,17 @@ void World::DestroyAllActors()
     SpawnDefaultCamera();
 }
 
+void World::FlushPendingDestroys()
+{
+    for (int32_t i = int32_t(mActors.size()) - 1; i >= 0; --i)
+    {
+        if (mActors[i]->IsPendingDestroy())
+        {
+            DestroyActor(i);
+        }
+    }
+}
+
 const std::vector<Actor*>& World::GetActors() const
 {
     return mActors;
