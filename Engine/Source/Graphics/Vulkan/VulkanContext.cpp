@@ -212,7 +212,7 @@ void VulkanContext::BeginFrame()
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        RecreateSwapchain(true);
+        RecreateSwapchain(false);
     }
     else if (result != VK_SUCCESS &&
              result != VK_SUBOPTIMAL_KHR)
