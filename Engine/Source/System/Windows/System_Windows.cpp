@@ -306,9 +306,17 @@ void SYS_Update()
         }
     }
 
-    if (INP_IsKeyDown(KEY_ALT_L) && INP_IsKeyJustDown(KEY_ENTER))
+    if (INP_IsKeyDown(KEY_ALT_L) || INP_IsKeyDown(KEY_ALT_R))
     {
-        SYS_SetFullscreen(!GetEngineState()->mSystem.mFullscreen);
+        if (INP_IsKeyJustDown(KEY_ENTER))
+        {
+            SYS_SetFullscreen(!GetEngineState()->mSystem.mFullscreen);
+        }
+
+        if (INP_IsKeyJustDown(KEY_F4))
+        {
+            Quit();
+        }
     }
 }
 
