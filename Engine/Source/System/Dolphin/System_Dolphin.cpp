@@ -691,4 +691,14 @@ ScreenOrientation SYS_GetScreenOrientation()
     return ScreenOrientation::Landscape;
 }
 
+void SYS_SetFullscreen(bool fullscreen)
+{
+
+}
+
+bool SYS_IsFullscreen()
+{
+    return true;
+}
+
 #endif

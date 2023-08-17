@@ -243,6 +243,7 @@ struct EngineConfig
     int32_t mWindowWidth = 0;
     int32_t mWindowHeight = 0;
     bool mValidateGraphics = false;
+    bool mFullscreen = false;
 };
 
 enum class ConsoleMode

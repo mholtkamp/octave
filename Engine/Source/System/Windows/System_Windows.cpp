@@ -276,6 +276,11 @@ void SYS_Initialize()
     // Window client area size must be at least 1 pixel high, to prevent crash.
     engineState->mSystem.mMinSize.x = GetSystemMetrics(SM_CXMINTRACK);
     engineState->mSystem.mMinSize.y = GetSystemMetrics(SM_CYMINTRACK) + 1;
+
+    if (GetEngineConfig()->mFullscreen)
+    {
+        SYS_SetFullscreen(true);
+    }
 }
 
 void SYS_Shutdown()
@@ -905,6 +910,11 @@ void SYS_SetFullscreen(bool fullscreen)
             ResizeWindow(sSavedWidth, sSavedHeight);
         }
     }
+}
+
+bool SYS_IsFullscreen()
+{
+    return GetEngineState()->mSystem.mFullscreen;
 }
 
 #endif
