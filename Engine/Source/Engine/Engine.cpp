@@ -125,6 +125,10 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
             sEngineConfig.mWindowHeight = height;
             i += 2;
         }
+        else if (strcmp(argv[i], "-fullscreen") == 0)
+        {
+            sEngineConfig.mFullscreen = true;
+        }
         else if (strcmp(argv[i], "-validate") == 0)
         {
             OCT_ASSERT(i + 1 < argc);

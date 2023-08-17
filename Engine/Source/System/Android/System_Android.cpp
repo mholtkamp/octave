@@ -923,4 +923,14 @@ ScreenOrientation SYS_GetScreenOrientation()
     return orientation;
 }
 
+void SYS_SetFullscreen(bool fullscreen)
+{
+
+}
+
+bool SYS_IsFullscreen()
+{
+    return true;
+}
+
 #endif

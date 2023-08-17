@@ -76,6 +76,23 @@ int System_Lua::GetScreenOrientation(lua_State* L)
     return 1;
 }
 
+int System_Lua::SetFullscreen(lua_State* L)
+{
+    bool fullscreen = CHECK_BOOLEAN(L, 1);
+
+    SYS_SetFullscreen(fullscreen);
+
+    return 0;
+}
+
+int System_Lua::IsFullscreen(lua_State* L)
+{
+    bool ret = SYS_IsFullscreen();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 void System_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -103,6 +120,12 @@ void System_Lua::Bind()
 
     lua_pushcfunction(L, GetScreenOrientation);
     lua_setfield(L, tableIdx, "GetScreenOrientation");
+
+    lua_pushcfunction(L, SetFullscreen);
+    lua_setfield(L, tableIdx, "SetFullscreen");
+
+    lua_pushcfunction(L, IsFullscreen);
+    lua_setfield(L, tableIdx, "IsFullscreen");
 
     lua_setglobal(L, "System");
 
