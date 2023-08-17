@@ -265,6 +265,8 @@ struct EngineState
     std::string mProjectName;
     std::string mAssetDirectory;
     std::string mSolutionPath;
+    int32_t mArgC = 0;
+    char** mArgV = nullptr;
     float mGameDeltaTime = 0.0f;
     float mRealDeltaTime = 0.0f;
     float mGameElapsedTime = 0.0f;

@@ -673,6 +673,8 @@ lua_State* GetLua()
 #if !EDITOR
 void GameMain(int32_t argc, char** argv)
 {
+    sEngineState.mArgC = argc;
+    sEngineState.mArgV = argv;
     ReadCommandLineArgs(argc, argv);
     InitOptions initOptions = OctPreInitialize();
     Initialize(initOptions);
