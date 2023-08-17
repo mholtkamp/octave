@@ -1084,9 +1084,8 @@ int32_t Renderer::FrustumCullLights(const CameraFrustum& frustum, std::vector<Li
 
 void Renderer::Render(World* world)
 {
-    if (world == nullptr || 
-        GetEngineState()->mConsoleMode ||
-        GetEngineState()->mWindowMinimized)
+    if (world == nullptr ||
+        GetEngineState()->mConsoleMode)
     {
         // Cannot record command buffers yet.
         return;
@@ -1145,6 +1144,12 @@ void Renderer::Render(World* world)
         {
             FrustumCull(activeCamera);
         }
+    }
+
+    // Still update UI and cull when minimized (to update animation and particle simulation)
+    if (GetEngineState()->mWindowMinimized)
+    {
+        return;
     }
 
     {
