@@ -14,6 +14,9 @@
 #include <Shlobj.h>
 #include <assert.h>
 
+#define OCT_WINDOWED_STYLE_FLAGS (WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_SYSMENU)
+#define OCT_FULLSCREEN_STYLE_FLAGS (OCT_WINDOWED_STYLE_FLAGS & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU))
+
 // MS-Windows event handling function:
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -255,8 +258,7 @@ void SYS_Initialize()
     engineState->mSystem.mWindow = CreateWindowEx(0,
         engineState->mProjectName.c_str(), // class name
         engineState->mProjectName.c_str(), // app name
-        WS_OVERLAPPEDWINDOW | // window style
-        WS_VISIBLE | WS_SYSMENU,
+        OCT_WINDOWED_STYLE_FLAGS,
         100, 100,           // x/y coordinates
         wr.right - wr.left, // width
         wr.bottom - wr.top, // height
@@ -891,18 +893,14 @@ void SYS_SetFullscreen(bool fullscreen)
             int width = GetSystemMetrics(SM_CXSCREEN);
             int height = GetSystemMetrics(SM_CYSCREEN);
 
-            DWORD dwStyle = GetWindowLong(system.mWindow, GWL_STYLE);
-            dwStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
-            SetWindowLong(system.mWindow, GWL_STYLE, dwStyle);
-
+            SetWindowLong(system.mWindow, GWL_STYLE, OCT_FULLSCREEN_STYLE_FLAGS);
             SetWindowPos(system.mWindow, HWND_TOP, 0, 0, width, height, 0);
-
             ResizeWindow(width, height);
         }
         else
         {
 
-            SetWindowLong(system.mWindow, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_SYSMENU);
+            SetWindowLong(system.mWindow, GWL_STYLE, OCT_WINDOWED_STYLE_FLAGS);
             SetWindowPos(system.mWindow, HWND_TOP, sSavedX, sSavedY, sSavedWidth, sSavedHeight, 0);
             ResizeWindow(sSavedWidth, sSavedHeight);
         }
