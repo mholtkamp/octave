@@ -97,6 +97,7 @@ struct SystemState
     HWND mWindow = nullptr;
     POINT mMinSize = {};
     bool mWindowHasFocus = true;
+    bool mFullscreen = false;
 #elif PLATFORM_LINUX
     xcb_connection_t* mXcbConnection = nullptr;
     xcb_screen_t* mXcbScreen = nullptr;
