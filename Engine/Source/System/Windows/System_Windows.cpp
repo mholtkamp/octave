@@ -872,8 +872,6 @@ void SYS_SetFullscreen(bool fullscreen)
     static int sSavedWidth = 0;
     static int sSavedHeight = 0;
 
-    LogDebug("SYS_SetFullscreen");
-
     SystemState& system = GetEngineState()->mSystem;
     if (system.mFullscreen != fullscreen)
     {
