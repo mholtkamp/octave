@@ -298,6 +298,11 @@ void SYS_Update()
             DispatchMessage(&msg);
         }
     }
+
+    if (INP_IsKeyDown(KEY_ALT_L) && INP_IsKeyJustDown(KEY_ENTER))
+    {
+        SYS_SetFullscreen(!GetEngineState()->mSystem.mFullscreen);
+    }
 }
 
 // Files
@@ -858,6 +863,52 @@ void SYS_SetScreenOrientation(ScreenOrientation orientation)
 ScreenOrientation SYS_GetScreenOrientation()
 {
     return ScreenOrientation::Landscape;
+}
+
+void SYS_SetFullscreen(bool fullscreen)
+{
+    static int sSavedX = 0;
+    static int sSavedY = 0;
+    static int sSavedWidth = 0;
+    static int sSavedHeight = 0;
+
+    LogDebug("SYS_SetFullscreen");
+
+    SystemState& system = GetEngineState()->mSystem;
+    if (system.mFullscreen != fullscreen)
+    {
+        system.mFullscreen = fullscreen;
+
+        if (fullscreen)
+        {
+            // First, save the windowed pos and size so we can restore it to the correct location.
+            RECT winRect;
+            GetWindowRect(system.mWindow, &winRect);
+
+            sSavedX = winRect.left;
+            sSavedY = winRect.top;
+            sSavedWidth = winRect.right - winRect.left;
+            sSavedHeight = winRect.bottom - winRect.top;
+
+            int width = GetSystemMetrics(SM_CXSCREEN);
+            int height = GetSystemMetrics(SM_CYSCREEN);
+
+            DWORD dwStyle = GetWindowLong(system.mWindow, GWL_STYLE);
+            dwStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+            SetWindowLong(system.mWindow, GWL_STYLE, dwStyle);
+
+            SetWindowPos(system.mWindow, HWND_TOP, 0, 0, width, height, 0);
+
+            ResizeWindow(width, height);
+        }
+        else
+        {
+
+            SetWindowLong(system.mWindow, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_SYSMENU);
+            SetWindowPos(system.mWindow, HWND_TOP, sSavedX, sSavedY, sSavedWidth, sSavedHeight, 0);
+            ResizeWindow(sSavedWidth, sSavedHeight);
+        }
+    }
 }
 
 #endif

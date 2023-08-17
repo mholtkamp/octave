@@ -67,6 +67,7 @@ void SYS_SetWindowTitle(const char* title);
 bool SYS_DoesWindowHaveFocus();
 void SYS_SetScreenOrientation(ScreenOrientation orientation);
 ScreenOrientation SYS_GetScreenOrientation();
+void SYS_SetFullscreen(bool fullscreen);
 
 struct ScopedLock
 {

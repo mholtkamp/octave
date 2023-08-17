@@ -208,23 +208,22 @@ void VulkanContext::BeginFrame()
         RecreateSwapchain(false);
     }
 
-    if (mCommandBuffers.size() == 0)
-    {
-        CreateCommandBuffers();
-    }
-
     VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, std::numeric_limits<uint64_t>::max(), mImageAvailableSemaphore, VK_NULL_HANDLE, &mSwapchainImageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        RecreateSwapchain(false);
-        return;
+        RecreateSwapchain(true);
     }
     else if (result != VK_SUCCESS &&
              result != VK_SUBOPTIMAL_KHR)
     {
         LogError("Failed to acquire swapchain image");
         OCT_ASSERT(0);
+    }
+
+    if (mCommandBuffers.size() == 0)
+    {
+        CreateCommandBuffers();
     }
 
     VkCommandBuffer cb = mCommandBuffers[mFrameIndex];
