@@ -108,6 +108,22 @@ void HandleXcbEvent(xcb_generic_event_t* event)
     }
 }
 
+static xcb_intern_atom_reply_t* InternAtom(const char* atomId)
+{
+    SystemState& system = GetEngineState()->mSystem;
+    xcb_intern_atom_cookie_t cookie = xcb_intern_atom(system.mXcbConnection, 0, strlen(atomId), atomId);
+    xcb_flush(system.mXcbConnection);
+    xcb_generic_error_t* error = nullptr;
+    xcb_intern_atom_reply_t* reply = xcb_intern_atom_reply(system.mXcbConnection, cookie, &error);
+    
+    if (error)
+    {
+        LogError("Intern: %d", (int) error->error_code);
+    }
+
+    return reply;
+}
+
 void SYS_Initialize()
 {
     EngineState& engine = *GetEngineState();
@@ -178,12 +194,31 @@ void SYS_Initialize()
 		system.mXcbWindow, (*reply).atom, 4, 32, 1,
 		&(*system.mAtomDeleteWindow).atom);
 
-	// std::string windowTitle = getWindowTitle();
-	// xcb_change_property(system.mXcbConnection, XCB_PROP_MODE_REPLACE,
-	// 	system.mXcbWindow, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-	// 	title.size(), windowTitle.c_str());
+	std::string windowTitle = GetEngineState()->mProjectName;
+	xcb_change_property(system.mXcbConnection, XCB_PROP_MODE_REPLACE,
+		system.mXcbWindow, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+		windowTitle.size(), windowTitle.c_str());
 
 	free(reply);
+
+    if (GetEngineConfig()->mFullscreen)
+    {
+        xcb_intern_atom_reply_t* atomState = InternAtom("_NET_WM_STATE");
+        xcb_intern_atom_reply_t* atomFullscreen = InternAtom("_NET_WM_STATE_FULLSCREEN");
+
+        xcb_change_property(
+            system.mXcbConnection,
+            XCB_PROP_MODE_REPLACE,
+            system.mXcbWindow,
+            atomState->atom,
+            XCB_ATOM_ATOM,
+            32,
+            1,
+            &(atomFullscreen->atom));
+
+        free(atomState);
+        free(atomFullscreen);
+    }
 
 	// /**
 	//  * Set the WM_CLASS property to display
@@ -232,6 +267,10 @@ void SYS_Initialize()
         0,          /* green value for the background of the source */
         0 );        /* blue value for the background of the source */
 
+    if (GetEngineConfig()->mFullscreen)
+    {
+        SYS_SetFullscreen(true);
+    }
 }
 
 void SYS_Shutdown()
@@ -305,6 +344,19 @@ void SYS_Update()
     }
 
     sPrevWarped = warped;
+
+    if (INP_IsKeyDown(KEY_ALT_L) || INP_IsKeyDown(KEY_ALT_R))
+    {
+        if (INP_IsKeyJustDown(KEY_ENTER))
+        {
+            SYS_SetFullscreen(!GetEngineState()->mSystem.mFullscreen);
+        }
+
+        if (INP_IsKeyJustDown(KEY_F4))
+        {
+            Quit();
+        }
+    }
 }
 
 // Files
@@ -770,12 +822,35 @@ ScreenOrientation SYS_GetScreenOrientation()
 
 void SYS_SetFullscreen(bool fullscreen)
 {
+    SystemState& system = GetEngineState()->mSystem;
 
+    if (system.mFullscreen != fullscreen)
+    {
+        system.mFullscreen = fullscreen;
+
+        xcb_intern_atom_reply_t* atomState = InternAtom("_NET_WM_STATE");
+        xcb_intern_atom_reply_t* atomFullscreen = InternAtom("_NET_WM_STATE_FULLSCREEN");
+
+        xcb_client_message_event_t ev = {0};
+        ev.response_type = XCB_CLIENT_MESSAGE;
+        ev.type = atomState->atom;
+        ev.window = system.mXcbWindow;
+        ev.format = 32;
+        ev.data.data32[0] = fullscreen ? 1 : 0;
+        ev.data.data32[1] = atomFullscreen->atom;
+        ev.data.data32[2] = 0;
+
+        xcb_send_event(system.mXcbConnection, 0, system.mXcbScreen->root, XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY, (char *)&ev);
+        xcb_flush(system.mXcbConnection);
+
+        free(atomState);
+        free(atomFullscreen);
+    }
 }
 
 bool SYS_IsFullscreen()
 {
-    return true;
+    return GetEngineState()->mSystem.mFullscreen;
 }
 
 #endif

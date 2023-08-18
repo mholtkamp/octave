@@ -104,6 +104,7 @@ struct SystemState
     xcb_window_t mXcbWindow = 0;
     xcb_intern_atom_reply_t* mAtomDeleteWindow = nullptr;
     xcb_cursor_t mNullCursor = XCB_NONE;
+    bool mFullscreen = false;
 #elif PLATFORM_ANDROID
     android_app* mState = nullptr;
     ANativeWindow* mWindow = nullptr;
