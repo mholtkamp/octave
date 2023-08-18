@@ -69,6 +69,7 @@ public:
 
     void DirtyAllWidgets();
     const std::vector<Widget*>& GetWidgets(int32_t screenIndex = 0);
+    Widget* FindWidget(const std::string& name, bool recurse = true);
 
     Console* GetConsoleWidget();
     StatsOverlay* GetStatsWidget();
