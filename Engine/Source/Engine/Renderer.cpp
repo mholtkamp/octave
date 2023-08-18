@@ -1189,179 +1189,177 @@ void Renderer::Render(World* world)
     }
 
     // Still update UI and cull when minimized (to update animation and particle simulation)
-    if (GetEngineState()->mWindowMinimized)
+    if (!GetEngineState()->mWindowMinimized)
     {
-        return;
-    }
-
-    {
-#if !SYNC_ON_END_FRAME
-        SCOPED_FRAME_STAT("Vsync");
-#endif
-        BeginFrame();
-    }
-
-    BEGIN_FRAME_STAT("Render");
-
-    if (GFX_IsLightBakeInProgress())
-    {
-        GFX_UpdateLightBake();
-    }
-
-    GFX_BeginScreen(0);
-
-    uint32_t numViews = GFX_GetNumViews();
-
-    for (uint32_t view = 0; view < numViews; ++view)
-    {
-        GFX_BeginView(view);
-
-        if (mEnableWorldRendering)
         {
-            if (mEnablePathTracing)
-            {
-                GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
-                GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
-                GFX_BeginRenderPass(RenderPassId::Forward);
-                GFX_EndRenderPass();
+#if !SYNC_ON_END_FRAME
+            SCOPED_FRAME_STAT("Vsync");
+#endif
+            BeginFrame();
+        }
 
-                GFX_PathTrace();
+        BEGIN_FRAME_STAT("Render");
+
+        if (GFX_IsLightBakeInProgress())
+        {
+            GFX_UpdateLightBake();
+        }
+
+        GFX_BeginScreen(0);
+
+        uint32_t numViews = GFX_GetNumViews();
+
+        for (uint32_t view = 0; view < numViews; ++view)
+        {
+            GFX_BeginView(view);
+
+            if (mEnableWorldRendering)
+            {
+                if (mEnablePathTracing)
+                {
+                    GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+                    GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+                    GFX_BeginRenderPass(RenderPassId::Forward);
+                    GFX_EndRenderPass();
+
+                    GFX_PathTrace();
+                }
+                else
+                {
+                    // ***************
+                    //  Shadow Depths
+                    // ***************
+                    // TODO: Reimplement shadow maps. Possibly for multiple light sources.
+#if 0
+                    GFX_SetViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION, false);
+                    GFX_SetScissor(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION, false);
+
+                    GFX_BeginRenderPass(RenderPassId::Shadows);
+
+                    DirectionalLightComponent* dirLight = world->GetDirectionalLight();
+
+                    if (dirLight && dirLight->ShouldCastShadows())
+                    {
+                        RenderDraws(mShadowDraws, PipelineId::Shadow);
+                    }
+
+                    GFX_EndRenderPass();
+#endif
+
+                    GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+                    GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+
+                    // ******************
+                    //  Forward Pass
+                    // ******************
+                    GFX_BeginRenderPass(RenderPassId::Forward);
+
+                    if (GetDebugMode() != DEBUG_WIREFRAME)
+                    {
+                        GFX_EnableMaterials(true);
+
+                        RenderDraws(mOpaqueDraws);
+                        RenderDraws(mSimpleShadowDraws);
+                        RenderDraws(mPostShadowOpaqueDraws);
+
+                        RenderDraws(mTranslucentDraws);
+
+                        RenderDebugDraws(mDebugDraws);
+
+                        GFX_EnableMaterials(false);
+                    }
+
+                    RenderDraws(mWireframeDraws, PipelineId::Wireframe);
+                    RenderDebugDraws(mDebugDraws, PipelineId::Wireframe);
+
+                    if (GetDebugMode() == DEBUG_COLLISION)
+                    {
+                        RenderDebugDraws(mCollisionDraws, PipelineId::Collision);
+                    }
+
+                    GFX_DrawLines(world->GetLines());
+
+                    GFX_EndRenderPass();
+                }
+
+                // ******************
+                //  Post Process
+                // ******************
+
+                GFX_BeginRenderPass(RenderPassId::PostProcess);
+
+                // Tonemapping does not look good.
+                // Disabling it for now. Also need to totally rewrite postprocessing system.
+                // Make it smarter so that it can pingpong between render targets.
+                GFX_BindPipeline(PipelineId::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess : PipelineId::NullPostProcess*/);
+                GFX_DrawFullscreen();
+
+#if EDITOR
+                RenderSelectedGeometry(world);
+#endif
+
+                GFX_EndRenderPass();
             }
             else
             {
-                // ***************
-                //  Shadow Depths
-                // ***************
-                // TODO: Reimplement shadow maps. Possibly for multiple light sources.
-#if 0
-                GFX_SetViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION, false);
-                GFX_SetScissor(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION, false);
-
-                GFX_BeginRenderPass(RenderPassId::Shadows);
-
-                DirectionalLightComponent* dirLight = world->GetDirectionalLight();
-
-                if (dirLight && dirLight->ShouldCastShadows())
-                {
-                    RenderDraws(mShadowDraws, PipelineId::Shadow);
-                }
-
-                GFX_EndRenderPass();
-#endif
-
                 GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
                 GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
-
-                // ******************
-                //  Forward Pass
-                // ******************
-                GFX_BeginRenderPass(RenderPassId::Forward);
-
-                if (GetDebugMode() != DEBUG_WIREFRAME)
-                {
-                    GFX_EnableMaterials(true);
-
-                    RenderDraws(mOpaqueDraws);
-                    RenderDraws(mSimpleShadowDraws);
-                    RenderDraws(mPostShadowOpaqueDraws);
-
-                    RenderDraws(mTranslucentDraws);
-
-                    RenderDebugDraws(mDebugDraws);
-
-                    GFX_EnableMaterials(false);
-                }
-
-                RenderDraws(mWireframeDraws, PipelineId::Wireframe);
-                RenderDebugDraws(mDebugDraws, PipelineId::Wireframe);
-
-                if (GetDebugMode() == DEBUG_COLLISION)
-                {
-                    RenderDebugDraws(mCollisionDraws, PipelineId::Collision);
-                }
-
-                GFX_DrawLines(world->GetLines());
-
+                GFX_BeginRenderPass(RenderPassId::Clear);
                 GFX_EndRenderPass();
             }
 
             // ******************
-            //  Post Process
+            //  UI
             // ******************
+            GFX_BeginRenderPass(RenderPassId::Ui);
+            Widget::ResetScissor();
 
-            GFX_BeginRenderPass(RenderPassId::PostProcess);
+            for (uint32_t i = 0; i < mWidgets0.size(); ++i)
+            {
+                if (mWidgets0[i]->IsVisible())
+                {
+                    mWidgets0[i]->RecursiveRender();
+                }
+            }
 
-            // Tonemapping does not look good.
-            // Disabling it for now. Also need to totally rewrite postprocessing system.
-            // Make it smarter so that it can pingpong between render targets.
-            GFX_BindPipeline(PipelineId::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess : PipelineId::NullPostProcess*/);
-            GFX_DrawFullscreen();
-
-#if EDITOR
-            RenderSelectedGeometry(world);
-#endif
-
-            GFX_EndRenderPass();
-        }
-        else
-        {
-            GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
-            GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
-            GFX_BeginRenderPass(RenderPassId::Clear);
+            if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->RecursiveRender(); }
+            if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->RecursiveRender(); }
+            if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->RecursiveRender(); }
             GFX_EndRenderPass();
         }
 
-        // ******************
-        //  UI
-        // ******************
-        GFX_BeginRenderPass(RenderPassId::Ui);
+#if SUPPORTS_SECOND_SCREEN
+        // Do 3DS bottom screen rendering
+        mScreenIndex = 1;
+        GFX_BeginScreen(1);
+
+        GFX_SetViewport(0, 0, mEngineState->mSecondWindowWidth, mEngineState->mSecondWindowHeight);
+        GFX_SetScissor(0, 0, mEngineState->mSecondWindowWidth, mEngineState->mSecondWindowHeight);
+
         Widget::ResetScissor();
 
-        for (uint32_t i = 0; i < mWidgets0.size(); ++i)
+        for (uint32_t i = 0; i < mWidgets1.size(); ++i)
         {
-            if (mWidgets0[i]->IsVisible())
+            if (mWidgets1[i]->IsVisible())
             {
-                mWidgets0[i]->RecursiveRender();
+                mWidgets1[i]->RecursiveRender();
             }
         }
 
-        if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->RecursiveRender(); }
-        if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->RecursiveRender(); }
-        if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->RecursiveRender(); }
-        GFX_EndRenderPass();
-    }
+        mScreenIndex = 0;
+#endif
 
-#if SUPPORTS_SECOND_SCREEN
-    // Do 3DS bottom screen rendering
-    mScreenIndex = 1;
-    GFX_BeginScreen(1);
+        END_FRAME_STAT("Render");
 
-    GFX_SetViewport(0, 0, mEngineState->mSecondWindowWidth, mEngineState->mSecondWindowHeight);
-    GFX_SetScissor(0, 0, mEngineState->mSecondWindowWidth, mEngineState->mSecondWindowHeight);
-
-    Widget::ResetScissor();
-
-    for (uint32_t i = 0; i < mWidgets1.size(); ++i)
-    {
-        if (mWidgets1[i]->IsVisible())
         {
-            mWidgets1[i]->RecursiveRender();
+#if SYNC_ON_END_FRAME
+            SCOPED_FRAME_STAT("Vsync");
+#endif
+            EndFrame();
         }
     }
 
-    mScreenIndex = 0;
-#endif
-
     UpdateDebugDraws();
-
-    END_FRAME_STAT("Render");
-
-    {
-#if SYNC_ON_END_FRAME
-        SCOPED_FRAME_STAT("Vsync");
-#endif
-        EndFrame();
-    }
 }
 
 void Renderer::RenderShadowCasters(World* world)
