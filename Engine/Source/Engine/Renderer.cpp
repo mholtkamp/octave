@@ -409,6 +409,48 @@ const std::vector<Widget*>& Renderer::GetWidgets(int32_t screenIndex)
     return (screenIndex == 1) ? mWidgets1 : mWidgets0;
 }
 
+Widget* Renderer::FindWidget(const std::string& name, bool recurse)
+{
+    // TODO: Merge mWidgets0 and mWidgets1 into an array.
+    for (uint32_t i = 0; i < mWidgets0.size(); ++i)
+    {
+        if (mWidgets0[i]->GetName() == name)
+        {
+            return mWidgets0[i];
+        }
+
+        if (recurse)
+        {
+            Widget* widget = mWidgets0[i]->FindChild(name, true);
+
+            if (widget != nullptr)
+            {
+                return widget;
+            }
+        }
+    }
+
+    for (uint32_t i = 0; i < mWidgets1.size(); ++i)
+    {
+        if (mWidgets1[i]->GetName() == name)
+        {
+            return mWidgets1[i];
+        }
+
+        if (recurse)
+        {
+            Widget* widget = mWidgets1[i]->FindChild(name, true);
+
+            if (widget != nullptr)
+            {
+                return widget;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 Console* Renderer::GetConsoleWidget()
 {
     return mConsoleWidget;
