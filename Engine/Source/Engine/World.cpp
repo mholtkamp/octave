@@ -918,14 +918,16 @@ void World::Update(float deltaTime)
                     mActors[i]->BeginPlay();
                 }
 
-                if (mActors[i]->IsTickEnabled())
+                if (!mActors[i]->IsPendingDestroy() && 
+                    mActors[i]->IsTickEnabled())
                 {
                     mActors[i]->Tick(deltaTime);
                 }
             }
             else
             {
-                if (mActors[i]->IsTickEnabled())
+                if (!mActors[i]->IsPendingDestroy() && 
+                    mActors[i]->IsTickEnabled())
                 {
                     mActors[i]->EditorTick(deltaTime);
                 }
