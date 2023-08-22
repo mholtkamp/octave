@@ -6,6 +6,7 @@
 #include "Utilities.h"
 #include "Maths.h"
 #include "Profiler.h"
+#include "Assets/ParticleSystemInstance.h"
 
 #include "Graphics/Graphics.h"
 
@@ -437,6 +438,14 @@ void ParticleComponent::SetParticleSpeed(int32_t index, float speed)
     {
         mParticles[index].mVelocity = Maths::SafeNormalize(mParticles[index].mVelocity) * speed;
     }
+}
+
+ParticleSystemInstance* ParticleComponent::InstantiateParticleSystem()
+{
+    ParticleSystem* sys = GetParticleSystem();
+    ParticleSystemInstance* sysInst = ParticleSystemInstance::New(sys);
+    SetParticleSystem(sysInst);
+    return sysInst;
 }
 
 Bounds ParticleComponent::GetLocalBounds() const

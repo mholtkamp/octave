@@ -2,6 +2,7 @@
 
 #include "Components/PrimitiveComponent.h"
 #include "Assets/ParticleSystem.h"
+#include "Assets/ParticleSystemInstance.h"
 
 enum class ParticleOrientation : uint8_t
 {
@@ -99,6 +100,8 @@ public:
     glm::vec3 GetParticlePosition(int32_t index);
 
     void SetParticleSpeed(int32_t index, float speed);
+
+    ParticleSystemInstance* InstantiateParticleSystem();
 
     virtual Bounds GetLocalBounds() const override;
 

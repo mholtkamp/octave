@@ -7,6 +7,7 @@
 #include "LuaBindings/LuaUtils.h"
 
 #include "AssetManager.h"
+#include "Assets/ParticleSystemInstance.h"
 
 #if LUA_ENABLED
 
@@ -246,6 +247,16 @@ int ParticleComponent_Lua::SetParticleSpeed(lua_State* L)
     return 0;
 }
 
+int ParticleComponent_Lua::InstantiateParticleSystem(lua_State* L)
+{
+    ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+
+    ParticleSystemInstance* ret = comp->InstantiateParticleSystem();
+
+    Asset_Lua::Create(L, ret);
+    return 1;
+}
+
 void ParticleComponent_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -324,6 +335,9 @@ void ParticleComponent_Lua::Bind()
 
     lua_pushcfunction(L, IsAutoEmitEnabled);
     lua_setfield(L, mtIndex, "IsAutoEmitEnabled");
+
+    lua_pushcfunction(L, InstantiateParticleSystem);
+    lua_setfield(L, mtIndex, "InstantiateParticleSystem");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);
