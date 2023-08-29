@@ -119,6 +119,50 @@ float Maths::Approach(float source, float target, float speed, float deltaTime)
     return smoothed;
 }
 
+glm::vec3 Maths::Approach(glm::vec3 source, glm::vec3 target, float speed, float deltaTime)
+{
+    glm::vec3 smoothed = source;
+
+    glm::vec3 dir = (target - source);
+    float dist = glm::length(dir);
+    dir = (dist > 0.0f) ? dir / dist : glm::vec3(0.0f, 0.0f, 0.0f);
+
+    float delta = deltaTime * speed;
+
+    if (dist > delta)
+    {
+        smoothed = source + delta * dir;
+    }
+    else
+    {
+        smoothed = target;
+    }
+
+    return smoothed;
+}
+
+glm::vec4 Maths::Approach(glm::vec4 source, glm::vec4 target, float speed, float deltaTime)
+{
+    glm::vec4 smoothed = source;
+
+    glm::vec4 dir = (target - source);
+    float dist = glm::length(dir);
+    dir = (dist > 0.0f) ? dir / dist : glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+    float delta = deltaTime * speed;
+
+    if (dist > delta)
+    {
+        smoothed = source + delta * dir;
+    }
+    else
+    {
+        smoothed = target;
+    }
+
+    return smoothed;
+}
+
 float Maths::ApproachAngle(float source, float target, float speed, float deltaTime)
 {
     float ret = source;

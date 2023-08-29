@@ -50,15 +50,30 @@ int Maths_Lua::DampAngle(lua_State* L)
 
 int Maths_Lua::Approach(lua_State* L)
 {
-    float source = CHECK_NUMBER(L, 1);
-    float target = CHECK_NUMBER(L, 2);
-    float speed = CHECK_NUMBER(L, 3);
-    float deltaTime = CHECK_NUMBER(L, 4);
+    if (lua_isnumber(L, 1))
+    {
+        float source = CHECK_NUMBER(L, 1);
+        float target = CHECK_NUMBER(L, 2);
+        float speed = CHECK_NUMBER(L, 3);
+        float deltaTime = CHECK_NUMBER(L, 4);
 
-    float ret = Maths::Approach(source, target, speed, deltaTime);
+        float ret = Maths::Approach(source, target, speed, deltaTime);
 
-    lua_pushnumber(L, ret);
-    return 1;
+        lua_pushnumber(L, ret);
+        return 1;
+    }
+    else
+    {
+        glm::vec4 source = CHECK_VECTOR(L, 1);
+        glm::vec4 target = CHECK_VECTOR(L, 2);
+        float speed = CHECK_NUMBER(L, 3);
+        float deltaTime = CHECK_NUMBER(L, 4);
+
+        glm::vec4 ret = Maths::Approach(source, target, speed, deltaTime);
+
+        Vector_Lua::Create(L, ret);
+        return 1;
+    }
 }
 
 int Maths_Lua::ApproachAngle(lua_State* L)
