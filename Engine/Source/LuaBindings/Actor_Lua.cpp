@@ -788,6 +788,8 @@ void Actor_Lua::Bind()
 
     lua_pushcfunction(L, Actor_Lua::GetRotationEuler);
     lua_setfield(L, mtIndex, "GetRotationEuler");
+    lua_pushcfunction(L, Actor_Lua::GetRotationEuler);
+    lua_setfield(L, mtIndex, "GetRotation"); // Alias
 
     lua_pushcfunction(L, Actor_Lua::GetScale);
     lua_setfield(L, mtIndex, "GetScale");
