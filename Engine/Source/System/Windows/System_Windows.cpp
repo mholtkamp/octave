@@ -886,6 +886,8 @@ void SYS_SetFullscreen(bool fullscreen)
     static int sSavedY = 0;
     static int sSavedWidth = 0;
     static int sSavedHeight = 0;
+    static int sSavedClientWidth = 0;
+    static int sSavedClientHeight = 0;
 
     SystemState& system = GetEngineState()->mSystem;
     if (system.mFullscreen != fullscreen)
@@ -902,6 +904,8 @@ void SYS_SetFullscreen(bool fullscreen)
             sSavedY = winRect.top;
             sSavedWidth = winRect.right - winRect.left;
             sSavedHeight = winRect.bottom - winRect.top;
+            sSavedClientWidth = GetEngineState()->mWindowWidth;
+            sSavedClientHeight = GetEngineState()->mWindowHeight;
 
             int width = GetSystemMetrics(SM_CXSCREEN);
             int height = GetSystemMetrics(SM_CYSCREEN);
@@ -912,10 +916,9 @@ void SYS_SetFullscreen(bool fullscreen)
         }
         else
         {
-
             SetWindowLong(system.mWindow, GWL_STYLE, OCT_WINDOWED_STYLE_FLAGS);
             SetWindowPos(system.mWindow, HWND_TOP, sSavedX, sSavedY, sSavedWidth, sSavedHeight, 0);
-            ResizeWindow(sSavedWidth, sSavedHeight);
+            ResizeWindow(sSavedClientWidth, sSavedClientHeight);
         }
     }
 }
