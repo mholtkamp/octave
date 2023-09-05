@@ -18,7 +18,7 @@ const float TextField::sCursorBlinkPeriod = 0.3f;
 
 TextField::TextField() :
     mCursorQuad(nullptr),
-    mMaxCharacters(64)
+    mMaxCharacters(0)
 {
     mCursorQuad = new Quad();
     mCursorQuad->SetVisible(false);
@@ -83,7 +83,7 @@ void TextField::Update()
 
         if (charToAdd >= ' ' &&
             charToAdd <= '~' &&
-            mText->GetText().size() < mMaxCharacters)
+            (mMaxCharacters == 0 || mText->GetText().size() < mMaxCharacters))
         {
             std::string newText = mText->GetText();
             newText += charToAdd;
