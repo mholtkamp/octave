@@ -519,6 +519,11 @@ void AudioManager::UpdateSound(
         {
             if (sAudioSources[i].mSoundWave == soundWave)
             {
+                sAudioSources[i].mVolumeMult = volume;
+                sAudioSources[i].mPitchMult = pitch;
+                //sAudioSources[i].mLoop = loop;
+                sAudioSources[i].mPriority = priority;
+
                 // Adjust pitch and volume based on soundwave asset and sound class
                 float classVolume = GetAudioClassVolume(sAudioSources[i].mAudioClass);
                 float classPitch = GetAudioClassPitch(sAudioSources[i].mAudioClass);
@@ -526,11 +531,6 @@ void AudioManager::UpdateSound(
                 volume = volume * soundWave->GetVolumeMultiplier() * classVolume * sMasterVolume;
                 pitch = pitch * soundWave->GetPitchMultiplier() * classPitch * sMasterPitch;
 
-                sAudioSources[i].mVolumeMult = volume;
-                sAudioSources[i].mPitchMult = pitch;
-                //sAudioSources[i].mLoop = loop;
-                sAudioSources[i].mPriority = priority;
-                
                 AUD_SetVolume(i, volume, volume);
                 AUD_SetPitch(i, pitch);
 
