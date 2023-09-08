@@ -38,7 +38,7 @@ struct DelayedPacket
     uint32_t mIpAddress = 0;
     uint16_t mPort = 0;
     uint32_t mSize = 0;
-    char mData[OCT_MAX_MSG_SIZE] = {};
+    char mData[OCT_MAX_MSG_BODY_SIZE] = {};
 };
 
 static std::vector<DelayedPacket> sDelayedPackets;
@@ -577,8 +577,8 @@ void NetworkManager::SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfi
 {
     if (hostProfile != nullptr)
     {
-        char msgData[OCT_MAX_MSG_SIZE] = {};
-        Stream stream(msgData, OCT_MAX_MSG_SIZE);
+        char msgData[OCT_MAX_MSG_BODY_SIZE] = {};
+        Stream stream(msgData, OCT_MAX_MSG_BODY_SIZE);
         netMsg->Write(stream);
 
         bool reliable = netMsg->IsReliable();
@@ -586,7 +586,7 @@ void NetworkManager::SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfi
 
         // If this newly serialized message would cause send buffer to exceed max message size,
         // then send out the queued messages first.
-        if (sendBuffer.size() + stream.GetPos() > OCT_MAX_MSG_SIZE)
+        if (sendBuffer.size() + stream.GetPos() > OCT_MAX_MSG_BODY_SIZE)
         {
             FlushSendBuffer(hostProfile, reliable);
         }
@@ -618,9 +618,7 @@ void NetworkManager::SendMessageImmediate(const NetMsg* netMsg, uint32_t ipAddre
     stream.WriteBool(false);
     netMsg->Write(stream);
 
-    // If this newly serialized message would cause send buffer to exceed max message size,
-    // then send out the queued messages first.
-    if (stream.GetPos() <= OCT_MAX_MSG_SIZE)
+    if (stream.GetPos() <= OCT_MAX_MSG_BODY_SIZE)
     {
 
 #if DEBUG_NETWORK_CONDITIONS
@@ -1022,7 +1020,7 @@ static const uint32_t RepMsgHeaderSize =
     sizeof(NetMsgReplicate::mNumVariables);
 
 static const uint32_t MaxDatumNetSerializeSize = 
-    OCT_MAX_MSG_SIZE - 
+    OCT_MAX_MSG_BODY_SIZE - 
     RepMsgHeaderSize -
     sizeof(uint16_t); // 1 index
 
@@ -1326,7 +1324,7 @@ bool ReplicateData(std::vector<T>& repData, NetMsgReplicate& msg, NetId hostId, 
                 LogWarning("Replicated variable too large to replicate. Most likely a big string.");
                 continue;
             }
-            else if (msgSerializedSize + datumSerializeSize > OCT_MAX_MSG_SIZE)
+            else if (msgSerializedSize + datumSerializeSize > OCT_MAX_MSG_BODY_SIZE)
             {
                 // Send what we have until now
                 NetworkManager::Get()->SendReplicateMsg(msg, numVars, hostId);
@@ -1720,9 +1718,9 @@ void NetworkManager::FlushSendBuffer(NetHostProfile* hostProfile, bool reliable)
     {
         // Stackoverflow says that 508 is the maximum safe udp payload.
         // Currently the max msg size is 500 for extra safety and to leave 2 bytes for the sequence number.
-        OCT_ASSERT(sendBuffer.size() <= OCT_MAX_MSG_SIZE);
+        OCT_ASSERT(sendBuffer.size() <= OCT_MAX_MSG_BODY_SIZE);
 
-        if (sendBuffer.size() <= OCT_MAX_MSG_SIZE)
+        if (sendBuffer.size() <= OCT_MAX_MSG_BODY_SIZE)
         {
             Stream stream(sSendBuffer, OCT_SEND_BUFFER_SIZE);
             static_assert(OCT_SEQ_NUM_SIZE == sizeof(uint16_t), "Seq num size mismatch");

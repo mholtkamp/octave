@@ -142,7 +142,7 @@ void NetMsgLoadLevel::Write(Stream& stream) const
 
     // TODO: Replace with NetSafeStringWrite() 
 
-    if (stream.GetPos() + STREAM_STRING_LEN_BYTES + mLevelName.size() < OCT_MAX_MSG_SIZE)
+    if (stream.GetPos() + STREAM_STRING_LEN_BYTES + mLevelName.size() < OCT_MAX_MSG_BODY_SIZE)
     {
         stream.WriteString(mLevelName);
     }
@@ -330,7 +330,7 @@ void NetMsgReplicate::Write(Stream& stream) const
 
     // Multiple replicate messages will need to be send for an actor
     // if it exceeds the message size limit.
-    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_SIZE);
+    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_BODY_SIZE);
 }
 
 void NetMsgReplicate::Execute(NetHost sender)
@@ -384,7 +384,7 @@ void NetMsgReplicateScript::Write(Stream& stream) const
 
     // Multiple replicate messages will need to be sent for an actor
     // if it exceeds the message size limit.
-    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_SIZE);
+    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_BODY_SIZE);
 }
 
 ScriptComponent* FindScriptComponent(Actor* actor, const std::string& scriptName)
@@ -480,7 +480,7 @@ void NetMsgInvoke::Write(Stream& stream) const
         mParams[i].WriteStream(stream);
     }
 
-    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_SIZE);
+    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_BODY_SIZE);
 }
 
 void NetMsgInvoke::Execute(NetHost sender)
@@ -537,7 +537,7 @@ void NetMsgInvokeScript::Write(Stream& stream) const
     NetMsgInvoke::Write(stream);
     stream.WriteString(mScriptName);
 
-    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_SIZE);
+    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_BODY_SIZE);
 }
 
 void NetMsgInvokeScript::Execute(NetHost sender)
