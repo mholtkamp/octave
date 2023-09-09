@@ -22,9 +22,15 @@ public:
     ScriptFunc(lua_State* L, int arg);
     ScriptFunc(const ScriptFunc& src);
     ScriptFunc& operator=(const ScriptFunc& src);
+    ScriptFunc(const Datum& datum);
 
-    void Call(uint32_t numParams = 0, Datum* params = nullptr);
-    Datum CallR(uint32_t numParams = 0, Datum* params = nullptr);
+    bool operator==(const ScriptFunc& other) const;
+    bool operator!=(const ScriptFunc& other) const;
+
+    void Call(uint32_t numParams = 0, Datum* params = nullptr) const;
+    Datum CallR(uint32_t numParams = 0, Datum* params = nullptr) const;
+
+    void Push(lua_State* L) const;
 
     bool IsValid() const;
 

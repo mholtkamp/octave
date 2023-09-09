@@ -78,6 +78,12 @@ TableDatum::TableDatum(const char* key, RTTI* value)
     SetStringKey(key);
 }
 
+TableDatum::TableDatum(const char* key, const ScriptFunc& value)
+{
+    PushBack(value);
+    SetStringKey(key);
+}
+
 //TableDatum::TableDatum(const char* key, const TableDatum& value)
 //{
 //    PushBackTableDatum(value);
@@ -145,6 +151,12 @@ TableDatum::TableDatum(int32_t key, uint32_t value)
 }
 
 TableDatum::TableDatum(int32_t key, RTTI* value)
+{
+    PushBack(value);
+    SetIntegerKey(key);
+}
+
+TableDatum::TableDatum(int32_t key, const ScriptFunc& value)
 {
     PushBack(value);
     SetIntegerKey(key);

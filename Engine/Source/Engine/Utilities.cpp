@@ -504,6 +504,9 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
             // This should be handled by CreateTableLua().
             OCT_ASSERT(0);
             break;
+        case DatumType::Function:
+            arg.GetFunction(i).Push(L);
+            break;
         case DatumType::Pointer:
         {
             RTTI* pointer = arg.GetPointer(i);
@@ -609,6 +612,9 @@ void LuaObjectToDatum(lua_State* L, int idx, Datum& datum)
         break;
     case LUA_TTABLE:
         CreateTableCpp(L, idx, datum);
+        break;
+    case LUA_TFUNCTION:
+        datum.PushBack(ScriptFunc(L, idx));
         break;
 
     default:

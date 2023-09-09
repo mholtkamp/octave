@@ -512,6 +512,13 @@ void ScriptComponent::GatherScriptProperties()
                                         break;
                                     }
 
+                                    case DatumType::Function:
+                                    {
+                                        LogError("Function script properties are not supported.");
+                                        OCT_ASSERT(0);
+                                        break;
+                                    }
+
                                     case DatumType::Count:
                                     {
                                         OCT_ASSERT(0); // Unreachable
@@ -741,7 +748,7 @@ void ScriptComponent::GatherReplicatedData()
                                 case DatumType::Table:
                                 {
                                     push = false;
-                                    LogError("Table script properties are not supported.");
+                                    LogError("Table replicated data is not supported.");
                                     break;
                                 }
 
@@ -757,6 +764,13 @@ void ScriptComponent::GatherReplicatedData()
                                 {
                                     int32_t value = CHECK_INTEGER(L, -1);
                                     newDatum.PushBack((int16_t)value);
+                                    break;
+                                }
+
+                                case DatumType::Function:
+                                {
+                                    push = false;
+                                    LogError("Function replicated data is not supported.");
                                     break;
                                 }
 
@@ -1110,6 +1124,13 @@ bool ScriptComponent::DownloadDatum(lua_State* L, Datum& datum, int tableIdx, co
             break;
         }
 
+        case DatumType::Function:
+        {
+            success = false;
+            LogError("Function script properties are not supported.");
+            break;
+        }
+
         case DatumType::Count:
         {
             success = false;
@@ -1166,6 +1187,7 @@ void ScriptComponent::UploadDatum(Datum& datum, const char* varName)
 
             case DatumType::Table:
             case DatumType::Pointer:
+            case DatumType::Function:
             case DatumType::Count:
                 // These datum types are not supported.
                 OCT_ASSERT(0);

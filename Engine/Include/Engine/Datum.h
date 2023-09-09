@@ -11,6 +11,7 @@ typedef bool(*DatumChangeHandlerFP)(class Datum* prop, uint32_t index, const voi
 class Asset;
 class AssetRef;
 class TableDatum;
+class ScriptFunc;
 class RTTI;
 
 enum class DatumType : uint8_t
@@ -27,6 +28,7 @@ enum class DatumType : uint8_t
     Table,
     Pointer,
     Short,
+    Function,
 
     Count
 };
@@ -46,6 +48,7 @@ union DatumData
     TableDatum* t;
     RTTI** p;
     int16_t* sh;
+    ScriptFunc* fn;
     void* vp;
 };
 
@@ -78,6 +81,7 @@ public:
     Datum(uint8_t value);
     Datum(RTTI* value);
     Datum(int16_t value);
+    Datum(const ScriptFunc& func);
 
     template<typename T>
     Datum(const std::vector<T>& arr)
@@ -107,6 +111,7 @@ public:
     operator uint8_t() const { return (mType == DatumType::Integer) ? uint8_t(GetInteger()) : GetByte(); }
     operator RTTI*() const { return (mType == DatumType::Asset) ? ((RTTI*)GetAsset()) : GetPointer(); }
     operator int16_t() const { return (mType == DatumType::Integer) ? int16_t(GetInteger()) : GetShort(); }
+    // ScriptFunc conversion is defined as a constructor in ScriptFunc class
 
     DatumType GetType() const;
     void SetType(DatumType type);
@@ -136,6 +141,7 @@ public:
     void SetTableDatum(const TableDatum& value, uint32_t index = 0);
     void SetPointer(RTTI* value, uint32_t index = 0);
     void SetShort(int16_t value, uint32_t index = 0);
+    void SetFunction(const ScriptFunc& value, uint32_t index = 0);
 
     void SetValue(const void* value, uint32_t index = 0, uint32_t count = 1);
     void SetValueRaw(const void* value, uint32_t index = 0);
@@ -152,6 +158,7 @@ public:
     void SetExternal(TableDatum* data, uint32_t count = 1);
     void SetExternal(RTTI** data, uint32_t count = 1);
     void SetExternal(int16_t* data, uint32_t count = 1);
+    void SetExternal(ScriptFunc* data, uint32_t count = 1);
 
     int32_t GetInteger(uint32_t index = 0) const;
     float GetFloat(uint32_t index = 0) const;
@@ -166,6 +173,7 @@ public:
     const TableDatum& GetTableDatum(uint32_t index = 0) const;
     RTTI* GetPointer(uint32_t index = 0) const;
     int16_t GetShort(uint32_t index = 0) const;
+    const ScriptFunc& GetFunction(uint32_t index = 0) const;
 
     void PushBack(int32_t value);
     void PushBack(float value);
@@ -180,6 +188,7 @@ public:
     TableDatum* PushBackTableDatum(const TableDatum& value);
     void PushBack(RTTI* value);
     void PushBack(int16_t value);
+    void PushBack(const ScriptFunc& value);
 
     void Erase(uint32_t index);
 
@@ -201,6 +210,7 @@ public:
     Asset* GetAssetField(const char* key);
     RTTI* GetPointerField(const char* key);
     TableDatum& GetTableField(const char* key);
+    ScriptFunc GetFunctionField(const char* key);
 
     int32_t GetIntegerField(int32_t key);
     float GetFloatField(int32_t key);
@@ -212,6 +222,7 @@ public:
     Asset* GetAssetField(int32_t key);
     RTTI* GetPointerField(int32_t key);
     TableDatum& GetTableField(int32_t key);
+    ScriptFunc GetFunctionField(int32_t key);
 
     void SetIntegerField(const char* key, int32_t value);
     void SetFloatField(const char* key, float value);
@@ -223,6 +234,7 @@ public:
     void SetAssetField(const char* key, Asset* value);
     void SetPointerField(const char* key, RTTI* value);
     void SetTableField(const char* key, const TableDatum& value);
+    void SetFunctionField(const char* key, const ScriptFunc& value);
 
     void SetIntegerField(int32_t key, int32_t value);
     void SetFloatField(int32_t key, float value);
@@ -234,6 +246,7 @@ public:
     void SetAssetField(int32_t key, Asset* value);
     void SetPointerField(int32_t key, RTTI* value);
     void SetTableField(int32_t key, const TableDatum& value);
+    void SetFunctionField(int32_t key, const ScriptFunc& value);
 
     bool HasField(const char* key);
     bool HasField(int32_t key);
@@ -253,6 +266,7 @@ public:
     Datum& operator=(uint8_t src);
     Datum& operator=(RTTI* srC);
     Datum& operator=(int16_t src);
+    Datum& operator=(const ScriptFunc& src);
 
     // Equivalence
     bool operator==(const Datum& other) const;
@@ -270,6 +284,7 @@ public:
     bool operator==(const uint8_t& other) const;
     bool operator==(const RTTI*& other) const;
     bool operator==(const int16_t& other) const;
+    bool operator==(const ScriptFunc& other) const;
 
     bool operator!=(const Datum& other) const;
 
@@ -286,6 +301,7 @@ public:
     bool operator!=(const uint8_t& other) const;
     bool operator!=(const RTTI*& other) const;
     bool operator!=(const int16_t& other) const;
+    bool operator!=(const ScriptFunc& other) const;
 
     virtual bool IsProperty() const;
     virtual bool IsTableDatum() const;
