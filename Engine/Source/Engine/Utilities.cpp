@@ -541,9 +541,11 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
     // Need to insert elements into array table
     if (arrIdx != -1)
     {
-        for (uint32_t i = 0; i < count; ++i)
+        // The last element in the array is at the top of the stack, 
+        // so go backwards to set the the integer indexes (otherwise the vector will be reversed).
+        for (int32_t i = count - 1; i >= 0; --i)
         {
-            lua_seti(L, arrIdx, int32_t(i) + 1);
+            lua_seti(L, arrIdx, i + 1);
         }
 
         // The array table should be top on the stack, now that has lua_seti has removed count elements.
