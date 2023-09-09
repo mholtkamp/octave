@@ -1,5 +1,6 @@
 #include "Datum.h"
 #include "TableDatum.h"
+#include "ScriptFunc.h"
 #include "Asset.h"
 #include "AssetRef.h"
 #include "Log.h"
@@ -129,6 +130,12 @@ Datum::Datum(int16_t value)
     PushBack(value);
 }
 
+Datum::Datum(const ScriptFunc& value)
+{
+    Reset();
+    PushBack(value);
+}
+
 DatumType Datum::GetType() const
 {
     return mType;
@@ -222,6 +229,7 @@ uint32_t Datum::GetDataTypeSize() const
         case DatumType::Table: size = sizeof(TableDatum); break;
         case DatumType::Pointer: size = sizeof(RTTI*); break;
         case DatumType::Short: size = sizeof(int16_t); break;
+        case DatumType::Function: size = sizeof(ScriptFunc); break;
         
         case DatumType::Count: size = 0; break;
     }
@@ -359,6 +367,9 @@ void Datum::ReadStream(Stream& stream, bool external)
                 }
                 case DatumType::Short: PushBack(stream.ReadInt16()); break;
 
+                // Functions can't be serialized to file or network.
+                case DatumType::Function: OCT_ASSERT(0); break;
+
                 case DatumType::Count: break;
             }
         }
@@ -403,6 +414,10 @@ void Datum::WriteStream(Stream& stream) const
                 break;
             }
             case DatumType::Short: stream.WriteInt16(mData.sh[i]); break;
+
+            // Functions can't be serialized.
+            case DatumType::Function: OCT_ASSERT(0); break;
+
             case DatumType::Count: OCT_ASSERT(0); break;
         }
     }
@@ -502,6 +517,13 @@ void Datum::SetShort(int16_t value, uint32_t index)
         mData.sh[index] = value;
 }
 
+void Datum::SetFunction(const ScriptFunc& value, uint32_t index)
+{
+    PreSet(index, DatumType::Function);
+    if (!mChangeHandler || !mChangeHandler(this, index, &value))
+        mData.fn[index] = value;
+}
+
 void Datum::SetValue(const void* value, uint32_t index, uint32_t count)
 {
     OCT_ASSERT(mType != DatumType::Count);
@@ -530,6 +552,7 @@ void Datum::SetValue(const void* value, uint32_t index, uint32_t count)
             case DatumType::Table: SetTableDatum(*(reinterpret_cast<const TableDatum*>(value) + i),   index + i); break;
             case DatumType::Pointer: SetPointer(*(((RTTI**)value) + i),                               index + i); break;
             case DatumType::Short: SetShort(*(reinterpret_cast<const int16_t*>(value) + i),           index + i); break;
+            case DatumType::Function: SetFunction(*(reinterpret_cast<const ScriptFunc*>(value) + i),  index + i); break;
             case DatumType::Count: break;
             }
         }
@@ -552,6 +575,7 @@ void Datum::SetValueRaw(const void* value, uint32_t index)
     case DatumType::Table: mData.t[index] = *reinterpret_cast<const TableDatum*>(value); break;
     case DatumType::Pointer: mData.p[index] = *((RTTI**)value); break;
     case DatumType::Short: mData.sh[index] = *reinterpret_cast<const int16_t*>(value); break;
+    case DatumType::Function: mData.fn[index] = *reinterpret_cast<const ScriptFunc*>(value); break;
 
     case DatumType::Count: break;
     }
@@ -633,6 +657,13 @@ void Datum::SetExternal(int16_t* data, uint32_t count)
     PostSetExternal(DatumType::Short, count);
 }
 
+void Datum::SetExternal(ScriptFunc* data, uint32_t count)
+{
+    PreSetExternal(DatumType::Function);
+    mData.fn = data;
+    PostSetExternal(DatumType::Function, count);
+}
+
 int32_t Datum::GetInteger(uint32_t index) const
 {
     PreGet(index, DatumType::Integer);
@@ -711,11 +742,10 @@ int16_t Datum::GetShort(uint32_t index) const
     return mData.sh[index];
 }
 
-void Datum::PushBack(int32_t value)
+const ScriptFunc& Datum::GetFunction(uint32_t index) const
 {
-    PrePushBack(DatumType::Integer);
-    new (mData.i + mCount) int32_t(value);
-    mCount++;
+    PreGet(index, DatumType::Function);
+    return mData.fn[index];
 }
 
 TableDatum* Datum::FindTableDatum(const char* key)
@@ -782,6 +812,13 @@ TableDatum* Datum::AddTableField(const char* key)
     TableDatum* td = PushBackTableDatum(TableDatum());
     td->SetStringKey(key);
     return td;
+}
+
+void Datum::PushBack(int32_t value)
+{
+    PrePushBack(DatumType::Integer);
+    new (mData.i + mCount) int32_t(value);
+    mCount++;
 }
 
 void Datum::PushBack(float value)
@@ -870,6 +907,13 @@ void Datum::PushBack(int16_t value)
     mCount++;
 }
 
+void Datum::PushBack(const ScriptFunc& value)
+{
+    PrePushBack(DatumType::Function);
+    new (mData.fn + mCount) ScriptFunc(value);
+    mCount++;
+}
+
 void Datum::Erase(uint32_t index)
 {
     if (index >= 0 && index < mCount)
@@ -951,6 +995,7 @@ DEFINE_GET_FIELD(const char*, Vector, glm::vec3, {})
 DEFINE_GET_FIELD(const char*, Color, glm::vec4, {})
 DEFINE_GET_FIELD(const char*, Asset, Asset*, nullptr)
 DEFINE_GET_FIELD(const char*, Pointer, RTTI*, nullptr)
+DEFINE_GET_FIELD(const char*, Function, ScriptFunc, {})
 
 //DEFINE_GET_FIELD(int32_t, Integer, int32_t, 0)
 //DEFINE_GET_FIELD(int32_t, Float, float, 0.0f)
@@ -1004,6 +1049,7 @@ DEFINE_GET_FIELD(int32_t, Vector, glm::vec3, {})
 DEFINE_GET_FIELD(int32_t, Color, glm::vec4, {})
 DEFINE_GET_FIELD(int32_t, Asset, Asset*, nullptr)
 DEFINE_GET_FIELD(int32_t, Pointer, RTTI*, nullptr)
+DEFINE_GET_FIELD(int32_t, Function, ScriptFunc, {})
 
 TableDatum& Datum::GetTableField(const char* key)
 {
@@ -1069,6 +1115,7 @@ DEFINE_SET_FIELD(const char*, Vector, glm::vec3)
 DEFINE_SET_FIELD(const char*, Color, glm::vec4)
 DEFINE_SET_FIELD(const char*, Asset, Asset*)
 DEFINE_SET_FIELD(const char*, Pointer, RTTI*)
+DEFINE_SET_FIELD(const char*, Function, const ScriptFunc&)
 
 DEFINE_SET_FIELD(int32_t, Integer, int32_t)
 DEFINE_SET_FIELD(int32_t, Float, float)
@@ -1079,6 +1126,7 @@ DEFINE_SET_FIELD(int32_t, Vector, glm::vec3)
 DEFINE_SET_FIELD(int32_t, Color, glm::vec4)
 DEFINE_SET_FIELD(int32_t, Asset, Asset*)
 DEFINE_SET_FIELD(int32_t, Pointer, RTTI*)
+DEFINE_SET_FIELD(int32_t, Function, const ScriptFunc&)
 
 void Datum::SetTableField(const char* key, const TableDatum& value)
 {
@@ -1229,6 +1277,13 @@ Datum& Datum::operator=(int16_t src)
     return *this;
 }
 
+Datum& Datum::operator=(const ScriptFunc& src)
+{
+    PreAssign(DatumType::Function);
+    mData.fn[0] = src;
+    return *this;
+}
+
 bool Datum::operator==(const Datum& other) const
 {
     if (mType != other.mType ||
@@ -1259,6 +1314,12 @@ bool Datum::operator==(const Datum& other) const
             break;
         case DatumType::Table:
             if (mData.t[i] != other.mData.t[i])
+            {
+                return false;
+            }
+            break;
+        case DatumType::Function:
+            if (mData.fn[i] != other.mData.fn[i])
             {
                 return false;
             }
@@ -1419,6 +1480,17 @@ bool Datum::operator==(const int16_t& other) const
     return mData.sh[0] == other;
 }
 
+bool Datum::operator==(const ScriptFunc& other) const
+{
+    if (mCount == 0 ||
+        mType != DatumType::Function)
+    {
+        return false;
+    }
+
+    return mData.fn[0] == other;
+}
+
 bool Datum::operator!=(const Datum& other) const
 {
     return !operator==(other);
@@ -1489,6 +1561,11 @@ bool Datum::operator!=(const int16_t& other) const
     return !operator==(other);
 }
 
+bool Datum::operator!=(const ScriptFunc& other) const
+{
+    return !operator==(other);
+}
+
 bool Datum::IsProperty() const
 {
     return false;
@@ -1525,7 +1602,8 @@ void Datum::Reserve(uint32_t capacity)
         {
             if (mType == DatumType::String ||
                 mType == DatumType::Asset ||
-                mType == DatumType::Table)
+                mType == DatumType::Table ||
+                mType == DatumType::Function)
             {
                 for (uint32_t i = 0; i < mCount; ++i)
                 {
@@ -1627,6 +1705,9 @@ void Datum::DeepCopy(const Datum& src, bool forceInternalStorage)
                 break;
             case DatumType::Short:
                 PushBack(*(src.mData.sh + i));
+                break;
+            case DatumType::Function:
+                PushBack(*(src.mData.fn + i));
                 break;
 
             case DatumType::Count:
@@ -1798,6 +1879,9 @@ void Datum::ConstructData(DatumData& dataUnion, uint32_t index)
     case DatumType::Short:
         dataUnion.sh[index] = 0;
         break;
+    case DatumType::Function:
+        new (dataUnion.fn + index) ScriptFunc();
+        break;
 
     case DatumType::Count:
         OCT_ASSERT(0);
@@ -1825,6 +1909,9 @@ void Datum::DestructData(DatumData& dataUnion, uint32_t index)
         dataUnion.t[index].Datum::~Datum();
 
         break;
+    case DatumType::Function:
+        dataUnion.fn[index].ScriptFunc::~ScriptFunc();
+        break;
 
     default: break;
     }
@@ -1842,6 +1929,9 @@ void Datum::CopyData(DatumData& dst, uint32_t dstIndex, DatumData& src, uint32_t
         break;
     case DatumType::Table:
         dst.t[dstIndex] = src.t[srcIndex];
+        break;
+    case DatumType::Function:
+        dst.fn[dstIndex] = src.fn[srcIndex];
         break;
 
     default: 

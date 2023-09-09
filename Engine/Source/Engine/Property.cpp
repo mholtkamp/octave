@@ -194,6 +194,12 @@ void Property::PushBackVector(void* value)
             mData.sh = vect.data();
             break;
         }
+        case DatumType::Function:
+        {
+            // Function not supported as vector.
+            OCT_ASSERT(0);
+            break;
+        }
 
         default: break;
         }
@@ -282,6 +288,12 @@ void Property::EraseVector(uint32_t index)
         {
             std::vector<int16_t>& vect = *((std::vector<int16_t>*) mVector);
             vect.erase(vect.begin() + index);
+            break;
+        }
+        case DatumType::Function:
+        {
+            // Function not supported as Vector
+            OCT_ASSERT(0);
             break;
         }
 
@@ -388,6 +400,12 @@ void Property::ResizeVector(uint32_t count)
             std::vector<int16_t>& vect = *((std::vector<int16_t>*) mVector);
             vect.resize(count);
             mData.sh = vect.data();
+            break;
+        }
+        case DatumType::Function:
+        {
+            // Function not supported as Vector
+            OCT_ASSERT(0);
             break;
         }
 
@@ -497,6 +515,12 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
             std::vector<int16_t>& vect = *((std::vector<int16_t>*) mVector);
             mData.sh = vect.data();
             mCount = (uint8_t)vect.size();
+            break;
+        }
+        case DatumType::Function:
+        {
+            // Function not supported as vector
+            OCT_ASSERT(0);
             break;
         }
 

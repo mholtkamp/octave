@@ -22,6 +22,7 @@ public:
     TableDatum(const char* key, Asset* value);
     TableDatum(const char* key, uint32_t value);
     TableDatum(const char* key, RTTI* value);
+    TableDatum(const char* key, const ScriptFunc& value);
     //TableDatum(const char* key, const TableDatum& value);
 
     TableDatum(int32_t key, int32_t value);
@@ -35,6 +36,7 @@ public:
     TableDatum(int32_t key, Asset* value);
     TableDatum(int32_t key, uint32_t value);
     TableDatum(int32_t key, RTTI* value);
+    TableDatum(int32_t key, const ScriptFunc& value);
     //TableDatum(int32_t key, const TableDatum& value);
 
     TableDatum(const TableDatum& src);

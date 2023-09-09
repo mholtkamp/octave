@@ -57,6 +57,7 @@ bool NetDatum::ShouldReplicate() const
             case DatumType::Table: equal = false; OCT_ASSERT(0); break; // Table not supported for replication
             case DatumType::Pointer: equal = (mPrevData.p[i] == mData.p[i]); break;
             case DatumType::Short: equal = (mPrevData.sh[i] == mData.sh[i]); break;
+            case DatumType::Function: equal = false; OCT_ASSERT(0); break; // Functions not supported for replication
 
             case DatumType::Count: break;
         }
@@ -106,6 +107,7 @@ void NetDatum::PostReplicate()
             case DatumType::Table: OCT_ASSERT(0); break; // Table not supported for replication
             case DatumType::Pointer: mPrevData.p[i] = mData.p[i]; break;
             case DatumType::Short: mPrevData.sh[i] = mData.sh[i]; break;
+            case DatumType::Function: OCT_ASSERT(0); break; // Function not supported for replication
 
             case DatumType::Count: break;
         }
