@@ -352,6 +352,16 @@ void NetworkManager::CloseSession()
     }
 }
 
+void NetworkManager::EnableSessionBroadcast(bool enable)
+{
+    mEnableSessionBroadcast = enable;
+}
+
+bool NetworkManager::IsSessionBroadcastEnabled() const
+{
+    return mEnableSessionBroadcast;
+}
+
 void NetworkManager::BeginSessionSearch()
 {
     if (!NET_IsActive())
@@ -1684,23 +1694,26 @@ void NetworkManager::ResetToLocalStatus()
 
 void NetworkManager::BroadcastSession()
 {
-    NetMsgBroadcast bcMsg;
-    bcMsg.mMagic = NetMsgBroadcast::sMagicNumber;
-    bcMsg.mGameCode = GetEngineState()->mGameCode;
-    bcMsg.mVersion = GetEngineState()->mVersion;
-
-    // For now, use project name for session name.
-    const char* sessionName = GetEngineState()->mProjectName.c_str();
-    if (sessionName != nullptr)
+    if (mEnableSessionBroadcast)
     {
-        strncpy(bcMsg.mName, sessionName, OCT_SESSION_NAME_LEN);
-        bcMsg.mName[OCT_SESSION_NAME_LEN] = 0;
+        NetMsgBroadcast bcMsg;
+        bcMsg.mMagic = NetMsgBroadcast::sMagicNumber;
+        bcMsg.mGameCode = GetEngineState()->mGameCode;
+        bcMsg.mVersion = GetEngineState()->mVersion;
+
+        // For now, use project name for session name.
+        const char* sessionName = GetEngineState()->mProjectName.c_str();
+        if (sessionName != nullptr)
+        {
+            strncpy(bcMsg.mName, sessionName, OCT_SESSION_NAME_LEN);
+            bcMsg.mName[OCT_SESSION_NAME_LEN] = 0;
+        }
+
+        bcMsg.mMaxPlayers = 1 + mMaxClients;
+        bcMsg.mNumPlayers = 1 + uint8_t(mClients.size());
+
+        SendMessageImmediate(&bcMsg, mBroadcastIp, OCT_BROADCAST_PORT);
     }
-
-    bcMsg.mMaxPlayers = 1 + mMaxClients;
-    bcMsg.mNumPlayers = 1 + uint8_t(mClients.size());
-
-    SendMessageImmediate(&bcMsg, mBroadcastIp, OCT_BROADCAST_PORT);
 }
 
 void NetworkManager::FlushSendBuffers(NetHostProfile* hostProfile)

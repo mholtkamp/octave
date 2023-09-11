@@ -104,6 +104,24 @@ int Network_Lua::IsSearching(lua_State* L)
     return 1;
 }
 
+int Network_Lua::EnableSessionBroadcast(lua_State* L)
+{
+    bool value = CHECK_BOOLEAN(L, 1);
+
+    NetworkManager::Get()->EnableSessionBroadcast(value);
+
+    return 0;
+}
+
+int Network_Lua::IsSessionBroadcastEnabled(lua_State* L)
+{
+    bool ret = NetworkManager::Get()->IsSessionBroadcastEnabled();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+
 int Network_Lua::GetNumSessions(lua_State* L)
 {
     uint32_t ret = (uint32_t) NetworkManager::Get()->GetSessions().size();

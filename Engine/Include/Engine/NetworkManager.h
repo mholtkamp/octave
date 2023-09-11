@@ -62,6 +62,8 @@ public:
 
     void OpenSession(uint16_t port = OCT_DEFAULT_PORT);
     void CloseSession();
+    void EnableSessionBroadcast(bool enable);
+    bool IsSessionBroadcastEnabled() const;
 
     void BeginSessionSearch();
     void EndSessionSearch();
@@ -184,6 +186,7 @@ private:
     SocketHandle mSocket = NET_INVALID_SOCKET;
     SocketHandle mSearchSocket = NET_INVALID_SOCKET;
     bool mSearching = false;
+    bool mEnableSessionBroadcast = true;
     bool mIncrementalReplication = true;
 
     ScriptableFP<NetCallbackConnectFP> mConnectCallback;

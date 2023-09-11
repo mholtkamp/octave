@@ -17,6 +17,8 @@ struct Network_Lua
     static int BeginSessionSearch(lua_State* L);
     static int EndSessionSearch(lua_State* L);
     static int IsSearching(lua_State* L);
+    static int EnableSessionBroadcast(lua_State* L);
+    static int IsSessionBroadcastEnabled(lua_State* L);
     static int GetNumSessions(lua_State* L);
     static int GetSession(lua_State* L);
     static int GetSessions(lua_State* L);
