@@ -24,6 +24,7 @@ struct AsyncLoadRequest
     const EmbeddedFile* mEmbeddedData = nullptr;
     TypeId mType = INVALID_TYPE_ID;
     Asset* mAsset = nullptr;
+    int32_t mRequeueCount = 0;
 };
 
 Asset* FetchAsset(const std::string& name);
