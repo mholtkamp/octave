@@ -31,6 +31,8 @@
 #include "Editor/PanelManager.h"
 #endif
 
+#define ASYNC_REQUEUE_LIMIT 30
+
 AssetManager* AssetManager::sInstance = nullptr;
 
 Asset* FetchAsset(const std::string& name)
@@ -1112,6 +1114,13 @@ void AssetManager::UpdateEndLoadQueue()
                 // of the mEndLoadQueue.
                 LogWarning("Async load for %s is still waiting on dependencies", loadRequest->mName.c_str());
                 mEndLoadQueue.push_back(loadRequest);
+                loadRequest->mRequeueCount++;
+
+                if (loadRequest->mRequeueCount >= ASYNC_REQUEUE_LIMIT)
+                {
+                    LogWarning("Exceeded requeue limit for %s, possible cyclical dependency. Forcing load.", loadRequest->mName.c_str());
+                    LoadAsset(loadRequest->mName);
+                }
             }
         }
     } while (handled && numIterations < maxIterations);
