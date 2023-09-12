@@ -1452,6 +1452,16 @@ uint32_t Renderer::GetLightFadeLimit() const
     return mLightFadeLimit;
 }
 
+void Renderer::SetLightFadeSpeed(float speed)
+{
+    mLightFadeSpeed = speed;
+}
+
+float Renderer::GetLightFadeSpeed() const
+{
+    return mLightFadeSpeed;
+}
+
 void Renderer::SetResolutionScale(float scale)
 {
     scale = glm::clamp(scale, 0.1f, 2.0f);
