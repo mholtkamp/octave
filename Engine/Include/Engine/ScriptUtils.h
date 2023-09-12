@@ -12,6 +12,8 @@ public:
     static bool CallLuaFunc(int numArgs, int numResults = 0);
     static bool LoadScriptFile(const std::string& fileName, const std::string& className);
     static void ReloadAllScriptFiles();
+    static void LoadAllScripts();
+    static void LoadScriptDirectory(const std::string& dirName, bool recurse = true);
 
     static std::string GetClassNameFromFileName(const std::string& fileName);
     static void SetEmbeddedScripts(EmbeddedFile* embeddedScripts, uint32_t numEmbeddedScripts);

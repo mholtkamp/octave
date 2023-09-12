@@ -77,6 +77,17 @@ int Script_Lua::GarbageCollect(lua_State* L)
     return 0;
 }
 
+int Script_Lua::LoadDirectory(lua_State* L)
+{
+    const char* dirStr = CHECK_STRING(L, 1);
+    bool recurse = true;
+    if (!lua_isnone(L, 2)) { recurse = CHECK_BOOLEAN(L, 2); }
+
+    ScriptUtils::LoadScriptDirectory(dirStr, recurse);
+
+    return 0;
+}
+
 void Script_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -100,6 +111,9 @@ void Script_Lua::Bind()
 
     lua_pushcfunction(L, Script_Lua::GarbageCollect);
     lua_setfield(L, tableIdx, "GarbageCollect");
+
+    lua_pushcfunction(L, Script_Lua::LoadDirectory);
+    lua_setfield(L, tableIdx, "LoadDirectory");
 
     lua_setglobal(L, SCRIPT_LUA_NAME);
 

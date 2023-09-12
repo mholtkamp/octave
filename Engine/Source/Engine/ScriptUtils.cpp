@@ -92,6 +92,73 @@ void ScriptUtils::ReloadAllScriptFiles()
     // This doesn't re-gather the NetFuncs for this script file.
 }
 
+void ScriptUtils::LoadAllScripts()
+{
+    LoadScriptDirectory(".", true);
+}
+
+void ScriptUtils::LoadScriptDirectory(const std::string& dirName, bool recurse)
+{
+    std::string rootScriptDir = GetEngineState()->mProjectDirectory + "Scripts/";
+    std::string scriptDirName = dirName;
+
+    if (scriptDirName.size() > 0 &&
+        scriptDirName[scriptDirName.size() - 1] != '/')
+    {
+        scriptDirName += "/";
+    }
+
+    std::string scriptDir = rootScriptDir + scriptDirName;
+
+    std::vector<std::string> subDirectories;
+    DirEntry dirEntry = {};
+
+    SYS_OpenDirectory(scriptDir, dirEntry);
+
+    while (dirEntry.mValid)
+    {
+        if (dirEntry.mDirectory)
+        {
+            if (dirEntry.mFilename[0] != '.')
+            {
+                subDirectories.push_back(dirEntry.mFilename);
+            }
+        }
+        else
+        {
+            const char* extension = strrchr(dirEntry.mFilename, '.');
+
+            if (extension != nullptr &&
+                strcmp(extension, ".lua") == 0)
+            {
+                Stream stream;
+                std::string relPath = scriptDirName + dirEntry.mFilename;
+
+                std::string className = ScriptUtils::GetClassNameFromFileName(relPath);
+
+                if (!ScriptUtils::IsScriptLoaded(className))
+                {
+                    ScriptUtils::LoadScriptFile(relPath, className);
+                }
+            }
+        }
+
+        SYS_IterateDirectory(dirEntry);
+    }
+
+    SYS_CloseDirectory(dirEntry);
+
+    if (recurse)
+    {
+        // Discover scripts of subdirectories.
+        for (uint32_t i = 0; i < subDirectories.size(); ++i)
+        {
+            std::string nextDirPath = scriptDirName + subDirectories[i] + "/";
+            LoadScriptDirectory(nextDirPath, recurse);
+        }
+    }
+}
+
 std::string ScriptUtils::GetClassNameFromFileName(const std::string& fileName)
 {
     std::string className = fileName;
