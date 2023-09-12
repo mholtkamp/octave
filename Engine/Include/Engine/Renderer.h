@@ -126,6 +126,8 @@ public:
     void EnableLightFade(bool enable);
     void SetLightFadeLimit(uint32_t limit);
     uint32_t GetLightFadeLimit() const;
+    void SetLightFadeSpeed(float speed);
+    float GetLightFadeSpeed() const;
 
     void SetResolutionScale(float scale);
     float GetResolutionScale() const;
