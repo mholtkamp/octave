@@ -1078,6 +1078,8 @@ void AssetManager::UpdateEndLoadQueue()
                 }
                 else
                 {
+                    LogDebug("Finished Async Loading: %s", loadRequest->mName.c_str());
+
                     // Finish the load on the main thread and assign the stub's mAsset so that it is officially "Loaded"
                     OCT_ASSERT(loadRequest->mAsset != nullptr);
                     loadRequest->mAsset->Create();
@@ -1086,13 +1088,17 @@ void AssetManager::UpdateEndLoadQueue()
                     // Now assign the asset to all of the refs that had requested the load
                     for (uint32_t i = 0; i < loadRequest->mTargetRefs.size(); ++i)
                     {
-                        // The load request of the target ref should match this load request but...
-                        // We need to make sure we handle the case where an AssetRef is assigned twice to an async load
-                        // before the first one finishes. Might mean Canceling the request if one already exists in AsyncLoadAsset()
-                        OCT_ASSERT(loadRequest->mTargetRefs[i]->mLoadRequest == loadRequest);
+                        if (loadRequest->mTargetRefs[i] != nullptr)
+                        {
+                            // The load request of the target ref should match this load request but...
+                            // We need to make sure we handle the case where an AssetRef is assigned twice to an async load
+                            // before the first one finishes. Might mean Canceling the request if one already exists in AsyncLoadAsset()
+                            OCT_ASSERT(loadRequest->mTargetRefs[i]->mLoadRequest == nullptr ||
+                                loadRequest->mTargetRefs[i]->mLoadRequest == loadRequest);
 
-                        (*loadRequest->mTargetRefs[i]) = loadRequest->mAsset;
-                        loadRequest->mTargetRefs[i]->mLoadRequest = nullptr;
+                            (*loadRequest->mTargetRefs[i]) = loadRequest->mAsset;
+                            loadRequest->mTargetRefs[i]->mLoadRequest = nullptr;
+                        }
                     }
                 }
 
