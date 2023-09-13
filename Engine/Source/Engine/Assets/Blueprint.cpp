@@ -410,7 +410,10 @@ Actor* Blueprint::Instantiate(World* world, bool addNetwork)
         }
 
         // No root was specified, so leave the root as is, if there is one.
-        newRoot = retActor->GetRootComponent();
+        if (newRoot == nullptr)
+        {
+            newRoot = retActor->GetRootComponent();
+        }
 
         if (newRoot == nullptr)
         {
