@@ -67,6 +67,7 @@ World::World() :
     mShadowColor(DEFAULT_SHADOW_COLOR),
     mActiveCamera(nullptr),
     mAudioReceiver(nullptr),
+    mDefaultCamera(nullptr),
     mNextNetId(1)
 {
     SCOPED_STAT("World()")
@@ -133,6 +134,8 @@ void World::SpawnDefaultCamera()
         cameraActor->SetName("Default Camera");
         cameraActor->SetPersitent(true);
         mActiveCamera->SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
+
+        mDefaultCamera = mActiveCamera;
     }
 }
 
@@ -945,6 +948,11 @@ void World::Update(float deltaTime)
 CameraComponent* World::GetActiveCamera()
 {
     return mActiveCamera;
+}
+
+CameraComponent* World::GetDefaultCamera()
+{
+    return mDefaultCamera.Get<CameraComponent>();
 }
 
 TransformComponent* World::GetAudioReceiver()

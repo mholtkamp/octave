@@ -12,6 +12,7 @@
 #include "Clock.h"
 #include "Line.h"
 #include "EngineTypes.h"
+#include "ObjectRef.h"
 #include "Components/CameraComponent.h"
 #include "Components/DirectionalLightComponent.h"
 
@@ -36,6 +37,7 @@ public:
     void Update(float deltaTime);
 
     CameraComponent* GetActiveCamera();
+    CameraComponent* GetDefaultCamera();
     TransformComponent* GetAudioReceiver();
 
     void SetActiveCamera(CameraComponent* activeCamera);
@@ -182,6 +184,7 @@ private:
     FogSettings mFogSettings;
     CameraComponent* mActiveCamera;
     TransformComponent* mAudioReceiver;
+    ComponentRef mDefaultCamera;
     NetId mNextNetId;
     bool mPendingClear = false;
 
