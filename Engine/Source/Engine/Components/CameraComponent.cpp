@@ -28,6 +28,19 @@ const char* CameraComponent::GetTypeName() const
     return "Camera";
 }
 
+void CameraComponent::BeginPlay()
+{
+    TransformComponent::BeginPlay();
+
+    CameraComponent* activeCam = GetWorld()->GetActiveCamera();
+
+    if (activeCam == nullptr ||
+        activeCam == GetWorld()->GetDefaultCamera())
+    {
+        GetWorld()->SetActiveCamera(this);
+    }
+}
+
 void CameraComponent::Destroy()
 {
     if (GetWorld() &&
