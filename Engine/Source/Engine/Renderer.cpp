@@ -748,7 +748,8 @@ void Renderer::GatherLightData(World* world)
         // Step 1 - Determine the closest N lights
         for (uint32_t i = 0; i < comps.size(); ++i)
         {
-            if (!comps[i]->IsVisible()
+            if (!comps[i]->IsVisible() ||
+                !comps[i]->GetOwner()->IsVisible() 
 #if !EDITOR
                 || comps[i]->GetLightingDomain() == LightingDomain::Static
 #endif
@@ -873,7 +874,8 @@ void Renderer::GatherLightData(World* world)
     {
         for (uint32_t i = 0; i < comps.size(); ++i)
         {
-            if (comps[i]->IsVisible()
+            if (comps[i]->IsVisible() &&
+                comps[i]->GetOwner()->IsVisible()
 #if !EDITOR
                 && comps[i]->GetLightingDomain() != LightingDomain::Static
 #endif
