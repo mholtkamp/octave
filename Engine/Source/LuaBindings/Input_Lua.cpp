@@ -322,6 +322,33 @@ int Input_Lua::SetCursorPosition(lua_State* L)
     return 0;
 }
 
+int Input_Lua::GetKeysJustDown(lua_State* L)
+{
+     LuaPushDatum(L, GetEngineState()->mInput.mJustDownKeys);
+     return 1;
+}
+
+int Input_Lua::IsAnyKeyJustDown(lua_State* L)
+{
+    bool ret = (GetEngineState()->mInput.mJustDownKeys.size() > 0);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Input_Lua::ConvertKeyCodeToChar(lua_State* L)
+{
+    int32_t keyCode = CHECK_INTEGER(L, 1);
+
+    // Make a string with a single char (and null terminator)
+    char keyChar[2];
+    keyChar[0] = INP_ConvertKeyCodeToChar(keyCode);
+    keyChar[1] = 0;
+
+    lua_pushstring(L, keyChar);
+    return 1;
+}
+
 void Input_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -414,6 +441,15 @@ void Input_Lua::Bind()
     lua_pushcfunction(L, Input_Lua::SetCursorPosition);
     lua_setfield(L, tableIdx, "SetCursorPosition");
 
+    lua_pushcfunction(L, Input_Lua::GetKeysJustDown);
+    lua_setfield(L, tableIdx, "GetKeysJustDown");
+
+    lua_pushcfunction(L, Input_Lua::IsAnyKeyJustDown);
+    lua_setfield(L, tableIdx, "IsAnyKeyJustDown");
+
+    lua_pushcfunction(L, Input_Lua::ConvertKeyCodeToChar);
+    lua_setfield(L, tableIdx, "ConvertKeyCodeToChar");
+
     lua_setglobal(L, INPUT_LUA_NAME);
     OCT_ASSERT(lua_gettop(L) == 0);
 
@@ -432,6 +468,8 @@ void Input_Lua::BindKeyTable()
 
     lua_pushinteger(L, KeyCode::KEY_BACK);
     lua_setfield(L, tableIdx, "Back");
+    lua_pushinteger(L, KeyCode::KEY_ESCAPE);
+    lua_setfield(L, tableIdx, "Escape");
 
     lua_pushinteger(L, KeyCode::KEY_0);
     lua_setfield(L, tableIdx, "N0");
