@@ -48,6 +48,10 @@ struct Input_Lua
     static int ShowCursor(lua_State* L);
     static int SetCursorPosition(lua_State* L);
 
+    static int GetKeysJustDown(lua_State* L);
+    static int IsAnyKeyJustDown(lua_State* L);
+    static int ConvertKeyCodeToChar(lua_State* L);
+
     static void Bind();
     static void BindKeyTable();
     static void BindMouseTable();
