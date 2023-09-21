@@ -835,6 +835,46 @@ void SYS_UnmountMemoryCard()
 
 }
 
+// Soft Keyboard
+void SYS_ShowSoftKeyboard(bool show)
+{
+    LogDebug("SYS_ShowSoftKeyboard()");
+    SystemState& system = GetEngineState()->mSystem;
+
+#if 0
+    // This call does nothing?
+    ANativeActivity *nativeActivity = GetEngineState()->mSystem.mActivity;
+    ANativeActivity_showSoftInput(nativeActivity, 0);
+#else
+    JNIEnv* env = nullptr;
+    JavaVM* vm = system.mActivity->vm;
+    vm->AttachCurrentThread(&env, nullptr);
+
+    jobject octActivity = system.mActivity->clazz;
+    jclass octClass = env->GetObjectClass(octActivity);
+
+    if (show)
+    {
+        LogDebug("SHOW Keyboard");
+        jmethodID showMethod = env->GetMethodID(octClass, "showSoftKeyboard", "()V");
+        env->CallVoidMethod(octActivity, showMethod);
+    }
+    else
+    {
+        LogDebug("HIDE Keyboard");
+        jmethodID hideMethod = env->GetMethodID(octClass, "hideSoftKeyboard", "()V");
+        env->CallVoidMethod(octActivity, hideMethod);
+    }
+
+    vm->DetachCurrentThread();
+#endif
+}
+
+bool SYS_IsSoftKeyboardShown()
+{
+    return false;
+}
+
 // Misc
 void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 {
