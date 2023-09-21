@@ -93,6 +93,23 @@ int System_Lua::IsFullscreen(lua_State* L)
     return 1;
 }
 
+int System_Lua::ShowSoftKeyboard(lua_State* L)
+{
+    bool show = CHECK_BOOLEAN(L, 1);
+
+    SYS_ShowSoftKeyboard(show);
+
+    return 0;
+}
+
+int System_Lua::IsSoftKeyboardShown(lua_State* L)
+{
+    bool ret = SYS_IsSoftKeyboardShown();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 void System_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -126,6 +143,12 @@ void System_Lua::Bind()
 
     lua_pushcfunction(L, IsFullscreen);
     lua_setfield(L, tableIdx, "IsFullscreen");
+    
+    lua_pushcfunction(L, ShowSoftKeyboard);
+    lua_setfield(L, tableIdx, "ShowSoftKeyboard");
+
+    lua_pushcfunction(L, IsSoftKeyboardShown);
+    lua_setfield(L, tableIdx, "IsSoftKeyboardShown");
 
     lua_setglobal(L, "System");
 
