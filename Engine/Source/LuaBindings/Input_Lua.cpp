@@ -135,7 +135,8 @@ int Input_Lua::IsTouchDown(lua_State* L)
 
 int Input_Lua::IsPointerJustUp(lua_State* L)
 {
-    int index = CHECK_INTEGER(L, 1);
+    int index = 1;
+    if (!lua_isnone(L, 1)) { index = CHECK_INTEGER(L, 1); }
     --index;
 
     bool ret = ::IsPointerJustUp(index);
@@ -146,7 +147,8 @@ int Input_Lua::IsPointerJustUp(lua_State* L)
 
 int Input_Lua::IsPointerJustDown(lua_State* L)
 {
-    int index = CHECK_INTEGER(L, 1);
+    int index = 1;
+    if (!lua_isnone(L, 1)) { index = CHECK_INTEGER(L, 1); }
     --index;
 
     bool ret = ::IsPointerJustDown(index);
@@ -157,7 +159,8 @@ int Input_Lua::IsPointerJustDown(lua_State* L)
 
 int Input_Lua::IsPointerDown(lua_State* L)
 {
-    int index = CHECK_INTEGER(L, 1);
+    int index = 1;
+    if (!lua_isnone(L, 1)) { index = CHECK_INTEGER(L, 1); }
     --index;
 
     bool ret = ::IsPointerDown(index);
@@ -168,8 +171,10 @@ int Input_Lua::IsPointerDown(lua_State* L)
 
 int Input_Lua::GetTouchPosition(lua_State* L)
 {
-    int index = CHECK_INTEGER(L, 1);
+    int index = 1;
+    if (!lua_isnone(L, 1)) { index = CHECK_INTEGER(L, 1); }
     --index;
+
     int32_t touchX = 0;
     int32_t touchY = 0;
     ::GetTouchPosition(touchX, touchY, index);
@@ -181,8 +186,10 @@ int Input_Lua::GetTouchPosition(lua_State* L)
 
 int Input_Lua::GetTouchPositionNormalized(lua_State* L)
 {
-    int index = CHECK_INTEGER(L, 1);
+    int index = 1;
+    if (!lua_isnone(L, 1)) { index = CHECK_INTEGER(L, 1); }
     --index;
+
     float touchX = 0;
     float touchY = 0;
     ::GetTouchPositionNormalized(touchX, touchY, index);
@@ -194,8 +201,10 @@ int Input_Lua::GetTouchPositionNormalized(lua_State* L)
 
 int Input_Lua::GetPointerPosition(lua_State* L)
 {
-    int index = CHECK_INTEGER(L, 1);
+    int index = 1;
+    if (!lua_isnone(L, 1)) { index = CHECK_INTEGER(L, 1); }
     --index;
+
     int32_t x = 0;
     int32_t y = 0;
     ::GetPointerPosition(x, y, index);
@@ -207,8 +216,10 @@ int Input_Lua::GetPointerPosition(lua_State* L)
 
 int Input_Lua::GetPointerPositionNormalized(lua_State* L)
 {
-    int index = CHECK_INTEGER(L, 1);
+    int index = 1;
+    if (!lua_isnone(L, 1)) { index = CHECK_INTEGER(L, 1); }
     --index;
+
     float x = 0;
     float y = 0;
     ::GetPointerPositionNormalized(x, y, index);
