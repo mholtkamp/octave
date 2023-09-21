@@ -622,6 +622,17 @@ void SYS_UnmountMemoryCard()
     }
 }
 
+// Soft Keyboard
+void SYS_ShowSoftKeyboard(bool show)
+{
+
+}
+
+bool SYS_IsSoftKeyboardShown()
+{
+    return false;
+}
+
 // Misc
 void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 {

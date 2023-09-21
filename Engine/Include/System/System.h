@@ -57,6 +57,10 @@ bool SYS_DoesSaveExist(const char* saveName);
 bool SYS_DeleteSave(const char* saveName);
 void SYS_UnmountMemoryCard();
 
+// Soft Keyboard
+void SYS_ShowSoftKeyboard(bool show);
+bool SYS_IsSoftKeyboardShown();
+
 // Misc
 void SYS_Log(LogSeverity severity, const char* format, va_list arg);
 void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber);
