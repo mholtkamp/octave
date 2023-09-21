@@ -838,7 +838,6 @@ void SYS_UnmountMemoryCard()
 // Soft Keyboard
 void SYS_ShowSoftKeyboard(bool show)
 {
-    LogDebug("SYS_ShowSoftKeyboard()");
     SystemState& system = GetEngineState()->mSystem;
 
 #if 0
@@ -855,13 +854,11 @@ void SYS_ShowSoftKeyboard(bool show)
 
     if (show)
     {
-        LogDebug("SHOW Keyboard");
         jmethodID showMethod = env->GetMethodID(octClass, "showSoftKeyboard", "()V");
         env->CallVoidMethod(octActivity, showMethod);
     }
     else
     {
-        LogDebug("HIDE Keyboard");
         jmethodID hideMethod = env->GetMethodID(octClass, "hideSoftKeyboard", "()V");
         env->CallVoidMethod(octActivity, hideMethod);
     }
@@ -872,7 +869,20 @@ void SYS_ShowSoftKeyboard(bool show)
 
 bool SYS_IsSoftKeyboardShown()
 {
-    return false;
+    bool shown = false;
+    SystemState& system = GetEngineState()->mSystem;
+
+    JNIEnv* env = nullptr;
+    JavaVM* vm = system.mActivity->vm;
+    vm->AttachCurrentThread(&env, nullptr);
+
+    jobject octActivity = system.mActivity->clazz;
+    jclass octClass = env->GetObjectClass(octActivity);
+
+    jmethodID showMethod = env->GetMethodID(octClass, "isSoftKeyboardShown", "()Z");
+    shown = (bool) env->CallBooleanMethod(octActivity, showMethod);
+
+    return shown;
 }
 
 // Misc
