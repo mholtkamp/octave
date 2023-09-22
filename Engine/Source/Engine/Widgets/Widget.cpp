@@ -70,6 +70,8 @@ Widget* CreateWidget(const std::string& className, bool start)
 {
     Widget* retWidget = Widget::CreateInstance(className.c_str());
 
+    retWidget->RegisterScriptFuncs(GetLua());
+
 #if EDITOR
     // Mark native children. This is for the case where you add a Button to the map.
     // You don't want to instantiate a new Text + Quad when you load the widget map.
