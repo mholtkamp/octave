@@ -250,10 +250,14 @@ void INP_ClearTouch(int32_t touch)
         if (i < INPUT_MAX_TOUCHES - 1)
         {
             input.mTouches[i] = input.mTouches[i + 1];
+            input.mPointerX[i] = input.mPointerX[i + 1];
+            input.mPointerY[i] = input.mPointerY[i + 1];
         }
         else
         {
             input.mTouches[i] = false;
+            input.mPointerX[i] = 0.0f;
+            input.mPointerY[i] = 0.0f;
         }
     }
 }
