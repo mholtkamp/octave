@@ -7,7 +7,11 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
+
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.bonedust.standalone.databinding.ActivityMainBinding;
 
@@ -108,5 +112,29 @@ public class OctaveActivity extends NativeActivity {
         else {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
         }
+    }
+
+    public void showSoftKeyboard()
+    {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput( this.getWindow().getDecorView(), InputMethodManager.SHOW_FORCED);
+    }
+
+    public void hideSoftKeyboard()
+    {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(this.getWindow().getDecorView().getWindowToken(), 0);
+    }
+
+    public boolean isSoftKeyboardShown()
+    {
+        WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(this.getWindow().getDecorView());
+        boolean imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
+
+        // In the future, we may want to provide a way to query the keyboard height so the game
+        // can position elements better.
+        // int imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+
+        return imeVisible;
     }
 }
