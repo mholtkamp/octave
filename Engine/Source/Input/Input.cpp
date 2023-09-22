@@ -240,7 +240,22 @@ void INP_SetTouch(int32_t touch)
 void INP_ClearTouch(int32_t touch)
 {
     OCT_ASSERT(touch >= 0 && touch < INPUT_MAX_TOUCHES);
-    GetEngineState()->mInput.mTouches[touch] = false;
+    InputState& input = GetEngineState()->mInput;
+    input.mTouches[touch] = false;
+
+    // Tightly pack touches. On Android, if you receive pointer down 0, 1, 2
+    // and then the pointer at index 1 is released, the pointer at index 2 now becomes pointer 1.
+    for (uint32_t i = touch; i < INPUT_MAX_TOUCHES; ++i)
+    {
+        if (i < INPUT_MAX_TOUCHES - 1)
+        {
+            input.mTouches[i] = input.mTouches[i + 1];
+        }
+        else
+        {
+            input.mTouches[i] = false;
+        }
+    }
 }
 
 bool INP_IsTouchDown(int32_t touch)
