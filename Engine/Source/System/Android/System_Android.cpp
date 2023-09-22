@@ -182,10 +182,13 @@ static int HandleInput(struct android_app* app, AInputEvent* inputEvent)
         }
         else if (action == AMOTION_EVENT_ACTION_POINTER_UP)
         {
+            // This used to be called but it is useless because INP_ClearTouch() will have to
+            // propagate higher pointer positions downward, which overwrites this position.
+            //INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(inputEvent, pointer)),
+            //                     static_cast<int>(AMotionEvent_getY(inputEvent, pointer)),
+            //                     pointer);
+
             INP_ClearTouch(pointer);
-            INP_SetTouchPosition(static_cast<int>(AMotionEvent_getX(inputEvent, pointer)),
-                static_cast<int>(AMotionEvent_getY(inputEvent, pointer)),
-                pointer);
             return 1;
         }
         else if (action == AMOTION_EVENT_ACTION_MOVE)
