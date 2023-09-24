@@ -6,6 +6,8 @@
 #include "AssetManager.h"
 #include "Maths.h"
 
+#include "Components/PrimitiveComponent.h"
+
 #include "Graphics/Graphics.h"
 
 FORCE_LINK_DEF(CameraComponent);
@@ -375,4 +377,40 @@ glm::vec3 CameraComponent::WorldToScreenPosition(glm::vec3 worldPos)
     }
 
     return screenPos;
+}
+
+glm::vec3 CameraComponent::ScreenToWorldPosition(int32_t x, int32_t y)
+{
+    float screenX = float(x);
+    float screenY = float(y);
+    float screenWidth = (float)GetEngineState()->mWindowWidth;
+    float screenHeight = (float)GetEngineState()->mWindowHeight;
+
+    float cX = (screenX / screenWidth) * 2.0f - 1.0f;
+    float cY = (screenY / screenHeight) * 2.0f - 1.0f;
+    float cZ = 0.0f; // Near Plane
+
+    glm::mat4 invViewProj = glm::inverse(mViewProjectionMatrix);
+    glm::vec3 worldPos = invViewProj * glm::vec4(cX, cY, cZ, 1.0f);
+
+    return worldPos;
+}
+
+glm::vec3 CameraComponent::TraceScreenToWorld(int32_t x, int32_t y, uint8_t colMask, PrimitiveComponent** outComp)
+{
+    glm::vec3 worldPos = ScreenToWorldPosition(x, y);
+
+    glm::vec3 startPos = GetAbsolutePosition();
+    glm::vec3 rayDir = Maths::SafeNormalize(worldPos - startPos);
+    glm::vec3 endPos = startPos + rayDir * GetFarZ();
+
+    RayTestResult result;
+    GetWorld()->RayTest(startPos, endPos, colMask, result);
+
+    if (outComp != nullptr)
+    {
+        *outComp = result.mHitComponent;
+    }
+
+    return result.mHitPosition;
 }
