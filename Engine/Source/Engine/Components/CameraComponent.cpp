@@ -390,8 +390,12 @@ glm::vec3 CameraComponent::ScreenToWorldPosition(int32_t x, int32_t y)
     float cY = (screenY / screenHeight) * 2.0f - 1.0f;
     float cZ = 0.0f; // Near Plane
 
-    glm::mat4 invViewProj = glm::inverse(mViewProjectionMatrix);
-    glm::vec3 worldPos = invViewProj * glm::vec4(cX, cY, cZ, 1.0f);
+    // Use standard VP here because android might rotate the proj matrix.
+    glm::mat4 invViewProj = glm::inverse(mStandardViewProjectionMatrix);
+    glm::vec4 worldPos4 = invViewProj * glm::vec4(cX, cY, cZ, 1.0f);
+    worldPos4 = worldPos4 / worldPos4.w;
+
+    glm::vec3 worldPos = glm::vec3(worldPos4.x, worldPos4.y, worldPos4.z);
 
     return worldPos;
 }
