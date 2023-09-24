@@ -34,6 +34,8 @@ struct CameraComponent_Lua
     static int SetWidth(lua_State* L);
     static int SetHeight(lua_State* L);
     static int WorldToScreenPosition(lua_State* L);
+    static int ScreenToWorldPosition(lua_State* L);
+    static int TraceScreenToWorld(lua_State* L);
 
     static void Bind();
 };
