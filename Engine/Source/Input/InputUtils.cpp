@@ -1,5 +1,7 @@
 #include "Input/InputUtils.h"
 #include "Input/InputConstants.h"
+#include "Input/Input.h"
+#include "System/System.h"
 
 #include "Engine.h"
 
@@ -18,6 +20,15 @@ void InputAdvanceFrame()
 
 #if INPUT_MOUSE_SUPPORT
     memcpy(input.mPrevMouseButtons, input.mMouseButtons, INPUT_MAX_MOUSE_BUTTONS * sizeof(bool));
+
+    if (INP_IsCursorLocked() && SYS_DoesWindowHaveFocus())
+    {
+        // Reset mouse to center if locked
+        int32_t x = GetEngineState()->mWindowWidth / 2;
+        int32_t y = GetEngineState()->mWindowHeight / 2;
+        INP_SetCursorPos(x, y);
+    }
+
     input.mScrollWheelDelta = 0;
     input.mMouseDeltaX = 0;
     input.mMouseDeltaY = 0;
