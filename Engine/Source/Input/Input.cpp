@@ -466,3 +466,18 @@ void INP_ClearGamepadButton(GamepadButtonCode buttonCode, int32_t gamepadIndex)
         input.mGamepads[gamepadIndex].mButtons[(int32_t)buttonCode] = 0;
     }
 }
+
+bool INP_IsCursorLocked()
+{
+    return GetEngineState()->mInput.mCursorLocked;
+}
+
+bool INP_IsCursorTrapped()
+{
+    return GetEngineState()->mInput.mCursorTrapped;
+}
+
+bool INP_IsCursorShown()
+{
+    return GetEngineState()->mInput.mCursorShown;
+}

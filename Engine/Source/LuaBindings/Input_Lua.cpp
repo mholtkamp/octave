@@ -360,6 +360,23 @@ int Input_Lua::ConvertKeyCodeToChar(lua_State* L)
     return 1;
 }
 
+int Input_Lua::ShowSoftKeyboard(lua_State* L)
+{
+    bool show = CHECK_BOOLEAN(L, 1);
+
+    INP_ShowSoftKeyboard(show);
+
+    return 0;
+}
+
+int Input_Lua::IsSoftKeyboardShown(lua_State* L)
+{
+    bool ret = INP_IsSoftKeyboardShown();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 void Input_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -460,6 +477,12 @@ void Input_Lua::Bind()
 
     lua_pushcfunction(L, Input_Lua::ConvertKeyCodeToChar);
     lua_setfield(L, tableIdx, "ConvertKeyCodeToChar");
+
+    lua_pushcfunction(L, Input_Lua::ShowSoftKeyboard);
+    lua_setfield(L, tableIdx, "ShowSoftKeyboard");
+
+    lua_pushcfunction(L, Input_Lua::IsSoftKeyboardShown);
+    lua_setfield(L, tableIdx, "IsSoftKeyboardShown");
 
     lua_setglobal(L, INPUT_LUA_NAME);
     OCT_ASSERT(lua_gettop(L) == 0);

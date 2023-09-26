@@ -9,8 +9,12 @@
 void INP_Initialize();
 void INP_Shutdown();
 void INP_Update();
-void INP_ShowCursor(bool show);
 void INP_SetCursorPos(int32_t x, int32_t y);
+void INP_ShowCursor(bool show);
+void INP_LockCursor(bool lock);
+void INP_TrapCursor(bool trap);
+void INP_ShowSoftKeyboard(bool show);
+bool INP_IsSoftKeyboardShown();
 
 // Platform Agnostic
 void INP_SetKey(int32_t key);
@@ -57,3 +61,7 @@ int32_t INP_GetGamepadIndex(int32_t inputDevice);
 void INP_SetGamepadAxisValue(GamepadAxisCode axisCode, float axisValue, int32_t gamepadIndex);
 void INP_SetGamepadButton(GamepadButtonCode buttonCode, int32_t gamepadIndex);
 void INP_ClearGamepadButton(GamepadButtonCode buttonCode, int32_t gamepadIndex);
+
+bool INP_IsCursorLocked();
+bool INP_IsCursorTrapped();
+bool INP_IsCursorShown();

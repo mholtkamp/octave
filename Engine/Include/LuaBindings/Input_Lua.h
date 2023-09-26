@@ -52,6 +52,9 @@ struct Input_Lua
     static int IsAnyKeyJustDown(lua_State* L);
     static int ConvertKeyCodeToChar(lua_State* L);
 
+    static int ShowSoftKeyboard(lua_State* L);
+    static int IsSoftKeyboardShown(lua_State* L);
+
     static void Bind();
     static void BindKeyTable();
     static void BindMouseTable();

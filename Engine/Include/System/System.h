@@ -57,10 +57,6 @@ bool SYS_DoesSaveExist(const char* saveName);
 bool SYS_DeleteSave(const char* saveName);
 void SYS_UnmountMemoryCard();
 
-// Soft Keyboard
-void SYS_ShowSoftKeyboard(bool show);
-bool SYS_IsSoftKeyboardShown();
-
 // Misc
 void SYS_Log(LogSeverity severity, const char* format, va_list arg);
 void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber);
@@ -73,6 +69,8 @@ void SYS_SetScreenOrientation(ScreenOrientation orientation);
 ScreenOrientation SYS_GetScreenOrientation();
 void SYS_SetFullscreen(bool fullscreen);
 bool SYS_IsFullscreen();
+void SYS_SetWindowRect(int32_t x, int32_t y, int32_t width, int32_t height);
+void SYS_GetWindowRect(int32_t& outX, int32_t& outY, int32_t& outWidth, int32_t& outHeight);
 
 struct ScopedLock
 {
