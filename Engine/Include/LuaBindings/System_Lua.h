@@ -19,9 +19,6 @@ struct System_Lua
     static int SetFullscreen(lua_State* L);
     static int IsFullscreen(lua_State* L);
 
-    static int ShowSoftKeyboard(lua_State* L);
-    static int IsSoftKeyboardShown(lua_State* L);
-
     static void Bind();
 };
 

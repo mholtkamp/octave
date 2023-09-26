@@ -56,6 +56,10 @@ struct InputState
 
     std::vector<int32_t> mJustDownKeys;
 
+    bool mCursorLocked = false;
+    bool mCursorTrapped = false;
+    bool mCursorShown = true;
+
 #if PLATFORM_WINDOWS
     XINPUT_STATE mXinputStates[INPUT_MAX_GAMEPADS] = { };
     XINPUT_STATE mXinputPrevStates[INPUT_MAX_GAMEPADS] = { };

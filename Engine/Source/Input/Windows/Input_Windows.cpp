@@ -75,11 +75,6 @@ void INP_Update()
     }
 }
 
-void INP_ShowCursor(bool show)
-{
-    ShowCursor(show);
-}
-
 void INP_SetCursorPos(int32_t x, int32_t y)
 {
     INP_SetMousePosition(x, y);
@@ -89,5 +84,87 @@ void INP_SetCursorPos(int32_t x, int32_t y)
 
     SetCursorPos(screenPoint.x, screenPoint.y);
 }
+
+void INP_ShowCursor(bool show)
+{
+    SystemState& system = GetEngineState()->mSystem;
+
+    if (system.mWindowHasFocus)
+    {
+        ShowCursor(show);
+    }
+
+    GetEngineState()->mInput.mCursorShown = show;
+}
+
+void INP_LockCursor(bool lock)
+{
+    SystemState& system = GetEngineState()->mSystem;
+    InputState& input = GetEngineState()->mInput;
+
+    if (system.mWindowHasFocus)
+    {
+        if (lock)
+        {
+
+        }
+        else
+        {
+
+        }
+    }
+
+    input.mCursorLocked = lock;
+}
+
+void INP_TrapCursor(bool trap)
+{
+    SystemState& system = GetEngineState()->mSystem;
+    InputState& input = GetEngineState()->mInput;
+
+    if (system.mWindowHasFocus)
+    {
+        if (trap)
+        {
+            RECT rect;
+            GetClientRect(system.mWindow, &rect);
+
+            POINT tl;
+            tl.x = rect.left;
+            tl.y = rect.top;
+
+            POINT br;
+            br.x = rect.right;
+            br.y = rect.bottom;
+
+            MapWindowPoints(system.mWindow, nullptr, &tl, 1);
+            MapWindowPoints(system.mWindow, nullptr, &br, 1);
+
+            rect.left = tl.x;
+            rect.top = tl.y;
+            rect.right = br.x;
+            rect.bottom = br.y;
+
+            ClipCursor(&rect);
+        }
+        else
+        {
+            ClipCursor(nullptr);
+        }
+    }
+
+    input.mCursorTrapped = trap;
+}
+
+void INP_ShowSoftKeyboard(bool show)
+{
+
+}
+
+bool INP_IsSoftKeyboardShown()
+{
+    return false;
+}
+
 
 #endif

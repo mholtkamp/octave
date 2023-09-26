@@ -187,6 +187,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_SETFOCUS:
     {
         engineState->mSystem.mWindowHasFocus = true;
+
+        INP_TrapCursor(INP_IsCursorTrapped());
+
         return 0;
     }
 
@@ -195,6 +198,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         engineState->mSystem.mWindowHasFocus = false;
         INP_ClearAllKeys();
         INP_ClearAllMouseButtons();
+
+        ClipCursor(nullptr);
+
         return 0;
     }
 
@@ -823,18 +829,6 @@ void SYS_UnmountMemoryCard()
 
 }
 
-// Soft Keyboard
-
-void SYS_ShowSoftKeyboard(bool show)
-{
-
-}
-
-bool SYS_IsSoftKeyboardShown()
-{
-    return false;
-}
-
 // Misc
 
 void SYS_Log(LogSeverity severity, const char* format, va_list arg)
@@ -938,6 +932,29 @@ void SYS_SetFullscreen(bool fullscreen)
 bool SYS_IsFullscreen()
 {
     return GetEngineState()->mSystem.mFullscreen;
+}
+
+void SYS_SetWindowRect(int32_t x, int32_t y, int32_t width, int32_t height)
+{
+    if (!SYS_IsFullscreen())
+    {
+        SystemState& system = GetEngineState()->mSystem;
+
+        SetWindowPos(system.mWindow, HWND_TOP, x, y, width, height, 0);
+    }
+}
+
+void SYS_GetWindowRect(int32_t& outX, int32_t& outY, int32_t& outWidth, int32_t& outHeight)
+{
+    SystemState& system = GetEngineState()->mSystem;
+
+    RECT winRect;
+    GetWindowRect(system.mWindow, &winRect);
+
+    outX = winRect.left;
+    outY = winRect.top;
+    outWidth = winRect.right - winRect.left;
+    outHeight = winRect.bottom - winRect.top;
 }
 
 #endif
