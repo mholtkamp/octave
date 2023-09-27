@@ -196,14 +196,35 @@ void INP_Update()
     }
 }
 
-void INP_ShowCursor(bool show)
-{
-    
-}
-
 void INP_SetCursorPos(int32_t x, int32_t y)
 {
     
 }
+
+void INP_ShowCursor(bool show)
+{
+
+}
+
+void INP_LockCursor(bool lock)
+{
+
+}
+
+void INP_TrapCursor(bool trap)
+{
+
+}
+
+void INP_ShowSoftKeyboard(bool show)
+{
+
+}
+
+bool INP_IsSoftKeyboardShown()
+{
+    return false;
+}
+
 
 #endif
