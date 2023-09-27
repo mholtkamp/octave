@@ -80,10 +80,18 @@ void HandleXcbEvent(xcb_generic_event_t* event)
         INP_ClearKey(keyEvent->detail);
         break;
     }
+    case XCB_FOCUS_IN:
+    {
+        system.mWindowHasFocus = true;
+        INP_TrapCursor(INP_IsCursorTrapped());
+        break;
+    }
     case XCB_FOCUS_OUT:
     {
+        system.mWindowHasFocus = false;
         INP_ClearAllKeys();
         INP_ClearAllMouseButtons();
+        xcb_ungrab_pointer(system.mXcbConnection, XCB_CURRENT_TIME);
         break;
     }
     case XCB_DESTROY_NOTIFY:
@@ -807,7 +815,7 @@ void SYS_SetWindowTitle(const char* title)
 
 bool SYS_DoesWindowHaveFocus()
 {
-    return true;
+    return GetEngineState()->mSystem.mWindowHasFocus;
 }
 
 void SYS_SetScreenOrientation(ScreenOrientation orientation)
