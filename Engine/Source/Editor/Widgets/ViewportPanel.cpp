@@ -1316,27 +1316,11 @@ void ViewportPanel::HandleOrbitControls()
 
 glm::vec2 ViewportPanel::HandleLockedCursor()
 {
-    // Find mouse delta
-    glm::vec2 delta = glm::vec2(0.0f, 0.0f);
+    int32_t dX = 0;
+    int32_t dY = 0;
+    INP_GetMouseDelta(dX, dY);
 
-    if (SYS_DoesWindowHaveFocus())
-    {
-        glm::ivec2 centerPoint;
-
-        EditorGetWindowCenter(centerPoint.x, centerPoint.y);
-
-        int32_t iDeltaX;
-        int32_t iDeltaY;
-        INP_GetMouseDelta(iDeltaX, iDeltaY);
-
-        delta.x = (float)iDeltaX;
-        delta.y = (float)iDeltaY;
-
-        // Reset mouse to center of screen
-        EditorSetCursorPos(centerPoint.x, centerPoint.y);
-    }
-
-    return delta;
+    return glm::vec2((float)dX, (float)dY);
 }
 
 void ViewportPanel::HandleAxisLocking()

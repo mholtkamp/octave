@@ -22,6 +22,7 @@
 #include "Widgets/TextEntry.h"
 #include "Widgets/WidgetViewportPanel.h"
 #include "Widgets/PropertiesPanel.h"
+#include "Input/Input.h"
 
 static EditorState sEditorState;
 
@@ -285,7 +286,8 @@ void SetControlMode(ControlMode newMode)
         prevMode == ControlMode::Pan ||
         prevMode == ControlMode::Orbit)
     {
-        EditorShowCursor(true);
+        INP_ShowCursor(true);
+        INP_LockCursor(false);
     }
 
     if (newMode == ControlMode::Pilot ||
@@ -295,10 +297,8 @@ void SetControlMode(ControlMode newMode)
         newMode == ControlMode::Pan ||
         newMode == ControlMode::Orbit)
     {
-        EditorShowCursor(false);
-
-        // Center the cursor before any movement so the camera rotation doesn't jump at first.
-        EditorCenterCursor();
+        INP_ShowCursor(false);
+        INP_LockCursor(true);
 
         // But because of the event loop processing, we might get a bogus mouse motion event even after
         // we have just forced the position. So set a flag to let the viewport panel know that we need to
