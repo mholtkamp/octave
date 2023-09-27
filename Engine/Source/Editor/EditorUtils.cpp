@@ -15,27 +15,11 @@
 #include "Input/Input.h"
 #include "InputDevices.h"
 
-void EditorShowCursor(bool show)
-{
-    INP_ShowCursor(show);
-}
-
 void EditorCenterCursor()
 {
     int32_t centerX = GetEngineState()->mWindowWidth / 2;
     int32_t centerY = GetEngineState()->mWindowHeight / 2;
-    EditorSetCursorPos(centerX, centerY);
-}
-
-void EditorSetCursorPos(int32_t x, int32_t y)
-{
-    INP_SetCursorPos(x, y);
-}
-
-void EditorGetWindowCenter(int32_t& x, int32_t& y)
-{
-    x = GetEngineState()->mWindowWidth / 2;
-    y = GetEngineState()->mWindowHeight / 2;
+    INP_SetCursorPos(centerX, centerY);
 }
 
 glm::vec3 EditorGetFocusPosition()
