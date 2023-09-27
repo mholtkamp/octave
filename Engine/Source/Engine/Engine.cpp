@@ -729,7 +729,9 @@ int main(int argc, char** argv)
     GameMain(argc, argv);
 #endif
 
-#if !PLATFORM_ANDROID
+#if PLATFORM_ANDROID
+    exit(0);
+#else
     return 0;
 #endif
 }
