@@ -853,4 +853,27 @@ bool SYS_IsFullscreen()
     return GetEngineState()->mSystem.mFullscreen;
 }
 
+void SYS_SetWindowRect(int32_t x, int32_t y, int32_t width, int32_t height)
+{
+    SystemState& system = GetEngineState()->mSystem;
+    uint32_t values[] = { (uint32_t)x, (uint32_t)y, (uint32_t)width, (uint32_t)height };
+    xcb_configure_window(system.mXcbConnection, system.mXcbWindow, XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values);
+}
+
+void SYS_GetWindowRect(int32_t& outX, int32_t& outY, int32_t& outWidth, int32_t& outHeight)
+{
+    SystemState& system = GetEngineState()->mSystem;
+    xcb_get_geometry_reply_t* geom = xcb_get_geometry_reply(system.mXcbConnection, xcb_get_geometry(system.mXcbConnection, system.mXcbWindow), NULL);
+
+    /* Do something with the fields of geom */
+
+    outX = (int32_t)geom->x;
+    outY = (int32_t)geom->y;
+    outWidth = (int32_t)geom->width;
+    outHeight = (int32_t)geom->height;
+
+    free(geom);
+    geom = nullptr;
+}
+
 #endif
