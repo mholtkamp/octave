@@ -101,19 +101,6 @@ void INP_LockCursor(bool lock)
 {
     SystemState& system = GetEngineState()->mSystem;
     InputState& input = GetEngineState()->mInput;
-
-    if (system.mWindowHasFocus)
-    {
-        if (lock)
-        {
-
-        }
-        else
-        {
-
-        }
-    }
-
     input.mCursorLocked = lock;
 }
 
