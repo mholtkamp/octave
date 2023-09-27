@@ -222,36 +222,34 @@ void INP_TrapCursor(bool trap)
     SystemState& system = GetEngineState()->mSystem;
     InputState& input = GetEngineState()->mInput;
 
-    if (trap)
+    if (system.mWindowHasFocus)
     {
-        xcb_grab_pointer_cookie_t grabCookie;
-        xcb_grab_pointer_reply_t* grabReply = nullptr;
-        
-        grabCookie = xcb_grab_pointer(
-            system.mXcbConnection,
-            1,
-            system.mXcbWindow,
-            XCB_EVENT_MASK_BUTTON_PRESS |
-            XCB_EVENT_MASK_BUTTON_RELEASE |
-            XCB_EVENT_MASK_POINTER_MOTION,
-            XCB_GRAB_MODE_ASYNC,
-            XCB_GRAB_MODE_ASYNC,
-            system.mXcbWindow,
-            XCB_NONE,
-            XCB_CURRENT_TIME
-        );
+        if (trap)
+        {
+            xcb_grab_pointer_cookie_t grabCookie;
+            xcb_grab_pointer_reply_t* grabReply = nullptr;
+            
+            grabCookie = xcb_grab_pointer(
+                system.mXcbConnection,
+                1,
+                system.mXcbWindow,
+                XCB_EVENT_MASK_BUTTON_PRESS |
+                XCB_EVENT_MASK_BUTTON_RELEASE |
+                XCB_EVENT_MASK_POINTER_MOTION,
+                XCB_GRAB_MODE_ASYNC,
+                XCB_GRAB_MODE_ASYNC,
+                system.mXcbWindow,
+                XCB_NONE,
+                XCB_CURRENT_TIME
+            );
 
-        grabReply = xcb_grab_pointer_reply(system.mXcbConnection, grabCookie, nullptr); 
-        free(grabReply);
-    }
-    else
-    {
-        xcb_ungrab_pointer(system.mXcbConnection, XCB_CURRENT_TIME);
-    }
-    
-    //if (system.mWindowHasFocus)
-    {
-
+            grabReply = xcb_grab_pointer_reply(system.mXcbConnection, grabCookie, nullptr); 
+            free(grabReply);
+        }
+        else
+        {
+            xcb_ungrab_pointer(system.mXcbConnection, XCB_CURRENT_TIME);
+        }
     }
 
     input.mCursorTrapped = trap;
