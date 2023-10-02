@@ -440,6 +440,17 @@ void SYS_UnmountMemoryCard()
 
 }
 
+// Clipboard
+void SYS_SetClipboardText(const std::string& str)
+{
+
+}
+
+std::string SYS_GetClipboardText()
+{
+    return "";
+}
+
 // Misc
 void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 {
