@@ -829,6 +829,70 @@ void SYS_UnmountMemoryCard()
 
 }
 
+// Clipboard
+void SYS_SetClipboardText(const std::string& str)
+{
+    SystemState& system = GetEngineState()->mSystem;
+
+    if (!OpenClipboard(system.mWindow))
+    {
+        LogError("Failed to open clipboard.");
+        return;
+    }
+
+    EmptyClipboard();
+
+    HGLOBAL hglb = GlobalAlloc(GMEM_MOVEABLE, str.size() + 1);
+    if (hglb == nullptr)
+    {
+        CloseClipboard();
+        LogError("Failed to allocate clipboard data.");
+        return;
+    }
+
+    char* copyStr = (char*) GlobalLock(hglb);
+    memcpy(copyStr, str.data(), str.size());
+    copyStr[(int32_t)str.size()] = 0;
+    GlobalUnlock(hglb);
+
+    SetClipboardData(CF_TEXT, hglb);
+
+    CloseClipboard();
+}
+
+std::string SYS_GetClipboardText()
+{
+    std::string retStr;
+
+    SystemState& system = GetEngineState()->mSystem;
+
+    if (!IsClipboardFormatAvailable(CF_TEXT))
+    {
+        return retStr;
+    }
+
+    if (!OpenClipboard(system.mWindow))
+    {
+        LogError("Failed to open clipboard.");
+        return retStr;
+    }
+
+    HGLOBAL hglb = GetClipboardData(CF_TEXT);
+    if (hglb != nullptr)
+    {
+        char* srcStr = (char*) GlobalLock(hglb);
+        if (srcStr != nullptr)
+        {
+            retStr = srcStr;
+            GlobalUnlock(hglb);
+        }
+    }
+
+    CloseClipboard();
+
+    return retStr;
+}
+
 // Misc
 
 void SYS_Log(LogSeverity severity, const char* format, va_list arg)

@@ -57,6 +57,10 @@ bool SYS_DoesSaveExist(const char* saveName);
 bool SYS_DeleteSave(const char* saveName);
 void SYS_UnmountMemoryCard();
 
+// Clipboard
+void SYS_SetClipboardText(const std::string& str);
+std::string SYS_GetClipboardText();
+
 // Misc
 void SYS_Log(LogSeverity severity, const char* format, va_list arg);
 void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber);

@@ -75,34 +75,54 @@ void TextField::Update()
     const std::vector<int32_t>& pressedKeys = GetEngineState()->mInput.mJustDownKeys;
     bool textStringModified = false;
     const bool shiftDown = IsShiftDown();
+    const bool ctrlDown = IsControlDown();
 
-    for (uint32_t i = 0; i < pressedKeys.size(); ++i)
+    if (ctrlDown)
     {
-        uint8_t keyCode = uint8_t(pressedKeys[i]);
-        uint8_t charToAdd = ConvertKeyCodeToChar(keyCode, shiftDown);
-
-        if (charToAdd >= ' ' &&
-            charToAdd <= '~' &&
-            (mMaxCharacters == 0 || mText->GetText().size() < mMaxCharacters))
+        if (IsKeyJustDown(KEY_C))
         {
-            std::string newText = mText->GetText();
-            newText += charToAdd;
-            mText->SetText(newText);
+            SYS_SetClipboardText(mText->GetText());
+        }
+        else if (IsKeyJustDown(KEY_X))
+        {
+            SYS_SetClipboardText(mText->GetText());
+            mText->SetText("");
             textStringModified = true;
         }
-
-        // Remove characters
-        // TODO: If cursor movement is added, make backspace remove characters behind cursor.
-        //        and delete remove characters in front of the cursor.
-        if (keyCode == KEY_BACKSPACE||
-            keyCode == KEY_DELETE)
+        else if (IsKeyJustDown(KEY_V))
         {
-            if (IsControlDown())
+            std::string clipText = SYS_GetClipboardText();
+            mText->SetText(clipText);
+            textStringModified = true;
+        }
+        else if (IsKeyJustDown(KEY_BACKSPACE) || IsKeyJustDown(KEY_DELETE))
+        {
+            mText->SetText("");
+            textStringModified = true;
+        }
+    }
+    else
+    {
+        for (uint32_t i = 0; i < pressedKeys.size(); ++i)
+        {
+            uint8_t keyCode = uint8_t(pressedKeys[i]);
+            uint8_t charToAdd = ConvertKeyCodeToChar(keyCode, shiftDown);
+
+            if (charToAdd >= ' ' &&
+                charToAdd <= '~' &&
+                (mMaxCharacters == 0 || mText->GetText().size() < mMaxCharacters))
             {
-                // For now, delete everything
-                mText->SetText("");
+                std::string newText = mText->GetText();
+                newText += charToAdd;
+                mText->SetText(newText);
+                textStringModified = true;
             }
-            else
+
+            // Remove characters
+            // TODO: If cursor movement is added, make backspace remove characters behind cursor.
+            //        and delete remove characters in front of the cursor.
+            if (keyCode == KEY_BACKSPACE ||
+                keyCode == KEY_DELETE)
             {
                 std::string newText = mText->GetText();
 
@@ -112,9 +132,9 @@ void TextField::Update()
                 }
 
                 mText->SetText(newText);
-            }
 
-            textStringModified = true;
+                textStringModified = true;
+            }
         }
     }
 
