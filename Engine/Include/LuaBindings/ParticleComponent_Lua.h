@@ -41,6 +41,9 @@ struct ParticleComponent_Lua
     static int SetParticlePosition(lua_State* L);
     static int GetParticlePosition(lua_State* L);
     static int SetParticleSpeed(lua_State* L);
+    static int SetParticleOrientation(lua_State* L);
+    static int GetParticleOrientation(lua_State* L);
+
     static int InstantiateParticleSystem(lua_State* L);
 
     static void Bind();

@@ -247,6 +247,26 @@ int ParticleComponent_Lua::SetParticleSpeed(lua_State* L)
     return 0;
 }
 
+int ParticleComponent_Lua::SetParticleOrientation(lua_State* L)
+{
+    ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    ParticleOrientation value = (ParticleOrientation)CHECK_INTEGER(L, 2);
+
+    comp->SetParticleOrientation(value);
+
+    return 0;
+}
+
+int ParticleComponent_Lua::GetParticleOrientation(lua_State* L)
+{
+    ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+
+    int32_t ret = (int32_t)comp->GetParticleOrientation();
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+
 int ParticleComponent_Lua::InstantiateParticleSystem(lua_State* L)
 {
     ParticleComponent* comp = CHECK_PARTICLE_COMPONENT(L, 1);
@@ -335,6 +355,12 @@ void ParticleComponent_Lua::Bind()
 
     lua_pushcfunction(L, IsAutoEmitEnabled);
     lua_setfield(L, mtIndex, "IsAutoEmitEnabled");
+
+    lua_pushcfunction(L, SetParticleOrientation);
+    lua_setfield(L, mtIndex, "SetParticleOrientation");
+
+    lua_pushcfunction(L, GetParticleOrientation);
+    lua_setfield(L, mtIndex, "GetParticleOrientation");
 
     lua_pushcfunction(L, InstantiateParticleSystem);
     lua_setfield(L, mtIndex, "InstantiateParticleSystem");

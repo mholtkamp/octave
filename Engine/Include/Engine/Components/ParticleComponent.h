@@ -101,6 +101,9 @@ public:
 
     void SetParticleSpeed(int32_t index, float speed);
 
+    void SetParticleOrientation(ParticleOrientation orientation);
+    ParticleOrientation GetParticleOrientation();
+
     ParticleSystemInstance* InstantiateParticleSystem();
 
     virtual Bounds GetLocalBounds() const override;

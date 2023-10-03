@@ -4,6 +4,8 @@
 #include "Widgets/Button.h"
 #include "Widgets/Text.h"
 
+#include "Components/ParticleComponent.h"
+
 #include "Assets/Material.h"
 #include "NetFunc.h"
 
@@ -344,6 +346,40 @@ void BindScreenOrientation()
     OCT_ASSERT(lua_gettop(L) == 0);
 }
 
+void BindParticleOrientation()
+{
+    lua_State* L = GetLua();
+    OCT_ASSERT(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushinteger(L, (int)ParticleOrientation::X);
+    lua_setfield(L, tableIdx, "X");
+
+    lua_pushinteger(L, (int)ParticleOrientation::Y);
+    lua_setfield(L, tableIdx, "Y");
+
+    lua_pushinteger(L, (int)ParticleOrientation::Z);
+    lua_setfield(L, tableIdx, "Z");
+
+    lua_pushinteger(L, (int)ParticleOrientation::NX);
+    lua_setfield(L, tableIdx, "NX");
+
+    lua_pushinteger(L, (int)ParticleOrientation::NY);
+    lua_setfield(L, tableIdx, "Ny");
+
+    lua_pushinteger(L, (int)ParticleOrientation::NZ);
+    lua_setfield(L, tableIdx, "NZ");
+
+    lua_pushinteger(L, (int)ParticleOrientation::Billboard);
+    lua_setfield(L, tableIdx, "Billboard");
+
+    lua_setglobal(L, "ParticleOrientation");
+
+    OCT_ASSERT(lua_gettop(L) == 0);
+}
+
 void Misc_Lua::BindMisc()
 {
     BindBlendMode();
@@ -356,6 +392,7 @@ void Misc_Lua::BindMisc()
     BindNetFuncType();
     BindJustification();
     BindScreenOrientation();
+    BindParticleOrientation();
 }
 
 #endif
