@@ -440,6 +440,16 @@ void ParticleComponent::SetParticleSpeed(int32_t index, float speed)
     }
 }
 
+void ParticleComponent::SetParticleOrientation(ParticleOrientation orientation)
+{
+    mOrientation = orientation;
+}
+
+ParticleOrientation ParticleComponent::GetParticleOrientation()
+{
+    return mOrientation;
+}
+
 ParticleSystemInstance* ParticleComponent::InstantiateParticleSystem()
 {
     ParticleSystem* sys = GetParticleSystem();
