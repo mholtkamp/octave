@@ -206,7 +206,10 @@ float Maths::NormalizeRange(float value, float start, float end)
 
 float Maths::Map(float inX, float inMin, float inMax, float outMin, float outMax)
 {
-    return outMin + ((inX - inMin) / (inMax - inMin)) * (outMax - outMin);
+    return 
+        (inMax - inMin == 0.0f) ?
+        (outMax) : 
+        (outMin + ((inX - inMin) / (inMax - inMin)) * (outMax - outMin));
 }
 
 float Maths::MapClamped(float inX, float inMin, float inMax, float outMin, float outMax)
