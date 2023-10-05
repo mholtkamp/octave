@@ -207,12 +207,14 @@ void AUD_Update()
 
                     // We have four samples now, so now we need to linearly interpolate between the left and right channels
                     // to get a final 2 samples that we will accumulate into the mix buffer.
-                    int16_t finalSampleL = glm::mix(srcSampleL[0], srcSampleL[1], frameInterpAlpha);
-                    int16_t finalSampleR = glm::mix(srcSampleR[0], srcSampleR[1], frameInterpAlpha);
-                    finalSampleL *= voice.mVolumeL;
-                    finalSampleR *= voice.mVolumeR;
-                    sMixBuffer[dstFrame * 2 + 0] = glm::clamp(finalSampleL + sMixBuffer[dstFrame * 2 + 0], -32768, 32767);
-                    sMixBuffer[dstFrame * 2 + 1] = glm::clamp(finalSampleR + sMixBuffer[dstFrame * 2 + 1], -32768, 32767);
+                    int32_t finalSampleL = (int32_t)glm::mix(srcSampleL[0], srcSampleL[1], frameInterpAlpha);
+                    int32_t finalSampleR = (int32_t)glm::mix(srcSampleR[0], srcSampleR[1], frameInterpAlpha);
+                    finalSampleL = int32_t(finalSampleL * voice.mVolumeL);
+                    finalSampleR = int32_t(finalSampleR * voice.mVolumeR);
+                    finalSampleL = glm::clamp(finalSampleL + (int32_t)sMixBuffer[dstFrame * 2 + 0], -32768, 32767);
+                    finalSampleR = glm::clamp(finalSampleR + (int32_t)sMixBuffer[dstFrame * 2 + 1], -32768, 32767);
+                    sMixBuffer[dstFrame * 2 + 0] = (int16_t)finalSampleL;
+                    sMixBuffer[dstFrame * 2 + 1] = (int16_t)finalSampleR;
                 }
 
                 // We've finished getting all of the samples for this voice. Increase the current sample value
