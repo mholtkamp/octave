@@ -19,6 +19,8 @@ extern bool gWarpCursor;
 extern int32_t gWarpCursorX;
 extern int32_t gWarpCursorY;
 
+static std::string sClipboardString;
+
 void HandleXcbEvent(xcb_generic_event_t* event)
 {
     EngineState& engine = *GetEngineState();
@@ -110,6 +112,17 @@ void HandleXcbEvent(xcb_generic_event_t* event)
         ResizeWindow(width, height);
         break;
     }
+    case XCB_SELECTION_CLEAR:
+    {
+        LogWarning("XCB SELECTION CLEAR");
+        break;
+    }
+    case XCB_SELECTION_REQUEST:
+    {
+        LogWarning("XCB SELECTION REQUEST");
+        break;
+    }    
+
     
     default:
         break;
@@ -781,12 +794,85 @@ void SYS_UnmountMemoryCard()
 // Clipboard
 void SYS_SetClipboardText(const std::string& str)
 {
+    #if 0
+    {
+        xcb_set_selection_owner(conn, system.mXcbWindow, selection, XCB_CURRENT_TIME);
 
+        xcb_change_property(
+            conn,
+            XCB_PROP_MODE_REPLACE,
+            system.mXcbWindow,
+            property,
+            XCB_ATOM_STRING,
+            8,
+            str.size(),
+            str.data());
+
+        //xcb_convert_selection(conn, system.mXcbWindow, selection, target, property, XCB_CURRENT_TIME);
+
+
+        xcb_flush(conn);
+
+        xcb_set_selection_owner(conn, XCB_NONE, selection, XCB_CURRENT_TIME);
+    }
+    #endif
 }
 
 std::string SYS_GetClipboardText()
 {
-    return "";
+    std::string retStr;
+    SystemState& system = GetEngineState()->mSystem;
+
+    xcb_connection_t* conn = system.mXcbConnection;
+
+    xcb_intern_atom_cookie_t cookie_selection = xcb_intern_atom(conn, 0, 9,"CLIPBOARD");
+    xcb_intern_atom_cookie_t cookie_target    = xcb_intern_atom(conn, 0, 6,"STRING");
+    xcb_intern_atom_cookie_t cookie_property  = xcb_intern_atom(conn, 0, 9,"MATHISART");
+    xcb_intern_atom_reply_t* reply_selection  = xcb_intern_atom_reply(conn, cookie_selection, NULL);
+    xcb_intern_atom_reply_t* reply_target     = xcb_intern_atom_reply(conn, cookie_target,    NULL);
+    xcb_intern_atom_reply_t* reply_property   = xcb_intern_atom_reply(conn, cookie_property,  NULL);
+    
+    xcb_atom_t selection = reply_selection->atom;
+    xcb_atom_t target    = reply_target->atom;
+    xcb_atom_t property  = reply_property->atom;
+
+    free(reply_selection);
+    free(reply_target);
+    free(reply_property);
+
+    xcb_convert_selection(conn, system.mXcbWindow, selection, target, property, XCB_CURRENT_TIME);
+    xcb_flush(conn);
+
+    free(xcb_wait_for_event(conn));
+
+    xcb_get_property_cookie_t get_property_cookie = xcb_get_property(conn, 0, system.mXcbWindow, property, target, 0, UINT_MAX/4);
+    xcb_get_property_reply_t* get_property_reply  = xcb_get_property_reply(conn, get_property_cookie, NULL);
+    
+    int clipboardDataSize = 0;
+    char* clipboardData = nullptr;
+
+    if(get_property_reply!=NULL)
+    {
+        clipboardDataSize = xcb_get_property_value_length(get_property_reply);
+        clipboardData = new char[clipboardDataSize + 1];
+
+        memcpy(clipboardData, xcb_get_property_value(get_property_reply), clipboardDataSize);
+        clipboardData[clipboardDataSize] = 0;
+    }
+
+    free(get_property_reply);
+    xcb_delete_property(conn, system.mXcbWindow, property);
+
+    if (clipboardData != nullptr)
+    {
+        LogDebug("Clipboard Data: %s", clipboardData);
+        retStr = clipboardData;
+
+        delete [] clipboardData;
+        clipboardData = nullptr;
+    }
+
+    return retStr;
 }
 
 // Misc
