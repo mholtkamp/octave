@@ -821,7 +821,10 @@ int32_t SYS_GetPlatformTier()
 
 void SYS_SetWindowTitle(const char* title)
 {
-    
+    SystemState& system = GetEngineState()->mSystem;
+	xcb_change_property(system.mXcbConnection, XCB_PROP_MODE_REPLACE,
+		system.mXcbWindow, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+		strlen(title), title);
 }
 
 bool SYS_DoesWindowHaveFocus()
