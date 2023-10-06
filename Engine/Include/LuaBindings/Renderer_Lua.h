@@ -13,6 +13,7 @@ struct Renderer_Lua
     static int RemoveWidget(lua_State* L);
     static int RemoveAllWidgets(lua_State* L);
     static int EnableStatsOverlay(lua_State* L);
+    static int EnableConsole(lua_State* L);
     static int SetModalWidget(lua_State* L);
     static int GetModalWidget(lua_State* L);
     static int IsInModalWidgetUpdate(lua_State* L);

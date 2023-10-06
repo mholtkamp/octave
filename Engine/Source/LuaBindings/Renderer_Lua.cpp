@@ -57,6 +57,15 @@ int Renderer_Lua::EnableStatsOverlay(lua_State* L)
     return 0;
 }
 
+int Renderer_Lua::EnableConsole(lua_State* L)
+{
+    bool value = CHECK_BOOLEAN(L, 1);
+
+    Renderer::Get()->EnableConsole(value);
+
+    return 0;
+}
+
 int Renderer_Lua::SetModalWidget(lua_State* L)
 {
     Widget* widget = CHECK_WIDGET(L, 1);
@@ -359,6 +368,9 @@ void Renderer_Lua::Bind()
 
     lua_pushcfunction(L, EnableStatsOverlay);
     lua_setfield(L, tableIdx, "EnableStatsOverlay");
+
+    lua_pushcfunction(L, EnableConsole);
+    lua_setfield(L, tableIdx, "EnableConsole");
 
     lua_pushcfunction(L, SetModalWidget);
     lua_setfield(L, tableIdx, "SetModalWidget");
