@@ -153,25 +153,23 @@ void HandleXcbEvent(xcb_generic_event_t* event)
     }
     case XCB_SELECTION_CLEAR:
     {
-        LogWarning("XCB SELECTION CLEAR");
         sClipboardString = "";
         break;
     }
     case XCB_SELECTION_REQUEST:
     {
-        LogWarning("XCB SELECTION REQUEST");
-
         const xcb_selection_request_event_t* sev = (const xcb_selection_request_event_t*)event;
 
         xcb_atom_t stringAtom = InternAtom("STRING");
         xcb_atom_t utf8Atom = InternAtom("UTF8_STRING");
+        xcb_atom_t targetsAtom = InternAtom("TARGETS");
 
-        if (!(sev->target == stringAtom || sev->target == utf8Atom) || sev->property == XCB_ATOM_NONE)
+        std::string targetName = GetAtomName(sev->target);
+        LogDebug("[0x%08X] Selection request for target %s.", sev->requestor, targetName.c_str());
+
+        if (!(sev->target == stringAtom || sev->target == utf8Atom || sev->target == targetsAtom) || sev->property == XCB_ATOM_NONE)
         {
             xcb_selection_notify_event_t ssev = {};
-
-            std::string targetName = GetAtomName(sev->target);
-            LogWarning("[0x%08X] Denying selection request for non-string target (%s).", sev->requestor, targetName.c_str());
 
             ssev.response_type = XCB_SELECTION_NOTIFY;
             ssev.requestor = sev->requestor;
@@ -182,12 +180,33 @@ void HandleXcbEvent(xcb_generic_event_t* event)
 
             xcb_send_event(system.mXcbConnection, 1, sev->requestor, XCB_EVENT_MASK_NO_EVENT, (const char*)&ssev);
         }
+        else if (sev->target == targetsAtom)
+        {
+            // Send back a list of targets (but we only support STRING so our list is just size 1)
+            xcb_selection_notify_event_t ssev = {};
+
+            xcb_change_property(
+                system.mXcbConnection,
+                XCB_PROP_MODE_REPLACE,
+                sev->requestor, 
+                sev->property,
+                XCB_ATOM_ATOM,
+                32,
+                1,
+                &stringAtom);
+
+            ssev.response_type = XCB_SELECTION_NOTIFY;
+            ssev.requestor = sev->requestor;
+            ssev.selection = sev->selection;
+            ssev.target = sev->target;
+            ssev.property = sev->property;
+            ssev.time = sev->time;
+
+            xcb_send_event(system.mXcbConnection, 1, sev->requestor, XCB_EVENT_MASK_NO_EVENT, (const char*)&ssev);
+        }
         else
         {
             xcb_selection_notify_event_t ssev = {};
-
-            std::string targetName = GetAtomName(sev->target);
-            LogDebug("[0x%08X] Sending selection request for string target (%s).", sev->requestor, targetName.c_str());
 
             xcb_change_property(
                 system.mXcbConnection,
@@ -208,8 +227,6 @@ void HandleXcbEvent(xcb_generic_event_t* event)
 
             xcb_send_event(system.mXcbConnection, 1, sev->requestor, XCB_EVENT_MASK_NO_EVENT, (const char*)&ssev);
         }
-
-
 
         xcb_flush(system.mXcbConnection);
 
