@@ -21,6 +21,45 @@ extern int32_t gWarpCursorY;
 
 static std::string sClipboardString;
 
+static xcb_atom_t InternAtom(const char* atomId)
+{
+    SystemState& system = GetEngineState()->mSystem;
+    xcb_intern_atom_cookie_t cookie = xcb_intern_atom(system.mXcbConnection, 0, strlen(atomId), atomId);
+    xcb_generic_error_t* error = nullptr;
+    xcb_intern_atom_reply_t* reply = xcb_intern_atom_reply(system.mXcbConnection, cookie, &error);
+    
+    if (error)
+    {
+        LogError("Intern: %d", (int) error->error_code);
+    }
+
+    xcb_atom_t retAtom = reply->atom;
+
+    free(reply);
+
+    return retAtom;
+}
+
+std::string GetAtomName(xcb_atom_t atom)
+{
+    std::string retName;
+
+    SystemState& system = GetEngineState()->mSystem;
+    xcb_get_atom_name_reply_t* atomNameRep = xcb_get_atom_name_reply(system.mXcbConnection, xcb_get_atom_name(system.mXcbConnection, atom), nullptr);
+
+    int nameLen = xcb_get_atom_name_name_length(atomNameRep);
+    char* nameStr = xcb_get_atom_name_name(atomNameRep);
+
+    if (nameLen > 0)
+    {
+        retName.assign(nameStr, (size_t)nameLen);
+    }
+
+    free(atomNameRep);
+
+    return retName;
+}
+
 void HandleXcbEvent(xcb_generic_event_t* event)
 {
     EngineState& engine = *GetEngineState();
@@ -103,7 +142,7 @@ void HandleXcbEvent(xcb_generic_event_t* event)
     }
     case XCB_CONFIGURE_NOTIFY:
     {
-        const xcb_configure_notify_event_t* cfgEvent = (const xcb_configure_notify_event_t*) event;
+        const xcb_configure_notify_event_t* cfgEvent = (const xcb_configure_notify_event_t*)event;
 
         EngineState* engineState = GetEngineState();
         uint32_t width = cfgEvent->width;
@@ -115,11 +154,65 @@ void HandleXcbEvent(xcb_generic_event_t* event)
     case XCB_SELECTION_CLEAR:
     {
         LogWarning("XCB SELECTION CLEAR");
+        sClipboardString = "";
         break;
     }
     case XCB_SELECTION_REQUEST:
     {
         LogWarning("XCB SELECTION REQUEST");
+
+        const xcb_selection_request_event_t* sev = (const xcb_selection_request_event_t*)event;
+
+        xcb_atom_t stringAtom = InternAtom("STRING");
+        xcb_atom_t utf8Atom = InternAtom("UTF8_STRING");
+
+        if (!(sev->target == stringAtom || sev->target == utf8Atom) || sev->property == XCB_ATOM_NONE)
+        {
+            xcb_selection_notify_event_t ssev = {};
+
+            std::string targetName = GetAtomName(sev->target);
+            LogWarning("[0x%08X] Denying selection request for non-string target (%s).", sev->requestor, targetName.c_str());
+
+            ssev.response_type = XCB_SELECTION_NOTIFY;
+            ssev.requestor = sev->requestor;
+            ssev.selection = sev->selection;
+            ssev.target = sev->target;
+            ssev.property = XCB_ATOM_NONE;
+            ssev.time = sev->time;
+
+            xcb_send_event(system.mXcbConnection, 1, sev->requestor, XCB_EVENT_MASK_NO_EVENT, (const char*)&ssev);
+        }
+        else
+        {
+            xcb_selection_notify_event_t ssev = {};
+
+            std::string targetName = GetAtomName(sev->target);
+            LogDebug("[0x%08X] Sending selection request for string target (%s).", sev->requestor, targetName.c_str());
+
+            xcb_change_property(
+                system.mXcbConnection,
+                XCB_PROP_MODE_REPLACE,
+                sev->requestor, 
+                sev->property,
+                sev->target,
+                8,
+                sClipboardString.size(),
+                sClipboardString.data());
+
+            ssev.response_type = XCB_SELECTION_NOTIFY;
+            ssev.requestor = sev->requestor;
+            ssev.selection = sev->selection;
+            ssev.target = sev->target;
+            ssev.property = sev->property;
+            ssev.time = sev->time;
+
+            xcb_send_event(system.mXcbConnection, 1, sev->requestor, XCB_EVENT_MASK_NO_EVENT, (const char*)&ssev);
+        }
+
+
+
+        xcb_flush(system.mXcbConnection);
+
         break;
     }    
 
@@ -127,22 +220,6 @@ void HandleXcbEvent(xcb_generic_event_t* event)
     default:
         break;
     }
-}
-
-static xcb_intern_atom_reply_t* InternAtom(const char* atomId)
-{
-    SystemState& system = GetEngineState()->mSystem;
-    xcb_intern_atom_cookie_t cookie = xcb_intern_atom(system.mXcbConnection, 0, strlen(atomId), atomId);
-    xcb_flush(system.mXcbConnection);
-    xcb_generic_error_t* error = nullptr;
-    xcb_intern_atom_reply_t* reply = xcb_intern_atom_reply(system.mXcbConnection, cookie, &error);
-    
-    if (error)
-    {
-        LogError("Intern: %d", (int) error->error_code);
-    }
-
-    return reply;
 }
 
 void SYS_Initialize()
@@ -224,21 +301,18 @@ void SYS_Initialize()
 
     if (GetEngineConfig()->mFullscreen)
     {
-        xcb_intern_atom_reply_t* atomState = InternAtom("_NET_WM_STATE");
-        xcb_intern_atom_reply_t* atomFullscreen = InternAtom("_NET_WM_STATE_FULLSCREEN");
+        xcb_atom_t atomState = InternAtom("_NET_WM_STATE");
+        xcb_atom_t atomFullscreen = InternAtom("_NET_WM_STATE_FULLSCREEN");
 
         xcb_change_property(
             system.mXcbConnection,
             XCB_PROP_MODE_REPLACE,
             system.mXcbWindow,
-            atomState->atom,
+            atomState,
             XCB_ATOM_ATOM,
             32,
             1,
-            &(atomFullscreen->atom));
-
-        free(atomState);
-        free(atomFullscreen);
+            &(atomFullscreen));
     }
 
 	// /**
@@ -816,18 +890,33 @@ void SYS_SetClipboardText(const std::string& str)
         xcb_set_selection_owner(conn, XCB_NONE, selection, XCB_CURRENT_TIME);
     }
     #endif
+    sClipboardString = str;
+
+    SystemState& system = GetEngineState()->mSystem;
+    xcb_atom_t selection = InternAtom("CLIPBOARD");
+    xcb_set_selection_owner(system.mXcbConnection, system.mXcbWindow, selection, XCB_CURRENT_TIME);
+    xcb_flush(system.mXcbConnection);
+
 }
 
 std::string SYS_GetClipboardText()
 {
     std::string retStr;
+
+    if (sClipboardString != "")
+    {
+        // This application is controlling the clipboard already.
+        retStr = sClipboardString;
+        return retStr;
+    }
+
     SystemState& system = GetEngineState()->mSystem;
 
     xcb_connection_t* conn = system.mXcbConnection;
 
-    xcb_intern_atom_cookie_t cookie_selection = xcb_intern_atom(conn, 0, 9,"CLIPBOARD");
-    xcb_intern_atom_cookie_t cookie_target    = xcb_intern_atom(conn, 0, 6,"STRING");
-    xcb_intern_atom_cookie_t cookie_property  = xcb_intern_atom(conn, 0, 9,"MATHISART");
+    xcb_intern_atom_cookie_t cookie_selection = xcb_intern_atom(conn, 0, 9, "CLIPBOARD");
+    xcb_intern_atom_cookie_t cookie_target    = xcb_intern_atom(conn, 0, 6, "STRING");
+    xcb_intern_atom_cookie_t cookie_property  = xcb_intern_atom(conn, 0, 10, "OCTAVETEMP");
     xcb_intern_atom_reply_t* reply_selection  = xcb_intern_atom_reply(conn, cookie_selection, NULL);
     xcb_intern_atom_reply_t* reply_target     = xcb_intern_atom_reply(conn, cookie_target,    NULL);
     xcb_intern_atom_reply_t* reply_property   = xcb_intern_atom_reply(conn, cookie_property,  NULL);
@@ -936,23 +1025,20 @@ void SYS_SetFullscreen(bool fullscreen)
     {
         system.mFullscreen = fullscreen;
 
-        xcb_intern_atom_reply_t* atomState = InternAtom("_NET_WM_STATE");
-        xcb_intern_atom_reply_t* atomFullscreen = InternAtom("_NET_WM_STATE_FULLSCREEN");
+        xcb_atom_t atomState = InternAtom("_NET_WM_STATE");
+        xcb_atom_t atomFullscreen = InternAtom("_NET_WM_STATE_FULLSCREEN");
 
         xcb_client_message_event_t ev = {0};
         ev.response_type = XCB_CLIENT_MESSAGE;
-        ev.type = atomState->atom;
+        ev.type = atomState;
         ev.window = system.mXcbWindow;
         ev.format = 32;
         ev.data.data32[0] = fullscreen ? 1 : 0;
-        ev.data.data32[1] = atomFullscreen->atom;
+        ev.data.data32[1] = atomFullscreen;
         ev.data.data32[2] = 0;
 
         xcb_send_event(system.mXcbConnection, 0, system.mXcbScreen->root, XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY, (char *)&ev);
         xcb_flush(system.mXcbConnection);
-
-        free(atomState);
-        free(atomFullscreen);
     }
 }
 
