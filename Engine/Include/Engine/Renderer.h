@@ -60,6 +60,8 @@ public:
     void RemoveAllWidgets(int32_t screenIndex = -1);
     void EnableStatsOverlay(bool enable);
     bool IsStatsOverlayEnabled() const;
+    void EnableConsole(bool enable);
+    bool IsConsoleEnabled();
 
     // Renderer never assumes ownership of the modal widget.
     // The caller needs to hold on to the widget so they can free it when needed.

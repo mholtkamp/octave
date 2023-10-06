@@ -101,6 +101,19 @@ void Renderer::Initialize()
 
     mStatsWidget = new StatsOverlay();
 
+#if !_DEBUG
+    // In release builds, default these to hidden.
+    if (mConsoleWidget != nullptr)
+    {
+        mConsoleWidget->SetVisible(false);
+    }
+
+    if (mStatsWidget != nullptr)
+    {
+        mStatsWidget->SetVisible(false);
+    }
+#endif
+
 #if EDITOR
     EnableProxyRendering(true);
 #endif
@@ -365,6 +378,19 @@ void Renderer::EnableStatsOverlay(bool enable)
 bool Renderer::IsStatsOverlayEnabled() const
 {
     return mStatsWidget && mStatsWidget->IsVisible();
+}
+
+void Renderer::EnableConsole(bool enable)
+{
+    if (mConsoleWidget)
+    {
+        mConsoleWidget->SetVisible(enable);
+    }
+}
+
+bool Renderer::IsConsoleEnabled()
+{
+    return mConsoleWidget && mConsoleWidget->IsVisible();
 }
 
 void Renderer::SetModalWidget(Widget* widget)
