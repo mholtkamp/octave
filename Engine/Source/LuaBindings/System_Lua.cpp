@@ -93,6 +93,15 @@ int System_Lua::IsFullscreen(lua_State* L)
     return 1;
 }
 
+int System_Lua::SetWindowTitle(lua_State* L)
+{
+    const char* value = CHECK_STRING(L, 1);
+
+    SYS_SetWindowTitle(value);
+
+    return 0;
+}
+
 void System_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -126,6 +135,9 @@ void System_Lua::Bind()
 
     lua_pushcfunction(L, IsFullscreen);
     lua_setfield(L, tableIdx, "IsFullscreen");
+
+    lua_pushcfunction(L, SetWindowTitle);
+    lua_setfield(L, tableIdx, "SetWindowTitle");
 
     lua_setglobal(L, "System");
 

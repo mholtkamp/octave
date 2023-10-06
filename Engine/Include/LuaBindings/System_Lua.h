@@ -19,6 +19,8 @@ struct System_Lua
     static int SetFullscreen(lua_State* L);
     static int IsFullscreen(lua_State* L);
 
+    static int SetWindowTitle(lua_State* L);
+
     static void Bind();
 };
 
