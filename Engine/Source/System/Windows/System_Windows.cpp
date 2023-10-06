@@ -233,9 +233,14 @@ void SYS_Initialize()
     CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
     EngineState* engineState = GetEngineState();
-    engineState->mSystem.mConnection = GetModuleHandle(NULL); //hInstance;
+    HINSTANCE hInst = GetModuleHandle(NULL); // hInstance
+    engineState->mSystem.mConnection = hInst;
 
     WNDCLASSEX win_class;
+
+    char exeName[1024];
+    GetModuleFileName(hInst, exeName, 1024);
+    HICON icon = ExtractIcon(hInst, exeName, 0);
 
     // Initialize the window class structure:
     win_class.cbSize = sizeof(WNDCLASSEX);
@@ -243,13 +248,13 @@ void SYS_Initialize()
     win_class.lpfnWndProc = WndProc;
     win_class.cbClsExtra = 0;
     win_class.cbWndExtra = 0;
-    win_class.hInstance = engineState->mSystem.mConnection; // hInstance
-    win_class.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    win_class.hInstance = hInst;
+    win_class.hIcon = icon;
     win_class.hCursor = LoadCursor(NULL, IDC_ARROW);
     win_class.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
     win_class.lpszMenuName = NULL;
     win_class.lpszClassName = engineState->mProjectName.c_str();
-    win_class.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
+    win_class.hIconSm = icon;
 
     // Register window class:
     if (!RegisterClassEx(&win_class)) {
@@ -270,7 +275,7 @@ void SYS_Initialize()
         wr.bottom - wr.top, // height
         NULL,               // handle to parent
         NULL,               // handle to menu
-        engineState->mSystem.mConnection,   // hInstance
+        hInst,   // hInstance
         NULL);              // no extra parameters
     if (!engineState->mSystem.mWindow)
     {
