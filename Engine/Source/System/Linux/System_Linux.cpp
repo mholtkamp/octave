@@ -60,6 +60,81 @@ std::string GetAtomName(xcb_atom_t atom)
     return retName;
 }
 
+static void HandleSelectionRequest(const xcb_selection_request_event_t* sev)
+{
+    SystemState& system = GetEngineState()->mSystem;
+
+    xcb_atom_t stringAtom = InternAtom("STRING");
+    xcb_atom_t utf8Atom = InternAtom("UTF8_STRING");
+    xcb_atom_t targetsAtom = InternAtom("TARGETS");
+
+    std::string targetName = GetAtomName(sev->target);
+    LogDebug("[0x%08X] Selection request for target %s.", sev->requestor, targetName.c_str());
+
+    if (!(sev->target == stringAtom || sev->target == utf8Atom || sev->target == targetsAtom) || sev->property == XCB_ATOM_NONE)
+    {
+        xcb_selection_notify_event_t ssev = {};
+
+        ssev.response_type = XCB_SELECTION_NOTIFY;
+        ssev.requestor = sev->requestor;
+        ssev.selection = sev->selection;
+        ssev.target = sev->target;
+        ssev.property = XCB_ATOM_NONE;
+        ssev.time = sev->time;
+
+        xcb_send_event(system.mXcbConnection, 1, sev->requestor, XCB_EVENT_MASK_NO_EVENT, (const char*)&ssev);
+    }
+    else if (sev->target == targetsAtom)
+    {
+        // Send back a list of targets (but we only support STRING so our list is just size 1)
+        xcb_selection_notify_event_t ssev = {};
+
+        xcb_change_property(
+            system.mXcbConnection,
+            XCB_PROP_MODE_REPLACE,
+            sev->requestor, 
+            sev->property,
+            XCB_ATOM_ATOM,
+            32,
+            1,
+            &stringAtom);
+
+        ssev.response_type = XCB_SELECTION_NOTIFY;
+        ssev.requestor = sev->requestor;
+        ssev.selection = sev->selection;
+        ssev.target = sev->target;
+        ssev.property = sev->property;
+        ssev.time = sev->time;
+
+        xcb_send_event(system.mXcbConnection, 1, sev->requestor, XCB_EVENT_MASK_NO_EVENT, (const char*)&ssev);
+    }
+    else
+    {
+        xcb_selection_notify_event_t ssev = {};
+
+        xcb_change_property(
+            system.mXcbConnection,
+            XCB_PROP_MODE_REPLACE,
+            sev->requestor, 
+            sev->property,
+            sev->target,
+            8,
+            sClipboardString.size(),
+            sClipboardString.data());
+
+        ssev.response_type = XCB_SELECTION_NOTIFY;
+        ssev.requestor = sev->requestor;
+        ssev.selection = sev->selection;
+        ssev.target = sev->target;
+        ssev.property = sev->property;
+        ssev.time = sev->time;
+
+        xcb_send_event(system.mXcbConnection, 1, sev->requestor, XCB_EVENT_MASK_NO_EVENT, (const char*)&ssev);
+    }
+
+    xcb_flush(system.mXcbConnection);
+}
+
 void HandleXcbEvent(xcb_generic_event_t* event)
 {
     EngineState& engine = *GetEngineState();
@@ -159,80 +234,9 @@ void HandleXcbEvent(xcb_generic_event_t* event)
     case XCB_SELECTION_REQUEST:
     {
         const xcb_selection_request_event_t* sev = (const xcb_selection_request_event_t*)event;
-
-        xcb_atom_t stringAtom = InternAtom("STRING");
-        xcb_atom_t utf8Atom = InternAtom("UTF8_STRING");
-        xcb_atom_t targetsAtom = InternAtom("TARGETS");
-
-        std::string targetName = GetAtomName(sev->target);
-        LogDebug("[0x%08X] Selection request for target %s.", sev->requestor, targetName.c_str());
-
-        if (!(sev->target == stringAtom || sev->target == utf8Atom || sev->target == targetsAtom) || sev->property == XCB_ATOM_NONE)
-        {
-            xcb_selection_notify_event_t ssev = {};
-
-            ssev.response_type = XCB_SELECTION_NOTIFY;
-            ssev.requestor = sev->requestor;
-            ssev.selection = sev->selection;
-            ssev.target = sev->target;
-            ssev.property = XCB_ATOM_NONE;
-            ssev.time = sev->time;
-
-            xcb_send_event(system.mXcbConnection, 1, sev->requestor, XCB_EVENT_MASK_NO_EVENT, (const char*)&ssev);
-        }
-        else if (sev->target == targetsAtom)
-        {
-            // Send back a list of targets (but we only support STRING so our list is just size 1)
-            xcb_selection_notify_event_t ssev = {};
-
-            xcb_change_property(
-                system.mXcbConnection,
-                XCB_PROP_MODE_REPLACE,
-                sev->requestor, 
-                sev->property,
-                XCB_ATOM_ATOM,
-                32,
-                1,
-                &stringAtom);
-
-            ssev.response_type = XCB_SELECTION_NOTIFY;
-            ssev.requestor = sev->requestor;
-            ssev.selection = sev->selection;
-            ssev.target = sev->target;
-            ssev.property = sev->property;
-            ssev.time = sev->time;
-
-            xcb_send_event(system.mXcbConnection, 1, sev->requestor, XCB_EVENT_MASK_NO_EVENT, (const char*)&ssev);
-        }
-        else
-        {
-            xcb_selection_notify_event_t ssev = {};
-
-            xcb_change_property(
-                system.mXcbConnection,
-                XCB_PROP_MODE_REPLACE,
-                sev->requestor, 
-                sev->property,
-                sev->target,
-                8,
-                sClipboardString.size(),
-                sClipboardString.data());
-
-            ssev.response_type = XCB_SELECTION_NOTIFY;
-            ssev.requestor = sev->requestor;
-            ssev.selection = sev->selection;
-            ssev.target = sev->target;
-            ssev.property = sev->property;
-            ssev.time = sev->time;
-
-            xcb_send_event(system.mXcbConnection, 1, sev->requestor, XCB_EVENT_MASK_NO_EVENT, (const char*)&ssev);
-        }
-
-        xcb_flush(system.mXcbConnection);
-
+        HandleSelectionRequest(sev);
         break;
-    }    
-
+    }
     
     default:
         break;
@@ -885,28 +889,6 @@ void SYS_UnmountMemoryCard()
 // Clipboard
 void SYS_SetClipboardText(const std::string& str)
 {
-    #if 0
-    {
-        xcb_set_selection_owner(conn, system.mXcbWindow, selection, XCB_CURRENT_TIME);
-
-        xcb_change_property(
-            conn,
-            XCB_PROP_MODE_REPLACE,
-            system.mXcbWindow,
-            property,
-            XCB_ATOM_STRING,
-            8,
-            str.size(),
-            str.data());
-
-        //xcb_convert_selection(conn, system.mXcbWindow, selection, target, property, XCB_CURRENT_TIME);
-
-
-        xcb_flush(conn);
-
-        xcb_set_selection_owner(conn, XCB_NONE, selection, XCB_CURRENT_TIME);
-    }
-    #endif
     sClipboardString = str;
 
     SystemState& system = GetEngineState()->mSystem;
@@ -930,48 +912,60 @@ std::string SYS_GetClipboardText()
     SystemState& system = GetEngineState()->mSystem;
 
     xcb_connection_t* conn = system.mXcbConnection;
-
-    xcb_intern_atom_cookie_t cookie_selection = xcb_intern_atom(conn, 0, 9, "CLIPBOARD");
-    xcb_intern_atom_cookie_t cookie_target    = xcb_intern_atom(conn, 0, 6, "STRING");
-    xcb_intern_atom_cookie_t cookie_property  = xcb_intern_atom(conn, 0, 10, "OCTAVETEMP");
-    xcb_intern_atom_reply_t* reply_selection  = xcb_intern_atom_reply(conn, cookie_selection, NULL);
-    xcb_intern_atom_reply_t* reply_target     = xcb_intern_atom_reply(conn, cookie_target,    NULL);
-    xcb_intern_atom_reply_t* reply_property   = xcb_intern_atom_reply(conn, cookie_property,  NULL);
     
-    xcb_atom_t selection = reply_selection->atom;
-    xcb_atom_t target    = reply_target->atom;
-    xcb_atom_t property  = reply_property->atom;
-
-    free(reply_selection);
-    free(reply_target);
-    free(reply_property);
+    xcb_atom_t selection = InternAtom("CLIPBOARD");
+    xcb_atom_t target    = InternAtom("STRING");
+    xcb_atom_t property  = InternAtom("OCTAVETEMP");
 
     xcb_convert_selection(conn, system.mXcbWindow, selection, target, property, XCB_CURRENT_TIME);
     xcb_flush(conn);
 
-    free(xcb_wait_for_event(conn));
+    // Wait until we get the notify (or we wait a long time?)
+    bool gotNotify = false;
+    xcb_generic_event_t* event = nullptr;
+    int numAttempts = 0;
+    while (!gotNotify && numAttempts < 10)
+    {
+        while (event = xcb_poll_for_event(system.mXcbConnection))
+        {
+            if ((event->response_type & 0x7f) == XCB_SELECTION_NOTIFY)
+            {
+                gotNotify = true;
+            }
 
-    xcb_get_property_cookie_t get_property_cookie = xcb_get_property(conn, 0, system.mXcbWindow, property, target, 0, UINT_MAX/4);
-    xcb_get_property_reply_t* get_property_reply  = xcb_get_property_reply(conn, get_property_cookie, NULL);
+            free(event);
+
+            if (gotNotify)
+            {
+                break;
+            }
+        }
+
+        numAttempts++;
+
+        SYS_Sleep(1);
+    }
+
+    xcb_get_property_cookie_t getPropCookie = xcb_get_property(conn, 0, system.mXcbWindow, property, target, 0, UINT_MAX/4);
+    xcb_get_property_reply_t* getPropReply  = xcb_get_property_reply(conn, getPropCookie, NULL);
     
     int clipboardDataSize = 0;
     char* clipboardData = nullptr;
 
-    if(get_property_reply!=NULL)
+    if(getPropReply != nullptr)
     {
-        clipboardDataSize = xcb_get_property_value_length(get_property_reply);
+        clipboardDataSize = xcb_get_property_value_length(getPropReply);
         clipboardData = new char[clipboardDataSize + 1];
 
-        memcpy(clipboardData, xcb_get_property_value(get_property_reply), clipboardDataSize);
+        memcpy(clipboardData, xcb_get_property_value(getPropReply), clipboardDataSize);
         clipboardData[clipboardDataSize] = 0;
     }
 
-    free(get_property_reply);
+    free(getPropReply);
     xcb_delete_property(conn, system.mXcbWindow, property);
 
     if (clipboardData != nullptr)
     {
-        LogDebug("Clipboard Data: %s", clipboardData);
         retStr = clipboardData;
 
         delete [] clipboardData;
