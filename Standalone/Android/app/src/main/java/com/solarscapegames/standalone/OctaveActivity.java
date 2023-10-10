@@ -1,4 +1,4 @@
-package com.bonedust.standalone;
+package com.solarscapegames.standalone;
 
 import android.app.NativeActivity;
 import android.content.Context;
@@ -8,12 +8,11 @@ import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.TextView;
 
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.bonedust.standalone.databinding.ActivityMainBinding;
+import com.solarscapegames.standalone.databinding.ActivityMainBinding;
 
 public class OctaveActivity extends NativeActivity {
 

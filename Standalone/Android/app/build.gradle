@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.bonedust.standalone'
+    namespace 'com.solarscapegames.standalone'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.bonedust.standalone"
+        applicationId "com.solarscapegames.standalone"
         minSdk 24
         targetSdk 33
         versionCode 1

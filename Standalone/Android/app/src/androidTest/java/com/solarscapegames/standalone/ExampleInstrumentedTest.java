@@ -1,4 +1,4 @@
-package com.bonedust.standalone;
+package com.solarscapegames.standalone;
 
 import android.content.Context;
 
