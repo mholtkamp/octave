@@ -20,7 +20,7 @@
         android:hasCode="true"
         tools:targetApi="31">
         <activity
-            android:name="com.bonedust.standalone.OctaveActivity"
+            android:name="com.solarscapegames.standalone.OctaveActivity"
             android:label="Standalone"
             android:screenOrientation="landscape"
             android:configChanges="orientation|screenSize|keyboardHidden"
