@@ -1,5 +1,5 @@
 #include "World.h"
-#include "Components/CameraComponent.h"
+#include "Nodes/3D/CameraComponent.h"
 #include "Constants.h"
 #include "Renderer.h"
 #include "Profiler.h"
@@ -11,9 +11,9 @@
 #include "StaticMeshActor.h"
 #include "Assets/Level.h"
 #include "Assets/Blueprint.h"
-#include "Components/StaticMeshComponent.h"
-#include "Components/PointLightComponent.h"
-#include "Components/AudioComponent.h"
+#include "Nodes/3D/StaticMeshComponent.h"
+#include "Nodes/3D/PointLightComponent.h"
+#include "Nodes/3D/AudioComponent.h"
 
 #if EDITOR
 #include "Editor/EditorState.h"

@@ -4,8 +4,6 @@
 #include "Log.h"
 #include "Engine.h"
 
-#include "Components/ScriptComponent.h"
-
 #include "LuaBindings/Component_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 

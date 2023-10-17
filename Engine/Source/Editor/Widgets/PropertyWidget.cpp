@@ -9,7 +9,6 @@
 #include "Widgets/ComboBox.h"
 #include "Widgets/CheckBox.h"
 #include "Widgets/Panel.h"
-#include "Components/ScriptComponent.h"
 #include "EngineTypes.h"
 #include "EditorState.h"
 #include "AssetManager.h"

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Actor.h"
-#include "Components/StaticMeshComponent.h"
+#include "Nodes/3D/StaticMeshComponent.h"
 
 class StaticMeshComponent;
 

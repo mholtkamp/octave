@@ -1,4 +1,4 @@
-#include "Components/PrimitiveComponent.h"
+#include "Nodes/3D/PrimitiveComponent.h"
 #include "World.h"
 #include "Utilities.h"
 #include "Log.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Components/MeshComponent.h"
+#include "Nodes/3D/MeshComponent.h"
 #include "Vertex.h"
 #include "Widgets/Text.h"
 

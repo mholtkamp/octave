@@ -4,9 +4,8 @@
 
 #include "Actor.h"
 #include "Assets/Level.h"
-#include "Components/Component.h"
-#include "Components/PrimitiveComponent.h"
-#include "Components/ScriptComponent.h"
+#include "Nodes/Node.h"
+#include "Nodes/3D/PrimitiveComponent.h"
 
 #include "LuaBindings/LuaUtils.h"
 #include "LuaBindings/Actor_Lua.h"

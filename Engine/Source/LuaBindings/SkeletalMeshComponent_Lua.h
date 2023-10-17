@@ -4,7 +4,7 @@
 #include "Log.h"
 #include "Engine.h"
 
-#include "Components/SkeletalMeshComponent.h"
+#include "Nodes/3D/SkeletalMeshComponent.h"
 
 #include "LuaBindings/Component_Lua.h"
 #include "LuaBindings/LuaUtils.h"

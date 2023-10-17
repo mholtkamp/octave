@@ -9,9 +9,9 @@
 #include "InputDevices.h"
 #include "Widgets/ActionList.h"
 #include "Renderer.h"
-#include "Components/Component.h"
-#include "Components/TransformComponent.h"
-#include "Components/SkeletalMeshComponent.h"
+#include "Nodes/Node.h"
+#include "Nodes/3D/TransformComponent.h"
+#include "Nodes/3D/SkeletalMeshComponent.h"
 #include "Assets/SkeletalMesh.h"
 #include "ObjectRef.h"
 

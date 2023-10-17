@@ -1,4 +1,4 @@
-#include "Components/ParticleComponent.h"
+#include "Nodes/3D/ParticleComponent.h"
 
 #include "Renderer.h"
 #include "AssetManager.h"

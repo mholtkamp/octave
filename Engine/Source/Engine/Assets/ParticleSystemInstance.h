@@ -6,7 +6,7 @@ class ParticleSystemInstance : public ParticleSystem
 {
 public:
 
-    DECLARE_RTTI(ParticleSystemInstance, ParticleSystem);
+    DECLARE_ASSET(ParticleSystemInstance, ParticleSystem);
 
     static ParticleSystemInstance* New(const ParticleSystem* src = nullptr);
 

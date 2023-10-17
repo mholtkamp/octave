@@ -2,9 +2,8 @@
 
 #include "TestActor.h"
 
-#include "Components/StaticMeshComponent.h"
-#include "Components/PointLightComponent.h"
-#include "Components/ScriptComponent.h"
+#include "Nodes/3D/StaticMeshComponent.h"
+#include "Nodes/3D/PointLightComponent.h"
 #include "Assets/Texture.h"
 #include "Assets/StaticMesh.h"
 #include "Clock.h"

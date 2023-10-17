@@ -1,45 +1,45 @@
-#include "Components/Component.h"
+#include "Nodes/Node.h"
 #include "Actor.h"
 #include "Log.h"
 #include "World.h"
 #include "ObjectRef.h"
 
-#include "Components/TransformComponent.h"
-#include "Components/StaticMeshComponent.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Components/PointLightComponent.h"
-#include "Components/DirectionalLightComponent.h"
-#include "Components/CameraComponent.h"
-#include "Components/BoxComponent.h"
-#include "Components/SphereComponent.h"
-#include "Components/ParticleComponent.h"
-#include "Components/AudioComponent.h"
+#include "Nodes/3D/TransformComponent.h"
+#include "Nodes/3D/StaticMeshComponent.h"
+#include "Nodes/3D/SkeletalMeshComponent.h"
+#include "Nodes/3D/PointLightComponent.h"
+#include "Nodes/3D/DirectionalLightComponent.h"
+#include "Nodes/3D/CameraComponent.h"
+#include "Nodes/3D/BoxComponent.h"
+#include "Nodes/3D/SphereComponent.h"
+#include "Nodes/3D/ParticleComponent.h"
+#include "Nodes/3D/AudioComponent.h"
 
-FORCE_LINK_DEF(Component);
-DEFINE_FACTORY_MANAGER(Component);
-DEFINE_FACTORY(Component, Component);
-DEFINE_RTTI(Component);
+FORCE_LINK_DEF(Node);
+DEFINE_FACTORY_MANAGER(Node);
+DEFINE_FACTORY(Node, Node);
+DEFINE_RTTI(Node);
 
-Component::Component()
+Node::Node()
 {
     mName = "Node";
 }
 
-Component::~Component()
+Node::~Node()
 {
 
 }
 
-void Component::Create()
+void Node::Create()
 {
 
 }
 
-void Component::Destroy()
+void Node::Destroy()
 {
-    ComponentRef::EraseReferencesToObject(this);
+    NodeRef::EraseReferencesToObject(this);
 
-    if (IsPrimitiveComponent() && GetWorld())
+    if (IsPrimitiveNode() && GetWorld())
     {
         GetWorld()->PurgeOverlaps(static_cast<PrimitiveComponent*>(this));
     }
@@ -49,28 +49,70 @@ void Component::Destroy()
 #endif
 }
 
-void Component::SaveStream(Stream& stream)
+void Node::SaveStream(Stream& stream)
 {
+    // TODO-NODE: Can we just entirely remove Save/LoadStream from Nodes 
+    // and just serialize the properties? Could simplify things. Or instead of
+    // totally removing Save/LoadStream(), still allow nodes to override it
+    // but just delete all of the stuff that could be serialized by properties.
+
     stream.WriteString(mName);
     stream.WriteBool(mActive);
     stream.WriteBool(mVisible);
+
+    // Tags
+    OCT_ASSERT(mTags.size() <= 255);
+    uint32_t numTags = glm::min((uint32_t)mTags.size(), 255u);
+    stream.WriteUint8(numTags);
+
+    for (uint32_t i = 0; i < numTags; ++i)
+    {
+        stream.WriteString(mTags[i]);
+    }
+
+    stream.WriteBool(mReplicate);
+    stream.WriteBool(mReplicateTransform);
+
+    // TODO-NODE: Script serailization? Possibly just serialize-by-properties.
 }
 
-void Component::LoadStream(Stream& stream)
+void Node::LoadStream(Stream& stream)
 {
+    // TODO-NODE: Remove old data loading after serializing everything.
+#if 1
+    // Load old data
     stream.ReadString(mName);
     mActive = stream.ReadBool();
     mVisible = stream.ReadBool();
+#else
+    // Load new data
+    stream.ReadString(mName);
+    mActive = stream.ReadBool();
+    mVisible = stream.ReadBool();
+
+
+    uint32_t numTags = (uint32_t)stream.ReadUint8();
+    mTags.resize(numTags);
+    for (uint32_t i = 0; i < numTags; ++i)
+    {
+        stream.ReadString(mTags[i]);
+    }
+
+    mReplicate = stream.ReadBool();
+    mReplicateTransform = stream.ReadBool();
+
+    // TODO-NODE: Script serailization? Possibly just serialize-by-properties.
+#endif
 }
 
-void Component::Copy(Component* srcComp)
+void Node::Copy(Node* srcNode)
 {
-    OCT_ASSERT(srcComp);
-    OCT_ASSERT(srcComp->GetType() == GetType());
+    OCT_ASSERT(srcNode);
+    OCT_ASSERT(srcNode->GetType() == GetType());
 
     // Copy actor properties
     std::vector<Property> srcProps;
-    srcComp->GatherProperties(srcProps);
+    srcNode->GatherProperties(srcProps);
 
     std::vector<Property> dstProps;
     GatherProperties(dstProps);
@@ -95,12 +137,13 @@ void Component::Copy(Component* srcComp)
             dstProp->SetValue(srcProp->mData.vp, 0, srcProp->mCount);
         }
 
+
+        // TODO-NODE: Gather properties if this uses a script.
         // For script components... if we first copy over the Filename property,
         // that will change the number of properties on the script so we need to regather them.
         // Script component is really the only component that can dynamically change its properties,
         // so I'm adding a hack now just for script component.
-        if (srcComp->Is(ScriptComponent::ClassRuntimeId()) &&
-            srcProp->mName == "Filename")
+        if (srcProp->mName == "Filename")
         {
             dstProps.clear();
             GatherProperties(dstProps);
@@ -108,33 +151,40 @@ void Component::Copy(Component* srcComp)
     }
 }
 
-void Component::BeginPlay()
+void Node::Start()
 {
 
 }
 
-void Component::EndPlay()
+void Node::Stop()
 {
 
 }
 
-void Component::Tick(float deltaTime)
+void Node::Tick(float deltaTime)
 {
     
 }
 
-void Component::EditorTick(float deltaTime)
+void Node::EditorTick(float deltaTime)
 {
     Tick(deltaTime);
 }
 
-void Component::GatherProperties(std::vector<Property>& outProps)
+void Node::GatherProperties(std::vector<Property>& outProps)
 {
     outProps.push_back({DatumType::String, "Name", this, &mName});
     outProps.push_back({DatumType::Bool, "Active", this, &mActive});
     outProps.push_back({DatumType::Bool, "Visible", this, &mVisible});
+
+    outProps.push_back(Property(DatumType::Bool, "Persistent", this, &mPersistent));
+    outProps.push_back(Property(DatumType::Bool, "Replicate", this, &mReplicate));
+    outProps.push_back(Property(DatumType::Bool, "Replicate Transform", this, &mReplicateTransform));
+    outProps.push_back(Property(DatumType::String, "Tags", this, &mTags).MakeVector());
 }
 
+// TODO-NODE: Register / unregister should happen on AddChild() / SetParent()
+// If the prev world != newWorld, set its world and also call register/unregister.
 void Component::SetOwner(Actor* owner)
 {
     World* prevWorld = mOwner ? mOwner->GetWorld() : nullptr;
@@ -155,72 +205,67 @@ void Component::SetOwner(Actor* owner)
     }
 }
 
-Actor* Component::GetOwner()
-{
-    return mOwner;
-}
-
-void Component::SetName(const std::string& newName)
+void Node::SetName(const std::string& newName)
 {
     mName = newName;
 }
 
-const std::string& Component::GetName() const
+const std::string& Node::GetName() const
 {
     return mName;
 }
 
-void Component::SetActive(bool active)
+void Node::SetActive(bool active)
 {
     mActive = active;
 }
 
-bool Component::IsActive() const
+bool Node::IsActive() const
 {
     return mActive;
 }
 
-void Component::SetVisible(bool visible)
+void Node::SetVisible(bool visible)
 {
     mVisible = visible;
 }
 
-bool Component::IsVisible() const
+bool Node::IsVisible() const
 {
     return mVisible;
 }
 
-void Component::SetTransient(bool transient)
+void Node::SetTransient(bool transient)
 {
     mTransient = transient;
 }
 
-bool Component::IsTransient() const
+bool Node::IsTransient() const
 {
     return mTransient;
 }
 
-void Component::SetDefault(bool isDefault)
+void Node::SetDefault(bool isDefault)
 {
     mDefault = isDefault;
 }
 
-bool Component::IsDefault() const
+bool Node::IsDefault() const
 {
     return mDefault;
 }
 
-World* Component::GetWorld()
+World* Node::GetWorld()
 {
-    return mOwner ? mOwner->GetWorld() : nullptr;
+    return mWorld;
 }
 
-const char* Component::GetTypeName() const
+const char* Node::GetTypeName() const
 {
-    return "Component";
+    return "Node";
 }
 
-DrawData Component::GetDrawData()
+DrawData Node::GetDrawData()
 {
     DrawData ret = {};
     ret.mComponent = nullptr;
@@ -228,17 +273,17 @@ DrawData Component::GetDrawData()
     return ret;
 }
 
-bool Component::IsTransformComponent() const
+bool Node::IsTransformNode() const
 {
     return false;
 }
 
-bool Component::IsPrimitiveComponent() const
+bool Node::IsPrimitiveNode() const
 {
     return false;
 }
 
-bool Component::IsLightComponent() const
+bool Node::IsLightNode() const
 {
     return false;
 }

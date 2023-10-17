@@ -3,8 +3,6 @@
 #include "AssetRef.h"
 #include "Log.h"
 
-#include "Components/ScriptComponent.h"
-
 #include <string.h>
 
 NetDatum::NetDatum()

@@ -2,7 +2,7 @@
 
 #include "Widgets/HierarchyButton.h"
 #include "Widgets/Panel.h"
-#include "Components/Component.h"
+#include "Nodes/Node.h"
 #include "Actor.h"
 #include "EditorState.h"
 #include "Widgets/Quad.h"

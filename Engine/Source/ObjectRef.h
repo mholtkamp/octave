@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Actor.h"
-#include "Components/Component.h"
+#include "Nodes/Node.h"
 #include <vector>
 #include <stdint.h>
 
@@ -130,8 +129,7 @@ private:
     bool mRegistered = false;
 };
 
-typedef ObjectRef<Actor> ActorRef;
-typedef ObjectRef<Component> ComponentRef;
+typedef ObjectRef<Node> NodeRef;
 
 template <typename T>
 std::vector<ObjectRef<T>*> ObjectRef<T>::sLiveRefs;

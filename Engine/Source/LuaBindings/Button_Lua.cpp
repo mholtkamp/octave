@@ -9,8 +9,6 @@
 #include "Widgets/Text.h"
 #include "Widgets/Quad.h"
 
-#include "Components/ScriptComponent.h"
-
 #if LUA_ENABLED
 
 int Button_Lua::CreateNew(lua_State* L)

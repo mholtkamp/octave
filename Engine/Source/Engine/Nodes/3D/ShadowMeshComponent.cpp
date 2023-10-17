@@ -1,4 +1,4 @@
-#include "Components/ShadowMeshComponent.h"
+#include "Nodes/3D/ShadowMeshComponent.h"
 #include "Graphics/Graphics.h"
 
 FORCE_LINK_DEF(ShadowMeshComponent);

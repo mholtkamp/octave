@@ -1,4 +1,4 @@
-#include "Components/CapsuleComponent.h"
+#include "Nodes/3D/CapsuleComponent.h"
 
 #include "AssetManager.h"
 #include "Renderer.h"

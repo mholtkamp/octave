@@ -4,8 +4,6 @@
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Rect_Lua.h"
 
-#include "Components/ScriptComponent.h"
-
 #if LUA_ENABLED
 
 int Selector_Lua::CreateNew(lua_State* L)

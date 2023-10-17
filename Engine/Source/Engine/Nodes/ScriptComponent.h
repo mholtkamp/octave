@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Components/Component.h"
+#include "Nodes/Node.h"
 #include "ObjectRef.h"
 #include "ScriptFunc.h"
 #include "NetFunc.h"
@@ -16,11 +16,11 @@ class TextField;
 
 typedef std::unordered_map<std::string, ScriptNetFunc> ScriptNetFuncMap;
 
-class ScriptComponent : public Component
+class ScriptComponent : public Node
 {
 public:
 
-    DECLARE_NODE(ScriptComponent, Component);
+    DECLARE_NODE(ScriptComponent, Node);
 
     ScriptComponent();
     virtual ~ScriptComponent();

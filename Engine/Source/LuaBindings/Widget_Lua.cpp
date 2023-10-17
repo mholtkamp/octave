@@ -4,7 +4,7 @@
 #include "Engine.h"
 #include "Renderer.h"
 
-#include "Components/Component.h"
+#include "Nodes/Node.h"
 #include "LuaBindings/LuaUtils.h"
 #include "LuaBindings/Rect_Lua.h"
 #include "LuaBindings/Vector_Lua.h"

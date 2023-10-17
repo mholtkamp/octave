@@ -4,7 +4,7 @@
 #include "EditorState.h"
 #include "Property.h"
 #include "PanelManager.h"
-#include "Components/Component.h"
+#include "Nodes/Node.h"
 #include "Widgets/PropertyWidget.h"
 #include "Widgets/HierarchyPanel.h"
 #include "Widgets/TextField.h"

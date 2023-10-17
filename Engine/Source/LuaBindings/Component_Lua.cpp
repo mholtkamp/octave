@@ -2,7 +2,7 @@
 #include "Log.h"
 #include "Engine.h"
 
-#include "Components/Component.h"
+#include "Nodes/Node.h"
 
 #include "LuaBindings/LuaUtils.h"
 #include "LuaBindings/Component_Lua.h"

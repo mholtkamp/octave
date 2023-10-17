@@ -5,8 +5,7 @@
 #include "Log.h"
 #include "Engine.h"
 #include "NetworkManager.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Components/ScriptComponent.h"
+#include "Nodes/3D/SkeletalMeshComponent.h"
 
 FORCE_LINK_DEF(Blueprint);
 DEFINE_ASSET(Blueprint);

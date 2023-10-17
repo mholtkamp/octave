@@ -5,7 +5,7 @@
 #include "Asset.h"
 #include "Assets/Material.h"
 
-DEFINE_RTTI(ParticleSystemInstance);
+DEFINE_ASSET(ParticleSystemInstance);
 
 ParticleSystemInstance* ParticleSystemInstance::New(const ParticleSystem* src)
 {

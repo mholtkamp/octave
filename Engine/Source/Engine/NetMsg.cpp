@@ -4,7 +4,6 @@
 #include "NetworkManager.h"
 #include "AssetManager.h"
 #include "Assets/Level.h"
-#include "Components/ScriptComponent.h"
 #include "World.h"
 
 void NetSafeStringWrite(Stream& stream, const std::string& string)

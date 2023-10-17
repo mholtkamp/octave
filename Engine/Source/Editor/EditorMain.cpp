@@ -25,8 +25,8 @@
 #include "Widgets/Panel.h"
 #include "Widgets/AssetsPanel.h"
 
-#include "Components/StaticMeshComponent.h"
-#include "Components/PointLightComponent.h"
+#include "Nodes/3D/StaticMeshComponent.h"
+#include "Nodes/3D/PointLightComponent.h"
 
 #include "ActionManager.h"
 #include "InputManager.h"

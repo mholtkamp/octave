@@ -1,7 +1,6 @@
 #include "TimerManager.h"
 
 #include "Actor.h"
-#include "Components/ScriptComponent.h"
 
 TimerManager gTimerManager;
 

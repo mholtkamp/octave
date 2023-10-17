@@ -3,7 +3,7 @@
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 
-#include "Components/PrimitiveComponent.h"
+#include "Nodes/3D/PrimitiveComponent.h"
 
 #if LUA_ENABLED
 

@@ -5,7 +5,6 @@
 #include "Maths.h"
 #include "Engine.h"
 #include "TableDatum.h"
-#include "Components/ScriptComponent.h"
 
 #include <iostream>
 #include <fstream>

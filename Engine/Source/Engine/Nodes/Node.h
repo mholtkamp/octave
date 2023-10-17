@@ -16,6 +16,32 @@ class World;
 #define DECLARE_NODE(Base, Parent) DECLARE_FACTORY(Base, Node); DECLARE_RTTI(Base, Parent);
 #define DEFINE_NODE(Base) DEFINE_FACTORY(Base, Node); DEFINE_RTTI(Base);
 
+struct NodeScriptData
+{
+    std::string mFileName;
+    std::string mClassName;
+    std::string mTableName;
+    std::vector<Property> mScriptProps;
+    std::vector<ScriptNetDatum> mReplicatedData;
+    bool mTickEnabled = false;
+    bool mHandleBeginOverlap = false;
+    bool mHandleEndOverlap = false;
+    bool mHandleOnCollision = false;
+};
+
+#if 0
+struct NodeNetData
+{
+    std::vector<NetDatum> mReplicatedData;
+    NetId mNetId = INVALID_NET_ID;
+    NetHostId mOwningHost = INVALID_HOST_ID;
+    bool mReplicate = false;
+    bool mReplicateTransform = false;
+    bool mForceReplicate = false;
+    ReplicationRate mReplicationRate = ReplicationRate::High;
+};
+#endif
+
 class Node : public RTTI
 {
 public:
@@ -41,8 +67,6 @@ public:
     virtual void EditorTick(float deltaTime);
     virtual void GatherProperties(std::vector<Property>& outProps);
 
-    virtual void SetOwner(Actor* owner);
-    Actor* GetOwner();
     void SetName(const std::string& newName);
     const std::string& GetName() const;
     void SetActive(bool active);
@@ -66,12 +90,41 @@ public:
 
 protected:
 
+    std::string mName;
+
+    World* mWorld = nullptr;
     Node* mParent = nullptr;
     std::vector<Node*> mChildren;
 
-    std::string mName;
     bool mActive = true;
     bool mVisible = true;
     bool mTransient = false;
     bool mDefault = false;
+
+    // Merged from Actor
+    SceneRef mScene;
+    std::vector<std::string> mTags;
+    uint32_t mHitCheckId;
+
+    bool mHasStarted = false;
+    bool mPendingDestroy = false;
+    bool mTickEnabled = true;
+    bool mTransient = false;
+    bool mPersistent = false;
+    bool mVisible = true;
+
+    // Network Data
+    // This is only about 44 bytes, so right now, we will keep this data as direct members of Node.
+    // But if we need to save data, then consider allocating a NodeNetData struct only if replicated.
+    // Leaving these as direct members will improve cache performance too.
+    std::vector<NetDatum> mReplicatedData;
+    NetId mNetId = INVALID_NET_ID;
+    NetHostId mOwningHost = INVALID_HOST_ID;
+    bool mReplicate = false;
+    bool mReplicateTransform = false;
+    bool mForceReplicate = false;
+    ReplicationRate mReplicationRate = ReplicationRate::High;
+
+    NodeScriptData* mScriptData = nullptr;
+    //NodeNetData* mNetData = nullptr;
 };

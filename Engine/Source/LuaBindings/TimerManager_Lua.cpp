@@ -1,6 +1,5 @@
 #include "LuaBindings/TimerManager_Lua.h"
 #include "TimerManager.h"
-#include "Components/ScriptComponent.h"
 
 #if LUA_ENABLED
 

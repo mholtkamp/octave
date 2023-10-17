@@ -3,7 +3,7 @@
 #include "RTTI.h"
 #include "Assets/StaticMesh.h"
 #include "Maths.h"
-#include "Components/Component.h"
+#include "Nodes/Node.h"
 #include "Property.h"
 #include "Factory.h"
 #include "NetDatum.h"

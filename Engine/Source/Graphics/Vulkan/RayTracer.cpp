@@ -9,10 +9,10 @@
 
 #include "Graphics/GraphicsUtils.h"
 
-#include "Components/CameraComponent.h"
-#include "Components/DirectionalLightComponent.h"
-#include "Components/PointLightComponent.h"
-#include "Components/StaticMeshComponent.h"
+#include "Nodes/3D/CameraComponent.h"
+#include "Nodes/3D/DirectionalLightComponent.h"
+#include "Nodes/3D/PointLightComponent.h"
+#include "Nodes/3D/StaticMeshComponent.h"
 
 void RayTracer::CreateStaticRayTraceResources()
 {

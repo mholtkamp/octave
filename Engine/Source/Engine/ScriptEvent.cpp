@@ -5,7 +5,7 @@
 #include "Widgets/Widget.h"
 
 #include "Assets/SkeletalMesh.h"
-#include "Components/SkeletalMeshComponent.h"
+#include "Nodes/3D/SkeletalMeshComponent.h"
 
 #include "LuaBindings/Actor_Lua.h"
 #include "LuaBindings/Component_Lua.h"

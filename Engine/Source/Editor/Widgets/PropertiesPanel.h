@@ -2,7 +2,7 @@
 
 #include "Panel.h"
 #include <vector>
-#include "Components/Component.h"
+#include "Nodes/Node.h"
 #include "Asset.h"
 #include "Widgets/ComboBox.h"
 

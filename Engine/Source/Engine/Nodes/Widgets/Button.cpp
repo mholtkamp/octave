@@ -7,8 +7,6 @@
 #include "Renderer.h"
 #include "ScriptEvent.h"
 
-#include "Components/ScriptComponent.h"
-
 FORCE_LINK_DEF(Button);
 DEFINE_WIDGET(Button, Widget);
 

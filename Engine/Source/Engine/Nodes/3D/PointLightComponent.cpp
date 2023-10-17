@@ -1,5 +1,5 @@
-#include "Components/PointLightComponent.h"
-#include "Components/CameraComponent.h"
+#include "Nodes/3D/PointLightComponent.h"
+#include "Nodes/3D/CameraComponent.h"
 #include "Renderer.h"
 #include "Assets/StaticMesh.h"
 #include "Engine.h"

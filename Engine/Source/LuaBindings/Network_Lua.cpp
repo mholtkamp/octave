@@ -1,8 +1,6 @@
 #include "NetworkManager.h"
 #include "Engine.h"
 
-#include "Components/ScriptComponent.h"
-
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 

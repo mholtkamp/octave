@@ -4,7 +4,7 @@
 #include "Log.h"
 #include "Engine.h"
 
-#include "Components/TransformComponent.h"
+#include "Nodes/3D/TransformComponent.h"
 
 #include "LuaBindings/LuaUtils.h"
 

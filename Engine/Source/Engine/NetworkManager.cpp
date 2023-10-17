@@ -8,8 +8,6 @@
 #include "Maths.h"
 #include "ScriptEvent.h"
 
-#include "Components/ScriptComponent.h"
-
 #ifdef SendMessage
 #undef SendMessage
 #endif

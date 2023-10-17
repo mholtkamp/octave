@@ -3,8 +3,6 @@
 #include "InputDevices.h"
 #include "ScriptEvent.h"
 
-#include "Components/ScriptComponent.h"
-
 FORCE_LINK_DEF(Selector);
 DEFINE_WIDGET(Selector, Button);
 

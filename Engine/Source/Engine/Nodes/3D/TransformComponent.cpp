@@ -1,4 +1,4 @@
-#include "Components/TransformComponent.h"
+#include "Nodes/3D/TransformComponent.h"
 
 #include "AssetManager.h"
 #include "Actor.h"
@@ -6,7 +6,7 @@
 #include "Maths.h"
 #include "Assets/SkeletalMesh.h"
 
-#include "Components/SkeletalMeshComponent.h"
+#include "Nodes/3D/SkeletalMeshComponent.h"
 
 FORCE_LINK_DEF(TransformComponent);
 DEFINE_NODE(TransformComponent);

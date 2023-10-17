@@ -4,7 +4,7 @@
 #include "Widgets/Button.h"
 #include "Widgets/Text.h"
 
-#include "Components/ParticleComponent.h"
+#include "Nodes/3D/ParticleComponent.h"
 
 #include "Assets/Material.h"
 #include "NetFunc.h"

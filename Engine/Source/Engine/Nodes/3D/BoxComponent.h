@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Components/PrimitiveComponent.h"
+#include "Nodes/3D/PrimitiveComponent.h"
 
 class BoxComponent : public PrimitiveComponent
 {

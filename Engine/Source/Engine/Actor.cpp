@@ -2,7 +2,7 @@
 #include "Renderer.h"
 #include "Clock.h"
 #include "World.h"
-#include "Components/CameraComponent.h"
+#include "Nodes/3D/CameraComponent.h"
 #include "Enums.h"
 #include "Log.h"
 #include "Maths.h"
@@ -13,9 +13,8 @@
 #include "LuaBindings/Actor_Lua.h"
 #include "Assets/Blueprint.h"
 
-#include "Components/PrimitiveComponent.h"
-#include "Components/LightComponent.h"
-#include "Components/ScriptComponent.h"
+#include "Nodes/3D/PrimitiveComponent.h"
+#include "Nodes/3D/LightComponent.h"
 
 #include "Graphics/Graphics.h"
 

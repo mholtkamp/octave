@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Components/StaticMeshComponent.h"
+#include "Nodes/3D/StaticMeshComponent.h"
 
 class ShadowMeshComponent : public StaticMeshComponent
 {

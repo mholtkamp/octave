@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Component.h"
+#include "Nodes/Node.h"
 #include "EngineTypes.h"
 
 #include "Maths.h"
@@ -9,11 +9,11 @@
 
 class SkeletalMeshComponent;
 
-class TransformComponent : public Component
+class TransformComponent : public Node
 {
 public:
 
-    DECLARE_NODE(TransformComponent, Component);
+    DECLARE_NODE(TransformComponent, Node);
 
     TransformComponent();
     virtual ~TransformComponent();
@@ -27,7 +27,7 @@ public:
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
-    virtual bool IsTransformComponent() const override;
+    virtual bool IsTransformNode() const override;
 
     void Attach(TransformComponent* parent, bool keepWorldTransform = false);
     void AddChild(TransformComponent* child);

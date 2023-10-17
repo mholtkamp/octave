@@ -1,4 +1,4 @@
-#include "Components/CameraComponent.h"
+#include "Nodes/3D/CameraComponent.h"
 #include "Log.h"
 #include "Engine.h"
 #include "World.h"
@@ -6,7 +6,7 @@
 #include "AssetManager.h"
 #include "Maths.h"
 
-#include "Components/PrimitiveComponent.h"
+#include "Nodes/3D/PrimitiveComponent.h"
 
 #include "Graphics/Graphics.h"
 
