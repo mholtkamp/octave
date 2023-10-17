@@ -11,7 +11,7 @@
 #include <btBulletDynamicsCommon.h>
 
 FORCE_LINK_DEF(StaticMeshComponent);
-DEFINE_COMPONENT(StaticMeshComponent);
+DEFINE_NODE(StaticMeshComponent);
 
 static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {

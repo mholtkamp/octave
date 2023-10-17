@@ -13,7 +13,7 @@ class TransformComponent : public Component
 {
 public:
 
-    DECLARE_COMPONENT(TransformComponent, Component);
+    DECLARE_NODE(TransformComponent, Component);
 
     TransformComponent();
     virtual ~TransformComponent();

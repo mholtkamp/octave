@@ -6,7 +6,7 @@ class CapsuleComponent : public PrimitiveComponent
 {
 public:
 
-    DECLARE_COMPONENT(CapsuleComponent, PrimitiveComponent);
+    DECLARE_NODE(CapsuleComponent, PrimitiveComponent);
 
     CapsuleComponent();
     ~CapsuleComponent();

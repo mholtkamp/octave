@@ -8,7 +8,7 @@ class AudioComponent : public TransformComponent
 {
 public:
 
-    DECLARE_COMPONENT(AudioComponent, TransformComponent);
+    DECLARE_NODE(AudioComponent, TransformComponent);
 
     AudioComponent();
     ~AudioComponent();

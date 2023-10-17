@@ -18,7 +18,7 @@
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
 
-DEFINE_COMPONENT(ScriptComponent)
+DEFINE_NODE(ScriptComponent)
 
 std::unordered_map<std::string, ScriptComponent*> ScriptComponent::sTableToCompMap;
 std::unordered_map<std::string, ScriptNetFuncMap> ScriptComponent::sScriptNetFuncMap;

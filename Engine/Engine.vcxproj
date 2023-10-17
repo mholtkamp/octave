@@ -278,7 +278,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(ProjectDir)Include;$(ProjectDir)Include/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Include/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=0;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -327,7 +327,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(ProjectDir)Include;$(ProjectDir)Include/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Include/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -432,7 +432,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(ProjectDir)Include;$(ProjectDir)Include/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Include/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=0;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -479,7 +479,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(ProjectDir)Include;$(ProjectDir)Include/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Include/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -566,23 +566,6 @@
     <ClCompile Include="Source\Engine\Assets\Texture.cpp" />
     <ClCompile Include="Source\Engine\AudioManager.cpp" />
     <ClCompile Include="Source\Engine\Clock.cpp" />
-    <ClCompile Include="Source\Engine\Components\AudioComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\BoxComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\CameraComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\CapsuleComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\DirectionalLightComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\LightComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\MeshComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\ParticleComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\PointLightComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\PrimitiveComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\ShadowMeshComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\ScriptComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\SkeletalMeshComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\SphereComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\StaticMeshComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\TextMeshComponent.cpp" />
-    <ClCompile Include="Source\Engine\Components\TransformComponent.cpp" />
     <ClCompile Include="Source\Engine\Datum.cpp" />
     <ClCompile Include="Source\Engine\Engine.cpp" />
     <ClCompile Include="Source\Engine\EngineTypes.cpp" />
@@ -594,7 +577,42 @@
     <ClCompile Include="Source\Engine\NetFunc.cpp" />
     <ClCompile Include="Source\Engine\NetMsg.cpp" />
     <ClCompile Include="Source\Engine\NetworkManager.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\AudioComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\BoxComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\CameraComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\CapsuleComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\DirectionalLightComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\LightComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\MeshComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\ParticleComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\PointLightComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\PrimitiveComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\ShadowMeshComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\SkeletalMeshComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\SphereComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\StaticMeshComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\TextMeshComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\TransformComponent.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Node.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\ScriptComponent.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ArrayWidget.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Button.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Canvas.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\CheckBox.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ComboBox.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Console.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ModalList.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Poly.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\PolyRect.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Quad.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ScriptWidget.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Selector.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\StatsOverlay.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Text.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\TextField.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\VerticalList.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\WidgetMap.cpp" />
     <ClCompile Include="Source\Engine\ObjectRef.cpp" />
     <ClCompile Include="Source\Engine\ParticleActor.cpp" />
     <ClCompile Include="Source\Engine\Profiler.cpp" />
@@ -611,24 +629,6 @@
     <ClCompile Include="Source\Engine\TableDatum.cpp" />
     <ClCompile Include="Source\Engine\TimerManager.cpp" />
     <ClCompile Include="Source\Engine\Utilities.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\ArrayWidget.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\Button.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\Canvas.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\Checkbox.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\ComboBox.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\Console.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\ModalList.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\Poly.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\PolyRect.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\Quad.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\ScriptWidget.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\Selector.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\StatsOverlay.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\Text.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\TextField.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\VerticalList.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\Widget.cpp" />
-    <ClCompile Include="Source\Engine\Widgets\WidgetMap.cpp" />
     <ClCompile Include="Source\Engine\World.cpp" />
     <ClCompile Include="Source\Graphics\C3D\C3dUtils.cpp" />
     <ClCompile Include="Source\Graphics\C3D\DoubleBuffer.cpp" />

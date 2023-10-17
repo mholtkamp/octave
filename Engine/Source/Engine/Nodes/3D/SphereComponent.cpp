@@ -6,7 +6,7 @@
 #include "BulletCollision/CollisionShapes/btSphereShape.h"
 
 FORCE_LINK_DEF(SphereComponent);
-DEFINE_COMPONENT(SphereComponent);
+DEFINE_NODE(SphereComponent);
 
 static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {

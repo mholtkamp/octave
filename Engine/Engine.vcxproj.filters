@@ -206,57 +206,6 @@
     <ClCompile Include="Source\Engine\World.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\Canvas.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\Checkbox.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\Quad.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\Selector.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\Text.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\TextField.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\Widget.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\Button.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\DirectionalLightComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\LightComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\MeshComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\PointLightComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\PrimitiveComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\SkeletalMeshComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\StaticMeshComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\TransformComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\CameraComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
     <ClCompile Include="Source\System\Dolphin\System_Dolphin.cpp">
       <Filter>Source Files\System\Dolphin</Filter>
     </ClCompile>
@@ -278,32 +227,14 @@
     <ClCompile Include="Source\System\Windows\System_Windows.cpp">
       <Filter>Source Files\System\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\Console.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\BoxComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\SphereComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\EngineTypes.cpp">
       <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\StatsOverlay.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Log.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Components\ParticleComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\AudioManager.cpp">
       <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\AudioComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Audio\Windows\Audio_Windows.cpp">
       <Filter>Source Files\Audio\Windows</Filter>
@@ -386,15 +317,6 @@
     <ClCompile Include="Source\Editor\Widgets\ViewportPanel.cpp">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\ComboBox.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\ModalList.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\VerticalList.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\NetFunc.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -431,17 +353,11 @@
     <ClCompile Include="Source\System\Linux\System_Linux.cpp">
       <Filter>Source Files\System\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Components\CapsuleComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\ParticleActor.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\CameraFrustum.cpp">
       <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\ShadowMeshComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\LuaBindings.cpp">
       <Filter>Source Files\LuaBindings</Filter>
@@ -668,9 +584,6 @@
     <ClCompile Include="Source\LuaBindings\System_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Components\TextMeshComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
     <ClCompile Include="Source\LuaBindings\TextMeshComponent_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
@@ -683,29 +596,17 @@
     <ClCompile Include="Source\LuaBindings\TimerManager_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\ScriptWidget.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\ScriptUtils.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\ScriptWidget_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\Poly.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\WidgetMap.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Editor\Widgets\WidgetHierarchyPanel.cpp">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\Widgets\WidgetViewportPanel.cpp">
       <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\PolyRect.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\WidgetMap_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
@@ -715,9 +616,6 @@
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\PolyRect_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Widgets\ArrayWidget.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Script_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
@@ -746,14 +644,116 @@
     <ClCompile Include="Source\Audio\Audio.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Components\ScriptComponent.cpp">
-      <Filter>Source Files\Engine\Nodes</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Node.cpp">
       <Filter>Source Files\Engine\Nodes</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\ScriptFunc.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\AudioComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\BoxComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\CameraComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\CapsuleComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\DirectionalLightComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\LightComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\MeshComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\ParticleComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\PointLightComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\PrimitiveComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\ShadowMeshComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\SkeletalMeshComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\SphereComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\StaticMeshComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\TextMeshComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\TransformComponent.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Canvas.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\CheckBox.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ComboBox.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Console.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ModalList.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Poly.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\PolyRect.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Quad.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ScriptWidget.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Selector.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\StatsOverlay.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Text.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\TextField.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\VerticalList.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\WidgetMap.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ArrayWidget.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Button.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\ScriptComponent.cpp">
+      <Filter>Source Files\Engine\Nodes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

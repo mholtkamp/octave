@@ -46,7 +46,7 @@ class CameraComponent : public TransformComponent
 {
 public:
 
-    DECLARE_COMPONENT(CameraComponent, TransformComponent);
+    DECLARE_NODE(CameraComponent, TransformComponent);
 
     CameraComponent();
     ~CameraComponent();

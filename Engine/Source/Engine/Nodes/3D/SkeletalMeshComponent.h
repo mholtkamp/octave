@@ -52,7 +52,7 @@ class SkeletalMeshComponent : public MeshComponent
 {
 public:
 
-    DECLARE_COMPONENT(SkeletalMeshComponent, MeshComponent);
+    DECLARE_NODE(SkeletalMeshComponent, MeshComponent);
 
     SkeletalMeshComponent();
     ~SkeletalMeshComponent();

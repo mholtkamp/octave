@@ -9,7 +9,7 @@
 #include "Components/SkeletalMeshComponent.h"
 
 FORCE_LINK_DEF(TransformComponent);
-DEFINE_COMPONENT(TransformComponent);
+DEFINE_NODE(TransformComponent);
 
 bool HandleTransformPropChange(Datum* datum, uint32_t index, const void* newValue)
 {

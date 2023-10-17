@@ -6,7 +6,7 @@ class ShadowMeshComponent : public StaticMeshComponent
 {
 public:
 
-    DECLARE_COMPONENT(ShadowMeshComponent, StaticMeshComponent);
+    DECLARE_NODE(ShadowMeshComponent, StaticMeshComponent);
 
     ShadowMeshComponent();
     ~ShadowMeshComponent();

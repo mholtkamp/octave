@@ -6,7 +6,7 @@ class BoxComponent : public PrimitiveComponent
 {
 public:
 
-    DECLARE_COMPONENT(BoxComponent, PrimitiveComponent);
+    DECLARE_NODE(BoxComponent, PrimitiveComponent);
 
     BoxComponent();
     ~BoxComponent();

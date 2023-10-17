@@ -26,7 +26,7 @@ class PointLightComponent : public LightComponent
 {
 public:
 
-    DECLARE_COMPONENT(PointLightComponent, LightComponent);
+    DECLARE_NODE(PointLightComponent, LightComponent);
 
     PointLightComponent();
     ~PointLightComponent();

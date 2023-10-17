@@ -12,7 +12,7 @@ class StaticMeshComponent : public MeshComponent
 {
 public:
 
-    DECLARE_COMPONENT(StaticMeshComponent, MeshComponent);
+    DECLARE_NODE(StaticMeshComponent, MeshComponent);
 
     StaticMeshComponent();
     ~StaticMeshComponent();

@@ -19,7 +19,7 @@ static const char* sAttenuationFuncStrings[] =
 static_assert(int32_t(AttenuationFunc::Count) == 2, "Need to update string conversion table");
 
 FORCE_LINK_DEF(AudioComponent);
-DEFINE_COMPONENT(AudioComponent);
+DEFINE_NODE(AudioComponent);
 
 static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {

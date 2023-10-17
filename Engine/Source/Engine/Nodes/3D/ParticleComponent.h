@@ -34,7 +34,7 @@ class ParticleComponent : public PrimitiveComponent
 {
 public:
 
-    DECLARE_COMPONENT(ParticleComponent, PrimitiveComponent);
+    DECLARE_NODE(ParticleComponent, PrimitiveComponent);
 
     ParticleComponent();
     virtual ~ParticleComponent();

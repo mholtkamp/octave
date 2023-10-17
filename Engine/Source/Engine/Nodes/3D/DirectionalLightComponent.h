@@ -6,7 +6,7 @@ class DirectionalLightComponent : public LightComponent
 {
 public:
 
-    DECLARE_COMPONENT(DirectionalLightComponent, LightComponent);
+    DECLARE_NODE(DirectionalLightComponent, LightComponent);
 
     DirectionalLightComponent();
     ~DirectionalLightComponent();

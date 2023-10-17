@@ -6,7 +6,7 @@ class SphereComponent : public PrimitiveComponent
 {
 public:
 
-    DECLARE_COMPONENT(SphereComponent, PrimitiveComponent);
+    DECLARE_NODE(SphereComponent, PrimitiveComponent);
 
     SphereComponent();
     ~SphereComponent();

@@ -15,7 +15,7 @@
 #endif
 
 FORCE_LINK_DEF(ParticleComponent);
-DEFINE_COMPONENT(ParticleComponent);
+DEFINE_NODE(ParticleComponent);
 
 const char* sParticleOrientationStrings[] =
 {

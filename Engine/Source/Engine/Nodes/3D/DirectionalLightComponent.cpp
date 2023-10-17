@@ -4,7 +4,7 @@
 #include "Maths.h"
 
 FORCE_LINK_DEF(DirectionalLightComponent);
-DEFINE_COMPONENT(DirectionalLightComponent);
+DEFINE_NODE(DirectionalLightComponent);
 
 DirectionalLightComponent::DirectionalLightComponent()
 {

@@ -9,7 +9,7 @@ class Font;
 class TextMeshComponent : public MeshComponent
 {
 public:
-    DECLARE_COMPONENT(TextMeshComponent, MeshComponent);
+    DECLARE_NODE(TextMeshComponent, MeshComponent);
 
     TextMeshComponent();
     ~TextMeshComponent();

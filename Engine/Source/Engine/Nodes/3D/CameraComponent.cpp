@@ -11,7 +11,7 @@
 #include "Graphics/Graphics.h"
 
 FORCE_LINK_DEF(CameraComponent);
-DEFINE_COMPONENT(CameraComponent);
+DEFINE_NODE(CameraComponent);
 
 CameraComponent::CameraComponent() :
     mProjectionMode(ProjectionMode::PERSPECTIVE),

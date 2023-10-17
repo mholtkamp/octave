@@ -14,7 +14,7 @@
 #undef max
 
 FORCE_LINK_DEF(PointLightComponent);
-DEFINE_COMPONENT(PointLightComponent);
+DEFINE_NODE(PointLightComponent);
 
 PointLightComponent::PointLightComponent() :
     mRadius(5)

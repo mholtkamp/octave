@@ -20,7 +20,7 @@ class ScriptComponent : public Component
 {
 public:
 
-    DECLARE_COMPONENT(ScriptComponent, Component);
+    DECLARE_NODE(ScriptComponent, Component);
 
     ScriptComponent();
     virtual ~ScriptComponent();

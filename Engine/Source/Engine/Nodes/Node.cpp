@@ -20,14 +20,9 @@ DEFINE_FACTORY_MANAGER(Component);
 DEFINE_FACTORY(Component, Component);
 DEFINE_RTTI(Component);
 
-Component::Component() :
-    mOwner(nullptr),
-    mActive(true),
-    mVisible(true),
-    mTransient(false),
-    mDefault(false)
+Component::Component()
 {
-    mName = "Component";
+    mName = "Node";
 }
 
 Component::~Component()

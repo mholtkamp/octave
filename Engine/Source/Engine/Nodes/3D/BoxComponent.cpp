@@ -6,7 +6,7 @@
 #include "BulletCollision/CollisionShapes/btBoxShape.h"
 
 FORCE_LINK_DEF(BoxComponent);
-DEFINE_COMPONENT(BoxComponent);
+DEFINE_NODE(BoxComponent);
 
 static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
