@@ -175,11 +175,6 @@ const std::string& Component::GetName() const
     return mName;
 }
 
-uint32_t Component::GetId() const
-{
-    return mId;
-}
-
 void Component::SetActive(bool active)
 {
     mActive = active;

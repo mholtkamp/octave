@@ -229,6 +229,28 @@
     <ClCompile Include="vorbisfile.c" />
     <ClCompile Include="window.c" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="backends.h" />
+    <ClInclude Include="bitrate.h" />
+    <ClInclude Include="codebook.h" />
+    <ClInclude Include="codec_internal.h" />
+    <ClInclude Include="crctable.h" />
+    <ClInclude Include="envelope.h" />
+    <ClInclude Include="highlevel.h" />
+    <ClInclude Include="lookup.h" />
+    <ClInclude Include="lookup_data.h" />
+    <ClInclude Include="lpc.h" />
+    <ClInclude Include="lsp.h" />
+    <ClInclude Include="masking.h" />
+    <ClInclude Include="mdct.h" />
+    <ClInclude Include="misc.h" />
+    <ClInclude Include="os.h" />
+    <ClInclude Include="psy.h" />
+    <ClInclude Include="registry.h" />
+    <ClInclude Include="scales.h" />
+    <ClInclude Include="smallft.h" />
+    <ClInclude Include="window.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

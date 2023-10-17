@@ -16,7 +16,7 @@ class World;
 #define DECLARE_COMPONENT(Base, Parent) DECLARE_FACTORY(Base, Component); DECLARE_RTTI(Base, Parent);
 #define DEFINE_COMPONENT(Base) DEFINE_FACTORY(Base, Component); DEFINE_RTTI(Base);
 
-class Component : public RTTI
+class Node : public RTTI
 {
 public:
 
@@ -45,7 +45,6 @@ public:
     Actor* GetOwner();
     void SetName(const std::string& newName);
     const std::string& GetName() const;
-    uint32_t GetId() const;
     void SetActive(bool active);
     bool IsActive() const;
     void SetVisible(bool visible);
@@ -70,7 +69,6 @@ protected:
     Actor* mOwner;
 
     std::string mName;
-    uint32_t mId;
     bool mActive;
     bool mVisible;
     bool mTransient;

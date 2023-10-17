@@ -5,10 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{9076d360-c1e3-452b-8c4a-419c64c8f22a}</UniqueIdentifier>
     </Filter>
@@ -61,62 +57,8 @@
     <Filter Include="Source Files\System\Dolphin">
       <UniqueIdentifier>{1d40aa21-0366-4693-8825-958ada42d433}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Graphics">
-      <UniqueIdentifier>{9ad5c761-d6b3-4e57-ba02-9fbf43b72a8a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Input">
-      <UniqueIdentifier>{39a3fae2-2150-4aa1-882f-faa1e66c3b31}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Audio">
-      <UniqueIdentifier>{869e6708-510e-4ad9-8964-13ac4fea84b8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\System">
-      <UniqueIdentifier>{4dd601c8-1d93-4350-ad97-b9efa22ea007}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Network">
-      <UniqueIdentifier>{16f09a4d-a6eb-4822-8b27-eb9956b39409}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Graphics\Vulkan">
-      <UniqueIdentifier>{957f2ca3-a32a-456b-9211-ccefd64fe3eb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Graphics\GX">
-      <UniqueIdentifier>{14b4cc3f-5349-4e7b-b87b-3b0fe17bacc0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Input\Windows">
-      <UniqueIdentifier>{a1a5b055-671b-4dfc-838d-f1217f8d6bb6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Input\Dolphin">
-      <UniqueIdentifier>{160f713f-e61e-4fa7-a81b-99dc8dcf7e03}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Audio\Windows">
-      <UniqueIdentifier>{a7f964bb-9157-49ec-b957-a891a5f00142}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Audio\Dolphin">
-      <UniqueIdentifier>{e79277b2-8ed7-49db-9021-78c15274d023}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\System\Dolphin">
-      <UniqueIdentifier>{c3a20d97-f7ee-4b86-baa9-e55da6d10b89}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\System\Windows">
-      <UniqueIdentifier>{e8d4fba0-7803-4a88-a3d8-c919c056c77e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Engine">
-      <UniqueIdentifier>{db7c4490-6983-4beb-ac56-f96101411416}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Engine\Components">
-      <UniqueIdentifier>{35a919e4-e4a0-48c8-9fe5-bd4c103b38b2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Engine\Widgets">
-      <UniqueIdentifier>{5a5147ba-3aa7-4ddd-9b8a-f5c2a45e005a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Engine">
       <UniqueIdentifier>{3a6a6b94-dce8-4dab-878b-39963484f10b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Engine\Components">
-      <UniqueIdentifier>{9bd20d9a-4e2e-42dd-819e-61f60afc29c5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Engine\Widgets">
-      <UniqueIdentifier>{dc41d54e-d3cc-4f72-a638-388191adde27}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\System\3DS">
       <UniqueIdentifier>{08123d14-1957-4219-8c58-79687714aca2}</UniqueIdentifier>
@@ -130,20 +72,11 @@
     <Filter Include="Source Files\Graphics\C3D">
       <UniqueIdentifier>{2c252683-c9bf-4211-8bdf-a2bf002a9bee}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Graphics\C3D">
-      <UniqueIdentifier>{290cff37-48c1-40f7-99a9-75f6dd4a341a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Editor">
       <UniqueIdentifier>{3b70c2ca-d70b-4e25-a867-def9107acb59}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Editor\Widgets">
       <UniqueIdentifier>{6dd96cb5-5cc9-470e-8286-80d1ef315baa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Editor">
-      <UniqueIdentifier>{72602059-1886-4580-9962-c76415db0431}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Editor\Widgets">
-      <UniqueIdentifier>{7976335e-8c06-43ff-bce4-9f6c0e1d4a62}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Network\3DS">
       <UniqueIdentifier>{e4f01309-129d-4ead-afe5-10ce95b79e5b}</UniqueIdentifier>
@@ -163,14 +96,8 @@
     <Filter Include="Source Files\LuaBindings">
       <UniqueIdentifier>{e328cdab-7cbd-4cd7-b36d-cd304a7a93e7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\LuaBindings">
-      <UniqueIdentifier>{57f35abb-acfd-41be-b4f3-7f381b76dcb9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Engine\Assets">
       <UniqueIdentifier>{34ed2864-b921-4089-abed-1621c26ef9f0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Engine\Assets">
-      <UniqueIdentifier>{394964a1-e36b-418f-b50d-b9b7fa351d6b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Audio\Android">
       <UniqueIdentifier>{e10803b1-23e8-4d48-8b3a-6b7b43f7b3bc}</UniqueIdentifier>
@@ -183,6 +110,15 @@
     </Filter>
     <Filter Include="Source Files\System\Android">
       <UniqueIdentifier>{357599d0-a3f2-48cb-8918-ad140e561af9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Nodes">
+      <UniqueIdentifier>{0c1dc114-d792-49eb-bb9d-a0f98b94f95d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Nodes\Widgets">
+      <UniqueIdentifier>{dc41d54e-d3cc-4f72-a638-388191adde27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Nodes\3D">
+      <UniqueIdentifier>{9bd20d9a-4e2e-42dd-819e-61f60afc29c5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -271,58 +207,55 @@
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\Canvas.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\Checkbox.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\Quad.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\Selector.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\Text.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\TextField.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\Widget.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\Button.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\Component.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\DirectionalLightComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\LightComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\MeshComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\PointLightComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\PrimitiveComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\SkeletalMeshComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\StaticMeshComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\TransformComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\CameraComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\System\Dolphin\System_Dolphin.cpp">
       <Filter>Source Files\System\Dolphin</Filter>
@@ -346,31 +279,31 @@
       <Filter>Source Files\System\Windows</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\Console.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\BoxComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\SphereComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\EngineTypes.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\StatsOverlay.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Log.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\ParticleComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\AudioManager.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\AudioComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Audio\Windows\Audio_Windows.cpp">
       <Filter>Source Files\Audio\Windows</Filter>
@@ -454,13 +387,13 @@
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\ComboBox.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\ModalList.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\VerticalList.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\NetFunc.cpp">
       <Filter>Source Files\Engine</Filter>
@@ -499,7 +432,7 @@
       <Filter>Source Files\System\Linux</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\CapsuleComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\ParticleActor.cpp">
       <Filter>Source Files\Engine</Filter>
@@ -508,10 +441,7 @@
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\ShadowMeshComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Components\ScriptComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\LuaBindings.cpp">
       <Filter>Source Files\LuaBindings</Filter>
@@ -739,7 +669,7 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Components\TextMeshComponent.cpp">
-      <Filter>Source Files\Engine\Components</Filter>
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\TextMeshComponent_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
@@ -754,7 +684,7 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\ScriptWidget.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\ScriptUtils.cpp">
       <Filter>Source Files\Engine</Filter>
@@ -763,10 +693,10 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\Poly.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\WidgetMap.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\Widgets\WidgetHierarchyPanel.cpp">
       <Filter>Source Files\Editor\Widgets</Filter>
@@ -775,7 +705,7 @@
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\PolyRect.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\WidgetMap_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
@@ -787,13 +717,10 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Widgets\ArrayWidget.cpp">
-      <Filter>Source Files\Engine\Widgets</Filter>
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Script_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\ScriptFunc.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Graphics\Vulkan\RayTracer.cpp">
       <Filter>Source Files\Graphics\Vulkan</Filter>
@@ -819,656 +746,15 @@
     <ClCompile Include="Source\Audio\Audio.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Include\Graphics\Vulkan\VulkanUtils.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\VulkanContext.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Graphics.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\Buffer.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\Image.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\GraphicsTypes.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\GraphicsConstants.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\DescriptorSet.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\DestroyQueue.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\Pipeline.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\PipelineConfigs.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\VulkanTypes.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\VulkanConstants.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\Allocator.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\GraphicsUtils.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\GX\GxUtils.h">
-      <Filter>Header Files\Graphics\GX</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\GX\GxTypes.h">
-      <Filter>Header Files\Graphics\GX</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\System\System.h">
-      <Filter>Header Files\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\System\SystemTypes.h">
-      <Filter>Header Files\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\Button.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\Canvas.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\Checkbox.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\Quad.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\Selector.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\Text.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\TextField.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\Widget.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\CameraComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\Component.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\DirectionalLightComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\LightComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\MeshComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\PointLightComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\PrimitiveComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\SkeletalMeshComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\StaticMeshComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\TransformComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Actor.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Asset.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\AssetDir.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\AssetManager.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\AssetRef.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Clock.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Constants.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Engine.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Enums.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Line.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Log.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Maths.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Property.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Rect.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Renderer.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\StaticMeshActor.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Stream.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Utilities.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Vertex.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\World.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\EngineTypes.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\System\SystemConstants.h">
-      <Filter>Header Files\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Input\Input.h">
-      <Filter>Header Files\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Input\InputTypes.h">
-      <Filter>Header Files\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Input\InputConstants.h">
-      <Filter>Header Files\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Input\InputUtils.h">
-      <Filter>Header Files\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\InputDevices.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\Console.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\BoxComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\SphereComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\StatsOverlay.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\ParticleComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\AudioManager.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Audio\Audio.h">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Audio\AudioTypes.h">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Audio\AudioConstants.h">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\AudioComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Profiler.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\C3D\C3dTypes.h">
-      <Filter>Header Files\Graphics\C3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\C3D\C3dUtils.h">
-      <Filter>Header Files\Graphics\C3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\C3D\DoubleBuffer.h">
-      <Filter>Header Files\Graphics\C3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\ActionManager.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\EditorConstants.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\EditorState.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\EditorUtils.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Grid.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\InputManager.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\PanelManager.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\TestActor.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\ActorButton.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\AssetButton.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\AssetsPanel.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\HierarchyButton.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\HierarchyPanel.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\OutlinerPanel.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\Panel.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\PropertiesPanel.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\PropertyWidget.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\ViewportPanel.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\ComboBox.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\ModalList.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\VerticalList.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\NetFunc.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\NetMsg.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\NetworkManager.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Datum.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Factory.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\NetDatum.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Network\Network.h">
-      <Filter>Header Files\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Network\NetworkConstants.h">
-      <Filter>Header Files\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Network\NetworkTypes.h">
-      <Filter>Header Files\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\CapsuleComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\RTTI.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\ParticleActor.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\ResourceArena.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\CameraFrustum.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\ShadowMeshComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\ScriptComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\LuaUtils.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Vector_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\TransformComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Component_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Engine_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Actor_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\World_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Input_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\PrimitiveComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\MeshComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\StaticMeshComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Asset_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\AssetManager_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\SkeletalMeshComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\ObjectRef.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\CameraComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\LightComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\PointLightComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\DirectionalLightComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\AudioComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\ParticleComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\ScriptComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\BoxComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\SphereComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\CapsuleComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\ShadowMeshComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Log_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Renderer_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Maths_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Network_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Audio_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Widget_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Canvas_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Quad_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Text_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Button_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\CheckBox_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Selector_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\ComboBox_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\TextField_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\VerticalList_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Misc_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Rect_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Assets\Blueprint.h">
-      <Filter>Header Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Assets\Level.h">
-      <Filter>Header Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Assets\Material.h">
-      <Filter>Header Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Assets\MaterialInstance.h">
-      <Filter>Header Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Assets\ParticleSystem.h">
-      <Filter>Header Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Assets\ParticleSystemInstance.h">
-      <Filter>Header Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Assets\SkeletalMesh.h">
-      <Filter>Header Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Assets\SoundWave.h">
-      <Filter>Header Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Assets\StaticMesh.h">
-      <Filter>Header Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Assets\Texture.h">
-      <Filter>Header Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Blueprint_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Level_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Material_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\MaterialInstance_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\ParticleSystem_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\ParticleSystemInstance_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\SkeletalMesh_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\SoundWave_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\StaticMesh_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Texture_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\ActorRef_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\ComponentRef_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\ScriptEvent.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\EmbeddedFile.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Assets\Font.h">
-      <Filter>Header Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Font_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\TextEntry.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\ActionList.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\TableDatum.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\LuaTypeCheck.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\ScriptAutoReg.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Stream_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\System_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Components\TextMeshComponent.h">
-      <Filter>Header Files\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\TextMeshComponent_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\EditorTypes.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\SceneImportWidget.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\TimerManager.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\TimerManager_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Assertion.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\ScriptWidget.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\ScriptMacros.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\ScriptUtils.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\ScriptWidget_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\Poly.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Assets\WidgetMap.h">
-      <Filter>Header Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\WidgetHierarchyPanel.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Editor\Widgets\WidgetViewportPanel.h">
-      <Filter>Header Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\PolyRect.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Poly_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\WidgetMap_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\PolyRect_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\Widgets\ArrayWidget.h">
-      <Filter>Header Files\Engine\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\LuaBindings\Script_Lua.h">
-      <Filter>Header Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Engine\ScriptFunc.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\RayTracer.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\MultiBuffer.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Graphics\Vulkan\MaterialPipelineCache.h">
-      <Filter>Header Files\Graphics\Vulkan</Filter>
-    </ClInclude>
+    <ClCompile Include="Source\Engine\Components\ScriptComponent.cpp">
+      <Filter>Source Files\Engine\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Node.cpp">
+      <Filter>Source Files\Engine\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\ScriptFunc.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1525,5 +811,655 @@
     <None Include="Shaders\src\Tonemap.frag">
       <Filter>Shaders</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\Audio\AudioConstants.h">
+      <Filter>Source Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Audio\AudioTypes.h">
+      <Filter>Source Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Audio\Audio.h">
+      <Filter>Source Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\InputManager.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\PanelManager.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\TestActor.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ActionManager.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\EditorConstants.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\EditorState.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\EditorTypes.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\EditorUtils.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Grid.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\PropertiesPanel.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\PropertyWidget.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\SceneImportWidget.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\TextEntry.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\ViewportPanel.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\WidgetHierarchyPanel.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\WidgetViewportPanel.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\ActionList.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\ActorButton.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\AssetButton.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\AssetsPanel.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\HierarchyButton.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\HierarchyPanel.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\OutlinerPanel.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Widgets\Panel.h">
+      <Filter>Source Files\Editor\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\Material.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\MaterialInstance.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\ParticleSystem.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\ParticleSystemInstance.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\SkeletalMesh.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\SoundWave.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\StaticMesh.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\Texture.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\WidgetMap.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\Blueprint.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\Font.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\Level.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Node.h">
+      <Filter>Source Files\Engine\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\ScriptComponent.h">
+      <Filter>Source Files\Engine\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\TextMeshComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\TransformComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\AudioComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\BoxComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\CameraComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\CapsuleComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\DirectionalLightComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\LightComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\MeshComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\ParticleComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\PointLightComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\PrimitiveComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\ShadowMeshComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\SkeletalMeshComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\SphereComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\StaticMeshComponent.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ComboBox.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Console.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ModalList.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Poly.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\PolyRect.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Quad.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ScriptWidget.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Selector.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\StatsOverlay.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Text.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\TextField.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\VerticalList.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Widget.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ArrayWidget.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Button.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Canvas.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\CheckBox.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\TableDatum.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\TimerManager.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Utilities.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Vertex.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\World.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Actor.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assertion.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Asset.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\AssetDir.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\AssetManager.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\AssetRef.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\AudioManager.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\CameraFrustum.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Clock.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Constants.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Datum.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\EmbeddedFile.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Engine.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\EngineTypes.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Enums.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Factory.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\InputDevices.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Line.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Log.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Maths.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NetDatum.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NetFunc.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NetMsg.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NetworkManager.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\ParticleActor.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Profiler.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Property.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Rect.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Renderer.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\RTTI.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\ScriptAutoReg.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\ScriptEvent.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\ScriptFunc.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\ScriptMacros.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\ScriptUtils.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\StaticMeshActor.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Stream.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\GraphicsConstants.h">
+      <Filter>Source Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\GraphicsTypes.h">
+      <Filter>Source Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\GraphicsUtils.h">
+      <Filter>Source Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Graphics.h">
+      <Filter>Source Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\ResourceArena.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanConstants.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanContext.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanUtils.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\Allocator.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\Buffer.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\DescriptorSet.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\DestroyQueue.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\Image.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\MaterialPipelineCache.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\MultiBuffer.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\Pipeline.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\PipelineConfigs.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\RayTracer.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\GX\GxUtils.h">
+      <Filter>Source Files\Graphics\GX</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\GX\GxTypes.h">
+      <Filter>Source Files\Graphics\GX</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\C3D\DoubleBuffer.h">
+      <Filter>Source Files\Graphics\C3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\C3D\C3dTypes.h">
+      <Filter>Source Files\Graphics\C3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\C3D\C3dUtils.h">
+      <Filter>Source Files\Graphics\C3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Input\InputTypes.h">
+      <Filter>Source Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Input\InputUtils.h">
+      <Filter>Source Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Input\Input.h">
+      <Filter>Source Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Input\InputConstants.h">
+      <Filter>Source Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\VerticalList_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Widget_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\WidgetMap_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\World_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Actor_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ActorRef_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Asset_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\AssetManager_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Audio_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\AudioComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Blueprint_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\BoxComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Button_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\CameraComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Canvas_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\CapsuleComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\CheckBox_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ComboBox_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Component_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ComponentRef_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\DirectionalLightComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Engine_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Font_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Input_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Level_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\LightComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Log_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\LuaTypeCheck.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\LuaUtils.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Material_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\MaterialInstance_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Maths_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\MeshComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Misc_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Network_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ParticleComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ParticleSystem_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ParticleSystemInstance_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\PointLightComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Poly_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\PolyRect_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\PrimitiveComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Quad_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Rect_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Renderer_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Script_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ScriptComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ScriptWidget_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Selector_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ShadowMeshComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\SkeletalMesh_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\SkeletalMeshComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\SoundWave_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\SphereComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\StaticMesh_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\StaticMeshComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Stream_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\System_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Text_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\TextField_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\TextMeshComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Texture_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\TimerManager_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\TransformComponent_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Vector_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Network\NetworkTypes.h">
+      <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Network\Network.h">
+      <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Network\NetworkConstants.h">
+      <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\System\SystemConstants.h">
+      <Filter>Source Files\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\System\SystemTypes.h">
+      <Filter>Source Files\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\System\System.h">
+      <Filter>Source Files\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ObjectRef.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
