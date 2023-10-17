@@ -126,107 +126,9 @@ void TransformComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Vector, "Scale", this, &mScale, 1, HandleTransformPropChange));
 }
 
-bool TransformComponent::IsTransformComponent() const
+bool TransformComponent::IsTransformNode() const
 {
     return true;
-}
-
-void TransformComponent::Attach(TransformComponent* parent, bool keepWorldTransform)
-{
-    // Can't attach to self.
-    OCT_ASSERT(parent != this);
-
-    if (keepWorldTransform && IsTransformDirty())
-    {
-        UpdateTransform(false);
-    }
-
-    // Detach from parent first
-    if (mParent != nullptr)
-    {
-        if (keepWorldTransform)
-        {
-            glm::mat4 transform = GetTransform();
-            mParent->RemoveChild(this);
-            SetTransform(transform);
-        }
-        else
-        {
-            mParent->RemoveChild(this);
-        }
-    }
-
-    mParentBoneIndex = -1;
-
-    // Attach to new parent
-    if (parent != nullptr)
-    {
-        if (keepWorldTransform)
-        {
-            glm::mat4 transform = GetTransform();
-            parent->AddChild(this);
-            SetTransform(transform);
-        }
-        else
-        {
-            parent->AddChild(this);
-        }
-    }
-
-    MarkTransformDirty();
-}
-
-void TransformComponent::AddChild(TransformComponent* child)
-{
-    if (child != nullptr)
-    {
-        // Check to make sure we aren't adding a duplicate
-        bool childFound = false;
-        for (uint32_t i = 0; i < mChildren.size(); ++i)
-        {
-            if (mChildren[i] == child)
-            {
-                childFound = true;
-                break;
-            }
-        }
-
-        OCT_ASSERT(!childFound); // Child already parented to this component?
-        if (!childFound)
-        {
-            mChildren.push_back(child);
-            child->mParent = this;
-        }
-    }
-}
-
-void TransformComponent::RemoveChild(TransformComponent* child)
-{
-    if (child != nullptr)
-    {
-        int32_t childIndex = -1;
-        for (int32_t i = 0; i < int32_t(mChildren.size()); ++i)
-        {
-            if (mChildren[i] == child)
-            {
-                childIndex = i;
-                break;
-            }
-        }
-
-        OCT_ASSERT(childIndex != -1); // Could not find the component to remove
-        if (childIndex != -1)
-        {
-            RemoveChild(childIndex);
-        }
-    }
-}
-
-void TransformComponent::RemoveChild(int32_t index)
-{
-    OCT_ASSERT(index >= 0 && index < int32_t(mChildren.size()));
-    mChildren[index]->mParent = nullptr;
-    mChildren.erase(mChildren.begin() + index);
 }
 
 void TransformComponent::AttachToBone(SkeletalMeshComponent* parent, const char* boneName, bool keepWorldTransform)
@@ -250,16 +152,6 @@ void TransformComponent::AttachToBone(SkeletalMeshComponent* parent, int32_t bon
     {
         SetTransform(origWorldTransform);
     }
-}
-
-TransformComponent * TransformComponent::GetParent()
-{
-    return mParent;
-}
-
-const std::vector<TransformComponent*>& TransformComponent::GetChildren() const
-{
-    return mChildren;
 }
 
 void TransformComponent::MarkTransformDirty()
@@ -628,69 +520,6 @@ glm::vec3 TransformComponent::GetUpVector() const
     return upVector;
 }
 
-int32_t TransformComponent::GetChildIndex(const char* childName)
-{
-    int32_t index = -1;
-    for (int32_t i = 0; i < int32_t(mChildren.size()); ++i)
-    {
-        if (mChildren[i]->GetName() == childName)
-        {
-            index = i;
-            break;
-        }
-    }
-
-    return index;
-}
-
-TransformComponent* TransformComponent::GetChild(const char* childName)
-{
-    TransformComponent* retComp = nullptr;
-    int32_t index = GetChildIndex(childName);
-    if (index != -1)
-    {
-        retComp = GetChild(index);
-    }
-    return retComp;
-}
-
-TransformComponent* TransformComponent::GetChild(int32_t index)
-{
-    TransformComponent* retComp = nullptr;
-    if (index >= 0 &&
-        index < (int32_t)mChildren.size())
-    {
-        retComp = mChildren[index];
-    }
-    return retComp;
-}
-
-uint32_t TransformComponent::GetNumChildren() const
-{
-    return (uint32_t)mChildren.size();
-}
-
-int32_t TransformComponent::FindParentComponentIndex() const
-{
-    int32_t retIndex = -1;
-
-    if (mParent != nullptr &&
-        mOwner != nullptr)
-    {
-        const std::vector<Component*>& comps = mOwner->GetComponents();
-        for (uint32_t i = 0; i < comps.size(); ++i)
-        {
-            if (comps[i] == mParent)
-            {
-                retIndex = i;
-                break;
-            }
-        }
-    }
-
-    return retIndex;
-}
-
 glm::mat4 TransformComponent::GetParentTransform()
 {
     glm::mat4 transform(1);
@@ -722,4 +551,53 @@ glm::mat4 TransformComponent::GetParentTransform()
 int32_t TransformComponent::GetParentBoneIndex() const
 {
     return mParentBoneIndex;
+}
+
+void TransformComponent::Attach(Node* parent, bool keepWorldTransform)
+{
+    // Can't attach to self.
+    OCT_ASSERT(parent != this);
+    if (parent == this)
+    {
+        return;
+    }
+
+    if (keepWorldTransform && IsTransformDirty())
+    {
+        UpdateTransform(false);
+    }
+
+    // Detach from parent first
+    if (mParent != nullptr)
+    {
+        if (keepWorldTransform)
+        {
+            glm::mat4 transform = GetTransform();
+            mParent->RemoveChild(this);
+            SetTransform(transform);
+        }
+        else
+        {
+            mParent->RemoveChild(this);
+        }
+    }
+
+    mParentBoneIndex = -1;
+
+    // Attach to new parent
+    if (parent != nullptr)
+    {
+        if (keepWorldTransform)
+        {
+            glm::mat4 transform = GetTransform();
+            parent->AddChild(this);
+            SetTransform(transform);
+        }
+        else
+        {
+            parent->AddChild(this);
+        }
+    }
+
+    MarkTransformDirty();
 }

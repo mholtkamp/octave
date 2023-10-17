@@ -287,3 +287,150 @@ bool Node::IsLightNode() const
 {
     return false;
 }
+
+Node * Node::GetParent()
+{
+    return mParent;
+}
+
+const std::vector<Node*>& Node::GetChildren() const
+{
+    return mChildren;
+}
+
+void Node::Attach(Node* parent, bool keepWorldTransform)
+{
+    // Can't attach to self.
+    OCT_ASSERT(parent != this);
+    if (parent == this)
+    {
+        return;
+    }
+
+    // Detach from parent first
+    if (mParent != nullptr)
+    {
+        mParent->RemoveChild(this);
+    }
+
+    // Attach to new parent
+    if (parent != nullptr)
+    {
+        parent->AddChild(this);
+    }
+}
+
+void Node::AddChild(Node* child)
+{
+    if (child != nullptr)
+    {
+        // Check to make sure we aren't adding a duplicate
+        bool childFound = false;
+        for (uint32_t i = 0; i < mChildren.size(); ++i)
+        {
+            if (mChildren[i] == child)
+            {
+                childFound = true;
+                break;
+            }
+        }
+
+        OCT_ASSERT(!childFound); // Child already parented to this node?
+        if (!childFound)
+        {
+            mChildren.push_back(child);
+            child->mParent = this;
+        }
+    }
+}
+
+void Node::RemoveChild(Node* child)
+{
+    if (child != nullptr)
+    {
+        int32_t childIndex = -1;
+        for (int32_t i = 0; i < int32_t(mChildren.size()); ++i)
+        {
+            if (mChildren[i] == child)
+            {
+                childIndex = i;
+                break;
+            }
+        }
+
+        OCT_ASSERT(childIndex != -1); // Could not find the component to remove
+        if (childIndex != -1)
+        {
+            RemoveChild(childIndex);
+        }
+    }
+}
+
+void Node::RemoveChild(int32_t index)
+{
+    OCT_ASSERT(index >= 0 && index < int32_t(mChildren.size()));
+    mChildren[index]->mParent = nullptr;
+    mChildren.erase(mChildren.begin() + index);
+}
+
+int32_t Node::GetChildIndex(const char* childName)
+{
+    int32_t index = -1;
+    for (int32_t i = 0; i < int32_t(mChildren.size()); ++i)
+    {
+        if (mChildren[i]->GetName() == childName)
+        {
+            index = i;
+            break;
+        }
+    }
+
+    return index;
+}
+
+Node* Node::GetChild(const char* childName)
+{
+    Node* retNode = nullptr;
+    int32_t index = GetChildIndex(childName);
+    if (index != -1)
+    {
+        retNode = GetChild(index);
+    }
+    return retNode;
+}
+
+Node* Node::GetChild(int32_t index)
+{
+    Node* retNode = nullptr;
+    if (index >= 0 &&
+        index < (int32_t)mChildren.size())
+    {
+        retNode = mChildren[index];
+    }
+    return retNode;
+}
+
+uint32_t Node::GetNumChildren() const
+{
+    return (uint32_t)mChildren.size();
+}
+
+int32_t Node::FindParentNodeIndex() const
+{
+    int32_t retIndex = -1;
+
+    if (mParent != nullptr)
+    {
+        const std::vector<Node*>& children = mParent->GetChildren();
+        for (uint32_t i = 0; i < children.size(); ++i)
+        {
+            if (children[i] == mParent)
+            {
+                retIndex = i;
+                break;
+            }
+        }
+    }
+
+    return retIndex;
+}

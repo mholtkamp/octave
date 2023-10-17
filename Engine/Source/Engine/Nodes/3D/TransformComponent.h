@@ -29,16 +29,8 @@ public:
 
     virtual bool IsTransformNode() const override;
 
-    void Attach(TransformComponent* parent, bool keepWorldTransform = false);
-    void AddChild(TransformComponent* child);
-    void RemoveChild(TransformComponent* child);
-    void RemoveChild(int32_t index);
-
     void AttachToBone(SkeletalMeshComponent* parent, const char* boneName, bool keepWorldTransform = false);
     void AttachToBone(SkeletalMeshComponent* parent, int32_t boneIndex, bool keepWorldTransform = false);
-
-    TransformComponent* GetParent();
-    const std::vector<TransformComponent*>& GetChildren() const;
 
     void MarkTransformDirty();
     bool IsTransformDirty() const;
@@ -90,19 +82,12 @@ public:
     glm::vec3 GetRightVector() const;
     glm::vec3 GetUpVector() const;
 
-    int32_t GetChildIndex(const char* childName);
-    TransformComponent* GetChild(const char* childName);
-    TransformComponent* GetChild(int32_t index);
-    uint32_t GetNumChildren() const;
-    int32_t FindParentComponentIndex() const;
-
     glm::mat4 GetParentTransform();
     int32_t GetParentBoneIndex() const;
 
-protected:
+    virtual void Attach(Node* parent, bool keepWorldTransform) override;
 
-    TransformComponent* mParent;
-    std::vector<TransformComponent*> mChildren;
+protected:
 
     glm::vec3 mPosition;
     glm::vec3 mRotationEuler;

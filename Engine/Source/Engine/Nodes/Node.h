@@ -88,6 +88,20 @@ public:
     virtual bool IsPrimitiveNode() const;
     virtual bool IsLightNode() const;
 
+    Node* GetParent();
+    const std::vector<Node*>& GetChildren() const;
+
+    virtual void Attach(Node* parent, bool keepWorldTransform = false);
+    void AddChild(Node* child);
+    void RemoveChild(Node* child);
+    void RemoveChild(int32_t index);
+
+    int32_t GetChildIndex(const char* childName);
+    Node* GetChild(const char* childName);
+    Node* GetChild(int32_t index);
+    uint32_t GetNumChildren() const;
+    int32_t FindParentNodeIndex() const;
+
 protected:
 
     std::string mName;
@@ -127,4 +141,5 @@ protected:
 
     NodeScriptData* mScriptData = nullptr;
     //NodeNetData* mNetData = nullptr;
+
 };
