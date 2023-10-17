@@ -11,6 +11,7 @@
 #include "Engine.h"
 #include "AssetManager.h"
 #include "Log.h"
+#include "Widgets/Widget.h"
 
 TestActor::TestActor() :
     mRootMesh(nullptr),
@@ -103,7 +104,6 @@ void TestActor::Create()
         }
     }
 
-
     {
         LogDebug("----Asset Types----");
         std::vector<Factory*>& factoryList = Asset::GetFactoryList();
@@ -111,6 +111,16 @@ void TestActor::Create()
         for (uint32_t i = 0; i < factoryList.size(); ++i)
         {
             LogDebug("AssetClass[%d] %s - %lu", i, factoryList[i]->GetClassName(), factoryList[i]->GetType());
+        }
+    }
+
+    {
+        LogDebug("----Widget Types----");
+        std::vector<Factory*>& factoryList = Widget::GetFactoryList();
+
+        for (uint32_t i = 0; i < factoryList.size(); ++i)
+        {
+            LogDebug("WidgetClass[%d] %s - %lu", i, factoryList[i]->GetClassName(), factoryList[i]->GetType());
         }
     }
 
