@@ -51,7 +51,7 @@ void Camera3D::Destroy()
         GetWorld()->SetActiveCamera(nullptr);
     }
 
-    Component::Destroy();
+    Node3D::Destroy();
 }
 
 void Camera3D::GatherProperties(std::vector<Property>& outProps)

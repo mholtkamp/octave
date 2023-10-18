@@ -62,7 +62,7 @@ public:
     virtual void LoadStream(Stream& stream) override;
     virtual void SaveStream(Stream& stream) override;
 
-    virtual void SetOwner(Actor* owner) override;
+    virtual void SetWorld(World* world) override;
     virtual void Render();
 
     virtual void UpdateTransform(bool updateChildren) override;

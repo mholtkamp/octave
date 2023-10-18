@@ -1079,21 +1079,17 @@ void SkeletalMesh3D::UpdateAnimation(float deltaTime, bool updateBones)
         // Fire off any events that triggered.
         if (mAnimEventHandler.mFuncPointer != nullptr)
         {
-            Actor* actor = GetOwner();
             for (uint32_t i = 0; i < sAnimEvents.size(); ++i)
             {
-                sAnimEvents[i].mActor = actor;
-                sAnimEvents[i].mComponent = this;
+                sAnimEvents[i].mNode = this;
                 mAnimEventHandler.mFuncPointer(sAnimEvents[i]);
             }
         }
         if (mAnimEventHandler.mScriptTableName != "")
         {
-            Actor* actor = GetOwner();
             for (uint32_t i = 0; i < sAnimEvents.size(); ++i)
             {
-                sAnimEvents[i].mActor = actor;
-                sAnimEvents[i].mComponent = this;
+                sAnimEvents[i].mNode = this;
 
                 ScriptEvent::Animation(
                     mAnimEventHandler.mScriptTableName,
@@ -1131,9 +1127,11 @@ void SkeletalMesh3D::UpdateAttachedChildren(float deltaTime)
     {
         for (uint32_t i = 0; i < mChildren.size(); ++i)
         {
-            if (mChildren[i]->GetParentBoneIndex() != -1)
+            Node3D* child3D = mChildren[i]->IsNode3D() ? static_cast<Node3D*>(mChildren[i]) : nullptr;
+
+            if (child3D && child3D->GetParentBoneIndex() != -1)
             {
-                mChildren[i]->MarkTransformDirty();
+                child3D->MarkTransformDirty();
             }
         }
     }

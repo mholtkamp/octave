@@ -126,7 +126,7 @@ public:
     void SetPersitent(bool persistent);
     bool IsPersistent() const;
 
-    void SetWorld(World* world);
+    virtual void SetWorld(World* world);
     World* GetWorld();
 
     void SetScene(Scene* scene);
@@ -171,9 +171,9 @@ public:
     virtual const char* GetTypeName() const;
     virtual DrawData GetDrawData();
 
-    virtual bool IsTransformNode() const;
-    virtual bool IsPrimitiveNode() const;
-    virtual bool IsLightNode() const;
+    virtual bool IsNode3D() const;
+    virtual bool IsPrimitive3D() const;
+    virtual bool IsLight3D() const;
 
     Node* GetParent();
     const std::vector<Node*>& GetChildren() const;

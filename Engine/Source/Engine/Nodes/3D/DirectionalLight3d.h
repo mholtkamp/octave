@@ -11,7 +11,6 @@ public:
     DirectionalLight3D();
     ~DirectionalLight3D();
 
-    virtual void SetOwner(Actor* owner) override;
     virtual void Destroy() override;
 
     virtual void Tick(float deltaTime) override;

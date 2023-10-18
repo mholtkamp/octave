@@ -282,8 +282,14 @@ void Primitive3D::SaveStream(Stream& stream)
     stream.WriteUint8(mCollisionMask);
 }
 
-void Primitive3D::SetOwner(Actor* owner)
+void Primitive3D::SetWorld(World* world)
 {
+    // TODO-NODE: I am attempting to simplify this code. Does it still work?
+#if 1
+    EnableRigidBody(false);
+    Node3D::SetWorld(world);
+    EnableRigidBody(true);
+#else
     bool rigidBodyInWorld = IsRigidBodyInWorld();
 
     if (rigidBodyInWorld)
@@ -292,12 +298,13 @@ void Primitive3D::SetOwner(Actor* owner)
         EnableRigidBody(false);
     }
 
-    Node3D::SetOwner(owner);
+    Node3D::SetWorld(world);
 
     if (rigidBodyInWorld)
     {
         EnableRigidBody(true);
     }
+#endif
 }
 
 void Primitive3D::Render()
@@ -627,8 +634,7 @@ void Primitive3D::FullSyncRigidBodyTransform()
 
 void Primitive3D::SyncRigidBodyTransform()
 {
-    if (mOwner != nullptr &&
-        GetWorld() != nullptr)
+    if (GetWorld() != nullptr)
     {
         if (mRigidBody != nullptr)
         {
@@ -816,7 +822,10 @@ bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outS
 
         SetPosition(startPos + fracDelta + outSweepResult.mHitNormal * padding);
 
-        GetOwner()->OnCollision(this, outSweepResult.mHitComponent, outSweepResult.mHitPosition, outSweepResult.mHitNormal, nullptr);
+        if (GetParent() != nullptr)
+        {
+            GetParent()->OnCollision(this, outSweepResult.mHitComponent, outSweepResult.mHitPosition, outSweepResult.mHitNormal, nullptr);
+        }
     }
     else
     {

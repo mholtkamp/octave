@@ -83,7 +83,7 @@ void Node::Destroy()
         Stop();
     }
 
-    if (IsPrimitiveNode() && GetWorld())
+    if (IsPrimitive3D() && GetWorld())
     {
         GetWorld()->PurgeOverlaps(static_cast<Primitive3D*>(this));
     }
@@ -244,7 +244,7 @@ void Node::Render(PipelineId pipelineId)
     // TODO-NODE: This function is used when rendering hit check and selected geometry I believe.
     // Could probably adjust Render() function in Primitive3D + Widget so that it can take a pipeline.
     // Or just manually bind the pipeline from the callers.
-    if (IsPrimitiveNode() && IsVisible())
+    if (IsPrimitive3D() && IsVisible())
     {
         Primitive3D* primComp = static_cast<Primitive3D*>(this);
         GFX_BindPipeline(pipelineId, primComp->GetVertexType());
@@ -419,29 +419,41 @@ void Node::ApplyPropertyOverrides(const std::vector<Property>& overs)
 #endif
 }
 
-void Node::BeginOverlap(Primitive3D* thisComp, Primitive3D* other)
+void Node::BeginOverlap(Primitive3D* thisNode, Primitive3D* otherNode)
 {
     //LogDebug("Begin Overlap <%s> with <%s>", this->GetName().c_str(), other->GetName().c_str());
 
     // TODO-NODE: Get this working with scripts.
-    if (mScriptData != nullptr)
+    if (mScript != nullptr)
     {
         LogError("Need to call script BeginOverlap");
     }
+
+    // Until "Signals" are implemented, the current method of handling collision/overlaps will be to bubble up the events.
+    if (mParent != nullptr)
+    {
+        mParent->BeginOverlap(thisNode, otherNode);
+    }
 }
-void Node::EndOverlap(Primitive3D* thisComp, Primitive3D* other)
+void Node::EndOverlap(Primitive3D* thisNode, Primitive3D* otherNode)
 {
     //LogDebug("End Overlap <%s> with <%s>", this->GetName().c_str(), other->GetName().c_str());
 
     // TODO-NODE: Get this working with scripts.
-    if (mScriptData != nullptr)
+    if (mScript != nullptr)
     {
         LogError("Need to call script EndOverlap");
     }
+
+    // Until "Signals" are implemented, the current method of handling collision/overlaps will be to bubble up the events.
+    if (mParent != nullptr)
+    {
+        mParent->EndOverlap(thisNode, otherNode);
+    }
 }
 void Node::OnCollision(
-    Primitive3D* thisComp,
-    Primitive3D* other,
+    Primitive3D* thisNode,
+    Primitive3D* otherNode,
     glm::vec3 impactPoint,
     glm::vec3 impactNormal,
     btPersistentManifold* manifold)
@@ -449,9 +461,15 @@ void Node::OnCollision(
     //LogDebug("Collisions [%d] <%s> with <%s>", manifold->getNumContacts(), this->GetName().c_str(), other->GetName().c_str());
 
     // TODO-NODE: Get this working with scripts.
-    if (mScriptData != nullptr)
+    if (mScript != nullptr)
     {
         LogError("Need to call script OnCollision");
+    }
+
+    // Until "Signals" are implemented, the current method of handling collision/overlaps will be to bubble up the events.
+    if (mParent != nullptr)
+    {
+        mParent->OnCollision(thisNode, otherNode, impactPoint, impactNormal, manifold);
     }
 }
 
@@ -478,14 +496,14 @@ void Node::RenderSelected(bool renderChildren)
 
     const bool proxyEnabled = Renderer::Get()->IsProxyRenderingEnabled();
 
-    if (IsPrimitiveNode())
+    if (IsPrimitive3D())
     {
         Primitive3D* primComp = static_cast<Primitive3D*>(this);
         GFX_BindPipeline(PipelineId::Selected, primComp->GetVertexType());
         primComp->Render();
     }
 
-    if (proxyEnabled && IsTransformNode())
+    if (proxyEnabled && IsNode3D())
     {
         Node3D* transComp = static_cast<Node3D*>(this);
 
@@ -803,17 +821,17 @@ DrawData Node::GetDrawData()
     return ret;
 }
 
-bool Node::IsTransformNode() const
+bool Node::IsNode3D() const
 {
     return false;
 }
 
-bool Node::IsPrimitiveNode() const
+bool Node::IsPrimitive3D() const
 {
     return false;
 }
 
-bool Node::IsLightNode() const
+bool Node::IsLight3D() const
 {
     return false;
 }
@@ -902,12 +920,6 @@ void Node::RemoveChild(Node* child)
         OCT_ASSERT(childIndex != -1); // Could not find the component to remove
         if (childIndex != -1)
         {
-            if (child->GetWorld() != nullptr)
-            {
-                child->GetWorld()->UnregisterNode(child);
-                child->SetWorld(nullptr);
-            }
-
             RemoveChild(childIndex);
         }
     }
@@ -916,8 +928,19 @@ void Node::RemoveChild(Node* child)
 void Node::RemoveChild(int32_t index)
 {
     OCT_ASSERT(index >= 0 && index < int32_t(mChildren.size()));
-    mChildren[index]->mParent = nullptr;
-    mChildren.erase(mChildren.begin() + index);
+    if (index >= 0 && index < int32_t(mChildren.size()))
+    {
+        Node* child = mChildren[index];
+
+        if (child->GetWorld() != nullptr)
+        {
+            child->GetWorld()->UnregisterNode(child);
+            child->SetWorld(nullptr);
+        }
+
+        child->mParent = nullptr;
+        mChildren.erase(mChildren.begin() + index);
+    }
 }
 
 int32_t Node::GetChildIndex(const char* childName) const

@@ -92,11 +92,8 @@ void ScriptEvent::Animation(std::string& tableName, std::string& funcName, const
     {
         lua_newtable(L);
 
-        Actor_Lua::Create(L, animEvent.mActor);
-        lua_setfield(L, -2, "actor");
-
-        Component_Lua::Create(L, animEvent.mComponent);
-        lua_setfield(L, -2, "component");
+        Component_Lua::Create(L, animEvent.mNode);
+        lua_setfield(L, -2, "node");
 
         lua_pushstring(L, animEvent.mName.c_str());
         lua_setfield(L, -2, "name");

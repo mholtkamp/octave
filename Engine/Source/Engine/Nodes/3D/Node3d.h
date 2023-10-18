@@ -29,7 +29,7 @@ public:
     virtual void GatherProperties(std::vector<Property>& outProps) override;
     virtual void GatherReplicatedData(std::vector<NetDatum>& outData);
 
-    virtual bool IsTransformNode() const override;
+    virtual bool IsNode3D() const override;
 
     void AttachToBone(SkeletalMesh3D* parent, const char* boneName, bool keepWorldTransform = false);
     void AttachToBone(SkeletalMesh3D* parent, int32_t boneIndex, bool keepWorldTransform = false);

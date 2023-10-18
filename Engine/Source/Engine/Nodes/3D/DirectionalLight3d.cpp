@@ -17,11 +17,6 @@ DirectionalLight3D::~DirectionalLight3D()
 
 }
 
-void DirectionalLight3D::SetOwner(Actor* newOwner)
-{
-    Light3D::SetOwner(newOwner);
-}
-
 void DirectionalLight3D::Destroy()
 {
     Light3D::Destroy();

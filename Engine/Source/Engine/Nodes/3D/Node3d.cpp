@@ -42,35 +42,38 @@ bool HandleTransformPropChange(Datum* datum, uint32_t index, const void* newValu
 
 bool Node3D::OnRep_RootPosition(Datum* datum, uint32_t index, const void* newValue)
 {
-    Actor* actor = (Actor*)datum->mOwner;
-    OCT_ASSERT(actor != nullptr);
+    Node3D* node3d = (Node3D*)datum->mOwner;
+    OCT_ASSERT(node3d != nullptr);
+
     glm::vec3* newPos = (glm::vec3*) newValue;
-    actor->GetRootComponent()->SetPosition(*newPos);
+    node3d->SetPosition(*newPos);
+
     return true;
 }
 
 bool Node3D::OnRep_RootRotation(Datum* datum, uint32_t index, const void* newValue)
 {
-    Actor* actor = (Actor*)datum->mOwner;
-    OCT_ASSERT(actor != nullptr);
+    Node3D* node3d = (Node3D*)datum->mOwner;
+    OCT_ASSERT(node3d != nullptr);
 
     glm::vec3* newRot = (glm::vec3*) newValue;
-    actor->GetRootComponent()->SetRotation(*newRot);
+    node3d->SetRotation(*newRot);
 
     return true;
 }
 
 bool Node3D::OnRep_RootScale(Datum* datum, uint32_t index, const void* newValue)
 {
-    Actor* actor = (Actor*)datum->mOwner;
-    OCT_ASSERT(actor != nullptr);
+    Node3D* node3d = (Node3D*)datum->mOwner;
+    OCT_ASSERT(node3d != nullptr);
+
     glm::vec3* newScale = (glm::vec3*) newValue;
-    actor->GetRootComponent()->SetScale(*newScale);
+    node3d->SetScale(*newScale);
+
     return true;
 }
 
 Node3D::Node3D() :
-    mParent(nullptr),
     mPosition(0,0,0),
     mRotationEuler(0,0,0),
     mScale(1,1,1),
@@ -89,7 +92,7 @@ Node3D::~Node3D()
 
 void Node3D::SaveStream(Stream& stream)
 {
-    Component::SaveStream(stream);
+    Node::SaveStream(stream);
     stream.WriteVec3(mPosition);
     stream.WriteQuat(mRotationQuat);
     stream.WriteVec3(mScale);
@@ -97,7 +100,7 @@ void Node3D::SaveStream(Stream& stream)
 
 void Node3D::LoadStream(Stream& stream)
 {
-    Component::LoadStream(stream);
+    Node::LoadStream(stream);
     mPosition = stream.ReadVec3();
     mRotationQuat = stream.ReadQuat();
     mScale = stream.ReadVec3();
@@ -105,12 +108,12 @@ void Node3D::LoadStream(Stream& stream)
 
 void Node3D::Create()
 {
-    Component::Create();
+    Node::Create();
 }
 
 void Node3D::Destroy()
 {
-    Component::Destroy();
+    Node::Destroy();
 
     if (GetWorld() &&
         GetWorld()->GetAudioReceiver() == this)
@@ -154,7 +157,7 @@ void Node3D::GatherReplicatedData(std::vector<NetDatum>& outData)
     }
 }
 
-bool Node3D::IsTransformNode() const
+bool Node3D::IsNode3D() const
 {
     return true;
 }
@@ -197,10 +200,12 @@ bool Node3D::IsTransformDirty() const
 void Node3D::UpdateTransform(bool updateChildren)
 {
     // First we need to update parent transform if it's dirty.
-    if (mParent != nullptr &&
-        mParent->mTransformDirty)
+    Node3D* parent = (mParent && mParent->IsNode3D()) ? static_cast<Node3D*>(mParent) : nullptr;
+
+    if (parent != nullptr &&
+        parent->mTransformDirty)
     {
-        mParent->UpdateTransform(false);
+        parent->UpdateTransform(false);
     }
 
     if (mTransformDirty)
@@ -234,7 +239,11 @@ void Node3D::UpdateTransform(bool updateChildren)
         // Recursively mark children dirty since their parent has updated.
         for (uint32_t i = 0; i < mChildren.size(); ++i)
         {
-            mChildren[i]->MarkTransformDirty();
+            Node3D* child3d = mChildren[i]->IsNode3D() ? static_cast<Node3D*>(mChildren[i]) : nullptr;
+            if (child3d)
+            {
+                child3d->MarkTransformDirty();
+            }
         }
 
         // Cache off the euler angle rotation.
@@ -248,7 +257,11 @@ void Node3D::UpdateTransform(bool updateChildren)
     {
         for (uint32_t i = 0; i < mChildren.size(); ++i)
         {
-            mChildren[i]->UpdateTransform(updateChildren);
+            Node3D* child3d = mChildren[i]->IsNode3D() ? static_cast<Node3D*>(mChildren[i]) : nullptr;
+            if (child3d)
+            {
+                child3d->UpdateTransform(updateChildren);
+            }
         }
     }
 }
@@ -374,8 +387,12 @@ void Node3D::SetTransform(const glm::mat4& transform)
 
     for (uint32_t i = 0; i < mChildren.size(); ++i)
     {
-        //mChildren[i]->UpdateTransform();
-        mChildren[i]->MarkTransformDirty();
+        Node3D* child3d = mChildren[i]->IsNode3D() ? static_cast<Node3D*>(mChildren[i]) : nullptr;
+        if (child3d)
+        {
+            //child3d->UpdateTransform();
+            child3d->MarkTransformDirty();
+        }
     }
 }
 
@@ -434,9 +451,9 @@ void Node3D::SetAbsoluteRotation(glm::quat rotation)
     glm::quat newRelativeRot = mRotationQuat;
 
     // Convert the world rotation to relative rotation
-    if (mParent != nullptr)
+    if (mParent != nullptr && mParent->IsNode3D())
     {
-        glm::quat parentWorldRot = mParent->GetAbsoluteRotationQuat();
+        glm::quat parentWorldRot = static_cast<Node3D*>(mParent)->GetAbsoluteRotationQuat();
 
         if (mParentBoneIndex != -1 &&
             mParent->GetType() == SkeletalMesh3D::GetStaticType())
@@ -458,7 +475,7 @@ void Node3D::SetAbsoluteRotation(glm::quat rotation)
 
 void Node3D::SetAbsoluteScale(glm::vec3 scale)
 {
-    if (mParent != nullptr)
+    if (mParent != nullptr && mParent->IsNode3D())
     {
 #if 0
         // Old code that was causing some problems.
@@ -467,7 +484,7 @@ void Node3D::SetAbsoluteScale(glm::vec3 scale)
         glm::vec4 relScale4 = invParentTrans * scale4;
         SetScale(glm::vec3(relScale4.x, relScale4.y, relScale4.z));
 #else
-        glm::vec3 parentScale = mParent->GetAbsoluteScale();
+        glm::vec3 parentScale = static_cast<Node3D*>(mParent)->GetAbsoluteScale();
         glm::vec3 relScale;
         relScale.x = (parentScale.x != 0.0f) ? scale.x / parentScale.x : 0.0f;
         relScale.y = (parentScale.y != 0.0f) ? scale.y / parentScale.y : 0.0f;
@@ -560,11 +577,12 @@ glm::mat4 Node3D::GetParentTransform()
 {
     glm::mat4 transform(1);
 
-    if (mParent != nullptr)
+    if (mParent != nullptr && mParent->IsNode3D())
     {
+        Node3D* parent3d = static_cast<Node3D*>(mParent);
         if (mParentBoneIndex == -1)
         {
-            transform = mParent->GetTransform();
+            transform = parent3d->GetTransform();
         }
         else if (mParent->GetType() == SkeletalMesh3D::GetStaticType())
         {
@@ -574,7 +592,7 @@ glm::mat4 Node3D::GetParentTransform()
                 mParentBoneIndex < int32_t(skComp->GetNumBones()) &&
                 skComp->GetSkeletalMesh() != nullptr)
             {
-                transform = mParent->GetTransform() *
+                transform = parent3d->GetTransform() *
                     skComp->GetBoneTransform(mParentBoneIndex) *
                     skComp->GetSkeletalMesh()->GetBone(mParentBoneIndex).mInvOffsetMatrix;
             }
