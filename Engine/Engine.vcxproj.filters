@@ -647,54 +647,6 @@
     <ClCompile Include="Source\Engine\ScriptFunc.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\AudioComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\BoxComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\CameraComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\CapsuleComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\DirectionalLightComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\LightComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\MeshComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\ParticleComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\PointLightComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\PrimitiveComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\ShadowMeshComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\SkeletalMeshComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\SphereComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\StaticMeshComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\TextMeshComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\TransformComponent.cpp">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Widgets\Canvas.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
@@ -751,6 +703,54 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\ScriptComponent.cpp">
       <Filter>Source Files\Engine\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\Audio3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\Box3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\Camera3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\Capsule3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\DirectionalLight3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\Light3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\Mesh3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\Particle3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\PointLight3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\Primitive3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\ShadowMesh3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\SkeletalMesh3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\Sphere3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\StaticMesh3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\TextMesh3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\Node3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -932,54 +932,6 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\ScriptComponent.h">
       <Filter>Source Files\Engine\Nodes</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\TextMeshComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\TransformComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\AudioComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\BoxComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\CameraComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\CapsuleComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\DirectionalLightComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\LightComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\MeshComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\ParticleComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\PointLightComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\PrimitiveComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\ShadowMeshComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\SkeletalMeshComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\SphereComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\StaticMeshComponent.h">
-      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\ComboBox.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
@@ -1454,6 +1406,54 @@
     </ClInclude>
     <ClInclude Include="Source\ObjectRef.h">
       <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\Audio3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\Box3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\Camera3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\Capsule3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\DirectionalLight3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\Light3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\Mesh3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\Particle3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\PointLight3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\Primitive3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\ShadowMesh3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\SkeletalMesh3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\Sphere3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\StaticMesh3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\TextMesh3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\Node3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
