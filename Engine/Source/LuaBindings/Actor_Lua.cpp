@@ -5,7 +5,7 @@
 #include "Nodes/Node.h"
 #include "Assets/Level.h"
 #include "Nodes/Node.h"
-#include "Nodes/3D/PrimitiveComponent.h"
+#include "Nodes/3D/Primitive3d.h"
 
 #include "LuaBindings/LuaUtils.h"
 #include "LuaBindings/Actor_Lua.h"

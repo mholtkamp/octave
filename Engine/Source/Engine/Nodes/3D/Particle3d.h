@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Nodes/3D/PrimitiveComponent.h"
+#include "Nodes/3D/Primitive3d.h"
 #include "Assets/ParticleSystem.h"
 #include "Assets/ParticleSystemInstance.h"
 

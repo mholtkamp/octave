@@ -1,5 +1,5 @@
-#include "Nodes/3D/SkeletalMeshComponent.h"
-#include "Nodes/3D/StaticMeshComponent.h"
+#include "Nodes/3D/SkeletalMesh3d.h"
+#include "Nodes/3D/StaticMesh3d.h"
 #include "Assets/SkeletalMesh.h"
 #include "Renderer.h"
 #include "AssetManager.h"

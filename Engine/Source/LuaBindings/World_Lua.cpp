@@ -10,7 +10,7 @@
 #include "LuaBindings/ParticleSystem_Lua.h"
 #include "ParticleActor.h"
 
-#include "Nodes/3D/PrimitiveComponent.h"
+#include "Nodes/3D/Primitive3d.h"
 
 #if LUA_ENABLED
 

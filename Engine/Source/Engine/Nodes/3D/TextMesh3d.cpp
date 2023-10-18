@@ -1,4 +1,4 @@
-#include "Nodes/3D/TextMeshComponent.h"
+#include "Nodes/3D/TextMesh3d.h"
 #include "Renderer.h"
 #include "AssetManager.h"
 #include "Log.h"

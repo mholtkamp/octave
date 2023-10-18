@@ -4,7 +4,7 @@
 #include "Log.h"
 #include "Engine.h"
 
-#include "Nodes/3D/ShadowMeshComponent.h"
+#include "Nodes/3D/ShadowMesh3d.h"
 
 #include "LuaBindings/Component_Lua.h"
 #include "LuaBindings/LuaUtils.h"

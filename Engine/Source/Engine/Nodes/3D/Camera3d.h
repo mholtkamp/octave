@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TransformComponent.h"
+#include "Node3d.h"
 #include "Enums.h"
 #include "CameraFrustum.h"
 

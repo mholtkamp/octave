@@ -1,5 +1,5 @@
 #pragma once
-#include "TransformComponent.h"
+#include "Node3d.h"
 #include "Vertex.h"
 #include "Assets/StaticMesh.h"
 

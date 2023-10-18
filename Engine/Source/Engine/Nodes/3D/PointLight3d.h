@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LightComponent.h"
+#include "Light3d.h"
 #include "AssetRef.h"
 
 struct PointLightData

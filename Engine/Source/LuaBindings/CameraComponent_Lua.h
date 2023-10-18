@@ -4,7 +4,7 @@
 #include "Log.h"
 #include "Engine.h"
 
-#include "Nodes/3D/CameraComponent.h"
+#include "Nodes/3D/Camera3d.h"
 
 #include "LuaBindings/Component_Lua.h"
 #include "LuaBindings/LuaUtils.h"

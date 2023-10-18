@@ -1,4 +1,4 @@
-#include "Nodes/3D/AudioComponent.h"
+#include "Nodes/3D/Audio3d.h"
 
 #include "Engine.h"
 #include "World.h"

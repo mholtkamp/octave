@@ -8,7 +8,7 @@
 #include "Asset.h"
 #include "AssetManager.h"
 #include "Nodes/Node.h"
-#include "Nodes/3D/TransformComponent.h"
+#include "Nodes/3D/Node3d.h"
 #include "Engine.h"
 #include "Grid.h"
 #include "World.h"

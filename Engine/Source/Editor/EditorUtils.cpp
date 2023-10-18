@@ -4,7 +4,7 @@
 #include "Engine.h"
 #include "Log.h"
 #include "World.h"
-#include "Nodes/3D/CameraComponent.h"
+#include "Nodes/3D/Camera3d.h"
 #include "PanelManager.h"
 #include "Widgets/ViewportPanel.h"
 #include "Widgets/WidgetHierarchyPanel.h"

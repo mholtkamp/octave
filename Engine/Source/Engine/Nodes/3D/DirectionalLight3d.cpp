@@ -1,4 +1,4 @@
-#include "Nodes/3D/DirectionalLightComponent.h"
+#include "Nodes/3D/DirectionalLight3d.h"
 #include "Renderer.h"
 #include "Constants.h"
 #include "Maths.h"

@@ -1,4 +1,4 @@
-#include "Nodes/3D/BoxComponent.h"
+#include "Nodes/3D/Box3d.h"
 
 #include "AssetManager.h"
 #include "Renderer.h"

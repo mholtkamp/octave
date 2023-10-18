@@ -1,4 +1,4 @@
-#include "Nodes/3D/LightComponent.h"
+#include "Nodes/3D/Light3d.h"
 
 DEFINE_RTTI(Light3D);
 

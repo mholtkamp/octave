@@ -1,4 +1,4 @@
-#include "Nodes/3D/StaticMeshComponent.h"
+#include "Nodes/3D/StaticMesh3d.h"
 
 #include "Assets/StaticMesh.h"
 #include "Renderer.h"

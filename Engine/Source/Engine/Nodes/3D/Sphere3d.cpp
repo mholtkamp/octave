@@ -1,4 +1,4 @@
-#include "Nodes/3D/SphereComponent.h"
+#include "Nodes/3D/Sphere3d.h"
 
 #include "AssetManager.h"
 #include "Renderer.h"

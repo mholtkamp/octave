@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LightComponent.h"
+#include "Light3d.h"
 
 class DirectionalLight3D : public Light3D
 {

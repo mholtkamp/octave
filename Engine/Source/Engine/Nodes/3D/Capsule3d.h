@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Nodes/3D/PrimitiveComponent.h"
+#include "Nodes/3D/Primitive3d.h"
 
 class Capsule3D : public Primitive3D
 {

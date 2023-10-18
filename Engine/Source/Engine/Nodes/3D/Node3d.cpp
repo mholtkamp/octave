@@ -1,4 +1,4 @@
-#include "Nodes/3D/TransformComponent.h"
+#include "Nodes/3D/Node3d.h"
 
 #include "AssetManager.h"
 #include "Nodes/Node.h"
@@ -6,7 +6,7 @@
 #include "Maths.h"
 #include "Assets/SkeletalMesh.h"
 
-#include "Nodes/3D/SkeletalMeshComponent.h"
+#include "Nodes/3D/SkeletalMesh3d.h"
 
 FORCE_LINK_DEF(Node3D);
 DEFINE_NODE(Node3D);

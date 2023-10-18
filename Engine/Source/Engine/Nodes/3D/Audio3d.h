@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Nodes/3D/TransformComponent.h"
+#include "Nodes/3D/Node3d.h"
 
 #include "Assets/SoundWave.h"
 

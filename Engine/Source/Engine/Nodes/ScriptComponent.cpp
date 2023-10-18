@@ -1,6 +1,6 @@
 #include "Nodes/3D/ScriptComponent.h"
-#include "Nodes/3D/PrimitiveComponent.h"
-#include "Nodes/3D/SkeletalMeshComponent.h"
+#include "Nodes/3D/Primitive3d.h"
+#include "Nodes/3D/SkeletalMesh3d.h"
 #include "Constants.h"
 #include "Assets/SkeletalMesh.h"
 #include "Engine.h"

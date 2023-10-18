@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TransformComponent.h"
+#include "Node3d.h"
 
 class Light3D : public Node3D
 {

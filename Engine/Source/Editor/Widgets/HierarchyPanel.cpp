@@ -10,8 +10,8 @@
 #include "Widgets/ActionList.h"
 #include "Renderer.h"
 #include "Nodes/Node.h"
-#include "Nodes/3D/TransformComponent.h"
-#include "Nodes/3D/SkeletalMeshComponent.h"
+#include "Nodes/3D/Node3d.h"
+#include "Nodes/3D/SkeletalMesh3d.h"
 #include "Assets/SkeletalMesh.h"
 #include "ObjectRef.h"
 

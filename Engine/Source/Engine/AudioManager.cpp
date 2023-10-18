@@ -7,8 +7,8 @@
 #include "World.h"
 #include "Profiler.h"
 
-#include "Nodes/3D/TransformComponent.h"
-#include "Nodes/3D/AudioComponent.h"
+#include "Nodes/3D/Node3d.h"
+#include "Nodes/3D/Audio3d.h"
 
 #include "Audio/Audio.h"
 #include "Audio/AudioConstants.h"

@@ -4,7 +4,7 @@
 #include "AssetRef.h"
 #include "Assets/ParticleSystem.h"
 
-#include "Nodes/3D/ParticleComponent.h"
+#include "Nodes/3D/Particle3d.h"
 
 class ParticleActor : public Actor
 {

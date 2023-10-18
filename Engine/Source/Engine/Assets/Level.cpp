@@ -7,7 +7,7 @@
 #include "Maths.h"
 #include "NetworkManager.h"
 #include "Assets/Blueprint.h"
-#include "Nodes/3D/LightComponent.h"
+#include "Nodes/3D/Light3d.h"
 
 #if EDITOR
 #include "EditorState.h"

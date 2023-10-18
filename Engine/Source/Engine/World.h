@@ -13,8 +13,8 @@
 #include "Line.h"
 #include "EngineTypes.h"
 #include "ObjectRef.h"
-#include "Nodes/3D/CameraComponent.h"
-#include "Nodes/3D/DirectionalLightComponent.h"
+#include "Nodes/3D/Camera3d.h"
+#include "Nodes/3D/DirectionalLight3d.h"
 
 class Component;
 class Audio3D;

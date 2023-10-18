@@ -6,9 +6,9 @@
 #include "Log.h"
 #include "Engine.h"
 
-#include "Nodes/3D/DirectionalLightComponent.h"
-#include "Nodes/3D/PointLightComponent.h"
-#include "Nodes/3D/CameraComponent.h"
+#include "Nodes/3D/DirectionalLight3d.h"
+#include "Nodes/3D/PointLight3d.h"
+#include "Nodes/3D/Camera3d.h"
 
 #include "Graphics/Graphics.h"
 
