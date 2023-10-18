@@ -1,18 +1,18 @@
 #pragma once
 
 #include "Nodes/3D/MeshComponent.h"
+#include "Nodes/Widgets/Text.h"
 #include "Vertex.h"
-#include "Widgets/Text.h"
 
 class Font;
 
-class TextMeshComponent : public MeshComponent
+class TextMesh3D : public Mesh3D
 {
 public:
-    DECLARE_NODE(TextMeshComponent, MeshComponent);
+    DECLARE_NODE(TextMesh3D, Mesh3D);
 
-    TextMeshComponent();
-    ~TextMeshComponent();
+    TextMesh3D();
+    ~TextMesh3D();
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;

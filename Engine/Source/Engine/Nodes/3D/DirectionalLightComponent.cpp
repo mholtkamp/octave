@@ -3,53 +3,53 @@
 #include "Constants.h"
 #include "Maths.h"
 
-FORCE_LINK_DEF(DirectionalLightComponent);
-DEFINE_NODE(DirectionalLightComponent);
+FORCE_LINK_DEF(DirectionalLight3D);
+DEFINE_NODE(DirectionalLight3D);
 
-DirectionalLightComponent::DirectionalLightComponent()
+DirectionalLight3D::DirectionalLight3D()
 {
     mName = "Directional Light";
     mViewProjectionMatrix = glm::mat4(1);
 }
 
-DirectionalLightComponent::~DirectionalLightComponent()
+DirectionalLight3D::~DirectionalLight3D()
 {
 
 }
 
-void DirectionalLightComponent::SetOwner(Actor* newOwner)
+void DirectionalLight3D::SetOwner(Actor* newOwner)
 {
-    LightComponent::SetOwner(newOwner);
+    Light3D::SetOwner(newOwner);
 }
 
-void DirectionalLightComponent::Destroy()
+void DirectionalLight3D::Destroy()
 {
-    LightComponent::Destroy();
+    Light3D::Destroy();
 }
 
-void DirectionalLightComponent::Tick(float deltaTime)
+void DirectionalLight3D::Tick(float deltaTime)
 {
-    LightComponent::Tick(deltaTime);
+    Light3D::Tick(deltaTime);
     GenerateViewProjectionMatrix();
 }
 
-const char* DirectionalLightComponent::GetTypeName() const
+const char* DirectionalLight3D::GetTypeName() const
 {
     return "DirectionalLight";
 }
 
-void DirectionalLightComponent::GatherProperties(std::vector<Property>& outProps)
+void DirectionalLight3D::GatherProperties(std::vector<Property>& outProps)
 {
-    LightComponent::GatherProperties(outProps);
+    Light3D::GatherProperties(outProps);
 }
 
-void DirectionalLightComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+void DirectionalLight3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    LightComponent::GatherProxyDraws(inoutDraws);
+    Light3D::GatherProxyDraws(inoutDraws);
 
 
-    if (GetType() == DirectionalLightComponent::GetStaticType())
+    if (GetType() == DirectionalLight3D::GetStaticType())
     {
         glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.3f, 1.0f);
 
@@ -91,42 +91,42 @@ void DirectionalLightComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDr
 #endif
 }
 
-void DirectionalLightComponent::SaveStream(Stream& stream)
+void DirectionalLight3D::SaveStream(Stream& stream)
 {
-    LightComponent::SaveStream(stream);
+    Light3D::SaveStream(stream);
 }
 
-void DirectionalLightComponent::LoadStream(Stream& stream)
+void DirectionalLight3D::LoadStream(Stream& stream)
 {
-    LightComponent::LoadStream(stream);
+    Light3D::LoadStream(stream);
 }
 
-bool DirectionalLightComponent::IsPointLightComponent() const
+bool DirectionalLight3D::IsPointLightComponent() const
 {
     return false;
 }
 
-bool DirectionalLightComponent::IsDirectionalLightComponent() const
+bool DirectionalLight3D::IsDirectionalLightComponent() const
 {
     return true;
 }
 
-glm::vec3 DirectionalLightComponent::GetDirection() const
+glm::vec3 DirectionalLight3D::GetDirection() const
 {
     return GetForwardVector();
 }
 
-void DirectionalLightComponent::SetDirection(const glm::vec3& dir)
+void DirectionalLight3D::SetDirection(const glm::vec3& dir)
 {
     LookAt(GetAbsolutePosition() + dir, { 0.0f, 1.0f, 0.0f });
 }
 
-const glm::mat4& DirectionalLightComponent::GetViewProjectionMatrix() const
+const glm::mat4& DirectionalLight3D::GetViewProjectionMatrix() const
 {
     return mViewProjectionMatrix;
 }
 
-void DirectionalLightComponent::GenerateViewProjectionMatrix()
+void DirectionalLight3D::GenerateViewProjectionMatrix()
 {
     glm::mat4 view;
     glm::mat4 proj;

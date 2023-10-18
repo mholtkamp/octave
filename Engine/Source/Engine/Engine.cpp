@@ -49,20 +49,20 @@ void ForceLinkage()
     FORCE_LINK_CALL(StaticMeshActor);
 
     // Component Types
-    FORCE_LINK_CALL(AudioComponent);
-    FORCE_LINK_CALL(BoxComponent);
-    FORCE_LINK_CALL(CameraComponent);
+    FORCE_LINK_CALL(Audio3D);
+    FORCE_LINK_CALL(Box3D);
+    FORCE_LINK_CALL(Camera3D);
     FORCE_LINK_CALL(Component);
-    FORCE_LINK_CALL(DirectionalLightComponent);
-    FORCE_LINK_CALL(ParticleComponent);
-    FORCE_LINK_CALL(PointLightComponent);
-    FORCE_LINK_CALL(SkeletalMeshComponent);
-    FORCE_LINK_CALL(SphereComponent);
-    FORCE_LINK_CALL(StaticMeshComponent);
-    FORCE_LINK_CALL(TransformComponent);
-    FORCE_LINK_CALL(CapsuleComponent);
-    FORCE_LINK_CALL(ShadowMeshComponent);
-    FORCE_LINK_CALL(TextMeshComponent);
+    FORCE_LINK_CALL(DirectionalLight3D);
+    FORCE_LINK_CALL(Particle3D);
+    FORCE_LINK_CALL(PointLight3D);
+    FORCE_LINK_CALL(SkeletalMesh3D);
+    FORCE_LINK_CALL(Sphere3D);
+    FORCE_LINK_CALL(StaticMesh3D);
+    FORCE_LINK_CALL(Node3D);
+    FORCE_LINK_CALL(Capsule3D);
+    FORCE_LINK_CALL(ShadowMesh3D);
+    FORCE_LINK_CALL(TextMesh3D);
 
     // Asset Types
     FORCE_LINK_CALL(Level);

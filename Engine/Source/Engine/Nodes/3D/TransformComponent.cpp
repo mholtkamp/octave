@@ -8,14 +8,14 @@
 
 #include "Nodes/3D/SkeletalMeshComponent.h"
 
-FORCE_LINK_DEF(TransformComponent);
-DEFINE_NODE(TransformComponent);
+FORCE_LINK_DEF(Node3D);
+DEFINE_NODE(Node3D);
 
 bool HandleTransformPropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);
-    TransformComponent* transformComp = static_cast<TransformComponent*>(prop->mOwner);
+    Node3D* transformComp = static_cast<Node3D*>(prop->mOwner);
     bool success = false;
 
     if (prop->mName == "Rotation")
@@ -39,7 +39,7 @@ bool HandleTransformPropChange(Datum* datum, uint32_t index, const void* newValu
     return success;
 }
 
-bool TransformComponent::OnRep_RootPosition(Datum* datum, uint32_t index, const void* newValue)
+bool Node3D::OnRep_RootPosition(Datum* datum, uint32_t index, const void* newValue)
 {
     Actor* actor = (Actor*)datum->mOwner;
     OCT_ASSERT(actor != nullptr);
@@ -48,7 +48,7 @@ bool TransformComponent::OnRep_RootPosition(Datum* datum, uint32_t index, const 
     return true;
 }
 
-bool TransformComponent::OnRep_RootRotation(Datum* datum, uint32_t index, const void* newValue)
+bool Node3D::OnRep_RootRotation(Datum* datum, uint32_t index, const void* newValue)
 {
     Actor* actor = (Actor*)datum->mOwner;
     OCT_ASSERT(actor != nullptr);
@@ -59,7 +59,7 @@ bool TransformComponent::OnRep_RootRotation(Datum* datum, uint32_t index, const 
     return true;
 }
 
-bool TransformComponent::OnRep_RootScale(Datum* datum, uint32_t index, const void* newValue)
+bool Node3D::OnRep_RootScale(Datum* datum, uint32_t index, const void* newValue)
 {
     Actor* actor = (Actor*)datum->mOwner;
     OCT_ASSERT(actor != nullptr);
@@ -68,7 +68,7 @@ bool TransformComponent::OnRep_RootScale(Datum* datum, uint32_t index, const voi
     return true;
 }
 
-TransformComponent::TransformComponent() :
+Node3D::Node3D() :
     mParent(nullptr),
     mPosition(0,0,0),
     mRotationEuler(0,0,0),
@@ -81,12 +81,12 @@ TransformComponent::TransformComponent() :
     mName = "Transform";
 }
 
-TransformComponent::~TransformComponent()
+Node3D::~Node3D()
 {
 
 }
 
-void TransformComponent::SaveStream(Stream& stream)
+void Node3D::SaveStream(Stream& stream)
 {
     Component::SaveStream(stream);
     stream.WriteVec3(mPosition);
@@ -94,7 +94,7 @@ void TransformComponent::SaveStream(Stream& stream)
     stream.WriteVec3(mScale);
 }
 
-void TransformComponent::LoadStream(Stream& stream)
+void Node3D::LoadStream(Stream& stream)
 {
     Component::LoadStream(stream);
     mPosition = stream.ReadVec3();
@@ -102,12 +102,12 @@ void TransformComponent::LoadStream(Stream& stream)
     mScale = stream.ReadVec3();
 }
 
-void TransformComponent::Create()
+void Node3D::Create()
 {
     Component::Create();
 }
 
-void TransformComponent::Destroy()
+void Node3D::Destroy()
 {
     Component::Destroy();
 
@@ -118,17 +118,17 @@ void TransformComponent::Destroy()
     }
 }
 
-void TransformComponent::Tick(float deltaTime)
+void Node3D::Tick(float deltaTime)
 {
 
 }
 
-const char* TransformComponent::GetTypeName() const
+const char* Node3D::GetTypeName() const
 {
     return "Transform";
 }
 
-void TransformComponent::GatherProperties(std::vector<Property>& outProps)
+void Node3D::GatherProperties(std::vector<Property>& outProps)
 {
     Node::GatherProperties(outProps);
 
@@ -137,7 +137,7 @@ void TransformComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Vector, "Scale", this, &mScale, 1, HandleTransformPropChange));
 }
 
-void TransformComponent::GatherReplicatedData(std::vector<NetDatum>& outData)
+void Node3D::GatherReplicatedData(std::vector<NetDatum>& outData)
 {
     Node::GatherReplicatedData(outData);
 
@@ -149,18 +149,18 @@ void TransformComponent::GatherReplicatedData(std::vector<NetDatum>& outData)
     }
 }
 
-bool TransformComponent::IsTransformNode() const
+bool Node3D::IsTransformNode() const
 {
     return true;
 }
 
-void TransformComponent::AttachToBone(SkeletalMeshComponent* parent, const char* boneName, bool keepWorldTransform)
+void Node3D::AttachToBone(SkeletalMesh3D* parent, const char* boneName, bool keepWorldTransform)
 {
     int32_t parentBoneIndex = parent->FindBoneIndex(boneName);
     AttachToBone(parent, parentBoneIndex, keepWorldTransform);
 }
 
-void TransformComponent::AttachToBone(SkeletalMeshComponent* parent, int32_t boneIndex, bool keepWorldTransform)
+void Node3D::AttachToBone(SkeletalMesh3D* parent, int32_t boneIndex, bool keepWorldTransform)
 {
     glm::mat4 origWorldTransform;
     if (keepWorldTransform)
@@ -177,19 +177,19 @@ void TransformComponent::AttachToBone(SkeletalMeshComponent* parent, int32_t bon
     }
 }
 
-void TransformComponent::MarkTransformDirty()
+void Node3D::MarkTransformDirty()
 {
     // TODO-NODE: Consider propogating this to children nodes. 
     // It looks like Godot does it this way, and might remove some one-frame-delay bugs.
     mTransformDirty = true;
 }
 
-bool TransformComponent::IsTransformDirty() const
+bool Node3D::IsTransformDirty() const
 {
     return mTransformDirty;
 }
 
-void TransformComponent::UpdateTransform(bool updateChildren)
+void Node3D::UpdateTransform(bool updateChildren)
 {
     // First we need to update parent transform if it's dirty.
     if (mParent != nullptr &&
@@ -248,10 +248,10 @@ void TransformComponent::UpdateTransform(bool updateChildren)
     }
 }
 
-void TransformComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+void Node3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    if (GetType() == TransformComponent::GetStaticType())
+    if (GetType() == Node3D::GetStaticType())
     {
         DebugDraw debugDraw;
         debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cube");
@@ -264,7 +264,7 @@ void TransformComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif
 }
 
-bool TransformComponent::IsTransient() const
+bool Node3D::IsTransient() const
 {
     bool transient = mTransient;
 
@@ -277,12 +277,12 @@ bool TransformComponent::IsTransient() const
     return transient;
 }
 
-glm::vec3 TransformComponent::GetPosition() const
+glm::vec3 Node3D::GetPosition() const
 {
     return mPosition;
 }
 
-glm::vec3 TransformComponent::GetRotationEuler() const
+glm::vec3 Node3D::GetRotationEuler() const
 {
     glm::vec3 eulerAngles = glm::eulerAngles(mRotationQuat) * RADIANS_TO_DEGREES;
 
@@ -291,37 +291,37 @@ glm::vec3 TransformComponent::GetRotationEuler() const
     return eulerAngles;
 }
 
-glm::quat TransformComponent::GetRotationQuat() const
+glm::quat Node3D::GetRotationQuat() const
 {
     return mRotationQuat;
 }
 
-glm::vec3 TransformComponent::GetScale() const
+glm::vec3 Node3D::GetScale() const
 {
     return mScale;
 }
 
-glm::vec3& TransformComponent::GetPositionRef()
+glm::vec3& Node3D::GetPositionRef()
 {
     return mPosition;
 }
 
-glm::vec3& TransformComponent::GetRotationEulerRef()
+glm::vec3& Node3D::GetRotationEulerRef()
 {
     return mRotationEuler;
 }
 
-glm::quat& TransformComponent::GetRotationQuatRef()
+glm::quat& Node3D::GetRotationQuatRef()
 {
     return mRotationQuat;
 }
 
-glm::vec3& TransformComponent::GetScaleRef()
+glm::vec3& Node3D::GetScaleRef()
 {
     return mScale;
 }
 
-const glm::mat4& TransformComponent::GetTransform()
+const glm::mat4& Node3D::GetTransform()
 {
     // TODO-NODE: I added this update transform check and made this method non-const.
     // Is this causing any bugs? Performance issues?
@@ -333,30 +333,30 @@ const glm::mat4& TransformComponent::GetTransform()
     return mTransform;
 }
 
-void TransformComponent::SetPosition(glm::vec3 position)
+void Node3D::SetPosition(glm::vec3 position)
 {
     mPosition = position;
     MarkTransformDirty();
 }
 
-void TransformComponent::SetRotation(glm::vec3 rotation)
+void Node3D::SetRotation(glm::vec3 rotation)
 {
     SetRotation(glm::quat(rotation * DEGREES_TO_RADIANS));
 }
 
-void TransformComponent::SetRotation(glm::quat quat)
+void Node3D::SetRotation(glm::quat quat)
 {
     mRotationQuat = glm::normalize(quat);
     MarkTransformDirty();
 }
 
-void TransformComponent::SetScale(glm::vec3 scale)
+void Node3D::SetScale(glm::vec3 scale)
 {
     mScale = scale;
     MarkTransformDirty();
 }
 
-void TransformComponent::SetTransform(const glm::mat4& transform)
+void Node3D::SetTransform(const glm::mat4& transform)
 {
     mTransform = transform;
 
@@ -375,13 +375,13 @@ void TransformComponent::SetTransform(const glm::mat4& transform)
     }
 }
 
-glm::vec3 TransformComponent::GetAbsolutePosition()
+glm::vec3 Node3D::GetAbsolutePosition()
 {
     UpdateTransform(false);
     return Maths::ExtractPosition(mTransform);
 }
 
-glm::vec3 TransformComponent::GetAbsoluteRotationEuler()
+glm::vec3 Node3D::GetAbsoluteRotationEuler()
 {
     UpdateTransform(false);
 
@@ -392,19 +392,19 @@ glm::vec3 TransformComponent::GetAbsoluteRotationEuler()
     return eulerAngles;
 }
 
-glm::quat TransformComponent::GetAbsoluteRotationQuat()
+glm::quat Node3D::GetAbsoluteRotationQuat()
 {
     UpdateTransform(false);
     return Maths::ExtractRotation(mTransform);
 }
 
-glm::vec3 TransformComponent::GetAbsoluteScale()
+glm::vec3 Node3D::GetAbsoluteScale()
 {
     UpdateTransform(false);
     return Maths::ExtractScale(mTransform);
 }
 
-void TransformComponent::SetAbsolutePosition(glm::vec3 position)
+void Node3D::SetAbsolutePosition(glm::vec3 position)
 {
     if (mParent != nullptr)
     {
@@ -419,13 +419,13 @@ void TransformComponent::SetAbsolutePosition(glm::vec3 position)
     }
 }
 
-void TransformComponent::SetAbsoluteRotation(glm::vec3 rotation)
+void Node3D::SetAbsoluteRotation(glm::vec3 rotation)
 {
     glm::quat quat = glm::quat(rotation * DEGREES_TO_RADIANS);
     SetAbsoluteRotation(quat);
 }
 
-void TransformComponent::SetAbsoluteRotation(glm::quat rotation)
+void Node3D::SetAbsoluteRotation(glm::quat rotation)
 {
     glm::quat newRelativeRot = mRotationQuat;
 
@@ -435,9 +435,9 @@ void TransformComponent::SetAbsoluteRotation(glm::quat rotation)
         glm::quat parentWorldRot = mParent->GetAbsoluteRotationQuat();
 
         if (mParentBoneIndex != -1 &&
-            mParent->GetType() == SkeletalMeshComponent::GetStaticType())
+            mParent->GetType() == SkeletalMesh3D::GetStaticType())
         {
-            SkeletalMeshComponent* skComp = (SkeletalMeshComponent*) mParent;
+            SkeletalMesh3D* skComp = (SkeletalMesh3D*) mParent;
             parentWorldRot = parentWorldRot * skComp->GetBoneRotationQuat(mParentBoneIndex);
         }
 
@@ -452,7 +452,7 @@ void TransformComponent::SetAbsoluteRotation(glm::quat rotation)
     SetRotation(newRelativeRot);
 }
 
-void TransformComponent::SetAbsoluteScale(glm::vec3 scale)
+void Node3D::SetAbsoluteScale(glm::vec3 scale)
 {
     if (mParent != nullptr)
     {
@@ -477,19 +477,19 @@ void TransformComponent::SetAbsoluteScale(glm::vec3 scale)
     }
 }
 
-void TransformComponent::AddRotation(glm::quat rotation)
+void Node3D::AddRotation(glm::quat rotation)
 {
     SetRotation(rotation * mRotationQuat);
 }
 
-void TransformComponent::AddRotation(glm::vec3 rotation)
+void Node3D::AddRotation(glm::vec3 rotation)
 {
     glm::quat rotQuat = glm::quat(rotation * DEGREES_TO_RADIANS);
     AddRotation(rotQuat);
     //SetRotation(GetRotationEuler() + rotation);
 }
 
-void TransformComponent::AddAbsoluteRotation(glm::quat rotation)
+void Node3D::AddAbsoluteRotation(glm::quat rotation)
 {
     // Get component's world rotation first
     glm::quat newWorldRot = GetAbsoluteRotationQuat();
@@ -500,13 +500,13 @@ void TransformComponent::AddAbsoluteRotation(glm::quat rotation)
     SetAbsoluteRotation(newWorldRot);
 }
 
-void TransformComponent::AddAbsoluteRotation(glm::vec3 rotation)
+void Node3D::AddAbsoluteRotation(glm::vec3 rotation)
 {
     glm::quat rotQuat = glm::quat(rotation);
     AddAbsoluteRotation(rotQuat);
 }
 
-void TransformComponent::RotateAround(glm::vec3 pivot, glm::vec3 axis, float degrees)
+void Node3D::RotateAround(glm::vec3 pivot, glm::vec3 axis, float degrees)
 {
     // Work in world space
     UpdateTransform(false);
@@ -519,40 +519,40 @@ void TransformComponent::RotateAround(glm::vec3 pivot, glm::vec3 axis, float deg
     SetTransform(trans);
 }
 
-void TransformComponent::LookAt(glm::vec3 target, glm::vec3 up)
+void Node3D::LookAt(glm::vec3 target, glm::vec3 up)
 {
     glm::mat4 rotMat = glm::lookAt(GetAbsolutePosition(), target, up);
     glm::quat rotQuat = glm::conjugate(glm::toQuat(rotMat));
     SetAbsoluteRotation(rotQuat);
 }
 
-glm::vec3 TransformComponent::GetCachedEulerRotation() const
+glm::vec3 Node3D::GetCachedEulerRotation() const
 {
     return mRotationEuler;
 }
 
-glm::vec3 TransformComponent::GetForwardVector() const
+glm::vec3 Node3D::GetForwardVector() const
 {
      glm::vec3 forwardVector = mTransform * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
      forwardVector = Maths::SafeNormalize(forwardVector);
     return forwardVector;
 }
 
-glm::vec3 TransformComponent::GetRightVector() const
+glm::vec3 Node3D::GetRightVector() const
 {
     glm::vec3 rightVector = mTransform * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
     rightVector = Maths::SafeNormalize(rightVector);
     return rightVector;
 }
 
-glm::vec3 TransformComponent::GetUpVector() const
+glm::vec3 Node3D::GetUpVector() const
 {
     glm::vec3 upVector = mTransform * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
     upVector = Maths::SafeNormalize(upVector);
     return upVector;
 }
 
-glm::mat4 TransformComponent::GetParentTransform()
+glm::mat4 Node3D::GetParentTransform()
 {
     glm::mat4 transform(1);
 
@@ -562,9 +562,9 @@ glm::mat4 TransformComponent::GetParentTransform()
         {
             transform = mParent->GetTransform();
         }
-        else if (mParent->GetType() == SkeletalMeshComponent::GetStaticType())
+        else if (mParent->GetType() == SkeletalMesh3D::GetStaticType())
         {
-            SkeletalMeshComponent* skComp = (SkeletalMeshComponent*)mParent;
+            SkeletalMesh3D* skComp = (SkeletalMesh3D*)mParent;
 
             if (mParentBoneIndex >= 0 &&
                 mParentBoneIndex < int32_t(skComp->GetNumBones()) &&
@@ -580,12 +580,12 @@ glm::mat4 TransformComponent::GetParentTransform()
     return transform;
 }
 
-int32_t TransformComponent::GetParentBoneIndex() const
+int32_t Node3D::GetParentBoneIndex() const
 {
     return mParentBoneIndex;
 }
 
-void TransformComponent::Attach(Node* parent, bool keepWorldTransform)
+void Node3D::Attach(Node* parent, bool keepWorldTransform)
 {
     // Can't attach to self.
     OCT_ASSERT(parent != this);

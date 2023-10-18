@@ -19,12 +19,12 @@ class Texture;
 class Material;
 class StaticMesh;
 class SkeletalMesh;
-class StaticMeshComponent;
-class SkeletalMeshComponent;
-class ShadowMeshComponent;
-class TextMeshComponent;
-class ParticleComponent;
-class TransformComponent;
+class StaticMesh3D;
+class SkeletalMesh3D;
+class ShadowMesh3D;
+class TextMesh3D;
+class Particle3D;
+class Node3D;
 class Quad;
 class Text;
 class Poly;
@@ -83,11 +83,11 @@ void SetDebugObjectName(VkObjectType objectType, uint64_t object, const char* na
 void BeginDebugLabel(const char* name, glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f });
 void EndDebugLabel();
 
-uint32_t GetHitCheckId(TransformComponent* comp);
+uint32_t GetHitCheckId(Node3D* comp);
 
-void WriteGeometryUniformData(GeometryData& outData, World* world, TransformComponent* comp, const glm::mat4& transform);
+void WriteGeometryUniformData(GeometryData& outData, World* world, Node3D* comp, const glm::mat4& transform);
 void WriteMaterialUniformData(MaterialData& outData, Material* material);
-void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds, StaticMeshComponent* staticMeshComp = nullptr);
+void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds, StaticMesh3D* staticMeshComp = nullptr);
 
 #if _DEBUG
 void FullPipelineBarrier();
@@ -116,37 +116,37 @@ void BindSkeletalMeshResource(SkeletalMesh* skeletalMesh);
 void BindSkeletalMeshResourceIndices(SkeletalMesh* skeletalMesh);
 
 // StaticMeshComp
-void CreateStaticMeshCompResource(StaticMeshComponent* staticMeshComp);
-void DestroyStaticMeshCompResource(StaticMeshComponent* staticMeshComp);
-void UpdateStaticMeshCompResource(StaticMeshComponent* staticMeshComp);
-void UpdateStaticMeshCompResourceColors(StaticMeshComponent* staticMeshComp);
-void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOverride = nullptr);
+void CreateStaticMeshCompResource(StaticMesh3D* staticMeshComp);
+void DestroyStaticMeshCompResource(StaticMesh3D* staticMeshComp);
+void UpdateStaticMeshCompResource(StaticMesh3D* staticMeshComp);
+void UpdateStaticMeshCompResourceColors(StaticMesh3D* staticMeshComp);
+void DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverride = nullptr);
 
 // SkeletalMeshComp
-void CreateSkeletalMeshCompResource(SkeletalMeshComponent* skeletalMeshComp);
-void DestroySkeletalMeshCompResource(SkeletalMeshComponent* skeletalMeshComp);
-void ReallocateSkeletalMeshCompVertexBuffer(SkeletalMeshComponent* skeletalMeshComp, uint32_t numVertices);
-void UpdateSkeletalMeshCompVertexBuffer(SkeletalMeshComponent* skeletalMeshComp, const std::vector<Vertex>& skinnedVertices);
-void UpdateSkeletalMeshCompUniformBuffer(SkeletalMeshComponent* skeletalMeshComp);
-void DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp);
-bool IsCpuSkinningRequired(SkeletalMeshComponent* skeletalMeshComp);
+void CreateSkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp);
+void DestroySkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp);
+void ReallocateSkeletalMeshCompVertexBuffer(SkeletalMesh3D* skeletalMeshComp, uint32_t numVertices);
+void UpdateSkeletalMeshCompVertexBuffer(SkeletalMesh3D* skeletalMeshComp, const std::vector<Vertex>& skinnedVertices);
+void UpdateSkeletalMeshCompUniformBuffer(SkeletalMesh3D* skeletalMeshComp);
+void DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp);
+bool IsCpuSkinningRequired(SkeletalMesh3D* skeletalMeshComp);
 
 // ShadowMeshComp
-void DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp);
+void DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp);
 
 // TextMeshComp
-void CreateTextMeshCompResource(TextMeshComponent* textMeshComp);
-void DestroyTextMeshCompResource(TextMeshComponent* textMeshComp);
-void UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::vector<Vertex>& vertices);
-void DrawTextMeshComp(TextMeshComponent* textMeshComp);
-void UpdateTextMeshCompUniformBuffer(TextMeshComponent* textMeshComp);
+void CreateTextMeshCompResource(TextMesh3D* textMeshComp);
+void DestroyTextMeshCompResource(TextMesh3D* textMeshComp);
+void UpdateTextMeshCompVertexBuffer(TextMesh3D* textMeshComp, const std::vector<Vertex>& vertices);
+void DrawTextMeshComp(TextMesh3D* textMeshComp);
+void UpdateTextMeshCompUniformBuffer(TextMesh3D* textMeshComp);
 
 // ParticleComp
-void CreateParticleCompResource(ParticleComponent* particleComp);
-void DestroyParticleCompResource(ParticleComponent* particleComp);
-void UpdateParticleCompResource(ParticleComponent* particleComp);
-void UpdateParticleCompVertexBuffer(ParticleComponent* particleComp, const std::vector<VertexParticle>& vertices);
-void DrawParticleComp(ParticleComponent* particleComp);
+void CreateParticleCompResource(Particle3D* particleComp);
+void DestroyParticleCompResource(Particle3D* particleComp);
+void UpdateParticleCompResource(Particle3D* particleComp);
+void UpdateParticleCompVertexBuffer(Particle3D* particleComp, const std::vector<VertexParticle>& vertices);
+void DrawParticleComp(Particle3D* particleComp);
 
 // Quad
 void CreateQuadResource(Quad* quad);

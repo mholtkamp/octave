@@ -22,14 +22,14 @@ struct PointLightData
     }
 };
 
-class PointLightComponent : public LightComponent
+class PointLight3D : public Light3D
 {
 public:
 
-    DECLARE_NODE(PointLightComponent, LightComponent);
+    DECLARE_NODE(PointLight3D, Light3D);
 
-    PointLightComponent();
-    ~PointLightComponent();
+    PointLight3D();
+    ~PointLight3D();
 
     virtual void Create() override;
     virtual void Destroy() override;

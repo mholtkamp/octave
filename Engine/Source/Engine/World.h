@@ -17,7 +17,7 @@
 #include "Nodes/3D/DirectionalLightComponent.h"
 
 class Component;
-class AudioComponent;
+class Audio3D;
 
 struct QueuedLevel
 {
@@ -36,12 +36,12 @@ public:
 
     void Update(float deltaTime);
 
-    CameraComponent* GetActiveCamera();
-    CameraComponent* GetDefaultCamera();
-    TransformComponent* GetAudioReceiver();
+    Camera3D* GetActiveCamera();
+    Camera3D* GetDefaultCamera();
+    Node3D* GetAudioReceiver();
 
-    void SetActiveCamera(CameraComponent* activeCamera);
-    void SetAudioReceiver(TransformComponent* newReceiver);
+    void SetActiveCamera(Camera3D* activeCamera);
+    void SetAudioReceiver(Node3D* newReceiver);
 
     void AddActor(Actor* actor);
     void RemoveActor(Actor* actor);
@@ -77,7 +77,7 @@ public:
     void RemoveAllLines();
     const std::vector<Line>& GetLines() const;
 
-    const std::vector<class LightComponent*>& GetLightComponents();
+    const std::vector<class Light3D*>& GetLightComponents();
 
     void SetAmbientLightColor(glm::vec4 color);
     glm::vec4 GetAmbientLightColor() const;
@@ -93,11 +93,11 @@ public:
 
     btDynamicsWorld* GetDynamicsWorld();
     btDbvtBroadphase* GetBroadphase();
-    void PurgeOverlaps(PrimitiveComponent* prim);
+    void PurgeOverlaps(Primitive3D* prim);
 
     void RayTest(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTestResult& outResult);
     void RayTestMulti(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTestMultiResult& outResult);
-    void SweepTest(PrimitiveComponent* primComp, glm::vec3 start, glm::vec3 end, uint8_t collisionMask, SweepTestResult& outResult);
+    void SweepTest(Primitive3D* primComp, glm::vec3 start, glm::vec3 end, uint8_t collisionMask, SweepTestResult& outResult);
     void SweepTest(
         btConvexShape* convexShape, 
         glm::vec3 start,
@@ -110,7 +110,7 @@ public:
 
     void RegisterComponent(Component* comp);
     void UnregisterComponent(Component* comp);
-    const std::vector<AudioComponent*>& GetAudioComponents() const;
+    const std::vector<Audio3D*>& GetAudioComponents() const;
 
     std::vector<Actor*>& GetReplicatedActorVector(ReplicationRate rate);
     uint32_t& GetReplicatedActorIndex(ReplicationRate rate);
@@ -174,16 +174,16 @@ private:
     std::vector<Actor*> mActors;
     std::unordered_map<NetId, Actor*> mNetActorMap;
     std::vector<Line> mLines;
-    std::vector<class LightComponent*> mLightComponents;
-    std::vector<class AudioComponent*> mAudioComponents;
+    std::vector<class Light3D*> mLightComponents;
+    std::vector<class Audio3D*> mAudioComponents;
     std::vector<LevelRef> mLoadedLevels;
     std::vector<QueuedLevel> mQueuedLevels;
-    DirectionalLightComponent* mDirectionalLight;
+    DirectionalLight3D* mDirectionalLight;
     glm::vec4 mAmbientLightColor;
     glm::vec4 mShadowColor;
     FogSettings mFogSettings;
-    CameraComponent* mActiveCamera;
-    TransformComponent* mAudioReceiver;
+    Camera3D* mActiveCamera;
+    Node3D* mAudioReceiver;
     ComponentRef mDefaultCamera;
     NetId mNextNetId;
     bool mPendingClear = false;

@@ -24,20 +24,20 @@ struct EngineState;
 struct FadingLight
 {
     // mComponent should only be used for comparisons!! If deleted, we want to fade it out, not crash.
-    LightComponent* mComponent = nullptr;
+    Light3D* mComponent = nullptr;
     LightData mData = {};
     glm::vec4 mColor = { 0.0f, 0.0f, 0.0f, 0.0f };
     float mAlpha = 0.0f;
 
-    FadingLight(LightComponent* comp) : mComponent(comp) {}
+    FadingLight(Light3D* comp) : mComponent(comp) {}
 };
 
 struct LightDistance2
 {
-    LightComponent* mComponent = nullptr;
+    Light3D* mComponent = nullptr;
     float mDistance2 = 0.0f;
 
-    LightDistance2(LightComponent* comp, float dist2) : mComponent(comp), mDistance2(dist2) {}
+    LightDistance2(Light3D* comp, float dist2) : mComponent(comp), mDistance2(dist2) {}
 };
 
 class Renderer
@@ -87,7 +87,7 @@ public:
     float GetGlobalUiScale() const;
     void SetGlobalUiScale(float scale);
 
-    TransformComponent* ProcessHitCheck(World* world, int32_t x, int32_t y);
+    Node3D* ProcessHitCheck(World* world, int32_t x, int32_t y);
 
     void SetDebugMode(DebugMode mode);
     DebugMode GetDebugMode() const;
@@ -187,7 +187,7 @@ private:
     void RenderDraws(const std::vector<DrawData>& drawData);
     void RenderDraws(const std::vector<DrawData>& drawData, PipelineId pipelineId);
     void RenderDebugDraws(const std::vector<DebugDraw>& draws, PipelineId pipelineId = PipelineId::Count);
-    void FrustumCull(CameraComponent* camera);
+    void FrustumCull(Camera3D* camera);
     int32_t FrustumCullDraws(const CameraFrustum& frustum, std::vector<DrawData>& drawData);
     int32_t FrustumCullDraws(const CameraFrustum& frustum, std::vector<DebugDraw>& drawData);
     int32_t FrustumCullLights(const CameraFrustum& frustum, std::vector<LightData>& lightData);

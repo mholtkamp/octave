@@ -1738,7 +1738,7 @@ void VulkanContext::UpdateGlobalUniformData()
     if (world != nullptr &&
         world->GetActiveCamera() != nullptr)
     {
-        CameraComponent* camera = world->GetActiveCamera();
+        Camera3D* camera = world->GetActiveCamera();
         EngineState* engineState = GetEngineState();
 
         mGlobalUniformData.mViewProjMatrix = camera->GetViewProjectionMatrix();
@@ -2819,7 +2819,7 @@ void VulkanContext::SetScissor(int32_t x, int32_t y, int32_t width, int32_t heig
 }
 
 #if EDITOR
-TransformComponent* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pixelY)
+Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pixelY)
 {
     if (world == nullptr)
     {
@@ -2865,7 +2865,7 @@ TransformComponent* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX,
                 {
                     if (comp->IsTransformComponent())
                     {
-                        static_cast<TransformComponent*>(comp)->GatherProxyDraws(debugDraws);
+                        static_cast<Node3D*>(comp)->GatherProxyDraws(debugDraws);
                     }
                 }
             }
@@ -2932,13 +2932,13 @@ TransformComponent* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX,
     uint32_t compId = (hitId & 0x0000ffff);
     Actor* hitActor = (actorId != 0) ? world->GetActors()[actorId - 1] : nullptr;
 
-    TransformComponent* retComp = nullptr;
+    Node3D* retComp = nullptr;
     if (hitActor)
     {
         if (compId < hitActor->GetNumComponents())
         {
             Component* hitComp = hitActor->GetComponent(compId);
-            retComp = hitComp->As<TransformComponent>();
+            retComp = hitComp->As<Node3D>();
         }
         else
         {

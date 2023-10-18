@@ -2,14 +2,14 @@
 
 #include "TransformComponent.h"
 
-class LightComponent : public TransformComponent
+class Light3D : public Node3D
 {
 public:
 
-    DECLARE_RTTI(LightComponent, TransformComponent);
+    DECLARE_RTTI(Light3D, Node3D);
 
-    LightComponent();
-    ~LightComponent();
+    Light3D();
+    ~Light3D();
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;

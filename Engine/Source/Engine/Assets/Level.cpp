@@ -276,9 +276,9 @@ void Level::LoadIntoWorld(World* world, bool clear, glm::vec3 offset, glm::vec3 
             // Delete any actors that are solely a baked light when in Non-Editor config
             if (newActor != nullptr && 
                 newActor->GetNumComponents() == 1 &&
-                newActor->GetComponent(0)->Is(LightComponent::ClassRuntimeId()))
+                newActor->GetComponent(0)->Is(Light3D::ClassRuntimeId()))
             {
-                LightComponent* lightComp = newActor->GetComponent(0)->As<LightComponent>();
+                Light3D* lightComp = newActor->GetComponent(0)->As<Light3D>();
                 if (lightComp->GetLightingDomain() == LightingDomain::Static)
                 {
                     GetWorld()->DestroyActor(newActor);

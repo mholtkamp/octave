@@ -6,7 +6,7 @@
 
 #include "Maths.h"
 
-class PrimitiveComponent;
+class Primitive3D;
 
 struct OrthoSettings
 {
@@ -42,14 +42,14 @@ struct PerspectiveSettings
     }
 };
 
-class CameraComponent : public TransformComponent
+class Camera3D : public Node3D
 {
 public:
 
-    DECLARE_NODE(CameraComponent, TransformComponent);
+    DECLARE_NODE(Camera3D, Node3D);
 
-    CameraComponent();
-    ~CameraComponent();
+    Camera3D();
+    ~Camera3D();
 
     virtual const char* GetTypeName() const override;
     virtual void BeginPlay() override;
@@ -106,7 +106,7 @@ public:
 
     glm::vec3 WorldToScreenPosition(glm::vec3 worldPos);
     glm::vec3 ScreenToWorldPosition(int32_t x, int32_t y);
-    glm::vec3 TraceScreenToWorld(int32_t x, int32_t y, uint8_t colMask, PrimitiveComponent** outComp = nullptr);
+    glm::vec3 TraceScreenToWorld(int32_t x, int32_t y, uint8_t colMask, Primitive3D** outComp = nullptr);
 
 protected:
 

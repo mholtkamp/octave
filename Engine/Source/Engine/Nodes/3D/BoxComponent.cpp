@@ -5,14 +5,14 @@
 
 #include "BulletCollision/CollisionShapes/btBoxShape.h"
 
-FORCE_LINK_DEF(BoxComponent);
-DEFINE_NODE(BoxComponent);
+FORCE_LINK_DEF(Box3D);
+DEFINE_NODE(Box3D);
 
 static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);
-    BoxComponent* boxComp = static_cast<BoxComponent*>(prop->mOwner);
+    Box3D* boxComp = static_cast<Box3D*>(prop->mOwner);
     bool success = false;
 
     if (prop->mName == "Extents")
@@ -24,36 +24,36 @@ static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
     return success;
 }
 
-const float BoxComponent::sDefaultExtent = 2.0f;
+const float Box3D::sDefaultExtent = 2.0f;
 
-BoxComponent::BoxComponent()
+Box3D::Box3D()
 {
     mName = "Box Component";
     mExtents = { sDefaultExtent, sDefaultExtent, sDefaultExtent };
 }
 
-BoxComponent::~BoxComponent()
+Box3D::~Box3D()
 {
 
 }
 
-const char* BoxComponent::GetTypeName() const
+const char* Box3D::GetTypeName() const
 {
     return "Box";
 }
 
-void BoxComponent::GatherProperties(std::vector<Property>& outProps)
+void Box3D::GatherProperties(std::vector<Property>& outProps)
 {
-    PrimitiveComponent::GatherProperties(outProps);
+    Primitive3D::GatherProperties(outProps);
     outProps.push_back(Property(DatumType::Vector, "Extents", this, &mExtents, 1, HandlePropChange));
 }
 
-void BoxComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+void Box3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    PrimitiveComponent::GatherProxyDraws(inoutDraws);
+    Primitive3D::GatherProxyDraws(inoutDraws);
 
-    if (GetType() == BoxComponent::GetStaticType())
+    if (GetType() == Box3D::GetStaticType())
     {
         glm::vec3 extentScale = { mExtents.x / sDefaultExtent, mExtents.y / sDefaultExtent, mExtents.z / sDefaultExtent };
         glm::vec4 color = 
@@ -72,9 +72,9 @@ void BoxComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif
 }
 
-void BoxComponent::Create()
+void Box3D::Create()
 {
-    PrimitiveComponent::Create();
+    Primitive3D::Create();
 
     btVector3 halfExtents = btVector3(mExtents.x, mExtents.y, mExtents.z) / 2.0f;
     btBoxShape* boxShape = new btBoxShape(halfExtents);
@@ -83,24 +83,24 @@ void BoxComponent::Create()
     UpdateRigidBody();
 }
 
-void BoxComponent::SaveStream(Stream& stream)
+void Box3D::SaveStream(Stream& stream)
 {
-    PrimitiveComponent::SaveStream(stream);
+    Primitive3D::SaveStream(stream);
     stream.WriteVec3(mExtents);
 }
 
-void BoxComponent::LoadStream(Stream& stream)
+void Box3D::LoadStream(Stream& stream)
 {
-    PrimitiveComponent::LoadStream(stream);
+    Primitive3D::LoadStream(stream);
     SetExtents(stream.ReadVec3());
 }
 
-glm::vec3 BoxComponent::GetExtents() const
+glm::vec3 Box3D::GetExtents() const
 {
     return mExtents;
 }
 
-void BoxComponent::SetExtents(glm::vec3 extents)
+void Box3D::SetExtents(glm::vec3 extents)
 {
     if (mExtents != extents)
     {
@@ -109,7 +109,7 @@ void BoxComponent::SetExtents(glm::vec3 extents)
     }
 }
 
-void BoxComponent::UpdateRigidBody()
+void Box3D::UpdateRigidBody()
 {
     EnableRigidBody(false);
 

@@ -9,7 +9,7 @@ class Widget;
 
 struct ScriptEvent
 {
-    // SkeletalMeshComponent
+    // SkeletalMesh3D
     static void Animation(std::string& tableName, std::string& funcName, const AnimEvent& animEvent);
 
     // Widget (Button, Selector, TextField events)

@@ -11,9 +11,9 @@
 
 #if LUA_ENABLED
 
-#define LIGHT_COMPONENT_LUA_NAME "LightComponent"
+#define LIGHT_COMPONENT_LUA_NAME "Light3D"
 #define LIGHT_COMPONENT_LUA_FLAG "cfLightComponent"
-#define CHECK_LIGHT_COMPONENT(L, arg) static_cast<LightComponent*>(CheckComponentLuaType(L, arg, LIGHT_COMPONENT_LUA_NAME, LIGHT_COMPONENT_LUA_FLAG));
+#define CHECK_LIGHT_COMPONENT(L, arg) static_cast<Light3D*>(CheckComponentLuaType(L, arg, LIGHT_COMPONENT_LUA_NAME, LIGHT_COMPONENT_LUA_FLAG));
 
 struct LightComponent_Lua
 {

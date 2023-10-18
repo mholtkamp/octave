@@ -7,7 +7,7 @@
 
 int DirectionalLightComponent_Lua::GetDirection(lua_State* L)
 {
-    DirectionalLightComponent* comp = CHECK_DIRECTIONAL_LIGHT_COMPONENT(L, 1);
+    DirectionalLight3D* comp = CHECK_DIRECTIONAL_LIGHT_COMPONENT(L, 1);
 
     glm::vec3 ret = comp->GetDirection();
 
@@ -17,7 +17,7 @@ int DirectionalLightComponent_Lua::GetDirection(lua_State* L)
 
 int DirectionalLightComponent_Lua::SetDirection(lua_State* L)
 {
-    DirectionalLightComponent* comp = CHECK_DIRECTIONAL_LIGHT_COMPONENT(L, 1);
+    DirectionalLight3D* comp = CHECK_DIRECTIONAL_LIGHT_COMPONENT(L, 1);
     glm::vec3 value = CHECK_VECTOR(L, 2);
 
     comp->SetDirection(value);

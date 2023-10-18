@@ -393,7 +393,7 @@ void EjectPlayInEditor()
         {
             Actor* cameraActor = GetWorld()->SpawnActor<Actor>();
             cameraActor->SetName("Ejected Camera");
-            sEditorState.mEjectedCamera = cameraActor->CreateComponent<CameraComponent>();
+            sEditorState.mEjectedCamera = cameraActor->CreateComponent<Camera3D>();
 
             // Set its transform to match the PIE camera
             if (GetWorld()->GetActiveCamera())
@@ -402,7 +402,7 @@ void EjectPlayInEditor()
             }
         }
 
-        GetWorld()->SetActiveCamera(sEditorState.mEjectedCamera.Get<CameraComponent>());
+        GetWorld()->SetActiveCamera(sEditorState.mEjectedCamera.Get<Camera3D>());
         ShowRootCanvas(true);
         sEditorState.mEjected = true;
     }
@@ -417,7 +417,7 @@ void InjectPlayInEditor()
 
         if (sEditorState.mInjectedCamera != nullptr)
         {
-            GetWorld()->SetActiveCamera(sEditorState.mInjectedCamera.Get<CameraComponent>());
+            GetWorld()->SetActiveCamera(sEditorState.mInjectedCamera.Get<Camera3D>());
         }
 
         ShowRootCanvas(false);
@@ -654,7 +654,7 @@ void SetupBlueprintEditor()
 
     GetWorld()->Clear(true);
     Actor* dirLightActor = ActionManager::Get()->SpawnBasicActor(BASIC_DIRECTIONAL_LIGHT, { 0.0f, 0.0f, 0.0f });
-    DirectionalLightComponent * dirLight = dirLightActor->GetComponentByType(DirectionalLightComponent::GetStaticType())->As<DirectionalLightComponent>();
+    DirectionalLight3D * dirLight = dirLightActor->GetComponentByType(DirectionalLight3D::GetStaticType())->As<DirectionalLight3D>();
     dirLight->SetDirection(Maths::SafeNormalize(glm::vec3(1.0f, -1.0f, -1.0f)));
 
     Blueprint* activeBp = GetActiveBlueprint();
@@ -666,7 +666,7 @@ void SetupBlueprintEditor()
     if (sEditorState.mEditBlueprintActor == nullptr)
     {
         sEditorState.mEditBlueprintActor = GetWorld()->SpawnActor<Actor>();
-        sEditorState.mEditBlueprintActor->CreateComponent<TransformComponent>("Root");
+        sEditorState.mEditBlueprintActor->CreateComponent<Node3D>("Root");
     }
 
     SetSelectedActor(sEditorState.mEditBlueprintActor);
@@ -757,7 +757,7 @@ void SetTransformLock(TransformLock lock)
         Component* comp = GetSelectedComponent();
         if (comp != nullptr && comp->IsTransformComponent())
         {
-            glm::vec3 pos = static_cast<TransformComponent*>(comp)->GetAbsolutePosition();
+            glm::vec3 pos = static_cast<Node3D*>(comp)->GetAbsolutePosition();
             lineX.mStart = pos - glm::vec3(10000, 0, 0);;
             lineY.mStart = pos - glm::vec3(0, 10000, 0);;
             lineZ.mStart = pos - glm::vec3(0, 0, 10000);;

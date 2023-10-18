@@ -11,9 +11,9 @@
 
 #if LUA_ENABLED
 
-#define POINT_LIGHT_COMPONENT_LUA_NAME "PointLightComponent"
+#define POINT_LIGHT_COMPONENT_LUA_NAME "PointLight3D"
 #define POINT_LIGHT_COMPONENT_LUA_FLAG "cfPointLightComponent"
-#define CHECK_POINT_LIGHT_COMPONENT(L, arg) static_cast<PointLightComponent*>(CheckComponentLuaType(L, arg, POINT_LIGHT_COMPONENT_LUA_NAME, POINT_LIGHT_COMPONENT_LUA_FLAG));
+#define CHECK_POINT_LIGHT_COMPONENT(L, arg) static_cast<PointLight3D*>(CheckComponentLuaType(L, arg, POINT_LIGHT_COMPONENT_LUA_NAME, POINT_LIGHT_COMPONENT_LUA_FLAG));
 
 struct PointLightComponent_Lua
 {

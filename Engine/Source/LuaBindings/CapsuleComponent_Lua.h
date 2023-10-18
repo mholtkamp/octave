@@ -11,9 +11,9 @@
 
 #if LUA_ENABLED
 
-#define CAPSULE_COMPONENT_LUA_NAME "CapsuleComponent"
+#define CAPSULE_COMPONENT_LUA_NAME "Capsule3D"
 #define CAPSULE_COMPONENT_LUA_FLAG "cfCapsuleComponent"
-#define CHECK_CAPSULE_COMPONENT(L, arg) static_cast<CapsuleComponent*>(CheckComponentLuaType(L, arg, CAPSULE_COMPONENT_LUA_NAME, CAPSULE_COMPONENT_LUA_FLAG));
+#define CHECK_CAPSULE_COMPONENT(L, arg) static_cast<Capsule3D*>(CheckComponentLuaType(L, arg, CAPSULE_COMPONENT_LUA_NAME, CAPSULE_COMPONENT_LUA_FLAG));
 
 struct CapsuleComponent_Lua
 {

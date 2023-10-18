@@ -2,14 +2,14 @@
 
 #include "Nodes/3D/StaticMeshComponent.h"
 
-class ShadowMeshComponent : public StaticMeshComponent
+class ShadowMesh3D : public StaticMesh3D
 {
 public:
 
-    DECLARE_NODE(ShadowMeshComponent, StaticMeshComponent);
+    DECLARE_NODE(ShadowMesh3D, StaticMesh3D);
 
-    ShadowMeshComponent();
-    ~ShadowMeshComponent();
+    ShadowMesh3D();
+    ~ShadowMesh3D();
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;

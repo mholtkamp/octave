@@ -25,8 +25,8 @@ static const char* sAnimationUpdateModeStrings[] =
 };
 static_assert(int32_t(AnimationUpdateMode::Count) == 3, "Need to update string conversion table");
 
-FORCE_LINK_DEF(SkeletalMeshComponent);
-DEFINE_NODE(SkeletalMeshComponent);
+FORCE_LINK_DEF(SkeletalMesh3D);
+DEFINE_NODE(SkeletalMesh3D);
 
 struct DecompTransform
 {
@@ -36,11 +36,11 @@ struct DecompTransform
     bool mValid = false;
 };
 
-bool SkeletalMeshComponent::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+bool SkeletalMesh3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);
-    SkeletalMeshComponent* meshComp = static_cast<SkeletalMeshComponent*>(prop->mOwner);
+    SkeletalMesh3D* meshComp = static_cast<SkeletalMesh3D*>(prop->mOwner);
     bool success = false;
 
     if (prop->mName == "Skeletal Mesh")
@@ -68,7 +68,7 @@ static SkeletalMesh* GetDefaultMesh()
     return nullptr;
 }
 
-SkeletalMeshComponent::SkeletalMeshComponent() :
+SkeletalMesh3D::SkeletalMesh3D() :
     mSkeletalMesh(nullptr),
     mAnimationSpeed(1.0f),
     mAnimationPaused(false),
@@ -83,19 +83,19 @@ SkeletalMeshComponent::SkeletalMeshComponent() :
     mReceiveSimpleShadows = false;
 }
 
-SkeletalMeshComponent::~SkeletalMeshComponent()
+SkeletalMesh3D::~SkeletalMesh3D()
 {
 
 }
 
-const char* SkeletalMeshComponent::GetTypeName() const
+const char* SkeletalMesh3D::GetTypeName() const
 {
     return "SkeletalMesh";
 }
 
-void SkeletalMeshComponent::GatherProperties(std::vector<Property>& outProps)
+void SkeletalMesh3D::GatherProperties(std::vector<Property>& outProps)
 {
-    MeshComponent::GatherProperties(outProps);
+    Mesh3D::GatherProperties(outProps);
     outProps.push_back(Property(DatumType::Asset, "Skeletal Mesh", this, &mSkeletalMesh, 1, HandlePropChange, int32_t(SkeletalMesh::GetStaticType())));
     outProps.push_back(Property(DatumType::String, "Default Animation", this, &mDefaultAnimation, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Animation Speed", this, &mAnimationSpeed));
@@ -107,9 +107,9 @@ void SkeletalMeshComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Bounds Radius Override", this, &mBoundsRadiusOverride));
 }
 
-void SkeletalMeshComponent::Create()
+void SkeletalMesh3D::Create()
 {
-    MeshComponent::Create();
+    Mesh3D::Create();
     GFX_CreateSkeletalMeshCompResource(this);
     SetSkeletalMesh(GetDefaultMesh());
 
@@ -119,20 +119,20 @@ void SkeletalMeshComponent::Create()
     }
 }
 
-void SkeletalMeshComponent::Destroy()
+void SkeletalMesh3D::Destroy()
 {
-    MeshComponent::Destroy();
+    Mesh3D::Destroy();
     GFX_DestroySkeletalMeshCompResource(this);
 }
 
-SkeletalMeshCompResource* SkeletalMeshComponent::GetResource()
+SkeletalMeshCompResource* SkeletalMesh3D::GetResource()
 {
     return &mResource;
 }
 
-void SkeletalMeshComponent::SaveStream(Stream& stream)
+void SkeletalMesh3D::SaveStream(Stream& stream)
 {
-    MeshComponent::SaveStream(stream);
+    Mesh3D::SaveStream(stream);
     stream.WriteAsset(mSkeletalMesh);
     stream.WriteString(mDefaultAnimation);
     stream.WriteFloat(mAnimationSpeed);
@@ -143,9 +143,9 @@ void SkeletalMeshComponent::SaveStream(Stream& stream)
     //stream.WriteUint32(uint32_t(mAnimationUpdateMode));
 }
 
-void SkeletalMeshComponent::LoadStream(Stream& stream)
+void SkeletalMesh3D::LoadStream(Stream& stream)
 {
-    MeshComponent::LoadStream(stream);
+    Mesh3D::LoadStream(stream);
 
     AssetRef meshRef;
     stream.ReadAsset(meshRef);
@@ -167,23 +167,23 @@ void SkeletalMeshComponent::LoadStream(Stream& stream)
     }
 }
 
-void SkeletalMeshComponent::Tick(float deltaTime)
+void SkeletalMesh3D::Tick(float deltaTime)
 {
-    MeshComponent::Tick(deltaTime);
+    Mesh3D::Tick(deltaTime);
     mHasAnimatedThisFrame = false;
 }
 
-bool SkeletalMeshComponent::IsStaticMeshComponent() const
+bool SkeletalMesh3D::IsStaticMeshComponent() const
 {
     return false;
 }
 
-bool SkeletalMeshComponent::IsSkeletalMeshComponent() const
+bool SkeletalMesh3D::IsSkeletalMeshComponent() const
 {
     return true;
 }
 
-void SkeletalMeshComponent::SetSkeletalMesh(SkeletalMesh* skeletalMesh)
+void SkeletalMesh3D::SetSkeletalMesh(SkeletalMesh* skeletalMesh)
 {
     if (mSkeletalMesh.Get() != skeletalMesh)
     {
@@ -218,12 +218,12 @@ void SkeletalMeshComponent::SetSkeletalMesh(SkeletalMesh* skeletalMesh)
     }
 }
 
-SkeletalMesh* SkeletalMeshComponent::GetSkeletalMesh()
+SkeletalMesh* SkeletalMesh3D::GetSkeletalMesh()
 {
     return mSkeletalMesh.Get<SkeletalMesh>();
 }
 
-void SkeletalMeshComponent::PlayAnimation(const char* animName, bool loop, float speed, float weight, uint8_t priority)
+void SkeletalMesh3D::PlayAnimation(const char* animName, bool loop, float speed, float weight, uint8_t priority)
 {
     if (animName == nullptr ||
         animName[0] == '\0')
@@ -252,7 +252,7 @@ void SkeletalMeshComponent::PlayAnimation(const char* animName, bool loop, float
     anim->mLoop = loop;
 }
 
-void SkeletalMeshComponent::QueueAnimation(const char* animName, bool loop, const char* targetAnim, float speed, float weight, uint8_t priority)
+void SkeletalMesh3D::QueueAnimation(const char* animName, bool loop, const char* targetAnim, float speed, float weight, uint8_t priority)
 {
     if (animName == nullptr ||
         animName[0] == '\0')
@@ -315,7 +315,7 @@ void SkeletalMeshComponent::QueueAnimation(const char* animName, bool loop, cons
     }
 }
 
-void SkeletalMeshComponent::StopAnimation(const char* animName, bool cancelQueued)
+void SkeletalMesh3D::StopAnimation(const char* animName, bool cancelQueued)
 {
     for (uint32_t i = 0; i < mActiveAnimations.size(); ++i)
     {
@@ -340,7 +340,7 @@ void SkeletalMeshComponent::StopAnimation(const char* animName, bool cancelQueue
     }
 }
 
-void SkeletalMeshComponent::StopAllAnimations(bool cancelQueued)
+void SkeletalMesh3D::StopAllAnimations(bool cancelQueued)
 {
     mActiveAnimations.clear();
 
@@ -350,7 +350,7 @@ void SkeletalMeshComponent::StopAllAnimations(bool cancelQueued)
     }
 }
 
-void SkeletalMeshComponent::CancelQueuedAnimation(const char* animName)
+void SkeletalMesh3D::CancelQueuedAnimation(const char* animName)
 {
     for (int32_t i = int32_t(mQueuedAnimations.size()) - 1; i >= 0; --i)
     {
@@ -361,17 +361,17 @@ void SkeletalMeshComponent::CancelQueuedAnimation(const char* animName)
     }
 }
 
-void SkeletalMeshComponent::CancelAllQueuedAnimations()
+void SkeletalMesh3D::CancelAllQueuedAnimations()
 {
     mQueuedAnimations.clear();
 }
 
-bool SkeletalMeshComponent::IsAnimationPlaying(const char* animName)
+bool SkeletalMesh3D::IsAnimationPlaying(const char* animName)
 {
     return (FindActiveAnimation(animName) != nullptr);
 }
 
-void SkeletalMeshComponent::ResetAnimation()
+void SkeletalMesh3D::ResetAnimation()
 {
     // Not sure what a "Reset" function should do? Will probably remove this
     for (uint32_t i = 0; i < mActiveAnimations.size(); ++i)
@@ -380,52 +380,52 @@ void SkeletalMeshComponent::ResetAnimation()
     }
 }
 
-float SkeletalMeshComponent::GetAnimationSpeed() const
+float SkeletalMesh3D::GetAnimationSpeed() const
 {
     return mAnimationSpeed;
 }
 
-void SkeletalMeshComponent::SetAnimationSpeed(float speed)
+void SkeletalMesh3D::SetAnimationSpeed(float speed)
 {
     mAnimationSpeed = speed;
 }
 
-void SkeletalMeshComponent::SetAnimationPaused(bool paused)
+void SkeletalMesh3D::SetAnimationPaused(bool paused)
 {
     mAnimationPaused = paused;
 }
 
-bool SkeletalMeshComponent::IsAnimationPaused() const
+bool SkeletalMesh3D::IsAnimationPaused() const
 {
     return mAnimationPaused;
 }
 
-void SkeletalMeshComponent::SetInheritPose(bool inherit)
+void SkeletalMesh3D::SetInheritPose(bool inherit)
 {
     mInheritPose = inherit;
 }
 
-bool SkeletalMeshComponent::IsInheritPoseEnabled() const
+bool SkeletalMesh3D::IsInheritPoseEnabled() const
 {
     return mInheritPose;
 }
 
-void SkeletalMeshComponent::SetBoundsRadiusOverride(float radius)
+void SkeletalMesh3D::SetBoundsRadiusOverride(float radius)
 {
     mBoundsRadiusOverride = radius;
 }
 
-float SkeletalMeshComponent::GetBoundsRadiusOverride() const
+float SkeletalMesh3D::GetBoundsRadiusOverride() const
 {
     return mBoundsRadiusOverride;
 }
 
-bool SkeletalMeshComponent::HasAnimatedThisFrame() const
+bool SkeletalMesh3D::HasAnimatedThisFrame() const
 {
     return mHasAnimatedThisFrame;
 }
 
-ActiveAnimation* SkeletalMeshComponent::FindActiveAnimation(const char* animName)
+ActiveAnimation* SkeletalMesh3D::FindActiveAnimation(const char* animName)
 {
     ActiveAnimation* anim = nullptr;
 
@@ -441,12 +441,12 @@ ActiveAnimation* SkeletalMeshComponent::FindActiveAnimation(const char* animName
     return anim;
 }
 
-std::vector<ActiveAnimation>& SkeletalMeshComponent::GetActiveAnimations()
+std::vector<ActiveAnimation>& SkeletalMesh3D::GetActiveAnimations()
 {
     return mActiveAnimations;
 }
 
-QueuedAnimation* SkeletalMeshComponent::FindQueuedAnimation(const char* animName, const char* dependName)
+QueuedAnimation* SkeletalMesh3D::FindQueuedAnimation(const char* animName, const char* dependName)
 {
     QueuedAnimation* anim = nullptr;
 
@@ -463,12 +463,12 @@ QueuedAnimation* SkeletalMeshComponent::FindQueuedAnimation(const char* animName
     return anim;
 }
 
-std::vector<QueuedAnimation>& SkeletalMeshComponent::GetQueuedAnimations()
+std::vector<QueuedAnimation>& SkeletalMesh3D::GetQueuedAnimations()
 {
     return mQueuedAnimations;
 }
 
-int32_t SkeletalMeshComponent::FindBoneIndex(const std::string& name) const
+int32_t SkeletalMesh3D::FindBoneIndex(const std::string& name) const
 {
     int32_t boneIndex = -1;
     SkeletalMesh* mesh = mSkeletalMesh.Get<SkeletalMesh>();
@@ -481,17 +481,17 @@ int32_t SkeletalMeshComponent::FindBoneIndex(const std::string& name) const
     return boneIndex;
 }
 
-void SkeletalMeshComponent::SetAnimEventHandler(AnimEventHandlerFP handler)
+void SkeletalMesh3D::SetAnimEventHandler(AnimEventHandlerFP handler)
 {
     mAnimEventHandler.mFuncPointer = handler;
 }
 
-AnimEventHandlerFP SkeletalMeshComponent::GetAnimEventHandler()
+AnimEventHandlerFP SkeletalMesh3D::GetAnimEventHandler()
 {
     return mAnimEventHandler.mFuncPointer;
 }
 
-void SkeletalMeshComponent::SetScriptAnimEventHandler(
+void SkeletalMesh3D::SetScriptAnimEventHandler(
     const char* tableName,
     const char* funcName)
 {
@@ -499,7 +499,7 @@ void SkeletalMeshComponent::SetScriptAnimEventHandler(
     mAnimEventHandler.mScriptFuncName = funcName;
 }
 
-glm::vec3 SkeletalMeshComponent::InterpolateScale(float time, const Channel& channel)
+glm::vec3 SkeletalMesh3D::InterpolateScale(float time, const Channel& channel)
 {
     if (channel.mScaleKeys.size() == 1)
     {
@@ -521,7 +521,7 @@ glm::vec3 SkeletalMeshComponent::InterpolateScale(float time, const Channel& cha
     return retScale;
 }
 
-glm::quat SkeletalMeshComponent::InterpolateRotation(float time, const Channel& channel)
+glm::quat SkeletalMesh3D::InterpolateRotation(float time, const Channel& channel)
 {
     if (channel.mRotationKeys.size() == 1)
     {
@@ -544,7 +544,7 @@ glm::quat SkeletalMeshComponent::InterpolateRotation(float time, const Channel& 
     return retQuat;
 }
 
-glm::vec3 SkeletalMeshComponent::InterpolatePosition(float time, const Channel& channel)
+glm::vec3 SkeletalMesh3D::InterpolatePosition(float time, const Channel& channel)
 {
     if (channel.mPositionKeys.size() == 1)
     {
@@ -566,7 +566,7 @@ glm::vec3 SkeletalMeshComponent::InterpolatePosition(float time, const Channel& 
     return retPos;
 }
 
-void SkeletalMeshComponent::DetectTriggeredAnimEvents(
+void SkeletalMesh3D::DetectTriggeredAnimEvents(
     const Animation& animation,
     float prevTickTime,
     float tickTime,
@@ -598,7 +598,7 @@ void SkeletalMeshComponent::DetectTriggeredAnimEvents(
     }
 }
 
-uint32_t SkeletalMeshComponent::FindScaleIndex(float time, const Channel& channel)
+uint32_t SkeletalMesh3D::FindScaleIndex(float time, const Channel& channel)
 {
     OCT_ASSERT(channel.mScaleKeys.size() > 0);
 
@@ -613,7 +613,7 @@ uint32_t SkeletalMeshComponent::FindScaleIndex(float time, const Channel& channe
     return uint32_t(channel.mScaleKeys.size() - 2);
 }
 
-uint32_t SkeletalMeshComponent::FindRotationIndex(float time, const Channel& channel)
+uint32_t SkeletalMesh3D::FindRotationIndex(float time, const Channel& channel)
 {
     OCT_ASSERT(channel.mRotationKeys.size() > 0);
 
@@ -628,7 +628,7 @@ uint32_t SkeletalMeshComponent::FindRotationIndex(float time, const Channel& cha
     return uint32_t(channel.mRotationKeys.size() - 2);
 }
 
-uint32_t SkeletalMeshComponent::FindPositionIndex(float time, const Channel& channel)
+uint32_t SkeletalMesh3D::FindPositionIndex(float time, const Channel& channel)
 {
     OCT_ASSERT(channel.mPositionKeys.size() > 0);
 
@@ -643,37 +643,37 @@ uint32_t SkeletalMeshComponent::FindPositionIndex(float time, const Channel& cha
     return uint32_t(channel.mPositionKeys.size() - 2);
 }
 
-glm::mat4 SkeletalMeshComponent::GetBoneTransform(const std::string& name) const
+glm::mat4 SkeletalMesh3D::GetBoneTransform(const std::string& name) const
 {
     int32_t index = FindBoneIndex(name);
     return GetBoneTransform(index);
 }
 
-glm::vec3 SkeletalMeshComponent::GetBonePosition(const std::string& name) const
+glm::vec3 SkeletalMesh3D::GetBonePosition(const std::string& name) const
 {
     int32_t index = FindBoneIndex(name);
     return GetBonePosition(index);
 }
 
-glm::quat SkeletalMeshComponent::GetBoneRotationQuat(const std::string& name) const
+glm::quat SkeletalMesh3D::GetBoneRotationQuat(const std::string& name) const
 {
     int32_t index = FindBoneIndex(name);
     return GetBoneRotationQuat(index);
 }
 
-glm::vec3 SkeletalMeshComponent::GetBoneRotationEuler(const std::string& name) const
+glm::vec3 SkeletalMesh3D::GetBoneRotationEuler(const std::string& name) const
 {
     int32_t index = FindBoneIndex(name);
     return GetBoneRotationEuler(index);
 }
 
-glm::vec3 SkeletalMeshComponent::GetBoneScale(const std::string& name) const
+glm::vec3 SkeletalMesh3D::GetBoneScale(const std::string& name) const
 {
     int32_t index = FindBoneIndex(name);
     return GetBoneScale(index);
 }
 
-glm::mat4 SkeletalMeshComponent::GetBoneTransform(int32_t index) const
+glm::mat4 SkeletalMesh3D::GetBoneTransform(int32_t index) const
 {
     glm::mat4 retTransform;
     if (index >= 0 && index < (int32_t)mBoneMatrices.size())
@@ -683,7 +683,7 @@ glm::mat4 SkeletalMeshComponent::GetBoneTransform(int32_t index) const
     return retTransform;
 }
 
-glm::vec3 SkeletalMeshComponent::GetBonePosition(int32_t boneIndex) const
+glm::vec3 SkeletalMesh3D::GetBonePosition(int32_t boneIndex) const
 {
     glm::vec3 retPosition(0.0f, 0.0f, 0.0f);
     SkeletalMesh* mesh = mSkeletalMesh.Get<SkeletalMesh>();
@@ -702,7 +702,7 @@ glm::vec3 SkeletalMeshComponent::GetBonePosition(int32_t boneIndex) const
     return retPosition;
 }
 
-glm::quat SkeletalMeshComponent::GetBoneRotationQuat(int32_t boneIndex) const
+glm::quat SkeletalMesh3D::GetBoneRotationQuat(int32_t boneIndex) const
 {
     glm::quat retRotation(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -720,7 +720,7 @@ glm::quat SkeletalMeshComponent::GetBoneRotationQuat(int32_t boneIndex) const
     return retRotation;
 }
 
-glm::vec3 SkeletalMeshComponent::GetBoneRotationEuler(int32_t boneIndex) const
+glm::vec3 SkeletalMesh3D::GetBoneRotationEuler(int32_t boneIndex) const
 {
     glm::vec3 retRotation(0.0f, 0.0f, 0.0f);
 
@@ -730,7 +730,7 @@ glm::vec3 SkeletalMeshComponent::GetBoneRotationEuler(int32_t boneIndex) const
     return retRotation;
 }
 
-glm::vec3 SkeletalMeshComponent::GetBoneScale(int32_t boneIndex) const
+glm::vec3 SkeletalMesh3D::GetBoneScale(int32_t boneIndex) const
 {
     glm::vec3 retScale = glm::vec3(0, 0, 0);
 
@@ -748,7 +748,7 @@ glm::vec3 SkeletalMeshComponent::GetBoneScale(int32_t boneIndex) const
     return retScale;
 }
 
-void SkeletalMeshComponent::SetBoneTransform(int32_t boneIndex, const glm::mat4& transform)
+void SkeletalMesh3D::SetBoneTransform(int32_t boneIndex, const glm::mat4& transform)
 {
     // TODO: This function probably isn't working as intended. Please fix.
 #if 1
@@ -779,52 +779,52 @@ void SkeletalMeshComponent::SetBoneTransform(int32_t boneIndex, const glm::mat4&
 #endif
 }
 
-void SkeletalMeshComponent::SetBonePosition(int32_t boneIndex, glm::vec3 position)
+void SkeletalMesh3D::SetBonePosition(int32_t boneIndex, glm::vec3 position)
 {
-    LogWarning("SkeletalMeshComponent::SetBonePosition() not yet implemented");
+    LogWarning("SkeletalMesh3D::SetBonePosition() not yet implemented");
 }
 
-void SkeletalMeshComponent::SetBoneRotation(int32_t boneIndex, glm::vec3 rotation)
+void SkeletalMesh3D::SetBoneRotation(int32_t boneIndex, glm::vec3 rotation)
 {
-    LogWarning("SkeletalMeshComponent::SetBoneRotation() not yet implemented");
+    LogWarning("SkeletalMesh3D::SetBoneRotation() not yet implemented");
 }
 
-void SkeletalMeshComponent::SetBoneScale(int32_t boneIndex, glm::vec2 scale)
+void SkeletalMesh3D::SetBoneScale(int32_t boneIndex, glm::vec2 scale)
 {
-    LogWarning("SkeletalMeshComponent::SetBoneScale() not yet implemented");
+    LogWarning("SkeletalMesh3D::SetBoneScale() not yet implemented");
 }
 
-uint32_t SkeletalMeshComponent::GetNumBones() const
+uint32_t SkeletalMesh3D::GetNumBones() const
 {
     return uint32_t(mBoneMatrices.size());
 }
 
-BoneInfluenceMode SkeletalMeshComponent::GetBoneInfluenceMode() const
+BoneInfluenceMode SkeletalMesh3D::GetBoneInfluenceMode() const
 {
     return mBoneInfluenceMode;
 }
 
-AnimationUpdateMode SkeletalMeshComponent::GetAnimationUpdateMode() const
+AnimationUpdateMode SkeletalMesh3D::GetAnimationUpdateMode() const
 {
     return mAnimationUpdateMode;
 }
 
-void SkeletalMeshComponent::SetAnimationUpdateMode(AnimationUpdateMode mode)
+void SkeletalMesh3D::SetAnimationUpdateMode(AnimationUpdateMode mode)
 {
     mAnimationUpdateMode = mode;
 }
 
-Vertex* SkeletalMeshComponent::GetSkinnedVertices()
+Vertex* SkeletalMesh3D::GetSkinnedVertices()
 {
     return mSkinnedVertices.data();
 }
 
-uint32_t SkeletalMeshComponent::GetNumSkinnedVertices()
+uint32_t SkeletalMesh3D::GetNumSkinnedVertices()
 {
     return (uint32_t) mSkinnedVertices.size();
 }
 
-Material* SkeletalMeshComponent::GetMaterial()
+Material* SkeletalMesh3D::GetMaterial()
 {
     Material* mat = mMaterialOverride.Get<Material>();
 
@@ -836,12 +836,12 @@ Material* SkeletalMeshComponent::GetMaterial()
     return mat;
 }
 
-void SkeletalMeshComponent::Render()
+void SkeletalMesh3D::Render()
 {
     GFX_DrawSkeletalMeshComp(this);
 }
 
-Bounds SkeletalMeshComponent::GetLocalBounds() const
+Bounds SkeletalMesh3D::GetLocalBounds() const
 {
     Bounds retBounds;
     if (mSkeletalMesh != nullptr)
@@ -851,7 +851,7 @@ Bounds SkeletalMeshComponent::GetLocalBounds() const
     }
     else
     {
-        retBounds = MeshComponent::GetLocalBounds();
+        retBounds = Mesh3D::GetLocalBounds();
     }
 
     if (mBoundsRadiusOverride > 0.0f)
@@ -862,7 +862,7 @@ Bounds SkeletalMeshComponent::GetLocalBounds() const
     return retBounds;
 }
 
-void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
+void SkeletalMesh3D::UpdateAnimation(float deltaTime, bool updateBones)
 {
     if (mHasAnimatedThisFrame)
         return;
@@ -877,14 +877,14 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
     bool inheritPose = mInheritPose && 
         updateBones &&
         mParent != nullptr && 
-        mParent->GetType() == SkeletalMeshComponent::GetStaticType();
+        mParent->GetType() == SkeletalMesh3D::GetStaticType();
 
     if (inheritPose &&
         mesh != nullptr)
     {
         // It's definitely possible to make this better by referencing the parent bone transforms
         // instead of copying them, but that would probably require some refactoring in the GFX layer.
-        SkeletalMeshComponent* parentMesh = mParent->As<SkeletalMeshComponent>();
+        SkeletalMesh3D* parentMesh = mParent->As<SkeletalMesh3D>();
 
         if (!parentMesh->mHasAnimatedThisFrame)
         {
@@ -1121,7 +1121,7 @@ void SkeletalMeshComponent::UpdateAnimation(float deltaTime, bool updateBones)
     mHasAnimatedThisFrame = true;
 }
 
-void SkeletalMeshComponent::UpdateAttachedChildren(float deltaTime)
+void SkeletalMesh3D::UpdateAttachedChildren(float deltaTime)
 {
     bool isAnimating = !mAnimationPaused &&
         (mAnimationSpeed != 0.0f) &&
@@ -1139,7 +1139,7 @@ void SkeletalMeshComponent::UpdateAttachedChildren(float deltaTime)
     }
 }
 
-void SkeletalMeshComponent::CpuSkinVertices()
+void SkeletalMesh3D::CpuSkinVertices()
 {
     SkeletalMesh* mesh = mSkeletalMesh.Get<SkeletalMesh>();
     if (mesh != nullptr)

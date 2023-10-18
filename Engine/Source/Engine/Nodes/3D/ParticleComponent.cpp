@@ -14,8 +14,8 @@
 #include "EditorState.h"
 #endif
 
-FORCE_LINK_DEF(ParticleComponent);
-DEFINE_NODE(ParticleComponent);
+FORCE_LINK_DEF(Particle3D);
+DEFINE_NODE(Particle3D);
 
 const char* sParticleOrientationStrings[] =
 {
@@ -33,7 +33,7 @@ static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);
-    ParticleComponent* particleComp = static_cast<ParticleComponent*>(prop->mOwner);
+    Particle3D* particleComp = static_cast<Particle3D*>(prop->mOwner);
     bool success = false;
 
     if (prop->mName == "Emit")
@@ -45,24 +45,24 @@ static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
     return success;
 }
 
-ParticleComponent::ParticleComponent()
+Particle3D::Particle3D()
 {
     mName = "Particle";
 }
 
-ParticleComponent::~ParticleComponent()
+Particle3D::~Particle3D()
 {
 
 }
 
-const char* ParticleComponent::GetTypeName() const
+const char* Particle3D::GetTypeName() const
 {
     return "Particle";
 }
 
-void ParticleComponent::GatherProperties(std::vector<Property>& outProps)
+void Particle3D::GatherProperties(std::vector<Property>& outProps)
 {
-    PrimitiveComponent::GatherProperties(outProps);
+    Primitive3D::GatherProperties(outProps);
     outProps.push_back(Property(DatumType::Asset, "Particle System", this, &mParticleSystem, 1, nullptr, int32_t(ParticleSystem::GetStaticType())));
     outProps.push_back(Property(DatumType::Asset, "Material Override", this, &mMaterialOverride, 1, nullptr, int32_t(Material::GetStaticType())));
     outProps.push_back(Property(DatumType::Float, "Time Multiplier", this, &mTimeMultiplier));
@@ -73,12 +73,12 @@ void ParticleComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Byte, "Orientation", this, &mOrientation, 1, nullptr, 0, int32_t(ParticleOrientation::Count), sParticleOrientationStrings));
 }
 
-void ParticleComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+void Particle3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    PrimitiveComponent::GatherProxyDraws(inoutDraws);
+    Primitive3D::GatherProxyDraws(inoutDraws);
 
-    if (GetType() == ParticleComponent::GetStaticType())
+    if (GetType() == Particle3D::GetStaticType())
     {
         glm::vec4 color = glm::vec4(0.2f, 0.2f, 1.0f, 1.0f);
 
@@ -125,16 +125,16 @@ void ParticleComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif
 }
 
-void ParticleComponent::Create()
+void Particle3D::Create()
 {
-    PrimitiveComponent::Create();
+    Primitive3D::Create();
     GFX_CreateParticleCompResource(this);
     EnableEmission(true);
 }
 
-void ParticleComponent::Destroy()
+void Particle3D::Destroy()
 {
-    PrimitiveComponent::Destroy();
+    Primitive3D::Destroy();
     
     EnableEmission(false);
 
@@ -144,22 +144,22 @@ void ParticleComponent::Destroy()
     mParticles.shrink_to_fit();
 }
 
-void ParticleComponent::BeginPlay()
+void Particle3D::BeginPlay()
 {
-    PrimitiveComponent::BeginPlay();
+    Primitive3D::BeginPlay();
 
     // Have auto emit determine starting emission.
     EnableEmission(mAutoEmit);
 }
 
-ParticleCompResource* ParticleComponent::GetResource()
+ParticleCompResource* Particle3D::GetResource()
 {
     return &mResource;
 }
 
-void ParticleComponent::SaveStream(Stream& stream)
+void Particle3D::SaveStream(Stream& stream)
 {
-    PrimitiveComponent::SaveStream(stream);
+    Primitive3D::SaveStream(stream);
 
     stream.WriteAsset(mParticleSystem);
     stream.WriteAsset(mMaterialOverride);
@@ -171,9 +171,9 @@ void ParticleComponent::SaveStream(Stream& stream)
     stream.WriteUint8((uint8_t)mOrientation);
 }
 
-void ParticleComponent::LoadStream(Stream& stream)
+void Particle3D::LoadStream(Stream& stream)
 {
-    PrimitiveComponent::LoadStream(stream);
+    Primitive3D::LoadStream(stream);
 
     stream.ReadAsset(mParticleSystem);
     stream.ReadAsset(mMaterialOverride);
@@ -185,12 +185,12 @@ void ParticleComponent::LoadStream(Stream& stream)
     mOrientation = (ParticleOrientation)stream.ReadUint8();
 }
 
-DrawData ParticleComponent::GetDrawData()
+DrawData Particle3D::GetDrawData()
 {
     DrawData data = {};
     Material* material = GetMaterial();
 
-    data.mComponent = static_cast<PrimitiveComponent*>(this);
+    data.mComponent = static_cast<Primitive3D*>(this);
     data.mMaterial = material;
     data.mShadingModel = material ? material->GetShadingModel() : ShadingModel::Lit;
     data.mBlendMode = material ? material->GetBlendMode() : BlendMode::Opaque;
@@ -202,24 +202,24 @@ DrawData ParticleComponent::GetDrawData()
     return data;
 }
 
-void ParticleComponent::Render()
+void Particle3D::Render()
 {
     GFX_DrawParticleComp(this);
 }
 
-void ParticleComponent::Tick(float deltaTime)
+void Particle3D::Tick(float deltaTime)
 {
-    PrimitiveComponent::Tick(deltaTime);
+    Primitive3D::Tick(deltaTime);
     mHasSimulatedThisFrame = false;
     mHasUpdatedVerticesThisFrame = false;
 }
 
-VertexType ParticleComponent::GetVertexType() const
+VertexType Particle3D::GetVertexType() const
 {
     return VertexType::VertexParticle;
 }
 
-void ParticleComponent::Simulate(float deltaTime)
+void Particle3D::Simulate(float deltaTime)
 {
     if (mHasSimulatedThisFrame)
         return;
@@ -237,14 +237,14 @@ void ParticleComponent::Simulate(float deltaTime)
     mHasSimulatedThisFrame = true;
 }
 
-void ParticleComponent::Reset()
+void Particle3D::Reset()
 {
     mParticles.clear();
     mElapsedTime = 0.0f;
     mLoop = 0;
 }
 
-void ParticleComponent::EnableEmission(bool enable)
+void Particle3D::EnableEmission(bool enable)
 {
     mEmit = enable;
 
@@ -255,27 +255,27 @@ void ParticleComponent::EnableEmission(bool enable)
     }
 }
 
-bool ParticleComponent::IsEmissionEnabled() const
+bool Particle3D::IsEmissionEnabled() const
 {
     return mEmit;
 }
 
-void ParticleComponent::EnableAutoEmit(bool enable)
+void Particle3D::EnableAutoEmit(bool enable)
 {
     mAutoEmit = enable;
 }
 
-bool ParticleComponent::IsAutoEmitEnabled() const
+bool Particle3D::IsAutoEmitEnabled() const
 {
     return mAutoEmit;
 }
 
-float ParticleComponent::GetElapsedTime() const
+float Particle3D::GetElapsedTime() const
 {
     return mElapsedTime;
 }
 
-void ParticleComponent::SetParticleSystem(ParticleSystem* particleSystem)
+void Particle3D::SetParticleSystem(ParticleSystem* particleSystem)
 {
     if (mParticleSystem.Get<ParticleSystem>() != particleSystem)
     {
@@ -283,17 +283,17 @@ void ParticleComponent::SetParticleSystem(ParticleSystem* particleSystem)
     }
 }
 
-ParticleSystem* ParticleComponent::GetParticleSystem()
+ParticleSystem* Particle3D::GetParticleSystem()
 {
     return mParticleSystem.Get<ParticleSystem>();
 }
 
-void ParticleComponent::SetMaterialOverride(Material* material)
+void Particle3D::SetMaterialOverride(Material* material)
 {
     mMaterialOverride = material;
 }
 
-Material* ParticleComponent::GetMaterial()
+Material* Particle3D::GetMaterial()
 {
     Material* retMaterial = nullptr;
 
@@ -309,72 +309,72 @@ Material* ParticleComponent::GetMaterial()
     return retMaterial;
 }
 
-Material* ParticleComponent::GetMaterialOverride()
+Material* Particle3D::GetMaterialOverride()
 {
     return mMaterialOverride.Get<Material>();
 }
 
-void ParticleComponent::SetTimeMultiplier(float timeMultiplier)
+void Particle3D::SetTimeMultiplier(float timeMultiplier)
 {
     mTimeMultiplier = timeMultiplier;
 }
 
-float ParticleComponent::GetTimeMultiplier() const
+float Particle3D::GetTimeMultiplier() const
 {
     return mTimeMultiplier;
 }
 
-void ParticleComponent::SetUseLocalSpace(bool useLocalSpace)
+void Particle3D::SetUseLocalSpace(bool useLocalSpace)
 {
     mUseLocalSpace = useLocalSpace;
 }
 
-bool ParticleComponent::GetUseLocalSpace() const
+bool Particle3D::GetUseLocalSpace() const
 {
     return mUseLocalSpace;
 }
 
-void ParticleComponent::SetAlwaysSimulate(bool alwaysSimulate)
+void Particle3D::SetAlwaysSimulate(bool alwaysSimulate)
 {
     mAlwaysSimulate = alwaysSimulate;
 }
 
-bool ParticleComponent::ShouldAlwaysSimulate() const
+bool Particle3D::ShouldAlwaysSimulate() const
 {
     return mAlwaysSimulate;
 }
 
-void ParticleComponent::EnableSimulation(bool simulate)
+void Particle3D::EnableSimulation(bool simulate)
 {
     mEnableSimulation = simulate;
 }
 
-bool ParticleComponent::IsSimulationEnabled() const
+bool Particle3D::IsSimulationEnabled() const
 {
     return mEnableSimulation;
 }
 
-uint32_t ParticleComponent::GetNumParticles()
+uint32_t Particle3D::GetNumParticles()
 {
     return (uint32_t)mParticles.size();
 }
 
-uint32_t ParticleComponent::GetNumVertices()
+uint32_t Particle3D::GetNumVertices()
 {
     return (uint32_t)mVertices.size();
 }
 
-const std::vector<Particle>& ParticleComponent::GetParticles()
+const std::vector<Particle>& Particle3D::GetParticles()
 {
     return mParticles;
 }
 
-const std::vector<VertexParticle>& ParticleComponent::GetVertices()
+const std::vector<VertexParticle>& Particle3D::GetVertices()
 {
     return mVertices;
 }
 
-void ParticleComponent::SetParticleVelocity(int32_t index, glm::vec3 velocity)
+void Particle3D::SetParticleVelocity(int32_t index, glm::vec3 velocity)
 {
     if (index == -1)
     {
@@ -389,7 +389,7 @@ void ParticleComponent::SetParticleVelocity(int32_t index, glm::vec3 velocity)
     }
 }
 
-glm::vec3 ParticleComponent::GetParticleVelocity(int32_t index)
+glm::vec3 Particle3D::GetParticleVelocity(int32_t index)
 {
     glm::vec3 ret = { 0.0f, 0.0f, 0.0f };
     if (index >= 0 && index < (int32_t)mParticles.size())
@@ -400,7 +400,7 @@ glm::vec3 ParticleComponent::GetParticleVelocity(int32_t index)
 }
 
 
-void ParticleComponent::SetParticlePosition(int32_t index, glm::vec3 position)
+void Particle3D::SetParticlePosition(int32_t index, glm::vec3 position)
 {
     if (index == -1)
     {
@@ -415,7 +415,7 @@ void ParticleComponent::SetParticlePosition(int32_t index, glm::vec3 position)
     }
 }
 
-glm::vec3 ParticleComponent::GetParticlePosition(int32_t index)
+glm::vec3 Particle3D::GetParticlePosition(int32_t index)
 {
     glm::vec3 ret = { 0.0f, 0.0f, 0.0f };
     if (index >= 0 && index < mParticles.size())
@@ -425,7 +425,7 @@ glm::vec3 ParticleComponent::GetParticlePosition(int32_t index)
     return ret;
 }
 
-void ParticleComponent::SetParticleSpeed(int32_t index, float speed)
+void Particle3D::SetParticleSpeed(int32_t index, float speed)
 {
     if (index == -1)
     {
@@ -440,17 +440,17 @@ void ParticleComponent::SetParticleSpeed(int32_t index, float speed)
     }
 }
 
-void ParticleComponent::SetParticleOrientation(ParticleOrientation orientation)
+void Particle3D::SetParticleOrientation(ParticleOrientation orientation)
 {
     mOrientation = orientation;
 }
 
-ParticleOrientation ParticleComponent::GetParticleOrientation()
+ParticleOrientation Particle3D::GetParticleOrientation()
 {
     return mOrientation;
 }
 
-ParticleSystemInstance* ParticleComponent::InstantiateParticleSystem()
+ParticleSystemInstance* Particle3D::InstantiateParticleSystem()
 {
     ParticleSystem* sys = GetParticleSystem();
     ParticleSystemInstance* sysInst = ParticleSystemInstance::New(sys);
@@ -458,7 +458,7 @@ ParticleSystemInstance* ParticleComponent::InstantiateParticleSystem()
     return sysInst;
 }
 
-Bounds ParticleComponent::GetLocalBounds() const
+Bounds Particle3D::GetLocalBounds() const
 {
     if (mParticleSystem != nullptr)
     {
@@ -466,11 +466,11 @@ Bounds ParticleComponent::GetLocalBounds() const
     }
     else
     {
-        return PrimitiveComponent::GetLocalBounds();
+        return Primitive3D::GetLocalBounds();
     }
 }
 
-void ParticleComponent::KillExpiredParticles(float deltaTime)
+void Particle3D::KillExpiredParticles(float deltaTime)
 {
     for (int32_t i = int32_t(mParticles.size()) - 1; i >= 0; --i)
     {
@@ -484,7 +484,7 @@ void ParticleComponent::KillExpiredParticles(float deltaTime)
     }
 }
 
-void ParticleComponent::UpdateParticles(float deltaTime)
+void Particle3D::UpdateParticles(float deltaTime)
 {
     ParticleSystem* system = mParticleSystem.Get<ParticleSystem>();
 
@@ -502,7 +502,7 @@ void ParticleComponent::UpdateParticles(float deltaTime)
     }
 }
 
-void ParticleComponent::SpawnNewParticles(float deltaTime)
+void Particle3D::SpawnNewParticles(float deltaTime)
 {
     ParticleSystem* system = mParticleSystem.Get<ParticleSystem>();
 
@@ -615,7 +615,7 @@ void ParticleComponent::SpawnNewParticles(float deltaTime)
     }
 }
 
-void ParticleComponent::UpdateVertexBuffer()
+void Particle3D::UpdateVertexBuffer()
 {
     ParticleSystem* system = mParticleSystem.Get<ParticleSystem>();
 

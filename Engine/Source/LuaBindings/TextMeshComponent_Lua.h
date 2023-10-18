@@ -11,9 +11,9 @@
 
 #if LUA_ENABLED
 
-#define TEXT_MESH_COMPONENT_LUA_NAME "TextMeshComponent"
+#define TEXT_MESH_COMPONENT_LUA_NAME "TextMesh3D"
 #define TEXT_MESH_COMPONENT_LUA_FLAG "cfTextMeshComponent"
-#define CHECK_TEXT_MESH_COMPONENT(L, arg) static_cast<TextMeshComponent*>(CheckComponentLuaType(L, arg, TEXT_MESH_COMPONENT_LUA_NAME, TEXT_MESH_COMPONENT_LUA_FLAG));
+#define CHECK_TEXT_MESH_COMPONENT(L, arg) static_cast<TextMesh3D*>(CheckComponentLuaType(L, arg, TEXT_MESH_COMPONENT_LUA_NAME, TEXT_MESH_COMPONENT_LUA_FLAG));
 
 struct TextMeshComponent_Lua
 {

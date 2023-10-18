@@ -7,7 +7,7 @@
 
 int LightComponent_Lua::SetColor(lua_State* L)
 {
-    LightComponent* comp = CHECK_LIGHT_COMPONENT(L, 1);
+    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
     glm::vec4 value = CHECK_VECTOR(L, 2);
 
     comp->SetColor(value);
@@ -17,7 +17,7 @@ int LightComponent_Lua::SetColor(lua_State* L)
 
 int LightComponent_Lua::GetColor(lua_State* L)
 {
-    LightComponent* comp = CHECK_LIGHT_COMPONENT(L, 1);
+    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
 
     glm::vec4 ret = comp->GetColor();
 
@@ -27,7 +27,7 @@ int LightComponent_Lua::GetColor(lua_State* L)
 
 int LightComponent_Lua::SetIntensity(lua_State* L)
 {
-    LightComponent* comp = CHECK_LIGHT_COMPONENT(L, 1);
+    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetIntensity(value);
@@ -37,7 +37,7 @@ int LightComponent_Lua::SetIntensity(lua_State* L)
 
 int LightComponent_Lua::GetIntensity(lua_State* L)
 {
-    LightComponent* comp = CHECK_LIGHT_COMPONENT(L, 1);
+    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
 
     float ret = comp->GetIntensity();
 
@@ -47,7 +47,7 @@ int LightComponent_Lua::GetIntensity(lua_State* L)
 
 int LightComponent_Lua::SetCastShadows(lua_State* L)
 {
-    LightComponent* comp = CHECK_LIGHT_COMPONENT(L, 1);
+    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
 
     comp->SetCastShadows(value);
@@ -57,7 +57,7 @@ int LightComponent_Lua::SetCastShadows(lua_State* L)
 
 int LightComponent_Lua::ShouldCastShadows(lua_State* L)
 {
-    LightComponent* comp = CHECK_LIGHT_COMPONENT(L, 1);
+    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
 
     bool ret = comp->ShouldCastShadows();
 
@@ -67,7 +67,7 @@ int LightComponent_Lua::ShouldCastShadows(lua_State* L)
 
 int LightComponent_Lua::GetDomain(lua_State* L)
 {
-    LightComponent* comp = CHECK_LIGHT_COMPONENT(L, 2);
+    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 2);
 
     int32_t ret = (int32_t)comp->GetLightingDomain();
 

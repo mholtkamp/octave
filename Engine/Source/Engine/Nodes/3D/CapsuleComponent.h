@@ -2,14 +2,14 @@
 
 #include "Nodes/3D/PrimitiveComponent.h"
 
-class CapsuleComponent : public PrimitiveComponent
+class Capsule3D : public Primitive3D
 {
 public:
 
-    DECLARE_NODE(CapsuleComponent, PrimitiveComponent);
+    DECLARE_NODE(Capsule3D, Primitive3D);
 
-    CapsuleComponent();
-    ~CapsuleComponent();
+    Capsule3D();
+    ~Capsule3D();
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;

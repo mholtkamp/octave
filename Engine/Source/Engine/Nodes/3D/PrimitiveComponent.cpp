@@ -9,7 +9,7 @@
 
 #include <btBulletDynamicsCommon.h>
 
-DEFINE_RTTI(PrimitiveComponent);
+DEFINE_RTTI(Primitive3D);
 
 static btEmptyShape* sEmptyCollisionShape = nullptr;
 
@@ -28,7 +28,7 @@ bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);
-    PrimitiveComponent* primComponent = static_cast<PrimitiveComponent*>(prop->mOwner);
+    Primitive3D* primComponent = static_cast<Primitive3D*>(prop->mOwner);
     bool success = false;
 
     if (prop->mName == "Mass")
@@ -100,7 +100,7 @@ bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
     return success;
 }
 
-PrimitiveComponent::PrimitiveComponent() :
+Primitive3D::Primitive3D() :
     mRigidBody(nullptr),
     mMotionState(nullptr),
     mCollisionShape(nullptr),
@@ -127,14 +127,14 @@ PrimitiveComponent::PrimitiveComponent() :
 
 }
 
-PrimitiveComponent::~PrimitiveComponent()
+Primitive3D::~Primitive3D()
 {
 
 }
 
-void PrimitiveComponent::Create()
+void Primitive3D::Create()
 {
-    TransformComponent::Create();
+    Node3D::Create();
 
     if (mCollisionShape == nullptr)
     {
@@ -144,9 +144,9 @@ void PrimitiveComponent::Create()
     EnableRigidBody(true);
 }
 
-void PrimitiveComponent::Destroy()
+void Primitive3D::Destroy()
 {
-    TransformComponent::Destroy();
+    Node3D::Destroy();
 
     if (GetWorld() && IsRigidBodyInWorld())
     {
@@ -168,19 +168,19 @@ void PrimitiveComponent::Destroy()
     DestroyComponentCollisionShape();
 }
 
-const char* PrimitiveComponent::GetTypeName() const
+const char* Primitive3D::GetTypeName() const
 {
     return "Primitive";
 }
 
-bool PrimitiveComponent::IsPrimitiveComponent() const
+bool Primitive3D::IsPrimitiveComponent() const
 {
     return true;
 }
 
-void PrimitiveComponent::Tick(float deltaTime)
+void Primitive3D::Tick(float deltaTime)
 {
-    TransformComponent::Tick(deltaTime);
+    Node3D::Tick(deltaTime);
 
     bool gameTickEnabled = IsGameTickEnabled();
 
@@ -207,18 +207,18 @@ void PrimitiveComponent::Tick(float deltaTime)
 
             physTransform = glm::scale(physTransform, worldScale);
 
-            // Do not call PrimitiveComponent's SetTransform, because it will
+            // Do not call Primitive3D's SetTransform, because it will
             // remove / add the rigidbody to the world, which will mess up its velocity/acceleration.
             // In this case, we just want to update our position/rotation/scale from the new transform
             // and also dirty child transforms.
-            TransformComponent::SetTransform(physTransform);
+            Node3D::SetTransform(physTransform);
         }
     }
 }
 
-void PrimitiveComponent::GatherProperties(std::vector<Property>& outProps)
+void Primitive3D::GatherProperties(std::vector<Property>& outProps)
 {
-    TransformComponent::GatherProperties(outProps);
+    Node3D::GatherProperties(outProps);
 
     outProps.push_back(Property(DatumType::Bool, "Physics", this, &mPhysicsEnabled, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Collision", this, &mCollisionEnabled, 1, HandlePropChange));
@@ -240,9 +240,9 @@ void PrimitiveComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Byte, "Collision Mask", this, &mCollisionMask, 1, HandlePropChange, (int32_t)ByteExtra::FlagWidget));
 }
 
-void PrimitiveComponent::LoadStream(Stream& stream)
+void Primitive3D::LoadStream(Stream& stream)
 {
-    TransformComponent::LoadStream(stream);
+    Node3D::LoadStream(stream);
     EnablePhysics(stream.ReadBool());
     EnableCollision(stream.ReadBool());
     EnableOverlaps(stream.ReadBool());
@@ -261,9 +261,9 @@ void PrimitiveComponent::LoadStream(Stream& stream)
     SetCollisionMask(stream.ReadUint8());
 }
 
-void PrimitiveComponent::SaveStream(Stream& stream)
+void Primitive3D::SaveStream(Stream& stream)
 {
-    TransformComponent::SaveStream(stream);
+    Node3D::SaveStream(stream);
     stream.WriteBool(mPhysicsEnabled);
     stream.WriteBool(mCollisionEnabled);
     stream.WriteBool(mOverlapsEnabled);
@@ -282,7 +282,7 @@ void PrimitiveComponent::SaveStream(Stream& stream)
     stream.WriteUint8(mCollisionMask);
 }
 
-void PrimitiveComponent::SetOwner(Actor* owner)
+void Primitive3D::SetOwner(Actor* owner)
 {
     bool rigidBodyInWorld = IsRigidBodyInWorld();
 
@@ -292,7 +292,7 @@ void PrimitiveComponent::SetOwner(Actor* owner)
         EnableRigidBody(false);
     }
 
-    TransformComponent::SetOwner(owner);
+    Node3D::SetOwner(owner);
 
     if (rigidBodyInWorld)
     {
@@ -300,15 +300,15 @@ void PrimitiveComponent::SetOwner(Actor* owner)
     }
 }
 
-void PrimitiveComponent::Render()
+void Primitive3D::Render()
 {
 
 }
 
-void PrimitiveComponent::UpdateTransform(bool updateChildren)
+void Primitive3D::UpdateTransform(bool updateChildren)
 {
     bool updateRigidBody = (mPhysicsEnabled || mCollisionEnabled || mOverlapsEnabled) && mTransformDirty && IsRigidBodyInWorld();
-    TransformComponent::UpdateTransform(updateChildren);
+    Node3D::UpdateTransform(updateChildren);
     
     if (updateRigidBody)
     {
@@ -316,9 +316,9 @@ void PrimitiveComponent::UpdateTransform(bool updateChildren)
     }
 }
 
-void PrimitiveComponent::SetTransform(const glm::mat4& transform)
+void Primitive3D::SetTransform(const glm::mat4& transform)
 {
-    TransformComponent::SetTransform(transform);
+    Node3D::SetTransform(transform);
 
     if (IsRigidBodyInWorld())
     {
@@ -326,7 +326,7 @@ void PrimitiveComponent::SetTransform(const glm::mat4& transform)
     }
 }
 
-void PrimitiveComponent::EnablePhysics(bool enable)
+void Primitive3D::EnablePhysics(bool enable)
 {
     if (mPhysicsEnabled != enable)
     {
@@ -350,7 +350,7 @@ void PrimitiveComponent::EnablePhysics(bool enable)
     }
 }
 
-void PrimitiveComponent::EnableCollision(bool enable)
+void Primitive3D::EnableCollision(bool enable)
 {
     if (mCollisionEnabled != enable)
     {
@@ -360,7 +360,7 @@ void PrimitiveComponent::EnableCollision(bool enable)
     }
 }
 
-void PrimitiveComponent::EnableOverlaps(bool enable)
+void Primitive3D::EnableOverlaps(bool enable)
 {
     if (mOverlapsEnabled != enable)
     {
@@ -370,72 +370,72 @@ void PrimitiveComponent::EnableOverlaps(bool enable)
     }
 }
 
-bool PrimitiveComponent::IsPhysicsEnabled() const
+bool Primitive3D::IsPhysicsEnabled() const
 {
     return mPhysicsEnabled;
 }
 
-bool PrimitiveComponent::IsCollisionEnabled() const
+bool Primitive3D::IsCollisionEnabled() const
 {
     return mCollisionEnabled;
 }
 
-bool PrimitiveComponent::AreOverlapsEnabled() const
+bool Primitive3D::AreOverlapsEnabled() const
 {
     return mOverlapsEnabled;
 }
 
-float PrimitiveComponent::GetMass() const
+float Primitive3D::GetMass() const
 {
     return mMass;
 }
 
-float PrimitiveComponent::GetLinearDamping() const
+float Primitive3D::GetLinearDamping() const
 {
     return mLinearDamping;
 }
 
-float PrimitiveComponent::GetAngularDamping() const
+float Primitive3D::GetAngularDamping() const
 {
     return mAngularDamping;
 }
 
-float PrimitiveComponent::GetRestitution() const
+float Primitive3D::GetRestitution() const
 {
     return mRestitution;
 }
 
-float PrimitiveComponent::GetFriction() const
+float Primitive3D::GetFriction() const
 {
     return mFriction;
 }
 
-float PrimitiveComponent::GetRollingFriction()
+float Primitive3D::GetRollingFriction()
 {
     return mRollingFriction;
 }
 
-glm::vec3 PrimitiveComponent::GetLinearFactor() const
+glm::vec3 Primitive3D::GetLinearFactor() const
 {
     return mLinearFactor;
 }
 
-glm::vec3 PrimitiveComponent::GetAngularFactor() const
+glm::vec3 Primitive3D::GetAngularFactor() const
 {
     return mAngularFactor;
 }
 
-uint8_t PrimitiveComponent::GetCollisionGroup() const
+uint8_t Primitive3D::GetCollisionGroup() const
 {
     return mCollisionGroup;
 }
 
-uint8_t PrimitiveComponent::GetCollisionMask() const
+uint8_t Primitive3D::GetCollisionMask() const
 {
     return mCollisionMask;
 }
 
-void PrimitiveComponent::SetMass(float mass)
+void Primitive3D::SetMass(float mass)
 {
     if (mass != mMass)
     {
@@ -448,7 +448,7 @@ void PrimitiveComponent::SetMass(float mass)
     }
 }
 
-void PrimitiveComponent::SetLinearDamping(float linearDamping)
+void Primitive3D::SetLinearDamping(float linearDamping)
 {
     UPDATE_RIGID_BODY_PROPERTY
     (
@@ -458,7 +458,7 @@ void PrimitiveComponent::SetLinearDamping(float linearDamping)
     );
 }
 
-void PrimitiveComponent::SetAngularDamping(float angularDamping)
+void Primitive3D::SetAngularDamping(float angularDamping)
 {
     UPDATE_RIGID_BODY_PROPERTY
     (
@@ -468,7 +468,7 @@ void PrimitiveComponent::SetAngularDamping(float angularDamping)
     );
 }
 
-void PrimitiveComponent::SetRestitution(float restitution)
+void Primitive3D::SetRestitution(float restitution)
 {
     UPDATE_RIGID_BODY_PROPERTY
     (
@@ -478,7 +478,7 @@ void PrimitiveComponent::SetRestitution(float restitution)
     );
 }
 
-void PrimitiveComponent::SetFriction(float friction)
+void Primitive3D::SetFriction(float friction)
 {
     UPDATE_RIGID_BODY_PROPERTY
     (
@@ -488,7 +488,7 @@ void PrimitiveComponent::SetFriction(float friction)
     );
 }
 
-void PrimitiveComponent::SetRollingFriction(float rollingFriction)
+void Primitive3D::SetRollingFriction(float rollingFriction)
 {
     UPDATE_RIGID_BODY_PROPERTY
     (
@@ -498,7 +498,7 @@ void PrimitiveComponent::SetRollingFriction(float rollingFriction)
     );
 }
 
-void PrimitiveComponent::SetLinearFactor(glm::vec3 linearFactor)
+void Primitive3D::SetLinearFactor(glm::vec3 linearFactor)
 {
     UPDATE_RIGID_BODY_PROPERTY
     (
@@ -508,7 +508,7 @@ void PrimitiveComponent::SetLinearFactor(glm::vec3 linearFactor)
     );
 }
 
-void PrimitiveComponent::SetAngularFactor(glm::vec3 angularFactor)
+void Primitive3D::SetAngularFactor(glm::vec3 angularFactor)
 {
     UPDATE_RIGID_BODY_PROPERTY
     (
@@ -518,35 +518,35 @@ void PrimitiveComponent::SetAngularFactor(glm::vec3 angularFactor)
     );
 }
 
-void PrimitiveComponent::SetCollisionGroup(uint8_t group)
+void Primitive3D::SetCollisionGroup(uint8_t group)
 {
     EnableRigidBody(false);
     mCollisionGroup = group;
     EnableRigidBody(true);
 }
 
-void PrimitiveComponent::SetCollisionMask(uint8_t mask)
+void Primitive3D::SetCollisionMask(uint8_t mask)
 {
     EnableRigidBody(false);
     mCollisionMask = mask;
     EnableRigidBody(true);
 }
 
-glm::vec3 PrimitiveComponent::GetLinearVelocity() const
+glm::vec3 Primitive3D::GetLinearVelocity() const
 {
     btVector3 linearVelocity;
     linearVelocity = mRigidBody->getLinearVelocity();
     return { linearVelocity.x(), linearVelocity.y(), linearVelocity.z() };
 }
 
-glm::vec3 PrimitiveComponent::GetAngularVelocity() const
+glm::vec3 Primitive3D::GetAngularVelocity() const
 {
     btVector3 angularVelocity;
     angularVelocity = mRigidBody->getAngularVelocity();
     return { angularVelocity.x(), angularVelocity.y(), angularVelocity.z() };
 }
 
-void PrimitiveComponent::AddLinearVelocity(glm::vec3 deltaVelocity)
+void Primitive3D::AddLinearVelocity(glm::vec3 deltaVelocity)
 {
     if (mRigidBody)
     {
@@ -556,7 +556,7 @@ void PrimitiveComponent::AddLinearVelocity(glm::vec3 deltaVelocity)
     }
 }
 
-void PrimitiveComponent::AddAngularVelocity(glm::vec3 deltaVelocity)
+void Primitive3D::AddAngularVelocity(glm::vec3 deltaVelocity)
 {
     if (mRigidBody)
     {
@@ -566,7 +566,7 @@ void PrimitiveComponent::AddAngularVelocity(glm::vec3 deltaVelocity)
     }
 }
 
-void PrimitiveComponent::SetLinearVelocity(glm::vec3 linearVelocity)
+void Primitive3D::SetLinearVelocity(glm::vec3 linearVelocity)
 {
     if (mRigidBody)
     {
@@ -576,7 +576,7 @@ void PrimitiveComponent::SetLinearVelocity(glm::vec3 linearVelocity)
     }
 }
 
-void PrimitiveComponent::SetAngularVelocity(glm::vec3 angularVelocity)
+void Primitive3D::SetAngularVelocity(glm::vec3 angularVelocity)
 {
     if (mRigidBody)
     {
@@ -586,7 +586,7 @@ void PrimitiveComponent::SetAngularVelocity(glm::vec3 angularVelocity)
     }
 }
 
-void PrimitiveComponent::AddForce(glm::vec3 force)
+void Primitive3D::AddForce(glm::vec3 force)
 {
     if (mRigidBody)
     {
@@ -596,7 +596,7 @@ void PrimitiveComponent::AddForce(glm::vec3 force)
     }
 }
 
-void PrimitiveComponent::AddImpulse(glm::vec3 impulse)
+void Primitive3D::AddImpulse(glm::vec3 impulse)
 {
     if (mRigidBody)
     {
@@ -606,7 +606,7 @@ void PrimitiveComponent::AddImpulse(glm::vec3 impulse)
     }
 }
 
-void PrimitiveComponent::ClearForces()
+void Primitive3D::ClearForces()
 {
     if (mRigidBody)
     {
@@ -614,7 +614,7 @@ void PrimitiveComponent::ClearForces()
     }
 }
 
-void PrimitiveComponent::FullSyncRigidBodyTransform()
+void Primitive3D::FullSyncRigidBodyTransform()
 {
     // Because updating transform is something that might happen very often
     // We only sync transform instead of calling Enable/DisableRigidBody
@@ -625,7 +625,7 @@ void PrimitiveComponent::FullSyncRigidBodyTransform()
     dynamicsWorld->addRigidBody(mRigidBody, mCollisionGroup, mCollisionMask);
 }
 
-void PrimitiveComponent::SyncRigidBodyTransform()
+void Primitive3D::SyncRigidBodyTransform()
 {
     if (mOwner != nullptr &&
         GetWorld() != nullptr)
@@ -670,7 +670,7 @@ void PrimitiveComponent::SyncRigidBodyTransform()
     }
 }
 
-void PrimitiveComponent::SyncRigidBodyMass()
+void Primitive3D::SyncRigidBodyMass()
 {
     if (!mRigidBody)
         return;
@@ -688,7 +688,7 @@ void PrimitiveComponent::SyncRigidBodyMass()
     mRigidBody->setMassProps(rigidBodyMass, localInertia);
 }
 
-void PrimitiveComponent::SyncCollisionFlags()
+void Primitive3D::SyncCollisionFlags()
 {
     if (!mRigidBody)
         return;
@@ -727,52 +727,52 @@ void PrimitiveComponent::SyncCollisionFlags()
     mRigidBody->setCollisionFlags(flags);
 }
 
-void PrimitiveComponent::EnableCastShadows(bool enable)
+void Primitive3D::EnableCastShadows(bool enable)
 {
     mCastShadows = enable;
 }
 
-bool PrimitiveComponent::ShouldCastShadows() const
+bool Primitive3D::ShouldCastShadows() const
 {
     return mCastShadows;
 }
 
-void PrimitiveComponent::EnableReceiveShadows(bool enable)
+void Primitive3D::EnableReceiveShadows(bool enable)
 {
     mReceiveShadows = enable;
 }
 
-bool PrimitiveComponent::ShouldReceiveShadows() const
+bool Primitive3D::ShouldReceiveShadows() const
 {
     return mReceiveShadows;
 }
 
-void PrimitiveComponent::EnableReceiveSimpleShadows(bool enable)
+void Primitive3D::EnableReceiveSimpleShadows(bool enable)
 {
     mReceiveSimpleShadows = enable;
 }
 
-bool PrimitiveComponent::ShouldReceiveSimpleShadows() const
+bool Primitive3D::ShouldReceiveSimpleShadows() const
 {
     return mReceiveSimpleShadows;
 }
 
-VertexType PrimitiveComponent::GetVertexType() const
+VertexType Primitive3D::GetVertexType() const
 {
     return VertexType::Vertex;
 }
 
-btRigidBody* PrimitiveComponent::GetRigidBody()
+btRigidBody* Primitive3D::GetRigidBody()
 {
     return mRigidBody;
 }
 
-btCollisionShape* PrimitiveComponent::GetCollisionShape()
+btCollisionShape* Primitive3D::GetCollisionShape()
 {
     return mCollisionShape;
 }
 
-void PrimitiveComponent::SetCollisionShape(btCollisionShape* newShape)
+void Primitive3D::SetCollisionShape(btCollisionShape* newShape)
 {
     EnableRigidBody(false);
 
@@ -787,7 +787,7 @@ void PrimitiveComponent::SetCollisionShape(btCollisionShape* newShape)
     EnableRigidBody(true);
 }
 
-bool PrimitiveComponent::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask)
+bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask)
 {
     bool hit = false;
     glm::vec3 startPos = GetAbsolutePosition();
@@ -826,7 +826,7 @@ bool PrimitiveComponent::SweepToWorldPosition(glm::vec3 position, SweepTestResul
     return hit;
 }
 
-Bounds PrimitiveComponent::GetBounds() const
+Bounds Primitive3D::GetBounds() const
 {
     // Transform the local bounds into world bounds.
     Bounds localBounds = GetLocalBounds();
@@ -840,17 +840,17 @@ Bounds PrimitiveComponent::GetBounds() const
     return worldBounds;
 }
 
-Bounds PrimitiveComponent::GetLocalBounds() const
+Bounds Primitive3D::GetLocalBounds() const
 {
     // Derived classes should implement a way of getting their local bounds.
-    // By default PrimitiveComponent will create a huge bounding sphere so that it never really gets culled.
+    // By default Primitive3D will create a huge bounding sphere so that it never really gets culled.
     Bounds retBounds;
     retBounds.mCenter = { 0.0f, 0.0f, 0.0f };
     retBounds.mRadius = LARGE_BOUNDS;
     return retBounds;
 }
 
-void PrimitiveComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+void Primitive3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
     BoundsDebugMode boundsMode = Renderer::Get()->GetBoundsDebugMode();
@@ -873,7 +873,7 @@ void PrimitiveComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif
 }
 
-btCollisionShape* PrimitiveComponent::GetEmptyCollisionShape()
+btCollisionShape* Primitive3D::GetEmptyCollisionShape()
 {
     if (sEmptyCollisionShape == nullptr)
     {
@@ -883,7 +883,7 @@ btCollisionShape* PrimitiveComponent::GetEmptyCollisionShape()
     return sEmptyCollisionShape;
 }
 
-glm::vec4 PrimitiveComponent::GetCollisionDebugColor()
+glm::vec4 Primitive3D::GetCollisionDebugColor()
 {
     // Override color based on overlaps/collision/physics
     glm::vec4 collisionColor = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -904,12 +904,12 @@ glm::vec4 PrimitiveComponent::GetCollisionDebugColor()
     return collisionColor;
 }
 
-bool PrimitiveComponent::IsRigidBodyInWorld() const
+bool Primitive3D::IsRigidBodyInWorld() const
 {
     return mRigidBody && mRigidBody->isInWorld();
 }
 
-void PrimitiveComponent::EnableRigidBody(bool enable)
+void Primitive3D::EnableRigidBody(bool enable)
 {
     World* world = GetWorld();
     if (world == nullptr)
@@ -958,7 +958,7 @@ void PrimitiveComponent::EnableRigidBody(bool enable)
     }
 }
 
-void PrimitiveComponent::DestroyComponentCollisionShape()
+void Primitive3D::DestroyComponentCollisionShape()
 {
     if (mCollisionShape != nullptr &&
         mCollisionShape != GetEmptyCollisionShape())

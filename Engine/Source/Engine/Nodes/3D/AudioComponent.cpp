@@ -18,14 +18,14 @@ static const char* sAttenuationFuncStrings[] =
 };
 static_assert(int32_t(AttenuationFunc::Count) == 2, "Need to update string conversion table");
 
-FORCE_LINK_DEF(AudioComponent);
-DEFINE_NODE(AudioComponent);
+FORCE_LINK_DEF(Audio3D);
+DEFINE_NODE(Audio3D);
 
 static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);
-    AudioComponent* comp = static_cast<AudioComponent*>(prop->mOwner);
+    Audio3D* comp = static_cast<Audio3D*>(prop->mOwner);
     bool success = false;
 
     if (prop->mName == "Play")
@@ -45,24 +45,24 @@ static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
     return success;
 }
 
-AudioComponent::AudioComponent()
+Audio3D::Audio3D()
 {
     mName = "Audio Component";
 }
 
-AudioComponent::~AudioComponent()
+Audio3D::~Audio3D()
 {
 
 }
 
-const char* AudioComponent::GetTypeName() const
+const char* Audio3D::GetTypeName() const
 {
     return "Audio";
 }
 
-void AudioComponent::GatherProperties(std::vector<Property>& outProps)
+void Audio3D::GatherProperties(std::vector<Property>& outProps)
 {
-    TransformComponent::GatherProperties(outProps);
+    Node3D::GatherProperties(outProps);
 
     // Dummy Play property
     outProps.push_back(Property(DatumType::Bool, "Play", this, &mPlaying, 1, HandlePropChange));
@@ -80,12 +80,12 @@ void AudioComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Auto Play", this, &mAutoPlay));
 }
 
-void AudioComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+void Audio3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    TransformComponent::GatherProxyDraws(inoutDraws);
+    Node3D::GatherProxyDraws(inoutDraws);
 
-    if (GetType() == AudioComponent::GetStaticType())
+    if (GetType() == Audio3D::GetStaticType())
     {
         {
             DebugDraw debugDraw;
@@ -127,20 +127,20 @@ void AudioComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif // DEBUG_DRAW_ENABLED
 }
 
-void AudioComponent::Create()
+void Audio3D::Create()
 {
-    TransformComponent::Create();
+    Node3D::Create();
 }
 
-void AudioComponent::Destroy()
+void Audio3D::Destroy()
 {
     AudioManager::StopComponent(this);
-    TransformComponent::Destroy();
+    Node3D::Destroy();
 }
 
-void AudioComponent::BeginPlay()
+void Audio3D::BeginPlay()
 {
-    TransformComponent::BeginPlay();
+    Node3D::BeginPlay();
 
     if (mAutoPlay)
     {
@@ -148,9 +148,9 @@ void AudioComponent::BeginPlay()
     }
 }
 
-void AudioComponent::Tick(float deltaTime)
+void Audio3D::Tick(float deltaTime)
 {
-    TransformComponent::Tick(deltaTime);
+    Node3D::Tick(deltaTime);
 
     if (mPlaying)
     {
@@ -158,9 +158,9 @@ void AudioComponent::Tick(float deltaTime)
     }
 }
 
-void AudioComponent::SaveStream(Stream& stream)
+void Audio3D::SaveStream(Stream& stream)
 {
-    TransformComponent::SaveStream(stream);
+    Node3D::SaveStream(stream);
 
     stream.WriteAsset(mSoundWave);
     stream.WriteFloat(mInnerRadius);
@@ -175,9 +175,9 @@ void AudioComponent::SaveStream(Stream& stream)
     stream.WriteBool(mAutoPlay);
 }
 
-void AudioComponent::LoadStream(Stream& stream)
+void Audio3D::LoadStream(Stream& stream)
 {
-    TransformComponent::LoadStream(stream);
+    Node3D::LoadStream(stream);
 
     stream.ReadAsset(mSoundWave);
     mInnerRadius = stream.ReadFloat();
@@ -192,92 +192,92 @@ void AudioComponent::LoadStream(Stream& stream)
     mAutoPlay = stream.ReadBool();
 }
 
-void AudioComponent::SetSoundWave(SoundWave* soundWave)
+void Audio3D::SetSoundWave(SoundWave* soundWave)
 {
     mSoundWave = soundWave;
 }
 
-SoundWave* AudioComponent::GetSoundWave()
+SoundWave* Audio3D::GetSoundWave()
 {
     return mSoundWave.Get<SoundWave>();
 }
 
-void AudioComponent::SetInnerRadius(float innerRadius)
+void Audio3D::SetInnerRadius(float innerRadius)
 {
     mInnerRadius = innerRadius;
 }
 
-float AudioComponent::GetInnerRadius() const
+float Audio3D::GetInnerRadius() const
 {
     return mInnerRadius;
 }
 
-void AudioComponent::SetOuterRadius(float outerRadius)
+void Audio3D::SetOuterRadius(float outerRadius)
 {
     mOuterRadius = outerRadius;
 }
 
-float AudioComponent::GetOuterRadius() const
+float Audio3D::GetOuterRadius() const
 {
     return mOuterRadius;
 }
 
-void AudioComponent::SetVolume(float volume)
+void Audio3D::SetVolume(float volume)
 {
     mVolume = volume;
 }
 
-float AudioComponent::GetVolume() const
+float Audio3D::GetVolume() const
 {
     return mVolume;
 }
 
-void AudioComponent::SetPitch(float pitch)
+void Audio3D::SetPitch(float pitch)
 {
     mPitch = pitch;
 }
 
-float AudioComponent::GetPitch() const
+float Audio3D::GetPitch() const
 {
     return mPitch;
 }
 
-void AudioComponent::SetStartOffset(float startOffset)
+void Audio3D::SetStartOffset(float startOffset)
 {
     mStartOffset = startOffset;
 }
 
-float AudioComponent::GetStartOffset() const
+float Audio3D::GetStartOffset() const
 {
     return mStartOffset;
 }
 
-void AudioComponent::SetPriority(int32_t priority)
+void Audio3D::SetPriority(int32_t priority)
 {
     mPriority = priority;
 }
 
-int32_t AudioComponent::GetPriority() const
+int32_t Audio3D::GetPriority() const
 {
     return mPriority;
 }
 
-void AudioComponent::SetAttenuationFunc(AttenuationFunc func)
+void Audio3D::SetAttenuationFunc(AttenuationFunc func)
 {
     mAttenuationFunc = func;
 }
 
-AttenuationFunc AudioComponent::GetAttenuationFunc() const
+AttenuationFunc Audio3D::GetAttenuationFunc() const
 {
     return mAttenuationFunc;
 }
 
-void AudioComponent::SetAudioClass(int8_t audioClass)
+void Audio3D::SetAudioClass(int8_t audioClass)
 {
     mAudioClass = audioClass;
 }
 
-int8_t AudioComponent::GetAudioClass() const
+int8_t Audio3D::GetAudioClass() const
 {
     int8_t audioClass = 0;
     if (mAudioClass < 0)
@@ -296,66 +296,66 @@ int8_t AudioComponent::GetAudioClass() const
     return audioClass;
 }
 
-void AudioComponent::SetLoop(bool loop)
+void Audio3D::SetLoop(bool loop)
 {
     mLoop = loop;
 }
 
-bool AudioComponent::GetLoop() const
+bool Audio3D::GetLoop() const
 {
     return mLoop;
 }
 
 
-void AudioComponent::SetAutoPlay(bool autoPlay)
+void Audio3D::SetAutoPlay(bool autoPlay)
 {
     mAutoPlay = autoPlay;
 }
 
-bool AudioComponent::GetAutoPlay() const
+bool Audio3D::GetAutoPlay() const
 {
     return mAutoPlay;
 }
 
-float AudioComponent::GetPlayTime() const
+float Audio3D::GetPlayTime() const
 {
     return mPlayTime;
 }
 
-bool AudioComponent::IsPlaying() const
+bool Audio3D::IsPlaying() const
 {
     return mPlaying;
 }
 
-bool AudioComponent::IsAudible() const
+bool Audio3D::IsAudible() const
 {
     return mAudible;
 }
 
-void AudioComponent::Play()
+void Audio3D::Play()
 {
     mPlaying = true;
 }
 
-void AudioComponent::Pause()
+void Audio3D::Pause()
 {
     mPlaying = false;
 }
 
-void AudioComponent::Reset()
+void Audio3D::Reset()
 {
     // Forcibly remove the audio
     AudioManager::StopComponent(this);
     mPlayTime = 0.0f;
 }
 
-void AudioComponent::Stop()
+void Audio3D::Stop()
 {
     mPlaying = false;
     mPlayTime = 0.0f;
 }
 
-void AudioComponent::NotifyAudible(bool audible)
+void Audio3D::NotifyAudible(bool audible)
 {
     mAudible = audible;
 }

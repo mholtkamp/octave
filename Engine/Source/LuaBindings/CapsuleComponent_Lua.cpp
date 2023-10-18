@@ -8,7 +8,7 @@
 
 int CapsuleComponent_Lua::GetHeight(lua_State* L)
 {
-    CapsuleComponent* comp = CHECK_CAPSULE_COMPONENT(L, 1);
+    Capsule3D* comp = CHECK_CAPSULE_COMPONENT(L, 1);
 
     float ret = comp->GetHeight();
 
@@ -18,7 +18,7 @@ int CapsuleComponent_Lua::GetHeight(lua_State* L)
 
 int CapsuleComponent_Lua::SetHeight(lua_State* L)
 {
-    CapsuleComponent* comp = CHECK_CAPSULE_COMPONENT(L, 1);
+    Capsule3D* comp = CHECK_CAPSULE_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetHeight(value);
@@ -28,7 +28,7 @@ int CapsuleComponent_Lua::SetHeight(lua_State* L)
 
 int CapsuleComponent_Lua::GetRadius(lua_State* L)
 {
-    CapsuleComponent* comp = CHECK_CAPSULE_COMPONENT(L, 1);
+    Capsule3D* comp = CHECK_CAPSULE_COMPONENT(L, 1);
 
     float ret = comp->GetRadius();
 
@@ -38,7 +38,7 @@ int CapsuleComponent_Lua::GetRadius(lua_State* L)
 
 int CapsuleComponent_Lua::SetRadius(lua_State* L)
 {
-    CapsuleComponent* comp = CHECK_CAPSULE_COMPONENT(L, 1);
+    Capsule3D* comp = CHECK_CAPSULE_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetRadius(value);

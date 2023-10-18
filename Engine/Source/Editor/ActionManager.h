@@ -9,7 +9,7 @@
 #include "AssetRef.h"
 #include "Widgets/Widget.h"
 
-class TransformComponent;
+class Node3D;
 
 class Action
 {
@@ -44,19 +44,19 @@ public:
 
     // Actions
     void EXE_EditProperty(void* owner, PropertyOwnerType ownerType, const std::string& name, uint32_t index, Datum newValue);
-    void EXE_EditTransform(TransformComponent* transComp, const glm::mat4& transform);
-    void EXE_EditTransforms(const std::vector<TransformComponent*>& transComps, const std::vector<glm::mat4>& newTransforms);
+    void EXE_EditTransform(Node3D* transComp, const glm::mat4& transform);
+    void EXE_EditTransforms(const std::vector<Node3D*>& transComps, const std::vector<glm::mat4>& newTransforms);
     void EXE_SpawnActor(Actor* actor);
     void EXE_DeleteActor(Actor* actor);
     void EXE_SpawnActors(const std::vector<Actor*>& actors);
     void EXE_DeleteActors(const std::vector<Actor*>& actors);
     void EXE_AddComponent(Component* comp);
     void EXE_RemoveComponent(Component* comp);
-    void EXE_AttachComponent(TransformComponent* comp, TransformComponent* newParent, int32_t boneIndex);
-    void EXE_SetRootComponent(TransformComponent* newRoot);
-    void EXE_SetAbsoluteRotation(TransformComponent* comp, glm::quat rot);
-    void EXE_SetAbsolutePosition(TransformComponent* comp, glm::vec3 pos);
-    void EXE_SetAbsoluteScale(TransformComponent* comp, glm::vec3 scale);
+    void EXE_AttachComponent(Node3D* comp, Node3D* newParent, int32_t boneIndex);
+    void EXE_SetRootComponent(Node3D* newRoot);
+    void EXE_SetAbsoluteRotation(Node3D* comp, glm::quat rot);
+    void EXE_SetAbsolutePosition(Node3D* comp, glm::vec3 pos);
+    void EXE_SetAbsoluteScale(Node3D* comp, glm::vec3 scale);
     void EXE_AddWidget(Widget* widget);
     void EXE_RemoveWidget(Widget* widget);
     void EXE_AttachWidget(Widget* widget, Widget* newParent, int32_t index = -1);
@@ -161,11 +161,11 @@ public:
     DECLARE_ACTION_INTERFACE(EditTransforms)
 
     ActionEditTransforms(
-        const std::vector<TransformComponent*>& transComps,
+        const std::vector<Node3D*>& transComps,
         const std::vector<glm::mat4>& newTransforms);
 
 protected:
-    std::vector<TransformComponent*> mTransComps;
+    std::vector<Node3D*> mTransComps;
     std::vector<glm::mat4> mNewTransforms;
     std::vector<glm::mat4> mPrevTransforms;
 };
@@ -196,7 +196,7 @@ public:
 protected:
     Component* mComponent = nullptr;
     Actor* mOwner = nullptr;
-    TransformComponent* mParent = nullptr;
+    Node3D* mParent = nullptr;
 };
 
 class ActionRemoveComponent : public Action
@@ -207,18 +207,18 @@ public:
 protected:
     Component* mComponent = nullptr;
     Actor* mOwner = nullptr;
-    TransformComponent* mParent = nullptr;
+    Node3D* mParent = nullptr;
 };
 
 class ActionAttachComponent : public Action
 {
 public:
     DECLARE_ACTION_INTERFACE(AttachComponent)
-    ActionAttachComponent(TransformComponent* comp, TransformComponent* newParent, int32_t boneIndex);
+    ActionAttachComponent(Node3D* comp, Node3D* newParent, int32_t boneIndex);
 protected:
-    TransformComponent* mComponent = nullptr;
-    TransformComponent* mNewParent = nullptr;
-    TransformComponent* mPrevParent = nullptr;
+    Node3D* mComponent = nullptr;
+    Node3D* mNewParent = nullptr;
+    Node3D* mPrevParent = nullptr;
     int32_t mBoneIndex = -1;
     int32_t mPrevBoneIndex = -1;
 };
@@ -227,19 +227,19 @@ class ActionSetRootComponent : public Action
 {
 public:
     DECLARE_ACTION_INTERFACE(SetRootComponent)
-    ActionSetRootComponent(TransformComponent* newRoot);
+    ActionSetRootComponent(Node3D* newRoot);
 protected:
-    TransformComponent* mNewRoot = nullptr;
-    TransformComponent* mOldRoot = nullptr;
+    Node3D* mNewRoot = nullptr;
+    Node3D* mOldRoot = nullptr;
 };
 
 class ActionSetAbsoluteRotation : public Action
 {
 public:
     DECLARE_ACTION_INTERFACE(SetAbsoluteRotation)
-    ActionSetAbsoluteRotation(TransformComponent* comp, glm::quat rot);
+    ActionSetAbsoluteRotation(Node3D* comp, glm::quat rot);
 protected:
-    TransformComponent* mComponent = nullptr;
+    Node3D* mComponent = nullptr;
     glm::quat mNewRotation;
     glm::quat mPrevRotation;
 };
@@ -248,9 +248,9 @@ class ActionSetAbsolutePosition : public Action
 {
 public:
     DECLARE_ACTION_INTERFACE(SetAbsolutePosition)
-    ActionSetAbsolutePosition(TransformComponent* comp, glm::vec3 pos);
+    ActionSetAbsolutePosition(Node3D* comp, glm::vec3 pos);
 protected:
-    TransformComponent* mComponent = nullptr;
+    Node3D* mComponent = nullptr;
     glm::vec3 mNewPosition;
     glm::vec3 mPrevPosition;
 };
@@ -259,9 +259,9 @@ class ActionSetAbsoluteScale : public Action
 {
 public:
     DECLARE_ACTION_INTERFACE(SetAbsoluteScale)
-    ActionSetAbsoluteScale(TransformComponent* comp, glm::vec3 scale);
+    ActionSetAbsoluteScale(Node3D* comp, glm::vec3 scale);
 protected:
-    TransformComponent* mComponent = nullptr;
+    Node3D* mComponent = nullptr;
     glm::vec3 mNewScale;
     glm::vec3 mPrevScale;
 };

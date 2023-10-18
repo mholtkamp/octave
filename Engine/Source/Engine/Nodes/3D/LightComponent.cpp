@@ -1,6 +1,6 @@
 #include "Nodes/3D/LightComponent.h"
 
-DEFINE_RTTI(LightComponent);
+DEFINE_RTTI(Light3D);
 
 static const char* sLightingDomainStrings[] =
 {
@@ -10,7 +10,7 @@ static const char* sLightingDomainStrings[] =
 };
 static_assert(int32_t(LightingDomain::Count) == 3, "Need to update string conversion table");
 
-LightComponent::LightComponent() :
+Light3D::Light3D() :
     mColor(1,1,1,1),
     mIntensity(1),
     mDomain(LightingDomain::Dynamic),
@@ -19,84 +19,84 @@ LightComponent::LightComponent() :
 
 }
 
-LightComponent::~LightComponent()
+Light3D::~Light3D()
 {
 
 }
 
-const char* LightComponent::GetTypeName() const
+const char* Light3D::GetTypeName() const
 {
     return "Light";
 }
 
-void LightComponent::GatherProperties(std::vector<Property>& outProps)
+void Light3D::GatherProperties(std::vector<Property>& outProps)
 {
-    TransformComponent::GatherProperties(outProps);
+    Node3D::GatherProperties(outProps);
 
     outProps.push_back(Property(DatumType::Color, "Color", this, &mColor));
     outProps.push_back(Property(DatumType::Byte, "Lighting Domain", this, &mDomain, 1, nullptr, 0, int32_t(LightingDomain::Count), sLightingDomainStrings));
     outProps.push_back(Property(DatumType::Bool, "Cast Shadows", this, &mCastShadows));
 }
 
-void LightComponent::SaveStream(Stream& stream)
+void Light3D::SaveStream(Stream& stream)
 {
-    TransformComponent::SaveStream(stream);
+    Node3D::SaveStream(stream);
     stream.WriteVec4(mColor);
     stream.WriteFloat(mIntensity);
     stream.WriteBool(mCastShadows);
     stream.WriteUint8((uint8_t)mDomain);
 }
 
-void LightComponent::LoadStream(Stream& stream)
+void Light3D::LoadStream(Stream& stream)
 {
-    TransformComponent::LoadStream(stream);
+    Node3D::LoadStream(stream);
     mColor = stream.ReadVec4();
     mIntensity = stream.ReadFloat();
     mCastShadows = stream.ReadBool();
     mDomain = (LightingDomain) stream.ReadUint8();
 }
 
-bool LightComponent::IsLightComponent() const
+bool Light3D::IsLightComponent() const
 {
     return true;
 }
 
-void LightComponent::SetColor(glm::vec4 color)
+void Light3D::SetColor(glm::vec4 color)
 {
     mColor = color;
 }
 
-glm::vec4 LightComponent::GetColor() const
+glm::vec4 Light3D::GetColor() const
 {
     return mColor;
 }
 
-void LightComponent::SetIntensity(float intensity)
+void Light3D::SetIntensity(float intensity)
 {
     mIntensity = intensity;
 }
 
-float LightComponent::GetIntensity() const
+float Light3D::GetIntensity() const
 {
     return mIntensity;
 }
 
-void LightComponent::SetLightingDomain(LightingDomain domain)
+void Light3D::SetLightingDomain(LightingDomain domain)
 {
     mDomain = domain;
 }
 
-LightingDomain LightComponent::GetLightingDomain() const
+LightingDomain Light3D::GetLightingDomain() const
 {
     return mDomain;
 }
 
-void LightComponent::SetCastShadows(bool castShadows)
+void Light3D::SetCastShadows(bool castShadows)
 {
     mCastShadows = castShadows;
 }
 
-bool LightComponent::ShouldCastShadows() const
+bool Light3D::ShouldCastShadows() const
 {
     return mCastShadows;
 }

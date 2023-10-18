@@ -59,7 +59,7 @@ struct AnimEventTrack
 struct AnimEvent
 {
     Actor* mActor = nullptr;
-    SkeletalMeshComponent* mComponent = nullptr;
+    SkeletalMesh3D* mComponent = nullptr;
     std::string mName;
     std::string mAnimation;
     float mTime = 0.0f;

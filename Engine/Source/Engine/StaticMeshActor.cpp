@@ -14,7 +14,7 @@ void StaticMeshActor::Create()
 {
     Actor::Create();
 
-    mStaticMeshComponent = CreateComponent<StaticMeshComponent>();
+    mStaticMeshComponent = CreateComponent<StaticMesh3D>();
     SetRootComponent(mStaticMeshComponent);
     mStaticMeshComponent->EnablePhysics(false);
     mStaticMeshComponent->EnableCollision(true);
@@ -25,7 +25,7 @@ void StaticMeshActor::Create()
     SetName("StaticMesh");
 }
 
-StaticMeshComponent* StaticMeshActor::GetStaticMeshComponent()
+StaticMesh3D* StaticMeshActor::GetStaticMeshComponent()
 {
     return mStaticMeshComponent;
 }

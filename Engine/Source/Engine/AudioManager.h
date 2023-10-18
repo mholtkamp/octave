@@ -3,7 +3,7 @@
 #include "EngineTypes.h"
 
 class SoundWave;
-class AudioComponent;
+class Audio3D;
 
 class AudioManager
 {
@@ -40,7 +40,7 @@ public:
         bool loop = false,
         int32_t priority = 0);
 
-    static void StopComponent(AudioComponent* comp);
+    static void StopComponent(Audio3D* comp);
     static void StopSounds(SoundWave* soundWave);
     static void StopSound(const std::string& name);
     static void StopAllSounds();

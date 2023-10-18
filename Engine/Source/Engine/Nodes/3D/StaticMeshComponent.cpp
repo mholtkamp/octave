@@ -10,14 +10,14 @@
 
 #include <btBulletDynamicsCommon.h>
 
-FORCE_LINK_DEF(StaticMeshComponent);
-DEFINE_NODE(StaticMeshComponent);
+FORCE_LINK_DEF(StaticMesh3D);
+DEFINE_NODE(StaticMesh3D);
 
 static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);
-    StaticMeshComponent* meshComp = static_cast<StaticMeshComponent*>(prop->mOwner);
+    StaticMesh3D* meshComp = static_cast<StaticMesh3D*>(prop->mOwner);
     bool success = false;
 
     if (prop->mName == "Static Mesh")
@@ -46,7 +46,7 @@ static StaticMesh* GetDefaultMesh()
     return defaultMesh.Get<StaticMesh>();
 }
 
-StaticMeshComponent::StaticMeshComponent() :
+StaticMesh3D::StaticMesh3D() :
     mStaticMesh(nullptr),
     mUseTriangleCollision(false),
     mBakeLighting(false)
@@ -54,19 +54,19 @@ StaticMeshComponent::StaticMeshComponent() :
     mName = "Static Mesh";
 }
 
-StaticMeshComponent::~StaticMeshComponent()
+StaticMesh3D::~StaticMesh3D()
 {
 
 }
 
-const char* StaticMeshComponent::GetTypeName() const
+const char* StaticMesh3D::GetTypeName() const
 {
     return "StaticMesh";
 }
 
-void StaticMeshComponent::GatherProperties(std::vector<Property>& outProps)
+void StaticMesh3D::GatherProperties(std::vector<Property>& outProps)
 {
-    MeshComponent::GatherProperties(outProps);
+    Mesh3D::GatherProperties(outProps);
     static bool sFakeBool = false;
     outProps.push_back(Property(DatumType::Asset, "Static Mesh", this, &mStaticMesh, 1, HandlePropChange, int32_t(StaticMesh::GetStaticType())));
     outProps.push_back(Property(DatumType::Bool, "Use Triangle Collision", this, &mUseTriangleCollision, 1, HandlePropChange));
@@ -74,27 +74,27 @@ void StaticMeshComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Clear Baked Lighting", this, &sFakeBool, 1, HandlePropChange));
 }
 
-void StaticMeshComponent::Create()
+void StaticMesh3D::Create()
 {
-    MeshComponent::Create();
+    Mesh3D::Create();
     GFX_CreateStaticMeshCompResource(this);
     SetStaticMesh(GetDefaultMesh());
 }
 
-void StaticMeshComponent::Destroy()
+void StaticMesh3D::Destroy()
 {
-    MeshComponent::Destroy();
+    Mesh3D::Destroy();
     GFX_DestroyStaticMeshCompResource(this);
 }
 
-StaticMeshCompResource* StaticMeshComponent::GetResource()
+StaticMeshCompResource* StaticMesh3D::GetResource()
 {
     return &mResource;
 }
 
-void StaticMeshComponent::SaveStream(Stream& stream)
+void StaticMesh3D::SaveStream(Stream& stream)
 {
-    MeshComponent::SaveStream(stream);
+    Mesh3D::SaveStream(stream);
     stream.WriteAsset(mStaticMesh);
     stream.WriteBool(mUseTriangleCollision);
     stream.WriteBool(mBakeLighting);
@@ -107,9 +107,9 @@ void StaticMeshComponent::SaveStream(Stream& stream)
     }
 }
 
-void StaticMeshComponent::LoadStream(Stream& stream)
+void StaticMesh3D::LoadStream(Stream& stream)
 {
-    MeshComponent::LoadStream(stream);
+    Mesh3D::LoadStream(stream);
 
     AssetRef meshRef;
     stream.ReadAsset(meshRef);
@@ -137,17 +137,17 @@ void StaticMeshComponent::LoadStream(Stream& stream)
     GFX_UpdateStaticMeshCompResourceColors(this);
 }
 
-bool StaticMeshComponent::IsStaticMeshComponent() const
+bool StaticMesh3D::IsStaticMeshComponent() const
 {
     return true;
 }
 
-bool StaticMeshComponent::IsSkeletalMeshComponent() const
+bool StaticMesh3D::IsSkeletalMeshComponent() const
 {
     return false;
 }
 
-void StaticMeshComponent::SetStaticMesh(StaticMesh* staticMesh)
+void StaticMesh3D::SetStaticMesh(StaticMesh* staticMesh)
 {
     if (mStaticMesh.Get() != staticMesh)
     {
@@ -157,12 +157,12 @@ void StaticMeshComponent::SetStaticMesh(StaticMesh* staticMesh)
     }
 }
 
-StaticMesh* StaticMeshComponent::GetStaticMesh()
+StaticMesh* StaticMesh3D::GetStaticMesh()
 {
     return mStaticMesh.Get<StaticMesh>();
 }
 
-void StaticMeshComponent::SetUseTriangleCollision(bool triangleCol)
+void StaticMesh3D::SetUseTriangleCollision(bool triangleCol)
 {
     if (mUseTriangleCollision != triangleCol)
     {
@@ -171,22 +171,22 @@ void StaticMeshComponent::SetUseTriangleCollision(bool triangleCol)
     }
 }
 
-bool StaticMeshComponent::GetUseTriangleCollision() const
+bool StaticMesh3D::GetUseTriangleCollision() const
 {
     return mUseTriangleCollision;
 }
 
-void StaticMeshComponent::SetBakeLighting(bool bake)
+void StaticMesh3D::SetBakeLighting(bool bake)
 {
     mBakeLighting = bake;
 }
 
-bool StaticMeshComponent::GetBakeLighting() const
+bool StaticMesh3D::GetBakeLighting() const
 {
     return mBakeLighting;
 }
 
-Material* StaticMeshComponent::GetMaterial()
+Material* StaticMesh3D::GetMaterial()
 {
     Material* mat = mMaterialOverride.Get<Material>();
 
@@ -198,12 +198,12 @@ Material* StaticMeshComponent::GetMaterial()
     return mat;
 }
 
-void StaticMeshComponent::Render()
+void StaticMesh3D::Render()
 {
     GFX_DrawStaticMeshComp(this);
 }
 
-VertexType StaticMeshComponent::GetVertexType() const
+VertexType StaticMesh3D::GetVertexType() const
 {
     VertexType retType = VertexType::Vertex;
 
@@ -216,13 +216,13 @@ VertexType StaticMeshComponent::GetVertexType() const
     return retType;
 }
 
-void StaticMeshComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+void StaticMesh3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    MeshComponent::GatherProxyDraws(inoutDraws);
+    Mesh3D::GatherProxyDraws(inoutDraws);
 
     if (Renderer::Get()->GetDebugMode() == DEBUG_COLLISION &&
-        GetType() == StaticMeshComponent::GetStaticType())
+        GetType() == StaticMesh3D::GetStaticType())
     {
         StaticMesh* staticMesh = mStaticMesh.Get<StaticMesh>();
 
@@ -342,7 +342,7 @@ void StaticMeshComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif
 }
 
-Bounds StaticMeshComponent::GetLocalBounds() const
+Bounds StaticMesh3D::GetLocalBounds() const
 {
     if (mStaticMesh != nullptr)
     {
@@ -350,33 +350,33 @@ Bounds StaticMeshComponent::GetLocalBounds() const
     }
     else
     {
-        return MeshComponent::GetLocalBounds();
+        return Mesh3D::GetLocalBounds();
     }
 }
 
-void StaticMeshComponent::ClearInstanceColors()
+void StaticMesh3D::ClearInstanceColors()
 {
     mInstanceColors.clear();
     GFX_UpdateStaticMeshCompResourceColors(this);
 }
 
-void StaticMeshComponent::SetInstanceColors(const std::vector<uint32_t>& colors)
+void StaticMesh3D::SetInstanceColors(const std::vector<uint32_t>& colors)
 {
     mInstanceColors = colors;
     GFX_UpdateStaticMeshCompResourceColors(this);
 }
 
-std::vector<uint32_t>& StaticMeshComponent::GetInstanceColors()
+std::vector<uint32_t>& StaticMesh3D::GetInstanceColors()
 {
     return mInstanceColors;
 }
 
-bool StaticMeshComponent::HasBakedLighting() const
+bool StaticMesh3D::HasBakedLighting() const
 {
     return (mBakeLighting && mInstanceColors.size() > 0);
 }
 
-void StaticMeshComponent::RecreateCollisionShape()
+void StaticMesh3D::RecreateCollisionShape()
 {
     StaticMesh* staticMesh = mStaticMesh.Get<StaticMesh>();
 
@@ -397,6 +397,6 @@ void StaticMeshComponent::RecreateCollisionShape()
     }
     else
     {
-        SetCollisionShape(PrimitiveComponent::GetEmptyCollisionShape());
+        SetCollisionShape(Primitive3D::GetEmptyCollisionShape());
     }
 }

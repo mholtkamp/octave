@@ -5,14 +5,14 @@
 
 #include "BulletCollision/CollisionShapes/btSphereShape.h"
 
-FORCE_LINK_DEF(SphereComponent);
-DEFINE_NODE(SphereComponent);
+FORCE_LINK_DEF(Sphere3D);
+DEFINE_NODE(Sphere3D);
 
 static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);
-    SphereComponent* sphereComp = static_cast<SphereComponent*>(prop->mOwner);
+    Sphere3D* sphereComp = static_cast<Sphere3D*>(prop->mOwner);
     bool success = false;
 
     if (prop->mName == "Radius")
@@ -24,36 +24,36 @@ static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
     return success;
 }
 
-const float SphereComponent::sDefaultRadius = 1.0f;
+const float Sphere3D::sDefaultRadius = 1.0f;
 
-SphereComponent::SphereComponent()
+Sphere3D::Sphere3D()
 {
     mName = "Sphere Component";
     mRadius = sDefaultRadius;
 }
 
-SphereComponent::~SphereComponent()
+Sphere3D::~Sphere3D()
 {
 
 }
 
-const char* SphereComponent::GetTypeName() const
+const char* Sphere3D::GetTypeName() const
 {
     return "Sphere";
 }
 
-void SphereComponent::GatherProperties(std::vector<Property>& outProps)
+void Sphere3D::GatherProperties(std::vector<Property>& outProps)
 {
-    PrimitiveComponent::GatherProperties(outProps);
+    Primitive3D::GatherProperties(outProps);
     outProps.push_back(Property(DatumType::Float, "Radius", this, &mRadius, 1, HandlePropChange));
 }
 
-void SphereComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+void Sphere3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    PrimitiveComponent::GatherProxyDraws(inoutDraws);
+    Primitive3D::GatherProxyDraws(inoutDraws);
 
-    if (GetType() == SphereComponent::GetStaticType())
+    if (GetType() == Sphere3D::GetStaticType())
     {
         float radiusScale = (mRadius / sDefaultRadius);
         glm::vec4 color =
@@ -73,31 +73,31 @@ void SphereComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif
 }
 
-void SphereComponent::Create()
+void Sphere3D::Create()
 {
-    PrimitiveComponent::Create();
+    Primitive3D::Create();
     SetCollisionShape(new btSphereShape(mRadius));
     UpdateRigidBody();
 }
 
-void SphereComponent::SaveStream(Stream& stream)
+void Sphere3D::SaveStream(Stream& stream)
 {
-    PrimitiveComponent::SaveStream(stream);
+    Primitive3D::SaveStream(stream);
     stream.WriteFloat(mRadius);
 }
 
-void SphereComponent::LoadStream(Stream& stream)
+void Sphere3D::LoadStream(Stream& stream)
 {
-    PrimitiveComponent::LoadStream(stream);
+    Primitive3D::LoadStream(stream);
     SetRadius(stream.ReadFloat());
 }
 
-float SphereComponent::GetRadius() const
+float Sphere3D::GetRadius() const
 {
     return mRadius;
 }
 
-void SphereComponent::SetRadius(float radius)
+void Sphere3D::SetRadius(float radius)
 {
     if (mRadius != radius)
     {
@@ -106,7 +106,7 @@ void SphereComponent::SetRadius(float radius)
     }
 }
 
-void SphereComponent::UpdateRigidBody()
+void Sphere3D::UpdateRigidBody()
 {
     EnableRigidBody(false);
 

@@ -30,14 +30,14 @@ struct Particle
     float mRotation = 0.0f;
 };
 
-class ParticleComponent : public PrimitiveComponent
+class Particle3D : public Primitive3D
 {
 public:
 
-    DECLARE_NODE(ParticleComponent, PrimitiveComponent);
+    DECLARE_NODE(Particle3D, Primitive3D);
 
-    ParticleComponent();
-    virtual ~ParticleComponent();
+    Particle3D();
+    virtual ~Particle3D();
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;

@@ -7,7 +7,7 @@
 
 int PointLightComponent_Lua::SetRadius(lua_State* L)
 {
-    PointLightComponent* comp = CHECK_POINT_LIGHT_COMPONENT(L, 1);
+    PointLight3D* comp = CHECK_POINT_LIGHT_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetRadius(value);
@@ -17,7 +17,7 @@ int PointLightComponent_Lua::SetRadius(lua_State* L)
 
 int PointLightComponent_Lua::GetRadius(lua_State* L)
 {
-    PointLightComponent* comp = CHECK_POINT_LIGHT_COMPONENT(L, 1);
+    PointLight3D* comp = CHECK_POINT_LIGHT_COMPONENT(L, 1);
 
     float ret = comp->GetRadius();
 

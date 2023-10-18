@@ -8,14 +8,14 @@
 #include <assimp/scene.h>
 #endif
 
-class MeshComponent : public PrimitiveComponent
+class Mesh3D : public Primitive3D
 {
 public:
 
-    DECLARE_RTTI(MeshComponent, PrimitiveComponent);
+    DECLARE_RTTI(Mesh3D, Primitive3D);
 
-    MeshComponent();
-    virtual ~MeshComponent();
+    Mesh3D();
+    virtual ~Mesh3D();
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;

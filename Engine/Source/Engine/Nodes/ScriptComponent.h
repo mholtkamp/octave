@@ -60,11 +60,11 @@ public:
     ScriptNetFunc* FindNetFunc(uint16_t index);
     void ExecuteNetFunc(uint16_t index, uint32_t numParams, std::vector<Datum>& params);
 
-    void BeginOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* otherComp);
-    void EndOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* otherComp);
+    void BeginOverlap(Primitive3D* thisComp, Primitive3D* otherComp);
+    void EndOverlap(Primitive3D* thisComp, Primitive3D* otherComp);
     void OnCollision(
-        PrimitiveComponent* thisComp,
-        PrimitiveComponent* otherComp,
+        Primitive3D* thisComp,
+        Primitive3D* otherComp,
         glm::vec3 impactPoint,
         glm::vec3 impactNormal,
         btPersistentManifold* manifold);

@@ -17,8 +17,8 @@
 #endif
 
 class Level;
-class PrimitiveComponent;
-class TransformComponent;
+class Primitive3D;
+class Node3D;
 class Actor;
 
 class StaticMesh;
@@ -128,7 +128,7 @@ struct Bounds
 
 struct DrawData
 {
-    PrimitiveComponent* mComponent;
+    Primitive3D* mComponent;
     Material* mMaterial;
     ShadingModel mShadingModel;
     BlendMode mBlendMode;
@@ -154,7 +154,7 @@ struct DebugDraw
     StaticMesh* mMesh = nullptr;
     Material* mMaterial = nullptr;
     Actor* mActor = nullptr;
-    TransformComponent* mComponent = nullptr;
+    Node3D* mComponent = nullptr;
     glm::mat4 mTransform = glm::mat4(1);
     glm::vec4 mColor = { 0.25f, 0.25f, 1.0f, 1.0f };
     float mLife = 0.0f;
@@ -162,8 +162,8 @@ struct DebugDraw
 
 struct ComponentPair
 {
-    PrimitiveComponent* mComponentA = nullptr;
-    PrimitiveComponent* mComponentB = nullptr;
+    Primitive3D* mComponentA = nullptr;
+    Primitive3D* mComponentB = nullptr;
 
     ComponentPair() :
         mComponentA(nullptr),
@@ -172,7 +172,7 @@ struct ComponentPair
 
     }
 
-    ComponentPair(PrimitiveComponent* compA, PrimitiveComponent* compB)
+    ComponentPair(Primitive3D* compA, Primitive3D* compB)
     {
         mComponentA = compA;
         mComponentB = compB;
@@ -297,7 +297,7 @@ struct RayTestResult
 {
     glm::vec3 mStart = {};
     glm::vec3 mEnd = {};
-    PrimitiveComponent* mHitComponent = {};
+    Primitive3D* mHitComponent = {};
     glm::vec3 mHitNormal = {};
     glm::vec3 mHitPosition = {};
     float mHitFraction = 0.0f;
@@ -308,7 +308,7 @@ struct RayTestMultiResult
     glm::vec3 mStart = {};
     glm::vec3 mEnd = {};
     uint32_t mNumHits = 0;
-    std::vector<PrimitiveComponent*> mHitComponents;
+    std::vector<Primitive3D*> mHitComponents;
     std::vector<glm::vec3> mHitNormals;
     std::vector<glm::vec3> mHitPositions;
     std::vector<float> mHitFractions;
@@ -318,7 +318,7 @@ struct SweepTestResult
 {
     glm::vec3 mStart = {};
     glm::vec3 mEnd = {};
-    PrimitiveComponent* mHitComponent = {};
+    Primitive3D* mHitComponent = {};
     glm::vec3 mHitNormal = {};
     glm::vec3 mHitPosition = {};
     float mHitFraction = 0.0f;

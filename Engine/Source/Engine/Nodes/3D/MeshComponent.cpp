@@ -5,13 +5,13 @@
 #include "Engine.h"
 #include "World.h"
 
-DEFINE_RTTI(MeshComponent);
+DEFINE_RTTI(Mesh3D);
 
 static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);
-    MeshComponent* meshComp = static_cast<MeshComponent*>(prop->mOwner);
+    Mesh3D* meshComp = static_cast<Mesh3D*>(prop->mOwner);
     bool success = false;
 
     if (prop->mName == "Material Override")
@@ -23,59 +23,59 @@ static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
     return success;
 }
 
-MeshComponent::MeshComponent() :
+Mesh3D::Mesh3D() :
     mMaterialOverride(nullptr)
 {
 
 }
 
-MeshComponent::~MeshComponent()
+Mesh3D::~Mesh3D()
 {
 
 }
 
-const char* MeshComponent::GetTypeName() const
+const char* Mesh3D::GetTypeName() const
 {
     return "Mesh";
 }
 
-void MeshComponent::GatherProperties(std::vector<Property>& outProps)
+void Mesh3D::GatherProperties(std::vector<Property>& outProps)
 {
-    PrimitiveComponent::GatherProperties(outProps);
+    Primitive3D::GatherProperties(outProps);
     outProps.push_back(Property(DatumType::Asset, "Material Override", this, &mMaterialOverride, 1, HandlePropChange, int32_t(Material::GetStaticType())));
     outProps.push_back(Property(DatumType::Bool, "Billboard", this, &mBillboard));
 }
 
-void MeshComponent::SaveStream(Stream& stream)
+void Mesh3D::SaveStream(Stream& stream)
 {
-    PrimitiveComponent::SaveStream(stream);
+    Primitive3D::SaveStream(stream);
     stream.WriteAsset(mMaterialOverride);
     stream.WriteBool(mBillboard);
 }
 
-void MeshComponent::LoadStream(Stream& stream)
+void Mesh3D::LoadStream(Stream& stream)
 {
-    PrimitiveComponent::LoadStream(stream);
+    Primitive3D::LoadStream(stream);
     stream.ReadAsset(mMaterialOverride);
     mBillboard = stream.ReadBool();
 }
 
-bool MeshComponent::IsShadowMeshComponent()
+bool Mesh3D::IsShadowMeshComponent()
 {
     return false;
 }
 
-Material* MeshComponent::GetMaterialOverride()
+Material* Mesh3D::GetMaterialOverride()
 {
     return mMaterialOverride.Get<Material>();
 }
 
-void MeshComponent::SetMaterialOverride(Material* material)
+void Mesh3D::SetMaterialOverride(Material* material)
 {
     mMaterialOverride = material;
 }
 
-MaterialInstance* MeshComponent::InstantiateMaterial()
+MaterialInstance* Mesh3D::InstantiateMaterial()
 {
     Material* mat = GetMaterial();
     MaterialInstance* matInst = MaterialInstance::New(mat);
@@ -83,19 +83,19 @@ MaterialInstance* MeshComponent::InstantiateMaterial()
     return matInst;
 }
 
-bool MeshComponent::IsBillboard() const
+bool Mesh3D::IsBillboard() const
 {
     return mBillboard;
 }
 
-void MeshComponent::SetBillboard(bool billboard)
+void Mesh3D::SetBillboard(bool billboard)
 {
     mBillboard = billboard;
 }
 
-glm::mat4 MeshComponent::ComputeBillboardTransform()
+glm::mat4 Mesh3D::ComputeBillboardTransform()
 {
-    CameraComponent* camera = GetWorld()->GetActiveCamera();
+    Camera3D* camera = GetWorld()->GetActiveCamera();
     glm::quat camQuat = camera->GetAbsoluteRotationQuat();
 
     glm::mat4 transform = glm::mat4(1);
@@ -112,7 +112,7 @@ glm::mat4 MeshComponent::ComputeBillboardTransform()
     return transform;
 }
 
-glm::mat4 MeshComponent::GetRenderTransform()
+glm::mat4 Mesh3D::GetRenderTransform()
 {
     glm::mat4 transform;
     if (IsBillboard())
@@ -126,12 +126,12 @@ glm::mat4 MeshComponent::GetRenderTransform()
     return transform;
 }
 
-DrawData MeshComponent::GetDrawData()
+DrawData Mesh3D::GetDrawData()
 {
     DrawData data = {};
     Material* material = GetMaterial();
 
-    data.mComponent = static_cast<PrimitiveComponent*>(this);
+    data.mComponent = static_cast<Primitive3D*>(this);
     data.mMaterial = material;
     data.mShadingModel = material ? material->GetShadingModel() : ShadingModel::Lit;
     data.mBlendMode = material ? material->GetBlendMode() : BlendMode::Opaque;

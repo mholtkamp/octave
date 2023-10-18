@@ -83,11 +83,11 @@ public:
     void GatherPropertyOverrides(std::vector<Property>& outOverrides);
     void ApplyPropertyOverrides(const std::vector<Property>& overs);
 
-    virtual void BeginOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* otherComp);
-    virtual void EndOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* otherComp);
+    virtual void BeginOverlap(Primitive3D* thisComp, Primitive3D* otherComp);
+    virtual void EndOverlap(Primitive3D* thisComp, Primitive3D* otherComp);
     virtual void OnCollision(
-        PrimitiveComponent* thisComp,
-        PrimitiveComponent* otherComp,
+        Primitive3D* thisComp,
+        Primitive3D* otherComp,
         glm::vec3 impactPoint,
         glm::vec3 impactNormal,
         btPersistentManifold* manifold);

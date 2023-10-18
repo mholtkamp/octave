@@ -8,7 +8,7 @@ void ParticleActor::Create()
 {
     Actor::Create();
 
-    mParticleComp = CreateComponent<ParticleComponent>();
+    mParticleComp = CreateComponent<Particle3D>();
     SetRootComponent(mParticleComp);
     mParticleComp->EnableEmission(true);
 }

@@ -141,7 +141,7 @@ void Renderer::GatherProperties(std::vector<Property>& props)
 
 }
 
-TransformComponent* Renderer::ProcessHitCheck(World* world, int32_t x, int32_t y)
+Node3D* Renderer::ProcessHitCheck(World* world, int32_t x, int32_t y)
 {
     return GFX_ProcessHitCheck(world, x, y);
 }
@@ -592,8 +592,8 @@ void Renderer::GatherDrawData(World* world)
                     DrawData data = comp->GetDrawData();
                     data.mComponentType = comp->GetType();
 
-                    PrimitiveComponent* prim = (PrimitiveComponent*)comp;
-                    bool simpleShadow = (data.mComponentType == ShadowMeshComponent::GetStaticType());
+                    Primitive3D* prim = (Primitive3D*)comp;
+                    bool simpleShadow = (data.mComponentType == ShadowMesh3D::GetStaticType());
 
                     if (data.mComponent != nullptr &&
                         comp->IsVisible())
@@ -653,21 +653,21 @@ void Renderer::GatherDrawData(World* world)
                     comp->IsTransformComponent() &&
                     proxyActorEnabled)
                 {
-                    TransformComponent* trans = (TransformComponent*)comp;
+                    Node3D* trans = (Node3D*)comp;
                     trans->GatherProxyDraws(mDebugDraws);
                 }
 
                 if (mDebugMode == DEBUG_COLLISION &&
                     comp->IsPrimitiveComponent())
                 {
-                    PrimitiveComponent* prim = (PrimitiveComponent*)comp;
+                    Primitive3D* prim = (Primitive3D*)comp;
                     prim->GatherProxyDraws(mCollisionDraws);
                 }
 #endif
             }
         }
 
-        CameraComponent* camera = world->GetActiveCamera();
+        Camera3D* camera = world->GetActiveCamera();
 
         if (camera)
         {
@@ -732,7 +732,7 @@ void Renderer::GatherDrawData(World* world)
     }
 }
 
-static void SetLightData(LightData& lightData, LightComponent* comp)
+static void SetLightData(LightData& lightData, Light3D* comp)
 {
     lightData.mDomain = comp->GetLightingDomain();
     lightData.mPosition = comp->GetAbsolutePosition();
@@ -740,17 +740,17 @@ static void SetLightData(LightData& lightData, LightComponent* comp)
 
     RuntimeId id = comp->InstanceRuntimeId();
 
-    if (id == PointLightComponent::ClassRuntimeId())
+    if (id == PointLight3D::ClassRuntimeId())
     {
-        PointLightComponent* pointComp = comp->As<PointLightComponent>();
+        PointLight3D* pointComp = comp->As<PointLight3D>();
         lightData.mType = LightType::Point;
         lightData.mRadius = pointComp->GetRadius();
         lightData.mDirection = { 0.0f, 0.0f, 0.0f };
 
     }
-    else if (id == DirectionalLightComponent::ClassRuntimeId())
+    else if (id == DirectionalLight3D::ClassRuntimeId())
     {
-        DirectionalLightComponent* dirComp = comp->As<DirectionalLightComponent>();
+        DirectionalLight3D* dirComp = comp->As<DirectionalLight3D>();
         lightData.mType = LightType::Directional;
         lightData.mDirection = dirComp->GetDirection();
         lightData.mRadius = 0.0f;
@@ -763,7 +763,7 @@ void Renderer::GatherLightData(World* world)
     sClosestLights.clear();
 
     mLightData.clear();
-    const std::vector<LightComponent*>& comps = world->GetLightComponents();
+    const std::vector<Light3D*>& comps = world->GetLightComponents();
 
     if (mEnableLightFade)
     {
@@ -861,7 +861,7 @@ void Renderer::GatherLightData(World* world)
             {
                 if (fadingLight.mComponent == sClosestLights[j].mComponent)
                 {
-                    LightComponent* light = sClosestLights[j].mComponent;
+                    Light3D* light = sClosestLights[j].mComponent;
 
                     // Ok, this light is still in the closest N lights.
                     active = true;
@@ -953,7 +953,7 @@ void Renderer::RenderDebugDraws(const std::vector<DebugDraw>& draws, PipelineId 
 #endif
 }
 
-void Renderer::FrustumCull(CameraComponent* camera)
+void Renderer::FrustumCull(Camera3D* camera)
 {
     CameraFrustum frustum;
     frustum.SetPosition(camera->GetAbsolutePosition());
@@ -1006,9 +1006,9 @@ void Renderer::FrustumCull(CameraComponent* camera)
 
 static inline void HandleCullResult(DrawData& drawData, bool inFrustum)
 {
-    if (drawData.mComponentType == SkeletalMeshComponent::GetStaticType())
+    if (drawData.mComponentType == SkeletalMesh3D::GetStaticType())
     {
-        SkeletalMeshComponent* skComp = static_cast<SkeletalMeshComponent*>(drawData.mComponent);
+        SkeletalMesh3D* skComp = static_cast<SkeletalMesh3D*>(drawData.mComponent);
 
         if (inFrustum)
         {
@@ -1027,9 +1027,9 @@ static inline void HandleCullResult(DrawData& drawData, bool inFrustum)
             }
         }
     }
-    else if (drawData.mComponentType == ParticleComponent::GetStaticType())
+    else if (drawData.mComponentType == Particle3D::GetStaticType())
     {
-        ParticleComponent* pComp = static_cast<ParticleComponent*>(drawData.mComponent);
+        Particle3D* pComp = static_cast<Particle3D*>(drawData.mComponent);
 
         if (inFrustum)
         {
@@ -1194,7 +1194,7 @@ void Renderer::Render(World* world)
 #endif
     }
 
-    CameraComponent* activeCamera = world->GetActiveCamera();
+    Camera3D* activeCamera = world->GetActiveCamera();
 
     // On 3DS especially, we want to cull before syncing with the GPU
     // otherwise it increases GPU idle time.
@@ -1264,7 +1264,7 @@ void Renderer::Render(World* world)
 
                     GFX_BeginRenderPass(RenderPassId::Shadows);
 
-                    DirectionalLightComponent* dirLight = world->GetDirectionalLight();
+                    DirectionalLight3D* dirLight = world->GetDirectionalLight();
 
                     if (dirLight && dirLight->ShouldCastShadows())
                     {

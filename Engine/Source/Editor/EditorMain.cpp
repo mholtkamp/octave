@@ -56,7 +56,7 @@ void EditorMain(int32_t argc, char** argv)
 
     // Spawn Default Light
     Actor* defaultLight = GetWorld()->SpawnActor<Actor>();
-    DirectionalLightComponent* dirLightComp = defaultLight->CreateComponent<DirectionalLightComponent>();
+    DirectionalLight3D* dirLightComp = defaultLight->CreateComponent<DirectionalLight3D>();
     dirLightComp->SetDirection(glm::normalize(glm::vec3(1.0f, -1.0f, -1.0f)));
     dirLightComp->SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     defaultLight->SetName("Default Light");

@@ -1,63 +1,63 @@
 #include "Nodes/3D/ShadowMeshComponent.h"
 #include "Graphics/Graphics.h"
 
-FORCE_LINK_DEF(ShadowMeshComponent);
-DEFINE_NODE(ShadowMeshComponent);
+FORCE_LINK_DEF(ShadowMesh3D);
+DEFINE_NODE(ShadowMesh3D);
 
-ShadowMeshComponent::ShadowMeshComponent()
+ShadowMesh3D::ShadowMesh3D()
 {
     mName = "Shadow Mesh";
     mBakeLighting = false;
 }
 
-ShadowMeshComponent::~ShadowMeshComponent()
+ShadowMesh3D::~ShadowMesh3D()
 {
 
 }
 
-const char* ShadowMeshComponent::GetTypeName() const
+const char* ShadowMesh3D::GetTypeName() const
 {
     return "ShadowMesh";
 }
 
-void ShadowMeshComponent::GatherProperties(std::vector<Property>& outProps)
+void ShadowMesh3D::GatherProperties(std::vector<Property>& outProps)
 {
-    StaticMeshComponent::GatherProperties(outProps);
+    StaticMesh3D::GatherProperties(outProps);
 }
 
-void ShadowMeshComponent::Create()
+void ShadowMesh3D::Create()
 {
-    StaticMeshComponent::Create();
+    StaticMesh3D::Create();
 }
 
-void ShadowMeshComponent::Destroy()
+void ShadowMesh3D::Destroy()
 {
-    StaticMeshComponent::Destroy();
+    StaticMesh3D::Destroy();
 }
 
-void ShadowMeshComponent::Render()
+void ShadowMesh3D::Render()
 {
     GFX_DrawShadowMeshComp(this);
 }
 
-void ShadowMeshComponent::SaveStream(Stream& stream)
+void ShadowMesh3D::SaveStream(Stream& stream)
 {
-    StaticMeshComponent::SaveStream(stream);
+    StaticMesh3D::SaveStream(stream);
 }
 
-void ShadowMeshComponent::LoadStream(Stream& stream)
+void ShadowMesh3D::LoadStream(Stream& stream)
 {
-    StaticMeshComponent::LoadStream(stream);
+    StaticMesh3D::LoadStream(stream);
 }
 
-bool ShadowMeshComponent::IsShadowMeshComponent()
+bool ShadowMesh3D::IsShadowMeshComponent()
 {
     return true;
 }
 
-void ShadowMeshComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+void ShadowMesh3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
-    StaticMeshComponent::GatherProxyDraws(inoutDraws);
+    StaticMesh3D::GatherProxyDraws(inoutDraws);
 
     DebugDraw debugDraw;
     debugDraw.mMesh = mStaticMesh.Get<StaticMesh>();

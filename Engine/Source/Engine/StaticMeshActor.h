@@ -3,7 +3,7 @@
 #include "Nodes/Node.h"
 #include "Nodes/3D/StaticMeshComponent.h"
 
-class StaticMeshComponent;
+class StaticMesh3D;
 
 class StaticMeshActor : public Actor
 {
@@ -13,11 +13,11 @@ public:
 
     StaticMeshActor();
     virtual void Create() override;
-    StaticMeshComponent* GetStaticMeshComponent();
+    StaticMesh3D* GetStaticMeshComponent();
 
 protected:
 
-    StaticMeshComponent* mStaticMeshComponent;
+    StaticMesh3D* mStaticMeshComponent;
 
 #if EDITOR
 public:

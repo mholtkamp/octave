@@ -204,12 +204,12 @@ void Blueprint::Create(Actor* srcActor)
 
         if (comps[i]->IsTransformComponent())
         {
-            TransformComponent* transComp = static_cast<TransformComponent*>(comps[i]);
+            Node3D* transComp = static_cast<Node3D*>(comps[i]);
             if (transComp->GetParent() != nullptr)
             {
                 mComponents[i].mParentName = transComp->GetParent()->GetName();
 
-                if (transComp->GetParent()->Is(SkeletalMeshComponent::ClassRuntimeId()) &&
+                if (transComp->GetParent()->Is(SkeletalMesh3D::ClassRuntimeId()) &&
                     transComp->GetParentBoneIndex() >= 0)
                 {
                     // Storing bone index as int8
@@ -394,17 +394,17 @@ Actor* Blueprint::Instantiate(World* world, bool addNetwork)
         }
 
         // Establish the root component
-        TransformComponent* newRoot = nullptr;
+        Node3D* newRoot = nullptr;
         if (mRootComponentName != "")
         {
             Component* comp = retActor->GetComponent(mRootComponentName);
             if (comp && comp->IsTransformComponent())
             {
-                newRoot = static_cast<TransformComponent*>(comp);
+                newRoot = static_cast<Node3D*>(comp);
             }
             else
             {
-                LogWarning("Blueprint Root Component name is not a TransformComponent");
+                LogWarning("Blueprint Root Component name is not a Node3D");
             }
         }
 
@@ -422,7 +422,7 @@ Actor* Blueprint::Instantiate(World* world, bool addNetwork)
                 Component* comp = retActor->GetComponent((int32_t)i);
                 if (comp->IsTransformComponent())
                 {
-                    newRoot = static_cast<TransformComponent*>(comp);
+                    newRoot = static_cast<Node3D*>(comp);
                 }
             }
         }
@@ -459,10 +459,10 @@ Actor* Blueprint::Instantiate(World* world, bool addNetwork)
                         parentComp = newRoot;
                     }
 
-                    TransformComponent* transComp = static_cast<TransformComponent*>(comps[i]);
-                    TransformComponent* parentTransComp = static_cast<TransformComponent*>(parentComp);
+                    Node3D* transComp = static_cast<Node3D*>(comps[i]);
+                    Node3D* parentTransComp = static_cast<Node3D*>(parentComp);
 
-                    SkeletalMeshComponent* parentSkComp = parentTransComp->As<SkeletalMeshComponent>();
+                    SkeletalMesh3D* parentSkComp = parentTransComp->As<SkeletalMesh3D>();
                     if (parentSkComp &&
                         bpComp->mParentBone >= 0 &&
                         parentSkComp->GetSkeletalMesh() != nullptr &&

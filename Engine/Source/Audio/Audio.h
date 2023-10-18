@@ -4,7 +4,7 @@
 
 class Stream;
 class SoundWave;
-class AudioComponent;
+class Audio3D;
 
 struct PcmFormat
 {

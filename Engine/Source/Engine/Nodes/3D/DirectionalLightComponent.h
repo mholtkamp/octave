@@ -2,14 +2,14 @@
 
 #include "LightComponent.h"
 
-class DirectionalLightComponent : public LightComponent
+class DirectionalLight3D : public Light3D
 {
 public:
 
-    DECLARE_NODE(DirectionalLightComponent, LightComponent);
+    DECLARE_NODE(DirectionalLight3D, Light3D);
 
-    DirectionalLightComponent();
-    ~DirectionalLightComponent();
+    DirectionalLight3D();
+    ~DirectionalLight3D();
 
     virtual void SetOwner(Actor* owner) override;
     virtual void Destroy() override;

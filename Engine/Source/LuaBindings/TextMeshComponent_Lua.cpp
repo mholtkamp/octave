@@ -9,7 +9,7 @@
 
 int TextMeshComponent_Lua::SetText(lua_State* L)
 {
-    TextMeshComponent* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
     const char* text = CHECK_STRING(L, 2);
 
     textComp->SetText(text);
@@ -19,7 +19,7 @@ int TextMeshComponent_Lua::SetText(lua_State* L)
 
 int TextMeshComponent_Lua::GetText(lua_State* L)
 {
-    TextMeshComponent* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
 
     const char* value = textComp->GetText().c_str();
 
@@ -29,7 +29,7 @@ int TextMeshComponent_Lua::GetText(lua_State* L)
 
 int TextMeshComponent_Lua::SetFont(lua_State* L)
 {
-    TextMeshComponent* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
     Font* font = CHECK_FONT(L, 2);
 
     textComp->SetFont(font);
@@ -39,7 +39,7 @@ int TextMeshComponent_Lua::SetFont(lua_State* L)
 
 int TextMeshComponent_Lua::GetFont(lua_State* L)
 {
-    TextMeshComponent* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
 
     Font* font = textComp->GetFont();
 
@@ -49,7 +49,7 @@ int TextMeshComponent_Lua::GetFont(lua_State* L)
 
 int TextMeshComponent_Lua::SetColor(lua_State* L)
 {
-    TextMeshComponent* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
     glm::vec4 value = CHECK_VECTOR(L, 2);
 
     textComp->SetColor(value);
@@ -59,7 +59,7 @@ int TextMeshComponent_Lua::SetColor(lua_State* L)
 
 int TextMeshComponent_Lua::GetColor(lua_State* L)
 {
-    TextMeshComponent* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
 
     glm::vec4 ret = textComp->GetColor();
 
@@ -69,7 +69,7 @@ int TextMeshComponent_Lua::GetColor(lua_State* L)
 
 int TextMeshComponent_Lua::SetBlendMode(lua_State* L)
 {
-    TextMeshComponent* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
     int32_t blendMode = CHECK_INTEGER(L, 2);
 
     textComp->SetBlendMode((BlendMode)blendMode);
@@ -79,7 +79,7 @@ int TextMeshComponent_Lua::SetBlendMode(lua_State* L)
 
 int TextMeshComponent_Lua::GetBlendMode(lua_State* L)
 {
-    TextMeshComponent* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
 
     int32_t ret = (int32_t)textComp->GetBlendMode();
 
@@ -89,7 +89,7 @@ int TextMeshComponent_Lua::GetBlendMode(lua_State* L)
 
 int TextMeshComponent_Lua::SetHorizontalJustification(lua_State* L)
 {
-    TextMeshComponent* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
     float just = CHECK_NUMBER(L, 2);
 
     textComp->SetHorizontalJustification(just);
@@ -99,7 +99,7 @@ int TextMeshComponent_Lua::SetHorizontalJustification(lua_State* L)
 
 int TextMeshComponent_Lua::GetHorizontalJustification(lua_State* L)
 {
-    TextMeshComponent* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
 
     float ret = textComp->GetHorizontalJustification();
 
@@ -109,7 +109,7 @@ int TextMeshComponent_Lua::GetHorizontalJustification(lua_State* L)
 
 int TextMeshComponent_Lua::SetVerticalJustification(lua_State* L)
 {
-    TextMeshComponent* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
     float just = CHECK_NUMBER(L, 2);
 
     textComp->SetVerticalJustification(just);
@@ -119,7 +119,7 @@ int TextMeshComponent_Lua::SetVerticalJustification(lua_State* L)
 
 int TextMeshComponent_Lua::GetVerticalJustification(lua_State* L)
 {
-    TextMeshComponent* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
 
     float ret = textComp->GetVerticalJustification();
 

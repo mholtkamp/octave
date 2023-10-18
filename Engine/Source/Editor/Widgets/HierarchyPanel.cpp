@@ -83,8 +83,8 @@ void OnCreateCompButtonPressed(Button* button)
 
         if (newComp->IsTransformComponent())
         {
-            TransformComponent* newTrans = (TransformComponent*)newComp;
-            TransformComponent* parentTrans = selectedComp->IsTransformComponent() ? (TransformComponent*)selectedComp : actor->GetRootComponent();
+            Node3D* newTrans = (Node3D*)newComp;
+            Node3D* parentTrans = selectedComp->IsTransformComponent() ? (Node3D*)selectedComp : actor->GetRootComponent();
             OCT_ASSERT(parentTrans != nullptr);
             newTrans->Attach(parentTrans);
         }
@@ -167,7 +167,7 @@ void HierarchyPanel::ActionHandler(Button* button)
     else if (buttonText == "Duplicate Component")
     {
         Component* actionComp = sActionComponent.Get();
-        TransformComponent* actionTrans = actionComp->As<TransformComponent>();
+        Node3D* actionTrans = actionComp->As<Node3D>();
         Actor* owner = actionComp->GetOwner();
         OCT_ASSERT(owner);
 
@@ -175,8 +175,8 @@ void HierarchyPanel::ActionHandler(Button* button)
         if (newComp->IsTransformComponent())
         {
             OCT_ASSERT(actionTrans);
-            TransformComponent* newTrans = newComp->As<TransformComponent>();
-            TransformComponent* actionParent = actionTrans->GetParent();
+            Node3D* newTrans = newComp->As<Node3D>();
+            Node3D* actionParent = actionTrans->GetParent();
 
             if (actionParent != nullptr)
             {
@@ -231,7 +231,7 @@ void HierarchyPanel::DeleteComponent(Component* comp)
 
         if (comp->IsTransformComponent())
         {
-            TransformComponent* transComp = (TransformComponent*)comp;
+            Node3D* transComp = (Node3D*)comp;
             hasChildren = transComp->GetChildren().size() > 0;
         }
 
@@ -283,8 +283,8 @@ void HierarchyPanel::AttachSelectedComponent(Component* newParent, int32_t boneI
         return;
     }
 
-    TransformComponent* child = (TransformComponent*)GetSelectedComponent();
-    TransformComponent* parent = (TransformComponent*)newParent;
+    Node3D* child = (Node3D*)GetSelectedComponent();
+    Node3D* parent = (Node3D*)newParent;
 
     if (child->GetParent() != parent ||
         boneIdx != child->GetParentBoneIndex())
@@ -307,8 +307,8 @@ void HierarchyPanel::SetRootComponent(Component* newRoot)
     if (!newRoot->IsTransformComponent())
         return;
 
-    TransformComponent* newRootTrans = (TransformComponent*)newRoot;
-    TransformComponent* oldRootTrans = newRoot->GetOwner()->GetRootComponent();
+    Node3D* newRootTrans = (Node3D*)newRoot;
+    Node3D* oldRootTrans = newRoot->GetOwner()->GetRootComponent();
 
     if (newRoot->IsDefault() ||
         oldRootTrans->IsDefault())
@@ -348,8 +348,8 @@ void HierarchyPanel::HandleBonePrompt(TextField* tf)
     const std::string& boneName = tf->GetTextString();
     Component* selComp = GetSelectedComponent();
 
-    TransformComponent* selTrans = selComp ? selComp->As<TransformComponent>() : nullptr;
-    SkeletalMeshComponent* parentSk = (sActionComponent != nullptr) ? sActionComponent.Get<SkeletalMeshComponent>() : nullptr;
+    Node3D* selTrans = selComp ? selComp->As<Node3D>() : nullptr;
+    SkeletalMesh3D* parentSk = (sActionComponent != nullptr) ? sActionComponent.Get<SkeletalMesh3D>() : nullptr;
 
     if (boneName != "" &&
         parentSk != nullptr &&
@@ -410,7 +410,7 @@ void HierarchyPanel::RefreshCompButtons()
         std::vector<Component*> compList;
         std::vector<uint32_t> depthList;
 
-        std::function<void(TransformComponent*, uint32_t)> AddTransComp = [&](TransformComponent* comp, uint32_t depth)
+        std::function<void(Node3D*, uint32_t)> AddTransComp = [&](Node3D* comp, uint32_t depth)
         {
             if (comp != nullptr)
             {
@@ -419,7 +419,7 @@ void HierarchyPanel::RefreshCompButtons()
 
                 for (uint32_t i = 0; i < comp->GetNumChildren(); ++i)
                 {
-                    TransformComponent* child = comp->GetChild(i);
+                    Node3D* child = comp->GetChild(i);
 
                     if (child->GetOwner() == selectedActor)
                     {
@@ -439,7 +439,7 @@ void HierarchyPanel::RefreshCompButtons()
                 compList.push_back(components[i]);
                 depthList.push_back(0);
                 OCT_ASSERT(!components[i]->IsTransformComponent() ||
-                    static_cast<TransformComponent*>(components[i])->GetParent()->GetOwner() != selectedActor);
+                    static_cast<Node3D*>(components[i])->GetParent()->GetOwner() != selectedActor);
             }
         }
 
@@ -509,7 +509,7 @@ void HierarchyPanel::HandleInput()
             {
                 actions.push_back("Delete Component");
                 actions.push_back("Attach Selected");
-                if (comp->As<SkeletalMeshComponent>())
+                if (comp->As<SkeletalMesh3D>())
                 {
                     actions.push_back("Attach To Bone");
                 }

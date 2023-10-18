@@ -9,7 +9,7 @@
 
 int CameraComponent_Lua::SetPerspective(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float fovY = CHECK_NUMBER(L, 2);
     float aspectRatio = CHECK_NUMBER(L, 3);
     float zNear = CHECK_NUMBER(L, 4);
@@ -23,7 +23,7 @@ int CameraComponent_Lua::SetPerspective(lua_State* L)
 
 int CameraComponent_Lua::SetOrtho(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float width = CHECK_NUMBER(L, 2);
     float height = CHECK_NUMBER(L, 3);
     float zNear = CHECK_NUMBER(L, 4);
@@ -37,7 +37,7 @@ int CameraComponent_Lua::SetOrtho(lua_State* L)
 
 int CameraComponent_Lua::IsPerspective(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
     bool ret = comp->GetProjectionMode() == ProjectionMode::PERSPECTIVE;
 
@@ -47,7 +47,7 @@ int CameraComponent_Lua::IsPerspective(lua_State* L)
 
 int CameraComponent_Lua::IsOrtho(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
     bool ret = comp->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC;
 
@@ -57,7 +57,7 @@ int CameraComponent_Lua::IsOrtho(lua_State* L)
 
 int CameraComponent_Lua::GetNear(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
     float ret = comp->GetNearZ();
 
@@ -67,7 +67,7 @@ int CameraComponent_Lua::GetNear(lua_State* L)
 
 int CameraComponent_Lua::GetFar(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
     float ret = comp->GetFarZ();
 
@@ -77,7 +77,7 @@ int CameraComponent_Lua::GetFar(lua_State* L)
 
 int CameraComponent_Lua::GetFieldOfView(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
     float ret = comp->GetPerspectiveSettings().mFovY;
 
@@ -87,7 +87,7 @@ int CameraComponent_Lua::GetFieldOfView(lua_State* L)
 
 int CameraComponent_Lua::GetAspectRatio(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
     float ret = comp->GetPerspectiveSettings().mAspectRatio;
 
@@ -97,7 +97,7 @@ int CameraComponent_Lua::GetAspectRatio(lua_State* L)
 
 int CameraComponent_Lua::GetWidth(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
     float ret = comp->GetOrthoSettings().mWidth;
 
@@ -107,7 +107,7 @@ int CameraComponent_Lua::GetWidth(lua_State* L)
 
 int CameraComponent_Lua::GetHeight(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
     float ret = comp->GetOrthoSettings().mHeight;
 
@@ -117,7 +117,7 @@ int CameraComponent_Lua::GetHeight(lua_State* L)
 
 int CameraComponent_Lua::SetNear(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetNearZ(value);
@@ -127,7 +127,7 @@ int CameraComponent_Lua::SetNear(lua_State* L)
 
 int CameraComponent_Lua::SetFar(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetFarZ(value);
@@ -137,7 +137,7 @@ int CameraComponent_Lua::SetFar(lua_State* L)
 
 int CameraComponent_Lua::SetFieldOfView(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetFieldOfView(value);
@@ -147,7 +147,7 @@ int CameraComponent_Lua::SetFieldOfView(lua_State* L)
 
 int CameraComponent_Lua::SetAspectRatio(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetAspectRatio(value);
@@ -157,7 +157,7 @@ int CameraComponent_Lua::SetAspectRatio(lua_State* L)
 
 int CameraComponent_Lua::SetWidth(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetWidth(value);
@@ -167,7 +167,7 @@ int CameraComponent_Lua::SetWidth(lua_State* L)
 
 int CameraComponent_Lua::SetHeight(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetHeight(value);
@@ -177,7 +177,7 @@ int CameraComponent_Lua::SetHeight(lua_State* L)
 
 int CameraComponent_Lua::WorldToScreenPosition(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     glm::vec3 worldPos = CHECK_VECTOR(L, 2);
 
     glm::vec3 ret = comp->WorldToScreenPosition(worldPos);
@@ -188,7 +188,7 @@ int CameraComponent_Lua::WorldToScreenPosition(lua_State* L)
 
 int CameraComponent_Lua::ScreenToWorldPosition(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     int32_t x = CHECK_INTEGER(L, 2);
     int32_t y = CHECK_INTEGER(L, 3);
 
@@ -200,13 +200,13 @@ int CameraComponent_Lua::ScreenToWorldPosition(lua_State* L)
 
 int CameraComponent_Lua::TraceScreenToWorld(lua_State* L)
 {
-    CameraComponent* comp = CHECK_CAMERA_COMPONENT(L, 1);
+    Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     int32_t x = CHECK_INTEGER(L, 2);
     int32_t y = CHECK_INTEGER(L, 3);
     uint8_t colMask = 0xff;
     if (!lua_isnone(L, 4)) { colMask = (uint8_t)CHECK_INTEGER(L, 4); }
 
-    PrimitiveComponent* hitComp = nullptr;
+    Primitive3D* hitComp = nullptr;
     glm::vec3 worldPos = comp->TraceScreenToWorld(x, y, colMask, &hitComp);
 
     Vector_Lua::Create(L, worldPos);

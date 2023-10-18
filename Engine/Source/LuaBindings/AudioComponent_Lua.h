@@ -11,9 +11,9 @@
 
 #if LUA_ENABLED
 
-#define AUDIO_COMPONENT_LUA_NAME "AudioComponent"
+#define AUDIO_COMPONENT_LUA_NAME "Audio3D"
 #define AUDIO_COMPONENT_LUA_FLAG "cfAudioComponent"
-#define CHECK_AUDIO_COMPONENT(L, arg) static_cast<AudioComponent*>(CheckComponentLuaType(L, arg, AUDIO_COMPONENT_LUA_NAME, AUDIO_COMPONENT_LUA_FLAG));
+#define CHECK_AUDIO_COMPONENT(L, arg) static_cast<Audio3D*>(CheckComponentLuaType(L, arg, AUDIO_COMPONENT_LUA_NAME, AUDIO_COMPONENT_LUA_FLAG));
 
 struct AudioComponent_Lua
 {

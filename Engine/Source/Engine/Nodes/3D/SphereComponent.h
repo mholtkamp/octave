@@ -2,14 +2,14 @@
 
 #include "Nodes/3D/PrimitiveComponent.h"
 
-class SphereComponent : public PrimitiveComponent
+class Sphere3D : public Primitive3D
 {
 public:
 
-    DECLARE_NODE(SphereComponent, PrimitiveComponent);
+    DECLARE_NODE(Sphere3D, Primitive3D);
 
-    SphereComponent();
-    ~SphereComponent();
+    Sphere3D();
+    ~Sphere3D();
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;

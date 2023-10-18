@@ -8,7 +8,7 @@
 
 int SphereComponent_Lua::GetRadius(lua_State* L)
 {
-    SphereComponent* comp = CHECK_SPHERE_COMPONENT(L, 1);
+    Sphere3D* comp = CHECK_SPHERE_COMPONENT(L, 1);
 
     float ret = comp->GetRadius();
 
@@ -18,7 +18,7 @@ int SphereComponent_Lua::GetRadius(lua_State* L)
 
 int SphereComponent_Lua::SetRadius(lua_State* L)
 {
-    SphereComponent* comp = CHECK_SPHERE_COMPONENT(L, 1);
+    Sphere3D* comp = CHECK_SPHERE_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetRadius(value);

@@ -26,7 +26,7 @@ struct AudioClassData
 struct AudioSource
 {
     SoundWaveRef mSoundWave;
-    AudioComponent* mComponent;
+    Audio3D* mComponent;
     float mVolumeMult;
     float mPitchMult;
     int32_t mPriority;
@@ -43,7 +43,7 @@ struct AudioSource
 
     void Set(
         SoundWave* soundWave,
-        AudioComponent* component,
+        Audio3D* component,
         float volumeMult,
         float pitchMult,
         int32_t priority,
@@ -162,7 +162,7 @@ void CalcVolumeAttenuationLR(
 void PlayAudio(
     uint32_t sourceIndex,
     SoundWave* soundWave,
-    AudioComponent* component,
+    Audio3D* component,
     float volumeMult,
     float pitchMult,
     int32_t priority,
@@ -280,12 +280,12 @@ void AudioManager::Update(float deltaTime)
     //     Do not evict 3D sounds that are out of range. We want to hear them when we return.
     //     Evict components if out of hearing range.
     // (2) -- Play New Sounds --
-    //     Iterate over AudioComponent list. If any component is playing and in range, but has no audio source active,
+    //     Iterate over Audio3D list. If any component is playing and in range, but has no audio source active,
     //     then find an available audio source and Play(). Use component's mPlayTime var to start at correct time.
 
 
     // (1) Update Active Sources
-    TransformComponent* listener = GetWorld()->GetAudioReceiver();
+    Node3D* listener = GetWorld()->GetAudioReceiver();
     glm::vec3 listenerPos = listener ? listener->GetAbsolutePosition() : glm::vec3(0,0,0);
     glm::vec3 listenerRight = listener ? listener->GetRightVector() : glm::vec3(1.0f, 0.0f, 0.0f);
 
@@ -324,7 +324,7 @@ void AudioManager::Update(float deltaTime)
                 // Update attenuation of the 3D sound
                 if (sAudioSources[i].mComponent != nullptr)
                 {
-                    AudioComponent* comp = sAudioSources[i].mComponent;
+                    Audio3D* comp = sAudioSources[i].mComponent;
                     sAudioSources[i].mPosition = comp->GetAbsolutePosition();
                     sAudioSources[i].mVolumeMult = comp->GetVolume();
                 }
@@ -389,11 +389,11 @@ void AudioManager::Update(float deltaTime)
     World* world = GetWorld();
     if (world != nullptr)
     {
-        const std::vector<AudioComponent*>& components = GetWorld()->GetAudioComponents();
+        const std::vector<Audio3D*>& components = GetWorld()->GetAudioComponents();
 
         for (uint32_t i = 0; i < components.size(); ++i)
         {
-            AudioComponent* comp = components[i];
+            Audio3D* comp = components[i];
 
             // In the case that the component is playing, but it is inaudible (not a current sound source)
             // Then we need to check if it should be audible
@@ -540,7 +540,7 @@ void AudioManager::UpdateSound(
     }
 }
 
-void AudioManager::StopComponent(AudioComponent* comp)
+void AudioManager::StopComponent(Audio3D* comp)
 {
     for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
     {

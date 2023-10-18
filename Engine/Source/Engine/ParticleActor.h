@@ -22,6 +22,6 @@ public:
 protected:
 
     ParticleSystemRef mParticleSystem;
-    ParticleComponent* mParticleComp = nullptr;
+    Particle3D* mParticleComp = nullptr;
     float mTimeAlive = 0.0f;
 };

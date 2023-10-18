@@ -248,7 +248,7 @@ void ViewportPanel::HandleWorldPressed(Button* button)
         {
             for (uint32_t c = 0; c < actors[a]->GetNumComponents(); ++c)
             {
-                StaticMeshComponent* meshComp = actors[a]->GetComponent((uint32_t)c)->As<StaticMeshComponent>();
+                StaticMesh3D* meshComp = actors[a]->GetComponent((uint32_t)c)->As<StaticMesh3D>();
                 if (meshComp != nullptr)
                 {
                     meshComp->ClearInstanceColors();
@@ -296,7 +296,7 @@ void HandleSpawnActorPressed(Button* button)
         if (strncmp(factories[i]->GetClassName(), actorTypeName.c_str(), MAX_PATH_SIZE) == 0)
         {
             TypeId actorType = factories[i]->GetType();
-            CameraComponent* camera = GetWorld()->GetActiveCamera();
+            Camera3D* camera = GetWorld()->GetActiveCamera();
             float focalDistance = PanelManager::Get()->GetViewportPanel()->GetFocalDistance();
             glm::vec3 spawnPos = camera->GetAbsolutePosition() + focalDistance * camera->GetForwardVector();
 
@@ -526,7 +526,7 @@ float ViewportPanel::GetFocalDistance() const
 void ViewportPanel::HandleDefaultControls()
 {
     Renderer* renderer = Renderer::Get();
-    CameraComponent* camera = GetWorld()->GetActiveCamera();
+    Camera3D* camera = GetWorld()->GetActiveCamera();
     Actor* cameraActor = camera ? camera->GetOwner() : nullptr;
     glm::vec3 focus = camera->GetAbsolutePosition() + camera->GetForwardVector() * mFocalDistance;
 
@@ -549,7 +549,7 @@ void ViewportPanel::HandleDefaultControls()
             int32_t mouseX = 0;
             int32_t mouseY = 0;
             GetMousePosition(mouseX, mouseY);
-            TransformComponent* selectComp = Renderer::Get()->ProcessHitCheck(GetWorld(), mouseX, mouseY);
+            Node3D* selectComp = Renderer::Get()->ProcessHitCheck(GetWorld(), mouseX, mouseY);
             Actor* selectActor = selectComp ? selectComp->GetOwner() : nullptr;
 
             if (GetEditorMode() == EditorMode::Blueprint)
@@ -651,7 +651,7 @@ void ViewportPanel::HandleDefaultControls()
 
         if (IsKeyJustDown(KEY_NUMPAD5))
         {
-            CameraComponent* camera = GetWorld()->GetActiveCamera();
+            Camera3D* camera = GetWorld()->GetActiveCamera();
             if (camera != nullptr)
             {
                 ProjectionMode newMode = (camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC) ? ProjectionMode::PERSPECTIVE : ProjectionMode::ORTHOGRAPHIC;
@@ -664,7 +664,7 @@ void ViewportPanel::HandleDefaultControls()
         {
             // Focus on selected object
             Component* comp = GetSelectedComponent();
-            TransformComponent* transComp = (comp && comp->IsTransformComponent()) ? static_cast<TransformComponent*>(comp) : nullptr;
+            Node3D* transComp = (comp && comp->IsTransformComponent()) ? static_cast<Node3D*>(comp) : nullptr;
 
             if (transComp != nullptr && transComp != camera)
             {
@@ -827,8 +827,8 @@ void ViewportPanel::HandleDefaultControls()
             bool orient = deltaPressTime < 0.5f;
 
              Component* selComp = GetSelectedComponent();
-             TransformComponent* transComp = selComp ? selComp->As<TransformComponent>() : nullptr;
-             PrimitiveComponent* primComp = selComp ? selComp->As<PrimitiveComponent>() : nullptr;
+             Node3D* transComp = selComp ? selComp->As<Node3D>() : nullptr;
+             Primitive3D* primComp = selComp ? selComp->As<Primitive3D>() : nullptr;
 
              if (transComp)
              {
@@ -930,7 +930,7 @@ void ViewportPanel::HandleDefaultControls()
             glm::mat4 camTransform = camera->GetTransform();
 
             Component* selComp = GetSelectedComponent();
-            TransformComponent* transComp = selComp ? selComp->As<TransformComponent>() : nullptr;
+            Node3D* transComp = selComp ? selComp->As<Node3D>() : nullptr;
 
             if (transComp)
             {
@@ -941,7 +941,7 @@ void ViewportPanel::HandleDefaultControls()
         // Handle zoom
         if (scrollDelta != 0)
         {
-            CameraComponent* camera = GetWorld()->GetActiveCamera();
+            Camera3D* camera = GetWorld()->GetActiveCamera();
 
             if (camera->GetProjectionMode() == ProjectionMode::PERSPECTIVE)
             {
@@ -985,7 +985,7 @@ void ViewportPanel::HandleDefaultControls()
 
 void ViewportPanel::HandlePilotControls()
 {
-    CameraComponent* camera = GetWorld()->GetActiveCamera();
+    Camera3D* camera = GetWorld()->GetActiveCamera();
     float deltaTime = GetAppClock()->DeltaTime();
 
     int32_t scrollDelta = GetScrollWheelDelta();
@@ -1070,18 +1070,18 @@ void ViewportPanel::HandleTransformControls()
     if (component == nullptr || !component->IsTransformComponent())
         return;
 
-    TransformComponent* transComp = static_cast<TransformComponent*>(component);
+    Node3D* transComp = static_cast<Node3D*>(component);
 
-    std::vector<TransformComponent*> transComps;
+    std::vector<Node3D*> transComps;
     for (uint32_t i = 0; i < selectedComps.size(); ++i)
     {
         if (selectedComps[i]->IsTransformComponent())
         {
-            transComps.push_back((TransformComponent*)selectedComps[i]);
+            transComps.push_back((Node3D*)selectedComps[i]);
         }
     }
 
-    CameraComponent* camera = GetWorld()->GetActiveCamera();
+    Camera3D* camera = GetWorld()->GetActiveCamera();
     glm::mat4 invViewMat = camera->CalculateInvViewMatrix();
 
     HandleAxisLocking();
@@ -1256,7 +1256,7 @@ void ViewportPanel::HandleTransformControls()
 void ViewportPanel::HandlePanControls()
 {
     // Pan the camera
-    CameraComponent* camera = GetWorld()->GetActiveCamera();
+    Camera3D* camera = GetWorld()->GetActiveCamera();
     glm::vec3 cameraPos = camera->GetAbsolutePosition();
     glm::vec3 right = camera->GetRightVector();
     glm::vec3 up = camera->GetUpVector();
@@ -1273,7 +1273,7 @@ void ViewportPanel::HandlePanControls()
 
 void ViewportPanel::HandleOrbitControls()
 {
-    CameraComponent* camera = GetWorld()->GetActiveCamera();
+    Camera3D* camera = GetWorld()->GetActiveCamera();
     glm::vec2 delta = HandleLockedCursor();
     glm::vec3 cameraPos = camera->GetPosition();
     glm::vec3 cameraRot = camera->GetRotationEuler();
@@ -1403,7 +1403,7 @@ void ViewportPanel::SavePreTransforms()
 
     for (uint32_t i = 0; i < selComps.size(); ++i)
     {
-        TransformComponent* transComp = (selComps[i] && selComps[i]->IsTransformComponent()) ? static_cast<TransformComponent*>(selComps[i]) : nullptr;
+        Node3D* transComp = (selComps[i] && selComps[i]->IsTransformComponent()) ? static_cast<Node3D*>(selComps[i]) : nullptr;
 
         if (transComp)
         {
@@ -1424,7 +1424,7 @@ void ViewportPanel::RestorePreTransforms()
             break;
         }
 
-        TransformComponent* transComp = (selComps[i] && selComps[i]->IsTransformComponent()) ? static_cast<TransformComponent*>(selComps[i]) : nullptr;
+        Node3D* transComp = (selComps[i] && selComps[i]->IsTransformComponent()) ? static_cast<Node3D*>(selComps[i]) : nullptr;
 
         if (transComp)
         {

@@ -7,7 +7,7 @@
 
 int StaticMeshComponent_Lua::SetStaticMesh(lua_State* L)
 {
-    StaticMeshComponent* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
+    StaticMesh3D* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
     StaticMesh* mesh = nullptr;
 
     if (!lua_isnil(L, 2))
@@ -22,7 +22,7 @@ int StaticMeshComponent_Lua::SetStaticMesh(lua_State* L)
 
 int StaticMeshComponent_Lua::GetStaticMesh(lua_State* L)
 {
-    StaticMeshComponent* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
+    StaticMesh3D* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
 
     StaticMesh* ret = comp->GetStaticMesh();
 
@@ -32,7 +32,7 @@ int StaticMeshComponent_Lua::GetStaticMesh(lua_State* L)
 
 int StaticMeshComponent_Lua::SetUseTriangleCollision(lua_State* L)
 {
-    StaticMeshComponent* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
+    StaticMesh3D* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
 
     comp->SetUseTriangleCollision(value);
@@ -42,7 +42,7 @@ int StaticMeshComponent_Lua::SetUseTriangleCollision(lua_State* L)
 
 int StaticMeshComponent_Lua::GetUseTriangleCollision(lua_State* L)
 {
-    StaticMeshComponent* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
+    StaticMesh3D* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
 
     bool ret = comp->GetUseTriangleCollision();
 
@@ -52,7 +52,7 @@ int StaticMeshComponent_Lua::GetUseTriangleCollision(lua_State* L)
 
 int StaticMeshComponent_Lua::GetBakeLighting(lua_State* L)
 {
-    StaticMeshComponent* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
+    StaticMesh3D* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
 
     bool ret = comp->GetBakeLighting();
 

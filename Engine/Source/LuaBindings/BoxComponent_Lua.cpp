@@ -8,7 +8,7 @@
 
 int BoxComponent_Lua::GetExtents(lua_State* L)
 {
-    BoxComponent* comp = CHECK_BOX_COMPONENT(L, 1);
+    Box3D* comp = CHECK_BOX_COMPONENT(L, 1);
 
     glm::vec3 ret = comp->GetExtents();
 
@@ -18,7 +18,7 @@ int BoxComponent_Lua::GetExtents(lua_State* L)
 
 int BoxComponent_Lua::SetExtents(lua_State* L)
 {
-    BoxComponent* comp = CHECK_BOX_COMPONENT(L, 1);
+    Box3D* comp = CHECK_BOX_COMPONENT(L, 1);
     glm::vec3 value = CHECK_VECTOR(L, 2);
 
     comp->SetExtents(value);

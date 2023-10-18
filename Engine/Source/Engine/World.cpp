@@ -112,7 +112,7 @@ void World::SetTestDirectionalLight()
     if (mDirectionalLight == nullptr)
     {
         Actor* dirLightActor = SpawnActor<Actor>();
-        mDirectionalLight = dirLightActor->CreateComponent<DirectionalLightComponent>();
+        mDirectionalLight = dirLightActor->CreateComponent<DirectionalLight3D>();
         dirLightActor->SetRootComponent(mDirectionalLight);
         dirLightActor->SetName("Default Light");
     }
@@ -129,7 +129,7 @@ void World::SpawnDefaultCamera()
     if (GetActiveCamera() == nullptr)
     {
         Actor* cameraActor = SpawnActor<Actor>();
-        mActiveCamera = cameraActor->CreateComponent<CameraComponent>();
+        mActiveCamera = cameraActor->CreateComponent<Camera3D>();
         cameraActor->SetRootComponent(mActiveCamera);
         cameraActor->SetName("Default Camera");
         cameraActor->SetPersitent(true);
@@ -436,7 +436,7 @@ const std::vector<Line>& World::GetLines() const
     return mLines;
 }
 
-const std::vector<LightComponent*>& World::GetLightComponents()
+const std::vector<Light3D*>& World::GetLightComponents()
 {
     return mLightComponents;
 }
@@ -502,12 +502,12 @@ btDbvtBroadphase* World::GetBroadphase()
     return mBroadphase;
 }
 
-void World::PurgeOverlaps(PrimitiveComponent* prim)
+void World::PurgeOverlaps(Primitive3D* prim)
 {
     for (int32_t i = (int32_t)mCurrentOverlaps.size() - 1; i >= 0; --i)
     {
-        PrimitiveComponent* compA = mCurrentOverlaps[i].mComponentA;
-        PrimitiveComponent* compB = mCurrentOverlaps[i].mComponentB;
+        Primitive3D* compA = mCurrentOverlaps[i].mComponentA;
+        Primitive3D* compB = mCurrentOverlaps[i].mComponentB;
 
         if (compA == prim ||
             compB == prim)
@@ -539,7 +539,7 @@ void World::RayTest(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTe
 
     if (result.m_collisionObject != nullptr)
     {
-        outResult.mHitComponent = reinterpret_cast<PrimitiveComponent*>(result.m_collisionObject->getUserPointer());
+        outResult.mHitComponent = reinterpret_cast<Primitive3D*>(result.m_collisionObject->getUserPointer());
     }
     else
     {
@@ -568,11 +568,11 @@ void World::RayTestMulti(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, 
         outResult.mHitPositions.push_back({ result.m_hitPointWorld[i].x(), result.m_hitPointWorld[i].y(), result.m_hitPointWorld[i].z() });
         outResult.mHitNormals.push_back({ result.m_hitNormalWorld[i].x(), result.m_hitNormalWorld[i].y(), result.m_hitNormalWorld[i].z() });
         outResult.mHitFractions.push_back(result.m_hitFractions[i]);
-        outResult.mHitComponents.push_back(reinterpret_cast<PrimitiveComponent*>(result.m_collisionObjects[i]->getUserPointer()));
+        outResult.mHitComponents.push_back(reinterpret_cast<Primitive3D*>(result.m_collisionObjects[i]->getUserPointer()));
     }
 }
 
-void World::SweepTest(PrimitiveComponent* primComp, glm::vec3 start, glm::vec3 end, uint8_t collisionMask, SweepTestResult& outResult)
+void World::SweepTest(Primitive3D* primComp, glm::vec3 start, glm::vec3 end, uint8_t collisionMask, SweepTestResult& outResult)
 {
     if (primComp->GetCollisionShape() == nullptr ||
         primComp->GetCollisionShape()->isCompound() ||
@@ -636,7 +636,7 @@ void World::SweepTest(
 
     if (result.m_hitCollisionObject != nullptr)
     {
-        outResult.mHitComponent = reinterpret_cast<PrimitiveComponent*>(result.m_hitCollisionObject->getUserPointer());
+        outResult.mHitComponent = reinterpret_cast<Primitive3D*>(result.m_hitCollisionObject->getUserPointer());
     }
     else
     {
@@ -648,19 +648,19 @@ void World::RegisterComponent(Component* comp)
 {
     TypeId compType = comp->GetType();
 
-    if (compType == AudioComponent::GetStaticType())
+    if (compType == Audio3D::GetStaticType())
     {
 #if _DEBUG
-        OCT_ASSERT(std::find(mAudioComponents.begin(), mAudioComponents.end(), (AudioComponent*)comp) == mAudioComponents.end());
+        OCT_ASSERT(std::find(mAudioComponents.begin(), mAudioComponents.end(), (Audio3D*)comp) == mAudioComponents.end());
 #endif
-        mAudioComponents.push_back((AudioComponent*) comp);
+        mAudioComponents.push_back((Audio3D*) comp);
     }
     else if (comp->IsLightComponent())
     {
 #if _DEBUG
-        OCT_ASSERT(std::find(mLightComponents.begin(), mLightComponents.end(), (LightComponent*)comp) == mLightComponents.end());
+        OCT_ASSERT(std::find(mLightComponents.begin(), mLightComponents.end(), (Light3D*)comp) == mLightComponents.end());
 #endif
-        mLightComponents.push_back((LightComponent*)comp);
+        mLightComponents.push_back((Light3D*)comp);
     }
 }
 
@@ -668,21 +668,21 @@ void World::UnregisterComponent(Component* comp)
 {
     TypeId compType = comp->GetType();
 
-    if (compType == AudioComponent::GetStaticType())
+    if (compType == Audio3D::GetStaticType())
     {
-        auto it = std::find(mAudioComponents.begin(), mAudioComponents.end(), (AudioComponent*)comp);
+        auto it = std::find(mAudioComponents.begin(), mAudioComponents.end(), (Audio3D*)comp);
         OCT_ASSERT(it != mAudioComponents.end());
         mAudioComponents.erase(it);
     }
     else if (comp->IsLightComponent())
     {
-        auto it = std::find(mLightComponents.begin(), mLightComponents.end(), (LightComponent*)comp);
+        auto it = std::find(mLightComponents.begin(), mLightComponents.end(), (Light3D*)comp);
         OCT_ASSERT(it != mLightComponents.end());
         mLightComponents.erase(it);
     }
 }
 
-const std::vector<AudioComponent*>& World::GetAudioComponents() const
+const std::vector<Audio3D*>& World::GetAudioComponents() const
 {
     return mAudioComponents;
 }
@@ -844,8 +844,8 @@ void World::Update(float deltaTime)
             const btCollisionObject* object0 = manifold->getBody0();
             const btCollisionObject* object1 = manifold->getBody1();
 
-            PrimitiveComponent* prim0 = reinterpret_cast<PrimitiveComponent*>(object0->getUserPointer());
-            PrimitiveComponent* prim1 = reinterpret_cast<PrimitiveComponent*>(object1->getUserPointer());
+            Primitive3D* prim0 = reinterpret_cast<Primitive3D*>(object0->getUserPointer());
+            Primitive3D* prim1 = reinterpret_cast<Primitive3D*>(object1->getUserPointer());
 
             if (prim0 == nullptr || prim1 == nullptr || prim0 == prim1)
                 continue;
@@ -955,17 +955,17 @@ void World::Update(float deltaTime)
     }
 }
 
-CameraComponent* World::GetActiveCamera()
+Camera3D* World::GetActiveCamera()
 {
     return mActiveCamera;
 }
 
-CameraComponent* World::GetDefaultCamera()
+Camera3D* World::GetDefaultCamera()
 {
-    return mDefaultCamera.Get<CameraComponent>();
+    return mDefaultCamera.Get<Camera3D>();
 }
 
-TransformComponent* World::GetAudioReceiver()
+Node3D* World::GetAudioReceiver()
 {
     if (mAudioReceiver != nullptr)
     {
@@ -980,12 +980,12 @@ TransformComponent* World::GetAudioReceiver()
     return nullptr;
 }
 
-void World::SetActiveCamera(CameraComponent* activeCamera)
+void World::SetActiveCamera(Camera3D* activeCamera)
 {
     mActiveCamera = activeCamera;
 }
 
-void World::SetAudioReceiver(TransformComponent* newReceiver)
+void World::SetAudioReceiver(Node3D* newReceiver)
 {
     mAudioReceiver = newReceiver;
 }

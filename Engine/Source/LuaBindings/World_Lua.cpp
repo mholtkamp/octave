@@ -38,7 +38,7 @@ int World_Lua::GetActiveCamera(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
     
-    CameraComponent* cameraComp = world->GetActiveCamera();
+    Camera3D* cameraComp = world->GetActiveCamera();
 
     Component_Lua::Create(L, cameraComp);
     return 1;
@@ -48,7 +48,7 @@ int World_Lua::GetAudioReceiver(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
 
-    TransformComponent* receiverComp = world->GetAudioReceiver();
+    Node3D* receiverComp = world->GetAudioReceiver();
 
     Component_Lua::Create(L, receiverComp);
     return 1;
@@ -57,7 +57,7 @@ int World_Lua::GetAudioReceiver(lua_State* L)
 int World_Lua::SetActiveCamera(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
-    CameraComponent* cameraComp = CHECK_CAMERA_COMPONENT(L, 2);
+    Camera3D* cameraComp = CHECK_CAMERA_COMPONENT(L, 2);
 
     world->SetActiveCamera(cameraComp);
 
@@ -67,7 +67,7 @@ int World_Lua::SetActiveCamera(lua_State* L)
 int World_Lua::SetAudioReceiver(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
-    TransformComponent* transformComp = nullptr;
+    Node3D* transformComp = nullptr;
     if (!lua_isnil(L, 2))
     {
         transformComp = CHECK_TRANSFORM_COMPONENT(L, 2);
@@ -375,7 +375,7 @@ int World_Lua::RayTestMulti(lua_State* L)
 int World_Lua::SweepTest(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
-    PrimitiveComponent* primComp = CHECK_PRIMITIVE_COMPONENT(L, 2);
+    Primitive3D* primComp = CHECK_PRIMITIVE_COMPONENT(L, 2);
     glm::vec3 start = CHECK_VECTOR(L, 3);
     glm::vec3 end = CHECK_VECTOR(L, 4);
     uint8_t colMask = (uint8_t)CHECK_INTEGER(L, 5);

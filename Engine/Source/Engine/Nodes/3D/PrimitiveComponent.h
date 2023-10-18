@@ -8,9 +8,9 @@
 
 #include <vector>
 
-//typedef void(*BeginOverlapHandlerFP)(PrimitiveComponent* thisPrim, PrimitiveComponent* otherPrim);
-//typedef void(*EndOverlapHandlerFP)(PrimitiveComponent* thisPrim, PrimitiveComponent* otherPrim);
-//typedef void(*CollisionHandlerFP)(PrimitiveComponent* thisPrim, PrimitiveComponent* otherPrim, btPersistentManifold* manifold);
+//typedef void(*BeginOverlapHandlerFP)(Primitive3D* thisPrim, Primitive3D* otherPrim);
+//typedef void(*EndOverlapHandlerFP)(Primitive3D* thisPrim, Primitive3D* otherPrim);
+//typedef void(*CollisionHandlerFP)(Primitive3D* thisPrim, Primitive3D* otherPrim, btPersistentManifold* manifold);
 
 ATTRIBUTE_ALIGNED16(struct) OctaveMotionState : public btMotionState
 {
@@ -42,14 +42,14 @@ ATTRIBUTE_ALIGNED16(struct) OctaveMotionState : public btMotionState
     }
 };
 
-class PrimitiveComponent : public TransformComponent
+class Primitive3D : public Node3D
 {
 public:
 
-    DECLARE_RTTI(PrimitiveComponent, TransformComponent);
+    DECLARE_RTTI(Primitive3D, Node3D);
 
-    PrimitiveComponent();
-    virtual ~PrimitiveComponent();
+    Primitive3D();
+    virtual ~Primitive3D();
 
     virtual void Create() override;
     virtual void Destroy() override;

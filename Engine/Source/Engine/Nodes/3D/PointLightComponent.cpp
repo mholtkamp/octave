@@ -13,47 +13,47 @@
 #undef min
 #undef max
 
-FORCE_LINK_DEF(PointLightComponent);
-DEFINE_NODE(PointLightComponent);
+FORCE_LINK_DEF(PointLight3D);
+DEFINE_NODE(PointLight3D);
 
-PointLightComponent::PointLightComponent() :
+PointLight3D::PointLight3D() :
     mRadius(5)
 {
     mName = "Point Light";
 }
 
-PointLightComponent::~PointLightComponent()
+PointLight3D::~PointLight3D()
 {
 }
 
-void PointLightComponent::Create()
+void PointLight3D::Create()
 {
-    LightComponent::Create();
+    Light3D::Create();
 }
 
-void PointLightComponent::Destroy()
+void PointLight3D::Destroy()
 {
-    LightComponent::Destroy();
+    Light3D::Destroy();
 }
 
-const char* PointLightComponent::GetTypeName() const
+const char* PointLight3D::GetTypeName() const
 {
     return "PointLight";
 }
 
-void PointLightComponent::GatherProperties(std::vector<Property>& outProps)
+void PointLight3D::GatherProperties(std::vector<Property>& outProps)
 {
-    LightComponent::GatherProperties(outProps);
+    Light3D::GatherProperties(outProps);
 
     outProps.push_back(Property(DatumType::Float, "Radius", this, &mRadius));
 }
 
-void PointLightComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+void PointLight3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    LightComponent::GatherProxyDraws(inoutDraws);
+    Light3D::GatherProxyDraws(inoutDraws);
 
-    if (GetType() == PointLightComponent::GetStaticType())
+    if (GetType() == PointLight3D::GetStaticType())
     {
         glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.3f, 1.0f);
 
@@ -92,34 +92,34 @@ void PointLightComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif // DEBUG_DRAW_ENABLED
 }
 
-void PointLightComponent::SaveStream(Stream& stream)
+void PointLight3D::SaveStream(Stream& stream)
 {
-    LightComponent::SaveStream(stream);
+    Light3D::SaveStream(stream);
     stream.WriteFloat(mRadius);
 }
 
-void PointLightComponent::LoadStream(Stream& stream)
+void PointLight3D::LoadStream(Stream& stream)
 {
-    LightComponent::LoadStream(stream);
+    Light3D::LoadStream(stream);
     mRadius = stream.ReadFloat();
 }
 
-bool PointLightComponent::IsPointLightComponent() const
+bool PointLight3D::IsPointLightComponent() const
 {
     return true;
 }
 
-bool PointLightComponent::IsDirectionalLightComponent() const
+bool PointLight3D::IsDirectionalLightComponent() const
 {
     return false;
 }
 
-void PointLightComponent::SetRadius(float radius)
+void PointLight3D::SetRadius(float radius)
 {
     mRadius = radius;
 }
 
-float PointLightComponent::GetRadius() const
+float PointLight3D::GetRadius() const
 {
     return mRadius;
 }

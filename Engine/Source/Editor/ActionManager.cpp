@@ -554,7 +554,7 @@ Actor* ActionManager::SpawnActor(TypeId actorType, glm::vec3 position)
 
     if (spawnedActor->GetRootComponent() == nullptr)
     {
-        TransformComponent* defaultRoot = spawnedActor->CreateComponent<TransformComponent>();
+        Node3D* defaultRoot = spawnedActor->CreateComponent<Node3D>();
         defaultRoot->SetName("Root");
         spawnedActor->SetRootComponent(defaultRoot);
     }
@@ -578,7 +578,7 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
     if (name == BASIC_STATIC_MESH)
     {
         spawnedActor = GetWorld()->SpawnActor<Actor>();
-        StaticMeshComponent* meshComp = spawnedActor->CreateComponent<StaticMeshComponent>();
+        StaticMesh3D* meshComp = spawnedActor->CreateComponent<StaticMesh3D>();
         spawnedActor->SetRootComponent(meshComp);
 
         std::string actorName = "Static Mesh";
@@ -606,7 +606,7 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
     {
         // Spawn point light actor
         spawnedActor = GetWorld()->SpawnActor<Actor>();
-        PointLightComponent* pointLightComp = spawnedActor->CreateComponent<PointLightComponent>();
+        PointLight3D* pointLightComp = spawnedActor->CreateComponent<PointLight3D>();
         spawnedActor->SetRootComponent(pointLightComp);
         pointLightComp->SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
         pointLightComp->SetRadius(10.0f);
@@ -615,13 +615,13 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
     else if (name == BASIC_TRANSFORM)
     {
         spawnedActor = GetWorld()->SpawnActor<Actor>();
-        TransformComponent* transformComp = spawnedActor->CreateComponent<TransformComponent>();
+        Node3D* transformComp = spawnedActor->CreateComponent<Node3D>();
         spawnedActor->SetRootComponent(transformComp);
     }
     else if (name == BASIC_DIRECTIONAL_LIGHT)
     {
         spawnedActor = GetWorld()->SpawnActor<Actor>();
-        DirectionalLightComponent* dirLightComp = spawnedActor->CreateComponent<DirectionalLightComponent>();
+        DirectionalLight3D* dirLightComp = spawnedActor->CreateComponent<DirectionalLight3D>();
         dirLightComp->SetLightingDomain(LightingDomain::All);
         spawnedActor->SetRootComponent(dirLightComp);
     }
@@ -637,7 +637,7 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
 
             // Spawn skeletal mesh actor.
             spawnedActor = GetWorld()->SpawnActor<Actor>();
-            SkeletalMeshComponent* skeletalMeshComp = spawnedActor->CreateComponent<SkeletalMeshComponent>();
+            SkeletalMesh3D* skeletalMeshComp = spawnedActor->CreateComponent<SkeletalMesh3D>();
             spawnedActor->SetRootComponent(skeletalMeshComp);
             skeletalMeshComp->SetSkeletalMesh(mesh);
         }
@@ -645,19 +645,19 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
     else if (name == BASIC_BOX)
     {
         spawnedActor = GetWorld()->SpawnActor<Actor>();
-        BoxComponent* boxComponent = spawnedActor->CreateComponent<BoxComponent>();
+        Box3D* boxComponent = spawnedActor->CreateComponent<Box3D>();
         spawnedActor->SetRootComponent(boxComponent);
     }
     else if (name == BASIC_SPHERE)
     {
         spawnedActor = GetWorld()->SpawnActor<Actor>();
-        SphereComponent* sphereComponent = spawnedActor->CreateComponent<SphereComponent>();
+        Sphere3D* sphereComponent = spawnedActor->CreateComponent<Sphere3D>();
         spawnedActor->SetRootComponent(sphereComponent);
     }
     else if (name == BASIC_CAPSULE)
     {
         spawnedActor = GetWorld()->SpawnActor<Actor>();
-        CapsuleComponent* capsuleComponent = spawnedActor->CreateComponent<CapsuleComponent>();
+        Capsule3D* capsuleComponent = spawnedActor->CreateComponent<Capsule3D>();
         spawnedActor->SetRootComponent(capsuleComponent);
     }
     else if (name == BASIC_PARTICLE)
@@ -672,7 +672,7 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
 
         // Spawn a Particle actor
         spawnedActor = GetWorld()->SpawnActor<Actor>();
-        ParticleComponent* particleComponent = spawnedActor->CreateComponent<ParticleComponent>();
+        Particle3D* particleComponent = spawnedActor->CreateComponent<Particle3D>();
         spawnedActor->SetRootComponent(particleComponent);
         particleComponent->SetParticleSystem(particleSystem);
     }
@@ -691,7 +691,7 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
         {
             // Spawn an Audio actor
             spawnedActor = GetWorld()->SpawnActor<Actor>();
-            AudioComponent* audioComponent = spawnedActor->CreateComponent<AudioComponent>();
+            Audio3D* audioComponent = spawnedActor->CreateComponent<Audio3D>();
             spawnedActor->SetRootComponent(audioComponent);
             audioComponent->SetSoundWave(soundWave);
             audioComponent->SetLoop(true);
@@ -716,13 +716,13 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
     else if (name == BASIC_CAMERA)
     {
         spawnedActor = GetWorld()->SpawnActor<Actor>();
-        CameraComponent* cameraComponent = spawnedActor->CreateComponent<CameraComponent>();
+        Camera3D* cameraComponent = spawnedActor->CreateComponent<Camera3D>();
         spawnedActor->SetRootComponent(cameraComponent);
     }
     else if (name == BASIC_TEXT_MESH)
     {
         spawnedActor = GetWorld()->SpawnActor<Actor>();
-        TextMeshComponent* textComponent = spawnedActor->CreateComponent<TextMeshComponent>();
+        TextMesh3D* textComponent = spawnedActor->CreateComponent<TextMesh3D>();
         spawnedActor->SetRootComponent(textComponent);
     }
 
@@ -801,9 +801,9 @@ void ActionManager::EXE_EditProperty(void* owner, PropertyOwnerType ownerType, c
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_EditTransform(TransformComponent* transComp, const glm::mat4& transform)
+void ActionManager::EXE_EditTransform(Node3D* transComp, const glm::mat4& transform)
 {
-    std::vector<TransformComponent*> transComps;
+    std::vector<Node3D*> transComps;
     transComps.push_back(transComp);
 
     std::vector<glm::mat4> transforms;
@@ -813,7 +813,7 @@ void ActionManager::EXE_EditTransform(TransformComponent* transComp, const glm::
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_EditTransforms(const std::vector<TransformComponent*>& transComps, const std::vector<glm::mat4>& newTransforms)
+void ActionManager::EXE_EditTransforms(const std::vector<Node3D*>& transComps, const std::vector<glm::mat4>& newTransforms)
 {
     ActionEditTransforms* action = new ActionEditTransforms(transComps, newTransforms);
     ActionManager::Get()->ExecuteAction(action);
@@ -861,31 +861,31 @@ void ActionManager::EXE_RemoveComponent(Component* comp)
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_AttachComponent(TransformComponent* comp, TransformComponent* newParent, int32_t boneIndex)
+void ActionManager::EXE_AttachComponent(Node3D* comp, Node3D* newParent, int32_t boneIndex)
 {
     ActionAttachComponent* action = new ActionAttachComponent(comp, newParent, boneIndex);
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_SetRootComponent(TransformComponent* newRoot)
+void ActionManager::EXE_SetRootComponent(Node3D* newRoot)
 {
     ActionSetRootComponent* action = new ActionSetRootComponent(newRoot);
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_SetAbsoluteRotation(TransformComponent* comp, glm::quat rot)
+void ActionManager::EXE_SetAbsoluteRotation(Node3D* comp, glm::quat rot)
 {
     ActionSetAbsoluteRotation* action = new ActionSetAbsoluteRotation(comp, rot);
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_SetAbsolutePosition(TransformComponent* comp, glm::vec3 pos)
+void ActionManager::EXE_SetAbsolutePosition(Node3D* comp, glm::vec3 pos)
 {
     ActionSetAbsolutePosition* action = new ActionSetAbsolutePosition(comp, pos);
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_SetAbsoluteScale(TransformComponent* comp, glm::vec3 scale)
+void ActionManager::EXE_SetAbsoluteScale(Node3D* comp, glm::vec3 scale)
 {
     ActionSetAbsoluteScale* action = new ActionSetAbsoluteScale(comp, scale);
     ActionManager::Get()->ExecuteAction(action);
@@ -1663,7 +1663,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                     if (aLight->mType == aiLightSource_POINT)
                     {
                         Actor* lightActor = GetWorld()->SpawnActor<Actor>();
-                        PointLightComponent* pointLight = lightActor->CreateComponent<PointLightComponent>();
+                        PointLight3D* pointLight = lightActor->CreateComponent<PointLight3D>();
 
                         glm::vec3 lightColor;
                         lightColor.r = aLight->mColorDiffuse.r;
@@ -2208,7 +2208,7 @@ void ActionEditProperty::Reverse()
 }
 
 ActionEditTransforms::ActionEditTransforms(
-    const std::vector<TransformComponent*>& transComps,
+    const std::vector<Node3D*>& transComps,
     const std::vector<glm::mat4>& newTransforms)
 {
     mTransComps = transComps;
@@ -2298,7 +2298,7 @@ ActionAddComponent::ActionAddComponent(Component* comp)
 {
     mComponent = comp;
     mOwner = comp->GetOwner();
-    mParent = comp->IsTransformComponent() ? ((TransformComponent*)comp)->GetParent() : nullptr;
+    mParent = comp->IsTransformComponent() ? ((Node3D*)comp)->GetParent() : nullptr;
     OCT_ASSERT(mComponent);
     OCT_ASSERT(mOwner);
 }
@@ -2313,7 +2313,7 @@ void ActionAddComponent::Execute()
         if (mParent != nullptr)
         {
             OCT_ASSERT(mComponent->IsTransformComponent());
-            ((TransformComponent*)mComponent)->Attach(mParent);
+            ((Node3D*)mComponent)->Attach(mParent);
         }
 
         PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
@@ -2332,7 +2332,7 @@ ActionRemoveComponent::ActionRemoveComponent(Component* comp)
 {
     mComponent = comp;
     mOwner = comp->GetOwner();
-    mParent = comp->IsTransformComponent() ? ((TransformComponent*)comp)->GetParent() : nullptr;
+    mParent = comp->IsTransformComponent() ? ((Node3D*)comp)->GetParent() : nullptr;
     OCT_ASSERT(mComponent);
     OCT_ASSERT(mOwner);
 }
@@ -2363,13 +2363,13 @@ void ActionRemoveComponent::Reverse()
     if (mParent != nullptr)
     {
         OCT_ASSERT(mComponent->IsTransformComponent());
-        ((TransformComponent*)mComponent)->Attach(mParent);
+        ((Node3D*)mComponent)->Attach(mParent);
     }
 
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
-ActionAttachComponent::ActionAttachComponent(TransformComponent* comp, TransformComponent* newParent, int32_t boneIndex)
+ActionAttachComponent::ActionAttachComponent(Node3D* comp, Node3D* newParent, int32_t boneIndex)
 {
     mComponent = comp;
     mNewParent = newParent;
@@ -2384,9 +2384,9 @@ void ActionAttachComponent::Execute()
 {
     if (mBoneIndex >= 0 &&
         mNewParent != nullptr &&
-        mNewParent->As<SkeletalMeshComponent>())
+        mNewParent->As<SkeletalMesh3D>())
     {
-        SkeletalMeshComponent* skParent = mNewParent->As<SkeletalMeshComponent>();
+        SkeletalMesh3D* skParent = mNewParent->As<SkeletalMesh3D>();
         mComponent->AttachToBone(skParent, mBoneIndex);
     }
     else
@@ -2400,9 +2400,9 @@ void ActionAttachComponent::Reverse()
 {
     if (mPrevBoneIndex >= 0 &&
         mPrevParent != nullptr &&
-        mPrevParent->As<SkeletalMeshComponent>())
+        mPrevParent->As<SkeletalMesh3D>())
     {
-        SkeletalMeshComponent* skParent = mPrevParent->As<SkeletalMeshComponent>();
+        SkeletalMesh3D* skParent = mPrevParent->As<SkeletalMesh3D>();
         mComponent->AttachToBone(skParent, mPrevBoneIndex);
     }
     else
@@ -2412,7 +2412,7 @@ void ActionAttachComponent::Reverse()
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
-ActionSetRootComponent::ActionSetRootComponent(TransformComponent* newRoot)
+ActionSetRootComponent::ActionSetRootComponent(Node3D* newRoot)
 {
     mNewRoot = newRoot;
     mOldRoot = newRoot->GetOwner()->GetRootComponent();
@@ -2434,7 +2434,7 @@ void ActionSetRootComponent::Reverse()
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
-ActionSetAbsoluteRotation::ActionSetAbsoluteRotation(TransformComponent* comp, glm::quat rot)
+ActionSetAbsoluteRotation::ActionSetAbsoluteRotation(Node3D* comp, glm::quat rot)
 {
     mComponent = comp;
     mNewRotation = rot;
@@ -2452,7 +2452,7 @@ void ActionSetAbsoluteRotation::Reverse()
     mComponent->SetAbsoluteRotation(mPrevRotation);
 }
 
-ActionSetAbsolutePosition::ActionSetAbsolutePosition(TransformComponent* comp, glm::vec3 pos)
+ActionSetAbsolutePosition::ActionSetAbsolutePosition(Node3D* comp, glm::vec3 pos)
 {
     mComponent = comp;
     mNewPosition = pos;
@@ -2470,7 +2470,7 @@ void ActionSetAbsolutePosition::Reverse()
     mComponent->SetAbsolutePosition(mPrevPosition);
 }
 
-ActionSetAbsoluteScale::ActionSetAbsoluteScale(TransformComponent* comp, glm::vec3 scale)
+ActionSetAbsoluteScale::ActionSetAbsoluteScale(Node3D* comp, glm::vec3 scale)
 {
     mComponent = comp;
     mNewScale = scale;

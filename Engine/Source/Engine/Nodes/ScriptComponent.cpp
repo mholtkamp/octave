@@ -1335,7 +1335,7 @@ void ScriptComponent::InvokeNetFunc(const char* name, std::vector<Datum>& params
     }
 }
 
-void ScriptComponent::BeginOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* otherComp)
+void ScriptComponent::BeginOverlap(Primitive3D* thisComp, Primitive3D* otherComp)
 {
 #if LUA_ENABLED
     if (mHandleBeginOverlap && mTableName != "")
@@ -1371,7 +1371,7 @@ void ScriptComponent::BeginOverlap(PrimitiveComponent* thisComp, PrimitiveCompon
 #endif
 }
 
-void ScriptComponent::EndOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* otherComp)
+void ScriptComponent::EndOverlap(Primitive3D* thisComp, Primitive3D* otherComp)
 {
 #if LUA_ENABLED
     if (mHandleEndOverlap && mTableName != "")
@@ -1408,8 +1408,8 @@ void ScriptComponent::EndOverlap(PrimitiveComponent* thisComp, PrimitiveComponen
 }
 
 void ScriptComponent::OnCollision(
-    PrimitiveComponent* thisComp,
-    PrimitiveComponent* otherComp,
+    Primitive3D* thisComp,
+    Primitive3D* otherComp,
     glm::vec3 impactPoint,
     glm::vec3 impactNormal,
     btPersistentManifold* manifold)

@@ -47,14 +47,14 @@ struct QueuedAnimation
 
 typedef void(*AnimEventHandlerFP)(const AnimEvent& animEvent);
 
-class SkeletalMeshComponent : public MeshComponent
+class SkeletalMesh3D : public Mesh3D
 {
 public:
 
-    DECLARE_NODE(SkeletalMeshComponent, MeshComponent);
+    DECLARE_NODE(SkeletalMesh3D, Mesh3D);
 
-    SkeletalMeshComponent();
-    ~SkeletalMeshComponent();
+    SkeletalMesh3D();
+    ~SkeletalMesh3D();
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;

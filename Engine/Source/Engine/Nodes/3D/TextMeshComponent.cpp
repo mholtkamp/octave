@@ -8,23 +8,23 @@
 
 #include "Graphics/Graphics.h"
 
-FORCE_LINK_DEF(TextMeshComponent);
-DEFINE_NODE(TextMeshComponent);
+FORCE_LINK_DEF(TextMesh3D);
+DEFINE_NODE(TextMesh3D);
 
 extern const char* gBlendModeStrings[];
 
-bool TextMeshComponent::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+bool TextMesh3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);
-    TextMeshComponent* textComp = static_cast<TextMeshComponent*>(prop->mOwner);
+    TextMesh3D* textComp = static_cast<TextMesh3D*>(prop->mOwner);
 
     textComp->MarkVerticesDirty();
 
     return false;
 }
 
-TextMeshComponent::TextMeshComponent()
+TextMesh3D::TextMesh3D()
 {
     mName = "Text Mesh";
 
@@ -34,19 +34,19 @@ TextMeshComponent::TextMeshComponent()
     MarkVerticesDirty();
 }
 
-TextMeshComponent::~TextMeshComponent()
+TextMesh3D::~TextMesh3D()
 {
 
 }
 
-const char* TextMeshComponent::GetTypeName() const
+const char* TextMesh3D::GetTypeName() const
 {
     return "TextMesh";
 }
 
-void TextMeshComponent::GatherProperties(std::vector<Property>& outProps)
+void TextMesh3D::GatherProperties(std::vector<Property>& outProps)
 {
-    MeshComponent::GatherProperties(outProps);
+    Mesh3D::GatherProperties(outProps);
 
     outProps.push_back(Property(DatumType::Asset, "Font", this, &mFont, 1, HandlePropChange, int32_t(Font::GetStaticType())));
     outProps.push_back(Property(DatumType::String, "Text", this, &mText, 1, HandlePropChange));
@@ -56,12 +56,12 @@ void TextMeshComponent::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mBlendMode, 1, HandlePropChange, 0, (int32_t)BlendMode::Count, gBlendModeStrings));
 }
 
-void TextMeshComponent::Create()
+void TextMesh3D::Create()
 {
-    MeshComponent::Create();
+    Mesh3D::Create();
     GFX_CreateTextMeshCompResource(this);
 
-    // To make things easier, each TextMeshComponent creates a material instance
+    // To make things easier, each TextMesh3D creates a material instance
     // to use in the case that a material override is not provided.
     // Each frame, the default mat instance is updated so that it's TEXTURE_0 is the font texture
     // And its color is set to mColor.
@@ -69,20 +69,20 @@ void TextMeshComponent::Create()
     mDefaultMatInstance.Get<Material>()->SetBlendMode(mBlendMode);
 }
 
-void TextMeshComponent::Destroy()
+void TextMesh3D::Destroy()
 {
-    MeshComponent::Destroy();
+    Mesh3D::Destroy();
     GFX_DestroyTextMeshCompResource(this);
 }
 
-TextMeshCompResource* TextMeshComponent::GetResource()
+TextMeshCompResource* TextMesh3D::GetResource()
 {
     return &mResource;
 }
 
-void TextMeshComponent::SaveStream(Stream& stream)
+void TextMesh3D::SaveStream(Stream& stream)
 {
-    MeshComponent::SaveStream(stream);
+    Mesh3D::SaveStream(stream);
     stream.WriteAsset(mFont);
     stream.WriteString(mText);
     stream.WriteVec4(mColor);
@@ -90,9 +90,9 @@ void TextMeshComponent::SaveStream(Stream& stream)
     stream.WriteFloat(mVerticalJustification);
 }
 
-void TextMeshComponent::LoadStream(Stream& stream)
+void TextMesh3D::LoadStream(Stream& stream)
 {
-    MeshComponent::LoadStream(stream);
+    Mesh3D::LoadStream(stream);
     stream.ReadAsset(mFont);
     stream.ReadString(mText);
     mColor = stream.ReadVec4();
@@ -100,9 +100,9 @@ void TextMeshComponent::LoadStream(Stream& stream)
     mVerticalJustification = stream.ReadFloat();
 }
 
-void TextMeshComponent::Tick(float deltaTime)
+void TextMesh3D::Tick(float deltaTime)
 {
-    MeshComponent::Tick(deltaTime);
+    Mesh3D::Tick(deltaTime);
     UpdateVertexData();
     UploadVertexData();
 
@@ -121,17 +121,17 @@ void TextMeshComponent::Tick(float deltaTime)
 }
 
 
-bool TextMeshComponent::IsStaticMeshComponent() const
+bool TextMesh3D::IsStaticMeshComponent() const
 {
     return false;
 }
 
-bool TextMeshComponent::IsSkeletalMeshComponent() const
+bool TextMesh3D::IsSkeletalMeshComponent() const
 {
     return false;
 }
 
-Material* TextMeshComponent::GetMaterial()
+Material* TextMesh3D::GetMaterial()
 {
     Material* mat = mMaterialOverride.Get<Material>();
 
@@ -143,12 +143,12 @@ Material* TextMeshComponent::GetMaterial()
     return mat;
 }
 
-void TextMeshComponent::Render()
+void TextMesh3D::Render()
 {
     GFX_DrawTextMeshComp(this);
 }
 
-void TextMeshComponent::SetText(const std::string& text)
+void TextMesh3D::SetText(const std::string& text)
 {
     if (mText != text)
     {
@@ -157,13 +157,13 @@ void TextMeshComponent::SetText(const std::string& text)
     }
 }
 
-const std::string& TextMeshComponent::GetText() const
+const std::string& TextMesh3D::GetText() const
 {
     return mText;
 }
 
 
-void TextMeshComponent::SetFont(Font* font)
+void TextMesh3D::SetFont(Font* font)
 {
     if (mFont != font)
     {
@@ -172,32 +172,32 @@ void TextMeshComponent::SetFont(Font* font)
     }
 }
 
-Font* TextMeshComponent::GetFont() const
+Font* TextMesh3D::GetFont() const
 {
     return mFont.Get<Font>();
 }
 
-void TextMeshComponent::SetColor(glm::vec4 color)
+void TextMesh3D::SetColor(glm::vec4 color)
 {
     mColor = color;
 }
 
-glm::vec4 TextMeshComponent::GetColor() const
+glm::vec4 TextMesh3D::GetColor() const
 {
     return mColor;
 }
 
-void TextMeshComponent::SetBlendMode(BlendMode blendMode)
+void TextMesh3D::SetBlendMode(BlendMode blendMode)
 {
     mBlendMode = blendMode;
 }
 
-BlendMode TextMeshComponent::GetBlendMode() const
+BlendMode TextMesh3D::GetBlendMode() const
 {
     return mBlendMode;
 }
 
-void TextMeshComponent::SetHorizontalJustification(float just)
+void TextMesh3D::SetHorizontalJustification(float just)
 {
     if (mHorizontalJustification != just)
     {
@@ -206,12 +206,12 @@ void TextMeshComponent::SetHorizontalJustification(float just)
     }
 }
 
-float TextMeshComponent::GetHorizontalJustification() const
+float TextMesh3D::GetHorizontalJustification() const
 {
     return mHorizontalJustification;
 }
 
-void TextMeshComponent::SetVerticalJustification(float just)
+void TextMesh3D::SetVerticalJustification(float just)
 {
     if (mVerticalJustification != just)
     {
@@ -220,12 +220,12 @@ void TextMeshComponent::SetVerticalJustification(float just)
     }
 }
 
-float TextMeshComponent::GetVerticalJustification() const
+float TextMesh3D::GetVerticalJustification() const
 {
     return mVerticalJustification;
 }
 
-Bounds TextMeshComponent::GetLocalBounds() const
+Bounds TextMesh3D::GetLocalBounds() const
 {
     Bounds retBounds = mBounds;
 
@@ -239,7 +239,7 @@ Bounds TextMeshComponent::GetLocalBounds() const
     return retBounds;
 }
 
-void TextMeshComponent::MarkVerticesDirty()
+void TextMesh3D::MarkVerticesDirty()
 {
     mReconstructVertices = true;
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
@@ -248,7 +248,7 @@ void TextMeshComponent::MarkVerticesDirty()
     }
 }
 
-void TextMeshComponent::UploadVertexData()
+void TextMesh3D::UploadVertexData()
 {
     // Upload vertices to GPU
     uint32_t frameIndex = Renderer::Get()->GetFrameIndex();
@@ -259,17 +259,17 @@ void TextMeshComponent::UploadVertexData()
     }
 }
 
-int32_t TextMeshComponent::GetNumVisibleCharacters() const
+int32_t TextMesh3D::GetNumVisibleCharacters() const
 {
     return mVisibleCharacters;
 }
 
-const Vertex* TextMeshComponent::GetVertices() const
+const Vertex* TextMesh3D::GetVertices() const
 {
     return mVertices.data();
 }
 
-void TextMeshComponent::JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart)
+void TextMesh3D::JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart)
 {
     const int32_t numVerts = mVisibleCharacters * TEXT_VERTS_PER_CHAR;
 
@@ -291,7 +291,7 @@ void TextMeshComponent::JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMax
     lineVertStart = numVerts;
 }
 
-void TextMeshComponent::UpdateVertexData()
+void TextMesh3D::UpdateVertexData()
 {
     if (!mReconstructVertices ||
         mFont == nullptr)
@@ -438,7 +438,7 @@ void TextMeshComponent::UpdateVertexData()
     mReconstructVertices = false;
 }
 
-void TextMeshComponent::UpdateBounds()
+void TextMesh3D::UpdateBounds()
 {
     mBounds = ComputeBounds(mVertices);
 }

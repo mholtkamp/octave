@@ -302,7 +302,7 @@ private:
 
 #if EDITOR
 public:
-    class TransformComponent* ProcessHitCheck(World* world, int32_t pixelX, int32_t pixelY);
+    class Node3D* ProcessHitCheck(World* world, int32_t pixelX, int32_t pixelY);
     VkRenderPass GetHitCheckRenderPass();
 private:
     void CreateHitCheck();

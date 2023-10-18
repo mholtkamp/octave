@@ -11,9 +11,9 @@
 
 #if LUA_ENABLED
 
-#define SPHERE_COMPONENT_LUA_NAME "SphereComponent"
+#define SPHERE_COMPONENT_LUA_NAME "Sphere3D"
 #define SPHERE_COMPONENT_LUA_FLAG "cfSphereComponent"
-#define CHECK_SPHERE_COMPONENT(L, arg) static_cast<SphereComponent*>(CheckComponentLuaType(L, arg, SPHERE_COMPONENT_LUA_NAME, SPHERE_COMPONENT_LUA_FLAG));
+#define CHECK_SPHERE_COMPONENT(L, arg) static_cast<Sphere3D*>(CheckComponentLuaType(L, arg, SPHERE_COMPONENT_LUA_NAME, SPHERE_COMPONENT_LUA_FLAG));
 
 struct SphereComponent_Lua
 {

@@ -10,31 +10,31 @@
 
 #include "Graphics/Graphics.h"
 
-FORCE_LINK_DEF(CameraComponent);
-DEFINE_NODE(CameraComponent);
+FORCE_LINK_DEF(Camera3D);
+DEFINE_NODE(Camera3D);
 
-CameraComponent::CameraComponent() :
+Camera3D::Camera3D() :
     mProjectionMode(ProjectionMode::PERSPECTIVE),
     mViewProjectionMatrix(1)
 {
     mName = "Camera";
 }
 
-CameraComponent::~CameraComponent()
+Camera3D::~Camera3D()
 {
 
 }
 
-const char* CameraComponent::GetTypeName() const
+const char* Camera3D::GetTypeName() const
 {
     return "Camera";
 }
 
-void CameraComponent::BeginPlay()
+void Camera3D::BeginPlay()
 {
-    TransformComponent::BeginPlay();
+    Node3D::BeginPlay();
 
-    CameraComponent* activeCam = GetWorld()->GetActiveCamera();
+    Camera3D* activeCam = GetWorld()->GetActiveCamera();
 
     if (activeCam == nullptr ||
         activeCam == GetWorld()->GetDefaultCamera())
@@ -43,7 +43,7 @@ void CameraComponent::BeginPlay()
     }
 }
 
-void CameraComponent::Destroy()
+void Camera3D::Destroy()
 {
     if (GetWorld() &&
         GetWorld()->GetActiveCamera() == this)
@@ -54,18 +54,18 @@ void CameraComponent::Destroy()
     Component::Destroy();
 }
 
-void CameraComponent::GatherProperties(std::vector<Property>& outProps)
+void Camera3D::GatherProperties(std::vector<Property>& outProps)
 {
-    TransformComponent::GatherProperties(outProps);
+    Node3D::GatherProperties(outProps);
 
     outProps.push_back(Property(DatumType::Bool, "Perspective", this, &mProjectionMode));
     outProps.push_back(Property(DatumType::Float, "Field Of View", this, &mPerspectiveSettings.mFovY));
 }
 
-void CameraComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+void Camera3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    if (GetType() == CameraComponent::GetStaticType() &&
+    if (GetType() == Camera3D::GetStaticType() &&
         this != GetWorld()->GetActiveCamera())
     {
         glm::mat4 transform = glm::rotate(DEGREES_TO_RADIANS * -90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -82,21 +82,21 @@ void CameraComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif
 }
 
-void CameraComponent::SaveStream(Stream& stream)
+void Camera3D::SaveStream(Stream& stream)
 {
-    TransformComponent::SaveStream(stream);
+    Node3D::SaveStream(stream);
     stream.WriteUint8(uint8_t(mProjectionMode));
     stream.WriteFloat(mPerspectiveSettings.mFovY);
 }
 
-void CameraComponent::LoadStream(Stream& stream)
+void Camera3D::LoadStream(Stream& stream)
 {
-    TransformComponent::LoadStream(stream);
+    Node3D::LoadStream(stream);
     mProjectionMode = ProjectionMode(stream.ReadUint8());
     mPerspectiveSettings.mFovY = stream.ReadFloat();
 }
 
-void CameraComponent::SetOrthoSettings(float width, float height, float zNear, float zFar)
+void Camera3D::SetOrthoSettings(float width, float height, float zNear, float zFar)
 {
     mOrthoSettings.mWidth = width;
     mOrthoSettings.mHeight = height;
@@ -104,7 +104,7 @@ void CameraComponent::SetOrthoSettings(float width, float height, float zNear, f
     mOrthoSettings.mFar = zFar;
 }
 
-void CameraComponent::SetPerspectiveSettings(float fovY, float aspectRatio, float zNear, float zFar)
+void Camera3D::SetPerspectiveSettings(float fovY, float aspectRatio, float zNear, float zFar)
 {
     mPerspectiveSettings.mFovY = fovY;
     mPerspectiveSettings.mAspectRatio = aspectRatio;
@@ -112,42 +112,42 @@ void CameraComponent::SetPerspectiveSettings(float fovY, float aspectRatio, floa
     mPerspectiveSettings.mFar = zFar;
 }
 
-ProjectionMode CameraComponent::GetProjectionMode() const
+ProjectionMode Camera3D::GetProjectionMode() const
 {
     return mProjectionMode;
 }
 
-void CameraComponent::SetProjectionMode(ProjectionMode mode)
+void Camera3D::SetProjectionMode(ProjectionMode mode)
 {
     mProjectionMode = mode;
 }
 
-PerspectiveSettings CameraComponent::GetPerspectiveSettings() const
+PerspectiveSettings Camera3D::GetPerspectiveSettings() const
 {
     return mPerspectiveSettings;
 }
 
-OrthoSettings CameraComponent::GetOrthoSettings() const
+OrthoSettings Camera3D::GetOrthoSettings() const
 {
     return mOrthoSettings;
 }
 
-const glm::mat4& CameraComponent::GetViewProjectionMatrix()
+const glm::mat4& Camera3D::GetViewProjectionMatrix()
 {
     return mViewProjectionMatrix;
 }
 
-const glm::mat4& CameraComponent::GetViewMatrix()
+const glm::mat4& Camera3D::GetViewMatrix()
 {
     return mViewMatrix;
 }
 
-const glm::mat4& CameraComponent::GetProjectionMatrix()
+const glm::mat4& Camera3D::GetProjectionMatrix()
 {
     return mProjectionMatrix;
 }
 
-void CameraComponent::ComputeMatrices()
+void Camera3D::ComputeMatrices()
 {
     // Make sure transform is up to date.
     UpdateTransform(false);
@@ -212,14 +212,14 @@ void CameraComponent::ComputeMatrices()
     }
 }
 
-glm::mat4 CameraComponent::CalculateViewMatrix()
+glm::mat4 Camera3D::CalculateViewMatrix()
 {
     glm::mat4 view = glm::toMat4(glm::conjugate(GetAbsoluteRotationQuat()));
     view = translate(mViewMatrix, -GetAbsolutePosition());
     return view;
 }
 
-glm::mat4 CameraComponent::CalculateInvViewMatrix()
+glm::mat4 Camera3D::CalculateInvViewMatrix()
 {
     glm::mat4 invView;
 
@@ -229,31 +229,31 @@ glm::mat4 CameraComponent::CalculateInvViewMatrix()
     return invView;
 }
 
-float CameraComponent::GetNearZ() const
+float Camera3D::GetNearZ() const
 {
     return (mProjectionMode == ProjectionMode::ORTHOGRAPHIC) ?
         mOrthoSettings.mNear :
         mPerspectiveSettings.mNear;
 }
 
-float CameraComponent::GetFarZ() const
+float Camera3D::GetFarZ() const
 {
     return (mProjectionMode == ProjectionMode::ORTHOGRAPHIC) ?
         mOrthoSettings.mFar :
         mPerspectiveSettings.mFar;
 }
 
-float CameraComponent::GetFieldOfView() const
+float Camera3D::GetFieldOfView() const
 {
     return mPerspectiveSettings.mFovY;
 }
 
-float CameraComponent::GetFieldOfViewY() const
+float Camera3D::GetFieldOfViewY() const
 {
     return mPerspectiveSettings.mFovY;
 }
 
-float CameraComponent::GetFieldOfViewX() const
+float Camera3D::GetFieldOfViewX() const
 {
     float aspectRatio = mPerspectiveSettings.mAspectRatio;
     float fovRadiansY = mPerspectiveSettings.mFovY * DEGREES_TO_RADIANS;
@@ -264,22 +264,22 @@ float CameraComponent::GetFieldOfViewX() const
     return fovDegreesX;
 }
 
-float CameraComponent::GetAspectRatio() const
+float Camera3D::GetAspectRatio() const
 {
     return mPerspectiveSettings.mAspectRatio;
 }
 
-float CameraComponent::GetWidth() const
+float Camera3D::GetWidth() const
 {
     return mOrthoSettings.mWidth;
 }
 
-float CameraComponent::GetHeight() const
+float Camera3D::GetHeight() const
 {
     return mOrthoSettings.mHeight;
 }
 
-float CameraComponent::GetNearWidth() const
+float Camera3D::GetNearWidth() const
 {
     float width = 0.0f;
 
@@ -295,7 +295,7 @@ float CameraComponent::GetNearWidth() const
     return width;
 }
 
-float CameraComponent::GetNearHeight() const
+float Camera3D::GetNearHeight() const
 {
     float height = 0.0f;
 
@@ -311,7 +311,7 @@ float CameraComponent::GetNearHeight() const
     return height;
 }
 
-void CameraComponent::SetNearZ(float nearZ)
+void Camera3D::SetNearZ(float nearZ)
 {
     if (mProjectionMode == ProjectionMode::PERSPECTIVE)
     {
@@ -323,7 +323,7 @@ void CameraComponent::SetNearZ(float nearZ)
     }
 }
 
-void CameraComponent::SetFarZ(float farZ)
+void Camera3D::SetFarZ(float farZ)
 {
     if (mProjectionMode == ProjectionMode::PERSPECTIVE)
     {
@@ -335,27 +335,27 @@ void CameraComponent::SetFarZ(float farZ)
     }
 }
 
-void CameraComponent::SetFieldOfView(float fovY)
+void Camera3D::SetFieldOfView(float fovY)
 {
     mPerspectiveSettings.mFovY = fovY;
 }
 
-void CameraComponent::SetAspectRatio(float aspectRatio)
+void Camera3D::SetAspectRatio(float aspectRatio)
 {
     mPerspectiveSettings.mAspectRatio = aspectRatio;
 }
 
-void CameraComponent::SetWidth(float width)
+void Camera3D::SetWidth(float width)
 {
     mOrthoSettings.mWidth = width;
 }
 
-void CameraComponent::SetHeight(float height)
+void Camera3D::SetHeight(float height)
 {
     mOrthoSettings.mHeight = height;
 }
 
-glm::vec3 CameraComponent::WorldToScreenPosition(glm::vec3 worldPos)
+glm::vec3 Camera3D::WorldToScreenPosition(glm::vec3 worldPos)
 {
     glm::vec3 screenPos = {};
 
@@ -379,7 +379,7 @@ glm::vec3 CameraComponent::WorldToScreenPosition(glm::vec3 worldPos)
     return screenPos;
 }
 
-glm::vec3 CameraComponent::ScreenToWorldPosition(int32_t x, int32_t y)
+glm::vec3 Camera3D::ScreenToWorldPosition(int32_t x, int32_t y)
 {
     float screenX = float(x);
     float screenY = float(y);
@@ -400,7 +400,7 @@ glm::vec3 CameraComponent::ScreenToWorldPosition(int32_t x, int32_t y)
     return worldPos;
 }
 
-glm::vec3 CameraComponent::TraceScreenToWorld(int32_t x, int32_t y, uint8_t colMask, PrimitiveComponent** outComp)
+glm::vec3 Camera3D::TraceScreenToWorld(int32_t x, int32_t y, uint8_t colMask, Primitive3D** outComp)
 {
     glm::vec3 worldPos = ScreenToWorldPosition(x, y);
 

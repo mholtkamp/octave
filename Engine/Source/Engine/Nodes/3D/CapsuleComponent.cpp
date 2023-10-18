@@ -5,14 +5,14 @@
 
 #include "BulletCollision/CollisionShapes/btBoxShape.h"
 
-FORCE_LINK_DEF(CapsuleComponent);
-DEFINE_NODE(CapsuleComponent);
+FORCE_LINK_DEF(Capsule3D);
+DEFINE_NODE(Capsule3D);
 
 static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);
-    CapsuleComponent* capsuleComp = static_cast<CapsuleComponent*>(prop->mOwner);
+    Capsule3D* capsuleComp = static_cast<Capsule3D*>(prop->mOwner);
     bool success = false;
 
     if (prop->mName == "Height")
@@ -29,39 +29,39 @@ static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
     return success;
 }
 
-const float CapsuleComponent::sDefaultHeight = 2.0f;
-const float CapsuleComponent::sDefaultRadius = 1.0f;
+const float Capsule3D::sDefaultHeight = 2.0f;
+const float Capsule3D::sDefaultRadius = 1.0f;
 
-CapsuleComponent::CapsuleComponent()
+Capsule3D::Capsule3D()
 {
     mName = "Capsule Component";
     mHeight = sDefaultHeight;
     mRadius = sDefaultRadius;
 }
 
-CapsuleComponent::~CapsuleComponent()
+Capsule3D::~Capsule3D()
 {
 
 }
 
-const char* CapsuleComponent::GetTypeName() const
+const char* Capsule3D::GetTypeName() const
 {
     return "Capsule";
 }
 
-void CapsuleComponent::GatherProperties(std::vector<Property>& outProps)
+void Capsule3D::GatherProperties(std::vector<Property>& outProps)
 {
-    PrimitiveComponent::GatherProperties(outProps);
+    Primitive3D::GatherProperties(outProps);
     outProps.push_back(Property(DatumType::Float, "Height", this, &mHeight, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Radius", this, &mRadius, 1, HandlePropChange));
 }
 
-void CapsuleComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+void Capsule3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    PrimitiveComponent::GatherProxyDraws(inoutDraws);
+    Primitive3D::GatherProxyDraws(inoutDraws);
 
-    if (GetType() == CapsuleComponent::GetStaticType())
+    if (GetType() == Capsule3D::GetStaticType())
     {
         const float halfHeight = mHeight / 2.0f;
         const float hScale = mHeight / sDefaultHeight;
@@ -109,9 +109,9 @@ void CapsuleComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif
 }
 
-void CapsuleComponent::Create()
+void Capsule3D::Create()
 {
-    PrimitiveComponent::Create();
+    Primitive3D::Create();
 
     btCapsuleShape* capsuleShape = new btCapsuleShape(mRadius, mHeight);
     SetCollisionShape(capsuleShape);
@@ -119,26 +119,26 @@ void CapsuleComponent::Create()
     UpdateRigidBody();
 }
 
-void CapsuleComponent::SaveStream(Stream& stream)
+void Capsule3D::SaveStream(Stream& stream)
 {
-    PrimitiveComponent::SaveStream(stream);
+    Primitive3D::SaveStream(stream);
     stream.WriteFloat(mHeight);
     stream.WriteFloat(mRadius);
 }
 
-void CapsuleComponent::LoadStream(Stream& stream)
+void Capsule3D::LoadStream(Stream& stream)
 {
-    PrimitiveComponent::LoadStream(stream);
+    Primitive3D::LoadStream(stream);
     SetHeight(stream.ReadFloat());
     SetRadius(stream.ReadFloat());
 }
 
-float CapsuleComponent::GetHeight() const
+float Capsule3D::GetHeight() const
 {
     return mHeight;
 }
 
-void CapsuleComponent::SetHeight(float height)
+void Capsule3D::SetHeight(float height)
 {
     if (mHeight != height)
     {
@@ -147,12 +147,12 @@ void CapsuleComponent::SetHeight(float height)
     }
 }
 
-float CapsuleComponent::GetRadius() const
+float Capsule3D::GetRadius() const
 {
     return mRadius;
 }
 
-void CapsuleComponent::SetRadius(float radius)
+void Capsule3D::SetRadius(float radius)
 {
     if (mRadius != radius)
     {
@@ -161,7 +161,7 @@ void CapsuleComponent::SetRadius(float radius)
     }
 }
 
-void CapsuleComponent::UpdateRigidBody()
+void Capsule3D::UpdateRigidBody()
 {
     EnableRigidBody(false);
 

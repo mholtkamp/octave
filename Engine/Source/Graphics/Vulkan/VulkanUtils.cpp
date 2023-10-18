@@ -801,9 +801,9 @@ void EndDebugLabel()
 #endif
 }
 
-void WriteGeometryUniformData(GeometryData& outData, World* world, TransformComponent* comp, const glm::mat4& transform)
+void WriteGeometryUniformData(GeometryData& outData, World* world, Node3D* comp, const glm::mat4& transform)
 {
-    CameraComponent* camera = world->GetActiveCamera();
+    Camera3D* camera = world->GetActiveCamera();
 
     outData.mWVPMatrix = camera->GetViewProjectionMatrix() * transform;
     outData.mWorldMatrix = transform;
@@ -834,7 +834,7 @@ void WriteGeometryUniformData(GeometryData& outData, World* world, TransformComp
     }
 }
 
-void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds, StaticMeshComponent* staticMeshComp)
+void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds, StaticMesh3D* staticMeshComp)
 {
     // Find overlapping point lights
     uint32_t numLights = 0;
@@ -1299,7 +1299,7 @@ void BindSkeletalMeshResourceIndices(SkeletalMesh* skeletalMesh)
     vkCmdBindIndexBuffer(cb, resource->mIndexBuffer->Get(), 0, VK_INDEX_TYPE_UINT32);
 }
 
-void CreateStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
+void CreateStaticMeshCompResource(StaticMesh3D* staticMeshComp)
 {
     StaticMeshCompResource* resource = staticMeshComp->GetResource();
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Geometry);
@@ -1310,7 +1310,7 @@ void CreateStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
     resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, resource->mUniformBuffer);
 }
 
-void DestroyStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
+void DestroyStaticMeshCompResource(StaticMesh3D* staticMeshComp)
 {
     StaticMeshCompResource* resource = staticMeshComp->GetResource();
 
@@ -1327,7 +1327,7 @@ void DestroyStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
     }
 }
 
-uint32_t GetHitCheckId(TransformComponent* comp)
+uint32_t GetHitCheckId(Node3D* comp)
 {
     uint32_t retId = 0;
 #if EDITOR
@@ -1349,7 +1349,7 @@ uint32_t GetHitCheckId(TransformComponent* comp)
     return retId;
 }
 
-void UpdateStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
+void UpdateStaticMeshCompResource(StaticMesh3D* staticMeshComp)
 {
     StaticMeshCompResource* resource = staticMeshComp->GetResource();
 
@@ -1367,7 +1367,7 @@ void UpdateStaticMeshCompResource(StaticMeshComponent* staticMeshComp)
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 }
 
-void UpdateStaticMeshCompResourceColors(StaticMeshComponent* staticMeshComp)
+void UpdateStaticMeshCompResourceColors(StaticMesh3D* staticMeshComp)
 {
     StaticMeshCompResource* resource = staticMeshComp->GetResource();
 
@@ -1405,7 +1405,7 @@ void UpdateStaticMeshCompResourceColors(StaticMeshComponent* staticMeshComp)
     }
 }
 
-void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOverride)
+void DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverride)
 {
     StaticMesh* mesh = meshOverride ? meshOverride : staticMeshComp->GetStaticMesh();
     StaticMeshCompResource* resource = staticMeshComp->GetResource();
@@ -1480,7 +1480,7 @@ void DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOve
     }
 }
 
-void CreateSkeletalMeshCompResource(SkeletalMeshComponent* skeletalMeshComp)
+void CreateSkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp)
 {
     SkeletalMeshCompResource* resource = skeletalMeshComp->GetResource();
 
@@ -1493,7 +1493,7 @@ void CreateSkeletalMeshCompResource(SkeletalMeshComponent* skeletalMeshComp)
     resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, resource->mUniformBuffer);
 }
 
-void DestroySkeletalMeshCompResource(SkeletalMeshComponent* skeletalMeshComp)
+void DestroySkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp)
 {
     SkeletalMeshCompResource* resource = skeletalMeshComp->GetResource();
 
@@ -1516,7 +1516,7 @@ void DestroySkeletalMeshCompResource(SkeletalMeshComponent* skeletalMeshComp)
     }
 }
 
-void ReallocateSkeletalMeshCompVertexBuffer(SkeletalMeshComponent* skeletalMeshComp, uint32_t numVertices)
+void ReallocateSkeletalMeshCompVertexBuffer(SkeletalMesh3D* skeletalMeshComp, uint32_t numVertices)
 {
     SkeletalMeshCompResource* resource = skeletalMeshComp->GetResource();
 
@@ -1528,11 +1528,11 @@ void ReallocateSkeletalMeshCompVertexBuffer(SkeletalMeshComponent* skeletalMeshC
             resource->mVertexBuffer = nullptr;
         }
 
-        resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, numVertices * sizeof(Vertex), "SkeletalMeshComponent Skinned Vertices");
+        resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, numVertices * sizeof(Vertex), "SkeletalMesh3D Skinned Vertices");
     }
 }
 
-void UpdateSkeletalMeshCompVertexBuffer(SkeletalMeshComponent* skeletalMeshComp, const std::vector<Vertex>& skinnedVertices)
+void UpdateSkeletalMeshCompVertexBuffer(SkeletalMesh3D* skeletalMeshComp, const std::vector<Vertex>& skinnedVertices)
 {
     SkeletalMeshCompResource* resource = skeletalMeshComp->GetResource();
 
@@ -1543,7 +1543,7 @@ void UpdateSkeletalMeshCompVertexBuffer(SkeletalMeshComponent* skeletalMeshComp,
     }
 }
 
-void UpdateSkeletalMeshCompUniformBuffer(SkeletalMeshComponent* skeletalMeshComp)
+void UpdateSkeletalMeshCompUniformBuffer(SkeletalMesh3D* skeletalMeshComp)
 {
     SkeletalMeshCompResource* resource = skeletalMeshComp->GetResource();
 
@@ -1551,7 +1551,7 @@ void UpdateSkeletalMeshCompUniformBuffer(SkeletalMeshComponent* skeletalMeshComp
     OCT_UNUSED(renderer);
 
     World* world = skeletalMeshComp->GetWorld();
-    CameraComponent* camera = world->GetActiveCamera();
+    Camera3D* camera = world->GetActiveCamera();
     uint32_t numBoneInfluences = 1;
 
     switch (skeletalMeshComp->GetBoneInfluenceMode())
@@ -1587,7 +1587,7 @@ void UpdateSkeletalMeshCompUniformBuffer(SkeletalMeshComponent* skeletalMeshComp
     }
 }
 
-void DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
+void DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
 {
     SkeletalMeshCompResource* resource = skeletalMeshComp->GetResource();
     SkeletalMesh* mesh = skeletalMeshComp->GetSkeletalMesh();
@@ -1648,7 +1648,7 @@ void DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp)
     }
 }
 
-bool IsCpuSkinningRequired(SkeletalMeshComponent* skeletalMeshComp)
+bool IsCpuSkinningRequired(SkeletalMesh3D* skeletalMeshComp)
 {
 #if PLATFORM_ANDROID
     // GPU skinning is really slow on Android because of the massive vertex data size.
@@ -1670,7 +1670,7 @@ bool IsCpuSkinningRequired(SkeletalMeshComponent* skeletalMeshComp)
 #endif
 }
 
-void DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp)
+void DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
 {
     VulkanContext* context = GetVulkanContext();
     StaticMesh* mesh = shadowMeshComp->GetStaticMesh();
@@ -1707,7 +1707,7 @@ void DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp)
     }
 }
 
-void CreateTextMeshCompResource(TextMeshComponent* textMeshComp)
+void CreateTextMeshCompResource(TextMesh3D* textMeshComp)
 {
     TextMeshCompResource* resource = textMeshComp->GetResource();
 
@@ -1719,7 +1719,7 @@ void CreateTextMeshCompResource(TextMeshComponent* textMeshComp)
     resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, resource->mUniformBuffer);
 }
 
-void DestroyTextMeshCompResource(TextMeshComponent* textMeshComp)
+void DestroyTextMeshCompResource(TextMesh3D* textMeshComp)
 {
     TextMeshCompResource* resource = textMeshComp->GetResource();
 
@@ -1742,7 +1742,7 @@ void DestroyTextMeshCompResource(TextMeshComponent* textMeshComp)
     }
 }
 
-void UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::vector<Vertex>& vertices)
+void UpdateTextMeshCompVertexBuffer(TextMesh3D* textMeshComp, const std::vector<Vertex>& vertices)
 {
     TextMeshCompResource* resource = textMeshComp->GetResource();
 
@@ -1766,7 +1766,7 @@ void UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::
     }
 }
 
-void DrawTextMeshComp(TextMeshComponent* textMeshComp)
+void DrawTextMeshComp(TextMesh3D* textMeshComp)
 {
     TextMeshCompResource* resource = textMeshComp->GetResource();
     if (resource->mVertexBuffer == nullptr || textMeshComp->GetNumVisibleCharacters() == 0)
@@ -1810,7 +1810,7 @@ void DrawTextMeshComp(TextMeshComponent* textMeshComp)
     vkCmdDraw(cb, TEXT_VERTS_PER_CHAR * textMeshComp->GetNumVisibleCharacters(), 1, 0, 0);
 }
 
-void UpdateTextMeshCompUniformBuffer(TextMeshComponent* textMeshComp)
+void UpdateTextMeshCompUniformBuffer(TextMesh3D* textMeshComp)
 {
     TextMeshCompResource* resource = textMeshComp->GetResource();
 
@@ -1826,7 +1826,7 @@ void UpdateTextMeshCompUniformBuffer(TextMeshComponent* textMeshComp)
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 }
 
-void CreateParticleCompResource(ParticleComponent* particleComp)
+void CreateParticleCompResource(Particle3D* particleComp)
 {
     ParticleCompResource* resource = particleComp->GetResource();
 
@@ -1838,7 +1838,7 @@ void CreateParticleCompResource(ParticleComponent* particleComp)
     resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, resource->mUniformBuffer);
 }
 
-void DestroyParticleCompResource(ParticleComponent* particleComp)
+void DestroyParticleCompResource(Particle3D* particleComp)
 {
     ParticleCompResource* resource = particleComp->GetResource();
 
@@ -1867,7 +1867,7 @@ void DestroyParticleCompResource(ParticleComponent* particleComp)
     }
 }
 
-void UpdateParticleCompResource(ParticleComponent* particleComp)
+void UpdateParticleCompResource(Particle3D* particleComp)
 {
     // TODO: Reduce code duplication in updating these uniform buffers...
     ParticleCompResource* resource = particleComp->GetResource();
@@ -1876,7 +1876,7 @@ void UpdateParticleCompResource(ParticleComponent* particleComp)
     OCT_UNUSED(renderer);
 
     World* world = particleComp->GetWorld();
-    CameraComponent* camera = world->GetActiveCamera();
+    Camera3D* camera = world->GetActiveCamera();
 
     const glm::mat4 transform = particleComp->GetUseLocalSpace() ? particleComp->GetTransform() : glm::mat4(1);
 
@@ -1887,7 +1887,7 @@ void UpdateParticleCompResource(ParticleComponent* particleComp)
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 }
 
-void UpdateParticleCompVertexBuffer(ParticleComponent* particleComp, const std::vector<VertexParticle>& vertices)
+void UpdateParticleCompVertexBuffer(Particle3D* particleComp, const std::vector<VertexParticle>& vertices)
 {
     if (vertices.size() == 0)
         return;
@@ -1949,7 +1949,7 @@ void UpdateParticleCompVertexBuffer(ParticleComponent* particleComp, const std::
     resource->mIndexBuffer->GetBuffer()->Unmap();
 }
 
-void DrawParticleComp(ParticleComponent* particleComp)
+void DrawParticleComp(Particle3D* particleComp)
 {
     if (particleComp->GetNumParticles() > 0 &&
         particleComp->GetNumVertices() > 0)

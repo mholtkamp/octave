@@ -152,8 +152,8 @@ void RayTracer::UpdateRayTracingScene(
             if (!components[c]->IsVisible())
                 continue;
 
-            StaticMeshComponent* meshComp = components[c]->As<StaticMeshComponent>();
-            LightComponent* lightComp = components[c]->As<LightComponent>();
+            StaticMesh3D* meshComp = components[c]->As<StaticMesh3D>();
+            Light3D* lightComp = components[c]->As<Light3D>();
             if (meshComp != nullptr)
             {
                 StaticMesh* meshAsset = meshComp->GetStaticMesh();
@@ -287,9 +287,9 @@ void RayTracer::UpdateRayTracingScene(
             }
             else if (lightComp && lightComp->GetLightingDomain() != LightingDomain::Dynamic)
             {
-                if (lightComp->Is(PointLightComponent::ClassRuntimeId()))
+                if (lightComp->Is(PointLight3D::ClassRuntimeId()))
                 {
-                    PointLightComponent* pointLightComp = lightComp->As<PointLightComponent>();
+                    PointLight3D* pointLightComp = lightComp->As<PointLight3D>();
 
                     lightData.push_back(RayTraceLight());
                     RayTraceLight& light = lightData.back();
@@ -300,9 +300,9 @@ void RayTracer::UpdateRayTracingScene(
                     light.mLightType = uint32_t(RayTraceLightType::Point);
                     light.mCastShadows = (uint32_t)pointLightComp->ShouldCastShadows();
                 }
-                else if (lightComp->Is(DirectionalLightComponent::ClassRuntimeId()))
+                else if (lightComp->Is(DirectionalLight3D::ClassRuntimeId()))
                 {
-                    DirectionalLightComponent* dirLightComp = lightComp->As<DirectionalLightComponent>();
+                    DirectionalLight3D* dirLightComp = lightComp->As<DirectionalLight3D>();
 
                     lightData.push_back(RayTraceLight());
                     RayTraceLight& light = lightData.back();
@@ -366,7 +366,7 @@ void RayTracer::UpdateRayTracingScene(
 
 void RayTracer::UpdateBakeVertexData()
 {
-    StaticMeshComponent* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMeshComponent>();
+    StaticMesh3D* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMesh3D>();
     StaticMesh* meshAsset = meshComp->GetStaticMesh();
     uint32_t numVerts = meshAsset->GetNumVertices();
 
@@ -433,7 +433,7 @@ void RayTracer::PathTraceWorld()
     {
         // Check to see if camera moved. If so we need to reset our accumulated image data.
 
-        CameraComponent* camera = GetWorld()->GetActiveCamera();
+        Camera3D* camera = GetWorld()->GetActiveCamera();
         if (camera != nullptr)
         {
             glm::vec3 camPos = camera->GetAbsolutePosition();
@@ -517,7 +517,7 @@ void RayTracer::BeginLightBake()
 
             for (uint32_t c = 0; c < actor->GetNumComponents(); ++c)
             {
-                StaticMeshComponent* meshComp = actor->GetComponent((int32_t)c)->As<StaticMeshComponent>();
+                StaticMesh3D* meshComp = actor->GetComponent((int32_t)c)->As<StaticMesh3D>();
 
                 if (meshComp != nullptr &&
                     meshComp->IsVisible() &&
@@ -559,7 +559,7 @@ void RayTracer::UpdateLightBake()
             // Do we have more meshes to bake?
             if (mNextBakingCompIndex < mLightBakeComps.size())
             {
-                StaticMeshComponent* meshComp = mLightBakeComps[mNextBakingCompIndex].Get<StaticMeshComponent>();
+                StaticMesh3D* meshComp = mLightBakeComps[mNextBakingCompIndex].Get<StaticMesh3D>();
                 if (meshComp != nullptr &&
                     meshComp->GetOwner() != nullptr &&
                     meshComp->GetWorld() == GetWorld())
@@ -712,7 +712,7 @@ void RayTracer::DispatchNextLightBake()
         (mLightBakePhase == LightBakePhase::Indirect && mAccumulatedFrames >= Renderer::Get()->GetBakeIndirectIterations()))
         return;
 
-    StaticMeshComponent* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMeshComponent>();
+    StaticMesh3D* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMesh3D>();
 
     if (meshComp != nullptr &&
         meshComp->GetStaticMesh() != nullptr &&
@@ -792,7 +792,7 @@ void RayTracer::DispatchNextBakeDiffuse()
         mAccumulatedFrames >= mTotalDiffusePasses)
         return;
 
-    StaticMeshComponent* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMeshComponent>();
+    StaticMesh3D* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMesh3D>();
 
     if (meshComp != nullptr &&
         meshComp->GetStaticMesh() != nullptr &&
@@ -907,7 +907,7 @@ void RayTracer::DispatchNextBakeDiffuse()
     }
 }
 
-static void AssignInstanceColors(StaticMeshComponent* meshComp, std::vector<glm::vec4>& colors)
+static void AssignInstanceColors(StaticMesh3D* meshComp, std::vector<glm::vec4>& colors)
 {
     std::vector<uint32_t> instanceColors;
     uint32_t numVerts = (uint32_t)colors.size();
@@ -956,11 +956,11 @@ void RayTracer::ReadbackLightBakeResults()
 
     if (resultsReady)
     {
-        StaticMeshComponent* meshComp = nullptr;
+        StaticMesh3D* meshComp = nullptr;
 
         if (mBakingCompIndex >= 0 && mBakingCompIndex < mLightBakeComps.size())
         {
-            meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMeshComponent>();
+            meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMesh3D>();
         }
 
         // Assuming the component still exists, readback the baked light data.
@@ -1027,7 +1027,7 @@ void RayTracer::FinalizeLightBake()
 
     for (uint32_t c = 0; c < mLightBakeComps.size(); ++c)
     {
-        StaticMeshComponent* meshComp = mLightBakeComps[c].Get<StaticMeshComponent>();
+        StaticMesh3D* meshComp = mLightBakeComps[c].Get<StaticMesh3D>();
 
         if (meshComp != nullptr &&
             meshComp->GetStaticMesh() != nullptr)

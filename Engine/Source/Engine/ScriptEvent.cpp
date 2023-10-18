@@ -84,7 +84,7 @@ void ExecFunctionCall(lua_State* L, const std::string& tableName, int argCount)
     lua_pop(L, 1);
 }
 
-// SkeletalMeshComponent
+// SkeletalMesh3D
 void ScriptEvent::Animation(std::string& tableName, std::string& funcName, const AnimEvent& animEvent)
 {
     lua_State* L = GetLua();

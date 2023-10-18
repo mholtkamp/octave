@@ -2,9 +2,9 @@
 
 #include "Nodes/Node.h"
 
-class StaticMeshComponent;
-class PointLightComponent;
-class TransformComponent;
+class StaticMesh3D;
+class PointLight3D;
+class Node3D;
 class ScriptComponent;
 class Texture;
 class StaticMesh;
@@ -23,13 +23,13 @@ public:
 
 protected:
 
-    StaticMeshComponent* mRootMesh;
-    StaticMeshComponent* mLeftMesh1;
-    StaticMeshComponent* mRightMesh1;
-    StaticMeshComponent* mRightMesh2;
-    PointLightComponent* mLeftLight1;
-    PointLightComponent* mLeftLight2;
-    PointLightComponent* mRightLight1;
-    TransformComponent* mLeftSpin1;
+    StaticMesh3D* mRootMesh;
+    StaticMesh3D* mLeftMesh1;
+    StaticMesh3D* mRightMesh1;
+    StaticMesh3D* mRightMesh2;
+    PointLight3D* mLeftLight1;
+    PointLight3D* mLeftLight2;
+    PointLight3D* mRightLight1;
+    Node3D* mLeftSpin1;
     ScriptComponent* mScript;
 };

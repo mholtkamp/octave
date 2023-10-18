@@ -12,13 +12,13 @@ class Texture;
 class Material;
 class StaticMesh;
 class SkeletalMesh;
-class StaticMeshComponent;
-class SkeletalMeshComponent;
-class ShadowMeshComponent;
-class TextMeshComponent;
-class ParticleComponent;
-class CameraComponent;
-class TransformComponent;
+class StaticMesh3D;
+class SkeletalMesh3D;
+class ShadowMesh3D;
+class TextMesh3D;
+class Particle3D;
+class Camera3D;
+class Node3D;
 class Quad;
 class Text;
 class Poly;
@@ -51,7 +51,7 @@ void GFX_DrawFullscreen();
 
 void GFX_ResizeWindow();
 void GFX_Reset();
-TransformComponent* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y);
+Node3D* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y);
 uint32_t GFX_GetNumViews();
 
 void GFX_SetFrameRate(int32_t frameRate);
@@ -86,34 +86,34 @@ void GFX_CreateSkeletalMeshResource(SkeletalMesh* skeletalMesh, uint32_t numVert
 void GFX_DestroySkeletalMeshResource(SkeletalMesh* skeletalMesh);
 
 // StaticMeshComp
-void GFX_CreateStaticMeshCompResource(StaticMeshComponent* staticMeshComp);
-void GFX_DestroyStaticMeshCompResource(StaticMeshComponent* staticMeshComp);
-void GFX_UpdateStaticMeshCompResourceColors(StaticMeshComponent* staticMeshComp);
-void GFX_DrawStaticMeshComp(StaticMeshComponent* staticMeshComp, StaticMesh* meshOverride = nullptr);
+void GFX_CreateStaticMeshCompResource(StaticMesh3D* staticMeshComp);
+void GFX_DestroyStaticMeshCompResource(StaticMesh3D* staticMeshComp);
+void GFX_UpdateStaticMeshCompResourceColors(StaticMesh3D* staticMeshComp);
+void GFX_DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverride = nullptr);
 
 // SkeletalMeshComp
-void GFX_CreateSkeletalMeshCompResource(SkeletalMeshComponent* skeletalMeshComp);
-void GFX_DestroySkeletalMeshCompResource(SkeletalMeshComponent* skeletalMeshComp);
-void GFX_ReallocateSkeletalMeshCompVertexBuffer(SkeletalMeshComponent* skeletalMeshComp, uint32_t numVertices);
-void GFX_UpdateSkeletalMeshCompVertexBuffer(SkeletalMeshComponent* skeletalMeshComp, const std::vector<Vertex>& skinnedVertices);
-void GFX_DrawSkeletalMeshComp(SkeletalMeshComponent* skeletalMeshComp);
-bool GFX_IsCpuSkinningRequired(SkeletalMeshComponent* skeletalMeshComp);
+void GFX_CreateSkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp);
+void GFX_DestroySkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp);
+void GFX_ReallocateSkeletalMeshCompVertexBuffer(SkeletalMesh3D* skeletalMeshComp, uint32_t numVertices);
+void GFX_UpdateSkeletalMeshCompVertexBuffer(SkeletalMesh3D* skeletalMeshComp, const std::vector<Vertex>& skinnedVertices);
+void GFX_DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp);
+bool GFX_IsCpuSkinningRequired(SkeletalMesh3D* skeletalMeshComp);
 
 // ShadowMeshComp
-// ShadowMeshComponent uses StaticMeshCompResource for now.
-void GFX_DrawShadowMeshComp(ShadowMeshComponent* shadowMeshComp);
+// ShadowMesh3D uses StaticMeshCompResource for now.
+void GFX_DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp);
 
 // TextMeshComp
-void GFX_CreateTextMeshCompResource(TextMeshComponent* textMeshComp);
-void GFX_DestroyTextMeshCompResource(TextMeshComponent* textMeshComp);
-void GFX_UpdateTextMeshCompVertexBuffer(TextMeshComponent* textMeshComp, const std::vector<Vertex>& vertices);
-void GFX_DrawTextMeshComp(TextMeshComponent* textMeshComp);
+void GFX_CreateTextMeshCompResource(TextMesh3D* textMeshComp);
+void GFX_DestroyTextMeshCompResource(TextMesh3D* textMeshComp);
+void GFX_UpdateTextMeshCompVertexBuffer(TextMesh3D* textMeshComp, const std::vector<Vertex>& vertices);
+void GFX_DrawTextMeshComp(TextMesh3D* textMeshComp);
 
 // ParticleComp
-void GFX_CreateParticleCompResource(ParticleComponent* particleComp);
-void GFX_DestroyParticleCompResource(ParticleComponent* particleComp);
-void GFX_UpdateParticleCompVertexBuffer(ParticleComponent* particleComp, const std::vector<VertexParticle>& vertices);
-void GFX_DrawParticleComp(ParticleComponent* particleComp);
+void GFX_CreateParticleCompResource(Particle3D* particleComp);
+void GFX_DestroyParticleCompResource(Particle3D* particleComp);
+void GFX_UpdateParticleCompVertexBuffer(Particle3D* particleComp, const std::vector<VertexParticle>& vertices);
+void GFX_DrawParticleComp(Particle3D* particleComp);
 
 // Quad
 void GFX_CreateQuadResource(Quad* quad);

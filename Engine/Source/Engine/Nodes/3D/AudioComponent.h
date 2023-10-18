@@ -4,14 +4,14 @@
 
 #include "Assets/SoundWave.h"
 
-class AudioComponent : public TransformComponent
+class Audio3D : public Node3D
 {
 public:
 
-    DECLARE_NODE(AudioComponent, TransformComponent);
+    DECLARE_NODE(Audio3D, Node3D);
 
-    AudioComponent();
-    ~AudioComponent();
+    Audio3D();
+    ~Audio3D();
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;

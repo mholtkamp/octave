@@ -30,14 +30,14 @@ void TestActor::Create()
 
     SetName("TestActor");
 
-    mRootMesh = CreateComponent<StaticMeshComponent>();
-    mLeftMesh1 = CreateComponent<StaticMeshComponent>();
-    mRightMesh1 = CreateComponent<StaticMeshComponent>();
-    mRightMesh2 = CreateComponent<StaticMeshComponent>();
-    mLeftLight1 = CreateComponent<PointLightComponent>();
-    mLeftLight2 = CreateComponent<PointLightComponent>();
-    mRightLight1 = CreateComponent<PointLightComponent>();
-    mLeftSpin1 = CreateComponent<TransformComponent>();
+    mRootMesh = CreateComponent<StaticMesh3D>();
+    mLeftMesh1 = CreateComponent<StaticMesh3D>();
+    mRightMesh1 = CreateComponent<StaticMesh3D>();
+    mRightMesh2 = CreateComponent<StaticMesh3D>();
+    mLeftLight1 = CreateComponent<PointLight3D>();
+    mLeftLight2 = CreateComponent<PointLight3D>();
+    mRightLight1 = CreateComponent<PointLight3D>();
+    mLeftSpin1 = CreateComponent<Node3D>();
 
     mRootMesh->SetName("Root Mesh");
     mLeftMesh1->SetName("Left Mesh 1");

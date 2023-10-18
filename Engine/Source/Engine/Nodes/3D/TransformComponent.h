@@ -7,16 +7,16 @@
 
 #include "AssetRef.h"
 
-class SkeletalMeshComponent;
+class SkeletalMesh3D;
 
-class TransformComponent : public Node
+class Node3D : public Node
 {
 public:
 
-    DECLARE_NODE(TransformComponent, Node);
+    DECLARE_NODE(Node3D, Node);
 
-    TransformComponent();
-    virtual ~TransformComponent();
+    Node3D();
+    virtual ~Node3D();
 
     virtual void SaveStream(Stream& stream) override;
 	virtual void LoadStream(Stream& stream) override;
@@ -31,8 +31,8 @@ public:
 
     virtual bool IsTransformNode() const override;
 
-    void AttachToBone(SkeletalMeshComponent* parent, const char* boneName, bool keepWorldTransform = false);
-    void AttachToBone(SkeletalMeshComponent* parent, int32_t boneIndex, bool keepWorldTransform = false);
+    void AttachToBone(SkeletalMesh3D* parent, const char* boneName, bool keepWorldTransform = false);
+    void AttachToBone(SkeletalMesh3D* parent, int32_t boneIndex, bool keepWorldTransform = false);
 
     void MarkTransformDirty();
     bool IsTransformDirty() const;

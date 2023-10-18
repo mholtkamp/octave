@@ -85,7 +85,7 @@ void Node::Destroy()
 
     if (IsPrimitiveNode() && GetWorld())
     {
-        GetWorld()->PurgeOverlaps(static_cast<PrimitiveComponent*>(this));
+        GetWorld()->PurgeOverlaps(static_cast<Primitive3D*>(this));
     }
 
     if (mParent != nullptr)
@@ -246,7 +246,7 @@ void Node::Render(PipelineId pipelineId)
     // Or just manually bind the pipeline from the callers.
     if (IsPrimitiveNode() && IsVisible())
     {
-        PrimitiveComponent* primComp = static_cast<PrimitiveComponent*>(this);
+        Primitive3D* primComp = static_cast<Primitive3D*>(this);
         GFX_BindPipeline(pipelineId, primComp->GetVertexType());
         primComp->Render();
     }
@@ -419,7 +419,7 @@ void Node::ApplyPropertyOverrides(const std::vector<Property>& overs)
 #endif
 }
 
-void Node::BeginOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* other)
+void Node::BeginOverlap(Primitive3D* thisComp, Primitive3D* other)
 {
     //LogDebug("Begin Overlap <%s> with <%s>", this->GetName().c_str(), other->GetName().c_str());
 
@@ -429,7 +429,7 @@ void Node::BeginOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* other)
         LogError("Need to call script BeginOverlap");
     }
 }
-void Node::EndOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* other)
+void Node::EndOverlap(Primitive3D* thisComp, Primitive3D* other)
 {
     //LogDebug("End Overlap <%s> with <%s>", this->GetName().c_str(), other->GetName().c_str());
 
@@ -440,8 +440,8 @@ void Node::EndOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* other)
     }
 }
 void Node::OnCollision(
-    PrimitiveComponent* thisComp,
-    PrimitiveComponent* other,
+    Primitive3D* thisComp,
+    Primitive3D* other,
     glm::vec3 impactPoint,
     glm::vec3 impactNormal,
     btPersistentManifold* manifold)
@@ -464,7 +464,7 @@ void Node::RenderShadow()
     {
         if (IsPrimitiveComponent() && IsVisible())
         {
-            static_cast<PrimitiveComponent*>(this)->RenderWithPipeline(shadowPipeline);
+            static_cast<Primitive3D*>(this)->RenderWithPipeline(shadowPipeline);
         }
     }
 #endif
@@ -480,14 +480,14 @@ void Node::RenderSelected(bool renderChildren)
 
     if (IsPrimitiveNode())
     {
-        PrimitiveComponent* primComp = static_cast<PrimitiveComponent*>(this);
+        Primitive3D* primComp = static_cast<Primitive3D*>(this);
         GFX_BindPipeline(PipelineId::Selected, primComp->GetVertexType());
         primComp->Render();
     }
 
     if (proxyEnabled && IsTransformNode())
     {
-        TransformComponent* transComp = static_cast<TransformComponent*>(this);
+        Node3D* transComp = static_cast<Node3D*>(this);
 
         std::vector<DebugDraw> proxyDraws;
         transComp->GatherProxyDraws(proxyDraws);

@@ -194,7 +194,7 @@ int Actor_Lua::Attach(lua_State* L)
     }
     else
     {
-        TransformComponent* comp = CHECK_TRANSFORM_COMPONENT(L, 2);
+        Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 2);
         actor->Attach(comp, keepWorldTransform);
     }
 
@@ -515,7 +515,7 @@ int Actor_Lua::RemoveComponent(lua_State* L)
 int Actor_Lua::SetRootComponent(lua_State* L)
 {
     Actor* actor = CHECK_ACTOR(L, 1);
-    TransformComponent* comp = CHECK_TRANSFORM_COMPONENT(L, 2);
+    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 2);
 
     actor->SetRootComponent(comp);
 
@@ -526,7 +526,7 @@ int Actor_Lua::GetRootComponent(lua_State* L)
 {
     Actor* actor = CHECK_ACTOR(L, 1);
 
-    TransformComponent* rootComp = actor->GetRootComponent();
+    Node3D* rootComp = actor->GetRootComponent();
 
     Component_Lua::Create(L, rootComp);
     return 1;

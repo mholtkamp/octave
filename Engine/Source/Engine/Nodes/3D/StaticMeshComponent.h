@@ -8,14 +8,14 @@
 
 class StaticMesh;
 
-class StaticMeshComponent : public MeshComponent
+class StaticMesh3D : public Mesh3D
 {
 public:
 
-    DECLARE_NODE(StaticMeshComponent, MeshComponent);
+    DECLARE_NODE(StaticMesh3D, Mesh3D);
 
-    StaticMeshComponent();
-    ~StaticMeshComponent();
+    StaticMesh3D();
+    ~StaticMesh3D();
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
