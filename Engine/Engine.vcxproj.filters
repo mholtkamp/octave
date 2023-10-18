@@ -158,9 +158,6 @@
     <ClCompile Include="Source\Graphics\GX\GxUtils.cpp">
       <Filter>Source Files\Graphics\GX</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Actor.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\Asset.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -1048,9 +1045,6 @@
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\World.h">
-      <Filter>Source Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Actor.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Assertion.h">

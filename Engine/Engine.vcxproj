@@ -548,7 +548,6 @@
     <ClCompile Include="Source\Editor\Widgets\ViewportPanel.cpp" />
     <ClCompile Include="Source\Editor\Widgets\WidgetHierarchyPanel.cpp" />
     <ClCompile Include="Source\Editor\Widgets\WidgetViewportPanel.cpp" />
-    <ClCompile Include="Source\Engine\Actor.cpp" />
     <ClCompile Include="Source\Engine\Asset.cpp" />
     <ClCompile Include="Source\Engine\AssetDir.cpp" />
     <ClCompile Include="Source\Engine\AssetManager.cpp" />
@@ -791,7 +790,6 @@
     <ClInclude Include="Source\Editor\Widgets\ViewportPanel.h" />
     <ClInclude Include="Source\Editor\Widgets\WidgetHierarchyPanel.h" />
     <ClInclude Include="Source\Editor\Widgets\WidgetViewportPanel.h" />
-    <ClInclude Include="Source\Engine\Actor.h" />
     <ClInclude Include="Source\Engine\Assertion.h" />
     <ClInclude Include="Source\Engine\Asset.h" />
     <ClInclude Include="Source\Engine\AssetDir.h" />

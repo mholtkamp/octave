@@ -26,6 +26,7 @@
 #include "Nodes/3D/LightComponent.h"
 
 #include "Graphics/Graphics.h"
+#include "LuaBindings/LuaUtils.h"
 
 #if EDITOR
 #include "EditorState.h"
@@ -542,7 +543,7 @@ Node* Node::CreateChildNode(const char* typeName)
     return subNode;
 }
 
-Node* Node::CloneNode(Node* srcNode)
+Node* Node::CloneChildNode(Node* srcNode)
 {
     Node* subNode = Node::CreateInstance(srcNode->GetType());
 
@@ -568,10 +569,24 @@ void Node::DestroyChildNode(Node* childNode)
     delete childNode;
 }
 
+void Node::DestroyAllChildren()
+{
+    for (int32_t i = int32_t(GetNumChildren()) - 1; i >= 0; --i)
+    {
+        Node* child = GetChild(i);
+        child->Destroy();
+        delete child;
+    }
+}
 
 void Node::SetPendingDestroy(bool pendingDestroy)
 {
     mPendingDestroy = pendingDestroy;
+
+    for (uint32_t i = 0; i < GetNumChildren(); ++i)
+    {
+        GetChild(i)->SetPendingDestroy(pendingDestroy);
+    }
 }
 
 bool Node::IsPendingDestroy() const

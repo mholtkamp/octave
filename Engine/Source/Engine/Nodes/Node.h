@@ -97,8 +97,9 @@ public:
 
     Node* CreateChildNode(TypeId nodeType);
     Node* CreateChildNode(const char* typeName);
-    Node* CloneNode(Node* srcNode);
+    Node* CloneChildNode(Node* srcNode);
     void DestroyChildNode(Node* node);
+    void DestroyAllChildren();
 
     template<class NodeClass>
     NodeClass* CreateChildNode()
