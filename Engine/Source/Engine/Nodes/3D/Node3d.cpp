@@ -3,6 +3,7 @@
 #include "AssetManager.h"
 #include "Nodes/Node.h"
 #include "World.h"
+#include "Renderer.h"
 #include "Maths.h"
 #include "Assets/SkeletalMesh.h"
 
@@ -116,6 +117,10 @@ void Node3D::Destroy()
     {
         GetWorld()->SetAudioReceiver(nullptr);
     }
+
+#if DEBUG_DRAW_ENABLED
+    Renderer::Get()->RemoveDebugDrawsForNode(this);
+#endif
 }
 
 void Node3D::Tick(float deltaTime)
@@ -255,8 +260,7 @@ void Node3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
     {
         DebugDraw debugDraw;
         debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cube");
-        debugDraw.mActor = GetOwner();
-        debugDraw.mComponent = this;
+        debugDraw.mNode = this;
         debugDraw.mColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
         debugDraw.mTransform = glm::scale(GetTransform(), { 0.2f, 0.2f, 0.2f });
         inoutDraws.push_back(debugDraw);

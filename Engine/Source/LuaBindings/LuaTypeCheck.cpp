@@ -38,7 +38,7 @@ Component* CheckComponentLuaType(lua_State* L, int arg, const char* className, c
 
     if (luaObj != nullptr)
     {
-        ret = luaObj->mComponent.Get();
+        ret = luaObj->mNode.Get();
         if (ret == nullptr)
         {
             luaL_error(L, "Attempting to use destroyed component at arg %d", arg);

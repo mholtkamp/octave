@@ -5,7 +5,7 @@
 #include "Factory.h"
 
 class World;
-class Actor;
+class Node;
 
 struct BlueprintComp
 {

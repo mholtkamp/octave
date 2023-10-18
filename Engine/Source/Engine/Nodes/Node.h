@@ -21,7 +21,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-class Actor;
+class Node;
 class World;
 
 #define DECLARE_NODE(Base, Parent) \

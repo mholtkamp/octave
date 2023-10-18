@@ -32,11 +32,11 @@ static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
     {
         if (*(bool*)newValue)
         {
-            comp->Play();
+            comp->PlayAudio();
         }
         else
         {
-            comp->Stop();
+            comp->StopAudio();
         }
         
         success = true;
@@ -90,8 +90,7 @@ void Audio3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
         {
             DebugDraw debugDraw;
             debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
-            debugDraw.mActor = GetOwner();
-            debugDraw.mComponent = this;
+            debugDraw.mNode = this;
             debugDraw.mColor = glm::vec4(0.3f, 0.8f, 0.8f, 1.0f);
             debugDraw.mTransform = glm::scale(mTransform, { 0.2f, 0.2f, 0.2f });
             inoutDraws.push_back(debugDraw);
@@ -104,8 +103,7 @@ void Audio3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
                 // Inner Radius
                 DebugDraw debugDraw;
                 debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
-                debugDraw.mActor = GetOwner();
-                debugDraw.mComponent = this;
+                debugDraw.mNode = this;
                 debugDraw.mColor = glm::vec4(0.3f, 0.8f, 0.8f, 1.0f);
                 debugDraw.mTransform = glm::scale(mTransform, { mInnerRadius, mInnerRadius, mInnerRadius });
                 inoutDraws.push_back(debugDraw);
@@ -115,8 +113,7 @@ void Audio3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
                 // Outer Radius
                 DebugDraw debugDraw;
                 debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
-                debugDraw.mActor = GetOwner();
-                debugDraw.mComponent = this;
+                debugDraw.mNode = this;
                 debugDraw.mColor = glm::vec4(0.3f, 0.8f, 0.8f, 1.0f);
                 debugDraw.mTransform = glm::scale(mTransform, { mOuterRadius, mOuterRadius, mOuterRadius });
                 inoutDraws.push_back(debugDraw);
@@ -138,13 +135,13 @@ void Audio3D::Destroy()
     Node3D::Destroy();
 }
 
-void Audio3D::BeginPlay()
+void Audio3D::Start()
 {
-    Node3D::BeginPlay();
+    Node3D::Start();
 
     if (mAutoPlay)
     {
-        Play();
+        PlayAudio();
     }
 }
 
@@ -332,24 +329,24 @@ bool Audio3D::IsAudible() const
     return mAudible;
 }
 
-void Audio3D::Play()
+void Audio3D::PlayAudio()
 {
     mPlaying = true;
 }
 
-void Audio3D::Pause()
+void Audio3D::PauseAudio()
 {
     mPlaying = false;
 }
 
-void Audio3D::Reset()
+void Audio3D::ResetAudio()
 {
     // Forcibly remove the audio
     AudioManager::StopComponent(this);
     mPlayTime = 0.0f;
 }
 
-void Audio3D::Stop()
+void Audio3D::StopAudio()
 {
     mPlaying = false;
     mPlayTime = 0.0f;

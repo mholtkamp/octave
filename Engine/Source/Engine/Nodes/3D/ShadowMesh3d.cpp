@@ -63,7 +63,6 @@ void ShadowMesh3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
     debugDraw.mMesh = mStaticMesh.Get<StaticMesh>();
     debugDraw.mTransform = mTransform;
     debugDraw.mColor = glm::vec4(0.6f, 0.0f, 1.0f, 1.0f);
-    debugDraw.mActor = GetOwner();
-    debugDraw.mComponent = this;
+    debugDraw.mNode = this;
     inoutDraws.push_back(debugDraw);
 }

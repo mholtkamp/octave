@@ -9,8 +9,7 @@
 #include "EngineTypes.h"
 #include "Maths.h"
 
-class Actor;
-class Component;
+class Node;
 
 #define OCT_ARRAY_SIZE(array) (int(sizeof(array) / sizeof(array[0])))
 

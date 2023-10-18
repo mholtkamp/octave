@@ -3,8 +3,7 @@
 #include "Panel.h"
 #include "Widgets/ModalList.h"
 
-class Actor;
-class Component;
+class Node;
 class HierarchyButton;
 class Button;
 class TextField;

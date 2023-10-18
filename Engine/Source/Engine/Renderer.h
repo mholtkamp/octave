@@ -23,7 +23,7 @@ struct EngineState;
 
 struct FadingLight
 {
-    // mComponent should only be used for comparisons!! If deleted, we want to fade it out, not crash.
+    // mNode should only be used for comparisons!! If deleted, we want to fade it out, not crash.
     Light3D* mComponent = nullptr;
     LightData mData = {};
     glm::vec4 mColor = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -114,7 +114,7 @@ public:
     void LoadDefaultFonts();
 
     void AddDebugDraw(const DebugDraw& draw);
-    void RemoveDebugDrawsForActor(Actor* actor);
+    void RemoveDebugDrawsForNode(Node* node);
     const std::vector<DebugDraw>& GetDebugDraws() const;
 
     const std::vector<LightData>& GetLightData() const;

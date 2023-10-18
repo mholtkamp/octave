@@ -69,8 +69,7 @@ void PointLight3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
         {
             DebugDraw debugDraw;
             debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
-            debugDraw.mActor = GetOwner();
-            debugDraw.mComponent = this;
+            debugDraw.mNode = this;
             debugDraw.mColor = color;
             debugDraw.mTransform = glm::scale(mTransform, { 0.2f, 0.2f, 0.2f });
             inoutDraws.push_back(debugDraw);
@@ -81,8 +80,7 @@ void PointLight3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
         {
             DebugDraw debugDraw;
             debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
-            debugDraw.mActor = GetOwner();
-            debugDraw.mComponent = this;
+            debugDraw.mNode = this;
             debugDraw.mColor = color;
             debugDraw.mTransform = glm::scale(mTransform, { mRadius, mRadius, mRadius });
             inoutDraws.push_back(debugDraw);

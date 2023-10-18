@@ -28,8 +28,8 @@ struct Actor_Lua
     static int CloneComponent(lua_State* L);
     static int DestroyComponent(lua_State* L);
 
-    static int BeginPlay(lua_State* L);
-    static int HasBegunPlay(lua_State* L);
+    static int Start(lua_State* L);
+    static int HasStarted(lua_State* L);
 
     static int IsA(lua_State* L);
     static int Equals(lua_State* L);

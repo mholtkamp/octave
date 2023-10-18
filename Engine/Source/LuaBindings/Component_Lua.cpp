@@ -56,7 +56,7 @@ int Component_Lua::IsValid(lua_State* L)
 #if LUA_SAFE_COMPONENT
     Component_Lua* luaObj = static_cast<Component_Lua*>(CheckHierarchyLuaType<Component_Lua>(L, 1, COMPONENT_LUA_NAME, COMPONENT_LUA_FLAG));
 
-    bool ret = (luaObj->mComponent.Get() != nullptr);
+    bool ret = (luaObj->mNode.Get() != nullptr);
 
     lua_pushboolean(L, ret);
     return 1;

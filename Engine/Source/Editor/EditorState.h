@@ -10,8 +10,7 @@
 #include "Widgets/TextEntry.h"
 #include "Widgets/SceneImportWidget.h"
 
-class Actor;
-class Component;
+class Node;
 class Asset;
 class Level;
 struct AssetStub;

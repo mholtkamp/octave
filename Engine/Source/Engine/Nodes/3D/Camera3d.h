@@ -52,7 +52,7 @@ public:
     ~Camera3D();
 
     virtual const char* GetTypeName() const override;
-    virtual void BeginPlay() override;
+    virtual void Start() override;
     virtual void Destroy() override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
     virtual void GatherProxyDraws(std::vector<DebugDraw>& inoutDraws) override;

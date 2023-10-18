@@ -12,7 +12,7 @@
 struct Component_Lua
 {
 #if LUA_SAFE_COMPONENT
-    ComponentRef mComponent;
+    ComponentRef mNode;
 #else
     Component* mComponent = nullptr;
 #endif

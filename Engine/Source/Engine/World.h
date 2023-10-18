@@ -16,7 +16,7 @@
 #include "Nodes/3D/Camera3d.h"
 #include "Nodes/3D/DirectionalLight3d.h"
 
-class Component;
+class Node;
 class Audio3D;
 
 struct QueuedLevel

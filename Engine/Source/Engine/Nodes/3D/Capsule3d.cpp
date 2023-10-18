@@ -75,8 +75,7 @@ void Capsule3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
             // Cylinder
             DebugDraw debugDraw;
             debugDraw.mMesh = LoadAsset<StaticMesh>("SM_CapsuleCylinder");
-            debugDraw.mActor = GetOwner();
-            debugDraw.mComponent = this;
+            debugDraw.mNode = this;
             debugDraw.mColor = color;
             debugDraw.mTransform = glm::scale(mTransform, { rScale, hScale, rScale });
             inoutDraws.push_back(debugDraw);
@@ -86,8 +85,7 @@ void Capsule3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
             // Top Cap
             DebugDraw debugDraw;
             debugDraw.mMesh = LoadAsset<StaticMesh>("SM_CapsuleCap");
-            debugDraw.mActor = GetOwner();
-            debugDraw.mComponent = this;
+            debugDraw.mNode = this;
             debugDraw.mColor = color;
             glm::mat4 trans = MakeTransform({ 0.0f, halfHeight, 0.0f }, {}, { rScale, rScale, rScale });
             debugDraw.mTransform = mTransform * trans;
@@ -98,8 +96,7 @@ void Capsule3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
             // Bottom Cap
             DebugDraw debugDraw;
             debugDraw.mMesh = LoadAsset<StaticMesh>("SM_CapsuleCap");
-            debugDraw.mActor = GetOwner();
-            debugDraw.mComponent = this;
+            debugDraw.mNode = this;
             debugDraw.mColor = color;
             glm::mat4 trans = MakeTransform({ 0.0f, -halfHeight, 0.0f }, {180.0f, 0.0f, 0.0f}, { rScale, rScale, rScale });
             debugDraw.mTransform = mTransform * trans;

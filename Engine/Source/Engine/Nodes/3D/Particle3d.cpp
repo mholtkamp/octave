@@ -85,8 +85,7 @@ void Particle3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
         {
             DebugDraw debugDraw;
             debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
-            debugDraw.mActor = GetOwner();
-            debugDraw.mComponent = this;
+            debugDraw.mNode = this;
             debugDraw.mColor = color;
             debugDraw.mTransform = glm::scale(mTransform, { 0.2f, 0.2f, 0.2f });
             inoutDraws.push_back(debugDraw);
@@ -112,8 +111,7 @@ void Particle3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 
             DebugDraw debugDraw;
             debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cube");
-            debugDraw.mActor = GetOwner();
-            debugDraw.mComponent = this;
+            debugDraw.mNode = this;
             debugDraw.mColor = color;
             glm::mat4 transform = glm::translate(mTransform, pos);
             transform = glm::scale(transform, scale);
@@ -144,9 +142,9 @@ void Particle3D::Destroy()
     mParticles.shrink_to_fit();
 }
 
-void Particle3D::BeginPlay()
+void Particle3D::Start()
 {
-    Primitive3D::BeginPlay();
+    Primitive3D::Start();
 
     // Have auto emit determine starting emission.
     EnableEmission(mAutoEmit);

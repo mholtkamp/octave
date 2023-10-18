@@ -3,7 +3,7 @@
 #include "Asset.h"
 
 class World;
-class Actor;
+class Node;
 
 class Level : public Asset
 {

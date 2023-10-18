@@ -2,9 +2,6 @@
 
 #include "Widgets/Button.h"
 
-class Actor;
-class Component;
-
 class HierarchyButton : public Button
 {
 public:

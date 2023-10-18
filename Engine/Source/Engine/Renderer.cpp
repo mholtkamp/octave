@@ -544,12 +544,12 @@ void Renderer::AddDebugDraw(const DebugDraw& draw)
 #endif
 }
 
-void Renderer::RemoveDebugDrawsForActor(Actor* actor)
+void Renderer::RemoveDebugDrawsForNode(Node* node)
 {
 #if DEBUG_DRAW_ENABLED
     for (int32_t i = int32_t(mDebugDraws.size()) - 1; i >= 0 ; --i)
     {
-        if (mDebugDraws[i].mActor == actor)
+        if (mDebugDraws[i].mNode == node)
         {
             mDebugDraws.erase(mDebugDraws.begin() + i);
         }

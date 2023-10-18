@@ -7,7 +7,7 @@
 #include <vector>
 
 class World;
-class Actor;
+class Node;
 class Texture;
 class Material;
 class StaticMesh;

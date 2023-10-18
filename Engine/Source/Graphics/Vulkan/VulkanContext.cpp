@@ -2890,7 +2890,7 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
                     nullptr,
                     debugDraws[i].mTransform,
                     { 1.0f, 1.0f, 1.0f, 1.0f },
-                    GetHitCheckId(debugDraws[i].mComponent));
+                    GetHitCheckId(debugDraws[i].mNode));
             }
         }
 

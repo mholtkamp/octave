@@ -240,7 +240,7 @@ int Audio3D_Lua::IsAudible(lua_State* L)
     return 1;
 }
 
-int Audio3D_Lua::Play(lua_State* L)
+int Audio3D_Lua::PlayAudio(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -249,7 +249,7 @@ int Audio3D_Lua::Play(lua_State* L)
     return 0;
 }
 
-int Audio3D_Lua::Pause(lua_State* L)
+int Audio3D_Lua::PauseAudio(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -258,7 +258,7 @@ int Audio3D_Lua::Pause(lua_State* L)
     return 0;
 }
 
-int Audio3D_Lua::Stop(lua_State* L)
+int Audio3D_Lua::StopAudio(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -267,7 +267,7 @@ int Audio3D_Lua::Stop(lua_State* L)
     return 0;
 }
 
-int Audio3D_Lua::Reset(lua_State* L)
+int Audio3D_Lua::ResetAudio(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -355,17 +355,17 @@ void Audio3D_Lua::Bind()
     lua_pushcfunction(L, IsAudible);
     lua_setfield(L, mtIndex, "IsAudible");
 
-    lua_pushcfunction(L, Play);
-    lua_setfield(L, mtIndex, "Play");
+    lua_pushcfunction(L, PlayAudio);
+    lua_setfield(L, mtIndex, "PlayAudio");
 
-    lua_pushcfunction(L, Pause);
-    lua_setfield(L, mtIndex, "Pause");
+    lua_pushcfunction(L, PauseAudio);
+    lua_setfield(L, mtIndex, "PauseAudio");
 
-    lua_pushcfunction(L, Stop);
-    lua_setfield(L, mtIndex, "Stop");
+    lua_pushcfunction(L, StopAudio);
+    lua_setfield(L, mtIndex, "StopAudio");
 
-    lua_pushcfunction(L, Reset);
-    lua_setfield(L, mtIndex, "Reset");
+    lua_pushcfunction(L, ResetAudio);
+    lua_setfield(L, mtIndex, "ResetAudio");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

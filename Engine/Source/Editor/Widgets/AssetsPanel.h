@@ -7,7 +7,6 @@ class AssetDir;
 class TextEntry;
 class TextField;
 struct AssetStub;
-class Actor;
 class Button;
 
 class AssetsPanel : public Panel

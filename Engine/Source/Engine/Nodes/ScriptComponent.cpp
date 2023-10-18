@@ -181,10 +181,10 @@ void ScriptComponent::Destroy()
     StopScript();
 }
 
-void ScriptComponent::BeginPlay()
+void ScriptComponent::Start()
 {
-    Component::BeginPlay();
-    CallFunction("BeginPlay");
+    Component::Start();
+    CallFunction("Start");
 }
 
 void ScriptComponent::EndPlay()

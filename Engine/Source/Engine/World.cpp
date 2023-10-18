@@ -190,10 +190,6 @@ void World::DestroyActor(uint32_t index)
         }
     }
 
-#if DEBUG_DRAW_ENABLED
-    Renderer::Get()->RemoveDebugDrawsForActor(actor);
-#endif
-
     actor->Destroy();
     mActors.erase(mActors.begin() + index);
     delete actor;
@@ -918,9 +914,9 @@ void World::Update(float deltaTime)
     //    {
     //        if (gameTickEnabled)
     //        {
-    //            if (!mActors[i]->HasBegunPlay())
+    //            if (!mActors[i]->HasStarted())
     //            {
-    //                mActors[i]->BeginPlay();
+    //                mActors[i]->Start();
     //            }
 
     //            if (!mActors[i]->IsPendingDestroy() && 

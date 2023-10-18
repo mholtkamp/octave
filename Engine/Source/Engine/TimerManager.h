@@ -5,7 +5,7 @@
 #include "ObjectRef.h"
 
 class ScriptComponent;
-class Actor;
+class Node;
 
 typedef void(*TimerHandlerFP)();
 typedef void(*PointerTimerHandlerFP)(void*);

@@ -45,7 +45,7 @@ public:
 
     virtual void Create() override;
     virtual void Destroy() override;
-    virtual void BeginPlay() override;
+    virtual void Start() override;
     ParticleCompResource* GetResource();
 
     virtual void SaveStream(Stream& stream) override;

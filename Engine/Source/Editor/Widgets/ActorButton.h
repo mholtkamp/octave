@@ -2,8 +2,6 @@
 
 #include "Widgets/Button.h"
 
-class Actor;
-
 class ActorButton : public Button
 {
 public:

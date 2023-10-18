@@ -5,8 +5,7 @@
 
 #include "LuaBindings/Asset_Lua.h"
 
-class Actor;
-class Component;
+class Node;
 class Widget;
 
 #if LUA_ENABLED

@@ -19,7 +19,7 @@
 class Level;
 class Primitive3D;
 class Node3D;
-class Actor;
+class Node;
 
 class StaticMesh;
 class Material;
@@ -153,8 +153,7 @@ struct DebugDraw
 {
     StaticMesh* mMesh = nullptr;
     Material* mMaterial = nullptr;
-    Actor* mActor = nullptr;
-    Node3D* mComponent = nullptr;
+    Node3D* mNode = nullptr;
     glm::mat4 mTransform = glm::mat4(1);
     glm::vec4 mColor = { 0.25f, 0.25f, 1.0f, 1.0f };
     float mLife = 0.0f;

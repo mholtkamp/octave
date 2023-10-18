@@ -313,7 +313,7 @@ void AudioManager::Update(float deltaTime)
                 if (sAudioSources[i].mComponent != nullptr &&
                     !sAudioSources[i].mComponent->GetLoop())
                 {
-                    sAudioSources[i].mComponent->Stop();
+                    sAudioSources[i].mComponent->StopAudio();
                 }
 
                 StopAudio(i);
@@ -335,7 +335,7 @@ void AudioManager::Update(float deltaTime)
                     dist > sAudioSources[i].mOuterRadius)
                 {
                     // Sound is no longer in hearing range.
-                    // If this belongs to a component, Stop() the sound.
+                    // If this belongs to a component, StopAudio() the sound.
                     StopAudio(i);
                     stopped = true;
                 }

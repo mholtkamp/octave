@@ -19,7 +19,7 @@ public:
 
     virtual void Create() override;
     virtual void Destroy() override;
-    virtual void BeginPlay() override;
+    virtual void Start() override;
     virtual void Tick(float deltaTime) override;
 
     virtual void SaveStream(Stream& stream) override;
@@ -62,10 +62,10 @@ public:
     bool IsPlaying() const;
     bool IsAudible() const;
 
-    void Play();
-    void Pause();
-    void Stop();
-    void Reset();
+    void PlayAudio();
+    void PauseAudio();
+    void StopAudio();
+    void ResetAudio();
 
     void NotifyAudible(bool audible);
 
