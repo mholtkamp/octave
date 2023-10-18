@@ -1,67 +1,31 @@
 #include "LuaBindings/LuaTypeCheck.h"
 
-#include "LuaBindings/Actor_Lua.h"
-#include "LuaBindings/Component_Lua.h"
+#include "LuaBindings/Node_Lua.h"
 #include "LuaBindings/Node3d_Lua.h"
-#include "LuaBindings/Widget_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 
 #if LUA_ENABLED
 
-Actor* CheckActorLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
+Node* CheckNodeLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
 {
-#if LUA_SAFE_ACTOR
-    Actor* ret = nullptr;
-    Actor_Lua* luaObj = static_cast<Actor_Lua*>(CheckHierarchyLuaType<Actor_Lua>(L, arg, className, classFlag));
-
-    if (luaObj != nullptr)
-    {
-        ret = luaObj->mActor.Get();
-        if (ret == nullptr)
-        {
-            luaL_error(L, "Attempting to use destroyed actor at arg %d", arg);
-        }
-    }
-
-    return ret;
-#else
-    return CheckHierarchyLuaType<Actor_Lua>(L, arg, className, classFlag)->mActor;
-#endif
-}
-
-Component* CheckComponentLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
-{
-#if LUA_SAFE_COMPONENT
-    Component* ret = nullptr;
-    Component_Lua* luaObj = static_cast<Component_Lua*>(CheckHierarchyLuaType<Component_Lua>(L, arg, className, classFlag));
+#if LUA_SAFE_NODE
+    Node* ret = nullptr;
+    Node_Lua* luaObj = static_cast<Node_Lua*>(CheckHierarchyLuaType<Node_Lua>(L, arg, className, classFlag));
 
     if (luaObj != nullptr)
     {
         ret = luaObj->mNode.Get();
         if (ret == nullptr)
         {
-            luaL_error(L, "Attempting to use destroyed component at arg %d", arg);
+            luaL_error(L, "Attempting to use destroyed node at arg %d", arg);
         }
     }
 
     return ret;
 #else
-    return CheckHierarchyLuaType<Component_Lua>(L, arg, className, classFlag)->mComponent;
+    return CheckHierarchyLuaType<Node_Lua>(L, arg, className, classFlag)->mNode;
 #endif
-}
-
-Widget* CheckWidgetLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
-{
-    Widget* ret = nullptr;
-    Widget_Lua* luaObj = static_cast<Widget_Lua*>(CheckHierarchyLuaType<Widget_Lua>(L, arg, className, classFlag));
-
-    if (luaObj != nullptr)
-    {
-        ret = luaObj->mWidget;
-    }
-
-    return ret;
 }
 
 RTTI* CheckRttiLuaType(lua_State* L, int arg)
@@ -69,28 +33,17 @@ RTTI* CheckRttiLuaType(lua_State* L, int arg)
     RTTI* rtti = nullptr;
     luaL_checktype(L, arg, LUA_TUSERDATA);
 
-    // There are only two RTTI types that support script-to-native function calls: Actor and Widget
-    // Check actor first
-    bool isActor = (lua_getfield(L, arg, "cfActor") != LUA_TNIL);
+    // Only nodes support script-to-native function calls.
+    bool isNode = (lua_getfield(L, arg, "cfNode") != LUA_TNIL);
     lua_pop(L, 1);
 
-    if (isActor)
+    if (isNode)
     {
-        rtti = ((Actor_Lua*)lua_touserdata(L, arg))->mActor;
+        rtti = ((Node_Lua*)lua_touserdata(L, arg))->mNode;
     }
     else
     {
-        bool isWidget = (lua_getfield(L, arg, "cfWidget") != LUA_TNIL);
-        lua_pop(L, 1);
-
-        if (isWidget)
-        {
-            rtti = ((Widget_Lua*)lua_touserdata(L, arg))->mWidget;
-        }
-        else
-        {
-            luaL_error(L, "Error: Arg #%d: Expected Actor or Widget", arg);
-        }
+        luaL_error(L, "Error: Arg #%d: Expected Node", arg);
     }
 
     return rtti;
@@ -101,19 +54,9 @@ Asset* CheckAssetOrNilLuaType(lua_State* L, int arg, const char* className, cons
     return lua_isnil(L, arg) ? nullptr : CheckAssetLuaType<Asset>(L, arg, className, classFlag);
 }
 
-Actor* CheckActorOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
+Node* CheckNodeOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
 {
-    return lua_isnil(L, arg) ? nullptr : CheckActorLuaType(L, arg, className, classFlag);
-}
-
-Component* CheckComponentOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
-{
-    return lua_isnil(L, arg) ? nullptr : CheckComponentLuaType(L, arg, className, classFlag);
-}
-
-Widget* CheckWidgetOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
-{
-    return lua_isnil(L, arg) ? nullptr : CheckWidgetLuaType(L, arg, className, classFlag);
+    return lua_isnil(L, arg) ? nullptr : CheckNodeLuaType(L, arg, className, classFlag);
 }
 
 RTTI* CheckRttiOrNilLuaType(lua_State* L, int arg)

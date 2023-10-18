@@ -16,11 +16,7 @@
 
 struct Node3D_Lua
 {
-    static int Attach(lua_State* L);
     static int AttachToBone(lua_State* L);
-    static int GetParent(lua_State* L);
-    static int GetChild(lua_State* L);
-    static int GetNumChildren(lua_State* L);
     static int UpdateTransform(lua_State* L);
 
     static int GetPosition(lua_State* L);

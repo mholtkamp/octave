@@ -24,76 +24,29 @@ struct Actor_Lua
 
     static int IsValid(lua_State* L);
 
-    static int CreateComponent(lua_State* L);
-    static int CloneComponent(lua_State* L);
-    static int DestroyComponent(lua_State* L);
 
-    static int Start(lua_State* L);
-    static int HasStarted(lua_State* L);
 
-    static int IsA(lua_State* L);
-    static int Equals(lua_State* L);
+
+
+
+
+
+
+
+
+
     
-    static int GetName(lua_State* L);
-    static int SetName(lua_State* L);
-    static int Attach(lua_State* L);
-    static int Detach(lua_State* L);
-    static int SetPendingDestroy(lua_State* L);
-    static int IsPendingDestroy(lua_State* L);
-    static int EnableTick(lua_State* L);
-    static int IsTickEnabled(lua_State* L);
-
-    static int GetPosition(lua_State* L);
-    static int GetRotationQuat(lua_State* L);
-    static int GetRotationEuler(lua_State* L);
-    static int GetScale(lua_State* L);
-
-    static int SetPosition(lua_State* L);
-    static int SetRotationQuat(lua_State* L);
-    static int SetRotationEuler(lua_State* L);
-    static int SetScale(lua_State* L);
-
-    static int GetForwardVector(lua_State* L);
-    static int GetRightVector(lua_State* L);
-    static int GetUpVector(lua_State* L);
-
-    static int SweepToPosition(lua_State* L);
-    static int GetLevel(lua_State* L);
-
-    static int GetNetId(lua_State* L);
-    static int GetOwningHost(lua_State* L);
-    static int SetOwningHost(lua_State* L);
-
-    static int SetReplicate(lua_State* L);
-    static int IsReplicated(lua_State* L);
-    static int ForceReplication(lua_State* L);
-
-    static int GetComponent(lua_State* L);
-    static int GetNumComponents(lua_State* L);
-    static int AddComponent(lua_State* L);
-    static int RemoveComponent(lua_State* L);
-    
-    static int SetRootComponent(lua_State* L);
-    static int GetRootComponent(lua_State* L);
-
-    static int UpdateComponentTransforms(lua_State* L);
 
     static int GetScript(lua_State* L);
 
-    static int HasTag(lua_State* L);
-    static int AddTag(lua_State* L);
-    static int RemoveTag(lua_State* L);
 
-    static int SetPersistent(lua_State* L);
-    static int IsPersistent(lua_State* L);
 
-    static int IsVisible(lua_State* L);
-    static int SetVisible(lua_State* L);
 
-    static int HasAuthority(lua_State* L);
-    static int IsOwned(lua_State* L);
 
-    static int InvokeNetFunc(lua_State* L);
+
+
+
+
 
     static void BindCommon(lua_State* L, int mtIndex);
     static void Bind();

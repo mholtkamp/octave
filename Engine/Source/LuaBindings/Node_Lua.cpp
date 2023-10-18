@@ -5,31 +5,30 @@
 #include "Nodes/Node.h"
 
 #include "LuaBindings/LuaUtils.h"
-#include "LuaBindings/Component_Lua.h"
+#include "LuaBindings/Node_Lua.h"
 #include "LuaBindings/Node3d_Lua.h"
-#include "LuaBindings/Actor_Lua.h"
 #include "LuaBindings/World_Lua.h"
 
 #if LUA_ENABLED
 
-int Component_Lua::Create(lua_State* L, Component* component)
+int Node_Lua::Create(lua_State* L, Node* node)
 {
-    if (component != nullptr)
+    if (node != nullptr)
     {
-        Component_Lua* compLua = (Component_Lua*)lua_newuserdata(L, sizeof(Component_Lua));
-        new (compLua) Component_Lua();
-        compLua->mComponent = component;
+        Node_Lua* nodeLua = (Node_Lua*)lua_newuserdata(L, sizeof(Node_Lua));
+        new (nodeLua) Node_Lua();
+        nodeLua->mNode = node;
 
         int udIndex = lua_gettop(L);
 
-        luaL_getmetatable(L, component->GetClassName());
+        luaL_getmetatable(L, node->GetClassName());
         if (lua_isnil(L, -1))
         {
             LogWarning("Could not find object's metatable, so the top-level metatable will be used.");
 
-            // Could not find this type's metatable, so just use Component
+            // Could not find this type's metatable, so just use Node
             lua_pop(L, 1);
-            luaL_getmetatable(L, COMPONENT_LUA_NAME);
+            luaL_getmetatable(L, NODE_LUA_NAME);
         }
 
         OCT_ASSERT(lua_istable(L, -1));
@@ -43,18 +42,18 @@ int Component_Lua::Create(lua_State* L, Component* component)
     return 1;
 }
 
-int Component_Lua::Destroy(lua_State* L)
+int Node_Lua::Destroy(lua_State* L)
 {
-    CHECK_COMPONENT(L, 1);
-    Component_Lua* compLua = (Component_Lua*)lua_touserdata(L, 1);
-    compLua->~Component_Lua();
+    CHECK_NODE(L, 1);
+    Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
+    nodeLua->~Node_Lua();
     return 0;
 }
 
-int Component_Lua::IsValid(lua_State* L)
+int Node_Lua::IsValid(lua_State* L)
 {
-#if LUA_SAFE_COMPONENT
-    Component_Lua* luaObj = static_cast<Component_Lua*>(CheckHierarchyLuaType<Component_Lua>(L, 1, COMPONENT_LUA_NAME, COMPONENT_LUA_FLAG));
+#if LUA_SAFE_NODE
+    Node_Lua* luaObj = static_cast<Node_Lua*>(CheckHierarchyLuaType<Node_Lua>(L, 1, NODE_LUA_NAME, NODE_LUA_FLAG));
 
     bool ret = (luaObj->mNode.Get() != nullptr);
 
@@ -66,106 +65,96 @@ int Component_Lua::IsValid(lua_State* L)
 #endif
 }
 
-int Component_Lua::GetOwner(lua_State* L)
+int Node_Lua::GetName(lua_State* L)
 {
-    Component* component = CHECK_COMPONENT(L, 1);
+    Node* node = CHECK_NODE(L, 1);
 
-    Actor* actor = component->GetOwner();
-
-    Actor_Lua::Create(L, actor);
-    return 1;
-}
-
-int Component_Lua::GetName(lua_State* L)
-{
-    Component* component = CHECK_COMPONENT(L, 1);
-
-    const std::string& name = component->GetName();
+    const std::string& name = node->GetName();
 
     lua_pushstring(L, name.c_str());
     return 1;
 }
 
-int Component_Lua::SetName(lua_State* L)
+int Node_Lua::SetName(lua_State* L)
 {
-    Component* component = CHECK_COMPONENT(L, 1);
+    Node* node = CHECK_NODE(L, 1);
     const char* name = CHECK_STRING(L, 2);
 
-    component->SetName(name);
+    node->SetName(name);
 
     return 0;
 }
 
-int Component_Lua::SetActive(lua_State* L)
+int Node_Lua::SetActive(lua_State* L)
 {
-    Component* component = CHECK_COMPONENT(L, 1);
+    Node* node = CHECK_NODE(L, 1);
     bool active = CHECK_BOOLEAN(L, 2);
 
-    component->SetActive(active);
+    node->SetActive(active);
 
     return 0;
 }
 
-int Component_Lua::IsActive(lua_State* L)
+int Node_Lua::IsActive(lua_State* L)
 {
-    Component* component = CHECK_COMPONENT(L, 1);
+    Node* node = CHECK_NODE(L, 1);
 
-    bool active = component->IsActive();
+    bool active = node->IsActive();
 
     lua_pushboolean(L, active);
     return 1;
 }
 
-int Component_Lua::SetVisible(lua_State* L)
+int Node_Lua::SetVisible(lua_State* L)
 {
-    Component* component = CHECK_COMPONENT(L, 1);
+    Node* node = CHECK_NODE(L, 1);
     bool visible = CHECK_BOOLEAN(L, 2);
 
-    component->SetVisible(visible);
+    node->SetVisible(visible);
 
     return 0;
 }
 
-int Component_Lua::IsVisible(lua_State* L)
+int Node_Lua::IsVisible(lua_State* L)
 {
-    Component* component = CHECK_COMPONENT(L, 1);
+    Node* node = CHECK_NODE(L, 1);
 
-    bool isVisible = component->IsVisible();
+    bool isVisible = node->IsVisible();
 
     lua_pushboolean(L, isVisible);
     return 1;
 }
 
-int Component_Lua::GetWorld(lua_State* L)
+int Node_Lua::GetWorld(lua_State* L)
 {
-    Component* component = CHECK_COMPONENT(L, 1);
+    Node* node = CHECK_NODE(L, 1);
 
-    World* world = component->GetWorld();
+    World* world = node->GetWorld();
 
     World_Lua::Create(L, world);
     return 1;
 }
 
-int Component_Lua::Equals(lua_State* L)
+int Node_Lua::Equals(lua_State* L)
 {
-    Component* compA = CHECK_COMPONENT(L, 1);
-    Component* compB = nullptr;
+    Node* nodeA = CHECK_NODE(L, 1);
+    Node* nodeB = nullptr;
 
     if (lua_isuserdata(L, 2))
     {
-        compB = CHECK_COMPONENT(L, 2);
+        nodeB = CHECK_NODE(L, 2);
     }
 
-    bool ret = (compA == compB);
+    bool ret = (nodeA == nodeB);
 
     lua_pushboolean(L, ret);
     return 1;
 }
 
-int Component_Lua::CheckType(lua_State* L)
+int Node_Lua::CheckType(lua_State* L)
 {
     bool ret = false;
-    CHECK_COMPONENT(L, 1);
+    CHECK_NODE(L, 1);
     const char* typeName = CHECK_STRING(L, 2);
 
     if (lua_getmetatable(L, 1))
@@ -183,7 +172,7 @@ int Component_Lua::CheckType(lua_State* L)
     return ret;
 }
 
-void Component_Lua::BindCommon(lua_State* L, int mtIndex)
+void Node_Lua::BindCommon(lua_State* L, int mtIndex)
 {
     lua_pushcfunction(L, Destroy);
     lua_setfield(L, mtIndex, "__gc");
@@ -192,12 +181,12 @@ void Component_Lua::BindCommon(lua_State* L, int mtIndex)
     lua_setfield(L, mtIndex, "__eq");
 }
 
-void Component_Lua::Bind()
+void Node_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(
-        COMPONENT_LUA_NAME,
-        COMPONENT_LUA_FLAG,
+        NODE_LUA_NAME,
+        NODE_LUA_FLAG,
         nullptr);
 
     BindCommon(L, mtIndex);

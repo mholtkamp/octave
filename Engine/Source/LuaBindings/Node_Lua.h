@@ -5,24 +5,23 @@
 
 #if LUA_ENABLED
 
-#define COMPONENT_LUA_NAME "Component"
-#define COMPONENT_LUA_FLAG "cfComponent"
-#define CHECK_COMPONENT(L, arg) CheckComponentLuaType(L, arg, COMPONENT_LUA_NAME, COMPONENT_LUA_FLAG);
+#define NODE_LUA_NAME "Node"
+#define NODE_LUA_FLAG "cfNode"
+#define CHECK_NODE(L, arg) CheckNodeLuaType(L, arg, NODE_LUA_NAME, NODE_LUA_FLAG);
 
-struct Component_Lua
+struct Node_Lua
 {
-#if LUA_SAFE_COMPONENT
-    ComponentRef mNode;
+#if LUA_SAFE_NODE
+    NodeRef mNode;
 #else
-    Component* mComponent = nullptr;
+    Node* mNode = nullptr;
 #endif
 
-    static int Create(lua_State* L, Component* component);
+    static int Create(lua_State* L, Node* node);
     static int Destroy(lua_State* L);
 
     static int IsValid(lua_State* L);
 
-    static int GetOwner(lua_State* L);
     static int GetName(lua_State* L);
     static int SetName(lua_State* L);
     static int SetActive(lua_State* L);
@@ -31,6 +30,51 @@ struct Component_Lua
     static int IsVisible(lua_State* L);
     static int GetWorld(lua_State* L);
     static int Equals(lua_State* L);
+
+    static int CreateChildNode(lua_State* L);
+    static int CloneChildNode(lua_State* L);
+    static int DestroyChildNode(lua_State* L);
+
+    static int Start(lua_State* L);
+    static int HasStarted(lua_State* L);
+
+    static int IsA(lua_State* L);
+    static int Equals(lua_State* L);
+
+    static int Attach(lua_State* L);
+    static int Detach(lua_State* L);
+    static int SetPendingDestroy(lua_State* L);
+    static int IsPendingDestroy(lua_State* L);
+    static int EnableTick(lua_State* L);
+    static int IsTickEnabled(lua_State* L);
+
+    static int GetScene(lua_State* L);
+
+    static int GetNetId(lua_State* L);
+    static int GetOwningHost(lua_State* L);
+    static int SetOwningHost(lua_State* L);
+
+    static int SetReplicate(lua_State* L);
+    static int IsReplicated(lua_State* L);
+    static int ForceReplication(lua_State* L);
+
+    static int GetChild(lua_State* L);
+    static int GetChildByType(lua_State* L);
+    static int GetNumChildren(lua_State* L);
+    static int AddChild(lua_State* L);
+    static int RemoveChild(lua_State* L);
+
+    static int HasTag(lua_State* L);
+    static int AddTag(lua_State* L);
+    static int RemoveTag(lua_State* L);
+
+    static int SetPersistent(lua_State* L);
+    static int IsPersistent(lua_State* L);
+
+    static int HasAuthority(lua_State* L);
+    static int IsOwned(lua_State* L);
+
+    static int InvokeNetFunc(lua_State* L);
 
     static int CheckType(lua_State* L);
 

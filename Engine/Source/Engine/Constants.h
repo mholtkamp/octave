@@ -59,5 +59,4 @@
 
 #define LUA_ENABLED 1
 #define LUA_TYPE_CHECK 1
-#define LUA_SAFE_ACTOR 0
-#define LUA_SAFE_COMPONENT 0
+#define LUA_SAFE_NODE 0

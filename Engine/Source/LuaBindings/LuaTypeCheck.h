@@ -6,7 +6,6 @@
 #include "LuaBindings/Asset_Lua.h"
 
 class Node;
-class Widget;
 
 #if LUA_ENABLED
 
@@ -55,15 +54,11 @@ T* CheckAssetLuaType(lua_State* L, int arg, const char* className, const char* c
     return ret;
 }
 
-Actor* CheckActorLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
-Component* CheckComponentLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
-Widget* CheckWidgetLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
+Node* CheckNodeLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
 RTTI* CheckRttiLuaType(lua_State* L, int arg);
 
 Asset* CheckAssetOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
-Actor* CheckActorOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
-Component* CheckComponentOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
-Widget* CheckWidgetOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
+Node* CheckNodeOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
 RTTI* CheckRttiOrNilLuaType(lua_State* L, int arg);
 
 
