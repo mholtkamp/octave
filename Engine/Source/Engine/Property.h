@@ -56,9 +56,3 @@ public:
     uint8_t mMaxCount = 255;
     bool mIsVector = false;
 };
-
-struct PropertyOverride
-{
-    int32_t mIndex = -1;
-    Property mProperty;
-};

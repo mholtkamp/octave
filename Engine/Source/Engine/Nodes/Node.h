@@ -2,32 +2,39 @@
 
 #include <string>
 #include <vector>
-#include "Assertion.h"
 
 #include "RTTI.h"
+#include "Assertion.h"
 #include "EngineTypes.h"
 #include "Property.h"
 #include "Stream.h"
 #include "Factory.h"
+#include "Maths.h"
+#include "NetDatum.h"
+#include "NetFunc.h"
+#include "ScriptUtils.h"
+#include "ScriptAutoReg.h"
+#include "Assets/StaticMesh.h"
+
+#include "Bullet/btBulletCollisionCommon.h"
+
+#include <unordered_map>
+#include <unordered_set>
 
 class Actor;
 class World;
 
-#define DECLARE_NODE(Base, Parent) DECLARE_FACTORY(Base, Node); DECLARE_RTTI(Base, Parent);
-#define DEFINE_NODE(Base) DEFINE_FACTORY(Base, Node); DEFINE_RTTI(Base);
+#define DECLARE_NODE(Base, Parent) \
+        DECLARE_FACTORY(Base, Node); \
+        DECLARE_RTTI(Base, Parent); \
+        DECLARE_SCRIPT_LINK(Base, Parent, Node);
 
-struct NodeScriptData
-{
-    std::string mFileName;
-    std::string mClassName;
-    std::string mTableName;
-    std::vector<Property> mScriptProps;
-    std::vector<ScriptNetDatum> mReplicatedData;
-    bool mTickEnabled = false;
-    bool mHandleBeginOverlap = false;
-    bool mHandleEndOverlap = false;
-    bool mHandleOnCollision = false;
-};
+#define DEFINE_NODE(Base, Parent) \
+        DEFINE_FACTORY(Base, Node); \
+        DEFINE_RTTI(Base); \
+        DEFINE_SCRIPT_LINK(Base, Parent, Node);
+
+typedef std::unordered_map<std::string, NetFunc> NetFuncMap;
 
 #if 0
 struct NodeNetData
@@ -49,6 +56,7 @@ public:
     DECLARE_FACTORY_MANAGER(Node);
     DECLARE_FACTORY(Node, Node);
     DECLARE_RTTI(Node, RTTI);
+    DECLARE_SCRIPT_LINK_BASE(Node);
 
     Node();
     virtual ~Node();
@@ -71,6 +79,79 @@ public:
     virtual void GatherProperties(std::vector<Property>& outProps);
     virtual void GatherReplicatedData(std::vector<NetDatum>& outData);
     virtual void GatherNetFuncs(std::vector<NetFunc>& outFuncs);
+
+    void GatherPropertyOverrides(std::vector<Property>& outOverrides);
+    void ApplyPropertyOverrides(const std::vector<Property>& overs);
+
+    virtual void BeginOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* otherComp);
+    virtual void EndOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* otherComp);
+    virtual void OnCollision(
+        PrimitiveComponent* thisComp,
+        PrimitiveComponent* otherComp,
+        glm::vec3 impactPoint,
+        glm::vec3 impactNormal,
+        btPersistentManifold* manifold);
+
+    void RenderShadow();
+    void RenderSelected(bool renderChildren);
+
+    Node* CreateChildNode(TypeId nodeType);
+    Node* CreateChildNode(const char* typeName);
+    Node* CloneNode(Node* srcNode);
+    void DestroyChildNode(Node* node);
+
+    template<class NodeClass>
+    NodeClass* CreateChildNode()
+    {
+        return (NodeClass*)CreateChildNode(NodeClass::GetStaticType());
+    }
+
+    template<class NodeClass>
+    NodeClass* CreateChildNode(const char* name)
+    {
+        NodeClass* ret = (NodeClass*)CreateChildNode(NodeClass::GetStaticType());
+        ret->SetName(name);
+        return ret;
+    }
+
+    void SetPendingDestroy(bool pendingDestroy);
+    bool IsPendingDestroy() const;
+
+    bool HasStarted() const;
+
+    void EnableTick(bool enable);
+    bool IsTickEnabled() const;
+
+    void SetPersitent(bool persistent);
+    bool IsPersistent() const;
+
+    void SetWorld(World* world);
+    World* GetWorld();
+
+    void SetScene(Scene* scene);
+    Scene* GetScene();
+
+    std::vector<NetDatum>& GetReplicatedData();
+
+    void SetNetId(NetId id);
+    NetId GetNetId() const;
+
+    NetHostId GetOwningHost() const;
+    void SetOwningHost(NetHostId hostId);
+
+    void SetReplicate(bool replicate);
+    bool IsReplicated() const;
+
+    void ForceReplication();
+    void ClearForcedReplication();
+    bool NeedsForcedReplication();
+
+    ReplicationRate GetReplicationRate() const;
+    //void SetReplicationRate(ReplicationRate rate);
+
+    bool HasTag(const std::string& tag);
+    void AddTag(const std::string& tag);
+    void RemoveTag(const std::string& tag);
 
     void SetName(const std::string& newName);
     const std::string& GetName() const;
@@ -97,17 +178,49 @@ public:
     const std::vector<Node*>& GetChildren() const;
 
     virtual void Attach(Node* parent, bool keepWorldTransform = false);
+    void Detach(bool keepWorldTransform = false);
     void AddChild(Node* child);
     void RemoveChild(Node* child);
     void RemoveChild(int32_t index);
 
-    int32_t GetChildIndex(const char* childName);
-    Node* GetChild(const char* childName);
-    Node* GetChild(int32_t index);
+    int32_t GetChildIndex(const char* childName) const;
+    Node* GetChild(const char* childName) const;
+    Node* GetChild(int32_t index) const;
+    Node* GetChildByType(TypeId type) const;
     uint32_t GetNumChildren() const;
     int32_t FindParentNodeIndex() const;
 
+    void SetHitCheckId(uint32_t id);
+    uint32_t GetHitCheckId() const;
+
+    Script* GetScript();
+
+    bool DoChildrenHaveUniqueNames() const;
+
+    bool HasAuthority() const;
+    bool IsOwned() const;
+
+    NetFunc* FindNetFunc(const char* name);
+    NetFunc* FindNetFunc(uint16_t index);
+
+    void InvokeNetFunc(const char* name);
+    void InvokeNetFunc(const char* name, Datum param0);
+    void InvokeNetFunc(const char* name, Datum param0, Datum param1);
+    void InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2);
+    void InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3);
+    void InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4);
+    void InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5);
+    void InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5, Datum param6);
+    void InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5, Datum param6, Datum param7);
+    void InvokeNetFunc(const char* name, const std::vector<Datum>& params);
+
+    static void RegisterNetFuncs(Node* node);
+
 protected:
+
+    void SendNetFunc(NetFunc* func, uint32_t numParams, Datum** params);
+
+    static std::unordered_map<TypeId, NetFuncMap> sTypeNetFuncMap;
 
     std::string mName;
 
@@ -121,9 +234,9 @@ protected:
     bool mDefault = false;
 
     // Merged from Actor
-    SceneRef mSceneSource;
+    SceneRef mScene;
     std::vector<std::string> mTags;
-    uint32_t mHitCheckId;
+    uint32_t mHitCheckId = 0;
 
     bool mHasStarted = false;
     bool mPendingDestroy = false;
@@ -144,7 +257,7 @@ protected:
     bool mForceReplicate = false;
     ReplicationRate mReplicationRate = ReplicationRate::High;
 
-    NodeScriptData* mScriptData = nullptr;
+    Script* mScript = nullptr;
     //NodeNetData* mNetData = nullptr;
 
 };

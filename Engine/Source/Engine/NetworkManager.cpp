@@ -1053,13 +1053,13 @@ void NetworkManager::SendReplicateMsg(NetMsgReplicate& repMsg, uint32_t& numVars
     numVars = 0;
 }
 
-void NetworkManager::SendInvokeMsg(NetMsgInvoke& msg, Actor* actor, NetFunc* func, uint32_t numParams, Datum** params)
+void NetworkManager::SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func, uint32_t numParams, Datum** params)
 {
     NetFuncType type = func->mType;
     bool scriptMsg = msg.GetType() == NetMsgType::InvokeScript;
     OCT_ASSERT(scriptMsg || numParams == func->mNumParams); // Script NetFuncs do not setup num params.
 
-    msg.mActorNetId = actor->GetNetId();
+    msg.mActorNetId = node->GetNetId();
     msg.mIndex = func->mIndex;
     msg.mNumParams = numParams;
     msg.mReliable = func->mReliable;
@@ -1097,7 +1097,7 @@ void NetworkManager::SendInvokeMsg(NetMsgInvoke& msg, Actor* actor, NetFunc* fun
     }
 }
 
-void NetworkManager::SendInvokeMsg(Actor* actor, NetFunc* func, uint32_t numParams, Datum** params)
+void NetworkManager::SendInvokeMsg(Node* actor, NetFunc* func, uint32_t numParams, Datum** params)
 {
     SendInvokeMsg(sMsgInvoke, actor, func, numParams, params);
 }

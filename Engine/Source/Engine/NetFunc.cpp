@@ -90,11 +90,11 @@ NetFunc::NetFunc(NetFuncType type, const char* name, NetFunc8FP fp, bool reliabl
 }
 
 
-bool ShouldExecuteNetFunc(NetFuncType type, Actor* actor)
+bool ShouldExecuteNetFunc(NetFuncType type, Node* node)
 {
     bool execute = false;
     NetStatus netStatus = NetworkManager::Get()->GetNetStatus();
-    NetHostId owningHost = actor->GetOwningHost();
+    NetHostId owningHost = node->GetOwningHost();
 
     switch (type)
     {
@@ -121,13 +121,13 @@ bool ShouldExecuteNetFunc(NetFuncType type, Actor* actor)
     return execute;
 }
 
-bool ShouldSendNetFunc(NetFuncType type, Actor* actor)
+bool ShouldSendNetFunc(NetFuncType type, Node* node)
 {
     bool send = false;
 
     NetStatus netStatus = NetworkManager::Get()->GetNetStatus();
     NetHostId hostId = NetworkManager::Get()->GetHostId();
-    NetHostId owningHost = actor->GetOwningHost();
+    NetHostId owningHost = node->GetOwningHost();
 
     switch (type)
     {

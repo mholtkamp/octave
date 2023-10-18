@@ -3,22 +3,22 @@
 #include "Datum.h"
 #include <unordered_map>
 
-class Actor;
+class Node;
 
 #define OCT_NET_FUNC_MAX_PARAMS 8
 
 #define ADD_NET_FUNC(OutFuncs, FuncType, Function) OutFuncs.push_back(NetFunc(NetFuncType::FuncType, #Function, Function));
 #define ADD_NET_FUNC_RELIABLE(OutFuncs, FuncType, Function) OutFuncs.push_back(NetFunc(NetFuncType::FuncType, #Function, Function, true));
 
-typedef void (*NetFunc0FP)(Actor* actor);
-typedef void (*NetFunc1FP)(Actor* actor, Datum& param0);
-typedef void (*NetFunc2FP)(Actor* actor, Datum& param0, Datum& param1);
-typedef void (*NetFunc3FP)(Actor* actor, Datum& param0, Datum& param1, Datum& param2);
-typedef void (*NetFunc4FP)(Actor* actor, Datum& param0, Datum& param1, Datum& param2, Datum& param3);
-typedef void (*NetFunc5FP)(Actor* actor, Datum& param0, Datum& param1, Datum& param2, Datum& param3, Datum& param4);
-typedef void (*NetFunc6FP)(Actor* actor, Datum& param0, Datum& param1, Datum& param2, Datum& param3, Datum& param4, Datum& param5);
-typedef void (*NetFunc7FP)(Actor* actor, Datum& param0, Datum& param1, Datum& param2, Datum& param3, Datum& param4, Datum& param5, Datum& param6);
-typedef void (*NetFunc8FP)(Actor* actor, Datum& param0, Datum& param1, Datum& param2, Datum& param3, Datum& param4, Datum& param5, Datum& param6, Datum& param7);
+typedef void (*NetFunc0FP)(Node* node);
+typedef void (*NetFunc1FP)(Node* node, Datum& param0);
+typedef void (*NetFunc2FP)(Node* node, Datum& param0, Datum& param1);
+typedef void (*NetFunc3FP)(Node* node, Datum& param0, Datum& param1, Datum& param2);
+typedef void (*NetFunc4FP)(Node* node, Datum& param0, Datum& param1, Datum& param2, Datum& param3);
+typedef void (*NetFunc5FP)(Node* node, Datum& param0, Datum& param1, Datum& param2, Datum& param3, Datum& param4);
+typedef void (*NetFunc6FP)(Node* node, Datum& param0, Datum& param1, Datum& param2, Datum& param3, Datum& param4, Datum& param5);
+typedef void (*NetFunc7FP)(Node* node, Datum& param0, Datum& param1, Datum& param2, Datum& param3, Datum& param4, Datum& param5, Datum& param6);
+typedef void (*NetFunc8FP)(Node* node, Datum& param0, Datum& param1, Datum& param2, Datum& param3, Datum& param4, Datum& param5, Datum& param6, Datum& param7);
 
 enum class NetFuncType : uint8_t
 {
@@ -79,5 +79,5 @@ struct NetFunc
 
 typedef NetFunc ScriptNetFunc;
 
-bool ShouldExecuteNetFunc(NetFuncType type, Actor* actor);
-bool ShouldSendNetFunc(NetFuncType type, Actor* actor);
+bool ShouldExecuteNetFunc(NetFuncType type, Node* node);
+bool ShouldSendNetFunc(NetFuncType type, Node* node);

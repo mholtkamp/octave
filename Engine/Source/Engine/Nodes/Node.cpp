@@ -95,7 +95,7 @@ void Node::Destroy()
     NodeRef::EraseReferencesToObject(this);
 
 #if EDITOR
-    GetWorld()->DeselectComponent(this);
+    GetWorld()->DeselectNode(this);
 #endif
 }
 
@@ -216,7 +216,7 @@ void Node::Copy(Node* srcNode)
         }
     }
 
-    mSceneSource = srcNode->GetSceneSource();
+    mScene = srcNode->GetScene();
 
     // Copy children recursively.
     for (uint32_t i = 0; i < srcNode->GetNumChildren(); ++i)
@@ -226,7 +226,7 @@ void Node::Copy(Node* srcNode)
 
         if (i >= GetNumChildren())
         {
-            dstChild = CreateComponent(srcChild->GetType());
+            dstChild = CreateChildNode(srcChild->GetType());
         }
         else
         {
@@ -253,7 +253,25 @@ void Node::Render(PipelineId pipelineId)
 
 void Node::Start()
 {
+    mHasStarted = true;
 
+    // TODO-NODE: Start children first? We could add a bool mLateStart.
+    for (uint32_t i = 0; i < GetNumChildren(); ++i)
+    {
+        Node* child = GetChild(i);
+        if (!child->HasStarted())
+        {
+            GetChild(i)->Start();
+        }
+    }
+
+    if (mReplicate &&
+        NetIsServer())
+    {
+        // Send a reliable forced replication message to ensure the initial state
+        // is received by the clients.
+        ForceReplication();
+    }
 }
 
 void Node::Stop()
@@ -341,24 +359,363 @@ void Node::GatherNetFuncs(std::vector<NetFunc>& outFuncs)
 
 }
 
-// TODO-NODE: Register / unregister should happen on AddChild() / SetParent()
-// If the prev world != newWorld, set its world and also call register/unregister.
-void Component::SetOwner(Actor* owner)
+void Node::GatherPropertyOverrides(std::vector<Property>& outOverrides)
 {
-    World* prevWorld = mOwner ? mOwner->GetWorld() : nullptr;
-    mOwner = owner;
-    World* newWorld = mOwner ? mOwner->GetWorld() : nullptr;
-
-    if (prevWorld != newWorld)
+    if (mScene != nullptr)
     {
-        if (prevWorld != nullptr)
+        Scene* scene = mScene.Get<Scene>();
+
+        std::vector<Property> nodeProps;
+        GatherProperties(nodeProps);
+
+        Node* defaultNode = Node::CreateInstance(GetType());
+        std::vector<Property> defaultProps;
+        defaultNode->GatherProperties(defaultProps);
+
+        for (uint32_t i = 0; i < nodeProps.size(); ++i)
         {
-            prevWorld->UnregisterComponent(this);
+            const Property* scProp = scene->GetProperty(nodeProps[i].mName.c_str());
+            const Property* defaultProp = FindProperty(defaultProps, nodeProps[i].mName);
+
+            if ((scProp == nullptr && defaultProp == nullptr) ||           // Prop doesnt exist in BP or default
+                (scProp != nullptr && nodeProps[i] != *scProp) ||         // Prop exists on bp but it's different
+                (scProp == nullptr && defaultProp != nullptr && nodeProps[i] != *defaultProp)) // Prop exists on the default actor but it's different
+            {
+                outOverrides.push_back(nodeProps[i]);
+            }
         }
 
-        if (newWorld != nullptr)
+        delete defaultNode;
+        defaultNode = nullptr;
+    }
+}
+
+void Node::ApplyPropertyOverrides(const std::vector<Property>& overs)
+{
+#if 1
+    // TODO-NODE: Check to make sure property overrides work with this call.
+    // Old code is shown in #else below.
+    std::vector<Property> props;
+    GatherProperties(props);
+    CopyPropertyValues(props, overs);
+#else
+    std::vector<Property> props;
+    GatherProperties(props);
+
+    for (uint32_t i = 0; i < overs.size(); ++i)
+    {
+        for (uint32_t d = 0; d < props.size(); ++d)
         {
-            newWorld->RegisterComponent(this);
+            if (props[d].mName == overs[i].mName &&
+                props[d].mType == overs[i].mType &&
+                props[d].mCount == overs[i].mCount)
+            {
+                props[d].SetValue(overs[i].mData.vp, 0, props[d].mCount);
+                break;
+            }
+        }
+    }
+#endif
+}
+
+void Node::BeginOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* other)
+{
+    //LogDebug("Begin Overlap <%s> with <%s>", this->GetName().c_str(), other->GetName().c_str());
+
+    // TODO-NODE: Get this working with scripts.
+    if (mScriptData != nullptr)
+    {
+        LogError("Need to call script BeginOverlap");
+    }
+}
+void Node::EndOverlap(PrimitiveComponent* thisComp, PrimitiveComponent* other)
+{
+    //LogDebug("End Overlap <%s> with <%s>", this->GetName().c_str(), other->GetName().c_str());
+
+    // TODO-NODE: Get this working with scripts.
+    if (mScriptData != nullptr)
+    {
+        LogError("Need to call script EndOverlap");
+    }
+}
+void Node::OnCollision(
+    PrimitiveComponent* thisComp,
+    PrimitiveComponent* other,
+    glm::vec3 impactPoint,
+    glm::vec3 impactNormal,
+    btPersistentManifold* manifold)
+{
+    //LogDebug("Collisions [%d] <%s> with <%s>", manifold->getNumContacts(), this->GetName().c_str(), other->GetName().c_str());
+
+    // TODO-NODE: Get this working with scripts.
+    if (mScriptData != nullptr)
+    {
+        LogError("Need to call script OnCollision");
+    }
+}
+
+void Node::RenderShadow()
+{
+#if 0
+    Pipeline* shadowPipeline = Renderer::Get()->GetShadowCaster()->GetPipeline();
+
+    for (uint32_t i = 0; i < mComponents.size(); ++i)
+    {
+        if (IsPrimitiveComponent() && IsVisible())
+        {
+            static_cast<PrimitiveComponent*>(this)->RenderWithPipeline(shadowPipeline);
+        }
+    }
+#endif
+}
+
+void Node::RenderSelected(bool renderChildren)
+{
+#if EDITOR
+    if (!IsVisible())
+        return;
+
+    const bool proxyEnabled = Renderer::Get()->IsProxyRenderingEnabled();
+
+    if (IsPrimitiveNode())
+    {
+        PrimitiveComponent* primComp = static_cast<PrimitiveComponent*>(this);
+        GFX_BindPipeline(PipelineId::Selected, primComp->GetVertexType());
+        primComp->Render();
+    }
+
+    if (proxyEnabled && IsTransformNode())
+    {
+        TransformComponent* transComp = static_cast<TransformComponent*>(this);
+
+        std::vector<DebugDraw> proxyDraws;
+        transComp->GatherProxyDraws(proxyDraws);
+
+        for (DebugDraw& draw : proxyDraws)
+        {
+            GFX_BindPipeline(PipelineId::Selected);
+            GFX_DrawStaticMesh(draw.mMesh, nullptr, draw.mTransform, draw.mColor);
+        }
+    }
+
+    if (renderChildren)
+    {
+        for (uint32_t i = 0; i < GetNumChildren(); ++i)
+        {
+            GetChild(i)->RenderSelected(true);
+        }
+    }
+#endif
+}
+
+Node* Node::CreateChildNode(TypeId nodeType)
+{
+    Node* subNode = Node::CreateInstance(nodeType);
+
+    if (subNode != nullptr)
+    {
+        AddChild(subNode);
+        subNode->Create();
+
+        if (HasStarted())
+        {
+            subNode->Start();
+        }
+    }
+
+    return subNode;
+}
+
+Node* Node::CreateChildNode(const char* typeName)
+{
+    Node* subNode = nullptr;
+    const std::vector<Factory*>& factories = Node::GetFactoryList();
+    for (uint32_t i = 0; i < factories.size(); ++i)
+    {
+        if (strncmp(typeName, factories[i]->GetClassName(), MAX_PATH_SIZE) == 0)
+        {
+            subNode = CreateChildNode(factories[i]->GetType());
+            break;
+        }
+    }
+
+    return subNode;
+}
+
+Node* Node::CloneNode(Node* srcNode)
+{
+    Node* subNode = Node::CreateInstance(srcNode->GetType());
+
+    if (subNode != nullptr)
+    {
+        AddChild(subNode);
+        subNode->Create();
+        subNode->Copy(srcNode);
+
+        if (HasStarted())
+        {
+            subNode->Start();
+        }
+    }
+
+    return subNode;
+}
+
+void Node::DestroyChildNode(Node* childNode)
+{
+    RemoveChild(childNode);
+    childNode->Destroy();
+    delete childNode;
+}
+
+
+void Node::SetPendingDestroy(bool pendingDestroy)
+{
+    mPendingDestroy = pendingDestroy;
+}
+
+bool Node::IsPendingDestroy() const
+{
+    return mPendingDestroy;
+}
+
+bool Node::HasStarted() const
+{
+    return mHasStarted;
+}
+
+void Node::EnableTick(bool enable)
+{
+    mTickEnabled = enable;
+}
+
+bool Node::IsTickEnabled() const
+{
+    return mTickEnabled;
+}
+
+void Node::SetPersitent(bool persistent)
+{
+    mPersistent = persistent;
+}
+
+bool Node::IsPersistent() const
+{
+    return mPersistent;
+}
+
+void Node::SetWorld(World * world)
+{
+    mWorld = world;
+
+    for (uint32_t i = 0; i < GetNumChildren(); ++i)
+    {
+        GetChild(i)->SetWorld(world);
+    }
+}
+
+World* Node::GetWorld()
+{
+    return mWorld;
+}
+
+void Node::SetScene(Scene* scene)
+{
+    mScene = scene;
+}
+
+Scene* Node::GetScene()
+{
+    return mScene.Get<Scene>();
+}
+
+std::vector<NetDatum>& Node::GetReplicatedData()
+{
+    return mReplicatedData;
+}
+
+void Node::SetNetId(NetId id)
+{
+    mNetId = id;
+}
+
+NetId Node::GetNetId() const
+{
+    return mNetId;
+}
+
+NetHostId Node::GetOwningHost() const
+{
+    return mOwningHost;
+}
+
+void Node::SetOwningHost(NetHostId hostId)
+{
+    mOwningHost = hostId;
+}
+
+void Node::SetReplicate(bool replicate)
+{
+    mReplicate = replicate;
+}
+
+bool Node::IsReplicated() const
+{
+    return mReplicate;
+}
+
+void Node::ForceReplication()
+{
+    mForceReplicate = true;
+}
+
+void Node::ClearForcedReplication()
+{
+    mForceReplicate = false;
+}
+
+bool Node::NeedsForcedReplication()
+{
+    return mForceReplicate;
+}
+
+ReplicationRate Node::GetReplicationRate() const
+{
+    return mReplicationRate;
+}
+
+bool Node::HasTag(const std::string& tag)
+{
+    bool hasTag = false;
+
+    for (uint32_t i = 0; i < mTags.size(); ++i)
+    {
+        if (mTags[i] == tag)
+        {
+            hasTag = true;
+            break;
+        }
+    }
+
+    return hasTag;
+}
+
+void Node::AddTag(const std::string& tag)
+{
+    if (!HasTag(tag))
+    {
+        mTags.push_back(tag);
+    }
+}
+
+void Node::RemoveTag(const std::string& tag)
+{
+    for (uint32_t i = 0; i < mTags.size(); ++i)
+    {
+        if (mTags[i] == tag)
+        {
+            mTags.erase(mTags.begin() + i);
+            break;
         }
     }
 }
@@ -478,6 +835,11 @@ void Node::Attach(Node* parent, bool keepWorldTransform)
     }
 }
 
+void Node::Detach(bool keepWorldTransform)
+{
+    Attach(nullptr, keepWorldTransform);
+}
+
 void Node::AddChild(Node* child)
 {
     if (child != nullptr)
@@ -498,6 +860,12 @@ void Node::AddChild(Node* child)
         {
             mChildren.push_back(child);
             child->mParent = this;
+            child->SetWorld(mWorld);
+
+            if (mWorld != nullptr)
+            {
+                mWorld->RegisterNode(child);
+            }
         }
     }
 }
@@ -519,6 +887,12 @@ void Node::RemoveChild(Node* child)
         OCT_ASSERT(childIndex != -1); // Could not find the component to remove
         if (childIndex != -1)
         {
+            if (child->GetWorld() != nullptr)
+            {
+                child->GetWorld()->UnregisterNode(child);
+                child->SetWorld(nullptr);
+            }
+
             RemoveChild(childIndex);
         }
     }
@@ -531,7 +905,7 @@ void Node::RemoveChild(int32_t index)
     mChildren.erase(mChildren.begin() + index);
 }
 
-int32_t Node::GetChildIndex(const char* childName)
+int32_t Node::GetChildIndex(const char* childName) const
 {
     int32_t index = -1;
     for (int32_t i = 0; i < int32_t(mChildren.size()); ++i)
@@ -546,7 +920,7 @@ int32_t Node::GetChildIndex(const char* childName)
     return index;
 }
 
-Node* Node::GetChild(const char* childName)
+Node* Node::GetChild(const char* childName) const
 {
     Node* retNode = nullptr;
     int32_t index = GetChildIndex(childName);
@@ -557,7 +931,7 @@ Node* Node::GetChild(const char* childName)
     return retNode;
 }
 
-Node* Node::GetChild(int32_t index)
+Node* Node::GetChild(int32_t index) const
 {
     Node* retNode = nullptr;
     if (index >= 0 &&
@@ -566,6 +940,23 @@ Node* Node::GetChild(int32_t index)
         retNode = mChildren[index];
     }
     return retNode;
+}
+
+Node* Node::GetChildByType(TypeId type) const
+{
+    Node* ret = nullptr;
+
+    for (uint32_t i = 0; i < GetNumChildren(); ++i)
+    {
+        Node* child = GetChild(i);
+        if (child->GetType() == type)
+        {
+            ret = child;
+            break;
+        }
+    }
+
+    return ret;
 }
 
 uint32_t Node::GetNumChildren() const
@@ -591,4 +982,224 @@ int32_t Node::FindParentNodeIndex() const
     }
 
     return retIndex;
+}
+
+void Node::SetHitCheckId(uint32_t id)
+{
+    mHitCheckId = id;
+}
+
+uint32_t Node::GetHitCheckId() const
+{
+    return mHitCheckId;
+}
+
+Script* Node::GetScript()
+{
+    return mScript;
+}
+
+bool Node::DoChildrenHaveUniqueNames() const
+{
+    bool unique = true;
+    std::unordered_set<std::string> names;
+
+    for (uint32_t i = 0; i < GetNumChildren(); ++i)
+    {
+        if (names.find(GetChild(i)->GetName()) != names.end())
+        {
+            unique = false;
+            break;
+        }
+        else
+        {
+            names.insert(GetChild(i)->GetName());
+        }
+    }
+
+    return unique;
+}
+
+bool Node::HasAuthority() const
+{
+    return NetIsAuthority();
+}
+
+bool Node::IsOwned() const
+{
+    return (NetIsLocal() || mOwningHost == NetGetHostId());
+}
+
+void Node::InvokeNetFunc(const char* name)
+{
+    Datum** params = nullptr;
+    INVOKE_NET_FUNC_BODY(0);
+    if (shouldExecute) { netFunc->mFuncPointer.p0(this); }
+}
+
+void Node::InvokeNetFunc(const char* name, Datum param0)
+{
+    Datum* params[] = { &param0 };
+    INVOKE_NET_FUNC_BODY(1);
+    if (shouldExecute) { netFunc->mFuncPointer.p1(this, param0); }
+}
+
+void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1)
+{
+    Datum* params[] = { &param0, &param1 };
+    INVOKE_NET_FUNC_BODY(2);
+    if (shouldExecute) { netFunc->mFuncPointer.p2(this, param0, param1); }
+}
+
+void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2)
+{
+    Datum* params[] = { &param0, &param1, &param2 };
+    INVOKE_NET_FUNC_BODY(3);
+    if (shouldExecute) { netFunc->mFuncPointer.p3(this, param0, param1, param2); }
+}
+
+void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3)
+{
+    Datum* params[] = { &param0, &param1, &param2, &param3 };
+    INVOKE_NET_FUNC_BODY(4);
+    if (shouldExecute) { netFunc->mFuncPointer.p4(this, param0, param1, param2, param3); }
+}
+
+void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4)
+{
+    Datum* params[] = { &param0, &param1, &param2, &param3, &param4 };
+    INVOKE_NET_FUNC_BODY(5);
+    if (shouldExecute) { netFunc->mFuncPointer.p5(this, param0, param1, param2, param3, param4); }
+}
+
+void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5)
+{
+    Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5 };
+    INVOKE_NET_FUNC_BODY(6);
+    if (shouldExecute) { netFunc->mFuncPointer.p6(this, param0, param1, param2, param3, param4, param5); }
+}
+
+void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5, Datum param6)
+{
+    Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6 };
+    INVOKE_NET_FUNC_BODY(7);
+    if (shouldExecute) { netFunc->mFuncPointer.p7(this, param0, param1, param2, param3, param4, param5, param6); }
+}
+
+void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5, Datum param6, Datum param7)
+{
+    Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6, &param7 };
+    INVOKE_NET_FUNC_BODY(8);
+    if (shouldExecute) { netFunc->mFuncPointer.p8(this, param0, param1, param2, param3, param4, param5, param6, param7); }
+}
+
+void Node::InvokeNetFunc(const char* name, const std::vector<Datum>& params)
+{
+    uint32_t numParams = (uint32_t)params.size();
+    if (numParams > 8)
+    {
+        LogError("Too many params for NetFunc, truncating to 8.");
+        numParams = 8;
+    }
+
+    switch (numParams)
+    {
+    case 0: InvokeNetFunc(name); break;
+    case 1: InvokeNetFunc(name, params[0]); break;
+    case 2: InvokeNetFunc(name, params[0], params[1]); break;
+    case 3: InvokeNetFunc(name, params[0], params[1], params[2]); break;
+    case 4: InvokeNetFunc(name, params[0], params[1], params[2], params[3]); break;
+    case 5: InvokeNetFunc(name, params[0], params[1], params[2], params[3], params[4]); break;
+    case 6: InvokeNetFunc(name, params[0], params[1], params[2], params[3], params[4], params[5]); break;
+    case 7: InvokeNetFunc(name, params[0], params[1], params[2], params[3], params[4], params[5], params[6]); break;
+    case 8: InvokeNetFunc(name, params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7]); break;
+    }
+}
+
+void Node::RegisterNetFuncs(Node* node)
+{
+    TypeId nodeType = node->GetType();
+
+    if (sTypeNetFuncMap.find(nodeType) == sTypeNetFuncMap.end())
+    {
+        // First actor of this class spawned.
+        // Need to gather up the RPCs and save them in static memory.
+
+        sTypeNetFuncMap.insert({ nodeType, std::unordered_map<std::string, NetFunc>() });
+
+        std::unordered_map<std::string, NetFunc>& funcMap = sTypeNetFuncMap[nodeType];
+
+        std::vector<NetFunc> netFuncs;
+        node->GatherNetFuncs(netFuncs);
+
+        for (uint32_t i = 0; i < netFuncs.size(); ++i)
+        {
+            netFuncs[i].mIndex = (uint16_t)i;
+            funcMap.insert({ netFuncs[i].mName, netFuncs[i] });
+        }
+
+        //LogDebug("Registered %d net functions for class %s", int32_t(netFuncs.size()), actor->GetClassName());
+    }
+}
+
+NetFunc* Node::FindNetFunc(const char* name)
+{
+    NetFunc* retFunc = nullptr;
+
+    TypeId actorType = GetType();
+    auto mapIt = sTypeNetFuncMap.find(actorType);
+
+    // The map should have been added when the first instanced of this class was spawned.
+    // Checkout RegisterNetFuncs()
+    OCT_ASSERT(mapIt != sTypeNetFuncMap.end());
+
+    if (mapIt != sTypeNetFuncMap.end())
+    {
+        auto funcIt = mapIt->second.find(name);
+
+        // Did you remember to register the net func in GatherNetFuncs().
+        // Is the function name spelled correctly?
+        OCT_ASSERT(funcIt != mapIt->second.end());
+
+        if (funcIt != mapIt->second.end())
+        {
+            retFunc = &funcIt->second;
+        }
+    }
+
+    return retFunc;
+}
+
+NetFunc* Node::FindNetFunc(uint16_t index)
+{
+    NetFunc* retFunc = nullptr;
+
+    TypeId actorType = GetType();
+    auto mapIt = sTypeNetFuncMap.find(actorType);
+
+    // The map should have been added when the first instanced of this class was spawned.
+    // Checkout RegisterNetFuncs()
+    OCT_ASSERT(mapIt != sTypeNetFuncMap.end());
+
+    if (mapIt != sTypeNetFuncMap.end())
+    {
+        for (auto funcIt = mapIt->second.begin(); funcIt != mapIt->second.end(); ++funcIt)
+        {
+            if (funcIt->second.mIndex == index)
+            {
+                retFunc = &funcIt->second;
+                break;
+            }
+        }
+    }
+
+    return retFunc;
+}
+
+void Node::SendNetFunc(NetFunc* func, uint32_t numParams, Datum** params)
+{
+    if (ShouldSendNetFunc(func->mType, this))
+    {
+        NetworkManager::Get()->SendInvokeMsg(this, func, numParams, params);
+    }
 }

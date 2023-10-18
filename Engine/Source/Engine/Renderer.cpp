@@ -1409,11 +1409,12 @@ void Renderer::RenderSelectedGeometry(World* world)
     if (!GetEditorState()->mPlayInEditor ||
         GetEditorState()->mEjected)
     {
-        std::vector<Actor*> selectedActors = world->GetSelectedActors();
+        std::vector<Node*> selectedNodes = world->GetSelectedNodes();
 
-        for (uint32_t i = 0; i < selectedActors.size(); ++i)
+        for (uint32_t i = 0; i < selectedNodes.size(); ++i)
         {
-            selectedActors[i]->RenderSelected();
+            const bool renderChildren = (selectedNodes[i]->GetParent() != nullptr && selectedNodes[i]->GetSceneSource() != nullptr);
+            selectedNodes[i]->RenderSelected(renderChildren);
         }
     }
 #endif

@@ -24,7 +24,7 @@
 #define OCT_PING_INTERVAL 1.0f
 #define OCT_BROADCAST_INTERVAL 5.0f
 
-class Actor;
+class Node;
 
 bool NetIsClient();
 bool NetIsServer();
@@ -86,8 +86,8 @@ public:
     void SendMessageImmediate(const NetMsg* netMsg, uint32_t ipAddress, uint16_t port);
 
     void SendReplicateMsg(NetMsgReplicate& repMsg, uint32_t& numVars, NetHostId hostId);
-    void SendInvokeMsg(NetMsgInvoke& msg, Actor* actor, NetFunc* func, uint32_t numParams, Datum** params);
-    void SendInvokeMsg(Actor* actor, NetFunc* func, uint32_t numParams, Datum** params);
+    void SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func, uint32_t numParams, Datum** params);
+    void SendInvokeMsg(Node* node, NetFunc* func, uint32_t numParams, Datum** params);
     void SendInvokeScriptMsg(ScriptComponent* scriptComp, ScriptNetFunc* func, uint32_t numParams, Datum** params);
     void SendSpawnMessage(Actor* actor, NetClient* client);
     void SendDestroyMessage(Actor* actor, NetClient* client);

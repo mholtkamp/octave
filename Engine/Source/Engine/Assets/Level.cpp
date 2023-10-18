@@ -173,7 +173,7 @@ void Level::CaptureWorld(World* world)
                 // Blueprints need to serialize their asset name + override properties
                 captureStream.WriteAsset(actors[i]->GetBlueprintSource());
 
-                std::vector<PropertyOverride> propOverrides;
+                std::vector<Property> propOverrides;
                 actors[i]->GatherPropertyOverrides(propOverrides);
 
                 captureStream.WriteUint32((uint32_t)propOverrides.size());
@@ -231,7 +231,7 @@ void Level::LoadIntoWorld(World* world, bool clear, glm::vec3 offset, glm::vec3 
             Blueprint* bp = bpRef.Get<Blueprint>();
             uint32_t numOverrides = stream.ReadUint32();
 
-            std::vector<PropertyOverride> overs;
+            std::vector<Property> overs;
             overs.resize(numOverrides);
 
             for (uint32_t o = 0; o < numOverrides; ++o)
