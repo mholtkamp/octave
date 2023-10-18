@@ -1,5 +1,5 @@
-#include "LuaBindings/Particle3D_Lua.h"
-#include "LuaBindings/Primitive3D_Lua.h"
+#include "LuaBindings/Particle3d_Lua.h"
+#include "LuaBindings/Primitive3d_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/Material_Lua.h"

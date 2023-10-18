@@ -6,7 +6,7 @@
 
 #include "LuaBindings/LuaUtils.h"
 #include "LuaBindings/Component_Lua.h"
-#include "LuaBindings/Node3D_Lua.h"
+#include "LuaBindings/Node3d_Lua.h"
 #include "LuaBindings/Actor_Lua.h"
 #include "LuaBindings/World_Lua.h"
 

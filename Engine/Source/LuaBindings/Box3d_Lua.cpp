@@ -1,5 +1,5 @@
-#include "LuaBindings/Box3D_Lua.h"
-#include "LuaBindings/Primitive3D_Lua.h"
+#include "LuaBindings/Box3d_Lua.h"
+#include "LuaBindings/Primitive3d_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/LuaUtils.h"

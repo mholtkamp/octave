@@ -1,5 +1,5 @@
-#include "LuaBindings/DirectionalLight3D_Lua.h"
-#include "LuaBindings/Light3D_Lua.h"
+#include "LuaBindings/DirectionalLight3d_Lua.h"
+#include "LuaBindings/Light3d_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 

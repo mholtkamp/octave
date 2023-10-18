@@ -2,7 +2,7 @@
 
 #include "LuaBindings/Actor_Lua.h"
 #include "LuaBindings/Component_Lua.h"
-#include "LuaBindings/Node3D_Lua.h"
+#include "LuaBindings/Node3d_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/Vector_Lua.h"

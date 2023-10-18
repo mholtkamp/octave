@@ -1,5 +1,5 @@
-#include "LuaBindings/Audio3D_Lua.h"
-#include "LuaBindings/Node3D_Lua.h"
+#include "LuaBindings/Audio3d_Lua.h"
+#include "LuaBindings/Node3d_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/SoundWave_Lua.h"

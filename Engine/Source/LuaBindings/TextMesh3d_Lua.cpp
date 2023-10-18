@@ -1,5 +1,5 @@
-#include "LuaBindings/TextMesh3D_Lua.h"
-#include "LuaBindings/StaticMesh3D_Lua.h"
+#include "LuaBindings/TextMesh3d_Lua.h"
+#include "LuaBindings/StaticMesh3d_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/LuaUtils.h"

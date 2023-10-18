@@ -1,5 +1,5 @@
-#include "LuaBindings/Camera3D_Lua.h"
-#include "LuaBindings/Node3D_Lua.h"
+#include "LuaBindings/Camera3d_Lua.h"
+#include "LuaBindings/Node3d_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 

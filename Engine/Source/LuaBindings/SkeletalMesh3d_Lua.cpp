@@ -1,5 +1,5 @@
-#include "LuaBindings/SkeletalMesh3D_Lua.h"
-#include "LuaBindings/Mesh3D_Lua.h"
+#include "LuaBindings/SkeletalMesh3d_Lua.h"
+#include "LuaBindings/Mesh3d_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/SkeletalMesh_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
