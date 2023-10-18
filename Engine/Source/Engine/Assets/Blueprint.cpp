@@ -202,7 +202,7 @@ void Blueprint::Create(Actor* srcActor)
             }
         }
 
-        if (comps[i]->IsTransformComponent())
+        if (comps[i]->IsNode3D())
         {
             Node3D* transComp = static_cast<Node3D*>(comps[i]);
             if (transComp->GetParent() != nullptr)
@@ -398,7 +398,7 @@ Actor* Blueprint::Instantiate(World* world, bool addNetwork)
         if (mRootComponentName != "")
         {
             Component* comp = retActor->GetComponent(mRootComponentName);
-            if (comp && comp->IsTransformComponent())
+            if (comp && comp->IsNode3D())
             {
                 newRoot = static_cast<Node3D*>(comp);
             }
@@ -420,7 +420,7 @@ Actor* Blueprint::Instantiate(World* world, bool addNetwork)
             for (uint32_t i = 0; i < retActor->GetNumComponents(); ++i)
             {
                 Component* comp = retActor->GetComponent((int32_t)i);
-                if (comp->IsTransformComponent())
+                if (comp->IsNode3D())
                 {
                     newRoot = static_cast<Node3D*>(comp);
                 }
@@ -444,7 +444,7 @@ Actor* Blueprint::Instantiate(World* world, bool addNetwork)
 
         for (uint32_t i = 0; i < comps.size(); ++i)
         {
-            if (comps[i]->IsTransformComponent() &&
+            if (comps[i]->IsNode3D() &&
                 !comps[i]->IsDefault())
             {
                 BlueprintComp* bpComp = FindBlueprintComp(comps[i]->GetName(), false);
@@ -454,7 +454,7 @@ Actor* Blueprint::Instantiate(World* world, bool addNetwork)
                 {
                     Component* parentComp = retActor->GetComponent(bpComp->mParentName);
 
-                    if (parentComp == nullptr || !parentComp->IsTransformComponent())
+                    if (parentComp == nullptr || !parentComp->IsNode3D())
                     {
                         parentComp = newRoot;
                     }

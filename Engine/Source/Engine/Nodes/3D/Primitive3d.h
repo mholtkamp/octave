@@ -55,7 +55,7 @@ public:
     virtual void Destroy() override;
 
     virtual const char* GetTypeName() const override;
-    virtual bool IsPrimitiveComponent() const override;
+    virtual bool IsPrimitive3D() const override;
     virtual void Tick(float deltaTime) override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 

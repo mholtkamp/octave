@@ -101,12 +101,12 @@ void DirectionalLight3D::LoadStream(Stream& stream)
     Light3D::LoadStream(stream);
 }
 
-bool DirectionalLight3D::IsPointLightComponent() const
+bool DirectionalLight3D::IsPointLight3D() const
 {
     return false;
 }
 
-bool DirectionalLight3D::IsDirectionalLightComponent() const
+bool DirectionalLight3D::IsDirectionalLight3D() const
 {
     return true;
 }

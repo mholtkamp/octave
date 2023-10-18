@@ -1380,13 +1380,13 @@ static void SpawnNode(aiNode* node, const glm::mat4& parentTransform, const std:
         {
             uint32_t meshIndex = node->mMeshes[i];
             StaticMeshActor* newActor = world->SpawnActor<StaticMeshActor>();
-            newActor->GetStaticMeshComponent()->SetStaticMesh(meshList[meshIndex]);
-            newActor->GetStaticMeshComponent()->SetUseTriangleCollision(meshList[meshIndex]->IsTriangleCollisionMeshEnabled());
+            newActor->GetStaticMesh3D()->SetStaticMesh(meshList[meshIndex]);
+            newActor->GetStaticMesh3D()->SetUseTriangleCollision(meshList[meshIndex]->IsTriangleCollisionMeshEnabled());
             newActor->GetRootComponent()->SetTransform(transform);
             newActor->SetName(/*options.mPrefix + */node->mName.C_Str());
-            newActor->GetStaticMeshComponent()->EnableCastShadows(true);
-            newActor->GetStaticMeshComponent()->SetBakeLighting(true);
-            newActor->GetStaticMeshComponent()->SetUseTriangleCollision(true);
+            newActor->GetStaticMesh3D()->EnableCastShadows(true);
+            newActor->GetStaticMesh3D()->SetBakeLighting(true);
+            newActor->GetStaticMesh3D()->SetUseTriangleCollision(true);
             newActor->AddTag("Scene");
         }
     }
@@ -2298,7 +2298,7 @@ ActionAddComponent::ActionAddComponent(Component* comp)
 {
     mComponent = comp;
     mOwner = comp->GetOwner();
-    mParent = comp->IsTransformComponent() ? ((Node3D*)comp)->GetParent() : nullptr;
+    mParent = comp->IsNode3D() ? ((Node3D*)comp)->GetParent() : nullptr;
     OCT_ASSERT(mComponent);
     OCT_ASSERT(mOwner);
 }
@@ -2312,7 +2312,7 @@ void ActionAddComponent::Execute()
 
         if (mParent != nullptr)
         {
-            OCT_ASSERT(mComponent->IsTransformComponent());
+            OCT_ASSERT(mComponent->IsNode3D());
             ((Node3D*)mComponent)->Attach(mParent);
         }
 
@@ -2332,7 +2332,7 @@ ActionRemoveComponent::ActionRemoveComponent(Component* comp)
 {
     mComponent = comp;
     mOwner = comp->GetOwner();
-    mParent = comp->IsTransformComponent() ? ((Node3D*)comp)->GetParent() : nullptr;
+    mParent = comp->IsNode3D() ? ((Node3D*)comp)->GetParent() : nullptr;
     OCT_ASSERT(mComponent);
     OCT_ASSERT(mOwner);
 }
@@ -2362,7 +2362,7 @@ void ActionRemoveComponent::Reverse()
 
     if (mParent != nullptr)
     {
-        OCT_ASSERT(mComponent->IsTransformComponent());
+        OCT_ASSERT(mComponent->IsNode3D());
         ((Node3D*)mComponent)->Attach(mParent);
     }
 

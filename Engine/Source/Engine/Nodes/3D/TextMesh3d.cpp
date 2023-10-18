@@ -121,12 +121,12 @@ void TextMesh3D::Tick(float deltaTime)
 }
 
 
-bool TextMesh3D::IsStaticMeshComponent() const
+bool TextMesh3D::IsStaticMesh3D() const
 {
     return false;
 }
 
-bool TextMesh3D::IsSkeletalMeshComponent() const
+bool TextMesh3D::IsSkeletalMesh3D() const
 {
     return false;
 }

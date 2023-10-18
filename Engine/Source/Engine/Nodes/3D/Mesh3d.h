@@ -23,9 +23,9 @@ public:
     virtual void SaveStream(Stream& stream) override;
     virtual void LoadStream(Stream& stream) override;
 
-    virtual bool IsStaticMeshComponent() const = 0;
-    virtual bool IsSkeletalMeshComponent() const = 0;
-    virtual bool IsShadowMeshComponent();
+    virtual bool IsStaticMesh3D() const = 0;
+    virtual bool IsSkeletalMesh3D() const = 0;
+    virtual bool IsShadowMesh3D();
 
     virtual Material* GetMaterial() = 0;
     Material* GetMaterialOverride();

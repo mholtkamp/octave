@@ -137,12 +137,12 @@ void StaticMesh3D::LoadStream(Stream& stream)
     GFX_UpdateStaticMeshCompResourceColors(this);
 }
 
-bool StaticMesh3D::IsStaticMeshComponent() const
+bool StaticMesh3D::IsStaticMesh3D() const
 {
     return true;
 }
 
-bool StaticMesh3D::IsSkeletalMeshComponent() const
+bool StaticMesh3D::IsSkeletalMesh3D() const
 {
     return false;
 }

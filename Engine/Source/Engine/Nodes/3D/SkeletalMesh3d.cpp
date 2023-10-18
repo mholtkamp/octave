@@ -173,12 +173,12 @@ void SkeletalMesh3D::Tick(float deltaTime)
     mHasAnimatedThisFrame = false;
 }
 
-bool SkeletalMesh3D::IsStaticMeshComponent() const
+bool SkeletalMesh3D::IsStaticMesh3D() const
 {
     return false;
 }
 
-bool SkeletalMesh3D::IsSkeletalMeshComponent() const
+bool SkeletalMesh3D::IsSkeletalMesh3D() const
 {
     return true;
 }

@@ -50,7 +50,7 @@ void ShadowMesh3D::LoadStream(Stream& stream)
     StaticMesh3D::LoadStream(stream);
 }
 
-bool ShadowMesh3D::IsShadowMeshComponent()
+bool ShadowMesh3D::IsShadowMesh3D()
 {
     return true;
 }

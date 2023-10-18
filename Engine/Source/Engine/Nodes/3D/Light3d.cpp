@@ -56,7 +56,7 @@ void Light3D::LoadStream(Stream& stream)
     mDomain = (LightingDomain) stream.ReadUint8();
 }
 
-bool Light3D::IsLightComponent() const
+bool Light3D::IsLight3D() const
 {
     return true;
 }

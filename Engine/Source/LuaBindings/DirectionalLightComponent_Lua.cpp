@@ -1,11 +1,11 @@
-#include "LuaBindings/DirectionalLightComponent_Lua.h"
-#include "LuaBindings/LightComponent_Lua.h"
+#include "LuaBindings/DirectionalLight3D_Lua.h"
+#include "LuaBindings/Light3D_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 
 #if LUA_ENABLED
 
-int DirectionalLightComponent_Lua::GetDirection(lua_State* L)
+int DirectionalLight3D_Lua::GetDirection(lua_State* L)
 {
     DirectionalLight3D* comp = CHECK_DIRECTIONAL_LIGHT_COMPONENT(L, 1);
 
@@ -15,7 +15,7 @@ int DirectionalLightComponent_Lua::GetDirection(lua_State* L)
     return 1;
 }
 
-int DirectionalLightComponent_Lua::SetDirection(lua_State* L)
+int DirectionalLight3D_Lua::SetDirection(lua_State* L)
 {
     DirectionalLight3D* comp = CHECK_DIRECTIONAL_LIGHT_COMPONENT(L, 1);
     glm::vec3 value = CHECK_VECTOR(L, 2);
@@ -25,7 +25,7 @@ int DirectionalLightComponent_Lua::SetDirection(lua_State* L)
     return 0;
 }
 
-void DirectionalLightComponent_Lua::Bind()
+void DirectionalLight3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(

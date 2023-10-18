@@ -1,5 +1,5 @@
-#include "LuaBindings/SkeletalMeshComponent_Lua.h"
-#include "LuaBindings/MeshComponent_Lua.h"
+#include "LuaBindings/SkeletalMesh3D_Lua.h"
+#include "LuaBindings/Mesh3D_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/SkeletalMesh_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
@@ -8,7 +8,7 @@
 #include "AssetManager.h"
 #include "Assets/SkeletalMesh.h"
 
-int SkeletalMeshComponent_Lua::SetSkeletalMesh(lua_State* L)
+int SkeletalMesh3D_Lua::SetSkeletalMesh(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     SkeletalMesh* skMesh = nullptr;
@@ -22,7 +22,7 @@ int SkeletalMeshComponent_Lua::SetSkeletalMesh(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::GetSkeletalMesh(lua_State* L)
+int SkeletalMesh3D_Lua::GetSkeletalMesh(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
 
@@ -32,7 +32,7 @@ int SkeletalMeshComponent_Lua::GetSkeletalMesh(lua_State* L)
     return 1;
 }
 
-int SkeletalMeshComponent_Lua::PlayAnimation(lua_State* L)
+int SkeletalMesh3D_Lua::PlayAnimation(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* animName = CHECK_STRING(L, 2);
@@ -51,7 +51,7 @@ int SkeletalMeshComponent_Lua::PlayAnimation(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::StopAnimation(lua_State* L)
+int SkeletalMesh3D_Lua::StopAnimation(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* animName = CHECK_STRING(L, 2);
@@ -64,7 +64,7 @@ int SkeletalMeshComponent_Lua::StopAnimation(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::StopAllAnimations(lua_State* L)
+int SkeletalMesh3D_Lua::StopAllAnimations(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     bool cancelQueued = false;
@@ -76,7 +76,7 @@ int SkeletalMeshComponent_Lua::StopAllAnimations(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::IsAnimationPlaying(lua_State* L)
+int SkeletalMesh3D_Lua::IsAnimationPlaying(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* animName = CHECK_STRING(L, 2);
@@ -87,7 +87,7 @@ int SkeletalMeshComponent_Lua::IsAnimationPlaying(lua_State* L)
     return 1;
 }
 
-int SkeletalMeshComponent_Lua::QueueAnimation(lua_State* L)
+int SkeletalMesh3D_Lua::QueueAnimation(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* animName = CHECK_STRING(L, 2);
@@ -108,7 +108,7 @@ int SkeletalMeshComponent_Lua::QueueAnimation(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::CancelQueuedAnimation(lua_State* L)
+int SkeletalMesh3D_Lua::CancelQueuedAnimation(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* animName = CHECK_STRING(L, 2);
@@ -118,7 +118,7 @@ int SkeletalMeshComponent_Lua::CancelQueuedAnimation(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::CancelAllQueuedAnimations(lua_State* L)
+int SkeletalMesh3D_Lua::CancelAllQueuedAnimations(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
 
@@ -127,7 +127,7 @@ int SkeletalMeshComponent_Lua::CancelAllQueuedAnimations(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::SetInheritPose(lua_State* L)
+int SkeletalMesh3D_Lua::SetInheritPose(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
@@ -137,7 +137,7 @@ int SkeletalMeshComponent_Lua::SetInheritPose(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::IsInheritPoseEnabled(lua_State* L)
+int SkeletalMesh3D_Lua::IsInheritPoseEnabled(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
 
@@ -147,7 +147,7 @@ int SkeletalMeshComponent_Lua::IsInheritPoseEnabled(lua_State* L)
     return 1;
 }
 
-int SkeletalMeshComponent_Lua::ResetAnimation(lua_State* L)
+int SkeletalMesh3D_Lua::ResetAnimation(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
 
@@ -156,7 +156,7 @@ int SkeletalMeshComponent_Lua::ResetAnimation(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::GetAnimationSpeed(lua_State* L)
+int SkeletalMesh3D_Lua::GetAnimationSpeed(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
 
@@ -166,7 +166,7 @@ int SkeletalMeshComponent_Lua::GetAnimationSpeed(lua_State* L)
     return 1;
 }
 
-int SkeletalMeshComponent_Lua::SetAnimationSpeed(lua_State* L)
+int SkeletalMesh3D_Lua::SetAnimationSpeed(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     float speed = CHECK_NUMBER(L, 2);
@@ -176,7 +176,7 @@ int SkeletalMeshComponent_Lua::SetAnimationSpeed(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::SetAnimationPaused(lua_State* L)
+int SkeletalMesh3D_Lua::SetAnimationPaused(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
@@ -186,7 +186,7 @@ int SkeletalMeshComponent_Lua::SetAnimationPaused(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::IsAnimationPaused(lua_State* L)
+int SkeletalMesh3D_Lua::IsAnimationPaused(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
 
@@ -196,7 +196,7 @@ int SkeletalMeshComponent_Lua::IsAnimationPaused(lua_State* L)
     return 1;
 }
 
-int SkeletalMeshComponent_Lua::GetBonePosition(lua_State* L)
+int SkeletalMesh3D_Lua::GetBonePosition(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* boneName = CHECK_STRING(L, 2);
@@ -207,7 +207,7 @@ int SkeletalMeshComponent_Lua::GetBonePosition(lua_State* L)
     return 1;
 }
 
-int SkeletalMeshComponent_Lua::GetBoneRotation(lua_State* L)
+int SkeletalMesh3D_Lua::GetBoneRotation(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* boneName = CHECK_STRING(L, 2);
@@ -218,7 +218,7 @@ int SkeletalMeshComponent_Lua::GetBoneRotation(lua_State* L)
     return 1;
 }
 
-int SkeletalMeshComponent_Lua::GetBoneScale(lua_State* L)
+int SkeletalMesh3D_Lua::GetBoneScale(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* boneName = CHECK_STRING(L, 2);
@@ -229,7 +229,7 @@ int SkeletalMeshComponent_Lua::GetBoneScale(lua_State* L)
     return 1;
 }
 
-int SkeletalMeshComponent_Lua::SetBonePosition(lua_State* L)
+int SkeletalMesh3D_Lua::SetBonePosition(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* boneName = CHECK_STRING(L, 2);
@@ -241,7 +241,7 @@ int SkeletalMeshComponent_Lua::SetBonePosition(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::SetBoneRotation(lua_State* L)
+int SkeletalMesh3D_Lua::SetBoneRotation(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* boneName = CHECK_STRING(L, 2);
@@ -253,7 +253,7 @@ int SkeletalMeshComponent_Lua::SetBoneRotation(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::SetBoneScale(lua_State* L)
+int SkeletalMesh3D_Lua::SetBoneScale(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* boneName = CHECK_STRING(L, 2);
@@ -265,7 +265,7 @@ int SkeletalMeshComponent_Lua::SetBoneScale(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::GetNumBones(lua_State* L)
+int SkeletalMesh3D_Lua::GetNumBones(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
 
@@ -275,7 +275,7 @@ int SkeletalMeshComponent_Lua::GetNumBones(lua_State* L)
     return 1;
 }
 
-int SkeletalMeshComponent_Lua::SetAnimEventHandler(lua_State* L)
+int SkeletalMesh3D_Lua::SetAnimEventHandler(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     const char* tableName = CheckTableName(L, 2);
@@ -288,7 +288,7 @@ int SkeletalMeshComponent_Lua::SetAnimEventHandler(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::SetBoundsRadiusOverride(lua_State* L)
+int SkeletalMesh3D_Lua::SetBoundsRadiusOverride(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
     float radius = CHECK_NUMBER(L, 2);
@@ -298,7 +298,7 @@ int SkeletalMeshComponent_Lua::SetBoundsRadiusOverride(lua_State* L)
     return 0;
 }
 
-int SkeletalMeshComponent_Lua::GetBoundsRadiusOverride(lua_State* L)
+int SkeletalMesh3D_Lua::GetBoundsRadiusOverride(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_COMPONENT(L, 1);
 
@@ -308,7 +308,7 @@ int SkeletalMeshComponent_Lua::GetBoundsRadiusOverride(lua_State* L)
     return 1;
 }
 
-void SkeletalMeshComponent_Lua::Bind()
+void SkeletalMesh3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(

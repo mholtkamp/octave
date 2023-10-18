@@ -1,11 +1,11 @@
-#include "LuaBindings/LightComponent_Lua.h"
-#include "LuaBindings/TransformComponent_Lua.h"
+#include "LuaBindings/Light3D_Lua.h"
+#include "LuaBindings/Node3D_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 
 #if LUA_ENABLED
 
-int LightComponent_Lua::SetColor(lua_State* L)
+int Light3D_Lua::SetColor(lua_State* L)
 {
     Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
     glm::vec4 value = CHECK_VECTOR(L, 2);
@@ -15,7 +15,7 @@ int LightComponent_Lua::SetColor(lua_State* L)
     return 0;
 }
 
-int LightComponent_Lua::GetColor(lua_State* L)
+int Light3D_Lua::GetColor(lua_State* L)
 {
     Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
 
@@ -25,7 +25,7 @@ int LightComponent_Lua::GetColor(lua_State* L)
     return 1;
 }
 
-int LightComponent_Lua::SetIntensity(lua_State* L)
+int Light3D_Lua::SetIntensity(lua_State* L)
 {
     Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -35,7 +35,7 @@ int LightComponent_Lua::SetIntensity(lua_State* L)
     return 0;
 }
 
-int LightComponent_Lua::GetIntensity(lua_State* L)
+int Light3D_Lua::GetIntensity(lua_State* L)
 {
     Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
 
@@ -45,7 +45,7 @@ int LightComponent_Lua::GetIntensity(lua_State* L)
     return 1;
 }
 
-int LightComponent_Lua::SetCastShadows(lua_State* L)
+int Light3D_Lua::SetCastShadows(lua_State* L)
 {
     Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
@@ -55,7 +55,7 @@ int LightComponent_Lua::SetCastShadows(lua_State* L)
     return 0;
 }
 
-int LightComponent_Lua::ShouldCastShadows(lua_State* L)
+int Light3D_Lua::ShouldCastShadows(lua_State* L)
 {
     Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
 
@@ -65,7 +65,7 @@ int LightComponent_Lua::ShouldCastShadows(lua_State* L)
     return 1;
 }
 
-int LightComponent_Lua::GetDomain(lua_State* L)
+int Light3D_Lua::GetDomain(lua_State* L)
 {
     Light3D* comp = CHECK_LIGHT_COMPONENT(L, 2);
 
@@ -75,7 +75,7 @@ int LightComponent_Lua::GetDomain(lua_State* L)
     return 1;
 }
 
-void LightComponent_Lua::Bind()
+void Light3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(

@@ -25,8 +25,8 @@ public:
     virtual void LoadStream(Stream& stream) override;
     virtual void Tick(float deltaTime) override;
 
-    virtual bool IsStaticMeshComponent() const override;
-    virtual bool IsSkeletalMeshComponent() const override;
+    virtual bool IsStaticMesh3D() const override;
+    virtual bool IsSkeletalMesh3D() const override;
     virtual Material* GetMaterial() override;
 
     virtual void Render() override;

@@ -2863,7 +2863,7 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
             {
                 for (Component* comp : actors[i]->GetComponents())
                 {
-                    if (comp->IsTransformComponent())
+                    if (comp->IsNode3D())
                     {
                         static_cast<Node3D*>(comp)->GatherProxyDraws(debugDraws);
                     }

@@ -1,5 +1,5 @@
-#include "LuaBindings/AudioComponent_Lua.h"
-#include "LuaBindings/TransformComponent_Lua.h"
+#include "LuaBindings/Audio3D_Lua.h"
+#include "LuaBindings/Node3D_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/SoundWave_Lua.h"
@@ -9,7 +9,7 @@
 
 #if LUA_ENABLED
 
-int AudioComponent_Lua::SetSoundWave(lua_State* L)
+int Audio3D_Lua::SetSoundWave(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
     SoundWave* wave = nullptr;
@@ -20,7 +20,7 @@ int AudioComponent_Lua::SetSoundWave(lua_State* L)
     return 0;
 }
 
-int AudioComponent_Lua::GetSoundWave(lua_State* L)
+int Audio3D_Lua::GetSoundWave(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -30,7 +30,7 @@ int AudioComponent_Lua::GetSoundWave(lua_State* L)
     return 1;
 }
 
-int AudioComponent_Lua::SetInnerRadius(lua_State* L)
+int Audio3D_Lua::SetInnerRadius(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -40,7 +40,7 @@ int AudioComponent_Lua::SetInnerRadius(lua_State* L)
     return 0;
 }
 
-int AudioComponent_Lua::GetInnerRadius(lua_State* L)
+int Audio3D_Lua::GetInnerRadius(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -50,7 +50,7 @@ int AudioComponent_Lua::GetInnerRadius(lua_State* L)
     return 1;
 }
 
-int AudioComponent_Lua::SetOuterRadius(lua_State* L)
+int Audio3D_Lua::SetOuterRadius(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -60,7 +60,7 @@ int AudioComponent_Lua::SetOuterRadius(lua_State* L)
     return 0;
 }
 
-int AudioComponent_Lua::GetOuterRadius(lua_State* L)
+int Audio3D_Lua::GetOuterRadius(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -70,7 +70,7 @@ int AudioComponent_Lua::GetOuterRadius(lua_State* L)
     return 1;
 }
 
-int AudioComponent_Lua::SetVolume(lua_State* L)
+int Audio3D_Lua::SetVolume(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -80,7 +80,7 @@ int AudioComponent_Lua::SetVolume(lua_State* L)
     return 0;
 }
 
-int AudioComponent_Lua::GetVolume(lua_State* L)
+int Audio3D_Lua::GetVolume(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -90,7 +90,7 @@ int AudioComponent_Lua::GetVolume(lua_State* L)
     return 1;
 }
 
-int AudioComponent_Lua::SetPitch(lua_State* L)
+int Audio3D_Lua::SetPitch(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -100,7 +100,7 @@ int AudioComponent_Lua::SetPitch(lua_State* L)
     return 0;
 }
 
-int AudioComponent_Lua::GetPitch(lua_State* L)
+int Audio3D_Lua::GetPitch(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -110,7 +110,7 @@ int AudioComponent_Lua::GetPitch(lua_State* L)
     return 1;
 }
 
-int AudioComponent_Lua::SetStartOffset(lua_State* L)
+int Audio3D_Lua::SetStartOffset(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -120,7 +120,7 @@ int AudioComponent_Lua::SetStartOffset(lua_State* L)
     return 0;
 }
 
-int AudioComponent_Lua::GetStartOffset(lua_State* L)
+int Audio3D_Lua::GetStartOffset(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -130,7 +130,7 @@ int AudioComponent_Lua::GetStartOffset(lua_State* L)
     return 1;
 }
 
-int AudioComponent_Lua::SetPriority(lua_State* L)
+int Audio3D_Lua::SetPriority(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
     int32_t value = (int32_t) CHECK_INTEGER(L, 2);
@@ -140,7 +140,7 @@ int AudioComponent_Lua::SetPriority(lua_State* L)
     return 0;
 }
 
-int AudioComponent_Lua::GetPriority(lua_State* L)
+int Audio3D_Lua::GetPriority(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -150,7 +150,7 @@ int AudioComponent_Lua::GetPriority(lua_State* L)
     return 1;
 }
 
-int AudioComponent_Lua::SetAttenuationFunc(lua_State* L)
+int Audio3D_Lua::SetAttenuationFunc(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
     AttenuationFunc value = (AttenuationFunc) CHECK_INTEGER(L, 2);
@@ -160,7 +160,7 @@ int AudioComponent_Lua::SetAttenuationFunc(lua_State* L)
     return 0;
 }
 
-int AudioComponent_Lua::GetAttenuationFunc(lua_State* L)
+int Audio3D_Lua::GetAttenuationFunc(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -170,7 +170,7 @@ int AudioComponent_Lua::GetAttenuationFunc(lua_State* L)
     return 1;
 }
 
-int AudioComponent_Lua::SetLoop(lua_State* L)
+int Audio3D_Lua::SetLoop(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
@@ -180,7 +180,7 @@ int AudioComponent_Lua::SetLoop(lua_State* L)
     return 0;
 }
 
-int AudioComponent_Lua::GetLoop(lua_State* L)
+int Audio3D_Lua::GetLoop(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -190,7 +190,7 @@ int AudioComponent_Lua::GetLoop(lua_State* L)
     return 1;
 }
 
-int AudioComponent_Lua::SetAutoPlay(lua_State* L)
+int Audio3D_Lua::SetAutoPlay(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
@@ -200,7 +200,7 @@ int AudioComponent_Lua::SetAutoPlay(lua_State* L)
     return 0;
 }
 
-int AudioComponent_Lua::GetAutoPlay(lua_State* L)
+int Audio3D_Lua::GetAutoPlay(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -210,7 +210,7 @@ int AudioComponent_Lua::GetAutoPlay(lua_State* L)
     return 1;
 }
 
-int AudioComponent_Lua::GetPlayTime(lua_State* L)
+int Audio3D_Lua::GetPlayTime(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -220,7 +220,7 @@ int AudioComponent_Lua::GetPlayTime(lua_State* L)
     return 1;
 }
 
-int AudioComponent_Lua::IsPlaying(lua_State* L)
+int Audio3D_Lua::IsPlaying(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -230,7 +230,7 @@ int AudioComponent_Lua::IsPlaying(lua_State* L)
     return 1;
 }
 
-int AudioComponent_Lua::IsAudible(lua_State* L)
+int Audio3D_Lua::IsAudible(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -240,7 +240,7 @@ int AudioComponent_Lua::IsAudible(lua_State* L)
     return 1;
 }
 
-int AudioComponent_Lua::Play(lua_State* L)
+int Audio3D_Lua::Play(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -249,7 +249,7 @@ int AudioComponent_Lua::Play(lua_State* L)
     return 0;
 }
 
-int AudioComponent_Lua::Pause(lua_State* L)
+int Audio3D_Lua::Pause(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -258,7 +258,7 @@ int AudioComponent_Lua::Pause(lua_State* L)
     return 0;
 }
 
-int AudioComponent_Lua::Stop(lua_State* L)
+int Audio3D_Lua::Stop(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -267,7 +267,7 @@ int AudioComponent_Lua::Stop(lua_State* L)
     return 0;
 }
 
-int AudioComponent_Lua::Reset(lua_State* L)
+int Audio3D_Lua::Reset(lua_State* L)
 {
     Audio3D* comp = CHECK_AUDIO_COMPONENT(L, 1);
 
@@ -276,7 +276,7 @@ int AudioComponent_Lua::Reset(lua_State* L)
     return 0;
 }
 
-void AudioComponent_Lua::Bind()
+void Audio3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(

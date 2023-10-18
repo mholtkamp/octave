@@ -173,7 +173,7 @@ const char* Primitive3D::GetTypeName() const
     return "Primitive";
 }
 
-bool Primitive3D::IsPrimitiveComponent() const
+bool Primitive3D::IsPrimitive3D() const
 {
     return true;
 }

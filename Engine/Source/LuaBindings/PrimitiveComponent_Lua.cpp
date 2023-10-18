@@ -1,11 +1,11 @@
-#include "LuaBindings/PrimitiveComponent_Lua.h"
-#include "LuaBindings/TransformComponent_Lua.h"
+#include "LuaBindings/Primitive3D_Lua.h"
+#include "LuaBindings/Node3D_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 
 #if LUA_ENABLED
 
-int PrimitiveComponent_Lua::EnablePhysics(lua_State* L)
+int Primitive3D_Lua::EnablePhysics(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     bool enable = CHECK_BOOLEAN(L, 2);
@@ -15,7 +15,7 @@ int PrimitiveComponent_Lua::EnablePhysics(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::EnableCollision(lua_State* L)
+int Primitive3D_Lua::EnableCollision(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     bool enable = CHECK_BOOLEAN(L, 2);
@@ -25,7 +25,7 @@ int PrimitiveComponent_Lua::EnableCollision(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::EnableOverlaps(lua_State* L)
+int Primitive3D_Lua::EnableOverlaps(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     bool enable = CHECK_BOOLEAN(L, 2);
@@ -35,7 +35,7 @@ int PrimitiveComponent_Lua::EnableOverlaps(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::IsPhysicsEnabled(lua_State* L)
+int Primitive3D_Lua::IsPhysicsEnabled(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -45,7 +45,7 @@ int PrimitiveComponent_Lua::IsPhysicsEnabled(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::IsCollisionEnabled(lua_State* L)
+int Primitive3D_Lua::IsCollisionEnabled(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -55,7 +55,7 @@ int PrimitiveComponent_Lua::IsCollisionEnabled(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::AreOverlapsEnabled(lua_State* L)
+int Primitive3D_Lua::AreOverlapsEnabled(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -65,7 +65,7 @@ int PrimitiveComponent_Lua::AreOverlapsEnabled(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::GetMass(lua_State* L)
+int Primitive3D_Lua::GetMass(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -75,7 +75,7 @@ int PrimitiveComponent_Lua::GetMass(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::GetLinearDamping(lua_State* L)
+int Primitive3D_Lua::GetLinearDamping(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -85,7 +85,7 @@ int PrimitiveComponent_Lua::GetLinearDamping(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::GetAngularDamping(lua_State* L)
+int Primitive3D_Lua::GetAngularDamping(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -95,7 +95,7 @@ int PrimitiveComponent_Lua::GetAngularDamping(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::GetRestitution(lua_State* L)
+int Primitive3D_Lua::GetRestitution(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -105,7 +105,7 @@ int PrimitiveComponent_Lua::GetRestitution(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::GetFriction(lua_State* L)
+int Primitive3D_Lua::GetFriction(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -115,7 +115,7 @@ int PrimitiveComponent_Lua::GetFriction(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::GetRollingFriction(lua_State* L)
+int Primitive3D_Lua::GetRollingFriction(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -125,7 +125,7 @@ int PrimitiveComponent_Lua::GetRollingFriction(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::GetLinearFactor(lua_State* L)
+int Primitive3D_Lua::GetLinearFactor(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -135,7 +135,7 @@ int PrimitiveComponent_Lua::GetLinearFactor(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::GetAngularFactor(lua_State* L)
+int Primitive3D_Lua::GetAngularFactor(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -145,7 +145,7 @@ int PrimitiveComponent_Lua::GetAngularFactor(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::GetCollisionGroup(lua_State* L)
+int Primitive3D_Lua::GetCollisionGroup(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -155,7 +155,7 @@ int PrimitiveComponent_Lua::GetCollisionGroup(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::GetCollisionMask(lua_State* L)
+int Primitive3D_Lua::GetCollisionMask(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -165,7 +165,7 @@ int PrimitiveComponent_Lua::GetCollisionMask(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::SetMass(lua_State* L)
+int Primitive3D_Lua::SetMass(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -175,7 +175,7 @@ int PrimitiveComponent_Lua::SetMass(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::SetLinearDamping(lua_State* L)
+int Primitive3D_Lua::SetLinearDamping(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -185,7 +185,7 @@ int PrimitiveComponent_Lua::SetLinearDamping(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::SetAngularDamping(lua_State* L)
+int Primitive3D_Lua::SetAngularDamping(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -195,7 +195,7 @@ int PrimitiveComponent_Lua::SetAngularDamping(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::SetRestitution(lua_State* L)
+int Primitive3D_Lua::SetRestitution(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -205,7 +205,7 @@ int PrimitiveComponent_Lua::SetRestitution(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::SetFriction(lua_State* L)
+int Primitive3D_Lua::SetFriction(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -215,7 +215,7 @@ int PrimitiveComponent_Lua::SetFriction(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::SetRollingFriction(lua_State* L)
+int Primitive3D_Lua::SetRollingFriction(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -225,7 +225,7 @@ int PrimitiveComponent_Lua::SetRollingFriction(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::SetLinearFactor(lua_State* L)
+int Primitive3D_Lua::SetLinearFactor(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     glm::vec3 value = CHECK_VECTOR(L, 2);
@@ -235,7 +235,7 @@ int PrimitiveComponent_Lua::SetLinearFactor(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::SetAngularFactor(lua_State* L)
+int Primitive3D_Lua::SetAngularFactor(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     glm::vec3 value = CHECK_VECTOR(L, 2);
@@ -245,7 +245,7 @@ int PrimitiveComponent_Lua::SetAngularFactor(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::SetCollisionGroup(lua_State* L)
+int Primitive3D_Lua::SetCollisionGroup(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     uint8_t value = (uint8_t) CHECK_INTEGER(L, 2);
@@ -255,7 +255,7 @@ int PrimitiveComponent_Lua::SetCollisionGroup(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::SetCollisionMask(lua_State* L)
+int Primitive3D_Lua::SetCollisionMask(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     uint8_t value = (uint8_t)CHECK_INTEGER(L, 2);
@@ -265,7 +265,7 @@ int PrimitiveComponent_Lua::SetCollisionMask(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::GetLinearVelocity(lua_State* L)
+int Primitive3D_Lua::GetLinearVelocity(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -275,7 +275,7 @@ int PrimitiveComponent_Lua::GetLinearVelocity(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::GetAngularVelocity(lua_State* L)
+int Primitive3D_Lua::GetAngularVelocity(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -285,7 +285,7 @@ int PrimitiveComponent_Lua::GetAngularVelocity(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::AddLinearVelocity(lua_State* L)
+int Primitive3D_Lua::AddLinearVelocity(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     glm::vec3 delta = CHECK_VECTOR(L, 2);
@@ -295,7 +295,7 @@ int PrimitiveComponent_Lua::AddLinearVelocity(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::AddAngularVelocity(lua_State* L)
+int Primitive3D_Lua::AddAngularVelocity(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     glm::vec3 delta = CHECK_VECTOR(L, 2);
@@ -305,7 +305,7 @@ int PrimitiveComponent_Lua::AddAngularVelocity(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::SetLinearVelocity(lua_State* L)
+int Primitive3D_Lua::SetLinearVelocity(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     glm::vec3 value = CHECK_VECTOR(L, 2);
@@ -315,7 +315,7 @@ int PrimitiveComponent_Lua::SetLinearVelocity(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::SetAngularVelocity(lua_State* L)
+int Primitive3D_Lua::SetAngularVelocity(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     glm::vec3 value = CHECK_VECTOR(L, 2);
@@ -325,7 +325,7 @@ int PrimitiveComponent_Lua::SetAngularVelocity(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::AddForce(lua_State* L)
+int Primitive3D_Lua::AddForce(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     glm::vec3 delta = CHECK_VECTOR(L, 2);
@@ -335,7 +335,7 @@ int PrimitiveComponent_Lua::AddForce(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::AddImpulse(lua_State* L)
+int Primitive3D_Lua::AddImpulse(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     glm::vec3 delta = CHECK_VECTOR(L, 2);
@@ -345,7 +345,7 @@ int PrimitiveComponent_Lua::AddImpulse(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::ClearForces(lua_State* L)
+int Primitive3D_Lua::ClearForces(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -354,7 +354,7 @@ int PrimitiveComponent_Lua::ClearForces(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::EnableCastShadows(lua_State* L)
+int Primitive3D_Lua::EnableCastShadows(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     bool enable = CHECK_BOOLEAN(L, 2);
@@ -364,7 +364,7 @@ int PrimitiveComponent_Lua::EnableCastShadows(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::ShouldCastShadows(lua_State* L)
+int Primitive3D_Lua::ShouldCastShadows(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -374,7 +374,7 @@ int PrimitiveComponent_Lua::ShouldCastShadows(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::EnableReceiveShadows(lua_State* L)
+int Primitive3D_Lua::EnableReceiveShadows(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     bool enable = CHECK_BOOLEAN(L, 2);
@@ -384,7 +384,7 @@ int PrimitiveComponent_Lua::EnableReceiveShadows(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::ShouldReceiveShadows(lua_State* L)
+int Primitive3D_Lua::ShouldReceiveShadows(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -394,7 +394,7 @@ int PrimitiveComponent_Lua::ShouldReceiveShadows(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::EnableReceiveSimpleShadows(lua_State* L)
+int Primitive3D_Lua::EnableReceiveSimpleShadows(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     bool enable = CHECK_BOOLEAN(L, 2);
@@ -404,7 +404,7 @@ int PrimitiveComponent_Lua::EnableReceiveSimpleShadows(lua_State* L)
     return 0;
 }
 
-int PrimitiveComponent_Lua::ShouldReceiveSimpleShadows(lua_State* L)
+int Primitive3D_Lua::ShouldReceiveSimpleShadows(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
 
@@ -414,7 +414,7 @@ int PrimitiveComponent_Lua::ShouldReceiveSimpleShadows(lua_State* L)
     return 1;
 }
 
-int PrimitiveComponent_Lua::SweepToWorldPosition(lua_State* L)
+int Primitive3D_Lua::SweepToWorldPosition(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_COMPONENT(L, 1);
     glm::vec3 pos = CHECK_VECTOR(L, 2);
@@ -440,7 +440,7 @@ int PrimitiveComponent_Lua::SweepToWorldPosition(lua_State* L)
 }
 
 
-void PrimitiveComponent_Lua::Bind()
+void Primitive3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(

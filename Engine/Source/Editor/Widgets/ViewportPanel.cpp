@@ -591,7 +591,7 @@ void ViewportPanel::HandleDefaultControls()
         }
 
         if (GetSelectedComponent() != nullptr &&
-            GetSelectedComponent()->IsTransformComponent())
+            GetSelectedComponent()->IsNode3D())
         {
             if (!controlDown && !altDown && IsKeyJustDown(KEY_G))
             {
@@ -664,7 +664,7 @@ void ViewportPanel::HandleDefaultControls()
         {
             // Focus on selected object
             Component* comp = GetSelectedComponent();
-            Node3D* transComp = (comp && comp->IsTransformComponent()) ? static_cast<Node3D*>(comp) : nullptr;
+            Node3D* transComp = (comp && comp->IsNode3D()) ? static_cast<Node3D*>(comp) : nullptr;
 
             if (transComp != nullptr && transComp != camera)
             {
@@ -1067,7 +1067,7 @@ void ViewportPanel::HandleTransformControls()
     Component* component = GetSelectedComponent();
     const std::vector<Component*>& selectedComps = GetSelectedComponents();
 
-    if (component == nullptr || !component->IsTransformComponent())
+    if (component == nullptr || !component->IsNode3D())
         return;
 
     Node3D* transComp = static_cast<Node3D*>(component);
@@ -1075,7 +1075,7 @@ void ViewportPanel::HandleTransformControls()
     std::vector<Node3D*> transComps;
     for (uint32_t i = 0; i < selectedComps.size(); ++i)
     {
-        if (selectedComps[i]->IsTransformComponent())
+        if (selectedComps[i]->IsNode3D())
         {
             transComps.push_back((Node3D*)selectedComps[i]);
         }
@@ -1403,7 +1403,7 @@ void ViewportPanel::SavePreTransforms()
 
     for (uint32_t i = 0; i < selComps.size(); ++i)
     {
-        Node3D* transComp = (selComps[i] && selComps[i]->IsTransformComponent()) ? static_cast<Node3D*>(selComps[i]) : nullptr;
+        Node3D* transComp = (selComps[i] && selComps[i]->IsNode3D()) ? static_cast<Node3D*>(selComps[i]) : nullptr;
 
         if (transComp)
         {
@@ -1424,7 +1424,7 @@ void ViewportPanel::RestorePreTransforms()
             break;
         }
 
-        Node3D* transComp = (selComps[i] && selComps[i]->IsTransformComponent()) ? static_cast<Node3D*>(selComps[i]) : nullptr;
+        Node3D* transComp = (selComps[i] && selComps[i]->IsNode3D()) ? static_cast<Node3D*>(selComps[i]) : nullptr;
 
         if (transComp)
         {

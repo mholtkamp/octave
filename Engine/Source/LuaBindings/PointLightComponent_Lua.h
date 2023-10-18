@@ -12,10 +12,10 @@
 #if LUA_ENABLED
 
 #define POINT_LIGHT_COMPONENT_LUA_NAME "PointLight3D"
-#define POINT_LIGHT_COMPONENT_LUA_FLAG "cfPointLightComponent"
+#define POINT_LIGHT_COMPONENT_LUA_FLAG "cfPointLight3D"
 #define CHECK_POINT_LIGHT_COMPONENT(L, arg) static_cast<PointLight3D*>(CheckComponentLuaType(L, arg, POINT_LIGHT_COMPONENT_LUA_NAME, POINT_LIGHT_COMPONENT_LUA_FLAG));
 
-struct PointLightComponent_Lua
+struct PointLight3D_Lua
 {
     static int SetRadius(lua_State* L);
     static int GetRadius(lua_State* L);

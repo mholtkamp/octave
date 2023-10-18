@@ -1,12 +1,12 @@
-#include "LuaBindings/ShadowMeshComponent_Lua.h"
-#include "LuaBindings/StaticMeshComponent_Lua.h"
+#include "LuaBindings/ShadowMesh3D_Lua.h"
+#include "LuaBindings/StaticMesh3D_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 
 #if LUA_ENABLED
 
-void ShadowMeshComponent_Lua::Bind()
+void ShadowMesh3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(

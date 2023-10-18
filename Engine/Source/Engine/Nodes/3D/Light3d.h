@@ -17,9 +17,9 @@ public:
     virtual void SaveStream(Stream& stream) override;
 	virtual void LoadStream(Stream& stream) override;
 
-    virtual bool IsLightComponent() const;
-    virtual bool IsPointLightComponent() const = 0;
-    virtual bool IsDirectionalLightComponent() const = 0;
+    virtual bool IsLight3D() const;
+    virtual bool IsPointLight3D() const = 0;
+    virtual bool IsDirectionalLight3D() const = 0;
 
     void SetColor(glm::vec4 color);
     glm::vec4 GetColor() const;

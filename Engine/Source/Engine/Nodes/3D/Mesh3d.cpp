@@ -60,7 +60,7 @@ void Mesh3D::LoadStream(Stream& stream)
     mBillboard = stream.ReadBool();
 }
 
-bool Mesh3D::IsShadowMeshComponent()
+bool Mesh3D::IsShadowMesh3D()
 {
     return false;
 }

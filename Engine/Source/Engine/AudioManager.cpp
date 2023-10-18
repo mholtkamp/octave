@@ -389,7 +389,7 @@ void AudioManager::Update(float deltaTime)
     World* world = GetWorld();
     if (world != nullptr)
     {
-        const std::vector<Audio3D*>& components = GetWorld()->GetAudioComponents();
+        const std::vector<Audio3D*>& components = GetWorld()->GetAudio3Ds();
 
         for (uint32_t i = 0; i < components.size(); ++i)
         {

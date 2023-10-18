@@ -1,12 +1,12 @@
-#include "LuaBindings/CapsuleComponent_Lua.h"
-#include "LuaBindings/PrimitiveComponent_Lua.h"
+#include "LuaBindings/Capsule3D_Lua.h"
+#include "LuaBindings/Primitive3D_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 
 #if LUA_ENABLED
 
-int CapsuleComponent_Lua::GetHeight(lua_State* L)
+int Capsule3D_Lua::GetHeight(lua_State* L)
 {
     Capsule3D* comp = CHECK_CAPSULE_COMPONENT(L, 1);
 
@@ -16,7 +16,7 @@ int CapsuleComponent_Lua::GetHeight(lua_State* L)
     return 1;
 }
 
-int CapsuleComponent_Lua::SetHeight(lua_State* L)
+int Capsule3D_Lua::SetHeight(lua_State* L)
 {
     Capsule3D* comp = CHECK_CAPSULE_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -26,7 +26,7 @@ int CapsuleComponent_Lua::SetHeight(lua_State* L)
     return 0;
 }
 
-int CapsuleComponent_Lua::GetRadius(lua_State* L)
+int Capsule3D_Lua::GetRadius(lua_State* L)
 {
     Capsule3D* comp = CHECK_CAPSULE_COMPONENT(L, 1);
 
@@ -36,7 +36,7 @@ int CapsuleComponent_Lua::GetRadius(lua_State* L)
     return 1;
 }
 
-int CapsuleComponent_Lua::SetRadius(lua_State* L)
+int Capsule3D_Lua::SetRadius(lua_State* L)
 {
     Capsule3D* comp = CHECK_CAPSULE_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -46,7 +46,7 @@ int CapsuleComponent_Lua::SetRadius(lua_State* L)
     return 0;
 }
 
-void CapsuleComponent_Lua::Bind()
+void Capsule3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(

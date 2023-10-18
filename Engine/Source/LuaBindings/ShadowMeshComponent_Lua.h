@@ -12,10 +12,10 @@
 #if LUA_ENABLED
 
 #define SHADOW_MESH_COMPONENT_LUA_NAME "ShadowMesh3D"
-#define SHADOW_MESH_COMPONENT_LUA_FLAG "cfShadowMeshComponent"
+#define SHADOW_MESH_COMPONENT_LUA_FLAG "cfShadowMesh3D"
 #define CHECK_SHADOW_MESH_COMPONENT(L, arg) static_cast<ShadowMesh3D*>(CheckComponentLuaType(L, arg, SHADOW_MESH_COMPONENT_LUA_NAME, SHADOW_MESH_COMPONENT_LUA_FLAG));
 
-struct ShadowMeshComponent_Lua
+struct ShadowMesh3D_Lua
 {
     static void Bind();
 };

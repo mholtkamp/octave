@@ -209,7 +209,7 @@ void AddSelectedActor(Actor* actor, bool addAllChildren)
 
         for (uint32_t i = 0; i < comps.size(); ++i)
         {
-            if (comps[i]->IsTransformComponent())
+            if (comps[i]->IsNode3D())
             {
                 AddSelectedComponent(comps[i]);
             }
@@ -755,7 +755,7 @@ void SetTransformLock(TransformLock lock)
         world->RemoveLine(lineZ);
 
         Component* comp = GetSelectedComponent();
-        if (comp != nullptr && comp->IsTransformComponent())
+        if (comp != nullptr && comp->IsNode3D())
         {
             glm::vec3 pos = static_cast<Node3D*>(comp)->GetAbsolutePosition();
             lineX.mStart = pos - glm::vec3(10000, 0, 0);;

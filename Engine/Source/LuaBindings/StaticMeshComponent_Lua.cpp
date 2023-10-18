@@ -1,11 +1,11 @@
-#include "LuaBindings/StaticMeshComponent_Lua.h"
-#include "LuaBindings/MeshComponent_Lua.h"
+#include "LuaBindings/StaticMesh3D_Lua.h"
+#include "LuaBindings/Mesh3D_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/StaticMesh_Lua.h"
 
 #include "AssetManager.h"
 
-int StaticMeshComponent_Lua::SetStaticMesh(lua_State* L)
+int StaticMesh3D_Lua::SetStaticMesh(lua_State* L)
 {
     StaticMesh3D* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
     StaticMesh* mesh = nullptr;
@@ -20,7 +20,7 @@ int StaticMeshComponent_Lua::SetStaticMesh(lua_State* L)
     return 0;
 }
 
-int StaticMeshComponent_Lua::GetStaticMesh(lua_State* L)
+int StaticMesh3D_Lua::GetStaticMesh(lua_State* L)
 {
     StaticMesh3D* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
 
@@ -30,7 +30,7 @@ int StaticMeshComponent_Lua::GetStaticMesh(lua_State* L)
     return 1;
 }
 
-int StaticMeshComponent_Lua::SetUseTriangleCollision(lua_State* L)
+int StaticMesh3D_Lua::SetUseTriangleCollision(lua_State* L)
 {
     StaticMesh3D* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
@@ -40,7 +40,7 @@ int StaticMeshComponent_Lua::SetUseTriangleCollision(lua_State* L)
     return 0;
 }
 
-int StaticMeshComponent_Lua::GetUseTriangleCollision(lua_State* L)
+int StaticMesh3D_Lua::GetUseTriangleCollision(lua_State* L)
 {
     StaticMesh3D* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
 
@@ -50,7 +50,7 @@ int StaticMeshComponent_Lua::GetUseTriangleCollision(lua_State* L)
     return 1;
 }
 
-int StaticMeshComponent_Lua::GetBakeLighting(lua_State* L)
+int StaticMesh3D_Lua::GetBakeLighting(lua_State* L)
 {
     StaticMesh3D* comp = CHECK_STATIC_MESH_COMPONENT(L, 1);
 
@@ -60,7 +60,7 @@ int StaticMeshComponent_Lua::GetBakeLighting(lua_State* L)
     return 1;
 }
 
-void StaticMeshComponent_Lua::Bind()
+void StaticMesh3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(

@@ -462,7 +462,7 @@ void Node::RenderShadow()
 
     for (uint32_t i = 0; i < mComponents.size(); ++i)
     {
-        if (IsPrimitiveComponent() && IsVisible())
+        if (IsPrimitive3D() && IsVisible())
         {
             static_cast<Primitive3D*>(this)->RenderWithPipeline(shadowPipeline);
         }

@@ -5,7 +5,7 @@ FORCE_LINK_DEF(StaticMeshActor);
 
 
 StaticMeshActor::StaticMeshActor() :
-    mStaticMeshComponent(nullptr)
+    mStaticMesh3D(nullptr)
 {
 
 }
@@ -14,20 +14,20 @@ void StaticMeshActor::Create()
 {
     Actor::Create();
 
-    mStaticMeshComponent = CreateComponent<StaticMesh3D>();
-    SetRootComponent(mStaticMeshComponent);
-    mStaticMeshComponent->EnablePhysics(false);
-    mStaticMeshComponent->EnableCollision(true);
-    mStaticMeshComponent->EnableOverlaps(false);
-    mStaticMeshComponent->SetCollisionGroup(ColGroup1);
-    mStaticMeshComponent->SetCollisionMask(~ColGroup1);
+    mStaticMesh3D = CreateComponent<StaticMesh3D>();
+    SetRootComponent(mStaticMesh3D);
+    mStaticMesh3D->EnablePhysics(false);
+    mStaticMesh3D->EnableCollision(true);
+    mStaticMesh3D->EnableOverlaps(false);
+    mStaticMesh3D->SetCollisionGroup(ColGroup1);
+    mStaticMesh3D->SetCollisionMask(~ColGroup1);
 
     SetName("StaticMesh");
 }
 
-StaticMesh3D* StaticMeshActor::GetStaticMeshComponent()
+StaticMesh3D* StaticMeshActor::GetStaticMesh3D()
 {
-    return mStaticMeshComponent;
+    return mStaticMesh3D;
 }
 
 #if EDITOR
@@ -38,7 +38,7 @@ void StaticMeshActor::InitFromAiNode(const aiNode& node, std::vector<StaticMesh>
     invTransform.Transpose();
     glm::mat4 transform;
     memcpy(&transform, &invTransform, sizeof(aiMatrix4x4));
-    mStaticMeshComponent->SetTransform(transform);
+    mStaticMesh3D->SetTransform(transform);
 
     if (node.mNumMeshes > 0)
     {
@@ -47,7 +47,7 @@ void StaticMeshActor::InitFromAiNode(const aiNode& node, std::vector<StaticMesh>
             printf("Multiple meshes received by one actor.\n");
         }
 
-        mStaticMeshComponent->SetStaticMesh(&meshes[node.mMeshes[0]]);
+        mStaticMesh3D->SetStaticMesh(&meshes[node.mMeshes[0]]);
     }
 }
 #endif

@@ -1,5 +1,5 @@
-#include "LuaBindings/CameraComponent_Lua.h"
-#include "LuaBindings/TransformComponent_Lua.h"
+#include "LuaBindings/Camera3D_Lua.h"
+#include "LuaBindings/Node3D_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 
@@ -7,7 +7,7 @@
 
 #if LUA_ENABLED
 
-int CameraComponent_Lua::SetPerspective(lua_State* L)
+int Camera3D_Lua::SetPerspective(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float fovY = CHECK_NUMBER(L, 2);
@@ -21,7 +21,7 @@ int CameraComponent_Lua::SetPerspective(lua_State* L)
     return 0;
 }
 
-int CameraComponent_Lua::SetOrtho(lua_State* L)
+int Camera3D_Lua::SetOrtho(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float width = CHECK_NUMBER(L, 2);
@@ -35,7 +35,7 @@ int CameraComponent_Lua::SetOrtho(lua_State* L)
     return 0;
 }
 
-int CameraComponent_Lua::IsPerspective(lua_State* L)
+int Camera3D_Lua::IsPerspective(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
@@ -45,7 +45,7 @@ int CameraComponent_Lua::IsPerspective(lua_State* L)
     return 1;
 }
 
-int CameraComponent_Lua::IsOrtho(lua_State* L)
+int Camera3D_Lua::IsOrtho(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
@@ -55,7 +55,7 @@ int CameraComponent_Lua::IsOrtho(lua_State* L)
     return 1;
 }
 
-int CameraComponent_Lua::GetNear(lua_State* L)
+int Camera3D_Lua::GetNear(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
@@ -65,7 +65,7 @@ int CameraComponent_Lua::GetNear(lua_State* L)
     return 1;
 }
 
-int CameraComponent_Lua::GetFar(lua_State* L)
+int Camera3D_Lua::GetFar(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
@@ -75,7 +75,7 @@ int CameraComponent_Lua::GetFar(lua_State* L)
     return 1;
 }
 
-int CameraComponent_Lua::GetFieldOfView(lua_State* L)
+int Camera3D_Lua::GetFieldOfView(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
@@ -85,7 +85,7 @@ int CameraComponent_Lua::GetFieldOfView(lua_State* L)
     return 1;
 }
 
-int CameraComponent_Lua::GetAspectRatio(lua_State* L)
+int Camera3D_Lua::GetAspectRatio(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
@@ -95,7 +95,7 @@ int CameraComponent_Lua::GetAspectRatio(lua_State* L)
     return 1;
 }
 
-int CameraComponent_Lua::GetWidth(lua_State* L)
+int Camera3D_Lua::GetWidth(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
@@ -105,7 +105,7 @@ int CameraComponent_Lua::GetWidth(lua_State* L)
     return 1;
 }
 
-int CameraComponent_Lua::GetHeight(lua_State* L)
+int Camera3D_Lua::GetHeight(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
 
@@ -115,7 +115,7 @@ int CameraComponent_Lua::GetHeight(lua_State* L)
     return 1;
 }
 
-int CameraComponent_Lua::SetNear(lua_State* L)
+int Camera3D_Lua::SetNear(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -125,7 +125,7 @@ int CameraComponent_Lua::SetNear(lua_State* L)
     return 0;
 }
 
-int CameraComponent_Lua::SetFar(lua_State* L)
+int Camera3D_Lua::SetFar(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -135,7 +135,7 @@ int CameraComponent_Lua::SetFar(lua_State* L)
     return 0;
 }
 
-int CameraComponent_Lua::SetFieldOfView(lua_State* L)
+int Camera3D_Lua::SetFieldOfView(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -145,7 +145,7 @@ int CameraComponent_Lua::SetFieldOfView(lua_State* L)
     return 0;
 }
 
-int CameraComponent_Lua::SetAspectRatio(lua_State* L)
+int Camera3D_Lua::SetAspectRatio(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -155,7 +155,7 @@ int CameraComponent_Lua::SetAspectRatio(lua_State* L)
     return 0;
 }
 
-int CameraComponent_Lua::SetWidth(lua_State* L)
+int Camera3D_Lua::SetWidth(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -165,7 +165,7 @@ int CameraComponent_Lua::SetWidth(lua_State* L)
     return 0;
 }
 
-int CameraComponent_Lua::SetHeight(lua_State* L)
+int Camera3D_Lua::SetHeight(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     float value = CHECK_NUMBER(L, 2);
@@ -175,7 +175,7 @@ int CameraComponent_Lua::SetHeight(lua_State* L)
     return 0;
 }
 
-int CameraComponent_Lua::WorldToScreenPosition(lua_State* L)
+int Camera3D_Lua::WorldToScreenPosition(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     glm::vec3 worldPos = CHECK_VECTOR(L, 2);
@@ -186,7 +186,7 @@ int CameraComponent_Lua::WorldToScreenPosition(lua_State* L)
     return 1;
 }
 
-int CameraComponent_Lua::ScreenToWorldPosition(lua_State* L)
+int Camera3D_Lua::ScreenToWorldPosition(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     int32_t x = CHECK_INTEGER(L, 2);
@@ -198,7 +198,7 @@ int CameraComponent_Lua::ScreenToWorldPosition(lua_State* L)
     return 1;
 }
 
-int CameraComponent_Lua::TraceScreenToWorld(lua_State* L)
+int Camera3D_Lua::TraceScreenToWorld(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_COMPONENT(L, 1);
     int32_t x = CHECK_INTEGER(L, 2);
@@ -214,7 +214,7 @@ int CameraComponent_Lua::TraceScreenToWorld(lua_State* L)
     return 2;
 }
 
-void CameraComponent_Lua::Bind()
+void Camera3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(

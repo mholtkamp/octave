@@ -1,12 +1,12 @@
-#include "LuaBindings/BoxComponent_Lua.h"
-#include "LuaBindings/PrimitiveComponent_Lua.h"
+#include "LuaBindings/Box3D_Lua.h"
+#include "LuaBindings/Primitive3D_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 
 #if LUA_ENABLED
 
-int BoxComponent_Lua::GetExtents(lua_State* L)
+int Box3D_Lua::GetExtents(lua_State* L)
 {
     Box3D* comp = CHECK_BOX_COMPONENT(L, 1);
 
@@ -16,7 +16,7 @@ int BoxComponent_Lua::GetExtents(lua_State* L)
     return 1;
 }
 
-int BoxComponent_Lua::SetExtents(lua_State* L)
+int Box3D_Lua::SetExtents(lua_State* L)
 {
     Box3D* comp = CHECK_BOX_COMPONENT(L, 1);
     glm::vec3 value = CHECK_VECTOR(L, 2);
@@ -26,7 +26,7 @@ int BoxComponent_Lua::SetExtents(lua_State* L)
     return 1;
 }
 
-void BoxComponent_Lua::Bind()
+void Box3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(

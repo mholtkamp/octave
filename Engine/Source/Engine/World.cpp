@@ -436,9 +436,9 @@ const std::vector<Line>& World::GetLines() const
     return mLines;
 }
 
-const std::vector<Light3D*>& World::GetLightComponents()
+const std::vector<Light3D*>& World::GetLight3Ds()
 {
-    return mLightComponents;
+    return mLight3Ds;
 }
 
 void World::SetAmbientLightColor(glm::vec4 color)
@@ -651,16 +651,16 @@ void World::RegisterComponent(Component* comp)
     if (compType == Audio3D::GetStaticType())
     {
 #if _DEBUG
-        OCT_ASSERT(std::find(mAudioComponents.begin(), mAudioComponents.end(), (Audio3D*)comp) == mAudioComponents.end());
+        OCT_ASSERT(std::find(mAudio3Ds.begin(), mAudio3Ds.end(), (Audio3D*)comp) == mAudio3Ds.end());
 #endif
-        mAudioComponents.push_back((Audio3D*) comp);
+        mAudio3Ds.push_back((Audio3D*) comp);
     }
-    else if (comp->IsLightComponent())
+    else if (comp->IsLight3D())
     {
 #if _DEBUG
-        OCT_ASSERT(std::find(mLightComponents.begin(), mLightComponents.end(), (Light3D*)comp) == mLightComponents.end());
+        OCT_ASSERT(std::find(mLight3Ds.begin(), mLight3Ds.end(), (Light3D*)comp) == mLight3Ds.end());
 #endif
-        mLightComponents.push_back((Light3D*)comp);
+        mLight3Ds.push_back((Light3D*)comp);
     }
 }
 
@@ -670,21 +670,21 @@ void World::UnregisterComponent(Component* comp)
 
     if (compType == Audio3D::GetStaticType())
     {
-        auto it = std::find(mAudioComponents.begin(), mAudioComponents.end(), (Audio3D*)comp);
-        OCT_ASSERT(it != mAudioComponents.end());
-        mAudioComponents.erase(it);
+        auto it = std::find(mAudio3Ds.begin(), mAudio3Ds.end(), (Audio3D*)comp);
+        OCT_ASSERT(it != mAudio3Ds.end());
+        mAudio3Ds.erase(it);
     }
-    else if (comp->IsLightComponent())
+    else if (comp->IsLight3D())
     {
-        auto it = std::find(mLightComponents.begin(), mLightComponents.end(), (Light3D*)comp);
-        OCT_ASSERT(it != mLightComponents.end());
-        mLightComponents.erase(it);
+        auto it = std::find(mLight3Ds.begin(), mLight3Ds.end(), (Light3D*)comp);
+        OCT_ASSERT(it != mLight3Ds.end());
+        mLight3Ds.erase(it);
     }
 }
 
-const std::vector<Audio3D*>& World::GetAudioComponents() const
+const std::vector<Audio3D*>& World::GetAudio3Ds() const
 {
-    return mAudioComponents;
+    return mAudio3Ds;
 }
 
 std::vector<Actor*>& World::GetReplicatedActorVector(ReplicationRate rate)

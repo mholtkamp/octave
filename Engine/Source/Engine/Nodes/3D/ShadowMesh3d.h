@@ -22,7 +22,7 @@ public:
     virtual void SaveStream(Stream& stream) override;
     virtual void LoadStream(Stream& stream) override;
 
-    virtual bool IsShadowMeshComponent() override;
+    virtual bool IsShadowMesh3D() override;
 
     virtual void GatherProxyDraws(std::vector<DebugDraw>& inoutDraws) override;
 };

@@ -104,12 +104,12 @@ void PointLight3D::LoadStream(Stream& stream)
     mRadius = stream.ReadFloat();
 }
 
-bool PointLight3D::IsPointLightComponent() const
+bool PointLight3D::IsPointLight3D() const
 {
     return true;
 }
 
-bool PointLight3D::IsDirectionalLightComponent() const
+bool PointLight3D::IsDirectionalLight3D() const
 {
     return false;
 }

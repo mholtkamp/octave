@@ -16,23 +16,23 @@
 #include "LuaBindings/World_Lua.h"
 #include "LuaBindings/Actor_Lua.h"
 #include "LuaBindings/Component_Lua.h"
-#include "LuaBindings/TransformComponent_Lua.h"
-#include "LuaBindings/PrimitiveComponent_Lua.h"
-#include "LuaBindings/MeshComponent_Lua.h"
-#include "LuaBindings/StaticMeshComponent_Lua.h"
-#include "LuaBindings/SkeletalMeshComponent_Lua.h"
-#include "LuaBindings/CameraComponent_Lua.h"
-#include "LuaBindings/LightComponent_Lua.h"
-#include "LuaBindings/DirectionalLightComponent_Lua.h"
-#include "LuaBindings/PointLightComponent_Lua.h"
-#include "LuaBindings/AudioComponent_Lua.h"
-#include "LuaBindings/BoxComponent_Lua.h"
-#include "LuaBindings/CapsuleComponent_Lua.h"
-#include "LuaBindings/ParticleComponent_Lua.h"
+#include "LuaBindings/Node3D_Lua.h"
+#include "LuaBindings/Primitive3D_Lua.h"
+#include "LuaBindings/Mesh3D_Lua.h"
+#include "LuaBindings/StaticMesh3D_Lua.h"
+#include "LuaBindings/SkeletalMesh3D_Lua.h"
+#include "LuaBindings/Camera3D_Lua.h"
+#include "LuaBindings/Light3D_Lua.h"
+#include "LuaBindings/DirectionalLight3D_Lua.h"
+#include "LuaBindings/PointLight3D_Lua.h"
+#include "LuaBindings/Audio3D_Lua.h"
+#include "LuaBindings/Box3D_Lua.h"
+#include "LuaBindings/Capsule3D_Lua.h"
+#include "LuaBindings/Particle3D_Lua.h"
 #include "LuaBindings/ScriptComponent_Lua.h"
-#include "LuaBindings/ShadowMeshComponent_Lua.h"
-#include "LuaBindings/TextMeshComponent_Lua.h"
-#include "LuaBindings/SphereComponent_Lua.h"
+#include "LuaBindings/ShadowMesh3D_Lua.h"
+#include "LuaBindings/TextMesh3D_Lua.h"
+#include "LuaBindings/Sphere3D_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/Blueprint_Lua.h"
 #include "LuaBindings/WidgetMap_Lua.h"
@@ -93,23 +93,23 @@ void BindLuaInterface()
     // Components need to be bound in hierarchy order.
     // Derived classes need to come after parent classes.
     Component_Lua::Bind();
-    TransformComponent_Lua::Bind();
-    PrimitiveComponent_Lua::Bind();
-    MeshComponent_Lua::Bind();
-    StaticMeshComponent_Lua::Bind();
-    SkeletalMeshComponent_Lua::Bind();
-    CameraComponent_Lua::Bind();
-    LightComponent_Lua::Bind();
-    DirectionalLightComponent_Lua::Bind();
-    PointLightComponent_Lua::Bind();
-    AudioComponent_Lua::Bind();
-    BoxComponent_Lua::Bind();
-    CapsuleComponent_Lua::Bind();
-    ParticleComponent_Lua::Bind();
+    Node3D_Lua::Bind();
+    Primitive3D_Lua::Bind();
+    Mesh3D_Lua::Bind();
+    StaticMesh3D_Lua::Bind();
+    SkeletalMesh3D_Lua::Bind();
+    Camera3D_Lua::Bind();
+    Light3D_Lua::Bind();
+    DirectionalLight3D_Lua::Bind();
+    PointLight3D_Lua::Bind();
+    Audio3D_Lua::Bind();
+    Box3D_Lua::Bind();
+    Capsule3D_Lua::Bind();
+    Particle3D_Lua::Bind();
     ScriptComponent_Lua::Bind();
-    ShadowMeshComponent_Lua::Bind();
-    TextMeshComponent_Lua::Bind();
-    SphereComponent_Lua::Bind();
+    ShadowMesh3D_Lua::Bind();
+    TextMesh3D_Lua::Bind();
+    Sphere3D_Lua::Bind();
 
     // Assets need to be bound in hierarchy order.
     Asset_Lua::Bind();

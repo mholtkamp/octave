@@ -11,7 +11,7 @@
 #include "LuaBindings/Actor_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Component_Lua.h"
-#include "LuaBindings/TransformComponent_Lua.h"
+#include "LuaBindings/Node3D_Lua.h"
 
 #if LUA_ENABLED
 

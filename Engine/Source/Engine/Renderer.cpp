@@ -587,7 +587,7 @@ void Renderer::GatherDrawData(World* world)
             {
                 Component* comp = components[c];
 
-                if (comp->IsPrimitiveComponent())
+                if (comp->IsPrimitive3D())
                 {
                     DrawData data = comp->GetDrawData();
                     data.mComponentType = comp->GetType();
@@ -650,7 +650,7 @@ void Renderer::GatherDrawData(World* world)
 
                 if (mEnableProxyRendering &&
                     mDebugMode != DEBUG_COLLISION &&
-                    comp->IsTransformComponent() &&
+                    comp->IsNode3D() &&
                     proxyActorEnabled)
                 {
                     Node3D* trans = (Node3D*)comp;
@@ -658,7 +658,7 @@ void Renderer::GatherDrawData(World* world)
                 }
 
                 if (mDebugMode == DEBUG_COLLISION &&
-                    comp->IsPrimitiveComponent())
+                    comp->IsPrimitive3D())
                 {
                     Primitive3D* prim = (Primitive3D*)comp;
                     prim->GatherProxyDraws(mCollisionDraws);
@@ -763,7 +763,7 @@ void Renderer::GatherLightData(World* world)
     sClosestLights.clear();
 
     mLightData.clear();
-    const std::vector<Light3D*>& comps = world->GetLightComponents();
+    const std::vector<Light3D*>& comps = world->GetLight3Ds();
 
     if (mEnableLightFade)
     {
@@ -785,7 +785,7 @@ void Renderer::GatherLightData(World* world)
             }
 
             glm::vec3 lightPos = comps[i]->GetAbsolutePosition();
-            bool directional = comps[i]->IsDirectionalLightComponent();
+            bool directional = comps[i]->IsDirectionalLight3D();
 
             float dist2 = directional ? 0.0f : glm::distance2(lightPos, camPos);
 

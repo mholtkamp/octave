@@ -12,10 +12,10 @@
 #if LUA_ENABLED
 
 #define CAMERA_COMPONENT_LUA_NAME "Camera3D"
-#define CAMERA_COMPONENT_LUA_FLAG "cfCameraComponent"
+#define CAMERA_COMPONENT_LUA_FLAG "cfCamera3D"
 #define CHECK_CAMERA_COMPONENT(L, arg) static_cast<Camera3D*>(CheckComponentLuaType(L, arg, CAMERA_COMPONENT_LUA_NAME, CAMERA_COMPONENT_LUA_FLAG));
 
-struct CameraComponent_Lua
+struct Camera3D_Lua
 {
     static int SetPerspective(lua_State* L);
     static int SetOrtho(lua_State* L);

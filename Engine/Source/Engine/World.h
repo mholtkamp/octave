@@ -77,7 +77,7 @@ public:
     void RemoveAllLines();
     const std::vector<Line>& GetLines() const;
 
-    const std::vector<class Light3D*>& GetLightComponents();
+    const std::vector<class Light3D*>& GetLight3Ds();
 
     void SetAmbientLightColor(glm::vec4 color);
     glm::vec4 GetAmbientLightColor() const;
@@ -110,7 +110,7 @@ public:
 
     void RegisterComponent(Component* comp);
     void UnregisterComponent(Component* comp);
-    const std::vector<Audio3D*>& GetAudioComponents() const;
+    const std::vector<Audio3D*>& GetAudio3Ds() const;
 
     std::vector<Actor*>& GetReplicatedActorVector(ReplicationRate rate);
     uint32_t& GetReplicatedActorIndex(ReplicationRate rate);
@@ -174,8 +174,8 @@ private:
     std::vector<Actor*> mActors;
     std::unordered_map<NetId, Actor*> mNetActorMap;
     std::vector<Line> mLines;
-    std::vector<class Light3D*> mLightComponents;
-    std::vector<class Audio3D*> mAudioComponents;
+    std::vector<class Light3D*> mLight3Ds;
+    std::vector<class Audio3D*> mAudio3Ds;
     std::vector<LevelRef> mLoadedLevels;
     std::vector<QueuedLevel> mQueuedLevels;
     DirectionalLight3D* mDirectionalLight;

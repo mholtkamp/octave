@@ -81,10 +81,10 @@ void OnCreateCompButtonPressed(Button* button)
 
         EnsureUniqueComponentName(newComp);
 
-        if (newComp->IsTransformComponent())
+        if (newComp->IsNode3D())
         {
             Node3D* newTrans = (Node3D*)newComp;
-            Node3D* parentTrans = selectedComp->IsTransformComponent() ? (Node3D*)selectedComp : actor->GetRootComponent();
+            Node3D* parentTrans = selectedComp->IsNode3D() ? (Node3D*)selectedComp : actor->GetRootComponent();
             OCT_ASSERT(parentTrans != nullptr);
             newTrans->Attach(parentTrans);
         }
@@ -172,7 +172,7 @@ void HierarchyPanel::ActionHandler(Button* button)
         OCT_ASSERT(owner);
 
         Component* newComp = owner->CreateComponent(actionComp->GetType());
-        if (newComp->IsTransformComponent())
+        if (newComp->IsNode3D())
         {
             OCT_ASSERT(actionTrans);
             Node3D* newTrans = newComp->As<Node3D>();
@@ -229,7 +229,7 @@ void HierarchyPanel::DeleteComponent(Component* comp)
         isRoot = (comp == actor->GetRootComponent());
         isDefault = comp->IsDefault();
 
-        if (comp->IsTransformComponent())
+        if (comp->IsNode3D())
         {
             Node3D* transComp = (Node3D*)comp;
             hasChildren = transComp->GetChildren().size() > 0;
@@ -266,7 +266,7 @@ void HierarchyPanel::AttachSelectedComponent(Component* newParent, int32_t boneI
     if (newParent == nullptr)
         return;
 
-    if (!newParent->IsTransformComponent())
+    if (!newParent->IsNode3D())
         return;
 
     Component* selComp = GetSelectedComponent();
@@ -274,7 +274,7 @@ void HierarchyPanel::AttachSelectedComponent(Component* newParent, int32_t boneI
     if (selComp == nullptr)
         return;
 
-    if (!selComp->IsTransformComponent())
+    if (!selComp->IsNode3D())
         return;
 
     if (selComp->IsDefault())
@@ -304,7 +304,7 @@ void HierarchyPanel::SetRootComponent(Component* newRoot)
     if (newRoot == nullptr)
         return;
 
-    if (!newRoot->IsTransformComponent())
+    if (!newRoot->IsNode3D())
         return;
 
     Node3D* newRootTrans = (Node3D*)newRoot;
@@ -438,7 +438,7 @@ void HierarchyPanel::RefreshCompButtons()
             {
                 compList.push_back(components[i]);
                 depthList.push_back(0);
-                OCT_ASSERT(!components[i]->IsTransformComponent() ||
+                OCT_ASSERT(!components[i]->IsNode3D() ||
                     static_cast<Node3D*>(components[i])->GetParent()->GetOwner() != selectedActor);
             }
         }

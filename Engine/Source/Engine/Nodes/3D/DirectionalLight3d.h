@@ -23,8 +23,8 @@ public:
     virtual void SaveStream(Stream& stream) override;
 	virtual void LoadStream(Stream& stream) override;
 
-    virtual bool IsPointLightComponent() const override;
-    virtual bool IsDirectionalLightComponent() const override;
+    virtual bool IsPointLight3D() const override;
+    virtual bool IsDirectionalLight3D() const override;
 
     glm::vec3 GetDirection() const;
     void SetDirection(const glm::vec3& dir);

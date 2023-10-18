@@ -13,11 +13,11 @@ public:
 
     StaticMeshActor();
     virtual void Create() override;
-    StaticMesh3D* GetStaticMeshComponent();
+    StaticMesh3D* GetStaticMesh3D();
 
 protected:
 
-    StaticMesh3D* mStaticMeshComponent;
+    StaticMesh3D* mStaticMesh3D;
 
 #if EDITOR
 public:
