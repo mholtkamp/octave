@@ -5,7 +5,7 @@
 #include "ActionManager.h"
 #include "PanelManager.h"
 #include "EditorState.h"
-#include "Actor.h"
+#include "Nodes/Node.h"
 #include "InputDevices.h"
 #include "Widgets/ActionList.h"
 #include "Renderer.h"

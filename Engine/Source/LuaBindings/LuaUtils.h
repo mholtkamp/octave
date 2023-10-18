@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EngineTypes.h"
-#include "Actor.h"
+#include "Nodes/Node.h"
 
 #include "AssetManager.h"
 

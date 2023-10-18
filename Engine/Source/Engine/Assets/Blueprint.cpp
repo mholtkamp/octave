@@ -1,7 +1,7 @@
 #include "Assets/Blueprint.h"
 #include "Assets/SkeletalMesh.h"
 #include "World.h"
-#include "Actor.h"
+#include "Nodes/Node.h"
 #include "Log.h"
 #include "Engine.h"
 #include "NetworkManager.h"

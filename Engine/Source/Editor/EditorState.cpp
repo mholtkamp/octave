@@ -4,7 +4,7 @@
 #include "EditorConstants.h"
 #include "PanelManager.h"
 #include "ActionManager.h"
-#include "Actor.h"
+#include "Nodes/Node.h"
 #include "Asset.h"
 #include "AssetManager.h"
 #include "Nodes/Node.h"

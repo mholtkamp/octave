@@ -1,5 +1,5 @@
 #include "NetFunc.h"
-#include "Actor.h"
+#include "Nodes/Node.h"
 #include "NetworkManager.h"
 #include <string.h>
 

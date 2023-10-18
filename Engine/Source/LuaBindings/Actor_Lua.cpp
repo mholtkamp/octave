@@ -2,7 +2,7 @@
 #include "Log.h"
 #include "Engine.h"
 
-#include "Actor.h"
+#include "Nodes/Node.h"
 #include "Assets/Level.h"
 #include "Nodes/Node.h"
 #include "Nodes/3D/PrimitiveComponent.h"

@@ -1,7 +1,7 @@
 #if EDITOR
 
 #include "Widgets/ActorButton.h"
-#include "Actor.h"
+#include "Nodes/Node.h"
 #include "Widgets/Panel.h"
 #include "Widgets/Quad.h"
 #include "EditorState.h"

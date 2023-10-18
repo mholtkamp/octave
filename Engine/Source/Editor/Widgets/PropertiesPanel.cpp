@@ -11,7 +11,7 @@
 #include "Widgets/Text.h"
 #include "InputDevices.h"
 #include "Log.h"
-#include "Actor.h"
+#include "Nodes/Node.h"
 
 void PropModeChangeHandler(Selector* selector)
 {

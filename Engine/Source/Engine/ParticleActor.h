@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Actor.h"
+#include "Nodes/Node.h"
 #include "AssetRef.h"
 #include "Assets/ParticleSystem.h"
 

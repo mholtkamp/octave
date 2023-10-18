@@ -1,6 +1,6 @@
 #include "Assets/WidgetMap.h"
 #include "World.h"
-#include "Actor.h"
+#include "Nodes/Node.h"
 #include "Log.h"
 #include "Engine.h"
 #include "Widgets/ScriptWidget.h"

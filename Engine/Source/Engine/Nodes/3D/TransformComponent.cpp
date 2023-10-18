@@ -1,7 +1,7 @@
 #include "Nodes/3D/TransformComponent.h"
 
 #include "AssetManager.h"
-#include "Actor.h"
+#include "Nodes/Node.h"
 #include "World.h"
 #include "Maths.h"
 #include "Assets/SkeletalMesh.h"

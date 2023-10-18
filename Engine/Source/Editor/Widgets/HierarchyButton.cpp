@@ -3,7 +3,7 @@
 #include "Widgets/HierarchyButton.h"
 #include "Widgets/Panel.h"
 #include "Nodes/Node.h"
-#include "Actor.h"
+#include "Nodes/Node.h"
 #include "EditorState.h"
 #include "Widgets/Quad.h"
 

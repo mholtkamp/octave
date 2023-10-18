@@ -8,7 +8,7 @@
 #include "Assets/StaticMesh.h"
 #include "Assets/Material.h"
 #include "Assets/Texture.h"
-#include "Actor.h"
+#include "Nodes/Node.h"
 #include "Clock.h"
 #include "Line.h"
 #include "EngineTypes.h"
