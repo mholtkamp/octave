@@ -118,6 +118,11 @@ void TransformComponent::Destroy()
     }
 }
 
+void TransformComponent::Tick(float deltaTime)
+{
+
+}
+
 const char* TransformComponent::GetTypeName() const
 {
     return "Transform";
@@ -174,6 +179,8 @@ void TransformComponent::AttachToBone(SkeletalMeshComponent* parent, int32_t bon
 
 void TransformComponent::MarkTransformDirty()
 {
+    // TODO-NODE: Consider propogating this to children nodes. 
+    // It looks like Godot does it this way, and might remove some one-frame-delay bugs.
     mTransformDirty = true;
 }
 
@@ -251,7 +258,7 @@ void TransformComponent::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
         debugDraw.mActor = GetOwner();
         debugDraw.mComponent = this;
         debugDraw.mColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
-        debugDraw.mTransform = glm::scale(mTransform, { 0.2f, 0.2f, 0.2f });
+        debugDraw.mTransform = glm::scale(GetTransform(), { 0.2f, 0.2f, 0.2f });
         inoutDraws.push_back(debugDraw);
     }
 #endif
@@ -314,8 +321,15 @@ glm::vec3& TransformComponent::GetScaleRef()
     return mScale;
 }
 
-const glm::mat4& TransformComponent::GetTransform() const
+const glm::mat4& TransformComponent::GetTransform()
 {
+    // TODO-NODE: I added this update transform check and made this method non-const.
+    // Is this causing any bugs? Performance issues?
+    if (mTransformDirty)
+    {
+        UpdateTransform(false);
+    }
+
     return mTransform;
 }
 

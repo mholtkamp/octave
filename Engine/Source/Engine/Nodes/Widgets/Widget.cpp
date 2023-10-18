@@ -329,6 +329,8 @@ void Widget::Render()
 // Recursively update children.
 void Widget::RecursiveUpdate()
 {
+    // TODO-NODE: Merge this function with RecursiveTick on Node. Can we
+    // clear the dirty flag inside Tick()?
     Update();
     mDirty[Renderer::Get()->GetFrameIndex()] = false;
 

@@ -23,6 +23,7 @@ public:
 
     virtual void Create() override;
     virtual void Destroy() override;
+    virtual void Tick(float deltaTime) override;
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
@@ -51,7 +52,7 @@ public:
     glm::quat& GetRotationQuatRef();
     glm::vec3& GetScaleRef();
 
-    const glm::mat4& GetTransform() const;
+    const glm::mat4& GetTransform();
 
     void SetPosition(glm::vec3 position);
     void SetRotation(glm::vec3 rotation);

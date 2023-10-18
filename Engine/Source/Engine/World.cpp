@@ -912,36 +912,46 @@ void World::Update(float deltaTime)
 
     {
         SCOPED_FRAME_STAT("Tick");
-        for (int32_t i = 0; i < (int32_t)mActors.size(); ++i)
-        {
-            if (gameTickEnabled)
-            {
-                if (!mActors[i]->HasBegunPlay())
-                {
-                    mActors[i]->BeginPlay();
-                }
+        mRootNode->RecursiveTick(deltaTime, gameTickEnabled);
 
-                if (!mActors[i]->IsPendingDestroy() && 
-                    mActors[i]->IsTickEnabled())
-                {
-                    mActors[i]->Tick(deltaTime);
-                }
-            }
-            else
-            {
-                if (!mActors[i]->IsPendingDestroy() && 
-                    mActors[i]->IsTickEnabled())
-                {
-                    mActors[i]->EditorTick(deltaTime);
-                }
-            }
+    //    for (int32_t i = 0; i < (int32_t)mActors.size(); ++i)
+    //    {
+    //        if (gameTickEnabled)
+    //        {
+    //            if (!mActors[i]->HasBegunPlay())
+    //            {
+    //                mActors[i]->BeginPlay();
+    //            }
 
-            if (mActors[i]->IsPendingDestroy())
-            {
-                DestroyActor(i);
-                --i;
-            }
-        }
+    //            if (!mActors[i]->IsPendingDestroy() && 
+    //                mActors[i]->IsTickEnabled())
+    //            {
+    //                mActors[i]->Tick(deltaTime);
+    //            }
+    //        }
+    //        else
+    //        {
+    //            if (!mActors[i]->IsPendingDestroy() && 
+    //                mActors[i]->IsTickEnabled())
+    //            {
+    //                mActors[i]->EditorTick(deltaTime);
+    //            }
+    //        }
+
+    //        if (mActors[i]->IsPendingDestroy())
+    //        {
+    //            DestroyActor(i);
+    //            --i;
+    //        }
+    //    }
+    }
+
+    {
+        // TODO-NODE: Adding this! Make sure it works. I think we need to
+        // make sure transforms are updated so that the bullet dynamics world is in sync.
+        // But maybe not and we only need to update transforms when getting world pos/rot/scale/transform
+        SCOPED_FRAME_STAT("Transforms");
+        mRootNode->UpdateTransform(true);
     }
 }
 

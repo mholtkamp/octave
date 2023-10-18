@@ -64,6 +64,7 @@ public:
 
     virtual void Start();
     virtual void Stop();
+    virtual void RecursiveTick(float deltaTime, bool game);
     virtual void Tick(float deltaTime);
     virtual void EditorTick(float deltaTime);
 

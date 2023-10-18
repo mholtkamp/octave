@@ -31,32 +31,6 @@
 
 using namespace std;
 
-void Actor::Tick(float deltaTime)
-{
-    for (uint32_t i = 0; i < mComponents.size(); ++i)
-    {
-        if (mComponents[i]->IsActive())
-        {
-            mComponents[i]->Tick(deltaTime);
-        }
-    }
-
-    UpdateComponentTransforms();
-}
-
-void Actor::EditorTick(float deltaTime)
-{
-    for (uint32_t i = 0; i < mComponents.size(); ++i)
-    {
-        if (mComponents[i]->IsActive())
-        {
-            mComponents[i]->EditorTick(deltaTime);
-        }
-    }
-
-    UpdateComponentTransforms();
-}
-
 void Actor::BeginPlay()
 {
     mBegunPlay = true;

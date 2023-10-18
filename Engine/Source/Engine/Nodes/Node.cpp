@@ -261,6 +261,54 @@ void Node::Stop()
 
 }
 
+void Node::RecursiveTick(float deltaTime, bool game)
+{
+    // TODO-NODE: Add a bool on Node for mLateTick.
+    // If late tick is set, then tick after children tick.
+
+    if (!mHasStarted)
+    {
+        Start();
+    }
+
+    if (IsTickEnabled() && IsActive() && !mPendingDestroy)
+    {
+        if (/*!mLateTick*/ 1)
+        {
+            if (game)
+            {
+                Tick(deltaTime);
+            }
+            else
+            {
+                EditorTick(deltaTime);
+            }
+        }
+
+        for (uint32_t i = 0; i < GetNumChildren(); ++i)
+        {
+            GetChild(i)->RecursiveTick(deltaTime, game);
+        }
+
+        if (/*mLateTick*/ 0)
+        {
+            if (game)
+            {
+                Tick(deltaTime);
+            }
+            else
+            {
+                EditorTick(deltaTime);
+            }
+        }
+
+        if (mPendingDestroy)
+        {
+            Destroy();
+        }
+    }
+}
+
 void Node::Tick(float deltaTime)
 {
     // TODO-NODE: Need to implement RecursiveTick(). Replace Widget's RecursiveUpdate()?
