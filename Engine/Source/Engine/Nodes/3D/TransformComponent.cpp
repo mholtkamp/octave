@@ -39,6 +39,35 @@ bool HandleTransformPropChange(Datum* datum, uint32_t index, const void* newValu
     return success;
 }
 
+bool TransformComponent::OnRep_RootPosition(Datum* datum, uint32_t index, const void* newValue)
+{
+    Actor* actor = (Actor*)datum->mOwner;
+    OCT_ASSERT(actor != nullptr);
+    glm::vec3* newPos = (glm::vec3*) newValue;
+    actor->GetRootComponent()->SetPosition(*newPos);
+    return true;
+}
+
+bool TransformComponent::OnRep_RootRotation(Datum* datum, uint32_t index, const void* newValue)
+{
+    Actor* actor = (Actor*)datum->mOwner;
+    OCT_ASSERT(actor != nullptr);
+
+    glm::vec3* newRot = (glm::vec3*) newValue;
+    actor->GetRootComponent()->SetRotation(*newRot);
+
+    return true;
+}
+
+bool TransformComponent::OnRep_RootScale(Datum* datum, uint32_t index, const void* newValue)
+{
+    Actor* actor = (Actor*)datum->mOwner;
+    OCT_ASSERT(actor != nullptr);
+    glm::vec3* newScale = (glm::vec3*) newValue;
+    actor->GetRootComponent()->SetScale(*newScale);
+    return true;
+}
+
 TransformComponent::TransformComponent() :
     mParent(nullptr),
     mPosition(0,0,0),
@@ -82,29 +111,6 @@ void TransformComponent::Destroy()
 {
     Component::Destroy();
 
-    // Detach children from this component, in case another 
-    // actor's components are attached to this. Don't want to leave
-    // an invalid pointer on the other actor.
-    for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
-    {
-        if (mChildren[i]->GetOwner() != GetOwner())
-        {
-            // I think in most cases, when a component is attached from a different actor,
-            // and this component is being destroyed, we want to keep the orphaned component
-            // where it is in world space. Snapping back to the origin looks pretty bad :/
-            mChildren[i]->Attach(nullptr, true);
-        }
-        else
-        {
-            // Simpler version which doesn't worry about preserving world transform.
-            RemoveChild(i);
-        }
-    }
-
-    // Detach from parent. If this component is attached to another actor's component,
-    // then we need to make sure it no longer references it or else it will crash.
-    Attach(nullptr);
-
     if (GetWorld() &&
         GetWorld()->GetAudioReceiver() == this)
     {
@@ -119,11 +125,23 @@ const char* TransformComponent::GetTypeName() const
 
 void TransformComponent::GatherProperties(std::vector<Property>& outProps)
 {
-    Component::GatherProperties(outProps);
+    Node::GatherProperties(outProps);
 
     outProps.push_back(Property(DatumType::Vector, "Position", this, &mPosition, 1, HandleTransformPropChange));
     outProps.push_back(Property(DatumType::Vector, "Rotation", this, &mRotationEuler, 1, HandleTransformPropChange));
     outProps.push_back(Property(DatumType::Vector, "Scale", this, &mScale, 1, HandleTransformPropChange));
+}
+
+void TransformComponent::GatherReplicatedData(std::vector<NetDatum>& outData)
+{
+    Node::GatherReplicatedData(outData);
+
+    if (mReplicateTransform)
+    {
+        outData.push_back(NetDatum(DatumType::Vector, this, &mPosition, 1, OnRep_RootPosition));
+        outData.push_back(NetDatum(DatumType::Vector, this, &mRotationEuler, 1, OnRep_RootRotation));
+        outData.push_back(NetDatum(DatumType::Vector, this, &mScale, 1, OnRep_RootScale));
+    }
 }
 
 bool TransformComponent::IsTransformNode() const

@@ -55,8 +55,6 @@ public:
 
     virtual void SaveStream(Stream& stream);
     virtual void LoadStream(Stream& stream);
-    virtual void Copy(Actor* srcActor);
-    virtual void Render(PipelineId pipelineId);
 
     virtual void GatherProperties(std::vector<Property>& outProps);
     virtual void GatherReplicatedData(std::vector<NetDatum>& outData);
@@ -206,10 +204,6 @@ public:
     void InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5, Datum param6);
     void InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5, Datum param6, Datum param7);
     void InvokeNetFunc(const char* name, const std::vector<Datum>& params);
-
-    static bool OnRep_RootPosition(Datum* datum, uint32_t index, const void* newValue);
-    static bool OnRep_RootRotation(Datum* datum, uint32_t index, const void* newValue);
-    static bool OnRep_RootScale(Datum* datum, uint32_t index, const void* newValue);
 
     static void RegisterNetFuncs(Actor* actor);
 

@@ -26,6 +26,7 @@ public:
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
+    virtual void GatherReplicatedData(std::vector<NetDatum>& outData);
 
     virtual bool IsTransformNode() const override;
 
@@ -85,7 +86,11 @@ public:
     glm::mat4 GetParentTransform();
     int32_t GetParentBoneIndex() const;
 
-    virtual void Attach(Node* parent, bool keepWorldTransform) override;
+    virtual void Attach(Node* parent, bool keepWorldTransform = false) override;
+
+    static bool OnRep_RootPosition(Datum* datum, uint32_t index, const void* newValue);
+    static bool OnRep_RootRotation(Datum* datum, uint32_t index, const void* newValue);
+    static bool OnRep_RootScale(Datum* datum, uint32_t index, const void* newValue);
 
 protected:
 

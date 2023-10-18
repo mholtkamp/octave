@@ -1,8 +1,16 @@
 #include "Nodes/Node.h"
-#include "Actor.h"
 #include "Log.h"
 #include "World.h"
+#include "Renderer.h"
+#include "Clock.h"
+#include "Enums.h"
+#include "Maths.h"
+#include "Utilities.h"
+#include "Engine.h"
 #include "ObjectRef.h"
+#include "NetworkManager.h"
+#include "LuaBindings/Actor_Lua.h"
+#include "Assets/Blueprint.h"
 
 #include "Nodes/3D/TransformComponent.h"
 #include "Nodes/3D/StaticMeshComponent.h"
@@ -14,6 +22,29 @@
 #include "Nodes/3D/SphereComponent.h"
 #include "Nodes/3D/ParticleComponent.h"
 #include "Nodes/3D/AudioComponent.h"
+#include "Nodes/3D/PrimitiveComponent.h"
+#include "Nodes/3D/LightComponent.h"
+
+#include "Graphics/Graphics.h"
+
+#if EDITOR
+#include "EditorState.h"
+#endif
+
+#include <functional>
+#include <algorithm>
+
+#define INVOKE_NET_FUNC_BODY(P) \
+    NetFunc* netFunc = FindNetFunc(name); \
+    OCT_ASSERT(netFunc->mNumParams == P); \
+    bool shouldExecute = ShouldExecuteNetFunc(netFunc->mType, this); \
+    SendNetFunc(netFunc, P, params);
+
+std::unordered_map<TypeId, NetFuncMap> Node::sTypeNetFuncMap;
+
+#define ENABLE_SCRIPT_FUNCS 1
+
+DEFINE_SCRIPT_LINK_BASE(Node);
 
 FORCE_LINK_DEF(Node);
 DEFINE_FACTORY_MANAGER(Node);
@@ -32,17 +63,36 @@ Node::~Node()
 
 void Node::Create()
 {
-
+    REGISTER_SCRIPT_FUNCS();
 }
 
 void Node::Destroy()
 {
-    NodeRef::EraseReferencesToObject(this);
+    // Destroy+Stop children first. Maybe we need to split up Stop + Destroy()?
+    // Could call RecursiveStop() before destroying everything?
+    for (int32_t i = int32_t(GetNumChildren()) - 1; i >= 0; --i)
+    {
+        Node* child = GetChild(i);
+        child->Destroy();
+        delete child;
+    }
+
+    if (mHasStarted)
+    {
+        Stop();
+    }
 
     if (IsPrimitiveNode() && GetWorld())
     {
         GetWorld()->PurgeOverlaps(static_cast<PrimitiveComponent*>(this));
     }
+
+    if (mParent != nullptr)
+    {
+        Attach(nullptr);
+    }
+
+    NodeRef::EraseReferencesToObject(this);
 
 #if EDITOR
     GetWorld()->DeselectComponent(this);
@@ -110,7 +160,16 @@ void Node::Copy(Node* srcNode)
     OCT_ASSERT(srcNode);
     OCT_ASSERT(srcNode->GetType() == GetType());
 
-    // Copy actor properties
+    if (srcNode == nullptr ||
+        srcNode->GetType() != GetType())
+    {
+        LogError("Failed to copy node");
+        return;
+    }
+
+    // I'm not using CopyPropertyValues() here because we need to handle the special
+    // case where "Filename" is copied. Should refactor this code so we can use the CopyPropertyValues() func.
+    // Possibly, just copy over ScriptProperties separately after initial pass.
     std::vector<Property> srcProps;
     srcNode->GatherProperties(srcProps);
 
@@ -133,10 +192,17 @@ void Node::Copy(Node* srcNode)
 
         if (dstProp != nullptr)
         {
-            OCT_ASSERT(dstProp->mCount == srcProp->mCount);
+            if (dstProp->IsVector())
+            {
+                dstProp->ResizeVector(srcProp->GetCount());
+            }
+            else
+            {
+                OCT_ASSERT(dstProp->mCount == srcProp->mCount);
+            }
+
             dstProp->SetValue(srcProp->mData.vp, 0, srcProp->mCount);
         }
-
 
         // TODO-NODE: Gather properties if this uses a script.
         // For script components... if we first copy over the Filename property,
@@ -148,6 +214,40 @@ void Node::Copy(Node* srcNode)
             dstProps.clear();
             GatherProperties(dstProps);
         }
+    }
+
+    mSceneSource = srcNode->GetSceneSource();
+
+    // Copy children recursively.
+    for (uint32_t i = 0; i < srcNode->GetNumChildren(); ++i)
+    {
+        Node* srcChild = srcNode->GetChild(i);
+        Node* dstChild = nullptr;
+
+        if (i >= GetNumChildren())
+        {
+            dstChild = CreateComponent(srcChild->GetType());
+        }
+        else
+        {
+            dstChild = GetChild(i);
+        }
+
+        dstChild->Copy(srcChild);
+    }
+}
+
+void Node::Render(PipelineId pipelineId)
+{
+    // TODO-NODE: Need to implement RecursiveRender(). Replace Widget's RecursiveRender()?
+    // TODO-NODE: This function is used when rendering hit check and selected geometry I believe.
+    // Could probably adjust Render() function in Primitive3D + Widget so that it can take a pipeline.
+    // Or just manually bind the pipeline from the callers.
+    if (IsPrimitiveNode() && IsVisible())
+    {
+        PrimitiveComponent* primComp = static_cast<PrimitiveComponent*>(this);
+        GFX_BindPipeline(pipelineId, primComp->GetVertexType());
+        primComp->Render();
     }
 }
 
@@ -163,7 +263,7 @@ void Node::Stop()
 
 void Node::Tick(float deltaTime)
 {
-    
+    // TODO-NODE: Need to implement RecursiveTick(). Replace Widget's RecursiveUpdate()?
 }
 
 void Node::EditorTick(float deltaTime)
@@ -181,6 +281,16 @@ void Node::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Replicate", this, &mReplicate));
     outProps.push_back(Property(DatumType::Bool, "Replicate Transform", this, &mReplicateTransform));
     outProps.push_back(Property(DatumType::String, "Tags", this, &mTags).MakeVector());
+}
+
+void Node::GatherReplicatedData(std::vector<NetDatum>& outData)
+{
+    outData.push_back(NetDatum(DatumType::Byte, this, &mOwningHost));
+}
+
+void Node::GatherNetFuncs(std::vector<NetFunc>& outFuncs)
+{
+
 }
 
 // TODO-NODE: Register / unregister should happen on AddChild() / SetParent()

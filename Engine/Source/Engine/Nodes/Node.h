@@ -60,12 +60,16 @@ public:
     virtual void LoadStream(Stream& stream);
 
     virtual void Copy(Node* srcNode);
+    virtual void Render(PipelineId pipelineId);
 
     virtual void Start();
     virtual void Stop();
     virtual void Tick(float deltaTime);
     virtual void EditorTick(float deltaTime);
+
     virtual void GatherProperties(std::vector<Property>& outProps);
+    virtual void GatherReplicatedData(std::vector<NetDatum>& outData);
+    virtual void GatherNetFuncs(std::vector<NetFunc>& outFuncs);
 
     void SetName(const std::string& newName);
     const std::string& GetName() const;
@@ -116,7 +120,7 @@ protected:
     bool mDefault = false;
 
     // Merged from Actor
-    SceneRef mScene;
+    SceneRef mSceneSource;
     std::vector<std::string> mTags;
     uint32_t mHitCheckId;
 
