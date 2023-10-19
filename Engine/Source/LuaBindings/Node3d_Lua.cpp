@@ -9,7 +9,7 @@
 int Node3D_Lua::AttachToBone(lua_State* L)
 {
     Node3D* comp = CHECK_NODE_3D(L, 1);
-    SkeletalMesh3D* newParent = CHECK_SKELETAL_MESH_COMPONENT(L, 2);
+    SkeletalMesh3D* newParent = CHECK_SKELETAL_MESH_3D(L, 2);
     const char* boneName = CHECK_STRING(L, 3);
     bool keepWorldTransform = false;
 
@@ -301,26 +301,14 @@ void Node3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(
-        TRANSFORM_COMPONENT_LUA_NAME,
-        TRANSFORM_COMPONENT_LUA_FLAG,
-        COMPONENT_LUA_NAME);
+        NODE_3D_LUA_NAME,
+        NODE_3D_LUA_FLAG,
+        NODE_LUA_NAME);
 
-    Component_Lua::BindCommon(L, mtIndex);
-
-    lua_pushcfunction(L, Node3D_Lua::Attach);
-    lua_setfield(L, mtIndex, "Attach");
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, Node3D_Lua::AttachToBone);
     lua_setfield(L, mtIndex, "AttachToBone");
-
-    lua_pushcfunction(L, Node3D_Lua::GetParent);
-    lua_setfield(L, mtIndex, "GetParent");
-
-    lua_pushcfunction(L, Node3D_Lua::GetChild);
-    lua_setfield(L, mtIndex, "GetChild");
-
-    lua_pushcfunction(L, Node3D_Lua::GetNumChildren);
-    lua_setfield(L, mtIndex, "GetNumChildren");
 
     lua_pushcfunction(L, Node3D_Lua::UpdateTransform);
     lua_setfield(L, mtIndex, "UpdateTransform");

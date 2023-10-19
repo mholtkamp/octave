@@ -172,7 +172,7 @@ void ScriptComponent_Lua::Bind()
         SCRIPT_COMPONENT_LUA_FLAG,
         COMPONENT_LUA_NAME);
 
-    Component_Lua::BindCommon(L, mtIndex);
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, SetFile);
     lua_setfield(L, mtIndex, "SetFile");

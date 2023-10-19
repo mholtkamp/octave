@@ -39,7 +39,7 @@ int World_Lua::GetActiveCamera(lua_State* L)
     
     Camera3D* cameraComp = world->GetActiveCamera();
 
-    Component_Lua::Create(L, cameraComp);
+    Node_Lua::Create(L, cameraComp);
     return 1;
 }
 
@@ -49,14 +49,14 @@ int World_Lua::GetAudioReceiver(lua_State* L)
 
     Node3D* receiverComp = world->GetAudioReceiver();
 
-    Component_Lua::Create(L, receiverComp);
+    Node_Lua::Create(L, receiverComp);
     return 1;
 }
 
 int World_Lua::SetActiveCamera(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
-    Camera3D* cameraComp = CHECK_CAMERA_COMPONENT(L, 2);
+    Camera3D* cameraComp = CHECK_CAMERA_3D(L, 2);
 
     world->SetActiveCamera(cameraComp);
 
@@ -181,7 +181,7 @@ int World_Lua::FindComponent(lua_State* L)
 
     Component* comp = world->FindComponent(name);
 
-    Component_Lua::Create(L, comp);
+    Node_Lua::Create(L, comp);
     return 1;
 }
 
@@ -306,7 +306,7 @@ int World_Lua::RayTest(lua_State* L)
     lua_setfield(L, -2, "start");
     Vector_Lua::Create(L, result.mEnd);
     lua_setfield(L, -2, "end");
-    Component_Lua::Create(L, result.mHitComponent);
+    Node_Lua::Create(L, result.mHitComponent);
     lua_setfield(L, -2, "hitComponent");
     Vector_Lua::Create(L, result.mHitNormal);
     lua_setfield(L, -2, "hitNormal");
@@ -346,7 +346,7 @@ int World_Lua::RayTestMulti(lua_State* L)
     {
         lua_newtable(L);
         int hitTableIdx = lua_gettop(L);
-        Component_Lua::Create(L, result.mHitComponents[i]);
+        Node_Lua::Create(L, result.mHitComponents[i]);
         lua_setfield(L, hitTableIdx, "component");
         Vector_Lua::Create(L, result.mHitNormals[i]);
         lua_setfield(L, hitTableIdx, "normal");
@@ -374,7 +374,7 @@ int World_Lua::RayTestMulti(lua_State* L)
 int World_Lua::SweepTest(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
-    Primitive3D* primComp = CHECK_PRIMITIVE_COMPONENT(L, 2);
+    Primitive3D* primComp = CHECK_PRIMITIVE_3D(L, 2);
     glm::vec3 start = CHECK_VECTOR(L, 3);
     glm::vec3 end = CHECK_VECTOR(L, 4);
     uint8_t colMask = (uint8_t)CHECK_INTEGER(L, 5);
@@ -387,7 +387,7 @@ int World_Lua::SweepTest(lua_State* L)
     lua_setfield(L, -2, "start");
     Vector_Lua::Create(L, result.mEnd);
     lua_setfield(L, -2, "end");
-    Component_Lua::Create(L, result.mHitComponent);
+    Node_Lua::Create(L, result.mHitComponent);
     lua_setfield(L, -2, "hitComponent");
     Vector_Lua::Create(L, result.mHitNormal);
     lua_setfield(L, -2, "hitNormal");

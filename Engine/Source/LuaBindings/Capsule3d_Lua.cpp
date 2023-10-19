@@ -8,7 +8,7 @@
 
 int Capsule3D_Lua::GetHeight(lua_State* L)
 {
-    Capsule3D* comp = CHECK_CAPSULE_COMPONENT(L, 1);
+    Capsule3D* comp = CHECK_CAPSULE_3D(L, 1);
 
     float ret = comp->GetHeight();
 
@@ -18,7 +18,7 @@ int Capsule3D_Lua::GetHeight(lua_State* L)
 
 int Capsule3D_Lua::SetHeight(lua_State* L)
 {
-    Capsule3D* comp = CHECK_CAPSULE_COMPONENT(L, 1);
+    Capsule3D* comp = CHECK_CAPSULE_3D(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetHeight(value);
@@ -28,7 +28,7 @@ int Capsule3D_Lua::SetHeight(lua_State* L)
 
 int Capsule3D_Lua::GetRadius(lua_State* L)
 {
-    Capsule3D* comp = CHECK_CAPSULE_COMPONENT(L, 1);
+    Capsule3D* comp = CHECK_CAPSULE_3D(L, 1);
 
     float ret = comp->GetRadius();
 
@@ -38,7 +38,7 @@ int Capsule3D_Lua::GetRadius(lua_State* L)
 
 int Capsule3D_Lua::SetRadius(lua_State* L)
 {
-    Capsule3D* comp = CHECK_CAPSULE_COMPONENT(L, 1);
+    Capsule3D* comp = CHECK_CAPSULE_3D(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetRadius(value);
@@ -50,11 +50,11 @@ void Capsule3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(
-        CAPSULE_COMPONENT_LUA_NAME,
-        CAPSULE_COMPONENT_LUA_FLAG,
-        PRIMITIVE_COMPONENT_LUA_NAME);
+        CAPSULE_3D_LUA_NAME,
+        CAPSULE_3D_LUA_FLAG,
+        PRIMITIVE_3D_LUA_NAME);
 
-    Component_Lua::BindCommon(L, mtIndex);
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, GetHeight);
     lua_setfield(L, mtIndex, "GetHeight");

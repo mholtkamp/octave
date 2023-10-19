@@ -11,9 +11,9 @@
 
 #if LUA_ENABLED
 
-#define BOX_COMPONENT_LUA_NAME "Box3D"
-#define BOX_COMPONENT_LUA_FLAG "cfBox3D"
-#define CHECK_BOX_COMPONENT(L, arg) static_cast<Box3D*>(CheckComponentLuaType(L, arg, BOX_COMPONENT_LUA_NAME, BOX_COMPONENT_LUA_FLAG));
+#define BOX_3D_LUA_NAME "Box3D"
+#define BOX_3D_LUA_FLAG "cfBox3D"
+#define CHECK_BOX_3D(L, arg) static_cast<Box3D*>(CheckNodeLuaType(L, arg, BOX_3D_LUA_NAME, BOX_3D_LUA_FLAG));
 
 struct Box3D_Lua
 {

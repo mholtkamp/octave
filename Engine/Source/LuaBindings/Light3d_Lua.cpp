@@ -7,7 +7,7 @@
 
 int Light3D_Lua::SetColor(lua_State* L)
 {
-    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
+    Light3D* comp = CHECK_LIGHT_3D(L, 1);
     glm::vec4 value = CHECK_VECTOR(L, 2);
 
     comp->SetColor(value);
@@ -17,7 +17,7 @@ int Light3D_Lua::SetColor(lua_State* L)
 
 int Light3D_Lua::GetColor(lua_State* L)
 {
-    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
+    Light3D* comp = CHECK_LIGHT_3D(L, 1);
 
     glm::vec4 ret = comp->GetColor();
 
@@ -27,7 +27,7 @@ int Light3D_Lua::GetColor(lua_State* L)
 
 int Light3D_Lua::SetIntensity(lua_State* L)
 {
-    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
+    Light3D* comp = CHECK_LIGHT_3D(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetIntensity(value);
@@ -37,7 +37,7 @@ int Light3D_Lua::SetIntensity(lua_State* L)
 
 int Light3D_Lua::GetIntensity(lua_State* L)
 {
-    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
+    Light3D* comp = CHECK_LIGHT_3D(L, 1);
 
     float ret = comp->GetIntensity();
 
@@ -47,7 +47,7 @@ int Light3D_Lua::GetIntensity(lua_State* L)
 
 int Light3D_Lua::SetCastShadows(lua_State* L)
 {
-    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
+    Light3D* comp = CHECK_LIGHT_3D(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
 
     comp->SetCastShadows(value);
@@ -57,7 +57,7 @@ int Light3D_Lua::SetCastShadows(lua_State* L)
 
 int Light3D_Lua::ShouldCastShadows(lua_State* L)
 {
-    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 1);
+    Light3D* comp = CHECK_LIGHT_3D(L, 1);
 
     bool ret = comp->ShouldCastShadows();
 
@@ -67,7 +67,7 @@ int Light3D_Lua::ShouldCastShadows(lua_State* L)
 
 int Light3D_Lua::GetDomain(lua_State* L)
 {
-    Light3D* comp = CHECK_LIGHT_COMPONENT(L, 2);
+    Light3D* comp = CHECK_LIGHT_3D(L, 2);
 
     int32_t ret = (int32_t)comp->GetLightingDomain();
 
@@ -79,11 +79,11 @@ void Light3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(
-        LIGHT_COMPONENT_LUA_NAME,
-        LIGHT_COMPONENT_LUA_FLAG,
-        TRANSFORM_COMPONENT_LUA_NAME);
+        LIGHT_3D_LUA_NAME,
+        LIGHT_3D_LUA_FLAG,
+        NODE_3D_LUA_NAME);
 
-    Component_Lua::BindCommon(L, mtIndex);
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, SetColor);
     lua_setfield(L, mtIndex, "SetColor");

@@ -11,9 +11,9 @@
 
 #if LUA_ENABLED
 
-#define MESH_COMPONENT_LUA_NAME "Mesh3D"
-#define MESH_COMPONENT_LUA_FLAG "cfMesh3D"
-#define CHECK_MESH_COMPONENT(L, arg) static_cast<Mesh3D*>(CheckComponentLuaType(L, arg, MESH_COMPONENT_LUA_NAME, MESH_COMPONENT_LUA_FLAG));
+#define MESH_3D_LUA_NAME "Mesh3D"
+#define MESH_3D_LUA_FLAG "cfMesh3D"
+#define CHECK_MESH_3D(L, arg) static_cast<Mesh3D*>(CheckNodeLuaType(L, arg, MESH_3D_LUA_NAME, MESH_3D_LUA_FLAG));
 
 struct Mesh3D_Lua
 {

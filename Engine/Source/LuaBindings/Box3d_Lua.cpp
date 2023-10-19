@@ -8,7 +8,7 @@
 
 int Box3D_Lua::GetExtents(lua_State* L)
 {
-    Box3D* comp = CHECK_BOX_COMPONENT(L, 1);
+    Box3D* comp = CHECK_BOX_3D(L, 1);
 
     glm::vec3 ret = comp->GetExtents();
 
@@ -18,7 +18,7 @@ int Box3D_Lua::GetExtents(lua_State* L)
 
 int Box3D_Lua::SetExtents(lua_State* L)
 {
-    Box3D* comp = CHECK_BOX_COMPONENT(L, 1);
+    Box3D* comp = CHECK_BOX_3D(L, 1);
     glm::vec3 value = CHECK_VECTOR(L, 2);
 
     comp->SetExtents(value);
@@ -30,11 +30,11 @@ void Box3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(
-        BOX_COMPONENT_LUA_NAME,
-        BOX_COMPONENT_LUA_FLAG,
-        PRIMITIVE_COMPONENT_LUA_NAME);
+        BOX_3D_LUA_NAME,
+        BOX_3D_LUA_FLAG,
+        PRIMITIVE_3D_LUA_NAME);
 
-    Component_Lua::BindCommon(L, mtIndex);
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, GetExtents);
     lua_setfield(L, mtIndex, "GetExtents");

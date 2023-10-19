@@ -8,7 +8,7 @@
 
 int Sphere3D_Lua::GetRadius(lua_State* L)
 {
-    Sphere3D* comp = CHECK_SPHERE_COMPONENT(L, 1);
+    Sphere3D* comp = CHECK_SPHERE_3D(L, 1);
 
     float ret = comp->GetRadius();
 
@@ -18,7 +18,7 @@ int Sphere3D_Lua::GetRadius(lua_State* L)
 
 int Sphere3D_Lua::SetRadius(lua_State* L)
 {
-    Sphere3D* comp = CHECK_SPHERE_COMPONENT(L, 1);
+    Sphere3D* comp = CHECK_SPHERE_3D(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetRadius(value);
@@ -30,11 +30,11 @@ void Sphere3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(
-        SPHERE_COMPONENT_LUA_NAME,
-        SPHERE_COMPONENT_LUA_FLAG,
-        PRIMITIVE_COMPONENT_LUA_NAME);
+        SPHERE_3D_LUA_NAME,
+        SPHERE_3D_LUA_FLAG,
+        PRIMITIVE_3D_LUA_NAME);
 
-    Component_Lua::BindCommon(L, mtIndex);
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, GetRadius);
     lua_setfield(L, mtIndex, "GetRadius");

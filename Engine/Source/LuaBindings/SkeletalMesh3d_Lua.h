@@ -11,9 +11,9 @@
 
 #if LUA_ENABLED
 
-#define SKELETAL_MESH_COMPONENT_LUA_NAME "SkeletalMesh3D"
-#define SKELETAL_MESH_COMPONENT_LUA_FLAG "cfSkeletalMesh3D"
-#define CHECK_SKELETAL_MESH_COMPONENT(L, arg) static_cast<SkeletalMesh3D*>(CheckComponentLuaType(L, arg, SKELETAL_MESH_COMPONENT_LUA_NAME, SKELETAL_MESH_COMPONENT_LUA_FLAG));
+#define SKELETAL_MESH_3D_LUA_NAME "SkeletalMesh3D"
+#define SKELETAL_MESH_3D_LUA_FLAG "cfSkeletalMesh3D"
+#define CHECK_SKELETAL_MESH_3D(L, arg) static_cast<SkeletalMesh3D*>(CheckNodeLuaType(L, arg, SKELETAL_MESH_3D_LUA_NAME, SKELETAL_MESH_3D_LUA_FLAG));
 
 struct SkeletalMesh3D_Lua
 {

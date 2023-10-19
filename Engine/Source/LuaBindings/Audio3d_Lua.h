@@ -11,9 +11,9 @@
 
 #if LUA_ENABLED
 
-#define AUDIO_COMPONENT_LUA_NAME "Audio3D"
-#define AUDIO_COMPONENT_LUA_FLAG "cfAudio3D"
-#define CHECK_AUDIO_COMPONENT(L, arg) static_cast<Audio3D*>(CheckComponentLuaType(L, arg, AUDIO_COMPONENT_LUA_NAME, AUDIO_COMPONENT_LUA_FLAG));
+#define AUDIO_3D_LUA_NAME "Audio3D"
+#define AUDIO_3D_LUA_FLAG "cfAudio3D"
+#define CHECK_AUDIO_3D(L, arg) static_cast<Audio3D*>(CheckNodeLuaType(L, arg, AUDIO_3D_LUA_NAME, AUDIO_3D_LUA_FLAG));
 
 struct Audio3D_Lua
 {
@@ -40,10 +40,10 @@ struct Audio3D_Lua
     static int GetPlayTime(lua_State* L);
     static int IsPlaying(lua_State* L);
     static int IsAudible(lua_State* L);
-    static int Play(lua_State* L);
-    static int Pause(lua_State* L);
-    static int Stop(lua_State* L);
-    static int Reset(lua_State* L);
+    static int PlayAudio(lua_State* L);
+    static int PauseAudio(lua_State* L);
+    static int StopAudio(lua_State* L);
+    static int ResetAudio(lua_State* L);
 
     static void Bind();
 };

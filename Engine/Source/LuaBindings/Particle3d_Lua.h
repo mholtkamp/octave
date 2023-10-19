@@ -11,9 +11,9 @@
 
 #if LUA_ENABLED
 
-#define PARTICLE_COMPONENT_LUA_NAME "Particle3D"
-#define PARTICLE_COMPONENT_LUA_FLAG "cfParticle3D"
-#define CHECK_PARTICLE_COMPONENT(L, arg) static_cast<Particle3D*>(CheckComponentLuaType(L, arg, PARTICLE_COMPONENT_LUA_NAME, PARTICLE_COMPONENT_LUA_FLAG));
+#define PARTICLE_3D_LUA_NAME "Particle3D"
+#define PARTICLE_3D_LUA_FLAG "cfParticle3D"
+#define CHECK_PARTICLE_3D(L, arg) static_cast<Particle3D*>(CheckNodeLuaType(L, arg, PARTICLE_3D_LUA_NAME, PARTICLE_3D_LUA_FLAG));
 
 struct Particle3D_Lua
 {

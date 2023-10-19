@@ -7,7 +7,7 @@
 
 int PointLight3D_Lua::SetRadius(lua_State* L)
 {
-    PointLight3D* comp = CHECK_POINT_LIGHT_COMPONENT(L, 1);
+    PointLight3D* comp = CHECK_POINT_LIGHT_3D(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetRadius(value);
@@ -17,7 +17,7 @@ int PointLight3D_Lua::SetRadius(lua_State* L)
 
 int PointLight3D_Lua::GetRadius(lua_State* L)
 {
-    PointLight3D* comp = CHECK_POINT_LIGHT_COMPONENT(L, 1);
+    PointLight3D* comp = CHECK_POINT_LIGHT_3D(L, 1);
 
     float ret = comp->GetRadius();
 
@@ -29,11 +29,11 @@ void PointLight3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(
-        POINT_LIGHT_COMPONENT_LUA_NAME,
-        POINT_LIGHT_COMPONENT_LUA_FLAG,
-        LIGHT_COMPONENT_LUA_NAME);
+        POINT_LIGHT_3D_LUA_NAME,
+        POINT_LIGHT_3D_LUA_FLAG,
+        LIGHT_3D_LUA_NAME);
 
-    Component_Lua::BindCommon(L, mtIndex);
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, SetRadius);
     lua_setfield(L, mtIndex, "SetRadius");

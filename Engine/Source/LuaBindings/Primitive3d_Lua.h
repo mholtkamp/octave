@@ -11,9 +11,9 @@
 
 #if LUA_ENABLED
 
-#define PRIMITIVE_COMPONENT_LUA_NAME "Primitive3D"
-#define PRIMITIVE_COMPONENT_LUA_FLAG "cfPrimitive3D"
-#define CHECK_PRIMITIVE_COMPONENT(L, arg) static_cast<Primitive3D*>(CheckComponentLuaType(L, arg, PRIMITIVE_COMPONENT_LUA_NAME, PRIMITIVE_COMPONENT_LUA_FLAG));
+#define PRIMITIVE_3D_LUA_NAME "Primitive3D"
+#define PRIMITIVE_3D_LUA_FLAG "cfPrimitive3D"
+#define CHECK_PRIMITIVE_3D(L, arg) static_cast<Primitive3D*>(CheckNodeLuaType(L, arg, PRIMITIVE_3D_LUA_NAME, PRIMITIVE_3D_LUA_FLAG));
 
 struct Primitive3D_Lua
 {

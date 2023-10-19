@@ -1350,8 +1350,8 @@ void ScriptComponent::BeginOverlap(Primitive3D* thisComp, Primitive3D* otherComp
         if (lua_isfunction(L, -1))
         {
             lua_pushvalue(L, tableIdx);
-            Component_Lua::Create(L, thisComp);
-            Component_Lua::Create(L, otherComp);
+            Node_Lua::Create(L, thisComp);
+            Node_Lua::Create(L, otherComp);
 
             // Instance table at -5
             // Func at -4
@@ -1386,8 +1386,8 @@ void ScriptComponent::EndOverlap(Primitive3D* thisComp, Primitive3D* otherComp)
         if (lua_isfunction(L, -1))
         {
             lua_pushvalue(L, tableIdx);
-            Component_Lua::Create(L, thisComp);
-            Component_Lua::Create(L, otherComp);
+            Node_Lua::Create(L, thisComp);
+            Node_Lua::Create(L, otherComp);
 
             // Instance table at -5
             // Func at -4
@@ -1427,8 +1427,8 @@ void ScriptComponent::OnCollision(
         if (lua_isfunction(L, -1))
         {
             lua_pushvalue(L, tableIdx);                             // arg1 - self
-            Component_Lua::Create(L, thisComp);                     // arg2 - thisComp
-            Component_Lua::Create(L, otherComp);                    // arg3 - otherComp
+            Node_Lua::Create(L, thisComp);                     // arg2 - thisComp
+            Node_Lua::Create(L, otherComp);                    // arg3 - otherComp
             Vector_Lua::Create(L, glm::vec4(impactPoint, 0.0f));    // arg4 - impactPoint
             Vector_Lua::Create(L, glm::vec4(impactNormal, 0.0f));   // arg5 - impactNormal
             // TODO: Do we want to handle manifold points?
@@ -1735,7 +1735,7 @@ void ScriptComponent::CreateScriptInstance()
             Actor_Lua::Create(L, GetOwner());
             lua_setfield(L, instanceTableIdx, "actor");
 
-            Component_Lua::Create(L, this);
+            Node_Lua::Create(L, this);
             lua_setfield(L, instanceTableIdx, "component");
 
             mTableName = mClassName + "_" + std::to_string(ScriptUtils::GetNextScriptInstanceNumber());

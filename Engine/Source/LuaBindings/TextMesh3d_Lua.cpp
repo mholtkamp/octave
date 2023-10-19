@@ -9,7 +9,7 @@
 
 int TextMesh3D_Lua::SetText(lua_State* L)
 {
-    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_3D(L, 1);
     const char* text = CHECK_STRING(L, 2);
 
     textComp->SetText(text);
@@ -19,7 +19,7 @@ int TextMesh3D_Lua::SetText(lua_State* L)
 
 int TextMesh3D_Lua::GetText(lua_State* L)
 {
-    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_3D(L, 1);
 
     const char* value = textComp->GetText().c_str();
 
@@ -29,7 +29,7 @@ int TextMesh3D_Lua::GetText(lua_State* L)
 
 int TextMesh3D_Lua::SetFont(lua_State* L)
 {
-    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_3D(L, 1);
     Font* font = CHECK_FONT(L, 2);
 
     textComp->SetFont(font);
@@ -39,7 +39,7 @@ int TextMesh3D_Lua::SetFont(lua_State* L)
 
 int TextMesh3D_Lua::GetFont(lua_State* L)
 {
-    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_3D(L, 1);
 
     Font* font = textComp->GetFont();
 
@@ -49,7 +49,7 @@ int TextMesh3D_Lua::GetFont(lua_State* L)
 
 int TextMesh3D_Lua::SetColor(lua_State* L)
 {
-    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_3D(L, 1);
     glm::vec4 value = CHECK_VECTOR(L, 2);
 
     textComp->SetColor(value);
@@ -59,7 +59,7 @@ int TextMesh3D_Lua::SetColor(lua_State* L)
 
 int TextMesh3D_Lua::GetColor(lua_State* L)
 {
-    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_3D(L, 1);
 
     glm::vec4 ret = textComp->GetColor();
 
@@ -69,7 +69,7 @@ int TextMesh3D_Lua::GetColor(lua_State* L)
 
 int TextMesh3D_Lua::SetBlendMode(lua_State* L)
 {
-    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_3D(L, 1);
     int32_t blendMode = CHECK_INTEGER(L, 2);
 
     textComp->SetBlendMode((BlendMode)blendMode);
@@ -79,7 +79,7 @@ int TextMesh3D_Lua::SetBlendMode(lua_State* L)
 
 int TextMesh3D_Lua::GetBlendMode(lua_State* L)
 {
-    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_3D(L, 1);
 
     int32_t ret = (int32_t)textComp->GetBlendMode();
 
@@ -89,7 +89,7 @@ int TextMesh3D_Lua::GetBlendMode(lua_State* L)
 
 int TextMesh3D_Lua::SetHorizontalJustification(lua_State* L)
 {
-    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_3D(L, 1);
     float just = CHECK_NUMBER(L, 2);
 
     textComp->SetHorizontalJustification(just);
@@ -99,7 +99,7 @@ int TextMesh3D_Lua::SetHorizontalJustification(lua_State* L)
 
 int TextMesh3D_Lua::GetHorizontalJustification(lua_State* L)
 {
-    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_3D(L, 1);
 
     float ret = textComp->GetHorizontalJustification();
 
@@ -109,7 +109,7 @@ int TextMesh3D_Lua::GetHorizontalJustification(lua_State* L)
 
 int TextMesh3D_Lua::SetVerticalJustification(lua_State* L)
 {
-    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_3D(L, 1);
     float just = CHECK_NUMBER(L, 2);
 
     textComp->SetVerticalJustification(just);
@@ -119,7 +119,7 @@ int TextMesh3D_Lua::SetVerticalJustification(lua_State* L)
 
 int TextMesh3D_Lua::GetVerticalJustification(lua_State* L)
 {
-    TextMesh3D* textComp = CHECK_TEXT_MESH_COMPONENT(L, 1);
+    TextMesh3D* textComp = CHECK_TEXT_MESH_3D(L, 1);
 
     float ret = textComp->GetVerticalJustification();
 
@@ -131,11 +131,11 @@ void TextMesh3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(
-        TEXT_MESH_COMPONENT_LUA_NAME,
-        TEXT_MESH_COMPONENT_LUA_FLAG,
-        STATIC_MESH_COMPONENT_LUA_NAME);
+        TEXT_MESH_3D_LUA_NAME,
+        TEXT_MESH_3D_LUA_FLAG,
+        STATIC_MESH_3D_LUA_NAME);
 
-    Component_Lua::BindCommon(L, mtIndex);
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, SetText);
     lua_setfield(L, mtIndex, "SetText");

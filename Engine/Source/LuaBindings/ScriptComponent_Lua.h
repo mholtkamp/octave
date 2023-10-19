@@ -11,7 +11,7 @@
 
 #define SCRIPT_COMPONENT_LUA_NAME "ScriptComponent"
 #define SCRIPT_COMPONENT_LUA_FLAG "cfScriptComponent"
-#define CHECK_SCRIPT_COMPONENT(L, arg) static_cast<ScriptComponent*>(CheckComponentLuaType(L, arg, SCRIPT_COMPONENT_LUA_NAME, SCRIPT_COMPONENT_LUA_FLAG));
+#define CHECK_SCRIPT_COMPONENT(L, arg) static_cast<ScriptComponent*>(CheckNodeLuaType(L, arg, SCRIPT_COMPONENT_LUA_NAME, SCRIPT_COMPONENT_LUA_FLAG));
 
 struct ScriptComponent_Lua
 {

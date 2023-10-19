@@ -7,7 +7,7 @@
 
 int DirectionalLight3D_Lua::GetDirection(lua_State* L)
 {
-    DirectionalLight3D* comp = CHECK_DIRECTIONAL_LIGHT_COMPONENT(L, 1);
+    DirectionalLight3D* comp = CHECK_DIRECTIONAL_LIGHT_3D(L, 1);
 
     glm::vec3 ret = comp->GetDirection();
 
@@ -17,7 +17,7 @@ int DirectionalLight3D_Lua::GetDirection(lua_State* L)
 
 int DirectionalLight3D_Lua::SetDirection(lua_State* L)
 {
-    DirectionalLight3D* comp = CHECK_DIRECTIONAL_LIGHT_COMPONENT(L, 1);
+    DirectionalLight3D* comp = CHECK_DIRECTIONAL_LIGHT_3D(L, 1);
     glm::vec3 value = CHECK_VECTOR(L, 2);
 
     comp->SetDirection(value);
@@ -29,11 +29,11 @@ void DirectionalLight3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(
-        DIRECTIONAL_LIGHT_COMPONENT_LUA_NAME,
-        DIRECTIONAL_LIGHT_COMPONENT_LUA_FLAG,
-        LIGHT_COMPONENT_LUA_NAME);
+        DIRECTIONAL_LIGHT_3D_LUA_NAME,
+        DIRECTIONAL_LIGHT_3D_LUA_FLAG,
+        LIGHT_3D_LUA_NAME);
 
-    Component_Lua::BindCommon(L, mtIndex);
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, GetDirection);
     lua_setfield(L, mtIndex, "GetDirection");

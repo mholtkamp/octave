@@ -11,9 +11,9 @@
 
 #if LUA_ENABLED
 
-#define DIRECTIONAL_LIGHT_COMPONENT_LUA_NAME "DirectionalLight3D"
-#define DIRECTIONAL_LIGHT_COMPONENT_LUA_FLAG "cfDirectionalLight3D"
-#define CHECK_DIRECTIONAL_LIGHT_COMPONENT(L, arg) static_cast<DirectionalLight3D*>(CheckComponentLuaType(L, arg, DIRECTIONAL_LIGHT_COMPONENT_LUA_NAME, DIRECTIONAL_LIGHT_COMPONENT_LUA_FLAG));
+#define DIRECTIONAL_LIGHT_3D_LUA_NAME "DirectionalLight3D"
+#define DIRECTIONAL_LIGHT_3D_LUA_FLAG "cfDirectionalLight3D"
+#define CHECK_DIRECTIONAL_LIGHT_3D(L, arg) static_cast<DirectionalLight3D*>(CheckNodeLuaType(L, arg, DIRECTIONAL_LIGHT_3D_LUA_NAME, DIRECTIONAL_LIGHT_3D_LUA_FLAG));
 
 struct DirectionalLight3D_Lua
 {

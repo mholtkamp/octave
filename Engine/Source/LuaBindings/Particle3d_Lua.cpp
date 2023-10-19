@@ -13,7 +13,7 @@
 
 int Particle3D_Lua::Reset(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
 
     comp->Reset();
 
@@ -22,7 +22,7 @@ int Particle3D_Lua::Reset(lua_State* L)
 
 int Particle3D_Lua::EnableEmission(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
 
     comp->EnableEmission(value);
@@ -32,7 +32,7 @@ int Particle3D_Lua::EnableEmission(lua_State* L)
 
 int Particle3D_Lua::IsEmissionEnabled(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
 
     bool ret = comp->IsEmissionEnabled();
 
@@ -42,7 +42,7 @@ int Particle3D_Lua::IsEmissionEnabled(lua_State* L)
 
 int Particle3D_Lua::EnableSimulation(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
 
     comp->EnableSimulation(value);
@@ -52,7 +52,7 @@ int Particle3D_Lua::EnableSimulation(lua_State* L)
 
 int Particle3D_Lua::IsSimulationEnabled(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
 
     bool ret = comp->IsSimulationEnabled();
 
@@ -62,7 +62,7 @@ int Particle3D_Lua::IsSimulationEnabled(lua_State* L)
 
 int Particle3D_Lua::EnableAutoEmit(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
 
     comp->EnableAutoEmit(value);
@@ -72,7 +72,7 @@ int Particle3D_Lua::EnableAutoEmit(lua_State* L)
 
 int Particle3D_Lua::IsAutoEmitEnabled(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
 
     bool ret = comp->IsAutoEmitEnabled();
 
@@ -82,7 +82,7 @@ int Particle3D_Lua::IsAutoEmitEnabled(lua_State* L)
 
 int Particle3D_Lua::GetElapsedTime(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
 
     float ret = comp->GetElapsedTime();
 
@@ -92,7 +92,7 @@ int Particle3D_Lua::GetElapsedTime(lua_State* L)
 
 int Particle3D_Lua::SetParticleSystem(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
     ParticleSystem* system = nullptr;
     if (!lua_isnil(L, 2)) { system = CHECK_PARTICLE_SYSTEM(L, 2); }
 
@@ -103,7 +103,7 @@ int Particle3D_Lua::SetParticleSystem(lua_State* L)
 
 int Particle3D_Lua::GetParticleSystem(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
 
     ParticleSystem* ret = comp->GetParticleSystem();
 
@@ -113,7 +113,7 @@ int Particle3D_Lua::GetParticleSystem(lua_State* L)
 
 int Particle3D_Lua::SetMaterialOverride(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
     Material* material = nullptr;
     if (!lua_isnil(L, 2)) { material = CHECK_MATERIAL(L, 2); }
 
@@ -124,7 +124,7 @@ int Particle3D_Lua::SetMaterialOverride(lua_State* L)
 
 int Particle3D_Lua::GetMaterial(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
 
     Material* ret = comp->GetMaterial();
 
@@ -134,7 +134,7 @@ int Particle3D_Lua::GetMaterial(lua_State* L)
 
 int Particle3D_Lua::GetMaterialOverride(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
 
     Material* ret = comp->GetMaterialOverride();
 
@@ -144,7 +144,7 @@ int Particle3D_Lua::GetMaterialOverride(lua_State* L)
 
 int Particle3D_Lua::SetTimeMultiplier(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
     comp->SetTimeMultiplier(value);
@@ -154,7 +154,7 @@ int Particle3D_Lua::SetTimeMultiplier(lua_State* L)
 
 int Particle3D_Lua::GetTimeMultiplier(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
 
     float ret = comp->GetTimeMultiplier();
 
@@ -164,7 +164,7 @@ int Particle3D_Lua::GetTimeMultiplier(lua_State* L)
 
 int Particle3D_Lua::SetUseLocalSpace(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
 
     comp->SetUseLocalSpace(value);
@@ -174,7 +174,7 @@ int Particle3D_Lua::SetUseLocalSpace(lua_State* L)
 
 int Particle3D_Lua::GetUseLocalSpace(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
 
     bool ret = comp->GetUseLocalSpace();
 
@@ -184,7 +184,7 @@ int Particle3D_Lua::GetUseLocalSpace(lua_State* L)
 
 int Particle3D_Lua::GetNumParticles(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
 
     uint32_t ret = comp->GetNumParticles();
 
@@ -194,7 +194,7 @@ int Particle3D_Lua::GetNumParticles(lua_State* L)
 
 int Particle3D_Lua::SetParticleVelocity(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
     int32_t index = CHECK_INTEGER(L, 2);
     glm::vec3 velocity = CHECK_VECTOR(L, 3);
 
@@ -205,7 +205,7 @@ int Particle3D_Lua::SetParticleVelocity(lua_State* L)
 
 int Particle3D_Lua::GetParticleVelocity(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
     int32_t index = CHECK_INTEGER(L, 2);
 
     glm::vec3 ret = comp->GetParticleVelocity(index);
@@ -216,7 +216,7 @@ int Particle3D_Lua::GetParticleVelocity(lua_State* L)
 
 int Particle3D_Lua::SetParticlePosition(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
     int32_t index = CHECK_INTEGER(L, 2);
     glm::vec3 position = CHECK_VECTOR(L, 3);
 
@@ -227,7 +227,7 @@ int Particle3D_Lua::SetParticlePosition(lua_State* L)
 
 int Particle3D_Lua::GetParticlePosition(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
     int32_t index = CHECK_INTEGER(L, 2);
 
     glm::vec3 ret = comp->GetParticlePosition(index);
@@ -238,7 +238,7 @@ int Particle3D_Lua::GetParticlePosition(lua_State* L)
 
 int Particle3D_Lua::SetParticleSpeed(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
     int32_t index = CHECK_INTEGER(L, 2);
     float speed = CHECK_NUMBER(L, 3);
 
@@ -249,7 +249,7 @@ int Particle3D_Lua::SetParticleSpeed(lua_State* L)
 
 int Particle3D_Lua::SetParticleOrientation(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
     ParticleOrientation value = (ParticleOrientation)CHECK_INTEGER(L, 2);
 
     comp->SetParticleOrientation(value);
@@ -259,7 +259,7 @@ int Particle3D_Lua::SetParticleOrientation(lua_State* L)
 
 int Particle3D_Lua::GetParticleOrientation(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
 
     int32_t ret = (int32_t)comp->GetParticleOrientation();
 
@@ -269,7 +269,7 @@ int Particle3D_Lua::GetParticleOrientation(lua_State* L)
 
 int Particle3D_Lua::InstantiateParticleSystem(lua_State* L)
 {
-    Particle3D* comp = CHECK_PARTICLE_COMPONENT(L, 1);
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
 
     ParticleSystemInstance* ret = comp->InstantiateParticleSystem();
 
@@ -281,11 +281,11 @@ void Particle3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(
-        PARTICLE_COMPONENT_LUA_NAME,
-        PARTICLE_COMPONENT_LUA_FLAG,
-        PRIMITIVE_COMPONENT_LUA_NAME);
+        PARTICLE_3D_LUA_NAME,
+        PARTICLE_3D_LUA_FLAG,
+        PRIMITIVE_3D_LUA_NAME);
 
-    Component_Lua::BindCommon(L, mtIndex);
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, Reset);
     lua_setfield(L, mtIndex, "Reset");

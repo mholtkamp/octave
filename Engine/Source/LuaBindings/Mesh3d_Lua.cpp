@@ -12,7 +12,7 @@
 
 int Mesh3D_Lua::GetMaterial(lua_State* L)
 {
-    Mesh3D* comp = CHECK_MESH_COMPONENT(L, 1);
+    Mesh3D* comp = CHECK_MESH_3D(L, 1);
 
     Material* mat = comp->GetMaterial();
 
@@ -22,7 +22,7 @@ int Mesh3D_Lua::GetMaterial(lua_State* L)
 
 int Mesh3D_Lua::GetMaterialOverride(lua_State* L)
 {
-    Mesh3D* comp = CHECK_MESH_COMPONENT(L, 1);
+    Mesh3D* comp = CHECK_MESH_3D(L, 1);
 
     Material* mat = comp->GetMaterialOverride();
 
@@ -32,7 +32,7 @@ int Mesh3D_Lua::GetMaterialOverride(lua_State* L)
 
 int Mesh3D_Lua::SetMaterialOverride(lua_State* L)
 {
-    Mesh3D* comp = CHECK_MESH_COMPONENT(L, 1);
+    Mesh3D* comp = CHECK_MESH_3D(L, 1);
     Material* material = nullptr;
     if (!lua_isnil(L, 2))
     {
@@ -46,7 +46,7 @@ int Mesh3D_Lua::SetMaterialOverride(lua_State* L)
 
 int Mesh3D_Lua::InstantiateMaterial(lua_State* L)
 {
-    Mesh3D* comp = CHECK_MESH_COMPONENT(L, 1);
+    Mesh3D* comp = CHECK_MESH_3D(L, 1);
 
     MaterialInstance* matInst = comp->InstantiateMaterial();
 
@@ -56,7 +56,7 @@ int Mesh3D_Lua::InstantiateMaterial(lua_State* L)
 
 int Mesh3D_Lua::IsBillboard(lua_State* L)
 {
-    Mesh3D* comp = CHECK_MESH_COMPONENT(L, 1);
+    Mesh3D* comp = CHECK_MESH_3D(L, 1);
 
     bool ret = comp->IsBillboard();
 
@@ -66,7 +66,7 @@ int Mesh3D_Lua::IsBillboard(lua_State* L)
 
 int Mesh3D_Lua::SetBillboard(lua_State* L)
 {
-    Mesh3D* comp = CHECK_MESH_COMPONENT(L, 1);
+    Mesh3D* comp = CHECK_MESH_3D(L, 1);
     bool value = CHECK_BOOLEAN(L, 2);
 
     comp->SetBillboard(value);
@@ -78,11 +78,11 @@ void Mesh3D_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(
-        MESH_COMPONENT_LUA_NAME,
-        MESH_COMPONENT_LUA_FLAG,
-        PRIMITIVE_COMPONENT_LUA_NAME);
+        MESH_3D_LUA_NAME,
+        MESH_3D_LUA_FLAG,
+        PRIMITIVE_3D_LUA_NAME);
 
-    Component_Lua::BindCommon(L, mtIndex);
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, GetMaterial);
     lua_setfield(L, mtIndex, "GetMaterial");
