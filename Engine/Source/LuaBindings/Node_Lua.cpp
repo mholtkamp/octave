@@ -651,6 +651,105 @@ void Node_Lua::Bind()
     lua_pushcfunction(L, Equals);
     lua_setfield(L, mtIndex, "Equals");
 
+    lua_pushcfunction(L, GetParent);
+    lua_setfield(L, mtIndex, "GetParent");
+
+    lua_pushcfunction(L, Attach);
+    lua_setfield(L, mtIndex, "Attach");
+
+    lua_pushcfunction(L, Detach);
+    lua_setfield(L, mtIndex, "Detach");
+
+    lua_pushcfunction(L, GetChild);
+    lua_setfield(L, mtIndex, "GetChild");
+
+    lua_pushcfunction(L, GetChildByType);
+    lua_setfield(L, mtIndex, "GetChildByType");
+
+    lua_pushcfunction(L, GetNumChildren);
+    lua_setfield(L, mtIndex, "GetNumChildren");
+
+    lua_pushcfunction(L, AddChild);
+    lua_setfield(L, mtIndex, "AddChild");
+
+    lua_pushcfunction(L, RemoveChild);
+    lua_setfield(L, mtIndex, "RemoveChild");
+
+    lua_pushcfunction(L, CreateChildNode);
+    lua_setfield(L, mtIndex, "CreateChildNode");
+
+    lua_pushcfunction(L, CloneChildNode);
+    lua_setfield(L, mtIndex, "CloneChildNode");
+
+    lua_pushcfunction(L, DestroyChildNode);
+    lua_setfield(L, mtIndex, "DestroyChildNode");
+
+    lua_pushcfunction(L, DestroyAllChildren);
+    lua_setfield(L, mtIndex, "DestroyAllChildren");
+
+    lua_pushcfunction(L, Start);
+    lua_setfield(L, mtIndex, "Start");
+
+    lua_pushcfunction(L, HasStarted);
+    lua_setfield(L, mtIndex, "HasStarted");
+
+    lua_pushcfunction(L, SetPendingDestroy);
+    lua_setfield(L, mtIndex, "SetPendingDestroy");
+
+    lua_pushcfunction(L, IsPendingDestroy);
+    lua_setfield(L, mtIndex, "IsPendingDestroy");
+
+    lua_pushcfunction(L, EnableTick);
+    lua_setfield(L, mtIndex, "EnableTick");
+
+    lua_pushcfunction(L, IsTickEnabled);
+    lua_setfield(L, mtIndex, "IsTickEnabled");
+
+    lua_pushcfunction(L, GetScene);
+    lua_setfield(L, mtIndex, "GetScene");
+
+    lua_pushcfunction(L, GetNetId);
+    lua_setfield(L, mtIndex, "GetNetId");
+
+    lua_pushcfunction(L, GetOwningHost);
+    lua_setfield(L, mtIndex, "GetOwningHost");
+
+    lua_pushcfunction(L, SetOwningHost);
+    lua_setfield(L, mtIndex, "SetOwningHost");
+
+    lua_pushcfunction(L, SetReplicate);
+    lua_setfield(L, mtIndex, "SetReplicate");
+
+    lua_pushcfunction(L, IsReplicated);
+    lua_setfield(L, mtIndex, "IsReplicated");
+
+    lua_pushcfunction(L, ForceReplication);
+    lua_setfield(L, mtIndex, "ForceReplication");
+
+    lua_pushcfunction(L, HasTag);
+    lua_setfield(L, mtIndex, "HasTag");
+
+    lua_pushcfunction(L, AddTag);
+    lua_setfield(L, mtIndex, "AddTag");
+
+    lua_pushcfunction(L, RemoveTag);
+    lua_setfield(L, mtIndex, "RemoveTag");
+
+    lua_pushcfunction(L, SetPersistent);
+    lua_setfield(L, mtIndex, "SetPersistent");
+
+    lua_pushcfunction(L, IsPersistent);
+    lua_setfield(L, mtIndex, "IsPersistent");
+
+    lua_pushcfunction(L, HasAuthority);
+    lua_setfield(L, mtIndex, "HasAuthority");
+
+    lua_pushcfunction(L, IsOwned);
+    lua_setfield(L, mtIndex, "IsOwned");
+
+    lua_pushcfunction(L, InvokeNetFunc);
+    lua_setfield(L, mtIndex, "InvokeNetFunc");
+
     lua_pushcfunction(L, CheckType);
     lua_pushcfunction(L, CheckType);
     lua_pushcfunction(L, CheckType);
