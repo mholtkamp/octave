@@ -11,12 +11,10 @@
 
 #define POLY_LUA_NAME "Poly"
 #define POLY_LUA_FLAG "cfPoly"
-#define CHECK_POLY(L, arg) (Poly*) CheckHierarchyLuaType<Widget_Lua>(L, arg, POLY_LUA_NAME, POLY_LUA_FLAG)->mWidget;
+#define CHECK_POLY(L, arg) (Poly*)CheckNodeLuaType(L, arg, POLY_LUA_NAME, POLY_LUA_FLAG);
 
 struct Poly_Lua
 {
-    static int CreateNew(lua_State* L);
-
     static int AddVertex(lua_State* L);
     static int ClearVertices(lua_State* L);
     static int GetNumVertices(lua_State* L);

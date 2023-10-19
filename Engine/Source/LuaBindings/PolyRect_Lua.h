@@ -11,12 +11,10 @@
 
 #define POLY_RECT_LUA_NAME "PolyRect"
 #define POLY_RECT_LUA_FLAG "cfPolyRect"
-#define CHECK_POLY_RECT(L, arg) (PolyRect*) CheckHierarchyLuaType<Widget_Lua>(L, arg, POLY_RECT_LUA_NAME, POLY_RECT_LUA_FLAG)->mWidget;
+#define CHECK_POLY_RECT(L, arg) (PolyRect*)CheckNodeLuaType(L, arg, POLY_RECT_LUA_NAME, POLY_RECT_LUA_FLAG);
 
 struct PolyRect_Lua
 {
-    static int CreateNew(lua_State* L);
-
     static void Bind();
 };
 

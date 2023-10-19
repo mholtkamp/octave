@@ -7,11 +7,6 @@
 
 #if LUA_ENABLED
 
-int Text_Lua::CreateNew(lua_State* L)
-{
-    return Widget_Lua::CreateNew(L, TEXT_LUA_NAME);
-}
-
 int Text_Lua::SetFont(lua_State* L)
 {
     Text* text = CHECK_TEXT(L, 1);
@@ -240,10 +235,7 @@ void Text_Lua::Bind()
         TEXT_LUA_FLAG,
         WIDGET_LUA_NAME);
 
-    Widget_Lua::BindCommon(L, mtIndex);
-
-    lua_pushcfunction(L, CreateNew);
-    lua_setfield(L, mtIndex, "Create");
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, SetFont);
     lua_setfield(L, mtIndex, "SetFont");

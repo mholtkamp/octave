@@ -3,7 +3,7 @@
 
 #if LUA_ENABLED
 
-int ScriptWidget_Lua::CreateNew(lua_State* L)
+int ScriptNode_Lua::CreateNew(lua_State* L)
 {
     const char* fileName = nullptr;
     if (lua_isstring(L, 1))
@@ -12,7 +12,7 @@ int ScriptWidget_Lua::CreateNew(lua_State* L)
     }
 
     Widget* newWidget = nullptr;
-    Widget_Lua::CreateNew(L, SCRIPT_WIDGET_LUA_NAME, &newWidget);
+    Node_Lua::CreateNew(L, SCRIPT_WIDGET_LUA_NAME, &newWidget);
 
     OCT_ASSERT(newWidget);
     OCT_ASSERT(newWidget->GetType() == ScriptWidget::GetStaticType());
@@ -183,7 +183,7 @@ void ScriptWidget_Lua::Bind()
         SCRIPT_WIDGET_LUA_FLAG,
         WIDGET_LUA_NAME);
 
-    Widget_Lua::BindCommon(L, mtIndex);
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, CreateNew);
     lua_setfield(L, mtIndex, "Create");

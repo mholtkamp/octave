@@ -6,11 +6,6 @@
 
 #if LUA_ENABLED
 
-int Selector_Lua::CreateNew(lua_State* L)
-{
-    return Widget_Lua::CreateNew(L, SELECTOR_LUA_NAME);
-}
-
 int Selector_Lua::AddSelection(lua_State* L)
 {
     Selector* sel = CHECK_SELECTOR(L, 1);
@@ -133,10 +128,7 @@ void Selector_Lua::Bind()
         SELECTOR_LUA_FLAG,
         BUTTON_LUA_NAME);
 
-    Widget_Lua::BindCommon(L, mtIndex);
-
-    lua_pushcfunction(L, CreateNew);
-    lua_setfield(L, mtIndex, "Create");
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, AddSelection);
     lua_setfield(L, mtIndex, "AddSelection");

@@ -11,12 +11,10 @@
 
 #define TEXT_LUA_NAME "Text"
 #define TEXT_LUA_FLAG "cfText"
-#define CHECK_TEXT(L, arg) (Text*) CheckHierarchyLuaType<Widget_Lua>(L, arg, TEXT_LUA_NAME, TEXT_LUA_FLAG)->mWidget;
+#define CHECK_TEXT(L, arg) (Text*)CheckNodeLuaType(L, arg, TEXT_LUA_NAME, TEXT_LUA_FLAG);
 
 struct Text_Lua
 {
-    static int CreateNew(lua_State* L);
-
     static int SetFont(lua_State* L);
     static int GetFont(lua_State* L);
     static int SetOutlineColor(lua_State* L);

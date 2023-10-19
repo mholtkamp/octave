@@ -3,6 +3,8 @@
 #include "EngineTypes.h"
 #include "Nodes/Widgets/Widget.h"
 
+#include "LuaBindings/Node_Lua.h"
+
 #if LUA_ENABLED
 
 #define WIDGET_LUA_NAME "Widget"

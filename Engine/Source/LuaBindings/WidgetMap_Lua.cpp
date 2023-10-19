@@ -16,7 +16,7 @@ int WidgetMap_Lua::Instantiate(lua_State* L)
     Widget* ret = widgetMap->Instantiate();
     ret->SetScriptOwned(true);
 
-    Widget_Lua::Create(L, ret);
+    Node_Lua::Create(L, ret);
     Widget_Lua* widgetLua = (Widget_Lua*)lua_touserdata(L, -1);
     widgetLua->mAlloced = true;
 

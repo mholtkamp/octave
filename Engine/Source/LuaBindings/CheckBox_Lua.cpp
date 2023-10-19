@@ -6,11 +6,6 @@
 
 #if LUA_ENABLED
 
-int CheckBox_Lua::CreateNew(lua_State* L)
-{
-    return Widget_Lua::CreateNew(L, CHECK_BOX_LUA_NAME);
-}
-
 int CheckBox_Lua::IsChecked(lua_State* L)
 {
     CheckBox* cb = CHECK_CHECK_BOX(L, 1);
@@ -39,10 +34,7 @@ void CheckBox_Lua::Bind()
         CHECK_BOX_LUA_FLAG,
         SELECTOR_LUA_NAME);
 
-    Widget_Lua::BindCommon(L, mtIndex);
-
-    lua_pushcfunction(L, CreateNew);
-    lua_setfield(L, mtIndex, "Create");
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, IsChecked);
     lua_setfield(L, mtIndex, "IsChecked");

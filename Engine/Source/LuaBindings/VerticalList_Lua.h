@@ -12,12 +12,10 @@
 
 #define VERTICAL_LIST_LUA_NAME "VerticalList"
 #define VERTICAL_LIST_LUA_FLAG "cfVerticalList"
-#define CHECK_VERTICAL_LIST(L, arg) (VerticalList*) CheckHierarchyLuaType<Widget_Lua>(L, arg, VERTICAL_LIST_LUA_NAME, VERTICAL_LIST_LUA_FLAG)->mWidget;
+#define CHECK_VERTICAL_LIST(L, arg) (VerticalList*)CheckNodeLuaType(L, arg, VERTICAL_LIST_LUA_NAME, VERTICAL_LIST_LUA_FLAG);
 
 struct VerticalList_Lua
 {
-    static int CreateNew(lua_State* L);
-
     static int AddListItem(lua_State* L);
     static int RemoveListItem(lua_State* L);
     static int GetListItem(lua_State* L);

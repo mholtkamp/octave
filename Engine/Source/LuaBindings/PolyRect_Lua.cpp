@@ -11,11 +11,6 @@
 
 #if LUA_ENABLED
 
-int PolyRect_Lua::CreateNew(lua_State* L)
-{
-    return Widget_Lua::CreateNew(L, POLY_RECT_LUA_NAME);
-}
-
 void PolyRect_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -24,10 +19,7 @@ void PolyRect_Lua::Bind()
         POLY_RECT_LUA_FLAG,
         WIDGET_LUA_NAME);
 
-    Widget_Lua::BindCommon(L, mtIndex);
-
-    lua_pushcfunction(L, CreateNew);
-    lua_setfield(L, mtIndex, "Create");
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

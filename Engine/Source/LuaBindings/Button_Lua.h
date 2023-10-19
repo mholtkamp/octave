@@ -12,12 +12,10 @@
 
 #define BUTTON_LUA_NAME "Button"
 #define BUTTON_LUA_FLAG "cfButton"
-#define CHECK_BUTTON(L, arg) (Button*) CheckHierarchyLuaType<Widget_Lua>(L, arg, BUTTON_LUA_NAME, BUTTON_LUA_FLAG)->mWidget;
+#define CHECK_BUTTON(L, arg) (Button*)CheckNodeLuaType(L, arg, BUTTON_LUA_NAME, BUTTON_LUA_FLAG);
 
 struct Button_Lua
 {
-    static int CreateNew(lua_State* L);
-
     static int GetState(lua_State* L);
     static int SetState(lua_State* L);
     static int SetNormalTexture(lua_State* L);

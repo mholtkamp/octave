@@ -11,12 +11,10 @@
 
 #define SCRIPT_WIDGET_LUA_NAME "ScriptWidget"
 #define SCRIPT_WIDGET_LUA_FLAG "cfScriptWidget"
-#define CHECK_SCRIPT_WIDGET(L, arg) (ScriptWidget*) CheckHierarchyLuaType<Widget_Lua>(L, arg, SCRIPT_WIDGET_LUA_NAME, SCRIPT_WIDGET_LUA_FLAG)->mWidget;
+#define CHECK_SCRIPT_WIDGET(L, arg) (ScriptWidget*)CheckNodeLuaType(L, arg, SCRIPT_WIDGET_LUA_NAME, SCRIPT_WIDGET_LUA_FLAG);
 
 struct ScriptWidget_Lua
 {
-    static int CreateNew(lua_State* L);
-
     static int CustomIndex(lua_State* L);
     static int CustomNewIndex(lua_State* L);
 

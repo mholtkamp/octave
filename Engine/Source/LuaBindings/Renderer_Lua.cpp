@@ -79,7 +79,7 @@ int Renderer_Lua::GetModalWidget(lua_State* L)
 {
     Widget* modalWidget = Renderer::Get()->GetModalWidget();
 
-    Widget_Lua::Create(L, modalWidget);
+    Node_Lua::Create(L, modalWidget);
     return 1;
 }
 

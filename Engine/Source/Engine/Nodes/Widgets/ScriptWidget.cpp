@@ -316,7 +316,7 @@ void ScriptWidget::CreateScriptInstance()
             // Assign the new table's metatable to the class table
             lua_setmetatable(L, instanceTableIdx);
 
-            Widget_Lua::Create(L, this);
+            Node_Lua::Create(L, this);
             lua_setfield(L, instanceTableIdx, "widget");
 
             mTableName = mClassName + "_" + std::to_string(ScriptUtils::GetNextScriptInstanceNumber());

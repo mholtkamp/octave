@@ -11,11 +11,6 @@
 
 #if LUA_ENABLED
 
-int Quad_Lua::CreateNew(lua_State* L)
-{
-    return Widget_Lua::CreateNew(L, QUAD_LUA_NAME);
-}
-
 int Quad_Lua::SetTexture(lua_State* L)
 {
     Quad* quad = CHECK_QUAD(L, 1);
@@ -119,10 +114,7 @@ void Quad_Lua::Bind()
         QUAD_LUA_FLAG,
         WIDGET_LUA_NAME);
 
-    Widget_Lua::BindCommon(L, mtIndex);
-
-    lua_pushcfunction(L, CreateNew);
-    lua_setfield(L, mtIndex, "Create");
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, SetTexture);
     lua_setfield(L, mtIndex, "SetTexture");

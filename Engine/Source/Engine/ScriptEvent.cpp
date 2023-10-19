@@ -116,7 +116,7 @@ void ScriptEvent::WidgetState(std::string& tableName, std::string& funcName, Wid
     lua_State* L = GetLua();
     if (PrepFunctionCall(L, tableName, funcName))
     {
-        Widget_Lua::Create(L, widget);     // arg2 - widget
+        Node_Lua::Create(L, widget);     // arg2 - widget
         ExecFunctionCall(L, tableName, 2);
     }
 }

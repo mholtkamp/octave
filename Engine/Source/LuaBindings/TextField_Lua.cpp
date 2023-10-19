@@ -6,11 +6,6 @@
 
 #if LUA_ENABLED
 
-int TextField_Lua::CreateNew(lua_State* L)
-{
-    return Widget_Lua::CreateNew(L, TEXT_FIELD_LUA_NAME);
-}
-
 int TextField_Lua::SetTextEditHandler(lua_State* L)
 {
     TextField* tf = CHECK_TEXT_FIELD(L, 1);
@@ -41,7 +36,7 @@ int TextField_Lua::GetSelectedTextField(lua_State* L)
 {
     TextField* tf = TextField::GetSelectedTextField();
 
-    Widget_Lua::Create(L, tf);
+    Node_Lua::Create(L, tf);
     return 1;
 }
 
@@ -54,10 +49,7 @@ void TextField_Lua::Bind()
         TEXT_FIELD_LUA_FLAG,
         BUTTON_LUA_NAME);
 
-    Widget_Lua::BindCommon(L, mtIndex);
-
-    lua_pushcfunction(L, CreateNew);
-    lua_setfield(L, mtIndex, "Create");
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, SetTextEditHandler);
     lua_setfield(L, mtIndex, "SetTextEditHandler");

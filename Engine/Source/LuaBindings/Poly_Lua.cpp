@@ -12,11 +12,6 @@
 
 #if LUA_ENABLED
 
-int Poly_Lua::CreateNew(lua_State* L)
-{
-    return Widget_Lua::CreateNew(L, POLY_LUA_NAME);
-}
-
 int Poly_Lua::AddVertex(lua_State* L)
 {
     Poly* poly = CHECK_POLY(L, 1);
@@ -117,10 +112,7 @@ void Poly_Lua::Bind()
         POLY_LUA_FLAG,
         WIDGET_LUA_NAME);
 
-    Widget_Lua::BindCommon(L, mtIndex);
-
-    lua_pushcfunction(L, CreateNew);
-    lua_setfield(L, mtIndex, "Create");
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, AddVertex);
     lua_setfield(L, mtIndex, "AddVertex");

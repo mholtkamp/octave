@@ -8,18 +8,13 @@
 
 #if LUA_ENABLED
 
-int ComboBox_Lua::CreateNew(lua_State* L)
-{
-    return Widget_Lua::CreateNew(L, COMBO_BOX_LUA_NAME);
-}
-
 int ComboBox_Lua::GetList(lua_State* L)
 {
     ComboBox* cb = CHECK_COMBO_BOX(L, 1);
 
     VerticalList* ret = cb->GetList();
 
-    Widget_Lua::Create(L, ret);
+    Node_Lua::Create(L, ret);
     return 1;
 }
 
@@ -41,10 +36,7 @@ void ComboBox_Lua::Bind()
         COMBO_BOX_LUA_FLAG,
         SELECTOR_LUA_NAME);
 
-    Widget_Lua::BindCommon(L, mtIndex);
-
-    lua_pushcfunction(L, CreateNew);
-    lua_setfield(L, mtIndex, "Create");
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, GetList);
     lua_setfield(L, mtIndex, "GetList");

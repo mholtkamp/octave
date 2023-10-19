@@ -11,11 +11,6 @@
 
 #if LUA_ENABLED
 
-int Button_Lua::CreateNew(lua_State* L)
-{
-    return Widget_Lua::CreateNew(L, BUTTON_LUA_NAME);
-}
-
 int Button_Lua::GetState(lua_State* L)
 {
     Button* button = CHECK_BUTTON(L, 1);
@@ -198,7 +193,7 @@ int Button_Lua::GetText(lua_State* L)
 
     Text* ret = button->GetText();
 
-    Widget_Lua::Create(L, ret);
+    Node_Lua::Create(L, ret);
     return 1;
 }
 
@@ -208,7 +203,7 @@ int Button_Lua::GetQuad(lua_State* L)
 
     Quad* ret = button->GetQuad();
 
-    Widget_Lua::Create(L, ret);
+    Node_Lua::Create(L, ret);
     return 1;
 }
 
@@ -220,10 +215,7 @@ void Button_Lua::Bind()
         BUTTON_LUA_FLAG,
         WIDGET_LUA_NAME);
 
-    Widget_Lua::BindCommon(L, mtIndex);
-
-    lua_pushcfunction(L, CreateNew);
-    lua_setfield(L, mtIndex, "Create");
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, GetState);
     lua_setfield(L, mtIndex, "GetState");

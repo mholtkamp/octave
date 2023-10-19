@@ -6,11 +6,6 @@
 
 #if LUA_ENABLED
 
-int VerticalList_Lua::CreateNew(lua_State* L)
-{
-    return Widget_Lua::CreateNew(L, VERTICAL_LIST_LUA_NAME);
-}
-
 int VerticalList_Lua::AddListItem(lua_State* L)
 {
     VerticalList* list = CHECK_VERTICAL_LIST(L, 1);
@@ -48,7 +43,7 @@ int VerticalList_Lua::GetListItem(lua_State* L)
 
     Widget* ret = list->GetListItem((uint32_t)index);
 
-    Widget_Lua::Create(L, ret);
+    Node_Lua::Create(L, ret);
     return 1;
 }
 
@@ -121,10 +116,7 @@ void VerticalList_Lua::Bind()
         VERTICAL_LIST_LUA_FLAG,
         CANVAS_LUA_NAME);
 
-    Widget_Lua::BindCommon(L, mtIndex);
-
-    lua_pushcfunction(L, CreateNew);
-    lua_setfield(L, mtIndex, "Create");
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, AddListItem);
     lua_setfield(L, mtIndex, "AddListItem");
