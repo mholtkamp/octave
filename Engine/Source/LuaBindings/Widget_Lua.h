@@ -7,24 +7,10 @@
 
 #define WIDGET_LUA_NAME "Widget"
 #define WIDGET_LUA_FLAG "cfWidget"
-#define CHECK_WIDGET(L, arg) CheckHierarchyLuaType<Widget_Lua>(L, arg, WIDGET_LUA_NAME, WIDGET_LUA_FLAG)->mWidget;
+#define CHECK_WIDGET(L, arg) static_cast<Widget*>(CheckNodeLuaType(L, arg, WIDGET_LUA_NAME, WIDGET_LUA_FLAG));
 
 struct Widget_Lua
 {
-    Widget* mWidget = nullptr;
-    bool mAlloced = false;
-
-    static int Create(lua_State* L, Widget* widget);
-    static int CreateNew(lua_State* L);
-    static int CreateNew(lua_State* L, const char* className, Widget** outWidget = nullptr);
-    static int Destroy(lua_State* L);
-
-    static int Equals(lua_State* L);
-
-    static int GetName(lua_State* L);
-    static int SetName(lua_State* L);
-    static int FindChild(lua_State* L);
-    static int CreateChildWidget(lua_State* L);
     static int GetRect(lua_State* L);
     static int UpdateRect(lua_State* L);
     static int SetX(lua_State* L);
@@ -60,16 +46,8 @@ struct Widget_Lua
     static int GetDimensions(lua_State* L);
     static int GetParentWidth(lua_State* L);
     static int GetParentHeight(lua_State* L);
-    static int SetVisible(lua_State* L);
-    static int IsVisible(lua_State* L);
     static int SetColor(lua_State* L);
     static int ShouldHandleInput(lua_State* L);
-    static int AddChild(lua_State* L);
-    static int RemoveChild(lua_State* L);
-    static int GetChild(lua_State* L);
-    static int GetParent(lua_State* L);
-    static int DetachFromParent(lua_State* L);
-    static int GetNumChildren(lua_State* L);
     static int MarkDirty(lua_State* L);
     static int IsDirty(lua_State* L);
     static int ContainsMouse(lua_State* L);
@@ -87,9 +65,6 @@ struct Widget_Lua
     static int GetOpacity(lua_State* L);
     static int GetOpacityFloat(lua_State* L);
 
-    static int CheckType(lua_State* L);
-
-    static void BindCommon(lua_State* L, int mtIndex);
     static void Bind();
 };
 

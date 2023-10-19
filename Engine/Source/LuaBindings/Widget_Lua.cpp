@@ -1,4 +1,5 @@
 #include "LuaBindings/Widget_Lua.h"
+#include "LuaBindings/Node_Lua.h"
 
 #include "Log.h"
 #include "Engine.h"
@@ -11,182 +12,6 @@
 #include "LuaBindings/ScriptWidget_Lua.h"
 
 #if  LUA_ENABLED
-
-int Widget_Lua::Create(lua_State* L, Widget* widget)
-{
-    if (widget != nullptr)
-    {
-        Widget_Lua* widgetLua = (Widget_Lua*)lua_newuserdata(L, sizeof(Widget_Lua));
-        widgetLua->mWidget = widget;
-        widgetLua->mAlloced = false; // This is only a wrapper. Not reposible for mWidget allocation.
-
-        int udIndex = lua_gettop(L);
-
-        luaL_getmetatable(L, widget->GetClassName());
-        if (lua_isnil(L, -1))
-        {
-            // Could not find this type's metatable, so just use top level
-            LogWarning("Could not find object's metatable, so the top-level metatable will be used.");
-
-            lua_pop(L, 1);
-            luaL_getmetatable(L, WIDGET_LUA_NAME);
-        }
-
-        OCT_ASSERT(lua_istable(L, -1));
-        lua_setmetatable(L, udIndex);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-
-    return 1;
-}
-
-int Widget_Lua::CreateNew(lua_State* L)
-{
-    // This func will create a new Widget(), and mark the mScriptOwned flag.
-    // Will also flag the Widget_Lua wrapper object mAlloced flag to indicate that this 
-    // Widget_Lua userdata object should delete the widget when __gc is called.
-    const char* className = "Widget";
-
-    int numArgs = lua_gettop(L);
-    if (numArgs >= 1 && lua_isstring(L, 1))
-    {
-        className = lua_tostring(L, 1);
-    }
-
-    return CreateNew(L, className);
-}
-
-int Widget_Lua::CreateNew(lua_State* L, const char* className, Widget** outWidget)
-{
-    Widget* widget = CreateWidget(className);
-
-    if (widget != nullptr)
-    {
-        widget->SetScriptOwned(true);
-        Widget_Lua::Create(L, widget);
-        Widget_Lua* widgetLua = (Widget_Lua*)lua_touserdata(L, -1);
-        widgetLua->mAlloced = true;
-    }
-    else
-    {
-        LogError("Failed to instantiate widget class %s", className);
-        lua_pushnil(L);
-    }
-
-    if (outWidget != nullptr)
-    {
-        *outWidget = widget;
-    }
-
-    return 1;
-}
-
-int Widget_Lua::Destroy(lua_State* L)
-{
-    // This function will be called when garbage collecting widget userdata but
-    // ALSO when garbage collecting the Widget metatables during shutdown.
-    // So first check if we are Destroy()ing a Widget userdata.
-
-    Widget_Lua* widgetLua = nullptr;
-    if (lua_isuserdata(L, 1))
-    {
-        // Calling CHECK_WIDGET() here may cause a crash if the widget was managed by native code
-        // and was already deleted. So here... just assume we are only working on Widgets.
-        // And hopefully we crash if whatever is being Destroy()'d isn't actually a widget.
-
-        //CHECK_WIDGET(L, 1);
-        widgetLua = (Widget_Lua*)lua_touserdata(L, 1);
-    }
-
-    // We need to delete the mWidget data if this wrapper allocated the data.
-    if (widgetLua && 
-        widgetLua->mAlloced)
-    {
-        Widget* widget = widgetLua->mWidget;
-
-        if (widget->GetParent() != nullptr)
-        {
-            LogWarning("Detaching script-owned widget from parent because it is being GC'd.");
-        }
-
-        Renderer::Get()->RemoveWidget(widget, 0);
-        Renderer::Get()->RemoveWidget(widget, 1);
-        widgetLua->mWidget->DetachFromParent();
-        delete widgetLua->mWidget;
-        widgetLua->mWidget = nullptr;
-    }
-
-    return 0;
-}
-
-int Widget_Lua::Equals(lua_State* L)
-{
-    Widget* widgetA = CHECK_WIDGET(L, 1);
-    Widget* widgetB = nullptr;
-
-    if (lua_isuserdata(L, 2))
-    {
-        widgetB = CHECK_WIDGET(L, 2);
-    }
-
-    bool ret = (widgetA == widgetB);
-
-    lua_pushboolean(L, ret);
-    return 1;
-}
-
-int Widget_Lua::GetName(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-
-    const char* ret = widget->GetName().c_str();
-
-    lua_pushstring(L, ret);
-    return 1;
-}
-
-int Widget_Lua::SetName(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-    const char* name = CHECK_STRING(L, 2);
-
-    widget->SetName(name);
-
-    return 0;
-}
-
-int Widget_Lua::FindChild(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-    const char* name = CHECK_STRING(L, 2);
-    bool recurse = false;
-    if (!lua_isnone(L,3)) { recurse = CHECK_BOOLEAN(L, 3); }
-
-    Widget* ret = widget->FindChild(name, recurse);
-
-    Widget_Lua::Create(L, ret);
-    return 1;
-}
-
-int Widget_Lua::CreateChildWidget(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-    const char* typeName = CHECK_STRING(L, 2);
-
-    Widget* childWidget =  CreateWidget(typeName);
-
-    if (childWidget != nullptr)
-    {
-        widget->AddChild(childWidget);
-    }
-
-    Widget_Lua::Create(L, childWidget);
-
-    return 1;
-}
 
 int Widget_Lua::GetRect(lua_State* L)
 {
@@ -583,26 +408,6 @@ int Widget_Lua::GetParentHeight(lua_State* L)
     return 1;
 }
 
-int Widget_Lua::SetVisible(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-    bool value = CHECK_BOOLEAN(L, 2);
-
-    widget->SetVisible(value);
-
-    return 0;
-}
-
-int Widget_Lua::IsVisible(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-
-    bool ret = widget->IsVisible();
-
-    lua_pushboolean(L, ret);
-    return 1;
-}
-
 int Widget_Lua::SetColor(lua_State* L)
 {
     Widget* widget = CHECK_WIDGET(L, 1);
@@ -620,79 +425,6 @@ int Widget_Lua::ShouldHandleInput(lua_State* L)
     bool ret = widget->ShouldHandleInput();
 
     lua_pushboolean(L, ret);
-    return 1;
-}
-
-int Widget_Lua::AddChild(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-    Widget* child = CHECK_WIDGET(L, 2);
-    int32_t index = -1;
-    if (!lua_isnone(L, 3)) { index = (int32_t)CHECK_INTEGER(L, 3); }
-
-    widget->AddChild(child, index);
-
-    return 0;
-}
-
-int Widget_Lua::RemoveChild(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-
-    if (lua_isinteger(L, 2))
-    {
-        int32_t index = (int32_t)CHECK_INTEGER(L, 2);
-        widget->RemoveChild(index);
-    }
-    else
-    {
-        Widget* child = CHECK_WIDGET(L, 2);
-        widget->RemoveChild(child);
-    }
-
-    return 0;
-}
-
-int Widget_Lua::GetChild(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-    int32_t index = CHECK_INTEGER(L, 2);
-
-    // Convert index from 1 based to 0 based.
-    --index;
-
-    Widget* child = widget->GetChild(index);
-
-    Widget_Lua::Create(L, child);
-    return 1;
-}
-
-int Widget_Lua::GetParent(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-
-    Widget* parent = widget->GetParent();
-
-    Widget_Lua::Create(L, parent);
-    return 1;
-}
-
-int Widget_Lua::DetachFromParent(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-
-    widget->DetachFromParent();
-
-    return 0;
-}
-
-int Widget_Lua::GetNumChildren(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-
-    uint32_t ret = widget->GetNumChildren();
-
-    lua_pushinteger(L, (int)ret);
     return 1;
 }
 
@@ -877,83 +609,15 @@ int Widget_Lua::GetOpacityFloat(lua_State* L)
     return 1;
 }
 
-int Widget_Lua::CheckType(lua_State* L)
-{
-    bool ret = false;
-    CHECK_WIDGET(L, 1);
-    const char* typeName = CHECK_STRING(L, 2);
-
-    if (lua_getmetatable(L, 1))
-    {
-        char classFlag[64];
-        snprintf(classFlag, 64, "cf%s", typeName);
-        lua_getfield(L, 1, classFlag);
-
-        if (!lua_isnil(L, -1))
-        {
-            ret = true;
-        }
-    }
-
-    return ret;
-}
-
-void Widget_Lua::BindCommon(lua_State* L, int mtIndex)
-{
-    lua_pushstring(L, "__gc");
-    lua_pushcfunction(L, Destroy);
-    lua_rawset(L, mtIndex);
-
-    lua_pushstring(L, "__eq");
-    lua_pushcfunction(L, Equals);
-    lua_rawset(L, mtIndex);
-
-    bool isScriptWidget = (lua_getfield(L, mtIndex, SCRIPT_WIDGET_LUA_FLAG) != LUA_TNIL);
-    if (isScriptWidget)
-    {
-        // If this is a ScriptWidget, then we need to set its __index and __newIndex
-        // This lets use invoke script fuctions directly from the ScriptWidget userdata, and we don't
-        // need to write code like: myWidget:GetScript():MyNativeFunc()
-        // instead it's just myWidget:MyNativeFunc()
-        lua_pushstring(L, "__index");
-        lua_pushcfunction(L, ScriptWidget_Lua::CustomIndex);
-        lua_rawset(L, mtIndex);
-
-        lua_pushstring(L, "__newindex");
-        lua_pushcfunction(L, ScriptWidget_Lua::CustomNewIndex);
-        lua_rawset(L, mtIndex);
-    }
-
-    lua_pop(L, 1);
-}
-
 void Widget_Lua::Bind()
 {
     lua_State* L = GetLua();
     int mtIndex = CreateClassMetatable(
         WIDGET_LUA_NAME,
         WIDGET_LUA_FLAG,
-        nullptr);
+        NODE_LUA_NAME);
 
-    BindCommon(L, mtIndex);
-
-    lua_pushcfunction(L, CreateNew);
-    lua_setfield(L, mtIndex, "Create");
-
-    lua_pushcfunction(L, Equals);
-    lua_setfield(L, mtIndex, "Equals");
-
-    lua_pushcfunction(L, GetName);
-    lua_setfield(L, mtIndex, "GetName");
-
-    lua_pushcfunction(L, SetName);
-    lua_setfield(L, mtIndex, "SetName");
-
-    lua_pushcfunction(L, FindChild);
-    lua_setfield(L, mtIndex, "FindChild");
-
-    lua_pushcfunction(L, CreateChildWidget);
-    lua_setfield(L, mtIndex, "CreateChildWidget");
+    Node_Lua::BindCommon(L, mtIndex);
 
     lua_pushcfunction(L, GetRect);
     lua_setfield(L, mtIndex, "GetRect");
@@ -1060,35 +724,11 @@ void Widget_Lua::Bind()
     lua_pushcfunction(L, GetParentHeight);
     lua_setfield(L, mtIndex, "GetParentHeight");
 
-    lua_pushcfunction(L, SetVisible);
-    lua_setfield(L, mtIndex, "SetVisible");
-
-    lua_pushcfunction(L, IsVisible);
-    lua_setfield(L, mtIndex, "IsVisible");
-
     lua_pushcfunction(L, SetColor);
     lua_setfield(L, mtIndex, "SetColor");
 
     lua_pushcfunction(L, ShouldHandleInput);
     lua_setfield(L, mtIndex, "ShouldHandleInput");
-
-    lua_pushcfunction(L, AddChild);
-    lua_setfield(L, mtIndex, "AddChild");
-
-    lua_pushcfunction(L, RemoveChild);
-    lua_setfield(L, mtIndex, "RemoveChild");
-
-    lua_pushcfunction(L, GetChild);
-    lua_setfield(L, mtIndex, "GetChild");
-
-    lua_pushcfunction(L, GetParent);
-    lua_setfield(L, mtIndex, "GetParent");
-
-    lua_pushcfunction(L, DetachFromParent);
-    lua_setfield(L, mtIndex, "DetachFromParent");
-
-    lua_pushcfunction(L, GetNumChildren);
-    lua_setfield(L, mtIndex, "GetNumChildren");
 
     lua_pushcfunction(L, MarkDirty);
     lua_setfield(L, mtIndex, "MarkDirty");
@@ -1137,9 +777,6 @@ void Widget_Lua::Bind()
 
     lua_pushcfunction(L, GetOpacityFloat);
     lua_setfield(L, mtIndex, "GetOpacityFloat");
-
-    lua_pushcfunction(L, CheckType);
-    lua_setfield(L, mtIndex, "CheckType");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);
