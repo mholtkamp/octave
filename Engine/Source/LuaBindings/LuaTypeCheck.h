@@ -73,6 +73,8 @@ const char* CheckTableName(lua_State* L, int arg);
 #define CHECK_USERDATA(L, Arg) luaL_checktype(L, Arg, LUA_TUSERDATA);
 #define CHECK_NIL(L, Arg) luaL_checktype(L, Arg, LUA_TNIL);
 
+#define CHECK_INDEX(L, Arg) (lua_tointeger(L, Arg) - 1); luaL_checktype(L, Arg, LUA_TNUMBER);
+
 bool CheckClassFlag(lua_State* L, int arg, const char* flag);
 
 #endif

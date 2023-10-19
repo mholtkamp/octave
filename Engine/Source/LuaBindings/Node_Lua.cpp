@@ -211,18 +211,10 @@ int Node_Lua::GetParent(lua_State* L)
 int Node_Lua::GetChild(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
-    Node* child = nullptr;
+    int32_t index = CHECK_INTEGER(L, 2);
+    index--; // Lua indices start at 1.
 
-    if (lua_isinteger(L, 2))
-    {
-        int32_t childIndex = (int32_t)lua_tointeger(L, 2) - 1;
-        child = node->GetChild(childIndex);
-    }
-    else
-    {
-        const char* childName = CHECK_STRING(L, 2);
-        child = node->GetChild(childName);
-    }
+    Node* child = node->GetChild(index);
 
     Node_Lua::Create(L, child);
     return 1;
@@ -267,7 +259,7 @@ int Node_Lua::AddChild(lua_State* L)
     Node* newChild = CHECK_NODE(L, 2);
     int32_t index = -1;
 
-    if (!lua_isnone(L, 3)) { index = CHECK_INTEGER(L, 3); }
+    if (!lua_isnone(L, 3)) { index = CHECK_INDEX(L, 3); }
 
     node->AddChild(newChild, index);
 
@@ -288,7 +280,7 @@ int Node_Lua::RemoveChild(lua_State* L)
     else
     {
         const char* childName = CHECK_STRING(L, 2);
-        child = node->GetChild(childName);
+        child = node->FindChild(childName, false);
     }
 
     if (child != nullptr)
@@ -299,30 +291,77 @@ int Node_Lua::RemoveChild(lua_State* L)
     return 0;
 }
 
-int Node_Lua::CreateChildNode(lua_State* L)
+int Node_Lua::FindChild(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    bool recurse = false;
+
+    if (!lua_isnone(L, 3)) { recurse = CHECK_BOOLEAN(L, 3); }
+
+    Node* ret = node->FindChild(name, recurse);
+
+    Node_Lua::Create(L, ret);
+    return 1;
+}
+
+int Node_Lua::FindDescendant(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+
+    Node* ret = node->FindDescendant(name);
+
+    Node_Lua::Create(L, ret);
+    return 1;
+}
+
+int Node_Lua::FindAncestor(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+
+    Node* ret = node->FindAncestor(name);
+
+    Node_Lua::Create(L, ret);
+    return 1;
+}
+
+int Node_Lua::HasAncestor(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    Node* otherNode = CHECK_NODE(L, 2);
+
+    bool ret = node->HasAncestor(otherNode);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Node_Lua::CreateChild(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
     const char* nodeClass = CHECK_STRING(L, 2);
 
-    Node* newChild = node->CreateChildNode(nodeClass);
+    Node* newChild = node->CreateChild(nodeClass);
 
     Node_Lua::Create(L, newChild);
     return 1;
 }
 
-int Node_Lua::CloneChildNode(lua_State* L)
+int Node_Lua::CreateChildClone(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
     Node* srcNode = CHECK_NODE(L, 2);
     bool recurse = CHECK_BOOLEAN(L, 3);
 
-    Node* newChild = node->CloneChildNode(srcNode, recurse);
+    Node* newChild = node->CreateChildClone(srcNode, recurse);
 
     Node_Lua::Create(L, newChild);
     return 1;
 }
 
-int Node_Lua::DestroyChildNode(lua_State* L)
+int Node_Lua::DestroyChild(lua_State* L)
 {
     // TODO-NODE: Check to see if this works.
     Node* node = CHECK_NODE(L, 1);
@@ -337,14 +376,14 @@ int Node_Lua::DestroyChildNode(lua_State* L)
     else if (lua_isstring(L, 2))
     {
         const char* childName = CHECK_STRING(L, 2);
-        child = node->GetChild(childName);
+        child = node->FindChild(childName, false);
     }
     else
     {
         child = CHECK_NODE(L, 2);
     }
 
-    node->DestroyChildNode(child);
+    node->DestroyChild(child);
 
     return 0;
 }
@@ -685,14 +724,26 @@ void Node_Lua::Bind()
     lua_pushcfunction(L, RemoveChild);
     lua_setfield(L, mtIndex, "RemoveChild");
 
-    lua_pushcfunction(L, CreateChildNode);
-    lua_setfield(L, mtIndex, "CreateChildNode");
+    lua_pushcfunction(L, FindChild);
+    lua_setfield(L, mtIndex, "FindChild");
 
-    lua_pushcfunction(L, CloneChildNode);
-    lua_setfield(L, mtIndex, "CloneChildNode");
+    lua_pushcfunction(L, FindDescendant);
+    lua_setfield(L, mtIndex, "FindDescendant");
 
-    lua_pushcfunction(L, DestroyChildNode);
-    lua_setfield(L, mtIndex, "DestroyChildNode");
+    lua_pushcfunction(L, FindAncestor);
+    lua_setfield(L, mtIndex, "FindAncestor");
+
+    lua_pushcfunction(L, HasAncestor);
+    lua_setfield(L, mtIndex, "HasAncestor");
+
+    lua_pushcfunction(L, CreateChild);
+    lua_setfield(L, mtIndex, "CreateChild");
+
+    lua_pushcfunction(L, CreateChildClone);
+    lua_setfield(L, mtIndex, "CreateChildClone");
+
+    lua_pushcfunction(L, DestroyChild);
+    lua_setfield(L, mtIndex, "DestroyChild");
 
     lua_pushcfunction(L, DestroyAllChildren);
     lua_setfield(L, mtIndex, "DestroyAllChildren");
