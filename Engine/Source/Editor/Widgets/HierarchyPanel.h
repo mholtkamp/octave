@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Panel.h"
-#include "Widgets/ModalList.h"
+#include "Nodes/Widgets/ModalList.h"
 
 class Node;
 class HierarchyButton;

@@ -6,15 +6,15 @@
 #include "Engine.h"
 #include "Log.h"
 
-#include "Widgets/Button.h"
-#include "Widgets/Selector.h"
-#include "Widgets/TextField.h"
+#include "Nodes/Widgets/Button.h"
+#include "Nodes/Widgets/Selector.h"
+#include "Nodes/Widgets/TextField.h"
 
 #include "LuaBindings/LuaUtils.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/Actor_Lua.h"
-#include "LuaBindings/Component_Lua.h"
+#include "LuaBindings/Node_Lua.h"
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
 

@@ -7,8 +7,8 @@
 
 #include "ObjectRef.h"
 
-#include "Widgets/TextEntry.h"
-#include "Widgets/SceneImportWidget.h"
+#include "Nodes/Widgets/TextEntry.h"
+#include "Nodes/Widgets/SceneImportWidget.h"
 
 class Node;
 class Asset;

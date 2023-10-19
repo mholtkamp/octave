@@ -1,6 +1,6 @@
 #if EDITOR
 
-#include "Widgets/SceneImportWidget.h"
+#include "Nodes/Widgets/SceneImportWidget.h"
 #include "Renderer.h"
 #include "InputDevices.h"
 

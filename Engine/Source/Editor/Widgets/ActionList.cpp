@@ -1,6 +1,6 @@
 #if EDITOR
 
-#include "Widgets/ActionList.h"
+#include "Nodes/Widgets/ActionList.h"
 
 #include "Renderer.h"
 #include "Engine.h"

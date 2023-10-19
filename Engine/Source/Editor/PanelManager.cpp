@@ -1,14 +1,14 @@
 #if EDITOR
 
 #include "PanelManager.h"
-#include "Widgets/Widget.h"
-#include "Widgets/OutlinerPanel.h"
-#include "Widgets/AssetsPanel.h"
-#include "Widgets/HierarchyPanel.h"
-#include "Widgets/PropertiesPanel.h"
-#include "Widgets/ViewportPanel.h"
-#include "Widgets/WidgetHierarchyPanel.h"
-#include "Widgets/WidgetViewportPanel.h"
+#include "Nodes/Widgets/Widget.h"
+#include "Nodes/Widgets/OutlinerPanel.h"
+#include "Nodes/Widgets/AssetsPanel.h"
+#include "Nodes/Widgets/HierarchyPanel.h"
+#include "Nodes/Widgets/PropertiesPanel.h"
+#include "Nodes/Widgets/ViewportPanel.h"
+#include "Nodes/Widgets/WidgetHierarchyPanel.h"
+#include "Nodes/Widgets/WidgetViewportPanel.h"
 
 PanelManager* PanelManager::sInstance = nullptr;
 

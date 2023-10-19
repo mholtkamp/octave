@@ -1,11 +1,11 @@
-#include "Widgets/Poly.h"
+#include "Nodes/Widgets/Poly.h"
 #include "Renderer.h"
 #include "Log.h"
 #include "Utilities.h"
 
 #include "Graphics/Graphics.h"
 
-#include "Widgets/Poly.h"
+#include "Nodes/Widgets/Poly.h"
 
 FORCE_LINK_DEF(Poly);
 DEFINE_WIDGET(Poly, Widget);

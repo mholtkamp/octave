@@ -1,5 +1,5 @@
 #include "LuaBindings/ScriptComponent_Lua.h"
-#include "LuaBindings/Component_Lua.h"
+#include "LuaBindings/Node_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/LuaUtils.h"

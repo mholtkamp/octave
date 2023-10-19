@@ -1,11 +1,11 @@
 #if EDITOR
 
-#include "Widgets/HierarchyButton.h"
-#include "Widgets/Panel.h"
+#include "Nodes/Widgets/HierarchyButton.h"
+#include "Nodes/Widgets/Panel.h"
 #include "Nodes/Node.h"
 #include "Nodes/Node.h"
 #include "EditorState.h"
-#include "Widgets/Quad.h"
+#include "Nodes/Widgets/Quad.h"
 
 HierarchyButton::HierarchyButton()
 {

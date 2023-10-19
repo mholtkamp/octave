@@ -1,7 +1,7 @@
 
-#include "Widgets/Button.h"
-#include "Widgets/Quad.h"
-#include "Widgets/Text.h"
+#include "Nodes/Widgets/Button.h"
+#include "Nodes/Widgets/Quad.h"
+#include "Nodes/Widgets/Text.h"
 #include "InputDevices.h"
 #include "Engine.h"
 #include "Renderer.h"

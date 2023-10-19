@@ -7,12 +7,12 @@
 
 #if LUA_ENABLED
 
-#define COMPONENT_REF_LUA_NAME "ComponentRef"
-#define CHECK_COMPONENT_REF(L, arg) CheckLuaType<ComponentRef_Lua>(L, arg, COMPONENT_REF_LUA_NAME)->mComponentRef;
+#define NODE_REF_LUA_NAME "NodeRef"
+#define CHECK_NODE_REF(L, arg) CheckLuaType<NodeRef_Lua>(L, arg, NODE_REF_LUA_NAME)->mNodeRef;
 
-struct ComponentRef_Lua
+struct NodeRef_Lua
 {
-    ComponentRef mComponentRef;
+    NodeRef mNodeRef;
 
     static int Create(lua_State* L);
     static int Destroy(lua_State* L);

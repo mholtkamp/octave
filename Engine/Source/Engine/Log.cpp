@@ -1,6 +1,6 @@
 #include "Log.h"
 #include "Renderer.h"
-#include "Widgets/Console.h"
+#include "Nodes/Widgets/Console.h"
 
 #include "System/System.h"
 

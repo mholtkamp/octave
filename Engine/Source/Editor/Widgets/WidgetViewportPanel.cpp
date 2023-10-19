@@ -1,11 +1,11 @@
 #if EDITOR
 
-#include "Widgets/WidgetViewportPanel.h"
+#include "Nodes/Widgets/WidgetViewportPanel.h"
 #include "InputDevices.h"
 #include "EditorState.h"
 #include "Engine.h"
 #include "EditorUtils.h"
-#include "Widgets/ActionList.h"
+#include "Nodes/Widgets/ActionList.h"
 #include "ActionManager.h"
 #include "PanelManager.h"
 #include "Maths.h"

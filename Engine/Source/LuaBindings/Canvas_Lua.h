@@ -3,7 +3,7 @@
 #include "EngineTypes.h"
 #include "Log.h"
 
-#include "Widgets/Canvas.h"
+#include "Nodes/Widgets/Canvas.h"
 #include "LuaBindings/Widget_Lua.h"
 
 #include "LuaBindings/LuaUtils.h"

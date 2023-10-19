@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Widgets/Canvas.h"
+#include "Nodes/Widgets/Canvas.h"
 #include "Maths.h"
 
 class Text;

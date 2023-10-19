@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Widgets/Poly.h"
+#include "Nodes/Widgets/Poly.h"
 
 class PolyRect : public Poly
 {

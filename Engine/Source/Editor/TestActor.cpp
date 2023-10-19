@@ -10,7 +10,7 @@
 #include "Engine.h"
 #include "AssetManager.h"
 #include "Log.h"
-#include "Widgets/Widget.h"
+#include "Nodes/Widgets/Widget.h"
 
 TestActor::TestActor() :
     mRootMesh(nullptr),

@@ -1,9 +1,9 @@
 #if EDITOR
 
-#include "Widgets/ActorButton.h"
+#include "Nodes/Widgets/ActorButton.h"
 #include "Nodes/Node.h"
-#include "Widgets/Panel.h"
-#include "Widgets/Quad.h"
+#include "Nodes/Widgets/Panel.h"
+#include "Nodes/Widgets/Quad.h"
 #include "EditorState.h"
 
 float ActorButton::sActorButtonHeight = 22;

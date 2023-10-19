@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Widgets/Selector.h"
+#include "Nodes/Widgets/Selector.h"
 
 class CheckBox : public Selector
 {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Widgets/Canvas.h"
-#include "Widgets/Text.h"
+#include "Nodes/Widgets/Canvas.h"
+#include "Nodes/Widgets/Text.h"
 
 class ConsoleOutputText : public Text
 {

@@ -2,13 +2,13 @@
 #include "Engine.h"
 #include "Log.h"
 
-#include "Widgets/Widget.h"
+#include "Nodes/Widgets/Widget.h"
 
 #include "Assets/SkeletalMesh.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
 
 #include "LuaBindings/Actor_Lua.h"
-#include "LuaBindings/Component_Lua.h"
+#include "LuaBindings/Node_Lua.h"
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Widget_Lua.h"

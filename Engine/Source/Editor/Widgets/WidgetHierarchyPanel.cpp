@@ -1,14 +1,14 @@
 #if EDITOR
 
-#include "Widgets/WidgetHierarchyPanel.h"
-#include "Widgets/HierarchyButton.h"
+#include "Nodes/Widgets/WidgetHierarchyPanel.h"
+#include "Nodes/Widgets/HierarchyButton.h"
 #include "Assets/WidgetMap.h"
 #include "ActionManager.h"
 #include "PanelManager.h"
 #include "EditorState.h"
 #include "EditorUtils.h"
 #include "InputDevices.h"
-#include "Widgets/ActionList.h"
+#include "Nodes/Widgets/ActionList.h"
 #include "Renderer.h"
 
 #include <functional>

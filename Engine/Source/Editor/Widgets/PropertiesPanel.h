@@ -4,7 +4,7 @@
 #include <vector>
 #include "Nodes/Node.h"
 #include "Asset.h"
-#include "Widgets/ComboBox.h"
+#include "Nodes/Widgets/ComboBox.h"
 
 class PropertyWidget;
 

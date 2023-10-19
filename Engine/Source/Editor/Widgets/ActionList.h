@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Widgets/Widget.h"
-#include "Widgets/VerticalList.h"
-#include "Widgets/Text.h"
-#include "Widgets/Quad.h"
-#include "Widgets/Button.h"
+#include "Nodes/Widgets/Widget.h"
+#include "Nodes/Widgets/VerticalList.h"
+#include "Nodes/Widgets/Text.h"
+#include "Nodes/Widgets/Quad.h"
+#include "Nodes/Widgets/Button.h"
 
 class ActionList : public Widget
 {

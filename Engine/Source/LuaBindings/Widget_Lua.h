@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EngineTypes.h"
-#include "Widgets/Widget.h"
+#include "Nodes/Widgets/Widget.h"
 
 #if LUA_ENABLED
 

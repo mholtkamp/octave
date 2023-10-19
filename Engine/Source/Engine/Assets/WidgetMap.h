@@ -3,7 +3,7 @@
 #include "Asset.h"
 #include "Property.h"
 #include "Factory.h"
-#include "Widgets/Widget.h"
+#include "Nodes/Widgets/Widget.h"
 
 struct WidgetDef
 {

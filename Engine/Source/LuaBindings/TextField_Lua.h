@@ -3,7 +3,7 @@
 #include "EngineTypes.h"
 #include "Log.h"
 
-#include "Widgets/TextField.h"
+#include "Nodes/Widgets/TextField.h"
 #include "LuaBindings/Widget_Lua.h"
 
 #include "LuaBindings/LuaUtils.h"

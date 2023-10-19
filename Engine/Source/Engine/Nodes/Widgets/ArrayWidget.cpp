@@ -1,4 +1,4 @@
-#include "Widgets/ArrayWidget.h"
+#include "Nodes/Widgets/ArrayWidget.h"
 
 FORCE_LINK_DEF(ArrayWidget);
 DEFINE_WIDGET(ArrayWidget, Widget);

@@ -1,5 +1,5 @@
-#include "Widgets/Selector.h"
-#include "Widgets/Text.h"
+#include "Nodes/Widgets/Selector.h"
+#include "Nodes/Widgets/Text.h"
 #include "InputDevices.h"
 #include "ScriptEvent.h"
 

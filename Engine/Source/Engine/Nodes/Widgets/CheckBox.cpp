@@ -1,4 +1,4 @@
-#include "Widgets/CheckBox.h"
+#include "Nodes/Widgets/CheckBox.h"
 
 FORCE_LINK_DEF(CheckBox);
 DEFINE_WIDGET(CheckBox, Selector);

@@ -18,10 +18,10 @@
 #include "Assets/Blueprint.h"
 #include "Assets/WidgetMap.h"
 #include "EditorUtils.h"
-#include "Widgets/ActionList.h"
-#include "Widgets/TextEntry.h"
-#include "Widgets/WidgetViewportPanel.h"
-#include "Widgets/PropertiesPanel.h"
+#include "Nodes/Widgets/ActionList.h"
+#include "Nodes/Widgets/TextEntry.h"
+#include "Nodes/Widgets/WidgetViewportPanel.h"
+#include "Nodes/Widgets/PropertiesPanel.h"
 #include "Input/Input.h"
 
 static EditorState sEditorState;

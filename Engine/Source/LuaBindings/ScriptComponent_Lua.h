@@ -4,7 +4,7 @@
 #include "Log.h"
 #include "Engine.h"
 
-#include "LuaBindings/Component_Lua.h"
+#include "LuaBindings/Node_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 
 #if LUA_ENABLED

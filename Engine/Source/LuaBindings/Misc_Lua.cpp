@@ -1,8 +1,8 @@
 #include "LuaBindings/Misc_Lua.h"
 
-#include "Widgets/Widget.h"
-#include "Widgets/Button.h"
-#include "Widgets/Text.h"
+#include "Nodes/Widgets/Widget.h"
+#include "Nodes/Widgets/Button.h"
+#include "Nodes/Widgets/Text.h"
 
 #include "Nodes/3D/Particle3d.h"
 

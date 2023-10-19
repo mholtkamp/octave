@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Widgets/VerticalList.h"
+#include "Nodes/Widgets/VerticalList.h"
 
 class ModalList : public VerticalList
 {

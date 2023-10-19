@@ -1,4 +1,4 @@
-#include "Widgets/PolyRect.h"
+#include "Nodes/Widgets/PolyRect.h"
 
 FORCE_LINK_DEF(PolyRect);
 DEFINE_WIDGET(PolyRect, Poly);

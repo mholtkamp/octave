@@ -1,12 +1,12 @@
 #if EDITOR
 
-#include "Widgets/OutlinerPanel.h"
-#include "Widgets/ActorButton.h"
-#include "Widgets/PropertiesPanel.h"
-#include "Widgets/ActionList.h"
+#include "Nodes/Widgets/OutlinerPanel.h"
+#include "Nodes/Widgets/ActorButton.h"
+#include "Nodes/Widgets/PropertiesPanel.h"
+#include "Nodes/Widgets/ActionList.h"
 #include "Engine.h"
 #include "World.h"
-#include "Widgets/Quad.h"
+#include "Nodes/Widgets/Quad.h"
 #include "EditorState.h"
 #include "ActionManager.h"
 #include "PanelManager.h"

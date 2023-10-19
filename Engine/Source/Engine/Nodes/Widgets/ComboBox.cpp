@@ -1,8 +1,8 @@
-#include "Widgets/ComboBox.h"
-#include "Widgets/VerticalList.h"
+#include "Nodes/Widgets/ComboBox.h"
+#include "Nodes/Widgets/VerticalList.h"
 #include "Renderer.h"
-#include "Widgets/Quad.h"
-#include "Widgets/Text.h"
+#include "Nodes/Widgets/Quad.h"
+#include "Nodes/Widgets/Text.h"
 
 #include "InputDevices.h"
 

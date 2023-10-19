@@ -1,9 +1,9 @@
-#include "Widgets/TextField.h"
+#include "Nodes/Widgets/TextField.h"
 #include "Engine.h"
 #include "Clock.h"
 #include "InputDevices.h"
-#include "Widgets/Text.h"
-#include "Widgets/Quad.h"
+#include "Nodes/Widgets/Text.h"
+#include "Nodes/Widgets/Quad.h"
 #include "Renderer.h"
 #include "ScriptEvent.h"
 

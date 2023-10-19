@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Widgets/Button.h"
-#include "Widgets/Quad.h"
+#include "Nodes/Widgets/Button.h"
+#include "Nodes/Widgets/Quad.h"
 
 #include "ScriptFunc.h"
 

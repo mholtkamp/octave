@@ -1,10 +1,10 @@
 #if EDITOR
 
-#include "Widgets/Panel.h"
-#include "Widgets/Canvas.h"
-#include "Widgets/Text.h"
-#include "Widgets/Quad.h"
-#include "Widgets/TextField.h"
+#include "Nodes/Widgets/Panel.h"
+#include "Nodes/Widgets/Canvas.h"
+#include "Nodes/Widgets/Text.h"
+#include "Nodes/Widgets/Quad.h"
+#include "Nodes/Widgets/TextField.h"
 
 #include "Renderer.h"
 #include "InputDevices.h"

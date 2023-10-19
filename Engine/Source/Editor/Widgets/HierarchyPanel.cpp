@@ -1,13 +1,13 @@
 #if EDITOR
 
-#include "Widgets/HierarchyPanel.h"
-#include "Widgets/HierarchyButton.h"
+#include "Nodes/Widgets/HierarchyPanel.h"
+#include "Nodes/Widgets/HierarchyButton.h"
 #include "ActionManager.h"
 #include "PanelManager.h"
 #include "EditorState.h"
 #include "Nodes/Node.h"
 #include "InputDevices.h"
-#include "Widgets/ActionList.h"
+#include "Nodes/Widgets/ActionList.h"
 #include "Renderer.h"
 #include "Nodes/Node.h"
 #include "Nodes/3D/Node3d.h"

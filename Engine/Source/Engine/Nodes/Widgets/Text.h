@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Widgets/Widget.h"
+#include "Nodes/Widgets/Widget.h"
 #include "Vertex.h"
 
 #include "AssetRef.h"

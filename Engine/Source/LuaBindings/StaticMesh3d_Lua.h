@@ -6,7 +6,7 @@
 
 #include "Nodes/3D/StaticMesh3d.h"
 
-#include "LuaBindings/Component_Lua.h"
+#include "LuaBindings/Node_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 
 #if LUA_ENABLED

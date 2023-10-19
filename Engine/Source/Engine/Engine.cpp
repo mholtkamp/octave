@@ -16,7 +16,7 @@
 #include "ScriptAutoReg.h"
 #include "ScriptFunc.h"
 #include "TimerManager.h"
-#include "Widgets/TextField.h"
+#include "Nodes/Widgets/TextField.h"
 
 #include "System/System.h"
 #include "Graphics/Graphics.h"

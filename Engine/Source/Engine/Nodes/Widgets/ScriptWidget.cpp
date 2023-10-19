@@ -1,4 +1,4 @@
-#include "Widgets/ScriptWidget.h"
+#include "Nodes/Widgets/ScriptWidget.h"
 #include "Engine.h"
 #include "ScriptUtils.h"
 

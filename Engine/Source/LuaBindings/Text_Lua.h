@@ -3,7 +3,7 @@
 #include "EngineTypes.h"
 #include "Log.h"
 
-#include "Widgets/Text.h"
+#include "Nodes/Widgets/Text.h"
 
 #include "LuaBindings/LuaUtils.h"
 

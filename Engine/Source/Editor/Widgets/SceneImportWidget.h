@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Widgets/Widget.h"
-#include "Widgets/Button.h"
-#include "Widgets/TextField.h"
-#include "Widgets/Text.h"
-#include "Widgets/Quad.h"
-#include "Widgets/CheckBox.h"
+#include "Nodes/Widgets/Widget.h"
+#include "Nodes/Widgets/Button.h"
+#include "Nodes/Widgets/TextField.h"
+#include "Nodes/Widgets/Text.h"
+#include "Nodes/Widgets/Quad.h"
+#include "Nodes/Widgets/CheckBox.h"
 #include "EditorTypes.h"
 
 class SceneImportWidget : public Widget

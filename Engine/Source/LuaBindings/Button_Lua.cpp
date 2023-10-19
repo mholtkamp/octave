@@ -6,8 +6,8 @@
 #include "LuaBindings/Asset_Lua.h"
 #include "LuaBindings/Texture_Lua.h"
 
-#include "Widgets/Text.h"
-#include "Widgets/Quad.h"
+#include "Nodes/Widgets/Text.h"
+#include "Nodes/Widgets/Quad.h"
 
 #if LUA_ENABLED
 

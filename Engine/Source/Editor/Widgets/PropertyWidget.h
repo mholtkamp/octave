@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Widgets/Widget.h"
-#include "Widgets/Canvas.h"
+#include "Nodes/Widgets/Widget.h"
+#include "Nodes/Widgets/Canvas.h"
 #include "Property.h"
 
 class Text;

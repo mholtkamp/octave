@@ -7,7 +7,7 @@
 #include "EditorTypes.h"
 #include "Asset.h"
 #include "AssetRef.h"
-#include "Widgets/Widget.h"
+#include "Nodes/Widgets/Widget.h"
 
 class Node3D;
 

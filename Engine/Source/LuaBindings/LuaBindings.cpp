@@ -15,7 +15,7 @@
 #include "LuaBindings/Log_Lua.h"
 #include "LuaBindings/World_Lua.h"
 #include "LuaBindings/Actor_Lua.h"
-#include "LuaBindings/Component_Lua.h"
+#include "LuaBindings/Node_Lua.h"
 #include "LuaBindings/Node3d_Lua.h"
 #include "LuaBindings/Primitive3d_Lua.h"
 #include "LuaBindings/Mesh3d_Lua.h"

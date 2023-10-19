@@ -3,7 +3,7 @@
 #include "EngineTypes.h"
 #include "Log.h"
 
-#include "Widgets/CheckBox.h"
+#include "Nodes/Widgets/CheckBox.h"
 #include "LuaBindings/Widget_Lua.h"
 
 #include "LuaBindings/LuaUtils.h"

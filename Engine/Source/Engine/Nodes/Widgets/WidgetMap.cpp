@@ -3,7 +3,7 @@
 #include "Nodes/Node.h"
 #include "Log.h"
 #include "Engine.h"
-#include "Widgets/ScriptWidget.h"
+#include "Nodes/Widgets/ScriptWidget.h"
 
 FORCE_LINK_DEF(WidgetMap);
 DEFINE_ASSET(WidgetMap);

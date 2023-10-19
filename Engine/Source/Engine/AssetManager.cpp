@@ -27,7 +27,7 @@
 
 #if EDITOR
 #include "Editor/EditorState.h"
-#include "Widgets/PropertiesPanel.h"
+#include "Nodes/Widgets/PropertiesPanel.h"
 #include "Editor/PanelManager.h"
 #endif
 

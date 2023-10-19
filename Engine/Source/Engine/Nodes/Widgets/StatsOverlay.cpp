@@ -1,4 +1,4 @@
-#include "Widgets/StatsOverlay.h"
+#include "Nodes/Widgets/StatsOverlay.h"
 #include "Assets/Font.h"
 #include "AssetManager.h"
 #include "Renderer.h"

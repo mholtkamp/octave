@@ -1,4 +1,4 @@
-#include "Widgets/Console.h"
+#include "Nodes/Widgets/Console.h"
 #include "Assets/Font.h"
 #include "Renderer.h"
 #include "Engine.h"

@@ -1,17 +1,17 @@
 #if EDITOR
 
-#include "Widgets/AssetButton.h"
+#include "Nodes/Widgets/AssetButton.h"
 #include "Asset.h"
 #include "AssetDir.h"
 #include "Renderer.h"
 #include "AssetManager.h"
 #include "ActionManager.h"
-#include "Widgets/Panel.h"
-#include "Widgets/Quad.h"
-#include "Widgets/Text.h"
-#include "Widgets/ActionList.h"
+#include "Nodes/Widgets/Panel.h"
+#include "Nodes/Widgets/Quad.h"
+#include "Nodes/Widgets/Text.h"
+#include "Nodes/Widgets/ActionList.h"
 #include "PanelManager.h"
-#include "Widgets/PropertiesPanel.h"
+#include "Nodes/Widgets/PropertiesPanel.h"
 #include "EditorState.h"
 
 #include "InputDevices.h"

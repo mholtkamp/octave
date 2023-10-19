@@ -2,7 +2,7 @@
 
 #include "Panel.h"
 #include "EditorState.h"
-#include "Widgets/ModalList.h"
+#include "Nodes/Widgets/ModalList.h"
 
 class Button;
 

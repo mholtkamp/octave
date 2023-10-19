@@ -4,7 +4,7 @@
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Rect_Lua.h"
 
-#include "Widgets/VerticalList.h"
+#include "Nodes/Widgets/VerticalList.h"
 
 #if LUA_ENABLED
 
