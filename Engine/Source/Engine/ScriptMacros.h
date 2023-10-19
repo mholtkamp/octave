@@ -1,37 +1,29 @@
 #pragma once
 
 // These macros are ugly, but it makes it easy to expose C++ functions to Lua
-// In your Actor class, you just need drop one of these macros based on the function return/params
+// In your Node class, you just need drop one of these macros based on the function return/params
 // Example in Unit.cpp:
-// SCRIPT_FUNC_1(AddHealth)
-// SCRIPT_FUNC_R(GetHealth)
+// OSF_1(AddHealth)
+// OSF_R(GetHealth)
 
 #include "Utilities.h"
 #include "LuaBindings/LuaTypeCheck.h"
 #include "ScriptAutoReg.h"
 #include "ScriptFunc.h"
 
-#define SF_CHECK_ACTOR(L, arg) CheckActorLuaType(L, arg, "Actor", "cfActor")
-#define SF_CHECK_COMPONENT(L, arg) CheckComponentLuaType(L, arg, "Component", "cfComponent")
+#define SF_CHECK_NODE(L, arg) CheckNodeLuaType(L, arg, "Node", "cfNode")
 #define SF_CHECK_ASSET(L, Arg) CheckAssetLuaType<Asset>(L, Arg, "Asset", "cfAsset")
-#define SF_CHECK_WIDGET(L, Arg) CheckWidgetLuaType(L, Arg, "Widget", "cfWidget")
 #define SF_CHECK_RTTI(L, Arg) CheckRttiLuaType(L, Arg)
 
-#define SF_CHECK_ACTOR_OR_NIL(L, arg) CheckActorOrNilLuaType(L, arg, "Actor", "cfActor")
-#define SF_CHECK_COMPONENT_OR_NIL(L, arg) CheckComponentOrNilLuaType(L, arg, "Component", "cfComponent")
+#define SF_CHECK_NODE_OR_NIL(L, arg) CheckNodeOrNilLuaType(L, arg, "Node", "cfNode")
 #define SF_CHECK_ASSET_OR_NIL(L, Arg) CheckAssetOrNilLuaType<Asset>(L, Arg, "Asset", "cfAsset")
-#define SF_CHECK_WIDGET_OR_NIL(L, Arg) CheckWidgetOrNilLuaType(L, Arg, "Widget", "cfWidget")
 #define SF_CHECK_RTTI_OR_NIL(L, Arg) CheckRttiOrNilLuaType(L, Arg)
 
 // Parameter macros
-#define SpActor(idx) SF_CHECK_ACTOR(L, idx)
-#define SpComponent(idx) SF_CHECK_COMPONENT(L, idx)
+#define SpNode(idx) SF_CHECK_NODE(L, idx)
 #define SpAsset(idx) SF_CHECK_ASSET(L, idx)
-#define SpWidget(idx) SF_CHECK_WIDGET(L, idx)
-#define SpActorOrNil(idx) SF_CHECK_ACTOR_OR_NIL(L, idx)
-#define SpComponentOrNil(idx) SF_CHECK_COMPONENT_OR_NIL(L, idx)
+#define SpNodeOrNil(idx) SF_CHECK_NODE_OR_NIL(L, idx)
 #define SpAssetOrNil(idx) SF_CHECK_ASSET_OR_NIL(L, idx)
-#define SpWidgetOrNil(idx) SF_CHECK_WIDGET_OR_NIL(L, idx)
 #define SpVector(idx) LuaObjectToDatum(L, idx)
 #define SpInt(idx) lua_tointeger(L, idx)
 #define SpIndex(idx) (lua_tointeger(L, idx) - 1)
@@ -42,8 +34,7 @@
 
 // Return macros
 #define SrReturn 
-#define SrActor (Actor*)
-#define SrComponent (Component*)
+#define SrNode (Node*)
 #define SrAsset (Asset*)
 #define SrWidget (Widget*)
 #define SrInt (int32_t)
