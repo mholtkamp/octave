@@ -51,6 +51,16 @@ DEFINE_FACTORY_MANAGER(Node);
 DEFINE_FACTORY(Node, Node);
 DEFINE_RTTI(Node);
 
+static Node* CreateNew(const std::string& name)
+{
+    return Node::CreateInstance(name.c_str());
+}
+
+static Node* CreateNew(TypeId typeId)
+{
+    return Node::CreateInstance(typeId);
+}
+
 Node::Node()
 {
     mName = "Node";
@@ -368,7 +378,7 @@ void Node::GatherPropertyOverrides(std::vector<Property>& outOverrides)
         std::vector<Property> nodeProps;
         GatherProperties(nodeProps);
 
-        Node* defaultNode = Node::CreateInstance(GetType());
+        Node* defaultNode = Node::CreateNew(GetType());
         std::vector<Property> defaultProps;
         defaultNode->GatherProperties(defaultProps);
 
@@ -528,7 +538,7 @@ void Node::RenderSelected(bool renderChildren)
 
 Node* Node::CreateChild(TypeId nodeType)
 {
-    Node* subNode = Node::CreateInstance(nodeType);
+    Node* subNode = Node::CreateNew(nodeType);
 
     if (subNode != nullptr)
     {
@@ -575,7 +585,7 @@ Node* Node::CreateChildClone(Node* srcNode, bool recurse)
     }
     else
     {
-        subNode = Node::CreateInstance(srcNode->GetType());
+        subNode = Node::CreateNew(srcNode->GetType());
     }
 
     if (subNode != nullptr)

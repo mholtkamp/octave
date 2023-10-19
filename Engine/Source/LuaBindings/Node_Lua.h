@@ -18,7 +18,8 @@ struct Node_Lua
 #endif
 
     static int Create(lua_State* L, Node* node);
-    static int Destroy(lua_State* L);
+    static int GarbageCollect(lua_State* L);
+    static int CreateNew(lua_State* L);
 
     static int IsValid(lua_State* L);
 
@@ -52,6 +53,7 @@ struct Node_Lua
     static int Start(lua_State* L);
     static int HasStarted(lua_State* L);
 
+    static int Destroy(lua_State* L);
     static int SetPendingDestroy(lua_State* L);
     static int IsPendingDestroy(lua_State* L);
     static int EnableTick(lua_State* L);

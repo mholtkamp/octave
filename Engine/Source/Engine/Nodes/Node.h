@@ -58,6 +58,9 @@ public:
     DECLARE_RTTI(Node, RTTI);
     DECLARE_SCRIPT_LINK_BASE(Node);
 
+    static Node* CreateNew(const std::string& name);
+    static Node* CreateNew(TypeId typeId);
+
     Node();
     virtual ~Node();
 
