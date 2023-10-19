@@ -28,7 +28,7 @@ const float Sphere3D::sDefaultRadius = 1.0f;
 
 Sphere3D::Sphere3D()
 {
-    mName = "Sphere Component";
+    mName = "Sphere";
     mRadius = sDefaultRadius;
 }
 

@@ -47,7 +47,7 @@ static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 
 Audio3D::Audio3D()
 {
-    mName = "Audio Component";
+    mName = "Audio";
 }
 
 Audio3D::~Audio3D()

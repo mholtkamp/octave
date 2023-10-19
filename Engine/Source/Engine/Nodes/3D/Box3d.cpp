@@ -28,7 +28,7 @@ const float Box3D::sDefaultExtent = 2.0f;
 
 Box3D::Box3D()
 {
-    mName = "Box Component";
+    mName = "Box";
     mExtents = { sDefaultExtent, sDefaultExtent, sDefaultExtent };
 }
 

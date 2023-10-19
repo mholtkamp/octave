@@ -34,7 +34,7 @@ const float Capsule3D::sDefaultRadius = 1.0f;
 
 Capsule3D::Capsule3D()
 {
-    mName = "Capsule Component";
+    mName = "Capsule";
     mHeight = sDefaultHeight;
     mRadius = sDefaultRadius;
 }
