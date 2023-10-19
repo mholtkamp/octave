@@ -7,7 +7,6 @@
 #include "Assets/SkeletalMesh.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
 
-#include "LuaBindings/Actor_Lua.h"
 #include "LuaBindings/Node_Lua.h"
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
@@ -92,7 +91,7 @@ void ScriptEvent::Animation(std::string& tableName, std::string& funcName, const
     {
         lua_newtable(L);
 
-        Component_Lua::Create(L, animEvent.mNode);
+        Node_Lua::Create(L, animEvent.mNode);
         lua_setfield(L, -2, "node");
 
         lua_pushstring(L, animEvent.mName.c_str());

@@ -13,7 +13,6 @@
 #include "LuaBindings/LuaUtils.h"
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
-#include "LuaBindings/Actor_Lua.h"
 #include "LuaBindings/Node_Lua.h"
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/Widget_Lua.h"

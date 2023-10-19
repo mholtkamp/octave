@@ -20,7 +20,6 @@
 #if LUA_ENABLED
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
-#include "LuaBindings/Actor_Lua.h"
 #include "LuaBindings/Node_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
 #endif
@@ -228,14 +227,14 @@ uint32_t OctHashString(const char* key)
     return h;
 }
 
-void GatherAllClassNames(std::vector<std::string>& outNames)
+void GatherAllNodeNames(std::vector<std::string>& outNames)
 {
     outNames.clear();
-    const std::vector<Factory*>& actorFactories = Actor::GetFactoryList();
+    const std::vector<Factory*>& nodeFactories = Node::GetFactoryList();
 
-    for (uint32_t i = 0; i < actorFactories.size(); ++i)
+    for (uint32_t i = 0; i < nodeFactories.size(); ++i)
     {
-        outNames.push_back(actorFactories[i]->GetClassName());
+        outNames.push_back(nodeFactories[i]->GetClassName());
     }
 }
 
@@ -513,17 +512,9 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
             {
                 lua_pushnil(L);
             }
-            else if (pointer->Is(Actor::ClassRuntimeId()))
+            else if (pointer->Is(Node::ClassRuntimeId()))
             {
-                Actor_Lua::Create(L, (Actor*)pointer);
-            }
-            else if (pointer->Is(Component::ClassRuntimeId()))
-            {
-                Component_Lua::Create(L, (Component*)pointer);
-            }
-            else if (pointer->Is(Widget::ClassRuntimeId()))
-            {
-                Widget_Lua::Create(L, (Widget*)pointer);
+                Node_Lua::Create(L, (Node*)pointer);
             }
             else
             {
@@ -583,26 +574,16 @@ void LuaObjectToDatum(lua_State* L, int idx, Datum& datum)
         datum.PushBack(lua_tostring(L, idx));
         break;
     case LUA_TUSERDATA:
-        // 5 main possibilities: Vector, Actor, Component, Widget, Asset
+        // 3 main possibilities: Vector, Node, Asset
         if (luaL_testudata(L, idx, VECTOR_LUA_NAME))
         {
             glm::vec4 vect = CHECK_VECTOR(L, idx);
             datum.PushBack(vect);
         }
-        else if (CheckClassFlag(L, idx, ACTOR_LUA_FLAG))
+        else if (CheckClassFlag(L, idx, NODE_LUA_FLAG))
         {
-            Actor* actor = CHECK_ACTOR(L, idx);
-            datum.PushBack(actor);
-        }
-        else if (CheckClassFlag(L, idx, COMPONENT_LUA_FLAG))
-        {
-            Component* comp = CHECK_COMPONENT(L, idx);
-            datum.PushBack(comp);
-        }
-        else if (CheckClassFlag(L, idx, WIDGET_LUA_FLAG))
-        {
-            Widget* widget = CHECK_WIDGET(L, idx);
-            datum.PushBack(widget);
+            Node* node = CHECK_NODE(L, idx);
+            datum.PushBack(node);
         }
         else //if (CheckClassFlag(L, idx, ASSET_LUA_FLAG))
         {

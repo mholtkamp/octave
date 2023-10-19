@@ -14,7 +14,6 @@
 #include "LuaBindings/System_Lua.h"
 #include "LuaBindings/Log_Lua.h"
 #include "LuaBindings/World_Lua.h"
-#include "LuaBindings/Actor_Lua.h"
 #include "LuaBindings/Node_Lua.h"
 #include "LuaBindings/Node3d_Lua.h"
 #include "LuaBindings/Primitive3d_Lua.h"
@@ -60,8 +59,7 @@
 #include "LuaBindings/ScriptWidget_Lua.h"
 #include "LuaBindings/Poly_Lua.h"
 #include "LuaBindings/PolyRect_Lua.h"
-#include "LuaBindings/ActorRef_Lua.h"
-#include "LuaBindings/ComponentRef_Lua.h"
+#include "LuaBindings/NodeRef_Lua.h"
 #include "LuaBindings/Stream_Lua.h"
 #include "LuaBindings/TimerManager_Lua.h"
 
@@ -84,15 +82,13 @@ void BindLuaInterface()
     System_Lua::Bind();
     World_Lua::Bind();
     AssetManager_Lua::Bind();
-    Actor_Lua::Bind();
-    ActorRef_Lua::Bind();
-    ComponentRef_Lua::Bind();
+    NodeRef_Lua::Bind();
     Stream_Lua::Bind();
     TimerManager_Lua::Bind();
 
     // Components need to be bound in hierarchy order.
     // Derived classes need to come after parent classes.
-    Component_Lua::Bind();
+    Node_Lua::Bind();
     Node3D_Lua::Bind();
     Primitive3D_Lua::Bind();
     Mesh3D_Lua::Bind();

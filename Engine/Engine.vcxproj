@@ -654,7 +654,6 @@
     <ClCompile Include="Source\Input\InputUtils.cpp" />
     <ClCompile Include="Source\Input\Linux\Input_Linux.cpp" />
     <ClCompile Include="Source\Input\Windows\Input_Windows.cpp" />
-    <ClCompile Include="Source\LuaBindings\ActorRef_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\AssetManager_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Asset_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Audio3d_Lua.cpp" />
@@ -677,7 +676,6 @@
     <ClCompile Include="Source\LuaBindings\LuaBindings.cpp" />
     <ClCompile Include="Source\LuaBindings\LuaTypeCheck.cpp" />
     <ClCompile Include="Source\LuaBindings\LuaUtils.cpp" />
-    <ClCompile Include="Source\LuaBindings\Actor_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Node_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Engine_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\MaterialInstance_Lua.cpp" />
@@ -704,7 +702,7 @@
     <ClCompile Include="Source\LuaBindings\SkeletalMesh3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\SkeletalMesh_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\SoundWave_Lua.cpp" />
-    <ClCompile Include="Source\LuaBindings\Sphere3d.cpp" />
+    <ClCompile Include="Source\LuaBindings\Sphere3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\StaticMesh3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\StaticMesh_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Stream_Lua.cpp" />
@@ -906,8 +904,6 @@
     <ClInclude Include="Source\Input\InputConstants.h" />
     <ClInclude Include="Source\Input\InputTypes.h" />
     <ClInclude Include="Source\Input\InputUtils.h" />
-    <ClInclude Include="Source\LuaBindings\ActorRef_Lua.h" />
-    <ClInclude Include="Source\LuaBindings\Actor_Lua.h" />
     <ClInclude Include="Source\LuaBindings\AssetManager_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Asset_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Audio3d_Lua.h" />
@@ -955,7 +951,7 @@
     <ClInclude Include="Source\LuaBindings\SkeletalMesh3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\SkeletalMesh_Lua.h" />
     <ClInclude Include="Source\LuaBindings\SoundWave_Lua.h" />
-    <ClInclude Include="Source\LuaBindings\Sphere3d.h" />
+    <ClInclude Include="Source\LuaBindings\Sphere3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\StaticMesh3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\StaticMesh_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Stream_Lua.h" />

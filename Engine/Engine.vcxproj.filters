@@ -362,9 +362,6 @@
     <ClCompile Include="Source\LuaBindings\LuaUtils.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
-    <ClCompile Include="Source\LuaBindings\Actor_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
     <ClCompile Include="Source\LuaBindings\Engine_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
@@ -498,9 +495,6 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Texture_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\LuaBindings\ActorRef_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\ScriptEvent.cpp">
@@ -740,9 +734,6 @@
     <ClCompile Include="Source\LuaBindings\SkeletalMesh3d_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
-    <ClCompile Include="Source\LuaBindings\Sphere3d.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
     <ClCompile Include="Source\LuaBindings\StaticMesh3d_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
@@ -750,6 +741,9 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Node3d_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Sphere3d_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1203,12 +1197,6 @@
     <ClInclude Include="Source\LuaBindings\World_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
-    <ClInclude Include="Source\LuaBindings\Actor_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\LuaBindings\ActorRef_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
     <ClInclude Include="Source\LuaBindings\Asset_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
@@ -1443,9 +1431,6 @@
     <ClInclude Include="Source\LuaBindings\SkeletalMesh3d_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
-    <ClInclude Include="Source\LuaBindings\Sphere3d.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
     <ClInclude Include="Source\LuaBindings\StaticMesh3d_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
@@ -1453,6 +1438,9 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Node3d_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Sphere3d_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
   </ItemGroup>

@@ -9,7 +9,6 @@
 #include "Engine.h"
 #include "ObjectRef.h"
 #include "NetworkManager.h"
-#include "LuaBindings/Actor_Lua.h"
 #include "Assets/Blueprint.h"
 
 #include "Nodes/3D/Node3d.h"
