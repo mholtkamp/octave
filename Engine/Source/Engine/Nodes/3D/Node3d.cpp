@@ -187,9 +187,19 @@ void Node3D::AttachToBone(SkeletalMesh3D* parent, int32_t boneIndex, bool keepWo
 
 void Node3D::MarkTransformDirty()
 {
+    mTransformDirty = true;
+
     // TODO-NODE: Consider propogating this to children nodes. 
     // It looks like Godot does it this way, and might remove some one-frame-delay bugs.
-    mTransformDirty = true;
+#if 0
+    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    {
+        if (mChildren[i]->IsNode3D())
+        {
+            static_cast<Node3D*>(mChildren[i])->MarkTransformDirty();
+        }
+    }
+#endif
 }
 
 bool Node3D::IsTransformDirty() const
@@ -652,6 +662,10 @@ void Node3D::Attach(Node* parent, bool keepWorldTransform)
             parent->AddChild(this);
         }
     }
+}
 
+void Node3D::SetParent(Node* parent)
+{
+    Node::SetParent(parent);
     MarkTransformDirty();
 }

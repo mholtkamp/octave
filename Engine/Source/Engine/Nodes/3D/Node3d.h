@@ -95,6 +95,8 @@ public:
 
 protected:
 
+    virtual void SetParent(Node* parent) override;
+
     glm::vec3 mPosition;
     glm::vec3 mRotationEuler;
     glm::vec3 mScale;

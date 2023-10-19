@@ -104,7 +104,7 @@ int Node_Lua::SetActive(lua_State* L)
 int Node_Lua::IsActive(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
-    bool recurse = true;
+    bool recurse = false;
 
     if (!lua_isnone(L, 2)) { recurse = CHECK_BOOLEAN(L, 2); }
 
@@ -127,7 +127,7 @@ int Node_Lua::SetVisible(lua_State* L)
 int Node_Lua::IsVisible(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
-    bool recurse = true;
+    bool recurse = false;
 
     if (!lua_isnone(L, 2)) { recurse = CHECK_BOOLEAN(L, 2); }
 
@@ -265,8 +265,11 @@ int Node_Lua::AddChild(lua_State* L)
     // TODO-NODE: Check if this works.
     Node* node = CHECK_NODE(L, 1);
     Node* newChild = CHECK_NODE(L, 2);
+    int32_t index = -1;
 
-    newChild->Attach(node);
+    if (!lua_isnone(L, 3)) { index = CHECK_INTEGER(L, 3); }
+
+    node->AddChild(newChild, index);
 
     return 0;
 }

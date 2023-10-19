@@ -39,64 +39,6 @@ static_assert(int32_t(AnchorMode::Count) == 16, "Need to update string conversio
 
 Rect Widget::sCurrentScissor = { 0.0f, 0.0f, LARGE_BOUNDS, LARGE_BOUNDS };
 
-Widget* CreateWidget(TypeId widgetType, bool start)
-{
-    Widget* retWidget = Widget::CreateInstance(widgetType);
-
-    retWidget->RegisterScriptFuncs(GetLua());
-
-#if EDITOR
-    // Mark native children. This is for the case where you add a Button to the map.
-    // You don't want to instantiate a new Text + Quad when you load the widget map.
-    // Instead you want to copy properties to the existing Text and Quad children.
-    for (uint32_t i = 0; i < retWidget->GetNumChildren(); ++i)
-    {
-        retWidget->GetChild(int32_t(i))->SetNativeChildSlot((int32_t) i);
-    }
-#endif
-
-    if (start)
-    {
-        retWidget->Start();
-    }
-
-    return retWidget;
-}
-
-Widget* CreateWidget(const std::string& className, bool start)
-{
-    Widget* retWidget = Widget::CreateInstance(className.c_str());
-
-    retWidget->RegisterScriptFuncs(GetLua());
-
-#if EDITOR
-    // Mark native children. This is for the case where you add a Button to the map.
-    // You don't want to instantiate a new Text + Quad when you load the widget map.
-    // Instead you want to copy properties to the existing Text and Quad children.
-    for (uint32_t i = 0; i < retWidget->GetNumChildren(); ++i)
-    {
-        retWidget->GetChild(int32_t(i))->SetNativeChildSlot((int32_t)i);
-    }
-#endif
-
-    if (start)
-    {
-        retWidget->Start();
-    }
-
-    return retWidget;
-}
-
-void DestroyWidget(Widget* widget)
-{
-    OCT_ASSERT(widget);
-    if (widget)
-    {
-        widget->Stop();
-        delete widget;
-    }
-}
-
 bool Widget::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
@@ -192,9 +134,9 @@ void Widget::GatherProperties(std::vector<Property>& outProps)
 
 // Issue gpu commands to display the widget.
 // Recursively render children.
-void Widget::RecursiveRender()
+void Widget::RecursiveRenderWidget()
 {
-    Render();
+    RenderWidget();
 
     if (mUseScissor)
     {
@@ -203,9 +145,9 @@ void Widget::RecursiveRender()
 
     for (uint32_t i = 0; i < mChildren.size(); ++i)
     {
-        if (mChildren[i]->IsVisible())
+        if (mChildren[i]->IsVisible() && mChildren[i]->IsWidget())
         {
-            mChildren[i]->RecursiveRender();
+            static_cast<Widget*>(mChildren[i])->RecursiveRenderWidget();
         }
     }
 
@@ -215,31 +157,26 @@ void Widget::RecursiveRender()
     }
 }
 
-void Widget::Render()
+void Widget::RenderWidget()
 {
 
 }
 
 // Refresh any data used for rendering based on this widget's state. Use dirty flag.
 // Recursively update children.
-void Widget::RecursiveUpdate()
+void Widget::RecursiveTick(float deltaTime, bool game)
 {
-    // TODO-NODE: Merge this function with RecursiveTick on Node. Can we
-    // clear the dirty flag inside Tick()?
-    Update();
-    mDirty[Renderer::Get()->GetFrameIndex()] = false;
-
-    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    // Widgets only tick when visible.
+    if (IsVisible())
     {
-        if (mChildren[i]->IsVisible())
-        {
-            mChildren[i]->RecursiveUpdate();
-        }
+        Node::RecursiveTick(deltaTime, game);
     }
 }
 
-void Widget::Update()
+void Widget::Tick(float deltaTime)
 {
+    Node::Tick(deltaTime);
+
     if (IsDirty())
     {
         UpdateRect();
@@ -852,76 +789,6 @@ bool Widget::ShouldHandleInput()
     return handleInput;
 }
 
-void Widget::AddChild(Widget* widget, int32_t index)
-{
-    if (widget != nullptr)
-    {
-        if (widget->mParent != nullptr)
-        {
-            widget->mParent->RemoveChild(widget);
-        }
-
-        if (index >= 0 && index <= (int32_t)mChildren.size())
-        {
-            mChildren.insert(mChildren.begin() + index, widget);
-        }
-        else
-        {
-            mChildren.push_back(widget);
-        }
-
-        widget->mParent = this;
-        widget->MarkDirty();
-    }
-}
-
-#error Make GetChild() use index only. GetChild(name) should use FindChild(name, recurse) instead!
-Widget* Widget::FindChild(const std::string& name, bool recurse)
-{
-    Widget* retWidget = nullptr;
-
-    for (uint32_t i = 0; i < mChildren.size(); ++i)
-    {
-        if (mChildren[i]->GetName() == name)
-        {
-            retWidget = mChildren[i];
-            break;
-        }
-    }
-
-    if (recurse &&
-        retWidget == nullptr)
-    {
-        for (uint32_t i = 0; i < mChildren.size(); ++i)
-        {
-            retWidget = mChildren[i]->FindChild(name, recurse);
-
-            if (retWidget != nullptr)
-            {
-                break;
-            }
-        }
-    }
-
-    return retWidget;
-}
-
-int32_t Widget::FindChildIndex(Widget* widget)
-{
-    int32_t retIdx = -1;
-
-    for (uint32_t i = 0; i < mChildren.size(); ++i)
-    {
-        if (mChildren[i] == widget)
-        {
-            retIdx = (int32_t)i;
-            break;
-        }
-    }
-
-    return retIdx;
-}
-
 void Widget::MarkDirty()
 {
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
@@ -1035,22 +902,10 @@ void Widget::EnableScissor(bool enable)
     mUseScissor = enable;
 }
 
-bool Widget::HasAncestor(Widget* widget)
+void Widget::SetParent(Node* parent)
 {
-    bool hasParent = false;
-    if (mParent != nullptr)
-    {
-        if (mParent == widget)
-        {
-            hasParent = true;
-        }
-        else
-        {
-            hasParent = mParent->HasParent(widget);
-        }
-    }
-
-    return hasParent;
+    Node::SetParent(parent);
+    MarkDirty();
 }
 
 float Widget::PixelsToRatioX(float x) const

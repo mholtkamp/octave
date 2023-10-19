@@ -128,7 +128,7 @@ struct Bounds
 
 struct DrawData
 {
-    Primitive3D* mComponent;
+    Primitive3D* mNode;
     Material* mMaterial;
     ShadingModel mShadingModel;
     BlendMode mBlendMode;

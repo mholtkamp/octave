@@ -226,7 +226,7 @@ void Node::Copy(Node* srcNode)
 
         if (i >= GetNumChildren())
         {
-            dstChild = CreateChildNode(srcChild->GetType());
+            dstChild = CreateChild(srcChild->GetType());
         }
         else
         {
@@ -329,7 +329,7 @@ void Node::RecursiveTick(float deltaTime, bool game)
 
 void Node::Tick(float deltaTime)
 {
-    // TODO-NODE: Need to implement RecursiveTick(). Replace Widget's RecursiveUpdate()?
+
 }
 
 void Node::EditorTick(float deltaTime)
@@ -526,7 +526,7 @@ void Node::RenderSelected(bool renderChildren)
 #endif
 }
 
-Node* Node::CreateChildNode(TypeId nodeType)
+Node* Node::CreateChild(TypeId nodeType)
 {
     Node* subNode = Node::CreateInstance(nodeType);
 
@@ -540,11 +540,15 @@ Node* Node::CreateChildNode(TypeId nodeType)
             subNode->Start();
         }
     }
+    else
+    {
+        LogError("Failed to create child node.");
+    }
 
     return subNode;
 }
 
-Node* Node::CreateChildNode(const char* typeName)
+Node* Node::CreateChild(const char* typeName)
 {
     Node* subNode = nullptr;
     const std::vector<Factory*>& factories = Node::GetFactoryList();
@@ -552,7 +556,7 @@ Node* Node::CreateChildNode(const char* typeName)
     {
         if (strncmp(typeName, factories[i]->GetClassName(), MAX_PATH_SIZE) == 0)
         {
-            subNode = CreateChildNode(factories[i]->GetType());
+            subNode = CreateChild(factories[i]->GetType());
             break;
         }
     }
@@ -560,7 +564,7 @@ Node* Node::CreateChildNode(const char* typeName)
     return subNode;
 }
 
-Node* Node::CloneChildNode(Node* srcNode, bool recurse)
+Node* Node::CreateChildClone(Node* srcNode, bool recurse)
 {
     Node* subNode = nullptr;
     Scene* srcScene = srcNode->GetScene();
@@ -587,7 +591,7 @@ Node* Node::CloneChildNode(Node* srcNode, bool recurse)
             // Clone children
             for (uint32_t i = 0; i < srcNode->GetNumChildren(); ++i)
             {
-                subNode->CloneChildNode(srcNode->GetChild(i), recurse);
+                subNode->CreateChildClone(srcNode->GetChild(i), recurse);
             }
         }
 
@@ -600,9 +604,12 @@ Node* Node::CloneChildNode(Node* srcNode, bool recurse)
     return subNode;
 }
 
-void Node::DestroyChildNode(Node* childNode)
+void Node::DestroyChild(Node* childNode)
 {
-    RemoveChild(childNode);
+    // TODO-NODE: This working right? Destroy() should detach the node. And 
+    // I think we want to still have the parent set while Stop() / Destroy() is called.
+    //RemoveChild(childNode);
+
     childNode->Destroy();
     delete childNode;
 }
@@ -659,11 +666,24 @@ bool Node::IsPersistent() const
 
 void Node::SetWorld(World * world)
 {
-    mWorld = world;
-
-    for (uint32_t i = 0; i < GetNumChildren(); ++i)
+    if (mWorld != world)
     {
-        GetChild(i)->SetWorld(world);
+        if (mWorld != nullptr)
+        {
+            mWorld->UnregisterNode(this);
+        }
+
+        mWorld = world;
+
+        if (mWorld != nullptr)
+        {
+            mWorld->RegisterNode(this);
+        }
+
+        for (uint32_t i = 0; i < GetNumChildren(); ++i)
+        {
+            GetChild(i)->SetWorld(world);
+        }
     }
 }
 
@@ -850,7 +870,7 @@ const char* Node::GetTypeName() const
 DrawData Node::GetDrawData()
 {
     DrawData ret = {};
-    ret.mComponent = nullptr;
+    ret.mNode = nullptr;
     ret.mMaterial = nullptr;
     return ret;
 }
@@ -917,33 +937,26 @@ void Node::Detach(bool keepWorldTransform)
     Attach(nullptr, keepWorldTransform);
 }
 
-void Node::AddChild(Node* child)
+void Node::AddChild(Node* child, int32_t index)
 {
     if (child != nullptr)
     {
-        // Check to make sure we aren't adding a duplicate
-        bool childFound = false;
-        for (uint32_t i = 0; i < mChildren.size(); ++i)
+        if (child->mParent != nullptr)
         {
-            if (mChildren[i] == child)
-            {
-                childFound = true;
-                break;
-            }
+            child->mParent->RemoveChild(child);
         }
 
-        OCT_ASSERT(!childFound); // Child already parented to this node?
-        if (!childFound)
+        if (index >= 0 && index <= (int32_t)mChildren.size())
+        {
+            mChildren.insert(mChildren.begin() + index, child);
+        }
+        else
         {
             mChildren.push_back(child);
-            child->mParent = this;
-            child->SetWorld(mWorld);
-
-            if (mWorld != nullptr)
-            {
-                mWorld->RegisterNode(child);
-            }
         }
+
+        child->mParent = this;
+        child->SetWorld(mWorld);
     }
 }
 
@@ -976,23 +989,19 @@ void Node::RemoveChild(int32_t index)
     {
         Node* child = mChildren[index];
 
-        if (child->GetWorld() != nullptr)
-        {
-            child->GetWorld()->UnregisterNode(child);
-            child->SetWorld(nullptr);
-        }
+        child->SetWorld(nullptr);
 
         child->mParent = nullptr;
         mChildren.erase(mChildren.begin() + index);
     }
 }
 
-int32_t Node::GetChildIndex(const char* childName) const
+int32_t Node::FindChildIndex(const std::string& name) const
 {
     int32_t index = -1;
     for (int32_t i = 0; i < int32_t(mChildren.size()); ++i)
     {
-        if (mChildren[i]->GetName() == childName)
+        if (mChildren[i]->GetName() == name)
         {
             index = i;
             break;
@@ -1002,15 +1011,76 @@ int32_t Node::GetChildIndex(const char* childName) const
     return index;
 }
 
-Node* Node::GetChild(const char* childName) const
+Node* Node::FindChild(const std::string& name, bool recurse) const
 {
     Node* retNode = nullptr;
-    int32_t index = GetChildIndex(childName);
-    if (index != -1)
+
+    for (uint32_t i = 0; i < mChildren.size(); ++i)
     {
-        retNode = GetChild(index);
+        if (mChildren[i]->GetName() == name)
+        {
+            retNode = mChildren[i];
+            break;
+        }
     }
+
+    if (recurse &&
+        retNode == nullptr)
+    {
+        for (uint32_t i = 0; i < mChildren.size(); ++i)
+        {
+            retNode = mChildren[i]->FindChild(name, recurse);
+
+            if (retNode != nullptr)
+            {
+                break;
+            }
+        }
+    }
+
     return retNode;
+}
+
+Node* Node::FindDescendant(const std::string& name)
+{
+    return FindChild(name, true);
+}
+
+Node* Node::FindAncestor(const std::string& name)
+{
+    Node* ret = nullptr;
+
+    if (mParent != nullptr)
+    {
+        if (mParent->GetName() == name)
+        {
+            ret = mParent;
+        }
+        else
+        {
+            ret = mParent->FindAncestor(name);
+        }
+    }
+
+    return ret;
+}
+
+bool Node::HasAncestor(Node* node)
+{
+    bool hasAncestor = false;
+    if (mParent != nullptr)
+    {
+        if (mParent == node)
+        {
+            hasAncestor = true;
+        }
+        else
+        {
+            hasAncestor = mParent->HasAncestor(node);
+        }
+    }
+
+    return hasAncestor;
 }
 
 Node* Node::GetChild(int32_t index) const
@@ -1276,6 +1346,11 @@ NetFunc* Node::FindNetFunc(uint16_t index)
     }
 
     return retFunc;
+}
+
+void Node::SetParent(Node* parent)
+{
+    mParent = parent;
 }
 
 void Node::SendNetFunc(NetFunc* func, uint32_t numParams, Datum** params)

@@ -79,8 +79,8 @@ public:
 
     // Issue gpu commands to display the widget.
     // Recursively render children.
-    void RecursiveRender();
-    virtual void Render();
+    void RecursiveRenderWidget();
+    virtual void RenderWidget();
 
     // Refresh any data used for rendering based on this widget's state. Use dirty flag.
     // Recursively update children.
@@ -166,15 +166,6 @@ public:
     
     virtual bool ShouldHandleInput();
 
-    void AddChild(Widget* widget, int32_t index = -1);
-    Widget* RemoveChild(Widget* widget);
-    Widget* RemoveChild(int32_t index);
-    Widget* GetChild(int32_t index);
-    void DetachFromParent();
-    uint32_t GetNumChildren() const;
-    Widget* FindChild(const std::string& name, bool recurse = false);
-    int32_t FindChildIndex(Widget* widget);
-
     virtual void MarkDirty();
     bool IsDirty() const;
 
@@ -198,44 +189,14 @@ public:
     bool IsScissorEnabled() const;
     void EnableScissor(bool enable);
 
-    bool IsScriptOwned() const;
-    void SetScriptOwned(bool scriptOwned);
-
-    bool HasParent(Widget* widget);
-    bool HasStarted() const;
-
-    template<typename T>
-    T* CreateChildWidget(const char* name = nullptr)
-    {
-        T* ret = new T();
-        ret->Start();
-        if (name != nullptr)
-        {
-            ret->SetName(name);
-        }
-        AddChild(ret);
-        return ret;
-    }
-
-    template<typename T>
-    T* FindChild(const std::string& name, bool recurse)
-    {
-        T* ret = nullptr;
-        Widget* child = FindChild(name, recurse);
-        if (child != nullptr)
-        {
-            ret = child->As<T>();
-        }
-
-        return ret;
-    }
-
     static void ResetScissor();
 
 protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
     static Rect sCurrentScissor;
+
+    virtual void SetParent(Node* parent) override;
 
     float PixelsToRatioX(float x) const;
     float PixelsToRatioY(float y) const;

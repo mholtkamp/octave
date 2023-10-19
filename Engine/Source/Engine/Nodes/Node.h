@@ -95,22 +95,22 @@ public:
     void RenderShadow();
     void RenderSelected(bool renderChildren);
 
-    Node* CreateChildNode(TypeId nodeType);
-    Node* CreateChildNode(const char* typeName);
-    Node* CloneChildNode(Node* srcNode, bool recurse);
-    void DestroyChildNode(Node* node);
+    Node* CreateChild(TypeId nodeType);
+    Node* CreateChild(const char* typeName);
+    Node* CreateChildClone(Node* srcNode, bool recurse);
+    void DestroyChild(Node* node);
     void DestroyAllChildren();
 
     template<class NodeClass>
-    NodeClass* CreateChildNode()
+    NodeClass* CreateChild()
     {
-        return (NodeClass*)CreateChildNode(NodeClass::GetStaticType());
+        return (NodeClass*)CreateChild(NodeClass::GetStaticType());
     }
 
     template<class NodeClass>
-    NodeClass* CreateChildNode(const char* name)
+    NodeClass* CreateChild(const char* name)
     {
-        NodeClass* ret = (NodeClass*)CreateChildNode(NodeClass::GetStaticType());
+        NodeClass* ret = (NodeClass*)CreateChild(NodeClass::GetStaticType());
         ret->SetName(name);
         return ret;
     }
@@ -157,9 +157,9 @@ public:
     void SetName(const std::string& newName);
     const std::string& GetName() const;
     void SetActive(bool active);
-    bool IsActive(bool recurse) const;
+    bool IsActive(bool recurse = false) const;
     void SetVisible(bool visible);
-    bool IsVisible(bool recurse) const;
+    bool IsVisible(bool recurse = false) const;
     void SetTransient(bool transient);
     virtual bool IsTransient() const;
 
@@ -182,12 +182,15 @@ public:
 
     virtual void Attach(Node* parent, bool keepWorldTransform = false);
     void Detach(bool keepWorldTransform = false);
-    void AddChild(Node* child);
+    void AddChild(Node* child, int32_t index = -1);
     void RemoveChild(Node* child);
     void RemoveChild(int32_t index);
 
-    int32_t GetChildIndex(const char* childName) const;
-    Node* GetChild(const char* childName) const;
+    int32_t FindChildIndex(const std::string& name) const;
+    Node* FindChild(const std::string& name, bool recurse) const;
+    Node* FindDescendant(const std::string& name);
+    Node* FindAncestor(const std::string& name);
+    bool HasAncestor(Node* node);
     Node* GetChild(int32_t index) const;
     Node* GetChildByType(TypeId type) const;
     uint32_t GetNumChildren() const;
@@ -219,7 +222,22 @@ public:
 
     static void RegisterNetFuncs(Node* node);
 
+    template<typename T>
+    T* FindChild(const std::string& name, bool recurse)
+    {
+        T* ret = nullptr;
+        Node* child = FindChild(name, recurse);
+        if (child != nullptr)
+        {
+            ret = child->As<T>();
+        }
+
+        return ret;
+    }
+
 protected:
+
+    virtual void SetParent(Node* parent);
 
     void SendNetFunc(NetFunc* func, uint32_t numParams, Datum** params);
 
