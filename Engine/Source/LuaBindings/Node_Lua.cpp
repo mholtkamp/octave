@@ -104,8 +104,11 @@ int Node_Lua::SetActive(lua_State* L)
 int Node_Lua::IsActive(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
+    bool recurse = true;
 
-    bool active = node->IsActive();
+    if (!lua_isnone(L, 2)) { recurse = CHECK_BOOLEAN(L, 2); }
+
+    bool active = node->IsActive(recurse);
 
     lua_pushboolean(L, active);
     return 1;
@@ -124,8 +127,11 @@ int Node_Lua::SetVisible(lua_State* L)
 int Node_Lua::IsVisible(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
+    bool recurse = true;
 
-    bool isVisible = node->IsVisible();
+    if (!lua_isnone(L, 2)) { recurse = CHECK_BOOLEAN(L, 2); }
+
+    bool isVisible = node->IsVisible(recurse);
 
     lua_pushboolean(L, isVisible);
     return 1;
@@ -305,8 +311,9 @@ int Node_Lua::CloneChildNode(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
     Node* srcNode = CHECK_NODE(L, 2);
+    bool recurse = CHECK_BOOLEAN(L, 3);
 
-    Node* newChild = node->CloneChildNode(srcNode);
+    Node* newChild = node->CloneChildNode(srcNode, recurse);
 
     Node_Lua::Create(L, newChild);
     return 1;

@@ -10,7 +10,7 @@
 #include "Nodes/3D/SkeletalMesh3d.h"
 
 FORCE_LINK_DEF(Node3D);
-DEFINE_NODE(Node3D);
+DEFINE_NODE(Node3D, Node);
 
 bool HandleTransformPropChange(Datum* datum, uint32_t index, const void* newValue)
 {

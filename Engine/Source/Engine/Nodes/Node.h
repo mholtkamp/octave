@@ -97,7 +97,7 @@ public:
 
     Node* CreateChildNode(TypeId nodeType);
     Node* CreateChildNode(const char* typeName);
-    Node* CloneChildNode(Node* srcNode);
+    Node* CloneChildNode(Node* srcNode, bool recurse);
     void DestroyChildNode(Node* node);
     void DestroyAllChildren();
 
@@ -157,9 +157,9 @@ public:
     void SetName(const std::string& newName);
     const std::string& GetName() const;
     void SetActive(bool active);
-    bool IsActive() const;
+    bool IsActive(bool recurse) const;
     void SetVisible(bool visible);
-    bool IsVisible() const;
+    bool IsVisible(bool recurse) const;
     void SetTransient(bool transient);
     virtual bool IsTransient() const;
 
@@ -172,10 +172,12 @@ public:
     virtual DrawData GetDrawData();
 
     virtual bool IsNode3D() const;
+    virtual bool IsWidget() const;
     virtual bool IsPrimitive3D() const;
     virtual bool IsLight3D() const;
 
     Node* GetParent();
+    const Node* GetParent() const;
     const std::vector<Node*>& GetChildren() const;
 
     virtual void Attach(Node* parent, bool keepWorldTransform = false);

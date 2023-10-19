@@ -11,10 +11,7 @@
 #include "Graphics/Graphics.h"
 
 FORCE_LINK_DEF(Widget);
-DEFINE_FACTORY_MANAGER(Widget);
-DEFINE_FACTORY(Widget, Widget);
-DEFINE_RTTI(Widget);
-DEFINE_SCRIPT_LINK_BASE(Widget);
+DEFINE_NODE(Widget, Node);
 
 static const char* sAnchorModeStrings[] =
 {
@@ -151,7 +148,6 @@ void Widget::ResetScissor()
 }
 
 Widget::Widget() :
-    mParent(nullptr),
     mTransform(1.0f),
     mColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)),
     mOffset(glm::vec2(0.0f, 0.0f)),
@@ -163,9 +159,6 @@ Widget::Widget() :
     mAnchorMode(AnchorMode::TopLeft),
     mActiveMargins(0),
     mUseScissor(false),
-    mVisible(true),
-    mScriptOwned(false),
-    mStarted(false),
     mOpacity(255)
 {
     MarkDirty();
@@ -176,37 +169,13 @@ Widget::Widget() :
     mCachedParentScissorRect = Rect(0.0f, 0.0f, 10000.0f, 10000.0f);
 }
 
-Widget::~Widget()
-{
-    for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
-    {
-        // Script-owned widgets are managed by Lua.
-        // It's possible that this could cause some weird chain
-        // of references that take multiple garbage collection iterations
-        // to fully free up the memory held by child script widgets.
-        if (mChildren[i]->IsScriptOwned())
-        {
-            RemoveChild(i);
-        }
-        else
-        {
-            delete mChildren[i];
-            mChildren[i] = nullptr;
-        }
-    }
-
-    mChildren.clear();
-}
-
 void Widget::GatherProperties(std::vector<Property>& outProps)
 {
-    outProps.push_back(Property(DatumType::String, "Name", this, &mName, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Byte, "Anchor", this, &mAnchorMode, 1, Widget::HandlePropChange, 0, int32_t(AnchorMode::Count), sAnchorModeStrings));
     
 #if EDITOR
     outProps.push_back(Property(DatumType::Bool, "Expose Variable", this, &mExposeVariable, 1, Widget::HandlePropChange));
 #endif
-    outProps.push_back(Property(DatumType::Bool, "Visible", this, &mVisible, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Scissor", this, &mUseScissor, 1, Widget::HandlePropChange));
 
     outProps.push_back(Property(DatumType::Vector2D, "Offset", this, &mOffset, 1, Widget::HandlePropChange));
@@ -219,80 +188,6 @@ void Widget::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Rotation", this, &mRotation, 1, Widget::HandlePropChange));
 
     //outProps.push_back(Property(DatumType::Asset, "Widget Map", this, &mWidgetMap, 1, Widget::HandlePropChange, int32_t(WidgetMap::GetStaticType())))
-}
-
-Widget* Widget::Clone()
-{
-    Widget* newWidget = nullptr;
-    
-#if EDITOR
-    if (mWidgetMap != nullptr)
-    {
-        newWidget = mWidgetMap.Get<WidgetMap>()->Instantiate();
-        newWidget->mWidgetMap = mWidgetMap;
-    }
-    else
-    {
-        newWidget = CreateWidget(GetType(), false);
-    }
-#else
-    newWidget = CreateWidget(GetType(), false);
-#endif
-
-    std::vector<Property> srcProps;
-    GatherProperties(srcProps);
-
-    std::vector<Property> dstProps;
-    newWidget->GatherProperties(dstProps);
-
-    CopyPropertyValues(dstProps, srcProps);
-
-#if EDITOR
-
-    std::vector<Widget*> arrangedNativeWidgets;
-
-    // Copy properties for native children first.
-    for (uint32_t i = 0; i < mChildren.size(); ++i)
-    {
-        if (mChildren[i]->IsNativeChild())
-        {
-            std::vector<Property> nativeSrcProps;
-            mChildren[i]->GatherProperties(nativeSrcProps);
-
-            Widget* dstChild = newWidget->GetChild(mChildren[i]->GetNativeChildSlot());
-            std::vector<Property> nativeDstProps;
-            dstChild->GatherProperties(nativeDstProps);
-
-            CopyPropertyValues(nativeDstProps, nativeSrcProps);
-
-            arrangedNativeWidgets.push_back(dstChild);
-        }
-    }
-
-    // Possibly rearrange native children
-    for (uint32_t i = 0; i < arrangedNativeWidgets.size(); ++i)
-    {
-        newWidget->AddChild(arrangedNativeWidgets[i], i);
-    }
-
-    // Then duplicate the rest of the children
-    for (uint32_t i = 0; i < mChildren.size(); ++i)
-    {
-        if (!mChildren[i]->IsNativeChild())
-        {
-            Widget* newChild = mChildren[i]->Clone();
-            newWidget->AddChild(newChild, i);
-        }
-    }
-#else
-    for (uint32_t i = 0; i < mChildren.size(); ++i)
-    {
-        Widget* newChild = mChildren[i]->Clone();
-        newWidget->AddChild(newChild);
-    }
-#endif
-
-    return newWidget;
 }
 
 // Issue gpu commands to display the widget.
@@ -352,40 +247,27 @@ void Widget::Update()
     }
 }
 
-void Widget::Start()
+bool Widget::IsWidget() const
 {
-    // This function is mainly so that C++ widgets have a point to setup things
-    // after a WidgetMap has been instantiated. It can look for child widgets by name for instance.
-    if (!mStarted)
+    return true;
+}
+
+Widget* Widget::GetParentWidget()
+{
+    return const_cast<Widget*>(const_cast<const Widget*>(this)->GetParentWidget());
+}
+
+const Widget* Widget::GetParentWidget() const
+{
+    const Widget* parentWidget = nullptr;
+    const Node* parent = GetParent();
+
+    if (parent && parent->IsWidget())
     {
-        for (uint32_t i = 0; i < mChildren.size(); ++i)
-        {
-            if (!mChildren[i]->mStarted)
-            {
-                mChildren[i]->Start();
-            }
-        }
-
-        mStarted = true;
+        parentWidget = (const Widget*)parent;
     }
-}
 
-void Widget::Stop()
-{
-    for (uint32_t i = 0; i < mChildren.size(); ++i)
-    {
-        mChildren[i]->Stop();
-    }
-}
-
-void Widget::SetName(const std::string& name)
-{
-    mName = name;
-}
-
-const std::string& Widget::GetName() const
-{
-    return mName;
+    return parentWidget;
 }
 
 Rect Widget::GetRect()
@@ -787,9 +669,11 @@ void Widget::UpdateRect()
 {
     Rect parentRect;
 
-    if (mParent != nullptr)
+    Widget* parent = GetParentWidget();
+
+    if (parent != nullptr)
     {
-        parentRect = mParent->GetRect();
+        parentRect = parent->GetRect();
     }
     else
     {
@@ -811,7 +695,7 @@ void Widget::UpdateRect()
     mAbsoluteScale = mScale;
     if (mParent != nullptr)
     {
-        mAbsoluteScale *= mParent->mAbsoluteScale;
+        mAbsoluteScale *= parent->mAbsoluteScale;
     }
     else
     {
@@ -859,15 +743,16 @@ void Widget::UpdateRect()
     mTransform = glm::rotate(mTransform, mRotation * DEGREES_TO_RADIANS);
     mTransform = glm::translate(mTransform, { -pivotPoint.x, -pivotPoint.y });
 
-    if (mParent)
+    if (parent)
     {
-        mTransform = mParent->GetTransform() * mTransform;
+        mTransform = parent->GetTransform() * mTransform;
     }
 }
 
 void Widget::UpdateColor()
 {
-    float parentAlpha = mParent ? mParent->mColor.a : 1.0f;
+    Widget* parent = GetParentWidget();
+    float parentAlpha = parent ? parent->mColor.a : 1.0f;
     float thisOpacity = GetOpacityFloat();
     mColor.a = (parentAlpha * thisOpacity);
 }
@@ -881,12 +766,13 @@ void Widget::FitInsideParent()
 
     Rect parentRect;
 
-    if (GetParent() != nullptr)
+    Widget* parent = GetParentWidget();
+    if (parent != nullptr)
     {
         parentRect.mX = 0.0f;
         parentRect.mY = 0.0f;
-        parentRect.mWidth = GetParent()->GetWidth();
-        parentRect.mHeight = GetParent()->GetHeight();
+        parentRect.mWidth = parent->GetWidth();
+        parentRect.mHeight = parent->GetHeight();
     }
     else
     {
@@ -910,48 +796,18 @@ void Widget::FitInsideParent()
 float Widget::GetParentWidth() const
 {
     return
-        mParent ?
-        mParent->GetWidth() :
+        GetParentWidget() ?
+        GetParentWidget()->GetWidth() :
         Renderer::Get()->GetScreenResolution().x;
 }
 
 float Widget::GetParentHeight() const
 {
     return
-        mParent ?
-        mParent->GetHeight() :
+        GetParentWidget() ?
+        GetParentWidget()->GetHeight() :
         Renderer::Get()->GetScreenResolution().y;
 }
-
-void Widget::SetVisible(bool visible)
-{
-    mVisible = visible;
-}
-
-bool Widget::IsVisible() const
-{
-    return mVisible;
-}
-
-bool Widget::IsVisibleRecursive() const
-{
-    bool visible = mVisible;
-
-    if (visible)
-    {
-        if (mParent != nullptr)
-        {
-            visible = mParent->IsVisibleRecursive();
-        }
-        else
-        {
-            visible = Renderer::Get()->HasWidget(this, -1);
-        }
-    }
-
-    return visible;
-}
-
 
 void Widget::SetColor(glm::vec4 color)
 {
@@ -1019,62 +875,7 @@ void Widget::AddChild(Widget* widget, int32_t index)
     }
 }
 
-Widget* Widget::RemoveChild(Widget* widget)
-{
-    Widget* removedWidget = nullptr;
-
-    for (uint32_t i = 0; i < mChildren.size(); ++i)
-    {
-        if (mChildren[i] == widget)
-        {
-            removedWidget = mChildren[i];
-            removedWidget->mParent = nullptr;
-            mChildren.erase(mChildren.begin() + i);
-            break;
-        }
-    }
-
-    return removedWidget;
-}
-
-Widget* Widget::RemoveChild(int32_t index)
-{
-    Widget* removedWidget = nullptr;
-
-    if (index >= 0 &&
-        index < int32_t(mChildren.size()))
-    {
-        removedWidget = mChildren[index];
-        removedWidget->mParent = nullptr;
-        mChildren.erase(mChildren.begin() + index);
-    }
-
-    return removedWidget;
-}
-
-Widget* Widget::GetChild(int32_t index)
-{
-    return mChildren[index];
-}
-
-Widget* Widget::GetParent()
-{
-    return mParent;
-}
-
-void Widget::DetachFromParent()
-{
-    if (mParent != nullptr)
-    {
-        mParent->RemoveChild(this);
-    }
-}
-
-uint32_t Widget::GetNumChildren() const
-{
-    return uint32_t(mChildren.size());
-}
-
+#error Make GetChild() use index only. GetChild(name) should use FindChild(name, recurse) instead!
 Widget* Widget::FindChild(const std::string& name, bool recurse)
 {
     Widget* retWidget = nullptr;
@@ -1130,7 +931,10 @@ void Widget::MarkDirty()
 
     for (uint32_t i = 0; i < mChildren.size(); ++i)
     {
-        mChildren[i]->MarkDirty();
+        if (mChildren[i]->IsWidget())
+        {
+            static_cast<Widget*>(mChildren[i])->MarkDirty();
+        }
     }
 }
 
@@ -1231,17 +1035,7 @@ void Widget::EnableScissor(bool enable)
     mUseScissor = enable;
 }
 
-bool Widget::IsScriptOwned() const
-{
-    return mScriptOwned;
-}
-
-void Widget::SetScriptOwned(bool scriptOwned)
-{
-    mScriptOwned = scriptOwned;
-}
-
-bool Widget::HasParent(Widget* widget)
+bool Widget::HasAncestor(Widget* widget)
 {
     bool hasParent = false;
     if (mParent != nullptr)
@@ -1257,11 +1051,6 @@ bool Widget::HasParent(Widget* widget)
     }
 
     return hasParent;
-}
-
-bool Widget::HasStarted() const
-{
-    return mStarted;
 }
 
 float Widget::PixelsToRatioX(float x) const
@@ -1311,15 +1100,6 @@ void Widget::SetScissor(Rect& area)
 }
 
 #if EDITOR
-WidgetMap* Widget::GetWidgetMap()
-{
-    return mWidgetMap.Get<WidgetMap>();
-}
-
-void Widget::SetWidgetMap(WidgetMap* map)
-{
-    mWidgetMap = map;
-}
 
 bool Widget::ShouldExposeVariable() const
 {
@@ -1329,21 +1109,6 @@ bool Widget::ShouldExposeVariable() const
 void Widget::SetExposeVariable(bool expose)
 {
     mExposeVariable = expose;
-}
-
-bool Widget::IsNativeChild() const
-{
-    return mNativeChildSlot != -1;
-}
-
-int32_t Widget::GetNativeChildSlot() const
-{
-    return mNativeChildSlot;
-}
-
-void Widget::SetNativeChildSlot(int32_t slot)
-{
-    mNativeChildSlot = slot;
 }
 
 #endif

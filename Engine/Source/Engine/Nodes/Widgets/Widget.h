@@ -3,9 +3,9 @@
 #include "Rect.h"
 #include "EngineTypes.h"
 #include "Factory.h"
-#include "ScriptAutoReg.h"
-
 #include "AssetRef.h"
+
+#include "Nodes/Node.h"
 
 #include "Maths.h"
 #include <vector>
@@ -15,16 +15,6 @@
 
 class Widget;
 class WidgetMap;
-
-#define DECLARE_WIDGET(Base, Parent) \
-        DECLARE_FACTORY(Base, Widget); \
-        DECLARE_RTTI(Base, Parent); \
-        DECLARE_SCRIPT_LINK(Base, Parent, Widget);
-
-#define DEFINE_WIDGET(Base, Parent) \
-        DEFINE_FACTORY(Base, Widget); \
-        DEFINE_RTTI(Base); \
-        DEFINE_SCRIPT_LINK(Base, Parent, Widget);
 
 enum class AnchorMode : uint8_t
 {
@@ -77,22 +67,15 @@ inline T* CreateWidget(bool start = true)
 }
 
 
-class Widget : public RTTI
+class Widget : public Node
 {
 public:
 
-    DECLARE_FACTORY_MANAGER(Widget);
-    DECLARE_FACTORY(Widget, Widget);
-    DECLARE_RTTI(Widget, RTTI);
-
-    DECLARE_SCRIPT_LINK_BASE(Widget);
+    DECLARE_NODE(Widget, Node);
 
     Widget();
-    virtual ~Widget();
 
-    virtual void GatherProperties(std::vector<Property>& outProps);
-
-    Widget* Clone();
+    virtual void GatherProperties(std::vector<Property>& outProps) override;
 
     // Issue gpu commands to display the widget.
     // Recursively render children.
@@ -101,14 +84,12 @@ public:
 
     // Refresh any data used for rendering based on this widget's state. Use dirty flag.
     // Recursively update children.
-    void RecursiveUpdate();
-    virtual void Update();
+    virtual void RecursiveTick(float deltaTime, bool game) override;
+    virtual void Tick(float deltaTime) override;
 
-    virtual void Start();
-    virtual void Stop();
-
-    void SetName(const std::string& name);
-    const std::string& GetName() const;
+    virtual bool IsWidget() const override;
+    Widget* GetParentWidget();
+    const Widget* GetParentWidget() const;
 
     Rect GetRect();
 
@@ -173,8 +154,6 @@ public:
     float GetParentWidth() const;
     float GetParentHeight() const;
 
-    virtual void SetVisible(bool visible);
-    bool IsVisible() const;
     bool IsVisibleRecursive() const;
     virtual void SetColor(glm::vec4 color);
     glm::vec4 GetColor() const;
@@ -191,7 +170,6 @@ public:
     Widget* RemoveChild(Widget* widget);
     Widget* RemoveChild(int32_t index);
     Widget* GetChild(int32_t index);
-    Widget* GetParent();
     void DetachFromParent();
     uint32_t GetNumChildren() const;
     Widget* FindChild(const std::string& name, bool recurse = false);
@@ -268,10 +246,6 @@ protected:
     void PopScissor();
     void SetScissor(Rect& area);
 
-    Widget* mParent;
-    std::vector<Widget*> mChildren;
-    std::string mName;
-
     Rect mRect; // The screen pos/dimensions that are computed on Update().
     Rect mCachedScissorRect;
     Rect mCachedParentScissorRect;
@@ -286,30 +260,22 @@ protected:
     AnchorMode mAnchorMode;
     uint8_t mActiveMargins;
     bool mUseScissor;
-    bool mVisible;
-    bool mScriptOwned;
-    bool mStarted;
     uint8_t mOpacity;
 
 private:
     bool mDirty[MAX_FRAMES] = {};
 
+    // TODO-NODE: I removed the IsNativeChild() and related functions. Do we need to add that into Node?
 
 #if EDITOR
 public:
-    WidgetMap* GetWidgetMap();
-    void SetWidgetMap(WidgetMap* map);
-
+    // TODO-NODE: Either remove mExposeVariable, or make sure it works with Scenes.
+    // Could consider moving this up to Node if it would be useful from avoiding FindChild() calls in Start().
     bool ShouldExposeVariable() const;
     void SetExposeVariable(bool expose);
 
-    bool IsNativeChild() const;
-    int32_t GetNativeChildSlot() const;
-    void SetNativeChildSlot(int32_t slot);
 protected:
-    // This is only used by the Widget editor.
-    WidgetMapRef mWidgetMap;
-    int32_t mNativeChildSlot = -1;
+
     bool mExposeVariable = false;
 #endif
 };

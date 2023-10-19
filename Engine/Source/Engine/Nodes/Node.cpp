@@ -560,15 +560,36 @@ Node* Node::CreateChildNode(const char* typeName)
     return subNode;
 }
 
-Node* Node::CloneChildNode(Node* srcNode)
+Node* Node::CloneChildNode(Node* srcNode, bool recurse)
 {
-    Node* subNode = Node::CreateInstance(srcNode->GetType());
+    Node* subNode = nullptr;
+    Scene* srcScene = srcNode->GetScene();
+
+    if (srcScene != nullptr)
+    {
+        subNode = srcScene->Instantiate();
+    }
+    else
+    {
+        subNode = Node::CreateInstance(srcNode->GetType());
+    }
 
     if (subNode != nullptr)
     {
         AddChild(subNode);
         subNode->Create();
+
+        // Might need to move copy after recurse block if properties aren't getting copied correctly.
         subNode->Copy(srcNode);
+
+        if (recurse && !srcScene)
+        {
+            // Clone children
+            for (uint32_t i = 0; i < srcNode->GetNumChildren(); ++i)
+            {
+                subNode->CloneChildNode(srcNode->GetChild(i), recurse);
+            }
+        }
 
         if (HasStarted())
         {
@@ -767,9 +788,16 @@ void Node::SetActive(bool active)
     mActive = active;
 }
 
-bool Node::IsActive() const
+bool Node::IsActive(bool recurse) const
 {
-    return mActive;
+    bool ret = mActive;
+
+    if (recurse && mParent != nullptr)
+    {
+        ret = ret && mParent->IsActive(recurse);
+    }
+
+    return ret;
 }
 
 void Node::SetVisible(bool visible)
@@ -777,9 +805,16 @@ void Node::SetVisible(bool visible)
     mVisible = visible;
 }
 
-bool Node::IsVisible() const
+bool Node::IsVisible(bool recurse) const
 {
-    return mVisible;
+    bool ret = mVisible;
+
+    if (recurse && mParent != nullptr)
+    {
+        ret = ret && mParent->IsVisible(recurse);
+    }
+
+    return ret;
 }
 
 void Node::SetTransient(bool transient)
@@ -825,6 +860,11 @@ bool Node::IsNode3D() const
     return false;
 }
 
+bool Node::IsWidget() const
+{
+    return false;
+}
+
 bool Node::IsPrimitive3D() const
 {
     return false;
@@ -835,7 +875,12 @@ bool Node::IsLight3D() const
     return false;
 }
 
-Node * Node::GetParent()
+Node* Node::GetParent()
+{
+    return mParent;
+}
+
+const Node* Node::GetParent() const
 {
     return mParent;
 }
