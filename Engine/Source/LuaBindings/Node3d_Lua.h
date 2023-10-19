@@ -10,9 +10,9 @@
 
 #if LUA_ENABLED
 
-#define TRANSFORM_COMPONENT_LUA_NAME "Node3D"
-#define TRANSFORM_COMPONENT_LUA_FLAG "cfNode3D"
-#define CHECK_TRANSFORM_COMPONENT(L, arg) static_cast<Node3D*>(CheckComponentLuaType(L, arg, TRANSFORM_COMPONENT_LUA_NAME, TRANSFORM_COMPONENT_LUA_FLAG));
+#define NODE_3D_LUA_NAME "Node3D"
+#define NODE_3D_LUA_FLAG "cfNode3D"
+#define CHECK_NODE_3D(L, arg) static_cast<Node3D*>(CheckNodeLuaType(L, arg, NODE_3D_LUA_NAME, NODE_3D_LUA_FLAG));
 
 struct Node3D_Lua
 {

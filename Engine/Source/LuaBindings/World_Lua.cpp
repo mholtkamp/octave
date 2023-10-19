@@ -70,7 +70,7 @@ int World_Lua::SetAudioReceiver(lua_State* L)
     Node3D* transformComp = nullptr;
     if (!lua_isnil(L, 2))
     {
-        transformComp = CHECK_TRANSFORM_COMPONENT(L, 2);
+        transformComp = CHECK_NODE_3D(L, 2);
     }
 
     world->SetAudioReceiver(transformComp);

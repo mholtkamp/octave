@@ -1716,6 +1716,7 @@ void ScriptComponent::CreateScriptInstance()
             OCT_ASSERT(lua_istable(L, -1));
             int classTableIdx = lua_gettop(L);
 
+            // TODO-NODE: Get rid of this "New" func call? You can inherit with Script.Inherit()/Script.Extend()
             // Check if the class table has a New function, if so call it to initialize the object (needed for setting up inheritance).
             lua_getfield(L, -1, "New");
             if (lua_isfunction(L, -1))

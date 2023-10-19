@@ -2,33 +2,13 @@
 #include "LuaBindings/SkeletalMesh3d_Lua.h"
 
 #include "LuaBindings/Vector_Lua.h"
-#include "LuaBindings/Component_Lua.h"
+#include "LuaBindings/Node_Lua.h"
 
 #if LUA_ENABLED
 
-int Node3D_Lua::Attach(lua_State* L)
-{
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
-    Node3D* newParent = nullptr;
-    bool keepWorldTransform = false;
-
-    if (!lua_isnil(L, 2))
-    {
-        newParent = CHECK_TRANSFORM_COMPONENT(L, 2);
-    }
-    if (!lua_isnone(L, 3))
-    {
-        keepWorldTransform = CHECK_BOOLEAN(L, 3);
-    }
-
-    comp->Attach(newParent, keepWorldTransform);
-
-    return 0;
-}
-
 int Node3D_Lua::AttachToBone(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     SkeletalMesh3D* newParent = CHECK_SKELETAL_MESH_COMPONENT(L, 2);
     const char* boneName = CHECK_STRING(L, 3);
     bool keepWorldTransform = false;
@@ -43,49 +23,9 @@ int Node3D_Lua::AttachToBone(lua_State* L)
     return 0;
 }
 
-int Node3D_Lua::GetParent(lua_State* L)
-{
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
-
-    Node3D* parentComp = comp->GetParent();
-
-    Component_Lua::Create(L, parentComp);
-    return 1;
-}
-
-int Node3D_Lua::GetChild(lua_State* L)
-{
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
-    Node3D* child = nullptr;
-    
-    if (lua_isinteger(L, 2))
-    {
-        int32_t childIndex = (int32_t)lua_tointeger(L, 2) - 1;
-        child = comp->GetChild(childIndex);
-    }
-    else
-    {
-        const char* childName = CHECK_STRING(L, 2);
-        child = comp->GetChild(childName);
-    }
-
-    Component_Lua::Create(L, child);
-    return 1;
-}
-
-int Node3D_Lua::GetNumChildren(lua_State* L)
-{
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
-
-    uint32_t numComps = comp->GetNumChildren();
-
-    lua_pushinteger(L, numComps);
-    return 1;
-}
-
 int Node3D_Lua::UpdateTransform(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     bool updateChildren = false;
     if (lua_gettop(L) == 2 &&
         lua_isboolean(L, 2))
@@ -100,7 +40,7 @@ int Node3D_Lua::UpdateTransform(lua_State* L)
 
 int Node3D_Lua::GetPosition(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
 
     glm::vec3 position = comp->GetPosition();
 
@@ -110,7 +50,7 @@ int Node3D_Lua::GetPosition(lua_State* L)
 
 int Node3D_Lua::GetRotationEuler(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
 
     glm::vec3 rotEuler = comp->GetRotationEuler();
 
@@ -120,7 +60,7 @@ int Node3D_Lua::GetRotationEuler(lua_State* L)
 
 int Node3D_Lua::GetRotationQuat(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
 
     glm::quat rotQuat = comp->GetRotationQuat();
 
@@ -130,7 +70,7 @@ int Node3D_Lua::GetRotationQuat(lua_State* L)
 
 int Node3D_Lua::GetScale(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
 
     glm::vec3 scale = comp->GetScale();
 
@@ -140,7 +80,7 @@ int Node3D_Lua::GetScale(lua_State* L)
 
 int Node3D_Lua::SetPosition(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4& pos = CHECK_VECTOR(L, 2);
 
     comp->SetPosition(glm::vec3(pos));
@@ -150,7 +90,7 @@ int Node3D_Lua::SetPosition(lua_State* L)
 
 int Node3D_Lua::SetRotationEuler(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4& rotEuler = CHECK_VECTOR(L, 2);
 
     comp->SetRotation(glm::vec3(rotEuler));
@@ -160,7 +100,7 @@ int Node3D_Lua::SetRotationEuler(lua_State* L)
 
 int Node3D_Lua::SetRotationQuat(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4& rotQuat = CHECK_VECTOR(L, 2);
 
     comp->SetRotation(LuaVectorToQuat(rotQuat));
@@ -170,7 +110,7 @@ int Node3D_Lua::SetRotationQuat(lua_State* L)
 
 int Node3D_Lua::SetScale(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4& scale = CHECK_VECTOR(L, 2);
 
     comp->SetScale(glm::vec3(scale));
@@ -180,7 +120,7 @@ int Node3D_Lua::SetScale(lua_State* L)
 
 int Node3D_Lua::RotateAround(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec3 pivot = CHECK_VECTOR(L, 2);
     glm::vec3 axis = CHECK_VECTOR(L, 3);
     float degrees = CHECK_NUMBER(L, 4);
@@ -192,7 +132,7 @@ int Node3D_Lua::RotateAround(lua_State* L)
 
 int Node3D_Lua::GetAbsolutePosition(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
 
     glm::vec3 absPos = comp->GetAbsolutePosition();
 
@@ -202,7 +142,7 @@ int Node3D_Lua::GetAbsolutePosition(lua_State* L)
 
 int Node3D_Lua::GetAbsoluteRotationEuler(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
 
     glm::vec3 absRotEuler = comp->GetAbsoluteRotationEuler();
 
@@ -212,7 +152,7 @@ int Node3D_Lua::GetAbsoluteRotationEuler(lua_State* L)
 
 int Node3D_Lua::GetAbsoluteRotationQuat(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
 
     glm::quat absQuatEuler = comp->GetAbsoluteRotationQuat();
 
@@ -222,7 +162,7 @@ int Node3D_Lua::GetAbsoluteRotationQuat(lua_State* L)
 
 int Node3D_Lua::GetAbsoluteScale(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
 
     glm::vec3 absScale = comp->GetAbsoluteScale();
 
@@ -232,7 +172,7 @@ int Node3D_Lua::GetAbsoluteScale(lua_State* L)
 
 int Node3D_Lua::SetAbsolutePosition(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4& pos = CHECK_VECTOR(L, 2);
 
     comp->SetAbsolutePosition(glm::vec3(pos));
@@ -242,7 +182,7 @@ int Node3D_Lua::SetAbsolutePosition(lua_State* L)
 
 int Node3D_Lua::SetAbsoluteRotationEuler(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4& rotEuler = CHECK_VECTOR(L, 2);
 
     comp->SetAbsoluteRotation(glm::vec3(rotEuler));
@@ -252,7 +192,7 @@ int Node3D_Lua::SetAbsoluteRotationEuler(lua_State* L)
 
 int Node3D_Lua::SetAbsoluteRotationQuat(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4& rotQuat = CHECK_VECTOR(L, 2);
 
     comp->SetAbsoluteRotation(LuaVectorToQuat(rotQuat));
@@ -262,7 +202,7 @@ int Node3D_Lua::SetAbsoluteRotationQuat(lua_State* L)
 
 int Node3D_Lua::SetAbsoluteScale(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4& scale = CHECK_VECTOR(L, 2);
 
     comp->SetAbsoluteScale(glm::vec3(scale));
@@ -272,7 +212,7 @@ int Node3D_Lua::SetAbsoluteScale(lua_State* L)
 
 int Node3D_Lua::AddRotationEuler(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec3 deltaDegrees = CHECK_VECTOR(L, 2);
 
     comp->AddRotation(deltaDegrees);
@@ -282,7 +222,7 @@ int Node3D_Lua::AddRotationEuler(lua_State* L)
 
 int Node3D_Lua::AddRotationQuat(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4 deltaVec = CHECK_VECTOR(L, 2);
 
     glm::quat deltaQuat = LuaVectorToQuat(deltaVec);
@@ -293,7 +233,7 @@ int Node3D_Lua::AddRotationQuat(lua_State* L)
 
 int Node3D_Lua::AddAbsoluteRotationEuler(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec3 deltaDegrees = CHECK_VECTOR(L, 2);
 
     comp->AddAbsoluteRotation(deltaDegrees);
@@ -303,7 +243,7 @@ int Node3D_Lua::AddAbsoluteRotationEuler(lua_State* L)
 
 int Node3D_Lua::AddAbsoluteRotationQuat(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4 deltaVec = CHECK_VECTOR(L, 2);
 
     glm::quat deltaQuat = LuaVectorToQuat(deltaVec);
@@ -314,7 +254,7 @@ int Node3D_Lua::AddAbsoluteRotationQuat(lua_State* L)
 
 int Node3D_Lua::LookAt(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec3 worldPos = CHECK_VECTOR(L, 2);
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
     if (lua_gettop(L) == 3)
@@ -329,7 +269,7 @@ int Node3D_Lua::LookAt(lua_State* L)
 
 int Node3D_Lua::GetForwardVector(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
 
     glm::vec3 fwd = comp->GetForwardVector();
 
@@ -339,7 +279,7 @@ int Node3D_Lua::GetForwardVector(lua_State* L)
 
 int Node3D_Lua::GetRightVector(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
 
     glm::vec3 right = comp->GetRightVector();
 
@@ -349,7 +289,7 @@ int Node3D_Lua::GetRightVector(lua_State* L)
 
 int Node3D_Lua::GetUpVector(lua_State* L)
 {
-    Node3D* comp = CHECK_TRANSFORM_COMPONENT(L, 1);
+    Node3D* comp = CHECK_NODE_3D(L, 1);
 
     glm::vec3 up = comp->GetUpVector();
 

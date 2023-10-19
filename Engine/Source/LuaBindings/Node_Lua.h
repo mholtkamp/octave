@@ -31,18 +31,23 @@ struct Node_Lua
     static int GetWorld(lua_State* L);
     static int Equals(lua_State* L);
 
+    static int GetParent(lua_State* L);
+    static int Attach(lua_State* L);
+    static int Detach(lua_State* L);
+    static int GetChild(lua_State* L);
+    static int GetChildByType(lua_State* L);
+    static int GetNumChildren(lua_State* L);
+    static int AddChild(lua_State* L);
+    static int RemoveChild(lua_State* L);
+
     static int CreateChildNode(lua_State* L);
     static int CloneChildNode(lua_State* L);
     static int DestroyChildNode(lua_State* L);
+    static int DestroyAllChildren(lua_State* L);
 
     static int Start(lua_State* L);
     static int HasStarted(lua_State* L);
 
-    static int IsA(lua_State* L);
-    static int Equals(lua_State* L);
-
-    static int Attach(lua_State* L);
-    static int Detach(lua_State* L);
     static int SetPendingDestroy(lua_State* L);
     static int IsPendingDestroy(lua_State* L);
     static int EnableTick(lua_State* L);
@@ -57,12 +62,6 @@ struct Node_Lua
     static int SetReplicate(lua_State* L);
     static int IsReplicated(lua_State* L);
     static int ForceReplication(lua_State* L);
-
-    static int GetChild(lua_State* L);
-    static int GetChildByType(lua_State* L);
-    static int GetNumChildren(lua_State* L);
-    static int AddChild(lua_State* L);
-    static int RemoveChild(lua_State* L);
 
     static int HasTag(lua_State* L);
     static int AddTag(lua_State* L);
