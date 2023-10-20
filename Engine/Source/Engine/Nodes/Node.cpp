@@ -354,6 +354,11 @@ void Node::EditorTick(float deltaTime)
     Tick(deltaTime);
 }
 
+void Node::Render()
+{
+
+}
+
 void Node::GatherProperties(std::vector<Property>& outProps)
 {
     outProps.push_back({DatumType::String, "Name", this, &mName});

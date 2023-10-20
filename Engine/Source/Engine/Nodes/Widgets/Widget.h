@@ -77,15 +77,11 @@ public:
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
-    // Issue gpu commands to display the widget.
-    // Recursively render children.
-    void RecursiveRenderWidget();
-    virtual void RenderWidget();
-
     // Refresh any data used for rendering based on this widget's state. Use dirty flag.
     // Recursively update children.
     virtual void RecursiveTick(float deltaTime, bool game) override;
     virtual void Tick(float deltaTime) override;
+    virtual void Render() override;
 
     virtual bool IsWidget() const override;
     Widget* GetParentWidget();
@@ -188,13 +184,11 @@ public:
 
     bool IsScissorEnabled() const;
     void EnableScissor(bool enable);
-
-    static void ResetScissor();
+    Rect GetScissorRect() const;
 
 protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
-    static Rect sCurrentScissor;
 
     virtual void SetParent(Node* parent) override;
 
@@ -208,8 +202,7 @@ protected:
     void SetScissor(Rect& area);
 
     Rect mRect; // The screen pos/dimensions that are computed on Update().
-    Rect mCachedScissorRect;
-    Rect mCachedParentScissorRect;
+    Rect mScissorRect;
     glm::mat3 mTransform;
     glm::vec4 mColor;
     glm::vec2 mOffset;

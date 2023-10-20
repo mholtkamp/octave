@@ -63,7 +63,7 @@ public:
     virtual void SaveStream(Stream& stream) override;
 
     virtual void SetWorld(World* world) override;
-    virtual void Render();
+    virtual void Render() override;
 
     virtual void UpdateTransform(bool updateChildren) override;
     virtual void SetTransform(const glm::mat4& transform) override;

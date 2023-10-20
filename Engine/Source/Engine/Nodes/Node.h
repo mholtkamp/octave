@@ -78,6 +78,7 @@ public:
     virtual void RecursiveTick(float deltaTime, bool game);
     virtual void Tick(float deltaTime);
     virtual void EditorTick(float deltaTime);
+    virtual void Render();
 
     virtual void GatherProperties(std::vector<Property>& outProps);
     virtual void GatherReplicatedData(std::vector<NetDatum>& outData);

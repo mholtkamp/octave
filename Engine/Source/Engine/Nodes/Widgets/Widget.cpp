@@ -37,8 +37,6 @@ static const char* sAnchorModeStrings[] =
 };
 static_assert(int32_t(AnchorMode::Count) == 16, "Need to update string conversion table");
 
-Rect Widget::sCurrentScissor = { 0.0f, 0.0f, LARGE_BOUNDS, LARGE_BOUNDS };
-
 bool Widget::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
@@ -83,12 +81,6 @@ bool Widget::HandlePropChange(Datum* datum, uint32_t index, const void* newValue
     return success;
 }
 
-void Widget::ResetScissor()
-{
-    glm::vec2 res = Renderer::Get()->GetActiveScreenResolution();
-    sCurrentScissor = { 0.0f, 0.0f, res.x, res.y };
-}
-
 Widget::Widget() :
     mTransform(1.0f),
     mColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)),
@@ -107,8 +99,7 @@ Widget::Widget() :
 
     SetName("Widget");
 
-    mCachedScissorRect = Rect(0.0f, 0.0f, 10000.0f, 10000.0f);
-    mCachedParentScissorRect = Rect(0.0f, 0.0f, 10000.0f, 10000.0f);
+    mScissorRect = Rect(0.0f, 0.0f, LARGE_BOUNDS, LARGE_BOUNDS);
 }
 
 void Widget::GatherProperties(std::vector<Property>& outProps)
@@ -134,34 +125,12 @@ void Widget::GatherProperties(std::vector<Property>& outProps)
     //outProps.push_back(Property(DatumType::Asset, "Widget Map", this, &mWidgetMap, 1, Widget::HandlePropChange, int32_t(WidgetMap::GetStaticType())))
 }
 
-// Issue gpu commands to display the widget.
-// Recursively render children.
-void Widget::RecursiveRenderWidget()
+void Widget::Render()
 {
-    RenderWidget();
-
-    if (mUseScissor)
-    {
-        PushScissor();
-    }
-
-    for (uint32_t i = 0; i < mChildren.size(); ++i)
-    {
-        if (mChildren[i]->IsVisible() && mChildren[i]->IsWidget())
-        {
-            static_cast<Widget*>(mChildren[i])->RecursiveRenderWidget();
-        }
-    }
-
-    if (mUseScissor)
-    {
-        PopScissor();
-    }
-}
-
-void Widget::RenderWidget()
-{
-
+    GFX_SetScissor(int32_t(mScissorRect.mX + 0.5f),
+        int32_t(mScissorRect.mY + 0.5f),
+        int32_t(mScissorRect.mWidth + 0.5f),
+        int32_t(mScissorRect.mHeight + 0.5f));
 }
 
 // Refresh any data used for rendering based on this widget's state. Use dirty flag.
@@ -172,6 +141,7 @@ void Widget::RecursiveTick(float deltaTime, bool game)
     if (IsVisible())
     {
         Node::RecursiveTick(deltaTime, game);
+        mDirty[Renderer::Get()->GetFrameIndex()] = false;
     }
 }
 
@@ -686,6 +656,22 @@ void Widget::UpdateRect()
     {
         mTransform = parent->GetTransform() * mTransform;
     }
+
+    // Udpate scissor
+    if (mUseScissor)
+    {
+        mScissorRect = mRect;
+    }
+    else
+    {
+        mScissorRect = Rect(0, 0, LARGE_BOUNDS, LARGE_BOUNDS);
+    }
+
+    if (parent)
+    {
+        Rect parentScissorRect = parent->GetScissorRect();
+        mScissorRect.Clamp(parentScissorRect);
+    }
 }
 
 void Widget::UpdateColor()
@@ -833,7 +819,7 @@ bool Widget::ContainsMouse(bool testScissor) const
     Rect testRect = mRect;
     if (testScissor)
     {
-        testRect.Clamp(mCachedScissorRect);
+        testRect.Clamp(mScissorRect);
     }
 
     return IsMouseInside(testRect);
@@ -842,7 +828,7 @@ bool Widget::ContainsMouse(bool testScissor) const
 bool Widget::ContainsPoint(int32_t x, int32_t y)
 {
     Rect testRect = mRect;
-    testRect.Clamp(mCachedScissorRect);
+    testRect.Clamp(mScissorRect);
     return testRect.ContainsPoint((float)x, (float)y);
 }
 
@@ -904,6 +890,11 @@ void Widget::EnableScissor(bool enable)
     mUseScissor = enable;
 }
 
+Rect Widget::GetScissorRect() const
+{
+    return mScissorRect;
+}
+
 void Widget::SetParent(Node* parent)
 {
     Node::SetParent(parent);
@@ -930,30 +921,6 @@ float Widget::RatioToPixelsX(float x) const
 float Widget::RatioToPixelsY(float y) const
 {
     return (GetParentHeight() * y);
-}
-
-void Widget::PushScissor()
-{
-    mCachedScissorRect = mRect;
-
-    mCachedParentScissorRect = sCurrentScissor;
-
-    mCachedScissorRect.Clamp(mCachedParentScissorRect);
-    SetScissor(mCachedScissorRect);
-}
-
-void Widget::PopScissor()
-{
-    SetScissor(mCachedParentScissorRect);
-}
-
-void Widget::SetScissor(Rect& area)
-{
-    sCurrentScissor = area;
-    GFX_SetScissor(int32_t(area.mX + 0.5f),
-                   int32_t(area.mY + 0.5f),
-                   int32_t(area.mWidth + 0.5f),
-                   int32_t(area.mHeight + 0.5f));
 }
 
 #if EDITOR
