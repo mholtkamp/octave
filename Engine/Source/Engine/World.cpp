@@ -123,10 +123,15 @@ void World::SetRootNode(Node* node)
     {
         if (mRootNode != nullptr)
         {
-            DestroyRootNode();
+            mRootNode->SetWorld(nullptr);
         }
 
         mRootNode = node;
+
+        if (mRootNode != nullptr)
+        {
+            mRootNode->SetWorld(this);
+        }
     }
 }
 
@@ -334,13 +339,13 @@ void World::PurgeOverlaps(Primitive3D* prim)
 {
     for (int32_t i = (int32_t)mCurrentOverlaps.size() - 1; i >= 0; --i)
     {
-        Primitive3D* compA = mCurrentOverlaps[i].mComponentA;
-        Primitive3D* compB = mCurrentOverlaps[i].mComponentB;
+        Primitive3D* primA = mCurrentOverlaps[i].mComponentA;
+        Primitive3D* primB = mCurrentOverlaps[i].mComponentB;
 
-        if (compA == prim ||
-            compB == prim)
+        if (primA == prim ||
+            primB == prim)
         {
-            compA->GetOwner()->EndOverlap(compA, compB);
+            primA->EndOverlap(primA, primB);
             mCurrentOverlaps.erase(mCurrentOverlaps.begin() + i);
         }
     }
@@ -567,21 +572,6 @@ uint32_t& World::GetIncrementalRepIndex()
     return mIncrementalRepIndex;
 }
 
-std::vector<LevelRef>& World::GetLoadedLevels()
-{
-    return mLoadedLevels;
-}
-
-void World::UnloadAllLevels()
-{
-    for (int32_t i = int32_t(mLoadedLevels.size()) - 1; i >= 0; --i)
-    {
-        mLoadedLevels[i].Get<Level>()->UnloadFromWorld(this);
-    }
-
-    mLoadedLevels.clear();
-}
-
 void World::UpdateLines(float deltaTime)
 {
     for (int32_t i = (int32_t)mLines.size() - 1; i >= 0; --i)
@@ -604,28 +594,15 @@ void World::Update(float deltaTime)
 {
     bool gameTickEnabled = IsGameTickEnabled();
 
-    if (mPendingClear)
-    {
-        Clear();
-        mPendingClear = false;
-    }
-
     // Load any queued levels.
-    if (mQueuedLevels.size() > 0)
+    if (mQueuedRootScene != nullptr)
     {
-        for (uint32_t i = 0; i < mQueuedLevels.size(); ++i)
-        {
-            Level* level = mQueuedLevels[i].mLevel.Get<Level>();
-            glm::vec3 offset = mQueuedLevels[i].mOffset;
-            glm::vec3 rotation = mQueuedLevels[i].mRotation;
+        Scene* scene = mQueuedRootScene.Get<Scene>();
+        DestroyRootNode();
+        Node* newRootNode = scene->Instantiate();
+        SetRootNode(newRootNode);
 
-            if (level)
-            {
-                level->LoadIntoWorld(this, false, offset, rotation);
-            }
-        }
-
-        mQueuedLevels.clear();
+        mQueuedRootScene = nullptr;
     }
 
     if (gameTickEnabled)
@@ -805,110 +782,73 @@ void World::SetAudioReceiver(Node3D* newReceiver)
     mAudioReceiver = newReceiver;
 }
 
-Actor* World::SpawnActor(TypeId actorType, bool addNetwork)
+void World::PlaceNewlySpawnedNode(Node* node)
 {
-    Actor* retActor = Actor::CreateInstance(actorType);
-
-    if (retActor != nullptr)
+    if (node != nullptr)
     {
-        mActors.push_back(retActor);
-        retActor->SetWorld(this);
-        retActor->Create();
-
-        for (uint32_t i = 0; i < retActor->GetNumComponents(); ++i)
+        if (mRootNode != nullptr)
         {
-            retActor->GetComponent(i)->SetDefault(true);
+            mRootNode->AddChild(node);
         }
-
-#if _DEBUG && (PLATFORM_WINDOWS || PLATFORM_LINUX)
-        OCT_ASSERT(retActor->DoComponentsHaveUniqueNames());
-#endif
-
-        if (addNetwork)
+        else
         {
-            AddNetActor(retActor, INVALID_NET_ID);
+            SetRootNode(node);
         }
     }
-    
-    return retActor;
 }
 
-Actor* World::SpawnActor(const char* typeName)
+Node* World::SpawnNode(TypeId actorType)
 {
-    Actor* retActor = nullptr;
-    const std::vector<Factory*>& factories = Actor::GetFactoryList();
-    for (uint32_t i = 0; i < factories.size(); ++i)
+    Node* newNode = Node::CreateNew(actorType);
+
+    if (newNode != nullptr)
     {
-        if (strncmp(typeName, factories[i]->GetClassName(), MAX_PATH_SIZE) == 0)
-        {
-            retActor = SpawnActor(factories[i]->GetType());
-            break;
-        }
-    }
-
-    return retActor;
-}
-
-Actor* World::CloneActor(Actor* srcActor)
-{
-    Actor* retActor = SpawnActor(srcActor->GetType());
-
-    if (retActor != nullptr)
-    {
-        retActor->Copy(srcActor);
-    }
-
-    return retActor;   
-}
-
-Actor* World::SpawnBlueprint(const char* name)
-{
-    Actor* ret = nullptr;
-    Blueprint* bp = LoadAsset<Blueprint>(name);
-
-    if (bp != nullptr)
-    {
-        ret = bp->Instantiate(this);
+        PlaceNewlySpawnedNode(newNode);
     }
     else
     {
-        LogError("Failed to load blueprint: %s", name);
+        LogError("Failed to spawn node with type: %d.", (int)actorType);
     }
-
-    return ret;
 }
 
-void World::LoadLevel(const char* name, bool clear, glm::vec3 offset, glm::vec3 rotation)
+Node* World::SpawnNode(const char* typeName)
 {
-    Level* level = LoadAsset<Level>(name);
+    Node* newNode = Node::CreateNew(typeName);
 
-    if (level != nullptr)
+    if (newNode != nullptr)
     {
-        level->LoadIntoWorld(this, clear, offset, rotation);
+        PlaceNewlySpawnedNode(newNode);
     }
     else
     {
-        LogError("Failed to load level.");
+        LogError("Failed to spawn node with type name: %s.", typeName);
     }
 }
 
-void World::QueueLevelLoad(const char* name, bool clearWorld, glm::vec3 offset, glm::vec3 rotation)
+Node* World::SpawnScene(const char* sceneName)
 {
-    // Load level at the beginning of next frame
-    if (clearWorld)
+    Scene* scene = LoadAsset<Scene>(sceneName);
+    Node* newNode = scene ? scene->Instantiate() : nullptr;
+
+    if (newNode != nullptr)
     {
-        mPendingClear = true;
+        PlaceNewlySpawnedNode(newNode);
+    }
+    else
+    {
+        LogError("Failed to spawn scene with type: %s.", sceneName);
     }
 
-    Level* level = LoadAsset<Level>(name);
+    return newNode;
+}
 
-    if (level != nullptr)
+void World::QueueRootScene(const char* name)
+{
+    Scene* scene = LoadAsset<Scene>(name);
+
+    if (scene != nullptr)
     {
-        QueuedLevel queuedLevel;
-        queuedLevel.mLevel = level;
-        queuedLevel.mOffset = offset;
-        queuedLevel.mRotation = rotation;
-        mQueuedLevels.push_back(queuedLevel);
+        mQueuedRootScene = scene;
     }
 }
 

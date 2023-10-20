@@ -20,13 +20,6 @@
 class Node;
 class Audio3D;
 
-struct QueuedLevel
-{
-    LevelRef mLevel;
-    glm::vec3 mOffset = {};
-    glm::vec3 mRotation = {};
-};
-
 class World
 {
 public:
@@ -43,7 +36,7 @@ public:
     void SetActiveCamera(Camera3D* activeCamera);
     void SetAudioReceiver(Node3D* newReceiver);
 
-    Node* SpawnNode(TypeId actorType, bool addNetwork = true);
+    Node* SpawnNode(TypeId actorType);
     Node* SpawnNode(const char* typeName);
     Node* SpawnScene(const char* sceneName);
 
@@ -109,18 +102,7 @@ public:
     uint32_t& GetIncrementalRepTier();
     uint32_t& GetIncrementalRepIndex();
 
-    void LoadLevel(
-        const char* name,
-        bool clear,
-        glm::vec3 offset = { 0.0f, 0.0f, 0.0f },
-        glm::vec3 rotation = { 0.0f, 0.0f, 0.0f });
-    void QueueLevelLoad(
-        const char* name,
-        bool clearWorld,
-        glm::vec3 offset = { 0.0f, 0.0f, 0.0f },
-        glm::vec3 rotation = { 0.0f, 0.0f, 0.0f });
-    void UnloadLevel(const char* name);
-    bool IsLevelLoaded(const char* levelName);
+    void QueueRootScene(const char* name);
 
     void EnableInternalEdgeSmoothing(bool enable);
     bool IsInternalEdgeSmoothingEnabled() const;
@@ -154,6 +136,7 @@ public:
 private:
 
     void UpdateLines(float deltaTime);
+    void PlaceNewlySpawnedNode(Node* node);
 
 private:
 
@@ -161,7 +144,7 @@ private:
     std::vector<Line> mLines;
     std::vector<class Light3D*> mLights;
     std::vector<class Audio3D*> mAudios;
-    std::vector<QueuedLevel> mQueuedLevels;
+    SceneRef mQueuedRootScene;
     glm::vec4 mAmbientLightColor;
     glm::vec4 mShadowColor;
     FogSettings mFogSettings;

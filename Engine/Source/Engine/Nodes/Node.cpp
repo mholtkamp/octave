@@ -53,12 +53,16 @@ DEFINE_RTTI(Node);
 
 static Node* CreateNew(const std::string& name)
 {
-    return Node::CreateInstance(name.c_str());
+    Node* newNode = Node::CreateInstance(name.c_str());
+    newNode->Create();
+    return newNode;
 }
 
 static Node* CreateNew(TypeId typeId)
 {
-    return Node::CreateInstance(typeId);
+    Node* newNode = Node::CreateInstance(typeId);
+    newNode->Create();
+    return newNode;
 }
 
 Node::Node()
