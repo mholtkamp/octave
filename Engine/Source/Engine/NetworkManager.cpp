@@ -1,6 +1,7 @@
 #include "NetworkManager.h"
 #include "Engine.h"
 #include "Log.h"
+#include "Nodes/Node.h"
 #include "Assets/Level.h"
 #include "Assets/Blueprint.h"
 #include "World.h"
@@ -729,6 +730,77 @@ NetHostId NetworkManager::GetHostId() const
 {
     return mHostId;
 }
+
+void NetworkManager::AddNetNode(Node* node, NetId netId)
+{
+    OCT_ASSERT(node != nullptr);
+    OCT_ASSERT(node->GetNetId() == INVALID_NET_ID);
+
+    if (node->IsReplicated())
+    {
+        // Gather net functions (even if local)
+        Node::RegisterNetFuncs(node);
+
+        if (!NetIsLocal())
+        {
+            node->GatherReplicatedData(node->GetReplicatedData());
+
+            if (NetIsServer() &&
+                netId == INVALID_NET_ID)
+            {
+                netId = mNextNetId;
+                ++mNextNetId;
+            }
+
+            if (netId != INVALID_NET_ID)
+            {
+                node->SetNetId(netId);
+                mNetNodeMap.insert({ netId, node });
+
+                if (node->GetWorld() != nullptr)
+                {
+                    // If this node is somehow not in the world yet, it will get added to the rep vector once SetWorld()/RegisterNode() is called.
+                    std::vector<Node*>& repNodeVector = node->GetWorld()->GetReplicatedNodeVector(node->GetReplicationRate());
+                    repNodeVector.push_back(node);
+                }
+
+                // The server needs to send Spawn messages for newly added network actors.
+                if (NetIsServer())
+                {
+                    NetworkManager::Get()->SendSpawnMessage(node, nullptr);
+                }
+            }
+        }
+
+    }
+
+}
+
+void NetworkManager::RemoveNetNode(Node* node)
+{
+    NetId netId = node->GetNetId();
+
+    OCT_ASSERT(netId != INVALID_NET_ID);
+
+    if (netId != INVALID_NET_ID)
+    {
+        // Send destroy message
+        if (NetIsServer())
+        {
+            NetworkManager::Get()->SendDestroyMessage(node, nullptr);
+        }
+
+        // This node was assigned a net id, so it should exist in our net actor map.
+        OCT_ASSERT(mNetNodeMap.find(netId) != mNetNodeMap.end());
+        mNetNodeMap.erase(netId);
+    }
+}
+
+const std::unordered_map<NetId, Node*>& NetworkManager::GetNetNodeMap() const
+{
+    return mNetNodeMap;
+}
+
 
 void NetworkManager::HandleConnect(NetHost host, uint32_t gameCode, uint32_t version)
 {

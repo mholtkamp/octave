@@ -43,6 +43,7 @@ bool ContactAddedHandler(btManifoldPoint& cp,
     // This blocked out code was taken from https://pybullet.org/Bullet/phpBB3/viewtopic.php?t=3052
     // but it doesn't seem to be any better than using btAdjustInternalEdgeContacts()
     // There are still some bumps :/
+
     // Correct the normal
     if (colObj0Wrap->getCollisionShape()->getShapeType() == TRIANGLE_SHAPE_PROXYTYPE)
     {
@@ -65,13 +66,9 @@ World::World() :
     mAmbientLightColor(DEFAULT_AMBIENT_LIGHT_COLOR),
     mShadowColor(DEFAULT_SHADOW_COLOR),
     mActiveCamera(nullptr),
-    mAudioReceiver(nullptr),
-    mDefaultCamera(nullptr),
-    mNextNetId(1)
+    mAudioReceiver(nullptr)
 {
     SCOPED_STAT("World()")
-
-    SpawnDefaultCamera();
 
     // Setup physics world
     mCollisionConfig = new btDefaultCollisionConfiguration();
@@ -84,13 +81,9 @@ World::World() :
 
 void World::Destroy()
 {
-    while (mActors.size() > 0)
-    {
-        DestroyActor(int32_t(mActors.size() - 1));
-    }
+    DestroyRootNode();
 
-    OCT_ASSERT(mActors.size() == 0);
-    mActors.clear();
+    OCT_ASSERT(mRootNode == nullptr);
     mActiveCamera = nullptr;
 
     delete mDynamicsWorld;
@@ -106,110 +99,15 @@ void World::Destroy()
     mCollisionConfig = nullptr;
 }
 
-void World::SpawnDefaultCamera()
-{
-    if (GetActiveCamera() == nullptr)
-    {
-        Actor* cameraActor = SpawnActor<Actor>();
-        mActiveCamera = cameraActor->CreateComponent<Camera3D>();
-        cameraActor->SetRootComponent(mActiveCamera);
-        cameraActor->SetName("Default Camera");
-        cameraActor->SetTransient(true);
-        mActiveCamera->SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
-
-        mDefaultCamera = mActiveCamera;
-    }
-}
-
-void World::DestroyActor(Actor* actor)
-{
-    for (uint32_t i = 0; i < mActors.size(); ++i)
-    {
-        if (mActors[i] == actor)
-        {
-            DestroyActor(i);
-            break;
-        }
-    }
-}
-
-void World::DestroyActor(uint32_t index)
-{
-    OCT_ASSERT(index < mActors.size());
-    Actor* actor = mActors[index];
-
-    if (actor->GetNetId() != INVALID_NET_ID)
-    {
-        // Send destroy message
-        if (NetIsServer())
-        {
-            NetworkManager::Get()->SendDestroyMessage(actor, nullptr);
-        }
-
-        // This actor was assigned a net id, so it should exist in our net actor map.
-        OCT_ASSERT(mNetNodeMap.find(actor->GetNetId()) != mNetNodeMap.end());
-        mNetNodeMap.erase(actor->GetNetId());
-
-        // Remove the destroyed actor from their assigned replication vector.
-        std::vector<Actor*>& repVector = GetReplicatedActorVector(actor->GetReplicationRate());
-        uint32_t& repIndex = GetReplicatedActorIndex(actor->GetReplicationRate());
-
-        for (uint32_t i = 0; i < repVector.size(); ++i)
-        {
-            if (repVector[i] == actor)
-            {
-                repVector.erase(repVector.begin() + i);
-
-                // Decrement the rep index so that an actor doesn't get skipped for one cycle.
-                if (repIndex > 0 &&
-                    repIndex > i)
-                {
-                    repIndex = repIndex - 1;
-                }
-
-                break;
-            }
-        }
-    }
-
-    actor->Destroy();
-    mActors.erase(mActors.begin() + index);
-    delete actor;
-    actor = nullptr;
-}
-
-void World::DestroyAllActors()
-{
-    for (int32_t i = int32_t(mActors.size()) - 1; i >= 0; --i)
-    {
-        DestroyActor(i);
-    }
-
-    mLoadedLevels.clear();
-
-    mNextNetId = 1;
-    SpawnDefaultCamera();
-}
-
 void World::FlushPendingDestroys()
 {
-    if (mRoot3D != nullptr)
+    if (mRootNode != nullptr)
     {
-        mRoot3D->FlushPendingDestroys();
+        mRootNode->FlushPendingDestroys();
 
-        if (mRoot3D->IsPendingDestroy())
+        if (mRootNode->IsPendingDestroy())
         {
-            mRoot3D->Destroy();
-        }
-    }
-
-    if (mRootWidget != nullptr)
-    {
-        mRootWidget->FlushPendingDestroys();
-
-        if (mRootWidget->IsPendingDestroy())
-        {
-            mRootWidget->Destroy();
+            DestroyRootNode();
         }
     }
 }
@@ -296,84 +194,9 @@ Component* World::FindComponent(const std::string& name)
     return foundComponent;
 }
 
-void World::PrioritizeActorTick(Actor* actor)
+void World::Clear()
 {
-    // This function simply moves the requested actor to the front of the mActors vector.
-    // In the future maybe we could implement some tick priority system or something.
-    auto it = std::find(mActors.begin(), mActors.end(), actor);
-
-    if (it != mActors.end())
-    {
-        Actor* target = *it;
-        mActors.erase(it);
-        mActors.insert(mActors.begin(), target);
-    }
-}
-
-void World::AddNetActor(Actor* actor, NetId netId)
-{
-    OCT_ASSERT(actor != nullptr);
-    OCT_ASSERT(actor->GetNetId() == INVALID_NET_ID);
-
-    if (actor->IsReplicated())
-    {
-        // Gather net functions (even if local)
-        Actor::RegisterNetFuncs(actor);
-
-        if (!NetIsLocal())
-        {
-            actor->GatherReplicatedData(actor->GetReplicatedData());
-
-            if (NetIsServer() &&
-                netId == INVALID_NET_ID)
-            {
-                netId = mNextNetId;
-                ++mNextNetId;
-            }
-
-            if (netId != INVALID_NET_ID)
-            {
-                actor->SetNetId(netId);
-                mNetNodeMap.insert({ netId, actor });
-
-                std::vector<Actor*>& repActorVector = GetReplicatedActorVector(actor->GetReplicationRate());
-                repActorVector.push_back(actor);
-
-                // The server needs to send Spawn messages for newly added network actors.
-                if (NetIsServer())
-                {
-                    NetworkManager::Get()->SendSpawnMessage(actor, nullptr);
-                }
-            }
-        }
-    }
-}
-
-const std::unordered_map<NetId, Actor*>& World::GetNetActorMap() const
-{
-    return mNetNodeMap;
-}
-
-void World::Clear(bool clearPersistent)
-{
-    if (clearPersistent)
-    {
-        DestroyAllActors();
-    }
-    else
-    {
-        // Unload all levels
-        UnloadAllLevels();
-
-        // Destroy all non-persistent actors.
-        for (int32_t i = int32_t(mActors.size()) - 1; i >= 0; --i)
-        {
-            DestroyActor(i);
-        }
-
-        mNextNetId = 1;
-        SpawnDefaultCamera();
-    }
+    DestroyRootNode();
 }
 
 void World::AddLine(const Line& line)
@@ -649,6 +472,12 @@ void World::RegisterNode(Node* node)
 #endif
         mLights.push_back((Light3D*)node);
     }
+
+    if (node->GetNetId() != INVALID_NET_ID)
+    {
+        std::vector<Node*>& repNodeVector = GetReplicatedNodeVector(node->GetReplicationRate());
+        repNodeVector.push_back(node);
+    }
 }
 
 void World::UnregisterNode(Node* node)
@@ -666,6 +495,30 @@ void World::UnregisterNode(Node* node)
         auto it = std::find(mLights.begin(), mLights.end(), (Light3D*)node);
         OCT_ASSERT(it != mLights.end());
         mLights.erase(it);
+    }
+
+    if (node->GetNetId() != INVALID_NET_ID)
+    {
+        // Remove the destroyed actor from their assigned replication vector.
+        std::vector<Node*>& repVector = GetReplicatedNodeVector(node->GetReplicationRate());
+        uint32_t& repIndex = GetReplicatedNodeIndex(node->GetReplicationRate());
+
+        for (uint32_t i = 0; i < repVector.size(); ++i)
+        {
+            if (repVector[i] == actor)
+            {
+                repVector.erase(repVector.begin() + i);
+
+                // Decrement the rep index so that an actor doesn't get skipped for one cycle.
+                if (repIndex > 0 &&
+                    repIndex > i)
+                {
+                    repIndex = repIndex - 1;
+                }
+
+                break;
+            }
+        }
     }
 }
 

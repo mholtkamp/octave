@@ -4,9 +4,12 @@
 #include "NetMsg.h"
 #include "NetFunc.h"
 #include "ScriptFunc.h"
+#include "Nodes/Node.h"
 
 #include "Network/Network.h"
 #include "Network/NetworkConstants.h"
+
+#include <unordered_map>
 
 // Conflict in WinUser.h
 #ifdef SendMessage
@@ -115,6 +118,10 @@ public:
     bool IsAuthority() const;
     NetHostId GetHostId() const;
 
+    void AddNetNode(Node* node, NetId netId);
+    void RemoveNetNode(Node* node);
+    const std::unordered_map<NetId, Node*>& GetNetNodeMap() const;
+
     // Message Handling
     void HandleConnect(NetHost host, uint32_t gameCode, uint32_t version);
     void HandleAccept(NetHostId assignedId);
@@ -170,9 +177,11 @@ private:
     NetStatus mNetStatus = NetStatus::Local;
     std::vector<NetClient> mClients;
     std::vector<GameSession> mSessions;
+    std::unordered_map<NetId, Node*> mNetNodeMap;
     NetServer mServer;
     uint32_t mBroadcastIp = 0;
     uint32_t mMaxClients = 9;
+    NetId mNextNetId = 1;
     float mConnectTimer = 0.0f;
     float mBroadcastTimer = 0.0f;
     float mPingTimer = 0.0f;

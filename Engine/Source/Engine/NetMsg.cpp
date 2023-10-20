@@ -208,14 +208,14 @@ void NetMsgPing::Execute(NetHost sender)
 void NetMsgSpawnActor::Read(Stream& stream)
 {
     NetMsg::Read(stream);
-    mActorTypeId = stream.ReadUint32();
+    mNodeTypeId = stream.ReadUint32();
     mNetId = stream.ReadUint32();
 }
 
 void NetMsgSpawnActor::Write(Stream& stream) const
 {
     NetMsg::Write(stream);
-    stream.WriteUint32(mActorTypeId);
+    stream.WriteUint32(mNodeTypeId);
     stream.WriteUint32(mNetId);
 }
 
@@ -225,8 +225,82 @@ void NetMsgSpawnActor::Execute(NetHost sender)
 
     if (NetIsClient())
     {
+        // TODO-NODE: Make this NetMsgSpawnNode, allow scene name to be passed,
+        // also send along a NetId of the parent the node should attach to.
+        // If netid is invalid, then it is the root node.
+        // The root node should always be replicated (forcefully if not set by user).
+
+
+#if 1
+        Node* newNode = nullptr;
+        
+        if (mScene != "")
+        {
+            // Spawning a scene
+            Scene* scene = LoadAsset<Scene>(mScene);
+
+            if (scene != nullptr)
+            {
+                newNode = scene->Instantiate();
+            }
+            else
+            {
+                LogError("Failed to load scene %s in NetMsgSpawnNode.", mScene.c_str());
+            }
+        }
+        else
+        {
+            // Spawning a single native node
+            newNode = Node::CreateNew(mNodeTypeId);
+
+            if (newNode == nullptr)
+            {
+                LogError("Failed to instantiate node of type %d in NetMsgSpawnNode.", (int)mNodeTypeId);
+            }
+        }
+
+        if (newNode != nullptr)
+        {
+            NetworkManager::Get()->AddNetNode(newNode, mNetId);
+
+            if (mParentNetId == INVALID_NET_ID)
+            {
+                // This is the root
+                // TODO: Handle multiple worlds.
+                GetWorld()->SetRootNode(newNode);
+            }
+            else
+            {
+                Node* parent = nullptr;
+
+                parent = NetworkManager::Get()->FindNetNode(mParentNetId);
+
+                if (parent != nullptr)
+                {
+                    parent->AddChild(newNode);
+                }
+                else
+                {
+                    LogError("Failed to find parent net node, attaching new net node to world root.");
+                    Node* rootNode = GetWorld()->GetRootNode();
+                    if (rootNode)
+                    {
+                        rootNode->AddChild(newNode);
+                    }
+                    else
+                    {
+                        // Hmm okay, well I guess this node will be the new world root.
+                        GetWorld()->SetRootNode(newNode);
+                    }
+                }
+            }
+        }
+
+#else
+        // Old code
         Actor* spawnedActor = GetWorld()->SpawnActor(mActorTypeId);
         GetWorld()->AddNetActor(spawnedActor, mNetId);
+#endif
     }
 }
 

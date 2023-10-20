@@ -122,8 +122,10 @@ struct NetMsgSpawnActor : public NetMsg
 {
     NET_MSG_INTERFACE_RELIABLE(SpawnActor);
 
-    TypeId mActorTypeId = INVALID_TYPE_ID;
+    TypeId mNodeTypeId = INVALID_TYPE_ID;
     NetId mNetId = INVALID_NET_ID;
+    std::string mScene;
+    NetId mParentNetId = INVALID_NET_ID;
 };
 
 struct NetMsgSpawnBlueprint : public NetMsg

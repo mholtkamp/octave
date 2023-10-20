@@ -263,30 +263,41 @@ void Node::Render(PipelineId pipelineId)
 
 void Node::Start()
 {
-    mHasStarted = true;
-
-    // TODO-NODE: Start children first? We could add a bool mLateStart.
-    for (uint32_t i = 0; i < GetNumChildren(); ++i)
+    if (!mHasStarted)
     {
-        Node* child = GetChild(i);
-        if (!child->HasStarted())
+        mHasStarted = true;
+
+        // TODO-NODE: Start children first? We could add a bool mLateStart.
+        for (uint32_t i = 0; i < GetNumChildren(); ++i)
         {
-            GetChild(i)->Start();
+            Node* child = GetChild(i);
+            if (!child->HasStarted())
+            {
+                GetChild(i)->Start();
+            }
         }
-    }
 
-    if (mReplicate &&
-        NetIsServer())
-    {
-        // Send a reliable forced replication message to ensure the initial state
-        // is received by the clients.
-        ForceReplication();
+        if (mReplicate &&
+            NetIsServer())
+        {
+            // The server will add the net node as soon as Start() is called.
+            // On the client, the net node will be added once the NetMsgSpawnNode is executed.
+            NetworkManager::Get()->AddNetNode(this, INVALID_NET_ID);
+
+            // Send a reliable forced replication message to ensure the initial state
+            // is received by the clients.
+            ForceReplication();
+        }
     }
 }
 
 void Node::Stop()
 {
-
+    if (mNetId != INVALID_NET_ID)
+    {
+        // RemoveNetNode should be called whether or not it's the server.
+        NetworkManager::Get()->RemoveNetNode(this);
+    }
 }
 
 void Node::RecursiveTick(float deltaTime, bool game)

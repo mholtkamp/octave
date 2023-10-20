@@ -38,7 +38,6 @@ public:
     void Update(float deltaTime);
 
     Camera3D* GetActiveCamera();
-    Camera3D* GetDefaultCamera();
     Node3D* GetAudioReceiver();
 
     void SetActiveCamera(Camera3D* activeCamera);
@@ -55,13 +54,14 @@ public:
     }
 
     void FlushPendingDestroys();
-    const Node* GetRootNode() const;
+    Node* GetRootNode();
+    void SetRootNode(Node* node);
+    void DestroyRootNode();
     Node* FindNode(const std::string& name);
     Node* FindNode(NetId netId);
     std::vector<Node*> FindNodesByTag(const char* tag);
     std::vector<Node*> FindNodesByName(const char* name);
-    void AddNetNode(Node* node, NetId netId);
-    const std::unordered_map<NetId, Node*>& GetNetNodeMap() const;
+
 
     void Clear();
 
@@ -110,9 +110,6 @@ public:
     uint32_t& GetIncrementalRepTier();
     uint32_t& GetIncrementalRepIndex();
 
-    std::vector<LevelRef>& GetLoadedLevels();
-    void UnloadAllLevels();
-
     void LoadLevel(
         const char* name,
         bool clear,
@@ -158,24 +155,19 @@ public:
 private:
 
     void UpdateLines(float deltaTime);
-    void SpawnDefaultCamera();
 
 private:
 
     Node* mRootNode = nullptr;
-    std::unordered_map<NetId, Node*> mNetNodeMap;
     std::vector<Line> mLines;
     std::vector<class Light3D*> mLights;
     std::vector<class Audio3D*> mAudios;
-    std::vector<LevelRef> mLoadedLevels;
     std::vector<QueuedLevel> mQueuedLevels;
     glm::vec4 mAmbientLightColor;
     glm::vec4 mShadowColor;
     FogSettings mFogSettings;
     Camera3D* mActiveCamera;
     Node3D* mAudioReceiver;
-    NodeRef mDefaultCamera;
-    NetId mNextNetId;
     bool mPendingClear = false;
 
     // Replication tiers
