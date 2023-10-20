@@ -56,6 +56,15 @@ void Quad::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Vector2D, "UV Offset", this, &mUvOffset, 1, Quad::HandlePropChange));
 }
 
+DrawData Quad::GetDrawData()
+{
+    DrawData data = {};
+
+    data.mNode = this;
+
+    return data;
+}
+
 void Quad::Tick(float deltaTime)
 {
     Widget::Tick(deltaTime);

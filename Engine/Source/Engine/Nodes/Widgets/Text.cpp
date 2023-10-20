@@ -127,6 +127,15 @@ void Text::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Byte, "Vert Justification", this, &mVertJust, 1, Text::HandlePropChange, 0, int32_t(Justification::Count), sVertJustStrings));
 }
 
+DrawData Text::GetDrawData()
+{
+    DrawData data = {};
+
+    data.mNode = this;
+
+    return data;
+}
+
 void Text::Tick(float deltaTime)
 {
     Widget::Tick(deltaTime);

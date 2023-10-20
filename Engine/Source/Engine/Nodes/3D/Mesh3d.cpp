@@ -131,7 +131,7 @@ DrawData Mesh3D::GetDrawData()
     DrawData data = {};
     Material* material = GetMaterial();
 
-    data.mNode = static_cast<Primitive3D*>(this);
+    data.mNode = this;
     data.mMaterial = material;
     data.mShadingModel = material ? material->GetShadingModel() : ShadingModel::Lit;
     data.mBlendMode = material ? material->GetBlendMode() : BlendMode::Opaque;

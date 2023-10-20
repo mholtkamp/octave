@@ -48,6 +48,15 @@ void Poly::Render()
     GFX_DrawPoly(this);
 }
 
+DrawData Poly::GetDrawData()
+{
+    DrawData data = {};
+
+    data.mNode = this;
+
+    return data;
+}
+
 void Poly::GatherProperties(std::vector<Property>& outProps)
 {
     Widget::GatherProperties(outProps);

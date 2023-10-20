@@ -20,7 +20,10 @@ public:
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
+    virtual DrawData GetDrawData() override;
+
     virtual void Tick(float deltaTime) override;
+    virtual void Render() override;
 
     void SetTexture(class Texture* texture);
     Texture* GetTexture();
@@ -41,8 +44,6 @@ public:
 
     void SetUvOffset(glm::vec2 offset);
     glm::vec2 GetUvOffset() const;
-
-    virtual void Render() override;
 
     VertexUI* GetVertices();
 

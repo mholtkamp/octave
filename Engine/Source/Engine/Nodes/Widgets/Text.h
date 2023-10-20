@@ -33,7 +33,11 @@ public:
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
+    virtual DrawData GetDrawData() override;
+
     virtual void Tick(float deltaTime) override;
+    virtual void Render() override;
+
     virtual void SetColor(glm::vec4 color) override;
 
     virtual void MarkDirty();
@@ -76,8 +80,6 @@ public:
     glm::vec2 GetScaledMaxExtent();
 
     virtual bool ContainsPoint(int32_t x, int32_t y) override;
-
-    virtual void Render() override;
 
     glm::vec2 GetJustifiedOffset();
     static float GetJustificationRatio(Justification just);

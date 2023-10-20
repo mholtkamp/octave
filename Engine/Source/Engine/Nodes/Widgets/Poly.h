@@ -4,6 +4,7 @@
 #include "Assets/Texture.h"
 #include "AssetRef.h"
 #include "Vertex.h"
+#include "Constants.h"
 
 class Poly : public Widget
 {
@@ -18,6 +19,8 @@ public:
 
     virtual void Tick(float deltaTime) override;
     virtual void Render() override;
+
+    virtual DrawData GetDrawData() override;
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
