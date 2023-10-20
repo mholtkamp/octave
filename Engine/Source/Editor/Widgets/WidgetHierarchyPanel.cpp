@@ -479,9 +479,9 @@ void WidgetHierarchyPanel::HandleInput()
     }
 }
 
-void WidgetHierarchyPanel::Update()
+void WidgetHierarchyPanel::Tick(float deltaTime)
 {
-    Panel::Update();
+    Panel::Tick(deltaTime);
 
     bool refresh = false;
 

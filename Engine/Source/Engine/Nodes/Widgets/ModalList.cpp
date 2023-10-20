@@ -6,16 +6,16 @@
 #include <algorithm>
 
 FORCE_LINK_DEF(ModalList);
-DEFINE_WIDGET(ModalList, VerticalList);
+DEFINE_NODE(ModalList, VerticalList);
 
 ModalList::ModalList()
 {
 
 }
 
-void ModalList::Update()
+void ModalList::Tick(float deltaTime)
 {
-    VerticalList::Update();
+    VerticalList::Tick(deltaTime);
 
     if (Renderer::Get()->GetModalWidget() == this &&
         IsMouseButtonJustUp(MOUSE_LEFT) &&

@@ -1,7 +1,7 @@
 #include "Nodes/Widgets/PolyRect.h"
 
 FORCE_LINK_DEF(PolyRect);
-DEFINE_WIDGET(PolyRect, Poly);
+DEFINE_NODE(PolyRect, Poly);
 
 PolyRect::PolyRect()
 {
@@ -13,9 +13,9 @@ PolyRect::~PolyRect()
 
 }
 
-void PolyRect::Update()
+void PolyRect::Tick(float deltaTime)
 {
-    Poly::Update();
+    Poly::Tick(deltaTime);
 
     if (IsDirty())
     {

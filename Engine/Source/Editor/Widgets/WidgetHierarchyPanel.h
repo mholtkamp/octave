@@ -16,7 +16,7 @@ public:
     void RefreshButtons();
 
     virtual void HandleInput() override;
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
 
     static const float sPanelHeight;
 

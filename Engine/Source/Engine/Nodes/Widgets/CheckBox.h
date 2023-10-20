@@ -6,7 +6,7 @@ class CheckBox : public Selector
 {
 public:
 
-    DECLARE_WIDGET(CheckBox, Selector);
+    DECLARE_NODE(CheckBox, Selector);
 
     CheckBox();
     ~CheckBox();

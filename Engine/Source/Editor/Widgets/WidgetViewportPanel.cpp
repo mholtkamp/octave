@@ -54,9 +54,9 @@ WidgetViewportPanel::~WidgetViewportPanel()
 }
 
 
-void WidgetViewportPanel::Update()
+void WidgetViewportPanel::Tick(float deltaTime)
 {
-    Panel::Update();
+    Panel::Tick(deltaTime);
 
     SyncEditRootWidget();
 

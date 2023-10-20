@@ -22,7 +22,7 @@ class StatsOverlay : public Canvas
 {
 public:
 
-    DECLARE_WIDGET(StatsOverlay, Canvas);
+    DECLARE_NODE(StatsOverlay, Canvas);
 
     StatsOverlay();
 

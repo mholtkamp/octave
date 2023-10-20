@@ -66,7 +66,7 @@ bool HierarchyButton::IsSelected() const
     return selected;
 }
 
-void HierarchyButton::Update()
+void HierarchyButton::Tick(float deltaTime)
 {
     if (IsSelected())
     {
@@ -91,7 +91,7 @@ void HierarchyButton::Update()
         mPrevSelected = false;
     }
 
-    Button::Update();
+    Button::Tick(deltaTime);
 }
 
 #endif

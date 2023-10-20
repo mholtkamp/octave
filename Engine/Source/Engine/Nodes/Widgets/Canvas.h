@@ -6,7 +6,7 @@ class Canvas : public Widget
 {
 public:
 
-    DECLARE_WIDGET(Canvas, Widget);
+    DECLARE_NODE(Canvas, Widget);
 
     Canvas();
     virtual ~Canvas();

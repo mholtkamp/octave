@@ -6,9 +6,9 @@ class ModalList : public VerticalList
 {
 public:
 
-    DECLARE_WIDGET(ModalList, VerticalList);
+    DECLARE_NODE(ModalList, VerticalList);
 
     ModalList();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
 };

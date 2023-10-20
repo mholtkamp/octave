@@ -9,7 +9,7 @@
 #endif
 
 FORCE_LINK_DEF(ScriptWidget);
-DEFINE_WIDGET(ScriptWidget, Widget);
+DEFINE_NODE(ScriptWidget, Widget);
 
 ScriptWidget::ScriptWidget()
 {
@@ -53,9 +53,9 @@ const std::string& ScriptWidget::GetTableName()
     return mTableName;
 }
 
-void ScriptWidget::Update()
+void ScriptWidget::Tick(float deltaTime)
 {
-    Widget::Update();
+    Widget::Tick(deltaTime);
 
     // To prevent updating in Widget editor.
     if (IsPlaying())

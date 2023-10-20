@@ -441,9 +441,9 @@ ViewportPanel::~ViewportPanel()
 
 }
 
-void ViewportPanel::Update()
+void ViewportPanel::Tick(float deltaTime)
 {
-    Panel::Update();
+    Panel::Tick(deltaTime);
 
     switch (GetControlMode())
     {

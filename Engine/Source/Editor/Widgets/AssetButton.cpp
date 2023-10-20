@@ -33,7 +33,7 @@ AssetButton::~AssetButton()
 
 }
 
-void AssetButton::Update()
+void AssetButton::Tick(float deltaTime)
 {
     AssetStub* selectedStub = GetSelectedAssetStub();
     if (mAssetStub != nullptr &&
@@ -55,7 +55,7 @@ void AssetButton::Update()
         mPrevSelectedStub = false;
     }
 
-    Button::Update();
+    Button::Tick(deltaTime);
 }
 
 void AssetButton::SetAssetStub(AssetStub* stub)

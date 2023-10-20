@@ -6,7 +6,7 @@
 #include "AssetManager.h"
 
 FORCE_LINK_DEF(Console);
-DEFINE_WIDGET(Console, Canvas);
+DEFINE_NODE(Console, Canvas);
 
 Console::Console()
 {
@@ -47,7 +47,7 @@ void Console::WriteOutput(const char* output, glm::vec4 color)
     }
 }
 
-void Console::Update()
+void Console::Tick(float deltaTime)
 {
     if (IsDirty())
     {
@@ -88,7 +88,7 @@ void Console::Update()
     }
 
 
-    Canvas::Update();
+    Canvas::Tick(deltaTime);
 }
 
 void Console::ProcessInput(const char* input)

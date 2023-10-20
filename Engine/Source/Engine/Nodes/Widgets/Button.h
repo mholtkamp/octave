@@ -22,12 +22,12 @@ class Button : public Widget
 {
 public:
 
-    DECLARE_WIDGET(Button, Widget);
+    DECLARE_NODE(Button, Widget);
 
     Button();
     virtual ~Button();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     void UpdateAppearance();
 
     // These functions need to adjust quad/text widget pos/dim.

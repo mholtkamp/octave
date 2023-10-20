@@ -6,10 +6,10 @@ class PolyRect : public Poly
 {
 public:
 
-    DECLARE_WIDGET(PolyRect, Poly);
+    DECLARE_NODE(PolyRect, Poly);
 
     PolyRect();
     virtual ~PolyRect();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
 };

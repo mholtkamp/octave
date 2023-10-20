@@ -19,12 +19,12 @@ class ArrayWidget : public Widget
 {
 public:
 
-    DECLARE_WIDGET(ArrayWidget, Widget);
+    DECLARE_NODE(ArrayWidget, Widget);
 
     ArrayWidget();
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
 
 protected:
 

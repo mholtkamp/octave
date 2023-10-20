@@ -8,7 +8,7 @@
 #include "Nodes/Widgets/Poly.h"
 
 FORCE_LINK_DEF(Poly);
-DEFINE_WIDGET(Poly, Widget);
+DEFINE_NODE(Poly, Widget);
 
 Poly::Poly()
 {
@@ -25,9 +25,9 @@ PolyResource* Poly::GetResource()
     return &mResource;
 }
 
-void Poly::Update()
+void Poly::Tick(float deltaTime)
 {
-    Widget::Update();
+    Widget::Tick(deltaTime);
 
     uint32_t frameIndex = Renderer::Get()->GetFrameIndex();
     if (mUploadVertices[frameIndex])

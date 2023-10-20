@@ -12,12 +12,12 @@ class Selector : public Button
 {
 public:
 
-    DECLARE_WIDGET(Selector, Button);
+    DECLARE_NODE(Selector, Button);
 
     Selector();
     ~Selector();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
 
     virtual void OnPressed() override;
 

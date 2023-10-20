@@ -13,7 +13,7 @@ class Console : public Canvas
 {
 public:
 
-    DECLARE_WIDGET(Console, Canvas);
+    DECLARE_NODE(Console, Canvas);
 
     Console();
 

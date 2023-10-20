@@ -17,7 +17,7 @@ public:
     void RefreshCompButtons();
 
     virtual void HandleInput() override;
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
 
     void OnEditorModeChanged();
 

@@ -4,7 +4,7 @@
 #include "ScriptEvent.h"
 
 FORCE_LINK_DEF(Selector);
-DEFINE_WIDGET(Selector, Button);
+DEFINE_NODE(Selector, Button);
 
 Selector::Selector() :
     mSelectionIndex(0)
@@ -17,9 +17,9 @@ Selector::~Selector()
 
 }
 
-void Selector::Update()
+void Selector::Tick(float deltaTime)
 {
-    Button::Update();
+    Button::Tick(deltaTime);
 
     // mText should always display the selected string.
     if (IsDirty())

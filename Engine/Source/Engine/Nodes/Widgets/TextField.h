@@ -11,12 +11,12 @@ class TextField : public Button
 {
 public:
 
-    DECLARE_WIDGET(TextField, Button);
+    DECLARE_NODE(TextField, Button);
 
     TextField();
     ~TextField();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void SetState(ButtonState newState) override;
     virtual void SetTextString(const std::string& newTextString) override;
 

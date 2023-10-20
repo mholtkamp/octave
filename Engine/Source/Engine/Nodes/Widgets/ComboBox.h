@@ -14,12 +14,12 @@ class ComboBox : public Selector
 {
 public:
 
-    DECLARE_WIDGET(ComboBox, Selector);
+    DECLARE_NODE(ComboBox, Selector);
 
     ComboBox();
     ~ComboBox();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual bool ShouldHandleInput() override;
 
     virtual void OnPressed() override;

@@ -1,7 +1,7 @@
 #include "Nodes/Widgets/ArrayWidget.h"
 
 FORCE_LINK_DEF(ArrayWidget);
-DEFINE_WIDGET(ArrayWidget, Widget);
+DEFINE_NODE(ArrayWidget, Widget);
 
 static const char* sArrayOrientationStrings[] =
 {
@@ -25,9 +25,9 @@ void ArrayWidget::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Center", this, &mCenter));
 }
 
-void ArrayWidget::Update()
+void ArrayWidget::Tick(float deltaTime)
 {
-    Widget::Update();
+    Widget::Tick(deltaTime);
 
     float offset = 0.0f;
     bool vertical = (mOrientation == ArrayOrientation::Vertical);

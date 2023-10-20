@@ -8,7 +8,7 @@
 #include "ScriptEvent.h"
 
 FORCE_LINK_DEF(TextField);
-DEFINE_WIDGET(TextField, Button);
+DEFINE_NODE(TextField, Button);
 
 TextField* TextField::sSelectedTextField = nullptr;
 float TextField::sCursorBlinkTime = 0.0f;
@@ -33,12 +33,12 @@ TextField::~TextField()
     }
 }
 
-void TextField::Update()
+void TextField::Tick(float deltaTime)
 {
     // If not the active text field, just update as if it was a button.
     if (mState != ButtonState::Pressed)
     {
-        Button::Update();
+        Button::Tick(deltaTime);
         return;
     }
 
@@ -161,11 +161,11 @@ void TextField::Update()
         ((IsMouseButtonJustUp(MOUSE_LEFT) || IsMouseButtonJustUp(MOUSE_RIGHT)) && !ContainsMouse()))
     {
         SetSelectedTextField(nullptr);
-        Button::Update();
+        Button::Tick(deltaTime);
     }
     else
     {
-        Widget::Update();
+        Widget::Tick(deltaTime);
     }
 }
 

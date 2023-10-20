@@ -5,7 +5,7 @@
 #include <algorithm>
 
 FORCE_LINK_DEF(VerticalList);
-DEFINE_WIDGET(VerticalList, Canvas);
+DEFINE_NODE(VerticalList, Canvas);
 
 VerticalList::VerticalList()
 {
@@ -28,9 +28,9 @@ VerticalList::~VerticalList()
     mWidgets.clear();
 }
 
-void VerticalList::Update()
+void VerticalList::Tick(float deltaTime)
 {
-    Canvas::Update();
+    Canvas::Tick(deltaTime);
 
     // This update needs to handle any scroll wheel input that adjust the display offset.
     if (GetScrollWheelDelta() != 0 &&

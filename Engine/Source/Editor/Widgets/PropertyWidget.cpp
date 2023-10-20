@@ -222,9 +222,9 @@ PropertyWidget::PropertyWidget() :
     SetDimensions(Panel::sDefaultWidth, GetHeight());
 }
 
-void PropertyWidget::Update()
+void PropertyWidget::Tick(float deltaTime)
 {
-    Widget::Update();
+    Widget::Tick(deltaTime);
 
     if (mArrayElement)
     {
@@ -324,9 +324,9 @@ PropertyArrayWidget::PropertyArrayWidget()
     AddChild(mPushButton);
 }
 
-void PropertyArrayWidget::Update()
+void PropertyArrayWidget::Tick(float deltaTime)
 {
-    PropertyWidget::Update();
+    PropertyWidget::Tick(deltaTime);
 
     bool resized = false;
 
@@ -425,9 +425,9 @@ FloatProp::FloatProp() :
     AddChild(mTextField);
 }
 
-void FloatProp::Update()
+void FloatProp::Tick(float deltaTime)
 {
-    PropertyWidget::Update();
+    PropertyWidget::Tick(deltaTime);
     mTextField->SetTextString(std::to_string(mProperty.GetFloat(mIndex)));
 }
 
@@ -460,9 +460,9 @@ IntegerProp::IntegerProp() :
     AddChild(mTextField);
 }
 
-void IntegerProp::Update()
+void IntegerProp::Tick(float deltaTime)
 {
-    PropertyWidget::Update();
+    PropertyWidget::Tick(deltaTime);
     mTextField->SetTextString(std::to_string(mProperty.GetInteger(mIndex)));
 }
 
@@ -523,9 +523,9 @@ VectorProp::VectorProp()
     SetDimensions(Panel::sDefaultWidth, GetHeight());
 }
 
-void VectorProp::Update()
+void VectorProp::Tick(float deltaTime)
 {
-    PropertyWidget::Update();
+    PropertyWidget::Tick(deltaTime);
     const glm::vec3& vect = mProperty.GetVector(mIndex);
     mTextFieldX->SetTextString(std::to_string(vect.x));
     mTextFieldY->SetTextString(std::to_string(vect.y));
@@ -582,9 +582,9 @@ ColorProp::ColorProp() :
     SetDimensions(Panel::sDefaultWidth, GetHeight());
 }
 
-void ColorProp::Update()
+void ColorProp::Tick(float deltaTime)
 {
-    PropertyWidget::Update();
+    PropertyWidget::Tick(deltaTime);
     const glm::vec4& color = mProperty.GetColor(mIndex);
     mTextFieldX->SetTextString(std::to_string(color.x));
     mTextFieldY->SetTextString(std::to_string(color.y));
@@ -629,9 +629,9 @@ StringProp::StringProp()
     AddChild(mTextField);
 }
 
-void StringProp::Update()
+void StringProp::Tick(float deltaTime)
 {
-    PropertyWidget::Update();
+    PropertyWidget::Tick(deltaTime);
     mTextField->SetTextString(mProperty.GetString(mIndex));
 }
 
@@ -660,9 +660,9 @@ BoolProp::BoolProp()
     SetDimensions(Panel::sDefaultWidth, GetHeight());
 }
 
-void BoolProp::Update()
+void BoolProp::Tick(float deltaTime)
 {
-    PropertyWidget::Update();
+    PropertyWidget::Tick(deltaTime);
     mCheckBox->SetChecked(mProperty.GetBool(mIndex));
 }
 
@@ -701,9 +701,9 @@ AssetProp::AssetProp()
     SetDimensions(Panel::sDefaultWidth, GetHeight());
 }
 
-void AssetProp::Update()
+void AssetProp::Tick(float deltaTime)
 {
-    PropertyWidget::Update();
+    PropertyWidget::Tick(deltaTime);
 
     Asset* asset = mProperty.GetAsset(mIndex);
     glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor((TypeId)mProperty.mExtra);
@@ -790,9 +790,9 @@ void EnumProp::SetProperty(const Property& prop, uint32_t index)
     }
 }
 
-void EnumProp::Update()
+void EnumProp::Tick(float deltaTime)
 {
-    PropertyWidget::Update();
+    PropertyWidget::Tick(deltaTime);
     mSelector->SetSelectionIndex(mProperty.GetType() == DatumType::Byte ? mProperty.GetByte(mIndex) : mProperty.GetInteger(mIndex));
 }
 
@@ -834,9 +834,9 @@ ByteProp::ByteProp() :
     AddChild(mTextField);
 }
 
-void ByteProp::Update()
+void ByteProp::Tick(float deltaTime)
 {
-    PropertyWidget::Update();
+    PropertyWidget::Tick(deltaTime);
     mTextField->SetTextString(std::to_string(mProperty.GetByte(mIndex)));
 }
 
@@ -871,9 +871,9 @@ ByteFlagProp::ByteFlagProp()
     }
 }
 
-void ByteFlagProp::Update()
+void ByteFlagProp::Tick(float deltaTime)
 {
-    PropertyWidget::Update();
+    PropertyWidget::Tick(deltaTime);
 
     uint8_t value = mProperty.GetByte(mIndex);
     for (int32_t i = 0; i < 8; ++i)
@@ -931,9 +931,9 @@ Vector2DProp::Vector2DProp()
     SetDimensions(Panel::sDefaultWidth, GetHeight());
 }
 
-void Vector2DProp::Update()
+void Vector2DProp::Tick(float deltaTime)
 {
-    PropertyWidget::Update();
+    PropertyWidget::Tick(deltaTime);
     const glm::vec2& vect = mProperty.GetVector2D(mIndex);
     mTextFieldX->SetTextString(std::to_string(vect.x));
     mTextFieldY->SetTextString(std::to_string(vect.y));
@@ -976,9 +976,9 @@ ShortProp::ShortProp() :
     AddChild(mTextField);
 }
 
-void ShortProp::Update()
+void ShortProp::Tick(float deltaTime)
 {
-    PropertyWidget::Update();
+    PropertyWidget::Tick(deltaTime);
     mTextField->SetTextString(std::to_string(mProperty.GetShort(mIndex)));
 }
 

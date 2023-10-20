@@ -16,7 +16,7 @@ public:
     AssetsPanel();
     virtual ~AssetsPanel();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void HandleInput() override;
 
     void SetDirectory(AssetDir* dir, bool recordHistory = true);

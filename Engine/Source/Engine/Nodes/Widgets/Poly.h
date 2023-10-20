@@ -9,14 +9,14 @@ class Poly : public Widget
 {
 public:
 
-    DECLARE_WIDGET(Poly, Widget);
+    DECLARE_NODE(Poly, Widget);
 
     Poly();
     virtual ~Poly();
 
     PolyResource* GetResource();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Render() override;
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;

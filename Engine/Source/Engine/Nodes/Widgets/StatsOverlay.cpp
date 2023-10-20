@@ -9,7 +9,7 @@
 #include "System/System.h"
 
 FORCE_LINK_DEF(StatsOverlay);
-DEFINE_WIDGET(StatsOverlay, Canvas);
+DEFINE_NODE(StatsOverlay, Canvas);
 
 #define DEFAULT_STAT_COLOR glm::vec4(0.4f, 1.0f, 0.4f, 1.0f)
 
@@ -24,7 +24,7 @@ StatsOverlay::StatsOverlay()
     SetRect(x, y, width, height);
 }
 
-void StatsOverlay::Update()
+void StatsOverlay::Tick(float deltaTime)
 {
     // (1) Determine the number of stats to display.
     uint32_t numStats = 0;
@@ -136,7 +136,7 @@ void StatsOverlay::Update()
         }
     }
 
-    Canvas::Update();
+    Canvas::Tick(deltaTime);
 }
 
 void StatsOverlay::SetDisplayMode(StatDisplayMode mode)

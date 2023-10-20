@@ -224,9 +224,9 @@ SceneImportWidget::SceneImportWidget()
     AddChild(mCancelButton);
 }
 
-void SceneImportWidget::Update()
+void SceneImportWidget::Tick(float deltaTime)
 {
-    Widget::Update();
+    Widget::Tick(deltaTime);
 
     if (Renderer::Get()->GetModalWidget() == this &&
         !ContainsMouse() &&

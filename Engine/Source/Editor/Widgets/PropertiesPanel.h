@@ -46,7 +46,7 @@ public:
     void OnSelectedComponentChanged();
     void OnSelectedWidgetChanged();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void HandleInput() override;
     virtual void Render() override;
 

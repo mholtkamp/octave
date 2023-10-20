@@ -14,7 +14,7 @@ public:
 
     bool IsSelected() const;
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
 
 protected:
 

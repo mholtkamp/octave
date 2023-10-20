@@ -24,7 +24,7 @@ class Text : public Widget
 {
 public:
 
-    DECLARE_WIDGET(Text, Widget);
+    DECLARE_NODE(Text, Widget);
 
     Text();
     virtual ~Text();
@@ -33,7 +33,7 @@ public:
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void SetColor(glm::vec4 color) override;
 
     virtual void MarkDirty();

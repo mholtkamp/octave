@@ -106,7 +106,7 @@ OutlinerPanel::OutlinerPanel()
     mScrollMultiplier = 5;
 }
 
-void OutlinerPanel::Update()
+void OutlinerPanel::Tick(float deltaTime)
 {
     World* world = GetWorld();
 
@@ -157,7 +157,7 @@ void OutlinerPanel::Update()
         }
     }
 
-    Panel::Update();
+    Panel::Tick(deltaTime);
 }
 
 void OutlinerPanel::HandleInput()

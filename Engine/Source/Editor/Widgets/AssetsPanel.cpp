@@ -437,7 +437,7 @@ AssetsPanel::~AssetsPanel()
 
 }
 
-void AssetsPanel::Update()
+void AssetsPanel::Tick(float deltaTime)
 {
     float canvasHeight = mBodyCanvas->GetHeight();
     float buttonHeight = AssetButton::sAssetButtonHeight;
@@ -500,7 +500,7 @@ void AssetsPanel::Update()
         }
     }
 
-    Panel::Update();
+    Panel::Tick(deltaTime);
 }
 
 void AssetsPanel::HandleInput()

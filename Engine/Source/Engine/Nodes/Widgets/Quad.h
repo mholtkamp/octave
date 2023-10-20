@@ -11,7 +11,7 @@ class Quad : public Widget
 {
 public:
 
-    DECLARE_WIDGET(Quad, Widget);
+    DECLARE_NODE(Quad, Widget);
 
     Quad();
     virtual ~Quad();
@@ -20,7 +20,7 @@ public:
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
 
     void SetTexture(class Texture* texture);
     Texture* GetTexture();

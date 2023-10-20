@@ -534,9 +534,9 @@ void HierarchyPanel::HandleInput()
     }
 }
 
-void HierarchyPanel::Update()
+void HierarchyPanel::Tick(float deltaTime)
 {
-    Panel::Update();
+    Panel::Tick(deltaTime);
 
     Actor* actor = GetTargetActor();
 

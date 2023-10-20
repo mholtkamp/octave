@@ -19,7 +19,7 @@ class PropertyWidget : public Canvas
 public:
 
     PropertyWidget();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Write() = 0;
     virtual float GetHeight();
     virtual void SetProperty(const Property& prop, uint32_t index);
@@ -43,7 +43,7 @@ class PropertyArrayWidget : public PropertyWidget
 {
 public:
     PropertyArrayWidget();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual float GetHeight();
     virtual void SetProperty(const Property& prop, uint32_t index);
     virtual void Write() override { };
@@ -61,7 +61,7 @@ class FloatProp : public PropertyWidget
 {
 public:
     FloatProp();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Write() override;
 protected:
     TextField* mTextField;
@@ -71,7 +71,7 @@ class IntegerProp : public PropertyWidget
 {
 public:
     IntegerProp();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Write() override;
 protected:
     TextField* mTextField;
@@ -81,7 +81,7 @@ class VectorProp : public PropertyWidget
 {
 public:
     VectorProp();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Write() override;
     virtual float GetHeight() override;
 protected:
@@ -97,7 +97,7 @@ class ColorProp : public VectorProp
 {
 public:
     ColorProp();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Write() override;
     virtual float GetHeight() override;
 protected:
@@ -109,7 +109,7 @@ class StringProp : public PropertyWidget
 {
 public:
     StringProp();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Write() override;
 protected:
     TextField* mTextField;
@@ -119,7 +119,7 @@ class BoolProp : public PropertyWidget
 {
 public:
     BoolProp();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Write() override;
     virtual float GetHeight() override;
 protected:
@@ -130,7 +130,7 @@ class AssetProp : public PropertyWidget
 {
 public:
     AssetProp();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Write() override;
     void AssignAsset(Asset* asset);
     void AssignAsset(const std::string& name);
@@ -145,7 +145,7 @@ class EnumProp : public PropertyWidget
 {
 public:
     EnumProp();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Write() override;
     virtual void SetProperty(const Property& prop, uint32_t index) override;
 protected:
@@ -156,7 +156,7 @@ class ByteProp : public PropertyWidget
 {
 public:
     ByteProp();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Write() override;
 protected:
     TextField* mTextField;
@@ -166,7 +166,7 @@ class ByteFlagProp : public PropertyWidget
 {
 public:
     ByteFlagProp();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Write() override;
 protected:
     CheckBox* mCheckBoxes[8] = {};
@@ -176,7 +176,7 @@ class Vector2DProp : public PropertyWidget
 {
 public:
     Vector2DProp();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Write() override;
     virtual float GetHeight() override;
 protected:
@@ -190,7 +190,7 @@ class ShortProp : public PropertyWidget
 {
 public:
     ShortProp();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Write() override;
 protected:
     TextField* mTextField;

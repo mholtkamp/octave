@@ -18,7 +18,7 @@ public:
     static void HandleImportPressed(Button* button);
     static void HandleCancelPressed(Button* button);
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
 
     Button* mFileButton = nullptr;
     Text* mFileText = nullptr;

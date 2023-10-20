@@ -32,7 +32,7 @@ public:
     WidgetViewportPanel();
     ~WidgetViewportPanel();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void HandleInput() override;
 
     void SetWidgetControlMode(WidgetControlMode newMode);

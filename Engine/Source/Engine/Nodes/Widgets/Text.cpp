@@ -9,7 +9,7 @@
 #include "Graphics/Graphics.h"
 
 FORCE_LINK_DEF(Text);
-DEFINE_WIDGET(Text, Widget);
+DEFINE_NODE(Text, Widget);
 
 static const char* sHoriJustStrings[] =
 {
@@ -127,9 +127,9 @@ void Text::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Byte, "Vert Justification", this, &mVertJust, 1, Text::HandlePropChange, 0, int32_t(Justification::Count), sVertJustStrings));
 }
 
-void Text::Update()
+void Text::Tick(float deltaTime)
 {
-    Widget::Update();
+    Widget::Tick(deltaTime);
 
     UpdateVertexData();
     UploadVertexData();
@@ -359,7 +359,7 @@ bool Text::ContainsPoint(int32_t x, int32_t y)
     textRect.mWidth = (maxExt.x - minExt.x);
     textRect.mHeight = (maxExt.y - minExt.y);
 
-    textRect.Clamp(mCachedScissorRect);
+    textRect.Clamp(mScissorRect);
     return textRect.ContainsPoint((float)x, (float)y);
 }
 

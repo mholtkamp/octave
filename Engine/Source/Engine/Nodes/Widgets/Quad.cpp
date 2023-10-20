@@ -6,7 +6,7 @@
 #include "Graphics/Graphics.h"
 
 FORCE_LINK_DEF(Quad);
-DEFINE_WIDGET(Quad, Widget);
+DEFINE_NODE(Quad, Widget);
 
 bool Quad::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
@@ -56,9 +56,9 @@ void Quad::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Vector2D, "UV Offset", this, &mUvOffset, 1, Quad::HandlePropChange));
 }
 
-void Quad::Update()
+void Quad::Tick(float deltaTime)
 {
-    Widget::Update();
+    Widget::Tick(deltaTime);
 
     if (IsDirty())
     {

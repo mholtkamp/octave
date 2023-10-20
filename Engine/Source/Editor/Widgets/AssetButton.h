@@ -14,7 +14,7 @@ public:
     AssetButton();
     ~AssetButton();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
 
     void SetAssetStub(AssetStub* asset);
     AssetStub* GetAssetStub();

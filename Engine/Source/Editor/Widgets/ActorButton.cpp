@@ -20,7 +20,7 @@ ActorButton::~ActorButton()
 
 }
 
-void ActorButton::Update()
+void ActorButton::Tick(float deltaTime)
 {
     Actor* selectedActor = GetSelectedActor();
     if (mActor == selectedActor)
@@ -46,7 +46,7 @@ void ActorButton::Update()
         mPrevSelectedActor = false;
     }
 
-    Button::Update();
+    Button::Tick(deltaTime);
 }
 
 void ActorButton::SetActor(Actor* actor)

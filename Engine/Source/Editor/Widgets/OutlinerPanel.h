@@ -12,7 +12,7 @@ class OutlinerPanel : public Panel
 public:
 
     OutlinerPanel();
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void HandleInput() override;
 
 protected:

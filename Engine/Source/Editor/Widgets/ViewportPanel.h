@@ -13,7 +13,7 @@ public:
     ViewportPanel();
     ~ViewportPanel();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void HandleInput() override;
 
     float GetFocalDistance() const;

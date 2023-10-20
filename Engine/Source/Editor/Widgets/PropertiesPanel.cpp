@@ -262,9 +262,9 @@ void PropertiesPanel::RefreshProperties()
     }
 }
 
-void PropertiesPanel::Update()
+void PropertiesPanel::Tick(float deltaTime)
 {
-    Panel::Update();
+    Panel::Tick(deltaTime);
 
     RecordInspectionHistory();
 

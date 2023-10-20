@@ -8,7 +8,7 @@
 #include "ScriptEvent.h"
 
 FORCE_LINK_DEF(Button);
-DEFINE_WIDGET(Button, Widget);
+DEFINE_NODE(Button, Widget);
 
 Button::Button() :
     mNormalTexture(nullptr),
@@ -59,9 +59,9 @@ Button::~Button()
     // Children are deleted automatically in ~Widget().
 }
 
-void Button::Update()
+void Button::Tick(float deltaTime)
 {
-    Widget::Update();
+    Widget::Tick(deltaTime);
 
     if (mHandleMouseInput &&
         mState != ButtonState::Disabled &&

@@ -13,7 +13,7 @@ public:
     ActionList();
     virtual ~ActionList();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
 
     void SetActions(const std::vector<std::string>& options, ButtonHandlerFP handler);
 

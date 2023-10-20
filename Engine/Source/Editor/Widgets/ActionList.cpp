@@ -60,14 +60,14 @@ ActionList::~ActionList()
     mButtons.clear();
 }
 
-void ActionList::Update()
+void ActionList::Tick(float deltaTime)
 {
     if (mVisibleDelay > 0)
     {
         MarkDirty();
     }
 
-    Widget::Update();
+    Widget::Tick(deltaTime);
 
     if (Renderer::Get()->GetModalWidget() == this &&
         !ContainsMouse() &&

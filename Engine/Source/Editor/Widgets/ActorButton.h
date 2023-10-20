@@ -9,7 +9,7 @@ public:
     ActorButton();
     ~ActorButton();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
 
     void SetActor(Actor* actor);
     Actor* GetActor();

@@ -6,7 +6,7 @@ class ScriptWidget : public Widget
 {
 public:
 
-    DECLARE_WIDGET(ScriptWidget, Widget);
+    DECLARE_NODE(ScriptWidget, Widget);
 
     ScriptWidget();
     ScriptWidget(const char* scriptName);
@@ -17,7 +17,7 @@ public:
     const std::string& GetFile();
     const std::string& GetTableName();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
     virtual void Start() override;
     virtual void Stop() override;
 

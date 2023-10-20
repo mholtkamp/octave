@@ -6,12 +6,12 @@ class VerticalList : public Canvas
 {
 public:
 
-    DECLARE_WIDGET(VerticalList, Canvas);
+    DECLARE_NODE(VerticalList, Canvas);
 
     VerticalList();
     virtual ~VerticalList();
 
-    virtual void Update() override;
+    virtual void Tick(float deltaTime) override;
 
     void AddListItem(Widget* widget);
     void RemoveListItem(Widget* widget);

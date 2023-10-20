@@ -7,7 +7,7 @@
 #include "InputDevices.h"
 
 FORCE_LINK_DEF(ComboBox);
-DEFINE_WIDGET(ComboBox, Selector);
+DEFINE_NODE(ComboBox, Selector);
 
 void HandleComboBoxButtonPress(Button* button)
 {
@@ -52,9 +52,9 @@ ComboBox::~ComboBox()
     }
 }
 
-void ComboBox::Update()
+void ComboBox::Tick(float deltaTime)
 {
-    Selector::Update();
+    Selector::Tick(deltaTime);
 
     if (ShouldHandleInput() &&
         Renderer::Get()->GetModalWidget() == mList)
