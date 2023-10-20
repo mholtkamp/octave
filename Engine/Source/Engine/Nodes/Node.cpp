@@ -313,9 +313,16 @@ void Node::RecursiveTick(float deltaTime, bool game)
             }
         }
 
-        for (uint32_t i = 0; i < GetNumChildren(); ++i)
+        for (int32_t i = 0; i < (int32_t)GetNumChildren(); ++i)
         {
-            GetChild(i)->RecursiveTick(deltaTime, game);
+            Node* child = GetChild(i);
+            child->RecursiveTick(deltaTime, game);
+
+            if (child->IsPendingDestroy())
+            {
+                child->Destroy();
+                --i;
+            }
         }
 
         if (/*mLateTick*/ 0)
@@ -330,7 +337,7 @@ void Node::RecursiveTick(float deltaTime, bool game)
             }
         }
 
-        if (mPendingDestroy)
+        if (mPendingDestroy && mParent == nullptr)
         {
             Destroy();
         }
@@ -637,10 +644,16 @@ void Node::SetPendingDestroy(bool pendingDestroy)
 {
     mPendingDestroy = pendingDestroy;
 
+    // Do we need to mark children as pending destroy? I think it could cause problems...
+    // A parent node may be expecting its children to be alive during Tick(), but if they are 
+    // already set to pending destroy (and the parent uses Late Tick) then the parent will tick 
+    // after the children have already been destroyed.
+#if 0
     for (uint32_t i = 0; i < GetNumChildren(); ++i)
     {
         GetChild(i)->SetPendingDestroy(pendingDestroy);
     }
+#endif
 }
 
 bool Node::IsPendingDestroy() const
