@@ -132,7 +132,7 @@ void World::SpawnDefaultCamera()
         mActiveCamera = cameraActor->CreateComponent<Camera3D>();
         cameraActor->SetRootComponent(mActiveCamera);
         cameraActor->SetName("Default Camera");
-        cameraActor->SetPersitent(true);
+        cameraActor->SetTransient(true);
         mActiveCamera->SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
 
         mDefaultCamera = mActiveCamera;
@@ -165,8 +165,8 @@ void World::DestroyActor(uint32_t index)
         }
 
         // This actor was assigned a net id, so it should exist in our net actor map.
-        OCT_ASSERT(mNetActorMap.find(actor->GetNetId()) != mNetActorMap.end());
-        mNetActorMap.erase(actor->GetNetId());
+        OCT_ASSERT(mNetNodeMap.find(actor->GetNetId()) != mNetNodeMap.end());
+        mNetNodeMap.erase(actor->GetNetId());
 
         // Remove the destroyed actor from their assigned replication vector.
         std::vector<Actor*>& repVector = GetReplicatedActorVector(actor->GetReplicationRate());
@@ -244,8 +244,8 @@ Actor* World::FindActor(const std::string& name)
 Actor* World::FindActor(NetId netId)
 {
     Actor* retActor = nullptr;
-    auto it = mNetActorMap.find(netId);
-    if (it != mNetActorMap.end())
+    auto it = mNetNodeMap.find(netId);
+    if (it != mNetNodeMap.end())
     {
         retActor = it->second;
     }
@@ -340,7 +340,7 @@ void World::AddNetActor(Actor* actor, NetId netId)
             if (netId != INVALID_NET_ID)
             {
                 actor->SetNetId(netId);
-                mNetActorMap.insert({ netId, actor });
+                mNetNodeMap.insert({ netId, actor });
 
                 std::vector<Actor*>& repActorVector = GetReplicatedActorVector(actor->GetReplicationRate());
                 repActorVector.push_back(actor);
@@ -357,7 +357,7 @@ void World::AddNetActor(Actor* actor, NetId netId)
 
 const std::unordered_map<NetId, Actor*>& World::GetNetActorMap() const
 {
-    return mNetActorMap;
+    return mNetNodeMap;
 }
 
 void World::Clear(bool clearPersistent)
@@ -374,10 +374,7 @@ void World::Clear(bool clearPersistent)
         // Destroy all non-persistent actors.
         for (int32_t i = int32_t(mActors.size()) - 1; i >= 0; --i)
         {
-            if (!mActors[i]->IsPersistent())
-            {
-                DestroyActor(i);
-            }
+            DestroyActor(i);
         }
 
         mNextNetId = 1;
@@ -432,9 +429,9 @@ const std::vector<Line>& World::GetLines() const
     return mLines;
 }
 
-const std::vector<Light3D*>& World::GetLight3Ds()
+const std::vector<Light3D*>& World::GetLights()
 {
-    return mLight3Ds;
+    return mLights;
 }
 
 void World::SetAmbientLightColor(glm::vec4 color)
@@ -647,16 +644,16 @@ void World::RegisterComponent(Component* comp)
     if (compType == Audio3D::GetStaticType())
     {
 #if _DEBUG
-        OCT_ASSERT(std::find(mAudio3Ds.begin(), mAudio3Ds.end(), (Audio3D*)comp) == mAudio3Ds.end());
+        OCT_ASSERT(std::find(mAudios.begin(), mAudios.end(), (Audio3D*)comp) == mAudios.end());
 #endif
-        mAudio3Ds.push_back((Audio3D*) comp);
+        mAudios.push_back((Audio3D*) comp);
     }
     else if (comp->IsLight3D())
     {
 #if _DEBUG
-        OCT_ASSERT(std::find(mLight3Ds.begin(), mLight3Ds.end(), (Light3D*)comp) == mLight3Ds.end());
+        OCT_ASSERT(std::find(mLights.begin(), mLights.end(), (Light3D*)comp) == mLights.end());
 #endif
-        mLight3Ds.push_back((Light3D*)comp);
+        mLights.push_back((Light3D*)comp);
     }
 }
 
@@ -666,30 +663,30 @@ void World::UnregisterComponent(Component* comp)
 
     if (compType == Audio3D::GetStaticType())
     {
-        auto it = std::find(mAudio3Ds.begin(), mAudio3Ds.end(), (Audio3D*)comp);
-        OCT_ASSERT(it != mAudio3Ds.end());
-        mAudio3Ds.erase(it);
+        auto it = std::find(mAudios.begin(), mAudios.end(), (Audio3D*)comp);
+        OCT_ASSERT(it != mAudios.end());
+        mAudios.erase(it);
     }
     else if (comp->IsLight3D())
     {
-        auto it = std::find(mLight3Ds.begin(), mLight3Ds.end(), (Light3D*)comp);
-        OCT_ASSERT(it != mLight3Ds.end());
-        mLight3Ds.erase(it);
+        auto it = std::find(mLights.begin(), mLights.end(), (Light3D*)comp);
+        OCT_ASSERT(it != mLights.end());
+        mLights.erase(it);
     }
 }
 
-const std::vector<Audio3D*>& World::GetAudio3Ds() const
+const std::vector<Audio3D*>& World::GetAudios() const
 {
-    return mAudio3Ds;
+    return mAudios;
 }
 
-std::vector<Actor*>& World::GetReplicatedActorVector(ReplicationRate rate)
+std::vector<Node*>& World::GetReplicatedNodeVector(ReplicationRate rate)
 {
     OCT_ASSERT(rate != ReplicationRate::Count);
-    return mRepActors[(uint32_t)rate];
+    return mRepNodes[(uint32_t)rate];
 }
 
-uint32_t& World::GetReplicatedActorIndex(ReplicationRate rate)
+uint32_t& World::GetReplicatedNodeIndex(ReplicationRate rate)
 {
     OCT_ASSERT(rate != ReplicationRate::Count);
     return mRepIndices[(uint32_t)rate];

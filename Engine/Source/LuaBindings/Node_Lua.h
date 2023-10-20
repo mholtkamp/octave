@@ -73,9 +73,6 @@ struct Node_Lua
     static int AddTag(lua_State* L);
     static int RemoveTag(lua_State* L);
 
-    static int SetPersistent(lua_State* L);
-    static int IsPersistent(lua_State* L);
-
     static int HasAuthority(lua_State* L);
     static int IsOwned(lua_State* L);
 

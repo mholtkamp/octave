@@ -126,9 +126,6 @@ public:
     void EnableTick(bool enable);
     bool IsTickEnabled() const;
 
-    void SetPersitent(bool persistent);
-    bool IsPersistent() const;
-
     virtual void SetWorld(World* world);
     World* GetWorld();
 
@@ -266,7 +263,6 @@ protected:
     bool mPendingDestroy = false;
     bool mTickEnabled = true;
     bool mTransient = false;
-    bool mPersistent = false;
     bool mVisible = true;
 
     // Network Data

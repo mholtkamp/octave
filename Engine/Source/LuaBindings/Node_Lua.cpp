@@ -583,26 +583,6 @@ int Node_Lua::RemoveTag(lua_State* L)
     return 0;
 }
 
-int Node_Lua::SetPersistent(lua_State* L)
-{
-    Node* node = CHECK_NODE(L, 1);
-    bool value = CHECK_BOOLEAN(L, 2);
-
-    node->SetPersitent(value);
-
-    return 0;
-}
-
-int Node_Lua::IsPersistent(lua_State* L)
-{
-    Node* node = CHECK_NODE(L, 1);
-
-    bool ret = node->IsPersistent();
-
-    lua_pushboolean(L, ret);
-    return 1;
-}
-
 int Node_Lua::HasAuthority(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -822,12 +802,6 @@ void Node_Lua::Bind()
 
     lua_pushcfunction(L, RemoveTag);
     lua_setfield(L, mtIndex, "RemoveTag");
-
-    lua_pushcfunction(L, SetPersistent);
-    lua_setfield(L, mtIndex, "SetPersistent");
-
-    lua_pushcfunction(L, IsPersistent);
-    lua_setfield(L, mtIndex, "IsPersistent");
 
     lua_pushcfunction(L, HasAuthority);
     lua_setfield(L, mtIndex, "HasAuthority");

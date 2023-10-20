@@ -9,6 +9,7 @@
 #include "Assets/Material.h"
 #include "Assets/Texture.h"
 #include "Nodes/Node.h"
+#include "Nodes/Widgets/Widget.h"
 #include "Clock.h"
 #include "Line.h"
 #include "EngineTypes.h"
@@ -77,7 +78,7 @@ public:
     void RemoveAllLines();
     const std::vector<Line>& GetLines() const;
 
-    const std::vector<class Light3D*>& GetLight3Ds();
+    const std::vector<class Light3D*>& GetLights();
 
     void SetAmbientLightColor(glm::vec4 color);
     glm::vec4 GetAmbientLightColor() const;
@@ -110,10 +111,10 @@ public:
 
     void RegisterComponent(Component* comp);
     void UnregisterComponent(Component* comp);
-    const std::vector<Audio3D*>& GetAudio3Ds() const;
+    const std::vector<Audio3D*>& GetAudios() const;
 
-    std::vector<Actor*>& GetReplicatedActorVector(ReplicationRate rate);
-    uint32_t& GetReplicatedActorIndex(ReplicationRate rate);
+    std::vector<Node*>& GetReplicatedNodeVector(ReplicationRate rate);
+    uint32_t& GetReplicatedNodeIndex(ReplicationRate rate);
     uint32_t& GetIncrementalRepTier();
     uint32_t& GetIncrementalRepIndex();
 
@@ -171,11 +172,12 @@ private:
 
 private:
 
-    std::vector<Actor*> mActors;
-    std::unordered_map<NetId, Actor*> mNetActorMap;
+    Node3D* mRoot3D = nullptr;
+    Widget* mRootWidget = nullptr;
+    std::unordered_map<NetId, Node*> mNetNodeMap;
     std::vector<Line> mLines;
-    std::vector<class Light3D*> mLight3Ds;
-    std::vector<class Audio3D*> mAudio3Ds;
+    std::vector<class Light3D*> mLights;
+    std::vector<class Audio3D*> mAudios;
     std::vector<LevelRef> mLoadedLevels;
     std::vector<QueuedLevel> mQueuedLevels;
     DirectionalLight3D* mDirectionalLight;
@@ -184,12 +186,12 @@ private:
     FogSettings mFogSettings;
     Camera3D* mActiveCamera;
     Node3D* mAudioReceiver;
-    ComponentRef mDefaultCamera;
+    NodeRef mDefaultCamera;
     NetId mNextNetId;
     bool mPendingClear = false;
 
     // Replication tiers
-    std::vector<Actor*> mRepActors[(uint32_t)ReplicationRate::Count];
+    std::vector<Node*> mRepNodes[(uint32_t)ReplicationRate::Count];
     uint32_t mRepIndices[(uint32_t)ReplicationRate::Count] = {};
     uint32_t mIncrementalRepTier = 0;
     uint32_t mIncrementalRepIndex = 0;
@@ -206,11 +208,10 @@ private:
 #if EDITOR
 public:
 
-    bool IsComponentSelected(Component* comp) const;
-    Component* GetSelectedComponent();
-    const std::vector<Component*>& GetSelectedComponents();
-    std::vector<Actor*> GetSelectedActors();
-    void DeselectComponent(Component* comp);
+    bool IsNodeSelected(Node* node) const;
+    Node* GetSelectedNode();
+    const std::vector<Node*>& GetSelectedNodes();
+    void DeselectNode(Node* node);
 
 #endif
 };
