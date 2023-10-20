@@ -661,6 +661,19 @@ bool Node::IsPendingDestroy() const
     return mPendingDestroy;
 }
 
+void Node::FlushPendingDestroys()
+{
+    for (int32_t i = 0; i < (int32_t)mChildren.size(); ++i)
+    {
+        Node* child = GetChild(i);
+        if (child->IsPendingDestroy())
+        {
+            child->Destroy();
+            --i;
+        }
+    }
+}
+
 bool Node::HasStarted() const
 {
     return mHasStarted;

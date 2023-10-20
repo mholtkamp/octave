@@ -44,12 +44,9 @@ public:
     void SetActiveCamera(Camera3D* activeCamera);
     void SetAudioReceiver(Node3D* newReceiver);
 
-    void AddActor(Actor* actor);
-    void RemoveActor(Actor* actor);
-
-    Actor* SpawnActor(TypeId actorType, bool addNetwork = true);
-    Actor* SpawnActor(const char* typeName);
-    Actor* CloneActor(Actor* srcActor);
+    Node* SpawnNode(TypeId actorType, bool addNetwork = true);
+    Node* SpawnNode(const char* typeName);
+    Node* SpawnScene(const char* sceneName);
 
     template<class ActorClass>
     ActorClass* SpawnActor()
@@ -57,21 +54,16 @@ public:
         return (ActorClass*) SpawnActor(ActorClass::GetStaticType());
     }
 
-    void DestroyActor(Actor* actor);
-    void DestroyActor(uint32_t index);
-    void DestroyAllActors();
     void FlushPendingDestroys();
-    const std::vector<Actor*>& GetActors() const;
-    Actor* FindActor(const std::string& name);
-    Actor* FindActor(NetId netId);
-    std::vector<Actor*> FindActorsByTag(const char* tag);
-    std::vector<Actor*> FindActorsByName(const char* name);
-    Component* FindComponent(const std::string& name);
-    void PrioritizeActorTick(Actor* actor);
-    void AddNetActor(Actor* actor, NetId netId);
-    const std::unordered_map<NetId, Actor*>& GetNetActorMap() const;
+    const Node* GetRootNode() const;
+    Node* FindNode(const std::string& name);
+    Node* FindNode(NetId netId);
+    std::vector<Node*> FindNodesByTag(const char* tag);
+    std::vector<Node*> FindNodesByName(const char* name);
+    void AddNetNode(Node* node, NetId netId);
+    const std::unordered_map<NetId, Node*>& GetNetNodeMap() const;
 
-    void Clear(bool clearPersistent = false);
+    void Clear();
 
     void AddLine(const Line& line);
     void RemoveLine(const Line& line);
@@ -109,8 +101,8 @@ public:
         uint32_t numIgnoreObjects = 0,
         btCollisionObject** ignoreObjects = nullptr);
 
-    void RegisterComponent(Component* comp);
-    void UnregisterComponent(Component* comp);
+    void RegisterNode(Node* node);
+    void UnregisterNode(Node* node);
     const std::vector<Audio3D*>& GetAudios() const;
 
     std::vector<Node*>& GetReplicatedNodeVector(ReplicationRate rate);
@@ -121,7 +113,6 @@ public:
     std::vector<LevelRef>& GetLoadedLevels();
     void UnloadAllLevels();
 
-    Actor* SpawnBlueprint(const char* name);
     void LoadLevel(
         const char* name,
         bool clear,
@@ -167,20 +158,17 @@ public:
 private:
 
     void UpdateLines(float deltaTime);
-    void SetTestDirectionalLight();
     void SpawnDefaultCamera();
 
 private:
 
-    Node3D* mRoot3D = nullptr;
-    Widget* mRootWidget = nullptr;
+    Node* mRootNode = nullptr;
     std::unordered_map<NetId, Node*> mNetNodeMap;
     std::vector<Line> mLines;
     std::vector<class Light3D*> mLights;
     std::vector<class Audio3D*> mAudios;
     std::vector<LevelRef> mLoadedLevels;
     std::vector<QueuedLevel> mQueuedLevels;
-    DirectionalLight3D* mDirectionalLight;
     glm::vec4 mAmbientLightColor;
     glm::vec4 mShadowColor;
     FogSettings mFogSettings;

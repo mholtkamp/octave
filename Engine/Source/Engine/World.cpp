@@ -62,7 +62,6 @@ bool ContactAddedHandler(btManifoldPoint& cp,
 }
 
 World::World() :
-    mDirectionalLight(nullptr),
     mAmbientLightColor(DEFAULT_AMBIENT_LIGHT_COLOR),
     mShadowColor(DEFAULT_SHADOW_COLOR),
     mActiveCamera(nullptr),
@@ -105,23 +104,6 @@ void World::Destroy()
     mBroadphase = nullptr;
     mCollisionDispatcher = nullptr;
     mCollisionConfig = nullptr;
-}
-
-void World::SetTestDirectionalLight()
-{
-    if (mDirectionalLight == nullptr)
-    {
-        Actor* dirLightActor = SpawnActor<Actor>();
-        mDirectionalLight = dirLightActor->CreateComponent<DirectionalLight3D>();
-        dirLightActor->SetRootComponent(mDirectionalLight);
-        dirLightActor->SetName("Default Light");
-    }
-
-    float lightValue = 5.0f;
-    mDirectionalLight->SetActive(true);
-    mDirectionalLight->SetCastShadows(true);
-    mDirectionalLight->SetColor(glm::vec4(lightValue, 4.0f, 4.0f, 4.0f));
-    mDirectionalLight->SetDirection(glm::normalize(glm::vec3(1.0f, -1.0f, 0.2f)));
 }
 
 void World::SpawnDefaultCamera()
@@ -211,11 +193,23 @@ void World::DestroyAllActors()
 
 void World::FlushPendingDestroys()
 {
-    for (int32_t i = int32_t(mActors.size()) - 1; i >= 0; --i)
+    if (mRoot3D != nullptr)
     {
-        if (mActors[i]->IsPendingDestroy())
+        mRoot3D->FlushPendingDestroys();
+
+        if (mRoot3D->IsPendingDestroy())
         {
-            DestroyActor(i);
+            mRoot3D->Destroy();
+        }
+    }
+
+    if (mRootWidget != nullptr)
+    {
+        mRootWidget->FlushPendingDestroys();
+
+        if (mRootWidget->IsPendingDestroy())
+        {
+            mRootWidget->Destroy();
         }
     }
 }
@@ -637,39 +631,39 @@ void World::SweepTest(
     }
 }
 
-void World::RegisterComponent(Component* comp)
+void World::RegisterNode(Node* node)
 {
-    TypeId compType = comp->GetType();
+    TypeId nodeType = node->GetType();
 
-    if (compType == Audio3D::GetStaticType())
+    if (nodeType == Audio3D::GetStaticType())
     {
 #if _DEBUG
-        OCT_ASSERT(std::find(mAudios.begin(), mAudios.end(), (Audio3D*)comp) == mAudios.end());
+        OCT_ASSERT(std::find(mAudios.begin(), mAudios.end(), (Audio3D*)node) == mAudios.end());
 #endif
-        mAudios.push_back((Audio3D*) comp);
+        mAudios.push_back((Audio3D*)node);
     }
-    else if (comp->IsLight3D())
+    else if (node->IsLight3D())
     {
 #if _DEBUG
-        OCT_ASSERT(std::find(mLights.begin(), mLights.end(), (Light3D*)comp) == mLights.end());
+        OCT_ASSERT(std::find(mLights.begin(), mLights.end(), (Light3D*)node) == mLights.end());
 #endif
-        mLights.push_back((Light3D*)comp);
+        mLights.push_back((Light3D*)node);
     }
 }
 
-void World::UnregisterComponent(Component* comp)
+void World::UnregisterNode(Node* node)
 {
-    TypeId compType = comp->GetType();
+    TypeId nodeType = node->GetType();
 
-    if (compType == Audio3D::GetStaticType())
+    if (nodeType == Audio3D::GetStaticType())
     {
-        auto it = std::find(mAudios.begin(), mAudios.end(), (Audio3D*)comp);
+        auto it = std::find(mAudios.begin(), mAudios.end(), (Audio3D*)node);
         OCT_ASSERT(it != mAudios.end());
         mAudios.erase(it);
     }
-    else if (comp->IsLight3D())
+    else if (node->IsLight3D())
     {
-        auto it = std::find(mLights.begin(), mLights.end(), (Light3D*)comp);
+        auto it = std::find(mLights.begin(), mLights.end(), (Light3D*)node);
         OCT_ASSERT(it != mLights.end());
         mLights.erase(it);
     }
@@ -733,49 +727,6 @@ void World::UpdateLines(float deltaTime)
             }
         }
     }
-}
-
-void World::AddActor(Actor* actor)
-{
-#if !EDITOR
-    // This should really only be used in Editor for Undo/Redo reasons.
-    OCT_ASSERT(0);
-#endif
-
-    OCT_ASSERT(std::find(mActors.begin(), mActors.end(), actor) == mActors.end());
-    mActors.push_back(actor);
-    actor->SetWorld(this);
-
-    // Unregister components from world
-    for (uint32_t i = 0; i < actor->GetNumComponents(); ++i)
-    {
-        GetWorld()->RegisterComponent(actor->GetComponent(i));
-    }
-}
-
-void World::RemoveActor(Actor* actor)
-{
-#if !EDITOR
-    // This should really only be used in Editor for Undo/Redo reasons.
-    OCT_ASSERT(0);
-#endif
-
-    for (uint32_t i = 0; i < mActors.size(); ++i)
-    {
-        if (mActors[i] == actor)
-        {
-            mActors.erase(mActors.begin() + i);
-            break;
-        }
-    }
-
-    // Unregister components from world
-    for (uint32_t i = 0; i < actor->GetNumComponents(); ++i)
-    {
-        GetWorld()->UnregisterComponent(actor->GetComponent(i));
-    }
-
-    actor->SetWorld(nullptr);
 }
 
 void World::Update(float deltaTime)
@@ -1130,29 +1081,24 @@ bool World::IsInternalEdgeSmoothingEnabled() const
 
 #if EDITOR
 
-bool World::IsComponentSelected(Component* comp) const
+bool World::IsNodeSelected(Node* node) const
 {
-    return ::IsComponentSelected(comp);
+    return ::IsNodeSelected(node);
 }
 
-Component* World::GetSelectedComponent()
+Node* World::GetSelectedNode()
 {
-    return ::GetSelectedComponent();
+    return ::GetSelectedNode();
 }
 
-const std::vector<Component*>& World::GetSelectedComponents()
+const std::vector<Node*>& World::GetSelectedNodes()
 {
-    return ::GetSelectedComponents();
+    return ::GetSelectedNodes();
 }
 
-std::vector<Actor*> World::GetSelectedActors()
+void World::DeselectNode(Node* node)
 {
-    return ::GetSelectedActors();
-}
-
-void World::DeselectComponent(Component* comp)
-{
-    ::DeselectComponent(comp);
+    ::DeselectNode(node);
 }
 
 #endif

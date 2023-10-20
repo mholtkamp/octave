@@ -120,6 +120,7 @@ public:
 
     void SetPendingDestroy(bool pendingDestroy);
     bool IsPendingDestroy() const;
+    void FlushPendingDestroys();
 
     bool HasStarted() const;
 
