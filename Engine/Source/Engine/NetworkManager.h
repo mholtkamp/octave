@@ -121,6 +121,7 @@ public:
     void AddNetNode(Node* node, NetId netId);
     void RemoveNetNode(Node* node);
     const std::unordered_map<NetId, Node*>& GetNetNodeMap() const;
+    Node* GetNetNode(NetId netId);
 
     // Message Handling
     void HandleConnect(NetHost host, uint32_t gameCode, uint32_t version);

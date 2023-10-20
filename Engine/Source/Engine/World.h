@@ -58,10 +58,9 @@ public:
     void SetRootNode(Node* node);
     void DestroyRootNode();
     Node* FindNode(const std::string& name);
-    Node* FindNode(NetId netId);
+    Node* GetNetNode(NetId netId);
     std::vector<Node*> FindNodesByTag(const char* tag);
     std::vector<Node*> FindNodesByName(const char* name);
-
 
     void Clear();
 

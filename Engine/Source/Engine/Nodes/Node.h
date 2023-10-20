@@ -36,6 +36,9 @@ class World;
 
 typedef std::unordered_map<std::string, NetFunc> NetFuncMap;
 
+// Can also use a lambda for ForEach() function
+typedef void(*NodeForEachFP)(Node*);
+
 #if 0
 struct NodeNetData
 {
@@ -190,6 +193,7 @@ public:
 
     int32_t FindChildIndex(const std::string& name) const;
     Node* FindChild(const std::string& name, bool recurse) const;
+    Node* FindChildWithTag(const std::string& name, bool recurse) const;
     Node* FindDescendant(const std::string& name);
     Node* FindAncestor(const std::string& name);
     bool HasAncestor(Node* node);
@@ -235,6 +239,17 @@ public:
         }
 
         return ret;
+    }
+
+    template<typename T>
+    void ForEach(T func)
+    {
+        func(this);
+
+        for (uint32_t i = 0; i < mChildren.size(); ++i)
+        {
+            ForEach(func);
+        }
     }
 
 protected:

@@ -112,86 +112,104 @@ void World::FlushPendingDestroys()
     }
 }
 
-const std::vector<Actor*>& World::GetActors() const
+Node* World::GetRootNode()
 {
-    return mActors;
+    return mRootNode;
 }
 
-Actor* World::FindActor(const std::string& name)
+void World::SetRootNode(Node* node)
 {
-    Actor* foundActor = nullptr;
-
-    for (uint32_t i = 0; i < mActors.size(); ++i)
+    if (mRootNode != node)
     {
-        if (mActors[i]->GetName() == name)
+        if (mRootNode != nullptr)
         {
-            foundActor = mActors[i];
-            break;
+            DestroyRootNode();
+        }
+
+        mRootNode = node;
+    }
+}
+
+void World::DestroyRootNode()
+{
+    if (mRootNode != nullptr)
+    {
+        mRootNode->Destroy();
+        mRootNode = nullptr;
+    }
+}
+
+Node* World::FindNode(const std::string& name)
+{
+    Node* ret = nullptr;
+
+    if (mRootNode != nullptr)
+    {
+        if (mRootNode->GetName() == name)
+        {
+            ret = mRootNode;
+        }
+        else
+        {
+            ret = mRootNode->FindChild(name, true);
         }
     }
 
-    return foundActor;
+    return ret;
 }
 
-Actor* World::FindActor(NetId netId)
+Node* World::GetNetNode(NetId netId)
 {
-    Actor* retActor = nullptr;
-    auto it = mNetNodeMap.find(netId);
-    if (it != mNetNodeMap.end())
-    {
-        retActor = it->second;
-    }
-    return retActor;
-}
+    Node* node = NetworkManager::Get()->GetNetNode(netId);
 
-std::vector<Actor*> World::FindActorsByTag(const char* tag)
-{
-    std::vector<Actor*> retActors;
-
-    for (uint32_t i = 0; i < mActors.size(); ++i)
+    if (node != nullptr &&
+        node->GetWorld() != this)
     {
-        if (mActors[i]->HasTag(tag))
-        {
-            retActors.push_back(mActors[i]);
-        }
+        // The net node exists, but it's not in the world.
+        node = nullptr;
     }
 
-    return retActors;
+    return node;
 }
 
-std::vector<Actor*> World::FindActorsByName(const char* name)
+std::vector<Node*> World::FindNodesByTag(const char* tag)
 {
-    std::vector<Actor*> retActors;
+    std::vector<Node*> retNodes;
 
-    for (uint32_t i = 0; i < mActors.size(); ++i)
+    if (mRootNode != nullptr)
     {
-        if (mActors[i]->GetName() == name)
+        auto gatherNodesWithTag = [&](Node* node)
         {
-            retActors.push_back(mActors[i]);
-        }
-    }
-
-    return retActors;
-}
-
-Component* World::FindComponent(const std::string& name)
-{
-    Component* foundComponent = nullptr;
-
-    for (uint32_t i = 0; i < mActors.size(); ++i)
-    {
-        const std::vector<Component*>& components = mActors[i]->GetComponents();
-        for (uint32_t c = 0; c < components.size(); ++c)
-        {
-            if (components[c]->GetName() == name)
+            if (node->HasTag(tag))
             {
-                foundComponent = components[c];
-                break;
+                retNodes.push_back(node);
             }
-        }
+        };
+
+        mRootNode->ForEach(gatherNodesWithTag);
     }
 
-    return foundComponent;
+    return retNodes;
+}
+
+std::vector<Node*> World::FindNodesByName(const char* name)
+{
+    std::vector<Node*> retNodes;
+
+    if (mRootNode != nullptr)
+    {
+        auto gatherNodesWithName = [&](Node* node)
+        {
+            if (node->GetName() == name)
+            {
+                retNodes.push_back(node);
+            }
+        };
+
+        mRootNode->ForEach(gatherNodesWithName);
+    }
+
+    return retNodes;
 }
 
 void World::Clear()

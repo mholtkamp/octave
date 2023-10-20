@@ -1082,6 +1082,36 @@ Node* Node::FindChild(const std::string& name, bool recurse) const
     return retNode;
 }
 
+Node* Node::FindChildWithTag(const std::string& tag, bool recurse) const
+{
+    Node* retNode = nullptr;
+
+    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    {
+        if (mChildren[i]->HasTag(tag))
+        {
+            retNode = mChildren[i];
+            break;
+        }
+    }
+
+    if (recurse &&
+        retNode == nullptr)
+    {
+        for (uint32_t i = 0; i < mChildren.size(); ++i)
+        {
+            retNode = mChildren[i]->FindChildWithTag(tag, recurse);
+
+            if (retNode != nullptr)
+            {
+                break;
+            }
+        }
+    }
+
+    return retNode;
+}
+
 Node* Node::FindDescendant(const std::string& name)
 {
     return FindChild(name, true);

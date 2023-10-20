@@ -801,6 +801,16 @@ const std::unordered_map<NetId, Node*>& NetworkManager::GetNetNodeMap() const
     return mNetNodeMap;
 }
 
+Node* NetworkManager::GetNetNode(NetId netId)
+{
+    Node* retNode = nullptr;
+    auto it = mNetNodeMap.find(netId);
+    if (it != mNetNodeMap.end())
+    {
+        retNode = it->second;
+    }
+    return retNode;
+}
 
 void NetworkManager::HandleConnect(NetHost host, uint32_t gameCode, uint32_t version)
 {
