@@ -251,6 +251,14 @@ void NetMsgSpawn::Execute(NetHost sender)
             // If not, then the client might receive replication messages with script data and the client node's 
             // script won't be started. On the other hand, calling Start() here before all of the initial data has been
             // replicated may not initialize the node properly on the client.
+            // Node::mScript isn't replicated (at least as of now), and usually you will be spawning a scene with a script...
+            // So maybe... at this point, if the node has a script, call mScript->StartScript()
+            // so that we can populate the netdata / netfuncs. And then later it's Start() will be called appropriately.
+            // Actually, yeah that sounds good, I'm going to do that now.
+            if (newNode->GetScript())
+            {
+                newNode->StartScript();
+            }
         }
     }
 }
@@ -401,89 +409,11 @@ bool NetMsgReplicate::IsReliable() const
     return mReliable;
 }
 
-void NetMsgReplicateScript::Read(Stream& stream)
-{
-    NetMsgReplicate::Read(stream);
-    stream.ReadString(mScriptName);
-}
-
-void NetMsgReplicateScript::Write(Stream& stream) const
-{
-    NetMsgReplicate::Write(stream);
-    stream.WriteString(mScriptName);
-
-    // Multiple replicate messages will need to be sent for an actor
-    // if it exceeds the message size limit.
-    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_BODY_SIZE);
-}
-
-ScriptComponent* FindScriptComponent(Actor* actor, const std::string& scriptName)
-{
-    // Find the script component
-    ScriptComponent* retComp = nullptr;
-    const std::vector<Component*>& comps = actor->GetComponents();
-    for (uint32_t i = 0; i < comps.size(); ++i)
-    {
-        if (comps[i]->GetType() == ScriptComponent::GetStaticType())
-        {
-            ScriptComponent* scComp = (ScriptComponent*)comps[i];
-            if (scComp->GetScriptClassName() == scriptName)
-            {
-                retComp = scComp;
-                break;
-            }
-        }
-    }
-    return retComp;
-}
-
-void NetMsgReplicateScript::Execute(NetHost sender)
-{
-    NetMsg::Execute(sender);
-
-    Actor* actor = GetWorld()->FindActor(mActorNetId);
-
-    if (actor != nullptr)
-    {
-        ScriptComponent* targetComp = FindScriptComponent(actor, mScriptName);
-
-        if (targetComp != nullptr)
-        {
-            std::vector<ScriptNetDatum>& repData = targetComp->GetReplicatedData();
-
-            for (uint32_t i = 0; i < mNumVariables; ++i)
-            {
-                uint16_t dstIndex = mIndices[i];
-                OCT_ASSERT(dstIndex < repData.size());
-
-                if (mIndices[i] < repData.size())
-                {
-                    OCT_ASSERT(repData[dstIndex].mType == mData[i].mType);
-                    OCT_ASSERT(repData[dstIndex].mCount == mData[i].mCount);
-
-                    if (repData[dstIndex] != mData[i])
-                    {
-                        repData[dstIndex].SetValue(mData[i].mData.vp, 0, repData[dstIndex].mCount);
-                    }
-                }
-            }
-        }
-        else
-        {
-            LogWarning("RepicateScript message received for unregistered script %s.", mScriptName.c_str());
-        }
-    }
-    else
-    {
-        LogWarning("RepicateScript message received for unknown netid %08x.", mActorNetId);
-    }
-}
-
 void NetMsgInvoke::Read(Stream& stream)
 {
     NetMsg::Read(stream);
 
-    mActorNetId = stream.ReadUint32();
+    mNodeNetId = stream.ReadUint32();
     mIndex = stream.ReadUint16();
     mNumParams = stream.ReadUint8();
 
@@ -499,7 +429,7 @@ void NetMsgInvoke::Read(Stream& stream)
 void NetMsgInvoke::Write(Stream& stream) const
 {
     NetMsg::Write(stream);
-    stream.WriteUint32(mActorNetId);
+    stream.WriteUint32(mNodeNetId);
     stream.WriteUint16(mIndex);
     stream.WriteUint8(mNumParams);
 
@@ -517,36 +447,36 @@ void NetMsgInvoke::Execute(NetHost sender)
 {
     NetMsg::Execute(sender);
 
-    Actor* actor = GetWorld()->FindActor(mActorNetId);
+    Node* node = NetworkManager::Get()->GetNetNode(mNodeNetId);
 
-    if (actor != nullptr)
+    if (node != nullptr)
     {
-        NetFunc* netFunc = actor->FindNetFunc(mIndex);
+        NetFunc* netFunc = node->FindNetFunc(mIndex);
 
         if (netFunc != nullptr)
         {
             switch (mNumParams)
             {
-                case 0: netFunc->mFuncPointer.p0(actor); break;
-                case 1: netFunc->mFuncPointer.p1(actor, mParams[0]); break;
-                case 2: netFunc->mFuncPointer.p2(actor, mParams[0], mParams[1]); break;
-                case 3: netFunc->mFuncPointer.p3(actor, mParams[0], mParams[1], mParams[2]); break;
-                case 4: netFunc->mFuncPointer.p4(actor, mParams[0], mParams[1], mParams[2], mParams[3]); break;
-                case 5: netFunc->mFuncPointer.p5(actor, mParams[0], mParams[1], mParams[2], mParams[3], mParams[4]); break;
-                case 6: netFunc->mFuncPointer.p6(actor, mParams[0], mParams[1], mParams[2], mParams[3], mParams[4], mParams[5]); break;
-                case 7: netFunc->mFuncPointer.p7(actor, mParams[0], mParams[1], mParams[2], mParams[3], mParams[4], mParams[5], mParams[6]); break;
-                case 8: netFunc->mFuncPointer.p8(actor, mParams[0], mParams[1], mParams[2], mParams[3], mParams[4], mParams[5], mParams[6], mParams[7]); break;
+                case 0: netFunc->mFuncPointer.p0(node); break;
+                case 1: netFunc->mFuncPointer.p1(node, mParams[0]); break;
+                case 2: netFunc->mFuncPointer.p2(node, mParams[0], mParams[1]); break;
+                case 3: netFunc->mFuncPointer.p3(node, mParams[0], mParams[1], mParams[2]); break;
+                case 4: netFunc->mFuncPointer.p4(node, mParams[0], mParams[1], mParams[2], mParams[3]); break;
+                case 5: netFunc->mFuncPointer.p5(node, mParams[0], mParams[1], mParams[2], mParams[3], mParams[4]); break;
+                case 6: netFunc->mFuncPointer.p6(node, mParams[0], mParams[1], mParams[2], mParams[3], mParams[4], mParams[5]); break;
+                case 7: netFunc->mFuncPointer.p7(node, mParams[0], mParams[1], mParams[2], mParams[3], mParams[4], mParams[5], mParams[6]); break;
+                case 8: netFunc->mFuncPointer.p8(node, mParams[0], mParams[1], mParams[2], mParams[3], mParams[4], mParams[5], mParams[6], mParams[7]); break;
                 default: LogWarning("Max param count exceeded in NetMsgInvoke::Execute()"); break;
             }
         }
         else
         {
-            LogWarning("Unknown net func index %u received for class %s", mIndex, actor->GetClassName());
+            LogWarning("Unknown net func index %u received for class %s", mIndex, node->GetClassName());
         }
     }
     else
     {
-        LogWarning("Invoke message received for unknown netid %08x.", mActorNetId);
+        LogWarning("Invoke message received for unknown netid %08x.", mNodeNetId);
     }
 
 }
@@ -559,42 +489,38 @@ bool NetMsgInvoke::IsReliable() const
 void NetMsgInvokeScript::Read(Stream& stream)
 {
     NetMsgInvoke::Read(stream);
-    stream.ReadString(mScriptName);
 }
 
 void NetMsgInvokeScript::Write(Stream& stream) const
 {
     NetMsgInvoke::Write(stream);
-    stream.WriteString(mScriptName);
-
-    OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_BODY_SIZE);
 }
 
 void NetMsgInvokeScript::Execute(NetHost sender)
 {
     NetMsg::Execute(sender);
+    
+    // Override NetMsgInvoke
 
-    Actor* actor = GetWorld()->FindActor(mActorNetId);
+    Node* node = NetworkManager::Get()->GetNetNode(mNodeNetId);
 
-    if (actor != nullptr)
+    if (node != nullptr)
     {
-        // Find Script component
-        ScriptComponent* scriptComp = FindScriptComponent(actor, mScriptName);
+        Script* script = node->GetScript();
 
-        if (scriptComp != nullptr)
+        if (script != nullptr)
         {
-            scriptComp->ExecuteNetFunc(mIndex, mNumParams, mParams);
+            script->ExecuteNetFunc(mIndex, mNumParams, mParams);
         }
         else
         {
-            LogWarning("Can't find target script %s on actor for InvokeScript msg.", mScriptName.c_str());
+            LogWarning("No script is on %s in NetMsgInvokeScript::Execture().", node->GetName().c_str());
         }
     }
     else
     {
-        LogWarning("InvokeScript message received for unknown netid %08x.", mActorNetId);
+        LogWarning("Invoke script message received for unknown netid %08x.", mNodeNetId);
     }
-
 }
 
 const uint32_t NetMsgBroadcast::sMagicNumber = 0x4f435421;

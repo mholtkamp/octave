@@ -30,6 +30,7 @@ enum class NetMsgType : uint8_t
     Ping,
     Replicate,
     Invoke,
+    InvokeScript,
     Broadcast,
     Ack,
 
@@ -143,11 +144,18 @@ struct NetMsgInvoke : public NetMsg
 
     virtual bool IsReliable() const override;
 
-    NetId mActorNetId = INVALID_TYPE_ID;
+    NetId mNodeNetId = INVALID_TYPE_ID;
     uint16_t mIndex = 0;
     uint8_t mNumParams = 0;
     bool mReliable = false;
     std::vector<Datum> mParams;
+};
+
+// Creating a separate message for script invoke so we don't need
+// to serialize an extra bool for whether the netfunc belongs to the script.
+struct NetMsgInvokeScript : public NetMsgInvoke
+{
+    NET_MSG_INTERFACE(InvokeScript);
 };
 
 struct NetMsgBroadcast : public NetMsg
