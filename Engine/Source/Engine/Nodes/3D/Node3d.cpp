@@ -133,7 +133,7 @@ void Node3D::Tick(float deltaTime)
 
 const char* Node3D::GetTypeName() const
 {
-    return "Transform";
+    return "Node3D";
 }
 
 void Node3D::GatherProperties(std::vector<Property>& outProps)

@@ -183,12 +183,14 @@ std::vector<Node*> World::FindNodesByTag(const char* tag)
 
     if (mRootNode != nullptr)
     {
-        auto gatherNodesWithTag = [&](Node* node)
+        auto gatherNodesWithTag = [&](Node* node) -> bool
         {
             if (node->HasTag(tag))
             {
                 retNodes.push_back(node);
             }
+
+            return true;
         };
 
         mRootNode->ForEach(gatherNodesWithTag);
@@ -203,12 +205,14 @@ std::vector<Node*> World::FindNodesByName(const char* name)
 
     if (mRootNode != nullptr)
     {
-        auto gatherNodesWithName = [&](Node* node)
+        auto gatherNodesWithName = [&](Node* node) -> bool
         {
             if (node->GetName() == name)
             {
                 retNodes.push_back(node);
             }
+
+            return true;
         };
 
         mRootNode->ForEach(gatherNodesWithName);
@@ -704,7 +708,10 @@ void World::Update(float deltaTime)
 
     {
         SCOPED_FRAME_STAT("Tick");
-        mRootNode->RecursiveTick(deltaTime, gameTickEnabled);
+        if (mRootNode != nullptr)
+        {
+            mRootNode->RecursiveTick(deltaTime, gameTickEnabled);
+        }
     }
 
     {
@@ -712,18 +719,30 @@ void World::Update(float deltaTime)
         // make sure transforms are updated so that the bullet dynamics world is in sync.
         // But maybe not and we only need to update transforms when getting world pos/rot/scale/transform
         SCOPED_FRAME_STAT("Transforms");
-        mRootNode->UpdateTransform(true);
+        if (mRootNode != nullptr)
+        {
+            auto update3dTransform = [](Node* node) -> bool
+            {
+                if (node->IsNode3D())
+                {
+                    Node3D* node3d = (Node3D*)node;
+                    if (node3d->IsTransformDirty())
+                    {
+                        node3d->UpdateTransform(false);
+                    }
+
+                    return true;
+                }
+            };
+
+            mRootNode->ForEach(update3dTransform);
+        }
     }
 }
 
 Camera3D* World::GetActiveCamera()
 {
     return mActiveCamera;
-}
-
-Camera3D* World::GetDefaultCamera()
-{
-    return mDefaultCamera.Get<Camera3D>();
 }
 
 Node3D* World::GetAudioReceiver()
@@ -819,34 +838,6 @@ void World::QueueRootScene(const char* name)
     {
         mQueuedRootScene = scene;
     }
-}
-
-void World::UnloadLevel(const char* name)
-{
-    for (uint32_t i = 0; i < mLoadedLevels.size(); ++i)
-    {
-        if (mLoadedLevels[i].Get()->GetName() == name)
-        {
-            mLoadedLevels[i].Get<Level>()->UnloadFromWorld(this);
-            mLoadedLevels.erase(mLoadedLevels.begin() + i);
-        }
-    }
-}
-
-bool World::IsLevelLoaded(const char* levelName)
-{
-    bool loaded = false;
-
-    for (uint32_t i = 0; i < mLoadedLevels.size(); ++i)
-    {
-        if (mLoadedLevels[i].Get()->GetName() == levelName)
-        {
-            loaded = true;
-            break;
-        }
-    }
-
-    return loaded;
 }
 
 void World::EnableInternalEdgeSmoothing(bool enable)

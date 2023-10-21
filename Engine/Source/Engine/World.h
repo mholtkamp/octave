@@ -108,28 +108,45 @@ public:
     bool IsInternalEdgeSmoothingEnabled() const;
 
     template<typename T>
-    T* FindActor()
+    T* FindNode()
     {
-        for (uint32_t i = 0; i < mActors.size(); ++i)
+        T* ret = nullptr;
+
+        auto typedNodeFind = [&](Node* node) -> bool
         {
-            if (mActors[i]->Is(T::ClassRuntimeId()))
+            if (node->Is(T::ClassRuntimeId()))
             {
-                return static_cast<T*>(mActors[i]);
+                ret = static_cast<T*>(node);
+                return false;
             }
+
+            return true;
+        };
+
+        if (mRootNode != nullptr)
+        {
+            mRootNode->ForEach(typedNodeFind);
         }
 
-        return nullptr;
+        return ret;
     }
 
     template<typename T>
-    void FindActors(std::vector<T*>& outActors)
+    void FindNodes(std::vector<T*>& outNodes)
     {
-        for (uint32_t i = 0; i < mActors.size(); ++i)
+        auto typedNodeGather = [&](Node* node) -> bool
         {
-            if (mActors[i]->Is(T::ClassRuntimeId()))
+            if (node->Is(T::ClassRuntimeId()))
             {
-                outActors.push_back(static_cast<T*>(mActors[i]));
+                outNodes.push_back(static_cast<T*>(node));
             }
+
+            return true;
+        };
+
+        if (mRootNode != nullptr)
+        {
+            mRootNode->ForEach(typedNodeGather);
         }
     }
 
