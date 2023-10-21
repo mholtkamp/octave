@@ -40,10 +40,10 @@ public:
     Node* SpawnNode(const char* typeName);
     Node* SpawnScene(const char* sceneName);
 
-    template<class ActorClass>
-    ActorClass* SpawnActor()
+    template<class NodeClass>
+    NodeClass* SpawnNode()
     {
-        return (ActorClass*) SpawnActor(ActorClass::GetStaticType());
+        return (NodeClass*)SpawnNode(NodeClass::GetStaticType());
     }
 
     void FlushPendingDestroys();
@@ -52,8 +52,8 @@ public:
     void DestroyRootNode();
     Node* FindNode(const std::string& name);
     Node* GetNetNode(NetId netId);
-    std::vector<Node*> FindNodesByTag(const char* tag);
-    std::vector<Node*> FindNodesByName(const char* name);
+    std::vector<Node*> FindNodesWithTag(const char* tag);
+    std::vector<Node*> FindNodesWithName(const char* name);
 
     void Clear();
 

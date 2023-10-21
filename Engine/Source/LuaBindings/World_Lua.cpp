@@ -77,23 +77,18 @@ int World_Lua::SetAudioReceiver(lua_State* L)
     return 0;
 }
 
-int World_Lua::SpawnActor(lua_State* L)
+int World_Lua::SpawnNode(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
-    const char* actorClass = "Actor";
-    if (lua_gettop(L) >= 2 &&
-        lua_isstring(L, 2))
-    {
-        actorClass = lua_tostring(L, 2);
-    }
+    const char* nodeClass = CHECK_STRING(L, 2);
 
-    Actor* spawnedActor = world->SpawnActor(actorClass);
+    Node* spawnedNode = world->SpawnNode(nodeClass);
 
-    Actor_Lua::Create(L, spawnedActor);
+    Node_Lua::Create(L, spawnedNode);
     return 1;
 }
 
-int World_Lua::CloneActor(lua_State* L)
+int World_Lua::SpawnScene(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
     Actor* srcActor = CHECK_ACTOR(L, 2);

@@ -177,7 +177,7 @@ Node* World::GetNetNode(NetId netId)
     return node;
 }
 
-std::vector<Node*> World::FindNodesByTag(const char* tag)
+std::vector<Node*> World::FindNodesWithTag(const char* tag)
 {
     std::vector<Node*> retNodes;
 
@@ -199,7 +199,7 @@ std::vector<Node*> World::FindNodesByTag(const char* tag)
     return retNodes;
 }
 
-std::vector<Node*> World::FindNodesByName(const char* name)
+std::vector<Node*> World::FindNodesWithName(const char* name)
 {
     std::vector<Node*> retNodes;
 

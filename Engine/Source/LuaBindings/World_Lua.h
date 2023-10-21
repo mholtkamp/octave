@@ -24,15 +24,14 @@ struct World_Lua
     static int SetActiveCamera(lua_State* L);
     static int SetAudioReceiver(lua_State* L);
 
-    static int SpawnActor(lua_State* L);
-    static int CloneActor(lua_State* L);
-    static int DestroyActor(lua_State* L);
-    static int DestroyAllActors(lua_State* L);
-    static int FindActor(lua_State* L);
-    static int FindActorsByTag(lua_State* L);
-    static int FindActorsByName(lua_State* L);
-    static int FindComponent(lua_State* L);
-    static int PrioritizeActorTick(lua_State* L);
+    static int SpawnNode(lua_State* L);
+    static int SpawnScene(lua_State* L);
+    static int GetRoodNode(lua_State* L);
+    static int SetRoodNode(lua_State* L);
+    static int DestroyRoodNode(lua_State* L);
+    static int FindNode(lua_State* L);
+    static int FindNodesWithTag(lua_State* L);
+    static int FindNodesWithName(lua_State* L);
 
     static int SetAmbientLightColor(lua_State* L);
     static int GetAmbientLightColor(lua_State* L);
@@ -48,13 +47,7 @@ struct World_Lua
     static int RayTestMulti(lua_State* L);
     static int SweepTest(lua_State* L);
 
-    static int GetLoadedLevels(lua_State* L);
-    static int UnloadAllLevels(lua_State* L);
-
-    static int SpawnBlueprint(lua_State* L);
-    static int LoadLevel(lua_State* L);
-    static int QueueLevelLoad(lua_State* L);
-    static int UnloadLevel(lua_State* L);
+    static int QueueRootScene(lua_State* L);
 
     static int EnableInternalEdgeSmoothing(lua_State* L);
     static int IsInternalEdgeSmoothingEnabled(lua_State* L);

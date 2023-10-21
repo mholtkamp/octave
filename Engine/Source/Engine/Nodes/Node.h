@@ -105,6 +105,7 @@ public:
     Node* CreateChild(TypeId nodeType);
     Node* CreateChild(const char* typeName);
     Node* CreateChildClone(Node* srcNode, bool recurse);
+    Node* Clone(bool recurse, bool autoAttach);
     void DestroyChild(Node* node);
     void DestroyAllChildren();
 

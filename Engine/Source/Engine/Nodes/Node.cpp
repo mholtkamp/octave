@@ -267,7 +267,7 @@ void Node::Render(PipelineId pipelineId)
 
 void Node::Start()
 {
-    if (!mHasStarted)
+    if (!mHasStarted && GetWorld() != nullptr)
     {
         mHasStarted = true;
 
@@ -602,42 +602,64 @@ Node* Node::CreateChild(const char* typeName)
 
 Node* Node::CreateChildClone(Node* srcNode, bool recurse)
 {
-    Node* subNode = nullptr;
-    Scene* srcScene = srcNode->GetScene();
+    Node* subNode = srcNode->Clone(recurse, false);
+    AddChild(subNode);
+
+    if (HasStarted())
+    {
+        subNode->Start();
+    }
+
+    return subNode;
+}
+
+Node* Node::Clone(bool recurse, bool autoAttach)
+{
+    Node* clonedNode = nullptr;
+    Scene* srcScene = GetScene();
 
     if (srcScene != nullptr)
     {
-        subNode = srcScene->Instantiate();
+        clonedNode = srcScene->Instantiate();
     }
     else
     {
-        subNode = Node::CreateNew(srcNode->GetType());
+        clonedNode = Node::CreateNew(GetType());
     }
 
-    if (subNode != nullptr)
+    if (clonedNode != nullptr)
     {
-        AddChild(subNode);
-        subNode->Create();
-
         // Might need to move copy after recurse block if properties aren't getting copied correctly.
-        subNode->Copy(srcNode);
+        clonedNode->Copy(this);
+
+        if (autoAttach)
+        {
+            Node* parent = GetParent();
+            if (parent == nullptr)
+            {
+                parent = this;
+            }
+
+            parent->AddChild(clonedNode);
+        }
 
         if (recurse && !srcScene)
         {
             // Clone children
-            for (uint32_t i = 0; i < srcNode->GetNumChildren(); ++i)
+            for (uint32_t i = 0; i < GetNumChildren(); ++i)
             {
-                subNode->CreateChildClone(srcNode->GetChild(i), recurse);
+                Node* childClone = GetChild(i)->Clone(recurse, false);
+                clonedNode->AddChild(childClone);
             }
         }
 
-        if (HasStarted())
+        if (HasStarted() && clonedNode->GetParent() != nullptr)
         {
-            subNode->Start();
+            clonedNode->Start();
         }
     }
 
-    return subNode;
+    return clonedNode;
 }
 
 void Node::DestroyChild(Node* childNode)
