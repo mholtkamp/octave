@@ -41,12 +41,16 @@ struct Node_Lua
     static int AddChild(lua_State* L);
     static int RemoveChild(lua_State* L);
     static int FindChild(lua_State* L);
+    static int FindChildWithTag(lua_State* L);
     static int FindDescendant(lua_State* L);
     static int FindAncestor(lua_State* L);
     static int HasAncestor(lua_State* L);
 
+    static int ForEach(lua_State* L);
+
     static int CreateChild(lua_State* L);
     static int CreateChildClone(lua_State* L);
+    static int Clone(lua_State* L);
     static int DestroyChild(lua_State* L);
     static int DestroyAllChildren(lua_State* L);
 

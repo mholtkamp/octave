@@ -316,6 +316,20 @@ int Node_Lua::FindChild(lua_State* L)
     return 1;
 }
 
+int Node_Lua::FindChildWithTag(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    const char* tag = CHECK_STRING(L, 2);
+    bool recurse = false;
+
+    if (!lua_isnone(L, 3)) { recurse = CHECK_BOOLEAN(L, 3); }
+
+    Node* ret = node->FindChildWithTag(tag, recurse);
+
+    Node_Lua::Create(L, ret);
+    return 1;
+}
+
 int Node_Lua::FindDescendant(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -349,6 +363,25 @@ int Node_Lua::HasAncestor(lua_State* L)
     return 1;
 }
 
+int Node_Lua::ForEach(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    CHECK_FUNCTION(L, 2);
+    ScriptFunc scriptFunc(L, 2);
+
+    auto callScriptFunc = [&](Node* node) -> bool
+    {
+        Datum args[1] = { node };
+        bool ret = scriptFunc.CallR(1, args);
+        return ret;
+    };
+
+    bool ret = node->ForEach(callScriptFunc);
+
+    lua_pushboolean(L, ret);
+    return ret;
+}
+
 int Node_Lua::CreateChild(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -357,6 +390,18 @@ int Node_Lua::CreateChild(lua_State* L)
     Node* newChild = node->CreateChild(nodeClass);
 
     Node_Lua::Create(L, newChild);
+    return 1;
+}
+
+int Node_Lua::Clone(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    bool recurse = CHECK_BOOLEAN(L, 2);
+    bool autoAttach = CHECK_BOOLEAN(L, 3);
+
+    Node* clonedNode = node->Clone(recurse, autoAttach);
+
+    Node_Lua::Create(L, clonedNode);
     return 1;
 }
 
@@ -734,6 +779,9 @@ void Node_Lua::Bind()
     lua_pushcfunction(L, FindChild);
     lua_setfield(L, mtIndex, "FindChild");
 
+    lua_pushcfunction(L, FindChildWithTag);
+    lua_setfield(L, mtIndex, "FindChildWithTag");
+
     lua_pushcfunction(L, FindDescendant);
     lua_setfield(L, mtIndex, "FindDescendant");
 
@@ -743,11 +791,17 @@ void Node_Lua::Bind()
     lua_pushcfunction(L, HasAncestor);
     lua_setfield(L, mtIndex, "HasAncestor");
 
+    lua_pushcfunction(L, ForEach);
+    lua_setfield(L, mtIndex, "ForEach");
+
     lua_pushcfunction(L, CreateChild);
     lua_setfield(L, mtIndex, "CreateChild");
 
     lua_pushcfunction(L, CreateChildClone);
     lua_setfield(L, mtIndex, "CreateChildClone");
+
+    lua_pushcfunction(L, Clone);
+    lua_setfield(L, mtIndex, "Clone");
 
     lua_pushcfunction(L, DestroyChild);
     lua_setfield(L, mtIndex, "DestroyChild");
