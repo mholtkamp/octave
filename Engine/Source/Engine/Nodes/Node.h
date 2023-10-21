@@ -109,6 +109,9 @@ public:
     void DestroyChild(Node* node);
     void DestroyAllChildren();
 
+    Node* GetRoot();
+    bool IsWorldRoot() const;
+
     template<class NodeClass>
     NodeClass* CreateChild()
     {

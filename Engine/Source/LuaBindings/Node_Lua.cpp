@@ -363,6 +363,26 @@ int Node_Lua::HasAncestor(lua_State* L)
     return 1;
 }
 
+int Node_Lua::GetRoot(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+
+    Node* root = node->GetRoot();
+
+    Node_Lua::Create(L, root);
+    return 1;
+}
+
+int Node_Lua::IsWorldRoot(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+
+    bool ret = node->IsWorldRoot();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Node_Lua::ForEach(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -790,6 +810,12 @@ void Node_Lua::Bind()
 
     lua_pushcfunction(L, HasAncestor);
     lua_setfield(L, mtIndex, "HasAncestor");
+
+    lua_pushcfunction(L, GetRoot);
+    lua_setfield(L, mtIndex, "GetRoot");
+    
+    lua_pushcfunction(L, IsWorldRoot);
+    lua_setfield(L, mtIndex, "IsWorldRoot");
 
     lua_pushcfunction(L, ForEach);
     lua_setfield(L, mtIndex, "ForEach");

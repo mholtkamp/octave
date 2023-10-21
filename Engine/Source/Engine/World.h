@@ -110,6 +110,8 @@ public:
     void EnableInternalEdgeSmoothing(bool enable);
     bool IsInternalEdgeSmoothingEnabled() const;
 
+    void DirtyAllWidgets();
+
     template<typename T>
     T* FindNode()
     {

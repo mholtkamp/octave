@@ -682,6 +682,30 @@ void Node::DestroyAllChildren()
     }
 }
 
+Node* Node::GetRoot()
+{
+    Node* root = this;
+
+    if (GetParent() != nullptr)
+    {
+        root = GetParent()->GetRoot();
+    }
+
+    return root;
+}
+
+bool Node::IsWorldRoot() const
+{
+    bool isWorldRoot = mWorld && (mWorld->GetRootNode() == this);
+
+    if (isWorldRoot)
+    {
+        OCT_ASSERT(mParent == nullptr);
+    }
+
+    return isWorldRoot;
+}
+
 void Node::SetPendingDestroy(bool pendingDestroy)
 {
     mPendingDestroy = pendingDestroy;

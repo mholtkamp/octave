@@ -868,6 +868,23 @@ bool World::IsInternalEdgeSmoothingEnabled() const
     return (gContactAddedCallback != nullptr);
 }
 
+void World::DirtyAllWidgets()
+{
+    if (mRootNode != nullptr)
+    {
+        auto dirtyWidget = [](Node* node) -> bool
+        {
+            if (node->IsWidget())
+            {
+                static_cast<Widget*>(node)->MarkDirty();
+                return true;
+            }
+        };
+
+        mRootNode->ForEach(dirtyWidget);
+    }
+}
+
 #if EDITOR
 
 bool World::IsNodeSelected(Node* node) const
