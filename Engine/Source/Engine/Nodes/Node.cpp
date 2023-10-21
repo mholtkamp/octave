@@ -1032,6 +1032,14 @@ void Node::AddChild(Node* child, int32_t index)
 {
     if (child != nullptr)
     {
+        // TODO-NODE: Is this a good way to handle the world root getting attached elsewhere?
+        // Another possibility is that we could make this node's new root node the world root?
+        // Could cause problems anyway if the new root is already a different world's root. Idk.
+        if (child->IsWorldRoot())
+        {
+            child->GetWorld()->SetRootNode(nullptr);
+        }
+
         if (child->mParent != nullptr)
         {
             child->mParent->RemoveChild(child);
