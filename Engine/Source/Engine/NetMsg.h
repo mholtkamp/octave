@@ -24,16 +24,12 @@ enum class NetMsgType : uint8_t
     Reject,
     Disconnect,
     Kick,
-    LoadLevel,
     Ready,
-    SpawnActor,
-    SpawnBlueprint,
-    DestroyActor,
+    Spawn,
+    Destroy,
     Ping,
     Replicate,
-    ReplicateScript,
     Invoke,
-    InvokeScript,
     Broadcast,
     Ack,
 
@@ -101,13 +97,6 @@ struct NetMsgKick : public NetMsg
     Reason mReason = Reason::Count;
 };
 
-struct NetMsgLoadLevel : public NetMsg
-{
-    NET_MSG_INTERFACE_RELIABLE(LoadLevel);
-
-    std::string mLevelName;
-};
-
 struct NetMsgReady : public NetMsg
 {
     NET_MSG_INTERFACE_RELIABLE(Ready);
@@ -118,27 +107,19 @@ struct NetMsgPing : public NetMsg
     NET_MSG_INTERFACE(Ping);
 };
 
-struct NetMsgSpawnActor : public NetMsg
+struct NetMsgSpawn : public NetMsg
 {
-    NET_MSG_INTERFACE_RELIABLE(SpawnActor);
+    NET_MSG_INTERFACE_RELIABLE(Spawn);
 
     TypeId mNodeTypeId = INVALID_TYPE_ID;
     NetId mNetId = INVALID_NET_ID;
-    std::string mScene;
     NetId mParentNetId = INVALID_NET_ID;
+    std::string mSceneName;
 };
 
-struct NetMsgSpawnBlueprint : public NetMsg
+struct NetMsgDestroy : public NetMsg
 {
-    NET_MSG_INTERFACE_RELIABLE(SpawnBlueprint);
-
-    std::string mBlueprintName;
-    NetId mNetId = INVALID_NET_ID;
-};
-
-struct NetMsgDestroyActor : public NetMsg
-{
-    NET_MSG_INTERFACE_RELIABLE(DestroyActor);
+    NET_MSG_INTERFACE_RELIABLE(Destroy);
 
     NetId mNetId = INVALID_NET_ID;
 };
@@ -149,18 +130,11 @@ struct NetMsgReplicate : public NetMsg
 
     virtual bool IsReliable() const override;
 
-    NetId mActorNetId = INVALID_TYPE_ID;
+    NetId mNodeNetId = INVALID_TYPE_ID;
     uint16_t mNumVariables = 0;
     std::vector<uint16_t> mIndices;
     std::vector<Datum> mData;
     bool mReliable = false;
-};
-
-struct NetMsgReplicateScript : public NetMsgReplicate
-{
-    NET_MSG_INTERFACE(ReplicateScript);
-
-    std::string mScriptName;
 };
 
 struct NetMsgInvoke : public NetMsg
@@ -174,13 +148,6 @@ struct NetMsgInvoke : public NetMsg
     uint8_t mNumParams = 0;
     bool mReliable = false;
     std::vector<Datum> mParams;
-};
-
-struct NetMsgInvokeScript : public NetMsgInvoke
-{
-    NET_MSG_INTERFACE(InvokeScript);
-
-    std::string mScriptName;
 };
 
 struct NetMsgBroadcast : public NetMsg

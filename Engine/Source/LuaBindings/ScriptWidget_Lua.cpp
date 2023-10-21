@@ -3,7 +3,7 @@
 
 #if LUA_ENABLED
 
-int ScriptNode_Lua::CreateNew(lua_State* L)
+int ScriptWidget_Lua::CreateNew(lua_State* L)
 {
     const char* fileName = nullptr;
     if (lua_isstring(L, 1))
@@ -11,8 +11,10 @@ int ScriptNode_Lua::CreateNew(lua_State* L)
         fileName = lua_tostring(L, 1);
     }
 
+    // TODO-NODE: I messed up this section when replacing all.
+    // ScriptWidget will be removed anyway.
     Widget* newWidget = nullptr;
-    Node_Lua::CreateNew(L, SCRIPT_WIDGET_LUA_NAME, &newWidget);
+    Node_Lua::Construct(L, SCRIPT_WIDGET_LUA_NAME, &newWidget);
 
     OCT_ASSERT(newWidget);
     OCT_ASSERT(newWidget->GetType() == ScriptWidget::GetStaticType());

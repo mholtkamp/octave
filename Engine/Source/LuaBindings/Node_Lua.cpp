@@ -56,12 +56,12 @@ int Node_Lua::GarbageCollect(lua_State* L)
     return 0;
 }
 
-int Node_Lua::CreateNew(lua_State* L)
+int Node_Lua::Construct(lua_State* L)
 {
     // Allow script to allocate a node.
     const char* className = CHECK_STRING(L, 1);
     
-    Node* newNode = Node::CreateNew(className);
+    Node* newNode = Node::Construct(className);
 
     Node_Lua::Create(L, newNode);
     return 1;
@@ -499,8 +499,7 @@ int Node_Lua::Destroy(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
 
-    node->Destroy();
-    delete node;
+    Node::Destruct(node);
 
     Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
     nodeLua->mNode = nullptr;
@@ -742,8 +741,10 @@ void Node_Lua::Bind()
 
     BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, CreateNew);
-    lua_setfield(L, mtIndex, "CreateNew");
+    lua_pushcfunction(L, Construct);
+    lua_setfield(L, mtIndex, "Construct");
+    lua_pushcfunction(L, Construct);
+    lua_setfield(L, mtIndex, "New"); // Alias
 
     lua_pushcfunction(L, IsValid);
     lua_setfield(L, mtIndex, "IsValid");

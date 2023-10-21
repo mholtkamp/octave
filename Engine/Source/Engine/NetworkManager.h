@@ -92,8 +92,8 @@ public:
     void SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func, uint32_t numParams, Datum** params);
     void SendInvokeMsg(Node* node, NetFunc* func, uint32_t numParams, Datum** params);
     void SendInvokeScriptMsg(ScriptComponent* scriptComp, ScriptNetFunc* func, uint32_t numParams, Datum** params);
-    void SendSpawnMessage(Actor* actor, NetClient* client);
-    void SendDestroyMessage(Actor* actor, NetClient* client);
+    void SendSpawnMessage(Node* node, NetClient* client);
+    void SendDestroyMessage(Node* node, NetClient* client);
 
     void ResendPacket(NetHostProfile* hostProfile, ReliablePacket& packet);
     void ResendOutgoingReliablePackets(NetHostProfile* hostProfile);

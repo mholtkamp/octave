@@ -140,8 +140,7 @@ void World::DestroyRootNode()
 {
     if (mRootNode != nullptr)
     {
-        mRootNode->Destroy();
-        mRootNode = nullptr;
+        Node::Destruct(mRootNode);
     }
 }
 
@@ -790,7 +789,7 @@ void World::PlaceNewlySpawnedNode(Node* node)
 
 Node* World::SpawnNode(TypeId actorType)
 {
-    Node* newNode = Node::CreateNew(actorType);
+    Node* newNode = Node::Construct(actorType);
 
     if (newNode != nullptr)
     {
@@ -804,7 +803,7 @@ Node* World::SpawnNode(TypeId actorType)
 
 Node* World::SpawnNode(const char* typeName)
 {
-    Node* newNode = Node::CreateNew(typeName);
+    Node* newNode = Node::Construct(typeName);
 
     if (newNode != nullptr)
     {

@@ -19,7 +19,7 @@ struct Node_Lua
 
     static int Create(lua_State* L, Node* node);
     static int GarbageCollect(lua_State* L);
-    static int CreateNew(lua_State* L);
+    static int Construct(lua_State* L);
 
     static int IsValid(lua_State* L);
 

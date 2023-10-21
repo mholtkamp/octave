@@ -51,18 +51,28 @@ DEFINE_FACTORY_MANAGER(Node);
 DEFINE_FACTORY(Node, Node);
 DEFINE_RTTI(Node);
 
-static Node* CreateNew(const std::string& name)
+Node* Node::Construct(const std::string& name)
 {
     Node* newNode = Node::CreateInstance(name.c_str());
     newNode->Create();
     return newNode;
 }
 
-static Node* CreateNew(TypeId typeId)
+Node* Node::Construct(TypeId typeId)
 {
     Node* newNode = Node::CreateInstance(typeId);
     newNode->Create();
     return newNode;
+}
+
+void Node::Destruct(Node*& node)
+{
+    if (node != nullptr)
+    {
+        node->Destroy();
+        delete node;
+        node = nullptr;
+    }
 }
 
 Node::Node()
@@ -87,8 +97,7 @@ void Node::Destroy()
     for (int32_t i = int32_t(GetNumChildren()) - 1; i >= 0; --i)
     {
         Node* child = GetChild(i);
-        child->Destroy();
-        delete child;
+        Node::Destruct(child);
     }
 
     if (mHasStarted)
@@ -335,7 +344,7 @@ void Node::RecursiveTick(float deltaTime, bool game)
 
             if (child->IsPendingDestroy())
             {
-                child->Destroy();
+                Node::Destruct(child);
                 --i;
             }
         }
@@ -409,7 +418,7 @@ void Node::GatherPropertyOverrides(std::vector<Property>& outOverrides)
         std::vector<Property> nodeProps;
         GatherProperties(nodeProps);
 
-        Node* defaultNode = Node::CreateNew(GetType());
+        Node* defaultNode = Node::Construct(GetType());
         std::vector<Property> defaultProps;
         defaultNode->GatherProperties(defaultProps);
 
@@ -569,7 +578,7 @@ void Node::RenderSelected(bool renderChildren)
 
 Node* Node::CreateChild(TypeId nodeType)
 {
-    Node* subNode = Node::CreateNew(nodeType);
+    Node* subNode = Node::Construct(nodeType);
 
     if (subNode != nullptr)
     {
@@ -629,7 +638,7 @@ Node* Node::Clone(bool recurse, bool autoAttach)
     }
     else
     {
-        clonedNode = Node::CreateNew(GetType());
+        clonedNode = Node::Construct(GetType());
     }
 
     if (clonedNode != nullptr)
@@ -671,10 +680,7 @@ void Node::DestroyChild(Node* childNode)
 {
     // TODO-NODE: This working right? Destroy() should detach the node. And 
     // I think we want to still have the parent set while Stop() / Destroy() is called.
-    //RemoveChild(childNode);
-
-    childNode->Destroy();
-    delete childNode;
+    Node::Destruct(childNode);
 }
 
 void Node::DestroyAllChildren()
@@ -682,8 +688,7 @@ void Node::DestroyAllChildren()
     for (int32_t i = int32_t(GetNumChildren()) - 1; i >= 0; --i)
     {
         Node* child = GetChild(i);
-        child->Destroy();
-        delete child;
+        Node::Destruct(child);
     }
 }
 
@@ -739,7 +744,7 @@ void Node::FlushPendingDestroys()
         Node* child = GetChild(i);
         if (child->IsPendingDestroy())
         {
-            child->Destroy();
+            Node::Destruct(child);
             --i;
         }
     }

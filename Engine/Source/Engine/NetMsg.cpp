@@ -129,51 +129,6 @@ void NetMsgKick::Execute(NetHost sender)
     NetworkManager::Get()->HandleKick(mReason);
 }
 
-void NetMsgLoadLevel::Read(Stream& stream)
-{
-    NetMsg::Read(stream);
-    stream.ReadString(mLevelName);
-}
-
-void NetMsgLoadLevel::Write(Stream& stream) const
-{
-    NetMsg::Write(stream);
-
-    // TODO: Replace with NetSafeStringWrite() 
-
-    if (stream.GetPos() + STREAM_STRING_LEN_BYTES + mLevelName.size() < OCT_MAX_MSG_BODY_SIZE)
-    {
-        stream.WriteString(mLevelName);
-    }
-    else
-    {
-        LogWarning("NetMsgLoadLevel: mLevelName too long. Truncating");
-        std::string truncatedLevelName = mLevelName.substr(0, 300);
-        stream.WriteString(truncatedLevelName);
-    }
-}
-
-void NetMsgLoadLevel::Execute(NetHost sender)
-{
-    NetMsg::Execute(sender);
-    
-    if (NetworkManager::Get()->IsClient())
-    {
-        AssetStub* levelAsset = FetchAssetStub(mLevelName);
-
-        if (levelAsset != nullptr &&
-            levelAsset->mType == Level::GetStaticType())
-        {
-            Level* level = (Level*) LoadAsset(mLevelName);
-            level->LoadIntoWorld(GetWorld());
-        }
-        else
-        {
-            LogError("NetMsgLoadLevel: Failed to find level %s", mLevelName.c_str());
-        }
-    }
-}
-
 void NetMsgReady::Read(Stream& stream)
 {
     NetMsg::Read(stream);
@@ -205,39 +160,36 @@ void NetMsgPing::Execute(NetHost sender)
     NetMsg::Execute(sender);
 }
 
-void NetMsgSpawnActor::Read(Stream& stream)
+void NetMsgSpawn::Read(Stream& stream)
 {
     NetMsg::Read(stream);
     mNodeTypeId = stream.ReadUint32();
     mNetId = stream.ReadUint32();
+    mParentNetId = stream.ReadUint32();
+    stream.ReadString(mSceneName);
 }
 
-void NetMsgSpawnActor::Write(Stream& stream) const
+void NetMsgSpawn::Write(Stream& stream) const
 {
     NetMsg::Write(stream);
     stream.WriteUint32(mNodeTypeId);
     stream.WriteUint32(mNetId);
+    stream.WriteUint32(mParentNetId);
+    stream.WriteString(mSceneName);
 }
 
-void NetMsgSpawnActor::Execute(NetHost sender)
+void NetMsgSpawn::Execute(NetHost sender)
 {
     NetMsg::Execute(sender);
 
     if (NetIsClient())
     {
-        // TODO-NODE: Make this NetMsgSpawnNode, allow scene name to be passed,
-        // also send along a NetId of the parent the node should attach to.
-        // If netid is invalid, then it is the root node.
-        // The root node should always be replicated (forcefully if not set by user).
-
-
-#if 1
         Node* newNode = nullptr;
         
-        if (mScene != "")
+        if (mSceneName != "")
         {
             // Spawning a scene
-            Scene* scene = LoadAsset<Scene>(mScene);
+            Scene* scene = LoadAsset<Scene>(mSceneName);
 
             if (scene != nullptr)
             {
@@ -245,13 +197,13 @@ void NetMsgSpawnActor::Execute(NetHost sender)
             }
             else
             {
-                LogError("Failed to load scene %s in NetMsgSpawnNode.", mScene.c_str());
+                LogError("Failed to load scene %s in NetMsgSpawnNode.", mSceneName.c_str());
             }
         }
         else
         {
             // Spawning a single native node
-            newNode = Node::CreateNew(mNodeTypeId);
+            newNode = Node::Construct(mNodeTypeId);
 
             if (newNode == nullptr)
             {
@@ -273,7 +225,7 @@ void NetMsgSpawnActor::Execute(NetHost sender)
             {
                 Node* parent = nullptr;
 
-                parent = NetworkManager::Get()->FindNetNode(mParentNetId);
+                parent = NetworkManager::Get()->GetNetNode(mParentNetId);
 
                 if (parent != nullptr)
                 {
@@ -294,64 +246,38 @@ void NetMsgSpawnActor::Execute(NetHost sender)
                     }
                 }
             }
+
+            // TODO-NODE: Do we want to Start() the node here??
+            // If not, then the client might receive replication messages with script data and the client node's 
+            // script won't be started. On the other hand, calling Start() here before all of the initial data has been
+            // replicated may not initialize the node properly on the client.
         }
-
-#else
-        // Old code
-        Actor* spawnedActor = GetWorld()->SpawnActor(mActorTypeId);
-        GetWorld()->AddNetActor(spawnedActor, mNetId);
-#endif
     }
 }
 
-void NetMsgSpawnBlueprint::Read(Stream& stream)
-{
-    NetMsg::Read(stream);
-    stream.ReadString(mBlueprintName);
-    mNetId = stream.ReadUint32();
-}
-
-void NetMsgSpawnBlueprint::Write(Stream& stream) const
-{
-    NetMsg::Write(stream);
-    stream.WriteString(mBlueprintName);
-    stream.WriteUint32(mNetId);
-}
-
-void NetMsgSpawnBlueprint::Execute(NetHost sender)
-{
-    NetMsg::Execute(sender);
-
-    if (NetIsClient())
-    {
-        Actor* spawnedActor = GetWorld()->SpawnBlueprint(mBlueprintName.c_str());
-        GetWorld()->AddNetActor(spawnedActor, mNetId);
-    }
-}
-
-void NetMsgDestroyActor::Read(Stream& stream)
+void NetMsgDestroy::Read(Stream& stream)
 {
     NetMsg::Read(stream);
     mNetId = stream.ReadUint32();
 }
 
-void NetMsgDestroyActor::Write(Stream& stream) const
+void NetMsgDestroy::Write(Stream& stream) const
 {
     NetMsg::Write(stream);
     stream.WriteUint32(mNetId);
 }
 
-void NetMsgDestroyActor::Execute(NetHost sender)
+void NetMsgDestroy::Execute(NetHost sender)
 {
     NetMsg::Execute(sender);
 
     if (NetIsClient())
     {
-        Actor* actor = GetWorld()->FindActor(mNetId);
+        Node* node = NetworkManager::Get()->GetNetNode(mNetId);
 
-        if (actor != nullptr)
+        if (node != nullptr)
         {
-            GetWorld()->DestroyActor(actor);
+            Node::Destruct(node);
         }
         else
         {
@@ -363,7 +289,7 @@ void NetMsgDestroyActor::Execute(NetHost sender)
 void NetMsgReplicate::Read(Stream& stream)
 {
     NetMsg::Read(stream);
-    mActorNetId = stream.ReadUint32();
+    mNodeNetId = stream.ReadUint32();
     mNumVariables = stream.ReadUint16();
 
     // Limiting max variables per message to 64.
@@ -389,7 +315,7 @@ void NetMsgReplicate::Read(Stream& stream)
 void NetMsgReplicate::Write(Stream& stream) const
 {
     NetMsg::Write(stream);
-    stream.WriteUint32(mActorNetId);
+    stream.WriteUint32(mNodeNetId);
     stream.WriteUint16(mNumVariables);
 
     OCT_ASSERT(mIndices.size() == mNumVariables);
@@ -410,19 +336,21 @@ void NetMsgReplicate::Execute(NetHost sender)
 {
     NetMsg::Execute(sender);
 
-    Actor* actor = GetWorld()->FindActor(mActorNetId);
+    Node* node = NetworkManager::Get()->GetNetNode(mNodeNetId);
 
-    if (actor != nullptr)
+    if (node != nullptr)
     {
-        std::vector<NetDatum>& repData = actor->GetReplicatedData();
+        std::vector<NetDatum>& repData = node->GetReplicatedData();
+        Script* script = node->GetScript();
 
         for (uint32_t i = 0; i < mNumVariables; ++i)
         {
+            bool scriptIndex = false;
             uint16_t dstIndex = mIndices[i];
-            OCT_ASSERT(dstIndex < repData.size());
 
-            if (mIndices[i] < repData.size())
+            if (dstIndex < repData.size())
             {
+                // Native net datum
                 OCT_ASSERT(repData[dstIndex].mType == mData[i].mType);
                 OCT_ASSERT(repData[dstIndex].mCount == mData[i].mCount);
 
@@ -431,11 +359,40 @@ void NetMsgReplicate::Execute(NetHost sender)
                     repData[dstIndex].SetValue(mData[i].mData.vp, 0, repData[dstIndex].mCount);
                 }
             }
+            else if (script != nullptr)
+            {
+                // Script net datum
+                // Adjust index to script base index
+                dstIndex -= repData.size();
+
+                std::vector<ScriptNetDatum>& scriptRepData = script->GetReplicatedData();
+
+                if (dstIndex < scriptRepData.size())
+                {
+                    OCT_ASSERT(scriptRepData[dstIndex].mType == mData[i].mType);
+                    OCT_ASSERT(scriptRepData[dstIndex].mCount == mData[i].mCount);
+
+                    if (scriptRepData[dstIndex] != mData[i])
+                    {
+                        scriptRepData[dstIndex].SetValue(mData[i].mData.vp, 0, repData[dstIndex].mCount);
+                    }
+                }
+                else
+                {
+                    LogError("Script replication index out of range.");
+                }
+            }
+            else
+            {
+                // TODO-NODE: Is it possible that script data will be replicated before this client's node has its script started?
+                OCT_ASSERT(0);
+                LogError("Replicated index out of range.");
+            }
         }
     }
     else
     {
-        LogWarning("Repicate message received for unknown netid %08x.", mActorNetId);
+        LogWarning("Repicate message received for unknown netid %08x.", mNodeNetId);
     }
 }
 
