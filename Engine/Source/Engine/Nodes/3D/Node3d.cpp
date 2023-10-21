@@ -240,7 +240,7 @@ void Node3D::UpdateTransform(bool updateChildren)
         mTransform *= glm::toMat4(mRotationQuat);
         mTransform = glm::scale(mTransform, scale);
 
-        if (mParent != nullptr)
+        if (parent != nullptr)
         {
             // Concatenate parent transform with this transform
             mTransform = GetParentTransform() * mTransform;
