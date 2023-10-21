@@ -28,6 +28,7 @@
 #define OCT_BROADCAST_INTERVAL 5.0f
 
 class Node;
+class Script;
 
 bool NetIsClient();
 bool NetIsServer();
@@ -91,7 +92,7 @@ public:
     void SendReplicateMsg(NetMsgReplicate& repMsg, uint32_t& numVars, NetHostId hostId);
     void SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func, uint32_t numParams, Datum** params);
     void SendInvokeMsg(Node* node, NetFunc* func, uint32_t numParams, Datum** params);
-    void SendInvokeScriptMsg(ScriptComponent* scriptComp, ScriptNetFunc* func, uint32_t numParams, Datum** params);
+    void SendInvokeScriptMsg(Script* script, ScriptNetFunc* func, uint32_t numParams, Datum** params);
     void SendSpawnMessage(Node* node, NetClient* client);
     void SendDestroyMessage(Node* node, NetClient* client);
 

@@ -1039,7 +1039,7 @@ void NetworkManager::HandleReady(NetHost host)
             for (auto it = mNetNodeMap.begin(); it != mNetNodeMap.end(); ++it)
             {
                 Node* node = it->second;
-                ReplicateActor(node, client->mHost.mId, true, true);
+                ReplicateNode(node, client->mHost.mId, true, true);
             }
         }
     }
@@ -1092,7 +1092,7 @@ void NetworkManager::HandleBroadcast(
 }
 
 static const uint32_t RepMsgHeaderSize = 
-    sizeof(NetMsgReplicate::mActorNetId) +
+    sizeof(NetMsgReplicate::mNodeNetId) +
     sizeof(NetMsgReplicate::mNumVariables);
 
 static const uint32_t MaxDatumNetSerializeSize = 
@@ -1127,7 +1127,7 @@ void NetworkManager::SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func,
     bool scriptMsg = msg.GetType() == NetMsgType::InvokeScript;
     OCT_ASSERT(scriptMsg || numParams == func->mNumParams); // Script NetFuncs do not setup num params.
 
-    msg.mActorNetId = node->GetNetId();
+    msg.mNodeNetId = node->GetNetId();
     msg.mIndex = func->mIndex;
     msg.mNumParams = numParams;
     msg.mReliable = func->mReliable;
@@ -1150,9 +1150,9 @@ void NetworkManager::SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func,
     case NetFuncType::Client:
     {
         OCT_ASSERT(mNetStatus == NetStatus::Server);
-        OCT_ASSERT(actor->GetOwningHost() != INVALID_HOST_ID);
-        OCT_ASSERT(actor->GetOwningHost() != SERVER_HOST_ID);
-        SendMessage(&msg, actor->GetOwningHost());
+        OCT_ASSERT(node->GetOwningHost() != INVALID_HOST_ID);
+        OCT_ASSERT(node->GetOwningHost() != SERVER_HOST_ID);
+        SendMessage(&msg, node->GetOwningHost());
         break;
     }
     case NetFuncType::Multicast:
@@ -1170,54 +1170,40 @@ void NetworkManager::SendInvokeMsg(Node* actor, NetFunc* func, uint32_t numParam
     SendInvokeMsg(sMsgInvoke, actor, func, numParams, params);
 }
 
-void NetworkManager::SendInvokeScriptMsg(ScriptComponent* scriptComp, ScriptNetFunc* func, uint32_t numParams, Datum** params)
+void NetworkManager::SendInvokeScriptMsg(Script* script, ScriptNetFunc* func, uint32_t numParams, Datum** params)
 {
-    Actor* actor = scriptComp->GetOwner();
-    sMsgInvokeScript.mScriptName = scriptComp->GetScriptClassName();
-    SendInvokeMsg(sMsgInvokeScript, actor, func, numParams, params);
+    Node* node = script->GetOwner();
+    SendInvokeMsg(sMsgInvokeScript, node, func, numParams, params);
 }
 
-void NetworkManager::SendSpawnMessage(Actor* actor, NetClient* client)
+void NetworkManager::SendSpawnMessage(Node* node, NetClient* client)
 {
-    Blueprint* bpSource = actor->GetBlueprintSource();
+    NetMsgSpawn spawnMsg;
+    spawnMsg.mSceneName = scene->GetName();
+    spawnMsg.mNetId = node->GetNetId();
+    spawnMsg.mNodeTypeId = node->GetType();
 
-    if (bpSource != nullptr)
+    Scene* scene = node->GetScene();
+    if (scene != nullptr)
     {
-        NetMsgSpawnBlueprint spawnMsg;
-        spawnMsg.mBlueprintName = bpSource->GetName();
-        spawnMsg.mNetId = actor->GetNetId();
+        spawnMsg.mSceneName = scene->GetName();
+    }
 
-        if (client == nullptr)
-        {
-            SendMessageToAllClients(&spawnMsg);
-        }
-        else
-        {
-            SendMessage(&spawnMsg, client);
-        }
+    if (client == nullptr)
+    {
+        SendMessageToAllClients(&spawnMsg);
     }
     else
     {
-        NetMsgSpawnActor spawnMsg;
-        spawnMsg.mActorTypeId = actor->GetType();
-        spawnMsg.mNetId = actor->GetNetId();
-
-        if (client == nullptr)
-        {
-            SendMessageToAllClients(&spawnMsg);
-        }
-        else
-        {
-            SendMessage(&spawnMsg, client);
-        }
+        SendMessage(&spawnMsg, client);
     }
 }
 
-void NetworkManager::SendDestroyMessage(Actor* actor, NetClient* client)
+void NetworkManager::SendDestroyMessage(Node* node, NetClient* client)
 {
-    OCT_ASSERT(actor != nullptr);
-    NetMsgDestroyActor destroyMsg;
-    destroyMsg.mNetId = actor->GetNetId();
+    OCT_ASSERT(node != nullptr);
+    NetMsgDestroy destroyMsg;
+    destroyMsg.mNetId = node->GetNetId();
 
     if (client == nullptr)
     {
@@ -1279,37 +1265,38 @@ void NetworkManager::UpdateReplication(float deltaTime)
 {
     OCT_ASSERT(mNetStatus == NetStatus::Server);
 
-    Actor* incRepActor = nullptr;
+    // TODO: Handle multiple worlds. Pass world into update replication.
+
+    Node* incRepNode = nullptr;
 
     if (mIncrementalReplication)
     {
-        uint32_t& incActorTier = GetWorld()->GetIncrementalRepTier();
-        uint32_t& incActorIndex = GetWorld()->GetIncrementalRepIndex();
-        std::vector<Actor*>& repVector = GetWorld()->GetReplicatedActorVector((ReplicationRate)incActorTier);
+        uint32_t& incTier = GetWorld()->GetIncrementalRepTier();
+        uint32_t& incIndex = GetWorld()->GetIncrementalRepIndex();
+        std::vector<Node*>& repVector = GetWorld()->GetReplicatedNodeVector((ReplicationRate)incTier);
 
-        if (incActorIndex < repVector.size())
+        if (incIndex < repVector.size())
         {
-            incRepActor = repVector[incActorIndex];
+            incRepNode = repVector[incIndex];
         }
 
-        ++incActorIndex;
+        ++incIndex;
 
         // If we've iterated over all these actors in this rep tier, move on to the next.
-        if (incActorIndex > repVector.size())
+        if (incIndex > repVector.size())
         {
-            incActorIndex = 0;
-            incActorTier++;
-            if (incActorTier == (uint32_t)ReplicationRate::Count)
+            incIndex = 0;
+            incTier++;
+            if (incTier == (uint32_t)ReplicationRate::Count)
             {
-                incActorTier = (uint32_t)ReplicationRate::Low;
+                incTier = (uint32_t)ReplicationRate::Low;
             }
         }
     }
 
+    uint32_t numNodesReplicated = 0;
 
-    uint32_t numActorsReplicated = 0;
-
-    auto replicateTier = [this, incRepActor, &numActorsReplicated](const std::vector<Actor*>& repVector, uint32_t& repIndex, uint32_t count)
+    auto replicateTier = [this, incRepNode, &numNodesReplicated](const std::vector<Node*>& repVector, uint32_t& repIndex, uint32_t count)
     {
         // Loop back around if the index is somehow past the vector size already
         if (repIndex >= repVector.size())
@@ -1319,13 +1306,13 @@ void NetworkManager::UpdateReplication(float deltaTime)
 
         for (uint32_t i = 0; i < count; ++i)
         {
-            Actor* actor = repVector[repIndex];
-            bool forceRep = (actor == incRepActor);
-            bool actorReplicated = ReplicateActor(actor, INVALID_HOST_ID, forceRep, false);
+            Node* node = repVector[repIndex];
+            bool forceRep = (node == incRepNode);
+            bool nodeReplicated = ReplicateNode(node, INVALID_HOST_ID, forceRep, false);
 
-            if (actorReplicated)
+            if (nodeReplicated)
             {
-                numActorsReplicated++;
+                numNodesReplicated++;
             }
 
             ++repIndex;
@@ -1339,8 +1326,8 @@ void NetworkManager::UpdateReplication(float deltaTime)
 
     // High Priority
     {
-        const std::vector<Actor*>& repVector = GetWorld()->GetReplicatedActorVector(ReplicationRate::High);
-        uint32_t& repIndex = GetWorld()->GetReplicatedActorIndex(ReplicationRate::High);
+        const std::vector<Node*>& repVector = GetWorld()->GetReplicatedNodeVector(ReplicationRate::High);
+        uint32_t& repIndex = GetWorld()->GetReplicatedNodeIndex(ReplicationRate::High);
         uint32_t vectorSize = (uint32_t) repVector.size();
         uint32_t count = vectorSize / 1;
         replicateTier(repVector, repIndex, count);
@@ -1348,16 +1335,16 @@ void NetworkManager::UpdateReplication(float deltaTime)
 
     // Medium Priority
     {
-        const std::vector<Actor*>& repVector = GetWorld()->GetReplicatedActorVector(ReplicationRate::Medium);
-        uint32_t& repIndex = GetWorld()->GetReplicatedActorIndex(ReplicationRate::Medium);
+        const std::vector<Node*>& repVector = GetWorld()->GetReplicatedNodeVector(ReplicationRate::Medium);
+        uint32_t& repIndex = GetWorld()->GetReplicatedNodeIndex(ReplicationRate::Medium);
         uint32_t vectorSize = (uint32_t) repVector.size();
         uint32_t count = (vectorSize + 1) / 2;
         replicateTier(repVector, repIndex, count);
     }
     // Low Priority
     {
-        const std::vector<Actor*>& repVector = GetWorld()->GetReplicatedActorVector(ReplicationRate::Low);
-        uint32_t& repIndex = GetWorld()->GetReplicatedActorIndex(ReplicationRate::Low);
+        const std::vector<Node*>& repVector = GetWorld()->GetReplicatedNodeVector(ReplicationRate::Low);
+        uint32_t& repIndex = GetWorld()->GetReplicatedNodeIndex(ReplicationRate::Low);
         uint32_t vectorSize = (uint32_t) repVector.size();
         uint32_t count = (vectorSize + 3) / 4;
         replicateTier(repVector, repIndex, count);
@@ -1367,23 +1354,15 @@ void NetworkManager::UpdateReplication(float deltaTime)
 template<typename T>
 bool ReplicateData(std::vector<T>& repData, NetMsgReplicate& msg, NetId hostId, bool force, bool reliable)
 {
-    // msg.mNetId and msg.mScriptName should already be set by caller.
+    // msg.mNetId should already be set by caller.
     msg.mIndices.clear();
     msg.mData.clear();
     msg.mReliable = reliable;
 
-    bool scriptRep = (msg.GetType() == NetMsgType::ReplicateScript);
     bool replicated = false;
     uint32_t numVars = 0;
-    uint32_t scriptNameBytes = 0;
 
-    // Strings are serialized with a 4 byte count, followed by the bytes.
-    if (scriptRep)
-    {
-        scriptNameBytes = sizeof(uint32_t) + uint32_t(static_cast<NetMsgReplicateScript&>(msg).mScriptName.size());
-    }
-
-    uint32_t msgSerializedSize = RepMsgHeaderSize + scriptNameBytes;
+    uint32_t msgSerializedSize = RepMsgHeaderSize;
 
     for (uint32_t i = 0; i < repData.size(); ++i)
     {
@@ -1404,7 +1383,7 @@ bool ReplicateData(std::vector<T>& repData, NetMsgReplicate& msg, NetId hostId, 
             {
                 // Send what we have until now
                 NetworkManager::Get()->SendReplicateMsg(msg, numVars, hostId);
-                msgSerializedSize = RepMsgHeaderSize + scriptNameBytes;
+                msgSerializedSize = RepMsgHeaderSize;
                 replicated = true;
             }
 
@@ -1660,12 +1639,10 @@ void NetworkManager::ProcessMessages(NetHost sender, Stream& stream)
             NET_MSG_CASE(Reject)
             NET_MSG_CASE(Disconnect)
             NET_MSG_CASE(Kick)
-            NET_MSG_CASE(LoadLevel)
             NET_MSG_CASE(Ready)
+            NET_MSG_CASE(Spawn)
+            NET_MSG_CASE(Destroy)
             NET_MSG_CASE(Ping)
-            NET_MSG_CASE(SpawnActor)
-            NET_MSG_CASE(SpawnBlueprint)
-            NET_MSG_CASE(DestroyActor)
             NET_MSG_STATIC_CASE(Replicate)
             NET_MSG_STATIC_CASE(ReplicateScript)
             NET_MSG_STATIC_CASE(Invoke)
