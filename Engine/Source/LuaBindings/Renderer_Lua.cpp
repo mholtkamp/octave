@@ -14,40 +14,6 @@
 
 #if LUA_ENABLED
 
-int Renderer_Lua::AddWidget(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-    int32_t arrayIndex = -1;
-    int32_t screenIndex = 0;
-    if (!lua_isnone(L, 2)) { arrayIndex = CHECK_INTEGER(L, 2); }
-    if (!lua_isnone(L, 3)) { screenIndex = CHECK_INTEGER(L, 3); }
-
-    Renderer::Get()->AddWidget(widget, arrayIndex, screenIndex);
-
-    return 0;
-}
-
-int Renderer_Lua::RemoveWidget(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-    int32_t screenIndex = 0;
-    if (!lua_isnone(L, 2)) { screenIndex = CHECK_INTEGER(L, 2); }
-
-    Renderer::Get()->RemoveWidget(widget, screenIndex);
-
-    return 0;
-}
-
-int Renderer_Lua::RemoveAllWidgets(lua_State* L)
-{
-    int32_t screenIndex = -1;
-    if (!lua_isnone(L, 1)) { screenIndex = CHECK_INTEGER(L, 1); }
-
-    Renderer::Get()->RemoveAllWidgets(screenIndex);
-
-    return 0;
-}
-
 int Renderer_Lua::EnableStatsOverlay(lua_State* L)
 {
     bool value = CHECK_BOOLEAN(L, 1);
@@ -356,15 +322,6 @@ void Renderer_Lua::Bind()
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
-
-    lua_pushcfunction(L, AddWidget);
-    lua_setfield(L, tableIdx, "AddWidget");
-
-    lua_pushcfunction(L, RemoveWidget);
-    lua_setfield(L, tableIdx, "RemoveWidget");
-
-    lua_pushcfunction(L, RemoveAllWidgets);
-    lua_setfield(L, tableIdx, "RemoveAllWidgets");
 
     lua_pushcfunction(L, EnableStatsOverlay);
     lua_setfield(L, tableIdx, "EnableStatsOverlay");
