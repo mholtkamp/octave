@@ -853,21 +853,8 @@ void NetworkManager::HandleConnect(NetHost host, uint32_t gameCode, uint32_t ver
             acceptMsg.mAssignedHostId = newClient->mHost.mId;
             SendMessage(&acceptMsg, newClient);
 
-            // Send LoadLevel messages for each loaded level that is flagged for NetLoad.
-            const std::vector<LevelRef>& levels = GetWorld()->GetLoadedLevels();
-            for (uint32_t i = 0; i < levels.size(); ++i)
-            {
-                if (levels[i].Get<Level>()->GetNetLoad())
-                {
-                    NetMsgLoadLevel levelMsg;
-                    levelMsg.mLevelName = levels[i].Get<Level>()->GetName();
-                    SendMessage(&levelMsg, newClient);
-                }
-            }
-
             // Spawn any replicated actors.
-            const std::unordered_map<NetId, Actor*>& netActorMap = GetWorld()->GetNetActorMap();
-            for (auto it = netActorMap.begin(); it != netActorMap.end(); ++it)
+            for (auto it = mNetNodeMap.begin(); it != mNetNodeMap.end(); ++it)
             {
                 SendSpawnMessage(it->second, newClient);
             }
@@ -1049,11 +1036,10 @@ void NetworkManager::HandleReady(NetHost host)
 
             // Now that client has loaded the level(s) and spawned actors,
             // Forcefully replicate the initial state of all actors
-            const std::unordered_map<NetId, Actor*>& netActorMap = GetWorld()->GetNetActorMap();
-            for (auto it = netActorMap.begin(); it != netActorMap.end(); ++it)
+            for (auto it = mNetNodeMap.begin(); it != mNetNodeMap.end(); ++it)
             {
-                Actor* actor = it->second;
-                ReplicateActor(actor, client->mHost.mId, true, true);
+                Node* node = it->second;
+                ReplicateActor(node, client->mHost.mId, true, true);
             }
         }
     }
@@ -1441,39 +1427,30 @@ bool ReplicateData(std::vector<T>& repData, NetMsgReplicate& msg, NetId hostId, 
     return replicated;
 }
 
-bool NetworkManager::ReplicateActor(Actor* actor, NetId hostId, bool force, bool reliable)
+bool NetworkManager::ReplicateNode(Node* node, NetId hostId, bool force, bool reliable)
 {
-    bool actorReplicated = false;
-    bool needsForcedRep = actor->NeedsForcedReplication();
+    bool nodeReplicated = false;
+    bool needsForcedRep = node->NeedsForcedReplication();
     force = (force || needsForcedRep);
     reliable = (reliable || needsForcedRep);
-    sMsgReplicate.mActorNetId = actor->GetNetId();
+    sMsgReplicate.mNodeNetId = node->GetNetId();
 
-    std::vector<NetDatum>& repData = actor->GetReplicatedData();
+    std::vector<NetDatum>& repData = node->GetReplicatedData();
 
-    actorReplicated = ReplicateData<NetDatum>(repData, sMsgReplicate, hostId, force, reliable);
+    nodeReplicated = ReplicateData<NetDatum>(repData, sMsgReplicate, hostId, force, reliable);
 
-    if (actor->GetNumComponents() > 0)
+    Script* script = node->GetScript();
+    if (script != nullptr && script->GetTableName() != "")
     {
-        const std::vector<Component*>& comps = actor->GetComponents();
-        for (uint32_t i = 0; i < comps.size(); ++i)
-        {
-            if (comps[i]->GetType() == ScriptComponent::GetStaticType() &&
-                static_cast<ScriptComponent*>(comps[i])->GetTableName() != "")
-            {
-                ScriptComponent* scriptComp = static_cast<ScriptComponent*>(comps[i]);
-                sMsgReplicateScript.mScriptName = scriptComp->GetScriptClassName();
-                sMsgReplicateScript.mActorNetId = actor->GetNetId();
+        sMsgReplicateScript.mNodeNetId = node->GetNetId();
 
-                std::vector<ScriptNetDatum>& scriptRepData = scriptComp->GetReplicatedData();
-                actorReplicated = ReplicateData<ScriptNetDatum>(scriptRepData, sMsgReplicateScript, hostId, force, reliable);
-            }
-        }
+        std::vector<ScriptNetDatum>& scriptRepData = script->GetReplicatedData();
+        nodeReplicated = ReplicateData<ScriptNetDatum>(scriptRepData, sMsgReplicateScript, hostId, force, reliable);
     }
 
-    actor->ClearForcedReplication();
+    node->ClearForcedReplication();
 
-    return actorReplicated;
+    return nodeReplicated;
 }
 
 void NetworkManager::UpdateHostConnections(float deltaTime)

@@ -349,12 +349,11 @@ void NetMsgReplicate::Execute(NetHost sender)
     if (node != nullptr)
     {
         std::vector<NetDatum>& repData = node->GetReplicatedData();
-        Script* script = node->GetScript();
 
         for (uint32_t i = 0; i < mNumVariables; ++i)
         {
-            bool scriptIndex = false;
             uint16_t dstIndex = mIndices[i];
+            OCT_ASSERT(dstIndex < repData.size());
 
             if (dstIndex < repData.size())
             {
@@ -367,32 +366,8 @@ void NetMsgReplicate::Execute(NetHost sender)
                     repData[dstIndex].SetValue(mData[i].mData.vp, 0, repData[dstIndex].mCount);
                 }
             }
-            else if (script != nullptr)
-            {
-                // Script net datum
-                // Adjust index to script base index
-                dstIndex -= repData.size();
-
-                std::vector<ScriptNetDatum>& scriptRepData = script->GetReplicatedData();
-
-                if (dstIndex < scriptRepData.size())
-                {
-                    OCT_ASSERT(scriptRepData[dstIndex].mType == mData[i].mType);
-                    OCT_ASSERT(scriptRepData[dstIndex].mCount == mData[i].mCount);
-
-                    if (scriptRepData[dstIndex] != mData[i])
-                    {
-                        scriptRepData[dstIndex].SetValue(mData[i].mData.vp, 0, repData[dstIndex].mCount);
-                    }
-                }
-                else
-                {
-                    LogError("Script replication index out of range.");
-                }
-            }
             else
             {
-                // TODO-NODE: Is it possible that script data will be replicated before this client's node has its script started?
                 OCT_ASSERT(0);
                 LogError("Replicated index out of range.");
             }
@@ -407,6 +382,65 @@ void NetMsgReplicate::Execute(NetHost sender)
 bool NetMsgReplicate::IsReliable() const
 {
     return mReliable;
+}
+
+void NetMsgReplicateScript::Read(Stream& stream)
+{
+    NetMsgReplicate::Read(stream);
+}
+
+void NetMsgReplicateScript::Write(Stream& stream) const
+{
+    NetMsgReplicate::Write(stream);
+}
+
+void NetMsgReplicateScript::Execute(NetHost sender)
+{
+    NetMsg::Execute(sender);
+
+    // Override NetMsgReplicate
+
+    Node* node = NetworkManager::Get()->GetNetNode(mNodeNetId);
+
+    if (node != nullptr)
+    {
+        Script* script = node->GetScript();
+
+        if (script != nullptr)
+        {
+            std::vector<ScriptNetDatum>& repData = script->GetReplicatedData();
+
+            for (uint32_t i = 0; i < mNumVariables; ++i)
+            {
+                uint16_t dstIndex = mIndices[i];
+                OCT_ASSERT(dstIndex < repData.size());
+
+                if (dstIndex < repData.size())
+                {
+                    OCT_ASSERT(repData[dstIndex].mType == mData[i].mType);
+                    OCT_ASSERT(repData[dstIndex].mCount == mData[i].mCount);
+
+                    if (repData[dstIndex] != mData[i])
+                    {
+                        repData[dstIndex].SetValue(mData[i].mData.vp, 0, repData[dstIndex].mCount);
+                    }
+                }
+                else
+                {
+                    OCT_ASSERT(0);
+                    LogError("Replicated index out of range.");
+                }
+            }
+        }
+        else
+        {
+            LogWarning("ReplicateScript message received for unregistered script on %s.", node->GetName().c_str());
+        }
+    }
+    else
+    {
+        LogWarning("ReplicateScript message received for unknown netid %08x.", mNodeNetId);
+    }
 }
 
 void NetMsgInvoke::Read(Stream& stream)

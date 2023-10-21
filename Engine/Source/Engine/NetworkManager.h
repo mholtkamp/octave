@@ -158,7 +158,7 @@ private:
     NetworkManager();
 
     void UpdateReplication(float deltaTime);
-    bool ReplicateActor(Actor* actor, NetId hostId, bool force, bool reliable);
+    bool ReplicateNode(Node* node, NetId hostId, bool force, bool reliable);
     void UpdateHostConnections(float deltaTime);
     void ProcessIncomingPackets(float deltaTime);
     void ProcessMessages(NetHost sender, Stream& stream);

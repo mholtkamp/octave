@@ -29,6 +29,7 @@ enum class NetMsgType : uint8_t
     Destroy,
     Ping,
     Replicate,
+    ReplicateScript,
     Invoke,
     InvokeScript,
     Broadcast,
@@ -136,6 +137,11 @@ struct NetMsgReplicate : public NetMsg
     std::vector<uint16_t> mIndices;
     std::vector<Datum> mData;
     bool mReliable = false;
+};
+
+struct NetMsgReplicateScript : public NetMsgReplicate
+{
+    NET_MSG_INTERFACE(ReplicateScript);
 };
 
 struct NetMsgInvoke : public NetMsg
