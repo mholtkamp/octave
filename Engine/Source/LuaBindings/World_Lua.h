@@ -26,9 +26,9 @@ struct World_Lua
 
     static int SpawnNode(lua_State* L);
     static int SpawnScene(lua_State* L);
-    static int GetRoodNode(lua_State* L);
-    static int SetRoodNode(lua_State* L);
-    static int DestroyRoodNode(lua_State* L);
+    static int GetRootNode(lua_State* L);
+    static int SetRootNode(lua_State* L);
+    static int DestroyRootNode(lua_State* L);
     static int FindNode(lua_State* L);
     static int FindNodesWithTag(lua_State* L);
     static int FindNodesWithName(lua_State* L);
@@ -48,6 +48,7 @@ struct World_Lua
     static int SweepTest(lua_State* L);
 
     static int QueueRootScene(lua_State* L);
+    static int QueueRootNode(lua_State* L);
 
     static int EnableInternalEdgeSmoothing(lua_State* L);
     static int IsInternalEdgeSmoothingEnabled(lua_State* L);

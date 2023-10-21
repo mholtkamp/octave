@@ -13,6 +13,7 @@
 #include "Assets/Blueprint.h"
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/PointLight3d.h"
+#include "Nodes/3D/Particle3d.h"
 #include "Nodes/3D/Audio3d.h"
 
 #if EDITOR
@@ -599,14 +600,16 @@ void World::Update(float deltaTime)
     bool gameTickEnabled = IsGameTickEnabled();
 
     // Load any queued levels.
-    if (mQueuedRootScene != nullptr)
+    if (mQueuedRootNode != nullptr)
     {
-        Scene* scene = mQueuedRootScene.Get<Scene>();
-        DestroyRootNode();
-        Node* newRootNode = scene->Instantiate();
-        SetRootNode(newRootNode);
+        Node* newRoot = mQueuedRootNode.Get<Node>();
+        newRoot->Detach();
 
-        mQueuedRootScene = nullptr;
+        DestroyRootNode();
+
+        SetRootNode(newRoot);
+
+        mQueuedRootNode = nullptr;
     }
 
     if (gameTickEnabled)
@@ -830,14 +833,29 @@ Node* World::SpawnScene(const char* sceneName)
     return newNode;
 }
 
+Particle3D* World::SpawnParticle(ParticleSystem* sys, glm::vec3 position)
+{
+    Particle3D* ret = SpawnNode<Particle3D>();
+    ret->SetParticleSystem(sys);
+    ret->SetPosition(position);
+
+    return ret;
+}
+
 void World::QueueRootScene(const char* name)
 {
     Scene* scene = LoadAsset<Scene>(name);
 
     if (scene != nullptr)
     {
-        mQueuedRootScene = scene;
+        Node* sceneNode = scene->Instantiate();
+        QueueRootNode(sceneNode);
     }
+}
+
+void World::QueueRootNode(Node* node)
+{
+    mQueuedRootNode = node;
 }
 
 void World::EnableInternalEdgeSmoothing(bool enable)

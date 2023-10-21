@@ -19,6 +19,7 @@
 
 class Node;
 class Audio3D;
+class Particle3D;
 
 class World
 {
@@ -39,6 +40,7 @@ public:
     Node* SpawnNode(TypeId actorType);
     Node* SpawnNode(const char* typeName);
     Node* SpawnScene(const char* sceneName);
+    Particle3D* SpawnParticle(ParticleSystem* sys, glm::vec3 position);
 
     template<class NodeClass>
     NodeClass* SpawnNode()
@@ -103,6 +105,7 @@ public:
     uint32_t& GetIncrementalRepIndex();
 
     void QueueRootScene(const char* name);
+    void QueueRootNode(Node* node);
 
     void EnableInternalEdgeSmoothing(bool enable);
     bool IsInternalEdgeSmoothingEnabled() const;
@@ -161,7 +164,7 @@ private:
     std::vector<Line> mLines;
     std::vector<class Light3D*> mLights;
     std::vector<class Audio3D*> mAudios;
-    SceneRef mQueuedRootScene;
+    NodeRef mQueuedRootNode;
     glm::vec4 mAmbientLightColor;
     glm::vec4 mShadowColor;
     FogSettings mFogSettings;

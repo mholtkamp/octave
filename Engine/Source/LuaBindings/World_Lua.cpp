@@ -91,103 +91,92 @@ int World_Lua::SpawnNode(lua_State* L)
 int World_Lua::SpawnScene(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
-    Actor* srcActor = CHECK_ACTOR(L, 2);
+    const char* sceneName = CHECK_STRING(L, 2);
 
-    Actor* clonedActor = world->CloneActor(srcActor);
+    Node* spawnedNode = world->SpawnScene(sceneName);
 
-    Actor_Lua::Create(L, clonedActor);
+    Node_Lua::Create(L, spawnedNode);
     return 1;
 }
 
-int World_Lua::DestroyActor(lua_State* L)
-{
-    World* world = CHECK_WORLD(L, 1);
-    Actor* actor = CHECK_ACTOR(L, 2);
-
-    world->DestroyActor(actor);
-    
-    return 0;
-}
-
-int World_Lua::DestroyAllActors(lua_State* L)
+int World_Lua::GetRootNode(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
 
-    world->DestroyAllActors();
+    Node* ret = world->GetRootNode();
+
+    Node_Lua::Create(L, ret);
+    return 1;
+}
+
+int World_Lua::SetRootNode(lua_State* L)
+{
+    World* world = CHECK_WORLD(L, 1);
+    Node* node = CHECK_NODE(L, 2);
+
+    world->SetRootNode(node);
 
     return 0;
 }
 
-int World_Lua::FindActor(lua_State* L)
+int World_Lua::DestroyRootNode(lua_State* L)
+{
+    World* world = CHECK_WORLD(L, 1);
+
+    world->DestroyRootNode();
+
+    return 0;
+}
+
+int World_Lua::FindNode(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
     const char* name = CHECK_STRING(L, 2);
 
-    Actor* actor = world->FindActor(name);
+    Node* node = world->FindNode(name);
 
-    Actor_Lua::Create(L, actor);
+    Node_Lua::Create(L, node);
     return 1;
 }
 
-int World_Lua::FindActorsByTag(lua_State* L)
+int World_Lua::FindNodesWithTag(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
     const char* tag = CHECK_STRING(L, 2);
 
-    std::vector<Actor*> actors = world->FindActorsByTag(tag);
+    std::vector<Node*> nodes = world->FindNodesWithTag(tag);
 
     lua_newtable(L);
     int arrayIdx = lua_gettop(L);
 
-    for (uint32_t i = 0; i < actors.size(); ++i)
+    for (uint32_t i = 0; i < nodes.size(); ++i)
     {
         lua_pushinteger(L, (int)i + 1);
-        Actor_Lua::Create(L, actors[i]);
+        Node_Lua::Create(L, nodes[i]);
         lua_settable(L, arrayIdx);
     }
 
     return 1;
 }
 
-int World_Lua::FindActorsByName(lua_State* L)
+int World_Lua::FindNodesWithName(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
     const char* name = CHECK_STRING(L, 2);
 
-    std::vector<Actor*> actors = world->FindActorsByName(name);
+    std::vector<Node*> nodes = world->FindNodesWithName(name);
 
     lua_newtable(L);
     int arrayIdx = lua_gettop(L);
 
-    for (uint32_t i = 0; i < actors.size(); ++i)
+    for (uint32_t i = 0; i < nodes.size(); ++i)
     {
         lua_pushinteger(L, (int)i + 1);
-        Actor_Lua::Create(L, actors[i]);
+        Node_Lua::Create(L, nodes[i]);
         lua_settable(L, arrayIdx);
     }
 
     return 1;
-}
-
-int World_Lua::FindComponent(lua_State* L)
-{
-    World* world = CHECK_WORLD(L, 1);
-    const char* name = CHECK_STRING(L, 2);
-
-    Component* comp = world->FindComponent(name);
-
-    Node_Lua::Create(L, comp);
-    return 1;
-}
-
-int World_Lua::PrioritizeActorTick(lua_State* L)
-{
-    World* world = CHECK_WORLD(L, 1);
-    Actor* actor = CHECK_ACTOR(L, 2);
-
-    world->PrioritizeActorTick(actor);
-
-    return 0;
 }
 
 int World_Lua::SetAmbientLightColor(lua_State* L)
@@ -393,81 +382,22 @@ int World_Lua::SweepTest(lua_State* L)
     return 1;
 }
 
-int World_Lua::GetLoadedLevels(lua_State* L)
+int World_Lua::QueueRootScene(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
+    const char* newScene = CHECK_STRING(L, 2);
 
-    const std::vector<LevelRef>& loadedLevels = world->GetLoadedLevels();
-
-    lua_newtable(L);
-    int levelListIdx = lua_gettop(L);
-    for (uint32_t i = 0; i < loadedLevels.size(); ++i)
-    {
-        lua_pushinteger(L, (int)i);
-        lua_pushstring(L, loadedLevels[i].Get()->GetName().c_str());
-        lua_settable(L, levelListIdx);
-    }
-    return 1;
-}
-
-int World_Lua::UnloadAllLevels(lua_State* L)
-{
-    World* world = CHECK_WORLD(L, 1);
-
-    world->UnloadAllLevels();
+    world->QueueRootScene(newScene);
 
     return 0;
 }
 
-int World_Lua::SpawnBlueprint(lua_State* L)
+int World_Lua::QueueRootNode(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
-    const char* name = CHECK_STRING(L, 2);
+    Node* newRoot = CHECK_NODE(L, 2);
 
-    Actor* ret = world->SpawnBlueprint(name);
-
-    Actor_Lua::Create(L, ret);
-    return 1;
-}
-
-int World_Lua::LoadLevel(lua_State* L)
-{
-    World* world = CHECK_WORLD(L, 1);
-    const char* name = CHECK_STRING(L, 2);
-    bool clear = false;
-    glm::vec3 offset = { 0.0f, 0.0f, 0.0f };
-    glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
-    if (!lua_isnone(L, 3)) { clear = CHECK_BOOLEAN(L, 3); }
-    if (!lua_isnone(L, 4)) { offset = CHECK_VECTOR(L, 4); }
-    if (!lua_isnone(L, 5)) { rotation = CHECK_VECTOR(L, 5); }
-
-    world->LoadLevel(name, clear, offset, rotation);
-
-    return 0;
-}
-
-int World_Lua::QueueLevelLoad(lua_State* L)
-{
-    World* world = CHECK_WORLD(L, 1);
-    const char* levelName = CHECK_STRING(L, 2);
-    bool clearWorld = false;
-    glm::vec3 offset = { 0.0f, 0.0f, 0.0f };
-    glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
-    if (!lua_isnone(L, 3)) { clearWorld = CHECK_BOOLEAN(L, 3); }
-    if (!lua_isnone(L, 4)) { offset = CHECK_VECTOR(L, 4); }
-    if (!lua_isnone(L, 5)) { rotation = CHECK_VECTOR(L, 5); }
-
-    world->QueueLevelLoad(levelName, clearWorld, offset, rotation);
-
-    return 0;
-}
-
-int World_Lua::UnloadLevel(lua_State* L)
-{
-    World* world = CHECK_WORLD(L, 1);
-    const char* name = CHECK_STRING(L, 2);
-
-    world->UnloadLevel(name);
+    world->QueueRootNode(newRoot);
 
     return 0;
 }
@@ -498,9 +428,9 @@ int World_Lua::SpawnParticle(lua_State* L)
     ParticleSystem* particleSys = CHECK_PARTICLE_SYSTEM(L, 2);
     glm::vec3 pos = CHECK_VECTOR(L, 3);
 
-    ParticleActor* ret = ParticleActor::SpawnParticleActor(world, pos, particleSys);
+    Particle3D* ret = world->SpawnParticle(particleSys, pos);
 
-    Actor_Lua::Create(L, ret);
+    Node_Lua::Create(L, ret);
     return 1;
 }
 
@@ -524,32 +454,29 @@ void World_Lua::Bind()
     lua_pushcfunction(L, World_Lua::SetAudioReceiver);
     lua_setfield(L, mtIndex, "SetAudioReceiver");
 
-    lua_pushcfunction(L, World_Lua::SpawnActor);
-    lua_setfield(L, mtIndex, "SpawnActor");
+    lua_pushcfunction(L, World_Lua::SpawnNode);
+    lua_setfield(L, mtIndex, "SpawnNode");
 
-    lua_pushcfunction(L, World_Lua::CloneActor);
-    lua_setfield(L, mtIndex, "CloneActor");
+    lua_pushcfunction(L, World_Lua::SpawnScene);
+    lua_setfield(L, mtIndex, "SpawnScene");
 
-    lua_pushcfunction(L, World_Lua::DestroyActor);
-    lua_setfield(L, mtIndex, "DestroyActor");
+    lua_pushcfunction(L, World_Lua::GetRootNode);
+    lua_setfield(L, mtIndex, "GetRootNode");
 
-    lua_pushcfunction(L, World_Lua::DestroyAllActors);
-    lua_setfield(L, mtIndex, "DestroyAllActors");
+    lua_pushcfunction(L, World_Lua::SetRootNode);
+    lua_setfield(L, mtIndex, "SetRootNode");
 
-    lua_pushcfunction(L, World_Lua::FindActor);
-    lua_setfield(L, mtIndex, "FindActor");
+    lua_pushcfunction(L, World_Lua::DestroyRootNode);
+    lua_setfield(L, mtIndex, "DestroyRootNode");
 
-    lua_pushcfunction(L, World_Lua::FindActorsByTag);
-    lua_setfield(L, mtIndex, "FindActorsByTag");
+    lua_pushcfunction(L, World_Lua::FindNode);
+    lua_setfield(L, mtIndex, "FindNode");
 
-    lua_pushcfunction(L, World_Lua::FindActorsByName);
-    lua_setfield(L, mtIndex, "FindActorsByName");
+    lua_pushcfunction(L, World_Lua::FindNodesWithTag);
+    lua_setfield(L, mtIndex, "FindNodesWithTag");
 
-    lua_pushcfunction(L, World_Lua::FindComponent);
-    lua_setfield(L, mtIndex, "FindComponent");
-
-    lua_pushcfunction(L, World_Lua::PrioritizeActorTick);
-    lua_setfield(L, mtIndex, "PrioritizeActorTick");
+    lua_pushcfunction(L, World_Lua::FindNodesWithName);
+    lua_setfield(L, mtIndex, "FindNodesWithName");
 
     lua_pushcfunction(L, World_Lua::SetAmbientLightColor);
     lua_setfield(L, mtIndex, "SetAmbientLightColor");
@@ -584,23 +511,11 @@ void World_Lua::Bind()
     lua_pushcfunction(L, World_Lua::SweepTest);
     lua_setfield(L, mtIndex, "SweepTest");
 
-    lua_pushcfunction(L, World_Lua::GetLoadedLevels);
-    lua_setfield(L, mtIndex, "GetLoadedLevels");
+    lua_pushcfunction(L, World_Lua::QueueRootScene);
+    lua_setfield(L, mtIndex, "QueueRootScene");
 
-    lua_pushcfunction(L, World_Lua::UnloadAllLevels);
-    lua_setfield(L, mtIndex, "UnloadAllLevels");
-
-    lua_pushcfunction(L, World_Lua::SpawnBlueprint);
-    lua_setfield(L, mtIndex, "SpawnBlueprint");
-
-    lua_pushcfunction(L, World_Lua::LoadLevel);
-    lua_setfield(L, mtIndex, "LoadLevel");
-
-    lua_pushcfunction(L, World_Lua::QueueLevelLoad);
-    lua_setfield(L, mtIndex, "QueueLevelLoad");
-
-    lua_pushcfunction(L, World_Lua::UnloadLevel);
-    lua_setfield(L, mtIndex, "UnloadLevel");
+    lua_pushcfunction(L, World_Lua::QueueRootNode);
+    lua_setfield(L, mtIndex, "QueueRootNode");
 
     lua_pushcfunction(L, World_Lua::EnableInternalEdgeSmoothing);
     lua_setfield(L, mtIndex, "EnableInternalEdgeSmoothing");
