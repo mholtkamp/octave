@@ -339,8 +339,8 @@ void World::PurgeOverlaps(Primitive3D* prim)
 {
     for (int32_t i = (int32_t)mCurrentOverlaps.size() - 1; i >= 0; --i)
     {
-        Primitive3D* primA = mCurrentOverlaps[i].mComponentA;
-        Primitive3D* primB = mCurrentOverlaps[i].mComponentB;
+        Primitive3D* primA = mCurrentOverlaps[i].mPrimitiveA;
+        Primitive3D* primB = mCurrentOverlaps[i].mPrimitiveB;
 
         if (primA == prim ||
             primB == prim)
@@ -528,7 +528,7 @@ void World::UnregisterNode(Node* node)
 
         for (uint32_t i = 0; i < repVector.size(); ++i)
         {
-            if (repVector[i] == actor)
+            if (repVector[i] == node)
             {
                 repVector.erase(repVector.begin() + i);
 
@@ -665,12 +665,12 @@ void World::Update(float deltaTime)
                 avgContactPoint1 /= numPoints;
 
 
-                prim0->GetOwner()->OnCollision(prim0, prim1, avgContactPoint0, avgNormal, manifold);
-                prim1->GetOwner()->OnCollision(prim1, prim0, avgContactPoint1, -avgNormal, manifold);
+                prim0->OnCollision(prim0, prim1, avgContactPoint0, avgNormal, manifold);
+                prim1->OnCollision(prim1, prim0, avgContactPoint1, -avgNormal, manifold);
             }
 
             if (prim0->AreOverlapsEnabled() && prim1->AreOverlapsEnabled() &&
-                std::find(mCurrentOverlaps.begin(), mCurrentOverlaps.end(), ComponentPair(prim0, prim1)) == mCurrentOverlaps.end())
+                std::find(mCurrentOverlaps.begin(), mCurrentOverlaps.end(), PrimitivePair(prim0, prim1)) == mCurrentOverlaps.end())
             {
                 mCurrentOverlaps.push_back({ prim0, prim1 });
                 mCurrentOverlaps.push_back({ prim1, prim0 });
@@ -684,7 +684,7 @@ void World::Update(float deltaTime)
 
             if (beginOverlap)
             {
-                pair.mComponentA->GetOwner()->BeginOverlap(pair.mComponentA, pair.mComponentB);
+                pair.mPrimitiveA->BeginOverlap(pair.mPrimitiveA, pair.mPrimitiveB);
             }
         }
 
@@ -695,7 +695,7 @@ void World::Update(float deltaTime)
 
             if (endOverlap)
             {
-                pair.mComponentA->GetOwner()->EndOverlap(pair.mComponentA, pair.mComponentB);
+                pair.mPrimitiveA->EndOverlap(pair.mPrimitiveA, pair.mPrimitiveB);
             }
         }
     }
@@ -705,37 +705,6 @@ void World::Update(float deltaTime)
     {
         SCOPED_FRAME_STAT("Tick");
         mRootNode->RecursiveTick(deltaTime, gameTickEnabled);
-
-    //    for (int32_t i = 0; i < (int32_t)mActors.size(); ++i)
-    //    {
-    //        if (gameTickEnabled)
-    //        {
-    //            if (!mActors[i]->HasStarted())
-    //            {
-    //                mActors[i]->Start();
-    //            }
-
-    //            if (!mActors[i]->IsPendingDestroy() && 
-    //                mActors[i]->IsTickEnabled())
-    //            {
-    //                mActors[i]->Tick(deltaTime);
-    //            }
-    //        }
-    //        else
-    //        {
-    //            if (!mActors[i]->IsPendingDestroy() && 
-    //                mActors[i]->IsTickEnabled())
-    //            {
-    //                mActors[i]->EditorTick(deltaTime);
-    //            }
-    //        }
-
-    //        if (mActors[i]->IsPendingDestroy())
-    //        {
-    //            DestroyActor(i);
-    //            --i;
-    //        }
-    //    }
     }
 
     {

@@ -164,8 +164,8 @@ private:
     btDbvtBroadphase* mBroadphase;
     btSequentialImpulseConstraintSolver* mSolver;
     btDiscreteDynamicsWorld* mDynamicsWorld;
-    std::vector<ComponentPair> mCurrentOverlaps;
-    std::vector<ComponentPair> mPreviousOverlaps;
+    std::vector<PrimitivePair> mCurrentOverlaps;
+    std::vector<PrimitivePair> mPreviousOverlaps;
 
 #if EDITOR
 public:

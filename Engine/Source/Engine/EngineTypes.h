@@ -159,53 +159,53 @@ struct DebugDraw
     float mLife = 0.0f;
 };
 
-struct ComponentPair
+struct PrimitivePair
 {
-    Primitive3D* mComponentA = nullptr;
-    Primitive3D* mComponentB = nullptr;
+    Primitive3D* mPrimitiveA = nullptr;
+    Primitive3D* mPrimitiveB = nullptr;
 
-    ComponentPair() :
-        mComponentA(nullptr),
-        mComponentB(nullptr)
+    PrimitivePair() :
+        mPrimitiveA(nullptr),
+        mPrimitiveB(nullptr)
     {
 
     }
 
-    ComponentPair(Primitive3D* compA, Primitive3D* compB)
+    PrimitivePair(Primitive3D* compA, Primitive3D* compB)
     {
-        mComponentA = compA;
-        mComponentB = compB;
+        mPrimitiveA = compA;
+        mPrimitiveB = compB;
     }
 
-    size_t operator()(const ComponentPair& pairToHash) const
+    size_t operator()(const PrimitivePair& pairToHash) const
     {
-        size_t hash = (size_t)pairToHash.mComponentA + (size_t)pairToHash.mComponentB;
+        size_t hash = (size_t)pairToHash.mPrimitiveA + (size_t)pairToHash.mPrimitiveB;
         return hash;
     }
 
-    bool operator==(const ComponentPair& other) const
+    bool operator==(const PrimitivePair& other) const
     {
-        return (mComponentA == other.mComponentA) &&
-            (mComponentB == other.mComponentB);
+        return (mPrimitiveA == other.mPrimitiveA) &&
+            (mPrimitiveB == other.mPrimitiveB);
     }
 
-    ComponentPair(const ComponentPair& other)
+    PrimitivePair(const PrimitivePair& other)
     {
-        mComponentA = other.mComponentA;
-        mComponentB = other.mComponentB;
+        mPrimitiveA = other.mPrimitiveA;
+        mPrimitiveB = other.mPrimitiveB;
     }
 
-    ComponentPair& operator=(const ComponentPair& other)
+    PrimitivePair& operator=(const PrimitivePair& other)
     {
-        mComponentA = other.mComponentA;
-        mComponentB = other.mComponentB;
+        mPrimitiveA = other.mPrimitiveA;
+        mPrimitiveB = other.mPrimitiveB;
         return *this;
     }
 
-    ComponentPair& operator=(ComponentPair&& other)
+    PrimitivePair& operator=(PrimitivePair&& other)
     {
-        mComponentA = other.mComponentA;
-        mComponentB = other.mComponentB;
+        mPrimitiveA = other.mPrimitiveA;
+        mPrimitiveB = other.mPrimitiveB;
         return *this;
     }
 };
