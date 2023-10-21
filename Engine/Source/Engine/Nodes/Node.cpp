@@ -374,6 +374,11 @@ void Node::Render()
 
 }
 
+VertexType Node::GetVertexType() const
+{
+    return VertexType::Max;
+}
+
 void Node::GatherProperties(std::vector<Property>& outProps)
 {
     outProps.push_back({DatumType::String, "Name", this, &mName});

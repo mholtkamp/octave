@@ -123,7 +123,7 @@ public:
     void EnableReceiveSimpleShadows(bool enable);
     bool ShouldReceiveSimpleShadows() const;
 
-    virtual VertexType GetVertexType() const;
+    virtual VertexType GetVertexType() const override;
 
     btRigidBody* GetRigidBody();
     btCollisionShape* GetCollisionShape();

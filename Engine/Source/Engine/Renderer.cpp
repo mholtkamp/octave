@@ -292,81 +292,6 @@ void Renderer::EndFrame()
     mFrameIndex = mFrameNumber % MAX_FRAMES;
 }
 
-void Renderer::AddWidget(class Widget* widget, int32_t index, int32_t screenIndex)
-{
-    std::vector<Widget*>& widgets = (screenIndex == 1) ? mWidgets1 : mWidgets0;
-
-    // Don't add duplicates of the same Widget.
-    if (std::find(widgets.begin(), widgets.end(), widget) == widgets.end())
-    {
-        if (index >= 0 && index <= (int32_t)widgets.size())
-        {
-            widgets.insert(widgets.begin() + index, widget);
-        }
-        else
-        {
-            widgets.push_back(widget);
-        }
-
-        widget->MarkDirty();
-    }
-}
-
-void Renderer::RemoveWidget(class Widget* widget, int32_t screenIndex)
-{
-    std::vector<Widget*>& widgets = (screenIndex == 1) ? mWidgets1 : mWidgets0;
-
-    for (int32_t i = (int32_t)widgets.size() - 1; i >= 0; --i)
-    {
-        if (widgets[i] == widget)
-        {
-            widgets.erase(widgets.begin() + i);
-        }
-    }
-}
-
-bool Renderer::HasWidget(const Widget* widget, int32_t screenIndex)
-{
-    bool hasWidget = false;
-
-    if (widget != nullptr)
-    {
-        if (screenIndex == 0 || screenIndex == -1)
-        {
-            hasWidget = std::find(mWidgets0.begin(), mWidgets0.end(), widget) != mWidgets0.end();
-        }
-
-        if (!hasWidget)
-        {
-            if (screenIndex == 1 || screenIndex == -1)
-            {
-                hasWidget = std::find(mWidgets1.begin(), mWidgets1.end(), widget) != mWidgets1.end();
-            }
-        }
-
-        if (!hasWidget)
-        {
-            hasWidget = (mModalWidget == widget);
-        }
-    }
-
-    return hasWidget;
-}
-
-void Renderer::RemoveAllWidgets(int32_t screenIndex)
-{
-    if (screenIndex == -1)
-    {
-        mWidgets0.clear();
-        mWidgets1.clear();
-    }
-    else
-    {
-        std::vector<Widget*>& widgets = (screenIndex == 1) ? mWidgets1 : mWidgets0;
-        widgets.clear();
-    }
-}
-
 void Renderer::EnableStatsOverlay(bool enable)
 {
     if (mStatsWidget)
@@ -410,16 +335,6 @@ bool Renderer::IsInModalWidgetUpdate() const
 
 void Renderer::DirtyAllWidgets()
 {
-    for (Widget* widget : mWidgets0)
-    {
-        widget->MarkDirty();
-    }
-
-    for (Widget* widget : mWidgets1)
-    {
-        widget->MarkDirty();
-    }
-
     if (mModalWidget != nullptr)
         mModalWidget->MarkDirty();
 
@@ -428,53 +343,12 @@ void Renderer::DirtyAllWidgets()
 
     if (mStatsWidget != nullptr)
         mStatsWidget->MarkDirty();
-}
 
-const std::vector<Widget*>& Renderer::GetWidgets(int32_t screenIndex)
-{
-    return (screenIndex == 1) ? mWidgets1 : mWidgets0;
-}
-
-Widget* Renderer::FindWidget(const std::string& name, bool recurse)
-{
-    // TODO: Merge mWidgets0 and mWidgets1 into an array.
-    for (uint32_t i = 0; i < mWidgets0.size(); ++i)
+    // TODO: Iterate over all worlds if we add multiple worlds
+    if (GetWorld() != nullptr)
     {
-        if (mWidgets0[i]->GetName() == name)
-        {
-            return mWidgets0[i];
-        }
-
-        if (recurse)
-        {
-            Widget* widget = mWidgets0[i]->FindChild(name, true);
-
-            if (widget != nullptr)
-            {
-                return widget;
-            }
-        }
+        GetWorld()->DirtyAllWidgets();
     }
-
-    for (uint32_t i = 0; i < mWidgets1.size(); ++i)
-    {
-        if (mWidgets1[i]->GetName() == name)
-        {
-            return mWidgets1[i];
-        }
-
-        if (recurse)
-        {
-            Widget* widget = mWidgets1[i]->FindChild(name, true);
-
-            if (widget != nullptr)
-            {
-                return widget;
-            }
-        }
-    }
-
-    return nullptr;
 }
 
 Console* Renderer::GetConsoleWidget()
@@ -571,100 +445,116 @@ void Renderer::GatherDrawData(World* world)
     mTranslucentDraws.clear();
     mWireframeDraws.clear();
     mCollisionDraws.clear();
+    mWidgetDraws.clear();
 
     if (world != nullptr)
     {
-        const std::vector<Actor*>& actors = world->GetActors();
-
-        for (uint32_t i = 0; i < actors.size(); ++i)
+        auto gatherDrawData = [&](Node* node) -> bool
         {
-            if (!actors[i]->IsVisible())
-                continue;
-
-            const std::vector<Component*>& components = actors[i]->GetComponents();
-
-            for (uint32_t c = 0; c < components.size(); ++c)
+            if (!node->IsVisible())
             {
-                Component* comp = components[c];
+                return true;
+            }
 
-                if (comp->IsPrimitive3D())
+            if (node->IsPrimitive3D())
+            {
+                DrawData data = node->GetDrawData();
+                data.mNodeType = node->GetType();
+
+                Primitive3D* prim = (Primitive3D*)node;
+                bool simpleShadow = (data.mNodeType == ShadowMesh3D::GetStaticType());
+
+                if (data.mNode != nullptr)
                 {
-                    DrawData data = comp->GetDrawData();
-                    data.mComponentType = comp->GetType();
-
-                    Primitive3D* prim = (Primitive3D*)comp;
-                    bool simpleShadow = (data.mComponentType == ShadowMesh3D::GetStaticType());
-
-                    if (data.mComponent != nullptr &&
-                        comp->IsVisible())
+                    if (simpleShadow)
                     {
-                        if (simpleShadow)
+                        mSimpleShadowDraws.push_back(data);
+                    }
+                    else
+                    {
+                        switch (data.mBlendMode)
                         {
-                            mSimpleShadowDraws.push_back(data);
+                        case BlendMode::Opaque:
+                        case BlendMode::Masked:
+                            if (prim->ShouldReceiveSimpleShadows())
+                            {
+                                mOpaqueDraws.push_back(data);
+                            }
+                            else
+                            {
+                                mPostShadowOpaqueDraws.push_back(data);
+                            }
+                            break;
+                        case BlendMode::Translucent:
+                        case BlendMode::Additive:
+                            mTranslucentDraws.push_back(data);
+                            break;
+                        default:
+                            break;
                         }
-                        else
+
+                        if (prim->ShouldCastShadows())
                         {
-                            switch (data.mBlendMode)
-                            {
-                            case BlendMode::Opaque:
-                            case BlendMode::Masked:
-                                if (prim->ShouldReceiveSimpleShadows())
-                                {
-                                    mOpaqueDraws.push_back(data);
-                                }
-                                else
-                                {
-                                    mPostShadowOpaqueDraws.push_back(data);
-                                }
-                                break;
-                            case BlendMode::Translucent:
-                            case BlendMode::Additive:
-                                mTranslucentDraws.push_back(data);
-                                break;
-                            default:
-                                break;
-                            }
+                            mShadowDraws.push_back(data);
+                        }
 
-                            if (prim->ShouldCastShadows())
-                            {
-                                mShadowDraws.push_back(data);
-                            }
-
-                            if (mDebugMode == DEBUG_WIREFRAME)
-                            {
-                                mWireframeDraws.push_back(data);
-                            }
+                        if (mDebugMode == DEBUG_WIREFRAME)
+                        {
+                            mWireframeDraws.push_back(data);
                         }
                     }
                 }
+            }
+            else if (node->IsWidget())
+            {
+                DrawData data = node->GetDrawData();
+                data.mNodeType = node->GetType();
+
+                if (data.mNode != nullptr)
+                {
+                    mWidgetDraws.push_back(data);
+                }
+            }
 
 #if DEBUG_DRAW_ENABLED
-                bool proxyActorEnabled = true;
-#if  EDITOR
-                if (GetEditorMode() == EditorMode::Blueprint &&
-                    comp->GetOwner() != GetEditBlueprintActor())
-                {
-                    proxyActorEnabled = false;
-                }
-#endif
-
-                if (mEnableProxyRendering &&
-                    mDebugMode != DEBUG_COLLISION &&
-                    comp->IsNode3D() &&
-                    proxyActorEnabled)
-                {
-                    Node3D* trans = (Node3D*)comp;
-                    trans->GatherProxyDraws(mDebugDraws);
-                }
-
-                if (mDebugMode == DEBUG_COLLISION &&
-                    comp->IsPrimitive3D())
-                {
-                    Primitive3D* prim = (Primitive3D*)comp;
-                    prim->GatherProxyDraws(mCollisionDraws);
-                }
-#endif
+            bool proxyActorEnabled = true;
+#if   0 // EDITOR
+            // TODO-NODE: I'm not sure what this code was meant to do? What components could
+            // be selected in the blueprint editor that didn't belong to the blueprint actor?
+            if (GetEditorMode() == EditorMode::Blueprint &&
+                node->GetOwner() != GetEditBlueprintActor())
+            {
+                proxyActorEnabled = false;
             }
+#endif
+
+            if (mEnableProxyRendering &&
+                mDebugMode != DEBUG_COLLISION &&
+                node->IsNode3D() &&
+                proxyActorEnabled)
+            {
+                Node3D* node3d = (Node3D*)node;
+                node3d->GatherProxyDraws(mDebugDraws);
+            }
+
+            if (mDebugMode == DEBUG_COLLISION &&
+                node->IsPrimitive3D())
+            {
+                Primitive3D* prim = (Primitive3D*)node;
+                prim->GatherProxyDraws(mCollisionDraws);
+            }
+#endif
+
+            return true;
+        };
+
+        if (world != nullptr && world->GetRootNode() != nullptr)
+        {
+            world->GetRootNode()->ForEach(gatherDrawData);
+
+            if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->ForEach(gatherDrawData); }
+            if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->ForEach(gatherDrawData); }
+            if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->ForEach(gatherDrawData); }
         }
 
         Camera3D* camera = world->GetActiveCamera();
@@ -763,7 +653,7 @@ void Renderer::GatherLightData(World* world)
     sClosestLights.clear();
 
     mLightData.clear();
-    const std::vector<Light3D*>& comps = world->GetLight3Ds();
+    const std::vector<Light3D*>& lights = world->GetLights();
 
     if (mEnableLightFade)
     {
@@ -772,26 +662,25 @@ void Renderer::GatherLightData(World* world)
         glm::vec3 camPos = GetWorld()->GetActiveCamera()->GetAbsolutePosition();
 
         // Step 1 - Determine the closest N lights
-        for (uint32_t i = 0; i < comps.size(); ++i)
+        for (uint32_t i = 0; i < lights.size(); ++i)
         {
-            if (!comps[i]->IsVisible() ||
-                !comps[i]->GetOwner()->IsVisible() 
+            if (!lights[i]->IsVisible()
 #if !EDITOR
-                || comps[i]->GetLightingDomain() == LightingDomain::Static
+                || lights[i]->GetLightingDomain() == LightingDomain::Static
 #endif
                 )
             {
                 continue;
             }
 
-            glm::vec3 lightPos = comps[i]->GetAbsolutePosition();
-            bool directional = comps[i]->IsDirectionalLight3D();
+            glm::vec3 lightPos = lights[i]->GetAbsolutePosition();
+            bool directional = lights[i]->IsDirectionalLight3D();
 
             float dist2 = directional ? 0.0f : glm::distance2(lightPos, camPos);
 
             if (sClosestLights.size() < lightLimit)
             {
-                sClosestLights.push_back({ comps[i], dist2 });
+                sClosestLights.push_back({ lights[i], dist2 });
             }
             else
             {
@@ -812,7 +701,7 @@ void Renderer::GatherLightData(World* world)
                 // We found a light to evict.
                 if (farthestIdx >= 0)
                 {
-                    sClosestLights[farthestIdx] = { comps[i], dist2 };
+                    sClosestLights[farthestIdx] = { lights[i], dist2 };
                 }
             }
         }
@@ -898,17 +787,16 @@ void Renderer::GatherLightData(World* world)
     }
     else
     {
-        for (uint32_t i = 0; i < comps.size(); ++i)
+        for (uint32_t i = 0; i < lights.size(); ++i)
         {
-            if (comps[i]->IsVisible() &&
-                comps[i]->GetOwner()->IsVisible()
+            if (lights[i]->IsVisible()
 #if !EDITOR
                 && comps[i]->GetLightingDomain() != LightingDomain::Static
 #endif
                 )
             {
                 LightData lightData;
-                SetLightData(lightData, comps[i]);
+                SetLightData(lightData, lights[i]);
                 mLightData.push_back(lightData);
             }
         }
@@ -919,7 +807,7 @@ void Renderer::RenderDraws(const std::vector<DrawData>& drawData)
 {
     for (uint32_t i = 0; i < drawData.size(); ++i)
     {
-        drawData[i].mComponent->Render();
+        drawData[i].mNode->Render();
     }
 }
 
@@ -927,8 +815,8 @@ void Renderer::RenderDraws(const std::vector<DrawData>& drawData, PipelineId pip
 {
     for (uint32_t i = 0; i < drawData.size(); ++i)
     {
-        GFX_BindPipeline(pipelineId, drawData[i].mComponent->GetVertexType());
-        drawData[i].mComponent->Render();
+        GFX_BindPipeline(pipelineId, drawData[i].mNode->GetVertexType());
+        drawData[i].mNode->Render();
     }
 }
 
@@ -1006,39 +894,39 @@ void Renderer::FrustumCull(Camera3D* camera)
 
 static inline void HandleCullResult(DrawData& drawData, bool inFrustum)
 {
-    if (drawData.mComponentType == SkeletalMesh3D::GetStaticType())
+    if (drawData.mNodeType == SkeletalMesh3D::GetStaticType())
     {
-        SkeletalMesh3D* skComp = static_cast<SkeletalMesh3D*>(drawData.mComponent);
+        SkeletalMesh3D* skNode = static_cast<SkeletalMesh3D*>(drawData.mNode);
 
         if (inFrustum)
         {
-            skComp->UpdateAnimation(GetEngineState()->mGameDeltaTime, true);
+            skNode->UpdateAnimation(GetEngineState()->mGameDeltaTime, true);
         }
         else
         {
-            AnimationUpdateMode animMode = skComp->GetAnimationUpdateMode();
+            AnimationUpdateMode animMode = skNode->GetAnimationUpdateMode();
             if (animMode == AnimationUpdateMode::AlwaysUpdateTimeAndBones)
             {
-                skComp->UpdateAnimation(GetEngineState()->mGameDeltaTime, true);
+                skNode->UpdateAnimation(GetEngineState()->mGameDeltaTime, true);
             }
             else if (animMode == AnimationUpdateMode::AlwaysUpdateTime)
             {
-                skComp->UpdateAnimation(GetEngineState()->mGameDeltaTime, false);
+                skNode->UpdateAnimation(GetEngineState()->mGameDeltaTime, false);
             }
         }
     }
-    else if (drawData.mComponentType == Particle3D::GetStaticType())
+    else if (drawData.mNodeType == Particle3D::GetStaticType())
     {
-        Particle3D* pComp = static_cast<Particle3D*>(drawData.mComponent);
+        Particle3D* pNode = static_cast<Particle3D*>(drawData.mNode);
 
         if (inFrustum)
         {
-            pComp->Simulate(GetEngineState()->mGameDeltaTime);
-            pComp->UpdateVertexBuffer();
+            pNode->Simulate(GetEngineState()->mGameDeltaTime);
+            pNode->UpdateVertexBuffer();
         }
-        else if (pComp->ShouldAlwaysSimulate())
+        else if (pNode->ShouldAlwaysSimulate())
         {
-            pComp->Simulate(GetEngineState()->mGameDeltaTime);
+            pNode->Simulate(GetEngineState()->mGameDeltaTime);
         }
     }
 }
@@ -1161,27 +1049,23 @@ void Renderer::Render(World* world)
         return;
     }
 
-    // Update widgets first. (It's possible a widget destroys an actor or loads a level
-    // so make sure this happens before gathering/culling objects.)
+    bool inGame = IsGameTickEnabled();
+    float gameDeltaTime = GetEngineState()->mGameDeltaTime;
+    float realDeltaTime = GetEngineState()->mRealDeltaTime;
+
+    // Update Renderer's overlay widgets (not widgets in the world.
     {
-        SCOPED_FRAME_STAT("Widgets");
+        SCOPED_FRAME_STAT("Overlay");
 
-        for (uint32_t i = 0; i < mWidgets0.size(); ++i)
-        {
-            if (mWidgets0[i]->IsVisible())
-            {
-                mWidgets0[i]->RecursiveUpdate();
-            }
-        }
-
-        if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->RecursiveUpdate(); }
-        if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->RecursiveUpdate(); }
+        if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->RecursiveTick(gameDeltaTime, inGame); }
+        if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->RecursiveTick(gameDeltaTime, inGame); }
 
         mInModalWidgetUpdate = true;
-        if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->RecursiveUpdate(); }
+        if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->RecursiveTick(gameDeltaTime, inGame); }
         mInModalWidgetUpdate = false;
 
-#if SUPPORTS_SECOND_SCREEN
+        // TODO-NODE: Handle two screens? Need to render two different worlds I believe.
+#if 0 //SUPPORTS_SECOND_SCREEN
         mScreenIndex = 1;
         for (uint32_t i = 0; i < mWidgets1.size(); ++i)
         {
@@ -1340,23 +1224,12 @@ void Renderer::Render(World* world)
             //  UI
             // ******************
             GFX_BeginRenderPass(RenderPassId::Ui);
-            Widget::ResetScissor();
-
-            for (uint32_t i = 0; i < mWidgets0.size(); ++i)
-            {
-                if (mWidgets0[i]->IsVisible())
-                {
-                    mWidgets0[i]->RecursiveRender();
-                }
-            }
-
-            if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->RecursiveRender(); }
-            if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->RecursiveRender(); }
-            if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->RecursiveRender(); }
+            RenderDraws(mWidgetDraws);
             GFX_EndRenderPass();
         }
 
-#if SUPPORTS_SECOND_SCREEN
+#if 0 //SUPPORTS_SECOND_SCREEN
+        // TODO-NODE: Fix second-screen rendering
         // Do 3DS bottom screen rendering
         mScreenIndex = 1;
         GFX_BeginScreen(1);
@@ -1413,7 +1286,7 @@ void Renderer::RenderSelectedGeometry(World* world)
 
         for (uint32_t i = 0; i < selectedNodes.size(); ++i)
         {
-            const bool renderChildren = (selectedNodes[i]->GetParent() != nullptr && selectedNodes[i]->GetSceneSource() != nullptr);
+            const bool renderChildren = (selectedNodes[i]->GetParent() != nullptr && selectedNodes[i]->GetScene() != nullptr);
             selectedNodes[i]->RenderSelected(renderChildren);
         }
     }

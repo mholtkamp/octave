@@ -133,6 +133,11 @@ void Widget::Render()
         int32_t(mScissorRect.mHeight + 0.5f));
 }
 
+VertexType Widget::GetVertexType() const
+{
+    return VertexType::VertexUI;
+}
+
 // Refresh any data used for rendering based on this widget's state. Use dirty flag.
 // Recursively update children.
 void Widget::RecursiveTick(float deltaTime, bool game)

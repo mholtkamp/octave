@@ -82,6 +82,7 @@ public:
     virtual void RecursiveTick(float deltaTime, bool game) override;
     virtual void Tick(float deltaTime) override;
     virtual void Render() override;
+    virtual VertexType GetVertexType() const override;
 
     virtual bool IsWidget() const override;
     Widget* GetParentWidget();

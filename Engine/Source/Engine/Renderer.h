@@ -54,10 +54,6 @@ public:
 
     void GatherProperties(std::vector<Property>& props);
 
-    void AddWidget(class Widget* widget, int32_t index = -1, int32_t screenIndex = 0);
-    void RemoveWidget(class Widget* widget, int32_t screenIndex = 0);
-    bool HasWidget(const class Widget* widget, int32_t screenIndex = 0);
-    void RemoveAllWidgets(int32_t screenIndex = -1);
     void EnableStatsOverlay(bool enable);
     bool IsStatsOverlayEnabled() const;
     void EnableConsole(bool enable);
@@ -70,8 +66,6 @@ public:
     bool IsInModalWidgetUpdate() const;
 
     void DirtyAllWidgets();
-    const std::vector<Widget*>& GetWidgets(int32_t screenIndex = 0);
-    Widget* FindWidget(const std::string& name, bool recurse = true);
 
     Console* GetConsoleWidget();
     StatsOverlay* GetStatsWidget();
@@ -197,9 +191,6 @@ private:
 
     void UpdateDebugDraws();
 
-    std::vector<Widget*> mWidgets0;
-    std::vector<Widget*> mWidgets1;  // Second-screen widget for 3DS
-
     Widget* mModalWidget = nullptr;
     StatsOverlay* mStatsWidget = nullptr;
     Console* mConsoleWidget = nullptr;
@@ -214,6 +205,7 @@ private:
     std::vector<DrawData> mPostShadowOpaqueDraws; // (post-simple-shadow opaques. not talking about shadow mapping)
     std::vector<DrawData> mTranslucentDraws;
     std::vector<DrawData> mWireframeDraws;
+    std::vector<DrawData> mWidgetDraws;
 
     std::vector<LightData> mLightData;
 
