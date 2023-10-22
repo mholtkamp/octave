@@ -291,7 +291,19 @@ void Scene::AddNodeDef(Node* node, std::vector<Node*>& nodeList)
         std::vector<Property> extProps;
         node->GatherProperties(extProps);
 
+        if (scene != nullptr)
         {
+            // For nodes with scene sources, just copy all of the properties.
+            for (uint32_t i = 0; i < extProps.size(); ++i)
+            {
+                nodeDef.mProperties.push_back(Property());
+                nodeDef.mProperties.back().DeepCopy(extProps[i], true);
+            }
+        }
+        else
+        {
+            // For native nodes, determine which properties are different than the defaults
+            // and only save those to reduce storage/memory of the scene.
             Node* defaultNode = Node::Construct(node->GetType());
             std::vector<Property> defaultProps;
             defaultNode->GatherProperties(defaultProps);
