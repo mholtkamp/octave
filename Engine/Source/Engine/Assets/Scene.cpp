@@ -268,6 +268,12 @@ void Scene::AddNodeDef(Node* node, std::vector<Node*>& nodeList)
     }
 #endif
 
+    if (node->IsTransient())
+    {
+        // Transient nodes mean they are not saved to the Scene.
+        return;
+    }
+
     if (node != nullptr)
     {
         nodeList.push_back(node);
