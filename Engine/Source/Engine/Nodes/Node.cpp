@@ -9,7 +9,7 @@
 #include "Engine.h"
 #include "ObjectRef.h"
 #include "NetworkManager.h"
-#include "Assets/Blueprint.h"
+#include "Assets/Scene.h"
 
 #include "Nodes/3D/Node3d.h"
 #include "Nodes/3D/StaticMesh3d.h"
@@ -391,6 +391,9 @@ VertexType Node::GetVertexType() const
 void Node::GatherProperties(std::vector<Property>& outProps)
 {
     outProps.push_back({DatumType::String, "Name", this, &mName});
+#if EDITOR
+    outProps.push_back(Property(DatumType::Bool, "Expose Variable", this, &mExposeVariable));
+#endif
     outProps.push_back({DatumType::Bool, "Active", this, &mActive});
     outProps.push_back({DatumType::Bool, "Visible", this, &mVisible});
 
@@ -411,6 +414,11 @@ void Node::GatherNetFuncs(std::vector<NetFunc>& outFuncs)
 
 void Node::GatherPropertyOverrides(std::vector<Property>& outOverrides)
 {
+    // TODO-NODE: Property overrides are only needed if we want to allow the user to change
+    // child scene node properties while keeping the Scene connection. This could be useful so we 
+    // might want to allow this, but to keep things simple for now, only the properties on the root
+    // child scene node can be editted.
+#if 0
     if (mScene != nullptr)
     {
         Scene* scene = mScene.Get<Scene>();
@@ -438,13 +446,12 @@ void Node::GatherPropertyOverrides(std::vector<Property>& outOverrides)
         delete defaultNode;
         defaultNode = nullptr;
     }
+#endif
 }
 
 void Node::ApplyPropertyOverrides(const std::vector<Property>& overs)
 {
 #if 1
-    // TODO-NODE: Check to make sure property overrides work with this call.
-    // Old code is shown in #else below.
     std::vector<Property> props;
     GatherProperties(props);
     CopyPropertyValues(props, overs);
@@ -1591,3 +1598,17 @@ void Node::SendNetFunc(NetFunc* func, uint32_t numParams, Datum** params)
         NetworkManager::Get()->SendInvokeMsg(this, func, numParams, params);
     }
 }
+
+#if EDITOR
+
+bool Node::ShouldExposeVariable() const
+{
+    return mExposeVariable;
+}
+
+void Node::SetExposeVariable(bool expose)
+{
+    mExposeVariable = expose;
+}
+
+#endif

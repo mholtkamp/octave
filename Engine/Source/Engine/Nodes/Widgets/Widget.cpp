@@ -107,10 +107,6 @@ void Widget::GatherProperties(std::vector<Property>& outProps)
     Node::GatherProperties(outProps);
 
     outProps.push_back(Property(DatumType::Byte, "Anchor", this, &mAnchorMode, 1, Widget::HandlePropChange, 0, int32_t(AnchorMode::Count), sAnchorModeStrings));
-    
-#if EDITOR
-    outProps.push_back(Property(DatumType::Bool, "Expose Variable", this, &mExposeVariable, 1, Widget::HandlePropChange));
-#endif
     outProps.push_back(Property(DatumType::Bool, "Scissor", this, &mUseScissor, 1, Widget::HandlePropChange));
 
     outProps.push_back(Property(DatumType::Vector2D, "Offset", this, &mOffset, 1, Widget::HandlePropChange));
@@ -927,17 +923,3 @@ float Widget::RatioToPixelsY(float y) const
 {
     return (GetParentHeight() * y);
 }
-
-#if EDITOR
-
-bool Widget::ShouldExposeVariable() const
-{
-    return mExposeVariable;
-}
-
-void Widget::SetExposeVariable(bool expose)
-{
-    mExposeVariable = expose;
-}
-
-#endif

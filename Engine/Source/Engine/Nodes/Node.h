@@ -22,6 +22,7 @@
 #include <unordered_set>
 
 class Node;
+class Scene;
 class World;
 
 #define DECLARE_NODE(Base, Parent) \
@@ -315,4 +316,15 @@ protected:
     Script* mScript = nullptr;
     //NodeNetData* mNetData = nullptr;
 
+#if EDITOR
+public:
+    // TODO-NODE: Either remove mExposeVariable, or make sure it works with Scenes.
+    // Could consider moving this up to Node if it would be useful from avoiding FindChild() calls in Start().
+    bool ShouldExposeVariable() const;
+    void SetExposeVariable(bool expose);
+
+protected:
+
+    bool mExposeVariable = false;
+#endif
 };

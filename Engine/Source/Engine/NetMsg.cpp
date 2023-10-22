@@ -255,10 +255,7 @@ void NetMsgSpawn::Execute(NetHost sender)
             // So maybe... at this point, if the node has a script, call mScript->StartScript()
             // so that we can populate the netdata / netfuncs. And then later it's Start() will be called appropriately.
             // Actually, yeah that sounds good, I'm going to do that now.
-            if (newNode->GetScript())
-            {
-                newNode->StartScript();
-            }
+            newNode->StartScript();
         }
     }
 }

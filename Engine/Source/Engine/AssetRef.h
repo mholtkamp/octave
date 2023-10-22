@@ -60,7 +60,5 @@ typedef AssetRef MaterialRef;
 typedef AssetRef SkeletalMeshRef;
 typedef AssetRef ParticleSystemRef;
 typedef AssetRef SoundWaveRef;
-typedef AssetRef LevelRef;
 typedef AssetRef FontRef;
-typedef AssetRef BlueprintRef;
-typedef AssetRef WidgetMapRef;
+typedef AssetRef SceneRef;

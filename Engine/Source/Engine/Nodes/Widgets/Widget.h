@@ -219,18 +219,4 @@ protected:
 
 private:
     bool mDirty[MAX_FRAMES] = {};
-
-    // TODO-NODE: I removed the IsNativeChild() and related functions. Do we need to add that into Node?
-
-#if EDITOR
-public:
-    // TODO-NODE: Either remove mExposeVariable, or make sure it works with Scenes.
-    // Could consider moving this up to Node if it would be useful from avoiding FindChild() calls in Start().
-    bool ShouldExposeVariable() const;
-    void SetExposeVariable(bool expose);
-
-protected:
-
-    bool mExposeVariable = false;
-#endif
 };
