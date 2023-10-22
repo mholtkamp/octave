@@ -11,8 +11,8 @@ struct SceneNodeDef
 {
     TypeId mType = INVALID_TYPE_ID;
     int32_t mParentIndex = -1;
-    int32_t mChildSlot = -1;
     SceneRef mScene;
+    std::string mName;
     std::vector<Property> mProperties;
     bool mExposeVariable = false;
 };

@@ -31,9 +31,9 @@ void Scene::LoadStream(Stream& stream, Platform platform)
 
         def.mType = (TypeId)stream.ReadUint32();
         def.mParentIndex = stream.ReadInt32();
-        def.mChildSlot = stream.ReadInt32();
 
         stream.ReadAsset(def.mScene);
+        stream.ReadString(def.mName);
         def.mExposeVariable = stream.ReadBool();
 
         uint32_t numProps = stream.ReadUint32();
@@ -56,9 +56,9 @@ void Scene::SaveStream(Stream& stream, Platform platform)
         SceneNodeDef& def = mNodeDefs[i];
         stream.WriteUint32((uint32_t)def.mType);
         stream.WriteInt32(def.mParentIndex);
-        stream.WriteInt32(def.mChildSlot);
 
         stream.WriteAsset(def.mScene);
+        stream.WriteString(def.mName);
         stream.WriteBool(def.mExposeVariable);
 
         stream.WriteUint32((uint32_t)def.mProperties.size());
@@ -113,41 +113,88 @@ Node* Scene::Instantiate()
     {
         std::vector<Node*> nodeList;
 
+        // The nativeChildren vector holds a list of all children by created in C++ for the nodes in this scene.
+        // If there is no SceneNodeDef for the nativeChild, then we must destroy it. This will happen
+        // if the user renames a native child, then we will have a duplicate so we need to destroy the native one.
+        std::vector<Node*> nativeChildren;
+
         for (uint32_t i = 0; i < mNodeDefs.size(); ++i)
         {
-            Node* newNode = nullptr;
+            Node* node = nullptr;
+            Node* parent = (i > 0) ? nodeList[mNodeDefs[i].mParentIndex] : nullptr;
 
-            if (mNodeDefs[i].mScene != nullptr)
+            if (parent != nullptr)
             {
-                Scene* scene = mNodeDefs[i].mScene.Get<Scene>();
-                newNode = scene->Instantiate();
+                // See if the node already exists. This can happen if lets say,
+                // the root node spawned other nodes on Create() in C++.
+                Node* existingChild = parent->FindChild(mNodeDefs[i].mName, false);
+
+                if (existingChild != nullptr &&
+                    existingChild->GetType() == mNodeDefs[i].mType &&
+                    existingChild->GetScene() == mNodeDefs[i].mScene)
+                {
+                    node = existingChild;
+                }
+
+                if (node != nullptr)
+                {
+                    // Double check that we found a natively spawned child.
+                    // Otherwise do we have conflicting SceneNodeDefs with same name?!
+                    bool isNativeChild = false;
+                    for (uint32_t n = 0; n < nativeChildren.size(); ++n)
+                    {
+                        if (nativeChildren[n] == node)
+                        {
+                            nativeChildren.erase(nativeChildren.begin() + n);
+                            isNativeChild = true;
+                            break;
+                        }
+                    }
+
+                    OCT_ASSERT(isNativeChild);
+                }
+            }
+
+            // We aren't overriding a native child, so we need to create a new node.
+            if (node == nullptr)
+            {
+                if (mNodeDefs[i].mScene != nullptr)
+                {
+                    Scene* scene = mNodeDefs[i].mScene.Get<Scene>();
+                    node = scene->Instantiate();
 
 #if EDITOR
-                newNode->SetExposeVariable(mNodeDefs[i].mExposeVariable);
+                    node->SetExposeVariable(mNodeDefs[i].mExposeVariable);
 #endif
+                }
+                else
+                {
+                    node = Node::Construct(mNodeDefs[i].mType);
+
+                    for (uint32_t c = 0; c < node->GetNumChildren(); ++c)
+                    {
+                        nativeChildren.push_back(node->GetChild(i));
+                    }
+                }
             }
-            else
-            {
-                newNode = Node::Construct(mNodeDefs[i].mType);
-            }
-            OCT_ASSERT(newNode);
+
+            OCT_ASSERT(node);
 
             std::vector<Property> dstProps;
-            newNode->GatherProperties(dstProps);
+            node->GatherProperties(dstProps);
             CopyPropertyValues(dstProps, mNodeDefs[i].mProperties);
 
             if (i > 0)
             {
-                Node* parent = nodeList[mNodeDefs[i].mParentIndex];
-
-                parent->AddChild(newNode, mNodeDefs[i].mChildSlot);
+                // Note: We call AddChild even if the node already existed natively to ensure the order matches scene order.
+                parent->AddChild(node);
 
                 if (mNodeDefs[i].mExposeVariable)
                 {
                     Script* rootScript = nodeList[0]->GetScript();
                     if (rootScript != nullptr)
                     {
-                        rootScript->SetField(newNode->GetName().c_str(), newNode);
+                        rootScript->SetField(node->GetName().c_str(), node);
                     }
                 }
             }
@@ -155,16 +202,22 @@ Node* Scene::Instantiate()
             // Start the script on the root node so we can expose child nodes are variables if set.
             if (i == 0)
             {
-                newNode->StartScript();
+                node->StartScript();
             }
 
-            nodeList.push_back(newNode);
+            nodeList.push_back(node);
         }
 
         rootNode = nodeList[0];
         OCT_ASSERT(rootNode);
 
         rootNode->SetScene(this);
+
+        // Destruct any native nodes that weren't matched by a SceneNodeDef
+        for (uint32_t n = 0; n < nativeChildren.size(); ++n)
+        {
+            Node::Destruct(nativeChildren[n]);
+        }
     }
 
     return rootNode;
@@ -214,21 +267,6 @@ void Scene::AddNodeDef(Node* node, std::vector<Node*>& nodeList)
         scene = node->GetScene();
 #endif
         nodeDef.mScene = scene;
-
-        // Find child slot
-        if (parent != nullptr)
-        {
-            for (uint32_t i = 0; i < parent->GetNumChildren(); ++i)
-            {
-                if (parent->GetChild(int32_t(i)) == node)
-                {
-                    nodeDef.mChildSlot = (int32_t)i;
-                    break;
-                }
-            }
-
-            OCT_ASSERT(nodeDef.mChildSlot != -1);
-        }
 
         std::vector<Property> extProps;
         node->GatherProperties(extProps);
