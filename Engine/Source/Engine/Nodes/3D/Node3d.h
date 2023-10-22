@@ -40,8 +40,6 @@ public:
 
     virtual void GatherProxyDraws(std::vector<DebugDraw>& inoutDraws);
 
-    virtual bool IsTransient() const override;
-
     glm::vec3 GetPosition() const;
     glm::vec3 GetRotationEuler() const;
     glm::quat GetRotationQuat() const;

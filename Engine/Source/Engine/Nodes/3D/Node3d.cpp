@@ -291,19 +291,6 @@ void Node3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif
 }
 
-bool Node3D::IsTransient() const
-{
-    bool transient = mTransient;
-
-    if (!transient &&
-        mParent != nullptr)
-    {
-        transient = mParent->IsTransient();
-    }
-
-    return transient;
-}
-
 glm::vec3 Node3D::GetPosition() const
 {
     return mPosition;
