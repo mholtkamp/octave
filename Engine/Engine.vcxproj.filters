@@ -437,12 +437,6 @@
     <ClCompile Include="Source\LuaBindings\Rect_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Assets\Blueprint.cpp">
-      <Filter>Source Files\Engine\Assets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Assets\Level.cpp">
-      <Filter>Source Files\Engine\Assets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\Assets\Material.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
@@ -915,13 +909,7 @@
     <ClInclude Include="Source\Engine\Assets\WidgetMap.h">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Assets\Blueprint.h">
-      <Filter>Source Files\Engine\Assets</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Engine\Assets\Font.h">
-      <Filter>Source Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Assets\Level.h">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Node.h">

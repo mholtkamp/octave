@@ -552,9 +552,7 @@
     <ClCompile Include="Source\Engine\AssetDir.cpp" />
     <ClCompile Include="Source\Engine\AssetManager.cpp" />
     <ClCompile Include="Source\Engine\AssetRef.cpp" />
-    <ClCompile Include="Source\Engine\Assets\Blueprint.cpp" />
     <ClCompile Include="Source\Engine\Assets\Font.cpp" />
-    <ClCompile Include="Source\Engine\Assets\Level.cpp" />
     <ClCompile Include="Source\Engine\Assets\Material.cpp" />
     <ClCompile Include="Source\Engine\Assets\MaterialInstance.cpp" />
     <ClCompile Include="Source\Engine\Assets\ParticleSystem.cpp" />
@@ -794,9 +792,7 @@
     <ClInclude Include="Source\Engine\AssetDir.h" />
     <ClInclude Include="Source\Engine\AssetManager.h" />
     <ClInclude Include="Source\Engine\AssetRef.h" />
-    <ClInclude Include="Source\Engine\Assets\Blueprint.h" />
     <ClInclude Include="Source\Engine\Assets\Font.h" />
-    <ClInclude Include="Source\Engine\Assets\Level.h" />
     <ClInclude Include="Source\Engine\Assets\Material.h" />
     <ClInclude Include="Source\Engine\Assets\MaterialInstance.h" />
     <ClInclude Include="Source\Engine\Assets\ParticleSystem.h" />
