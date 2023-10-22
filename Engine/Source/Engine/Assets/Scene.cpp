@@ -2,6 +2,7 @@
 #include "World.h"
 #include "Log.h"
 #include "Engine.h"
+#include "NetworkManager.h"
 #include "Nodes/Node.h"
 
 FORCE_LINK_DEF(Scene);
@@ -154,6 +155,7 @@ void Scene::GatherProperties(std::vector<Property>& outProps)
 
 glm::vec4 Scene::GetTypeColor()
 {
+    //return glm::vec4(0.9f, 0.8f, 0.2f, 1.0f);
     return glm::vec4(0.4f, 0.4f, 1.0f, 1.0f);
 }
 
@@ -303,6 +305,21 @@ Node* Scene::Instantiate()
         {
             Node::Destruct(nativeChildren[n]);
         }
+    }
+
+    // Destruct any replicated non-root nodes. The server will need to send the NetMsgSpawn for those.
+    if (!NetIsAuthority())
+    {
+        auto pruneReplicated = [&](Node* node) -> bool
+        {
+            if (node != rootNode && node->IsReplicated())
+            {
+                Node::Destruct(node);
+            }
+
+            return true;
+        };
+        rootNode->ForEach(pruneReplicated, true);
     }
 
     return rootNode;

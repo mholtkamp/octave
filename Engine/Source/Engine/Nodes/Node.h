@@ -249,21 +249,46 @@ public:
     }
 
     template<typename T>
-    bool ForEach(T func)
+    bool ForEach(T func, bool inverted = false)
     {
-        bool cont = func(this);
+        bool cont = true;
+        
+        if (!inverted)
+        {
+            cont = func(this);
+        }
 
         if (cont)
         {
-            for (uint32_t i = 0; i < mChildren.size(); ++i)
+            if (inverted)
             {
-                cont = ForEach(func);
-
-                if (!cont)
+                for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
                 {
-                    break;
+                    cont = ForEach(func, inverted);
+
+                    if (!cont)
+                    {
+                        break;
+                    }
                 }
             }
+            else
+            {
+                for (uint32_t i = 0; i < mChildren.size(); ++i)
+                {
+                    cont = ForEach(func, childFirst);
+
+                    if (!cont)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (cont && inverted)
+        {
+            cont = func(this);
         }
 
         return cont;
