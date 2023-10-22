@@ -35,6 +35,7 @@ void Scene::LoadStream(Stream& stream, Platform platform)
         stream.ReadAsset(def.mScene);
         stream.ReadString(def.mName);
         def.mExposeVariable = stream.ReadBool();
+        def.mParentBone = stream.ReadInt8();
 
         uint32_t numProps = stream.ReadUint32();
         def.mProperties.resize(numProps);
@@ -60,6 +61,7 @@ void Scene::SaveStream(Stream& stream, Platform platform)
         stream.WriteAsset(def.mScene);
         stream.WriteString(def.mName);
         stream.WriteBool(def.mExposeVariable);
+        stream.WriteBool(def.mParentBone);
 
         stream.WriteUint32((uint32_t)def.mProperties.size());
         for (uint32_t p = 0; p < def.mProperties.size(); ++p)
@@ -186,8 +188,25 @@ Node* Scene::Instantiate()
 
             if (i > 0)
             {
+                OCT_ASSERT(parent != nullptr);
+
                 // Note: We call AddChild even if the node already existed natively to ensure the order matches scene order.
-                parent->AddChild(node);
+                if (mNodeDefs[i].mParentBone >= 0)
+                {
+                    SkeletalMesh3D* parentSk = parent->As<SkeletalMesh3D>();
+
+                    OCT_ASSERT(node->IsNode3D());
+                    OCT_ASSERT(parentSk != nullptr);
+                    if (node->IsNode3D())
+                    {
+                        Node3D* node3d = static_cast<Node3D*>(node);
+                        node3d->AttachToBone(parentSk, mNodeDefs[i].mParentBone, false);
+                    }
+                }
+                else
+                {
+                    parent->AddChild(node);
+                }
 
                 if (mNodeDefs[i].mExposeVariable)
                 {
@@ -260,6 +279,7 @@ void Scene::AddNodeDef(Node* node, std::vector<Node*>& nodeList)
 
         nodeDef.mType = node->GetType();
         nodeDef.mParentIndex = FindNodeIndex(parent, nodeList);
+        nodeDef.mParentBone = node->IsNode3D() ? ((int8_t) static_cast<Node3D*>(node)->GetParentBoneIndex()) : -1;
 
         Scene* scene = nullptr;
 #if EDITOR
