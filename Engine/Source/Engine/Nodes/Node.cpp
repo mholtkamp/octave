@@ -896,7 +896,23 @@ void Node::RemoveTag(const std::string& tag)
 
 void Node::SetName(const std::string& newName)
 {
-    mName = newName;
+    if (mName != newName)
+    {
+        // Erase name from parent's child name map first.
+        if (mParent != nullptr)
+        {
+            size_t elemRemoved = mParent->mChildNameMap.erase(mName);
+            OCT_ASSERT(elemRemoved == 1);
+        }
+
+        mName = newName;
+
+        if (mParent != nullptr)
+        {
+            mParent->ValidateUniqueChildName(this);
+            mParent->mChildNameMap.insert({ mName, this });
+        }
+    }
 }
 
 const std::string& Node::GetName() const
@@ -1055,6 +1071,9 @@ void Node::AddChild(Node* child, int32_t index)
             child->mParent->RemoveChild(child);
         }
 
+        // Ensure unique name
+        ValidateUniqueChildName(child);
+
         if (index >= 0 && index <= (int32_t)mChildren.size())
         {
             mChildren.insert(mChildren.begin() + index, child);
@@ -1063,6 +1082,8 @@ void Node::AddChild(Node* child, int32_t index)
         {
             mChildren.push_back(child);
         }
+
+        mChildNameMap.insert({ child->GetName(), child });
 
         child->mParent = this;
         child->SetWorld(mWorld);
@@ -1102,6 +1123,10 @@ void Node::RemoveChild(int32_t index)
 
         child->mParent = nullptr;
         mChildren.erase(mChildren.begin() + index);
+
+        // This child's name should be in the map. When a node is renamed, the parent's map needs to be udpated.
+        size_t elemRemoved = mChildNameMap.erase(child->GetName());
+        OCT_ASSERT(elemRemoved == 1);
     }
 }
 
@@ -1490,6 +1515,73 @@ NetFunc* Node::FindNetFunc(uint16_t index)
 void Node::SetParent(Node* parent)
 {
     mParent = parent;
+}
+
+void Node::ValidateUniqueChildName(Node* newChild)
+{
+    static uint32_t sUniqueId = 1;
+
+    bool validName = (mChildNameMap.find(newChild->GetName()) == mChildNameMap.end());
+
+    if (!validName)
+    {
+        std::string name = newChild->GetName();
+
+        if (IsPlaying())
+        {
+            // In game, just spit out a unique string.
+            // For now, just use # at the end of name and increment a static counter.
+            name = name + "#" + std::to_string(sUniqueId);
+            sUniqueId++;
+        }
+        else
+        {
+            // In editor, we want to make the name more readable.
+            const int32_t kMaxRenameTries = 1000;
+            int32_t renameTry = 0;
+
+            while (!validName)
+            {
+                // 1 - Determine number at end of current name and remove it from name string
+                size_t lastCharIndex = name.find_last_not_of("0123456789");
+
+                uint32_t num = 1;
+                if (lastCharIndex == std::string::npos)
+                {
+                    // The name is entirely numbers?
+                    num = (uint32_t)std::stoul(name);
+                    name = "";
+                }
+                else if (lastCharIndex + 1 < name.size())
+                {
+                    std::string numStr = name.substr(lastCharIndex + 1);
+                    name = name.substr(0, lastCharIndex + 1);
+
+                    num = (uint32_t)std::stoul(numStr);
+                }
+
+                num++;
+                name = name + std::to_string(num);
+
+                validName = (mChildNameMap.find(name) == mChildNameMap.end());
+
+                renameTry++;
+
+                // If exceeded max renames, just use sUniqueId to make unique name like in-game.
+                if (renameTry > kMaxRenameTries)
+                {
+                    name = newChild->GetName() + "#" + std::to_string(sUniqueId);
+                    sUniqueId++;
+
+                    validName = true;
+                    break;
+                }
+            }
+        }
+
+        OCT_ASSERT(validName);
+        newChild->SetName(name);
+    }
 }
 
 void Node::SendNetFunc(NetFunc* func, uint32_t numParams, Datum** params)

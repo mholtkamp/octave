@@ -271,6 +271,7 @@ public:
 protected:
 
     virtual void SetParent(Node* parent);
+    void ValidateUniqueChildName(Node* newChild);
 
     void SendNetFunc(NetFunc* func, uint32_t numParams, Datum** params);
 
@@ -281,6 +282,7 @@ protected:
     World* mWorld = nullptr;
     Node* mParent = nullptr;
     std::vector<Node*> mChildren;
+    std::unordered_map<std::string, Node*> mChildNameMap;
 
     bool mActive = true;
     bool mVisible = true;
