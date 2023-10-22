@@ -112,6 +112,8 @@ public:
 
     void DirtyAllWidgets();
 
+    void UpdateRenderSettings();
+
     template<typename T>
     T* FindNode()
     {

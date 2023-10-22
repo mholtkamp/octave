@@ -9,8 +9,7 @@
 #include "NetworkManager.h"
 #include "InputDevices.h"
 #include "StaticMeshActor.h"
-#include "Assets/Level.h"
-#include "Assets/Blueprint.h"
+#include "Assets/Scene.h"
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/PointLight3d.h"
 #include "Nodes/3D/Particle3d.h"
@@ -133,6 +132,8 @@ void World::SetRootNode(Node* node)
         {
             mRootNode->SetWorld(this);
         }
+
+        UpdateRenderSettings();
     }
 }
 
@@ -881,6 +882,24 @@ void World::DirtyAllWidgets()
         };
 
         mRootNode->ForEach(dirtyWidget);
+    }
+}
+
+void World::UpdateRenderSettings()
+{
+    Scene* srcScene = mRootNode ? mRootNode->GetScene() : nullptr;
+
+    if (srcScene != nullptr)
+    {
+        srcScene->ApplyRenderSettings(this);
+    }
+    else
+    {
+        // Default render settings
+        GetWorld()->SetAmbientLightColor(DEFAULT_AMBIENT_LIGHT_COLOR);
+        GetWorld()->SetShadowColor(DEFAULT_SHADOW_COLOR);
+        FogSettings fogSettings;
+        GetWorld()->SetFogSettings(fogSettings);
     }
 }
 

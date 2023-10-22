@@ -7,6 +7,36 @@
 FORCE_LINK_DEF(Scene);
 DEFINE_ASSET(Scene);
 
+static const char* sFogDensityStrings[] =
+{
+    "Linear",
+    "Exponential",
+};
+static_assert(int32_t(FogDensityFunc::Count) == 2, "Need to update string conversion table");
+
+
+bool Scene::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+{
+    bool success = false;
+#if EDITOR
+    Property* prop = static_cast<Property*>(datum);
+    Scene* scene = (Scene*)prop->mOwner;
+
+    // Just set value anyway
+    datum->SetValueRaw(newValue, index);
+
+    if (GetWorld() != nullptr &&
+        GetWorld()->GetRootNode() != nullptr &&
+        GetWorld()->GetRootNode()->GetScene() == scene)
+    {
+        GetWorld()->UpdateWorldRenderSettings();
+    }
+
+#endif
+    return success;
+}
+
+
 Scene::Scene()
 {
     mType = Scene::GetStaticType();
@@ -44,6 +74,18 @@ void Scene::LoadStream(Stream& stream, Platform platform)
             def.mProperties[p].ReadStream(stream, false);
         }
     }
+
+    // World render properties
+    mSetAmbientLightColor = stream.ReadBool();
+    mSetShadowColor = stream.ReadBool();
+    mSetFog = stream.ReadBool();
+    mAmbientLightColor = stream.ReadVec4();
+    mShadowColor = stream.ReadVec4();
+    mFogEnabled = stream.ReadBool();
+    mFogColor = stream.ReadVec4();
+    mFogDensityFunc = (FogDensityFunc)stream.ReadUint8();
+    mFogNear = stream.ReadFloat();
+    mFogFar = stream.ReadFloat();
 }
 
 void Scene::SaveStream(Stream& stream, Platform platform)
@@ -69,6 +111,18 @@ void Scene::SaveStream(Stream& stream, Platform platform)
             def.mProperties[p].WriteStream(stream);
         }
     }
+
+    // World render properties
+    stream.WriteBool(mSetAmbientLightColor);
+    stream.WriteBool(mSetShadowColor);
+    stream.WriteBool(mSetFog);
+    stream.WriteVec4(mAmbientLightColor);
+    stream.WriteVec4(mShadowColor);
+    stream.WriteBool(mFogEnabled);
+    stream.WriteVec4(mFogColor);
+    stream.WriteUint8(uint8_t(mFogDensityFunc));
+    stream.WriteFloat(mFogNear);
+    stream.WriteFloat(mFogFar);
 }
 
 void Scene::Create()
@@ -84,6 +138,18 @@ void Scene::Destroy()
 void Scene::GatherProperties(std::vector<Property>& outProps)
 {
     Asset::GatherProperties(outProps);
+
+    // Settings
+    outProps.push_back(Property(DatumType::Bool, "Set Ambient Light Color", this, &mSetAmbientLightColor, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Color, "Ambient Light Color", this, &mAmbientLightColor, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Set Shadow Color", this, &mSetShadowColor, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Color, "Shadow Color", this, &mShadowColor, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Set Fog", this, &mSetFog, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Fog Enabled", this, &mFogEnabled, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Color, "Fog Color", this, &mFogColor, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Byte, "Fog Density", this, &mFogDensityFunc, 1, HandlePropChange, 0, int32_t(FogDensityFunc::Count), sFogDensityStrings));
+    outProps.push_back(Property(DatumType::Float, "Fog Near", this, &mFogNear, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Fog Far", this, &mFogFar, 1, HandlePropChange));
 }
 
 glm::vec4 Scene::GetTypeColor()
@@ -240,6 +306,34 @@ Node* Scene::Instantiate()
     }
 
     return rootNode;
+}
+
+void Scene::ApplyRenderSettings(World* world)
+{
+    glm::vec4 ambientLight = DEFAULT_AMBIENT_LIGHT_COLOR;
+    if (mSetAmbientLightColor)
+    {
+        ambientLight = mAmbientLightColor;
+    }
+    GetWorld()->SetAmbientLightColor(ambientLight);
+
+    glm::vec4 shadowColor = DEFAULT_SHADOW_COLOR;
+    if (mSetShadowColor)
+    {
+        shadowColor = mShadowColor;
+    }
+    GetWorld()->SetShadowColor(shadowColor);
+
+    FogSettings fogSettings;
+    if (mSetFog)
+    {
+        fogSettings.mEnabled = mFogEnabled;
+        fogSettings.mColor = mFogColor;
+        fogSettings.mDensityFunc = mFogDensityFunc;
+        fogSettings.mNear = mFogNear;
+        fogSettings.mFar = mFogFar;
+    }
+    GetWorld()->SetFogSettings(fogSettings);
 }
 
 //const Property* Scene::GetProperty(const std::string& widgetName, const std::string& propName)

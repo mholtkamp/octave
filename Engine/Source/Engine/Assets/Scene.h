@@ -39,10 +39,28 @@ public:
     void Capture(Node* root);
     Node* Instantiate();
 
+    void ApplyRenderSettings(World* world);
+
 protected:
+
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
     void AddNodeDef(Node* node, std::vector<Node*>& nodeList);
     int32_t FindNodeIndex(Node* node, const std::vector<Node*>& nodeList);
 
     std::vector<SceneNodeDef> mNodeDefs;
+
+    // World render properties (used when this scene is the world root).
+    bool mSetAmbientLightColor = false;
+    bool mSetShadowColor = false;
+    bool mSetFog = false;
+
+    glm::vec4 mAmbientLightColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+    glm::vec4 mShadowColor = { 0.0f, 0.0f, 0.0f, 0.8f };
+
+    bool mFogEnabled = false;
+    glm::vec4 mFogColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+    FogDensityFunc mFogDensityFunc = FogDensityFunc::Linear;
+    float mFogNear = 0.0f;
+    float mFogFar = 100.0f;
 };
