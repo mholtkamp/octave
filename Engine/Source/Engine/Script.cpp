@@ -1,4 +1,4 @@
-#include "Nodes/3D/ScriptComponent.h"
+#include "Script.h"
 #include "Nodes/3D/Primitive3d.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Constants.h"
@@ -17,29 +17,27 @@
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
 
-DEFINE_NODE(ScriptComponent)
+std::unordered_map<std::string, Script*> Script::sTableToScriptMap;
+std::unordered_map<std::string, ScriptNetFuncMap> Script::sScriptNetFuncMap;
 
-std::unordered_map<std::string, ScriptComponent*> ScriptComponent::sTableToCompMap;
-std::unordered_map<std::string, ScriptNetFuncMap> ScriptComponent::sScriptNetFuncMap;
-
-bool ScriptComponent::HandleScriptPropChange(Datum* datum, uint32_t index, const void* newValue)
+bool Script::HandleScriptPropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
 
     OCT_ASSERT(prop != nullptr);
     OCT_ASSERT(!prop->mExternal);
-    ScriptComponent* comp = static_cast<ScriptComponent*>(prop->mOwner);
+    Script* script = static_cast<Script*>(prop->mOwner);
 
     prop->SetValueRaw(newValue, index);
 
     // Now that the value has been updated (prop->SetValue()),
     // We want to propagate that new value to the script instance table.
-    comp->UploadDatum(*prop, prop->mName.c_str());
+    script->UploadDatum(*prop, prop->mName.c_str());
 
     return true;
 }
 
-bool ScriptComponent::HandleForeignScriptPropChange(Datum* datum, uint32_t index, const void* newValue)
+bool Script::HandleForeignScriptPropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     // This is ridiculous, but for the Property's that are passed to the editor, we need
     // to propagate the changes made to them so that they reflect the ScriptComponent's properties.
@@ -47,35 +45,35 @@ bool ScriptComponent::HandleForeignScriptPropChange(Datum* datum, uint32_t index
 
     OCT_ASSERT(prop != nullptr);
     OCT_ASSERT(!prop->mExternal);
-    ScriptComponent* comp = static_cast<ScriptComponent*>(prop->mOwner);
+    Script* script = static_cast<Script*>(prop->mOwner);
 
     prop->SetValueRaw(newValue, index);
 
-    Property* compProp = nullptr;
-    for (uint32_t i = 0; i < comp->mScriptProps.size(); ++i)
+    Property* scriptProp = nullptr;
+    for (uint32_t i = 0; i < script->mScriptProps.size(); ++i)
     {
-        if (comp->mScriptProps[i].mName == prop->mName)
+        if (script->mScriptProps[i].mName == prop->mName)
         {
-            compProp = &comp->mScriptProps[i];
+            scriptProp = &script->mScriptProps[i];
             break;
         }
     }
 
-    if (compProp != nullptr)
+    if (scriptProp != nullptr)
     {
-        compProp->SetValue(newValue, index);
+        scriptProp->SetValue(newValue, index);
     }
 
     return true;
 }
 
 
-ScriptComponent::ScriptComponent()
+Script::Script()
 {
-    mName = "Script";
+
 }
 
-ScriptComponent::~ScriptComponent()
+Script::~Script()
 {
 
 }
