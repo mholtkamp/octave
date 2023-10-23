@@ -461,12 +461,6 @@
     <ClCompile Include="Source\Engine\Assets\Texture.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
-    <ClCompile Include="Source\LuaBindings\Blueprint_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\LuaBindings\Level_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
     <ClCompile Include="Source\LuaBindings\Material_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
@@ -538,9 +532,6 @@
     </ClCompile>
     <ClCompile Include="Source\Editor\Widgets\WidgetViewportPanel.cpp">
       <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\LuaBindings\WidgetMap_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Poly_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
@@ -742,6 +733,9 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\Assets\Scene.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Scene_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1182,9 +1176,6 @@
     <ClInclude Include="Source\LuaBindings\Widget_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
-    <ClInclude Include="Source\LuaBindings\WidgetMap_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
     <ClInclude Include="Source\LuaBindings\World_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
@@ -1195,9 +1186,6 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Audio_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\LuaBindings\Blueprint_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Button_Lua.h">
@@ -1219,9 +1207,6 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Input_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\LuaBindings\Level_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Log_Lua.h">
@@ -1436,6 +1421,9 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\Assets\Scene.h">
       <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Scene_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
