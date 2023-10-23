@@ -65,7 +65,7 @@ protected:
     glm::vec3 mPathTracePrevCameraPos = { 0.0f, 0.0f, 0.0f };
     glm::vec3 mPathTracePrevCameraRot = { 0.0f, 0.0f, 0.0f };
     LightBakePhase mLightBakePhase = LightBakePhase::Count;
-    std::vector<ComponentRef> mLightBakeComps;
+    std::vector<NodeRef> mLightBakeNodes;
     std::vector<LightBakeResult> mLightBakeResults;
     int32_t mBakingCompIndex = -1;
     int32_t mNextBakingCompIndex = 0;

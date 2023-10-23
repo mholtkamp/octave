@@ -1121,7 +1121,7 @@ void NetworkManager::SendReplicateMsg(NetMsgReplicate& repMsg, uint32_t& numVars
     numVars = 0;
 }
 
-void NetworkManager::SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func, uint32_t numParams, Datum** params)
+void NetworkManager::SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func, uint32_t numParams, const Datum** params)
 {
     NetFuncType type = func->mType;
     bool scriptMsg = msg.GetType() == NetMsgType::InvokeScript;
@@ -1165,12 +1165,12 @@ void NetworkManager::SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func,
     }
 }
 
-void NetworkManager::SendInvokeMsg(Node* actor, NetFunc* func, uint32_t numParams, Datum** params)
+void NetworkManager::SendInvokeMsg(Node* actor, NetFunc* func, uint32_t numParams, const Datum** params)
 {
     SendInvokeMsg(sMsgInvoke, actor, func, numParams, params);
 }
 
-void NetworkManager::SendInvokeScriptMsg(Script* script, ScriptNetFunc* func, uint32_t numParams, Datum** params)
+void NetworkManager::SendInvokeScriptMsg(Script* script, ScriptNetFunc* func, uint32_t numParams, const Datum** params)
 {
     Node* node = script->GetOwner();
     SendInvokeMsg(sMsgInvokeScript, node, func, numParams, params);

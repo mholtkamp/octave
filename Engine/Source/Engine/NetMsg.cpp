@@ -542,7 +542,15 @@ void NetMsgInvokeScript::Execute(NetHost sender)
 
         if (script != nullptr)
         {
-            script->ExecuteNetFunc(mIndex, mNumParams, mParams);
+            // Convert the vector to a "const Datum**" param
+            const Datum* params[OCT_NET_FUNC_MAX_PARAMS] = {};
+            OCT_ASSERT(mNumParams <= OCT_NET_FUNC_MAX_PARAMS);
+            for (uint32_t i = 0; i < mNumParams; ++i)
+            {
+                params[i] = &(mParams[i]);
+            }
+
+            script->ExecuteNetFunc(mIndex, mNumParams, params);
         }
         else
         {

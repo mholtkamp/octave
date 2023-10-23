@@ -188,9 +188,6 @@
     <ClCompile Include="Source\Engine\Renderer.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\StaticMeshActor.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\stb_image.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -350,9 +347,6 @@
     <ClCompile Include="Source\System\Linux\System_Linux.cpp">
       <Filter>Source Files\System\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\ParticleActor.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\CameraFrustum.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -382,9 +376,6 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\ObjectRef.cpp">
       <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\LuaBindings\ScriptComponent_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Audio_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
@@ -524,9 +515,6 @@
     <ClCompile Include="Source\Engine\ScriptUtils.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Source\LuaBindings\ScriptWidget_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Editor\Widgets\WidgetHierarchyPanel.cpp">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
@@ -612,9 +600,6 @@
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\Widgets\WidgetMap.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Widgets\ArrayWidget.cpp">
@@ -897,9 +882,6 @@
     <ClInclude Include="Source\Engine\Assets\Texture.h">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Assets\WidgetMap.h">
-      <Filter>Source Files\Engine\Assets</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Engine\Assets\Font.h">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
@@ -1038,9 +1020,6 @@
     <ClInclude Include="Source\Engine\NetworkManager.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\ParticleActor.h">
-      <Filter>Source Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Engine\Profiler.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
@@ -1069,9 +1048,6 @@
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\ScriptUtils.h">
-      <Filter>Source Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\StaticMeshActor.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Stream.h">
@@ -1246,12 +1222,6 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Script_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\LuaBindings\ScriptComponent_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\LuaBindings\ScriptWidget_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Selector_Lua.h">

@@ -4,7 +4,6 @@
 #include "Engine.h"
 #include "Log.h"
 #include "Maths.h"
-#include "Assets/WidgetMap.h"
 
 #include "LuaBindings/Widget_Lua.h"
 
@@ -117,8 +116,6 @@ void Widget::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Vector2D, "Pivot", this, &mPivot, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "Scale", this, &mScale, 1, Widget::HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Rotation", this, &mRotation, 1, Widget::HandlePropChange));
-
-    //outProps.push_back(Property(DatumType::Asset, "Widget Map", this, &mWidgetMap, 1, Widget::HandlePropChange, int32_t(WidgetMap::GetStaticType())))
 }
 
 void Widget::Render()

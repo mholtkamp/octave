@@ -838,7 +838,7 @@ ScriptNetFunc* Script::FindNetFunc(uint16_t index)
     return retFunc;
 }
 
-void Script::ExecuteNetFunc(uint16_t index, uint32_t numParams, std::vector<Datum>& params)
+void Script::ExecuteNetFunc(uint16_t index, uint32_t numParams, const Datum** params)
 {
 #if LUA_ENABLED
     if (mTableName != "")
@@ -861,7 +861,7 @@ void Script::ExecuteNetFunc(uint16_t index, uint32_t numParams, std::vector<Datu
 
                     for (uint32_t i = 0; i < numParams; ++i)
                     {
-                        LuaPushDatum(L, params[i]);
+                        LuaPushDatum(L, *params[i]);
                     }
 
                     uint32_t totalArgCount = 1 + numParams;
@@ -1150,36 +1150,44 @@ std::vector<ScriptNetDatum>& Script::GetReplicatedData()
     return mReplicatedData;
 }
 
-void Script::InvokeNetFunc(const char* name, std::vector<Datum>& params)
+bool Script::InvokeNetFunc(const char* name, uint32_t numParams, const Datum** params)
 {
-    uint32_t numParams = (uint32_t)params.size();
     ScriptNetFunc* netFunc = FindNetFunc(name);
     Node* node = GetOwner();
+    bool validNetFunc = false;
 
-    OCT_ASSERT(numParams <= MAX_NET_FUNC_PARAMS);
-    Datum* paramArray[MAX_NET_FUNC_PARAMS];
-    for (uint32_t i = 0; i < MAX_NET_FUNC_PARAMS; ++i)
+    if (netFunc != nullptr)
     {
-        if (i < numParams)
+        validNetFunc = true;
+
+        OCT_ASSERT(numParams <= MAX_NET_FUNC_PARAMS);
+        const Datum* paramArray[MAX_NET_FUNC_PARAMS];
+        for (uint32_t i = 0; i < MAX_NET_FUNC_PARAMS; ++i)
         {
-            paramArray[i] = &params[i];
+            if (i < numParams)
+            {
+                // I should probably rework the rest of this code so that I don't have to const cast here.
+                paramArray[i] = const_cast<Datum*>(params[i]);
+            }
+            else
+            {
+                paramArray[i] = nullptr;
+            }
         }
-        else
+
+        if (ShouldSendNetFunc(netFunc->mType, node))
         {
-            paramArray[i] = nullptr;
+            // Local execution is handled in SendInvokeScriptMsg
+            NetworkManager::Get()->SendInvokeScriptMsg(this, netFunc, numParams, paramArray);
+        }
+
+        if (ShouldExecuteNetFunc(netFunc->mType, node))
+        {
+            ExecuteNetFunc(netFunc->mIndex, numParams, params);
         }
     }
 
-    if (ShouldSendNetFunc(netFunc->mType, node))
-    {
-        // Local execution is handled in SendInvokeScriptMsg
-        NetworkManager::Get()->SendInvokeScriptMsg(this, netFunc, numParams, paramArray);
-    }
-
-    if (ShouldExecuteNetFunc(netFunc->mType, node))
-    {
-        ExecuteNetFunc(netFunc->mIndex, numParams, params);
-    }
+    return validNetFunc;
 }
 
 void Script::BeginOverlap(Primitive3D* thisNode, Primitive3D* otherNode)

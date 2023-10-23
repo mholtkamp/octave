@@ -90,9 +90,9 @@ public:
     void SendMessageImmediate(const NetMsg* netMsg, uint32_t ipAddress, uint16_t port);
 
     void SendReplicateMsg(NetMsgReplicate& repMsg, uint32_t& numVars, NetHostId hostId);
-    void SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func, uint32_t numParams, Datum** params);
-    void SendInvokeMsg(Node* node, NetFunc* func, uint32_t numParams, Datum** params);
-    void SendInvokeScriptMsg(Script* script, ScriptNetFunc* func, uint32_t numParams, Datum** params);
+    void SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func, uint32_t numParams, const Datum** params);
+    void SendInvokeMsg(Node* node, NetFunc* func, uint32_t numParams, const Datum** params);
+    void SendInvokeScriptMsg(Script* script, ScriptNetFunc* func, uint32_t numParams, const Datum** params);
     void SendSpawnMessage(Node* node, NetClient* client);
     void SendDestroyMessage(Node* node, NetClient* client);
 

@@ -608,9 +608,7 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\TextField.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\VerticalList.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp" />
-    <ClCompile Include="Source\Engine\Nodes\Widgets\WidgetMap.cpp" />
     <ClCompile Include="Source\Engine\ObjectRef.cpp" />
-    <ClCompile Include="Source\Engine\ParticleActor.cpp" />
     <ClCompile Include="Source\Engine\Profiler.cpp" />
     <ClCompile Include="Source\Engine\Property.cpp" />
     <ClCompile Include="Source\Engine\Rect.cpp" />
@@ -620,7 +618,6 @@
     <ClCompile Include="Source\Engine\ScriptEvent.cpp" />
     <ClCompile Include="Source\Engine\ScriptFunc.cpp" />
     <ClCompile Include="Source\Engine\ScriptUtils.cpp" />
-    <ClCompile Include="Source\Engine\StaticMeshActor.cpp" />
     <ClCompile Include="Source\Engine\stb_image.cpp" />
     <ClCompile Include="Source\Engine\Stream.cpp" />
     <ClCompile Include="Source\Engine\TableDatum.cpp" />
@@ -691,8 +688,6 @@
     <ClCompile Include="Source\LuaBindings\Rect_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Renderer_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Scene_Lua.cpp" />
-    <ClCompile Include="Source\LuaBindings\ScriptComponent_Lua.cpp" />
-    <ClCompile Include="Source\LuaBindings\ScriptWidget_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Script_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Selector_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\ShadowMesh3d_Lua.cpp" />
@@ -799,7 +794,6 @@
     <ClInclude Include="Source\Engine\Assets\SoundWave.h" />
     <ClInclude Include="Source\Engine\Assets\StaticMesh.h" />
     <ClInclude Include="Source\Engine\Assets\Texture.h" />
-    <ClInclude Include="Source\Engine\Assets\WidgetMap.h" />
     <ClInclude Include="Source\Engine\AudioManager.h" />
     <ClInclude Include="Source\Engine\CameraFrustum.h" />
     <ClInclude Include="Source\Engine\Clock.h" />
@@ -851,7 +845,6 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\TextField.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\VerticalList.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Widget.h" />
-    <ClInclude Include="Source\Engine\ParticleActor.h" />
     <ClInclude Include="Source\Engine\Profiler.h" />
     <ClInclude Include="Source\Engine\Property.h" />
     <ClInclude Include="Source\Engine\Rect.h" />
@@ -863,7 +856,6 @@
     <ClInclude Include="Source\Engine\ScriptFunc.h" />
     <ClInclude Include="Source\Engine\ScriptMacros.h" />
     <ClInclude Include="Source\Engine\ScriptUtils.h" />
-    <ClInclude Include="Source\Engine\StaticMeshActor.h" />
     <ClInclude Include="Source\Engine\Stream.h" />
     <ClInclude Include="Source\Engine\TableDatum.h" />
     <ClInclude Include="Source\Engine\TimerManager.h" />
@@ -936,8 +928,6 @@
     <ClInclude Include="Source\LuaBindings\Rect_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Renderer_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Scene_Lua.h" />
-    <ClInclude Include="Source\LuaBindings\ScriptComponent_Lua.h" />
-    <ClInclude Include="Source\LuaBindings\ScriptWidget_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Script_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Selector_Lua.h" />
     <ClInclude Include="Source\LuaBindings\ShadowMesh3d_Lua.h" />

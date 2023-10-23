@@ -8,7 +8,6 @@
 #include "AssetManager.h"
 #include "NetworkManager.h"
 #include "InputDevices.h"
-#include "StaticMeshActor.h"
 #include "Assets/Scene.h"
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/PointLight3d.h"
@@ -752,9 +751,9 @@ void World::Update(float deltaTime)
                     {
                         node3d->UpdateTransform(false);
                     }
-
-                    return true;
                 }
+
+                return true;
             };
 
             mRootNode->ForEach(update3dTransform);
@@ -819,6 +818,8 @@ Node* World::SpawnNode(TypeId actorType)
     {
         LogError("Failed to spawn node with type: %d.", (int)actorType);
     }
+
+    return newNode;
 }
 
 Node* World::SpawnNode(const char* typeName)
@@ -833,6 +834,8 @@ Node* World::SpawnNode(const char* typeName)
     {
         LogError("Failed to spawn node with type name: %s.", typeName);
     }
+
+    return newNode;
 }
 
 Node* World::SpawnScene(const char* sceneName)

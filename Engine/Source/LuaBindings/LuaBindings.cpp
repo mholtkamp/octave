@@ -28,7 +28,6 @@
 #include "LuaBindings/Box3d_Lua.h"
 #include "LuaBindings/Capsule3d_Lua.h"
 #include "LuaBindings/Particle3d_Lua.h"
-#include "LuaBindings/ScriptComponent_Lua.h"
 #include "LuaBindings/ShadowMesh3d_Lua.h"
 #include "LuaBindings/TextMesh3d_Lua.h"
 #include "LuaBindings/Sphere3d_Lua.h"
@@ -54,7 +53,6 @@
 #include "LuaBindings/Selector_Lua.h"
 #include "LuaBindings/TextField_Lua.h"
 #include "LuaBindings/VerticalList_Lua.h"
-#include "LuaBindings/ScriptWidget_Lua.h"
 #include "LuaBindings/Poly_Lua.h"
 #include "LuaBindings/PolyRect_Lua.h"
 #include "LuaBindings/NodeRef_Lua.h"
@@ -100,7 +98,6 @@ void BindLuaInterface()
     Box3D_Lua::Bind();
     Capsule3D_Lua::Bind();
     Particle3D_Lua::Bind();
-    ScriptComponent_Lua::Bind();
     ShadowMesh3D_Lua::Bind();
     TextMesh3D_Lua::Bind();
     Sphere3D_Lua::Bind();
@@ -129,7 +126,6 @@ void BindLuaInterface()
     ComboBox_Lua::Bind();
     TextField_Lua::Bind();
     VerticalList_Lua::Bind();
-    ScriptWidget_Lua::Bind();
     Poly_Lua::Bind();
     PolyRect_Lua::Bind();
 

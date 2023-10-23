@@ -9,7 +9,6 @@
 #include "LuaBindings/LuaUtils.h"
 #include "LuaBindings/Rect_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
-#include "LuaBindings/ScriptWidget_Lua.h"
 
 #if  LUA_ENABLED
 

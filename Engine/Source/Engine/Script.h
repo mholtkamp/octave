@@ -43,10 +43,10 @@ public:
 
     std::vector<ScriptNetDatum>& GetReplicatedData();
 
-    void InvokeNetFunc(const char* name, std::vector<Datum>& params);
+    bool InvokeNetFunc(const char* name, uint32_t numParams, const Datum** params);
     ScriptNetFunc* FindNetFunc(const char* funcName);
     ScriptNetFunc* FindNetFunc(uint16_t index);
-    void ExecuteNetFunc(uint16_t index, uint32_t numParams, std::vector<Datum>& params);
+    void ExecuteNetFunc(uint16_t index, uint32_t numParams, const Datum** params);
 
     void BeginOverlap(Primitive3D* thisNode, Primitive3D* otherNode);
     void EndOverlap(Primitive3D* thisNode, Primitive3D* otherNode);

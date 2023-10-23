@@ -138,181 +138,174 @@ void RayTracer::UpdateRayTracingScene(
 
     uint32_t totalTriangles = 0;
 
-    const std::vector<Actor*>& actors = world->GetActors();
+    // TODO-NODE: GatherNodes is slow, and allocates memory, consider different approach.
+    const std::vector<Node*>& nodes = world->GatherNodes();
 
-    for (uint32_t a = 0; a < actors.size(); ++a)
+    for (uint32_t a = 0; a < nodes.size(); ++a)
     {
-        if (!actors[a]->IsVisible())
+        if (!nodes[a]->IsVisible())
             continue;
 
-        const std::vector<Component*>& components = actors[a]->GetComponents();
-
-        for (uint32_t c = 0; c < components.size(); ++c)
+        StaticMesh3D* meshComp = nodes[a]->As<StaticMesh3D>();
+        Light3D* lightComp = nodes[a]->As<Light3D>();
+        if (meshComp != nullptr)
         {
-            if (!components[c]->IsVisible())
-                continue;
-
-            StaticMesh3D* meshComp = components[c]->As<StaticMesh3D>();
-            Light3D* lightComp = components[c]->As<Light3D>();
-            if (meshComp != nullptr)
+            StaticMesh* meshAsset = meshComp->GetStaticMesh();
+            if (meshAsset == nullptr)
             {
-                StaticMesh* meshAsset = meshComp->GetStaticMesh();
-                if (meshAsset == nullptr)
+                continue;
+            }
+
+            if (outBakeMeshIndex != nullptr &&
+                meshComp == mLightBakeNodes[mBakingCompIndex].Get())
+            {
+                *outBakeMeshIndex = (int32_t)meshData.size();
+            }
+
+            Material* material = meshComp->GetMaterial();
+            if (material == nullptr)
+            {
+                material = Renderer::Get()->GetDefaultMaterial();
+            }
+
+            glm::mat4 transform = meshComp->GetRenderTransform();
+            glm::mat4 normalTransform = glm::transpose(glm::inverse(transform));
+
+            meshData.push_back(RayTraceMesh());
+            RayTraceMesh& mesh = meshData.back();
+            Bounds bounds = meshComp->GetBounds();
+            mesh.mBounds = glm::vec4(bounds.mCenter.x, bounds.mCenter.y, bounds.mCenter.z, bounds.mRadius);
+            mesh.mStartTriangleIndex = totalTriangles;
+            mesh.mNumTriangles = meshAsset->GetNumFaces();
+            mesh.mCastShadows = meshComp->ShouldCastShadows();
+            mesh.mHasBakedLighting = meshComp->HasBakedLighting();
+            WriteMaterialUniformData(mesh.mMaterial, material);
+
+            // Add textures and record indices.
+            for (uint32_t t = 0; t < MATERIAL_MAX_TEXTURES; ++t)
+            {
+                Texture* tex = material->GetTexture((TextureSlot)t);
+                Image* img = tex ? tex->GetResource()->mImage : nullptr;
+
+                if (img != nullptr)
                 {
-                    continue;
-                }
+                    int32_t index = -1;
 
-                if (outBakeMeshIndex != nullptr &&
-                    meshComp == mLightBakeComps[mBakingCompIndex].Get())
-                {
-                    *outBakeMeshIndex = (int32_t)meshData.size();
-                }
-
-                Material* material = meshComp->GetMaterial();
-                if (material == nullptr)
-                {
-                    material = Renderer::Get()->GetDefaultMaterial();
-                }
-
-                glm::mat4 transform = meshComp->GetRenderTransform();
-                glm::mat4 normalTransform = glm::transpose(glm::inverse(transform));
-
-                meshData.push_back(RayTraceMesh());
-                RayTraceMesh& mesh = meshData.back();
-                Bounds bounds = meshComp->GetBounds();
-                mesh.mBounds = glm::vec4(bounds.mCenter.x, bounds.mCenter.y, bounds.mCenter.z, bounds.mRadius);
-                mesh.mStartTriangleIndex = totalTriangles;
-                mesh.mNumTriangles = meshAsset->GetNumFaces();
-                mesh.mCastShadows = meshComp->ShouldCastShadows();
-                mesh.mHasBakedLighting = meshComp->HasBakedLighting();
-                WriteMaterialUniformData(mesh.mMaterial, material);
-
-                // Add textures and record indices.
-                for (uint32_t t = 0; t < MATERIAL_MAX_TEXTURES; ++t)
-                {
-                    Texture* tex = material->GetTexture((TextureSlot)t);
-                    Image* img = tex ? tex->GetResource()->mImage : nullptr;
-
-                    if (img != nullptr)
+                    // Look through already added textures for match
+                    for (uint32_t i = 0; i < images.size(); ++i)
                     {
-                        int32_t index = -1;
-
-                        // Look through already added textures for match
-                        for (uint32_t i = 0; i < images.size(); ++i)
+                        if (images[i] == img)
                         {
-                            if (images[i] == img)
-                            {
-                                index = (int32_t)i;
-                                break;
-                            }
-                        }
-
-                        // If texture wasn't found, then add it to the list.
-                        if (index == -1)
-                        {
-                            images.push_back(img);
-                            index = int32_t(images.size() - 1);
-                        }
-
-                        OCT_ASSERT(images.size() < PATH_TRACE_MAX_TEXTURES);
-                        OCT_ASSERT(index >= 0 && index < PATH_TRACE_MAX_TEXTURES);
-
-                        mesh.mTextures[t] = (uint32_t)index;
-                    }
-                    else
-                    {
-                        mesh.mTextures[t] = 0;
-                    }
-                }
-
-                // Add triangle data.
-                bool hasColor = meshAsset->HasVertexColor();
-                IndexType* indices = meshAsset->GetIndices();
-                Vertex* verts = hasColor ? nullptr : meshAsset->GetVertices();
-                VertexColor* colorVerts = hasColor ? meshAsset->GetColorVertices() : nullptr;
-                const std::vector<uint32_t>& instanceColors = meshComp->GetInstanceColors();
-                uint32_t numVerts = meshAsset->GetNumVertices();
-
-                std::vector<glm::vec4>* directLightColors = nullptr;
-                if (mLightBakePhase == LightBakePhase::Indirect)
-                {
-                    // See if we have baked direct lighting for this mesh. (This is higher precision than instance colors)
-                    for (uint32_t i = 0; i < mLightBakeComps.size(); ++i)
-                    {
-                        if (mLightBakeComps[i] == meshComp)
-                        {
-                            directLightColors = &(mLightBakeResults[i].mDirectColors);
+                            index = (int32_t)i;
                             break;
                         }
                     }
-                }
 
-                for (uint32_t t = 0; t < mesh.mNumTriangles; ++t)
-                {
-                    triangleData.push_back(RayTraceTriangle());
-                    RayTraceTriangle& triangle = triangleData.back();
-
-                    for (uint32_t v = 0; v < 3; ++v)
+                    // If texture wasn't found, then add it to the list.
+                    if (index == -1)
                     {
-                        uint32_t vertIndex = indices[t * 3 + v];
-                        if (hasColor)
-                        {
-                            triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[vertIndex].mPosition, 1));
-                            triangle.mVertices[v].mTexcoord0 = colorVerts[vertIndex].mTexcoord0;
-                            triangle.mVertices[v].mTexcoord1 = colorVerts[vertIndex].mTexcoord1;
-                            triangle.mVertices[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(colorVerts[vertIndex].mNormal, 0)));
-                            triangle.mVertices[v].mColor = ColorUint32ToFloat4(colorVerts[vertIndex].mColor);
-                        }
-                        else
-                        {
-                            triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(verts[vertIndex].mPosition, 1));
-                            triangle.mVertices[v].mTexcoord0 = verts[vertIndex].mTexcoord0;
-                            triangle.mVertices[v].mTexcoord1 = verts[vertIndex].mTexcoord1;
-                            triangle.mVertices[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(verts[vertIndex].mNormal, 0)));
-                            triangle.mVertices[v].mColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-                        }
+                        images.push_back(img);
+                        index = int32_t(images.size() - 1);
+                    }
 
-                        if (directLightColors != nullptr && directLightColors->size() == numVerts)
-                        {
-                            triangle.mVertices[v].mColor = directLightColors->at(vertIndex);
-                        }
-                        else if (instanceColors.size() == numVerts)
-                        {
-                            triangle.mVertices[v].mColor = ColorUint32ToFloat4(instanceColors[vertIndex]);
-                        }
+                    OCT_ASSERT(images.size() < PATH_TRACE_MAX_TEXTURES);
+                    OCT_ASSERT(index >= 0 && index < PATH_TRACE_MAX_TEXTURES);
+
+                    mesh.mTextures[t] = (uint32_t)index;
+                }
+                else
+                {
+                    mesh.mTextures[t] = 0;
+                }
+            }
+
+            // Add triangle data.
+            bool hasColor = meshAsset->HasVertexColor();
+            IndexType* indices = meshAsset->GetIndices();
+            Vertex* verts = hasColor ? nullptr : meshAsset->GetVertices();
+            VertexColor* colorVerts = hasColor ? meshAsset->GetColorVertices() : nullptr;
+            const std::vector<uint32_t>& instanceColors = meshComp->GetInstanceColors();
+            uint32_t numVerts = meshAsset->GetNumVertices();
+
+            std::vector<glm::vec4>* directLightColors = nullptr;
+            if (mLightBakePhase == LightBakePhase::Indirect)
+            {
+                // See if we have baked direct lighting for this mesh. (This is higher precision than instance colors)
+                for (uint32_t i = 0; i < mLightBakeNodes.size(); ++i)
+                {
+                    if (mLightBakeNodes[i] == meshComp)
+                    {
+                        directLightColors = &(mLightBakeResults[i].mDirectColors);
+                        break;
                     }
                 }
-
-                totalTriangles += mesh.mNumTriangles;
             }
-            else if (lightComp && lightComp->GetLightingDomain() != LightingDomain::Dynamic)
+
+            for (uint32_t t = 0; t < mesh.mNumTriangles; ++t)
             {
-                if (lightComp->Is(PointLight3D::ClassRuntimeId()))
-                {
-                    PointLight3D* pointLightComp = lightComp->As<PointLight3D>();
+                triangleData.push_back(RayTraceTriangle());
+                RayTraceTriangle& triangle = triangleData.back();
 
-                    lightData.push_back(RayTraceLight());
-                    RayTraceLight& light = lightData.back();
-                    light.mPosition = pointLightComp->GetAbsolutePosition();
-                    light.mRadius = pointLightComp->GetRadius();
-                    light.mColor = pointLightComp->GetColor();
-                    light.mDirection = { 0.0f, 0.0f, -1.0f };
-                    light.mLightType = uint32_t(RayTraceLightType::Point);
-                    light.mCastShadows = (uint32_t)pointLightComp->ShouldCastShadows();
-                }
-                else if (lightComp->Is(DirectionalLight3D::ClassRuntimeId()))
+                for (uint32_t v = 0; v < 3; ++v)
                 {
-                    DirectionalLight3D* dirLightComp = lightComp->As<DirectionalLight3D>();
+                    uint32_t vertIndex = indices[t * 3 + v];
+                    if (hasColor)
+                    {
+                        triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(colorVerts[vertIndex].mPosition, 1));
+                        triangle.mVertices[v].mTexcoord0 = colorVerts[vertIndex].mTexcoord0;
+                        triangle.mVertices[v].mTexcoord1 = colorVerts[vertIndex].mTexcoord1;
+                        triangle.mVertices[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(colorVerts[vertIndex].mNormal, 0)));
+                        triangle.mVertices[v].mColor = ColorUint32ToFloat4(colorVerts[vertIndex].mColor);
+                    }
+                    else
+                    {
+                        triangle.mVertices[v].mPosition = glm::vec3(transform * glm::vec4(verts[vertIndex].mPosition, 1));
+                        triangle.mVertices[v].mTexcoord0 = verts[vertIndex].mTexcoord0;
+                        triangle.mVertices[v].mTexcoord1 = verts[vertIndex].mTexcoord1;
+                        triangle.mVertices[v].mNormal = glm::normalize(glm::vec3(normalTransform * glm::vec4(verts[vertIndex].mNormal, 0)));
+                        triangle.mVertices[v].mColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+                    }
 
-                    lightData.push_back(RayTraceLight());
-                    RayTraceLight& light = lightData.back();
-                    light.mPosition = dirLightComp->GetAbsolutePosition();
-                    light.mRadius = 10000.0f;
-                    light.mColor = dirLightComp->GetColor();
-                    light.mDirection = dirLightComp->GetDirection();
-                    light.mLightType = uint32_t(RayTraceLightType::Directional);
-                    light.mCastShadows = (uint32_t)dirLightComp->ShouldCastShadows();
+                    if (directLightColors != nullptr && directLightColors->size() == numVerts)
+                    {
+                        triangle.mVertices[v].mColor = directLightColors->at(vertIndex);
+                    }
+                    else if (instanceColors.size() == numVerts)
+                    {
+                        triangle.mVertices[v].mColor = ColorUint32ToFloat4(instanceColors[vertIndex]);
+                    }
                 }
+            }
+
+            totalTriangles += mesh.mNumTriangles;
+        }
+        else if (lightComp && lightComp->GetLightingDomain() != LightingDomain::Dynamic)
+        {
+            if (lightComp->Is(PointLight3D::ClassRuntimeId()))
+            {
+                PointLight3D* pointLightComp = lightComp->As<PointLight3D>();
+
+                lightData.push_back(RayTraceLight());
+                RayTraceLight& light = lightData.back();
+                light.mPosition = pointLightComp->GetAbsolutePosition();
+                light.mRadius = pointLightComp->GetRadius();
+                light.mColor = pointLightComp->GetColor();
+                light.mDirection = { 0.0f, 0.0f, -1.0f };
+                light.mLightType = uint32_t(RayTraceLightType::Point);
+                light.mCastShadows = (uint32_t)pointLightComp->ShouldCastShadows();
+            }
+            else if (lightComp->Is(DirectionalLight3D::ClassRuntimeId()))
+            {
+                DirectionalLight3D* dirLightComp = lightComp->As<DirectionalLight3D>();
+
+                lightData.push_back(RayTraceLight());
+                RayTraceLight& light = lightData.back();
+                light.mPosition = dirLightComp->GetAbsolutePosition();
+                light.mRadius = 10000.0f;
+                light.mColor = dirLightComp->GetColor();
+                light.mDirection = dirLightComp->GetDirection();
+                light.mLightType = uint32_t(RayTraceLightType::Directional);
+                light.mCastShadows = (uint32_t)dirLightComp->ShouldCastShadows();
             }
         }
     }
@@ -366,7 +359,7 @@ void RayTracer::UpdateRayTracingScene(
 
 void RayTracer::UpdateBakeVertexData()
 {
-    StaticMesh3D* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMesh3D>();
+    StaticMesh3D* meshComp = mLightBakeNodes[mBakingCompIndex].Get<StaticMesh3D>();
     StaticMesh* meshAsset = meshComp->GetStaticMesh();
     uint32_t numVerts = meshAsset->GetNumVertices();
 
@@ -508,28 +501,25 @@ void RayTracer::BeginLightBake()
     if (world != nullptr &&
         mLightBakePhase == LightBakePhase::Count)
     {
-        mLightBakeComps.clear();
+        mLightBakeNodes.clear();
 
-        const std::vector<Actor*>& actors = world->GetActors();
-        for (uint32_t a = 0; a < actors.size(); ++a)
+        // TODO-NODE: Again, GatherNodes() is slow, so consider an alternative.
+        const std::vector<Node*>& nodes = world->GatherNodes();
+        for (uint32_t a = 0; a < nodes.size(); ++a)
         {
-            Actor* actor = actors[a];
+            Node* node = nodes[a];
+            StaticMesh3D* meshComp = node->As<StaticMesh3D>();
 
-            for (uint32_t c = 0; c < actor->GetNumComponents(); ++c)
+            if (meshComp != nullptr &&
+                meshComp->IsVisible() &&
+                meshComp->GetBakeLighting())
             {
-                StaticMesh3D* meshComp = actor->GetComponent((int32_t)c)->As<StaticMesh3D>();
-
-                if (meshComp != nullptr &&
-                    meshComp->IsVisible() &&
-                    meshComp->GetBakeLighting())
-                {
-                    meshComp->ClearInstanceColors();
-                    mLightBakeComps.push_back(meshComp);
-                }
+                meshComp->ClearInstanceColors();
+                mLightBakeNodes.push_back(meshComp);
             }
         }
 
-        if (mLightBakeComps.size() > 0)
+        if (mLightBakeNodes.size() > 0)
         {
             mLightBakePhase = LightBakePhase::Direct;
             mBakingCompIndex = -1;
@@ -543,7 +533,7 @@ void RayTracer::BeginLightBake()
             // Add an extra diffusal pass for the final deduplication averaging.
             ++mTotalDiffusePasses;
 
-            mLightBakeResults.resize(mLightBakeComps.size());
+            mLightBakeResults.resize(mLightBakeNodes.size());
         }
     }
 }
@@ -557,11 +547,10 @@ void RayTracer::UpdateLightBake()
         if (mBakingCompIndex == -1)
         {
             // Do we have more meshes to bake?
-            if (mNextBakingCompIndex < mLightBakeComps.size())
+            if (mNextBakingCompIndex < mLightBakeNodes.size())
             {
-                StaticMesh3D* meshComp = mLightBakeComps[mNextBakingCompIndex].Get<StaticMesh3D>();
+                StaticMesh3D* meshComp = mLightBakeNodes[mNextBakingCompIndex].Get<StaticMesh3D>();
                 if (meshComp != nullptr &&
-                    meshComp->GetOwner() != nullptr &&
                     meshComp->GetWorld() == GetWorld())
                 {
                     DispatchNextLightBake();
@@ -592,7 +581,7 @@ void RayTracer::UpdateLightBake()
             ++mNextBakingCompIndex;
         }
 
-        if (mBakingCompIndex < mLightBakeComps.size() &&
+        if (mBakingCompIndex < mLightBakeNodes.size() &&
             Renderer::Get()->GetBakeIndirectIterations() > 0)
         {
             DispatchNextLightBake();
@@ -616,7 +605,7 @@ void RayTracer::UpdateLightBake()
             ++mNextBakingCompIndex;
         }
 
-        if (mBakingCompIndex < mLightBakeComps.size())
+        if (mBakingCompIndex < mLightBakeNodes.size())
         {
             DispatchNextBakeDiffuse();
         }
@@ -632,7 +621,7 @@ void RayTracer::EndLightBake()
     FinalizeLightBake();
 
     mLightBakePhase = LightBakePhase::Count;
-    mLightBakeComps.clear();
+    mLightBakeNodes.clear();
     mLightBakeResults.clear();
 
     mBakingCompIndex = -1;
@@ -655,7 +644,7 @@ float RayTracer::GetLightBakeProgress()
 
     if (mLightBakePhase != LightBakePhase::Count)
     {
-        uint32_t numComps = (uint32_t)mLightBakeComps.size();
+        uint32_t numComps = (uint32_t)mLightBakeNodes.size();
         uint32_t numIndirectIterations = Renderer::Get()->GetBakeIndirectIterations();
         uint32_t numDirectDiffuses = Renderer::Get()->GetBakeDiffuseDirectPasses();
         uint32_t numIndirectDiffuses = Renderer::Get()->GetBakeDiffuseIndirectPasses();
@@ -708,15 +697,14 @@ void RayTracer::DispatchNextLightBake()
         ++mNextBakingCompIndex;
     }
 
-    if (mBakingCompIndex >= mLightBakeComps.size() ||
+    if (mBakingCompIndex >= mLightBakeNodes.size() ||
         (mLightBakePhase == LightBakePhase::Indirect && mAccumulatedFrames >= Renderer::Get()->GetBakeIndirectIterations()))
         return;
 
-    StaticMesh3D* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMesh3D>();
+    StaticMesh3D* meshComp = mLightBakeNodes[mBakingCompIndex].Get<StaticMesh3D>();
 
     if (meshComp != nullptr &&
         meshComp->GetStaticMesh() != nullptr &&
-        meshComp->GetOwner() != nullptr &&
         meshComp->GetWorld() == GetWorld())
     {
         // Update path tracing scene
@@ -788,15 +776,14 @@ void RayTracer::DispatchNextLightBake()
 
 void RayTracer::DispatchNextBakeDiffuse()
 {
-    if (mBakingCompIndex >= mLightBakeComps.size() ||
+    if (mBakingCompIndex >= mLightBakeNodes.size() ||
         mAccumulatedFrames >= mTotalDiffusePasses)
         return;
 
-    StaticMesh3D* meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMesh3D>();
+    StaticMesh3D* meshComp = mLightBakeNodes[mBakingCompIndex].Get<StaticMesh3D>();
 
     if (meshComp != nullptr &&
         meshComp->GetStaticMesh() != nullptr &&
-        meshComp->GetOwner() != nullptr &&
         meshComp->GetWorld() == GetWorld())
     {
         StaticMesh* meshAsset = meshComp->GetStaticMesh();
@@ -958,9 +945,9 @@ void RayTracer::ReadbackLightBakeResults()
     {
         StaticMesh3D* meshComp = nullptr;
 
-        if (mBakingCompIndex >= 0 && mBakingCompIndex < mLightBakeComps.size())
+        if (mBakingCompIndex >= 0 && mBakingCompIndex < mLightBakeNodes.size())
         {
-            meshComp = mLightBakeComps[mBakingCompIndex].Get<StaticMesh3D>();
+            meshComp = mLightBakeNodes[mBakingCompIndex].Get<StaticMesh3D>();
         }
 
         // Assuming the component still exists, readback the baked light data.
@@ -1025,9 +1012,9 @@ void RayTracer::FinalizeLightBake()
 {
     // Add the direct and indirect light colors and convert the result to uint32_t format.
 
-    for (uint32_t c = 0; c < mLightBakeComps.size(); ++c)
+    for (uint32_t c = 0; c < mLightBakeNodes.size(); ++c)
     {
-        StaticMesh3D* meshComp = mLightBakeComps[c].Get<StaticMesh3D>();
+        StaticMesh3D* meshComp = mLightBakeNodes[c].Get<StaticMesh3D>();
 
         if (meshComp != nullptr &&
             meshComp->GetStaticMesh() != nullptr)

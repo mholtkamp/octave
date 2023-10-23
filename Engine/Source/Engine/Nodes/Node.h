@@ -301,7 +301,7 @@ protected:
     virtual void SetParent(Node* parent);
     void ValidateUniqueChildName(Node* newChild);
 
-    void SendNetFunc(NetFunc* func, uint32_t numParams, Datum** params);
+    void SendNetFunc(NetFunc* func, uint32_t numParams, const Datum** params);
 
     static std::unordered_map<TypeId, NetFuncMap> sTypeNetFuncMap;
 

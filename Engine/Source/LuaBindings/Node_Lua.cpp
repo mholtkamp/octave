@@ -680,9 +680,10 @@ int Node_Lua::InvokeNetFunc(lua_State* L)
         numParams = 8;
     }
 
-    if (numParams >= 1)
+    std::vector<Datum> params;
+
+    if (numParams > 0)
     {
-        std::vector<Datum> params;
         params.resize(numParams);
 
         for (uint32_t i = 0; i < numParams; ++i)
@@ -690,13 +691,9 @@ int Node_Lua::InvokeNetFunc(lua_State* L)
             // First param starts at index 3
             params[i] = LuaObjectToDatum(L, 3 + i);
         }
+    }
 
-        node->InvokeNetFunc(funcName, params);
-    }
-    else
-    {
-        node->InvokeNetFunc(funcName);
-    }
+    node->InvokeNetFunc(funcName, params);
 
     return 0;
 }

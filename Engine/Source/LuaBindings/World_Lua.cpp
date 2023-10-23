@@ -7,9 +7,9 @@
 #include "LuaBindings/Camera3d_Lua.h"
 #include "LuaBindings/DirectionalLight3d_Lua.h"
 #include "LuaBindings/ParticleSystem_Lua.h"
-#include "ParticleActor.h"
 
 #include "Nodes/3D/Primitive3d.h"
+#include "Nodes/3D/Particle3d.h"
 
 #if LUA_ENABLED
 

@@ -37,10 +37,23 @@
 #include <algorithm>
 
 #define INVOKE_NET_FUNC_BODY(P) \
-    NetFunc* netFunc = FindNetFunc(name); \
-    OCT_ASSERT(netFunc->mNumParams == P); \
-    bool shouldExecute = ShouldExecuteNetFunc(netFunc->mType, this); \
-    SendNetFunc(netFunc, P, params);
+    bool isScript = mScript && mScript->InvokeNetFunc(name, P, params); \
+    bool shouldExecute = false; \
+    NetFunc* netFunc = nullptr; \
+    if (!isScript) \
+    { \
+        netFunc = FindNetFunc(name); \
+        if (netFunc != nullptr) \
+        { \
+            OCT_ASSERT(netFunc && netFunc->mNumParams == P); \
+            shouldExecute = ShouldExecuteNetFunc(netFunc->mType, this); \
+            SendNetFunc(netFunc, P, params); \
+        } \
+        else \
+        { \
+            LogError("Can't find NetFunc %s on node %s", name, mName.c_str()); \
+        } \
+    }
 
 std::unordered_map<TypeId, NetFuncMap> Node::sTypeNetFuncMap;
 
@@ -1445,63 +1458,63 @@ bool Node::IsOwned() const
 
 void Node::InvokeNetFunc(const char* name)
 {
-    Datum** params = nullptr;
+    const Datum** params = nullptr;
     INVOKE_NET_FUNC_BODY(0);
     if (shouldExecute) { netFunc->mFuncPointer.p0(this); }
 }
 
 void Node::InvokeNetFunc(const char* name, Datum param0)
 {
-    Datum* params[] = { &param0 };
+    const Datum* params[] = { &param0 };
     INVOKE_NET_FUNC_BODY(1);
     if (shouldExecute) { netFunc->mFuncPointer.p1(this, param0); }
 }
 
 void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1)
 {
-    Datum* params[] = { &param0, &param1 };
+    const Datum* params[] = { &param0, &param1 };
     INVOKE_NET_FUNC_BODY(2);
     if (shouldExecute) { netFunc->mFuncPointer.p2(this, param0, param1); }
 }
 
 void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2)
 {
-    Datum* params[] = { &param0, &param1, &param2 };
+    const Datum* params[] = { &param0, &param1, &param2 };
     INVOKE_NET_FUNC_BODY(3);
     if (shouldExecute) { netFunc->mFuncPointer.p3(this, param0, param1, param2); }
 }
 
 void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3)
 {
-    Datum* params[] = { &param0, &param1, &param2, &param3 };
+    const Datum* params[] = { &param0, &param1, &param2, &param3 };
     INVOKE_NET_FUNC_BODY(4);
     if (shouldExecute) { netFunc->mFuncPointer.p4(this, param0, param1, param2, param3); }
 }
 
 void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4)
 {
-    Datum* params[] = { &param0, &param1, &param2, &param3, &param4 };
+    const Datum* params[] = { &param0, &param1, &param2, &param3, &param4 };
     INVOKE_NET_FUNC_BODY(5);
     if (shouldExecute) { netFunc->mFuncPointer.p5(this, param0, param1, param2, param3, param4); }
 }
 
 void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5)
 {
-    Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5 };
+    const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5 };
     INVOKE_NET_FUNC_BODY(6);
     if (shouldExecute) { netFunc->mFuncPointer.p6(this, param0, param1, param2, param3, param4, param5); }
 }
 
 void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5, Datum param6)
 {
-    Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6 };
+    const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6 };
     INVOKE_NET_FUNC_BODY(7);
     if (shouldExecute) { netFunc->mFuncPointer.p7(this, param0, param1, param2, param3, param4, param5, param6); }
 }
 
 void Node::InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5, Datum param6, Datum param7)
 {
-    Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6, &param7 };
+    const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6, &param7 };
     INVOKE_NET_FUNC_BODY(8);
     if (shouldExecute) { netFunc->mFuncPointer.p8(this, param0, param1, param2, param3, param4, param5, param6, param7); }
 }
@@ -1681,7 +1694,7 @@ void Node::ValidateUniqueChildName(Node* newChild)
     }
 }
 
-void Node::SendNetFunc(NetFunc* func, uint32_t numParams, Datum** params)
+void Node::SendNetFunc(NetFunc* func, uint32_t numParams, const Datum** params)
 {
     if (ShouldSendNetFunc(func->mType, this))
     {
