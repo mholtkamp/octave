@@ -7,6 +7,7 @@
 #include "Maths.h"
 #include "Utilities.h"
 #include "Engine.h"
+#include "Script.h"
 #include "ObjectRef.h"
 #include "NetworkManager.h"
 #include "Assets/Scene.h"
@@ -50,6 +51,44 @@ FORCE_LINK_DEF(Node);
 DEFINE_FACTORY_MANAGER(Node);
 DEFINE_FACTORY(Node, Node);
 DEFINE_RTTI(Node);
+
+bool Node::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+{
+    Property* prop = static_cast<Property*>(datum);
+
+    OCT_ASSERT(prop != nullptr);
+    Node* node = static_cast<Node*>(prop->mOwner);
+    bool success = false;
+
+    if (prop->mName == "Script")
+    {
+        const std::string& newFileName = *((const std::string*)newValue);
+        node->SetScriptFile(newFileName);
+
+        success = true;
+    }
+#if EDITOR
+    if (prop->mName == "Restart Script")
+    {
+        if (node->GetScript() != nullptr)
+        {
+            node->GetScript()->RestartScript();
+        }
+        success = true;
+    }
+    else if (prop->mName == "Reload Script File")
+    {
+        if (node->GetScript() != nullptr)
+        {
+            node->GetScript()->ReloadScriptFile(node->GetScript()->GetFile(), true);
+        }
+        success = true;
+    }
+#endif
+
+    return success;
+}
+
 
 Node* Node::Construct(const std::string& name)
 {
@@ -113,6 +152,13 @@ void Node::Destroy()
     if (mParent != nullptr)
     {
         Attach(nullptr);
+    }
+
+    if (mScript != nullptr)
+    {
+        mScript->Destroy();
+        delete mScript;
+        mScript = nullptr;
     }
 
     NodeRef::EraseReferencesToObject(this);
@@ -400,6 +446,24 @@ void Node::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Replicate", this, &mReplicate));
     outProps.push_back(Property(DatumType::Bool, "Replicate Transform", this, &mReplicateTransform));
     outProps.push_back(Property(DatumType::String, "Tags", this, &mTags).MakeVector());
+
+    static std::string sScriptFileName;
+    if (mScript != nullptr)
+    {
+        sScriptFileName = mScript->GetFileName();
+    }
+    outProps.push_back(Property(DatumType::String, "Script File", this, &sScriptFileName, 1, HandlePropChange));
+
+#if EDITOR
+    static bool sFakeBool = false;
+    outProps.push_back(Property(DatumType::Bool, "Restart Script", this, &sFakeBool, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Reload Script File", this, &sFakeBool, 1, HandlePropChange));
+#endif
+
+    if (mScript != nullptr)
+    {
+        mScript->AppendScriptProperties(outProps);
+    }
 }
 
 void Node::GatherReplicatedData(std::vector<NetDatum>& outData)
@@ -1320,6 +1384,21 @@ uint32_t Node::GetHitCheckId() const
 Script* Node::GetScript()
 {
     return mScript;
+}
+
+void Node::SetScriptFile(const std::string& fileName)
+{
+    if (fileName != "" && mScript == nullptr)
+    {
+        mScript = new Script();
+    }
+
+    if (mScript != nullptr &&
+        mScript->GetFile() != fileName)
+    {
+        mScript->SetFile(fileName.c_str());
+        mScript->RestartScript();
+    }
 }
 
 bool Node::DoChildrenHaveUniqueNames() const

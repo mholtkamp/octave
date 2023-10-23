@@ -626,9 +626,6 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\Button.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\ScriptComponent.cpp">
-      <Filter>Source Files\Engine\Nodes</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\3D\Audio3d.cpp">
       <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
@@ -736,6 +733,9 @@
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Scene_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Script.cpp">
+      <Filter>Source Files\Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -907,9 +907,6 @@
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Node.h">
-      <Filter>Source Files\Engine\Nodes</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\ScriptComponent.h">
       <Filter>Source Files\Engine\Nodes</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\ComboBox.h">
@@ -1424,6 +1421,9 @@
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Scene_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Script.h">
+      <Filter>Source Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

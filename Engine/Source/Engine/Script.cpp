@@ -22,43 +22,6 @@ DEFINE_NODE(ScriptComponent)
 std::unordered_map<std::string, ScriptComponent*> ScriptComponent::sTableToCompMap;
 std::unordered_map<std::string, ScriptNetFuncMap> ScriptComponent::sScriptNetFuncMap;
 
-bool ScriptComponent::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
-{
-
-    Property* prop = static_cast<Property*>(datum);
-
-    OCT_ASSERT(prop != nullptr);
-    ScriptComponent* scriptComp = static_cast<ScriptComponent*>(prop->mOwner);
-    bool success = false;
-
-    if (prop->mName == "Filename")
-    {
-        const std::string* newFileName = ((const std::string*)newValue);
-
-        if (scriptComp->mFileName != *newFileName)
-        {
-            scriptComp->SetFile(newFileName->c_str());
-            scriptComp->RestartScript();
-        }
-
-        success = true;
-    }
-#if EDITOR
-    if (prop->mName == "Restart Script")
-    {
-        scriptComp->RestartScript();
-        success = true;
-    }
-    else if (prop->mName == "Reload Script File")
-    {
-        scriptComp->ReloadScriptFile(scriptComp->mFileName, true);
-        success = true;
-    }
-#endif
-
-    return success;
-}
-
 bool ScriptComponent::HandleScriptPropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
@@ -228,16 +191,6 @@ const char* ScriptComponent::GetTypeName() const
 void ScriptComponent::GatherProperties(std::vector<Property>& outProps)
 {
     Component::GatherProperties(outProps);
-
-    outProps.push_back(Property(DatumType::String, "Filename", this, &mFileName, 1, HandlePropChange));
-
-#if EDITOR
-    static bool sFakeBool = false;
-    outProps.push_back(Property(DatumType::Bool, "Restart Script", this, &sFakeBool, 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Bool, "Reload Script File", this, &sFakeBool, 1, HandlePropChange));
-#endif
-
-    AppendScriptProperties(outProps);
 }
 
 void ScriptComponent::AppendScriptProperties(std::vector<Property>& outProps)

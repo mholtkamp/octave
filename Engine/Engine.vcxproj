@@ -592,7 +592,6 @@
     <ClCompile Include="Source\Engine\Nodes\3D\TextMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Node3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Node.cpp" />
-    <ClCompile Include="Source\Engine\Nodes\ScriptComponent.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\ArrayWidget.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Button.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Canvas.cpp" />
@@ -617,6 +616,7 @@
     <ClCompile Include="Source\Engine\Property.cpp" />
     <ClCompile Include="Source\Engine\Rect.cpp" />
     <ClCompile Include="Source\Engine\Renderer.cpp" />
+    <ClCompile Include="Source\Engine\Script.cpp" />
     <ClCompile Include="Source\Engine\ScriptAutoReg.cpp" />
     <ClCompile Include="Source\Engine\ScriptEvent.cpp" />
     <ClCompile Include="Source\Engine\ScriptFunc.cpp" />
@@ -836,7 +836,6 @@
     <ClInclude Include="Source\Engine\Nodes\3D\TextMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Node3d.h" />
     <ClInclude Include="Source\Engine\Nodes\Node.h" />
-    <ClInclude Include="Source\Engine\Nodes\ScriptComponent.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\ArrayWidget.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Button.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Canvas.h" />
@@ -860,6 +859,7 @@
     <ClInclude Include="Source\Engine\Rect.h" />
     <ClInclude Include="Source\Engine\Renderer.h" />
     <ClInclude Include="Source\Engine\RTTI.h" />
+    <ClInclude Include="Source\Engine\Script.h" />
     <ClInclude Include="Source\Engine\ScriptAutoReg.h" />
     <ClInclude Include="Source\Engine\ScriptEvent.h" />
     <ClInclude Include="Source\Engine\ScriptFunc.h" />

@@ -2,6 +2,7 @@
 #include "World.h"
 #include "Log.h"
 #include "Engine.h"
+#include "Script.h"
 #include "NetworkManager.h"
 #include "Nodes/Node.h"
 
@@ -30,7 +31,7 @@ bool Scene::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
         GetWorld()->GetRootNode() != nullptr &&
         GetWorld()->GetRootNode()->GetScene() == scene)
     {
-        GetWorld()->UpdateWorldRenderSettings();
+        GetWorld()->UpdateRenderSettings();
     }
 
 #endif
@@ -253,6 +254,18 @@ Node* Scene::Instantiate()
             std::vector<Property> dstProps;
             node->GatherProperties(dstProps);
             CopyPropertyValues(dstProps, mNodeDefs[i].mProperties);
+
+            // If this node has a script, then it might have script properties, and thosse
+            // won't exist in the properties until the "Script File" property was assigned during the
+            // copy we just did. So to copy all of the script properties we need to gather + copy them a second time.
+            // During the second gather, node->mScript will be non-null and thus we can get the default script values that 
+            // we will now override during the second copy.
+            if (node->GetScript() != nullptr)
+            {
+                dstProps.clear();
+                node->GatherProperties(dstProps);
+                CopyPropertyValues(dstProps, mNodeDefs[i].mProperties);
+            }
 
             if (i > 0)
             {
