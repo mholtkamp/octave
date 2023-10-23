@@ -33,9 +33,7 @@
 #include "LuaBindings/TextMesh3d_Lua.h"
 #include "LuaBindings/Sphere3d_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
-#include "LuaBindings/Blueprint_Lua.h"
-#include "LuaBindings/WidgetMap_Lua.h"
-#include "LuaBindings/Level_Lua.h"
+#include "LuaBindings/Scene_Lua.h"
 #include "LuaBindings/Material_Lua.h"
 #include "LuaBindings/MaterialInstance_Lua.h"
 #include "LuaBindings/ParticleSystem_Lua.h"
@@ -109,9 +107,7 @@ void BindLuaInterface()
 
     // Assets need to be bound in hierarchy order.
     Asset_Lua::Bind();
-    Blueprint_Lua::Bind();
-    WidgetMap_Lua::Bind();
-    Level_Lua::Bind();
+    Scene_Lua::Bind();
     Material_Lua::Bind();
     MaterialInstance_Lua::Bind();
     ParticleSystem_Lua::Bind();
