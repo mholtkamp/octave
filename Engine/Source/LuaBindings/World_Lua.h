@@ -47,7 +47,7 @@ struct World_Lua
     static int RayTestMulti(lua_State* L);
     static int SweepTest(lua_State* L);
 
-    static int QueueRootScene(lua_State* L);
+    static int LoadScene(lua_State* L);
     static int QueueRootNode(lua_State* L);
 
     static int EnableInternalEdgeSmoothing(lua_State* L);

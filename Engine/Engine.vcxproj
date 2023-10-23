@@ -602,7 +602,6 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\Poly.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\PolyRect.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Quad.cpp" />
-    <ClCompile Include="Source\Engine\Nodes\Widgets\ScriptWidget.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Selector.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\StatsOverlay.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Text.cpp" />
@@ -846,7 +845,6 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\Poly.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\PolyRect.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Quad.h" />
-    <ClInclude Include="Source\Engine\Nodes\Widgets\ScriptWidget.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Selector.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\StatsOverlay.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Text.h" />

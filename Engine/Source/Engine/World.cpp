@@ -222,6 +222,25 @@ std::vector<Node*> World::FindNodesWithName(const char* name)
     return retNodes;
 }
 
+std::vector<Node*> World::GatherNodes()
+{
+    // Return a flatted list of all the nodes in the scene.
+    std::vector<Node*> nodeList;
+
+    auto gatherNodes = [&](Node* node) -> bool
+    {
+        nodeList.push_back(node);
+        return true;
+    };
+
+    if (mRootNode != nullptr)
+    {
+        mRootNode->ForEach(gatherNodes);
+    }
+
+    return nodeList;
+}
+
 void World::Clear()
 {
     DestroyRootNode();
@@ -840,6 +859,28 @@ Particle3D* World::SpawnParticle(ParticleSystem* sys, glm::vec3 position)
     ret->SetPosition(position);
 
     return ret;
+}
+
+void World::LoadScene(const char* name, bool instant)
+{
+    if (instant)
+    {
+        Scene* scene = LoadAsset<Scene>(name);
+
+        if (scene != nullptr)
+        {
+            DestroyRootNode();
+
+            Node* newRoot = scene->Instantiate();
+            SetRootNode(newRoot);
+        }
+    }
+    else
+    {
+        // Non-instant should be done if a script is loading a scene for instance.
+        // We can cause problems if we destroy root tree while iterating.
+        QueueRootScene(name);
+    }
 }
 
 void World::QueueRootScene(const char* name)

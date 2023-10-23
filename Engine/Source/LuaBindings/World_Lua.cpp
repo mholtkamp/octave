@@ -382,12 +382,14 @@ int World_Lua::SweepTest(lua_State* L)
     return 1;
 }
 
-int World_Lua::QueueRootScene(lua_State* L)
+int World_Lua::LoadScene(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
     const char* newScene = CHECK_STRING(L, 2);
+    bool instant = false;
+    if (!lua_isnone(L, 3)) { instant = CHECK_BOOLEAN(L, 3); }
 
-    world->QueueRootScene(newScene);
+    world->LoadScene(newScene, instant);
 
     return 0;
 }
@@ -511,8 +513,8 @@ void World_Lua::Bind()
     lua_pushcfunction(L, World_Lua::SweepTest);
     lua_setfield(L, mtIndex, "SweepTest");
 
-    lua_pushcfunction(L, World_Lua::QueueRootScene);
-    lua_setfield(L, mtIndex, "QueueRootScene");
+    lua_pushcfunction(L, World_Lua::LoadScene);
+    lua_setfield(L, mtIndex, "LoadScene");
 
     lua_pushcfunction(L, World_Lua::QueueRootNode);
     lua_setfield(L, mtIndex, "QueueRootNode");

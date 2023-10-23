@@ -6,6 +6,7 @@
 #include "Log.h"
 #include "Stream.h"
 #include "World.h"
+#include "NetworkManager.h"
 
 #include "System/System.h"
 
@@ -361,8 +362,8 @@ void Datum::ReadStream(Stream& stream, bool external)
                     // Pointers can only be serialized if it is an actor AND we
                     // are serializing across the network.
                     NetId netId = (NetId)stream.ReadUint32();
-                    Actor* localActor = GetWorld()->FindActor(netId);
-                    PushBack(localActor);
+                    Node* localNode = NetworkManager::Get()->GetNetNode(netId);
+                    PushBack(localNode);
                     break;
                 }
                 case DatumType::Short: PushBack(stream.ReadInt16()); break;
@@ -403,11 +404,11 @@ void Datum::WriteStream(Stream& stream) const
                 // are serializing across the network.
                 NetId netId = INVALID_NET_ID; 
                 RTTI* rtti = mData.p[i];
-                Actor* actor = rtti ? rtti->As<Actor>() : nullptr;
+                Node* node = rtti ? rtti->As<Node>() : nullptr;
 
-                if (actor != nullptr)
+                if (node != nullptr)
                 {
-                    netId = actor->GetNetId();
+                    netId = node->GetNetId();
                 }
 
                 stream.WriteUint32((uint32_t)netId);

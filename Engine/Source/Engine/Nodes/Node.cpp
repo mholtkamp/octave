@@ -1053,11 +1053,6 @@ bool Node::IsDefault() const
     return mDefault;
 }
 
-World* Node::GetWorld()
-{
-    return mWorld;
-}
-
 const char* Node::GetTypeName() const
 {
     return "Node";

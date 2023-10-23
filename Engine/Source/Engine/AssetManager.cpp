@@ -9,7 +9,7 @@
 #include "EmbeddedFile.h"
 #include "Renderer.h"
 
-#include "Assets/Level.h"
+#include "Assets/Scene.h"
 #include "Assets/Texture.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/SkeletalMesh.h"

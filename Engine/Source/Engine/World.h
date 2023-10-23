@@ -56,6 +56,7 @@ public:
     Node* GetNetNode(NetId netId);
     std::vector<Node*> FindNodesWithTag(const char* tag);
     std::vector<Node*> FindNodesWithName(const char* name);
+    std::vector<Node*> GatherNodes();
 
     void Clear();
 
@@ -104,6 +105,7 @@ public:
     uint32_t& GetIncrementalRepTier();
     uint32_t& GetIncrementalRepIndex();
 
+    void LoadScene(const char* name, bool instant);
     void QueueRootScene(const char* name);
     void QueueRootNode(Node* node);
 

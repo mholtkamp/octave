@@ -3,6 +3,7 @@
 #include "Asset.h"
 #include "Property.h"
 #include "Factory.h"
+#include "AssetRef.h"
 
 class World;
 class Node;

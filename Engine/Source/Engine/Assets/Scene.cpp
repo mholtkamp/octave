@@ -5,6 +5,7 @@
 #include "Script.h"
 #include "NetworkManager.h"
 #include "Nodes/Node.h"
+#include "Nodes/3D/SkeletalMesh3d.h"
 
 FORCE_LINK_DEF(Scene);
 DEFINE_ASSET(Scene);
@@ -202,7 +203,7 @@ Node* Scene::Instantiate()
 
                 if (existingChild != nullptr &&
                     existingChild->GetType() == mNodeDefs[i].mType &&
-                    existingChild->GetScene() == mNodeDefs[i].mScene)
+                    existingChild->GetScene() == mNodeDefs[i].mScene.Get())
                 {
                     node = existingChild;
                 }
@@ -297,12 +298,6 @@ Node* Scene::Instantiate()
                         rootScript->SetField(node->GetName().c_str(), node);
                     }
                 }
-            }
-
-            // Start the script on the root node so we can expose child nodes are variables if set.
-            if (i == 0)
-            {
-                node->StartScript();
             }
 
             nodeList.push_back(node);

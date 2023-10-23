@@ -9,7 +9,7 @@ class Node;
 
 typedef void(*TimerHandlerFP)();
 typedef void(*PointerTimerHandlerFP)(void*);
-typedef void(*ActorTimerHandlerFP)(Actor* actor);
+typedef void(*NodeTimerHandlerFP)(Node* node);
 
 enum class TimerType
 {
@@ -27,7 +27,7 @@ struct TimerData
     // Can this be made a union?
     // Not sure about ActorRef construction/destruction...
     void* mPointer = nullptr;
-    ActorRef mActor;
+    NodeRef mNode;
     std::string mScriptTableName;
     std::string mScriptFuncName;
     ScriptFunc mScriptFunc;
@@ -50,7 +50,7 @@ public:
     // Returns the timer ID.
     int32_t SetTimer(TimerHandlerFP handler, float time, bool loop = false);
     int32_t SetTimer(void* vp, PointerTimerHandlerFP handler, float time, bool loop = false);
-    int32_t SetTimer(Actor* actor, ActorTimerHandlerFP handler, float time, bool loop = false);
+    int32_t SetTimer(Node* node, NodeTimerHandlerFP handler, float time, bool loop = false);
     int32_t SetTimer(const char* tableName, const char* funcName, float time, bool loop = false);
     int32_t SetTimer(ScriptFunc scriptFunc, float time, bool loop = false);
 

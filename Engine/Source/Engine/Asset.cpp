@@ -6,7 +6,7 @@
 #include "AssetManager.h"
 #include "Log.h"
 #include "Utilities.h"
-#include "Assets/Blueprint.h"
+#include "Assets/Scene.h"
 
 #include "Assertion.h"
 

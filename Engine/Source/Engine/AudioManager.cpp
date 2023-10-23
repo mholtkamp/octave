@@ -389,31 +389,31 @@ void AudioManager::Update(float deltaTime)
     World* world = GetWorld();
     if (world != nullptr)
     {
-        const std::vector<Audio3D*>& components = GetWorld()->GetAudio3Ds();
+        const std::vector<Audio3D*>& audioNodes = GetWorld()->GetAudios();
 
-        for (uint32_t i = 0; i < components.size(); ++i)
+        for (uint32_t i = 0; i < audioNodes.size(); ++i)
         {
-            Audio3D* comp = components[i];
+            Audio3D* node = audioNodes[i];
 
-            // In the case that the component is playing, but it is inaudible (not a current sound source)
+            // In the case that the node is playing, but it is inaudible (not a current sound source)
             // Then we need to check if it should be audible
-            if (comp->IsPlaying() &&
-                !comp->IsAudible() &&
-                comp->GetVolume() > 0.0f &&
-                comp->GetSoundWave() != nullptr)
+            if (node->IsPlaying() &&
+                !node->IsAudible() &&
+                node->GetVolume() > 0.0f &&
+                node->GetSoundWave() != nullptr)
             {
                 // We need to check the distance to the listener. Should it be audible?
-                glm::vec3 compPosition = comp->GetAbsolutePosition();
-                float dist = glm::distance(listenerPos, compPosition);
-                float outerRadius = glm::max(0.0f, comp->GetOuterRadius());
+                glm::vec3 nodePosition = node->GetAbsolutePosition();
+                float dist = glm::distance(listenerPos, nodePosition);
+                float outerRadius = glm::max(0.0f, node->GetOuterRadius());
 
                 if (dist < outerRadius)
                 {
                     // It should be audible, so attempt to add it as a sound source.
-                    uint32_t sourceIndex = FindAvailableAudioSourceIndex(comp->GetPriority());
+                    uint32_t sourceIndex = FindAvailableAudioSourceIndex(node->GetPriority());
 
-                    float soundDuration = comp->GetSoundWave()->GetDuration();
-                    float startTime = glm::mod(comp->GetStartOffset() + comp->GetPlayTime(), soundDuration);
+                    float soundDuration = node->GetSoundWave()->GetDuration();
+                    float startTime = glm::mod(node->GetStartOffset() + node->GetPlayTime(), soundDuration);
                     if (startTime >= soundDuration)
                     {
                         startTime = 0.0f;
@@ -423,17 +423,17 @@ void AudioManager::Update(float deltaTime)
                     {
                         PlayAudio(
                             sourceIndex,
-                            comp->GetSoundWave(),
-                            comp,
-                            comp->GetVolume(),
-                            comp->GetPitch(),
-                            comp->GetPriority(),
-                            compPosition,
-                            comp->GetInnerRadius(),
-                            comp->GetOuterRadius(),
-                            comp->GetAttenuationFunc(),
-                            comp->GetAudioClass(),
-                            comp->GetLoop(),
+                            node->GetSoundWave(),
+                            node,
+                            node->GetVolume(),
+                            node->GetPitch(),
+                            node->GetPriority(),
+                            nodePosition,
+                            node->GetInnerRadius(),
+                            node->GetOuterRadius(),
+                            node->GetAttenuationFunc(),
+                            node->GetAudioClass(),
+                            node->GetLoop(),
                             startTime);
                     }
                 }

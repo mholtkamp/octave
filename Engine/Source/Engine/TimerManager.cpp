@@ -73,12 +73,12 @@ void TimerManager::Update(float deltaTime)
         {
             if (timer->mHandler != nullptr)
             {
-                ActorTimerHandlerFP handler = (ActorTimerHandlerFP)timer->mHandler;
-                Actor* actor = timer->mActor.Get();
+                NodeTimerHandlerFP handler = (NodeTimerHandlerFP)timer->mHandler;
+                Node* node = timer->mNode.Get();
 
-                if (actor != nullptr)
+                if (node != nullptr)
                 {
-                    handler(actor);
+                    handler(node);
                 }
             }
             break;
@@ -145,7 +145,7 @@ int32_t TimerManager::SetTimer(void* vp, PointerTimerHandlerFP handler, float ti
     return id;
 }
 
-int32_t TimerManager::SetTimer(Actor* actor, ActorTimerHandlerFP handler, float time, bool loop)
+int32_t TimerManager::SetTimer(Node* node, NodeTimerHandlerFP handler, float time, bool loop)
 {
     int32_t id = mNextTimerId++;
 
@@ -153,7 +153,7 @@ int32_t TimerManager::SetTimer(Actor* actor, ActorTimerHandlerFP handler, float 
     timerData.mId = id;
     timerData.mHandler = (void*)handler;
     timerData.mType = TimerType::Actor;
-    timerData.mActor = actor;
+    timerData.mNode = node;
     timerData.mDuration = time;
     timerData.mLoop = loop;
     timerData.mTimeRemaining = time;

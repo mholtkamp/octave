@@ -5,7 +5,8 @@
 #include "InputDevices.h"
 #include "Engine.h"
 #include "Log.h"
-#include "Assets/Level.h"
+#include "Script.h"
+#include "Assets/Scene.h"
 #include "AssetManager.h"
 #include "NetworkManager.h"
 #include "AudioManager.h"
@@ -49,30 +50,29 @@ void ForceLinkage()
     FORCE_LINK_CALL(StaticMeshActor);
 
     // Component Types
+    FORCE_LINK_CALL(Node);
+    FORCE_LINK_CALL(Node3D);
     FORCE_LINK_CALL(Audio3D);
     FORCE_LINK_CALL(Box3D);
     FORCE_LINK_CALL(Camera3D);
-    FORCE_LINK_CALL(Component);
     FORCE_LINK_CALL(DirectionalLight3D);
     FORCE_LINK_CALL(Particle3D);
     FORCE_LINK_CALL(PointLight3D);
     FORCE_LINK_CALL(SkeletalMesh3D);
     FORCE_LINK_CALL(Sphere3D);
     FORCE_LINK_CALL(StaticMesh3D);
-    FORCE_LINK_CALL(Node3D);
     FORCE_LINK_CALL(Capsule3D);
     FORCE_LINK_CALL(ShadowMesh3D);
     FORCE_LINK_CALL(TextMesh3D);
 
     // Asset Types
-    FORCE_LINK_CALL(Level);
+    FORCE_LINK_CALL(Scene);
     FORCE_LINK_CALL(Material);
     FORCE_LINK_CALL(ParticleSystem);
     FORCE_LINK_CALL(SkeletalMesh);
     FORCE_LINK_CALL(SoundWave);
     FORCE_LINK_CALL(StaticMesh);
     FORCE_LINK_CALL(Texture);
-    FORCE_LINK_CALL(Blueprint);
     FORCE_LINK_CALL(WidgetMap);
 
     // Widget Types
@@ -91,7 +91,6 @@ void ForceLinkage()
     FORCE_LINK_CALL(Text);
     FORCE_LINK_CALL(TextField);
     FORCE_LINK_CALL(VerticalList);
-    FORCE_LINK_CALL(ScriptWidget);
     FORCE_LINK_CALL(Widget);
 }
 
@@ -105,10 +104,10 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
             sEngineConfig.mProjectPath = argv[i + 1];
             ++i;
         }
-        else if (strcmp(argv[i], "-level") == 0)
+        else if (strcmp(argv[i], "-level") == 0 || strcmp(argv[i], "-scene") == 0)
         {
             OCT_ASSERT(i + 1 < argc);
-            sEngineConfig.mDefaultLevel = argv[i + 1];
+            sEngineConfig.mDefaultScene = argv[i + 1];
             ++i;
         }
         else if (strcmp(argv[i], "-res") == 0)
@@ -141,9 +140,9 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
 bool Initialize(InitOptions& initOptions)
 {
     // Override initOptions with commandline options
-    if (sEngineConfig.mDefaultLevel != "")
+    if (sEngineConfig.mDefaultScene != "")
     {
-        initOptions.mDefaultLevel = sEngineConfig.mDefaultLevel;
+        initOptions.mDefaultScene = sEngineConfig.mDefaultScene;
     }
 
     if (sEngineConfig.mWindowWidth > 0 &&
@@ -293,16 +292,10 @@ bool Initialize(InitOptions& initOptions)
     ForceLinkage();
 
 #if !EDITOR
-    if (initOptions.mDefaultLevel != "")
+    if (initOptions.mDefaultScene != "")
     {
-        Asset* levelAsset = LoadAsset(initOptions.mDefaultLevel);
-
-        if (levelAsset != nullptr &&
-            levelAsset->GetType() == Level::GetStaticType())
-        {
-            Level* level = (Level*)levelAsset;
-            level->LoadIntoWorld(sWorld);
-        }
+        Asset* sceneAsset = LoadAsset(initOptions.mDefaultScene);
+        GetWorld()->LoadScene(initOptions.mDefaultScene.c_str(), true);
     }
 #endif 
 
@@ -573,31 +566,28 @@ bool IsGameTickEnabled()
 void ReloadAllScripts(bool restartComponents)
 {
 #if LUA_ENABLED
-    std::vector<ScriptComponent*> scriptComps;
+    std::vector<Script*> scripts;
     std::vector<std::vector<Property> > scriptProps;
 
-    const std::vector<Actor*>& actors = GetWorld()->GetActors();
+    const std::vector<Node*>& nodes = GetWorld()->GatherNodes();
 
     if (restartComponents)
     {
-        for (uint32_t i = 0; i < actors.size(); ++i)
+        for (uint32_t i = 0; i < nodes.size(); ++i)
         {
-            for (uint32_t c = 0; c < actors[i]->GetNumComponents(); ++c)
+            Script* script = nodes[i]->GetScript();
+
+            if (script != nullptr)
             {
-                Component* comp = actors[i]->GetComponent(c);
-                if (comp->Is(ScriptComponent::ClassRuntimeId()))
-                {
-                    ScriptComponent* scriptComp = comp->As<ScriptComponent>();
-                    scriptComps.push_back(scriptComp);
-                    scriptProps.push_back(scriptComp->GetScriptProperties());
-                }
+                scripts.push_back(script);
+                scriptProps.push_back(script->GetScriptProperties());
             }
         }
 
         // Stop the script instances
-        for (uint32_t i = 0; i < scriptComps.size(); ++i)
+        for (uint32_t i = 0; i < scripts.size(); ++i)
         {
-            scriptComps[i]->StopScript();
+            scripts[i]->StopScript();
         }
     }
 
@@ -607,10 +597,10 @@ void ReloadAllScripts(bool restartComponents)
     if (restartComponents)
     {
         // Start script instances again
-        for (uint32_t i = 0; i < scriptComps.size(); ++i)
+        for (uint32_t i = 0; i < scripts.size(); ++i)
         {
-            scriptComps[i]->StartScript();
-            scriptComps[i]->SetScriptProperties(scriptProps[i]);
+            scripts[i]->StartScript();
+            scripts[i]->SetScriptProperties(scriptProps[i]);
         }
     }
 

@@ -225,7 +225,7 @@ struct InitOptions
     std::string mWorkingDirectory;
     uint32_t mGameCode = 0;
     uint32_t mVersion = 0;
-    std::string mDefaultLevel;
+    std::string mDefaultScene;
 };
 
 struct EngineConfig
@@ -238,7 +238,7 @@ struct EngineConfig
     }
 
     std::string mProjectPath;
-    std::string mDefaultLevel;
+    std::string mDefaultScene;
     int32_t mWindowWidth = 0;
     int32_t mWindowHeight = 0;
     bool mValidateGraphics = false;

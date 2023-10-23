@@ -596,9 +596,6 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\Quad.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\Widgets\ScriptWidget.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Widgets\Selector.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
@@ -925,9 +922,6 @@
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\Quad.h">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\Widgets\ScriptWidget.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\Selector.h">

@@ -179,8 +179,6 @@ public:
     void SetDefault(bool isDefault);
     bool IsDefault() const;
 
-    World* GetWorld();
-
     virtual const char* GetTypeName() const;
     virtual DrawData GetDrawData();
 
@@ -278,7 +276,7 @@ public:
             {
                 for (uint32_t i = 0; i < mChildren.size(); ++i)
                 {
-                    cont = ForEach(func, childFirst);
+                    cont = ForEach(func, inverted);
 
                     if (!cont)
                     {
@@ -328,8 +326,6 @@ protected:
     bool mHasStarted = false;
     bool mPendingDestroy = false;
     bool mTickEnabled = true;
-    bool mTransient = false;
-    bool mVisible = true;
 
     // Network Data
     // This is only about 44 bytes, so right now, we will keep this data as direct members of Node.
