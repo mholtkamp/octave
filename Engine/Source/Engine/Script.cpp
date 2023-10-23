@@ -68,94 +68,23 @@ bool Script::HandleForeignScriptPropChange(Datum* datum, uint32_t index, const v
 }
 
 
-Script::Script()
+Script::Script(Node* owner)
 {
-
+    mOwner = owner;
 }
 
 Script::~Script()
 {
-
-}
-
-void ScriptComponent::SaveStream(Stream& stream)
-{
-    Component::SaveStream(stream);
-    stream.WriteString(mFileName);
-
-    // Save script properties
-    uint32_t numProps = (uint32_t)mScriptProps.size();
-    stream.WriteUint32(numProps);
-
-    for (uint32_t i = 0; i < numProps; ++i)
-    {
-        mScriptProps[i].WriteStream(stream);
-    }
-}
-
-void ScriptComponent::LoadStream(Stream& stream)
-{
-    Component::LoadStream(stream);
-    stream.ReadString(mFileName);
-
-    // Load script properties
-    uint32_t numProps = stream.ReadUint32();
-    std::vector<Property> savedProps;
-    savedProps.resize(numProps);
-
-    // Start the script before updating the saved props
-    // (because the props won't exist until we start the script)
-    StartScript();
-
-    for (uint32_t i = 0; i < numProps; ++i)
-    {
-        savedProps[i].ReadStream(stream, false);
-
-        for (uint32_t j = 0; j < mScriptProps.size(); ++j)
-        {
-            if (mScriptProps[j].mName == savedProps[i].mName &&
-                mScriptProps[j].mType == savedProps[i].mType)
-            {
-                if (mScriptProps[i].mCount < savedProps[i].mCount)
-                {
-                    mScriptProps[i].SetCount(savedProps[i].mCount);
-                }
-
-                uint32_t count = savedProps[i].mCount;
-                mScriptProps[j].SetValue(savedProps[i].mData.vp, 0, count);
-                break;
-            }
-        }
-    }
-}
-
-void ScriptComponent::Create()
-{
-    Component::Create();
-    StartScript();
-}
-
-void ScriptComponent::Destroy()
-{
-    Component::Destroy();
     StopScript();
 }
 
-void ScriptComponent::Start()
+Node* Script::GetOwner()
 {
-    Component::Start();
-    CallFunction("Start");
+    return mOwner;
 }
 
-void ScriptComponent::EndPlay()
+void Script::Tick(float deltaTime)
 {
-    Component::EndPlay();
-    CallFunction("EndPlay");
-}
-
-void ScriptComponent::Tick(float deltaTime)
-{
-    Component::Tick(deltaTime);
     CallTick(deltaTime);
 
     if (NetIsServer())
@@ -164,34 +93,7 @@ void ScriptComponent::Tick(float deltaTime)
     }
 }
 
-void ScriptComponent::SetOwner(Actor* owner)
-{
-    if (GetOwner() != nullptr &&
-        ShouldHandleEvents())
-    {
-        GetOwner()->RemoveScriptEventHandler(this);
-    }
-
-    Component::SetOwner(owner);
-
-    if (owner != nullptr &&
-        ShouldHandleEvents())
-    {
-        owner->AddScriptEventHandler(this);
-    }
-}
-
-const char* ScriptComponent::GetTypeName() const
-{
-    return "Script";
-}
-
-void ScriptComponent::GatherProperties(std::vector<Property>& outProps)
-{
-    Component::GatherProperties(outProps);
-}
-
-void ScriptComponent::AppendScriptProperties(std::vector<Property>& outProps)
+void Script::AppendScriptProperties(std::vector<Property>& outProps)
 {
     for (uint32_t i = 0; i < mScriptProps.size(); ++i)
     {
@@ -203,7 +105,7 @@ void ScriptComponent::AppendScriptProperties(std::vector<Property>& outProps)
     }
 }
 
-void ScriptComponent::UploadScriptProperties()
+void Script::UploadScriptProperties()
 {
     for (uint32_t i = 0; i < mScriptProps.size(); ++i)
     {
@@ -211,7 +113,7 @@ void ScriptComponent::UploadScriptProperties()
     }
 }
 
-void ScriptComponent::SetArrayScriptPropCount(const std::string& name, uint32_t count)
+void Script::SetArrayScriptPropCount(const std::string& name, uint32_t count)
 {
     for (uint32_t i = 0; i < mScriptProps.size(); ++i)
     {
@@ -225,7 +127,7 @@ void ScriptComponent::SetArrayScriptPropCount(const std::string& name, uint32_t 
     UploadScriptProperties();
 }
 
-void ScriptComponent::GatherScriptProperties()
+void Script::GatherScriptProperties()
 {
 #if LUA_ENABLED
     if (mTableName != "")
@@ -516,17 +418,17 @@ void ScriptComponent::GatherScriptProperties()
 #endif
 }
 
-const std::vector<Property>& ScriptComponent::GetScriptProperties() const
+const std::vector<Property>& Script::GetScriptProperties() const
 {
     return mScriptProps;
 }
 
-void ScriptComponent::SetScriptProperties(const std::vector<Property>& srcProps)
+void Script::SetScriptProperties(const std::vector<Property>& srcProps)
 {
     CopyPropertyValues(mScriptProps, srcProps);
 }
 
-void ScriptComponent::GatherReplicatedData()
+void Script::GatherReplicatedData()
 {
 #if LUA_ENABLED
     if (mTableName != "")
@@ -705,8 +607,8 @@ void ScriptComponent::GatherReplicatedData()
                                 case DatumType::Pointer:
                                 {
                                     // Only actor pointers are supported right now.
-                                    Actor* actorPointer = CHECK_ACTOR(L, -1);
-                                    newDatum.PushBack(actorPointer);
+                                    Node* nodePointer = CHECK_NODE(L, -1);
+                                    newDatum.PushBack(nodePointer);
                                     break;
                                 }
 
@@ -767,7 +669,7 @@ void ScriptComponent::GatherReplicatedData()
 #endif
 }
 
-void ScriptComponent::RegisterNetFuncs()
+void Script::RegisterNetFuncs()
 {
     if (sScriptNetFuncMap.find(mClassName) == sScriptNetFuncMap.end())
     {
@@ -788,7 +690,7 @@ void ScriptComponent::RegisterNetFuncs()
     }
 }
 
-void ScriptComponent::GatherNetFuncs(std::vector<ScriptNetFunc>& outFuncs)
+void Script::GatherNetFuncs(std::vector<ScriptNetFunc>& outFuncs)
 {
 #if LUA_ENABLED
     if (mTableName != "")
@@ -872,7 +774,7 @@ void ScriptComponent::GatherNetFuncs(std::vector<ScriptNetFunc>& outFuncs)
 #endif
 }
 
-void ScriptComponent::DownloadReplicatedData()
+void Script::DownloadReplicatedData()
 {
 #if LUA_ENABLED
     lua_State* L = GetLua();
@@ -894,7 +796,7 @@ void ScriptComponent::DownloadReplicatedData()
 #endif
 }
 
-ScriptNetFunc* ScriptComponent::FindNetFunc(const char* funcName)
+ScriptNetFunc* Script::FindNetFunc(const char* funcName)
 {
     ScriptNetFunc* retFunc = nullptr;
 
@@ -915,7 +817,7 @@ ScriptNetFunc* ScriptComponent::FindNetFunc(const char* funcName)
     return retFunc;
 }
 
-ScriptNetFunc* ScriptComponent::FindNetFunc(uint16_t index)
+ScriptNetFunc* Script::FindNetFunc(uint16_t index)
 {
     ScriptNetFunc* retFunc = nullptr;
 
@@ -936,7 +838,7 @@ ScriptNetFunc* ScriptComponent::FindNetFunc(uint16_t index)
     return retFunc;
 }
 
-void ScriptComponent::ExecuteNetFunc(uint16_t index, uint32_t numParams, std::vector<Datum>& params)
+void Script::ExecuteNetFunc(uint16_t index, uint32_t numParams, std::vector<Datum>& params)
 {
 #if LUA_ENABLED
     if (mTableName != "")
@@ -983,7 +885,7 @@ void ScriptComponent::ExecuteNetFunc(uint16_t index, uint32_t numParams, std::ve
 #endif
 }
 
-bool ScriptComponent::DownloadDatum(lua_State* L, Datum& datum, int tableIdx, const char* varName)
+bool Script::DownloadDatum(lua_State* L, Datum& datum, int tableIdx, const char* varName)
 {
     bool success = true;
 
@@ -1101,7 +1003,7 @@ bool ScriptComponent::DownloadDatum(lua_State* L, Datum& datum, int tableIdx, co
     return success;
 }
 
-void ScriptComponent::UploadDatum(Datum& datum, const char* varName)
+void Script::UploadDatum(Datum& datum, const char* varName)
 {
 #if LUA_ENABLED
     lua_State* L = GetLua();
@@ -1170,27 +1072,27 @@ void ScriptComponent::UploadDatum(Datum& datum, const char* varName)
 #endif
 }
 
-void ScriptComponent::SetFile(const char* filename)
+void Script::SetFile(const char* filename)
 {
     mFileName = filename;
 }
 
-const std::string& ScriptComponent::GetFile() const
+const std::string& Script::GetFile() const
 {
     return mFileName;
 }
 
-const std::string& ScriptComponent::GetScriptClassName() const
+const std::string& Script::GetScriptClassName() const
 {
     return mClassName;
 }
 
-const std::string& ScriptComponent::GetTableName() const
+const std::string& Script::GetTableName() const
 {
     return mTableName;
 }
 
-void ScriptComponent::StartScript()
+void Script::StartScript()
 {
     if (mTableName == "")
     {
@@ -1198,18 +1100,18 @@ void ScriptComponent::StartScript()
     }
 }
 
-void ScriptComponent::RestartScript()
+void Script::RestartScript()
 {
     DestroyScriptInstance();
     CreateScriptInstance();
 }
 
-void ScriptComponent::StopScript()
+void Script::StopScript()
 {
     DestroyScriptInstance();
 }
 
-bool ScriptComponent::ReloadScriptFile(const std::string& fileName, bool restartScript)
+bool Script::ReloadScriptFile(const std::string& fileName, bool restartScript)
 {
     bool success = ScriptUtils::ReloadScriptFile(fileName);
 
@@ -1229,35 +1131,30 @@ bool ScriptComponent::ReloadScriptFile(const std::string& fileName, bool restart
     return success;
 }
 
-ScriptComponent* ScriptComponent::FindScriptCompFromTableName(const std::string& tableName)
+Script* Script::FindScriptFromTableName(const std::string& tableName)
 {
-    ScriptComponent* scriptComp = nullptr;
+    Script* script = nullptr;
 
-    auto it = sTableToCompMap.find(tableName);
+    auto it = sTableToScriptMap.find(tableName);
 
-    if (it != sTableToCompMap.end())
+    if (it != sTableToScriptMap.end())
     {
-        scriptComp = it->second;
+        script = it->second;
     }
 
-    return scriptComp;
+    return script;
 }
 
-bool ScriptComponent::ShouldHandleEvents() const
-{
-    return (mHandleBeginOverlap || mHandleEndOverlap || mHandleOnCollision);
-}
-
-std::vector<ScriptNetDatum>& ScriptComponent::GetReplicatedData()
+std::vector<ScriptNetDatum>& Script::GetReplicatedData()
 {
     return mReplicatedData;
 }
 
-void ScriptComponent::InvokeNetFunc(const char* name, std::vector<Datum>& params)
+void Script::InvokeNetFunc(const char* name, std::vector<Datum>& params)
 {
     uint32_t numParams = (uint32_t)params.size();
     ScriptNetFunc* netFunc = FindNetFunc(name);
-    Actor* actor = GetOwner();
+    Node* node = GetOwner();
 
     OCT_ASSERT(numParams <= MAX_NET_FUNC_PARAMS);
     Datum* paramArray[MAX_NET_FUNC_PARAMS];
@@ -1273,19 +1170,19 @@ void ScriptComponent::InvokeNetFunc(const char* name, std::vector<Datum>& params
         }
     }
 
-    if (ShouldSendNetFunc(netFunc->mType, actor))
+    if (ShouldSendNetFunc(netFunc->mType, node))
     {
         // Local execution is handled in SendInvokeScriptMsg
         NetworkManager::Get()->SendInvokeScriptMsg(this, netFunc, numParams, paramArray);
     }
 
-    if (ShouldExecuteNetFunc(netFunc->mType, actor))
+    if (ShouldExecuteNetFunc(netFunc->mType, node))
     {
         ExecuteNetFunc(netFunc->mIndex, numParams, params);
     }
 }
 
-void ScriptComponent::BeginOverlap(Primitive3D* thisComp, Primitive3D* otherComp)
+void Script::BeginOverlap(Primitive3D* thisNode, Primitive3D* otherNode)
 {
 #if LUA_ENABLED
     if (mHandleBeginOverlap && mTableName != "")
@@ -1301,8 +1198,8 @@ void ScriptComponent::BeginOverlap(Primitive3D* thisComp, Primitive3D* otherComp
         if (lua_isfunction(L, -1))
         {
             lua_pushvalue(L, tableIdx);
-            Node_Lua::Create(L, thisComp);
-            Node_Lua::Create(L, otherComp);
+            Node_Lua::Create(L, thisNode);
+            Node_Lua::Create(L, otherNode);
 
             // Instance table at -5
             // Func at -4
@@ -1321,7 +1218,7 @@ void ScriptComponent::BeginOverlap(Primitive3D* thisComp, Primitive3D* otherComp
 #endif
 }
 
-void ScriptComponent::EndOverlap(Primitive3D* thisComp, Primitive3D* otherComp)
+void Script::EndOverlap(Primitive3D* thisNode, Primitive3D* otherNode)
 {
 #if LUA_ENABLED
     if (mHandleEndOverlap && mTableName != "")
@@ -1337,14 +1234,14 @@ void ScriptComponent::EndOverlap(Primitive3D* thisComp, Primitive3D* otherComp)
         if (lua_isfunction(L, -1))
         {
             lua_pushvalue(L, tableIdx);
-            Node_Lua::Create(L, thisComp);
-            Node_Lua::Create(L, otherComp);
+            Node_Lua::Create(L, thisNode);
+            Node_Lua::Create(L, otherNode);
 
             // Instance table at -5
             // Func at -4
             // Instance table (as arg1) at -3
-            // thisComp (as arg2) at -2
-            // othercomp as (arg3) at -1
+            // thisNode (as arg2) at -2
+            // otherNode as (arg3) at -1
             LuaFuncCall(3);
         }
         else
@@ -1357,9 +1254,9 @@ void ScriptComponent::EndOverlap(Primitive3D* thisComp, Primitive3D* otherComp)
 #endif
 }
 
-void ScriptComponent::OnCollision(
-    Primitive3D* thisComp,
-    Primitive3D* otherComp,
+void Script::OnCollision(
+    Primitive3D* thisNode,
+    Primitive3D* otherNode,
     glm::vec3 impactPoint,
     glm::vec3 impactNormal,
     btPersistentManifold* manifold)
@@ -1378,8 +1275,8 @@ void ScriptComponent::OnCollision(
         if (lua_isfunction(L, -1))
         {
             lua_pushvalue(L, tableIdx);                             // arg1 - self
-            Node_Lua::Create(L, thisComp);                     // arg2 - thisComp
-            Node_Lua::Create(L, otherComp);                    // arg3 - otherComp
+            Node_Lua::Create(L, thisNode);                          // arg2 - thisNode
+            Node_Lua::Create(L, otherNode);                         // arg3 - otherNode
             Vector_Lua::Create(L, glm::vec4(impactPoint, 0.0f));    // arg4 - impactPoint
             Vector_Lua::Create(L, glm::vec4(impactNormal, 0.0f));   // arg5 - impactNormal
             // TODO: Do we want to handle manifold points?
@@ -1396,7 +1293,7 @@ void ScriptComponent::OnCollision(
 #endif
 }
 
-bool ScriptComponent::HasFunction(const char* name) const
+bool Script::HasFunction(const char* name) const
 {
     bool ret = false;
 
@@ -1423,67 +1320,67 @@ bool ScriptComponent::HasFunction(const char* name) const
 }
 
 // These functions are kinda nasty, but it's a nice convenience for the game programmer
-void ScriptComponent::CallFunction(const char* name)
+void Script::CallFunction(const char* name)
 {
     CallFunction(name, 0, nullptr, nullptr);
 }
 
-void ScriptComponent::CallFunction(const char* name, const Datum& param0)
+void Script::CallFunction(const char* name, const Datum& param0)
 {
     const Datum* params[] = { &param0 };
     CallFunction(name, 1, params, nullptr);
 }
 
-void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1)
+void Script::CallFunction(const char* name, const Datum& param0, const Datum& param1)
 {
     const Datum* params[] = { &param0, &param1 };
     CallFunction(name, 2, params, nullptr);
 }
 
-void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2)
+void Script::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2)
 {
     const Datum* params[] = { &param0, &param1, &param2 };
     CallFunction(name, 3, params, nullptr);
 }
 
-void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3)
+void Script::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3)
 {
     const Datum* params[] = { &param0, &param1, &param2, &param3 };
     CallFunction(name, 4, params, nullptr);
 }
 
-void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4)
+void Script::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4)
 {
     const Datum* params[] = { &param0, &param1, &param2, &param3, &param4 };
     CallFunction(name, 5, params, nullptr);
 }
 
-void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5)
+void Script::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5)
 {
     const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5 };
     CallFunction(name, 6, params, nullptr);
 }
 
-void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6)
+void Script::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6)
 {
     const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6 };
     CallFunction(name, 7, params, nullptr);
 }
 
-void ScriptComponent::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6, const Datum& param7)
+void Script::CallFunction(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6, const Datum& param7)
 {
     const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6, &param7 };
     CallFunction(name, 8, params, nullptr);
 }
 
-Datum ScriptComponent::CallFunctionR(const char* name)
+Datum Script::CallFunctionR(const char* name)
 {
     Datum retDatum;
     CallFunction(name, 0, nullptr, &retDatum);
     return retDatum;
 }
 
-Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0)
+Datum Script::CallFunctionR(const char* name, const Datum& param0)
 {
     Datum retDatum;
     const Datum* params[] = { &param0 };
@@ -1491,7 +1388,7 @@ Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0)
     return retDatum;
 }
 
-Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1)
+Datum Script::CallFunctionR(const char* name, const Datum& param0, const Datum& param1)
 {
     Datum retDatum;
     const Datum* params[] = { &param0, &param1 };
@@ -1499,7 +1396,7 @@ Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, cons
     return retDatum;
 }
 
-Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2)
+Datum Script::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2)
 {
     Datum retDatum;
     const Datum* params[] = { &param0, &param1, &param2 };
@@ -1507,7 +1404,7 @@ Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, cons
     return retDatum;
 }
 
-Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3)
+Datum Script::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3)
 {
     Datum retDatum;
     const Datum* params[] = { &param0, &param1, &param2, &param3 };
@@ -1515,7 +1412,7 @@ Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, cons
     return retDatum;
 }
 
-Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4)
+Datum Script::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4)
 {
     Datum retDatum;
     const Datum* params[] = { &param0, &param1, &param2, &param3, &param4 };
@@ -1523,7 +1420,7 @@ Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, cons
     return retDatum;
 }
 
-Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5)
+Datum Script::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5)
 {
     Datum retDatum;
     const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5 };
@@ -1531,7 +1428,7 @@ Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, cons
     return retDatum;
 }
 
-Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6)
+Datum Script::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6)
 {
     Datum retDatum;
     const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6 };
@@ -1539,7 +1436,7 @@ Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, cons
     return retDatum;
 }
 
-Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6, const Datum& param7)
+Datum Script::CallFunctionR(const char* name, const Datum& param0, const Datum& param1, const Datum& param2, const Datum& param3, const Datum& param4, const Datum& param5, const Datum& param6, const Datum& param7)
 {
     Datum retDatum;
     const Datum* params[] = { &param0, &param1, &param2, &param3, &param4, &param5, &param6, &param7 };
@@ -1547,7 +1444,7 @@ Datum ScriptComponent::CallFunctionR(const char* name, const Datum& param0, cons
     return retDatum;
 }
 
-void ScriptComponent::CallFunction(const char* name, uint32_t numParams, const Datum** params, Datum* ret)
+void Script::CallFunction(const char* name, uint32_t numParams, const Datum** params, Datum* ret)
 {
     if (mTableName != "")
     {
@@ -1555,7 +1452,7 @@ void ScriptComponent::CallFunction(const char* name, uint32_t numParams, const D
     }
 }
 
-Datum ScriptComponent::GetField(const char* key)
+Datum Script::GetField(const char* key)
 {
     Datum ret;
 
@@ -1568,7 +1465,7 @@ Datum ScriptComponent::GetField(const char* key)
 }
 
 
-void ScriptComponent::SetField(const char* key, const Datum& value)
+void Script::SetField(const char* key, const Datum& value)
 {
     if (mTableName != "")
     {
@@ -1577,11 +1474,11 @@ void ScriptComponent::SetField(const char* key, const Datum& value)
 }
 
 
-bool ScriptComponent::OnRepHandler(Datum* datum, uint32_t index, const void* newValue)
+bool Script::OnRepHandler(Datum* datum, uint32_t index, const void* newValue)
 {
 #if LUA_ENABLED
     ScriptNetDatum* netDatum = (ScriptNetDatum*)datum;
-    ScriptComponent* comp = static_cast<ScriptComponent*>(netDatum->mOwner);
+    Script* script = static_cast<Script*>(netDatum->mOwner);
 
     lua_State* L = GetLua();
 
@@ -1597,12 +1494,12 @@ bool ScriptComponent::OnRepHandler(Datum* datum, uint32_t index, const void* new
     }
 
     netDatum->SetValueRaw(newValue);
-    comp->UploadDatum(*netDatum, netDatum->mVarName.c_str());
+    script->UploadDatum(*netDatum, netDatum->mVarName.c_str());
 
     if (onRepFunc)
     {
         // Grab the table
-        lua_getglobal(L, comp->mTableName.c_str());
+        lua_getglobal(L, script->mTableName.c_str());
         OCT_ASSERT(lua_istable(L, -1));
         int tableIdx = lua_gettop(L);
         lua_getfield(L, tableIdx, netDatum->mOnRepFuncName.c_str());
@@ -1615,7 +1512,7 @@ bool ScriptComponent::OnRepHandler(Datum* datum, uint32_t index, const void* new
 
             netDatum->SetValueRaw(newValue);
 
-            comp->LuaFuncCall(2, 0);
+            script->LuaFuncCall(2, 0);
         }
         else
         {
@@ -1631,7 +1528,7 @@ bool ScriptComponent::OnRepHandler(Datum* datum, uint32_t index, const void* new
     return true;
 }
 
-void ScriptComponent::CreateScriptInstance()
+void Script::CreateScriptInstance()
 {
 #if LUA_ENABLED
 
@@ -1666,28 +1563,11 @@ void ScriptComponent::CreateScriptInstance()
             OCT_ASSERT(lua_istable(L, -1));
             int classTableIdx = lua_gettop(L);
 
-            // TODO-NODE: Get rid of this "New" func call? You can inherit with Script.Inherit()/Script.Extend()
-            // Check if the class table has a New function, if so call it to initialize the object (needed for setting up inheritance).
-            lua_getfield(L, -1, "New");
-            if (lua_isfunction(L, -1))
-            {
-                lua_pushvalue(L, classTableIdx); // push the class table as arg1 (self)
-                lua_pushvalue(L, instanceTableIdx); // push the newly created instance table as arg2 (o)
-                LuaFuncCall(2);
-            }
-            else
-            {
-                lua_pop(L, 1);
-            }
-
             // Assign the new table's metatable to the class table
             lua_setmetatable(L, instanceTableIdx);
 
-            Actor_Lua::Create(L, GetOwner());
-            lua_setfield(L, instanceTableIdx, "actor");
-
-            Node_Lua::Create(L, this);
-            lua_setfield(L, instanceTableIdx, "component");
+            Node_Lua::Create(L, GetOwner());
+            lua_setfield(L, instanceTableIdx, "node");
 
             mTableName = mClassName + "_" + std::to_string(ScriptUtils::GetNextScriptInstanceNumber());
 
@@ -1704,11 +1584,6 @@ void ScriptComponent::CreateScriptInstance()
             mHandleEndOverlap = CheckIfFunctionExists("EndOverlap");
             mHandleOnCollision = CheckIfFunctionExists("OnCollision");
 
-            if (ShouldHandleEvents() && GetOwner() != nullptr)
-            {
-                GetOwner()->AddScriptEventHandler(this);
-            }
-
             UploadScriptProperties();
             GatherScriptProperties();
 
@@ -1719,7 +1594,7 @@ void ScriptComponent::CreateScriptInstance()
             }
 
             // Register the table to comp map entry so that the script component can be found from a table name.
-            sTableToCompMap[mTableName] = this;
+            sTableToScriptMap[mTableName] = this;
 
             CallFunction("Create");
         }
@@ -1731,7 +1606,7 @@ void ScriptComponent::CreateScriptInstance()
 #endif
 }
 
-void ScriptComponent::DestroyScriptInstance()
+void Script::DestroyScriptInstance()
 {
 #if LUA_ENABLED
     if (mTableName != "")
@@ -1750,10 +1625,7 @@ void ScriptComponent::DestroyScriptInstance()
                 int tableIdx = lua_gettop(L);
 
                 lua_pushnil(L);
-                lua_setfield(L, tableIdx, "actor");
-
-                lua_pushnil(L);
-                lua_setfield(L, tableIdx, "component");
+                lua_setfield(L, tableIdx, "node");
 
                 lua_pushboolean(L, true);
                 lua_setfield(L, tableIdx, "destroyed");
@@ -1765,18 +1637,13 @@ void ScriptComponent::DestroyScriptInstance()
             lua_setglobal(L, mTableName.c_str());
         }
 
-        sTableToCompMap.erase(mTableName);
+        sTableToScriptMap.erase(mTableName);
 
         mTableName = "";
         mClassName = "";
 
         mScriptProps.clear();
         mReplicatedData.clear();
-    }
-
-    if (ShouldHandleEvents() && GetOwner() != nullptr)
-    {
-        GetOwner()->RemoveScriptEventHandler(this);
     }
 
     mTickEnabled = false;
@@ -1786,14 +1653,14 @@ void ScriptComponent::DestroyScriptInstance()
 #endif
 }
 
-bool ScriptComponent::LuaFuncCall(int numArgs, int numResults)
+bool Script::LuaFuncCall(int numArgs, int numResults)
 {
     bool success = true;
     success = ScriptUtils::CallLuaFunc(numArgs, numResults);
     return success;
 }
 
-void ScriptComponent::CallTick(float deltaTime)
+void Script::CallTick(float deltaTime)
 {
 #if LUA_ENABLED
 
@@ -1843,7 +1710,7 @@ void ScriptComponent::CallTick(float deltaTime)
 
 }
 
-bool ScriptComponent::CheckIfFunctionExists(const char* funcName)
+bool Script::CheckIfFunctionExists(const char* funcName)
 {
     bool exists = false;
 

@@ -156,7 +156,6 @@ void Node::Destroy()
 
     if (mScript != nullptr)
     {
-        mScript->Destroy();
         delete mScript;
         mScript = nullptr;
     }
@@ -336,6 +335,11 @@ void Node::Start()
             }
         }
 
+        if (mScript != nullptr)
+        {
+            mScript->CallFunction("Start");
+        }
+
         if (mReplicate &&
             NetIsServer())
         {
@@ -352,6 +356,11 @@ void Node::Start()
 
 void Node::Stop()
 {
+    if (mScript != nullptr)
+    {
+        mScript->CallFunction("Stop");
+    }
+
     if (mNetId != INVALID_NET_ID)
     {
         // RemoveNetNode should be called whether or not it's the server.
@@ -416,7 +425,10 @@ void Node::RecursiveTick(float deltaTime, bool game)
 
 void Node::Tick(float deltaTime)
 {
-
+    if (mScript != nullptr)
+    {
+        mScript->Tick(deltaTime);
+    }
 }
 
 void Node::EditorTick(float deltaTime)
@@ -447,12 +459,7 @@ void Node::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Replicate Transform", this, &mReplicateTransform));
     outProps.push_back(Property(DatumType::String, "Tags", this, &mTags).MakeVector());
 
-    static std::string sScriptFileName;
-    if (mScript != nullptr)
-    {
-        sScriptFileName = mScript->GetFileName();
-    }
-    outProps.push_back(Property(DatumType::String, "Script File", this, &sScriptFileName, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::String, "Script File", this, &mScriptFile, 1, HandlePropChange));
 
 #if EDITOR
     static bool sFakeBool = false;
@@ -546,7 +553,7 @@ void Node::BeginOverlap(Primitive3D* thisNode, Primitive3D* otherNode)
     // TODO-NODE: Get this working with scripts.
     if (mScript != nullptr)
     {
-        LogError("Need to call script BeginOverlap");
+        mScript->BeginOverlap(thisNode, otherNode);
     }
 
     // Until "Signals" are implemented, the current method of handling collision/overlaps will be to bubble up the events.
@@ -562,7 +569,7 @@ void Node::EndOverlap(Primitive3D* thisNode, Primitive3D* otherNode)
     // TODO-NODE: Get this working with scripts.
     if (mScript != nullptr)
     {
-        LogError("Need to call script EndOverlap");
+        mScript->EndOverlap(thisNode, otherNode);
     }
 
     // Until "Signals" are implemented, the current method of handling collision/overlaps will be to bubble up the events.
@@ -571,6 +578,7 @@ void Node::EndOverlap(Primitive3D* thisNode, Primitive3D* otherNode)
         mParent->EndOverlap(thisNode, otherNode);
     }
 }
+
 void Node::OnCollision(
     Primitive3D* thisNode,
     Primitive3D* otherNode,
@@ -583,7 +591,7 @@ void Node::OnCollision(
     // TODO-NODE: Get this working with scripts.
     if (mScript != nullptr)
     {
-        LogError("Need to call script OnCollision");
+        mScript->OnCollision(thisNode, otherNode, impactPoint, impactNormal, manifold);
     }
 
     // Until "Signals" are implemented, the current method of handling collision/overlaps will be to bubble up the events.
@@ -1388,9 +1396,11 @@ Script* Node::GetScript()
 
 void Node::SetScriptFile(const std::string& fileName)
 {
+    mScriptFile = fileName;
+
     if (fileName != "" && mScript == nullptr)
     {
-        mScript = new Script();
+        mScript = new Script(this);
     }
 
     if (mScript != nullptr &&
@@ -1398,6 +1408,11 @@ void Node::SetScriptFile(const std::string& fileName)
     {
         mScript->SetFile(fileName.c_str());
         mScript->RestartScript();
+
+        if (HasStarted())
+        {
+            mScript->CallFunction("Start");
+        }
     }
 }
 

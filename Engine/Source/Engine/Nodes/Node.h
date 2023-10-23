@@ -313,6 +313,7 @@ protected:
     Node* mParent = nullptr;
     std::vector<Node*> mChildren;
     std::unordered_map<std::string, Node*> mChildNameMap;
+    std::string mScriptFile;
 
     bool mActive = true;
     bool mVisible = true;

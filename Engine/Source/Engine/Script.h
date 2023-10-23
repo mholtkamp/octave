@@ -21,22 +21,13 @@ class Script
 {
 public:
 
-    Script();
+    Script(Node* owner);
     virtual ~Script();
 
-    virtual void SaveStream(Stream& stream) override;
-    virtual void LoadStream(Stream& stream) override;
+    Node* GetOwner();
 
-    virtual void Create() override;
-    virtual void Destroy() override;
-    virtual void Start() override;
-    virtual void EndPlay() override;
     virtual void Tick(float deltaTime);
 
-    virtual void SetOwner(Actor* owner);
-
-    virtual const char* GetTypeName() const override;
-    virtual void GatherProperties(std::vector<Property>& outProps) override;
     void AppendScriptProperties(std::vector<Property>& outProps);
 
     void SetFile(const char* filename);
@@ -50,8 +41,6 @@ public:
 
     bool ReloadScriptFile(const std::string& fileName, bool restartScript = true);
 
-    bool ShouldHandleEvents() const;
-
     std::vector<ScriptNetDatum>& GetReplicatedData();
 
     void InvokeNetFunc(const char* name, std::vector<Datum>& params);
@@ -59,11 +48,11 @@ public:
     ScriptNetFunc* FindNetFunc(uint16_t index);
     void ExecuteNetFunc(uint16_t index, uint32_t numParams, std::vector<Datum>& params);
 
-    void BeginOverlap(Primitive3D* thisComp, Primitive3D* otherComp);
-    void EndOverlap(Primitive3D* thisComp, Primitive3D* otherComp);
+    void BeginOverlap(Primitive3D* thisNode, Primitive3D* otherNode);
+    void EndOverlap(Primitive3D* thisNode, Primitive3D* otherNode);
     void OnCollision(
-        Primitive3D* thisComp,
-        Primitive3D* otherComp,
+        Primitive3D* thisNode,
+        Primitive3D* otherNode,
         glm::vec3 impactPoint,
         glm::vec3 impactNormal,
         btPersistentManifold* manifold);
@@ -129,6 +118,7 @@ protected:
     static std::unordered_map<std::string, Script*> sTableToScriptMap;
     static std::unordered_map<std::string, ScriptNetFuncMap> sScriptNetFuncMap;
 
+    Node* mOwner = nullptr;
     std::string mFileName;
     std::string mClassName;
     std::string mTableName;
