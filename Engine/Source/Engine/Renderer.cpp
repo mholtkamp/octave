@@ -791,7 +791,7 @@ void Renderer::GatherLightData(World* world)
         {
             if (lights[i]->IsVisible()
 #if !EDITOR
-                && comps[i]->GetLightingDomain() != LightingDomain::Static
+                && lights[i]->GetLightingDomain() != LightingDomain::Static
 #endif
                 )
             {

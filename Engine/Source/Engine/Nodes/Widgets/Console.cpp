@@ -37,7 +37,9 @@ void Console::WriteOutput(const char* output, glm::vec4 color)
         OCT_ASSERT(numChildren > 0);
 
         uint32_t lastIndex = numChildren - 1;
-        ConsoleOutputText* text = (ConsoleOutputText*)mOutputCanvas->RemoveChild(lastIndex);
+
+        ConsoleOutputText* text = (ConsoleOutputText*)mOutputCanvas->GetChild(lastIndex);
+        mOutputCanvas->RemoveChild(lastIndex);
         text->SetText(output);
         text->SetColor(color);
         text->SetVisible(true);
@@ -103,7 +105,8 @@ void Console::SetNumOutputLines(uint32_t numLines)
         // Destroy old widgets
         for (int32_t i = (int32_t)mOutputCanvas->GetNumChildren() - 1; i >= 0 ; --i)
         {
-            Widget* oldText = mOutputCanvas->RemoveChild(i);
+            Widget* oldText = mOutputCanvas->GetChild(i)->As<Widget>();
+            mOutputCanvas->RemoveChild(i);
             delete oldText;
         }
 

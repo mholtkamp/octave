@@ -53,8 +53,6 @@ void TextField::Tick(float deltaTime)
     }
 
     // Handle Blinky Cursor
-    const Clock* clock = GetAppClock();
-    float deltaTime = clock->DeltaTime();
     sCursorBlinkTime -= deltaTime;
 
     if (sCursorBlinkTime <= 0.0f)

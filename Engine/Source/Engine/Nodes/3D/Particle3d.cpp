@@ -15,7 +15,7 @@
 #endif
 
 FORCE_LINK_DEF(Particle3D);
-DEFINE_NODE(Particle3D);
+DEFINE_NODE(Particle3D, Primitive3D);
 
 const char* sParticleOrientationStrings[] =
 {
@@ -210,6 +210,18 @@ void Particle3D::Tick(float deltaTime)
     Primitive3D::Tick(deltaTime);
     mHasSimulatedThisFrame = false;
     mHasUpdatedVerticesThisFrame = false;
+
+    if (mAutoDestroy)
+    {
+        mElapsedTime += deltaTime;
+
+        if (mElapsedTime > 0.3f &&
+            !IsEmissionEnabled() &&
+            GetNumParticles() == 0)
+        {
+            SetPendingDestroy(true);
+        }
+    }
 }
 
 VertexType Particle3D::GetVertexType() const
@@ -266,6 +278,16 @@ void Particle3D::EnableAutoEmit(bool enable)
 bool Particle3D::IsAutoEmitEnabled() const
 {
     return mAutoEmit;
+}
+
+void Particle3D::EnableAutoDestroy(bool enable)
+{
+    mAutoDestroy = enable;
+}
+
+bool Particle3D::IsAutoDestroyEnabled() const
+{
+    return mAutoDestroy;
 }
 
 float Particle3D::GetElapsedTime() const

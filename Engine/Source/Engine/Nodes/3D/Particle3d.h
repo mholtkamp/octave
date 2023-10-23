@@ -67,6 +67,9 @@ public:
     void EnableAutoEmit(bool enable);
     bool IsAutoEmitEnabled() const;
 
+    void EnableAutoDestroy(bool enable);
+    bool IsAutoDestroyEnabled() const;
+
     float GetElapsedTime() const;
 
     void SetParticleSystem(ParticleSystem* particleSystem);
@@ -117,6 +120,7 @@ protected:
     float mElapsedTime = 0.0f;
     bool mEmit = true;
     bool mAutoEmit = true;
+    bool mAutoDestroy = false;
     std::vector<Particle> mParticles;
     std::vector<VertexParticle> mVertices;
     float mEmissionCounter = 0.0f;

@@ -2,12 +2,12 @@
 #include "Engine.h"
 #include "Log.h"
 #include "Nodes/Node.h"
-#include "Assets/Level.h"
-#include "Assets/Blueprint.h"
+#include "Assets/Scene.h"
 #include "World.h"
 #include "Profiler.h"
 #include "Maths.h"
 #include "ScriptEvent.h"
+#include "Script.h"
 
 #ifdef SendMessage
 #undef SendMessage
@@ -1179,9 +1179,15 @@ void NetworkManager::SendInvokeScriptMsg(Script* script, ScriptNetFunc* func, ui
 void NetworkManager::SendSpawnMessage(Node* node, NetClient* client)
 {
     NetMsgSpawn spawnMsg;
-    spawnMsg.mSceneName = scene->GetName();
-    spawnMsg.mNetId = node->GetNetId();
     spawnMsg.mNodeTypeId = node->GetType();
+    spawnMsg.mNetId = node->GetNetId();
+    spawnMsg.mParentNetId = INVALID_NET_ID;
+
+    Node* parent = node->GetParent();
+    if (parent != nullptr)
+    {
+        spawnMsg.mParentNetId = parent->GetNetId();
+    }
 
     Scene* scene = node->GetScene();
     if (scene != nullptr)

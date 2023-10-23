@@ -103,7 +103,7 @@ void HandlePopVectorPressed(Button* button)
         RTTI* owner = (RTTI*)prop.mOwner;
         if (owner && owner->As<ScriptComponent>())
         {
-            owner->As<ScriptComponent>()->SetArrayScriptPropCount(prop.mName, prop.GetCount());
+            owner->As<Script>()->SetArrayScriptPropCount(prop.mName, prop.GetCount());
         }
     }
 }
@@ -134,7 +134,7 @@ void HandlePushVectorPressed(Button* button)
         RTTI* owner = (RTTI*)prop.mOwner;
         if (owner && owner->As<ScriptComponent>())
         {
-            owner->As<ScriptComponent>()->SetArrayScriptPropCount(prop.mName, prop.GetCount());
+            owner->As<Script>()->SetArrayScriptPropCount(prop.mName, prop.GetCount());
         }
     }
 }

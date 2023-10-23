@@ -9,7 +9,7 @@
 #include "Graphics/Graphics.h"
 
 FORCE_LINK_DEF(TextMesh3D);
-DEFINE_NODE(TextMesh3D);
+DEFINE_NODE(TextMesh3D, Mesh3D);
 
 extern const char* gBlendModeStrings[];
 

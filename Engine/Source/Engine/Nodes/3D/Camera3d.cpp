@@ -11,7 +11,7 @@
 #include "Graphics/Graphics.h"
 
 FORCE_LINK_DEF(Camera3D);
-DEFINE_NODE(Camera3D);
+DEFINE_NODE(Camera3D, Node3D);
 
 Camera3D::Camera3D() :
     mProjectionMode(ProjectionMode::PERSPECTIVE),
@@ -36,8 +36,7 @@ void Camera3D::Start()
 
     Camera3D* activeCam = GetWorld()->GetActiveCamera();
 
-    if (activeCam == nullptr ||
-        activeCam == GetWorld()->GetDefaultCamera())
+    if (activeCam == nullptr)
     {
         GetWorld()->SetActiveCamera(this);
     }

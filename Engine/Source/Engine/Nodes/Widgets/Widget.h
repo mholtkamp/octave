@@ -87,6 +87,7 @@ public:
     virtual bool IsWidget() const override;
     Widget* GetParentWidget();
     const Widget* GetParentWidget() const;
+    Widget* GetChildWidget(int32_t index);
 
     Rect GetRect();
 

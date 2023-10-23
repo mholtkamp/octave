@@ -2,7 +2,7 @@
 #include "Graphics/Graphics.h"
 
 FORCE_LINK_DEF(ShadowMesh3D);
-DEFINE_NODE(ShadowMesh3D);
+DEFINE_NODE(ShadowMesh3D, StaticMesh3D);
 
 ShadowMesh3D::ShadowMesh3D()
 {

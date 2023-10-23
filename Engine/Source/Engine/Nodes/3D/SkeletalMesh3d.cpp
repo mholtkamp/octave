@@ -26,7 +26,7 @@ static const char* sAnimationUpdateModeStrings[] =
 static_assert(int32_t(AnimationUpdateMode::Count) == 3, "Need to update string conversion table");
 
 FORCE_LINK_DEF(SkeletalMesh3D);
-DEFINE_NODE(SkeletalMesh3D);
+DEFINE_NODE(SkeletalMesh3D, Mesh3D);
 
 struct DecompTransform
 {

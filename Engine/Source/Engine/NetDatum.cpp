@@ -2,6 +2,7 @@
 #include "Asset.h"
 #include "AssetRef.h"
 #include "Log.h"
+#include "Script.h"
 
 #include <string.h>
 
@@ -142,7 +143,7 @@ ScriptNetDatum::ScriptNetDatum(
     uint32_t count,
     const char* onRepFuncName,
     bool alwaysReplicate) :
-    NetDatum(type, owner, data, count, ScriptComponent::OnRepHandler , alwaysReplicate)
+    NetDatum(type, owner, data, count, Script::OnRepHandler , alwaysReplicate)
 {
     mVarName = varName;
 }

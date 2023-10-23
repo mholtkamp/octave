@@ -165,14 +165,18 @@ void VerticalList::RebuildDisplay()
     // So we just need to position them correctly.
     float yPos = 0.0f;
     float maxWidth = 1.0f;
-    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    for (uint32_t i = 0; i < GetNumChildren(); ++i)
     {
-        mChildren[i]->SetPosition(0.0f, yPos);
-        float width = mChildren[i]->GetWidth();
-        float height = mChildren[i]->GetHeight();
+        Widget* child = GetChildWidget(i);
+        if (child != nullptr)
+        {
+            child->SetPosition(0.0f, yPos);
+            float width = child->GetWidth();
+            float height = child->GetHeight();
 
-        maxWidth = glm::max(maxWidth, width);
-        yPos += height;
+            maxWidth = glm::max(maxWidth, width);
+            yPos += height;
+        }
     }
 
     // Make sure this list canvas encompasses its children.

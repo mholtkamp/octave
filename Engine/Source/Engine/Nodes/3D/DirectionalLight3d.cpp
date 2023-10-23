@@ -4,7 +4,7 @@
 #include "Maths.h"
 
 FORCE_LINK_DEF(DirectionalLight3D);
-DEFINE_NODE(DirectionalLight3D);
+DEFINE_NODE(DirectionalLight3D, Light3D);
 
 DirectionalLight3D::DirectionalLight3D()
 {

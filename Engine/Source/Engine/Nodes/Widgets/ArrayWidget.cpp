@@ -36,7 +36,7 @@ void ArrayWidget::Tick(float deltaTime)
 
     for (uint32_t i = 0; i < numChilden; ++i)
     {
-        Widget* child = GetChild(i);
+        Widget* child = GetChildWidget(i);
 
         if (vertical)
         {

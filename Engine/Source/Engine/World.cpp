@@ -857,6 +857,8 @@ Particle3D* World::SpawnParticle(ParticleSystem* sys, glm::vec3 position)
     Particle3D* ret = SpawnNode<Particle3D>();
     ret->SetParticleSystem(sys);
     ret->SetPosition(position);
+    ret->EnableEmission(true);
+    ret->EnableAutoDestroy(true);
 
     return ret;
 }

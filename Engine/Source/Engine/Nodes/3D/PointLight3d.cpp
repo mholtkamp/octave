@@ -14,7 +14,7 @@
 #undef max
 
 FORCE_LINK_DEF(PointLight3D);
-DEFINE_NODE(PointLight3D);
+DEFINE_NODE(PointLight3D, Light3D);
 
 PointLight3D::PointLight3D() :
     mRadius(5)

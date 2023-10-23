@@ -27,6 +27,7 @@
 
 #include "Graphics/Graphics.h"
 #include "LuaBindings/LuaUtils.h"
+#include "LuaBindings/Node_Lua.h"
 
 #if EDITOR
 #include "EditorState.h"

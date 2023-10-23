@@ -180,6 +180,19 @@ const Widget* Widget::GetParentWidget() const
     return parentWidget;
 }
 
+Widget* Widget::GetChildWidget(int32_t index)
+{
+    Widget* childWidget = nullptr;
+    Node* child = GetChild(index);
+
+    if (child && child->IsWidget())
+    {
+        childWidget = (Widget*)child;
+    }
+
+    return childWidget;
+}
+
 Rect Widget::GetRect()
 {
     return mRect;

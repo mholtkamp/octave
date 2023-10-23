@@ -1,5 +1,6 @@
 #include "ScriptEvent.h"
 #include "Engine.h"
+#include "Script.h"
 #include "Log.h"
 
 #include "Nodes/Widgets/Widget.h"
@@ -67,11 +68,11 @@ void ExecFunctionCall(lua_State* L, const std::string& tableName, int argCount)
 {
     // The self parameter is always passed as arg1
     OCT_ASSERT(argCount >= 1);
-    ScriptComponent* scriptComp = ScriptComponent::FindScriptCompFromTableName(tableName);
+    Script* script = Script::FindScriptFromTableName(tableName);
 
-    if (scriptComp)
+    if (script)
     {
-        scriptComp->LuaFuncCall(argCount);
+        script->LuaFuncCall(argCount);
     }
     else
     {

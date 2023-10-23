@@ -3,8 +3,9 @@
 #include "Engine.h"
 #include "NetworkManager.h"
 #include "AssetManager.h"
-#include "Assets/Level.h"
+#include "Assets/Scene.h"
 #include "World.h"
+#include "Script.h"
 
 void NetSafeStringWrite(Stream& stream, const std::string& string)
 {
@@ -254,8 +255,8 @@ void NetMsgSpawn::Execute(NetHost sender)
             // Node::mScript isn't replicated (at least as of now), and usually you will be spawning a scene with a script...
             // So maybe... at this point, if the node has a script, call mScript->StartScript()
             // so that we can populate the netdata / netfuncs. And then later it's Start() will be called appropriately.
-            // Actually, yeah that sounds good, I'm going to do that now.
-            newNode->StartScript();
+            
+            //newNode->StartScript();
         }
     }
 }

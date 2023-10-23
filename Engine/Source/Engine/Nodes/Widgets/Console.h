@@ -19,7 +19,7 @@ public:
 
     void WriteOutput(const char* output, glm::vec4 color = { 1, 1, 1, 1 });
 
-    virtual void Update();
+    virtual void Tick(float deltaTime) override;
 
     void ProcessInput(const char* input);
     void SetNumOutputLines(uint32_t numLines);

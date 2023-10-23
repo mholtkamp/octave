@@ -95,7 +95,6 @@ public:
 
 protected:
 
-    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
     static bool HandleScriptPropChange(Datum* datum, uint32_t index, const void* newValue);
     static bool HandleForeignScriptPropChange(Datum* datum, uint32_t index, const void* newValue);
 
