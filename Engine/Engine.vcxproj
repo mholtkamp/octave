@@ -533,7 +533,6 @@
     <ClCompile Include="Source\Editor\Grid.cpp" />
     <ClCompile Include="Source\Editor\InputManager.cpp" />
     <ClCompile Include="Source\Editor\PanelManager.cpp" />
-    <ClCompile Include="Source\Editor\TestActor.cpp" />
     <ClCompile Include="Source\Editor\Widgets\ActionList.cpp" />
     <ClCompile Include="Source\Editor\Widgets\ActorButton.cpp" />
     <ClCompile Include="Source\Editor\Widgets\AssetButton.cpp" />
@@ -589,6 +588,7 @@
     <ClCompile Include="Source\Engine\Nodes\3D\SkeletalMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Sphere3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\StaticMesh3d.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\TestSpinner.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\TextMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Node3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Node.cpp" />
@@ -763,7 +763,6 @@
     <ClInclude Include="Source\Editor\Grid.h" />
     <ClInclude Include="Source\Editor\InputManager.h" />
     <ClInclude Include="Source\Editor\PanelManager.h" />
-    <ClInclude Include="Source\Editor\TestActor.h" />
     <ClInclude Include="Source\Editor\Widgets\ActionList.h" />
     <ClInclude Include="Source\Editor\Widgets\ActorButton.h" />
     <ClInclude Include="Source\Editor\Widgets\AssetButton.h" />
@@ -826,6 +825,7 @@
     <ClInclude Include="Source\Engine\Nodes\3D\SkeletalMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Sphere3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\StaticMesh3d.h" />
+    <ClInclude Include="Source\Engine\Nodes\3D\TestSpinner.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\TextMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Node3d.h" />
     <ClInclude Include="Source\Engine\Nodes\Node.h" />

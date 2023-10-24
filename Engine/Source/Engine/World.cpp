@@ -958,6 +958,32 @@ void World::UpdateRenderSettings()
     }
 }
 
+Camera3D* World::SpawnDefaultCamera()
+{
+    if (mRootNode == nullptr)
+    {
+        SpawnDefaultRoot();
+    }
+
+    Camera3D* transCam = SpawnNode<Camera3D>();
+    transCam->SetName("Default Camera");
+    transCam->SetTransient(true);
+    transCam->SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
+
+    return transCam;
+}
+
+Node* World::SpawnDefaultRoot()
+{
+    if (mRootNode == nullptr)
+    {
+        mRootNode = SpawnNode<Node>();
+        mRootNode->SetName("Default Root");
+    }
+
+    return mRootNode;
+}
+
 #if EDITOR
 
 bool World::IsNodeSelected(Node* node) const

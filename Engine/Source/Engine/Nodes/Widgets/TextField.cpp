@@ -18,11 +18,10 @@ TextField::TextField() :
     mCursorQuad(nullptr),
     mMaxCharacters(0)
 {
-    mCursorQuad = new Quad();
+    mCursorQuad = CreateChild<Quad>("CursorQuad");
     mCursorQuad->SetVisible(false);
     mCursorQuad->SetAnchorMode(AnchorMode::FullStretch);
     mCursorQuad->SetMargins(0.0f, 0.0f, 0.0f, 0.0f);
-    AddChild(mCursorQuad);
 }
 
 TextField::~TextField()

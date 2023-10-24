@@ -49,24 +49,6 @@ enum MarginFlag : uint8_t
     MF_Bottom       = 1 << 3
 };
 
-Widget* CreateWidget(TypeId widgetType, bool start = true);
-Widget* CreateWidget(const std::string& className, bool start = true);
-void DestroyWidget(Widget* widget);
-
-template<typename T>
-inline T* CreateWidget(bool start = true)
-{
-    T* ret = new T();
-
-    if (start)
-    {
-        ret->Start();
-    }
-
-    return ret;
-}
-
-
 class Widget : public Node
 {
 public:

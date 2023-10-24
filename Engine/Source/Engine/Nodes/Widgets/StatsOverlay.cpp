@@ -73,15 +73,13 @@ void StatsOverlay::Tick(float deltaTime)
 
         for (uint32_t i = 0; i < numToAlloc; ++i)
         {
-            Text* newKeyText = new Text();
+            Text* newKeyText = CreateChild<Text>("Key");
             newKeyText->SetColor(DEFAULT_STAT_COLOR);
             newKeyText->SetFont(font);
-            AddChild(newKeyText);
 
-            Text* newValueText = new Text();
+            Text* newValueText = CreateChild<Text>("Value");
             newValueText->SetColor(DEFAULT_STAT_COLOR);
             newValueText->SetFont(font);
-            AddChild(newValueText);
 
             mStatKeyTexts.push_back(newKeyText);
             mStatValueTexts.push_back(newValueText);

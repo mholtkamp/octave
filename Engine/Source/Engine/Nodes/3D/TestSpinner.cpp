@@ -1,6 +1,6 @@
 #if 1 //EDITOR
 
-#include "TestActor.h"
+#include "TestSpinner.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/PointLight3d.h"
@@ -12,21 +12,21 @@
 #include "Log.h"
 #include "Nodes/Widgets/Widget.h"
 
-DEFINE_NODE(TestActor, Node3D);
+DEFINE_NODE(TestSpinner, StaticMesh3D);
 
-void TestActor::Create()
+void TestSpinner::Create()
 {
     StaticMesh3D::Create();
 
-    SetName("TestActor");
+    SetName("TestSpinner");
 
     mLeftMesh1 = CreateChild<StaticMesh3D>("Left Mesh 1");
     mRightMesh1 = CreateChild<StaticMesh3D>("Right Mesh 1");
     mRightMesh2 = mRightMesh1->CreateChild<StaticMesh3D>("Right Mesh 2");
+    mLeftSpin1 = mLeftMesh1->CreateChild<Node3D>("Left Spin Root");
     mLeftLight1 = mLeftSpin1->CreateChild<PointLight3D>("Left Light 1");
     mLeftLight2 = mLeftSpin1->CreateChild<PointLight3D>("Left Light 2");
     mRightLight1 = mRightMesh1->CreateChild<PointLight3D>("Right Light 1");
-    mLeftSpin1 = mLeftMesh1->CreateChild<Node3D>("Left Spin Root");
 
     mLeftMesh1->SetPosition(glm::vec3(-5, 0, 0));
     mRightMesh1->SetPosition(glm::vec3(5, 0, 0));
@@ -79,12 +79,12 @@ void TestActor::Create()
     SetTransient(true);
 }
 
-void TestActor::Destroy()
+void TestSpinner::Destroy()
 {
     StaticMesh3D::Destroy();
 }
 
-void TestActor::Tick(float deltaTime)
+void TestSpinner::Tick(float deltaTime)
 {
     StaticMesh3D::Tick(deltaTime);
 
@@ -136,7 +136,7 @@ void TestActor::Tick(float deltaTime)
     }
 }
 
-void TestActor::EditorTick(float deltaTime)
+void TestSpinner::EditorTick(float deltaTime)
 {
     Tick(deltaTime);
 }

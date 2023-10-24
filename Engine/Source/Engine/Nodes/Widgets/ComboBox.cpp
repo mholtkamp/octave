@@ -39,7 +39,7 @@ void HandleComboBoxButtonPress(Button* button)
 
 ComboBox::ComboBox()
 {
-    mList = new VerticalList();
+    mList = Node::Construct<VerticalList>();
     mList->SetDisplayCount(8);
 }
 
@@ -99,7 +99,7 @@ void ComboBox::AddSelection(const std::string& selection)
 
     // Create new button for our dropdown list. Make sure its position in the list
     // matches its selection string index in Selector.
-    ComboBoxButton* button = new ComboBoxButton();
+    ComboBoxButton* button = Node::Construct<ComboBoxButton>();
     button->mComboBox = this;
     button->SetTextString(selection);
     button->GetText()->SetTextSize(mTextSize);

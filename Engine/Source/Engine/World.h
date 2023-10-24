@@ -117,6 +117,9 @@ public:
 
     void UpdateRenderSettings();
 
+    Camera3D* SpawnDefaultCamera();
+    Node* SpawnDefaultRoot();
+
     template<typename T>
     T* FindNode()
     {

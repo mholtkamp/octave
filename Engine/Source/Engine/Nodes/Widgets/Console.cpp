@@ -14,8 +14,7 @@ Console::Console()
 
     mFont = LoadAsset<Font>("F_RobotoMono16");
 
-    mOutputCanvas = new Canvas();
-    AddChild(mOutputCanvas);
+    mOutputCanvas = CreateChild<Canvas>("OutputCanvas");
 
     const uint32_t defaultNumLines = 5;
     SetNumOutputLines(defaultNumLines);
@@ -115,9 +114,10 @@ void Console::SetNumOutputLines(uint32_t numLines)
         for (uint32_t i = 0; i < numLines; ++i)
         {
             // Allocate Text widgets and parent them to this widget.
-            ConsoleOutputText* newText = new ConsoleOutputText();
+            char name[32];
+            snprintf(name, 32, "Line%d", (int)i);
+            ConsoleOutputText* newText = mOutputCanvas->CreateChild<ConsoleOutputText>(name);
             newText->SetText("");
-            mOutputCanvas->AddChild(newText);
             mOutputLines.push_back(newText);
         }
 

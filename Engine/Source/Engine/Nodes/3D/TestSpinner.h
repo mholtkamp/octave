@@ -10,11 +10,11 @@ class ScriptComponent;
 class Texture;
 class StaticMesh;
 
-class TestActor : public StaticMesh3D
+class TestSpinner : public StaticMesh3D
 {
 public:
 
-    DECLARE_NODE(TestActor, StaticMesh3D);
+    DECLARE_NODE(TestSpinner, StaticMesh3D);
 
     virtual void Create() override;
     virtual void Destroy() override;

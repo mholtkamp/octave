@@ -27,11 +27,11 @@
 
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/PointLight3d.h"
+#include "Nodes/3D/TestSpinner.h"
 
 #include "ActionManager.h"
 #include "InputManager.h"
 #include "PanelManager.h"
-#include "TestActor.h"
 #include "Grid.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/Font.h"

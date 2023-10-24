@@ -34,11 +34,8 @@ Button::Button() :
     SetName("Button");
     mUseScissor = true;
 
-    mQuad = new Quad();
-    mText = new Text();
-
-    AddChild(mQuad);
-    AddChild(mText);
+    mQuad = CreateChild<Quad>();
+    mText = CreateChild<Text>();
 
     mQuad->SetAnchorMode(AnchorMode::FullStretch);
     mText->SetAnchorMode(AnchorMode::FullStretch);
