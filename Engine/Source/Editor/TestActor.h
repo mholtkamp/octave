@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Nodes/Node.h"
+#include "Nodes/3D/Node3d.h"
 
 class StaticMesh3D;
 class PointLight3D;
@@ -9,7 +10,7 @@ class ScriptComponent;
 class Texture;
 class StaticMesh;
 
-class TestActor : public Actor
+class TestActor : public Node3D
 {
 public:
 
@@ -19,7 +20,7 @@ public:
     virtual void Tick(float deltaTime) override;
     virtual void EditorTick(float deltaTime) override;
 
-    DECLARE_ACTOR(TestActor, Actor);
+    DECLARE_NODE(TestActor, Node3D);
 
 protected:
 

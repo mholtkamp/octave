@@ -194,6 +194,6 @@ void TestActor::EditorTick(float deltaTime)
 }
 
 
-DEFINE_ACTOR(TestActor, Actor);
+DEFINE_NODE(TestActor, Node3D);
 
 #endif
