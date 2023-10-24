@@ -1,4 +1,4 @@
-#if EDITOR
+#if 1 //EDITOR
 
 #include "TestActor.h"
 
@@ -12,52 +12,22 @@
 #include "Log.h"
 #include "Nodes/Widgets/Widget.h"
 
-TestActor::TestActor() :
-    mRootMesh(nullptr),
-    mLeftMesh1(nullptr),
-    mRightMesh1(nullptr),
-    mRightMesh2(nullptr),
-    mLeftLight1(nullptr),
-    mLeftLight2(nullptr),
-    mRightLight1(nullptr)
-{
-
-}
+DEFINE_NODE(TestActor, Node3D);
 
 void TestActor::Create()
 {
-    Actor::Create();
+    StaticMesh3D::Create();
 
     SetName("TestActor");
 
-    mRootMesh = CreateComponent<StaticMesh3D>();
-    mLeftMesh1 = CreateComponent<StaticMesh3D>();
-    mRightMesh1 = CreateComponent<StaticMesh3D>();
-    mRightMesh2 = CreateComponent<StaticMesh3D>();
-    mLeftLight1 = CreateComponent<PointLight3D>();
-    mLeftLight2 = CreateComponent<PointLight3D>();
-    mRightLight1 = CreateComponent<PointLight3D>();
-    mLeftSpin1 = CreateComponent<Node3D>();
+    mLeftMesh1 = CreateChild<StaticMesh3D>("Left Mesh 1");
+    mRightMesh1 = CreateChild<StaticMesh3D>("Right Mesh 1");
+    mRightMesh2 = mRightMesh1->CreateChild<StaticMesh3D>("Right Mesh 2");
+    mLeftLight1 = mLeftSpin1->CreateChild<PointLight3D>("Left Light 1");
+    mLeftLight2 = mLeftSpin1->CreateChild<PointLight3D>("Left Light 2");
+    mRightLight1 = mRightMesh1->CreateChild<PointLight3D>("Right Light 1");
+    mLeftSpin1 = mLeftMesh1->CreateChild<Node3D>("Left Spin Root");
 
-    mRootMesh->SetName("Root Mesh");
-    mLeftMesh1->SetName("Left Mesh 1");
-    mRightMesh1->SetName("Right Mesh 1");
-    mRightMesh2->SetName("Right Mesh 2");
-    mLeftLight1->SetName("Left Light 1");
-    mLeftLight2->SetName("Left Light 2");
-    mRightLight1->SetName("Right Light 1");
-    mLeftSpin1->SetName("Left Spin Root");
-
-    SetRootComponent(mRootMesh);
-    mLeftMesh1->Attach(mRootMesh);
-    mRightMesh1->Attach(mRootMesh);
-    mRightMesh2->Attach(mRightMesh1);
-    mRightLight1->Attach(mRightMesh1);
-    mLeftSpin1->Attach(mLeftMesh1);
-    mLeftLight1->Attach(mLeftSpin1);
-    mLeftLight2->Attach(mLeftSpin1);
-
-    mRootMesh->SetPosition(glm::vec3(0, 0, 0));
     mLeftMesh1->SetPosition(glm::vec3(-5, 0, 0));
     mRightMesh1->SetPosition(glm::vec3(5, 0, 0));
     mRightMesh2->SetPosition(glm::vec3(0, 5, 0));
@@ -68,7 +38,7 @@ void TestActor::Create()
     StaticMeshRef ConeMesh = LoadAsset("SM_Cone");
     StaticMeshRef CubeMesh = LoadAsset("SM_Cube");
 
-    mRootMesh->SetStaticMesh(ConeMesh.Get<StaticMesh>());
+    SetStaticMesh(ConeMesh.Get<StaticMesh>());
     mLeftMesh1->SetStaticMesh(CubeMesh.Get<StaticMesh>());
     mRightMesh1->SetStaticMesh(CubeMesh.Get<StaticMesh>());
     mRightMesh2->SetStaticMesh(ConeMesh.Get<StaticMesh>());
@@ -84,22 +54,12 @@ void TestActor::Create()
 
     // Print out all Actor factories.
     {
-        LogDebug("----Actor Types----");
-        std::vector<Factory*>& factoryList = GetFactoryList();
+        LogDebug("----Node Types----");
+        std::vector<Factory*>& factoryList = Node::GetFactoryList();
         
         for (uint32_t i = 0; i < factoryList.size(); ++i)
         {
-            LogDebug("ActorClass[%d] %s - %lu", i, factoryList[i]->GetClassName(), factoryList[i]->GetType());
-        }
-    }
-
-    {
-        LogDebug("----Component Types----");
-        std::vector<Factory*>& factoryList = Component::GetFactoryList();
-        
-        for (uint32_t i = 0; i < factoryList.size(); ++i)
-        {
-            LogDebug("ComponentClass[%d] %s - %lu", i, factoryList[i]->GetClassName(), factoryList[i]->GetType());
+            LogDebug("NodeClass[%d] %s - %lu", i, factoryList[i]->GetClassName(), factoryList[i]->GetType());
         }
     }
 
@@ -113,19 +73,7 @@ void TestActor::Create()
         }
     }
 
-    {
-        LogDebug("----Widget Types----");
-        std::vector<Factory*>& factoryList = Widget::GetFactoryList();
-
-        for (uint32_t i = 0; i < factoryList.size(); ++i)
-        {
-            LogDebug("WidgetClass[%d] %s - %lu", i, factoryList[i]->GetClassName(), factoryList[i]->GetType());
-        }
-    }
-
-    mScript = CreateComponent<ScriptComponent>();
-    //mScript->SetFile("Engine/Scripts/Test.lua");
-    //mScript->Create();
+    //SetScriptFile("Engine/Scripts/Test.lua");
 
     // Test actor only exists in the EDITOR builds. Don't allow saving it to a level.
     SetTransient(true);
@@ -133,12 +81,12 @@ void TestActor::Create()
 
 void TestActor::Destroy()
 {
-    Actor::Destroy();
+    StaticMesh3D::Destroy();
 }
 
 void TestActor::Tick(float deltaTime)
 {
-    Actor::Tick(deltaTime);
+    StaticMesh3D::Tick(deltaTime);
 
     static bool rotate = true;
     static bool translate = false;
@@ -146,9 +94,9 @@ void TestActor::Tick(float deltaTime)
 
     if (rotate)
     {
-        glm::vec3 rootRot = mRootMesh->GetRotationEuler();
+        glm::vec3 rootRot = GetRotationEuler();
         rootRot.y += 30 * deltaTime;
-        mRootMesh->SetRotation(rootRot);
+        SetRotation(rootRot);
 
         glm::vec3 right2Rot = mRightMesh2->GetRotationEuler();
         right2Rot.y += 470 * deltaTime;
@@ -169,9 +117,9 @@ void TestActor::Tick(float deltaTime)
 
     if (translate)
     {
-        glm::vec3 rootPos = mRootMesh->GetPosition();
+        glm::vec3 rootPos = GetPosition();
         rootPos.z = 20.0f * sinf(0.5f * GetAppClock()->GetTime());
-        mRootMesh->SetPosition(rootPos);
+        SetPosition(rootPos);
 
         glm::vec3 right2Pos = mRightMesh2->GetPosition();
         right2Pos.y = 5 + 2.5f * sinf(4.0f * GetAppClock()->GetTime());
@@ -181,7 +129,7 @@ void TestActor::Tick(float deltaTime)
     if (scale)
     {
         float newScale = 2 + 1 * sinf(2 * GetAppClock()->GetTime());
-        mRootMesh->SetScale(glm::vec3(newScale, newScale, newScale));
+        SetScale(glm::vec3(newScale, newScale, newScale));
 
         float right2Scale = 1 + 2 * fabs(sinf(5 * GetAppClock()->GetTime()));
         mRightMesh2->SetScale(glm::vec3(right2Scale, right2Scale, right2Scale));
@@ -192,8 +140,5 @@ void TestActor::EditorTick(float deltaTime)
 {
     Tick(deltaTime);
 }
-
-
-DEFINE_NODE(TestActor, Node3D);
 
 #endif
