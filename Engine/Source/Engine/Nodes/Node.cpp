@@ -676,7 +676,6 @@ Node* Node::CreateChild(TypeId nodeType)
     if (subNode != nullptr)
     {
         AddChild(subNode);
-        subNode->Create();
 
         if (HasStarted())
         {
@@ -1644,6 +1643,7 @@ void Node::ValidateUniqueChildName(Node* newChild)
             // For now, just use # at the end of name and increment a static counter.
             name = name + "#" + std::to_string(sUniqueId);
             sUniqueId++;
+            validName = true;
         }
         else
         {
@@ -1691,7 +1691,8 @@ void Node::ValidateUniqueChildName(Node* newChild)
         }
 
         OCT_ASSERT(validName);
-        newChild->SetName(name);
+        // Don't call SetName() here because that will trigger another ValidateUniqueChildName() call.
+        newChild->mName = name;
     }
 }
 

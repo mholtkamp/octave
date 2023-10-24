@@ -264,7 +264,7 @@ public:
             {
                 for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
                 {
-                    cont = ForEach(func, inverted);
+                    cont = mChildren[i]->ForEach(func, inverted);
 
                     if (!cont)
                     {
@@ -276,7 +276,7 @@ public:
             {
                 for (uint32_t i = 0; i < mChildren.size(); ++i)
                 {
-                    cont = ForEach(func, inverted);
+                    cont = mChildren[i]->ForEach(func, inverted);
 
                     if (!cont)
                     {
