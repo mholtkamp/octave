@@ -866,6 +866,15 @@ Particle3D* World::SpawnParticle(ParticleSystem* sys, glm::vec3 position)
     return ret;
 }
 
+void World::DestroyNode(Node*& node)
+{
+    if (node->GetWorld() == this)
+    {
+        Node::Destruct(node);
+        node = nullptr;
+    }
+}
+
 void World::LoadScene(const char* name, bool instant)
 {
     if (instant)

@@ -41,6 +41,7 @@ public:
     Node* SpawnNode(const char* typeName);
     Node* SpawnScene(const char* sceneName);
     Particle3D* SpawnParticle(ParticleSystem* sys, glm::vec3 position);
+    void DestroyNode(Node*& node);
 
     template<class NodeClass>
     NodeClass* SpawnNode()
