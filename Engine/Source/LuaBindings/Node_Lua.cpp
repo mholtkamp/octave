@@ -500,6 +500,7 @@ int Node_Lua::Destroy(lua_State* L)
     Node* node = CHECK_NODE(L, 1);
 
     Node::Destruct(node);
+    node = nullptr;
 
     Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
     nodeLua->mNode = nullptr;

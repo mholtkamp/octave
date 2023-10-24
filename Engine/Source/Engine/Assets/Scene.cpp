@@ -312,6 +312,7 @@ Node* Scene::Instantiate()
         for (uint32_t n = 0; n < nativeChildren.size(); ++n)
         {
             Node::Destruct(nativeChildren[n]);
+            nativeChildren[n] = nullptr;
         }
     }
 
@@ -323,6 +324,7 @@ Node* Scene::Instantiate()
             if (node != rootNode && node->IsReplicated())
             {
                 Node::Destruct(node);
+                node = nullptr;
             }
 
             return true;

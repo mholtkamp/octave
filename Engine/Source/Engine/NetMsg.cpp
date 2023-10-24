@@ -284,6 +284,7 @@ void NetMsgDestroy::Execute(NetHost sender)
         if (node != nullptr)
         {
             Node::Destruct(node);
+            node = nullptr;
         }
         else
         {

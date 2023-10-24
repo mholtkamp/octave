@@ -141,6 +141,7 @@ void World::DestroyRootNode()
     if (mRootNode != nullptr)
     {
         Node::Destruct(mRootNode);
+        mRootNode = nullptr;
     }
 }
 
@@ -866,12 +867,11 @@ Particle3D* World::SpawnParticle(ParticleSystem* sys, glm::vec3 position)
     return ret;
 }
 
-void World::DestroyNode(Node*& node)
+void World::DestroyNode(Node* node)
 {
     if (node->GetWorld() == this)
     {
         Node::Destruct(node);
-        node = nullptr;
     }
 }
 

@@ -65,7 +65,7 @@ public:
 
     static Node* Construct(const std::string& name);
     static Node* Construct(TypeId typeId);
-    static void Destruct(Node*& node);
+    static void Destruct(Node* node);
 
     Node();
     virtual ~Node();

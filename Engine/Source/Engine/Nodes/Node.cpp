@@ -118,13 +118,12 @@ Node* Node::Construct(TypeId typeId)
     return newNode;
 }
 
-void Node::Destruct(Node*& node)
+void Node::Destruct(Node* node)
 {
     if (node != nullptr)
     {
         node->Destroy();
         delete node;
-        node = nullptr;
     }
 }
 
@@ -414,6 +413,7 @@ void Node::RecursiveTick(float deltaTime, bool game)
             if (child->IsPendingDestroy())
             {
                 Node::Destruct(child);
+                child = nullptr;
                 --i;
             }
         }
@@ -838,6 +838,7 @@ void Node::FlushPendingDestroys()
         if (child->IsPendingDestroy())
         {
             Node::Destruct(child);
+            child = nullptr;
             --i;
         }
     }
