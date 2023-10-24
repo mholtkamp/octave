@@ -294,6 +294,12 @@ public:
         return cont;
     }
 
+    template<class NodeClass>
+    static NodeClass* Construct()
+    {
+        return (NodeClass*)Construct(NodeClass::GetStaticType());
+    }
+
 protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
