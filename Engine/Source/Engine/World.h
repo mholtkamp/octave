@@ -159,7 +159,7 @@ public:
 
         if (mRootNode != nullptr)
         {
-            mRootNode->ForEach(typedNodeGather);
+            mRootNode->Traverse(typedNodeGather);
         }
     }
 

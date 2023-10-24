@@ -453,7 +453,10 @@ void Renderer::GatherDrawData(World* world)
         {
             if (!node->IsVisible())
             {
-                return true;
+                // If this node is not visible, then return false so we don't
+                // traverse farther down the tree. Might have to add a new variable
+                // on Node if we want to tread child visibility independent of the parent.
+                return false;
             }
 
             if (node->IsPrimitive3D())
@@ -550,11 +553,11 @@ void Renderer::GatherDrawData(World* world)
 
         if (world != nullptr && world->GetRootNode() != nullptr)
         {
-            world->GetRootNode()->ForEach(gatherDrawData);
+            world->GetRootNode()->Traverse(gatherDrawData);
 
-            if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->ForEach(gatherDrawData); }
-            if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->ForEach(gatherDrawData); }
-            if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->ForEach(gatherDrawData); }
+            if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->Traverse(gatherDrawData); }
+            if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->Traverse(gatherDrawData); }
+            if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->Traverse(gatherDrawData); }
         }
 
         Camera3D* camera = world->GetActiveCamera();
@@ -843,6 +846,9 @@ void Renderer::RenderDebugDraws(const std::vector<DebugDraw>& draws, PipelineId 
 
 void Renderer::FrustumCull(Camera3D* camera)
 {
+    if (camera == nullptr)
+        return;
+
     CameraFrustum frustum;
     frustum.SetPosition(camera->GetAbsolutePosition());
     frustum.SetBasis(
@@ -1125,7 +1131,7 @@ void Renderer::Render(World* world)
         {
             GFX_BeginView(view);
 
-            if (mEnableWorldRendering)
+            if (mEnableWorldRendering && activeCamera != nullptr)
             {
                 if (mEnablePathTracing)
                 {

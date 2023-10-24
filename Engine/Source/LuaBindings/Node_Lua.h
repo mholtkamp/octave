@@ -49,6 +49,7 @@ struct Node_Lua
     static int GetRoot(lua_State* L);
     static int IsWorldRoot(lua_State* L);
 
+    static int Traverse(lua_State* L);
     static int ForEach(lua_State* L);
 
     static int CreateChild(lua_State* L);

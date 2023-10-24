@@ -38,8 +38,8 @@ class Script;
 
 typedef std::unordered_map<std::string, NetFunc> NetFuncMap;
 
-// Can also use a lambda for ForEach() function
-typedef bool(*NodeForEachFP)(Node*);
+// Can also use a lambda for Traverse() and ForEach() functions
+typedef bool(*NodeTraversalFP)(Node*);
 
 #if 0
 struct NodeNetData
@@ -249,10 +249,44 @@ public:
     }
 
     template<typename T>
+    void Traverse(T func, bool inverted = false)
+    {
+        bool traverseChildren = true;
+        
+        if (!inverted)
+        {
+            traverseChildren = func(this);
+        }
+
+        if (traverseChildren)
+        {
+            if (inverted)
+            {
+                for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
+                {
+                    mChildren[i]->Traverse(func, inverted);
+                }
+            }
+            else
+            {
+                for (uint32_t i = 0; i < mChildren.size(); ++i)
+                {
+                    mChildren[i]->Traverse(func, inverted);
+                }
+            }
+        }
+
+        if (inverted)
+        {
+            func(this);
+        }
+    }
+
+    template<typename T>
     bool ForEach(T func, bool inverted = false)
     {
         bool cont = true;
-        
+
         if (!inverted)
         {
             cont = func(this);

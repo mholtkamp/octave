@@ -329,7 +329,7 @@ Node* Scene::Instantiate()
 
             return true;
         };
-        rootNode->ForEach(pruneReplicated, true);
+        rootNode->Traverse(pruneReplicated, true);
     }
 
     return rootNode;

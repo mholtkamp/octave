@@ -144,6 +144,8 @@ void Node::Create()
 
 void Node::Destroy()
 {
+    bool isWorldRoot = (mParent == nullptr && mWorld != nullptr);
+
     // Destroy+Stop children first. Maybe we need to split up Stop + Destroy()?
     // Could call RecursiveStop() before destroying everything?
     for (int32_t i = int32_t(GetNumChildren()) - 1; i >= 0; --i)
@@ -178,6 +180,16 @@ void Node::Destroy()
 #if EDITOR
     GetWorld()->DeselectNode(this);
 #endif
+
+    if (isWorldRoot)
+    {
+        Node* worldRoot = GetWorld()->GetRootNode();
+        OCT_ASSERT(worldRoot == this);
+        if (worldRoot == this)
+        {
+            GetWorld()->SetRootNode(nullptr);
+        }
+    }
 }
 
 void Node::SaveStream(Stream& stream)

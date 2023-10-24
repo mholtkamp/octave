@@ -141,7 +141,12 @@ void World::DestroyRootNode()
     if (mRootNode != nullptr)
     {
         Node::Destruct(mRootNode);
-        mRootNode = nullptr;
+        
+        // Node::Destroy should clear the world root node
+        // Make sure derived class Destroy() is calling parent.
+        OCT_ASSERT(mRootNode == nullptr);
+        // Calling SetRootNode() just in case, but it's unnecessary.
+        SetRootNode(nullptr);
     }
 }
 
@@ -194,7 +199,7 @@ std::vector<Node*> World::FindNodesWithTag(const char* tag)
             return true;
         };
 
-        mRootNode->ForEach(gatherNodesWithTag);
+        mRootNode->Traverse(gatherNodesWithTag);
     }
 
     return retNodes;
@@ -216,7 +221,7 @@ std::vector<Node*> World::FindNodesWithName(const char* name)
             return true;
         };
 
-        mRootNode->ForEach(gatherNodesWithName);
+        mRootNode->Traverse(gatherNodesWithName);
     }
 
     return retNodes;
@@ -235,7 +240,7 @@ std::vector<Node*> World::GatherNodes()
 
     if (mRootNode != nullptr)
     {
-        mRootNode->ForEach(gatherNodes);
+        mRootNode->Traverse(gatherNodes);
     }
 
     return nodeList;
@@ -757,7 +762,7 @@ void World::Update(float deltaTime)
                 return true;
             };
 
-            mRootNode->ForEach(update3dTransform);
+            mRootNode->Traverse(update3dTransform);
         }
     }
 }
@@ -932,11 +937,12 @@ void World::DirtyAllWidgets()
             if (node->IsWidget())
             {
                 static_cast<Widget*>(node)->MarkDirty();
-                return true;
             }
+
+            return true;
         };
 
-        mRootNode->ForEach(dirtyWidget);
+        mRootNode->Traverse(dirtyWidget);
     }
 }
 

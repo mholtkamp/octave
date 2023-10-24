@@ -383,6 +383,24 @@ int Node_Lua::IsWorldRoot(lua_State* L)
     return 1;
 }
 
+int Node_Lua::Traverse(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    CHECK_FUNCTION(L, 2);
+    ScriptFunc scriptFunc(L, 2);
+
+    auto callScriptFunc = [&](Node* node) -> bool
+    {
+        Datum args[1] = { node };
+        bool ret = scriptFunc.CallR(1, args);
+        return ret;
+    };
+
+    node->Traverse(callScriptFunc);
+
+    return 0;
+}
+
 int Node_Lua::ForEach(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -815,6 +833,9 @@ void Node_Lua::Bind()
     
     lua_pushcfunction(L, IsWorldRoot);
     lua_setfield(L, mtIndex, "IsWorldRoot");
+
+    lua_pushcfunction(L, Traverse);
+    lua_setfield(L, mtIndex, "Traverse");
 
     lua_pushcfunction(L, ForEach);
     lua_setfield(L, mtIndex, "ForEach");
