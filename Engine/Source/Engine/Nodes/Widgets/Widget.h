@@ -152,7 +152,6 @@ public:
     float GetParentWidth() const;
     float GetParentHeight() const;
 
-    bool IsVisibleRecursive() const;
     virtual void SetColor(glm::vec4 color);
     glm::vec4 GetColor() const;
 

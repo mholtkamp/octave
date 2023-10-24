@@ -1,6 +1,7 @@
 #include "Assets/MaterialInstance.h"
 #include "AssetManager.h"
 
+FORCE_LINK_DEF(MaterialInstance);
 DEFINE_ASSET(MaterialInstance);
 
 MaterialInstance* MaterialInstance::New(const Material* src)

@@ -45,11 +45,7 @@ static Clock sClock;
 
 void ForceLinkage()
 {
-    // Actor Types
-    FORCE_LINK_CALL(Actor);
-    FORCE_LINK_CALL(StaticMeshActor);
-
-    // Component Types
+    // Node Types
     FORCE_LINK_CALL(Node);
     FORCE_LINK_CALL(Node3D);
     FORCE_LINK_CALL(Audio3D);
@@ -68,12 +64,14 @@ void ForceLinkage()
     // Asset Types
     FORCE_LINK_CALL(Scene);
     FORCE_LINK_CALL(Material);
+    FORCE_LINK_CALL(MaterialInstance);
     FORCE_LINK_CALL(ParticleSystem);
+    FORCE_LINK_CALL(ParticleSystemInstance);
     FORCE_LINK_CALL(SkeletalMesh);
     FORCE_LINK_CALL(SoundWave);
     FORCE_LINK_CALL(StaticMesh);
     FORCE_LINK_CALL(Texture);
-    FORCE_LINK_CALL(WidgetMap);
+    FORCE_LINK_CALL(Font);
 
     // Widget Types
     FORCE_LINK_CALL(ArrayWidget);

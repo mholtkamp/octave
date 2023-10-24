@@ -6,6 +6,7 @@ using namespace irr;
 using namespace io;
 #endif
 
+FORCE_LINK_DEF(Font);
 DEFINE_ASSET(Font);
 
 Font::Font()

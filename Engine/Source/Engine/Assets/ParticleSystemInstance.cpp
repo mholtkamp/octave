@@ -5,6 +5,7 @@
 #include "Asset.h"
 #include "Assets/Material.h"
 
+FORCE_LINK_DEF(ParticleSystemInstance);
 DEFINE_ASSET(ParticleSystemInstance);
 
 ParticleSystemInstance* ParticleSystemInstance::New(const ParticleSystem* src)
