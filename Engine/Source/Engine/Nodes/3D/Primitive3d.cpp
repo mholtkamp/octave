@@ -24,7 +24,7 @@ static btEmptyShape* sEmptyCollisionShape = nullptr;
         }                                                                      \
     }
 
-bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+bool Primitive3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);
@@ -951,6 +951,16 @@ void Primitive3D::EnableRigidBody(bool enable)
             btRigidBody::btRigidBodyConstructionInfo rbInfo(rigidBodyMass, mMotionState, mCollisionShape, localInertia);
             mRigidBody = new btRigidBody(rbInfo);
             mRigidBody->setUserPointer(this);
+
+            // These values might have been set before the primitive had a valid mWorld, 
+            // so initialize them here. Afterwards calls to the respective Primitive3D functions
+            // will relay the changes to the mRigidbody.
+            mRigidBody->setDamping(mLinearDamping, mAngularDamping);
+            mRigidBody->setRestitution(mRestitution);
+            mRigidBody->setFriction(mFriction);
+            mRigidBody->setRollingFriction(mRollingFriction);
+            mRigidBody->setLinearFactor({ mLinearFactor.x, mLinearFactor.y, mLinearFactor.z });
+            mRigidBody->setAngularFactor({ mAngularFactor.x, mAngularFactor.y, mAngularFactor.z });
         }
 
         if (!IsRigidBodyInWorld())

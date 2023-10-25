@@ -137,6 +137,8 @@ public:
 
     virtual void GatherProxyDraws(std::vector<DebugDraw>& inoutDraws) override;
 
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
+
 protected:
 
     static btCollisionShape* GetEmptyCollisionShape();
