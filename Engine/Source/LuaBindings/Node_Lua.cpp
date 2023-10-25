@@ -686,6 +686,26 @@ int Node_Lua::IsOwned(lua_State* L)
     return 1;
 }
 
+int Node_Lua::IsLateTickEnabled(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+
+    bool ret = node->IsLateTickEnabled();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Node_Lua::EnableLateTick(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    node->EnableLateTick(value);
+
+    return 0;
+}
+
 int Node_Lua::InvokeNetFunc(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -908,6 +928,12 @@ void Node_Lua::Bind()
 
     lua_pushcfunction(L, IsOwned);
     lua_setfield(L, mtIndex, "IsOwned");
+
+    lua_pushcfunction(L, IsLateTickEnabled);
+    lua_setfield(L, mtIndex, "IsLateTickEnabled");
+
+    lua_pushcfunction(L, EnableLateTick);
+    lua_setfield(L, mtIndex, "EnableLateTick");
 
     lua_pushcfunction(L, InvokeNetFunc);
     lua_setfield(L, mtIndex, "InvokeNetFunc");

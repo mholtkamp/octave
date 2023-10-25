@@ -211,6 +211,9 @@ public:
     void SetHitCheckId(uint32_t id);
     uint32_t GetHitCheckId() const;
 
+    bool IsLateTickEnabled() const;
+    void EnableLateTick(bool enable);
+
     Script* GetScript();
     void SetScriptFile(const std::string& fileName);
 
@@ -366,6 +369,7 @@ protected:
     bool mHasStarted = false;
     bool mPendingDestroy = false;
     bool mTickEnabled = true;
+    bool mLateTick = false;
 
     // Network Data
     // This is only about 44 bytes, so right now, we will keep this data as direct members of Node.

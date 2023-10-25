@@ -410,7 +410,7 @@ void Node::RecursiveTick(float deltaTime, bool game)
 
     if (IsTickEnabled() && IsActive() && !mPendingDestroy)
     {
-        if (/*!mLateTick*/ 1)
+        if (!mLateTick)
         {
             if (game)
             {
@@ -435,7 +435,7 @@ void Node::RecursiveTick(float deltaTime, bool game)
             }
         }
 
-        if (/*mLateTick*/ 0)
+        if (mLateTick)
         {
             if (game)
             {
@@ -485,6 +485,7 @@ void Node::GatherProperties(std::vector<Property>& outProps)
 #endif
     outProps.push_back({DatumType::Bool, "Active", this, &mActive});
     outProps.push_back({DatumType::Bool, "Visible", this, &mVisible});
+    outProps.push_back({DatumType::Bool, "Late Tick", this, &mLateTick});
 
     outProps.push_back(Property(DatumType::Bool, "Replicate", this, &mReplicate));
     outProps.push_back(Property(DatumType::Bool, "Replicate Transform", this, &mReplicateTransform));
@@ -1413,6 +1414,16 @@ void Node::SetHitCheckId(uint32_t id)
 uint32_t Node::GetHitCheckId() const
 {
     return mHitCheckId;
+}
+
+bool Node::IsLateTickEnabled() const
+{
+    return mLateTick;
+}
+
+void Node::EnableLateTick(bool enable)
+{
+    mLateTick = enable;
 }
 
 Script* Node::GetScript()
