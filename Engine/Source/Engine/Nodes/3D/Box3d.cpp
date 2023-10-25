@@ -53,21 +53,19 @@ void Box3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #if DEBUG_DRAW_ENABLED
     Primitive3D::GatherProxyDraws(inoutDraws);
 
-    if (GetType() == Box3D::GetStaticType())
-    {
-        glm::vec3 extentScale = { mExtents.x / sDefaultExtent, mExtents.y / sDefaultExtent, mExtents.z / sDefaultExtent };
-        glm::vec4 color = 
-            (Renderer::Get()->GetDebugMode() == DEBUG_COLLISION) ?
-            GetCollisionDebugColor() :
-            glm::vec4(0.8f, 0.2f, 0.8f, 1.0f);
+    glm::vec3 extentScale = { mExtents.x / sDefaultExtent, mExtents.y / sDefaultExtent, mExtents.z / sDefaultExtent };
+    glm::vec4 color = 
+        (Renderer::Get()->GetDebugMode() == DEBUG_COLLISION) ?
+        GetCollisionDebugColor() :
+        glm::vec4(0.8f, 0.2f, 0.8f, 1.0f);
 
-        DebugDraw debugDraw;
-        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cube");
-        debugDraw.mNode = this;
-        debugDraw.mColor = color;
-        debugDraw.mTransform = glm::scale(mTransform, extentScale);
-        inoutDraws.push_back(debugDraw);
-    }
+    DebugDraw debugDraw;
+    debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cube");
+    debugDraw.mNode = this;
+    debugDraw.mColor = color;
+    debugDraw.mTransform = glm::scale(mTransform, extentScale);
+    inoutDraws.push_back(debugDraw);
+
 #endif
 }
 

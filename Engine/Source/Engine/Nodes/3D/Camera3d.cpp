@@ -64,8 +64,7 @@ void Camera3D::GatherProperties(std::vector<Property>& outProps)
 void Camera3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    if (GetType() == Camera3D::GetStaticType() &&
-        this != GetWorld()->GetActiveCamera())
+    if (this != GetWorld()->GetActiveCamera())
     {
         glm::mat4 transform = glm::rotate(DEGREES_TO_RADIANS * -90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
         transform = mTransform * transform;

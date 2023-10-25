@@ -273,15 +273,14 @@ void Node3D::UpdateTransform(bool updateChildren)
 void Node3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    if (GetType() == Node3D::GetStaticType())
-    {
-        DebugDraw debugDraw;
-        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cube");
-        debugDraw.mNode = this;
-        debugDraw.mColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
-        debugDraw.mTransform = glm::scale(GetTransform(), { 0.2f, 0.2f, 0.2f });
-        inoutDraws.push_back(debugDraw);
-    }
+
+    DebugDraw debugDraw;
+    debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cube");
+    debugDraw.mNode = this;
+    debugDraw.mColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
+    debugDraw.mTransform = glm::scale(GetTransform(), { 0.2f, 0.2f, 0.2f });
+    inoutDraws.push_back(debugDraw);
+
 #endif
 }
 

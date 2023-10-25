@@ -43,43 +43,39 @@ void DirectionalLight3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #if DEBUG_DRAW_ENABLED
     Light3D::GatherProxyDraws(inoutDraws);
 
+    glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.3f, 1.0f);
 
-    if (GetType() == DirectionalLight3D::GetStaticType())
+    if (mDomain == LightingDomain::Static)
     {
-        glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.3f, 1.0f);
+        color = glm::vec4(0.8f, 0.5f, 0.3f, 1.0f);
+    }
+    else if (mDomain == LightingDomain::Dynamic)
+    {
+        color = glm::vec4(0.8f, 0.8f, 0.6f, 1.0f);
+    }
 
-        if (mDomain == LightingDomain::Static)
-        {
-            color = glm::vec4(0.8f, 0.5f, 0.3f, 1.0f);
-        }
-        else if (mDomain == LightingDomain::Dynamic)
-        {
-            color = glm::vec4(0.8f, 0.8f, 0.6f, 1.0f);
-        }
+    float scale = 0.3f;
 
-        float scale = 0.3f;
+    {
+        // Cylinder
+        DebugDraw debugDraw;
+        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cylinder");
+        debugDraw.mNode = this;
+        debugDraw.mColor = color;
+        glm::mat4 trans = MakeTransform({}, { -90.0f, 0.0f, 0.0f}, { scale * 0.5, scale, scale * 0.5});
+        debugDraw.mTransform = mTransform * trans; // glm::scale(mTransform, { rScale, hScale, rScale });
+        inoutDraws.push_back(debugDraw);
+    }
 
-        {
-            // Cylinder
-            DebugDraw debugDraw;
-            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cylinder");
-            debugDraw.mNode = this;
-            debugDraw.mColor = color;
-            glm::mat4 trans = MakeTransform({}, { -90.0f, 0.0f, 0.0f}, { scale * 0.5, scale, scale * 0.5});
-            debugDraw.mTransform = mTransform * trans; // glm::scale(mTransform, { rScale, hScale, rScale });
-            inoutDraws.push_back(debugDraw);
-        }
-
-        {
-            // Pointer Cone
-            DebugDraw debugDraw;
-            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cone");
-            debugDraw.mNode = this;
-            debugDraw.mColor = color;
-            glm::mat4 trans = MakeTransform({0.0f, 0.0f, -2.0f * scale}, { -90.0f, 0.0f, 0.0f }, { scale, scale, scale });
-            debugDraw.mTransform = mTransform * trans;
-            inoutDraws.push_back(debugDraw);
-        }
+    {
+        // Pointer Cone
+        DebugDraw debugDraw;
+        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cone");
+        debugDraw.mNode = this;
+        debugDraw.mColor = color;
+        glm::mat4 trans = MakeTransform({0.0f, 0.0f, -2.0f * scale}, { -90.0f, 0.0f, 0.0f }, { scale, scale, scale });
+        debugDraw.mTransform = mTransform * trans;
+        inoutDraws.push_back(debugDraw);
     }
 #endif
 }

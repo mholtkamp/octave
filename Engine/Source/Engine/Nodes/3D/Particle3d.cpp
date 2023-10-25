@@ -78,48 +78,46 @@ void Particle3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #if DEBUG_DRAW_ENABLED
     Primitive3D::GatherProxyDraws(inoutDraws);
 
-    if (GetType() == Particle3D::GetStaticType())
+    glm::vec4 color = glm::vec4(0.2f, 0.2f, 1.0f, 1.0f);
+
     {
-        glm::vec4 color = glm::vec4(0.2f, 0.2f, 1.0f, 1.0f);
-
-        {
-            DebugDraw debugDraw;
-            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
-            debugDraw.mNode = this;
-            debugDraw.mColor = color;
-            debugDraw.mTransform = glm::scale(mTransform, { 0.2f, 0.2f, 0.2f });
-            inoutDraws.push_back(debugDraw);
-        }
-
-        // Show spawn box when selected
-#if EDITOR
-        if (GetSelectedComponent() == this && mParticleSystem != nullptr)
-        {
-            ParticleSystem* sys = mParticleSystem.Get<ParticleSystem>();
-            glm::vec3 minPos = sys->GetParams().mPositionMin;
-            glm::vec3 maxPos = sys->GetParams().mPositionMax;
-
-            glm::vec3 pos = { 0.0f, 0.0f, 0.0f };
-            pos.x = (maxPos.x + minPos.x) / 2.0f;
-            pos.y = (maxPos.y + minPos.y) / 2.0f;
-            pos.z = (maxPos.z + minPos.z) / 2.0f;
-
-            glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
-            scale.x = (maxPos.x - minPos.x) / 2.0f;
-            scale.y = (maxPos.y - minPos.y) / 2.0f;
-            scale.z = (maxPos.z - minPos.z) / 2.0f;
-
-            DebugDraw debugDraw;
-            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cube");
-            debugDraw.mNode = this;
-            debugDraw.mColor = color;
-            glm::mat4 transform = glm::translate(mTransform, pos);
-            transform = glm::scale(transform, scale);
-            debugDraw.mTransform = transform;
-            inoutDraws.push_back(debugDraw);
-        }
-#endif // EDITOR
+        DebugDraw debugDraw;
+        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
+        debugDraw.mNode = this;
+        debugDraw.mColor = color;
+        debugDraw.mTransform = glm::scale(mTransform, { 0.2f, 0.2f, 0.2f });
+        inoutDraws.push_back(debugDraw);
     }
+
+    // Show spawn box when selected
+#if EDITOR
+    if (GetSelectedComponent() == this && mParticleSystem != nullptr)
+    {
+        ParticleSystem* sys = mParticleSystem.Get<ParticleSystem>();
+        glm::vec3 minPos = sys->GetParams().mPositionMin;
+        glm::vec3 maxPos = sys->GetParams().mPositionMax;
+
+        glm::vec3 pos = { 0.0f, 0.0f, 0.0f };
+        pos.x = (maxPos.x + minPos.x) / 2.0f;
+        pos.y = (maxPos.y + minPos.y) / 2.0f;
+        pos.z = (maxPos.z + minPos.z) / 2.0f;
+
+        glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
+        scale.x = (maxPos.x - minPos.x) / 2.0f;
+        scale.y = (maxPos.y - minPos.y) / 2.0f;
+        scale.z = (maxPos.z - minPos.z) / 2.0f;
+
+        DebugDraw debugDraw;
+        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cube");
+        debugDraw.mNode = this;
+        debugDraw.mColor = color;
+        glm::mat4 transform = glm::translate(mTransform, pos);
+        transform = glm::scale(transform, scale);
+        debugDraw.mTransform = transform;
+        inoutDraws.push_back(debugDraw);
+    }
+#endif // EDITOR
+
 #endif
 }
 

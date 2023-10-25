@@ -221,8 +221,7 @@ void StaticMesh3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #if DEBUG_DRAW_ENABLED
     Mesh3D::GatherProxyDraws(inoutDraws);
 
-    if (Renderer::Get()->GetDebugMode() == DEBUG_COLLISION &&
-        GetType() == StaticMesh3D::GetStaticType())
+    if (Renderer::Get()->GetDebugMode() == DEBUG_COLLISION)
     {
         StaticMesh* staticMesh = mStaticMesh.Get<StaticMesh>();
 

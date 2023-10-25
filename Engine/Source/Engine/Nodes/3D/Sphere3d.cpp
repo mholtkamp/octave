@@ -53,22 +53,20 @@ void Sphere3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #if DEBUG_DRAW_ENABLED
     Primitive3D::GatherProxyDraws(inoutDraws);
 
-    if (GetType() == Sphere3D::GetStaticType())
-    {
-        float radiusScale = (mRadius / sDefaultRadius);
-        glm::vec4 color =
-            (Renderer::Get()->GetDebugMode() == DEBUG_COLLISION) ?
-            GetCollisionDebugColor() :
-            glm::vec4(0.8f, 0.2f, 0.8f, 1.0f);
+    float radiusScale = (mRadius / sDefaultRadius);
+    glm::vec4 color =
+        (Renderer::Get()->GetDebugMode() == DEBUG_COLLISION) ?
+        GetCollisionDebugColor() :
+        glm::vec4(0.8f, 0.2f, 0.8f, 1.0f);
 
-        DebugDraw debugDraw;
-        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
-        debugDraw.mNode = this;
-        debugDraw.mColor = color;
-        debugDraw.mTransform = glm::scale(mTransform, { radiusScale, radiusScale, radiusScale });
+    DebugDraw debugDraw;
+    debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
+    debugDraw.mNode = this;
+    debugDraw.mColor = color;
+    debugDraw.mTransform = glm::scale(mTransform, { radiusScale, radiusScale, radiusScale });
 
-        inoutDraws.push_back(debugDraw);
-    }
+    inoutDraws.push_back(debugDraw);
+
 #endif
 }
 

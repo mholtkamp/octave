@@ -61,48 +61,46 @@ void Capsule3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #if DEBUG_DRAW_ENABLED
     Primitive3D::GatherProxyDraws(inoutDraws);
 
-    if (GetType() == Capsule3D::GetStaticType())
+    const float halfHeight = mHeight / 2.0f;
+    const float hScale = mHeight / sDefaultHeight;
+    const float rScale = mRadius / sDefaultRadius;
+    const glm::vec4 color =
+        (Renderer::Get()->GetDebugMode() == DEBUG_COLLISION) ?
+        GetCollisionDebugColor() :
+        glm::vec4(0.8f, 0.2f, 0.8f, 1.0f);
+
     {
-        const float halfHeight = mHeight / 2.0f;
-        const float hScale = mHeight / sDefaultHeight;
-        const float rScale = mRadius / sDefaultRadius;
-        const glm::vec4 color =
-            (Renderer::Get()->GetDebugMode() == DEBUG_COLLISION) ?
-            GetCollisionDebugColor() :
-            glm::vec4(0.8f, 0.2f, 0.8f, 1.0f);
-
-        {
-            // Cylinder
-            DebugDraw debugDraw;
-            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_CapsuleCylinder");
-            debugDraw.mNode = this;
-            debugDraw.mColor = color;
-            debugDraw.mTransform = glm::scale(mTransform, { rScale, hScale, rScale });
-            inoutDraws.push_back(debugDraw);
-        }
-
-        {
-            // Top Cap
-            DebugDraw debugDraw;
-            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_CapsuleCap");
-            debugDraw.mNode = this;
-            debugDraw.mColor = color;
-            glm::mat4 trans = MakeTransform({ 0.0f, halfHeight, 0.0f }, {}, { rScale, rScale, rScale });
-            debugDraw.mTransform = mTransform * trans;
-            inoutDraws.push_back(debugDraw);
-        }
-
-        {
-            // Bottom Cap
-            DebugDraw debugDraw;
-            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_CapsuleCap");
-            debugDraw.mNode = this;
-            debugDraw.mColor = color;
-            glm::mat4 trans = MakeTransform({ 0.0f, -halfHeight, 0.0f }, {180.0f, 0.0f, 0.0f}, { rScale, rScale, rScale });
-            debugDraw.mTransform = mTransform * trans;
-            inoutDraws.push_back(debugDraw);
-        }
+        // Cylinder
+        DebugDraw debugDraw;
+        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_CapsuleCylinder");
+        debugDraw.mNode = this;
+        debugDraw.mColor = color;
+        debugDraw.mTransform = glm::scale(mTransform, { rScale, hScale, rScale });
+        inoutDraws.push_back(debugDraw);
     }
+
+    {
+        // Top Cap
+        DebugDraw debugDraw;
+        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_CapsuleCap");
+        debugDraw.mNode = this;
+        debugDraw.mColor = color;
+        glm::mat4 trans = MakeTransform({ 0.0f, halfHeight, 0.0f }, {}, { rScale, rScale, rScale });
+        debugDraw.mTransform = mTransform * trans;
+        inoutDraws.push_back(debugDraw);
+    }
+
+    {
+        // Bottom Cap
+        DebugDraw debugDraw;
+        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_CapsuleCap");
+        debugDraw.mNode = this;
+        debugDraw.mColor = color;
+        glm::mat4 trans = MakeTransform({ 0.0f, -halfHeight, 0.0f }, {180.0f, 0.0f, 0.0f}, { rScale, rScale, rScale });
+        debugDraw.mTransform = mTransform * trans;
+        inoutDraws.push_back(debugDraw);
+    }
+
 #endif
 }
 
