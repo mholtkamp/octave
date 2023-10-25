@@ -39,6 +39,8 @@ public:
 
     virtual DrawData GetDrawData() override;
 
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
+
 protected:
 
     MaterialRef mMaterialOverride;

@@ -8,7 +8,7 @@
 FORCE_LINK_DEF(Capsule3D);
 DEFINE_NODE(Capsule3D, Primitive3D);
 
-static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+bool Capsule3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);

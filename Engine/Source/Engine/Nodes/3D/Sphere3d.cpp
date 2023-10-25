@@ -8,7 +8,7 @@
 FORCE_LINK_DEF(Sphere3D);
 DEFINE_NODE(Sphere3D, Primitive3D);
 
-static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+bool Sphere3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);

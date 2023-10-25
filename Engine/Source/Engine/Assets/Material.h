@@ -156,6 +156,8 @@ public:
     TevMode GetTevMode(uint32_t textureSlot);
     void SetTevMode(uint32_t textureSlot, TevMode mode);
 
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
+
 protected:
 
     // Properties

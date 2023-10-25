@@ -111,6 +111,8 @@ public:
 
     virtual Bounds GetLocalBounds() const override;
 
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
+
 protected:
 
     void KillExpiredParticles(float deltaTime);

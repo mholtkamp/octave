@@ -21,7 +21,7 @@ static_assert(int32_t(AttenuationFunc::Count) == 2, "Need to update string conve
 FORCE_LINK_DEF(Audio3D);
 DEFINE_NODE(Audio3D, Node3D);
 
-static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+bool Audio3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);

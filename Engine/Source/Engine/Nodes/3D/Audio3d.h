@@ -69,6 +69,8 @@ public:
 
     void NotifyAudible(bool audible);
 
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
+
 protected:
 
     // Properties

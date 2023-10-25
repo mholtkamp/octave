@@ -13,7 +13,7 @@
 FORCE_LINK_DEF(StaticMesh3D);
 DEFINE_NODE(StaticMesh3D, Mesh3D);
 
-static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+bool StaticMesh3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);

@@ -26,6 +26,8 @@ public:
     float GetRadius() const;
     void SetRadius(float radius);
 
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
+
 protected:
 
     void UpdateRigidBody();

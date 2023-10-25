@@ -53,6 +53,8 @@ public:
     std::vector<uint32_t>& GetInstanceColors();
     bool HasBakedLighting() const;
 
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
+
 protected:
 
     virtual void RecreateCollisionShape();

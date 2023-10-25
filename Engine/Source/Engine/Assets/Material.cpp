@@ -62,7 +62,7 @@ static_assert(int32_t(CullMode::Count) == 3, "Need to update string conversion t
 FORCE_LINK_DEF(Material);
 DEFINE_ASSET(Material);
 
-static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+bool Material::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
 

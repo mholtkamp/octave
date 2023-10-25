@@ -29,7 +29,7 @@ const char* sParticleOrientationStrings[] =
 };
 static_assert(int32_t(ParticleOrientation::Count) == 7, "Need to update string conversion table");
 
-static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+bool Particle3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     OCT_ASSERT(prop != nullptr);
