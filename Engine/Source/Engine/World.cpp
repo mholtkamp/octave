@@ -549,6 +549,11 @@ void World::UnregisterNode(Node* node)
         mLights.erase(it);
     }
 
+    if (node == GetAudioReceiver())
+    {
+        SetAudioReceiver(nullptr);
+    }
+
     if (node->GetNetId() != INVALID_NET_ID)
     {
         // Remove the destroyed actor from their assigned replication vector.

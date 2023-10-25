@@ -115,12 +115,6 @@ void Node3D::Destroy()
 {
     Node::Destroy();
 
-    if (GetWorld() &&
-        GetWorld()->GetAudioReceiver() == this)
-    {
-        GetWorld()->SetAudioReceiver(nullptr);
-    }
-
 #if DEBUG_DRAW_ENABLED
     Renderer::Get()->RemoveDebugDrawsForNode(this);
 #endif
