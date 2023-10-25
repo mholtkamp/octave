@@ -253,6 +253,14 @@ void Scene::LoadStreamActor(Stream& stream)
         Node::Destruct(compsToLoad[i]);
         compsToLoad[i] = nullptr;
     }
+
+    // Hacky hand-written loading for anything that overrode Actor::LoadStream()
+    // MAKE SURE TO DELETE THE CALL TO Actor::LoadStream() in these classes (since that is done by hand above)
+    if (actorType == 1500601734) // Rotator
+    {
+        Node* hackNode = Node::Construct((TypeId)1500601734);
+        hackNode->LoadStream(stream);
+    }
 }
 
 void Scene::LoadStreamLevel(Stream& stream)
