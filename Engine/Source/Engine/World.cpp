@@ -641,6 +641,18 @@ void World::Update(float deltaTime)
         mQueuedRootNode = nullptr;
     }
 
+    // Ensure world root node is set to replicate. (Otherwise clients will see nothing)
+    // This might a heavy-handed approach but I don't want a developer to worry about needing to
+    // set every one of their root scenes to replicate.
+    if (NetIsServer())
+    {
+        if (mRootNode != nullptr &&
+            !mRootNode->IsReplicated())
+        {
+            mRootNode->SetReplicate(true);
+        }
+    }
+
     if (gameTickEnabled)
     {
         SCOPED_FRAME_STAT("Physics");
