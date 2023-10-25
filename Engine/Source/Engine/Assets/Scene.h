@@ -44,6 +44,13 @@ public:
 
 protected:
 
+#if OCT_SCENE_CONVERSION
+    void LoadStreamActor(Stream& stream);
+    void LoadStreamLevel(Stream& stream);
+    void LoadStreamBlueprint(Stream& stream);
+    void LoadStreamWidgetMap(Stream& stream);
+#endif
+
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
     void AddNodeDef(Node* node, std::vector<Node*>& nodeList);

@@ -204,6 +204,7 @@ void Asset::LoadStream(Stream& stream, Platform platform)
     mVersion = header.mVersion;
     mType = header.mType;
     mEmbedded = header.mEmbedded;
+    mOldType = header.mOldType;
 
     stream.ReadString(mName);
 }
@@ -254,6 +255,15 @@ AssetHeader Asset::ReadHeader(Stream& stream)
     header.mVersion = stream.ReadUint32();
     header.mType = TypeId(stream.ReadUint32());
     header.mEmbedded = stream.ReadUint8();
+
+    if (header.mType == 83055820 || // Level
+        header.mType == 2369317065 || // Blueprint 
+        header.mType == 3362483201) // WidgetMap
+    {
+        header.mOldType = header.mType;
+        header.mType = Scene::GetStaticType();
+    }
+
     return header;
 }
 
