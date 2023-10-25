@@ -854,9 +854,25 @@ void NetworkManager::HandleConnect(NetHost host, uint32_t gameCode, uint32_t ver
             SendMessage(&acceptMsg, newClient);
 
             // Spawn any replicated actors.
-            for (auto it = mNetNodeMap.begin(); it != mNetNodeMap.end(); ++it)
+            auto spawnNode = [&](Node* node) -> bool
             {
-                SendSpawnMessage(it->second, newClient);
+                if (node->IsReplicated())
+                {
+                    SendSpawnMessage(node, newClient);
+                    return true;
+                }
+
+                // Do not spawn nodes with non-replicated parents.
+                // At least I think this is the behavior we want...
+                return false;
+            };
+
+            World* world = GetWorld();
+            Node* worldRoot = world ? world->GetRootNode() : nullptr;
+            if (worldRoot != nullptr)
+            {
+                // Make sure to traverse non-inverted because the parents need to be replicated first.
+                worldRoot->Traverse(spawnNode, false);
             }
 
             // Send a message asking for the client to send a response after processing
@@ -1036,10 +1052,25 @@ void NetworkManager::HandleReady(NetHost host)
 
             // Now that client has loaded the level(s) and spawned actors,
             // Forcefully replicate the initial state of all actors
-            for (auto it = mNetNodeMap.begin(); it != mNetNodeMap.end(); ++it)
+            auto repNode = [&](Node* node) -> bool
             {
-                Node* node = it->second;
-                ReplicateNode(node, client->mHost.mId, true, true);
+                if (node->IsReplicated())
+                {
+                    ReplicateNode(node, client->mHost.mId, true, true);
+                    return true;
+                }
+
+                // Do not replicate nodes with non-replicated parents.
+                // At least I think this is the behavior we want...
+                return false;
+            };
+
+            World* world = GetWorld();
+            Node* worldRoot = world ? world->GetRootNode() : nullptr;
+            if (worldRoot != nullptr)
+            {
+                // Make sure to traverse non-inverted because the parents need to be replicated first.
+                worldRoot->Traverse(repNode, false);
             }
         }
     }

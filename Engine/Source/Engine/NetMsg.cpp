@@ -214,6 +214,7 @@ void NetMsgSpawn::Execute(NetHost sender)
 
         if (newNode != nullptr)
         {
+            newNode->SetReplicate(true);
             NetworkManager::Get()->AddNetNode(newNode, mNetId);
 
             if (mParentNetId == INVALID_NET_ID)
