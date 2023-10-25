@@ -186,7 +186,20 @@ void Scene::LoadStreamActor(Stream& stream)
         for (uint32_t p = 0; p < extProps.size(); ++p)
         {
             def.mProperties.push_back(Property());
-            def.mProperties.back().DeepCopy(extProps[p], true);
+            Property& prop = def.mProperties.back();
+            prop.DeepCopy(extProps[p], true);
+
+            if (prop.mName == "Name")
+            {
+                if (def.mType == StaticMesh3D::GetStaticType())
+                {
+                    StaticMesh* mesh = node->As<StaticMesh3D>()->GetStaticMesh();
+                    if (mesh != nullptr)
+                    {
+                        prop.SetString(mesh->GetName());
+                    }
+                }
+            }
         }
     }
     else
@@ -199,20 +212,19 @@ void Scene::LoadStreamActor(Stream& stream)
         actorDef.mParentIndex = 0;
         actorDef.mName = actorName;
 
-        Property propName;
-        propName.PushBack(actorName);
-        propName.mName = "Name";
-        actorDef.mProperties.push_back(propName);
+        {
+            Node* actorNode = Node::Construct(actorType);
+            std::vector<Property> actorProps;
+            actorNode->GatherProperties(actorProps);
 
-        Property propReplicate;
-        propReplicate.PushBack(replicate);
-        propReplicate.mName = "Replicate";
-        actorDef.mProperties.push_back(propReplicate);
+            for (uint32_t p = 0; p < actorProps.size(); ++p)
+            {
+                actorDef.mProperties.push_back(Property());
+                actorDef.mProperties.back().DeepCopy(actorProps[p], true);
+            }
 
-        Property propReplicateTrans;
-        propReplicateTrans.PushBack(replicate);
-        propReplicateTrans.mName = "Replicate Transform";
-        actorDef.mProperties.push_back(propReplicateTrans);
+            Node::Destruct(actorNode);
+        }
 
         for (uint32_t i = 0; i < compsToLoad.size(); ++i)
         {
@@ -292,7 +304,7 @@ void Scene::LoadStreamLevel(Stream& stream)
     mNodeDefs.push_back(SceneNodeDef());
     SceneNodeDef& rootDef = mNodeDefs.back();
     rootDef.mType = Node3D::GetStaticType();
-    rootDef.mName = "Root";
+    rootDef.mName = mName;
 
     for (uint32_t i = 0; i < numActors; ++i)
     {
@@ -680,6 +692,12 @@ Node* Scene::Instantiate()
                 // the root node spawned other nodes on Create() in C++.
                 Node* existingChild = parent->FindChild(mNodeDefs[i].mName, false);
 
+                // Hack for Rocket Rotators.
+                if (existingChild == nullptr && parent->GetType() == 1500601734)
+                {
+                    existingChild = parent->GetChild(0);
+                }
+
                 if (existingChild != nullptr &&
                     existingChild->GetType() == mNodeDefs[i].mType &&
                     existingChild->GetScene() == mNodeDefs[i].mScene.Get())
@@ -724,7 +742,7 @@ Node* Scene::Instantiate()
 
                     for (uint32_t c = 0; c < node->GetNumChildren(); ++c)
                     {
-                        nativeChildren.push_back(node->GetChild(i));
+                        nativeChildren.push_back(node->GetChild(c));
                     }
                 }
             }
