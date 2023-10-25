@@ -37,8 +37,13 @@ DEFINE_ASSET(Scene);
 #include "Nodes/Widgets/TextField.h"
 #include "Nodes/Widgets/VerticalList.h"
 
+#include <unordered_set>
+
 static bool sSceneConversionInit = false;
 static std::unordered_map<TypeId, TypeId> sTypeConversionMap;
+
+static int32_t sConvUniqueNum = 1;
+static std::unordered_set<std::string> sConvNodeNames;
 
 void SceneConversionInit()
 {
@@ -172,7 +177,9 @@ void Scene::LoadStreamActor(Stream& stream)
         SceneNodeDef& def = mNodeDefs.back();
         def.mType = node->GetType();
         def.mParentIndex = 0; // This should be index of the Node3D root we made for the level.
-        def.mName = actorName;
+        
+        const bool kUseCompName = true;
+        def.mName = kUseCompName ? node->GetName() : actorName;
 
         std::vector<Property> extProps;
         node->GatherProperties(extProps);
@@ -191,6 +198,11 @@ void Scene::LoadStreamActor(Stream& stream)
         actorDef.mType = actorType;
         actorDef.mParentIndex = 0;
         actorDef.mName = actorName;
+
+        Property propName;
+        propName.PushBack(actorName);
+        propName.mName = "Name";
+        actorDef.mProperties.push_back(propName);
 
         Property propReplicate;
         propReplicate.PushBack(replicate);
@@ -306,6 +318,8 @@ void Scene::LoadStreamLevel(Stream& stream)
             LoadStreamActor(stream);
         }
     }
+
+    ConvEnforceUniqueNames();
 }
 
 void Scene::LoadStreamBlueprint(Stream& stream)
@@ -384,6 +398,8 @@ void Scene::LoadStreamBlueprint(Stream& stream)
             mNodeDefs[c].mParentIndex = 0;
         }
     }
+
+    ConvEnforceUniqueNames();
 }
 
 void Scene::LoadStreamWidgetMap(Stream& stream)
@@ -416,6 +432,30 @@ void Scene::LoadStreamWidgetMap(Stream& stream)
                 def.mName = def.mProperties[p].GetString();
             }
         }
+    }
+
+    ConvEnforceUniqueNames();
+}
+
+void Scene::ConvEnforceUniqueNames()
+{
+    sConvNodeNames.clear();
+    sConvUniqueNum = 1;
+
+    for (uint32_t i = 0; i < mNodeDefs.size(); ++i)
+    {
+        auto it = sConvNodeNames.find(mNodeDefs[i].mName);
+
+        if (it != sConvNodeNames.end())
+        {
+            mNodeDefs[i].mName = mNodeDefs[i].mName + "#" + std::to_string(sConvUniqueNum);
+            sConvUniqueNum++;
+
+            it = sConvNodeNames.find(mNodeDefs[i].mName);
+            OCT_ASSERT(it == sConvNodeNames.end()); // Should be unique now!!
+        }
+
+        sConvNodeNames.insert(mNodeDefs[i].mName);
     }
 }
 

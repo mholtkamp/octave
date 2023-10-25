@@ -613,7 +613,7 @@ void Widget::UpdateRect()
     anchorPos.y = parentRect.mY + anchorRatio.y * parentRect.mHeight;
 
     mAbsoluteScale = mScale;
-    if (mParent != nullptr)
+    if (parent != nullptr)
     {
         mAbsoluteScale *= parent->mAbsoluteScale;
     }
