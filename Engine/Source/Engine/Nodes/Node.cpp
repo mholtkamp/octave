@@ -350,6 +350,23 @@ void Node::Start()
     {
         mHasStarted = true;
 
+        if (mReplicate)
+        {
+            // We still need to register net funcs even if Local so that the functions can execute locally.
+            Node::RegisterNetFuncs(this);
+
+            if (NetIsServer())
+            {
+                // The server will add the net node as soon as Start() is called.
+                // On the client, the net node will be added once the NetMsgSpawnNode is executed.
+                NetworkManager::Get()->AddNetNode(this, INVALID_NET_ID);
+
+                // Send a reliable forced replication message to ensure the initial state
+                // is received by the clients.
+                ForceReplication();
+            }
+        }
+
         // TODO-NODE: Start children first? We could add a bool mLateStart.
         for (uint32_t i = 0; i < GetNumChildren(); ++i)
         {
@@ -363,18 +380,6 @@ void Node::Start()
         if (mScript != nullptr)
         {
             mScript->CallFunction("Start");
-        }
-
-        if (mReplicate &&
-            NetIsServer())
-        {
-            // The server will add the net node as soon as Start() is called.
-            // On the client, the net node will be added once the NetMsgSpawnNode is executed.
-            NetworkManager::Get()->AddNetNode(this, INVALID_NET_ID);
-
-            // Send a reliable forced replication message to ensure the initial state
-            // is received by the clients.
-            ForceReplication();
         }
     }
 }
@@ -1586,6 +1591,14 @@ NetFunc* Node::FindNetFunc(const char* name)
 
     TypeId actorType = GetType();
     auto mapIt = sTypeNetFuncMap.find(actorType);
+
+    if (mapIt == sTypeNetFuncMap.end())
+    {
+        // We haven't registered net funcs yet, so do that now!
+        Node::RegisterNetFuncs(this);
+
+        mapIt = sTypeNetFuncMap.find(actorType);
+    }
 
     // The map should have been added when the first instanced of this class was spawned.
     // Checkout RegisterNetFuncs()
