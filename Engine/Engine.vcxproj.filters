@@ -719,6 +719,9 @@
     <ClCompile Include="Source\Engine\Nodes\3D\TestSpinner.cpp">
       <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\EditorImgui.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1388,6 +1391,9 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\3D\TestSpinner.h">
       <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\EditorImgui.h">
+      <Filter>Source Files\Editor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
