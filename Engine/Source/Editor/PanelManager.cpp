@@ -182,7 +182,7 @@ WidgetViewportPanel* PanelManager::GetWidgetViewportPanel()
     return mWidgetViewportPanel;
 }
 
-void PanelManager::OnSelectedComponentChanged()
+void PanelManager::OnSelectedNodeChanged()
 {
     mHierarchyPanel->OnSelectedComponentChanged();
     mPropertiesPanel->OnSelectedComponentChanged();

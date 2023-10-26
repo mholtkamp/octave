@@ -35,9 +35,8 @@ public:
     WidgetHierarchyPanel* GetWidgetHierarchyPanel();
     WidgetViewportPanel* GetWidgetViewportPanel();
 
-    void OnSelectedComponentChanged();
+    void OnSelectedNodeChanged();
     void OnSelectedAssetChanged();
-    void OnSelectedWidgetChanged();
     void OnEditorModeChanged();
 
 protected:

@@ -1006,27 +1006,3 @@ Node* World::SpawnDefaultRoot()
 
     return mRootNode;
 }
-
-#if EDITOR
-
-bool World::IsNodeSelected(Node* node) const
-{
-    return ::IsNodeSelected(node);
-}
-
-Node* World::GetSelectedNode()
-{
-    return ::GetSelectedNode();
-}
-
-const std::vector<Node*>& World::GetSelectedNodes()
-{
-    return ::GetSelectedNodes();
-}
-
-void World::DeselectNode(Node* node)
-{
-    ::DeselectNode(node);
-}
-
-#endif

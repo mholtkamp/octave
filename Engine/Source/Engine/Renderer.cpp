@@ -1292,8 +1292,11 @@ void Renderer::RenderSelectedGeometry(World* world)
 
         for (uint32_t i = 0; i < selectedNodes.size(); ++i)
         {
-            const bool renderChildren = (selectedNodes[i]->GetParent() != nullptr && selectedNodes[i]->GetScene() != nullptr);
-            selectedNodes[i]->RenderSelected(renderChildren);
+            if (selectedNodes[i]->GetWorld() == world)
+            {
+                const bool renderChildren = (selectedNodes[i]->GetParent() != nullptr && selectedNodes[i]->GetScene() != nullptr);
+                selectedNodes[i]->RenderSelected(renderChildren);
+            }
         }
     }
 #endif

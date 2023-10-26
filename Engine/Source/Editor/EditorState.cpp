@@ -14,14 +14,12 @@
 #include "World.h"
 #include "TimerManager.h"
 #include "AudioManager.h"
-#include "Assets/Level.h"
-#include "Assets/Blueprint.h"
-#include "Assets/WidgetMap.h"
+#include "Assets/Scene.h"
 #include "EditorUtils.h"
-#include "Nodes/Widgets/ActionList.h"
-#include "Nodes/Widgets/TextEntry.h"
-#include "Nodes/Widgets/WidgetViewportPanel.h"
-#include "Nodes/Widgets/PropertiesPanel.h"
+#include "Widgets/ActionList.h"
+#include "Widgets/TextEntry.h"
+#include "Widgets/WidgetViewportPanel.h"
+#include "Widgets/PropertiesPanel.h"
 #include "Input/Input.h"
 
 static EditorState sEditorState;
@@ -31,10 +29,10 @@ constexpr int32_t kEditorSaveVersion = 1;
 
 void SetEditorMode(EditorMode mode)
 {
-    // Only allow level editing in PIE for now.
+    // Only allow scene editing in PIE for now.
     if (IsPlayingInEditor())
     {
-        mode = EditorMode::Level;
+        mode = EditorMode::Scene;
     }
 
     if (sEditorState.mMode != mode)
@@ -42,34 +40,11 @@ void SetEditorMode(EditorMode mode)
         EditorMode prevMode = sEditorState.mMode;
         sEditorState.mMode = mode;
 
-        SetSelectedActor(nullptr);
-        SetSelectedWidget(nullptr);
-
-        if (prevMode == EditorMode::Blueprint)
-        {
-            sEditorState.mEditBlueprintActor = nullptr;
-        }
-
-        if (mode == EditorMode::Level)
-        {
-            if (prevMode == EditorMode::Blueprint)
-            {
-                RestoreLevel();
-            }
-        }
-        if (mode == EditorMode::Blueprint)
-        {
-            if (prevMode == EditorMode::Level)
-            {
-                CacheLevel();
-            }
-
-            SetupBlueprintEditor();
-        }
+        // TODO-NODE: I don't think we need this anymore. Remove commented call after verifying.
+        //SetSelectedNode(nullptr);
 
         PanelManager::Get()->OnEditorModeChanged();
-        EnableGrid(mode == EditorMode::Blueprint);
-        Renderer::Get()->EnableWorldRendering(mode != EditorMode::Widget);
+
         ActionManager::Get()->ResetUndoRedo();
     }
 }
@@ -81,25 +56,12 @@ EditorMode GetEditorMode()
 
 void InitializeEditorState()
 {
-    sEditorState.mTextEntry = new TextEntry();
+
 }
 
 void DestroyEditorState()
 {
-    delete sEditorState.mTextEntry;
-    sEditorState.mTextEntry = nullptr;
 
-    if (sEditorState.mActionList != nullptr)
-    {
-        delete sEditorState.mActionList;
-        sEditorState.mActionList = nullptr;
-    }
-
-    if (sEditorState.mSceneImportWidget != nullptr)
-    {
-        delete sEditorState.mSceneImportWidget;
-        sEditorState.mSceneImportWidget = nullptr;
-    }
 }
 
 EditorState* GetEditorState()
@@ -111,6 +73,8 @@ void ReadEditorSave()
 {
     if (SYS_DoesSaveExist(kEditorSaveFile))
     {
+        // TODO: Save an ini file instead of a binary file so it can easily be
+        // edited by a user, especially if something goes wrong.
         Stream stream;
         SYS_ReadSave(kEditorSaveFile, stream);
 
@@ -118,7 +82,7 @@ void ReadEditorSave()
 
         if (version == kEditorSaveVersion)
         {
-            stream.ReadString(sEditorState.mStartupLevelName);
+            stream.ReadString(sEditorState.mStartupSceneName);
         }
         else
         {
@@ -131,114 +95,76 @@ void WriteEditorSave()
 {
     Stream stream;
     stream.WriteInt32(kEditorSaveVersion);
-    stream.WriteString(sEditorState.mStartupLevelName);
+    stream.WriteString(sEditorState.mStartupSceneName);
 
     SYS_WriteSave(kEditorSaveFile, stream);
 }
 
-void SetSelectedComponent(Component* newComponent)
+void SetSelectedNode(Node* newNode)
 {
     // Check if the component is actually exiled (only exists in the undo history).
-    if (newComponent != nullptr && newComponent->GetWorld() == nullptr)
+    if (newNode != nullptr && newNode->GetWorld() == nullptr)
     {
         return;
     }
 
-    if (sEditorState.mSelectedComponents.size() != 1 ||
-        sEditorState.mSelectedComponents[0] != newComponent)
+    if (sEditorState.mSelectedNodes.size() != 1 ||
+        sEditorState.mSelectedNodes[0] != newNode)
     {
-        sEditorState.mSelectedComponents.clear();
+        sEditorState.mSelectedNodes.clear();
 
-        if (newComponent != nullptr)
+        if (newNode != nullptr)
         {
-            sEditorState.mSelectedComponents.push_back(newComponent);
+            sEditorState.mSelectedNodes.push_back(newNode);
         }
 
         if (!IsShuttingDown())
         {
-            PanelManager::Get()->OnSelectedComponentChanged();
-            ActionManager::Get()->OnSelectedComponentChanged();
+            PanelManager::Get()->OnSelectedNodeChanged();
+            ActionManager::Get()->OnSelectedNodeChanged();
         }
     }
 }
 
-void SetSelectedActor(Actor* newActor)
+void AddSelectedNode(Node* node, bool addAllChildren)
 {
-    SetSelectedComponent(newActor ? newActor->GetRootComponent() : nullptr);
-}
-
-void AddSelectedComponent(Component* component)
-{
-    if (component != nullptr)
+    if (node != nullptr)
     {
-        std::vector<Component*>& comps = sEditorState.mSelectedComponents;
-        auto it = std::find(comps.begin(), comps.end(), component);
-
-        if (it != comps.end())
+        if (addAllChildren)
         {
-            // Move the component to the back of the vector so that 
-            // it is considered the primary selected component.
-            comps.erase(it);
-        }
-
-        comps.push_back(component);
-    }
-}
-
-void RemoveSelectedComponent(Component* component)
-{
-    if (component != nullptr)
-    {
-        std::vector<Component*>& comps = sEditorState.mSelectedComponents;
-        auto it = std::find(comps.begin(), comps.end(), component);
-
-        if (it != comps.end())
-        {
-            // Move the component to the back of the vector so that 
-            // it is considered the primary selected component.
-            comps.erase(it);
-        }
-    }
-}
-
-void AddSelectedActor(Actor* actor, bool addAllChildren)
-{
-    if (addAllChildren)
-    {
-        const std::vector<Component*>& comps = actor->GetComponents();
-
-        for (uint32_t i = 0; i < comps.size(); ++i)
-        {
-            if (comps[i]->IsNode3D())
+            for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
             {
-                AddSelectedComponent(comps[i]);
+                AddSelectedNode(node->GetChild(i), true);
             }
         }
-    }
-    else
-    {
-        AddSelectedComponent(actor ? actor->GetRootComponent() : nullptr);
+
+        std::vector<Node*>& nodes = sEditorState.mSelectedNodes;
+        auto it = std::find(nodes.begin(), nodes.end(), node);
+
+        if (it != nodes.end())
+        {
+            // Move the node to the back of the vector so that 
+            // it is considered the primary selected node.
+            nodes.erase(it);
+        }
+
+        nodes.push_back(node);
     }
 }
 
-void RemoveSelectedActor(Actor* actor)
+void RemoveSelectedNode(Node* node)
 {
-    bool erased = false;
-    std::vector<Component*>& comps = sEditorState.mSelectedComponents;
-    for (int32_t i = int32_t(comps.size()) - 1; i >= 0; --i)
+    if (node != nullptr)
     {
-        if (comps[i]->GetOwner() == actor)
-        {
-            comps.erase(comps.begin() + i);
-            erased = true;
-            --i;
-        }
-    }
+        std::vector<Node*>& nodes = sEditorState.mSelectedNodes;
+        auto it = std::find(nodes.begin(), nodes.end(), node);
 
-    if (erased && !IsShuttingDown())
-    {
-        PanelManager::Get()->OnSelectedComponentChanged();
-        ActionManager::Get()->OnSelectedComponentChanged();
+        if (it != nodes.end())
+        {
+            // Move the node to the back of the vector so that 
+            // it is considered the primary selected node.
+            nodes.erase(it);
+        }
     }
 }
 
@@ -254,16 +180,6 @@ void SetSelectedAssetStub(AssetStub* newStub)
         }
 
         PanelManager::Get()->OnSelectedAssetChanged();
-    }
-}
-
-void SetActiveLevel(Level* level)
-{
-    sEditorState.mActiveLevel = level;
-
-    if (level != nullptr)
-    {
-        level->ApplySettings(true);
     }
 }
 
@@ -315,18 +231,21 @@ void BeginPlayInEditor()
     if (sEditorState.mPlayInEditor)
         return;
 
-    SetSelectedComponent(nullptr);
+    SetSelectedNode(nullptr);
     SetSelectedAssetStub(nullptr);
-    SetEditorMode(EditorMode::Level);
     PanelManager::Get()->GetPropertiesPanel()->InspectAsset(nullptr);
 
     ActionManager::Get()->ResetUndoRedo();
 
-    CacheLevel();
+    // Save the current scene we want to play (and later restore)
+    ShelveEditScene();
 
-    GetWorld()->DestroyAllActors();
+    // TODO-NODE: This is overkill since the root node of the scene should have been removed in ShelveEditScene()
+    //   Maybe we just want to assert that the root node is null.
+    GetWorld()->Clear();
+    OCT_ASSERT(GetWorld()->GetRootNode() == nullptr);
 
-    ShowRootCanvas(false);
+    ShowEditorUi(false);
     Renderer::Get()->EnableProxyRendering(false);
 
     sEditorState.mPlayInEditor = true;
@@ -335,7 +254,13 @@ void BeginPlayInEditor()
     //OctPreInitialize();
     OctPostInitialize();
 
-    RestoreLevel();
+    EditScene* editScene = GetEditScene();
+    if (editScene != nullptr &&
+        editScene->mRootNode != nullptr)
+    {
+        Node* clonedRoot = editScene->mRootNode->Clone(true, false);
+        GetWorld()->SetRootNode(clonedRoot);
+    }
 }
 
 void EndPlayInEditor()
@@ -349,31 +274,34 @@ void EndPlayInEditor()
         cameraTransform = GetWorld()->GetActiveCamera()->GetTransform();
     }
 
-    GetWorld()->DestroyAllActors();
+    GetWorld()->DestroyRootNode();
     GetTimerManager()->ClearAllTimers();
 
-    Renderer::Get()->RemoveAllWidgets();
     AudioManager::StopAllSounds();
 
     // Fake Shutdown
     OctPreShutdown();
     OctPostShutdown();
 
-    SetSelectedComponent(nullptr);
+    SetSelectedNode(nullptr);
     SetSelectedAssetStub(nullptr);
     PanelManager::Get()->GetPropertiesPanel()->InspectAsset(nullptr);
 
     ActionManager::Get()->ResetUndoRedo();
 
-    ShowRootCanvas(true);
+    ShowEditorUi(true);
     Renderer::Get()->EnableProxyRendering(true);
 
     sEditorState.mPlayInEditor = false;
     sEditorState.mEjected = false;
     sEditorState.mPaused = false;
 
-    // Restore cached editor level
-    RestoreLevel();
+    // Restore the scene we were working on
+    EditScene* editScene = GetEditScene();
+    if (editScene != nullptr)
+    {
+        GetWorld()->SetRootNode(editScene->mRootNode);
+    }
 
     if (GetWorld()->GetActiveCamera())
     {
@@ -386,24 +314,24 @@ void EjectPlayInEditor()
     if (sEditorState.mPlayInEditor &&
         !sEditorState.mEjected)
     {
-        SetSelectedComponent(nullptr);
+        SetSelectedNode(nullptr);
         sEditorState.mInjectedCamera = GetWorld()->GetActiveCamera();
 
         if (sEditorState.mEjectedCamera == nullptr)
         {
-            Actor* cameraActor = GetWorld()->SpawnActor<Actor>();
-            cameraActor->SetName("Ejected Camera");
-            sEditorState.mEjectedCamera = cameraActor->CreateComponent<Camera3D>();
+            Camera3D* ejectedCamera = GetWorld()->SpawnNode<Camera3D>();
+            ejectedCamera->SetName("Ejected Camera");
+            sEditorState.mEjectedCamera = ejectedCamera;
 
             // Set its transform to match the PIE camera
             if (GetWorld()->GetActiveCamera())
             {
-                cameraActor->GetRootComponent()->SetTransform(GetWorld()->GetActiveCamera()->GetTransform());
+                ejectedCamera->SetTransform(GetWorld()->GetActiveCamera()->GetTransform());
             }
         }
 
         GetWorld()->SetActiveCamera(sEditorState.mEjectedCamera.Get<Camera3D>());
-        ShowRootCanvas(true);
+        ShowEditorUi(true);
         sEditorState.mEjected = true;
     }
 }
@@ -413,14 +341,14 @@ void InjectPlayInEditor()
     if (sEditorState.mPlayInEditor &&
         sEditorState.mEjected)
     {
-        SetSelectedComponent(nullptr);
+        SetSelectedNode(nullptr);
 
         if (sEditorState.mInjectedCamera != nullptr)
         {
             GetWorld()->SetActiveCamera(sEditorState.mInjectedCamera.Get<Camera3D>());
         }
 
-        ShowRootCanvas(false);
+        ShowEditorUi(false);
         sEditorState.mEjected = false;
     }
 }
@@ -435,70 +363,36 @@ bool IsPlayInEditorPaused()
     return sEditorState.mPaused;
 }
 
-void LoadStartupLevel()
+void LoadStartupScene()
 {
-    if (sEditorState.mStartupLevelName != "")
+    if (sEditorState.mStartupSceneName != "")
     {
-        Level* level = LoadAsset<Level>(sEditorState.mStartupLevelName);
+        Scene* scene = LoadAsset<Scene>(sEditorState.mStartupSceneName);
 
-        if (level != nullptr)
+        if (scene != nullptr)
         {
-            ActionManager::Get()->OpenLevel(level);
+            ActionManager::Get()->OpenScene(scene);
         }
     }
 }
 
-Component* GetSelectedComponent()
+Node* GetSelectedNode()
 {
-    return (sEditorState.mSelectedComponents.size() > 0) ?
-        sEditorState.mSelectedComponents.back() :
+    return (sEditorState.mSelectedNodes.size() > 0) ?
+        sEditorState.mSelectedNodes.back() :
         nullptr;
 }
 
-Actor* GetSelectedActor()
+const std::vector<Node*>& GetSelectedNodes()
 {
-    Actor* actor = nullptr;
-    Component* selComp = (sEditorState.mSelectedComponents.size() > 0) ?
-        sEditorState.mSelectedComponents.back() :
-        nullptr;
-
-    if (selComp != nullptr)
-    {
-        actor = selComp->GetOwner();
-    }
-
-    return actor;
+    return sEditorState.mSelectedNodes;
 }
 
-const std::vector<Component*>& GetSelectedComponents()
+bool IsNodeSelected(Node* node)
 {
-    // Return copy
-    return sEditorState.mSelectedComponents;
-}
-
-std::vector<Actor*> GetSelectedActors()
-{
-    std::vector<Actor*> selActors;
-
-    for (uint32_t i = 0; i < sEditorState.mSelectedComponents.size(); ++i)
+    for (uint32_t i = 0; i < sEditorState.mSelectedNodes.size(); ++i)
     {
-        Actor* actor = sEditorState.mSelectedComponents[i]->GetOwner();
-
-        if (actor != nullptr &&
-            std::find(selActors.begin(), selActors.end(), actor) == selActors.end())
-        {
-            selActors.push_back(actor);
-        }
-    }
-
-    return selActors;
-}
-
-bool IsComponentSelected(Component* component)
-{
-    for (uint32_t i = 0; i < sEditorState.mSelectedComponents.size(); ++i)
-    {
-        if (sEditorState.mSelectedComponents[i] == component)
+        if (sEditorState.mSelectedNodes[i] == node)
         {
             return true;
         }
@@ -506,26 +400,14 @@ bool IsComponentSelected(Component* component)
     return false;
 }
 
-bool IsActorSelected(Actor* actor)
-{
-    for (uint32_t i = 0; i < sEditorState.mSelectedComponents.size(); ++i)
-    {
-        if (sEditorState.mSelectedComponents[i]->GetOwner() == actor)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-void DeselectComponent(Component* component)
+void DeselectNode(Node* node)
 {
     bool erased = false;
-    for (uint32_t i = 0; i < sEditorState.mSelectedComponents.size(); ++i)
+    for (uint32_t i = 0; i < sEditorState.mSelectedNodes.size(); ++i)
     {
-        if (sEditorState.mSelectedComponents[i] == component)
+        if (sEditorState.mSelectedNodes[i] == node)
         {
-            sEditorState.mSelectedComponents.erase(sEditorState.mSelectedComponents.begin() + i);
+            sEditorState.mSelectedNodes.erase(sEditorState.mSelectedNodes.begin() + i);
             erased = true;
             break;
         }
@@ -533,171 +415,34 @@ void DeselectComponent(Component* component)
 
     if (erased && !IsShuttingDown())
     {
-        PanelManager::Get()->OnSelectedComponentChanged();
-        ActionManager::Get()->OnSelectedComponentChanged();
+        PanelManager::Get()->OnSelectedNodeChanged();
+        ActionManager::Get()->OnSelectedNodeChanged();
     }
 }
 
-void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler, const char* defaultText)
+void OpenEditScene(Scene* scene)
 {
-    sEditorState.mTextEntry->Prompt(title, confirmHandler, defaultText);
+
 }
 
-void ShowRootCanvas(bool show)
+void CloseEditScene(Scene* scene)
 {
-    if (sEditorState.mRootCanvas)
-    {
-        if (show)
-        {
-            Renderer::Get()->AddWidget(sEditorState.mRootCanvas);
-        }
-        else
-        {
-            Renderer::Get()->RemoveWidget(sEditorState.mRootCanvas);
-        }
-    }
+
 }
 
-
-Widget* GetSelectedWidget()
+void ShelveEditScene()
 {
-    return sEditorState.mSelectedWidget;
+
 }
 
-void SetSelectedWidget(Widget* widget)
+EditScene* GetEditScene()
 {
-    if (sEditorState.mSelectedWidget != widget)
-    {
-        sEditorState.mSelectedWidget = widget;
-        PanelManager::Get()->OnSelectedWidgetChanged();
-    }
+
 }
 
-Widget* GetEditRootWidget()
+void ShowEditorUi(bool show)
 {
-    return sEditorState.mEditRootWidget;
-}
-
-void SetEditRootWidget(Widget* widget)
-{
-    if (widget != sEditorState.mEditRootWidget)
-    {
-        // If we are switching to a child widget (reordering hierarchy)
-        // then we don't want to delete the current editroot, but we want
-        // to reparent it to the new edit root.
-        if (widget != nullptr &&
-            widget->HasParent(sEditorState.mEditRootWidget))
-        {
-            widget->DetachFromParent();
-            widget->AddChild(sEditorState.mEditRootWidget);
-            sEditorState.mEditRootWidget = nullptr;
-        }
-
-        sEditorState.mEditRootWidget = widget;
-        SetSelectedWidget(widget);
-    }
-}
-
-void DestroyEditRootWidget()
-{
-    if (sEditorState.mEditRootWidget != nullptr)
-    {
-        delete sEditorState.mEditRootWidget;
-        sEditorState.mEditRootWidget = nullptr;
-
-        SetSelectedWidget(nullptr);
-    }
-}
-
-void SetActiveWidgetMap(WidgetMap* widgetMap)
-{
-    if (sEditorState.mActiveWidgetMap.Get<WidgetMap>() != widgetMap)
-    {
-        sEditorState.mActiveWidgetMap = widgetMap;
-
-        // Attempt to instantiate a widget from the map. This may return nullptr
-        // if the map was just created and has no widgets. In this case,
-        // The hierarchy panel will set it when the first widget is created.
-        DestroyEditRootWidget();
-        ActionManager::Get()->ResetUndoRedo();
-        SetEditRootWidget(widgetMap->Instantiate());
-        PanelManager::Get()->GetWidgetViewportPanel()->SyncEditRootWidget();
-    }
-}
-
-WidgetMap* GetActiveWidgetMap()
-{
-    return sEditorState.mActiveWidgetMap.Get<WidgetMap>();
-}
-
-void SetActiveBlueprint(Blueprint* bp)
-{
-    if (sEditorState.mActiveBlueprint != bp)
-    {
-        sEditorState.mActiveBlueprint = bp;
-
-        if (GetEditorMode() == EditorMode::Blueprint)
-        {
-            SetupBlueprintEditor();
-        }
-    }
-}
-
-Blueprint* GetActiveBlueprint()
-{
-    return sEditorState.mActiveBlueprint.Get<Blueprint>();
-}
-
-void SetupBlueprintEditor()
-{
-    sEditorState.mEditBlueprintActor = nullptr;
-
-    GetWorld()->Clear(true);
-    Actor* dirLightActor = ActionManager::Get()->SpawnBasicActor(BASIC_DIRECTIONAL_LIGHT, { 0.0f, 0.0f, 0.0f });
-    DirectionalLight3D * dirLight = dirLightActor->GetComponentByType(DirectionalLight3D::GetStaticType())->As<DirectionalLight3D>();
-    dirLight->SetDirection(Maths::SafeNormalize(glm::vec3(1.0f, -1.0f, -1.0f)));
-
-    Blueprint* activeBp = GetActiveBlueprint();
-    if (activeBp)
-    {
-        sEditorState.mEditBlueprintActor = activeBp->Instantiate(GetWorld());
-    }
-    
-    if (sEditorState.mEditBlueprintActor == nullptr)
-    {
-        sEditorState.mEditBlueprintActor = GetWorld()->SpawnActor<Actor>();
-        sEditorState.mEditBlueprintActor->CreateComponent<Node3D>("Root");
-    }
-
-    SetSelectedActor(sEditorState.mEditBlueprintActor);
-}
-
-Actor* GetEditBlueprintActor()
-{
-    return sEditorState.mEditBlueprintActor;
-}
-
-void CacheLevel()
-{
-    if (sEditorState.mCachedLevel == nullptr)
-    {
-        Level* cachedLevel = new Level();
-        cachedLevel->Create();
-        cachedLevel->SetName("Cached Level");
-        AssetManager::Get()->RegisterTransientAsset(cachedLevel);
-        sEditorState.mCachedLevel = cachedLevel;
-    }
-
-    sEditorState.mCachedLevel.Get<Level>()->CaptureWorld(GetWorld());
-}
-
-void RestoreLevel()
-{
-    if (sEditorState.mCachedLevel != nullptr)
-    {
-        GetWorld()->Clear(true);
-        sEditorState.mCachedLevel.Get<Level>()->LoadIntoWorld(GetWorld());
-    }
+    sEditorState.mUiEnabled = show;
 }
 
 Asset* GetSelectedAsset()
@@ -708,11 +453,6 @@ Asset* GetSelectedAsset()
 AssetStub* GetSelectedAssetStub()
 {
     return sEditorState.mSelectedAssetStub;
-}
-
-Level* GetActiveLevel()
-{
-    return sEditorState.mActiveLevel.Get<Level>();
 }
 
 ControlMode GetControlMode()
@@ -754,10 +494,10 @@ void SetTransformLock(TransformLock lock)
         world->RemoveLine(lineY);
         world->RemoveLine(lineZ);
 
-        Component* comp = GetSelectedComponent();
-        if (comp != nullptr && comp->IsNode3D())
+        Node* node = GetSelectedNode();
+        if (node != nullptr && node->IsNode3D())
         {
-            glm::vec3 pos = static_cast<Node3D*>(comp)->GetAbsolutePosition();
+            glm::vec3 pos = static_cast<Node3D*>(node)->GetAbsolutePosition();
             lineX.mStart = pos - glm::vec3(10000, 0, 0);;
             lineY.mStart = pos - glm::vec3(0, 10000, 0);;
             lineZ.mStart = pos - glm::vec3(0, 0, 10000);;
@@ -794,26 +534,6 @@ void SetTransformLock(TransformLock lock)
 
         }
     }
-}
-
-ActionList* GetActionList()
-{
-    if (sEditorState.mActionList == nullptr)
-    {
-        sEditorState.mActionList = new ActionList();
-    }
-
-    return sEditorState.mActionList;
-}
-
-SceneImportWidget* GetSceneImportWidget()
-{
-    if (sEditorState.mSceneImportWidget == nullptr)
-    {
-        sEditorState.mSceneImportWidget = new SceneImportWidget();
-    }
-
-    return sEditorState.mSceneImportWidget;
 }
 
 #endif

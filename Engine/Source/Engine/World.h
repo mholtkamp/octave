@@ -197,13 +197,4 @@ private:
     std::vector<PrimitivePair> mCurrentOverlaps;
     std::vector<PrimitivePair> mPreviousOverlaps;
 
-#if EDITOR
-public:
-
-    bool IsNodeSelected(Node* node) const;
-    Node* GetSelectedNode();
-    const std::vector<Node*>& GetSelectedNodes();
-    void DeselectNode(Node* node);
-
-#endif
 };
