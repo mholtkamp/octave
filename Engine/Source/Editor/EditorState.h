@@ -54,6 +54,7 @@ struct EditScene
 
 struct EditorState
 {
+    // Data
     EditorMode mMode;
     std::vector<Node*> mSelectedNodes;
     std::vector<EditScene> mEditScenes;
@@ -69,52 +70,54 @@ struct EditorState
     NodeRef mEjectedCamera = nullptr;
     std::string mStartupSceneName;
     int32_t mEditSceneIndex = -1;
-};
+    int32_t mPieEditSceneIdx = -1;
 
-void SetEditorMode(EditorMode mode);
-EditorMode GetEditorMode();
+    // Methods
+    void SetEditorMode(EditorMode mode);
+    EditorMode GetEditorMode();
+
+    void ReadEditorSave();
+    void WriteEditorSave();
+
+    void SetSelectedNode(Node* newNode);
+    void AddSelectedNode(Node* node, bool addAllChildren);
+    void RemoveSelectedNode(Node* node);
+    void SetSelectedAssetStub(AssetStub* newStub);
+    void SetControlMode(ControlMode newMode);
+
+    void BeginPlayInEditor();
+    void EndPlayInEditor();
+    void EjectPlayInEditor();
+    void InjectPlayInEditor();
+    void SetPlayInEditorPaused(bool paused);
+    bool IsPlayInEditorPaused();
+
+    void LoadStartupScene();
+
+    Node* GetSelectedNode();
+    const std::vector<Node*>& GetSelectedNodes();
+    bool IsNodeSelected(Node* node);
+    void DeselectNode(Node* node);
+    //void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler, const char* defaultText = nullptr);
+
+    void OpenEditScene(Scene* scene);
+    void OpenEditScene(int32_t idx);
+    void CloseEditScene(int32_t idx);
+    void ShelveEditScene();
+    EditScene* GetEditScene(int32_t idx = -1);
+
+    void ShowEditorUi(bool show);
+
+    Asset* GetSelectedAsset();
+    AssetStub* GetSelectedAssetStub();
+    ControlMode GetControlMode();
+    glm::vec3 GetTransformLockVector(TransformLock lock);
+    void SetTransformLock(TransformLock lock);
+
+};
 
 void InitializeEditorState();
 void DestroyEditorState();
 EditorState* GetEditorState();
-
-void ReadEditorSave();
-void WriteEditorSave();
-
-void SetSelectedNode(Node* newNode);
-void AddSelectedNode(Node* node, bool addAllChildren);
-void RemoveSelectedNode(Node* node);
-void SetSelectedAssetStub(AssetStub* newStub);
-void SetControlMode(ControlMode newMode);
-
-void BeginPlayInEditor();
-void EndPlayInEditor();
-void EjectPlayInEditor();
-void InjectPlayInEditor();
-void SetPlayInEditorPaused(bool paused);
-bool IsPlayInEditorPaused();
-
-void LoadStartupScene();
-
-Node* GetSelectedNode();
-const std::vector<Node*>& GetSelectedNodes();
-bool IsNodeSelected(Node* node);
-void DeselectNode(Node* node);
-//void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler, const char* defaultText = nullptr);
-
-void OpenEditScene(Scene* scene);
-void CloseEditScene(Scene* scene);
-void ShelveEditScene();
-EditScene* GetEditScene();
-
-void ShowEditorUi(bool show);
-
-Asset* GetSelectedAsset();
-AssetStub* GetSelectedAssetStub();
-ControlMode GetControlMode();
-glm::vec3 GetTransformLockVector(TransformLock lock);
-void SetTransformLock(TransformLock lock);
-ActionList* GetActionList();
-SceneImportWidget* GetSceneImportWidget();
 
 #endif

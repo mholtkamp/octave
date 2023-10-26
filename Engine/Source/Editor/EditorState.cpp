@@ -27,33 +27,6 @@ static EditorState sEditorState;
 constexpr const char* kEditorSaveFile = "Editor.sav";
 constexpr int32_t kEditorSaveVersion = 1;
 
-void SetEditorMode(EditorMode mode)
-{
-    // Only allow scene editing in PIE for now.
-    if (IsPlayingInEditor())
-    {
-        mode = EditorMode::Scene;
-    }
-
-    if (sEditorState.mMode != mode)
-    {
-        EditorMode prevMode = sEditorState.mMode;
-        sEditorState.mMode = mode;
-
-        // TODO-NODE: I don't think we need this anymore. Remove commented call after verifying.
-        //SetSelectedNode(nullptr);
-
-        PanelManager::Get()->OnEditorModeChanged();
-
-        ActionManager::Get()->ResetUndoRedo();
-    }
-}
-
-EditorMode GetEditorMode()
-{
-    return sEditorState.mMode;
-}
-
 void InitializeEditorState()
 {
 
@@ -69,7 +42,34 @@ EditorState* GetEditorState()
     return &sEditorState;
 }
 
-void ReadEditorSave()
+void EditorState::SetEditorMode(EditorMode mode)
+{
+    // Only allow scene editing in PIE for now.
+    if (IsPlayingInEditor())
+    {
+        mode = EditorMode::Scene;
+    }
+
+    if (mMode != mode)
+    {
+        EditorMode prevMode = mMode;
+        mMode = mode;
+
+        // TODO-NODE: I don't think we need this anymore. Remove commented call after verifying.
+        //SetSelectedNode(nullptr);
+
+        PanelManager::Get()->OnEditorModeChanged();
+
+        ActionManager::Get()->ResetUndoRedo();
+    }
+}
+
+EditorMode EditorState::GetEditorMode()
+{
+    return mMode;
+}
+
+void EditorState::ReadEditorSave()
 {
     if (SYS_DoesSaveExist(kEditorSaveFile))
     {
@@ -82,7 +82,7 @@ void ReadEditorSave()
 
         if (version == kEditorSaveVersion)
         {
-            stream.ReadString(sEditorState.mStartupSceneName);
+            stream.ReadString(mStartupSceneName);
         }
         else
         {
@@ -91,16 +91,16 @@ void ReadEditorSave()
     }
 }
 
-void WriteEditorSave()
+void EditorState::WriteEditorSave()
 {
     Stream stream;
     stream.WriteInt32(kEditorSaveVersion);
-    stream.WriteString(sEditorState.mStartupSceneName);
+    stream.WriteString(mStartupSceneName);
 
     SYS_WriteSave(kEditorSaveFile, stream);
 }
 
-void SetSelectedNode(Node* newNode)
+void EditorState::SetSelectedNode(Node* newNode)
 {
     // Check if the component is actually exiled (only exists in the undo history).
     if (newNode != nullptr && newNode->GetWorld() == nullptr)
@@ -108,14 +108,14 @@ void SetSelectedNode(Node* newNode)
         return;
     }
 
-    if (sEditorState.mSelectedNodes.size() != 1 ||
-        sEditorState.mSelectedNodes[0] != newNode)
+    if (mSelectedNodes.size() != 1 ||
+        mSelectedNodes[0] != newNode)
     {
-        sEditorState.mSelectedNodes.clear();
+        mSelectedNodes.clear();
 
         if (newNode != nullptr)
         {
-            sEditorState.mSelectedNodes.push_back(newNode);
+            mSelectedNodes.push_back(newNode);
         }
 
         if (!IsShuttingDown())
@@ -126,7 +126,7 @@ void SetSelectedNode(Node* newNode)
     }
 }
 
-void AddSelectedNode(Node* node, bool addAllChildren)
+void EditorState::AddSelectedNode(Node* node, bool addAllChildren)
 {
     if (node != nullptr)
     {
@@ -138,7 +138,7 @@ void AddSelectedNode(Node* node, bool addAllChildren)
             }
         }
 
-        std::vector<Node*>& nodes = sEditorState.mSelectedNodes;
+        std::vector<Node*>& nodes = mSelectedNodes;
         auto it = std::find(nodes.begin(), nodes.end(), node);
 
         if (it != nodes.end())
@@ -152,11 +152,11 @@ void AddSelectedNode(Node* node, bool addAllChildren)
     }
 }
 
-void RemoveSelectedNode(Node* node)
+void EditorState::RemoveSelectedNode(Node* node)
 {
     if (node != nullptr)
     {
-        std::vector<Node*>& nodes = sEditorState.mSelectedNodes;
+        std::vector<Node*>& nodes = mSelectedNodes;
         auto it = std::find(nodes.begin(), nodes.end(), node);
 
         if (it != nodes.end())
@@ -168,11 +168,11 @@ void RemoveSelectedNode(Node* node)
     }
 }
 
-void SetSelectedAssetStub(AssetStub* newStub)
+void EditorState::SetSelectedAssetStub(AssetStub* newStub)
 {
-    if (sEditorState.mSelectedAssetStub != newStub)
+    if (mSelectedAssetStub != newStub)
     {
-        sEditorState.mSelectedAssetStub = newStub;
+        mSelectedAssetStub = newStub;
         if (newStub != nullptr &&
             newStub->mAsset == nullptr)
         {
@@ -183,17 +183,17 @@ void SetSelectedAssetStub(AssetStub* newStub)
     }
 }
 
-void SetControlMode(ControlMode newMode)
+void EditorState::SetControlMode(ControlMode newMode)
 {
     // Don't do anything if new mode is same as current mode or there is no component selected.
-    if (sEditorState.mControlMode == newMode)
+    if (mControlMode == newMode)
     {
         return;
     }
 
-    ControlMode prevMode = sEditorState.mControlMode;
+    ControlMode prevMode = mControlMode;
 
-    sEditorState.mControlMode = newMode;
+    mControlMode = newMode;
 
     if (prevMode == ControlMode::Pilot ||
         prevMode == ControlMode::Translate ||
@@ -219,16 +219,16 @@ void SetControlMode(ControlMode newMode)
         // But because of the event loop processing, we might get a bogus mouse motion event even after
         // we have just forced the position. So set a flag to let the viewport panel know that we need to
         // recenter the mouse next frame.
-        sEditorState.mMouseNeedsRecenter = true;
+        mMouseNeedsRecenter = true;
     }
 
     // Always reset transform lock when switching control modes.
     SetTransformLock(TransformLock::None);
 }
 
-void BeginPlayInEditor()
+void EditorState::BeginPlayInEditor()
 {
-    if (sEditorState.mPlayInEditor)
+    if (mPlayInEditor)
         return;
 
     SetSelectedNode(nullptr);
@@ -238,6 +238,7 @@ void BeginPlayInEditor()
     ActionManager::Get()->ResetUndoRedo();
 
     // Save the current scene we want to play (and later restore)
+    mPieEditSceneIdx = mEditSceneIndex;
     ShelveEditScene();
 
     // TODO-NODE: This is overkill since the root node of the scene should have been removed in ShelveEditScene()
@@ -248,13 +249,13 @@ void BeginPlayInEditor()
     ShowEditorUi(false);
     Renderer::Get()->EnableProxyRendering(false);
 
-    sEditorState.mPlayInEditor = true;
+    mPlayInEditor = true;
 
     // Fake-Initialize the Game
     //OctPreInitialize();
     OctPostInitialize();
 
-    EditScene* editScene = GetEditScene();
+    EditScene* editScene = GetEditScene(mPieEditSceneIdx);
     if (editScene != nullptr &&
         editScene->mRootNode != nullptr)
     {
@@ -263,9 +264,9 @@ void BeginPlayInEditor()
     }
 }
 
-void EndPlayInEditor()
+void EditorState::EndPlayInEditor()
 {
-    if (!sEditorState.mPlayInEditor)
+    if (!mPlayInEditor)
         return;
 
     glm::mat4 cameraTransform(1);
@@ -292,16 +293,12 @@ void EndPlayInEditor()
     ShowEditorUi(true);
     Renderer::Get()->EnableProxyRendering(true);
 
-    sEditorState.mPlayInEditor = false;
-    sEditorState.mEjected = false;
-    sEditorState.mPaused = false;
+    mPlayInEditor = false;
+    mEjected = false;
+    mPaused = false;
 
     // Restore the scene we were working on
-    EditScene* editScene = GetEditScene();
-    if (editScene != nullptr)
-    {
-        GetWorld()->SetRootNode(editScene->mRootNode);
-    }
+    OpenEditScene(mPieEditSceneIdx);
 
     if (GetWorld()->GetActiveCamera())
     {
@@ -309,19 +306,19 @@ void EndPlayInEditor()
     }
 }
 
-void EjectPlayInEditor()
+void EditorState::EjectPlayInEditor()
 {
-    if (sEditorState.mPlayInEditor &&
-        !sEditorState.mEjected)
+    if (mPlayInEditor &&
+        !mEjected)
     {
         SetSelectedNode(nullptr);
-        sEditorState.mInjectedCamera = GetWorld()->GetActiveCamera();
+        mInjectedCamera = GetWorld()->GetActiveCamera();
 
-        if (sEditorState.mEjectedCamera == nullptr)
+        if (mEjectedCamera == nullptr)
         {
             Camera3D* ejectedCamera = GetWorld()->SpawnNode<Camera3D>();
             ejectedCamera->SetName("Ejected Camera");
-            sEditorState.mEjectedCamera = ejectedCamera;
+            mEjectedCamera = ejectedCamera;
 
             // Set its transform to match the PIE camera
             if (GetWorld()->GetActiveCamera())
@@ -330,44 +327,44 @@ void EjectPlayInEditor()
             }
         }
 
-        GetWorld()->SetActiveCamera(sEditorState.mEjectedCamera.Get<Camera3D>());
+        GetWorld()->SetActiveCamera(mEjectedCamera.Get<Camera3D>());
         ShowEditorUi(true);
-        sEditorState.mEjected = true;
+        mEjected = true;
     }
 }
 
-void InjectPlayInEditor()
+void EditorState::InjectPlayInEditor()
 {
-    if (sEditorState.mPlayInEditor &&
-        sEditorState.mEjected)
+    if (mPlayInEditor &&
+        mEjected)
     {
         SetSelectedNode(nullptr);
 
-        if (sEditorState.mInjectedCamera != nullptr)
+        if (mInjectedCamera != nullptr)
         {
-            GetWorld()->SetActiveCamera(sEditorState.mInjectedCamera.Get<Camera3D>());
+            GetWorld()->SetActiveCamera(mInjectedCamera.Get<Camera3D>());
         }
 
         ShowEditorUi(false);
-        sEditorState.mEjected = false;
+        mEjected = false;
     }
 }
 
-void SetPlayInEditorPaused(bool paused)
+void EditorState::SetPlayInEditorPaused(bool paused)
 {
-    sEditorState.mPaused = paused;
+    mPaused = paused;
 }
 
-bool IsPlayInEditorPaused()
+bool EditorState::IsPlayInEditorPaused()
 {
-    return sEditorState.mPaused;
+    return mPaused;
 }
 
-void LoadStartupScene()
+void EditorState::LoadStartupScene()
 {
-    if (sEditorState.mStartupSceneName != "")
+    if (mStartupSceneName != "")
     {
-        Scene* scene = LoadAsset<Scene>(sEditorState.mStartupSceneName);
+        Scene* scene = LoadAsset<Scene>(mStartupSceneName);
 
         if (scene != nullptr)
         {
@@ -376,23 +373,23 @@ void LoadStartupScene()
     }
 }
 
-Node* GetSelectedNode()
+Node* EditorState::GetSelectedNode()
 {
-    return (sEditorState.mSelectedNodes.size() > 0) ?
-        sEditorState.mSelectedNodes.back() :
+    return (mSelectedNodes.size() > 0) ?
+        mSelectedNodes.back() :
         nullptr;
 }
 
-const std::vector<Node*>& GetSelectedNodes()
+const std::vector<Node*>& EditorState::GetSelectedNodes()
 {
-    return sEditorState.mSelectedNodes;
+    return mSelectedNodes;
 }
 
-bool IsNodeSelected(Node* node)
+bool EditorState::IsNodeSelected(Node* node)
 {
-    for (uint32_t i = 0; i < sEditorState.mSelectedNodes.size(); ++i)
+    for (uint32_t i = 0; i < mSelectedNodes.size(); ++i)
     {
-        if (sEditorState.mSelectedNodes[i] == node)
+        if (mSelectedNodes[i] == node)
         {
             return true;
         }
@@ -400,14 +397,14 @@ bool IsNodeSelected(Node* node)
     return false;
 }
 
-void DeselectNode(Node* node)
+void EditorState::DeselectNode(Node* node)
 {
     bool erased = false;
-    for (uint32_t i = 0; i < sEditorState.mSelectedNodes.size(); ++i)
+    for (uint32_t i = 0; i < mSelectedNodes.size(); ++i)
     {
-        if (sEditorState.mSelectedNodes[i] == node)
+        if (mSelectedNodes[i] == node)
         {
-            sEditorState.mSelectedNodes.erase(sEditorState.mSelectedNodes.begin() + i);
+            mSelectedNodes.erase(mSelectedNodes.begin() + i);
             erased = true;
             break;
         }
@@ -420,47 +417,150 @@ void DeselectNode(Node* node)
     }
 }
 
-void OpenEditScene(Scene* scene)
+void EditorState::OpenEditScene(Scene* scene)
 {
+    int32_t editSceneIdx = -1;
+    EditScene* editScene = nullptr;
 
+    // Allow opening multiple null scenes.
+    if (scene != nullptr)
+    {
+        for (uint32_t i = 0; i < mEditScenes.size(); ++i)
+        {
+            if (mEditScenes[i].mSceneAsset == scene)
+            {
+                editScene = &mEditScenes[i];
+                editSceneIdx = (int32_t)i;
+                break;
+            }
+        }
+    }
+
+    if (editScene == nullptr)
+    {
+        // The scene isn't open yet,
+        mEditScenes.push_back(EditScene());
+        EditScene& newEditScene = mEditScenes.back();
+        newEditScene.mSceneAsset = scene;
+        if (scene != nullptr)
+        {
+            newEditScene.mRootNode = scene->Instantiate();
+        }
+
+        editScene = &newEditScene;
+        editSceneIdx = int32_t(mEditScenes.size()) - 1;
+    }
+
+    OCT_ASSERT(editScene != nullptr);
+    OCT_ASSERT(editSceneIdx != -1);
+
+    OpenEditScene(editSceneIdx);
 }
 
-void CloseEditScene(Scene* scene)
+void EditorState::OpenEditScene(int32_t idx)
 {
+    // Lock scene open/close during PIE
+    if (mPlayInEditor)
+        return;
 
+    // Shelve whatever we are working on.
+    ShelveEditScene();
+    OCT_ASSERT(GetWorld()->GetRootNode() == nullptr);
+
+    if (idx >= 0 && idx < int32_t(mEditScenes.size()))
+    {
+        const EditScene& editScene = mEditScenes[idx];
+        mEditSceneIndex = idx;
+        GetWorld()->SetRootNode(editScene.mRootNode); // could be nullptr.
+    }
 }
 
-void ShelveEditScene()
+void EditorState::CloseEditScene(int32_t idx)
 {
+    // Lock scene open/close during PIE
+    if (mPlayInEditor)
+        return;
 
+    if (idx >= 0 && idx < int32_t(mEditScenes.size()))
+    {
+        if (idx == mEditSceneIndex)
+        {
+            // Is this the active EditScene? If so, shelve it first.
+            ShelveEditScene();
+        }
+
+        // Destroy the root node
+        Node::Destruct(mEditScenes[idx].mRootNode);
+
+        // Remove this EditScene entry.
+        mEditScenes.erase(mEditScenes.begin() + idx);
+
+        // If that was the active edit scene, then load the next one it's place.
+        if (mEditSceneIndex == -1 && 
+            mEditScenes.size() > 0)
+        {
+            if (idx >= int32_t(mEditScenes.size()))
+            {
+                idx = int32_t(mEditScenes.size() - 1);
+            }
+
+            OpenEditScene(idx);
+        }
+    }
 }
 
-EditScene* GetEditScene()
+void EditorState::ShelveEditScene()
 {
+    if (mEditSceneIndex >= 0)
+    {
+        EditScene& editScene = mEditScenes[mEditSceneIndex];
+        editScene.mRootNode = GetWorld()->GetRootNode();
+        GetWorld()->SetRootNode(nullptr);
 
+        mEditSceneIndex = -1;
+    }
 }
 
-void ShowEditorUi(bool show)
+EditScene* EditorState::GetEditScene(int32_t idx)
 {
-    sEditorState.mUiEnabled = show;
+    EditScene* ret = nullptr;
+
+    if (idx == -1)
+    {
+        // -1 means the current edit scene index.
+        idx = mEditSceneIndex;
+    }
+
+    if (idx >= 0 &&
+        idx < int32_t(mEditScenes.size()))
+    {
+        ret = &mEditScenes[mEditSceneIndex];
+    }
+
+    return ret;
 }
 
-Asset* GetSelectedAsset()
+void EditorState::ShowEditorUi(bool show)
 {
-    return  sEditorState.mSelectedAssetStub ? sEditorState.mSelectedAssetStub->mAsset : nullptr;
+    mUiEnabled = show;
 }
 
-AssetStub* GetSelectedAssetStub()
+Asset* EditorState::GetSelectedAsset()
 {
-    return sEditorState.mSelectedAssetStub;
+    return  mSelectedAssetStub ? mSelectedAssetStub->mAsset : nullptr;
 }
 
-ControlMode GetControlMode()
+AssetStub* EditorState::GetSelectedAssetStub()
 {
-    return sEditorState.mControlMode;
+    return mSelectedAssetStub;
 }
 
-glm::vec3 GetTransformLockVector(TransformLock lock)
+ControlMode EditorState::GetControlMode()
+{
+    return mControlMode;
+}
+
+glm::vec3 EditorState::GetTransformLockVector(TransformLock lock)
 {
     glm::vec3 ret = glm::vec3(1.0, 1.0, 1.0);
 
@@ -478,13 +578,13 @@ glm::vec3 GetTransformLockVector(TransformLock lock)
     return ret;
 }
 
-void SetTransformLock(TransformLock lock)
+void EditorState::SetTransformLock(TransformLock lock)
 {
     static Line lineX = Line({ 0,0,0 }, { 10, 0, 0 }, { 1.0f, 0.4f, 0.4f, 1.0f }, -1.0f);
     static Line lineY = Line({ 0,0,0 }, { 0, 10, 0 }, { 0.4f, 1.0f ,0.4f, 1.0f }, -1.0f);
     static Line lineZ = Line({ 0,0,0 }, { 0, 0, 10 }, { 0.4f, 0.4f, 1.0f, 1.0f }, -1.0f);
 
-    sEditorState.mTransformLock = lock;
+    mTransformLock = lock;
 
     World* world = GetWorld();
 
