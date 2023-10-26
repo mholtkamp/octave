@@ -48,29 +48,28 @@ enum class EditorMode
     Count
 };
 
+struct OpenScene
+{
+    SceneRef mSceneAsset;
+    Node* mRootNode = nullptr;
+};
+
 struct EditorState
 {
     EditorMode mMode;
     std::vector<Node*> mSelectedNodes;
+    std::vector<OpenScene> mOpenScenes;
     AssetStub* mSelectedAssetStub = nullptr;
-    LevelRef mActiveLevel;
-    BlueprintRef mActiveBlueprint;
-    WidgetMapRef mActiveWidgetMap;
     ControlMode mControlMode = ControlMode::Default;
     TransformLock mTransformLock = TransformLock::None;
-    ActionList* mActionList = nullptr;
     SceneImportWidget* mSceneImportWidget = nullptr;
-    TextEntry* mTextEntry = nullptr;
-    Canvas* mRootCanvas = nullptr;
-    Widget* mEditRootWidget = nullptr;
     bool mMouseNeedsRecenter = false;
     bool mPlayInEditor = false;
     bool mEjected = false;
     bool mPaused = false;
-    SceneRef mCachedScene = nullptr; // TODO-NODE: We might not need to cache scenes anymore. Just remove from world.
     NodeRef mInjectedCamera = nullptr;
     NodeRef mEjectedCamera = nullptr;
-    std::string mStartupLevelName;
+    std::string mStartupSceneName;
 };
 
 void SetEditorMode(EditorMode mode);
@@ -83,12 +82,9 @@ EditorState* GetEditorState();
 void ReadEditorSave();
 void WriteEditorSave();
 
-void SetSelectedComponent(Component* newComponent);
-void SetSelectedActor(Actor* newActor);
-void AddSelectedComponent(Component* component);
-void RemoveSelectedComponent(Component* component);
-void AddSelectedActor(Actor* actor, bool addAllChildren);
-void RemoveSelectedActor(Actor* actor);
+void SetSelectedNode(Node* newNode);
+void AddSelectedNode(Node* node, bool addAllChildren);
+void RemoveSelectedNode(Node* node);
 void SetSelectedAssetStub(AssetStub* newStub);
 void SetActiveLevel(Level* level);
 void SetControlMode(ControlMode newMode);
@@ -102,31 +98,11 @@ bool IsPlayInEditorPaused();
 
 void LoadStartupLevel();
 
-Component* GetSelectedComponent();
-Actor* GetSelectedActor();
-const std::vector<Component*>& GetSelectedComponents();
-std::vector<Actor*> GetSelectedActors();
-bool IsComponentSelected(Component* component);
-bool IsActorSelected(Actor* actor);
-void DeselectComponent(Component* component);
-void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler, const char* defaultText = nullptr);
-void ShowRootCanvas(bool show);
-
-Widget* GetSelectedWidget();
-void SetSelectedWidget(Widget* widget);
-Widget* GetEditRootWidget();
-void SetEditRootWidget(Widget* widget);
-void DestroyEditRootWidget();
-void SetActiveWidgetMap(WidgetMap* widgetMap);
-WidgetMap* GetActiveWidgetMap();
-
-void SetActiveBlueprint(Blueprint* bp);
-Blueprint* GetActiveBlueprint();
-void SetupBlueprintEditor();
-Actor* GetEditBlueprintActor();
-
-void CacheLevel();
-void RestoreLevel();
+Node* GetSelectedNode();
+const std::vector<Node*>& GetSelectedNodes();
+bool IsNodeSelected(Node* node);
+void DeselectNode(Node* node);
+//void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler, const char* defaultText = nullptr);
 
 Asset* GetSelectedAsset();
 AssetStub* GetSelectedAssetStub();
