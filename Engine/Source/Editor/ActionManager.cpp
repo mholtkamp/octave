@@ -118,6 +118,7 @@ void ActionManager::Update()
 
 void HandleBuildButtonPressed(Button* button)
 {
+#if NODE_CONV_EDITOR
     std::string buttonText = button->GetTextString();
     ActionManager* am = ActionManager::Get();
 
@@ -159,10 +160,12 @@ void HandleBuildButtonPressed(Button* button)
     }
 
     GetActionList()->Hide();
+#endif
 }
 
 void ActionManager::ShowBuildDataPrompt()
 {
+#if NODE_CONV_EDITOR
     std::vector<std::string> actions;
 #if PLATFORM_WINDOWS
     actions.push_back("Windows");
@@ -177,6 +180,7 @@ void ActionManager::ShowBuildDataPrompt()
     actions.push_back("Wii Embedded");
     actions.push_back("3DS Embedded");
     GetActionList()->SetActions(actions, HandleBuildButtonPressed);
+#endif
 }
 
 void ActionManager::BuildData(Platform platform, bool embedded)
@@ -557,7 +561,7 @@ Node* ActionManager::SpawnNode(TypeId nodeType, Node* parent)
             GetWorld()->SetRootNode(spawnedNode);
         }
 
-        SetSelectedNode(spawnedNode);
+        GetEditorState()->SetSelectedNode(spawnedNode);
         EXE_SpawnNode(spawnedNode);
     }
 
@@ -583,7 +587,7 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
 
     if (srcAsset == nullptr)
     {
-        srcAsset = GetSelectedAsset();
+        srcAsset = GetEditorState()->GetSelectedAsset();
     }
 
     if (name == BASIC_STATIC_MESH)
@@ -732,7 +736,7 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
             GetWorld()->SetRootNode(spawnedNode);
         }
 
-        SetSelectedNode(spawnedNode);
+        GetEditorState()->SetSelectedNode(spawnedNode);
         EXE_SpawnNode(spawnedNode);
     }
     else
@@ -835,57 +839,45 @@ void ActionManager::EXE_EditTransforms(const std::vector<Node3D*>& transComps, c
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_SpawnActor(Actor* actor)
+void ActionManager::EXE_SpawnNode(Node* node)
 {
-    std::vector<Actor*> actors;
-    actors.push_back(actor);
+    std::vector<Node*> nodes;
+    nodes.push_back(node);
 
-    ActionSpawnActors* action = new ActionSpawnActors(actors);
+    ActionSpawnNodes* action = new ActionSpawnNodes(nodes);
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_DeleteActor(Actor* actor)
+void ActionManager::EXE_DeleteNode(Node* node)
 {
-    std::vector<Actor*> actors;
-    actors.push_back(actor);
+    std::vector<Node*> nodes;
+    nodes.push_back(node);
 
-    ActionDeleteActors* action = new ActionDeleteActors(actors);
+    ActionDeleteNodes* action = new ActionDeleteNodes(nodes);
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_SpawnActors(const std::vector<Actor*>& actors)
+void ActionManager::EXE_SpawnNodes(const std::vector<Node*>& nodes)
 {
-    ActionSpawnActors* action = new ActionSpawnActors(actors);
+    ActionSpawnNodes* action = new ActionSpawnNodes(nodes);
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_DeleteActors(const std::vector<Actor*>& actors)
+void ActionManager::EXE_DeleteNodes(const std::vector<Node*>& nodes)
 {
-    ActionDeleteActors* action = new ActionDeleteActors(actors);
+    ActionDeleteNodes* action = new ActionDeleteNodes(nodes);
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_AddComponent(Component* comp)
+void ActionManager::EXE_AttachNode(Node* node, Node* newParent, int32_t childIndex, int32_t boneIndex)
 {
-    ActionAddComponent* action = new ActionAddComponent(comp);
+    ActionAttachNode* action = new ActionAttachNode(node, newParent, childIndex, boneIndex);
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_RemoveComponent(Component* comp)
+void ActionManager::EXE_SetRootNode(Node* newRoot)
 {
-    ActionRemoveComponent* action = new ActionRemoveComponent(comp);
-    ActionManager::Get()->ExecuteAction(action);
-}
-
-void ActionManager::EXE_AttachComponent(Node3D* comp, Node3D* newParent, int32_t boneIndex)
-{
-    ActionAttachComponent* action = new ActionAttachComponent(comp, newParent, boneIndex);
-    ActionManager::Get()->ExecuteAction(action);
-}
-
-void ActionManager::EXE_SetRootComponent(Node3D* newRoot)
-{
-    ActionSetRootComponent* action = new ActionSetRootComponent(newRoot);
+    ActionSetRootNode* action = new ActionSetRootNode(newRoot);
     ActionManager::Get()->ExecuteAction(action);
 }
 
@@ -904,30 +896,6 @@ void ActionManager::EXE_SetAbsolutePosition(Node3D* comp, glm::vec3 pos)
 void ActionManager::EXE_SetAbsoluteScale(Node3D* comp, glm::vec3 scale)
 {
     ActionSetAbsoluteScale* action = new ActionSetAbsoluteScale(comp, scale);
-    ActionManager::Get()->ExecuteAction(action);
-}
-
-void ActionManager::EXE_AddWidget(Widget* widget)
-{
-    ActionAddWidget* action = new ActionAddWidget(widget);
-    ActionManager::Get()->ExecuteAction(action);
-}
-
-void ActionManager::EXE_RemoveWidget(Widget* widget)
-{
-    ActionRemoveWidget* action = new ActionRemoveWidget(widget);
-    ActionManager::Get()->ExecuteAction(action);
-}
-
-void ActionManager::EXE_AttachWidget(Widget* widget, Widget* newParent, int32_t index)
-{
-    ActionAttachWidget* action = new ActionAttachWidget(widget, newParent, index);
-    ActionManager::Get()->ExecuteAction(action);
-}
-
-void ActionManager::EXE_SetRootWidget(Widget* newRoot)
-{
-    ActionSetRootWidget* action = new ActionSetRootWidget(newRoot);
     ActionManager::Get()->ExecuteAction(action);
 }
 
@@ -958,109 +926,38 @@ void ActionManager::ResetUndoRedo()
     ClearActionHistory();
     ClearActionFuture();
 
-    for (int32_t i = (int32_t)mExiledActors.size() - 1; i >= 0; --i)
+    for (int32_t i = (int32_t)mExiledNodes.size() - 1; i >= 0; --i)
     {
-        GetWorld()->AddActor(mExiledActors[i]);
-        GetWorld()->DestroyActor(mExiledActors[i]);
-        mExiledActors.erase(mExiledActors.begin() + i);
-    }
-
-    for (int32_t i = (int32_t)mExiledComponents.size() - 1; i >= 0; --i)
-    {
-        mExiledComponents[i]->Destroy();
-        delete mExiledComponents[i];
-        mExiledComponents.erase(mExiledComponents.begin() + i);
-    }
-
-    for (int32_t i = (int32_t)mExiledWidgets.size() - 1; i >= 0; --i)
-    {
-        delete mExiledWidgets[i];
-        mExiledWidgets.erase(mExiledWidgets.begin() + i);
+        Node::Destruct(mExiledNodes[i]);
+        mExiledNodes.erase(mExiledNodes.begin() + i);
     }
 
     // Clear property inspection history also.
     PanelManager::Get()->GetPropertiesPanel()->ClearInspectHistory();
 }
 
-void ActionManager::ExileActor(Actor* actor)
+void ActionManager::ExileNode(Node* node)
 {
-    OCT_ASSERT(std::find(mExiledActors.begin(), mExiledActors.end(), actor) == mExiledActors.end());
-    OCT_ASSERT(actor->GetWorld());
-    GetWorld()->RemoveActor(actor);
-    mExiledActors.push_back(actor);
+    OCT_ASSERT(std::find(mExiledNodes.begin(), mExiledNodes.end(), node) == mExiledNodes.end());
+    OCT_ASSERT(node->GetParent() == nullptr);
 
-    if (IsActorSelected(actor))
+    mExiledNodes.push_back(node);
+
+    if (GetEditorState()->IsNodeSelected(node))
     {
-        SetSelectedActor(nullptr);
+        GetEditorState()->SetSelectedNode(nullptr);
     }
 }
 
-void ActionManager::RestoreExiledActor(Actor* actor)
+void ActionManager::RestoreExiledNode(Node* node)
 {
     bool restored = false;
 
-    for (uint32_t i = 0; i < mExiledActors.size(); ++i)
+    for (uint32_t i = 0; i < mExiledNodes.size(); ++i)
     {
-        if (mExiledActors[i] == actor)
+        if (mExiledNodes[i] == node)
         {
-            GetWorld()->AddActor(actor);
-            mExiledActors.erase(mExiledActors.begin() + i);
-            restored = true;
-            break;
-        }
-    }
-
-    OCT_ASSERT(restored);
-}
-
-void ActionManager::ExileComponent(Component* comp)
-{
-    OCT_ASSERT(std::find(mExiledComponents.begin(), mExiledComponents.end(), comp) == mExiledComponents.end());
-    mExiledComponents.push_back(comp);
-
-    if (IsComponentSelected(comp))
-    {
-        SetSelectedComponent(nullptr);
-    }
-}
-
-void ActionManager::RestoreExiledComponent(Component* comp)
-{
-    bool restored = false;
-
-    for (uint32_t i = 0; i < mExiledComponents.size(); ++i)
-    {
-        if (mExiledComponents[i] == comp)
-        {
-            mExiledComponents.erase(mExiledComponents.begin() + i);
-            restored = true;
-            break;
-        }
-    }
-
-    OCT_ASSERT(restored);
-}
-
-void ActionManager::ExileWidget(Widget* widget)
-{
-    OCT_ASSERT(std::find(mExiledWidgets.begin(), mExiledWidgets.end(), widget) == mExiledWidgets.end());
-    mExiledWidgets.push_back(widget);
-
-    if (GetSelectedWidget() == widget)
-    {
-        SetSelectedWidget(nullptr);
-    }
-}
-
-void ActionManager::RestoreExiledWidget(Widget* widget)
-{
-    bool restored = false;
-
-    for (uint32_t i = 0; i < mExiledWidgets.size(); ++i)
-    {
-        if (mExiledWidgets[i] == widget)
-        {
-            mExiledWidgets.erase(mExiledWidgets.begin() + i);
+            mExiledNodes.erase(mExiledNodes.begin() + i);
             restored = true;
             break;
         }
@@ -1130,8 +1027,9 @@ void ActionManager::OpenProject(const char* path)
     PanelManager::Get()->GetAssetsPanel()->OnProjectDirectorySet();
 }
 
-void ActionManager::OpenLevel()
+void ActionManager::OpenScene()
 {
+    // TODO-NODE: This uses SYS_OpenFileDialog() and I think we should just get rid of this function.
     if (GetEngineState()->mProjectPath == "")
         return;
 
@@ -1145,12 +1043,12 @@ void ActionManager::OpenLevel()
         AssetStub* stub = FetchAssetStub(filename);
 
         if (stub != nullptr &&
-            stub->mType == Level::GetStaticType())
+            stub->mType == Scene::GetStaticType())
         {
             AssetManager::Get()->LoadAsset(*stub);
-            Level* loadedLevel = (Level*)stub->mAsset;
+            Scene* loadedScene = (Scene*)stub->mAsset;
 
-            OpenLevel(loadedLevel);
+            OpenScene(loadedScene);
         }
         else
         {
@@ -1159,26 +1057,19 @@ void ActionManager::OpenLevel()
     }
 }
 
-void ActionManager::OpenLevel(Level* level)
+void ActionManager::OpenScene(Scene* scene)
 {
-    ClearWorld();
-
-    ResetUndoRedo();
-
-    if (level != nullptr)
-    {
-        level->LoadIntoWorld(GetWorld());
-    }
-
-    SetActiveLevel(level);
+    GetEditorState()->OpenEditScene(scene);
 }
 
-void ActionManager::SaveLevel(bool saveAs)
+void ActionManager::SaveScene(bool saveAs)
 {
     if (GetEngineState()->mProjectPath == "")
         return;
 
-    if (saveAs || GetActiveLevel() == nullptr)
+    EditScene* editScene = GetEditorState()->GetEditScene();
+
+    if (saveAs || editScene->mSceneAsset == nullptr)
     {
         std::string savePath = SYS_SaveFileDialog();
 
@@ -1186,28 +1077,29 @@ void ActionManager::SaveLevel(bool saveAs)
         if (savePath != "")
         {
             std::replace(savePath.begin(), savePath.end(), '\\', '/');
-            std::string newLevelName = Asset::GetNameFromPath(savePath);
-            AssetStub* stub = AssetManager::Get()->CreateAndRegisterAsset(Level::GetStaticType(), nullptr, newLevelName, false);
+            std::string newSceneName = Asset::GetNameFromPath(savePath);
+            AssetStub* stub = AssetManager::Get()->CreateAndRegisterAsset(Scene::GetStaticType(), nullptr, newSceneName, false);
 
             if (stub != nullptr)
             {
-                Level* newLevel = (Level*)stub->mAsset;
-                newLevel->SetName(newLevelName);
-                SetActiveLevel(newLevel);
+                Scene* newScene = (Scene*)stub->mAsset;
+                newScene->SetName(newSceneName);
+                editScene->mSceneAsset = newScene;
             }
         }
     }
     
-    if (GetActiveLevel() != nullptr)
+    if (editScene->mSceneAsset != nullptr)
     {
-        GetActiveLevel()->CaptureWorld(GetWorld());
-        AssetManager::Get()->SaveAsset(GetActiveLevel()->GetName());
+        Scene* scene = editScene->mSceneAsset.Get<Scene>();
+        scene->Capture(GetWorld()->GetRootNode());
+        AssetManager::Get()->SaveAsset(scene->GetName());
     }
 }
 
 void ActionManager::SaveSelectedAsset()
 {
-    AssetStub* selectedStub = GetSelectedAssetStub();
+    AssetStub* selectedStub = GetEditorState()->GetSelectedAssetStub();
     if (selectedStub != nullptr &&
         selectedStub->mAsset != nullptr)
     {
@@ -1215,30 +1107,33 @@ void ActionManager::SaveSelectedAsset()
     }
 }
 
-void ActionManager::DeleteSelectedActors()
+void ActionManager::DeleteSelectedNodes()
 {
-    std::vector<Actor*> actors = GetSelectedActors();
+    std::vector<Node*> nodes = GetEditorState()->GetSelectedNodes();
 
-    for (uint32_t i = 0; i < actors.size(); ++i)
+    for (uint32_t i = 0; i < nodes.size(); ++i)
     {
-        if (actors[i] == nullptr ||
-            actors[i] == GetWorld()->GetActiveCamera()->GetOwner())
+        // TODO-NODE: Previously we checked here if the node was the World's active camera.
+        //   Now that we use a totally separate editor camera in EditorState, I removed the check.
+        //   Verify editor cam works as expected.
+        if (nodes[i] == nullptr ||
+            nodes[i] != GetEditorState()->GetEditorCamera())
         {
-            actors.erase(actors.begin() + i);
+            nodes.erase(nodes.begin() + i);
             --i;
         }
     }
 
-    EXE_DeleteActors(actors);
-    SetSelectedActor(nullptr);
+    EXE_DeleteNodes(nodes);
+    GetEditorState()->SetSelectedNode(nullptr);
 }
 
-void ActionManager::DeleteActor(Actor* actor)
+void ActionManager::DeleteNode(Node* node)
 {
-    if (actor != nullptr &&
-        actor != GetWorld()->GetActiveCamera()->GetOwner())
+    if (node != nullptr &&
+        node != GetEditorState()->GetEditorCamera())
     {
-        EXE_DeleteActor(actor);
+        EXE_DeleteNode(node);
     }
 }
 
@@ -2385,45 +2280,49 @@ void ActionRemoveComponent::Reverse()
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
-ActionAttachComponent::ActionAttachComponent(Node3D* comp, Node3D* newParent, int32_t boneIndex)
+ActionAttachNode::ActionAttachNode(Node* node, Node* newParent, int32_t childIndex, int32_t boneIndex)
 {
-    mComponent = comp;
+    mNode = node;
     mNewParent = newParent;
-    mPrevParent = comp->GetParent();
+    mPrevParent = node->GetParent();
+    mChildIndex = childIndex;
+    mPrevChildIndex = node->GetParent() ? node->GetParent()->FindChildIndex(node) : -1;
     mBoneIndex = boneIndex;
-    mPrevBoneIndex = comp->GetParentBoneIndex();
-    OCT_ASSERT(mComponent);
+    mPrevBoneIndex = node->GetParentBoneIndex();
+    OCT_ASSERT(mNode);
     OCT_ASSERT(mNewParent);
 }
 
-void ActionAttachComponent::Execute()
+void ActionAttachNode::Execute()
 {
     if (mBoneIndex >= 0 &&
         mNewParent != nullptr &&
         mNewParent->As<SkeletalMesh3D>())
     {
+        // TODO-NODE: AttachToBone() does not take a child index?? Probably need to fix so that it does.
         SkeletalMesh3D* skParent = mNewParent->As<SkeletalMesh3D>();
-        mComponent->AttachToBone(skParent, mBoneIndex);
+        mNode->AttachToBone(skParent, mBoneIndex);
     }
     else
     {
-        mComponent->Attach(mNewParent);
+        mComponent->Attach(mNewParent, mChildIndex);
     }
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
-void ActionAttachComponent::Reverse()
+void ActionAttachNode::Reverse()
 {
     if (mPrevBoneIndex >= 0 &&
         mPrevParent != nullptr &&
         mPrevParent->As<SkeletalMesh3D>())
     {
+        // TODO-NODE: AttachToBone() does not take a child index?? Probably need to fix so that it does.
         SkeletalMesh3D* skParent = mPrevParent->As<SkeletalMesh3D>();
-        mComponent->AttachToBone(skParent, mPrevBoneIndex);
+        mNode->AttachToBone(skParent, mPrevBoneIndex);
     }
     else
     {
-        mComponent->Attach(mPrevParent);
+        mNode->Attach(mPrevParent, mPrevChildIndex);
     }
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }

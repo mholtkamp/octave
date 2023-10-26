@@ -50,9 +50,9 @@ public:
     void EXE_EditTransforms(const std::vector<Node3D*>& nodes, const std::vector<glm::mat4>& newTransforms);
     void EXE_SpawnNode(Node* node);
     void EXE_DeleteNode(Node* node);
-    void EXE_SpawnNode(const std::vector<Node*>& nodes);
-    void EXE_DeleteNode(const std::vector<Node*>& nodes);
-    void EXE_AttachNode(Node* node, Node3D* newParent, int32_t boneIndex);
+    void EXE_SpawnNodes(const std::vector<Node*>& nodes);
+    void EXE_DeleteNodes(const std::vector<Node*>& nodes);
+    void EXE_AttachNode(Node* node, Node* newParent, int32_t childIndex, int32_t boneIndex);
     void EXE_SetRootNode(Node* newRoot);
     void EXE_SetAbsoluteRotation(Node3D* node, glm::quat rot);
     void EXE_SetAbsolutePosition(Node3D* node, glm::vec3 pos);

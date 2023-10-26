@@ -1251,6 +1251,23 @@ int32_t Node::FindChildIndex(const std::string& name) const
     return index;
 }
 
+int32_t Node::FindChildIndex(Node* child) const
+{
+    int32_t index = -1;
+
+    for (int32_t i = 0; i < int32_t(mChildren.size()); ++i)
+    {
+        if (mChildren[i] == child)
+        {
+            index = i;
+            break;
+        }
+    }
+
+    return index;
+}
+
+
 Node* Node::FindChild(const std::string& name, bool recurse) const
 {
     Node* retNode = nullptr;

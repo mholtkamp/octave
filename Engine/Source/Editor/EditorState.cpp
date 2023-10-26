@@ -472,6 +472,8 @@ void EditorState::OpenEditScene(int32_t idx)
         const EditScene& editScene = mEditScenes[idx];
         mEditSceneIndex = idx;
         GetWorld()->SetRootNode(editScene.mRootNode); // could be nullptr.
+
+        ActionManager::Get()->ResetUndoRedo();
     }
 }
 
@@ -518,6 +520,8 @@ void EditorState::ShelveEditScene()
         GetWorld()->SetRootNode(nullptr);
 
         mEditSceneIndex = -1;
+
+        ActionManager::Get()->ResetUndoRedo();
     }
 }
 

@@ -198,6 +198,7 @@ public:
     void RemoveChild(int32_t index);
 
     int32_t FindChildIndex(const std::string& name) const;
+    int32_t FindChildIndex(Node* child) const;
     Node* FindChild(const std::string& name, bool recurse) const;
     Node* FindChildWithTag(const std::string& name, bool recurse) const;
     Node* FindDescendant(const std::string& name);
