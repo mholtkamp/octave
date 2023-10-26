@@ -786,6 +786,23 @@ void World::Update(float deltaTime)
 
 Camera3D* World::GetActiveCamera()
 {
+#if EDITOR
+    // When in editor, the active camera is the EditorCamera unless
+    // we are playing in editor (and not ejected).
+    if (!GetEditorState()->mPlayInEditor || 
+        GetEditorState()->mEjected)
+    {
+        Camera3D* editorCam = GetEditorState()->GetEditorCamera();
+
+        if (editorCam != nullptr)
+        {
+            OCT_ASSERT(editorCam->GetParent() == nullptr);
+        }
+
+        return editorCam;
+    }
+#endif
+
     return mActiveCamera;
 }
 

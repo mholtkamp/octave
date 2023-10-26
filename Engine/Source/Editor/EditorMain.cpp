@@ -48,7 +48,7 @@ void EditorMain(int32_t argc, char** argv)
     InitOptions initOptions = OctPreInitialize();
     Initialize(initOptions);
 
-    InitializeEditorState();
+    GetEditorState()->Init();
 
     ActionManager::Create();
     InputManager::Create();
@@ -119,7 +119,7 @@ void EditorMain(int32_t argc, char** argv)
     }
     
     PanelManager::Destroy();
-    DestroyEditorState();
+    GetEditorState()->Shutdown();
     Shutdown();
 }
 

@@ -27,19 +27,24 @@ static EditorState sEditorState;
 constexpr const char* kEditorSaveFile = "Editor.sav";
 constexpr int32_t kEditorSaveVersion = 1;
 
-void InitializeEditorState()
-{
-
-}
-
-void DestroyEditorState()
-{
-
-}
-
 EditorState* GetEditorState()
 {
     return &sEditorState;
+}
+
+
+void EditorState::Init()
+{
+    mEditorCamera = Node::Construct<Camera3D>();
+    // TODO-NODE: This is a little sketchy because this will call World::RegisterNode(), but that's probably fine.
+    mEditorCamera->SetWorld(GetWorld());
+}
+
+void EditorState::Shutdown()
+{
+    mEditorCamera->SetWorld(nullptr);
+    Node::Destruct(mEditorCamera);
+    mEditorCamera = nullptr;
 }
 
 void EditorState::SetEditorMode(EditorMode mode)
@@ -360,6 +365,11 @@ bool EditorState::IsPlayInEditorPaused()
     return mPaused;
 }
 
+Camera3D* EditorState::GetEditorCamera()
+{
+    return mEditorCamera;
+}
+
 void EditorState::LoadStartupScene()
 {
     if (mStartupSceneName != "")
@@ -447,6 +457,8 @@ void EditorState::OpenEditScene(Scene* scene)
             newEditScene.mRootNode = scene->Instantiate();
         }
 
+        newEditScene.mCameraTransform = glm::mat4(1);
+
         editScene = &newEditScene;
         editSceneIdx = int32_t(mEditScenes.size()) - 1;
     }
@@ -472,6 +484,7 @@ void EditorState::OpenEditScene(int32_t idx)
         const EditScene& editScene = mEditScenes[idx];
         mEditSceneIndex = idx;
         GetWorld()->SetRootNode(editScene.mRootNode); // could be nullptr.
+        GetEditorCamera()->SetTransform(editScene.mCameraTransform);
 
         ActionManager::Get()->ResetUndoRedo();
     }
@@ -517,6 +530,7 @@ void EditorState::ShelveEditScene()
     {
         EditScene& editScene = mEditScenes[mEditSceneIndex];
         editScene.mRootNode = GetWorld()->GetRootNode();
+        editScene.mCameraTransform = GetEditorCamera()->GetTransform();
         GetWorld()->SetRootNode(nullptr);
 
         mEditSceneIndex = -1;

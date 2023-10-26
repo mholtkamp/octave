@@ -50,6 +50,7 @@ struct EditScene
 {
     SceneRef mSceneAsset;
     Node* mRootNode = nullptr;
+    glm::mat4 mCameraTransform;
 };
 
 struct EditorState
@@ -61,6 +62,7 @@ struct EditorState
     AssetStub* mSelectedAssetStub = nullptr;
     ControlMode mControlMode = ControlMode::Default;
     TransformLock mTransformLock = TransformLock::None;
+    Camera3D* mEditorCamera = nullptr;
     bool mMouseNeedsRecenter = false;
     bool mUiEnabled = true;
     bool mPlayInEditor = false;
@@ -73,6 +75,9 @@ struct EditorState
     int32_t mPieEditSceneIdx = -1;
 
     // Methods
+    void Init();
+    void Shutdown();
+
     void SetEditorMode(EditorMode mode);
     EditorMode GetEditorMode();
 
@@ -91,6 +96,8 @@ struct EditorState
     void InjectPlayInEditor();
     void SetPlayInEditorPaused(bool paused);
     bool IsPlayInEditorPaused();
+
+    Camera3D* GetEditorCamera();
 
     void LoadStartupScene();
 
@@ -116,8 +123,6 @@ struct EditorState
 
 };
 
-void InitializeEditorState();
-void DestroyEditorState();
 EditorState* GetEditorState();
 
 #endif
