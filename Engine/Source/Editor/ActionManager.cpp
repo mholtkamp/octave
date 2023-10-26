@@ -20,27 +20,25 @@
 #include "Constants.h"
 #include "World.h"
 #include "Engine.h"
-#include "Assets/Level.h"
 #include "AssetManager.h"
 #include "EditorState.h"
 #include "PanelManager.h"
-#include "Nodes/Widgets/AssetsPanel.h"
-#include "Nodes/Widgets/HierarchyPanel.h"
-#include "Nodes/Widgets/PropertiesPanel.h"
-#include "Nodes/Widgets/WidgetHierarchyPanel.h"
-#include "Nodes/Widgets/ActionList.h"
+#include "Widgets/AssetsPanel.h"
+#include "Widgets/HierarchyPanel.h"
+#include "Widgets/PropertiesPanel.h"
+#include "Widgets/WidgetHierarchyPanel.h"
+#include "Widgets/ActionList.h"
+#include "Assets/Scene.h"
 #include "Assets/Texture.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/SkeletalMesh.h"
 #include "Assets/SoundWave.h"
-#include "Assets/Blueprint.h"
 #include "Assets/Font.h"
 #include "AssetDir.h"
 #include "EmbeddedFile.h"
 #include "Utilities.h"
 #include "EditorUtils.h"
 #include "Log.h"
-#include "StaticMeshActor.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/PointLight3d.h"
@@ -537,38 +535,51 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     LogDebug("Build Finished");
 }
 
-void ActionManager::OnSelectedActorChanged()
+void ActionManager::OnSelectedNodeChanged()
 {
 
 }
 
-void ActionManager::OnSelectedComponentChanged()
+Node* ActionManager::SpawnNode(TypeId nodeType, Node* parent)
 {
+    Node* spawnedNode = Node::Construct(nodeType);
 
-}
-
-
-Actor* ActionManager::SpawnActor(TypeId actorType, glm::vec3 position)
-{
-    Actor* spawnedActor = GetWorld()->SpawnActor(actorType);
-
-    if (spawnedActor->GetRootComponent() == nullptr)
+    OCT_ASSERT(spawnedNode != nullptr);
+    if (spawnedNode != nullptr)
     {
-        Node3D* defaultRoot = spawnedActor->CreateComponent<Node3D>();
-        defaultRoot->SetName("Root");
-        spawnedActor->SetRootComponent(defaultRoot);
+        parent = parent ? parent : GetWorld()->GetRootNode();
+        if (parent != nullptr)
+        {
+            parent->AddChild(spawnedNode);
+        }
+        else
+        {
+            GetWorld()->SetRootNode(spawnedNode);
+        }
+
+        SetSelectedNode(spawnedNode);
+        EXE_SpawnNode(spawnedNode);
     }
 
-    spawnedActor->SetPosition(position);
-    SetSelectedActor(spawnedActor);
-    EXE_SpawnActor(spawnedActor);
-
-    return spawnedActor;
+    return spawnedNode;
 }
 
-Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 position, Asset* srcAsset)
+Node* ActionManager::SpawnNode(TypeId nodeType, glm::vec3 position)
 {
-    Actor* spawnedActor = nullptr;
+    Node* node = SpawnNode(nodeType, nullptr);
+    Node3D* node3d = node ? node->As<Node3D>() : nullptr;
+
+    if (node3d)
+    {
+        node3d->SetAbsolutePosition(position);
+    }
+
+    return node;
+}
+
+Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset* srcAsset)
+{
+    Node* spawnedNode = nullptr;
 
     if (srcAsset == nullptr)
     {
@@ -577,56 +588,53 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
 
     if (name == BASIC_STATIC_MESH)
     {
-        spawnedActor = GetWorld()->SpawnActor<Actor>();
-        StaticMesh3D* meshComp = spawnedActor->CreateComponent<StaticMesh3D>();
-        spawnedActor->SetRootComponent(meshComp);
+        StaticMesh3D* meshNode = Node::Construct<StaticMesh3D>();
 
-        std::string actorName = "Static Mesh";
         StaticMesh* mesh = (StaticMesh*) LoadAsset("SM_Cube");
 
         if (srcAsset != nullptr &&
             srcAsset->GetType() == StaticMesh::GetStaticType())
         {
             mesh = static_cast<StaticMesh*>(srcAsset);
-            actorName = mesh->GetName();
+            meshNode->SetName(mesh->GetName());
         }
 
-        spawnedActor->SetName(actorName);
-
         // When spawned by the editor, static meshes have collision enabled on colgroup1
-        meshComp->SetStaticMesh(mesh);
-        meshComp->EnableOverlaps(false);
-        meshComp->EnableCollision(true);
-        meshComp->EnablePhysics(false);
-        meshComp->SetCollisionGroup(ColGroup1);
-        meshComp->SetCollisionMask(~ColGroup1);
-        meshComp->SetBakeLighting(true);
+        meshNode->SetStaticMesh(mesh);
+        meshNode->EnableOverlaps(false);
+        meshNode->EnableCollision(true);
+        meshNode->EnablePhysics(false);
+        meshNode->SetCollisionGroup(ColGroup1);
+        meshNode->SetCollisionMask(~ColGroup1);
+        meshNode->SetBakeLighting(true);
+
+        spawnedNode = meshNode;
     }
     else if (name == BASIC_POINT_LIGHT)
     {
         // Spawn point light actor
-        spawnedActor = GetWorld()->SpawnActor<Actor>();
-        PointLight3D* pointLightComp = spawnedActor->CreateComponent<PointLight3D>();
-        spawnedActor->SetRootComponent(pointLightComp);
-        pointLightComp->SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-        pointLightComp->SetRadius(10.0f);
-        pointLightComp->SetLightingDomain(LightingDomain::All);
+        PointLight3D* pointLight = Node::Construct<PointLight3D>();
+        pointLight->SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        pointLight->SetRadius(10.0f);
+        pointLight->SetLightingDomain(LightingDomain::All);
+        
+        spawnedNode = pointLight;
     }
     else if (name == BASIC_TRANSFORM)
     {
-        spawnedActor = GetWorld()->SpawnActor<Actor>();
-        Node3D* transformComp = spawnedActor->CreateComponent<Node3D>();
-        spawnedActor->SetRootComponent(transformComp);
+        spawnedNode = Node::Construct<Node3D>();
     }
     else if (name == BASIC_DIRECTIONAL_LIGHT)
     {
-        spawnedActor = GetWorld()->SpawnActor<Actor>();
-        DirectionalLight3D* dirLightComp = spawnedActor->CreateComponent<DirectionalLight3D>();
-        dirLightComp->SetLightingDomain(LightingDomain::All);
-        spawnedActor->SetRootComponent(dirLightComp);
+        DirectionalLight3D* dirLight = Node::Construct<DirectionalLight3D>();
+        dirLight->SetLightingDomain(LightingDomain::All);
+
+        spawnedNode = dirLight;
     }
     else if (name == BASIC_SKELETAL_MESH)
     {
+        SkeletalMesh3D* skNode = Node::Construct<SkeletalMesh3D>();
+
         // TODO: Add a default SkeletalMesh to Engine assets
         SkeletalMesh* mesh = nullptr;
 
@@ -636,29 +644,22 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
             mesh = static_cast<SkeletalMesh*>(srcAsset);
 
             // Spawn skeletal mesh actor.
-            spawnedActor = GetWorld()->SpawnActor<Actor>();
-            SkeletalMesh3D* skeletalMeshComp = spawnedActor->CreateComponent<SkeletalMesh3D>();
-            spawnedActor->SetRootComponent(skeletalMeshComp);
-            skeletalMeshComp->SetSkeletalMesh(mesh);
+            skNode->SetSkeletalMesh(mesh);
         }
+
+        spawnedNode = skNode;
     }
     else if (name == BASIC_BOX)
     {
-        spawnedActor = GetWorld()->SpawnActor<Actor>();
-        Box3D* boxComponent = spawnedActor->CreateComponent<Box3D>();
-        spawnedActor->SetRootComponent(boxComponent);
+        spawnedNode = Node::Construct<Box3D>();
     }
     else if (name == BASIC_SPHERE)
     {
-        spawnedActor = GetWorld()->SpawnActor<Actor>();
-        Sphere3D* sphereComponent = spawnedActor->CreateComponent<Sphere3D>();
-        spawnedActor->SetRootComponent(sphereComponent);
+        spawnedNode = Node::Construct<Sphere3D>();
     }
     else if (name == BASIC_CAPSULE)
     {
-        spawnedActor = GetWorld()->SpawnActor<Actor>();
-        Capsule3D* capsuleComponent = spawnedActor->CreateComponent<Capsule3D>();
-        spawnedActor->SetRootComponent(capsuleComponent);
+        spawnedNode = Node::Construct<Capsule3D>();
     }
     else if (name == BASIC_PARTICLE)
     {
@@ -671,10 +672,10 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
         }
 
         // Spawn a Particle actor
-        spawnedActor = GetWorld()->SpawnActor<Actor>();
-        Particle3D* particleComponent = spawnedActor->CreateComponent<Particle3D>();
-        spawnedActor->SetRootComponent(particleComponent);
-        particleComponent->SetParticleSystem(particleSystem);
+        Particle3D* particleNode = Node::Construct<Particle3D>();
+        particleNode->SetParticleSystem(particleSystem);
+
+        spawnedNode = particleNode;
     }
     else if (name == BASIC_AUDIO)
     {
@@ -687,57 +688,72 @@ Actor* ActionManager::SpawnBasicActor(const std::string& name, glm::vec3 positio
             soundWave = static_cast<SoundWave*>(srcAsset);
         }
 
-        if (soundWave != nullptr)
-        {
-            // Spawn an Audio actor
-            spawnedActor = GetWorld()->SpawnActor<Actor>();
-            Audio3D* audioComponent = spawnedActor->CreateComponent<Audio3D>();
-            spawnedActor->SetRootComponent(audioComponent);
-            audioComponent->SetSoundWave(soundWave);
-            audioComponent->SetLoop(true);
-            audioComponent->SetAutoPlay(true);
-        }
+        // Spawn an Audio actor
+        Audio3D* audioNode = Node::Construct<Audio3D>();
+        audioNode->SetSoundWave(soundWave);
+        audioNode->SetLoop(true);
+        audioNode->SetAutoPlay(true);
+
+        spawnedNode = audioNode;
     }
     else if (name == BASIC_BLUEPRINT)
     {
-        Blueprint* bp = nullptr;
+        Scene* scene = nullptr;
 
         if (srcAsset != nullptr &&
-            srcAsset->GetType() == Blueprint::GetStaticType())
+            srcAsset->GetType() == Scene::GetStaticType())
         {
-            bp = static_cast<Blueprint*>(srcAsset);
+            scene = static_cast<Scene*>(srcAsset);
         }
 
-        if (bp != nullptr)
+        if (scene != nullptr)
         {
-            spawnedActor = bp->Instantiate(GetWorld());
+            spawnedNode = scene->Instantiate();
         }
     }
     else if (name == BASIC_CAMERA)
     {
-        spawnedActor = GetWorld()->SpawnActor<Actor>();
-        Camera3D* cameraComponent = spawnedActor->CreateComponent<Camera3D>();
-        spawnedActor->SetRootComponent(cameraComponent);
+        spawnedNode = Node::Construct<Camera3D>();
     }
     else if (name == BASIC_TEXT_MESH)
     {
-        spawnedActor = GetWorld()->SpawnActor<Actor>();
-        TextMesh3D* textComponent = spawnedActor->CreateComponent<TextMesh3D>();
-        spawnedActor->SetRootComponent(textComponent);
+    spawnedNode = Node::Construct<TextMesh3D>();
     }
 
-    if (spawnedActor != nullptr)
+    if (spawnedNode != nullptr)
     {
-        spawnedActor->SetPosition(position);
-        SetSelectedActor(spawnedActor);
-        EXE_SpawnActor(spawnedActor);
+        parent = parent ? parent : GetWorld()->GetRootNode();
+        if (parent != nullptr)
+        {
+            parent->AddChild(spawnedNode);
+        }
+        else
+        {
+            GetWorld()->SetRootNode(spawnedNode);
+        }
+
+        SetSelectedNode(spawnedNode);
+        EXE_SpawnNode(spawnedNode);
     }
     else
     {
         LogError("Failed to spawn basic actor: %s", name.c_str());
     }
 
-    return spawnedActor;
+    return spawnedNode;
+}
+
+Node* ActionManager::SpawnBasicNode(const std::string& name, glm::vec3 position, Asset* srcAsset)
+{
+    Node* node = SpawnBasicNode(name, position, srcAsset);
+    Node3D* node3d = node ? node->As<Node3D>() : nullptr;
+
+    if (node3d)
+    {
+        node3d->SetAbsolutePosition(position);
+    }
+
+    return node;
 }
 
 void ActionManager::ExecuteAction(Action* action)

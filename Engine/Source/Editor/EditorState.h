@@ -7,12 +7,11 @@
 
 #include "ObjectRef.h"
 
-#include "Nodes/Widgets/TextEntry.h"
-#include "Nodes/Widgets/SceneImportWidget.h"
+#include "Widgets/TextEntry.h"
+#include "Widgets/SceneImportWidget.h"
 
 class Node;
 class Asset;
-class Level;
 struct AssetStub;
 class ActionList;
 class Canvas;
@@ -52,8 +51,7 @@ enum class EditorMode
 struct EditorState
 {
     EditorMode mMode;
-    std::vector<Component*> mSelectedComponents;
-    Widget* mSelectedWidget = nullptr;
+    std::vector<Node*> mSelectedNodes;
     AssetStub* mSelectedAssetStub = nullptr;
     LevelRef mActiveLevel;
     BlueprintRef mActiveBlueprint;
@@ -69,10 +67,9 @@ struct EditorState
     bool mPlayInEditor = false;
     bool mEjected = false;
     bool mPaused = false;
-    LevelRef mCachedLevel = nullptr;
-    ComponentRef mInjectedCamera = nullptr;
-    ComponentRef mEjectedCamera = nullptr;
-    Actor* mEditBlueprintActor = nullptr;
+    SceneRef mCachedScene = nullptr; // TODO-NODE: We might not need to cache scenes anymore. Just remove from world.
+    NodeRef mInjectedCamera = nullptr;
+    NodeRef mEjectedCamera = nullptr;
     std::string mStartupLevelName;
 };
 

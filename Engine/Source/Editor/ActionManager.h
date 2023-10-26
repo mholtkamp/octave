@@ -7,7 +7,7 @@
 #include "EditorTypes.h"
 #include "Asset.h"
 #include "AssetRef.h"
-#include "Nodes/Widgets/Widget.h"
+#include "Nodes/Node.h"
 
 class Node3D;
 
@@ -32,11 +32,13 @@ public:
 
     void Update();
 
-    void OnSelectedActorChanged();
-    void OnSelectedComponentChanged();
+    void OnSelectedNodeChanged();
 
-    Actor* SpawnActor(TypeId actorType, glm::vec3 position);
-    Actor* SpawnBasicActor(const std::string& name, glm::vec3 position, Asset* srcAsset = nullptr);
+    Node* SpawnNode(TypeId nodeType, Node* parent);
+    Node* SpawnNode(TypeId nodeType, glm::vec3 position);
+
+    Node* SpawnBasicNode(const std::string& name, Node* parent, Asset* srcAsset = nullptr);
+    Node* SpawnBasicNode(const std::string& name, glm::vec3 position, Asset* srcAsset = nullptr);
 
     void ExecuteAction(Action* action);
     void Undo();
@@ -44,33 +46,23 @@ public:
 
     // Actions
     void EXE_EditProperty(void* owner, PropertyOwnerType ownerType, const std::string& name, uint32_t index, Datum newValue);
-    void EXE_EditTransform(Node3D* transComp, const glm::mat4& transform);
-    void EXE_EditTransforms(const std::vector<Node3D*>& transComps, const std::vector<glm::mat4>& newTransforms);
-    void EXE_SpawnActor(Actor* actor);
-    void EXE_DeleteActor(Actor* actor);
-    void EXE_SpawnActors(const std::vector<Actor*>& actors);
-    void EXE_DeleteActors(const std::vector<Actor*>& actors);
-    void EXE_AddComponent(Component* comp);
-    void EXE_RemoveComponent(Component* comp);
-    void EXE_AttachComponent(Node3D* comp, Node3D* newParent, int32_t boneIndex);
-    void EXE_SetRootComponent(Node3D* newRoot);
-    void EXE_SetAbsoluteRotation(Node3D* comp, glm::quat rot);
-    void EXE_SetAbsolutePosition(Node3D* comp, glm::vec3 pos);
-    void EXE_SetAbsoluteScale(Node3D* comp, glm::vec3 scale);
-    void EXE_AddWidget(Widget* widget);
-    void EXE_RemoveWidget(Widget* widget);
-    void EXE_AttachWidget(Widget* widget, Widget* newParent, int32_t index = -1);
-    void EXE_SetRootWidget(Widget* newRoot);
+    void EXE_EditTransform(Node3D* node, const glm::mat4& transform);
+    void EXE_EditTransforms(const std::vector<Node3D*>& nodes, const std::vector<glm::mat4>& newTransforms);
+    void EXE_SpawnNode(Node* node);
+    void EXE_DeleteNode(Node* node);
+    void EXE_SpawnNode(const std::vector<Node*>& nodes);
+    void EXE_DeleteNode(const std::vector<Node*>& nodes);
+    void EXE_AttachNode(Node* node, Node3D* newParent, int32_t boneIndex);
+    void EXE_SetRootNode(Node* newRoot);
+    void EXE_SetAbsoluteRotation(Node3D* node, glm::quat rot);
+    void EXE_SetAbsolutePosition(Node3D* node, glm::vec3 pos);
+    void EXE_SetAbsoluteScale(Node3D* node, glm::vec3 scale);
 
     void ClearActionHistory();
     void ClearActionFuture();
     void ResetUndoRedo();
-    void ExileActor(Actor* actor);
-    void RestoreExiledActor(Actor* actor);
-    void ExileComponent(Component* comp);
-    void RestoreExiledComponent(Component* comp);
-    void ExileWidget(Widget* widget);
-    void RestoreExiledWidget(Widget* widget);
+    void ExileNode(Node* node);
+    void RestoreExiledNode(Node* node);
 
 protected:
 
@@ -91,34 +83,31 @@ protected:
 
     std::vector<Action*> mActionHistory;
     std::vector<Action*> mActionFuture;
-    std::vector<Actor*> mExiledActors;
-    std::vector<Component*> mExiledComponents;
-    std::vector<Widget*> mExiledWidgets;
+    std::vector<Node*> mExiledNodes;
 
 public:
 
     // Actions
     void CreateNewProject();
     void OpenProject(const char* path = nullptr);
-    void OpenLevel();
-    void OpenLevel(Level* level);
-    void SaveLevel(bool saveAs);
+    void OpenScene();
+    void OpenScene(Scene* scene);
+    void SaveScene(bool saveAs);
     void SaveSelectedAsset();
-    void DeleteSelectedActors();
-    void DeleteActor(Actor* actor);
+    void DeleteSelectedNodes();
+    void DeleteNode(Node* node);
     Asset* ImportAsset();
     Asset* ImportAsset(const std::string& path);
     void ImportScene(const SceneImportOptions& options);
     void ShowBuildDataPrompt();
     void BuildData(Platform platform, bool embedded);
     void ClearWorld();
-    void DeleteAllActors();
-    void RecaptureAndSaveAllLevels();
-    void RecaptureAndSaveAllBlueprints();
+    void DeleteAllNodes();
+    void RecaptureAndSaveAllScenes();
     void ResaveAllAssets();
     void DeleteAsset(AssetStub* stub);
     void DeleteAssetDir(AssetDir* dir);
-    void DuplicateActor(Actor* actor);
+    void DuplicateNode(Node* node, bool recurse);
 };
 
 #define DECLARE_ACTION_INTERFACE(Name) \
@@ -161,85 +150,67 @@ public:
     DECLARE_ACTION_INTERFACE(EditTransforms)
 
     ActionEditTransforms(
-        const std::vector<Node3D*>& transComps,
+        const std::vector<Node3D*>& nodes,
         const std::vector<glm::mat4>& newTransforms);
 
 protected:
-    std::vector<Node3D*> mTransComps;
+    std::vector<Node3D*> mNodes;
     std::vector<glm::mat4> mNewTransforms;
     std::vector<glm::mat4> mPrevTransforms;
 };
 
-class ActionSpawnActors : public Action
+class ActionSpawnNodes : public Action
 {
 public:
-    DECLARE_ACTION_INTERFACE(SpawnActors)
-    ActionSpawnActors(const std::vector<Actor*>& actors);
+    DECLARE_ACTION_INTERFACE(SpawnNodes)
+    ActionSpawnNodes(const std::vector<Node*>& nodes);
 protected:
-    std::vector<Actor*> mActors;
+    std::vector<Node*> mNodes;
+    std::vector<Node*> mParents;
 };
 
-class ActionDeleteActors : public Action
+class ActionDeleteNodes : public Action
 {
 public:
-    DECLARE_ACTION_INTERFACE(DeleteActors)
-    ActionDeleteActors(const std::vector<Actor*>& actors);
+    DECLARE_ACTION_INTERFACE(DeleteNodes)
+    ActionDeleteNodes(const std::vector<Node*>& nodes);
 protected:
-    std::vector<Actor*> mActors;
+    std::vector<Node*> mNodes;
+    std::vector<Node*> mParents;
 };
 
-class ActionAddComponent : public Action
+class ActionAttachNode : public Action
 {
 public:
-    DECLARE_ACTION_INTERFACE(AddComponent)
-    ActionAddComponent(Component* comp);
+    DECLARE_ACTION_INTERFACE(AttachNode)
+    ActionAttachNode(Node* node, Node* newParent, int32_t childIndex, int32_t boneIndex);
 protected:
-    Component* mComponent = nullptr;
-    Actor* mOwner = nullptr;
-    Node3D* mParent = nullptr;
-};
-
-class ActionRemoveComponent : public Action
-{
-public:
-    DECLARE_ACTION_INTERFACE(RemoveComponent)
-    ActionRemoveComponent(Component* comp);
-protected:
-    Component* mComponent = nullptr;
-    Actor* mOwner = nullptr;
-    Node3D* mParent = nullptr;
-};
-
-class ActionAttachComponent : public Action
-{
-public:
-    DECLARE_ACTION_INTERFACE(AttachComponent)
-    ActionAttachComponent(Node3D* comp, Node3D* newParent, int32_t boneIndex);
-protected:
-    Node3D* mComponent = nullptr;
-    Node3D* mNewParent = nullptr;
-    Node3D* mPrevParent = nullptr;
+    Node* mNode = nullptr;
+    Node* mNewParent = nullptr;
+    Node* mPrevParent = nullptr;
+    int32_t mChildIndex = -1;
+    int32_t mPrevChildIndex = -1;
     int32_t mBoneIndex = -1;
     int32_t mPrevBoneIndex = -1;
 };
 
-class ActionSetRootComponent : public Action
+class ActionSetRootNode : public Action
 {
 public:
-    DECLARE_ACTION_INTERFACE(SetRootComponent)
-    ActionSetRootComponent(Node3D* newRoot);
+    DECLARE_ACTION_INTERFACE(SetRootNode)
+    ActionSetRootNode(Node* newRoot);
 protected:
-    Node3D* mNewRoot = nullptr;
-    Node3D* mOldRoot = nullptr;
+    Node* mNewRoot = nullptr;
+    Node* mOldRoot = nullptr;
 };
 
 class ActionSetAbsoluteRotation : public Action
 {
 public:
     DECLARE_ACTION_INTERFACE(SetAbsoluteRotation)
-    ActionSetAbsoluteRotation(Node3D* comp, glm::quat rot);
+    ActionSetAbsoluteRotation(Node3D* node, glm::quat rot);
 protected:
-    Node3D* mComponent = nullptr;
+    Node3D* mNode = nullptr;
     glm::quat mNewRotation;
     glm::quat mPrevRotation;
 };
@@ -248,9 +219,9 @@ class ActionSetAbsolutePosition : public Action
 {
 public:
     DECLARE_ACTION_INTERFACE(SetAbsolutePosition)
-    ActionSetAbsolutePosition(Node3D* comp, glm::vec3 pos);
+    ActionSetAbsolutePosition(Node3D* node, glm::vec3 pos);
 protected:
-    Node3D* mComponent = nullptr;
+    Node3D* mNode = nullptr;
     glm::vec3 mNewPosition;
     glm::vec3 mPrevPosition;
 };
@@ -259,55 +230,9 @@ class ActionSetAbsoluteScale : public Action
 {
 public:
     DECLARE_ACTION_INTERFACE(SetAbsoluteScale)
-    ActionSetAbsoluteScale(Node3D* comp, glm::vec3 scale);
+    ActionSetAbsoluteScale(Node3D* node, glm::vec3 scale);
 protected:
-    Node3D* mComponent = nullptr;
+    Node3D* mNode = nullptr;
     glm::vec3 mNewScale;
     glm::vec3 mPrevScale;
-};
-
-class ActionAddWidget : public Action
-{
-public:
-    DECLARE_ACTION_INTERFACE(AddWidget)
-    ActionAddWidget(Widget* widget);
-protected:
-    Widget* mWidget = nullptr;
-    Widget* mParent = nullptr;
-    bool mHasExecuted = false;
-};
-
-class ActionRemoveWidget : public Action
-{
-public:
-    DECLARE_ACTION_INTERFACE(RemoveWidget)
-    ActionRemoveWidget(Widget* widget);
-protected:
-    Widget* mWidget = nullptr;
-    Widget* mParent = nullptr;
-    int32_t mPrevIndex = -1;
-    bool mWasRoot = false;
-};
-
-class ActionAttachWidget : public Action
-{
-public:
-    DECLARE_ACTION_INTERFACE(AttachWidget)
-    ActionAttachWidget(Widget* widget, Widget* newParent, int32_t index);
-protected:
-    Widget* mWidget = nullptr;
-    Widget* mNewParent = nullptr;
-    int32_t mNewIndex = -1;
-    Widget* mPrevParent = nullptr;
-    int32_t mPrevIndex = -1;
-};
-
-class ActionSetRootWidget : public Action
-{
-public:
-    DECLARE_ACTION_INTERFACE(SetRootWidget)
-    ActionSetRootWidget(Widget* newRoot);
-protected:
-    Widget* mNewRoot = nullptr;
-    Widget* mOldRoot = nullptr;
 };
