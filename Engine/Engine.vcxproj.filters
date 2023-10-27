@@ -296,9 +296,6 @@
     <ClCompile Include="Source\Editor\Widgets\PropertyWidget.cpp">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\ViewportPanel.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\NetFunc.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -501,9 +498,6 @@
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\Widgets\WidgetHierarchyPanel.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\WidgetViewportPanel.cpp">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Poly_Lua.cpp">
@@ -710,6 +704,12 @@
     <ClCompile Include="Source\Editor\EditorImgui.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\Viewport2d.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Viewport3d.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -807,13 +807,7 @@
     <ClInclude Include="Source\Editor\Widgets\SceneImportWidget.h">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\ViewportPanel.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Editor\Widgets\WidgetHierarchyPanel.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\WidgetViewportPanel.h">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\Widgets\AssetsPanel.h">
@@ -1367,6 +1361,12 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\EditorUtils.h">
       <Filter>Source Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Viewport2d.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Viewport3d.h">
+      <Filter>Source Files\Editor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

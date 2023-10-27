@@ -349,6 +349,8 @@ bool Update()
     {
         gameDeltaTime = 0.0f;
     }
+
+    GetEditorState()->Update(realDeltaTime);
 #endif
 
     bool doFrameStep = sEngineState.mFrameStep;
@@ -372,6 +374,8 @@ bool Update()
     NetworkManager::Get()->PostTickUpdate(realDeltaTime);
 
     Renderer::Get()->Render(sWorld);
+
+    // TODO-NODE: Render Imgui UI here?
 
     AssetManager::Get()->Update(realDeltaTime);
 

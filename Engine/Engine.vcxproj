@@ -534,6 +534,8 @@
     <ClCompile Include="Source\Editor\Grid.cpp" />
     <ClCompile Include="Source\Editor\InputManager.cpp" />
     <ClCompile Include="Source\Editor\PanelManager.cpp" />
+    <ClCompile Include="Source\Editor\Viewport2d.cpp" />
+    <ClCompile Include="Source\Editor\Viewport3d.cpp" />
     <ClCompile Include="Source\Editor\Widgets\AssetsPanel.cpp" />
     <ClCompile Include="Source\Editor\Widgets\HierarchyPanel.cpp" />
     <ClCompile Include="Source\Editor\Widgets\OutlinerPanel.cpp" />
@@ -541,9 +543,7 @@
     <ClCompile Include="Source\Editor\Widgets\PropertiesPanel.cpp" />
     <ClCompile Include="Source\Editor\Widgets\PropertyWidget.cpp" />
     <ClCompile Include="Source\Editor\Widgets\SceneImportWidget.cpp" />
-    <ClCompile Include="Source\Editor\Widgets\ViewportPanel.cpp" />
     <ClCompile Include="Source\Editor\Widgets\WidgetHierarchyPanel.cpp" />
-    <ClCompile Include="Source\Editor\Widgets\WidgetViewportPanel.cpp" />
     <ClCompile Include="Source\Engine\Asset.cpp" />
     <ClCompile Include="Source\Engine\AssetDir.cpp" />
     <ClCompile Include="Source\Engine\AssetManager.cpp" />
@@ -761,6 +761,8 @@
     <ClInclude Include="Source\Editor\Grid.h" />
     <ClInclude Include="Source\Editor\InputManager.h" />
     <ClInclude Include="Source\Editor\PanelManager.h" />
+    <ClInclude Include="Source\Editor\Viewport2d.h" />
+    <ClInclude Include="Source\Editor\Viewport3d.h" />
     <ClInclude Include="Source\Editor\Widgets\AssetsPanel.h" />
     <ClInclude Include="Source\Editor\Widgets\HierarchyPanel.h" />
     <ClInclude Include="Source\Editor\Widgets\OutlinerPanel.h" />
@@ -768,9 +770,7 @@
     <ClInclude Include="Source\Editor\Widgets\PropertiesPanel.h" />
     <ClInclude Include="Source\Editor\Widgets\PropertyWidget.h" />
     <ClInclude Include="Source\Editor\Widgets\SceneImportWidget.h" />
-    <ClInclude Include="Source\Editor\Widgets\ViewportPanel.h" />
     <ClInclude Include="Source\Editor\Widgets\WidgetHierarchyPanel.h" />
-    <ClInclude Include="Source\Editor\Widgets\WidgetViewportPanel.h" />
     <ClInclude Include="Source\Engine\Assertion.h" />
     <ClInclude Include="Source\Engine\Asset.h" />
     <ClInclude Include="Source\Engine\AssetDir.h" />

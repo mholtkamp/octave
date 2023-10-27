@@ -13,6 +13,8 @@ struct AssetStub;
 class ActionList;
 class Canvas;
 class Camera3D;
+class Viewport3D;
+// class Viewport2D;
 
 enum class ControlMode
 {
@@ -79,10 +81,13 @@ struct EditorState
     RTTI* mInspectedObject;
     AssetRef mInspectedAsset;
     bool mInspectLocked = false;
+    Viewport3D* mViewport3D = nullptr;
+    //Viewport2D* mViewport2D = nullptr;
 
     // Methods
     void Init();
     void Shutdown();
+    void Update(float deltaTime);
 
     void SetEditorMode(EditorMode mode);
     EditorMode GetEditorMode();
@@ -136,6 +141,9 @@ struct EditorState
     void ClearAssetDirHistory();
     void SetAssetDirectory(AssetDir* assetDir);
     AssetDir* GetAssetDirectory();
+
+    Viewport3D* GetViewport3D();
+    //Viewport2D* GetViewport2D();
 };
 
 EditorState* GetEditorState();

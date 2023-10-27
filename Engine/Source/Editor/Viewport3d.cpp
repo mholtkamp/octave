@@ -1,8 +1,6 @@
-#if NODE_CONV_EDITOR
-
 #if EDITOR
 
-#include "Nodes/Widgets/ViewportPanel.h"
+#include "Viewport3d.h"
 #include "Nodes/Widgets/Console.h"
 #include "Nodes/Widgets/StatsOverlay.h"
 #include "InputDevices.h"
@@ -14,13 +12,11 @@
 #include "Nodes/Widgets/Text.h"
 #include "Nodes/Widgets/Button.h"
 #include "Nodes/Widgets/PolyRect.h"
-#include "Nodes/Widgets/ActionList.h"
 #include "Log.h"
 #include "Renderer.h"
 #include "AssetManager.h"
 #include "World.h"
 #include "Maths.h"
-#include "StaticMeshActor.h"
 #include "ActionManager.h"
 #include "Assets/SkeletalMesh.h"
 #include "Constants.h"
@@ -42,7 +38,8 @@
 static float sDefaultFocalDistance = 10.0f;
 constexpr float sMaxCameraPitch = 89.99f;
 
-void ViewportPanel::HandleFilePressed(Button* button)
+#if NODE_CONV_EDITOR
+void Viewport3D::HandleFilePressed(Button* button)
 {
     std::string buttonText = button->GetTextString();
     ActionManager* am = ActionManager::Get();
@@ -117,7 +114,7 @@ void ViewportPanel::HandleFilePressed(Button* button)
     }
 }
 
-void ViewportPanel::HandleViewPressed(Button* button)
+void Viewport3D::HandleViewPressed(Button* button)
 {
     std::string buttonText = button->GetTextString();
     ActionManager* am = ActionManager::Get();
@@ -185,12 +182,12 @@ void ViewportPanel::HandleViewPressed(Button* button)
     }
 }
 
-void ViewportPanel::HandleWorldPressed(Button* button)
+void Viewport3D::HandleWorldPressed(Button* button)
 {
     std::string buttonText = button->GetTextString();
     ActionManager* am = ActionManager::Get();
     ActionList* actionList = GetActionList();
-    ViewportPanel* vp = PanelManager::Get()->GetViewportPanel();
+    Viewport3D* vp = PanelManager::Get()->GetViewportPanel();
     bool hideActionList = true;
 
     if (buttonText == "World")
@@ -265,7 +262,7 @@ void ViewportPanel::HandleWorldPressed(Button* button)
     }
 }
 
-void ViewportPanel::HandlePlayPressed(Button* button)
+void Viewport3D::HandlePlayPressed(Button* button)
 {
     if (GetEditorState()->mPlayInEditor)
     {
@@ -278,7 +275,7 @@ void ViewportPanel::HandlePlayPressed(Button* button)
     }
 }
 
-void ViewportPanel::HandleStopPressed(Button* button)
+void Viewport3D::HandleStopPressed(Button* button)
 {
     if (GetEditorState()->mPlayInEditor)
     {
@@ -329,172 +326,35 @@ void HandleSpawnBasicPressed(Button* button)
     Renderer::Get()->SetModalWidget(nullptr);
 }
 
-ViewportPanel::ViewportPanel() :
+#endif
+
+
+Viewport3D::Viewport3D() :
     mFirstPersonMoveSpeed(10.0f),
     mFirstPersonRotationSpeed(0.07f),
     mFocalDistance(sDefaultFocalDistance)
 {
-    SetTitle("Viewport");
-    SetAnchorMode(AnchorMode::FullStretch);
-    SetMargins(sDefaultWidth, 0.0f, sDefaultWidth, 0.0f);
-
-    mFileButton = new Button();
-    mFileButton->SetTextString("File");
-    mFileButton->SetPressedHandler(HandleFilePressed);
-    mFileButton->SetPosition(5.0f, 4.0f);
-    mFileButton->SetDimensions(34.0f, 24.0f);
-    AddChild(mFileButton);
-    mButtons.push_back(mFileButton);
-
-    mViewButton = new Button();
-    mViewButton->SetTextString("View");
-    mViewButton->SetPressedHandler(HandleViewPressed);
-    mViewButton->SetPosition(45.0f, 4.0f);
-    mViewButton->SetDimensions(40.0f, 24.0f);
-    AddChild(mViewButton);
-    mButtons.push_back(mViewButton);
-
-    mWorldButton = new Button();
-    mWorldButton->SetTextString("World");
-    mWorldButton->SetPressedHandler(HandleWorldPressed);
-    mWorldButton->SetPosition(90.0f, 4.0f);
-    mWorldButton->SetDimensions(50.0f, 24.0f);
-    AddChild(mWorldButton);
-    mButtons.push_back(mWorldButton);
-
-    mPlayButton = new Button();
-    mPlayButton->SetTextString(" Play");
-    mPlayButton->SetPressedHandler(HandlePlayPressed);
-    mPlayButton->SetPosition(145.0f, 4.0f);
-    mPlayButton->SetDimensions(48.0f, 24.0f);
-    AddChild(mPlayButton);
-    mButtons.push_back(mPlayButton);
-
-    mStopButton = new Button();
-    mStopButton->SetTextString("Stop");
-    mStopButton->SetPressedHandler(HandleStopPressed);
-    mStopButton->SetPosition(198.0f, 4.0f);
-    mStopButton->SetDimensions(40.0f, 24.0f);
-    AddChild(mStopButton);
-    mButtons.push_back(mStopButton);
-
-    mPieWarningText = new Text();
-    mPieWarningText->SetText("PLAYING");
-    mPieWarningText->SetColor({ 1.0f, 0.8f, 0.7f, 0.5f });
-    mPieWarningText->SetTextSize(72);
-    mPieWarningText->SetAnchorMode(AnchorMode::TopRight);
-    mPieWarningText->SetDimensions(300.0f, 80.0f);
-    mPieWarningText->SetPosition(-310.0f, 4.0f);
-    AddChild(mPieWarningText);
-
-    mBlueprintLabel = new Text();
-    mBlueprintLabel->SetName("Label");
-    mBlueprintLabel->SetText("BLUEPRINT");
-    mBlueprintLabel->SetColor({ 1.0f, 1.0f, 1.0f, 0.5f });
-    mBlueprintLabel->SetTextSize(72);
-    mBlueprintLabel->SetAnchorMode(AnchorMode::TopRight);
-    mBlueprintLabel->SetDimensions(300.0f, 80.0f);
-    mBlueprintLabel->SetPosition(-380.0f, 4.0f);
-    AddChild(mBlueprintLabel);
-
-    mLightBakeBar = new Widget();
-    mLightBakeBar->SetName("LightBakeBar");
-    mLightBakeBar->SetAnchorMode(AnchorMode::FullStretch);
-    mLightBakeBar->SetRatios(0.05f, 0.90f, 0.90f, 0.03f);
-    mLightBakeBar->SetVisible(false);
-    AddChild(mLightBakeBar);
-    Quad* lightBakeBg = new Quad();
-    lightBakeBg->SetName("Bg");
-    lightBakeBg->SetAnchorMode(AnchorMode::FullStretch);
-    lightBakeBg->SetColor(glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
-    lightBakeBg->SetRatios(0.0f, 0.0f, 1.0f, 1.0f);
-    mLightBakeBar->AddChild(lightBakeBg);
-    Quad* lightBakeFg = new Quad();
-    lightBakeFg->SetName("Fg");
-    lightBakeFg->SetAnchorMode(AnchorMode::FullStretch);
-    lightBakeFg->SetColor(glm::vec4(0.1f, 0.3f, 1.0f, 1.0f));
-    lightBakeFg->SetRatios(0.0f, 0.0f, 0.25f, 1.0f);
-    mLightBakeBar->AddChild(lightBakeFg);
-    PolyRect* lightBakeBorder = new PolyRect();
-    lightBakeBorder->SetName("Border");
-    lightBakeBorder->SetAnchorMode(AnchorMode::FullStretch);
-    lightBakeBorder->SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    lightBakeBorder->SetRatios(0.0f, 0.0f, 1.0f, 1.0f);
-    mLightBakeBar->AddChild(lightBakeBorder);
-
 #if CONSOLE_ENABLED
     // Move the console into  viewport region
-    Renderer::Get()->GetConsoleWidget()->SetRect(sDefaultWidth + 5.0f, 30, 1280 - sDefaultWidth, 720);
+    // TODO-NODE: If we can slide out the left panels, then make the log slide over too.
+    const float kDefaultWidth = 180.0f;
+    Renderer::Get()->GetConsoleWidget()->SetRect(kDefaultWidth + 5.0f, 30, 1280 - kDefaultWidth, 720);
 #endif
 
     StatsOverlay* statsWidget = Renderer::Get()->GetStatsWidget();
     statsWidget->SetPosition(
-        -statsWidget->GetWidth() - sDefaultWidth,
+        -statsWidget->GetWidth() - kDefaultWidth,
         statsWidget->GetY());
     statsWidget->SetVisible(true);
-
-    mHeaderText->SetVisible(false);
-    mHeaderQuad->SetVisible(false);
-    mBodyQuad->SetVisible(false);
 }
 
-ViewportPanel::~ViewportPanel()
+Viewport3D::~Viewport3D()
 {
 
 }
 
-void ViewportPanel::Tick(float deltaTime)
+void Viewport3D::Update(float deltaTime)
 {
-    Panel::Tick(deltaTime);
-
-    switch (GetControlMode())
-    {
-    case ControlMode::Pilot: mHeaderText->SetText("Pilot"); break;
-    case ControlMode::Translate: mHeaderText->SetText("Translate"); break;
-    case ControlMode::Rotate: mHeaderText->SetText("Rotate"); break;
-    case ControlMode::Scale: mHeaderText->SetText("Scale"); break;
-    case ControlMode::Pan: mHeaderText->SetText("Pan"); break;
-    case ControlMode::Orbit: mHeaderText->SetText("Orbit"); break;
-    default: mHeaderText->SetText(""); break;
-    }
-
-    bool isPie = GetEditorState()->mPlayInEditor;
-    bool isPaused = GetEditorState()->mPaused;
-    bool isBp = (GetEditorMode() == EditorMode::Blueprint);
-    bool isLevel = (GetEditorMode() == EditorMode::Level);
-
-    mBlueprintLabel->SetVisible(isBp);
-    mPlayButton->SetVisible(isLevel);
-    mPlayButton->SetTextString((isPaused || !isPie) ? " Play" : "Pause");
-    mStopButton->SetVisible(isPie);
-    mPieWarningText->SetVisible(isPie);
-    mPieWarningText->SetText(isPaused ? "PAUSED" : "PLAYING");
-    mPieWarningText->SetColor(isPaused ?
-        glm::vec4(0.5f, 0.6f, 1.0f, 0.7f) :
-        glm::vec4(1.0f, 0.8f, 0.7f, 0.5f));
-
-    // Lock bpactor to origin.
-    if (isBp)
-    {
-        GetEditBlueprintActor()->SetPosition({ 0.0f, 0.0f, 0.0f });
-    }
-
-    if (Renderer::Get()->IsLightBakeInProgress())
-    {
-        mLightBakeBar->SetVisible(true);
-        float progress = Renderer::Get()->GetLightBakeProgress();
-        mLightBakeBar->FindChild("Fg")->As<Quad>()->SetWidthRatio(progress);
-    }
-    else
-    {
-        mLightBakeBar->SetVisible(false);
-    }
-}
-
-void ViewportPanel::HandleInput()
-{
-    Panel::HandleInput();
-
     if (ShouldHandleInput())
     {
         if (GetEditorState()->mMouseNeedsRecenter)
@@ -503,7 +363,7 @@ void ViewportPanel::HandleInput()
             GetEditorState()->mMouseNeedsRecenter = false;
         }
 
-        ControlMode controlMode = GetControlMode();
+        ControlMode controlMode = GetEditorState()->GetControlMode();
 
         switch (controlMode)
         {
@@ -520,19 +380,34 @@ void ViewportPanel::HandleInput()
     INP_GetMousePosition(mPrevMouseX, mPrevMouseY);
 }
 
-float ViewportPanel::GetFocalDistance() const
+bool Viewport3D::ShouldHandleInput() const
+{
+    Widget* modal = Renderer::Get()->GetModalWidget();
+    bool textInputActive = false; // TODO-NODE: Query imgui somehow
+    bool editorModalOpen = false; // TODO-NODE: Query imgui for modal status.
+    bool handleInput = (modal == nullptr && !textInputActive && !editorModalOpen);
+    return handleInput;
+}
+
+bool Viewport3D::IsMouseInside() const
+{
+    // TODO-NODE: Check if mouse is outside of all imgui windows?
+    //   Or at least check if mouse is within the kDefaultWidth area.
+    return true;
+}
+
+float Viewport3D::GetFocalDistance() const
 {
     return mFocalDistance;
 }
 
-void ViewportPanel::HandleDefaultControls()
+void Viewport3D::HandleDefaultControls()
 {
     Renderer* renderer = Renderer::Get();
     Camera3D* camera = GetWorld()->GetActiveCamera();
-    Actor* cameraActor = camera ? camera->GetOwner() : nullptr;
     glm::vec3 focus = camera->GetAbsolutePosition() + camera->GetForwardVector() * mFocalDistance;
 
-    if (IsMouseInsidePanel())
+    if (IsMouseInside())
     {
         const int32_t scrollDelta = GetScrollWheelDelta();
         const bool controlDown = IsControlDown();
@@ -542,7 +417,7 @@ void ViewportPanel::HandleDefaultControls()
 
         if (IsMouseButtonJustDown(MOUSE_RIGHT))
         {
-            SetControlMode(ControlMode::Pilot);
+            GetEditorState()->SetControlMode(ControlMode::Pilot);
         }
 
         if (IsMouseButtonJustDown(MOUSE_LEFT) &&
@@ -551,65 +426,53 @@ void ViewportPanel::HandleDefaultControls()
             int32_t mouseX = 0;
             int32_t mouseY = 0;
             GetMousePosition(mouseX, mouseY);
-            Node3D* selectComp = Renderer::Get()->ProcessHitCheck(GetWorld(), mouseX, mouseY);
-            Actor* selectActor = selectComp ? selectComp->GetOwner() : nullptr;
+            Node3D* selectNode = Renderer::Get()->ProcessHitCheck(GetWorld(), mouseX, mouseY);
 
-            if (GetEditorMode() == EditorMode::Blueprint)
+            if (shiftDown)
             {
-                if (GetSelectedComponent() == selectComp)
+                if (selectNode != nullptr)
                 {
-                    SetSelectedComponent(nullptr);
-                }
-                else
-                {
-                    SetSelectedComponent(selectComp);
-                }
-            }
-            else if (shiftDown)
-            {
-                if (selectActor != nullptr)
-                {
-                    if (IsActorSelected(selectActor))
+                    if (GetEditorState()->IsNodeSelected(selectNode))
                     {
-                        RemoveSelectedActor(selectActor);
+                        GetEditorState()->RemoveSelectedNode(selectNode);
                     }
                     else
                     {
-                        AddSelectedActor(selectActor, false);
+                        GetEditorState()->AddSelectedNode(selectNode, false);
                     }
                 }
             }
             else
             {
-                if (GetSelectedActor() != selectActor)
+                if (GetEditorState()->GetSelectedNode() != selectNode)
                 {
-                    SetSelectedActor(selectActor);
+                    GetEditorState()->SetSelectedNode(selectNode);
                 }
                 else
                 {
-                    SetSelectedActor(nullptr);
+                    GetEditorState()->SetSelectedNode(nullptr);
                 }
             }
         }
 
-        if (GetSelectedComponent() != nullptr &&
-            GetSelectedComponent()->IsNode3D())
+        if (GetEditorState()->GetSelectedNode() != nullptr &&
+            GetEditorState()->GetSelectedNode()->IsNode3D())
         {
             if (!controlDown && !altDown && IsKeyJustDown(KEY_G))
             {
-                SetControlMode(ControlMode::Translate);
+                GetEditorState()->SetControlMode(ControlMode::Translate);
                 SavePreTransforms();
             }
 
             if (!controlDown && !altDown && IsKeyJustDown(KEY_R))
             {
-                SetControlMode(ControlMode::Rotate);
+                GetEditorState()->SetControlMode(ControlMode::Rotate);
                 SavePreTransforms();
             }
 
             if (!controlDown && !altDown && IsKeyJustDown(KEY_S))
             {
-                SetControlMode(ControlMode::Scale);
+                GetEditorState()->SetControlMode(ControlMode::Scale);
                 SavePreTransforms();
             }
         }
@@ -665,13 +528,13 @@ void ViewportPanel::HandleDefaultControls()
             IsKeyJustDown(KEY_DECIMAL))
         {
             // Focus on selected object
-            Component* comp = GetSelectedComponent();
-            Node3D* transComp = (comp && comp->IsNode3D()) ? static_cast<Node3D*>(comp) : nullptr;
+            Node* node = GetEditorState()->GetSelectedNode();
+            Node3D* node3d = (node && node->IsNode3D()) ? static_cast<Node3D*>(node) : nullptr;
 
-            if (transComp != nullptr && transComp != camera)
+            if (node3d != nullptr && node3d != camera)
             {
                 glm::vec3 cameraPos = camera->GetAbsolutePosition();
-                glm::vec3 compPos = transComp->GetAbsolutePosition();
+                glm::vec3 compPos = node3d->GetAbsolutePosition();
                 glm::vec3 toCamera = glm::normalize(cameraPos - compPos);
                 camera->SetAbsolutePosition(compPos + toCamera * sDefaultFocalDistance);
 
@@ -730,90 +593,86 @@ void ViewportPanel::HandleDefaultControls()
             }
         }
 
-        if (GetEditorMode() == EditorMode::Level)
+        glm::vec3 spawnPos = camera->GetAbsolutePosition() + mFocalDistance * camera->GetForwardVector();
+        if (controlDown && IsKeyJustDown(KEY_1))
         {
-            glm::vec3 spawnPos = camera->GetAbsolutePosition() + mFocalDistance * camera->GetForwardVector();
-            if (controlDown && IsKeyJustDown(KEY_1))
-            {
-                ActionManager::Get()->SpawnBasicActor(BASIC_STATIC_MESH, spawnPos);
-            }
-            else if (controlDown && IsKeyJustDown(KEY_2))
-            {
-                ActionManager::Get()->SpawnBasicActor(BASIC_POINT_LIGHT, spawnPos);
-            }
-            else if (controlDown && IsKeyJustDown(KEY_3))
-            {
-                ActionManager::Get()->SpawnBasicActor(BASIC_TRANSFORM, spawnPos);
-            }
-            else if (controlDown && IsKeyJustDown(KEY_4))
-            {
-                ActionManager::Get()->SpawnBasicActor(BASIC_DIRECTIONAL_LIGHT, spawnPos);
-            }
-            else if (controlDown && IsKeyJustDown(KEY_5))
-            {
-                ActionManager::Get()->SpawnBasicActor(BASIC_SKELETAL_MESH, spawnPos);
-            }
-            else if (controlDown && IsKeyJustDown(KEY_6))
-            {
-                ActionManager::Get()->SpawnBasicActor(BASIC_BOX, spawnPos);
-            }
-            else if (controlDown && IsKeyJustDown(KEY_7))
-            {
-                ActionManager::Get()->SpawnBasicActor(BASIC_SPHERE, spawnPos);
-            }
-            else if (controlDown && IsKeyJustDown(KEY_8))
-            {
-                ActionManager::Get()->SpawnBasicActor(BASIC_PARTICLE, spawnPos);
-            }
-            else if (controlDown && IsKeyJustDown(KEY_9))
-            {
-                ActionManager::Get()->SpawnBasicActor(BASIC_AUDIO, spawnPos);
-            }
-            else if (controlDown && IsKeyJustDown(KEY_0))
-            {
-                ActionManager::Get()->SpawnBasicActor(BASIC_BLUEPRINT, spawnPos);
-            }
+            ActionManager::Get()->SpawnBasicNode(BASIC_STATIC_MESH, spawnPos);
+        }
+        else if (controlDown && IsKeyJustDown(KEY_2))
+        {
+            ActionManager::Get()->SpawnBasicNode(BASIC_POINT_LIGHT, spawnPos);
+        }
+        else if (controlDown && IsKeyJustDown(KEY_3))
+        {
+            ActionManager::Get()->SpawnBasicNode(BASIC_TRANSFORM, spawnPos);
+        }
+        else if (controlDown && IsKeyJustDown(KEY_4))
+        {
+            ActionManager::Get()->SpawnBasicNode(BASIC_DIRECTIONAL_LIGHT, spawnPos);
+        }
+        else if (controlDown && IsKeyJustDown(KEY_5))
+        {
+            ActionManager::Get()->SpawnBasicNode(BASIC_SKELETAL_MESH, spawnPos);
+        }
+        else if (controlDown && IsKeyJustDown(KEY_6))
+        {
+            ActionManager::Get()->SpawnBasicNode(BASIC_BOX, spawnPos);
+        }
+        else if (controlDown && IsKeyJustDown(KEY_7))
+        {
+            ActionManager::Get()->SpawnBasicNode(BASIC_SPHERE, spawnPos);
+        }
+        else if (controlDown && IsKeyJustDown(KEY_8))
+        {
+            ActionManager::Get()->SpawnBasicNode(BASIC_PARTICLE, spawnPos);
+        }
+        else if (controlDown && IsKeyJustDown(KEY_9))
+        {
+            ActionManager::Get()->SpawnBasicNode(BASIC_AUDIO, spawnPos);
+        }
+        else if (controlDown && IsKeyJustDown(KEY_0))
+        {
+            ActionManager::Get()->SpawnBasicNode(BASIC_BLUEPRINT, spawnPos);
+        }
 
 
-            if (IsKeyJustDown(KEY_DELETE))
-            {
-                ActionManager::Get()->DeleteSelectedActors();
-            }
+        if (IsKeyJustDown(KEY_DELETE))
+        {
+            ActionManager::Get()->DeleteSelectedNodes();
+        }
 
-            if (controlDown && IsKeyJustDown(KEY_D))
-            {
-                // Duplicate actor
-                Actor* selectedActor = GetSelectedActor();
+        if (controlDown && IsKeyJustDown(KEY_D))
+        {
+            // Duplicate node
+            Node* selectedNode = GetEditorState()->GetSelectedNode();
 
-                if (selectedActor != nullptr)
-                {
-                    ActionManager::Get()->DuplicateActor(selectedActor);
-                    SetControlMode(ControlMode::Translate);
-                    SavePreTransforms();
-                }
-            }
-
-            if (shiftDown && (IsKeyJustDown(KEY_A) || IsKeyJustDown(KEY_Q)))
+            if (selectedNode != nullptr)
             {
-                // Set the spawn actor list as the modal widget.
-                const bool basic = IsKeyJustDown(KEY_Q);
-                ShowSpawnActorPrompt(basic);
+                ActionManager::Get()->DuplicateNode(selectedNode);
+                GetEditorState()->SetControlMode(ControlMode::Translate);
+                SavePreTransforms();
             }
         }
+
+        if (shiftDown && (IsKeyJustDown(KEY_A) || IsKeyJustDown(KEY_Q)))
+        {
+            // Set the spawn actor list as the modal widget.
+            const bool basic = IsKeyJustDown(KEY_Q);
+            ShowSpawnActorPrompt(basic);
+        }
+
 
         if (altDown && IsKeyJustDown(KEY_A))
         {
-            SetSelectedActor(nullptr);
+            GetEditorState()->SetSelectedNode(nullptr);
         }
-        if (!cmdKeyDown && IsKeyJustDown(KEY_A))
+        if (controlDown && IsKeyJustDown(KEY_A))
         {
-            const std::vector<Actor*>& actors = GetWorld()->GetActors();
-            for (uint32_t i = 0; i < actors.size(); ++i)
+            std::vector<Node*> nodes = GetWorld()->GatherNodes();
+
+            for (uint32_t i = 0; i < nodes.size(); ++i)
             {
-                if (actors[i] != cameraActor)
-                {
-                    AddSelectedActor(actors[i], false);
-                }
+                GetEditorState()->AddSelectedNode(nodes[i], false);
             }
         }
 
@@ -828,9 +687,9 @@ void ViewportPanel::HandleDefaultControls()
 
             bool orient = deltaPressTime < 0.5f;
 
-             Component* selComp = GetSelectedComponent();
-             Node3D* transComp = selComp ? selComp->As<Node3D>() : nullptr;
-             Primitive3D* primComp = selComp ? selComp->As<Primitive3D>() : nullptr;
+             Node* selNode = GetEditorState()->GetSelectedNode();
+             Node3D* transComp = selNode ? selNode->As<Node3D>() : nullptr;
+             Primitive3D* primComp = selNode ? selNode->As<Primitive3D>() : nullptr;
 
              if (transComp)
              {
@@ -931,8 +790,8 @@ void ViewportPanel::HandleDefaultControls()
         {
             glm::mat4 camTransform = camera->GetTransform();
 
-            Component* selComp = GetSelectedComponent();
-            Node3D* transComp = selComp ? selComp->As<Node3D>() : nullptr;
+            Node* selNode = GetEditorState()->GetSelectedNode();
+            Node3D* transComp = selNode ? selNode->As<Node3D>() : nullptr;
 
             if (transComp)
             {
@@ -975,17 +834,17 @@ void ViewportPanel::HandleDefaultControls()
         {
             if (shiftDown)
             {
-                SetControlMode(ControlMode::Pan);
+                GetEditorState()->SetControlMode(ControlMode::Pan);
             }
             else
             {
-                SetControlMode(ControlMode::Orbit);
+                GetEditorState()->SetControlMode(ControlMode::Orbit);
             }
         }
     }
 }
 
-void ViewportPanel::HandlePilotControls()
+void Viewport3D::HandlePilotControls()
 {
     Camera3D* camera = GetWorld()->GetActiveCamera();
     float deltaTime = GetAppClock()->DeltaTime();
@@ -1059,20 +918,20 @@ void ViewportPanel::HandlePilotControls()
 
     if (!IsMouseButtonDown(MOUSE_RIGHT))
     {
-        SetControlMode(ControlMode::Default);
+        GetEditorState()->SetControlMode(ControlMode::Default);
     }
 }
 
-void ViewportPanel::HandleTransformControls()
+void Viewport3D::HandleTransformControls()
 {
-    ControlMode controlMode = GetControlMode();
-    Component* component = GetSelectedComponent();
-    const std::vector<Component*>& selectedComps = GetSelectedComponents();
+    ControlMode controlMode = GetEditorState()->GetControlMode();
+    Node* node = GetEditorState()->GetSelectedNode();
+    const std::vector<Node*>& selectedComps = GetEditorState()->GetSelectedNodes();
 
-    if (component == nullptr || !component->IsNode3D())
+    if (node == nullptr || !node->IsNode3D())
         return;
 
-    Node3D* transComp = static_cast<Node3D*>(component);
+    Node3D* transComp = static_cast<Node3D*>(node);
 
     std::vector<Node3D*> transComps;
     for (uint32_t i = 0; i < selectedComps.size(); ++i)
@@ -1244,18 +1103,18 @@ void ViewportPanel::HandleTransformControls()
         }
 
         ActionManager::Get()->EXE_EditTransforms(transComps, newTransforms);
-        SetControlMode(ControlMode::Default);
+        GetEditorState()->SetControlMode(ControlMode::Default);
     }
 
     if (IsMouseButtonDown(MOUSE_RIGHT))
     {
         // Cancel transform operation
         RestorePreTransforms();
-        SetControlMode(ControlMode::Default);
+        GetEditorState()->SetControlMode(ControlMode::Default);
     }
 }
 
-void ViewportPanel::HandlePanControls()
+void Viewport3D::HandlePanControls()
 {
     // Pan the camera
     Camera3D* camera = GetWorld()->GetActiveCamera();
@@ -1269,11 +1128,11 @@ void ViewportPanel::HandlePanControls()
 
     if (!IsMouseButtonDown(MOUSE_MIDDLE))
     {
-        SetControlMode(ControlMode::Default);
+        GetEditorState()->SetControlMode(ControlMode::Default);
     }
 }
 
-void ViewportPanel::HandleOrbitControls()
+void Viewport3D::HandleOrbitControls()
 {
     Camera3D* camera = GetWorld()->GetActiveCamera();
     glm::vec2 delta = HandleLockedCursor();
@@ -1312,11 +1171,11 @@ void ViewportPanel::HandleOrbitControls()
 
     if (!IsMouseButtonDown(MOUSE_MIDDLE))
     {
-        SetControlMode(ControlMode::Default);
+        GetEditorState()->SetControlMode(ControlMode::Default);
     }
 }
 
-glm::vec2 ViewportPanel::HandleLockedCursor()
+glm::vec2 Viewport3D::HandleLockedCursor()
 {
     int32_t dX = 0;
     int32_t dY = 0;
@@ -1325,7 +1184,7 @@ glm::vec2 ViewportPanel::HandleLockedCursor()
     return glm::vec2((float)dX, (float)dY);
 }
 
-void ViewportPanel::HandleAxisLocking()
+void Viewport3D::HandleAxisLocking()
 {
     EditorState* state = GetEditorState();
     TransformLock currentLock = state->mTransformLock;
@@ -1374,17 +1233,17 @@ void ViewportPanel::HandleAxisLocking()
 
         if (newLock != currentLock)
         {
-            SetTransformLock(newLock);
+            GetEditorState()->SetTransformLock(newLock);
         }
         else
         {
             // If hitting the same lock key, unlock. (reset to None transform lock).
-            SetTransformLock(TransformLock::None);
+            GetEditorState()->SetTransformLock(TransformLock::None);
         }
     }
 }
 
-glm::vec2 ViewportPanel::GetTransformDelta() const
+glm::vec2 Viewport3D::GetTransformDelta() const
 {
     glm::vec2 delta = glm::vec2(0.0f, 0.0f);
 
@@ -1398,14 +1257,14 @@ glm::vec2 ViewportPanel::GetTransformDelta() const
     return delta;
 }
 
-void ViewportPanel::SavePreTransforms()
+void Viewport3D::SavePreTransforms()
 {
-    const std::vector<Component*>& selComps = GetSelectedComponents();
+    const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
     mPreTransforms.clear();
 
-    for (uint32_t i = 0; i < selComps.size(); ++i)
+    for (uint32_t i = 0; i < selNodes.size(); ++i)
     {
-        Node3D* transComp = (selComps[i] && selComps[i]->IsNode3D()) ? static_cast<Node3D*>(selComps[i]) : nullptr;
+        Node3D* transComp = (selNodes[i] && selNodes[i]->IsNode3D()) ? static_cast<Node3D*>(selNodes[i]) : nullptr;
 
         if (transComp)
         {
@@ -1414,11 +1273,11 @@ void ViewportPanel::SavePreTransforms()
     }
 }
 
-void ViewportPanel::RestorePreTransforms()
+void Viewport3D::RestorePreTransforms()
 {
-    const std::vector<Component*>& selComps = GetSelectedComponents();
+    const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
 
-    for (uint32_t i = 0; i < selComps.size(); ++i)
+    for (uint32_t i = 0; i < selNodes.size(); ++i)
     {
         if (i >= mPreTransforms.size())
         {
@@ -1426,7 +1285,7 @@ void ViewportPanel::RestorePreTransforms()
             break;
         }
 
-        Node3D* transComp = (selComps[i] && selComps[i]->IsNode3D()) ? static_cast<Node3D*>(selComps[i]) : nullptr;
+        Node3D* transComp = (selNodes[i] && selNodes[i]->IsNode3D()) ? static_cast<Node3D*>(selNodes[i]) : nullptr;
 
         if (transComp)
         {
@@ -1435,20 +1294,20 @@ void ViewportPanel::RestorePreTransforms()
     }
 }
 
-void ViewportPanel::ToggleTransformMode()
+void Viewport3D::ToggleTransformMode()
 {
     mTransformLocal = !mTransformLocal;
     LogDebug("Transform Mode = %s", mTransformLocal ? "Local" : "Pivot");
 }
 
-glm::vec3 ViewportPanel::GetLockedTranslationDelta(glm::vec3 deltaWS) const
+glm::vec3 Viewport3D::GetLockedTranslationDelta(glm::vec3 deltaWS) const
 {
     glm::vec3 retDelta = deltaWS;
-    retDelta *= GetTransformLockVector(GetEditorState()->mTransformLock);
+    retDelta *= GetEditorState()->GetTransformLockVector(GetEditorState()->mTransformLock);
     return retDelta;
 }
 
-glm::vec3 ViewportPanel::GetLockedRotationAxis() const
+glm::vec3 Viewport3D::GetLockedRotationAxis() const
 {
     glm::vec3 ret = glm::vec3(0.0, 1.0, 0.0);
 
@@ -1473,14 +1332,14 @@ glm::vec3 ViewportPanel::GetLockedRotationAxis() const
     return ret;
 }
 
-glm::vec3 ViewportPanel::GetLockedScaleDelta()
+glm::vec3 Viewport3D::GetLockedScaleDelta()
 {
     glm::vec3 retDelta = glm::vec3(1, 1, 1);
-    retDelta *= GetTransformLockVector(GetEditorState()->mTransformLock);
+    retDelta *= GetEditorState()->GetTransformLockVector(GetEditorState()->mTransformLock);
     return retDelta;
 }
 
-bool ViewportPanel::IsMouseOnAnyButton() const
+bool Viewport3D::IsMouseOnAnyButton() const
 {
     bool ret = false;
 
@@ -1497,8 +1356,10 @@ bool ViewportPanel::IsMouseOnAnyButton() const
     return ret;
 }
 
-void ViewportPanel::ShowSpawnActorPrompt(bool basic)
+void Viewport3D::ShowSpawnActorPrompt(bool basic)
 {
+#if NODE_CONV_EDITOR
+
     ActionList* actionList = GetActionList();
 
     std::vector<std::string> actions;
@@ -1526,8 +1387,8 @@ void ViewportPanel::ShowSpawnActorPrompt(bool basic)
         GatherAllClassNames(actions);
         actionList->SetActions(actions, HandleSpawnActorPressed);
     }
+
+#endif
 }
 
 #endif
-
-#endif 

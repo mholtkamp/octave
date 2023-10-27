@@ -6,7 +6,8 @@
 #include "World.h"
 #include "Nodes/3D/Camera3d.h"
 #include "PanelManager.h"
-#include "Widgets/ViewportPanel.h"
+#include "Viewport3d.h"
+#include "Viewport2d.h"
 #include "Widgets/WidgetHierarchyPanel.h"
 #include "AssetManager.h"
 #include "Assets/Scene.h"
@@ -25,7 +26,7 @@ void EditorCenterCursor()
 glm::vec3 EditorGetFocusPosition()
 {
     Camera3D* camera = GetWorld()->GetActiveCamera();
-    float focalDistance = PanelManager::Get()->GetViewportPanel()->GetFocalDistance();
+    float focalDistance = GetEditorState()->GetViewport3D()->GetFocalDistance();
     glm::vec3 focusPos = camera->GetAbsolutePosition() + focalDistance * camera->GetForwardVector();
 
     return focusPos;

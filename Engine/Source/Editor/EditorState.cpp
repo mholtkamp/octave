@@ -18,7 +18,8 @@
 #include "AudioManager.h"
 #include "Assets/Scene.h"
 #include "EditorUtils.h"
-#include "Widgets/WidgetViewportPanel.h"
+#include "Viewport3d.h"
+#include "Viewport2d.h"
 #include "Widgets/PropertiesPanel.h"
 #include "Input/Input.h"
 
@@ -37,13 +38,40 @@ void EditorState::Init()
     mEditorCamera = Node::Construct<Camera3D>();
     // TODO-NODE: This is a little sketchy because this will call World::RegisterNode(), but that's probably fine.
     mEditorCamera->SetWorld(GetWorld());
+
+    mViewport3D = new Viewport3D();
+    //mViewport2D = new Viewport2D();
 }
 
 void EditorState::Shutdown()
 {
+    delete mViewport3D;
+    mViewport3D = nullptr;
+
+    // delete mViewport2D;
+    //mViewport2D = nullptr;
+
     mEditorCamera->SetWorld(nullptr);
     Node::Destruct(mEditorCamera);
     mEditorCamera = nullptr;
+}
+
+void EditorState::Update(float deltaTime)
+{
+    // TODO-NODE: Handle Widgets/2D? Maybe split modes to 3D and 2D
+    if (!mPlayInEditor || mEjected)
+    {
+        switch (mMode)
+        {
+        case EditorMode::Scene:
+            mViewport3D->Update(deltaTime);
+            break;
+
+        default:
+            break;
+        }
+    }
+
 }
 
 void EditorState::SetEditorMode(EditorMode mode)
@@ -714,5 +742,15 @@ AssetDir* EditorState::GetAssetDirectory()
 {
     return mCurrentDir;
 }
+
+Viewport3D* EditorState::GetViewport3D()
+{
+    return mViewport3D;
+}
+
+//Viewport2D* EditorState::GetViewport2D()
+//{
+//    return mViewport2D;
+//}
 
 #endif

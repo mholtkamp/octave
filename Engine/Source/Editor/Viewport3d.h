@@ -1,22 +1,20 @@
-#if NODE_CONV_EDITOR
-
 #pragma once
 
-#include "Panel.h"
 #include "EditorState.h"
 #include "Nodes/Widgets/ModalList.h"
 
 class Button;
 
-class ViewportPanel : public Panel
+class Viewport3D
 {
 public:
 
-    ViewportPanel();
-    ~ViewportPanel();
+    Viewport3D();
+    ~Viewport3D();
 
-    virtual void Tick(float deltaTime) override;
-    virtual void HandleInput() override;
+    void Update(float deltaTime);
+    bool ShouldHandleInput() const;
+    bool IsMouseInside() const;
 
     float GetFocalDistance() const;
 
@@ -50,17 +48,6 @@ protected:
 
     static void ShowSpawnActorPrompt(bool basic);
 
-    Button* mFileButton = nullptr;
-    Button* mViewButton = nullptr;
-    Button* mWorldButton = nullptr;
-    Button* mPlayButton = nullptr;
-    Button* mStopButton = nullptr;
-
-    Text* mPieWarningText = nullptr;
-    Text* mBlueprintLabel = nullptr;
-
-    Widget* mLightBakeBar = nullptr;
-
     float mFirstPersonMoveSpeed;
     float mFirstPersonRotationSpeed;
 
@@ -75,5 +62,3 @@ protected:
     bool mNeedsMouseRecenter = false;
     bool mTransformLocal = false;
 };
-
-#endif
