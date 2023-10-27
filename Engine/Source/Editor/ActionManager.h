@@ -107,7 +107,7 @@ public:
     void ResaveAllAssets();
     void DeleteAsset(AssetStub* stub);
     void DeleteAssetDir(AssetDir* dir);
-    void DuplicateNode(Node* node, bool recurse);
+    void DuplicateNode(Node* node);
 };
 
 #define DECLARE_ACTION_INTERFACE(Name) \

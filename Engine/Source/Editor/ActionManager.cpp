@@ -1233,10 +1233,10 @@ Asset* ActionManager::ImportAsset(const std::string& path)
         // the material to that static mesh.
         if (newAsset != nullptr &&
             (newAsset->Is(StaticMesh::ClassRuntimeId()) || newAsset->Is(SkeletalMesh::ClassRuntimeId())) &&
-            GetSelectedAsset() != nullptr &&
-            GetSelectedAsset()->Is(Material::ClassRuntimeId()))
+            GetEditorState()->GetSelectedAsset() != nullptr &&
+            GetEditorState()->GetSelectedAsset()->Is(Material::ClassRuntimeId()))
         {
-            Material* material = GetSelectedAsset()->As<Material>();
+            Material* material = GetEditorState()->GetSelectedAsset()->As<Material>();
 
             if (newAsset->Is(StaticMesh::ClassRuntimeId()))
             {
@@ -1279,7 +1279,7 @@ static std::string GetFixedFilename(const char* name, const char* prefix)
     return nameStr;
 }
 
-static void SpawnNode(aiNode* node, const glm::mat4& parentTransform, const std::vector<StaticMesh*>& meshList, const SceneImportOptions& options)
+static void SpawnAiNode(aiNode* node, const glm::mat4& parentTransform, const std::vector<StaticMesh*>& meshList, const SceneImportOptions& options)
 {
     World* world = GetWorld();
 
@@ -1290,21 +1290,21 @@ static void SpawnNode(aiNode* node, const glm::mat4& parentTransform, const std:
         for (uint32_t i = 0; i < node->mNumMeshes; ++i)
         {
             uint32_t meshIndex = node->mMeshes[i];
-            StaticMeshActor* newActor = world->SpawnActor<StaticMeshActor>();
-            newActor->GetStaticMesh3D()->SetStaticMesh(meshList[meshIndex]);
-            newActor->GetStaticMesh3D()->SetUseTriangleCollision(meshList[meshIndex]->IsTriangleCollisionMeshEnabled());
-            newActor->GetRootComponent()->SetTransform(transform);
-            newActor->SetName(/*options.mPrefix + */node->mName.C_Str());
-            newActor->GetStaticMesh3D()->EnableCastShadows(true);
-            newActor->GetStaticMesh3D()->SetBakeLighting(true);
-            newActor->GetStaticMesh3D()->SetUseTriangleCollision(true);
-            newActor->AddTag("Scene");
+            StaticMesh3D* newMesh = GetWorld()->SpawnNode<StaticMesh3D>();
+            newMesh->SetStaticMesh(meshList[meshIndex]);
+            newMesh->SetUseTriangleCollision(meshList[meshIndex]->IsTriangleCollisionMeshEnabled());
+            newMesh->SetTransform(transform);
+            newMesh->SetName(/*options.mPrefix + */node->mName.C_Str());
+            newMesh->EnableCastShadows(true);
+            newMesh->SetBakeLighting(true);
+            newMesh->SetUseTriangleCollision(true);
+            newMesh->AddTag("Scene");
         }
     }
 
     for (uint32_t i = 0; i < node->mNumChildren; ++i)
     {
-        SpawnNode(node->mChildren[i], parentTransform, meshList, options);
+        SpawnAiNode(node->mChildren[i], parentTransform, meshList, options);
     }
 }
 
@@ -1378,24 +1378,30 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
             if (options.mClearWorld)
             {
-                DeleteAllActors();
+                DeleteAllNodes();
             }
             else
             {
                 // Destroy all actors with a Scene tag.
                 // Kinda hacky, but for now, to mark anything spawned as part of a scene,
                 // I'm adding a Scene tag. This is to make reimporting scenes easier.
-                const std::vector<Actor*>& actors = GetWorld()->GetActors();
-                std::vector<Actor*> delActors;
-                for (int32_t i = int32_t(actors.size()) - 1; i >= 0; --i)
+                const std::vector<Node*>& nodes = GetWorld()->GatherNodes();
+                std::vector<Node*> delNodes;
+                for (int32_t i = int32_t(nodes.size()) - 1; i >= 0; --i)
                 {
-                    if (actors[i]->HasTag("Scene"))
+                    if (nodes[i]->HasTag("Scene"))
                     {
-                        delActors.push_back(actors[i]);
+                        delNodes.push_back(nodes[i]);
                     }
                 }
 
-                EXE_DeleteActors(delActors);
+                EXE_DeleteNodes(delNodes);
+            }
+
+            if (GetWorld()->GetRootNode() == nullptr)
+            {
+                Node3D* defaultRoot = GetWorld()->SpawnNode<Node3D>();
+                defaultRoot->SetName("Root");
             }
 
             std::vector<Texture*> textureList;
@@ -1573,8 +1579,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                     if (aLight->mType == aiLightSource_POINT)
                     {
-                        Actor* lightActor = GetWorld()->SpawnActor<Actor>();
-                        PointLight3D* pointLight = lightActor->CreateComponent<PointLight3D>();
+                        PointLight3D* pointLight = GetWorld()->SpawnNode<PointLight3D>();
 
                         glm::vec3 lightColor;
                         lightColor.r = aLight->mColorDiffuse.r;
@@ -1598,10 +1603,10 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                         }
 
                         pointLight->SetTransform(lightTransform);
-                        lightActor->UpdateComponentTransforms();
+                        pointLight->UpdateTransform(true);
 
-                        lightActor->SetName(aLight->mName.C_Str());
-                        lightActor->AddTag("Scene");
+                        pointLight->SetName(aLight->mName.C_Str());
+                        pointLight->AddTag("Scene");
                     }
                 }
             }
@@ -1609,7 +1614,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
             if (options.mImportObjects)
             {
                 aiNode* node = scene->mRootNode;
-                SpawnNode(node, glm::mat4(1), meshList, options);
+                SpawnAiNode(node, glm::mat4(1), meshList, options);
             }
         }
         else
@@ -1842,90 +1847,51 @@ void ActionManager::GatherScriptFiles(const std::string& dir, std::vector<std::s
 
 void ActionManager::ClearWorld()
 {
-    SetSelectedComponent(nullptr);
-    SetActiveLevel(nullptr);
-    GetWorld()->DestroyAllActors();
+    GetEditorState()->SetSelectedNode(nullptr);
+    //SetActiveLevel(nullptr);
+    GetWorld()->Clear();
 
     ResetUndoRedo();
 }
 
-void ActionManager::DeleteAllActors()
+void ActionManager::DeleteAllNodes()
 {
     if (!IsPlayingInEditor())
     {
-        SetSelectedComponent(nullptr);
+        GetEditorState()->SetSelectedNode(nullptr);
 
-        const std::vector<Actor*>& worldActors = GetWorld()->GetActors();
-        std::vector<Actor*> deleteActors;
-
-        Actor* cameraActor = GetWorld()->GetActiveCamera() ? GetWorld()->GetActiveCamera()->GetOwner() : nullptr;
-
-        for (uint32_t i = 0; i < worldActors.size(); ++i)
+        if (GetWorld()->GetRootNode() != nullptr)
         {
-            if (cameraActor == nullptr ||
-                worldActors[i] != cameraActor)
-            {
-                deleteActors.push_back(worldActors[i]);
-            }
+            EXE_DeleteNode(GetWorld()->GetRootNode());
         }
-
-        EXE_DeleteActors(deleteActors);
     }
 
 }
 
-void ActionManager::RecaptureAndSaveAllLevels()
+void ActionManager::RecaptureAndSaveAllScenes()
 {
     std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
 
     // This will load all assets! 
     for (auto& pair : assetMap)
     {
-        if (pair.second->mType == Level::GetStaticType())
+        if (pair.second->mType == Scene::GetStaticType())
         {
             Asset* asset = AssetManager::Get()->LoadAsset(*pair.second);
-            Level* level = static_cast<Level*>(asset);
-            OCT_ASSERT(level != nullptr);
+            Scene* scene = static_cast<Scene*>(asset);
+            OCT_ASSERT(scene != nullptr);
 
-            OpenLevel(level);
+            Node* temp = scene->Instantiate();
+            scene->Capture(temp);
 
-            if (GetActiveLevel() == level &&
-                level != nullptr)
-            {
-                level->CaptureWorld(GetWorld());
-                AssetManager::Get()->SaveAsset(*pair.second);
-            }
+            Node::Destruct(temp);
+            temp = nullptr;
+
+            AssetManager::Get()->SaveAsset(*pair.second);
         }
     }
 
     ClearWorld();
-}
-
-void ActionManager::RecaptureAndSaveAllBlueprints()
-{
-    std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
-
-    // This will load all assets! 
-    for (auto& pair : assetMap)
-    {
-        if (pair.second->mType == Blueprint::GetStaticType())
-        {
-            Asset* asset = AssetManager::Get()->LoadAsset(*pair.second);
-            Blueprint* bp = static_cast<Blueprint*>(asset);
-            OCT_ASSERT(bp != nullptr);
-
-            Actor* spawnedBp = bp->Instantiate(GetWorld());
-
-            if (spawnedBp != nullptr)
-            {
-                spawnedBp->UpdateComponentTransforms();
-                bp->Create(spawnedBp);
-                AssetManager::Get()->SaveAsset(*pair.second);
-            }
-
-            GetWorld()->DestroyActor(spawnedBp);
-        }
-    }
 }
 
 void ActionManager::ResaveAllAssets()
@@ -1948,9 +1914,9 @@ void ActionManager::DeleteAsset(AssetStub* stub)
 {
     if (stub != nullptr)
     {
-        if (GetSelectedAssetStub() == stub)
+        if (GetEditorState()->GetSelectedAssetStub() == stub)
         {
-            SetSelectedAssetStub(nullptr);
+            GetEditorState()->SetSelectedAssetStub(nullptr);
         }
 
         PropertiesPanel* propsPanel = PanelManager::Get()->GetPropertiesPanel();
@@ -1986,11 +1952,19 @@ void ActionManager::DeleteAssetDir(AssetDir* dir)
     }
 }
 
-void ActionManager::DuplicateActor(Actor* actor)
+void ActionManager::DuplicateNode(Node* node)
 {
-    Actor* newActor = GetWorld()->CloneActor(actor);
-    EXE_SpawnActor(newActor);
-    SetSelectedActor(newActor);
+    Node* newNode = node->Clone(true, false);
+    Node* parent = node->GetParent();
+    if (parent == nullptr)
+    {
+        parent = node;
+    }
+
+    parent->AddChild(newNode);
+
+    EXE_SpawnNode(newNode);
+    GetEditorState()->SetSelectedNode(newNode);
 }
 
 // ---------------------------
@@ -2019,15 +1993,10 @@ ActionEditProperty::ActionEditProperty(
 
 void ActionEditProperty::GatherProps(std::vector<Property>& props)
 {
-    if (mOwnerType == PropertyOwnerType::Component)
+    if (mOwnerType == PropertyOwnerType::Node)
     {
-        Component* comp = (Component*)mOwner;
-        comp->GatherProperties(props);
-    }
-    else if (mOwnerType == PropertyOwnerType::Actor)
-    {
-        Actor* actor = (Actor*)mOwner;
-        actor->GatherProperties(props);
+        Node* node = (Node*)mOwner;
+        node->GatherProperties(props);
     }
     else if (mOwnerType == PropertyOwnerType::Asset)
     {
@@ -2036,11 +2005,6 @@ void ActionEditProperty::GatherProps(std::vector<Property>& props)
         {
             asset->GatherProperties(props);
         }
-    }
-    else if (mOwnerType == PropertyOwnerType::Widget)
-    {
-        Widget* widget = (Widget*)mOwner;
-        widget->GatherProperties(props);
     }
     else if (mOwnerType == PropertyOwnerType::Global)
     {

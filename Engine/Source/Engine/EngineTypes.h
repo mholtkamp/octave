@@ -94,10 +94,8 @@ enum class CullMode : uint8_t
 
 enum class PropertyOwnerType
 {
-    Component,
-    Actor,
+    Node,
     Asset,
-    Widget,
     Global,
     Count
 };
