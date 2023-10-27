@@ -8,8 +8,7 @@
 #include "EditorUtils.h"
 #include "EditorState.h"
 #include "Renderer.h"
-#include "Assets/WidgetMap.h"
-#include "Assets/Blueprint.h"
+#include "Assets/Scene.h"
 #include "AssetManager.h"
 
 #include "Input/Input.h"
@@ -115,22 +114,22 @@ void InputManager::UpdateHotkeys()
     {
         if (IsKeyJustDown(KEY_ESCAPE))
         {
-            EndPlayInEditor();
+            GetEditorState()->EndPlayInEditor();
         }
         else if (IsKeyJustDown(KEY_P) && altDown)
         {
-            bool pause = !IsPlayInEditorPaused();
-            SetPlayInEditorPaused(pause);
+            bool pause = !GetEditorState()->IsPlayInEditorPaused();
+            GetEditorState()->SetPlayInEditorPaused(pause);
         }
         else if (IsKeyJustDown(KEY_F8))
         {
             if (GetEditorState()->mEjected)
             {
-                InjectPlayInEditor();
+                GetEditorState()->InjectPlayInEditor();
             }
             else
             {
-                EjectPlayInEditor();
+                GetEditorState()->EjectPlayInEditor();
             }
         }
         else if (IsKeyJustDown(KEY_F10))
@@ -141,9 +140,9 @@ void InputManager::UpdateHotkeys()
     else if (Renderer::Get()->GetModalWidget() == nullptr)
     {
         const bool textFieldActive = (TextField::GetSelectedTextField() != nullptr);
-        const bool isLevel = (GetEditorMode() == EditorMode::Level);
+        const bool isScene = (GetEditorState()->GetEditorMode() == EditorMode::Scene);
 
-        if (ctrlDown && IsKeyJustDown(KEY_P) && isLevel)
+        if (ctrlDown && IsKeyJustDown(KEY_P) && isScene)
         {
             if (shiftDown)
             {
@@ -159,47 +158,28 @@ void InputManager::UpdateHotkeys()
             ClearShiftDown();
             INP_ClearKey(KEY_P);
         }
-        else if (altDown && IsKeyJustDown(KEY_P) && isLevel)
+        else if (altDown && IsKeyJustDown(KEY_P) && isScene)
         {
-            BeginPlayInEditor();
+            GetEditorState()->BeginPlayInEditor();
         }
         else if (ctrlDown && IsKeyJustDown(KEY_S))
         {
-            if (GetEditorMode() == EditorMode::Level)
+            if (isScene)
             {
                 const bool saveAs = IsShiftDown();
-                ActionManager::Get()->SaveLevel(saveAs);
+                ActionManager::Get()->SaveScene(saveAs);
                 ClearControlDown();
                 ClearShiftDown();
                 INP_ClearKey(KEY_S);
-            }
-            else if (GetEditorMode() == EditorMode::Widget)
-            {
-                WidgetMap* widgetMap = GetActiveWidgetMap();
-
-                if (widgetMap)
-                {
-                    widgetMap->Create(GetEditRootWidget());
-                    AssetManager::Get()->SaveAsset(widgetMap->GetName());
-                }
-            }
-            else if (GetEditorMode() == EditorMode::Blueprint)
-            {
-                Blueprint* activeBp = GetActiveBlueprint();
-                if (activeBp)
-                {
-                    activeBp->Create(GetEditBlueprintActor());
-                    AssetManager::Get()->SaveAsset(activeBp->GetName());
-                }
             }
         }
         else if (shiftDown && IsKeyJustDown(KEY_S) && !textFieldActive)
         {
             ActionManager::Get()->SaveSelectedAsset();
         }
-        else if (ctrlDown && IsKeyJustDown(KEY_O) && isLevel)
+        else if (ctrlDown && IsKeyJustDown(KEY_O) && isScene)
         {
-            ActionManager::Get()->OpenLevel();
+            ActionManager::Get()->OpenScene();
             ClearControlDown();
             INP_ClearKey(KEY_O);
         }
@@ -209,7 +189,7 @@ void InputManager::UpdateHotkeys()
             ClearControlDown();
             INP_ClearKey(KEY_I);
         }
-        else if (ctrlDown && IsKeyJustDown(KEY_B) && isLevel)
+        else if (ctrlDown && IsKeyJustDown(KEY_B) && isScene)
         {
             Renderer::Get()->SetModalWidget(mBuildPlatformList);
             mBuildPlatformList->MoveToMousePosition();
@@ -228,10 +208,10 @@ void InputManager::UpdateHotkeys()
         }
 
         if (IsKeyJustDown(KEY_ESCAPE) &&
-            GetEditorMode() != EditorMode::Level)
+            !isScene)
         {
             // TODO: Show save prompt if edited asset has unsaved changes?
-            SetEditorMode(EditorMode::Level);
+            GetEditorState()->SetEditorMode(EditorMode::Scene);
         }
     }
 }

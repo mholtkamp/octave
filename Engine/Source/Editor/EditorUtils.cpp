@@ -6,10 +6,10 @@
 #include "World.h"
 #include "Nodes/3D/Camera3d.h"
 #include "PanelManager.h"
-#include "Nodes/Widgets/ViewportPanel.h"
-#include "Nodes/Widgets/WidgetHierarchyPanel.h"
+#include "Widgets/ViewportPanel.h"
+#include "Widgets/WidgetHierarchyPanel.h"
 #include "AssetManager.h"
-#include "Assets/WidgetMap.h"
+#include "Assets/Scene.h"
 #include "ActionManager.h"
 
 #include "Input/Input.h"
@@ -76,43 +76,6 @@ std::string EditorGetAssetNameFromPath(const std::string& path)
     std::string assetName = filename.substr(0, dotIndex);
 
     return assetName;
-}
-
-void EditorInstantiateMappedWidget(WidgetMap* widgetMap)
-{
-    if (widgetMap != nullptr &&
-        GetEditorMode() == EditorMode::Widget)
-    {
-        Widget* parentWidget = GetSelectedWidget();
-        if (parentWidget == nullptr)
-        {
-            parentWidget = GetEditRootWidget();
-        }
-
-        if (parentWidget != nullptr)
-        {
-            Widget* widget = widgetMap->Instantiate();
-            OCT_ASSERT(widget != nullptr);
-            widget->SetWidgetMap(widgetMap);
-
-            if (parentWidget != nullptr)
-            {
-                parentWidget->AddChild(widget);
-            }
-            else
-            {
-                SetEditRootWidget(widget);
-            }
-
-            ActionManager::Get()->EXE_AddWidget(widget);
-
-            SetSelectedWidget(widget);
-        }
-        else
-        {
-            LogError("Cannot instantiate mapped widget as root widget. Add a native widget first.");
-        }
-    }
 }
 
 #endif

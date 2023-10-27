@@ -22,8 +22,8 @@
 #include "Nodes/Widgets/TextField.h"
 #include "Nodes/Widgets/Canvas.h"
 
-#include "Nodes/Widgets/Panel.h"
-#include "Nodes/Widgets/AssetsPanel.h"
+#include "Widgets/Panel.h"
+#include "Widgets/AssetsPanel.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/PointLight3d.h"
@@ -54,27 +54,11 @@ void EditorMain(int32_t argc, char** argv)
     InputManager::Create();
     PanelManager::Create();
 
-    // Spawn Default Light
-    Actor* defaultLight = GetWorld()->SpawnActor<Actor>();
-    DirectionalLight3D* dirLightComp = defaultLight->CreateComponent<DirectionalLight3D>();
-    dirLightComp->SetDirection(glm::normalize(glm::vec3(1.0f, -1.0f, -1.0f)));
-    dirLightComp->SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    defaultLight->SetName("Default Light");
-    defaultLight->SetRootComponent(dirLightComp);
-
     // Spawn Test Actor
-    GetWorld()->SpawnActor<TestActor>();
+    GetWorld()->SpawnNode<TestSpinner>();
 
-    Canvas* rootCanvas = new Canvas();
-    rootCanvas->SetName("Root Canvas");
-    rootCanvas->SetAnchorMode(AnchorMode::FullStretch);
-    rootCanvas->SetRatios(0.0f, 0.0f, 1.0f, 1.0f);
-    PanelManager::Get()->AttachPanels(rootCanvas);
-    Renderer::Get()->AddWidget(rootCanvas);
-    GetEditorState()->mRootCanvas = rootCanvas;
-
-    GetWorld()->GetActiveCamera()->SetPosition(glm::vec3(0, 0, 10.0f));
-    GetWorld()->GetActiveCamera()->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+    GetEditorState()->GetEditorCamera()->SetPosition(glm::vec3(0, 0, 10.0f));
+    GetEditorState()->GetEditorCamera()->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 
     InitializeGrid();
 
