@@ -167,6 +167,7 @@ public:
 protected:
     std::vector<Node*> mNodes;
     std::vector<Node*> mParents;
+    bool mReversed = false;
 };
 
 class ActionDeleteNodes : public Action
@@ -177,6 +178,8 @@ public:
 protected:
     std::vector<Node*> mNodes;
     std::vector<Node*> mParents;
+    std::vector<int32_t> mChildIndices;
+    std::vector<int32_t> mBoneIndices;
 };
 
 class ActionAttachNode : public Action
@@ -202,6 +205,8 @@ public:
 protected:
     Node* mNewRoot = nullptr;
     Node* mOldRoot = nullptr;
+    Node* mNewRootParent = nullptr;
+    int32_t mNewRootChildIndex = -1;
 };
 
 class ActionSetAbsoluteRotation : public Action

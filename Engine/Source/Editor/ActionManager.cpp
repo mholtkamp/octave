@@ -2012,6 +2012,29 @@ void ActionEditProperty::GatherProps(std::vector<Property>& props)
     }
 }
 
+// Utility function for removing nodes that have parents already in the list.
+// This is probably a pretty slow O(N^2) operation.
+static void RemoveRedundantNodes(std::vector<Node*>& nodes)
+{
+    for (int32_t i = int32_t(nodes.size()) - 1; i >= 0; --i)
+    {
+        Node* parent = nodes[i]->GetParent();
+
+        if (parent != nullptr)
+        {
+            for (int32_t j = 0; j < int32_t(nodes.size()); ++j)
+            {
+                if (parent == nodes[j])
+                {
+                    // nodes[i] has a parent (nodes[j]), so we can remove it from the list.
+                    nodes.erase(nodes.begin() + i);
+                    break;
+                }
+            }
+        }
+    }
+}
+
 Property* ActionEditProperty::FindProp(std::vector<Property>& props, const std::string& name)
 {
     Property* prop = nullptr;
@@ -2083,165 +2106,162 @@ void ActionEditProperty::Reverse()
 }
 
 ActionEditTransforms::ActionEditTransforms(
-    const std::vector<Node3D*>& transComps,
+    const std::vector<Node3D*>& nodes,
     const std::vector<glm::mat4>& newTransforms)
 {
-    mTransComps = transComps;
+    mNodes = nodes;
     mNewTransforms = newTransforms;
 
-    OCT_ASSERT(mTransComps.size() == mNewTransforms.size());
+    OCT_ASSERT(mNodes.size() == mNewTransforms.size());
 }
 
 void ActionEditTransforms::Execute()
 {
     mPrevTransforms.clear();
 
-    for (uint32_t i = 0; i < mTransComps.size(); ++i)
+    for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
-        mPrevTransforms.push_back(mTransComps[i]->GetTransform());
-        mTransComps[i]->SetTransform(mNewTransforms[i]);
+        mPrevTransforms.push_back(mNodes[i]->GetTransform());
+        mNodes[i]->SetTransform(mNewTransforms[i]);
     }
 }
 
 void ActionEditTransforms::Reverse()
 {
-    OCT_ASSERT(mPrevTransforms.size() == mTransComps.size());
+    OCT_ASSERT(mPrevTransforms.size() == mNodes.size());
 
-    for (uint32_t i = 0; i < mTransComps.size(); ++i)
+    for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
-        mTransComps[i]->SetTransform(mPrevTransforms[i]);
+        mNodes[i]->SetTransform(mPrevTransforms[i]);
     }
 }
 
-ActionSpawnActors::ActionSpawnActors(const std::vector<Actor*>& actors)
+ActionSpawnNodes::ActionSpawnNodes(const std::vector<Node*>& nodes)
 {
-    mActors = actors;
+    mNodes = nodes;
+
+    RemoveRedundantNodes(mNodes);
+
+    for (uint32_t i = 0; i < mNodes.size(); ++i)
+    {
+        mParents.push_back(mNodes[i]->GetParent());
+    }
+
+    OCT_ASSERT(mNodes.size() == mParents.size());
 }
 
-void ActionSpawnActors::Execute()
+void ActionSpawnNodes::Execute()
 {
-    // Actor is already spawned at this point.
-    for (uint32_t i = 0; i < mActors.size(); ++i)
+    // First time execute is called, the node has already been spawned.
+    if (mReversed)
     {
-        if (mActors[i]->GetWorld() == nullptr)
+        for (uint32_t i = 0; i < mNodes.size(); ++i)
         {
-            ActionManager::Get()->RestoreExiledActor(mActors[i]);
+            ActionManager::Get()->RestoreExiledNode(mNodes[i]);
+
+            if (mParents[i] != nullptr)
+            {
+                mNodes[i]->Attach(mParents[i]);
+            }
+            else
+            {
+                // This must have been the root node?
+                OCT_ASSERT(mNodes.size() == 1);
+                OCT_ASSERT(GetWorld()->GetRootNode() == nullptr);
+                GetWorld()->SetRootNode(mNodes[i]);
+            }
         }
+
+        mReversed = false;
     }
 }
 
-void ActionSpawnActors::Reverse()
+void ActionSpawnNodes::Reverse()
 {
-    for (uint32_t i = 0; i < mActors.size(); ++i)
+    for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
-        ActionManager::Get()->ExileActor(mActors[i]);
+        ActionManager::Get()->ExileNode(mNodes[i]);
+        mNodes[i]->Detach();
     }
+
+    mReversed = true;
 }
 
-ActionDeleteActors::ActionDeleteActors(const std::vector<Actor*>& actors)
+ActionDeleteNodes::ActionDeleteNodes(const std::vector<Node*>& nodes)
 {
-    mActors = actors;
-}
+    mNodes = nodes;
 
-void ActionDeleteActors::Execute()
-{
-    for (uint32_t i = 0; i < mActors.size(); ++i)
+    RemoveRedundantNodes(mNodes);
+
+    for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
-        // Actor is already spawned at this point.
-        OCT_ASSERT(mActors[i]->GetWorld() != nullptr);
-
-        if (IsPlayingInEditor())
+        mParents.push_back(mNodes[i]->GetParent());
+        if (mParents[i] != nullptr)
         {
-            mActors[i]->SetPendingDestroy(true);
+            int32_t childIdx = mParents[i]->FindChildIndex(mNodes[i]);
+            OCT_ASSERT(childIdx != -1);
+            mChildIndices.push_back(childIdx);
+
+            Node3D* node3d = mNodes[i]->As<Node3D>();
+            if (node3d != nullptr)
+            {
+                mBoneIndices.push_back(node3d->GetParentBoneIndex());
+            }
+            else
+            {
+                mBoneIndices.push_back(-1);
+            }
         }
         else
         {
-            ActionManager::Get()->ExileActor(mActors[i]);
+            // This must be the root node being deleted.
+            OCT_ASSERT(mNodes.size() == 1);
+
+            mChildIndices.push_back(-1);
+            mBoneIndices.push_back(-1);
         }
     }
 }
 
-void ActionDeleteActors::Reverse()
+void ActionDeleteNodes::Execute()
 {
-    for (uint32_t i = 0; i < mActors.size(); ++i)
+    for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
-        ActionManager::Get()->RestoreExiledActor(mActors[i]);
-    }
-}
+        // Actor is already spawned at this point.
+        OCT_ASSERT(mNodes[i]->GetWorld() != nullptr);
 
-ActionAddComponent::ActionAddComponent(Component* comp)
-{
-    mComponent = comp;
-    mOwner = comp->GetOwner();
-    mParent = comp->IsNode3D() ? ((Node3D*)comp)->GetParent() : nullptr;
-    OCT_ASSERT(mComponent);
-    OCT_ASSERT(mOwner);
-}
-
-void ActionAddComponent::Execute()
-{
-    if (mComponent->GetOwner() == nullptr)
-    {
-        ActionManager::Get()->RestoreExiledComponent(mComponent);
-        mOwner->AddComponent(mComponent);
-
-        if (mParent != nullptr)
+        if (IsPlayingInEditor())
         {
-            OCT_ASSERT(mComponent->IsNode3D());
-            ((Node3D*)mComponent)->Attach(mParent);
+            mNodes[i]->SetPendingDestroy(true);
         }
-
-        PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+        else
+        {
+            mNodes[i]->Detach();
+            ActionManager::Get()->ExileNode(mNodes[i]);
+        }
     }
 }
 
-void ActionAddComponent::Reverse()
+void ActionDeleteNodes::Reverse()
 {
-    OCT_ASSERT(mComponent->GetOwner());
-    mOwner->RemoveComponent(mComponent);
-    ActionManager::Get()->ExileComponent(mComponent);
-    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
-}
-
-ActionRemoveComponent::ActionRemoveComponent(Component* comp)
-{
-    mComponent = comp;
-    mOwner = comp->GetOwner();
-    mParent = comp->IsNode3D() ? ((Node3D*)comp)->GetParent() : nullptr;
-    OCT_ASSERT(mComponent);
-    OCT_ASSERT(mOwner);
-}
-
-void ActionRemoveComponent::Execute()
-{
-    OCT_ASSERT(mComponent->GetOwner());
-
-    if (IsPlayingInEditor())
+    for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
-        mOwner->DestroyComponent(mComponent);
+        ActionManager::Get()->RestoreExiledNode(mNodes[i]);
+
+        if (mParents[i] != nullptr)
+        {
+            mParents[i]->AddChild(mNodes[i], mChildIndices[i]);
+            // TODO: Support attaching to the correct bone. 
+            // Probably need to add extra parameter to Attach() to include child index.
+        }
+        else
+        {
+            // Must have deleted the root node.
+            OCT_ASSERT(mNodes.size() == 1);
+            OCT_ASSERT(GetWorld()->GetRootNode() == nullptr);
+            GetWorld()->SetRootNode(mNodes[i]);
+        }
     }
-    else
-    {
-        mOwner->RemoveComponent(mComponent);
-        ActionManager::Get()->ExileComponent(mComponent);
-    }
-
-    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
-}
-
-void ActionRemoveComponent::Reverse()
-{
-    OCT_ASSERT(mComponent->GetOwner() == nullptr);
-    ActionManager::Get()->RestoreExiledComponent(mComponent);
-    mOwner->AddComponent(mComponent);
-
-    if (mParent != nullptr)
-    {
-        OCT_ASSERT(mComponent->IsNode3D());
-        ((Node3D*)mComponent)->Attach(mParent);
-    }
-
-    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
 ActionAttachNode::ActionAttachNode(Node* node, Node* newParent, int32_t childIndex, int32_t boneIndex)
@@ -2252,7 +2272,7 @@ ActionAttachNode::ActionAttachNode(Node* node, Node* newParent, int32_t childInd
     mChildIndex = childIndex;
     mPrevChildIndex = node->GetParent() ? node->GetParent()->FindChildIndex(node) : -1;
     mBoneIndex = boneIndex;
-    mPrevBoneIndex = node->GetParentBoneIndex();
+    mPrevBoneIndex = node->IsNode3D() ? node->As<Node3D>()->GetParentBoneIndex() : -1;
     OCT_ASSERT(mNode);
     OCT_ASSERT(mNewParent);
 }
@@ -2261,15 +2281,18 @@ void ActionAttachNode::Execute()
 {
     if (mBoneIndex >= 0 &&
         mNewParent != nullptr &&
-        mNewParent->As<SkeletalMesh3D>())
+        mNewParent->As<SkeletalMesh3D>() &&
+        mNode->As<Node3D>())
     {
         // TODO-NODE: AttachToBone() does not take a child index?? Probably need to fix so that it does.
+        Node3D* node3d = mNode->As<Node3D>();
         SkeletalMesh3D* skParent = mNewParent->As<SkeletalMesh3D>();
-        mNode->AttachToBone(skParent, mBoneIndex);
+
+        node3d->AttachToBone(skParent, mBoneIndex);
     }
     else
     {
-        mComponent->Attach(mNewParent, mChildIndex);
+       mNewParent->AddChild(mNode, mChildIndex);
     }
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
@@ -2278,278 +2301,100 @@ void ActionAttachNode::Reverse()
 {
     if (mPrevBoneIndex >= 0 &&
         mPrevParent != nullptr &&
-        mPrevParent->As<SkeletalMesh3D>())
+        mPrevParent->As<SkeletalMesh3D>() &&
+        mNode->As<Node3D>())
     {
         // TODO-NODE: AttachToBone() does not take a child index?? Probably need to fix so that it does.
+        Node3D* node3d = mNode->As<Node3D>();
         SkeletalMesh3D* skParent = mPrevParent->As<SkeletalMesh3D>();
-        mNode->AttachToBone(skParent, mPrevBoneIndex);
+        node3d->AttachToBone(skParent, mPrevBoneIndex);
     }
     else
     {
-        mNode->Attach(mPrevParent, mPrevChildIndex);
+        mPrevParent->AddChild(mNode, mPrevChildIndex);
     }
     PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
-ActionSetRootComponent::ActionSetRootComponent(Node3D* newRoot)
+ActionSetRootNode::ActionSetRootNode(Node* newRoot)
 {
     mNewRoot = newRoot;
-    mOldRoot = newRoot->GetOwner()->GetRootComponent();
+    mOldRoot = GetWorld()->GetRootNode();
+    mNewRootParent = mNewRoot->GetParent();
+    mNewRootChildIndex = mNewRootParent ? mNewRootParent->FindChildIndex(mNewRoot) : -1;
 
     OCT_ASSERT(mNewRoot != mOldRoot);
+    OCT_ASSERT(mNewRoot != nullptr);
+    OCT_ASSERT(mOldRoot != nullptr);
+    OCT_ASSERT(mNewRootParent != nullptr && mNewRootChildIndex != -1);
 }
 
-void ActionSetRootComponent::Execute()
+void ActionSetRootNode::Execute()
 {
-    Actor* actor = mNewRoot->GetOwner();
-    actor->SetRootComponent(mNewRoot);
-    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+    mNewRoot->Detach();
+    GetWorld()->SetRootNode(mNewRoot);
+    mNewRoot->AddChild(mOldRoot);
 }
 
-void ActionSetRootComponent::Reverse()
+void ActionSetRootNode::Reverse()
 {
-    Actor* actor = mOldRoot->GetOwner();
-    actor->SetRootComponent(mOldRoot);
-    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
+    mOldRoot->Detach();
+    GetWorld()->SetRootNode(mOldRoot);
+    mNewRootParent->AddChild(mNewRoot, mNewRootChildIndex);
 }
 
-ActionSetAbsoluteRotation::ActionSetAbsoluteRotation(Node3D* comp, glm::quat rot)
+ActionSetAbsoluteRotation::ActionSetAbsoluteRotation(Node3D* node, glm::quat rot)
 {
-    mComponent = comp;
+    mNode = node;
     mNewRotation = rot;
-    mPrevRotation = comp->GetAbsoluteRotationQuat();
-    OCT_ASSERT(mComponent);
+    mPrevRotation = node->GetAbsoluteRotationQuat();
+    OCT_ASSERT(mNode);
 }
 
 void ActionSetAbsoluteRotation::Execute()
 {
-    mComponent->SetAbsoluteRotation(mNewRotation);
+    mNode->SetAbsoluteRotation(mNewRotation);
 }
 
 void ActionSetAbsoluteRotation::Reverse()
 {
-    mComponent->SetAbsoluteRotation(mPrevRotation);
+    mNode->SetAbsoluteRotation(mPrevRotation);
 }
 
-ActionSetAbsolutePosition::ActionSetAbsolutePosition(Node3D* comp, glm::vec3 pos)
+ActionSetAbsolutePosition::ActionSetAbsolutePosition(Node3D* node, glm::vec3 pos)
 {
-    mComponent = comp;
+    mNode = node;
     mNewPosition = pos;
-    mPrevPosition = comp->GetAbsolutePosition();
-    OCT_ASSERT(mComponent);
+    mPrevPosition = node->GetAbsolutePosition();
+    OCT_ASSERT(mNode);
 }
 
 void ActionSetAbsolutePosition::Execute()
 {
-    mComponent->SetAbsolutePosition(mNewPosition);
+    mNode->SetAbsolutePosition(mNewPosition);
 }
 
 void ActionSetAbsolutePosition::Reverse()
 {
-    mComponent->SetAbsolutePosition(mPrevPosition);
+    mNode->SetAbsolutePosition(mPrevPosition);
 }
 
-ActionSetAbsoluteScale::ActionSetAbsoluteScale(Node3D* comp, glm::vec3 scale)
+ActionSetAbsoluteScale::ActionSetAbsoluteScale(Node3D* node, glm::vec3 scale)
 {
-    mComponent = comp;
+    mNode = node;
     mNewScale = scale;
-    mPrevScale = comp->GetAbsoluteScale();
-    OCT_ASSERT(mComponent);
+    mPrevScale = node->GetAbsoluteScale();
+    OCT_ASSERT(mNode);
 }
 
 void ActionSetAbsoluteScale::Execute()
 {
-    mComponent->SetAbsoluteScale(mNewScale);
+    mNode->SetAbsoluteScale(mNewScale);
 }
 
 void ActionSetAbsoluteScale::Reverse()
 {
-    mComponent->SetAbsoluteScale(mPrevScale);
-}
-
-ActionAddWidget::ActionAddWidget(Widget* widget)
-{
-    mWidget = widget;
-
-    if (GetEditRootWidget() == widget)
-    {
-        mParent = nullptr;
-    }
-    else
-    {
-        mParent = widget->GetParent();
-    }
-
-    OCT_ASSERT(mWidget);
-}
-
-void ActionAddWidget::Execute()
-{
-    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
-
-    if (mHasExecuted)
-    {
-        ActionManager::Get()->RestoreExiledWidget(mWidget);
-
-        if (mParent != nullptr)
-        {
-            mParent->AddChild(mWidget);
-        }
-        else
-        {
-            // No parent? This must have been the root widget.
-            SetEditRootWidget(mWidget);
-        }
-
-        panel->RefreshButtons();
-    }
-
-    mHasExecuted = true;
-}
-
-void ActionAddWidget::Reverse()
-{
-    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
-
-    if (mParent != nullptr)
-    {
-        mParent->RemoveChild(mWidget);
-    }
-    else
-    {
-        SetEditRootWidget(nullptr);
-    }
-
-    ActionManager::Get()->ExileWidget(mWidget);
-    panel->RefreshButtons();
-}
-
-ActionRemoveWidget::ActionRemoveWidget(Widget* widget)
-{
-    mWidget = widget;
-
-    if (GetEditRootWidget() == widget)
-    {
-        mParent = nullptr;
-    }
-    else
-    {
-        mParent = widget->GetParent();
-    }
-    OCT_ASSERT(mWidget);
-
-    // Find current index.
-    if (mParent)
-    {
-        for (uint32_t i = 0; i < mParent->GetNumChildren(); ++i)
-        {
-            if (mParent->GetChild(i) == widget)
-            {
-                mPrevIndex = int32_t(i);
-                break;
-            }
-        }
-    }
-}
-
-void ActionRemoveWidget::Execute()
-{
-    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
-
-    if (GetEditRootWidget() == mWidget)
-    {
-        OCT_ASSERT(mParent == nullptr);
-        SetEditRootWidget(nullptr);
-        mWasRoot = true;
-    }
-    else
-    {
-        OCT_ASSERT(mParent != nullptr);
-        mParent->RemoveChild(mWidget);
-        SetSelectedWidget(nullptr);
-    }
-
-    ActionManager::Get()->ExileWidget(mWidget);
-    panel->RefreshButtons();
-}
-
-void ActionRemoveWidget::Reverse()
-{
-    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
-
-    ActionManager::Get()->RestoreExiledWidget(mWidget);
-
-    if (mWasRoot)
-    {
-        SetEditRootWidget(mWidget);
-    }
-    else
-    {
-        OCT_ASSERT(mParent != nullptr);
-        mParent->AddChild(mWidget, mPrevIndex);
-    }
-
-    panel->RefreshButtons();
-}
-
-ActionAttachWidget::ActionAttachWidget(Widget* widget, Widget* newParent, int32_t index)
-{
-    mWidget = widget;
-    mNewParent = newParent;
-    mNewIndex = index;
-    mPrevParent = widget->GetParent();
-
-    // Find current index.
-    if (mPrevParent)
-    {
-        for (uint32_t i = 0; i < mPrevParent->GetNumChildren(); ++i)
-        {
-            if (mPrevParent->GetChild(i) == widget)
-            {
-                mPrevIndex = int32_t(i);
-                break;
-            }
-        }
-    }
-
-    OCT_ASSERT(mWidget);
-    OCT_ASSERT(mNewParent);
-}
-
-void ActionAttachWidget::Execute()
-{
-    mNewParent->AddChild(mWidget, mNewIndex);
-    PanelManager::Get()->GetWidgetHierarchyPanel()->RefreshButtons();
-}
-
-void ActionAttachWidget::Reverse()
-{
-    mPrevParent->AddChild(mWidget, mPrevIndex);
-    PanelManager::Get()->GetWidgetHierarchyPanel()->RefreshButtons();
-}
-
-ActionSetRootWidget::ActionSetRootWidget(Widget* newRoot)
-{
-    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
-
-    mNewRoot = newRoot;
-    mOldRoot = GetEditRootWidget();
-
-    OCT_ASSERT(mNewRoot != mOldRoot);
-}
-
-void ActionSetRootWidget::Execute()
-{
-    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
-    SetEditRootWidget(mNewRoot);
-    panel->RefreshButtons();
-}
-
-void ActionSetRootWidget::Reverse()
-{
-    WidgetHierarchyPanel* panel = PanelManager::Get()->GetWidgetHierarchyPanel();
-    SetEditRootWidget(mOldRoot);
-    panel->RefreshButtons();
+    mNode->SetAbsoluteScale(mPrevScale);
 }
 
 #endif
