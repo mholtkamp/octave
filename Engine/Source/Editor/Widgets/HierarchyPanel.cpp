@@ -190,6 +190,9 @@ void HierarchyPanel::ActionHandler(Button* button)
             }
         }
 
+        // TODO-NODE: Copy used to copy children, but I think we really only want to do that
+        // in clone. And so we should probably just change the above code to do actionComp->Clone();
+#error Read this^
         // Copy all properties.
         newComp->Copy(actionComp);
 

@@ -76,7 +76,7 @@ public:
     virtual void SaveStream(Stream& stream);
     virtual void LoadStream(Stream& stream);
 
-    virtual void Copy(Node* srcNode);
+    virtual void Copy(Node* srcNode, bool recurse);
     virtual void Render(PipelineId pipelineId);
 
     virtual void Start();

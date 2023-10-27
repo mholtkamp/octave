@@ -248,7 +248,7 @@ void Node::LoadStream(Stream& stream)
 #endif
 }
 
-void Node::Copy(Node* srcNode)
+void Node::Copy(Node* srcNode, bool recurse)
 {
     OCT_ASSERT(srcNode);
     OCT_ASSERT(srcNode->GetType() == GetType());
@@ -311,22 +311,31 @@ void Node::Copy(Node* srcNode)
 
     mScene = srcNode->GetScene();
 
-    // Copy children recursively.
-    for (uint32_t i = 0; i < srcNode->GetNumChildren(); ++i)
+    if (recurse)
     {
-        Node* srcChild = srcNode->GetChild(i);
-        Node* dstChild = nullptr;
 
-        if (i >= GetNumChildren())
+        for (uint32_t i = 0; i < srcNode->GetNumChildren(); ++i)
         {
-            dstChild = CreateChild(srcChild->GetType());
-        }
-        else
-        {
-            dstChild = GetChild(i);
-        }
+            Node* srcChild = srcNode->GetChild(i);
+            Node* dstChild = nullptr;
 
-        dstChild->Copy(srcChild);
+            if (i >= GetNumChildren())
+            {
+                LogError("Aborting recursive node copy. Mismatched number of children.");
+                break;
+                //dstChild = CreateChild(srcChild->GetType());
+            }
+            else
+            {
+                dstChild = GetChild(i);
+            }
+
+            OCT_ASSERT(dstChild);
+            if (dstChild != nullptr)
+            {
+                dstChild->Copy(srcChild, recurse);
+            }
+        }
     }
 }
 
@@ -741,6 +750,7 @@ Node* Node::Clone(bool recurse, bool autoAttach)
 {
     Node* clonedNode = nullptr;
     Scene* srcScene = GetScene();
+    bool hasNativeChildren = false;
 
     if (srcScene != nullptr)
     {
@@ -749,12 +759,17 @@ Node* Node::Clone(bool recurse, bool autoAttach)
     else
     {
         clonedNode = Node::Construct(GetType());
+
+        if (clonedNode->GetNumChildren() > 0)
+        {
+            hasNativeChildren = true;
+        }
     }
 
     if (clonedNode != nullptr)
     {
         // Might need to move copy after recurse block if properties aren't getting copied correctly.
-        clonedNode->Copy(this);
+        clonedNode->Copy(this, hasNativeChildren);
 
         if (autoAttach)
         {
@@ -767,7 +782,7 @@ Node* Node::Clone(bool recurse, bool autoAttach)
             parent->AddChild(clonedNode);
         }
 
-        if (recurse && !srcScene)
+        if (recurse && !srcScene && !hasNativeChildren)
         {
             // Clone children
             for (uint32_t i = 0; i < GetNumChildren(); ++i)
