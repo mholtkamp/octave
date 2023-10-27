@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #pragma once
 
 #include "Panel.h"
@@ -93,3 +95,5 @@ protected:
     RTTI* mPrevInspectObject = nullptr;
     PropertiesMode mPrevInspectMode = PropertiesMode::Count;
 };
+
+#endif

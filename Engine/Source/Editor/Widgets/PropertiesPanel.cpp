@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #if EDITOR
 
 #include "Nodes/Widgets/PropertiesPanel.h"
@@ -660,5 +662,7 @@ void PropertiesPanel::RegressInspectPast()
     }
 }
 
+
+#endif
 
 #endif

@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #if EDITOR
 
 #include "Nodes/Widgets/WidgetHierarchyPanel.h"
@@ -508,3 +510,5 @@ void WidgetHierarchyPanel::Tick(float deltaTime)
 }
 
 #endif
+
+#endif 

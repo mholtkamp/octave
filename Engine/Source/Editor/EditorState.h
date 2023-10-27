@@ -7,9 +7,6 @@
 
 #include "ObjectRef.h"
 
-#include "Widgets/TextEntry.h"
-#include "Widgets/SceneImportWidget.h"
-
 class Node;
 class Asset;
 struct AssetStub;
@@ -73,6 +70,12 @@ struct EditorState
     std::string mStartupSceneName;
     int32_t mEditSceneIndex = -1;
     int32_t mPieEditSceneIdx = -1;
+    AssetDir* mCurrentDir = nullptr;
+    std::vector<AssetDir*> mDirPast;
+    std::vector<AssetDir*> mDirFuture;
+    std::vector<RTTI*> mInspectPast;
+    std::vector<RTTI*> mInspectFuture;
+    AssetRef mInspectedAsset;
 
     // Methods
     void Init();
@@ -122,6 +125,11 @@ struct EditorState
     glm::vec3 GetTransformLockVector(TransformLock lock);
     void SetTransformLock(TransformLock lock);
 
+    void InspectObject(RTTI* obj);
+    void ClearInspectHistory();
+    void ClearAssetDirHistory();
+    void SetAssetDirectory(AssetDir* assetDir);
+    AssetDir* GetAssetDirectory();
 };
 
 EditorState* GetEditorState();

@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #pragma once
 
 #include "EngineTypes.h"
@@ -57,3 +59,5 @@ protected:
 
     bool mPanelsVisible = true;
 };
+
+#endif

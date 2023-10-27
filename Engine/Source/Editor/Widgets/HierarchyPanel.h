@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #pragma once
 
 #include "Panel.h"
@@ -40,3 +42,5 @@ protected:
     int32_t mListOffset;
     int32_t mNumButtons = sMaxButtons;
 };
+
+#endif 

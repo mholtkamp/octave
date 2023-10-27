@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #pragma once
 
 #include "Panel.h"
@@ -74,3 +76,5 @@ protected:
     glm::vec2 mSavedSize;
     float mSavedRotation;
 };
+
+#endif

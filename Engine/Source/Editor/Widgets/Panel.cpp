@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #if EDITOR
 
 #include "Nodes/Widgets/Panel.h"
@@ -155,5 +157,7 @@ void Panel::SetMaxScroll(int32_t maxScroll)
     mMaxScroll = maxScroll;
     mScroll = glm::clamp(mScroll, mMinScroll, mMaxScroll);
 }
+
+#endif
 
 #endif

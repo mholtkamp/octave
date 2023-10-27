@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #pragma once
 
 #include "Panel.h"
@@ -22,3 +24,5 @@ protected:
 
     std::vector<ActorButton*> mActorButtons;
 };
+
+#endif

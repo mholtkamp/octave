@@ -10,14 +10,13 @@
 #include "Nodes/Node.h"
 #include "Nodes/3D/Node3d.h"
 #include "Engine.h"
+#include "Renderer.h"
 #include "Grid.h"
 #include "World.h"
 #include "TimerManager.h"
 #include "AudioManager.h"
 #include "Assets/Scene.h"
 #include "EditorUtils.h"
-#include "Widgets/ActionList.h"
-#include "Widgets/TextEntry.h"
 #include "Widgets/WidgetViewportPanel.h"
 #include "Widgets/PropertiesPanel.h"
 #include "Input/Input.h"
@@ -61,8 +60,6 @@ void EditorState::SetEditorMode(EditorMode mode)
 
         // TODO-NODE: I don't think we need this anymore. Remove commented call after verifying.
         //SetSelectedNode(nullptr);
-
-        PanelManager::Get()->OnEditorModeChanged();
 
         ActionManager::Get()->ResetUndoRedo();
     }
@@ -124,7 +121,6 @@ void EditorState::SetSelectedNode(Node* newNode)
 
         if (!IsShuttingDown())
         {
-            PanelManager::Get()->OnSelectedNodeChanged();
             ActionManager::Get()->OnSelectedNodeChanged();
         }
     }
@@ -182,8 +178,6 @@ void EditorState::SetSelectedAssetStub(AssetStub* newStub)
         {
             AssetManager::Get()->LoadAsset(*newStub);
         }
-
-        PanelManager::Get()->OnSelectedAssetChanged();
     }
 }
 
@@ -421,7 +415,6 @@ void EditorState::DeselectNode(Node* node)
 
     if (erased && !IsShuttingDown())
     {
-        PanelManager::Get()->OnSelectedNodeChanged();
         ActionManager::Get()->OnSelectedNodeChanged();
     }
 }
@@ -659,6 +652,35 @@ void EditorState::SetTransformLock(TransformLock lock)
 
         }
     }
+}
+
+void EditorState::InspectObject(Object* obj)
+{
+    mInspectedObject = obj;
+}
+
+void EditorState::ClearInspectHistory()
+{
+    LogError("Need to get Inspect history working");
+    mInspectPast.clear();
+    mInspectFuture.clear();
+}
+
+void EditorState::ClearAssetDirHistory()
+{
+    LogError("Need to implement ClearAssetDirHistory()");
+    mDirPast.clear();
+    mDirFuture.clear();
+}
+
+void EditorState::SetAssetDirectory(AssetDir* assetDir)
+{
+    mCurrentDir = assetDir;
+}
+
+AssetDir* EditorState::GetAssetDirectory()
+{
+    return mCurrentDir;
 }
 
 #endif

@@ -86,7 +86,6 @@ InputManager::InputManager()
 
 InputManager::~InputManager()
 {
-
     if (mBuildPlatformList != nullptr)
     {
         if (Renderer::Get()->GetModalWidget() == mBuildPlatformList)

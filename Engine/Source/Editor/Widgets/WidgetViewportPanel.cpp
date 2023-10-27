@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #if EDITOR
 
 #include "Nodes/Widgets/WidgetViewportPanel.h"
@@ -537,3 +539,5 @@ Widget* WidgetViewportPanel::FindHoveredWidget(Widget* widget, uint32_t& maxDept
 }
 
 #endif
+
+#endif 

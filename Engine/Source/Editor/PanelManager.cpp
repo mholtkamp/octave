@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #if EDITOR
 
 #include "PanelManager.h"
@@ -209,5 +211,7 @@ void PanelManager::OnEditorModeChanged()
     mPropertiesPanel->OnEditorModeChanged();
     mHierarchyPanel->OnEditorModeChanged();
 }
+
+#endif
 
 #endif

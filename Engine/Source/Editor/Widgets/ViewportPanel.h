@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #pragma once
 
 #include "Panel.h"
@@ -73,3 +75,5 @@ protected:
     bool mNeedsMouseRecenter = false;
     bool mTransformLocal = false;
 };
+
+#endif

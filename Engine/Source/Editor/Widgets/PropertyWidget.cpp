@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #if EDITOR
 
 #include "Nodes/Widgets/PropertyWidget.h"
@@ -1003,3 +1005,5 @@ void ShortProp::Write()
 
 
 #endif
+
+#endif 

@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #pragma once
 
 #include "Nodes/Widgets/Widget.h"
@@ -195,3 +197,5 @@ public:
 protected:
     TextField* mTextField;
 };
+
+#endif

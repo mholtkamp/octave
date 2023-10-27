@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #if EDITOR
 
 #include "Nodes/Widgets/OutlinerPanel.h"
@@ -207,5 +209,7 @@ void OutlinerPanel::HandleInput()
         }
     }
 }
+
+#endif
 
 #endif

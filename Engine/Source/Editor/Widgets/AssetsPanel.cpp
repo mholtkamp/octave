@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #if EDITOR
 
 #include "Nodes/Widgets/AssetsPanel.h"
@@ -1003,3 +1005,5 @@ void AssetsPanel::RegressDirPast()
 }
 
 #endif
+
+#endif 

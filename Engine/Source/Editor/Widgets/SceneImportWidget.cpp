@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #if EDITOR
 
 #include "Nodes/Widgets/SceneImportWidget.h"
@@ -237,3 +239,5 @@ void SceneImportWidget::Tick(float deltaTime)
 }
 
 #endif
+
+#endif 

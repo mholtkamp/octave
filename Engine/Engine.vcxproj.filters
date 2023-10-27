@@ -278,16 +278,7 @@
     <ClCompile Include="Source\Editor\PanelManager.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\ActorButton.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\AssetButton.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Editor\Widgets\AssetsPanel.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\HierarchyButton.cpp">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\Widgets\HierarchyPanel.cpp">
@@ -481,9 +472,6 @@
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Font_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\ActionList.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\TableDatum.cpp">
       <Filter>Source Files\Engine</Filter>
@@ -822,9 +810,6 @@
     <ClInclude Include="Source\Editor\Widgets\SceneImportWidget.h">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\TextEntry.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Editor\Widgets\ViewportPanel.h">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClInclude>
@@ -834,19 +819,7 @@
     <ClInclude Include="Source\Editor\Widgets\WidgetViewportPanel.h">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\ActionList.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\ActorButton.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\AssetButton.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Editor\Widgets\AssetsPanel.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\HierarchyButton.h">
       <Filter>Source Files\Editor\Widgets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\Widgets\HierarchyPanel.h">

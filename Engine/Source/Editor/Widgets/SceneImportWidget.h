@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #pragma once
 
 #include "Nodes/Widgets/Widget.h"
@@ -53,3 +55,5 @@ public:
     Button* mImportButton = nullptr;
     Button* mCancelButton = nullptr;
 };
+
+#endif 

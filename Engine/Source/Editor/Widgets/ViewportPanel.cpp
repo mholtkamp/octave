@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #if EDITOR
 
 #include "Nodes/Widgets/ViewportPanel.h"
@@ -1527,3 +1529,5 @@ void ViewportPanel::ShowSpawnActorPrompt(bool basic)
 }
 
 #endif
+
+#endif 

@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #pragma once
 
 #include "Nodes/Widgets/Canvas.h"
@@ -51,3 +53,5 @@ protected:
     int32_t mMaxScroll;
     int32_t mScrollMultiplier;
 };
+
+#endif

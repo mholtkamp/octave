@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #if EDITOR
 
 #include "Nodes/Widgets/HierarchyPanel.h"
@@ -581,5 +583,7 @@ void HierarchyPanel::OnEditorModeChanged()
         mNumButtons = 10;
     }
 }
+
+#endif
 
 #endif

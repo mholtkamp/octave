@@ -52,7 +52,6 @@ void EditorMain(int32_t argc, char** argv)
 
     ActionManager::Create();
     InputManager::Create();
-    PanelManager::Create();
 
     // Spawn Test Actor
     GetWorld()->SpawnNode<TestSpinner>();
@@ -74,9 +73,6 @@ void EditorMain(int32_t argc, char** argv)
         ActionManager::Get()->OpenProject(engineConfig->mProjectPath.c_str());
     }
 
-    // Update asset panel to reflect our current project.
-    PanelManager::Get()->GetAssetsPanel()->OnProjectDirectorySet();
-
     Renderer::Get()->EnableStatsOverlay(false);
 
     bool ret = true;
@@ -85,7 +81,6 @@ void EditorMain(int32_t argc, char** argv)
     {
         InputManager::Get()->Update();
         ActionManager::Get()->Update();
-        PanelManager::Get()->Update();
 
         bool playInEditor = GetEditorState()->mPlayInEditor;
 
@@ -102,7 +97,6 @@ void EditorMain(int32_t argc, char** argv)
         }
     }
     
-    PanelManager::Destroy();
     GetEditorState()->Shutdown();
     Shutdown();
 }

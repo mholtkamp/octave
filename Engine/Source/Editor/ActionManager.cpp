@@ -23,11 +23,7 @@
 #include "AssetManager.h"
 #include "EditorState.h"
 #include "PanelManager.h"
-#include "Widgets/AssetsPanel.h"
-#include "Widgets/HierarchyPanel.h"
-#include "Widgets/PropertiesPanel.h"
-#include "Widgets/WidgetHierarchyPanel.h"
-#include "Widgets/ActionList.h"
+#include "Nodes/Widgets/Button.h"
 #include "Assets/Scene.h"
 #include "Assets/Texture.h"
 #include "Assets/StaticMesh.h"
@@ -933,7 +929,7 @@ void ActionManager::ResetUndoRedo()
     }
 
     // Clear property inspection history also.
-    PanelManager::Get()->GetPropertiesPanel()->ClearInspectHistory();
+    GetEditorState()->ClearInspectHistory();
 }
 
 void ActionManager::ExileNode(Node* node)
@@ -1024,7 +1020,9 @@ void ActionManager::OpenProject(const char* path)
     }
 
     // Handle new project directory
-    PanelManager::Get()->GetAssetsPanel()->OnProjectDirectorySet();
+    GetEditorState()->ClearAssetDirHistory();
+    GetEditorState()->SetAssetDirectory(AssetManager::Get()->FindProjectDirectory());
+    GetEditorState()->SetSelectedAssetStub(nullptr);
 }
 
 void ActionManager::OpenScene()
@@ -1193,7 +1191,7 @@ Asset* ActionManager::ImportAsset(const std::string& path)
         Asset* newAsset = Asset::CreateInstance(newType);
         newAsset->Import(path);
 
-        AssetDir* assetDir = PanelManager::Get()->GetAssetsPanel()->GetDirectory();
+        AssetDir* assetDir = GetEditorState()->GetAssetDirectory();
         std::string assetName = filename.substr(0, dotIndex);
         filename = assetName + ".oct";
 

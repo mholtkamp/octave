@@ -1,3 +1,5 @@
+#if NODE_CONV_EDITOR
+
 #pragma once
 
 #include "Panel.h"
@@ -56,3 +58,5 @@ protected:
     std::vector<AssetDir*> mDirPast;
     std::vector<AssetDir*> mDirFuture;
 };
+
+#endif
