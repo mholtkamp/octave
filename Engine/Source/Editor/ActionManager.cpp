@@ -2014,7 +2014,7 @@ void ActionEditProperty::GatherProps(std::vector<Property>& props)
 
 // Utility function for removing nodes that have parents already in the list.
 // This is probably a pretty slow O(N^2) operation.
-static void RemoveRedundantNodes(std::vector<Node*>& nodes)
+static void RemoveRedundantDescendants(std::vector<Node*>& nodes)
 {
     for (int32_t i = int32_t(nodes.size()) - 1; i >= 0; --i)
     {
@@ -2140,7 +2140,7 @@ ActionSpawnNodes::ActionSpawnNodes(const std::vector<Node*>& nodes)
 {
     mNodes = nodes;
 
-    RemoveRedundantNodes(mNodes);
+    RemoveRedundantDescendants(mNodes);
 
     for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
@@ -2191,7 +2191,7 @@ ActionDeleteNodes::ActionDeleteNodes(const std::vector<Node*>& nodes)
 {
     mNodes = nodes;
 
-    RemoveRedundantNodes(mNodes);
+    RemoveRedundantDescendants(mNodes);
 
     for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
