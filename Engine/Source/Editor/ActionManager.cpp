@@ -2294,7 +2294,6 @@ void ActionAttachNode::Execute()
     {
        mNewParent->AddChild(mNode, mChildIndex);
     }
-    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
 void ActionAttachNode::Reverse()
@@ -2313,7 +2312,6 @@ void ActionAttachNode::Reverse()
     {
         mPrevParent->AddChild(mNode, mPrevChildIndex);
     }
-    PanelManager::Get()->GetHierarchyPanel()->RefreshCompButtons();
 }
 
 ActionSetRootNode::ActionSetRootNode(Node* newRoot)
