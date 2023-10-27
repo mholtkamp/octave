@@ -32,7 +32,6 @@ EditorState* GetEditorState()
     return &sEditorState;
 }
 
-
 void EditorState::Init()
 {
     mEditorCamera = Node::Construct<Camera3D>();
@@ -556,6 +555,14 @@ EditScene* EditorState::GetEditScene(int32_t idx)
     }
 
     return ret;
+}
+
+void EditorState::CloseAllEditScenes()
+{
+    while (mEditScenes.size() > 0)
+    {
+        CloseEditScene(0);
+    }
 }
 
 void EditorState::ShowEditorUi(bool show)

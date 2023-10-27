@@ -344,7 +344,8 @@ bool Update()
     }
 
 #if EDITOR
-    if (IsPlayingInEditor() && IsPlayInEditorPaused())
+    if (IsPlayingInEditor() && 
+        GetEditorState()->IsPlayInEditorPaused())
     {
         gameDeltaTime = 0.0f;
     }
@@ -451,6 +452,11 @@ void LoadProject(const std::string& path, bool discoverAssets)
 {
     SCOPED_STAT("LoadProject");
 
+#if EDITOR
+    GetEditorState()->EndPlayInEditor();
+    GetEditorState()->CloseAllEditScenes();
+#endif
+
     // Reset asset manager??
     //AssetManager::Get()->Purge();
 
@@ -505,8 +511,8 @@ void LoadProject(const std::string& path, bool discoverAssets)
 #endif
 
 #if EDITOR
-    ReadEditorSave();
-    LoadStartupLevel();
+    GetEditorState()->ReadEditorSave();
+    GetEditorState()->LoadStartupScene();
 #endif
 }
 
