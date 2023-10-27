@@ -74,7 +74,7 @@ void PointLight3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
     }
 
 #if EDITOR
-    if (GetSelectedComponent() == this)
+    if (GetEditorState()->GetSelectedNode() == this)
     {
         DebugDraw debugDraw;
         debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");

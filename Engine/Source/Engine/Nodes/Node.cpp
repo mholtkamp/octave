@@ -178,7 +178,7 @@ void Node::Destroy()
     NodeRef::EraseReferencesToObject(this);
 
 #if EDITOR
-    DeselectNode(this);
+    GetEditorState()->DeselectNode(this);
 #endif
 
     if (isWorldRoot)

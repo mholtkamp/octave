@@ -745,7 +745,7 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
 
 Node* ActionManager::SpawnBasicNode(const std::string& name, glm::vec3 position, Asset* srcAsset)
 {
-    Node* node = SpawnBasicNode(name, position, srcAsset);
+    Node* node = SpawnBasicNode(name, nullptr, srcAsset);
     Node3D* node3d = node ? node->As<Node3D>() : nullptr;
 
     if (node3d)
@@ -1200,10 +1200,9 @@ Asset* ActionManager::ImportAsset(const std::string& path)
 
         if (oldAsset != nullptr)
         {
-            PropertiesPanel* propsPanel = PanelManager::Get()->GetPropertiesPanel();
-            if (propsPanel->GetInspectedAsset() == oldAsset)
+            if (GetEditorState()->GetInspectedObject() == oldAsset)
             {
-                propsPanel->InspectAsset(nullptr);
+                GetEditorState()->InspectObject(nullptr, true);
             }
         }
 
@@ -1360,7 +1359,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
             }
 
             // Get the current directory in the asset panel (all assets will be saved there)
-            AssetDir* dir = PanelManager::Get()->GetAssetsPanel()->GetDirectory();
+            AssetDir* dir = GetEditorState()->GetAssetDirectory();
 
             if (dir == nullptr ||
                 dir->mParentDir == nullptr)
@@ -1917,11 +1916,9 @@ void ActionManager::DeleteAsset(AssetStub* stub)
             GetEditorState()->SetSelectedAssetStub(nullptr);
         }
 
-        PropertiesPanel* propsPanel = PanelManager::Get()->GetPropertiesPanel();
-
-        if (propsPanel->GetInspectedAsset() == stub->mAsset)
+        if (GetEditorState()->GetInspectedObject() == stub->mAsset)
         {
-            propsPanel->InspectAsset(nullptr);
+            GetEditorState()->InspectObject(nullptr);
         }
 
         std::string path = stub->mPath;
@@ -2074,12 +2071,16 @@ void ActionEditProperty::Execute()
 
         prop->SetValue(mValue.mData.vp, mIndex, 1);
 
+        // TODO-NODE: Delete this? Shouldn't be necessary anymore now that we are using Imgui
+        //   and gathering properties every frame.
+#if 0
         // Script properties are stored internally and propagated to scripts
         // so after setting the value we need to refresh property widgets.
         if (!prop->IsExternal())
         {
             PanelManager::Get()->GetPropertiesPanel()->RefreshProperties();
         }
+#endif
     }
 }
 
@@ -2094,12 +2095,16 @@ void ActionEditProperty::Reverse()
     {
         prop->SetValue(mPreviousValue.GetValue(0), mIndex, 1);
 
+        // TODO-NODE: Delete this? Shouldn't be necessary anymore now that we are using Imgui
+        //   and gathering properties every frame.
+#if 0
         // Script properties are stored internally and propagated to scripts
         // so after setting the value we need to refresh property widgets.
         if (!prop->IsExternal())
         {
             PanelManager::Get()->GetPropertiesPanel()->RefreshProperties();
         }
+#endif
     }
 }
 

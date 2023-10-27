@@ -9,6 +9,7 @@
 #include "AssetManager.h"
 #include "Nodes/Node.h"
 #include "Nodes/3D/Node3d.h"
+#include "Nodes/3D/Camera3d.h"
 #include "Engine.h"
 #include "Renderer.h"
 #include "Grid.h"
@@ -121,6 +122,7 @@ void EditorState::SetSelectedNode(Node* newNode)
 
         if (!IsShuttingDown())
         {
+            InspectObject(newNode);
             ActionManager::Get()->OnSelectedNodeChanged();
         }
     }
@@ -149,6 +151,7 @@ void EditorState::AddSelectedNode(Node* node, bool addAllChildren)
         }
 
         nodes.push_back(node);
+        InspectObject(node);
     }
 }
 
@@ -164,6 +167,15 @@ void EditorState::RemoveSelectedNode(Node* node)
             // Move the node to the back of the vector so that 
             // it is considered the primary selected node.
             nodes.erase(it);
+        }
+
+        if (nodes.size() > 0)
+        {
+            InspectObject(nodes.back());
+        }
+        else
+        {
+            InspectObject(nullptr);
         }
     }
 }
@@ -231,7 +243,7 @@ void EditorState::BeginPlayInEditor()
 
     SetSelectedNode(nullptr);
     SetSelectedAssetStub(nullptr);
-    PanelManager::Get()->GetPropertiesPanel()->InspectAsset(nullptr);
+    InspectObject(nullptr, true);
 
     ActionManager::Get()->ResetUndoRedo();
 
@@ -284,7 +296,7 @@ void EditorState::EndPlayInEditor()
 
     SetSelectedNode(nullptr);
     SetSelectedAssetStub(nullptr);
-    PanelManager::Get()->GetPropertiesPanel()->InspectAsset(nullptr);
+    InspectObject(nullptr, true);
 
     ActionManager::Get()->ResetUndoRedo();
 
@@ -654,9 +666,29 @@ void EditorState::SetTransformLock(TransformLock lock)
     }
 }
 
-void EditorState::InspectObject(Object* obj)
+RTTI* EditorState::GetInspectedObject()
 {
-    mInspectedObject = obj;
+    return mInspectedObject;
+}
+
+Node* EditorState::GetInspectedNode()
+{
+    return mInspectedObject ? mInspectedObject->As<Node>() : nullptr;
+}
+
+Asset* EditorState::GetInspectedAsset()
+{
+    return mInspectedObject ? mInspectedObject->As<Asset>() : nullptr;
+}
+
+void EditorState::InspectObject(RTTI* obj, bool force)
+{
+    if (force || !mInspectLocked)
+    {
+        mInspectedObject = obj;
+        mInspectedAsset = obj ? obj->As<Asset>() : nullptr;
+        mInspectLocked = false;
+    }
 }
 
 void EditorState::ClearInspectHistory()

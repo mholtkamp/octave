@@ -27,7 +27,6 @@
 
 #if EDITOR
 #include "Editor/EditorState.h"
-#include "Nodes/Widgets/PropertiesPanel.h"
 #include "Editor/PanelManager.h"
 #endif
 
@@ -374,15 +373,14 @@ bool AssetManager::PurgeAsset(const char* name)
                 delStub->mDirectory->RemoveAssetStub(delStub);
             }
 
-            if (GetSelectedAssetStub() == delStub)
+            if (GetEditorState()->GetSelectedAssetStub() == delStub)
             {
-                SetSelectedAssetStub(nullptr);
+                GetEditorState()->SetSelectedAssetStub(nullptr);
             }
 
-            PropertiesPanel* propsPanel = PanelManager::Get()->GetPropertiesPanel();
-            if (propsPanel->GetInspectedAsset() == delStub->mAsset)
+            if (GetEditorState()->GetInspectedObject() == delStub->mAsset)
             {
-                propsPanel->InspectAsset(nullptr);
+                GetEditorState()->InspectObject(nullptr, true);
             }
 #endif
 

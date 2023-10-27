@@ -12,6 +12,7 @@ class Asset;
 struct AssetStub;
 class ActionList;
 class Canvas;
+class Camera3D;
 
 enum class ControlMode
 {
@@ -75,7 +76,9 @@ struct EditorState
     std::vector<AssetDir*> mDirFuture;
     std::vector<RTTI*> mInspectPast;
     std::vector<RTTI*> mInspectFuture;
+    RTTI* mInspectedObject;
     AssetRef mInspectedAsset;
+    bool mInspectLocked = false;
 
     // Methods
     void Init();
@@ -125,7 +128,10 @@ struct EditorState
     glm::vec3 GetTransformLockVector(TransformLock lock);
     void SetTransformLock(TransformLock lock);
 
-    void InspectObject(RTTI* obj);
+    RTTI* GetInspectedObject();
+    Node* GetInspectedNode();
+    Asset* GetInspectedAsset();
+    void InspectObject(RTTI* obj, bool force = false);
     void ClearInspectHistory();
     void ClearAssetDirHistory();
     void SetAssetDirectory(AssetDir* assetDir);

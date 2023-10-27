@@ -97,7 +97,7 @@ void Audio3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
         }
 
 #if EDITOR
-        if (GetSelectedComponent() == this)
+        if (GetEditorState()->GetSelectedNode() == this)
         {
             {
                 // Inner Radius

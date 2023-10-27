@@ -795,9 +795,6 @@
     <ClInclude Include="Source\Editor\EditorTypes.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Editor\EditorUtils.h">
-      <Filter>Source Files\Editor</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Editor\Grid.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
@@ -1367,6 +1364,9 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\EditorImgui.h">
       <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\EditorUtils.h">
+      <Filter>Source Files\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

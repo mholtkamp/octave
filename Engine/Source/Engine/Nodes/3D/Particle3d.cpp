@@ -91,7 +91,7 @@ void Particle3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 
     // Show spawn box when selected
 #if EDITOR
-    if (GetSelectedComponent() == this && mParticleSystem != nullptr)
+    if (GetEditorState()->GetSelectedNode() == this && mParticleSystem != nullptr)
     {
         ParticleSystem* sys = mParticleSystem.Get<ParticleSystem>();
         glm::vec3 minPos = sys->GetParams().mPositionMin;

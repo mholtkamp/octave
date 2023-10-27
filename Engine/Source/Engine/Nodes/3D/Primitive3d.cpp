@@ -9,6 +9,10 @@
 
 #include <btBulletDynamicsCommon.h>
 
+#if EDITOR
+#include "EditorState.h"
+#endif
+
 DEFINE_RTTI(Primitive3D);
 
 static btEmptyShape* sEmptyCollisionShape = nullptr;
@@ -866,7 +870,7 @@ void Primitive3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 
     if (boundsMode == BoundsDebugMode::All
 #if EDITOR
-        || (boundsMode == BoundsDebugMode::Selected && GetWorld()->GetSelectedComponent() == this)
+        || (boundsMode == BoundsDebugMode::Selected && GetEditorState()->GetSelectedNode() == this)
 #endif
         )
     {

@@ -1288,7 +1288,7 @@ void Renderer::RenderSelectedGeometry(World* world)
     if (!GetEditorState()->mPlayInEditor ||
         GetEditorState()->mEjected)
     {
-        std::vector<Node*> selectedNodes = world->GetSelectedNodes();
+        std::vector<Node*> selectedNodes = GetEditorState()->GetSelectedNodes();
 
         for (uint32_t i = 0; i < selectedNodes.size(); ++i)
         {
