@@ -83,8 +83,6 @@ void SetDebugObjectName(VkObjectType objectType, uint64_t object, const char* na
 void BeginDebugLabel(const char* name, glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f });
 void EndDebugLabel();
 
-uint32_t GetHitCheckId(Node3D* comp);
-
 void WriteGeometryUniformData(GeometryData& outData, World* world, Node3D* comp, const glm::mat4& transform);
 void WriteMaterialUniformData(MaterialData& outData, Material* material);
 void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds, StaticMesh3D* staticMeshComp = nullptr);

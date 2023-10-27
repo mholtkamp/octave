@@ -21,6 +21,9 @@
 #include "Vertex.h"
 #include "Maths.h"
 
+#if EDITOR
+#include "EditorState.h"
+#endif
 
 extern PFN_vkCmdBeginDebugUtilsLabelEXT CmdBeginDebugUtilsLabelEXT;
 extern PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT;
@@ -815,13 +818,13 @@ void WriteGeometryUniformData(GeometryData& outData, World* world, Node3D* comp,
 
     if (comp != nullptr)
     {
-        outData.mHitCheckId = GetHitCheckId(comp);
+        outData.mHitCheckId = comp->GetHitCheckId();
 
 #if EDITOR
         if (Renderer::Get()->GetDebugMode() == DEBUG_WIREFRAME &&
-            world->IsComponentSelected(comp))
+            GetEditorState()->IsNodeSelected(comp))
         {
-            if (world->GetSelectedComponent() == comp)
+            if (GetEditorState()->GetSelectedNode() == comp)
             {
                 outData.mColor = SELECTED_COMP_COLOR;
             }
@@ -1325,28 +1328,6 @@ void DestroyStaticMeshCompResource(StaticMesh3D* staticMeshComp)
         GetDestroyQueue()->Destroy(resource->mDescriptorSet);
         resource->mDescriptorSet = nullptr;
     }
-}
-
-uint32_t GetHitCheckId(Node3D* comp)
-{
-    uint32_t retId = 0;
-#if EDITOR
-    Actor* owner = comp->GetOwner();
-    uint32_t actorId = owner->GetHitCheckId();
-    uint32_t compId = 0;
-
-    for (uint32_t i = 0; i < owner->GetNumComponents(); ++i)
-    {
-        if (owner->GetComponent(i) == comp)
-        {
-            compId = i;
-            break;
-        }
-    }
-
-    retId = (actorId << 16) | compId;
-#endif
-    return retId;
 }
 
 void UpdateStaticMeshCompResource(StaticMesh3D* staticMeshComp)

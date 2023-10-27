@@ -2828,6 +2828,8 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
 
     DeviceWaitIdle();
 
+    std::vector<Node3D*> nodes;
+
     // Convert pixelX and pixelY to scene-resolution coordinates
     pixelX = (int32_t)(pixelX * mResolutionScale + 0.5f);
     pixelY = (int32_t)(pixelY * mResolutionScale + 0.5f);
@@ -2853,44 +2855,47 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
 
         BindPipeline(PipelineId::HitCheck, VertexType::Vertex);
 
-        const std::vector<Actor*>& actors = world->GetActors();
-        for (uint32_t i = 0; i < actors.size(); ++i)
+        uint32_t i = 1; // Start hit check id at 1, 0 = no hit.
+        auto renderHitChecks = [&](Node* node) -> bool
         {
-            actors[i]->SetHitCheckId(i + 1); // Reserve 0 for no actor
-            actors[i]->Render(PipelineId::HitCheck);
+            if (!node->IsVisible())
+                return false;
 
-            if (Renderer::Get()->IsProxyRenderingEnabled())
+            Node3D* node3d = node->As<Node3D>();
+
+            if (node3d)
             {
-                for (Component* comp : actors[i]->GetComponents())
+                nodes.push_back(node3d);
+                node3d->SetHitCheckId(i);
+                node3d->Render(PipelineId::HitCheck);
+                ++i;
+
+                if (Renderer::Get()->IsProxyRenderingEnabled())
                 {
-                    if (comp->IsNode3D())
-                    {
-                        static_cast<Node3D*>(comp)->GatherProxyDraws(debugDraws);
-                    }
+                    node3d->GatherProxyDraws(debugDraws);
                 }
             }
+
+            return true;
+        };
+
+        Node* root = world->GetRootNode();
+        if (root != nullptr)
+        {
+            root->Traverse(renderHitChecks);
         }
 
         // Issue proxy draws
         for (uint32_t i = 0; i < debugDraws.size(); ++i)
         {
-            bool proxyActorEnabled = true;
-
-            if (GetEditorMode() == EditorMode::Blueprint &&
-                debugDraws[i].mActor != GetEditBlueprintActor())
-            {
-                proxyActorEnabled = false;
-            }
-
-            if (debugDraws[i].mActor != nullptr &&
-                proxyActorEnabled)
+            if (debugDraws[i].mNode != nullptr)
             {
                 DrawStaticMesh(
                     debugDraws[i].mMesh,
                     nullptr,
                     debugDraws[i].mTransform,
                     { 1.0f, 1.0f, 1.0f, 1.0f },
-                    GetHitCheckId(debugDraws[i].mNode));
+                    debugDraws[i].mNode->GetHitCheckId());
             }
         }
 
@@ -2928,25 +2933,9 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
     hitId = hitData[pixelX + pixelY * mSceneWidth];
     mHitCheckBuffer->Unmap();
 
-    uint32_t actorId = (hitId >> 16);
-    uint32_t compId = (hitId & 0x0000ffff);
-    Actor* hitActor = (actorId != 0) ? world->GetActors()[actorId - 1] : nullptr;
+    Node3D* hitNode = (hitId != 0) ? nodes[hitId - 1] : nullptr;
 
-    Node3D* retComp = nullptr;
-    if (hitActor)
-    {
-        if (compId < hitActor->GetNumComponents())
-        {
-            Component* hitComp = hitActor->GetComponent(compId);
-            retComp = hitComp->As<Node3D>();
-        }
-        else
-        {
-            LogError("Invalid component hit during HitCheck.");
-        }
-    }
-
-    return retComp;
+    return hitNode;
 }
 
 VkRenderPass VulkanContext::GetHitCheckRenderPass()
