@@ -83,7 +83,6 @@ void Audio3D::GatherProperties(std::vector<Property>& outProps)
 void Audio3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    Node3D::GatherProxyDraws(inoutDraws);
 
     if (GetType() == Audio3D::GetStaticType())
     {

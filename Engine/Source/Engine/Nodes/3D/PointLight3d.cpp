@@ -51,7 +51,6 @@ void PointLight3D::GatherProperties(std::vector<Property>& outProps)
 void PointLight3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
 #if DEBUG_DRAW_ENABLED
-    Light3D::GatherProxyDraws(inoutDraws);
 
     glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.3f, 1.0f);
 
