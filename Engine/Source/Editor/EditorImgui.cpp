@@ -91,45 +91,23 @@ static void DrawViewport()
     ActionManager* am = ActionManager::Get();
 
     const float viewportWidth = (float)GetEngineState()->mWindowWidth - kSidePaneWidth * 2.0f;
-    const float viewportHeight = 60.0f;
+    const float viewportHeight = 32.0f;
 
-    const ImGuiWindowFlags kViewportWindowFlags = 
-        ImGuiWindowFlags_NoTitleBar | 
-        ImGuiWindowFlags_NoResize | 
+    const ImGuiWindowFlags kViewportWindowFlags =
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_NoMove |
         ImGuiWindowFlags_NoScrollbar |
         ImGuiWindowFlags_NoScrollWithMouse |
-        ImGuiWindowFlags_NoCollapse /*|
-        ImGuiWindowFlags_NoBackground*/;
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoSavedSettings; /* | ImGuiWindowFlags_AlwaysAutoResize*/ /*| ImGuiWindowFlags_NoBackground*/;
 
     ImGui::SetNextWindowPos(ImVec2(kSidePaneWidth, 0.0f));
     ImGui::SetNextWindowSize(ImVec2(viewportWidth, viewportHeight));
 
     ImGui::Begin("Viewport", nullptr, kViewportWindowFlags);
 
-    // (1) Draw Scene tabs on top
-    const ImGuiTabBarFlags kSceneTabBarFlags = ImGuiTabBarFlags_Reorderable;
-    if (ImGui::BeginTabBar("SceneTabBar", kSceneTabBarFlags))
-    {
-        for (int32_t n = 0; n < 5; n++)
-        {
-            bool opened = true;
-            char tabName[128];
-            snprintf(tabName, 128, "Scene %d", n);
-            if (ImGui::BeginTabItem(tabName, &opened, ImGuiTabItemFlags_None))
-            {
-                ImGui::EndTabItem();
-            }
-
-            if (!opened)
-            {
-                LogError("TODO: Close scene!");
-            }
-        }
-        ImGui::EndTabBar();
-    }
-
-    // (2) Draw File / View / World / Play buttons below
+    // (1) Draw File / View / World / Play buttons below
     if (ImGui::Button("File"))
         ImGui::OpenPopup("FilePopup");
 
@@ -259,6 +237,35 @@ static void DrawViewport()
             GetEditorState()->GetViewport3D()->ToggleTransformMode();
 
         ImGui::EndPopup();
+    }
+
+    // (2) Draw Scene tabs on top
+    const ImGuiTabBarFlags kSceneTabBarFlags = ImGuiTabBarFlags_Reorderable;
+    ImGui::SameLine(0.0f, 20.0f);
+    static int32_t sActiveScene = 0;
+    if (ImGui::BeginTabBar("SceneTabBar", kSceneTabBarFlags))
+    {
+        for (int32_t n = 0; n < 5; n++)
+        {
+            bool opened = true;
+            char tabName[128];
+            snprintf(tabName, 128, "Scene %d", n);
+            if (ImGui::BeginTabItem(tabName, &opened, ImGuiTabItemFlags_None))
+            {
+                if (n != sActiveScene)
+                {
+                    LogDebug("TODO: Switch to scene!");
+                    sActiveScene = n;
+                }
+                ImGui::EndTabItem();
+            }
+
+            if (!opened)
+            {
+                LogError("TODO: Close scene!");
+            }
+        }
+        ImGui::EndTabBar();
     }
 
     // Draw 3D / 2D / Material combo box on top right corner.
