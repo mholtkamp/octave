@@ -31,13 +31,20 @@ void EditorImguiDraw()
 
     // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
     {
+        const float kDefaultWidth = 180.0f;
         static float f = 0.0f;
         static int counter = 0;
 
         bool show_demo_window = true;
         static glm::vec4 clear_color = {};
+        ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+        ImGui::SetNextWindowSize(ImVec2(kDefaultWidth, (float) GetEngineState()->mWindowHeight));
+        ImGuiWindowFlags windowFlags = 0;
+        windowFlags |= ImGuiWindowFlags_NoResize;
+        windowFlags |= ImGuiWindowFlags_NoCollapse;
+        windowFlags |= ImGuiWindowFlags_NoMove;
 
-        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+        ImGui::Begin("Hello, world!", nullptr, windowFlags);                          // Create a window called "Hello, world!" and append into it.
 
         ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
         ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state

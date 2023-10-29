@@ -383,9 +383,14 @@ void Viewport3D::Update(float deltaTime)
 bool Viewport3D::ShouldHandleInput() const
 {
     Widget* modal = Renderer::Get()->GetModalWidget();
-    bool textInputActive = false; // TODO-NODE: Query imgui somehow
-    bool editorModalOpen = false; // TODO-NODE: Query imgui for modal status.
-    bool handleInput = (modal == nullptr && !textInputActive && !editorModalOpen);
+    bool imguiWantsKeyboard = ImGui::GetIO().WantCaptureKeyboard;
+    bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse;
+    bool imguiWantsText = ImGui::GetIO().WantTextInput;
+    bool imguiAnyItemHovered = ImGui::IsAnyItemHovered();
+    bool imguiAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
+    
+
+    bool handleInput = (modal == nullptr && !imguiAnyWindowHovered && !imguiWantsText);
     return handleInput;
 }
 
