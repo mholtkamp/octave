@@ -29,7 +29,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 #if EDITOR
-    ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+        return true;
 #endif
 
     EngineState* engineState = GetEngineState();
@@ -306,8 +307,7 @@ void SYS_Initialize()
     }
 
 #if EDITOR
-    ImGui_ImplWin32_Init(hInst);
-
+    ImGui_ImplWin32_Init(engineState->mSystem.mWindow);
 #endif
 }
 

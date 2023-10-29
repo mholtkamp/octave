@@ -166,6 +166,10 @@ bool Initialize(InitOptions& initOptions)
     AssetManager::Create();
     NetworkManager::Create();
 
+#if EDITOR
+    EditorImguiInit();
+#endif
+
     Renderer* renderer = Renderer::Get();
 
     renderer->SetEngineState(&sEngineState);
@@ -297,10 +301,6 @@ bool Initialize(InitOptions& initOptions)
         GetWorld()->LoadScene(initOptions.mDefaultScene.c_str(), true);
     }
 #endif 
-
-#if EDITOR
-    EditorImguiInit();
-#endif
 
     sEngineState.mInitialized = true;
 

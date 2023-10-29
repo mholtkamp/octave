@@ -120,6 +120,9 @@
     <Filter Include="Source Files\Engine\Nodes\3D">
       <UniqueIdentifier>{9bd20d9a-4e2e-42dd-819e-61f60afc29c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Editor\Imgui">
+      <UniqueIdentifier>{228bd210-e49e-43f0-a677-ef19ebf3ba53}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Graphics\Vulkan\VulkanUtils.cpp">
@@ -709,6 +712,21 @@
     </ClCompile>
     <ClCompile Include="Source\Editor\Viewport3d.cpp">
       <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\Imgui\imgui.cpp">
+      <Filter>Source Files\Editor\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\Imgui\imgui_demo.cpp">
+      <Filter>Source Files\Editor\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\Imgui\imgui_draw.cpp">
+      <Filter>Source Files\Editor\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\Imgui\imgui_tables.cpp">
+      <Filter>Source Files\Editor\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\Imgui\imgui_widgets.cpp">
+      <Filter>Source Files\Editor\Imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
