@@ -17,6 +17,7 @@ public:
     bool IsMouseInside() const;
 
     float GetFocalDistance() const;
+    void ToggleTransformMode();
 
 protected:
 
@@ -38,7 +39,6 @@ protected:
     glm::vec2 GetTransformDelta() const;
     void SavePreTransforms();
     void RestorePreTransforms();
-    void ToggleTransformMode();
 
     glm::vec3 GetLockedTranslationDelta(glm::vec3 deltaWS) const;
     glm::vec3 GetLockedRotationAxis() const;

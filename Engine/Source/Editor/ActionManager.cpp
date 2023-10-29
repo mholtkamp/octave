@@ -161,22 +161,7 @@ void HandleBuildButtonPressed(Button* button)
 
 void ActionManager::ShowBuildDataPrompt()
 {
-#if NODE_CONV_EDITOR
-    std::vector<std::string> actions;
-#if PLATFORM_WINDOWS
-    actions.push_back("Windows");
-#elif PLATFORM_LINUX
-    actions.push_back("Linux");
-#endif
-    actions.push_back("Android");
-    actions.push_back("GameCube");
-    actions.push_back("Wii");
-    actions.push_back("3DS");
-    actions.push_back("GameCube Embedded");
-    actions.push_back("Wii Embedded");
-    actions.push_back("3DS Embedded");
-    GetActionList()->SetActions(actions, HandleBuildButtonPressed);
-#endif
+
 }
 
 void ActionManager::BuildData(Platform platform, bool embedded)

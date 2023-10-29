@@ -3,6 +3,15 @@
 #include "EditorImgui.h"
 #include "System/System.h"
 #include "Engine.h"
+#include "Renderer.h"
+#include "Log.h"
+#include "Grid.h"
+
+#include "Nodes/3D/StaticMesh3d.h"
+
+#include "Viewport3d.h"
+#include "ActionManager.h"
+#include "EditorState.h"
 
 #include "backends/imgui_impl_vulkan.cpp"
 
@@ -11,6 +20,253 @@
 #elif PLATFORM_LINUX
 #error Get the linux backend working!
 #endif
+
+static const float kSidePaneWidth = 200.0f;
+static const ImGuiWindowFlags kPaneWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove;
+
+static void DrawMenu()
+{
+
+}
+
+static void DrawScene()
+{
+    const float halfHeight = (float)GetEngineState()->mWindowHeight / 2.0f;
+
+    static float f = 0.0f;
+    static int counter = 0;
+
+    bool show_demo_window = true;
+    static glm::vec4 clear_color = {};
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+    ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, halfHeight));
+
+    ImGui::Begin("Scene", nullptr, kPaneWindowFlags);
+
+    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+    ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+    //ImGui::Checkbox("Another Window", &show_another_window);
+
+    ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+    if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+        counter++;
+    ImGui::SameLine();
+    ImGui::Text("counter = %d", counter);
+
+    ImGui::Text("Window Dim: <%d, %d>", (int)GetEngineState()->mWindowWidth, (int)GetEngineState()->mWindowHeight);
+    ImGui::End();
+}
+
+static void DrawAssets()
+{
+    const float halfHeight = (float)GetEngineState()->mWindowHeight / 2.0f;
+
+    ImGui::SetNextWindowPos(ImVec2(0.0f, halfHeight));
+    ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, halfHeight));
+
+    ImGui::Begin("Assets", nullptr, kPaneWindowFlags);
+
+    ImGui::End();
+
+}
+
+static void DrawProperties()
+{
+    const float dispWidth = (float)GetEngineState()->mWindowWidth;
+    const float dispHeight = (float)GetEngineState()->mWindowHeight;
+
+    ImGui::SetNextWindowPos(ImVec2(dispWidth - kSidePaneWidth, 0.0f));
+    ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, dispHeight));
+
+    ImGui::Begin("Properties", nullptr, kPaneWindowFlags);
+
+    ImGui::End();
+}
+
+static void DrawViewport()
+{
+    Renderer* renderer = Renderer::Get();
+    ActionManager* am = ActionManager::Get();
+
+    const float viewportWidth = (float)GetEngineState()->mWindowWidth - kSidePaneWidth * 2.0f;
+    const float viewportHeight = 60.0f;
+
+    const ImGuiWindowFlags kViewportWindowFlags = 
+        ImGuiWindowFlags_NoTitleBar | 
+        ImGuiWindowFlags_NoResize | 
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoScrollWithMouse |
+        ImGuiWindowFlags_NoCollapse /*|
+        ImGuiWindowFlags_NoBackground*/;
+
+    ImGui::SetNextWindowPos(ImVec2(kSidePaneWidth, 0.0f));
+    ImGui::SetNextWindowSize(ImVec2(viewportWidth, viewportHeight));
+
+    ImGui::Begin("Viewport", nullptr, kViewportWindowFlags);
+
+    // (1) Draw Scene tabs on top
+    const ImGuiTabBarFlags kSceneTabBarFlags = ImGuiTabBarFlags_Reorderable;
+    if (ImGui::BeginTabBar("SceneTabBar", kSceneTabBarFlags))
+    {
+        for (int32_t n = 0; n < 5; n++)
+        {
+            bool opened = true;
+            char tabName[128];
+            snprintf(tabName, 128, "Scene %d", n);
+            if (ImGui::BeginTabItem(tabName, &opened, ImGuiTabItemFlags_None))
+            {
+                ImGui::EndTabItem();
+            }
+
+            if (!opened)
+            {
+                LogError("TODO: Close scene!");
+            }
+        }
+        ImGui::EndTabBar();
+    }
+
+    // (2) Draw File / View / World / Play buttons below
+    if (ImGui::Button("File"))
+        ImGui::OpenPopup("FilePopup");
+
+    ImGui::SameLine();
+    if (ImGui::Button("Edit"))
+        ImGui::OpenPopup("EditPopup");
+
+    ImGui::SameLine();
+    if (ImGui::Button("View"))
+        ImGui::OpenPopup("ViewPopup");
+
+    ImGui::SameLine();
+    if (ImGui::Button("World"))
+        ImGui::OpenPopup("WorldPopup");
+
+    ImGui::SameLine();
+    if (ImGui::Button("Play"))
+    {
+        LogError("TODO: Play in Editor!");
+    }
+
+    if (ImGui::BeginPopup("FilePopup"))
+    {
+        if (ImGui::Selectable("Open Project"))
+            am->OpenProject();
+        if (ImGui::Selectable("New Project"))
+            am->CreateNewProject();
+        if (ImGui::Selectable("Save Scene"))
+            am->SaveScene(true);
+        if (ImGui::Selectable("Recapture All Scenes"))
+            am->RecaptureAndSaveAllScenes();
+        if (ImGui::Selectable("Resave All Assets"))
+            am->ResaveAllAssets();
+        if (ImGui::Selectable("Reload All Scripts"))
+            ReloadAllScripts();
+        //if (ImGui::Selectable("Import Scene"))
+        //    YYY;
+        if (ImGui::Selectable("Package Project", false, ImGuiSelectableFlags_DontClosePopups))
+        {
+            ImGui::OpenPopup("PackagePopup");
+        }
+
+        if (ImGui::BeginPopup("PackagePopup"))
+        {
+#if PLATFORM_WINDOWS
+            if (ImGui::Selectable("Windows"))
+                am->BuildData(Platform::Windows, false);
+#elif PLATFORM_LINUX
+            if (ImGui::Selectable("Linux"))
+                am->BuildData(Platform::Linux, false);
+#endif
+            if (ImGui::Selectable("Android"))
+                am->BuildData(Platform::Android, false);
+            if (ImGui::Selectable("GameCube"))
+                am->BuildData(Platform::GameCube, false);
+            if (ImGui::Selectable("Wii"))
+                am->BuildData(Platform::Wii, false);
+            if (ImGui::Selectable("3DS"))
+                am->BuildData(Platform::N3DS, false);
+            if (ImGui::Selectable("GameCube Embedded"))
+                am->BuildData(Platform::GameCube, true);
+            if (ImGui::Selectable("Wii Embedded"))
+                am->BuildData(Platform::Wii, true);
+            if (ImGui::Selectable("3DS Embedded"))
+                am->BuildData(Platform::N3DS, true);
+
+            ImGui::EndPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("EditPopup"))
+    {
+        if (ImGui::Selectable("Undo"))
+            am->Undo();
+        if (ImGui::Selectable("Redo"))
+            am->Redo();
+
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("ViewPopup"))
+    {
+        if (ImGui::Selectable("Wireframe"))
+            renderer->SetDebugMode(renderer->GetDebugMode() == DEBUG_WIREFRAME ? DEBUG_NONE : DEBUG_WIREFRAME);
+        if (ImGui::Selectable("Collision"))
+            renderer->SetDebugMode(renderer->GetDebugMode() == DEBUG_COLLISION ? DEBUG_NONE : DEBUG_COLLISION);
+        if (ImGui::Selectable("Proxy"))
+            renderer->EnableProxyRendering(!renderer->IsProxyRenderingEnabled());
+        if (ImGui::Selectable("Bounds"))
+        {
+            uint32_t newMode = (uint32_t(renderer->GetBoundsDebugMode()) + 1) % uint32_t(BoundsDebugMode::Count);
+            renderer->SetBoundsDebugMode((BoundsDebugMode)newMode);
+        }
+        if (ImGui::Selectable("Grid"))
+            ToggleGrid();
+        if (ImGui::Selectable("Stats"))
+            renderer->EnableStatsOverlay(!renderer->IsStatsOverlayEnabled());
+
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("WorldPopup"))
+    {
+        if (ImGui::Selectable("Spawn Node"))
+            LogDebug("Spawn Node!");
+        if (ImGui::Selectable("Spawn Basic"))
+            LogDebug("Spawn Basic!");
+        if (ImGui::Selectable("Clear World"))
+            am->DeleteAllNodes();
+        if (ImGui::Selectable("Bake Lighting"))
+            renderer->BeginLightBake();
+        if (ImGui::Selectable("Clear Baked Lighting"))
+        {
+            const std::vector<Node*>& nodes = GetWorld()->GatherNodes();
+            for (uint32_t a = 0; a < nodes.size(); ++a)
+            {
+                StaticMesh3D* meshNode = nodes[a]->As<StaticMesh3D>();
+                if (meshNode != nullptr)
+                {
+                    meshNode->ClearInstanceColors();
+                }
+            }
+        }
+        if (ImGui::Selectable("Toggle Transform Mode"))
+            GetEditorState()->GetViewport3D()->ToggleTransformMode();
+
+        ImGui::EndPopup();
+    }
+
+    // Draw 3D / 2D / Material combo box on top right corner.
+
+
+    ImGui::End();
+
+}
 
 void EditorImguiInit()
 {
@@ -29,38 +285,11 @@ void EditorImguiDraw()
 {
     ImGui::NewFrame();
 
-    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-    {
-        const float kDefaultWidth = 180.0f;
-        static float f = 0.0f;
-        static int counter = 0;
-
-        bool show_demo_window = true;
-        static glm::vec4 clear_color = {};
-        ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-        ImGui::SetNextWindowSize(ImVec2(kDefaultWidth, (float) GetEngineState()->mWindowHeight));
-        ImGuiWindowFlags windowFlags = 0;
-        windowFlags |= ImGuiWindowFlags_NoResize;
-        windowFlags |= ImGuiWindowFlags_NoCollapse;
-        windowFlags |= ImGuiWindowFlags_NoMove;
-
-        ImGui::Begin("Hello, world!", nullptr, windowFlags);                          // Create a window called "Hello, world!" and append into it.
-
-        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-        ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-        //ImGui::Checkbox("Another Window", &show_another_window);
-
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-        if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-            counter++;
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
-
-        ImGui::Text("Window Dim: <%d, %d>", (int)GetEngineState()->mWindowWidth, (int)GetEngineState()->mWindowHeight);
-        ImGui::End();
-    }
+    DrawMenu();
+    DrawScene();
+    DrawAssets();
+    DrawProperties();
+    DrawViewport();
 
     ImGui::Render();
 }
