@@ -15,6 +15,7 @@ AssetRegistry.txt
 *.dol
 *.elf
 CpuStats.csv
+imgui.ini
 
 # User-specific files
 *.suo
