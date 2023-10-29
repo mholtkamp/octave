@@ -9,6 +9,8 @@
 
 #if EDITOR
 #include "EditorState.h"
+#include "imgui.h"
+#include "backends/imgui_impl_vulkan.h"
 #endif
 
 #include "Graphics/GraphicsUtils.h"
@@ -53,6 +55,16 @@ void DestroyVulkanContext()
     OCT_ASSERT(gVulkanContext != nullptr);
     delete gVulkanContext;
     gVulkanContext = nullptr;
+}
+
+// Adding this function for Imgui. We can probably remove it.
+static void CheckVkResult(VkResult err)
+{
+    if (err == 0)
+        return;
+    LogError("[Vulkan] Error: VkResult = %d\n", err);
+    if (err < 0)
+        abort();
 }
 
 VulkanContext* GetVulkanContext()
@@ -152,6 +164,34 @@ void VulkanContext::Initialize()
     EnableMaterialPipelineCache(true);
 #endif
 
+#if EDITOR
+
+    ImGui_ImplVulkan_InitInfo initInfo = {};
+    initInfo.Instance = mInstance;
+    initInfo.PhysicalDevice = mPhysicalDevice;
+    initInfo.Device = mDevice;
+    initInfo.QueueFamily = mGraphicsQueueFamily;
+    initInfo.Queue = mGraphicsQueue;
+    initInfo.PipelineCache = mPipelineCache;
+    initInfo.DescriptorPool = mDescriptorPool;
+    initInfo.Subpass = 0;
+    initInfo.MinImageCount = MAX_FRAMES;
+    initInfo.ImageCount = MAX_FRAMES;
+    initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    initInfo.Allocator = nullptr;
+    initInfo.CheckVkResultFn = CheckVkResult;
+    ImGui_ImplVulkan_Init(&initInfo, mUIRenderPass);
+
+    // Upload Fonts
+    {
+        VkCommandBuffer cb = BeginCommandBuffer();
+        ImGui_ImplVulkan_CreateFontsTexture(cb);
+        EndCommandBuffer(cb);
+        DeviceWaitIdle();
+        ImGui_ImplVulkan_DestroyFontUploadObjects();
+    }
+#endif
+
     DeviceWaitIdle();
     mInitialized = true;
 }
@@ -159,6 +199,10 @@ void VulkanContext::Initialize()
 void VulkanContext::Destroy()
 {
     DeviceWaitIdle();
+
+#if EDITOR
+    ImGui_ImplVulkan_Shutdown();
+#endif
 
     mMaterialPipelineCache.Destroy();
 
@@ -248,6 +292,10 @@ void VulkanContext::BeginFrame()
     {
         mMaterialPipelineCache.Update();
     }
+
+#if EDITOR
+    ImGui_ImplVulkan_NewFrame();
+#endif
 }
 
 void VulkanContext::EndFrame()
@@ -434,6 +482,14 @@ void VulkanContext::EndRenderPass()
         SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight, true, false);
         SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight, true, false);
     }
+
+#if EDITOR
+    if (mCurrentRenderPassId == RenderPassId::Ui)
+    {
+        ImDrawData* draw_data = ImGui::GetDrawData();
+        ImGui_ImplVulkan_RenderDrawData(draw_data, mCommandBuffers[mFrameIndex]);
+    }
+#endif
 
     if (mCurrentRenderPassId != RenderPassId::Count)
     {
@@ -629,6 +685,9 @@ void VulkanContext::CreateSwapchain()
 
     QueueFamilyIndices indices = FindQueueFamilies(mPhysicalDevice);
     uint32_t queueFamilyIndices[] = { (uint32_t)indices.mGraphicsFamily, (uint32_t)indices.mPresentFamily };
+
+    mGraphicsQueueFamily = (uint32_t)indices.mGraphicsFamily;
+    mPresentQueueFamily = (uint32_t)indices.mPresentFamily;
 
     if (indices.mGraphicsFamily != indices.mPresentFamily)
     {

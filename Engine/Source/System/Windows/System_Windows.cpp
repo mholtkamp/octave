@@ -14,12 +14,24 @@
 #include <Shlobj.h>
 #include <assert.h>
 
+#if EDITOR
+#include "imgui.h"
+#include "backends/imgui_impl_win32.h"
+
+// Forward declare message handler from imgui_impl_win32.cpp
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#endif // EDITOR
+
 #define OCT_WINDOWED_STYLE_FLAGS (WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_SYSMENU)
 #define OCT_FULLSCREEN_STYLE_FLAGS (OCT_WINDOWED_STYLE_FLAGS & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU))
 
 // MS-Windows event handling function:
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+#if EDITOR
+    ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+#endif
+
     EngineState* engineState = GetEngineState();
 
     switch (uMsg) {
@@ -292,11 +304,18 @@ void SYS_Initialize()
     {
         SYS_SetFullscreen(true);
     }
+
+#if EDITOR
+    ImGui_ImplWin32_Init(hInst);
+
+#endif
 }
 
 void SYS_Shutdown()
 {
-
+#if EDITOR
+    ImGui_ImplWin32_Shutdown();
+#endif
 }
 
 void SYS_Update()
@@ -329,6 +348,10 @@ void SYS_Update()
             Quit();
         }
     }
+
+#if EDITOR
+    ImGui_ImplWin32_NewFrame();
+#endif
 }
 
 // Files

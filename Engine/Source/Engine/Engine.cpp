@@ -32,6 +32,7 @@
 
 #if EDITOR
 #include "EditorState.h"
+#include "EditorImgui.h"
 
 // Located in Editor/EditorMain.cpp
 void EditorMain(int32_t argc, char** argv);
@@ -297,6 +298,10 @@ bool Initialize(InitOptions& initOptions)
     }
 #endif 
 
+#if EDITOR
+    EditorImguiInit();
+#endif
+
     sEngineState.mInitialized = true;
 
     return true;
@@ -373,9 +378,11 @@ bool Update()
 
     NetworkManager::Get()->PostTickUpdate(realDeltaTime);
 
-    Renderer::Get()->Render(sWorld);
+#if EDITOR
+    EditorImguiDraw();
+#endif
 
-    // TODO-NODE: Render Imgui UI here?
+    Renderer::Get()->Render(sWorld);
 
     AssetManager::Get()->Update(realDeltaTime);
 
@@ -413,6 +420,10 @@ void Shutdown()
     INP_Shutdown();
     GFX_Shutdown();
     SYS_Shutdown();
+
+#if EDITOR
+    EditorImguiShutdown();
+#endif
 
     DestroyProfiler();
 

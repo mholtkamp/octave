@@ -204,6 +204,8 @@ private:
     VkQueue mGraphicsQueue = VK_NULL_HANDLE;
     VkQueue mPresentQueue = VK_NULL_HANDLE;
     VkSurfaceKHR mSurface = VK_NULL_HANDLE;
+    uint32_t mGraphicsQueueFamily = 0;
+    uint32_t mPresentQueueFamily = 0;
 
     // Pools
     VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;

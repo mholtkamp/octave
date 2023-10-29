@@ -5,8 +5,7 @@
 #include "imgui.h"
 
 void EditorImguiInit();
-void EditorImguiNewFrame();
-void EditorImguiRenderDrawData(ImDrawData* draw_data);
+void EditorImguiDraw();
 void EditorImguiShutdown();
 
 #endif
