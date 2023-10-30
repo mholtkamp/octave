@@ -103,6 +103,8 @@ static void DrawMenu()
 
 static void DrawScene()
 {
+    ActionManager* am = ActionManager::Get();
+
     const float halfHeight = (float)GetEngineState()->mWindowHeight / 2.0f;
 
     static float f = 0.0f;
@@ -142,15 +144,20 @@ static void DrawScene()
         bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
         bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
 
-        if (ImGui::BeginPopupContextItem()) // <-- use last item id as popup id
+        if (ImGui::BeginPopupContextItem())
         {
-            if (ImGui::Selectable("Rename"))
-            {
+            static char sNodeName[256] = {};
+            static bool sSetTextInputFocus = true;
 
+            if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
+            {
+                ImGui::OpenPopup("Rename Node");
+                strncpy(sNodeName, node->GetName().c_str(), 256);
+                sSetTextInputFocus = true;
             }
             if (ImGui::Selectable("Duplicate"))
             {
-
+                am->DuplicateNode(node);
             }
             if (ImGui::Selectable("Attach Selected"))
             {
@@ -187,6 +194,25 @@ static void DrawScene()
             {
 
             }
+
+
+            if (ImGui::BeginPopup("Rename Node"))
+            {
+                if (sSetTextInputFocus)
+                {
+                    ImGui::SetKeyboardFocusHere();
+                    sSetTextInputFocus = false;
+                }
+
+                if (ImGui::InputText("Node Name", sNodeName, 256, ImGuiInputTextFlags_EnterReturnsTrue))
+                {
+                    node->SetName(sNodeName);
+                }
+
+                ImGui::EndPopup();
+            }
+
+            sSetTextInputFocus = false;
 
             ImGui::EndPopup();
         }
