@@ -31,8 +31,8 @@ public:
 
     virtual bool IsNode3D() const override;
 
-    void AttachToBone(SkeletalMesh3D* parent, const char* boneName, bool keepWorldTransform = false);
-    void AttachToBone(SkeletalMesh3D* parent, int32_t boneIndex, bool keepWorldTransform = false);
+    void AttachToBone(SkeletalMesh3D* parent, const char* boneName, bool keepWorldTransform = false, int32_t childIndex = -1);
+    void AttachToBone(SkeletalMesh3D* parent, int32_t boneIndex, bool keepWorldTransform = false, int32_t childIndex = -1);
 
     void MarkTransformDirty();
     bool IsTransformDirty() const;
@@ -85,7 +85,7 @@ public:
     glm::mat4 GetParentTransform();
     int32_t GetParentBoneIndex() const;
 
-    virtual void Attach(Node* parent, bool keepWorldTransform = false) override;
+    virtual void Attach(Node* parent, bool keepWorldTransform = false, int32_t index = -1) override;
 
     static bool OnRep_RootPosition(Datum* datum, uint32_t index, const void* newValue);
     static bool OnRep_RootRotation(Datum* datum, uint32_t index, const void* newValue);

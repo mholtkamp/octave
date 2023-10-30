@@ -2314,8 +2314,7 @@ void ActionAttachNode::Execute()
     }
     else
     {
-       //mNode->Attach(mNewParent, mChildIndex, true);
-       mNewParent->AddChild(mNode, mChildIndex);
+       mNode->Attach(mNewParent, true, mChildIndex);
     }
 }
 
@@ -2333,8 +2332,7 @@ void ActionAttachNode::Reverse()
     }
     else
     {
-        //mNode->Attach(mPrevParent, mPrevChildIndex, true);
-        mPrevParent->AddChild(mNode, mPrevChildIndex);
+        mNode->Attach(mPrevParent, true, mPrevChildIndex);
     }
 }
 

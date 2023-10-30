@@ -191,7 +191,7 @@ public:
     const Node* GetParent() const;
     const std::vector<Node*>& GetChildren() const;
 
-    virtual void Attach(Node* parent, bool keepWorldTransform = false);
+    virtual void Attach(Node* parent, bool keepWorldTransform = false, int32_t index = -1);
     void Detach(bool keepWorldTransform = false);
     void AddChild(Node* child, int32_t index = -1);
     void RemoveChild(Node* child);

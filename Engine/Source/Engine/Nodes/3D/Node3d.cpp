@@ -156,13 +156,13 @@ bool Node3D::IsNode3D() const
     return true;
 }
 
-void Node3D::AttachToBone(SkeletalMesh3D* parent, const char* boneName, bool keepWorldTransform)
+void Node3D::AttachToBone(SkeletalMesh3D* parent, const char* boneName, bool keepWorldTransform, int32_t childIndex)
 {
     int32_t parentBoneIndex = parent->FindBoneIndex(boneName);
-    AttachToBone(parent, parentBoneIndex, keepWorldTransform);
+    AttachToBone(parent, parentBoneIndex, keepWorldTransform, childIndex);
 }
 
-void Node3D::AttachToBone(SkeletalMesh3D* parent, int32_t boneIndex, bool keepWorldTransform)
+void Node3D::AttachToBone(SkeletalMesh3D* parent, int32_t boneIndex, bool keepWorldTransform, int32_t childIndex)
 {
     glm::mat4 origWorldTransform;
     if (keepWorldTransform)
@@ -170,7 +170,7 @@ void Node3D::AttachToBone(SkeletalMesh3D* parent, int32_t boneIndex, bool keepWo
         origWorldTransform = GetTransform();
     }
 
-    Attach(parent);
+    Attach(parent, keepWorldTransform, childIndex);
     mParentBoneIndex = boneIndex;
 
     if (keepWorldTransform)
@@ -597,7 +597,7 @@ int32_t Node3D::GetParentBoneIndex() const
     return mParentBoneIndex;
 }
 
-void Node3D::Attach(Node* parent, bool keepWorldTransform)
+void Node3D::Attach(Node* parent, bool keepWorldTransform, int32_t index)
 {
     // Can't attach to self.
     OCT_ASSERT(parent != this);
@@ -634,12 +634,12 @@ void Node3D::Attach(Node* parent, bool keepWorldTransform)
         if (keepWorldTransform)
         {
             glm::mat4 transform = GetTransform();
-            parent->AddChild(this);
+            parent->AddChild(this, index);
             SetTransform(transform);
         }
         else
         {
-            parent->AddChild(this);
+            parent->AddChild(this, index);
         }
     }
 }

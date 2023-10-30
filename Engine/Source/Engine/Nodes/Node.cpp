@@ -1148,7 +1148,7 @@ const std::vector<Node*>& Node::GetChildren() const
     return mChildren;
 }
 
-void Node::Attach(Node* parent, bool keepWorldTransform)
+void Node::Attach(Node* parent, bool keepWorldTransform, int32_t index)
 {
     // Can't attach to self.
     OCT_ASSERT(parent != this);
@@ -1166,7 +1166,7 @@ void Node::Attach(Node* parent, bool keepWorldTransform)
     // Attach to new parent
     if (parent != nullptr)
     {
-        parent->AddChild(this);
+        parent->AddChild(this, index);
     }
 }
 
