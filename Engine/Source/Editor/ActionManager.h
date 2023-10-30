@@ -99,7 +99,6 @@ public:
     Asset* ImportAsset();
     Asset* ImportAsset(const std::string& path);
     void ImportScene(const SceneImportOptions& options);
-    void ShowBuildDataPrompt();
     void BuildData(Platform platform, bool embedded);
     void ClearWorld();
     void DeleteAllNodes();

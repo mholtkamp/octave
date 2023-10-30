@@ -159,11 +159,6 @@ void HandleBuildButtonPressed(Button* button)
 #endif
 }
 
-void ActionManager::ShowBuildDataPrompt()
-{
-
-}
-
 void ActionManager::BuildData(Platform platform, bool embedded)
 {
     const EngineState* engineState = GetEngineState();

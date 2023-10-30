@@ -27,6 +27,39 @@
 static const float kSidePaneWidth = 200.0f;
 static const ImGuiWindowFlags kPaneWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove;
 
+
+static void DrawPackagePopup()
+{
+    ActionManager* am = ActionManager::Get();
+
+    //if (ImGui::BeginPopup("PackagePopup"))
+    //{
+#if PLATFORM_WINDOWS
+    if (ImGui::Selectable("Windows"))
+        am->BuildData(Platform::Windows, false);
+#elif PLATFORM_LINUX
+    if (ImGui::Selectable("Linux"))
+        am->BuildData(Platform::Linux, false);
+#endif
+    if (ImGui::Selectable("Android"))
+        am->BuildData(Platform::Android, false);
+    if (ImGui::Selectable("GameCube"))
+        am->BuildData(Platform::GameCube, false);
+    if (ImGui::Selectable("Wii"))
+        am->BuildData(Platform::Wii, false);
+    if (ImGui::Selectable("3DS"))
+        am->BuildData(Platform::N3DS, false);
+    if (ImGui::Selectable("GameCube Embedded"))
+        am->BuildData(Platform::GameCube, true);
+    if (ImGui::Selectable("Wii Embedded"))
+        am->BuildData(Platform::Wii, true);
+    if (ImGui::Selectable("3DS Embedded"))
+        am->BuildData(Platform::N3DS, true);
+
+    //    ImGui::EndPopup();
+    //}
+}
+
 static void DrawMenu()
 {
 
@@ -255,30 +288,10 @@ static void DrawViewport()
             ImGui::OpenPopup("PackagePopup");
         }
 
+        // Popups
         if (ImGui::BeginPopup("PackagePopup"))
         {
-#if PLATFORM_WINDOWS
-            if (ImGui::Selectable("Windows"))
-                am->BuildData(Platform::Windows, false);
-#elif PLATFORM_LINUX
-            if (ImGui::Selectable("Linux"))
-                am->BuildData(Platform::Linux, false);
-#endif
-            if (ImGui::Selectable("Android"))
-                am->BuildData(Platform::Android, false);
-            if (ImGui::Selectable("GameCube"))
-                am->BuildData(Platform::GameCube, false);
-            if (ImGui::Selectable("Wii"))
-                am->BuildData(Platform::Wii, false);
-            if (ImGui::Selectable("3DS"))
-                am->BuildData(Platform::N3DS, false);
-            if (ImGui::Selectable("GameCube Embedded"))
-                am->BuildData(Platform::GameCube, true);
-            if (ImGui::Selectable("Wii Embedded"))
-                am->BuildData(Platform::Wii, true);
-            if (ImGui::Selectable("3DS Embedded"))
-                am->BuildData(Platform::N3DS, true);
-
+            DrawPackagePopup();
             ImGui::EndPopup();
         }
 
