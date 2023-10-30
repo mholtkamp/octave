@@ -161,7 +161,7 @@ static void DrawScene()
             }
             if (ImGui::Selectable("Attach Selected"))
             {
-
+                am->AttachSelectedNodes(node, -1);
             }
 
             if (node->As<SkeletalMesh3D>())

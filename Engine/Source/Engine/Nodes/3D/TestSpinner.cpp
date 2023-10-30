@@ -88,6 +88,9 @@ void TestSpinner::Tick(float deltaTime)
 {
     StaticMesh3D::Tick(deltaTime);
 
+    if (!mSpin)
+        return;
+
     static bool rotate = true;
     static bool translate = false;
     static bool scale = false;
@@ -139,6 +142,12 @@ void TestSpinner::Tick(float deltaTime)
 void TestSpinner::EditorTick(float deltaTime)
 {
     Tick(deltaTime);
+}
+
+void TestSpinner::GatherProperties(std::vector<Property>& props)
+{
+    StaticMesh3D::GatherProperties(props);
+    props.push_back(Property(DatumType::Bool, "Spin", this, &mSpin));
 }
 
 #endif

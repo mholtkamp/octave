@@ -1942,6 +1942,45 @@ void ActionManager::DuplicateNode(Node* node)
     GetEditorState()->SetSelectedNode(newNode);
 }
 
+void ActionManager::AttachSelectedNodes(Node* newParent, int32_t boneIdx)
+{
+    if (newParent == nullptr)
+        return;
+
+    std::vector<Node*> selNodes = GetEditorState()->GetSelectedNodes();
+
+    if (selNodes.size() == 0)
+        return;
+
+    for (uint32_t i = 0; i < selNodes.size(); ++i)
+    {
+        Node* child = selNodes[i];
+        Node* parent = newParent;
+
+        int32_t boneIndex = -1;
+
+        if (child->As<Node3D>())
+        {
+            boneIndex = child->As<Node3D>()->GetParentBoneIndex();
+        }
+
+        if (child->GetParent() != parent ||
+            boneIdx != boneIndex)
+        {
+            // TODO: Do one EXE for all nodes so user doesn't have to CTRL+Z N times.
+            ActionManager::Get()->EXE_AttachNode(child, parent, -1, boneIdx);
+
+            // Reparenting components should break the scene link.
+            // For now, you cannot override scene instance children
+            if (newParent->GetParent() != GetWorld()->GetRootNode())
+            {
+                newParent->SetScene(nullptr);
+            }
+        }
+    }
+
+}
+
 // ---------------------------
 // --------- ACTIONS ---------
 // ---------------------------
@@ -2271,10 +2310,11 @@ void ActionAttachNode::Execute()
         Node3D* node3d = mNode->As<Node3D>();
         SkeletalMesh3D* skParent = mNewParent->As<SkeletalMesh3D>();
 
-        node3d->AttachToBone(skParent, mBoneIndex);
+        node3d->AttachToBone(skParent, mBoneIndex, true);
     }
     else
     {
+       //mNode->Attach(mNewParent, mChildIndex, true);
        mNewParent->AddChild(mNode, mChildIndex);
     }
 }
@@ -2293,6 +2333,7 @@ void ActionAttachNode::Reverse()
     }
     else
     {
+        //mNode->Attach(mPrevParent, mPrevChildIndex, true);
         mPrevParent->AddChild(mNode, mPrevChildIndex);
     }
 }

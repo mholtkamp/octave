@@ -107,6 +107,7 @@ public:
     void DeleteAsset(AssetStub* stub);
     void DeleteAssetDir(AssetDir* dir);
     void DuplicateNode(Node* node);
+    void AttachSelectedNodes(Node* newParent, int32_t boneIdx);
 };
 
 #define DECLARE_ACTION_INTERFACE(Name) \
