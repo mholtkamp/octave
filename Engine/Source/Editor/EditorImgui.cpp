@@ -70,7 +70,7 @@ static void DrawScene()
         }
         
         bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
-        bool nodeClicked = ImGui::IsItemClicked(); // && !ImGui::IsItemToggledOpen()
+        bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
 
         if (nodeOpen)
         {
