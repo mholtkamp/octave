@@ -146,13 +146,13 @@ static void DrawScene()
 
         if (ImGui::BeginPopupContextItem())
         {
-            static char sNodeName[256] = {};
+            static char sTextInputBuffer[256] = {};
             static bool sSetTextInputFocus = true;
 
             if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
             {
                 ImGui::OpenPopup("Rename Node");
-                strncpy(sNodeName, node->GetName().c_str(), 256);
+                strncpy(sTextInputBuffer, node->GetName().c_str(), 256);
                 sSetTextInputFocus = true;
             }
             if (ImGui::Selectable("Duplicate"))
@@ -166,9 +166,10 @@ static void DrawScene()
 
             if (node->As<SkeletalMesh3D>())
             {
-                if (ImGui::Selectable("Attach To Bone"))
+                if (ImGui::Selectable("Attach Selected To Bone"))
                 {
-
+                    ImGui::OpenPopup("Attach Selected To Bone");
+                    sSetTextInputFocus = true;
                 }
             }
 
@@ -195,6 +196,7 @@ static void DrawScene()
 
             }
 
+            // Sub Popups
 
             if (ImGui::BeginPopup("Rename Node"))
             {
@@ -204,12 +206,31 @@ static void DrawScene()
                     sSetTextInputFocus = false;
                 }
 
-                if (ImGui::InputText("Node Name", sNodeName, 256, ImGuiInputTextFlags_EnterReturnsTrue))
+                if (ImGui::InputText("Node Name", sTextInputBuffer, 256, ImGuiInputTextFlags_EnterReturnsTrue))
                 {
-                    node->SetName(sNodeName);
+                    node->SetName(sTextInputBuffer);
                 }
 
                 ImGui::EndPopup();
+            }
+
+            if (ImGui::BeginPopup("Attach Selected To Bone"))
+            {
+                if (sSetTextInputFocus)
+                {
+                    ImGui::SetKeyboardFocusHere();
+                    sSetTextInputFocus = false;
+                }
+
+                if (ImGui::InputText("Bone Name", sTextInputBuffer, 256, ImGuiInputTextFlags_EnterReturnsTrue))
+                {
+                    SkeletalMesh3D* skNode = node->As<SkeletalMesh3D>();
+                    if (skNode)
+                    {
+                        int32_t boneIdx = skNode->FindBoneIndex(sTextInputBuffer);
+                        am->AttachSelectedNodes(skNode, boneIdx);
+                    }
+                }
             }
 
             sSetTextInputFocus = false;
