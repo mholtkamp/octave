@@ -75,6 +75,71 @@ static void DiscoverNodeClasses()
     }
 }
 
+static void DrawAddNodeMenu(Node* node)
+{
+    ActionManager* am = ActionManager::Get();
+
+    if (!sNodesDiscovered)
+    {
+        DiscoverNodeClasses();
+        sNodesDiscovered = true;
+    }
+
+    if (ImGui::MenuItem("Node"))
+    {
+        Node* newNode = node ? node->CreateChild(Node::GetStaticType()) : GetWorld()->SpawnNode(Node::GetStaticType());
+        am->EXE_SpawnNode(newNode);
+        GetEditorState()->SetSelectedNode(newNode);
+    }
+
+    if (ImGui::BeginMenu("3D"))
+    {
+        for (uint32_t i = 0; i < sNode3dNames.size(); ++i)
+        {
+            if (ImGui::MenuItem(sNode3dNames[i].c_str()))
+            {
+                const char* nodeName = sNode3dNames[i].c_str();
+                Node* newNode = node ? node->CreateChild(nodeName) : GetWorld()->SpawnNode(nodeName);
+                am->EXE_SpawnNode(newNode);
+                GetEditorState()->SetSelectedNode(newNode);
+            }
+        }
+        ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("Widget"))
+    {
+        for (uint32_t i = 0; i < sNodeWidgetNames.size(); ++i)
+        {
+            if (ImGui::MenuItem(sNodeWidgetNames[i].c_str()))
+            {
+                const char* nodeName = sNodeWidgetNames[i].c_str();
+                Node* newNode = node ? node->CreateChild(nodeName) : GetWorld()->SpawnNode(nodeName);
+                am->EXE_SpawnNode(newNode);
+                GetEditorState()->SetSelectedNode(newNode);
+            }
+        }
+
+        ImGui::EndMenu();
+    }
+
+    if (sNodeOtherNames.size() > 0 &&
+        ImGui::BeginMenu("Other"))
+    {
+        for (uint32_t i = 0; i < sNodeOtherNames.size(); ++i)
+        {
+            if (ImGui::MenuItem(sNodeOtherNames[i].c_str()))
+            {
+                const char* nodeName = sNodeOtherNames[i].c_str();
+                Node* newNode = node ? node->CreateChild(nodeName) : GetWorld()->SpawnNode(nodeName);
+                am->EXE_SpawnNode(newNode);
+                GetEditorState()->SetSelectedNode(newNode);
+            }
+        }
+
+        ImGui::EndMenu();
+    }
+}
 
 static void DrawSpawnBasicMenu()
 {
@@ -153,24 +218,20 @@ static void DrawScene()
 
     const float halfHeight = (float)GetEngineState()->mWindowHeight / 2.0f;
 
-    static float f = 0.0f;
-    static int counter = 0;
-
-    bool show_demo_window = true;
-    static glm::vec4 clear_color = {};
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
     ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, halfHeight));
 
     ImGui::Begin("Scene", nullptr, kPaneWindowFlags);
 
-    ImGuiTreeNodeFlags treeNodeFlags = 
-        ImGuiTreeNodeFlags_OpenOnArrow 
-        | ImGuiTreeNodeFlags_OpenOnDoubleClick 
+    ImGuiTreeNodeFlags treeNodeFlags =
+        ImGuiTreeNodeFlags_OpenOnArrow
+        | ImGuiTreeNodeFlags_OpenOnDoubleClick
         | ImGuiTreeNodeFlags_SpanAvailWidth
         | ImGuiTreeNodeFlags_DefaultOpen;
 
     World* world = GetWorld();
     Node* rootNode = world ? world->GetRootNode() : nullptr;
+    bool sNodeContextActive = false;
 
     std::function<void(Node*)> drawTree = [&](Node* node)
     {
@@ -186,7 +247,7 @@ static void DrawScene()
         {
             nodeFlags |= ImGuiTreeNodeFlags_Leaf;
         }
-        
+
         bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
         bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
 
@@ -194,6 +255,8 @@ static void DrawScene()
         {
             static char sTextInputBuffer[256] = {};
             static bool sSetTextInputFocus = true;
+
+            sNodeContextActive = true;
 
             if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
             {
@@ -225,71 +288,14 @@ static void DrawScene()
             {
                 am->EXE_DeleteNode(node);
             }
-            if (node->As<StaticMesh3D>() && 
+            if (node->As<StaticMesh3D>() &&
                 ImGui::Selectable("Merge"))
             {
                 LogDebug("TODO: Implement Merge for static meshes.");
             }
             if (ImGui::BeginMenu("Add Node"))
             {
-                if (!sNodesDiscovered)
-                {
-                    DiscoverNodeClasses();
-                    sNodesDiscovered = true;
-                }
-
-                if (ImGui::MenuItem("Node"))
-                {
-                    Node* newNode = node->CreateChild(Node::GetStaticType());
-                    am->EXE_SpawnNode(newNode);
-                    GetEditorState()->SetSelectedNode(newNode);
-                }
-
-                if (ImGui::BeginMenu("3D"))
-                {
-                    for (uint32_t i = 0; i < sNode3dNames.size(); ++i)
-                    {
-                        if (ImGui::MenuItem(sNode3dNames[i].c_str()))
-                        {
-                            Node* newNode = node->CreateChild(sNode3dNames[i].c_str());
-                            am->EXE_SpawnNode(newNode);
-                            GetEditorState()->SetSelectedNode(newNode);
-                        }
-                    }
-                    ImGui::EndMenu();
-                }
-
-                if (ImGui::BeginMenu("Widget"))
-                {
-                    for (uint32_t i = 0; i < sNodeWidgetNames.size(); ++i)
-                    {
-                        if (ImGui::MenuItem(sNodeWidgetNames[i].c_str()))
-                        {
-                            Node* newNode = node->CreateChild(sNodeWidgetNames[i].c_str());
-                            am->EXE_SpawnNode(newNode);
-                            GetEditorState()->SetSelectedNode(newNode);
-                        }
-                    }
-
-                    ImGui::EndMenu();
-                }
-
-                if (sNodeOtherNames.size() > 0 &&
-                    ImGui::BeginMenu("Other"))
-                {
-                    for (uint32_t i = 0; i < sNodeOtherNames.size(); ++i)
-                    {
-                        if (ImGui::MenuItem(sNodeOtherNames[i].c_str()))
-                        {
-                            Node* newNode = node->CreateChild(sNodeOtherNames[i].c_str());
-                            am->EXE_SpawnNode(newNode);
-                            GetEditorState()->SetSelectedNode(newNode);
-                        }
-                    }
-
-                    ImGui::EndMenu();
-                }
-
+                DrawAddNodeMenu(node);
                 ImGui::EndMenu();
             }
             if (ImGui::Selectable("Add Scene..."))
@@ -378,6 +384,26 @@ static void DrawScene()
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 6.0f);
         drawTree(rootNode);
         ImGui::PopStyleVar();
+    }
+
+    // If no popup was opened and we right clicked somehwere...
+    if (!ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup) &&
+        ImGui::IsMouseReleased(ImGuiMouseButton_Right) &&
+        ImGui::IsWindowHovered() &&
+        !sNodeContextActive)
+    {
+        ImGui::OpenPopup("Null Node Context");
+    }
+
+    if (ImGui::BeginPopup("Null Node Context"))
+    {
+        if (ImGui::BeginMenu("Spawn Node"))
+        {
+            DrawAddNodeMenu(nullptr);
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndPopup();
     }
 
     ImGui::End();

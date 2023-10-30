@@ -1094,8 +1094,7 @@ void ActionManager::DeleteSelectedNodes()
         // TODO-NODE: Previously we checked here if the node was the World's active camera.
         //   Now that we use a totally separate editor camera in EditorState, I removed the check.
         //   Verify editor cam works as expected.
-        if (nodes[i] == nullptr ||
-            nodes[i] != GetEditorState()->GetEditorCamera())
+        if (nodes[i] == nullptr)
         {
             nodes.erase(nodes.begin() + i);
             --i;
@@ -2261,7 +2260,18 @@ void ActionDeleteNodes::Execute()
         }
         else
         {
-            mNodes[i]->Detach();
+            if (mParents[i] != nullptr)
+            {
+                mNodes[i]->Detach();
+            }
+            else
+            {
+                // We must be deleting the root node
+                OCT_ASSERT(mNodes.size() == 1);
+                OCT_ASSERT(GetWorld()->GetRootNode() == mNodes[i]);
+                GetWorld()->SetRootNode(nullptr);
+            }
+
             ActionManager::Get()->ExileNode(mNodes[i]);
         }
     }
