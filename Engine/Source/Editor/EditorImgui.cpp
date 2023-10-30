@@ -43,19 +43,7 @@ static void DrawScene()
 
     ImGui::Begin("Scene", nullptr, kPaneWindowFlags);
 
-    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-    ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-    //ImGui::Checkbox("Another Window", &show_another_window);
 
-    ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-    if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-        counter++;
-    ImGui::SameLine();
-    ImGui::Text("counter = %d", counter);
-
-    ImGui::Text("Window Dim: <%d, %d>", (int)GetEngineState()->mWindowWidth, (int)GetEngineState()->mWindowHeight);
     ImGui::End();
 }
 
@@ -295,6 +283,12 @@ void EditorImguiInit()
     colors[ImGuiCol_Tab] = ImVec4(0.20f, 0.20f, 0.68f, 1.00f);
     colors[ImGuiCol_TabHovered] = ImVec4(0.26f, 0.61f, 0.98f, 0.80f);
     colors[ImGuiCol_TabActive] = ImVec4(0.12f, 0.50f, 0.47f, 1.00f);
+
+
+
+    // Set unactive window title bg equal to active title.
+    colors[ImGuiCol_TitleBg] = colors[ImGuiCol_TitleBgActive];
+
 }
 
 void EditorImguiDraw()
