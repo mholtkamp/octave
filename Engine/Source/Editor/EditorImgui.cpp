@@ -240,7 +240,7 @@ static void DrawViewport()
     }
 
     // (2) Draw Scene tabs on top
-    const ImGuiTabBarFlags kSceneTabBarFlags = ImGuiTabBarFlags_Reorderable;
+    const ImGuiTabBarFlags kSceneTabBarFlags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyScroll;
     ImGui::SameLine(0.0f, 20.0f);
     //ImGui::PushStyleColor(ImGuiCol_Tab, ImVec4(0.6f, 0.2f, 0.2f, 1.0f));
     static int32_t sActiveScene = 0;
