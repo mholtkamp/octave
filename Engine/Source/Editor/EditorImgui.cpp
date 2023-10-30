@@ -64,32 +64,32 @@ static void DrawSpawnBasicMenu()
         am->SpawnBasicNode(BASIC_TEXT_MESH, spawnPos, selAsset);
 }
 
-static void DrawPackagePopup()
+static void DrawPackageMenu()
 {
     ActionManager* am = ActionManager::Get();
 
     //if (ImGui::BeginPopup("PackagePopup"))
     //{
 #if PLATFORM_WINDOWS
-    if (ImGui::Selectable("Windows"))
+    if (ImGui::MenuItem("Windows"))
         am->BuildData(Platform::Windows, false);
 #elif PLATFORM_LINUX
-    if (ImGui::Selectable("Linux"))
+    if (ImGui::MenuItem("Linux"))
         am->BuildData(Platform::Linux, false);
 #endif
-    if (ImGui::Selectable("Android"))
+    if (ImGui::MenuItem("Android"))
         am->BuildData(Platform::Android, false);
-    if (ImGui::Selectable("GameCube"))
+    if (ImGui::MenuItem("GameCube"))
         am->BuildData(Platform::GameCube, false);
-    if (ImGui::Selectable("Wii"))
+    if (ImGui::MenuItem("Wii"))
         am->BuildData(Platform::Wii, false);
-    if (ImGui::Selectable("3DS"))
+    if (ImGui::MenuItem("3DS"))
         am->BuildData(Platform::N3DS, false);
-    if (ImGui::Selectable("GameCube Embedded"))
+    if (ImGui::MenuItem("GameCube Embedded"))
         am->BuildData(Platform::GameCube, true);
-    if (ImGui::Selectable("Wii Embedded"))
+    if (ImGui::MenuItem("Wii Embedded"))
         am->BuildData(Platform::Wii, true);
-    if (ImGui::Selectable("3DS Embedded"))
+    if (ImGui::MenuItem("3DS Embedded"))
         am->BuildData(Platform::N3DS, true);
 
     //    ImGui::EndPopup();
@@ -319,16 +319,10 @@ static void DrawViewport()
             ReloadAllScripts();
         //if (ImGui::Selectable("Import Scene"))
         //    YYY;
-        if (ImGui::Selectable("Package Project", false, ImGuiSelectableFlags_DontClosePopups))
+        if (ImGui::BeginMenu("Package Project"))
         {
-            ImGui::OpenPopup("PackagePopup");
-        }
-
-        // Popups
-        if (ImGui::BeginPopup("PackagePopup"))
-        {
-            DrawPackagePopup();
-            ImGui::EndPopup();
+            DrawPackageMenu();
+            ImGui::EndMenu();
         }
 
         ImGui::EndPopup();
