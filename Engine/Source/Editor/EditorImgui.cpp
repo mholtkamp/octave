@@ -6,6 +6,7 @@
 #include "EditorUtils.h"
 #include "EditorConstants.h"
 #include "Renderer.h"
+#include "InputDevices.h"
 #include "Log.h"
 #include "Grid.h"
 
@@ -29,37 +30,37 @@
 static const float kSidePaneWidth = 200.0f;
 static const ImGuiWindowFlags kPaneWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove;
 
-static void DrawSpawnBasicPopup()
+static void DrawSpawnBasicMenu()
 {
     ActionManager* am = ActionManager::Get();
     glm::vec3 spawnPos = EditorGetFocusPosition();
     Asset* selAsset = GetEditorState()->GetSelectedAsset();
 
-    if (ImGui::Selectable(BASIC_NODE_3D))
+    if (ImGui::MenuItem(BASIC_NODE_3D))
         am->SpawnBasicNode(BASIC_NODE_3D, spawnPos, selAsset);
-    if (ImGui::Selectable(BASIC_STATIC_MESH))
+    if (ImGui::MenuItem(BASIC_STATIC_MESH))
         am->SpawnBasicNode(BASIC_STATIC_MESH, spawnPos, selAsset);
-    if (ImGui::Selectable(BASIC_SKELETAL_MESH))
+    if (ImGui::MenuItem(BASIC_SKELETAL_MESH))
         am->SpawnBasicNode(BASIC_SKELETAL_MESH, spawnPos, selAsset);
-    if (ImGui::Selectable(BASIC_POINT_LIGHT))
+    if (ImGui::MenuItem(BASIC_POINT_LIGHT))
         am->SpawnBasicNode(BASIC_POINT_LIGHT, spawnPos, selAsset);
-    if (ImGui::Selectable(BASIC_DIRECTIONAL_LIGHT))
+    if (ImGui::MenuItem(BASIC_DIRECTIONAL_LIGHT))
         am->SpawnBasicNode(BASIC_DIRECTIONAL_LIGHT, spawnPos, selAsset);
-    if (ImGui::Selectable(BASIC_PARTICLE))
+    if (ImGui::MenuItem(BASIC_PARTICLE))
         am->SpawnBasicNode(BASIC_PARTICLE, spawnPos, selAsset);
-    if (ImGui::Selectable(BASIC_AUDIO))
+    if (ImGui::MenuItem(BASIC_AUDIO))
         am->SpawnBasicNode(BASIC_AUDIO, spawnPos, selAsset);
-    if (ImGui::Selectable(BASIC_BOX))
+    if (ImGui::MenuItem(BASIC_BOX))
         am->SpawnBasicNode(BASIC_BOX, spawnPos, selAsset);
-    if (ImGui::Selectable(BASIC_SPHERE))
+    if (ImGui::MenuItem(BASIC_SPHERE))
         am->SpawnBasicNode(BASIC_SPHERE, spawnPos, selAsset);
-    if (ImGui::Selectable(BASIC_CAPSULE))
+    if (ImGui::MenuItem(BASIC_CAPSULE))
         am->SpawnBasicNode(BASIC_CAPSULE, spawnPos, selAsset);
-    if (ImGui::Selectable(BASIC_SCENE))
+    if (ImGui::MenuItem(BASIC_SCENE))
         am->SpawnBasicNode(BASIC_SCENE, spawnPos, selAsset);
-    if (ImGui::Selectable(BASIC_CAMERA))
+    if (ImGui::MenuItem(BASIC_CAMERA))
         am->SpawnBasicNode(BASIC_CAMERA, spawnPos, selAsset);
-    if (ImGui::Selectable(BASIC_TEXT_MESH))
+    if (ImGui::MenuItem(BASIC_TEXT_MESH))
         am->SpawnBasicNode(BASIC_TEXT_MESH, spawnPos, selAsset);
 }
 
@@ -368,8 +369,11 @@ static void DrawViewport()
     {
         if (ImGui::Selectable("Spawn Node"))
             LogDebug("Spawn Node!");
-        if (ImGui::Selectable("Spawn Basic", false, ImGuiSelectableFlags_DontClosePopups))
-            ImGui::OpenPopup("Spawn Basic");
+        if (ImGui::BeginMenu("Spawn Basic"))
+        {
+            DrawSpawnBasicMenu();
+            ImGui::EndMenu();
+        }
         if (ImGui::Selectable("Clear World"))
             am->DeleteAllNodes();
         if (ImGui::Selectable("Bake Lighting"))
@@ -388,12 +392,6 @@ static void DrawViewport()
         }
         if (ImGui::Selectable("Toggle Transform Mode"))
             GetEditorState()->GetViewport3D()->ToggleTransformMode();
-
-        if (ImGui::BeginPopup("Spawn Basic"))
-        {
-            DrawSpawnBasicPopup();
-            ImGui::EndPopup();
-        }
 
         ImGui::EndPopup();
     }
@@ -432,6 +430,28 @@ static void DrawViewport()
 
     // Draw 3D / 2D / Material combo box on top right corner.
 
+
+    // Hotkey Menus
+    if (GetEditorState()->GetViewport3D()->ShouldHandleInput())
+    {
+        const bool ctrlDown = IsControlDown();
+        bool shiftDown = IsShiftDown();
+        const bool altDown = IsAltDown();
+
+        //ImGuiIO& io = ImGui::GetIO();
+        //ImGui::SetNextWindowPos(io.MousePos);
+
+        if (shiftDown && IsKeyJustDown(KEY_A))
+        {
+            ImGui::OpenPopup("Spawn Basic");
+        }
+    }
+
+    if (ImGui::BeginPopup("Spawn Basic"))
+    {
+        DrawSpawnBasicMenu();
+        ImGui::EndPopup();
+    }
 
     ImGui::End();
 
