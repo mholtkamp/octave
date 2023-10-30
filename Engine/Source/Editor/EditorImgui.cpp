@@ -240,7 +240,9 @@ static void DrawScene()
 
                 if (ImGui::MenuItem("Node"))
                 {
-                    LogDebug("Spawn Node");
+                    Node* newNode = node->CreateChild(Node::GetStaticType());
+                    am->EXE_SpawnNode(newNode);
+                    GetEditorState()->SetSelectedNode(newNode);
                 }
 
                 if (ImGui::BeginMenu("3D"))
