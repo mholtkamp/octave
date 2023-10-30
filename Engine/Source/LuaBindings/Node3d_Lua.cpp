@@ -12,13 +12,19 @@ int Node3D_Lua::AttachToBone(lua_State* L)
     SkeletalMesh3D* newParent = CHECK_SKELETAL_MESH_3D(L, 2);
     const char* boneName = CHECK_STRING(L, 3);
     bool keepWorldTransform = false;
+    int32_t childIndex = -1;
 
     if (!lua_isnone(L, 4))
     {
         keepWorldTransform = CHECK_BOOLEAN(L, 4);
     }
 
-    comp->AttachToBone(newParent, boneName, keepWorldTransform);
+    if (!lua_isnone(L, 5))
+    {
+        childIndex = CHECK_INTEGER(L, 5);
+    }
+
+    comp->AttachToBone(newParent, boneName, keepWorldTransform, childIndex);
 
     return 0;
 }

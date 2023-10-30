@@ -179,6 +179,7 @@ int Node_Lua::Attach(lua_State* L)
     Node* node = CHECK_NODE(L, 1);
     Node* newParent = nullptr;
     bool keepWorldTransform = false;
+    int32_t childIndex = -1;
 
     if (!lua_isnil(L, 2))
     {
@@ -188,8 +189,12 @@ int Node_Lua::Attach(lua_State* L)
     {
         keepWorldTransform = CHECK_BOOLEAN(L, 3);
     }
+    if (!lua_isnone(L, 4))
+    {
+        childIndex = CHECK_INTEGER(L, 4);
+    }
 
-    node->Attach(newParent, keepWorldTransform);
+    node->Attach(newParent, keepWorldTransform, childIndex);
 
     return 0;
 }
