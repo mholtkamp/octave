@@ -13,6 +13,8 @@
 #include "ActionManager.h"
 #include "EditorState.h"
 
+#include <functional>
+
 #include "backends/imgui_impl_vulkan.cpp"
 
 #if PLATFORM_WINDOWS
@@ -43,6 +45,71 @@ static void DrawScene()
 
     ImGui::Begin("Scene", nullptr, kPaneWindowFlags);
 
+    ImGuiTreeNodeFlags treeNodeFlags = 
+        ImGuiTreeNodeFlags_OpenOnArrow 
+        | ImGuiTreeNodeFlags_OpenOnDoubleClick 
+        | ImGuiTreeNodeFlags_SpanAvailWidth
+        | ImGuiTreeNodeFlags_DefaultOpen;
+
+    World* world = GetWorld();
+    Node* rootNode = world ? world->GetRootNode() : nullptr;
+
+    std::function<void(Node*)> drawTree = [&](Node* node)
+    {
+        bool nodeSelected = GetEditorState()->IsNodeSelected(node);
+
+        ImGuiTreeNodeFlags nodeFlags = treeNodeFlags;
+        if (nodeSelected)
+        {
+            nodeFlags |= ImGuiTreeNodeFlags_Selected;
+        }
+
+        if (node->GetNumChildren() == 0)
+        {
+            nodeFlags |= ImGuiTreeNodeFlags_Leaf;
+        }
+        
+        bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
+        bool nodeClicked = ImGui::IsItemClicked(); // && !ImGui::IsItemToggledOpen()
+
+        if (nodeOpen)
+        {
+            for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
+            {
+                Node* child = node->GetChild(i);
+                drawTree(child);
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (nodeClicked)
+        {
+            if (nodeSelected)
+            {
+                GetEditorState()->DeselectNode(node);
+            }
+            else
+            {
+                if (ImGui::GetIO().KeyCtrl)
+                {
+                    GetEditorState()->AddSelectedNode(node, false);
+                }
+                else
+                {
+                    GetEditorState()->SetSelectedNode(node);
+                }
+            }
+        }
+
+    };
+
+    if (rootNode != nullptr)
+    {
+        ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 6.0f);
+        drawTree(rootNode);
+        ImGui::PopStyleVar();
+    }
 
     ImGui::End();
 }
