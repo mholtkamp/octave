@@ -2204,8 +2204,19 @@ void ActionSpawnNodes::Reverse()
 {
     for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
+
+        if (mParents[i] != nullptr)
+        {
+            mNodes[i]->Detach();
+        }
+        else
+        {
+            OCT_ASSERT(mNodes.size() == 1);
+            OCT_ASSERT(GetWorld()->GetRootNode() == mNodes[i]);
+            GetWorld()->SetRootNode(nullptr);
+        }
+
         ActionManager::Get()->ExileNode(mNodes[i]);
-        mNodes[i]->Detach();
     }
 
     mReversed = true;
