@@ -2354,16 +2354,16 @@ ActionSetRootNode::ActionSetRootNode(Node* newRoot)
 
 void ActionSetRootNode::Execute()
 {
-    mNewRoot->Detach();
+    mNewRoot->Detach(true);
     GetWorld()->SetRootNode(mNewRoot);
-    mNewRoot->AddChild(mOldRoot);
+    mOldRoot->Attach(mNewRoot, true);
 }
 
 void ActionSetRootNode::Reverse()
 {
-    mOldRoot->Detach();
+    mOldRoot->Detach(true);
     GetWorld()->SetRootNode(mOldRoot);
-    mNewRootParent->AddChild(mNewRoot, mNewRootChildIndex);
+    mNewRoot->Attach(mNewRootParent, true, mNewRootChildIndex);
 }
 
 ActionSetAbsoluteRotation::ActionSetAbsoluteRotation(Node3D* node, glm::quat rot)

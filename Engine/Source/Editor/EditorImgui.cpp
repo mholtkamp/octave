@@ -163,7 +163,6 @@ static void DrawScene()
             {
                 am->AttachSelectedNodes(node, -1);
             }
-
             if (node->As<SkeletalMesh3D>())
             {
                 if (ImGui::Selectable("Attach Selected To Bone"))
@@ -172,25 +171,23 @@ static void DrawScene()
                     sSetTextInputFocus = true;
                 }
             }
-
             if (ImGui::Selectable("Set Root Node"))
             {
-
+                am->EXE_SetRootNode(node);
             }
-
             if (ImGui::Selectable("Delete"))
             {
-
+                am->EXE_DeleteNode(node);
             }
-            if (ImGui::Selectable("Merge"))
+            if (node->As<StaticMesh3D>() && 
+                ImGui::Selectable("Merge"))
             {
-
+                LogDebug("TODO: Implement Merge for static meshes.");
             }
             if (ImGui::Selectable("Add Node..."))
             {
 
             }
-
             if (ImGui::Selectable("Add Scene..."))
             {
 
