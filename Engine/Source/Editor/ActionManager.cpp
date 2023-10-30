@@ -1957,6 +1957,9 @@ void ActionManager::AttachSelectedNodes(Node* newParent, int32_t boneIdx)
         Node* child = selNodes[i];
         Node* parent = newParent;
 
+        if (child == parent)
+            continue;
+
         int32_t boneIndex = -1;
 
         if (child->As<Node3D>())
