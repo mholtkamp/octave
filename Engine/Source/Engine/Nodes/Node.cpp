@@ -1206,7 +1206,7 @@ void Node::AddChild(Node* child, int32_t index)
 
         mChildNameMap.insert({ child->GetName(), child });
 
-        child->mParent = this;
+        child->SetParent(this);
         child->SetWorld(mWorld);
     }
 }
@@ -1242,7 +1242,7 @@ void Node::RemoveChild(int32_t index)
 
         child->SetWorld(nullptr);
 
-        child->mParent = nullptr;
+        child->SetParent(nullptr);
         mChildren.erase(mChildren.begin() + index);
 
         // This child's name should be in the map. When a node is renamed, the parent's map needs to be udpated.
