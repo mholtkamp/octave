@@ -242,6 +242,7 @@ static void DrawViewport()
     // (2) Draw Scene tabs on top
     const ImGuiTabBarFlags kSceneTabBarFlags = ImGuiTabBarFlags_Reorderable;
     ImGui::SameLine(0.0f, 20.0f);
+    //ImGui::PushStyleColor(ImGuiCol_Tab, ImVec4(0.6f, 0.2f, 0.2f, 1.0f));
     static int32_t sActiveScene = 0;
     if (ImGui::BeginTabBar("SceneTabBar", kSceneTabBarFlags))
     {
@@ -267,6 +268,8 @@ static void DrawViewport()
         }
         ImGui::EndTabBar();
     }
+    //ImGui::PopStyleColor();
+
 
     // Draw 3D / 2D / Material combo box on top right corner.
 
@@ -286,6 +289,12 @@ void EditorImguiInit()
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsLight();
+
+    // Override theme
+    ImVec4* colors = ImGui::GetStyle().Colors;
+    colors[ImGuiCol_Tab] = ImVec4(0.20f, 0.20f, 0.68f, 1.00f);
+    colors[ImGuiCol_TabHovered] = ImVec4(0.26f, 0.61f, 0.98f, 0.80f);
+    colors[ImGuiCol_TabActive] = ImVec4(0.12f, 0.50f, 0.47f, 1.00f);
 }
 
 void EditorImguiDraw()
