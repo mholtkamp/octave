@@ -30,6 +30,52 @@
 static const float kSidePaneWidth = 200.0f;
 static const ImGuiWindowFlags kPaneWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove;
 
+static bool sNodesDiscovered = false;
+static std::vector<std::string> sNode3dNames;
+static std::vector<std::string> sNodeWidgetNames;
+static std::vector<std::string> sNodeOtherNames;
+
+static void DiscoverNodeClasses()
+{
+    sNode3dNames.clear();
+    sNodeWidgetNames.clear();
+
+    const std::vector<Factory*>& nodeFactories = Node::GetFactoryList();
+    for (uint32_t i = 0; i < nodeFactories.size(); ++i)
+    {
+        Node* node = Node::CreateInstance(nodeFactories[i]->GetType());
+        if (node->As<Node3D>())
+        {
+            if (strcmp(node->GetClassName(), "Node3D") == 0)
+            {
+                sNode3dNames.insert(sNode3dNames.begin(), node->GetClassName());
+            }
+            else
+            {
+                sNode3dNames.push_back(nodeFactories[i]->GetClassName());
+            }
+        }
+        else if (node->As<Widget>())
+        {
+            if (strcmp(node->GetClassName(), "Widget") == 0)
+            {
+                sNodeWidgetNames.insert(sNodeWidgetNames.begin(), node->GetClassName());
+            }
+            else
+            {
+                sNodeWidgetNames.push_back(nodeFactories[i]->GetClassName());
+            }
+        }
+        else if (strcmp(node->GetClassName(), "Node") != 0)
+        {
+            sNodeOtherNames.push_back(nodeFactories[i]->GetClassName());
+        }
+
+        delete node;
+    }
+}
+
+
 static void DrawSpawnBasicMenu()
 {
     ActionManager* am = ActionManager::Get();
@@ -184,9 +230,65 @@ static void DrawScene()
             {
                 LogDebug("TODO: Implement Merge for static meshes.");
             }
-            if (ImGui::Selectable("Add Node..."))
+            if (ImGui::BeginMenu("Add Node"))
             {
+                if (!sNodesDiscovered)
+                {
+                    DiscoverNodeClasses();
+                    sNodesDiscovered = true;
+                }
 
+                if (ImGui::MenuItem("Node"))
+                {
+                    LogDebug("Spawn Node");
+                }
+
+                if (ImGui::BeginMenu("3D"))
+                {
+                    for (uint32_t i = 0; i < sNode3dNames.size(); ++i)
+                    {
+                        if (ImGui::MenuItem(sNode3dNames[i].c_str()))
+                        {
+                            Node* newNode = node->CreateChild(sNode3dNames[i].c_str());
+                            am->EXE_SpawnNode(newNode);
+                            GetEditorState()->SetSelectedNode(newNode);
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+
+                if (ImGui::BeginMenu("Widget"))
+                {
+                    for (uint32_t i = 0; i < sNodeWidgetNames.size(); ++i)
+                    {
+                        if (ImGui::MenuItem(sNodeWidgetNames[i].c_str()))
+                        {
+                            Node* newNode = node->CreateChild(sNodeWidgetNames[i].c_str());
+                            am->EXE_SpawnNode(newNode);
+                            GetEditorState()->SetSelectedNode(newNode);
+                        }
+                    }
+
+                    ImGui::EndMenu();
+                }
+
+                if (sNodeOtherNames.size() > 0 &&
+                    ImGui::BeginMenu("Other"))
+                {
+                    for (uint32_t i = 0; i < sNodeOtherNames.size(); ++i)
+                    {
+                        if (ImGui::MenuItem(sNodeOtherNames[i].c_str()))
+                        {
+                            Node* newNode = node->CreateChild(sNodeOtherNames[i].c_str());
+                            am->EXE_SpawnNode(newNode);
+                            GetEditorState()->SetSelectedNode(newNode);
+                        }
+                    }
+
+                    ImGui::EndMenu();
+                }
+
+                ImGui::EndMenu();
             }
             if (ImGui::Selectable("Add Scene..."))
             {
@@ -228,6 +330,8 @@ static void DrawScene()
                         am->AttachSelectedNodes(skNode, boneIdx);
                     }
                 }
+
+                ImGui::EndPopup();
             }
 
             sSetTextInputFocus = false;
@@ -517,7 +621,6 @@ void EditorImguiInit()
 
     // Set unactive window title bg equal to active title.
     colors[ImGuiCol_TitleBg] = colors[ImGuiCol_TitleBgActive];
-
 }
 
 void EditorImguiDraw()
