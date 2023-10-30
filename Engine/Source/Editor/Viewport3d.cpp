@@ -609,7 +609,7 @@ void Viewport3D::HandleDefaultControls()
         }
         else if (controlDown && IsKeyJustDown(KEY_3))
         {
-            ActionManager::Get()->SpawnBasicNode(BASIC_TRANSFORM, spawnPos);
+            ActionManager::Get()->SpawnBasicNode(BASIC_NODE_3D, spawnPos);
         }
         else if (controlDown && IsKeyJustDown(KEY_4))
         {
@@ -637,7 +637,7 @@ void Viewport3D::HandleDefaultControls()
         }
         else if (controlDown && IsKeyJustDown(KEY_0))
         {
-            ActionManager::Get()->SpawnBasicNode(BASIC_BLUEPRINT, spawnPos);
+            ActionManager::Get()->SpawnBasicNode(BASIC_SCENE, spawnPos);
         }
 
 

@@ -600,7 +600,7 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
         
         spawnedNode = pointLight;
     }
-    else if (name == BASIC_TRANSFORM)
+    else if (name == BASIC_NODE_3D)
     {
         spawnedNode = Node::Construct<Node3D>();
     }
@@ -676,7 +676,7 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
 
         spawnedNode = audioNode;
     }
-    else if (name == BASIC_BLUEPRINT)
+    else if (name == BASIC_SCENE)
     {
         Scene* scene = nullptr;
 

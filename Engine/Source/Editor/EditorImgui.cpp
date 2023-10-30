@@ -3,6 +3,8 @@
 #include "EditorImgui.h"
 #include "System/System.h"
 #include "Engine.h"
+#include "EditorUtils.h"
+#include "EditorConstants.h"
 #include "Renderer.h"
 #include "Log.h"
 #include "Grid.h"
@@ -27,6 +29,39 @@
 static const float kSidePaneWidth = 200.0f;
 static const ImGuiWindowFlags kPaneWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove;
 
+static void DrawSpawnBasicPopup()
+{
+    ActionManager* am = ActionManager::Get();
+    glm::vec3 spawnPos = EditorGetFocusPosition();
+    Asset* selAsset = GetEditorState()->GetSelectedAsset();
+
+    if (ImGui::Selectable(BASIC_NODE_3D))
+        am->SpawnBasicNode(BASIC_NODE_3D, spawnPos, selAsset);
+    if (ImGui::Selectable(BASIC_STATIC_MESH))
+        am->SpawnBasicNode(BASIC_STATIC_MESH, spawnPos, selAsset);
+    if (ImGui::Selectable(BASIC_SKELETAL_MESH))
+        am->SpawnBasicNode(BASIC_SKELETAL_MESH, spawnPos, selAsset);
+    if (ImGui::Selectable(BASIC_POINT_LIGHT))
+        am->SpawnBasicNode(BASIC_POINT_LIGHT, spawnPos, selAsset);
+    if (ImGui::Selectable(BASIC_DIRECTIONAL_LIGHT))
+        am->SpawnBasicNode(BASIC_DIRECTIONAL_LIGHT, spawnPos, selAsset);
+    if (ImGui::Selectable(BASIC_PARTICLE))
+        am->SpawnBasicNode(BASIC_PARTICLE, spawnPos, selAsset);
+    if (ImGui::Selectable(BASIC_AUDIO))
+        am->SpawnBasicNode(BASIC_AUDIO, spawnPos, selAsset);
+    if (ImGui::Selectable(BASIC_BOX))
+        am->SpawnBasicNode(BASIC_BOX, spawnPos, selAsset);
+    if (ImGui::Selectable(BASIC_SPHERE))
+        am->SpawnBasicNode(BASIC_SPHERE, spawnPos, selAsset);
+    if (ImGui::Selectable(BASIC_CAPSULE))
+        am->SpawnBasicNode(BASIC_CAPSULE, spawnPos, selAsset);
+    if (ImGui::Selectable(BASIC_SCENE))
+        am->SpawnBasicNode(BASIC_SCENE, spawnPos, selAsset);
+    if (ImGui::Selectable(BASIC_CAMERA))
+        am->SpawnBasicNode(BASIC_CAMERA, spawnPos, selAsset);
+    if (ImGui::Selectable(BASIC_TEXT_MESH))
+        am->SpawnBasicNode(BASIC_TEXT_MESH, spawnPos, selAsset);
+}
 
 static void DrawPackagePopup()
 {
@@ -333,8 +368,8 @@ static void DrawViewport()
     {
         if (ImGui::Selectable("Spawn Node"))
             LogDebug("Spawn Node!");
-        if (ImGui::Selectable("Spawn Basic"))
-            LogDebug("Spawn Basic!");
+        if (ImGui::Selectable("Spawn Basic", false, ImGuiSelectableFlags_DontClosePopups))
+            ImGui::OpenPopup("Spawn Basic");
         if (ImGui::Selectable("Clear World"))
             am->DeleteAllNodes();
         if (ImGui::Selectable("Bake Lighting"))
@@ -353,6 +388,12 @@ static void DrawViewport()
         }
         if (ImGui::Selectable("Toggle Transform Mode"))
             GetEditorState()->GetViewport3D()->ToggleTransformMode();
+
+        if (ImGui::BeginPopup("Spawn Basic"))
+        {
+            DrawSpawnBasicPopup();
+            ImGui::EndPopup();
+        }
 
         ImGui::EndPopup();
     }
