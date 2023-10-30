@@ -8,6 +8,7 @@
 #include "Grid.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
+#include "Nodes/3D/SkeletalMesh3d.h"
 
 #include "Viewport3d.h"
 #include "ActionManager.h"
@@ -71,6 +72,55 @@ static void DrawScene()
         
         bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
         bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
+
+        if (ImGui::BeginPopupContextItem()) // <-- use last item id as popup id
+        {
+            if (ImGui::Selectable("Rename"))
+            {
+
+            }
+            if (ImGui::Selectable("Duplicate"))
+            {
+
+            }
+            if (ImGui::Selectable("Attach Selected"))
+            {
+
+            }
+
+            if (node->As<SkeletalMesh3D>())
+            {
+                if (ImGui::Selectable("Attach To Bone"))
+                {
+
+                }
+            }
+
+            if (ImGui::Selectable("Set Root Node"))
+            {
+
+            }
+
+            if (ImGui::Selectable("Delete"))
+            {
+
+            }
+            if (ImGui::Selectable("Merge"))
+            {
+
+            }
+            if (ImGui::Selectable("Add Node..."))
+            {
+
+            }
+
+            if (ImGui::Selectable("Add Scene..."))
+            {
+
+            }
+
+            ImGui::EndPopup();
+        }
 
         if (nodeOpen)
         {
