@@ -303,7 +303,7 @@ static void DrawScene()
                 if (ImGui::Selectable("Top"))
                     am->EXE_AttachNode(node, parent, 0, -1);
                 if (ImGui::Selectable("Up"))
-                    am->EXE_AttachNode(node, parent, childSlot - 1, -1);
+                    am->EXE_AttachNode(node, parent, glm::max<int32_t>(childSlot - 1, 0), -1);
                 if (ImGui::Selectable("Down"))
                     am->EXE_AttachNode(node, parent, childSlot + 1, -1);
                 if (ImGui::Selectable("Bottom"))
@@ -451,11 +451,33 @@ static void DrawScene()
 
     // If no popup was opened and we right clicked somehwere...
     if (!ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup) &&
-        ImGui::IsMouseReleased(ImGuiMouseButton_Right) &&
         ImGui::IsWindowHovered() &&
         !sNodeContextActive)
     {
-        ImGui::OpenPopup("Null Node Context");
+        if (ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+        {
+            ImGui::OpenPopup("Null Node Context");
+        }
+
+        const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
+
+        // Move Up/Down selected node.
+        if (selNodes.size() == 1 &&
+            selNodes[0]->GetParent() != nullptr)
+        {
+            Node* node = selNodes[0];
+            Node* parent = node->GetParent();
+            int32_t childIndex = parent->FindChildIndex(node);
+
+            if (IsKeyJustDown(KEY_MINUS))
+            {
+                am->EXE_AttachNode(node, parent, glm::max<int32_t>(childIndex - 1, 0), -1);
+            }
+            else if (IsKeyJustDown(KEY_PLUS))
+            {
+                am->EXE_AttachNode(node, parent, childIndex + 1, -1);
+            }
+        }
     }
 
     if (ImGui::BeginPopup("Null Node Context"))
