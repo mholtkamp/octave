@@ -183,12 +183,22 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
             case DatumType::String:
             {
                 static std::string sTempString;
+                static std::string sOrigVal;
                 sTempString = prop.GetString(i);
 
-                if (sTempString != prop.GetString(i))
+                ImGui::InputText("", &sTempString);
+
+                if (ImGui::IsItemActivated())
                 {
-                    LogDebug("Handle String Edit!");
-                    prop.SetString(sTempString, i);
+                    sOrigVal = sTempString;
+                }
+
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                    if (sTempString != sOrigVal)
+                    {
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, sTempString);
+                    }
                 }
                 break;
             }
