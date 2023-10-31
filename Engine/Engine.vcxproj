@@ -560,6 +560,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\External\Imgui\misc\cpp\imgui_stdlib.cpp" />
     <ClCompile Include="Source\Audio\3DS\Audio_3DS.cpp" />
     <ClCompile Include="Source\Audio\Android\Audio_Android.cpp" />
     <ClCompile Include="Source\Audio\Audio.cpp" />

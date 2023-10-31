@@ -175,6 +175,19 @@ public:
     int16_t GetShort(uint32_t index = 0) const;
     const ScriptFunc& GetFunction(uint32_t index = 0) const;
 
+    int32_t& GetIntegerRef(uint32_t index = 0);
+    float& GetFloatRef(uint32_t index = 0);
+    bool& GetBoolRef(uint32_t index = 0);
+    std::string& GetStringRef(uint32_t index = 0);
+    glm::vec2& GetVector2DRef(uint32_t index = 0);
+    glm::vec3& GetVectorRef(uint32_t index = 0);
+    glm::vec4& GetColorRef(uint32_t index = 0);
+    AssetRef& GetAssetRef(uint32_t index = 0);
+    uint8_t& GetByteRef(uint32_t index = 0);
+    RTTI*& GetPointerRef(uint32_t index = 0);
+    int16_t& GetShortRef(uint32_t index = 0);
+    ScriptFunc& GetFunctionRef(uint32_t index = 0);
+
     void PushBack(int32_t value);
     void PushBack(float value);
     void PushBack(bool value);

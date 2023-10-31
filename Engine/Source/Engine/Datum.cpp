@@ -749,6 +749,79 @@ const ScriptFunc& Datum::GetFunction(uint32_t index) const
     return mData.fn[index];
 }
 
+int32_t& Datum::GetIntegerRef(uint32_t index)
+{
+    PreGet(index, DatumType::Integer);
+    return mData.i[index];
+}
+
+float& Datum::GetFloatRef(uint32_t index)
+{
+    PreGet(index, DatumType::Float);
+    return mData.f[index];
+}
+
+bool& Datum::GetBoolRef(uint32_t index)
+{
+    PreGet(index, DatumType::Bool);
+    return mData.b[index];
+}
+
+std::string& Datum::GetStringRef(uint32_t index)
+{
+    PreGet(index, DatumType::String);
+    return mData.s[index];
+}
+
+glm::vec2& Datum::GetVector2DRef(uint32_t index)
+{
+    PreGet(index, DatumType::Vector2D);
+    return mData.v2[index];
+}
+
+glm::vec3& Datum::GetVectorRef(uint32_t index)
+{
+    PreGet(index, DatumType::Vector);
+    return mData.v3[index];
+}
+
+glm::vec4& Datum::GetColorRef(uint32_t index)
+{
+    PreGet(index, DatumType::Color);
+    return mData.v4[index];
+}
+
+AssetRef& Datum::GetAssetRef(uint32_t index)
+{
+    PreGet(index, DatumType::Asset);
+    return mData.as[index];
+}
+
+uint8_t& Datum::GetByteRef(uint32_t index)
+{
+    PreGet(index, DatumType::Byte);
+    return mData.by[index];
+}
+
+RTTI*& Datum::GetPointerRef(uint32_t index)
+{
+    PreGet(index, DatumType::Pointer);
+    return mData.p[index];
+}
+
+int16_t& Datum::GetShortRef(uint32_t index)
+{
+    PreGet(index, DatumType::Short);
+    return mData.sh[index];
+}
+
+ScriptFunc& Datum::GetFunctionRef(uint32_t index)
+{
+    PreGet(index, DatumType::Function);
+    return mData.fn[index];
+}
+
+
 TableDatum* Datum::FindTableDatum(const char* key)
 {
     TableDatum* ret = nullptr;

@@ -81,6 +81,13 @@ bool Node::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 
         success = true;
     }
+    if (prop->mName == "Name")
+    {
+        const std::string& newName = *((const std::string*)newValue);
+        node->SetName(newName);
+
+        success = true;
+    }
 #if EDITOR
     if (prop->mName == "Restart Script")
     {
@@ -488,7 +495,7 @@ VertexType Node::GetVertexType() const
 
 void Node::GatherProperties(std::vector<Property>& outProps)
 {
-    outProps.push_back({DatumType::String, "Name", this, &mName});
+    outProps.push_back({DatumType::String, "Name", this, &mName, 1, HandlePropChange });
 #if EDITOR
     outProps.push_back(Property(DatumType::Bool, "Expose Variable", this, &mExposeVariable));
 #endif

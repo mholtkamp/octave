@@ -75,6 +75,102 @@ static void DiscoverNodeClasses()
     }
 }
 
+static void DrawPropertyList(std::vector<Property>& props)
+{
+    for (uint32_t p = 0; p < props.size(); ++p)
+    {
+        ImGui::PushID(p);
+
+        Property& prop = props[p];
+        DatumType propType = prop.GetType();
+
+        // Bools handle name on same line after checkbox
+        if (propType != DatumType::Bool)
+        {
+            ImGui::Text(prop.mName.c_str());
+        }
+
+        for (uint32_t i = 0; i < prop.GetCount(); ++i)
+        {
+            ImGui::PushID(i);
+            switch (propType)
+            {
+            case DatumType::Integer:
+            {
+                int32_t intVal = prop.GetInteger(i);
+
+                if (prop.mEnumCount > 0)
+                {
+                    ImGui::Combo("", &intVal, prop.mEnumStrings, prop.mEnumCount);
+                }
+                else
+                {
+                    ImGui::DragInt("", &intVal);
+                }
+                break;
+            }
+            case DatumType::Float:
+            {
+                float floatVal = prop.GetFloat(i);
+                if (ImGui::DragFloat("", &floatVal))
+                {
+                    prop.SetFloat(floatVal, i);
+                }
+                break;
+            }
+            case DatumType::Bool:
+            {
+                bool checked = prop.GetBool(i);
+                if (ImGui::Checkbox("", &checked))
+                {
+                    prop.SetBool(checked, i);
+                }
+
+                ImGui::SameLine();
+                ImGui::Text(prop.mName.c_str());
+                break;
+            }
+            case DatumType::String:
+            {
+                static std::string sTempString;
+                sTempString = prop.GetString(i);
+
+                if (sTempString != prop.GetString(i))
+                {
+                    LogDebug("Handle String Edit!");
+                    prop.SetString(sTempString, i);
+                }
+                break;
+            }
+            case DatumType::Vector2D:
+
+                break;
+            case DatumType::Vector:
+
+                break;
+            case DatumType::Color:
+
+                break;
+            case DatumType::Asset:
+
+                break;
+            case DatumType::Byte:
+
+                break;
+            case DatumType::Short:
+
+                break;
+
+            default: break;
+            }
+
+            ImGui::PopID();
+        }
+
+        ImGui::PopID();
+    }
+}
+
 static void DrawAddNodeMenu(Node* node)
 {
     ActionManager* am = ActionManager::Get();
@@ -543,6 +639,35 @@ static void DrawProperties()
     ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, dispHeight));
 
     ImGui::Begin("Properties", nullptr, kPaneWindowFlags);
+
+    if (ImGui::BeginTabBar("PropertyModeTabs"))
+    {
+        if (ImGui::BeginTabItem("Object"))
+        {
+            RTTI* obj = GetEditorState()->GetInspectedObject();
+
+            if (obj != nullptr)
+            {
+                std::vector<Property> props;
+                obj->GatherProperties(props);
+
+                DrawPropertyList(props);
+            }
+
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Global"))
+        {
+            std::vector<Property> globalProps;
+            GatherGlobalProperties(globalProps);
+
+            DrawPropertyList(globalProps);
+
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
+    }
 
     ImGui::End();
 }

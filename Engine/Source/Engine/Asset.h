@@ -106,7 +106,7 @@ public:
 	virtual void SaveStream(Stream& stream, Platform platform);
     virtual void Import(const std::string& path, ImportOptions* options = nullptr);
 
-    virtual void GatherProperties(std::vector<Property>& outProps);
+    virtual void GatherProperties(std::vector<Property>& outProps) override;
     virtual glm::vec4 GetTypeColor();
     virtual const char* GetTypeName();
     virtual const char* GetTypeImportExt();

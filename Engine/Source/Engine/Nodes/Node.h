@@ -87,7 +87,8 @@ public:
     virtual void Render();
     virtual VertexType GetVertexType() const;
 
-    virtual void GatherProperties(std::vector<Property>& outProps);
+    virtual void GatherProperties(std::vector<Property>& outProps) override;
+
     virtual void GatherReplicatedData(std::vector<NetDatum>& outData);
     virtual void GatherNetFuncs(std::vector<NetFunc>& outFuncs);
 

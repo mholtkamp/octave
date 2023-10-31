@@ -760,7 +760,8 @@ void ActionManager::ExecuteAction(Action* action)
 
 void ActionManager::Undo()
 {
-    if (mActionHistory.size() > 0)
+    if (mActionHistory.size() > 0 &&
+        !ImGui::GetIO().WantTextInput)
     {
         Action* action = mActionHistory.back();
         mActionHistory.pop_back();
@@ -774,7 +775,8 @@ void ActionManager::Undo()
 
 void ActionManager::Redo()
 {
-    if (mActionFuture.size() > 0)
+    if (mActionFuture.size() > 0 &&
+        !ImGui::GetIO().WantTextInput)
     {
         Action* action = mActionFuture.back();
         mActionFuture.pop_back();

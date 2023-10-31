@@ -37,6 +37,11 @@ public:
         return false;
     }
 
+    virtual void GatherProperties(std::vector<Property>& props)
+    {
+
+    }
+
     template <typename T>
     T* As() const
     {
