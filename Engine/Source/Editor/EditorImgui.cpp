@@ -75,10 +75,23 @@ static void DiscoverNodeClasses()
     }
 }
 
+static void AssignAssetToProperty(RTTI* owner, PropertyOwnerType ownerType, Property& prop, uint32_t index, Asset* newAsset)
+{
+    if (newAsset != nullptr &&
+        newAsset != prop.GetAsset() &&
+        (prop.mExtra == 0 || newAsset->GetType() == TypeId(prop.mExtra)))
+    {
+        ActionManager::Get()->EXE_EditProperty(owner, ownerType, prop.mName, index, newAsset);
+    }
+}
+
 static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
 {
     ActionManager* am = ActionManager::Get();
     const float kIndentWidth = 0.0f;
+    const bool ctrlDown = IsControlDown();
+    const bool altDown = IsAltDown();
+    const bool shiftDown = IsShiftDown();
 
     PropertyOwnerType ownerType = PropertyOwnerType::Global;
     if (owner != nullptr)
@@ -286,6 +299,61 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
             }
             case DatumType::Asset:
             {
+                Asset* propVal = prop.GetAsset(i);
+
+                if (ctrlDown)
+                {
+                    if (ImGui::Button("<<"))
+                    {
+                        //GetEditorState()->BrowseToAsset();
+                    }
+                }
+                else if (altDown)
+                {
+                    if (ImGui::Button("^^"))
+                    {
+                        if (propVal != nullptr)
+                        {
+                            GetEditorState()->InspectObject(propVal);
+                        }
+                    }
+                }
+                else
+                {
+                    if (ImGui::Button(">>"))
+                    {
+                        Asset* selAsset = GetEditorState()->GetSelectedAsset();
+                        if (selAsset != nullptr)
+                        {
+                            AssignAssetToProperty(owner, ownerType, prop, i, selAsset);
+                        }
+                    }
+                }
+
+                ImGui::SameLine();
+
+                static std::string sTempString;
+                static std::string sOrigVal;
+                sTempString = propVal ? propVal->GetName() : "";
+
+                ImGui::InputText("", &sTempString);
+
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                    if (sTempString == "null" ||
+                        sTempString == "NULL" ||
+                        sTempString == "Null")
+                    {
+                        Asset* nullAsset = nullptr;
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, nullAsset);
+                    }
+                    else
+                    {
+                        Asset* newAsset =  LoadAsset(sTempString);
+                        AssignAssetToProperty(owner, ownerType, prop, i, newAsset);
+                    }
+                }
+
                 break;
             }
             case DatumType::Byte:
