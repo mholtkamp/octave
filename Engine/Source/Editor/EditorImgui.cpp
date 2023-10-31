@@ -384,6 +384,10 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                 else if (prop.mExtra == int32_t(ByteExtra::FlagWidget) ||
                     prop.mExtra == int32_t(ByteExtra::ExclusiveFlagWidget)) // Should these be bitwise checks?
                 {
+                    ImVec2 itemSpacing = ImGui::GetStyle().ItemSpacing;
+                    itemSpacing.x = 2.0f;
+                    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, itemSpacing);
+
                     for (uint32_t f = 0; f < 8; ++f)
                     {
                         if (f > 0)
@@ -394,9 +398,18 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                         int32_t bit = 7 - int32_t(f);
                         bool bitSet = (propVal >> bit) & 1;
 
-                        const char* label = bitSet ? "X" : " ";
+                        ImVec4* imColors = ImGui::GetStyle().Colors;
 
-                        if (ImGui::Button(label))
+                        if (bitSet)
+                        {
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.5f, 1.0f));
+                        }
+                        else
+                        {
+                            ImGui::PushStyleColor(ImGuiCol_Button, imColors[ImGuiCol_Button]);
+                        }
+
+                        if (ImGui::Button("", ImVec2(16.0f, 16.0f)))
                         {
                             bitSet = !bitSet;
                             uint8_t newBitMask = propVal;
@@ -414,8 +427,12 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                             am->EXE_EditProperty(owner, ownerType, prop.mName, i, uint8_t(propVal));
                         }
 
+                        ImGui::PopStyleColor();
+
                         ImGui::PopID();
                     }
+
+                    ImGui::PopStyleVar();
                 }
                 else
                 {
