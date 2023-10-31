@@ -391,11 +391,14 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
 
                         ImGui::PushID(f);
 
-                        int32_t bit = 7 - int32_t(i);
+                        int32_t bit = 7 - int32_t(f);
                         bool bitSet = (propVal >> bit) & 1;
 
-                        if (ImGui::Checkbox("", &bitSet))
+                        const char* label = bitSet ? "X" : " ";
+
+                        if (ImGui::Button(label))
                         {
+                            bitSet = !bitSet;
                             uint8_t newBitMask = propVal;
                             if (bitSet)
                             {
