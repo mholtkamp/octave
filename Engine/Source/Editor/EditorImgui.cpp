@@ -78,6 +78,7 @@ static void DiscoverNodeClasses()
 static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
 {
     ActionManager* am = ActionManager::Get();
+    const float kIndentWidth = 0.0f;
 
     PropertyOwnerType ownerType = PropertyOwnerType::Global;
     if (owner != nullptr)
@@ -103,6 +104,11 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
         if (propType != DatumType::Bool)
         {
             ImGui::Text(prop.mName.c_str());
+
+            if (kIndentWidth > 0.0f)
+            {
+                ImGui::Indent(kIndentWidth);
+            }
         }
 
         for (uint32_t i = 0; i < prop.GetCount(); ++i)
@@ -208,7 +214,7 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                 glm::vec2 propVal = prop.GetVector2D(i);
                 glm::vec2 preVal = propVal;
 
-                ImGui::DragFloat2("", &propVal[0]);
+                ImGui::DragFloat2("", &propVal[0], 1.0f, 0.0f, 0.0f, "%.2f");
 
                 if (ImGui::IsItemActivated())
                 {
@@ -232,7 +238,9 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                 glm::vec3 propVal = prop.GetVector(i);
                 glm::vec3 preVal = propVal;
 
-                ImGui::DragFloat3("", &propVal[0]);
+                ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.85f);
+                ImGui::DragFloat3("", &propVal[0], 1.0f, 0.0f, 0.0f, "%.2f");
+                ImGui::PopItemWidth();
 
                 if (ImGui::IsItemActivated())
                 {
@@ -256,7 +264,9 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                 glm::vec4 propVal = prop.GetColor(i);
                 glm::vec4 preVal = propVal;
 
+                ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.85f);
                 ImGui::ColorEdit4("", &propVal[0]);
+                ImGui::PopItemWidth();
 
                 if (ImGui::IsItemActivated())
                 {
@@ -290,6 +300,14 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
             }
 
             ImGui::PopID();
+        }
+
+        if (propType != DatumType::Bool)
+        {
+            if (kIndentWidth > 0.0f)
+            {
+                ImGui::Unindent(kIndentWidth);
+            }
         }
 
         ImGui::PopID();
