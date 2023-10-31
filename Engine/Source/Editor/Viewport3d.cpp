@@ -388,9 +388,10 @@ bool Viewport3D::ShouldHandleInput() const
     bool imguiWantsText = ImGui::GetIO().WantTextInput;
     bool imguiAnyItemHovered = ImGui::IsAnyItemHovered();
     bool imguiAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
+    bool imguiAnyPopupUp = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
     
 
-    bool handleInput = (modal == nullptr && !imguiAnyWindowHovered && !imguiWantsText);
+    bool handleInput = (modal == nullptr && !imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp);
     return handleInput;
 }
 
