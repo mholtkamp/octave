@@ -9,6 +9,7 @@
 #include "imgui.h"
 
 class Node;
+class Widget;
 class Asset;
 struct AssetStub;
 class ActionList;
@@ -114,6 +115,7 @@ struct EditorState
     void LoadStartupScene();
 
     Node* GetSelectedNode();
+    Widget* GetSelectedWidget();
     const std::vector<Node*>& GetSelectedNodes();
     bool IsNodeSelected(Node* node);
     void DeselectNode(Node* node);

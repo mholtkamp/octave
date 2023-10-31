@@ -37,8 +37,7 @@ public:
     Node* SpawnNode(TypeId nodeType, Node* parent);
     Node* SpawnNode(TypeId nodeType, glm::vec3 position);
 
-    Node* SpawnBasicNode(const std::string& name, Node* parent, Asset* srcAsset = nullptr);
-    Node* SpawnBasicNode(const std::string& name, glm::vec3 position, Asset* srcAsset = nullptr);
+    Node* SpawnBasicNode(const std::string& name, Node* parent, Asset* srcAsset = nullptr, bool setWorldPos = false, glm::vec3 worldPos = { 0.0f, 0.0f, 0.0f });
 
     void ExecuteAction(Action* action);
     void Undo();

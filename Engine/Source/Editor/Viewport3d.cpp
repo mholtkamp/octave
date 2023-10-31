@@ -601,43 +601,43 @@ void Viewport3D::HandleDefaultControls()
         glm::vec3 spawnPos = camera->GetAbsolutePosition() + mFocalDistance * camera->GetForwardVector();
         if (controlDown && IsKeyJustDown(KEY_1))
         {
-            ActionManager::Get()->SpawnBasicNode(BASIC_STATIC_MESH, spawnPos);
+            ActionManager::Get()->SpawnBasicNode(BASIC_STATIC_MESH, nullptr, nullptr, true, spawnPos);
         }
         else if (controlDown && IsKeyJustDown(KEY_2))
         {
-            ActionManager::Get()->SpawnBasicNode(BASIC_POINT_LIGHT, spawnPos);
+            ActionManager::Get()->SpawnBasicNode(BASIC_POINT_LIGHT, nullptr, nullptr, true, spawnPos);
         }
         else if (controlDown && IsKeyJustDown(KEY_3))
         {
-            ActionManager::Get()->SpawnBasicNode(BASIC_NODE_3D, spawnPos);
+            ActionManager::Get()->SpawnBasicNode(BASIC_NODE_3D, nullptr, nullptr, true, spawnPos);
         }
         else if (controlDown && IsKeyJustDown(KEY_4))
         {
-            ActionManager::Get()->SpawnBasicNode(BASIC_DIRECTIONAL_LIGHT, spawnPos);
+            ActionManager::Get()->SpawnBasicNode(BASIC_DIRECTIONAL_LIGHT, nullptr, nullptr, true, spawnPos);
         }
         else if (controlDown && IsKeyJustDown(KEY_5))
         {
-            ActionManager::Get()->SpawnBasicNode(BASIC_SKELETAL_MESH, spawnPos);
+            ActionManager::Get()->SpawnBasicNode(BASIC_SKELETAL_MESH, nullptr, nullptr, true, spawnPos);
         }
         else if (controlDown && IsKeyJustDown(KEY_6))
         {
-            ActionManager::Get()->SpawnBasicNode(BASIC_BOX, spawnPos);
+            ActionManager::Get()->SpawnBasicNode(BASIC_BOX, nullptr, nullptr, true, spawnPos);
         }
         else if (controlDown && IsKeyJustDown(KEY_7))
         {
-            ActionManager::Get()->SpawnBasicNode(BASIC_SPHERE, spawnPos);
+            ActionManager::Get()->SpawnBasicNode(BASIC_SPHERE, nullptr, nullptr, true, spawnPos);
         }
         else if (controlDown && IsKeyJustDown(KEY_8))
         {
-            ActionManager::Get()->SpawnBasicNode(BASIC_PARTICLE, spawnPos);
+            ActionManager::Get()->SpawnBasicNode(BASIC_PARTICLE, nullptr, nullptr, true, spawnPos);
         }
         else if (controlDown && IsKeyJustDown(KEY_9))
         {
-            ActionManager::Get()->SpawnBasicNode(BASIC_AUDIO, spawnPos);
+            ActionManager::Get()->SpawnBasicNode(BASIC_AUDIO, nullptr, nullptr, true, spawnPos);
         }
         else if (controlDown && IsKeyJustDown(KEY_0))
         {
-            ActionManager::Get()->SpawnBasicNode(BASIC_SCENE, spawnPos);
+            ActionManager::Get()->SpawnBasicNode(BASIC_SCENE, nullptr, nullptr, true, spawnPos);
         }
 
 

@@ -10,6 +10,7 @@
 #include "Nodes/Node.h"
 #include "Nodes/3D/Node3d.h"
 #include "Nodes/3D/Camera3d.h"
+#include "Nodes/Widgets/Widget.h"
 #include "Engine.h"
 #include "Renderer.h"
 #include "Grid.h"
@@ -421,6 +422,14 @@ Node* EditorState::GetSelectedNode()
     return (mSelectedNodes.size() > 0) ?
         mSelectedNodes.back() :
         nullptr;
+}
+
+Widget* EditorState::GetSelectedWidget()
+{
+    Node* selNode = GetSelectedNode();
+    Widget* selWidget = selNode ? selNode->As<Widget>() : nullptr;
+
+    return selWidget;
 }
 
 const std::vector<Node*>& EditorState::GetSelectedNodes()

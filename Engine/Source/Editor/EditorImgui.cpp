@@ -141,38 +141,74 @@ static void DrawAddNodeMenu(Node* node)
     }
 }
 
-static void DrawSpawnBasicMenu()
+static void DrawSpawnBasic3dMenu(Node* node, bool setFocusPos)
 {
     ActionManager* am = ActionManager::Get();
     glm::vec3 spawnPos = EditorGetFocusPosition();
     Asset* selAsset = GetEditorState()->GetSelectedAsset();
 
     if (ImGui::MenuItem(BASIC_NODE_3D))
-        am->SpawnBasicNode(BASIC_NODE_3D, spawnPos, selAsset);
+        am->SpawnBasicNode(BASIC_NODE_3D, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_STATIC_MESH))
-        am->SpawnBasicNode(BASIC_STATIC_MESH, spawnPos, selAsset);
+        am->SpawnBasicNode(BASIC_STATIC_MESH, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_SKELETAL_MESH))
-        am->SpawnBasicNode(BASIC_SKELETAL_MESH, spawnPos, selAsset);
+        am->SpawnBasicNode(BASIC_SKELETAL_MESH, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_POINT_LIGHT))
-        am->SpawnBasicNode(BASIC_POINT_LIGHT, spawnPos, selAsset);
+        am->SpawnBasicNode(BASIC_POINT_LIGHT, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_DIRECTIONAL_LIGHT))
-        am->SpawnBasicNode(BASIC_DIRECTIONAL_LIGHT, spawnPos, selAsset);
+        am->SpawnBasicNode(BASIC_DIRECTIONAL_LIGHT, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_PARTICLE))
-        am->SpawnBasicNode(BASIC_PARTICLE, spawnPos, selAsset);
+        am->SpawnBasicNode(BASIC_PARTICLE, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_AUDIO))
-        am->SpawnBasicNode(BASIC_AUDIO, spawnPos, selAsset);
+        am->SpawnBasicNode(BASIC_AUDIO, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_BOX))
-        am->SpawnBasicNode(BASIC_BOX, spawnPos, selAsset);
+        am->SpawnBasicNode(BASIC_BOX, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_SPHERE))
-        am->SpawnBasicNode(BASIC_SPHERE, spawnPos, selAsset);
+        am->SpawnBasicNode(BASIC_SPHERE, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_CAPSULE))
-        am->SpawnBasicNode(BASIC_CAPSULE, spawnPos, selAsset);
+        am->SpawnBasicNode(BASIC_CAPSULE, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_SCENE))
-        am->SpawnBasicNode(BASIC_SCENE, spawnPos, selAsset);
+        am->SpawnBasicNode(BASIC_SCENE, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_CAMERA))
-        am->SpawnBasicNode(BASIC_CAMERA, spawnPos, selAsset);
+        am->SpawnBasicNode(BASIC_CAMERA, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_TEXT_MESH))
-        am->SpawnBasicNode(BASIC_TEXT_MESH, spawnPos, selAsset);
+        am->SpawnBasicNode(BASIC_TEXT_MESH, node, selAsset, setFocusPos, spawnPos);
+}
+static void DrawSpawnBasicWidgetMenu(Node* node)
+{
+    ActionManager* am = ActionManager::Get();
+    Asset* selAsset = GetEditorState()->GetSelectedAsset();
+
+    const char* widgetTypeName = nullptr;
+
+    if (ImGui::MenuItem("Widget"))
+        widgetTypeName = "Widget";
+    if (ImGui::MenuItem("Quad"))
+        widgetTypeName = "Quad";
+    if (ImGui::MenuItem("Text"))
+        widgetTypeName = "Text";
+
+    if (widgetTypeName != nullptr)
+    {
+        Node* newWidget = nullptr;
+
+        if (node == nullptr)
+        {
+            // Spawning initial node.
+            newWidget = GetWorld()->SpawnNode(widgetTypeName);
+        }
+        else
+        {
+            newWidget = node->CreateChild(widgetTypeName);
+        }
+
+        OCT_ASSERT(newWidget);
+        if (newWidget)
+        {
+            am->EXE_SpawnNode(newWidget);
+            GetEditorState()->SetSelectedNode(newWidget);
+        }
+    }
 }
 
 static void DrawPackageMenu()
@@ -298,10 +334,20 @@ static void DrawScene()
                 DrawAddNodeMenu(node);
                 ImGui::EndMenu();
             }
-            if (ImGui::Selectable("Add Scene..."))
+            if (ImGui::BeginMenu("Add Basic 3D"))
             {
-
+                DrawSpawnBasic3dMenu(node, false);
+                ImGui::EndMenu();
             }
+            if (ImGui::BeginMenu("Add Basic Widget"))
+            {
+                DrawSpawnBasicWidgetMenu(node);
+                ImGui::EndMenu();
+            }
+            //if (ImGui::Selectable("Add Scene..."))
+            //{
+
+            //}
 
             // Sub Popups
 
@@ -537,11 +583,14 @@ static void DrawViewport()
 
     if (ImGui::BeginPopup("WorldPopup"))
     {
-        if (ImGui::Selectable("Spawn Node"))
-            LogDebug("Spawn Node!");
-        if (ImGui::BeginMenu("Spawn Basic"))
+        if (ImGui::BeginMenu("Spawn Node"))
         {
-            DrawSpawnBasicMenu();
+            DrawAddNodeMenu(nullptr);
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Spawn Basic 3D"))
+        {
+            DrawSpawnBasic3dMenu(nullptr, true);
             ImGui::EndMenu();
         }
         if (ImGui::Selectable("Clear World"))
@@ -611,15 +660,37 @@ static void DrawViewport()
         //ImGuiIO& io = ImGui::GetIO();
         //ImGui::SetNextWindowPos(io.MousePos);
 
+        if (shiftDown && IsKeyJustDown(KEY_Q))
+        {
+            ImGui::OpenPopup("Spawn Basic 3D");
+        }
+
+        if (shiftDown && IsKeyJustDown(KEY_W))
+        {
+            ImGui::OpenPopup("Spawn Basic Widget");
+        }
+
         if (shiftDown && IsKeyJustDown(KEY_A))
         {
-            ImGui::OpenPopup("Spawn Basic");
+            ImGui::OpenPopup("Spawn Node");
         }
     }
 
-    if (ImGui::BeginPopup("Spawn Basic"))
+    if (ImGui::BeginPopup("Spawn Basic 3D"))
     {
-        DrawSpawnBasicMenu();
+        DrawSpawnBasic3dMenu(nullptr, true);
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("Spawn Basic Widget"))
+    {
+        DrawSpawnBasicWidgetMenu(GetEditorState()->GetSelectedWidget());
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("Spawn Node"))
+    {
+        DrawAddNodeMenu(nullptr);
         ImGui::EndPopup();
     }
 

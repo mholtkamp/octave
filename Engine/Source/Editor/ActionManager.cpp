@@ -557,7 +557,7 @@ Node* ActionManager::SpawnNode(TypeId nodeType, glm::vec3 position)
     return node;
 }
 
-Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset* srcAsset)
+Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset* srcAsset, bool setWorldPos, glm::vec3 worldPos)
 {
     Node* spawnedNode = nullptr;
 
@@ -714,6 +714,13 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
 
         GetEditorState()->SetSelectedNode(spawnedNode);
         EXE_SpawnNode(spawnedNode);
+
+        Node3D* node3d = spawnedNode ? spawnedNode->As<Node3D>() : nullptr;
+
+        if (setWorldPos && node3d)
+        {
+            node3d->SetAbsolutePosition(worldPos);
+        }
     }
     else
     {
@@ -721,19 +728,6 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
     }
 
     return spawnedNode;
-}
-
-Node* ActionManager::SpawnBasicNode(const std::string& name, glm::vec3 position, Asset* srcAsset)
-{
-    Node* node = SpawnBasicNode(name, nullptr, srcAsset);
-    Node3D* node3d = node ? node->As<Node3D>() : nullptr;
-
-    if (node3d)
-    {
-        node3d->SetAbsolutePosition(position);
-    }
-
-    return node;
 }
 
 void ActionManager::ExecuteAction(Action* action)
