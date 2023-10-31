@@ -118,26 +118,29 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
 
                 if (prop.mEnumCount > 0)
                 {
-                    ImGui::Combo("", &propVal, prop.mEnumStrings, prop.mEnumCount);
+                    if (ImGui::Combo("", &propVal, prop.mEnumStrings, prop.mEnumCount))
+                    {
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    }
                 }
                 else
                 {
                     ImGui::DragInt("", &propVal);
-                }
 
-                if (ImGui::IsItemActivated())
-                {
-                    sOrigVal = preVal;
-                }
+                    if (ImGui::IsItemActivated())
+                    {
+                        sOrigVal = preVal;
+                    }
 
-                if (ImGui::IsItemDeactivatedAfterEdit())
-                {
-                    prop.SetInteger(sOrigVal);
-                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
-                }
-                else if (propVal != preVal)
-                {
-                    prop.SetInteger(propVal, i);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                    {
+                        prop.SetInteger(sOrigVal);
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    }
+                    else if (propVal != preVal)
+                    {
+                        prop.SetInteger(propVal, i);
+                    }
                 }
                 break;
             }
