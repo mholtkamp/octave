@@ -203,24 +203,89 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                 break;
             }
             case DatumType::Vector2D:
+            {
+                static glm::vec2 sOrigVal = {};
+                glm::vec2 propVal = prop.GetVector2D(i);
+                glm::vec2 preVal = propVal;
 
+                ImGui::DragFloat2("", &propVal[0]);
+
+                if (ImGui::IsItemActivated())
+                {
+                    sOrigVal = preVal;
+                }
+
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                    prop.SetVector2D(sOrigVal);
+                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                }
+                else if (propVal != preVal)
+                {
+                    prop.SetVector2D(propVal, i);
+                }
                 break;
+            }
             case DatumType::Vector:
+            {
+                static glm::vec3 sOrigVal = {};
+                glm::vec3 propVal = prop.GetVector(i);
+                glm::vec3 preVal = propVal;
 
+                ImGui::DragFloat3("", &propVal[0]);
+
+                if (ImGui::IsItemActivated())
+                {
+                    sOrigVal = preVal;
+                }
+
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                    prop.SetVector(sOrigVal);
+                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                }
+                else if (propVal != preVal)
+                {
+                    prop.SetVector(propVal, i);
+                }
                 break;
+            }
             case DatumType::Color:
+            {
+                static glm::vec4 sOrigVal = {};
+                glm::vec4 propVal = prop.GetColor(i);
+                glm::vec4 preVal = propVal;
 
+                ImGui::ColorEdit4("", &propVal[0]);
+
+                if (ImGui::IsItemActivated())
+                {
+                    sOrigVal = preVal;
+                }
+
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                    prop.SetColor(sOrigVal);
+                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                }
+                else if (propVal != preVal)
+                {
+                    prop.SetColor(propVal, i);
+                }
                 break;
+            }
             case DatumType::Asset:
-
+            {
                 break;
+            }
             case DatumType::Byte:
-
+            {
                 break;
+            }
             case DatumType::Short:
-
+            {
                 break;
-
+            }
             default: break;
             }
 
