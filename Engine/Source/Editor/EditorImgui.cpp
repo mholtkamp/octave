@@ -294,6 +294,23 @@ static void DrawScene()
 
             sNodeContextActive = true;
 
+            if (node->GetParent() != nullptr &&
+                ImGui::BeginMenu("Move"))
+            {
+                Node* parent = node->GetParent();
+                int32_t childSlot = parent->FindChildIndex(node);
+
+                if (ImGui::Selectable("Top"))
+                    am->EXE_AttachNode(node, parent, 0, -1);
+                if (ImGui::Selectable("Up"))
+                    am->EXE_AttachNode(node, parent, childSlot - 1, -1);
+                if (ImGui::Selectable("Down"))
+                    am->EXE_AttachNode(node, parent, childSlot + 1, -1);
+                if (ImGui::Selectable("Bottom"))
+                    am->EXE_AttachNode(node, parent, -1, -1);
+
+                ImGui::EndMenu();
+            }
             if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
             {
                 ImGui::OpenPopup("Rename Node");
