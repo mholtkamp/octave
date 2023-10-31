@@ -2296,7 +2296,22 @@ void ActionDeleteNodes::Reverse()
 
         if (mParents[i] != nullptr)
         {
-            mParents[i]->AddChild(mNodes[i], mChildIndices[i]);
+            if (mBoneIndices[i] >= 0 &&
+                mParents[i]->As<SkeletalMesh3D>() &&
+                mNodes[i]->As<Node3D>())
+            {
+                // This node was attached to a bone!
+                mNodes[i]->As<Node3D>()->AttachToBone(
+                    mParents[i]->As<SkeletalMesh3D>(),
+                    mBoneIndices[i], 
+                    false, 
+                    mChildIndices[i]);
+            }
+            else
+            {
+                // Normal attachment
+                mParents[i]->AddChild(mNodes[i], mChildIndices[i]);
+            }
             // TODO: Support attaching to the correct bone. 
             // Probably need to add extra parameter to Attach() to include child index.
         }
@@ -2330,11 +2345,10 @@ void ActionAttachNode::Execute()
         mNewParent->As<SkeletalMesh3D>() &&
         mNode->As<Node3D>())
     {
-        // TODO-NODE: AttachToBone() does not take a child index?? Probably need to fix so that it does.
         Node3D* node3d = mNode->As<Node3D>();
         SkeletalMesh3D* skParent = mNewParent->As<SkeletalMesh3D>();
 
-        node3d->AttachToBone(skParent, mBoneIndex, true);
+        node3d->AttachToBone(skParent, mBoneIndex, true, mChildIndex);
     }
     else
     {
@@ -2349,10 +2363,9 @@ void ActionAttachNode::Reverse()
         mPrevParent->As<SkeletalMesh3D>() &&
         mNode->As<Node3D>())
     {
-        // TODO-NODE: AttachToBone() does not take a child index?? Probably need to fix so that it does.
         Node3D* node3d = mNode->As<Node3D>();
         SkeletalMesh3D* skParent = mPrevParent->As<SkeletalMesh3D>();
-        node3d->AttachToBone(skParent, mPrevBoneIndex);
+        node3d->AttachToBone(skParent, mPrevBoneIndex, true, mPrevChildIndex);
     }
     else
     {
