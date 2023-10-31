@@ -75,8 +75,23 @@ static void DiscoverNodeClasses()
     }
 }
 
-static void DrawPropertyList(std::vector<Property>& props)
+static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
 {
+    ActionManager* am = ActionManager::Get();
+
+    PropertyOwnerType ownerType = PropertyOwnerType::Global;
+    if (owner != nullptr)
+    {
+        if (owner->As<Node>())
+        {
+            ownerType = PropertyOwnerType::Node;
+        }
+        else if (owner->As<Asset>())
+        {
+            ownerType = PropertyOwnerType::Asset;
+        }
+    }
+
     for (uint32_t p = 0; p < props.size(); ++p)
     {
         ImGui::PushID(p);
@@ -97,33 +112,65 @@ static void DrawPropertyList(std::vector<Property>& props)
             {
             case DatumType::Integer:
             {
-                int32_t intVal = prop.GetInteger(i);
+                static int32_t sOrigVal = 0;
+                int32_t propVal = prop.GetInteger(i);
+                int32_t preVal = propVal;
 
                 if (prop.mEnumCount > 0)
                 {
-                    ImGui::Combo("", &intVal, prop.mEnumStrings, prop.mEnumCount);
+                    ImGui::Combo("", &propVal, prop.mEnumStrings, prop.mEnumCount);
                 }
                 else
                 {
-                    ImGui::DragInt("", &intVal);
+                    ImGui::DragInt("", &propVal);
+                }
+
+                if (ImGui::IsItemActivated())
+                {
+                    sOrigVal = preVal;
+                }
+
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                    prop.SetInteger(sOrigVal);
+                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                }
+                else if (propVal != preVal)
+                {
+                    prop.SetInteger(propVal, i);
                 }
                 break;
             }
             case DatumType::Float:
             {
-                float floatVal = prop.GetFloat(i);
-                if (ImGui::DragFloat("", &floatVal))
+                static float sOrigVal = 0.0f;
+                float propVal = prop.GetFloat(i);
+                float preVal = propVal;
+
+                ImGui::DragFloat("", &propVal);
+
+                if (ImGui::IsItemActivated())
                 {
-                    prop.SetFloat(floatVal, i);
+                    sOrigVal = preVal;
+                }
+
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                    prop.SetFloat(sOrigVal);
+                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                }
+                else if (propVal != preVal)
+                {
+                    prop.SetFloat(propVal, i);
                 }
                 break;
             }
             case DatumType::Bool:
             {
-                bool checked = prop.GetBool(i);
-                if (ImGui::Checkbox("", &checked))
+                bool propVal = prop.GetBool(i);
+                if (ImGui::Checkbox("", &propVal))
                 {
-                    prop.SetBool(checked, i);
+                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
                 }
 
                 ImGui::SameLine();
@@ -651,7 +698,7 @@ static void DrawProperties()
                 std::vector<Property> props;
                 obj->GatherProperties(props);
 
-                DrawPropertyList(props);
+                DrawPropertyList(obj, props);
             }
 
             ImGui::EndTabItem();
@@ -661,7 +708,7 @@ static void DrawProperties()
             std::vector<Property> globalProps;
             GatherGlobalProperties(globalProps);
 
-            DrawPropertyList(globalProps);
+            DrawPropertyList(nullptr, globalProps);
 
             ImGui::EndTabItem();
         }
