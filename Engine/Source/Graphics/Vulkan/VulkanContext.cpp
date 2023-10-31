@@ -246,6 +246,9 @@ void VulkanContext::BeginFrame()
     OCT_ASSERT(uint32_t(mFrameIndex) == Renderer::Get()->GetFrameIndex());
 
     float resScale = GetEngineState()->mGraphics.mResolutionScale;
+    resScale = glm::clamp(resScale, 0.1f, 2.0f);
+    GetEngineState()->mGraphics.mResolutionScale = resScale;
+
     if (mResolutionScale != resScale)
     {
         mResolutionScale = resScale;
