@@ -2079,23 +2079,27 @@ void ActionEditProperty::Execute()
             prop->SetCount(prop->GetCount() + 1);
         }
 
-        mPreviousValue.Destroy();
-        mPreviousValue.SetType(prop->GetType());
-        mPreviousValue.SetCount(1);
-        mPreviousValue.SetValue(prop->GetValue(mIndex));
-
-        prop->SetValue(mValue.mData.vp, mIndex, 1);
-
-        // TODO-NODE: Delete this? Shouldn't be necessary anymore now that we are using Imgui
-        //   and gathering properties every frame.
-#if 0
-        // Script properties are stored internally and propagated to scripts
-        // so after setting the value we need to refresh property widgets.
-        if (!prop->IsExternal())
+        // TODO-NODE: Support undo/redo for AddPropertyArray. Until then, don't set value on OOB elements.
+        if (mIndex < prop->GetCount())
         {
-            PanelManager::Get()->GetPropertiesPanel()->RefreshProperties();
-        }
+            mPreviousValue.Destroy();
+            mPreviousValue.SetType(prop->GetType());
+            mPreviousValue.SetCount(1);
+            mPreviousValue.SetValue(prop->GetValue(mIndex));
+
+            prop->SetValue(mValue.mData.vp, mIndex, 1);
+
+            // TODO-NODE: Delete this? Shouldn't be necessary anymore now that we are using Imgui
+            //   and gathering properties every frame.
+#if 0
+            // Script properties are stored internally and propagated to scripts
+            // so after setting the value we need to refresh property widgets.
+                if (!prop->IsExternal())
+                {
+                    PanelManager::Get()->GetPropertiesPanel()->RefreshProperties();
+            }
 #endif
+        }
     }
 }
 
@@ -2108,7 +2112,11 @@ void ActionEditProperty::Reverse()
 
     if (prop != nullptr)
     {
-        prop->SetValue(mPreviousValue.GetValue(0), mIndex, 1);
+        // TODO-NODE: Support undo/redo for AddPropertyArray. Until then, don't set value on OOB elements.
+        if (prop->GetCount() > mIndex)
+        {
+            prop->SetValue(mPreviousValue.GetValue(0), mIndex, 1);
+        }
 
         // TODO-NODE: Delete this? Shouldn't be necessary anymore now that we are using Imgui
         //   and gathering properties every frame.

@@ -114,13 +114,44 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
         DatumType propType = prop.GetType();
 
         // Bools handle name on same line after checkbox
-        if (propType != DatumType::Bool)
+        if (propType != DatumType::Bool || prop.GetCount() > 1)
         {
             ImGui::Text(prop.mName.c_str());
 
             if (kIndentWidth > 0.0f)
             {
                 ImGui::Indent(kIndentWidth);
+            }
+
+            if (prop.IsVector())
+            {
+                ImGui::SameLine();
+                if (ImGui::Button("+"))
+                {
+                    if (prop.IsExternal())
+                    {
+                        prop.PushBackVector();
+                    }
+                    else
+                    {
+                        prop.SetCount(prop.GetCount() + 1);
+                    }
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("-"))
+                {
+                    if (prop.GetCount() > 0)
+                    {
+                        if (prop.IsExternal())
+                        {
+                            prop.EraseVector(prop.GetCount() - 1);
+                        }
+                        else
+                        {
+                            prop.Erase(prop.GetCount() - 1);
+                        }
+                    }
+                }
             }
         }
 
