@@ -22,6 +22,7 @@
 #include "Engine.h"
 #include "AssetManager.h"
 #include "EditorState.h"
+#include "EditorUtils.h"
 #include "PanelManager.h"
 #include "Nodes/Widgets/Button.h"
 #include "Assets/Scene.h"
@@ -1920,19 +1921,39 @@ void ActionManager::DeleteAssetDir(AssetDir* dir)
     }
 }
 
-void ActionManager::DuplicateNode(Node* node)
+void ActionManager::DuplicateNodes(std::vector<Node*> nodes)
 {
-    Node* newNode = node->Clone(true, false);
-    Node* parent = node->GetParent();
-    if (parent == nullptr)
+    // Don't use a vector reference for nodes param because we are going to modify the vector anyway.
+    std::vector<Node*> dupedNodes;
+
+    RemoveRedundantDescendants(nodes);
+
+    for (uint32_t i = 0; i < nodes.size(); ++i)
     {
-        parent = node;
+        Node* node = nodes[i];
+        Node* newNode = node->Clone(true, false);
+        Node* parent = node->GetParent();
+        if (parent == nullptr)
+        {
+            parent = node;
+        }
+
+        parent->AddChild(newNode);
+
+        dupedNodes.push_back(newNode);
     }
 
-    parent->AddChild(newNode);
+    if (dupedNodes.size() > 0)
+    {
+        EXE_SpawnNodes(dupedNodes);
 
-    EXE_SpawnNode(newNode);
-    GetEditorState()->SetSelectedNode(newNode);
+        GetEditorState()->SetSelectedNode(nullptr);
+
+        for (uint32_t i = 0; i < dupedNodes.size(); ++i)
+        {
+            GetEditorState()->AddSelectedNode(dupedNodes[i], false);
+        }
+    }
 }
 
 void ActionManager::AttachSelectedNodes(Node* newParent, int32_t boneIdx)
@@ -2019,29 +2040,6 @@ void ActionEditProperty::GatherProps(std::vector<Property>& props)
     else if (mOwnerType == PropertyOwnerType::Global)
     {
         GatherGlobalProperties(props);
-    }
-}
-
-// Utility function for removing nodes that have parents already in the list.
-// This is probably a pretty slow O(N^2) operation.
-static void RemoveRedundantDescendants(std::vector<Node*>& nodes)
-{
-    for (int32_t i = int32_t(nodes.size()) - 1; i >= 0; --i)
-    {
-        Node* parent = nodes[i]->GetParent();
-
-        if (parent != nullptr)
-        {
-            for (int32_t j = 0; j < int32_t(nodes.size()); ++j)
-            {
-                if (parent == nodes[j])
-                {
-                    // nodes[i] has a parent (nodes[j]), so we can remove it from the list.
-                    nodes.erase(nodes.begin() + i);
-                    break;
-                }
-            }
-        }
     }
 }
 

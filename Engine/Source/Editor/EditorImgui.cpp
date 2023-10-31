@@ -319,7 +319,7 @@ static void DrawScene()
             }
             if (ImGui::Selectable("Duplicate"))
             {
-                am->DuplicateNode(node);
+                am->DuplicateNodes({ node });
             }
             if (ImGui::Selectable("Attach Selected"))
             {
@@ -454,6 +454,10 @@ static void DrawScene()
         ImGui::IsWindowHovered() &&
         !sNodeContextActive)
     {
+        const bool ctrlDown = IsControlDown();
+        const bool shiftDown = IsShiftDown();
+        const bool altDown = IsAltDown();
+
         if (ImGui::IsMouseReleased(ImGuiMouseButton_Right))
         {
             ImGui::OpenPopup("Null Node Context");
@@ -478,6 +482,19 @@ static void DrawScene()
                 am->EXE_AttachNode(node, parent, childIndex + 1, -1);
             }
         }
+
+        if (selNodes.size() > 0)
+        {
+            if (IsKeyJustDown(KEY_DELETE))
+            {
+                am->EXE_DeleteNodes(selNodes);
+            }
+            else if (ctrlDown && IsKeyJustDown(KEY_D))
+            {
+                am->DuplicateNodes(selNodes);
+            }
+        }
+
     }
 
     if (ImGui::BeginPopup("Null Node Context"))

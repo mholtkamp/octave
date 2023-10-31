@@ -79,4 +79,27 @@ std::string EditorGetAssetNameFromPath(const std::string& path)
     return assetName;
 }
 
+// Utility function for removing nodes that have parents already in the list.
+// This is probably a pretty slow O(N^2) operation.
+void RemoveRedundantDescendants(std::vector<Node*>& nodes)
+{
+    for (int32_t i = int32_t(nodes.size()) - 1; i >= 0; --i)
+    {
+        Node* parent = nodes[i]->GetParent();
+
+        if (parent != nullptr)
+        {
+            for (int32_t j = 0; j < int32_t(nodes.size()); ++j)
+            {
+                if (parent == nodes[j])
+                {
+                    // nodes[i] has a parent (nodes[j]), so we can remove it from the list.
+                    nodes.erase(nodes.begin() + i);
+                    break;
+                }
+            }
+        }
+    }
+}
+
 #endif

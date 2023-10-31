@@ -650,11 +650,11 @@ void Viewport3D::HandleDefaultControls()
         if (controlDown && IsKeyJustDown(KEY_D))
         {
             // Duplicate node
-            Node* selectedNode = GetEditorState()->GetSelectedNode();
+            const std::vector<Node*>& selectedNodes = GetEditorState()->GetSelectedNodes();
 
-            if (selectedNode != nullptr)
+            if (selectedNodes.size() > 0)
             {
-                ActionManager::Get()->DuplicateNode(selectedNode);
+                ActionManager::Get()->DuplicateNodes(selectedNodes);
                 GetEditorState()->SetControlMode(ControlMode::Translate);
                 SavePreTransforms();
             }

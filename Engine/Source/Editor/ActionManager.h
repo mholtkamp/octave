@@ -105,7 +105,7 @@ public:
     void ResaveAllAssets();
     void DeleteAsset(AssetStub* stub);
     void DeleteAssetDir(AssetDir* dir);
-    void DuplicateNode(Node* node);
+    void DuplicateNodes(std::vector<Node*> nodes);
     void AttachSelectedNodes(Node* newParent, int32_t boneIdx);
 };
 
