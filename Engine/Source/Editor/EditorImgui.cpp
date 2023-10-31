@@ -370,10 +370,103 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
             }
             case DatumType::Byte:
             {
+                static int32_t sOrigVal = 0;
+                int32_t propVal = prop.GetByte(i);
+                int32_t preVal = propVal;
+
+                if (prop.mEnumCount > 0)
+                {
+                    if (ImGui::Combo("", &propVal, prop.mEnumStrings, prop.mEnumCount))
+                    {
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, (uint8_t)propVal);
+                    }
+                }
+                else if (prop.mExtra == int32_t(ByteExtra::FlagWidget) ||
+                    prop.mExtra == int32_t(ByteExtra::ExclusiveFlagWidget)) // Should these be bitwise checks?
+                {
+                    for (uint32_t f = 0; f < 8; ++f)
+                    {
+                        if (f > 0)
+                            ImGui::SameLine();
+
+                        ImGui::PushID(f);
+
+                        int32_t bit = 7 - int32_t(i);
+                        bool bitSet = (propVal >> bit) & 1;
+
+                        if (ImGui::Checkbox("", &bitSet))
+                        {
+                            uint8_t newBitMask = propVal;
+                            if (bitSet)
+                            {
+                                newBitMask = newBitMask | (1 << bit);
+                            }
+                            else
+                            {
+                                newBitMask = newBitMask & (~(1 << bit));
+                            }
+
+                            propVal = newBitMask;
+
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, uint8_t(propVal));
+                        }
+
+                        ImGui::PopID();
+                    }
+                }
+                else
+                {
+                    ImGui::DragInt("", &propVal);
+
+                    if (ImGui::IsItemActivated())
+                    {
+                        sOrigVal = preVal;
+                    }
+
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                    {
+                        prop.SetByte((uint8_t)sOrigVal);
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, uint8_t(propVal));
+                    }
+                    else if (propVal != preVal)
+                    {
+                        prop.SetByte((uint8_t)propVal, i);
+                    }
+                }
                 break;
             }
             case DatumType::Short:
             {
+                static int32_t sOrigVal = 0;
+                int32_t propVal = prop.GetShort(i);
+                int32_t preVal = propVal;
+
+                if (prop.mEnumCount > 0)
+                {
+                    if (ImGui::Combo("", &propVal, prop.mEnumStrings, prop.mEnumCount))
+                    {
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, (int16_t)propVal);
+                    }
+                }
+                else
+                {
+                    ImGui::DragInt("", &propVal);
+
+                    if (ImGui::IsItemActivated())
+                    {
+                        sOrigVal = preVal;
+                    }
+
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                    {
+                        prop.SetShort((int16_t)sOrigVal);
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, int16_t(propVal));
+                    }
+                    else if (propVal != preVal)
+                    {
+                        prop.SetShort((int16_t)propVal, i);
+                    }
+                }
                 break;
             }
             default: break;
