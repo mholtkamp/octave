@@ -301,6 +301,13 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
             {
                 Asset* propVal = prop.GetAsset(i);
 
+                bool useAssetColor = (prop.mExtra != 0);
+                if (useAssetColor)
+                {
+                    glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor((TypeId)prop.mExtra);
+                    ImGui::PushStyleColor(ImGuiCol_Text,ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
+                }
+
                 if (ctrlDown)
                 {
                     if (ImGui::Button("<<"))
@@ -352,6 +359,11 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                         Asset* newAsset =  LoadAsset(sTempString);
                         AssignAssetToProperty(owner, ownerType, prop, i, newAsset);
                     }
+                }
+
+                if (useAssetColor)
+                {
+                    ImGui::PopStyleColor();
                 }
 
                 break;
