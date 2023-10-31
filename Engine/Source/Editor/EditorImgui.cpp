@@ -448,6 +448,16 @@ static void DrawScene()
             DrawAddNodeMenu(nullptr);
             ImGui::EndMenu();
         }
+        if (ImGui::BeginMenu("Spawn Basic 3D"))
+        {
+            DrawSpawnBasic3dMenu(nullptr, false);
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Spawn Basic Widget"))
+        {
+            DrawSpawnBasicWidgetMenu(nullptr);
+            ImGui::EndMenu();
+        }
 
         ImGui::EndPopup();
     }
