@@ -755,9 +755,20 @@ void EditorState::ClearAssetDirHistory()
     mDirFuture.clear();
 }
 
-void EditorState::SetAssetDirectory(AssetDir* assetDir)
+void EditorState::SetAssetDirectory(AssetDir* assetDir, bool recordHistory)
 {
-    mCurrentDir = assetDir;
+    if (mCurrentDir != assetDir)
+    {
+        if (recordHistory && mCurrentDir != nullptr)
+        {
+            mDirPast.push_back(mCurrentDir);
+            mDirFuture.clear();
+        }
+
+        mCurrentDir = assetDir;
+
+        GetEditorState()->SetSelectedAssetStub(nullptr);
+    }
 }
 
 AssetDir* EditorState::GetAssetDirectory()

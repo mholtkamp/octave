@@ -144,7 +144,7 @@ struct EditorState
     bool IsInspectLocked();
     void ClearInspectHistory();
     void ClearAssetDirHistory();
-    void SetAssetDirectory(AssetDir* assetDir);
+    void SetAssetDirectory(AssetDir* assetDir, bool recordHistory);
     AssetDir* GetAssetDirectory();
 
     Viewport3D* GetViewport3D();

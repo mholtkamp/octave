@@ -1003,7 +1003,7 @@ void ActionManager::OpenProject(const char* path)
 
     // Handle new project directory
     GetEditorState()->ClearAssetDirHistory();
-    GetEditorState()->SetAssetDirectory(AssetManager::Get()->FindProjectDirectory());
+    GetEditorState()->SetAssetDirectory(AssetManager::Get()->FindProjectDirectory(), true);
     GetEditorState()->SetSelectedAssetStub(nullptr);
 }
 

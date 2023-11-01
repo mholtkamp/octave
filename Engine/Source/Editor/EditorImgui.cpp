@@ -8,6 +8,7 @@
 #include "Renderer.h"
 #include "InputDevices.h"
 #include "Log.h"
+#include "AssetDir.h"
 #include "Grid.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
@@ -992,6 +993,82 @@ static void DrawAssets()
     ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, halfHeight));
 
     ImGui::Begin("Assets", nullptr, kPaneWindowFlags);
+
+    AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
+
+    if (currentDir != nullptr)
+    {
+        // Directories first
+        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.2f, 0.5f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.2f, 0.3f, 0.6f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.3f, 0.3f, 0.6f, 1.0f));
+
+        // Parent Dir (..)
+        if (currentDir->mParentDir != nullptr)
+        {
+            if (ImGui::Selectable(".."))
+            {
+                GetEditorState()->SetAssetDirectory(currentDir->mParentDir, true);
+            }
+        }
+
+        // Child Dirs
+        for (uint32_t i = 0; i < currentDir->mChildDirs.size(); ++i)
+        {
+            AssetDir* childDir = currentDir->mChildDirs[i];
+
+            if (ImGui::Selectable(childDir->mName.c_str()))
+            {
+                GetEditorState()->SetAssetDirectory(childDir, true);
+            }
+        }
+
+        ImGui::PopStyleColor(3); // Pop Directory Colors
+
+        // Assets
+        AssetStub* selStub = GetEditorState()->GetSelectedAssetStub();
+        for (uint32_t i = 0; i < currentDir->mAssetStubs.size(); ++i)
+        {
+            AssetStub* stub = currentDir->mAssetStubs[i];
+
+            bool isSelectedStub = (stub == selStub);
+            if (isSelectedStub)
+            {
+                ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.6f, 0.1f, 0.5f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.6f, 0.1f, 0.7f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.6f, 0.2f, 0.8f, 1.0f));
+            }
+
+            glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor(stub->mType);
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
+
+            if (ImGui::Selectable(stub->mName.c_str()))
+            {
+                if (selStub != stub)
+                {
+                    GetEditorState()->SetSelectedAssetStub(stub);
+                }
+                else if (!IsControlDown())
+                {
+                    GetEditorState()->SetSelectedAssetStub(nullptr);
+                }
+
+                if (IsControlDown() &&
+                    stub != nullptr &&
+                    stub->mAsset != nullptr)
+                {
+                    GetEditorState()->InspectObject(stub->mAsset);
+                }
+            }
+
+            ImGui::PopStyleColor(); // Pop asset color
+
+            if (isSelectedStub)
+            {
+                ImGui::PopStyleColor(3);
+            }
+        }
+    }
 
     ImGui::End();
 
