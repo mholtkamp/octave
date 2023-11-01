@@ -918,6 +918,17 @@ void EditorState::RegressDirPast()
     }
 }
 
+void EditorState::RemoveFilteredAssetStub(AssetStub* stub)
+{
+    for (int32_t i = int32_t(mFilteredAssetStubs.size()) - 1; i >= 0; --i)
+    {
+        if (mFilteredAssetStubs[i] == stub)
+        {
+            mFilteredAssetStubs.erase(mFilteredAssetStubs.begin() + i);
+            break;
+        }
+    }
+}
 
 Viewport3D* EditorState::GetViewport3D()
 {

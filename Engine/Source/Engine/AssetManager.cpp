@@ -382,6 +382,8 @@ bool AssetManager::PurgeAsset(const char* name)
             {
                 GetEditorState()->InspectObject(nullptr, true);
             }
+
+            GetEditorState()->RemoveFilteredAssetStub(delStub);
 #endif
 
             if (delStub->mAsset != nullptr)

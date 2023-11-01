@@ -86,6 +86,9 @@ struct EditorState
     bool mInspectLocked = false;
     Viewport3D* mViewport3D = nullptr;
     //Viewport2D* mViewport2D = nullptr;
+    std::string mAssetFilterStr;
+    std::vector<AssetStub*> mFilteredAssetStubs;
+
 
     // Methods
     void Init();
@@ -156,6 +159,8 @@ struct EditorState
 
     void ProgressDirFuture();
     void RegressDirPast();
+
+    void RemoveFilteredAssetStub(AssetStub* stub);
 
     Viewport3D* GetViewport3D();
     //Viewport2D* GetViewport2D();

@@ -49,9 +49,6 @@ static const ImVec4 kBgHover = ImVec4(0.26f, 0.61f, 0.98f, 0.80f);
 constexpr const uint32_t kTextInputBufferSize = 256;
 static char sTextInputBuffer[kTextInputBufferSize] = {};
 
-static std::string sFilterStr;
-static std::vector<AssetStub*> sFilteredStubs;
-
 static void DiscoverNodeClasses()
 {
     sNode3dNames.clear();
@@ -1281,14 +1278,17 @@ static void DrawAssetsPanel()
     AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
 
     static std::string sUpperAssetName;
-    if (ImGui::InputText("Filter", &sFilterStr, ImGuiInputTextFlags_EnterReturnsTrue))
-    {
-        sFilteredStubs.clear();
+    std::string& filterStr = GetEditorState()->mAssetFilterStr;
+    std::vector<AssetStub*>& filteredStubs = GetEditorState()->mFilteredAssetStubs;
 
-        if (sFilterStr != "")
+    if (ImGui::InputText("Filter", &filterStr, ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+        filteredStubs.clear();
+
+        if (filterStr != "")
         {
             // Convert filter string to all upper case
-            std::string filterStrUpper = sFilterStr;
+            std::string filterStrUpper = filterStr;
             for (uint32_t c = 0; c < filterStrUpper.size(); ++c)
             {
                 filterStrUpper[c] = toupper(filterStrUpper[c]);
@@ -1307,15 +1307,20 @@ static void DrawAssetsPanel()
 
                 if (sUpperAssetName.find(filterStrUpper) != std::string::npos)
                 {
-                    sFilteredStubs.push_back(element.second);
+                    filteredStubs.push_back(element.second);
                 }
             }
         }
     }
 
+    if (filterStr == "")
+    {
+        filteredStubs.clear();
+    }
+
     if (currentDir != nullptr)
     {
-        if (sFilterStr == "")
+        if (filterStr == "")
         {
             // Directories first
             ImGui::PushStyleColor(ImGuiCol_Header, kBgInactive);
@@ -1352,9 +1357,9 @@ static void DrawAssetsPanel()
         }
 
         std::vector<AssetStub*>* stubs = &(currentDir->mAssetStubs);
-        if (sFilterStr != "")
+        if (filterStr != "")
         {
-            stubs = &sFilteredStubs;
+            stubs = &filteredStubs;
         }
 
         // Assets
@@ -1422,12 +1427,12 @@ static void DrawAssetsPanel()
             ImGui::OpenPopup("Null Context");
         }
 
-        if (sFilterStr != "")
+        if (filterStr != "")
         {
             if (IsMouseButtonJustDown(MOUSE_X1))
             {
-                sFilterStr = "";
-                sFilteredStubs.clear();
+                filterStr = "";
+                filteredStubs.clear();
             }
         }
         else
