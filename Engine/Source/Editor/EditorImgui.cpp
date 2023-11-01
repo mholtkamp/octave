@@ -49,6 +49,9 @@ static const ImVec4 kBgHover = ImVec4(0.26f, 0.61f, 0.98f, 0.80f);
 constexpr const uint32_t kTextInputBufferSize = 256;
 static char sTextInputBuffer[kTextInputBufferSize] = {};
 
+static std::string sFilterStr;
+static std::vector<AssetStub*> sFilteredStubs;
+
 static void DiscoverNodeClasses()
 {
     sNode3dNames.clear();
@@ -1277,46 +1280,88 @@ static void DrawAssetsPanel()
 
     AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
 
+    static std::string sUpperAssetName;
+    if (ImGui::InputText("Filter", &sFilterStr, ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+        sFilteredStubs.clear();
+
+        if (sFilterStr != "")
+        {
+            // Convert filter string to all upper case
+            std::string filterStrUpper = sFilterStr;
+            for (uint32_t c = 0; c < filterStrUpper.size(); ++c)
+            {
+                filterStrUpper[c] = toupper(filterStrUpper[c]);
+            }
+
+            // Iterate through all matching asset names
+            const auto& assetMap = AssetManager::Get()->GetAssetMap();
+            for (auto element : assetMap)
+            {
+                // Get the upper case version of asset name
+                sUpperAssetName = element.second->mName;
+                for (uint32_t c = 0; c < sUpperAssetName.size(); ++c)
+                {
+                    sUpperAssetName[c] = toupper(sUpperAssetName[c]);
+                }
+
+                if (sUpperAssetName.find(filterStrUpper) != std::string::npos)
+                {
+                    sFilteredStubs.push_back(element.second);
+                }
+            }
+        }
+    }
+
     if (currentDir != nullptr)
     {
-        // Directories first
-        ImGui::PushStyleColor(ImGuiCol_Header, kBgInactive);
-        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, kBgHover);
-        ImGui::PushStyleColor(ImGuiCol_HeaderActive, kBgInactive);
-
-        // Parent Dir (..)
-        if (currentDir->mParentDir != nullptr)
+        if (sFilterStr == "")
         {
-            if (ImGui::Selectable("..", true))
+            // Directories first
+            ImGui::PushStyleColor(ImGuiCol_Header, kBgInactive);
+            ImGui::PushStyleColor(ImGuiCol_HeaderHovered, kBgHover);
+            ImGui::PushStyleColor(ImGuiCol_HeaderActive, kBgInactive);
+
+            // Parent Dir (..)
+            if (currentDir->mParentDir != nullptr)
             {
-                GetEditorState()->SetAssetDirectory(currentDir->mParentDir, true);
+                if (ImGui::Selectable("..", true))
+                {
+                    GetEditorState()->SetAssetDirectory(currentDir->mParentDir, true);
+                }
             }
+
+            // Child Dirs
+            for (uint32_t i = 0; i < currentDir->mChildDirs.size(); ++i)
+            {
+                AssetDir* childDir = currentDir->mChildDirs[i];
+
+                if (ImGui::Selectable(childDir->mName.c_str(), true))
+                {
+                    GetEditorState()->SetAssetDirectory(childDir, true);
+                }
+
+                if (ImGui::BeginPopupContextItem())
+                {
+                    DrawAssetsContextPopup(nullptr, childDir);
+                    ImGui::EndPopup();
+                }
+            }
+
+            ImGui::PopStyleColor(3); // Pop Directory Colors
         }
 
-        // Child Dirs
-        for (uint32_t i = 0; i < currentDir->mChildDirs.size(); ++i)
+        std::vector<AssetStub*>* stubs = &(currentDir->mAssetStubs);
+        if (sFilterStr != "")
         {
-            AssetDir* childDir = currentDir->mChildDirs[i];
-
-            if (ImGui::Selectable(childDir->mName.c_str(), true))
-            {
-                GetEditorState()->SetAssetDirectory(childDir, true);
-            }
-
-            if (ImGui::BeginPopupContextItem())
-            {
-                DrawAssetsContextPopup(nullptr, childDir);
-                ImGui::EndPopup();
-            }
+            stubs = &sFilteredStubs;
         }
-
-        ImGui::PopStyleColor(3); // Pop Directory Colors
 
         // Assets
         AssetStub* selStub = GetEditorState()->GetSelectedAssetStub();
-        for (uint32_t i = 0; i < currentDir->mAssetStubs.size(); ++i)
+        for (uint32_t i = 0; i < stubs->size(); ++i)
         {
-            AssetStub* stub = currentDir->mAssetStubs[i];
+            AssetStub* stub = (*stubs)[i];
 
             bool isSelectedStub = (stub == selStub);
             if (isSelectedStub)
@@ -1377,13 +1422,24 @@ static void DrawAssetsPanel()
             ImGui::OpenPopup("Null Context");
         }
 
-        if (IsMouseButtonJustDown(MOUSE_X1))
+        if (sFilterStr != "")
         {
-            GetEditorState()->RegressDirPast();
+            if (IsMouseButtonJustDown(MOUSE_X1))
+            {
+                sFilterStr = "";
+                sFilteredStubs.clear();
+            }
         }
-        else if (IsMouseButtonJustDown(MOUSE_X2))
+        else
         {
-            GetEditorState()->ProgressDirFuture();
+            if (IsMouseButtonJustDown(MOUSE_X1))
+            {
+                GetEditorState()->RegressDirPast();
+            }
+            else if (IsMouseButtonJustDown(MOUSE_X2))
+            {
+                GetEditorState()->ProgressDirFuture();
+            }
         }
     }
 
