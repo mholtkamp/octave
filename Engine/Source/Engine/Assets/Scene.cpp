@@ -648,8 +648,8 @@ void Scene::GatherProperties(std::vector<Property>& outProps)
 
 glm::vec4 Scene::GetTypeColor()
 {
-    //return glm::vec4(0.9f, 0.8f, 0.2f, 1.0f);
-    return glm::vec4(0.4f, 0.4f, 1.0f, 1.0f);
+    return glm::vec4(0.9f, 0.8f, 0.2f, 1.0f);
+    //return glm::vec4(0.4f, 0.4f, 1.0f, 1.0f);
 }
 
 const char* Scene::GetTypeName()
