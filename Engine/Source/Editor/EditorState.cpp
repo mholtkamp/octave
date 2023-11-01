@@ -728,6 +728,19 @@ void EditorState::InspectObject(RTTI* obj, bool force)
     }
 }
 
+void EditorState::LockInspect(bool lock)
+{
+    // Don't allow locking inspection if nothing is inspected.
+    lock = (mInspectedObject != nullptr) ? lock : false;
+
+    mInspectLocked = lock;
+}
+
+bool EditorState::IsInspectLocked()
+{
+    return mInspectLocked;
+}
+
 void EditorState::ClearInspectHistory()
 {
     LogError("Need to get Inspect history working");

@@ -920,6 +920,11 @@ void ActionManager::ExileNode(Node* node)
     {
         GetEditorState()->SetSelectedNode(nullptr);
     }
+
+    if (GetEditorState()->GetInspectedObject() == node)
+    {
+        GetEditorState()->InspectObject(nullptr, true);
+    }
 }
 
 void ActionManager::RestoreExiledNode(Node* node)

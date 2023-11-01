@@ -1015,6 +1015,36 @@ static void DrawProperties()
 
             if (obj != nullptr)
             {
+                // Add lock button for inspected object.
+                ImVec2 curPos = ImGui::GetCursorPos();
+                //ImGui::SetCursorPos(ImVec2())
+                ImVec2 lockPos = curPos;
+                lockPos.y -= 0;
+                lockPos.x = ImGui::GetWindowWidth() - 40;
+
+                bool inspectLocked = GetEditorState()->IsInspectLocked();
+                if (inspectLocked)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+                }
+
+                ImGui::SetCursorPos(lockPos);
+                if (ImGui::Button("L", ImVec2(20, 20)))
+                {
+                    // Toggle locked inspection
+                    GetEditorState()->LockInspect(!inspectLocked);
+                }
+
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone))
+                    ImGui::SetTooltip("Lock");
+
+                ImGui::SetCursorPos(curPos);
+
+                if (inspectLocked)
+                {
+                    ImGui::PopStyleColor();
+                }
+
                 std::vector<Property> props;
                 obj->GatherProperties(props);
 

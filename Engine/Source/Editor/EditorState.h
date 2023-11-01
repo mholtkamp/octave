@@ -140,6 +140,8 @@ struct EditorState
     Node* GetInspectedNode();
     Asset* GetInspectedAsset();
     void InspectObject(RTTI* obj, bool force = false);
+    void LockInspect(bool lock);
+    bool IsInspectLocked();
     void ClearInspectHistory();
     void ClearAssetDirHistory();
     void SetAssetDirectory(AssetDir* assetDir);
