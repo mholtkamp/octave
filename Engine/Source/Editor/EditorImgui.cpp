@@ -970,7 +970,7 @@ static void DrawScenePanel()
         ImGui::PopStyleVar();
     }
 
-    // If no popup was opened and we right clicked somehwere...
+    // If no popup is open and we aren't inputting text...
     if (!ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup) &&
         ImGui::IsWindowHovered() &&
         !ImGui::GetIO().WantTextInput && 
@@ -1118,7 +1118,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
     }
 
 
-    if (!engineFile)
+    if (!engineFile && (stub || dir))
     {
         if (stub && ImGui::Selectable("Save"))
         {
@@ -1302,6 +1302,12 @@ static void DrawAssetsPanel()
             {
                 GetEditorState()->SetAssetDirectory(childDir, true);
             }
+
+            if (ImGui::BeginPopupContextItem())
+            {
+                DrawAssetsContextPopup(nullptr, childDir);
+                ImGui::EndPopup();
+            }
         }
 
         ImGui::PopStyleColor(3); // Pop Directory Colors
@@ -1355,6 +1361,29 @@ static void DrawAssetsPanel()
                 ImGui::EndPopup();
             }
         }
+    }
+
+    // If no popup is open and we aren't inputting text...
+    if (!ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup) &&
+        ImGui::IsWindowHovered() &&
+        !ImGui::GetIO().WantTextInput)
+    {
+        const bool ctrlDown = IsControlDown();
+        const bool shiftDown = IsShiftDown();
+        const bool altDown = IsAltDown();
+
+        if (ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+        {
+            ImGui::OpenPopup("Null Context");
+        }
+
+
+    }
+
+    if (ImGui::BeginPopup("Null Context"))
+    {
+        DrawAssetsContextPopup(nullptr, nullptr);
+        ImGui::EndPopup();
     }
 
     ImGui::End();
