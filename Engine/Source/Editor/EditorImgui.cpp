@@ -1377,7 +1377,14 @@ static void DrawAssetsPanel()
             ImGui::OpenPopup("Null Context");
         }
 
-
+        if (IsMouseButtonJustDown(MOUSE_X1))
+        {
+            GetEditorState()->RegressDirPast();
+        }
+        else if (IsMouseButtonJustDown(MOUSE_X2))
+        {
+            GetEditorState()->ProgressDirFuture();
+        }
     }
 
     if (ImGui::BeginPopup("Null Context"))
@@ -1469,6 +1476,16 @@ static void DrawPropertiesPanel()
         if (ctrlDown && IsKeyJustDown(KEY_L))
         {
             GetEditorState()->LockInspect(!GetEditorState()->IsInspectLocked());
+        }
+
+        // Navigate inspection history.
+        if (IsMouseButtonJustDown(MOUSE_X1))
+        {
+            GetEditorState()->RegressInspectPast();
+        }
+        else if (IsMouseButtonJustDown(MOUSE_X2))
+        {
+            GetEditorState()->ProgressInspectFuture();
         }
     }
 

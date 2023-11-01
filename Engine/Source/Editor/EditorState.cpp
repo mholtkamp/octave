@@ -718,13 +718,18 @@ Asset* EditorState::GetInspectedAsset()
     return mInspectedObject ? mInspectedObject->As<Asset>() : nullptr;
 }
 
-void EditorState::InspectObject(RTTI* obj, bool force)
+void EditorState::InspectObject(RTTI* obj, bool force, bool recordHistory)
 {
     if (force || !mInspectLocked)
     {
         mInspectedObject = obj;
         mInspectedAsset = obj ? obj->As<Asset>() : nullptr;
         mInspectLocked = false;
+    }
+
+    if (recordHistory)
+    {
+        RecordInspectHistory();
     }
 }
 
@@ -741,16 +746,69 @@ bool EditorState::IsInspectLocked()
     return mInspectLocked;
 }
 
+void EditorState::RecordInspectHistory()
+{
+    if (mPrevInspectedObject != mInspectedObject)
+    {
+        if (mPrevInspectedObject != nullptr)
+        {
+            mInspectPast.push_back(mPrevInspectedObject);
+            mInspectFuture.clear();
+        }
+
+        mPrevInspectedObject = mInspectedObject;
+    }
+}
+
 void EditorState::ClearInspectHistory()
 {
-    LogError("Need to get Inspect history working");
     mInspectPast.clear();
     mInspectFuture.clear();
+    mPrevInspectedObject = nullptr;
+}
+
+void EditorState::ProgressInspectFuture()
+{
+    if (mInspectFuture.size() > 0)
+    {
+        if (mInspectedObject != nullptr)
+        {
+            mInspectPast.push_back(mInspectedObject);
+        }
+
+        RTTI* futureObj = mInspectFuture.back();
+        OCT_ASSERT(futureObj != nullptr);
+        mInspectFuture.pop_back();
+
+        // Should we prevent moving through history (at a higher level) if the object properties are locked?
+        InspectObject(futureObj, true, false);
+
+        mPrevInspectedObject = mInspectedObject;
+    }
+}
+
+void EditorState::RegressInspectPast()
+{
+    if (mInspectPast.size() > 0)
+    {
+        if (mInspectedObject != nullptr)
+        {
+            mInspectFuture.push_back(mInspectedObject);
+        }
+
+        RTTI* pastObj = mInspectPast.back();
+        OCT_ASSERT(pastObj != nullptr);
+        mInspectPast.pop_back();
+
+        // Should we prevent moving through history (at a higher level) if the object properties are locked?
+        InspectObject(pastObj, true, false);
+
+        mPrevInspectedObject = mInspectedObject;
+    }
 }
 
 void EditorState::ClearAssetDirHistory()
 {
-    LogError("Need to implement ClearAssetDirHistory()");
     mDirPast.clear();
     mDirFuture.clear();
 }
@@ -822,6 +880,41 @@ void EditorState::DuplicateAsset(AssetStub* srcStub)
                 AssetManager::Get()->SaveAsset(*stub);
             }
         }
+    }
+}
+
+void EditorState::ProgressDirFuture()
+{
+    if (mDirFuture.size() > 0)
+    {
+        if (mCurrentDir != nullptr)
+        {
+            mDirPast.push_back(mCurrentDir);
+        }
+
+        AssetDir* dir = mDirFuture.back();
+        OCT_ASSERT(dir);
+        mDirFuture.pop_back();
+
+        SetAssetDirectory(dir, false);
+    }
+}
+
+void EditorState::RegressDirPast()
+{
+    if (mDirPast.size() > 0)
+    {
+        if (mCurrentDir != nullptr)
+        {
+            // Record the current dir.
+            mDirFuture.push_back(mCurrentDir);
+        }
+
+        AssetDir* dir = mDirPast.back();
+        OCT_ASSERT(dir);
+        mDirPast.pop_back();
+
+        SetAssetDirectory(dir, false);
     }
 }
 

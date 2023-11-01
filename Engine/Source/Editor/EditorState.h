@@ -81,6 +81,7 @@ struct EditorState
     std::vector<RTTI*> mInspectPast;
     std::vector<RTTI*> mInspectFuture;
     RTTI* mInspectedObject;
+    RTTI* mPrevInspectedObject;
     AssetRef mInspectedAsset;
     bool mInspectLocked = false;
     Viewport3D* mViewport3D = nullptr;
@@ -139,16 +140,22 @@ struct EditorState
     RTTI* GetInspectedObject();
     Node* GetInspectedNode();
     Asset* GetInspectedAsset();
-    void InspectObject(RTTI* obj, bool force = false);
+    void InspectObject(RTTI* obj, bool force = false, bool recordHistory = true);
     void LockInspect(bool lock);
     bool IsInspectLocked();
+    void RecordInspectHistory();
     void ClearInspectHistory();
+    void ProgressInspectFuture();
+    void RegressInspectPast();
     void ClearAssetDirHistory();
     void SetAssetDirectory(AssetDir* assetDir, bool recordHistory);
     AssetDir* GetAssetDirectory();
 
     void CaptureAndSaveScene(AssetStub* stub, Node* rootNode);
     void DuplicateAsset(AssetStub* srcStub);
+
+    void ProgressDirFuture();
+    void RegressDirPast();
 
     Viewport3D* GetViewport3D();
     //Viewport2D* GetViewport2D();
