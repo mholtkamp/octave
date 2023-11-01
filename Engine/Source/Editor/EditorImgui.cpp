@@ -36,6 +36,10 @@ static std::vector<std::string> sNode3dNames;
 static std::vector<std::string> sNodeWidgetNames;
 static std::vector<std::string> sNodeOtherNames;
 
+static const ImVec4 kSelectedColor = ImVec4(0.12f, 0.50f, 0.47f, 1.00f);
+static const ImVec4 kBgInactive = ImVec4(0.20f, 0.20f, 0.68f, 1.00f);
+static const ImVec4 kBgHover = ImVec4(0.26f, 0.61f, 0.98f, 0.80f);
+
 static void DiscoverNodeClasses()
 {
     sNode3dNames.clear();
@@ -434,7 +438,7 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
 
                         if (bitSet)
                         {
-                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.5f, 1.0f));
+                            ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
                         }
                         else
                         {
@@ -707,12 +711,7 @@ static void DrawPackageMenu()
     //}
 }
 
-static void DrawMenu()
-{
-
-}
-
-static void DrawScene()
+static void DrawScenePanel()
 {
     ActionManager* am = ActionManager::Get();
 
@@ -985,7 +984,7 @@ static void DrawScene()
     ImGui::End();
 }
 
-static void DrawAssets()
+static void DrawAssetsPanel()
 {
     const float halfHeight = (float)GetEngineState()->mWindowHeight / 2.0f;
 
@@ -999,14 +998,14 @@ static void DrawAssets()
     if (currentDir != nullptr)
     {
         // Directories first
-        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.2f, 0.5f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.2f, 0.3f, 0.6f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.3f, 0.3f, 0.6f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Header, kBgInactive);
+        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, kBgHover);
+        ImGui::PushStyleColor(ImGuiCol_HeaderActive, kBgInactive);
 
         // Parent Dir (..)
         if (currentDir->mParentDir != nullptr)
         {
-            if (ImGui::Selectable(".."))
+            if (ImGui::Selectable("..", true))
             {
                 GetEditorState()->SetAssetDirectory(currentDir->mParentDir, true);
             }
@@ -1017,7 +1016,7 @@ static void DrawAssets()
         {
             AssetDir* childDir = currentDir->mChildDirs[i];
 
-            if (ImGui::Selectable(childDir->mName.c_str()))
+            if (ImGui::Selectable(childDir->mName.c_str(), true))
             {
                 GetEditorState()->SetAssetDirectory(childDir, true);
             }
@@ -1034,15 +1033,15 @@ static void DrawAssets()
             bool isSelectedStub = (stub == selStub);
             if (isSelectedStub)
             {
-                ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.6f, 0.1f, 0.5f, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.6f, 0.1f, 0.7f, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.6f, 0.2f, 0.8f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_Header, kSelectedColor);
+                ImGui::PushStyleColor(ImGuiCol_HeaderHovered, kSelectedColor);
+                ImGui::PushStyleColor(ImGuiCol_HeaderActive, kSelectedColor);
             }
 
             glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor(stub->mType);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
 
-            if (ImGui::Selectable(stub->mName.c_str()))
+            if (ImGui::Selectable(stub->mName.c_str(), isSelectedStub))
             {
                 if (selStub != stub)
                 {
@@ -1074,7 +1073,7 @@ static void DrawAssets()
 
 }
 
-static void DrawProperties()
+static void DrawPropertiesPanel()
 {
     const float dispWidth = (float)GetEngineState()->mWindowWidth;
     const float dispHeight = (float)GetEngineState()->mWindowHeight;
@@ -1156,7 +1155,7 @@ static void DrawProperties()
     ImGui::End();
 }
 
-static void DrawViewport()
+static void DrawViewportPanel()
 {
     Renderer* renderer = Renderer::Get();
     ActionManager* am = ActionManager::Get();
@@ -1401,11 +1400,10 @@ void EditorImguiDraw()
 {
     ImGui::NewFrame();
 
-    DrawMenu();
-    DrawScene();
-    DrawAssets();
-    DrawProperties();
-    DrawViewport();
+    DrawScenePanel();
+    DrawAssetsPanel();
+    DrawPropertiesPanel();
+    DrawViewportPanel();
 
     ImGui::Render();
 }
