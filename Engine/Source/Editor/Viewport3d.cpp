@@ -498,7 +498,7 @@ void Viewport3D::HandleDefaultControls()
             renderer->EnableProxyRendering(!renderer->IsProxyRenderingEnabled());
         }
 
-        if (IsKeyJustDown(KEY_L))
+        if (controlDown && IsKeyJustDown(KEY_L))
         {
             renderer->EnablePathTracing(!renderer->IsPathTracingEnabled());
         }

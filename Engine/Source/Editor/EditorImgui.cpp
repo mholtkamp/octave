@@ -1066,6 +1066,16 @@ static void DrawProperties()
         ImGui::EndTabBar();
     }
 
+    if (!ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup) &&
+        ImGui::IsWindowHovered())
+    {
+        // Hotkey for toggling lock.
+        if (IsKeyJustDown(KEY_L))
+        {
+            GetEditorState()->LockInspect(!GetEditorState()->IsInspectLocked());
+        }
+    }
+
     ImGui::End();
 }
 
