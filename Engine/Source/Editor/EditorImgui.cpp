@@ -973,6 +973,7 @@ static void DrawScenePanel()
     // If no popup was opened and we right clicked somehwere...
     if (!ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup) &&
         ImGui::IsWindowHovered() &&
+        !ImGui::GetIO().WantTextInput && 
         !sNodeContextActive)
     {
         const bool ctrlDown = IsControlDown();
@@ -1430,10 +1431,13 @@ static void DrawPropertiesPanel()
     }
 
     if (!ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup) &&
-        ImGui::IsWindowHovered())
+        ImGui::IsWindowHovered() &&
+        !ImGui::GetIO().WantTextInput)
     {
+        bool ctrlDown = IsControlDown();
+
         // Hotkey for toggling lock.
-        if (IsKeyJustDown(KEY_L))
+        if (ctrlDown && IsKeyJustDown(KEY_L))
         {
             GetEditorState()->LockInspect(!GetEditorState()->IsInspectLocked());
         }
