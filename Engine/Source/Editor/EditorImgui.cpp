@@ -14,6 +14,12 @@
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
 
+#include "Assets/Scene.h"
+#include "Assets/SoundWave.h"
+#include "Assets/ParticleSystem.h"
+#include "Assets/StaticMesh.h"
+#include "Assets/SkeletalMesh.h"
+
 #include "Viewport3d.h"
 #include "ActionManager.h"
 #include "EditorState.h"
@@ -984,6 +990,132 @@ static void DrawScenePanel()
     ImGui::End();
 }
 
+static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
+{
+    ActionManager* actMan = ActionManager::Get();
+    AssetManager* assMan = AssetManager::Get();
+
+    bool engineFile = false;
+    if ((stub && stub->mEngineAsset) ||
+        (dir && dir->mEngineDir))
+    {
+        engineFile = true;
+    }
+
+    bool canInstantiate = false;
+    if (stub &&
+        (stub->mType == Scene::GetStaticType() ||
+            stub->mType == SoundWave::GetStaticType() ||
+            stub->mType == StaticMesh::GetStaticType() ||
+            stub->mType == SkeletalMesh::GetStaticType() ||
+            stub->mType == ParticleSystem::GetStaticType()))
+    {
+        canInstantiate = true;
+    }
+
+    if (stub && ImGui::Selectable("Properties"))
+    {
+        if (stub->mAsset == nullptr)
+            AssetManager::Get()->LoadAsset(*stub);
+
+        GetEditorState()->InspectObject(stub->mAsset);
+    }
+
+    if (stub && stub->mType == Scene::GetStaticType())
+    {
+        if (ImGui::Selectable("Open Scene"))
+        {
+            LogDebug("TODO: Open up EditScene!");
+        }
+
+        if (ImGui::Selectable("Set Startup Scene"))
+        {
+
+        }
+    }
+
+    if (canInstantiate && ImGui::Selectable("Instantiate"))
+    {
+
+    }
+
+
+    if (!engineFile)
+    {
+        if (stub && ImGui::Selectable("Save"))
+        {
+            if (stub->mAsset == nullptr)
+                AssetManager::Get()->LoadAsset(*stub);
+
+            assMan->SaveAsset(*stub);
+        }
+        if (ImGui::Selectable("Rename"))
+        {
+
+        }
+        if (ImGui::Selectable("Delete"))
+        {
+            if (stub)
+            {
+                actMan->DeleteAsset(stub);
+            }
+            else if (dir)
+            {
+                actMan->DeleteAssetDir(dir);
+                GetEditorState()->ClearAssetDirHistory();
+            }
+
+        }
+
+        if (stub && ImGui::Selectable("Duplicate"))
+        {
+            GetEditorState()->DuplicateAsset(stub);
+        }
+    }
+
+    AssetDir* curDir = GetEditorState()->GetAssetDirectory();
+    if (curDir && !curDir->mEngineDir)
+    {
+        if (ImGui::Selectable("Import Asset"))
+        {
+
+        }
+
+        if (ImGui::Selectable("Create Asset"))
+        {
+
+        }
+
+        if (ImGui::Selectable("New Folder"))
+        {
+
+        }
+
+        if (ImGui::Selectable("Capture Active Scene"))
+        {
+            AssetStub* saveStub = nullptr;
+            if (stub && stub->mType == Scene::GetStaticType())
+            {
+                saveStub = stub;
+            }
+
+            GetEditorState()->CaptureAndSaveScene(saveStub, nullptr);
+        }
+
+        const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
+        if (selNodes.size() == 1 && ImGui::Selectable("Capture Selected Node"))
+        {
+            AssetStub* saveStub = nullptr;
+            if (stub && stub->mType == Scene::GetStaticType())
+            {
+                saveStub = stub;
+            }
+
+            GetEditorState()->CaptureAndSaveScene(saveStub, selNodes[0]);
+        }
+    }
+}
+
 static void DrawAssetsPanel()
 {
     const float halfHeight = (float)GetEngineState()->mWindowHeight / 2.0f;
@@ -1065,6 +1197,12 @@ static void DrawAssetsPanel()
             if (isSelectedStub)
             {
                 ImGui::PopStyleColor(3);
+            }
+
+            if (ImGui::BeginPopupContextItem())
+            {
+                DrawAssetsContextPopup(stub, nullptr);
+                ImGui::EndPopup();
             }
         }
     }

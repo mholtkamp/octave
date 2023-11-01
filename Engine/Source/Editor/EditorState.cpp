@@ -776,6 +776,56 @@ AssetDir* EditorState::GetAssetDirectory()
     return mCurrentDir;
 }
 
+void EditorState::CaptureAndSaveScene(AssetStub* stub, Node* rootNode)
+{
+    if (stub == nullptr)
+    {
+        stub = EditorAddUniqueAsset("SC_Scene", mCurrentDir, Scene::GetStaticType(), true);
+    }
+
+    if (stub->mAsset == nullptr)
+    {
+        AssetManager::Get()->LoadAsset(*stub);
+    }
+
+    if (rootNode == nullptr)
+    {
+        rootNode = GetWorld()->GetRootNode();
+    }
+
+    Scene* scene = (Scene*)stub->mAsset;
+    scene->Capture(rootNode);
+    AssetManager::Get()->SaveAsset(*stub);
+}
+
+void EditorState::DuplicateAsset(AssetStub* srcStub)
+{
+    if (srcStub != nullptr)
+    {
+        Asset* srcAsset = nullptr;
+        if (srcStub->mAsset == nullptr)
+        {
+            AssetManager::Get()->LoadAsset(*srcStub);
+        }
+
+        srcAsset = srcStub->mAsset;
+
+        if (srcAsset != nullptr)
+        {
+            AssetStub* stub = EditorAddUniqueAsset(srcAsset->GetName().c_str(), mCurrentDir, srcAsset->GetType(), false);
+
+            if (stub != nullptr)
+            {
+                stub->mAsset->Copy(srcAsset);
+                stub->mAsset->SetName(stub->mName);
+                stub->mAsset->Create();
+                AssetManager::Get()->SaveAsset(*stub);
+            }
+        }
+    }
+}
+
+
 Viewport3D* EditorState::GetViewport3D()
 {
     return mViewport3D;

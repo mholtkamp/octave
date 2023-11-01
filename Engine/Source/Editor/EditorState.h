@@ -147,6 +147,9 @@ struct EditorState
     void SetAssetDirectory(AssetDir* assetDir, bool recordHistory);
     AssetDir* GetAssetDirectory();
 
+    void CaptureAndSaveScene(AssetStub* stub, Node* rootNode);
+    void DuplicateAsset(AssetStub* srcStub);
+
     Viewport3D* GetViewport3D();
     //Viewport2D* GetViewport2D();
 };
