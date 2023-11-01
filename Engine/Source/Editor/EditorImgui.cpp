@@ -1446,6 +1446,44 @@ static void DrawAssetsPanel()
                 GetEditorState()->ProgressDirFuture();
             }
         }
+
+        if (currentDir != nullptr)
+        {
+            if (ctrlDown && IsKeyJustDown(KEY_N))
+            {
+                CreateNewAsset(Scene::GetStaticType());
+            }
+
+            if (ctrlDown && IsKeyJustDown(KEY_M))
+            {
+                CreateNewAsset(Material::GetStaticType());
+            }
+
+            if (ctrlDown && IsKeyJustDown(KEY_P))
+            {
+                CreateNewAsset(ParticleSystem::GetStaticType());
+            }
+        }
+
+        if (ctrlDown && IsKeyJustDown(KEY_D))
+        {
+            AssetStub* srcStub = GetEditorState()->GetSelectedAssetStub();
+
+            if (srcStub != nullptr)
+            {
+                GetEditorState()->DuplicateAsset(srcStub);
+            }
+        }
+
+        if (IsKeyJustDown(KEY_DELETE))
+        {
+            AssetStub* selStub = GetEditorState()->GetSelectedAssetStub();
+
+            if (selStub != nullptr)
+            {
+                ActionManager::Get()->DeleteAsset(selStub);
+            }
+        }
     }
 
     if (ImGui::BeginPopup("Null Context"))
