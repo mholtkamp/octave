@@ -46,6 +46,9 @@ static const ImVec4 kSelectedColor = ImVec4(0.12f, 0.50f, 0.47f, 1.00f);
 static const ImVec4 kBgInactive = ImVec4(0.20f, 0.20f, 0.68f, 1.00f);
 static const ImVec4 kBgHover = ImVec4(0.26f, 0.61f, 0.98f, 0.80f);
 
+constexpr const uint32_t kTextInputBufferSize = 256;
+static char sTextInputBuffer[kTextInputBufferSize] = {};
+
 static void DiscoverNodeClasses()
 {
     sNode3dNames.clear();
@@ -83,6 +86,60 @@ static void DiscoverNodeClasses()
         }
 
         delete node;
+    }
+}
+
+static void CreateNewAsset(TypeId assetType)
+{
+    AssetStub* stub = nullptr;
+    AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
+
+    if (currentDir == nullptr)
+        return;
+
+    if (assetType == Material::GetStaticType())
+    {
+        stub = EditorAddUniqueAsset("M_Material", currentDir, Material::GetStaticType(), true);
+        Asset* selAsset = GetEditorState()->GetSelectedAsset();
+
+
+        if (stub != nullptr &&
+            stub->mAsset != nullptr &&
+            selAsset != nullptr &&
+            selAsset->GetType() == Texture::GetStaticType())
+        {
+            Material* material = stub->mAsset->As<Material>();
+            Texture* texture = selAsset->As<Texture>();
+
+            // Auto assign the selected texture to Texture_0
+            material->SetTexture(TEXTURE_0, texture);
+
+            std::string newMatName = texture->GetName();
+
+            if (newMatName.length() >= 2 && newMatName[0] == 'T' && newMatName[1] == '_')
+            {
+                newMatName[0] = 'M';
+            }
+            else
+            {
+                newMatName = std::string("M_") + newMatName;
+            }
+
+            AssetManager::Get()->RenameAsset(material, newMatName);
+        }
+    }
+    else if (assetType == ParticleSystem::GetStaticType())
+    {
+        stub = EditorAddUniqueAsset("P_ParticleSystem", currentDir, ParticleSystem::GetStaticType(), true);
+    }
+    else if (assetType == Scene::GetStaticType())
+    {
+        stub = EditorAddUniqueAsset("SC_Scene", currentDir, Scene::GetStaticType(), true);
+    }
+
+    if (stub != nullptr)
+    {
+        AssetManager::Get()->SaveAsset(*stub);
     }
 }
 
@@ -758,8 +815,7 @@ static void DrawScenePanel()
 
         if (ImGui::BeginPopupContextItem())
         {
-            static char sTextInputBuffer[256] = {};
-            static bool sSetTextInputFocus = true;
+            bool setTextInputFocus = false;
 
             sNodeContextActive = true;
 
@@ -783,8 +839,8 @@ static void DrawScenePanel()
             if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
             {
                 ImGui::OpenPopup("Rename Node");
-                strncpy(sTextInputBuffer, node->GetName().c_str(), 256);
-                sSetTextInputFocus = true;
+                strncpy(sTextInputBuffer, node->GetName().c_str(), kTextInputBufferSize);
+                setTextInputFocus = true;
             }
             if (ImGui::Selectable("Duplicate"))
             {
@@ -799,7 +855,7 @@ static void DrawScenePanel()
                 if (ImGui::Selectable("Attach Selected To Bone"))
                 {
                     ImGui::OpenPopup("Attach Selected To Bone");
-                    sSetTextInputFocus = true;
+                    setTextInputFocus = true;
                 }
             }
             if (ImGui::Selectable("Set Root Node"))
@@ -839,13 +895,12 @@ static void DrawScenePanel()
 
             if (ImGui::BeginPopup("Rename Node"))
             {
-                if (sSetTextInputFocus)
+                if (setTextInputFocus)
                 {
                     ImGui::SetKeyboardFocusHere();
-                    sSetTextInputFocus = false;
                 }
 
-                if (ImGui::InputText("Node Name", sTextInputBuffer, 256, ImGuiInputTextFlags_EnterReturnsTrue))
+                if (ImGui::InputText("Node Name", sTextInputBuffer, kTextInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
                 {
                     node->SetName(sTextInputBuffer);
                 }
@@ -855,13 +910,12 @@ static void DrawScenePanel()
 
             if (ImGui::BeginPopup("Attach Selected To Bone"))
             {
-                if (sSetTextInputFocus)
+                if (setTextInputFocus)
                 {
                     ImGui::SetKeyboardFocusHere();
-                    sSetTextInputFocus = false;
                 }
 
-                if (ImGui::InputText("Bone Name", sTextInputBuffer, 256, ImGuiInputTextFlags_EnterReturnsTrue))
+                if (ImGui::InputText("Bone Name", sTextInputBuffer, kTextInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
                 {
                     SkeletalMesh3D* skNode = node->As<SkeletalMesh3D>();
                     if (skNode)
@@ -873,8 +927,6 @@ static void DrawScenePanel()
 
                 ImGui::EndPopup();
             }
-
-            sSetTextInputFocus = false;
 
             ImGui::EndPopup();
         }
@@ -992,8 +1044,13 @@ static void DrawScenePanel()
 
 static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 {
+    bool setTextInputFocus = false;
+    bool closeContextPopup = false;
+
     ActionManager* actMan = ActionManager::Get();
     AssetManager* assMan = AssetManager::Get();
+
+    AssetDir* curDir = GetEditorState()->GetAssetDirectory();
 
     bool engineFile = false;
     if ((stub && stub->mEngineAsset) ||
@@ -1030,13 +1087,33 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 
         if (ImGui::Selectable("Set Startup Scene"))
         {
-
+            GetEditorState()->mStartupSceneName = stub->mName;
+            GetEditorState()->WriteEditorSave();
         }
     }
 
     if (canInstantiate && ImGui::Selectable("Instantiate"))
     {
+        if (stub->mAsset == nullptr)
+            assMan->LoadAsset(*stub);
 
+        if (stub->mAsset != nullptr)
+        {
+            Asset* srcAsset = stub->mAsset;
+            glm::vec3 spawnPos = EditorGetFocusPosition();
+            Node* selNode = GetEditorState()->GetSelectedNode();
+
+            if (stub->mType == Scene::GetStaticType())
+                actMan->SpawnBasicNode(BASIC_SCENE, selNode, srcAsset, selNode == nullptr, spawnPos);
+            else if (stub->mType == SoundWave::GetStaticType())
+                actMan->SpawnBasicNode(BASIC_AUDIO, selNode, srcAsset, selNode == nullptr, spawnPos);
+            else if (stub->mType == StaticMesh::GetStaticType())
+                actMan->SpawnBasicNode(BASIC_STATIC_MESH, selNode, srcAsset, selNode == nullptr, spawnPos);
+            else if (stub->mType == SkeletalMesh::GetStaticType())
+                actMan->SpawnBasicNode(BASIC_SKELETAL_MESH, selNode, srcAsset, selNode == nullptr, spawnPos);
+            else if (stub->mType == ParticleSystem::GetStaticType())
+                actMan->SpawnBasicNode(BASIC_PARTICLE, selNode, srcAsset, selNode == nullptr, spawnPos);
+        }
     }
 
 
@@ -1049,9 +1126,11 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 
             assMan->SaveAsset(*stub);
         }
-        if (ImGui::Selectable("Rename"))
+        if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
         {
-
+            ImGui::OpenPopup("Rename Asset");
+            strncpy(sTextInputBuffer, stub ? stub->mName.c_str() : dir->mName.c_str(), kTextInputBufferSize);
+            setTextInputFocus = true;
         }
         if (ImGui::Selectable("Delete"))
         {
@@ -1073,22 +1152,30 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         }
     }
 
-    AssetDir* curDir = GetEditorState()->GetAssetDirectory();
     if (curDir && !curDir->mEngineDir)
     {
         if (ImGui::Selectable("Import Asset"))
         {
-
+            actMan->ImportAsset();
         }
 
-        if (ImGui::Selectable("Create Asset"))
+        if (ImGui::BeginMenu("Create Asset"))
         {
+            if (ImGui::Selectable("Material"))
+                CreateNewAsset(Material::GetStaticType());
+            if (ImGui::Selectable("Particle System"))
+                CreateNewAsset(ParticleSystem::GetStaticType());
+            if (ImGui::Selectable("Scene"))
+                CreateNewAsset(Scene::GetStaticType());
 
+            ImGui::EndMenu();
         }
 
-        if (ImGui::Selectable("New Folder"))
+        if (ImGui::Selectable("New Folder", false, ImGuiSelectableFlags_DontClosePopups))
         {
-
+            ImGui::OpenPopup("New Folder");
+            strncpy(sTextInputBuffer, "", kTextInputBufferSize);
+            setTextInputFocus = true;
         }
 
         if (ImGui::Selectable("Capture Active Scene"))
@@ -1113,6 +1200,68 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 
             GetEditorState()->CaptureAndSaveScene(saveStub, selNodes[0]);
         }
+    }
+
+    if (ImGui::BeginPopup("Rename Asset"))
+    {
+        if (setTextInputFocus)
+        {
+            ImGui::SetKeyboardFocusHere();
+        }
+
+        if (ImGui::InputText("Name", sTextInputBuffer, kTextInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            if (stub)
+            {
+                Asset* asset = AssetManager::Get()->LoadAsset(*stub);
+                AssetManager::Get()->RenameAsset(asset, sTextInputBuffer);
+                AssetManager::Get()->SaveAsset(*stub);
+            }
+            else if (dir)
+            {
+                AssetManager::Get()->RenameDirectory(dir, sTextInputBuffer);
+            }
+
+            ImGui::CloseCurrentPopup();
+            closeContextPopup = true;
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("New Folder"))
+    {
+        if (setTextInputFocus)
+        {
+            ImGui::SetKeyboardFocusHere();
+        }
+
+        if (ImGui::InputText("Folder Name", sTextInputBuffer, kTextInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            const std::string folderName = sTextInputBuffer;
+
+            if (folderName != "")
+            {
+                if (SYS_CreateDirectory((curDir->mPath + folderName).c_str()))
+                {
+                    curDir->CreateSubdirectory(folderName);
+                }
+                else
+                {
+                    LogError("Failed to create folder");
+                }
+            }
+
+            ImGui::CloseCurrentPopup();
+            closeContextPopup = true;
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (closeContextPopup)
+    {
+        ImGui::CloseCurrentPopup();
     }
 }
 
