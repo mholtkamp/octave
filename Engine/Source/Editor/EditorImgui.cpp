@@ -1758,28 +1758,32 @@ static void DrawViewportPanel()
 
     if (ImGui::BeginPopup("FilePopup"))
     {
+        EditScene* editScene = GetEditorState()->GetEditScene();
+
         if (ImGui::Selectable("Open Project"))
             am->OpenProject();
         if (ImGui::Selectable("New Project"))
             am->CreateNewProject();
-        if (ImGui::Selectable("Save Scene"))
+        if (editScene && ImGui::Selectable("Save Scene"))
         {
-            EditScene* editScene = GetEditorState()->GetEditScene();
-            if (editScene != nullptr)
+            Scene* scene = editScene->mSceneAsset.Get<Scene>();
+            AssetStub* sceneStub = scene ? AssetManager::Get()->GetAssetStub(scene->GetName()) : nullptr;
+            if (sceneStub != nullptr)
             {
-                Scene* scene = editScene->mSceneAsset.Get<Scene>();
-                AssetStub* sceneStub = scene ? AssetManager::Get()->GetAssetStub(scene->GetName()) : nullptr;
-                if (sceneStub != nullptr)
-                {
-                    GetEditorState()->CaptureAndSaveScene(sceneStub, nullptr);
-                }
-                else
-                {
-                    // Need to request name and create asset.
-                    openSaveSceneAsModal = true;
-                    strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
-                }
+                GetEditorState()->CaptureAndSaveScene(sceneStub, nullptr);
             }
+            else
+            {
+                // Need to request name and create asset.
+                openSaveSceneAsModal = true;
+                strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+            }
+        }
+        if (editScene && ImGui::Selectable("Save Scene As..."))
+        {
+            // Need to request name and create asset.
+            openSaveSceneAsModal = true;
+            strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
         }
         if (ImGui::Selectable("Recapture All Scenes"))
             am->RecaptureAndSaveAllScenes();
@@ -1821,7 +1825,7 @@ static void DrawViewportPanel()
 
         AssetDir* curDir = GetEditorState()->GetAssetDirectory();
 
-        if (curDir == nullptr || curDir->mEngineDir)
+        if (curDir == nullptr || curDir->mEngineDir || curDir == AssetManager::Get()->GetRootDirectory())
         {
             GetEditorState()->SetAssetDirectory(AssetManager::Get()->FindProjectDirectory(), true);
         }
