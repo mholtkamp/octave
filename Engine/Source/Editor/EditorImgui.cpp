@@ -1738,14 +1738,18 @@ static void DrawViewportPanel()
 
     // (2) Draw Scene tabs on top
 
+    static int32_t sPrevActiveSceneIdx = 0;
     std::vector<EditScene>& scenes = GetEditorState()->mEditScenes;
     int32_t activeSceneIdx = GetEditorState()->mEditSceneIndex;
+    bool sceneJustChanged = sPrevActiveSceneIdx != activeSceneIdx;
 
     const ImGuiTabBarFlags kSceneTabBarFlags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyScroll;
     ImGui::SameLine(0.0f, 20.0f);
 
     if (ImGui::BeginTabBar("SceneTabBar", kSceneTabBarFlags))
     {
+        int32_t openedTab = activeSceneIdx;
+
         for (int32_t n = 0; n < scenes.size(); n++)
         {
             const EditScene& scene = scenes[n];
@@ -1758,12 +1762,19 @@ static void DrawViewportPanel()
                 sceneName = scene.mSceneAsset.Get<Scene>()->GetName().c_str();
             }
 
-            if (ImGui::BeginTabItem(sceneName, &opened, ImGuiTabItemFlags_None))
+            ImGuiTabItemFlags tabFlags = ImGuiTabItemFlags_None;
+            if (sceneJustChanged && n == activeSceneIdx)
+            {
+                tabFlags = ImGuiTabItemFlags_SetSelected;
+            }
+
+            if (ImGui::BeginTabItem(sceneName, &opened, tabFlags))
             {
                 if (n != activeSceneIdx)
                 {
-                    GetEditorState()->OpenEditScene(n);
+                    openedTab = n;
                 }
+
                 ImGui::EndTabItem();
             }
 
@@ -1773,8 +1784,17 @@ static void DrawViewportPanel()
             }
         }
 
+        // Did we switch tabs? 
+        if (!sceneJustChanged && 
+            openedTab != activeSceneIdx)
+        {
+            GetEditorState()->OpenEditScene(openedTab);
+        }
+
         ImGui::EndTabBar();
     }
+
+    sPrevActiveSceneIdx = activeSceneIdx;
 
 
     // Draw 3D / 2D / Material combo box on top right corner.
