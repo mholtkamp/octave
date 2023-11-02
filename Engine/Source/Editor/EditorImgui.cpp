@@ -89,7 +89,7 @@ static void DiscoverNodeClasses()
     }
 }
 
-static void CreateNewAsset(TypeId assetType)
+static void CreateNewAsset(TypeId assetType, const char* assetName)
 {
     AssetStub* stub = nullptr;
     AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
@@ -99,7 +99,7 @@ static void CreateNewAsset(TypeId assetType)
 
     if (assetType == Material::GetStaticType())
     {
-        stub = EditorAddUniqueAsset("M_Material", currentDir, Material::GetStaticType(), true);
+        stub = EditorAddUniqueAsset(assetName, currentDir, Material::GetStaticType(), true);
         Asset* selAsset = GetEditorState()->GetSelectedAsset();
 
 
@@ -130,11 +130,11 @@ static void CreateNewAsset(TypeId assetType)
     }
     else if (assetType == ParticleSystem::GetStaticType())
     {
-        stub = EditorAddUniqueAsset("P_ParticleSystem", currentDir, ParticleSystem::GetStaticType(), true);
+        stub = EditorAddUniqueAsset(assetName, currentDir, ParticleSystem::GetStaticType(), true);
     }
     else if (assetType == Scene::GetStaticType())
     {
-        stub = EditorAddUniqueAsset("SC_Scene", currentDir, Scene::GetStaticType(), true);
+        stub = EditorAddUniqueAsset(assetName, currentDir, Scene::GetStaticType(), true);
     }
 
     if (stub != nullptr)
@@ -1047,6 +1047,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 {
     bool setTextInputFocus = false;
     bool closeContextPopup = false;
+    static TypeId sNewAssetType = INVALID_TYPE_ID;
 
     ActionManager* actMan = ActionManager::Get();
     AssetManager* assMan = AssetManager::Get();
@@ -1173,14 +1174,32 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 
         if (ImGui::BeginMenu("Create Asset"))
         {
-            if (ImGui::Selectable("Material"))
-                CreateNewAsset(Material::GetStaticType());
-            if (ImGui::Selectable("Particle System"))
-                CreateNewAsset(ParticleSystem::GetStaticType());
-            if (ImGui::Selectable("Scene"))
-                CreateNewAsset(Scene::GetStaticType());
+            bool showPopup = false;
+
+            if (ImGui::Selectable("Material", false, ImGuiSelectableFlags_DontClosePopups))
+            {
+                sNewAssetType = Material::GetStaticType();
+                showPopup = true;
+            }
+            if (ImGui::Selectable("Particle System", false, ImGuiSelectableFlags_DontClosePopups))
+            {
+                sNewAssetType = ParticleSystem::GetStaticType();
+                showPopup = true;
+            }
+            if (ImGui::Selectable("Scene", false, ImGuiSelectableFlags_DontClosePopups))
+            {
+                sNewAssetType = Scene::GetStaticType();
+                showPopup = true;
+            }
 
             ImGui::EndMenu();
+
+            if (showPopup)
+            {
+                ImGui::OpenPopup("New Asset Name");
+                strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+                setTextInputFocus = true;
+            }
         }
 
         if (ImGui::Selectable("New Folder", false, ImGuiSelectableFlags_DontClosePopups))
@@ -1288,7 +1307,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             ImGui::SetKeyboardFocusHere();
         }
 
-        if (ImGui::InputText("Scene Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        if (ImGui::InputText("Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
         {
             std::string sceneName = sPopupInputBuffer;
 
@@ -1299,6 +1318,39 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 
             AssetStub* saveStub = EditorAddUniqueAsset(sceneName.c_str(), curDir, Scene::GetStaticType(), true);
             GetEditorState()->CaptureAndSaveScene(saveStub, nullptr);
+
+            ImGui::CloseCurrentPopup();
+            closeContextPopup = true;
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("New Asset Name"))
+    {
+        if (setTextInputFocus)
+        {
+            ImGui::SetKeyboardFocusHere();
+        }
+
+        if (ImGui::InputText("Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            std::string assetName = sPopupInputBuffer;
+
+            if (assetName == "")
+            {
+                if (sNewAssetType == Material::GetStaticType())
+                    assetName = "M_Material";
+                else if (sNewAssetType == ParticleSystem::GetStaticType())
+                    assetName = "P_Particle";
+                else if (sNewAssetType == Scene::GetStaticType())
+                    assetName = "SC_Scene";
+            }
+
+            if (assetName != "" && sNewAssetType != INVALID_TYPE_ID)
+            {
+                CreateNewAsset(sNewAssetType, assetName.c_str());
+            }
 
             ImGui::CloseCurrentPopup();
             closeContextPopup = true;
@@ -1498,17 +1550,17 @@ static void DrawAssetsPanel()
         {
             if (ctrlDown && IsKeyJustDown(KEY_N))
             {
-                CreateNewAsset(Scene::GetStaticType());
+                CreateNewAsset(Scene::GetStaticType(), "SC_Scene");
             }
 
             if (ctrlDown && IsKeyJustDown(KEY_M))
             {
-                CreateNewAsset(Material::GetStaticType());
+                CreateNewAsset(Material::GetStaticType(), "M_Material");
             }
 
             if (ctrlDown && IsKeyJustDown(KEY_P))
             {
-                CreateNewAsset(ParticleSystem::GetStaticType());
+                CreateNewAsset(ParticleSystem::GetStaticType(), "P_Particle");
             }
         }
 
