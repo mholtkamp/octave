@@ -518,7 +518,12 @@ void EditorState::OpenEditScene(int32_t idx)
 
     // Shelve whatever we are working on.
     ShelveEditScene();
-    OCT_ASSERT(GetWorld()->GetRootNode() == nullptr);
+    
+    if (GetWorld()->GetRootNode() != nullptr)
+    {
+        LogWarning("Destroying nodes without associated EditScene.");
+        GetWorld()->DestroyRootNode();
+    }
 
     if (idx >= 0 && idx < int32_t(mEditScenes.size()))
     {
@@ -550,6 +555,12 @@ void EditorState::CloseEditScene(int32_t idx)
 
         // Remove this EditScene entry.
         mEditScenes.erase(mEditScenes.begin() + idx);
+
+        // If we removed an editscene below the active editscene, we need to adjust the active editscene index.
+        if (idx < mEditSceneIndex)
+        {
+            --mEditSceneIndex;
+        }
 
         // If that was the active edit scene, then load the next one it's place.
         if (mEditSceneIndex == -1 && 
@@ -870,8 +881,21 @@ void EditorState::CaptureAndSaveScene(AssetStub* stub, Node* rootNode)
         rootNode = GetWorld()->GetRootNode();
     }
 
+    bool worldRoot = (rootNode == GetWorld()->GetRootNode());
+
     Scene* scene = (Scene*)stub->mAsset;
     scene->Capture(rootNode);
+    rootNode->SetScene(scene);
+
+    if (worldRoot)
+    {
+        EditScene* editScene = GetEditScene();
+        if (editScene)
+        {
+            editScene->mSceneAsset = scene;
+        }
+    }
+
     AssetManager::Get()->SaveAsset(*stub);
 }
 
