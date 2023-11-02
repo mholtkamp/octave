@@ -731,6 +731,9 @@
     <ClCompile Include="..\External\Imgui\misc\cpp\imgui_stdlib.cpp">
       <Filter>Source Files\Editor\Imgui</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\CustomImgui.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1387,6 +1390,9 @@
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\Viewport3d.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\CustomImgui.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
   </ItemGroup>
