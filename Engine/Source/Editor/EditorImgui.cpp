@@ -1764,6 +1764,8 @@ static void DrawViewportPanel()
             am->OpenProject();
         if (ImGui::Selectable("New Project"))
             am->CreateNewProject();
+        if (ImGui::Selectable("New Scene"))
+            GetEditorState()->OpenEditScene(nullptr);
         if (editScene && ImGui::Selectable("Save Scene"))
         {
             Scene* scene = editScene->mSceneAsset.Get<Scene>();
@@ -1989,6 +1991,9 @@ static void DrawViewportPanel()
 
         for (int32_t n = 0; n < scenes.size(); n++)
         {
+            // Push a unique ID in case we have scenes with duplicate names.
+            ImGui::PushID(n);
+
             const EditScene& scene = scenes[n];
 
             bool opened = true;
@@ -2019,6 +2024,8 @@ static void DrawViewportPanel()
             {
                 GetEditorState()->CloseEditScene(n);
             }
+
+            ImGui::PopID();
         }
 
         // Did we switch tabs? 
