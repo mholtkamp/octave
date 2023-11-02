@@ -46,8 +46,8 @@ static const ImVec4 kSelectedColor = ImVec4(0.12f, 0.50f, 0.47f, 1.00f);
 static const ImVec4 kBgInactive = ImVec4(0.20f, 0.20f, 0.68f, 1.00f);
 static const ImVec4 kBgHover = ImVec4(0.26f, 0.61f, 0.98f, 0.80f);
 
-constexpr const uint32_t kTextInputBufferSize = 256;
-static char sTextInputBuffer[kTextInputBufferSize] = {};
+constexpr const uint32_t kPopupInputBufferSize = 256;
+static char sPopupInputBuffer[kPopupInputBufferSize] = {};
 
 static void DiscoverNodeClasses()
 {
@@ -839,7 +839,7 @@ static void DrawScenePanel()
             if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
             {
                 ImGui::OpenPopup("Rename Node");
-                strncpy(sTextInputBuffer, node->GetName().c_str(), kTextInputBufferSize);
+                strncpy(sPopupInputBuffer, node->GetName().c_str(), kPopupInputBufferSize);
                 setTextInputFocus = true;
             }
             if (ImGui::Selectable("Duplicate"))
@@ -900,9 +900,9 @@ static void DrawScenePanel()
                     ImGui::SetKeyboardFocusHere();
                 }
 
-                if (ImGui::InputText("Node Name", sTextInputBuffer, kTextInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+                if (ImGui::InputText("Node Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
                 {
-                    node->SetName(sTextInputBuffer);
+                    node->SetName(sPopupInputBuffer);
                 }
 
                 ImGui::EndPopup();
@@ -915,12 +915,12 @@ static void DrawScenePanel()
                     ImGui::SetKeyboardFocusHere();
                 }
 
-                if (ImGui::InputText("Bone Name", sTextInputBuffer, kTextInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+                if (ImGui::InputText("Bone Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
                 {
                     SkeletalMesh3D* skNode = node->As<SkeletalMesh3D>();
                     if (skNode)
                     {
-                        int32_t boneIdx = skNode->FindBoneIndex(sTextInputBuffer);
+                        int32_t boneIdx = skNode->FindBoneIndex(sPopupInputBuffer);
                         am->AttachSelectedNodes(skNode, boneIdx);
                     }
                 }
@@ -1141,7 +1141,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
         {
             ImGui::OpenPopup("Rename Asset");
-            strncpy(sTextInputBuffer, stub ? stub->mName.c_str() : dir->mName.c_str(), kTextInputBufferSize);
+            strncpy(sPopupInputBuffer, stub ? stub->mName.c_str() : dir->mName.c_str(), kPopupInputBufferSize);
             setTextInputFocus = true;
         }
         if (ImGui::Selectable("Delete"))
@@ -1186,11 +1186,11 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         if (ImGui::Selectable("New Folder", false, ImGuiSelectableFlags_DontClosePopups))
         {
             ImGui::OpenPopup("New Folder");
-            strncpy(sTextInputBuffer, "", kTextInputBufferSize);
+            strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
             setTextInputFocus = true;
         }
 
-        if (ImGui::Selectable("Capture Active Scene"))
+        if (ImGui::Selectable("Capture Active Scene", false, ImGuiSelectableFlags_DontClosePopups))
         {
             AssetStub* saveStub = nullptr;
             if (stub && stub->mType == Scene::GetStaticType())
@@ -1198,7 +1198,17 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
                 saveStub = stub;
             }
 
-            GetEditorState()->CaptureAndSaveScene(saveStub, nullptr);
+            if (saveStub == nullptr)
+            {
+                ImGui::OpenPopup("Capture To New Scene");
+                strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+                setTextInputFocus = true;
+            }
+            else
+            {
+                GetEditorState()->CaptureAndSaveScene(saveStub, nullptr);
+                closeContextPopup = true;
+            }
         }
 
         const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
@@ -1221,17 +1231,17 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             ImGui::SetKeyboardFocusHere();
         }
 
-        if (ImGui::InputText("Name", sTextInputBuffer, kTextInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        if (ImGui::InputText("Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
         {
             if (stub)
             {
                 Asset* asset = AssetManager::Get()->LoadAsset(*stub);
-                AssetManager::Get()->RenameAsset(asset, sTextInputBuffer);
+                AssetManager::Get()->RenameAsset(asset, sPopupInputBuffer);
                 AssetManager::Get()->SaveAsset(*stub);
             }
             else if (dir)
             {
-                AssetManager::Get()->RenameDirectory(dir, sTextInputBuffer);
+                AssetManager::Get()->RenameDirectory(dir, sPopupInputBuffer);
             }
 
             ImGui::CloseCurrentPopup();
@@ -1248,9 +1258,9 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             ImGui::SetKeyboardFocusHere();
         }
 
-        if (ImGui::InputText("Folder Name", sTextInputBuffer, kTextInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        if (ImGui::InputText("Folder Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
         {
-            const std::string folderName = sTextInputBuffer;
+            const std::string folderName = sPopupInputBuffer;
 
             if (folderName != "")
             {
@@ -1263,6 +1273,32 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
                     LogError("Failed to create folder");
                 }
             }
+
+            ImGui::CloseCurrentPopup();
+            closeContextPopup = true;
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("Capture To New Scene"))
+    {
+        if (setTextInputFocus)
+        {
+            ImGui::SetKeyboardFocusHere();
+        }
+
+        if (ImGui::InputText("Scene Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            std::string sceneName = sPopupInputBuffer;
+
+            if (sceneName == "")
+            {
+                sceneName = "SC_Scene";
+            }
+
+            AssetStub* saveStub = EditorAddUniqueAsset(sceneName.c_str(), curDir, Scene::GetStaticType(), true);
+            GetEditorState()->CaptureAndSaveScene(saveStub, nullptr);
 
             ImGui::CloseCurrentPopup();
             closeContextPopup = true;
