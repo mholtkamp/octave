@@ -28,6 +28,8 @@
 
 #include "backends/imgui_impl_vulkan.cpp"
 
+#include "imgui_internal.h"
+
 #if PLATFORM_WINDOWS
 #include "backends/imgui_impl_win32.cpp"
 #elif PLATFORM_LINUX
@@ -48,6 +50,82 @@ static const ImVec4 kBgHover = ImVec4(0.26f, 0.61f, 0.98f, 0.80f);
 
 constexpr const uint32_t kPopupInputBufferSize = 256;
 static char sPopupInputBuffer[kPopupInputBufferSize] = {};
+
+
+// Borrowed + Modified from ImGui
+// ======================================================================
+static const ImGuiDataTypeInfo GDataTypeInfo[] =
+{
+    { sizeof(char),             "S8",   "%d",   "%d"    },  // ImGuiDataType_S8
+    { sizeof(unsigned char),    "U8",   "%u",   "%u"    },
+    { sizeof(short),            "S16",  "%d",   "%d"    },  // ImGuiDataType_S16
+    { sizeof(unsigned short),   "U16",  "%u",   "%u"    },
+    { sizeof(int),              "S32",  "%d",   "%d"    },  // ImGuiDataType_S32
+    { sizeof(unsigned int),     "U32",  "%u",   "%u"    },
+#ifdef _MSC_VER
+    { sizeof(ImS64),            "S64",  "%I64d","%I64d" },  // ImGuiDataType_S64
+    { sizeof(ImU64),            "U64",  "%I64u","%I64u" },
+#else
+    { sizeof(ImS64),            "S64",  "%lld", "%lld"  },  // ImGuiDataType_S64
+    { sizeof(ImU64),            "U64",  "%llu", "%llu"  },
+#endif
+    { sizeof(float),            "float", "%.3f","%f"    },  // ImGuiDataType_Float (float are promoted to double in va_arg)
+    { sizeof(double),           "double","%f",  "%lf"   },  // ImGuiDataType_Double
+};
+IM_STATIC_ASSERT(IM_ARRAYSIZE(GDataTypeInfo) == ImGuiDataType_COUNT);
+
+
+static bool ColorDragScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags)
+{
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    if (window->SkipItems)
+        return false;
+
+    ImGuiContext& g = *GImGui;
+    bool value_changed = false;
+    ImGui::BeginGroup();
+    ImGui::PushID(label);
+    ImGui::PushMultiItemsWidths(components, ImGui::CalcItemWidth());
+    size_t type_size = GDataTypeInfo[data_type].Size;
+    for (int i = 0; i < components; i++)
+    {
+        ImGui::PushID(i);
+
+        ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+        constexpr const float kLow = 0.5f;
+        switch (i)
+        {
+        case 0: color = ImVec4(1.0f, kLow, kLow, 1.0f); break;
+        case 1: color = ImVec4(kLow, 1.0f, kLow, 1.0f); break;
+        case 2: color = ImVec4(kLow, kLow, 1.0f, 1.0f); break;
+        case 3: color = ImVec4(0.9f, 0.9f, 0.9f, 1.0f); break;
+        }
+
+        ImGui::PushStyleColor(ImGuiCol_Text, color);
+
+        if (i > 0)
+            ImGui::SameLine(0, g.Style.ItemInnerSpacing.x);
+        value_changed |= ImGui::DragScalar("", data_type, p_data, v_speed, p_min, p_max, format, flags);
+        ImGui::PopID();
+        ImGui::PopItemWidth();
+        p_data = (void*)((char*)p_data + type_size);
+
+        ImGui::PopStyleColor();
+    }
+    ImGui::PopID();
+
+    const char* label_end = ImGui::FindRenderedTextEnd(label);
+    if (label != label_end)
+    {
+        ImGui::SameLine(0, g.Style.ItemInnerSpacing.x);
+        ImGui::TextEx(label, label_end);
+    }
+
+    ImGui::EndGroup();
+    return value_changed;
+}
+// ======================================================================
+
 
 static void DiscoverNodeClasses()
 {
@@ -351,7 +429,10 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                 glm::vec3 preVal = propVal;
 
                 ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.85f);
-                ImGui::DragFloat3("", &propVal[0], 1.0f, 0.0f, 0.0f, "%.2f");
+                //ImGui::DragFloat3("", &propVal[0], 1.0f, 0.0f, 0.0f, "%.2f");
+                float vMin = 0.0f;
+                float vMax = 0.0f;
+                ColorDragScalarN("", ImGuiDataType_Float, &propVal[0], 3, 1.0f, &vMin, &vMax, "%.2f", 0);
                 ImGui::PopItemWidth();
 
                 if (ImGui::IsItemActivated())
