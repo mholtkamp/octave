@@ -119,41 +119,6 @@ AssetStub* EditorAddUniqueAsset(const char* baseName, AssetDir* dir, TypeId asse
         }
     }
 
-
-#if 0
-    for (int32_t i = 0; i < 99; ++i)
-    {
-        assetName = baseName;
-
-        if (i > 0)
-        {
-            assetName += "_";
-            assetName += std::to_string(i);
-        }
-
-        if (!AssetManager::Get()->DoesAssetExist(assetName))
-        {
-            if (autoCreate)
-            {
-                stub = AssetManager::Get()->CreateAndRegisterAsset(assetType, dir, assetName, false);
-            }
-            else
-            {
-                stub = AssetManager::Get()->RegisterAsset(assetName, assetType, dir, nullptr, false);
-
-                if (stub != nullptr)
-                {
-                    Asset* newAsset = Asset::CreateInstance(assetType);
-                    stub->mAsset = newAsset;
-                }
-            }
-            break;
-        }
-    }
-#endif
-
-
-
     return stub;
 }
 
