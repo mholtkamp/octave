@@ -562,8 +562,27 @@ void EditorState::CloseEditScene(int32_t idx)
 
             OpenEditScene(idx);
         }
+
+#if 0
+        // Do we want to always have a scene open?
+        if (mEditScenes.size() == 0)
+        {
+            // Open a blank edit scene.
+            OpenEditScene(nullptr);
+        }
+#endif
     }
 }
+
+//void EditorState::OpenDefaultEditScene()
+//{
+//    // The scene isn't open yet,
+//    mEditScenes.push_back(EditScene());
+//    EditScene& newEditScene = mEditScenes.back();
+//    newEditScene.mCameraTransform = glm::mat4(1);
+//
+//    OpenEditScene(int32_t(mEditScenes.size()) - 1);
+//}
 
 void EditorState::ShelveEditScene()
 {

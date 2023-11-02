@@ -1083,7 +1083,18 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
     {
         if (ImGui::Selectable("Open Scene"))
         {
-            LogDebug("TODO: Open up EditScene!");
+            if (stub->mAsset == nullptr)
+                AssetManager::Get()->LoadAsset(*stub);
+
+            Scene* scene = stub->mAsset ? stub->mAsset->As<Scene>() : nullptr;
+            if (scene != nullptr)
+            {
+                GetEditorState()->OpenEditScene(scene);
+            }
+            else
+            {
+                LogError("Failed to load scene asset?");
+            }
         }
 
         if (ImGui::Selectable("Set Startup Scene"))
@@ -1726,35 +1737,44 @@ static void DrawViewportPanel()
     }
 
     // (2) Draw Scene tabs on top
+
+    std::vector<EditScene>& scenes = GetEditorState()->mEditScenes;
+    int32_t activeSceneIdx = GetEditorState()->mEditSceneIndex;
+
     const ImGuiTabBarFlags kSceneTabBarFlags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyScroll;
     ImGui::SameLine(0.0f, 20.0f);
-    //ImGui::PushStyleColor(ImGuiCol_Tab, ImVec4(0.6f, 0.2f, 0.2f, 1.0f));
-    static int32_t sActiveScene = 0;
+
     if (ImGui::BeginTabBar("SceneTabBar", kSceneTabBarFlags))
     {
-        for (int32_t n = 0; n < 5; n++)
+        for (int32_t n = 0; n < scenes.size(); n++)
         {
+            const EditScene& scene = scenes[n];
+
             bool opened = true;
-            char tabName[128];
-            snprintf(tabName, 128, "Scene %d", n);
-            if (ImGui::BeginTabItem(tabName, &opened, ImGuiTabItemFlags_None))
+            const char* sceneName = "[Unsaved]";
+
+            if (scene.mSceneAsset != nullptr)
             {
-                if (n != sActiveScene)
+                sceneName = scene.mSceneAsset.Get<Scene>()->GetName().c_str();
+            }
+
+            if (ImGui::BeginTabItem(sceneName, &opened, ImGuiTabItemFlags_None))
+            {
+                if (n != activeSceneIdx)
                 {
-                    LogDebug("TODO: Switch to scene!");
-                    sActiveScene = n;
+                    GetEditorState()->OpenEditScene(n);
                 }
                 ImGui::EndTabItem();
             }
 
             if (!opened)
             {
-                LogError("TODO: Close scene!");
+                GetEditorState()->CloseEditScene(n);
             }
         }
+
         ImGui::EndTabBar();
     }
-    //ImGui::PopStyleColor();
 
 
     // Draw 3D / 2D / Material combo box on top right corner.

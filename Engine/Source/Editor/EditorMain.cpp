@@ -53,11 +53,7 @@ void EditorMain(int32_t argc, char** argv)
     ActionManager::Create();
     InputManager::Create();
 
-    // Spawn Test Actor
-    GetWorld()->SpawnNode<TestSpinner>();
 
-    GetEditorState()->GetEditorCamera()->SetPosition(glm::vec3(0, 0, 10.0f));
-    GetEditorState()->GetEditorCamera()->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 
     InitializeGrid();
 
@@ -72,6 +68,16 @@ void EditorMain(int32_t argc, char** argv)
     {
         ActionManager::Get()->OpenProject(engineConfig->mProjectPath.c_str());
     }
+
+    // Spawn starting scene if a default wasn't loaded
+    if (GetEditorState()->GetEditScene() == nullptr)
+    {
+        GetEditorState()->OpenEditScene(nullptr);
+        GetWorld()->SpawnNode<TestSpinner>();
+    }
+
+    GetEditorState()->GetEditorCamera()->SetPosition(glm::vec3(0, 0, 10.0f));
+    GetEditorState()->GetEditorCamera()->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 
     Renderer::Get()->EnableStatsOverlay(false);
 

@@ -419,7 +419,7 @@ void Node::RecursiveTick(float deltaTime, bool game)
     // TODO-NODE: Add a bool on Node for mLateTick.
     // If late tick is set, then tick after children tick.
 
-    if (!mHasStarted)
+    if (game && !mHasStarted)
     {
         Start();
     }
@@ -480,7 +480,7 @@ void Node::Tick(float deltaTime)
 
 void Node::EditorTick(float deltaTime)
 {
-    Tick(deltaTime);
+    Node::Tick(deltaTime);
 }
 
 void Node::Render()
