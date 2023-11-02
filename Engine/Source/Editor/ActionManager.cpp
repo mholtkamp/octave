@@ -817,6 +817,8 @@ void ActionManager::EXE_SpawnNode(Node* node)
     std::vector<Node*> nodes;
     nodes.push_back(node);
 
+    GetEditorState()->EnsureActiveScene();
+
     ActionSpawnNodes* action = new ActionSpawnNodes(nodes);
     ActionManager::Get()->ExecuteAction(action);
 }
@@ -832,6 +834,8 @@ void ActionManager::EXE_DeleteNode(Node* node)
 
 void ActionManager::EXE_SpawnNodes(const std::vector<Node*>& nodes)
 {
+    GetEditorState()->EnsureActiveScene();
+
     ActionSpawnNodes* action = new ActionSpawnNodes(nodes);
     ActionManager::Get()->ExecuteAction(action);
 }

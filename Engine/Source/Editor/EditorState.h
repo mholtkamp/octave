@@ -131,6 +131,7 @@ struct EditorState
     void ShelveEditScene();
     EditScene* GetEditScene(int32_t idx = -1);
     void CloseAllEditScenes();
+    void EnsureActiveScene();
 
     void ShowEditorUi(bool show);
 

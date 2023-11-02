@@ -637,6 +637,21 @@ void EditorState::CloseAllEditScenes()
     }
 }
 
+void EditorState::EnsureActiveScene()
+{
+    if (GetEditorState()->GetEditScene() == nullptr)
+    {
+        // Save whatever is in the world and move it to the new scene.
+        // For instance, the user has no open editscene, but spawns a Node3D.
+        Node* curWorldRoot = GetWorld()->GetRootNode();
+        GetWorld()->SetRootNode(nullptr);
+
+        GetEditorState()->OpenEditScene(nullptr);
+
+        GetWorld()->SetRootNode(curWorldRoot);
+    }
+}
+
 void EditorState::ShowEditorUi(bool show)
 {
     mUiEnabled = show;
