@@ -186,6 +186,10 @@ void Node::Destroy()
 
 #if EDITOR
     GetEditorState()->DeselectNode(this);
+    if (GetEditorState()->GetInspectedObject() == this)
+    {
+        GetEditorState()->InspectObject(nullptr, true, false);
+    }
 #endif
 
     if (isWorldRoot)
