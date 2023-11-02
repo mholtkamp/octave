@@ -597,7 +597,7 @@ void Scene::SaveStream(Stream& stream, Platform platform)
         stream.WriteAsset(def.mScene);
         stream.WriteString(def.mName);
         stream.WriteBool(def.mExposeVariable);
-        stream.WriteBool(def.mParentBone);
+        stream.WriteInt8(def.mParentBone);
 
         stream.WriteUint32((uint32_t)def.mProperties.size());
         for (uint32_t p = 0; p < def.mProperties.size(); ++p)
@@ -874,11 +874,14 @@ void Scene::AddNodeDef(Node* node, std::vector<Node*>& nodeList)
 {
     OCT_ASSERT(node != nullptr);
 
+    bool nodeIsRoot = (nodeList.size() == 0);
+
 #if EDITOR
     // TODO-NODE: Do we want every node that is saved/loaded from a Scene to hold the mScene ref?
     //   Or just the root node? If only the root node should hold the scene ref (which I think is what we want)
     //   then keep this check below. When a child scene is expanded/unrolled then we remove the root's scene ref.
     if (node &&
+        !nodeIsRoot && 
         node->GetScene() == this)
     {
         LogWarning("Recursive Scene chain found.");
@@ -908,8 +911,12 @@ void Scene::AddNodeDef(Node* node, std::vector<Node*>& nodeList)
         Scene* scene = nullptr;
 #if EDITOR
         nodeDef.mExposeVariable = node->ShouldExposeVariable();
-        scene = node->GetScene();
 #endif
+        if (!nodeIsRoot)
+        {
+            scene = node->GetScene();
+        }
+
         nodeDef.mScene = scene;
 
         std::vector<Property> extProps;
