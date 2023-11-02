@@ -67,6 +67,7 @@ public:
     virtual void LoadStream(Stream& stream) override;
 
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
 
     virtual bool IsStaticMesh3D() const override;
     virtual bool IsSkeletalMesh3D() const override;

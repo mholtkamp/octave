@@ -54,6 +54,7 @@ public:
     virtual DrawData GetDrawData() override;
     virtual void Render() override;
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
 
     virtual VertexType GetVertexType() const override;
 

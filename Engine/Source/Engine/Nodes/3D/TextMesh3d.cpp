@@ -120,6 +120,10 @@ void TextMesh3D::Tick(float deltaTime)
     matInst->SetBlendMode(mBlendMode);
 }
 
+void TextMesh3D::EditorTick(float deltaTime)
+{
+    Tick(deltaTime);
+}
 
 bool TextMesh3D::IsStaticMesh3D() const
 {

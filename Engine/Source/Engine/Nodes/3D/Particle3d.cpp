@@ -222,6 +222,11 @@ void Particle3D::Tick(float deltaTime)
     }
 }
 
+void Particle3D::EditorTick(float deltaTime)
+{
+    Tick(deltaTime);
+}
+
 VertexType Particle3D::GetVertexType() const
 {
     return VertexType::VertexParticle;

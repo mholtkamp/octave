@@ -154,6 +154,11 @@ void Audio3D::Tick(float deltaTime)
     }
 }
 
+void Audio3D::EditorTick(float deltaTime)
+{
+    Tick(deltaTime);
+}
+
 void Audio3D::SaveStream(Stream& stream)
 {
     Node3D::SaveStream(stream);

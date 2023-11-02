@@ -14,6 +14,7 @@ public:
     virtual void Destroy() override;
 
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;

@@ -173,6 +173,11 @@ void SkeletalMesh3D::Tick(float deltaTime)
     mHasAnimatedThisFrame = false;
 }
 
+void SkeletalMesh3D::EditorTick(float deltaTime)
+{
+    Tick(deltaTime);
+}
+
 bool SkeletalMesh3D::IsStaticMesh3D() const
 {
     return false;

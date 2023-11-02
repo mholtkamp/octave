@@ -28,6 +28,11 @@ void DirectionalLight3D::Tick(float deltaTime)
     GenerateViewProjectionMatrix();
 }
 
+void DirectionalLight3D::EditorTick(float deltaTime)
+{
+    Tick(deltaTime);
+}
+
 const char* DirectionalLight3D::GetTypeName() const
 {
     return "DirectionalLight";

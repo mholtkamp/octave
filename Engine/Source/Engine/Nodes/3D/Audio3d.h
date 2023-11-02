@@ -21,6 +21,7 @@ public:
     virtual void Destroy() override;
     virtual void Start() override;
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
 
     virtual void SaveStream(Stream& stream) override;
     virtual void LoadStream(Stream& stream) override;
