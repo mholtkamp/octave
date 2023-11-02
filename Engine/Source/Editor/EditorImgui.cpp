@@ -1985,7 +1985,8 @@ static void DrawViewportPanel()
     const ImGuiTabBarFlags kSceneTabBarFlags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyScroll;
     ImGui::SameLine(0.0f, 20.0f);
 
-    if (ImGui::BeginTabBar("SceneTabBar", kSceneTabBarFlags))
+    if (scenes.size() > 0 &&
+        ImGui::BeginTabBar("SceneTabBar", kSceneTabBarFlags))
     {
         int32_t openedTab = activeSceneIdx;
 
@@ -2067,6 +2068,11 @@ static void DrawViewportPanel()
         if (shiftDown && IsKeyJustDown(KEY_A))
         {
             ImGui::OpenPopup("Spawn Node");
+        }
+
+        if (ctrlDown && IsKeyJustDown(KEY_N))
+        {
+            GetEditorState()->OpenEditScene(nullptr);
         }
     }
 
