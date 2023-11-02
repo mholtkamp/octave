@@ -35,7 +35,92 @@ glm::vec3 EditorGetFocusPosition()
 AssetStub* EditorAddUniqueAsset(const char* baseName, AssetDir* dir, TypeId assetType, bool autoCreate)
 {
     AssetStub* stub = nullptr;
-    std::string assetName;
+    std::string name = baseName;
+
+
+    // In editor, we want to make the name more readable.
+    const int32_t kMaxRenameTries = 1000;
+    int32_t renameTry = 0;
+    bool validName = !AssetManager::Get()->DoesAssetExist(name);
+
+    if (!validName)
+    {
+        // Append an underscore if we don't have one yet.
+        size_t lastUnderscore = name.rfind("_");
+        if (lastUnderscore == std::string::npos)
+        {
+            // No underscores at all, just append the underscore.
+            name += "_";
+        }
+        else
+        {
+            // There is an underscore, so lets see if everything to the right of it is a number.
+            // If not, then we need to add another underscore.
+            for (size_t i = lastUnderscore + 1; i < name.size(); ++i)
+            {
+                if (!(name[i] >= '0' && name[i] <= '9'))
+                {
+                    name += "_";
+                    break;
+                }
+            }
+        }
+    }
+
+    while (!validName)
+    {
+        // 1 - Determine number at end of current name and remove it from name string
+        size_t lastCharIndex = name.find_last_not_of("0123456789");
+
+        uint32_t num = 1;
+        if (lastCharIndex == std::string::npos)
+        {
+            // The name is entirely numbers?
+            num = (uint32_t)std::stoul(name);
+            name = "";
+        }
+        else if (lastCharIndex + 1 < name.size())
+        {
+            std::string numStr = name.substr(lastCharIndex + 1);
+            name = name.substr(0, lastCharIndex + 1);
+
+            num = (uint32_t)std::stoul(numStr);
+        }
+
+        num++;
+        name = name + std::to_string(num);
+
+        validName = !AssetManager::Get()->DoesAssetExist(name);
+
+        renameTry++;
+
+        // If exceeded max renames, just use sUniqueId to make unique name like in-game.
+        if (renameTry > kMaxRenameTries)
+        {
+            break;
+        }
+    }
+
+    if (validName)
+    {
+        if (autoCreate)
+        {
+            stub = AssetManager::Get()->CreateAndRegisterAsset(assetType, dir, name, false);
+        }
+        else
+        {
+            stub = AssetManager::Get()->RegisterAsset(name, assetType, dir, nullptr, false);
+
+            if (stub != nullptr)
+            {
+                Asset* newAsset = Asset::CreateInstance(assetType);
+                stub->mAsset = newAsset;
+            }
+        }
+    }
+
+
+#if 0
     for (int32_t i = 0; i < 99; ++i)
     {
         assetName = baseName;
@@ -65,6 +150,9 @@ AssetStub* EditorAddUniqueAsset(const char* baseName, AssetDir* dir, TypeId asse
             break;
         }
     }
+#endif
+
+
 
     return stub;
 }
