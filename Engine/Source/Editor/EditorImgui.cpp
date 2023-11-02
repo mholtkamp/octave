@@ -1751,12 +1751,31 @@ static void DrawViewportPanel()
 
     if (ImGui::BeginPopup("FilePopup"))
     {
+        bool openSaveNameModal = false;
+
         if (ImGui::Selectable("Open Project"))
             am->OpenProject();
         if (ImGui::Selectable("New Project"))
             am->CreateNewProject();
         if (ImGui::Selectable("Save Scene"))
-            am->SaveScene(true);
+        {
+            EditScene* editScene = GetEditorState()->GetEditScene();
+            if (editScene != nullptr)
+            {
+                Scene* scene = editScene->mSceneAsset.Get<Scene>();
+                AssetStub* sceneStub = scene ? AssetManager::Get()->GetAssetStub(scene->GetName()) : nullptr;
+                if (sceneStub != nullptr)
+                {
+                    GetEditorState()->CaptureAndSaveScene(sceneStub, nullptr);
+                }
+                else
+                {
+                    // Need to request name and create asset.
+                    openSaveNameModal = true;
+                    strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+                }
+            }
+        }
         if (ImGui::Selectable("Recapture All Scenes"))
             am->RecaptureAndSaveAllScenes();
         if (ImGui::Selectable("Resave All Assets"))
@@ -1769,6 +1788,84 @@ static void DrawViewportPanel()
         {
             DrawPackageMenu();
             ImGui::EndMenu();
+        }
+
+        ImGui::EndPopup();
+
+        if (openSaveNameModal)
+        {
+            ImGui::OpenPopup("Save Scene As");
+        }
+    }
+
+    if (ImGui::BeginPopupModal("Save Scene As", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        AssetDir* curDir = GetEditorState()->GetAssetDirectory();
+
+        if (curDir != nullptr && !curDir->mEngineDir)
+        {
+            AssetDir* dir = curDir;
+            std::string dirString = dir->mName + "/";
+            dir = dir->mParentDir;
+
+            while (dir != nullptr)
+            {
+                if (dir->mParentDir == nullptr)
+                    dirString = "/" + dirString;
+                else
+                    dirString = dir->mName + "/" + dirString;
+
+                dir = dir->mParentDir;
+            }
+
+            ImGui::Text("Save scene to current directory...");
+            ImGui::Indent(10);
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 1.0f, 0.7f, 1.0f));
+            ImGui::Text(dirString.c_str());
+            ImGui::PopStyleColor();
+            ImGui::Unindent(10);
+
+            bool save = false;
+            if (ImGui::InputText("Scene Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+            {
+                save = true;
+            }
+
+            if (ImGui::Button("Save"))
+            {
+                save = true;
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel"))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+
+            if (save)
+            {
+                std::string sceneName = sPopupInputBuffer;
+
+                if (sceneName == "")
+                {
+                    sceneName = "SC_Scene";
+                }
+
+                AssetStub* stub = EditorAddUniqueAsset(sceneName.c_str(), curDir, Scene::GetStaticType(), true);
+                OCT_ASSERT(stub != nullptr);
+
+                GetEditorState()->CaptureAndSaveScene(stub, nullptr);
+
+                ImGui::CloseCurrentPopup();
+            }
+        }
+        else
+        {
+            ImGui::Text("Invalid asset directory. Please navigate to a project directory.");
+            if (ImGui::Button("Close"))
+            {
+                ImGui::CloseCurrentPopup();
+            }
         }
 
         ImGui::EndPopup();
