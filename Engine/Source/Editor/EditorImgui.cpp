@@ -1365,22 +1365,15 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
     }
 }
 
-static void DrawAssetsPanel()
+static void DrawAssetBrowser(bool showFilter, bool interactive)
 {
-    const float halfHeight = (float)GetEngineState()->mWindowHeight / 2.0f;
-
-    ImGui::SetNextWindowPos(ImVec2(0.0f, halfHeight));
-    ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, halfHeight));
-
-    ImGui::Begin("Assets", nullptr, kPaneWindowFlags);
-
     AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
 
     static std::string sUpperAssetName;
     std::string& filterStr = GetEditorState()->mAssetFilterStr;
     std::vector<AssetStub*>& filteredStubs = GetEditorState()->mFilteredAssetStubs;
 
-    if (ImGui::InputText("Filter", &filterStr, ImGuiInputTextFlags_EnterReturnsTrue))
+    if (showFilter && ImGui::InputText("Filter", &filterStr, ImGuiInputTextFlags_EnterReturnsTrue))
     {
         filteredStubs.clear();
 
@@ -1419,7 +1412,7 @@ static void DrawAssetsPanel()
 
     if (currentDir != nullptr)
     {
-        if (filterStr == "")
+        if (!showFilter || filterStr == "")
         {
             // Directories first
             ImGui::PushStyleColor(ImGuiCol_Header, kBgInactive);
@@ -1456,7 +1449,7 @@ static void DrawAssetsPanel()
         }
 
         std::vector<AssetStub*>* stubs = &(currentDir->mAssetStubs);
-        if (filterStr != "")
+        if (showFilter && filterStr != "")
         {
             stubs = &filteredStubs;
         }
@@ -1504,7 +1497,7 @@ static void DrawAssetsPanel()
                 ImGui::PopStyleColor(3);
             }
 
-            if (ImGui::BeginPopupContextItem())
+            if (interactive && ImGui::BeginPopupContextItem())
             {
                 DrawAssetsContextPopup(stub, nullptr);
                 ImGui::EndPopup();
@@ -1515,7 +1508,8 @@ static void DrawAssetsPanel()
     // If no popup is open and we aren't inputting text...
     if (!ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup) &&
         ImGui::IsWindowHovered() &&
-        !ImGui::GetIO().WantTextInput)
+        !ImGui::GetIO().WantTextInput &&
+        interactive)
     {
         const bool ctrlDown = IsControlDown();
         const bool shiftDown = IsShiftDown();
@@ -1585,14 +1579,25 @@ static void DrawAssetsPanel()
         }
     }
 
-    if (ImGui::BeginPopup("Null Context"))
+    if (interactive && ImGui::BeginPopup("Null Context"))
     {
         DrawAssetsContextPopup(nullptr, nullptr);
         ImGui::EndPopup();
     }
+}
+
+static void DrawAssetsPanel()
+{
+    const float halfHeight = (float)GetEngineState()->mWindowHeight / 2.0f;
+
+    ImGui::SetNextWindowPos(ImVec2(0.0f, halfHeight));
+    ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, halfHeight));
+
+    ImGui::Begin("Assets", nullptr, kPaneWindowFlags);
+
+    DrawAssetBrowser(true, true);
 
     ImGui::End();
-
 }
 
 static void DrawPropertiesPanel()
@@ -1749,7 +1754,7 @@ static void DrawViewportPanel()
         LogError("TODO: Play in Editor!");
     }
 
-    bool openSaveNameModal = false;
+    bool openSaveSceneAsModal = false;
 
     if (ImGui::BeginPopup("FilePopup"))
     {
@@ -1771,7 +1776,7 @@ static void DrawViewportPanel()
                 else
                 {
                     // Need to request name and create asset.
-                    openSaveNameModal = true;
+                    openSaveSceneAsModal = true;
                     strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
                 }
             }
@@ -1795,12 +1800,19 @@ static void DrawViewportPanel()
 
     if (GetEditorState()->mRequestSaveSceneAs)
     {
-        openSaveNameModal = true;
+        openSaveSceneAsModal = true;
     }
 
-    if (openSaveNameModal)
+    if (openSaveSceneAsModal)
     {
         ImGui::OpenPopup("Save Scene As");
+    }
+
+    // Center the "Save Scene As" modal
+    if (ImGui::IsPopupOpen("Save Scene As"))
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
     }
 
     if (ImGui::BeginPopupModal("Save Scene As", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
@@ -1808,6 +1820,20 @@ static void DrawViewportPanel()
         GetEditorState()->mRequestSaveSceneAs = false;
 
         AssetDir* curDir = GetEditorState()->GetAssetDirectory();
+
+        if (curDir == nullptr || curDir->mEngineDir)
+        {
+            GetEditorState()->SetAssetDirectory(AssetManager::Get()->FindProjectDirectory(), true);
+        }
+
+        {
+            ImGuiWindowFlags childFlags = ImGuiWindowFlags_None;
+            ImGui::BeginChild("Dir Browser", ImVec2(250, 250), true, childFlags);
+            DrawAssetBrowser(false, false);
+
+            ImGui::EndChild();
+        }
+
 
         if (curDir != nullptr && !curDir->mEngineDir)
         {
@@ -1825,7 +1851,7 @@ static void DrawViewportPanel()
                 dir = dir->mParentDir;
             }
 
-            ImGui::Text("Save scene to current directory...");
+            ImGui::Text("Save scene to directory...");
             ImGui::Indent(10);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 1.0f, 0.7f, 1.0f));
             ImGui::Text(dirString.c_str());
