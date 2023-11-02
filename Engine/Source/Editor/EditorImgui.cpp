@@ -1749,10 +1749,10 @@ static void DrawViewportPanel()
         LogError("TODO: Play in Editor!");
     }
 
+    bool openSaveNameModal = false;
+
     if (ImGui::BeginPopup("FilePopup"))
     {
-        bool openSaveNameModal = false;
-
         if (ImGui::Selectable("Open Project"))
             am->OpenProject();
         if (ImGui::Selectable("New Project"))
@@ -1791,15 +1791,22 @@ static void DrawViewportPanel()
         }
 
         ImGui::EndPopup();
+    }
 
-        if (openSaveNameModal)
-        {
-            ImGui::OpenPopup("Save Scene As");
-        }
+    if (GetEditorState()->mRequestSaveSceneAs)
+    {
+        openSaveNameModal = true;
+    }
+
+    if (openSaveNameModal)
+    {
+        ImGui::OpenPopup("Save Scene As");
     }
 
     if (ImGui::BeginPopupModal("Save Scene As", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
+        GetEditorState()->mRequestSaveSceneAs = false;
+
         AssetDir* curDir = GetEditorState()->GetAssetDirectory();
 
         if (curDir != nullptr && !curDir->mEngineDir)

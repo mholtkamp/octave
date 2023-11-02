@@ -88,6 +88,7 @@ struct EditorState
     //Viewport2D* mViewport2D = nullptr;
     std::string mAssetFilterStr;
     std::vector<AssetStub*> mFilteredAssetStubs;
+    bool mRequestSaveSceneAs = false;
 
 
     // Methods

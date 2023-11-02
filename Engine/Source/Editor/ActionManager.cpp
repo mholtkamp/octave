@@ -1055,6 +1055,10 @@ void ActionManager::SaveScene(bool saveAs)
 
     if (saveAs || editScene->mSceneAsset == nullptr)
     {
+        GetEditorState()->mRequestSaveSceneAs = true;
+
+#if 0
+        // Old method of bringing up OS file browser
         std::string savePath = SYS_SaveFileDialog();
 
         // Display the Open dialog box. 
@@ -1071,9 +1075,9 @@ void ActionManager::SaveScene(bool saveAs)
                 editScene->mSceneAsset = newScene;
             }
         }
+#endif
     }
-    
-    if (editScene->mSceneAsset != nullptr)
+    else if (editScene->mSceneAsset != nullptr)
     {
         Scene* scene = editScene->mSceneAsset.Get<Scene>();
         scene->Capture(GetWorld()->GetRootNode());
