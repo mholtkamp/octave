@@ -1563,6 +1563,21 @@ static void DrawPropertiesPanel()
 
             ImGui::EndTabItem();
         }
+        if (ImGui::BeginTabItem("Scene"))
+        {
+            EditScene* editScene = GetEditorState()->GetEditScene();
+            Scene* scene = editScene ? editScene->mSceneAsset.Get<Scene>() : nullptr;
+
+            if (scene != nullptr)
+            {
+                std::vector<Property> sceneProps;
+                scene->GatherProperties(sceneProps);
+
+                DrawPropertyList(scene, sceneProps);
+            }
+
+            ImGui::EndTabItem();
+        }
         if (ImGui::BeginTabItem("Global"))
         {
             std::vector<Property> globalProps;
