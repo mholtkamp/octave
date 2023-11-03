@@ -221,6 +221,8 @@ public:
 
     bool DoChildrenHaveUniqueNames() const;
     void BreakSceneLink();
+    bool IsSceneLinked() const;
+    bool IsForeign() const;
 
     bool HasAuthority() const;
     bool IsOwned() const;

@@ -2928,7 +2928,9 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
             if (node3d)
             {
                 nodes.push_back(node3d);
-                node3d->SetHitCheckId(i);
+                // Make foreign nodes select their non-foreign ancestors.
+                uint32_t hitCheckId = node3d->IsForeign() ? node3d->GetParent()->GetHitCheckId() : i;
+                node3d->SetHitCheckId(hitCheckId);
                 node3d->Render(PipelineId::HitCheck);
                 ++i;
 

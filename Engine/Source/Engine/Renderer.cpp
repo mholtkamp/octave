@@ -1294,7 +1294,7 @@ void Renderer::RenderSelectedGeometry(World* world)
         {
             if (selectedNodes[i]->GetWorld() == world)
             {
-                const bool renderChildren = (selectedNodes[i]->GetParent() != nullptr && selectedNodes[i]->GetScene() != nullptr);
+                const bool renderChildren = selectedNodes[i]->IsSceneLinked();
                 selectedNodes[i]->RenderSelected(renderChildren);
             }
         }

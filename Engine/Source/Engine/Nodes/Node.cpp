@@ -1536,6 +1536,26 @@ void Node::BreakSceneLink()
     mScene = nullptr;
 }
 
+bool Node::IsSceneLinked() const
+{
+    return (mScene != nullptr && mParent != nullptr);
+}
+
+bool Node::IsForeign() const
+{
+    // A node considered "Foreign" is one that has an ancestor which is scene-linked.
+    // The scene-linked ancestor itself is not considered foreign unless it is also 
+    // has a different scene-linked ancestor.
+    bool foreign = mParent && mParent->IsSceneLinked();
+
+    if (!foreign && mParent != nullptr)
+    {
+        foreign = mParent->IsForeign();
+    }
+
+    return foreign;
+}
+
 bool Node::HasAuthority() const
 {
     return NetIsAuthority();

@@ -134,8 +134,7 @@ void EditorState::WriteEditorSave()
 
 void EditorState::SetSelectedNode(Node* newNode)
 {
-    // Check if the component is actually exiled (only exists in the undo history).
-    if (newNode != nullptr && newNode->GetWorld() == nullptr)
+    if (newNode != nullptr && (newNode->GetWorld() == nullptr || newNode->IsForeign()))
     {
         return;
     }
@@ -160,7 +159,7 @@ void EditorState::SetSelectedNode(Node* newNode)
 
 void EditorState::AddSelectedNode(Node* node, bool addAllChildren)
 {
-    if (node != nullptr)
+    if (node != nullptr && !node->IsForeign())
     {
         if (addAllChildren)
         {
