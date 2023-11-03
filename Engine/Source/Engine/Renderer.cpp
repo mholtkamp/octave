@@ -1216,8 +1216,10 @@ void Renderer::Render(World* world)
                 // Disabling it for now. Also need to totally rewrite postprocessing system.
                 // Make it smarter so that it can pingpong between render targets.
 
-                GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
-                GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+                // Because we may render to subset of 
+                glm::uvec4 fvp = Renderer::Get()->GetFullViewport();
+                GFX_SetViewport(fvp.x, fvp.y, fvp.z, fvp.w);
+                GFX_SetScissor(fvp.x, fvp.y, fvp.z, fvp.w);
 
                 GFX_BindPipeline(PipelineId::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess : PipelineId::NullPostProcess*/);
                 GFX_DrawFullscreen();
@@ -1492,4 +1494,30 @@ uint32_t Renderer::GetViewportHeight()
 #else
     return uint32_t(sEngineState.mWindowHeight);
 #endif
+}
+
+glm::uvec4 Renderer::GetViewport()
+{
+    return glm::uvec4(GetViewportX(), GetViewportY(), GetViewportWidth(), GetViewportHeight());
+}
+
+glm::uvec4 Renderer::GetSceneViewport()
+{
+    float resScale = GetEngineState()->mGraphics.mResolutionScale;
+    int32_t vx = GetViewportX();
+    int32_t vy = GetViewportY();
+    int32_t vw = GetViewportWidth();
+    int32_t vh = GetViewportHeight();
+
+    vx = uint32_t(vx * resScale + 0.5f);
+    vy = uint32_t(vy * resScale + 0.5f);
+    vw = uint32_t(vw * resScale + 0.5f);
+    vh = uint32_t(vh * resScale + 0.5f);
+
+    return glm::uvec4(vx, vy, vw, vh);
+}
+
+glm::uvec4 Renderer::GetFullViewport()
+{
+    return glm::uvec4(0, 0, GetEngineState()->mWindowWidth, GetEngineState()->mWindowHeight);
 }

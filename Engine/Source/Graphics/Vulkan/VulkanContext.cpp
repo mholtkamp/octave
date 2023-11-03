@@ -461,19 +461,9 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
     if (mCurrentRenderPassId == RenderPassId::Forward)
     {
         // Forward pass may render to a different resolution than other passes because of Render Scale setting.
-        int32_t x = (int32_t)Renderer::Get()->GetViewportX();
-        int32_t y = (int32_t)Renderer::Get()->GetViewportY();
-        int32_t w = (int32_t)Renderer::Get()->GetViewportWidth();
-        int32_t h = (int32_t)Renderer::Get()->GetViewportHeight();
-
-        float resScale = GetEngineState()->mGraphics.mResolutionScale;
-        x = uint32_t(x * resScale + 0.5f);
-        y = uint32_t(y * resScale + 0.5f);
-        w = uint32_t(w * resScale + 0.5f);
-        h = uint32_t(h * resScale + 0.5f);
-
-        SetViewport(x, y, w, h, false, true);
-        SetScissor(x, y, w, h, false, true);
+        glm::uvec4 vp = Renderer::Get()->GetSceneViewport();
+        SetViewport(vp.x, vp.y, vp.z, vp.w, false, true);
+        SetScissor(vp.x, vp.y, vp.z, vp.w, false, true);
     }
 
     vkCmdBeginRenderPass(mCommandBuffers[mFrameIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -2922,19 +2912,9 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
         UpdateGlobalUniformData();
         UpdateGlobalDescriptorSet();
 
-        float resScale = GetEngineState()->mGraphics.mResolutionScale;
-        int32_t vx = (int32_t)Renderer::Get()->GetViewportX();
-        int32_t vy = (int32_t)Renderer::Get()->GetViewportY();
-        int32_t vw = (int32_t)Renderer::Get()->GetViewportWidth();
-        int32_t vh = (int32_t)Renderer::Get()->GetViewportHeight();
-
-        vx = uint32_t(vx * resScale + 0.5f);
-        vy = uint32_t(vy * resScale + 0.5f);
-        vw = uint32_t(vw * resScale + 0.5f);
-        vh = uint32_t(vh * resScale + 0.5f);
-
-        SetViewport(vx, vy, vw, vh, false, true);
-        SetScissor(vx, vy, vw, vh, false, true);
+        glm::uvec4 vp = Renderer::Get()->GetSceneViewport();
+        SetViewport(vp.x, vp.y, vp.z, vp.w, false, true);
+        SetScissor(vp.x, vp.y, vp.z, vp.w, false, true);
 
         BeginRenderPass(RenderPassId::HitCheck);
         std::vector<DebugDraw> debugDraws;
