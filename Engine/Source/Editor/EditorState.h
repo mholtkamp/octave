@@ -91,7 +91,13 @@ struct EditorState
     bool mRequestSaveSceneAs = false;
     bool mTrackSelectedAsset = false;
     bool mTrackSelectedNode = false;
-
+    uint32_t mViewportX = 0;
+    uint32_t mViewportY = 0;
+    uint32_t mViewportWidth = 100;
+    uint32_t mViewportHeight = 100;
+    bool mShowLeftPane = true;
+    bool mShowRightPane = true;
+    bool mShowInterface = true;
 
     // Methods
     void Init();

@@ -483,6 +483,7 @@ void RayTracer::PathTraceWorld()
 
         mPathTraceDescriptorSet->Bind(cb, 1, pathTracePipeline->GetPipelineLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
 
+        // TODO-NODE: Should we use viewport instead?
         uint32_t width = GetEngineState()->mWindowWidth;
         uint32_t height = GetEngineState()->mWindowHeight;
 

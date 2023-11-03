@@ -37,12 +37,8 @@
 #endif
 
 static const float kSidePaneWidth = 200.0f;
+static const float kViewportBarHeight = 32.0f;
 static const ImGuiWindowFlags kPaneWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove;
-
-static bool sNodesDiscovered = false;
-static std::vector<std::string> sNode3dNames;
-static std::vector<std::string> sNodeWidgetNames;
-static std::vector<std::string> sNodeOtherNames;
 
 static const ImVec4 kSelectedColor = ImVec4(0.12f, 0.50f, 0.47f, 1.00f);
 static const ImVec4 kBgInactive = ImVec4(0.20f, 0.20f, 0.68f, 1.00f);
@@ -50,6 +46,11 @@ static const ImVec4 kBgHover = ImVec4(0.26f, 0.61f, 0.98f, 0.80f);
 
 constexpr const uint32_t kPopupInputBufferSize = 256;
 static char sPopupInputBuffer[kPopupInputBufferSize] = {};
+
+static bool sNodesDiscovered = false;
+static std::vector<std::string> sNode3dNames;
+static std::vector<std::string> sNodeWidgetNames;
+static std::vector<std::string> sNodeOtherNames;
 
 static void DiscoverNodeClasses()
 {
@@ -1759,8 +1760,12 @@ static void DrawViewportPanel()
     Renderer* renderer = Renderer::Get();
     ActionManager* am = ActionManager::Get();
 
-    const float viewportWidth = (float)GetEngineState()->mWindowWidth - kSidePaneWidth * 2.0f;
-    const float viewportHeight = 32.0f;
+    float viewportBarX = GetEditorState()->mShowLeftPane ? kSidePaneWidth : 0.0f;
+    float viewportBarWidth = (float)GetEngineState()->mWindowWidth;
+    if (GetEditorState()->mShowLeftPane)
+        viewportBarWidth -= kSidePaneWidth;
+    if (GetEditorState()->mShowRightPane)
+        viewportBarWidth -= kSidePaneWidth;
 
     const ImGuiWindowFlags kViewportWindowFlags =
         ImGuiWindowFlags_NoTitleBar |
@@ -1771,8 +1776,8 @@ static void DrawViewportPanel()
         ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoSavedSettings; /* | ImGuiWindowFlags_AlwaysAutoResize*/ /*| ImGuiWindowFlags_NoBackground*/;
 
-    ImGui::SetNextWindowPos(ImVec2(kSidePaneWidth, 0.0f));
-    ImGui::SetNextWindowSize(ImVec2(viewportWidth, viewportHeight));
+    ImGui::SetNextWindowPos(ImVec2(viewportBarX, 0.0f));
+    ImGui::SetNextWindowSize(ImVec2(viewportBarWidth, kViewportBarHeight));
 
     ImGui::Begin("Viewport", nullptr, kViewportWindowFlags);
 
@@ -2170,10 +2175,21 @@ void EditorImguiDraw()
 {
     ImGui::NewFrame();
 
-    DrawScenePanel();
-    DrawAssetsPanel();
-    DrawPropertiesPanel();
-    DrawViewportPanel();
+    if (GetEditorState()->mShowInterface)
+    {
+        if (GetEditorState()->mShowLeftPane)
+        {
+            DrawScenePanel();
+            DrawAssetsPanel();
+        }
+
+        if (GetEditorState()->mShowRightPane)
+        {
+            DrawPropertiesPanel();
+        }
+
+        DrawViewportPanel();
+    }
 
     ImGui::Render();
 }
@@ -2181,6 +2197,40 @@ void EditorImguiDraw()
 void EditorImguiShutdown()
 {
     ImGui::DestroyContext();
+}
+
+void EditorImguiGetViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t& height)
+{
+    if (GetEditorState()->mShowInterface)
+    {
+        x = 0;
+        y = uint32_t(kViewportBarHeight + 0.5f);
+        int32_t iWidth = (int32_t)GetEngineState()->mWindowWidth;
+        int32_t iHeight = int32_t(GetEngineState()->mWindowHeight - kViewportBarHeight + 0.5f);
+
+        if (GetEditorState()->mShowLeftPane)
+        {
+            x = int32_t(kSidePaneWidth + 0.5f);
+            iWidth -= int32_t(kSidePaneWidth + 0.5f);
+        }
+        if (GetEditorState()->mShowRightPane)
+        {
+            iWidth -= int32_t(kSidePaneWidth + 0.5f);
+        }
+
+        iWidth = glm::clamp<int32_t>(iWidth, 100, GetEngineState()->mWindowWidth);
+        iHeight = glm::clamp<int32_t>(iHeight, 100, GetEngineState()->mWindowHeight);
+
+        width = uint32_t(iWidth);
+        height = uint32_t(iHeight);
+    }
+    else
+    {
+        x = 0;
+        y = 0;
+        width = GetEngineState()->mWindowWidth;
+        height = GetEngineState()->mWindowHeight;
+    }
 }
 
 #endif

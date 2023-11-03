@@ -674,7 +674,6 @@ ScreenOrientation GetScreenOrientation()
     return SYS_GetScreenOrientation();
 }
 
-
 #if LUA_ENABLED
 lua_State* GetLua()
 {

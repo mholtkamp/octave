@@ -13,6 +13,8 @@
 
 #include "Input/Input.h"
 
+#include "imgui.h"
+
 InputManager* InputManager::sInstance = nullptr;
 
 class PlatformBuildButton : public Button
@@ -108,6 +110,9 @@ void InputManager::UpdateHotkeys()
     const bool ctrlDown = IsControlDown();
     const bool shiftDown = IsShiftDown();
     const bool altDown = IsAltDown();
+    bool modKeyDown = ctrlDown || shiftDown || altDown;
+
+    bool popupOpen = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
 
     if (GetEditorState()->mPlayInEditor)
     {
@@ -136,9 +141,9 @@ void InputManager::UpdateHotkeys()
             FrameStep();
         }
     }
-    else if (Renderer::Get()->GetModalWidget() == nullptr)
+    else if (!popupOpen)
     {
-        const bool textFieldActive = (TextField::GetSelectedTextField() != nullptr);
+        const bool textFieldActive = ImGui::GetIO().WantCaptureKeyboard;
         const bool isScene = (GetEditorState()->GetEditorMode() == EditorMode::Scene);
 
         if (ctrlDown && IsKeyJustDown(KEY_P) && isScene)
@@ -188,22 +193,29 @@ void InputManager::UpdateHotkeys()
             ClearControlDown();
             INP_ClearKey(KEY_I);
         }
-        else if (ctrlDown && IsKeyJustDown(KEY_B) && isScene)
-        {
-            Renderer::Get()->SetModalWidget(mBuildPlatformList);
-            mBuildPlatformList->MoveToMousePosition();
-        }
-        else if (shiftDown && ctrlDown && IsKeyJustDown(KEY_Z))
+        else if (shiftDown && ctrlDown && IsKeyJustDown(KEY_Z) && !textFieldActive)
         {
             ActionManager::Get()->Redo();
         }
-        else if (ctrlDown && IsKeyJustDown(KEY_Z))
+        else if (ctrlDown && IsKeyJustDown(KEY_Z) && !textFieldActive)
         {
             ActionManager::Get()->Undo();
         }
-        else if (altDown && IsKeyJustDown(KEY_R))
+        else if (altDown && IsKeyJustDown(KEY_R) && !textFieldActive)
         {
             ReloadAllScripts();
+        }
+        else if (!modKeyDown && IsKeyJustDown(KEY_T) && !textFieldActive)
+        {
+            GetEditorState()->mShowLeftPane = !GetEditorState()->mShowLeftPane;
+        }
+        else if (!modKeyDown && IsKeyJustDown(KEY_N) && !textFieldActive)
+        {
+            GetEditorState()->mShowRightPane = !GetEditorState()->mShowRightPane;
+        }
+        else if (altDown && IsKeyJustDown(KEY_Z) && !textFieldActive)
+        {
+            GetEditorState()->mShowInterface = !GetEditorState()->mShowInterface;
         }
 
         if (IsKeyJustDown(KEY_ESCAPE) &&

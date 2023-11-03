@@ -4,6 +4,7 @@
 #include "Engine.h"
 #include "Log.h"
 #include "World.h"
+#include "Renderer.h"
 #include "Nodes/3D/Camera3d.h"
 #include "PanelManager.h"
 #include "Viewport3d.h"
@@ -18,8 +19,8 @@
 
 void EditorCenterCursor()
 {
-    int32_t centerX = GetEngineState()->mWindowWidth / 2;
-    int32_t centerY = GetEngineState()->mWindowHeight / 2;
+    int32_t centerX = Renderer::Get()->GetViewportWidth() / 2;
+    int32_t centerY = Renderer::Get()->GetViewportHeight() / 2;
     INP_SetCursorPos(centerX, centerY);
 }
 

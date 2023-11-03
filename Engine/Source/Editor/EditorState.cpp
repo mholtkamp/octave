@@ -20,6 +20,7 @@
 #include "AudioManager.h"
 #include "Assets/Scene.h"
 #include "EditorUtils.h"
+#include "EditorImgui.h"
 #include "Viewport3d.h"
 #include "Viewport2d.h"
 #include "Widgets/PropertiesPanel.h"
@@ -74,6 +75,17 @@ void EditorState::Update(float deltaTime)
         }
     }
 
+    if (mPlayInEditor && !mEjected)
+    {
+        mViewportX = 0;
+        mViewportY = 0;
+        mViewportWidth = GetEngineState()->mWindowWidth;
+        mViewportHeight = GetEngineState()->mWindowHeight;
+    }
+    else
+    {
+        EditorImguiGetViewport(mViewportX, mViewportY, mViewportWidth, mViewportHeight);
+    }
 }
 
 void EditorState::SetEditorMode(EditorMode mode)

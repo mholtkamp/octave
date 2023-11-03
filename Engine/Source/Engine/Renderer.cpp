@@ -250,11 +250,12 @@ glm::vec2 Renderer::GetScreenResolution(int32_t screen)
 
     if (screen == 0)
     {
-        res.x = (float)GetEngineState()->mWindowWidth;
-        res.y = (float)GetEngineState()->mWindowHeight;
+        res.x = (float)GetViewportWidth();
+        res.y = (float)GetViewportHeight();
     }
     else if (screen == 1)
     {
+        // TODO-NODE: Handle second screen / multiple viewports.
         res.x = (float)GetEngineState()->mSecondWindowWidth;
         res.y = (float)GetEngineState()->mSecondWindowHeight;
     }
@@ -1131,12 +1132,17 @@ void Renderer::Render(World* world)
         {
             GFX_BeginView(view);
 
+            uint32_t viewportX = GetViewportX();
+            uint32_t viewportY = GetViewportY();
+            uint32_t viewportWidth = GetViewportWidth();
+            uint32_t viewportHeight = GetViewportHeight();
+
             if (mEnableWorldRendering && activeCamera != nullptr)
             {
                 if (mEnablePathTracing)
                 {
-                    GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
-                    GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+                    GFX_SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+                    GFX_SetScissor(viewportX, viewportY, viewportWidth, viewportHeight);
                     GFX_BeginRenderPass(RenderPassId::Forward);
                     GFX_EndRenderPass();
 
@@ -1164,8 +1170,8 @@ void Renderer::Render(World* world)
                     GFX_EndRenderPass();
 #endif
 
-                    GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
-                    GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+                    GFX_SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+                    GFX_SetScissor(viewportX, viewportY, viewportWidth, viewportHeight);
 
                     // ******************
                     //  Forward Pass
@@ -1209,8 +1215,15 @@ void Renderer::Render(World* world)
                 // Tonemapping does not look good.
                 // Disabling it for now. Also need to totally rewrite postprocessing system.
                 // Make it smarter so that it can pingpong between render targets.
+
+                GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+                GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+
                 GFX_BindPipeline(PipelineId::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess : PipelineId::NullPostProcess*/);
                 GFX_DrawFullscreen();
+
+                GFX_SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+                GFX_SetScissor(viewportX, viewportY, viewportWidth, viewportHeight);
 
 #if EDITOR
                 RenderSelectedGeometry(world);
@@ -1220,8 +1233,8 @@ void Renderer::Render(World* world)
             }
             else
             {
-                GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
-                GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+                GFX_SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+                GFX_SetScissor(viewportX, viewportY, viewportWidth, viewportHeight);
                 GFX_BeginRenderPass(RenderPassId::Clear);
                 GFX_EndRenderPass();
             }
@@ -1444,3 +1457,39 @@ glm::vec4 Renderer::GetGroundColor() const
     return mGroundColor;
 }
 
+// TODO: Might have to adjust these to handle 3DS (two screens) and split-screen
+uint32_t Renderer::GetViewportX()
+{
+#if EDITOR
+    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? 0 : GetEditorState()->mViewportX;
+#else
+    return uint32_t(0);
+#endif
+}
+
+uint32_t Renderer::GetViewportY()
+{
+#if EDITOR
+    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? 0 : GetEditorState()->mViewportY;
+#else
+    return uint32_t(0);
+#endif
+}
+
+uint32_t Renderer::GetViewportWidth()
+{
+#if EDITOR
+    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? GetEngineState()->mWindowWidth : GetEditorState()->mViewportWidth;
+#else
+    return uint32_t(sEngineState.mWindowWidth);
+#endif
+}
+
+uint32_t Renderer::GetViewportHeight()
+{
+#if EDITOR
+    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? GetEngineState()->mWindowHeight : GetEditorState()->mViewportHeight;
+#else
+    return uint32_t(sEngineState.mWindowHeight);
+#endif
+}

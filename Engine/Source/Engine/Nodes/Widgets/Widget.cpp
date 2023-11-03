@@ -725,8 +725,8 @@ void Widget::FitInsideParent()
         // Fit to screen
         parentRect.mX = 0.0f;
         parentRect.mY = 0.0f;
-        parentRect.mWidth = (float)GetEngineState()->mWindowWidth;
-        parentRect.mHeight = (float)GetEngineState()->mWindowHeight;
+        parentRect.mWidth = Renderer::Get()->GetScreenResolution().x;
+        parentRect.mHeight = Renderer::Get()->GetScreenResolution().y;
     }
 
     if (mRect.mX < parentRect.mX)

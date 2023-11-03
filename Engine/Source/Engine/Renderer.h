@@ -128,6 +128,11 @@ public:
     void SetResolutionScale(float scale);
     float GetResolutionScale() const;
 
+    uint32_t GetViewportX();
+    uint32_t GetViewportY();
+    uint32_t GetViewportWidth();
+    uint32_t GetViewportHeight();
+
     // Property Getters
     uint32_t GetRaysPerPixel() const;
     uint32_t GetMaxBounces() const;

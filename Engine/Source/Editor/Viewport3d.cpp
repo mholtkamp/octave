@@ -491,7 +491,7 @@ void Viewport3D::HandleDefaultControls()
             }
         }
 
-        if (!controlDown && !shiftDown && IsKeyJustDown(KEY_Z))
+        if (!cmdKeyDown && IsKeyJustDown(KEY_Z))
         {
             renderer->SetDebugMode((renderer->GetDebugMode() != DEBUG_WIREFRAME) ? DEBUG_WIREFRAME : DEBUG_NONE);
         }
@@ -523,7 +523,7 @@ void Viewport3D::HandleDefaultControls()
             ToggleGrid();
         }
 
-        if (!controlDown && IsKeyJustDown(KEY_T))
+        if (controlDown && IsKeyJustDown(KEY_T))
         {
             ToggleTransformMode();
         }
@@ -1092,7 +1092,7 @@ void Viewport3D::HandleTransformControls()
         }
     }
 
-    if (!IsControlDown() && IsKeyJustDown(KEY_T))
+    if (IsControlDown() && IsKeyJustDown(KEY_T))
     {
         ToggleTransformMode();
     }

@@ -150,7 +150,8 @@ void Camera3D::ComputeMatrices()
     UpdateTransform(false);
 
     EngineState* engineState = GetEngineState();
-    mPerspectiveSettings.mAspectRatio = static_cast<float>(engineState->mWindowWidth) / engineState->mWindowHeight;
+    Renderer* renderer = Renderer::Get();
+    mPerspectiveSettings.mAspectRatio = static_cast<float>(renderer->GetViewportWidth()) / (renderer->GetViewportHeight());
 
     // Use the scaling factor to address Wii widescreen stretching
     mPerspectiveSettings.mAspectRatio *= engineState->mAspectRatioScale;
@@ -358,6 +359,7 @@ glm::vec3 Camera3D::WorldToScreenPosition(glm::vec3 worldPos)
 
     if (GetWorld())
     {
+        Renderer* renderer = Renderer::Get();
         glm::vec4 clipPos = mStandardViewProjectionMatrix * glm::vec4(worldPos, 1.0f);
 
         float w = clipPos.w;
@@ -366,7 +368,8 @@ glm::vec3 Camera3D::WorldToScreenPosition(glm::vec3 worldPos)
         glm::vec2 screen2d = glm::vec2(clipPos);
         screen2d += glm::vec2(1.0f, 1.0f);
         screen2d *= glm::vec2(0.5f, 0.5f);
-        screen2d *= glm::vec2(GetEngineState()->mWindowWidth, GetEngineState()->mWindowHeight);
+        screen2d *= glm::vec2(renderer->GetViewportWidth(), renderer->GetViewportHeight());
+        screen2d += glm::vec2(renderer->GetViewportX(), renderer->GetViewportY());
 
         screenPos.x = screen2d.x;
         screenPos.y = screen2d.y;
@@ -378,13 +381,16 @@ glm::vec3 Camera3D::WorldToScreenPosition(glm::vec3 worldPos)
 
 glm::vec3 Camera3D::ScreenToWorldPosition(int32_t x, int32_t y)
 {
+    Renderer* renderer = Renderer::Get();
     float screenX = float(x);
     float screenY = float(y);
-    float screenWidth = (float)GetEngineState()->mWindowWidth;
-    float screenHeight = (float)GetEngineState()->mWindowHeight;
+    float vpX = (float)renderer->GetViewportX();
+    float vpY = (float)renderer->GetViewportY();
+    float vpWidth = (float)renderer->GetViewportWidth();
+    float vpHeight = (float)renderer->GetViewportHeight();
 
-    float cX = (screenX / screenWidth) * 2.0f - 1.0f;
-    float cY = (screenY / screenHeight) * 2.0f - 1.0f;
+    float cX = ((screenX - vpX) / vpWidth) * 2.0f - 1.0f;
+    float cY = ((screenY - vpY) / vpHeight) * 2.0f - 1.0f;
     float cZ = 0.0f; // Near Plane
 
     // Use standard VP here because android might rotate the proj matrix.
