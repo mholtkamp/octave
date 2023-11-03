@@ -89,6 +89,8 @@ struct EditorState
     std::string mAssetFilterStr;
     std::vector<AssetStub*> mFilteredAssetStubs;
     bool mRequestSaveSceneAs = false;
+    bool mTrackSelectedAsset = false;
+    bool mTrackSelectedNode = false;
 
 
     // Methods
@@ -155,6 +157,7 @@ struct EditorState
     void ClearAssetDirHistory();
     void SetAssetDirectory(AssetDir* assetDir, bool recordHistory);
     AssetDir* GetAssetDirectory();
+    void BrowseToAsset(const std::string& name);
 
     void CaptureAndSaveScene(AssetStub* stub, Node* rootNode);
     void DuplicateAsset(AssetStub* srcStub);

@@ -414,19 +414,16 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
 
                 if (ctrlDown)
                 {
-                    if (ImGui::Button("<<"))
+                    if (ImGui::Button("<<") && propVal)
                     {
-                        //GetEditorState()->BrowseToAsset();
+                        GetEditorState()->BrowseToAsset(propVal->GetName());
                     }
                 }
                 else if (altDown)
                 {
-                    if (ImGui::Button("^^"))
+                    if (ImGui::Button("^^") && propVal)
                     {
-                        if (propVal != nullptr)
-                        {
-                            GetEditorState()->InspectObject(propVal);
-                        }
+                        GetEditorState()->InspectObject(propVal);
                     }
                 }
                 else
@@ -1493,6 +1490,13 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
                 {
                     GetEditorState()->InspectObject(stub->mAsset);
                 }
+            }
+
+            if (GetEditorState()->mTrackSelectedAsset &&
+                stub == GetEditorState()->mSelectedAssetStub)
+            {
+                ImGui::SetScrollHereY(0.5f);
+                GetEditorState()->mTrackSelectedAsset = false;
             }
 
             ImGui::PopStyleColor(); // Pop asset color

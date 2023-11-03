@@ -15,6 +15,7 @@
 #include "Renderer.h"
 #include "Grid.h"
 #include "World.h"
+#include "AssetDir.h"
 #include "TimerManager.h"
 #include "AudioManager.h"
 #include "Assets/Scene.h"
@@ -877,6 +878,25 @@ void EditorState::SetAssetDirectory(AssetDir* assetDir, bool recordHistory)
 AssetDir* EditorState::GetAssetDirectory()
 {
     return mCurrentDir;
+}
+
+void EditorState::BrowseToAsset(const std::string& name)
+{
+    AssetStub* stub = AssetManager::Get()->GetAssetStub(name);
+
+    if (stub != nullptr)
+    {
+        SetAssetDirectory(stub->mDirectory, true);
+        SetSelectedAssetStub(stub);
+
+        const std::vector<AssetDir*>& dirs = mCurrentDir->mChildDirs;
+        const std::vector<AssetStub*>& assets = mCurrentDir->mAssetStubs;
+        const int32_t parentDirCount = (mCurrentDir->mParentDir != nullptr) ? 1 : 0;
+        const int32_t numDirs = int32_t(dirs.size());
+        const int32_t numAssets = int32_t(assets.size());
+
+        mTrackSelectedAsset = true;
+    }
 }
 
 void EditorState::CaptureAndSaveScene(AssetStub* stub, Node* rootNode)
