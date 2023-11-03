@@ -823,6 +823,12 @@ static void DrawScenePanel()
         bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
         bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
 
+        if (nodeSelected && GetEditorState()->mTrackSelectedNode)
+        {
+            ImGui::SetScrollHereY(0.5f);
+            GetEditorState()->mTrackSelectedNode = false;
+        }
+
         if (ImGui::BeginPopupContextItem())
         {
             bool setTextInputFocus = false;

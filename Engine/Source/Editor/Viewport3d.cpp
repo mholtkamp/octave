@@ -434,7 +434,7 @@ void Viewport3D::HandleDefaultControls()
             GetMousePosition(mouseX, mouseY);
             Node3D* selectNode = Renderer::Get()->ProcessHitCheck(GetWorld(), mouseX, mouseY);
 
-            if (shiftDown)
+            if (shiftDown || controlDown)
             {
                 if (selectNode != nullptr)
                 {
@@ -450,13 +450,21 @@ void Viewport3D::HandleDefaultControls()
             }
             else
             {
-                if (GetEditorState()->GetSelectedNode() != selectNode)
+                if (altDown)
                 {
                     GetEditorState()->SetSelectedNode(selectNode);
+                    GetEditorState()->mTrackSelectedNode = true;
                 }
                 else
                 {
-                    GetEditorState()->SetSelectedNode(nullptr);
+                    if (GetEditorState()->GetSelectedNode() != selectNode)
+                    {
+                        GetEditorState()->SetSelectedNode(selectNode);
+                    }
+                    else
+                    {
+                        GetEditorState()->SetSelectedNode(nullptr);
+                    }
                 }
             }
         }
