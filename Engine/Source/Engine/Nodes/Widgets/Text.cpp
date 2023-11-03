@@ -139,7 +139,17 @@ DrawData Text::GetDrawData()
 void Text::Tick(float deltaTime)
 {
     Widget::Tick(deltaTime);
+    TickCommon(deltaTime);
+}
 
+void Text::EditorTick(float deltaTime)
+{
+    Widget::EditorTick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void Text::TickCommon(float deltaTime)
+{
     UpdateVertexData();
     UploadVertexData();
 

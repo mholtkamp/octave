@@ -25,6 +25,8 @@ public:
 
 protected:
 
+    void TickCommon(float deltaTime);
+
     StaticMesh3D* mLeftMesh1 = nullptr;
     StaticMesh3D* mRightMesh1 = nullptr;
     StaticMesh3D* mRightMesh2 = nullptr;

@@ -12,4 +12,10 @@ public:
     virtual ~PolyRect();
 
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
+
+protected:
+
+    void TickCommon(float deltaTime);
+
 };

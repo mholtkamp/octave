@@ -28,7 +28,17 @@ PolyResource* Poly::GetResource()
 void Poly::Tick(float deltaTime)
 {
     Widget::Tick(deltaTime);
+    TickCommon(deltaTime);
+}
 
+void Poly::EditorTick(float deltaTime)
+{
+    Widget::EditorTick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void Poly::TickCommon(float deltaTime)
+{
     uint32_t frameIndex = Renderer::Get()->GetFrameIndex();
     if (mUploadVertices[frameIndex])
     {

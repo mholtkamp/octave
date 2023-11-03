@@ -103,6 +103,17 @@ void TextMesh3D::LoadStream(Stream& stream)
 void TextMesh3D::Tick(float deltaTime)
 {
     Mesh3D::Tick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void TextMesh3D::EditorTick(float deltaTime)
+{
+    Mesh3D::EditorTick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void TextMesh3D::TickCommon(float deltaTime)
+{
     UpdateVertexData();
     UploadVertexData();
 
@@ -118,11 +129,6 @@ void TextMesh3D::Tick(float deltaTime)
     matInst->SetColor(mColor);
     matInst->SetOpacity(mColor.a);
     matInst->SetBlendMode(mBlendMode);
-}
-
-void TextMesh3D::EditorTick(float deltaTime)
-{
-    Tick(deltaTime);
 }
 
 bool TextMesh3D::IsStaticMesh3D() const

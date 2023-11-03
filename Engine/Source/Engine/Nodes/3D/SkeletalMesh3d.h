@@ -148,6 +148,8 @@ protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
+    void TickCommon(float deltaTime);
+
     glm::vec3 InterpolateScale(float time, const Channel& channel);
     glm::quat InterpolateRotation(float time, const Channel& channel);
     glm::vec3 InterpolatePosition(float time, const Channel& channel);

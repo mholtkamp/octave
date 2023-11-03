@@ -146,7 +146,17 @@ void Widget::RecursiveTick(float deltaTime, bool game)
 void Widget::Tick(float deltaTime)
 {
     Node::Tick(deltaTime);
+    TickCommon(deltaTime);
+}
 
+void Widget::EditorTick(float deltaTime)
+{
+    Node::EditorTick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void Widget::TickCommon(float deltaTime)
+{
     if (IsDirty())
     {
         UpdateRect();

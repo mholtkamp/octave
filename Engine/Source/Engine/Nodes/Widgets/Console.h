@@ -20,6 +20,7 @@ public:
     void WriteOutput(const char* output, glm::vec4 color = { 1, 1, 1, 1 });
 
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
 
     void ProcessInput(const char* input);
     void SetNumOutputLines(uint32_t numLines);
@@ -29,6 +30,8 @@ public:
     void SetTextFadeTime(float fadeTime);
 
 protected:
+
+    void TickCommon(float deltaTime);
 
     uint32_t mNumOutputLines = 0;
 

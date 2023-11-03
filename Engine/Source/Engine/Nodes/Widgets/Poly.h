@@ -18,6 +18,8 @@ public:
     PolyResource* GetResource();
 
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
+
     virtual void Render() override;
 
     virtual DrawData GetDrawData() override;
@@ -42,6 +44,8 @@ public:
     void SetLineWidth(float width);
 
 protected:
+
+    void TickCommon(float deltaTime);
 
     std::vector<VertexUI> mVertices;
     TextureRef mTexture; // TODO: Add support for filled polygons

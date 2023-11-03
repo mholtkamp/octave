@@ -26,6 +26,18 @@ StatsOverlay::StatsOverlay()
 
 void StatsOverlay::Tick(float deltaTime)
 {
+    TickCommon(deltaTime);
+    Canvas::Tick(deltaTime);
+}
+
+void StatsOverlay::EditorTick(float deltaTime)
+{
+    TickCommon(deltaTime);
+    Canvas::EditorTick(deltaTime);
+}
+
+void StatsOverlay::TickCommon(float deltaTime)
+{
     // (1) Determine the number of stats to display.
     uint32_t numStats = 0;
 
@@ -133,8 +145,6 @@ void StatsOverlay::Tick(float deltaTime)
             }
         }
     }
-
-    Canvas::Tick(deltaTime);
 }
 
 void StatsOverlay::SetDisplayMode(StatDisplayMode mode)

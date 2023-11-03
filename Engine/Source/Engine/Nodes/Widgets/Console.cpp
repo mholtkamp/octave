@@ -50,6 +50,18 @@ void Console::WriteOutput(const char* output, glm::vec4 color)
 
 void Console::Tick(float deltaTime)
 {
+    TickCommon(deltaTime);
+    Canvas::Tick(deltaTime);
+}
+
+void Console::EditorTick(float deltaTime)
+{
+    TickCommon(deltaTime);
+    Canvas::EditorTick(deltaTime);
+}
+
+void Console::TickCommon(float deltaTime)
+{
     if (IsDirty())
     {
         // Update the output Text lines
@@ -87,9 +99,6 @@ void Console::Tick(float deltaTime)
             }
         }
     }
-
-
-    Canvas::Tick(deltaTime);
 }
 
 void Console::ProcessInput(const char* input)

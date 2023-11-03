@@ -206,6 +206,17 @@ void Particle3D::Render()
 void Particle3D::Tick(float deltaTime)
 {
     Primitive3D::Tick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void Particle3D::EditorTick(float deltaTime)
+{
+    Primitive3D::EditorTick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void Particle3D::TickCommon(float deltaTime)
+{
     mHasSimulatedThisFrame = false;
     mHasUpdatedVerticesThisFrame = false;
 
@@ -220,11 +231,6 @@ void Particle3D::Tick(float deltaTime)
             SetPendingDestroy(true);
         }
     }
-}
-
-void Particle3D::EditorTick(float deltaTime)
-{
-    Tick(deltaTime);
 }
 
 VertexType Particle3D::GetVertexType() const

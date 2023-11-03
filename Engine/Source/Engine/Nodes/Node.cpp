@@ -476,15 +476,20 @@ void Node::RecursiveTick(float deltaTime, bool game)
 
 void Node::Tick(float deltaTime)
 {
-    if (mScript != nullptr)
-    {
-        mScript->Tick(deltaTime);
-    }
+    TickCommon(deltaTime);
 }
 
 void Node::EditorTick(float deltaTime)
 {
-    Node::Tick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void Node::TickCommon(float deltaTime)
+{
+    if (mScript != nullptr)
+    {
+        mScript->Tick(deltaTime);
+    }
 }
 
 void Node::Render()

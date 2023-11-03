@@ -28,7 +28,17 @@ void ArrayWidget::GatherProperties(std::vector<Property>& outProps)
 void ArrayWidget::Tick(float deltaTime)
 {
     Widget::Tick(deltaTime);
+    TickCommon(deltaTime);
+}
 
+void ArrayWidget::EditorTick(float deltaTime)
+{
+    Widget::EditorTick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void ArrayWidget::TickCommon(float deltaTime)
+{
     float offset = 0.0f;
     bool vertical = (mOrientation == ArrayOrientation::Vertical);
 

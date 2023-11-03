@@ -170,12 +170,18 @@ void SkeletalMesh3D::LoadStream(Stream& stream)
 void SkeletalMesh3D::Tick(float deltaTime)
 {
     Mesh3D::Tick(deltaTime);
-    mHasAnimatedThisFrame = false;
+    TickCommon(deltaTime);
 }
 
 void SkeletalMesh3D::EditorTick(float deltaTime)
 {
-    Tick(deltaTime);
+    Mesh3D::EditorTick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void SkeletalMesh3D::TickCommon(float deltaTime)
+{
+    mHasAnimatedThisFrame = false;
 }
 
 bool SkeletalMesh3D::IsStaticMesh3D() const

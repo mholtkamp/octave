@@ -23,6 +23,7 @@ public:
     virtual DrawData GetDrawData() override;
 
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
     virtual void Render() override;
 
     void SetTexture(class Texture* texture);
@@ -51,6 +52,7 @@ protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
+    void TickCommon(float deltaTime);
     void InitVertexData();
     void UpdateVertexData();
 

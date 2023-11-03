@@ -60,6 +60,8 @@ protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
+    void TickCommon(float deltaTime);
+
     void MarkVerticesDirty();
     void UploadVertexData();
     void UpdateVertexData();

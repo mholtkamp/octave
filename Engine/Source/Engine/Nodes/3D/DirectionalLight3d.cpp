@@ -25,12 +25,18 @@ void DirectionalLight3D::Destroy()
 void DirectionalLight3D::Tick(float deltaTime)
 {
     Light3D::Tick(deltaTime);
-    GenerateViewProjectionMatrix();
+    TickCommon(deltaTime);
 }
 
 void DirectionalLight3D::EditorTick(float deltaTime)
 {
-    Tick(deltaTime);
+    Light3D::EditorTick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void DirectionalLight3D::TickCommon(float deltaTime)
+{
+    GenerateViewProjectionMatrix();
 }
 
 const char* DirectionalLight3D::GetTypeName() const

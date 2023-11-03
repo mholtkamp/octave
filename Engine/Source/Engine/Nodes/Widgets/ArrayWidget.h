@@ -25,8 +25,11 @@ public:
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
 
 protected:
+
+    void TickCommon(float deltaTime);
 
     //static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 

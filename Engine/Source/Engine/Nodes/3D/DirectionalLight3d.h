@@ -33,6 +33,7 @@ public:
 
 protected:
 
+    void TickCommon(float deltaTime);
     void GenerateViewProjectionMatrix();
 
     glm::mat4 mViewProjectionMatrix;

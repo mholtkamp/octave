@@ -147,16 +147,21 @@ void Audio3D::Start()
 void Audio3D::Tick(float deltaTime)
 {
     Node3D::Tick(deltaTime);
-
-    if (mPlaying)
-    {
-        mPlayTime += deltaTime;
-    }
+    TickCommon(deltaTime);
 }
 
 void Audio3D::EditorTick(float deltaTime)
 {
-    Tick(deltaTime);
+    Node3D::EditorTick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void Audio3D::TickCommon(float deltaTime)
+{
+    if (mPlaying)
+    {
+        mPlayTime += deltaTime;
+    }
 }
 
 void Audio3D::SaveStream(Stream& stream)

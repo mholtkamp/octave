@@ -63,6 +63,7 @@ public:
     // Recursively update children.
     virtual void RecursiveTick(float deltaTime, bool game) override;
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
     virtual void Render() override;
     virtual VertexType GetVertexType() const override;
 
@@ -174,6 +175,8 @@ protected:
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
     virtual void SetParent(Node* parent) override;
+
+    void TickCommon(float deltaTime);
 
     float PixelsToRatioX(float x) const;
     float PixelsToRatioY(float y) const;

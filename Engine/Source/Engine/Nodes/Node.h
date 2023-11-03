@@ -346,6 +346,8 @@ protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
+    void TickCommon(float deltaTime);
+
     virtual void SetParent(Node* parent);
     void ValidateUniqueChildName(Node* newChild);
 

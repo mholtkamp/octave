@@ -27,6 +27,8 @@ public:
     StatsOverlay();
 
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
+    void TickCommon(float deltaTime);
 
     void SetDisplayMode(StatDisplayMode mode);
     StatDisplayMode GetDisplayMode() const;

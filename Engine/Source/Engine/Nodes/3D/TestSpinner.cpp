@@ -87,7 +87,17 @@ void TestSpinner::Destroy()
 void TestSpinner::Tick(float deltaTime)
 {
     StaticMesh3D::Tick(deltaTime);
+    TickCommon(deltaTime);
+}
 
+void TestSpinner::EditorTick(float deltaTime)
+{
+    StaticMesh3D::EditorTick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void TestSpinner::TickCommon(float deltaTime)
+{
     if (!mSpin)
         return;
 
@@ -137,11 +147,6 @@ void TestSpinner::Tick(float deltaTime)
         float right2Scale = 1 + 2 * fabs(sinf(5 * GetAppClock()->GetTime()));
         mRightMesh2->SetScale(glm::vec3(right2Scale, right2Scale, right2Scale));
     }
-}
-
-void TestSpinner::EditorTick(float deltaTime)
-{
-    Tick(deltaTime);
 }
 
 void TestSpinner::GatherProperties(std::vector<Property>& props)

@@ -116,6 +116,8 @@ public:
 
 protected:
 
+    void TickCommon(float deltaTime);
+    
     void KillExpiredParticles(float deltaTime);
     void UpdateParticles(float deltaTime);
     void SpawnNewParticles(float deltaTime);

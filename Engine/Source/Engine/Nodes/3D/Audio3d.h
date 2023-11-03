@@ -74,6 +74,8 @@ public:
 
 protected:
 
+    void TickCommon(float deltaTime);
+
     // Properties
     SoundWaveRef mSoundWave;
     float mInnerRadius = 0.0f;

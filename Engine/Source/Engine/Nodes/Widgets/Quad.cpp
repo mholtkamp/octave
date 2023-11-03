@@ -68,7 +68,17 @@ DrawData Quad::GetDrawData()
 void Quad::Tick(float deltaTime)
 {
     Widget::Tick(deltaTime);
+    TickCommon(deltaTime);
+}
 
+void Quad::EditorTick(float deltaTime)
+{
+    Widget::EditorTick(deltaTime);
+    TickCommon(deltaTime);
+}
+
+void Quad::TickCommon(float deltaTime)
+{
     if (IsDirty())
     {
         UpdateVertexData();
