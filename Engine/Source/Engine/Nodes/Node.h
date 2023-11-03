@@ -220,6 +220,7 @@ public:
     void SetScriptFile(const std::string& fileName);
 
     bool DoChildrenHaveUniqueNames() const;
+    void BreakSceneLink();
 
     bool HasAuthority() const;
     bool IsOwned() const;

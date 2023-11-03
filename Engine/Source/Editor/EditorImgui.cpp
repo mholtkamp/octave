@@ -892,6 +892,10 @@ static void DrawScenePanel()
             {
                 am->EXE_SetRootNode(node);
             }
+            if (nodeSceneLinked && ImGui::Selectable("Break Scene Link"))
+            {
+                node->BreakSceneLink();
+            }
             if (ImGui::Selectable("Delete"))
             {
                 am->EXE_DeleteNode(node);

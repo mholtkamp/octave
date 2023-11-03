@@ -1215,6 +1215,13 @@ void Node::AddChild(Node* child, int32_t index)
             mChildren.push_back(child);
         }
 
+#if EDITOR
+        if (mParent != nullptr && mScene != nullptr)
+        {
+            BreakSceneLink();
+        }
+#endif
+
         mChildNameMap.insert({ child->GetName(), child });
 
         child->SetParent(this);
@@ -1240,6 +1247,13 @@ void Node::RemoveChild(Node* child)
         if (childIndex != -1)
         {
             RemoveChild(childIndex);
+
+#if EDITOR
+            if (mParent != nullptr && mScene != nullptr)
+            {
+                BreakSceneLink();
+            }
+#endif
         }
     }
 }
@@ -1515,6 +1529,11 @@ bool Node::DoChildrenHaveUniqueNames() const
     }
 
     return unique;
+}
+
+void Node::BreakSceneLink()
+{
+    mScene = nullptr;
 }
 
 bool Node::HasAuthority() const
