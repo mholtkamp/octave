@@ -436,6 +436,14 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                             AssignAssetToProperty(owner, ownerType, prop, i, selAsset);
                         }
                     }
+
+                    if (propVal != nullptr && 
+                        ImGui::IsItemHovered() && 
+                        IsKeyJustDown(KEY_DELETE))
+                    {
+                        ActionManager::Get()->EXE_EditProperty(owner, ownerType, prop.mName, i, (Asset*) nullptr);
+
+                    }
                 }
 
                 ImGui::SameLine();
