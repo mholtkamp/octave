@@ -805,9 +805,13 @@ static void DrawScenePanel()
     Node* rootNode = world ? world->GetRootNode() : nullptr;
     bool sNodeContextActive = false;
 
+    glm::vec4 sceneColor = AssetManager::Get()->GetEditorAssetColor(Scene::GetStaticType());
+    ImVec4 sceneColorIm = ImVec4(sceneColor.r, sceneColor.g, sceneColor.b, sceneColor.a);
+
     std::function<void(Node*)> drawTree = [&](Node* node)
     {
         bool nodeSelected = GetEditorState()->IsNodeSelected(node);
+        bool nodeSceneLinked = (node->GetScene() != nullptr && node != rootNode);
 
         ImGuiTreeNodeFlags nodeFlags = treeNodeFlags;
         if (nodeSelected)
@@ -815,13 +819,23 @@ static void DrawScenePanel()
             nodeFlags |= ImGuiTreeNodeFlags_Selected;
         }
 
-        if (node->GetNumChildren() == 0)
+        if (node->GetNumChildren() == 0 || nodeSceneLinked)
         {
             nodeFlags |= ImGuiTreeNodeFlags_Leaf;
         }
 
+        if (nodeSceneLinked)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, sceneColorIm);
+        }
+
         bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
         bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
+
+        if (nodeSceneLinked)
+        {
+            ImGui::PopStyleColor();
+        }
 
         if (nodeSelected && GetEditorState()->mTrackSelectedNode)
         {
@@ -949,10 +963,13 @@ static void DrawScenePanel()
 
         if (nodeOpen)
         {
-            for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
+            if (!nodeSceneLinked)
             {
-                Node* child = node->GetChild(i);
-                drawTree(child);
+                for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
+                {
+                    Node* child = node->GetChild(i);
+                    drawTree(child);
+                }
             }
 
             ImGui::TreePop();
