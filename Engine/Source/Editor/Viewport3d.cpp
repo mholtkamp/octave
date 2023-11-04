@@ -334,18 +334,7 @@ Viewport3D::Viewport3D() :
     mFirstPersonRotationSpeed(0.07f),
     mFocalDistance(sDefaultFocalDistance)
 {
-#if CONSOLE_ENABLED
-    // Move the console into  viewport region
-    // TODO-NODE: If we can slide out the left panels, then make the log slide over too.
-    const float kDefaultWidth = 180.0f;
-    Renderer::Get()->GetConsoleWidget()->SetRect(kDefaultWidth + 5.0f, 30, 1280 - kDefaultWidth, 720);
-#endif
 
-    StatsOverlay* statsWidget = Renderer::Get()->GetStatsWidget();
-    statsWidget->SetPosition(
-        -statsWidget->GetWidth() - kDefaultWidth,
-        statsWidget->GetY());
-    statsWidget->SetVisible(true);
 }
 
 Viewport3D::~Viewport3D()

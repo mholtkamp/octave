@@ -1132,10 +1132,11 @@ void Renderer::Render(World* world)
         {
             GFX_BeginView(view);
 
-            uint32_t viewportX = GetViewportX();
-            uint32_t viewportY = GetViewportY();
-            uint32_t viewportWidth = GetViewportWidth();
-            uint32_t viewportHeight = GetViewportHeight();
+            glm::uvec4 vp = GetSceneViewport();
+            uint32_t viewportX = vp.x;
+            uint32_t viewportY = vp.y;
+            uint32_t viewportWidth = vp.z;
+            uint32_t viewportHeight = vp.w;
 
             if (mEnableWorldRendering && activeCamera != nullptr)
             {

@@ -95,6 +95,7 @@ struct EditorState
     uint32_t mViewportY = 0;
     uint32_t mViewportWidth = 100;
     uint32_t mViewportHeight = 100;
+    glm::uvec4 mPrevViewport = {};
     bool mShowLeftPane = true;
     bool mShowRightPane = true;
     bool mShowInterface = true;

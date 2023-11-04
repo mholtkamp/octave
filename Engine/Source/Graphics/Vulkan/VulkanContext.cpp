@@ -489,6 +489,12 @@ void VulkanContext::EndRenderPass()
 #if EDITOR
     if (mCurrentRenderPassId == RenderPassId::Ui)
     {
+        // I think Imgui sets the viewport appropriately, but just to be safe...
+        Renderer* renderer = Renderer::Get();
+        glm::uvec4 fvp = Renderer::Get()->GetFullViewport();
+        SetViewport(fvp.x, fvp.y, fvp.z, fvp.w, true, false);
+        SetScissor(fvp.x, fvp.y, fvp.z, fvp.w, true, false);
+
         ImDrawData* draw_data = ImGui::GetDrawData();
         if (draw_data != nullptr)
         {
@@ -2548,6 +2554,16 @@ bool VulkanContext::IsMaterialPipelineCacheEnabled() const
 MaterialPipelineCache* VulkanContext::GetMaterialPipelineCache()
 {
     return &mMaterialPipelineCache;
+}
+
+uint32_t VulkanContext::GetSceneWidth()
+{
+    return mSceneWidth;
+}
+
+uint32_t VulkanContext::GetSceneHeight()
+{
+    return mSceneHeight;
 }
 
 VkExtent2D& VulkanContext::GetSwapchainExtent()

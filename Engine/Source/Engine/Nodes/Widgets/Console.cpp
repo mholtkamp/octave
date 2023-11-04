@@ -19,8 +19,10 @@ Console::Console()
     const uint32_t defaultNumLines = 5;
     SetNumOutputLines(defaultNumLines);
 
-    SetRect(0.0f, 0.0f, res.x, res.y);
-    mOutputCanvas->SetRect(0.0f, 0.0f, res.x, res.y);
+    SetAnchorMode(AnchorMode::FullStretch);
+    SetRatios(0.0f, 0.0f, 1.0f, 1.0f);
+    mOutputCanvas->SetAnchorMode(AnchorMode::FullStretch);
+    mOutputCanvas->SetRatios(0.0f, 0.0f, 1.0f, 1.0f);
 
 }
 

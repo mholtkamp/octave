@@ -143,7 +143,7 @@ void InputManager::UpdateHotkeys()
     }
     else if (!popupOpen)
     {
-        const bool textFieldActive = ImGui::GetIO().WantCaptureKeyboard;
+        const bool textFieldActive = ImGui::GetIO().WantTextInput;
         const bool isScene = (GetEditorState()->GetEditorMode() == EditorMode::Scene);
 
         if (ctrlDown && IsKeyJustDown(KEY_P) && isScene)

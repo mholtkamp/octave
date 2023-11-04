@@ -600,6 +600,7 @@ void Widget::UpdateRect()
     Rect parentRect;
 
     Widget* parent = GetParentWidget();
+    glm::uvec4 vp = Renderer::Get()->GetViewport();
 
     if (parent != nullptr)
     {
@@ -607,11 +608,10 @@ void Widget::UpdateRect()
     }
     else
     {
-        glm::vec2 res = Renderer::Get()->GetScreenResolution();
         parentRect.mX = 0.0f;
         parentRect.mY = 0.0f;
-        parentRect.mWidth = res.x;
-        parentRect.mHeight = res.y;
+        parentRect.mWidth = (float)vp.z;
+        parentRect.mHeight = (float)vp.w;
     }
 
     glm::vec2 anchorRatio = GetAnchorRatio();
@@ -682,6 +682,10 @@ void Widget::UpdateRect()
     if (mUseScissor)
     {
         mScissorRect = mRect;
+
+        // In the case of the Editor, the viewport may be offset.
+        mScissorRect.mX += float(vp.x);
+        mScissorRect.mY += float(vp.y);
     }
     else
     {
@@ -723,10 +727,11 @@ void Widget::FitInsideParent()
     else
     {
         // Fit to screen
+        glm::uvec4 vp = Renderer::Get()->GetViewport();
         parentRect.mX = 0.0f;
         parentRect.mY = 0.0f;
-        parentRect.mWidth = Renderer::Get()->GetScreenResolution().x;
-        parentRect.mHeight = Renderer::Get()->GetScreenResolution().y;
+        parentRect.mWidth = (float)vp.z;
+        parentRect.mHeight = (float)vp.w;
     }
 
     if (mRect.mX < parentRect.mX)

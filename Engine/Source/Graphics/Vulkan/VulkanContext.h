@@ -142,6 +142,9 @@ public:
     bool IsMaterialPipelineCacheEnabled() const;
     MaterialPipelineCache* GetMaterialPipelineCache();
 
+    uint32_t GetSceneWidth();
+    uint32_t GetSceneHeight();
+
 private:
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(

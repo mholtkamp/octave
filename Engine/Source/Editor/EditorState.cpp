@@ -86,6 +86,16 @@ void EditorState::Update(float deltaTime)
     {
         EditorImguiGetViewport(mViewportX, mViewportY, mViewportWidth, mViewportHeight);
     }
+
+    if (mPrevViewport.x != mViewportX ||
+        mPrevViewport.y != mViewportY ||
+        mPrevViewport.z != mViewportWidth ||
+        mPrevViewport.w != mViewportHeight)
+    {
+        Renderer::Get()->DirtyAllWidgets();
+    }
+
+    mPrevViewport = { mViewportX, mViewportY, mViewportWidth, mViewportHeight };
 }
 
 void EditorState::SetEditorMode(EditorMode mode)
