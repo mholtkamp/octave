@@ -1132,18 +1132,23 @@ void Renderer::Render(World* world)
         {
             GFX_BeginView(view);
 
-            glm::uvec4 vp = GetSceneViewport();
-            uint32_t viewportX = vp.x;
-            uint32_t viewportY = vp.y;
-            uint32_t viewportWidth = vp.z;
-            uint32_t viewportHeight = vp.w;
+
+            glm::uvec4 vp = GetViewport();
+            glm::uvec4 svp = GetSceneViewport();
+            glm::uvec4 fvp = GetFullViewport();
+
+            uint32_t sceneViewportX = svp.x;
+            uint32_t sceneViewportY = svp.y;
+            uint32_t sceneViewportWidth = svp.z;
+            uint32_t sceneViewportHeight = svp.w;
+
 
             if (mEnableWorldRendering && activeCamera != nullptr)
             {
                 if (mEnablePathTracing)
                 {
-                    GFX_SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-                    GFX_SetScissor(viewportX, viewportY, viewportWidth, viewportHeight);
+                    GFX_SetViewport(sceneViewportX, sceneViewportY, sceneViewportWidth, sceneViewportHeight);
+                    GFX_SetScissor(sceneViewportX, sceneViewportY, sceneViewportWidth, sceneViewportHeight);
                     GFX_BeginRenderPass(RenderPassId::Forward);
                     GFX_EndRenderPass();
 
@@ -1171,8 +1176,8 @@ void Renderer::Render(World* world)
                     GFX_EndRenderPass();
 #endif
 
-                    GFX_SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-                    GFX_SetScissor(viewportX, viewportY, viewportWidth, viewportHeight);
+                    GFX_SetViewport(sceneViewportX, sceneViewportY, sceneViewportWidth, sceneViewportHeight);
+                    GFX_SetScissor(sceneViewportX, sceneViewportY, sceneViewportWidth, sceneViewportHeight);
 
                     // ******************
                     //  Forward Pass
@@ -1218,26 +1223,29 @@ void Renderer::Render(World* world)
                 // Make it smarter so that it can pingpong between render targets.
 
                 // Because we may render to subset of 
-                glm::uvec4 fvp = Renderer::Get()->GetFullViewport();
                 GFX_SetViewport(fvp.x, fvp.y, fvp.z, fvp.w);
                 GFX_SetScissor(fvp.x, fvp.y, fvp.z, fvp.w);
 
+                // Rename the PostProcess pass to Composite pass? Especially to differentiate Bloom/SSAO/Custom post effects.
                 GFX_BindPipeline(PipelineId::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess : PipelineId::NullPostProcess*/);
                 GFX_DrawFullscreen();
 
-                GFX_SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-                GFX_SetScissor(viewportX, viewportY, viewportWidth, viewportHeight);
-
 #if EDITOR
+
+                GFX_SetViewport(vp.x, vp.y, vp.z, vp.w);
+                GFX_SetScissor(vp.x, vp.y, vp.z, vp.w);
+
                 RenderSelectedGeometry(world);
 #endif
+                GFX_SetViewport(sceneViewportX, sceneViewportY, sceneViewportWidth, sceneViewportHeight);
+                GFX_SetScissor(sceneViewportX, sceneViewportY, sceneViewportWidth, sceneViewportHeight);
 
                 GFX_EndRenderPass();
             }
             else
             {
-                GFX_SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-                GFX_SetScissor(viewportX, viewportY, viewportWidth, viewportHeight);
+                GFX_SetViewport(sceneViewportX, sceneViewportY, sceneViewportWidth, sceneViewportHeight);
+                GFX_SetScissor(sceneViewportX, sceneViewportY, sceneViewportWidth, sceneViewportHeight);
                 GFX_BeginRenderPass(RenderPassId::Clear);
                 GFX_EndRenderPass();
             }

@@ -64,6 +64,8 @@ struct GlobalUniforms
     vec2 mScreenDimensions;
     vec2 mInterfaceResolution;
     vec4 mShadowColor;
+    vec4 mViewport;
+    vec4 mSceneViewport;
 
     uint mFrameNumber;
     int mVisualizationMode;

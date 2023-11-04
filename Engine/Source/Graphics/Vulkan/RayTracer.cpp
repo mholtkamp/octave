@@ -83,11 +83,10 @@ void RayTracer::CreateDynamicRayTraceResources()
         // Images
         ImageDesc imageDesc;
 
-        const VkExtent2D& swapchainExtent = GetVulkanContext()->GetSwapchainExtent();
         VkFormat sceneColorImageFormat = GetVulkanContext()->GetSceneColorFormat();
 
-        imageDesc.mWidth = swapchainExtent.width;
-        imageDesc.mHeight = swapchainExtent.height;
+        imageDesc.mWidth = GetVulkanContext()->GetSceneWidth();
+        imageDesc.mHeight = GetVulkanContext()->GetSceneHeight();
         imageDesc.mFormat = sceneColorImageFormat;
         imageDesc.mUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
 

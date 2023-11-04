@@ -33,6 +33,8 @@ struct GlobalUniformData
     glm::vec2 mScreenDimensions;
     glm::vec2 mInterfaceResolution;
     glm::vec4 mShadowColor;
+    glm::vec4 mViewport;
+    glm::vec4 mSceneViewport;
 
     uint32_t mFrameNumber;
     int32_t mVisualizationMode;

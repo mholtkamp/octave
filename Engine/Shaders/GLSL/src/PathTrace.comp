@@ -42,7 +42,15 @@ void main()
     uint threadIndex = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * uint(global.mScreenDimensions.x + 0.5);
     uint rngState = threadIndex + (global.mFrameNumber * 719393);
 
-    vec2 uv = gl_GlobalInvocationID.xy / global.mScreenDimensions;
+    vec2 uv = (gl_GlobalInvocationID.xy - global.mSceneViewport.xy) / global.mSceneViewport.zw;
+
+    if (uv.x < 0.0 || uv.x > 1.0 ||
+        uv.y < 0.0 || uv.y > 1.0)
+    {
+        // Outside of the viewport, write black and early-exit.
+        imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), vec4(0,0,0,1));
+        return;
+    }
 
     vec3 viewPointVS = vec3(2.0 * (uv - 0.5) * vec2(global.mNearHalfWidth, -global.mNearHalfHeight), -global.mNearDist);
     vec3 viewPoint = (global.mViewToWorld * vec4(viewPointVS, 1.0)).xyz;

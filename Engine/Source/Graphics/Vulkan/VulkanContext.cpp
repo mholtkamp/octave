@@ -1865,6 +1865,12 @@ void VulkanContext::UpdateGlobalUniformData()
             }
         }
 
+
+        glm::uvec4 vp = Renderer::Get()->GetViewport();
+        glm::uvec4 svp = Renderer::Get()->GetSceneViewport();
+        mGlobalUniformData.mViewport = { vp.x, vp.y, vp.z, vp.w };
+        mGlobalUniformData.mSceneViewport = { svp.x, svp.y, svp.z, svp.w };
+
         mGlobalUniformData.mShadowColor = world->GetShadowColor();
 
         const FogSettings& fog = world->GetFogSettings();
