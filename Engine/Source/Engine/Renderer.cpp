@@ -1215,7 +1215,7 @@ void Renderer::Render(World* world)
                 // ******************
                 //  Post Process
                 // ******************
-
+                // Rename the PostProcess pass to Composite pass? Especially to differentiate Bloom/SSAO/Custom post effects.
                 GFX_BeginRenderPass(RenderPassId::PostProcess);
 
                 // Tonemapping does not look good.
@@ -1226,12 +1226,10 @@ void Renderer::Render(World* world)
                 GFX_SetViewport(fvp.x, fvp.y, fvp.z, fvp.w);
                 GFX_SetScissor(fvp.x, fvp.y, fvp.z, fvp.w);
 
-                // Rename the PostProcess pass to Composite pass? Especially to differentiate Bloom/SSAO/Custom post effects.
                 GFX_BindPipeline(PipelineId::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess : PipelineId::NullPostProcess*/);
                 GFX_DrawFullscreen();
 
 #if EDITOR
-
                 GFX_SetViewport(vp.x, vp.y, vp.z, vp.w);
                 GFX_SetScissor(vp.x, vp.y, vp.z, vp.w);
 
