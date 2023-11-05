@@ -9,6 +9,11 @@
 
 #include "Graphics/Graphics.h"
 
+#if EDITOR
+#include "EditorState.h"
+#include "Viewport2d.h"
+#endif
+
 FORCE_LINK_DEF(Widget);
 DEFINE_NODE(Widget, Node);
 
@@ -601,6 +606,16 @@ void Widget::UpdateRect()
 
     Widget* parent = GetParentWidget();
     glm::uvec4 vp = Renderer::Get()->GetViewport();
+
+#if EDITOR
+    if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
+    {
+        if (parent == nullptr)
+        {
+            parent = GetEditorState()->GetViewport2D()->GetWrapperWidget();
+        }
+    }
+#endif
 
     if (parent != nullptr)
     {

@@ -1,85 +1,66 @@
-#if NODE_CONV_EDITOR
-
 #if EDITOR
 
-#include "Nodes/Widgets/WidgetViewportPanel.h"
+#include "Viewport2D.h"
 #include "InputDevices.h"
 #include "EditorState.h"
 #include "Engine.h"
 #include "EditorUtils.h"
-#include "Nodes/Widgets/ActionList.h"
 #include "ActionManager.h"
 #include "PanelManager.h"
 #include "Maths.h"
+#include "Renderer.h"
 
-WidgetViewportPanel::WidgetViewportPanel()
+Viewport2D::Viewport2D()
 {
-    SetTitle("Widget Viewport");
-    SetAnchorMode(AnchorMode::FullStretch);
-    SetMargins(sDefaultWidth, 0.0f, sDefaultWidth, 0.0f);
-
-    mWrapperWidget = new Widget();
+    mWrapperWidget = Node::Construct<Widget>();
     mWrapperWidget->SetName("Wrapper");
     mWrapperWidget->SetPosition(0, 0);
-    AddChild(mWrapperWidget);
 
-    mSelectedRect = new PolyRect();
+    mSelectedRect = Node::Construct<PolyRect>();
     mSelectedRect->SetName("Select Rect");
     mSelectedRect->SetVisible(false);
     mSelectedRect->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f });
-    AddChild(mSelectedRect);
 
-    mHoveredRect = new PolyRect();
+    mHoveredRect = Node::Construct<PolyRect>();
     mHoveredRect->SetName("Hover Rect");
     mHoveredRect->SetVisible(false);
     mHoveredRect->SetColor({ 0.0f, 1.0f, 1.0f, 1.0f });
-    AddChild(mHoveredRect);
-
-    mEditorLabel = new Text();
-    mEditorLabel->SetName("Label");
-    mEditorLabel->SetText("WIDGET");
-    mEditorLabel->SetColor({ 1.0f, 1.0f, 1.0f, 0.5f });
-    mEditorLabel->SetTextSize(72);
-    mEditorLabel->SetAnchorMode(AnchorMode::TopRight);
-    mEditorLabel->SetDimensions(300.0f, 80.0f);
-    mEditorLabel->SetPosition(-310.0f, 4.0f);
-    AddChild(mEditorLabel);
-
-    mHeaderText->SetVisible(false);
-    mHeaderQuad->SetVisible(false);
-    mBodyQuad->SetVisible(false);
-}
-
-WidgetViewportPanel::~WidgetViewportPanel()
-{
 
 }
 
-
-void WidgetViewportPanel::Tick(float deltaTime)
+Viewport2D::~Viewport2D()
 {
-    Panel::Tick(deltaTime);
+    Node::Destruct(mHoveredRect);
+    mHoveredRect = nullptr;
 
-    SyncEditRootWidget();
+    Node::Destruct(mSelectedRect);
+    mSelectedRect = nullptr;
+
+    Node::Destruct(mWrapperWidget);
+    mWrapperWidget = nullptr;
+}
+
+
+void Viewport2D::Update(float deltaTime)
+{
+    Renderer* renderer = Renderer::Get();
 
     mWrapperWidget->SetPosition(mRootOffset);
     mWrapperWidget->SetScale({ mZoom, mZoom });
-    mWrapperWidget->SetDimensions(GetWidth(), GetHeight());
+    mWrapperWidget->SetDimensions((float)renderer->GetViewportWidth(), (float)renderer->GetViewportHeight());
 
-    Widget* selWidget = GetSelectedWidget();
+    Widget* selWidget = GetEditorState()->GetSelectedWidget();
     if (selWidget)
     {
-        selWidget->Update();
+        selWidget->UpdateRect();
+
         mSelectedRect->SetVisible(true);
         Rect overRect = selWidget->GetRect();
 
-        // Viewport panel is pushed over to the right a bit,
-        // so to translated the absolute rect position to the relative rect
-        // position, we need to subtract the parent X;
-        overRect.mX -= GetX();
+        //overRect.mX -= renderer->GetViewportX();
 
         mSelectedRect->SetRect(overRect);
-        mSelectedRect->Update();
+        mSelectedRect->Tick(deltaTime);
     }
     else
     {
@@ -87,42 +68,71 @@ void WidgetViewportPanel::Tick(float deltaTime)
     }
 
     Widget* hoverWidget = nullptr;
-    if (mEditRootWidget &&
-        mControlMode == WidgetControlMode::Default)
+    if (mControlMode == WidgetControlMode::Default)
     {
         int32_t mouseX = 0;
         int32_t mouseY = 0;
         GetMousePosition(mouseX, mouseY);
+        mouseX -= renderer->GetViewportX();
+        mouseY -= renderer->GetViewportY();
 
         uint32_t maxDepth = 0;
-        hoverWidget = FindHoveredWidget(mEditRootWidget, maxDepth, mouseX, mouseY);
+        hoverWidget = FindHoveredWidget(GetWorld()->GetRootNode(), maxDepth, mouseX, mouseY);
     }
 
     if (hoverWidget &&
         hoverWidget != selWidget)
     {
-        hoverWidget->Update();
+        hoverWidget->UpdateRect();
         mHoveredRect->SetVisible(true);
         Rect overRect = hoverWidget->GetRect();
 
-        // Viewport panel is pushed over to the right a bit,
-        // so to translated the absolute rect position to the relative rect
-        // position, we need to subtract the parent X;
-        overRect.mX -= GetX();
+        //overRect.mX -= GetX();
 
         mHoveredRect->SetRect(overRect);
-        mHoveredRect->Update();
+        mHoveredRect->Tick(deltaTime);
     }
     else
     {
         mHoveredRect->SetVisible(false);
     }
+
+    HandleInput();
 }
 
-void WidgetViewportPanel::HandleInput()
+bool Viewport2D::ShouldHandleInput() const
 {
-    Panel::HandleInput();
+    bool imguiWantsText = ImGui::GetIO().WantTextInput;
+    bool imguiAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
+    bool imguiAnyPopupUp = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
 
+
+    bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp);
+    return handleInput;
+}
+
+bool Viewport2D::IsMouseInside() const
+{
+    return true;
+}
+
+Widget* Viewport2D::GetWrapperWidget()
+{
+    return mWrapperWidget;
+}
+
+PolyRect* Viewport2D::GetSelectedRect()
+{
+    return mSelectedRect;
+}
+
+PolyRect* Viewport2D::GetHoveredRect()
+{
+    return mHoveredRect;
+}
+
+void Viewport2D::HandleInput()
+{
     if (ShouldHandleInput())
     {
         if (GetEditorState()->mMouseNeedsRecenter)
@@ -144,7 +154,7 @@ void WidgetViewportPanel::HandleInput()
     INP_GetMousePosition(mPrevMouseX, mPrevMouseY);
 }
 
-void WidgetViewportPanel::SetWidgetControlMode(WidgetControlMode newMode)
+void Viewport2D::SetWidgetControlMode(WidgetControlMode newMode)
 {
     if (mControlMode == newMode)
     {
@@ -181,14 +191,9 @@ void WidgetViewportPanel::SetWidgetControlMode(WidgetControlMode newMode)
     mAxisLock = WidgetAxisLock::None;
 }
 
-void WidgetViewportPanel::OnSelectedWidgetChanged()
+void Viewport2D::HandleDefaultControls()
 {
-    SyncEditRootWidget();
-}
-
-void WidgetViewportPanel::HandleDefaultControls()
-{
-    if (IsMouseInsidePanel())
+    if (IsMouseInside())
     {
         const int32_t scrollDelta = GetScrollWheelDelta();
         const bool controlDown = IsControlDown();
@@ -207,26 +212,25 @@ void WidgetViewportPanel::HandleDefaultControls()
             int32_t mouseX = 0;
             int32_t mouseY = 0;
             GetMousePosition(mouseX, mouseY);
+            mouseX -= Renderer::Get()->GetViewportX();
+            mouseY -= Renderer::Get()->GetViewportY();
 
             Widget* hoveredWidget = nullptr;
             
-            if (mEditRootWidget)
-            {
-                uint32_t maxDepth = 0;
-                hoveredWidget = FindHoveredWidget(mEditRootWidget, maxDepth, mouseX, mouseY);
-            }
+            uint32_t maxDepth = 0;
+            hoveredWidget = FindHoveredWidget(GetWorld()->GetRootNode(), maxDepth, mouseX, mouseY);
 
-            if (GetSelectedWidget() != hoveredWidget)
+            if (GetEditorState()->GetSelectedWidget() != hoveredWidget)
             {
-                SetSelectedWidget(hoveredWidget);
+                GetEditorState()->SetSelectedNode(hoveredWidget);
             }
             else
             {
-                SetSelectedWidget(nullptr);
+                GetEditorState()->SetSelectedNode(nullptr);
             }
         }
 
-        if (GetSelectedWidget() != nullptr)
+        if (GetEditorState()->GetSelectedWidget() != nullptr)
         {
             if (!controlDown && !altDown && IsKeyJustDown(KEY_G))
             {
@@ -250,48 +254,39 @@ void WidgetViewportPanel::HandleDefaultControls()
         if (IsKeyJustDown(KEY_F) ||
             IsKeyJustDown(KEY_DECIMAL))
         {
-            LogDebug("Reset viewport");
             mZoom = 1.0f;
             mRootOffset = { 0.0f, 0.0f };
         }
 
         if (controlDown && IsKeyJustDown(KEY_D))
         {
-            // Duplicate selected widget
-            Widget* selWidget = GetSelectedWidget();
-            if (selWidget)
+            // Duplicate node
+            const std::vector<Node*>& selectedNodes = GetEditorState()->GetSelectedNodes();
+
+            if (selectedNodes.size() > 0)
             {
-                Widget* newWidget = selWidget->Clone();
-                if (selWidget->GetParent() != mWrapperWidget)
-                {
-                    selWidget->GetParent()->AddChild(newWidget);
-                }
-                else
-                {
-                    mEditRootWidget->AddChild(newWidget);
-                }
-
-                SetSelectedWidget(newWidget);
-
-                ActionManager::Get()->EXE_AddWidget(newWidget);
-                SetWidgetControlMode(WidgetControlMode::Translate);
+                ActionManager::Get()->DuplicateNodes(selectedNodes);
+                GetEditorState()->SetControlMode(ControlMode::Translate);
                 SavePreTransforms();
             }
         }
 
         if (IsKeyJustDown(KEY_DELETE))
         {
-            Widget* selWidget = GetSelectedWidget();
-            if (selWidget != nullptr)
+            ActionManager::Get()->DeleteSelectedNodes();
+        }
+
+        if (altDown && IsKeyJustDown(KEY_A))
+        {
+            GetEditorState()->SetSelectedNode(nullptr);
+        }
+        if (controlDown && IsKeyJustDown(KEY_A))
+        {
+            std::vector<Node*> nodes = GetWorld()->GatherNodes();
+
+            for (uint32_t i = 0; i < nodes.size(); ++i)
             {
-                if (!selWidget->IsNativeChild())
-                {
-                    ActionManager::Get()->EXE_RemoveWidget(GetSelectedWidget());
-                }
-                else
-                {
-                    LogWarning("Cannot delete native child widget.");
-                }
+                GetEditorState()->AddSelectedNode(nodes[i], false);
             }
         }
 
@@ -305,8 +300,8 @@ void WidgetViewportPanel::HandleDefaultControls()
             int32_t mouseX = 0;
             int32_t mouseY = 0;
             GetMousePosition(mouseX, mouseY);
-            float fMouseX = float(mouseX) - mRect.mX;
-            float fMouseY = float(mouseY) - mRect.mY;
+            float fMouseX = float(mouseX) - Renderer::Get()->GetViewportX();
+            float fMouseY = float(mouseY) - Renderer::Get()->GetViewportY();
             
             float dx = fMouseX / mZoom - fMouseX / prevZoom;
             float dy = fMouseY / mZoom - fMouseY / prevZoom;
@@ -315,9 +310,9 @@ void WidgetViewportPanel::HandleDefaultControls()
     }
 }
 
-void WidgetViewportPanel::HandleTransformControls()
+void Viewport2D::HandleTransformControls()
 {
-    Widget* widget = GetSelectedWidget();
+    Widget* widget = GetEditorState()->GetSelectedWidget();
 
     if (widget == nullptr)
         return;
@@ -386,19 +381,19 @@ void WidgetViewportPanel::HandleTransformControls()
         {
             glm::vec2 offset = widget->GetOffset();
             RestorePreTransforms();
-            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "Offset", 0, offset);
+            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Node, "Offset", 0, offset);
         }
         else if (mControlMode == WidgetControlMode::Rotate)
         {
             float rotation = widget->GetRotation();
             RestorePreTransforms();
-            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "Rotation", 0, rotation);
+            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Node, "Rotation", 0, rotation);
         }
         else if (mControlMode == WidgetControlMode::Scale)
         {
             glm::vec2 size = widget->GetSize();
             RestorePreTransforms();
-            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Widget, "Size", 0, size);
+            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Node, "Size", 0, size);
         }
 
         SetWidgetControlMode(WidgetControlMode::Default);
@@ -411,7 +406,7 @@ void WidgetViewportPanel::HandleTransformControls()
     }
 }
 
-void WidgetViewportPanel::HandlePanControls()
+void Viewport2D::HandlePanControls()
 {
     glm::vec2 delta = HandleLockedCursor();
     float speed = 0.1f;
@@ -425,7 +420,7 @@ void WidgetViewportPanel::HandlePanControls()
 }
 
 
-glm::vec2 WidgetViewportPanel::HandleLockedCursor()
+glm::vec2 Viewport2D::HandleLockedCursor()
 {
     int32_t dX = 0;
     int32_t dY = 0;
@@ -434,7 +429,7 @@ glm::vec2 WidgetViewportPanel::HandleLockedCursor()
     return glm::vec2((float)dX, (float)dY);
 }
 
-void WidgetViewportPanel::HandleAxisLocking()
+void Viewport2D::HandleAxisLocking()
 {
     WidgetAxisLock newLock = WidgetAxisLock::None;
 
@@ -463,9 +458,9 @@ void WidgetViewportPanel::HandleAxisLocking()
     }
 }
 
-void WidgetViewportPanel::SavePreTransforms()
+void Viewport2D::SavePreTransforms()
 {
-    Widget* widget = GetSelectedWidget();
+    Widget* widget = GetEditorState()->GetSelectedWidget();
 
     if (widget)
     {
@@ -475,9 +470,9 @@ void WidgetViewportPanel::SavePreTransforms()
     }
 }
 
-void WidgetViewportPanel::RestorePreTransforms()
+void Viewport2D::RestorePreTransforms()
 {
-    Widget* widget = GetSelectedWidget();
+    Widget* widget = GetEditorState()->GetSelectedWidget();
 
     if (widget)
     {
@@ -487,50 +482,34 @@ void WidgetViewportPanel::RestorePreTransforms()
     }
 }
 
-void WidgetViewportPanel::SyncEditRootWidget()
-{
-    // Sync the edit root widget.
-    Widget* editRoot = GetEditRootWidget();
-
-    if (editRoot != mEditRootWidget)
-    {
-        if (mEditRootWidget != nullptr)
-        {
-            mWrapperWidget->RemoveChild(mEditRootWidget);
-        }
-
-        mEditRootWidget = editRoot;
-
-        if (mEditRootWidget != nullptr)
-        {
-            mWrapperWidget->AddChild(mEditRootWidget, 0);
-        }
-    }
-}
-
-Widget* WidgetViewportPanel::FindHoveredWidget(Widget* widget, uint32_t& maxDepth, int32_t mouseX, int32_t mouseY, uint32_t depth)
+Widget* Viewport2D::FindHoveredWidget(Node* node, uint32_t& maxDepth, int32_t mouseX, int32_t mouseY, uint32_t depth)
 {
     Widget* retWidget = nullptr;
 
-    Rect rect = widget->GetRect();
+    Widget* widget = node->As<Widget>();
 
-    if (rect.ContainsPoint(float(mouseX), float(mouseY)) &&
-        depth >= maxDepth)
+    if (widget)
     {
-        retWidget = widget;
-        maxDepth = depth;
+        Rect rect = widget->GetRect();
+
+        if (rect.ContainsPoint(float(mouseX), float(mouseY)) &&
+            depth >= maxDepth)
+        {
+            retWidget = widget;
+            maxDepth = depth;
+        }
     }
 
-    if (widget->GetWidgetMap() == nullptr)
+    if (!node->IsSceneLinked())
     {
-        for (uint32_t i = 0; i < widget->GetNumChildren(); ++i)
+        for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
         {
-            Widget* child = widget->GetChild(i);
-            Widget* childFound = FindHoveredWidget(child, maxDepth, mouseX, mouseY, depth + 1);
+            Node* child = node->GetChild(i);
+            Widget* childWidgetFound = FindHoveredWidget(child, maxDepth, mouseX, mouseY, depth + 1);
 
-            if (childFound)
+            if (childWidgetFound)
             {
-                retWidget = childFound;
+                retWidget = childWidgetFound;
             }
         }
     }
@@ -539,5 +518,3 @@ Widget* WidgetViewportPanel::FindHoveredWidget(Widget* widget, uint32_t& maxDept
 }
 
 #endif
-
-#endif 

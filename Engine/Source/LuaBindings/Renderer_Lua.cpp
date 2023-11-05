@@ -231,22 +231,40 @@ int Renderer_Lua::AddDebugLine(lua_State* L)
     return 0;
 }
 
-int Renderer_Lua::EnableWorldRendering(lua_State* L)
+int Renderer_Lua::Enable3dRendering(lua_State* L)
 {
     bool enable = CHECK_BOOLEAN(L, 1);
 
-    Renderer::Get()->EnableWorldRendering(enable);
+    Renderer::Get()->Enable3dRendering(enable);
 
     return 0;
 }
 
-int Renderer_Lua::IsWorldRenderingEnabled(lua_State* L)
+int Renderer_Lua::Is3dRenderingEnabled(lua_State* L)
 {
-    bool ret = Renderer::Get()->IsWorldRenderingEnabled();
+    bool ret = Renderer::Get()->Is3dRenderingEnabled();
 
     lua_pushboolean(L, ret);
     return 1;
 }
+
+int Renderer_Lua::Enable2dRendering(lua_State* L)
+{
+    bool enable = CHECK_BOOLEAN(L, 1);
+
+    Renderer::Get()->Enable2dRendering(enable);
+
+    return 0;
+}
+
+int Renderer_Lua::Is2dRenderingEnabled(lua_State* L)
+{
+    bool ret = Renderer::Get()->Is2dRenderingEnabled();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 
 int Renderer_Lua::IsLightFadeEnabled(lua_State* L)
 {
@@ -392,11 +410,17 @@ void Renderer_Lua::Bind()
     lua_pushcfunction(L, AddDebugLine);
     lua_setfield(L, tableIdx, "AddDebugLine");
 
-    lua_pushcfunction(L, EnableWorldRendering);
-    lua_setfield(L, tableIdx, "EnableWorldRendering");
+    lua_pushcfunction(L, Enable3dRendering);
+    lua_setfield(L, tableIdx, "Enable3dRendering");
 
-    lua_pushcfunction(L, IsWorldRenderingEnabled);
-    lua_setfield(L, tableIdx, "IsWorldRenderingEnabled");
+    lua_pushcfunction(L, Is3dRenderingEnabled);
+    lua_setfield(L, tableIdx, "Is3dRenderingEnabled");
+
+    lua_pushcfunction(L, Enable2dRendering);
+    lua_setfield(L, tableIdx, "Enable2dRendering");
+
+    lua_pushcfunction(L, Is2dRenderingEnabled);
+    lua_setfield(L, tableIdx, "Is2dRenderingEnabled");
 
     lua_pushcfunction(L, IsLightFadeEnabled);
     lua_setfield(L, tableIdx, "IsLightFadeEnabled");

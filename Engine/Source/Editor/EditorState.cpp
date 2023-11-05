@@ -44,7 +44,7 @@ void EditorState::Init()
     mEditorCamera->SetWorld(GetWorld());
 
     mViewport3D = new Viewport3D();
-    //mViewport2D = new Viewport2D();
+    mViewport2D = new Viewport2D();
 }
 
 void EditorState::Shutdown()
@@ -52,8 +52,8 @@ void EditorState::Shutdown()
     delete mViewport3D;
     mViewport3D = nullptr;
 
-    // delete mViewport2D;
-    //mViewport2D = nullptr;
+    delete mViewport2D;
+    mViewport2D = nullptr;
 
     mEditorCamera->SetWorld(nullptr);
     Node::Destruct(mEditorCamera);
@@ -69,6 +69,14 @@ void EditorState::Update(float deltaTime)
         {
         case EditorMode::Scene:
             mViewport3D->Update(deltaTime);
+            break;
+
+        case EditorMode::Scene3D:
+            mViewport3D->Update(deltaTime);
+            break;
+
+        case EditorMode::Scene2D:
+            mViewport2D->Update(deltaTime);
             break;
 
         default:
@@ -170,6 +178,18 @@ void EditorState::SetSelectedNode(Node* newNode)
         if (newNode != nullptr)
         {
             mSelectedNodes.push_back(newNode);
+
+            if (!IsPlayingInEditor())
+            {
+                if (newNode->IsWidget())
+                {
+                    SetEditorMode(EditorMode::Scene2D);
+                }
+                else
+                {
+                    SetEditorMode(EditorMode::Scene3D);
+                }
+            }
         }
 
         if (!IsShuttingDown())
@@ -1027,9 +1047,9 @@ Viewport3D* EditorState::GetViewport3D()
     return mViewport3D;
 }
 
-//Viewport2D* EditorState::GetViewport2D()
-//{
-//    return mViewport2D;
-//}
+Viewport2D* EditorState::GetViewport2D()
+{
+    return mViewport2D;
+}
 
 #endif

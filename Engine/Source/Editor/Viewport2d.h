@@ -1,8 +1,5 @@
-#if NODE_CONV_EDITOR
-
 #pragma once
 
-#include "Panel.h"
 #include "EditorState.h"
 #include "Nodes/Widgets/ModalList.h"
 #include "Nodes/Widgets/PolyRect.h"
@@ -27,20 +24,23 @@ enum class WidgetAxisLock
     Count
 };
 
-class WidgetViewportPanel : public Panel
+class Viewport2D
 {
 public:
 
-    WidgetViewportPanel();
-    ~WidgetViewportPanel();
+    Viewport2D();
+    ~Viewport2D();
 
-    virtual void Tick(float deltaTime) override;
-    virtual void HandleInput() override;
+    void Update(float deltaTime);
+    bool ShouldHandleInput() const;
+    bool IsMouseInside() const;
+    void HandleInput();
 
     void SetWidgetControlMode(WidgetControlMode newMode);
 
-    void OnSelectedWidgetChanged();
-    void SyncEditRootWidget();
+    Widget* GetWrapperWidget();
+    PolyRect* GetSelectedRect();
+    PolyRect* GetHoveredRect();
 
 protected:
 
@@ -54,20 +54,16 @@ protected:
     void SavePreTransforms();
     void RestorePreTransforms();
 
-    Widget* FindHoveredWidget(Widget* widget, uint32_t& maxDepth, int32_t mouseX, int32_t mouseY, uint32_t depth = 0);
+    Widget* FindHoveredWidget(Node* node, uint32_t& maxDepth, int32_t mouseX, int32_t mouseY, uint32_t depth = 0);
 
     float mZoom = 1.0f;
     glm::vec2 mRootOffset = { 0.0f, 0.0f };
     WidgetControlMode mControlMode = WidgetControlMode::Default;
     WidgetAxisLock mAxisLock = WidgetAxisLock::None;
 
-    Widget* mEditRootWidget = nullptr;
     Widget* mWrapperWidget = nullptr;
-
     PolyRect* mSelectedRect = nullptr;
     PolyRect* mHoveredRect = nullptr;
-
-    Text* mEditorLabel = nullptr;
 
     int32_t mPrevMouseX = 0;
     int32_t mPrevMouseY = 0;
@@ -76,5 +72,3 @@ protected:
     glm::vec2 mSavedSize;
     float mSavedRotation;
 };
-
-#endif

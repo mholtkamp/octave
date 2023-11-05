@@ -22,6 +22,7 @@
 
 #if EDITOR
 #include "EditorState.h"
+#include "Viewport2d.h"
 #endif
 
 #include "Assertion.h"
@@ -189,14 +190,24 @@ bool Renderer::IsFrustumCullingEnabled() const
     return mFrustumCulling;
 }
 
-void Renderer::EnableWorldRendering(bool enable)
+void Renderer::Enable3dRendering(bool enable)
 {
-    mEnableWorldRendering = enable;
+    mEnable3dRendering = enable;
 }
 
-bool Renderer::IsWorldRenderingEnabled() const
+bool Renderer::Is3dRenderingEnabled() const
 {
-    return mEnableWorldRendering;
+    return mEnable3dRendering;
+}
+
+void Renderer::Enable2dRendering(bool enable)
+{
+    mEnable2dRendering = enable;
+}
+
+bool Renderer::Is2dRenderingEnabled() const
+{
+    return mEnable2dRendering;
 }
 
 void Renderer::EnablePathTracing(bool enable)
@@ -522,15 +533,6 @@ void Renderer::GatherDrawData(World* world)
 
 #if DEBUG_DRAW_ENABLED
             bool proxyActorEnabled = true;
-#if   0 // EDITOR
-            // TODO-NODE: I'm not sure what this code was meant to do? What components could
-            // be selected in the blueprint editor that didn't belong to the blueprint actor?
-            if (GetEditorMode() == EditorMode::Blueprint &&
-                node->GetOwner() != GetEditBlueprintActor())
-            {
-                proxyActorEnabled = false;
-            }
-#endif
 
             if (mEnableProxyRendering &&
                 mDebugMode != DEBUG_COLLISION &&
@@ -559,6 +561,14 @@ void Renderer::GatherDrawData(World* world)
             if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->Traverse(gatherDrawData); }
             if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->Traverse(gatherDrawData); }
             if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->Traverse(gatherDrawData); }
+
+#if EDITOR
+            if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
+            {
+                GetEditorState()->GetViewport2D()->GetHoveredRect()->Traverse(gatherDrawData);
+                GetEditorState()->GetViewport2D()->GetSelectedRect()->Traverse(gatherDrawData);
+            }
+#endif
         }
 
         Camera3D* camera = world->GetActiveCamera();
@@ -1087,6 +1097,19 @@ void Renderer::Render(World* world)
     bool inGame = IsGameTickEnabled();
     float gameDeltaTime = GetEngineState()->mGameDeltaTime;
     float realDeltaTime = GetEngineState()->mRealDeltaTime;
+    bool enable3D = mEnable3dRendering;
+    bool enable2D = mEnable2dRendering;
+
+#if EDITOR
+    if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
+    {
+        enable3D = false;
+    }
+    else if (GetEditorState()->GetEditorMode() == EditorMode::Scene3D)
+    {
+        enable2D = false;
+    }
+#endif
 
     // Update Renderer's overlay widgets (not widgets in the world.
     {
@@ -1117,21 +1140,24 @@ void Renderer::Render(World* world)
 
     // On 3DS especially, we want to cull before syncing with the GPU
     // otherwise it increases GPU idle time.
-    if (mEnableWorldRendering)
     {
         SCOPED_FRAME_STAT("Culling");
 
-        if (activeCamera != nullptr)
-        {
-            activeCamera->ComputeMatrices();
-        }
-
         GatherDrawData(world);
-        GatherLightData(world);
 
-        if (mFrustumCulling)
+        if (enable3D)
         {
-            FrustumCull(activeCamera);
+            if (activeCamera != nullptr)
+            {
+                activeCamera->ComputeMatrices();
+            }
+
+            GatherLightData(world);
+
+            if (mFrustumCulling)
+            {
+                FrustumCull(activeCamera);
+            }
         }
     }
 
@@ -1175,7 +1201,7 @@ void Renderer::Render(World* world)
             uint32_t viewportWidth = vp.z;
             uint32_t viewportHeight = vp.w;
 
-            if (mEnableWorldRendering && activeCamera != nullptr)
+            if (enable3D && activeCamera != nullptr)
             {
                 if (mEnablePathTracing)
                 {
@@ -1284,7 +1310,10 @@ void Renderer::Render(World* world)
             //  UI
             // ******************
             GFX_BeginRenderPass(RenderPassId::Ui);
-            RenderDraws(mWidgetDraws);
+            if (enable2D)
+            {
+                RenderDraws(mWidgetDraws);
+            }
             GFX_EndRenderPass();
         }
 

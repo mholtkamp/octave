@@ -46,8 +46,6 @@ protected:
 
     bool IsMouseOnAnyButton() const;
 
-    static void ShowSpawnActorPrompt(bool basic);
-
     float mFirstPersonMoveSpeed;
     float mFirstPersonRotationSpeed;
 

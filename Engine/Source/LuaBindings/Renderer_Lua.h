@@ -32,8 +32,10 @@ struct Renderer_Lua
     static int IsFrustumCullingEnabled(lua_State* L);
     static int AddDebugDraw(lua_State* L);
     static int AddDebugLine(lua_State* L);
-    static int EnableWorldRendering(lua_State* L);
-    static int IsWorldRenderingEnabled(lua_State* L);
+    static int Enable3dRendering(lua_State* L);
+    static int Is3dRenderingEnabled(lua_State* L);
+    static int Enable2dRendering(lua_State* L);
+    static int Is2dRenderingEnabled(lua_State* L);
     static int IsLightFadeEnabled(lua_State* L);
     static int EnableLightFade(lua_State* L);
     static int SetLightFadeLimit(lua_State* L);

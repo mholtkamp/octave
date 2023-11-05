@@ -16,7 +16,7 @@ class ActionList;
 class Canvas;
 class Camera3D;
 class Viewport3D;
-// class Viewport2D;
+class Viewport2D;
 
 enum class ControlMode
 {
@@ -44,6 +44,8 @@ enum class TransformLock
 enum class EditorMode
 {
     Scene,
+    Scene3D,
+    Scene2D,
 
     Count
 };
@@ -84,7 +86,7 @@ struct EditorState
     AssetRef mInspectedAsset;
     bool mInspectLocked = false;
     Viewport3D* mViewport3D = nullptr;
-    //Viewport2D* mViewport2D = nullptr;
+    Viewport2D* mViewport2D = nullptr;
     std::string mAssetFilterStr;
     std::vector<AssetStub*> mFilteredAssetStubs;
     bool mRequestSaveSceneAs = false;
@@ -175,7 +177,7 @@ struct EditorState
     void RemoveFilteredAssetStub(AssetStub* stub);
 
     Viewport3D* GetViewport3D();
-    //Viewport2D* GetViewport2D();
+    Viewport2D* GetViewport2D();
 };
 
 EditorState* GetEditorState();

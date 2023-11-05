@@ -93,8 +93,10 @@ public:
     void EnableFrustumCulling(bool enable);
     bool IsFrustumCullingEnabled() const;
 
-    void EnableWorldRendering(bool enable);
-    bool IsWorldRenderingEnabled() const;
+    void Enable3dRendering(bool enable);
+    bool Is3dRenderingEnabled() const;
+    void Enable2dRendering(bool enable);
+    bool Is2dRenderingEnabled() const;
 
     void EnablePathTracing(bool enable);
     bool IsPathTracingEnabled() const;
@@ -227,7 +229,8 @@ private:
     BoundsDebugMode mBoundsDebugMode = BoundsDebugMode::Off;
     bool mFrustumCulling = true;
     bool mEnableProxyRendering = false;
-    bool mEnableWorldRendering = true;
+    bool mEnable3dRendering = true;
+    bool mEnable2dRendering = true;
     bool mEnablePathTracing = false;
     bool mInModalWidgetUpdate = false;
     bool mEnableLightFade = false;

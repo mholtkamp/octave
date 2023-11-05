@@ -657,14 +657,6 @@ void Viewport3D::HandleDefaultControls()
             }
         }
 
-        if (shiftDown && (IsKeyJustDown(KEY_A) || IsKeyJustDown(KEY_Q)))
-        {
-            // Set the spawn actor list as the modal widget.
-            const bool basic = IsKeyJustDown(KEY_Q);
-            ShowSpawnActorPrompt(basic);
-        }
-
-
         if (altDown && IsKeyJustDown(KEY_A))
         {
             GetEditorState()->SetSelectedNode(nullptr);
@@ -1357,41 +1349,6 @@ bool Viewport3D::IsMouseOnAnyButton() const
     }
 
     return ret;
-}
-
-void Viewport3D::ShowSpawnActorPrompt(bool basic)
-{
-#if NODE_CONV_EDITOR
-
-    ActionList* actionList = GetActionList();
-
-    std::vector<std::string> actions;
-
-    if (basic)
-    {
-        actions.push_back(BASIC_BLUEPRINT);
-        actions.push_back(BASIC_STATIC_MESH);
-        actions.push_back(BASIC_POINT_LIGHT);
-        actions.push_back(BASIC_TRANSFORM);
-        actions.push_back(BASIC_DIRECTIONAL_LIGHT);
-        actions.push_back(BASIC_SKELETAL_MESH);
-        actions.push_back(BASIC_BOX);
-        actions.push_back(BASIC_SPHERE);
-        actions.push_back(BASIC_CAPSULE);
-        actions.push_back(BASIC_PARTICLE);
-        actions.push_back(BASIC_AUDIO);
-        actions.push_back(BASIC_CAMERA);
-        actions.push_back(BASIC_TEXT_MESH);
-
-        actionList->SetActions(actions, HandleSpawnBasicPressed);
-    }
-    else
-    {
-        GatherAllClassNames(actions);
-        actionList->SetActions(actions, HandleSpawnActorPressed);
-    }
-
-#endif
 }
 
 #endif
