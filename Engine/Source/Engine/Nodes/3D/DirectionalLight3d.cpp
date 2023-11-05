@@ -126,21 +126,26 @@ const glm::mat4& DirectionalLight3D::GetViewProjectionMatrix() const
 
 void DirectionalLight3D::GenerateViewProjectionMatrix()
 {
-    glm::mat4 view;
-    glm::mat4 proj;
+    Camera3D* camera = GetWorld()->GetActiveCamera();
 
-    glm::vec3 cameraPosition = GetWorld()->GetActiveCamera()->GetAbsolutePosition();
-    glm::vec3 direction = GetDirection();
+    if (camera != nullptr)
+    {
+        glm::mat4 view;
+        glm::mat4 proj;
 
-    glm::vec3 upVector = fabs(direction.y) > 0.5f ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-    view = glm::lookAtRH(cameraPosition, cameraPosition + direction, upVector);
-    proj = glm::orthoRH(-SHADOW_RANGE, SHADOW_RANGE, -SHADOW_RANGE, SHADOW_RANGE, -SHADOW_RANGE_Z, SHADOW_RANGE_Z);
+        glm::vec3 cameraPosition = camera->GetAbsolutePosition();
+        glm::vec3 direction = GetDirection();
 
-    // Needed for adjusting to NDC
-    const glm::mat4 clip(1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, -1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f);
+        glm::vec3 upVector = fabs(direction.y) > 0.5f ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+        view = glm::lookAtRH(cameraPosition, cameraPosition + direction, upVector);
+        proj = glm::orthoRH(-SHADOW_RANGE, SHADOW_RANGE, -SHADOW_RANGE, SHADOW_RANGE, -SHADOW_RANGE_Z, SHADOW_RANGE_Z);
 
-    mViewProjectionMatrix = clip * proj * view;
+        // Needed for adjusting to NDC
+        const glm::mat4 clip(1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, -1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
+
+        mViewProjectionMatrix = clip * proj * view;
+    }
 }
