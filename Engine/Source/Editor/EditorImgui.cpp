@@ -55,6 +55,9 @@ static std::vector<std::string> sNode3dNames;
 static std::vector<std::string> sNodeWidgetNames;
 static std::vector<std::string> sNodeOtherNames;
 
+static ImTextureID sInspectTexId = 0;
+static Texture* sPrevInspectTexture = nullptr;
+
 static void DiscoverNodeClasses()
 {
     sNode3dNames.clear();
@@ -1650,9 +1653,6 @@ static void DrawAssetsPanel()
 
 static void DrawPropertiesPanel()
 {
-    static ImTextureID sTexId = 0;
-    static Texture* sPrevTexture = nullptr;
-
     const float dispWidth = (float)GetEngineState()->mWindowWidth;
     const float dispHeight = (float)GetEngineState()->mWindowHeight;
 
@@ -1704,27 +1704,27 @@ static void DrawPropertiesPanel()
                     texObj->GetResource()->mImage != nullptr)
                 {
                     // Dealloc prev tex descriptor
-                    if (sPrevTexture != texObj)
+                    if (sPrevInspectTexture != texObj)
                     {
                         DeviceWaitIdle();
 
-                        if (sTexId != 0)
+                        if (sInspectTexId != 0)
                         {
-                            ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)sTexId);
-                            sTexId = 0;
+                            ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)sInspectTexId);
+                            sInspectTexId = 0;
                         }
 
-                        sTexId = (VkDescriptorSet)ImGui_ImplVulkan_AddTexture(
+                        sInspectTexId = (VkDescriptorSet)ImGui_ImplVulkan_AddTexture(
                             texObj->GetResource()->mImage->GetSampler(),
                             texObj->GetResource()->mImage->GetView(),
                             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-                        sPrevTexture = texObj;
+                        sPrevInspectTexture = texObj;
                     }
 
-                    if (sTexId != 0)
+                    if (sInspectTexId != 0)
                     {
-                        ImGui::Image(sTexId, ImVec2(128, 128), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1,1,1,1), ImVec4(0.5f, 0.2f, 0.2f, 1.0f));
+                        ImGui::Image(sInspectTexId, ImVec2(128, 128), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1,1,1,1), ImVec4(0.5f, 0.2f, 0.2f, 1.0f));
                     }
                 }
 
@@ -2245,6 +2245,16 @@ void EditorImguiDraw()
 void EditorImguiShutdown()
 {
     ImGui::DestroyContext();
+}
+
+void EditorImguiPreShutdown()
+{
+    if (sInspectTexId != 0)
+    {
+        DeviceWaitIdle();
+        ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)sInspectTexId);
+        sInspectTexId = 0;
+    }
 }
 
 void EditorImguiGetViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t& height)

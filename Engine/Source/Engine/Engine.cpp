@@ -411,6 +411,10 @@ void Shutdown()
     sEngineState.mLua = nullptr;
 #endif
 
+#if EDITOR
+    EditorImguiPreShutdown();
+#endif
+
     NetworkManager::Destroy();
     Renderer::Destroy();
     AssetManager::Destroy();
