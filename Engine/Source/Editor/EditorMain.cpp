@@ -76,9 +76,6 @@ void EditorMain(int32_t argc, char** argv)
         GetWorld()->SpawnNode<TestSpinner>();
     }
 
-    GetEditorState()->GetEditorCamera()->SetPosition(glm::vec3(0, 0, 10.0f));
-    GetEditorState()->GetEditorCamera()->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-
     Renderer::Get()->EnableStatsOverlay(false);
 
     bool ret = true;

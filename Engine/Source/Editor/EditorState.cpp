@@ -512,7 +512,7 @@ void EditorState::OpenEditScene(Scene* scene)
             newEditScene.mRootNode = scene->Instantiate();
         }
 
-        newEditScene.mCameraTransform = glm::mat4(1);
+        newEditScene.mCameraTransform = glm::translate(glm::vec3(0.0f, 2.5f, 10.0f));
 
         editScene = &newEditScene;
         editSceneIdx = int32_t(mEditScenes.size()) - 1;
