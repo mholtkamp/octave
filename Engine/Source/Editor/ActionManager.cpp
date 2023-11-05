@@ -1946,7 +1946,7 @@ void ActionManager::DuplicateNodes(std::vector<Node*> nodes)
     for (uint32_t i = 0; i < nodes.size(); ++i)
     {
         Node* node = nodes[i];
-        Node* newNode = node->Clone(true, false);
+        Node* newNode = node->Clone(true);
         Node* parent = node->GetParent();
         if (parent == nullptr)
         {

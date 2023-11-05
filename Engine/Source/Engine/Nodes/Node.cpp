@@ -751,7 +751,7 @@ Node* Node::CreateChild(const char* typeName)
 
 Node* Node::CreateChildClone(Node* srcNode, bool recurse)
 {
-    Node* subNode = srcNode->Clone(recurse, false);
+    Node* subNode = srcNode->Clone(recurse);
     AddChild(subNode);
 
     if (HasStarted())
@@ -762,10 +762,10 @@ Node* Node::CreateChildClone(Node* srcNode, bool recurse)
     return subNode;
 }
 
-Node* Node::Clone(bool recurse, bool autoAttach)
+Node* Node::Clone(bool recurse, bool instantiateLinkedScene)
 {
     Node* clonedNode = nullptr;
-    Scene* srcScene = GetScene();
+    Scene* srcScene = instantiateLinkedScene ? GetScene() : nullptr;
     bool hasNativeChildren = false;
 
     if (srcScene != nullptr)
@@ -787,23 +787,16 @@ Node* Node::Clone(bool recurse, bool autoAttach)
         // Might need to move copy after recurse block if properties aren't getting copied correctly.
         clonedNode->Copy(this, hasNativeChildren);
 
-        if (autoAttach)
-        {
-            Node* parent = GetParent();
-            if (parent == nullptr)
-            {
-                parent = this;
-            }
-
-            parent->AddChild(clonedNode);
-        }
-
         if (recurse && !srcScene && !hasNativeChildren)
         {
             // Clone children
             for (uint32_t i = 0; i < GetNumChildren(); ++i)
             {
-                Node* childClone = GetChild(i)->Clone(recurse, false);
+                // Note: instantiateLinkedScene is always defaulted to true here.
+                // That option was added just for PIE when cloning the EditScene. Because
+                // in that case we don't want to instantiate from the Scene. It may not be saved 
+                // and we want to carry over the current state instead of what was last saved.
+                Node* childClone = GetChild(i)->Clone(recurse);
                 clonedNode->AddChild(childClone);
             }
         }

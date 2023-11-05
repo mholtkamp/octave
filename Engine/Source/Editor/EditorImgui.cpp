@@ -1798,9 +1798,17 @@ static void DrawViewportPanel()
         ImGui::OpenPopup("WorldPopup");
 
     ImGui::SameLine();
-    if (ImGui::Button("Play"))
+    bool inPie = IsPlayingInEditor();
+    if (ImGui::Button(inPie ? "Stop" : "Play"))
     {
-        GetEditorState()->BeginPlayInEditor();
+        if (inPie)
+        {
+            GetEditorState()->EndPlayInEditor();
+        }
+        else
+        {
+            GetEditorState()->BeginPlayInEditor();
+        }
     }
 
     bool openSaveSceneAsModal = false;

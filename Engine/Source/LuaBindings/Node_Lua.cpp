@@ -440,9 +440,8 @@ int Node_Lua::Clone(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
     bool recurse = CHECK_BOOLEAN(L, 2);
-    bool autoAttach = CHECK_BOOLEAN(L, 3);
 
-    Node* clonedNode = node->Clone(recurse, autoAttach);
+    Node* clonedNode = node->Clone(recurse);
 
     Node_Lua::Create(L, clonedNode);
     return 1;
