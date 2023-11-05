@@ -33,23 +33,10 @@ const char* Camera3D::GetTypeName() const
 void Camera3D::Start()
 {
     Node3D::Start();
-
-    Camera3D* activeCam = GetWorld()->GetActiveCamera();
-
-    if (activeCam == nullptr)
-    {
-        GetWorld()->SetActiveCamera(this);
-    }
 }
 
 void Camera3D::Destroy()
 {
-    if (GetWorld() &&
-        GetWorld()->GetActiveCamera() == this)
-    {
-        GetWorld()->SetActiveCamera(nullptr);
-    }
-
     Node3D::Destroy();
 }
 

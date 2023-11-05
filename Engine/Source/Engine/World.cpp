@@ -549,9 +549,14 @@ void World::UnregisterNode(Node* node)
         mLights.erase(it);
     }
 
-    if (node == GetAudioReceiver())
+    if (node == mAudioReceiver)
     {
         SetAudioReceiver(nullptr);
+    }
+
+    if (node == mActiveCamera)
+    {
+        SetActiveCamera(nullptr);
     }
 
     if (node->GetNetId() != INVALID_NET_ID)
@@ -813,9 +818,10 @@ Node3D* World::GetAudioReceiver()
         return mAudioReceiver;
     }
 
-    if (mActiveCamera != nullptr)
+    Camera3D* activeCam = GetActiveCamera();
+    if (activeCam != nullptr)
     {
-        return mActiveCamera;
+        return activeCam;
     }
 
     return nullptr;

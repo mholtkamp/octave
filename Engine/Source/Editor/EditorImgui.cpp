@@ -2175,7 +2175,7 @@ void EditorImguiDraw()
 {
     ImGui::NewFrame();
 
-    if (GetEditorState()->mShowInterface)
+    if (EditorIsInterfaceVisible())
     {
         if (GetEditorState()->mShowLeftPane)
         {
@@ -2201,7 +2201,7 @@ void EditorImguiShutdown()
 
 void EditorImguiGetViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t& height)
 {
-    if (GetEditorState()->mShowInterface)
+    if (EditorIsInterfaceVisible())
     {
         x = 0;
         y = uint32_t(kViewportBarHeight + 0.5f);
@@ -2231,6 +2231,11 @@ void EditorImguiGetViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t&
         width = GetEngineState()->mWindowWidth;
         height = GetEngineState()->mWindowHeight;
     }
+}
+
+bool EditorIsInterfaceVisible()
+{
+    return GetEditorState()->mShowInterface && (!IsPlaying() || GetEditorState()->mEjected);
 }
 
 #endif

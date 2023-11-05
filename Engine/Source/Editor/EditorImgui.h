@@ -10,5 +10,6 @@ void EditorImguiDraw();
 void EditorImguiShutdown();
 
 void EditorImguiGetViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t& height);
+bool EditorIsInterfaceVisible();
 
 #endif

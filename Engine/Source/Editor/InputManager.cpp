@@ -112,6 +112,8 @@ void InputManager::UpdateHotkeys()
     const bool altDown = IsAltDown();
     bool modKeyDown = ctrlDown || shiftDown || altDown;
 
+    const bool textFieldActive = ImGui::GetIO().WantTextInput;
+
     bool popupOpen = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
 
     if (GetEditorState()->mPlayInEditor)
@@ -143,7 +145,6 @@ void InputManager::UpdateHotkeys()
     }
     else if (!popupOpen)
     {
-        const bool textFieldActive = ImGui::GetIO().WantTextInput;
         const bool isScene = (GetEditorState()->GetEditorMode() == EditorMode::Scene);
 
         if (ctrlDown && IsKeyJustDown(KEY_P) && isScene)
@@ -205,7 +206,18 @@ void InputManager::UpdateHotkeys()
         {
             ReloadAllScripts();
         }
-        else if (!modKeyDown && IsKeyJustDown(KEY_T) && !textFieldActive)
+
+        if (IsKeyJustDown(KEY_ESCAPE) &&
+            !isScene)
+        {
+            // TODO: Show save prompt if edited asset has unsaved changes?
+            GetEditorState()->SetEditorMode(EditorMode::Scene);
+        }
+    }
+
+    if (!IsPlaying() || GetEditorState()->mEjected)
+    {
+        if (!modKeyDown && IsKeyJustDown(KEY_T) && !textFieldActive)
         {
             GetEditorState()->mShowLeftPane = !GetEditorState()->mShowLeftPane;
         }
@@ -216,13 +228,6 @@ void InputManager::UpdateHotkeys()
         else if (altDown && IsKeyJustDown(KEY_Z) && !textFieldActive)
         {
             GetEditorState()->mShowInterface = !GetEditorState()->mShowInterface;
-        }
-
-        if (IsKeyJustDown(KEY_ESCAPE) &&
-            !isScene)
-        {
-            // TODO: Show save prompt if edited asset has unsaved changes?
-            GetEditorState()->SetEditorMode(EditorMode::Scene);
         }
     }
 }

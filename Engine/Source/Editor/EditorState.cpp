@@ -645,7 +645,7 @@ EditScene* EditorState::GetEditScene(int32_t idx)
     if (idx >= 0 &&
         idx < int32_t(mEditScenes.size()))
     {
-        ret = &mEditScenes[mEditSceneIndex];
+        ret = &mEditScenes[idx];
     }
 
     return ret;
