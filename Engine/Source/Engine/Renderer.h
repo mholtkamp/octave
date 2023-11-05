@@ -134,7 +134,6 @@ public:
     uint32_t GetViewportHeight();
     glm::uvec4 GetViewport();
     glm::uvec4 GetSceneViewport();
-    glm::uvec4 GetFullViewport();
 
     // Property Getters
     uint32_t GetRaysPerPixel() const;

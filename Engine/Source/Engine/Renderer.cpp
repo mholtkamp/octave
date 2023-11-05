@@ -1132,16 +1132,20 @@ void Renderer::Render(World* world)
         {
             GFX_BeginView(view);
 
-
             glm::uvec4 vp = GetViewport();
             glm::uvec4 svp = GetSceneViewport();
-            glm::uvec4 fvp = GetFullViewport();
 
+            // The scene viewport is adjusted for render resolution. Matches scene color image / depth image.
             uint32_t sceneViewportX = svp.x;
             uint32_t sceneViewportY = svp.y;
             uint32_t sceneViewportWidth = svp.z;
             uint32_t sceneViewportHeight = svp.w;
 
+            // The regular viewport matches the swapchain image. Used in UI rendering.
+            uint32_t viewportX = vp.x;
+            uint32_t viewportY = vp.y;
+            uint32_t viewportWidth = vp.z;
+            uint32_t viewportHeight = vp.w;
 
             if (mEnableWorldRendering && activeCamera != nullptr)
             {
@@ -1222,16 +1226,16 @@ void Renderer::Render(World* world)
                 // Disabling it for now. Also need to totally rewrite postprocessing system.
                 // Make it smarter so that it can pingpong between render targets.
 
-                // Because we may render to subset of 
-                GFX_SetViewport(fvp.x, fvp.y, fvp.z, fvp.w);
-                GFX_SetScissor(fvp.x, fvp.y, fvp.z, fvp.w);
+                // The composite pass takes the scene image and composes anything else (e.g. path trace image) to the full swapchain resolution.
+                GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+                GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
 
                 GFX_BindPipeline(PipelineId::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess : PipelineId::NullPostProcess*/);
                 GFX_DrawFullscreen();
 
 #if EDITOR
-                GFX_SetViewport(vp.x, vp.y, vp.z, vp.w);
-                GFX_SetScissor(vp.x, vp.y, vp.z, vp.w);
+                GFX_SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+                GFX_SetScissor(viewportX, viewportY, viewportWidth, viewportHeight);
 
                 RenderSelectedGeometry(world);
 #endif
@@ -1490,7 +1494,7 @@ uint32_t Renderer::GetViewportWidth()
 #if EDITOR
     return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? GetEngineState()->mWindowWidth : GetEditorState()->mViewportWidth;
 #else
-    return uint32_t(sEngineState.mWindowWidth);
+    return uint32_t(GetEngineState()->mWindowWidth);
 #endif
 }
 
@@ -1499,7 +1503,7 @@ uint32_t Renderer::GetViewportHeight()
 #if EDITOR
     return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? GetEngineState()->mWindowHeight : GetEditorState()->mViewportHeight;
 #else
-    return uint32_t(sEngineState.mWindowHeight);
+    return uint32_t(GetEngineState()->mWindowHeight);
 #endif
 }
 
@@ -1522,9 +1526,4 @@ glm::uvec4 Renderer::GetSceneViewport()
     vh = uint32_t(vh * resScale + 0.5f);
 
     return glm::uvec4(vx, vy, vw, vh);
-}
-
-glm::uvec4 Renderer::GetFullViewport()
-{
-    return glm::uvec4(0, 0, GetEngineState()->mWindowWidth, GetEngineState()->mWindowHeight);
 }

@@ -489,11 +489,11 @@ void VulkanContext::EndRenderPass()
 #if EDITOR
     if (mCurrentRenderPassId == RenderPassId::Ui)
     {
-        // I think Imgui sets the viewport appropriately, but just to be safe...
-        Renderer* renderer = Renderer::Get();
-        glm::uvec4 fvp = Renderer::Get()->GetFullViewport();
-        SetViewport(fvp.x, fvp.y, fvp.z, fvp.w, true, false);
-        SetScissor(fvp.x, fvp.y, fvp.z, fvp.w, true, false);
+        //// I think Imgui sets the viewport appropriately, but just to be safe...
+        //Renderer* renderer = Renderer::Get();
+        //glm::uvec4 fvp = Renderer::Get()->GetFullViewport();
+        //SetViewport(fvp.x, fvp.y, fvp.z, fvp.w, true, false);
+        //SetScissor(fvp.x, fvp.y, fvp.z, fvp.w, true, false);
 
         ImDrawData* draw_data = ImGui::GetDrawData();
         if (draw_data != nullptr)
