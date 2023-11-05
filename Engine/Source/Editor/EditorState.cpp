@@ -39,6 +39,7 @@ EditorState* GetEditorState()
 void EditorState::Init()
 {
     mEditorCamera = Node::Construct<Camera3D>();
+    mEditorCamera->SetName("Editor Camera");
     // TODO-NODE: This is a little sketchy because this will call World::RegisterNode(), but that's probably fine.
     mEditorCamera->SetWorld(GetWorld());
 

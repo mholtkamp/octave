@@ -838,7 +838,14 @@ Node3D* World::GetAudioReceiver()
 
 void World::SetActiveCamera(Camera3D* activeCamera)
 {
+#if EDITOR
+    if (activeCamera != GetEditorState()->mEditorCamera)
+    {
+        mActiveCamera = activeCamera;
+    }
+#else
     mActiveCamera = activeCamera;
+#endif
 }
 
 void World::SetAudioReceiver(Node3D* newReceiver)
