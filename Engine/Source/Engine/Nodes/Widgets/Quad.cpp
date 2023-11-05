@@ -22,12 +22,13 @@ bool Quad::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
         success = true;
     }
 
+    quad->MarkDirty();
+
     return success;
 }
 
 Quad::Quad() :
     mTexture(nullptr),
-    mTint(glm::vec4(1, 1, 1, 1)),
     mUvScale(glm::vec2(1, 1)),
     mUvOffset(glm::vec2(0, 0))
 {
@@ -51,7 +52,6 @@ void Quad::GatherProperties(std::vector<Property>& outProps)
     Widget::GatherProperties(outProps);
 
     outProps.push_back(Property(DatumType::Asset, "Texture", this, &mTexture, 1, Quad::HandlePropChange, int32_t(Texture::GetStaticType())));
-    outProps.push_back(Property(DatumType::Color, "Tint", this, &mTint, 1, Quad::HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "UV Scale", this, &mUvScale, 1, Quad::HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "UV Offset", this, &mUvOffset, 1, Quad::HandlePropChange));
 }
@@ -134,17 +134,6 @@ void Quad::SetColor(glm::vec4 topLeft,
 {
     glm::vec4 colors[4] = { topLeft, bottomLeft, topRight, bottomRight };
     SetColor(colors);
-}
-
-void Quad::SetTint(glm::vec4 tint)
-{
-    mTint = tint;
-    MarkDirty();
-}
-
-glm::vec4 Quad::GetTint() const
-{
-    return mTint;
 }
 
 void Quad::SetUvScale(glm::vec2 scale)

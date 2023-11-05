@@ -122,7 +122,6 @@ struct QuadUniformData
 {
     glm::mat4 mTransform;
     glm::vec4 mColor;
-    glm::vec4 mTint;
 };
 
 struct TextUniformData

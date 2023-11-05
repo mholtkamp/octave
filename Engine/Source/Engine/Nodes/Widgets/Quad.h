@@ -37,9 +37,6 @@ public:
                   glm::vec4 bottomLeft,
                   glm::vec4 bottomRight);
 
-    void SetTint(glm::vec4 tint);
-    glm::vec4 GetTint() const;
-
     void SetUvScale(glm::vec2 scale);
     glm::vec2 GetUvScale() const;
 
@@ -59,7 +56,6 @@ protected:
     TextureRef mTexture;
     VertexUI mVertices[4];
 
-    glm::vec4 mTint;
     glm::vec2 mUvScale;
     glm::vec2 mUvOffset;
 

@@ -12,7 +12,6 @@ layout (set = 1, binding = 0) uniform QuadUniformBuffer
 {    
     mat4 mTransform;
     vec4 mColor;
-    vec4 mTint;
 
 } quadData;
 layout (set = 1, binding = 1) uniform sampler2D quadSampler;

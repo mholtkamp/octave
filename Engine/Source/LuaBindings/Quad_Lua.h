@@ -18,8 +18,6 @@ struct Quad_Lua
     static int SetTexture(lua_State* L);
     static int GetTexture(lua_State* L);
     static int SetVertexColors(lua_State* L);
-    static int SetTint(lua_State* L);
-    static int GetTint(lua_State* L);
     static int SetUvScale(lua_State* L);
     static int GetUvScale(lua_State* L);
     static int SetUvOffset(lua_State* L);

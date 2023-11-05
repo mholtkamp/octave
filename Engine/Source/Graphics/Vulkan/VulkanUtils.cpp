@@ -2037,7 +2037,6 @@ void UpdateQuadResource(Quad* quad)
     QuadUniformData ubo = {};
     ubo.mTransform = glm::mat4(quad->GetTransform());
     ubo.mColor = quad->GetColor();
-    ubo.mTint = quad->GetTint();
     resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
 
     // Descriptor Set

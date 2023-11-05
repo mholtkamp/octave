@@ -130,7 +130,7 @@ void Button::UpdateAppearance()
 
     if (mUseQuadStateColor)
     {
-        mQuad->SetTint(stateColor);
+        mQuad->SetColor(stateColor);
     }
 
     if (mUseTextStateColor)

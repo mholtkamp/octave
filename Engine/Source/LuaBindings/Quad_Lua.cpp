@@ -45,26 +45,6 @@ int Quad_Lua::SetVertexColors(lua_State* L)
     return 0;
 }
 
-int Quad_Lua::SetTint(lua_State* L)
-{
-    Quad* quad = CHECK_QUAD(L, 1);
-    glm::vec4 value = CHECK_VECTOR(L, 2);
-
-    quad->SetTint(value);
-
-    return 0;
-}
-
-int Quad_Lua::GetTint(lua_State* L)
-{
-    Quad* quad = CHECK_QUAD(L, 1);
-
-    glm::vec4 ret = quad->GetTint();
-
-    Vector_Lua::Create(L, ret);
-    return 1;
-}
-
 int Quad_Lua::SetUvScale(lua_State* L)
 {
     Quad* quad = CHECK_QUAD(L, 1);
@@ -124,12 +104,6 @@ void Quad_Lua::Bind()
 
     lua_pushcfunction(L, SetVertexColors);
     lua_setfield(L, mtIndex, "SetVertexColors");
-
-    lua_pushcfunction(L, SetTint);
-    lua_setfield(L, mtIndex, "SetTint");
-
-    lua_pushcfunction(L, GetTint);
-    lua_setfield(L, mtIndex, "GetTint");
 
     lua_pushcfunction(L, SetUvScale);
     lua_setfield(L, mtIndex, "SetUvScale");
