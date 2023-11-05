@@ -2029,6 +2029,11 @@ static void DrawViewportPanel()
             ToggleGrid();
         if (ImGui::Selectable("Stats"))
             renderer->EnableStatsOverlay(!renderer->IsStatsOverlayEnabled());
+        if (ImGui::Selectable("Preview Lighting"))
+        {
+            GetEditorState()->mPreviewLighting = !GetEditorState()->mPreviewLighting;
+            LogDebug("Preview lighting %s", GetEditorState()->mPreviewLighting ? "enabled." : "disabled.");
+        }
 
         ImGui::EndPopup();
     }

@@ -98,6 +98,7 @@ struct EditorState
     bool mShowLeftPane = true;
     bool mShowRightPane = true;
     bool mShowInterface = true;
+    bool mPreviewLighting = true;
 
     // Methods
     void Init();

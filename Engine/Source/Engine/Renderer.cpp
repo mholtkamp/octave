@@ -805,6 +805,34 @@ void Renderer::GatherLightData(World* world)
             }
         }
     }
+
+#if EDITOR
+    // If preview lighting is enabled, and there is no directional light in the scene, add a preview dir light.
+    if (GetEditorState()->mPreviewLighting && !IsPlayingInEditor())
+    {
+        bool hasDirLight = false;
+        for (uint32_t i = 0; i < mLightData.size(); ++i)
+        {
+            if (mLightData[i].mType == LightType::Directional)
+            {
+                hasDirLight = true;
+                break;
+            }
+        }
+
+        if (!hasDirLight)
+        {
+            LightData previewLight;
+            previewLight.mColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+            previewLight.mDirection = glm::vec3(0.57735f, -0.57735, -0.57735);
+            previewLight.mDomain = LightingDomain::Dynamic;
+            previewLight.mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+            previewLight.mRadius = 0.0f;
+            previewLight.mType = LightType::Directional;
+            mLightData.push_back(previewLight);
+        }
+    }
+#endif
 }
 
 void Renderer::RenderDraws(const std::vector<DrawData>& drawData)
