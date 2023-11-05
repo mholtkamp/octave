@@ -1800,7 +1800,7 @@ static void DrawViewportPanel()
     ImGui::SameLine();
     if (ImGui::Button("Play"))
     {
-        LogError("TODO: Play in Editor!");
+        GetEditorState()->BeginPlayInEditor();
     }
 
     bool openSaveSceneAsModal = false;

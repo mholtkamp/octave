@@ -311,6 +311,7 @@ void EditorState::BeginPlayInEditor()
     Renderer::Get()->EnableProxyRendering(false);
 
     mPlayInEditor = true;
+    mHasEjectedOnce = false;
 
     // Fake-Initialize the Game
     //OctPreInitialize();
@@ -373,24 +374,19 @@ void EditorState::EjectPlayInEditor()
         !mEjected)
     {
         SetSelectedNode(nullptr);
-        mInjectedCamera = GetWorld()->GetActiveCamera();
 
-        if (mEjectedCamera == nullptr)
+        // Get the game's active camera. This should return the camera spawned in game, and not the editor camera,
+        // as long as we get it here and not once mEjected has been set.
+        Camera3D* activeCam = GetWorld()->GetActiveCamera();
+
+        if (!mHasEjectedOnce && activeCam)
         {
-            Camera3D* ejectedCamera = GetWorld()->SpawnNode<Camera3D>();
-            ejectedCamera->SetName("Ejected Camera");
-            mEjectedCamera = ejectedCamera;
-
-            // Set its transform to match the PIE camera
-            if (GetWorld()->GetActiveCamera())
-            {
-                ejectedCamera->SetTransform(GetWorld()->GetActiveCamera()->GetTransform());
-            }
+            mEditorCamera->SetTransform(activeCam->GetTransform());
         }
 
-        GetWorld()->SetActiveCamera(mEjectedCamera.Get<Camera3D>());
         ShowEditorUi(true);
         mEjected = true;
+        mHasEjectedOnce = true;
     }
 }
 
@@ -400,11 +396,6 @@ void EditorState::InjectPlayInEditor()
         mEjected)
     {
         SetSelectedNode(nullptr);
-
-        if (mInjectedCamera != nullptr)
-        {
-            GetWorld()->SetActiveCamera(mInjectedCamera.Get<Camera3D>());
-        }
 
         ShowEditorUi(false);
         mEjected = false;
@@ -661,7 +652,8 @@ void EditorState::CloseAllEditScenes()
 
 void EditorState::EnsureActiveScene()
 {
-    if (GetEditorState()->GetEditScene() == nullptr)
+    if (!IsPlayingInEditor() && 
+        GetEditorState()->GetEditScene() == nullptr)
     {
         // Save whatever is in the world and move it to the new scene.
         // For instance, the user has no open editscene, but spawns a Node3D.

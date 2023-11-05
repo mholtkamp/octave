@@ -510,6 +510,8 @@ void World::RegisterNode(Node* node)
 {
     TypeId nodeType = node->GetType();
 
+    // TODO: Now that components have become nodes, these static type checks don't hold up
+    // if the user inherits from these nodes. Won't be a problem for Lua.
     if (nodeType == Audio3D::GetStaticType())
     {
 #if _DEBUG
@@ -523,6 +525,13 @@ void World::RegisterNode(Node* node)
         OCT_ASSERT(std::find(mLights.begin(), mLights.end(), (Light3D*)node) == mLights.end());
 #endif
         mLights.push_back((Light3D*)node);
+    }
+    else if (nodeType == Camera3D::GetStaticType())
+    {
+        if (mActiveCamera == nullptr)
+        {
+            mActiveCamera = node->As<Camera3D>();
+        }
     }
 
     if (node->GetNetId() != INVALID_NET_ID)

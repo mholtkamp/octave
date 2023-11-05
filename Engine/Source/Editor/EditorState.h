@@ -70,8 +70,7 @@ struct EditorState
     bool mPlayInEditor = false;
     bool mEjected = false;
     bool mPaused = false;
-    NodeRef mInjectedCamera = nullptr;
-    NodeRef mEjectedCamera = nullptr;
+    bool mHasEjectedOnce = false;
     std::string mStartupSceneName;
     int32_t mEditSceneIndex = -1;
     int32_t mPieEditSceneIdx = -1;
