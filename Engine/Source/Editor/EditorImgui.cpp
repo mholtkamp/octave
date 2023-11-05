@@ -26,7 +26,10 @@
 
 #include <functional>
 
+// TODO: If we ever support an OpenGL backend, gotta change this.
 #include "backends/imgui_impl_vulkan.cpp"
+#include "Graphics/Vulkan/VulkanContext.h"
+#include "Graphics/Vulkan/VulkanUtils.h"
 
 #include "CustomImgui.h"
 
@@ -1647,6 +1650,9 @@ static void DrawAssetsPanel()
 
 static void DrawPropertiesPanel()
 {
+    static ImTextureID sTexId = 0;
+    static Texture* sPrevTexture = nullptr;
+
     const float dispWidth = (float)GetEngineState()->mWindowWidth;
     const float dispHeight = (float)GetEngineState()->mWindowHeight;
 
@@ -1691,6 +1697,35 @@ static void DrawPropertiesPanel()
                 if (inspectLocked)
                 {
                     ImGui::PopStyleColor();
+                }
+
+                Texture* texObj = obj->As<Texture>();
+                if (texObj != nullptr &&
+                    texObj->GetResource()->mImage != nullptr)
+                {
+                    // Dealloc prev tex descriptor
+                    if (sPrevTexture != texObj)
+                    {
+                        DeviceWaitIdle();
+
+                        if (sTexId != 0)
+                        {
+                            ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)sTexId);
+                            sTexId = 0;
+                        }
+
+                        sTexId = (VkDescriptorSet)ImGui_ImplVulkan_AddTexture(
+                            texObj->GetResource()->mImage->GetSampler(),
+                            texObj->GetResource()->mImage->GetView(),
+                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+                        sPrevTexture = texObj;
+                    }
+
+                    if (sTexId != 0)
+                    {
+                        ImGui::Image(sTexId, ImVec2(128, 128), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1,1,1,1), ImVec4(0.5f, 0.2f, 0.2f, 1.0f));
+                    }
                 }
 
                 std::vector<Property> props;
