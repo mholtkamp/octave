@@ -450,6 +450,20 @@ const std::vector<DebugDraw>& Renderer::GetDebugDraws() const
 
 void Renderer::GatherDrawData(World* world)
 {
+    bool enable3D = mEnable3dRendering;
+    bool enable2D = mEnable2dRendering;
+
+#if EDITOR
+    if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
+    {
+        enable3D = false;
+    }
+    else if (GetEditorState()->GetEditorMode() == EditorMode::Scene3D)
+    {
+        enable2D = false;
+    }
+#endif
+
     mShadowDraws.clear();
     mOpaqueDraws.clear();
     mSimpleShadowDraws.clear();
@@ -471,7 +485,7 @@ void Renderer::GatherDrawData(World* world)
                 return false;
             }
 
-            if (node->IsPrimitive3D())
+            if (enable3D && node->IsPrimitive3D())
             {
                 DrawData data = node->GetDrawData();
                 data.mNodeType = node->GetType();
@@ -520,7 +534,7 @@ void Renderer::GatherDrawData(World* world)
                     }
                 }
             }
-            else if (node->IsWidget())
+            else if (enable2D && node->IsWidget())
             {
                 DrawData data = node->GetDrawData();
                 data.mNodeType = node->GetType();
@@ -557,6 +571,9 @@ void Renderer::GatherDrawData(World* world)
         if (world != nullptr && world->GetRootNode() != nullptr)
         {
             world->GetRootNode()->Traverse(gatherDrawData);
+
+            // Need to render these widgets even if in 3D mode.
+            enable2D = true;
 
             if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->Traverse(gatherDrawData); }
             if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->Traverse(gatherDrawData); }
@@ -1105,10 +1122,6 @@ void Renderer::Render(World* world)
     {
         enable3D = false;
     }
-    else if (GetEditorState()->GetEditorMode() == EditorMode::Scene3D)
-    {
-        enable2D = false;
-    }
 #endif
 
     // Update Renderer's overlay widgets (not widgets in the world.
@@ -1310,10 +1323,7 @@ void Renderer::Render(World* world)
             //  UI
             // ******************
             GFX_BeginRenderPass(RenderPassId::Ui);
-            if (enable2D)
-            {
-                RenderDraws(mWidgetDraws);
-            }
+            RenderDraws(mWidgetDraws);
             GFX_EndRenderPass();
         }
 

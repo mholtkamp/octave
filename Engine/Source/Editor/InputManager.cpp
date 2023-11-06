@@ -145,9 +145,10 @@ void InputManager::UpdateHotkeys()
     }
     else if (!popupOpen)
     {
-        const bool isScene = (GetEditorState()->GetEditorMode() == EditorMode::Scene);
+        EditorMode editorMode = GetEditorState()->GetEditorMode();
+        const bool isScene = (editorMode == EditorMode::Scene) || (editorMode == EditorMode::Scene2D) || (editorMode == EditorMode::Scene3D);
 
-        if (ctrlDown && IsKeyJustDown(KEY_P) && isScene)
+        if (ctrlDown && IsKeyJustDown(KEY_P))
         {
             if (shiftDown)
             {
@@ -163,7 +164,7 @@ void InputManager::UpdateHotkeys()
             ClearShiftDown();
             INP_ClearKey(KEY_P);
         }
-        else if (altDown && IsKeyJustDown(KEY_P) && isScene)
+        else if (altDown && IsKeyJustDown(KEY_P))
         {
             GetEditorState()->BeginPlayInEditor();
         }
@@ -182,7 +183,7 @@ void InputManager::UpdateHotkeys()
         {
             ActionManager::Get()->SaveSelectedAsset();
         }
-        else if (ctrlDown && IsKeyJustDown(KEY_O) && isScene)
+        else if (ctrlDown && IsKeyJustDown(KEY_O))
         {
             ActionManager::Get()->OpenScene();
             ClearControlDown();
@@ -208,7 +209,7 @@ void InputManager::UpdateHotkeys()
         }
 
         if (IsKeyJustDown(KEY_ESCAPE) &&
-            !isScene)
+            editorMode != EditorMode::Scene)
         {
             // TODO: Show save prompt if edited asset has unsaved changes?
             GetEditorState()->SetEditorMode(EditorMode::Scene);
