@@ -15,30 +15,13 @@ Viewport2D::Viewport2D()
     mWrapperWidget = Node::Construct<Widget>();
     mWrapperWidget->SetName("Wrapper");
     mWrapperWidget->SetPosition(0, 0);
-
-    mSelectedRect = Node::Construct<PolyRect>();
-    mSelectedRect->SetName("Select Rect");
-    mSelectedRect->SetVisible(false);
-    mSelectedRect->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f });
-
-    mHoveredRect = Node::Construct<PolyRect>();
-    mHoveredRect->SetName("Hover Rect");
-    mHoveredRect->SetVisible(false);
-    mHoveredRect->SetColor({ 0.0f, 1.0f, 1.0f, 1.0f });
 }
 
 Viewport2D::~Viewport2D()
 {
-    Node::Destruct(mHoveredRect);
-    mHoveredRect = nullptr;
-
-    Node::Destruct(mSelectedRect);
-    mSelectedRect = nullptr;
-
     Node::Destruct(mWrapperWidget);
     mWrapperWidget = nullptr;
 }
-
 
 void Viewport2D::Update(float deltaTime)
 {
@@ -51,21 +34,6 @@ void Viewport2D::Update(float deltaTime)
     mWrapperWidget->SetDimensions((float)renderer->GetViewportWidth(), (float)renderer->GetViewportHeight());
 
     Widget* selWidget = GetEditorState()->GetSelectedWidget();
-    if (selWidget)
-    {
-        selWidget->UpdateRect();
-
-        mSelectedRect->SetVisible(true);
-        Rect overRect = selWidget->GetRect();
-
-        mSelectedRect->SetRect(overRect);
-        mSelectedRect->Tick(deltaTime);
-    }
-    else
-    {
-        mSelectedRect->SetVisible(false);
-    }
-
     Widget* hoverWidget = nullptr;
     if (mControlMode == WidgetControlMode::Default)
     {
@@ -82,16 +50,11 @@ void Viewport2D::Update(float deltaTime)
     if (hoverWidget &&
         hoverWidget != selWidget)
     {
-        hoverWidget->UpdateRect();
-        mHoveredRect->SetVisible(true);
-        Rect overRect = hoverWidget->GetRect();
-
-        mHoveredRect->SetRect(overRect);
-        mHoveredRect->Tick(deltaTime);
+        mHoveredWidget = hoverWidget;
     }
     else
     {
-        mHoveredRect->SetVisible(false);
+        mHoveredWidget = nullptr;
     }
 
     mWrapperWidget->UpdateRect();
@@ -119,14 +82,9 @@ Widget* Viewport2D::GetWrapperWidget()
     return mWrapperWidget;
 }
 
-PolyRect* Viewport2D::GetSelectedRect()
+Widget* Viewport2D::GetHoveredWidget()
 {
-    return mSelectedRect;
-}
-
-PolyRect* Viewport2D::GetHoveredRect()
-{
-    return mHoveredRect;
+    return mHoveredWidget.Get<Widget>();
 }
 
 void Viewport2D::HandleInput()

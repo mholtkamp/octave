@@ -46,8 +46,7 @@ public:
     void SetWidgetControlMode(WidgetControlMode newMode);
 
     Widget* GetWrapperWidget();
-    PolyRect* GetSelectedRect();
-    PolyRect* GetHoveredRect();
+    Widget* GetHoveredWidget();
 
 protected:
 
@@ -69,8 +68,7 @@ protected:
     WidgetAxisLock mAxisLock = WidgetAxisLock::None;
 
     Widget* mWrapperWidget = nullptr;
-    PolyRect* mSelectedRect = nullptr;
-    PolyRect* mHoveredRect = nullptr;
+    NodeRef mHoveredWidget;
 
     int32_t mPrevMouseX = 0;
     int32_t mPrevMouseY = 0;

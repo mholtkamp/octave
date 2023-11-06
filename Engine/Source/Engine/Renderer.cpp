@@ -578,14 +578,6 @@ void Renderer::GatherDrawData(World* world)
             if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->Traverse(gatherDrawData); }
             if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->Traverse(gatherDrawData); }
             if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->Traverse(gatherDrawData); }
-
-#if EDITOR
-            if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
-            {
-                GetEditorState()->GetViewport2D()->GetHoveredRect()->Traverse(gatherDrawData);
-                GetEditorState()->GetViewport2D()->GetSelectedRect()->Traverse(gatherDrawData);
-            }
-#endif
         }
 
         Camera3D* camera = world->GetActiveCamera();
