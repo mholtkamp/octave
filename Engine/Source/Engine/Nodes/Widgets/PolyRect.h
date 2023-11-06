@@ -11,8 +11,7 @@ public:
     PolyRect();
     virtual ~PolyRect();
 
-    virtual void Tick(float deltaTime) override;
-    virtual void EditorTick(float deltaTime) override;
+    virtual void UpdateGeometry(float deltaTime) override;
 
 protected:
 

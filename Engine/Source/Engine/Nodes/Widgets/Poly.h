@@ -26,6 +26,8 @@ public:
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
+    virtual void UpdateGeometry(float deltaTime);
+
     void MarkVerticesDirty();
 
     VertexUI* GetVertices();

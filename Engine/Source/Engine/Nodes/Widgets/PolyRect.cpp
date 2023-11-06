@@ -13,19 +13,7 @@ PolyRect::~PolyRect()
 
 }
 
-void PolyRect::Tick(float deltaTime)
-{
-    Poly::Tick(deltaTime);
-    TickCommon(deltaTime);
-}
-
-void PolyRect::EditorTick(float deltaTime)
-{
-    Poly::EditorTick(deltaTime);
-    TickCommon(deltaTime);
-}
-
-void PolyRect::TickCommon(float deltaTime)
+void PolyRect::UpdateGeometry(float deltaTime)
 {
     if (IsDirty())
     {

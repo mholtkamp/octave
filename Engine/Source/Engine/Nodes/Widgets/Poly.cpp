@@ -39,6 +39,8 @@ void Poly::EditorTick(float deltaTime)
 
 void Poly::TickCommon(float deltaTime)
 {
+    UpdateGeometry(deltaTime);
+
     uint32_t frameIndex = Renderer::Get()->GetFrameIndex();
     if (mUploadVertices[frameIndex])
     {
@@ -73,6 +75,10 @@ void Poly::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Line Width", this, &mLineWidth));
 }
 
+void Poly::UpdateGeometry(float deltaTime)
+{
+
+}
 
 void Poly::MarkVerticesDirty()
 {

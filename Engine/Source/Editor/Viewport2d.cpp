@@ -57,8 +57,6 @@ void Viewport2D::Update(float deltaTime)
         mSelectedRect->SetVisible(true);
         Rect overRect = selWidget->GetRect();
 
-        //overRect.mX -= renderer->GetViewportX();
-
         mSelectedRect->SetRect(overRect);
         mSelectedRect->Tick(deltaTime);
     }
@@ -86,8 +84,6 @@ void Viewport2D::Update(float deltaTime)
         hoverWidget->UpdateRect();
         mHoveredRect->SetVisible(true);
         Rect overRect = hoverWidget->GetRect();
-
-        //overRect.mX -= GetX();
 
         mHoveredRect->SetRect(overRect);
         mHoveredRect->Tick(deltaTime);
