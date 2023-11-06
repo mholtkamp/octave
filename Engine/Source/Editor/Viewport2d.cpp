@@ -25,7 +25,6 @@ Viewport2D::Viewport2D()
     mHoveredRect->SetName("Hover Rect");
     mHoveredRect->SetVisible(false);
     mHoveredRect->SetColor({ 0.0f, 1.0f, 1.0f, 1.0f });
-
 }
 
 Viewport2D::~Viewport2D()
@@ -316,6 +315,16 @@ void Viewport2D::HandleTransformControls()
     if (widget == nullptr)
         return;
 
+    const std::vector<Node*>& selectedNodes = GetEditorState()->GetSelectedNodes();
+    std::vector<Widget*> widgets;
+    for (uint32_t i = 0; i < selectedNodes.size(); ++i)
+    {
+        if (selectedNodes[i]->IsWidget())
+        {
+            widgets.push_back((Widget*)selectedNodes[i]);
+        }
+    }
+
     HandleAxisLocking();
     glm::vec2 delta = HandleLockedCursor();
 
@@ -344,9 +353,12 @@ void Viewport2D::HandleTransformControls()
             else if (mAxisLock == WidgetAxisLock::AxisY)
                 delta.x = 0.0f;
 
-            glm::vec2 offset = widget->GetOffset();
-            offset += speed * stretchScale * delta;
-            widget->SetOffset(offset.x, offset.y);
+            for (uint32_t i = 0; i < widgets.size(); ++i)
+            {
+                glm::vec2 offset = widgets[i]->GetOffset();
+                offset += speed * stretchScale * delta;
+                widgets[i]->SetOffset(offset.x, offset.y);
+            }
         }
         else if (mControlMode == WidgetControlMode::Rotate)
         {
@@ -354,9 +366,12 @@ void Viewport2D::HandleTransformControls()
             float speed = shiftDown ? (shiftSpeedMult * rotateSpeed) : rotateSpeed;
             float totalDelta = -(delta.x - delta.y);
 
-            float rotation = widget->GetRotation();
-            rotation += speed * totalDelta;
-            widget->SetRotation(rotation);
+            for (uint32_t i = 0; i < widgets.size(); ++i)
+            {
+                float rotation = widgets[i]->GetRotation();
+                rotation += speed * totalDelta;
+                widgets[i]->SetRotation(rotation);
+            }
         }
         else if (mControlMode == WidgetControlMode::Scale)
         {
@@ -368,31 +383,51 @@ void Viewport2D::HandleTransformControls()
             else if (mAxisLock == WidgetAxisLock::AxisY)
                 delta.x = 0.0f;
 
-            glm::vec2 size = widget->GetSize();
-            size += speed * stretchScale * delta;
-            widget->SetSize(size.x, size.y);
+            for (uint32_t i = 0; i < widgets.size(); ++i)
+            {
+                glm::vec2 size = widgets[i]->GetSize();
+                size += speed * stretchScale * delta;
+                widgets[i]->SetSize(size.x, size.y);
+            }
         }
     }
 
     if (IsMouseButtonDown(MOUSE_LEFT))
     {
+        std::vector<VpWidgetTransform> newTransforms;
+        for (uint32_t i = 0; i < widgets.size(); ++i)
+        {
+            newTransforms.push_back(VpWidgetTransform());
+            newTransforms.back().mOffset = widgets[i]->GetOffset();
+            newTransforms.back().mSize = widgets[i]->GetSize();
+            newTransforms.back().mRotation = widgets[i]->GetRotation();
+        }
+
+        RestorePreTransforms();
+
         if (mControlMode == WidgetControlMode::Translate)
         {
-            glm::vec2 offset = widget->GetOffset();
-            RestorePreTransforms();
-            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Node, "Offset", 0, offset);
+            for (uint32_t i = 0; i < widgets.size(); ++i)
+            {
+                glm::vec2 offset = newTransforms[i].mOffset;
+                ActionManager::Get()->EXE_EditProperty(widgets[i], PropertyOwnerType::Node, "Offset", 0, offset);
+            }
         }
         else if (mControlMode == WidgetControlMode::Rotate)
         {
-            float rotation = widget->GetRotation();
-            RestorePreTransforms();
-            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Node, "Rotation", 0, rotation);
+            for (uint32_t i = 0; i < widgets.size(); ++i)
+            {
+                float rotation = newTransforms[i].mRotation;
+                ActionManager::Get()->EXE_EditProperty(widgets[i], PropertyOwnerType::Node, "Rotation", 0, rotation);
+            }
         }
         else if (mControlMode == WidgetControlMode::Scale)
         {
-            glm::vec2 size = widget->GetSize();
-            RestorePreTransforms();
-            ActionManager::Get()->EXE_EditProperty(widget, PropertyOwnerType::Node, "Size", 0, size);
+            for (uint32_t i = 0; i < widgets.size(); ++i)
+            {
+                glm::vec2 size = newTransforms[i].mSize;
+                ActionManager::Get()->EXE_EditProperty(widgets[i], PropertyOwnerType::Node, "Size", 0, size);
+            }
         }
 
         SetWidgetControlMode(WidgetControlMode::Default);
@@ -459,25 +494,45 @@ void Viewport2D::HandleAxisLocking()
 
 void Viewport2D::SavePreTransforms()
 {
-    Widget* widget = GetEditorState()->GetSelectedWidget();
+    const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
+    mSavedTransforms.clear();
 
-    if (widget)
+    for (uint32_t i = 0; i < selNodes.size(); ++i)
     {
-        mSavedOffset = widget->GetOffset();
-        mSavedSize = widget->GetSize();
-        mSavedRotation = widget->GetRotation();
+        Widget* widget = (selNodes[i] && selNodes[i]->IsWidget()) ? static_cast<Widget*>(selNodes[i]) : nullptr;
+
+        if (widget)
+        {
+            mSavedTransforms.push_back(VpWidgetTransform());
+
+            mSavedTransforms.back().mOffset = widget->GetOffset();
+            mSavedTransforms.back().mSize = widget->GetSize();
+            mSavedTransforms.back().mRotation = widget->GetRotation();
+        }
     }
 }
 
 void Viewport2D::RestorePreTransforms()
 {
-    Widget* widget = GetEditorState()->GetSelectedWidget();
-
-    if (widget)
+    const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
+    for (uint32_t i = 0; i < selNodes.size(); ++i)
     {
-        widget->SetOffset(mSavedOffset.x, mSavedOffset.y);
-        widget->SetSize(mSavedSize.x, mSavedSize.y);
-        widget->SetRotation(mSavedRotation);
+        if (i >= mSavedTransforms.size())
+        {
+            LogError("Component/Transform array mismatch?");
+            break;
+        }
+
+        Widget* widget = (selNodes[i] && selNodes[i]->IsWidget()) ? static_cast<Widget*>(selNodes[i]) : nullptr;
+
+        if (widget)
+        {
+            VpWidgetTransform& trans = mSavedTransforms[i];
+
+            widget->SetOffset(trans.mOffset.x, trans.mOffset.y);
+            widget->SetSize(trans.mSize.x, trans.mSize.y);
+            widget->SetRotation(trans.mRotation);
+        }
     }
 }
 

@@ -2202,6 +2202,43 @@ static void DrawViewportPanel()
 
 }
 
+static void Draw2dSelections()
+{
+    const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
+
+    ImDrawList* draw_list = ImGui::GetForegroundDrawList();
+    ImColor mutliSelColor(0.5f, 1.0f, 0.0f, 1.0f);
+    float thickness = 3.0f;
+    glm::vec4 vp = Renderer::Get()->GetViewport();
+    Rect boundsRect;
+    boundsRect.mX = 0.0f;
+    boundsRect.mY = 0.0f;
+    boundsRect.mWidth = vp.z;
+    boundsRect.mHeight = vp.w;
+
+    for (int32_t i = 0; i < int32_t(selNodes.size()) - 1; ++i)
+    {
+        Widget* widget = selNodes[i]->As<Widget>();
+
+        if (widget)
+        {
+            Rect rect = widget->GetRect();
+
+            if (rect.OverlapsRect(boundsRect))
+            {
+                rect.Clamp(boundsRect);
+
+                float x = rect.mX + vp.x;
+                float y = rect.mY + vp.y;
+                float w = rect.mWidth;
+                float h = rect.mHeight;
+                draw_list->AddRect(ImVec2(x, y), ImVec2(x + w, y + h), mutliSelColor, 0.0f, ImDrawFlags_None, thickness);
+            }
+        }
+    }
+}
+
+
 void EditorImguiInit()
 {
     IMGUI_CHECKVERSION();
@@ -2244,6 +2281,11 @@ void EditorImguiDraw()
         }
 
         DrawViewportPanel();
+
+        if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
+        {
+            Draw2dSelections();
+        }
     }
 
     ImGui::Render();
