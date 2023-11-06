@@ -1846,6 +1846,13 @@ static void DrawViewportPanel()
         }
     }
 
+    ImGui::SameLine();
+    int curMode = (int)GetEditorState()->mMode;
+    const char* modeStrings[] = { "Scene", "3D", "2D" };
+    ImGui::SetNextItemWidth(70);
+    ImGui::Combo("##EditorMode", &curMode, modeStrings, 3);
+    GetEditorState()->SetEditorMode((EditorMode)curMode);
+
     bool openSaveSceneAsModal = false;
 
     if (ImGui::BeginPopup("FilePopup"))
