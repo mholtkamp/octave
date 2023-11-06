@@ -45,6 +45,8 @@ void Viewport2D::Update(float deltaTime)
 {
     Renderer* renderer = Renderer::Get();
 
+    HandleInput();
+
     mWrapperWidget->SetPosition(mRootOffset);
     mWrapperWidget->SetScale({ mZoom, mZoom });
     mWrapperWidget->SetDimensions((float)renderer->GetViewportWidth(), (float)renderer->GetViewportHeight());
@@ -92,8 +94,6 @@ void Viewport2D::Update(float deltaTime)
     {
         mHoveredRect->SetVisible(false);
     }
-
-    HandleInput();
 
     mWrapperWidget->UpdateRect();
     Renderer::Get()->DirtyAllWidgets();
