@@ -610,9 +610,12 @@ void Widget::UpdateRect()
 #if EDITOR
     if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
     {
-        if (parent == nullptr)
+        Widget* wrapper = GetEditorState()->GetViewport2D()->GetWrapperWidget();
+        if (parent == nullptr &&
+            this != wrapper &&
+            GetWorld() != nullptr)
         {
-            parent = GetEditorState()->GetViewport2D()->GetWrapperWidget();
+            parent = wrapper;
         }
     }
 #endif

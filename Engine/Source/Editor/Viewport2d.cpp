@@ -98,6 +98,9 @@ void Viewport2D::Update(float deltaTime)
     }
 
     HandleInput();
+
+    mWrapperWidget->UpdateRect();
+    Renderer::Get()->DirtyAllWidgets();
 }
 
 bool Viewport2D::ShouldHandleInput() const
