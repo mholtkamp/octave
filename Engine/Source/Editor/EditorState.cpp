@@ -331,6 +331,8 @@ void EditorState::BeginPlayInEditor()
     ShowEditorUi(false);
     Renderer::Get()->EnableProxyRendering(false);
 
+    SetEditorMode(EditorMode::Scene);
+
     mPlayInEditor = true;
     mHasEjectedOnce = false;
 
