@@ -527,8 +527,8 @@ void Viewport3D::HandleDefaultControls()
             }
         }
 
-        if (IsKeyJustDown(KEY_F) ||
-            IsKeyJustDown(KEY_DECIMAL))
+        if (IsKeyDown(KEY_F) ||
+            IsKeyDown(KEY_DECIMAL))
         {
             // Focus on selected object
             Node* node = GetEditorState()->GetSelectedNode();
@@ -536,15 +536,34 @@ void Viewport3D::HandleDefaultControls()
 
             if (node3d != nullptr && node3d != camera)
             {
+                Primitive3D* prim = node3d->As<Primitive3D>();
+
+                float boundsRadius = 0.0f;
+                if (prim != nullptr)
+                {
+                    Bounds bounds = prim->GetBounds();
+
+                    // Some primitives (like Box,Sphere,Capsule) just have default bounds.
+                    // Same for particles that don't have their bounds set.
+                    // So just treat the bounds radius as 0.0 instead of blasting the camera to 10000 units away.
+                    if (bounds.mRadius < (LARGE_BOUNDS - 1.0f))
+                    {
+                        boundsRadius = bounds.mRadius;
+                    }
+                }
+
+                float focusDist = glm::max(boundsRadius + 1.0f, sDefaultFocalDistance);
+
                 glm::vec3 cameraPos = camera->GetAbsolutePosition();
                 glm::vec3 compPos = node3d->GetAbsolutePosition();
-                glm::vec3 toCamera = glm::normalize(cameraPos - compPos);
-                camera->SetAbsolutePosition(compPos + toCamera * sDefaultFocalDistance);
+                glm::vec3 toCamera = Maths::SafeNormalize(cameraPos - compPos);
+                glm::vec3 newCamPos = compPos + toCamera * focusDist;
+                camera->SetAbsolutePosition(newCamPos);
 
                 glm::quat cameraRot = glm::conjugate(glm::toQuat(glm::lookAt(toCamera, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f))));
                 camera->SetAbsoluteRotation(cameraRot);
 
-                mFocalDistance = sDefaultFocalDistance;
+                mFocalDistance = focusDist;
             }
         }
 
