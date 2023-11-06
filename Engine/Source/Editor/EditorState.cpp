@@ -568,6 +568,33 @@ void EditorState::OpenEditScene(int32_t idx)
         GetWorld()->SetRootNode(editScene.mRootNode); // could be nullptr.
         GetEditorCamera()->SetTransform(editScene.mCameraTransform);
 
+        // Reinstantiate scene-linked nodes
+        auto respawnSceneLinks = [&](Node* node) -> bool
+        {
+            if (node->IsSceneLinked())
+            {
+                // Replace this scene-linked node with a newly instantiated version
+                // to make sure we grab new changes that have been made to the scene.
+                Node* newNode = node->Clone(true);
+                Node* parent = node->GetParent();
+                int32_t nodeIdx = parent->FindChildIndex(node);
+
+                parent->RemoveChild(node);
+                parent->AddChild(newNode, nodeIdx);
+
+                Node::Destruct(node);
+                node = nullptr;
+            }
+
+            return true;
+        };
+
+        if (editScene.mRootNode != nullptr)
+        {
+            editScene.mRootNode->Traverse(respawnSceneLinks);
+        }
+
+
         ActionManager::Get()->ResetUndoRedo();
     }
 }
