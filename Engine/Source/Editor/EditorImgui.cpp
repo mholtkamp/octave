@@ -857,6 +857,10 @@ static void DrawScenePanel()
 
             sNodeContextActive = true;
 
+            if (node->IsSceneLinked() && ImGui::Selectable("Open Scene"))
+            {
+                GetEditorState()->OpenEditScene(node->GetScene());
+            }
             if (node->GetParent() != nullptr &&
                 ImGui::BeginMenu("Move"))
             {
