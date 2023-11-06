@@ -265,7 +265,7 @@ void Viewport2D::HandleDefaultControls()
             if (selectedNodes.size() > 0)
             {
                 ActionManager::Get()->DuplicateNodes(selectedNodes);
-                GetEditorState()->SetControlMode(ControlMode::Translate);
+                SetWidgetControlMode(WidgetControlMode::Translate);
                 SavePreTransforms();
             }
         }
