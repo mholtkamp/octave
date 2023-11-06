@@ -218,13 +218,38 @@ void Viewport2D::HandleDefaultControls()
             uint32_t maxDepth = 0;
             hoveredWidget = FindHoveredWidget(GetWorld()->GetRootNode(), maxDepth, mouseX, mouseY);
 
-            if (GetEditorState()->GetSelectedWidget() != hoveredWidget)
+            if (shiftDown || controlDown)
             {
-                GetEditorState()->SetSelectedNode(hoveredWidget);
+                if (hoveredWidget != nullptr)
+                {
+                    if (GetEditorState()->IsNodeSelected(hoveredWidget))
+                    {
+                        GetEditorState()->RemoveSelectedNode(hoveredWidget);
+                    }
+                    else
+                    {
+                        GetEditorState()->AddSelectedNode(hoveredWidget, false);
+                    }
+                }
             }
             else
             {
-                GetEditorState()->SetSelectedNode(nullptr);
+                if (altDown)
+                {
+                    GetEditorState()->SetSelectedNode(hoveredWidget);
+                    GetEditorState()->mTrackSelectedNode = true;
+                }
+                else
+                {
+                    if (GetEditorState()->GetSelectedWidget() != hoveredWidget)
+                    {
+                        GetEditorState()->SetSelectedNode(hoveredWidget);
+                    }
+                    else
+                    {
+                        GetEditorState()->SetSelectedNode(nullptr);
+                    }
+                }
             }
         }
 
