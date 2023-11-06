@@ -2043,6 +2043,14 @@ static void DrawViewportPanel()
             LogDebug("Preview lighting %s", GetEditorState()->mPreviewLighting ? "enabled." : "disabled.");
         }
 
+        if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
+        {
+            if (ImGui::Selectable("Reset 2D Viewport"))
+            {
+                GetEditorState()->GetViewport2D()->ResetViewport();
+            }
+        }
+
         ImGui::EndPopup();
     }
 

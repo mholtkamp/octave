@@ -48,6 +48,8 @@ public:
     Widget* GetWrapperWidget();
     Widget* GetHoveredWidget();
 
+    void ResetViewport();
+
 protected:
 
     void HandleDefaultControls();

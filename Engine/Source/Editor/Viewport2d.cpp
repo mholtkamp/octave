@@ -87,6 +87,12 @@ Widget* Viewport2D::GetHoveredWidget()
     return mHoveredWidget.Get<Widget>();
 }
 
+void Viewport2D::ResetViewport()
+{
+    mZoom = 1.0f;
+    mRootOffset = { 0.0f, 0.0f };
+}
+
 void Viewport2D::HandleInput()
 {
     if (ShouldHandleInput())
@@ -235,8 +241,7 @@ void Viewport2D::HandleDefaultControls()
         if (IsKeyJustDown(KEY_F) ||
             IsKeyJustDown(KEY_DECIMAL))
         {
-            mZoom = 1.0f;
-            mRootOffset = { 0.0f, 0.0f };
+            ResetViewport();
         }
 
         if (controlDown && IsKeyJustDown(KEY_D))
