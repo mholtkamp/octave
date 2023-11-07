@@ -43,6 +43,7 @@
 struct FileBrowserDirEntry
 {
     std::string mName;
+    std::string mDirPath;
     bool mFolder = false;
 };
 
@@ -72,6 +73,7 @@ static std::string sFileBrowserPath;
 static std::string sFileBrowserCurDir;
 static std::vector<FileBrowserDirEntry> sFileBrowserEntries;
 static float sFileBrowserDoubleClickBlock = 0.0f;
+static bool sFileBrowserNeedsRefresh = false;
 
 static void PopulateFileBrowserDirs()
 {
@@ -87,6 +89,7 @@ static void PopulateFileBrowserDirs()
     {
         FileBrowserDirEntry entry;
         entry.mName = dirEntry.mFilename;
+        entry.mDirPath = sFileBrowserCurDir;
         entry.mFolder = dirEntry.mDirectory;
         sFileBrowserEntries.push_back(entry);
 
@@ -139,8 +142,109 @@ void EditorOpenFileBrowser(FileBrowserCallbackFP callback, bool folderMode)
     }
 }
 
+static void DrawFileBrowserContextPopup(FileBrowserDirEntry* entry)
+{
+    // New Folder
+    // Rename 
+    // Delete
+
+    bool closeContextPopup = false;
+    bool setTextInputFocus = false;
+    bool isParentDir = (entry && entry->mName == "..");
+
+    if (entry && !isParentDir && ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
+    {
+        ImGui::OpenPopup("Rename File");
+        strncpy(sPopupInputBuffer, entry->mName.c_str(), kPopupInputBufferSize);
+        setTextInputFocus = true;
+    }
+    if (ImGui::Selectable("New Folder", false, ImGuiSelectableFlags_DontClosePopups))
+    {
+        ImGui::OpenPopup("New Folder");
+        strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+        setTextInputFocus = true;
+    }
+    if (entry && !isParentDir && ImGui::Selectable("Delete"))
+    {
+        if (entry->mFolder)
+        {
+            std::string dirPath = sFileBrowserCurDir + entry->mName;
+            SYS_RemoveDirectory(dirPath.c_str());
+            LogDebug("Deleted directory: %s", dirPath.c_str());
+        }
+        else
+        {
+            std::string filePath = sFileBrowserCurDir + entry->mName;
+            SYS_RemoveFile(filePath.c_str());
+            LogDebug("Deleted file: %s", filePath.c_str());
+        }
+
+        sFileBrowserNeedsRefresh = true;
+    }
+
+    if (ImGui::BeginPopup("Rename File"))
+    {
+        if (setTextInputFocus)
+            ImGui::SetKeyboardFocusHere();
+
+        if (ImGui::InputText("Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            // Rename!
+            std::string newName = sPopupInputBuffer;
+            std::string oldFilePath = entry->mDirPath + entry->mName;
+            std::string newFilePath = entry->mDirPath + newName;
+            SYS_Rename(oldFilePath.c_str(), newFilePath.c_str());
+            sFileBrowserNeedsRefresh = true;
+
+            ImGui::CloseCurrentPopup();
+            closeContextPopup = true;
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("New Folder"))
+    {
+        if (setTextInputFocus)
+            ImGui::SetKeyboardFocusHere();
+
+        if (ImGui::InputText("Folder Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            const std::string folderName = sPopupInputBuffer;
+
+            if (folderName != "")
+            {
+                if (!SYS_CreateDirectory((sFileBrowserCurDir + folderName).c_str()))
+                {
+                    LogError("Failed to create folder");
+                }
+            }
+
+            sFileBrowserNeedsRefresh = true;
+
+            ImGui::CloseCurrentPopup();
+            closeContextPopup = true;
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (closeContextPopup)
+    {
+        ImGui::CloseCurrentPopup();
+    }
+}
+
 static void DrawFileBrowser()
 {
+    bool contextPopupOpen = false;
+
+    if (sFileBrowserNeedsRefresh)
+    {
+        PopulateFileBrowserDirs();
+        sFileBrowserNeedsRefresh = false;
+    }
+
     sFileBrowserDoubleClickBlock -= GetEngineState()->mRealDeltaTime;
     sFileBrowserDoubleClickBlock = glm::max(sFileBrowserDoubleClickBlock, 0.0f);
 
@@ -189,6 +293,13 @@ static void DrawFileBrowser()
                             sFileBrowserPath = sFileBrowserCurDir;
                         }
                     }
+
+                    if (ImGui::BeginPopupContextItem())
+                    {
+                        contextPopupOpen = true;
+                        DrawFileBrowserContextPopup(&sFileBrowserEntries[i]);
+                        ImGui::EndPopup();
+                    }
                 }
             }
 
@@ -211,10 +322,35 @@ static void DrawFileBrowser()
                             sFileBrowserPath = sFileBrowserCurDir + sFileBrowserEntries[i].mName;
                         }
                     }
+
+                    if (ImGui::BeginPopupContextItem())
+                    {
+                        contextPopupOpen = true;
+                        DrawFileBrowserContextPopup(&sFileBrowserEntries[i]);
+                        ImGui::EndPopup();
+                    }
                 }
             }
 
             ImGui::EndChild();
+
+            // If no popup is open and we aren't inputting text...
+            if (!contextPopupOpen &&
+                ImGui::IsItemHovered() &&
+                !ImGui::GetIO().WantTextInput)
+            {
+                if (ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+                {
+                    ImGui::OpenPopup("Null Context");
+                }
+            }
+
+            if (ImGui::BeginPopup("Null Context"))
+            {
+                contextPopupOpen = true;
+                DrawFileBrowserContextPopup(nullptr);
+                ImGui::EndPopup();
+            }
 
             if (changedDir)
             {
@@ -267,7 +403,7 @@ static void DrawFileBrowser()
             ImGui::CloseCurrentPopup();
         }
 
-        if (IsKeyJustDown(KEY_ENTER))
+        if (!contextPopupOpen && IsKeyJustDown(KEY_ENTER))
         {
             confirmOpen = true;
         }
