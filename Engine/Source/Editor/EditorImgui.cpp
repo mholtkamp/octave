@@ -2147,6 +2147,8 @@ static void DrawViewportPanel()
             openSaveSceneAsModal = true;
             strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
         }
+        if (ImGui::Selectable("Import Asset"))
+            am->ImportAsset();
         if (ImGui::Selectable("Recapture All Scenes"))
             am->RecaptureAndSaveAllScenes();
         if (ImGui::Selectable("Resave All Assets"))
