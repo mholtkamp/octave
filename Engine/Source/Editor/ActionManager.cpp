@@ -1044,6 +1044,12 @@ void ActionManager::CreateNewProject(const char* folderPath)
         std::string newProjDir = folderPath; // SYS_SelectFolderDialog();
         std::replace(newProjDir.begin(), newProjDir.end(), '\\', '/');
 
+        // Remove trailing slash
+        if (newProjDir.size() > 0 && newProjDir.back() == '/')
+        {
+            newProjDir.pop_back();
+        }
+
         std::string newProjName = newProjDir;
         size_t slashLoc = newProjName.find_last_of('/');
         if (slashLoc != std::string::npos)
