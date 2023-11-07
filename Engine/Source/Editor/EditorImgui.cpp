@@ -114,6 +114,8 @@ void EditorOpenFileBrowser(FileBrowserCallbackFP callback, bool folderMode)
             }
         }
 
+        sFileBrowserCurDir = SYS_GetAbsolutePath(sFileBrowserCurDir);
+
         PopulateFileBrowserDirs();
 
         if (sFileBrowserEntries.size() == 0)
