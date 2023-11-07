@@ -146,17 +146,18 @@ static void DrawFileBrowser()
     {
         ImGuiIO& io = ImGui::GetIO();
         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(465, 450));
     }
 
     if (ImGui::BeginPopupModal("File Browser", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
         // Text that shows current directory.
-        ImGui::Text("C:/Folder/Directory");
+        ImGui::Text(sFileBrowserCurDir.c_str());
 
         // List of selectables that let you navigate/open/delete.
         {
             ImGuiWindowFlags childFlags = ImGuiWindowFlags_None;
-            ImGui::BeginChild("File List", ImVec2(250, 250), true, childFlags);
+            ImGui::BeginChild("File List", ImVec2(450, 350), true, childFlags);
 
             bool changedDir = false;
 
@@ -204,7 +205,7 @@ static void DrawFileBrowser()
             }
         }
 
-
+        ImGui::SetNextItemWidth(400);
         ImGui::InputText(sFileBrowserFolderMode ? "Folder" : "File", &sFileBrowserPath);
         if (ImGui::Button("Open"))
         {
@@ -216,6 +217,7 @@ static void DrawFileBrowser()
             sFileBrowserOpen = false;
             ImGui::CloseCurrentPopup();
         }
+        ImGui::SameLine();
         if (ImGui::Button("Cancel"))
         {
             sFileBrowserOpen = false;
