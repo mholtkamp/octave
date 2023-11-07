@@ -40,6 +40,12 @@
 #error Get the linux backend working!
 #endif
 
+struct FileBrowserDirEntry
+{
+    std::string mName;
+    bool mFolder = false;
+};
+
 static const float kSidePaneWidth = 200.0f;
 static const float kViewportBarHeight = 32.0f;
 static const ImGuiWindowFlags kPaneWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove;
@@ -58,6 +64,167 @@ static std::vector<std::string> sNodeOtherNames;
 
 static ImTextureID sInspectTexId = 0;
 static Texture* sPrevInspectTexture = nullptr;
+
+static bool sFileBrowserOpen = false;
+static bool sFileBrowserFolderMode = false;
+static FileBrowserCallbackFP sFileBrowserCallback = nullptr;
+static std::string sFileBrowserPath;
+static std::string sFileBrowserCurDir;
+static std::vector<FileBrowserDirEntry> sFileBrowserEntries;
+
+static void PopulateFileBrowserDirs()
+{
+    sFileBrowserEntries.clear();
+
+    DirEntry dirEntry = { };
+
+    SYS_OpenDirectory(sFileBrowserCurDir, dirEntry);
+
+    while (dirEntry.mValid)
+    {
+        FileBrowserDirEntry entry;
+        entry.mName = dirEntry.mFilename;
+        entry.mFolder = dirEntry.mDirectory;
+        sFileBrowserEntries.push_back(entry);
+
+        SYS_IterateDirectory(dirEntry);
+    }
+
+    SYS_CloseDirectory(dirEntry);
+}
+
+void EditorOpenFileBrowser(FileBrowserCallbackFP callback, bool folderMode)
+{
+    if (!sFileBrowserOpen)
+    {
+        sFileBrowserOpen = true;
+        sFileBrowserFolderMode = folderMode;
+        sFileBrowserCallback = callback;
+        sFileBrowserPath = "";
+
+        if (sFileBrowserCurDir == "")
+        {
+            if (GetEngineState()->mProjectDirectory != "")
+            {
+                sFileBrowserCurDir = GetEngineState()->mProjectDirectory;
+            }
+            else
+            {
+                sFileBrowserCurDir = "./";
+            }
+        }
+
+        PopulateFileBrowserDirs();
+
+        if (sFileBrowserEntries.size() == 0)
+        {
+            LogWarning("No directory entries found. Reseting to working dir.");
+            sFileBrowserCurDir = "./";
+            PopulateFileBrowserDirs();
+
+            if (sFileBrowserEntries.size() == 0)
+            {
+                LogError("Still couldn't find directory entries...");
+            }
+        }
+    }
+    else
+    {
+        LogWarning("Failed to open file browser. It is already open.");
+    }
+}
+
+static void DrawFileBrowser()
+{
+    if (sFileBrowserOpen)
+    {
+        ImGui::OpenPopup("File Browser");
+    }
+
+    // Center the modal
+    if (ImGui::IsPopupOpen("File Browser"))
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    }
+
+    if (ImGui::BeginPopupModal("File Browser", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        // Text that shows current directory.
+        ImGui::Text("C:/Folder/Directory");
+
+        // List of selectables that let you navigate/open/delete.
+        {
+            ImGuiWindowFlags childFlags = ImGuiWindowFlags_None;
+            ImGui::BeginChild("File List", ImVec2(250, 250), true, childFlags);
+
+            bool changedDir = false;
+
+            // Show folders
+            for (uint32_t i = 0; i < sFileBrowserEntries.size(); ++i)
+            {
+                if (sFileBrowserEntries[i].mFolder &&
+                    sFileBrowserEntries[i].mName != ".")
+                {
+                    if (ImGui::Selectable(sFileBrowserEntries[i].mName.c_str(), true))
+                    {
+                        // If a folder is selected, then we need to switch to that directory,
+                        // and also set the sFileBrowserPath if in folder mode.
+                        sFileBrowserCurDir = SYS_GetAbsolutePath(sFileBrowserCurDir + sFileBrowserEntries[i].mName + "/");
+                        changedDir = true;
+
+                        if (sFileBrowserFolderMode)
+                        {
+                            sFileBrowserPath = sFileBrowserCurDir;
+                        }
+                    }
+                }
+            }
+
+            // Show files
+            for (uint32_t i = 0; i < sFileBrowserEntries.size(); ++i)
+            {
+                if (!sFileBrowserEntries[i].mFolder)
+                {
+                    if (ImGui::Selectable(sFileBrowserEntries[i].mName.c_str()))
+                    {
+                        if (!sFileBrowserFolderMode)
+                        {
+                            sFileBrowserPath = sFileBrowserCurDir + "/" + sFileBrowserEntries[i].mName;
+                        }
+                    }
+                }
+            }
+
+            ImGui::EndChild();
+
+            if (changedDir)
+            {
+                PopulateFileBrowserDirs();
+            }
+        }
+
+
+        ImGui::InputText(sFileBrowserFolderMode ? "Folder" : "File", &sFileBrowserPath);
+        if (ImGui::Button("Open"))
+        {
+            if (sFileBrowserCallback != nullptr)
+            {
+                sFileBrowserCallback(sFileBrowserPath);
+            }
+
+            sFileBrowserOpen = false;
+            ImGui::CloseCurrentPopup();
+        }
+        if (ImGui::Button("Cancel"))
+        {
+            sFileBrowserOpen = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
 
 static void DiscoverNodeClasses()
 {
@@ -2364,6 +2531,8 @@ void EditorImguiDraw()
         {
             Draw2dSelections();
         }
+
+        DrawFileBrowser();
     }
 
     ImGui::Render();

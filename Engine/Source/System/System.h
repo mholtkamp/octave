@@ -16,6 +16,7 @@ bool SYS_DoesFileExist(const char* path, bool isAsset);
 void SYS_AcquireFileData(const char* path, bool isAsset, int32_t maxSize, char*& outData, uint32_t& outSize);
 void SYS_ReleaseFileData(char* data);
 std::string SYS_GetCurrentDirectoryPath();
+std::string SYS_GetAbsolutePath(const std::string& relativePath);
 void SYS_SetWorkingDirectory(const std::string& dirPath);
 bool SYS_CreateDirectory(const char* dirPath);
 void SYS_RemoveDirectory(const char* dirPath);

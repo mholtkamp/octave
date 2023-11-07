@@ -35,6 +35,7 @@
 #include "EmbeddedFile.h"
 #include "Utilities.h"
 #include "EditorUtils.h"
+#include "EditorImgui.h"
 #include "Log.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
@@ -52,11 +53,9 @@
 
 #include "System/System.h"
 
-#if EDITOR
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#endif
 
 #define STANDALONE_RELEASE 0
 
@@ -1022,39 +1021,58 @@ void ActionManager::RestoreExiledNode(Node* node)
     OCT_ASSERT(restored);
 }
 
-void ActionManager::CreateNewProject()
+static void HandleNewProjectCallback(const std::string& folderPath)
 {
-    std::string newProjDir = SYS_SelectFolderDialog();
-    std::replace(newProjDir.begin(), newProjDir.end(), '\\', '/');
-
-    std::string newProjName = newProjDir;
-    size_t slashLoc = newProjName.find_last_of('/');
-    if (slashLoc != std::string::npos)
+    if (folderPath != "")
     {
-        newProjName = newProjName.substr(slashLoc + 1);
+        ActionManager::Get()->CreateNewProject(folderPath.c_str());
     }
-
-    LogDebug("CreateNewProject: %s @ %s", newProjName.c_str(), newProjDir.c_str());
-
-    // Now that we have the folder, we need to populate it with an Assets and Scripts folder
-    std::string assetsFolder = newProjDir + "/Assets";
-    std::string scriptsFolder = newProjDir + "/Scripts";
-    SYS_CreateDirectory(assetsFolder.c_str());
-    SYS_CreateDirectory(scriptsFolder.c_str());
-
-    // Also we need to create an octp so that user can open the project with Ctrl+P
-    std::string projectFile = newProjDir + "/" + newProjName.c_str() + ".octp";
-    FILE* octpFile = fopen(projectFile.c_str(), "w");
-    if (octpFile != nullptr)
+    else
     {
-        fprintf(octpFile, "name=%s", newProjName.c_str());
-
-        fclose(octpFile);
-        octpFile = nullptr;
+        LogError("Bad folder for CreateNewProject.");
     }
+}
 
-    // Finally, open the project
-    OpenProject(projectFile.c_str());
+void ActionManager::CreateNewProject(const char* folderPath)
+{
+    if (folderPath == nullptr)
+    {
+        EditorOpenFileBrowser(HandleNewProjectCallback, true);
+    }
+    else
+    {
+        std::string newProjDir = folderPath; // SYS_SelectFolderDialog();
+        std::replace(newProjDir.begin(), newProjDir.end(), '\\', '/');
+
+        std::string newProjName = newProjDir;
+        size_t slashLoc = newProjName.find_last_of('/');
+        if (slashLoc != std::string::npos)
+        {
+            newProjName = newProjName.substr(slashLoc + 1);
+        }
+
+        LogDebug("CreateNewProject: %s @ %s", newProjName.c_str(), newProjDir.c_str());
+
+        // Now that we have the folder, we need to populate it with an Assets and Scripts folder
+        std::string assetsFolder = newProjDir + "/Assets";
+        std::string scriptsFolder = newProjDir + "/Scripts";
+        SYS_CreateDirectory(assetsFolder.c_str());
+        SYS_CreateDirectory(scriptsFolder.c_str());
+
+        // Also we need to create an octp so that user can open the project with Ctrl+P
+        std::string projectFile = newProjDir + "/" + newProjName.c_str() + ".octp";
+        FILE* octpFile = fopen(projectFile.c_str(), "w");
+        if (octpFile != nullptr)
+        {
+            fprintf(octpFile, "name=%s", newProjName.c_str());
+
+            fclose(octpFile);
+            octpFile = nullptr;
+        }
+
+        // Finally, open the project
+        OpenProject(projectFile.c_str());
+    }
 }
 
 void ActionManager::OpenProject(const char* path)

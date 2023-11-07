@@ -539,6 +539,19 @@ std::string SYS_GetCurrentDirectoryPath()
     return std::string(path) + "/";
 }
 
+std::string SYS_GetAbsolutePath(const std::string& relativePath)
+{
+    std::string absPath;
+    char* resolvedPath = realpath(relativePath.c_str(), nullptr);
+    if (resolvedPath != nullptr)
+    {
+        absPath = resolvedPath;
+        free(resolvedPath);
+    }
+
+    return absPath;
+}
+
 void SYS_SetWorkingDirectory(const std::string& dirPath)
 {
     chdir(dirPath.c_str());

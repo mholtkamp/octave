@@ -91,7 +91,7 @@ protected:
 public:
 
     // Actions
-    void CreateNewProject();
+    void CreateNewProject(const char* folderPath = nullptr);
     void OpenProject(const char* path = nullptr);
     void OpenScene();
     void OpenScene(Scene* scene);
