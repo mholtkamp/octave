@@ -1041,7 +1041,7 @@ void ActionManager::CreateNewProject(const char* folderPath)
     }
     else
     {
-        std::string newProjDir = folderPath; // SYS_SelectFolderDialog();
+        std::string newProjDir = folderPath;
         std::replace(newProjDir.begin(), newProjDir.end(), '\\', '/');
 
         // Remove trailing slash
@@ -1081,32 +1081,33 @@ void ActionManager::CreateNewProject(const char* folderPath)
     }
 }
 
+static void HandleOpenProjectCallback(const std::string& filePath)
+{
+    if (filePath != "")
+    {
+        ActionManager::Get()->OpenProject(filePath.c_str());
+    }
+    else
+    {
+        LogError("Bad file for OpenProject.");
+    }
+}
+
 void ActionManager::OpenProject(const char* path)
 {
-    const char* projectPath = path;
-    std::string openPath;
-
-    if (projectPath == nullptr)
+    if (path == nullptr)
     {
-        openPath = SYS_OpenFileDialog();
-
-        // Display the Open dialog box. 
-        if (openPath != "")
-        {
-            projectPath = openPath.c_str();
-            LogDebug("ProjectDirectory = %s", projectPath);
-        }
+        EditorOpenFileBrowser(HandleOpenProjectCallback, false);
     }
-
-    if (projectPath != nullptr)
+    else
     {
-        LoadProject(projectPath);
-    }
+        LoadProject(path);
 
-    // Handle new project directory
-    GetEditorState()->ClearAssetDirHistory();
-    GetEditorState()->SetAssetDirectory(AssetManager::Get()->FindProjectDirectory(), true);
-    GetEditorState()->SetSelectedAssetStub(nullptr);
+        // Handle new project directory
+        GetEditorState()->ClearAssetDirHistory();
+        GetEditorState()->SetAssetDirectory(AssetManager::Get()->FindProjectDirectory(), true);
+        GetEditorState()->SetSelectedAssetStub(nullptr);
+    }
 }
 
 void ActionManager::OpenScene()
@@ -1222,19 +1223,25 @@ void ActionManager::DeleteNode(Node* node)
     }
 }
 
+static void HandleImportCallback(const std::string& filePath)
+{
+    if (filePath != "")
+    {
+        ActionManager::Get()->ImportAsset(filePath.c_str());
+    }
+    else
+    {
+        LogError("Bad file for ImportAsset.");
+    }
+}
+
 Asset* ActionManager::ImportAsset()
 {
     Asset* retAsset = nullptr;
 
     if (GetEngineState()->mProjectPath != "")
     {
-        std::string openPath = SYS_OpenFileDialog();
-
-        // Display the Open dialog box. 
-        if (openPath != "")
-        {
-            retAsset = ImportAsset(openPath);
-        }
+        EditorOpenFileBrowser(HandleImportCallback, false);
     }
     else
     {
