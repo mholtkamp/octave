@@ -10,6 +10,7 @@
 
 class Node;
 class Widget;
+class Text;
 class Asset;
 struct AssetStub;
 class ActionList;
@@ -101,6 +102,7 @@ struct EditorState
     bool mShowRightPane = true;
     bool mShowInterface = true;
     bool mPreviewLighting = true;
+    Text* mOverlayText = nullptr;
 
     // Methods
     void Init();

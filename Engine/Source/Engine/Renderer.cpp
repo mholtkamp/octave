@@ -578,6 +578,14 @@ void Renderer::GatherDrawData(World* world)
             if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->Traverse(gatherDrawData); }
             if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->Traverse(gatherDrawData); }
             if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->Traverse(gatherDrawData); }
+
+#if EDITOR
+            // Kinda hacky but doing this to draw overlay text when in editor.
+            if (GetEditorState()->mOverlayText)
+            {
+                GetEditorState()->mOverlayText->Traverse(gatherDrawData);
+            }
+#endif
         }
 
         Camera3D* camera = world->GetActiveCamera();

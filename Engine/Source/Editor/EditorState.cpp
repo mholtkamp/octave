@@ -11,6 +11,7 @@
 #include "Nodes/3D/Node3d.h"
 #include "Nodes/3D/Camera3d.h"
 #include "Nodes/Widgets/Widget.h"
+#include "Nodes/Widgets/Text.h"
 #include "Engine.h"
 #include "Renderer.h"
 #include "Grid.h"
@@ -45,10 +46,22 @@ void EditorState::Init()
 
     mViewport3D = new Viewport3D();
     mViewport2D = new Viewport2D();
+
+    mOverlayText = Node::Construct<Text>();
+    mOverlayText->SetName("Overlay Text");
+    mOverlayText->SetVisible(false);
+    mOverlayText->SetAnchorMode(AnchorMode::TopRight);
+    mOverlayText->SetHorizontalJustification(Justification::Right);
+    mOverlayText->SetPosition(-200, 0);
+    mOverlayText->SetDimensions(185, 50);
+    mOverlayText->SetTextSize(50);
 }
 
 void EditorState::Shutdown()
 {
+    Node::Destruct(mOverlayText);
+    mOverlayText = nullptr;
+
     delete mViewport3D;
     mViewport3D = nullptr;
 
@@ -105,6 +118,30 @@ void EditorState::Update(float deltaTime)
     }
 
     mPrevViewport = { mViewportX, mViewportY, mViewportWidth, mViewportHeight };
+
+    // Update overlay text.
+    bool isPie = IsPlayingInEditor();
+    bool isPaused = GetEditorState()->mPaused;
+    bool isEjected = GetEditorState()->mEjected;
+
+    if (isPaused)
+    {
+        mOverlayText->SetText("PAUSED");
+        mOverlayText->SetColor({ 0.7f, 0.7f, 1.0f, 0.5 });
+        mOverlayText->SetVisible(true);
+        mOverlayText->Tick(deltaTime);
+    }
+    else if (isPie && isEjected)
+    {
+        mOverlayText->SetText("PLAYING");
+        mOverlayText->SetColor({ 1.0f, 0.7f, 0.7f, 0.5 });
+        mOverlayText->SetVisible(true);
+        mOverlayText->Tick(deltaTime);
+    }
+    else
+    {
+        mOverlayText->SetVisible(false);
+    }
 }
 
 void EditorState::SetEditorMode(EditorMode mode)
