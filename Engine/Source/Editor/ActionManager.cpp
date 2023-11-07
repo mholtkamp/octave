@@ -1255,7 +1255,14 @@ Asset* ActionManager::ImportAsset(const std::string& path)
 {
     Asset* retAsset = nullptr;
 
-    std::string filename = strrchr(path.c_str(), '/') + 1;
+    std::string filename = path;
+    size_t lastSlashIdx = filename.find_last_of("/\\");
+
+    if (lastSlashIdx != std::string::npos)
+    {
+        filename = filename.substr(lastSlashIdx + 1);
+    }
+
     int32_t dotIndex = int32_t(filename.find_last_of('.'));
     std::string extension = filename.substr(dotIndex, filename.size() - dotIndex);
 

@@ -153,6 +153,8 @@ static void DrawFileBrowser()
 
     if (ImGui::BeginPopupModal("File Browser", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
+        bool confirmOpen = false;
+
         // Text that shows current directory.
         ImGui::Text(sFileBrowserCurDir.c_str());
 
@@ -185,15 +187,33 @@ static void DrawFileBrowser()
             }
 
             // Show files
+            bool doubleClicked = ImGui::IsMouseDoubleClicked(0);
+
             for (uint32_t i = 0; i < sFileBrowserEntries.size(); ++i)
             {
                 if (!sFileBrowserEntries[i].mFolder)
                 {
-                    if (ImGui::Selectable(sFileBrowserEntries[i].mName.c_str()))
+                    if (ImGui::Selectable(sFileBrowserEntries[i].mName.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick))
                     {
                         if (!sFileBrowserFolderMode)
                         {
-                            sFileBrowserPath = sFileBrowserCurDir + "/" + sFileBrowserEntries[i].mName;
+                            if (false /*doubleClicked*/)
+                            {
+                                // Was this selectable already selected?
+                                std::string selFile = sFileBrowserPath;
+                                size_t lastSlashIdx = selFile.find_last_of("/\\");
+                                if (lastSlashIdx != std::string::npos)
+                                {
+                                    selFile = selFile.substr(lastSlashIdx + 1);
+                                }
+
+                                if (selFile == sFileBrowserEntries[i].mName)
+                                {
+                                    confirmOpen = true;
+                                }
+                            }
+
+                            sFileBrowserPath = sFileBrowserCurDir + sFileBrowserEntries[i].mName;
                         }
                     }
                 }
@@ -243,17 +263,27 @@ static void DrawFileBrowser()
 
         if (ImGui::Button("Open"))
         {
+            confirmOpen = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+        {
+            sFileBrowserOpen = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        if (IsKeyJustDown(KEY_ENTER))
+        {
+            confirmOpen = true;
+        }
+
+        if (confirmOpen)
+        {
             if (sFileBrowserCallback != nullptr)
             {
                 sFileBrowserCallback(sFileBrowserPath);
             }
 
-            sFileBrowserOpen = false;
-            ImGui::CloseCurrentPopup();
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel"))
-        {
             sFileBrowserOpen = false;
             ImGui::CloseCurrentPopup();
         }
