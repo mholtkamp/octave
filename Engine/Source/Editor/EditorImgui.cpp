@@ -71,9 +71,12 @@ static FileBrowserCallbackFP sFileBrowserCallback = nullptr;
 static std::string sFileBrowserPath;
 static std::string sFileBrowserCurDir;
 static std::vector<FileBrowserDirEntry> sFileBrowserEntries;
+static float sFileBrowserDoubleClickBlock = 0.0f;
 
 static void PopulateFileBrowserDirs()
 {
+    sFileBrowserDoubleClickBlock = 0.2f;
+
     sFileBrowserEntries.clear();
 
     DirEntry dirEntry = { };
@@ -138,6 +141,9 @@ void EditorOpenFileBrowser(FileBrowserCallbackFP callback, bool folderMode)
 
 static void DrawFileBrowser()
 {
+    sFileBrowserDoubleClickBlock -= GetEngineState()->mRealDeltaTime;
+    sFileBrowserDoubleClickBlock = glm::max(sFileBrowserDoubleClickBlock, 0.0f);
+
     if (sFileBrowserOpen)
     {
         ImGui::OpenPopup("File Browser");
@@ -187,7 +193,7 @@ static void DrawFileBrowser()
             }
 
             // Show files
-            bool doubleClicked = ImGui::IsMouseDoubleClicked(0);
+            bool doubleClicked = ImGui::IsMouseDoubleClicked(0) && sFileBrowserDoubleClickBlock <= 0.0f;
 
             for (uint32_t i = 0; i < sFileBrowserEntries.size(); ++i)
             {
@@ -197,20 +203,9 @@ static void DrawFileBrowser()
                     {
                         if (!sFileBrowserFolderMode)
                         {
-                            if (false /*doubleClicked*/)
+                            if (doubleClicked)
                             {
-                                // Was this selectable already selected?
-                                std::string selFile = sFileBrowserPath;
-                                size_t lastSlashIdx = selFile.find_last_of("/\\");
-                                if (lastSlashIdx != std::string::npos)
-                                {
-                                    selFile = selFile.substr(lastSlashIdx + 1);
-                                }
-
-                                if (selFile == sFileBrowserEntries[i].mName)
-                                {
-                                    confirmOpen = true;
-                                }
+                                confirmOpen = true;
                             }
 
                             sFileBrowserPath = sFileBrowserCurDir + sFileBrowserEntries[i].mName;
