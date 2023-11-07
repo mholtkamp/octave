@@ -523,6 +523,12 @@ void ActionManager::OnSelectedNodeChanged()
 
 Node* ActionManager::SpawnNode(TypeId nodeType, Node* parent)
 {
+    if (parent && parent->IsSceneLinked())
+    {
+        LogWarning("Cannot add child to scene-linked node. Unlink the scene first.");
+        return nullptr;
+    }
+
     Node* spawnedNode = EXE_SpawnNode(nodeType);
 
     OCT_ASSERT(spawnedNode != nullptr);
@@ -560,6 +566,12 @@ Node* ActionManager::SpawnNode(TypeId nodeType, glm::vec3 position)
 Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset* srcAsset, bool setWorldPos, glm::vec3 worldPos)
 {
     Node* spawnedNode = nullptr;
+
+    if (parent && parent->IsSceneLinked())
+    {
+        LogWarning("Cannot add child to scene-linked node. Unlink the scene first.");
+        return nullptr;
+    }
 
     if (srcAsset == nullptr)
     {
@@ -2038,6 +2050,12 @@ void ActionManager::AttachSelectedNodes(Node* newParent, int32_t boneIdx)
 {
     if (newParent == nullptr)
         return;
+
+    if (newParent->IsSceneLinked())
+    {
+        LogWarning("Cannot add child to scene-linked node. Unlink the scene first.");
+        return;
+    }
 
     std::vector<Node*> selNodes = GetEditorState()->GetSelectedNodes();
 

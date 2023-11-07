@@ -911,11 +911,11 @@ static void DrawScenePanel()
             {
                 am->DuplicateNodes({ node });
             }
-            if (ImGui::Selectable("Attach Selected"))
+            if (!nodeSceneLinked && ImGui::Selectable("Attach Selected"))
             {
                 am->AttachSelectedNodes(node, -1);
             }
-            if (node->As<SkeletalMesh3D>())
+            if (!nodeSceneLinked && node->As<SkeletalMesh3D>())
             {
                 if (ImGui::Selectable("Attach Selected To Bone"))
                 {
@@ -940,17 +940,17 @@ static void DrawScenePanel()
             {
                 LogDebug("TODO: Implement Merge for static meshes.");
             }
-            if (ImGui::BeginMenu("Add Node"))
+            if (!nodeSceneLinked && ImGui::BeginMenu("Add Node"))
             {
                 DrawAddNodeMenu(node);
                 ImGui::EndMenu();
             }
-            if (ImGui::BeginMenu("Add Basic 3D"))
+            if (!nodeSceneLinked && ImGui::BeginMenu("Add Basic 3D"))
             {
                 DrawSpawnBasic3dMenu(node, false);
                 ImGui::EndMenu();
             }
-            if (ImGui::BeginMenu("Add Basic Widget"))
+            if (!nodeSceneLinked && ImGui::BeginMenu("Add Basic Widget"))
             {
                 DrawSpawnBasicWidgetMenu(node);
                 ImGui::EndMenu();
