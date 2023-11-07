@@ -146,7 +146,7 @@ static void DrawFileBrowser()
     {
         ImGuiIO& io = ImGui::GetIO();
         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-        ImGui::SetNextWindowSize(ImVec2(465, 450));
+        ImGui::SetNextWindowSize(ImVec2(465, 465));
     }
 
     if (ImGui::BeginPopupModal("File Browser", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
@@ -205,8 +205,40 @@ static void DrawFileBrowser()
             }
         }
 
+        std::string fileFolderName = sFileBrowserPath;
+        if (sFileBrowserFolderMode && 
+            fileFolderName.size() > 0 &&
+            (fileFolderName.back() == '/' || fileFolderName.back() == '\\'))
+        {
+            fileFolderName.pop_back();
+        }
+
+        size_t lastSlashIdx = fileFolderName.find_last_of("/\\");
+        if (lastSlashIdx != std::string::npos)
+        {
+            fileFolderName = fileFolderName.substr(lastSlashIdx + 1);
+        }
+
         ImGui::SetNextItemWidth(400);
-        ImGui::InputText(sFileBrowserFolderMode ? "Folder" : "File", &sFileBrowserPath);
+        if (ImGui::InputText(sFileBrowserFolderMode ? "Folder" : "File", &fileFolderName))
+        {
+            sFileBrowserPath = sFileBrowserCurDir + fileFolderName;
+
+            // Add the trailing slash if its a folder.
+            if (sFileBrowserFolderMode &&
+                sFileBrowserPath.size() > 0 &&
+                (sFileBrowserPath.back() != '/' && sFileBrowserPath.back() != '\\'))
+            {
+#if PLATFORM_WINDOWS
+                sFileBrowserPath.push_back('\\');
+#else
+                sFileBrowserPath.push_back('/');
+#endif
+            }
+        }
+
+        ImGui::Text(sFileBrowserPath.c_str());
+
         if (ImGui::Button("Open"))
         {
             if (sFileBrowserCallback != nullptr)
