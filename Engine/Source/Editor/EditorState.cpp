@@ -120,10 +120,18 @@ void EditorState::SetEditorMode(EditorMode mode)
         EditorMode prevMode = mMode;
         mMode = mode;
 
-        // TODO-NODE: I don't think we need this anymore. Remove commented call after verifying.
-        //SetSelectedNode(nullptr);
+        static_assert(
+            (int32_t)EditorMode::Scene == 0 && 
+            (int32_t)EditorMode::Scene3D == 1 &&
+            (int32_t)EditorMode::Scene2D == 2,
+            "Update this check below.");
 
-        ActionManager::Get()->ResetUndoRedo();
+        // Only reset undo history when changing out of "scene editing".
+        if (int32_t(prevMode) > int32_t(EditorMode::Scene2D) ||
+            int32_t(mMode) > int32_t(EditorMode::Scene2D))
+        {
+            ActionManager::Get()->ResetUndoRedo();
+        }
     }
 }
 
