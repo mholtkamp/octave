@@ -47,9 +47,12 @@ public:
     void EXE_EditProperty(void* owner, PropertyOwnerType ownerType, const std::string& name, uint32_t index, Datum newValue);
     void EXE_EditTransform(Node3D* node, const glm::mat4& transform);
     void EXE_EditTransforms(const std::vector<Node3D*>& nodes, const std::vector<glm::mat4>& newTransforms);
-    void EXE_SpawnNode(Node* node);
+    Node* EXE_SpawnNode(TypeId srcType);
+    Node* EXE_SpawnNode(const char* srcTypeName);
+    Node* EXE_SpawnNode(Scene* srcScene);
+    Node* EXE_SpawnNode(Node* srcNode);
     void EXE_DeleteNode(Node* node);
-    void EXE_SpawnNodes(const std::vector<Node*>& nodes);
+    std::vector<Node*> EXE_SpawnNodes(const std::vector<Node*>& nodes);
     void EXE_DeleteNodes(const std::vector<Node*>& nodes);
     void EXE_AttachNode(Node* node, Node* newParent, int32_t childIndex, int32_t boneIndex);
     void EXE_SetRootNode(Node* newRoot);
@@ -162,11 +165,27 @@ class ActionSpawnNodes : public Action
 {
 public:
     DECLARE_ACTION_INTERFACE(SpawnNodes)
-    ActionSpawnNodes(const std::vector<Node*>& nodes);
+    ActionSpawnNodes(const std::vector<TypeId>& types);
+    ActionSpawnNodes(const std::vector<const char*>& typeNames);
+    ActionSpawnNodes(const std::vector<SceneRef>& scenes);
+    ActionSpawnNodes(const std::vector<Node*>& srcNodes);
+
+    const std::vector<Node*>& GetNodes() const { return mNodes; }
+
 protected:
+
+    // Action inputs, only one should be filled.
+    std::vector<TypeId> mSrcTypes;
+    std::vector<const char*> mSrcTypeNames;
+    std::vector<SceneRef> mSrcScenes;
+    std::vector<Node*> mSrcNodes;
+
+    // Populated after first Execute()
     std::vector<Node*> mNodes;
+
+    // Populated after first Reverse()
     std::vector<Node*> mParents;
-    bool mReversed = false;
+    std::vector<SceneRef> mParentLinkedScenes;
 };
 
 class ActionDeleteNodes : public Action

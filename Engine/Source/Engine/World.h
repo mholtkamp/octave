@@ -119,6 +119,7 @@ public:
 
     Camera3D* SpawnDefaultCamera();
     Node* SpawnDefaultRoot();
+    void PlaceNewlySpawnedNode(Node* node);
 
     template<typename T>
     T* FindNode()
@@ -166,7 +167,6 @@ public:
 private:
 
     void UpdateLines(float deltaTime);
-    void PlaceNewlySpawnedNode(Node* node);
 
 private:
 

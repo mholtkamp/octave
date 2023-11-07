@@ -636,8 +636,16 @@ static void DrawAddNodeMenu(Node* node)
 
     if (ImGui::MenuItem("Node"))
     {
-        Node* newNode = node ? node->CreateChild(Node::GetStaticType()) : GetWorld()->SpawnNode(Node::GetStaticType());
-        am->EXE_SpawnNode(newNode);
+        Node* newNode = am->EXE_SpawnNode(Node::GetStaticType());
+        if (node)
+        {
+            node->AddChild(newNode);
+        }
+        else
+        {
+            GetWorld()->PlaceNewlySpawnedNode(newNode);
+        }
+        
         GetEditorState()->SetSelectedNode(newNode);
     }
 
@@ -648,8 +656,14 @@ static void DrawAddNodeMenu(Node* node)
             if (ImGui::MenuItem(sNode3dNames[i].c_str()))
             {
                 const char* nodeName = sNode3dNames[i].c_str();
-                Node* newNode = node ? node->CreateChild(nodeName) : GetWorld()->SpawnNode(nodeName);
-                am->EXE_SpawnNode(newNode);
+
+                Node* newNode = am->EXE_SpawnNode(nodeName);
+
+                if (node)
+                    node->AddChild(newNode);
+                else
+                    GetWorld()->PlaceNewlySpawnedNode(newNode);
+
                 GetEditorState()->SetSelectedNode(newNode);
             }
         }
@@ -663,8 +677,14 @@ static void DrawAddNodeMenu(Node* node)
             if (ImGui::MenuItem(sNodeWidgetNames[i].c_str()))
             {
                 const char* nodeName = sNodeWidgetNames[i].c_str();
-                Node* newNode = node ? node->CreateChild(nodeName) : GetWorld()->SpawnNode(nodeName);
-                am->EXE_SpawnNode(newNode);
+
+                Node* newNode = am->EXE_SpawnNode(nodeName);
+
+                if (node)
+                    node->AddChild(newNode);
+                else
+                    GetWorld()->PlaceNewlySpawnedNode(newNode);
+
                 GetEditorState()->SetSelectedNode(newNode);
             }
         }
@@ -680,8 +700,13 @@ static void DrawAddNodeMenu(Node* node)
             if (ImGui::MenuItem(sNodeOtherNames[i].c_str()))
             {
                 const char* nodeName = sNodeOtherNames[i].c_str();
-                Node* newNode = node ? node->CreateChild(nodeName) : GetWorld()->SpawnNode(nodeName);
-                am->EXE_SpawnNode(newNode);
+                Node* newNode = am->EXE_SpawnNode(nodeName);
+
+                if (node)
+                    node->AddChild(newNode);
+                else
+                    GetWorld()->PlaceNewlySpawnedNode(newNode);
+
                 GetEditorState()->SetSelectedNode(newNode);
             }
         }
@@ -739,22 +764,20 @@ static void DrawSpawnBasicWidgetMenu(Node* node)
 
     if (widgetTypeName != nullptr)
     {
-        Node* newWidget = nullptr;
+        Node* newWidget = am->EXE_SpawnNode(widgetTypeName);
 
         if (node == nullptr)
         {
-            // Spawning initial node.
-            newWidget = GetWorld()->SpawnNode(widgetTypeName);
+            GetWorld()->PlaceNewlySpawnedNode(newWidget);
         }
         else
         {
-            newWidget = node->CreateChild(widgetTypeName);
+            node->AddChild(newWidget);
         }
 
         OCT_ASSERT(newWidget);
         if (newWidget)
         {
-            am->EXE_SpawnNode(newWidget);
             GetEditorState()->SetSelectedNode(newWidget);
         }
     }

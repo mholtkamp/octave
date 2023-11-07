@@ -523,7 +523,7 @@ void ActionManager::OnSelectedNodeChanged()
 
 Node* ActionManager::SpawnNode(TypeId nodeType, Node* parent)
 {
-    Node* spawnedNode = Node::Construct(nodeType);
+    Node* spawnedNode = EXE_SpawnNode(nodeType);
 
     OCT_ASSERT(spawnedNode != nullptr);
     if (spawnedNode != nullptr)
@@ -539,7 +539,6 @@ Node* ActionManager::SpawnNode(TypeId nodeType, Node* parent)
         }
 
         GetEditorState()->SetSelectedNode(spawnedNode);
-        EXE_SpawnNode(spawnedNode);
     }
 
     return spawnedNode;
@@ -569,7 +568,7 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
 
     if (name == BASIC_STATIC_MESH)
     {
-        StaticMesh3D* meshNode = Node::Construct<StaticMesh3D>();
+        StaticMesh3D* meshNode = EXE_SpawnNode(StaticMesh3D::GetStaticType())->As<StaticMesh3D>();
 
         StaticMesh* mesh = (StaticMesh*) LoadAsset("SM_Cube");
 
@@ -594,7 +593,8 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
     else if (name == BASIC_POINT_LIGHT)
     {
         // Spawn point light actor
-        PointLight3D* pointLight = Node::Construct<PointLight3D>();
+        PointLight3D* pointLight = EXE_SpawnNode(PointLight3D::GetStaticType())->As<PointLight3D>();
+
         pointLight->SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
         pointLight->SetRadius(10.0f);
         pointLight->SetLightingDomain(LightingDomain::All);
@@ -603,18 +603,18 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
     }
     else if (name == BASIC_NODE_3D)
     {
-        spawnedNode = Node::Construct<Node3D>();
+        spawnedNode = EXE_SpawnNode(Node3D::GetStaticType())->As<Node3D>();
     }
     else if (name == BASIC_DIRECTIONAL_LIGHT)
     {
-        DirectionalLight3D* dirLight = Node::Construct<DirectionalLight3D>();
+        DirectionalLight3D* dirLight = EXE_SpawnNode(DirectionalLight3D::GetStaticType())->As<DirectionalLight3D>();
         dirLight->SetLightingDomain(LightingDomain::All);
 
         spawnedNode = dirLight;
     }
     else if (name == BASIC_SKELETAL_MESH)
     {
-        SkeletalMesh3D* skNode = Node::Construct<SkeletalMesh3D>();
+        SkeletalMesh3D* skNode = EXE_SpawnNode(SkeletalMesh3D::GetStaticType())->As<SkeletalMesh3D>();
 
         // TODO: Add a default SkeletalMesh to Engine assets
         SkeletalMesh* mesh = nullptr;
@@ -632,15 +632,15 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
     }
     else if (name == BASIC_BOX)
     {
-        spawnedNode = Node::Construct<Box3D>();
+        spawnedNode = EXE_SpawnNode(Box3D::GetStaticType())->As<Box3D>();
     }
     else if (name == BASIC_SPHERE)
     {
-        spawnedNode = Node::Construct<Sphere3D>();
+        spawnedNode = EXE_SpawnNode(Sphere3D::GetStaticType())->As<Sphere3D>();
     }
     else if (name == BASIC_CAPSULE)
     {
-        spawnedNode = Node::Construct<Capsule3D>();
+        spawnedNode = EXE_SpawnNode(Capsule3D::GetStaticType())->As<Capsule3D>();
     }
     else if (name == BASIC_PARTICLE)
     {
@@ -653,7 +653,7 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
         }
 
         // Spawn a Particle actor
-        Particle3D* particleNode = Node::Construct<Particle3D>();
+        Particle3D* particleNode = EXE_SpawnNode(Particle3D::GetStaticType())->As<Particle3D>();
         particleNode->SetParticleSystem(particleSystem);
 
         spawnedNode = particleNode;
@@ -670,7 +670,7 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
         }
 
         // Spawn an Audio actor
-        Audio3D* audioNode = Node::Construct<Audio3D>();
+        Audio3D* audioNode = EXE_SpawnNode(Audio3D::GetStaticType())->As<Audio3D>();
         audioNode->SetSoundWave(soundWave);
         audioNode->SetLoop(true);
         audioNode->SetAutoPlay(true);
@@ -689,16 +689,16 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
 
         if (scene != nullptr)
         {
-            spawnedNode = scene->Instantiate();
+            spawnedNode = EXE_SpawnNode(scene);
         }
     }
     else if (name == BASIC_CAMERA)
     {
-        spawnedNode = Node::Construct<Camera3D>();
+        spawnedNode = EXE_SpawnNode(Camera3D::GetStaticType())->As<Camera3D>();
     }
     else if (name == BASIC_TEXT_MESH)
     {
-    spawnedNode = Node::Construct<TextMesh3D>();
+    spawnedNode = EXE_SpawnNode(TextMesh3D::GetStaticType())->As<TextMesh3D>();
     }
 
     if (spawnedNode != nullptr)
@@ -714,7 +714,6 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
         }
 
         GetEditorState()->SetSelectedNode(spawnedNode);
-        EXE_SpawnNode(spawnedNode);
 
         Node3D* node3d = spawnedNode ? spawnedNode->As<Node3D>() : nullptr;
 
@@ -812,15 +811,64 @@ void ActionManager::EXE_EditTransforms(const std::vector<Node3D*>& transComps, c
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_SpawnNode(Node* node)
+Node* ActionManager::EXE_SpawnNode(TypeId srcType)
 {
-    std::vector<Node*> nodes;
-    nodes.push_back(node);
+    std::vector<TypeId> srcTypes;
+    srcTypes.push_back(srcType);
 
     GetEditorState()->EnsureActiveScene();
 
-    ActionSpawnNodes* action = new ActionSpawnNodes(nodes);
+    ActionSpawnNodes* action = new ActionSpawnNodes(srcTypes);
     ActionManager::Get()->ExecuteAction(action);
+
+    OCT_ASSERT(action->GetNodes().size() == 1);
+    Node* retNode = action->GetNodes()[0];
+    return retNode;
+}
+
+Node* ActionManager::EXE_SpawnNode(const char* srcTypeName)
+{
+    std::vector<const char*> srcTypeNames;
+    srcTypeNames.push_back(srcTypeName);
+
+    GetEditorState()->EnsureActiveScene();
+
+    ActionSpawnNodes* action = new ActionSpawnNodes(srcTypeNames);
+    ActionManager::Get()->ExecuteAction(action);
+
+    OCT_ASSERT(action->GetNodes().size() == 1);
+    Node* retNode = action->GetNodes()[0];
+    return retNode;
+}
+
+Node* ActionManager::EXE_SpawnNode(Scene* srcScene)
+{
+    std::vector<SceneRef> srcScenes;
+    srcScenes.push_back(srcScene);
+
+    GetEditorState()->EnsureActiveScene();
+
+    ActionSpawnNodes* action = new ActionSpawnNodes(srcScenes);
+    ActionManager::Get()->ExecuteAction(action);
+
+    OCT_ASSERT(action->GetNodes().size() == 1);
+    Node* retNode = action->GetNodes()[0];
+    return retNode;
+}
+
+Node* ActionManager::EXE_SpawnNode(Node* srcNode)
+{
+    std::vector<Node*> srcNodes;
+    srcNodes.push_back(srcNode);
+
+    GetEditorState()->EnsureActiveScene();
+
+    ActionSpawnNodes* action = new ActionSpawnNodes(srcNodes);
+    ActionManager::Get()->ExecuteAction(action);
+
+    OCT_ASSERT(action->GetNodes().size() == 1);
+    Node* retNode = action->GetNodes()[0];
+    return retNode;
 }
 
 void ActionManager::EXE_DeleteNode(Node* node)
@@ -832,12 +880,17 @@ void ActionManager::EXE_DeleteNode(Node* node)
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_SpawnNodes(const std::vector<Node*>& nodes)
+std::vector<Node*> ActionManager::EXE_SpawnNodes(const std::vector<Node*>& srcNodes)
 {
+    OCT_ASSERT(srcNodes.size() > 0);
+
     GetEditorState()->EnsureActiveScene();
 
-    ActionSpawnNodes* action = new ActionSpawnNodes(nodes);
+    ActionSpawnNodes* action = new ActionSpawnNodes(srcNodes);
     ActionManager::Get()->ExecuteAction(action);
+
+    OCT_ASSERT(action->GetNodes().size() > 0);
+    return action->GetNodes();
 }
 
 void ActionManager::EXE_DeleteNodes(const std::vector<Node*>& nodes)
@@ -1936,31 +1989,32 @@ void ActionManager::DeleteAssetDir(AssetDir* dir)
     }
 }
 
-void ActionManager::DuplicateNodes(std::vector<Node*> nodes)
+void ActionManager::DuplicateNodes(std::vector<Node*> srcNodes)
 {
     // Don't use a vector reference for nodes param because we are going to modify the vector anyway.
     std::vector<Node*> dupedNodes;
 
-    RemoveRedundantDescendants(nodes);
+    RemoveRedundantDescendants(srcNodes);
 
-    for (uint32_t i = 0; i < nodes.size(); ++i)
+    OCT_ASSERT(srcNodes.size() > 0);
+    dupedNodes = EXE_SpawnNodes(srcNodes);
+    OCT_ASSERT(dupedNodes.size() == srcNodes.size());
+
+    if (dupedNodes.size() > 0 &&
+        dupedNodes.size() == srcNodes.size())
     {
-        Node* node = nodes[i];
-        Node* newNode = node->Clone(true);
-        Node* parent = node->GetParent();
-        if (parent == nullptr)
+        for (uint32_t i = 0; i < srcNodes.size(); ++i)
         {
-            parent = node;
+            Node* srcNode = srcNodes[i];
+            Node* newNode = dupedNodes[i];
+            Node* parent = srcNode->GetParent();
+            if (parent == nullptr)
+            {
+                parent = srcNode;
+            }
+
+            parent->AddChild(newNode);
         }
-
-        parent->AddChild(newNode);
-
-        dupedNodes.push_back(newNode);
-    }
-
-    if (dupedNodes.size() > 0)
-    {
-        EXE_SpawnNodes(dupedNodes);
 
         GetEditorState()->SetSelectedNode(nullptr);
 
@@ -2175,25 +2229,86 @@ void ActionEditTransforms::Reverse()
     }
 }
 
-ActionSpawnNodes::ActionSpawnNodes(const std::vector<Node*>& nodes)
+ActionSpawnNodes::ActionSpawnNodes(const std::vector<TypeId>& types)
 {
-    mNodes = nodes;
+    mSrcTypes = types;
+}
 
-    RemoveRedundantDescendants(mNodes);
+ActionSpawnNodes::ActionSpawnNodes(const std::vector<const char*>& typeNames)
+{
+    mSrcTypeNames = typeNames;
+}
 
-    for (uint32_t i = 0; i < mNodes.size(); ++i)
-    {
-        mParents.push_back(mNodes[i]->GetParent());
-    }
+ActionSpawnNodes::ActionSpawnNodes(const std::vector<SceneRef>& scenes)
+{
+    mSrcScenes = scenes;
+}
 
-    OCT_ASSERT(mNodes.size() == mParents.size());
+ActionSpawnNodes::ActionSpawnNodes(const std::vector<Node*>& srcNodes)
+{
+    mSrcNodes = srcNodes;
+    RemoveRedundantDescendants(mSrcNodes);
 }
 
 void ActionSpawnNodes::Execute()
 {
-    // First time execute is called, the node has already been spawned.
-    if (mReversed)
+    if (mNodes.size() == 0)
     {
+        // First time executing this action. We need to create the nodes from the src data.
+        if (mSrcTypes.size() > 0)
+        {
+            for (uint32_t i = 0; i < mSrcTypes.size(); ++i)
+            {
+                Node* newNode = Node::Construct(mSrcTypes[i]);
+                OCT_ASSERT(newNode);
+                mNodes.push_back(newNode);
+            }
+        }
+        else if (mSrcTypeNames.size() > 0)
+        {
+            for (uint32_t i = 0; i < mSrcTypeNames.size(); ++i)
+            {
+                Node* newNode = Node::Construct(mSrcTypeNames[i]);
+                OCT_ASSERT(newNode);
+                mNodes.push_back(newNode);
+            }
+        }
+        else if (mSrcScenes.size() > 0)
+        {
+            for (uint32_t i = 0; i < mSrcScenes.size(); ++i)
+            {
+                Scene* scene = mSrcScenes[i].Get<Scene>();
+                if (scene != nullptr)
+                {
+                    Node* newNode = scene->Instantiate();
+                    OCT_ASSERT(newNode);
+                    mNodes.push_back(newNode);
+                }
+                else
+                {
+                    LogError("Null scene in ActionSpawnNodes::Execute()");
+                }
+            }
+        }
+        else if (mSrcNodes.size() > 0)
+        {
+            for (uint32_t i = 0; i < mSrcNodes.size(); ++i)
+            {
+                OCT_ASSERT(mSrcNodes[i] != nullptr);
+
+                Node* newNode = mSrcNodes[i]->Clone(true);
+                OCT_ASSERT(newNode);
+                mNodes.push_back(newNode);
+            }
+        }
+        else
+        {
+            LogError("Invalid src data for ActionSpawnNodes!");
+        }
+    }
+    else 
+    {
+        // Second time and beyond. Restore exiled nodes and attach to correct parents.
         for (uint32_t i = 0; i < mNodes.size(); ++i)
         {
             ActionManager::Get()->RestoreExiledNode(mNodes[i]);
@@ -2201,6 +2316,12 @@ void ActionSpawnNodes::Execute()
             if (mParents[i] != nullptr)
             {
                 mNodes[i]->Attach(mParents[i]);
+
+                if (mParentLinkedScenes[i] != nullptr)
+                {
+                    // Restore the scene link.
+                    mParents[i]->SetScene(mParentLinkedScenes[i].Get<Scene>());
+                }
             }
             else
             {
@@ -2210,16 +2331,34 @@ void ActionSpawnNodes::Execute()
                 GetWorld()->SetRootNode(mNodes[i]);
             }
         }
-
-        mReversed = false;
     }
 }
 
 void ActionSpawnNodes::Reverse()
 {
+    if (mParents.size() == 0)
+    {
+        OCT_ASSERT(mParentLinkedScenes.size() == 0);
+
+        // First time reversing, track the parents and parent scene-links.
+        for (uint32_t i = 0; i < mNodes.size(); ++i)
+        {
+
+            Node* parent = mNodes[i]->GetParent();
+            Scene* parentLinkedScene = nullptr;
+
+            if (parent != nullptr && parent->IsSceneLinked())
+            {
+                parentLinkedScene = parent->GetScene();
+            }
+
+            mParents.push_back(parent);
+            mParentLinkedScenes.push_back(parentLinkedScene);
+        }
+    }
+
     for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
-
         if (mParents[i] != nullptr)
         {
             mNodes[i]->Detach();
@@ -2233,8 +2372,6 @@ void ActionSpawnNodes::Reverse()
 
         ActionManager::Get()->ExileNode(mNodes[i]);
     }
-
-    mReversed = true;
 }
 
 ActionDeleteNodes::ActionDeleteNodes(const std::vector<Node*>& nodes)
