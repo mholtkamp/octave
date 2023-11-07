@@ -59,6 +59,7 @@ public:
     void EXE_SetAbsoluteRotation(Node3D* node, glm::quat rot);
     void EXE_SetAbsolutePosition(Node3D* node, glm::vec3 pos);
     void EXE_SetAbsoluteScale(Node3D* node, glm::vec3 scale);
+    void EXE_UnlinkScene(Node* node);
 
     void ClearActionHistory();
     void ClearActionFuture();
@@ -185,7 +186,6 @@ protected:
 
     // Populated after first Reverse()
     std::vector<Node*> mParents;
-    std::vector<SceneRef> mParentLinkedScenes;
 };
 
 class ActionDeleteNodes : public Action
@@ -258,4 +258,17 @@ protected:
     Node3D* mNode = nullptr;
     glm::vec3 mNewScale;
     glm::vec3 mPrevScale;
+};
+
+class ActionUnlinkScene : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(UnlinkScene);
+    ActionUnlinkScene(Node* node);
+
+protected:
+
+    Node* mNode = nullptr;
+    SceneRef mScene;
+
 };

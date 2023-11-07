@@ -929,6 +929,15 @@ void ActionManager::EXE_SetAbsoluteScale(Node3D* comp, glm::vec3 scale)
     ActionManager::Get()->ExecuteAction(action);
 }
 
+void ActionManager::EXE_UnlinkScene(Node* node)
+{
+    if (node->IsSceneLinked())
+    {
+        ActionUnlinkScene* action = new ActionUnlinkScene(node);
+        ActionManager::Get()->ExecuteAction(action);
+    }
+}
+
 void ActionManager::ClearActionHistory()
 {
     for (uint32_t i = 0; i < mActionHistory.size(); ++i)
@@ -2316,12 +2325,6 @@ void ActionSpawnNodes::Execute()
             if (mParents[i] != nullptr)
             {
                 mNodes[i]->Attach(mParents[i]);
-
-                if (mParentLinkedScenes[i] != nullptr)
-                {
-                    // Restore the scene link.
-                    mParents[i]->SetScene(mParentLinkedScenes[i].Get<Scene>());
-                }
             }
             else
             {
@@ -2338,22 +2341,11 @@ void ActionSpawnNodes::Reverse()
 {
     if (mParents.size() == 0)
     {
-        OCT_ASSERT(mParentLinkedScenes.size() == 0);
-
         // First time reversing, track the parents and parent scene-links.
         for (uint32_t i = 0; i < mNodes.size(); ++i)
         {
-
             Node* parent = mNodes[i]->GetParent();
-            Scene* parentLinkedScene = nullptr;
-
-            if (parent != nullptr && parent->IsSceneLinked())
-            {
-                parentLinkedScene = parent->GetScene();
-            }
-
             mParents.push_back(parent);
-            mParentLinkedScenes.push_back(parentLinkedScene);
         }
     }
 
@@ -2604,6 +2596,23 @@ void ActionSetAbsoluteScale::Execute()
 void ActionSetAbsoluteScale::Reverse()
 {
     mNode->SetAbsoluteScale(mPrevScale);
+}
+
+ActionUnlinkScene::ActionUnlinkScene(Node* node)
+{
+    mNode = node;
+    mScene = node->GetScene();
+    OCT_ASSERT(mNode);
+}
+
+void ActionUnlinkScene::Execute()
+{
+    mNode->BreakSceneLink();
+}
+
+void ActionUnlinkScene::Reverse()
+{
+    mNode->SetScene(mScene.Get<Scene>());
 }
 
 #endif
