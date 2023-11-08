@@ -66,6 +66,13 @@ void EditorMain(int32_t argc, char** argv)
     EngineConfig* engineConfig = GetEngineConfig();
     if (engineConfig->mProjectPath != "")
     {
+        // Clear the project path so we don't overwrite the EditorProject.sav file with default data.
+        // This would have been set earlier in Initialize() to ensure that shader cache is loaded correctly.
+        // TODO: Seems like we don't need to be storing shader cache in project folder when running the editor?
+        GetEngineState()->mProjectName = "";
+        GetEngineState()->mProjectPath = "";
+        GetEngineState()->mProjectDirectory = "";
+
         ActionManager::Get()->OpenProject(engineConfig->mProjectPath.c_str());
     }
 

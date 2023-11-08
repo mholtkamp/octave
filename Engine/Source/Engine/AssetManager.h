@@ -78,7 +78,7 @@ public:
     void Discover(const char* directoryName, const char* directoryPath);
     void DiscoverAssetRegistry(const char* registryPath);
     void DiscoverEmbeddedAssets(struct EmbeddedFile* assets, uint32_t numAssets);
-    void Purge();
+    void Purge(bool purgeEngineAssets);
     bool PurgeAsset(const char* name);
     void RefSweep();
     void LoadAll();
@@ -105,6 +105,7 @@ public:
     AssetDir* FindProjectDirectory();
     AssetDir* FindEngineDirectory();
     AssetDir* GetRootDirectory();
+    void UnloadProjectDirectory();
     std::unordered_map<std::string, AssetStub*>& GetAssetMap();
 
     void DirtyAllMaterials();

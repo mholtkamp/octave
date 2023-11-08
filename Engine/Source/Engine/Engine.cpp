@@ -474,10 +474,19 @@ void LoadProject(const std::string& path, bool discoverAssets)
 #if EDITOR
     GetEditorState()->EndPlayInEditor();
     GetEditorState()->CloseAllEditScenes();
-#endif
 
     // Reset asset manager??
-    //AssetManager::Get()->Purge();
+    if (sEngineState.mProjectDirectory != "")
+    {
+        GetEditorState()->WriteEditorProjectSave();
+        AssetManager::Get()->Purge(false);
+        AssetManager::Get()->UnloadProjectDirectory();
+
+        sEngineState.mProjectName = "";
+        sEngineState.mProjectPath = "";
+        sEngineState.mProjectDirectory = "";
+    }
+#endif
 
     sEngineState.mProjectPath = path;
     sEngineState.mProjectDirectory = path.substr(0, path.find_last_of("/\\") + 1);
@@ -530,8 +539,12 @@ void LoadProject(const std::string& path, bool discoverAssets)
 #endif
 
 #if EDITOR
-    GetEditorState()->ReadEditorSave();
+    GetEditorState()->ReadEditorProjectSave();
     GetEditorState()->LoadStartupScene();
+    if (sEngineState.mProjectPath != "")
+    {
+        GetEditorState()->AddRecentProject(sEngineState.mProjectPath);
+    }
 #endif
 }
 

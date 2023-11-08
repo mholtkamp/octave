@@ -29,8 +29,12 @@
 
 static EditorState sEditorState;
 
+constexpr const char* kEditorProjectSaveFile = "EditorProject.sav";
 constexpr const char* kEditorSaveFile = "Editor.sav";
-constexpr int32_t kEditorSaveVersion = 2;
+constexpr int32_t kEditorProjectSaveVersion = 1;
+constexpr int32_t kEditorSaveVersion = 1;
+
+constexpr const uint32_t kMaxRecentProjects = 10;
 
 EditorState* GetEditorState()
 {
@@ -55,10 +59,13 @@ void EditorState::Init()
     mOverlayText->SetPosition(-200, 0);
     mOverlayText->SetDimensions(185, 50);
     mOverlayText->SetTextSize(50);
+
+    ReadEditorSave();
 }
 
 void EditorState::Shutdown()
 {
+    WriteEditorProjectSave();
     WriteEditorSave();
 
     Node::Destruct(mOverlayText);
@@ -181,20 +188,83 @@ EditorMode EditorState::GetEditorMode()
 
 void EditorState::ReadEditorSave()
 {
-    if (SYS_DoesSaveExist(kEditorSaveFile))
+    std::string saveFilePath = std::string("Engine/Saves/") + kEditorSaveFile;
+
+    if (SYS_DoesFileExist(saveFilePath.c_str(), false))
     {
-        // TODO: Save an ini file instead of a binary file so it can easily be
-        // edited by a user, especially if something goes wrong.
         Stream stream;
-        SYS_ReadSave(kEditorSaveFile, stream);
+        stream.ReadFile(saveFilePath.c_str(), false);
 
         int32_t version = stream.ReadInt32();
 
         if (version == kEditorSaveVersion)
         {
+            uint32_t numRecentProjects = stream.ReadUint32();
+            mRecentProjects.clear();
+            for (uint32_t i = 0; i < numRecentProjects; ++i)
+            {
+                std::string recentProj;
+                stream.ReadString(recentProj);
+                mRecentProjects.push_back(recentProj);
+            }
+        }
+        else
+        {
+            SYS_RemoveFile(saveFilePath.c_str());
+        }
+    }
+}
+
+void EditorState::WriteEditorSave()
+{
+    Stream stream;
+    stream.WriteInt32(kEditorSaveVersion);
+    stream.WriteUint32((uint32_t)mRecentProjects.size());
+    for (uint32_t i = 0; i < mRecentProjects.size(); ++i)
+    {
+        stream.WriteString(mRecentProjects[i]);
+    }
+
+
+    bool saveDirExists = DoesDirExist("Engine/Saves");
+
+    if (!saveDirExists)
+    {
+        saveDirExists = SYS_CreateDirectory("Engine/Saves");
+    }
+
+    if (saveDirExists)
+    {
+        std::string saveFilePath = std::string("Engine/Saves/") + kEditorSaveFile;
+        stream.WriteFile(saveFilePath.c_str());
+    }
+    else
+    {
+        LogError("Failed to create Engine Saves directory while writing Editor.sav");
+    }
+}
+
+void EditorState::ReadEditorProjectSave()
+{
+    const std::string& projDir = GetEngineState()->mProjectDirectory;
+    std::string saveFilePath = projDir + "Saves/" + kEditorProjectSaveFile;
+
+    if (projDir != "" &&
+        SYS_DoesFileExist(saveFilePath.c_str(), false))
+    {
+        // TODO: Save an ini file instead of a binary file so it can easily be
+        // edited by a user, especially if something goes wrong.
+        Stream stream;
+        stream.ReadFile(saveFilePath.c_str(), false);
+
+        int32_t version = stream.ReadInt32();
+
+        if (version == kEditorProjectSaveVersion)
+        {
             stream.ReadString(mStartupSceneName);
 
             uint32_t numFavDirs = stream.ReadUint32();
+            mFavoritedDirs.clear();
             for (uint32_t i = 0; i < numFavDirs; ++i)
             {
                 std::string favDir;
@@ -204,24 +274,45 @@ void EditorState::ReadEditorSave()
         }
         else
         {
-            SYS_DeleteSave(kEditorSaveFile);
+            SYS_RemoveFile(saveFilePath.c_str());
         }
     }
 }
 
-void EditorState::WriteEditorSave()
+void EditorState::WriteEditorProjectSave()
 {
-    Stream stream;
-    stream.WriteInt32(kEditorSaveVersion);
-    stream.WriteString(mStartupSceneName);
-    stream.WriteUint32((uint32_t)mFavoritedDirs.size());
-    for (uint32_t i = 0; i < mFavoritedDirs.size(); ++i)
+    const std::string& projDir = GetEngineState()->mProjectDirectory;
+    if (projDir != "")
     {
-        stream.WriteString(mFavoritedDirs[i]);
-    }
+        Stream stream;
+        stream.WriteInt32(kEditorProjectSaveVersion);
+        stream.WriteString(mStartupSceneName);
+        stream.WriteUint32((uint32_t)mFavoritedDirs.size());
+        for (uint32_t i = 0; i < mFavoritedDirs.size(); ++i)
+        {
+            stream.WriteString(mFavoritedDirs[i]);
+        }
 
-    SYS_WriteSave(kEditorSaveFile, stream);
+        std::string projSavesDir = projDir + "Saves";
+        bool saveDirExists = DoesDirExist(projSavesDir.c_str());
+
+        if (!saveDirExists)
+        {
+            saveDirExists = SYS_CreateDirectory(projSavesDir.c_str());
+        }
+
+        if (saveDirExists)
+        {
+            std::string saveFilePath = projSavesDir + "/" + kEditorProjectSaveFile;
+            stream.WriteFile(saveFilePath.c_str());
+        }
+        else
+        {
+            LogError("Failed to create Project Saves directory while writing EditorProject.sav");
+        }
+    }
 }
+
 
 void EditorState::SetSelectedNode(Node* newNode)
 {
@@ -1171,6 +1262,30 @@ void EditorState::RemoveFavoriteDir(const std::string& dirPath)
     {
         mFavoritedDirs.erase(it);
     }
+}
+
+void EditorState::AddRecentProject(const std::string& projPath)
+{
+    std::string fullPath = SYS_GetAbsolutePath(projPath);
+
+    // Remove if already in the recent project list.
+    for (uint32_t i = 0; i < mRecentProjects.size(); ++i)
+    {
+        if (mRecentProjects[i] == fullPath)
+        {
+            mRecentProjects.erase(mRecentProjects.begin() + i);
+            break;
+        }
+    }
+
+    // If recent project list size >= kMaxRecentProjects, pop_back()
+    while (mRecentProjects.size() >= kMaxRecentProjects)
+    {
+        mRecentProjects.pop_back();
+    }
+
+    // Insert this project at the front (most-recent).
+    mRecentProjects.insert(mRecentProjects.begin(), fullPath);
 }
 
 

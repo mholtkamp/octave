@@ -88,7 +88,7 @@ AssetManager::AssetManager()
 
 AssetManager::~AssetManager()
 {
-    Purge();
+    Purge(true);
 
     SYS_LockMutex(mMutex);
     // Flag that we are destructing so that the async load thread can exit.
@@ -340,19 +340,42 @@ void AssetManager::DiscoverEmbeddedAssets(EmbeddedFile* assets, uint32_t numAsse
     }
 }
 
-
-void AssetManager::Purge()
+void AssetManager::Purge(bool purgeEngineAssets)
 {
     // Destroy all assets in the map and empty the map.
     // Caller needs to ensure that no assets are being referenced.
+
     mPurging = true;
-    for (auto it = mAssetMap.begin(); it != mAssetMap.end(); ++it)
+
+    if (purgeEngineAssets)
     {
-        UnloadAsset(*it->second);
-        delete it->second;
+        for (auto it = mAssetMap.begin(); it != mAssetMap.end(); ++it)
+        {
+            UnloadAsset(*it->second);
+            delete it->second;
+        }
+
+        mAssetMap.clear();
+    }
+    else
+    {
+        std::vector<std::string> assetsToPurge;
+
+        for (auto it = mAssetMap.begin(); it != mAssetMap.end(); ++it)
+        {
+            if (!it->second->mEngineAsset)
+            {
+                assetsToPurge.push_back(it->first);
+            }
+        }
+
+        while (assetsToPurge.size() > 0)
+        {
+            PurgeAsset(assetsToPurge.back().c_str());
+            assetsToPurge.pop_back();
+        }
     }
 
-    mAssetMap.clear();
     mPurging = false;
 }
 
@@ -388,8 +411,10 @@ bool AssetManager::PurgeAsset(const char* name)
 
             if (delStub->mAsset != nullptr)
             {
-                delStub->mAsset->Destroy();
-                delete delStub->mAsset;
+                //delStub->mAsset->Destroy();
+                //delete delStub->mAsset;
+
+                UnloadAsset(*delStub);
             }
 
             delete delStub;
@@ -948,6 +973,26 @@ AssetDir* AssetManager::FindEngineDirectory()
 AssetDir* AssetManager::GetRootDirectory()
 {
     return mRootDirectory;
+}
+
+void AssetManager::UnloadProjectDirectory()
+{
+    const std::string& projName = GetEngineState()->mProjectName;
+
+    if (projName != "")
+    {
+        std::vector<AssetDir*>& dirs = mRootDirectory->mChildDirs;
+        uint32_t numChildDirs = uint32_t(mRootDirectory ? dirs.size() : 0);
+        for (uint32_t i = 0; i < numChildDirs; ++i)
+        {
+            if (dirs[i]->mName == projName)
+            {
+                delete dirs[i];
+                dirs.erase(dirs.begin() + i);
+                break;
+            }
+        }
+    }
 }
 
 std::unordered_map<std::string, AssetStub*>& AssetManager::GetAssetMap()

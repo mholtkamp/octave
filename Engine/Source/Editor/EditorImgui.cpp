@@ -1611,7 +1611,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         if (ImGui::Selectable("Set Startup Scene"))
         {
             GetEditorState()->mStartupSceneName = stub->mName;
-            GetEditorState()->WriteEditorSave();
+            GetEditorState()->WriteEditorProjectSave();
         }
     }
 
@@ -2327,6 +2327,18 @@ static void DrawViewportPanel()
 
         if (ImGui::Selectable("Open Project"))
             am->OpenProject();
+        if (ImGui::BeginMenu("Open Recent Project"))
+        {
+            const std::vector<std::string>& recentProjects = GetEditorState()->mRecentProjects;
+            for (uint32_t i = 0; i < recentProjects.size(); ++i)
+            {
+                if (ImGui::MenuItem(recentProjects[i].c_str()))
+                {
+                    am->OpenProject(recentProjects[i].c_str());
+                }
+            }
+            ImGui::EndMenu();
+        }
         if (ImGui::Selectable("New Project"))
             am->CreateNewProject();
         if (ImGui::Selectable("New Scene"))

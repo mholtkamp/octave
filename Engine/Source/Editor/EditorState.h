@@ -104,6 +104,7 @@ struct EditorState
     bool mPreviewLighting = true;
     Text* mOverlayText = nullptr;
     std::vector<std::string> mFavoritedDirs;
+    std::vector<std::string> mRecentProjects;
 
     // Methods
     void Init();
@@ -115,6 +116,9 @@ struct EditorState
 
     void ReadEditorSave();
     void WriteEditorSave();
+
+    void ReadEditorProjectSave();
+    void WriteEditorProjectSave();
 
     void SetSelectedNode(Node* newNode);
     void AddSelectedNode(Node* node, bool addAllChildren);
@@ -185,6 +189,8 @@ struct EditorState
     bool IsDirFavorited(const std::string& dirPath);
     void AddFavoriteDir(const std::string& dirPath);
     void RemoveFavoriteDir(const std::string& dirPath);
+
+    void AddRecentProject(const std::string& projPath);
 };
 
 EditorState* GetEditorState();
