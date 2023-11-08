@@ -752,7 +752,7 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                 static std::string sOrigVal;
                 sTempString = prop.GetString(i);
 
-                ImGui::InputText("", &sTempString);
+                ImGui::InputTextMultiline("", &sTempString, ImVec2(ImGui::CalcItemWidth(), 19.0f), ImGuiInputTextFlags_CtrlEnterForNewLine);
 
                 if (ImGui::IsItemActivated())
                 {
