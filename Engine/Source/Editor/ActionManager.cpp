@@ -59,6 +59,8 @@
 
 #define STANDALONE_RELEASE 0
 
+#define USE_IMGUI_FILE_BROWSER (!PLATFORM_WINDOWS)
+
 ActionManager* ActionManager::sInstance = nullptr;
 
 TypeId CheckDaeAssetType(const char* path)
@@ -1035,13 +1037,20 @@ static void HandleNewProjectCallback(const std::string& folderPath)
 
 void ActionManager::CreateNewProject(const char* folderPath)
 {
-    if (folderPath == nullptr)
+    std::string folderPathStr = folderPath ? folderPath : "";
+
+    if (folderPathStr == "")
     {
+#if USE_IMGUI_FILE_BROWSER
         EditorOpenFileBrowser(HandleNewProjectCallback, true);
+#else
+        folderPathStr = SYS_SelectFolderDialog();
+#endif
     }
-    else
+
+    if (folderPathStr != "")
     {
-        std::string newProjDir = folderPath;
+        std::string newProjDir = folderPathStr;
         std::replace(newProjDir.begin(), newProjDir.end(), '\\', '/');
 
         // Remove trailing slash
@@ -1095,13 +1104,20 @@ static void HandleOpenProjectCallback(const std::string& filePath)
 
 void ActionManager::OpenProject(const char* path)
 {
-    if (path == nullptr)
+    std::string pathStr = path ? path : "";
+
+    if (pathStr == "")
     {
+#if USE_IMGUI_FILE_BROWSER
         EditorOpenFileBrowser(HandleOpenProjectCallback, false);
+#else
+        pathStr = SYS_OpenFileDialog();
+#endif
     }
-    else
+
+    if (pathStr != "")
     {
-        LoadProject(path);
+        LoadProject(pathStr);
 
         // Handle new project directory
         GetEditorState()->ClearAssetDirHistory();
@@ -1235,20 +1251,25 @@ static void HandleImportCallback(const std::string& filePath)
     }
 }
 
-Asset* ActionManager::ImportAsset()
+void ActionManager::ImportAsset()
 {
-    Asset* retAsset = nullptr;
-
     if (GetEngineState()->mProjectPath != "")
     {
+#if USE_IMGUI_FILE_BROWSER
         EditorOpenFileBrowser(HandleImportCallback, false);
+#else
+        std::string filePath = SYS_OpenFileDialog();
+
+        if (filePath != "")
+        {
+            ImportAsset(filePath);
+        }
+#endif
     }
     else
     {
         LogWarning("Cannot import asset. No project loaded.");
     }
-
-    return retAsset;
 }
 
 Asset* ActionManager::ImportAsset(const std::string& path)

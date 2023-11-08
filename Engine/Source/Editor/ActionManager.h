@@ -99,7 +99,7 @@ public:
     void SaveSelectedAsset();
     void DeleteSelectedNodes();
     void DeleteNode(Node* node);
-    Asset* ImportAsset();
+    void ImportAsset();
     Asset* ImportAsset(const std::string& path);
     void ImportScene(const SceneImportOptions& options);
     void BuildData(Platform platform, bool embedded);
