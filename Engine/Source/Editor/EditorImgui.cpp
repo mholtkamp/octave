@@ -37,7 +37,7 @@
 #if PLATFORM_WINDOWS
 #include "backends/imgui_impl_win32.cpp"
 #elif PLATFORM_LINUX
-#error Get the linux backend working!
+//#error Get the linux backend working!
 #endif
 
 struct FileBrowserDirEntry

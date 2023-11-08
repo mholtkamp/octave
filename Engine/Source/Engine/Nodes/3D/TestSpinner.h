@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Nodes/Node.h"
-#include "Nodes/3D/StaticMesh3D.h"
+#include "Nodes/3D/StaticMesh3d.h"
 
 class StaticMesh3D;
 class PointLight3D;

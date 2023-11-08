@@ -48,8 +48,9 @@ endif
 TARGET		:=	$(notdir $(CURDIR))
 SOURCES		:=	Source \
 				Source/Engine \
-				Source/Engine/Widgets \
-				Source/Engine/Components \
+				Source/Engine/Nodes \
+				Source/Engine/Nodes/3D \
+				Source/Engine/Nodes/Widgets \
 				Source/Engine/Assets \
 				Source/System Source/System/Linux \
 				Source/Graphics \
@@ -63,7 +64,7 @@ SOURCES		:=	Source \
 				Source/LuaBindings \
 				../External/Lua \
 				../External/Vorbis
-INCLUDES	:=	Include Include/Engine ../External ../External/Vorbis ../External/Bullet $(VULKAN_SDK)/include 
+INCLUDES	:=	Source Source/Engine ../External ../External/Vorbis ../External/Bullet $(VULKAN_SDK)/include 
 OUTPUT_DIR	:=	$(CURDIR)/Build/Linux
 BULLET_DIR	:=	$(CURDIR)/../External/Bullet
 ASSIMP_DIR	:=	$(CURDIR)/../External/Assimp
@@ -80,8 +81,8 @@ BUILD		:=	Intermediate/Linux/EngineGame
 TARGET		:= EngineGame
 else
 CFLAGS	+=	-DEDITOR=1
-INCLUDES += ../External/Assimp ../External/IrrXML ../External/Zlib Include/Editor
-SOURCES +=	Source/Editor Source/Editor/Widgets
+INCLUDES += ../External/Assimp ../External/IrrXML ../External/Zlib Source/Editor ../External/Imgui
+SOURCES +=	Source/Editor Source/Editor/Widgets ../External/Imgui ../External/Imgui/misc/cpp
 TARGET		:= EngineEditor
 BUILD		:=	Intermediate/Linux/EngineEditor
 endif
