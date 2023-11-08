@@ -241,6 +241,21 @@ static void DrawFileBrowserContextPopup(FileBrowserDirEntry* entry)
     }
 }
 
+static std::string GetDirShortName(const std::string& dirName)
+{
+    std::string shortName = dirName;
+    size_t slash1 = shortName.find_last_of("/\\", shortName.size() - 2);
+    size_t slash2 = shortName.find_last_of("/\\");
+
+    if (slash1 != std::string::npos &&
+        slash2 != std::string::npos)
+    {
+        shortName = shortName.substr(slash1 + 1, (slash2 - slash1 - 1));
+    }
+
+    return shortName;
+}
+
 static void DrawFileBrowser()
 {
     bool contextPopupOpen = false;
@@ -297,22 +312,15 @@ static void DrawFileBrowser()
         }
 
         ImGui::SameLine();
+        std::string curDirShortName = GetDirShortName(sFileBrowserCurDir);
 
-        if (ImGui::BeginCombo("Favorites", dirFaved ? sFileBrowserCurDir.c_str() : ""))
+        if (ImGui::BeginCombo("Favorites", dirFaved ? curDirShortName.c_str() : ""))
         {
             const std::vector<std::string>& favedDirs = GetEditorState()->mFavoritedDirs;
             for (uint32_t i = 0; i < favedDirs.size(); ++i)
             {
-                std::string dispName = favedDirs[i];
-                size_t slash1 = dispName.find_last_of("/\\", dispName.size() - 2);
-                size_t slash2 = dispName.find_last_of("/\\");
-
-                if (slash1 != std::string::npos &&
-                    slash2 != std::string::npos)
-                {
-                    dispName = dispName.substr(slash1 + 1, (slash2 - slash1 - 1));
-                    dispName += " --- " + favedDirs[i];
-                }
+                std::string dispName = GetDirShortName(favedDirs[i]);
+                dispName += " --- " + favedDirs[i];
 
                 if (ImGui::Selectable(dispName.c_str()))
                 {
