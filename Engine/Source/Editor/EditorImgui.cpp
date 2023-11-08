@@ -82,9 +82,19 @@ static void PopulateFileBrowserDirs()
 
     sFileBrowserEntries.clear();
 
-    DirEntry dirEntry = { };
-
+    DirEntry dirEntry;
     SYS_OpenDirectory(sFileBrowserCurDir, dirEntry);
+
+    if (!dirEntry.mValid)
+    {
+        // Invalid directory. Renamed or no longer exists?
+        // Remove favorite in case it was favorited. Will do nothing if not favorited.
+        GetEditorState()->RemoveFavoriteDir(sFileBrowserCurDir);
+
+        // Default to project directory.
+        sFileBrowserCurDir = SYS_GetAbsolutePath(GetEngineState()->mProjectDirectory);
+        SYS_OpenDirectory(sFileBrowserCurDir, dirEntry);
+    }
 
     while (dirEntry.mValid)
     {
