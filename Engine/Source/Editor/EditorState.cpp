@@ -30,7 +30,7 @@
 static EditorState sEditorState;
 
 constexpr const char* kEditorSaveFile = "Editor.sav";
-constexpr int32_t kEditorSaveVersion = 1;
+constexpr int32_t kEditorSaveVersion = 2;
 
 EditorState* GetEditorState()
 {
@@ -59,6 +59,8 @@ void EditorState::Init()
 
 void EditorState::Shutdown()
 {
+    WriteEditorSave();
+
     Node::Destruct(mOverlayText);
     mOverlayText = nullptr;
 
@@ -191,6 +193,14 @@ void EditorState::ReadEditorSave()
         if (version == kEditorSaveVersion)
         {
             stream.ReadString(mStartupSceneName);
+
+            uint32_t numFavDirs = stream.ReadUint32();
+            for (uint32_t i = 0; i < numFavDirs; ++i)
+            {
+                std::string favDir;
+                stream.ReadString(favDir);
+                mFavoritedDirs.push_back(favDir);
+            }
         }
         else
         {
@@ -204,6 +214,11 @@ void EditorState::WriteEditorSave()
     Stream stream;
     stream.WriteInt32(kEditorSaveVersion);
     stream.WriteString(mStartupSceneName);
+    stream.WriteUint32((uint32_t)mFavoritedDirs.size());
+    for (uint32_t i = 0; i < mFavoritedDirs.size(); ++i)
+    {
+        stream.WriteString(mFavoritedDirs[i]);
+    }
 
     SYS_WriteSave(kEditorSaveFile, stream);
 }
@@ -1125,5 +1140,38 @@ Viewport2D* EditorState::GetViewport2D()
 {
     return mViewport2D;
 }
+
+bool EditorState::IsDirFavorited(const std::string& dirPath)
+{
+    bool favorited = false;
+
+    for (uint32_t i = 0; i < mFavoritedDirs.size(); ++i)
+    {
+        if (mFavoritedDirs[i] == dirPath)
+        {
+            favorited = true;
+        }
+    }
+
+    return favorited;
+}
+
+void EditorState::AddFavoriteDir(const std::string& dirPath)
+{
+    if (std::find(mFavoritedDirs.begin(), mFavoritedDirs.end(), dirPath) == mFavoritedDirs.end())
+    {
+        mFavoritedDirs.push_back(dirPath);
+    }
+}
+
+void EditorState::RemoveFavoriteDir(const std::string& dirPath)
+{
+    auto it = std::find(mFavoritedDirs.begin(), mFavoritedDirs.end(), dirPath);
+    if (it != mFavoritedDirs.end())
+    {
+        mFavoritedDirs.erase(it);
+    }
+}
+
 
 #endif

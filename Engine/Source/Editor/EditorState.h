@@ -103,6 +103,7 @@ struct EditorState
     bool mShowInterface = true;
     bool mPreviewLighting = true;
     Text* mOverlayText = nullptr;
+    std::vector<std::string> mFavoritedDirs;
 
     // Methods
     void Init();
@@ -180,6 +181,10 @@ struct EditorState
 
     Viewport3D* GetViewport3D();
     Viewport2D* GetViewport2D();
+
+    bool IsDirFavorited(const std::string& dirPath);
+    void AddFavoriteDir(const std::string& dirPath);
+    void RemoveFavoriteDir(const std::string& dirPath);
 };
 
 EditorState* GetEditorState();

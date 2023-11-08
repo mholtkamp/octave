@@ -54,6 +54,7 @@ static const ImGuiWindowFlags kPaneWindowFlags = ImGuiWindowFlags_NoResize | ImG
 static const ImVec4 kSelectedColor = ImVec4(0.12f, 0.50f, 0.47f, 1.00f);
 static const ImVec4 kBgInactive = ImVec4(0.20f, 0.20f, 0.68f, 1.00f);
 static const ImVec4 kBgHover = ImVec4(0.26f, 0.61f, 0.98f, 0.80f);
+static const ImVec4 kToggledColor = ImVec4(0.7f, 0.2f, 0.2f, 1.0f);
 
 constexpr const uint32_t kPopupInputBufferSize = 256;
 static char sPopupInputBuffer[kPopupInputBufferSize] = {};
@@ -140,6 +141,11 @@ void EditorOpenFileBrowser(FileBrowserCallbackFP callback, bool folderMode)
     {
         LogWarning("Failed to open file browser. It is already open.");
     }
+}
+
+void EditorSetFileBrowserDir(const std::string& dir)
+{
+    sFileBrowserCurDir = dir;
 }
 
 static void DrawFileBrowserContextPopup(FileBrowserDirEntry* entry)
@@ -258,7 +264,7 @@ static void DrawFileBrowser()
     {
         ImGuiIO& io = ImGui::GetIO();
         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-        ImGui::SetNextWindowSize(ImVec2(465, 465));
+        ImGui::SetNextWindowSize(ImVec2(465, 490));
     }
 
     if (ImGui::BeginPopupModal("File Browser", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
@@ -267,6 +273,56 @@ static void DrawFileBrowser()
 
         // Text that shows current directory.
         ImGui::Text(sFileBrowserCurDir.c_str());
+
+        bool dirFaved = GetEditorState()->IsDirFavorited(sFileBrowserCurDir);
+        if (dirFaved)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button, kToggledColor);
+        }
+
+        if (ImGui::Button("F", ImVec2(20, 20)))
+        {
+            if (dirFaved)
+                GetEditorState()->RemoveFavoriteDir(sFileBrowserCurDir);
+            else
+                GetEditorState()->AddFavoriteDir(sFileBrowserCurDir);
+        }
+
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone))
+            ImGui::SetTooltip("Favorite");
+
+        if (dirFaved)
+        {
+            ImGui::PopStyleColor();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::BeginCombo("Favorites", dirFaved ? sFileBrowserCurDir.c_str() : ""))
+        {
+            const std::vector<std::string>& favedDirs = GetEditorState()->mFavoritedDirs;
+            for (uint32_t i = 0; i < favedDirs.size(); ++i)
+            {
+                std::string dispName = favedDirs[i];
+                size_t slash1 = dispName.find_last_of("/\\", dispName.size() - 2);
+                size_t slash2 = dispName.find_last_of("/\\");
+
+                if (slash1 != std::string::npos &&
+                    slash2 != std::string::npos)
+                {
+                    dispName = dispName.substr(slash1 + 1, (slash2 - slash1 - 1));
+                    dispName += " --- " + favedDirs[i];
+                }
+
+                if (ImGui::Selectable(dispName.c_str()))
+                {
+                    sFileBrowserCurDir = favedDirs[i];
+                    sFileBrowserNeedsRefresh = true;
+                }
+            }
+
+            ImGui::EndCombo();
+        }
 
         // List of selectables that let you navigate/open/delete.
         {
@@ -2071,7 +2127,7 @@ static void DrawPropertiesPanel()
                 bool inspectLocked = GetEditorState()->IsInspectLocked();
                 if (inspectLocked)
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_Button, kToggledColor);
                 }
 
                 ImGui::SetCursorPos(lockPos);
