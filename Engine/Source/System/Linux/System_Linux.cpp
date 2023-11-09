@@ -15,6 +15,11 @@
 #include <assert.h>
 #include <signal.h>
 
+#if EDITOR
+#include "imgui.h"
+#include "imgui_impl_xcb.h"
+#endif
+
 extern bool gWarpCursor;
 extern int32_t gWarpCursorX;
 extern int32_t gWarpCursorY;
@@ -139,6 +144,9 @@ void HandleXcbEvent(xcb_generic_event_t* event)
 {
     EngineState& engine = *GetEngineState();
     SystemState& system = engine.mSystem;
+
+    if (ImGui_ImplXcb_EventHandler(event))
+        return;
 
     switch (event->response_type & 0x7f)
     {
@@ -387,11 +395,17 @@ void SYS_Initialize()
     {
         SYS_SetFullscreen(true);
     }
+
+#if EDITOR
+    ImGui_ImplXcb_Init(system.mXcbWindow);
+#endif
 }
 
 void SYS_Shutdown()
 {
     SystemState& system = GetEngineState()->mSystem;
+
+    ImGui_ImplXcb_Shutdown();
 
     xcb_free_cursor (system.mXcbConnection, system.mNullCursor);
 
@@ -473,6 +487,10 @@ void SYS_Update()
             Quit();
         }
     }
+
+#if EDITOR
+    ImGui_ImplXcb_NewFrame();
+#endif
 }
 
 // Files

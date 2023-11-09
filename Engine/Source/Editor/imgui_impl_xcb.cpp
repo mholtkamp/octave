@@ -8,7 +8,7 @@
 #ifndef IMGUI_DISABLE
 #include "imgui_impl_xcb.h"
 
-#include "Input.h"
+#include "Input/Input.h"
 #include "InputDevices.h"
 #include "Engine.h"
 
