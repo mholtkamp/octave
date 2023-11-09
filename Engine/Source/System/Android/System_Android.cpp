@@ -525,6 +525,9 @@ std::string SYS_GetAbsolutePath(const std::string& relativePath)
         free(resolvedPath);
     }
 
+    if (absPath != "")
+        absPath += "/";
+
     return absPath;
 }
 
