@@ -240,7 +240,7 @@ IMGUI_IMPL_API int32_t ImGui_ImplXcb_EventHandler(xcb_generic_event_t* event)
     {
         xcb_button_press_event_t* press = (xcb_button_press_event_t*) event;
 
-        int button = 0;
+        int button = -1;
         if (press->detail == XCB_BUTTON_INDEX_1) { button = 0; }
         if (press->detail == XCB_BUTTON_INDEX_3) { button = 1; }
         if (press->detail == XCB_BUTTON_INDEX_2) { button = 2; }
@@ -254,21 +254,27 @@ IMGUI_IMPL_API int32_t ImGui_ImplXcb_EventHandler(xcb_generic_event_t* event)
             io.AddMouseWheelEvent(0.0f, -1.0f);
         }
 
-        io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
-        io.AddMouseButtonEvent(button, true);
+        if (button != -1)
+        {
+            io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
+            io.AddMouseButtonEvent(button, true);
+        }
         return 0;
     }
     case XCB_BUTTON_RELEASE:
     {
         xcb_button_press_event_t* release = (xcb_button_press_event_t*) event;
 
-        int button = 0;
+        int button = -1;
         if (release->detail == XCB_BUTTON_INDEX_1) { button = 0; }
         if (release->detail == XCB_BUTTON_INDEX_3) { button = 1; }
         if (release->detail == XCB_BUTTON_INDEX_2) { button = 2; }
 
-        io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
-        io.AddMouseButtonEvent(button, false);
+        if (button != -1)
+        {
+            io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
+            io.AddMouseButtonEvent(button, false);
+        }
         return 0;
     }
     case XCB_KEY_PRESS:
@@ -322,6 +328,20 @@ IMGUI_IMPL_API int32_t ImGui_ImplXcb_EventHandler(xcb_generic_event_t* event)
             }
         }
 #endif
+
+        return 0;
+    }
+    case XCB_KEY_RELEASE:
+    {
+        const xcb_key_release_event_t* keyEvent = (const xcb_key_release_event_t*) event;
+
+        xcb_keycode_t keyCode = keyEvent->detail;
+        
+        // Submit key event
+        const ImGuiKey key = ImGui_ImplXcb_VirtualKeyToImGuiKey(keyCode);
+        const int scancode = -1;
+        if (key != ImGuiKey_None)
+            ImGui_ImplXcb_AddKeyEvent(key, false, keyCode, scancode);
 
         return 0;
     }
