@@ -108,6 +108,18 @@ static void PopulateFileBrowserDirs()
     }
 
     SYS_CloseDirectory(dirEntry);
+
+    // Sort entries alphabetically. Perhaps add different sorting methods in the future.
+    auto alphaComp = [&](const FileBrowserDirEntry& l, const FileBrowserDirEntry& r)
+    {
+        if (l.mName == "..")
+            return true;
+        else if (r.mName == "..")
+            return false;
+        return l.mName < r.mName;
+    };
+
+    std::sort(sFileBrowserEntries.begin(), sFileBrowserEntries.end(), alphaComp);    
 }
 
 void EditorOpenFileBrowser(FileBrowserCallbackFP callback, bool folderMode)
