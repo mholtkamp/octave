@@ -75,9 +75,6 @@
     <Filter Include="Source Files\Editor">
       <UniqueIdentifier>{3b70c2ca-d70b-4e25-a867-def9107acb59}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Editor\Widgets">
-      <UniqueIdentifier>{6dd96cb5-5cc9-470e-8286-80d1ef315baa}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Network\3DS">
       <UniqueIdentifier>{e4f01309-129d-4ead-afe5-10ce95b79e5b}</UniqueIdentifier>
     </Filter>
@@ -278,27 +275,6 @@
     <ClCompile Include="Source\Editor\InputManager.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Editor\PanelManager.cpp">
-      <Filter>Source Files\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\AssetsPanel.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\HierarchyPanel.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\OutlinerPanel.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\Panel.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\PropertiesPanel.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\PropertyWidget.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\NetFunc.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -488,9 +464,6 @@
     <ClCompile Include="Source\LuaBindings\System_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\SceneImportWidget.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\TimerManager.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -499,9 +472,6 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\ScriptUtils.cpp">
       <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Widgets\WidgetHierarchyPanel.cpp">
-      <Filter>Source Files\Editor\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Poly_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
@@ -804,9 +774,6 @@
     <ClInclude Include="Source\Editor\InputManager.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Editor\PanelManager.h">
-      <Filter>Source Files\Editor</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Editor\ActionManager.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
@@ -821,30 +788,6 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\Grid.h">
       <Filter>Source Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\PropertiesPanel.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\PropertyWidget.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\SceneImportWidget.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\WidgetHierarchyPanel.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\AssetsPanel.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\HierarchyPanel.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\OutlinerPanel.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Widgets\Panel.h">
-      <Filter>Source Files\Editor\Widgets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Assets\Material.h">
       <Filter>Source Files\Engine\Assets</Filter>

@@ -2,7 +2,6 @@
 
 #include "EditorState.h"
 #include "EditorConstants.h"
-#include "PanelManager.h"
 #include "ActionManager.h"
 #include "Nodes/Node.h"
 #include "Asset.h"
@@ -24,7 +23,6 @@
 #include "EditorImgui.h"
 #include "Viewport3d.h"
 #include "Viewport2d.h"
-#include "Widgets/PropertiesPanel.h"
 #include "Input/Input.h"
 
 static EditorState sEditorState;

@@ -27,7 +27,6 @@
 
 #if EDITOR
 #include "Editor/EditorState.h"
-#include "Editor/PanelManager.h"
 #endif
 
 #define ASYNC_REQUEUE_LIMIT 30

@@ -22,16 +22,12 @@
 #include "Nodes/Widgets/TextField.h"
 #include "Nodes/Widgets/Canvas.h"
 
-#include "Widgets/Panel.h"
-#include "Widgets/AssetsPanel.h"
-
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/PointLight3d.h"
 #include "Nodes/3D/TestSpinner.h"
 
 #include "ActionManager.h"
 #include "InputManager.h"
-#include "PanelManager.h"
 #include "Grid.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/Font.h"

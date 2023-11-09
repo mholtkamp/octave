@@ -23,7 +23,6 @@
 #include "AssetManager.h"
 #include "EditorState.h"
 #include "EditorUtils.h"
-#include "PanelManager.h"
 #include "Nodes/Widgets/Button.h"
 #include "Assets/Scene.h"
 #include "Assets/Texture.h"
@@ -112,53 +111,6 @@ ActionManager::~ActionManager()
 void ActionManager::Update()
 {
 
-}
-
-void HandleBuildButtonPressed(Button* button)
-{
-#if NODE_CONV_EDITOR
-    std::string buttonText = button->GetTextString();
-    ActionManager* am = ActionManager::Get();
-
-    if (buttonText == "Windows")
-    {
-        am->BuildData(Platform::Windows, false);
-    }
-    else if (buttonText == "Linux")
-    {
-        am->BuildData(Platform::Linux, false);
-    }
-    else if (buttonText == "Android")
-    {
-        am->BuildData(Platform::Android, false);
-    }
-    else if (buttonText == "GameCube")
-    {
-        am->BuildData(Platform::GameCube, false);
-    }
-    else if (buttonText == "Wii")
-    {
-        am->BuildData(Platform::Wii, false);
-    }
-    else if (buttonText == "3DS")
-    {
-        am->BuildData(Platform::N3DS, false);
-    }
-    else if (buttonText == "GameCube Embedded")
-    {
-        am->BuildData(Platform::GameCube, true);
-    }
-    else if (buttonText == "Wii Embedded")
-    {
-        am->BuildData(Platform::Wii, true);
-    }
-    else if (buttonText == "3DS Embedded")
-    {
-        am->BuildData(Platform::N3DS, true);
-    }
-
-    GetActionList()->Hide();
-#endif
 }
 
 void ActionManager::BuildData(Platform platform, bool embedded)

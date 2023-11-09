@@ -6,7 +6,6 @@
 #include "Engine.h"
 #include "EditorUtils.h"
 #include "ActionManager.h"
-#include "PanelManager.h"
 #include "Maths.h"
 #include "Renderer.h"
 
