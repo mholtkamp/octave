@@ -167,6 +167,7 @@ void HandleXcbEvent(xcb_generic_event_t* event)
     case XCB_BUTTON_PRESS:
     {
         xcb_button_press_event_t* press = (xcb_button_press_event_t*) event;
+
         if (press->detail == XCB_BUTTON_INDEX_1)
             INP_SetMouseButton(MouseCode::MOUSE_LEFT);
         if (press->detail == XCB_BUTTON_INDEX_2)
@@ -177,6 +178,10 @@ void HandleXcbEvent(xcb_generic_event_t* event)
             INP_SetScrollWheelDelta(INP_GetScrollWheelDelta() + 1);
         if (press->detail == XCB_BUTTON_INDEX_5)
             INP_SetScrollWheelDelta(INP_GetScrollWheelDelta() - 1);
+        if (press->detail == 8)
+            INP_SetMouseButton(MouseCode::MOUSE_X1);
+        if (press->detail == 9)
+            INP_SetMouseButton(MouseCode::MOUSE_X2);
             
         break;
     }
@@ -189,6 +194,10 @@ void HandleXcbEvent(xcb_generic_event_t* event)
             INP_ClearMouseButton(MouseCode::MOUSE_MIDDLE);
         if (release->detail == XCB_BUTTON_INDEX_3)
             INP_ClearMouseButton(MouseCode::MOUSE_RIGHT);
+        if (release->detail == 8)
+            INP_ClearMouseButton(MouseCode::MOUSE_X1);
+        if (release->detail == 9)
+            INP_ClearMouseButton(MouseCode::MOUSE_X2);
         break;
     }
     case XCB_KEY_PRESS:
