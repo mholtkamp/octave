@@ -40,11 +40,11 @@ file(GLOB_RECURSE SrcStandalone "../../../../../../Standalone/Source/*.cpp")
 include_directories("../../../../../../External/Lua/")
 include_directories("../../../../../../External/Vorbis/")
 include_directories("../../../../../../External/Bullet/")
-include_directories("../../../../../../Engine/Include/"
-        "../../../../../../Engine/Include/Engine/"
+include_directories("../../../../../../Engine/Source/"
+        "../../../../../../Engine/Source/Engine/"
         "../../../../../../External/"
         "../../../../../../External/Bullet/")
-include_directories("../../../../../../Standalone/Include")
+include_directories("../../../../../../Standalone/Source")
 
 add_library( # Sets the name of the library.
         standalone
