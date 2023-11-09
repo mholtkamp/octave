@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 
 #include "System/System.h"
+#include "Input/Input.h"
 
 #include <btBulletDynamicsCommon.h>
 
@@ -309,6 +310,51 @@ const char* GetPlatformString(Platform platform)
 
     return retString;
 }
+
+uint8_t ConvertKeyCodeToChar(uint8_t keyCode, bool shiftDown)
+{
+    uint8_t retChar = 0;
+    retChar = INP_ConvertKeyCodeToChar(keyCode);
+
+    if (retChar >= 'A' &&
+        retChar <= 'Z' &&
+        !shiftDown)
+    {
+        // If not shifted, make the character lower-case.
+        // TODO: handle caps lock state.
+        retChar += 32;
+    }
+    else if (shiftDown)
+    {
+        switch (retChar)
+        {
+        case '`': retChar = '~'; break;
+        case '1': retChar = '!'; break;
+        case '2': retChar = '@'; break;
+        case '3': retChar = '#'; break;
+        case '4': retChar = '$'; break;
+        case '5': retChar = '%'; break;
+        case '6': retChar = '^'; break;
+        case '7': retChar = '&'; break;
+        case '8': retChar = '*'; break;
+        case '9': retChar = '('; break;
+        case '0': retChar = ')'; break;
+        case '-': retChar = '_'; break;
+        case '=': retChar = '+'; break;
+        case '[': retChar = '{'; break;
+        case ']': retChar = '}'; break;
+        case '\\': retChar = '|'; break;
+        case ';': retChar = ':'; break;
+        case '\'': retChar = '\"'; break;
+        case ',': retChar = '<'; break;
+        case '.': retChar = '>'; break;
+        case '/': retChar = '?'; break;
+        }
+    }
+
+    return retChar;
+}
+
 
 glm::mat4 MakeTransform(glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale)
 {

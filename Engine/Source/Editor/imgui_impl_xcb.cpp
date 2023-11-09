@@ -11,6 +11,7 @@
 #include "Input/Input.h"
 #include "InputDevices.h"
 #include "Engine.h"
+#include "Utilities.h"
 
 struct ImGui_ImplXcb_Data
 {
@@ -288,6 +289,11 @@ IMGUI_IMPL_API int32_t ImGui_ImplXcb_EventHandler(xcb_generic_event_t* event)
         if (key != ImGuiKey_None)
             ImGui_ImplXcb_AddKeyEvent(key, true, keyCode, scancode);
 
+        uint8_t charVal = ConvertKeyCodeToChar((uint8_t)keyCode, IsShiftDown());
+        if (charVal != 0)
+        {
+            io.AddInputCharacter(charVal);
+        }
 
         // Win32 implementation for reference.
 #if 0

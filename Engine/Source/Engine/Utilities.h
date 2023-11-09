@@ -42,6 +42,8 @@ uint32_t GetStringSerializationSize(const std::string& str);
 
 const char* GetPlatformString(Platform platform);
 
+uint8_t ConvertKeyCodeToChar(uint8_t keyCode, bool shiftDown);
+
 glm::mat4 MakeTransform(glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale);
 
 void AddDebugDraw(const DebugDraw& draw);
