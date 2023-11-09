@@ -462,8 +462,8 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
     {
         // Forward pass may render to a different resolution than other passes because of Render Scale setting.
         glm::uvec4 vp = Renderer::Get()->GetSceneViewport();
-        SetViewport(vp.x, vp.y, vp.z, vp.w, false, true);
-        SetScissor(vp.x, vp.y, vp.z, vp.w, false, true);
+        SetViewport(vp.x, vp.y, vp.z, vp.w, true, true);
+        SetScissor(vp.x, vp.y, vp.z, vp.w, true, true);
     }
 
     vkCmdBeginRenderPass(mCommandBuffers[mFrameIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -1806,16 +1806,18 @@ void VulkanContext::UpdateGlobalUniformData()
     // Update the camera
     World* world = GetWorld();
 
-    if (world != nullptr &&
-        world->GetActiveCamera() != nullptr)
+    if (world != nullptr)
     {
         Camera3D* camera = world->GetActiveCamera();
         EngineState* engineState = GetEngineState();
 
-        mGlobalUniformData.mViewProjMatrix = camera->GetViewProjectionMatrix();
-        mGlobalUniformData.mViewPosition = glm::vec4(camera->GetAbsolutePosition(), 1.0f);
-        mGlobalUniformData.mViewDirection = glm::vec4(camera->GetForwardVector(), 0.0f);
-        mGlobalUniformData.mViewToWorld = glm::inverse(camera->GetViewMatrix());
+        if (camera != nullptr)
+        {
+            mGlobalUniformData.mViewProjMatrix = camera->GetViewProjectionMatrix();
+            mGlobalUniformData.mViewPosition = glm::vec4(camera->GetAbsolutePosition(), 1.0f);
+            mGlobalUniformData.mViewDirection = glm::vec4(camera->GetForwardVector(), 0.0f);
+            mGlobalUniformData.mViewToWorld = glm::inverse(camera->GetViewMatrix());
+        }
 
         // Determine pre-rotation matrix. This matrix is used in widget shaders to rotate them.
         // 3D objects already have their prerotation baked into their WVP matrix.
@@ -1880,9 +1882,12 @@ void VulkanContext::UpdateGlobalUniformData()
         mGlobalUniformData.mFogNear = fog.mNear;
         mGlobalUniformData.mFogFar = fog.mFar;
 
-        mGlobalUniformData.mNearHalfWidth = 0.5f * camera->GetNearWidth();
-        mGlobalUniformData.mNearHalfHeight = 0.5f * camera->GetNearHeight();
-        mGlobalUniformData.mNearDist = camera->GetNearZ();
+        if (camera != nullptr)
+        {
+            mGlobalUniformData.mNearHalfWidth = 0.5f * camera->GetNearWidth();
+            mGlobalUniformData.mNearHalfHeight = 0.5f * camera->GetNearHeight();
+            mGlobalUniformData.mNearDist = camera->GetNearZ();
+        }
 
         mGlobalUniformData.mGameTime = engineState->mGameElapsedTime;
         mGlobalUniformData.mRealTime = engineState->mRealElapsedTime;

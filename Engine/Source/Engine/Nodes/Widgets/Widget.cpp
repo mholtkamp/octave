@@ -707,7 +707,7 @@ void Widget::UpdateRect()
     }
     else
     {
-        mScissorRect = Rect(0, 0, LARGE_BOUNDS, LARGE_BOUNDS);
+        mScissorRect = Rect((float)vp.x, (float)vp.y, (float)vp.z, (float)vp.w);
     }
 
     if (parent)

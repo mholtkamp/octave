@@ -1322,6 +1322,7 @@ void Renderer::Render(World* world)
             // ******************
             //  UI
             // ******************
+            GFX_SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
             GFX_BeginRenderPass(RenderPassId::Ui);
             RenderDraws(mWidgetDraws);
             GFX_EndRenderPass();
