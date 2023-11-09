@@ -102,6 +102,8 @@ void    ImGui_ImplXcb_NewFrame()
 
     // Update OS mouse position
     ImGui_ImplXcb_UpdateMouseData();
+
+    ImGui_ImplXcb_UpdateKeyModifiers();
 }
 
 // Map VK_xxx to ImGuiKey_xxx.
