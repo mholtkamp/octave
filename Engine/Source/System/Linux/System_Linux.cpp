@@ -174,18 +174,18 @@ void HandleXcbEvent(xcb_generic_event_t* event)
     }
     case XCB_BUTTON_RELEASE:
     {
-        xcb_button_press_event_t* press = (xcb_button_press_event_t*) event;
-        if (press->detail == XCB_BUTTON_INDEX_1)
+        xcb_button_release_event_t* release = (xcb_button_release_event_t*) event;
+        if (release->detail == XCB_BUTTON_INDEX_1)
             INP_ClearMouseButton(MouseCode::MOUSE_LEFT);
-        if (press->detail == XCB_BUTTON_INDEX_2)
+        if (release->detail == XCB_BUTTON_INDEX_2)
             INP_ClearMouseButton(MouseCode::MOUSE_MIDDLE);
-        if (press->detail == XCB_BUTTON_INDEX_3)
+        if (release->detail == XCB_BUTTON_INDEX_3)
             INP_ClearMouseButton(MouseCode::MOUSE_RIGHT);
         break;
     }
     case XCB_KEY_PRESS:
     {
-        const xcb_key_release_event_t* keyEvent = (const xcb_key_release_event_t*)event;
+        const xcb_key_press_event_t* keyEvent = (const xcb_key_press_event_t*)event;
         INP_SetKey(keyEvent->detail);
         //LogDebug("Key %d", keyEvent->detail);
         break;
