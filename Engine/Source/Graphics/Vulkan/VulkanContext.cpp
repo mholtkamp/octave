@@ -2614,6 +2614,9 @@ void VulkanContext::SavePipelineCacheToFile()
             stream.WriteBytes((uint8_t*)cacheData, (uint32_t)cacheSize);
 
             SYS_WriteSave(PIPELINE_CACHE_SAVE_NAME, stream);
+
+            free(cacheData);
+            cacheData = nullptr;
         }
     }
 }

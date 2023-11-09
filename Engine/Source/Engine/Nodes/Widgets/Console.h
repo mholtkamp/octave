@@ -4,8 +4,9 @@
 #include "Nodes/Widgets/Text.h"
 
 class ConsoleOutputText : public Text
-{
+{    
 public:
+    DECLARE_NODE(ConsoleOutputText, Text);
     float mLifetime = 0.0f;
 };
 
@@ -43,5 +44,5 @@ protected:
     Canvas* mOutputCanvas = nullptr;
     Canvas* mInputCanvas = nullptr;
     Text* mInputLine = nullptr;
-    std::vector<Text*> mOutputLines;
+    std::vector<ConsoleOutputText*> mOutputLines;
 };

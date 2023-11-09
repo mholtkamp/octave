@@ -107,6 +107,12 @@ Text::Text() :
 
 Text::~Text()
 {
+    if (mVertices != nullptr)
+    {
+        delete [] mVertices;
+        mVertices = nullptr;
+    }
+    
     GFX_DestroyTextResource(this);
 }
 

@@ -6,6 +6,7 @@
 #include "AssetManager.h"
 
 FORCE_LINK_DEF(Console);
+DEFINE_NODE(ConsoleOutputText, Text);
 DEFINE_NODE(Console, Canvas);
 
 Console::Console()

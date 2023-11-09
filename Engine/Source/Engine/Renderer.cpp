@@ -71,13 +71,13 @@ Renderer::~Renderer()
 {
     if (mConsoleWidget != nullptr)
     {
-        delete mConsoleWidget;
+        Node::Destruct(mConsoleWidget);
         mConsoleWidget = nullptr;
     }
 
     if (mStatsWidget != nullptr)
     {
-        delete mStatsWidget;
+        Node::Destruct(mStatsWidget);
         mStatsWidget = nullptr;
     }
 
@@ -97,10 +97,10 @@ void Renderer::Initialize()
     LoadDefaultFonts();
 
 #if CONSOLE_ENABLED
-    mConsoleWidget = new Console();
+    mConsoleWidget = Node::Construct<Console>();
 #endif
 
-    mStatsWidget = new StatsOverlay();
+    mStatsWidget = Node::Construct<StatsOverlay>();
 
 #if !_DEBUG
     // In release builds, default these to hidden.
