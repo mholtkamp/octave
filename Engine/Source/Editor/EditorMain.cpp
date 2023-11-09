@@ -83,6 +83,7 @@ void EditorMain(int32_t argc, char** argv)
         GetWorld()->SpawnNode<TestSpinner>();
     }
 
+    Renderer::Get()->EnableConsole(true);
     Renderer::Get()->EnableStatsOverlay(false);
 
     bool ret = true;
