@@ -27,4 +27,5 @@ public:
     void DeleteSubdirectory(const char* name);
     bool RemoveAssetStub(AssetStub* stub);
     void Purge();
+    void SortChildrenAlphabetically();
 };

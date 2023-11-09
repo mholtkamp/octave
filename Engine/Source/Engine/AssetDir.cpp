@@ -89,3 +89,31 @@ void AssetDir::Purge()
     mChildDirs.clear();
 #endif
 }
+
+void AssetDir::SortChildrenAlphabetically()
+{
+    // Sort child dirs first
+    auto alphaCompDirs = [&](const AssetDir* l, const AssetDir* r) -> bool
+    {
+        if (l->mName == "..")
+            return true;
+        else if (r->mName == "..")
+            return false;
+        return l->mName < r->mName;
+    };
+
+    std::sort(mChildDirs.begin(), mChildDirs.end(), alphaCompDirs);
+
+    
+    // Then sort asset stubs
+    auto alphaCompStubs = [&](const AssetStub* l, const AssetStub* r) -> bool
+    {
+        if (l->mName == "..")
+            return true;
+        else if (r->mName == "..")
+            return false;
+        return l->mName < r->mName;
+    };
+
+    std::sort(mAssetStubs.begin(), mAssetStubs.end(), alphaCompStubs);
+}

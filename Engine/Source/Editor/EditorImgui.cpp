@@ -119,7 +119,7 @@ static void PopulateFileBrowserDirs()
         return l.mName < r.mName;
     };
 
-    std::sort(sFileBrowserEntries.begin(), sFileBrowserEntries.end(), alphaComp);    
+    std::sort(sFileBrowserEntries.begin(), sFileBrowserEntries.end(), alphaComp);
 }
 
 void EditorOpenFileBrowser(FileBrowserCallbackFP callback, bool folderMode)

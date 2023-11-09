@@ -1085,6 +1085,11 @@ void EditorState::SetAssetDirectory(AssetDir* assetDir, bool recordHistory)
 
         mCurrentDir = assetDir;
 
+        if (mCurrentDir != nullptr)
+        {
+            mCurrentDir->SortChildrenAlphabetically();
+        }
+
         GetEditorState()->SetSelectedAssetStub(nullptr);
     }
 }
