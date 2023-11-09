@@ -92,6 +92,8 @@ void AssetDir::Purge()
 
 void AssetDir::SortChildrenAlphabetically()
 {
+    // Putting this behind an EDITOR guard because apparently AssetStubs don't have an mName member in game.
+#if EDITOR
     // Sort child dirs first
     auto alphaCompDirs = [&](const AssetDir* l, const AssetDir* r) -> bool
     {
@@ -116,4 +118,5 @@ void AssetDir::SortChildrenAlphabetically()
     };
 
     std::sort(mAssetStubs.begin(), mAssetStubs.end(), alphaCompStubs);
+#endif
 }

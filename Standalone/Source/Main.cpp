@@ -8,10 +8,10 @@
 #include "Renderer.h"
 #include "InputDevices.h"
 #include "Log.h"
-#include "Assets/Level.h"
+#include "Assets/Scene.h"
 #include "AssetManager.h"
 
-#include "Widgets/StatsOverlay.h"
+#include "Nodes/Widgets/StatsOverlay.h"
 
 #define EMBEDDED_ENABLED (PLATFORM_DOLPHIN || PLATFORM_3DS)
 
@@ -22,7 +22,7 @@ extern uint32_t gNumEmbeddedAssets;
 #endif
 
 static std::string sProjectName;
-static std::string sDefaultLevel;
+static std::string sDefaultScene;
 
 void ReadIni()
 {
@@ -40,9 +40,9 @@ void ReadIni()
             {
                 sProjectName = value;
             }
-            else if (strncmp(key, "defaultLevel", MAX_PATH_SIZE) == 0)
+            else if (strncmp(key, "defaultScene", MAX_PATH_SIZE) == 0)
             {
-                sDefaultLevel = value;
+                sDefaultScene = value;
             }
         }
     }
@@ -99,7 +99,7 @@ InitOptions OctPreInitialize()
         ReadIni();
 
         initOptions.mProjectName = sProjectName;
-        initOptions.mDefaultLevel = (sDefaultLevel != "") ? sDefaultLevel : "L_Default";
+        initOptions.mDefaultScene = (sDefaultScene != "") ? sDefaultScene : "SC_Default";
     }
 
 #endif

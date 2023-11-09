@@ -53,7 +53,7 @@ TARGET		:=	Octave
 BUILD		:=	Intermediate/Linux/Game
 SOURCES		:=	Source \
 				Generated
-INCLUDES	:=	Include ../Engine/Include ../Engine/Include/Engine ../External ../External/Bullet $(VULKAN_SDK)/include
+INCLUDES	:=	Source ../Engine/Source ../Engine/Source/Engine ../External ../External/Bullet $(VULKAN_SDK)/include
 OUTPUT_DIR	:=	$(CURDIR)/Build/Linux
 
 #---------------------------------------------------------------------------------

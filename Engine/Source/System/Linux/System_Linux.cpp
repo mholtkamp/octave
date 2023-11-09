@@ -145,8 +145,10 @@ void HandleXcbEvent(xcb_generic_event_t* event)
     EngineState& engine = *GetEngineState();
     SystemState& system = engine.mSystem;
 
+#if EDITOR
     if (ImGui_ImplXcb_EventHandler(event))
         return;
+#endif
 
     switch (event->response_type & 0x7f)
     {
@@ -414,7 +416,9 @@ void SYS_Shutdown()
 {
     SystemState& system = GetEngineState()->mSystem;
 
+#if EDITOR
     ImGui_ImplXcb_Shutdown();
+#endif
 
     xcb_free_cursor (system.mXcbConnection, system.mNullCursor);
 
