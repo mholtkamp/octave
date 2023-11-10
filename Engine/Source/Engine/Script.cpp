@@ -17,7 +17,6 @@
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
 
-std::unordered_map<std::string, Script*> Script::sTableToScriptMap;
 std::unordered_map<std::string, ScriptNetFuncMap> Script::sScriptNetFuncMap;
 
 bool Script::HandleScriptPropChange(Datum* datum, uint32_t index, const void* newValue)
@@ -1533,7 +1532,7 @@ void Script::CreateScriptInstance()
 
     // If mTableName is set, that means CreateScriptInstance is being called
     // before the previous instance was destroyed with DestroyScriptInstance.
-    if (mTableName == "" &&
+    if (!IsActive() &&
         mFileName != "")
     {
         bool classLoaded = false;
@@ -1551,9 +1550,17 @@ void Script::CreateScriptInstance()
 
         if (classLoaded)
         {
-            // Create a new table
+            // Create a new userdata if the node previously didn't have one.
+            Node_Lua::Create(L, mOwner);
+            int udIdx = lua_gettop(L);
+
+            mUserdataRef = mOwner->GetUserdataRef();
+            // The userdata ref should be assigned in Node_Lua::Create().
+            OCT_ASSERT(mUserdataRef != LUA_REFNIL);
+
+            // Create a new (uservalue) table
             lua_newtable(L);
-            int instanceTableIdx = lua_gettop(L);
+            lua_setuservalue(L, udIdx); // This pops the table from stack.
 
             // Retrieve the prototype class table
             lua_getglobal(L, mClassName.c_str());
@@ -1561,20 +1568,7 @@ void Script::CreateScriptInstance()
             int classTableIdx = lua_gettop(L);
 
             // Assign the new table's metatable to the class table
-            lua_setmetatable(L, instanceTableIdx);
-
-            Node_Lua::Create(L, GetOwner());
-            lua_setfield(L, instanceTableIdx, "node");
-
-            mTableName = mClassName + "_" + std::to_string(ScriptUtils::GetNextScriptInstanceNumber());
-
-            // Register the global name on to the script itself, so that native functions can
-            // identify what script they are working with.
-            lua_pushstring(L, mTableName.c_str());
-            lua_setfield(L, instanceTableIdx, "tableName");
-
-            // Save the new table as a global so it doesnt get GCed.
-            lua_setglobal(L, mTableName.c_str());
+            lua_setmetatable(L, udIdx);
 
             mTickEnabled = CheckIfFunctionExists("Tick");
             mHandleBeginOverlap = CheckIfFunctionExists("BeginOverlap");
@@ -1590,9 +1584,6 @@ void Script::CreateScriptInstance()
                 RegisterNetFuncs();
             }
 
-            // Register the table to comp map entry so that the script component can be found from a table name.
-            sTableToScriptMap[mTableName] = this;
-
             CallFunction("Create");
         }
         else
@@ -1606,7 +1597,7 @@ void Script::CreateScriptInstance()
 void Script::DestroyScriptInstance()
 {
 #if LUA_ENABLED
-    if (mTableName != "")
+    if (IsActive())
     {
         // Erase this instance so that it gets garbage collected.
         lua_State* L = GetLua();
@@ -1616,27 +1607,30 @@ void Script::DestroyScriptInstance()
 
             // Clear the actor and component fields of the table in case anything else tries to access it.
             // Also set a destroyed field that can be queried.
-            lua_getglobal(L, mTableName.c_str());
-            if (lua_istable(L, -1))
-            {
-                int tableIdx = lua_gettop(L);
+            lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+            OCT_ASSERT(lua_isuserdata(L, -1));
+            int udIdx = lua_gettop(L);
 
-                lua_pushnil(L);
-                lua_setfield(L, tableIdx, "node");
-
-                lua_pushboolean(L, true);
-                lua_setfield(L, tableIdx, "destroyed");
-            }
-            lua_pop(L, 1);
-
-            // Erase this global. It will eventually be garbage collected when nothing else references it.
+            // Remove the uservalue
             lua_pushnil(L);
-            lua_setglobal(L, mTableName.c_str());
+            lua_setuservalue(L, udIdx);
+
+            // Reset the node metatable back to its native metatable.
+            luaL_getmetatable(L, mOwner->GetClassName());
+            if (lua_isnil(L, -1))
+            {
+                LogError("Bad native metatable in DestroyScriptInstance().");
+                lua_pop(L, 1);
+                luaL_getmetatable(L, NODE_LUA_NAME);
+            }
+
+            OCT_ASSERT(lua_istable(L, -1));
+            lua_setmetatable(L, udIdx);
+
+            lua_pop(L, 1); // Pop userdata
         }
 
-        sTableToScriptMap.erase(mTableName);
-
-        mTableName = "";
+        mUserdataRef = LUA_REFNIL;
         mClassName = "";
 
         mScriptProps.clear();

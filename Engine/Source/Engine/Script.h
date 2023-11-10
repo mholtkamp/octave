@@ -114,7 +114,6 @@ protected:
 
     bool CheckIfFunctionExists(const char* funcName);
 
-    static std::unordered_map<std::string, Script*> sTableToScriptMap;
     static std::unordered_map<std::string, ScriptNetFuncMap> sScriptNetFuncMap;
 
     Node* mOwner = nullptr;

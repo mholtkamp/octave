@@ -182,6 +182,21 @@ void Node::Destroy()
         mScript = nullptr;
     }
 
+    // Unref userdata is it was created by Node_Lua::Create().
+    if (mUserdataRef != LUA_REFNIL)
+    {
+        lua_State* L = GetLua();
+
+        // Clear the userdata's mNode member.
+        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        Node_Lua* nodeLua = (Node_Lua*) lua_touserdata(L, -1);
+        nodeLua->mNode = nullptr;
+        lua_pop(L, 1);
+
+        luaL_unref(L, LUA_REGISTRYINDEX, mUserdataRef);
+        mUserdataRef = LUA_REFNIL;
+    }
+
     NodeRef::EraseReferencesToObject(this);
 
 #if EDITOR
@@ -1557,6 +1572,19 @@ bool Node::IsForeign() const
 bool Node::HasAuthority() const
 {
     return NetIsAuthority();
+}
+
+int Node::GetUserdataRef() const
+{
+    return mUserdataRef;
+}
+
+void Node::SetUserdataRef(int ref)
+{
+    // This should only be called once.
+    OCT_ASSERT(mUserdataRef == LUA_REFNIL);
+
+    mUserdataRef = ref;
 }
 
 bool Node::IsOwned() const

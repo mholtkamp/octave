@@ -16,29 +16,39 @@ int Node_Lua::Create(lua_State* L, Node* node)
 {
     if (node != nullptr)
     {
-        Node_Lua* nodeLua = (Node_Lua*)lua_newuserdata(L, sizeof(Node_Lua));
-        new (nodeLua) Node_Lua();
-        nodeLua->mNode = node;
-
-        int udIndex = lua_gettop(L);
-
-        // TODO-NODE: How do we extend userdata so that Lua scripts can inherit from C++ directly.
-        // We want a script to be able to call world:FindNode('Genie'):Teleport() where the node has a Genie scirpt
-        // where Teleport is defined. I THINK a decent solution would be to make the Script's table instance the uservalue for the userdata.
-        // And then Node_Lua::Index() and NewIndex() will need to query the uservalue if it has one (after all other metatables have failed __index).
-
-        luaL_getmetatable(L, node->GetClassName());
-        if (lua_isnil(L, -1))
+        if (node->GetUserdataRef() != LUA_REFNIL)
         {
-            LogWarning("Could not find object's metatable, so the top-level metatable will be used.");
-
-            // Could not find this type's metatable, so just use Node
-            lua_pop(L, 1);
-            luaL_getmetatable(L, NODE_LUA_NAME);
+            // The user data already exists. Grab it from the registry.
+            lua_rawgeti(L, LUA_REGISTRYINDEX, node->GetUserdataRef());
+            OCT_ASSERT(lua_isuserdata(L, -1));
         }
+        else
+        {
+            // Create new userdata
+            Node_Lua* nodeLua = (Node_Lua*)lua_newuserdata(L, sizeof(Node_Lua));
+            new (nodeLua) Node_Lua();
+            nodeLua->mNode = node;
 
-        OCT_ASSERT(lua_istable(L, -1));
-        lua_setmetatable(L, udIndex);
+            int udIndex = lua_gettop(L);
+            luaL_getmetatable(L, node->GetClassName());
+            if (lua_isnil(L, -1))
+            {
+                LogWarning("Could not find object's metatable, so the top-level metatable will be used.");
+
+                // Could not find this type's metatable, so just use Node
+                lua_pop(L, 1);
+                luaL_getmetatable(L, NODE_LUA_NAME);
+            }
+
+            OCT_ASSERT(lua_istable(L, -1));
+            lua_setmetatable(L, udIndex);
+
+            // Create a registry reference to the new userdata, and then save it on Node
+            // so we can reference it next time. The corresponding unref() call is done in Node::Destroy()
+            lua_pushvalue(L, udIndex);
+            int ref = luaL_ref(L, LUA_REGISTRYINDEX);
+            node->SetUserdataRef(ref);
+        }
     }
     else
     {

@@ -228,6 +228,9 @@ public:
     bool HasAuthority() const;
     bool IsOwned() const;
 
+    int GetUserdataRef() const;
+    void SetUserdataRef(int ref);
+
     NetFunc* FindNetFunc(const char* name);
     NetFunc* FindNetFunc(uint16_t index);
 
@@ -392,6 +395,7 @@ protected:
     ReplicationRate mReplicationRate = ReplicationRate::High;
 
     Script* mScript = nullptr;
+    int mUserdataRef = LUA_REFNIL;
     //NodeNetData* mNetData = nullptr;
 
 #if EDITOR
