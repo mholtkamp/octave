@@ -117,7 +117,6 @@ protected:
     static std::unordered_map<std::string, ScriptNetFuncMap> sScriptNetFuncMap;
 
     Node* mOwner = nullptr;
-    Node_Lua* mNodeLua = nullptr;
     int mUserdataRef = LUA_REFNIL;
     std::string mFileName;
     std::string mClassName;

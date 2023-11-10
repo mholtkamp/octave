@@ -1111,7 +1111,7 @@ void Script::StopScript()
 
 bool Script::IsActive() const
 {
-    return (mNodeLua != nullptr && mUserdataRef != LUA_REFNIL);
+    return (mUserdataRef != LUA_REFNIL);
 }
 
 bool Script::ReloadScriptFile(const std::string& fileName, bool restartScript)
