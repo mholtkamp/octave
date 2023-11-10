@@ -1495,16 +1495,16 @@ bool Script::OnRepHandler(Datum* datum, uint32_t index, const void* newValue)
 
     if (onRepFunc)
     {
-        // Grab the table
-        lua_getglobal(L, script->mTableName.c_str());
-        OCT_ASSERT(lua_istable(L, -1));
-        int tableIdx = lua_gettop(L);
-        lua_getfield(L, tableIdx, netDatum->mOnRepFuncName.c_str());
+        lua_rawgeti(L, LUA_REGISTRYINDEX, script->mUserdataRef);
+
+        OCT_ASSERT(lua_isuserdata(L, -1));
+        int udIdx = lua_gettop(L);
+        lua_getfield(L, udIdx, netDatum->mOnRepFuncName.c_str());
 
         if (lua_isfunction(L, -1))
         {
             // (2) If the func is valid, call it and pass the new value
-            lua_pushvalue(L, tableIdx);         // arg1 - self
+            lua_pushvalue(L, udIdx);         // arg1 - self
             lua_pushvalue(L, oldValueIdx);      // arg2 - old value
 
             netDatum->SetValueRaw(newValue);
@@ -1662,7 +1662,7 @@ void Script::CallTick(float deltaTime)
 #if LUA_ENABLED
 
 #if EDITOR
-    if (mTableName != "")
+    if (IsActive())
     {
         if (IsGameTickEnabled())
         {
@@ -1674,13 +1674,13 @@ void Script::CallTick(float deltaTime)
         }
     }
 #else
-    if (mTableName != "" && mTickEnabled)
+    if (IsActive() && mTickEnabled)
     {
         lua_State* L = GetLua();
 
-        // Grab the table
-        lua_getglobal(L, mTableName.c_str());
-        OCT_ASSERT(lua_istable(L, -1));
+        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        OCT_ASSERT(lua_isuserdata(L, -1));
+
         lua_getfield(L, -1, "Tick");
 
         if (lua_isfunction(L, -1))
@@ -1712,11 +1712,13 @@ bool Script::CheckIfFunctionExists(const char* funcName)
     bool exists = false;
 
 #if LUA_ENABLED
-    if (mTableName != "")
+    if (IsActive())
     {
         lua_State* L = GetLua();
-        lua_getglobal(L, mTableName.c_str());
-        OCT_ASSERT(lua_istable(L, -1));
+
+        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        OCT_ASSERT(lua_isuserdata(L, -1));
+
         lua_getfield(L, -1, funcName);
 
         if (lua_isfunction(L, -1))
