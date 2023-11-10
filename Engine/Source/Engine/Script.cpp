@@ -1567,8 +1567,40 @@ void Script::CreateScriptInstance()
             OCT_ASSERT(lua_istable(L, -1));
             int classTableIdx = lua_gettop(L);
 
+            if (lua_getmetatable(L, classTableIdx) == 0)
+            {
+                LogDebug("Auto-parenting script Class table to native node's table.");
+
+                luaL_getmetatable(L, mOwner->GetClassName());
+                if (lua_isnil(L, -1))
+                {
+                    LogError("Bad native metatable in CreateScriptInstance().");
+                    lua_pop(L, 1);
+                    luaL_getmetatable(L, NODE_LUA_NAME);
+                }
+
+                lua_setmetatable(L, classTableIdx); // Pops native metatable
+            }
+            else
+            {
+                // Ensure that the script class derives from the native node.
+                char classFlag[64];
+                snprintf(classFlag, 64, "cf%s", mOwner->GetClassName());
+                lua_getfield(L, classTableIdx, classFlag);
+
+                bool hasFlag = !lua_isnil(L, -1);
+                
+                if (!hasFlag)
+                {
+                    LogError("Bad inheritance chain! Make sure the script class table inherits (eventually) from the native node it is being used on.");
+                    OCT_ASSERT(0);
+                }
+
+                lua_pop(L, 1); // Pop class flag.
+            }
+
             // Assign the new table's metatable to the class table
-            lua_setmetatable(L, udIdx);
+            lua_setmetatable(L, udIdx); // Pops script class metatable
 
             mTickEnabled = CheckIfFunctionExists("Tick");
             mHandleBeginOverlap = CheckIfFunctionExists("BeginOverlap");
