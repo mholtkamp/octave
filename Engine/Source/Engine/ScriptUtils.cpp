@@ -58,9 +58,17 @@ bool ScriptUtils::LoadScriptFile(const std::string& fileName, const std::string&
         // will have access to its methods/properties.
         lua_getglobal(L, className.c_str());
         OCT_ASSERT(lua_istable(L, -1));
+        int classTableIdx = lua_gettop(L);
 
-        lua_pushvalue(L, -1);
-        lua_setfield(L, -2, "__index");
+        // Set class flag (doing a raw set here just to make sure it goes on the actual class table.
+        char classFlag[64];
+        snprintf(classFlag, 64, "cf%s", className.c_str());
+        lua_pushstring(L, classFlag);
+        lua_pushboolean(L, true);
+        lua_rawset(L, classTableIdx);
+
+        lua_pushvalue(L, classTableIdx);
+        lua_setfield(L, classTableIdx, "__index");
 
         lua_pop(L, 1);
 
