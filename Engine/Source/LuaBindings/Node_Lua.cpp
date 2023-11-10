@@ -77,6 +77,62 @@ int Node_Lua::Construct(lua_State* L)
     return 1;
 }
 
+int Node_Lua::Index(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    // TODO: Do we want to support integer keys??
+    const char* key = CHECK_STRING(L, 2);
+
+    // Check if the Node metatable has the key
+    lua_getglobal(L, NODE_LUA_NAME);
+    lua_pushvalue(L, 2);
+    lua_rawget(L, -2);
+
+    if (lua_isnil(L, -1))
+    {
+        // Otherwise check the uservalue (script)
+        lua_getuservalue(L, 1);
+        if (lua_istable(L, -1))
+        {
+            lua_pushstring(L, key);
+            lua_rawget(L, -2);
+        }
+        else
+        {
+            // Pop getuservalue return (probably nil). Nil should still be on top of stack.
+            lua_pop(L, 1);
+        }
+    }
+}
+
+int Node_Lua::NewIndex(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    // TODO: Do we want to support integer keys??
+    const char* key = CHECK_STRING(L, 2);
+
+    // First, see if we have a uservalue and assign it to the uservalue table.
+    lua_getuservalue(L, 1);
+    if (lua_istable(L, -1))
+    {
+        int uservalueIdx = lua_gettop(L);
+        lua_pushvalue(L, 2);
+        lua_pushvalue(L, 3);
+        lua_rawset(L, uservalueIdx);
+    }
+    else
+    {
+        // If no uservalue, then assign to the table itself. 
+        lua_getglobal(L, NODE_LUA_NAME);
+        int nodeTableIdx = lua_gettop(L);
+        lua_pushvalue(L, 2);
+        lua_pushvalue(L, 3);
+        lua_rawset(L, nodeTableIdx);
+    }
+
+    return 0;
+}
+
 int Node_Lua::IsValid(lua_State* L)
 {
 #if LUA_SAFE_NODE
@@ -958,6 +1014,13 @@ void Node_Lua::Bind()
     lua_setfield(L, mtIndex, "CheckType");
     lua_setfield(L, mtIndex, "Is");
     lua_setfield(L, mtIndex, "IsA");
+
+    // Add index/newindex metamethods last? To make sure we don't hit NewIndex() adding the above fields
+    lua_pushcfunction(L, Index);
+    lua_setfield(L, mtIndex, "__index");
+
+    lua_pushcfunction(L, NewIndex);
+    lua_setfield(L, mtIndex, "__newindex");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

@@ -21,6 +21,9 @@ struct Node_Lua
     static int GarbageCollect(lua_State* L);
     static int Construct(lua_State* L);
 
+    static int Index(lua_State* L);
+    static int NewIndex(lua_State* L);
+
     static int IsValid(lua_State* L);
 
     static int GetName(lua_State* L);
