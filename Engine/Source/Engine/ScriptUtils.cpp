@@ -289,17 +289,15 @@ uint32_t ScriptUtils::GetNextScriptInstanceNumber()
     return retNum;
 }
 
-void ScriptUtils::CallMethod(const char* tableName, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret)
+void ScriptUtils::CallMethod(int userdataIdx, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret)
 {
 #if LUA_ENABLED
     lua_State* L = GetLua();
 
-    OCT_ASSERT(tableName != nullptr);
-    OCT_ASSERT(*tableName != '\0');
+    OCT_ASSERT(userdataIdx != LUA_REFNIL);
 
-    // Grab the script instance table
-    lua_getglobal(L, tableName);
-    OCT_ASSERT(lua_istable(L, -1));
+    lua_rawgeti(L, LUA_REGISTRYINDEX, userdataIdx);
+    OCT_ASSERT(lua_isuserdata(L, -1));
     lua_getfield(L, -1, funcName);
 
     // Only call the function if it has been defined.
@@ -351,7 +349,7 @@ void ScriptUtils::GarbageCollect()
 #endif
 }
 
-Datum ScriptUtils::GetField(const char* table, const char* key)
+Datum ScriptUtils::GetField(int userdataIdx, const char* key)
 {
     Datum ret;
 
@@ -359,70 +357,68 @@ Datum ScriptUtils::GetField(const char* table, const char* key)
     lua_State* L = GetLua();
 
     // Grab the script instance table
-    lua_getglobal(L, table);
-    OCT_ASSERT(lua_istable(L, -1));
+    lua_rawgeti(L, LUA_REGISTRYINDEX, userdataIdx);
+    OCT_ASSERT(lua_isuserdata(L, -1));
     lua_getfield(L, -1, key);
 
     LuaObjectToDatum(L, -1, ret);
 
-    // Pop field and instance table
+    // Pop field and userdata
     lua_pop(L, 2);
 #endif
 
     return ret;
 }
 
-void ScriptUtils::SetField(const char* table, const char* key, const Datum& value)
+void ScriptUtils::SetField(int userdataIdx, const char* key, const Datum& value)
 {
 #if LUA_ENABLED
     lua_State* L = GetLua();
 
-    // Grab the script instance table
-    lua_getglobal(L, table);
-    OCT_ASSERT(lua_istable(L, -1));
+    lua_rawgeti(L, LUA_REGISTRYINDEX, userdataIdx);
+    OCT_ASSERT(lua_isuserdata(L, -1));
 
     LuaPushDatum(L, value);
     lua_setfield(L, -2, key);
-    
-    // Pop instance table
+
+    // Pop userdata
     lua_pop(L, 1);
 #endif
 }
 
-Datum ScriptUtils::GetField(const char* table, int32_t key)
+Datum ScriptUtils::GetField(int userdataIdx, int32_t key)
 {
     Datum ret;
 
 #if LUA_ENABLED
     lua_State* L = GetLua();
 
-    // Grab the script instance table
-    lua_getglobal(L, table);
-    OCT_ASSERT(lua_istable(L, -1));
+    lua_rawgeti(L, LUA_REGISTRYINDEX, userdataIdx);
+    OCT_ASSERT(lua_isuserdata(L, -1));
     lua_geti(L, -1, key);
 
     LuaObjectToDatum(L, -1, ret);
 
-    // Pop field and instance table
+    // Pop field and userdata
     lua_pop(L, 2);
 #endif
 
     return ret;
 }
 
-void ScriptUtils::SetField(const char* table, int32_t key, const Datum& value)
+void ScriptUtils::SetField(int userdataIdx, int32_t key, const Datum& value)
 {
 #if LUA_ENABLED
     lua_State* L = GetLua();
 
     // Grab the script instance table
-    lua_getglobal(L, table);
-    OCT_ASSERT(lua_istable(L, -1));
+    lua_rawgeti(L, LUA_REGISTRYINDEX, userdataIdx);
+    OCT_ASSERT(lua_isuserdata(L, -1));
 
     LuaPushDatum(L, value);
     lua_seti(L, -2, key);
 
-    // Pop instance table
+    // Pop userdata
     lua_pop(L, 1);
 #endif
 }

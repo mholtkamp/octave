@@ -130,17 +130,18 @@ void Script::SetArrayScriptPropCount(const std::string& name, uint32_t count)
 void Script::GatherScriptProperties()
 {
 #if LUA_ENABLED
-    if (mTableName != "")
+    if (IsActive())
     {
         // Even if we had valid ScriptProps already (loaded from blueprint or level file),
         // we still want to re-gather the properties because some may have been added or deleted.
         mScriptProps.clear();
 
         lua_State* L = GetLua();
-        lua_getglobal(L, mTableName.c_str());
-        if (lua_istable(L, -1))
+        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+
+        if (lua_isuserdata(L, -1))
         {
-            int scriptIdx = lua_gettop(L);
+            int udIdx = lua_gettop(L);
 
             lua_getfield(L, -1, "GatherProperties");
 
@@ -216,7 +217,7 @@ void Script::GatherScriptProperties()
 
                                 if (isArray)
                                 {
-                                    lua_getfield(L, scriptIdx, name);
+                                    lua_getfield(L, udIdx, name);
 
                                     if (!lua_istable(L, -1))
                                     {
@@ -227,7 +228,7 @@ void Script::GatherScriptProperties()
                                         // Push a copy of the arraytable on the stack so it can be used later.
                                         lua_pushvalue(L, -1);
 
-                                        lua_setfield(L, scriptIdx, name);
+                                        lua_setfield(L, udIdx, name);
                                     }
                                     else
                                     {
@@ -241,7 +242,7 @@ void Script::GatherScriptProperties()
 
                                 for (int32_t i = 0; i < count; ++i)
                                 {
-                                    lua_getfield(L, isArray ? tableIdx : scriptIdx, name);
+                                    lua_getfield(L, isArray ? tableIdx : udIdx, name);
 
                                     if (lua_isnil(L, -1) &&
                                         type != DatumType::Asset)
@@ -278,7 +279,7 @@ void Script::GatherScriptProperties()
                                         }
                                         else
                                         {
-                                            lua_setfield(L, scriptIdx, name);
+                                            lua_setfield(L, udIdx, name);
                                         }
                                     }
 
@@ -412,7 +413,7 @@ void Script::GatherScriptProperties()
             }
         }
 
-        // Pop script instance Table
+        // Pop node userdata
         lua_pop(L, 1);
     }
 #endif
@@ -431,7 +432,7 @@ void Script::SetScriptProperties(const std::vector<Property>& srcProps)
 void Script::GatherReplicatedData()
 {
 #if LUA_ENABLED
-    if (mTableName != "")
+    if (IsActive())
     {
         // Even if we had valid ScriptProps already (loaded from blueprint or level file),
         // we still want to re-gather the properties because some may have been added or deleted.
@@ -440,10 +441,10 @@ void Script::GatherReplicatedData()
         bool isServer = NetIsServer();
 
         lua_State* L = GetLua();
-        lua_getglobal(L, mTableName.c_str());
-        if (lua_istable(L, -1))
+        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        if (lua_isuserdata(L, -1))
         {
-            int scriptIdx = lua_gettop(L);
+            int udIdx = lua_gettop(L);
 
             lua_getfield(L, -1, "GatherReplicatedData");
 
@@ -501,7 +502,7 @@ void Script::GatherReplicatedData()
                             if (newDatum.mVarName != "" &&
                                 type != DatumType::Count)
                             {
-                                lua_getfield(L, scriptIdx, name);
+                                lua_getfield(L, udIdx, name);
 
                                 if (lua_isnil(L, -1) &&
                                     type != DatumType::Asset)
@@ -531,7 +532,7 @@ void Script::GatherReplicatedData()
                                     // Put a duplicate of the value on the stack so it will remain after setting the field.
                                     lua_pushvalue(L, -1);
 
-                                    lua_setfield(L, scriptIdx, name);
+                                    lua_setfield(L, udIdx, name);
                                 }
 
                                 bool push = true;
@@ -663,7 +664,7 @@ void Script::GatherReplicatedData()
             }
         }
 
-        // Pop script instance Table
+        // Pop userdata
         lua_pop(L, 1);
     }
 #endif
@@ -693,19 +694,20 @@ void Script::RegisterNetFuncs()
 void Script::GatherNetFuncs(std::vector<ScriptNetFunc>& outFuncs)
 {
 #if LUA_ENABLED
-    if (mTableName != "")
+    if (IsActive())
     {
         lua_State* L = GetLua();
-        lua_getglobal(L, mTableName.c_str());
-        if (lua_istable(L, -1))
+        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+
+        if (lua_isuserdata(L, -1))
         {
-            int scriptIdx = lua_gettop(L);
+            int udIdx = lua_gettop(L);
 
             lua_getfield(L, -1, "GatherNetFuncs");
 
             if (lua_isfunction(L, -1))
             {
-                lua_pushvalue(L, scriptIdx);   // arg1 - self
+                lua_pushvalue(L, udIdx);   // arg1 - self
                 LuaFuncCall(1, 1);
 
                 if (lua_istable(L, -1))
@@ -779,15 +781,16 @@ void Script::DownloadReplicatedData()
 #if LUA_ENABLED
     lua_State* L = GetLua();
 
-    if (mTableName != "")
+    if (IsActive())
     {
-        lua_getglobal(L, mTableName.c_str());
-        OCT_ASSERT(lua_istable(L, -1));
-        int tableIdx = lua_gettop(L);
+        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+
+        OCT_ASSERT(lua_isuserdata(L, -1));
+        int udIdx = lua_gettop(L);
 
         for (uint32_t i = 0; i < mReplicatedData.size(); ++i)
         {
-            DownloadDatum(L, mReplicatedData[i], tableIdx, mReplicatedData[i].mVarName.c_str());
+            DownloadDatum(L, mReplicatedData[i], udIdx, mReplicatedData[i].mVarName.c_str());
         }
 
         // Pop script instance table
@@ -841,23 +844,23 @@ ScriptNetFunc* Script::FindNetFunc(uint16_t index)
 void Script::ExecuteNetFunc(uint16_t index, uint32_t numParams, const Datum** params)
 {
 #if LUA_ENABLED
-    if (mTableName != "")
+    if (IsActive())
     {
         lua_State* L = GetLua();
         ScriptNetFunc* netFunc = FindNetFunc(index);
 
         if (netFunc != nullptr)
         {
-            lua_getglobal(L, mTableName.c_str());
+            lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
 
-            if (lua_istable(L, -1))
+            if (lua_isuserdata(L, -1))
             {
-                int tableIdx = lua_gettop(L);
-                lua_getfield(L, tableIdx, netFunc->mName.c_str());
+                int udIdx = lua_gettop(L);
+                lua_getfield(L, udIdx, netFunc->mName.c_str());
 
                 if (lua_isfunction(L, -1))
                 {
-                    lua_pushvalue(L, tableIdx);     // arg1 - self
+                    lua_pushvalue(L, udIdx);     // arg1 - self
 
                     for (uint32_t i = 0; i < numParams; ++i)
                     {
@@ -874,7 +877,7 @@ void Script::ExecuteNetFunc(uint16_t index, uint32_t numParams, const Datum** pa
                 }
             }
 
-            // Pop instance table
+            // Pop userdata
             lua_pop(L, 1);
         }
         else
@@ -885,12 +888,12 @@ void Script::ExecuteNetFunc(uint16_t index, uint32_t numParams, const Datum** pa
 #endif
 }
 
-bool Script::DownloadDatum(lua_State* L, Datum& datum, int tableIdx, const char* varName)
+bool Script::DownloadDatum(lua_State* L, Datum& datum, int udIdx, const char* varName)
 {
     bool success = true;
 
 #if LUA_ENABLED
-    lua_getfield(L, tableIdx, varName);
+    lua_getfield(L, udIdx, varName);
 
     if (!lua_isnil(L, -1))
     {
@@ -1007,17 +1010,18 @@ void Script::UploadDatum(Datum& datum, const char* varName)
 {
 #if LUA_ENABLED
     lua_State* L = GetLua();
-    lua_getglobal(L, mTableName.c_str());
-    if (lua_istable(L, -1))
+    lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+
+    if (lua_isuserdata(L, -1))
     {
-        int instTableIdx = lua_gettop(L);
+        int udIdx = lua_gettop(L);
         int arrayTableIdx = -1;
         uint32_t count = datum.GetCount();
 
         if (datum.IsProperty() &&
             static_cast<Property&>(datum).IsVector())
         {
-            lua_getfield(L, instTableIdx, varName);
+            lua_getfield(L, udIdx, varName);
             arrayTableIdx = lua_gettop(L);
         }
 
@@ -1052,7 +1056,7 @@ void Script::UploadDatum(Datum& datum, const char* varName)
             }
             else
             {
-                lua_setfield(L, instTableIdx, varName);
+                lua_setfield(L, udIdx, varName);
             }
         }
 
@@ -1087,14 +1091,9 @@ const std::string& Script::GetScriptClassName() const
     return mClassName;
 }
 
-const std::string& Script::GetTableName() const
-{
-    return mTableName;
-}
-
 void Script::StartScript()
 {
-    if (mTableName == "")
+    if (!IsActive())
     {
         CreateScriptInstance();
     }
@@ -1109,6 +1108,11 @@ void Script::RestartScript()
 void Script::StopScript()
 {
     DestroyScriptInstance();
+}
+
+bool Script::IsActive() const
+{
+    return (mNodeLua != nullptr && mUserdataRef != LUA_REFNIL);
 }
 
 bool Script::ReloadScriptFile(const std::string& fileName, bool restartScript)
@@ -1129,20 +1133,6 @@ bool Script::ReloadScriptFile(const std::string& fileName, bool restartScript)
     }
 
     return success;
-}
-
-Script* Script::FindScriptFromTableName(const std::string& tableName)
-{
-    Script* script = nullptr;
-
-    auto it = sTableToScriptMap.find(tableName);
-
-    if (it != sTableToScriptMap.end())
-    {
-        script = it->second;
-    }
-
-    return script;
 }
 
 std::vector<ScriptNetDatum>& Script::GetReplicatedData()
@@ -1193,19 +1183,20 @@ bool Script::InvokeNetFunc(const char* name, uint32_t numParams, const Datum** p
 void Script::BeginOverlap(Primitive3D* thisNode, Primitive3D* otherNode)
 {
 #if LUA_ENABLED
-    if (mHandleBeginOverlap && mTableName != "")
+    if (mHandleBeginOverlap && IsActive())
     {
         lua_State* L = GetLua();
 
-        // Grab the table
-        lua_getglobal(L, mTableName.c_str());
-        OCT_ASSERT(lua_istable(L, -1));
-        int tableIdx = lua_gettop(L);
-        lua_getfield(L, tableIdx, "BeginOverlap");
+        // Grab the ud
+        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+
+        OCT_ASSERT(lua_isuserdata(L, -1));
+        int udIdx = lua_gettop(L);
+        lua_getfield(L, udIdx, "BeginOverlap");
 
         if (lua_isfunction(L, -1))
         {
-            lua_pushvalue(L, tableIdx);
+            lua_pushvalue(L, udIdx);
             Node_Lua::Create(L, thisNode);
             Node_Lua::Create(L, otherNode);
 
@@ -1229,19 +1220,19 @@ void Script::BeginOverlap(Primitive3D* thisNode, Primitive3D* otherNode)
 void Script::EndOverlap(Primitive3D* thisNode, Primitive3D* otherNode)
 {
 #if LUA_ENABLED
-    if (mHandleEndOverlap && mTableName != "")
+    if (mHandleEndOverlap && IsActive())
     {
         lua_State* L = GetLua();
 
-        // Grab the table
-        lua_getglobal(L, mTableName.c_str());
-        OCT_ASSERT(lua_istable(L, -1));
-        int tableIdx = lua_gettop(L);
-        lua_getfield(L, tableIdx, "EndOverlap");
+        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+
+        OCT_ASSERT(lua_isuserdata(L, -1));
+        int udIdx = lua_gettop(L);
+        lua_getfield(L, udIdx, "EndOverlap");
 
         if (lua_isfunction(L, -1))
         {
-            lua_pushvalue(L, tableIdx);
+            lua_pushvalue(L, udIdx);
             Node_Lua::Create(L, thisNode);
             Node_Lua::Create(L, otherNode);
 
@@ -1270,19 +1261,18 @@ void Script::OnCollision(
     btPersistentManifold* manifold)
 {
 #if LUA_ENABLED
-    if (mHandleOnCollision && mTableName != "")
+    if (mHandleOnCollision && IsActive())
     {
         lua_State* L = GetLua();
 
-        // Grab the table
-        lua_getglobal(L, mTableName.c_str());
-        OCT_ASSERT(lua_istable(L, -1));
-        int tableIdx = lua_gettop(L);
-        lua_getfield(L, tableIdx, "OnCollision");
+        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        OCT_ASSERT(lua_isuserdata(L, -1));
+        int udIdx = lua_gettop(L);
+        lua_getfield(L, udIdx, "OnCollision");
 
         if (lua_isfunction(L, -1))
         {
-            lua_pushvalue(L, tableIdx);                             // arg1 - self
+            lua_pushvalue(L, udIdx);                                // arg1 - self
             Node_Lua::Create(L, thisNode);                          // arg2 - thisNode
             Node_Lua::Create(L, otherNode);                         // arg3 - otherNode
             Vector_Lua::Create(L, glm::vec4(impactPoint, 0.0f));    // arg4 - impactPoint
@@ -1305,13 +1295,12 @@ bool Script::HasFunction(const char* name) const
 {
     bool ret = false;
 
-    if (mTableName != "")
+    if (IsActive())
     {
         lua_State* L = GetLua();
 
-        // Grab the script instance table
-        lua_getglobal(L, mTableName.c_str());
-        OCT_ASSERT(lua_istable(L, -1));
+        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        OCT_ASSERT(lua_isuserdata(L, -1));
         lua_getfield(L, -1, name);
 
         // Only call the function if it has been defined.
@@ -1320,7 +1309,7 @@ bool Script::HasFunction(const char* name) const
             ret = true;
         }
 
-        // Pop table and function
+        // Pop userdata and function
         lua_pop(L, 2);
     }
 
@@ -1454,9 +1443,9 @@ Datum Script::CallFunctionR(const char* name, const Datum& param0, const Datum& 
 
 void Script::CallFunction(const char* name, uint32_t numParams, const Datum** params, Datum* ret)
 {
-    if (mTableName != "")
+    if (IsActive())
     {
-        ScriptUtils::CallMethod(mTableName.c_str(), name, numParams, params, ret);
+        ScriptUtils::CallMethod(mUserdataRef, name, numParams, params, ret);
     }
 }
 
@@ -1464,9 +1453,9 @@ Datum Script::GetField(const char* key)
 {
     Datum ret;
 
-    if (mTableName != "")
+    if (IsActive())
     {
-        ret = ScriptUtils::GetField(mTableName.c_str(), key);
+        ret = ScriptUtils::GetField(mUserdataRef, key);
     }
 
     return ret;
@@ -1475,9 +1464,9 @@ Datum Script::GetField(const char* key)
 
 void Script::SetField(const char* key, const Datum& value)
 {
-    if (mTableName != "")
+    if (IsActive())
     {
-        ScriptUtils::SetField(mTableName.c_str(), key, value);
+        ScriptUtils::SetField(mUserdataRef, key, value);
     }
 }
 

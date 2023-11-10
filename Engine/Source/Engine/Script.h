@@ -14,6 +14,7 @@ struct AnimEvent;
 class Button;
 class Selector;
 class TextField;
+class Node_Lua;
 
 typedef std::unordered_map<std::string, ScriptNetFunc> ScriptNetFuncMap;
 
@@ -33,11 +34,12 @@ public:
     void SetFile(const char* filename);
     const std::string& GetFile() const;
     const std::string& GetScriptClassName() const;
-    const std::string& GetTableName() const;
 
     void StartScript();
     void RestartScript();
     void StopScript();
+
+    bool IsActive() const;
 
     bool ReloadScriptFile(const std::string& fileName, bool restartScript = true);
 
@@ -91,8 +93,6 @@ public:
 
     static bool OnRepHandler(Datum* datum, uint32_t index, const void* newValue);
 
-    static Script* FindScriptFromTableName(const std::string& tableName);
-
 protected:
 
     static bool HandleScriptPropChange(Datum* datum, uint32_t index, const void* newValue);
@@ -107,7 +107,7 @@ protected:
     void GatherNetFuncs(std::vector<ScriptNetFunc>& outFuncs);
     void DownloadReplicatedData();
 
-    bool DownloadDatum(lua_State* L, Datum& datum, int tableIdx, const char* varName);
+    bool DownloadDatum(lua_State* L, Datum& datum, int udIdx, const char* varName);
     void UploadDatum(Datum& datum, const char* varName);
 
     void CallTick(float deltaTime);
@@ -118,9 +118,10 @@ protected:
     static std::unordered_map<std::string, ScriptNetFuncMap> sScriptNetFuncMap;
 
     Node* mOwner = nullptr;
+    Node_Lua* mNodeLua = nullptr;
+    int mUserdataRef = LUA_REFNIL;
     std::string mFileName;
     std::string mClassName;
-    std::string mTableName;
     std::vector<Property> mScriptProps;
     std::vector<ScriptNetDatum> mReplicatedData;
     bool mTickEnabled = false;

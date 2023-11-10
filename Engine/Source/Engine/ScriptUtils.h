@@ -22,16 +22,16 @@ public:
 
     static uint32_t GetNextScriptInstanceNumber();
 
-    static void CallMethod(const char* tableName, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret);
+    static void CallMethod(int userdataIdx, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret);
     static void SetBreakOnScriptError(bool enableBreak);
 
     static void GarbageCollect();
 
-    static Datum GetField(const char* table, const char* key);
-    static void SetField(const char* table, const char* key, const Datum& value);
+    static Datum GetField(int userdataIdx, const char* key);
+    static void SetField(int userdataIdx, const char* key, const Datum& value);
 
-    static Datum GetField(const char* table, int32_t key);
-    static void SetField(const char* table, int32_t key, const Datum& value);
+    static Datum GetField(int userdataIdx, int32_t key);
+    static void SetField(int userdataIdx, int32_t key, const Datum& value);
 
 private:
 
