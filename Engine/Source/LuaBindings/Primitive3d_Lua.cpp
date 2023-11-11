@@ -533,7 +533,7 @@ void Primitive3D_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, ShouldReceiveSimpleShadows);
 
     REGISTER_TABLE_FUNC(L, mtIndex, SweepToWorldPosition);
-    REGISTER_TABLE_FUNC(L, mtIndex, SweepToWorldPosition); // Alias
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SweepToWorldPosition, "SweepToPosition"); // Alias
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

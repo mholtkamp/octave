@@ -97,7 +97,7 @@ void Script_Lua::Bind()
     int tableIdx = lua_gettop(L);
 
     REGISTER_TABLE_FUNC(L, tableIdx, Load);
-    REGISTER_TABLE_FUNC(L, tableIdx, Load);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, Load, "Require");
 
     REGISTER_TABLE_FUNC(L, tableIdx, Run);
 

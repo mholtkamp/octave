@@ -185,7 +185,7 @@ void Audio_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, PlaySound3D);
 
     REGISTER_TABLE_FUNC(L, tableIdx, StopSounds);
-    REGISTER_TABLE_FUNC(L, tableIdx, StopSounds);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, StopSounds, "StopSound");
 
     REGISTER_TABLE_FUNC(L, tableIdx, StopAllSounds);
 
