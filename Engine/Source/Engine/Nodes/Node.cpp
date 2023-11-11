@@ -531,7 +531,7 @@ void Node::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Replicate Transform", this, &mReplicateTransform));
     outProps.push_back(Property(DatumType::String, "Tags", this, &mTags).MakeVector());
 
-    outProps.push_back(Property(DatumType::String, "Script File", this, &mScriptFile, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::String, "Script", this, &mScriptFile, 1, HandlePropChange));
 
 #if EDITOR
     static bool sFakeBool = false;

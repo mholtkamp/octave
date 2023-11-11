@@ -958,10 +958,9 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC_EX(L, mtIndex, CheckType, "Is");
     REGISTER_TABLE_FUNC_EX(L, mtIndex, CheckType, "IsA");
 
-    // Add index/newindex metamethods last? To make sure we don't hit NewIndex() adding the above fields
-    REGISTER_TABLE_FUNC(L, mtIndex, Index);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Index, "__index");
 
-    REGISTER_TABLE_FUNC(L, mtIndex, NewIndex);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, NewIndex, "__newindex");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

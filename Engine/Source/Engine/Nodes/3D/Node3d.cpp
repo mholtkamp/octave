@@ -122,7 +122,7 @@ void Node3D::Destroy()
 
 void Node3D::Tick(float deltaTime)
 {
-
+    Node::Tick(deltaTime);
 }
 
 const char* Node3D::GetTypeName() const
