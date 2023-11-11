@@ -377,60 +377,50 @@ int Network_Lua::GetHostId(lua_State* L)
 // Callbacks
 int Network_Lua::SetConnectCallback(lua_State* L)
 {
-    const char* tableName = CheckTableName(L, 1);
-    const char* funcName = CHECK_STRING(L, 2);
+    CHECK_FUNCTION(L, 1);
+    ScriptFunc func(L, 1);
 
-    NetworkManager::Get()->SetScriptConnectCallback(
-        tableName,
-        funcName);
+    NetworkManager::Get()->SetScriptConnectCallback(func);
 
     return 0;
 }
 
 int Network_Lua::SetAcceptCallback(lua_State* L)
 {
-    const char* tableName = CheckTableName(L, 1);
-    const char* funcName = CHECK_STRING(L, 2);
+    CHECK_FUNCTION(L, 1);
+    ScriptFunc func(L, 1);
 
-    NetworkManager::Get()->SetScriptAcceptCallback(
-        tableName,
-        funcName);
+    NetworkManager::Get()->SetScriptAcceptCallback(func);
 
     return 0;
 }
 
 int Network_Lua::SetRejectCallback(lua_State* L)
 {
-    const char* tableName = CheckTableName(L, 1);
-    const char* funcName = CHECK_STRING(L, 2);
+    CHECK_FUNCTION(L, 1);
+    ScriptFunc func(L, 1);
 
-    NetworkManager::Get()->SetScriptRejectCallback(
-        tableName,
-        funcName);
+    NetworkManager::Get()->SetScriptRejectCallback(func);
 
     return 0;
 }
 
 int Network_Lua::SetDisconnectCallback(lua_State* L)
 {
-    const char* tableName = CheckTableName(L, 1);
-    const char* funcName = CHECK_STRING(L, 2);
+    CHECK_FUNCTION(L, 1);
+    ScriptFunc func(L, 1);
 
-    NetworkManager::Get()->SetScriptDisconnectCallback(
-        tableName,
-        funcName);
+    NetworkManager::Get()->SetScriptDisconnectCallback(func);
 
     return 0;
 }
 
 int Network_Lua::SetKickCallback(lua_State* L)
 {
-    const char* tableName = CheckTableName(L, 1);
-    const char* funcName = CHECK_STRING(L, 2);
+    CHECK_FUNCTION(L, 1);
+    ScriptFunc func(L, 1);
 
-    NetworkManager::Get()->SetScriptKickCallback(
-        tableName,
-        funcName);
+    NetworkManager::Get()->SetScriptKickCallback(func);
 
     return 0;
 }

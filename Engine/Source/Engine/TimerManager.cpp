@@ -69,7 +69,7 @@ void TimerManager::Update(float deltaTime)
             }
             break;
         }
-        case TimerType::Actor:
+        case TimerType::Node:
         {
             if (timer->mHandler != nullptr)
             {
@@ -80,20 +80,6 @@ void TimerManager::Update(float deltaTime)
                 {
                     handler(node);
                 }
-            }
-            break;
-        }
-        case TimerType::Script:
-        {
-            if (timer->mScriptTableName != "" &&
-                timer->mScriptFuncName != "")
-            {
-                ScriptUtils::CallMethod(
-                    timer->mScriptTableName.c_str(),
-                    timer->mScriptFuncName.c_str(),
-                    0,
-                    nullptr,
-                    nullptr);
             }
             break;
         }
@@ -152,25 +138,8 @@ int32_t TimerManager::SetTimer(Node* node, NodeTimerHandlerFP handler, float tim
     TimerData timerData;
     timerData.mId = id;
     timerData.mHandler = (void*)handler;
-    timerData.mType = TimerType::Actor;
+    timerData.mType = TimerType::Node;
     timerData.mNode = node;
-    timerData.mDuration = time;
-    timerData.mLoop = loop;
-    timerData.mTimeRemaining = time;
-    mTimerData.push_back(timerData);
-
-    return id;
-}
-
-int32_t TimerManager::SetTimer(const char* tableName, const char* funcName, float time, bool loop)
-{
-    int32_t id = mNextTimerId++;
-
-    TimerData timerData;
-    timerData.mId = id;
-    timerData.mType = TimerType::Script;
-    timerData.mScriptTableName = tableName;
-    timerData.mScriptFuncName = funcName;
     timerData.mDuration = time;
     timerData.mLoop = loop;
     timerData.mTimeRemaining = time;

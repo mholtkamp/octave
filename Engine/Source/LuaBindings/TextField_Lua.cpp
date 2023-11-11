@@ -9,12 +9,10 @@
 int TextField_Lua::SetTextEditHandler(lua_State* L)
 {
     TextField* tf = CHECK_TEXT_FIELD(L, 1);
-    const char* tableName = CheckTableName(L, 2);
-    const char* funcName = CHECK_STRING(L, 3);
+    CHECK_FUNCTION(L, 2);
+    ScriptFunc func(L, 2);
 
-    tf->SetScriptTextEditHandler(
-        tableName,
-        funcName);
+    tf->SetScriptTextEditHandler(func);
 
     return 0;
 }
@@ -22,12 +20,10 @@ int TextField_Lua::SetTextEditHandler(lua_State* L)
 int TextField_Lua::SetTextConfirmHandler(lua_State* L)
 {
     TextField* tf = CHECK_TEXT_FIELD(L, 1);
-    const char* tableName = CheckTableName(L, 2);
-    const char* funcName = CHECK_STRING(L, 3);
+    CHECK_FUNCTION(L, 2);
+    ScriptFunc func(L, 2);
 
-    tf->SetScriptTextConfirmHandler(
-        tableName,
-        funcName);
+    tf->SetScriptTextConfirmHandler(func);
 
     return 0;
 }

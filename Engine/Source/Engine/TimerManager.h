@@ -15,8 +15,7 @@ enum class TimerType
 {
     Void,
     Pointer,
-    Actor,
-    Script,
+    Node,
     ScriptFunc,
 
     Count
@@ -28,8 +27,6 @@ struct TimerData
     // Not sure about ActorRef construction/destruction...
     void* mPointer = nullptr;
     NodeRef mNode;
-    std::string mScriptTableName;
-    std::string mScriptFuncName;
     ScriptFunc mScriptFunc;
 
     int32_t mId = -1;
@@ -51,7 +48,6 @@ public:
     int32_t SetTimer(TimerHandlerFP handler, float time, bool loop = false);
     int32_t SetTimer(void* vp, PointerTimerHandlerFP handler, float time, bool loop = false);
     int32_t SetTimer(Node* node, NodeTimerHandlerFP handler, float time, bool loop = false);
-    int32_t SetTimer(const char* tableName, const char* funcName, float time, bool loop = false);
     int32_t SetTimer(ScriptFunc scriptFunc, float time, bool loop = false);
 
     void ClearAllTimers();

@@ -103,6 +103,8 @@ int Node_Lua::Index(lua_State* L)
             lua_pop(L, 1);
         }
     }
+
+    return 1;
 }
 
 int Node_Lua::NewIndex(lua_State* L)
