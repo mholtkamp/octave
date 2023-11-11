@@ -84,23 +84,17 @@ void Mesh3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, GetMaterial);
-    lua_setfield(L, mtIndex, "GetMaterial");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetMaterial);
 
-    lua_pushcfunction(L, GetMaterialOverride);
-    lua_setfield(L, mtIndex, "GetMaterialOverride");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetMaterialOverride);
 
-    lua_pushcfunction(L, SetMaterialOverride);
-    lua_setfield(L, mtIndex, "SetMaterialOverride");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetMaterialOverride);
 
-    lua_pushcfunction(L, InstantiateMaterial);
-    lua_setfield(L, mtIndex, "InstantiateMaterial");
+    REGISTER_TABLE_FUNC(L, mtIndex, InstantiateMaterial);
 
-    lua_pushcfunction(L, IsBillboard);
-    lua_setfield(L, mtIndex, "IsBillboard");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsBillboard);
 
-    lua_pushcfunction(L, SetBillboard);
-    lua_setfield(L, mtIndex, "SetBillboard");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetBillboard);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

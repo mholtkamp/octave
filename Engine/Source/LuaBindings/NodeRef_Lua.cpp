@@ -69,17 +69,13 @@ void NodeRef_Lua::Bind()
     luaL_newmetatable(L, NODE_REF_LUA_NAME);
     int mtIndex = lua_gettop(L);
 
-    lua_pushcfunction(L, Create);
-    lua_setfield(L, mtIndex, "Create");
+    REGISTER_TABLE_FUNC(L, mtIndex, Create);
 
-    lua_pushcfunction(L, Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    REGISTER_TABLE_FUNC(L, mtIndex, Destroy);
 
-    lua_pushcfunction(L, Get);
-    lua_setfield(L, mtIndex, "Get");
+    REGISTER_TABLE_FUNC(L, mtIndex, Get);
 
-    lua_pushcfunction(L, Set);
-    lua_setfield(L, mtIndex, "Set");
+    REGISTER_TABLE_FUNC(L, mtIndex, Set);
 
     // Set the __index metamethod to itself
     lua_pushvalue(L, mtIndex);

@@ -87,26 +87,19 @@ void StaticMesh_Lua::Bind()
 
     Asset_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, GetMaterial);
-    lua_setfield(L, mtIndex, "GetMaterial");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetMaterial);
 
-    lua_pushcfunction(L, SetMaterial);
-    lua_setfield(L, mtIndex, "SetMaterial");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetMaterial);
 
-    lua_pushcfunction(L, GetNumIndices);
-    lua_setfield(L, mtIndex, "GetNumIndices");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNumIndices);
 
-    lua_pushcfunction(L, GetNumFaces);
-    lua_setfield(L, mtIndex, "GetNumFaces");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNumFaces);
 
-    lua_pushcfunction(L, GetNumVertices);
-    lua_setfield(L, mtIndex, "GetNumVertices");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNumVertices);
 
-    lua_pushcfunction(L, HasVertexColor);
-    lua_setfield(L, mtIndex, "HasVertexColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, HasVertexColor);
 
-    lua_pushcfunction(L, HasTriangleMeshCollision);
-    lua_setfield(L, mtIndex, "HasTriangleMeshCollision");
+    REGISTER_TABLE_FUNC(L, mtIndex, HasTriangleMeshCollision);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

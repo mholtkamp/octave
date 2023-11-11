@@ -114,29 +114,21 @@ void Poly_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, AddVertex);
-    lua_setfield(L, mtIndex, "AddVertex");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddVertex);
 
-    lua_pushcfunction(L, ClearVertices);
-    lua_setfield(L, mtIndex, "ClearVertices");
+    REGISTER_TABLE_FUNC(L, mtIndex, ClearVertices);
 
-    lua_pushcfunction(L, GetNumVertices);
-    lua_setfield(L, mtIndex, "GetNumVertices");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNumVertices);
 
-    lua_pushcfunction(L, GetVertex);
-    lua_setfield(L, mtIndex, "GetVertex");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetVertex);
 
-    lua_pushcfunction(L, SetTexture);
-    lua_setfield(L, mtIndex, "SetTexture");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTexture);
 
-    lua_pushcfunction(L, GetTexture);
-    lua_setfield(L, mtIndex, "GetTexture");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTexture);
 
-    lua_pushcfunction(L, GetLineWidth);
-    lua_setfield(L, mtIndex, "GetLineWidth");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetLineWidth);
 
-    lua_pushcfunction(L, SetLineWidth);
-    lua_setfield(L, mtIndex, "SetLineWidth");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetLineWidth);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

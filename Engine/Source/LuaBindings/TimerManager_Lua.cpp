@@ -1,5 +1,6 @@
 #include "LuaBindings/TimerManager_Lua.h"
 #include "TimerManager.h"
+#include "LuaUtils.h"
 
 #if LUA_ENABLED
 
@@ -76,26 +77,19 @@ void TimerManager_Lua::Bind()
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
 
-    lua_pushcfunction(L, SetTimer);
-    lua_setfield(L, tableIdx, "SetTimer");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetTimer);
 
-    lua_pushcfunction(L, ClearAllTimers);
-    lua_setfield(L, tableIdx, "ClearAllTimers");
+    REGISTER_TABLE_FUNC(L, tableIdx, ClearAllTimers);
 
-    lua_pushcfunction(L, ClearTimer);
-    lua_setfield(L, tableIdx, "ClearTimer");
+    REGISTER_TABLE_FUNC(L, tableIdx, ClearTimer);
 
-    lua_pushcfunction(L, PauseTimer);
-    lua_setfield(L, tableIdx, "PauseTimer");
+    REGISTER_TABLE_FUNC(L, tableIdx, PauseTimer);
 
-    lua_pushcfunction(L, ResumeTimer);
-    lua_setfield(L, tableIdx, "ResumeTimer");
+    REGISTER_TABLE_FUNC(L, tableIdx, ResumeTimer);
 
-    lua_pushcfunction(L, ResetTimer);
-    lua_setfield(L, tableIdx, "ResetTimer");
+    REGISTER_TABLE_FUNC(L, tableIdx, ResetTimer);
 
-    lua_pushcfunction(L, GetTimeRemaining);
-    lua_setfield(L, tableIdx, "GetTimeRemaining");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetTimeRemaining);
 
     lua_setglobal(L, TIMER_MANAGER_LUA_NAME);
     OCT_ASSERT(lua_gettop(L) == 0);

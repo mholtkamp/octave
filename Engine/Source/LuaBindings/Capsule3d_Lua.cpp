@@ -56,17 +56,13 @@ void Capsule3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, GetHeight);
-    lua_setfield(L, mtIndex, "GetHeight");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetHeight);
 
-    lua_pushcfunction(L, SetHeight);
-    lua_setfield(L, mtIndex, "SetHeight");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetHeight);
 
-    lua_pushcfunction(L, GetRadius);
-    lua_setfield(L, mtIndex, "GetRadius");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRadius);
 
-    lua_pushcfunction(L, SetRadius);
-    lua_setfield(L, mtIndex, "SetRadius");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRadius);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

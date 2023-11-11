@@ -85,26 +85,19 @@ void Light3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, SetColor);
-    lua_setfield(L, mtIndex, "SetColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetColor);
 
-    lua_pushcfunction(L, GetColor);
-    lua_setfield(L, mtIndex, "GetColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetColor);
 
-    lua_pushcfunction(L, SetIntensity);
-    lua_setfield(L, mtIndex, "SetIntensity");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetIntensity);
 
-    lua_pushcfunction(L, GetIntensity);
-    lua_setfield(L, mtIndex, "GetIntensity");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetIntensity);
 
-    lua_pushcfunction(L, SetCastShadows);
-    lua_setfield(L, mtIndex, "SetCastShadows");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetCastShadows);
 
-    lua_pushcfunction(L, ShouldCastShadows);
-    lua_setfield(L, mtIndex, "ShouldCastShadows");
+    REGISTER_TABLE_FUNC(L, mtIndex, ShouldCastShadows);
 
-    lua_pushcfunction(L, GetDomain);
-    lua_setfield(L, mtIndex, "GetDomain");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetDomain);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

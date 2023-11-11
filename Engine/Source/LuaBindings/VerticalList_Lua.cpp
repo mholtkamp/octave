@@ -118,32 +118,23 @@ void VerticalList_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, AddListItem);
-    lua_setfield(L, mtIndex, "AddListItem");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddListItem);
 
-    lua_pushcfunction(L, RemoveListItem);
-    lua_setfield(L, mtIndex, "RemoveListItem");
+    REGISTER_TABLE_FUNC(L, mtIndex, RemoveListItem);
 
-    lua_pushcfunction(L, GetListItem);
-    lua_setfield(L, mtIndex, "GetListItem");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetListItem);
 
-    lua_pushcfunction(L, GetNumListItems);
-    lua_setfield(L, mtIndex, "GetNumListItems");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNumListItems);
 
-    lua_pushcfunction(L, SetDisplayCount);
-    lua_setfield(L, mtIndex, "SetDisplayCount");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetDisplayCount);
 
-    lua_pushcfunction(L, GetDisplayCount);
-    lua_setfield(L, mtIndex, "GetDisplayCount");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetDisplayCount);
 
-    lua_pushcfunction(L, SetDisplayOffset);
-    lua_setfield(L, mtIndex, "SetDisplayOffset");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetDisplayOffset);
 
-    lua_pushcfunction(L, GetDisplayOffset);
-    lua_setfield(L, mtIndex, "GetDisplayOffset");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetDisplayOffset);
 
-    lua_pushcfunction(L, SetFitContents);
-    lua_setfield(L, mtIndex, "SetFitContents");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetFitContents);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

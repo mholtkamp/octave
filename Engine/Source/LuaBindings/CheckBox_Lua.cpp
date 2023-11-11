@@ -36,11 +36,9 @@ void CheckBox_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, IsChecked);
-    lua_setfield(L, mtIndex, "IsChecked");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsChecked);
 
-    lua_pushcfunction(L, SetChecked);
-    lua_setfield(L, mtIndex, "SetChecked");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetChecked);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

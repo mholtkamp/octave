@@ -105,32 +105,23 @@ void Texture_Lua::Bind()
 
     Asset_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, IsMipmapped);
-    lua_setfield(L, mtIndex, "IsMipmapped");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsMipmapped);
 
-    lua_pushcfunction(L, IsRenderTarget);
-    lua_setfield(L, mtIndex, "IsRenderTarget");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsRenderTarget);
 
-    lua_pushcfunction(L, GetWidth);
-    lua_setfield(L, mtIndex, "GetWidth");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetWidth);
 
-    lua_pushcfunction(L, GetHeight);
-    lua_setfield(L, mtIndex, "GetHeight");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetHeight);
 
-    lua_pushcfunction(L, GetMipLevels);
-    lua_setfield(L, mtIndex, "GetMipLevels");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetMipLevels);
 
-    lua_pushcfunction(L, GetLayers);
-    lua_setfield(L, mtIndex, "GetLayers");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetLayers);
 
-    lua_pushcfunction(L, GetFormat);
-    lua_setfield(L, mtIndex, "GetFormat");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetFormat);
 
-    lua_pushcfunction(L, GetFilterType);
-    lua_setfield(L, mtIndex, "GetFilterType");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetFilterType);
 
-    lua_pushcfunction(L, GetWrapMode);
-    lua_setfield(L, mtIndex, "GetWrapMode");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetWrapMode);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

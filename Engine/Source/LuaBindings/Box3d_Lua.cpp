@@ -36,11 +36,9 @@ void Box3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, GetExtents);
-    lua_setfield(L, mtIndex, "GetExtents");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetExtents);
 
-    lua_pushcfunction(L, SetExtents);
-    lua_setfield(L, mtIndex, "SetExtents");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetExtents);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

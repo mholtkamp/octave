@@ -832,11 +832,9 @@ int Node_Lua::CheckType(lua_State* L)
 
 void Node_Lua::BindCommon(lua_State* L, int mtIndex)
 {
-    lua_pushcfunction(L, GarbageCollect);
-    lua_setfield(L, mtIndex, "__gc");
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GarbageCollect, "__gc");
 
-    lua_pushcfunction(L, Equals);
-    lua_setfield(L, mtIndex, "__eq");
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Equals, "__eq");
 }
 
 void Node_Lua::Bind()
@@ -849,180 +847,121 @@ void Node_Lua::Bind()
 
     BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, Construct);
-    lua_setfield(L, mtIndex, "Construct");
-    lua_pushcfunction(L, Construct);
-    lua_setfield(L, mtIndex, "New"); // Alias
+    REGISTER_TABLE_FUNC(L, mtIndex, Construct);
+    REGISTER_TABLE_FUNC(L, mtIndex, Construct); // Alias
 
-    lua_pushcfunction(L, IsValid);
-    lua_setfield(L, mtIndex, "IsValid");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsValid);
 
-    lua_pushcfunction(L, GetName);
-    lua_setfield(L, mtIndex, "GetName");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetName);
 
-    lua_pushcfunction(L, SetName);
-    lua_setfield(L, mtIndex, "SetName");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetName);
 
-    lua_pushcfunction(L, SetActive);
-    lua_setfield(L, mtIndex, "SetActive");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetActive);
 
-    lua_pushcfunction(L, IsActive);
-    lua_setfield(L, mtIndex, "IsActive");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsActive);
 
-    lua_pushcfunction(L, SetVisible);
-    lua_setfield(L, mtIndex, "SetVisible");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetVisible);
 
-    lua_pushcfunction(L, IsVisible);
-    lua_setfield(L, mtIndex, "IsVisible");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsVisible);
 
-    lua_pushcfunction(L, GetWorld);
-    lua_setfield(L, mtIndex, "GetWorld");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetWorld);
 
-    lua_pushcfunction(L, Equals);
-    lua_setfield(L, mtIndex, "Equals");
+    REGISTER_TABLE_FUNC(L, mtIndex, Equals);
 
-    lua_pushcfunction(L, GetParent);
-    lua_setfield(L, mtIndex, "GetParent");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetParent);
 
-    lua_pushcfunction(L, Attach);
-    lua_setfield(L, mtIndex, "Attach");
+    REGISTER_TABLE_FUNC(L, mtIndex, Attach);
 
-    lua_pushcfunction(L, Detach);
-    lua_setfield(L, mtIndex, "Detach");
+    REGISTER_TABLE_FUNC(L, mtIndex, Detach);
 
-    lua_pushcfunction(L, GetChild);
-    lua_setfield(L, mtIndex, "GetChild");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetChild);
 
-    lua_pushcfunction(L, GetChildByType);
-    lua_setfield(L, mtIndex, "GetChildByType");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetChildByType);
 
-    lua_pushcfunction(L, GetNumChildren);
-    lua_setfield(L, mtIndex, "GetNumChildren");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNumChildren);
 
-    lua_pushcfunction(L, AddChild);
-    lua_setfield(L, mtIndex, "AddChild");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddChild);
 
-    lua_pushcfunction(L, RemoveChild);
-    lua_setfield(L, mtIndex, "RemoveChild");
+    REGISTER_TABLE_FUNC(L, mtIndex, RemoveChild);
 
-    lua_pushcfunction(L, FindChild);
-    lua_setfield(L, mtIndex, "FindChild");
+    REGISTER_TABLE_FUNC(L, mtIndex, FindChild);
 
-    lua_pushcfunction(L, FindChildWithTag);
-    lua_setfield(L, mtIndex, "FindChildWithTag");
+    REGISTER_TABLE_FUNC(L, mtIndex, FindChildWithTag);
 
-    lua_pushcfunction(L, FindDescendant);
-    lua_setfield(L, mtIndex, "FindDescendant");
+    REGISTER_TABLE_FUNC(L, mtIndex, FindDescendant);
 
-    lua_pushcfunction(L, FindAncestor);
-    lua_setfield(L, mtIndex, "FindAncestor");
+    REGISTER_TABLE_FUNC(L, mtIndex, FindAncestor);
 
-    lua_pushcfunction(L, HasAncestor);
-    lua_setfield(L, mtIndex, "HasAncestor");
+    REGISTER_TABLE_FUNC(L, mtIndex, HasAncestor);
 
-    lua_pushcfunction(L, GetRoot);
-    lua_setfield(L, mtIndex, "GetRoot");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRoot);
     
-    lua_pushcfunction(L, IsWorldRoot);
-    lua_setfield(L, mtIndex, "IsWorldRoot");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsWorldRoot);
 
-    lua_pushcfunction(L, Traverse);
-    lua_setfield(L, mtIndex, "Traverse");
+    REGISTER_TABLE_FUNC(L, mtIndex, Traverse);
 
-    lua_pushcfunction(L, ForEach);
-    lua_setfield(L, mtIndex, "ForEach");
+    REGISTER_TABLE_FUNC(L, mtIndex, ForEach);
 
-    lua_pushcfunction(L, CreateChild);
-    lua_setfield(L, mtIndex, "CreateChild");
+    REGISTER_TABLE_FUNC(L, mtIndex, CreateChild);
 
-    lua_pushcfunction(L, CreateChildClone);
-    lua_setfield(L, mtIndex, "CreateChildClone");
+    REGISTER_TABLE_FUNC(L, mtIndex, CreateChildClone);
 
-    lua_pushcfunction(L, Clone);
-    lua_setfield(L, mtIndex, "Clone");
+    REGISTER_TABLE_FUNC(L, mtIndex, Clone);
 
-    lua_pushcfunction(L, DestroyChild);
-    lua_setfield(L, mtIndex, "DestroyChild");
+    REGISTER_TABLE_FUNC(L, mtIndex, DestroyChild);
 
-    lua_pushcfunction(L, DestroyAllChildren);
-    lua_setfield(L, mtIndex, "DestroyAllChildren");
+    REGISTER_TABLE_FUNC(L, mtIndex, DestroyAllChildren);
 
-    lua_pushcfunction(L, Start);
-    lua_setfield(L, mtIndex, "Start");
+    REGISTER_TABLE_FUNC(L, mtIndex, Start);
 
-    lua_pushcfunction(L, HasStarted);
-    lua_setfield(L, mtIndex, "HasStarted");
+    REGISTER_TABLE_FUNC(L, mtIndex, HasStarted);
 
-    lua_pushcfunction(L, SetPendingDestroy);
-    lua_setfield(L, mtIndex, "SetPendingDestroy");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPendingDestroy);
 
-    lua_pushcfunction(L, IsPendingDestroy);
-    lua_setfield(L, mtIndex, "IsPendingDestroy");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsPendingDestroy);
 
-    lua_pushcfunction(L, EnableTick);
-    lua_setfield(L, mtIndex, "EnableTick");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableTick);
 
-    lua_pushcfunction(L, IsTickEnabled);
-    lua_setfield(L, mtIndex, "IsTickEnabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsTickEnabled);
 
-    lua_pushcfunction(L, GetScene);
-    lua_setfield(L, mtIndex, "GetScene");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetScene);
 
-    lua_pushcfunction(L, GetNetId);
-    lua_setfield(L, mtIndex, "GetNetId");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNetId);
 
-    lua_pushcfunction(L, GetOwningHost);
-    lua_setfield(L, mtIndex, "GetOwningHost");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOwningHost);
 
-    lua_pushcfunction(L, SetOwningHost);
-    lua_setfield(L, mtIndex, "SetOwningHost");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetOwningHost);
 
-    lua_pushcfunction(L, SetReplicate);
-    lua_setfield(L, mtIndex, "SetReplicate");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetReplicate);
 
-    lua_pushcfunction(L, IsReplicated);
-    lua_setfield(L, mtIndex, "IsReplicated");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsReplicated);
 
-    lua_pushcfunction(L, ForceReplication);
-    lua_setfield(L, mtIndex, "ForceReplication");
+    REGISTER_TABLE_FUNC(L, mtIndex, ForceReplication);
 
-    lua_pushcfunction(L, HasTag);
-    lua_setfield(L, mtIndex, "HasTag");
+    REGISTER_TABLE_FUNC(L, mtIndex, HasTag);
 
-    lua_pushcfunction(L, AddTag);
-    lua_setfield(L, mtIndex, "AddTag");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddTag);
 
-    lua_pushcfunction(L, RemoveTag);
-    lua_setfield(L, mtIndex, "RemoveTag");
+    REGISTER_TABLE_FUNC(L, mtIndex, RemoveTag);
 
-    lua_pushcfunction(L, HasAuthority);
-    lua_setfield(L, mtIndex, "HasAuthority");
+    REGISTER_TABLE_FUNC(L, mtIndex, HasAuthority);
 
-    lua_pushcfunction(L, IsOwned);
-    lua_setfield(L, mtIndex, "IsOwned");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsOwned);
 
-    lua_pushcfunction(L, IsLateTickEnabled);
-    lua_setfield(L, mtIndex, "IsLateTickEnabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsLateTickEnabled);
 
-    lua_pushcfunction(L, EnableLateTick);
-    lua_setfield(L, mtIndex, "EnableLateTick");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableLateTick);
 
-    lua_pushcfunction(L, InvokeNetFunc);
-    lua_setfield(L, mtIndex, "InvokeNetFunc");
+    REGISTER_TABLE_FUNC(L, mtIndex, InvokeNetFunc);
 
-    lua_pushcfunction(L, CheckType);
-    lua_pushcfunction(L, CheckType);
-    lua_pushcfunction(L, CheckType);
-    lua_setfield(L, mtIndex, "CheckType");
-    lua_setfield(L, mtIndex, "Is");
-    lua_setfield(L, mtIndex, "IsA");
+    REGISTER_TABLE_FUNC(L, mtIndex, CheckType);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, CheckType, "Is");
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, CheckType, "IsA");
 
     // Add index/newindex metamethods last? To make sure we don't hit NewIndex() adding the above fields
-    lua_pushcfunction(L, Index);
-    lua_setfield(L, mtIndex, "__index");
+    REGISTER_TABLE_FUNC(L, mtIndex, Index);
 
-    lua_pushcfunction(L, NewIndex);
-    lua_setfield(L, mtIndex, "__newindex");
+    REGISTER_TABLE_FUNC(L, mtIndex, NewIndex);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

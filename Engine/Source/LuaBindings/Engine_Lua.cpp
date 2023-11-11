@@ -189,72 +189,49 @@ void Engine_Lua::Bind()
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
 
-    lua_pushcfunction(L, Engine_Lua::Quit);
-    lua_setfield(L, tableIdx, "Quit");
+    REGISTER_TABLE_FUNC(L, tableIdx, Quit);
 
-    lua_pushcfunction(L, Engine_Lua::IsShuttingDown);
-    lua_setfield(L, tableIdx, "IsShuttingDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsShuttingDown);
 
-    lua_pushcfunction(L, Engine_Lua::GetTime);
-    lua_setfield(L, tableIdx, "GetTime");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetTime);
 
-    lua_pushcfunction(L, Engine_Lua::GetGameDeltaTime);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, tableIdx, "GetGameDeltaTime");
-    lua_setfield(L, tableIdx, "GetDeltaTime");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetGameDeltaTime);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, GetGameDeltaTime, "GetDeltaTime");
 
-    lua_pushcfunction(L, Engine_Lua::GetRealDeltaTime);
-    lua_setfield(L, tableIdx, "GetRealDeltaTime");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetRealDeltaTime);
 
-    lua_pushcfunction(L, Engine_Lua::GetGameElapsedTime);
-    lua_setfield(L, tableIdx, "GetGameElapsedTime");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetGameElapsedTime);
 
-    lua_pushcfunction(L, Engine_Lua::GetRealElapsedTime);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, tableIdx, "GetElapsedTime");
-    lua_setfield(L, tableIdx, "GetRealElapsedTime");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetRealElapsedTime);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, GetRealElapsedTime, "GetElapsedTime");
 
-    lua_pushcfunction(L, Engine_Lua::GetPlatform);
-    lua_setfield(L, tableIdx, "GetPlatform");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetPlatform);
 
-    lua_pushcfunction(L, Engine_Lua::IsEditor);
-    lua_setfield(L, tableIdx, "IsEditor");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsEditor);
 
-    lua_pushcfunction(L, Engine_Lua::Break);
-    lua_setfield(L, tableIdx, "Break");
+    REGISTER_TABLE_FUNC(L, tableIdx, Break);
 
-    lua_pushcfunction(L, Engine_Lua::Alert);
-    lua_setfield(L, tableIdx, "Alert");
+    REGISTER_TABLE_FUNC(L, tableIdx, Alert);
 
-    lua_pushcfunction(L, Engine_Lua::SetBreakOnScriptError);
-    lua_setfield(L, tableIdx, "SetBreakOnScriptError");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetBreakOnScriptError);
 
-    lua_pushcfunction(L, Engine_Lua::IsPlayingInEditor);
-    lua_setfield(L, tableIdx, "IsPlayingInEditor");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsPlayingInEditor);
 
-    lua_pushcfunction(L, Engine_Lua::IsPlaying);
-    lua_setfield(L, tableIdx, "IsPlaying");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsPlaying);
 
-    lua_pushcfunction(L, Engine_Lua::ReloadAllScripts);
-    lua_setfield(L, tableIdx, "ReloadAllScripts");
+    REGISTER_TABLE_FUNC(L, tableIdx, ReloadAllScripts);
 
-    lua_pushcfunction(L, Engine_Lua::SetPaused);
-    lua_setfield(L, tableIdx, "SetPaused");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetPaused);
 
-    lua_pushcfunction(L, Engine_Lua::IsPaused);
-    lua_setfield(L, tableIdx, "IsPaused");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsPaused);
 
-    lua_pushcfunction(L, Engine_Lua::FrameStep);
-    lua_setfield(L, tableIdx, "FrameStep");
+    REGISTER_TABLE_FUNC(L, tableIdx, FrameStep);
 
-    lua_pushcfunction(L, Engine_Lua::SetTimeDilation);
-    lua_setfield(L, tableIdx, "SetTimeDilation");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetTimeDilation);
 
-    lua_pushcfunction(L, Engine_Lua::GetTimeDilation);
-    lua_setfield(L, tableIdx, "GetTimeDilation");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetTimeDilation);
 
-    lua_pushcfunction(L, Engine_Lua::GarbageCollect);
-    lua_setfield(L, tableIdx, "GarbageCollect");
+    REGISTER_TABLE_FUNC(L, tableIdx, GarbageCollect);
 
     lua_setglobal(L, "Engine");
 

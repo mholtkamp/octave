@@ -61,20 +61,15 @@ void AssetManager_Lua::Bind()
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
 
-    lua_pushcfunction(L, RefSweep);
-    lua_setfield(L, tableIdx, "RefSweep");
+    REGISTER_TABLE_FUNC(L, tableIdx, RefSweep);
 
-    lua_pushcfunction(L, GetAsset);
-    lua_setfield(L, tableIdx, "GetAsset");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetAsset);
 
-    lua_pushcfunction(L, LoadAsset);
-    lua_setfield(L, tableIdx, "LoadAsset");
+    REGISTER_TABLE_FUNC(L, tableIdx, LoadAsset);
 
-    lua_pushcfunction(L, AsyncLoadAsset);
-    lua_setfield(L, tableIdx, "AsyncLoadAsset");
+    REGISTER_TABLE_FUNC(L, tableIdx, AsyncLoadAsset);
 
-    lua_pushcfunction(L, UnloadAsset);
-    lua_setfield(L, tableIdx, "UnloadAsset");
+    REGISTER_TABLE_FUNC(L, tableIdx, UnloadAsset);
 
     lua_setglobal(L, ASSET_MANAGER_LUA_NAME);
     OCT_ASSERT(lua_gettop(L) == 0);

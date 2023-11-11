@@ -341,110 +341,75 @@ void Renderer_Lua::Bind()
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
 
-    lua_pushcfunction(L, EnableStatsOverlay);
-    lua_setfield(L, tableIdx, "EnableStatsOverlay");
+    REGISTER_TABLE_FUNC(L, tableIdx, EnableStatsOverlay);
 
-    lua_pushcfunction(L, EnableConsole);
-    lua_setfield(L, tableIdx, "EnableConsole");
+    REGISTER_TABLE_FUNC(L, tableIdx, EnableConsole);
 
-    lua_pushcfunction(L, SetModalWidget);
-    lua_setfield(L, tableIdx, "SetModalWidget");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetModalWidget);
 
-    lua_pushcfunction(L, GetModalWidget);
-    lua_setfield(L, tableIdx, "GetModalWidget");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetModalWidget);
 
-    lua_pushcfunction(L, IsInModalWidgetUpdate);
-    lua_setfield(L, tableIdx, "IsInModalWidgetUpdate");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsInModalWidgetUpdate);
 
-    lua_pushcfunction(L, DirtyAllWidgets);
-    lua_setfield(L, tableIdx, "DirtyAllWidgets");
+    REGISTER_TABLE_FUNC(L, tableIdx, DirtyAllWidgets);
 
-    lua_pushcfunction(L, GetFrameNumber);
-    lua_setfield(L, tableIdx, "GetFrameNumber");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetFrameNumber);
 
-    lua_pushcfunction(L, GetFrameIndex);
-    lua_setfield(L, tableIdx, "GetFrameIndex");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetFrameIndex);
 
-    lua_pushcfunction(L, GetScreenIndex);
-    lua_setfield(L, tableIdx, "GetScreenIndex");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetScreenIndex);
 
-    lua_pushcfunction(L, GetScreenResolution);
-    lua_setfield(L, tableIdx, "GetScreenResolution");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetScreenResolution);
 
-    lua_pushcfunction(L, GetActiveScreenResolution);
-    lua_setfield(L, tableIdx, "GetActiveScreenResolution");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetActiveScreenResolution);
 
-    lua_pushcfunction(L, GetGlobalUiScale);
-    lua_setfield(L, tableIdx, "GetGlobalUiScale");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetGlobalUiScale);
 
-    lua_pushcfunction(L, SetGlobalUiScale);
-    lua_setfield(L, tableIdx, "SetGlobalUiScale");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetGlobalUiScale);
 
-    lua_pushcfunction(L, SetDebugMode);
-    lua_setfield(L, tableIdx, "SetDebugMode");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetDebugMode);
 
-    lua_pushcfunction(L, GetDebugMode);
-    lua_setfield(L, tableIdx, "GetDebugMode");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetDebugMode);
 
-    lua_pushcfunction(L, EnableProxyRendering);
-    lua_setfield(L, tableIdx, "EnableProxyRendering");
+    REGISTER_TABLE_FUNC(L, tableIdx, EnableProxyRendering);
 
-    lua_pushcfunction(L, IsProxyRenderingEnabled);
-    lua_setfield(L, tableIdx, "IsProxyRenderingEnabled");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsProxyRenderingEnabled);
 
-    lua_pushcfunction(L, SetBoundsDebugMode);
-    lua_setfield(L, tableIdx, "SetBoundsDebugMode");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetBoundsDebugMode);
 
-    lua_pushcfunction(L, GetBoundsDebugMode);
-    lua_setfield(L, tableIdx, "GetBoundsDebugMode");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetBoundsDebugMode);
 
-    lua_pushcfunction(L, EnableFrustumCulling);
-    lua_setfield(L, tableIdx, "EnableFrustumCulling");
+    REGISTER_TABLE_FUNC(L, tableIdx, EnableFrustumCulling);
 
-    lua_pushcfunction(L, IsFrustumCullingEnabled);
-    lua_setfield(L, tableIdx, "IsFrustumCullingEnabled");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsFrustumCullingEnabled);
 
-    lua_pushcfunction(L, AddDebugDraw);
-    lua_setfield(L, tableIdx, "AddDebugDraw");
+    REGISTER_TABLE_FUNC(L, tableIdx, AddDebugDraw);
 
-    lua_pushcfunction(L, AddDebugLine);
-    lua_setfield(L, tableIdx, "AddDebugLine");
+    REGISTER_TABLE_FUNC(L, tableIdx, AddDebugLine);
 
-    lua_pushcfunction(L, Enable3dRendering);
-    lua_setfield(L, tableIdx, "Enable3dRendering");
+    REGISTER_TABLE_FUNC(L, tableIdx, Enable3dRendering);
 
-    lua_pushcfunction(L, Is3dRenderingEnabled);
-    lua_setfield(L, tableIdx, "Is3dRenderingEnabled");
+    REGISTER_TABLE_FUNC(L, tableIdx, Is3dRenderingEnabled);
 
-    lua_pushcfunction(L, Enable2dRendering);
-    lua_setfield(L, tableIdx, "Enable2dRendering");
+    REGISTER_TABLE_FUNC(L, tableIdx, Enable2dRendering);
 
-    lua_pushcfunction(L, Is2dRenderingEnabled);
-    lua_setfield(L, tableIdx, "Is2dRenderingEnabled");
+    REGISTER_TABLE_FUNC(L, tableIdx, Is2dRenderingEnabled);
 
-    lua_pushcfunction(L, IsLightFadeEnabled);
-    lua_setfield(L, tableIdx, "IsLightFadeEnabled");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsLightFadeEnabled);
 
-    lua_pushcfunction(L, EnableLightFade);
-    lua_setfield(L, tableIdx, "EnableLightFade");
+    REGISTER_TABLE_FUNC(L, tableIdx, EnableLightFade);
 
-    lua_pushcfunction(L, SetLightFadeLimit);
-    lua_setfield(L, tableIdx, "SetLightFadeLimit");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetLightFadeLimit);
 
-    lua_pushcfunction(L, GetLightFadeLimit);
-    lua_setfield(L, tableIdx, "GetLightFadeLimit");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetLightFadeLimit);
 
-    lua_pushcfunction(L, SetLightFadeSpeed);
-    lua_setfield(L, tableIdx, "SetLightFadeSpeed");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetLightFadeSpeed);
 
-    lua_pushcfunction(L, GetLightFadeSpeed);
-    lua_setfield(L, tableIdx, "GetLightFadeSpeed");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetLightFadeSpeed);
 
-    lua_pushcfunction(L, SetResolutionScale);
-    lua_setfield(L, tableIdx, "SetResolutionScale");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetResolutionScale);
 
-    lua_pushcfunction(L, GetResolutionScale);
-    lua_setfield(L, tableIdx, "GetResolutionScale");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetResolutionScale);
 
     lua_setglobal(L, RENDERER_LUA_NAME);
 

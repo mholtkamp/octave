@@ -25,8 +25,7 @@ void MaterialInstance_Lua::Bind()
         MATERIAL_INSTANCE_LUA_FLAG,
         MATERIAL_LUA_NAME);
 
-    lua_pushcfunction(L, CreateNew);
-    lua_setfield(L, mtIndex, "Create");
+    REGISTER_TABLE_FUNC(L, mtIndex, CreateNew);
 
     Asset_Lua::BindCommon(L, mtIndex);
 

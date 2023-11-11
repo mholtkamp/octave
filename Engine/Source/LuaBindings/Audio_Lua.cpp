@@ -180,46 +180,32 @@ void Audio_Lua::Bind()
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
 
-    lua_pushcfunction(L, PlaySound2D);
-    lua_setfield(L, tableIdx, "PlaySound2D");
+    REGISTER_TABLE_FUNC(L, tableIdx, PlaySound2D);
 
-    lua_pushcfunction(L, PlaySound3D);
-    lua_setfield(L, tableIdx, "PlaySound3D");
+    REGISTER_TABLE_FUNC(L, tableIdx, PlaySound3D);
 
-    lua_pushcfunction(L, StopSounds);
-    lua_setfield(L, tableIdx, "StopSounds");
-    lua_pushcfunction(L, StopSounds);
-    lua_setfield(L, tableIdx, "StopSound");
+    REGISTER_TABLE_FUNC(L, tableIdx, StopSounds);
+    REGISTER_TABLE_FUNC(L, tableIdx, StopSounds);
 
-    lua_pushcfunction(L, StopAllSounds);
-    lua_setfield(L, tableIdx, "StopAllSounds");
+    REGISTER_TABLE_FUNC(L, tableIdx, StopAllSounds);
 
-    lua_pushcfunction(L, IsSoundPlaying);
-    lua_setfield(L, tableIdx, "IsSoundPlaying");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsSoundPlaying);
 
-    lua_pushcfunction(L, SetAudioClassVolume);
-    lua_setfield(L, tableIdx, "SetAudioClassVolume");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetAudioClassVolume);
 
-    lua_pushcfunction(L, GetAudioClassVolume);
-    lua_setfield(L, tableIdx, "GetAudioClassVolume");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetAudioClassVolume);
 
-    lua_pushcfunction(L, SetAudioClassPitch);
-    lua_setfield(L, tableIdx, "SetAudioClassPitch");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetAudioClassPitch);
 
-    lua_pushcfunction(L, GetAudioClassPitch);
-    lua_setfield(L, tableIdx, "GetAudioClassPitch");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetAudioClassPitch);
 
-    lua_pushcfunction(L, SetMasterVolume);
-    lua_setfield(L, tableIdx, "SetMasterVolume");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetMasterVolume);
 
-    lua_pushcfunction(L, GetMasterVolume);
-    lua_setfield(L, tableIdx, "GetMasterVolume");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetMasterVolume);
 
-    lua_pushcfunction(L, SetMasterPitch);
-    lua_setfield(L, tableIdx, "SetMasterPitch");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetMasterPitch);
 
-    lua_pushcfunction(L, GetMasterPitch);
-    lua_setfield(L, tableIdx, "GetMasterPitch");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetMasterPitch);
 
     lua_setglobal(L, AUDIO_LUA_NAME);
 

@@ -515,149 +515,101 @@ void ParticleSystem_Lua::Bind()
 
     Asset_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, SetMaterial);
-    lua_setfield(L, mtIndex, "SetMaterial");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetMaterial);
 
-    lua_pushcfunction(L, GetMaterial);
-    lua_setfield(L, mtIndex, "GetMaterial");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetMaterial);
 
-    lua_pushcfunction(L, SetDuration);
-    lua_setfield(L, mtIndex, "SetDuration");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetDuration);
 
-    lua_pushcfunction(L, GetDuration);
-    lua_setfield(L, mtIndex, "GetDuration");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetDuration);
 
-    lua_pushcfunction(L, SetSpawnRate);
-    lua_setfield(L, mtIndex, "SetSpawnRate");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetSpawnRate);
 
-    lua_pushcfunction(L, GetSpawnRate);
-    lua_setfield(L, mtIndex, "GetSpawnRate");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSpawnRate);
 
-    lua_pushcfunction(L, SetBurstCount);
-    lua_setfield(L, mtIndex, "SetBurstCount");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetBurstCount);
 
-    lua_pushcfunction(L, GetBurstCount);
-    lua_setfield(L, mtIndex, "GetBurstCount");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetBurstCount);
 
-    lua_pushcfunction(L, SetBurstWindow);
-    lua_setfield(L, mtIndex, "SetBurstWindow");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetBurstWindow);
 
-    lua_pushcfunction(L, GetBurstWindow);
-    lua_setfield(L, mtIndex, "GetBurstWindow");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetBurstWindow);
 
-    lua_pushcfunction(L, SetMaxParticles);
-    lua_setfield(L, mtIndex, "SetMaxParticles");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetMaxParticles);
 
-    lua_pushcfunction(L, GetMaxParticles);
-    lua_setfield(L, mtIndex, "GetMaxParticles");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetMaxParticles);
 
-    lua_pushcfunction(L, SetLoops);
-    lua_setfield(L, mtIndex, "SetLoops");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetLoops);
 
-    lua_pushcfunction(L, GetLoops);
-    lua_setfield(L, mtIndex, "GetLoops");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetLoops);
 
-    lua_pushcfunction(L, SetRadialVelocity);
-    lua_setfield(L, mtIndex, "SetRadialVelocity");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRadialVelocity);
 
-    lua_pushcfunction(L, IsRadialVelocity);
-    lua_setfield(L, mtIndex, "IsRadialVelocity");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsRadialVelocity);
 
-    lua_pushcfunction(L, SetRadialSpawn);
-    lua_setfield(L, mtIndex, "SetRadialSpawn");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRadialSpawn);
 
-    lua_pushcfunction(L, IsRadialSpawn);
-    lua_setfield(L, mtIndex, "IsRadialSpawn");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsRadialSpawn);
 
-    lua_pushcfunction(L, SetLockedRatio);
-    lua_setfield(L, mtIndex, "SetLockedRatio");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetLockedRatio);
 
-    lua_pushcfunction(L, IsRatioLocked);
-    lua_setfield(L, mtIndex, "IsRatioLocked");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsRatioLocked);
 
-    lua_pushcfunction(L, SetLifetime);
-    lua_setfield(L, mtIndex, "SetLifetime");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetLifetime);
 
-    lua_pushcfunction(L, GetLifetimeMin);
-    lua_setfield(L, mtIndex, "GetLifetimeMin");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetLifetimeMin);
 
-    lua_pushcfunction(L, GetLifetimeMax);
-    lua_setfield(L, mtIndex, "GetLifetimeMax");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetLifetimeMax);
 
-    lua_pushcfunction(L, SetPosition);
-    lua_setfield(L, mtIndex, "SetPosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPosition);
 
-    lua_pushcfunction(L, GetPositionMin);
-    lua_setfield(L, mtIndex, "GetPositionMin");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetPositionMin);
 
-    lua_pushcfunction(L, GetPositionMax);
-    lua_setfield(L, mtIndex, "GetPositionMax");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetPositionMax);
 
-    lua_pushcfunction(L, SetVelocity);
-    lua_setfield(L, mtIndex, "SetVelocity");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetVelocity);
 
-    lua_pushcfunction(L, GetVelocityMin);
-    lua_setfield(L, mtIndex, "GetVelocityMin");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetVelocityMin);
 
-    lua_pushcfunction(L, GetVelocityMax);
-    lua_setfield(L, mtIndex, "GetVelocityMax");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetVelocityMax);
 
-    lua_pushcfunction(L, SetSize);
-    lua_setfield(L, mtIndex, "SetSize");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetSize);
 
-    lua_pushcfunction(L, GetSizeMin);
-    lua_setfield(L, mtIndex, "GetSizeMin");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSizeMin);
 
-    lua_pushcfunction(L, GetSizeMax);
-    lua_setfield(L, mtIndex, "GetSizeMax");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSizeMax);
 
-    lua_pushcfunction(L, SetRotation);
-    lua_setfield(L, mtIndex, "SetRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRotation);
 
-    lua_pushcfunction(L, GetRotationMin);
-    lua_setfield(L, mtIndex, "GetRotationMin");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRotationMin);
 
-    lua_pushcfunction(L, GetRotationMax);
-    lua_setfield(L, mtIndex, "GetRotationMax");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRotationMax);
 
-    lua_pushcfunction(L, SetRotationSpeed);
-    lua_setfield(L, mtIndex, "SetRotationSpeed");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRotationSpeed);
 
-    lua_pushcfunction(L, GetRotationSpeedMin);
-    lua_setfield(L, mtIndex, "GetRotationSpeedMin");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRotationSpeedMin);
 
-    lua_pushcfunction(L, GetRotationSpeedMax);
-    lua_setfield(L, mtIndex, "GetRotationSpeedMax");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRotationSpeedMax);
 
-    lua_pushcfunction(L, SetAcceleration);
-    lua_setfield(L, mtIndex, "SetAcceleration");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAcceleration);
 
-    lua_pushcfunction(L, GetAcceleration);
-    lua_setfield(L, mtIndex, "GetAcceleration");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAcceleration);
 
-    lua_pushcfunction(L, SetAlphaEase);
-    lua_setfield(L, mtIndex, "SetAlphaEase");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAlphaEase);
 
-    lua_pushcfunction(L, GetAlphaEase);
-    lua_setfield(L, mtIndex, "GetAlphaEase");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAlphaEase);
 
-    lua_pushcfunction(L, SetScaleEase);
-    lua_setfield(L, mtIndex, "SetScaleEase");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetScaleEase);
 
-    lua_pushcfunction(L, GetScaleEase);
-    lua_setfield(L, mtIndex, "GetScaleEase");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetScaleEase);
 
-    lua_pushcfunction(L, SetColorStart);
-    lua_setfield(L, mtIndex, "SetColorStart");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetColorStart);
 
-    lua_pushcfunction(L, GetColorStart);
-    lua_setfield(L, mtIndex, "GetColorStart");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetColorStart);
 
-    lua_pushcfunction(L, SetColorEnd);
-    lua_setfield(L, mtIndex, "SetColorEnd");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetColorEnd);
 
-    lua_pushcfunction(L, GetColorEnd);
-    lua_setfield(L, mtIndex, "GetColorEnd");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetColorEnd);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

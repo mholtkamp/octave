@@ -450,133 +450,90 @@ void Primitive3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, EnablePhysics);
-    lua_setfield(L, mtIndex, "EnablePhysics");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnablePhysics);
 
-    lua_pushcfunction(L, EnableCollision);
-    lua_setfield(L, mtIndex, "EnableCollision");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableCollision);
 
-    lua_pushcfunction(L, EnableOverlaps);
-    lua_setfield(L, mtIndex, "EnableOverlaps");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableOverlaps);
 
-    lua_pushcfunction(L, IsPhysicsEnabled);
-    lua_setfield(L, mtIndex, "IsPhysicsEnabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsPhysicsEnabled);
 
-    lua_pushcfunction(L, IsCollisionEnabled);
-    lua_setfield(L, mtIndex, "IsCollisionEnabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsCollisionEnabled);
 
-    lua_pushcfunction(L, AreOverlapsEnabled);
-    lua_setfield(L, mtIndex, "AreOverlapsEnabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, AreOverlapsEnabled);
 
-    lua_pushcfunction(L, GetMass);
-    lua_setfield(L, mtIndex, "GetMass");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetMass);
 
-    lua_pushcfunction(L, GetLinearDamping);
-    lua_setfield(L, mtIndex, "GetLinearDamping");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetLinearDamping);
 
-    lua_pushcfunction(L, GetAngularDamping);
-    lua_setfield(L, mtIndex, "GetAngularDamping");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAngularDamping);
 
-    lua_pushcfunction(L, GetRestitution);
-    lua_setfield(L, mtIndex, "GetRestitution");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRestitution);
 
-    lua_pushcfunction(L, GetFriction);
-    lua_setfield(L, mtIndex, "GetFriction");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetFriction);
 
-    lua_pushcfunction(L, GetRollingFriction);
-    lua_setfield(L, mtIndex, "GetRollingFriction");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRollingFriction);
 
-    lua_pushcfunction(L, GetLinearFactor);
-    lua_setfield(L, mtIndex, "GetLinearFactor");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetLinearFactor);
 
-    lua_pushcfunction(L, GetAngularFactor);
-    lua_setfield(L, mtIndex, "GetAngularFactor");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAngularFactor);
 
-    lua_pushcfunction(L, GetCollisionGroup);
-    lua_setfield(L, mtIndex, "GetCollisionGroup");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetCollisionGroup);
 
-    lua_pushcfunction(L, GetCollisionMask);
-    lua_setfield(L, mtIndex, "GetCollisionMask");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetCollisionMask);
 
-    lua_pushcfunction(L, SetMass);
-    lua_setfield(L, mtIndex, "SetMass");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetMass);
 
-    lua_pushcfunction(L, SetLinearDamping);
-    lua_setfield(L, mtIndex, "SetLinearDamping");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetLinearDamping);
 
-    lua_pushcfunction(L, SetAngularDamping);
-    lua_setfield(L, mtIndex, "SetAngularDamping");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAngularDamping);
 
-    lua_pushcfunction(L, SetRestitution);
-    lua_setfield(L, mtIndex, "SetRestitution");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRestitution);
 
-    lua_pushcfunction(L, SetFriction);
-    lua_setfield(L, mtIndex, "SetFriction");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetFriction);
 
-    lua_pushcfunction(L, SetRollingFriction);
-    lua_setfield(L, mtIndex, "SetRollingFriction");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRollingFriction);
 
-    lua_pushcfunction(L, SetLinearFactor);
-    lua_setfield(L, mtIndex, "SetLinearFactor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetLinearFactor);
 
-    lua_pushcfunction(L, SetAngularFactor);
-    lua_setfield(L, mtIndex, "SetAngularFactor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAngularFactor);
 
-    lua_pushcfunction(L, SetCollisionGroup);
-    lua_setfield(L, mtIndex, "SetCollisionGroup");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetCollisionGroup);
 
-    lua_pushcfunction(L, SetCollisionMask);
-    lua_setfield(L, mtIndex, "SetCollisionMask");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetCollisionMask);
 
-    lua_pushcfunction(L, GetLinearVelocity);
-    lua_setfield(L, mtIndex, "GetLinearVelocity");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetLinearVelocity);
 
-    lua_pushcfunction(L, GetAngularVelocity);
-    lua_setfield(L, mtIndex, "GetAngularVelocity");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAngularVelocity);
 
-    lua_pushcfunction(L, AddLinearVelocity);
-    lua_setfield(L, mtIndex, "AddLinearVelocity");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddLinearVelocity);
 
-    lua_pushcfunction(L, AddAngularVelocity);
-    lua_setfield(L, mtIndex, "AddAngularVelocity");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddAngularVelocity);
 
-    lua_pushcfunction(L, SetLinearVelocity);
-    lua_setfield(L, mtIndex, "SetLinearVelocity");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetLinearVelocity);
 
-    lua_pushcfunction(L, SetAngularVelocity);
-    lua_setfield(L, mtIndex, "SetAngularVelocity");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAngularVelocity);
 
-    lua_pushcfunction(L, AddForce);
-    lua_setfield(L, mtIndex, "AddForce");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddForce);
 
-    lua_pushcfunction(L, AddImpulse);
-    lua_setfield(L, mtIndex, "AddImpulse");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddImpulse);
 
-    lua_pushcfunction(L, ClearForces);
-    lua_setfield(L, mtIndex, "ClearForces");
+    REGISTER_TABLE_FUNC(L, mtIndex, ClearForces);
 
-    lua_pushcfunction(L, EnableCastShadows);
-    lua_setfield(L, mtIndex, "EnableCastShadows");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableCastShadows);
 
-    lua_pushcfunction(L, ShouldCastShadows);
-    lua_setfield(L, mtIndex, "ShouldCastShadows");
+    REGISTER_TABLE_FUNC(L, mtIndex, ShouldCastShadows);
 
-    lua_pushcfunction(L, EnableReceiveShadows);
-    lua_setfield(L, mtIndex, "EnableReceiveShadows");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableReceiveShadows);
 
-    lua_pushcfunction(L, ShouldReceiveShadows);
-    lua_setfield(L, mtIndex, "ShouldReceiveShadows");
+    REGISTER_TABLE_FUNC(L, mtIndex, ShouldReceiveShadows);
 
-    lua_pushcfunction(L, EnableReceiveSimpleShadows);
-    lua_setfield(L, mtIndex, "EnableReceiveSimpleShadows");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableReceiveSimpleShadows);
 
-    lua_pushcfunction(L, ShouldReceiveSimpleShadows);
-    lua_setfield(L, mtIndex, "ShouldReceiveSimpleShadows");
+    REGISTER_TABLE_FUNC(L, mtIndex, ShouldReceiveSimpleShadows);
 
-    lua_pushcfunction(L, SweepToWorldPosition);
-    lua_setfield(L, mtIndex, "SweepToWorldPosition");
-    lua_pushcfunction(L, SweepToWorldPosition);
-    lua_setfield(L, mtIndex, "SweepToPosition"); // Alias
+    REGISTER_TABLE_FUNC(L, mtIndex, SweepToWorldPosition);
+    REGISTER_TABLE_FUNC(L, mtIndex, SweepToWorldPosition); // Alias
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

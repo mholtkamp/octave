@@ -76,23 +76,17 @@ void Font_Lua::Bind()
 
     Asset_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, GetSize);
-    lua_setfield(L, mtIndex, "GetSize");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSize);
 
-    lua_pushcfunction(L, GetWidth);
-    lua_setfield(L, mtIndex, "GetWidth");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetWidth);
 
-    lua_pushcfunction(L, GetHeight);
-    lua_setfield(L, mtIndex, "GetHeight");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetHeight);
 
-    lua_pushcfunction(L, GetTexture);
-    lua_setfield(L, mtIndex, "GetTexture");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTexture);
 
-    lua_pushcfunction(L, IsBold);
-    lua_setfield(L, mtIndex, "IsBold");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsBold);
 
-    lua_pushcfunction(L, IsItalic);
-    lua_setfield(L, mtIndex, "IsItalic");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsItalic);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

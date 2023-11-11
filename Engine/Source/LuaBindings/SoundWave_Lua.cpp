@@ -125,38 +125,27 @@ void SoundWave_Lua::Bind()
 
     Asset_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, GetVolumeMultiplier);
-    lua_setfield(L, mtIndex, "GetVolumeMultiplier");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetVolumeMultiplier);
 
-    lua_pushcfunction(L, SetVolumeMultiplier);
-    lua_setfield(L, mtIndex, "SetVolumeMultiplier");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetVolumeMultiplier);
 
-    lua_pushcfunction(L, GetPitchMultiplier);
-    lua_setfield(L, mtIndex, "GetPitchMultiplier");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetPitchMultiplier);
 
-    lua_pushcfunction(L, SetPitchMultiplier);
-    lua_setfield(L, mtIndex, "SetPitchMultiplier");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPitchMultiplier);
 
-    lua_pushcfunction(L, GetWaveDataSize);
-    lua_setfield(L, mtIndex, "GetWaveDataSize");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetWaveDataSize);
 
-    lua_pushcfunction(L, GetNumChannels);
-    lua_setfield(L, mtIndex, "GetNumChannels");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNumChannels);
 
-    lua_pushcfunction(L, GetBitsPerSample);
-    lua_setfield(L, mtIndex, "GetBitsPerSample");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetBitsPerSample);
 
-    lua_pushcfunction(L, GetSampleRate);
-    lua_setfield(L, mtIndex, "GetSampleRate");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSampleRate);
 
-    lua_pushcfunction(L, GetNumSamples);
-    lua_setfield(L, mtIndex, "GetNumSamples");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNumSamples);
 
-    lua_pushcfunction(L, GetByteRate);
-    lua_setfield(L, mtIndex, "GetByteRate");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetByteRate);
 
-    lua_pushcfunction(L, GetDuration);
-    lua_setfield(L, mtIndex, "GetDuration");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetDuration);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

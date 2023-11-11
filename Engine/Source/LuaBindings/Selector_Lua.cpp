@@ -128,38 +128,27 @@ void Selector_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, AddSelection);
-    lua_setfield(L, mtIndex, "AddSelection");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddSelection);
 
-    lua_pushcfunction(L, RemoveSelection);
-    lua_setfield(L, mtIndex, "RemoveSelection");
+    REGISTER_TABLE_FUNC(L, mtIndex, RemoveSelection);
 
-    lua_pushcfunction(L, RemoveAllSelections);
-    lua_setfield(L, mtIndex, "RemoveAllSelections");
+    REGISTER_TABLE_FUNC(L, mtIndex, RemoveAllSelections);
 
-    lua_pushcfunction(L, GetNumSelections);
-    lua_setfield(L, mtIndex, "GetNumSelections");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNumSelections);
 
-    lua_pushcfunction(L, SetSelectionByString);
-    lua_setfield(L, mtIndex, "SetSelectionByString");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetSelectionByString);
 
-    lua_pushcfunction(L, SetSelectionIndex);
-    lua_setfield(L, mtIndex, "SetSelectionIndex");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetSelectionIndex);
 
-    lua_pushcfunction(L, Increment);
-    lua_setfield(L, mtIndex, "Increment");
+    REGISTER_TABLE_FUNC(L, mtIndex, Increment);
 
-    lua_pushcfunction(L, Decrement);
-    lua_setfield(L, mtIndex, "Decrement");
+    REGISTER_TABLE_FUNC(L, mtIndex, Decrement);
 
-    lua_pushcfunction(L, GetSelectionString);
-    lua_setfield(L, mtIndex, "GetSelectionString");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSelectionString);
 
-    lua_pushcfunction(L, GetSelectionIndex);
-    lua_setfield(L, mtIndex, "GetSelectionIndex");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSelectionIndex);
 
-    lua_pushcfunction(L, SetSelectionChangeHandler);
-    lua_setfield(L, mtIndex, "SetSelectionChangeHandler");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetSelectionChangeHandler);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

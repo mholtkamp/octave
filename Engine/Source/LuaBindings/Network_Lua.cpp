@@ -432,104 +432,71 @@ void Network_Lua::Bind()
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
 
-    lua_pushcfunction(L, OpenSession);
-    lua_setfield(L, tableIdx, "OpenSession");
+    REGISTER_TABLE_FUNC(L, tableIdx, OpenSession);
 
-    lua_pushcfunction(L, CloseSession);
-    lua_setfield(L, tableIdx, "CloseSession");
+    REGISTER_TABLE_FUNC(L, tableIdx, CloseSession);
 
-    lua_pushcfunction(L, BeginSessionSearch);
-    lua_setfield(L, tableIdx, "BeginSessionSearch");
+    REGISTER_TABLE_FUNC(L, tableIdx, BeginSessionSearch);
 
-    lua_pushcfunction(L, EndSessionSearch);
-    lua_setfield(L, tableIdx, "EndSessionSearch");
+    REGISTER_TABLE_FUNC(L, tableIdx, EndSessionSearch);
 
-    lua_pushcfunction(L, IsSearching);
-    lua_setfield(L, tableIdx, "IsSearching");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsSearching);
 
-    lua_pushcfunction(L, GetNumSessions);
-    lua_setfield(L, tableIdx, "GetNumSessions");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetNumSessions);
 
-    lua_pushcfunction(L, GetSession);
-    lua_setfield(L, tableIdx, "GetSession");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetSession);
 
-    lua_pushcfunction(L, GetSessions);
-    lua_setfield(L, tableIdx, "GetSessions");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetSessions);
 
-    lua_pushcfunction(L, Connect);
-    lua_setfield(L, tableIdx, "Connect");
+    REGISTER_TABLE_FUNC(L, tableIdx, Connect);
 
-    lua_pushcfunction(L, Disconnect);
-    lua_setfield(L, tableIdx, "Disconnect");
+    REGISTER_TABLE_FUNC(L, tableIdx, Disconnect);
 
-    lua_pushcfunction(L, Kick);
-    lua_setfield(L, tableIdx, "Kick");
+    REGISTER_TABLE_FUNC(L, tableIdx, Kick);
 
-    lua_pushcfunction(L, SetMaxClients);
-    lua_setfield(L, tableIdx, "SetMaxClients");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetMaxClients);
 
-    lua_pushcfunction(L, GetMaxClients);
-    lua_setfield(L, tableIdx, "GetMaxClients");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetMaxClients);
 
-    lua_pushcfunction(L, GetNumClients);
-    lua_setfield(L, tableIdx, "GetNumClients");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetNumClients);
 
-    lua_pushcfunction(L, GetClients);
-    lua_setfield(L, tableIdx, "GetClients");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetClients);
 
-    lua_pushcfunction(L, FindNetClient);
-    lua_setfield(L, tableIdx, "FindNetClient");
+    REGISTER_TABLE_FUNC(L, tableIdx, FindNetClient);
 
-    lua_pushcfunction(L, GetNetStatus);
-    lua_setfield(L, tableIdx, "GetNetStatus");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetNetStatus);
 
-    lua_pushcfunction(L, EnableIncrementalReplication);
-    lua_setfield(L, tableIdx, "EnableIncrementalReplication");
+    REGISTER_TABLE_FUNC(L, tableIdx, EnableIncrementalReplication);
 
-    lua_pushcfunction(L, IsIncrementalReplicationEnabled);
-    lua_setfield(L, tableIdx, "IsIncrementalReplicationEnabled");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsIncrementalReplicationEnabled);
 
-    lua_pushcfunction(L, GetBytesSent);
-    lua_setfield(L, tableIdx, "GetBytesSent");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetBytesSent);
 
-    lua_pushcfunction(L, GetBytesReceived);
-    lua_setfield(L, tableIdx, "GetBytesReceived");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetBytesReceived);
 
-    lua_pushcfunction(L, GetUploadRate);
-    lua_setfield(L, tableIdx, "GetUploadRate");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetUploadRate);
 
-    lua_pushcfunction(L, GetDownloadRate);
-    lua_setfield(L, tableIdx, "GetDownloadRate");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetDownloadRate);
 
-    lua_pushcfunction(L, IsServer);
-    lua_setfield(L, tableIdx, "IsServer");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsServer);
 
-    lua_pushcfunction(L, IsClient);
-    lua_setfield(L, tableIdx, "IsClient");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsClient);
 
-    lua_pushcfunction(L, IsLocal);
-    lua_setfield(L, tableIdx, "IsLocal");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsLocal);
 
-    lua_pushcfunction(L, IsAuthority);
-    lua_setfield(L, tableIdx, "IsAuthority");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsAuthority);
 
-    lua_pushcfunction(L, GetHostId);
-    lua_setfield(L, tableIdx, "GetHostId");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetHostId);
 
-    lua_pushcfunction(L, SetConnectCallback);
-    lua_setfield(L, tableIdx, "SetConnectCallback");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetConnectCallback);
 
-    lua_pushcfunction(L, SetAcceptCallback);
-    lua_setfield(L, tableIdx, "SetAcceptCallback");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetAcceptCallback);
 
-    lua_pushcfunction(L, SetRejectCallback);
-    lua_setfield(L, tableIdx, "SetRejectCallback");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetRejectCallback);
 
-    lua_pushcfunction(L, SetDisconnectCallback);
-    lua_setfield(L, tableIdx, "SetDisconnectCallback");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetDisconnectCallback);
 
-    lua_pushcfunction(L, SetKickCallback);
-    lua_setfield(L, tableIdx, "SetKickCallback");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetKickCallback);
 
     lua_setglobal(L, NETWORK_LUA_NAME);
 

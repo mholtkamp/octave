@@ -224,62 +224,43 @@ void Camera3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, SetPerspective);
-    lua_setfield(L, mtIndex, "SetPerspective");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPerspective);
 
-    lua_pushcfunction(L, SetOrtho);
-    lua_setfield(L, mtIndex, "SetOrtho");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetOrtho);
 
-    lua_pushcfunction(L, IsPerspective);
-    lua_setfield(L, mtIndex, "IsPerspective");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsPerspective);
 
-    lua_pushcfunction(L, IsOrtho);
-    lua_setfield(L, mtIndex, "IsOrtho");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsOrtho);
 
-    lua_pushcfunction(L, GetNear);
-    lua_setfield(L, mtIndex, "GetNear");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNear);
 
-    lua_pushcfunction(L, GetFar);
-    lua_setfield(L, mtIndex, "GetFar");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetFar);
 
-    lua_pushcfunction(L, GetFieldOfView);
-    lua_setfield(L, mtIndex, "GetFieldOfView");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetFieldOfView);
 
-    lua_pushcfunction(L, GetAspectRatio);
-    lua_setfield(L, mtIndex, "GetAspectRatio");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAspectRatio);
 
-    lua_pushcfunction(L, GetWidth);
-    lua_setfield(L, mtIndex, "GetWidth");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetWidth);
 
-    lua_pushcfunction(L, GetHeight);
-    lua_setfield(L, mtIndex, "GetHeight");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetHeight);
 
-    lua_pushcfunction(L, SetNear);
-    lua_setfield(L, mtIndex, "SetNear");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetNear);
 
-    lua_pushcfunction(L, SetFar);
-    lua_setfield(L, mtIndex, "SetFar");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetFar);
 
-    lua_pushcfunction(L, SetFieldOfView);
-    lua_setfield(L, mtIndex, "SetFieldOfView");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetFieldOfView);
 
-    lua_pushcfunction(L, SetAspectRatio);
-    lua_setfield(L, mtIndex, "SetAspectRatio");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAspectRatio);
 
-    lua_pushcfunction(L, SetWidth);
-    lua_setfield(L, mtIndex, "SetWidth");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetWidth);
 
-    lua_pushcfunction(L, SetHeight);
-    lua_setfield(L, mtIndex, "SetHeight");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetHeight);
 
-    lua_pushcfunction(L, WorldToScreenPosition);
-    lua_setfield(L, mtIndex, "WorldToScreenPosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, WorldToScreenPosition);
 
-    lua_pushcfunction(L, ScreenToWorldPosition);
-    lua_setfield(L, mtIndex, "ScreenToWorldPosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, ScreenToWorldPosition);
 
-    lua_pushcfunction(L, TraceScreenToWorld);
-    lua_setfield(L, mtIndex, "TraceScreenToWorld");
+    REGISTER_TABLE_FUNC(L, mtIndex, TraceScreenToWorld);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

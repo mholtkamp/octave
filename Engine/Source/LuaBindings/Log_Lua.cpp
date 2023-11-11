@@ -51,19 +51,14 @@ void Log_Lua::Bind()
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
 
-    lua_pushcfunction(L, Debug);
-    lua_pushcfunction(L, Debug);
-    lua_setfield(L, tableIdx, "Debug");
-    lua_setfield(L, tableIdx, "Info");
+    REGISTER_TABLE_FUNC(L, tableIdx, Debug);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, Debug, "Info");
 
-    lua_pushcfunction(L, Warning);
-    lua_setfield(L, tableIdx, "Warning");
+    REGISTER_TABLE_FUNC(L, tableIdx, Warning);
 
-    lua_pushcfunction(L, Error);
-    lua_setfield(L, tableIdx, "Error");
+    REGISTER_TABLE_FUNC(L, tableIdx, Error);
 
-    lua_pushcfunction(L, Console);
-    lua_setfield(L, tableIdx, "Console");
+    REGISTER_TABLE_FUNC(L, tableIdx, Console);
 
     lua_setglobal(L, LOG_LUA_NAME);
 

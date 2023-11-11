@@ -393,77 +393,53 @@ void Maths_Lua::Bind()
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
 
-    lua_pushcfunction(L, Damp);
-    lua_setfield(L, tableIdx, "Damp");
+    REGISTER_TABLE_FUNC(L, tableIdx, Damp);
 
-    lua_pushcfunction(L, DampAngle);
-    lua_setfield(L, tableIdx, "DampAngle");
+    REGISTER_TABLE_FUNC(L, tableIdx, DampAngle);
 
-    lua_pushcfunction(L, Approach);
-    lua_setfield(L, tableIdx, "Approach");
+    REGISTER_TABLE_FUNC(L, tableIdx, Approach);
 
-    lua_pushcfunction(L, ApproachAngle);
-    lua_setfield(L, tableIdx, "ApproachAngle");
+    REGISTER_TABLE_FUNC(L, tableIdx, ApproachAngle);
 
-    lua_pushcfunction(L, NormalizeRange);
-    lua_setfield(L, tableIdx, "NormalizeRange");
+    REGISTER_TABLE_FUNC(L, tableIdx, NormalizeRange);
 
-    lua_pushcfunction(L, Map);
-    lua_setfield(L, tableIdx, "Map");
+    REGISTER_TABLE_FUNC(L, tableIdx, Map);
 
-    lua_pushcfunction(L, MapClamped);
-    lua_setfield(L, tableIdx, "MapClamped");
+    REGISTER_TABLE_FUNC(L, tableIdx, MapClamped);
 
-    lua_pushcfunction(L, IsPowerOfTwo);
-    lua_setfield(L, tableIdx, "IsPowerOfTwo");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsPowerOfTwo);
 
-    lua_pushcfunction(L, Min);
-    lua_setfield(L, tableIdx, "Min");
+    REGISTER_TABLE_FUNC(L, tableIdx, Min);
 
-    lua_pushcfunction(L, Max);
-    lua_setfield(L, tableIdx, "Max");
+    REGISTER_TABLE_FUNC(L, tableIdx, Max);
 
-    lua_pushcfunction(L, Clamp);
-    lua_setfield(L, tableIdx, "Clamp");
+    REGISTER_TABLE_FUNC(L, tableIdx, Clamp);
 
-    lua_pushcfunction(L, Lerp);
-    lua_setfield(L, tableIdx, "Lerp");
+    REGISTER_TABLE_FUNC(L, tableIdx, Lerp);
 
-    lua_pushcfunction(L, Sign);
-    lua_setfield(L, tableIdx, "Sign");
+    REGISTER_TABLE_FUNC(L, tableIdx, Sign);
 
-    lua_pushcfunction(L, RotateYawTowardDirection);
-    lua_setfield(L, tableIdx, "RotateYawTowardDirection");
+    REGISTER_TABLE_FUNC(L, tableIdx, RotateYawTowardDirection);
 
-    lua_pushcfunction(L, Reflect);
-    lua_setfield(L, tableIdx, "Reflect");
+    REGISTER_TABLE_FUNC(L, tableIdx, Reflect);
 
-    lua_pushcfunction(L, VectorToRotation);
-    lua_setfield(L, tableIdx, "VectorToRotation");
+    REGISTER_TABLE_FUNC(L, tableIdx, VectorToRotation);
 
-    lua_pushcfunction(L, VectorToQuat);
-    lua_setfield(L, tableIdx, "VectorToQuat");
+    REGISTER_TABLE_FUNC(L, tableIdx, VectorToQuat);
 
-    lua_pushcfunction(L, RotationToVector);
-    lua_setfield(L, tableIdx, "RotationToVector");
+    REGISTER_TABLE_FUNC(L, tableIdx, RotationToVector);
 
-    lua_pushcfunction(L, QuatToVector);
-    lua_setfield(L, tableIdx, "QuatToVector");
+    REGISTER_TABLE_FUNC(L, tableIdx, QuatToVector);
 
-    lua_pushcfunction(L, SeedRand);
-    lua_setfield(L, tableIdx, "SeedRand");
+    REGISTER_TABLE_FUNC(L, tableIdx, SeedRand);
 
-    lua_pushcfunction(L, RandRange);
-    lua_setfield(L, tableIdx, "RandRange");
+    REGISTER_TABLE_FUNC(L, tableIdx, RandRange);
 
-    lua_pushcfunction(L, RandRangeInt);
-    lua_setfield(L, tableIdx, "RandRangeInt");
+    REGISTER_TABLE_FUNC(L, tableIdx, RandRangeInt);
 
-    lua_pushcfunction(L, RandRangeVec);
-    lua_setfield(L, tableIdx, "RandRangeVec");
+    REGISTER_TABLE_FUNC(L, tableIdx, RandRangeVec);
 
-    lua_pushcfunction(L, Rand);
-    lua_setfield(L, tableIdx, "Rand");
+    REGISTER_TABLE_FUNC(L, tableIdx, Rand);
 
     lua_pushvalue(L, -1);
     lua_setglobal(L, MATHS_LUA_NAME);

@@ -36,11 +36,9 @@ void Scene_Lua::Bind()
 
     Asset_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, Capture);
-    lua_setfield(L, mtIndex, "Capture");
+    REGISTER_TABLE_FUNC(L, mtIndex, Capture);
 
-    lua_pushcfunction(L, Instantiate);
-    lua_setfield(L, mtIndex, "Instantiate");
+    REGISTER_TABLE_FUNC(L, mtIndex, Instantiate);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

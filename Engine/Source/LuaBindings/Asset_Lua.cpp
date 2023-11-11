@@ -121,11 +121,9 @@ int Asset_Lua::IsLoaded(lua_State* L)
 
 void Asset_Lua::BindCommon(lua_State* L, int mtIndex)
 {
-    lua_pushcfunction(L, Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    REGISTER_TABLE_FUNC(L, mtIndex, Destroy);
 
-    lua_pushcfunction(L, Equals);
-    lua_setfield(L, mtIndex, "__eq");
+    REGISTER_TABLE_FUNC(L, mtIndex, Equals);
 }
 
 void Asset_Lua::Bind()
@@ -138,26 +136,19 @@ void Asset_Lua::Bind()
 
     BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, Equals);
-    lua_setfield(L, mtIndex, "Equals");
+    REGISTER_TABLE_FUNC(L, mtIndex, Equals);
 
-    lua_pushcfunction(L, GetName);
-    lua_setfield(L, mtIndex, "GetName");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetName);
 
-    lua_pushcfunction(L, IsRefCounted);
-    lua_setfield(L, mtIndex, "IsRefCounted");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsRefCounted);
 
-    lua_pushcfunction(L, GetRefCount);
-    lua_setfield(L, mtIndex, "GetRefCount");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRefCount);
 
-    lua_pushcfunction(L, GetTypeName);
-    lua_setfield(L, mtIndex, "GetTypeName");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTypeName);
 
-    lua_pushcfunction(L, IsTransient);
-    lua_setfield(L, mtIndex, "IsTransient");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsTransient);
 
-    lua_pushcfunction(L, IsLoaded);
-    lua_setfield(L, mtIndex, "IsLoaded");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsLoaded);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

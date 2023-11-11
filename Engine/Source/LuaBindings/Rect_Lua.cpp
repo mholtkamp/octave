@@ -270,38 +270,27 @@ void Rect_Lua::Bind()
     luaL_newmetatable(L, RECT_LUA_NAME);
     int mtIndex = lua_gettop(L);
 
-    lua_pushcfunction(L, Create);
-    lua_setfield(L, mtIndex, "Create");
+    REGISTER_TABLE_FUNC(L, mtIndex, Create);
 
-    lua_pushcfunction(L, Index);
-    lua_setfield(L, mtIndex, "__index");
+    REGISTER_TABLE_FUNC(L, mtIndex, Index);
 
-    lua_pushcfunction(L, NewIndex);
-    lua_setfield(L, mtIndex, "__newindex");
+    REGISTER_TABLE_FUNC(L, mtIndex, NewIndex);
 
-    lua_pushcfunction(L, ToString);
-    lua_setfield(L, mtIndex, "__tostring");
+    REGISTER_TABLE_FUNC(L, mtIndex, ToString);
 
-    lua_pushcfunction(L, ContainsPoint);
-    lua_setfield(L, mtIndex, "ContainsPoint");
+    REGISTER_TABLE_FUNC(L, mtIndex, ContainsPoint);
 
-    lua_pushcfunction(L, OverlapsRect);
-    lua_setfield(L, mtIndex, "OverlapsRect");
+    REGISTER_TABLE_FUNC(L, mtIndex, OverlapsRect);
 
-    lua_pushcfunction(L, Clamp);
-    lua_setfield(L, mtIndex, "Clamp");
+    REGISTER_TABLE_FUNC(L, mtIndex, Clamp);
 
-    lua_pushcfunction(L, Top);
-    lua_setfield(L, mtIndex, "Top");
+    REGISTER_TABLE_FUNC(L, mtIndex, Top);
 
-    lua_pushcfunction(L, Bottom);
-    lua_setfield(L, mtIndex, "Bottom");
+    REGISTER_TABLE_FUNC(L, mtIndex, Bottom);
 
-    lua_pushcfunction(L, Left);
-    lua_setfield(L, mtIndex, "Left");
+    REGISTER_TABLE_FUNC(L, mtIndex, Left);
 
-    lua_pushcfunction(L, Right);
-    lua_setfield(L, mtIndex, "Right");
+    REGISTER_TABLE_FUNC(L, mtIndex, Right);
 
     lua_setglobal(L, RECT_LUA_NAME);
 

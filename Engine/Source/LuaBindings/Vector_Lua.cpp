@@ -557,111 +557,76 @@ void Vector_Lua::Bind()
     luaL_newmetatable(L, VECTOR_LUA_NAME);
     int mtIndex = lua_gettop(L);
 
-    lua_pushcfunction(L, Vector_Lua::Create);
-    lua_setfield(L, mtIndex, "Create");
+    REGISTER_TABLE_FUNC(L, mtIndex, Create);
 
     //lua_pushcfunction(L, Vector_Lua::Destroy);
     //lua_setfield(L, mtIndex, "__gc");
 
-    lua_pushcfunction(L, Vector_Lua::Set);
-    lua_setfield(L, mtIndex, "Set");
+    REGISTER_TABLE_FUNC(L, mtIndex, Set);
 
-    lua_pushcfunction(L, Vector_Lua::Clone);
-    lua_setfield(L, mtIndex, "Clone");
+    REGISTER_TABLE_FUNC(L, mtIndex, Clone);
 
-    lua_pushcfunction(L, Vector_Lua::Add);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, mtIndex, "Add");
-    lua_setfield(L, mtIndex, "__add");
+    REGISTER_TABLE_FUNC(L, mtIndex, Add);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Add, "__add");
 
-    lua_pushcfunction(L, Vector_Lua::Subtract);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, mtIndex, "Subtract");
-    lua_setfield(L, mtIndex, "__sub");
+    REGISTER_TABLE_FUNC(L, mtIndex, Subtract);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Subtract, "__sub");
 
-    lua_pushcfunction(L, Vector_Lua::Multiply);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, mtIndex, "Multiply");
-    lua_setfield(L, mtIndex, "__mul");
+    REGISTER_TABLE_FUNC(L, mtIndex, Multiply);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Multiply, "__mul");
 
-    lua_pushcfunction(L, Vector_Lua::Divide);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, mtIndex, "Divide");
-    lua_setfield(L, mtIndex, "__div");
+    REGISTER_TABLE_FUNC(L, mtIndex, Divide);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Divide, "__div");
 
-    lua_pushcfunction(L, Vector_Lua::Equals);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, mtIndex, "Equals");
-    lua_setfield(L, mtIndex, "__eq");
+    REGISTER_TABLE_FUNC(L, mtIndex, Equals);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Equals, "__eq");
 
     //lua_pushcfunction(L, Vector_Lua::NotEqual);
     //lua_pushvalue(L, -1);
     //lua_setfield(L, mtIndex, "NotEqual");
 
-    lua_pushcfunction(L, Vector_Lua::Dot);
-    lua_setfield(L, mtIndex, "Dot");
+    REGISTER_TABLE_FUNC(L, mtIndex, Dot);
 
-    lua_pushcfunction(L, Vector_Lua::Dot3);
-    lua_setfield(L, mtIndex, "Dot3");
+    REGISTER_TABLE_FUNC(L, mtIndex, Dot3);
 
-    lua_pushcfunction(L, Vector_Lua::Cross);
-    lua_setfield(L, mtIndex, "Cross");
+    REGISTER_TABLE_FUNC(L, mtIndex, Cross);
 
-    lua_pushcfunction(L, Vector_Lua::Lerp);
-    lua_setfield(L, mtIndex, "Lerp");
+    REGISTER_TABLE_FUNC(L, mtIndex, Lerp);
 
-    lua_pushcfunction(L, Vector_Lua::Max);
-    lua_setfield(L, mtIndex, "Max");
+    REGISTER_TABLE_FUNC(L, mtIndex, Max);
 
-    lua_pushcfunction(L, Vector_Lua::Min);
-    lua_setfield(L, mtIndex, "Min");
+    REGISTER_TABLE_FUNC(L, mtIndex, Min);
 
-    lua_pushcfunction(L, Vector_Lua::Clamp);
-    lua_setfield(L, mtIndex, "Clamp");
+    REGISTER_TABLE_FUNC(L, mtIndex, Clamp);
 
-    lua_pushcfunction(L, Vector_Lua::Normalize);
-    lua_setfield(L, mtIndex, "Normalize");
+    REGISTER_TABLE_FUNC(L, mtIndex, Normalize);
 
-    lua_pushcfunction(L, Vector_Lua::Normalize3);
-    lua_setfield(L, mtIndex, "Normalize3");
+    REGISTER_TABLE_FUNC(L, mtIndex, Normalize3);
 
-    lua_pushcfunction(L, Vector_Lua::Reflect);
-    lua_setfield(L, mtIndex, "Reflect");
+    REGISTER_TABLE_FUNC(L, mtIndex, Reflect);
 
-    lua_pushcfunction(L, Vector_Lua::Damp);
-    lua_setfield(L, mtIndex, "Damp");
+    REGISTER_TABLE_FUNC(L, mtIndex, Damp);
 
-    lua_pushcfunction(L, Vector_Lua::Rotate);
-    lua_setfield(L, mtIndex, "Rotate");
+    REGISTER_TABLE_FUNC(L, mtIndex, Rotate);
 
-    lua_pushcfunction(L, Vector_Lua::Length);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, mtIndex, "Length");
-    lua_setfield(L, mtIndex, "Magnitude");
+    REGISTER_TABLE_FUNC(L, mtIndex, Length);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Length, "Magnitude");
 
-    lua_pushcfunction(L, Vector_Lua::Distance);
-    lua_setfield(L, mtIndex, "Distance");
+    REGISTER_TABLE_FUNC(L, mtIndex, Distance);
 
-    lua_pushcfunction(L, Vector_Lua::Distance2);
-    lua_setfield(L, mtIndex, "Distance2");
+    REGISTER_TABLE_FUNC(L, mtIndex, Distance2);
 
-    lua_pushcfunction(L, Vector_Lua::Angle);
-    lua_setfield(L, mtIndex, "Angle");
+    REGISTER_TABLE_FUNC(L, mtIndex, Angle);
 
-    lua_pushcfunction(L, Vector_Lua::SignedAngle);
-    lua_setfield(L, mtIndex, "SignedAngle");
+    REGISTER_TABLE_FUNC(L, mtIndex, SignedAngle);
 
-    lua_pushcfunction(L, Vector_Lua::Negate);
-    lua_setfield(L, mtIndex, "__unm");
+    REGISTER_TABLE_FUNC(L, mtIndex, Negate);
 
-    lua_pushcfunction(L, Vector_Lua::Index);
-    lua_setfield(L, mtIndex, "__index");
+    REGISTER_TABLE_FUNC(L, mtIndex, Index);
 
-    lua_pushcfunction(L, Vector_Lua::NewIndex);
-    lua_setfield(L, mtIndex, "__newindex");
+    REGISTER_TABLE_FUNC(L, mtIndex, NewIndex);
 
-    lua_pushcfunction(L, Vector_Lua::ToString);
-    lua_setfield(L, mtIndex, "__tostring");
+    REGISTER_TABLE_FUNC(L, mtIndex, ToString);
 
     lua_setglobal(L, VECTOR_LUA_NAME);
 

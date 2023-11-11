@@ -385,104 +385,71 @@ void Input_Lua::Bind()
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
 
-    lua_pushcfunction(L, Input_Lua::IsKeyDown);
-    lua_setfield(L, tableIdx, "IsKeyDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsKeyDown);
 
-    lua_pushcfunction(L, Input_Lua::IsKeyJustDownRepeat);
-    lua_setfield(L, tableIdx, "IsKeyJustDownRepeat");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsKeyJustDownRepeat);
 
-    lua_pushcfunction(L, Input_Lua::IsKeyJustDown);
-    lua_setfield(L, tableIdx, "IsKeyJustDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsKeyJustDown);
 
-    lua_pushcfunction(L, Input_Lua::IsKeyJustUp);
-    lua_setfield(L, tableIdx, "IsKeyJustUp");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsKeyJustUp);
 
-    lua_pushcfunction(L, Input_Lua::IsControlDown);
-    lua_setfield(L, tableIdx, "IsControlDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsControlDown);
 
-    lua_pushcfunction(L, Input_Lua::IsShiftDown);
-    lua_setfield(L, tableIdx, "IsShiftDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsShiftDown);
 
-    lua_pushcfunction(L, Input_Lua::IsMouseButtonDown);
-    lua_setfield(L, tableIdx, "IsMouseButtonDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsMouseButtonDown);
 
-    lua_pushcfunction(L, Input_Lua::IsMouseButtonJustDown);
-    lua_setfield(L, tableIdx, "IsMouseButtonJustDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsMouseButtonJustDown);
 
-    lua_pushcfunction(L, Input_Lua::IsMouseButtonJustUp);
-    lua_setfield(L, tableIdx, "IsMouseButtonJustUp");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsMouseButtonJustUp);
 
-    lua_pushcfunction(L, Input_Lua::GetMousePosition);
-    lua_setfield(L, tableIdx, "GetMousePosition");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetMousePosition);
 
-    lua_pushcfunction(L, Input_Lua::GetScrollWheelDelta);
-    lua_setfield(L, tableIdx, "GetScrollWheelDelta");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetScrollWheelDelta);
 
-    lua_pushcfunction(L, Input_Lua::GetMouseDelta);
-    lua_setfield(L, tableIdx, "GetMouseDelta");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetMouseDelta);
 
-    lua_pushcfunction(L, Input_Lua::IsTouchDown);
-    lua_setfield(L, tableIdx, "IsTouchDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsTouchDown);
 
-    lua_pushcfunction(L, Input_Lua::IsPointerJustUp);
-    lua_setfield(L, tableIdx, "IsPointerJustUp");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsPointerJustUp);
 
-    lua_pushcfunction(L, Input_Lua::IsPointerJustDown);
-    lua_setfield(L, tableIdx, "IsPointerJustDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsPointerJustDown);
 
-    lua_pushcfunction(L, Input_Lua::IsPointerDown);
-    lua_setfield(L, tableIdx, "IsPointerDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsPointerDown);
 
-    lua_pushcfunction(L, Input_Lua::GetTouchPosition);
-    lua_setfield(L, tableIdx, "GetTouchPosition");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetTouchPosition);
 
-    lua_pushcfunction(L, Input_Lua::GetTouchPositionNormalized);
-    lua_setfield(L, tableIdx, "GetTouchPositionNormalized");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetTouchPositionNormalized);
 
-    lua_pushcfunction(L, Input_Lua::GetPointerPosition);
-    lua_setfield(L, tableIdx, "GetPointerPosition");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetPointerPosition);
 
-    lua_pushcfunction(L, Input_Lua::GetPointerPositionNormalized);
-    lua_setfield(L, tableIdx, "GetPointerPositionNormalized");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetPointerPositionNormalized);
 
-    lua_pushcfunction(L, Input_Lua::IsGamepadButtonDown);
-    lua_setfield(L, tableIdx, "IsGamepadButtonDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsGamepadButtonDown);
 
-    lua_pushcfunction(L, Input_Lua::IsGamepadButtonJustDown);
-    lua_setfield(L, tableIdx, "IsGamepadButtonJustDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsGamepadButtonJustDown);
 
-    lua_pushcfunction(L, Input_Lua::IsGamepadButtonJustUp);
-    lua_setfield(L, tableIdx, "IsGamepadButtonJustUp");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsGamepadButtonJustUp);
 
-    lua_pushcfunction(L, Input_Lua::GetGamepadAxisValue);
-    lua_setfield(L, tableIdx, "GetGamepadAxisValue");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetGamepadAxisValue);
 
-    lua_pushcfunction(L, Input_Lua::GetGamepadType);
-    lua_setfield(L, tableIdx, "GetGamepadType");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetGamepadType);
 
-    lua_pushcfunction(L, Input_Lua::IsGamepadConnected);
-    lua_setfield(L, tableIdx, "IsGamepadConnected");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsGamepadConnected);
 
-    lua_pushcfunction(L, Input_Lua::ShowCursor);
-    lua_setfield(L, tableIdx, "ShowCursor");
+    REGISTER_TABLE_FUNC(L, tableIdx, ShowCursor);
 
-    lua_pushcfunction(L, Input_Lua::SetCursorPosition);
-    lua_setfield(L, tableIdx, "SetCursorPosition");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetCursorPosition);
 
-    lua_pushcfunction(L, Input_Lua::GetKeysJustDown);
-    lua_setfield(L, tableIdx, "GetKeysJustDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetKeysJustDown);
 
-    lua_pushcfunction(L, Input_Lua::IsAnyKeyJustDown);
-    lua_setfield(L, tableIdx, "IsAnyKeyJustDown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsAnyKeyJustDown);
 
-    lua_pushcfunction(L, Input_Lua::ConvertKeyCodeToChar);
-    lua_setfield(L, tableIdx, "ConvertKeyCodeToChar");
+    REGISTER_TABLE_FUNC(L, tableIdx, ConvertKeyCodeToChar);
 
-    lua_pushcfunction(L, Input_Lua::ShowSoftKeyboard);
-    lua_setfield(L, tableIdx, "ShowSoftKeyboard");
+    REGISTER_TABLE_FUNC(L, tableIdx, ShowSoftKeyboard);
 
-    lua_pushcfunction(L, Input_Lua::IsSoftKeyboardShown);
-    lua_setfield(L, tableIdx, "IsSoftKeyboardShown");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsSoftKeyboardShown);
 
     lua_setglobal(L, INPUT_LUA_NAME);
     OCT_ASSERT(lua_gettop(L) == 0);

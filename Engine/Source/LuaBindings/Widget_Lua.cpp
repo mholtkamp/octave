@@ -618,164 +618,111 @@ void Widget_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, GetRect);
-    lua_setfield(L, mtIndex, "GetRect");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRect);
 
-    lua_pushcfunction(L, UpdateRect);
-    lua_setfield(L, mtIndex, "UpdateRect");
+    REGISTER_TABLE_FUNC(L, mtIndex, UpdateRect);
 
-    lua_pushcfunction(L, SetX);
-    lua_setfield(L, mtIndex, "SetX");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetX);
 
-    lua_pushcfunction(L, SetY);
-    lua_setfield(L, mtIndex, "SetY");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetY);
 
-    lua_pushcfunction(L, SetWidth);
-    lua_setfield(L, mtIndex, "SetWidth");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetWidth);
 
-    lua_pushcfunction(L, SetHeight);
-    lua_setfield(L, mtIndex, "SetHeight");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetHeight);
 
-    lua_pushcfunction(L, SetXRatio);
-    lua_setfield(L, mtIndex, "SetXRatio");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetXRatio);
 
-    lua_pushcfunction(L, SetYRatio);
-    lua_setfield(L, mtIndex, "SetYRatio");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetYRatio);
 
-    lua_pushcfunction(L, SetWidthRatio);
-    lua_setfield(L, mtIndex, "SetWidthRatio");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetWidthRatio);
 
-    lua_pushcfunction(L, SetHeightRatio);
-    lua_setfield(L, mtIndex, "SetHeightRatio");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetHeightRatio);
 
-    lua_pushcfunction(L, SetLeftMargin);
-    lua_setfield(L, mtIndex, "SetLeftMargin");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetLeftMargin);
 
-    lua_pushcfunction(L, SetTopMargin);
-    lua_setfield(L, mtIndex, "SetTopMargin");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTopMargin);
 
-    lua_pushcfunction(L, SetRightMargin);
-    lua_setfield(L, mtIndex, "SetRightMargin");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRightMargin);
 
-    lua_pushcfunction(L, SetBottomMargin);
-    lua_setfield(L, mtIndex, "SetBottomMargin");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetBottomMargin);
 
-    lua_pushcfunction(L, SetPosition);
-    lua_setfield(L, mtIndex, "SetPosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPosition);
 
-    lua_pushcfunction(L, SetDimensions);
-    lua_setfield(L, mtIndex, "SetDimensions");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetDimensions);
 
-    lua_pushcfunction(L, SetRect);
-    lua_setfield(L, mtIndex, "SetRect");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRect);
 
-    lua_pushcfunction(L, SetRatios);
-    lua_setfield(L, mtIndex, "SetRatios");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRatios);
 
-    lua_pushcfunction(L, SetMargins);
-    lua_setfield(L, mtIndex, "SetMargins");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetMargins);
 
-    lua_pushcfunction(L, SetOffset);
-    lua_setfield(L, mtIndex, "SetOffset");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetOffset);
 
-    lua_pushcfunction(L, GetOffset);
-    lua_setfield(L, mtIndex, "GetOffset");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOffset);
 
-    lua_pushcfunction(L, SetSize);
-    lua_setfield(L, mtIndex, "SetSize");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetSize);
 
-    lua_pushcfunction(L, GetSize);
-    lua_setfield(L, mtIndex, "GetSize");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSize);
 
-    lua_pushcfunction(L, GetAnchorMode);
-    lua_setfield(L, mtIndex, "GetAnchorMode");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAnchorMode);
 
-    lua_pushcfunction(L, SetAnchorMode);
-    lua_setfield(L, mtIndex, "SetAnchorMode");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAnchorMode);
 
-    lua_pushcfunction(L, StretchX);
-    lua_setfield(L, mtIndex, "StretchX");
+    REGISTER_TABLE_FUNC(L, mtIndex, StretchX);
 
-    lua_pushcfunction(L, StretchY);
-    lua_setfield(L, mtIndex, "StretchY");
+    REGISTER_TABLE_FUNC(L, mtIndex, StretchY);
 
-    lua_pushcfunction(L, GetX);
-    lua_setfield(L, mtIndex, "GetX");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetX);
 
-    lua_pushcfunction(L, GetY);
-    lua_setfield(L, mtIndex, "GetY");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetY);
 
-    lua_pushcfunction(L, GetWidth);
-    lua_setfield(L, mtIndex, "GetWidth");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetWidth);
 
-    lua_pushcfunction(L, GetHeight);
-    lua_setfield(L, mtIndex, "GetHeight");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetHeight);
 
-    lua_pushcfunction(L, GetPosition);
-    lua_setfield(L, mtIndex, "GetPosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetPosition);
 
-    lua_pushcfunction(L, GetDimensions);
-    lua_setfield(L, mtIndex, "GetDimensions");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetDimensions);
 
-    lua_pushcfunction(L, GetParentWidth);
-    lua_setfield(L, mtIndex, "GetParentWidth");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetParentWidth);
 
-    lua_pushcfunction(L, GetParentHeight);
-    lua_setfield(L, mtIndex, "GetParentHeight");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetParentHeight);
 
-    lua_pushcfunction(L, SetColor);
-    lua_setfield(L, mtIndex, "SetColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetColor);
 
-    lua_pushcfunction(L, ShouldHandleInput);
-    lua_setfield(L, mtIndex, "ShouldHandleInput");
+    REGISTER_TABLE_FUNC(L, mtIndex, ShouldHandleInput);
 
-    lua_pushcfunction(L, MarkDirty);
-    lua_setfield(L, mtIndex, "MarkDirty");
+    REGISTER_TABLE_FUNC(L, mtIndex, MarkDirty);
 
-    lua_pushcfunction(L, IsDirty);
-    lua_setfield(L, mtIndex, "IsDirty");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsDirty);
 
-    lua_pushcfunction(L, ContainsMouse);
-    lua_setfield(L, mtIndex, "ContainsMouse");
+    REGISTER_TABLE_FUNC(L, mtIndex, ContainsMouse);
 
-    lua_pushcfunction(L, ContainsPoint);
-    lua_setfield(L, mtIndex, "ContainsPoint");
+    REGISTER_TABLE_FUNC(L, mtIndex, ContainsPoint);
 
-    lua_pushcfunction(L, SetRotation);
-    lua_setfield(L, mtIndex, "SetRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRotation);
 
-    lua_pushcfunction(L, GetRotation);
-    lua_setfield(L, mtIndex, "GetRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRotation);
 
-    lua_pushcfunction(L, SetPivot);
-    lua_setfield(L, mtIndex, "SetPivot");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPivot);
 
-    lua_pushcfunction(L, GetPivot);
-    lua_setfield(L, mtIndex, "GetPivot");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetPivot);
 
-    lua_pushcfunction(L, SetScale);
-    lua_setfield(L, mtIndex, "SetScale");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetScale);
 
-    lua_pushcfunction(L, GetScale);
-    lua_setfield(L, mtIndex, "GetScale");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetScale);
 
-    lua_pushcfunction(L, IsScissorEnabled);
-    lua_setfield(L, mtIndex, "IsScissorEnabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsScissorEnabled);
 
-    lua_pushcfunction(L, EnableScissor);
-    lua_setfield(L, mtIndex, "EnableScissor");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableScissor);
 
-    lua_pushcfunction(L, SetOpacity);
-    lua_setfield(L, mtIndex, "SetOpacity");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetOpacity);
 
-    lua_pushcfunction(L, SetOpacityFloat);
-    lua_setfield(L, mtIndex, "SetOpacityFloat");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetOpacityFloat);
 
-    lua_pushcfunction(L, GetOpacity);
-    lua_setfield(L, mtIndex, "GetOpacity");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOpacity);
 
-    lua_pushcfunction(L, GetOpacityFloat);
-    lua_setfield(L, mtIndex, "GetOpacityFloat");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOpacityFloat);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

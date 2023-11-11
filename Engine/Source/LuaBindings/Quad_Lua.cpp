@@ -96,26 +96,19 @@ void Quad_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, SetTexture);
-    lua_setfield(L, mtIndex, "SetTexture");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTexture);
 
-    lua_pushcfunction(L, GetTexture);
-    lua_setfield(L, mtIndex, "GetTexture");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTexture);
 
-    lua_pushcfunction(L, SetVertexColors);
-    lua_setfield(L, mtIndex, "SetVertexColors");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetVertexColors);
 
-    lua_pushcfunction(L, SetUvScale);
-    lua_setfield(L, mtIndex, "SetUvScale");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetUvScale);
 
-    lua_pushcfunction(L, GetUvScale);
-    lua_setfield(L, mtIndex, "GetUvScale");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetUvScale);
 
-    lua_pushcfunction(L, SetUvOffset);
-    lua_setfield(L, mtIndex, "SetUvOffset");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetUvOffset);
 
-    lua_pushcfunction(L, GetUvOffset);
-    lua_setfield(L, mtIndex, "GetUvOffset");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetUvOffset);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

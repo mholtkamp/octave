@@ -237,71 +237,49 @@ void Text_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, SetFont);
-    lua_setfield(L, mtIndex, "SetFont");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetFont);
 
-    lua_pushcfunction(L, GetFont);
-    lua_setfield(L, mtIndex, "GetFont");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetFont);
 
-    lua_pushcfunction(L, SetOutlineColor);
-    lua_setfield(L, mtIndex, "SetOutlineColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetOutlineColor);
 
-    lua_pushcfunction(L, GetOutlineColor);
-    lua_setfield(L, mtIndex, "GetOutlineColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOutlineColor);
 
-    lua_pushcfunction(L, SetTextSize);
-    lua_setfield(L, mtIndex, "SetTextSize");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTextSize);
 
-    lua_pushcfunction(L, GetTextSize);
-    lua_setfield(L, mtIndex, "GetTextSize");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTextSize);
 
-    lua_pushcfunction(L, GetScaledTextSize);
-    lua_setfield(L, mtIndex, "GetScaledTextSize");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetScaledTextSize);
 
-    lua_pushcfunction(L, GetOutlineSize);
-    lua_setfield(L, mtIndex, "GetOutlineSize");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOutlineSize);
 
-    lua_pushcfunction(L, GetSoftness);
-    lua_setfield(L, mtIndex, "GetSoftness");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSoftness);
 
-    lua_pushcfunction(L, GetCutoff);
-    lua_setfield(L, mtIndex, "GetCutoff");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetCutoff);
 
-    lua_pushcfunction(L, SetText);
-    lua_setfield(L, mtIndex, "SetText");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetText);
 
-    lua_pushcfunction(L, GetText);
-    lua_setfield(L, mtIndex, "GetText");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetText);
 
-    lua_pushcfunction(L, GetTextWidth);
-    lua_setfield(L, mtIndex, "GetTextWidth");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTextWidth);
 
-    lua_pushcfunction(L, GetTextHeight);
-    lua_setfield(L, mtIndex, "GetTextHeight");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTextHeight);
 
-    lua_pushcfunction(L, GetScaledMinExtent);
-    lua_setfield(L, mtIndex, "GetScaledMinExtent");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetScaledMinExtent);
 
-    lua_pushcfunction(L, GetScaledMaxExtent);
-    lua_setfield(L, mtIndex, "GetScaledMaxExtent");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetScaledMaxExtent);
 
-    lua_pushcfunction(L, SetHorizontalJustification);
-    lua_setfield(L, mtIndex, "SetHorizontalJustification");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetHorizontalJustification);
 
-    lua_pushcfunction(L, GetHorizontalJustification);
-    lua_setfield(L, mtIndex, "GetHorizontalJustification");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetHorizontalJustification);
 
-    lua_pushcfunction(L, SetVerticalJustification);
-    lua_setfield(L, mtIndex, "SetVerticalJustification");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetVerticalJustification);
 
-    lua_pushcfunction(L, GetVerticalJustification);
-    lua_setfield(L, mtIndex, "GetVerticalJustification");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetVerticalJustification);
 
-    lua_pushcfunction(L, EnableWordWrap);
-    lua_setfield(L, mtIndex, "EnableWordWrap");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableWordWrap);
 
-    lua_pushcfunction(L, IsWordWrapEnabled);
-    lua_setfield(L, mtIndex, "IsWordWrapEnabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsWordWrapEnabled);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

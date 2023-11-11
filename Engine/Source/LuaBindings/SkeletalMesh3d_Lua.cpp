@@ -316,83 +316,57 @@ void SkeletalMesh3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, SetSkeletalMesh);
-    lua_setfield(L, mtIndex, "SetSkeletalMesh");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetSkeletalMesh);
 
-    lua_pushcfunction(L, GetSkeletalMesh);
-    lua_setfield(L, mtIndex, "GetSkeletalMesh");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSkeletalMesh);
 
-    lua_pushcfunction(L, PlayAnimation);
-    lua_setfield(L, mtIndex, "PlayAnimation");
+    REGISTER_TABLE_FUNC(L, mtIndex, PlayAnimation);
 
-    lua_pushcfunction(L, StopAnimation);
-    lua_setfield(L, mtIndex, "StopAnimation");
+    REGISTER_TABLE_FUNC(L, mtIndex, StopAnimation);
 
-    lua_pushcfunction(L, StopAllAnimations);
-    lua_setfield(L, mtIndex, "StopAllAnimations");
+    REGISTER_TABLE_FUNC(L, mtIndex, StopAllAnimations);
 
-    lua_pushcfunction(L, IsAnimationPlaying);
-    lua_setfield(L, mtIndex, "IsAnimationPlaying");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsAnimationPlaying);
 
-    lua_pushcfunction(L, QueueAnimation);
-    lua_setfield(L, mtIndex, "QueueAnimation");
+    REGISTER_TABLE_FUNC(L, mtIndex, QueueAnimation);
 
-    lua_pushcfunction(L, CancelQueuedAnimation);
-    lua_setfield(L, mtIndex, "CancelQueuedAnimation");
+    REGISTER_TABLE_FUNC(L, mtIndex, CancelQueuedAnimation);
 
-    lua_pushcfunction(L, CancelAllQueuedAnimations);
-    lua_setfield(L, mtIndex, "CancelAllQueuedAnimations");
+    REGISTER_TABLE_FUNC(L, mtIndex, CancelAllQueuedAnimations);
 
-    lua_pushcfunction(L, SetInheritPose);
-    lua_setfield(L, mtIndex, "SetInheritPose");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInheritPose);
 
-    lua_pushcfunction(L, IsInheritPoseEnabled);
-    lua_setfield(L, mtIndex, "IsInheritPoseEnabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsInheritPoseEnabled);
 
-    lua_pushcfunction(L, ResetAnimation);
-    lua_setfield(L, mtIndex, "ResetAnimation");
+    REGISTER_TABLE_FUNC(L, mtIndex, ResetAnimation);
 
-    lua_pushcfunction(L, GetAnimationSpeed);
-    lua_setfield(L, mtIndex, "GetAnimationSpeed");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAnimationSpeed);
 
-    lua_pushcfunction(L, SetAnimationSpeed);
-    lua_setfield(L, mtIndex, "SetAnimationSpeed");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAnimationSpeed);
 
-    lua_pushcfunction(L, SetAnimationPaused);
-    lua_setfield(L, mtIndex, "SetAnimationPaused");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAnimationPaused);
 
-    lua_pushcfunction(L, IsAnimationPaused);
-    lua_setfield(L, mtIndex, "IsAnimationPaused");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsAnimationPaused);
 
-    lua_pushcfunction(L, GetBonePosition);
-    lua_setfield(L, mtIndex, "GetBonePosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetBonePosition);
 
-    lua_pushcfunction(L, GetBoneRotation);
-    lua_setfield(L, mtIndex, "GetBoneRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetBoneRotation);
 
-    lua_pushcfunction(L, GetBoneScale);
-    lua_setfield(L, mtIndex, "GetBoneScale");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetBoneScale);
 
-    lua_pushcfunction(L, SetBonePosition);
-    lua_setfield(L, mtIndex, "SetBonePosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetBonePosition);
 
-    lua_pushcfunction(L, SetBoneRotation);
-    lua_setfield(L, mtIndex, "SetBoneRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetBoneRotation);
 
-    lua_pushcfunction(L, SetBoneScale);
-    lua_setfield(L, mtIndex, "SetBoneScale");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetBoneScale);
 
-    lua_pushcfunction(L, GetNumBones);
-    lua_setfield(L, mtIndex, "GetNumBones");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNumBones);
 
-    lua_pushcfunction(L, SetAnimEventHandler);
-    lua_setfield(L, mtIndex, "SetAnimEventHandler");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAnimEventHandler);
 
-    lua_pushcfunction(L, SetBoundsRadiusOverride);
-    lua_setfield(L, mtIndex, "SetBoundsRadiusOverride");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetBoundsRadiusOverride);
 
-    lua_pushcfunction(L, GetBoundsRadiusOverride);
-    lua_setfield(L, mtIndex, "GetBoundsRadiusOverride");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetBoundsRadiusOverride);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

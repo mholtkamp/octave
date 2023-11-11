@@ -1,5 +1,6 @@
 #include "ScriptAutoReg.h"
 #include "LuaBindings/LuaTypeCheck.h"
+#include "LuaBindings/LuaUtils.h"
 
 std::vector<AutoRegData>& GetGlobalAutoRegArray()
 {
@@ -32,9 +33,10 @@ void InitAutoRegScripts()
                 lua_getglobal(L, data.mTableName);
             }
 
-            OCT_ASSERT(lua_istable(L, -1));
-            lua_pushcfunction(L, data.mFunc);
-            lua_setfield(L, -2, data.mFuncName);
+            int tableIdx = lua_gettop(L);
+            OCT_ASSERT(lua_istable(L, tableIdx));
+
+            REGISTER_TABLE_FUNC_EX(L, tableIdx, data.mFunc, data.mFuncName);
 
             // Pop the table
             lua_pop(L, 1);

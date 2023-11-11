@@ -293,86 +293,59 @@ void Stream_Lua::Bind()
     luaL_newmetatable(L, STREAM_LUA_NAME);
     int mtIndex = lua_gettop(L);
 
-    lua_pushcfunction(L, Create);
-    lua_setfield(L, mtIndex, "Create");
+    REGISTER_TABLE_FUNC(L, mtIndex, Create);
 
-    lua_pushcfunction(L, Destroy);
-    lua_setfield(L, mtIndex, "__gc");
+    REGISTER_TABLE_FUNC(L, mtIndex, Destroy);
 
-    lua_pushcfunction(L, GetSize);
-    lua_setfield(L, mtIndex, "GetSize");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSize);
 
-    lua_pushcfunction(L, GetPos);
-    lua_setfield(L, mtIndex, "GetPos");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetPos);
 
-    lua_pushcfunction(L, SetPos);
-    lua_setfield(L, mtIndex, "SetPos");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPos);
 
-    lua_pushcfunction(L, ReadFile);
-    lua_setfield(L, mtIndex, "ReadFile");
+    REGISTER_TABLE_FUNC(L, mtIndex, ReadFile);
 
-    lua_pushcfunction(L, WriteFile);
-    lua_setfield(L, mtIndex, "WriteFile");
+    REGISTER_TABLE_FUNC(L, mtIndex, WriteFile);
 
-    lua_pushcfunction(L, ReadAsset);
-    lua_setfield(L, mtIndex, "ReadAsset");
+    REGISTER_TABLE_FUNC(L, mtIndex, ReadAsset);
 
-    lua_pushcfunction(L, WriteAsset);
-    lua_setfield(L, mtIndex, "WriteAsset");
+    REGISTER_TABLE_FUNC(L, mtIndex, WriteAsset);
 
-    lua_pushcfunction(L, ReadString);
-    lua_setfield(L, mtIndex, "ReadString");
+    REGISTER_TABLE_FUNC(L, mtIndex, ReadString);
 
-    lua_pushcfunction(L, WriteString);
-    lua_setfield(L, mtIndex, "WriteString");
+    REGISTER_TABLE_FUNC(L, mtIndex, WriteString);
 
-    lua_pushcfunction(L, ReadInt32);
-    lua_setfield(L, mtIndex, "ReadInt32");
+    REGISTER_TABLE_FUNC(L, mtIndex, ReadInt32);
 
-    lua_pushcfunction(L, ReadInt16);
-    lua_setfield(L, mtIndex, "ReadInt16");
+    REGISTER_TABLE_FUNC(L, mtIndex, ReadInt16);
 
-    lua_pushcfunction(L, ReadInt8);
-    lua_setfield(L, mtIndex, "ReadInt8");
+    REGISTER_TABLE_FUNC(L, mtIndex, ReadInt8);
 
-    lua_pushcfunction(L, ReadFloat);
-    lua_setfield(L, mtIndex, "ReadFloat");
+    REGISTER_TABLE_FUNC(L, mtIndex, ReadFloat);
 
-    lua_pushcfunction(L, ReadBool);
-    lua_setfield(L, mtIndex, "ReadBool");
+    REGISTER_TABLE_FUNC(L, mtIndex, ReadBool);
 
-    lua_pushcfunction(L, ReadVec2);
-    lua_setfield(L, mtIndex, "ReadVec2");
+    REGISTER_TABLE_FUNC(L, mtIndex, ReadVec2);
 
-    lua_pushcfunction(L, ReadVec3);
-    lua_setfield(L, mtIndex, "ReadVec3");
+    REGISTER_TABLE_FUNC(L, mtIndex, ReadVec3);
 
-    lua_pushcfunction(L, ReadVec4);
-    lua_setfield(L, mtIndex, "ReadVec4");
+    REGISTER_TABLE_FUNC(L, mtIndex, ReadVec4);
 
-    lua_pushcfunction(L, WriteInt32);
-    lua_setfield(L, mtIndex, "WriteInt32");
+    REGISTER_TABLE_FUNC(L, mtIndex, WriteInt32);
 
-    lua_pushcfunction(L, WriteInt16);
-    lua_setfield(L, mtIndex, "WriteInt16");
+    REGISTER_TABLE_FUNC(L, mtIndex, WriteInt16);
 
-    lua_pushcfunction(L, WriteInt8);
-    lua_setfield(L, mtIndex, "WriteInt8");
+    REGISTER_TABLE_FUNC(L, mtIndex, WriteInt8);
 
-    lua_pushcfunction(L, WriteFloat);
-    lua_setfield(L, mtIndex, "WriteFloat");
+    REGISTER_TABLE_FUNC(L, mtIndex, WriteFloat);
 
-    lua_pushcfunction(L, WriteBool);
-    lua_setfield(L, mtIndex, "WriteBool");
+    REGISTER_TABLE_FUNC(L, mtIndex, WriteBool);
 
-    lua_pushcfunction(L, WriteVec2);
-    lua_setfield(L, mtIndex, "WriteVec2");
+    REGISTER_TABLE_FUNC(L, mtIndex, WriteVec2);
 
-    lua_pushcfunction(L, WriteVec3);
-    lua_setfield(L, mtIndex, "WriteVec3");
+    REGISTER_TABLE_FUNC(L, mtIndex, WriteVec3);
 
-    lua_pushcfunction(L, WriteVec4);
-    lua_setfield(L, mtIndex, "WriteVec4");
+    REGISTER_TABLE_FUNC(L, mtIndex, WriteVec4);
 
     // Set the __index metamethod to itself
     lua_pushvalue(L, mtIndex);

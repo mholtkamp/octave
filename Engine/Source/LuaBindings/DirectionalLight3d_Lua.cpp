@@ -35,11 +35,9 @@ void DirectionalLight3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, GetDirection);
-    lua_setfield(L, mtIndex, "GetDirection");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetDirection);
 
-    lua_pushcfunction(L, SetDirection);
-    lua_setfield(L, mtIndex, "SetDirection");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetDirection);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

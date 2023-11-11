@@ -287,83 +287,57 @@ void Particle3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, Reset);
-    lua_setfield(L, mtIndex, "Reset");
+    REGISTER_TABLE_FUNC(L, mtIndex, Reset);
 
-    lua_pushcfunction(L, EnableEmission);
-    lua_setfield(L, mtIndex, "EnableEmission");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableEmission);
 
-    lua_pushcfunction(L, IsEmissionEnabled);
-    lua_setfield(L, mtIndex, "IsEmissionEnabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsEmissionEnabled);
 
-    lua_pushcfunction(L, EnableSimulation);
-    lua_setfield(L, mtIndex, "EnableSimulation");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableSimulation);
 
-    lua_pushcfunction(L, IsSimulationEnabled);
-    lua_setfield(L, mtIndex, "IsSimulationEnabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsSimulationEnabled);
 
-    lua_pushcfunction(L, GetElapsedTime);
-    lua_setfield(L, mtIndex, "GetElapsedTime");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetElapsedTime);
 
-    lua_pushcfunction(L, SetParticleSystem);
-    lua_setfield(L, mtIndex, "SetParticleSystem");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetParticleSystem);
 
-    lua_pushcfunction(L, GetParticleSystem);
-    lua_setfield(L, mtIndex, "GetParticleSystem");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetParticleSystem);
 
-    lua_pushcfunction(L, SetMaterialOverride);
-    lua_setfield(L, mtIndex, "SetMaterialOverride");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetMaterialOverride);
 
-    lua_pushcfunction(L, GetMaterial);
-    lua_setfield(L, mtIndex, "GetMaterial");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetMaterial);
 
-    lua_pushcfunction(L, GetMaterialOverride);
-    lua_setfield(L, mtIndex, "GetMaterialOverride");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetMaterialOverride);
 
-    lua_pushcfunction(L, SetTimeMultiplier);
-    lua_setfield(L, mtIndex, "SetTimeMultiplier");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTimeMultiplier);
 
-    lua_pushcfunction(L, GetTimeMultiplier);
-    lua_setfield(L, mtIndex, "GetTimeMultiplier");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTimeMultiplier);
 
-    lua_pushcfunction(L, SetUseLocalSpace);
-    lua_setfield(L, mtIndex, "SetUseLocalSpace");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetUseLocalSpace);
 
-    lua_pushcfunction(L, GetUseLocalSpace);
-    lua_setfield(L, mtIndex, "GetUseLocalSpace");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetUseLocalSpace);
 
-    lua_pushcfunction(L, GetNumParticles);
-    lua_setfield(L, mtIndex, "GetNumParticles");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNumParticles);
 
-    lua_pushcfunction(L, SetParticleVelocity);
-    lua_setfield(L, mtIndex, "SetParticleVelocity");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetParticleVelocity);
 
-    lua_pushcfunction(L, GetParticleVelocity);
-    lua_setfield(L, mtIndex, "GetParticleVelocity");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetParticleVelocity);
 
-    lua_pushcfunction(L, SetParticlePosition);
-    lua_setfield(L, mtIndex, "SetParticlePosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetParticlePosition);
 
-    lua_pushcfunction(L, GetParticlePosition);
-    lua_setfield(L, mtIndex, "GetParticlePosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetParticlePosition);
 
-    lua_pushcfunction(L, SetParticleSpeed);
-    lua_setfield(L, mtIndex, "SetParticleSpeed");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetParticleSpeed);
 
-    lua_pushcfunction(L, EnableAutoEmit);
-    lua_setfield(L, mtIndex, "EnableAutoEmit");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableAutoEmit);
 
-    lua_pushcfunction(L, IsAutoEmitEnabled);
-    lua_setfield(L, mtIndex, "IsAutoEmitEnabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsAutoEmitEnabled);
 
-    lua_pushcfunction(L, SetParticleOrientation);
-    lua_setfield(L, mtIndex, "SetParticleOrientation");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetParticleOrientation);
 
-    lua_pushcfunction(L, GetParticleOrientation);
-    lua_setfield(L, mtIndex, "GetParticleOrientation");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetParticleOrientation);
 
-    lua_pushcfunction(L, InstantiateParticleSystem);
-    lua_setfield(L, mtIndex, "InstantiateParticleSystem");
+    REGISTER_TABLE_FUNC(L, mtIndex, InstantiateParticleSystem);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

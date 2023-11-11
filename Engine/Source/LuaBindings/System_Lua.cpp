@@ -109,35 +109,25 @@ void System_Lua::Bind()
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
 
-    lua_pushcfunction(L, WriteSave);
-    lua_setfield(L, tableIdx, "WriteSave");
+    REGISTER_TABLE_FUNC(L, tableIdx, WriteSave);
 
-    lua_pushcfunction(L, ReadSave);
-    lua_setfield(L, tableIdx, "ReadSave");
+    REGISTER_TABLE_FUNC(L, tableIdx, ReadSave);
 
-    lua_pushcfunction(L, DoesSaveExist);
-    lua_setfield(L, tableIdx, "DoesSaveExist");
+    REGISTER_TABLE_FUNC(L, tableIdx, DoesSaveExist);
 
-    lua_pushcfunction(L, DeleteSave);
-    lua_setfield(L, tableIdx, "DeleteSave");
+    REGISTER_TABLE_FUNC(L, tableIdx, DeleteSave);
 
-    lua_pushcfunction(L, UnmountMemoryCard);
-    lua_setfield(L, tableIdx, "UnmountMemoryCard");
+    REGISTER_TABLE_FUNC(L, tableIdx, UnmountMemoryCard);
 
-    lua_pushcfunction(L, SetScreenOrientation);
-    lua_setfield(L, tableIdx, "SetScreenOrientation");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetScreenOrientation);
 
-    lua_pushcfunction(L, GetScreenOrientation);
-    lua_setfield(L, tableIdx, "GetScreenOrientation");
+    REGISTER_TABLE_FUNC(L, tableIdx, GetScreenOrientation);
 
-    lua_pushcfunction(L, SetFullscreen);
-    lua_setfield(L, tableIdx, "SetFullscreen");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetFullscreen);
 
-    lua_pushcfunction(L, IsFullscreen);
-    lua_setfield(L, tableIdx, "IsFullscreen");
+    REGISTER_TABLE_FUNC(L, tableIdx, IsFullscreen);
 
-    lua_pushcfunction(L, SetWindowTitle);
-    lua_setfield(L, tableIdx, "SetWindowTitle");
+    REGISTER_TABLE_FUNC(L, tableIdx, SetWindowTitle);
 
     lua_setglobal(L, "System");
 

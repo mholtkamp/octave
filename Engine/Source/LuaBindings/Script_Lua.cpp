@@ -4,6 +4,7 @@
 #include "Utilities.h"
 #include "ScriptUtils.h"
 
+#include "LuaBindings/LuaUtils.h"
 #include "LuaBindings/Script_Lua.h"
 
 #if LUA_ENABLED
@@ -95,25 +96,18 @@ void Script_Lua::Bind()
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
 
-    lua_pushcfunction(L, Script_Lua::Load);
-    lua_setfield(L, tableIdx, "Load");
-    lua_pushcfunction(L, Script_Lua::Load);
-    lua_setfield(L, tableIdx, "Require");
+    REGISTER_TABLE_FUNC(L, tableIdx, Load);
+    REGISTER_TABLE_FUNC(L, tableIdx, Load);
 
-    lua_pushcfunction(L, Script_Lua::Run);
-    lua_setfield(L, tableIdx, "Run");
+    REGISTER_TABLE_FUNC(L, tableIdx, Run);
 
-    lua_pushcfunction(L, Script_Lua::Inherit);
-    lua_setfield(L, tableIdx, "Inherit");
+    REGISTER_TABLE_FUNC(L, tableIdx, Inherit);
 
-    lua_pushcfunction(L, Script_Lua::New);
-    lua_setfield(L, tableIdx, "New");
+    REGISTER_TABLE_FUNC(L, tableIdx, New);
 
-    lua_pushcfunction(L, Script_Lua::GarbageCollect);
-    lua_setfield(L, tableIdx, "GarbageCollect");
+    REGISTER_TABLE_FUNC(L, tableIdx, GarbageCollect);
 
-    lua_pushcfunction(L, Script_Lua::LoadDirectory);
-    lua_setfield(L, tableIdx, "LoadDirectory");
+    REGISTER_TABLE_FUNC(L, tableIdx, LoadDirectory);
 
     lua_setglobal(L, SCRIPT_LUA_NAME);
 

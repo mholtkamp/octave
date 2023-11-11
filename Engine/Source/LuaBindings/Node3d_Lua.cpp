@@ -313,98 +313,65 @@ void Node3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, Node3D_Lua::AttachToBone);
-    lua_setfield(L, mtIndex, "AttachToBone");
+    REGISTER_TABLE_FUNC(L, mtIndex, AttachToBone);
 
-    lua_pushcfunction(L, Node3D_Lua::UpdateTransform);
-    lua_setfield(L, mtIndex, "UpdateTransform");
+    REGISTER_TABLE_FUNC(L, mtIndex, UpdateTransform);
 
-    lua_pushcfunction(L, Node3D_Lua::GetPosition);
-    lua_setfield(L, mtIndex, "GetPosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetPosition);
 
-    lua_pushcfunction(L, Node3D_Lua::GetRotationEuler);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, mtIndex, "GetRotationEuler");
-    lua_setfield(L, mtIndex, "GetRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRotationEuler);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetRotationEuler, "GetRotation");
 
-    lua_pushcfunction(L, Node3D_Lua::GetRotationQuat);
-    lua_setfield(L, mtIndex, "GetRotationQuat");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRotationQuat);
 
-    lua_pushcfunction(L, Node3D_Lua::GetScale);
-    lua_setfield(L, mtIndex, "GetScale");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetScale);
 
-    lua_pushcfunction(L, Node3D_Lua::SetPosition);
-    lua_setfield(L, mtIndex, "SetPosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPosition);
 
-    lua_pushcfunction(L, Node3D_Lua::SetRotationEuler);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, mtIndex, "SetRotationEuler");
-    lua_setfield(L, mtIndex, "SetRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRotationEuler);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetRotationEuler, "SetRotation");
 
-    lua_pushcfunction(L, Node3D_Lua::SetRotationQuat);
-    lua_setfield(L, mtIndex, "SetRotationQuat");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRotationQuat);
 
-    lua_pushcfunction(L, Node3D_Lua::SetScale);
-    lua_setfield(L, mtIndex, "SetScale");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetScale);
 
-    lua_pushcfunction(L, Node3D_Lua::RotateAround);
-    lua_setfield(L, mtIndex, "RotateAround");
+    REGISTER_TABLE_FUNC(L, mtIndex, RotateAround);
 
-    lua_pushcfunction(L, Node3D_Lua::GetAbsolutePosition);
-    lua_setfield(L, mtIndex, "GetAbsolutePosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAbsolutePosition);
 
-    lua_pushcfunction(L, Node3D_Lua::GetAbsoluteRotationEuler);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, mtIndex, "GetAbsoluteRotationEuler");
-    lua_setfield(L, mtIndex, "GetAbsoluteRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAbsoluteRotationEuler);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetAbsoluteRotationEuler, "GetAbsoluteRotation");
 
-    lua_pushcfunction(L, Node3D_Lua::GetAbsoluteRotationQuat);
-    lua_setfield(L, mtIndex, "GetAbsoluteRotationQuat");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAbsoluteRotationQuat);
 
-    lua_pushcfunction(L, Node3D_Lua::GetAbsoluteScale);
-    lua_setfield(L, mtIndex, "GetAbsoluteScale");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAbsoluteScale);
 
-    lua_pushcfunction(L, Node3D_Lua::SetAbsolutePosition);
-    lua_setfield(L, mtIndex, "SetAbsolutePosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAbsolutePosition);
 
-    lua_pushcfunction(L, Node3D_Lua::SetAbsoluteRotationEuler);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, mtIndex, "SetAbsoluteRotationEuler");
-    lua_setfield(L, mtIndex, "SetAbsoluteRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAbsoluteRotationEuler);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetAbsoluteRotationEuler, "SetAbsoluteRotation");
 
-    lua_pushcfunction(L, Node3D_Lua::SetAbsoluteRotationQuat);
-    lua_setfield(L, mtIndex, "SetAbsoluteRotationQuat");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAbsoluteRotationQuat);
 
-    lua_pushcfunction(L, Node3D_Lua::SetAbsoluteScale);
-    lua_setfield(L, mtIndex, "SetAbsoluteScale");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAbsoluteScale);
 
-    lua_pushcfunction(L, Node3D_Lua::AddRotationEuler);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, mtIndex, "AddRotationEuler");
-    lua_setfield(L, mtIndex, "AddRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddRotationEuler);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, AddRotationEuler, "AddRotation");
 
-    lua_pushcfunction(L, Node3D_Lua::AddRotationQuat);
-    lua_setfield(L, mtIndex, "AddRotationQuat");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddRotationQuat);
 
-    lua_pushcfunction(L, Node3D_Lua::AddAbsoluteRotationEuler);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, mtIndex, "AddAbsoluteRotationEuler");
-    lua_setfield(L, mtIndex, "AddAbsoluteRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddAbsoluteRotationEuler);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, AddAbsoluteRotationEuler, "AddAbsoluteRotation");
 
-    lua_pushcfunction(L, Node3D_Lua::AddAbsoluteRotationQuat);
-    lua_setfield(L, mtIndex, "AddAbsoluteRotationQuat");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddAbsoluteRotationQuat);
 
-    lua_pushcfunction(L, Node3D_Lua::LookAt);
-    lua_setfield(L, mtIndex, "LookAt");
+    REGISTER_TABLE_FUNC(L, mtIndex, LookAt);
 
-    lua_pushcfunction(L, Node3D_Lua::GetForwardVector);
-    lua_setfield(L, mtIndex, "GetForwardVector");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetForwardVector);
 
-    lua_pushcfunction(L, Node3D_Lua::GetRightVector);
-    lua_setfield(L, mtIndex, "GetRightVector");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRightVector);
 
-    lua_pushcfunction(L, Node3D_Lua::GetUpVector);
-    lua_setfield(L, mtIndex, "GetUpVector");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetUpVector);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

@@ -70,20 +70,15 @@ void StaticMesh3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, SetStaticMesh);
-    lua_setfield(L, mtIndex, "SetStaticMesh");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetStaticMesh);
 
-    lua_pushcfunction(L, GetStaticMesh);
-    lua_setfield(L, mtIndex, "GetStaticMesh");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetStaticMesh);
 
-    lua_pushcfunction(L, SetUseTriangleCollision);
-    lua_setfield(L, mtIndex, "SetUseTriangleCollision");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetUseTriangleCollision);
 
-    lua_pushcfunction(L, GetUseTriangleCollision);
-    lua_setfield(L, mtIndex, "GetUseTriangleCollision");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetUseTriangleCollision);
 
-    lua_pushcfunction(L, GetBakeLighting);
-    lua_setfield(L, mtIndex, "GetBakeLighting");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetBakeLighting);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

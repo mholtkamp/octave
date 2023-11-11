@@ -137,41 +137,29 @@ void TextMesh3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, SetText);
-    lua_setfield(L, mtIndex, "SetText");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetText);
 
-    lua_pushcfunction(L, GetText);
-    lua_setfield(L, mtIndex, "GetText");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetText);
 
-    lua_pushcfunction(L, SetFont);
-    lua_setfield(L, mtIndex, "SetFont");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetFont);
 
-    lua_pushcfunction(L, GetFont);
-    lua_setfield(L, mtIndex, "GetFont");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetFont);
 
-    lua_pushcfunction(L, SetColor);
-    lua_setfield(L, mtIndex, "SetColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetColor);
 
-    lua_pushcfunction(L, GetColor);
-    lua_setfield(L, mtIndex, "GetColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetColor);
 
-    lua_pushcfunction(L, SetBlendMode);
-    lua_setfield(L, mtIndex, "SetBlendMode");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetBlendMode);
 
-    lua_pushcfunction(L, GetBlendMode);
-    lua_setfield(L, mtIndex, "GetBlendMode");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetBlendMode);
 
-    lua_pushcfunction(L, SetHorizontalJustification);
-    lua_setfield(L, mtIndex, "SetHorizontalJustification");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetHorizontalJustification);
 
-    lua_pushcfunction(L, GetHorizontalJustification);
-    lua_setfield(L, mtIndex, "GetHorizontalJustification");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetHorizontalJustification);
 
-    lua_pushcfunction(L, SetVerticalJustification);
-    lua_setfield(L, mtIndex, "SetVerticalJustification");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetVerticalJustification);
 
-    lua_pushcfunction(L, GetVerticalJustification);
-    lua_setfield(L, mtIndex, "GetVerticalJustification");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetVerticalJustification);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

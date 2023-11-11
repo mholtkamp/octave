@@ -381,110 +381,75 @@ void Material_Lua::Bind()
 
     Asset_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, IsMaterialInstance);
-    lua_setfield(L, mtIndex, "IsMaterialInstance");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsMaterialInstance);
 
-    lua_pushcfunction(L, SetTexture);
-    lua_setfield(L, mtIndex, "SetTexture");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTexture);
 
-    lua_pushcfunction(L, GetTexture);
-    lua_setfield(L, mtIndex, "GetTexture");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTexture);
 
-    lua_pushcfunction(L, GetShadingModel);
-    lua_setfield(L, mtIndex, "GetShadingModel");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetShadingModel);
 
-    lua_pushcfunction(L, SetShadingModel);
-    lua_setfield(L, mtIndex, "SetShadingModel");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetShadingModel);
 
-    lua_pushcfunction(L, GetBlendMode);
-    lua_setfield(L, mtIndex, "GetBlendMode");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetBlendMode);
 
-    lua_pushcfunction(L, SetBlendMode);
-    lua_setfield(L, mtIndex, "SetBlendMode");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetBlendMode);
 
-    lua_pushcfunction(L, GetUvOffset);
-    lua_setfield(L, mtIndex, "GetUvOffset");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetUvOffset);
 
-    lua_pushcfunction(L, SetUvOffset);
-    lua_setfield(L, mtIndex, "SetUvOffset");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetUvOffset);
 
-    lua_pushcfunction(L, GetUvScale);
-    lua_setfield(L, mtIndex, "GetUvScale");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetUvScale);
 
-    lua_pushcfunction(L, SetUvScale);
-    lua_setfield(L, mtIndex, "SetUvScale");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetUvScale);
 
-    lua_pushcfunction(L, GetColor);
-    lua_setfield(L, mtIndex, "GetColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetColor);
 
-    lua_pushcfunction(L, SetColor);
-    lua_setfield(L, mtIndex, "SetColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetColor);
 
-    lua_pushcfunction(L, GetFresnelColor);
-    lua_setfield(L, mtIndex, "GetFresnelColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetFresnelColor);
 
-    lua_pushcfunction(L, SetFresnelColor);
-    lua_setfield(L, mtIndex, "SetFresnelColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetFresnelColor);
 
-    lua_pushcfunction(L, GetFresnelPower);
-    lua_setfield(L, mtIndex, "GetFresnelPower");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetFresnelPower);
 
-    lua_pushcfunction(L, SetFresnelPower);
-    lua_setfield(L, mtIndex, "SetFresnelPower");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetFresnelPower);
 
-    lua_pushcfunction(L, GetEmission);
-    lua_setfield(L, mtIndex, "GetEmission");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetEmission);
 
-    lua_pushcfunction(L, SetEmission);
-    lua_setfield(L, mtIndex, "SetEmission");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetEmission);
 
-    lua_pushcfunction(L, GetWrapLighting);
-    lua_setfield(L, mtIndex, "GetWrapLighting");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetWrapLighting);
 
-    lua_pushcfunction(L, SetWrapLighting);
-    lua_setfield(L, mtIndex, "SetWrapLighting");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetWrapLighting);
 
-    lua_pushcfunction(L, GetSpecular);
-    lua_setfield(L, mtIndex, "GetSpecular");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSpecular);
 
-    lua_pushcfunction(L, SetSpecular);
-    lua_setfield(L, mtIndex, "SetSpecular");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetSpecular);
 
-    lua_pushcfunction(L, GetOpacity);
-    lua_setfield(L, mtIndex, "GetOpacity");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOpacity);
 
-    lua_pushcfunction(L, SetOpacity);
-    lua_setfield(L, mtIndex, "SetOpacity");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetOpacity);
 
-    lua_pushcfunction(L, GetMaskCutoff);
-    lua_setfield(L, mtIndex, "GetMaskCutoff");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetMaskCutoff);
 
-    lua_pushcfunction(L, SetMaskCutoff);
-    lua_setfield(L, mtIndex, "SetMaskCutoff");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetMaskCutoff);
 
-    lua_pushcfunction(L, GetSortPriority);
-    lua_setfield(L, mtIndex, "GetSortPriority");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSortPriority);
 
-    lua_pushcfunction(L, SetSortPriority);
-    lua_setfield(L, mtIndex, "SetSortPriority");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetSortPriority);
 
-    lua_pushcfunction(L, IsDepthTestDisabled);
-    lua_setfield(L, mtIndex, "IsDepthTestDisabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsDepthTestDisabled);
 
-    lua_pushcfunction(L, SetDepthTestDisabled);
-    lua_setfield(L, mtIndex, "SetDepthTestDisabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetDepthTestDisabled);
 
-    lua_pushcfunction(L, GetUvMap);
-    lua_setfield(L, mtIndex, "GetUvMap");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetUvMap);
 
-    lua_pushcfunction(L, SetUvMap);
-    lua_setfield(L, mtIndex, "SetUvMap");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetUvMap);
 
-    lua_pushcfunction(L, GetTevMode);
-    lua_setfield(L, mtIndex, "GetTevMode");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTevMode);
 
-    lua_pushcfunction(L, SetTevMode);
-    lua_setfield(L, mtIndex, "SetTevMode");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTevMode);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

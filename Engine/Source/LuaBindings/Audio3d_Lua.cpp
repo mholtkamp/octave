@@ -286,86 +286,59 @@ void Audio3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, SetSoundWave);
-    lua_setfield(L, mtIndex, "SetSoundWave");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetSoundWave);
 
-    lua_pushcfunction(L, GetSoundWave);
-    lua_setfield(L, mtIndex, "GetSoundWave");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSoundWave);
 
-    lua_pushcfunction(L, SetInnerRadius);
-    lua_setfield(L, mtIndex, "SetInnerRadius");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInnerRadius);
 
-    lua_pushcfunction(L, GetInnerRadius);
-    lua_setfield(L, mtIndex, "GetInnerRadius");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetInnerRadius);
 
-    lua_pushcfunction(L, SetOuterRadius);
-    lua_setfield(L, mtIndex, "SetOuterRadius");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetOuterRadius);
 
-    lua_pushcfunction(L, GetOuterRadius);
-    lua_setfield(L, mtIndex, "GetOuterRadius");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOuterRadius);
 
-    lua_pushcfunction(L, SetVolume);
-    lua_setfield(L, mtIndex, "SetVolume");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetVolume);
 
-    lua_pushcfunction(L, GetVolume);
-    lua_setfield(L, mtIndex, "GetVolume");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetVolume);
 
-    lua_pushcfunction(L, SetPitch);
-    lua_setfield(L, mtIndex, "SetPitch");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPitch);
 
-    lua_pushcfunction(L, GetPitch);
-    lua_setfield(L, mtIndex, "GetPitch");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetPitch);
 
-    lua_pushcfunction(L, SetStartOffset);
-    lua_setfield(L, mtIndex, "SetStartOffset");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetStartOffset);
 
-    lua_pushcfunction(L, GetStartOffset);
-    lua_setfield(L, mtIndex, "GetStartOffset");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetStartOffset);
 
-    lua_pushcfunction(L, SetPriority);
-    lua_setfield(L, mtIndex, "SetPriority");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPriority);
 
-    lua_pushcfunction(L, GetPriority);
-    lua_setfield(L, mtIndex, "GetPriority");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetPriority);
 
-    lua_pushcfunction(L, SetAttenuationFunc);
-    lua_setfield(L, mtIndex, "SetAttenuationFunc");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAttenuationFunc);
 
-    lua_pushcfunction(L, GetAttenuationFunc);
-    lua_setfield(L, mtIndex, "GetAttenuationFunc");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAttenuationFunc);
 
-    lua_pushcfunction(L, SetLoop);
-    lua_setfield(L, mtIndex, "SetLoop");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetLoop);
 
-    lua_pushcfunction(L, GetLoop);
-    lua_setfield(L, mtIndex, "GetLoop");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetLoop);
 
-    lua_pushcfunction(L, SetAutoPlay);
-    lua_setfield(L, mtIndex, "SetAutoPlay");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAutoPlay);
 
-    lua_pushcfunction(L, GetAutoPlay);
-    lua_setfield(L, mtIndex, "GetAutoPlay");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAutoPlay);
 
-    lua_pushcfunction(L, GetPlayTime);
-    lua_setfield(L, mtIndex, "GetPlayTime");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetPlayTime);
 
-    lua_pushcfunction(L, IsPlaying);
-    lua_setfield(L, mtIndex, "IsPlaying");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsPlaying);
 
-    lua_pushcfunction(L, IsAudible);
-    lua_setfield(L, mtIndex, "IsAudible");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsAudible);
 
-    lua_pushcfunction(L, PlayAudio);
-    lua_setfield(L, mtIndex, "PlayAudio");
+    REGISTER_TABLE_FUNC(L, mtIndex, PlayAudio);
 
-    lua_pushcfunction(L, PauseAudio);
-    lua_setfield(L, mtIndex, "PauseAudio");
+    REGISTER_TABLE_FUNC(L, mtIndex, PauseAudio);
 
-    lua_pushcfunction(L, StopAudio);
-    lua_setfield(L, mtIndex, "StopAudio");
+    REGISTER_TABLE_FUNC(L, mtIndex, StopAudio);
 
-    lua_pushcfunction(L, ResetAudio);
-    lua_setfield(L, mtIndex, "ResetAudio");
+    REGISTER_TABLE_FUNC(L, mtIndex, ResetAudio);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

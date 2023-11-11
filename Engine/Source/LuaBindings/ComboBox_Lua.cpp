@@ -38,11 +38,9 @@ void ComboBox_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, GetList);
-    lua_setfield(L, mtIndex, "GetList");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetList);
 
-    lua_pushcfunction(L, ShowList);
-    lua_setfield(L, mtIndex, "ShowList");
+    REGISTER_TABLE_FUNC(L, mtIndex, ShowList);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

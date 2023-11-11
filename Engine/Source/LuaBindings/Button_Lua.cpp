@@ -217,62 +217,43 @@ void Button_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, GetState);
-    lua_setfield(L, mtIndex, "GetState");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetState);
 
-    lua_pushcfunction(L, SetState);
-    lua_setfield(L, mtIndex, "SetState");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetState);
 
-    lua_pushcfunction(L, SetNormalTexture);
-    lua_setfield(L, mtIndex, "SetNormalTexture");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetNormalTexture);
 
-    lua_pushcfunction(L, SetHoveredTexture);
-    lua_setfield(L, mtIndex, "SetHoveredTexture");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetHoveredTexture);
 
-    lua_pushcfunction(L, SetPressedTexture);
-    lua_setfield(L, mtIndex, "SetPressedTexture");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPressedTexture);
 
-    lua_pushcfunction(L, SetDisabledTexture);
-    lua_setfield(L, mtIndex, "SetDisabledTexture");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetDisabledTexture);
 
-    lua_pushcfunction(L, SetNormalColor);
-    lua_setfield(L, mtIndex, "SetNormalColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetNormalColor);
 
-    lua_pushcfunction(L, SetHoveredColor);
-    lua_setfield(L, mtIndex, "SetHoveredColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetHoveredColor);
 
-    lua_pushcfunction(L, SetPressedColor);
-    lua_setfield(L, mtIndex, "SetPressedColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPressedColor);
 
-    lua_pushcfunction(L, SetDisabledColor);
-    lua_setfield(L, mtIndex, "SetDisabledColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetDisabledColor);
 
-    lua_pushcfunction(L, SetUseQuadStateColor);
-    lua_setfield(L, mtIndex, "SetUseQuadStateColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetUseQuadStateColor);
 
-    lua_pushcfunction(L, SetUseTextStateColor);
-    lua_setfield(L, mtIndex, "SetUseTextStateColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetUseTextStateColor);
 
-    lua_pushcfunction(L, SetHandleMouseInput);
-    lua_setfield(L, mtIndex, "SetHandleMouseInput");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetHandleMouseInput);
 
-    lua_pushcfunction(L, SetHoverHandler);
-    lua_setfield(L, mtIndex, "SetHoverHandler");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetHoverHandler);
 
-    lua_pushcfunction(L, SetPressedHandler);
-    lua_setfield(L, mtIndex, "SetPressedHandler");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPressedHandler);
 
-    lua_pushcfunction(L, SetTextString);
-    lua_setfield(L, mtIndex, "SetTextString");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTextString);
 
-    lua_pushcfunction(L, GetTextString);
-    lua_setfield(L, mtIndex, "GetTextString");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTextString);
 
-    lua_pushcfunction(L, GetText);
-    lua_setfield(L, mtIndex, "GetText");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetText);
 
-    lua_pushcfunction(L, GetQuad);
-    lua_setfield(L, mtIndex, "GetQuad");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetQuad);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

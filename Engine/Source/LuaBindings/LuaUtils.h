@@ -37,4 +37,16 @@ int CreateClassMetatable(
     const char* classFlag,
     const char* parentClassName);
 
+#define REGISTER_TABLE_FUNC(L, TableIdx, Func) \
+    OCT_ASSERT(TableIdx >= 1); \
+    lua_pushstring(L, #Func); \
+    lua_pushcfunction(L, Func); \
+    lua_rawset(L, TableIdx);
+
+#define REGISTER_TABLE_FUNC_EX(L, TableIdx, Func, Name) \
+    OCT_ASSERT(TableIdx >= 1); \
+    lua_pushstring(L, Name); \
+    lua_pushcfunction(L, Func); \
+    lua_rawset(L, TableIdx);
+
 #endif

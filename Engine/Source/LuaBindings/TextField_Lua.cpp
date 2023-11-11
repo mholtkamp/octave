@@ -47,14 +47,11 @@ void TextField_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    lua_pushcfunction(L, SetTextEditHandler);
-    lua_setfield(L, mtIndex, "SetTextEditHandler");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTextEditHandler);
 
-    lua_pushcfunction(L, SetTextConfirmHandler);
-    lua_setfield(L, mtIndex, "SetTextConfirmHandler");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTextConfirmHandler);
 
-    lua_pushcfunction(L, GetSelectedTextField);
-    lua_setfield(L, mtIndex, "GetSelectedTextField");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSelectedTextField);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

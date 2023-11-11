@@ -444,89 +444,61 @@ void World_Lua::Bind()
     luaL_newmetatable(L, WORLD_LUA_NAME);
     int mtIndex = lua_gettop(L);
 
-    lua_pushcfunction(L, World_Lua::GetActiveCamera);
-    lua_setfield(L, mtIndex, "GetActiveCamera");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetActiveCamera);
 
-    lua_pushcfunction(L, World_Lua::GetAudioReceiver);
-    lua_setfield(L, mtIndex, "GetAudioReceiver");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAudioReceiver);
 
-    lua_pushcfunction(L, World_Lua::SetActiveCamera);
-    lua_setfield(L, mtIndex, "SetActiveCamera");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetActiveCamera);
 
-    lua_pushcfunction(L, World_Lua::SetAudioReceiver);
-    lua_setfield(L, mtIndex, "SetAudioReceiver");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAudioReceiver);
 
-    lua_pushcfunction(L, World_Lua::SpawnNode);
-    lua_setfield(L, mtIndex, "SpawnNode");
+    REGISTER_TABLE_FUNC(L, mtIndex, SpawnNode);
 
-    lua_pushcfunction(L, World_Lua::SpawnScene);
-    lua_setfield(L, mtIndex, "SpawnScene");
+    REGISTER_TABLE_FUNC(L, mtIndex, SpawnScene);
 
-    lua_pushcfunction(L, World_Lua::GetRootNode);
-    lua_setfield(L, mtIndex, "GetRootNode");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRootNode);
 
-    lua_pushcfunction(L, World_Lua::SetRootNode);
-    lua_setfield(L, mtIndex, "SetRootNode");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRootNode);
 
-    lua_pushcfunction(L, World_Lua::DestroyRootNode);
-    lua_setfield(L, mtIndex, "DestroyRootNode");
+    REGISTER_TABLE_FUNC(L, mtIndex, DestroyRootNode);
 
-    lua_pushcfunction(L, World_Lua::FindNode);
-    lua_setfield(L, mtIndex, "FindNode");
+    REGISTER_TABLE_FUNC(L, mtIndex, FindNode);
 
-    lua_pushcfunction(L, World_Lua::FindNodesWithTag);
-    lua_setfield(L, mtIndex, "FindNodesWithTag");
+    REGISTER_TABLE_FUNC(L, mtIndex, FindNodesWithTag);
 
-    lua_pushcfunction(L, World_Lua::FindNodesWithName);
-    lua_setfield(L, mtIndex, "FindNodesWithName");
+    REGISTER_TABLE_FUNC(L, mtIndex, FindNodesWithName);
 
-    lua_pushcfunction(L, World_Lua::SetAmbientLightColor);
-    lua_setfield(L, mtIndex, "SetAmbientLightColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAmbientLightColor);
 
-    lua_pushcfunction(L, World_Lua::GetAmbientLightColor);
-    lua_setfield(L, mtIndex, "GetAmbientLightColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetAmbientLightColor);
 
-    lua_pushcfunction(L, World_Lua::SetShadowColor);
-    lua_setfield(L, mtIndex, "SetShadowColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetShadowColor);
 
-    lua_pushcfunction(L, World_Lua::GetShadowColor);
-    lua_setfield(L, mtIndex, "GetShadowColor");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetShadowColor);
 
-    lua_pushcfunction(L, World_Lua::SetFogSettings);
-    lua_setfield(L, mtIndex, "SetFogSettings");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetFogSettings);
 
-    lua_pushcfunction(L, World_Lua::GetFogSettings);
-    lua_setfield(L, mtIndex, "GetFogSettings");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetFogSettings);
 
-    lua_pushcfunction(L, World_Lua::SetGravity);
-    lua_setfield(L, mtIndex, "SetGravity");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetGravity);
 
-    lua_pushcfunction(L, World_Lua::GetGravity);
-    lua_setfield(L, mtIndex, "GetGravity");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetGravity);
 
-    lua_pushcfunction(L, World_Lua::RayTest);
-    lua_setfield(L, mtIndex, "RayTest");
+    REGISTER_TABLE_FUNC(L, mtIndex, RayTest);
 
-    lua_pushcfunction(L, World_Lua::RayTestMulti);
-    lua_setfield(L, mtIndex, "RayTestMulti");
+    REGISTER_TABLE_FUNC(L, mtIndex, RayTestMulti);
 
-    lua_pushcfunction(L, World_Lua::SweepTest);
-    lua_setfield(L, mtIndex, "SweepTest");
+    REGISTER_TABLE_FUNC(L, mtIndex, SweepTest);
 
-    lua_pushcfunction(L, World_Lua::LoadScene);
-    lua_setfield(L, mtIndex, "LoadScene");
+    REGISTER_TABLE_FUNC(L, mtIndex, LoadScene);
 
-    lua_pushcfunction(L, World_Lua::QueueRootNode);
-    lua_setfield(L, mtIndex, "QueueRootNode");
+    REGISTER_TABLE_FUNC(L, mtIndex, QueueRootNode);
 
-    lua_pushcfunction(L, World_Lua::EnableInternalEdgeSmoothing);
-    lua_setfield(L, mtIndex, "EnableInternalEdgeSmoothing");
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableInternalEdgeSmoothing);
 
-    lua_pushcfunction(L, World_Lua::IsInternalEdgeSmoothingEnabled);
-    lua_setfield(L, mtIndex, "IsInternalEdgeSmoothingEnabled");
+    REGISTER_TABLE_FUNC(L, mtIndex, IsInternalEdgeSmoothingEnabled);
 
-    lua_pushcfunction(L, World_Lua::SpawnParticle);
-    lua_setfield(L, mtIndex, "SpawnParticle");
+    REGISTER_TABLE_FUNC(L, mtIndex, SpawnParticle);
 
     // Set the __index metamethod to itself
     lua_pushvalue(L, mtIndex);
