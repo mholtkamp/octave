@@ -1,7 +1,6 @@
 #include "Nodes/Widgets/Selector.h"
 #include "Nodes/Widgets/Text.h"
 #include "InputDevices.h"
-#include "ScriptEvent.h"
 
 FORCE_LINK_DEF(Selector);
 DEFINE_NODE(Selector, Button);
@@ -108,12 +107,9 @@ void Selector::SetSelectionIndex(int32_t index)
         {
             mSelectionChangeHandler.mFuncPointer(this);
         }
-        if (mSelectionChangeHandler.mScriptTableName != "")
+        if (mSelectionChangeHandler.mScriptFunc.IsValid())
         {
-            ScriptEvent::WidgetState(
-                mSelectionChangeHandler.mScriptTableName,
-                mSelectionChangeHandler.mScriptFuncName,
-                this);
+            mSelectionChangeHandler.mScriptFunc.Call();
         }
 
         MarkDirty();
@@ -154,8 +150,7 @@ void Selector::SetSelectionChangeHandler(SelectorHandlerFP handler)
     mSelectionChangeHandler.mFuncPointer = handler;
 }
 
-void Selector::SetScriptSelectionChangeHandler(const char* tableName, const char* funcName)
+void Selector::SetScriptSelectionChangeHandler(const ScriptFunc& scriptFunc)
 {
-    mSelectionChangeHandler.mScriptTableName = tableName;
-    mSelectionChangeHandler.mScriptFuncName = funcName;
+    mSelectionChangeHandler.mScriptFunc = scriptFunc;
 }

@@ -62,6 +62,17 @@ void PushNetHostProfile(lua_State* L, const NetHostProfile& profile)
     lua_setfield(L, profIdx, "ready");
 }
 
+void WriteNetHostProfile(const NetHostProfile& profile, Datum& table)
+{
+    char ipString[32] = {};
+    NET_IpUint32ToString(profile.mHost.mIpAddress, ipString);
+    table.SetStringField("ipAddress", ipString);
+    table.SetIntegerField("port", (int)profile.mHost.mPort);
+    table.SetIntegerField("id", (int)profile.mHost.mId);
+    table.SetFloatField("ping", profile.mPing);
+    table.SetBoolField("ready", profile.mReady);
+}
+
 
 int Network_Lua::OpenSession(lua_State* L)
 {

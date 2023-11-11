@@ -140,9 +140,7 @@ public:
 
     void SetAnimEventHandler(AnimEventHandlerFP handler);
     AnimEventHandlerFP GetAnimEventHandler();
-    void SetScriptAnimEventHandler(
-        const char* tableName,
-        const char* funcName);
+    void SetScriptAnimEventHandler(const ScriptFunc& func);
 
 protected:
 

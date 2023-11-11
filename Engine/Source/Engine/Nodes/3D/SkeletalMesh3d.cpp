@@ -3,7 +3,6 @@
 #include "Assets/SkeletalMesh.h"
 #include "Renderer.h"
 #include "AssetManager.h"
-#include "ScriptEvent.h"
 #include "Log.h"
 #include "Maths.h"
 #include "Utilities.h"
@@ -502,12 +501,9 @@ AnimEventHandlerFP SkeletalMesh3D::GetAnimEventHandler()
     return mAnimEventHandler.mFuncPointer;
 }
 
-void SkeletalMesh3D::SetScriptAnimEventHandler(
-    const char* tableName,
-    const char* funcName)
+void SkeletalMesh3D::SetScriptAnimEventHandler(const ScriptFunc& func)
 {
-    mAnimEventHandler.mScriptTableName = tableName;
-    mAnimEventHandler.mScriptFuncName = funcName;
+    mAnimEventHandler.mScriptFunc = func;
 }
 
 glm::vec3 SkeletalMesh3D::InterpolateScale(float time, const Channel& channel)
@@ -1096,16 +1092,20 @@ void SkeletalMesh3D::UpdateAnimation(float deltaTime, bool updateBones)
                 mAnimEventHandler.mFuncPointer(sAnimEvents[i]);
             }
         }
-        if (mAnimEventHandler.mScriptTableName != "")
+        if (mAnimEventHandler.mScriptFunc.IsValid())
         {
             for (uint32_t i = 0; i < sAnimEvents.size(); ++i)
             {
                 sAnimEvents[i].mNode = this;
 
-                ScriptEvent::Animation(
-                    mAnimEventHandler.mScriptTableName,
-                    mAnimEventHandler.mScriptFuncName,
-                    sAnimEvents[i]);
+                Datum animTable;
+                animTable.SetPointerField("node", sAnimEvents[i].mNode);
+                animTable.SetStringField("name", sAnimEvents[i].mName);
+                animTable.SetStringField("animation", sAnimEvents[i].mAnimation);
+                animTable.SetFloatField("time", sAnimEvents[i].mTime);
+                animTable.SetVectorField("value", sAnimEvents[i].mValue);
+
+                mAnimEventHandler.mScriptFunc.Call(animTable);
             }
         }
     }

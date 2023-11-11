@@ -147,11 +147,11 @@ public:
     void SetDisconnectCallback(NetCallbackDisconnectFP cb) { mDisconnectCallback.mFuncPointer = cb; }
     void SetKickCallback(NetCallbackKickFP cb) { mKickCallback.mFuncPointer = cb; }
 
-    void SetScriptConnectCallback(const char* tableName, const char* funcName) { mConnectCallback.mScriptTableName = tableName; mConnectCallback.mScriptFuncName = funcName; }
-    void SetScriptAcceptCallback(const char* tableName, const char* funcName) { mAcceptCallback.mScriptTableName = tableName; mAcceptCallback.mScriptFuncName = funcName; }
-    void SetScriptRejectCallback(const char* tableName, const char* funcName) { mRejectCallback.mScriptTableName = tableName; mRejectCallback.mScriptFuncName = funcName; }
-    void SetScriptDisconnectCallback(const char* tableName, const char* funcName) { mDisconnectCallback.mScriptTableName = tableName; mDisconnectCallback.mScriptFuncName = funcName; }
-    void SetScriptKickCallback(const char* tableName, const char* funcName) { mKickCallback.mScriptTableName = tableName; mKickCallback.mScriptFuncName = funcName; }
+    void SetScriptConnectCallback(const ScriptFunc& func) { mConnectCallback.mScriptFunc = func; }
+    void SetScriptAcceptCallback(const ScriptFunc& func) { mAcceptCallback.mScriptFunc = func; }
+    void SetScriptRejectCallback(const ScriptFunc& func) { mRejectCallback.mScriptFunc = func; }
+    void SetScriptDisconnectCallback(const ScriptFunc& func) { mDisconnectCallback.mScriptFunc = func; }
+    void SetScriptKickCallback(const ScriptFunc& func) { mKickCallback.mScriptFunc = func; }
 
 private:
 

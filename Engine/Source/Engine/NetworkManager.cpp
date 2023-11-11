@@ -6,8 +6,9 @@
 #include "World.h"
 #include "Profiler.h"
 #include "Maths.h"
-#include "ScriptEvent.h"
 #include "Script.h"
+
+#include "LuaBindings/Network_Lua.h"
 
 #ifdef SendMessage
 #undef SendMessage
@@ -526,12 +527,11 @@ void NetworkManager::Kick(NetHostId hostId, NetMsgKick::Reason reason)
             {
                 mDisconnectCallback.mFuncPointer(&mClients[i]);
             }
-            if (mDisconnectCallback.mScriptTableName != "")
+            if (mDisconnectCallback.mScriptFunc.IsValid())
             {
-                ScriptEvent::NetDisconnect(
-                    mDisconnectCallback.mScriptTableName,
-                    mDisconnectCallback.mScriptFuncName,
-                    mClients[i]);
+                Datum clientTable;
+                WriteNetHostProfile(mClients[i], clientTable);
+                mDisconnectCallback.mScriptFunc.Call(clientTable);
             }
 
             LogDebug("Kicking client %08x:%u", mClients[i].mHost.mIpAddress, mClients[i].mHost.mPort);
@@ -888,12 +888,12 @@ void NetworkManager::HandleConnect(NetHost host, uint32_t gameCode, uint32_t ver
             {
                 mConnectCallback.mFuncPointer(newClient);
             }
-            if (mConnectCallback.mScriptTableName != "")
+            if (mConnectCallback.mScriptFunc.IsValid())
             {
-                ScriptEvent::NetConnect(
-                    mConnectCallback.mScriptTableName,
-                    mConnectCallback.mScriptFuncName,
-                    *newClient);
+                Datum clientTable;
+                WriteNetHostProfile(*newClient, clientTable);
+
+                mConnectCallback.mScriptFunc.Call(clientTable);
             }
         }
 
@@ -919,11 +919,9 @@ void NetworkManager::HandleAccept(NetHostId assignedId)
         {
             mAcceptCallback.mFuncPointer();
         }
-        if (mAcceptCallback.mScriptTableName != "")
+        if (mAcceptCallback.mScriptFunc.IsValid())
         {
-            ScriptEvent::NetAccept(
-                mAcceptCallback.mScriptTableName,
-                mAcceptCallback.mScriptFuncName);
+            mAcceptCallback.mScriptFunc.Call();
         }
     }
 }
@@ -939,12 +937,9 @@ void NetworkManager::HandleReject(NetMsgReject::Reason reason)
         {
             mRejectCallback.mFuncPointer(reason);
         }
-        if (mRejectCallback.mScriptTableName != "")
+        if (mRejectCallback.mScriptFunc.IsValid())
         {
-            ScriptEvent::NetReject(
-                mRejectCallback.mScriptTableName,
-                mRejectCallback.mScriptFuncName,
-                reason);
+            mRejectCallback.mScriptFunc.Call((int32_t)reason);
         }
     }
 }
@@ -967,12 +962,12 @@ void NetworkManager::HandleDisconnect(NetHost host)
                     {
                         mDisconnectCallback.mFuncPointer(&mClients[i]);
                     }
-                    if (mDisconnectCallback.mScriptTableName != "")
+                    if (mDisconnectCallback.mScriptFunc.IsValid())
                     {
-                        ScriptEvent::NetDisconnect(
-                            mDisconnectCallback.mScriptTableName,
-                            mDisconnectCallback.mScriptFuncName,
-                            mClients[i]);
+                        Datum clientTable;
+                        WriteNetHostProfile(mClients[i], clientTable);
+
+                        mDisconnectCallback.mScriptFunc.Call();
                     }
 
                     mClients.erase(mClients.begin() + i);
@@ -998,12 +993,9 @@ void NetworkManager::HandleKick(NetMsgKick::Reason reason)
         {
             mKickCallback.mFuncPointer(reason);
         }
-        if (mKickCallback.mScriptTableName != "")
+        if (mKickCallback.mScriptFunc.IsValid())
         {
-            ScriptEvent::NetKick(
-                mKickCallback.mScriptTableName,
-                mKickCallback.mScriptFuncName,
-                reason);
+            mKickCallback.mScriptFunc.Call((int32_t)reason);
         }
     }
 }
@@ -1456,7 +1448,7 @@ bool NetworkManager::ReplicateNode(Node* node, NetId hostId, bool force, bool re
     nodeReplicated = ReplicateData<NetDatum>(repData, sMsgReplicate, hostId, force, reliable);
 
     Script* script = node->GetScript();
-    if (script != nullptr && script->GetTableName() != "")
+    if (script != nullptr && script->IsActive())
     {
         sMsgReplicateScript.mNodeNetId = node->GetNetId();
 
@@ -1496,12 +1488,9 @@ void NetworkManager::UpdateHostConnections(float deltaTime)
             {
                 mKickCallback.mFuncPointer(NetMsgKick::Reason::Timeout);
             }
-            if (mKickCallback.mScriptTableName != "")
+            if (mKickCallback.mScriptFunc.IsValid())
             {
-                ScriptEvent::NetKick(
-                    mKickCallback.mScriptTableName,
-                    mKickCallback.mScriptFuncName,
-                    NetMsgKick::Reason::Timeout);
+                mKickCallback.mScriptFunc.Call((int32_t)NetMsgKick::Reason::Timeout);
             }
         }
     }

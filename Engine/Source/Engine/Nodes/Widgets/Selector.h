@@ -36,7 +36,7 @@ public:
     int32_t GetSelectionIndex() const;
 
     void SetSelectionChangeHandler(SelectorHandlerFP handler);
-    void SetScriptSelectionChangeHandler(const char* tableName, const char* funcName);
+    void SetScriptSelectionChangeHandler(const ScriptFunc& scriptFunc);
 
 protected:
 

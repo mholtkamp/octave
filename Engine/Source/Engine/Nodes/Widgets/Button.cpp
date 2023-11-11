@@ -5,7 +5,6 @@
 #include "InputDevices.h"
 #include "Engine.h"
 #include "Renderer.h"
-#include "ScriptEvent.h"
 
 FORCE_LINK_DEF(Button);
 DEFINE_NODE(Button, Widget);
@@ -177,12 +176,12 @@ void Button::SetState(ButtonState newState)
         if (!mHandleMouseInput)
         {
             if (newState == ButtonState::Hovered && 
-                (mHoveredHandler.mFuncPointer != nullptr || mHoveredHandler.mScriptTableName != ""))
+                (mHoveredHandler.mFuncPointer != nullptr || mHoveredHandler.mScriptFunc.IsValid()))
             {
                 OnHover();
             }
             else if (newState == ButtonState::Pressed && 
-                (mPressedHandler.mFuncPointer != nullptr || mPressedHandler.mScriptTableName != ""))
+                (mPressedHandler.mFuncPointer != nullptr || mPressedHandler.mScriptFunc.IsValid()))
             {
                 OnPressed();
             }
@@ -287,16 +286,14 @@ void Button::SetPressedHandler(ButtonHandlerFP newHandler)
     mPressedHandler.mFuncPointer = newHandler;
 }
 
-void Button::SetScriptHoverHandler(const char* tableName, const char* funcName)
+void Button::SetScriptHoverHandler(const ScriptFunc& scriptFunc)
 {
-    mHoveredHandler.mScriptTableName = tableName;
-    mHoveredHandler.mScriptFuncName = funcName;
+    mHoveredHandler.mScriptFunc = scriptFunc;
 }
 
-void Button::SetScriptPressedHandler(const char* tableName, const char* funcName)
+void Button::SetScriptPressedHandler(const ScriptFunc& scriptFunc)
 {
-    mPressedHandler.mScriptTableName = tableName;
-    mPressedHandler.mScriptFuncName = funcName;
+    mPressedHandler.mScriptFunc = scriptFunc;
 }
 
 void Button::EnableRightClickPress(bool enable)
@@ -335,12 +332,9 @@ void Button::OnPressed()
     {
         mPressedHandler.mFuncPointer(this);
     }
-    if (mPressedHandler.mScriptTableName != "")
+    if (mPressedHandler.mScriptFunc.IsValid())
     {
-        ScriptEvent::WidgetState(
-            mPressedHandler.mScriptTableName,
-            mPressedHandler.mScriptFuncName,
-            this);
+        mPressedHandler.mScriptFunc.Call();
     }
 }
 
@@ -350,11 +344,8 @@ void Button::OnHover()
     {
         mHoveredHandler.mFuncPointer(this);
     }
-    if (mHoveredHandler.mScriptTableName != "")
+    if (mHoveredHandler.mScriptFunc.IsValid())
     {
-        ScriptEvent::WidgetState(
-            mHoveredHandler.mScriptTableName,
-            mHoveredHandler.mScriptFuncName,
-            this);
+        mHoveredHandler.mScriptFunc.Call();
     }
 }

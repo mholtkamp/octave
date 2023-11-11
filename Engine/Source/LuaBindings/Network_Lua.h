@@ -9,6 +9,7 @@
 
 void PushSession(lua_State* L, const GameSession& session);
 void PushNetHostProfile(lua_State* L, const NetHostProfile& profile);
+void WriteNetHostProfile(const NetHostProfile& profile, Datum& table);
 
 struct Network_Lua
 {

@@ -5,7 +5,6 @@
 #include "Nodes/Widgets/Text.h"
 #include "Nodes/Widgets/Quad.h"
 #include "Renderer.h"
-#include "ScriptEvent.h"
 #include "Utilities.h"
 
 FORCE_LINK_DEF(TextField);
@@ -140,12 +139,9 @@ void TextField::Tick(float deltaTime)
         {
             mTextEditHandler.mFuncPointer(this);
         }
-        if (mTextEditHandler.mScriptTableName != "")
+        if (mTextEditHandler.mScriptFunc.IsValid())
         {
-            ScriptEvent::WidgetState(
-                mTextEditHandler.mScriptTableName,
-                mTextEditHandler.mScriptFuncName,
-                this);
+            mTextEditHandler.mScriptFunc.Call();
         }
     }
 
@@ -197,16 +193,14 @@ void TextField::SetTextConfirmHandler(TextFieldHandlerFP handler)
     mTextConfirmHandler.mFuncPointer = handler;
 }
 
-void TextField::SetScriptTextEditHandler(const char* tableName, const char* funcName)
+void TextField::SetScriptTextEditHandler(const ScriptFunc& scriptFunc)
 {
-    mTextEditHandler.mScriptTableName = tableName;
-    mTextEditHandler.mScriptFuncName = funcName;
+    mTextEditHandler.mScriptFunc = scriptFunc;
 }
 
-void TextField::SetScriptTextConfirmHandler(const char* tableName, const char* funcName)
+void TextField::SetScriptTextConfirmHandler(const ScriptFunc& scriptFunc)
 {
-    mTextConfirmHandler.mScriptTableName = tableName;
-    mTextConfirmHandler.mScriptFuncName = funcName;
+    mTextConfirmHandler.mScriptFunc = scriptFunc;
 }
 
 
@@ -225,12 +219,9 @@ void TextField::SetSelectedTextField(TextField * newField)
         {
             handler.mFuncPointer(sSelectedTextField);
         }
-        if (handler.mScriptTableName != "")
+        if (handler.mScriptFunc.IsValid())
         {
-            ScriptEvent::WidgetState(
-                handler.mScriptTableName,
-                handler.mScriptFuncName,
-                sSelectedTextField);
+            handler.mScriptFunc.Call();
         }
     }
 

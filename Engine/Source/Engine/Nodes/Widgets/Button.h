@@ -53,8 +53,8 @@ public:
 
     void SetHoverHandler(ButtonHandlerFP newHandler);
     void SetPressedHandler(ButtonHandlerFP newHandler);
-    void SetScriptHoverHandler(const char* tableName, const char* funcName);
-    void SetScriptPressedHandler(const char* tableName, const char* funcName);
+    void SetScriptHoverHandler(const ScriptFunc& scriptFunc);
+    void SetScriptPressedHandler(const ScriptFunc& scriptFunc);
 
     void EnableRightClickPress(bool enable);
     bool IsRightClickPressEnabled();

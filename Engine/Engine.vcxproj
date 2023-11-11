@@ -652,7 +652,6 @@
     <ClCompile Include="Source\Engine\Renderer.cpp" />
     <ClCompile Include="Source\Engine\Script.cpp" />
     <ClCompile Include="Source\Engine\ScriptAutoReg.cpp" />
-    <ClCompile Include="Source\Engine\ScriptEvent.cpp" />
     <ClCompile Include="Source\Engine\ScriptFunc.cpp" />
     <ClCompile Include="Source\Engine\ScriptUtils.cpp" />
     <ClCompile Include="Source\Engine\stb_image.cpp" />
@@ -877,7 +876,6 @@
     <ClInclude Include="Source\Engine\RTTI.h" />
     <ClInclude Include="Source\Engine\Script.h" />
     <ClInclude Include="Source\Engine\ScriptAutoReg.h" />
-    <ClInclude Include="Source\Engine\ScriptEvent.h" />
     <ClInclude Include="Source\Engine\ScriptFunc.h" />
     <ClInclude Include="Source\Engine\ScriptMacros.h" />
     <ClInclude Include="Source\Engine\ScriptUtils.h" />

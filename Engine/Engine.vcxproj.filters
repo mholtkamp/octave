@@ -440,9 +440,6 @@
     <ClCompile Include="Source\LuaBindings\Texture_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\ScriptEvent.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\Assets\Font.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
@@ -967,9 +964,6 @@
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\ScriptAutoReg.h">
-      <Filter>Source Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\ScriptEvent.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\ScriptFunc.h">

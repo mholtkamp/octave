@@ -278,12 +278,10 @@ int SkeletalMesh3D_Lua::GetNumBones(lua_State* L)
 int SkeletalMesh3D_Lua::SetAnimEventHandler(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_3D(L, 1);
-    const char* tableName = CheckTableName(L, 2);
-    const char* funcName = CHECK_STRING(L, 3);
+    CHECK_FUNCTION(L, 2);
+    ScriptFunc func(L, 2);
 
-    comp->SetScriptAnimEventHandler(
-        tableName,
-        funcName);
+    comp->SetScriptAnimEventHandler(func);
 
     return 0;
 }

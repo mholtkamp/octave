@@ -5,14 +5,6 @@
 
 class ScriptComponent;
 
-template<typename T>
-struct ScriptableFP
-{
-    T mFuncPointer = nullptr;
-    mutable std::string mScriptTableName;
-    mutable std::string mScriptFuncName;
-};
-
 class ScriptFunc
 {
 public:
@@ -43,4 +35,11 @@ protected:
     void CopyRef(int ref);
 
     int mRef = LUA_REFNIL;
+};
+
+template<typename T>
+struct ScriptableFP
+{
+    T mFuncPointer = nullptr;
+    mutable ScriptFunc mScriptFunc;
 };

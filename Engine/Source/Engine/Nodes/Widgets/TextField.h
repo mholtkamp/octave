@@ -22,8 +22,8 @@ public:
 
     void SetTextEditHandler(TextFieldHandlerFP handler);
     void SetTextConfirmHandler(TextFieldHandlerFP handler);
-    void SetScriptTextEditHandler(const char* tableName, const char* funcName);
-    void SetScriptTextConfirmHandler(const char* tableName, const char* funcName);
+    void SetScriptTextEditHandler(const ScriptFunc& scriptFunc);
+    void SetScriptTextConfirmHandler(const ScriptFunc& scriptFunc);
 
     static TextField* GetSelectedTextField();
     static void SetSelectedTextField(TextField* newField);

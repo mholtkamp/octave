@@ -14,7 +14,7 @@ struct AnimEvent;
 class Button;
 class Selector;
 class TextField;
-class Node_Lua;
+struct Node_Lua;
 
 typedef std::unordered_map<std::string, ScriptNetFunc> ScriptNetFuncMap;
 
