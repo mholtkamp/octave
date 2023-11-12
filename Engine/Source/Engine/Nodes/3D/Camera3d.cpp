@@ -44,6 +44,8 @@ void Camera3D::GatherProperties(std::vector<Property>& outProps)
 {
     Node3D::GatherProperties(outProps);
 
+    SCOPED_CATEGORY("Camera");
+
     outProps.push_back(Property(DatumType::Bool, "Perspective", this, &mProjectionMode));
     outProps.push_back(Property(DatumType::Float, "Field Of View", this, &mPerspectiveSettings.mFovY));
 }

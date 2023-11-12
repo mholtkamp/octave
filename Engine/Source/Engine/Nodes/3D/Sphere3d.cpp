@@ -45,6 +45,8 @@ const char* Sphere3D::GetTypeName() const
 void Sphere3D::GatherProperties(std::vector<Property>& outProps)
 {
     Primitive3D::GatherProperties(outProps);
+
+    SCOPED_CATEGORY("Sphere");
     outProps.push_back(Property(DatumType::Float, "Radius", this, &mRadius, 1, HandlePropChange));
 }
 

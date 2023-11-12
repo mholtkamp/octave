@@ -52,6 +52,9 @@ const char* Capsule3D::GetTypeName() const
 void Capsule3D::GatherProperties(std::vector<Property>& outProps)
 {
     Primitive3D::GatherProperties(outProps);
+
+    SCOPED_CATEGORY("Capsule");
+
     outProps.push_back(Property(DatumType::Float, "Height", this, &mHeight, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Radius", this, &mRadius, 1, HandlePropChange));
 }

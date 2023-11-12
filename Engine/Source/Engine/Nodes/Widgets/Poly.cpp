@@ -72,6 +72,8 @@ DrawData Poly::GetDrawData()
 void Poly::GatherProperties(std::vector<Property>& outProps)
 {
     Widget::GatherProperties(outProps);
+
+    SCOPED_CATEGORY("Poly");
     outProps.push_back(Property(DatumType::Float, "Line Width", this, &mLineWidth));
 }
 

@@ -45,6 +45,9 @@ const char* Box3D::GetTypeName() const
 void Box3D::GatherProperties(std::vector<Property>& outProps)
 {
     Primitive3D::GatherProperties(outProps);
+
+    SCOPED_CATEGORY("Box");
+
     outProps.push_back(Property(DatumType::Vector, "Extents", this, &mExtents, 1, HandlePropChange));
 }
 

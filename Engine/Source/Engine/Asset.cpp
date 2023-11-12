@@ -225,7 +225,6 @@ void Asset::Import(const std::string& path, ImportOptions* options)
 void Asset::GatherProperties(std::vector<Property>& outProps)
 {
     outProps.push_back(Property(DatumType::String, "Name", this, &mName, 1, HandleAssetNamePropChange));
-    outProps.push_back(Property(DatumType::Bool, "Embedded", this, &mEmbedded));
 }
 
 glm::vec4 Asset::GetTypeColor()

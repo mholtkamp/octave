@@ -47,6 +47,7 @@ const char* DirectionalLight3D::GetTypeName() const
 void DirectionalLight3D::GatherProperties(std::vector<Property>& outProps)
 {
     Light3D::GatherProperties(outProps);
+    //SCOPED_CATEGORY("Light");
 }
 
 void DirectionalLight3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)

@@ -24,6 +24,10 @@ Property::Property(
     mExtra = extra;
     mEnumCount = enumCount;
     mEnumStrings = enumStrings;
+
+#if EDITOR
+    mCategory = sCategory;
+#endif
 }
 
 Property::Property(const Property& src) :
@@ -38,6 +42,10 @@ Property::Property(const Property& src) :
     mMinCount = src.mMinCount;
     mMaxCount = src.mMaxCount;
     mIsVector = src.mIsVector;
+
+#if EDITOR
+    mCategory = src.mCategory;
+#endif
 }
 
 Property& Property::operator=(const Property& src)
@@ -556,3 +564,20 @@ void Property::Reset()
     mMaxCount = 255;
     mIsVector = false;
 }
+
+
+#if EDITOR
+
+const char* Property::sCategory = "";
+
+void Property::SetCategory(const char* category)
+{
+    sCategory = category;
+}
+
+void Property::ClearCategory()
+{
+    sCategory = "";
+}
+
+#endif

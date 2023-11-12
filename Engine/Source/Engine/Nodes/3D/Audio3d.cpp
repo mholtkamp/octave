@@ -64,6 +64,8 @@ void Audio3D::GatherProperties(std::vector<Property>& outProps)
 {
     Node3D::GatherProperties(outProps);
 
+    SCOPED_CATEGORY("Audio");
+
     // Dummy Play property
     outProps.push_back(Property(DatumType::Bool, "Play", this, &mPlaying, 1, HandlePropChange));
 

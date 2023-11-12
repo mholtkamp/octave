@@ -42,6 +42,9 @@ const char* Mesh3D::GetTypeName() const
 void Mesh3D::GatherProperties(std::vector<Property>& outProps)
 {
     Primitive3D::GatherProperties(outProps);
+
+    SCOPED_CATEGORY("Mesh");
+
     outProps.push_back(Property(DatumType::Asset, "Material Override", this, &mMaterialOverride, 1, HandlePropChange, int32_t(Material::GetStaticType())));
     outProps.push_back(Property(DatumType::Bool, "Billboard", this, &mBillboard));
 }

@@ -134,6 +134,8 @@ void Node3D::GatherProperties(std::vector<Property>& outProps)
 {
     Node::GatherProperties(outProps);
 
+    SCOPED_CATEGORY("3D");
+
     outProps.push_back(Property(DatumType::Vector, "Position", this, &mPosition, 1, HandleTransformPropChange));
     outProps.push_back(Property(DatumType::Vector, "Rotation", this, &mRotationEuler, 1, HandleTransformPropChange));
     outProps.push_back(Property(DatumType::Vector, "Scale", this, &mScale, 1, HandleTransformPropChange));

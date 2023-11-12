@@ -522,25 +522,33 @@ VertexType Node::GetVertexType() const
 
 void Node::GatherProperties(std::vector<Property>& outProps)
 {
-    outProps.push_back({DatumType::String, "Name", this, &mName, 1, HandlePropChange });
+    {
+        SCOPED_CATEGORY("Node");
+
+        outProps.push_back({ DatumType::String, "Name", this, &mName, 1, HandlePropChange });
 #if EDITOR
-    outProps.push_back(Property(DatumType::Bool, "Expose Variable", this, &mExposeVariable));
+        outProps.push_back(Property(DatumType::Bool, "Expose Variable", this, &mExposeVariable));
 #endif
-    outProps.push_back({DatumType::Bool, "Active", this, &mActive});
-    outProps.push_back({DatumType::Bool, "Visible", this, &mVisible});
-    outProps.push_back({DatumType::Bool, "Late Tick", this, &mLateTick});
+        outProps.push_back({ DatumType::Bool, "Active", this, &mActive });
+        outProps.push_back({ DatumType::Bool, "Visible", this, &mVisible });
+        outProps.push_back({ DatumType::Bool, "Late Tick", this, &mLateTick });
 
-    outProps.push_back(Property(DatumType::Bool, "Replicate", this, &mReplicate));
-    outProps.push_back(Property(DatumType::Bool, "Replicate Transform", this, &mReplicateTransform));
-    outProps.push_back(Property(DatumType::String, "Tags", this, &mTags).MakeVector());
+        outProps.push_back(Property(DatumType::Bool, "Replicate", this, &mReplicate));
+        outProps.push_back(Property(DatumType::Bool, "Replicate Transform", this, &mReplicateTransform));
+        outProps.push_back(Property(DatumType::String, "Tags", this, &mTags).MakeVector());
+    }
 
-    outProps.push_back(Property(DatumType::String, "Script", this, &mScriptFile, 1, HandlePropChange));
+    {
+        SCOPED_CATEGORY("Script");
+
+        outProps.push_back(Property(DatumType::String, "Script", this, &mScriptFile, 1, HandlePropChange));
 
 #if EDITOR
-    static bool sFakeBool = false;
-    outProps.push_back(Property(DatumType::Bool, "Restart Script", this, &sFakeBool, 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Bool, "Reload Script File", this, &sFakeBool, 1, HandlePropChange));
+        static bool sFakeBool = false;
+        outProps.push_back(Property(DatumType::Bool, "Restart Script", this, &sFakeBool, 1, HandlePropChange));
+        outProps.push_back(Property(DatumType::Bool, "Reload Script File", this, &sFakeBool, 1, HandlePropChange));
 #endif
+    }
 
     if (mScript != nullptr)
     {

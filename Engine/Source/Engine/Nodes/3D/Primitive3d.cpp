@@ -224,6 +224,8 @@ void Primitive3D::GatherProperties(std::vector<Property>& outProps)
 {
     Node3D::GatherProperties(outProps);
 
+    SCOPED_CATEGORY("Primitive");
+
     outProps.push_back(Property(DatumType::Bool, "Physics", this, &mPhysicsEnabled, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Collision", this, &mCollisionEnabled, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Overlaps", this, &mOverlapsEnabled, 1, HandlePropChange));

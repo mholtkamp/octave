@@ -23,6 +23,7 @@ const char* ShadowMesh3D::GetTypeName() const
 void ShadowMesh3D::GatherProperties(std::vector<Property>& outProps)
 {
     StaticMesh3D::GatherProperties(outProps);
+    SCOPED_CATEGORY("Mesh");
 }
 
 void ShadowMesh3D::Create()

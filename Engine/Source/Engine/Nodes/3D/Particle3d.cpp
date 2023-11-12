@@ -63,6 +63,9 @@ const char* Particle3D::GetTypeName() const
 void Particle3D::GatherProperties(std::vector<Property>& outProps)
 {
     Primitive3D::GatherProperties(outProps);
+
+    SCOPED_CATEGORY("Particle");
+
     outProps.push_back(Property(DatumType::Asset, "Particle System", this, &mParticleSystem, 1, nullptr, int32_t(ParticleSystem::GetStaticType())));
     outProps.push_back(Property(DatumType::Asset, "Material Override", this, &mMaterialOverride, 1, nullptr, int32_t(Material::GetStaticType())));
     outProps.push_back(Property(DatumType::Float, "Time Multiplier", this, &mTimeMultiplier));

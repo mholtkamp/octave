@@ -171,6 +171,10 @@ void Script::GatherScriptProperties()
                             int propIdx = lua_gettop(L);
                             Property newProp;
                             
+#if EDITOR
+                            newProp.mCategory = "Script";
+#endif
+
                             lua_getfield(L, propIdx, "name");
                             const char* name = lua_isstring(L, -1) ? lua_tostring(L, -1) : "";
                             newProp.mName = name;

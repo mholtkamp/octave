@@ -110,6 +110,8 @@ void Widget::GatherProperties(std::vector<Property>& outProps)
 {
     Node::GatherProperties(outProps);
 
+    SCOPED_CATEGORY("Widget");
+
     outProps.push_back(Property(DatumType::Byte, "Anchor", this, &mAnchorMode, 1, Widget::HandlePropChange, 0, int32_t(AnchorMode::Count), sAnchorModeStrings));
     outProps.push_back(Property(DatumType::Bool, "Scissor", this, &mUseScissor, 1, Widget::HandlePropChange));
 

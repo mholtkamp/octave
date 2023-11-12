@@ -67,6 +67,9 @@ const char* StaticMesh3D::GetTypeName() const
 void StaticMesh3D::GatherProperties(std::vector<Property>& outProps)
 {
     Mesh3D::GatherProperties(outProps);
+
+    SCOPED_CATEGORY("Mesh");
+
     static bool sFakeBool = false;
     outProps.push_back(Property(DatumType::Asset, "Static Mesh", this, &mStaticMesh, 1, HandlePropChange, int32_t(StaticMesh::GetStaticType())));
     outProps.push_back(Property(DatumType::Bool, "Use Triangle Collision", this, &mUseTriangleCollision, 1, HandlePropChange));

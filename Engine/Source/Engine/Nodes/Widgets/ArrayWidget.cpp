@@ -20,6 +20,8 @@ void ArrayWidget::GatherProperties(std::vector<Property>& outProps)
 {
     Widget::GatherProperties(outProps);
 
+    SCOPED_CATEGORY("Array");
+
     outProps.push_back(Property(DatumType::Float, "Spacing", this, &mSpacing));
     outProps.push_back(Property(DatumType::Byte, "Orientation", this, &mOrientation, 1, nullptr, 0, int32_t(ArrayOrientation::Count), sArrayOrientationStrings));
     outProps.push_back(Property(DatumType::Bool, "Center", this, &mCenter));

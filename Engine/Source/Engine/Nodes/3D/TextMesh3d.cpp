@@ -48,6 +48,8 @@ void TextMesh3D::GatherProperties(std::vector<Property>& outProps)
 {
     Mesh3D::GatherProperties(outProps);
 
+    SCOPED_CATEGORY("Text");
+
     outProps.push_back(Property(DatumType::Asset, "Font", this, &mFont, 1, HandlePropChange, int32_t(Font::GetStaticType())));
     outProps.push_back(Property(DatumType::String, "Text", this, &mText, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Color, "Color", this, &mColor, 1, HandlePropChange));

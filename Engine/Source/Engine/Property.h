@@ -42,11 +42,19 @@ public:
     bool IsVector() const;
     bool IsArray() const;
 
+#if EDITOR
+    static void SetCategory(const char* category);
+    static void ClearCategory();
+#endif
+
 protected:
 
     virtual void Reset() override;
 
 public:
+
+    static const char* sCategory;
+
     std::string mName;
     int32_t mExtra = 0;
     int32_t mEnumCount = 0;
@@ -55,4 +63,19 @@ public:
     uint8_t mMinCount = 0;
     uint8_t mMaxCount = 255;
     bool mIsVector = false;
+#if EDITOR
+    const char* mCategory = "";
+#endif
 };
+
+#if EDITOR
+struct ScopedPropertyCategory
+{
+    ScopedPropertyCategory(const char* catName) { Property::SetCategory(catName); }
+    ~ScopedPropertyCategory() { Property::ClearCategory(); }
+};
+
+#define SCOPED_CATEGORY(CatName) ScopedPropertyCategory scopedCat(CatName);
+#else
+#define SCOPED_CATEGORY(CatName)  
+#endif

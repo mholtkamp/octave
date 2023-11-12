@@ -45,6 +45,8 @@ void PointLight3D::GatherProperties(std::vector<Property>& outProps)
 {
     Light3D::GatherProperties(outProps);
 
+    SCOPED_CATEGORY("Light");
+
     outProps.push_back(Property(DatumType::Float, "Radius", this, &mRadius));
 }
 

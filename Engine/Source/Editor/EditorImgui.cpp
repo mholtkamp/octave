@@ -621,6 +621,9 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
     const bool altDown = IsAltDown();
     const bool shiftDown = IsShiftDown();
 
+    const char* curCategory = "";
+    bool catOpen = false;
+
     PropertyOwnerType ownerType = PropertyOwnerType::Global;
     if (owner != nullptr)
     {
@@ -636,10 +639,19 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
 
     for (uint32_t p = 0; p < props.size(); ++p)
     {
-        ImGui::PushID(p);
-
         Property& prop = props[p];
         DatumType propType = prop.GetType();
+
+        if (strcmp(curCategory, prop.mCategory) != 0)
+        {
+            curCategory = prop.mCategory;
+            catOpen = ImGui::CollapsingHeader(curCategory);
+        }
+
+        if (!catOpen)
+            continue;
+
+        ImGui::PushID(p);
 
         // Bools handle name on same line after checkbox
         if (propType != DatumType::Bool || prop.GetCount() > 1)

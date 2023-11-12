@@ -95,6 +95,9 @@ const char* SkeletalMesh3D::GetTypeName() const
 void SkeletalMesh3D::GatherProperties(std::vector<Property>& outProps)
 {
     Mesh3D::GatherProperties(outProps);
+
+    SCOPED_CATEGORY("Mesh");
+
     outProps.push_back(Property(DatumType::Asset, "Skeletal Mesh", this, &mSkeletalMesh, 1, HandlePropChange, int32_t(SkeletalMesh::GetStaticType())));
     outProps.push_back(Property(DatumType::String, "Default Animation", this, &mDefaultAnimation, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Animation Speed", this, &mAnimationSpeed));
