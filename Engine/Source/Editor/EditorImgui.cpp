@@ -622,7 +622,7 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
     const bool shiftDown = IsShiftDown();
 
     const char* curCategory = "";
-    bool catOpen = false;
+    bool catOpen = true;
 
     PropertyOwnerType ownerType = PropertyOwnerType::Global;
     if (owner != nullptr)
@@ -645,7 +645,11 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
         if (strcmp(curCategory, prop.mCategory) != 0)
         {
             curCategory = prop.mCategory;
-            catOpen = ImGui::CollapsingHeader(curCategory);
+
+            if (strcmp(prop.mCategory, "") != 0)
+            {
+                catOpen = ImGui::CollapsingHeader(curCategory, ImGuiTreeNodeFlags_DefaultOpen);
+            }
         }
 
         if (!catOpen)
