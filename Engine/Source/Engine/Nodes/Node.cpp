@@ -287,7 +287,7 @@ void Node::Copy(Node* srcNode, bool recurse)
     }
 
     // I'm not using CopyPropertyValues() here because we need to handle the special
-    // case where "Filename" is copied. Should refactor this code so we can use the CopyPropertyValues() func.
+    // case where "Script" is copied. Should refactor this code so we can use the CopyPropertyValues() func.
     // Possibly, just copy over ScriptProperties separately after initial pass.
     std::vector<Property> srcProps;
     srcNode->GatherProperties(srcProps);
@@ -306,6 +306,7 @@ void Node::Copy(Node* srcNode, bool recurse)
                 dstProps[j].mType == srcProp->mType)
             {
                 dstProp = &dstProps[j];
+                break;
             }
         }
 
@@ -328,7 +329,7 @@ void Node::Copy(Node* srcNode, bool recurse)
         // that will change the number of properties on the script so we need to regather them.
         // Script component is really the only component that can dynamically change its properties,
         // so I'm adding a hack now just for script component.
-        if (srcProp->mName == "Filename")
+        if (srcProp->mName == "Script")
         {
             dstProps.clear();
             GatherProperties(dstProps);
