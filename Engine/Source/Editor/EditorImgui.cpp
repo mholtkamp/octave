@@ -76,6 +76,8 @@ static std::vector<FileBrowserDirEntry> sFileBrowserEntries;
 static float sFileBrowserDoubleClickBlock = 0.0f;
 static bool sFileBrowserNeedsRefresh = false;
 
+static bool sObjectTabOpen = false;
+
 static void PopulateFileBrowserDirs()
 {
     sFileBrowserDoubleClickBlock = 0.2f;
@@ -2153,45 +2155,27 @@ static void DrawPropertiesPanel()
     ImGui::SetNextWindowPos(ImVec2(dispWidth - kSidePaneWidth, 0.0f));
     ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, dispHeight));
 
+    // The locked BG color will be delayed by a frame.
+    bool lockedProperties = sObjectTabOpen && GetEditorState()->IsInspectLocked();
+    if (lockedProperties)
+    {
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.4f, 0.0f, 0.0f, 1.0f));
+    }
+
+    sObjectTabOpen = false;
+
     ImGui::Begin("Properties", nullptr, kPaneWindowFlags);
 
     if (ImGui::BeginTabBar("PropertyModeTabs"))
     {
         if (ImGui::BeginTabItem("Object"))
         {
+            sObjectTabOpen = true;
             RTTI* obj = GetEditorState()->GetInspectedObject();
 
             if (obj != nullptr)
             {
-                // Add lock button for inspected object.
-                ImVec2 curPos = ImGui::GetCursorPos();
-                //ImGui::SetCursorPos(ImVec2())
-                ImVec2 lockPos = curPos;
-                lockPos.y -= 0;
-                lockPos.x = ImGui::GetWindowWidth() - 40;
-
                 bool inspectLocked = GetEditorState()->IsInspectLocked();
-                if (inspectLocked)
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Button, kToggledColor);
-                }
-
-                ImGui::SetCursorPos(lockPos);
-                if (ImGui::Button("L", ImVec2(20, 20)))
-                {
-                    // Toggle locked inspection
-                    GetEditorState()->LockInspect(!inspectLocked);
-                }
-
-                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone))
-                    ImGui::SetTooltip("Lock");
-
-                ImGui::SetCursorPos(curPos);
-
-                if (inspectLocked)
-                {
-                    ImGui::PopStyleColor();
-                }
 
                 Texture* texObj = obj->As<Texture>();
                 if (texObj != nullptr &&
@@ -2265,7 +2249,7 @@ static void DrawPropertiesPanel()
         bool ctrlDown = IsControlDown();
 
         // Hotkey for toggling lock.
-        if (ctrlDown && IsKeyJustDown(KEY_L))
+        if (IsKeyJustDown(KEY_L))
         {
             GetEditorState()->LockInspect(!GetEditorState()->IsInspectLocked());
         }
@@ -2282,6 +2266,11 @@ static void DrawPropertiesPanel()
     }
 
     ImGui::End();
+
+    if (lockedProperties)
+    {
+        ImGui::PopStyleColor();
+    }
 }
 
 static void DrawViewportPanel()
