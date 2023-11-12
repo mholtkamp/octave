@@ -11,6 +11,12 @@ Node* CheckNodeWrapper(lua_State* L, int arg)
 {
     luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
     Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
+
+    if (nodeLua->mNode == nullptr)
+    {
+        luaL_error(L, "Attempting to use destroyed node at arg %d", arg);
+    }
+
     return nodeLua->mNode;
 }
 
@@ -31,7 +37,14 @@ Node* CheckNodeLuaType(lua_State* L, int arg, const char* className, const char*
 
     return ret;
 #else
-    return CheckHierarchyLuaType<Node_Lua>(L, arg, className, classFlag)->mNode;
+    Node_Lua* nodeLua = CheckHierarchyLuaType<Node_Lua>(L, arg, className, classFlag);
+
+    if (nodeLua->mNode == nullptr)
+    {
+        luaL_error(L, "Attempting to use destroyed node at arg %d", arg);
+    }
+
+    return nodeLua->mNode;
 #endif
 }
 
