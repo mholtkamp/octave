@@ -91,7 +91,8 @@ bool Node::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 #if EDITOR
     if (prop->mName == "Restart Script")
     {
-        if (node->GetScript() != nullptr)
+        bool restart = *((const bool*)newValue);
+        if (restart && node->GetScript() != nullptr)
         {
             node->GetScript()->RestartScript();
         }
@@ -99,7 +100,8 @@ bool Node::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
     }
     else if (prop->mName == "Reload Script File")
     {
-        if (node->GetScript() != nullptr)
+        bool reload = *((const bool*)newValue);
+        if (reload && node->GetScript() != nullptr)
         {
             node->GetScript()->ReloadScriptFile(node->GetScript()->GetFile(), true);
         }
