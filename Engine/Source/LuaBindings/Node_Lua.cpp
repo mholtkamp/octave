@@ -61,6 +61,15 @@ int NodeWrapperNewIndex(lua_State* L)
     return 0;
 }
 
+int NodeWrapperGarbageCollect(lua_State* L)
+{
+    luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
+    Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
+    nodeLua->~Node_Lua();
+    return 0;
+}
+
+
 int Node_Lua::Create(lua_State* L, Node* node)
 {
     if (node != nullptr)
@@ -122,14 +131,6 @@ int Node_Lua::Create(lua_State* L, Node* node)
     }
 
     return 1;
-}
-
-int Node_Lua::GarbageCollect(lua_State* L)
-{
-    CHECK_NODE(L, 1);
-    Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
-    nodeLua->~Node_Lua();
-    return 0;
 }
 
 int Node_Lua::Construct(lua_State* L)
@@ -231,22 +232,6 @@ int Node_Lua::GetWorld(lua_State* L)
     World* world = node->GetWorld();
 
     World_Lua::Create(L, world);
-    return 1;
-}
-
-int Node_Lua::Equals(lua_State* L)
-{
-    Node* nodeA = CHECK_NODE(L, 1);
-    Node* nodeB = nullptr;
-
-    if (lua_isuserdata(L, 2))
-    {
-        nodeB = CHECK_NODE(L, 2);
-    }
-
-    bool ret = (nodeA == nodeB);
-
-    lua_pushboolean(L, ret);
     return 1;
 }
 
@@ -840,9 +825,9 @@ int Node_Lua::CheckType(lua_State* L)
 
 void Node_Lua::BindCommon(lua_State* L, int mtIndex)
 {
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, GarbageCollect, "__gc");
-
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, Equals, "__eq");
+    // This function used to bind __gc and __eq, but now that we use the NodeWrapper table,
+    // the __gc metamethod has been moved to that, and __eq is no longer needed.
+    // Leaving this BindCommon() func here just in case we ever need to add something to every class table.
 }
 
 void Node_Lua::Bind()
@@ -853,10 +838,8 @@ void Node_Lua::Bind()
         NODE_LUA_FLAG,
         nullptr);
 
-    BindCommon(L, mtIndex);
-
     REGISTER_TABLE_FUNC(L, mtIndex, Construct);
-    REGISTER_TABLE_FUNC(L, mtIndex, Construct); // Alias
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Construct, "New"); // Alias
 
     REGISTER_TABLE_FUNC(L, mtIndex, IsValid);
 
@@ -873,8 +856,6 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, IsVisible);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetWorld);
-
-    REGISTER_TABLE_FUNC(L, mtIndex, Equals);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetParent);
 
@@ -977,6 +958,7 @@ void Node_Lua::Bind()
     int wrapperIdx = lua_gettop(L);
     REGISTER_TABLE_FUNC_EX(L, wrapperIdx, NodeWrapperIndex, "__index");
     REGISTER_TABLE_FUNC_EX(L, wrapperIdx, NodeWrapperNewIndex, "__newindex");
+    REGISTER_TABLE_FUNC_EX(L, wrapperIdx, NodeWrapperGarbageCollect, "__gc");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

@@ -7,6 +7,13 @@
 
 #if LUA_ENABLED
 
+Node* CheckNodeWrapper(lua_State* L, int arg)
+{
+    luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
+    Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
+    return nodeLua->mNode;
+}
+
 Node* CheckNodeLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
 {
 #if LUA_SAFE_NODE

@@ -54,6 +54,7 @@ T* CheckAssetLuaType(lua_State* L, int arg, const char* className, const char* c
     return ret;
 }
 
+Node* CheckNodeWrapper(lua_State* L, int arg);
 Node* CheckNodeLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
 RTTI* CheckRttiLuaType(lua_State* L, int arg);
 

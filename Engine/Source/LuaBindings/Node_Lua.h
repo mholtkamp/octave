@@ -5,12 +5,12 @@
 
 #if LUA_ENABLED
 
-#define NODE_LUA_NAME "Node"
-#define NODE_LUA_FLAG "cfNode"
-#define CHECK_NODE(L, arg) CheckNodeLuaType(L, arg, NODE_LUA_NAME, NODE_LUA_FLAG);
-
 #define OCT_CLASS_TABLE_KEY "octClassTable"
 #define NODE_WRAPPER_TABLE_NAME "NodeWrapper"
+
+#define NODE_LUA_NAME "Node"
+#define NODE_LUA_FLAG "cfNode"
+#define CHECK_NODE(L, arg)  CheckNodeWrapper(L, arg);
 
 struct Node_Lua
 {
@@ -21,7 +21,6 @@ struct Node_Lua
 #endif
 
     static int Create(lua_State* L, Node* node);
-    static int GarbageCollect(lua_State* L);
     static int Construct(lua_State* L);
 
     static int IsValid(lua_State* L);
@@ -33,7 +32,6 @@ struct Node_Lua
     static int SetVisible(lua_State* L);
     static int IsVisible(lua_State* L);
     static int GetWorld(lua_State* L);
-    static int Equals(lua_State* L);
 
     static int GetParent(lua_State* L);
     static int Attach(lua_State* L);
