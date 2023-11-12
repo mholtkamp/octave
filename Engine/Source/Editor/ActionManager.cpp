@@ -702,29 +702,21 @@ void ActionManager::ExecuteAction(Action* action)
 
     action->Execute();
 
-    // Don't record action history while playing in editor. Too chaotic for undo/redo
-    if (IsPlayingInEditor())
+    // Limit max number of history?
+    const uint32_t MaxActionHistoryCount = 100;
+    if (mActionHistory.size() >= MaxActionHistoryCount)
     {
-        delete action;
-        action = nullptr;
+        mActionHistory.erase(mActionHistory.begin());
     }
-    else
-    {
-        // Limit max number of history?
-        const uint32_t MaxActionHistoryCount = 100;
-        if (mActionHistory.size() >= MaxActionHistoryCount)
-        {
-            mActionHistory.erase(mActionHistory.begin());
-        }
 
-        mActionHistory.push_back(action);
-        ClearActionFuture();
-    }
+    mActionHistory.push_back(action);
+    ClearActionFuture();
 }
 
 void ActionManager::Undo()
 {
-    if (mActionHistory.size() > 0 &&
+    if (!IsPlaying() &&
+        mActionHistory.size() > 0 &&
         !ImGui::GetIO().WantTextInput)
     {
         Action* action = mActionHistory.back();
@@ -739,7 +731,8 @@ void ActionManager::Undo()
 
 void ActionManager::Redo()
 {
-    if (mActionFuture.size() > 0 &&
+    if (!IsPlaying() &&
+        mActionFuture.size() > 0 &&
         !ImGui::GetIO().WantTextInput)
     {
         Action* action = mActionFuture.back();
