@@ -9,6 +9,9 @@
 #define NODE_LUA_FLAG "cfNode"
 #define CHECK_NODE(L, arg) CheckNodeLuaType(L, arg, NODE_LUA_NAME, NODE_LUA_FLAG);
 
+#define OCT_CLASS_TABLE_KEY "octClassTable"
+#define NODE_WRAPPER_TABLE_NAME "NodeWrapper"
+
 struct Node_Lua
 {
 #if LUA_SAFE_NODE
@@ -20,9 +23,6 @@ struct Node_Lua
     static int Create(lua_State* L, Node* node);
     static int GarbageCollect(lua_State* L);
     static int Construct(lua_State* L);
-
-    static int Index(lua_State* L);
-    static int NewIndex(lua_State* L);
 
     static int IsValid(lua_State* L);
 

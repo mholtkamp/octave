@@ -12,6 +12,55 @@
 
 #if LUA_ENABLED
 
+int NodeWrapperIndex(lua_State* L)
+{
+    luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
+    // TODO: Do we want to support integer keys??
+    const char* key = CHECK_STRING(L, 2);
+
+    lua_getuservalue(L, 1);
+    int uvIdx = lua_gettop(L);
+    OCT_ASSERT(lua_istable(L, uvIdx));
+
+    // First, check the uservalue to see if the key is found in that
+    lua_getfield(L, uvIdx, key);
+
+    if (lua_isnil(L, -1))
+    {
+        lua_pop(L, 1);
+        lua_getfield(L, uvIdx, OCT_CLASS_TABLE_KEY);
+        int classTableIdx = lua_gettop(L);
+        OCT_ASSERT(lua_istable(L, classTableIdx));
+        
+        // This will propagate up the class inheritance chain via __index metamethod.
+        lua_getfield(L, classTableIdx, key);
+        return 1;
+    }
+    else
+    {
+        // Field was found in the uservalue table.
+        return 1;
+    }
+}
+
+int NodeWrapperNewIndex(lua_State* L)
+{
+    luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
+    // TODO: Do we want to support integer keys??
+    const char* key = CHECK_STRING(L, 2);
+
+    // Add the key/value to the Node userdata's associated uservalue
+    lua_getuservalue(L, 1);
+    int uvIdx = lua_gettop(L);
+    OCT_ASSERT(lua_istable(L, uvIdx));
+
+    lua_pushvalue(L, 2);
+    lua_pushvalue(L, 3);
+    lua_rawset(L, uvIdx);
+
+    return 0;
+}
+
 int Node_Lua::Create(lua_State* L, Node* node)
 {
     if (node != nullptr)
@@ -28,8 +77,16 @@ int Node_Lua::Create(lua_State* L, Node* node)
             Node_Lua* nodeLua = (Node_Lua*)lua_newuserdata(L, sizeof(Node_Lua));
             new (nodeLua) Node_Lua();
             nodeLua->mNode = node;
+            int udIdx = lua_gettop(L);
 
-            int udIndex = lua_gettop(L);
+            // Create a uservalue for storing script related values.
+            lua_newtable(L);
+            int uvIdx = lua_gettop(L);
+
+            lua_pushvalue(L, uvIdx);
+            lua_setuservalue(L, udIdx); // This pops the copied table value from stack. uvIdx should be valid still.
+
+            // Assign the class table to octClassTable key
             luaL_getmetatable(L, node->GetClassName());
             if (lua_isnil(L, -1))
             {
@@ -41,13 +98,22 @@ int Node_Lua::Create(lua_State* L, Node* node)
             }
 
             OCT_ASSERT(lua_istable(L, -1));
-            lua_setmetatable(L, udIndex);
+            lua_setfield(L, uvIdx, OCT_CLASS_TABLE_KEY);
+            lua_pop(L, 1); // Pop uservalue
+
+            // Set the metatable of the userdata to the NodeWrapper table
+            luaL_getmetatable(L, NODE_WRAPPER_TABLE_NAME);
+            OCT_ASSERT(lua_istable(L, -1));
+            lua_setmetatable(L, udIdx);
 
             // Create a registry reference to the new userdata, and then save it on Node
             // so we can reference it next time. The corresponding unref() call is done in Node::Destroy()
-            lua_pushvalue(L, udIndex);
+            lua_pushvalue(L, udIdx);
             int ref = luaL_ref(L, LUA_REGISTRYINDEX);
             node->SetUserdataRef(ref);
+
+            // We need to return the newly created userdata.
+            OCT_ASSERT(lua_gettop(L) == udIdx);
         }
     }
     else
@@ -75,64 +141,6 @@ int Node_Lua::Construct(lua_State* L)
 
     Node_Lua::Create(L, newNode);
     return 1;
-}
-
-int Node_Lua::Index(lua_State* L)
-{
-    Node* node = CHECK_NODE(L, 1);
-    // TODO: Do we want to support integer keys??
-    const char* key = CHECK_STRING(L, 2);
-
-    // Check if the Node metatable has the key
-    lua_getglobal(L, NODE_LUA_NAME);
-    lua_pushvalue(L, 2);
-    lua_rawget(L, -2);
-
-    if (lua_isnil(L, -1))
-    {
-        // Otherwise check the uservalue (script)
-        lua_getuservalue(L, 1);
-        if (lua_istable(L, -1))
-        {
-            lua_pushstring(L, key);
-            lua_rawget(L, -2);
-        }
-        else
-        {
-            // Pop getuservalue return (probably nil). Nil should still be on top of stack.
-            lua_pop(L, 1);
-        }
-    }
-
-    return 1;
-}
-
-int Node_Lua::NewIndex(lua_State* L)
-{
-    Node* node = CHECK_NODE(L, 1);
-    // TODO: Do we want to support integer keys??
-    const char* key = CHECK_STRING(L, 2);
-
-    // First, see if we have a uservalue and assign it to the uservalue table.
-    lua_getuservalue(L, 1);
-    if (lua_istable(L, -1))
-    {
-        int uservalueIdx = lua_gettop(L);
-        lua_pushvalue(L, 2);
-        lua_pushvalue(L, 3);
-        lua_rawset(L, uservalueIdx);
-    }
-    else
-    {
-        // If no uservalue, then assign to the table itself. 
-        lua_getglobal(L, NODE_LUA_NAME);
-        int nodeTableIdx = lua_gettop(L);
-        lua_pushvalue(L, 2);
-        lua_pushvalue(L, 3);
-        lua_rawset(L, nodeTableIdx);
-    }
-
-    return 0;
 }
 
 int Node_Lua::IsValid(lua_State* L)
@@ -958,9 +966,17 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC_EX(L, mtIndex, CheckType, "Is");
     REGISTER_TABLE_FUNC_EX(L, mtIndex, CheckType, "IsA");
 
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, Index, "__index");
+    // Pop Node_Lua table
+    lua_pop(L, 1);
 
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, NewIndex, "__newindex");
+
+    // Create the Node Userdata table, this is a simple metatable with __index/__newindex.
+    // __index checks uservalue for key before fetching from the class table hierarchy.
+    // __newindex will add new values to the associated uservalue
+    luaL_newmetatable(L, NODE_WRAPPER_TABLE_NAME);
+    int wrapperIdx = lua_gettop(L);
+    REGISTER_TABLE_FUNC_EX(L, wrapperIdx, NodeWrapperIndex, "__index");
+    REGISTER_TABLE_FUNC_EX(L, wrapperIdx, NodeWrapperNewIndex, "__newindex");
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

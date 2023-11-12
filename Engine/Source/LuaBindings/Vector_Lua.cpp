@@ -620,13 +620,13 @@ void Vector_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, mtIndex, SignedAngle);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, Negate);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Negate, "__unm");
 
-    REGISTER_TABLE_FUNC(L, mtIndex, Index);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Index, "__index");
 
-    REGISTER_TABLE_FUNC(L, mtIndex, NewIndex);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, NewIndex, "__newindex");
 
-    REGISTER_TABLE_FUNC(L, mtIndex, ToString);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, ToString, "__tostring");
 
     lua_setglobal(L, VECTOR_LUA_NAME);
 

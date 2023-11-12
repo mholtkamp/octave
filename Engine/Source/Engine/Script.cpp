@@ -1558,9 +1558,9 @@ void Script::CreateScriptInstance()
             // The userdata ref should be assigned in Node_Lua::Create().
             OCT_ASSERT(mUserdataRef != LUA_REFNIL);
 
-            // Create a new (uservalue) table
-            lua_newtable(L);
-            lua_setuservalue(L, udIdx); // This pops the table from stack.
+            lua_getuservalue(L, udIdx);
+            int uvIdx = lua_gettop(L);
+            OCT_ASSERT(lua_istable(L, uvIdx)); // Should be created and assigned in Node_Lua::Create()
 
             // Retrieve the prototype class table
             lua_getglobal(L, mClassName.c_str());
@@ -1596,11 +1596,12 @@ void Script::CreateScriptInstance()
                     OCT_ASSERT(0);
                 }
 
-                lua_pop(L, 1); // Pop class flag.
+                lua_pop(L, 2); // Pop class flag + metatable
             }
 
-            // Assign the new table's metatable to the class table
-            lua_setmetatable(L, udIdx); // Pops script class metatable
+            // Assign the new script class table to the Node Uservalue's class key
+            OCT_ASSERT(lua_gettop(L) == classTableIdx);
+            lua_setfield(L, uvIdx, OCT_CLASS_TABLE_KEY); // Pops script class metatable
 
             mTickEnabled = CheckIfFunctionExists("Tick");
             mHandleBeginOverlap = CheckIfFunctionExists("BeginOverlap");
@@ -1643,11 +1644,11 @@ void Script::DestroyScriptInstance()
             OCT_ASSERT(lua_isuserdata(L, -1));
             int udIdx = lua_gettop(L);
 
-            // Remove the uservalue
-            lua_pushnil(L);
-            lua_setuservalue(L, udIdx);
+            lua_getuservalue(L, udIdx);
+            int uvIdx = lua_gettop(L);
+            OCT_ASSERT(lua_istable(L, uvIdx)); // Should be created and assigned in Node_Lua::Create()
 
-            // Reset the node metatable back to its native metatable.
+            // Reset the uservalue class table to the native node's class.
             luaL_getmetatable(L, mOwner->GetClassName());
             if (lua_isnil(L, -1))
             {
@@ -1657,7 +1658,7 @@ void Script::DestroyScriptInstance()
             }
 
             OCT_ASSERT(lua_istable(L, -1));
-            lua_setmetatable(L, udIdx);
+            lua_setfield(L, uvIdx, OCT_CLASS_TABLE_KEY);
 
             lua_pop(L, 1); // Pop userdata
         }
