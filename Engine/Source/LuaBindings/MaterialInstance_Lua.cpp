@@ -25,7 +25,7 @@ void MaterialInstance_Lua::Bind()
         MATERIAL_INSTANCE_LUA_FLAG,
         MATERIAL_LUA_NAME);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, CreateNew);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, CreateNew, "Create");
 
     Asset_Lua::BindCommon(L, mtIndex);
 

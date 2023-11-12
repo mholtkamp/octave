@@ -295,7 +295,7 @@ void Stream_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, mtIndex, Create);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, Destroy);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Destroy, "__gc");
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetSize);
 

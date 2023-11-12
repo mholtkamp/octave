@@ -24,7 +24,7 @@ void ParticleSystemInstance_Lua::Bind()
         PARTICLE_SYSTEM_INSTANCE_LUA_FLAG,
         PARTICLE_SYSTEM_LUA_NAME);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, CreateNew);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, CreateNew, "Create");
 
     Asset_Lua::BindCommon(L, mtIndex);
 

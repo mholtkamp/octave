@@ -272,11 +272,11 @@ void Rect_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, mtIndex, Create);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, Index);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Index, "__index");
 
-    REGISTER_TABLE_FUNC(L, mtIndex, NewIndex);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, NewIndex, "__newindex");
 
-    REGISTER_TABLE_FUNC(L, mtIndex, ToString);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, ToString, "__tostring");
 
     REGISTER_TABLE_FUNC(L, mtIndex, ContainsPoint);
 
