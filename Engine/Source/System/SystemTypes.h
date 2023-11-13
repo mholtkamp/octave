@@ -24,16 +24,6 @@
 #include <android/native_window.h>
 #include <android/native_activity.h>
 #include <android_native_app_glue.h>
-#elif PLATFORM_DOLPHIN
-#include <gccore.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#elif PLATFORM_3DS
-#include <3ds.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #endif
 
 #if PLATFORM_WINDOWS
@@ -44,23 +34,11 @@ typedef DWORD ThreadFuncRet;
 typedef pthread_t ThreadObject;
 typedef pthread_mutex_t MutexObject;
 typedef void* ThreadFuncRet;
-#elif PLATFORM_DOLPHIN
-typedef lwp_t ThreadObject;
-typedef uint32_t MutexObject;
-typedef void* ThreadFuncRet;
-#elif PLATFORM_3DS
-typedef Thread ThreadObject;
-typedef uint32_t MutexObject;
-typedef void ThreadFuncRet;
 #endif
 
 typedef ThreadFuncRet(*ThreadFuncFP)(void*);
 
-#if PLATFORM_3DS
-#define THREAD_RETURN() return;
-#else
 #define THREAD_RETURN() return 0;
-#endif
 
 enum class ScreenOrientation : uint8_t
 {
@@ -82,10 +60,6 @@ struct DirEntry
     WIN32_FIND_DATA mFindData = { };
     HANDLE mFindHandle = nullptr;
 #elif (PLATFORM_LINUX || PLATFORM_ANDROID)
-    DIR* mDir = nullptr;
-#elif PLATFORM_DOLPHIN
-    DIR* mDir = nullptr;
-#elif PLATFORM_3DS
     DIR* mDir = nullptr;
 #endif
 };
@@ -121,17 +95,6 @@ struct SystemState
     bool mOrientationChanged = false;
     ScreenOrientation mOrientationMode = ScreenOrientation::Landscape;
     ScreenOrientation mActiveOrientation = ScreenOrientation::Landscape;
-#elif PLATFORM_DOLPHIN
-    void* mFrameBuffers[2] = { };
-    void* mConsoleBuffer = nullptr;
-    GXRModeObj* mGxrMode = nullptr;
-    uint32_t mFrameIndex = 0;
-    void* mMemoryCardMountArea = nullptr;
-    bool mMemoryCardMounted = false;
-#elif PLATFORM_3DS
-    PrintConsole mPrintConsole = {};
-    float mSlider = 0.0f;
-    bool mNew3DS = false;
 #endif
 };
 

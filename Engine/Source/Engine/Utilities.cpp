@@ -35,12 +35,6 @@ Platform GetPlatform()
     return Platform::Linux;
 #elif PLATFORM_ANDROID
     return Platform::Android;
-#elif PLATFORM_GAMECUBE
-    return Platform::GameCube;
-#elif PLATFORM_WII
-    return Platform::Wii;
-#elif PLATFORM_3DS
-    return Platform::N3DS;
 #else
     return Platform::Count;
 #endif

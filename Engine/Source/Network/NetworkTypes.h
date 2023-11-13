@@ -12,12 +12,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <sys/ioctl.h>
-#elif PLATFORM_3DS
-#include <sys/socket.h>
-#include <netdb.h>
-#include <sys/ioctl.h>
-#elif PLATFORM_DOLPHIN
-#include <network.h>
 #elif PLATFORM_ANDROID
 #include <sys/socket.h>
 #include <netdb.h>
@@ -29,10 +23,6 @@
 #elif PLATFORM_LINUX
     typedef int32_t SocketHandle;
 #elif PLATFORM_ANDROID
-    typedef int32_t SocketHandle;
-#elif PLATFORM_3DS
-    typedef int32_t SocketHandle;
-#elif PLATFORM_DOLPHIN
     typedef int32_t SocketHandle;
 #endif
 

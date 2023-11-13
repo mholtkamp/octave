@@ -514,18 +514,10 @@ void Input_Lua::BindKeyTable()
     lua_setfield(L, tableIdx, "Eight");
     lua_pushinteger(L, KeyCode::KEY_9);
     lua_setfield(L, tableIdx, "Nine");
-
-#if PLATFORM_3DS
-    lua_pushinteger(L, 0);
-    lua_setfield(L, tableIdx, "A");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, tableIdx, "B");
-#else
     lua_pushinteger(L, KeyCode::KEY_A);
     lua_setfield(L, tableIdx, "A");
     lua_pushinteger(L, KeyCode::KEY_B);
     lua_setfield(L, tableIdx, "B");
-#endif
     lua_pushinteger(L, KeyCode::KEY_C);
     lua_setfield(L, tableIdx, "C");
     lua_pushinteger(L, KeyCode::KEY_D);
@@ -544,13 +536,8 @@ void Input_Lua::BindKeyTable()
     lua_setfield(L, tableIdx, "J");
     lua_pushinteger(L, KeyCode::KEY_K);
     lua_setfield(L, tableIdx, "K");
-#if PLATFORM_3DS
-    lua_pushinteger(L, 0);
-    lua_setfield(L, tableIdx, "L");
-#else
     lua_pushinteger(L, KeyCode::KEY_L);
     lua_setfield(L, tableIdx, "L");
-#endif
     lua_pushinteger(L, KeyCode::KEY_M);
     lua_setfield(L, tableIdx, "M");
     lua_pushinteger(L, KeyCode::KEY_N);
@@ -561,13 +548,8 @@ void Input_Lua::BindKeyTable()
     lua_setfield(L, tableIdx, "P");
     lua_pushinteger(L, KeyCode::KEY_Q);
     lua_setfield(L, tableIdx, "Q");
-#if PLATFORM_3DS
-    lua_pushinteger(L, 0);
-    lua_setfield(L, tableIdx, "R");
-#else
     lua_pushinteger(L, KeyCode::KEY_R);
     lua_setfield(L, tableIdx, "R");
-#endif
     lua_pushinteger(L, KeyCode::KEY_S);
     lua_setfield(L, tableIdx, "S");
     lua_pushinteger(L, KeyCode::KEY_T);
@@ -578,17 +560,10 @@ void Input_Lua::BindKeyTable()
     lua_setfield(L, tableIdx, "V");
     lua_pushinteger(L, KeyCode::KEY_W);
     lua_setfield(L, tableIdx, "W");
-#if PLATFORM_3DS
-    lua_pushinteger(L, 0);
-    lua_setfield(L, tableIdx, "X");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, tableIdx, "Y");
-#else
     lua_pushinteger(L, KeyCode::KEY_X);
     lua_setfield(L, tableIdx, "X");
     lua_pushinteger(L, KeyCode::KEY_Y);
     lua_setfield(L, tableIdx, "Y");
-#endif
     lua_pushinteger(L, KeyCode::KEY_Z);
     lua_setfield(L, tableIdx, "Z");
 
@@ -626,17 +601,6 @@ void Input_Lua::BindKeyTable()
     lua_setfield(L, tableIdx, "PageUp");
     lua_pushinteger(L, KeyCode::KEY_PAGE_DOWN);
     lua_setfield(L, tableIdx, "PageDown");
-
-#if PLATFORM_3DS
-    lua_pushinteger(L, 0);
-    lua_setfield(L, tableIdx, "Up");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, tableIdx, "Down");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, tableIdx, "Left");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, tableIdx, "Right");
-#else
     lua_pushinteger(L, KeyCode::KEY_UP);
     lua_setfield(L, tableIdx, "Up");
     lua_pushinteger(L, KeyCode::KEY_DOWN);
@@ -645,7 +609,6 @@ void Input_Lua::BindKeyTable()
     lua_setfield(L, tableIdx, "Left");
     lua_pushinteger(L, KeyCode::KEY_RIGHT);
     lua_setfield(L, tableIdx, "Right");
-#endif
 
     lua_pushinteger(L, KeyCode::KEY_NUMPAD0);
     lua_setfield(L, tableIdx, "Numpad0");
