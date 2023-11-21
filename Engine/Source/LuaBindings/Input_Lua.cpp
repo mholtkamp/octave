@@ -118,7 +118,7 @@ int Input_Lua::GetMouseDelta(lua_State* L)
     INP_GetMouseDelta(deltaX, deltaY);
 
     lua_pushinteger(L, deltaX);
-    lua_pushboolean(L, deltaY);
+    lua_pushinteger(L, deltaY);
     return 2;
 }
 
