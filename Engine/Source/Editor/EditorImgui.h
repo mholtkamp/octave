@@ -1,7 +1,7 @@
 #pragma once
 
 #if EDITOR
-
+#include <cstdint>
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
 
