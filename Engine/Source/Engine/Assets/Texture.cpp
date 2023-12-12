@@ -458,6 +458,7 @@ void Texture::Init(uint32_t width, uint32_t height, uint8_t* data)
 void Texture::SetMipmapped(bool mipmapped)
 {
     mMipmapped = mipmapped;
+    mMipLevels = mMipmapped ? static_cast<int32_t>(floor(log2(std::max(mWidth, mHeight))) + 1) : 1;
 }
 
 bool Texture::IsMipmapped() const
@@ -504,3 +505,20 @@ WrapMode Texture::GetWrapMode() const
 {
     return mWrapMode;
 }
+
+// These Set***() calls need to be called before Create().
+void Texture::SetFormat(PixelFormat format)
+{
+    mFormat = format;
+}
+
+void Texture::SetFilterType(FilterType filterType)
+{
+    mFilterType = filterType;
+}
+
+void Texture::SetWrapMode(WrapMode wrapMode)
+{
+    mWrapMode = wrapMode;
+}
+

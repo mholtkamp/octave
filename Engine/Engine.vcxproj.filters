@@ -152,9 +152,6 @@
     <ClCompile Include="Source\Engine\Renderer.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\stb_image.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\Stream.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -631,6 +628,9 @@
     </ClCompile>
     <ClCompile Include="Source\Editor\CustomImgui.cpp">
       <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\stb_implementation.cpp">
+      <Filter>Source Files\Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

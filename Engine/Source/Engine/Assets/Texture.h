@@ -43,6 +43,10 @@ public:
     FilterType GetFilterType() const;
     WrapMode GetWrapMode() const;
 
+    void SetFormat(PixelFormat format);
+    void SetFilterType(FilterType filterType);
+    void SetWrapMode(WrapMode wrapMode);
+
     static bool HandlePropChange(class Datum* datum, uint32_t index, const void* newValue);
 
 protected:

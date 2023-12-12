@@ -376,24 +376,24 @@ void TextMesh3D::UpdateVertexData()
         //   1  4---5
         vertices[0].mPosition.x = cursorX - fontChar.mOriginX;
         vertices[0].mPosition.y = cursorY + fontChar.mOriginY;
-        vertices[0].mTexcoord0.x = (float)fontChar.mX;
-        vertices[0].mTexcoord0.y = (float)fontChar.mY;
+        vertices[0].mTexcoord0.x = fontChar.mX;
+        vertices[0].mTexcoord0.y = fontChar.mY;
         vertices[0].mTexcoord1.x = vertices[0].mPosition.x;
         vertices[0].mTexcoord1.y = vertices[0].mPosition.y;
         vertices[0].mNormal = glm::vec3(0.0f, 0.0f, 1.0f);
 
         vertices[1].mPosition.x = cursorX - fontChar.mOriginX;
         vertices[1].mPosition.y = cursorY + fontChar.mOriginY - fontChar.mHeight;
-        vertices[1].mTexcoord0.x = (float)fontChar.mX;
-        vertices[1].mTexcoord0.y = (float)fontChar.mY + fontChar.mHeight;
+        vertices[1].mTexcoord0.x = fontChar.mX;
+        vertices[1].mTexcoord0.y = fontChar.mY + fontChar.mHeight;
         vertices[1].mTexcoord1.x = vertices[1].mPosition.x;
         vertices[1].mTexcoord1.y = vertices[1].mPosition.y;
         vertices[1].mNormal = glm::vec3(0.0f, 0.0f, 1.0f);
 
         vertices[2].mPosition.x = cursorX - fontChar.mOriginX + fontChar.mWidth;
         vertices[2].mPosition.y = cursorY + fontChar.mOriginY;
-        vertices[2].mTexcoord0.x = (float)fontChar.mX + fontChar.mWidth;
-        vertices[2].mTexcoord0.y = (float)fontChar.mY;
+        vertices[2].mTexcoord0.x = fontChar.mX + fontChar.mWidth;
+        vertices[2].mTexcoord0.y = fontChar.mY;
         vertices[2].mTexcoord1.x = vertices[2].mPosition.x;
         vertices[2].mTexcoord1.y = vertices[2].mPosition.y;
         vertices[2].mNormal = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -403,8 +403,8 @@ void TextMesh3D::UpdateVertexData()
 
         vertices[5].mPosition.x = cursorX - fontChar.mOriginX + fontChar.mWidth;
         vertices[5].mPosition.y = cursorY + fontChar.mOriginY - fontChar.mHeight;
-        vertices[5].mTexcoord0.x = (float)fontChar.mX + fontChar.mWidth;
-        vertices[5].mTexcoord0.y = (float)fontChar.mY + fontChar.mHeight;
+        vertices[5].mTexcoord0.x = fontChar.mX + fontChar.mWidth;
+        vertices[5].mTexcoord0.y = fontChar.mY + fontChar.mHeight;
         vertices[5].mTexcoord1.x = vertices[5].mPosition.x;
         vertices[5].mTexcoord1.y = vertices[5].mPosition.y;
         vertices[5].mNormal = glm::vec3(0.0f, 0.0f, 1.0f);

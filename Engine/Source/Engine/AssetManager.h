@@ -99,7 +99,7 @@ public:
     bool UnloadAsset(AssetStub& stub);
     void EraseAsyncLoadRef(AssetRef& assetRef);
 
-	bool DoesAssetExist(const std::string& name);
+    bool DoesAssetExist(const std::string& name);
     bool RenameAsset(Asset* asset, const std::string& newName);
     bool RenameDirectory(AssetDir* dir, const std::string& newName);
     AssetDir* FindProjectDirectory();
@@ -142,3 +142,13 @@ protected:
     std::unordered_map<TypeId, glm::vec4> mAssetColorMap;
 #endif
 };
+
+template<typename T>
+T* NewTransientAsset()
+{
+    T* ret = new T();
+    AssetManager::Get()->RegisterTransientAsset(ret);
+    return ret;
+
+    // Caller still needs to call Create() when ready!
+}

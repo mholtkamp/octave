@@ -6,14 +6,12 @@ DEFINE_ASSET(MaterialInstance);
 
 MaterialInstance* MaterialInstance::New(const Material* src)
 {
-    MaterialInstance* ret = new MaterialInstance();
+    MaterialInstance* ret = NewTransientAsset<MaterialInstance>();
     if (src != nullptr)
     {
         ret->mParams = src->GetParams();
     }
     ret->Create();
-
-    AssetManager::Get()->RegisterTransientAsset(ret);
 
     return ret;
 }

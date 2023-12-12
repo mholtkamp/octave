@@ -7,13 +7,13 @@
 struct Character
 {
     int32_t mCodePoint = 0;
-    int32_t mX = 0;
-    int32_t mY = 0;
-    int32_t mWidth = 0;
-    int32_t mHeight = 0;
-    int32_t mOriginX = 0;
-    int32_t mOriginY = 0;
-    int32_t mAdvance = 0;
+    float mX = 0;
+    float mY = 0;
+    float mWidth = 0;
+    float mHeight = 0;
+    float mOriginX = 0;
+    float mOriginY = 0;
+    float mAdvance = 0;
 };
 
 class Font : public Asset
@@ -44,6 +44,8 @@ public:
     bool IsItalic() const;
 
     void SetTexture(Texture* texture);
+
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
 protected:
 

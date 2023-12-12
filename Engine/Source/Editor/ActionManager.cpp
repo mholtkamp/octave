@@ -1248,7 +1248,7 @@ Asset* ActionManager::ImportAsset(const std::string& path)
     {
         newType = SoundWave::GetStaticType();
     }
-    else if (extension == ".xml")
+    else if (extension == ".ttf" || extension == ".xml")
     {
         newType = Font::GetStaticType();
     }

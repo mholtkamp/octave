@@ -499,26 +499,26 @@ void Text::UpdateVertexData()
         //   1  4---5
         vertices[0].mPosition.x = cursorX - fontChar.mOriginX;
         vertices[0].mPosition.y = cursorY - fontChar.mOriginY;
-        vertices[0].mTexcoord.x = (float)fontChar.mX;
-        vertices[0].mTexcoord.y = (float)fontChar.mY;
+        vertices[0].mTexcoord.x = fontChar.mX;
+        vertices[0].mTexcoord.y = fontChar.mY;
 
         vertices[1].mPosition.x = cursorX - fontChar.mOriginX;
         vertices[1].mPosition.y = cursorY - fontChar.mOriginY + fontChar.mHeight;
-        vertices[1].mTexcoord.x = (float)fontChar.mX;
-        vertices[1].mTexcoord.y = (float)fontChar.mY + fontChar.mHeight;
+        vertices[1].mTexcoord.x = fontChar.mX;
+        vertices[1].mTexcoord.y = fontChar.mY + fontChar.mHeight;
 
         vertices[2].mPosition.x = cursorX - fontChar.mOriginX + fontChar.mWidth;
         vertices[2].mPosition.y = cursorY - fontChar.mOriginY;
-        vertices[2].mTexcoord.x = (float)fontChar.mX + fontChar.mWidth;
-        vertices[2].mTexcoord.y = (float)fontChar.mY;
+        vertices[2].mTexcoord.x = fontChar.mX + fontChar.mWidth;
+        vertices[2].mTexcoord.y = fontChar.mY;
 
         vertices[3] = vertices[2]; // duplicated
         vertices[4] = vertices[1]; // duplicated
 
         vertices[5].mPosition.x = cursorX - fontChar.mOriginX + fontChar.mWidth;
         vertices[5].mPosition.y = cursorY - fontChar.mOriginY + fontChar.mHeight;
-        vertices[5].mTexcoord.x = (float)fontChar.mX + fontChar.mWidth;
-        vertices[5].mTexcoord.y = (float)fontChar.mY + fontChar.mHeight;
+        vertices[5].mTexcoord.x = fontChar.mX + fontChar.mWidth;
+        vertices[5].mTexcoord.y = fontChar.mY + fontChar.mHeight;
 
         for (int32_t i = 0; i < 6; ++i)
         {

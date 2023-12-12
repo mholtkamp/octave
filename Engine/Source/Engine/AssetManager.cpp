@@ -614,14 +614,14 @@ void AssetManager::ImportEngineAssets()
 
         // Import fonts
         Font* fontRoboto32 = (Font*) ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_Roboto32");
-        Font* fontRoboto16 = (Font*) ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_Roboto16");
-        Font* fontRobotoMono16 = (Font*) ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_RobotoMono16");
-        Font* fontRobotoMono8 = (Font*) ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_RobotoMono8");
+        //Font* fontRoboto16 = (Font*) ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_Roboto16");
+        //Font* fontRobotoMono16 = (Font*) ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_RobotoMono16");
+        //Font* fontRobotoMono8 = (Font*) ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_RobotoMono8");
 
-        fontRoboto32->SetTexture(roboto32Tex);
-        fontRoboto16->SetTexture(roboto16Tex);
-        fontRobotoMono16->SetTexture(robotoMono16Tex);
-        fontRobotoMono8->SetTexture(robotoMono8Tex);
+        //fontRoboto32->SetTexture(roboto32Tex);
+        //fontRoboto16->SetTexture(roboto16Tex);
+        //fontRobotoMono16->SetTexture(robotoMono16Tex);
+        //fontRobotoMono8->SetTexture(robotoMono8Tex);
 
         imported = true;
     }

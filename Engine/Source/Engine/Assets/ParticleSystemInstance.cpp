@@ -10,14 +10,12 @@ DEFINE_ASSET(ParticleSystemInstance);
 
 ParticleSystemInstance* ParticleSystemInstance::New(const ParticleSystem* src)
 {
-    ParticleSystemInstance* ret = new ParticleSystemInstance();
+    ParticleSystemInstance* ret = NewTransientAsset<ParticleSystemInstance>();
     if (src != nullptr)
     {
         ret->CopyParticleSystem(src);
     }
     ret->Create();
-
-    AssetManager::Get()->RegisterTransientAsset(ret);
 
     return ret;
 }
