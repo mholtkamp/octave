@@ -34,14 +34,14 @@ static_assert(
     uint32_t(PixelFormat::RGBA5551) == 4,
     "Need to update texture asset format string table");
 
-static const char* sFilterEnumStrings[] =
+const char* gFilterEnumStrings[] =
 {
     "Nearest",
     "Linear"
 };
 static_assert(uint32_t(FilterType::Count) == 2, "Need to update filter type enum string table");
 
-static const char* sWrapEnumStrings[] =
+const char* gWrapEnumStrings[] =
 {
     "Clamp",
     "Repeat",
@@ -422,8 +422,8 @@ void Texture::GatherProperties(std::vector<Property>& outProps)
 
     outProps.push_back(Property(DatumType::Bool, "Mipmapped", this, &mMipmapped));
     outProps.push_back(Property(DatumType::Integer, "Format", this, &mFormat, 1, Texture::HandlePropChange, 0, 5, sPixelFormatEnumStrings));
-    outProps.push_back(Property(DatumType::Integer, "Filter Type", this, &mFilterType, 1, Texture::HandlePropChange, 0, int32_t(FilterType::Count), sFilterEnumStrings));
-    outProps.push_back(Property(DatumType::Integer, "Wrap Mode", this, &mWrapMode, 1, Texture::HandlePropChange, 0, int32_t(WrapMode::Count), sWrapEnumStrings));
+    outProps.push_back(Property(DatumType::Integer, "Filter Type", this, &mFilterType, 1, Texture::HandlePropChange, 0, int32_t(FilterType::Count), gFilterEnumStrings));
+    outProps.push_back(Property(DatumType::Integer, "Wrap Mode", this, &mWrapMode, 1, Texture::HandlePropChange, 0, int32_t(WrapMode::Count), gWrapEnumStrings));
 }
 
 glm::vec4 Texture::GetTypeColor()

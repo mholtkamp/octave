@@ -56,13 +56,14 @@ public:
 
     const Vertex* GetVertices() const;
 
+    void MarkVerticesDirty();
+
 protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
     void TickCommon(float deltaTime);
 
-    void MarkVerticesDirty();
     void UploadVertexData();
     void UpdateVertexData();
     void JustifyLine(glm::vec2& lineMinExtent, glm::vec2& lineMaxExtent, int32_t& lineVertStart);

@@ -39,13 +39,7 @@ Stream::Stream(const char* externalData, uint32_t externalSize) :
 
 Stream::~Stream()
 {
-    if (!mExternal && mData != nullptr)
-    {
-        // We need to use free() here because SYS_AcquireFileData() calls malloc().
-        // And we use that allocated data directly when ACQUIRE_FILE_DIRECTLY is enabled.
-        free(mData);
-        mData = nullptr;
-    }
+    Reset();
 }
 
 char* Stream::GetData()
@@ -71,6 +65,24 @@ void Stream::SetPos(uint32_t pos)
     {
         mPos = mSize;
     }
+}
+
+void Stream::Reset()
+{
+    if (!mExternal && mData != nullptr)
+    {
+        // We need to use free() here because SYS_AcquireFileData() calls malloc().
+        // And we use that allocated data directly when ACQUIRE_FILE_DIRECTLY is enabled.
+        free(mData);
+        mData = nullptr;
+    }
+
+    mData = nullptr;
+    mSize = 0;
+    mCapacity = 0;
+    mPos = 0;
+    mAsyncRequest = nullptr;
+    mExternal = false;
 }
 
 void Stream::ReadFile(const char* path, bool isAsset, int32_t maxSize)

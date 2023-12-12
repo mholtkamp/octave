@@ -45,15 +45,28 @@ public:
 
     void SetTexture(Texture* texture);
 
+    void RebuildFont();
+
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
 protected:
 
-    int32_t mSize = 0;
+    int32_t mSize = 32;
     int32_t mWidth = 0;
     int32_t mHeight = 0;
     std::vector<Character> mCharacters;
     TextureRef mTexture;
     bool mBold = false;
     bool mItalic = false;
+
+    FilterType mFilterType = FilterType::Linear;
+    WrapMode mWrapMode = WrapMode::Clamp;
+    bool mMipmapped = true;
+
+    bool mFontDirty[MAX_FRAMES] = { };
+
+#if EDITOR
+    // Keep TTF data loaded in Editor.
+    Stream mTtfData;
+#endif
 };
