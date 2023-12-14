@@ -11,6 +11,7 @@
 #include <stb_truetype.h>
 #include <stb_image_write.h>
 #include <IrrXML/irrXML.h>
+#include "EditorState.h"
 using namespace irr;
 using namespace io;
 #endif
@@ -338,34 +339,38 @@ void Font::RebuildFont()
             delete[] tempBitmap;
             tempBitmap = nullptr;
 
-            // Dirty all text
-            if (GetWorld() != nullptr)
+            // Dirty all text widgets 
+            for (uint32_t i = 0; i < GetEditorState()->mEditScenes.size(); ++i)
             {
-                Node* rootNode = GetWorld()->GetRootNode();
-
-                auto dirtyText = [&](Node* node) -> bool
+                if (GetEditorState()->GetEditScene(i)->mRootNode != nullptr)
                 {
-                    Text* text = node->As<Text>();
-                    if (text)
-                    {
-                        text->MarkDirty();
-                        text->MarkVerticesDirty();
-                    }
-                    
-                    TextMesh3D* text3d = node->As<TextMesh3D>();
-                    if (text3d)
-                    {
-                        text3d->MarkVerticesDirty();
-                    }
+                    Node* rootNode = GetEditorState()->GetEditScene(i)->mRootNode;
 
-                    return true;
-                };
+                    auto dirtyText = [&](Node* node) -> bool
+                    {
+                        Text* text = node->As<Text>();
+                        if (text)
+                        {
+                            text->MarkDirty();
+                            text->MarkVerticesDirty();
+                        }
 
-                if (rootNode != nullptr)
-                {
-                    rootNode->Traverse(dirtyText);
+                        TextMesh3D* text3d = node->As<TextMesh3D>();
+                        if (text3d)
+                        {
+                            text3d->MarkVerticesDirty();
+                        }
+
+                        return true;
+                    };
+
+                    if (rootNode != nullptr)
+                    {
+                        rootNode->Traverse(dirtyText);
+                    }
                 }
             }
+
         }
     }
 #endif
