@@ -843,6 +843,13 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                 if (ImGui::IsItemDeactivatedAfterEdit())
                 {
                     prop.SetVector(sOrigVal);
+
+                    // Handle edge case where Rotation property is reset so we need to recompute transform to update mRotationEuler.
+                    if (owner->As<Node3D>())
+                    {
+                        owner->As<Node3D>()->UpdateTransform(false);
+                    }
+
                     am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
                 }
                 else if (propVal != preVal)
