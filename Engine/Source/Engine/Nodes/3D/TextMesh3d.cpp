@@ -320,6 +320,7 @@ void TextMesh3D::UpdateVertexData()
     int32_t fontSize = font->GetSize();
     int32_t fontWidth = font->GetWidth();
     int32_t fontHeight = font->GetHeight();
+    float lineSpacing = font->GetLineSpacing();
     const std::vector<Character>& fontChars = font->GetCharacters();
 
     mVisibleCharacters = 0;
@@ -351,7 +352,7 @@ void TextMesh3D::UpdateVertexData()
         char textChar = characters[i];
         if (textChar == '\n')
         {
-            cursorY -= fontSize;
+            cursorY -= (fontSize + lineSpacing);
             cursorX = 0.0f;
 
             JustifyLine(lineMinExtent, lineMaxExtent, lineVertStart);

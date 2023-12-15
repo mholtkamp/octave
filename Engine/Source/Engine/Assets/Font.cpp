@@ -72,6 +72,7 @@ void Font::LoadStream(Stream& stream, Platform platform)
     mSize = stream.ReadInt32();
     mWidth = stream.ReadInt32();
     mHeight = stream.ReadInt32();
+    mLineSpacing = stream.ReadFloat();
     mBold = stream.ReadBool();
     mItalic = stream.ReadBool();
 
@@ -104,6 +105,13 @@ void Font::LoadStream(Stream& stream, Platform platform)
 
         mTexture = texture;
     }
+
+    uint32_t ttfDataSize = stream.ReadUint32();
+    if (ttfDataSize > 0)
+    {
+        mTtfData.ReadBytes((uint8_t*)stream.GetData() + stream.GetPos(), ttfDataSize);
+        stream.SetPos(stream.GetPos() + ttfDataSize);
+    }
 }
 
 void Font::SaveStream(Stream& stream, Platform platform)
@@ -113,6 +121,7 @@ void Font::SaveStream(Stream& stream, Platform platform)
     stream.WriteInt32(mSize);
     stream.WriteInt32(mWidth);
     stream.WriteInt32(mHeight);
+    stream.WriteFloat(mLineSpacing);
     stream.WriteBool(mBold);
     stream.WriteBool(mItalic);
 
@@ -141,6 +150,18 @@ void Font::SaveStream(Stream& stream, Platform platform)
     if (validTexture)
     {
         stream.WriteAsset(mTexture);
+    }
+
+    if (platform == Platform::Count)
+    {
+        // Save TTF data so we can rebuild the font bitmap with different settings.
+        uint32_t ttfDataSize = mTtfData.GetSize();
+        stream.WriteUint32(ttfDataSize);
+
+        if (ttfDataSize > 0)
+        {
+            stream.WriteBytes((uint8_t*)mTtfData.GetData(), ttfDataSize);
+        }
     }
 }
 
@@ -184,6 +205,7 @@ void Font::GatherProperties(std::vector<Property>& outProps)
     //outProps.push_back(Property(DatumType::Asset, "Texture", this, &mTexture, 1, nullptr, int32_t(Texture::GetStaticType())));
 
     outProps.push_back(Property(DatumType::Integer, "Size", this, &mSize, 1, Font::HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Line Spacing", this, &mLineSpacing));
 
     outProps.push_back(Property(DatumType::Bool, "Mipmapped", this, &mMipmapped));
     outProps.push_back(Property(DatumType::Integer, "Filter Type", this, &mFilterType, 1, Font::HandlePropChange, 0, int32_t(FilterType::Count), gFilterEnumStrings));
@@ -223,6 +245,11 @@ int32_t Font::GetWidth() const
 int32_t Font::GetHeight() const
 {
     return mHeight;
+}
+
+float Font::GetLineSpacing() const
+{
+    return mLineSpacing;
 }
 
 const std::vector<Character>& Font::GetCharacters() const
@@ -272,7 +299,7 @@ void Font::RebuildFont()
             if (bakeResult >= 0)
             {
                 // Debug: Write out .png
-                stbi_write_png("C:/Scrap/font_test.png", texWidth, texHeight, 1, tempBitmap, texWidth);
+                //stbi_write_png("C:/Scrap/font_test.png", texWidth, texHeight, 1, tempBitmap, texWidth);
 
                 // 1. Gather font metadata
                 mSize = int32_t(fontSize + 0.5f);

@@ -417,6 +417,7 @@ void Text::UpdateVertexData()
     int32_t fontSize = font->GetSize();
     int32_t fontWidth = font->GetWidth();
     int32_t fontHeight = font->GetHeight();
+    float lineSpacing = font->GetLineSpacing();
     const std::vector<Character>& fontChars = font->GetCharacters();
 
     mVisibleCharacters = 0;
@@ -439,7 +440,7 @@ void Text::UpdateVertexData()
 
     const char* characters = mText.c_str();
     float cursorX = 0.0f;
-    float cursorY = 0.0f + font->GetSize();
+    float cursorY = 0.0f + (font->GetSize() + lineSpacing);
 
     float textScale = GetScaledTextSize() / fontSize;
 
@@ -448,7 +449,7 @@ void Text::UpdateVertexData()
         char textChar = characters[i];
         if (textChar == '\n')
         {
-            cursorY += fontSize;
+            cursorY += (fontSize + lineSpacing);
             cursorX = 0.0f;
 
             JustifyLine(mVertices, mHoriJust, lineVertStart, mVisibleCharacters * TEXT_VERTS_PER_CHAR);

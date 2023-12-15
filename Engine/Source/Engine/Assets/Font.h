@@ -38,6 +38,7 @@ public:
     int32_t GetSize() const;
     int32_t GetWidth() const;
     int32_t GetHeight() const;
+    float GetLineSpacing() const;
     const std::vector<Character>& GetCharacters() const;
     Texture* GetTexture() const;
     bool IsBold() const;
@@ -56,6 +57,7 @@ protected:
     int32_t mHeight = 0;
     std::vector<Character> mCharacters;
     TextureRef mTexture;
+    float mLineSpacing = 0.0f;
     bool mBold = false;
     bool mItalic = false;
 
