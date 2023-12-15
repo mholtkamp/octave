@@ -37,7 +37,7 @@ protected:
     uint32_t mNumOutputLines = 0;
 
     FontRef mFont;
-    float mTextSize = 14.0f;
+    float mTextSize = 20.0f;
     float mTextLifetime = 5.0f;
     float mTextFadeTime = 0.0f;
 

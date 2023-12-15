@@ -401,6 +401,26 @@ void Font::RebuildFont()
                 }
             }
         }
+
+#if 0
+        // Determine the line spacing of the font?
+        // So the lineAdvanceY comes out to be the same as fontSize, which makes sense I guess,
+        // but the line spacing doesn't seem right.
+        // Keeping this code here for reference.
+        {
+            stbtt_fontinfo fontInfo;
+            stbtt_InitFont(&fontInfo, (uint8_t*)mTtfData.GetData(), 0);
+
+            int32_t ascent;
+            int32_t descent;
+            int32_t lineGap;
+            stbtt_GetFontVMetrics(&fontInfo, &ascent, &descent, &lineGap);
+
+            float scale = stbtt_ScaleForPixelHeight(&fontInfo, fontSize);
+            float lineAdvanceY = (ascent - descent + lineGap) * scale;
+            LogDebug("Scale = %.2f, AdvanceY = %.2f", scale, lineAdvanceY);
+        }
+#endif
     }
 #endif
 }
