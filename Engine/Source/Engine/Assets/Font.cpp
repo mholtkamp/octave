@@ -289,6 +289,9 @@ void Font::RebuildFont()
         stbtt_bakedchar charData[96] = {};
         float fontSize = (float)mSize;
 
+        // Clamp to something reasonable
+        fontSize = glm::clamp(fontSize, 4.0f, 96.0f);
+
         while (bakeResult < 0)
         {
             uint8_t* tempBitmap = new uint8_t[texWidth * texHeight];
@@ -397,7 +400,6 @@ void Font::RebuildFont()
                     }
                 }
             }
-
         }
     }
 #endif
