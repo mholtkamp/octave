@@ -35,7 +35,7 @@ public:
 
     void SetStatText(uint32_t index, const char* key, float value, glm::vec4 color, float& y);
 
-    float mTextSize = 20.0f;
+    float mTextSize = 14.0f;
 
     std::vector<Text*> mStatKeyTexts;
     std::vector<Text*> mStatValueTexts;

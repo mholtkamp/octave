@@ -292,12 +292,25 @@ void Font::RebuildFont()
         // Clamp to something reasonable
         fontSize = glm::clamp(fontSize, 4.0f, 96.0f);
 
+        // Compute the em scale factor that we need to use to produce proper sized bitmap.
+        float emFontSize = fontSize;
+
+        {
+            stbtt_fontinfo fontInfo;
+            stbtt_InitFont(&fontInfo, (uint8_t*)mTtfData.GetData(), 0);
+
+            float normalScale = stbtt_ScaleForPixelHeight(&fontInfo, fontSize);
+            float emScale = stbtt_ScaleForMappingEmToPixels(&fontInfo, fontSize);
+
+            emFontSize = (emScale / normalScale) * fontSize;
+        }
+
         while (bakeResult < 0)
         {
             uint8_t* tempBitmap = new uint8_t[texWidth * texHeight];
             memset(tempBitmap, 0, texWidth * texHeight);
 
-            bakeResult = stbtt_BakeFontBitmap((uint8_t*)mTtfData.GetData(), 0, fontSize, tempBitmap, texWidth, texHeight, 32, 96, charData); // no guarantee this fits!
+            bakeResult = stbtt_BakeFontBitmap((uint8_t*)mTtfData.GetData(), 0, emFontSize, tempBitmap, texWidth, texHeight, 32, 96, charData); // no guarantee this fits!
 
             if (bakeResult >= 0)
             {
@@ -401,26 +414,6 @@ void Font::RebuildFont()
                 }
             }
         }
-
-#if 0
-        // Determine the line spacing of the font?
-        // So the lineAdvanceY comes out to be the same as fontSize, which makes sense I guess,
-        // but the line spacing doesn't seem right.
-        // Keeping this code here for reference.
-        {
-            stbtt_fontinfo fontInfo;
-            stbtt_InitFont(&fontInfo, (uint8_t*)mTtfData.GetData(), 0);
-
-            int32_t ascent;
-            int32_t descent;
-            int32_t lineGap;
-            stbtt_GetFontVMetrics(&fontInfo, &ascent, &descent, &lineGap);
-
-            float scale = stbtt_ScaleForPixelHeight(&fontInfo, fontSize);
-            float lineAdvanceY = (ascent - descent + lineGap) * scale;
-            LogDebug("Scale = %.2f, AdvanceY = %.2f", scale, lineAdvanceY);
-        }
-#endif
     }
 #endif
 }
