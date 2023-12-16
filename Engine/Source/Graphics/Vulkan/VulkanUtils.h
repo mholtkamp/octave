@@ -33,6 +33,8 @@ struct Bounds;
 
 VkFormat ConvertPixelFormat(PixelFormat pixelFormat);
 
+UniformBlock WriteUniformBlock(void* data, uint32_t size);
+
 void CreateBuffer(
     VkDeviceSize size,
     VkBufferUsageFlags usage,

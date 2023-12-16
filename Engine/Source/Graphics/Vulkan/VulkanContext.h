@@ -145,6 +145,9 @@ public:
     uint32_t GetSceneWidth();
     uint32_t GetSceneHeight();
 
+    const VkPhysicalDeviceProperties& GetDeviceProperties() const;
+    UniformBuffer* GetFrameUniformBuffer();
+
 private:
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -158,7 +161,8 @@ private:
     void CreateSurface();
     void CreateLogicalDevice();
     void CreateImageViews();
-    void CreateGlobalUniformBuffer();
+    void CreateFrameUniformBuffer();
+    void DestroyFrameUniformBuffer();
     void CreateGlobalDescriptorSet();
     void CreateRenderPass();
     void CreatePipelineCache();
@@ -253,10 +257,10 @@ private:
     Pipeline* mPipelines[(size_t)PipelineId::Count] = {};
 
     // Shader Data
-    UniformBuffer* mGlobalUniformBuffer = nullptr;
     DescriptorSet* mGlobalDescriptorSet = nullptr;
     DescriptorSet* mDebugDescriptorSet = nullptr;
     DescriptorSet* mPostProcessDescriptorSet = nullptr;
+    UniformBuffer* mFrameUniformBuffer = nullptr;
     GlobalUniformData mGlobalUniformData;
 
     // Destroy Queue
@@ -304,6 +308,7 @@ private:
     float mResolutionScale = 1.0f;
     uint32_t mSceneWidth = 0;
     uint32_t mSceneHeight = 0;
+    VkPhysicalDeviceProperties mDeviceProperties;
 
 #if EDITOR
 public:

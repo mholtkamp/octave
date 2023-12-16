@@ -12,6 +12,7 @@
 
 class Buffer;
 class UniformBuffer;
+struct UniformBlock;
 
 enum class DescriptorType
 {
@@ -28,6 +29,8 @@ struct DescriptorBinding
 {
     DescriptorType mType = DescriptorType::Count;
     void* mObject = nullptr;
+    uint32_t mOffset = 0;
+    uint32_t mSize = 0; // Only filled for Uniform Blocks
     std::vector<Image*> mImageArray;
 };
 
@@ -41,6 +44,7 @@ public:
     void UpdateImageDescriptor(int32_t binding, Image* image);
     void UpdateImageArrayDescriptor(int32_t binding, const std::vector<Image*>& imageArray);
     void UpdateUniformDescriptor(int32_t binding, UniformBuffer* uniformBuffer);
+    void UpdateUniformDescriptor(int32_t binding, const UniformBlock& block);
     void UpdateStorageBufferDescriptor(int32_t binding, Buffer* storageBuffer);
     void UpdateStorageImageDescriptor(int32_t binding, Image* storageImage);
 

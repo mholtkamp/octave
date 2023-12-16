@@ -69,6 +69,15 @@ VkFormat ConvertPixelFormat(PixelFormat pixelFormat)
     return format;
 }
 
+UniformBlock WriteUniformBlock(void* data, uint32_t size)
+{
+    UniformBuffer* uniformBuffer = GetVulkanContext()->GetFrameUniformBuffer();
+    UniformBlock retBlock = uniformBuffer->AllocBlock(size);
+    memcpy(retBlock.mData, data, size);
+
+    return retBlock;
+}
+
 void CreateBuffer(
     VkDeviceSize size,
     VkBufferUsageFlags usage,
@@ -1091,7 +1100,6 @@ void CreateMaterialResource(Material* material)
     MaterialResource* resource = material->GetResource();
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Material);
 
-    resource->mUniformBuffer = new UniformBuffer(sizeof(MaterialData), "Material Uniforms");
     resource->mDescriptorSet = new DescriptorSet(layout);
 
     UpdateMaterialResource(material);
@@ -1100,12 +1108,6 @@ void CreateMaterialResource(Material* material)
 void DestroyMaterialResource(Material* material)
 {
     MaterialResource* resource = material->GetResource();
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
 
     if (resource->mDescriptorSet != nullptr)
     {
@@ -1129,6 +1131,8 @@ void BindMaterialResource(Material* material, Pipeline* pipeline)
 
 void UpdateMaterialResource(Material* material)
 {
+    // This should only happen once per frame per material.
+
     MaterialResource* resource = material->GetResource();
 
     Texture* textures[4] = {};
@@ -1141,12 +1145,12 @@ void UpdateMaterialResource(Material* material)
     MaterialData ubo = {};
     WriteMaterialUniformData(ubo, material);
 
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+    UniformBlock block = WriteUniformBlock(&ubo, sizeof(ubo));
 
     // Update descriptor bindings
     Renderer* renderer = Renderer::Get();
     OCT_ASSERT(resource->mDescriptorSet != nullptr);
-    resource->mDescriptorSet->UpdateUniformDescriptor(MD_UNIFORM_BUFFER, resource->mUniformBuffer);
+    resource->mDescriptorSet->UpdateUniformDescriptor(MD_UNIFORM_BUFFER, block);
 
     for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
     {
@@ -1307,21 +1311,12 @@ void CreateStaticMeshCompResource(StaticMesh3D* staticMeshComp)
     StaticMeshCompResource* resource = staticMeshComp->GetResource();
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Geometry);
 
-    resource->mUniformBuffer = new UniformBuffer(sizeof(GeometryData), "Geometry Uniforms");
     resource->mDescriptorSet = new DescriptorSet(layout);
-
-    resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, resource->mUniformBuffer);
 }
 
 void DestroyStaticMeshCompResource(StaticMesh3D* staticMeshComp)
 {
     StaticMeshCompResource* resource = staticMeshComp->GetResource();
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
 
     if (resource->mDescriptorSet != nullptr)
     {
@@ -1345,7 +1340,8 @@ void UpdateStaticMeshCompResource(StaticMesh3D* staticMeshComp)
 
     GatherGeometryLightUniformData(ubo, staticMeshComp->GetMaterial(), staticMeshComp->GetBounds(), staticMeshComp);
 
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+    UniformBlock block = WriteUniformBlock(&ubo, sizeof(ubo));
+    resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, block);
 }
 
 void UpdateStaticMeshCompResourceColors(StaticMesh3D* staticMeshComp)
@@ -1465,24 +1461,13 @@ void CreateSkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp)
 {
     SkeletalMeshCompResource* resource = skeletalMeshComp->GetResource();
 
-    size_t bufferSize = IsCpuSkinningRequired(skeletalMeshComp) ? sizeof(GeometryData) : sizeof(SkinnedGeometryData);
-    resource->mUniformBuffer = new UniformBuffer(bufferSize, "Skinned Geometry Uniforms");
-
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(1);
     resource->mDescriptorSet = new DescriptorSet(layout);
-
-    resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, resource->mUniformBuffer);
 }
 
 void DestroySkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp)
 {
     SkeletalMeshCompResource* resource = skeletalMeshComp->GetResource();
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
 
     if (resource->mDescriptorSet != nullptr)
     {
@@ -1556,7 +1541,8 @@ void UpdateSkeletalMeshCompUniformBuffer(SkeletalMesh3D* skeletalMeshComp)
         }
         ubo.mNumBoneInfluences = numBoneInfluences;
 
-        resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+        UniformBlock block = WriteUniformBlock(&ubo, sizeof(ubo));
+        resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, block);
     }
     else
     {
@@ -1564,7 +1550,8 @@ void UpdateSkeletalMeshCompUniformBuffer(SkeletalMesh3D* skeletalMeshComp)
         WriteGeometryUniformData(ubo, world, skeletalMeshComp, transform);
         GatherGeometryLightUniformData(ubo, skeletalMeshComp->GetMaterial(), skeletalMeshComp->GetBounds());
 
-        resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+        UniformBlock block = WriteUniformBlock(&ubo, sizeof(ubo));
+        resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, block);
     }
 }
 
@@ -1692,23 +1679,13 @@ void CreateTextMeshCompResource(TextMesh3D* textMeshComp)
 {
     TextMeshCompResource* resource = textMeshComp->GetResource();
 
-    resource->mUniformBuffer = new UniformBuffer(sizeof(GeometryData), "Text Geometry Uniforms");
-
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(1);
     resource->mDescriptorSet = new DescriptorSet(layout);
-
-    resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, resource->mUniformBuffer);
 }
 
 void DestroyTextMeshCompResource(TextMesh3D* textMeshComp)
 {
     TextMeshCompResource* resource = textMeshComp->GetResource();
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
 
     if (resource->mDescriptorSet != nullptr)
     {
@@ -1804,30 +1781,21 @@ void UpdateTextMeshCompUniformBuffer(TextMesh3D* textMeshComp)
     WriteGeometryUniformData(ubo, world, textMeshComp, textMeshComp->GetRenderTransform());
     GatherGeometryLightUniformData(ubo, textMeshComp->GetMaterial(), textMeshComp->GetBounds());
 
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+    UniformBlock block = WriteUniformBlock(&ubo, sizeof(ubo));
+    resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, block);
 }
 
 void CreateParticleCompResource(Particle3D* particleComp)
 {
     ParticleCompResource* resource = particleComp->GetResource();
 
-    resource->mUniformBuffer = new UniformBuffer(sizeof(GeometryData), "Particle Geometry Uniforms");
-
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(1);
     resource->mDescriptorSet = new DescriptorSet(layout);
-
-    resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, resource->mUniformBuffer);
 }
 
 void DestroyParticleCompResource(Particle3D* particleComp)
 {
     ParticleCompResource* resource = particleComp->GetResource();
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
 
     if (resource->mDescriptorSet != nullptr)
     {
@@ -1865,7 +1833,8 @@ void UpdateParticleCompResource(Particle3D* particleComp)
     WriteGeometryUniformData(ubo, world, particleComp, transform);
     GatherGeometryLightUniformData(ubo, particleComp->GetMaterial(), particleComp->GetBounds());
 
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+    UniformBlock block = WriteUniformBlock(&ubo, sizeof(ubo));
+    resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, block);
 }
 
 void UpdateParticleCompVertexBuffer(Particle3D* particleComp, const std::vector<VertexParticle>& vertices)
@@ -1993,9 +1962,6 @@ void CreateQuadResource(Quad* quad)
 
     OCT_ASSERT(resource->mVertexBuffer == nullptr);
     resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, 4 * sizeof(VertexUI), "Quad Vertices");
-
-    OCT_ASSERT(resource->mUniformBuffer == nullptr);
-    resource->mUniformBuffer = new UniformBuffer(sizeof(QuadUniformData), "Quad Uniforms");
     
     OCT_ASSERT(resource->mDescriptorSet == nullptr);
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Quad)->GetDescriptorSetLayout(1);
@@ -2012,12 +1978,6 @@ void DestroyQuadResource(Quad* quad)
     {
         GetDestroyQueue()->Destroy(resource->mVertexBuffer);
         resource->mVertexBuffer = nullptr;
-    }
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
     }
 
     if (resource->mDescriptorSet != nullptr)
@@ -2037,12 +1997,12 @@ void UpdateQuadResource(Quad* quad)
     QuadUniformData ubo = {};
     ubo.mTransform = glm::mat4(quad->GetTransform());
     ubo.mColor = quad->GetColor();
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+    UniformBlock block = WriteUniformBlock(&ubo, sizeof(ubo));
 
     // Descriptor Set
     Renderer* renderer = Renderer::Get();
     Texture* texture = quad->GetTexture() ? quad->GetTexture() : renderer->mWhiteTexture.Get<Texture>();
-    resource->mDescriptorSet->UpdateUniformDescriptor(0, resource->mUniformBuffer);
+    resource->mDescriptorSet->UpdateUniformDescriptor(0, block);
     resource->mDescriptorSet->UpdateImageDescriptor(1, texture->GetResource()->mImage);
 }
 
@@ -2070,9 +2030,6 @@ void CreateTextResource(Text* text)
 
     CreateTextResourceVertexBuffer(text);
 
-    OCT_ASSERT(resource->mUniformBuffer == nullptr);
-    resource->mUniformBuffer = new UniformBuffer(sizeof(TextUniformData), "Text Uniforms");
-
     OCT_ASSERT(resource->mDescriptorSet == nullptr);
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Text)->GetDescriptorSetLayout(1);
     resource->mDescriptorSet = new DescriptorSet(layout);
@@ -2086,12 +2043,6 @@ void DestroyTextResource(Text* text)
     TextResource* resource = text->GetResource();
 
     DestroyTextResourceVertexBuffer(text);
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
 
     if (resource->mDescriptorSet != nullptr)
     {
@@ -2145,7 +2096,7 @@ void UpdateTextResourceUniformData(Text* text)
     ubo.mDistanceField = false;
     ubo.mEffect = 0;
 
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+    UniformBlock block = WriteUniformBlock(&ubo, sizeof(ubo));
 
     // Descriptors
     Renderer* renderer = Renderer::Get();
@@ -2158,7 +2109,7 @@ void UpdateTextResourceUniformData(Text* text)
         texture = font->GetTexture();
     }
 
-    resource->mDescriptorSet->UpdateUniformDescriptor(0, resource->mUniformBuffer);
+    resource->mDescriptorSet->UpdateUniformDescriptor(0, block);
     resource->mDescriptorSet->UpdateImageDescriptor(1, texture->GetResource()->mImage);
 }
 
@@ -2211,9 +2162,6 @@ void CreatePolyResource(Poly* poly)
         resource->mNumVerts = numVerts;
     }
 
-    OCT_ASSERT(resource->mUniformBuffer == nullptr);
-    resource->mUniformBuffer = new UniformBuffer(sizeof(PolyUniformData), "Poly Uniforms");
-
     OCT_ASSERT(resource->mDescriptorSet == nullptr);
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Poly)->GetDescriptorSetLayout(1);
     resource->mDescriptorSet = new DescriptorSet(layout);
@@ -2231,12 +2179,6 @@ void DestroyPolyResource(Poly* poly)
         GetDestroyQueue()->Destroy(resource->mVertexBuffer);
         resource->mVertexBuffer = nullptr;
         resource->mNumVerts = 0;
-    }
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
     }
 
     if (resource->mDescriptorSet != nullptr)
@@ -2258,12 +2200,12 @@ void UpdatePolyResourceUniformData(Poly* poly)
     ubo.mY = poly->GetRect().mY;
     ubo.mPad0 = 1337.0f;
     ubo.mPad1 = 1337.0f;
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+    UniformBlock block = WriteUniformBlock(&ubo, sizeof(ubo));
 
     // Descriptor Set
     Renderer* renderer = Renderer::Get();
     Texture* texture = poly->GetTexture() ? poly->GetTexture() : renderer->mWhiteTexture.Get<Texture>();
-    resource->mDescriptorSet->UpdateUniformDescriptor(0, resource->mUniformBuffer);
+    resource->mDescriptorSet->UpdateUniformDescriptor(0, block);
     resource->mDescriptorSet->UpdateImageDescriptor(1, texture->GetResource()->mImage);
 }
 

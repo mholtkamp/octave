@@ -116,6 +116,8 @@ void VulkanContext::Initialize()
     CreateImageViews();
     CreateCommandPool();
 
+    CreateFrameUniformBuffer();
+
     CreateShadowMapImage();
     CreateSceneColorImage();
     CreateDepthImage();
@@ -217,6 +219,8 @@ void VulkanContext::Destroy()
 
     DestroyPipelines();
     DestroyPipelineCache();
+
+    DestroyFrameUniformBuffer();
 
     mDestroyQueue.FlushAll();
 
@@ -356,6 +360,9 @@ void VulkanContext::EndFrame()
     // Destroy anything that was queued from two frames ago.
     // It should be safe if we waited to acquire the swapchain image.
     mDestroyQueue.Flush(nextFrameIndex);
+
+    // Reset the head offset for our frame uniform buffer.
+    mFrameUniformBuffer->Reset(nextFrameIndex);
 
     mFrameIndex = nextFrameIndex;
     mFrameNumber++;
@@ -642,9 +649,6 @@ void VulkanContext::DestroySwapchain()
 
     GetDestroyQueue()->Destroy(mSceneColorImage);
     mSceneColorImage = nullptr;
-
-    GetDestroyQueue()->Destroy(mGlobalUniformBuffer);
-    mGlobalUniformBuffer = nullptr;
 
     GetDestroyQueue()->Destroy(mGlobalDescriptorSet);
     mGlobalDescriptorSet = nullptr;
@@ -1159,17 +1163,17 @@ void VulkanContext::PickPhysicalDevice()
         }
     }
 
-    VkPhysicalDeviceProperties properties;
-    vkGetPhysicalDeviceProperties(mPhysicalDevice, &properties);
+    mDeviceProperties = {};
+    vkGetPhysicalDeviceProperties(mPhysicalDevice, &mDeviceProperties);
 
 #if (PLATFORM_WINDOWS || PLATFORM_LINUX)
-    if (properties.limits.maxPerStageDescriptorSampledImages >= PATH_TRACE_MAX_TEXTURES)
+    if (mDeviceProperties.limits.maxPerStageDescriptorSampledImages >= PATH_TRACE_MAX_TEXTURES)
     {
         mSupportsRayTracing = true;
     }
 #endif
 
-    mTimestampPeriod = properties.limits.timestampPeriod;
+    mTimestampPeriod = mDeviceProperties.limits.timestampPeriod;
 }
 
 void VulkanContext::CreateLogicalDevice()
@@ -1255,6 +1259,23 @@ void VulkanContext::CreateImageViews()
 
         SetDebugObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)mSwapchainImageViews[i], "Swapchain Image View");
     }
+}
+
+void VulkanContext::CreateFrameUniformBuffer()
+{
+    mFrameUniformBuffer = new UniformBuffer(128 * 1024 * 1024, "Frame Uniform Buffer");
+
+    // Leave these buffers mapped forever?
+    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    {
+        mFrameUniformBuffer->GetBuffer(i)->Map();
+    }
+}
+
+void VulkanContext::DestroyFrameUniformBuffer()
+{
+    GetDestroyQueue()->Destroy(mFrameUniformBuffer);
+    mFrameUniformBuffer = nullptr;
 }
 
 void VulkanContext::CreateSceneColorImage()
@@ -1796,11 +1817,6 @@ void VulkanContext::CreateDepthImage()
     DeviceWaitIdle();
 }
 
-void VulkanContext::CreateGlobalUniformBuffer()
-{
-    mGlobalUniformBuffer = new UniformBuffer(sizeof(GlobalUniformData), "Global Uniforms");
-}
-
 void VulkanContext::UpdateGlobalUniformData()
 {
     // Update the camera
@@ -1941,18 +1957,15 @@ void VulkanContext::EnableMaterials(bool enable)
 
 void VulkanContext::UpdateGlobalDescriptorSet()
 {
-    mGlobalUniformBuffer->Update(&mGlobalUniformData, sizeof(GlobalUniformData));
+    UniformBlock block = WriteUniformBlock(&mGlobalUniformData, sizeof(GlobalUniformData));
+    mGlobalDescriptorSet->UpdateUniformDescriptor(GLD_UNIFORM_BUFFER, block);
     mGlobalDescriptorSet->UpdateImageDescriptor(GLD_SHADOW_MAP, mShadowMapImage);
 }
 
 void VulkanContext::CreateGlobalDescriptorSet()
 {
-    CreateGlobalUniformBuffer();
-
     VkDescriptorSetLayout layout = GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(0);
     mGlobalDescriptorSet = new DescriptorSet(layout);
-    mGlobalDescriptorSet->UpdateUniformDescriptor(GLD_UNIFORM_BUFFER, mGlobalUniformBuffer);
-    mGlobalDescriptorSet->UpdateImageDescriptor(GLD_SHADOW_MAP, mShadowMapImage);
 
     UpdateGlobalDescriptorSet();
 }
@@ -2062,7 +2075,7 @@ void VulkanContext::CreateFences()
 void VulkanContext::CreateDescriptorPool()
 {
     VkDescriptorPoolSize poolSizes[4] = {};
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     poolSizes[0].descriptorCount = MAX_UNIFORM_BUFFER_DESCRIPTORS;
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[1].descriptorCount = MAX_SAMPLER_DESCRIPTORS;
@@ -2413,6 +2426,16 @@ void VulkanContext::DestroyDebugCallback()
             DestroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
         }
     }
+}
+
+const VkPhysicalDeviceProperties& VulkanContext::GetDeviceProperties() const
+{
+    return mDeviceProperties;
+}
+
+UniformBuffer* VulkanContext::GetFrameUniformBuffer()
+{
+    return mFrameUniformBuffer;
 }
 
 DescriptorSetArena& VulkanContext::GetMeshDescriptorSetArena()

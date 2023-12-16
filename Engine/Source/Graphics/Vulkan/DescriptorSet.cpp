@@ -68,6 +68,18 @@ void DescriptorSet::UpdateUniformDescriptor(int32_t binding, UniformBuffer* unif
     mBindings[binding].mType = DescriptorType::Uniform;
     mBindings[binding].mObject = uniformBuffer;
     mBindings[binding].mImageArray.clear();
+    mBindings[binding].mSize = (uint32_t)uniformBuffer->GetSize();
+    MarkDirty();
+}
+
+void DescriptorSet::UpdateUniformDescriptor(int32_t binding, const UniformBlock& block)
+{
+    OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
+    mBindings[binding].mType = DescriptorType::Uniform;
+    mBindings[binding].mObject = block.mUniformBuffer;
+    mBindings[binding].mOffset = block.mOffset;
+    mBindings[binding].mSize = block.mSize;
+    mBindings[binding].mImageArray.clear();
     MarkDirty();
 }
 
@@ -99,6 +111,17 @@ void DescriptorSet::Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pi
         mDirty[frameIndex] = false;
     }
 
+    static std::vector<uint32_t> dynOffsets;
+    dynOffsets.clear();
+    for (uint32_t i = 0; i < MAX_DESCRIPTORS_PER_SET; ++i)
+    {
+        // We use a dynamic buffer for uniforms
+        if (mBindings[i].mType == DescriptorType::Uniform)
+        {
+            dynOffsets.push_back(mBindings[i].mOffset);
+        }
+    }
+
     vkCmdBindDescriptorSets(
         cb,
         bindPoint,
@@ -106,8 +129,8 @@ void DescriptorSet::Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pi
         index,
         1,
         &mDescriptorSets[frameIndex],
-        0,
-        nullptr);
+        (uint32_t)dynOffsets.size(),
+        dynOffsets.data());
 }
 
 VkDescriptorSet DescriptorSet::Get()
@@ -191,7 +214,7 @@ void DescriptorSet::RefreshBindings(uint32_t frameIndex)
 
                 VkDescriptorBufferInfo bufferInfo = {};
                 bufferInfo.buffer = uniformBuffer->Get(frameIndex);
-                bufferInfo.range = uniformBuffer->GetBuffer(frameIndex)->GetSize();
+                bufferInfo.range = binding.mSize;
                 bufferInfo.offset = 0;
 
                 VkWriteDescriptorSet descriptorWrite = {};
@@ -199,7 +222,7 @@ void DescriptorSet::RefreshBindings(uint32_t frameIndex)
                 descriptorWrite.dstSet = mDescriptorSets[frameIndex];
                 descriptorWrite.dstBinding = i;
                 descriptorWrite.dstArrayElement = 0;
-                descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
                 descriptorWrite.descriptorCount = 1;
                 descriptorWrite.pBufferInfo = &bufferInfo;
 
