@@ -1992,7 +1992,7 @@ void CreateQuadResource(Quad* quad)
     QuadResource* resource = quad->GetResource();
 
     OCT_ASSERT(resource->mVertexBuffer == nullptr);
-    resource->mVertexBuffer = new Buffer(BufferType::Vertex, 4 * sizeof(VertexUI), "Quad Vertices");
+    resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, 4 * sizeof(VertexUI), "Quad Vertices");
 
     OCT_ASSERT(resource->mUniformBuffer == nullptr);
     resource->mUniformBuffer = new UniformBuffer(sizeof(QuadUniformData), "Quad Uniforms");
@@ -2106,7 +2106,7 @@ void CreateTextResourceVertexBuffer(Text* text)
 
     if (text->GetText().size() > 0 && text->GetNumCharactersAllocated() > 0)
     {
-        resource->mVertexBuffer = new Buffer(BufferType::Vertex, text->GetNumCharactersAllocated() * TEXT_VERTS_PER_CHAR * sizeof(VertexUI), "Text Vertex Buffer");
+        resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, text->GetNumCharactersAllocated() * TEXT_VERTS_PER_CHAR * sizeof(VertexUI), "Text Vertex Buffer");
         resource->mNumBufferCharsAllocated = text->GetNumCharactersAllocated();
     }
 }
@@ -2207,7 +2207,7 @@ void CreatePolyResource(Poly* poly)
     if (numVerts > 0)
     {
         OCT_ASSERT(resource->mVertexBuffer == nullptr);
-        resource->mVertexBuffer = new Buffer(BufferType::Vertex, numVerts * sizeof(VertexUI), "Poly Vertices");
+        resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, numVerts * sizeof(VertexUI), "Poly Vertices");
         resource->mNumVerts = numVerts;
     }
 
@@ -2286,7 +2286,7 @@ void UpdatePolyResourceVertexData(Poly* poly)
     {
         if (resource->mVertexBuffer == nullptr)
         {
-            resource->mVertexBuffer = new Buffer(BufferType::Vertex, numVerts * sizeof(VertexUI), "Poly Vertices");
+            resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, numVerts * sizeof(VertexUI), "Poly Vertices");
             resource->mNumVerts = numVerts;
         }
 

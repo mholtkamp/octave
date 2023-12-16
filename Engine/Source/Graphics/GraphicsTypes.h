@@ -184,7 +184,7 @@ struct TextMeshCompResource
 struct QuadResource
 {
 #if API_VULKAN
-    Buffer* mVertexBuffer = nullptr;
+    MultiBuffer* mVertexBuffer = nullptr;
     UniformBuffer* mUniformBuffer = nullptr;
     DescriptorSet* mDescriptorSet = nullptr;
 #endif
@@ -193,7 +193,7 @@ struct QuadResource
 struct PolyResource
 {
 #if API_VULKAN
-    Buffer* mVertexBuffer = nullptr;
+    MultiBuffer* mVertexBuffer = nullptr;
     UniformBuffer* mUniformBuffer = nullptr;
     DescriptorSet* mDescriptorSet = nullptr;
     uint32_t mNumVerts = 0;
@@ -203,7 +203,7 @@ struct PolyResource
 struct TextResource
 {
 #if API_VULKAN
-    Buffer* mVertexBuffer = nullptr;
+    MultiBuffer* mVertexBuffer = nullptr;
     UniformBuffer* mUniformBuffer = nullptr;
     DescriptorSet* mDescriptorSet = nullptr;
     uint32_t mNumBufferCharsAllocated = 0;

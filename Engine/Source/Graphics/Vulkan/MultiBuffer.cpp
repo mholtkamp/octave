@@ -52,6 +52,11 @@ Buffer* MultiBuffer::GetBuffer(uint32_t frameIndex)
     return mBuffers[frameIndex];
 }
 
+size_t MultiBuffer::GetSize() const
+{
+    return mBuffers[0]->GetSize();
+}
+
 UniformBuffer::UniformBuffer(size_t size, const char* debugName, const void* srcData) : 
     MultiBuffer(BufferType::Uniform, size, debugName, srcData)
 {

@@ -21,6 +21,8 @@ public:
     Buffer* GetBuffer();
     Buffer* GetBuffer(uint32_t frameIndex);
 
+    size_t GetSize() const;
+
 protected:
 
     friend class DestroyQueue;
