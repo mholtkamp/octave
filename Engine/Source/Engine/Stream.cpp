@@ -85,6 +85,12 @@ void Stream::Reset()
     mExternal = false;
 }
 
+void Stream::Resize(uint32_t size)
+{
+    OCT_ASSERT(!mExternal);
+    Grow(size);
+}
+
 void Stream::ReadFile(const char* path, bool isAsset, int32_t maxSize)
 {
     OCT_ASSERT(!mExternal);

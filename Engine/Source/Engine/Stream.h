@@ -28,6 +28,7 @@ public:
     uint32_t GetPos();
     void SetPos(uint32_t pos);
     void Reset();
+    void Resize(uint32_t size);
 
     void ReadFile(const char* path, bool isAsset, int32_t maxSize = 0);
     void WriteFile(const char* path);

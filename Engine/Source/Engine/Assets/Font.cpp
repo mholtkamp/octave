@@ -109,6 +109,7 @@ void Font::LoadStream(Stream& stream, Platform platform)
     uint32_t ttfDataSize = stream.ReadUint32();
     if (ttfDataSize > 0)
     {
+        mTtfData.Resize(ttfDataSize);
         mTtfData.ReadBytes((uint8_t*)stream.GetData() + stream.GetPos(), ttfDataSize);
         stream.SetPos(stream.GetPos() + ttfDataSize);
     }
@@ -149,7 +150,7 @@ void Font::SaveStream(Stream& stream, Platform platform)
 
     if (validTexture)
     {
-        stream.WriteAsset(mTexture);
+        texture->SaveStream(stream, platform);
     }
 
     if (platform == Platform::Count)
