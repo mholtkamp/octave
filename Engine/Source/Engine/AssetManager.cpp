@@ -492,6 +492,7 @@ void AssetManager::LoadAll()
 void AssetManager::RegisterTransientAsset(Asset* asset)
 {
     mTransientAssets.push_back(asset);
+    asset->SetTransient(true);
 }
 
 Asset* AssetManager::ImportEngineAsset(TypeId type, AssetDir* dir, const std::string& filename, ImportOptions* options)

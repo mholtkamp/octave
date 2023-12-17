@@ -4,14 +4,6 @@
 
 #define INDEX(x) static_cast<uint32_t>(x)
 
-enum TextureSlot
-{
-    TEXTURE_0,
-    TEXTURE_1,
-    TEXTURE_2,
-    TEXTURE_3
-};
-
 enum GlobalDescriptor
 {
     GLD_UNIFORM_BUFFER,

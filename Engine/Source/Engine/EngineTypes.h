@@ -55,30 +55,12 @@ enum class CollisionShape : uint32_t
     Num
 };
 
-enum class ShadingModel : uint32_t
-{
-    Unlit,
-    Lit,
-    Toon,
-
-    Count
-};
-
 enum class BlendMode : uint32_t
 {
     Opaque,
     Masked,
     Translucent,
     Additive,
-
-    Count
-};
-
-enum class VertexColorMode : uint32_t
-{
-    None,
-    Modulate,
-    TextureBlend,
 
     Count
 };

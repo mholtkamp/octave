@@ -4,12 +4,21 @@
 FORCE_LINK_DEF(MaterialInstance);
 DEFINE_ASSET(MaterialInstance);
 
-MaterialInstance* MaterialInstance::New(const Material* src)
+MaterialInstance* MaterialInstance::New(MaterialInterface* src)
 {
     MaterialInstance* ret = NewTransientAsset<MaterialInstance>();
     if (src != nullptr)
     {
-        ret->mParams = src->GetParams();
+        Material* baseMaterial = src->IsBase() ? (Material*)src : nullptr;
+
+        if (!baseMaterial)
+        {
+            MaterialInstance* srcInst = src->IsInstance() ? (MaterialInstance*)src : nullptr;
+            baseMaterial = srcInst->GetBaseMaterial();
+        }
+
+        ret->SetBaseMaterial(baseMaterial);
+        ret->mParameters = src->GetParameters();
     }
     ret->Create();
 
@@ -26,15 +35,6 @@ MaterialInstance::~MaterialInstance()
 
 }
 
-bool MaterialInstance::IsTransient() const
-{
-    return true;
-}
-
-bool MaterialInstance::IsMaterialInstance() const
-{
-    return true;
-}
 
 void MaterialInstance::SaveStream(Stream& stream)
 {

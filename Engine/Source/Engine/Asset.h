@@ -110,7 +110,8 @@ public:
     virtual glm::vec4 GetTypeColor();
     virtual const char* GetTypeName();
     virtual const char* GetTypeImportExt();
-    virtual bool IsTransient() const;
+    bool IsTransient() const;
+    void SetTransient(bool transient);
 
     static AssetHeader ReadHeader(Stream& stream);
     void WriteHeader(Stream& stream);
@@ -129,6 +130,7 @@ protected:
     bool mLoaded = false;
     bool mEnableRefCount = true;
     bool mEngineAsset = false;
+    bool mTransient = false;
 
     std::string mName = "Asset";
     int32_t mRefCount = 0;

@@ -632,6 +632,9 @@
     <ClCompile Include="Source\Engine\stb_implementation.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Assets\MaterialInterface.cpp">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1247,6 +1250,9 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\CustomImgui.h">
       <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\MaterialInterface.h">
+      <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

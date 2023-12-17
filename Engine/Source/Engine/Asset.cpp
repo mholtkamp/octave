@@ -244,7 +244,12 @@ const char* Asset::GetTypeImportExt()
 
 bool Asset::IsTransient() const
 {
-    return false;
+    return mTransient;
+}
+
+void Asset::SetTransient(bool transient)
+{
+    mTransient = transient;
 }
 
 AssetHeader Asset::ReadHeader(Stream& stream)
