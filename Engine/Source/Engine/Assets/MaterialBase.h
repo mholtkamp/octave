@@ -25,6 +25,11 @@ public:
     virtual glm::vec4 GetTypeColor() override;
     virtual const char* GetTypeName() override;
 
+    virtual bool IsMaterialBase() const override;
+
+    void Compile();
+    void InvalidateCompilation();
+
     BlendMode GetBlendMode() const;
     void SetBlendMode(BlendMode blendMode);
 
@@ -54,8 +59,11 @@ protected:
     int32_t mSortPriority = 0;
     bool mDisableDepthTest = false;
     bool mApplyFog = true;
+    CullMode mCullMode = CullMode::Back;
 
     // Misc
     std::vector<uint8_t> mVertexCode;
     std::vector<uint8_t> mFragmentCode;
+    bool mCompiled = false;
+    bool mCompilationStale = false;
 };

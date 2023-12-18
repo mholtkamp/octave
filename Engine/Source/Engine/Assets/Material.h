@@ -55,6 +55,8 @@ public:
     virtual bool IsMaterialBase() const;
     virtual bool IsMaterialInstance() const;
 
+    std::vector<ShaderParameter>& GetParameters();
+
     void SetScalarParameter(const std::string& name, float value);
     void SetVectorParameter(const std::string& name, glm::vec4 value);
     void SetTextureParameter(const std::string& name, Texture* value);
@@ -62,8 +64,6 @@ public:
     float GetScalarParameter(const std::string& name);
     glm::vec4 GetVectorParameter(const std::string& name);
     Texture* GetTextureParameter(const std::string& name);
-
-    std::vector<ShaderParameter>& GetParameters();
 
 protected:
 

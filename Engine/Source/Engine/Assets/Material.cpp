@@ -1,5 +1,42 @@
 #include "Material.h"
 
+void Material::MarkDirty()
+{
+    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    {
+        mDirty[i] = true;
+    }
+}
+
+void Material::ClearDirty(uint32_t frameIndex)
+{
+    mDirty[frameIndex] = false;
+}
+
+bool Material::IsDirty(uint32_t frameIndex)
+{
+    return mDirty[frameIndex];
+}
+
+MaterialResource* Material::GetResource()
+{
+    return &mResource;
+}
+
+bool Material::IsMaterialBase() const
+{
+    return false;
+}
+
+bool Material::IsMaterialInstance() const
+{
+    return false;
+}
+
+std::vector<ShaderParameter>& Material::GetParameters()
+{
+    return mParameters;
+}
 
 void Material::SetScalarParameter(const std::string& name, float value)
 {

@@ -27,8 +27,11 @@ public:
     MaterialBase* GetBaseMaterial() const;
     void SetBaseMaterial(MaterialBase* material);
 
+    void LinkToBase();
+
 protected:
 
+
     // Property
-    MaterialBase* mBaseMaterial = nullptr;
+    MaterialRef mBaseMaterial;
 };
