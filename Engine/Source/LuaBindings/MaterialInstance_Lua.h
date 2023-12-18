@@ -18,6 +18,9 @@ struct MaterialInstance_Lua
 {
     static int CreateNew(lua_State* L);
 
+    static int GetBaseMaterial(lua_State* L);
+    static int SetBaseMaterial(lua_State* L);
+
     static void Bind();
 };
 
