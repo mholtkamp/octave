@@ -183,7 +183,10 @@ void RayTracer::UpdateRayTracingScene(
             // Add textures and record indices.
             for (uint32_t t = 0; t < MATERIAL_MAX_TEXTURES; ++t)
             {
-                Texture* tex = material->GetTexture((TextureSlot)t);
+                
+                //TODO-LITE-MATERIAL: Get ray tracer working.
+                Texture* tex = nullptr;
+                //Texture* tex = material->GetTexture((TextureSlot)t);
                 Image* img = tex ? tex->GetResource()->mImage : nullptr;
 
                 if (img != nullptr)
@@ -905,7 +908,8 @@ static void AssignInstanceColors(StaticMesh3D* meshComp, std::vector<glm::vec4>&
     Material* material = meshComp->GetMaterial();
     if (material && mesh && colorVerts && mesh->GetNumVertices() == numVerts)
     {
-        texBlend = material->GetVertexColorMode() == VertexColorMode::TextureBlend;
+        //TODO-LITE-MATERIAL: Get ray tracer working.
+        //texBlend = material->GetVertexColorMode() == VertexColorMode::TextureBlend;
     }
 
     for (uint32_t v = 0; v < numVerts; ++v)

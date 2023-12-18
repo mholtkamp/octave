@@ -246,6 +246,8 @@ Pipeline* MaterialPipelineCache::GetPipeline(Material* material, VertexType vert
     static_assert(uint32_t(TevMode::Count) <= 8, "Need to update pipeline id!");
     static_assert(uint32_t(CullMode::Count) <= 4, "Need to update pipeline id!");
 
+    // TODO-LITE-MATERIAL: Get the material pipeline cache working for Lite Materials.
+#if 0
     // Constant values
     uint32_t shadingModel_3 = (uint32_t)material->GetShadingModel();
     uint32_t blendMode_3 = (uint32_t)material->GetBlendMode();
@@ -279,6 +281,9 @@ Pipeline* MaterialPipelineCache::GetPipeline(Material* material, VertexType vert
     id += tev3_3 << 26;
     id += cullMode_2 << 29;
     id += depthless_1 << 31;
+#else
+    uint32_t id = 0;
+#endif
 
     return GetPipeline(id, vertexType);
 }

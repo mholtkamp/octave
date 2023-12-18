@@ -68,7 +68,8 @@ void TextMesh3D::Create()
     // Each frame, the default mat instance is updated so that it's TEXTURE_0 is the font texture
     // And its color is set to mColor.
     mDefaultMatInstance = MaterialInstance::New(LoadAsset<Material>("M_DefaultUnlit"));
-    mDefaultMatInstance.Get<Material>()->SetBlendMode(mBlendMode);
+    //TODO-LITE-MATERIAL: Uncomment this and use a lite material instead of an mat instance.
+    //mDefaultMatInstance.Get<Material>()->SetBlendMode(mBlendMode);
 }
 
 void TextMesh3D::Destroy()

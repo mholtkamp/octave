@@ -142,7 +142,6 @@ struct DrawData
 {
     Node* mNode;
     Material* mMaterial;
-    ShadingModel mShadingModel;
     BlendMode mBlendMode;
     glm::vec3 mPosition;
     Bounds mBounds;
