@@ -42,7 +42,7 @@ bool MaterialBase::HandlePropChange(Datum* datum, uint32_t index, const void* ne
     bool success = false;
 
     materialBase->MarkDirty();
-    materialBase->InvalidateCompilation();
+    materialBase->MarkStale();
 
     return success;
 }
@@ -178,7 +178,7 @@ void MaterialBase::Compile()
 #endif
 }
 
-void MaterialBase::InvalidateCompilation()
+void MaterialBase::MarkStale()
 {
 #if EDITOR
     mCompilationStale = true;
@@ -195,7 +195,7 @@ void MaterialBase::SetBlendMode(BlendMode blendMode)
     if (mBlendMode != blendMode)
     {
         mBlendMode = blendMode;
-        InvalidateCompilation();
+        MarkStale();
     }
 }
 
@@ -209,7 +209,7 @@ void MaterialBase::SetMaskCutoff(float cutoff)
     if (mMaskCutoff != cutoff)
     {
         mMaskCutoff = cutoff;
-        InvalidateCompilation();
+        MarkStale();
     }
 }
 
@@ -223,7 +223,7 @@ void MaterialBase::SetSortPriority(int32_t priority)
     if (mSortPriority != priority)
     {
         mSortPriority = priority;
-        InvalidateCompilation();
+        MarkStale();
     }
 }
 
@@ -237,7 +237,7 @@ void MaterialBase::SetDepthTestDisabled(bool depthTestDis)
     if (mDisableDepthTest != depthTestDis)
     {
         mDisableDepthTest = depthTestDis;
-        InvalidateCompilation();
+        MarkStale();
     }
 }
 
@@ -251,7 +251,7 @@ void MaterialBase::SetApplyFog(bool applyFog)
     if (mApplyFog != applyFog)
     {
         mApplyFog = applyFog;
-        InvalidateCompilation();
+        MarkStale();
     }
 }
 
@@ -265,7 +265,7 @@ void MaterialBase::SetCullMode(CullMode cullMode)
     if (mCullMode != cullMode)
     {
         mCullMode = cullMode;
-        InvalidateCompilation();
+        MarkStale();
     }
 }
 

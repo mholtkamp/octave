@@ -28,7 +28,7 @@ public:
     virtual bool IsMaterialBase() const override;
 
     void Compile();
-    void InvalidateCompilation();
+    void MarkStale();
 
     BlendMode GetBlendMode() const;
     void SetBlendMode(BlendMode blendMode);
