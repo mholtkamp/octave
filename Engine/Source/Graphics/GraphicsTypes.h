@@ -12,6 +12,7 @@
 
 #if API_VULKAN
 extern class VulkanContext* gVulkanContext;
+class Pipeline;
 #endif
 
 struct GraphicsState
@@ -135,6 +136,8 @@ struct MaterialResource
 #if API_VULKAN
     DescriptorSet* mDescriptorSet = nullptr;
     UniformBuffer* mUniformBuffer = nullptr;
+    Pipeline* mPipeline = nullptr;
+    VkDescriptorSetLayout mDescriptorSetLayout = VK_NULL_HANDLE;
 #endif
 };
 

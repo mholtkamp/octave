@@ -320,9 +320,6 @@
     <ClCompile Include="Source\LuaBindings\Rect_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Assets\Material.cpp">
-      <Filter>Source Files\Engine\Assets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\Assets\MaterialInstance.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
@@ -632,7 +629,10 @@
     <ClCompile Include="Source\Engine\stb_implementation.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Assets\MaterialInterface.cpp">
+    <ClCompile Include="Source\Engine\Assets\MaterialBase.cpp">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Assets\Material.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
   </ItemGroup>
@@ -719,12 +719,6 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\Grid.h">
       <Filter>Source Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Assets\Material.h">
-      <Filter>Source Files\Engine\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Assets\MaterialInstance.h">
-      <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Assets\ParticleSystem.h">
       <Filter>Source Files\Engine\Assets</Filter>
@@ -1251,7 +1245,13 @@
     <ClInclude Include="Source\Editor\CustomImgui.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Assets\MaterialInterface.h">
+    <ClInclude Include="Source\Engine\Assets\MaterialBase.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\MaterialInstance.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\Material.h">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
   </ItemGroup>

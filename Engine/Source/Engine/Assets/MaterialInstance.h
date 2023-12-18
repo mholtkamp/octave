@@ -1,48 +1,34 @@
 #pragma once
 
 #include "Assets/Material.h"
-#include "Assets/MaterialInterface.h"
 
-class MaterialInstance : public Asset, public MaterialInterface
+class MaterialBase;
+
+class MaterialInstance : public Material
 {
 public:
 
-    DECLARE_ASSET(MaterialInstance, Asset);
+    DECLARE_ASSET(MaterialInstance, Material);
 
-    static MaterialInstance* New(MaterialInterface* src = nullptr);
+    static MaterialInstance* New(Material* src = nullptr);
 
     MaterialInstance();
     ~MaterialInstance();
 
-    virtual void SaveStream(Stream& stream);
-    virtual void LoadStream(Stream& stream);
+    virtual void SaveStream(Stream& stream, Platform platform) override;
+    virtual void LoadStream(Stream& stream, Platform platform) override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
+    virtual void Create() override;
+    virtual void Destroy() override;
+    virtual void Import(const std::string& path, ImportOptions* options) override;
+    virtual glm::vec4 GetTypeColor() override;
+    virtual const char* GetTypeName() override;
 
-    Material* GetBaseMaterial() const;
-    void SetBaseMaterial(Material* material);
-
-    // Begin MaterialInterface
-    virtual void MarkDirty() override;
-    virtual void ClearDirty(uint32_t frameIndex) override;
-    virtual bool IsDirty(uint32_t frameIndex) override;
-    virtual Material* AsBase() override;
-    virtual MaterialInstance* AsInstance() override;
-    virtual bool IsBase() const override;
-    virtual bool IsInstance() const override;
-    virtual std::vector<ShaderParameter>& GetParameters() override;
-    // End MaterialInterface
+    MaterialBase* GetBaseMaterial() const;
+    void SetBaseMaterial(MaterialBase* material);
 
 protected:
 
     // Property
-    Material* mBaseMaterial = nullptr;
-
-    // Shader Parameters
-    std::vector<ShaderParameter> mParameters;
-
-    // Misc
-    bool mDirty[MAX_FRAMES] = {};
-
-    // Graphics Resource
-    MaterialResource mResource;
+    MaterialBase* mBaseMaterial = nullptr;
 };

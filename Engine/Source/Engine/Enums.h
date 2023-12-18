@@ -18,10 +18,7 @@ enum GeometryDescriptor
 enum MaterialDescriptor
 {
     MD_UNIFORM_BUFFER,
-    MD_TEXTURE_0,
-    MD_TEXTURE_1,
-    MD_TEXTURE_2,
-    MD_TEXTURE_3
+    MD_TEXTURE_START
 };
 
 enum class ProjectionMode : uint8_t

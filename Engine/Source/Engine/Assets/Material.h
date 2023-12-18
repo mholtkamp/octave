@@ -1,5 +1,12 @@
 #pragma once
 
+#include "Asset.h"
+#include "EngineTypes.h"
+#include "Datum.h"
+
+#include "Texture.h"
+#include "AssetRef.h"
+
 #include "Maths.h"
 #include <string>
 #include <vector>
@@ -12,83 +19,58 @@
 #include "EngineTypes.h"
 #include "Vertex.h"
 
-#include "Assets/MaterialInterface.h"
-
-#include "Graphics/GraphicsConstants.h"
-#include "Graphics/GraphicsTypes.h"
-
+class Material;
+class MaterialInstance;
 class Texture;
 
-class Material : public Asset, public MaterialInterface
+enum class ShaderParameterType
+{
+    Scalar,
+    Vector,
+    Texture,
+
+    Count
+};
+
+struct ShaderParameter
+{
+    std::string mName;
+    glm::vec4 mFloatValue = { }; // Holds scalar and vector values.
+    TextureRef mTextureValue; // Only used when Texture param type.
+    ShaderParameterType mType = ShaderParameterType::Count;
+    uint32_t mOffset = 0; // Byte offset for uniforms, binding location for textures.
+};
+
+class Material : public Asset
 {
 public:
 
     DECLARE_ASSET(Material, Asset);
 
-    Material();
-    ~Material();
-
+    void MarkDirty();
+    void ClearDirty(uint32_t frameIndex);
+    bool IsDirty(uint32_t frameIndex);
     MaterialResource* GetResource();
 
-    virtual void LoadStream(Stream& stream, Platform platform) override;
-    virtual void SaveStream(Stream& stream, Platform platform) override;
-    virtual void Create() override;
-    virtual void Destroy() override;
-    virtual void Import(const std::string& path, ImportOptions* options) override;
-    virtual void GatherProperties(std::vector<Property>& outProps) override;
-    virtual glm::vec4 GetTypeColor() override;
-    virtual const char* GetTypeName() override;
+    virtual bool IsMaterialBase() const;
+    virtual bool IsMaterialInstance() const;
 
-    // Begin MaterialInterface
-    virtual void MarkDirty() override;
-    virtual void ClearDirty(uint32_t frameIndex) override;
-    virtual bool IsDirty(uint32_t frameIndex) override;
-    virtual Material* AsBase() override;
-    virtual MaterialInstance* AsInstance() override;
-    virtual bool IsBase() const override;
-    virtual bool IsInstance() const override;
-    virtual std::vector<ShaderParameter>& GetParameters() override;
-    // End MaterialInterface
+    void SetScalarParameter(const std::string& name, float value);
+    void SetVectorParameter(const std::string& name, glm::vec4 value);
+    void SetTextureParameter(const std::string& name, Texture* value);
 
-    BlendMode GetBlendMode() const;
-    void SetBlendMode(BlendMode blendMode);
+    float GetScalarParameter(const std::string& name);
+    glm::vec4 GetVectorParameter(const std::string& name);
+    Texture* GetTextureParameter(const std::string& name);
 
-    float GetMaskCutoff() const;
-    void SetMaskCutoff(float cutoff);
-
-    int32_t GetSortPriority() const;
-    void SetSortPriority(int32_t priority);
-
-    bool IsDepthTestDisabled() const;
-    void SetDepthTestDisabled(bool depthTest);
-
-    bool ShouldApplyFog() const;
-    void SetApplyFog(bool applyFog);
-
-    CullMode GetCullMode() const;
-    void SetCullMode(CullMode cullMode);
-
-    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
+    std::vector<ShaderParameter>& GetParameters();
 
 protected:
 
-    // Properties
-    std::string mShader;
-    BlendMode mBlendMode = BlendMode::Opaque;
-    float mMaskCutoff = 0.5f;
-    int32_t mSortPriority = 0;
-    bool mDisableDepthTest = false;
-    bool mApplyFog = true;
-
-    // Shader Parameters
     std::vector<ShaderParameter> mParameters;
-
-    // Misc
-    std::vector<uint8_t> mVertexCode;
-    std::vector<uint8_t> mFragmentCode;
-
     bool mDirty[MAX_FRAMES] = {};
 
     // Graphics Resource
     MaterialResource mResource;
 };
+

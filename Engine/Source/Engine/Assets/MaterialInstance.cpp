@@ -4,16 +4,16 @@
 FORCE_LINK_DEF(MaterialInstance);
 DEFINE_ASSET(MaterialInstance);
 
-MaterialInstance* MaterialInstance::New(MaterialInterface* src)
+MaterialInstance* MaterialInstance::New(Material* src)
 {
     MaterialInstance* ret = NewTransientAsset<MaterialInstance>();
     if (src != nullptr)
     {
-        Material* baseMaterial = src->IsBase() ? (Material*)src : nullptr;
+        MaterialBase* baseMaterial = src->IsMaterialBase() ? (MaterialBase*)src : nullptr;
 
         if (!baseMaterial)
         {
-            MaterialInstance* srcInst = src->IsInstance() ? (MaterialInstance*)src : nullptr;
+            MaterialInstance* srcInst = src->IsMaterialInstance() ? (MaterialInstance*)src : nullptr;
             baseMaterial = srcInst->GetBaseMaterial();
         }
 
@@ -36,14 +36,12 @@ MaterialInstance::~MaterialInstance()
 }
 
 
-void MaterialInstance::SaveStream(Stream& stream)
+void MaterialInstance::SaveStream(Stream& stream, Platform platform)
 {
-    OCT_ASSERT(0);
-    // Should not be saved
+
 }
 
-void MaterialInstance::LoadStream(Stream& stream)
+void MaterialInstance::LoadStream(Stream& stream, Platform platform)
 {
-    OCT_ASSERT(0);
-    // Should not be loaded.
+
 }
