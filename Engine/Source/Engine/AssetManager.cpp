@@ -582,8 +582,8 @@ void AssetManager::ImportEngineAssets()
         CreateAndRegisterAsset(Material::GetStaticType(), engineMaterials, "M_Default", true);
         AssetStub* defaultUnlitStub = CreateAndRegisterAsset(Material::GetStaticType(), engineMaterials, "M_DefaultUnlit", true);
         Material* defaultUnlitMaterial = (Material*)defaultUnlitStub->mAsset;
-        defaultUnlitMaterial->SetShadingModel(ShadingModel::Unlit);
-		Renderer::Get()->LoadDefaultMaterials();
+        //defaultUnlitMaterial->SetShader("Unlit");
+        Renderer::Get()->LoadDefaultMaterials();
 
         ImportEngineAsset(StaticMesh::GetStaticType(), engineMeshes, "SM_Cone");
         ImportEngineAsset(StaticMesh::GetStaticType(), engineMeshes, "SM_Cube");

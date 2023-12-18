@@ -341,9 +341,6 @@
     <ClCompile Include="Source\Engine\Assets\Texture.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
-    <ClCompile Include="Source\LuaBindings\Material_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
     <ClCompile Include="Source\LuaBindings\MaterialInstance_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
@@ -634,6 +631,15 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\Assets\Material.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\MaterialLite_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\MaterialBase_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Material_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1023,9 +1029,6 @@
     <ClInclude Include="Source\LuaBindings\LuaUtils.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
-    <ClInclude Include="Source\LuaBindings\Material_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
     <ClInclude Include="Source\LuaBindings\MaterialInstance_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
@@ -1253,6 +1256,15 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\Assets\Material.h">
       <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\MaterialLite_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\MaterialBase_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Material_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

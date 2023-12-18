@@ -29,6 +29,13 @@ public:
 
     void LinkToBase();
 
+    virtual BlendMode GetBlendMode() const override;
+    virtual float GetMaskCutoff() const override;
+    virtual int32_t GetSortPriority() const override;
+    virtual bool IsDepthTestDisabled() const override;
+    virtual bool ShouldApplyFog() const override;
+    virtual CullMode GetCullMode() const override;
+
 protected:
 
 

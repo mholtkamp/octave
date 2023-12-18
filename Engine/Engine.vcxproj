@@ -688,6 +688,8 @@
     <ClCompile Include="Source\LuaBindings\Capsule3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\CheckBox_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\ComboBox_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\MaterialBase_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Material_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\NodeRef_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\DirectionalLight3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Font_Lua.cpp" />
@@ -700,7 +702,7 @@
     <ClCompile Include="Source\LuaBindings\Node_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Engine_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\MaterialInstance_Lua.cpp" />
-    <ClCompile Include="Source\LuaBindings\Material_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\MaterialLite_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Maths_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Mesh3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Misc_Lua.cpp" />
@@ -908,6 +910,8 @@
     <ClInclude Include="Source\LuaBindings\Capsule3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\CheckBox_Lua.h" />
     <ClInclude Include="Source\LuaBindings\ComboBox_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\MaterialBase_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\Material_Lua.h" />
     <ClInclude Include="Source\LuaBindings\NodeRef_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Node_Lua.h" />
     <ClInclude Include="Source\LuaBindings\DirectionalLight3d_Lua.h" />
@@ -919,7 +923,7 @@
     <ClInclude Include="Source\LuaBindings\LuaTypeCheck.h" />
     <ClInclude Include="Source\LuaBindings\LuaUtils.h" />
     <ClInclude Include="Source\LuaBindings\MaterialInstance_Lua.h" />
-    <ClInclude Include="Source\LuaBindings\Material_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\MaterialLite_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Maths_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Mesh3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Misc_Lua.h" />

@@ -30,22 +30,18 @@ public:
     void Compile();
     void MarkStale();
 
-    BlendMode GetBlendMode() const;
+    virtual BlendMode GetBlendMode() const override;
+    virtual float GetMaskCutoff() const override;
+    virtual int32_t GetSortPriority() const override;
+    virtual bool IsDepthTestDisabled() const override;
+    virtual bool ShouldApplyFog() const override;
+    virtual CullMode GetCullMode() const override;
+
     void SetBlendMode(BlendMode blendMode);
-
-    float GetMaskCutoff() const;
     void SetMaskCutoff(float cutoff);
-
-    int32_t GetSortPriority() const;
     void SetSortPriority(int32_t priority);
-
-    bool IsDepthTestDisabled() const;
     void SetDepthTestDisabled(bool depthTest);
-
-    bool ShouldApplyFog() const;
     void SetApplyFog(bool applyFog);
-
-    CullMode GetCullMode() const;
     void SetCullMode(CullMode cullMode);
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);

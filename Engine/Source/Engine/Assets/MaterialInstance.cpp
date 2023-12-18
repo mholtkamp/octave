@@ -98,3 +98,39 @@ void MaterialInstance::LinkToBase()
 {
 #error Implement LinkToBase(). Need to grab parent's
 }
+
+BlendMode MaterialInstance::GetBlendMode() const
+{
+    MaterialBase* base = mBaseMaterial.Get<MaterialBase>();
+    return base ? base->GetBlendMode() : BlendMode::Count;
+}
+
+float MaterialInstance::GetMaskCutoff() const
+{
+    MaterialBase* base = mBaseMaterial.Get<MaterialBase>();
+    return base ? base->GetMaskCutoff() : 0.5f;
+}
+
+int32_t MaterialInstance::GetSortPriority() const
+{
+    MaterialBase* base = mBaseMaterial.Get<MaterialBase>();
+    return base ? base->GetSortPriority() : 0;
+}
+
+bool MaterialInstance::IsDepthTestDisabled() const
+{
+    MaterialBase* base = mBaseMaterial.Get<MaterialBase>();
+    return base ? base->IsDepthTestDisabled() : false;
+}
+
+bool MaterialInstance::ShouldApplyFog() const
+{
+    MaterialBase* base = mBaseMaterial.Get<MaterialBase>();
+    return base ? base->ShouldApplyFog() : true;
+}
+
+CullMode MaterialInstance::GetCullMode() const
+{
+    MaterialBase* base = mBaseMaterial.Get<MaterialBase>();
+    return base ? base->GetCullMode() : CullMode::Back;
+}

@@ -101,7 +101,6 @@ public:
     void DeleteNode(Node* node);
     void ImportAsset();
     Asset* ImportAsset(const std::string& path);
-    void ImportScene(const SceneImportOptions& options);
     void BuildData(Platform platform, bool embedded);
     void ClearWorld();
     void DeleteAllNodes();

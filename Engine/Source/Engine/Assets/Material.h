@@ -65,6 +65,13 @@ public:
     glm::vec4 GetVectorParameter(const std::string& name);
     Texture* GetTextureParameter(const std::string& name);
 
+    virtual BlendMode GetBlendMode() const;
+    virtual float GetMaskCutoff() const;
+    virtual int32_t GetSortPriority() const;
+    virtual bool IsDepthTestDisabled() const;
+    virtual bool ShouldApplyFog() const;
+    virtual CullMode GetCullMode() const;
+
 protected:
 
     std::vector<ShaderParameter> mParameters;

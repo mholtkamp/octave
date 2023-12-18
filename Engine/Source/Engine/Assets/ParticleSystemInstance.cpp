@@ -48,11 +48,6 @@ void ParticleSystemInstance::CopyParticleSystem(const ParticleSystem* src)
     SetParams(src->GetParams());
 }
 
-bool ParticleSystemInstance::IsTransient() const
-{
-    return true;
-}
-
 void ParticleSystemInstance::SaveStream(Stream& stream)
 {
     // Do nothing

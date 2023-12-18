@@ -15,8 +15,6 @@ public:
 
     void CopyParticleSystem(const ParticleSystem* src);
 
-    virtual bool IsTransient() const override;
-
     virtual void SaveStream(Stream& stream);
     virtual void LoadStream(Stream& stream);
 };

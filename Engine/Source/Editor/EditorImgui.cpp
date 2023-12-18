@@ -562,33 +562,6 @@ static void CreateNewAsset(TypeId assetType, const char* assetName)
     if (assetType == Material::GetStaticType())
     {
         stub = EditorAddUniqueAsset(assetName, currentDir, Material::GetStaticType(), true);
-        Asset* selAsset = GetEditorState()->GetSelectedAsset();
-
-
-        if (stub != nullptr &&
-            stub->mAsset != nullptr &&
-            selAsset != nullptr &&
-            selAsset->GetType() == Texture::GetStaticType())
-        {
-            Material* material = stub->mAsset->As<Material>();
-            Texture* texture = selAsset->As<Texture>();
-
-            // Auto assign the selected texture to Texture_0
-            material->SetTexture(TEXTURE_0, texture);
-
-            std::string newMatName = texture->GetName();
-
-            if (newMatName.length() >= 2 && newMatName[0] == 'T' && newMatName[1] == '_')
-            {
-                newMatName[0] = 'M';
-            }
-            else
-            {
-                newMatName = std::string("M_") + newMatName;
-            }
-
-            AssetManager::Get()->RenameAsset(material, newMatName);
-        }
     }
     else if (assetType == ParticleSystem::GetStaticType())
     {

@@ -16,41 +16,23 @@
 
 struct Material_Lua
 {
+    static int IsMaterialBase(lua_State* L);
     static int IsMaterialInstance(lua_State* L);
-    static int SetTexture(lua_State* L);
-    static int GetTexture(lua_State* L);
-    static int GetShadingModel(lua_State* L);
-    static int SetShadingModel(lua_State* L);
+
+    static int SetScalarParameter(lua_State* L);
+    static int SetVectorParameter(lua_State* L);
+    static int SetTextureParameter(lua_State* L);
+
+    static int GetScalarParameter(lua_State* L);
+    static int GetVectorParameter(lua_State* L);
+    static int GetTextureParameter(lua_State* L);
+
     static int GetBlendMode(lua_State* L);
-    static int SetBlendMode(lua_State* L);
-    static int GetUvOffset(lua_State* L);
-    static int SetUvOffset(lua_State* L);
-    static int GetUvScale(lua_State* L);
-    static int SetUvScale(lua_State* L);
-    static int GetColor(lua_State* L);
-    static int SetColor(lua_State* L);
-    static int GetFresnelColor(lua_State* L);
-    static int SetFresnelColor(lua_State* L);
-    static int GetFresnelPower(lua_State* L);
-    static int SetFresnelPower(lua_State* L);
-    static int GetEmission(lua_State* L);
-    static int SetEmission(lua_State* L);
-    static int GetWrapLighting(lua_State* L);
-    static int SetWrapLighting(lua_State* L);
-    static int GetSpecular(lua_State* L);
-    static int SetSpecular(lua_State* L);
-    static int GetOpacity(lua_State* L);
-    static int SetOpacity(lua_State* L);
     static int GetMaskCutoff(lua_State* L);
-    static int SetMaskCutoff(lua_State* L);
     static int GetSortPriority(lua_State* L);
-    static int SetSortPriority(lua_State* L);
     static int IsDepthTestDisabled(lua_State* L);
-    static int SetDepthTestDisabled(lua_State* L);
-    static int GetUvMap(lua_State* L);
-    static int SetUvMap(lua_State* L);
-    static int GetTevMode(lua_State* L);
-    static int SetTevMode(lua_State* L);
+    static int ShouldApplyFog(lua_State* L);
+    static int GetCullMode(lua_State* L);
 
     static void Bind();
 };

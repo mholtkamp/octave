@@ -159,3 +159,10 @@ Texture* Material::GetTextureParameter(const std::string& name)
     return ret;
 }
 
+// These should all be implemented by Material and MaterialInstance
+BlendMode Material::GetBlendMode() const { return BlendMode::Count; }
+float Material::GetMaskCutoff() const { return 0.5f; }
+int32_t Material::GetSortPriority() const { return 0; }
+bool Material::IsDepthTestDisabled() const { return false; }
+bool Material::ShouldApplyFog() const { return true; }
+CullMode Material::GetCullMode() const { return CullMode::Back; }
