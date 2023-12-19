@@ -1175,7 +1175,7 @@ void UpdateMaterialResource(Material* material)
     else
     {
         // TODO-MAT: Implement
-        //#error Need to upload float parameters to uniform buffer
+        #error Need to upload float parameters to uniform buffer
 
         // Update descriptor bindings
         Renderer* renderer = Renderer::Get();

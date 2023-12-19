@@ -2,6 +2,8 @@
 
 #include "Assets/Material.h"
 
+#include "Vertex.h"
+
 #include "Graphics/GraphicsConstants.h"
 #include "Graphics/GraphicsTypes.h"
 
@@ -58,7 +60,7 @@ protected:
     CullMode mCullMode = CullMode::Back;
 
     // Misc
-    std::vector<uint8_t> mVertexCode;
+    std::vector<uint8_t> mVertexCode[(uint32_t)VertexType::Max];
     std::vector<uint8_t> mFragmentCode;
     bool mCompiled = false;
     bool mCompilationStale = false;

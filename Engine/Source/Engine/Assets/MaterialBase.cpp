@@ -70,6 +70,24 @@ void MaterialBase::LoadStream(Stream& stream, Platform platform)
     mDisableDepthTest = stream.ReadBool();
     mApplyFog = stream.ReadBool();
     mCullMode = (CullMode)stream.ReadUint8();
+
+    for (uint32_t i = 0; i < uint32_t(VertexType::Max); ++i)
+    {
+        uint32_t vertSize = stream.ReadUint32();
+
+        if (vertSize > 0)
+        {
+            mVertexCode[i].resize(vertSize);
+            stream.ReadBytes(mVertexCode[i].data(), vertSize);
+        }
+    }
+
+    uint32_t fragSize = stream.ReadUint32();
+    if (fragSize > 0)
+    {
+        mFragmentCode.resize(fragSize);
+        stream.ReadBytes(mFragmentCode.data(), fragSize);
+    }
 }
 
 void MaterialBase::SaveStream(Stream& stream, Platform platform)
@@ -83,6 +101,23 @@ void MaterialBase::SaveStream(Stream& stream, Platform platform)
     stream.WriteBool(mDisableDepthTest);
     stream.WriteBool(mApplyFog);
     stream.WriteUint8((uint8_t)mCullMode);
+
+    for (uint32_t i = 0; i < uint32_t(VertexType::Max); ++i)
+    {
+        uint32_t vertSize = (uint32_t)mVertexCode[i].size();
+        stream.WriteUint32(vertSize);
+        if (mVertexCode[i].size() > 0)
+        {
+            stream.WriteBytes(mVertexCode[i].data(), vertSize);
+        }
+    }
+
+    uint32_t fragSize = mFragmentCode.size();
+    stream.WriteUint32(fragSize);
+    if (fragSize > 0)
+    {
+        stream.WriteBytes(mFragmentCode.data(), fragSize);
+    }
 }
 
 void MaterialBase::Create()
@@ -150,18 +185,72 @@ bool MaterialBase::IsBase() const
 
 void MaterialBase::Compile()
 {
-    // TODO-MAT: Implement
-//#error Perform full compilation process
+#if EDITOR
+    if (mShader == "")
+        return;
 
     // Compile MaterialBase:
-    // (1) Get user shader code from .glsl file.
-    // (2) Get template vert + frag code
-    // (3) Create the combined file (Header + User + Template)
-    // (4) Compile with shaderc / glslc to get the spirv (save to members)
-    // (5) Fillout parameters using SpirvReflect
-    // (6) Call GFX_BuildMaterial() to create pipelines/descriptor layout.
+    // (X) Find engine/user shader directories
+    std::string engineShaderDir = "Engine/Shaders/GLSL/";
+    std::string projectShaderDir = GetEngineState()->mProjectDirectory + "Shaders/";
 
-#if EDITOR
+    // (X) Get user shader code from .glsl file.
+    std::string userGlsl;
+
+    {
+        // Check for engine shader first
+        std::string shaderPath = engineShaderDir + "mat/" + mShader + ".glsl";
+        if (SYS_DoesFileExist(shaderPath.c_str(), false))
+        {
+            Stream shaderStream;
+            shaderStream.ReadFile(shaderPath.c_str(), false);
+            shaderStream.GetData();
+
+            userGlsl.assign(shaderStream.GetData(), shaderStream.GetSize());
+        }
+        else
+        {
+            shaderPath = projectShaderDir + mShader + ".glsl";
+            if (SYS_DoesFileExist(shaderPath.c_str(), false))
+            {
+                Stream shaderStream;
+                shaderStream.ReadFile(shaderPath.c_str(), false);
+                shaderStream.GetData();
+
+                userGlsl.assign(shaderStream.GetData(), shaderStream.GetSize());
+            }
+        }
+    }
+
+    if (userGlsl == "")
+        return;
+
+    // (X) Get template vert + frag code
+    //std::string templateHeaderPath = engineShaderDir + "TemplateHeader.glsl";
+    std::string templateVertPath = engineShaderDir + "src/MatTemplateVert.glsl";
+    std::string templateFragPath = engineShaderDir + "src/MatTemplateFrag.glsl";
+
+    //std::string headerCode;
+    std::string fragCode;
+    std::string vertCode;
+
+    {
+        Stream stream;
+        stream.ReadFile(templateVertPath.c_str(), false);
+        vertCode.assign(stream.GetData(), stream.GetSize());
+    }
+
+    {
+        Stream stream;
+        stream.ReadFile(templateFragPath.c_str(), false);
+        fragCode.assign(stream.GetData(), stream.GetSize());
+    }
+
+    // (X) Insert user code into the template code
+    // (X) Compile with shaderc / glslc to get the spirv (save to members)
+    // (X) Fillout parameters using SpirvReflect
+    // (X) Call GFX_BuildMaterial() to create pipelines/descriptor layout.
+
     // Relink any loaded material instances that use this base.
     std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
 
