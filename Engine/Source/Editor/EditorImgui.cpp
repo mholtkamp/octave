@@ -603,10 +603,26 @@ static void CreateNewAsset(TypeId assetType, const char* assetName)
 static void AssignAssetToProperty(RTTI* owner, PropertyOwnerType ownerType, Property& prop, uint32_t index, Asset* newAsset)
 {
     if (newAsset != nullptr &&
-        newAsset != prop.GetAsset() &&
-        (prop.mExtra == 0 || newAsset->GetType() == TypeId(prop.mExtra)))
+        newAsset != prop.GetAsset())
     {
-        ActionManager::Get()->EXE_EditProperty(owner, ownerType, prop.mName, index, newAsset);
+        TypeId newType = newAsset->GetType();
+        TypeId propId = (TypeId)prop.mExtra;
+
+        bool matchingType = (prop.mExtra == 0 || newType == TypeId(prop.mExtra));
+
+        // HACK: Handle derived class types.
+        if (propId == Material::GetStaticType() &&
+            (newType == MaterialBase::GetStaticType() ||
+             newType == MaterialInstance::GetStaticType() ||
+             newType == MaterialLite::GetStaticType()))
+        {
+            matchingType = true;
+        }
+
+        if (matchingType)
+        {
+            ActionManager::Get()->EXE_EditProperty(owner, ownerType, prop.mName, index, newAsset);
+        }
     }
 }
 

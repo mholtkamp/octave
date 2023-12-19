@@ -54,6 +54,9 @@ public:
     virtual void Import(const std::string& path, ImportOptions* options) override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
+    virtual glm::vec4 GetTypeColor() override;
+    virtual const char* GetTypeName() override;
+
     void MarkDirty();
     void ClearDirty(uint32_t frameIndex);
     bool IsDirty(uint32_t frameIndex);

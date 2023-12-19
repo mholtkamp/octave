@@ -92,6 +92,16 @@ void Material::GatherProperties(std::vector<Property>& outProps)
     Asset::GatherProperties(outProps);
 }
 
+glm::vec4 Material::GetTypeColor()
+{
+    return glm::vec4(0.2f, 1.0f, 0.25f, 1.0f);
+}
+
+const char* Material::GetTypeName()
+{
+    return "Material";
+}
+
 void Material::MarkDirty()
 {
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
