@@ -82,6 +82,43 @@ bool MaterialLite::HandlePropChange(Datum* datum, uint32_t index, const void* ne
     return success;
 }
 
+MaterialLite* MaterialLite::New(Material* src)
+{
+    MaterialLite* ret = NewTransientAsset<MaterialLite>();
+
+    if (src != nullptr)
+    {
+        if (src->IsLite())
+        {
+            MaterialLite* srcLite = (MaterialLite*)src;
+            ret->SetLiteParams(srcLite->GetLiteParams());
+        }
+        else
+        {
+            // Find first texture and set it as the Texture0 lite param.
+            Texture* tex = nullptr;
+            const std::vector<ShaderParameter>& srcParams = src->GetParameters();
+            for (uint32_t i = 0; i < srcParams.size(); ++i)
+            {
+                if (srcParams[i].mType == ShaderParameterType::Texture)
+                {
+                    tex = srcParams[i].mTextureValue.Get<Texture>();
+                    break;
+                }
+            }
+
+            if (tex != nullptr)
+            {
+                ret->SetTexture(TEXTURE_0, tex);
+            }
+        }
+    }
+
+    ret->Create();
+
+    return ret;
+}
+
 MaterialLite::MaterialLite()
 {
     mType = MaterialLite::GetStaticType();

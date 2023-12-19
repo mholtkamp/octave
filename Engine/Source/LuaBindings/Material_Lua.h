@@ -16,8 +16,9 @@
 
 struct Material_Lua
 {
-    static int IsMaterialBase(lua_State* L);
-    static int IsMaterialInstance(lua_State* L);
+    static int IsBase(lua_State* L);
+    static int IsInstance(lua_State* L);
+    static int IsLite(lua_State* L);
 
     static int SetScalarParameter(lua_State* L);
     static int SetVectorParameter(lua_State* L);

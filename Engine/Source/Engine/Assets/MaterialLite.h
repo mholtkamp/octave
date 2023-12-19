@@ -35,6 +35,8 @@ public:
 
     DECLARE_ASSET(MaterialLite, Material);
 
+    static MaterialLite* New(Material* src = nullptr);
+
     MaterialLite();
     ~MaterialLite();
 

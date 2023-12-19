@@ -6,21 +6,31 @@
 
 #if LUA_ENABLED
 
-int Material_Lua::IsMaterialBase(lua_State* L)
+int Material_Lua::IsBase(lua_State* L)
 {
     Material* mat = CHECK_MATERIAL(L, 1);
 
-    bool ret = mat->IsMaterialBase();
+    bool ret = mat->IsBase();
 
     lua_pushboolean(L, ret);
     return 1;
 }
 
-int Material_Lua::IsMaterialInstance(lua_State* L)
+int Material_Lua::IsInstance(lua_State* L)
 {
     Material* mat = CHECK_MATERIAL(L, 1);
 
-    bool ret = mat->IsMaterialInstance();
+    bool ret = mat->IsInstance();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Material_Lua::IsLite(lua_State* L)
+{
+    Material* mat = CHECK_MATERIAL(L, 1);
+
+    bool ret = mat->IsLite();
 
     lua_pushboolean(L, ret);
     return 1;
@@ -162,8 +172,9 @@ void Material_Lua::Bind()
 
     Asset_Lua::BindCommon(L, mtIndex);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, IsMaterialBase);
-    REGISTER_TABLE_FUNC(L, mtIndex, IsMaterialInstance);
+    REGISTER_TABLE_FUNC(L, mtIndex, IsBase);
+    REGISTER_TABLE_FUNC(L, mtIndex, IsInstance);
+    REGISTER_TABLE_FUNC(L, mtIndex, IsLite);
     REGISTER_TABLE_FUNC(L, mtIndex, SetScalarParameter);
     REGISTER_TABLE_FUNC(L, mtIndex, SetVectorParameter);
     REGISTER_TABLE_FUNC(L, mtIndex, SetTextureParameter);
