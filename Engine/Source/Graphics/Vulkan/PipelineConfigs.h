@@ -43,7 +43,7 @@ public:
         PushSet();
         AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
         // Add texture sampler descriptors for each texture slot
-        for (int32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
+        for (int32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
         {
             AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
         }
@@ -84,7 +84,7 @@ public:
         PushSet();
         AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
         // Add texture sampler descriptors for each texture slot
-        for (int32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
+        for (int32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
         {
             AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
         }

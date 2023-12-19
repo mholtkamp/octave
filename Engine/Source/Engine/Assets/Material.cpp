@@ -1,5 +1,8 @@
 #include "Material.h"
 
+FORCE_LINK_DEF(Material);
+DEFINE_ASSET(Material);
+
 void Material::LoadStream(Stream& stream, Platform platform)
 {
     Asset::LoadStream(stream, platform);

@@ -17,6 +17,9 @@ class Pipeline;
 
 class Texture;
 class Material;
+class MaterialLite;
+class MaterialBase;
+class MaterialInstance;
 class StaticMesh;
 class SkeletalMesh;
 class StaticMesh3D;
@@ -84,7 +87,8 @@ void BeginDebugLabel(const char* name, glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0
 void EndDebugLabel();
 
 void WriteGeometryUniformData(GeometryData& outData, World* world, Node3D* comp, const glm::mat4& transform);
-void WriteMaterialUniformData(MaterialData& outData, Material* material);
+void WriteMaterialLiteUniformData(MaterialData& outData, MaterialLite* material);
+void WriteMaterialCustomUniformData(MaterialData& outData, Material* material);
 void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds, StaticMesh3D* staticMeshComp = nullptr);
 
 #if _DEBUG

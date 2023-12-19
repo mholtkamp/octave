@@ -185,8 +185,8 @@ struct MaterialData
     float mPad1;
     float mPad2;
 
-    uint32_t mUvMaps[MATERIAL_MAX_TEXTURES];
-    uint32_t mTevModes[MATERIAL_MAX_TEXTURES];
+    uint32_t mUvMaps[MATERIAL_LITE_MAX_TEXTURES];
+    uint32_t mTevModes[MATERIAL_LITE_MAX_TEXTURES];
 };
 
 enum class RayTraceLightType

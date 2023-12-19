@@ -180,10 +180,10 @@ void RayTracer::UpdateRayTracingScene(
             mesh.mNumTriangles = meshAsset->GetNumFaces();
             mesh.mCastShadows = meshComp->ShouldCastShadows();
             mesh.mHasBakedLighting = meshComp->HasBakedLighting();
-            WriteMaterialUniformData(mesh.mMaterial, material);
+            WriteMaterialLiteUniformData(mesh.mMaterial, material);
 
             // Add textures and record indices.
-            for (uint32_t t = 0; t < MATERIAL_MAX_TEXTURES; ++t)
+            for (uint32_t t = 0; t < MATERIAL_LITE_MAX_TEXTURES; ++t)
             {
                 Texture* tex = material->GetTexture((TextureSlot)t);
                 Image* img = tex ? tex->GetResource()->mImage : nullptr;

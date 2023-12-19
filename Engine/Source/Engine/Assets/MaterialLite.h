@@ -7,9 +7,9 @@ struct MaterialLiteParams
     ShadingModel mShadingModel = ShadingModel::Lit;
     BlendMode mBlendMode = BlendMode::Opaque;
     VertexColorMode mVertexColorMode = VertexColorMode::Modulate;
-    TextureRef mTextures[MATERIAL_MAX_TEXTURES];
-    uint8_t mUvMaps[MATERIAL_MAX_TEXTURES] = { };
-    TevMode mTevModes[MATERIAL_MAX_TEXTURES] = { TevMode::Replace, TevMode::Pass, TevMode::Pass, TevMode::Pass };
+    TextureRef mTextures[MATERIAL_LITE_MAX_TEXTURES];
+    uint8_t mUvMaps[MATERIAL_LITE_MAX_TEXTURES] = { };
+    TevMode mTevModes[MATERIAL_LITE_MAX_TEXTURES] = { TevMode::Replace, TevMode::Pass, TevMode::Pass, TevMode::Pass };
     glm::vec2 mUvOffsets[MAX_UV_MAPS] = { { 0.0f, 0.0f }, {0.0f, 0.0f} };
     glm::vec2 mUvScales[MAX_UV_MAPS] = { { 1.0f, 1.0f }, {1.0f, 1.0f} };
     glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };

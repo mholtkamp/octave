@@ -139,7 +139,7 @@ void MaterialLite::LoadStream(Stream& stream, Platform platform)
     mLiteParams.mBlendMode = BlendMode(stream.ReadUint32());
     mLiteParams.mVertexColorMode = VertexColorMode(stream.ReadUint32());
 
-    for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
+    for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
     {
         stream.ReadAsset(mLiteParams.mTextures[i]);
         mLiteParams.mUvMaps[i] = stream.ReadUint8();
@@ -177,7 +177,7 @@ void MaterialLite::SaveStream(Stream& stream, Platform platform)
     stream.WriteUint32(uint32_t(mLiteParams.mBlendMode));
     stream.WriteUint32(uint32_t(mLiteParams.mVertexColorMode));
 
-    for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
+    for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
     {
         stream.WriteAsset(mLiteParams.mTextures[i]);
         stream.WriteUint8(mLiteParams.mUvMaps[i]);
@@ -213,7 +213,7 @@ void MaterialLite::Create()
 
     Renderer* renderer = Renderer::Get();
 
-    for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
+    for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
     {
         if (mLiteParams.mTextures[i].Get() == nullptr)
         {
@@ -231,7 +231,7 @@ void MaterialLite::Destroy()
 
     GFX_DestroyMaterialResource(this);
 
-    for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
+    for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
     {
         mLiteParams.mTextures[i] = nullptr;
     }
@@ -548,8 +548,8 @@ void MaterialLite::SetCullMode(CullMode cullMode)
 
 uint32_t MaterialLite::GetUvMap(uint32_t textureSlot)
 {
-    OCT_ASSERT(textureSlot < MATERIAL_MAX_TEXTURES);
-    if (textureSlot < MATERIAL_MAX_TEXTURES)
+    OCT_ASSERT(textureSlot < MATERIAL_LITE_MAX_TEXTURES);
+    if (textureSlot < MATERIAL_LITE_MAX_TEXTURES)
     {
         return mLiteParams.mUvMaps[textureSlot];
     }
@@ -559,9 +559,9 @@ uint32_t MaterialLite::GetUvMap(uint32_t textureSlot)
 
 void MaterialLite::SetUvMap(uint32_t textureSlot, uint32_t uvMapIndex)
 {
-    OCT_ASSERT(textureSlot < MATERIAL_MAX_TEXTURES);
+    OCT_ASSERT(textureSlot < MATERIAL_LITE_MAX_TEXTURES);
     OCT_ASSERT(uvMapIndex < MAX_UV_MAPS);
-    if (textureSlot < MATERIAL_MAX_TEXTURES &&
+    if (textureSlot < MATERIAL_LITE_MAX_TEXTURES &&
         uvMapIndex < MAX_UV_MAPS)
     {
         mLiteParams.mUvMaps[textureSlot] = uvMapIndex;
@@ -571,8 +571,8 @@ void MaterialLite::SetUvMap(uint32_t textureSlot, uint32_t uvMapIndex)
 
 TevMode MaterialLite::GetTevMode(uint32_t textureSlot)
 {
-    OCT_ASSERT(textureSlot < MATERIAL_MAX_TEXTURES);
-    if (textureSlot < MATERIAL_MAX_TEXTURES)
+    OCT_ASSERT(textureSlot < MATERIAL_LITE_MAX_TEXTURES);
+    if (textureSlot < MATERIAL_LITE_MAX_TEXTURES)
     {
         return mLiteParams.mTevModes[textureSlot];
     }
@@ -582,10 +582,10 @@ TevMode MaterialLite::GetTevMode(uint32_t textureSlot)
 
 void MaterialLite::SetTevMode(uint32_t textureSlot, TevMode mode)
 {
-    OCT_ASSERT(textureSlot < MATERIAL_MAX_TEXTURES);
+    OCT_ASSERT(textureSlot < MATERIAL_LITE_MAX_TEXTURES);
     OCT_ASSERT(mode != TevMode::Count);
 
-    if (textureSlot < MATERIAL_MAX_TEXTURES &&
+    if (textureSlot < MATERIAL_LITE_MAX_TEXTURES &&
         mode != TevMode::Count)
     {
         mLiteParams.mTevModes[textureSlot] = mode;

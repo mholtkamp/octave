@@ -122,9 +122,8 @@ void TextMesh3D::TickCommon(float deltaTime)
 
     LogError("Need to update TextMesh3D to properly use new material system");
 
-#if 0
     // Update default material instance
-    Material* matInst = mDefaultMatInstance.Get<Material>();
+    MaterialLite* matInst = mDefaultMatInstance.Get<MaterialLite>();
     Font* font = mFont.Get<Font>();
 
     if (font)
@@ -135,7 +134,6 @@ void TextMesh3D::TickCommon(float deltaTime)
     matInst->SetColor(mColor);
     matInst->SetOpacity(mColor.a);
     matInst->SetBlendMode(mBlendMode);
-#endif
 }
 
 bool TextMesh3D::IsStaticMesh3D() const

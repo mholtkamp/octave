@@ -856,7 +856,8 @@ void GatherGeometryLightUniformData(GeometryData& outData, Material* material, c
     }
 
     // We can skip this if the material doesn't use lighting.
-    if (true /*material != nullptr && material->GetShadingModel() != ShadingModel::Unlit*/)
+    if (material != nullptr && 
+        (!material->IsLite() || ((MaterialLite*)material)->GetShadingModel() != ShadingModel::Unlit))
     {
         const std::vector<LightData>& lights = Renderer::Get()->GetLightData();
         uint32_t lightIndices[MAX_LIGHTS_PER_DRAW] = {};
@@ -924,6 +925,48 @@ void GatherGeometryLightUniformData(GeometryData& outData, Material* material, c
     }
 
     outData.mNumLights = numLights;
+}
+
+void WriteMaterialLiteUniformData(MaterialData& outData, MaterialLite* material)
+{
+    Texture* textures[4] = {};
+    textures[0] = material->GetTexture((TextureSlot)0);
+    textures[1] = material->GetTexture((TextureSlot)1);
+    textures[2] = material->GetTexture((TextureSlot)2);
+    textures[3] = material->GetTexture((TextureSlot)3);
+
+    outData.mUvOffset0 = material->GetUvOffset(0);
+    outData.mUvScale0 = material->GetUvScale(0);
+    outData.mUvOffset1 = material->GetUvOffset(1);
+    outData.mUvScale1 = material->GetUvScale(1);
+    outData.mColor = material->GetColor();
+    outData.mFresnelColor = material->GetFresnelColor();
+    outData.mShadingModel = static_cast<uint32_t>(material->GetShadingModel());
+    outData.mBlendMode = static_cast<uint32_t>(material->GetBlendMode());
+    outData.mToonSteps = material->GetToonSteps();
+    outData.mFresnelPower = material->GetFresnelPower();
+    outData.mSpecular = material->GetSpecular();
+    outData.mOpacity = material->GetOpacity();
+    outData.mMaskCutoff = material->GetMaskCutoff();
+    outData.mShininess = material->GetShininess();
+    outData.mFresnelEnabled = static_cast<uint32_t>(material->IsFresnelEnabled());
+    outData.mVertexColorMode = static_cast<uint32_t>(material->GetVertexColorMode());
+    outData.mApplyFog = static_cast<uint32_t>(material->ShouldApplyFog());
+    outData.mEmission = material->GetEmission();
+    outData.mWrapLighting = material->GetWrapLighting();
+    outData.mUvMaps[0] = material->GetUvMap(0);
+    outData.mUvMaps[1] = material->GetUvMap(1);
+    outData.mUvMaps[2] = material->GetUvMap(2);
+    outData.mUvMaps[3] = material->GetUvMap(3);
+    outData.mTevModes[0] = textures[0] ? (uint32_t)material->GetTevMode(0) : (uint32_t)TevMode::Count;
+    outData.mTevModes[1] = textures[1] ? (uint32_t)material->GetTevMode(1) : (uint32_t)TevMode::Count;
+    outData.mTevModes[2] = textures[2] ? (uint32_t)material->GetTevMode(2) : (uint32_t)TevMode::Count;
+    outData.mTevModes[3] = textures[3] ? (uint32_t)material->GetTevMode(3) : (uint32_t)TevMode::Count;
+}
+
+void WriteMaterialCustomUniformData(MaterialData& outData, Material* material)
+{
+
 }
 
 #if _DEBUG
@@ -1096,42 +1139,64 @@ void UpdateMaterialResource(Material* material)
     MaterialResource* resource = material->GetResource();
     std::vector<ShaderParameter>& params = material->GetParameters();
 
-    // TODO-MAT: Implement
-//#error Need to upload float parameters to uniform buffer
-
-    /*
-    Texture* textures[4] = {};
-    textures[0] = material->GetTexture((TextureSlot)0);
-    textures[1] = material->GetTexture((TextureSlot)1);
-    textures[2] = material->GetTexture((TextureSlot)2);
-    textures[3] = material->GetTexture((TextureSlot)3);
-
-    // Update uniform buffer data
-    MaterialData ubo = {};
-    WriteMaterialUniformData(ubo, material);
-
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
-    */
-
-    // Update descriptor bindings
-    Renderer* renderer = Renderer::Get();
-    OCT_ASSERT(resource->mDescriptorSet != nullptr);
-    resource->mDescriptorSet->UpdateUniformDescriptor(MD_UNIFORM_BUFFER, resource->mUniformBuffer);
-
-
-    for (uint32_t i = 0; i < params.size(); ++i)
+    if (material->IsLite())
     {
-        ShaderParameter& param = params[i];
-        if (param.mType == ShaderParameterType::Texture)
+        MaterialLite* matLite = (MaterialLite*)material;
+
+        Texture* textures[4] = {};
+        textures[0] = matLite->GetTexture((TextureSlot)0);
+        textures[1] = matLite->GetTexture((TextureSlot)1);
+        textures[2] = matLite->GetTexture((TextureSlot)2);
+        textures[3] = matLite->GetTexture((TextureSlot)3);
+
+        // Update uniform buffer data
+        MaterialData ubo = {};
+        WriteMaterialLiteUniformData(ubo, matLite);
+
+        resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+
+        // Update descriptor bindings
+        Renderer* renderer = Renderer::Get();
+        OCT_ASSERT(resource->mDescriptorSet != nullptr);
+        resource->mDescriptorSet->UpdateUniformDescriptor(MD_UNIFORM_BUFFER, resource->mUniformBuffer);
+
+        for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
         {
-            Texture* texture = param.mTextureValue.Get<Texture>();
+            Texture* texture = textures[i];
             if (texture == nullptr)
             {
                 texture = renderer->mWhiteTexture.Get<Texture>();
                 OCT_ASSERT(texture != nullptr);
             }
 
-            resource->mDescriptorSet->UpdateImageDescriptor(MD_TEXTURE_START + param.mOffset, texture->GetResource()->mImage);
+            resource->mDescriptorSet->UpdateImageDescriptor(MD_TEXTURE_START + i, texture->GetResource()->mImage);
+        }
+    }
+    else
+    {
+        // TODO-MAT: Implement
+        //#error Need to upload float parameters to uniform buffer
+
+        // Update descriptor bindings
+        Renderer* renderer = Renderer::Get();
+        OCT_ASSERT(resource->mDescriptorSet != nullptr);
+        resource->mDescriptorSet->UpdateUniformDescriptor(MD_UNIFORM_BUFFER, resource->mUniformBuffer);
+
+
+        for (uint32_t i = 0; i < params.size(); ++i)
+        {
+            ShaderParameter& param = params[i];
+            if (param.mType == ShaderParameterType::Texture)
+            {
+                Texture* texture = param.mTextureValue.Get<Texture>();
+                if (texture == nullptr)
+                {
+                    texture = renderer->mWhiteTexture.Get<Texture>();
+                    OCT_ASSERT(texture != nullptr);
+                }
+
+                resource->mDescriptorSet->UpdateImageDescriptor(MD_TEXTURE_START + param.mOffset, texture->GetResource()->mImage);
+            }
         }
     }
 
