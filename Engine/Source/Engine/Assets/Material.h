@@ -47,6 +47,13 @@ public:
 
     DECLARE_ASSET(Material, Asset);
 
+    virtual void LoadStream(Stream& stream, Platform platform) override;
+    virtual void SaveStream(Stream& stream, Platform platform) override;
+    virtual void Create() override;
+    virtual void Destroy() override;
+    virtual void Import(const std::string& path, ImportOptions* options) override;
+    virtual void GatherProperties(std::vector<Property>& outProps) override;
+
     void MarkDirty();
     void ClearDirty(uint32_t frameIndex);
     bool IsDirty(uint32_t frameIndex);

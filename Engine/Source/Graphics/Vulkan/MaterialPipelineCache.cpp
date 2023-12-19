@@ -3,7 +3,7 @@
 #include "Graphics/Vulkan/VulkanContext.h"
 #include "Graphics/Vulkan/PipelineConfigs.h"
 
-#include "Assets/Material.h"
+#include "Assets/MaterialLite.h"
 #include "System/System.h"
 #include "Log.h"
 
@@ -240,30 +240,34 @@ void MaterialPipelineCache::Destroy()
 
 Pipeline* MaterialPipelineCache::GetPipeline(Material* material, VertexType vertexType)
 {
+    // Base materials should store their pipelines on their graphics resource object.
+    if (!material->IsLite())
+        return nullptr;
+
+    MaterialLite* matLite = (MaterialLite*)material;
+
     static_assert(uint32_t(ShadingModel::Count) <= 8, "Need to update pipeline id!");
     static_assert(uint32_t(BlendMode::Count) <= 8, "Need to update pipeline id!");
     static_assert(uint32_t(VertexColorMode::Count) <= 8, "Need to update pipeline id!");
     static_assert(uint32_t(TevMode::Count) <= 8, "Need to update pipeline id!");
     static_assert(uint32_t(CullMode::Count) <= 4, "Need to update pipeline id!");
 
-    // TODO-LITE-MATERIAL: Get the material pipeline cache working for Lite Materials.
-#if 0
     // Constant values
-    uint32_t shadingModel_3 = (uint32_t)material->GetShadingModel();
-    uint32_t blendMode_3 = (uint32_t)material->GetBlendMode();
-    uint32_t vertexColorMode_3 = (uint32_t)material->GetVertexColorMode();
-    uint32_t hasSpecular_1 = (uint32_t)(material->GetSpecular() > 0.0f);
-    uint32_t hasUv1_1 = (uint32_t)(material->GetUvMap(0) == 1 || material->GetUvMap(1) == 1 || material->GetUvMap(2) == 1 || material->GetUvMap(3) == 1);
-    uint32_t hasFresnel_1 = (uint32_t)material->IsFresnelEnabled();
-    uint32_t hasFog_1 = (uint32_t)material->ShouldApplyFog();
-    uint32_t hasWrapLighting_1 = (uint32_t)(material->GetWrapLighting() > 0.0f);
-    uint32_t numTextures_3 = (uint32_t)(1 + uint32_t(material->GetTevMode(1) != TevMode::Pass) + uint32_t(material->GetTevMode(2) != TevMode::Pass) + uint32_t(material->GetTevMode(3) != TevMode::Pass));
-    uint32_t tev0_3 = (uint32_t)material->GetTevMode(0);
-    uint32_t tev1_3 = (uint32_t)material->GetTevMode(1);
-    uint32_t tev2_3 = (uint32_t)material->GetTevMode(2);
-    uint32_t tev3_3 = (uint32_t)material->GetTevMode(3);
-    uint32_t cullMode_2 = (uint32_t)material->GetCullMode();
-    uint32_t depthless_1 = (uint32_t)material->IsDepthTestDisabled();
+    uint32_t shadingModel_3 = (uint32_t)matLite->GetShadingModel();
+    uint32_t blendMode_3 = (uint32_t)matLite->GetBlendMode();
+    uint32_t vertexColorMode_3 = (uint32_t)matLite->GetVertexColorMode();
+    uint32_t hasSpecular_1 = (uint32_t)(matLite->GetSpecular() > 0.0f);
+    uint32_t hasUv1_1 = (uint32_t)(matLite->GetUvMap(0) == 1 || matLite->GetUvMap(1) == 1 || matLite->GetUvMap(2) == 1 || matLite->GetUvMap(3) == 1);
+    uint32_t hasFresnel_1 = (uint32_t)matLite->IsFresnelEnabled();
+    uint32_t hasFog_1 = (uint32_t)matLite->ShouldApplyFog();
+    uint32_t hasWrapLighting_1 = (uint32_t)(matLite->GetWrapLighting() > 0.0f);
+    uint32_t numTextures_3 = (uint32_t)(1 + uint32_t(matLite->GetTevMode(1) != TevMode::Pass) + uint32_t(matLite->GetTevMode(2) != TevMode::Pass) + uint32_t(matLite->GetTevMode(3) != TevMode::Pass));
+    uint32_t tev0_3 = (uint32_t)matLite->GetTevMode(0);
+    uint32_t tev1_3 = (uint32_t)matLite->GetTevMode(1);
+    uint32_t tev2_3 = (uint32_t)matLite->GetTevMode(2);
+    uint32_t tev3_3 = (uint32_t)matLite->GetTevMode(3);
+    uint32_t cullMode_2 = (uint32_t)matLite->GetCullMode();
+    uint32_t depthless_1 = (uint32_t)matLite->IsDepthTestDisabled();
 
     uint32_t id = 0;
     id += shadingModel_3 << 0;
@@ -281,9 +285,6 @@ Pipeline* MaterialPipelineCache::GetPipeline(Material* material, VertexType vert
     id += tev3_3 << 26;
     id += cullMode_2 << 29;
     id += depthless_1 << 31;
-#else
-    uint32_t id = 0;
-#endif
 
     return GetPipeline(id, vertexType);
 }

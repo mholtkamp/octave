@@ -5,6 +5,7 @@
 
 #include "Assets/Font.h"
 #include "Assets/MaterialInstance.h"
+#include "Assets/MaterialLite.h"
 
 #include "Graphics/Graphics.h"
 
@@ -67,9 +68,8 @@ void TextMesh3D::Create()
     // to use in the case that a material override is not provided.
     // Each frame, the default mat instance is updated so that it's TEXTURE_0 is the font texture
     // And its color is set to mColor.
-    mDefaultMatInstance = MaterialInstance::New(LoadAsset<Material>("M_DefaultUnlit"));
-    //TODO-LITE-MATERIAL: Uncomment this and use a lite material instead of an mat instance.
-    //mDefaultMatInstance.Get<Material>()->SetBlendMode(mBlendMode);
+    mDefaultMatInstance = MaterialLite::New(LoadAsset<MaterialLite>("M_DefaultUnlit"));
+    mDefaultMatInstance.Get<MaterialLite>()->SetBlendMode(mBlendMode);
 }
 
 void TextMesh3D::Destroy()

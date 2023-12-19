@@ -225,9 +225,9 @@ Texture* Renderer::GetBlackTexture()
     return mBlackTexture.Get<Texture>();
 }
 
-Material* Renderer::GetDefaultMaterial()
+MaterialLite* Renderer::GetDefaultMaterial()
 {
-    return mDefaultMaterial.Get<Material>();
+    return mDefaultMaterial.Get<MaterialLite>();
 }
 
 void Renderer::SetEngineState(EngineState* engineState)

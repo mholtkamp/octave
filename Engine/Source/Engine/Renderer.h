@@ -7,7 +7,7 @@
 #include "EngineTypes.h"
 #include "Assets/Texture.h"
 #include "Assets/StaticMesh.h"
-#include "Assets/Material.h"
+#include "Assets/MaterialLite.h"
 #include "Vertex.h"
 #include "World.h"
 #include "Constants.h"
@@ -102,7 +102,7 @@ public:
     bool IsPathTracingEnabled() const;
 
     Texture* GetBlackTexture();
-    Material* GetDefaultMaterial();
+    MaterialLite* GetDefaultMaterial();
 
     void LoadDefaultTextures();
     void LoadDefaultMaterials();

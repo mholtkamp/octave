@@ -150,7 +150,9 @@ bool MaterialBase::IsBase() const
 
 void MaterialBase::Compile()
 {
-#error Perform full compilation process
+    // TODO-MAT: Implement
+//#error Perform full compilation process
+
     // Compile MaterialBase:
     // (1) Get user shader code from .glsl file.
     // (2) Get template vert + frag code

@@ -101,7 +101,8 @@ void MaterialInstance::SetBaseMaterial(MaterialBase* material)
 
 void MaterialInstance::LinkToBase()
 {
-#error Implement LinkToBase(). Need to grab parent's
+    // TODO-MAT: Implement
+//#error Implement LinkToBase(). Need to grab parent's
 }
 
 BlendMode MaterialInstance::GetBlendMode() const

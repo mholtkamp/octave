@@ -1,5 +1,94 @@
 #include "Material.h"
 
+void Material::LoadStream(Stream& stream, Platform platform)
+{
+    Asset::LoadStream(stream, platform);
+
+    // If we are converting a legacy "Material" then do not read anything.
+    // MaterialLite will read the stream properly.
+    if (mOldType != Material::GetStaticType())
+    {
+        uint32_t numParams = stream.ReadUint32();
+        mParameters.resize(numParams);
+        for (uint32_t i = 0; i < numParams; ++i)
+        {
+            ShaderParameter& param = mParameters[i];
+            stream.ReadString(param.mName);
+            param.mType = (ShaderParameterType)stream.ReadUint8();
+            param.mOffset = stream.ReadUint32();
+
+            switch (param.mType)
+            {
+            case ShaderParameterType::Scalar:
+                param.mFloatValue.x = stream.ReadFloat();
+                break;
+            case ShaderParameterType::Vector:
+                param.mFloatValue = stream.ReadVec4();
+                break;
+            case ShaderParameterType::Texture:
+                stream.ReadAsset(param.mTextureValue);
+                break;
+            default:
+                LogError("Invalid shader parameter type serialized.");
+                OCT_ASSERT(0);
+                break;
+            }
+        }
+    }
+}
+
+void Material::SaveStream(Stream& stream, Platform platform)
+{
+    Asset::SaveStream(stream, platform);
+
+    stream.WriteUint32((uint32_t)mParameters.size());
+
+    for (uint32_t i = 0; i < mParameters.size(); ++i)
+    {
+        const ShaderParameter& param = mParameters[i];
+        stream.WriteString(param.mName);
+        stream.WriteUint8((uint8_t)param.mType);
+        stream.WriteUint32(param.mOffset);
+
+        switch (param.mType)
+        {
+        case ShaderParameterType::Scalar:
+            stream.WriteFloat(param.mFloatValue.x);
+            break;
+        case ShaderParameterType::Vector:
+            stream.WriteVec4(param.mFloatValue);
+            break;
+        case ShaderParameterType::Texture:
+            stream.WriteAsset(param.mTextureValue);
+            break;
+        default:
+            LogError("Invalid shader parameter type serialized.");
+            OCT_ASSERT(0);
+            break;
+        }
+    }
+}
+
+void Material::Create()
+{
+    Asset::Create();
+}
+
+void Material::Destroy()
+{
+    Asset::Destroy();
+}
+
+void Material::Import(const std::string& path, ImportOptions* options)
+{
+    Asset::Import(path, options);
+}
+
+void Material::GatherProperties(std::vector<Property>& outProps)
+{
+    Asset::GatherProperties(outProps);
+}
+
 void Material::MarkDirty()
 {
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)

@@ -7,6 +7,7 @@
 #include "Log.h"
 #include "Utilities.h"
 #include "Assets/Scene.h"
+#include "Assets/MaterialLite.h"
 
 #include "Assertion.h"
 
@@ -266,6 +267,12 @@ AssetHeader Asset::ReadHeader(Stream& stream)
     {
         header.mOldType = header.mType;
         header.mType = Scene::GetStaticType();
+    }
+    else if (header.mType == Material::GetStaticType())
+    {
+        // Convert old Materials to the new "MaterialLite" class.
+        header.mType = MaterialLite::GetStaticType();
+        header.mOldType = Material::GetStaticType();
     }
 
     return header;

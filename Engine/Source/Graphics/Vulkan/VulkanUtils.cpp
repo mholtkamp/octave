@@ -1096,7 +1096,9 @@ void UpdateMaterialResource(Material* material)
     MaterialResource* resource = material->GetResource();
     std::vector<ShaderParameter>& params = material->GetParameters();
 
-#error Need to upload float parameters to uniform buffer
+    // TODO-MAT: Implement
+//#error Need to upload float parameters to uniform buffer
+
     /*
     Texture* textures[4] = {};
     textures[0] = material->GetTexture((TextureSlot)0);
