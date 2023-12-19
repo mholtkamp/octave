@@ -17,6 +17,7 @@
 #include "Assets/ParticleSystemInstance.h"
 #include "Assets/SoundWave.h"
 #include "Assets/Material.h"
+#include "Assets/MaterialLite.h"
 #include "Assets/MaterialInstance.h"
 #include "Assets/Font.h"
 
