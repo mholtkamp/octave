@@ -25,7 +25,7 @@ public:
     virtual glm::vec4 GetTypeColor() override;
     virtual const char* GetTypeName() override;
 
-    virtual bool IsMaterialBase() const override;
+    virtual bool IsBase() const override;
 
     void Compile();
     void MarkStale();

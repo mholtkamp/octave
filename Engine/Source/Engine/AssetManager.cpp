@@ -579,10 +579,10 @@ void AssetManager::ImportEngineAssets()
         Renderer::Get()->LoadDefaultTextures();
 
         // Create materials (not actually imported from any source files)
-        CreateAndRegisterAsset(Material::GetStaticType(), engineMaterials, "M_Default", true);
-        AssetStub* defaultUnlitStub = CreateAndRegisterAsset(Material::GetStaticType(), engineMaterials, "M_DefaultUnlit", true);
-        Material* defaultUnlitMaterial = (Material*)defaultUnlitStub->mAsset;
-        //defaultUnlitMaterial->SetShader("Unlit");
+        CreateAndRegisterAsset(MaterialLite::GetStaticType(), engineMaterials, "M_Default", true);
+        AssetStub* defaultUnlitStub = CreateAndRegisterAsset(MaterialLite::GetStaticType(), engineMaterials, "M_DefaultUnlit", true);
+        MaterialLite* defaultUnlitMaterial = (MaterialLite*)defaultUnlitStub->mAsset;
+        defaultUnlitMaterial->SetShadingModel(ShadingModel::Unlit);
         Renderer::Get()->LoadDefaultMaterials();
 
         ImportEngineAsset(StaticMesh::GetStaticType(), engineMeshes, "SM_Cone");

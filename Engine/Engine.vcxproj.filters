@@ -641,6 +641,9 @@
     <ClCompile Include="Source\LuaBindings\Material_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Assets\MaterialLite.cpp">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1265,6 +1268,9 @@
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Material_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\MaterialLite.h">
+      <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

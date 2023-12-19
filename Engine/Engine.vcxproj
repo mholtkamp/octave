@@ -590,6 +590,7 @@
     <ClCompile Include="Source\Engine\Assets\MaterialBase.cpp" />
     <ClCompile Include="Source\Engine\Assets\MaterialInstance.cpp" />
     <ClCompile Include="Source\Engine\Assets\Material.cpp" />
+    <ClCompile Include="Source\Engine\Assets\MaterialLite.cpp" />
     <ClCompile Include="Source\Engine\Assets\ParticleSystem.cpp" />
     <ClCompile Include="Source\Engine\Assets\ParticleSystemInstance.cpp" />
     <ClCompile Include="Source\Engine\Assets\Scene.cpp" />
@@ -801,6 +802,7 @@
     <ClInclude Include="Source\Engine\Assets\MaterialBase.h" />
     <ClInclude Include="Source\Engine\Assets\MaterialInstance.h" />
     <ClInclude Include="Source\Engine\Assets\Material.h" />
+    <ClInclude Include="Source\Engine\Assets\MaterialLite.h" />
     <ClInclude Include="Source\Engine\Assets\ParticleSystem.h" />
     <ClInclude Include="Source\Engine\Assets\ParticleSystemInstance.h" />
     <ClInclude Include="Source\Engine\Assets\Scene.h" />

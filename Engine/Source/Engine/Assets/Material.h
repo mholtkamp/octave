@@ -52,8 +52,9 @@ public:
     bool IsDirty(uint32_t frameIndex);
     MaterialResource* GetResource();
 
-    virtual bool IsMaterialBase() const;
-    virtual bool IsMaterialInstance() const;
+    virtual bool IsBase() const;
+    virtual bool IsInstance() const;
+    virtual bool IsLite() const;
 
     std::vector<ShaderParameter>& GetParameters();
 

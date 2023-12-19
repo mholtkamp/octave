@@ -23,12 +23,17 @@ MaterialResource* Material::GetResource()
     return &mResource;
 }
 
-bool Material::IsMaterialBase() const
+bool Material::IsBase() const
 {
     return false;
 }
 
-bool Material::IsMaterialInstance() const
+bool Material::IsInstance() const
+{
+    return false;
+}
+
+bool Material::IsLite() const
 {
     return false;
 }
@@ -159,7 +164,7 @@ Texture* Material::GetTextureParameter(const std::string& name)
     return ret;
 }
 
-// These should all be implemented by Material and MaterialInstance
+// These should all be implemented by Material / MaterialInstance / MaterialLite
 BlendMode Material::GetBlendMode() const { return BlendMode::Count; }
 float Material::GetMaskCutoff() const { return 0.5f; }
 int32_t Material::GetSortPriority() const { return 0; }

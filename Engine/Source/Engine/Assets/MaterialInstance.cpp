@@ -11,11 +11,11 @@ MaterialInstance* MaterialInstance::New(Material* src)
     MaterialInstance* ret = NewTransientAsset<MaterialInstance>();
     if (src != nullptr)
     {
-        MaterialBase* baseMaterial = src->IsMaterialBase() ? (MaterialBase*)src : nullptr;
+        MaterialBase* baseMaterial = src->IsBase() ? (MaterialBase*)src : nullptr;
 
         if (!baseMaterial)
         {
-            MaterialInstance* srcInst = src->IsMaterialInstance() ? (MaterialInstance*)src : nullptr;
+            MaterialInstance* srcInst = src->IsInstance() ? (MaterialInstance*)src : nullptr;
             baseMaterial = srcInst->GetBaseMaterial();
         }
 
@@ -78,6 +78,11 @@ glm::vec4 MaterialInstance::GetTypeColor()
 const char* MaterialInstance::GetTypeName()
 {
     return "MaterialInstance";
+}
+
+bool MaterialInstance::IsInstance() const
+{
+    return true;
 }
 
 MaterialBase* MaterialInstance::GetBaseMaterial() const

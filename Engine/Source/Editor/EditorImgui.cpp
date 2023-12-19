@@ -19,6 +19,9 @@
 #include "Assets/ParticleSystem.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/SkeletalMesh.h"
+#include "Assets/MaterialBase.h"
+#include "Assets/MaterialInstance.h"
+#include "Assets/MaterialLite.h"
 
 #include "Viewport3d.h"
 #include "Viewport2d.h"
@@ -559,17 +562,36 @@ static void CreateNewAsset(TypeId assetType, const char* assetName)
     if (currentDir == nullptr)
         return;
 
-    if (assetType == Material::GetStaticType())
+    if (assetType == MaterialLite::GetStaticType())
     {
-        stub = EditorAddUniqueAsset(assetName, currentDir, Material::GetStaticType(), true);
-    }
-    else if (assetType == ParticleSystem::GetStaticType())
-    {
-        stub = EditorAddUniqueAsset(assetName, currentDir, ParticleSystem::GetStaticType(), true);
-    }
-    else if (assetType == Scene::GetStaticType())
-    {
-        stub = EditorAddUniqueAsset(assetName, currentDir, Scene::GetStaticType(), true);
+        Asset* selAsset = GetEditorState()->GetSelectedAsset();
+
+        stub = EditorAddUniqueAsset(assetName, currentDir, assetType, true);
+
+        if (stub != nullptr &&
+            stub->mAsset != nullptr &&
+            selAsset != nullptr &&
+            selAsset->GetType() == Texture::GetStaticType())
+        {
+            MaterialLite* matLite = stub->mAsset->As<MaterialLite>();
+            Texture* texture = selAsset->As<Texture>();
+
+            // Auto assign the selected texture to Texture_0
+            matLite->SetTexture(TEXTURE_0, texture);
+
+            std::string newMatName = texture->GetName();
+
+            if (newMatName.length() >= 2 && newMatName[0] == 'T' && newMatName[1] == '_')
+            {
+                newMatName[0] = 'M';
+            }
+            else
+            {
+                newMatName = std::string("M_") + newMatName;
+            }
+
+            AssetManager::Get()->RenameAsset(matLite, newMatName);
+        }
     }
 
     if (stub != nullptr)
@@ -1712,9 +1734,19 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         {
             bool showPopup = false;
 
-            if (ImGui::Selectable("Material", false, ImGuiSelectableFlags_DontClosePopups))
+            if (ImGui::Selectable("Material (Lite)", false, ImGuiSelectableFlags_DontClosePopups))
             {
-                sNewAssetType = Material::GetStaticType();
+                sNewAssetType = MaterialLite::GetStaticType();
+                showPopup = true;
+            }
+            if (ImGui::Selectable("Material (Base)", false, ImGuiSelectableFlags_DontClosePopups))
+            {
+                sNewAssetType = MaterialBase::GetStaticType();
+                showPopup = true;
+            }
+            if (ImGui::Selectable("Material (Instance)", false, ImGuiSelectableFlags_DontClosePopups))
+            {
+                sNewAssetType = MaterialInstance::GetStaticType();
                 showPopup = true;
             }
             if (ImGui::Selectable("Particle System", false, ImGuiSelectableFlags_DontClosePopups))
@@ -1875,8 +1907,12 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 
             if (assetName == "")
             {
-                if (sNewAssetType == Material::GetStaticType())
+                if (sNewAssetType == MaterialLite::GetStaticType())
                     assetName = "M_Material";
+                else if (sNewAssetType == MaterialBase::GetStaticType())
+                    assetName = "MB_Material";
+                else if (sNewAssetType == MaterialInstance::GetStaticType())
+                    assetName = "MI_Material";
                 else if (sNewAssetType == ParticleSystem::GetStaticType())
                     assetName = "P_Particle";
                 else if (sNewAssetType == Scene::GetStaticType())
@@ -2092,7 +2128,7 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
 
             if (ctrlDown && IsKeyJustDown(KEY_M))
             {
-                CreateNewAsset(Material::GetStaticType(), "M_Material");
+                CreateNewAsset(MaterialLite::GetStaticType(), "M_Material");
             }
 
             if (ctrlDown && IsKeyJustDown(KEY_P))

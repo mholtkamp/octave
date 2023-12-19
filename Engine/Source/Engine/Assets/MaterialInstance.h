@@ -24,6 +24,8 @@ public:
     virtual glm::vec4 GetTypeColor() override;
     virtual const char* GetTypeName() override;
 
+    virtual bool IsInstance() const override;
+
     MaterialBase* GetBaseMaterial() const;
     void SetBaseMaterial(MaterialBase* material);
 

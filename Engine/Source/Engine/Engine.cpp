@@ -67,6 +67,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(Material);
     FORCE_LINK_CALL(MaterialBase);
     FORCE_LINK_CALL(MaterialInstance);
+    FORCE_LINK_CALL(MaterialLite);
     FORCE_LINK_CALL(ParticleSystem);
     FORCE_LINK_CALL(ParticleSystemInstance);
     FORCE_LINK_CALL(SkeletalMesh);
