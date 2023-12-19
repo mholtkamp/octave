@@ -48,6 +48,8 @@ glm::mat4 MakeTransform(glm::vec3 translation, glm::vec3 rotation, glm::vec3 sca
 
 void GatherNonDefaultProperties(Node* node, std::vector<Property>& props);
 
+void RemoveSpacesFromString(std::string& str);
+
 void AddDebugDraw(const DebugDraw& draw);
 void AddDebugDraw(
     StaticMesh* mesh,

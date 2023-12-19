@@ -1,11 +1,9 @@
-MAT_UNIFORMS
-{
-    vec4 OffColor;
-    float NormAlpha;
-    float DispAlpha;
-};
+MAT_SCALAR(NormAlpha);
+MAT_SCALAR(DispAlpha);
 
-MAT_TEXTURE(OffTex, 1);
+MAT_VECTOR(OffColor);
+
+MAT_TEXTURE(OffTex);
 
 void VertMain(VertIn vIn, inout VertOut vOut)
 {

@@ -397,6 +397,17 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
     }
 }
 
+void RemoveSpacesFromString(std::string& str)
+{
+    for (int32_t i = int32_t(str.size()) - 1; i >= 0; --i)
+    {
+        if (str[i] == ' ')
+        {
+            str.erase(str.begin() + i);
+        }
+    }
+}
+
 void AddDebugDraw(const DebugDraw& draw)
 {
 #if DEBUG_DRAW_ENABLED

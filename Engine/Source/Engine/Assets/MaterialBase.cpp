@@ -6,12 +6,17 @@
 #include "Constants.h"
 #include "Log.h"
 #include "Engine.h"
+#include "Utilities.h"
 
 #include "Nodes/3D/DirectionalLight3d.h"
 #include "Nodes/3D/PointLight3d.h"
 #include "Nodes/3D/Camera3d.h"
 
 #include "Graphics/Graphics.h"
+
+
+
+#include <sstream>
 
 const char* gBlendModeStrings[] =
 {
@@ -195,7 +200,7 @@ void MaterialBase::Compile()
     std::string projectShaderDir = GetEngineState()->mProjectDirectory + "Shaders/";
 
     // (X) Get user shader code from .glsl file.
-    std::string userGlsl;
+    std::string userCode;
 
     {
         // Check for engine shader first
@@ -206,7 +211,7 @@ void MaterialBase::Compile()
             shaderStream.ReadFile(shaderPath.c_str(), false);
             shaderStream.GetData();
 
-            userGlsl.assign(shaderStream.GetData(), shaderStream.GetSize());
+            userCode.assign(shaderStream.GetData(), shaderStream.GetSize());
         }
         else
         {
@@ -217,16 +222,15 @@ void MaterialBase::Compile()
                 shaderStream.ReadFile(shaderPath.c_str(), false);
                 shaderStream.GetData();
 
-                userGlsl.assign(shaderStream.GetData(), shaderStream.GetSize());
+                userCode.assign(shaderStream.GetData(), shaderStream.GetSize());
             }
         }
     }
 
-    if (userGlsl == "")
+    if (userCode == "")
         return;
 
     // (X) Get template vert + frag code
-    //std::string templateHeaderPath = engineShaderDir + "TemplateHeader.glsl";
     std::string templateVertPath = engineShaderDir + "src/MatTemplateVert.glsl";
     std::string templateFragPath = engineShaderDir + "src/MatTemplateFrag.glsl";
 
@@ -246,10 +250,57 @@ void MaterialBase::Compile()
         fragCode.assign(stream.GetData(), stream.GetSize());
     }
 
+    // (X) Extract shader parameters from user code
+    std::vector<ShaderParameter> userParams;
+    {
+        std::istringstream iss(userCode);
+
+        for (std::string line; std::getline(iss, line);)
+        {
+            size_t scalarIdx = line.find("MAT_SCALAR(");
+            size_t vectorIdx = line.find("MAT_VECTOR(");
+            size_t textureIdx = line.find("MAT_TEXTURE(");
+
+            ShaderParameterType paramType = ShaderParameterType::Count;
+
+            if (scalarIdx != std::string::npos)
+            {
+                paramType = ShaderParameterType::Scalar;
+                line = line.substr(strlen("MAT_SCALAR("));
+            }
+            else if (vectorIdx != std::string::npos)
+            {
+                paramType = ShaderParameterType::Vector;
+                line = line.substr(strlen("MAT_VECTOR("));
+            }
+            else if (textureIdx != std::string::npos)
+            {
+                paramType = ShaderParameterType::Texture;
+                line = line.substr(strlen("MAT_TEXTURE("));
+            }
+
+            if (paramType != ShaderParameterType::Count)
+            {
+                size_t endParen = line.find(")");
+                if (endParen != std::string::npos)
+                {
+                    std::string paramName = line.substr(0, endParen - 1);
+
+                    // Remove spaces
+                    RemoveSpacesFromString(paramName);
+                }
+            }
+        }
+    }
+    
     // (X) Insert user code into the template code
+    // (X) Inseret user parameters into the template code
     // (X) Compile with shaderc / glslc to get the spirv (save to members)
-    // (X) Fillout parameters using SpirvReflect
+    // (X) Fillout parameters using SpirvReflect (????)
     // (X) Call GFX_BuildMaterial() to create pipelines/descriptor layout.
+
+    // (X) Assuming compilation was successful, copy over old parameter values (that match new params).
+    // (X) Set the material's parameters to the new parameter list.
 
     // Relink any loaded material instances that use this base.
     std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
