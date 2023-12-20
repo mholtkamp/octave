@@ -54,8 +54,6 @@ public:
 
     void SetRenderPass(VkRenderPass renderPass);
 
-protected:
-
     void CreateGraphicsPipeline(VkSpecializationInfo* specInfo);
     void CreateComputePipeline(VkSpecializationInfo* specInfo);
 

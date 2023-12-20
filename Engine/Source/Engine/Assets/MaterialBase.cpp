@@ -368,7 +368,7 @@ void MaterialBase::Compile()
         if (param.mType == ShaderParameterType::Vector)
         {
             param.mOffset = uniformByteOffset;
-            uniformByteOffset += 4;
+            uniformByteOffset += 16;
             userParamsString += ("    vec4 " + param.mName + ";\n");
             numVectorParams++;
         }
@@ -381,7 +381,7 @@ void MaterialBase::Compile()
         if (param.mType == ShaderParameterType::Scalar)
         {
             param.mOffset = uniformByteOffset;
-            uniformByteOffset += 1;
+            uniformByteOffset += 4;
             userParamsString += ("    float " + param.mName + ";\n");
             numScalarParams++;
         }
@@ -703,5 +703,25 @@ void MaterialBase::SetCullMode(CullMode cullMode)
         mCullMode = cullMode;
         MarkStale();
     }
+}
+
+uint32_t MaterialBase::GetNumScalarParameters()
+{
+    return mNumScalarParams;
+}
+
+uint32_t MaterialBase::GetNumVectorParameters()
+{
+    return mNumVectorParams;
+}
+
+uint32_t MaterialBase::GetNumTextureParameters()
+{
+    return mNumTextureParams;
+}
+
+uint32_t MaterialBase::GetUniformBufferSize()
+{
+    return (16 * mNumVectorParams + 4 * mNumScalarParams);
 }
 

@@ -6,6 +6,9 @@
 #include "Renderer.h"
 #include "Assets/Font.h"
 #include "Assets/Material.h"
+#include "Assets/MaterialBase.h"
+#include "Assets/MaterialInstance.h"
+#include "Assets/MaterialLite.h"
 #include "Assets/Texture.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/SkeletalMesh.h"
@@ -1096,10 +1099,71 @@ void DestroyTextureResource(Texture* texture)
 void CreateMaterialResource(Material* material)
 {
     MaterialResource* resource = material->GetResource();
-    VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Material);
 
-    resource->mUniformBuffer = new UniformBuffer(sizeof(MaterialData), "Material Uniforms");
-    resource->mDescriptorSet = new DescriptorSet(layout);
+    if (material->IsLite())
+    {
+        VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Material);
+
+        resource->mUniformBuffer = new UniformBuffer(sizeof(MaterialData), "Material Uniforms");
+        resource->mDescriptorSet = new DescriptorSet(layout);
+    }
+    else
+    {
+        MaterialBase* base = material->IsBase() ? (MaterialBase*)material : nullptr;
+
+        if (material->IsInstance())
+        {
+            MaterialInstance* inst = (MaterialInstance*)material;
+            base = inst->GetBaseMaterial();
+        }
+
+        if (base != nullptr)
+        {
+            ForwardPipeline* matPipeline = nullptr;
+
+            switch (material->GetBlendMode())
+            {
+            case BlendMode::Opaque:
+            case BlendMode::Masked:
+                matPipeline = new OpaquePipeline();
+                break;
+            case BlendMode::Translucent:
+                matPipeline = new TranslucentPipeline();
+                break;
+            case BlendMode::Additive:
+                matPipeline = new AdditivePipeline();
+                break;
+            }
+
+            if (material->GetCullMode() == CullMode::Front)
+                matPipeline->mCullMode = VK_CULL_MODE_FRONT_BIT;
+            else if (material->GetCullMode() == CullMode::None)
+                matPipeline->mCullMode = VK_CULL_MODE_NONE;
+
+            if (material->IsDepthTestDisabled())
+            {
+                matPipeline->mDepthTestEnabled = false;
+                matPipeline->mDepthWriteEnabled = false;
+            }
+
+            // Pop the default (lite) material descriptor layout
+            matPipeline->mLayoutBindings.pop_back();
+            matPipeline->PushSet();
+            matPipeline->AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+
+            for (uint32_t i = 0; i < base->GetNumTextureParameters(); ++i)
+            {
+                matPipeline->AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+            }
+
+            matPipeline->SetRenderPass(GetVulkanContext()->GetForwardRenderPass());
+            matPipeline->Create();
+
+            resource->mPipeline = matPipeline;
+            resource->mDescriptorSet = new DescriptorSet(matPipeline->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Material));
+            resource->mUniformBuffer = new UniformBuffer(base->GetUniformBufferSize(), "CustomMaterialUniforms");
+        }
+    }
 
     UpdateMaterialResource(material);
 }
@@ -1118,6 +1182,12 @@ void DestroyMaterialResource(Material* material)
     {
         GetDestroyQueue()->Destroy(resource->mDescriptorSet);
         resource->mDescriptorSet = nullptr;
+    }
+
+    if (resource->mPipeline != nullptr)
+    {
+        GetDestroyQueue()->Destroy(resource->mPipeline);
+        resource->mPipeline = nullptr;
     }
 }
 

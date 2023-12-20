@@ -46,6 +46,11 @@ public:
     void SetApplyFog(bool applyFog);
     void SetCullMode(CullMode cullMode);
 
+    uint32_t GetNumScalarParameters();
+    uint32_t GetNumVectorParameters();
+    uint32_t GetNumTextureParameters();
+    uint32_t GetUniformBufferSize();
+
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
 protected:

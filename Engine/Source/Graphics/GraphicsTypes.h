@@ -137,7 +137,8 @@ struct MaterialResource
     DescriptorSet* mDescriptorSet = nullptr;
     UniformBuffer* mUniformBuffer = nullptr;
     Pipeline* mPipeline = nullptr;
-    VkDescriptorSetLayout mDescriptorSetLayout = VK_NULL_HANDLE;
+    // This should be stored in Pipeline, so we don't need track it separately.
+    //VkDescriptorSetLayout mDescriptorSetLayout = VK_NULL_HANDLE;
 #endif
 };
 

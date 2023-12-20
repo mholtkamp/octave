@@ -10,6 +10,7 @@
 #include "Graphics/Vulkan/Image.h"
 #include "Graphics/Vulkan/Buffer.h"
 #include "Graphics/Vulkan/DescriptorSet.h"
+#include "Graphics/Vulkan/Pipeline.h"
 
 DestroyQueue::DestroyQueue()
 {
@@ -51,6 +52,12 @@ void DestroyQueue::Destroy(VkCommandBuffer commandBuffer)
     mCommandBuffers[frameIndex].push_back(commandBuffer);
 }
 
+void DestroyQueue::Destroy(Pipeline* pipeline)
+{
+    uint32_t frameIndex = GetFrameIndex();
+    mPipelines[frameIndex].push_back(pipeline);
+}
+
 void DestroyQueue::Flush(uint32_t frameIndex)
 {
     VkDevice device = GetVulkanDevice();
@@ -81,11 +88,18 @@ void DestroyQueue::Flush(uint32_t frameIndex)
         delete mBuffers[frameIndex][i];
     }
 
+    for (uint32_t i = 0; i < mPipelines[frameIndex].size(); ++i)
+    {
+        mPipelines[frameIndex][i]->Destroy();
+        delete mPipelines[frameIndex][i];
+    }
+
     mCommandBuffers[frameIndex].clear();
     mDescriptorSets[frameIndex].clear();
     mMultiBuffers[frameIndex].clear();
     mImages[frameIndex].clear();
     mBuffers[frameIndex].clear();
+    mPipelines[frameIndex].clear();
 }
 
 void DestroyQueue::FlushAll()
