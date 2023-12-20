@@ -14,7 +14,11 @@
 
 #include "Graphics/Graphics.h"
 
-
+#if EDITOR
+#if API_VULKAN
+#include <shaderc/shaderc.h>
+#endif
+#endif
 
 #include <sstream>
 
@@ -187,6 +191,48 @@ bool MaterialBase::IsBase() const
 {
     return true;
 }
+
+#if EDITOR
+static shaderc_include_result* CompileInclude(void* userData, const char* requestedSource, int type, const char* requestingSource, size_t include_depth)
+{
+    shaderc_include_result* result = new shaderc_include_result();
+
+    std::string incDir = "Engine/Shaders/GLSL/src/";
+    Stream stream;
+    std::string filePath = incDir + requestedSource;
+    stream.ReadFile(filePath.c_str(), false);
+
+    std::string fileStr;
+    if (stream.GetSize() > 0)
+    {
+        fileStr.assign(stream.GetData(), stream.GetSize());
+    }
+    else
+    {
+        LogError("Failed to include %s", requestedSource);
+    }
+
+    char* rawFileStr = new char[fileStr.size()];
+    memcpy(rawFileStr, fileStr.c_str(), fileStr.size());
+
+    result->content = rawFileStr;
+    result->content_length = fileStr.size();
+    result->source_name = requestedSource;
+    result->source_name_length = strlen(requestedSource);
+    result->user_data = nullptr;
+
+    return result;
+}
+
+static void CompileIncludeRelease(void* userData, shaderc_include_result* includeResult)
+{
+    if (includeResult != nullptr)
+    {
+        delete[] includeResult->content;
+        delete includeResult;
+    }
+}
+#endif
 
 void MaterialBase::Compile()
 {
@@ -368,6 +414,128 @@ void MaterialBase::Compile()
     }
 
     // (X) Compile with shaderc / glslc to get the spirv (save to members)
+#if 1
+    {
+        shaderc_compiler_t compiler = shaderc_compiler_initialize();
+        shaderc_compile_options_t options = shaderc_compile_options_initialize();
+
+
+        shaderc_compile_options_set_source_language(options, shaderc_source_language_glsl);
+        shaderc_compile_options_set_target_env(options, shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_0);
+        shaderc_compile_options_set_target_spirv(options, shaderc_spirv_version_1_0);
+
+#if DEBUG_MATERIAL_SHADERS
+        shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_zero);
+        shaderc_compile_options_set_generate_debug_info(options);
+#else
+        shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_size);
+#endif
+
+        shaderc_compile_options_set_include_callbacks(options, &CompileInclude, &CompileIncludeRelease, nullptr);
+
+        // Compile frag first?
+        {
+            shaderc_compile_options_t fragOptions = shaderc_compile_options_clone(options);
+
+            if (GetBlendMode() == BlendMode::Masked)
+            {
+                shaderc_compile_options_add_macro_definition(fragOptions, "MATERIAL_MASKED", strlen("MATERIAL_MASKED"), "1", strlen("1"));
+            }
+
+            if (ShouldApplyFog())
+            {
+                shaderc_compile_options_add_macro_definition(fragOptions, "MATERIAL_APPLY_FOG", strlen("MATERIAL_APPLY_FOG"), "1", strlen("1"));
+            }
+
+            shaderc_compilation_result_t result = shaderc_compile_into_spv(compiler, fragCode.c_str(), fragCode.size(), shaderc_fragment_shader, "MaterialFrag", "main", fragOptions);
+
+            if (shaderc_result_get_compilation_status(result) == shaderc_compilation_status_compilation_error)
+            {
+                const char* errorMsg = shaderc_result_get_error_message(result);
+                LogError("Shader compilation error: %s", errorMsg);
+            }
+            else
+            {
+                const char* spirvCode = shaderc_result_get_bytes(result);
+                size_t spirvSize = shaderc_result_get_length(result);
+                mFragmentCode.resize(spirvSize);
+                memcpy(mFragmentCode.data(), spirvCode, spirvSize);
+            }
+
+            shaderc_result_release(result);
+            shaderc_compile_options_release(fragOptions);
+        }
+
+
+        std::vector<VertexType> vertTypes;
+        vertTypes.push_back(VertexType::Vertex);
+        vertTypes.push_back(VertexType::VertexInstanceColor);
+        vertTypes.push_back(VertexType::VertexColor);
+        vertTypes.push_back(VertexType::VertexColorInstanceColor);
+        vertTypes.push_back(VertexType::VertexParticle);
+        vertTypes.push_back(VertexType::VertexSkinned);
+
+        for (uint32_t i = 0; i < uint32_t(VertexType::Max); ++i)
+        {
+            VertexType vertType = (VertexType)i;
+            if (vertType == VertexType::VertexUI ||
+                vertType == VertexType::VertexColorSimple)
+            {
+                // These aren't supported.
+                continue;
+            }
+
+            shaderc_compile_options_t vertOptions = shaderc_compile_options_clone(options);
+
+            const char* vertStr = "";
+            uint32_t vertStrSize = 0;
+
+            switch (vertType)
+            {
+            case VertexType::Vertex:
+            case VertexType::VertexInstanceColor:
+                vertStr = "VERTEX_TYPE_BASIC";
+                break;
+            case VertexType::VertexColor:
+            case VertexType::VertexColorInstanceColor:
+                vertStr = "VERTEX_TYPE_COLOR";
+                break;
+            case VertexType::VertexParticle:
+                vertStr = "VERTEX_TYPE_PARTICLE";
+                break;
+            case VertexType::VertexSkinned:
+                vertStr = "VERTEX_TYPE_SKINNED";
+                break;
+            }
+
+            vertStrSize = (uint32_t)strlen(vertStr);
+            OCT_ASSERT(vertStrSize > 0);
+
+            shaderc_compile_options_add_macro_definition(vertOptions, vertStr, vertStrSize, "1", strlen("1"));
+
+            shaderc_compilation_result_t result = shaderc_compile_into_spv(compiler, vertCode.c_str(), vertCode.size(), shaderc_vertex_shader, "MaterialVert", "main", vertOptions);
+
+            if (shaderc_result_get_compilation_status(result) == shaderc_compilation_status_compilation_error)
+            {
+                const char* errorMsg = shaderc_result_get_error_message(result);
+                LogError("Shader compilation error: %s", errorMsg);
+            }
+            else
+            {
+                const char* spirvCode = shaderc_result_get_bytes(result);
+                size_t spirvSize = shaderc_result_get_length(result);
+                mVertexCode[i].resize(spirvSize);
+                memcpy(mVertexCode[i].data(), spirvCode, spirvSize);
+            }
+
+            shaderc_result_release(result);
+            shaderc_compile_options_release(vertOptions);
+        }
+
+        shaderc_compile_options_release(options);
+        shaderc_compiler_release(compiler);
+    }
+#else
     {
         Stream vertStream;
         vertStream.WriteString(vertCode);
@@ -414,12 +582,19 @@ void MaterialBase::Compile()
             // ... Wait we need to compile 6 different vertex shaders...
         }
     }
+#endif
 
-
-    // (X) Fillout parameters using SpirvReflect (???? not needed?)
     // (X) Call GFX_BuildMaterial() to create pipelines/descriptor layout.
+    GFX_DestroyMaterialResource(this);
+    GFX_CreateMaterialResource(this);
+
     // (X) Assuming compilation was successful, copy over old parameter values (that match new params) and param counts.
+    mNumScalarParams = numScalarParams;
+    mNumVectorParams = numVectorParams;
+    mNumTextureParams = numTextureParams;
+
     // (X) Set the material's parameters to the new parameter list.
+    mParameters = userParams;
 
     // Relink any loaded material instances that use this base.
     std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
