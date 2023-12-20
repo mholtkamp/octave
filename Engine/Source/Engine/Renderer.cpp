@@ -568,9 +568,12 @@ void Renderer::GatherDrawData(World* world)
             return true;
         };
 
-        if (world != nullptr && world->GetRootNode() != nullptr)
+        if (world != nullptr)
         {
-            world->GetRootNode()->Traverse(gatherDrawData);
+            if (world->GetRootNode() != nullptr)
+            {
+                world->GetRootNode()->Traverse(gatherDrawData);
+            }
 
             // Need to render these widgets even if in 3D mode.
             enable2D = true;

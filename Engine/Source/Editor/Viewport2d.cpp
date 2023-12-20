@@ -43,7 +43,12 @@ void Viewport2D::Update(float deltaTime)
         mouseY -= renderer->GetViewportY();
 
         uint32_t maxDepth = 0;
-        hoverWidget = FindHoveredWidget(GetWorld()->GetRootNode(), maxDepth, mouseX, mouseY);
+        Node* rootNode = GetWorld()->GetRootNode();
+
+        if (rootNode != nullptr)
+        {
+            hoverWidget = FindHoveredWidget(rootNode, maxDepth, mouseX, mouseY);
+        }
     }
 
     if (hoverWidget &&
@@ -525,8 +530,10 @@ void Viewport2D::RestorePreTransforms()
 
 Widget* Viewport2D::FindHoveredWidget(Node* node, uint32_t& maxDepth, int32_t mouseX, int32_t mouseY, uint32_t depth)
 {
-    Widget* retWidget = nullptr;
+    if (node == nullptr)
+        return nullptr;
 
+    Widget* retWidget = nullptr;
     Widget* widget = node->As<Widget>();
 
     if (widget)

@@ -741,8 +741,12 @@ void EditorState::OpenEditScene(int32_t idx)
         if (editScene.mRootNode != nullptr)
         {
             editScene.mRootNode->Traverse(respawnSceneLinks);
-        }
 
+            if (editScene.mRootNode->IsNode3D())
+                GetEditorState()->SetEditorMode(EditorMode::Scene3D);
+            else if (editScene.mRootNode->IsWidget())
+                GetEditorState()->SetEditorMode(EditorMode::Scene2D);
+        }
 
         ActionManager::Get()->ResetUndoRedo();
     }
