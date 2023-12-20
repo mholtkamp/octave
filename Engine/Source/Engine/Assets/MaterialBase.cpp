@@ -200,7 +200,7 @@ void MaterialBase::Compile()
     std::string projectShaderDir = GetEngineState()->mProjectDirectory + "Shaders/";
 
     // (X) Get user shader code from .glsl file.
-    std::string userCode;
+    std::string rawUserCode;
 
     {
         // Check for engine shader first
@@ -211,7 +211,7 @@ void MaterialBase::Compile()
             shaderStream.ReadFile(shaderPath.c_str(), false);
             shaderStream.GetData();
 
-            userCode.assign(shaderStream.GetData(), shaderStream.GetSize());
+            rawUserCode.assign(shaderStream.GetData(), shaderStream.GetSize());
         }
         else
         {
@@ -222,12 +222,12 @@ void MaterialBase::Compile()
                 shaderStream.ReadFile(shaderPath.c_str(), false);
                 shaderStream.GetData();
 
-                userCode.assign(shaderStream.GetData(), shaderStream.GetSize());
+                rawUserCode.assign(shaderStream.GetData(), shaderStream.GetSize());
             }
         }
     }
 
-    if (userCode == "")
+    if (rawUserCode == "")
         return;
 
     // (X) Get template vert + frag code
@@ -250,10 +250,14 @@ void MaterialBase::Compile()
         fragCode.assign(stream.GetData(), stream.GetSize());
     }
 
+    OCT_ASSERT(vertCode.size() > 0);
+    OCT_ASSERT(fragCode.size() > 0);
+
     // (X) Extract shader parameters from user code
     std::vector<ShaderParameter> userParams;
+    std::string userCode;
     {
-        std::istringstream iss(userCode);
+        std::istringstream iss(rawUserCode);
 
         for (std::string line; std::getline(iss, line);)
         {
@@ -288,18 +292,85 @@ void MaterialBase::Compile()
 
                     // Remove spaces
                     RemoveSpacesFromString(paramName);
+
+                    ShaderParameter param;
+                    param.mName = paramName;
+                    param.mType = paramType;
+                    userParams.push_back(param);
                 }
+            }
+            else
+            {
+                // Filter out the parameters from the raw code.
+                userCode += line;
             }
         }
     }
-    
-    // (X) Insert user code into the template code
-    // (X) Inseret user parameters into the template code
-    // (X) Compile with shaderc / glslc to get the spirv (save to members)
-    // (X) Fillout parameters using SpirvReflect (????)
-    // (X) Call GFX_BuildMaterial() to create pipelines/descriptor layout.
 
-    // (X) Assuming compilation was successful, copy over old parameter values (that match new params).
+    // (X) Generate shader parameter string while determining param Offset values
+    uint32_t numScalarParams = 0;
+    uint32_t numVectorParams = 0;
+    uint32_t numTextureParams = 0;
+    uint32_t uniformByteOffset = 0;
+
+    std::string userParamsString = "layout(set = 2, binding = 0) uniform MaterialUniformBuffer\n{\n";
+
+    // Add vector parameters first (for alignment reasons).
+    for (uint32_t i = 0; i < userParams.size(); ++i)
+    {
+        ShaderParameter& param = userParams[i];
+        if (param.mType == ShaderParameterType::Vector)
+        {
+            param.mOffset = uniformByteOffset;
+            uniformByteOffset += 4;
+            userParamsString += ("    vec4 " + param.mName + ";\n");
+            numVectorParams++;
+        }
+    }
+
+    // Then add scalars
+    for (uint32_t i = 0; i < userParams.size(); ++i)
+    {
+        ShaderParameter& param = userParams[i];
+        if (param.mType == ShaderParameterType::Scalar)
+        {
+            param.mOffset = uniformByteOffset;
+            uniformByteOffset += 1;
+            userParamsString += ("    float " + param.mName + ";\n");
+            numScalarParams++;
+        }
+    }
+
+    userParamsString += "}\n\n";
+
+    // Lastly, gather textures
+    for (uint32_t i = 0; i < userParams.size(); ++i)
+    {
+        ShaderParameter& param = userParams[i];
+        if (param.mType == ShaderParameterType::Texture)
+        {
+            // Unlike uniform parameters, texture "mOffset" means descriptor binding location, not a byte offset or anything.
+            param.mOffset = numTextureParams + 1;
+            userParamsString += ("layout(set = 2, binding = " + std::to_string(param.mOffset) + ") uniform sampler2D " + param.mName + ";\n");
+            numTextureParams++;
+        }
+    }
+    
+    // (X) Insert user code + parameter string into the template code
+    {
+        std::string paramStub = "---CUSTOM-PARAMS---";
+        vertCode.replace(vertCode.find(paramStub), paramStub.length(), userParamsString);
+        fragCode.replace(fragCode.find(paramStub), paramStub.length(), userParamsString);
+
+        std::string codeStub = "---CUSTOM-CODE---";
+        vertCode.replace(vertCode.find(codeStub), codeStub.length(), userCode);
+        fragCode.replace(fragCode.find(codeStub), codeStub.length(), userCode);
+    }
+
+    // (X) Compile with shaderc / glslc to get the spirv (save to members)
+    // (X) Fillout parameters using SpirvReflect (???? not needed?)
+    // (X) Call GFX_BuildMaterial() to create pipelines/descriptor layout.
+    // (X) Assuming compilation was successful, copy over old parameter values (that match new params) and param counts.
     // (X) Set the material's parameters to the new parameter list.
 
     // Relink any loaded material instances that use this base.

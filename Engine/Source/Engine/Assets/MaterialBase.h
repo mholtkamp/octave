@@ -62,6 +62,9 @@ protected:
     // Misc
     std::vector<uint8_t> mVertexCode[(uint32_t)VertexType::Max];
     std::vector<uint8_t> mFragmentCode;
+    uint32_t mNumScalarParams = 0;
+    uint32_t mNumVectorParams = 0;
+    uint32_t mNumTextureParams = 0;
     bool mCompiled = false;
     bool mCompilationStale = false;
 };
