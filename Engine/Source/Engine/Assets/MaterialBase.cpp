@@ -368,6 +368,54 @@ void MaterialBase::Compile()
     }
 
     // (X) Compile with shaderc / glslc to get the spirv (save to members)
+    {
+        Stream vertStream;
+        vertStream.WriteString(vertCode);
+        vertStream.WriteFile("Engine/Saves/TempMaterialVert.vert");
+
+        Stream fragStream;
+        fragStream.WriteString(fragCode);
+        fragStream.WriteFile("Engine/Saves/TempMaterialFrag.frag");
+    }
+
+    // Remove old files first. (This could cause problems if file is opened and locked.
+    // Just another reason this code should calling a library and not running shell commands.
+    SYS_RemoveFile("Engine/Saves/TempMaterialVert.bin");
+    SYS_RemoveFile("Engine/Saves/TempMaterialFrag.bin");
+
+#if PLATFORM_WINDOWS
+    std::string compStr = "cd Engine/Saves && \"%VULKAN_SDK%/Bin/glslc.exe TempMaterialVert.vert -Os -o TempMaterialVert.bin\" -I \"../Shaders/GLSL/src\"";
+    SYS_Exec(compStr.c_str());
+    compStr = "cd Engine/Saves && \"%VULKAN_SDK%/Bin/glslc.exe TempMaterialFrag.frag -Os -o TempMaterialFrag.bin\" -I \"../Shaders/GLSL/src\"";
+    SYS_Exec(compStr.c_str());
+    //SYS_Exec("cd Engine/Saves && \"./compile.bat\"");
+#else
+    std::string compStr = "cd Engine/Saves && \"%VULKAN_SDK%/Bin/glslc TempMaterialVert.vert -Os -o TempMaterialVert.bin\" -I \"../Shaders/GLSL/src\"";
+    SYS_Exec(compStr.c_str());
+    compStr = "cd Engine/Saves && \"%VULKAN_SDK%/Bin/glslc TempMaterialFrag.frag -Os -o TempMaterialFrag.bin\" -I \"../Shaders/GLSL/src\"";
+    SYS_Exec(compStr.c_str());
+    //SYS_Exec("cd Engine/Saves && \"./compile.sh\"");
+#endif
+
+    // Check if code compiled
+    bool compiledSuccessful = false;
+
+    {
+        Stream vertBin;
+        vertBin.ReadFile("Engine/Saves/TempMaterialVert.bin", false);
+
+        Stream fragBin;
+        fragBin.ReadFile("Engine/Saves/TempMaterialFrag.bin", false);
+
+        if (vertBin.GetSize() > 0 && fragBin.GetSize() > 0)
+        {
+            compiledSuccessful = true;
+
+            // ... Wait we need to compile 6 different vertex shaders...
+        }
+    }
+
+
     // (X) Fillout parameters using SpirvReflect (???? not needed?)
     // (X) Call GFX_BuildMaterial() to create pipelines/descriptor layout.
     // (X) Assuming compilation was successful, copy over old parameter values (that match new params) and param counts.
