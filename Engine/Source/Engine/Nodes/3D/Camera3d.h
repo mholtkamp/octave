@@ -35,7 +35,7 @@ struct PerspectiveSettings
     PerspectiveSettings() :
         mFovY(70.0f),
         mAspectRatio(1.78f),
-        mNear(1.0f),
+        mNear(0.25f),
         mFar(4096.0f)
     {
 

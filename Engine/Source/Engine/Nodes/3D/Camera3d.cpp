@@ -48,6 +48,12 @@ void Camera3D::GatherProperties(std::vector<Property>& outProps)
 
     outProps.push_back(Property(DatumType::Bool, "Perspective", this, &mProjectionMode));
     outProps.push_back(Property(DatumType::Float, "Field Of View", this, &mPerspectiveSettings.mFovY));
+    outProps.push_back(Property(DatumType::Float, "Persp Near Plane", this, &mPerspectiveSettings.mNear));
+    outProps.push_back(Property(DatumType::Float, "Persp Far Plane", this, &mPerspectiveSettings.mFar));
+    outProps.push_back(Property(DatumType::Float, "Ortho Near Plane", this, &mOrthoSettings.mNear));
+    outProps.push_back(Property(DatumType::Float, "Ortho Far Plane", this, &mOrthoSettings.mFar));
+    outProps.push_back(Property(DatumType::Float, "Ortho Width", this, &mOrthoSettings.mWidth));
+    outProps.push_back(Property(DatumType::Float, "Ortho Height", this, &mOrthoSettings.mHeight));
 }
 
 void Camera3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)

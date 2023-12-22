@@ -111,6 +111,8 @@ struct EditorState
     void Shutdown();
     void Update(float deltaTime);
 
+    void GatherProperties(std::vector<Property>& props);
+
     void SetEditorMode(EditorMode mode);
     EditorMode GetEditorMode();
 

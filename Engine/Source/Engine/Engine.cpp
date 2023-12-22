@@ -679,6 +679,10 @@ void GarbageCollect()
 void GatherGlobalProperties(std::vector<Property>& props)
 {
     Renderer::Get()->GatherProperties(props);
+
+#if EDITOR
+    GetEditorState()->GatherProperties(props);
+#endif
 }
 
 void SetScreenOrientation(ScreenOrientation mode)

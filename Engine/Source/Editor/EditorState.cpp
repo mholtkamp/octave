@@ -151,6 +151,11 @@ void EditorState::Update(float deltaTime)
     }
 }
 
+void EditorState::GatherProperties(std::vector<Property>& props)
+{
+
+}
+
 void EditorState::SetEditorMode(EditorMode mode)
 {
     // Only allow scene editing in PIE for now.
