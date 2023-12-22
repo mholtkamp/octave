@@ -260,7 +260,7 @@ void Viewport3D::HandleDefaultControls()
                     }
                 }
 
-                float focusDist = glm::max(boundsRadius + 1.0f, sDefaultFocalDistance);
+                float focusDist = glm::max(boundsRadius + 1.0f, 2.0f);
 
                 glm::vec3 cameraPos = camera->GetAbsolutePosition();
                 glm::vec3 compPos = node3d->GetAbsolutePosition();

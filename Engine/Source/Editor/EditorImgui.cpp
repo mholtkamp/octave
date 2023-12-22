@@ -1352,6 +1352,7 @@ static void DrawScenePanel()
         if (ImGui::BeginPopupContextItem())
         {
             bool setTextInputFocus = false;
+            bool closeContextPopup = false;
 
             sNodeContextActive = true;
 
@@ -1392,7 +1393,7 @@ static void DrawScenePanel()
             }
             if (!nodeSceneLinked && node->As<SkeletalMesh3D>())
             {
-                if (ImGui::Selectable("Attach Selected To Bone"))
+                if (ImGui::Selectable("Attach Selected To Bone", false, ImGuiSelectableFlags_DontClosePopups))
                 {
                     ImGui::OpenPopup("Attach Selected To Bone");
                     setTextInputFocus = true;
@@ -1466,10 +1467,17 @@ static void DrawScenePanel()
                     {
                         int32_t boneIdx = skNode->FindBoneIndex(sPopupInputBuffer);
                         am->AttachSelectedNodes(skNode, boneIdx);
+                        ImGui::CloseCurrentPopup();
+                        closeContextPopup = true;
                     }
                 }
 
                 ImGui::EndPopup();
+            }
+
+            if (closeContextPopup)
+            {
+                ImGui::CloseCurrentPopup();
             }
 
             ImGui::EndPopup();
