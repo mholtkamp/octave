@@ -164,7 +164,24 @@ void Capsule3D::UpdateRigidBody()
     EnableRigidBody(false);
 
     btCapsuleShape* capsuleShape = static_cast<btCapsuleShape*>(mCollisionShape);
-    capsuleShape->setImplicitShapeDimensions({mRadius, 0.5f * mHeight, mRadius});
+
+    if (capsuleShape->getRadius() != mRadius)
+    {
+        // Workaround for issue where capsule margin can't be changed after creation.
+        // The margin needs to be equal to the radius.
+        DestroyComponentCollisionShape();
+        btCapsuleShape* newCapsuleShape = new btCapsuleShape(mRadius, mHeight);
+        SetCollisionShape(newCapsuleShape);
+    }
+    else
+    {
+        capsuleShape->setImplicitShapeDimensions({ mRadius, 0.5f * mHeight, mRadius });
+        // setMargin() is NOP'd out for capsules so you CAN'T change it???
+        // An easy fix is to remove the override version that ignores the margin change...
+        // But for now (so we don't have to edit bullet source code), if the radius changes, we just recreate
+        // the collision shape. See above...
+        //capsuleShape->setMargin(mRadius);
+    }
 
     EnableRigidBody(true);
 }
