@@ -1612,6 +1612,10 @@ void Script::CreateScriptInstance()
             mHandleEndOverlap = CheckIfFunctionExists("EndOverlap");
             mHandleOnCollision = CheckIfFunctionExists("OnCollision");
 
+            // Is calling Create() here causing issues? It used to be called after gathering properties.
+            // If this causes a problem, consider calling a separate function like PreCreate() or Init() or something.
+            CallFunction("Create");
+
             UploadScriptProperties();
             GatherScriptProperties();
 
@@ -1621,7 +1625,8 @@ void Script::CreateScriptInstance()
                 RegisterNetFuncs();
             }
 
-            CallFunction("Create");
+            // Create used to be called here, but then we couldn't assign default values in Create().
+            //CallFunction("Create");
         }
         else
         {
