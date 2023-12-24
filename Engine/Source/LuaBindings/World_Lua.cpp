@@ -290,8 +290,8 @@ int World_Lua::RayTest(lua_State* L)
     lua_setfield(L, -2, "start");
     Vector_Lua::Create(L, result.mEnd);
     lua_setfield(L, -2, "end");
-    Node_Lua::Create(L, result.mHitComponent);
-    lua_setfield(L, -2, "hitComponent");
+    Node_Lua::Create(L, result.mHitNode);
+    lua_setfield(L, -2, "hitNode");
     Vector_Lua::Create(L, result.mHitNormal);
     lua_setfield(L, -2, "hitNormal");
     Vector_Lua::Create(L, result.mHitPosition);
@@ -330,8 +330,8 @@ int World_Lua::RayTestMulti(lua_State* L)
     {
         lua_newtable(L);
         int hitTableIdx = lua_gettop(L);
-        Node_Lua::Create(L, result.mHitComponents[i]);
-        lua_setfield(L, hitTableIdx, "component");
+        Node_Lua::Create(L, result.mHitNodes[i]);
+        lua_setfield(L, hitTableIdx, "node");
         Vector_Lua::Create(L, result.mHitNormals[i]);
         lua_setfield(L, hitTableIdx, "normal");
         Vector_Lua::Create(L, result.mHitPositions[i]);
@@ -371,8 +371,8 @@ int World_Lua::SweepTest(lua_State* L)
     lua_setfield(L, -2, "start");
     Vector_Lua::Create(L, result.mEnd);
     lua_setfield(L, -2, "end");
-    Node_Lua::Create(L, result.mHitComponent);
-    lua_setfield(L, -2, "hitComponent");
+    Node_Lua::Create(L, result.mHitNode);
+    lua_setfield(L, -2, "hitNode");
     Vector_Lua::Create(L, result.mHitNormal);
     lua_setfield(L, -2, "hitNormal");
     Vector_Lua::Create(L, result.mHitPosition);

@@ -428,8 +428,8 @@ int Primitive3D_Lua::SweepToWorldPosition(lua_State* L)
     lua_setfield(L, -2, "start");
     Vector_Lua::Create(L, result.mEnd);
     lua_setfield(L, -2, "end");
-    Node_Lua::Create(L, result.mHitComponent);
-    lua_setfield(L, -2, "hitComponent");
+    Node_Lua::Create(L, result.mHitNode);
+    lua_setfield(L, -2, "hitNode");
     Vector_Lua::Create(L, result.mHitNormal);
     lua_setfield(L, -2, "hitNormal");
     Vector_Lua::Create(L, result.mHitPosition);

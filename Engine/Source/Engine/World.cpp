@@ -401,11 +401,11 @@ void World::RayTest(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTe
 
     if (result.m_collisionObject != nullptr)
     {
-        outResult.mHitComponent = reinterpret_cast<Primitive3D*>(result.m_collisionObject->getUserPointer());
+        outResult.mHitNode = reinterpret_cast<Primitive3D*>(result.m_collisionObject->getUserPointer());
     }
     else
     {
-        outResult.mHitComponent = nullptr;
+        outResult.mHitNode = nullptr;
     }
 }
 
@@ -430,7 +430,7 @@ void World::RayTestMulti(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, 
         outResult.mHitPositions.push_back({ result.m_hitPointWorld[i].x(), result.m_hitPointWorld[i].y(), result.m_hitPointWorld[i].z() });
         outResult.mHitNormals.push_back({ result.m_hitNormalWorld[i].x(), result.m_hitNormalWorld[i].y(), result.m_hitNormalWorld[i].z() });
         outResult.mHitFractions.push_back(result.m_hitFractions[i]);
-        outResult.mHitComponents.push_back(reinterpret_cast<Primitive3D*>(result.m_collisionObjects[i]->getUserPointer()));
+        outResult.mHitNodes.push_back(reinterpret_cast<Primitive3D*>(result.m_collisionObjects[i]->getUserPointer()));
     }
 }
 
@@ -465,7 +465,7 @@ void World::SweepTest(
         outResult.mStart = start;
         outResult.mEnd = end;
         outResult.mHitFraction = 1.0f;
-        outResult.mHitComponent = nullptr;
+        outResult.mHitNode = nullptr;
         return;
     }
 
@@ -498,11 +498,11 @@ void World::SweepTest(
 
     if (result.m_hitCollisionObject != nullptr)
     {
-        outResult.mHitComponent = reinterpret_cast<Primitive3D*>(result.m_hitCollisionObject->getUserPointer());
+        outResult.mHitNode = reinterpret_cast<Primitive3D*>(result.m_hitCollisionObject->getUserPointer());
     }
     else
     {
-        outResult.mHitComponent = nullptr;
+        outResult.mHitNode = nullptr;
     }
 }
 

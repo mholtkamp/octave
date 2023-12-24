@@ -826,16 +826,16 @@ bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outS
 
         glm::vec3 fracDelta = outSweepResult.mHitFraction * delta;
 
-        SetPosition(startPos + fracDelta + outSweepResult.mHitNormal * padding);
+        SetAbsolutePosition(startPos + fracDelta + outSweepResult.mHitNormal * padding);
 
         if (GetParent() != nullptr)
         {
-            GetParent()->OnCollision(this, outSweepResult.mHitComponent, outSweepResult.mHitPosition, outSweepResult.mHitNormal, nullptr);
+            GetParent()->OnCollision(this, outSweepResult.mHitNode, outSweepResult.mHitPosition, outSweepResult.mHitNormal, nullptr);
         }
     }
     else
     {
-        SetPosition(position);
+        SetAbsolutePosition(position);
     }
 
     return hit;

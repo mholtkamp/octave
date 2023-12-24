@@ -294,7 +294,7 @@ struct RayTestResult
 {
     glm::vec3 mStart = {};
     glm::vec3 mEnd = {};
-    Primitive3D* mHitComponent = {};
+    Primitive3D* mHitNode = {};
     glm::vec3 mHitNormal = {};
     glm::vec3 mHitPosition = {};
     float mHitFraction = 0.0f;
@@ -305,7 +305,7 @@ struct RayTestMultiResult
     glm::vec3 mStart = {};
     glm::vec3 mEnd = {};
     uint32_t mNumHits = 0;
-    std::vector<Primitive3D*> mHitComponents;
+    std::vector<Primitive3D*> mHitNodes;
     std::vector<glm::vec3> mHitNormals;
     std::vector<glm::vec3> mHitPositions;
     std::vector<float> mHitFractions;
@@ -315,7 +315,7 @@ struct SweepTestResult
 {
     glm::vec3 mStart = {};
     glm::vec3 mEnd = {};
-    Primitive3D* mHitComponent = {};
+    Primitive3D* mHitNode = {};
     glm::vec3 mHitNormal = {};
     glm::vec3 mHitPosition = {};
     float mHitFraction = 0.0f;

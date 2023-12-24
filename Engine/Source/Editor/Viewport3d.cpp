@@ -498,7 +498,7 @@ void Viewport3D::HandleDefaultControls()
                          primComp->EnableCollision(savedCollisionEnabled);
                      }
 
-                     if (rayResult.mHitComponent != nullptr)
+                     if (rayResult.mHitNode != nullptr)
                      {
                          ActionManager::Get()->EXE_SetAbsolutePosition(transComp, rayResult.mHitPosition);
                          sLastNormal = rayResult.mHitNormal;

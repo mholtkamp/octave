@@ -338,22 +338,32 @@ void Node3D_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, RotateAround);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetAbsolutePosition);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetAbsolutePosition, "GetWorldPosition");
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetAbsoluteRotationEuler);
     REGISTER_TABLE_FUNC_EX(L, mtIndex, GetAbsoluteRotationEuler, "GetAbsoluteRotation");
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetAbsoluteRotationEuler, "GetWorldRotation");
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetAbsoluteRotationQuat);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetAbsoluteRotationQuat, "GetWorldRotationQuat");
+
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetAbsoluteScale);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetAbsoluteScale, "GetWorldScale");
 
     REGISTER_TABLE_FUNC(L, mtIndex, SetAbsolutePosition);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetAbsolutePosition, "SetWorldPosition");
 
     REGISTER_TABLE_FUNC(L, mtIndex, SetAbsoluteRotationEuler);
     REGISTER_TABLE_FUNC_EX(L, mtIndex, SetAbsoluteRotationEuler, "SetAbsoluteRotation");
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetAbsoluteRotationEuler, "SetWorldRotation");
+
 
     REGISTER_TABLE_FUNC(L, mtIndex, SetAbsoluteRotationQuat);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetAbsoluteRotationQuat, "SetWorldRotationQuat");
 
     REGISTER_TABLE_FUNC(L, mtIndex, SetAbsoluteScale);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetAbsoluteScale, "SetWorldScale");
 
     REGISTER_TABLE_FUNC(L, mtIndex, AddRotationEuler);
     REGISTER_TABLE_FUNC_EX(L, mtIndex, AddRotationEuler, "AddRotation");
@@ -362,8 +372,10 @@ void Node3D_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, mtIndex, AddAbsoluteRotationEuler);
     REGISTER_TABLE_FUNC_EX(L, mtIndex, AddAbsoluteRotationEuler, "AddAbsoluteRotation");
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, AddAbsoluteRotationEuler, "AddWorldRotation");
 
     REGISTER_TABLE_FUNC(L, mtIndex, AddAbsoluteRotationQuat);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, AddAbsoluteRotationQuat, "AddWorldRotationQuat");
 
     REGISTER_TABLE_FUNC(L, mtIndex, LookAt);
 

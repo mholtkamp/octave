@@ -411,7 +411,7 @@ glm::vec3 Camera3D::TraceScreenToWorld(int32_t x, int32_t y, uint8_t colMask, Pr
 
     if (outComp != nullptr)
     {
-        *outComp = result.mHitComponent;
+        *outComp = result.mHitNode;
     }
 
     return result.mHitPosition;
