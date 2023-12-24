@@ -75,8 +75,10 @@ void StaticMesh3D_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, GetStaticMesh);
 
     REGISTER_TABLE_FUNC(L, mtIndex, SetUseTriangleCollision);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetUseTriangleCollision, "EnableTriangleCollision");
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetUseTriangleCollision);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetUseTriangleCollision, "IsTriangleCollisionEnabled");
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetBakeLighting);
 
