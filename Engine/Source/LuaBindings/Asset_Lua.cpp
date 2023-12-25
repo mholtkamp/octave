@@ -121,9 +121,9 @@ int Asset_Lua::IsLoaded(lua_State* L)
 
 void Asset_Lua::BindCommon(lua_State* L, int mtIndex)
 {
-    REGISTER_TABLE_FUNC(L, mtIndex, Destroy);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Destroy, "__gc");
 
-    REGISTER_TABLE_FUNC(L, mtIndex, Equals);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Equals, "__eq");
 }
 
 void Asset_Lua::Bind()
