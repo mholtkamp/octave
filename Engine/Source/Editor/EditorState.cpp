@@ -15,6 +15,7 @@
 #include "Renderer.h"
 #include "Grid.h"
 #include "World.h"
+#include "ScriptUtils.h"
 #include "AssetDir.h"
 #include "TimerManager.h"
 #include "AudioManager.h"
@@ -535,6 +536,8 @@ void EditorState::EndPlayInEditor()
     mPlayInEditor = false;
     mEjected = false;
     mPaused = false;
+
+    ScriptUtils::GarbageCollect();
 
     // Restore the scene we were working on
     OpenEditScene(mPieEditSceneIdx);
