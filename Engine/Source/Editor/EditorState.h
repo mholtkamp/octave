@@ -51,11 +51,18 @@ enum class EditorMode
     Count
 };
 
+struct LinkedSceneProps
+{
+    Node* mNode = nullptr;
+    std::vector<Property> mProps;
+};
+
 struct EditScene
 {
     SceneRef mSceneAsset;
     Node* mRootNode = nullptr;
     glm::mat4 mCameraTransform;
+    std::vector<LinkedSceneProps> mLinkedSceneProps;
 };
 
 struct EditorState

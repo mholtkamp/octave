@@ -5,6 +5,7 @@
 #include "Maths.h"
 #include "Engine.h"
 #include "TableDatum.h"
+#include "Assets/Scene.h"
 
 #include <iostream>
 #include <fstream>
@@ -361,6 +362,39 @@ glm::mat4 MakeTransform(glm::vec3 translation, glm::vec3 rotation, glm::vec3 sca
     transform = glm::scale(transform, scale);
 
     return transform;
+}
+
+void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
+{
+    std::vector<Property> extProps;
+    node->GatherProperties(extProps);
+
+    Scene* scene = node->IsSceneLinked() ? node->GetScene() : nullptr;
+
+    {
+        // For native nodes, determine which properties are different than the defaults
+        // and only save those to reduce storage/memory of the scene.
+        Node* defaultNode = scene ? scene->Instantiate() : Node::Construct(node->GetType());
+        std::vector<Property> defaultProps;
+        defaultNode->GatherProperties(defaultProps);
+
+        props.reserve(extProps.size());
+        for (uint32_t i = 0; i < extProps.size(); ++i)
+        {
+            Property* defaultProp = FindProperty(defaultProps, extProps[i].mName);
+
+            if (defaultProp == nullptr ||
+                (extProps[i].mType == DatumType::Asset && scene == nullptr) || 
+                extProps[i] != *defaultProp)
+            {
+                props.push_back(Property());
+                props.back().DeepCopy(extProps[i], true);
+            }
+        }
+
+        Node::Destruct(defaultNode);
+        defaultNode = nullptr;
+    }
 }
 
 void AddDebugDraw(const DebugDraw& draw)

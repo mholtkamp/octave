@@ -46,6 +46,8 @@ uint8_t ConvertKeyCodeToChar(uint8_t keyCode, bool shiftDown);
 
 glm::mat4 MakeTransform(glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale);
 
+void GatherNonDefaultProperties(Node* node, std::vector<Property>& props);
+
 void AddDebugDraw(const DebugDraw& draw);
 void AddDebugDraw(
     StaticMesh* mesh,

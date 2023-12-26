@@ -919,43 +919,7 @@ void Scene::AddNodeDef(Node* node, std::vector<Node*>& nodeList)
 
         nodeDef.mScene = scene;
 
-        std::vector<Property> extProps;
-        node->GatherProperties(extProps);
-
-        if (scene != nullptr)
-        {
-            // For nodes with scene sources, just copy all of the properties.
-            for (uint32_t i = 0; i < extProps.size(); ++i)
-            {
-                nodeDef.mProperties.push_back(Property());
-                nodeDef.mProperties.back().DeepCopy(extProps[i], true);
-            }
-        }
-        else
-        {
-            // For native nodes, determine which properties are different than the defaults
-            // and only save those to reduce storage/memory of the scene.
-            Node* defaultNode = Node::Construct(node->GetType());
-            std::vector<Property> defaultProps;
-            defaultNode->GatherProperties(defaultProps);
-
-            nodeDef.mProperties.reserve(extProps.size());
-            for (uint32_t i = 0; i < extProps.size(); ++i)
-            {
-                Property* defaultProp = FindProperty(defaultProps, extProps[i].mName);
-
-                if (defaultProp == nullptr ||
-                    extProps[i].mType == DatumType::Asset ||
-                    extProps[i] != *defaultProp)
-                {
-                    nodeDef.mProperties.push_back(Property());
-                    nodeDef.mProperties.back().DeepCopy(extProps[i], true);
-                }
-            }
-
-            delete defaultNode;
-            defaultNode = nullptr;
-        }
+        GatherNonDefaultProperties(node, nodeDef.mProperties);
 
         // Recursively add children. Do not add children of widgets spawned via maps.
         if (scene == nullptr)

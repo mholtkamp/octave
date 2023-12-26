@@ -661,6 +661,34 @@ void EditorState::DeselectNode(Node* node)
     }
 }
 
+void CacheEditSceneLinkedProps(EditScene& editScene)
+{
+    editScene.mLinkedSceneProps.clear();
+    auto saveSceneLinkedProps = [&](Node* node) -> bool
+    {
+        if (node->IsSceneLinked())
+        {
+            Scene* linkedScene = node->GetScene();
+            if (linkedScene != nullptr)
+            {
+                editScene.mLinkedSceneProps.push_back(LinkedSceneProps());
+                LinkedSceneProps& nonDefProps = editScene.mLinkedSceneProps.back();
+                nonDefProps.mNode = node;
+                GatherNonDefaultProperties(node, nonDefProps.mProps);
+            }
+
+            return false;
+        }
+
+        return true;
+    };
+
+    if (editScene.mRootNode != nullptr)
+    {
+        editScene.mRootNode->Traverse(saveSceneLinkedProps);
+    }
+}
+
 void EditorState::OpenEditScene(Scene* scene)
 {
     int32_t editSceneIdx = -1;
@@ -695,6 +723,8 @@ void EditorState::OpenEditScene(Scene* scene)
 
         editScene = &newEditScene;
         editSceneIdx = int32_t(mEditScenes.size()) - 1;
+
+        CacheEditSceneLinkedProps(*editScene);
     }
 
     OCT_ASSERT(editScene != nullptr);
@@ -730,14 +760,32 @@ void EditorState::OpenEditScene(int32_t idx)
         {
             if (node->IsSceneLinked())
             {
+                const std::vector<Property>* nonDefProps = nullptr;
+                for (uint32_t i = 0; i < editScene.mLinkedSceneProps.size(); ++i)
+                {
+                    if (editScene.mLinkedSceneProps[i].mNode == node)
+                    {
+                        nonDefProps = &editScene.mLinkedSceneProps[i].mProps;
+                        break;
+                    }
+                }
+
                 // Replace this scene-linked node with a newly instantiated version
                 // to make sure we grab new changes that have been made to the scene.
-                Node* newNode = node->Clone(true);
+                Node* newNode = node->GetScene()->Instantiate(); // node->Clone(true);
                 Node* parent = node->GetParent();
                 int32_t nodeIdx = parent->FindChildIndex(node);
 
                 parent->RemoveChild(node);
                 parent->AddChild(newNode, nodeIdx);
+
+                // Copy non-default props.
+                if (nonDefProps != nullptr)
+                {
+                    std::vector<Property> dstProps;
+                    newNode->GatherProperties(dstProps);
+                    CopyPropertyValues(dstProps, *nonDefProps);
+                }
 
                 Node::Destruct(node);
                 node = nullptr;
@@ -827,6 +875,8 @@ void EditorState::ShelveEditScene()
         editScene.mRootNode = GetWorld()->GetRootNode();
         editScene.mCameraTransform = GetEditorCamera()->GetTransform();
         GetWorld()->SetRootNode(nullptr);
+
+        CacheEditSceneLinkedProps(editScene);
 
         mEditSceneIndex = -1;
 
