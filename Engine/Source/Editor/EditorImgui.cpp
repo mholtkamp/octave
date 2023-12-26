@@ -680,7 +680,11 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                     }
                     else
                     {
+                        // Script properties use internal storage
                         prop.SetCount(prop.GetCount() + 1);
+
+                        // HACK: Re-assign values so that we trigger the script prop change handler to propagate changes to script.
+                        prop.SetValue(prop.GetValue(0), 0, prop.GetCount());
                     }
                 }
                 ImGui::SameLine();
@@ -694,7 +698,11 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
                         }
                         else
                         {
+                            // Script properties use internal storage
                             prop.Erase(prop.GetCount() - 1);
+
+                            // HACK: Re-assign values so that we trigger the script prop change handler to propagate changes to script.
+                            prop.SetValue(prop.GetValue(0), 0, prop.GetCount());
                         }
                     }
                 }

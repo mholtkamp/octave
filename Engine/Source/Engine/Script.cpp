@@ -60,6 +60,12 @@ bool Script::HandleForeignScriptPropChange(Datum* datum, uint32_t index, const v
 
     if (scriptProp != nullptr)
     {
+        if (scriptProp->IsArray() &&
+            scriptProp->GetCount() != prop->GetCount())
+        {
+            scriptProp->SetCount(prop->GetCount());
+        }
+
         scriptProp->SetValue(newValue, index);
     }
 
