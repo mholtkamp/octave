@@ -2557,6 +2557,7 @@ void ActionSetRootNode::Execute()
     mNewRoot->Detach(true);
     GetWorld()->SetRootNode(mNewRoot);
     mOldRoot->Attach(mNewRoot, true);
+    mOldRoot->SetScene(nullptr);
 }
 
 void ActionSetRootNode::Reverse()
@@ -2564,6 +2565,7 @@ void ActionSetRootNode::Reverse()
     mOldRoot->Detach(true);
     GetWorld()->SetRootNode(mOldRoot);
     mNewRoot->Attach(mNewRootParent, true, mNewRootChildIndex);
+    mNewRoot->SetScene(nullptr);
 }
 
 ActionSetAbsoluteRotation::ActionSetAbsoluteRotation(Node3D* node, glm::quat rot)
