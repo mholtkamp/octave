@@ -9,8 +9,8 @@
 
 Node* CheckNodeWrapper(lua_State* L, int arg)
 {
-    luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
-    Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
+    luaL_checkudata(L, arg, NODE_WRAPPER_TABLE_NAME);
+    Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, arg);
 
     if (nodeLua->mNode == nullptr)
     {

@@ -1212,6 +1212,12 @@ void Node::Detach(bool keepWorldTransform)
 
 void Node::AddChild(Node* child, int32_t index)
 {
+    if (child == this)
+    {
+        LogError("Cannot add a node as its own child.");
+        return;
+    }
+
     if (child != nullptr)
     {
         // TODO-NODE: Is this a good way to handle the world root getting attached elsewhere?
