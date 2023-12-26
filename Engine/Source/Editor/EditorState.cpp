@@ -1035,6 +1035,7 @@ void EditorState::ClearInspectHistory()
     mInspectPast.clear();
     mInspectFuture.clear();
     mPrevInspectedObject = nullptr;
+    mInspectedObject = nullptr;
 }
 
 void EditorState::ProgressInspectFuture()
