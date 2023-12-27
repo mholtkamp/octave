@@ -157,6 +157,8 @@ public:
 
     void SetReplicate(bool replicate);
     bool IsReplicated() const;
+    void SetReplicateTransform(bool repTransform);
+    bool IsTransformReplicated() const;
 
     void ForceReplication();
     void ClearForcedReplication();

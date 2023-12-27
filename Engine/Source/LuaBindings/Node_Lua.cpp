@@ -691,6 +691,26 @@ int Node_Lua::IsReplicated(lua_State* L)
     return 1;
 }
 
+int Node_Lua::SetReplicateTransform(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    node->SetReplicateTransform(value);
+
+    return 0;
+}
+
+int Node_Lua::IsTransformReplicated(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+
+    bool ret = node->IsTransformReplicated();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Node_Lua::ForceReplication(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -924,6 +944,10 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetReplicate);
 
     REGISTER_TABLE_FUNC(L, mtIndex, IsReplicated);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, SetReplicateTransform);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, IsTransformReplicated);
 
     REGISTER_TABLE_FUNC(L, mtIndex, ForceReplication);
 

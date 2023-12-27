@@ -102,6 +102,7 @@ void Script_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, Run);
 
     REGISTER_TABLE_FUNC(L, tableIdx, Inherit);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, Inherit, "Extend");
 
     REGISTER_TABLE_FUNC(L, tableIdx, New);
 

@@ -999,6 +999,16 @@ bool Node::IsReplicated() const
     return mReplicate;
 }
 
+void Node::SetReplicateTransform(bool repTransform)
+{
+    mReplicateTransform = repTransform;
+}
+
+bool Node::IsTransformReplicated() const
+{
+    return mReplicateTransform;
+}
+
 void Node::ForceReplication()
 {
     mForceReplicate = true;

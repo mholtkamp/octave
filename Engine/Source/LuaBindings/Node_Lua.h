@@ -76,6 +76,8 @@ struct Node_Lua
 
     static int SetReplicate(lua_State* L);
     static int IsReplicated(lua_State* L);
+    static int SetReplicateTransform(lua_State* L);
+    static int IsTransformReplicated(lua_State* L);
     static int ForceReplication(lua_State* L);
 
     static int HasTag(lua_State* L);
