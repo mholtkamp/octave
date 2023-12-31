@@ -221,6 +221,10 @@ void NetMsgSpawn::Execute(NetHost sender)
             {
                 // This is the root
                 // TODO: Handle multiple worlds.
+                // Also, do we want to destroy the previous root node here?
+                // If we don't we might leak memory. However, this could cause problems
+                // if the user spawns a new node that gets set as the root.
+                GetWorld()->DestroyRootNode();
                 GetWorld()->SetRootNode(newNode);
             }
             else

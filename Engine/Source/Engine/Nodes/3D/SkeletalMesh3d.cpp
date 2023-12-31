@@ -1108,7 +1108,7 @@ void SkeletalMesh3D::UpdateAnimation(float deltaTime, bool updateBones)
                 animTable.SetFloatField("time", sAnimEvents[i].mTime);
                 animTable.SetVectorField("value", sAnimEvents[i].mValue);
 
-                mAnimEventHandler.mScriptFunc.Call(animTable);
+                mAnimEventHandler.mScriptFunc.Call(1, &animTable);
             }
         }
     }

@@ -346,9 +346,14 @@ void NetworkManager::CloseSession()
         mNetStatus = NetStatus::Local;
         mHostId = INVALID_HOST_ID;
     }
+    else if (mNetStatus == NetStatus::Client ||
+             mNetStatus == NetStatus::Connecting)
+    {
+        Disconnect();
+    }
     else
     {
-        LogWarning("NetworkManager::CloseSession() called but no session is open.");
+        LogWarning("NetworkManager::CloseSession() called but there is no active session.");
     }
 }
 
@@ -505,9 +510,13 @@ void NetworkManager::Disconnect()
 
         ResetToLocalStatus();
     }
+    else if (mNetStatus == NetStatus::Server)
+    {
+        CloseSession();
+    }
     else
     {
-        LogWarning("NetworkManager::Disconnect() called but not connected/connecting to a remote session.");
+        LogWarning("NetworkManager::Disconnect() called but not connected to a session.");
     }
 }
 
@@ -531,7 +540,7 @@ void NetworkManager::Kick(NetHostId hostId, NetMsgKick::Reason reason)
             {
                 Datum clientTable;
                 WriteNetHostProfile(mClients[i], clientTable);
-                mDisconnectCallback.mScriptFunc.Call(clientTable);
+                mDisconnectCallback.mScriptFunc.Call(1, &clientTable);
             }
 
             LogDebug("Kicking client %08x:%u", mClients[i].mHost.mIpAddress, mClients[i].mHost.mPort);
@@ -893,7 +902,7 @@ void NetworkManager::HandleConnect(NetHost host, uint32_t gameCode, uint32_t ver
                 Datum clientTable;
                 WriteNetHostProfile(*newClient, clientTable);
 
-                mConnectCallback.mScriptFunc.Call(clientTable);
+                mConnectCallback.mScriptFunc.Call(1, &clientTable);
             }
         }
 
@@ -939,7 +948,8 @@ void NetworkManager::HandleReject(NetMsgReject::Reason reason)
         }
         if (mRejectCallback.mScriptFunc.IsValid())
         {
-            mRejectCallback.mScriptFunc.Call((int32_t)reason);
+            Datum reasonArg = (int32_t)reason;
+            mRejectCallback.mScriptFunc.Call(1, &reasonArg);
         }
     }
 }
@@ -967,7 +977,7 @@ void NetworkManager::HandleDisconnect(NetHost host)
                         Datum clientTable;
                         WriteNetHostProfile(mClients[i], clientTable);
 
-                        mDisconnectCallback.mScriptFunc.Call();
+                        mDisconnectCallback.mScriptFunc.Call(1, &clientTable);
                     }
 
                     mClients.erase(mClients.begin() + i);
@@ -995,7 +1005,8 @@ void NetworkManager::HandleKick(NetMsgKick::Reason reason)
         }
         if (mKickCallback.mScriptFunc.IsValid())
         {
-            mKickCallback.mScriptFunc.Call((int32_t)reason);
+            Datum reasonArg = (int32_t)reason;
+            mKickCallback.mScriptFunc.Call(1, &reasonArg);
         }
     }
 }
@@ -1490,7 +1501,8 @@ void NetworkManager::UpdateHostConnections(float deltaTime)
             }
             if (mKickCallback.mScriptFunc.IsValid())
             {
-                mKickCallback.mScriptFunc.Call((int32_t)NetMsgKick::Reason::Timeout);
+                Datum reasonArg = (int32_t)NetMsgKick::Reason::Timeout;
+                mKickCallback.mScriptFunc.Call(1, &reasonArg);
             }
         }
     }

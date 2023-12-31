@@ -9,6 +9,7 @@ struct Engine_Lua
 {
     static int Quit(lua_State* L);
     static int IsShuttingDown(lua_State* L);
+    static int GetWorld(lua_State* L);
     static int GetTime(lua_State* L);
     static int GetGameDeltaTime(lua_State* L);
     static int GetRealDeltaTime(lua_State* L);

@@ -37,7 +37,7 @@ bool IgnoreConvexResultCallback::needsCollision(btBroadphaseProxy* proxy0) const
 
 ReliablePacket::ReliablePacket(uint16_t seqNum, const char* data, uint32_t size)
 {
-    OCT_ASSERT(size < OCT_MAX_MSG_SIZE);
+    OCT_ASSERT(size <= OCT_MAX_MSG_SIZE);
     mSeq = seqNum;
     mData.resize(size);
     memcpy(mData.data(), data, size);

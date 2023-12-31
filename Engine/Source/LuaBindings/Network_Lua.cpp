@@ -141,8 +141,7 @@ int Network_Lua::GetNumSessions(lua_State* L)
 
 int Network_Lua::GetSession(lua_State* L)
 {
-    int32_t index = (int32_t)CHECK_INTEGER(L, 1);
-    index -= 1; // Lua indexes starting from 1
+    int32_t index = (int32_t)CHECK_INDEX(L, 1);
 
     const std::vector<GameSession>& sessions = NetworkManager::Get()->GetSessions();
     if (index >= 0 &&

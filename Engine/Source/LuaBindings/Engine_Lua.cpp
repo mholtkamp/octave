@@ -8,6 +8,7 @@
 
 #include "LuaBindings/Engine_Lua.h"
 #include "LuaBindings/Stream_Lua.h"
+#include "LuaBindings/World_Lua.h"
 
 #if LUA_ENABLED
 
@@ -22,6 +23,14 @@ int Engine_Lua::IsShuttingDown(lua_State* L)
     bool ret = ::IsShuttingDown();
 
     lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Engine_Lua::GetWorld(lua_State* L)
+{
+    World* world = ::GetWorld();
+
+    World_Lua::Create(L, world);
     return 1;
 }
 
@@ -192,6 +201,8 @@ void Engine_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, Quit);
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsShuttingDown);
+
+    REGISTER_TABLE_FUNC(L, tableIdx, GetWorld);
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetTime);
 
