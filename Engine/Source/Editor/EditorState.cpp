@@ -16,6 +16,7 @@
 #include "Grid.h"
 #include "World.h"
 #include "ScriptUtils.h"
+#include "NetworkManager.h"
 #include "AssetDir.h"
 #include "TimerManager.h"
 #include "AudioManager.h"
@@ -519,6 +520,11 @@ void EditorState::EndPlayInEditor()
     GetTimerManager()->ClearAllTimers();
 
     AudioManager::StopAllSounds();
+
+    if (!NetIsLocal())
+    {
+        NetworkManager::Get()->Disconnect();
+    }
 
     // Fake Shutdown
     OctPreShutdown();

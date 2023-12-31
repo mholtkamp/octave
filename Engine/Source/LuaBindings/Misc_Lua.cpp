@@ -380,6 +380,25 @@ void BindParticleOrientation()
     OCT_ASSERT(lua_gettop(L) == 0);
 }
 
+void BindNetConstants()
+{
+    lua_State* L = GetLua();
+    OCT_ASSERT(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushinteger(L, INVALID_HOST_ID);
+    lua_setfield(L, tableIdx, "Invalid");
+
+    lua_pushinteger(L, SERVER_HOST_ID);
+    lua_setfield(L, tableIdx, "Server");
+
+    lua_setglobal(L, "NetHost");
+
+    OCT_ASSERT(lua_gettop(L) == 0);
+}
+
 void Misc_Lua::BindMisc()
 {
     BindBlendMode();
@@ -393,6 +412,7 @@ void Misc_Lua::BindMisc()
     BindJustification();
     BindScreenOrientation();
     BindParticleOrientation();
+    BindNetConstants();
 }
 
 #endif
