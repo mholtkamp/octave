@@ -116,6 +116,7 @@ struct NetMsgSpawn : public NetMsg
     TypeId mNodeTypeId = INVALID_TYPE_ID;
     NetId mNetId = INVALID_NET_ID;
     NetId mParentNetId = INVALID_NET_ID;
+    bool mReplicateTransform = INVALID_NET_ID;
     std::string mSceneName;
 };
 

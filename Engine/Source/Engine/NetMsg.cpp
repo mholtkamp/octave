@@ -167,6 +167,7 @@ void NetMsgSpawn::Read(Stream& stream)
     mNodeTypeId = stream.ReadUint32();
     mNetId = stream.ReadUint32();
     mParentNetId = stream.ReadUint32();
+    mReplicateTransform = stream.ReadBool();
     stream.ReadString(mSceneName);
 }
 
@@ -176,6 +177,7 @@ void NetMsgSpawn::Write(Stream& stream) const
     stream.WriteUint32(mNodeTypeId);
     stream.WriteUint32(mNetId);
     stream.WriteUint32(mParentNetId);
+    stream.WriteBool(mReplicateTransform);
     stream.WriteString(mSceneName);
 }
 
@@ -215,6 +217,8 @@ void NetMsgSpawn::Execute(NetHost sender)
         if (newNode != nullptr)
         {
             newNode->SetReplicate(true);
+            newNode->SetReplicateTransform(mReplicateTransform);
+
             NetworkManager::Get()->AddNetNode(newNode, mNetId);
 
             if (mParentNetId == INVALID_NET_ID)

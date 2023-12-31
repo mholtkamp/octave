@@ -1216,6 +1216,7 @@ void NetworkManager::SendSpawnMessage(Node* node, NetClient* client)
     spawnMsg.mNodeTypeId = node->GetType();
     spawnMsg.mNetId = node->GetNetId();
     spawnMsg.mParentNetId = INVALID_NET_ID;
+    spawnMsg.mReplicateTransform = node->IsTransformReplicated();
 
     Node* parent = node->GetParent();
     if (parent != nullptr)
