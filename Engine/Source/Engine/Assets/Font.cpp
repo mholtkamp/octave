@@ -106,6 +106,7 @@ void Font::LoadStream(Stream& stream, Platform platform)
         mTexture = texture;
     }
 
+#if EDITOR
     uint32_t ttfDataSize = stream.ReadUint32();
     if (ttfDataSize > 0)
     {
@@ -113,6 +114,7 @@ void Font::LoadStream(Stream& stream, Platform platform)
         mTtfData.ReadBytes((uint8_t*)stream.GetData() + stream.GetPos(), ttfDataSize);
         stream.SetPos(stream.GetPos() + ttfDataSize);
     }
+#endif
 }
 
 void Font::SaveStream(Stream& stream, Platform platform)
@@ -153,6 +155,7 @@ void Font::SaveStream(Stream& stream, Platform platform)
         texture->SaveStream(stream, platform);
     }
 
+#if EDITOR
     if (platform == Platform::Count)
     {
         // Save TTF data so we can rebuild the font bitmap with different settings.
@@ -164,6 +167,7 @@ void Font::SaveStream(Stream& stream, Platform platform)
             stream.WriteBytes((uint8_t*)mTtfData.GetData(), ttfDataSize);
         }
     }
+#endif
 }
 
 void Font::Create()

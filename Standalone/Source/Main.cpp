@@ -59,7 +59,7 @@ InitOptions OctPreInitialize()
     initOptions.mWidth = 1280;
     initOptions.mHeight = 720;
     initOptions.mUseAssetRegistry = false;
-    initOptions.mVersion = 1;
+    initOptions.mVersion = 0;
 
 #if EMBEDDED_ENABLED
     // Note to self:
