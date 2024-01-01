@@ -112,6 +112,17 @@ bool Node::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
     return success;
 }
 
+bool Node::OnRep_OwningHost(Datum* datum, uint32_t index, const void* newValue)
+{
+    Node* node = (Node*)datum->mOwner;
+    OCT_ASSERT(node != nullptr);
+
+    NetHostId newHost = (NetHostId) *((uint8_t*)newValue);
+    node->SetOwningHost(newHost);
+
+    return true;
+}
+
 
 Node* Node::Construct(const std::string& name)
 {
@@ -558,7 +569,7 @@ void Node::GatherProperties(std::vector<Property>& outProps)
 
 void Node::GatherReplicatedData(std::vector<NetDatum>& outData)
 {
-    outData.push_back(NetDatum(DatumType::Byte, this, &mOwningHost));
+    outData.push_back(NetDatum(DatumType::Byte, this, &mOwningHost, 1, OnRep_OwningHost));
 }
 
 void Node::GatherNetFuncs(std::vector<NetFunc>& outFuncs)
@@ -987,6 +998,11 @@ NetHostId Node::GetOwningHost() const
 void Node::SetOwningHost(NetHostId hostId)
 {
     mOwningHost = hostId;
+
+    if (mScript != nullptr)
+    {
+        mScript->CallFunction("OwnerChanged");
+    }
 }
 
 void Node::SetReplicate(bool replicate)

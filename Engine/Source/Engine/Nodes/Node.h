@@ -352,6 +352,8 @@ protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
+    static bool OnRep_OwningHost(Datum* datum, uint32_t index, const void* newValue);
+
     void TickCommon(float deltaTime);
 
     virtual void SetParent(Node* parent);
