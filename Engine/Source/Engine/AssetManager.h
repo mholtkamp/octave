@@ -108,8 +108,6 @@ public:
     void UnloadProjectDirectory();
     std::unordered_map<std::string, AssetStub*>& GetAssetMap();
 
-    void DirtyAllMaterials();
-
     AssetStub* RegisterAsset(const std::string& filename, TypeId type, AssetDir* directory, EmbeddedFile* embeddedAsset, bool engineAsset);
     AssetStub* CreateAndRegisterAsset(TypeId assetType, AssetDir* directory, const std::string& filename, bool engineAsset);
 

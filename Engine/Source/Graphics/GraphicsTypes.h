@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <limits.h>
 #include "Graphics/GraphicsConstants.h"
 
 #if API_VULKAN
@@ -134,8 +135,8 @@ struct MaterialResource
 {
 #if API_VULKAN
     DescriptorSet* mDescriptorSet = nullptr;
-    int32_t mLastUpdatedFrame = -1;
-    uint32_t mUniformOffset = 0;
+    uint32_t mLastUpdatedFrame = UINT_MAX;
+    //uint32_t mUniformOffset = 0;
 #endif
 };
 

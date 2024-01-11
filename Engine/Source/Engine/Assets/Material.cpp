@@ -91,16 +91,12 @@ bool Material::HandlePropChange(Datum* datum, uint32_t index, const void* newVal
         success = true;
     }
 
-    material->MarkDirty();
-
     return success;
 }
 
 Material::Material()
 {
     mType = Material::GetStaticType();
-
-    MarkDirty();
 }
 
 Material::~Material()
@@ -204,7 +200,6 @@ void Material::Create()
     }
 
     GFX_CreateMaterialResource(this);
-    MarkDirty();
 }
 
 void Material::Destroy()
@@ -279,24 +274,6 @@ bool Material::IsMaterialInstance() const
     return false;
 }
 
-void Material::MarkDirty()
-{
-    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
-    {
-        mDirty[i] = true;
-    }
-}
-
-void Material::ClearDirty(uint32_t frameIndex)
-{
-    mDirty[frameIndex] = false;
-}
-
-bool Material::IsDirty(uint32_t frameIndex)
-{
-    return mDirty[frameIndex];
-}
-
 const MaterialParams& Material::GetParams() const
 {
     return mParams;
@@ -305,7 +282,6 @@ const MaterialParams& Material::GetParams() const
 void Material::SetParams(const MaterialParams& params)
 {
     mParams = params;
-    MarkDirty();
 }
 
 void Material::SetTexture(TextureSlot slot, Texture* texture)
@@ -313,7 +289,6 @@ void Material::SetTexture(TextureSlot slot, Texture* texture)
     if (mParams.mTextures[slot].Get<Texture>() != texture)
     {
         mParams.mTextures[slot] = texture;
-        MarkDirty();
     }
 }
 
@@ -330,7 +305,6 @@ ShadingModel Material::GetShadingModel() const
 void Material::SetShadingModel(ShadingModel shadingModel)
 {
     mParams.mShadingModel = shadingModel;
-    MarkDirty();
 }
 
 BlendMode Material::GetBlendMode() const
@@ -341,7 +315,6 @@ BlendMode Material::GetBlendMode() const
 void Material::SetBlendMode(BlendMode blendMode)
 {
     mParams.mBlendMode = blendMode;
-    MarkDirty();
 }
 
 VertexColorMode Material::GetVertexColorMode() const
@@ -352,7 +325,6 @@ VertexColorMode Material::GetVertexColorMode() const
 void Material::SetVertexColorMode(VertexColorMode mode)
 {
     mParams.mVertexColorMode = mode;
-    MarkDirty();
 }
 
 glm::vec2 Material::GetUvOffset(uint32_t uvIndex) const
@@ -365,7 +337,6 @@ void Material::SetUvOffset(glm::vec2 offset, uint32_t uvIndex)
 {
     OCT_ASSERT(uvIndex < MAX_UV_MAPS);
     mParams.mUvOffsets[uvIndex] = offset;
-    MarkDirty();
 }
 
 glm::vec2 Material::GetUvScale(uint32_t uvIndex) const
@@ -378,7 +349,6 @@ void Material::SetUvScale(glm::vec2 scale, uint32_t uvIndex)
 {
     OCT_ASSERT(uvIndex < MAX_UV_MAPS);
     mParams.mUvScales[uvIndex] = scale;
-    MarkDirty();
 }
 
 glm::vec4 Material::GetColor() const
@@ -389,7 +359,6 @@ glm::vec4 Material::GetColor() const
 void Material::SetColor(const glm::vec4& color)
 {
     mParams.mColor = color;
-    MarkDirty();
 }
 
 glm::vec4 Material::GetFresnelColor() const
@@ -400,7 +369,6 @@ glm::vec4 Material::GetFresnelColor() const
 void Material::SetFresnelColor(const glm::vec4& color)
 {
     mParams.mFresnelColor = color;
-    MarkDirty();
 }
 
 float Material::GetEmission() const
@@ -411,7 +379,6 @@ float Material::GetEmission() const
 void Material::SetEmission(float emission)
 {
     mParams.mEmission = emission;
-    MarkDirty();
 }
 
 float Material::GetWrapLighting() const
@@ -422,7 +389,6 @@ float Material::GetWrapLighting() const
 void Material::SetWrapLighting(float wrapLighting)
 {
     mParams.mWrapLighting = wrapLighting;
-    MarkDirty();
 }
 
 float Material::GetFresnelPower() const
@@ -433,7 +399,6 @@ float Material::GetFresnelPower() const
 void Material::SetFresnelPower(float power)
 {
     mParams.mFresnelPower = power;
-    MarkDirty();
 }
 
 float Material::GetSpecular() const
@@ -444,7 +409,6 @@ float Material::GetSpecular() const
 void Material::SetSpecular(float specular)
 {
     mParams.mSpecular = specular;
-    MarkDirty();
 }
 
 uint32_t Material::GetToonSteps() const
@@ -455,7 +419,6 @@ uint32_t Material::GetToonSteps() const
 void Material::SetToonSteps(uint32_t steps)
 {
     mParams.mToonSteps = steps;
-    MarkDirty();
 }
 
 float Material::GetOpacity() const
@@ -466,7 +429,6 @@ float Material::GetOpacity() const
 void Material::SetOpacity(float opacity)
 {
     mParams.mOpacity = opacity;
-    MarkDirty();
 }
 
 float Material::GetMaskCutoff() const
@@ -477,7 +439,6 @@ float Material::GetMaskCutoff() const
 void Material::SetMaskCutoff(float cutoff)
 {
     mParams.mMaskCutoff = cutoff;
-    MarkDirty();
 }
 
 float Material::GetShininess() const
@@ -488,7 +449,6 @@ float Material::GetShininess() const
 void Material::SetShininess(float shininess)
 {
     mParams.mShininess = shininess;
-    MarkDirty();
 }
 
 int32_t Material::GetSortPriority() const
@@ -499,7 +459,6 @@ int32_t Material::GetSortPriority() const
 void Material::SetSortPriority(int32_t priority)
 {
     mParams.mSortPriority = priority;
-    MarkDirty();
 }
 
 bool Material::IsDepthTestDisabled() const
@@ -510,7 +469,6 @@ bool Material::IsDepthTestDisabled() const
 void Material::SetDepthTestDisabled(bool depthTest)
 {
     mParams.mDisableDepthTest = depthTest;
-    MarkDirty();
 }
 
 bool Material::IsFresnelEnabled() const
@@ -521,7 +479,6 @@ bool Material::IsFresnelEnabled() const
 void Material::SetFresnelEnabled(bool enable)
 {
     mParams.mFresnelEnabled = enable;
-    MarkDirty();
 }
 
 bool Material::ShouldApplyFog() const
@@ -532,7 +489,6 @@ bool Material::ShouldApplyFog() const
 void Material::SetApplyFog(bool applyFog)
 {
     mParams.mApplyFog = applyFog;
-    MarkDirty();
 }
 
 CullMode Material::GetCullMode() const
@@ -543,7 +499,6 @@ CullMode Material::GetCullMode() const
 void Material::SetCullMode(CullMode cullMode)
 {
     mParams.mCullMode = cullMode;
-    MarkDirty();
 }
 
 uint32_t Material::GetUvMap(uint32_t textureSlot)
@@ -565,7 +520,6 @@ void Material::SetUvMap(uint32_t textureSlot, uint32_t uvMapIndex)
         uvMapIndex < MAX_UV_MAPS)
     {
         mParams.mUvMaps[textureSlot] = uvMapIndex;
-        MarkDirty();
     }
 }
 
@@ -589,6 +543,5 @@ void Material::SetTevMode(uint32_t textureSlot, TevMode mode)
         mode != TevMode::Count)
     {
         mParams.mTevModes[textureSlot] = mode;
-        MarkDirty();
     }
 }

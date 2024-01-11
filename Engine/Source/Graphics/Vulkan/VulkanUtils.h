@@ -63,6 +63,7 @@ void CopyBufferToImage(
     uint32_t height);
 
 uint32_t GetFrameIndex();
+uint32_t GetFrameNumber();
 DestroyQueue* GetDestroyQueue();
 VkDevice GetVulkanDevice();
 VkCommandBuffer GetCommandBuffer();

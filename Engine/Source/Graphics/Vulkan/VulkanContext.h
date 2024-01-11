@@ -106,6 +106,7 @@ public:
     void CreateCommandBuffers();
 
     uint32_t GetFrameIndex() const;
+    uint32_t GetFrameNumber() const;
     RenderPassId GetCurrentRenderPassId() const;
 
     Image* GetShadowMapImage();

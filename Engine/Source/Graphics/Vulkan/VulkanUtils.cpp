@@ -304,6 +304,11 @@ uint32_t GetFrameIndex()
     return GetVulkanContext()->GetFrameIndex();
 }
 
+uint32_t GetFrameNumber()
+{
+    return GetVulkanContext()->GetFrameNumber();
+}
+
 DestroyQueue* GetDestroyQueue()
 {
     return GetVulkanContext()->GetDestroyQueue();
@@ -1121,7 +1126,7 @@ void BindMaterialResource(Material* material, Pipeline* pipeline)
     MaterialResource* resource = material->GetResource();
     VkCommandBuffer cb = GetCommandBuffer();
 
-    if (material->IsDirty(GetFrameIndex()))
+    if (resource->mLastUpdatedFrame != GetFrameNumber())
     {
         UpdateMaterialResource(material);
     }
@@ -1164,7 +1169,7 @@ void UpdateMaterialResource(Material* material)
         resource->mDescriptorSet->UpdateImageDescriptor(MD_TEXTURE_0 + i, texture->GetResource()->mImage);
     }
 
-    material->ClearDirty(GetFrameIndex());
+    resource->mLastUpdatedFrame = GetFrameNumber();
 }
 
 Pipeline* GetMaterialPipeline(Material* material, VertexType vertType)

@@ -81,10 +81,6 @@ bool Texture::HandlePropChange(Datum* datum, uint32_t index, const void* newValu
         // Need to recreate the texture resource to show changes.
         GFX_DestroyTextureResource(texture);
         GFX_CreateTextureResource(texture, texture->mPixels);
-
-        // Textures aren't normally meant to change at runtime so...
-        // Kinda hacky, but refresh descriptors on all materials?
-        AssetManager::Get()->DirtyAllMaterials();
 #endif
     }
 

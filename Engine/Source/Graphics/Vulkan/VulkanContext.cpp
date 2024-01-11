@@ -2019,6 +2019,11 @@ uint32_t VulkanContext::GetFrameIndex() const
     return mFrameIndex;
 }
 
+uint32_t VulkanContext::GetFrameNumber() const
+{
+    return mFrameNumber;
+}
+
 RenderPassId VulkanContext::GetCurrentRenderPassId() const
 {
     return mCurrentRenderPassId;

@@ -80,10 +80,6 @@ public:
 
     virtual bool IsMaterialInstance() const;
 
-    void MarkDirty();
-    void ClearDirty(uint32_t frameIndex);
-    bool IsDirty(uint32_t frameIndex);
-
     const MaterialParams& GetParams() const;
     void SetParams(const MaterialParams& params);
 
@@ -162,8 +158,6 @@ protected:
 
     // Properties
     MaterialParams mParams;
-
-    bool mDirty[MAX_FRAMES] = {};
 
     // Graphics Resource
     MaterialResource mResource;

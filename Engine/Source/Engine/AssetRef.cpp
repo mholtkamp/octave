@@ -40,19 +40,6 @@ void AssetRef::ReplaceReferencesToAsset(Asset* oldAsset, Asset* newAsset)
             }
         }
     }
-
-    // If a texture asset was replaced, it could mean that a material needs to update
-    // its descriptor tables (for vulkan). So for now, dirty all materials. Other options could be
-    // only dirtying materials that are using the texture, or using a global dirty flag or something.
-#if API_VULKAN
-    // It's possible that this DirtyAllMaterials() func is called during AssetManager construction
-    // so the instance may not be available yet, so check first.
-    if (AssetManager::Get() != nullptr &&
-        !AssetManager::Get()->IsPurging())
-    {
-        AssetManager::Get()->DirtyAllMaterials();
-    }
-#endif
 }
 
 void AssetRef::EraseReferencesToAsset(Asset* asset)
