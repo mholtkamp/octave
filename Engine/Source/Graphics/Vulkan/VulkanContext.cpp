@@ -763,7 +763,9 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
     void* userData)
 {
     char prefix[64];
-    char* message = (char*)malloc(strlen(callbackData->pMessage) + 500);
+
+    uint32_t messageSize = uint32_t(strlen(callbackData->pMessage) + 1024);
+    char* message = (char*)malloc(messageSize);
     OCT_ASSERT(message);
 
     bool isError = false;
@@ -801,7 +803,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
         strcat(prefix, "Validation: ");
     }
 
-    sprintf(message,
+    snprintf(message,
+        messageSize,
         "%s - Message ID Number %d, Message ID String %s :\n%s",
         prefix,
         callbackData->messageIdNumber,
@@ -811,28 +814,33 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
     if (callbackData->objectCount > 0)
     {
         char tmp_message[500];
-        sprintf(tmp_message, "\n Objects - %d\n", callbackData->objectCount);
-        strcat(message, tmp_message);
+        snprintf(tmp_message, 500, "\n Objects - %d\n", callbackData->objectCount);
+        strncat(message, tmp_message, messageSize);
 
         for (uint32_t object = 0; object < callbackData->objectCount; ++object)
         {
-            sprintf(tmp_message,
+            snprintf(tmp_message,
+                500,
                 " Object[%d] - Type %d, Value %p, Name \"%s\"\n",
                 object,
                 callbackData->pObjects[object].objectType,
                 (void*)(callbackData->pObjects[object].objectHandle),
                 callbackData->pObjects[object].pObjectName);
-            strcat(message, tmp_message);
+            strncat(message, tmp_message, messageSize);
         }
     }
-    if (callbackData->cmdBufLabelCount > 0) {
+
+    if (callbackData->cmdBufLabelCount > 0) 
+    {
         char tmp_message[500];
-        sprintf(tmp_message,
+        snprintf(tmp_message,
+            500,
             "\n Command Buffer Labels - %d\n",
             callbackData->cmdBufLabelCount);
-        strcat(message, tmp_message);
+        strncat(message, tmp_message, messageSize);
         for (uint32_t label = 0; label < callbackData->cmdBufLabelCount; ++label) {
-            sprintf(tmp_message,
+            snprintf(tmp_message,
+                500,
                 " Label[%d] - %s { %f, %f, %f, %f}\n",
                 label,
                 callbackData->pCmdBufLabels[label].pLabelName,
@@ -840,7 +848,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
                 callbackData->pCmdBufLabels[label].color[1],
                 callbackData->pCmdBufLabels[label].color[2],
                 callbackData->pCmdBufLabels[label].color[3]);
-            strcat(message, tmp_message);
+            strncat(message, tmp_message, messageSize);
         }
     }
 
