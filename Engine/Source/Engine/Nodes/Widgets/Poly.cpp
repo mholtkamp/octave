@@ -47,11 +47,6 @@ void Poly::TickCommon(float deltaTime)
         GFX_UpdatePolyResourceVertexData(this);
         mUploadVertices[frameIndex] = false;
     }
-
-    if (IsDirty())
-    {
-        GFX_UpdatePolyResourceUniformData(this);
-    }
 }
 
 void Poly::Render()

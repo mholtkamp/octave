@@ -118,20 +118,17 @@ void GFX_DrawParticleComp(Particle3D* particleComp);
 // Quad
 void GFX_CreateQuadResource(Quad* quad);
 void GFX_DestroyQuadResource(Quad* quad);
-void GFX_UpdateQuadResource(Quad* quad);
 void GFX_DrawQuad(Quad* quad);
 
 // Text
 void GFX_CreateTextResource(Text* text);
 void GFX_DestroyTextResource(Text* text);
-void GFX_UpdateTextResourceUniformData(Text* text);
 void GFX_UpdateTextResourceVertexData(Text* text);
 void GFX_DrawText(Text* text);
 
 // Polygon
 void GFX_CreatePolyResource(Poly* poly);
 void GFX_DestroyPolyResource(Poly* poly);
-void GFX_UpdatePolyResourceUniformData(Poly* poly);
 void GFX_UpdatePolyResourceVertexData(Poly* poly);
 void GFX_DrawPoly(Poly* poly);
 

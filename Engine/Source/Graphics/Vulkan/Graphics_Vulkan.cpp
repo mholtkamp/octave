@@ -404,11 +404,6 @@ void GFX_DestroyQuadResource(Quad* quad)
     DestroyQuadResource(quad);
 }
 
-void GFX_UpdateQuadResource(Quad* quad)
-{
-    UpdateQuadResource(quad);
-}
-
 void GFX_DrawQuad(Quad* quad)
 {
     DrawQuad(quad);
@@ -422,11 +417,6 @@ void GFX_CreateTextResource(Text* text)
 void GFX_DestroyTextResource(Text* text)
 {
     DestroyTextResource(text);
-}
-
-void GFX_UpdateTextResourceUniformData(Text* text)
-{
-    UpdateTextResourceUniformData(text);
 }
 
 void GFX_UpdateTextResourceVertexData(Text* text)
@@ -447,11 +437,6 @@ void GFX_CreatePolyResource(Poly* poly)
 void GFX_DestroyPolyResource(Poly* poly)
 {
     DestroyPolyResource(poly);
-}
-
-void GFX_UpdatePolyResourceUniformData(Poly* poly)
-{
-    UpdatePolyResourceUniformData(poly);
 }
 
 void GFX_UpdatePolyResourceVertexData(Poly* poly)

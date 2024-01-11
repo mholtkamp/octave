@@ -90,7 +90,6 @@ UniformBlock UniformBuffer::AllocBlock(uint32_t blockSize)
     UniformBlock retBlock;
 
     const uint32_t uboAlignment = (uint32_t) GetVulkanContext()->GetDeviceProperties().limits.minUniformBufferOffsetAlignment;
-    LogDebug("Ubo Alignment = %d / %x", uboAlignment, uboAlignment);
     
     uint32_t frameIndex = GetFrameIndex();
     int32_t head = mHead[frameIndex];

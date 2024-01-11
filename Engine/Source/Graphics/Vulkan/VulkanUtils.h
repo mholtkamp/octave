@@ -152,7 +152,7 @@ void DrawParticleComp(Particle3D* particleComp);
 // Quad
 void CreateQuadResource(Quad* quad);
 void DestroyQuadResource(Quad* quad);
-void UpdateQuadResource(Quad* quad);
+void UpdateQuadDescriptors(Quad* quad);
 void DrawQuad(Quad* quad);
 
 // Text
@@ -160,14 +160,14 @@ void CreateTextResource(Text* text);
 void DestroyTextResource(Text* text);
 void CreateTextResourceVertexBuffer(Text* text);
 void DestroyTextResourceVertexBuffer(Text* text);
-void UpdateTextResourceUniformData(Text* text);
+void UpdateTextDescriptors(Text* text);
 void UpdateTextResourceVertexData(Text* text);
 void DrawTextWidget(Text* text);
 
 // Poly
 void CreatePolyResource(Poly* poly);
 void DestroyPolyResource(Poly* poly);
-void UpdatePolyResourceUniformData(Poly* poly);
+void UpdatePolyDescriptors(Poly* poly);
 void UpdatePolyResourceVertexData(Poly* poly);
 void DrawPoly(Poly* poly);
 

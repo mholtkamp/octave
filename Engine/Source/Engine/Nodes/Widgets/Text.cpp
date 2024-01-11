@@ -160,11 +160,6 @@ void Text::TickCommon(float deltaTime)
 {
     UpdateVertexData();
     UploadVertexData();
-
-    if (IsDirty())
-    {
-        GFX_UpdateTextResourceUniformData(this);
-    }
 }
 
 void Text::SetFont(class Font* font)

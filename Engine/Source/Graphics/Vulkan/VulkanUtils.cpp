@@ -1971,8 +1971,6 @@ void CreateQuadResource(Quad* quad)
     OCT_ASSERT(resource->mDescriptorSet == nullptr);
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Quad)->GetDescriptorSetLayout(1);
     resource->mDescriptorSet = new DescriptorSet(layout);
-
-    UpdateQuadResource(quad);
 }
 
 void DestroyQuadResource(Quad* quad)
@@ -1992,7 +1990,7 @@ void DestroyQuadResource(Quad* quad)
     }
 }
 
-void UpdateQuadResource(Quad* quad)
+void UpdateQuadDescriptors(Quad* quad)
 {
     // Vertex Buffer
     QuadResource* resource = quad->GetResource();
@@ -2024,6 +2022,7 @@ void DrawQuad(Quad* quad)
     VkBuffer vertexBuffer = resource->mVertexBuffer->Get();
     vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
 
+    UpdateQuadDescriptors(quad);
     resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Quad, quadPipeline->GetPipelineLayout());
 
     vkCmdDraw(cb, 4, 1, 0, 0);
@@ -2039,7 +2038,6 @@ void CreateTextResource(Text* text)
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Text)->GetDescriptorSetLayout(1);
     resource->mDescriptorSet = new DescriptorSet(layout);
 
-    UpdateTextResourceUniformData(text);
     UpdateTextResourceVertexData(text);
 }
 
@@ -2079,7 +2077,7 @@ void DestroyTextResourceVertexBuffer(Text* text)
     }
 }
 
-void UpdateTextResourceUniformData(Text* text)
+void UpdateTextDescriptors(Text* text)
 {
     TextResource* resource = text->GetResource();
 
@@ -2149,6 +2147,7 @@ void DrawTextWidget(Text* text)
         VkBuffer vertexBuffer = resource->mVertexBuffer->Get();
         vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
 
+        UpdateTextDescriptors(text);
         resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Text, textPipeline->GetPipelineLayout());
 
         vkCmdDraw(cb, 6 * text->GetNumVisibleCharacters(), 1, 0, 0);
@@ -2172,7 +2171,6 @@ void CreatePolyResource(Poly* poly)
     resource->mDescriptorSet = new DescriptorSet(layout);
 
     UpdatePolyResourceVertexData(poly);
-    UpdatePolyResourceUniformData(poly);
 }
 
 void DestroyPolyResource(Poly* poly)
@@ -2193,7 +2191,7 @@ void DestroyPolyResource(Poly* poly)
     }
 }
 
-void UpdatePolyResourceUniformData(Poly* poly)
+void UpdatePolyDescriptors(Poly* poly)
 {
     PolyResource* resource = poly->GetResource();
 
@@ -2257,6 +2255,7 @@ void DrawPoly(Poly* poly)
         VkBuffer vertexBuffer = resource->mVertexBuffer->Get();
         vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
 
+        UpdatePolyDescriptors(poly);
         resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Poly, polygonPipeline->GetPipelineLayout());
 
         if (GetVulkanContext()->HasFeatureWideLines())
