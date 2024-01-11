@@ -295,6 +295,11 @@ void VulkanContext::BeginFrame()
     mMeshDescriptorSetArena.Reset();
     mMeshUniformBufferArena.Reset();
 
+    // We need to update global data at begining of the frame because 
+    // when it is bound, we need the dynamic offset to be updated already.
+    UpdateGlobalUniformData();
+    UpdateGlobalDescriptorSet();
+
     if (mEnableMaterialPipelineCache)
     {
         mMaterialPipelineCache.Update();
@@ -2966,9 +2971,6 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
         // replace the "current" CB with our temp CB
         VkCommandBuffer realCb = mCommandBuffers[mFrameIndex];
         mCommandBuffers[mFrameIndex] = cb;
-
-        UpdateGlobalUniformData();
-        UpdateGlobalDescriptorSet();
 
         glm::uvec4 vp = Renderer::Get()->GetSceneViewport();
         SetViewport(vp.x, vp.y, vp.z, vp.w, false, true);
