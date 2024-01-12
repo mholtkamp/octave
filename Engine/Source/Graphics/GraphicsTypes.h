@@ -135,8 +135,6 @@ struct MaterialResource
 {
 #if API_VULKAN
     DescriptorSet* mDescriptorSet = nullptr;
-    uint32_t mLastUpdatedFrame = UINT_MAX;
-    //uint32_t mUniformOffset = 0;
 #endif
 };
 

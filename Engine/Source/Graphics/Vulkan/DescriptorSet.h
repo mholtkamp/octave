@@ -38,7 +38,7 @@ class DescriptorSet
 {
 public:
 
-    DescriptorSet(VkDescriptorSetLayout layout);
+    DescriptorSet(VkDescriptorSetLayout layout, const char* name = "");
 
     // Updates the current frame's descriptor.
     void UpdateImageDescriptor(int32_t binding, Image* image);
@@ -65,6 +65,8 @@ private:
 
     VkDescriptorSet mDescriptorSets[MAX_FRAMES] = { };
     bool mDirty[MAX_FRAMES] = { };
+    uint32_t mLastFrameBound = UINT_MAX;
+    std::string mName;
 };
 
 #endif // API_VULKAN

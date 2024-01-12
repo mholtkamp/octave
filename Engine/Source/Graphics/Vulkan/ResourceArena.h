@@ -56,7 +56,7 @@ public:
         DescriptorSet* retSet = nullptr;
         if (mIndex >= (uint32_t)mResources.size())
         {
-            retSet = new DescriptorSet(layout);
+            retSet = new DescriptorSet(layout, "Arena DS");
             mResources.push_back(retSet);
         }
         else

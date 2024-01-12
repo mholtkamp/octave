@@ -1978,7 +1978,7 @@ void VulkanContext::UpdateGlobalDescriptorSet()
 void VulkanContext::CreateGlobalDescriptorSet()
 {
     VkDescriptorSetLayout layout = GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(0);
-    mGlobalDescriptorSet = new DescriptorSet(layout);
+    mGlobalDescriptorSet = new DescriptorSet(layout, "Global DS");
 
     UpdateGlobalDescriptorSet();
 }
@@ -1986,7 +1986,7 @@ void VulkanContext::CreateGlobalDescriptorSet()
 void VulkanContext::CreatePostProcessDescriptorSet()
 {
     VkDescriptorSetLayout layout = GetPipeline(PipelineId::PostProcess)->GetDescriptorSetLayout(1);
-    mPostProcessDescriptorSet = new DescriptorSet(layout);
+    mPostProcessDescriptorSet = new DescriptorSet(layout, "Postprocess DS");
     mPostProcessDescriptorSet->UpdateImageDescriptor(0, mSceneColorImage);
     mPostProcessDescriptorSet->UpdateImageDescriptor(1, mSupportsRayTracing ? mRayTracer.GetPathTraceImage() : mSceneColorImage);
 }

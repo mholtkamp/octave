@@ -10,7 +10,7 @@
 
 using namespace std;
 
-DescriptorSet::DescriptorSet(VkDescriptorSetLayout layout)
+DescriptorSet::DescriptorSet(VkDescriptorSetLayout layout, const char* name)
 {
     VkDevice device = GetVulkanDevice();
     VkDescriptorPool pool = GetVulkanContext()->GetDescriptorPool();
@@ -22,12 +22,19 @@ DescriptorSet::DescriptorSet(VkDescriptorSetLayout layout)
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = layouts;
 
+    mName = name;
+
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
     {
         if (vkAllocateDescriptorSets(device, &allocInfo, &mDescriptorSets[i]) != VK_SUCCESS)
         {
             LogError("Failed to allocate descriptor set");
             OCT_ASSERT(0);
+        }
+
+        if (mName != "")
+        {
+            SetDebugObjectName(VK_OBJECT_TYPE_DESCRIPTOR_SET, (uint64_t)mDescriptorSets[i], mName.c_str());
         }
     }
 }
@@ -105,7 +112,8 @@ void DescriptorSet::Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pi
 {
     uint32_t frameIndex = GetFrameIndex();
 
-    if (mDirty[frameIndex])
+    if (mDirty[frameIndex] && 
+        mLastFrameBound != GetFrameNumber())
     {
         RefreshBindings(frameIndex);
         mDirty[frameIndex] = false;
@@ -131,6 +139,8 @@ void DescriptorSet::Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pi
         &mDescriptorSets[frameIndex],
         (uint32_t)dynOffsets.size(),
         dynOffsets.data());
+
+    mLastFrameBound = GetFrameNumber();
 }
 
 VkDescriptorSet DescriptorSet::Get()

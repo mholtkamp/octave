@@ -1105,7 +1105,7 @@ void CreateMaterialResource(Material* material)
     MaterialResource* resource = material->GetResource();
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Material);
 
-    resource->mDescriptorSet = new DescriptorSet(layout);
+    resource->mDescriptorSet = new DescriptorSet(layout, "Material DS");
 
     UpdateMaterialResource(material);
 }
@@ -1126,10 +1126,7 @@ void BindMaterialResource(Material* material, Pipeline* pipeline)
     MaterialResource* resource = material->GetResource();
     VkCommandBuffer cb = GetCommandBuffer();
 
-    if (resource->mLastUpdatedFrame != GetFrameNumber())
-    {
-        UpdateMaterialResource(material);
-    }
+    UpdateMaterialResource(material);
 
     resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Material, pipeline->GetPipelineLayout());
 }
@@ -1137,7 +1134,6 @@ void BindMaterialResource(Material* material, Pipeline* pipeline)
 void UpdateMaterialResource(Material* material)
 {
     // This should only happen once per frame per material.
-
     MaterialResource* resource = material->GetResource();
 
     Texture* textures[4] = {};
@@ -1168,8 +1164,6 @@ void UpdateMaterialResource(Material* material)
 
         resource->mDescriptorSet->UpdateImageDescriptor(MD_TEXTURE_0 + i, texture->GetResource()->mImage);
     }
-
-    resource->mLastUpdatedFrame = GetFrameNumber();
 }
 
 Pipeline* GetMaterialPipeline(Material* material, VertexType vertType)
@@ -1316,7 +1310,7 @@ void CreateStaticMeshCompResource(StaticMesh3D* staticMeshComp)
     StaticMeshCompResource* resource = staticMeshComp->GetResource();
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Geometry);
 
-    resource->mDescriptorSet = new DescriptorSet(layout);
+    resource->mDescriptorSet = new DescriptorSet(layout, "StaticMesh3D DS");
 }
 
 void DestroyStaticMeshCompResource(StaticMesh3D* staticMeshComp)
@@ -1467,7 +1461,7 @@ void CreateSkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp)
     SkeletalMeshCompResource* resource = skeletalMeshComp->GetResource();
 
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(1);
-    resource->mDescriptorSet = new DescriptorSet(layout);
+    resource->mDescriptorSet = new DescriptorSet(layout, "SkeletalMesh3D DS");
 }
 
 void DestroySkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp)
@@ -1685,7 +1679,7 @@ void CreateTextMeshCompResource(TextMesh3D* textMeshComp)
     TextMeshCompResource* resource = textMeshComp->GetResource();
 
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(1);
-    resource->mDescriptorSet = new DescriptorSet(layout);
+    resource->mDescriptorSet = new DescriptorSet(layout, "TextMesh3D DS");
 }
 
 void DestroyTextMeshCompResource(TextMesh3D* textMeshComp)
@@ -1795,7 +1789,7 @@ void CreateParticleCompResource(Particle3D* particleComp)
     ParticleCompResource* resource = particleComp->GetResource();
 
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(1);
-    resource->mDescriptorSet = new DescriptorSet(layout);
+    resource->mDescriptorSet = new DescriptorSet(layout, "Particle3D DS");
 }
 
 void DestroyParticleCompResource(Particle3D* particleComp)
@@ -1970,7 +1964,7 @@ void CreateQuadResource(Quad* quad)
     
     OCT_ASSERT(resource->mDescriptorSet == nullptr);
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Quad)->GetDescriptorSetLayout(1);
-    resource->mDescriptorSet = new DescriptorSet(layout);
+    resource->mDescriptorSet = new DescriptorSet(layout, "Quad DS");
 }
 
 void DestroyQuadResource(Quad* quad)
@@ -2036,7 +2030,7 @@ void CreateTextResource(Text* text)
 
     OCT_ASSERT(resource->mDescriptorSet == nullptr);
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Text)->GetDescriptorSetLayout(1);
-    resource->mDescriptorSet = new DescriptorSet(layout);
+    resource->mDescriptorSet = new DescriptorSet(layout, "Text DS");
 
     UpdateTextResourceVertexData(text);
 }
@@ -2168,7 +2162,7 @@ void CreatePolyResource(Poly* poly)
 
     OCT_ASSERT(resource->mDescriptorSet == nullptr);
     VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Poly)->GetDescriptorSetLayout(1);
-    resource->mDescriptorSet = new DescriptorSet(layout);
+    resource->mDescriptorSet = new DescriptorSet(layout, "Poly DS");
 
     UpdatePolyResourceVertexData(poly);
 }
@@ -2275,13 +2269,14 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
         VkCommandBuffer cb = GetCommandBuffer();
 
         // Setup uniform buffer
-        UniformBufferArena& uniformArena = GetVulkanContext()->GetMeshUniformBufferArena();
-        UniformBuffer* uniformBuffer = uniformArena.Alloc(sizeof(GeometryData), "DrawStaticMesh Uniforms");
+        //UniformBufferArena& uniformArena = GetVulkanContext()->GetMeshUniformBufferArena();
+        //UniformBuffer* uniformBuffer = uniformArena.Alloc(sizeof(GeometryData), "DrawStaticMesh Uniforms");
         GeometryData ubo = {};
         WriteGeometryUniformData(ubo, GetWorld(), nullptr, transform);
         ubo.mColor = color;
         ubo.mHitCheckId = hitCheckId;
-        uniformBuffer->Update(&ubo, sizeof(ubo));
+        UniformBlock block = WriteUniformBlock(&ubo, sizeof(ubo));
+        //uniformBuffer->Update(&ubo, sizeof(ubo));
 
         BindStaticMeshResource(mesh);
 
@@ -2311,7 +2306,7 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
 
         DescriptorSetArena& descriptorArena = GetVulkanContext()->GetMeshDescriptorSetArena();
         DescriptorSet* descriptorSet = descriptorArena.Alloc(pipeline->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Geometry));
-        descriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, uniformBuffer);
+        descriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, block);
         descriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
 
         vkCmdDrawIndexed(cb,
