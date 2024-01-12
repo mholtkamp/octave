@@ -407,30 +407,6 @@ void Pipeline::SetRenderPass(VkRenderPass renderPass)
     mRenderpass = renderPass;
 }
 
-VkShaderModule Pipeline::CreateShaderModule(const char* codeData, uint32_t codeSize)
-{
-    VkDevice device = GetVulkanDevice();
-    VkShaderModuleCreateInfo ciModule = {};
-    ciModule.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    ciModule.codeSize = codeSize;
-
-    vector<uint32_t> codeLong(codeSize / sizeof(uint32_t) + 1);
-    memcpy(codeLong.data(), codeData, codeSize);
-    ciModule.pCode = codeLong.data();
-
-    VkShaderModule module;
-
-    if (vkCreateShaderModule(device, &ciModule, nullptr, &module) != VK_SUCCESS)
-    {
-        LogError("Failed to create shader module");
-        OCT_ASSERT(0);
-    }
-
-    SetDebugObjectName(VK_OBJECT_TYPE_SHADER_MODULE, (uint64_t)module, mName.c_str());
-
-    return module;
-}
-
 void Pipeline::AddOpaqueBlendAttachmentState()
 {
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};

@@ -62,8 +62,6 @@ protected:
     void PushSet();
     void AddLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t descriptorCount = 1);
 
-    VkShaderModule CreateShaderModule(const char* codeData, uint32_t codeSize);
-
     virtual void PopulateLayoutBindings();
     void CreateDescriptorSetLayouts();
     void CreatePipelineLayout();

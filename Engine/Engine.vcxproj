@@ -668,6 +668,7 @@
     <ClCompile Include="Source\Graphics\Vulkan\Pipeline.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RayTracer.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\MultiBuffer.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Graphics_Vulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanUtils.cpp" />
@@ -887,6 +888,7 @@
     <ClInclude Include="Source\Graphics\Vulkan\PipelineConfigs.h" />
     <ClInclude Include="Source\Graphics\Vulkan\RayTracer.h" />
     <ClInclude Include="Source\Graphics\Vulkan\ResourceArena.h" />
+    <ClInclude Include="Source\Graphics\Vulkan\Shader.h" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanConstants.h" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanContext.h" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.h" />
