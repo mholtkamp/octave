@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Vertex.h"
+#include "Shader.h"
 
 #include "Graphics/GraphicsTypes.h"
 #include "Graphics/Vulkan/VulkanTypes.h"
@@ -27,7 +28,6 @@ public:
     virtual ~Pipeline();
 
     void Create(VkSpecializationInfo* specInfo = nullptr);
-    void Destroy();
 
     VkPipeline GetVkPipeline(VertexType vertType) const;
 
@@ -55,6 +55,8 @@ public:
     void SetRenderPass(VkRenderPass renderPass);
 
 protected:
+
+    void Destroy();
 
     void CreateGraphicsPipeline(VkSpecializationInfo* specInfo);
     void CreateComputePipeline(VkSpecializationInfo* specInfo);
@@ -86,6 +88,9 @@ public:
     std::vector<VertexConfig> mVertexConfigs;
     std::string mFragmentShaderPath;
     std::string mComputeShaderPath;
+    std::vector<Shader*> mVertexShaders;
+    Shader* mFragmentShader = nullptr;
+    Shader* mComputeShader = nullptr;
 
     // Viewport
     uint32_t mViewportWidth;

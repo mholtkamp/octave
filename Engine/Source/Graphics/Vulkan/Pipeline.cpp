@@ -37,7 +37,7 @@ Pipeline::Pipeline() :
 
 Pipeline::~Pipeline()
 {
-
+    Destroy();
 }
 
 void Pipeline::SetVertexConfig(VertexType vertexType, const std::string& path)
@@ -106,12 +106,8 @@ void Pipeline::CreateGraphicsPipeline(VkSpecializationInfo* specInfo)
         mPolygonMode = VK_POLYGON_MODE_FILL;
     }
 
-    if (mFragmentShaderPath != "")
-    {
-        Stream stream;
-        stream.ReadFile(mFragmentShaderPath.c_str(), true);
-        fragShaderModule = CreateShaderModule(stream.GetData(), stream.GetSize());
-    }
+    mFragmentShader = new Shader(mFragmentShaderPath.c_str(), ShaderStage::Fragment, "Pipeline Frag");
+    fragShaderModule = mFragmentShader->mModule;
 
     VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
     fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -218,11 +214,10 @@ void Pipeline::CreateGraphicsPipeline(VkSpecializationInfo* specInfo)
     {
         const VertexConfig vertexConfig = mVertexConfigs[i];
 
-        Stream stream;
-        stream.ReadFile(vertexConfig.mVertexShaderPath.c_str(), true);
-
-        VkShaderModule vertShaderModule;
-        vertShaderModule = CreateShaderModule(stream.GetData(), stream.GetSize());
+        VkShaderModule vertShaderModule = VK_NULL_HANDLE;
+        Shader* vertShader = new Shader(vertexConfig.mVertexShaderPath.c_str(), ShaderStage::Vertex, "Pipeline Vertex Shader");
+        mVertexShaders.push_back(vertShader);
+        vertShaderModule = vertShader->mModule;
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -270,13 +265,6 @@ void Pipeline::CreateGraphicsPipeline(VkSpecializationInfo* specInfo)
         }
 
         SetDebugObjectName(VK_OBJECT_TYPE_PIPELINE, (uint64_t)mPipelines[pipelineIndex], mName.c_str());
-
-        vkDestroyShaderModule(device, vertShaderModule, nullptr);
-    }
-
-    if (mFragmentShaderPath != "")
-    {
-        vkDestroyShaderModule(device, fragShaderModule, nullptr);
     }
 }
 
@@ -285,11 +273,9 @@ void Pipeline::CreateComputePipeline(VkSpecializationInfo* specInfo)
     VkDevice device = GetVulkanDevice();
     VkPipelineCache cache = GetVulkanContext()->GetPipelineCache();
 
-    Stream stream;
-    stream.ReadFile(mComputeShaderPath.c_str(), true);
-
-    VkShaderModule computeShaderModule;
-    computeShaderModule = CreateShaderModule(stream.GetData(), stream.GetSize());
+    VkShaderModule computeShaderModule = VK_NULL_HANDLE;
+    mComputeShader = new Shader(mComputeShaderPath.c_str(), ShaderStage::Compute, "Pipeline Compute Shader");
+    computeShaderModule = mComputeShader->mModule;
 
     VkPipelineShaderStageCreateInfo computeShaderStageInfo = {};
     computeShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -319,7 +305,6 @@ void Pipeline::CreateComputePipeline(VkSpecializationInfo* specInfo)
         OCT_ASSERT(0);
     }
 
-    vkDestroyShaderModule(device, computeShaderModule, nullptr);
 }
 
 void Pipeline::Create(VkSpecializationInfo* specInfo)
@@ -345,6 +330,29 @@ void Pipeline::Create(VkSpecializationInfo* specInfo)
 void Pipeline::Destroy()
 {
     VkDevice device = GetVulkanDevice();
+
+    if (mFragmentShader != nullptr)
+    {
+        GetDestroyQueue()->Destroy(mFragmentShader);
+        mFragmentShader = nullptr;
+    }
+
+    for (uint32_t i = 0; i < mVertexShaders.size(); ++i)
+    {
+        if (mVertexShaders[i] != nullptr)
+        {
+            GetDestroyQueue()->Destroy(mVertexShaders[i]);
+            mVertexShaders[i] = nullptr;
+        }
+
+        mVertexShaders.clear();
+    }
+
+    if (mComputeShader != nullptr)
+    {
+        GetDestroyQueue()->Destroy(mComputeShader);
+        mComputeShader = nullptr;
+    }
 
     for (uint32_t i = 0; i < mPipelines.size(); ++i)
     {

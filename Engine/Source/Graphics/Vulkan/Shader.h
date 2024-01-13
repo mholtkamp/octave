@@ -5,7 +5,7 @@
 #include <vulkan/vulkan.h>
 #include <spirv_cross/spirv_cross.hpp>
 
-enum ShaderStage
+enum class ShaderStage : uint8_t
 {
     Vertex,
     Fragment,

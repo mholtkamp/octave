@@ -334,8 +334,7 @@ void MaterialPipelineCache::Reset()
     {
         if (it->second != nullptr)
         {
-            it->second->Destroy();
-            delete it->second;
+            GetDestroyQueue()->Destroy(it->second);
             it->second = nullptr;
         }
     }
@@ -349,8 +348,7 @@ void MaterialPipelineCache::Reset()
         {
             if (mResults[i].mPipeline != nullptr)
             {
-                mResults[i].mPipeline->Destroy();
-                delete mResults[i].mPipeline;
+                GetDestroyQueue()->Destroy(mResults[i].mPipeline);
                 mResults[i].mPipeline = nullptr;
             }
         }

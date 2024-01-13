@@ -12,11 +12,13 @@ VkShaderStageFlags GetShaderStageFlags(ShaderStage stage)
 
     switch (stage)
     {
-    case ShaderStage::Vertex: flags = VK_SHADER_STAGE_VERTEX_BIT;
-    case ShaderStage::Fragment: flags = VK_SHADER_STAGE_FRAGMENT_BIT;
-    case ShaderStage::Compute: flags = VK_SHADER_STAGE_COMPUTE_BIT;
+    case ShaderStage::Vertex: flags = VK_SHADER_STAGE_VERTEX_BIT; break;
+    case ShaderStage::Fragment: flags = VK_SHADER_STAGE_FRAGMENT_BIT; break;
+    case ShaderStage::Compute: flags = VK_SHADER_STAGE_COMPUTE_BIT; break;
     default: OCT_ASSERT(0); break;
     }
+
+    return flags;
 }
 
 Shader::Shader(const char* filePath, ShaderStage stage, const char* name)
@@ -26,10 +28,10 @@ Shader::Shader(const char* filePath, ShaderStage stage, const char* name)
 
     const char* data = nullptr;
     uint32_t size = 0;
+    Stream stream;
 
     if (filePath != "")
     {
-        Stream stream;
         stream.ReadFile(filePath, true);
 
         data = stream.GetData();
@@ -95,7 +97,7 @@ void Shader::Create(const char* data, uint32_t size)
     ciModule.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     ciModule.codeSize = size;
 
-    std::vector<uint32_t> codeLong(size / sizeof(uint32_t) + 1);
+    std::vector<uint32_t> codeLong(size / sizeof(uint32_t));
     memcpy(codeLong.data(), data, size);
     ciModule.pCode = codeLong.data();
 
@@ -111,7 +113,8 @@ void Shader::Create(const char* data, uint32_t size)
     }
 
     // NEXT! Use SPIR-V Reflect to determine descriptor set layouts and save them on this object.
-    spirv_cross::Compiler comp(codeLong.data(), size);
+    //spirv_cross::Compiler comp(codeLong.data(), codeLong.size());
+    spirv_cross::Compiler comp(codeLong);
     spirv_cross::ShaderResources resources = comp.get_shader_resources();
 
     std::vector<VkDescriptorSetLayoutBinding> bindings[MAX_BOUND_DESCRIPTOR_SETS];
@@ -122,7 +125,7 @@ void Shader::Create(const char* data, uint32_t size)
         uint32_t binding = comp.get_decoration(res.id, spv::DecorationBinding);
 
         const spirv_cross::SPIRType type = comp.get_type(res.type_id);
-        uint32_t count = type.array.size();
+        uint32_t count = (uint32_t)type.array.size();
 
         if (set < MAX_BOUND_DESCRIPTOR_SETS)
         {

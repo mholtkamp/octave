@@ -2859,8 +2859,7 @@ void VulkanContext::DestroyPipelines()
     {
         if (mPipelines[i] != nullptr)
         {
-            mPipelines[i]->Destroy();
-            delete mPipelines[i];
+            GetDestroyQueue()->Destroy(mPipelines[i]);
             mPipelines[i] = nullptr;
         }
     }
