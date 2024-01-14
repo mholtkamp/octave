@@ -12,8 +12,8 @@ VkShaderStageFlags GetShaderStageFlags(ShaderStage stage)
 
     switch (stage)
     {
-    case ShaderStage::Vertex: flags = VK_SHADER_STAGE_VERTEX_BIT; break;
-    case ShaderStage::Fragment: flags = VK_SHADER_STAGE_FRAGMENT_BIT; break;
+    case ShaderStage::Vertex: flags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT; break;
+    case ShaderStage::Fragment: flags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT; break;
     case ShaderStage::Compute: flags = VK_SHADER_STAGE_COMPUTE_BIT; break;
     default: OCT_ASSERT(0); break;
     }
@@ -67,6 +67,7 @@ Shader::~Shader()
         mModule = VK_NULL_HANDLE;
     }
 
+#if 0
     for (uint32_t i = 0; i < MAX_BOUND_DESCRIPTOR_SETS; ++i)
     {
         if (mDescriptorSetLayouts[i] != VK_NULL_HANDLE)
@@ -76,6 +77,7 @@ Shader::~Shader()
             mDescriptorSetLayouts[i] = VK_NULL_HANDLE;
         }
     }
+#endif
 }
 
 void Shader::Create(const char* data, uint32_t size)
@@ -112,12 +114,10 @@ void Shader::Create(const char* data, uint32_t size)
         SetDebugObjectName(VK_OBJECT_TYPE_SHADER_MODULE, (uint64_t)mModule, mName.c_str());
     }
 
-    // NEXT! Use SPIR-V Reflect to determine descriptor set layouts and save them on this object.
+    // Use Spirv Cross to determine descriptor set layouts and save them on this object.
     //spirv_cross::Compiler comp(codeLong.data(), codeLong.size());
     spirv_cross::Compiler comp(codeLong);
     spirv_cross::ShaderResources resources = comp.get_shader_resources();
-
-    std::vector<VkDescriptorSetLayoutBinding> bindings[MAX_BOUND_DESCRIPTOR_SETS];
 
     auto addBinding = [&](const spirv_cross::Resource& res, VkDescriptorType descType)
     {
@@ -125,7 +125,19 @@ void Shader::Create(const char* data, uint32_t size)
         uint32_t binding = comp.get_decoration(res.id, spv::DecorationBinding);
 
         const spirv_cross::SPIRType type = comp.get_type(res.type_id);
-        uint32_t count = (uint32_t)type.array.size();
+        uint32_t count = 1;
+
+        if (type.array.size() > 0)
+        {
+            // Only supporting 1 dimensional arrays.
+            count = type.array[0];
+        }
+
+        // We manually setup the global descriptor set. See below.
+        if (set == 0)
+        {
+            return;
+        }
 
         if (set < MAX_BOUND_DESCRIPTOR_SETS)
         {
@@ -140,7 +152,7 @@ void Shader::Create(const char* data, uint32_t size)
             // We need to merge the descriptors for vertex and fragment I think.
             layoutBinding.stageFlags = GetShaderStageFlags(mStage);
 
-            bindings[set].push_back(layoutBinding);
+            mDescriptorBindings[set].push_back(layoutBinding);
         }
         else
         {
@@ -155,7 +167,7 @@ void Shader::Create(const char* data, uint32_t size)
 
     for (uint32_t i = 0; i < resources.sampled_images.size(); ++i)
     {
-        addBinding(resources.sampled_images[i], VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
+        addBinding(resources.sampled_images[i], VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     }
 
     for (uint32_t i = 0; i < resources.storage_buffers.size(); ++i)
@@ -166,6 +178,29 @@ void Shader::Create(const char* data, uint32_t size)
     for (uint32_t i = 0; i < resources.storage_images.size(); ++i)
     {
         addBinding(resources.storage_images[i], VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+    }
+
+    // Setup global descriptor set.
+    {
+        VkShaderStageFlags allStages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
+
+        // Global Uniform Buffer at 0.0
+        VkDescriptorSetLayoutBinding globalUniformBinding = {};
+        globalUniformBinding.descriptorCount = 1;
+        globalUniformBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        globalUniformBinding.binding = 0;
+        globalUniformBinding.pImmutableSamplers = nullptr;
+        globalUniformBinding.stageFlags = allStages;
+        mDescriptorBindings[0].push_back(globalUniformBinding);
+
+        // Shadow Map image at 0.1
+        VkDescriptorSetLayoutBinding shadowMapBinding = {};
+        shadowMapBinding.descriptorCount = 1;
+        shadowMapBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        shadowMapBinding.binding = 1;
+        shadowMapBinding.pImmutableSamplers = nullptr;
+        shadowMapBinding.stageFlags = allStages;
+        mDescriptorBindings[0].push_back(shadowMapBinding);
     }
 
     // We will access these descriptor set layouts when creating a pipeline using this shader.

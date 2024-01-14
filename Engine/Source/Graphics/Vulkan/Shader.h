@@ -34,6 +34,6 @@ public:
     std::string mName;
     ShaderStage mStage;
     VkShaderModule mModule = VK_NULL_HANDLE;
-    VkDescriptorSetLayout mDescriptorSetLayouts[MAX_BOUND_DESCRIPTOR_SETS] = {};
+    std::vector<VkDescriptorSetLayoutBinding> mDescriptorBindings[MAX_BOUND_DESCRIPTOR_SETS];
 };
 

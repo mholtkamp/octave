@@ -188,6 +188,14 @@ void Pipeline::CreateGraphicsPipeline(VkSpecializationInfo* specInfo)
     dynamicState.dynamicStateCount = (uint32_t)dynStates.size();
     dynamicState.pDynamicStates = dynStates.data();
 
+    // Load vertex shaders so we can create our descriptor set layouts + pipeline layout.
+    for (uint32_t i = 0; i < mVertexConfigs.size(); ++i)
+    {
+        Shader* vertShader = new Shader(mVertexConfigs[i].mVertexShaderPath.c_str(), ShaderStage::Vertex, "Pipeline Vertex Shader");
+        mVertexShaders.push_back(vertShader);
+    }
+
+    CreateDescriptorSetLayouts();
     CreatePipelineLayout();
 
     VkGraphicsPipelineCreateInfo ciPipeline = {};
@@ -214,10 +222,7 @@ void Pipeline::CreateGraphicsPipeline(VkSpecializationInfo* specInfo)
     {
         const VertexConfig vertexConfig = mVertexConfigs[i];
 
-        VkShaderModule vertShaderModule = VK_NULL_HANDLE;
-        Shader* vertShader = new Shader(vertexConfig.mVertexShaderPath.c_str(), ShaderStage::Vertex, "Pipeline Vertex Shader");
-        mVertexShaders.push_back(vertShader);
-        vertShaderModule = vertShader->mModule;
+        VkShaderModule vertShaderModule = mVertexShaders[i]->mModule;
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -283,6 +288,7 @@ void Pipeline::CreateComputePipeline(VkSpecializationInfo* specInfo)
     computeShaderStageInfo.module = computeShaderModule;
     computeShaderStageInfo.pName = "main";
 
+    CreateDescriptorSetLayouts();
     CreatePipelineLayout();
 
     VkComputePipelineCreateInfo ci = { };
@@ -313,8 +319,7 @@ void Pipeline::Create(VkSpecializationInfo* specInfo)
     OCT_ASSERT(mRenderpass != VK_NULL_HANDLE || mComputePipeline);
     OCT_ASSERT(mPipelineId != PipelineId::Count);
 
-    PopulateLayoutBindings();
-    CreateDescriptorSetLayouts();
+    //PopulateLayoutBindings();
 
     if (mComputePipeline)
     {
@@ -495,6 +500,101 @@ void Pipeline::CreatePipelineLayout()
 
 void Pipeline::CreateDescriptorSetLayouts()
 {
+#if 1
+    // This can easily be changed.
+    const uint32_t kMaxNumBindings = 32;
+
+    std::vector<VkDescriptorSetLayoutBinding> setBindings[MAX_BOUND_DESCRIPTOR_SETS];
+
+    auto gatherDescriptorBindings = [&](Shader* shader)
+    {
+        OCT_ASSERT(shader != nullptr);
+
+        for (uint32_t i = 0; i < MAX_BOUND_DESCRIPTOR_SETS; ++i)
+        {
+            const std::vector<VkDescriptorSetLayoutBinding>& bindings = shader->mDescriptorBindings[i];
+
+            for (uint32_t j = 0; j < bindings.size(); ++j)
+            {
+                const VkDescriptorSetLayoutBinding& binding = bindings[j];
+
+                if (binding.binding >= kMaxNumBindings)
+                {
+                    LogError("Need to increase max bindings in Pipeline::CreateDescriptorSetLayouts()");
+                    OCT_ASSERT(0);
+                    continue;
+                }
+
+                VkDescriptorSetLayoutBinding* setBinding = nullptr;
+                for (uint32_t k = 0; k < setBindings[i].size(); ++k)
+                {
+                    if (setBindings[i][k].binding == binding.binding)
+                    {
+                        // Found an existing binding
+                        setBinding = &setBindings[i][k];
+                        break;
+                    }
+                }
+
+                if (setBinding != nullptr)
+                {
+                    OCT_ASSERT(setBinding->binding == binding.binding);
+                    OCT_ASSERT(setBinding->descriptorCount == binding.descriptorCount);
+                    OCT_ASSERT(setBinding->descriptorType == binding.descriptorType);
+                }
+                else
+                {
+                    setBindings[i].push_back(VkDescriptorSetLayoutBinding());
+                    setBinding = &(setBindings[i].back());
+                }
+
+                OCT_ASSERT(setBinding != nullptr);
+
+                // Add this binding
+                setBinding->binding = binding.binding;
+                setBinding->descriptorCount = binding.descriptorCount;
+                setBinding->descriptorType = binding.descriptorType;
+                setBinding->stageFlags |= binding.stageFlags;
+            }
+        }
+    };
+
+    if (mComputePipeline)
+    {
+        gatherDescriptorBindings(mComputeShader);
+    }
+    else
+    {
+        gatherDescriptorBindings(mVertexShaders[0]);
+        gatherDescriptorBindings(mFragmentShader);
+    }
+
+    for (uint32_t i = 0; i < MAX_BOUND_DESCRIPTOR_SETS; ++i)
+    {
+        const std::vector<VkDescriptorSetLayoutBinding>& bindings = setBindings[i];
+
+        if (bindings.size() == 0)
+            continue;
+
+        VkDescriptorSetLayoutCreateInfo ciDescriptorSetLayout = {};
+        ciDescriptorSetLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        ciDescriptorSetLayout.bindingCount = static_cast<uint32_t>(bindings.size());
+        ciDescriptorSetLayout.pBindings = bindings.data();
+
+        mDescriptorSetLayouts.push_back(VK_NULL_HANDLE);
+
+        if (vkCreateDescriptorSetLayout(GetVulkanDevice(),
+            &ciDescriptorSetLayout,
+            nullptr,
+            &(mDescriptorSetLayouts.back())) != VK_SUCCESS)
+        {
+            LogError("Failed to create descriptor set layout");
+            OCT_ASSERT(0);
+        }
+    }
+
+#else
+
     for (uint32_t i = 0; i < mLayoutBindings.size(); ++i)
     {
         VkDescriptorSetLayoutCreateInfo ciDescriptorSetLayout = {};
@@ -513,6 +613,7 @@ void Pipeline::CreateDescriptorSetLayouts()
             OCT_ASSERT(0);
         }
     }
+#endif
 }
 
 void Pipeline::PopulateLayoutBindings()

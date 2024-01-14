@@ -1435,6 +1435,7 @@ void DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverride)
             // This could be moved up to the Renderer in the future to reduce CPU cost.
             pipeline = GetMaterialPipeline(material, vertexType);
             GetVulkanContext()->BindPipeline(pipeline, vertexType);
+            BindMaterialResource(material, pipeline);
         }
         else
         {
@@ -1444,7 +1445,6 @@ void DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverride)
 
         OCT_ASSERT(pipeline);
 
-        BindMaterialResource(material, pipeline);
         resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
 
         vkCmdDrawIndexed(cb,
@@ -1594,6 +1594,7 @@ void DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
             VertexType vertType = IsCpuSkinningRequired(skeletalMeshComp) ? VertexType::Vertex : VertexType::VertexSkinned;
             pipeline = GetMaterialPipeline(material, vertType);
             GetVulkanContext()->BindPipeline(pipeline, vertType);
+            BindMaterialResource(material, pipeline);
         }
         else
         {
@@ -1603,7 +1604,6 @@ void DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
 
         OCT_ASSERT(pipeline);
 
-        BindMaterialResource(material, pipeline);
         resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
 
         vkCmdDrawIndexed(cb,
@@ -1752,6 +1752,7 @@ void DrawTextMeshComp(TextMesh3D* textMeshComp)
         // This could be moved up to the Renderer in the future to reduce CPU cost.
         pipeline = GetMaterialPipeline(material, VertexType::Vertex);
         GetVulkanContext()->BindPipeline(pipeline, VertexType::Vertex);
+        BindMaterialResource(material, pipeline);
     }
     else
     {
@@ -1761,7 +1762,6 @@ void DrawTextMeshComp(TextMesh3D* textMeshComp)
 
     OCT_ASSERT(pipeline);
 
-    BindMaterialResource(material, pipeline);
     resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
 
     vkCmdDraw(cb, TEXT_VERTS_PER_CHAR * textMeshComp->GetNumVisibleCharacters(), 1, 0, 0);
@@ -1923,6 +1923,7 @@ void DrawParticleComp(Particle3D* particleComp)
             // This could be moved up to the Renderer in the future to reduce CPU cost.
             pipeline = GetMaterialPipeline(material, VertexType::VertexParticle);
             GetVulkanContext()->BindPipeline(pipeline, VertexType::VertexParticle);
+            BindMaterialResource(material, pipeline);
         }
         else
         {
@@ -1932,7 +1933,6 @@ void DrawParticleComp(Particle3D* particleComp)
 
         OCT_ASSERT(pipeline);
 
-        BindMaterialResource(material, pipeline);
         resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
 
         VkDeviceSize offset = 0;
@@ -2294,6 +2294,7 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
             VertexType vertType = mesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex;
             pipeline = GetMaterialPipeline(material, vertType);
             GetVulkanContext()->BindPipeline(pipeline, vertType);
+            BindMaterialResource(material, pipeline);
         }
         else
         {
@@ -2302,7 +2303,6 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
         }
 
         OCT_ASSERT(pipeline);
-        BindMaterialResource(material, pipeline);
 
         DescriptorSetArena& descriptorArena = GetVulkanContext()->GetMeshDescriptorSetArena();
         DescriptorSet* descriptorSet = descriptorArena.Alloc(pipeline->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Geometry));
