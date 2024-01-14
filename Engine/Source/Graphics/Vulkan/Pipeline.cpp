@@ -465,23 +465,6 @@ void Pipeline::AddAdditiveBlendAttachmentState()
     mBlendAttachments.push_back(colorBlendAttachment);
 }
 
-void Pipeline::AddLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t descriptorCount)
-{
-    VkDescriptorSetLayoutBinding layoutBinding = {};
-    layoutBinding.descriptorCount = descriptorCount;
-    layoutBinding.descriptorType = type;
-    layoutBinding.pImmutableSamplers = nullptr;
-    layoutBinding.stageFlags = stageFlags;
-    layoutBinding.binding = static_cast<uint32_t>(mLayoutBindings.back().size());
-
-    mLayoutBindings.back().push_back(layoutBinding);
-}
-
-void Pipeline::PushSet()
-{
-    mLayoutBindings.push_back(std::vector<VkDescriptorSetLayoutBinding>());
-}
-
 void Pipeline::CreatePipelineLayout()
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
@@ -500,7 +483,6 @@ void Pipeline::CreatePipelineLayout()
 
 void Pipeline::CreateDescriptorSetLayouts()
 {
-#if 1
     // This can easily be changed.
     const uint32_t kMaxNumBindings = 32;
 
@@ -592,36 +574,6 @@ void Pipeline::CreateDescriptorSetLayouts()
             OCT_ASSERT(0);
         }
     }
-
-#else
-
-    for (uint32_t i = 0; i < mLayoutBindings.size(); ++i)
-    {
-        VkDescriptorSetLayoutCreateInfo ciDescriptorSetLayout = {};
-        ciDescriptorSetLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        ciDescriptorSetLayout.bindingCount = static_cast<uint32_t>(mLayoutBindings[i].size());
-        ciDescriptorSetLayout.pBindings = mLayoutBindings[i].data();
-
-        mDescriptorSetLayouts.push_back(VK_NULL_HANDLE);
-
-        if (vkCreateDescriptorSetLayout(GetVulkanDevice(),
-            &ciDescriptorSetLayout,
-            nullptr,
-            &mDescriptorSetLayouts[i]) != VK_SUCCESS)
-        {
-            LogError("Failed to create descriptor set layout");
-            OCT_ASSERT(0);
-        }
-    }
-#endif
-}
-
-void Pipeline::PopulateLayoutBindings()
-{
-    // Global descriptor set
-    PushSet();
-    AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT);
-    AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 }
 
 #endif

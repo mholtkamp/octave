@@ -32,22 +32,6 @@ public:
         mBlendAttachments.clear();
         mPipelineId = PipelineId::Shadow;
     }
-
-    virtual void PopulateLayoutBindings() override
-    {
-        Pipeline::PopulateLayoutBindings();
-
-        PushSet();
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-
-        PushSet();
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-        // Add texture sampler descriptors for each texture slot
-        for (int32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
-        {
-            AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-        }
-    }
 };
 
 class ForwardPipeline : public Pipeline
@@ -72,22 +56,6 @@ public:
         mCullMode = VK_CULL_MODE_BACK_BIT;
 
         mPipelineId = PipelineId::Opaque;
-    }
-
-    virtual void PopulateLayoutBindings() override
-    {
-        Pipeline::PopulateLayoutBindings();
-
-        PushSet();
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-
-        PushSet();
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-        // Add texture sampler descriptors for each texture slot
-        for (int32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
-        {
-            AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-        }
     }
 };
 
@@ -226,15 +194,6 @@ public:
 
         mPipelineId = PipelineId::PostProcess;
     }
-
-    virtual void PopulateLayoutBindings() override
-    {
-        Pipeline::PopulateLayoutBindings();
-
-        PushSet();
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    }
 };
 
 class NullPostProcessPipeline : public PostProcessPipeline
@@ -270,15 +229,6 @@ public:
 
         mPipelineId = PipelineId::Quad;
     }
-
-    virtual void PopulateLayoutBindings() override
-    {
-        Pipeline::PopulateLayoutBindings();
-
-        PushSet();
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    }
 };
 
 class TextPipeline : public Pipeline
@@ -301,15 +251,6 @@ public:
 
         mPipelineId = PipelineId::Text;
     }
-
-    virtual void PopulateLayoutBindings() override
-    {
-        Pipeline::PopulateLayoutBindings();
-
-        PushSet();
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    }
 };
 
 class PolyPipeline : public Pipeline
@@ -331,15 +272,6 @@ public:
         mBlendAttachments[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 
         mPipelineId = PipelineId::Poly;
-    }
-
-    virtual void PopulateLayoutBindings() override
-    {
-        Pipeline::PopulateLayoutBindings();
-
-        PushSet();
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     }
 };
 
@@ -475,20 +407,6 @@ public:
 
         mPipelineId = PipelineId::PathTrace;
     }
-
-    virtual void PopulateLayoutBindings() override
-    {
-        Pipeline::PopulateLayoutBindings();
-
-        PushSet();
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_COMPUTE_BIT); // Uniform data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Triangle data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Mesh (+ Material) data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Light data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT, PATH_TRACE_MAX_TEXTURES); // Texture Array
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT); // Output image
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // In/Out baked vertex data
-    }
 };
 
 class LightBakeDirectPipeline : public PathTracePipeline
@@ -524,17 +442,6 @@ public:
 
         mPipelineId = PipelineId::LightBakeAverage;
     }
-
-    virtual void PopulateLayoutBindings() override
-    {
-        Pipeline::PopulateLayoutBindings();
-
-        PushSet();
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_COMPUTE_BIT); // Uniform data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Baked vertex data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Triangle data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Output average light data
-    }
 };
 
 class LightBakeDiffusePipeline : public Pipeline
@@ -547,17 +454,6 @@ public:
         mComputeShaderPath = ENGINE_SHADER_DIR "LightBakeDiffuse.comp";
 
         mPipelineId = PipelineId::LightBakeDiffuse;
-    }
-
-    virtual void PopulateLayoutBindings() override
-    {
-        Pipeline::PopulateLayoutBindings();
-
-        PushSet();
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_COMPUTE_BIT); // Uniform data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Baked vertex data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Triangle data
-        AddLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT); // Output average light data
     }
 };
 

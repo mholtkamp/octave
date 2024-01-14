@@ -61,10 +61,6 @@ protected:
     void CreateGraphicsPipeline(VkSpecializationInfo* specInfo);
     void CreateComputePipeline(VkSpecializationInfo* specInfo);
 
-    void PushSet();
-    void AddLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t descriptorCount = 1);
-
-    virtual void PopulateLayoutBindings();
     void CreateDescriptorSetLayouts();
     void CreatePipelineLayout();
 
