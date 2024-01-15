@@ -3,6 +3,8 @@
 #include "Maths.h"
 #include "System/SystemTypes.h"
 
+class Shader;
+
 struct PipelineCreateJobArgs
 {
     std::vector<class Pipeline*>* mPipelines;

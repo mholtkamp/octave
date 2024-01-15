@@ -168,6 +168,11 @@ public:
     void SetDepthCompareOp(VkCompareOp compareOp);
     void SetBlendState(VkPipelineColorBlendAttachmentState blendState, uint32_t index = 0);
     void SetBlendState(BasicBlendState basicBlendState, uint32_t index = 0);
+    void SetBlendEnable(bool enable, uint32_t index = 0);
+    void SetBlendColorOp(VkBlendFactor src, VkBlendFactor dst, VkBlendOp op, uint32_t index = 0);
+    void SetBlendAlphaOp(VkBlendFactor src, VkBlendFactor dst, VkBlendOp op, uint32_t index = 0);
+    void SetColorWriteMask(VkColorComponentFlags writeMask, uint32_t index = 0);
+
 
 private:
 
