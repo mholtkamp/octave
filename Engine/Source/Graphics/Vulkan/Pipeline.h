@@ -88,10 +88,6 @@ public:
     Shader* mFragmentShader = nullptr;
     Shader* mComputeShader = nullptr;
 
-    // Viewport
-    uint32_t mViewportWidth;
-    uint32_t mViewportHeight;
-
     // Rasterizer stage
     VkBool32 mRasterizerDiscard;
     VkPrimitiveTopology mPrimitiveTopology;

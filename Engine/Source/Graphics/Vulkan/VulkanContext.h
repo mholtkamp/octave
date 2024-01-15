@@ -149,6 +149,26 @@ public:
     const VkPhysicalDeviceProperties& GetDeviceProperties() const;
     UniformBuffer* GetFrameUniformBuffer();
 
+    // Pipeline State
+    void SetVertexShader(Shader* shader);
+    void SetFragmentShader(Shader* shader);
+    void SetComputeShader(Shader* shader);
+    void SetRenderPass(VkRenderPass renderPass);
+    void SetVertexType(VertexType vertexType);
+    void SetRasterizerDiscard(bool discard);
+    void SetPrimitiveTopology(VkPrimitiveTopology primitiveToplogy);
+    void SetPolygonMode(VkPolygonMode polygonMode);
+    void SetLineWidth(float lineWidth);
+    void SetDynamicLineWidth(bool dynamicLineWidth);
+    void SetCullMode(VkCullModeFlags cullMode);
+    void SetFrontFace(VkFrontFace frontFace);
+    void SetDepthBias(float depthBias);
+    void SetDepthTestEnabled(bool enabled);
+    void SetDepthWriteEnabled(bool enabled);
+    void SetDepthCompareOp(VkCompareOp compareOp);
+    void SetBlendState(VkPipelineColorBlendAttachmentState blendState, uint32_t index = 0);
+    void SetBlendState(BasicBlendState basicBlendState, uint32_t index = 0);
+
 private:
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -289,6 +309,9 @@ private:
 
     // Material Pipelines
     MaterialPipelineCache mMaterialPipelineCache;
+
+    //Pipeline State
+    PipelineState mPipelineState;
 
     // Misc
     int32_t mFrameIndex = 0;

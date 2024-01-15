@@ -2456,6 +2456,137 @@ UniformBuffer* VulkanContext::GetFrameUniformBuffer()
     return mFrameUniformBuffer;
 }
 
+void VulkanContext::SetVertexShader(Shader* shader)
+{
+    mPipelineState.mVertexShader = shader;
+    mPipelineState.mComputeShader = nullptr;
+}
+
+void VulkanContext::SetFragmentShader(Shader* shader)
+{
+    mPipelineState.mFragmentShader = shader;
+    mPipelineState.mComputeShader = nullptr;
+}
+
+void VulkanContext::SetComputeShader(Shader* shader)
+{
+    mPipelineState.mComputeShader = shader;
+    mPipelineState.mVertexShader = nullptr;
+    mPipelineState.mFragmentShader = nullptr;
+}
+
+void VulkanContext::SetRenderPass(VkRenderPass renderPass)
+{
+    mPipelineState.mRenderPass = renderPass;
+}
+
+void VulkanContext::SetVertexType(VertexType vertexType)
+{
+    mPipelineState.mVertexType = vertexType;
+}
+
+void VulkanContext::SetRasterizerDiscard(bool discard)
+{
+    mPipelineState.mRasterizerDiscard = discard;
+}
+
+void VulkanContext::SetPrimitiveTopology(VkPrimitiveTopology primitiveToplogy)
+{
+    mPipelineState.mPrimitiveTopology = primitiveToplogy;
+}
+
+void VulkanContext::SetPolygonMode(VkPolygonMode polygonMode)
+{
+    mPipelineState.mPolygonMode = polygonMode;
+}
+
+void VulkanContext::SetLineWidth(float lineWidth)
+{
+    mPipelineState.mLineWidth = lineWidth;
+}
+
+void VulkanContext::SetDynamicLineWidth(bool dynamicLineWidth)
+{
+    mPipelineState.mDynamicLineWidth = dynamicLineWidth;
+}
+
+void VulkanContext::SetCullMode(VkCullModeFlags cullMode)
+{
+    mPipelineState.mCullMode = cullMode;
+}
+
+void VulkanContext::SetFrontFace(VkFrontFace frontFace)
+{
+    mPipelineState.mFrontFace = frontFace;
+}
+
+void VulkanContext::SetDepthBias(float depthBias)
+{
+    mPipelineState.mDepthBias = depthBias;
+}
+
+void VulkanContext::SetDepthTestEnabled(bool enabled)
+{
+    mPipelineState.mDepthTestEnabled = enabled;
+}
+
+void VulkanContext::SetDepthWriteEnabled(bool enabled)
+{
+    mPipelineState.mDepthWriteEnabled = enabled;
+}
+
+void VulkanContext::SetDepthCompareOp(VkCompareOp compareOp)
+{
+    mPipelineState.mDepthCompareOp = compareOp;
+}
+
+void VulkanContext::SetBlendState(VkPipelineColorBlendAttachmentState blendState, uint32_t index)
+{
+    uint32_t index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
+    mPipelineState.mBlendStates[index] = blendState;
+}
+
+void VulkanContext::SetBlendState(BasicBlendState basicBlendState, uint32_t index)
+{
+    VkPipelineColorBlendAttachmentState blendState = {};
+
+    switch (basicBlendState)
+    {
+    case BasicBlendState::Opaque:
+        blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT;
+        blendState.blendEnable = false;
+        blendState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+        blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.colorBlendOp = VK_BLEND_OP_ADD;
+        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+        break;
+    case BasicBlendState::Translucent:
+        blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        blendState.blendEnable = true;
+        blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        blendState.colorBlendOp = VK_BLEND_OP_ADD;
+        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+        break;
+    case BasicBlendState::Additive:
+        blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        blendState.blendEnable = true;
+        blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+        blendState.colorBlendOp = VK_BLEND_OP_ADD;
+        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+        break;
+    }
+
+    SetBlendState(blendState, index);
+}
+
 DescriptorSetArena& VulkanContext::GetMeshDescriptorSetArena()
 {
     return mMeshDescriptorSetArena;

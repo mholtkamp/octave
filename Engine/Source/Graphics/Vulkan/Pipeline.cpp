@@ -18,8 +18,6 @@ Pipeline::Pipeline() :
     mSubpass(0),
     mComputePipeline(false),
     mFragmentShaderPath("Shaders/bin/Forward.frag"),
-    mViewportWidth(0),
-    mViewportHeight(0),
     mRasterizerDiscard(VK_FALSE),
     mPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST),
     mPolygonMode(VK_POLYGON_MODE_FILL),

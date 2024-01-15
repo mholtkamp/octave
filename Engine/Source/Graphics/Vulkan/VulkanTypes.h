@@ -9,6 +9,43 @@ struct PipelineCreateJobArgs
     MutexObject* mMutex = nullptr;
 };
 
+enum class BasicBlendState
+{
+    Opaque,
+    Translucent,
+    Additive,
+
+    Count
+};
+
+struct PipelineState
+{
+    Shader* mVertexShader = nullptr;
+    Shader* mFragmentShader = nullptr;
+    Shader* mComputeShader = nullptr;
+
+    VkRenderPass mRenderPass = VK_NULL_HANDLE;
+    VertexType mVertexType = VertexType::Vertex;
+
+    // Rasterizer
+    bool mRasterizerDiscard = false;
+    VkPrimitiveTopology mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    VkPolygonMode mPolygonMode = VK_POLYGON_MODE_FILL;
+    float mLineWidth = 1.0f;
+    bool mDynamicLineWidth = false;
+    VkCullModeFlags mCullMode = VK_CULL_MODE_BACK_BIT;
+    VkFrontFace mFrontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    float mDepthBias = 0.0f;
+
+    // Depth Stencil
+    bool mDepthTestEnabled = true;
+    bool mDepthWriteEnabled = true;
+    VkCompareOp mDepthCompareOp = VK_COMPARE_OP_LESS;
+
+    // Blending
+    VkPipelineColorBlendAttachmentState mBlendStates[MAX_RENDER_TARGETS] = {};
+};
+
 struct LightUniformData
 {
     glm::vec4 mColor;
