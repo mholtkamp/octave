@@ -635,7 +635,10 @@
     <ClCompile Include="Source\Graphics\Vulkan\Shader.cpp">
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\Vulkan\PipelineCache.cpp">
+    <ClCompile Include="Source\Graphics\Vulkan\PipelineLibrary.cpp">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Vulkan\PipelineConfigs.cpp">
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1257,7 +1260,7 @@
     <ClInclude Include="Source\Graphics\Vulkan\Shader.h">
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Graphics\Vulkan\PipelineCache.h">
+    <ClInclude Include="Source\Graphics\Vulkan\PipelineLibrary.h">
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,7 +3,7 @@
 #include "VulkanTypes.h"
 #include "Pipeline.h"
 
-class PipelineCache
+class PipelineLibrary
 {
 
 

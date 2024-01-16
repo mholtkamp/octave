@@ -11,6 +11,8 @@
 #define MAX_BOUND_DESCRIPTOR_SETS 4
 #define MAX_RENDER_TARGETS 8
 
+#define ENGINE_SHADER_DIR "Engine/Shaders/GLSL/bin/"
+
 #define SELECTED_COMP_COLOR glm::vec4(1.0f, 1.0f, 0.5f, 1.0f)
 #define MULTI_SELECTED_COMP_COLOR glm::vec4(1.0f, 0.6f, 0.3f, 1.0f)
 

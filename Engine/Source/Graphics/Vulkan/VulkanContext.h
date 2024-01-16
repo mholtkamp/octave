@@ -70,9 +70,8 @@ public:
     void EndFrame();
     void BeginRenderPass(RenderPassId id);
     void EndRenderPass();
-    void BindPipeline(PipelineId id, VertexType vertexType);
-    void BindPipeline(Pipeline* pipeline, VertexType vertexType);
-    void RebindPipeline(VertexType vertexType);
+    void BindPipeline();
+    void BindPipeline(Pipeline* pipeline);
     void DrawLines(const std::vector<Line>& lines);
     void DrawFullscreen();
 
@@ -150,9 +149,13 @@ public:
     UniformBuffer* GetFrameUniformBuffer();
 
     // Pipeline State
+    void SetPipelineState(const PipelineState& state);
     void SetVertexShader(Shader* shader);
     void SetFragmentShader(Shader* shader);
     void SetComputeShader(Shader* shader);
+    void SetVertexShader(const char* globalName);
+    void SetFragmentShader(const char* globalName);
+    void SetComputeShader(const char* globalName);
     void SetRenderPass(VkRenderPass renderPass);
     void SetVertexType(VertexType vertexType);
     void SetRasterizerDiscard(bool discard);
@@ -207,6 +210,8 @@ private:
     void CreateQueryPools();
     void DestroyQueryPools();
     void RecreateSurface();
+    void CreateGlobalShaders();
+    void DestroyGlobalShaders();
 
     void PickPhysicalDevice();
     bool IsDeviceSuitable(VkPhysicalDevice device);
@@ -283,6 +288,7 @@ private:
     Pipeline* mPipelines[(size_t)PipelineId::Count] = {};
 
     // Shader Data
+    std::unordered_map<std::string, Shader*> mGlobalShaders;
     DescriptorSet* mGlobalDescriptorSet = nullptr;
     DescriptorSet* mDebugDescriptorSet = nullptr;
     DescriptorSet* mPostProcessDescriptorSet = nullptr;

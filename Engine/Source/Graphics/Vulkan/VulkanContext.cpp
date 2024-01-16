@@ -160,6 +160,8 @@ void VulkanContext::Initialize()
     mFrameIndex = Renderer::Get()->GetFrameIndex();
     mFrameNumber = Renderer::Get()->GetFrameNumber();
 
+    CreateGlobalShaders();
+
     mMaterialPipelineCache.Create();
 
 #if PLATFORM_ANDROID
@@ -207,6 +209,8 @@ void VulkanContext::Destroy()
 #endif
 
     mMaterialPipelineCache.Destroy();
+
+    DestroyGlobalShaders();
 
     DestroyQueryPools();
 
@@ -529,26 +533,32 @@ void VulkanContext::EndRenderPass()
     }
 }
 
-void VulkanContext::BindPipeline(PipelineId id, VertexType vertexType)
+void VulkanContext::BindPipeline()
 {
+    // TODO: Resolve pipeline from state and then bind it.
+#if 0
     Pipeline* pipeline = GetPipeline(id);
     OCT_ASSERT(pipeline != nullptr &&
         pipeline->GetId() == id);
     BindPipeline(pipeline, vertexType);
+#endif
 }
 
-void VulkanContext::BindPipeline(Pipeline* pipeline, VertexType vertexType)
+void VulkanContext::BindPipeline(Pipeline* pipeline)
 {
     VkCommandBuffer cb = mCommandBuffers[mFrameIndex];
     VkPipelineLayout pipelineLayout = pipeline->GetPipelineLayout();
     
-    pipeline->BindPipeline(cb, vertexType);
+    pipeline->Bind(cb);
     mCurrentlyBoundPipeline = pipeline;
 
     // Always rebind Global Descriptor (might not need to do this)
     VkPipelineBindPoint bindPoint = pipeline->IsComputePipeline() ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS;
     mGlobalDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Global, pipelineLayout, bindPoint);
 
+    LogError("Handle binding post process descriptors");
+
+#if 0
     // Handle pipeline-specific functionality
     switch (pipeline->GetId())
     {
@@ -559,14 +569,7 @@ void VulkanContext::BindPipeline(Pipeline* pipeline, VertexType vertexType)
 
     default: break;
     }
-}
-
-void VulkanContext::RebindPipeline(VertexType vertexType)
-{
-    if (mCurrentlyBoundPipeline != nullptr)
-    {
-        BindPipeline(mCurrentlyBoundPipeline, vertexType);
-    }
+#endif
 }
 
 void VulkanContext::DrawLines(const std::vector<Line>& lines)
@@ -585,14 +588,14 @@ void VulkanContext::DrawLines(const std::vector<Line>& lines)
         }
 
 
-        mLineVertexBuffer = new Buffer(BufferType::Vertex, lines.size() * sizeof(VertexColorSimple) * 2, "Line Vertex Data");
+        mLineVertexBuffer = new Buffer(BufferType::Vertex, lines.size() * sizeof(VertexLine) * 2, "Line Vertex Data");
         mNumLinesAllocated = uint32_t(lines.size());
     }
 
     // Update vertex data
     {
         void* data = mLineVertexBuffer->Map();
-        VertexColorSimple* verts = reinterpret_cast<VertexColorSimple*>(data);
+        VertexLine* verts = reinterpret_cast<VertexLine*>(data);
         for (int32_t i = 0; i < int32_t(lines.size()); ++i)
         {
             uint32_t color32 = ColorFloat4ToUint32(lines[i].mColor);
@@ -608,7 +611,16 @@ void VulkanContext::DrawLines(const std::vector<Line>& lines)
 
     // Render
     {
-        BindPipeline(PipelineId::Line, VertexType::VertexColorSimple);
+        //BindPipeline(PipelineId::Line, VertexType::VertexLine);
+        SetVertexShader("Line.vert");
+        SetFragmentShader("Line.frag");
+        SetVertexType(VertexType::VertexLine);
+        SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+        SetDepthTestEnabled(true);
+        SetDepthWriteEnabled(false);
+        SetDepthCompareOp(VK_COMPARE_OP_LESS);
+        SetCullMode(VK_CULL_MODE_NONE);
+        SetLineWidth(1.0f);
 
         VkDeviceSize offset = 0;
         VkBuffer lineVertexBuffer = mLineVertexBuffer->Get();
@@ -2186,6 +2198,53 @@ void VulkanContext::RecreateSurface()
     CreateSurface();
 }
 
+void VulkanContext::CreateGlobalShaders()
+{
+    OCT_ASSERT(mGlobalShaders.size() == 0);
+
+    DirEntry dirEntry;
+    SYS_OpenDirectory(ENGINE_SHADER_DIR, dirEntry);
+
+    while (dirEntry.mValid)
+    {
+        std::string fileName = dirEntry.mFilename;
+
+        ShaderStage shaderStage = ShaderStage::Count;
+        if (fileName.size() >= 5)
+        {
+            std::string ext = fileName.substr(fileName.size() - 5);
+            if (ext == ".vert")
+                shaderStage = ShaderStage::Vertex;
+            else if (ext == ".frag")
+                shaderStage = ShaderStage::Fragment;
+            else if (ext == ".comp")
+                shaderStage = ShaderStage::Compute;
+        }
+
+        if (shaderStage != ShaderStage::Count)
+        {
+            std::string shaderPath = std::string(ENGINE_SHADER_DIR) + fileName;
+            Shader* newShader = new Shader(shaderPath.c_str(), shaderStage, fileName.c_str());
+            mGlobalShaders.insert({ fileName, newShader });
+
+            LogDebug("Loaded Shader: %s", fileName);
+        }
+
+        SYS_IterateDirectory(dirEntry);
+    }
+}
+
+void VulkanContext::DestroyGlobalShaders()
+{
+    for (auto& entry : mGlobalShaders)
+    {
+        GetDestroyQueue()->Destroy(entry.second);
+        entry.second = nullptr;
+    }
+
+    mGlobalShaders.clear();
+}
+
 VkDescriptorPool VulkanContext::GetDescriptorPool()
 {
     return mDescriptorPool;
@@ -2456,6 +2515,11 @@ UniformBuffer* VulkanContext::GetFrameUniformBuffer()
     return mFrameUniformBuffer;
 }
 
+void VulkanContext::SetPipelineState(const PipelineState& state)
+{
+    mPipelineState = state;
+}
+
 void VulkanContext::SetVertexShader(Shader* shader)
 {
     mPipelineState.mVertexShader = shader;
@@ -2473,6 +2537,51 @@ void VulkanContext::SetComputeShader(Shader* shader)
     mPipelineState.mComputeShader = shader;
     mPipelineState.mVertexShader = nullptr;
     mPipelineState.mFragmentShader = nullptr;
+}
+
+void VulkanContext::SetVertexShader(const char* globalName)
+{
+    Shader* shader = mGlobalShaders[globalName];
+
+    if (shader != nullptr && shader->mStage == ShaderStage::Vertex)
+    {
+        SetVertexShader(shader);
+    }
+    else
+    {
+        LogError("Failed to set global shader %s", globalName);
+        OCT_ASSERT(0);
+    }
+}
+
+void VulkanContext::SetFragmentShader(const char* globalName)
+{
+    Shader* shader = mGlobalShaders[globalName];
+
+    if (shader != nullptr && shader->mStage == ShaderStage::Fragment)
+    {
+        SetFragmentShader(shader);
+    }
+    else
+    {
+        LogError("Failed to set global shader %s", globalName);
+        OCT_ASSERT(0);
+    }
+}
+
+void VulkanContext::SetComputeShader(const char* globalName)
+{
+    Shader* shader = mGlobalShaders[globalName];
+
+    if (shader != nullptr && shader->mStage == ShaderStage::Compute)
+    {
+        SetComputeShader(shader);
+    }
+    else
+    {
+        LogError("Failed to set global shader %s", globalName);
+        OCT_ASSERT(0);
+    }
 }
 
 void VulkanContext::SetRenderPass(VkRenderPass renderPass)
@@ -2841,6 +2950,7 @@ VkRenderPass VulkanContext::GetUIRenderPass()
     return mUIRenderPass;
 }
 
+#if 0
 static ThreadFuncRet CreatePipelineThread(void* arg)
 {
     PipelineCreateJobArgs* jobArgs = (PipelineCreateJobArgs*)arg;
@@ -3023,6 +3133,7 @@ void VulkanContext::DestroyPipelines()
         }
     }
 }
+#endif
 
 void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes)
 {

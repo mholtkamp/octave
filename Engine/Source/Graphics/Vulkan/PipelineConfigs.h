@@ -10,7 +10,32 @@
 
 #include "Assertion.h"
 
-#define ENGINE_SHADER_DIR "Engine/Shaders/GLSL/bin/"
+enum class PipelineConfig
+{
+    Shadow,
+    Forward,
+    Opaque,
+    Translucent,
+    Additive,
+    ShadowMeshBack,
+    ShadowMeshFront,
+    ShadowMeshClear,
+    PostProcess,
+    NullPostProcess,
+    Quad,
+    Text,
+    Poly,
+    SelectedGeometry,
+    HitCheck,
+    Wireframe,
+    Collision,
+    Line,
+
+    Count
+};
+
+void InitPipelineConfigs();
+void BindPipelineConfig(PipelineConfig config);
 
 class ShadowPipeline : public Pipeline
 {
@@ -331,7 +356,7 @@ public:
         mDepthCompareOp = VK_COMPARE_OP_LESS;
         mPolygonMode = VK_POLYGON_MODE_LINE;
         mLineWidth = 1.0f;
-        mFragmentShaderPath = ENGINE_SHADER_DIR "ColorGeometry.frag";
+        mFragmentShaderPath = ENGINE_SHADER_DIR "Wireframe.frag";
 
         mBlendAttachments.clear(); // Clear all geometry blends
         AddOpaqueBlendAttachmentState();
@@ -356,23 +381,6 @@ public:
     }
 };
 
-class BakedLightVisPipeline : public ForwardPipeline
-{
-public:
-
-    BakedLightVisPipeline()
-    {
-        mName = "BakedLightVis Pipeline";
-        mDepthTestEnabled = true;
-        mFragmentShaderPath = ENGINE_SHADER_DIR "BakedLightVis.frag";
-
-        mBlendAttachments.clear(); // Clear all geometry blends
-        AddOpaqueBlendAttachmentState();
-
-        mPipelineId = PipelineId::BakedLightVis;
-    }
-};
-
 class LineGeometryPipeline : public Pipeline
 {
 public:
@@ -387,71 +395,10 @@ public:
         mCullMode = VK_CULL_MODE_NONE;
         mLineWidth = 1.0f;
 
-        SetVertexConfig(VertexType::VertexColorSimple, ENGINE_SHADER_DIR "Line.vert");
+        SetVertexConfig(VertexType::VertexLine, ENGINE_SHADER_DIR "Line.vert");
         mFragmentShaderPath = ENGINE_SHADER_DIR "Line.frag";
 
         mPipelineId = PipelineId::Line;
-    }
-};
-
-class PathTracePipeline : public Pipeline
-{
-public:
-
-    PathTracePipeline()
-    {
-        mComputePipeline = true;
-        mComputeShaderPath = ENGINE_SHADER_DIR "PathTrace.comp";
-
-        mPipelineId = PipelineId::PathTrace;
-    }
-};
-
-class LightBakeDirectPipeline : public PathTracePipeline
-{
-public:
-
-    LightBakeDirectPipeline()
-    {
-        mComputeShaderPath = ENGINE_SHADER_DIR "LightBakeDirect.comp";
-        mPipelineId = PipelineId::LightBakeDirect;
-    }
-};
-
-class LightBakeIndirectPipeline : public LightBakeDirectPipeline
-{
-public:
-
-    LightBakeIndirectPipeline()
-    {
-        mComputeShaderPath = ENGINE_SHADER_DIR "LightBakeIndirect.comp";
-        mPipelineId = PipelineId::LightBakeIndirect;
-    }
-};
-
-class LightBakeAveragePipeline : public Pipeline
-{
-public:
-
-    LightBakeAveragePipeline()
-    {
-        mComputePipeline = true;
-        mComputeShaderPath = ENGINE_SHADER_DIR "LightBakeAverage.comp";
-
-        mPipelineId = PipelineId::LightBakeAverage;
-    }
-};
-
-class LightBakeDiffusePipeline : public Pipeline
-{
-public:
-
-    LightBakeDiffusePipeline()
-    {
-        mComputePipeline = true;
-        mComputeShaderPath = ENGINE_SHADER_DIR "LightBakeDiffuse.comp";
-
-        mPipelineId = PipelineId::LightBakeDiffuse;
     }
 };
 

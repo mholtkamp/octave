@@ -505,8 +505,8 @@ std::vector<VkVertexInputBindingDescription> GetVertexBindingDescription(VertexT
         case VertexType::VertexUI:
             desc.stride = sizeof(VertexUI);
             break;
-        case VertexType::VertexColorSimple:
-            desc.stride = sizeof(VertexColorSimple);
+        case VertexType::VertexLine:
+            desc.stride = sizeof(VertexLine);
             break;
         case VertexType::VertexSkinned:
             desc.stride = sizeof(VertexSkinned);
@@ -690,19 +690,19 @@ std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions(Ve
         attributeDescriptions[2].offset = offsetof(VertexUI, mColor);
         break;
 
-    case VertexType::VertexColorSimple:
+    case VertexType::VertexLine:
         // Position
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
         attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[0].offset = offsetof(VertexColorSimple, mPosition);
+        attributeDescriptions[0].offset = offsetof(VertexLine, mPosition);
         // Color
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = VK_FORMAT_R8G8B8A8_UNORM;
-        attributeDescriptions[1].offset = offsetof(VertexColorSimple, mColor);
+        attributeDescriptions[1].offset = offsetof(VertexLine, mColor);
         break;
 
     case VertexType::VertexSkinned:
