@@ -2,6 +2,7 @@
 
 #include "Maths.h"
 #include "System/SystemTypes.h"
+#include "Vertex.h"
 
 class Shader;
 

@@ -2542,7 +2542,7 @@ void VulkanContext::SetDepthCompareOp(VkCompareOp compareOp)
 
 void VulkanContext::SetBlendState(VkPipelineColorBlendAttachmentState blendState, uint32_t index)
 {
-    uint32_t index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
+    index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
     mPipelineState.mBlendStates[index] = blendState;
 }
 
@@ -2589,13 +2589,13 @@ void VulkanContext::SetBlendState(BasicBlendState basicBlendState, uint32_t inde
 
 void VulkanContext::SetBlendEnable(bool enable, uint32_t index)
 {
-    uint32_t index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
+    index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
     mPipelineState.mBlendStates[index].blendEnable = enable;
 }
 
 void VulkanContext::SetBlendColorOp(VkBlendFactor src, VkBlendFactor dst, VkBlendOp op, uint32_t index)
 {
-    uint32_t index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
+    index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
     mPipelineState.mBlendStates[index].srcColorBlendFactor = src;
     mPipelineState.mBlendStates[index].dstColorBlendFactor = dst;
     mPipelineState.mBlendStates[index].colorBlendOp = op;
@@ -2603,7 +2603,7 @@ void VulkanContext::SetBlendColorOp(VkBlendFactor src, VkBlendFactor dst, VkBlen
 
 void VulkanContext::SetBlendAlphaOp(VkBlendFactor src, VkBlendFactor dst, VkBlendOp op, uint32_t index)
 {
-    uint32_t index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
+    index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
     mPipelineState.mBlendStates[index].srcAlphaBlendFactor = src;
     mPipelineState.mBlendStates[index].dstAlphaBlendFactor = dst;
     mPipelineState.mBlendStates[index].alphaBlendOp = op;
@@ -2611,7 +2611,7 @@ void VulkanContext::SetBlendAlphaOp(VkBlendFactor src, VkBlendFactor dst, VkBlen
 
 void VulkanContext::SetColorWriteMask(VkColorComponentFlags writeMask, uint32_t index)
 {
-    uint32_t index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
+    index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
     mPipelineState.mBlendStates[index].colorWriteMask = writeMask;
 }
 

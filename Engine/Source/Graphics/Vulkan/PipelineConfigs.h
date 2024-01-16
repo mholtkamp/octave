@@ -4,6 +4,7 @@
 
 #include "Enums.h"
 #include "Constants.h"
+#include "VulkanTypes.h"
 
 #include "Graphics/Vulkan/Pipeline.h"
 
@@ -25,9 +26,6 @@ public:
             ENGINE_SHADER_DIR "Shadow.vert",
             ENGINE_SHADER_DIR "ShadowSkinned.vert",
             ENGINE_SHADER_DIR "Shadow.vert");
-
-        mViewportWidth = SHADOW_MAP_RESOLUTION;
-        mViewportHeight = SHADOW_MAP_RESOLUTION;
 
         mBlendAttachments.clear();
         mPipelineId = PipelineId::Shadow;
