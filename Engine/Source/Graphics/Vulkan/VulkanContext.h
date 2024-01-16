@@ -148,14 +148,16 @@ public:
     const VkPhysicalDeviceProperties& GetDeviceProperties() const;
     UniformBuffer* GetFrameUniformBuffer();
 
+    Shader* GetGlobalShader(const std::string& name);
+
     // Pipeline State
     void SetPipelineState(const PipelineState& state);
     void SetVertexShader(Shader* shader);
     void SetFragmentShader(Shader* shader);
     void SetComputeShader(Shader* shader);
-    void SetVertexShader(const char* globalName);
-    void SetFragmentShader(const char* globalName);
-    void SetComputeShader(const char* globalName);
+    void SetVertexShader(const std::string& globalName);
+    void SetFragmentShader(const std::string& globalName);
+    void SetComputeShader(const std::string& globalName);
     void SetRenderPass(VkRenderPass renderPass);
     void SetVertexType(VertexType vertexType);
     void SetRasterizerDiscard(bool discard);

@@ -3,6 +3,9 @@
 #include "Maths.h"
 #include "System/SystemTypes.h"
 #include "Vertex.h"
+#include "VulkanConstants.h"
+
+#include <vulkan/vulkan.h>
 
 class Shader;
 

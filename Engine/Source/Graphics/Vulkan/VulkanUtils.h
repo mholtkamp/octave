@@ -90,6 +90,8 @@ void WriteGeometryUniformData(GeometryData& outData, World* world, Node3D* comp,
 void WriteMaterialUniformData(MaterialData& outData, Material* material);
 void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds, StaticMesh3D* staticMeshComp = nullptr);
 
+VkPipelineColorBlendAttachmentState GetBasicBlendState(BasicBlendState basicBlendState);
+
 #if _DEBUG
 void FullPipelineBarrier();
 #endif

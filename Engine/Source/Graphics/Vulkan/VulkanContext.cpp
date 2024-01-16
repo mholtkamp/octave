@@ -161,6 +161,7 @@ void VulkanContext::Initialize()
     mFrameNumber = Renderer::Get()->GetFrameNumber();
 
     CreateGlobalShaders();
+    InitPipelineConfigs();
 
     mMaterialPipelineCache.Create();
 
@@ -2515,6 +2516,19 @@ UniformBuffer* VulkanContext::GetFrameUniformBuffer()
     return mFrameUniformBuffer;
 }
 
+Shader* VulkanContext::GetGlobalShader(const std::string& name)
+{
+    Shader* shader = mGlobalShaders[name];
+
+    if (shader == nullptr)
+    {
+        LogError("Failed to find global shader: %s", name.c_str());
+        OCT_ASSERT(0);
+    }
+
+    return shader;
+}
+
 void VulkanContext::SetPipelineState(const PipelineState& state)
 {
     mPipelineState = state;
@@ -2522,66 +2536,63 @@ void VulkanContext::SetPipelineState(const PipelineState& state)
 
 void VulkanContext::SetVertexShader(Shader* shader)
 {
-    mPipelineState.mVertexShader = shader;
-    mPipelineState.mComputeShader = nullptr;
+    if (shader->mStage == ShaderStage::Vertex)
+    {
+        mPipelineState.mVertexShader = shader;
+        mPipelineState.mComputeShader = nullptr;
+    }
+    else
+    {
+        LogError("Invalid shader stage. Cannot set shader.");
+        OCT_ASSERT(0);
+    }
 }
 
 void VulkanContext::SetFragmentShader(Shader* shader)
 {
-    mPipelineState.mFragmentShader = shader;
-    mPipelineState.mComputeShader = nullptr;
+    if (shader->mStage == ShaderStage::Fragment)
+    {
+        mPipelineState.mFragmentShader = shader;
+        mPipelineState.mComputeShader = nullptr;
+    }
+    else
+    {
+        LogError("Invalid shader stage. Cannot set shader.");
+        OCT_ASSERT(0);
+    }
 }
 
 void VulkanContext::SetComputeShader(Shader* shader)
 {
-    mPipelineState.mComputeShader = shader;
-    mPipelineState.mVertexShader = nullptr;
-    mPipelineState.mFragmentShader = nullptr;
-}
-
-void VulkanContext::SetVertexShader(const char* globalName)
-{
-    Shader* shader = mGlobalShaders[globalName];
-
-    if (shader != nullptr && shader->mStage == ShaderStage::Vertex)
+    if (shader->mStage == ShaderStage::Compute)
     {
-        SetVertexShader(shader);
+        mPipelineState.mComputeShader = shader;
+        mPipelineState.mVertexShader = nullptr;
+        mPipelineState.mFragmentShader = nullptr;
     }
     else
     {
-        LogError("Failed to set global shader %s", globalName);
+        LogError("Invalid shader stage. Cannot set shader.");
         OCT_ASSERT(0);
     }
 }
 
-void VulkanContext::SetFragmentShader(const char* globalName)
+void VulkanContext::SetVertexShader(const std::string& globalName)
 {
-    Shader* shader = mGlobalShaders[globalName];
-
-    if (shader != nullptr && shader->mStage == ShaderStage::Fragment)
-    {
-        SetFragmentShader(shader);
-    }
-    else
-    {
-        LogError("Failed to set global shader %s", globalName);
-        OCT_ASSERT(0);
-    }
+    Shader* shader = GetGlobalShader(globalName);
+    SetVertexShader(shader);
 }
 
-void VulkanContext::SetComputeShader(const char* globalName)
+void VulkanContext::SetFragmentShader(const std::string& globalName)
 {
-    Shader* shader = mGlobalShaders[globalName];
+    Shader* shader = GetGlobalShader(globalName);
+    SetFragmentShader(shader);
+}
 
-    if (shader != nullptr && shader->mStage == ShaderStage::Compute)
-    {
-        SetComputeShader(shader);
-    }
-    else
-    {
-        LogError("Failed to set global shader %s", globalName);
-        OCT_ASSERT(0);
-    }
+void VulkanContext::SetComputeShader(const std::string& globalName)
+{
+    Shader* shader = GetGlobalShader(globalName);
+    SetComputeShader(shader);
 }
 
 void VulkanContext::SetRenderPass(VkRenderPass renderPass)
@@ -2657,43 +2668,7 @@ void VulkanContext::SetBlendState(VkPipelineColorBlendAttachmentState blendState
 
 void VulkanContext::SetBlendState(BasicBlendState basicBlendState, uint32_t index)
 {
-    VkPipelineColorBlendAttachmentState blendState = {};
-
-    switch (basicBlendState)
-    {
-    case BasicBlendState::Opaque:
-        blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT;
-        blendState.blendEnable = false;
-        blendState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-        blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-        blendState.colorBlendOp = VK_BLEND_OP_ADD;
-        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        blendState.alphaBlendOp = VK_BLEND_OP_ADD;
-        break;
-    case BasicBlendState::Translucent:
-        blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        blendState.blendEnable = true;
-        blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-        blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-        blendState.colorBlendOp = VK_BLEND_OP_ADD;
-        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        blendState.alphaBlendOp = VK_BLEND_OP_ADD;
-        break;
-    case BasicBlendState::Additive:
-        blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        blendState.blendEnable = true;
-        blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-        blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-        blendState.colorBlendOp = VK_BLEND_OP_ADD;
-        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        blendState.alphaBlendOp = VK_BLEND_OP_ADD;
-        break;
-    }
-
-    SetBlendState(blendState, index);
+    SetBlendState(GetBasicBlendState(basicBlendState), index);
 }
 
 void VulkanContext::SetBlendEnable(bool enable, uint32_t index)

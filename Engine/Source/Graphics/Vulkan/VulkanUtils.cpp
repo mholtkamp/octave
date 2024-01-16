@@ -976,6 +976,47 @@ void WriteMaterialUniformData(MaterialData& outData, Material* material)
     outData.mTevModes[3] = textures[3] ? (uint32_t)material->GetTevMode(3) : (uint32_t)TevMode::Count;
 }
 
+VkPipelineColorBlendAttachmentState GetBasicBlendState(BasicBlendState basicBlendState)
+{
+    VkPipelineColorBlendAttachmentState blendState = {};
+
+    switch (basicBlendState)
+    {
+    case BasicBlendState::Opaque:
+        blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT;
+        blendState.blendEnable = false;
+        blendState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+        blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.colorBlendOp = VK_BLEND_OP_ADD;
+        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+        break;
+    case BasicBlendState::Translucent:
+        blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        blendState.blendEnable = true;
+        blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        blendState.colorBlendOp = VK_BLEND_OP_ADD;
+        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+        break;
+    case BasicBlendState::Additive:
+        blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        blendState.blendEnable = true;
+        blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+        blendState.colorBlendOp = VK_BLEND_OP_ADD;
+        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+        break;
+    }
+
+    return blendState;
+}
+
 #if _DEBUG
 void FullPipelineBarrier()
 {
