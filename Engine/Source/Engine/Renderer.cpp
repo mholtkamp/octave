@@ -873,28 +873,28 @@ void Renderer::RenderDraws(const std::vector<DrawData>& drawData)
     }
 }
 
-void Renderer::RenderDraws(const std::vector<DrawData>& drawData, PipelineId pipelineId)
+void Renderer::RenderDraws(const std::vector<DrawData>& drawData, PipelineConfig pipelineConfig)
 {
     for (uint32_t i = 0; i < drawData.size(); ++i)
     {
-        GFX_BindPipeline(pipelineId, drawData[i].mNode->GetVertexType());
+        GFX_SetPipelineState(pipelineConfig, drawData[i].mNode->GetVertexType());
         drawData[i].mNode->Render();
     }
 }
 
-void Renderer::RenderDebugDraws(const std::vector<DebugDraw>& draws, PipelineId pipelineId)
+void Renderer::RenderDebugDraws(const std::vector<DebugDraw>& draws, PipelineConfig pipelineConfig)
 {
 #if DEBUG_DRAW_ENABLED
     for (uint32_t i = 0; i < draws.size(); ++i)
     {
-        bool drawMaterials = pipelineId == PipelineId::Count;
+        bool drawMaterials = (pipelineConfig == PipelineConfig::Count);
 
         if ((!drawMaterials && draws[i].mMaterial == nullptr) ||
             (drawMaterials && draws[i].mMaterial != nullptr))
         {
             if (!drawMaterials)
             {
-                GFX_BindPipeline(pipelineId, draws[i].mMesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex);
+                GFX_SetPipelineState(pipelineConfig, draws[i].mMesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex);
             }
 
             GFX_DrawStaticMesh(draws[i].mMesh, draws[i].mMaterial, draws[i].mTransform, draws[i].mColor);
@@ -1273,12 +1273,12 @@ void Renderer::Render(World* world)
                         GFX_EnableMaterials(false);
                     }
 
-                    RenderDraws(mWireframeDraws, PipelineId::Wireframe);
-                    RenderDebugDraws(mDebugDraws, PipelineId::Wireframe);
+                    RenderDraws(mWireframeDraws, PipelineConfig::Wireframe);
+                    RenderDebugDraws(mDebugDraws, PipelineConfig::Wireframe);
 
                     if (GetDebugMode() == DEBUG_COLLISION)
                     {
-                        RenderDebugDraws(mCollisionDraws, PipelineId::Collision);
+                        RenderDebugDraws(mCollisionDraws, PipelineConfig::Collision);
                     }
 
                     GFX_DrawLines(world->GetLines());
@@ -1300,7 +1300,7 @@ void Renderer::Render(World* world)
                 GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
                 GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
 
-                GFX_BindPipeline(PipelineId::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess : PipelineId::NullPostProcess*/);
+                GFX_SetPipelineState(PipelineConfig::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess : PipelineId::NullPostProcess*/);
                 GFX_DrawFullscreen();
 
 #if EDITOR

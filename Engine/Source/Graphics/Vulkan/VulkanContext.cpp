@@ -2866,13 +2866,6 @@ VkExtent2D& VulkanContext::GetSwapchainExtent()
     return mSwapchainExtent;
 }
 
-Pipeline* VulkanContext::GetPipeline(PipelineId id)
-{
-    uint32_t index = uint32_t(id);
-    OCT_ASSERT(index < (uint32_t)PipelineId::Count);
-    return mPipelines[index];
-}
-
 Pipeline* VulkanContext::GetCurrentlyBoundPipeline()
 {
     return mCurrentlyBoundPipeline;

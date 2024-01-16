@@ -59,9 +59,10 @@ void GFX_EndRenderPass()
     gVulkanContext->EndRenderPass();
 }
 
-void GFX_BindPipeline(PipelineId pipelineId, VertexType vertexType)
+void GFX_SetPipelineState(PipelineConfig pipelineConfig, VertexType vertexType)
 {
-    gVulkanContext->BindPipeline(pipelineId, vertexType);
+    BindPipelineConfig(pipelineConfig);
+    gVulkanContext->SetVertexType(vertexType);
 }
 
 void GFX_SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation)

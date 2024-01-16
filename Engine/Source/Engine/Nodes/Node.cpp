@@ -379,16 +379,15 @@ void Node::Copy(Node* srcNode, bool recurse)
     }
 }
 
-void Node::Render(PipelineId pipelineId)
+void Node::Render(PipelineConfig pipelineConfig)
 {
-    // TODO-NODE: Need to implement RecursiveRender(). Replace Widget's RecursiveRender()?
     // TODO-NODE: This function is used when rendering hit check and selected geometry I believe.
     // Could probably adjust Render() function in Primitive3D + Widget so that it can take a pipeline.
     // Or just manually bind the pipeline from the callers.
     if (IsPrimitive3D() && IsVisible())
     {
         Primitive3D* primComp = static_cast<Primitive3D*>(this);
-        GFX_BindPipeline(pipelineId, primComp->GetVertexType());
+        GFX_SetPipelineState(pipelineConfig, primComp->GetVertexType());
         primComp->Render();
     }
 }
@@ -721,7 +720,7 @@ void Node::RenderSelected(bool renderChildren)
     if (IsPrimitive3D())
     {
         Primitive3D* primComp = static_cast<Primitive3D*>(this);
-        GFX_BindPipeline(PipelineId::Selected, primComp->GetVertexType());
+        GFX_SetPipelineState(PipelineConfig::Selected, primComp->GetVertexType());
         primComp->Render();
     }
 
@@ -734,7 +733,7 @@ void Node::RenderSelected(bool renderChildren)
 
         for (DebugDraw& draw : proxyDraws)
         {
-            GFX_BindPipeline(PipelineId::Selected);
+            GFX_SetPipelineState(PipelineConfig::Selected);
             GFX_DrawStaticMesh(draw.mMesh, nullptr, draw.mTransform, draw.mColor);
         }
     }

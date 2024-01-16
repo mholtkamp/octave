@@ -45,45 +45,26 @@ enum class PixelFormat
     Count
 };
 
-enum class PipelineId
+enum class PipelineConfig
 {
-    // Graphics
     Shadow,
+    Forward,
     Opaque,
     Translucent,
     Additive,
-    DepthlessOpaque,
-    DepthlessTranslucent,
-    DepthlessAdditive,
-    CullFrontOpaque,
-    CullFrontTranslucent,
-    CullFrontAdditive,
-    CullNoneOpaque,
-    CullNoneTranslucent,
-    CullNoneAdditive,
     ShadowMeshBack,
     ShadowMeshFront,
     ShadowMeshClear,
-    Selected,
-    Wireframe,
-    Collision,
-    BakedLightVis,
-    Line,
     PostProcess,
     NullPostProcess,
     Quad,
     Text,
     Poly,
-
-    // Compute
-    PathTrace,
-    LightBakeDirect,
-    LightBakeIndirect,
-    LightBakeAverage,
-    LightBakeDiffuse,
-
-    // Editor
+    Selected,
     HitCheck,
+    Wireframe,
+    Collision,
+    Line,
 
     Count
 };

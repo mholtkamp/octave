@@ -37,7 +37,7 @@ bool GFX_ShouldCullLights();
 
 void GFX_BeginRenderPass(RenderPassId renderPassId);
 void GFX_EndRenderPass();
-void GFX_BindPipeline(PipelineId pipelineId, VertexType vertexType = VertexType::Max);
+void GFX_SetPipelineState(PipelineConfig config, VertexType vertexType = VertexType::Max);
 
 void GFX_SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation = true);
 void GFX_SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation = true);

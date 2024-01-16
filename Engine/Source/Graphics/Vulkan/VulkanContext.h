@@ -88,7 +88,6 @@ public:
     VkFormat GetSwapchainFormat();
     VkFormat GetSceneColorFormat();
 
-    Pipeline* GetPipeline(PipelineId id);
     Pipeline* GetCurrentlyBoundPipeline();
     VkPipelineCache GetPipelineCache() const;
     void SavePipelineCacheToFile();
@@ -287,7 +286,6 @@ private:
 
     // Pipelines
     VkPipelineCache mPipelineCache = VK_NULL_HANDLE;
-    Pipeline* mPipelines[(size_t)PipelineId::Count] = {};
 
     // Shader Data
     std::unordered_map<std::string, Shader*> mGlobalShaders;

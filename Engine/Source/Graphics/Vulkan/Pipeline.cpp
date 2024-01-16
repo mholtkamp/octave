@@ -259,25 +259,6 @@ void Pipeline::Destroy()
 {
     VkDevice device = GetVulkanDevice();
 
-    // TODO!! Shaders need to be managed externally (global and material shaders).
-    if (mFragmentShader != nullptr)
-    {
-        GetDestroyQueue()->Destroy(mFragmentShader);
-        mFragmentShader = nullptr;
-    }
-
-    if (mVertexShader != nullptr)
-    {
-        GetDestroyQueue()->Destroy(mVertexShader);
-        mVertexShader = nullptr;
-    }
-
-    if (mComputeShader != nullptr)
-    {
-        GetDestroyQueue()->Destroy(mComputeShader);
-        mComputeShader = nullptr;
-    }
-
     vkDestroyPipeline(device, mPipeline, nullptr);
     mPipeline = VK_NULL_HANDLE;
 

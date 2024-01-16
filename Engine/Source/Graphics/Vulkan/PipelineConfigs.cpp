@@ -121,14 +121,14 @@ void InitPipelineConfigs()
     statePoly.mBlendStates[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
     statePoly.mBlendStates[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 
-    // SelectedGeometry
-    PipelineState& stateSelectedGeometry = sPipelineConfigs[(uint32_t)PipelineConfig::SelectedGeometry];
-    stateSelectedGeometry = stateForward;
-    stateSelectedGeometry.mVertexShader = gVulkanContext->GetGlobalShader("Depth.vert");
-    stateSelectedGeometry.mFragmentShader = gVulkanContext->GetGlobalShader("SelectedGeometry.frag");
-    stateSelectedGeometry.mDepthTestEnabled = false;
-    stateSelectedGeometry.mDepthCompareOp = VK_COMPARE_OP_ALWAYS;
-    stateSelectedGeometry.mBlendStates[0] = GetBasicBlendState(BasicBlendState::Translucent);
+    // Selected
+    PipelineState& stateSelected = sPipelineConfigs[(uint32_t)PipelineConfig::Selected];
+    stateSelected = stateForward;
+    stateSelected.mVertexShader = gVulkanContext->GetGlobalShader("Depth.vert");
+    stateSelected.mFragmentShader = gVulkanContext->GetGlobalShader("Selected.frag");
+    stateSelected.mDepthTestEnabled = false;
+    stateSelected.mDepthCompareOp = VK_COMPARE_OP_ALWAYS;
+    stateSelected.mBlendStates[0] = GetBasicBlendState(BasicBlendState::Translucent);
 
     // HitCheck
     PipelineState& stateHitCheck = sPipelineConfigs[(uint32_t)PipelineConfig::HitCheck];
