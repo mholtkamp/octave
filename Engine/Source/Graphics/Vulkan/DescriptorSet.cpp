@@ -8,7 +8,91 @@
 
 #include "Assertion.h"
 
-using namespace std;
+DescriptorSet DescriptorSet::Begin(const char* name)
+{
+    DescriptorSet retSet;
+    retSet.mName = name;
+}
+
+DescriptorSet& DescriptorSet::WriteImage(int32_t binding, Image* image)
+{
+    DescriptorBinding bindInfo;
+    bindInfo.mType = DescriptorType::Image;
+    bindInfo.mObject = image;
+    bindInfo.mBinding = binding;
+    mBindings.push_back(bindInfo);
+}
+
+DescriptorSet& DescriptorSet::WriteImageArray(int32_t binding, const std::vector<Image*>& imageArray)
+{
+    DescriptorBinding bindInfo;
+    bindInfo.mType = DescriptorType::ImageArray;
+    bindInfo.mObject = nullptr;
+    bindInfo.mImageArray = imageArray;
+    bindInfo.mBinding = binding;
+    mBindings.push_back(bindInfo);
+}
+
+DescriptorSet& DescriptorSet::WriteUniformBuffer(int32_t binding, UniformBuffer* uniformBuffer)
+{
+    DescriptorBinding bindInfo;
+    bindInfo.mType = DescriptorType::Uniform;
+    bindInfo.mObject = uniformBuffer;
+    bindInfo.mSize = (uint32_t)uniformBuffer->GetSize();
+    bindInfo.mBinding = binding;
+    mBindings.push_back(bindInfo);
+}
+
+DescriptorSet& DescriptorSet::WriteUniformBuffer(int32_t binding, const UniformBlock& block)
+{
+    DescriptorBinding bindInfo;
+    bindInfo.mType = DescriptorType::Uniform;
+    bindInfo.mObject = block.mUniformBuffer;
+    bindInfo.mOffset = block.mOffset;
+    bindInfo.mSize = block.mSize;
+    bindInfo.mBinding = binding;
+    mBindings.push_back(bindInfo);
+}
+
+DescriptorSet& DescriptorSet::WriteStorageBuffer(int32_t binding, Buffer* storageBuffer)
+{
+    DescriptorBinding bindInfo;
+    bindInfo.mType = DescriptorType::StorageBuffer;
+    bindInfo.mObject = storageBuffer;
+    bindInfo.mBinding = binding;
+    mBindings.push_back(bindInfo);
+}
+
+DescriptorSet& DescriptorSet::WriteStorageImage(int32_t binding, Image* storageImage)
+{
+    DescriptorBinding bindInfo;
+    bindInfo.mType = DescriptorType::StorageImage;
+    bindInfo.mObject = storageImage;
+    bindInfo.mBinding = binding;
+    mBindings.push_back(bindInfo);
+}
+
+DescriptorSet& DescriptorSet::Build()
+{
+    OCT_ASSERT(mDescriptorSet == VK_NULL_HANDLE);
+
+    // Build or Reuse DescriptorSetLayout from LayoutCache.
+#error Build layout using LayoutCache
+
+    // Allocate descriptor set from DescriptorPool
+#error Allocate set
+
+    // Update descriptor sets
+    UpdateDescriptors();
+}
+
+void Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pipelineLayout, VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+VkDescriptorSet Get() const;
+VkDescriptorSetLayout GetLayout() const;
+
+
+
 
 DescriptorSet::DescriptorSet(VkDescriptorSetLayout layout, const char* name)
 {
@@ -51,63 +135,6 @@ DescriptorSet::~DescriptorSet()
     }
 }
 
-void DescriptorSet::UpdateImageDescriptor(int32_t binding, Image* image)
-{
-    OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
-    mBindings[binding].mType = DescriptorType::Image;
-    mBindings[binding].mObject = image;
-    mBindings[binding].mImageArray.clear();
-    MarkDirty();
-}
-
-void DescriptorSet::UpdateImageArrayDescriptor(int32_t binding, const std::vector<Image*>& imageArray)
-{
-    OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
-    mBindings[binding].mType = DescriptorType::ImageArray;
-    mBindings[binding].mObject = nullptr;
-    mBindings[binding].mImageArray = imageArray;
-    MarkDirty();
-}
-
-void DescriptorSet::UpdateUniformDescriptor(int32_t binding, UniformBuffer* uniformBuffer)
-{
-    OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
-    mBindings[binding].mType = DescriptorType::Uniform;
-    mBindings[binding].mObject = uniformBuffer;
-    mBindings[binding].mImageArray.clear();
-    mBindings[binding].mSize = (uint32_t)uniformBuffer->GetSize();
-    MarkDirty();
-}
-
-void DescriptorSet::UpdateUniformDescriptor(int32_t binding, const UniformBlock& block)
-{
-    OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
-    mBindings[binding].mType = DescriptorType::Uniform;
-    mBindings[binding].mObject = block.mUniformBuffer;
-    mBindings[binding].mOffset = block.mOffset;
-    mBindings[binding].mSize = block.mSize;
-    mBindings[binding].mImageArray.clear();
-    MarkDirty();
-}
-
-void DescriptorSet::UpdateStorageBufferDescriptor(int32_t binding, Buffer* storageBuffer)
-{
-    OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
-    mBindings[binding].mType = DescriptorType::StorageBuffer;
-    mBindings[binding].mObject = storageBuffer;
-    mBindings[binding].mImageArray.clear();
-    MarkDirty();
-}
-
-void DescriptorSet::UpdateStorageImageDescriptor(int32_t binding, Image* storageImage)
-{
-    OCT_ASSERT(binding >= 0 && binding < MAX_DESCRIPTORS_PER_SET);
-    mBindings[binding].mType = DescriptorType::StorageImage;
-    mBindings[binding].mObject = storageImage;
-    mBindings[binding].mImageArray.clear();
-    MarkDirty();
-}
-
 void DescriptorSet::Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pipelineLayout, VkPipelineBindPoint bindPoint)
 {
     uint32_t frameIndex = GetFrameIndex();
@@ -140,29 +167,10 @@ void DescriptorSet::Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pi
         (uint32_t)dynOffsets.size(),
         dynOffsets.data());
 
-    mLastFrameBound = GetFrameNumber();
+    mFrameBuilt = GetFrameNumber();
 }
 
-VkDescriptorSet DescriptorSet::Get()
-{
-    uint32_t frameIndex = GetVulkanContext()->GetFrameIndex();
-    return mDescriptorSets[frameIndex];
-}
-
-VkDescriptorSet DescriptorSet::Get(uint32_t frameIndex)
-{
-    return mDescriptorSets[frameIndex];
-}
-
-void DescriptorSet::MarkDirty()
-{
-    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
-    {
-        mDirty[i] = true;
-    }
-}
-
-void DescriptorSet::RefreshBindings(uint32_t frameIndex)
+void DescriptorSet::UpdateDescriptors()
 {
     VkDevice device = GetVulkanDevice();
 
@@ -182,7 +190,7 @@ void DescriptorSet::RefreshBindings(uint32_t frameIndex)
 
                 VkWriteDescriptorSet descriptorWrite = {};
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrite.dstSet = mDescriptorSets[frameIndex];
+                descriptorWrite.dstSet = mDescriptorSet;
                 descriptorWrite.dstBinding = i;
                 descriptorWrite.dstArrayElement = 0;
                 descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -208,7 +216,7 @@ void DescriptorSet::RefreshBindings(uint32_t frameIndex)
 
                     VkWriteDescriptorSet descriptorWrite = {};
                     descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrite.dstSet = mDescriptorSets[frameIndex];
+                    descriptorWrite.dstSet = mDescriptorSet;
                     descriptorWrite.dstBinding = i;
                     descriptorWrite.dstArrayElement = 0;
                     descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -223,13 +231,13 @@ void DescriptorSet::RefreshBindings(uint32_t frameIndex)
                 UniformBuffer* uniformBuffer = reinterpret_cast<UniformBuffer*>(binding.mObject);
 
                 VkDescriptorBufferInfo bufferInfo = {};
-                bufferInfo.buffer = uniformBuffer->Get(frameIndex);
+                bufferInfo.buffer = uniformBuffer->Get();
                 bufferInfo.range = binding.mSize;
                 bufferInfo.offset = 0;
 
                 VkWriteDescriptorSet descriptorWrite = {};
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrite.dstSet = mDescriptorSets[frameIndex];
+                descriptorWrite.dstSet = mDescriptorSet;
                 descriptorWrite.dstBinding = i;
                 descriptorWrite.dstArrayElement = 0;
                 descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
@@ -249,7 +257,7 @@ void DescriptorSet::RefreshBindings(uint32_t frameIndex)
 
                 VkWriteDescriptorSet descriptorWrite = {};
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrite.dstSet = mDescriptorSets[frameIndex];
+                descriptorWrite.dstSet = mDescriptorSet;
                 descriptorWrite.dstBinding = i;
                 descriptorWrite.dstArrayElement = 0;
                 descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -269,7 +277,7 @@ void DescriptorSet::RefreshBindings(uint32_t frameIndex)
 
                 VkWriteDescriptorSet descriptorWrite = {};
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrite.dstSet = mDescriptorSets[frameIndex];
+                descriptorWrite.dstSet = mDescriptorSet;
                 descriptorWrite.dstBinding = i;
                 descriptorWrite.dstArrayElement = 0;
                 descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
