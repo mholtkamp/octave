@@ -86,10 +86,52 @@ DescriptorSet& DescriptorSet::Build()
     UpdateDescriptors();
 }
 
-void Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pipelineLayout, VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
+void DescriptorSet::Bind(VkCommandBuffer cb, uint32_t index)
+{
+    Pipeline* pipeline = GetVulkanContext()->GetBoundPipeline();
 
-VkDescriptorSet Get() const;
-VkDescriptorSetLayout GetLayout() const;
+    VkPipelineBindPoint bindPoint = pipeline->IsComputePipeline() ?
+        VK_PIPELINE_BIND_POINT_COMPUTE :
+        VK_PIPELINE_BIND_POINT_GRAPHICS;
+
+    VkPipelineLayout pipelineLayout = pipeline->GetPipelineLayout();
+
+    static std::vector<uint32_t> dynOffsets;
+    dynOffsets.clear();
+    for (uint32_t i = 0; i < mBindings.size(); ++i)
+    {
+        // We use a dynamic buffer for uniforms
+        if (mBindings[i].mType == DescriptorType::Uniform)
+        {
+            dynOffsets.push_back(mBindings[i].mOffset);
+        }
+    }
+
+    vkCmdBindDescriptorSets(
+        cb,
+        bindPoint,
+        pipelineLayout,
+        index,
+        1,
+        &mDescriptorSet,
+        (uint32_t)dynOffsets.size(),
+        dynOffsets.data());
+
+    mFrameBuilt = GetFrameNumber();
+}
+
+VkDescriptorSet DescriptorSet::Get() const
+{
+    return mDescriptorSet;
+}
+
+VkDescriptorSetLayout DescriptorSet::GetLayout() const
+{
+    return mLayout;
+}
+
+
+
 
 
 
@@ -135,46 +177,14 @@ DescriptorSet::~DescriptorSet()
     }
 }
 
-void DescriptorSet::Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pipelineLayout, VkPipelineBindPoint bindPoint)
-{
-    uint32_t frameIndex = GetFrameIndex();
-
-    if (mDirty[frameIndex] && 
-        mLastFrameBound != GetFrameNumber())
-    {
-        RefreshBindings(frameIndex);
-        mDirty[frameIndex] = false;
-    }
-
-    static std::vector<uint32_t> dynOffsets;
-    dynOffsets.clear();
-    for (uint32_t i = 0; i < MAX_DESCRIPTORS_PER_SET; ++i)
-    {
-        // We use a dynamic buffer for uniforms
-        if (mBindings[i].mType == DescriptorType::Uniform)
-        {
-            dynOffsets.push_back(mBindings[i].mOffset);
-        }
-    }
-
-    vkCmdBindDescriptorSets(
-        cb,
-        bindPoint,
-        pipelineLayout,
-        index,
-        1,
-        &mDescriptorSets[frameIndex],
-        (uint32_t)dynOffsets.size(),
-        dynOffsets.data());
-
-    mFrameBuilt = GetFrameNumber();
-}
-
 void DescriptorSet::UpdateDescriptors()
 {
     VkDevice device = GetVulkanDevice();
 
-    for (uint32_t i = 0; i < MAX_DESCRIPTORS_PER_SET; ++i)
+    // TODO: Merge all of the updates for this set into a single vkUpdateDescriptorSets() call.
+    // Might want to store VkDescriptorImageInfo and VkDescriptorBufferInfo on Image and Buffer resources.
+    // And we could possibly just use a static std::vector<> for the VkWriteDescriptorSet structs.
+    for (uint32_t i = 0; i < mBindings.size(); ++i)
     {
         DescriptorBinding& binding = mBindings[i];
         if (binding.mObject != nullptr || binding.mType == DescriptorType::ImageArray)

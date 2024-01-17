@@ -52,7 +52,7 @@ public:
 
     DescriptorSet& Build();
 
-    void Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pipelineLayout, VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
+    void Bind(VkCommandBuffer cb, uint32_t index);
 
     VkDescriptorSet Get() const;
     VkDescriptorSetLayout GetLayout() const;
