@@ -170,7 +170,7 @@ void DescriptorSet::UpdateDescriptors()
     for (uint32_t i = 0; i < mBindings.size(); ++i)
     {
         DescriptorBinding& binding = mBindings[i];
-        if (binding.mObject != nullptr || binding.mType == DescriptorType::ImageArray)
+        if (binding.mObject != nullptr || binding.mImageArray.size() > 0)
         {
             if (binding.mType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
             {

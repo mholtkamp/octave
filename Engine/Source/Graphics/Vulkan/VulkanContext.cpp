@@ -562,9 +562,10 @@ void VulkanContext::EndRenderPass()
     }
 }
 
-void VulkanContext::BindPipeline()
+void VulkanContext::CommitPipeline()
 {
     // TODO: Resolve pipeline from state and then bind it.
+    LogError("TODO: Resolve pipeline and bind it!");
 #if 0
     Pipeline* pipeline = GetPipeline(id);
     OCT_ASSERT(pipeline != nullptr &&
@@ -575,6 +576,7 @@ void VulkanContext::BindPipeline()
 
 void VulkanContext::BindPipeline(Pipeline* pipeline)
 {
+#if 0
     VkCommandBuffer cb = mCommandBuffers[mFrameIndex];
     VkPipelineLayout pipelineLayout = pipeline->GetPipelineLayout();
     
@@ -587,7 +589,7 @@ void VulkanContext::BindPipeline(Pipeline* pipeline)
 
     LogError("Handle binding post process descriptors");
 
-#if 0
+
     // Handle pipeline-specific functionality
     switch (pipeline->GetId())
     {
@@ -2556,6 +2558,11 @@ Shader* VulkanContext::GetGlobalShader(const std::string& name)
     return shader;
 }
 
+const PipelineState& VulkanContext::GetPipelineState() const
+{
+    return mPipelineState;
+}
+
 void VulkanContext::SetPipelineState(const PipelineState& state)
 {
     mPipelineState = state;
@@ -2893,9 +2900,9 @@ VkExtent2D& VulkanContext::GetSwapchainExtent()
     return mSwapchainExtent;
 }
 
-Pipeline* VulkanContext::GetCurrentlyBoundPipeline()
+Pipeline* VulkanContext::GetBoundPipeline()
 {
-    return mCurrentlyBoundPipeline;
+    return mBoundPipeline;
 }
 
 VkPipelineCache VulkanContext::GetPipelineCache() const

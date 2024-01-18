@@ -72,8 +72,7 @@ public:
     void EndFrame();
     void BeginRenderPass(RenderPassId id);
     void EndRenderPass();
-    void BindPipeline();
-    void BindPipeline(Pipeline* pipeline);
+    void CommitPipeline();
     void DrawLines(const std::vector<Line>& lines);
     void DrawFullscreen();
 
@@ -91,7 +90,7 @@ public:
     VkFormat GetSwapchainFormat();
     VkFormat GetSceneColorFormat();
 
-    Pipeline* GetCurrentlyBoundPipeline();
+    Pipeline* GetBoundPipeline();
     VkPipelineCache GetPipelineCache() const;
     void SavePipelineCacheToFile();
 
@@ -153,6 +152,7 @@ public:
     Shader* GetGlobalShader(const std::string& name);
 
     // Pipeline State
+    const PipelineState& GetPipelineState() const;
     void SetPipelineState(const PipelineState& state);
     void SetVertexShader(Shader* shader);
     void SetFragmentShader(Shader* shader);
@@ -292,6 +292,7 @@ private:
 
     // Pipelines
     VkPipelineCache mPipelineCache = VK_NULL_HANDLE;
+    Pipeline* mBoundPipeline = nullptr;
 
     // Shader Data
     std::unordered_map<std::string, Shader*> mGlobalShaders;
@@ -344,7 +345,6 @@ private:
     bool mFeatureWideLines = false;
     bool mFeatureFillModeNonSolid = false;
     EngineState* mEngineState = nullptr;
-    Pipeline* mCurrentlyBoundPipeline = nullptr;
     VkSurfaceTransformFlagBitsKHR mPreTransformFlag = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     float mResolutionScale = 1.0f;
     uint32_t mSceneWidth = 0;

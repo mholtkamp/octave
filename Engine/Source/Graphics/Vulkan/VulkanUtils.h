@@ -103,7 +103,7 @@ void DestroyTextureResource(Texture* texture);
 // Material
 void CreateMaterialResource(Material* material);
 void DestroyMaterialResource(Material* material);
-void BindMaterialResource(Material* material, Pipeline* pipeline);
+void BindMaterialResource(Material* material);
 void UpdateMaterialResource(Material* material);
 Pipeline* GetMaterialPipeline(Material* material, VertexType vertType);
 
