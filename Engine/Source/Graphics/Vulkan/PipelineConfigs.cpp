@@ -91,6 +91,7 @@ void InitPipelineConfigs()
     PipelineState& stateQuad = sPipelineConfigs[(uint32_t)PipelineConfig::Quad];
     stateQuad.mVertexShader = gVulkanContext->GetGlobalShader("Quad.vert");
     stateQuad.mFragmentShader = gVulkanContext->GetGlobalShader("Quad.frag");
+    stateText.mVertexType = VertexType::VertexUI;
     stateQuad.mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     stateQuad.mCullMode = VK_CULL_MODE_NONE;
     stateQuad.mDepthTestEnabled = false;
@@ -102,6 +103,7 @@ void InitPipelineConfigs()
     PipelineState& stateText = sPipelineConfigs[(uint32_t)PipelineConfig::Text];
     stateText.mVertexShader = gVulkanContext->GetGlobalShader("Text.vert");
     stateText.mFragmentShader = gVulkanContext->GetGlobalShader("Text.frag");
+    stateText.mVertexType = VertexType::VertexUI;
     stateText.mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     stateText.mCullMode = VK_CULL_MODE_NONE;
     stateText.mDepthTestEnabled = false;
@@ -113,6 +115,7 @@ void InitPipelineConfigs()
     PipelineState& statePoly = sPipelineConfigs[(uint32_t)PipelineConfig::Poly];
     statePoly.mVertexShader = gVulkanContext->GetGlobalShader("Poly.vert");
     statePoly.mFragmentShader = gVulkanContext->GetGlobalShader("Poly.frag");
+    stateText.mVertexType = VertexType::VertexUI;
     statePoly.mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
     statePoly.mCullMode = VK_CULL_MODE_NONE;
     statePoly.mDepthTestEnabled = false;

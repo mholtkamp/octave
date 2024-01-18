@@ -39,12 +39,6 @@ void DestroyQueue::Destroy(MultiBuffer* multiBuffer)
     mMultiBuffers[frameIndex].push_back(multiBuffer);
 }
 
-void DestroyQueue::Destroy(DescriptorSet* descriptorSet)
-{
-    uint32_t frameIndex = GetFrameIndex();
-    mDescriptorSets[frameIndex].push_back(descriptorSet);
-}
-
 void DestroyQueue::Destroy(Shader* shader)
 {
     uint32_t frameIndex = GetFrameIndex();
@@ -83,11 +77,6 @@ void DestroyQueue::Flush(uint32_t frameIndex)
         delete mShaders[frameIndex][i];
     }
 
-    for (uint32_t i = 0; i < mDescriptorSets[frameIndex].size(); ++i)
-    {
-        delete mDescriptorSets[frameIndex][i];
-    }
-
     for (uint32_t i = 0; i < mMultiBuffers[frameIndex].size(); ++i)
     {
         delete mMultiBuffers[frameIndex][i];
@@ -104,7 +93,6 @@ void DestroyQueue::Flush(uint32_t frameIndex)
     }
 
     mCommandBuffers[frameIndex].clear();
-    mDescriptorSets[frameIndex].clear();
     mMultiBuffers[frameIndex].clear();
     mImages[frameIndex].clear();
     mBuffers[frameIndex].clear();

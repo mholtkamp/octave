@@ -114,9 +114,7 @@ struct TextureResource
 
 struct MaterialResource
 {
-#if API_VULKAN
-    DescriptorSet* mDescriptorSet = nullptr;
-#endif
+
 };
 
 struct StaticMeshResource
@@ -138,7 +136,6 @@ struct SkeletalMeshResource
 struct StaticMeshCompResource
 {
 #if API_VULKAN
-    DescriptorSet* mDescriptorSet = nullptr;
     Buffer* mColorVertexBuffer = nullptr;
 #endif
 };
@@ -146,7 +143,6 @@ struct StaticMeshCompResource
 struct SkeletalMeshCompResource
 {
 #if API_VULKAN
-    DescriptorSet* mDescriptorSet = nullptr;
     MultiBuffer* mVertexBuffer = nullptr;
 #endif
 };
@@ -154,7 +150,6 @@ struct SkeletalMeshCompResource
 struct TextMeshCompResource
 {
 #if API_VULKAN
-    DescriptorSet* mDescriptorSet = nullptr;
     Buffer* mVertexBuffer = nullptr;
 #endif
 };
@@ -163,7 +158,6 @@ struct QuadResource
 {
 #if API_VULKAN
     MultiBuffer* mVertexBuffer = nullptr;
-    DescriptorSet* mDescriptorSet = nullptr;
 #endif
 };
 
@@ -171,7 +165,6 @@ struct PolyResource
 {
 #if API_VULKAN
     MultiBuffer* mVertexBuffer = nullptr;
-    DescriptorSet* mDescriptorSet = nullptr;
     uint32_t mNumVerts = 0;
 #endif
 };
@@ -180,7 +173,6 @@ struct TextResource
 {
 #if API_VULKAN
     MultiBuffer* mVertexBuffer = nullptr;
-    DescriptorSet* mDescriptorSet = nullptr;
     uint32_t mNumBufferCharsAllocated = 0;
 #endif
 };
@@ -188,7 +180,6 @@ struct TextResource
 struct ParticleCompResource
 {
 #if API_VULKAN
-    DescriptorSet* mDescriptorSet = nullptr;
     MultiBuffer* mVertexBuffer = nullptr;
     MultiBuffer* mIndexBuffer = nullptr;
     uint32_t mNumVerticesAllocated = 0;
