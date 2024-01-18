@@ -661,9 +661,11 @@
     <ClCompile Include="Source\Graphics\GraphicsUtils.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Allocator.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Buffer.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\DescriptorPool.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\DescriptorSet.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\DestroyQueue.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Image.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\DescriptorLayoutCache.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\MaterialPipelineCache.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Pipeline.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\PipelineConfigs.cpp" />
@@ -881,9 +883,11 @@
     <ClInclude Include="Source\Graphics\GraphicsUtils.h" />
     <ClInclude Include="Source\Graphics\Vulkan\Allocator.h" />
     <ClInclude Include="Source\Graphics\Vulkan\Buffer.h" />
+    <ClInclude Include="Source\Graphics\Vulkan\DescriptorPool.h" />
     <ClInclude Include="Source\Graphics\Vulkan\DescriptorSet.h" />
     <ClInclude Include="Source\Graphics\Vulkan\DestroyQueue.h" />
     <ClInclude Include="Source\Graphics\Vulkan\Image.h" />
+    <ClInclude Include="Source\Graphics\Vulkan\DescriptorLayoutCache.h" />
     <ClInclude Include="Source\Graphics\Vulkan\MaterialPipelineCache.h" />
     <ClInclude Include="Source\Graphics\Vulkan\MultiBuffer.h" />
     <ClInclude Include="Source\Graphics\Vulkan\Pipeline.h" />

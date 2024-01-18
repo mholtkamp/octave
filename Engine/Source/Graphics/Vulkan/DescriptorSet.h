@@ -14,23 +14,13 @@ class Buffer;
 class UniformBuffer;
 struct UniformBlock;
 
-enum class DescriptorType
-{
-    Uniform,
-    Image,
-    ImageArray,
-    StorageBuffer,
-    StorageImage,
-
-    Count
-};
-
 struct DescriptorBinding
 {
-    DescriptorType mType = DescriptorType::Count;
+    VkDescriptorType mType = VK_DESCRIPTOR_TYPE_MAX_ENUM;
     void* mObject = nullptr;
     uint32_t mOffset = 0;
     uint32_t mSize = 0; // Only filled for Uniform Blocks
+    uint32_t mCount = 1;
     std::vector<Image*> mImageArray;
 
     int32_t mBinding = -1;
@@ -62,8 +52,8 @@ private:
     void UpdateDescriptors();
 
     std::vector<DescriptorBinding> mBindings;
-    //std::vector<VkDescriptorSetLayoutBinding> mBindings;
-    //std::vector<VkWriteDescriptorSet> mWrites;
+    //std::vector<VkDescriptorImageInfo> mImages;
+    //std::vector<VkDescriptorBufferInfo> mBuffers;
 
     VkDescriptorSet mDescriptorSet = VK_NULL_HANDLE;
     VkDescriptorSetLayout mLayout = VK_NULL_HANDLE;

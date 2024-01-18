@@ -641,6 +641,12 @@
     <ClCompile Include="Source\Graphics\Vulkan\PipelineConfigs.cpp">
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Vulkan\DescriptorPool.cpp">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Vulkan\DescriptorLayoutCache.cpp">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1261,6 +1267,12 @@
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="Source\Graphics\Vulkan\PipelineLibrary.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\DescriptorPool.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\DescriptorLayoutCache.h">
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>

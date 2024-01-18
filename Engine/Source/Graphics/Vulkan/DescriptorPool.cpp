@@ -39,7 +39,7 @@ void DescriptorPool::Reset()
     mCurrentPool = VK_NULL_HANDLE;
 }
 
-VkDescriptorSet DescriptorPool::Allocate(VkDescriptorSetLayout layout, const char* name)
+VkDescriptorSet DescriptorPool::Allocate(VkDescriptorSetLayout layout)
 {
     VkDevice device = GetVulkanDevice();
     VkDescriptorSet retSet = VK_NULL_HANDLE;
@@ -70,11 +70,6 @@ VkDescriptorSet DescriptorPool::Allocate(VkDescriptorSetLayout layout, const cha
                 OCT_ASSERT(0);
                 return;
         }
-    }
-
-    if (name != nullptr)
-    {
-        SetDebugObjectName(VK_OBJECT_TYPE_DESCRIPTOR_SET, (uint64_t)retSet, name);
     }
 }
 
