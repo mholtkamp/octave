@@ -8,6 +8,8 @@
 
 #include "Assertion.h"
 
+// Referenced: https://vkguide.dev/docs/extra-chapter/abstracting_descriptors/
+
 DescriptorSet DescriptorSet::Begin(const char* name)
 {
     DescriptorSet retSet;

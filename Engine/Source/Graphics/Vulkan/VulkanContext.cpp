@@ -121,7 +121,7 @@ void VulkanContext::Initialize()
     CreateShadowMapImage();
     CreateSceneColorImage();
     CreateDepthImage();
-    CreateDescriptorPool();
+    CreateDescriptorPools();
     CreateRenderPass();
 
 #if EDITOR
@@ -171,6 +171,34 @@ void VulkanContext::Initialize()
 
 #if EDITOR
 
+    {
+        // Create descriptor pool for imgui
+        VkDescriptorPoolSize poolSizes[5] = {};
+        poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        poolSizes[0].descriptorCount = 1024;
+        poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        poolSizes[1].descriptorCount = 1024;
+        poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[2].descriptorCount = 1024;
+        poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        poolSizes[3].descriptorCount = 32;
+        poolSizes[4].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+        poolSizes[4].descriptorCount = 32;
+
+        VkDescriptorPoolCreateInfo ciPool = {};
+        ciPool.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        ciPool.poolSizeCount = 5;
+        ciPool.pPoolSizes = poolSizes;
+        ciPool.maxSets = MAX_DESCRIPTOR_SETS;
+        ciPool.flags = 0;
+
+        if (vkCreateDescriptorPool(mDevice, &ciPool, nullptr, &mImguiDescriptorPool) != VK_SUCCESS)
+        {
+            LogError("Failed to create descriptor pool");
+            OCT_ASSERT(0);
+        }
+    }
+
     ImGui_ImplVulkan_InitInfo initInfo = {};
     initInfo.Instance = mInstance;
     initInfo.PhysicalDevice = mPhysicalDevice;
@@ -178,7 +206,7 @@ void VulkanContext::Initialize()
     initInfo.QueueFamily = mGraphicsQueueFamily;
     initInfo.Queue = mGraphicsQueue;
     initInfo.PipelineCache = mPipelineCache;
-    initInfo.DescriptorPool = mDescriptorPool;
+    initInfo.DescriptorPool = mImguiDescriptorPool;
     initInfo.Subpass = 0;
     initInfo.MinImageCount = MAX_FRAMES;
     initInfo.ImageCount = MAX_FRAMES;
@@ -229,7 +257,7 @@ void VulkanContext::Destroy()
 
     mDestroyQueue.FlushAll();
 
-    vkDestroyDescriptorPool(mDevice, mDescriptorPool, nullptr);
+    DestroyDescriptorPools();
 
     vkDestroySemaphore(mDevice, mRenderFinishedSemaphore, nullptr);
     vkDestroySemaphore(mDevice, mImageAvailableSemaphore, nullptr);
@@ -1946,6 +1974,16 @@ VkPhysicalDevice VulkanContext::GetPhysicalDevice()
     return mPhysicalDevice;
 }
 
+DescriptorPool& VulkanContext::GetDescriptorPool()
+{
+    return mDescriptorPools[mFrameIndex];
+}
+
+DescriptorLayoutCache& VulkanContext::GetDescriptorLayoutCache()
+{
+    return mDescriptorLayoutCache;
+}
+
 GlobalUniformData& VulkanContext::GetGlobalUniformData()
 {
     return mGlobalUniformData;
@@ -2103,30 +2141,24 @@ void VulkanContext::CreateFences()
     vkResetFences(mDevice, 1, &mWaitFences[0]);
 }
 
-void VulkanContext::CreateDescriptorPool()
+void VulkanContext::CreateDescriptorPools()
 {
-    VkDescriptorPoolSize poolSizes[4] = {};
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    poolSizes[0].descriptorCount = MAX_UNIFORM_BUFFER_DESCRIPTORS;
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = MAX_SAMPLER_DESCRIPTORS;
-    poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    poolSizes[2].descriptorCount = MAX_STORAGE_BUFFER_DESCRIPTORS;
-    poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-    poolSizes[3].descriptorCount = MAX_STORAGE_IMAGE_DESCRIPTORS;
+    mDescriptorLayoutCache.Create();
 
-    VkDescriptorPoolCreateInfo ciPool = {};
-    ciPool.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    ciPool.poolSizeCount = 4;
-    ciPool.pPoolSizes = poolSizes;
-    ciPool.maxSets = MAX_DESCRIPTOR_SETS;
-    ciPool.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-
-    if (vkCreateDescriptorPool(mDevice, &ciPool, nullptr, &mDescriptorPool) != VK_SUCCESS)
+    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
     {
-        LogError("Failed to create descriptor pool");
-        OCT_ASSERT(0);
+        mDescriptorPools[i].Create();
     }
+}
+
+void VulkanContext::DestroyDescriptorPools()
+{
+    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    {
+        mDescriptorPools[i].Destroy();
+    }
+
+    mDescriptorLayoutCache.Destroy();
 }
 
 void VulkanContext::RecreateSwapchain(bool recreateSurface)
@@ -2244,11 +2276,6 @@ void VulkanContext::DestroyGlobalShaders()
     }
 
     mGlobalShaders.clear();
-}
-
-VkDescriptorPool VulkanContext::GetDescriptorPool()
-{
-    return mDescriptorPool;
 }
 
 DescriptorSet* VulkanContext::GetGlobalDescriptorSet()

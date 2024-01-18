@@ -19,6 +19,8 @@
 #include "ObjectRef.h"
 #include "RayTracer.h"
 #include "Profiler.h"
+#include "DescriptorPool.h"
+#include "DescriptorLayoutCache.h"
 #include "MaterialPipelineCache.h"
 
 #if PLATFORM_LINUX
@@ -80,7 +82,8 @@ public:
     void RecreateSwapchain(bool recreateSurface);
 
     VkPhysicalDevice GetPhysicalDevice();
-    VkDescriptorPool GetDescriptorPool();
+    DescriptorPool& GetDescriptorPool();
+    DescriptorLayoutCache& GetDescriptorLayoutCache();
 
     DestroyQueue* GetDestroyQueue();
 
@@ -203,7 +206,8 @@ private:
     void CreateCommandPool();
     void CreateSemaphores();
     void CreateFences();
-    void CreateDescriptorPool();
+    void CreateDescriptorPools();
+    void DestroyDescriptorPools();
     void CreateDepthImage();
     void CreatePostProcessDescriptorSet();
     void CreateSceneColorImage();
@@ -246,11 +250,13 @@ private:
     uint32_t mGraphicsQueueFamily = 0;
     uint32_t mPresentQueueFamily = 0;
 
-    // Pools
-    VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;
-    VkCommandPool mCommandPool = VK_NULL_HANDLE;
+    // Descriptors
+    DescriptorPool mDescriptorPools[MAX_FRAMES];
+    DescriptorLayoutCache mDescriptorLayoutCache;
+    VkDescriptorPool mImguiDescriptorPool = VK_NULL_HANDLE;
 
     // Command Buffers
+    VkCommandPool mCommandPool = VK_NULL_HANDLE;
     std::vector<VkCommandBuffer> mCommandBuffers;
 
     // Swapchain
