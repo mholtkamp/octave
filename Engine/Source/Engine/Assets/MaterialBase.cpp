@@ -50,7 +50,6 @@ bool MaterialBase::HandlePropChange(Datum* datum, uint32_t index, const void* ne
     MaterialBase* materialBase = static_cast<MaterialBase*>(prop->mOwner);
     bool success = false;
 
-    materialBase->MarkDirty();
     materialBase->MarkStale();
 
     return success;
@@ -59,8 +58,6 @@ bool MaterialBase::HandlePropChange(Datum* datum, uint32_t index, const void* ne
 MaterialBase::MaterialBase()
 {
     mType = MaterialBase::GetStaticType();
-
-    MarkDirty();
 }
 
 MaterialBase::~MaterialBase()
@@ -121,7 +118,7 @@ void MaterialBase::SaveStream(Stream& stream, Platform platform)
         }
     }
 
-    uint32_t fragSize = mFragmentCode.size();
+    uint32_t fragSize = (uint32_t)mFragmentCode.size();
     stream.WriteUint32(fragSize);
     if (fragSize > 0)
     {
@@ -149,7 +146,6 @@ void MaterialBase::Create()
 #endif
 
     GFX_CreateMaterialResource(this);
-    MarkDirty();
 }
 
 void MaterialBase::Destroy()
@@ -479,7 +475,7 @@ void MaterialBase::Compile()
         {
             VertexType vertType = (VertexType)i;
             if (vertType == VertexType::VertexUI ||
-                vertType == VertexType::VertexColorSimple)
+                vertType == VertexType::VertexLine)
             {
                 // These aren't supported.
                 continue;

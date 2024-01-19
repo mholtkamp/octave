@@ -138,7 +138,6 @@ void Material::SetScalarParameter(const std::string& name, float value)
             if (param.mType == ShaderParameterType::Scalar)
             {
                 param.mFloatValue.x = value;
-                MarkDirty();
             }
             else
             {
@@ -160,7 +159,6 @@ void Material::SetVectorParameter(const std::string& name, glm::vec4 value)
             if (param.mType == ShaderParameterType::Vector)
             {
                 param.mFloatValue = value;
-                MarkDirty();
             }
             else
             {
@@ -182,7 +180,6 @@ void Material::SetTextureParameter(const std::string& name, Texture* value)
             if (param.mType == ShaderParameterType::Texture)
             {
                 param.mTextureValue = value;
-                MarkDirty();
             }
             else
             {

@@ -1209,9 +1209,9 @@ void CreateMaterialResource(Material* material)
 
         if (base != nullptr)
         {
-			OCT_ASSERT(0);
-         	LogDebug("Need to create Shader in CreateMaterialResource());   
-		}
+            OCT_ASSERT(0);
+            LogDebug("Need to create Shader in CreateMaterialResource()");
+        }
     }
 
 }
@@ -1255,11 +1255,16 @@ void BindMaterialResource(Material* material)
         ctx->SetDepthWriteEnabled(false);
         break;
     }
+}
 
-	// Need to merge these
-	OCT_ASSERT(0);
-#if 0
- MaterialResource* resource = material->GetResource();
+void BindMaterialDescriptorSet(Material* material)
+{
+    if (material == nullptr)
+        return;
+
+    VkCommandBuffer cb = GetCommandBuffer();
+
+    MaterialResource* resource = material->GetResource();
     std::vector<ShaderParameter>& params = material->GetParameters();
 
     if (material->IsLite())
@@ -1276,14 +1281,11 @@ void BindMaterialResource(Material* material)
         MaterialData ubo = {};
         WriteMaterialLiteUniformData(ubo, matLite);
 
-        resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+        UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
 
-        // Update descriptor bindings
+        // Ensure we are using valid textures
         Renderer* renderer = Renderer::Get();
-        OCT_ASSERT(resource->mDescriptorSet != nullptr);
-        resource->mDescriptorSet->UpdateUniformDescriptor(MD_UNIFORM_BUFFER, resource->mUniformBuffer);
-
-        for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
+        for (uint32_t i = 0; i < 4; ++i)
         {
             Texture* texture = textures[i];
             if (texture == nullptr)
@@ -1291,20 +1293,32 @@ void BindMaterialResource(Material* material)
                 texture = renderer->mWhiteTexture.Get<Texture>();
                 OCT_ASSERT(texture != nullptr);
             }
-
-            resource->mDescriptorSet->UpdateImageDescriptor(MD_TEXTURE_START + i, texture->GetResource()->mImage);
         }
+
+        DescriptorSet::Begin("Lite Material DS")
+            .WriteUniformBuffer(MD_UNIFORM_BUFFER, uniformBlock)
+            .WriteImage(MD_TEXTURE_START + 0, textures[0]->GetResource()->mImage)
+            .WriteImage(MD_TEXTURE_START + 1, textures[1]->GetResource()->mImage)
+            .WriteImage(MD_TEXTURE_START + 2, textures[2]->GetResource()->mImage)
+            .WriteImage(MD_TEXTURE_START + 3, textures[3]->GetResource()->mImage)
+            .Build()
+            .Bind(cb, 2);
     }
     else
     {
         // TODO-MAT: Implement
-        #error Need to upload float parameters to uniform buffer
+        OCT_ASSERT(0);
+        //Need to upload float parameters to uniform buffer
 
-        // Update descriptor bindings
+        DescriptorSet matSet = DescriptorSet::Begin("Material DS");
+
         Renderer* renderer = Renderer::Get();
-        OCT_ASSERT(resource->mDescriptorSet != nullptr);
-        resource->mDescriptorSet->UpdateUniformDescriptor(MD_UNIFORM_BUFFER, resource->mUniformBuffer);
-
+        
+        // Update uniform buffer data
+        uint32_t ubo = 0;
+        OCT_ASSERT(0); // Use correct ubo block
+        UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
+        matSet.WriteUniformBuffer(MD_UNIFORM_BUFFER, uniformBlock);
 
         for (uint32_t i = 0; i < params.size(); ++i)
         {
@@ -1318,56 +1332,10 @@ void BindMaterialResource(Material* material)
                     OCT_ASSERT(texture != nullptr);
                 }
 
-                resource->mDescriptorSet->UpdateImageDescriptor(MD_TEXTURE_START + param.mOffset, texture->GetResource()->mImage);
+                matSet.WriteImage(MD_TEXTURE_START + param.mOffset, texture->GetResource()->mImage);
             }
         }
     }
-#endif
-}
-
-void BindMaterialDescriptorSet(Material* material)
-{
-    if (material == nullptr)
-        return;
-
-	OCT_ASSERT(0);
-    // TODO: Handle Lite material vs full material
-
-    VkCommandBuffer cb = GetCommandBuffer();
-    
-    // This should only happen once per frame per material.
-    Texture* textures[4] = {};
-    textures[0] = material->GetTexture((TextureSlot)0);
-    textures[1] = material->GetTexture((TextureSlot)1);
-    textures[2] = material->GetTexture((TextureSlot)2);
-    textures[3] = material->GetTexture((TextureSlot)3);
-
-    // Update uniform buffer data
-    MaterialData ubo = {};
-    WriteMaterialUniformData(ubo, material);
-
-    UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
-
-    // Ensure we are using valid textures
-    Renderer* renderer = Renderer::Get();
-    for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
-    {
-        Texture* texture = textures[i];
-        if (texture == nullptr)
-        {
-            texture = renderer->mWhiteTexture.Get<Texture>();
-            OCT_ASSERT(texture != nullptr);
-        }
-    }
-
-    DescriptorSet::Begin("Material DS")
-        .WriteUniformBuffer(MD_UNIFORM_BUFFER, uniformBlock)
-        .WriteImage(MD_TEXTURE_0, textures[0]->GetResource()->mImage)
-        .WriteImage(MD_TEXTURE_1, textures[1]->GetResource()->mImage)
-        .WriteImage(MD_TEXTURE_2, textures[2]->GetResource()->mImage)
-        .WriteImage(MD_TEXTURE_3, textures[3]->GetResource()->mImage)
-        .Build()
-        .Bind(cb, 2);
 }
 
 void CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_t numVertices, void* vertices, uint32_t numIndices, IndexType* indices)

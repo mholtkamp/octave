@@ -58,12 +58,6 @@ void DestroyQueue::Destroy(VkCommandBuffer commandBuffer)
     mCommandBuffers[frameIndex].push_back(commandBuffer);
 }
 
-void DestroyQueue::Destroy(Pipeline* pipeline)
-{
-    uint32_t frameIndex = GetFrameIndex();
-    mPipelines[frameIndex].push_back(pipeline);
-}
-
 void DestroyQueue::Flush(uint32_t frameIndex)
 {
     VkDevice device = GetVulkanDevice();
