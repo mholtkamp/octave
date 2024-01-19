@@ -167,6 +167,7 @@ void InitPipelineConfigs()
     PipelineState& stateLine = sPipelineConfigs[(uint32_t)PipelineConfig::Line];
     stateLine.mVertexShader = gVulkanContext->GetGlobalShader("Line.vert");
     stateLine.mFragmentShader = gVulkanContext->GetGlobalShader("Line.frag");
+    stateLine.mVertexType = VertexType::VertexLine;
     stateLine.mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
     stateLine.mDepthTestEnabled = true;
     stateLine.mDepthWriteEnabled = false;

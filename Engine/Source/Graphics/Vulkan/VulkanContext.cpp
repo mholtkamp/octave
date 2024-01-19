@@ -39,7 +39,6 @@ PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT = nullptr;
 PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT = nullptr;
 PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
 
-#define PIPELINE_CACHE_SAVE_NAME "PipelineCache.sav"
 #define ENABLE_FULL_VALIDATION 1
 #define MAX_GPU_TIMESPANS 64
 #define MAX_GPU_TIMESTAMPS (MAX_GPU_TIMESPANS * 2)
@@ -129,8 +128,6 @@ void VulkanContext::Initialize()
 #endif
 
     CreatePipelineCache();
-    CreatePipelines();
-    SavePipelineCacheToFile();
 
     mRayTracer.CreateStaticRayTraceResources();
     mRayTracer.CreateDynamicRayTraceResources();
@@ -196,7 +193,7 @@ void VulkanContext::Initialize()
     initInfo.Device = mDevice;
     initInfo.QueueFamily = mGraphicsQueueFamily;
     initInfo.Queue = mGraphicsQueue;
-    initInfo.PipelineCache = mPipelineCache;
+    initInfo.PipelineCache = mPipelineCache.GetPipelineCacheObj();
     initInfo.DescriptorPool = mImguiDescriptorPool;
     initInfo.Subpass = 0;
     initInfo.MinImageCount = MAX_FRAMES;
@@ -236,7 +233,6 @@ void VulkanContext::Destroy()
 
     DestroySwapchain();
 
-    DestroyPipelines();
     DestroyPipelineCache();
 
     DestroyFrameUniformBuffer();
@@ -493,6 +489,8 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
     }
 
     vkCmdBeginRenderPass(mCommandBuffers[mFrameIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    mPipelineState.mRenderPass = renderPassInfo.renderPass;
 }
 
 void VulkanContext::EndRenderPass()
@@ -554,40 +552,12 @@ void VulkanContext::CommitPipeline()
     BindPipeline(pipeline, vertexType);
 #endif
 
-    mBoundPipeline = mPipelineCache.ResolveAndBindPipeline(mPipelineState);
+    mBoundPipeline = mPipelineCache.Resolve(mPipelineState);
+    mBoundPipeline->Bind(mCommandBuffers[mFrameIndex]);
 
     // TODO: Can we avoid always binding the global descriptor set.
     BindGlobalDescriptorSet();
 }
-
-#if 0
-void VulkanContext::BindPipeline(Pipeline* pipeline)
-{
-    VkCommandBuffer cb = mCommandBuffers[mFrameIndex];
-    VkPipelineLayout pipelineLayout = pipeline->GetPipelineLayout();
-    
-    pipeline->Bind(cb);
-    mCurrentlyBoundPipeline = pipeline;
-
-    // Always rebind Global Descriptor (might not need to do this)
-    VkPipelineBindPoint bindPoint = pipeline->IsComputePipeline() ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS;
-    mGlobalDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Global, pipelineLayout, bindPoint);
-
-    LogError("Handle binding post process descriptors");
-
-
-    // Handle pipeline-specific functionality
-    switch (pipeline->GetId())
-    {
-    case PipelineId::PostProcess:
-    case PipelineId::NullPostProcess:
-        mPostProcessDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::PostProcess, pipelineLayout);
-        break;
-
-    default: break;
-    }
-}
-#endif
 
 void VulkanContext::DrawLines(const std::vector<Line>& lines)
 {
@@ -628,16 +598,7 @@ void VulkanContext::DrawLines(const std::vector<Line>& lines)
 
     // Render
     {
-        //BindPipeline(PipelineId::Line, VertexType::VertexLine);
-        SetVertexShader("Line.vert");
-        SetFragmentShader("Line.frag");
-        SetVertexType(VertexType::VertexLine);
-        SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
-        SetDepthTestEnabled(true);
-        SetDepthWriteEnabled(false);
-        SetDepthCompareOp(VK_COMPARE_OP_LESS);
-        SetCullMode(VK_CULL_MODE_NONE);
-        SetLineWidth(1.0f);
+        BindPipelineConfig(PipelineConfig::Line);
 
         VkDeviceSize offset = 0;
         VkBuffer lineVertexBuffer = mLineVertexBuffer->Get();
@@ -1739,41 +1700,18 @@ void VulkanContext::CreateRenderPass()
 
         SetDebugObjectName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t)mClearSwapchainPass, "ClearSwapchain RenderPass");
     }
+
+    mPipelineState.mRenderPass = mForwardRenderPass;
 }
 
 void VulkanContext::CreatePipelineCache()
 {
-    const char* initData = nullptr;
-    size_t initSize = 0;
-
-    Stream pipelineData;
-    if (SYS_DoesSaveExist(PIPELINE_CACHE_SAVE_NAME))
-    {
-        if (SYS_ReadSave(PIPELINE_CACHE_SAVE_NAME, pipelineData))
-        {
-            initData = pipelineData.GetData();
-            initSize = (size_t)pipelineData.GetSize();
-        }
-    }
-
-    OCT_ASSERT(mPipelineCache == VK_NULL_HANDLE);
-    VkPipelineCacheCreateInfo ciCache = {};
-    ciCache.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-    ciCache.pInitialData = (void*)initData;
-    ciCache.initialDataSize = initSize;
-    ciCache.flags = 0;
-    
-    if (vkCreatePipelineCache(mDevice, &ciCache, nullptr, &mPipelineCache) != VK_SUCCESS)
-    {
-        LogError("Failed to create pipeline cache");
-        OCT_ASSERT(0);
-    }
+    mPipelineCache.Create();
 }
 
 void VulkanContext::DestroyPipelineCache()
 {
-    OCT_ASSERT(mPipelineCache != VK_NULL_HANDLE);
-    vkDestroyPipelineCache(mDevice, mPipelineCache, nullptr);
+    mPipelineCache.Destroy();
 }
 
 void VulkanContext::CreateFramebuffers()
@@ -2233,7 +2171,7 @@ void VulkanContext::CreateGlobalShaders()
             Shader* newShader = new Shader(shaderPath.c_str(), shaderStage, fileName.c_str());
             mGlobalShaders.insert({ fileName, newShader });
 
-            LogDebug("Loaded Shader: %s", fileName);
+            LogDebug("Loaded Shader: %s", fileName.c_str());
         }
 
         SYS_IterateDirectory(dirEntry);
@@ -2842,36 +2780,14 @@ Pipeline* VulkanContext::GetBoundPipeline()
     return mBoundPipeline;
 }
 
-VkPipelineCache VulkanContext::GetPipelineCache() const
+PipelineCache& VulkanContext::GetPipelineCache()
 {
     return mPipelineCache;
 }
 
 void VulkanContext::SavePipelineCacheToFile()
 {
-    if (mPipelineCache != VK_NULL_HANDLE)
-    {
-        size_t cacheSize = 0;
-        VkResult res = vkGetPipelineCacheData(mDevice, mPipelineCache, &cacheSize, nullptr);
-        OCT_ASSERT(res == VK_SUCCESS);
-
-        if (cacheSize > 0)
-        {
-            char* cacheData = (char*)malloc(sizeof(char) * cacheSize);
-            OCT_ASSERT(cacheData);
-
-            res = vkGetPipelineCacheData(mDevice, mPipelineCache, &cacheSize, cacheData);
-            OCT_ASSERT(res == VK_SUCCESS);
-
-            Stream stream;
-            stream.WriteBytes((uint8_t*)cacheData, (uint32_t)cacheSize);
-
-            SYS_WriteSave(PIPELINE_CACHE_SAVE_NAME, stream);
-
-            free(cacheData);
-            cacheData = nullptr;
-        }
-    }
+    mPipelineCache.SaveToFile();
 }
 
 VkRenderPass VulkanContext::GetForwardRenderPass()
@@ -2888,191 +2804,6 @@ VkRenderPass VulkanContext::GetUIRenderPass()
 {
     return mUIRenderPass;
 }
-
-#if 0
-static ThreadFuncRet CreatePipelineThread(void* arg)
-{
-    PipelineCreateJobArgs* jobArgs = (PipelineCreateJobArgs*)arg;
-
-    std::vector<Pipeline*>& pipelines = *(jobArgs->mPipelines);
-    MutexObject* mutex = jobArgs->mMutex;
-
-    while (true)
-    {
-        Pipeline* pipeline = nullptr;
-
-        SYS_LockMutex(mutex);
-
-        if (pipelines.size() > 0)
-        {
-            pipeline = pipelines.back();
-            pipelines.pop_back();
-        }
-
-        SYS_UnlockMutex(mutex);
-
-        if (pipeline != nullptr)
-        {
-            pipeline->Create();
-        }
-        else
-        {
-            break;
-        }
-    }
-
-
-    THREAD_RETURN();
-}
-
-void VulkanContext::CreatePipelines()
-{
-    mPipelines[(size_t)PipelineId::Shadow] = new ShadowPipeline();
-    mPipelines[(size_t)PipelineId::Opaque] = new OpaquePipeline();
-    mPipelines[(size_t)PipelineId::Translucent] = new TranslucentPipeline();
-    mPipelines[(size_t)PipelineId::Additive] = new AdditivePipeline();
-    mPipelines[(size_t)PipelineId::DepthlessOpaque] = new OpaquePipeline();
-    mPipelines[(size_t)PipelineId::DepthlessTranslucent] = new TranslucentPipeline();
-    mPipelines[(size_t)PipelineId::DepthlessAdditive] = new AdditivePipeline();
-    mPipelines[(size_t)PipelineId::CullFrontOpaque] = new OpaquePipeline();
-    mPipelines[(size_t)PipelineId::CullFrontTranslucent] = new TranslucentPipeline();
-    mPipelines[(size_t)PipelineId::CullFrontAdditive] = new AdditivePipeline();
-    mPipelines[(size_t)PipelineId::CullNoneOpaque] = new OpaquePipeline();
-    mPipelines[(size_t)PipelineId::CullNoneTranslucent] = new TranslucentPipeline();
-    mPipelines[(size_t)PipelineId::CullNoneAdditive] = new AdditivePipeline();
-    mPipelines[(size_t)PipelineId::ShadowMeshBack] = new ShadowMeshBackPipeline();
-    mPipelines[(size_t)PipelineId::ShadowMeshFront] = new ShadowMeshFrontPipeline();
-    mPipelines[(size_t)PipelineId::ShadowMeshClear] = new ShadowMeshClearPipeline();
-    mPipelines[(size_t)PipelineId::Selected] = new SelectedGeometryPipeline();
-    mPipelines[(size_t)PipelineId::Wireframe] = new WireframeGeometryPipeline();
-    mPipelines[(size_t)PipelineId::Collision] = new CollisionGeometryPipeline();
-    mPipelines[(size_t)PipelineId::Line] = new LineGeometryPipeline();
-    mPipelines[(size_t)PipelineId::PostProcess] = new PostProcessPipeline();
-    mPipelines[(size_t)PipelineId::NullPostProcess] = new NullPostProcessPipeline();
-    mPipelines[(size_t)PipelineId::Quad] = new QuadPipeline();
-    mPipelines[(size_t)PipelineId::Text] = new TextPipeline();
-    mPipelines[(size_t)PipelineId::Poly] = new PolyPipeline();
-
-    if (mSupportsRayTracing)
-    {
-        mPipelines[(size_t)PipelineId::PathTrace] = new PathTracePipeline();
-        mPipelines[(size_t)PipelineId::LightBakeDirect] = new LightBakeDirectPipeline();
-        mPipelines[(size_t)PipelineId::LightBakeIndirect] = new LightBakeIndirectPipeline();
-        mPipelines[(size_t)PipelineId::LightBakeAverage] = new LightBakeAveragePipeline();
-        mPipelines[(size_t)PipelineId::LightBakeDiffuse] = new LightBakeDiffusePipeline();
-    }
-
-#if EDITOR
-    mPipelines[(size_t)PipelineId::HitCheck] = new HitCheckPipeline();
-#endif
-
-    // Modified Foward Pipelines
-    for (uint32_t i = 0; i < 3; ++i)
-    {
-        uint32_t pipelineIdx = (uint32_t)PipelineId::DepthlessOpaque + i;
-        mPipelines[pipelineIdx]->mPipelineId = PipelineId(pipelineIdx);
-        mPipelines[pipelineIdx]->mDepthTestEnabled = false;
-        mPipelines[pipelineIdx]->mDepthWriteEnabled = false;
-    }
-    for (uint32_t i = 0; i < 3; ++i)
-    {
-        uint32_t pipelineIdx = (uint32_t)PipelineId::CullFrontOpaque + i;
-        mPipelines[pipelineIdx]->mPipelineId = PipelineId(pipelineIdx);
-        mPipelines[pipelineIdx]->mCullMode = VK_CULL_MODE_FRONT_BIT;
-    }
-    for (uint32_t i = 0; i < 3; ++i)
-    {
-        uint32_t pipelineIdx = (uint32_t)PipelineId::CullNoneOpaque + i;
-        mPipelines[pipelineIdx]->mPipelineId = PipelineId(pipelineIdx);
-        mPipelines[pipelineIdx]->mCullMode = VK_CULL_MODE_NONE;
-    }
-
-    // Create Pipelines
-    mPipelines[(size_t)PipelineId::Shadow]->SetRenderPass(mShadowRenderPass);
-    mPipelines[(size_t)PipelineId::Opaque]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::Translucent]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::Additive]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::DepthlessOpaque]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::DepthlessTranslucent]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::DepthlessAdditive]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullFrontOpaque]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullFrontTranslucent]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullFrontAdditive]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullNoneOpaque]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullNoneTranslucent]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullNoneAdditive]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::ShadowMeshBack]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::ShadowMeshFront]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::ShadowMeshClear]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::Selected]->SetRenderPass(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::Wireframe]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::Collision]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::Line]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::PostProcess]->SetRenderPass(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::NullPostProcess]->SetRenderPass(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::Quad]->SetRenderPass(mUIRenderPass);
-    mPipelines[(size_t)PipelineId::Text]->SetRenderPass(mUIRenderPass);
-    mPipelines[(size_t)PipelineId::Poly]->SetRenderPass(mUIRenderPass);
-
-    // Compute pipelines don't need to set a RenderPass.
-
-#if EDITOR
-    mPipelines[(size_t)PipelineId::HitCheck]->SetRenderPass(mHitCheckRenderPass);
-#endif
-
-    // Create pipelines across multiple threads to use all CPU cores.
-    std::vector<Pipeline*> pipelines;
-    pipelines.reserve((size_t)PipelineId::Count);
-    MutexObject* mutex = SYS_CreateMutex();
-
-    PipelineCreateJobArgs jobArgs;
-    jobArgs.mPipelines = &pipelines;
-    jobArgs.mMutex = mutex;
-
-    // Gather pipelines that we need to create.
-    for (uint32_t i = 0; i < (uint32_t)PipelineId::Count; ++i)
-    {
-        if (mPipelines[i] != nullptr)
-        {
-            pipelines.push_back(mPipelines[i]);
-        }
-    }
-
-    // Dispatch threads
-    constexpr uint32_t kNumThreads = 8;
-    ThreadObject* threads[kNumThreads] = {};
-
-    for (uint32_t i = 0; i < kNumThreads; ++i)
-    {
-        threads[i] = SYS_CreateThread(CreatePipelineThread, &jobArgs);
-    }
-
-    // Join threads
-    for (uint32_t i = 0; i < kNumThreads; ++i)
-    {
-        SYS_JoinThread(threads[i]);
-        SYS_DestroyThread(threads[i]);
-        threads[i] = nullptr;
-    }
-
-    // All pipeslines should be created now. Delete the shader modules we used.
-    OCT_ASSERT(pipelines.size() == 0);
-    SYS_DestroyMutex(mutex);
-    mutex = nullptr;
-}
-
-void VulkanContext::DestroyPipelines()
-{
-    for (uint32_t i = 0; i < (uint32_t)PipelineId::Count; ++i)
-    {
-        if (mPipelines[i] != nullptr)
-        {
-            GetDestroyQueue()->Destroy(mPipelines[i]);
-            mPipelines[i] = nullptr;
-        }
-    }
-}
-#endif
 
 void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes)
 {

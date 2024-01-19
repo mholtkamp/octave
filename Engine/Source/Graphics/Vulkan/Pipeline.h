@@ -27,7 +27,7 @@ public:
 
     virtual ~Pipeline();
 
-    void Create(const PipelineState& state, VkSpecializationInfo* specInfo = nullptr);
+    void Create(const PipelineState& state, VkPipelineCache cache, VkSpecializationInfo* specInfo = nullptr);
 
     VkPipeline GetVkPipeline() const;
 
@@ -42,8 +42,8 @@ protected:
 
     void Destroy();
 
-    void CreateGraphicsPipeline(VkSpecializationInfo* specInfo);
-    void CreateComputePipeline(VkSpecializationInfo* specInfo);
+    void CreateGraphicsPipeline(VkPipelineCache cache, VkSpecializationInfo* specInfo);
+    void CreateComputePipeline(VkPipelineCache cache, VkSpecializationInfo* specInfo);
 
     void CreateDescriptorSetLayouts();
     void CreatePipelineLayout();

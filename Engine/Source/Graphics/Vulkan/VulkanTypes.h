@@ -51,6 +51,34 @@ struct PipelineState
 
     // Blending
     VkPipelineColorBlendAttachmentState mBlendStates[MAX_RENDER_TARGETS] = {};
+
+    bool operator==(const PipelineState& other) const
+    {
+        bool equal = (memcmp(this, &other, sizeof(PipelineState)) == 0);
+    }
+
+    size_t Hash() const
+    {
+        size_t ret = 0x1337;
+        uint8_t* data = (uint8_t*)this;
+        uint32_t size = sizeof(PipelineState);
+        
+        for (uint32_t i = 0; i < size; ++i)
+        {
+            ret = ret << 4;
+            ret += data[i];
+        }
+
+        return ret;
+    }
+};
+
+struct PipelineStateHasher
+{
+    size_t operator()(const PipelineState& k) const
+    {
+        return k.Hash();
+    }
 };
 
 struct LightUniformData

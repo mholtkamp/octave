@@ -1244,7 +1244,7 @@ void Renderer::Render(World* world)
 
                     if (dirLight && dirLight->ShouldCastShadows())
                     {
-                        RenderDraws(mShadowDraws, PipelineId::Shadow);
+                        RenderDraws(mShadowDraws, PipelineConfig::Shadow);
                     }
 
                     GFX_EndRenderPass();
@@ -1300,7 +1300,7 @@ void Renderer::Render(World* world)
                 GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
                 GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
 
-                GFX_SetPipelineState(PipelineConfig::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineId::PostProcess : PipelineId::NullPostProcess*/);
+                GFX_SetPipelineState(PipelineConfig::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineConfig::PostProcess : PipelineConfig::NullPostProcess*/);
                 GFX_DrawFullscreen();
 
 #if EDITOR

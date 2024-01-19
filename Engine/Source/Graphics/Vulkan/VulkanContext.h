@@ -20,6 +20,7 @@
 #include "Profiler.h"
 #include "DescriptorPool.h"
 #include "DescriptorLayoutCache.h"
+#include "PipelineCache.h"
 
 #if PLATFORM_LINUX
 #include <xcb/xcb.h>
@@ -89,7 +90,7 @@ public:
     VkFormat GetSceneColorFormat();
 
     Pipeline* GetBoundPipeline();
-    VkPipelineCache GetPipelineCache() const;
+    PipelineCache& GetPipelineCache();
     void SavePipelineCacheToFile();
 
     VkRenderPass GetForwardRenderPass();
@@ -191,8 +192,6 @@ private:
     void CreateRenderPass();
     void CreatePipelineCache();
     void DestroyPipelineCache();
-    void CreatePipelines();
-    void DestroyPipelines();
     void CreateFramebuffers();
     void CreateCommandPool();
     void CreateSemaphores();
@@ -281,7 +280,7 @@ private:
     VkFence mWaitFences[MAX_FRAMES] = {};
 
     // Pipelines
-    VkPipelineCache mPipelineCache = VK_NULL_HANDLE;
+    PipelineCache mPipelineCache;
     Pipeline* mBoundPipeline = nullptr;
 
     // Shader Data

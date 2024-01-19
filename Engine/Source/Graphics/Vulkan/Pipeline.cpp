@@ -29,11 +29,10 @@ VkDescriptorSetLayout Pipeline::GetDescriptorSetLayout(uint32_t index)
     return mDescriptorSetLayouts[index];
 }
 
-void Pipeline::CreateGraphicsPipeline(VkSpecializationInfo* specInfo)
+void Pipeline::CreateGraphicsPipeline(VkPipelineCache cache, VkSpecializationInfo* specInfo)
 {
     VulkanContext* context = GetVulkanContext();
     VkDevice device = context->GetDevice();
-    VkPipelineCache cache = GetVulkanContext()->GetPipelineCache();
 
     // Limit features
     if (!context->HasFeatureWideLines())
@@ -198,10 +197,9 @@ void Pipeline::CreateGraphicsPipeline(VkSpecializationInfo* specInfo)
     SetDebugObjectName(VK_OBJECT_TYPE_PIPELINE, (uint64_t)mPipeline, mName.c_str());
 }
 
-void Pipeline::CreateComputePipeline(VkSpecializationInfo* specInfo)
+void Pipeline::CreateComputePipeline(VkPipelineCache cache, VkSpecializationInfo* specInfo)
 {
     VkDevice device = GetVulkanDevice();
-    VkPipelineCache cache = GetVulkanContext()->GetPipelineCache();
 
     VkShaderModule computeShaderModule = mState.mComputeShader->mModule;
 
@@ -234,7 +232,7 @@ void Pipeline::CreateComputePipeline(VkSpecializationInfo* specInfo)
 
 }
 
-void Pipeline::Create(const PipelineState& state, VkSpecializationInfo* specInfo)
+void Pipeline::Create(const PipelineState& state, VkPipelineCache cache, VkSpecializationInfo* specInfo)
 {
     // We probably don't need to store the state internally, but it might help for debugging.
     // If we have tons of pipelines and its consuming a lot of memory, then we can pass a ref of the state
@@ -246,11 +244,11 @@ void Pipeline::Create(const PipelineState& state, VkSpecializationInfo* specInfo
 
     if (mComputePipeline)
     {
-        CreateComputePipeline(specInfo);
+        CreateComputePipeline(cache, specInfo);
     }
     else
     {
-        CreateGraphicsPipeline(specInfo);
+        CreateGraphicsPipeline(cache, specInfo);
     }
 }
 
