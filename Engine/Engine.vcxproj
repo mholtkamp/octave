@@ -244,7 +244,7 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <Lib>
-      <AdditionalDependencies>vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>spirv-cross-cored.lib;shaderc_combinedd.lib;vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)/Bin32;$(SolutionDir)Engine/External/lib/Lib/;$(VULKAN_SDK)/Lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <ProjectReference>
@@ -266,7 +266,7 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <Lib>
-      <AdditionalDependencies>vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>spirv-cross-cored.lib;shaderc_combinedd.lib;vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)/Bin32;$(SolutionDir)Engine/External/lib/Lib/;$(VULKAN_SDK)/Lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <ProjectReference>
@@ -283,14 +283,14 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalDependencies>vulkan-1.lib;assimpd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)/Bin;$(SolutionDir)External/lib/Lib/;$(VULKAN_SDK)/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalDependencies>vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>spirv-cross-cored.lib;shaderc_combinedd.lib;vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)/Bin;$(SolutionDir)Engine/External/lib/Lib/;$(VULKAN_SDK)/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
@@ -333,14 +333,14 @@
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalDependencies>vulkan-1.lib;assimpd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)/Bin;$(SolutionDir)External/lib/Lib/;$(VULKAN_SDK)/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalDependencies>shaderc-combined.lib;vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>spirv-cross-cored.lib;shaderc_combinedd.lib;vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)/Bin;$(SolutionDir)Engine/External/lib/Lib/;$(VULKAN_SDK)/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
@@ -392,7 +392,7 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <Lib>
-      <AdditionalDependencies>vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>spirv-cross-core.lib;shaderc_combined.lib;vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)/Bin32;$(SolutionDir)Engine/External/lib/Lib/;$(VULKAN_SDK)/Lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <ProjectReference>
@@ -418,7 +418,7 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <Lib>
-      <AdditionalDependencies>vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>spirv-cross-core.lib;shaderc_combined.lib;vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)/Bin32;$(SolutionDir)Engine/External/lib/Lib/;$(VULKAN_SDK)/Lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <ProjectReference>
@@ -434,7 +434,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=0;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -442,7 +442,7 @@
       <AdditionalDependencies>vulkan-1.lib;assimpd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>spirv-cross-core.lib;shaderc_combined.lib;vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)/Bin;$(SolutionDir)Engine/External/lib/Lib/;$(VULKAN_SDK)/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <ProjectReference>
@@ -481,7 +481,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -489,7 +489,7 @@
       <AdditionalDependencies>vulkan-1.lib;assimpd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>shaderc-combined.lib;vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>spirv-cross-core.lib;shaderc_combined.lib;vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)/Bin;$(SolutionDir)Engine/External/lib/Lib/;$(VULKAN_SDK)/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <ProjectReference>
@@ -663,15 +663,21 @@
     <ClCompile Include="Source\Graphics\GraphicsUtils.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Allocator.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Buffer.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\DescriptorPool.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\DescriptorSet.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\DestroyQueue.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Image.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\DescriptorLayoutCache.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\MaterialPipelineCache.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Pipeline.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\PipelineConfigs.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\PipelineCache.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RayTracer.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\MultiBuffer.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Graphics_Vulkan.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanTypes.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanUtils.cpp" />
     <ClCompile Include="Source\Input\Android\Input_Android.cpp" />
     <ClCompile Include="Source\Input\Input.cpp" />
@@ -884,15 +890,18 @@
     <ClInclude Include="Source\Graphics\GraphicsUtils.h" />
     <ClInclude Include="Source\Graphics\Vulkan\Allocator.h" />
     <ClInclude Include="Source\Graphics\Vulkan\Buffer.h" />
+    <ClInclude Include="Source\Graphics\Vulkan\DescriptorPool.h" />
     <ClInclude Include="Source\Graphics\Vulkan\DescriptorSet.h" />
     <ClInclude Include="Source\Graphics\Vulkan\DestroyQueue.h" />
     <ClInclude Include="Source\Graphics\Vulkan\Image.h" />
+    <ClInclude Include="Source\Graphics\Vulkan\DescriptorLayoutCache.h" />
     <ClInclude Include="Source\Graphics\Vulkan\MaterialPipelineCache.h" />
     <ClInclude Include="Source\Graphics\Vulkan\MultiBuffer.h" />
     <ClInclude Include="Source\Graphics\Vulkan\Pipeline.h" />
+    <ClInclude Include="Source\Graphics\Vulkan\PipelineCache.h" />
     <ClInclude Include="Source\Graphics\Vulkan\PipelineConfigs.h" />
     <ClInclude Include="Source\Graphics\Vulkan\RayTracer.h" />
-    <ClInclude Include="Source\Graphics\Vulkan\ResourceArena.h" />
+    <ClInclude Include="Source\Graphics\Vulkan\Shader.h" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanConstants.h" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanContext.h" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.h" />

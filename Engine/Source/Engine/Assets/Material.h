@@ -57,9 +57,6 @@ public:
     virtual glm::vec4 GetTypeColor() override;
     virtual const char* GetTypeName() override;
 
-    void MarkDirty();
-    void ClearDirty(uint32_t frameIndex);
-    bool IsDirty(uint32_t frameIndex);
     MaterialResource* GetResource();
 
     virtual bool IsBase() const;
@@ -86,7 +83,6 @@ public:
 protected:
 
     std::vector<ShaderParameter> mParameters;
-    bool mDirty[MAX_FRAMES] = {};
 
     // Graphics Resource
     MaterialResource mResource;

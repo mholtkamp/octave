@@ -37,7 +37,7 @@ bool GFX_ShouldCullLights();
 
 void GFX_BeginRenderPass(RenderPassId renderPassId);
 void GFX_EndRenderPass();
-void GFX_BindPipeline(PipelineId pipelineId, VertexType vertexType = VertexType::Max);
+void GFX_SetPipelineState(PipelineConfig config);
 
 void GFX_SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation = true);
 void GFX_SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation = true);
@@ -118,20 +118,17 @@ void GFX_DrawParticleComp(Particle3D* particleComp);
 // Quad
 void GFX_CreateQuadResource(Quad* quad);
 void GFX_DestroyQuadResource(Quad* quad);
-void GFX_UpdateQuadResource(Quad* quad);
 void GFX_DrawQuad(Quad* quad);
 
 // Text
 void GFX_CreateTextResource(Text* text);
 void GFX_DestroyTextResource(Text* text);
-void GFX_UpdateTextResourceUniformData(Text* text);
 void GFX_UpdateTextResourceVertexData(Text* text);
 void GFX_DrawText(Text* text);
 
 // Polygon
 void GFX_CreatePolyResource(Poly* poly);
 void GFX_DestroyPolyResource(Poly* poly);
-void GFX_UpdatePolyResourceUniformData(Poly* poly);
 void GFX_UpdatePolyResourceVertexData(Poly* poly);
 void GFX_DrawPoly(Poly* poly);
 

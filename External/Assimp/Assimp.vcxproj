@@ -794,7 +794,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)../Zlib;$(ProjectDir);$(ProjectDir)../IrrXML;$(ProjectDir)contrib;$(ProjectDir)contrib/zlib;$(ProjectDir)../../External;$(ProjectDir)contrib/openddlparser/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;ASSIMP_BUILD_NO_IFC_IMPORTER;ASSIMP_BUILD_NO_STEP_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -829,7 +829,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)../Zlib;$(ProjectDir);$(ProjectDir)../IrrXML;$(ProjectDir)contrib;$(ProjectDir)contrib/zlib;$(ProjectDir)../../External;$(ProjectDir)contrib/openddlparser/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;ASSIMP_BUILD_NO_IFC_IMPORTER;ASSIMP_BUILD_NO_STEP_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -941,7 +941,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)../Zlib;$(ProjectDir);$(ProjectDir)../IrrXML;$(ProjectDir)contrib;$(ProjectDir)contrib/zlib;$(ProjectDir)../../External;$(ProjectDir)contrib/openddlparser/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;ASSIMP_BUILD_NO_IFC_IMPORTER;ASSIMP_BUILD_NO_STEP_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -986,7 +986,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)../Zlib;$(ProjectDir);$(ProjectDir)../IrrXML;$(ProjectDir)contrib;$(ProjectDir)contrib/zlib;$(ProjectDir)../../External;$(ProjectDir)contrib/openddlparser/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;ASSIMP_BUILD_NO_IFC_IMPORTER;ASSIMP_BUILD_NO_STEP_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

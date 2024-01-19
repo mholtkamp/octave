@@ -72,6 +72,27 @@ VkFormat ConvertPixelFormat(PixelFormat pixelFormat)
     return format;
 }
 
+VkCullModeFlags ConvertCullMode(CullMode cullMode)
+{
+    VkCullModeFlags retMode = VK_CULL_MODE_NONE;
+
+    if (cullMode == CullMode::Front)
+        retMode = VK_CULL_MODE_FRONT_BIT;
+    else if (cullMode == CullMode::Back)
+        retMode = VK_CULL_MODE_BACK_BIT;
+
+    return retMode;
+}
+
+UniformBlock WriteUniformBlock(void* data, uint32_t size)
+{
+    UniformBuffer* uniformBuffer = GetVulkanContext()->GetFrameUniformBuffer();
+    UniformBlock retBlock = uniformBuffer->AllocBlock(size);
+    memcpy(retBlock.mData, data, size);
+
+    return retBlock;
+}
+
 void CreateBuffer(
     VkDeviceSize size,
     VkBufferUsageFlags usage,
@@ -298,6 +319,11 @@ uint32_t GetFrameIndex()
     return GetVulkanContext()->GetFrameIndex();
 }
 
+uint32_t GetFrameNumber()
+{
+    return GetVulkanContext()->GetFrameNumber();
+}
+
 DestroyQueue* GetDestroyQueue()
 {
     return GetVulkanContext()->GetDestroyQueue();
@@ -494,8 +520,8 @@ std::vector<VkVertexInputBindingDescription> GetVertexBindingDescription(VertexT
         case VertexType::VertexUI:
             desc.stride = sizeof(VertexUI);
             break;
-        case VertexType::VertexColorSimple:
-            desc.stride = sizeof(VertexColorSimple);
+        case VertexType::VertexLine:
+            desc.stride = sizeof(VertexLine);
             break;
         case VertexType::VertexSkinned:
             desc.stride = sizeof(VertexSkinned);
@@ -679,19 +705,19 @@ std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions(Ve
         attributeDescriptions[2].offset = offsetof(VertexUI, mColor);
         break;
 
-    case VertexType::VertexColorSimple:
+    case VertexType::VertexLine:
         // Position
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
         attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[0].offset = offsetof(VertexColorSimple, mPosition);
+        attributeDescriptions[0].offset = offsetof(VertexLine, mPosition);
         // Color
         attributeDescriptions.push_back(VkVertexInputAttributeDescription());
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = VK_FORMAT_R8G8B8A8_UNORM;
-        attributeDescriptions[1].offset = offsetof(VertexColorSimple, mColor);
+        attributeDescriptions[1].offset = offsetof(VertexLine, mColor);
         break;
 
     case VertexType::VertexSkinned:
@@ -972,6 +998,47 @@ void WriteMaterialCustomUniformData(MaterialData& outData, Material* material)
 
 }
 
+VkPipelineColorBlendAttachmentState GetBasicBlendState(BasicBlendState basicBlendState)
+{
+    VkPipelineColorBlendAttachmentState blendState = {};
+
+    switch (basicBlendState)
+    {
+    case BasicBlendState::Opaque:
+        blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT;
+        blendState.blendEnable = false;
+        blendState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+        blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.colorBlendOp = VK_BLEND_OP_ADD;
+        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+        break;
+    case BasicBlendState::Translucent:
+        blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        blendState.blendEnable = true;
+        blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        blendState.colorBlendOp = VK_BLEND_OP_ADD;
+        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+        break;
+    case BasicBlendState::Additive:
+        blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        blendState.blendEnable = true;
+        blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+        blendState.colorBlendOp = VK_BLEND_OP_ADD;
+        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+        break;
+    }
+
+    return blendState;
+}
+
 #if _DEBUG
 void FullPipelineBarrier()
 {
@@ -1096,18 +1163,41 @@ void DestroyTextureResource(Texture* texture)
     }
 }
 
+void BindForwardVertexType(VertexType vertType)
+{
+    VulkanContext* ctx = GetVulkanContext();
+
+    // Always bind correct vert shader even
+    // TODO: Lite material vs full material
+    const char* vertShaderName = "Forward.vert";
+
+    switch (vertType)
+    {
+    case VertexType::VertexColor:
+    case VertexType::VertexInstanceColor:
+    case VertexType::VertexColorInstanceColor:
+        vertShaderName = "ForwardColor.vert";
+        break;
+    case VertexType::VertexSkinned:
+        vertShaderName = "ForwardSkinned.vert";
+        break;
+    case VertexType::VertexParticle:
+        vertShaderName = "ForwardParticle.vert";
+        break;
+
+    default:
+        break;
+    }
+
+    ctx->SetVertexType(vertType);
+    ctx->SetVertexShader(vertShaderName);
+}
+
 void CreateMaterialResource(Material* material)
 {
     MaterialResource* resource = material->GetResource();
-
-    if (material->IsLite())
-    {
-        VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Material);
-
-        resource->mUniformBuffer = new UniformBuffer(sizeof(MaterialData), "Material Uniforms");
-        resource->mDescriptorSet = new DescriptorSet(layout);
-    }
-    else
+	
+	if (!material->IsLite())
     {
         MaterialBase* base = material->IsBase() ? (MaterialBase*)material : nullptr;
 
@@ -1119,94 +1209,57 @@ void CreateMaterialResource(Material* material)
 
         if (base != nullptr)
         {
-            ForwardPipeline* matPipeline = nullptr;
-
-            switch (material->GetBlendMode())
-            {
-            case BlendMode::Opaque:
-            case BlendMode::Masked:
-                matPipeline = new OpaquePipeline();
-                break;
-            case BlendMode::Translucent:
-                matPipeline = new TranslucentPipeline();
-                break;
-            case BlendMode::Additive:
-                matPipeline = new AdditivePipeline();
-                break;
-            }
-
-            if (material->GetCullMode() == CullMode::Front)
-                matPipeline->mCullMode = VK_CULL_MODE_FRONT_BIT;
-            else if (material->GetCullMode() == CullMode::None)
-                matPipeline->mCullMode = VK_CULL_MODE_NONE;
-
-            if (material->IsDepthTestDisabled())
-            {
-                matPipeline->mDepthTestEnabled = false;
-                matPipeline->mDepthWriteEnabled = false;
-            }
-
-            // Pop the default (lite) material descriptor layout
-            matPipeline->mLayoutBindings.pop_back();
-            matPipeline->PushSet();
-            matPipeline->AddLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-
-            for (uint32_t i = 0; i < base->GetNumTextureParameters(); ++i)
-            {
-                matPipeline->AddLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-            }
-
-            matPipeline->SetRenderPass(GetVulkanContext()->GetForwardRenderPass());
-            matPipeline->Create();
-
-            resource->mPipeline = matPipeline;
-            resource->mDescriptorSet = new DescriptorSet(matPipeline->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Material));
-            resource->mUniformBuffer = new UniformBuffer(base->GetUniformBufferSize(), "CustomMaterialUniforms");
-        }
+			OCT_ASSERT(0);
+         	LogDebug("Need to create Shader in CreateMaterialResource());   
+		}
     }
 
-    UpdateMaterialResource(material);
 }
 
 void DestroyMaterialResource(Material* material)
 {
-    MaterialResource* resource = material->GetResource();
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
-
-    if (resource->mDescriptorSet != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mDescriptorSet);
-        resource->mDescriptorSet = nullptr;
-    }
-
-    if (resource->mPipeline != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mPipeline);
-        resource->mPipeline = nullptr;
-    }
+    OCT_ASSERT(0);
+	// Need to destroy shaders
 }
 
-void BindMaterialResource(Material* material, Pipeline* pipeline)
+void BindMaterialResource(Material* material)
 {
-    MaterialResource* resource = material->GetResource();
-    VkCommandBuffer cb = GetCommandBuffer();
+    if (material == nullptr)
+        return;
 
-    if (material->IsDirty(GetFrameIndex()))
+    VulkanContext* ctx = GetVulkanContext();
+    MaterialResource* res = material->GetResource();
+
+    ctx->SetFragmentShader("Forward.frag");
+
+    bool depthEnabled = !material->IsDepthTestDisabled();
+    ctx->SetDepthTestEnabled(depthEnabled);
+    ctx->SetDepthWriteEnabled(depthEnabled);
+
+    VkCullModeFlags cullMode = ConvertCullMode(material->GetCullMode());
+    ctx->SetCullMode(cullMode);
+
+    BlendMode blendMode = material->GetBlendMode();
+    switch (blendMode)
     {
-        UpdateMaterialResource(material);
+    case BlendMode::Opaque:
+    case BlendMode::Masked:
+        ctx->SetBlendState(BasicBlendState::Opaque, 0);
+        break;
+    case BlendMode::Translucent:
+        ctx->SetBlendState(BasicBlendState::Translucent, 0);
+        ctx->SetDepthWriteEnabled(false);
+        break;
+    case BlendMode::Additive:
+        ctx->SetBlendState(BasicBlendState::Additive, 0);
+        ctx->SetDepthWriteEnabled(false);
+        break;
     }
 
-    resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Material, pipeline->GetPipelineLayout());
-}
-
-void UpdateMaterialResource(Material* material)
-{
-    MaterialResource* resource = material->GetResource();
+	// Need to merge these
+	OCT_ASSERT(0);
+#if 0
+ MaterialResource* resource = material->GetResource();
     std::vector<ShaderParameter>& params = material->GetParameters();
 
     if (material->IsLite())
@@ -1269,66 +1322,52 @@ void UpdateMaterialResource(Material* material)
             }
         }
     }
-
-    material->ClearDirty(GetFrameIndex());
+#endif
 }
 
-Pipeline* GetMaterialPipeline(Material* material, VertexType vertType)
+void BindMaterialDescriptorSet(Material* material)
 {
-    Pipeline* pipeline = nullptr;
-    VulkanContext* context = GetVulkanContext();
+    if (material == nullptr)
+        return;
 
-    if (context->IsMaterialPipelineCacheEnabled())
+	OCT_ASSERT(0);
+    // TODO: Handle Lite material vs full material
+
+    VkCommandBuffer cb = GetCommandBuffer();
+    
+    // This should only happen once per frame per material.
+    Texture* textures[4] = {};
+    textures[0] = material->GetTexture((TextureSlot)0);
+    textures[1] = material->GetTexture((TextureSlot)1);
+    textures[2] = material->GetTexture((TextureSlot)2);
+    textures[3] = material->GetTexture((TextureSlot)3);
+
+    // Update uniform buffer data
+    MaterialData ubo = {};
+    WriteMaterialUniformData(ubo, material);
+
+    UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
+
+    // Ensure we are using valid textures
+    Renderer* renderer = Renderer::Get();
+    for (uint32_t i = 0; i < MATERIAL_MAX_TEXTURES; ++i)
     {
-        pipeline = context->GetMaterialPipelineCache()->GetPipeline(material, vertType);
-    }
-
-    if (pipeline == nullptr)
-    {
-        bool depthless = material->IsDepthTestDisabled();
-        CullMode cullMode = material->GetCullMode();
-
-        // Right now, only blend mode determines pipeline selection.
-        // After adding vertex coloured meshes or skeletal meshes, pipeline
-        // selection may become slightly more complicated.
-        // 
-        // Update: Skeletal/Coloured vertex permutations are stored internally inside Pipeline
-        // but depthless is stored as separate PipelineId.
-        // If we have to add another permutation... we'll need to create some sort of 
-        // pipeline cache system, and only create them as needed.
-
-        PipelineId pipelineId = PipelineId::Opaque;
-
-        if (depthless)
-            pipelineId = PipelineId::DepthlessOpaque;
-        else if (cullMode == CullMode::Front)
-            pipelineId = PipelineId::CullFrontOpaque;
-        else if (cullMode == CullMode::None)
-            pipelineId = PipelineId::CullNoneOpaque;
-
-        switch (material->GetBlendMode())
+        Texture* texture = textures[i];
+        if (texture == nullptr)
         {
-        case BlendMode::Opaque:
-        case BlendMode::Masked:
-            break;
-        case BlendMode::Translucent:
-            pipelineId = PipelineId((uint32_t)pipelineId + 1);
-            break;
-        case BlendMode::Additive:
-            pipelineId = PipelineId((uint32_t)pipelineId + 2);
-            break;
-
-        default:
-            break;
-        }
-
-        if (pipelineId != PipelineId::Count)
-        {
-            pipeline = context->GetPipeline(pipelineId);
+            texture = renderer->mWhiteTexture.Get<Texture>();
+            OCT_ASSERT(texture != nullptr);
         }
     }
 
-    return pipeline;
+    DescriptorSet::Begin("Material DS")
+        .WriteUniformBuffer(MD_UNIFORM_BUFFER, uniformBlock)
+        .WriteImage(MD_TEXTURE_0, textures[0]->GetResource()->mImage)
+        .WriteImage(MD_TEXTURE_1, textures[1]->GetResource()->mImage)
+        .WriteImage(MD_TEXTURE_2, textures[2]->GetResource()->mImage)
+        .WriteImage(MD_TEXTURE_3, textures[3]->GetResource()->mImage)
+        .Build()
+        .Bind(cb, 2);
 }
 
 void CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_t numVertices, void* vertices, uint32_t numIndices, IndexType* indices)
@@ -1412,36 +1451,9 @@ void BindSkeletalMeshResourceIndices(SkeletalMesh* skeletalMesh)
     vkCmdBindIndexBuffer(cb, resource->mIndexBuffer->Get(), 0, VK_INDEX_TYPE_UINT32);
 }
 
-void CreateStaticMeshCompResource(StaticMesh3D* staticMeshComp)
+void BindGeometryDescriptorSet(StaticMesh3D* staticMeshComp)
 {
-    StaticMeshCompResource* resource = staticMeshComp->GetResource();
-    VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Geometry);
-
-    resource->mUniformBuffer = new UniformBuffer(sizeof(GeometryData), "Geometry Uniforms");
-    resource->mDescriptorSet = new DescriptorSet(layout);
-
-    resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, resource->mUniformBuffer);
-}
-
-void DestroyStaticMeshCompResource(StaticMesh3D* staticMeshComp)
-{
-    StaticMeshCompResource* resource = staticMeshComp->GetResource();
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
-
-    if (resource->mDescriptorSet != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mDescriptorSet);
-        resource->mDescriptorSet = nullptr;
-    }
-}
-
-void UpdateStaticMeshCompResource(StaticMesh3D* staticMeshComp)
-{
+    VkCommandBuffer cb = GetCommandBuffer();
     StaticMeshCompResource* resource = staticMeshComp->GetResource();
 
     Renderer* renderer = Renderer::Get();
@@ -1455,7 +1467,12 @@ void UpdateStaticMeshCompResource(StaticMesh3D* staticMeshComp)
 
     GatherGeometryLightUniformData(ubo, staticMeshComp->GetMaterial(), staticMeshComp->GetBounds(), staticMeshComp);
 
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+    UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
+
+    DescriptorSet::Begin("StaticMesh3D DS")
+        .WriteUniformBuffer(GD_UNIFORM_BUFFER, uniformBlock)
+        .Build()
+        .Bind(cb, 1);
 }
 
 void UpdateStaticMeshCompResourceColors(StaticMesh3D* staticMeshComp)
@@ -1505,15 +1522,13 @@ void DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverride)
     {
         VkCommandBuffer cb = GetCommandBuffer();
 
-        UpdateStaticMeshCompResource(staticMeshComp);
-
         BindStaticMeshResource(mesh);
 
-        bool bindMaterialPipeline = GetVulkanContext()->AreMaterialsEnabled();
+        bool useMaterial = GetVulkanContext()->AreMaterialsEnabled();
 
         // Determine vertex type for binding appropriate pipeline
         VertexType vertexType = VertexType::Vertex;
-        if (bindMaterialPipeline &&
+        if (useMaterial &&
             staticMeshComp->GetInstanceColors().size() == mesh->GetNumVertices() &&
             resource->mColorVertexBuffer != nullptr)
         {
@@ -1536,31 +1551,20 @@ void DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverride)
             vertexType = VertexType::VertexColor;
         }
 
-        Material* material = staticMeshComp->GetMaterial();
-
-        if (material == nullptr)
+        Material* material = nullptr;
+        
+        if (useMaterial)
         {
-            material = Renderer::Get()->GetDefaultMaterial();
-            OCT_ASSERT(material != nullptr);
+            material = staticMeshComp->GetMaterial();
+            material = material ? material : Renderer::Get()->GetDefaultMaterial();
         }
 
-        Pipeline* pipeline = nullptr;
-        if (bindMaterialPipeline)
-        {
-            // This could be moved up to the Renderer in the future to reduce CPU cost.
-            pipeline = GetMaterialPipeline(material, vertexType);
-            GetVulkanContext()->BindPipeline(pipeline, vertexType);
-        }
-        else
-        {
-            pipeline = GetVulkanContext()->GetCurrentlyBoundPipeline();
-            GetVulkanContext()->RebindPipeline(vertexType);
-        }
+        BindForwardVertexType(vertexType);
+        BindMaterialResource(material);
+        GetVulkanContext()->CommitPipeline();
 
-        OCT_ASSERT(pipeline);
-
-        BindMaterialResource(material, pipeline);
-        resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
+        BindGeometryDescriptorSet(staticMeshComp);
+        BindMaterialDescriptorSet(material);
 
         vkCmdDrawIndexed(cb,
             mesh->GetNumIndices(),
@@ -1571,34 +1575,9 @@ void DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverride)
     }
 }
 
-void CreateSkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp)
-{
-    SkeletalMeshCompResource* resource = skeletalMeshComp->GetResource();
-
-    size_t bufferSize = IsCpuSkinningRequired(skeletalMeshComp) ? sizeof(GeometryData) : sizeof(SkinnedGeometryData);
-    resource->mUniformBuffer = new UniformBuffer(bufferSize, "Skinned Geometry Uniforms");
-
-    VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(1);
-    resource->mDescriptorSet = new DescriptorSet(layout);
-
-    resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, resource->mUniformBuffer);
-}
-
 void DestroySkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp)
 {
     SkeletalMeshCompResource* resource = skeletalMeshComp->GetResource();
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
-
-    if (resource->mDescriptorSet != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mDescriptorSet);
-        resource->mDescriptorSet = nullptr;
-    }
 
     if (resource->mVertexBuffer != nullptr)
     {
@@ -1634,8 +1613,9 @@ void UpdateSkeletalMeshCompVertexBuffer(SkeletalMesh3D* skeletalMeshComp, const 
     }
 }
 
-void UpdateSkeletalMeshCompUniformBuffer(SkeletalMesh3D* skeletalMeshComp)
+void BindGeometryDescriptorSet(SkeletalMesh3D* skeletalMeshComp)
 {
+    VkCommandBuffer cb = GetCommandBuffer();
     SkeletalMeshCompResource* resource = skeletalMeshComp->GetResource();
 
     Renderer* renderer = Renderer::Get();
@@ -1654,6 +1634,8 @@ void UpdateSkeletalMeshCompUniformBuffer(SkeletalMesh3D* skeletalMeshComp)
 
     glm::mat4 transform = skeletalMeshComp->GetRenderTransform();
 
+    UniformBlock uniformBlock;
+
     if (!IsCpuSkinningRequired(skeletalMeshComp))
     {
         SkinnedGeometryData ubo = {};
@@ -1666,7 +1648,7 @@ void UpdateSkeletalMeshCompUniformBuffer(SkeletalMesh3D* skeletalMeshComp)
         }
         ubo.mNumBoneInfluences = numBoneInfluences;
 
-        resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+        uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
     }
     else
     {
@@ -1674,8 +1656,13 @@ void UpdateSkeletalMeshCompUniformBuffer(SkeletalMesh3D* skeletalMeshComp)
         WriteGeometryUniformData(ubo, world, skeletalMeshComp, transform);
         GatherGeometryLightUniformData(ubo, skeletalMeshComp->GetMaterial(), skeletalMeshComp->GetBounds());
 
-        resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+        uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
     }
+
+    DescriptorSet::Begin("SkeletalMesh3D DS")
+        .WriteUniformBuffer(GD_UNIFORM_BUFFER, uniformBlock)
+        .Build()
+        .Bind(cb, 1);
 }
 
 void DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
@@ -1686,8 +1673,6 @@ void DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
     if (mesh != nullptr)
     {
         VkCommandBuffer cb = GetCommandBuffer();
-
-        UpdateSkeletalMeshCompUniformBuffer(skeletalMeshComp);
 
         if (IsCpuSkinningRequired(skeletalMeshComp))
         {
@@ -1702,33 +1687,21 @@ void DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
             BindSkeletalMeshResource(mesh);
         }
 
-        Material* material = skeletalMeshComp->GetMaterial();
+        Material* material = nullptr;
 
-        if (material == nullptr)
-        {
-            material = Renderer::Get()->GetDefaultMaterial();
-            OCT_ASSERT(material != nullptr);
-        }
-
-        Pipeline* pipeline = nullptr;
         if (GetVulkanContext()->AreMaterialsEnabled())
         {
-            // During the Forward pass, it is expected that that the material sets the necessary pipeline.
-            // This could be moved up to the Renderer in the future to reduce CPU cost.
-            VertexType vertType = IsCpuSkinningRequired(skeletalMeshComp) ? VertexType::Vertex : VertexType::VertexSkinned;
-            pipeline = GetMaterialPipeline(material, vertType);
-            GetVulkanContext()->BindPipeline(pipeline, vertType);
-        }
-        else
-        {
-            pipeline = GetVulkanContext()->GetCurrentlyBoundPipeline();
-            GetVulkanContext()->RebindPipeline(IsCpuSkinningRequired(skeletalMeshComp) ? VertexType::Vertex : VertexType::VertexSkinned);
+            material = skeletalMeshComp->GetMaterial();
+            material = material ? material : Renderer::Get()->GetDefaultMaterial();
         }
 
-        OCT_ASSERT(pipeline);
+        VertexType vertType = IsCpuSkinningRequired(skeletalMeshComp) ? VertexType::Vertex : VertexType::VertexSkinned;
+        BindForwardVertexType(vertType);
+        BindMaterialResource(material);
+        GetVulkanContext()->CommitPipeline();
 
-        BindMaterialResource(material, pipeline);
-        resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
+        BindGeometryDescriptorSet(skeletalMeshComp);
+        BindMaterialDescriptorSet(material);
 
         vkCmdDrawIndexed(cb,
             mesh->GetNumIndices(),
@@ -1772,59 +1745,36 @@ void DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
     {
         VkCommandBuffer cb = GetCommandBuffer();
 
-        UpdateStaticMeshCompResource(shadowMeshComp);
-
         BindStaticMeshResource(mesh);
 
         // Step 1, render backfaces and write the desired shadow intensity to the scene color's Alpha channel.
         // Depth test is reversed.
-        Pipeline* backPipeline = context->GetPipeline(PipelineId::ShadowMeshBack);
-        context->BindPipeline(backPipeline, shadowMeshComp->GetVertexType());
-        resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, backPipeline->GetPipelineLayout());
+        BindPipelineConfig(PipelineConfig::ShadowMeshBack);
+        context->SetVertexType(shadowMeshComp->GetVertexType());
+        GetVulkanContext()->CommitPipeline();
+        BindGeometryDescriptorSet(shadowMeshComp);
         vkCmdDrawIndexed(cb, mesh->GetNumIndices(), 1, 0, 0, 0);
 
         // Step 2, render front faces and blend the shadow color to the scene colors's RGB channels based on the scene color's Alpha.
         // Depth test is normal
-        Pipeline* frontPipeline = context->GetPipeline(PipelineId::ShadowMeshFront);
-        context->BindPipeline(frontPipeline, shadowMeshComp->GetVertexType());
-        resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, frontPipeline->GetPipelineLayout());
+        BindPipelineConfig(PipelineConfig::ShadowMeshFront);
+        context->SetVertexType(shadowMeshComp->GetVertexType());
+        GetVulkanContext()->CommitPipeline();
+        BindGeometryDescriptorSet(shadowMeshComp);
         vkCmdDrawIndexed(cb, mesh->GetNumIndices(), 1, 0, 0, 0);
 
         // Step 3, render front faces without depth testing to clear scene color's alpha channel.
-        Pipeline* clearPipeline = context->GetPipeline(PipelineId::ShadowMeshClear);
-        context->BindPipeline(clearPipeline, shadowMeshComp->GetVertexType());
-        resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, clearPipeline->GetPipelineLayout());
+        BindPipelineConfig(PipelineConfig::ShadowMeshClear);
+        context->SetVertexType(shadowMeshComp->GetVertexType());
+        GetVulkanContext()->CommitPipeline();
+        BindGeometryDescriptorSet(shadowMeshComp);
         vkCmdDrawIndexed(cb, mesh->GetNumIndices(), 1, 0, 0, 0);
     }
-}
-
-void CreateTextMeshCompResource(TextMesh3D* textMeshComp)
-{
-    TextMeshCompResource* resource = textMeshComp->GetResource();
-
-    resource->mUniformBuffer = new UniformBuffer(sizeof(GeometryData), "Text Geometry Uniforms");
-
-    VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(1);
-    resource->mDescriptorSet = new DescriptorSet(layout);
-
-    resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, resource->mUniformBuffer);
 }
 
 void DestroyTextMeshCompResource(TextMesh3D* textMeshComp)
 {
     TextMeshCompResource* resource = textMeshComp->GetResource();
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
-
-    if (resource->mDescriptorSet != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mDescriptorSet);
-        resource->mDescriptorSet = nullptr;
-    }
 
     if (resource->mVertexBuffer != nullptr)
     {
@@ -1847,7 +1797,6 @@ void UpdateTextMeshCompVertexBuffer(TextMesh3D* textMeshComp, const std::vector<
     if (resource->mVertexBuffer == nullptr)
     {
         resource->mVertexBuffer = new Buffer(BufferType::Vertex, vertices.size() * sizeof(Vertex), "TextMeshComp Vertices");
-
     }
 
     if (resource->mVertexBuffer != nullptr && vertices.size() > 0)
@@ -1865,44 +1814,31 @@ void DrawTextMeshComp(TextMesh3D* textMeshComp)
 
     VkCommandBuffer cb = GetCommandBuffer();
 
-    UpdateTextMeshCompUniformBuffer(textMeshComp);
-
     VkDeviceSize offset = 0;
     VkBuffer vertexBuffer = resource->mVertexBuffer->Get();
     vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
 
-    Material* material = textMeshComp->GetMaterial();
+    Material* material = nullptr; 
 
-    if (material == nullptr)
-    {
-        material = Renderer::Get()->GetDefaultMaterial();
-        OCT_ASSERT(material != nullptr);
-    }
-
-    Pipeline* pipeline = nullptr;
     if (GetVulkanContext()->AreMaterialsEnabled())
     {
-        // During the Forward pass, it is expected that that the material sets the necessary pipeline.
-        // This could be moved up to the Renderer in the future to reduce CPU cost.
-        pipeline = GetMaterialPipeline(material, VertexType::Vertex);
-        GetVulkanContext()->BindPipeline(pipeline, VertexType::Vertex);
-    }
-    else
-    {
-        pipeline = GetVulkanContext()->GetCurrentlyBoundPipeline();
-        GetVulkanContext()->RebindPipeline(VertexType::Vertex);
+        material = textMeshComp->GetMaterial();
+        material = material ? material : Renderer::Get()->GetDefaultMaterial();
     }
 
-    OCT_ASSERT(pipeline);
+    BindForwardVertexType(VertexType::Vertex);
+    BindMaterialResource(material);
+    GetVulkanContext()->CommitPipeline();
 
-    BindMaterialResource(material, pipeline);
-    resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
+    BindGeometryDescriptorSet(textMeshComp);
+    BindMaterialDescriptorSet(material);
 
     vkCmdDraw(cb, TEXT_VERTS_PER_CHAR * textMeshComp->GetNumVisibleCharacters(), 1, 0, 0);
 }
 
-void UpdateTextMeshCompUniformBuffer(TextMesh3D* textMeshComp)
+void BindGeometryDescriptorSet(TextMesh3D* textMeshComp)
 {
+    VkCommandBuffer cb = GetCommandBuffer();
     TextMeshCompResource* resource = textMeshComp->GetResource();
 
     Renderer* renderer = Renderer::Get();
@@ -1914,36 +1850,16 @@ void UpdateTextMeshCompUniformBuffer(TextMesh3D* textMeshComp)
     WriteGeometryUniformData(ubo, world, textMeshComp, textMeshComp->GetRenderTransform());
     GatherGeometryLightUniformData(ubo, textMeshComp->GetMaterial(), textMeshComp->GetBounds());
 
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
-}
-
-void CreateParticleCompResource(Particle3D* particleComp)
-{
-    ParticleCompResource* resource = particleComp->GetResource();
-
-    resource->mUniformBuffer = new UniformBuffer(sizeof(GeometryData), "Particle Geometry Uniforms");
-
-    VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(1);
-    resource->mDescriptorSet = new DescriptorSet(layout);
-
-    resource->mDescriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, resource->mUniformBuffer);
+    UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
+    DescriptorSet::Begin("TextMesh3D DS")
+        .WriteUniformBuffer(GD_UNIFORM_BUFFER, uniformBlock)
+        .Build()
+        .Bind(cb, 1);
 }
 
 void DestroyParticleCompResource(Particle3D* particleComp)
 {
     ParticleCompResource* resource = particleComp->GetResource();
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
-
-    if (resource->mDescriptorSet != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mDescriptorSet);
-        resource->mDescriptorSet = nullptr;
-    }
 
     if (resource->mVertexBuffer != nullptr)
     {
@@ -1958,9 +1874,10 @@ void DestroyParticleCompResource(Particle3D* particleComp)
     }
 }
 
-void UpdateParticleCompResource(Particle3D* particleComp)
+void BindGeometryDescriptorSet(Particle3D* particleComp)
 {
     // TODO: Reduce code duplication in updating these uniform buffers...
+    VkCommandBuffer cb = GetCommandBuffer();
     ParticleCompResource* resource = particleComp->GetResource();
 
     Renderer* renderer = Renderer::Get();
@@ -1975,7 +1892,11 @@ void UpdateParticleCompResource(Particle3D* particleComp)
     WriteGeometryUniformData(ubo, world, particleComp, transform);
     GatherGeometryLightUniformData(ubo, particleComp->GetMaterial(), particleComp->GetBounds());
 
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+    UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
+    DescriptorSet::Begin("Particle3D DS")
+        .WriteUniformBuffer(GD_UNIFORM_BUFFER, uniformBlock)
+        .Build()
+        .Bind(cb, 1);
 }
 
 void UpdateParticleCompVertexBuffer(Particle3D* particleComp, const std::vector<VertexParticle>& vertices)
@@ -2048,39 +1969,25 @@ void DrawParticleComp(Particle3D* particleComp)
         ParticleCompResource* resource = particleComp->GetResource();
         VkCommandBuffer cb = GetCommandBuffer();
 
-        UpdateParticleCompResource(particleComp);
-
-        Material* material = particleComp->GetMaterial();
-
-        if (material == nullptr)
-        {
-            material = Renderer::Get()->GetDefaultMaterial();
-            OCT_ASSERT(material != nullptr);
-        }
-
-        Pipeline* pipeline = nullptr;
+        Material* material = nullptr;
+        
         if (GetVulkanContext()->AreMaterialsEnabled())
         {
-            // During the Forward pass, it is expected that that the material sets the necessary pipeline.
-            // This could be moved up to the Renderer in the future to reduce CPU cost.
-            pipeline = GetMaterialPipeline(material, VertexType::VertexParticle);
-            GetVulkanContext()->BindPipeline(pipeline, VertexType::VertexParticle);
+            material = particleComp->GetMaterial();
+            material = material ? material : Renderer::Get()->GetDefaultMaterial();
         }
-        else
-        {
-            pipeline = GetVulkanContext()->GetCurrentlyBoundPipeline();
-            GetVulkanContext()->RebindPipeline(VertexType::VertexParticle);
-        }
-
-        OCT_ASSERT(pipeline);
-
-        BindMaterialResource(material, pipeline);
-        resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
 
         VkDeviceSize offset = 0;
         VkBuffer vertexBuffer = resource->mVertexBuffer->Get();
         vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
         vkCmdBindIndexBuffer(cb, resource->mIndexBuffer->Get(), 0, VK_INDEX_TYPE_UINT32);
+
+        BindForwardVertexType(VertexType::VertexParticle);
+        BindMaterialResource(material);
+        GetVulkanContext()->CommitPipeline();
+
+        BindGeometryDescriptorSet(particleComp);
+        BindMaterialDescriptorSet(material);
 
         // Note: because in the editor, selected components and hitcheck rendering will render things
         // that would normally be frustum culled, the number of vertices might not match what is expected
@@ -2103,15 +2010,6 @@ void CreateQuadResource(Quad* quad)
 
     OCT_ASSERT(resource->mVertexBuffer == nullptr);
     resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, 4 * sizeof(VertexUI), "Quad Vertices");
-
-    OCT_ASSERT(resource->mUniformBuffer == nullptr);
-    resource->mUniformBuffer = new UniformBuffer(sizeof(QuadUniformData), "Quad Uniforms");
-    
-    OCT_ASSERT(resource->mDescriptorSet == nullptr);
-    VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Quad)->GetDescriptorSetLayout(1);
-    resource->mDescriptorSet = new DescriptorSet(layout);
-
-    UpdateQuadResource(quad);
 }
 
 void DestroyQuadResource(Quad* quad)
@@ -2123,22 +2021,12 @@ void DestroyQuadResource(Quad* quad)
         GetDestroyQueue()->Destroy(resource->mVertexBuffer);
         resource->mVertexBuffer = nullptr;
     }
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
-
-    if (resource->mDescriptorSet != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mDescriptorSet);
-        resource->mDescriptorSet = nullptr;
-    }
 }
 
-void UpdateQuadResource(Quad* quad)
+void BindGeometryDescriptorSet(Quad* quad)
 {
+    VkCommandBuffer cb = GetCommandBuffer();
+
     // Vertex Buffer
     QuadResource* resource = quad->GetResource();
     resource->mVertexBuffer->Update(quad->GetVertices(), sizeof(VertexUI) * 4, 0);
@@ -2147,29 +2035,35 @@ void UpdateQuadResource(Quad* quad)
     QuadUniformData ubo = {};
     ubo.mTransform = glm::mat4(quad->GetTransform());
     ubo.mColor = quad->GetColor();
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+    UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
 
     // Descriptor Set
     Renderer* renderer = Renderer::Get();
     Texture* texture = quad->GetTexture() ? quad->GetTexture() : renderer->mWhiteTexture.Get<Texture>();
-    resource->mDescriptorSet->UpdateUniformDescriptor(0, resource->mUniformBuffer);
-    resource->mDescriptorSet->UpdateImageDescriptor(1, texture->GetResource()->mImage);
+
+    DescriptorSet::Begin("Quad DS")
+        .WriteUniformBuffer(0, uniformBlock)
+        .WriteImage(1, texture->GetResource()->mImage)
+        .Build()
+        .Bind(cb, 1);
 }
 
 void DrawQuad(Quad* quad)
 {
     QuadResource* resource = quad->GetResource();
     VkCommandBuffer cb = GetCommandBuffer();
+    VulkanContext* context = GetVulkanContext();
 
     // Make sure to bind the quad pipeline. Quad and text rendering will be interleaved.
-    Pipeline* quadPipeline = GetVulkanContext()->GetPipeline(PipelineId::Quad);
-    GetVulkanContext()->BindPipeline(quadPipeline, VertexType::VertexUI);
+    BindPipelineConfig(PipelineConfig::Quad);
 
     VkDeviceSize offset = 0;
     VkBuffer vertexBuffer = resource->mVertexBuffer->Get();
     vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
 
-    resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Quad, quadPipeline->GetPipelineLayout());
+    context->CommitPipeline();
+
+    BindGeometryDescriptorSet(quad);
 
     vkCmdDraw(cb, 4, 1, 0, 0);
 }
@@ -2179,15 +2073,6 @@ void CreateTextResource(Text* text)
     TextResource* resource = text->GetResource();
 
     CreateTextResourceVertexBuffer(text);
-
-    OCT_ASSERT(resource->mUniformBuffer == nullptr);
-    resource->mUniformBuffer = new UniformBuffer(sizeof(TextUniformData), "Text Uniforms");
-
-    OCT_ASSERT(resource->mDescriptorSet == nullptr);
-    VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Text)->GetDescriptorSetLayout(1);
-    resource->mDescriptorSet = new DescriptorSet(layout);
-
-    UpdateTextResourceUniformData(text);
     UpdateTextResourceVertexData(text);
 }
 
@@ -2196,18 +2081,6 @@ void DestroyTextResource(Text* text)
     TextResource* resource = text->GetResource();
 
     DestroyTextResourceVertexBuffer(text);
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
-
-    if (resource->mDescriptorSet != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mDescriptorSet);
-        resource->mDescriptorSet = nullptr;
-    }
 }
 
 void CreateTextResourceVertexBuffer(Text* text)
@@ -2233,8 +2106,9 @@ void DestroyTextResourceVertexBuffer(Text* text)
     }
 }
 
-void UpdateTextResourceUniformData(Text* text)
+void BindGeometryDescriptorSet(Text* text)
 {
+    VkCommandBuffer cb = GetCommandBuffer();
     TextResource* resource = text->GetResource();
 
     // Uniform Buffer
@@ -2255,7 +2129,7 @@ void UpdateTextResourceUniformData(Text* text)
     ubo.mDistanceField = false;
     ubo.mEffect = 0;
 
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+    UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
 
     // Descriptors
     Renderer* renderer = Renderer::Get();
@@ -2268,8 +2142,11 @@ void UpdateTextResourceUniformData(Text* text)
         texture = font->GetTexture();
     }
 
-    resource->mDescriptorSet->UpdateUniformDescriptor(0, resource->mUniformBuffer);
-    resource->mDescriptorSet->UpdateImageDescriptor(1, texture->GetResource()->mImage);
+    DescriptorSet::Begin("Text DS")
+        .WriteUniformBuffer(0, uniformBlock)
+        .WriteImage(1, texture->GetResource()->mImage)
+        .Build()
+        .Bind(cb, 1);
 }
 
 void UpdateTextResourceVertexData(Text* text)
@@ -2296,14 +2173,15 @@ void DrawTextWidget(Text* text)
     if (text->GetText().size() > 0 && resource->mVertexBuffer != nullptr)
     {
         VkCommandBuffer cb = GetCommandBuffer();
-        Pipeline* textPipeline = GetVulkanContext()->GetPipeline(PipelineId::Text);
-        GetVulkanContext()->BindPipeline(textPipeline, VertexType::VertexUI);
+        BindPipelineConfig(PipelineConfig::Text);
 
         VkDeviceSize offset = 0;
         VkBuffer vertexBuffer = resource->mVertexBuffer->Get();
         vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
 
-        resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Text, textPipeline->GetPipelineLayout());
+        GetVulkanContext()->CommitPipeline();
+
+        BindGeometryDescriptorSet(text);
 
         vkCmdDraw(cb, 6 * text->GetNumVisibleCharacters(), 1, 0, 0);
     }
@@ -2321,15 +2199,7 @@ void CreatePolyResource(Poly* poly)
         resource->mNumVerts = numVerts;
     }
 
-    OCT_ASSERT(resource->mUniformBuffer == nullptr);
-    resource->mUniformBuffer = new UniformBuffer(sizeof(PolyUniformData), "Poly Uniforms");
-
-    OCT_ASSERT(resource->mDescriptorSet == nullptr);
-    VkDescriptorSetLayout layout = GetVulkanContext()->GetPipeline(PipelineId::Poly)->GetDescriptorSetLayout(1);
-    resource->mDescriptorSet = new DescriptorSet(layout);
-
     UpdatePolyResourceVertexData(poly);
-    UpdatePolyResourceUniformData(poly);
 }
 
 void DestroyPolyResource(Poly* poly)
@@ -2342,22 +2212,11 @@ void DestroyPolyResource(Poly* poly)
         resource->mVertexBuffer = nullptr;
         resource->mNumVerts = 0;
     }
-
-    if (resource->mUniformBuffer != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mUniformBuffer);
-        resource->mUniformBuffer = nullptr;
-    }
-
-    if (resource->mDescriptorSet != nullptr)
-    {
-        GetDestroyQueue()->Destroy(resource->mDescriptorSet);
-        resource->mDescriptorSet = nullptr;
-    }
 }
 
-void UpdatePolyResourceUniformData(Poly* poly)
+void BindGeometryDescriptorSet(Poly* poly)
 {
+    VkCommandBuffer cb = GetCommandBuffer();
     PolyResource* resource = poly->GetResource();
 
     // Uniform Buffer
@@ -2368,13 +2227,17 @@ void UpdatePolyResourceUniformData(Poly* poly)
     ubo.mY = poly->GetRect().mY;
     ubo.mPad0 = 1337.0f;
     ubo.mPad1 = 1337.0f;
-    resource->mUniformBuffer->Update(&ubo, sizeof(ubo));
+    UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
 
     // Descriptor Set
     Renderer* renderer = Renderer::Get();
     Texture* texture = poly->GetTexture() ? poly->GetTexture() : renderer->mWhiteTexture.Get<Texture>();
-    resource->mDescriptorSet->UpdateUniformDescriptor(0, resource->mUniformBuffer);
-    resource->mDescriptorSet->UpdateImageDescriptor(1, texture->GetResource()->mImage);
+    
+    DescriptorSet::Begin("Poly DS")
+        .WriteUniformBuffer(0, uniformBlock)
+        .WriteImage(1, texture->GetResource()->mImage)
+        .Build()
+        .Bind(cb, 1);
 }
 
 void UpdatePolyResourceVertexData(Poly* poly)
@@ -2413,14 +2276,15 @@ void DrawPoly(Poly* poly)
     {
         VkCommandBuffer cb = GetCommandBuffer();
 
-        Pipeline* polygonPipeline = GetVulkanContext()->GetPipeline(PipelineId::Poly);
-        GetVulkanContext()->BindPipeline(polygonPipeline, VertexType::VertexUI);
+        BindPipelineConfig(PipelineConfig::Poly);
 
         VkDeviceSize offset = 0;
         VkBuffer vertexBuffer = resource->mVertexBuffer->Get();
         vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
 
-        resource->mDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Poly, polygonPipeline->GetPipelineLayout());
+        GetVulkanContext()->CommitPipeline();
+
+        BindGeometryDescriptorSet(poly);
 
         if (GetVulkanContext()->HasFeatureWideLines())
         {
@@ -2438,45 +2302,34 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
     {
         VkCommandBuffer cb = GetCommandBuffer();
 
-        // Setup uniform buffer
-        UniformBufferArena& uniformArena = GetVulkanContext()->GetMeshUniformBufferArena();
-        UniformBuffer* uniformBuffer = uniformArena.Alloc(sizeof(GeometryData), "DrawStaticMesh Uniforms");
         GeometryData ubo = {};
         WriteGeometryUniformData(ubo, GetWorld(), nullptr, transform);
         ubo.mColor = color;
         ubo.mHitCheckId = hitCheckId;
-        uniformBuffer->Update(&ubo, sizeof(ubo));
+        UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
 
         BindStaticMeshResource(mesh);
 
-        if (material == nullptr)
-        {
-            material = Renderer::Get()->GetDefaultMaterial();
-            OCT_ASSERT(material != nullptr);
-        }
-
-        Pipeline* pipeline = nullptr;
         if (GetVulkanContext()->AreMaterialsEnabled())
         {
-            // During the Forward pass, it is expected that that the material sets the necessary pipeline.
-            // This could be moved up to the Renderer in the future to reduce CPU cost.
-            VertexType vertType = mesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex;
-            pipeline = GetMaterialPipeline(material, vertType);
-            GetVulkanContext()->BindPipeline(pipeline, vertType);
-        }
-        else
-        {
-            pipeline = GetVulkanContext()->GetCurrentlyBoundPipeline();
-            GetVulkanContext()->RebindPipeline(mesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex);
+            if (material == nullptr)
+            {
+                material = Renderer::Get()->GetDefaultMaterial();
+                OCT_ASSERT(material != nullptr);
+            }
         }
 
-        OCT_ASSERT(pipeline);
-        BindMaterialResource(material, pipeline);
+        VertexType vertType = mesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex;
+        BindForwardVertexType(vertType);
 
-        DescriptorSetArena& descriptorArena = GetVulkanContext()->GetMeshDescriptorSetArena();
-        DescriptorSet* descriptorSet = descriptorArena.Alloc(pipeline->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Geometry));
-        descriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, uniformBuffer);
-        descriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
+        BindMaterialResource(material);
+        GetVulkanContext()->CommitPipeline();
+
+        DescriptorSet::Begin("Free Mesh DS")
+            .WriteUniformBuffer(GD_UNIFORM_BUFFER, uniformBlock)
+            .Build()
+            .Bind(cb, 1);
+        BindMaterialDescriptorSet(material);
 
         vkCmdDrawIndexed(cb,
             mesh->GetNumIndices(),

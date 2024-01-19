@@ -173,7 +173,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(SolutionDir)External;$(SolutionDir)Engine;$(SolutionDir)Engine/Source;$(SolutionDir)Engine/Source/Engine;$(SolutionDir)External/Bullet;$(ProjectDir);$(SolutionDir)Engine/Source/Editor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;NOMINMAX;_CRT_SECURE_NO_WARNINGS=1;EDITOR=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -191,7 +191,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(SolutionDir)External;$(SolutionDir)Engine;$(SolutionDir)Engine/Source;$(SolutionDir)Engine/Source/Engine;$(SolutionDir)External/Bullet;$(ProjectDir);$(SolutionDir)Engine/Source/Editor;$(SolutionDir)External/Assimp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;NOMINMAX;_CRT_SECURE_NO_WARNINGS=1;EDITOR=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -237,7 +237,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(SolutionDir)External;$(SolutionDir)Engine;$(SolutionDir)Engine/Source;$(SolutionDir)Engine/Source/Engine;$(SolutionDir)External/Bullet;$(ProjectDir);$(SolutionDir)Engine/Source/Editor;$(SolutionDir)External/Lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;NOMINMAX;_CRT_SECURE_NO_WARNINGS=1;EDITOR=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -251,7 +251,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(SolutionDir)External;$(SolutionDir)Engine;$(SolutionDir)Engine/Source;$(SolutionDir)Engine/Source/Engine;$(SolutionDir)External/Bullet;$(ProjectDir);$(SolutionDir)Engine/Source/Editor;$(SolutionDir)External/Lua;$(SolutionDir)External/Assimp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;NOMINMAX;_CRT_SECURE_NO_WARNINGS=1;EDITOR=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

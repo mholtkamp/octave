@@ -5,8 +5,8 @@ if command -v glslc >/dev/null 2>&1
 then
     for file in *.vert *.frag *.comp
     do
-        echo $VULKAN_SDK/bin/glslc $file -Os -o ../bin/$file
-        val= $VULKAN_SDK/bin/glslc $file -Os -o ../bin/$file
+        echo $VULKAN_SDK/bin/glslc $file -O -o ../bin/$file
+        val= $VULKAN_SDK/bin/glslc $file -O -o ../bin/$file
 
         if [ val != 0 ]
         then

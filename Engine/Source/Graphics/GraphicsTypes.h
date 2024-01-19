@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <limits.h>
 #include "Graphics/GraphicsConstants.h"
 
 #if API_VULKAN
@@ -45,45 +46,26 @@ enum class PixelFormat
     Count
 };
 
-enum class PipelineId
+enum class PipelineConfig
 {
-    // Graphics
     Shadow,
+    Forward,
     Opaque,
     Translucent,
     Additive,
-    DepthlessOpaque,
-    DepthlessTranslucent,
-    DepthlessAdditive,
-    CullFrontOpaque,
-    CullFrontTranslucent,
-    CullFrontAdditive,
-    CullNoneOpaque,
-    CullNoneTranslucent,
-    CullNoneAdditive,
     ShadowMeshBack,
     ShadowMeshFront,
     ShadowMeshClear,
-    Selected,
-    Wireframe,
-    Collision,
-    BakedLightVis,
-    Line,
     PostProcess,
     NullPostProcess,
     Quad,
     Text,
     Poly,
-
-    // Compute
-    PathTrace,
-    LightBakeDirect,
-    LightBakeIndirect,
-    LightBakeAverage,
-    LightBakeDiffuse,
-
-    // Editor
+    Selected,
     HitCheck,
+    Wireframe,
+    Collision,
+    Line,
 
     Count
 };
@@ -133,13 +115,7 @@ struct TextureResource
 
 struct MaterialResource
 {
-#if API_VULKAN
-    DescriptorSet* mDescriptorSet = nullptr;
-    UniformBuffer* mUniformBuffer = nullptr;
-    Pipeline* mPipeline = nullptr;
-    // This should be stored in Pipeline, so we don't need track it separately.
-    //VkDescriptorSetLayout mDescriptorSetLayout = VK_NULL_HANDLE;
-#endif
+
 };
 
 struct StaticMeshResource
@@ -161,8 +137,6 @@ struct SkeletalMeshResource
 struct StaticMeshCompResource
 {
 #if API_VULKAN
-    DescriptorSet* mDescriptorSet = nullptr;
-    UniformBuffer* mUniformBuffer = nullptr;
     Buffer* mColorVertexBuffer = nullptr;
 #endif
 };
@@ -170,8 +144,6 @@ struct StaticMeshCompResource
 struct SkeletalMeshCompResource
 {
 #if API_VULKAN
-    DescriptorSet* mDescriptorSet = nullptr;
-    UniformBuffer* mUniformBuffer = nullptr;
     MultiBuffer* mVertexBuffer = nullptr;
 #endif
 };
@@ -179,8 +151,6 @@ struct SkeletalMeshCompResource
 struct TextMeshCompResource
 {
 #if API_VULKAN
-    DescriptorSet* mDescriptorSet = nullptr;
-    UniformBuffer* mUniformBuffer = nullptr;
     Buffer* mVertexBuffer = nullptr;
 #endif
 };
@@ -189,8 +159,6 @@ struct QuadResource
 {
 #if API_VULKAN
     MultiBuffer* mVertexBuffer = nullptr;
-    UniformBuffer* mUniformBuffer = nullptr;
-    DescriptorSet* mDescriptorSet = nullptr;
 #endif
 };
 
@@ -198,8 +166,6 @@ struct PolyResource
 {
 #if API_VULKAN
     MultiBuffer* mVertexBuffer = nullptr;
-    UniformBuffer* mUniformBuffer = nullptr;
-    DescriptorSet* mDescriptorSet = nullptr;
     uint32_t mNumVerts = 0;
 #endif
 };
@@ -208,8 +174,6 @@ struct TextResource
 {
 #if API_VULKAN
     MultiBuffer* mVertexBuffer = nullptr;
-    UniformBuffer* mUniformBuffer = nullptr;
-    DescriptorSet* mDescriptorSet = nullptr;
     uint32_t mNumBufferCharsAllocated = 0;
 #endif
 };
@@ -217,8 +181,6 @@ struct TextResource
 struct ParticleCompResource
 {
 #if API_VULKAN
-    DescriptorSet* mDescriptorSet = nullptr;
-    UniformBuffer* mUniformBuffer = nullptr;
     MultiBuffer* mVertexBuffer = nullptr;
     MultiBuffer* mIndexBuffer = nullptr;
     uint32_t mNumVerticesAllocated = 0;

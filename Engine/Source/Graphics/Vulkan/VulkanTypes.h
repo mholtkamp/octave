@@ -2,11 +2,76 @@
 
 #include "Maths.h"
 #include "System/SystemTypes.h"
+#include "Vertex.h"
+#include "VulkanConstants.h"
+
+#include <vulkan/vulkan.h>
+#include <vector>
+
+class Shader;
 
 struct PipelineCreateJobArgs
 {
     std::vector<class Pipeline*>* mPipelines;
     MutexObject* mMutex = nullptr;
+};
+
+enum class BasicBlendState
+{
+    Opaque,
+    Translucent,
+    Additive,
+
+    Count
+};
+
+struct PipelineState
+{
+    PipelineState()
+    {
+        // Default write masks to RGBA
+        for (uint32_t i = 0; i < MAX_RENDER_TARGETS; ++i)
+        {
+            mBlendStates[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        }
+    }
+
+    Shader* mVertexShader = nullptr;
+    Shader* mFragmentShader = nullptr;
+    Shader* mComputeShader = nullptr;
+
+    VkRenderPass mRenderPass = VK_NULL_HANDLE;
+    VertexType mVertexType = VertexType::Vertex;
+
+    // Rasterizer
+    bool mRasterizerDiscard = false;
+    VkPrimitiveTopology mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    VkPolygonMode mPolygonMode = VK_POLYGON_MODE_FILL;
+    float mLineWidth = 1.0f;
+    bool mDynamicLineWidth = false;
+    VkCullModeFlags mCullMode = VK_CULL_MODE_BACK_BIT;
+    VkFrontFace mFrontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    float mDepthBias = 0.0f;
+
+    // Depth Stencil
+    bool mDepthTestEnabled = true;
+    bool mDepthWriteEnabled = true;
+    VkCompareOp mDepthCompareOp = VK_COMPARE_OP_LESS;
+
+    // Blending
+    VkPipelineColorBlendAttachmentState mBlendStates[MAX_RENDER_TARGETS] = {};
+
+    bool operator==(const PipelineState& other) const;
+
+    size_t Hash() const;
+};
+
+struct PipelineStateHasher
+{
+    size_t operator()(const PipelineState& k) const
+    {
+        return k.Hash();
+    }
 };
 
 struct LightUniformData

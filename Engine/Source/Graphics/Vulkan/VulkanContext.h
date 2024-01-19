@@ -15,11 +15,12 @@
 #include "Buffer.h"
 #include "Image.h"
 #include "Line.h"
-#include "ResourceArena.h"
 #include "ObjectRef.h"
 #include "RayTracer.h"
 #include "Profiler.h"
-#include "MaterialPipelineCache.h"
+#include "DescriptorPool.h"
+#include "DescriptorLayoutCache.h"
+#include "PipelineCache.h"
 
 #if PLATFORM_LINUX
 #include <xcb/xcb.h>
@@ -70,9 +71,7 @@ public:
     void EndFrame();
     void BeginRenderPass(RenderPassId id);
     void EndRenderPass();
-    void BindPipeline(PipelineId id, VertexType vertexType);
-    void BindPipeline(Pipeline* pipeline, VertexType vertexType);
-    void RebindPipeline(VertexType vertexType);
+    void CommitPipeline();
     void DrawLines(const std::vector<Line>& lines);
     void DrawFullscreen();
 
@@ -81,7 +80,8 @@ public:
     void RecreateSwapchain(bool recreateSurface);
 
     VkPhysicalDevice GetPhysicalDevice();
-    VkDescriptorPool GetDescriptorPool();
+    DescriptorPool& GetDescriptorPool();
+    DescriptorLayoutCache& GetDescriptorLayoutCache();
 
     DestroyQueue* GetDestroyQueue();
 
@@ -89,9 +89,8 @@ public:
     VkFormat GetSwapchainFormat();
     VkFormat GetSceneColorFormat();
 
-    Pipeline* GetPipeline(PipelineId id);
-    Pipeline* GetCurrentlyBoundPipeline();
-    VkPipelineCache GetPipelineCache() const;
+    Pipeline* GetBoundPipeline();
+    PipelineCache& GetPipelineCache();
     void SavePipelineCacheToFile();
 
     VkRenderPass GetForwardRenderPass();
@@ -101,11 +100,10 @@ public:
     void SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes);
     void SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes);
 
-    DescriptorSet* GetGlobalDescriptorSet();
-
     void CreateCommandBuffers();
 
     uint32_t GetFrameIndex() const;
+    uint32_t GetFrameNumber() const;
     RenderPassId GetCurrentRenderPassId() const;
 
     Image* GetShadowMapImage();
@@ -117,6 +115,9 @@ public:
     void UpdateGlobalDescriptorSet();
     void UpdateGlobalUniformData();
 
+    void BindGlobalDescriptorSet();
+    void BindPostProcessDescriptorSet();
+
     GlobalUniformData& GetGlobalUniformData();
 
     bool IsValidationEnabled() const;
@@ -127,9 +128,6 @@ public:
     bool AreMaterialsEnabled() const;
     void EnableMaterials(bool enable);
 
-    DescriptorSetArena& GetMeshDescriptorSetArena();
-    UniformBufferArena& GetMeshUniformBufferArena();
-
     void BeginGpuTimestamp(const char* name);
     void EndGpuTimestamp(const char* name);
     void ReadTimeQueryResults();
@@ -138,12 +136,43 @@ public:
 
     VkSurfaceTransformFlagBitsKHR GetPreTransformFlag() const;
 
-    void EnableMaterialPipelineCache(bool enable);
-    bool IsMaterialPipelineCacheEnabled() const;
-    MaterialPipelineCache* GetMaterialPipelineCache();
-
     uint32_t GetSceneWidth();
     uint32_t GetSceneHeight();
+
+    const VkPhysicalDeviceProperties& GetDeviceProperties() const;
+    UniformBuffer* GetFrameUniformBuffer();
+
+    Shader* GetGlobalShader(const std::string& name);
+
+    // Pipeline State
+    const PipelineState& GetPipelineState() const;
+    void SetPipelineState(const PipelineState& state);
+    void SetVertexShader(Shader* shader);
+    void SetFragmentShader(Shader* shader);
+    void SetComputeShader(Shader* shader);
+    void SetVertexShader(const std::string& globalName);
+    void SetFragmentShader(const std::string& globalName);
+    void SetComputeShader(const std::string& globalName);
+    void SetRenderPass(VkRenderPass renderPass);
+    void SetVertexType(VertexType vertexType);
+    void SetRasterizerDiscard(bool discard);
+    void SetPrimitiveTopology(VkPrimitiveTopology primitiveToplogy);
+    void SetPolygonMode(VkPolygonMode polygonMode);
+    void SetLineWidth(float lineWidth);
+    void SetDynamicLineWidth(bool dynamicLineWidth);
+    void SetCullMode(VkCullModeFlags cullMode);
+    void SetFrontFace(VkFrontFace frontFace);
+    void SetDepthBias(float depthBias);
+    void SetDepthTestEnabled(bool enabled);
+    void SetDepthWriteEnabled(bool enabled);
+    void SetDepthCompareOp(VkCompareOp compareOp);
+    void SetBlendState(VkPipelineColorBlendAttachmentState blendState, uint32_t index = 0);
+    void SetBlendState(BasicBlendState basicBlendState, uint32_t index = 0);
+    void SetBlendEnable(bool enable, uint32_t index = 0);
+    void SetBlendColorOp(VkBlendFactor src, VkBlendFactor dst, VkBlendOp op, uint32_t index = 0);
+    void SetBlendAlphaOp(VkBlendFactor src, VkBlendFactor dst, VkBlendOp op, uint32_t index = 0);
+    void SetColorWriteMask(VkColorComponentFlags writeMask, uint32_t index = 0);
+
 
 private:
 
@@ -158,25 +187,28 @@ private:
     void CreateSurface();
     void CreateLogicalDevice();
     void CreateImageViews();
-    void CreateGlobalUniformBuffer();
-    void CreateGlobalDescriptorSet();
-    void CreateRenderPass();
+    void CreateFrameUniformBuffer();
+    void DestroyFrameUniformBuffer();
+    void CreateRenderPasses();
+    void DestroyRenderPasses();
     void CreatePipelineCache();
     void DestroyPipelineCache();
-    void CreatePipelines();
-    void DestroyPipelines();
     void CreateFramebuffers();
     void CreateCommandPool();
     void CreateSemaphores();
     void CreateFences();
-    void CreateDescriptorPool();
+    void CreateDescriptorPools();
+    void DestroyDescriptorPools();
     void CreateDepthImage();
-    void CreatePostProcessDescriptorSet();
     void CreateSceneColorImage();
     void CreateShadowMapImage();
     void CreateQueryPools();
     void DestroyQueryPools();
     void RecreateSurface();
+    void CreateGlobalShaders();
+    void DestroyGlobalShaders();
+    void CreateMisc();
+    void DestroyMisc();
 
     void PickPhysicalDevice();
     bool IsDeviceSuitable(VkPhysicalDevice device);
@@ -210,11 +242,13 @@ private:
     uint32_t mGraphicsQueueFamily = 0;
     uint32_t mPresentQueueFamily = 0;
 
-    // Pools
-    VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;
-    VkCommandPool mCommandPool = VK_NULL_HANDLE;
+    // Descriptors
+    DescriptorPool mDescriptorPools[MAX_FRAMES];
+    DescriptorLayoutCache mDescriptorLayoutCache;
+    VkDescriptorPool mImguiDescriptorPool = VK_NULL_HANDLE;
 
     // Command Buffers
+    VkCommandPool mCommandPool = VK_NULL_HANDLE;
     std::vector<VkCommandBuffer> mCommandBuffers;
 
     // Swapchain
@@ -249,14 +283,15 @@ private:
     VkFence mWaitFences[MAX_FRAMES] = {};
 
     // Pipelines
-    VkPipelineCache mPipelineCache = VK_NULL_HANDLE;
-    Pipeline* mPipelines[(size_t)PipelineId::Count] = {};
+    PipelineCache mPipelineCache;
+    Pipeline* mBoundPipeline = nullptr;
 
     // Shader Data
-    UniformBuffer* mGlobalUniformBuffer = nullptr;
-    DescriptorSet* mGlobalDescriptorSet = nullptr;
-    DescriptorSet* mDebugDescriptorSet = nullptr;
-    DescriptorSet* mPostProcessDescriptorSet = nullptr;
+    std::unordered_map<std::string, Shader*> mGlobalShaders;
+    DescriptorSet mGlobalDescriptorSet;
+    DescriptorSet mDebugDescriptorSet;
+    DescriptorSet mPostProcessDescriptorSet;
+    UniformBuffer* mFrameUniformBuffer = nullptr;
     GlobalUniformData mGlobalUniformData;
 
     // Destroy Queue
@@ -272,8 +307,6 @@ private:
     const char* mEnabledExtensions[MAX_ENABLED_EXTENSIONS] = { };
     uint32_t mEnabledLayersCount = 0;
     const char* mEnabledLayers[MAX_ENABLED_LAYERS] = { };
-    DescriptorSetArena mMeshDescriptorSetArena;
-    UniformBufferArena mMeshUniformBufferArena;
 
     // Timestamp Queries
     std::vector<GpuTimespan> mGpuTimespans[MAX_FRAMES];
@@ -282,8 +315,8 @@ private:
     float mTimestampPeriod = 0.0f;
     bool mTimestampsSupported = false;
 
-    // Material Pipelines
-    MaterialPipelineCache mMaterialPipelineCache;
+    //Pipeline State
+    PipelineState mPipelineState;
 
     // Misc
     int32_t mFrameIndex = 0;
@@ -295,15 +328,15 @@ private:
     bool mInitialized = false;
     bool mEnableMaterials = false;
     bool mSupportsRayTracing = false;
-    bool mEnableMaterialPipelineCache = false;
     bool mFeatureWideLines = false;
     bool mFeatureFillModeNonSolid = false;
     EngineState* mEngineState = nullptr;
-    Pipeline* mCurrentlyBoundPipeline = nullptr;
     VkSurfaceTransformFlagBitsKHR mPreTransformFlag = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     float mResolutionScale = 1.0f;
     uint32_t mSceneWidth = 0;
     uint32_t mSceneHeight = 0;
+    VkPhysicalDeviceProperties mDeviceProperties;
+    Buffer* mFullScreenVertexBuffer = nullptr;
 
 #if EDITOR
 public:

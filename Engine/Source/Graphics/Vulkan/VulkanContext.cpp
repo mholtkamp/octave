@@ -39,7 +39,6 @@ PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT = nullptr;
 PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT = nullptr;
 PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
 
-#define PIPELINE_CACHE_SAVE_NAME "PipelineCache.sav"
 #define ENABLE_FULL_VALIDATION 1
 #define MAX_GPU_TIMESPANS 64
 #define MAX_GPU_TIMESTAMPS (MAX_GPU_TIMESPANS * 2)
@@ -116,26 +115,23 @@ void VulkanContext::Initialize()
     CreateImageViews();
     CreateCommandPool();
 
+    CreateFrameUniformBuffer();
+
     CreateShadowMapImage();
     CreateSceneColorImage();
     CreateDepthImage();
-    CreateDescriptorPool();
-    CreateRenderPass();
+    CreateDescriptorPools();
+    CreateRenderPasses();
 
 #if EDITOR
     CreateHitCheck();
 #endif
 
     CreatePipelineCache();
-    CreatePipelines();
-    SavePipelineCacheToFile();
-
-    CreateGlobalDescriptorSet();
 
     mRayTracer.CreateStaticRayTraceResources();
     mRayTracer.CreateDynamicRayTraceResources();
 
-    CreatePostProcessDescriptorSet();
     CreateFramebuffers();
     CreateCommandBuffers();
     CreateSemaphores();
@@ -158,13 +154,40 @@ void VulkanContext::Initialize()
     mFrameIndex = Renderer::Get()->GetFrameIndex();
     mFrameNumber = Renderer::Get()->GetFrameNumber();
 
-    mMaterialPipelineCache.Create();
+    CreateGlobalShaders();
+    InitPipelineConfigs();
 
-#if PLATFORM_ANDROID
-    EnableMaterialPipelineCache(true);
-#endif
+    CreateMisc();
 
 #if EDITOR
+
+    {
+        // Create descriptor pool for imgui
+        VkDescriptorPoolSize poolSizes[5] = {};
+        poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        poolSizes[0].descriptorCount = 1024;
+        poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        poolSizes[1].descriptorCount = 1024;
+        poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[2].descriptorCount = 1024;
+        poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        poolSizes[3].descriptorCount = 32;
+        poolSizes[4].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+        poolSizes[4].descriptorCount = 32;
+
+        VkDescriptorPoolCreateInfo ciPool = {};
+        ciPool.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        ciPool.poolSizeCount = 5;
+        ciPool.pPoolSizes = poolSizes;
+        ciPool.maxSets = MAX_DESCRIPTOR_SETS;
+        ciPool.flags = 0;
+
+        if (vkCreateDescriptorPool(mDevice, &ciPool, nullptr, &mImguiDescriptorPool) != VK_SUCCESS)
+        {
+            LogError("Failed to create descriptor pool");
+            OCT_ASSERT(0);
+        }
+    }
 
     ImGui_ImplVulkan_InitInfo initInfo = {};
     initInfo.Instance = mInstance;
@@ -172,8 +195,8 @@ void VulkanContext::Initialize()
     initInfo.Device = mDevice;
     initInfo.QueueFamily = mGraphicsQueueFamily;
     initInfo.Queue = mGraphicsQueue;
-    initInfo.PipelineCache = mPipelineCache;
-    initInfo.DescriptorPool = mDescriptorPool;
+    initInfo.PipelineCache = mPipelineCache.GetPipelineCacheObj();
+    initInfo.DescriptorPool = mImguiDescriptorPool;
     initInfo.Subpass = 0;
     initInfo.MinImageCount = MAX_FRAMES;
     initInfo.ImageCount = MAX_FRAMES;
@@ -204,23 +227,25 @@ void VulkanContext::Destroy()
     ImGui_ImplVulkan_Shutdown();
 #endif
 
-    mMaterialPipelineCache.Destroy();
+    DestroyMisc();
+
+    DestroyGlobalShaders();
 
     DestroyQueryPools();
-
-    mMeshDescriptorSetArena.Destroy();
-    mMeshUniformBufferArena.Destroy();
 
     mRayTracer.DestroyStaticRayTraceResources();
 
     DestroySwapchain();
 
-    DestroyPipelines();
     DestroyPipelineCache();
+
+    DestroyRenderPasses();
+
+    DestroyFrameUniformBuffer();
 
     mDestroyQueue.FlushAll();
 
-    vkDestroyDescriptorPool(mDevice, mDescriptorPool, nullptr);
+    DestroyDescriptorPools();
 
     vkDestroySemaphore(mDevice, mRenderFinishedSemaphore, nullptr);
     vkDestroySemaphore(mDevice, mImageAvailableSemaphore, nullptr);
@@ -278,6 +303,9 @@ void VulkanContext::BeginFrame()
     // Reset our command buffer to record a fresh set of commands for this frame.
     vkResetCommandBuffer(cb, 0);
 
+    // Reset descriptor pool
+    mDescriptorPools[mFrameIndex].Reset();
+
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
@@ -288,13 +316,10 @@ void VulkanContext::BeginFrame()
 
     ReadTimeQueryResults();
 
-    mMeshDescriptorSetArena.Reset();
-    mMeshUniformBufferArena.Reset();
-
-    if (mEnableMaterialPipelineCache)
-    {
-        mMaterialPipelineCache.Update();
-    }
+    // We need to update global data at begining of the frame because 
+    // when it is bound, we need the dynamic offset to be updated already.
+    UpdateGlobalUniformData();
+    UpdateGlobalDescriptorSet();
 
 #if EDITOR
     ImGui_ImplVulkan_NewFrame();
@@ -356,6 +381,9 @@ void VulkanContext::EndFrame()
     // Destroy anything that was queued from two frames ago.
     // It should be safe if we waited to acquire the swapchain image.
     mDestroyQueue.Flush(nextFrameIndex);
+
+    // Reset the head offset for our frame uniform buffer.
+    mFrameUniformBuffer->Reset(nextFrameIndex);
 
     mFrameIndex = nextFrameIndex;
     mFrameNumber++;
@@ -467,6 +495,8 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
     }
 
     vkCmdBeginRenderPass(mCommandBuffers[mFrameIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    mPipelineState.mRenderPass = renderPassInfo.renderPass;
 }
 
 void VulkanContext::EndRenderPass()
@@ -517,44 +547,13 @@ void VulkanContext::EndRenderPass()
     }
 }
 
-void VulkanContext::BindPipeline(PipelineId id, VertexType vertexType)
+void VulkanContext::CommitPipeline()
 {
-    Pipeline* pipeline = GetPipeline(id);
-    OCT_ASSERT(pipeline != nullptr &&
-        pipeline->GetId() == id);
-    BindPipeline(pipeline, vertexType);
-}
+    mBoundPipeline = mPipelineCache.Resolve(mPipelineState);
+    mBoundPipeline->Bind(mCommandBuffers[mFrameIndex]);
 
-void VulkanContext::BindPipeline(Pipeline* pipeline, VertexType vertexType)
-{
-    VkCommandBuffer cb = mCommandBuffers[mFrameIndex];
-    VkPipelineLayout pipelineLayout = pipeline->GetPipelineLayout();
-    
-    pipeline->BindPipeline(cb, vertexType);
-    mCurrentlyBoundPipeline = pipeline;
-
-    // Always rebind Global Descriptor (might not need to do this)
-    VkPipelineBindPoint bindPoint = pipeline->IsComputePipeline() ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS;
-    mGlobalDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Global, pipelineLayout, bindPoint);
-
-    // Handle pipeline-specific functionality
-    switch (pipeline->GetId())
-    {
-    case PipelineId::PostProcess:
-    case PipelineId::NullPostProcess:
-        mPostProcessDescriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::PostProcess, pipelineLayout);
-        break;
-
-    default: break;
-    }
-}
-
-void VulkanContext::RebindPipeline(VertexType vertexType)
-{
-    if (mCurrentlyBoundPipeline != nullptr)
-    {
-        BindPipeline(mCurrentlyBoundPipeline, vertexType);
-    }
+    // TODO: Can we avoid always binding the global descriptor set.
+    BindGlobalDescriptorSet();
 }
 
 void VulkanContext::DrawLines(const std::vector<Line>& lines)
@@ -573,14 +572,14 @@ void VulkanContext::DrawLines(const std::vector<Line>& lines)
         }
 
 
-        mLineVertexBuffer = new Buffer(BufferType::Vertex, lines.size() * sizeof(VertexColorSimple) * 2, "Line Vertex Data");
+        mLineVertexBuffer = new Buffer(BufferType::Vertex, lines.size() * sizeof(VertexLine) * 2, "Line Vertex Data");
         mNumLinesAllocated = uint32_t(lines.size());
     }
 
     // Update vertex data
     {
         void* data = mLineVertexBuffer->Map();
-        VertexColorSimple* verts = reinterpret_cast<VertexColorSimple*>(data);
+        VertexLine* verts = reinterpret_cast<VertexLine*>(data);
         for (int32_t i = 0; i < int32_t(lines.size()); ++i)
         {
             uint32_t color32 = ColorFloat4ToUint32(lines[i].mColor);
@@ -596,7 +595,7 @@ void VulkanContext::DrawLines(const std::vector<Line>& lines)
 
     // Render
     {
-        BindPipeline(PipelineId::Line, VertexType::VertexColorSimple);
+        BindPipelineConfig(PipelineConfig::Line);
 
         VkDeviceSize offset = 0;
         VkBuffer lineVertexBuffer = mLineVertexBuffer->Get();
@@ -607,8 +606,13 @@ void VulkanContext::DrawLines(const std::vector<Line>& lines)
 
 void VulkanContext::DrawFullscreen()
 {
-    // TODO: Bind buffer with 4 vertices
-    vkCmdDraw(GetCommandBuffer(), 4, 1, 0, 0);
+    VkCommandBuffer cb = GetCommandBuffer();
+
+    VkBuffer vertexBuffers[] = { mFullScreenVertexBuffer->Get() };
+    VkDeviceSize offsets[] = { 0 };
+    vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
+
+    vkCmdDraw(cb, 4, 1, 0, 0);
 }
 
 void VulkanContext::DestroySwapchain()
@@ -626,12 +630,6 @@ void VulkanContext::DestroySwapchain()
     }
     mCommandBuffers.clear();
 
-    vkDestroyRenderPass(mDevice, mShadowRenderPass, nullptr);
-    vkDestroyRenderPass(mDevice, mForwardRenderPass, nullptr);
-    vkDestroyRenderPass(mDevice, mPostprocessRenderPass, nullptr);
-    vkDestroyRenderPass(mDevice, mUIRenderPass, nullptr);
-    vkDestroyRenderPass(mDevice, mClearSwapchainPass, nullptr);
-
     mRayTracer.DestroyDynamicRayTraceResources();
 
     GetDestroyQueue()->Destroy(mShadowMapImage);
@@ -642,12 +640,6 @@ void VulkanContext::DestroySwapchain()
 
     GetDestroyQueue()->Destroy(mSceneColorImage);
     mSceneColorImage = nullptr;
-
-    GetDestroyQueue()->Destroy(mGlobalUniformBuffer);
-    mGlobalUniformBuffer = nullptr;
-
-    GetDestroyQueue()->Destroy(mGlobalDescriptorSet);
-    mGlobalDescriptorSet = nullptr;
 
     for (size_t i = 0; i < mSwapchainImageViews.size(); ++i)
     {
@@ -754,7 +746,9 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
     void* userData)
 {
     char prefix[64];
-    char* message = (char*)malloc(strlen(callbackData->pMessage) + 500);
+
+    uint32_t messageSize = uint32_t(strlen(callbackData->pMessage) + 1024);
+    char* message = (char*)malloc(messageSize);
     OCT_ASSERT(message);
 
     bool isError = false;
@@ -792,7 +786,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
         strcat(prefix, "Validation: ");
     }
 
-    sprintf(message,
+    snprintf(message,
+        messageSize,
         "%s - Message ID Number %d, Message ID String %s :\n%s",
         prefix,
         callbackData->messageIdNumber,
@@ -802,28 +797,33 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
     if (callbackData->objectCount > 0)
     {
         char tmp_message[500];
-        sprintf(tmp_message, "\n Objects - %d\n", callbackData->objectCount);
-        strcat(message, tmp_message);
+        snprintf(tmp_message, 500, "\n Objects - %d\n", callbackData->objectCount);
+        strncat(message, tmp_message, messageSize);
 
         for (uint32_t object = 0; object < callbackData->objectCount; ++object)
         {
-            sprintf(tmp_message,
+            snprintf(tmp_message,
+                500,
                 " Object[%d] - Type %d, Value %p, Name \"%s\"\n",
                 object,
                 callbackData->pObjects[object].objectType,
                 (void*)(callbackData->pObjects[object].objectHandle),
                 callbackData->pObjects[object].pObjectName);
-            strcat(message, tmp_message);
+            strncat(message, tmp_message, messageSize);
         }
     }
-    if (callbackData->cmdBufLabelCount > 0) {
+
+    if (callbackData->cmdBufLabelCount > 0) 
+    {
         char tmp_message[500];
-        sprintf(tmp_message,
+        snprintf(tmp_message,
+            500,
             "\n Command Buffer Labels - %d\n",
             callbackData->cmdBufLabelCount);
-        strcat(message, tmp_message);
+        strncat(message, tmp_message, messageSize);
         for (uint32_t label = 0; label < callbackData->cmdBufLabelCount; ++label) {
-            sprintf(tmp_message,
+            snprintf(tmp_message,
+                500,
                 " Label[%d] - %s { %f, %f, %f, %f}\n",
                 label,
                 callbackData->pCmdBufLabels[label].pLabelName,
@@ -831,7 +831,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
                 callbackData->pCmdBufLabels[label].color[1],
                 callbackData->pCmdBufLabels[label].color[2],
                 callbackData->pCmdBufLabels[label].color[3]);
-            strcat(message, tmp_message);
+            strncat(message, tmp_message, messageSize);
         }
     }
 
@@ -1159,17 +1159,17 @@ void VulkanContext::PickPhysicalDevice()
         }
     }
 
-    VkPhysicalDeviceProperties properties;
-    vkGetPhysicalDeviceProperties(mPhysicalDevice, &properties);
+    mDeviceProperties = {};
+    vkGetPhysicalDeviceProperties(mPhysicalDevice, &mDeviceProperties);
 
 #if (PLATFORM_WINDOWS || PLATFORM_LINUX)
-    if (properties.limits.maxPerStageDescriptorSampledImages >= PATH_TRACE_MAX_TEXTURES)
+    if (mDeviceProperties.limits.maxPerStageDescriptorSampledImages >= PATH_TRACE_MAX_TEXTURES)
     {
         mSupportsRayTracing = true;
     }
 #endif
 
-    mTimestampPeriod = properties.limits.timestampPeriod;
+    mTimestampPeriod = mDeviceProperties.limits.timestampPeriod;
 }
 
 void VulkanContext::CreateLogicalDevice()
@@ -1255,6 +1255,23 @@ void VulkanContext::CreateImageViews()
 
         SetDebugObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)mSwapchainImageViews[i], "Swapchain Image View");
     }
+}
+
+void VulkanContext::CreateFrameUniformBuffer()
+{
+    mFrameUniformBuffer = new UniformBuffer(32 * 1024 * 1024, "Frame Uniform Buffer");
+
+    // Leave these buffers mapped forever?
+    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    {
+        mFrameUniformBuffer->GetBuffer(i)->Map();
+    }
+}
+
+void VulkanContext::DestroyFrameUniformBuffer()
+{
+    GetDestroyQueue()->Destroy(mFrameUniformBuffer);
+    mFrameUniformBuffer = nullptr;
 }
 
 void VulkanContext::CreateSceneColorImage()
@@ -1363,7 +1380,7 @@ VkFormat VulkanContext::GetSceneColorFormat()
     return mSceneColorImageFormat;
 }
 
-void VulkanContext::CreateRenderPass()
+void VulkanContext::CreateRenderPasses()
 {
     // I was getting SYNC-HAZARD-READ-AFTER-WRITE validation warnings 
     // (and was getting incorrect rendering results on the RG552). I thought
@@ -1679,41 +1696,37 @@ void VulkanContext::CreateRenderPass()
 
         SetDebugObjectName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t)mClearSwapchainPass, "ClearSwapchain RenderPass");
     }
+
+    mPipelineState.mRenderPass = mForwardRenderPass;
+}
+
+void VulkanContext::DestroyRenderPasses()
+{
+    vkDestroyRenderPass(mDevice, mShadowRenderPass, nullptr);
+    mShadowRenderPass = VK_NULL_HANDLE;
+
+    vkDestroyRenderPass(mDevice, mForwardRenderPass, nullptr);
+    mForwardRenderPass = VK_NULL_HANDLE;
+
+    vkDestroyRenderPass(mDevice, mPostprocessRenderPass, nullptr);
+    mPostprocessRenderPass = VK_NULL_HANDLE;
+
+    vkDestroyRenderPass(mDevice, mUIRenderPass, nullptr);
+    mUIRenderPass = VK_NULL_HANDLE;
+
+    vkDestroyRenderPass(mDevice, mClearSwapchainPass, nullptr);
+    mClearSwapchainPass = VK_NULL_HANDLE;
+
 }
 
 void VulkanContext::CreatePipelineCache()
 {
-    const char* initData = nullptr;
-    size_t initSize = 0;
-
-    Stream pipelineData;
-    if (SYS_DoesSaveExist(PIPELINE_CACHE_SAVE_NAME))
-    {
-        if (SYS_ReadSave(PIPELINE_CACHE_SAVE_NAME, pipelineData))
-        {
-            initData = pipelineData.GetData();
-            initSize = (size_t)pipelineData.GetSize();
-        }
-    }
-
-    OCT_ASSERT(mPipelineCache == VK_NULL_HANDLE);
-    VkPipelineCacheCreateInfo ciCache = {};
-    ciCache.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-    ciCache.pInitialData = (void*)initData;
-    ciCache.initialDataSize = initSize;
-    ciCache.flags = 0;
-    
-    if (vkCreatePipelineCache(mDevice, &ciCache, nullptr, &mPipelineCache) != VK_SUCCESS)
-    {
-        LogError("Failed to create pipeline cache");
-        OCT_ASSERT(0);
-    }
+    mPipelineCache.Create();
 }
 
 void VulkanContext::DestroyPipelineCache()
 {
-    OCT_ASSERT(mPipelineCache != VK_NULL_HANDLE);
-    vkDestroyPipelineCache(mDevice, mPipelineCache, nullptr);
+    mPipelineCache.Destroy();
 }
 
 void VulkanContext::CreateFramebuffers()
@@ -1794,11 +1807,6 @@ void VulkanContext::CreateDepthImage()
     mDepthImage->Transition(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
     DeviceWaitIdle();
-}
-
-void VulkanContext::CreateGlobalUniformBuffer()
-{
-    mGlobalUniformBuffer = new UniformBuffer(sizeof(GlobalUniformData), "Global Uniforms");
 }
 
 void VulkanContext::UpdateGlobalUniformData()
@@ -1904,6 +1912,16 @@ VkPhysicalDevice VulkanContext::GetPhysicalDevice()
     return mPhysicalDevice;
 }
 
+DescriptorPool& VulkanContext::GetDescriptorPool()
+{
+    return mDescriptorPools[mFrameIndex];
+}
+
+DescriptorLayoutCache& VulkanContext::GetDescriptorLayoutCache()
+{
+    return mDescriptorLayoutCache;
+}
+
 GlobalUniformData& VulkanContext::GetGlobalUniformData()
 {
     return mGlobalUniformData;
@@ -1941,28 +1959,26 @@ void VulkanContext::EnableMaterials(bool enable)
 
 void VulkanContext::UpdateGlobalDescriptorSet()
 {
-    mGlobalUniformBuffer->Update(&mGlobalUniformData, sizeof(GlobalUniformData));
-    mGlobalDescriptorSet->UpdateImageDescriptor(GLD_SHADOW_MAP, mShadowMapImage);
+    UniformBlock uniformBlock = WriteUniformBlock(&mGlobalUniformData, sizeof(GlobalUniformData));
+
+    mGlobalDescriptorSet = DescriptorSet::Begin("Global DS")
+        .WriteUniformBuffer(GLD_UNIFORM_BUFFER, uniformBlock)
+        .WriteImage(GLD_SHADOW_MAP, mShadowMapImage)
+        .Build();
 }
 
-void VulkanContext::CreateGlobalDescriptorSet()
+void VulkanContext::BindGlobalDescriptorSet()
 {
-    CreateGlobalUniformBuffer();
-
-    VkDescriptorSetLayout layout = GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(0);
-    mGlobalDescriptorSet = new DescriptorSet(layout);
-    mGlobalDescriptorSet->UpdateUniformDescriptor(GLD_UNIFORM_BUFFER, mGlobalUniformBuffer);
-    mGlobalDescriptorSet->UpdateImageDescriptor(GLD_SHADOW_MAP, mShadowMapImage);
-
-    UpdateGlobalDescriptorSet();
+    mGlobalDescriptorSet.Bind(mCommandBuffers[mFrameIndex], 0);
 }
 
-void VulkanContext::CreatePostProcessDescriptorSet()
+void VulkanContext::BindPostProcessDescriptorSet()
 {
-    VkDescriptorSetLayout layout = GetPipeline(PipelineId::PostProcess)->GetDescriptorSetLayout(1);
-    mPostProcessDescriptorSet = new DescriptorSet(layout);
-    mPostProcessDescriptorSet->UpdateImageDescriptor(0, mSceneColorImage);
-    mPostProcessDescriptorSet->UpdateImageDescriptor(1, mSupportsRayTracing ? mRayTracer.GetPathTraceImage() : mSceneColorImage);
+    DescriptorSet::Begin("PostProcess DS")
+        .WriteImage(0, mSceneColorImage)
+        .WriteImage(1, mSupportsRayTracing ? mRayTracer.GetPathTraceImage() : mSceneColorImage)
+        .Build()
+        .Bind(mCommandBuffers[mFrameIndex], 1);
 }
 
 void VulkanContext::CreateCommandPool()
@@ -2004,6 +2020,11 @@ void VulkanContext::CreateCommandBuffers()
 uint32_t VulkanContext::GetFrameIndex() const
 {
     return mFrameIndex;
+}
+
+uint32_t VulkanContext::GetFrameNumber() const
+{
+    return mFrameNumber;
 }
 
 RenderPassId VulkanContext::GetCurrentRenderPassId() const
@@ -2059,30 +2080,24 @@ void VulkanContext::CreateFences()
     vkResetFences(mDevice, 1, &mWaitFences[0]);
 }
 
-void VulkanContext::CreateDescriptorPool()
+void VulkanContext::CreateDescriptorPools()
 {
-    VkDescriptorPoolSize poolSizes[4] = {};
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = MAX_UNIFORM_BUFFER_DESCRIPTORS;
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = MAX_SAMPLER_DESCRIPTORS;
-    poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    poolSizes[2].descriptorCount = MAX_STORAGE_BUFFER_DESCRIPTORS;
-    poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-    poolSizes[3].descriptorCount = MAX_STORAGE_IMAGE_DESCRIPTORS;
+    mDescriptorLayoutCache.Create();
 
-    VkDescriptorPoolCreateInfo ciPool = {};
-    ciPool.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    ciPool.poolSizeCount = 4;
-    ciPool.pPoolSizes = poolSizes;
-    ciPool.maxSets = MAX_DESCRIPTOR_SETS;
-    ciPool.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-
-    if (vkCreateDescriptorPool(mDevice, &ciPool, nullptr, &mDescriptorPool) != VK_SUCCESS)
+    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
     {
-        LogError("Failed to create descriptor pool");
-        OCT_ASSERT(0);
+        mDescriptorPools[i].Create();
     }
+}
+
+void VulkanContext::DestroyDescriptorPools()
+{
+    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    {
+        mDescriptorPools[i].Destroy();
+    }
+
+    mDescriptorLayoutCache.Destroy();
 }
 
 void VulkanContext::RecreateSwapchain(bool recreateSurface)
@@ -2090,12 +2105,6 @@ void VulkanContext::RecreateSwapchain(bool recreateSurface)
     if (!mInitialized)
     {
         return;
-    }
-
-    if (mEnableMaterialPipelineCache)
-    {
-        // Need to stop thread temporarily while resizing to avoid data access hazards.
-        mMaterialPipelineCache.Enable(false);
     }
 
     DeviceWaitIdle();
@@ -2112,11 +2121,8 @@ void VulkanContext::RecreateSwapchain(bool recreateSurface)
     CreateDepthImage();
     CreateSceneColorImage();
     CreateShadowMapImage();
-    CreateRenderPass();
     CreateFramebuffers();
-    CreateGlobalDescriptorSet();
     mRayTracer.CreateDynamicRayTraceResources();
-    CreatePostProcessDescriptorSet();
 
 #if EDITOR
     CreateHitCheck();
@@ -2138,11 +2144,6 @@ void VulkanContext::RecreateSwapchain(bool recreateSurface)
     // may lead to an OOM crash in the VRAM allocator.
     DeviceWaitIdle();
     GetDestroyQueue()->FlushAll();
-
-    if (mEnableMaterialPipelineCache)
-    {
-        mMaterialPipelineCache.Enable(true);
-    }
 }
 
 void VulkanContext::RecreateSurface()
@@ -2155,14 +2156,64 @@ void VulkanContext::RecreateSurface()
     CreateSurface();
 }
 
-VkDescriptorPool VulkanContext::GetDescriptorPool()
+void VulkanContext::CreateGlobalShaders()
 {
-    return mDescriptorPool;
+    OCT_ASSERT(mGlobalShaders.size() == 0);
+
+    DirEntry dirEntry;
+    SYS_OpenDirectory(ENGINE_SHADER_DIR, dirEntry);
+
+    while (dirEntry.mValid)
+    {
+        std::string fileName = dirEntry.mFilename;
+
+        ShaderStage shaderStage = ShaderStage::Count;
+        if (fileName.size() >= 5)
+        {
+            std::string ext = fileName.substr(fileName.size() - 5);
+            if (ext == ".vert")
+                shaderStage = ShaderStage::Vertex;
+            else if (ext == ".frag")
+                shaderStage = ShaderStage::Fragment;
+            else if (ext == ".comp")
+                shaderStage = ShaderStage::Compute;
+        }
+
+        if (shaderStage != ShaderStage::Count)
+        {
+            std::string shaderPath = std::string(ENGINE_SHADER_DIR) + fileName;
+            Shader* newShader = new Shader(shaderPath.c_str(), shaderStage, fileName.c_str());
+            mGlobalShaders.insert({ fileName, newShader });
+
+            LogDebug("Loaded Shader: %s", fileName.c_str());
+        }
+
+        SYS_IterateDirectory(dirEntry);
+    }
 }
 
-DescriptorSet* VulkanContext::GetGlobalDescriptorSet()
+void VulkanContext::DestroyGlobalShaders()
 {
-    return mGlobalDescriptorSet;
+    for (auto& entry : mGlobalShaders)
+    {
+        GetDestroyQueue()->Destroy(entry.second);
+        entry.second = nullptr;
+    }
+
+    mGlobalShaders.clear();
+}
+
+void VulkanContext::CreateMisc()
+{
+    // Actually this can just be empty since we determine vertex positions independently in vert shader.
+    static VertexUI sFullScreenVertexData[6] = { };
+    mFullScreenVertexBuffer = new Buffer(BufferType::Vertex, sizeof(sFullScreenVertexData), "Full Screen Vertices", (void*)sFullScreenVertexData, false);
+}
+
+void VulkanContext::DestroyMisc()
+{
+    GetDestroyQueue()->Destroy(mFullScreenVertexBuffer);
+    mFullScreenVertexBuffer = nullptr;
 }
 
 bool VulkanContext::IsDeviceSuitable(VkPhysicalDevice device)
@@ -2415,14 +2466,207 @@ void VulkanContext::DestroyDebugCallback()
     }
 }
 
-DescriptorSetArena& VulkanContext::GetMeshDescriptorSetArena()
+const VkPhysicalDeviceProperties& VulkanContext::GetDeviceProperties() const
 {
-    return mMeshDescriptorSetArena;
+    return mDeviceProperties;
 }
 
-UniformBufferArena& VulkanContext::GetMeshUniformBufferArena()
+UniformBuffer* VulkanContext::GetFrameUniformBuffer()
 {
-    return mMeshUniformBufferArena;
+    return mFrameUniformBuffer;
+}
+
+Shader* VulkanContext::GetGlobalShader(const std::string& name)
+{
+    Shader* shader = mGlobalShaders[name];
+
+    if (shader == nullptr)
+    {
+        LogError("Failed to find global shader: %s", name.c_str());
+        OCT_ASSERT(0);
+    }
+
+    return shader;
+}
+
+const PipelineState& VulkanContext::GetPipelineState() const
+{
+    return mPipelineState;
+}
+
+void VulkanContext::SetPipelineState(const PipelineState& state)
+{
+    // Do not change Render Pass.
+    VkRenderPass curRenderPass = mPipelineState.mRenderPass;
+
+    mPipelineState = state;
+
+    mPipelineState.mRenderPass = curRenderPass;
+}
+
+void VulkanContext::SetVertexShader(Shader* shader)
+{
+    if (shader->mStage == ShaderStage::Vertex)
+    {
+        mPipelineState.mVertexShader = shader;
+        mPipelineState.mComputeShader = nullptr;
+    }
+    else
+    {
+        LogError("Invalid shader stage. Cannot set shader.");
+        OCT_ASSERT(0);
+    }
+}
+
+void VulkanContext::SetFragmentShader(Shader* shader)
+{
+    if (shader->mStage == ShaderStage::Fragment)
+    {
+        mPipelineState.mFragmentShader = shader;
+        mPipelineState.mComputeShader = nullptr;
+    }
+    else
+    {
+        LogError("Invalid shader stage. Cannot set shader.");
+        OCT_ASSERT(0);
+    }
+}
+
+void VulkanContext::SetComputeShader(Shader* shader)
+{
+    if (shader->mStage == ShaderStage::Compute)
+    {
+        mPipelineState.mComputeShader = shader;
+        mPipelineState.mVertexShader = nullptr;
+        mPipelineState.mFragmentShader = nullptr;
+    }
+    else
+    {
+        LogError("Invalid shader stage. Cannot set shader.");
+        OCT_ASSERT(0);
+    }
+}
+
+void VulkanContext::SetVertexShader(const std::string& globalName)
+{
+    Shader* shader = GetGlobalShader(globalName);
+    SetVertexShader(shader);
+}
+
+void VulkanContext::SetFragmentShader(const std::string& globalName)
+{
+    Shader* shader = GetGlobalShader(globalName);
+    SetFragmentShader(shader);
+}
+
+void VulkanContext::SetComputeShader(const std::string& globalName)
+{
+    Shader* shader = GetGlobalShader(globalName);
+    SetComputeShader(shader);
+}
+
+void VulkanContext::SetRenderPass(VkRenderPass renderPass)
+{
+    mPipelineState.mRenderPass = renderPass;
+}
+
+void VulkanContext::SetVertexType(VertexType vertexType)
+{
+    mPipelineState.mVertexType = vertexType;
+}
+
+void VulkanContext::SetRasterizerDiscard(bool discard)
+{
+    mPipelineState.mRasterizerDiscard = discard;
+}
+
+void VulkanContext::SetPrimitiveTopology(VkPrimitiveTopology primitiveToplogy)
+{
+    mPipelineState.mPrimitiveTopology = primitiveToplogy;
+}
+
+void VulkanContext::SetPolygonMode(VkPolygonMode polygonMode)
+{
+    mPipelineState.mPolygonMode = polygonMode;
+}
+
+void VulkanContext::SetLineWidth(float lineWidth)
+{
+    mPipelineState.mLineWidth = lineWidth;
+}
+
+void VulkanContext::SetDynamicLineWidth(bool dynamicLineWidth)
+{
+    mPipelineState.mDynamicLineWidth = dynamicLineWidth;
+}
+
+void VulkanContext::SetCullMode(VkCullModeFlags cullMode)
+{
+    mPipelineState.mCullMode = cullMode;
+}
+
+void VulkanContext::SetFrontFace(VkFrontFace frontFace)
+{
+    mPipelineState.mFrontFace = frontFace;
+}
+
+void VulkanContext::SetDepthBias(float depthBias)
+{
+    mPipelineState.mDepthBias = depthBias;
+}
+
+void VulkanContext::SetDepthTestEnabled(bool enabled)
+{
+    mPipelineState.mDepthTestEnabled = enabled;
+}
+
+void VulkanContext::SetDepthWriteEnabled(bool enabled)
+{
+    mPipelineState.mDepthWriteEnabled = enabled;
+}
+
+void VulkanContext::SetDepthCompareOp(VkCompareOp compareOp)
+{
+    mPipelineState.mDepthCompareOp = compareOp;
+}
+
+void VulkanContext::SetBlendState(VkPipelineColorBlendAttachmentState blendState, uint32_t index)
+{
+    index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
+    mPipelineState.mBlendStates[index] = blendState;
+}
+
+void VulkanContext::SetBlendState(BasicBlendState basicBlendState, uint32_t index)
+{
+    SetBlendState(GetBasicBlendState(basicBlendState), index);
+}
+
+void VulkanContext::SetBlendEnable(bool enable, uint32_t index)
+{
+    index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
+    mPipelineState.mBlendStates[index].blendEnable = enable;
+}
+
+void VulkanContext::SetBlendColorOp(VkBlendFactor src, VkBlendFactor dst, VkBlendOp op, uint32_t index)
+{
+    index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
+    mPipelineState.mBlendStates[index].srcColorBlendFactor = src;
+    mPipelineState.mBlendStates[index].dstColorBlendFactor = dst;
+    mPipelineState.mBlendStates[index].colorBlendOp = op;
+}
+
+void VulkanContext::SetBlendAlphaOp(VkBlendFactor src, VkBlendFactor dst, VkBlendOp op, uint32_t index)
+{
+    index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
+    mPipelineState.mBlendStates[index].srcAlphaBlendFactor = src;
+    mPipelineState.mBlendStates[index].dstAlphaBlendFactor = dst;
+    mPipelineState.mBlendStates[index].alphaBlendOp = op;
+}
+
+void VulkanContext::SetColorWriteMask(VkColorComponentFlags writeMask, uint32_t index)
+{
+    index = glm::clamp<uint32_t>(index, 0, MAX_RENDER_TARGETS - 1);
+    mPipelineState.mBlendStates[index].colorWriteMask = writeMask;
 }
 
 void VulkanContext::BeginGpuTimestamp(const char* name)
@@ -2548,25 +2792,6 @@ VkSurfaceTransformFlagBitsKHR VulkanContext::GetPreTransformFlag() const
     return mPreTransformFlag;
 }
 
-void VulkanContext::EnableMaterialPipelineCache(bool enable)
-{
-    if (mEnableMaterialPipelineCache != enable)
-    {
-        mEnableMaterialPipelineCache = enable;
-        mMaterialPipelineCache.Enable(enable);
-    }
-}
-
-bool VulkanContext::IsMaterialPipelineCacheEnabled() const
-{
-    return mEnableMaterialPipelineCache;
-}
-
-MaterialPipelineCache* VulkanContext::GetMaterialPipelineCache()
-{
-    return &mMaterialPipelineCache;
-}
-
 uint32_t VulkanContext::GetSceneWidth()
 {
     return mSceneWidth;
@@ -2582,48 +2807,19 @@ VkExtent2D& VulkanContext::GetSwapchainExtent()
     return mSwapchainExtent;
 }
 
-Pipeline* VulkanContext::GetPipeline(PipelineId id)
+Pipeline* VulkanContext::GetBoundPipeline()
 {
-    uint32_t index = uint32_t(id);
-    OCT_ASSERT(index < (uint32_t)PipelineId::Count);
-    return mPipelines[index];
+    return mBoundPipeline;
 }
 
-Pipeline* VulkanContext::GetCurrentlyBoundPipeline()
-{
-    return mCurrentlyBoundPipeline;
-}
-
-VkPipelineCache VulkanContext::GetPipelineCache() const
+PipelineCache& VulkanContext::GetPipelineCache()
 {
     return mPipelineCache;
 }
 
 void VulkanContext::SavePipelineCacheToFile()
 {
-    if (mPipelineCache != VK_NULL_HANDLE)
-    {
-        size_t cacheSize = 0;
-        VkResult res = vkGetPipelineCacheData(mDevice, mPipelineCache, &cacheSize, nullptr);
-        OCT_ASSERT(res == VK_SUCCESS);
-
-        if (cacheSize > 0)
-        {
-            char* cacheData = (char*)malloc(sizeof(char) * cacheSize);
-            OCT_ASSERT(cacheData);
-
-            res = vkGetPipelineCacheData(mDevice, mPipelineCache, &cacheSize, cacheData);
-            OCT_ASSERT(res == VK_SUCCESS);
-
-            Stream stream;
-            stream.WriteBytes((uint8_t*)cacheData, (uint32_t)cacheSize);
-
-            SYS_WriteSave(PIPELINE_CACHE_SAVE_NAME, stream);
-
-            free(cacheData);
-            cacheData = nullptr;
-        }
-    }
+    mPipelineCache.SaveToFile();
 }
 
 VkRenderPass VulkanContext::GetForwardRenderPass()
@@ -2639,190 +2835,6 @@ VkRenderPass VulkanContext::GetPostprocessRenderPass()
 VkRenderPass VulkanContext::GetUIRenderPass()
 {
     return mUIRenderPass;
-}
-
-static ThreadFuncRet CreatePipelineThread(void* arg)
-{
-    PipelineCreateJobArgs* jobArgs = (PipelineCreateJobArgs*)arg;
-
-    std::vector<Pipeline*>& pipelines = *(jobArgs->mPipelines);
-    MutexObject* mutex = jobArgs->mMutex;
-
-    while (true)
-    {
-        Pipeline* pipeline = nullptr;
-
-        SYS_LockMutex(mutex);
-
-        if (pipelines.size() > 0)
-        {
-            pipeline = pipelines.back();
-            pipelines.pop_back();
-        }
-
-        SYS_UnlockMutex(mutex);
-
-        if (pipeline != nullptr)
-        {
-            pipeline->Create();
-        }
-        else
-        {
-            break;
-        }
-    }
-
-
-    THREAD_RETURN();
-}
-
-void VulkanContext::CreatePipelines()
-{
-    mPipelines[(size_t)PipelineId::Shadow] = new ShadowPipeline();
-    mPipelines[(size_t)PipelineId::Opaque] = new OpaquePipeline();
-    mPipelines[(size_t)PipelineId::Translucent] = new TranslucentPipeline();
-    mPipelines[(size_t)PipelineId::Additive] = new AdditivePipeline();
-    mPipelines[(size_t)PipelineId::DepthlessOpaque] = new OpaquePipeline();
-    mPipelines[(size_t)PipelineId::DepthlessTranslucent] = new TranslucentPipeline();
-    mPipelines[(size_t)PipelineId::DepthlessAdditive] = new AdditivePipeline();
-    mPipelines[(size_t)PipelineId::CullFrontOpaque] = new OpaquePipeline();
-    mPipelines[(size_t)PipelineId::CullFrontTranslucent] = new TranslucentPipeline();
-    mPipelines[(size_t)PipelineId::CullFrontAdditive] = new AdditivePipeline();
-    mPipelines[(size_t)PipelineId::CullNoneOpaque] = new OpaquePipeline();
-    mPipelines[(size_t)PipelineId::CullNoneTranslucent] = new TranslucentPipeline();
-    mPipelines[(size_t)PipelineId::CullNoneAdditive] = new AdditivePipeline();
-    mPipelines[(size_t)PipelineId::ShadowMeshBack] = new ShadowMeshBackPipeline();
-    mPipelines[(size_t)PipelineId::ShadowMeshFront] = new ShadowMeshFrontPipeline();
-    mPipelines[(size_t)PipelineId::ShadowMeshClear] = new ShadowMeshClearPipeline();
-    mPipelines[(size_t)PipelineId::Selected] = new SelectedGeometryPipeline();
-    mPipelines[(size_t)PipelineId::Wireframe] = new WireframeGeometryPipeline();
-    mPipelines[(size_t)PipelineId::Collision] = new CollisionGeometryPipeline();
-    mPipelines[(size_t)PipelineId::Line] = new LineGeometryPipeline();
-    mPipelines[(size_t)PipelineId::PostProcess] = new PostProcessPipeline();
-    mPipelines[(size_t)PipelineId::NullPostProcess] = new NullPostProcessPipeline();
-    mPipelines[(size_t)PipelineId::Quad] = new QuadPipeline();
-    mPipelines[(size_t)PipelineId::Text] = new TextPipeline();
-    mPipelines[(size_t)PipelineId::Poly] = new PolyPipeline();
-
-    if (mSupportsRayTracing)
-    {
-        mPipelines[(size_t)PipelineId::PathTrace] = new PathTracePipeline();
-        mPipelines[(size_t)PipelineId::LightBakeDirect] = new LightBakeDirectPipeline();
-        mPipelines[(size_t)PipelineId::LightBakeIndirect] = new LightBakeIndirectPipeline();
-        mPipelines[(size_t)PipelineId::LightBakeAverage] = new LightBakeAveragePipeline();
-        mPipelines[(size_t)PipelineId::LightBakeDiffuse] = new LightBakeDiffusePipeline();
-    }
-
-#if EDITOR
-    mPipelines[(size_t)PipelineId::HitCheck] = new HitCheckPipeline();
-#endif
-
-    // Modified Foward Pipelines
-    for (uint32_t i = 0; i < 3; ++i)
-    {
-        uint32_t pipelineIdx = (uint32_t)PipelineId::DepthlessOpaque + i;
-        mPipelines[pipelineIdx]->mPipelineId = PipelineId(pipelineIdx);
-        mPipelines[pipelineIdx]->mDepthTestEnabled = false;
-        mPipelines[pipelineIdx]->mDepthWriteEnabled = false;
-    }
-    for (uint32_t i = 0; i < 3; ++i)
-    {
-        uint32_t pipelineIdx = (uint32_t)PipelineId::CullFrontOpaque + i;
-        mPipelines[pipelineIdx]->mPipelineId = PipelineId(pipelineIdx);
-        mPipelines[pipelineIdx]->mCullMode = VK_CULL_MODE_FRONT_BIT;
-    }
-    for (uint32_t i = 0; i < 3; ++i)
-    {
-        uint32_t pipelineIdx = (uint32_t)PipelineId::CullNoneOpaque + i;
-        mPipelines[pipelineIdx]->mPipelineId = PipelineId(pipelineIdx);
-        mPipelines[pipelineIdx]->mCullMode = VK_CULL_MODE_NONE;
-    }
-
-    // Create Pipelines
-    mPipelines[(size_t)PipelineId::Shadow]->SetRenderPass(mShadowRenderPass);
-    mPipelines[(size_t)PipelineId::Opaque]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::Translucent]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::Additive]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::DepthlessOpaque]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::DepthlessTranslucent]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::DepthlessAdditive]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullFrontOpaque]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullFrontTranslucent]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullFrontAdditive]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullNoneOpaque]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullNoneTranslucent]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::CullNoneAdditive]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::ShadowMeshBack]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::ShadowMeshFront]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::ShadowMeshClear]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::Selected]->SetRenderPass(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::Wireframe]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::Collision]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::Line]->SetRenderPass(mForwardRenderPass);
-    mPipelines[(size_t)PipelineId::PostProcess]->SetRenderPass(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::NullPostProcess]->SetRenderPass(mPostprocessRenderPass);
-    mPipelines[(size_t)PipelineId::Quad]->SetRenderPass(mUIRenderPass);
-    mPipelines[(size_t)PipelineId::Text]->SetRenderPass(mUIRenderPass);
-    mPipelines[(size_t)PipelineId::Poly]->SetRenderPass(mUIRenderPass);
-
-    // Compute pipelines don't need to set a RenderPass.
-
-#if EDITOR
-    mPipelines[(size_t)PipelineId::HitCheck]->SetRenderPass(mHitCheckRenderPass);
-#endif
-
-    // Create pipelines across multiple threads to use all CPU cores.
-    std::vector<Pipeline*> pipelines;
-    pipelines.reserve((size_t)PipelineId::Count);
-    MutexObject* mutex = SYS_CreateMutex();
-
-    PipelineCreateJobArgs jobArgs;
-    jobArgs.mPipelines = &pipelines;
-    jobArgs.mMutex = mutex;
-
-    // Gather pipelines that we need to create.
-    for (uint32_t i = 0; i < (uint32_t)PipelineId::Count; ++i)
-    {
-        if (mPipelines[i] != nullptr)
-        {
-            pipelines.push_back(mPipelines[i]);
-        }
-    }
-
-    // Dispatch threads
-    constexpr uint32_t kNumThreads = 8;
-    ThreadObject* threads[kNumThreads] = {};
-
-    for (uint32_t i = 0; i < kNumThreads; ++i)
-    {
-        threads[i] = SYS_CreateThread(CreatePipelineThread, &jobArgs);
-    }
-
-    // Join threads
-    for (uint32_t i = 0; i < kNumThreads; ++i)
-    {
-        SYS_JoinThread(threads[i]);
-        SYS_DestroyThread(threads[i]);
-        threads[i] = nullptr;
-    }
-
-    // All pipeslines should be created now. Delete the shader modules we used.
-    OCT_ASSERT(pipelines.size() == 0);
-    SYS_DestroyMutex(mutex);
-    mutex = nullptr;
-}
-
-void VulkanContext::DestroyPipelines()
-{
-    for (uint32_t i = 0; i < (uint32_t)PipelineId::Count; ++i)
-    {
-        if (mPipelines[i] != nullptr)
-        {
-            mPipelines[i]->Destroy();
-            delete mPipelines[i];
-            mPipelines[i] = nullptr;
-        }
-    }
 }
 
 void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes)
@@ -2939,9 +2951,6 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
         VkCommandBuffer realCb = mCommandBuffers[mFrameIndex];
         mCommandBuffers[mFrameIndex] = cb;
 
-        UpdateGlobalUniformData();
-        UpdateGlobalDescriptorSet();
-
         glm::uvec4 vp = Renderer::Get()->GetSceneViewport();
         SetViewport(vp.x, vp.y, vp.z, vp.w, false, true);
         SetScissor(vp.x, vp.y, vp.z, vp.w, false, true);
@@ -2949,7 +2958,7 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
         BeginRenderPass(RenderPassId::HitCheck);
         std::vector<DebugDraw> debugDraws;
 
-        BindPipeline(PipelineId::HitCheck, VertexType::Vertex);
+        BindPipelineConfig(PipelineConfig::HitCheck);
 
         uint32_t i = 1; // Start hit check id at 1, 0 = no hit.
         auto renderHitChecks = [&](Node* node) -> bool
@@ -2965,7 +2974,7 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
                 // Make foreign nodes select their non-foreign ancestors.
                 uint32_t hitCheckId = node3d->IsForeign() ? node3d->GetParent()->GetHitCheckId() : i;
                 node3d->SetHitCheckId(hitCheckId);
-                node3d->Render(PipelineId::HitCheck);
+                node3d->Render(PipelineConfig::HitCheck);
                 ++i;
 
                 if (Renderer::Get()->IsProxyRenderingEnabled())

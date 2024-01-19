@@ -10,7 +10,7 @@ enum class VertexType
     VertexColor,
     VertexColorInstanceColor,
     VertexUI,
-    VertexColorSimple,
+    VertexLine,
     VertexSkinned,
     VertexParticle,
     Max
@@ -40,7 +40,7 @@ struct VertexUI
     uint32_t mColor;
 };
 
-struct VertexColorSimple
+struct VertexLine
 {
     glm::vec3 mPosition;
     uint32_t mColor;

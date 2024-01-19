@@ -12,55 +12,53 @@
 
 class Buffer;
 class UniformBuffer;
-
-enum class DescriptorType
-{
-    Uniform,
-    Image,
-    ImageArray,
-    StorageBuffer,
-    StorageImage,
-
-    Count
-};
+struct UniformBlock;
 
 struct DescriptorBinding
 {
-    DescriptorType mType = DescriptorType::Count;
+    VkDescriptorType mType = VK_DESCRIPTOR_TYPE_MAX_ENUM;
     void* mObject = nullptr;
+    uint32_t mOffset = 0;
+    uint32_t mSize = 0; // Only filled for Uniform Blocks
+    uint32_t mCount = 1;
     std::vector<Image*> mImageArray;
+
+    int32_t mBinding = -1;
 };
 
 class DescriptorSet
 {
 public:
 
-    DescriptorSet(VkDescriptorSetLayout layout);
+    static DescriptorSet Begin(const char* name = "");
 
     // Updates the current frame's descriptor.
-    void UpdateImageDescriptor(int32_t binding, Image* image);
-    void UpdateImageArrayDescriptor(int32_t binding, const std::vector<Image*>& imageArray);
-    void UpdateUniformDescriptor(int32_t binding, UniformBuffer* uniformBuffer);
-    void UpdateStorageBufferDescriptor(int32_t binding, Buffer* storageBuffer);
-    void UpdateStorageImageDescriptor(int32_t binding, Image* storageImage);
+    DescriptorSet& WriteImage(int32_t binding, Image* image);
+    DescriptorSet& WriteImageArray(int32_t binding, const std::vector<Image*>& imageArray);
+    DescriptorSet& WriteUniformBuffer(int32_t binding, UniformBuffer* uniformBuffer);
+    DescriptorSet& WriteUniformBuffer(int32_t binding, const UniformBlock& block);
+    DescriptorSet& WriteStorageBuffer(int32_t binding, Buffer* storageBuffer);
+    DescriptorSet& WriteStorageImage(int32_t binding, Image* storageImage);
 
-    void Bind(VkCommandBuffer cb, uint32_t index, VkPipelineLayout pipelineLayout, VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
+    DescriptorSet& Build();
 
-    VkDescriptorSet Get();
-    VkDescriptorSet Get(uint32_t frameIndex);
+    void Bind(VkCommandBuffer cb, uint32_t index);
+
+    VkDescriptorSet Get() const;
+    VkDescriptorSetLayout GetLayout() const;
 
 private:
 
-    friend class DestroyQueue;
-    ~DescriptorSet();
+    void UpdateDescriptors();
 
-    void MarkDirty();
-    void RefreshBindings(uint32_t frameIndex);
+    std::vector<DescriptorBinding> mBindings;
+    //std::vector<VkDescriptorImageInfo> mImages;
+    //std::vector<VkDescriptorBufferInfo> mBuffers;
 
-    DescriptorBinding mBindings[MAX_DESCRIPTORS_PER_SET] = { };
-
-    VkDescriptorSet mDescriptorSets[MAX_FRAMES] = { };
-    bool mDirty[MAX_FRAMES] = { };
+    VkDescriptorSet mDescriptorSet = VK_NULL_HANDLE;
+    VkDescriptorSetLayout mLayout = VK_NULL_HANDLE;
+    uint32_t mFrameBuilt = UINT_MAX;
+    const char* mName = nullptr;
 };
 
 #endif // API_VULKAN

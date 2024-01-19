@@ -70,10 +70,19 @@ void Buffer::Update(const void* srcData, size_t srcSize, size_t dstOffset)
     // If not host visible, then we need to use a staging buffer to transfer data to device-local memory.
     if (mHostVisible)
     {
-        void* data = nullptr;
-        vkMapMemory(device, mMemory.mDeviceMemory, mMemory.mOffset, srcSize, 0, &data);
+        void* data = mMappedPointer;
+
+        if (mMappedPointer == nullptr)
+        {
+            vkMapMemory(device, mMemory.mDeviceMemory, mMemory.mOffset, srcSize, 0, &data);
+        }
+
         memcpy(data, srcData, srcSize);
-        vkUnmapMemory(device, mMemory.mDeviceMemory);
+
+        if (mMappedPointer == nullptr)
+        {
+            vkUnmapMemory(device, mMemory.mDeviceMemory);
+        }
     }
     else
     {
@@ -85,14 +94,14 @@ void Buffer::Update(const void* srcData, size_t srcSize, size_t dstOffset)
 
 void* Buffer::Map()
 {
-    void* data = nullptr;
-    vkMapMemory(GetVulkanDevice(), mMemory.mDeviceMemory, mMemory.mOffset, mMemory.mSize, 0, &data);
-    return data;
+    vkMapMemory(GetVulkanDevice(), mMemory.mDeviceMemory, mMemory.mOffset, mMemory.mSize, 0, &mMappedPointer);
+    return mMappedPointer;
 }
 
 void Buffer::Unmap()
 {
     vkUnmapMemory(GetVulkanDevice(), mMemory.mDeviceMemory);
+    mMappedPointer = nullptr;
 }
 
 VkBuffer Buffer::Get()
@@ -108,6 +117,11 @@ size_t Buffer::GetSize() const
 BufferType Buffer::GetType() const
 {
     return mType;
+}
+
+void* Buffer::GetMappedPointer()
+{
+    return mMappedPointer;
 }
 
 #endif

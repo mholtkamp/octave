@@ -39,6 +39,8 @@ public:
     size_t GetSize() const;
     BufferType GetType() const;
 
+    void* GetMappedPointer();
+
 private:
 
     friend class DestroyQueue;
@@ -48,6 +50,7 @@ private:
     Allocation mMemory;
     BufferType mType = BufferType::Count;
     size_t mSize = 0;
+    void* mMappedPointer = nullptr;
     bool mHostVisible = false;
 };
 

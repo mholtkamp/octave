@@ -188,8 +188,8 @@ private:
     void GatherDrawData(World* world);
     void GatherLightData(World* world);
     void RenderDraws(const std::vector<DrawData>& drawData);
-    void RenderDraws(const std::vector<DrawData>& drawData, PipelineId pipelineId);
-    void RenderDebugDraws(const std::vector<DebugDraw>& draws, PipelineId pipelineId = PipelineId::Count);
+    void RenderDraws(const std::vector<DrawData>& drawData, PipelineConfig pipelineConfig);
+    void RenderDebugDraws(const std::vector<DebugDraw>& draws, PipelineConfig pipelineConfig = PipelineConfig::Count);
     void FrustumCull(Camera3D* camera);
     int32_t FrustumCullDraws(const CameraFrustum& frustum, std::vector<DrawData>& drawData);
     int32_t FrustumCullDraws(const CameraFrustum& frustum, std::vector<DebugDraw>& drawData);

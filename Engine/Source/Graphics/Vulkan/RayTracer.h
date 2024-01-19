@@ -46,6 +46,9 @@ protected:
     void DispatchNextBakeDiffuse();
     void FinalizeLightBake();
 
+    void BindPathTraceDescriptorSet();
+    void BindBakeDiffuseDescriptorSet();
+
 protected:
 
     // Ray Tracing Resources
@@ -59,6 +62,7 @@ protected:
     Buffer* mBakeAverageBuffer = nullptr;
     Buffer* mBakeDiffuseTriangleBuffer = nullptr;
     Image* mPathTraceImage = nullptr;
+    std::vector<Image*> mTextureImages;
 
     // Path Tracing and Light Baking state
     uint32_t mAccumulatedFrames = 0;

@@ -34,6 +34,11 @@ layout (set = 1, binding = 4) uniform sampler2D textures[PATH_TRACE_MAX_TEXTURES
 
 layout (set = 1, binding = 5, rgba8) uniform image2D outputImage;
 
+layout(std140, set = 1, binding = 6) buffer BakeVertexData  
+{
+   LightBakeVertex bakeVertices[];
+};
+
 #include "RayTraceCommon.glsl"
 
 layout (local_size_x = 8, local_size_y = 8) in;

@@ -9,6 +9,8 @@
 #include <unordered_set>
 #include <vector>
 
+#if 0
+
 struct MaterialPipelineRequest
 {
     uint32_t mId = 0;
@@ -54,3 +56,5 @@ protected:
 
     ThreadObject* mBuildThread = nullptr;
 };
+
+#endif

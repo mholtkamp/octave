@@ -102,24 +102,6 @@ const char* Material::GetTypeName()
     return "Material";
 }
 
-void Material::MarkDirty()
-{
-    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
-    {
-        mDirty[i] = true;
-    }
-}
-
-void Material::ClearDirty(uint32_t frameIndex)
-{
-    mDirty[frameIndex] = false;
-}
-
-bool Material::IsDirty(uint32_t frameIndex)
-{
-    return mDirty[frameIndex];
-}
-
 MaterialResource* Material::GetResource()
 {
     return &mResource;

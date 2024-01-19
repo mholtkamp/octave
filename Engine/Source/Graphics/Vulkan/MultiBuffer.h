@@ -31,11 +31,28 @@ protected:
     Buffer* mBuffers[MAX_FRAMES] = {};
 };
 
+
+struct UniformBlock
+{
+    class UniformBuffer* mUniformBuffer = nullptr;
+    uint8_t* mData = nullptr;
+    uint32_t mOffset = 0;
+    uint32_t mSize = 0;
+};
+
+// TODO: For optimal memory usage, this should be converted to a Ring Buffer.
 class UniformBuffer : public MultiBuffer
 {
 public:
-
     UniformBuffer(size_t size, const char* debugName, const void* srcData = nullptr);
+
+    void Reset(uint32_t frameIndex);
+
+    UniformBlock AllocBlock(uint32_t blockSize);
+
+protected:
+
+    int32_t mHead[MAX_FRAMES] = {};
 };
 
 #endif

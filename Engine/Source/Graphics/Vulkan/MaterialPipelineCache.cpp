@@ -7,6 +7,7 @@
 #include "System/System.h"
 #include "Log.h"
 
+#if 0
 ThreadFuncRet MaterialPipelineCache::BuildThreadFunc(void* arg)
 {
     MaterialPipelineCache* cache = (MaterialPipelineCache*)arg;
@@ -340,8 +341,7 @@ void MaterialPipelineCache::Reset()
     {
         if (it->second != nullptr)
         {
-            it->second->Destroy();
-            delete it->second;
+            GetDestroyQueue()->Destroy(it->second);
             it->second = nullptr;
         }
     }
@@ -355,8 +355,7 @@ void MaterialPipelineCache::Reset()
         {
             if (mResults[i].mPipeline != nullptr)
             {
-                mResults[i].mPipeline->Destroy();
-                delete mResults[i].mPipeline;
+                GetDestroyQueue()->Destroy(mResults[i].mPipeline);
                 mResults[i].mPipeline = nullptr;
             }
         }
@@ -424,3 +423,4 @@ void MaterialPipelineCache::SetMaxPipelines(uint32_t maxPipelines)
     mMaxPipelines = maxPipelines;
 }
 
+#endif

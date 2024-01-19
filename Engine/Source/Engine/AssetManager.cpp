@@ -994,19 +994,6 @@ std::unordered_map<std::string, AssetStub*>& AssetManager::GetAssetMap()
     return mAssetMap;
 }
 
-void AssetManager::DirtyAllMaterials()
-{
-    for (auto it = mAssetMap.begin(); it != mAssetMap.end(); ++it)
-    {
-        if (it->second->mAsset &&
-            it->second->mType == Material::GetStaticType())
-        {
-            Material* material = static_cast<Material*>(it->second->mAsset);
-            material->MarkDirty();
-        }
-    }
-}
-
 ThreadFuncRet AssetManager::AsyncLoadThreadFunc(void* in)
 {
     AssetManager& am = *((AssetManager*)in);

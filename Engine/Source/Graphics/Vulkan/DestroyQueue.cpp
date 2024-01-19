@@ -40,10 +40,16 @@ void DestroyQueue::Destroy(MultiBuffer* multiBuffer)
     mMultiBuffers[frameIndex].push_back(multiBuffer);
 }
 
-void DestroyQueue::Destroy(DescriptorSet* descriptorSet)
+void DestroyQueue::Destroy(Shader* shader)
 {
     uint32_t frameIndex = GetFrameIndex();
-    mDescriptorSets[frameIndex].push_back(descriptorSet);
+    mShaders[frameIndex].push_back(shader);
+}
+
+void DestroyQueue::Destroy(Pipeline* pipeline)
+{
+    uint32_t frameIndex = GetFrameIndex();
+    mPipelines[frameIndex].push_back(pipeline);
 }
 
 void DestroyQueue::Destroy(VkCommandBuffer commandBuffer)
@@ -68,9 +74,14 @@ void DestroyQueue::Flush(uint32_t frameIndex)
         vkFreeCommandBuffers(device, commandPool, 1, &mCommandBuffers[frameIndex][i]);
     }
 
-    for (uint32_t i = 0; i < mDescriptorSets[frameIndex].size(); ++i)
+    for (uint32_t i = 0; i < mPipelines[frameIndex].size(); ++i)
     {
-        delete mDescriptorSets[frameIndex][i];
+        delete mPipelines[frameIndex][i];
+    }
+
+    for (uint32_t i = 0; i < mShaders[frameIndex].size(); ++i)
+    {
+        delete mShaders[frameIndex][i];
     }
 
     for (uint32_t i = 0; i < mMultiBuffers[frameIndex].size(); ++i)
@@ -95,7 +106,6 @@ void DestroyQueue::Flush(uint32_t frameIndex)
     }
 
     mCommandBuffers[frameIndex].clear();
-    mDescriptorSets[frameIndex].clear();
     mMultiBuffers[frameIndex].clear();
     mImages[frameIndex].clear();
     mBuffers[frameIndex].clear();

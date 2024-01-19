@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Vertex.h"
+#include "Shader.h"
 
 #include "Graphics/GraphicsTypes.h"
 #include "Graphics/Vulkan/VulkanTypes.h"
@@ -26,90 +27,36 @@ public:
 
     virtual ~Pipeline();
 
-    void Create(VkSpecializationInfo* specInfo = nullptr);
-    void Destroy();
+    void Create(const PipelineState& state, VkPipelineCache cache, VkSpecializationInfo* specInfo = nullptr);
 
-    VkPipeline GetVkPipeline(VertexType vertType) const;
+    VkPipeline GetVkPipeline() const;
 
-    void SetVertexConfig(VertexType vertexType, const std::string& path);
-    void AddVertexConfig(VertexType vertexType, const std::string& path);
-    void SetMeshVertexConfigs(
-        const std::string& staticPath,
-        const std::string& staticColorPath,
-        const std::string& skinnedPath,
-        const std::string& particlePath);
-    void ClearVertexConfigs();
+    void Bind(VkCommandBuffer commandBuffer);
 
-    void SetFragmentShader(const std::string& path);
-
-    void BindPipeline(VkCommandBuffer commandBuffer, VertexType vertexType);
-
-    VkDescriptorSetLayout GetDescriptorSetLayout(uint32_t index = 0);
-
+    VkDescriptorSetLayout GetDescriptorSetLayout(uint32_t index);
     VkPipelineLayout GetPipelineLayout();
-
-    PipelineId GetId() const;
 
     bool IsComputePipeline() const;
 
-    void SetRenderPass(VkRenderPass renderPass);
+    void Destroy();
 
-    void CreateGraphicsPipeline(VkSpecializationInfo* specInfo);
-    void CreateComputePipeline(VkSpecializationInfo* specInfo);
+    void CreateGraphicsPipeline(VkPipelineCache cache, VkSpecializationInfo* specInfo);
+    void CreateComputePipeline(VkPipelineCache cache, VkSpecializationInfo* specInfo);
 
-    void PushSet();
-    void AddLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t descriptorCount = 1);
-
-    VkShaderModule CreateShaderModule(const char* codeData, uint32_t codeSize);
-
-    virtual void PopulateLayoutBindings();
     void CreateDescriptorSetLayouts();
     void CreatePipelineLayout();
 
-    void AddOpaqueBlendAttachmentState();
-    void AddMixBlendAttachmentState();
-    void AddAdditiveBlendAttachmentState();
-
-    std::vector<VkPipeline> mPipelines;
-    VkPipelineLayout mPipelineLayout;
-    std::vector<VkDescriptorSetLayout> mDescriptorSetLayouts;
-    
 public:
 
+    VkPipeline mPipeline = VK_NULL_HANDLE;
+    VkPipelineLayout mPipelineLayout = VK_NULL_HANDLE;
+    std::vector<VkDescriptorSetLayout> mDescriptorSetLayouts;
+
     std::string mName;
-    PipelineId mPipelineId;
-    VkRenderPass mRenderpass;
-    uint32_t mSubpass;
-    bool mComputePipeline;
+    bool mComputePipeline = false;
 
-    // Shader stages
-    std::vector<VertexConfig> mVertexConfigs;
-    std::string mFragmentShaderPath;
-    std::string mComputeShaderPath;
-
-    // Viewport
-    uint32_t mViewportWidth;
-    uint32_t mViewportHeight;
-
-    // Rasterizer stage
-    VkBool32 mRasterizerDiscard;
-    VkPrimitiveTopology mPrimitiveTopology;
-    VkPolygonMode mPolygonMode;
-    float mLineWidth;
-    VkCullModeFlags mCullMode;
-    VkFrontFace mFrontFace;
-    float mDepthBias;
-    bool mDynamicLineWidth;
-
-    // Depth Stencil state
-    VkBool32 mDepthTestEnabled;
-    VkBool32 mDepthWriteEnabled;
-    VkCompareOp mDepthCompareOp;
-
-    // Color Blend State
-    std::vector<VkPipelineColorBlendAttachmentState> mBlendAttachments;
-
-    std::vector<std::vector<VkDescriptorSetLayoutBinding> > mLayoutBindings;
+    // Really only needed for debugging.
+    PipelineState mState;
 };
 
 #endif // API_VULKAN
