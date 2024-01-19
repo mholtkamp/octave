@@ -63,6 +63,7 @@ VkDescriptorSetLayout DescriptorLayoutCache::CreateLayout(VkDescriptorSetLayoutC
     else
     {
         // Pre-existing layout not found, need to create it.
+        LogDebug("Creating new descriptor set layout");
         VkDescriptorSetLayout layout;
         vkCreateDescriptorSetLayout(device, info, nullptr, &layout);
 

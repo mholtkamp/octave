@@ -675,6 +675,7 @@
     <ClCompile Include="Source\Graphics\Vulkan\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Graphics_Vulkan.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanTypes.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanUtils.cpp" />
     <ClCompile Include="Source\Input\Android\Input_Android.cpp" />
     <ClCompile Include="Source\Input\Input.cpp" />

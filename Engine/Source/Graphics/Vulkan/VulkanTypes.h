@@ -27,6 +27,15 @@ enum class BasicBlendState
 
 struct PipelineState
 {
+    PipelineState()
+    {
+        // Default write masks to RGBA
+        for (uint32_t i = 0; i < MAX_RENDER_TARGETS; ++i)
+        {
+            mBlendStates[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        }
+    }
+
     Shader* mVertexShader = nullptr;
     Shader* mFragmentShader = nullptr;
     Shader* mComputeShader = nullptr;
@@ -52,25 +61,9 @@ struct PipelineState
     // Blending
     VkPipelineColorBlendAttachmentState mBlendStates[MAX_RENDER_TARGETS] = {};
 
-    bool operator==(const PipelineState& other) const
-    {
-        bool equal = (memcmp(this, &other, sizeof(PipelineState)) == 0);
-    }
+    bool operator==(const PipelineState& other) const;
 
-    size_t Hash() const
-    {
-        size_t ret = 0x1337;
-        uint8_t* data = (uint8_t*)this;
-        uint32_t size = sizeof(PipelineState);
-        
-        for (uint32_t i = 0; i < size; ++i)
-        {
-            ret = ret << 4;
-            ret += data[i];
-        }
-
-        return ret;
-    }
+    size_t Hash() const;
 };
 
 struct PipelineStateHasher

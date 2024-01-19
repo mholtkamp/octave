@@ -647,6 +647,9 @@
     <ClCompile Include="Source\Graphics\Vulkan\PipelineCache.cpp">
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanTypes.cpp">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">

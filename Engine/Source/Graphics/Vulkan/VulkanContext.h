@@ -206,6 +206,8 @@ private:
     void RecreateSurface();
     void CreateGlobalShaders();
     void DestroyGlobalShaders();
+    void CreateMisc();
+    void DestroyMisc();
 
     void PickPhysicalDevice();
     bool IsDeviceSuitable(VkPhysicalDevice device);
@@ -333,6 +335,7 @@ private:
     uint32_t mSceneWidth = 0;
     uint32_t mSceneHeight = 0;
     VkPhysicalDeviceProperties mDeviceProperties;
+    Buffer* mFullScreenVertexBuffer = nullptr;
 
 #if EDITOR
 public:

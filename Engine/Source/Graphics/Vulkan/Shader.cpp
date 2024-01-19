@@ -150,7 +150,8 @@ void Shader::Create(const char* data, uint32_t size)
             // We can set this later when creating the VkDescriptorSetLayout.
             // If graphics, just set stages to Vertex + Fragment. For compute, just compute stage.
             // We need to merge the descriptors for vertex and fragment I think.
-            layoutBinding.stageFlags = GetShaderStageFlags(mStage);
+            //layoutBinding.stageFlags = GetShaderStageFlags(mStage);
+            layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
 
             mDescriptorBindings[set].push_back(layoutBinding);
         }

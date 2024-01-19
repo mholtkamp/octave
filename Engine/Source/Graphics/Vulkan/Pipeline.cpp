@@ -144,7 +144,7 @@ void Pipeline::CreateGraphicsPipeline(VkPipelineCache cache, VkSpecializationInf
     colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlending.logicOpEnable = VK_FALSE;
     colorBlending.logicOp = VK_LOGIC_OP_COPY;
-    colorBlending.attachmentCount = static_cast<uint32_t>(MAX_RENDER_TARGETS);
+    colorBlending.attachmentCount = 1; // static_cast<uint32_t>(MAX_RENDER_TARGETS);
     colorBlending.pAttachments = mState.mBlendStates;
     colorBlending.blendConstants[0] = 0.0f;
     colorBlending.blendConstants[1] = 0.0f;
@@ -234,13 +234,15 @@ void Pipeline::CreateComputePipeline(VkPipelineCache cache, VkSpecializationInfo
 
 void Pipeline::Create(const PipelineState& state, VkPipelineCache cache, VkSpecializationInfo* specInfo)
 {
+    LogDebug("Creating new pipeline");
+
     // We probably don't need to store the state internally, but it might help for debugging.
     // If we have tons of pipelines and its consuming a lot of memory, then we can pass a ref of the state
     // into the CreateXPipeline() funcs.
     mState = state;
 
     // Ensure that a renderpass has been set before creating the pipeline.
-    OCT_ASSERT(mState.mRenderPass != VK_NULL_HANDLE || mComputePipeline);
+    OCT_ASSERT(mState.mRenderPass != VK_NULL_HANDLE || mState.mComputeShader != nullptr);
 
     if (mComputePipeline)
     {
@@ -251,7 +253,6 @@ void Pipeline::Create(const PipelineState& state, VkPipelineCache cache, VkSpeci
         CreateGraphicsPipeline(cache, specInfo);
     }
 }
-
 
 void Pipeline::Destroy()
 {

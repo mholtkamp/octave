@@ -157,6 +157,8 @@ void VulkanContext::Initialize()
     CreateGlobalShaders();
     InitPipelineConfigs();
 
+    CreateMisc();
+
 #if EDITOR
 
     {
@@ -224,6 +226,8 @@ void VulkanContext::Destroy()
 #if EDITOR
     ImGui_ImplVulkan_Shutdown();
 #endif
+
+    DestroyMisc();
 
     DestroyGlobalShaders();
 
@@ -543,15 +547,6 @@ void VulkanContext::EndRenderPass()
 
 void VulkanContext::CommitPipeline()
 {
-    // TODO: Resolve pipeline from state and then bind it.
-    LogError("TODO: Resolve pipeline and bind it!");
-#if 0
-    Pipeline* pipeline = GetPipeline(id);
-    OCT_ASSERT(pipeline != nullptr &&
-        pipeline->GetId() == id);
-    BindPipeline(pipeline, vertexType);
-#endif
-
     mBoundPipeline = mPipelineCache.Resolve(mPipelineState);
     mBoundPipeline->Bind(mCommandBuffers[mFrameIndex]);
 
@@ -609,8 +604,13 @@ void VulkanContext::DrawLines(const std::vector<Line>& lines)
 
 void VulkanContext::DrawFullscreen()
 {
-    // TODO: Bind buffer with 4 vertices
-    vkCmdDraw(GetCommandBuffer(), 4, 1, 0, 0);
+    VkCommandBuffer cb = GetCommandBuffer();
+
+    VkBuffer vertexBuffers[] = { mFullScreenVertexBuffer->Get() };
+    VkDeviceSize offsets[] = { 0 };
+    vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
+
+    vkCmdDraw(cb, 4, 1, 0, 0);
 }
 
 void VulkanContext::DestroySwapchain()
@@ -2189,6 +2189,19 @@ void VulkanContext::DestroyGlobalShaders()
     mGlobalShaders.clear();
 }
 
+void VulkanContext::CreateMisc()
+{
+    // Actually this can just be empty since we determine vertex positions independently in vert shader.
+    static VertexUI sFullScreenVertexData[6] = { };
+    mFullScreenVertexBuffer = new Buffer(BufferType::Vertex, sizeof(sFullScreenVertexData), "Full Screen Vertices", (void*)sFullScreenVertexData, false);
+}
+
+void VulkanContext::DestroyMisc()
+{
+    GetDestroyQueue()->Destroy(mFullScreenVertexBuffer);
+    mFullScreenVertexBuffer = nullptr;
+}
+
 bool VulkanContext::IsDeviceSuitable(VkPhysicalDevice device)
 {
     VkPhysicalDeviceProperties deviceProperties;
@@ -2469,7 +2482,12 @@ const PipelineState& VulkanContext::GetPipelineState() const
 
 void VulkanContext::SetPipelineState(const PipelineState& state)
 {
+    // Do not change Render Pass.
+    VkRenderPass curRenderPass = mPipelineState.mRenderPass;
+
     mPipelineState = state;
+
+    mPipelineState.mRenderPass = curRenderPass;
 }
 
 void VulkanContext::SetVertexShader(Shader* shader)

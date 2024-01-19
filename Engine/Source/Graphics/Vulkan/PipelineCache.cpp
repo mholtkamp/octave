@@ -13,6 +13,7 @@ void PipelineCache::Create()
     const char* initData = nullptr;
     size_t initSize = 0;
 
+#if 0
     Stream pipelineData;
     if (SYS_DoesSaveExist(PIPELINE_CACHE_SAVE_NAME))
     {
@@ -22,6 +23,7 @@ void PipelineCache::Create()
             initSize = (size_t)pipelineData.GetSize();
         }
     }
+#endif
 
     OCT_ASSERT(mPipelineCache == VK_NULL_HANDLE);
     VkPipelineCacheCreateInfo ciCache = {};

@@ -1153,18 +1153,15 @@ void DestroyTextureResource(Texture* texture)
     }
 }
 
-void BindMaterialResource(Material* material)
+void BindForwardVertexType(VertexType vertType)
 {
-    if (material == nullptr)
-        return;
-
     VulkanContext* ctx = GetVulkanContext();
-    MaterialResource* res = material->GetResource();
 
+    // Always bind correct vert shader even
     // TODO: Lite material vs full material
     const char* vertShaderName = "Forward.vert";
 
-    switch (ctx->GetPipelineState().mVertexType)
+    switch (vertType)
     {
     case VertexType::VertexColor:
     case VertexType::VertexInstanceColor:
@@ -1182,7 +1179,18 @@ void BindMaterialResource(Material* material)
         break;
     }
 
+    ctx->SetVertexType(vertType);
     ctx->SetVertexShader(vertShaderName);
+}
+
+void BindMaterialResource(Material* material)
+{
+    if (material == nullptr)
+        return;
+
+    VulkanContext* ctx = GetVulkanContext();
+    MaterialResource* res = material->GetResource();
+
     ctx->SetFragmentShader("Forward.frag");
 
     bool depthEnabled = !material->IsDepthTestDisabled();
@@ -1201,9 +1209,11 @@ void BindMaterialResource(Material* material)
         break;
     case BlendMode::Translucent:
         ctx->SetBlendState(BasicBlendState::Translucent, 0);
+        ctx->SetDepthWriteEnabled(false);
         break;
     case BlendMode::Additive:
         ctx->SetBlendState(BasicBlendState::Additive, 0);
+        ctx->SetDepthWriteEnabled(false);
         break;
     }
 }
@@ -1441,7 +1451,7 @@ void DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverride)
             material = material ? material : Renderer::Get()->GetDefaultMaterial();
         }
 
-        GetVulkanContext()->SetVertexType(vertexType);
+        BindForwardVertexType(vertexType);
         BindMaterialResource(material);
         GetVulkanContext()->CommitPipeline();
 
@@ -1578,7 +1588,7 @@ void DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
         }
 
         VertexType vertType = IsCpuSkinningRequired(skeletalMeshComp) ? VertexType::Vertex : VertexType::VertexSkinned;
-        GetVulkanContext()->SetVertexType(vertType);
+        BindForwardVertexType(vertType);
         BindMaterialResource(material);
         GetVulkanContext()->CommitPipeline();
 
@@ -1705,7 +1715,7 @@ void DrawTextMeshComp(TextMesh3D* textMeshComp)
         material = material ? material : Renderer::Get()->GetDefaultMaterial();
     }
 
-    GetVulkanContext()->SetVertexType(VertexType::Vertex);
+    BindForwardVertexType(VertexType::Vertex);
     BindMaterialResource(material);
     GetVulkanContext()->CommitPipeline();
 
@@ -1861,7 +1871,7 @@ void DrawParticleComp(Particle3D* particleComp)
         vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
         vkCmdBindIndexBuffer(cb, resource->mIndexBuffer->Get(), 0, VK_INDEX_TYPE_UINT32);
 
-        GetVulkanContext()->SetVertexType(VertexType::VertexParticle);
+        BindForwardVertexType(VertexType::VertexParticle);
         BindMaterialResource(material);
         GetVulkanContext()->CommitPipeline();
 
@@ -2199,7 +2209,7 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
         }
 
         VertexType vertType = mesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex;
-        GetVulkanContext()->SetVertexType(vertType);
+        BindForwardVertexType(vertType);
 
         BindMaterialResource(material);
         GetVulkanContext()->CommitPipeline();

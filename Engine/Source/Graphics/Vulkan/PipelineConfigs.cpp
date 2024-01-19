@@ -21,6 +21,7 @@ void InitPipelineConfigs()
     stateForward.mDepthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
     stateForward.mDepthWriteEnabled = true;
     stateForward.mCullMode = VK_CULL_MODE_BACK_BIT;
+    stateForward.mBlendStates[0] = GetBasicBlendState(BasicBlendState::Opaque);
 
     // Opaque
     PipelineState& stateOpaque = sPipelineConfigs[(uint32_t)PipelineConfig::Opaque];
@@ -101,6 +102,7 @@ void InitPipelineConfigs()
     stateQuad.mBlendStates[0].blendEnable = true;
     stateQuad.mBlendStates[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
     stateQuad.mBlendStates[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    stateQuad.mBlendStates[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
     // Text
     PipelineState& stateText = sPipelineConfigs[(uint32_t)PipelineConfig::Text];
@@ -113,6 +115,8 @@ void InitPipelineConfigs()
     stateText.mBlendStates[0].blendEnable = true;
     stateText.mBlendStates[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
     stateText.mBlendStates[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    stateText.mBlendStates[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+
 
     // Poly
     PipelineState& statePoly = sPipelineConfigs[(uint32_t)PipelineConfig::Poly];
@@ -126,6 +130,7 @@ void InitPipelineConfigs()
     statePoly.mBlendStates[0].blendEnable = true;
     statePoly.mBlendStates[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
     statePoly.mBlendStates[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    statePoly.mBlendStates[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
     // Selected
     PipelineState& stateSelected = sPipelineConfigs[(uint32_t)PipelineConfig::Selected];
@@ -179,6 +184,7 @@ void InitPipelineConfigs()
 void BindPipelineConfig(PipelineConfig config)
 {
     uint32_t index = (uint32_t)config;
+    
     GetVulkanContext()->SetPipelineState(sPipelineConfigs[index]);
 
     // TODO: Figure out a better way / place to handle custom bindings.
