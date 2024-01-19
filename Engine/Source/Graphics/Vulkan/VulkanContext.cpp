@@ -1259,7 +1259,7 @@ void VulkanContext::CreateImageViews()
 
 void VulkanContext::CreateFrameUniformBuffer()
 {
-    mFrameUniformBuffer = new UniformBuffer(128 * 1024 * 1024, "Frame Uniform Buffer");
+    mFrameUniformBuffer = new UniformBuffer(32 * 1024 * 1024, "Frame Uniform Buffer");
 
     // Leave these buffers mapped forever?
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
