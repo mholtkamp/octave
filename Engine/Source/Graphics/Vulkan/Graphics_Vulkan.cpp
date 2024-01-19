@@ -59,10 +59,9 @@ void GFX_EndRenderPass()
     gVulkanContext->EndRenderPass();
 }
 
-void GFX_SetPipelineState(PipelineConfig pipelineConfig, VertexType vertexType)
+void GFX_SetPipelineState(PipelineConfig pipelineConfig)
 {
     BindPipelineConfig(pipelineConfig);
-    gVulkanContext->SetVertexType(vertexType);
 }
 
 void GFX_SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation)
@@ -272,12 +271,12 @@ void GFX_DestroyTextureResource(Texture* texture)
 
 void GFX_CreateMaterialResource(Material* material)
 {
-    CreateMaterialResource(material);
+
 }
 
 void GFX_DestroyMaterialResource(Material* material)
 {
-    DestroyMaterialResource(material);
+
 }
 
 void GFX_CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_t numVertices, void* vertices, uint32_t numIndices, IndexType* indices)
@@ -302,12 +301,12 @@ void GFX_DestroySkeletalMeshResource(SkeletalMesh* skeletalMesh)
 
 void GFX_CreateStaticMeshCompResource(StaticMesh3D* staticMeshComp)
 {
-    CreateStaticMeshCompResource(staticMeshComp);
+
 }
 
 void GFX_DestroyStaticMeshCompResource(StaticMesh3D* staticMeshComp)
 {
-    DestroyStaticMeshCompResource(staticMeshComp);
+
 }
 
 void GFX_UpdateStaticMeshCompResourceColors(StaticMesh3D* staticMeshComp)
@@ -322,7 +321,7 @@ void GFX_DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverri
 
 void GFX_CreateSkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp)
 {
-    CreateSkeletalMeshCompResource(skeletalMeshComp);
+
 }
 
 void GFX_DestroySkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp)
@@ -357,7 +356,7 @@ void GFX_DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
 
 void GFX_CreateTextMeshCompResource(TextMesh3D* textMeshComp)
 {
-    CreateTextMeshCompResource(textMeshComp);
+
 }
 
 void GFX_DestroyTextMeshCompResource(TextMesh3D* textMeshComp)
@@ -377,7 +376,7 @@ void GFX_DrawTextMeshComp(TextMesh3D* textMeshComp)
 
 void GFX_CreateParticleCompResource(Particle3D* particleComp)
 {
-    CreateParticleCompResource(particleComp);
+
 }
 
 void GFX_DestroyParticleCompResource(Particle3D* particleComp)

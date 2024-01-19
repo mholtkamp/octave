@@ -132,12 +132,9 @@ void VulkanContext::Initialize()
     CreatePipelines();
     SavePipelineCacheToFile();
 
-    CreateGlobalDescriptorSet();
-
     mRayTracer.CreateStaticRayTraceResources();
     mRayTracer.CreateDynamicRayTraceResources();
 
-    CreatePostProcessDescriptorSet();
     CreateFramebuffers();
     CreateCommandBuffers();
     CreateSemaphores();
@@ -162,12 +159,6 @@ void VulkanContext::Initialize()
 
     CreateGlobalShaders();
     InitPipelineConfigs();
-
-    mMaterialPipelineCache.Create();
-
-#if PLATFORM_ANDROID
-    EnableMaterialPipelineCache(true);
-#endif
 
 #if EDITOR
 
@@ -237,14 +228,9 @@ void VulkanContext::Destroy()
     ImGui_ImplVulkan_Shutdown();
 #endif
 
-    mMaterialPipelineCache.Destroy();
-
     DestroyGlobalShaders();
 
     DestroyQueryPools();
-
-    mMeshDescriptorSetArena.Destroy();
-    mMeshUniformBufferArena.Destroy();
 
     mRayTracer.DestroyStaticRayTraceResources();
 
@@ -315,6 +301,9 @@ void VulkanContext::BeginFrame()
     // Reset our command buffer to record a fresh set of commands for this frame.
     vkResetCommandBuffer(cb, 0);
 
+    // Reset descriptor pool
+    mDescriptorPools[mFrameIndex].Reset();
+
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
@@ -325,18 +314,10 @@ void VulkanContext::BeginFrame()
 
     ReadTimeQueryResults();
 
-    mMeshDescriptorSetArena.Reset();
-    mMeshUniformBufferArena.Reset();
-
     // We need to update global data at begining of the frame because 
     // when it is bound, we need the dynamic offset to be updated already.
     UpdateGlobalUniformData();
     UpdateGlobalDescriptorSet();
-
-    if (mEnableMaterialPipelineCache)
-    {
-        mMaterialPipelineCache.Update();
-    }
 
 #if EDITOR
     ImGui_ImplVulkan_NewFrame();
@@ -572,11 +553,16 @@ void VulkanContext::CommitPipeline()
         pipeline->GetId() == id);
     BindPipeline(pipeline, vertexType);
 #endif
+
+    mBoundPipeline = mPipelineCache.ResolveAndBindPipeline(mPipelineState);
+
+    // TODO: Can we avoid always binding the global descriptor set.
+    BindGlobalDescriptorSet();
 }
 
+#if 0
 void VulkanContext::BindPipeline(Pipeline* pipeline)
 {
-#if 0
     VkCommandBuffer cb = mCommandBuffers[mFrameIndex];
     VkPipelineLayout pipelineLayout = pipeline->GetPipelineLayout();
     
@@ -600,8 +586,8 @@ void VulkanContext::BindPipeline(Pipeline* pipeline)
 
     default: break;
     }
-#endif
 }
+#endif
 
 void VulkanContext::DrawLines(const std::vector<Line>& lines)
 {
@@ -697,9 +683,6 @@ void VulkanContext::DestroySwapchain()
 
     GetDestroyQueue()->Destroy(mSceneColorImage);
     mSceneColorImage = nullptr;
-
-    GetDestroyQueue()->Destroy(mGlobalDescriptorSet);
-    mGlobalDescriptorSet = nullptr;
 
     for (size_t i = 0; i < mSwapchainImageViews.size(); ++i)
     {
@@ -2023,25 +2006,26 @@ void VulkanContext::EnableMaterials(bool enable)
 
 void VulkanContext::UpdateGlobalDescriptorSet()
 {
-    UniformBlock block = WriteUniformBlock(&mGlobalUniformData, sizeof(GlobalUniformData));
-    mGlobalDescriptorSet->UpdateUniformDescriptor(GLD_UNIFORM_BUFFER, block);
-    mGlobalDescriptorSet->UpdateImageDescriptor(GLD_SHADOW_MAP, mShadowMapImage);
+    UniformBlock uniformBlock = WriteUniformBlock(&mGlobalUniformData, sizeof(GlobalUniformData));
+
+    mGlobalDescriptorSet = DescriptorSet::Begin("Global DS")
+        .WriteUniformBuffer(GLD_UNIFORM_BUFFER, uniformBlock)
+        .WriteImage(GLD_SHADOW_MAP, mShadowMapImage)
+        .Build();
 }
 
-void VulkanContext::CreateGlobalDescriptorSet()
+void VulkanContext::BindGlobalDescriptorSet()
 {
-    VkDescriptorSetLayout layout = GetPipeline(PipelineId::Opaque)->GetDescriptorSetLayout(0);
-    mGlobalDescriptorSet = new DescriptorSet(layout, "Global DS");
-
-    UpdateGlobalDescriptorSet();
+    mGlobalDescriptorSet.Bind(mCommandBuffers[mFrameIndex], 0);
 }
 
-void VulkanContext::CreatePostProcessDescriptorSet()
+void VulkanContext::BindPostProcessDescriptorSet()
 {
-    VkDescriptorSetLayout layout = GetPipeline(PipelineId::PostProcess)->GetDescriptorSetLayout(1);
-    mPostProcessDescriptorSet = new DescriptorSet(layout, "Postprocess DS");
-    mPostProcessDescriptorSet->UpdateImageDescriptor(0, mSceneColorImage);
-    mPostProcessDescriptorSet->UpdateImageDescriptor(1, mSupportsRayTracing ? mRayTracer.GetPathTraceImage() : mSceneColorImage);
+    DescriptorSet::Begin("PostProcess DS")
+        .WriteImage(0, mSceneColorImage)
+        .WriteImage(1, mSupportsRayTracing ? mRayTracer.GetPathTraceImage() : mSceneColorImage)
+        .Build()
+        .Bind(mCommandBuffers[mFrameIndex], 1);
 }
 
 void VulkanContext::CreateCommandPool()
@@ -2170,12 +2154,6 @@ void VulkanContext::RecreateSwapchain(bool recreateSurface)
         return;
     }
 
-    if (mEnableMaterialPipelineCache)
-    {
-        // Need to stop thread temporarily while resizing to avoid data access hazards.
-        mMaterialPipelineCache.Enable(false);
-    }
-
     DeviceWaitIdle();
 
     DestroySwapchain();
@@ -2192,9 +2170,7 @@ void VulkanContext::RecreateSwapchain(bool recreateSurface)
     CreateShadowMapImage();
     CreateRenderPass();
     CreateFramebuffers();
-    CreateGlobalDescriptorSet();
     mRayTracer.CreateDynamicRayTraceResources();
-    CreatePostProcessDescriptorSet();
 
 #if EDITOR
     CreateHitCheck();
@@ -2216,11 +2192,6 @@ void VulkanContext::RecreateSwapchain(bool recreateSurface)
     // may lead to an OOM crash in the VRAM allocator.
     DeviceWaitIdle();
     GetDestroyQueue()->FlushAll();
-
-    if (mEnableMaterialPipelineCache)
-    {
-        mMaterialPipelineCache.Enable(true);
-    }
 }
 
 void VulkanContext::RecreateSurface()
@@ -2278,11 +2249,6 @@ void VulkanContext::DestroyGlobalShaders()
     }
 
     mGlobalShaders.clear();
-}
-
-DescriptorSet* VulkanContext::GetGlobalDescriptorSet()
-{
-    return mGlobalDescriptorSet;
 }
 
 bool VulkanContext::IsDeviceSuitable(VkPhysicalDevice device)
@@ -2733,16 +2699,6 @@ void VulkanContext::SetColorWriteMask(VkColorComponentFlags writeMask, uint32_t 
     mPipelineState.mBlendStates[index].colorWriteMask = writeMask;
 }
 
-DescriptorSetArena& VulkanContext::GetMeshDescriptorSetArena()
-{
-    return mMeshDescriptorSetArena;
-}
-
-UniformBufferArena& VulkanContext::GetMeshUniformBufferArena()
-{
-    return mMeshUniformBufferArena;
-}
-
 void VulkanContext::BeginGpuTimestamp(const char* name)
 {
 #if PROFILING_ENABLED
@@ -2864,25 +2820,6 @@ RayTracer* VulkanContext::GetRayTracer()
 VkSurfaceTransformFlagBitsKHR VulkanContext::GetPreTransformFlag() const
 {
     return mPreTransformFlag;
-}
-
-void VulkanContext::EnableMaterialPipelineCache(bool enable)
-{
-    if (mEnableMaterialPipelineCache != enable)
-    {
-        mEnableMaterialPipelineCache = enable;
-        mMaterialPipelineCache.Enable(enable);
-    }
-}
-
-bool VulkanContext::IsMaterialPipelineCacheEnabled() const
-{
-    return mEnableMaterialPipelineCache;
-}
-
-MaterialPipelineCache* VulkanContext::GetMaterialPipelineCache()
-{
-    return &mMaterialPipelineCache;
 }
 
 uint32_t VulkanContext::GetSceneWidth()
@@ -3258,7 +3195,7 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
         BeginRenderPass(RenderPassId::HitCheck);
         std::vector<DebugDraw> debugDraws;
 
-        BindPipeline(PipelineId::HitCheck, VertexType::Vertex);
+        BindPipelineConfig(PipelineConfig::HitCheck);
 
         uint32_t i = 1; // Start hit check id at 1, 0 = no hit.
         auto renderHitChecks = [&](Node* node) -> bool
@@ -3274,7 +3211,7 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
                 // Make foreign nodes select their non-foreign ancestors.
                 uint32_t hitCheckId = node3d->IsForeign() ? node3d->GetParent()->GetHitCheckId() : i;
                 node3d->SetHitCheckId(hitCheckId);
-                node3d->Render(PipelineId::HitCheck);
+                node3d->Render(PipelineConfig::HitCheck);
                 ++i;
 
                 if (Renderer::Get()->IsProxyRenderingEnabled())

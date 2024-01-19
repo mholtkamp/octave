@@ -10,12 +10,14 @@ void InitPipelineConfigs()
     PipelineState& stateShadow = sPipelineConfigs[(uint32_t)PipelineConfig::Shadow];
     stateShadow.mVertexShader = gVulkanContext->GetGlobalShader("Shadow.vert");
     stateShadow.mFragmentShader = gVulkanContext->GetGlobalShader("Shadow.frag");
+    stateShadow.mVertexType = VertexType::Vertex;
     stateShadow.mRasterizerDiscard = false;
 
     // Forward
     PipelineState& stateForward = sPipelineConfigs[(uint32_t)PipelineConfig::Forward];
     stateForward.mVertexShader = gVulkanContext->GetGlobalShader("Forward.vert");
     stateForward.mFragmentShader = gVulkanContext->GetGlobalShader("Forward.frag");
+    stateForward.mVertexType = VertexType::Vertex;
     stateForward.mDepthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
     stateForward.mDepthWriteEnabled = true;
     stateForward.mCullMode = VK_CULL_MODE_BACK_BIT;
@@ -78,6 +80,7 @@ void InitPipelineConfigs()
     PipelineState& statePostProcess = sPipelineConfigs[(uint32_t)PipelineConfig::PostProcess];
     statePostProcess.mVertexShader = gVulkanContext->GetGlobalShader("ScreenRect.vert");
     statePostProcess.mFragmentShader = gVulkanContext->GetGlobalShader("PostProcess.frag");
+    statePostProcess.mVertexType = VertexType::VertexUI;
     statePostProcess.mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     statePostProcess.mCullMode = VK_CULL_MODE_NONE;
     statePostProcess.mDepthTestEnabled = false;
@@ -91,7 +94,7 @@ void InitPipelineConfigs()
     PipelineState& stateQuad = sPipelineConfigs[(uint32_t)PipelineConfig::Quad];
     stateQuad.mVertexShader = gVulkanContext->GetGlobalShader("Quad.vert");
     stateQuad.mFragmentShader = gVulkanContext->GetGlobalShader("Quad.frag");
-    stateText.mVertexType = VertexType::VertexUI;
+    stateQuad.mVertexType = VertexType::VertexUI;
     stateQuad.mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     stateQuad.mCullMode = VK_CULL_MODE_NONE;
     stateQuad.mDepthTestEnabled = false;
@@ -176,4 +179,12 @@ void BindPipelineConfig(PipelineConfig config)
 {
     uint32_t index = (uint32_t)config;
     GetVulkanContext()->SetPipelineState(sPipelineConfigs[index]);
+
+    // TODO: Figure out a better way / place to handle custom bindings.
+    if (config == PipelineConfig::PostProcess ||
+        config == PipelineConfig::NullPostProcess)
+    {
+        GetVulkanContext()->CommitPipeline();
+        GetVulkanContext()->BindPostProcessDescriptorSet();
+    }
 }

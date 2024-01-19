@@ -2093,7 +2093,7 @@ void DestroyPolyResource(Poly* poly)
     }
 }
 
-void BindGeomtryDescriptorSet(Poly* poly)
+void BindGeometryDescriptorSet(Poly* poly)
 {
     VkCommandBuffer cb = GetCommandBuffer();
     PolyResource* resource = poly->GetResource();
@@ -2181,9 +2181,6 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
     {
         VkCommandBuffer cb = GetCommandBuffer();
 
-        // Setup uniform buffer
-        //UniformBufferArena& uniformArena = GetVulkanContext()->GetMeshUniformBufferArena();
-        //UniformBuffer* uniformBuffer = uniformArena.Alloc(sizeof(GeometryData), "DrawStaticMesh Uniforms");
         GeometryData ubo = {};
         WriteGeometryUniformData(ubo, GetWorld(), nullptr, transform);
         ubo.mColor = color;
@@ -2212,11 +2209,6 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
             .Build()
             .Bind(cb, 1);
         BindMaterialDescriptorSet(material);
-
-        //DescriptorSetArena& descriptorArena = GetVulkanContext()->GetMeshDescriptorSetArena();
-        //DescriptorSet* descriptorSet = descriptorArena.Alloc(pipeline->GetDescriptorSetLayout((uint32_t)DescriptorSetBinding::Geometry));
-        //descriptorSet->UpdateUniformDescriptor(GD_UNIFORM_BUFFER, block);
-        //descriptorSet->Bind(cb, (uint32_t)DescriptorSetBinding::Geometry, pipeline->GetPipelineLayout());
 
         vkCmdDrawIndexed(cb,
             mesh->GetNumIndices(),

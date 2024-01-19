@@ -104,9 +104,12 @@ void DestroyTextureResource(Texture* texture);
 void BindMaterialResource(Material* material);
 
 // StaticMesh
+void CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_t numVertices, void* vertices, uint32_t numIndices, IndexType* indices);
+void DestroyStaticMeshResource(StaticMesh* staticMesh);
 void BindStaticMeshResource(StaticMesh* staticMesh);
 
 // SkeletalMesh
+void CreateSkeletalMeshResource(SkeletalMesh* skeletalMesh, uint32_t numVertices, VertexSkinned* vertices, uint32_t numIndices, IndexType* indices);
 void DestroySkeletalMeshResource(SkeletalMesh* skeletalMesh);
 void BindSkeletalMeshResource(SkeletalMesh* skeletalMesh);
 void BindSkeletalMeshResourceIndices(SkeletalMesh* skeletalMesh);

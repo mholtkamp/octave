@@ -894,7 +894,6 @@
     <ClInclude Include="Source\Graphics\Vulkan\PipelineLibrary.h" />
     <ClInclude Include="Source\Graphics\Vulkan\PipelineConfigs.h" />
     <ClInclude Include="Source\Graphics\Vulkan\RayTracer.h" />
-    <ClInclude Include="Source\Graphics\Vulkan\ResourceArena.h" />
     <ClInclude Include="Source\Graphics\Vulkan\Shader.h" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanConstants.h" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanContext.h" />

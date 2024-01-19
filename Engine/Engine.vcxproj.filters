@@ -936,9 +936,6 @@
     <ClInclude Include="Source\Graphics\Graphics.h">
       <Filter>Source Files\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Graphics\Vulkan\ResourceArena.h">
-      <Filter>Source Files\Graphics\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Graphics\Vulkan\VulkanConstants.h">
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClInclude>

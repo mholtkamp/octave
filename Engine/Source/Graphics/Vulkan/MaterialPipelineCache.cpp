@@ -7,6 +7,7 @@
 #include "System/System.h"
 #include "Log.h"
 
+#if 0
 ThreadFuncRet MaterialPipelineCache::BuildThreadFunc(void* arg)
 {
     MaterialPipelineCache* cache = (MaterialPipelineCache*)arg;
@@ -416,3 +417,4 @@ void MaterialPipelineCache::SetMaxPipelines(uint32_t maxPipelines)
     mMaxPipelines = maxPipelines;
 }
 
+#endif

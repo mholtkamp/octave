@@ -36,7 +36,7 @@ VkDescriptorSetLayout DescriptorLayoutCache::CreateLayout(VkDescriptorSetLayoutC
     {
         layoutInfo.mBindings.push_back(info->pBindings[i]);
 
-        if (info->pBindings[i].binding > lastBinding)
+        if ((int32_t)info->pBindings[i].binding > lastBinding)
             lastBinding = info->pBindings[i].binding;
         else
             isSorted = false;
@@ -90,6 +90,8 @@ bool DescriptorLayoutCache::DescriptorLayoutInfo::operator==(const DescriptorLay
         if (other.mBindings[i].stageFlags != mBindings[i].stageFlags)
             return false;
     }
+
+    return true;
 }
 
 size_t DescriptorLayoutCache::DescriptorLayoutInfo::Hash() const

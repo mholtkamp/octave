@@ -877,7 +877,7 @@ void Renderer::RenderDraws(const std::vector<DrawData>& drawData, PipelineConfig
 {
     for (uint32_t i = 0; i < drawData.size(); ++i)
     {
-        GFX_SetPipelineState(pipelineConfig, drawData[i].mNode->GetVertexType());
+        GFX_SetPipelineState(pipelineConfig);
         drawData[i].mNode->Render();
     }
 }
@@ -894,7 +894,7 @@ void Renderer::RenderDebugDraws(const std::vector<DebugDraw>& draws, PipelineCon
         {
             if (!drawMaterials)
             {
-                GFX_SetPipelineState(pipelineConfig, draws[i].mMesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex);
+                GFX_SetPipelineState(pipelineConfig);
             }
 
             GFX_DrawStaticMesh(draws[i].mMesh, draws[i].mMaterial, draws[i].mTransform, draws[i].mColor);

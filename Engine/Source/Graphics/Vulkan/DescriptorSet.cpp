@@ -14,6 +14,8 @@ DescriptorSet DescriptorSet::Begin(const char* name)
 {
     DescriptorSet retSet;
     retSet.mName = name;
+
+    return retSet;
 }
 
 DescriptorSet& DescriptorSet::WriteImage(int32_t binding, Image* image)
@@ -23,6 +25,8 @@ DescriptorSet& DescriptorSet::WriteImage(int32_t binding, Image* image)
     bindInfo.mObject = image;
     bindInfo.mBinding = binding;
     mBindings.push_back(bindInfo);
+
+    return *this;
 }
 
 DescriptorSet& DescriptorSet::WriteImageArray(int32_t binding, const std::vector<Image*>& imageArray)
@@ -34,6 +38,8 @@ DescriptorSet& DescriptorSet::WriteImageArray(int32_t binding, const std::vector
     bindInfo.mBinding = binding;
     bindInfo.mCount = (uint32_t)imageArray.size();
     mBindings.push_back(bindInfo);
+
+    return *this;
 }
 
 DescriptorSet& DescriptorSet::WriteUniformBuffer(int32_t binding, UniformBuffer* uniformBuffer)
@@ -44,6 +50,8 @@ DescriptorSet& DescriptorSet::WriteUniformBuffer(int32_t binding, UniformBuffer*
     bindInfo.mSize = (uint32_t)uniformBuffer->GetSize();
     bindInfo.mBinding = binding;
     mBindings.push_back(bindInfo);
+
+    return *this;
 }
 
 DescriptorSet& DescriptorSet::WriteUniformBuffer(int32_t binding, const UniformBlock& block)
@@ -55,6 +63,8 @@ DescriptorSet& DescriptorSet::WriteUniformBuffer(int32_t binding, const UniformB
     bindInfo.mSize = block.mSize;
     bindInfo.mBinding = binding;
     mBindings.push_back(bindInfo);
+
+    return *this;
 }
 
 DescriptorSet& DescriptorSet::WriteStorageBuffer(int32_t binding, Buffer* storageBuffer)
@@ -64,6 +74,8 @@ DescriptorSet& DescriptorSet::WriteStorageBuffer(int32_t binding, Buffer* storag
     bindInfo.mObject = storageBuffer;
     bindInfo.mBinding = binding;
     mBindings.push_back(bindInfo);
+
+    return *this;
 }
 
 DescriptorSet& DescriptorSet::WriteStorageImage(int32_t binding, Image* storageImage)
@@ -73,6 +85,8 @@ DescriptorSet& DescriptorSet::WriteStorageImage(int32_t binding, Image* storageI
     bindInfo.mObject = storageImage;
     bindInfo.mBinding = binding;
     mBindings.push_back(bindInfo);
+
+    return *this;
 }
 
 DescriptorSet& DescriptorSet::Build()
@@ -114,6 +128,8 @@ DescriptorSet& DescriptorSet::Build()
 
     // Update descriptor sets
     UpdateDescriptors();
+
+    return *this;
 }
 
 void DescriptorSet::Bind(VkCommandBuffer cb, uint32_t index)

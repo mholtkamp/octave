@@ -387,7 +387,7 @@ void Node::Render(PipelineConfig pipelineConfig)
     if (IsPrimitive3D() && IsVisible())
     {
         Primitive3D* primComp = static_cast<Primitive3D*>(this);
-        GFX_SetPipelineState(pipelineConfig, primComp->GetVertexType());
+        GFX_SetPipelineState(pipelineConfig);
         primComp->Render();
     }
 }
@@ -720,7 +720,7 @@ void Node::RenderSelected(bool renderChildren)
     if (IsPrimitive3D())
     {
         Primitive3D* primComp = static_cast<Primitive3D*>(this);
-        GFX_SetPipelineState(PipelineConfig::Selected, primComp->GetVertexType());
+        GFX_SetPipelineState(PipelineConfig::Selected);
         primComp->Render();
     }
 

@@ -15,13 +15,11 @@
 #include "Buffer.h"
 #include "Image.h"
 #include "Line.h"
-#include "ResourceArena.h"
 #include "ObjectRef.h"
 #include "RayTracer.h"
 #include "Profiler.h"
 #include "DescriptorPool.h"
 #include "DescriptorLayoutCache.h"
-#include "MaterialPipelineCache.h"
 
 #if PLATFORM_LINUX
 #include <xcb/xcb.h>
@@ -101,8 +99,6 @@ public:
     void SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes);
     void SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes);
 
-    DescriptorSet* GetGlobalDescriptorSet();
-
     void CreateCommandBuffers();
 
     uint32_t GetFrameIndex() const;
@@ -118,6 +114,9 @@ public:
     void UpdateGlobalDescriptorSet();
     void UpdateGlobalUniformData();
 
+    void BindGlobalDescriptorSet();
+    void BindPostProcessDescriptorSet();
+
     GlobalUniformData& GetGlobalUniformData();
 
     bool IsValidationEnabled() const;
@@ -128,9 +127,6 @@ public:
     bool AreMaterialsEnabled() const;
     void EnableMaterials(bool enable);
 
-    DescriptorSetArena& GetMeshDescriptorSetArena();
-    UniformBufferArena& GetMeshUniformBufferArena();
-
     void BeginGpuTimestamp(const char* name);
     void EndGpuTimestamp(const char* name);
     void ReadTimeQueryResults();
@@ -138,10 +134,6 @@ public:
     RayTracer* GetRayTracer();
 
     VkSurfaceTransformFlagBitsKHR GetPreTransformFlag() const;
-
-    void EnableMaterialPipelineCache(bool enable);
-    bool IsMaterialPipelineCacheEnabled() const;
-    MaterialPipelineCache* GetMaterialPipelineCache();
 
     uint32_t GetSceneWidth();
     uint32_t GetSceneHeight();
@@ -196,7 +188,6 @@ private:
     void CreateImageViews();
     void CreateFrameUniformBuffer();
     void DestroyFrameUniformBuffer();
-    void CreateGlobalDescriptorSet();
     void CreateRenderPass();
     void CreatePipelineCache();
     void DestroyPipelineCache();
@@ -209,7 +200,6 @@ private:
     void CreateDescriptorPools();
     void DestroyDescriptorPools();
     void CreateDepthImage();
-    void CreatePostProcessDescriptorSet();
     void CreateSceneColorImage();
     void CreateShadowMapImage();
     void CreateQueryPools();
@@ -296,9 +286,9 @@ private:
 
     // Shader Data
     std::unordered_map<std::string, Shader*> mGlobalShaders;
-    DescriptorSet* mGlobalDescriptorSet = nullptr;
-    DescriptorSet* mDebugDescriptorSet = nullptr;
-    DescriptorSet* mPostProcessDescriptorSet = nullptr;
+    DescriptorSet mGlobalDescriptorSet;
+    DescriptorSet mDebugDescriptorSet;
+    DescriptorSet mPostProcessDescriptorSet;
     UniformBuffer* mFrameUniformBuffer = nullptr;
     GlobalUniformData mGlobalUniformData;
 
@@ -315,8 +305,6 @@ private:
     const char* mEnabledExtensions[MAX_ENABLED_EXTENSIONS] = { };
     uint32_t mEnabledLayersCount = 0;
     const char* mEnabledLayers[MAX_ENABLED_LAYERS] = { };
-    DescriptorSetArena mMeshDescriptorSetArena;
-    UniformBufferArena mMeshUniformBufferArena;
 
     // Timestamp Queries
     std::vector<GpuTimespan> mGpuTimespans[MAX_FRAMES];
@@ -324,9 +312,6 @@ private:
     int32_t mNumTimestamps[MAX_FRAMES] = { };
     float mTimestampPeriod = 0.0f;
     bool mTimestampsSupported = false;
-
-    // Material Pipelines
-    MaterialPipelineCache mMaterialPipelineCache;
 
     //Pipeline State
     PipelineState mPipelineState;
@@ -341,7 +326,6 @@ private:
     bool mInitialized = false;
     bool mEnableMaterials = false;
     bool mSupportsRayTracing = false;
-    bool mEnableMaterialPipelineCache = false;
     bool mFeatureWideLines = false;
     bool mFeatureFillModeNonSolid = false;
     EngineState* mEngineState = nullptr;

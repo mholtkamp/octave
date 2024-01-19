@@ -6,6 +6,7 @@
 #include "VulkanConstants.h"
 
 #include <vulkan/vulkan.h>
+#include <vector>
 
 class Shader;
 

@@ -39,7 +39,7 @@ void DescriptorPool::Reset()
     mCurrentPool = VK_NULL_HANDLE;
 }
 
-VkDescriptorSet DescriptorPool::Allocate(VkDescriptorSetLayout layout)
+VkDescriptorSet DescriptorPool::Allocate(VkDescriptorSetLayout layout, const char* name)
 {
     VkDevice device = GetVulkanDevice();
     VkDescriptorSet retSet = VK_NULL_HANDLE;
@@ -68,9 +68,10 @@ VkDescriptorSet DescriptorPool::Allocate(VkDescriptorSetLayout layout)
         {
                 LogError("Failed to allocate descriptor set");
                 OCT_ASSERT(0);
-                return;
         }
     }
+
+    return retSet;
 }
 
 VkDescriptorPool DescriptorPool::CreatePool()
