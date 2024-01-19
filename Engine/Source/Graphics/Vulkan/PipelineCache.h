@@ -11,6 +11,7 @@ public:
 
     void Create();
     void Destroy();
+    void Clear();
     void SaveToFile();
 
     VkPipelineCache GetPipelineCacheObj();

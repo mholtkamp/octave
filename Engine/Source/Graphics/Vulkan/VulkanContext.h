@@ -189,7 +189,8 @@ private:
     void CreateImageViews();
     void CreateFrameUniformBuffer();
     void DestroyFrameUniformBuffer();
-    void CreateRenderPass();
+    void CreateRenderPasses();
+    void DestroyRenderPasses();
     void CreatePipelineCache();
     void DestroyPipelineCache();
     void CreateFramebuffers();

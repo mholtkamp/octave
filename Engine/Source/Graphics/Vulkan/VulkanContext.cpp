@@ -121,7 +121,7 @@ void VulkanContext::Initialize()
     CreateSceneColorImage();
     CreateDepthImage();
     CreateDescriptorPools();
-    CreateRenderPass();
+    CreateRenderPasses();
 
 #if EDITOR
     CreateHitCheck();
@@ -238,6 +238,8 @@ void VulkanContext::Destroy()
     DestroySwapchain();
 
     DestroyPipelineCache();
+
+    DestroyRenderPasses();
 
     DestroyFrameUniformBuffer();
 
@@ -627,12 +629,6 @@ void VulkanContext::DestroySwapchain()
         GetDestroyQueue()->Destroy(mCommandBuffers[i]);
     }
     mCommandBuffers.clear();
-
-    vkDestroyRenderPass(mDevice, mShadowRenderPass, nullptr);
-    vkDestroyRenderPass(mDevice, mForwardRenderPass, nullptr);
-    vkDestroyRenderPass(mDevice, mPostprocessRenderPass, nullptr);
-    vkDestroyRenderPass(mDevice, mUIRenderPass, nullptr);
-    vkDestroyRenderPass(mDevice, mClearSwapchainPass, nullptr);
 
     mRayTracer.DestroyDynamicRayTraceResources();
 
@@ -1384,7 +1380,7 @@ VkFormat VulkanContext::GetSceneColorFormat()
     return mSceneColorImageFormat;
 }
 
-void VulkanContext::CreateRenderPass()
+void VulkanContext::CreateRenderPasses()
 {
     // I was getting SYNC-HAZARD-READ-AFTER-WRITE validation warnings 
     // (and was getting incorrect rendering results on the RG552). I thought
@@ -1702,6 +1698,25 @@ void VulkanContext::CreateRenderPass()
     }
 
     mPipelineState.mRenderPass = mForwardRenderPass;
+}
+
+void VulkanContext::DestroyRenderPasses()
+{
+    vkDestroyRenderPass(mDevice, mShadowRenderPass, nullptr);
+    mShadowRenderPass = VK_NULL_HANDLE;
+
+    vkDestroyRenderPass(mDevice, mForwardRenderPass, nullptr);
+    mForwardRenderPass = VK_NULL_HANDLE;
+
+    vkDestroyRenderPass(mDevice, mPostprocessRenderPass, nullptr);
+    mPostprocessRenderPass = VK_NULL_HANDLE;
+
+    vkDestroyRenderPass(mDevice, mUIRenderPass, nullptr);
+    mUIRenderPass = VK_NULL_HANDLE;
+
+    vkDestroyRenderPass(mDevice, mClearSwapchainPass, nullptr);
+    mClearSwapchainPass = VK_NULL_HANDLE;
+
 }
 
 void VulkanContext::CreatePipelineCache()
@@ -2106,7 +2121,6 @@ void VulkanContext::RecreateSwapchain(bool recreateSurface)
     CreateDepthImage();
     CreateSceneColorImage();
     CreateShadowMapImage();
-    CreateRenderPass();
     CreateFramebuffers();
     mRayTracer.CreateDynamicRayTraceResources();
 
