@@ -1643,6 +1643,7 @@ void DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
         // Depth test is reversed.
         BindPipelineConfig(PipelineConfig::ShadowMeshBack);
         context->SetVertexType(shadowMeshComp->GetVertexType());
+        GetVulkanContext()->CommitPipeline();
         BindGeometryDescriptorSet(shadowMeshComp);
         vkCmdDrawIndexed(cb, mesh->GetNumIndices(), 1, 0, 0, 0);
 
@@ -1650,12 +1651,14 @@ void DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
         // Depth test is normal
         BindPipelineConfig(PipelineConfig::ShadowMeshFront);
         context->SetVertexType(shadowMeshComp->GetVertexType());
+        GetVulkanContext()->CommitPipeline();
         BindGeometryDescriptorSet(shadowMeshComp);
         vkCmdDrawIndexed(cb, mesh->GetNumIndices(), 1, 0, 0, 0);
 
         // Step 3, render front faces without depth testing to clear scene color's alpha channel.
         BindPipelineConfig(PipelineConfig::ShadowMeshClear);
         context->SetVertexType(shadowMeshComp->GetVertexType());
+        GetVulkanContext()->CommitPipeline();
         BindGeometryDescriptorSet(shadowMeshComp);
         vkCmdDrawIndexed(cb, mesh->GetNumIndices(), 1, 0, 0, 0);
     }

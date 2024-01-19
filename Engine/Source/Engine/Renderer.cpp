@@ -1262,8 +1262,11 @@ void Renderer::Render(World* world)
                     {
                         GFX_EnableMaterials(true);
 
+                        GFX_SetPipelineState(PipelineConfig::Forward);
                         RenderDraws(mOpaqueDraws);
                         RenderDraws(mSimpleShadowDraws);
+                        // Reset state that was altered by shadow mesh draws.
+                        GFX_SetPipelineState(PipelineConfig::Forward);
                         RenderDraws(mPostShadowOpaqueDraws);
 
                         RenderDraws(mTranslucentDraws);
