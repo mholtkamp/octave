@@ -621,8 +621,105 @@ static void AssignAssetToProperty(RTTI* owner, PropertyOwnerType ownerType, Prop
 
         if (matchingType)
         {
-            ActionManager::Get()->EXE_EditProperty(owner, ownerType, prop.mName, index, newAsset);
+            if (ownerType != PropertyOwnerType::Count)
+            {
+                ActionManager::Get()->EXE_EditProperty(owner, ownerType, prop.mName, index, newAsset);
+            }
+            else
+            {
+                // Skip undo/redo (for shader parameters?)
+                prop.SetAsset(newAsset, index);
+            }
         }
+    }
+}
+
+static void DrawAssetProperty(Property& prop, uint32_t index, RTTI* owner, PropertyOwnerType ownerType)
+{
+    Asset* asset = prop.GetAsset(index);
+    ActionManager* am = ActionManager::Get();
+ 
+    bool useAssetColor = (prop.mExtra != 0);
+    if (useAssetColor)
+    {
+        glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor((TypeId)prop.mExtra);
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
+    }
+
+    if (IsControlDown())
+    {
+        if (ImGui::Button("<<") && asset)
+        {
+            GetEditorState()->BrowseToAsset(asset->GetName());
+        }
+    }
+    else if (IsAltDown())
+    {
+        if (ImGui::Button("^^") && asset)
+        {
+            GetEditorState()->InspectObject(asset);
+        }
+    }
+    else
+    {
+        if (ImGui::Button(">>"))
+        {
+            Asset* selAsset = GetEditorState()->GetSelectedAsset();
+            if (selAsset != nullptr)
+            {
+                AssignAssetToProperty(owner, ownerType, prop, index, selAsset);
+            }
+        }
+
+        if (asset != nullptr &&
+            ImGui::IsItemHovered() &&
+            IsKeyJustDown(KEY_DELETE))
+        {
+            if (ownerType != PropertyOwnerType::Count)
+            {
+                am->EXE_EditProperty(owner, ownerType, prop.mName, index, (Asset*) nullptr);
+            }
+            else
+            {
+                prop.SetAsset(nullptr, index);
+            }
+        }
+    }
+
+    ImGui::SameLine();
+
+    static std::string sTempString;
+    static std::string sOrigVal;
+    sTempString = asset ? asset->GetName() : "";
+
+    ImGui::InputText("", &sTempString);
+
+    if (ImGui::IsItemDeactivatedAfterEdit())
+    {
+        if (sTempString == "null" ||
+            sTempString == "NULL" ||
+            sTempString == "Null")
+        {
+            Asset* nullAsset = nullptr;
+            if (ownerType != PropertyOwnerType::Count)
+            {
+                am->EXE_EditProperty(owner, ownerType, prop.mName, index, nullAsset);
+            }
+            else
+            {
+                prop.SetAsset(nullAsset, index);
+            }
+        }
+        else
+        {
+            Asset* newAsset = LoadAsset(sTempString);
+            AssignAssetToProperty(owner, ownerType, prop, index, newAsset);
+        }
+    }
+
+    if (useAssetColor)
+    {
+        ImGui::PopStyleColor();
     }
 }
 
@@ -905,78 +1002,7 @@ static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
             }
             case DatumType::Asset:
             {
-                Asset* propVal = prop.GetAsset(i);
-
-                bool useAssetColor = (prop.mExtra != 0);
-                if (useAssetColor)
-                {
-                    glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor((TypeId)prop.mExtra);
-                    ImGui::PushStyleColor(ImGuiCol_Text,ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
-                }
-
-                if (ctrlDown)
-                {
-                    if (ImGui::Button("<<") && propVal)
-                    {
-                        GetEditorState()->BrowseToAsset(propVal->GetName());
-                    }
-                }
-                else if (altDown)
-                {
-                    if (ImGui::Button("^^") && propVal)
-                    {
-                        GetEditorState()->InspectObject(propVal);
-                    }
-                }
-                else
-                {
-                    if (ImGui::Button(">>"))
-                    {
-                        Asset* selAsset = GetEditorState()->GetSelectedAsset();
-                        if (selAsset != nullptr)
-                        {
-                            AssignAssetToProperty(owner, ownerType, prop, i, selAsset);
-                        }
-                    }
-
-                    if (propVal != nullptr && 
-                        ImGui::IsItemHovered() && 
-                        IsKeyJustDown(KEY_DELETE))
-                    {
-                        ActionManager::Get()->EXE_EditProperty(owner, ownerType, prop.mName, i, (Asset*) nullptr);
-
-                    }
-                }
-
-                ImGui::SameLine();
-
-                static std::string sTempString;
-                static std::string sOrigVal;
-                sTempString = propVal ? propVal->GetName() : "";
-
-                ImGui::InputText("", &sTempString);
-
-                if (ImGui::IsItemDeactivatedAfterEdit())
-                {
-                    if (sTempString == "null" ||
-                        sTempString == "NULL" ||
-                        sTempString == "Null")
-                    {
-                        Asset* nullAsset = nullptr;
-                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, nullAsset);
-                    }
-                    else
-                    {
-                        Asset* newAsset =  LoadAsset(sTempString);
-                        AssignAssetToProperty(owner, ownerType, prop, i, newAsset);
-                    }
-                }
-
-                if (useAssetColor)
-                {
-                    ImGui::PopStyleColor();
-                }
-
+                DrawAssetProperty(prop, i, owner, ownerType);
                 break;
             }
             case DatumType::Byte:
@@ -2195,6 +2221,32 @@ static void DrawAssetsPanel()
     ImGui::End();
 }
 
+static void DrawMaterialShaderParams(Material* mat)
+{
+    std::vector<ShaderParameter>& params = mat->GetParameters();
+
+    for (uint32_t i = 0; i < params.size(); ++i)
+    {
+        ShaderParameter& param = params[i];
+
+        ImGui::Text(param.mName.c_str());
+
+        if (param.mType == ShaderParameterType::Scalar)
+        {
+            ImGui::DragFloat("", &param.mFloatValue[0]);
+        }
+        else if (param.mType == ShaderParameterType::Vector)
+        {
+            ImGui::OctDragScalarN("", ImGuiDataType_Float, &param.mFloatValue[0], 3, 1.0f, nullptr, nullptr, "%.2f", 0);
+        }
+        else if (param.mType == ShaderParameterType::Texture)
+        {
+            Property prop(DatumType::Asset, "ShaderParam", nullptr, &param.mTextureValue, 1, nullptr, (int32_t)Texture::GetStaticType());
+            DrawAssetProperty(prop, 0, nullptr, PropertyOwnerType::Count);
+        }
+    }
+}
+
 static void DrawPropertiesPanel()
 {
     const float dispWidth = (float)GetEngineState()->mWindowWidth;
@@ -2258,6 +2310,12 @@ static void DrawPropertiesPanel()
                 obj->GatherProperties(props);
 
                 DrawPropertyList(obj, props);
+
+                if (obj->As<Material>())
+                {
+                    Material* mat = obj->As<Material>();
+                    DrawMaterialShaderParams(mat);
+                }
             }
 
             ImGui::EndTabItem();
