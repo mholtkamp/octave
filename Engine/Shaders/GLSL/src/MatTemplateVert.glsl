@@ -103,6 +103,12 @@ void main()
 
     VertMain(vIn, vOut);
 
+    outPosition = vOut.mPosition;
+    outTexcoord0 = vOut.mUv0;
+    outTexcoord1 = vOut.mUv1;
+    outNormal = vOut.mNormal;
+    outColor = vOut.mColor;
+
     // Convert the world space position to clip space.
     gl_Position = global.mViewProj * vec4(vOut.mPosition, 1.0);
 }  
