@@ -271,12 +271,12 @@ void GFX_DestroyTextureResource(Texture* texture)
 
 void GFX_CreateMaterialResource(Material* material)
 {
-
+    CreateMaterialResource(material);
 }
 
 void GFX_DestroyMaterialResource(Material* material)
 {
-
+    DestroyMaterialResource(material);
 }
 
 void GFX_CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_t numVertices, void* vertices, uint32_t numIndices, IndexType* indices)

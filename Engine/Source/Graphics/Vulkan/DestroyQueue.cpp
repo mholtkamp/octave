@@ -93,12 +93,6 @@ void DestroyQueue::Flush(uint32_t frameIndex)
         delete mBuffers[frameIndex][i];
     }
 
-    for (uint32_t i = 0; i < mPipelines[frameIndex].size(); ++i)
-    {
-        mPipelines[frameIndex][i]->Destroy();
-        delete mPipelines[frameIndex][i];
-    }
-
     mCommandBuffers[frameIndex].clear();
     mMultiBuffers[frameIndex].clear();
     mImages[frameIndex].clear();

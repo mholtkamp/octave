@@ -30,7 +30,7 @@ public:
     virtual Material* GetMaterial() = 0;
     Material* GetMaterialOverride();
     virtual void SetMaterialOverride(Material* material);
-    MaterialInstance* InstantiateMaterial();
+    Material* InstantiateMaterial();
 
     bool IsBillboard() const;
     void SetBillboard(bool billboard);

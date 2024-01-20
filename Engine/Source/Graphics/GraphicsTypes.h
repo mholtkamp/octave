@@ -14,6 +14,7 @@
 #if API_VULKAN
 extern class VulkanContext* gVulkanContext;
 class Pipeline;
+class Shader;
 #endif
 
 struct GraphicsState
@@ -115,7 +116,10 @@ struct TextureResource
 
 struct MaterialResource
 {
-
+#if API_VULKAN
+    Shader* mVertexShader = nullptr;
+    Shader* mFragmentShader = nullptr;
+#endif
 };
 
 struct StaticMeshResource

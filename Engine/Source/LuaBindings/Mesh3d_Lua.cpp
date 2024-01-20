@@ -48,7 +48,7 @@ int Mesh3D_Lua::InstantiateMaterial(lua_State* L)
 {
     Mesh3D* comp = CHECK_MESH_3D(L, 1);
 
-    MaterialInstance* matInst = comp->InstantiateMaterial();
+    Material* matInst = comp->InstantiateMaterial();
 
     Asset_Lua::Create(L, matInst);
     return 1;

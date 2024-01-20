@@ -105,6 +105,8 @@ void CreateTextureResource(Texture* texture, uint8_t* pixels);
 void DestroyTextureResource(Texture* texture);
 
 // Material
+void CreateMaterialResource(Material* material);
+void DestroyMaterialResource(Material* material);
 void BindMaterialResource(Material* material);
 
 // StaticMesh

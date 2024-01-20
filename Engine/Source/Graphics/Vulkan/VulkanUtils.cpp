@@ -1213,13 +1213,14 @@ void CreateMaterialResource(Material* material)
             LogDebug("Need to create Shader in CreateMaterialResource()");
         }
     }
-
 }
 
 void DestroyMaterialResource(Material* material)
 {
+#if 0
     OCT_ASSERT(0);
-	// Need to destroy shaders
+    // Need to destroy shaders
+#endif
 }
 
 void BindMaterialResource(Material* material)

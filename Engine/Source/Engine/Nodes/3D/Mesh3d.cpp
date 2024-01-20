@@ -2,6 +2,7 @@
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Assets/MaterialInstance.h"
+#include "Assets/MaterialLite.h"
 #include "Engine.h"
 #include "World.h"
 
@@ -78,12 +79,20 @@ void Mesh3D::SetMaterialOverride(Material* material)
     mMaterialOverride = material;
 }
 
-MaterialInstance* Mesh3D::InstantiateMaterial()
+Material* Mesh3D::InstantiateMaterial()
 {
     Material* mat = GetMaterial();
-    MaterialInstance* matInst = MaterialInstance::New(mat);
-    SetMaterialOverride(matInst);
-    return matInst;
+    Material* newInst = nullptr;
+    if (mat == nullptr || mat->IsLite())
+    {
+        newInst = MaterialLite::New(mat);
+    }
+    else
+    {
+        newInst = MaterialInstance::New(mat);
+    }
+    SetMaterialOverride(newInst);
+    return newInst;
 }
 
 bool Mesh3D::IsBillboard() const
