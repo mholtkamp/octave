@@ -35,6 +35,7 @@
 #include "LuaBindings/Scene_Lua.h"
 #include "LuaBindings/Material_Lua.h"
 #include "LuaBindings/MaterialInstance_Lua.h"
+#include "LuaBindings/MaterialLite_Lua.h"
 #include "LuaBindings/ParticleSystem_Lua.h"
 #include "LuaBindings/ParticleSystemInstance_Lua.h"
 #include "LuaBindings/StaticMesh_Lua.h"
@@ -107,6 +108,7 @@ void BindLuaInterface()
     Scene_Lua::Bind();
     Material_Lua::Bind();
     MaterialInstance_Lua::Bind();
+    MaterialLite_Lua::Bind();
     ParticleSystem_Lua::Bind();
     ParticleSystemInstance_Lua::Bind();
     StaticMesh_Lua::Bind();

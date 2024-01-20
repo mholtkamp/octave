@@ -54,7 +54,7 @@ T* LoadAsset(const std::string& name)
     Asset* asset = LoadAsset(name);
 
     if (asset != nullptr &&
-        asset->GetType() != T::GetStaticType())
+        !asset->Is(T::ClassRuntimeId()))
     {
         LogError("Type mismatch in LoadAsset<T>()");
         asset = nullptr;
