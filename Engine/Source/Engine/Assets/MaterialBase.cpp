@@ -52,6 +52,20 @@ bool MaterialBase::HandlePropChange(Datum* datum, uint32_t index, const void* ne
 
     materialBase->MarkStale();
 
+#if EDITOR
+    if (prop->mName == "Shader")
+    {
+        materialBase->mShader = *((std::string*)newValue);
+        materialBase->Compile();
+        success = true;
+    }
+    else if (prop->mName == "Compile")
+    {
+        materialBase->Compile();
+        success = true;
+    }
+#endif
+
     return success;
 }
 
@@ -330,7 +344,7 @@ void MaterialBase::Compile()
                 size_t endParen = line.find(")");
                 if (endParen != std::string::npos)
                 {
-                    std::string paramName = line.substr(0, endParen - 1);
+                    std::string paramName = line.substr(0, endParen);
 
                     // Remove spaces
                     RemoveSpacesFromString(paramName);
@@ -383,7 +397,7 @@ void MaterialBase::Compile()
         }
     }
 
-    userParamsString += "}\n\n";
+    userParamsString += "};\n\n";
 
     // Lastly, gather textures
     for (uint32_t i = 0; i < userParams.size(); ++i)
@@ -409,6 +423,22 @@ void MaterialBase::Compile()
         fragCode.replace(fragCode.find(codeStub), codeStub.length(), userCode);
     }
 
+#if 1
+    // Write out to a temporary file for debugging
+    Stream vertOutStream;
+    vertOutStream.WriteBytes((const uint8_t*)vertCode.data(), (uint32_t)vertCode.size());
+    Stream fragOutStream;
+    fragOutStream.WriteBytes((const uint8_t*)fragCode.data(), (uint32_t)fragCode.size());
+
+    if (!DoesDirExist("Engine/Saves"))
+    {
+        SYS_CreateDirectory("Engine/Saves");
+    }
+
+    vertOutStream.WriteFile("Engine/Saves/MaterialVertex.glsl");
+    fragOutStream.WriteFile("Engine/Saves/MaterialFrag.glsl");
+#endif
+
     // (X) Compile with shaderc / glslc to get the spirv (save to members)
 #if 1
     {
@@ -424,7 +454,7 @@ void MaterialBase::Compile()
         shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_zero);
         shaderc_compile_options_set_generate_debug_info(options);
 #else
-        shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_size);
+        shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_performance);
 #endif
 
         shaderc_compile_options_set_include_callbacks(options, &CompileInclude, &CompileIncludeRelease, nullptr);
@@ -719,5 +749,16 @@ uint32_t MaterialBase::GetNumTextureParameters()
 uint32_t MaterialBase::GetUniformBufferSize()
 {
     return (16 * mNumVectorParams + 4 * mNumScalarParams);
+}
+
+const std::vector<uint8_t>& MaterialBase::GetVertexShaderCode(VertexType type) const
+{
+    uint32_t index = glm::clamp<uint32_t>((uint32_t)type, 0, (uint32_t)VertexType::Max - 1);
+    return mVertexCode[index];
+}
+
+const std::vector<uint8_t>& MaterialBase::GetFragmentShaderCode()
+{
+    return mFragmentCode;
 }
 

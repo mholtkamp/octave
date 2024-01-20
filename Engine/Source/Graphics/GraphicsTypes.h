@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <limits.h>
 #include "Graphics/GraphicsConstants.h"
+#include "Vertex.h"
 
 #if API_VULKAN
 #include "Graphics/Vulkan/Buffer.h"
@@ -117,7 +118,7 @@ struct TextureResource
 struct MaterialResource
 {
 #if API_VULKAN
-    Shader* mVertexShader = nullptr;
+    Shader* mVertexShaders[(uint32_t)VertexType::Max] = {};
     Shader* mFragmentShader = nullptr;
 #endif
 };

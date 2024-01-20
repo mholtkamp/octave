@@ -245,6 +245,33 @@ Texture* Material::GetTextureParameter(const std::string& name)
     return ret;
 }
 
+void Material::WriteShaderUniformParams(uint8_t* outData, uint32_t& outSize)
+{
+    uint32_t size = 0;
+
+    // Always write vectors first because of alignment issues
+    for (uint32_t i = 0; i < mParameters.size(); ++i)
+    {
+        if (mParameters[i].mType == ShaderParameterType::Vector)
+        {
+            memcpy(outData + size, &mParameters[i].mFloatValue, 16);
+            size += 16;
+        }
+    }
+
+    // Then write the scalar params
+    for (uint32_t i = 0; i < mParameters.size(); ++i)
+    {
+        if (mParameters[i].mType == ShaderParameterType::Scalar)
+        {
+            memcpy(outData + size, &mParameters[i].mFloatValue, 4);
+            size += 4;
+        }
+    }
+
+    outSize = size;
+}
+
 // These should all be implemented by Material / MaterialInstance / MaterialLite
 BlendMode Material::GetBlendMode() const { return BlendMode::Count; }
 float Material::GetMaskCutoff() const { return 0.5f; }

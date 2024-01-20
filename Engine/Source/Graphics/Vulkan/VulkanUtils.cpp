@@ -1163,12 +1163,14 @@ void DestroyTextureResource(Texture* texture)
     }
 }
 
-void BindForwardVertexType(VertexType vertType)
+void BindForwardVertexType(VertexType vertType, Material* material)
 {
     VulkanContext* ctx = GetVulkanContext();
+    MaterialResource* res = material->GetResource();
 
     // Always bind correct vert shader even
-    // TODO: Lite material vs full material
+    Shader* vertShader = material ? res->mVertexShaders[(uint32_t)vertType] : nullptr;
+
     const char* vertShaderName = "Forward.vert";
 
     switch (vertType)
@@ -1190,7 +1192,15 @@ void BindForwardVertexType(VertexType vertType)
     }
 
     ctx->SetVertexType(vertType);
-    ctx->SetVertexShader(vertShaderName);
+
+    if (vertShader != nullptr)
+    {
+        ctx->SetVertexShader(vertShader);
+    }
+    else
+    {
+        ctx->SetVertexShader(vertShaderName);
+    }
 }
 
 void CreateMaterialResource(Material* material)
@@ -1209,18 +1219,56 @@ void CreateMaterialResource(Material* material)
 
         if (base != nullptr)
         {
-            OCT_ASSERT(0);
-            LogDebug("Need to create Shader in CreateMaterialResource()");
+            DestroyMaterialResource(material);
+
+            // Vertex Shaders
+            for (uint32_t i = 0; i < (uint32_t)VertexType::Max; ++i)
+            {
+                const std::vector<uint8_t>& sprv = base->GetVertexShaderCode((VertexType)i);
+                const uint8_t* data = sprv.data();
+                uint32_t size = (uint32_t)sprv.size();
+
+                if (size > 0)
+                {
+                    resource->mVertexShaders[i] = new Shader((const char*)data, size, ShaderStage::Vertex, "Material Vert Shader");
+                }
+            }
+
+            // Fragment Shader
+            {
+                const std::vector<uint8_t>& sprv = base->GetFragmentShaderCode();
+                const uint8_t* data = sprv.data();
+                uint32_t size = (uint32_t)sprv.size();
+
+                if (size > 0)
+                {
+                    resource->mFragmentShader = new Shader((const char*)data, size, ShaderStage::Fragment, "Material Frag Shader");
+                }
+            }
         }
     }
 }
 
 void DestroyMaterialResource(Material* material)
 {
-#if 0
-    OCT_ASSERT(0);
-    // Need to destroy shaders
-#endif
+    MaterialResource* resource = material->GetResource();
+    DestroyQueue* destroyQueue = GetVulkanContext()->GetDestroyQueue();
+
+    for (uint32_t i = 0; i < (uint32_t)VertexType::Max; ++i)
+    {
+        if (resource->mVertexShaders[i] != nullptr)
+        {
+            destroyQueue->Destroy(resource->mVertexShaders[i]);
+            resource->mVertexShaders[i] = nullptr;
+        }
+
+    }
+
+    if (resource->mFragmentShader != nullptr)
+    {
+        destroyQueue->Destroy(resource->mFragmentShader);
+        resource->mFragmentShader = nullptr;
+    }
 }
 
 void BindMaterialResource(Material* material)
@@ -1231,7 +1279,13 @@ void BindMaterialResource(Material* material)
     VulkanContext* ctx = GetVulkanContext();
     MaterialResource* res = material->GetResource();
 
-    ctx->SetFragmentShader("Forward.frag");
+    Shader* matFragShader = res->mFragmentShader;
+    if (matFragShader == nullptr)
+    {
+        matFragShader = GetVulkanContext()->GetGlobalShader("Forward.frag");
+    }
+
+    ctx->SetFragmentShader(matFragShader);
 
     bool depthEnabled = !material->IsDepthTestDisabled();
     ctx->SetDepthTestEnabled(depthEnabled);
@@ -1307,18 +1361,17 @@ void BindMaterialDescriptorSet(Material* material)
     }
     else
     {
-        // TODO-MAT: Implement
-        OCT_ASSERT(0);
-        //Need to upload float parameters to uniform buffer
+        // 4 KB should be enough for all of our vector/scalar params right??
+        uint32_t uboSize = 0;
+        uint8_t uboData[MAX_MATERIAL_UBO_SIZE];
+        material->WriteShaderUniformParams(uboData, uboSize);
 
         DescriptorSet matSet = DescriptorSet::Begin("Material DS");
 
         Renderer* renderer = Renderer::Get();
         
         // Update uniform buffer data
-        uint32_t ubo = 0;
-        OCT_ASSERT(0); // Use correct ubo block
-        UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
+        UniformBlock uniformBlock = WriteUniformBlock(uboData, uboSize);
         matSet.WriteUniformBuffer(MD_UNIFORM_BUFFER, uniformBlock);
 
         for (uint32_t i = 0; i < params.size(); ++i)
@@ -1333,9 +1386,12 @@ void BindMaterialDescriptorSet(Material* material)
                     OCT_ASSERT(texture != nullptr);
                 }
 
-                matSet.WriteImage(MD_TEXTURE_START + param.mOffset, texture->GetResource()->mImage);
+                matSet.WriteImage(param.mOffset, texture->GetResource()->mImage);
             }
         }
+
+        matSet.Build();
+        matSet.Bind(cb, 2);
     }
 }
 
@@ -1528,7 +1584,7 @@ void DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverride)
             material = material ? material : Renderer::Get()->GetDefaultMaterial();
         }
 
-        BindForwardVertexType(vertexType);
+        BindForwardVertexType(vertexType, material);
         BindMaterialResource(material);
         GetVulkanContext()->CommitPipeline();
 
@@ -1665,7 +1721,7 @@ void DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
         }
 
         VertexType vertType = IsCpuSkinningRequired(skeletalMeshComp) ? VertexType::Vertex : VertexType::VertexSkinned;
-        BindForwardVertexType(vertType);
+        BindForwardVertexType(vertType, material);
         BindMaterialResource(material);
         GetVulkanContext()->CommitPipeline();
 
@@ -1795,7 +1851,7 @@ void DrawTextMeshComp(TextMesh3D* textMeshComp)
         material = material ? material : Renderer::Get()->GetDefaultMaterial();
     }
 
-    BindForwardVertexType(VertexType::Vertex);
+    BindForwardVertexType(VertexType::Vertex, material);
     BindMaterialResource(material);
     GetVulkanContext()->CommitPipeline();
 
@@ -1951,7 +2007,7 @@ void DrawParticleComp(Particle3D* particleComp)
         vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
         vkCmdBindIndexBuffer(cb, resource->mIndexBuffer->Get(), 0, VK_INDEX_TYPE_UINT32);
 
-        BindForwardVertexType(VertexType::VertexParticle);
+        BindForwardVertexType(VertexType::VertexParticle, material);
         BindMaterialResource(material);
         GetVulkanContext()->CommitPipeline();
 
@@ -2289,7 +2345,7 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
         }
 
         VertexType vertType = mesh->HasVertexColor() ? VertexType::VertexColor : VertexType::Vertex;
-        BindForwardVertexType(vertType);
+        BindForwardVertexType(vertType, material);
 
         BindMaterialResource(material);
         GetVulkanContext()->CommitPipeline();

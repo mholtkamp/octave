@@ -26,20 +26,6 @@ layout(location = 4) in vec4 inColor;
 
 layout(location = 0) out vec4 outColor;
 
-struct FragIn
-{
-    vec3 mPosition;
-    vec2 mUv0;
-    vec2 mUv1;
-    vec3 mNormal;
-    vec4 mColor;
-};
-
-struct FragOut
-{
-    vec4 mColor;
-};
-
 ---CUSTOM-CODE---
 
 void main()
@@ -67,6 +53,8 @@ void main()
 #endif
 
 #if MATERIAL_APPLY_FOG
-    ApplyFog(outColor, inPosition, global);
+    ApplyFog(fOut.mColor, inPosition, global);
 #endif
+
+    outColor = fOut.mColor;
 }

@@ -51,6 +51,9 @@ public:
     uint32_t GetNumTextureParameters();
     uint32_t GetUniformBufferSize();
 
+    const std::vector<uint8_t>& GetVertexShaderCode(VertexType type) const;
+    const std::vector<uint8_t>& GetFragmentShaderCode();
+
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
 protected:

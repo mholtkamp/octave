@@ -73,6 +73,8 @@ public:
     glm::vec4 GetVectorParameter(const std::string& name);
     Texture* GetTextureParameter(const std::string& name);
 
+    void WriteShaderUniformParams(uint8_t* outData, uint32_t& outSize);
+
     virtual BlendMode GetBlendMode() const;
     virtual float GetMaskCutoff() const;
     virtual int32_t GetSortPriority() const;

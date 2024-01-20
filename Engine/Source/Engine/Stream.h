@@ -42,7 +42,7 @@ public:
     void WriteString(const std::string& src);
 
     void ReadBytes(uint8_t* dst, uint32_t length);
-    void WriteBytes(uint8_t* src, uint32_t length);
+    void WriteBytes(const uint8_t* src, uint32_t length);
 
     uint32_t ReadBytesMax(uint8_t* dst, uint32_t length);
 

@@ -43,6 +43,39 @@
 //#define MAT_UNIFORMS layout (set = 2, binding = 0) uniform MaterialUniformBuffer
 //#define MAT_TEXTURE(name, bindLoc) layout (set = 2, binding = bindLoc) uniform sampler2D name;
 
+// Material in/out structs
+struct VertIn
+{
+    vec3 mPosition;
+    vec2 mUv0;
+    vec2 mUv1;
+    vec3 mNormal;
+    vec4 mColor;
+};
+
+struct VertOut
+{
+    vec3 mPosition;
+    vec2 mUv0;
+    vec2 mUv1;
+    vec3 mNormal;
+    vec4 mColor;
+};
+
+struct FragIn
+{
+    vec3 mPosition;
+    vec2 mUv0;
+    vec2 mUv1;
+    vec3 mNormal;
+    vec4 mColor;
+};
+
+struct FragOut
+{
+    vec4 mColor;
+};
+
 struct LightData 
 {
     vec4 mColor;

@@ -57,25 +57,7 @@ out gl_PerVertex
     vec4 gl_Position;
 };
 
-struct VertIn
-{
-    vec3 mPosition;
-    vec2 mUv0;
-    vec2 mUv1;
-    vec3 mNormal;
-    vec4 mColor;
-};
-
-struct VertOut
-{
-    vec3 mPosition;
-    vec2 mUv0;
-    vec2 mUv1;
-    vec3 mNormal;
-    vec4 mColor;
-};
-
----CUSTOM-CODE---;
+---CUSTOM-CODE---
 
 void main()
 {

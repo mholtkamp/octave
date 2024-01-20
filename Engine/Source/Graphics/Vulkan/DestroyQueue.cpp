@@ -97,6 +97,7 @@ void DestroyQueue::Flush(uint32_t frameIndex)
     mMultiBuffers[frameIndex].clear();
     mImages[frameIndex].clear();
     mBuffers[frameIndex].clear();
+    mShaders[frameIndex].clear();
     mPipelines[frameIndex].clear();
 }
 

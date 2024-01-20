@@ -562,11 +562,11 @@ static void CreateNewAsset(TypeId assetType, const char* assetName)
     if (currentDir == nullptr)
         return;
 
+    stub = EditorAddUniqueAsset(assetName, currentDir, assetType, true);
+
     if (assetType == MaterialLite::GetStaticType())
     {
         Asset* selAsset = GetEditorState()->GetSelectedAsset();
-
-        stub = EditorAddUniqueAsset(assetName, currentDir, assetType, true);
 
         if (stub != nullptr &&
             stub->mAsset != nullptr &&

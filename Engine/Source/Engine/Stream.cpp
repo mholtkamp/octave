@@ -289,7 +289,7 @@ uint32_t Stream::ReadBytesMax(uint8_t* dst, uint32_t length)
     return 0;
 }
 
-void Stream::WriteBytes(uint8_t* src, uint32_t length)
+void Stream::WriteBytes(const uint8_t* src, uint32_t length)
 {
     if (mPos + length > mSize)
     {
