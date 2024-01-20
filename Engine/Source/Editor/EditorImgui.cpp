@@ -2225,6 +2225,14 @@ static void DrawMaterialShaderParams(Material* mat)
 {
     std::vector<ShaderParameter>& params = mat->GetParameters();
 
+    if (params.size() == 0)
+        return;
+
+    bool catOpen = ImGui::CollapsingHeader("Shader Parameters", ImGuiTreeNodeFlags_DefaultOpen);
+
+    if (!catOpen)
+        return;
+
     for (uint32_t i = 0; i < params.size(); ++i)
     {
         ShaderParameter& param = params[i];
