@@ -66,18 +66,6 @@ Shader::~Shader()
         vkDestroyShaderModule(device, mModule, nullptr);
         mModule = VK_NULL_HANDLE;
     }
-
-#if 0
-    for (uint32_t i = 0; i < MAX_BOUND_DESCRIPTOR_SETS; ++i)
-    {
-        if (mDescriptorSetLayouts[i] != VK_NULL_HANDLE)
-        {
-
-            vkDestroyDescriptorSetLayout(device, mDescriptorSetLayouts[i], nullptr);
-            mDescriptorSetLayouts[i] = VK_NULL_HANDLE;
-        }
-    }
-#endif
 }
 
 void Shader::Create(const char* data, uint32_t size)

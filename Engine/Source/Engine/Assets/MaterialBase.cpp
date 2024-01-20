@@ -56,12 +56,23 @@ bool MaterialBase::HandlePropChange(Datum* datum, uint32_t index, const void* ne
     if (prop->mName == "Shader")
     {
         materialBase->mShader = *((std::string*)newValue);
-        materialBase->Compile();
+
+        if (materialBase->IsLoaded())
+        {
+            materialBase->Compile();
+        }
+
         success = true;
     }
     else if (prop->mName == "Compile")
     {
-        materialBase->Compile();
+        bool compile = ((bool*)newValue);
+
+        if (compile)
+        {
+            materialBase->Compile();
+        }
+
         success = true;
     }
 #endif
@@ -158,6 +169,8 @@ void MaterialBase::Create()
         }
     }
 #endif
+
+    Compile();
 
     GFX_CreateMaterialResource(this);
 }
@@ -455,6 +468,7 @@ void MaterialBase::Compile()
         shaderc_compile_options_set_generate_debug_info(options);
 #else
         shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_performance);
+        shaderc_compile_options_set_generate_debug_info(options);
 #endif
 
         shaderc_compile_options_set_include_callbacks(options, &CompileInclude, &CompileIncludeRelease, nullptr);
