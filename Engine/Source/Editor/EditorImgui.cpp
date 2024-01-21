@@ -2233,11 +2233,15 @@ static void DrawMaterialShaderParams(Material* mat)
     if (!catOpen)
         return;
 
+    ImGui::PushID("ShaderParams");
+
     for (uint32_t i = 0; i < params.size(); ++i)
     {
         ShaderParameter& param = params[i];
 
         ImGui::Text(param.mName.c_str());
+
+        ImGui::PushID(i);
 
         if (param.mType == ShaderParameterType::Scalar)
         {
@@ -2252,7 +2256,11 @@ static void DrawMaterialShaderParams(Material* mat)
             Property prop(DatumType::Asset, "ShaderParam", nullptr, &param.mTextureValue, 1, nullptr, (int32_t)Texture::GetStaticType());
             DrawAssetProperty(prop, 0, nullptr, PropertyOwnerType::Count);
         }
+
+        ImGui::PopID();
     }
+
+    ImGui::PopID();
 }
 
 static void DrawPropertiesPanel()
