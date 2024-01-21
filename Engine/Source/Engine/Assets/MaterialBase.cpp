@@ -118,6 +118,9 @@ void MaterialBase::LoadStream(Stream& stream, Platform platform)
     {
         mFragmentCode.resize(fragSize);
         stream.ReadBytes(mFragmentCode.data(), fragSize);
+
+        // We are loading the Spirv code, we don't need to compile it.
+        mCompilationStale = false;
     }
 }
 
@@ -170,7 +173,10 @@ void MaterialBase::Create()
     }
 #endif
 
-    Compile();
+    if (mCompilationStale)
+    {
+        Compile();
+    }
 
     GFX_CreateMaterialResource(this);
 }
@@ -655,6 +661,8 @@ void MaterialBase::Compile()
             }
         }
     }
+
+    mCompilationStale = false;
 #endif
 }
 

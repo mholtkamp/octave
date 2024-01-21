@@ -105,8 +105,8 @@ struct GlobalUniforms
 
     uint mFrameNumber;
     int mVisualizationMode;
-    float mGameElapsedTime;
-    float mRealElapsedTime;
+    float mGameTime;
+    float mTime;
 
     vec4 mFogColor;
 

@@ -180,7 +180,7 @@ void VulkanContext::Initialize()
         ciPool.poolSizeCount = 5;
         ciPool.pPoolSizes = poolSizes;
         ciPool.maxSets = MAX_DESCRIPTOR_SETS;
-        ciPool.flags = 0;
+        ciPool.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
         if (vkCreateDescriptorPool(mDevice, &ciPool, nullptr, &mImguiDescriptorPool) != VK_SUCCESS)
         {
