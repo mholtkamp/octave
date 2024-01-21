@@ -376,6 +376,13 @@ void AssetManager::Purge(bool purgeEngineAssets)
         }
     }
 
+    for (int32_t i = int32_t(mTransientAssets.size()) - 1; i >= 0; --i)
+    {
+        mTransientAssets[i]->Destroy();
+        delete mTransientAssets[i];
+    }
+    mTransientAssets.clear();
+
     mPurging = false;
 }
 

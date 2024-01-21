@@ -16,6 +16,9 @@ public:
     Quad();
     virtual ~Quad();
 
+    virtual void Create() override;
+    virtual void Destroy() override;
+
     QuadResource* GetResource();
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;

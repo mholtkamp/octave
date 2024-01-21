@@ -12,11 +12,24 @@ DEFINE_NODE(Poly, Widget);
 
 Poly::Poly()
 {
-    GFX_CreatePolyResource(this);
+
 }
 
 Poly::~Poly()
 {
+
+}
+
+
+void Poly::Create()
+{
+    Widget::Create();
+    GFX_CreatePolyResource(this);
+}
+
+void Poly::Destroy()
+{
+    Widget::Destroy();
     GFX_DestroyPolyResource(this);
 }
 

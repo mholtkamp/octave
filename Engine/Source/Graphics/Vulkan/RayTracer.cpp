@@ -50,6 +50,12 @@ void RayTracer::DestroyStaticRayTraceResources()
 
         GetDestroyQueue()->Destroy(mLightBakeVertexBuffer);
         mLightBakeVertexBuffer = nullptr;
+
+        GetDestroyQueue()->Destroy(mBakeAverageBuffer);
+        mBakeAverageBuffer = nullptr;
+
+        GetDestroyQueue()->Destroy(mBakeDiffuseTriangleBuffer);
+        mBakeDiffuseTriangleBuffer = nullptr;
     }
 }
 

@@ -100,19 +100,32 @@ Text::Text() :
     mNumCharactersAllocated(0)
 {
     SetName("Text");
+}
+
+Text::~Text()
+{
+
+}
+
+void Text::Create()
+{
+    Widget::Create();
+
     mFont = LoadAsset<Font>("F_Roboto32");
     MarkVerticesDirty();
     GFX_CreateTextResource(this);
 }
 
-Text::~Text()
+void Text::Destroy()
 {
+    Widget::Destroy();
+
     if (mVertices != nullptr)
     {
-        delete [] mVertices;
+        delete[] mVertices;
         mVertices = nullptr;
     }
-    
+
     GFX_DestroyTextResource(this);
 }
 

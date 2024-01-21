@@ -33,12 +33,26 @@ Quad::Quad() :
     mUvOffset(glm::vec2(0, 0))
 {
     SetName("Quad");
-    InitVertexData();
-    GFX_CreateQuadResource(this);
+    
 }
 
 Quad::~Quad()
 {
+
+}
+
+void Quad::Create()
+{
+    Widget::Create();
+
+    InitVertexData();
+    GFX_CreateQuadResource(this);
+}
+
+void Quad::Destroy()
+{
+    Widget::Destroy();
+
     GFX_DestroyQuadResource(this);
 }
 

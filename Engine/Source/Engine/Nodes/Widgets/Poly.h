@@ -15,6 +15,9 @@ public:
     Poly();
     virtual ~Poly();
 
+    virtual void Create() override;
+    virtual void Destroy() override;
+
     PolyResource* GetResource();
 
     virtual void Tick(float deltaTime) override;

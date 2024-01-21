@@ -29,6 +29,9 @@ public:
     Text();
     virtual ~Text();
 
+    virtual void Create() override;
+    virtual void Destroy() override;
+
     TextResource* GetResource();
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;

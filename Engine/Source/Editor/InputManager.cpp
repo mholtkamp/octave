@@ -59,45 +59,12 @@ InputManager* InputManager::Get()
 
 InputManager::InputManager()
 {
-    mBuildPlatformList = new ModalList();
 
-    auto addPlatform = [this](const char* name, Platform platform, bool embedded)
-    {
-        PlatformBuildButton* item = new PlatformBuildButton();
-        item->SetDimensions(150,22);
-        item->SetTextString(name);
-        item->SetPressedHandler(HandleBuildPlatformSelect);
-        item->mPlatform = platform;
-        item->mEmbedded = embedded;
-        mBuildPlatformList->AddListItem(item);
-    };
-
-#if PLATFORM_WINDOWS
-    addPlatform("Windows", Platform::Windows, false);
-#elif PLATFORM_LINUX
-    addPlatform("Linux", Platform::Linux, false);
-#endif
-    addPlatform("Android", Platform::Android, false);
-    addPlatform("GameCube", Platform::GameCube, false);
-    addPlatform("Wii", Platform::Wii, false);
-    addPlatform("3DS", Platform::N3DS, false);
-    addPlatform("GameCube Embedded", Platform::GameCube, true);
-    addPlatform("Wii Embedded", Platform::Wii, true);
-    addPlatform("3DS Embedded", Platform::N3DS, true);
 }
 
 InputManager::~InputManager()
 {
-    if (mBuildPlatformList != nullptr)
-    {
-        if (Renderer::Get()->GetModalWidget() == mBuildPlatformList)
-        {
-            Renderer::Get()->SetModalWidget(nullptr);
-        }
 
-        delete mBuildPlatformList;
-        mBuildPlatformList = nullptr;
-    }
 }
 
 void InputManager::Update()

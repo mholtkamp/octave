@@ -225,6 +225,7 @@ void VulkanContext::Destroy()
 
 #if EDITOR
     ImGui_ImplVulkan_Shutdown();
+    vkDestroyDescriptorPool(mDevice, mImguiDescriptorPool, nullptr);
 #endif
 
     DestroyMisc();
@@ -841,7 +842,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
     }
     else
     {
-        LogWarning("%s\n", message);
+        // Don't log warnings for now? So far these are all perf warnings about unconsumed inputs.
+        //LogWarning("%s\n", message);
     }
 
     fflush(stdout);

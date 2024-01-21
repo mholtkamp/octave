@@ -19,7 +19,5 @@ protected:
     static InputManager* sInstance;
     InputManager();
 
-    ModalList* mBuildPlatformList = nullptr;
-
     void UpdateHotkeys();
 };
