@@ -1166,7 +1166,15 @@ void DestroyTextureResource(Texture* texture)
 void BindForwardVertexType(VertexType vertType, Material* material)
 {
     VulkanContext* ctx = GetVulkanContext();
-    MaterialResource* res = material->GetResource();
+    MaterialResource* res = material ? material->GetResource() : nullptr;
+
+    // Instances should reference their base material.
+    if (material && material->IsInstance())
+    {
+        MaterialInstance* inst = (MaterialInstance*)material;
+        MaterialBase* base = inst->GetBaseMaterial();
+        res = base ? base->GetResource() : res;
+    }
 
     // Always bind correct vert shader even
     Shader* vertShader = material ? res->mVertexShaders[(uint32_t)vertType] : nullptr;
@@ -1279,7 +1287,16 @@ void BindMaterialResource(Material* material)
     VulkanContext* ctx = GetVulkanContext();
     MaterialResource* res = material->GetResource();
 
+    // Instances should reference their base material.
+    if (material->IsInstance())
+    {
+        MaterialInstance* inst = (MaterialInstance*)material;
+        MaterialBase* base = inst->GetBaseMaterial();
+        res = base ? base->GetResource() : res;
+    }
+
     Shader* matFragShader = res->mFragmentShader;
+
     if (matFragShader == nullptr)
     {
         matFragShader = GetVulkanContext()->GetGlobalShader("Forward.frag");

@@ -279,3 +279,24 @@ int32_t Material::GetSortPriority() const { return 0; }
 bool Material::IsDepthTestDisabled() const { return false; }
 bool Material::ShouldApplyFog() const { return true; }
 CullMode Material::GetCullMode() const { return CullMode::Back; }
+
+void Material::OverwriteShaderParameters(std::vector<ShaderParameter>& dst, const std::vector<ShaderParameter>& src)
+{
+    for (uint32_t d = 0; d < dst.size(); ++d)
+    {
+        ShaderParameter& dstParam = dst[d];
+
+        for (uint32_t s = 0; s < src.size(); ++s)
+        {
+            const ShaderParameter& srcParam = src[s];
+
+            if (srcParam.mName == dstParam.mName &&
+                srcParam.mType == dstParam.mType)
+            {
+                dstParam = srcParam;
+                break;
+            }
+        }
+
+    }
+}

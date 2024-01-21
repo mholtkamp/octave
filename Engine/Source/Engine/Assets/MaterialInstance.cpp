@@ -6,6 +6,27 @@
 FORCE_LINK_DEF(MaterialInstance);
 DEFINE_ASSET(MaterialInstance);
 
+
+bool MaterialInstance::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+{
+    Property* prop = static_cast<Property*>(datum);
+
+    OCT_ASSERT(prop != nullptr);
+    MaterialInstance* matInst = static_cast<MaterialInstance*>(prop->mOwner);
+    bool success = false;
+
+#if EDITOR
+    if (prop->mName == "Base Material")
+    {
+        MaterialBase* baseMaterial = (*(Asset**)newValue)->As<MaterialBase>();
+        matInst->SetBaseMaterial(baseMaterial);
+        success = true;
+    }
+#endif
+
+    return success;
+}
+
 MaterialInstance* MaterialInstance::New(Material* src)
 {
     MaterialInstance* ret = NewTransientAsset<MaterialInstance>();
@@ -42,17 +63,21 @@ MaterialInstance::~MaterialInstance()
 void MaterialInstance::SaveStream(Stream& stream, Platform platform)
 {
     Material::SaveStream(stream, platform);
+    stream.WriteAsset(mBaseMaterial);
 }
 
 void MaterialInstance::LoadStream(Stream& stream, Platform platform)
 {
     Material::LoadStream(stream, platform);
+    stream.ReadAsset(mBaseMaterial);
 }
 
 
 void MaterialInstance::GatherProperties(std::vector<Property>& outProps)
 {
     Material::GatherProperties(outProps);
+
+    outProps.push_back(Property(DatumType::Asset, "Base Material", this, &mBaseMaterial, 1, HandlePropChange, int32_t(MaterialBase::GetStaticType())));
 }
 
 void MaterialInstance::Create()
@@ -101,8 +126,21 @@ void MaterialInstance::SetBaseMaterial(MaterialBase* material)
 
 void MaterialInstance::LinkToBase()
 {
-    // TODO-MAT: Implement
-//#error Implement LinkToBase(). Need to grab parent's
+    MaterialBase* base = mBaseMaterial.Get<MaterialBase>();
+
+    if (base != nullptr)
+    {
+        std::vector<ShaderParameter> origParams = mParameters;
+        std::vector<ShaderParameter> baseParams = base->GetParameters();
+
+        mParameters = baseParams;
+
+        Material::OverwriteShaderParameters(mParameters, origParams);
+    }
+    else
+    {
+        mParameters.clear();
+    }
 }
 
 BlendMode MaterialInstance::GetBlendMode() const

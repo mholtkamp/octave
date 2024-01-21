@@ -644,7 +644,9 @@ void MaterialBase::Compile()
     mNumTextureParams = numTextureParams;
 
     // (X) Set the material's parameters to the new parameter list.
+    std::vector<ShaderParameter> origParams = mParameters;
     mParameters = userParams;
+    Material::OverwriteShaderParameters(mParameters, origParams);
 
     // Relink any loaded material instances that use this base.
     std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();

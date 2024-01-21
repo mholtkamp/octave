@@ -82,6 +82,8 @@ public:
     virtual bool ShouldApplyFog() const;
     virtual CullMode GetCullMode() const;
 
+    static void OverwriteShaderParameters(std::vector<ShaderParameter>& dst, const std::vector<ShaderParameter>& src);
+
 protected:
 
     std::vector<ShaderParameter> mParameters;
