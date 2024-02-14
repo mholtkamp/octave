@@ -254,7 +254,8 @@ Texture::Texture() :
     mFilterType(FilterType::Linear),
     mWrapMode(WrapMode::Repeat),
     mMipmapped(true),
-    mRenderTarget(false)
+    mRenderTarget(false),
+    mSrgb(true)
 {
     mType = Texture::GetStaticType();
 }
@@ -283,6 +284,7 @@ void Texture::LoadStream(Stream& stream, Platform platform)
 
     mMipmapped = stream.ReadBool();
     mRenderTarget = stream.ReadBool();
+    mSrgb = stream.ReadBool();
 
     if (UseCookedTextures(platform))
     {
@@ -319,6 +321,7 @@ void Texture::SaveStream(Stream& stream, Platform platform)
 
     stream.WriteBool(mMipmapped);
     stream.WriteBool(mRenderTarget);
+    stream.WriteBool(mSrgb);
 
     if (UseCookedTextures(platform))
     {
@@ -417,6 +420,7 @@ void Texture::GatherProperties(std::vector<Property>& outProps)
     Asset::GatherProperties(outProps);
 
     outProps.push_back(Property(DatumType::Bool, "Mipmapped", this, &mMipmapped));
+    outProps.push_back(Property(DatumType::Bool, "sRGB", this, &mSrgb));
     outProps.push_back(Property(DatumType::Integer, "Format", this, &mFormat, 1, Texture::HandlePropChange, 0, 5, sPixelFormatEnumStrings));
     outProps.push_back(Property(DatumType::Integer, "Filter Type", this, &mFilterType, 1, Texture::HandlePropChange, 0, int32_t(FilterType::Count), gFilterEnumStrings));
     outProps.push_back(Property(DatumType::Integer, "Wrap Mode", this, &mWrapMode, 1, Texture::HandlePropChange, 0, int32_t(WrapMode::Count), gWrapEnumStrings));
@@ -465,6 +469,11 @@ bool Texture::IsMipmapped() const
 bool Texture::IsRenderTarget() const
 {
     return mRenderTarget;
+}
+
+bool Texture::IsSrgb() const
+{
+    return mSrgb;
 }
 
 uint32_t Texture::GetWidth() const

@@ -17,12 +17,19 @@ layout (location = 0) out vec4 outFinalColor;
 
 void main()
 {
+    vec4 linearColor = vec4(0,0,0,1);
+
     if (global.mPathTracingEnabled != 0)
     {
-        outFinalColor = texture(pathTraceImage, inTexcoord);
+        linearColor = texture(pathTraceImage, inTexcoord);
     }
     else
     {
-        outFinalColor = texture(samplerLitColor, inTexcoord);
+        linearColor = texture(samplerLitColor, inTexcoord);
     }
+
+    // Gamma correct
+    vec4 srgbColor = LinearToSrgb(linearColor);
+
+    outFinalColor = srgbColor;
 }

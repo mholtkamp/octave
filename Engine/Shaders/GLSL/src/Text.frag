@@ -35,7 +35,7 @@ layout (location = 0) out vec4 outFinalColor;
 
 void main()
 {
-	vec4 fontColor = texture(fontSampler, inTexcoord);
+	vec4 fontColor = LinearToSrgb(texture(fontSampler, inTexcoord));
 
     if (textData.mDistanceField != 0)
     {

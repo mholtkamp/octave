@@ -248,3 +248,21 @@ float CalcLightIntensity(vec3 N, vec3 L, float wrap)
     float intensity = max(0.0, (dot(L, N) + wrap) / (1.0 + wrap));
     return intensity;
 }
+
+vec4 LinearToSrgb(vec4 linearColor)
+{
+    // Leave alpha channel unaffected.
+    vec4 srgbColor;
+    srgbColor.rgb = pow(linearColor.rgb, vec3(1 / 2.2));
+    srgbColor.a = linearColor.a;
+    return srgbColor;
+}
+
+vec4 SrgbToLinear(vec4 srgbColor)
+{
+    // Leave alpha channel unaffected.
+    vec4 linearColor;
+    linearColor.rgb = pow(srgbColor.rgb, vec3(2.2));
+    linearColor.a = srgbColor.a;
+    return linearColor;
+}
