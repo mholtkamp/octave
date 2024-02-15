@@ -89,7 +89,11 @@ VulkanContext::VulkanContext()
     mSceneColorFramebuffer = VK_NULL_HANDLE;
     mImageAvailableSemaphore = 0;
     mRenderFinishedSemaphore = 0;
-    mSceneColorImageFormat = VK_FORMAT_R8G8B8A8_UNORM;
+
+    // This format breaks shadow mesh rendering. If we want to 
+    // bring back that feature, then change to RGBA16 possibly. 
+    // Need the extra precision to prevent banding artifacts from srbg -> linear.
+    mSceneColorImageFormat = VK_FORMAT_B10G11R11_UFLOAT_PACK32;
 
     mGlobalUniformData.mScreenDimensions = glm::vec2(800.0f, 600.0f);
     mGlobalUniformData.mVisualizationMode = 0;
