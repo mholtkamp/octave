@@ -34,6 +34,7 @@ public:
     void SetMipmapped(bool mipmapped);
     bool IsMipmapped() const;
     bool IsRenderTarget() const;
+    bool IsSrgb() const;
 
     uint32_t GetWidth() const;
     uint32_t GetHeight() const;
@@ -60,6 +61,7 @@ protected:
     WrapMode mWrapMode;
     bool mMipmapped;
     bool mRenderTarget;
+    bool mSrgb;
 
     // This pixel array is used as an intermediate storage between LoadStream() and Create()
     // It is cleared and shrunk within Create() except when compiled for EDITOR

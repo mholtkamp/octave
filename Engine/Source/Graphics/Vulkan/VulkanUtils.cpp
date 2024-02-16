@@ -33,7 +33,7 @@ extern PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT;
 extern PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT;
 extern PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT;
 
-VkFormat ConvertPixelFormat(PixelFormat pixelFormat)
+VkFormat ConvertPixelFormat(PixelFormat pixelFormat, bool srgb)
 {
     VkFormat format = VK_FORMAT_UNDEFINED;
 
@@ -42,15 +42,15 @@ VkFormat ConvertPixelFormat(PixelFormat pixelFormat)
     case PixelFormat::LA4: format = VK_FORMAT_R8G8_UNORM; break;
     case PixelFormat::RGB565: format = VK_FORMAT_R5G6B5_UNORM_PACK16; break;
     case PixelFormat::RGBA5551: format = VK_FORMAT_R5G5B5A1_UNORM_PACK16; break;
-    case PixelFormat::RGBA8: format = VK_FORMAT_R8G8B8A8_UNORM; break;
+    case PixelFormat::RGBA8: format = srgb ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
 
 #if PLATFORM_ANDROID
     case PixelFormat::CMPR: format = VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK; break;
 #else
-    case PixelFormat::CMPR: format = VK_FORMAT_BC1_RGBA_UNORM_BLOCK; break;
+    case PixelFormat::CMPR: format = srgb ? VK_FORMAT_BC1_RGBA_SRGB_BLOCK : VK_FORMAT_BC1_RGBA_UNORM_BLOCK; break;
 #endif
 
-    case PixelFormat::R8: format = VK_FORMAT_R8_UNORM; break;
+    case PixelFormat::R8: format = srgb ? VK_FORMAT_R8_SRGB : VK_FORMAT_R8_UNORM; break;
     case PixelFormat::R32U: format = VK_FORMAT_R32_UINT; break;
     case PixelFormat::R32F: format = VK_FORMAT_R32_SFLOAT; break;
     case PixelFormat::RGBA16F: format = VK_FORMAT_R16G16B16A16_SFLOAT; break;
@@ -417,6 +417,7 @@ uint32_t GetFormatPixelSize(VkFormat format)
     case VK_FORMAT_R5G6B5_UNORM_PACK16: size = 2; break;
     case VK_FORMAT_R5G5B5A1_UNORM_PACK16: size = 2; break;
     case VK_FORMAT_R8G8B8A8_UNORM: size = 4; break;
+    case VK_FORMAT_R8G8B8A8_SRGB: size = 4; break;
 
     case VK_FORMAT_R32_UINT: size = 4; break;
     case VK_FORMAT_R32_SFLOAT: size = 4; break;
@@ -1093,7 +1094,7 @@ void CreateTextureResource(Texture* texture, uint8_t* pixels)
     TextureResource* resource = texture->GetResource();
 
     // TODO: Handle other pixel formats
-    VkFormat format = ConvertPixelFormat(PixelFormat::RGBA8 /*texture->GetFormat()*/);
+    VkFormat format = ConvertPixelFormat(PixelFormat::RGBA8 /*texture->GetFormat()*/, texture->IsSrgb());
 
     ImageDesc imageDesc;
     imageDesc.mWidth = texture->GetWidth();

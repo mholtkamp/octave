@@ -34,7 +34,7 @@ class Poly;
 
 struct Bounds;
 
-VkFormat ConvertPixelFormat(PixelFormat pixelFormat);
+VkFormat ConvertPixelFormat(PixelFormat pixelFormat, bool srgb = false);
 
 UniformBlock WriteUniformBlock(void* data, uint32_t size);
 
