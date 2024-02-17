@@ -1,6 +1,6 @@
 #if API_VULKAN
 
-#include "Graphics/Vulkan/Allocator.h"
+#include "Graphics/Vulkan/VramAllocator.h"
 #include "Renderer.h"
 #include "Log.h"
 
@@ -9,17 +9,17 @@
 
 #include "Assertion.h"
 
-std::vector<MemoryBlock> Allocator::sBlocks;
-const uint64_t Allocator::sDefaultBlockSize = 16777216; // 16 MB Blocks
+std::vector<VramMemoryBlock> VramAllocator::sBlocks;
+const uint64_t VramAllocator::sDefaultBlockSize = 16777216; // 16 MB Blocks
 
-uint64_t Allocator::sNumAllocations = 0;
-uint64_t Allocator::sNumAllocatedBytes = 0;
+uint64_t VramAllocator::sNumAllocations = 0;
+uint64_t VramAllocator::sNumAllocatedBytes = 0;
 
 static int64_t sNumChunksAllocated = 0;
 
-MemoryChunk* MemoryBlock::AllocateChunk(uint64_t size)
+VramMemoryChunk* VramMemoryBlock::AllocateChunk(uint64_t size)
 {
-    MemoryChunk* chunk = nullptr;
+    VramMemoryChunk* chunk = nullptr;
 
     for (int32_t j = 0; j < int32_t(mChunks.size()); ++j)
     {
@@ -33,7 +33,7 @@ MemoryChunk* MemoryBlock::AllocateChunk(uint64_t size)
             {
                 mChunks[j].mSize = size;
                 
-                MemoryChunk extraChunk;
+                VramMemoryChunk extraChunk;
                 extraChunk.mFree = true;
                 extraChunk.mOffset = mChunks[j].mOffset + mChunks[j].mSize;
                 extraChunk.mSize = extraSize;
@@ -56,7 +56,7 @@ MemoryChunk* MemoryBlock::AllocateChunk(uint64_t size)
     return chunk;
 }
 
-bool MemoryBlock::FreeChunk(int64_t id)
+bool VramMemoryBlock::FreeChunk(int64_t id)
 {
     bool bFreed = false;
 
@@ -91,10 +91,10 @@ bool MemoryBlock::FreeChunk(int64_t id)
     return bFreed;
 }
 
-void Allocator::Alloc(uint64_t size, uint64_t alignment, uint32_t memoryType, Allocation& outAllocation)
+void VramAllocator::Alloc(uint64_t size, uint64_t alignment, uint32_t memoryType, VramAllocation& outAllocation)
 {
-    MemoryBlock* block = nullptr;
-    MemoryChunk* chunk = nullptr;
+    VramMemoryBlock* block = nullptr;
+    VramMemoryChunk* chunk = nullptr;
 
     uint64_t maxAlignSize = size + alignment;
     for (int32_t i = 0; i < int32_t(sBlocks.size()); ++i)
@@ -135,7 +135,7 @@ void Allocator::Alloc(uint64_t size, uint64_t alignment, uint32_t memoryType, Al
     //LogDebug("ALLOC: NumAllocations = %lld, NumAllocatedBytes = %lld", sNumAllocations, sNumAllocatedBytes);
 }
 
-void Allocator::Free(Allocation& allocation)
+void VramAllocator::Free(VramAllocation& allocation)
 {
     sNumAllocations--;
     sNumAllocatedBytes -= allocation.mPaddedSize;
@@ -171,25 +171,25 @@ void Allocator::Free(Allocation& allocation)
     allocation.mType = 0;
 }
 
-uint64_t Allocator::GetNumBlocksAllocated()
+uint64_t VramAllocator::GetNumBlocksAllocated()
 {
     return static_cast<uint64_t>(sBlocks.size());
 }
 
-uint64_t Allocator::GetNumAllocations()
+uint64_t VramAllocator::GetNumAllocations()
 {
     return sNumAllocations;
 }
 
-uint64_t Allocator::GetNumAllocatedBytes()
+uint64_t VramAllocator::GetNumAllocatedBytes()
 {
     return sNumAllocatedBytes;
 }
 
-MemoryBlock* Allocator::AllocateBlock(uint64_t newBlockSize, uint32_t memoryType)
+VramMemoryBlock* VramAllocator::AllocateBlock(uint64_t newBlockSize, uint32_t memoryType)
 {
-    sBlocks.push_back(MemoryBlock());
-    MemoryBlock& newBlock = sBlocks.back();
+    sBlocks.push_back(VramMemoryBlock());
+    VramMemoryBlock& newBlock = sBlocks.back();
 
     newBlock.mSize = newBlockSize;
     newBlock.mAvailableMemory = newBlockSize;
@@ -209,7 +209,7 @@ MemoryBlock* Allocator::AllocateBlock(uint64_t newBlockSize, uint32_t memoryType
     }
 
     // Initialize the starting chunk.
-    MemoryChunk firstChunk;
+    VramMemoryChunk firstChunk;
     firstChunk.mFree = true;
     firstChunk.mID = -1;
     firstChunk.mOffset = 0;
@@ -219,7 +219,7 @@ MemoryBlock* Allocator::AllocateBlock(uint64_t newBlockSize, uint32_t memoryType
     return &newBlock;
 }
 
-void Allocator::FreeBlock(MemoryBlock& block)
+void VramAllocator::FreeBlock(VramMemoryBlock& block)
 {
     int32_t index = 0;
 

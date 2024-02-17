@@ -69,7 +69,7 @@ Image::Image(ImageDesc imageDesc, SamplerDesc samplerDesc, const char* debugObje
     vkGetImageMemoryRequirements(device, mImage, &memRequirements);
     uint32_t memoryType = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    Allocator::Alloc(memRequirements.size, memRequirements.alignment, memoryType, mMemory);
+    VramAllocator::Alloc(memRequirements.size, memRequirements.alignment, memoryType, mMemory);
     vkBindImageMemory(device, mImage, mMemory.mDeviceMemory, mMemory.mOffset);
 
     // ImageView
@@ -136,7 +136,7 @@ Image::~Image()
     vkDestroyImage(device, mImage, nullptr);
     mImage = VK_NULL_HANDLE;
 
-    Allocator::Free(mMemory);
+    VramAllocator::Free(mMemory);
 }
 
 VkImage Image::Get() const

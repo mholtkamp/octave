@@ -2,7 +2,7 @@
 
 #if API_VULKAN
 
-#include "Allocator.h"
+#include "Graphics/Vulkan/VramAllocator.h"
 #include "Vertex.h"
 
 #include "Graphics/GraphicsTypes.h"
@@ -43,7 +43,7 @@ void CreateBuffer(
     VkBufferUsageFlags usage,
     VkMemoryPropertyFlags properties,
     VkBuffer& buffer,
-    Allocation& bufferMemory);
+    VramAllocation& bufferMemory);
 
 void TransitionImageLayout(
     VkImage image,

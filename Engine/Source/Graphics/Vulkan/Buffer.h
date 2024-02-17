@@ -2,7 +2,7 @@
 
 #if API_VULKAN
 
-#include "Allocator.h"
+#include "Graphics/Vulkan/VramAllocator.h"
 
 #include <vulkan/vulkan.h>
 
@@ -47,7 +47,7 @@ private:
     ~Buffer();
 
     VkBuffer mBuffer = VK_NULL_HANDLE;
-    Allocation mMemory;
+    VramAllocation mMemory;
     BufferType mType = BufferType::Count;
     size_t mSize = 0;
     void* mMappedPointer = nullptr;

@@ -10,7 +10,7 @@
 #include "DescriptorSet.h"
 #include "Pipeline.h"
 #include "PipelineConfigs.h"
-#include "Allocator.h"
+#include "VramAllocator.h"
 #include "DestroyQueue.h"
 #include "Buffer.h"
 #include "Image.h"

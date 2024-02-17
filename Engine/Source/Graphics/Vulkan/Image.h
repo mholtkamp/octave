@@ -2,7 +2,7 @@
 
 #if API_VULKAN
 
-#include "Allocator.h"
+#include "Graphics/Vulkan/VramAllocator.h"
 #include "Maths.h"
 
 #include <vulkan/vulkan.h>
@@ -56,7 +56,7 @@ private:
     VkImage mImage = VK_NULL_HANDLE;
     VkImageView mImageView = VK_NULL_HANDLE;
     VkSampler mSampler = VK_NULL_HANDLE;
-    Allocation mMemory;
+    VramAllocation mMemory;
 
     uint32_t mWidth = 0;
     uint32_t mHeight = 0;

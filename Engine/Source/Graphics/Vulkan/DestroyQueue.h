@@ -3,7 +3,7 @@
 #if API_VULKAN
 
 #include "Graphics/GraphicsConstants.h"
-#include "Allocator.h"
+#include "Graphics/Vulkan/VramAllocator.h"
 
 #include <vulkan/vulkan.h>
 #include <vector>

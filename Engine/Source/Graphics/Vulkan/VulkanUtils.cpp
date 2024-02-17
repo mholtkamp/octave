@@ -98,7 +98,7 @@ void CreateBuffer(
     VkBufferUsageFlags usage,
     VkMemoryPropertyFlags properties,
     VkBuffer& buffer,
-    Allocation& bufferMemory)
+    VramAllocation& bufferMemory)
 {
     VkDevice device = GetVulkanDevice();
 
@@ -119,7 +119,7 @@ void CreateBuffer(
     vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
     uint32_t memoryType = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-    Allocator::Alloc(memRequirements.size, memRequirements.alignment, memoryType, bufferMemory);
+    VramAllocator::Alloc(memRequirements.size, memRequirements.alignment, memoryType, bufferMemory);
 
     vkBindBufferMemory(device, buffer, bufferMemory.mDeviceMemory, bufferMemory.mOffset);
 }

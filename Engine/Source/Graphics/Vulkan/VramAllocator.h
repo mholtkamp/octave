@@ -5,7 +5,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-struct Allocation
+struct VramAllocation
 {
     VkDeviceMemory mDeviceMemory;
     uint32_t mType;
@@ -14,7 +14,7 @@ struct Allocation
     VkDeviceSize mOffset;
     VkDeviceSize mPaddedSize;
 
-    Allocation() :
+    VramAllocation() :
         mDeviceMemory(VK_NULL_HANDLE),
         mType(0),
         mID(-1),
@@ -31,14 +31,14 @@ struct Allocation
     }
 };
 
-struct MemoryChunk
+struct VramMemoryChunk
 {
     int64_t mID;
     uint64_t mOffset;
     uint64_t mSize;
     bool mFree;
 
-    MemoryChunk() :
+    VramMemoryChunk() :
         mID(-1),
         mOffset(0),
         mSize(0),
@@ -48,12 +48,12 @@ struct MemoryChunk
     }
 };
 
-struct MemoryBlock
+struct VramMemoryBlock
 {
-    MemoryChunk* AllocateChunk(uint64_t size);
+    VramMemoryChunk* AllocateChunk(uint64_t size);
     bool FreeChunk(int64_t id);
 
-    MemoryBlock() :
+    VramMemoryBlock() :
         mDeviceMemory(0),
         mSize(0),
         mAvailableMemory(0),
@@ -63,7 +63,7 @@ struct MemoryBlock
         
     }
 
-    std::vector<MemoryChunk> mChunks;
+    std::vector<VramMemoryChunk> mChunks;
     VkDeviceMemory mDeviceMemory;
     uint64_t mSize;
     uint64_t mAvailableMemory;
@@ -71,12 +71,12 @@ struct MemoryBlock
     uint32_t mMemoryType;
 };
 
-class Allocator
+class VramAllocator
 {
 public:
 
-    static void Alloc(uint64_t size, uint64_t alignment, uint32_t memoryType, Allocation& outAllocation);
-    static void Free(Allocation& allocation);
+    static void Alloc(uint64_t size, uint64_t alignment, uint32_t memoryType, VramAllocation& outAllocation);
+    static void Free(VramAllocation& allocation);
 
     static uint64_t GetNumBlocksAllocated();
     static uint64_t GetNumAllocations();
@@ -86,11 +86,11 @@ public:
 
 private:
 
-    static MemoryBlock* AllocateBlock(uint64_t newBlockSize, uint32_t memoryType);
-    static void FreeBlock(MemoryBlock& block);
+    static VramMemoryBlock* AllocateBlock(uint64_t newBlockSize, uint32_t memoryType);
+    static void FreeBlock(VramMemoryBlock& block);
 
 
-    static std::vector<MemoryBlock> sBlocks;
+    static std::vector<VramMemoryBlock> sBlocks;
     static uint64_t sNumAllocations;
     static uint64_t sNumAllocatedBytes;
 };

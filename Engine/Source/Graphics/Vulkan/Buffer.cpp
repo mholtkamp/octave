@@ -49,7 +49,7 @@ Buffer::~Buffer()
     vkDestroyBuffer(GetVulkanDevice(), mBuffer, nullptr);
     mBuffer = VK_NULL_HANDLE;
 
-    Allocator::Free(mMemory);
+    VramAllocator::Free(mMemory);
 
     mSize = 0;
 }
