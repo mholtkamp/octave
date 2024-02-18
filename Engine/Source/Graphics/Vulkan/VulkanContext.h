@@ -71,7 +71,7 @@ public:
     void BeginFrame();
     void EndFrame();
     void BeginRenderPass(RenderPassId id);
-    void BeginVkRenderPass(const RenderPassConfig& rpConfig, bool insertBarrier);
+    void BeginVkRenderPass(const RenderPassSetup& rpConfig, bool insertBarrier);
     void EndRenderPass();
     void EndVkRenderPass();
     void CommitPipeline();

@@ -406,55 +406,61 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
 
     mCurrentRenderPassId = id;
 
-    RenderPassConfig rpConfig;
+    RenderPassSetup rpSetup;
 
     bool barrierNeeded = false;
 
     switch (id)
     {
     case RenderPassId::Shadows:
-        rpConfig.mDepthImage = mShadowMapImage;
-        rpConfig.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        rpConfig.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpSetup.mDepthImage = mShadowMapImage;
+        rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpSetup.mDebugName = "Shadows";
         break;
     case RenderPassId::Forward:
-        rpConfig.mDepthImage = mDepthImage;
-        rpConfig.mColorImages[0] = mSceneColorImage;
-        rpConfig.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        rpConfig.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-        rpConfig.mDepthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpSetup.mDepthImage = mDepthImage;
+        rpSetup.mColorImages[0] = mSceneColorImage;
+        rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpSetup.mDepthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpSetup.mDebugName = "Forward";
         break;
     case RenderPassId::PostProcess:
-        rpConfig.mColorImages[0] = mExtSwapchainImages[mFrameIndex];
-        rpConfig.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        rpConfig.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-        rpConfig.mPreLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        rpConfig.mPostLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        rpSetup.mColorImages[0] = mExtSwapchainImages[mFrameIndex];
+        rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpSetup.mPreLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        rpSetup.mPostLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        rpSetup.mDebugName = "PostProcess";
         barrierNeeded = true;
         break;
     case RenderPassId::Ui:
-        rpConfig.mColorImages[0] = mExtSwapchainImages[mFrameIndex];
-        rpConfig.mLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-        rpConfig.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-        rpConfig.mPreLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        rpConfig.mPostLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        rpSetup.mColorImages[0] = mExtSwapchainImages[mFrameIndex];
+        rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpSetup.mPreLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        rpSetup.mPostLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        rpSetup.mDebugName = "UI";
         break;
     case RenderPassId::Clear:
-        rpConfig.mColorImages[0] = mExtSwapchainImages[mFrameIndex];
-        rpConfig.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        rpConfig.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-        rpConfig.mPreLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        rpConfig.mPostLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        rpSetup.mColorImages[0] = mExtSwapchainImages[mFrameIndex];
+        rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpSetup.mPreLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        rpSetup.mPostLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        rpSetup.mDebugName = "Clear";
         break;
 #if EDITOR
     case RenderPassId::HitCheck:
-        rpConfig.mColorImages[0] = mHitCheckImage;
-        rpConfig.mDepthImage = mDepthImage;
-        rpConfig.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        rpConfig.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-        rpConfig.mDepthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        rpConfig.mPreLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        rpConfig.mPostLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        rpSetup.mColorImages[0] = mHitCheckImage;
+        rpSetup.mDepthImage = mDepthImage;
+        rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpSetup.mDepthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpSetup.mPreLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        rpSetup.mPostLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        rpSetup.mDebugName = "HitCheck";
         break;
 #endif
 
@@ -476,10 +482,10 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         SetScissor(vp.x, vp.y, vp.z, vp.w, true, true);
     }
 
-    BeginVkRenderPass(rpConfig, barrierNeeded);
+    BeginVkRenderPass(rpSetup, barrierNeeded);
 }
 
-void VulkanContext::BeginVkRenderPass(const RenderPassConfig& rpConfig, bool insertBarrier)
+void VulkanContext::BeginVkRenderPass(const RenderPassSetup& rpSetup, bool insertBarrier)
 {
     VkClearValue clearValues[2] = {};
     clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -491,12 +497,32 @@ void VulkanContext::BeginVkRenderPass(const RenderPassConfig& rpConfig, bool ins
     renderPassInfo.clearValueCount = OCT_ARRAY_SIZE(clearValues);
     renderPassInfo.pClearValues = clearValues;
 
-    RenderPass renderPass = mRenderPassCache.CreateRenderPass(rpConfig);
-    renderPassInfo.framebuffer = renderPass.mFramebuffer;
-    renderPassInfo.renderPass = renderPass.mRenderPass;
+    RenderPassConfig rpConfig;
+    for (uint32_t i = 0; i < MAX_RENDER_TARGETS; ++i)
+    {
+        rpConfig.mColorFormats[i] = rpSetup.mColorImages[i] ? rpSetup.mColorImages[i]->GetFormat() : VK_FORMAT_UNDEFINED;
+    }
+    rpConfig.mDepthFormat = rpSetup.mDepthImage ? rpSetup.mDepthImage->GetFormat() : VK_FORMAT_UNDEFINED;
+    rpConfig.mLoadOp = rpSetup.mLoadOp;
+    rpConfig.mStoreOp = rpSetup.mStoreOp;
+    rpConfig.mDepthLoadOp = rpSetup.mDepthLoadOp;
+    rpConfig.mDepthStoreOp = rpSetup.mDepthStoreOp;
+    rpConfig.mPreLayout = rpSetup.mPreLayout;
+    rpConfig.mPostLayout = rpSetup.mPostLayout;
+    rpConfig.mDebugName = rpSetup.mDebugName;
+    VkRenderPass renderPass = mRenderPassCache.ResolveRenderPass(rpConfig);
+    renderPassInfo.renderPass = renderPass;
 
-    uint32_t width = rpConfig.mDepthImage ? rpConfig.mDepthImage->GetWidth() : rpConfig.mColorImages[0]->GetWidth();
-    uint32_t height = rpConfig.mDepthImage ? rpConfig.mDepthImage->GetHeight() : rpConfig.mColorImages[0]->GetHeight();
+    FramebufferConfig fbConfig;
+    memcpy(fbConfig.mColorImages, rpSetup.mColorImages, sizeof(Image*));
+    fbConfig.mDepthImage = rpSetup.mDepthImage;
+    fbConfig.mDebugName = rpSetup.mDebugName;
+    fbConfig.mRenderPass = renderPass;
+    VkFramebuffer framebuffer = mRenderPassCache.ResolveFramebuffer(fbConfig);
+    renderPassInfo.framebuffer = framebuffer;
+
+    uint32_t width = rpSetup.mDepthImage ? rpSetup.mDepthImage->GetWidth() : rpSetup.mColorImages[0]->GetWidth();
+    uint32_t height = rpSetup.mDepthImage ? rpSetup.mDepthImage->GetHeight() : rpSetup.mColorImages[0]->GetHeight();
     renderPassInfo.renderArea.extent.width = width;
     renderPassInfo.renderArea.extent.height = height;
 
@@ -648,8 +674,10 @@ void VulkanContext::DrawFullscreen()
 
 void VulkanContext::DestroySwapchain()
 {
-    // TODO: Is this too heavy of an operation?
-    mRenderPassCache.Clear();
+    // Clear cached framebuffers or else we might get back cache hits if
+    // an image happens to be allocated with the same memory address.
+    // Render passes can persist throughout the entirety of the application.
+    mRenderPassCache.Clear(true);
 
     for (uint32_t i = 0; i < mCommandBuffers.size(); ++i)
     {

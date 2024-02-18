@@ -9,6 +9,7 @@
 #include <vector>
 
 class Shader;
+class Image;
 
 struct PipelineCreateJobArgs
 {
@@ -72,6 +73,20 @@ struct PipelineStateHasher
     {
         return k.Hash();
     }
+};
+
+struct RenderPassSetup
+{
+    Image* mDepthImage = nullptr;
+    Image* mColorImages[MAX_RENDER_TARGETS] = {};
+    VkAttachmentLoadOp mLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+    VkAttachmentStoreOp mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+    VkAttachmentLoadOp mDepthLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+    VkAttachmentStoreOp mDepthStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+    VkImageLayout mPreLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    VkImageLayout mPostLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    const char* mDebugName = "";
 };
 
 struct LightUniformData

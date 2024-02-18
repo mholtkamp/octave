@@ -8,8 +8,8 @@
 struct RenderPassConfig
 {
     // Config
-    Image* mDepthImage = nullptr;
-    Image* mColorImages[MAX_RENDER_TARGETS] = {};
+    VkFormat mDepthFormat = VK_FORMAT_UNDEFINED;
+    VkFormat mColorFormats[MAX_RENDER_TARGETS] = {};
     VkAttachmentLoadOp mLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
     VkAttachmentStoreOp mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
     VkAttachmentLoadOp mDepthLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -24,16 +24,32 @@ struct RenderPassConfig
     size_t Hash() const;
 };
 
-struct RenderPass
+struct FramebufferConfig
 {
-    // State
-    VkRenderPass mRenderPass = VK_NULL_HANDLE;
-    VkFramebuffer mFramebuffer = VK_NULL_HANDLE;
+    // Config
+    Image* mDepthImage = nullptr;
+    Image* mColorImages[MAX_RENDER_TARGETS] = {};
+    VkRenderPass mRenderPass;
+
+    // Debug
+    const char* mDebugName = "";
+
+    bool operator==(const FramebufferConfig& other) const;
+    size_t Hash() const;
+
 };
 
-struct RenderPassConfigHash
+struct RenderPassHash
 {
     size_t operator()(const RenderPassConfig& config) const
+    {
+        return config.Hash();
+    }
+};
+
+struct FramebufferHash
+{
+    size_t operator()(const FramebufferConfig& config) const
     {
         return config.Hash();
     }
@@ -45,12 +61,14 @@ public:
 
     void Create();
     void Destroy();
-    void Clear();
+    void Clear(bool framebuffersOnly);
 
-    RenderPass CreateRenderPass(const RenderPassConfig& config);
+    VkRenderPass ResolveRenderPass(const RenderPassConfig& config);
+    VkFramebuffer ResolveFramebuffer(const FramebufferConfig& config);
 
 protected:
 
-    std::unordered_map<RenderPassConfig, RenderPass, RenderPassConfigHash> mRenderPassMap;
+    std::unordered_map<RenderPassConfig, VkRenderPass, RenderPassHash> mRenderPassMap;
+    std::unordered_map<FramebufferConfig, VkFramebuffer, FramebufferHash> mFramebufferMap;
 
 };
