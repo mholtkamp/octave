@@ -82,11 +82,6 @@ VulkanContext::VulkanContext()
     mPresentQueue = 0;
     mSurface = 0;
     mSwapchain = 0;
-    mForwardRenderPass = VK_NULL_HANDLE;
-    mPostprocessRenderPass = VK_NULL_HANDLE;
-    mUIRenderPass = VK_NULL_HANDLE;
-    mClearSwapchainPass = VK_NULL_HANDLE;
-    mSceneColorFramebuffer = VK_NULL_HANDLE;
     mImageAvailableSemaphore = 0;
     mRenderFinishedSemaphore = 0;
 
@@ -116,7 +111,6 @@ void VulkanContext::Initialize()
     PickPhysicalDevice();
     CreateLogicalDevice();
     CreateSwapchain();
-    CreateImageViews();
     CreateCommandPool();
 
     CreateFrameUniformBuffer();
@@ -131,12 +125,12 @@ void VulkanContext::Initialize()
     CreateHitCheck();
 #endif
 
-    CreatePipelineCache();
+    mPipelineCache.Create();
+    mRenderPassCache.Create();
 
     mRayTracer.CreateStaticRayTraceResources();
     mRayTracer.CreateDynamicRayTraceResources();
 
-    CreateFramebuffers();
     CreateCommandBuffers();
     CreateSemaphores();
     CreateFences();
@@ -207,7 +201,7 @@ void VulkanContext::Initialize()
     initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     initInfo.Allocator = nullptr;
     initInfo.CheckVkResultFn = CheckVkResult;
-    ImGui_ImplVulkan_Init(&initInfo, mUIRenderPass);
+    ImGui_ImplVulkan_Init(&initInfo, mImguiRenderPass);
 
     // Upload Fonts
     {
@@ -242,7 +236,8 @@ void VulkanContext::Destroy()
 
     DestroySwapchain();
 
-    DestroyPipelineCache();
+    mRenderPassCache.Destroy();
+    mPipelineCache.Destroy();
 
     DestroyRenderPasses();
 
@@ -411,6 +406,81 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
 
     mCurrentRenderPassId = id;
 
+    RenderPassConfig rpConfig;
+
+    bool barrierNeeded = false;
+
+    switch (id)
+    {
+    case RenderPassId::Shadows:
+        rpConfig.mDepthImage = mShadowMapImage;
+        rpConfig.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpConfig.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        break;
+    case RenderPassId::Forward:
+        rpConfig.mDepthImage = mDepthImage;
+        rpConfig.mColorImages[0] = mSceneColorImage;
+        rpConfig.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpConfig.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpConfig.mDepthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        break;
+    case RenderPassId::PostProcess:
+        rpConfig.mColorImages[0] = mExtSwapchainImages[mFrameIndex];
+        rpConfig.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpConfig.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpConfig.mPreLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        rpConfig.mPostLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        barrierNeeded = true;
+        break;
+    case RenderPassId::Ui:
+        rpConfig.mColorImages[0] = mExtSwapchainImages[mFrameIndex];
+        rpConfig.mLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        rpConfig.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpConfig.mPreLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        rpConfig.mPostLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        break;
+    case RenderPassId::Clear:
+        rpConfig.mColorImages[0] = mExtSwapchainImages[mFrameIndex];
+        rpConfig.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpConfig.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpConfig.mPreLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        rpConfig.mPostLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        break;
+#if EDITOR
+    case RenderPassId::HitCheck:
+        rpConfig.mColorImages[0] = mHitCheckImage;
+        rpConfig.mDepthImage = mDepthImage;
+        rpConfig.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpConfig.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpConfig.mDepthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpConfig.mPreLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        rpConfig.mPostLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        break;
+#endif
+
+    default: break;
+    }
+
+    BeginDebugLabel(GetRenderPassName(id));
+
+    if (mCurrentRenderPassId != RenderPassId::HitCheck)
+    {
+        BeginGpuTimestamp(GetRenderPassName(mCurrentRenderPassId));
+    }
+
+    if (mCurrentRenderPassId == RenderPassId::Forward)
+    {
+        // Forward pass may render to a different resolution than other passes because of Render Scale setting.
+        glm::uvec4 vp = Renderer::Get()->GetSceneViewport();
+        SetViewport(vp.x, vp.y, vp.z, vp.w, true, true);
+        SetScissor(vp.x, vp.y, vp.z, vp.w, true, true);
+    }
+
+    BeginVkRenderPass(rpConfig, barrierNeeded);
+}
+
+void VulkanContext::BeginVkRenderPass(const RenderPassConfig& rpConfig, bool insertBarrier)
+{
     VkClearValue clearValues[2] = {};
     clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
     clearValues[1].depthStencil = { 1.0f, 0 };
@@ -418,53 +488,19 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderArea.offset = { 0, 0 };
-    renderPassInfo.renderArea.extent = mSwapchainExtent;
     renderPassInfo.clearValueCount = OCT_ARRAY_SIZE(clearValues);
     renderPassInfo.pClearValues = clearValues;
 
-    bool barrierNeeded = false;
+    RenderPass renderPass = mRenderPassCache.CreateRenderPass(rpConfig);
+    renderPassInfo.framebuffer = renderPass.mFramebuffer;
+    renderPassInfo.renderPass = renderPass.mRenderPass;
 
-    switch (id)
-    {
-    case RenderPassId::Shadows:
-        renderPassInfo.renderArea.extent.width = SHADOW_MAP_RESOLUTION;
-        renderPassInfo.renderArea.extent.height = SHADOW_MAP_RESOLUTION;
-        renderPassInfo.renderPass = mShadowRenderPass;
-        renderPassInfo.framebuffer = mShadowFramebuffer;
-        clearValues[0].depthStencil = { 1.0f, 0 };
-        break;
-    case RenderPassId::Forward:
-        renderPassInfo.renderArea.extent.width = mSceneWidth;
-        renderPassInfo.renderArea.extent.height = mSceneHeight;
-        renderPassInfo.renderPass = mForwardRenderPass;
-        renderPassInfo.framebuffer = mSceneColorFramebuffer;
-        break;
-    case RenderPassId::PostProcess:
-        renderPassInfo.renderPass = mPostprocessRenderPass;
-        renderPassInfo.framebuffer = mSwapchainFramebuffers[mSwapchainImageIndex];
-        barrierNeeded = true;
-        break;
-    case RenderPassId::Ui:
-        renderPassInfo.renderPass = mUIRenderPass;
-        renderPassInfo.framebuffer = mSwapchainFramebuffers[mSwapchainImageIndex];
-        break;
-    case RenderPassId::Clear:
-        renderPassInfo.renderPass = mClearSwapchainPass;
-        renderPassInfo.framebuffer = mSwapchainFramebuffers[mSwapchainImageIndex];
-        break;
-#if EDITOR
-    case RenderPassId::HitCheck:
-        renderPassInfo.renderArea.extent.width = mSceneWidth;
-        renderPassInfo.renderArea.extent.height = mSceneHeight;
-        renderPassInfo.renderPass = mHitCheckRenderPass;
-        renderPassInfo.framebuffer = mHitCheckFramebuffer;
-        break;
-#endif
+    uint32_t width = rpConfig.mDepthImage ? rpConfig.mDepthImage->GetWidth() : rpConfig.mColorImages[0]->GetWidth();
+    uint32_t height = rpConfig.mDepthImage ? rpConfig.mDepthImage->GetHeight() : rpConfig.mColorImages[0]->GetHeight();
+    renderPassInfo.renderArea.extent.width = width;
+    renderPassInfo.renderArea.extent.height = height;
 
-    default: break;
-    }
-
-    if (barrierNeeded)
+    if (insertBarrier)
     {
         // Add a barrier for our attachments to make sure they are fully written to.
         // This barrier is probably overkill. Might need to refine.
@@ -482,21 +518,6 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
             &memoryBarrier,
             0, nullptr,
             0, nullptr);
-    }
-
-    BeginDebugLabel(GetRenderPassName(id));
-
-    if (mCurrentRenderPassId != RenderPassId::HitCheck)
-    {
-        BeginGpuTimestamp(GetRenderPassName(mCurrentRenderPassId));
-    }
-
-    if (mCurrentRenderPassId == RenderPassId::Forward)
-    {
-        // Forward pass may render to a different resolution than other passes because of Render Scale setting.
-        glm::uvec4 vp = Renderer::Get()->GetSceneViewport();
-        SetViewport(vp.x, vp.y, vp.z, vp.w, true, true);
-        SetScissor(vp.x, vp.y, vp.z, vp.w, true, true);
     }
 
     vkCmdBeginRenderPass(mCommandBuffers[mFrameIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -540,7 +561,7 @@ void VulkanContext::EndRenderPass()
 
     if (mCurrentRenderPassId != RenderPassId::Count)
     {
-        vkCmdEndRenderPass(mCommandBuffers[mFrameIndex]);
+        EndVkRenderPass();
         EndDebugLabel();
 
         if (mCurrentRenderPassId != RenderPassId::HitCheck)
@@ -550,6 +571,11 @@ void VulkanContext::EndRenderPass()
 
         mCurrentRenderPassId = RenderPassId::Count;
     }
+}
+
+void VulkanContext::EndVkRenderPass()
+{
+    vkCmdEndRenderPass(mCommandBuffers[mFrameIndex]);
 }
 
 void VulkanContext::CommitPipeline()
@@ -622,12 +648,8 @@ void VulkanContext::DrawFullscreen()
 
 void VulkanContext::DestroySwapchain()
 {
-    for (size_t i = 0; i < mSwapchainFramebuffers.size(); ++i)
-    {
-        vkDestroyFramebuffer(mDevice, mSwapchainFramebuffers[i], nullptr);
-    }
-    vkDestroyFramebuffer(mDevice, mSceneColorFramebuffer, nullptr);
-    vkDestroyFramebuffer(mDevice, mShadowFramebuffer, nullptr);
+    // TODO: Is this too heavy of an operation?
+    mRenderPassCache.Clear();
 
     for (uint32_t i = 0; i < mCommandBuffers.size(); ++i)
     {
@@ -645,6 +667,13 @@ void VulkanContext::DestroySwapchain()
 
     GetDestroyQueue()->Destroy(mSceneColorImage);
     mSceneColorImage = nullptr;
+
+    // Create external Images for later use in RenderPassCache
+    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    {
+        GetDestroyQueue()->Destroy(mExtSwapchainImages[i]);
+        mExtSwapchainImages[i] = nullptr;
+    }
 
     for (size_t i = 0; i < mSwapchainImageViews.size(); ++i)
     {
@@ -742,6 +771,40 @@ void VulkanContext::CreateSwapchain()
     mSceneHeight = uint32_t(mSwapchainExtent.height * resScale + 0.5f);
 
     mGlobalUniformData.mScreenDimensions = glm::vec2(extent.width, extent.height);
+
+
+    // Create Image Views
+    mSwapchainImageViews.resize(mSwapchainImages.size());
+
+    for (size_t i = 0; i < mSwapchainImages.size(); ++i)
+    {
+        // ImageView
+        VkImageViewCreateInfo ciImageView = {};
+        ciImageView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        ciImageView.image = mSwapchainImages[i];
+        ciImageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        ciImageView.format = mSwapchainImageFormat;
+        ciImageView.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
+        ciImageView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        ciImageView.subresourceRange.baseMipLevel = 0;
+        ciImageView.subresourceRange.baseArrayLayer = 0;
+        ciImageView.subresourceRange.layerCount = 1;
+        ciImageView.subresourceRange.levelCount = 1;
+
+        if (vkCreateImageView(mDevice, &ciImageView, nullptr, &mSwapchainImageViews[i]) != VK_SUCCESS)
+        {
+            LogError("Failed to create swapchain image view");
+            OCT_ASSERT(0);
+        }
+
+        SetDebugObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)mSwapchainImageViews[i], "Swapchain Image View");
+    }
+
+    // Create external Images for later use in RenderPassCache
+    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    {
+        mExtSwapchainImages[i] = new Image(mSwapchainImages[i], mSwapchainImageViews[i], VK_NULL_HANDLE, mSwapchainImageFormat, extent.width, extent.height);
+    }
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
@@ -1234,35 +1297,6 @@ void VulkanContext::CreateLogicalDevice()
     vkGetDeviceQueue(mDevice, indices.mPresentFamily, 0, &mPresentQueue);
 }
 
-void VulkanContext::CreateImageViews()
-{
-    mSwapchainImageViews.resize(mSwapchainImages.size());
-
-    for (size_t i = 0; i < mSwapchainImages.size(); ++i)
-    {
-        // ImageView
-        VkImageViewCreateInfo ciImageView = {};
-        ciImageView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        ciImageView.image = mSwapchainImages[i];
-        ciImageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        ciImageView.format = mSwapchainImageFormat;
-        ciImageView.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
-        ciImageView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        ciImageView.subresourceRange.baseMipLevel = 0;
-        ciImageView.subresourceRange.baseArrayLayer = 0;
-        ciImageView.subresourceRange.layerCount = 1;
-        ciImageView.subresourceRange.levelCount = 1;
-
-        if (vkCreateImageView(mDevice, &ciImageView, nullptr, &mSwapchainImageViews[i]) != VK_SUCCESS)
-        {
-            LogError("Failed to create swapchain image view");
-            OCT_ASSERT(0);
-        }
-
-        SetDebugObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)mSwapchainImageViews[i], "Swapchain Image View");
-    }
-}
-
 void VulkanContext::CreateFrameUniformBuffer()
 {
     mFrameUniformBuffer = new UniformBuffer(32 * 1024 * 1024, "Frame Uniform Buffer");
@@ -1389,10 +1423,10 @@ VkFormat VulkanContext::GetSceneColorFormat()
 void VulkanContext::CreateRenderPasses()
 {
     // I was getting SYNC-HAZARD-READ-AFTER-WRITE validation warnings 
-    // (and was getting incorrect rendering results on the RG552). I thought
-    // render passes were supposed to automatically handle the transition
-    // to the final output (which it seems to do) but unless I add this external 
-    // subpass dependency, I get the read after write warnings.
+       // (and was getting incorrect rendering results on the RG552). I thought
+       // render passes were supposed to automatically handle the transition
+       // to the final output (which it seems to do) but unless I add this external 
+       // subpass dependency, I get the read after write warnings.
     VkSubpassDependency extDependency = {};
     extDependency.srcSubpass = 0;
     extDependency.dstSubpass = VK_SUBPASS_EXTERNAL;
@@ -1403,187 +1437,7 @@ void VulkanContext::CreateRenderPasses()
     extDependency.dstAccessMask = 0;
     extDependency.dependencyFlags = 0;
 
-    // Shadow Pass
-    {
-        VkAttachmentDescription attachmentDesc = {};
-        attachmentDesc.format = VK_FORMAT_D16_UNORM;
-        attachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-        attachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        attachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        attachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        attachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachmentDesc.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        //attachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        //attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-        VkAttachmentReference attachmentRef = {};
-        attachmentRef.attachment = 0;
-        attachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-        VkSubpassDescription subpass = {};
-        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.colorAttachmentCount = 0;
-        subpass.pDepthStencilAttachment = &attachmentRef;
-
-        VkRenderPassCreateInfo ciRenderPass = {};
-        ciRenderPass.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        ciRenderPass.attachmentCount = 1;
-        ciRenderPass.pAttachments = &attachmentDesc;
-        ciRenderPass.subpassCount = 1;
-        ciRenderPass.pSubpasses = &subpass;
-        ciRenderPass.dependencyCount = 1;
-        ciRenderPass.pDependencies = &extDependency;
-
-        if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mShadowRenderPass) != VK_SUCCESS)
-        {
-            LogError("Failed to create shadow renderpass");
-            OCT_ASSERT(0);
-        }
-
-        SetDebugObjectName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t)mShadowRenderPass, "Shadow RenderPass");
-    }
-
-    // Forward Pass
-    {
-        VkAttachmentDescription attachments[] =
-        {
-            // Scene Color
-            {
-                0,
-                mSceneColorImageFormat,
-                VK_SAMPLE_COUNT_1_BIT,
-                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-            },
-
-            // Depth Buffer
-            {
-                0,
-				mDepthImageFormat,
-                VK_SAMPLE_COUNT_1_BIT,
-                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-            }
-        };
-
-        VkAttachmentReference colorRef =
-        {
-            0,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-        };
-
-        VkAttachmentReference depthRef =
-        {
-            1,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-        };
-
-        VkSubpassDescription subpass =
-        {
-            0, // flags
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            0, // input attachments
-            nullptr,
-            1, // color attachments
-            &colorRef,
-            nullptr,
-            &depthRef, // depth attachment
-            0,
-            nullptr
-        };
-
-        VkRenderPassCreateInfo ciRenderPass =
-        {
-            VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-            nullptr,
-            0,
-            OCT_ARRAY_SIZE(attachments),
-            attachments,
-            1,
-            &subpass,
-            1,
-            &extDependency
-        };
-
-        if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mForwardRenderPass) != VK_SUCCESS)
-        {
-            LogError("Failed to create forward render pass");
-            OCT_ASSERT(0);
-        }
-
-        SetDebugObjectName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t)mForwardRenderPass, "Forward RenderPass");
-    }
-
-    // Postprocess Pass
-    {
-        VkAttachmentDescription attachments[] =
-        {
-            // Swapchain Image
-            {
-                0,
-                mSwapchainImageFormat,
-                VK_SAMPLE_COUNT_1_BIT,
-                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-            }
-        };
-
-        VkAttachmentReference colorRef =
-        {
-            0,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-        };
-
-        VkSubpassDescription subpass =
-        {
-            0, // flags
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            0, // input attachments
-            nullptr,
-            1, // color attachments
-            &colorRef,
-            nullptr,
-            nullptr, // depth attachment
-            0,
-            nullptr
-        };
-
-        VkRenderPassCreateInfo ciRenderPass =
-        {
-            VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-            nullptr,
-            0,
-            OCT_ARRAY_SIZE(attachments),
-            attachments,
-            1,
-            &subpass,
-            1,
-            &extDependency
-        };
-
-        if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mPostprocessRenderPass) != VK_SUCCESS)
-        {
-            LogError("Failed to create postprocess render pass");
-            OCT_ASSERT(0);
-        }
-
-        SetDebugObjectName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t)mPostprocessRenderPass, "PostProcess RenderPass");
-    }
-
-    // UI Pass
+    // Imgui Pass
     {
         VkAttachmentDescription attachments[] =
         {
@@ -1634,170 +1488,20 @@ void VulkanContext::CreateRenderPasses()
             &extDependency
         };
 
-        if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mUIRenderPass) != VK_SUCCESS)
+        if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mImguiRenderPass) != VK_SUCCESS)
         {
             LogError("Failed to create UI render pass");
             OCT_ASSERT(0);
         }
 
-        SetDebugObjectName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t)mUIRenderPass, "UI RenderPass");
+        SetDebugObjectName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t)mImguiRenderPass, "Imgui RenderPass");
     }
-
-    // Clear Swapchain Pass
-    {
-        VkAttachmentDescription attachments[] =
-        {
-            // Swapchain Image
-            {
-                0,
-                mSwapchainImageFormat,
-                VK_SAMPLE_COUNT_1_BIT,
-                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-            }
-        };
-
-        VkAttachmentReference colorRef =
-        {
-            0,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-        };
-
-        VkSubpassDescription subpass =
-        {
-            0, // flags
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            0, // input attachments
-            nullptr,
-            1, // color attachments
-            &colorRef,
-            nullptr,
-            nullptr, // depth attachment
-            0,
-            nullptr
-        };
-
-        VkRenderPassCreateInfo ciRenderPass =
-        {
-            VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-            nullptr,
-            0,
-            OCT_ARRAY_SIZE(attachments),
-            attachments,
-            1,
-            &subpass,
-            1,
-            &extDependency
-        };
-
-        if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mClearSwapchainPass) != VK_SUCCESS)
-        {
-            LogError("Failed to create ClearSwapchain pass");
-            OCT_ASSERT(0);
-        }
-
-        SetDebugObjectName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t)mClearSwapchainPass, "ClearSwapchain RenderPass");
-    }
-
-    mPipelineState.mRenderPass = mForwardRenderPass;
 }
 
 void VulkanContext::DestroyRenderPasses()
 {
-    vkDestroyRenderPass(mDevice, mShadowRenderPass, nullptr);
-    mShadowRenderPass = VK_NULL_HANDLE;
-
-    vkDestroyRenderPass(mDevice, mForwardRenderPass, nullptr);
-    mForwardRenderPass = VK_NULL_HANDLE;
-
-    vkDestroyRenderPass(mDevice, mPostprocessRenderPass, nullptr);
-    mPostprocessRenderPass = VK_NULL_HANDLE;
-
-    vkDestroyRenderPass(mDevice, mUIRenderPass, nullptr);
-    mUIRenderPass = VK_NULL_HANDLE;
-
-    vkDestroyRenderPass(mDevice, mClearSwapchainPass, nullptr);
-    mClearSwapchainPass = VK_NULL_HANDLE;
-
-}
-
-void VulkanContext::CreatePipelineCache()
-{
-    mPipelineCache.Create();
-}
-
-void VulkanContext::DestroyPipelineCache()
-{
-    mPipelineCache.Destroy();
-}
-
-void VulkanContext::CreateFramebuffers()
-{
-    mSwapchainFramebuffers.resize(mSwapchainImageViews.size());
-
-    for (size_t i = 0; i < mSwapchainImageViews.size(); ++i)
-    {
-        VkImageView attachmentViews[] = { mSwapchainImageViews[i] };
-
-        VkFramebufferCreateInfo ciFramebuffer = {};
-        ciFramebuffer.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        ciFramebuffer.renderPass = mUIRenderPass;
-        ciFramebuffer.attachmentCount = OCT_ARRAY_SIZE(attachmentViews);
-        ciFramebuffer.pAttachments = attachmentViews;
-        ciFramebuffer.width = mSwapchainExtent.width;
-        ciFramebuffer.height = mSwapchainExtent.height;
-        ciFramebuffer.layers = 1;
-
-        if (vkCreateFramebuffer(mDevice, &ciFramebuffer, nullptr, &mSwapchainFramebuffers[i]) != VK_SUCCESS)
-        {
-            LogError("Failed to create framebuffer.");
-            OCT_ASSERT(0);
-        }
-    }
-
-    {
-        OCT_ASSERT(mShadowRenderPass != VK_NULL_HANDLE);
-
-        VkImageView shadowMapImageView = GetShadowMapImage()->GetView();
-
-        VkFramebufferCreateInfo ciFramebuffer = {};
-        ciFramebuffer.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        ciFramebuffer.renderPass = mShadowRenderPass;
-        ciFramebuffer.attachmentCount = 1;
-        ciFramebuffer.pAttachments = &shadowMapImageView;
-        ciFramebuffer.width = SHADOW_MAP_RESOLUTION;
-        ciFramebuffer.height = SHADOW_MAP_RESOLUTION;
-        ciFramebuffer.layers = 1;
-
-        if (vkCreateFramebuffer(mDevice, &ciFramebuffer, nullptr, &mShadowFramebuffer) != VK_SUCCESS)
-        {
-            LogError("Failed to create shadow framebuffer.");
-            OCT_ASSERT(0);
-        }
-    }
-
-    {
-        VkImageView attachmentViews[] = { mSceneColorImage->GetView(), mDepthImage->GetView() };
-
-        VkFramebufferCreateInfo ciFramebuffer = {};
-        ciFramebuffer.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        ciFramebuffer.renderPass = mForwardRenderPass;
-        ciFramebuffer.attachmentCount = OCT_ARRAY_SIZE(attachmentViews);
-        ciFramebuffer.pAttachments = attachmentViews;
-        ciFramebuffer.width = mSceneWidth;
-        ciFramebuffer.height = mSceneHeight;
-        ciFramebuffer.layers = 1;
-
-        if (vkCreateFramebuffer(mDevice, &ciFramebuffer, nullptr, &mSceneColorFramebuffer) != VK_SUCCESS)
-        {
-            LogError("Failed to create framebuffer.");
-            OCT_ASSERT(0);
-        }
-    }
+    vkDestroyRenderPass(mDevice, mImguiRenderPass, nullptr);
+    mImguiRenderPass = VK_NULL_HANDLE;
 }
 
 void VulkanContext::CreateDepthImage()
@@ -2007,7 +1711,7 @@ void VulkanContext::CreateCommandBuffers()
 {
     if (mCommandBuffers.size() == 0)
     {
-        mCommandBuffers.resize(mSwapchainFramebuffers.size());
+        mCommandBuffers.resize(MAX_FRAMES);
 
         VkCommandBufferAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -2123,11 +1827,9 @@ void VulkanContext::RecreateSwapchain(bool recreateSurface)
     }
 
     CreateSwapchain();
-    CreateImageViews();
     CreateDepthImage();
     CreateSceneColorImage();
     CreateShadowMapImage();
-    CreateFramebuffers();
     mRayTracer.CreateDynamicRayTraceResources();
 
 #if EDITOR
@@ -2828,21 +2530,6 @@ void VulkanContext::SavePipelineCacheToFile()
     mPipelineCache.SaveToFile();
 }
 
-VkRenderPass VulkanContext::GetForwardRenderPass()
-{
-    return mForwardRenderPass;
-}
-
-VkRenderPass VulkanContext::GetPostprocessRenderPass()
-{
-    return mPostprocessRenderPass;
-}
-
-VkRenderPass VulkanContext::GetUIRenderPass()
-{
-    return mUIRenderPass;
-}
-
 void VulkanContext::SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes)
 {
     float bufferWidth = (float)(useSceneRes ? mSceneWidth : mSwapchainExtent.width);
@@ -3051,11 +2738,6 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
     return hitNode;
 }
 
-VkRenderPass VulkanContext::GetHitCheckRenderPass()
-{
-    return mHitCheckRenderPass;
-}
-
 void VulkanContext::CreateHitCheck()
 {
     // Create Image
@@ -3071,118 +2753,17 @@ void VulkanContext::CreateHitCheck()
     // Create Buffer
     uint32_t bufferSize = 4 * mSceneWidth * mSceneHeight; // 4 bytes per pixel. 32 uint format.
     mHitCheckBuffer = new Buffer(BufferType::Transfer, bufferSize, "Hit Check");
-
-    // Create Render Pass
-    VkAttachmentDescription attachments[] =
-    {
-        // Color attachment
-        {
-            0,
-            VK_FORMAT_R32_UINT,
-            VK_SAMPLE_COUNT_1_BIT,
-            VK_ATTACHMENT_LOAD_OP_CLEAR,
-            VK_ATTACHMENT_STORE_OP_STORE,
-            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
-        },
-
-        // Depth attachment
-        {
-            0,
-			mDepthImageFormat,
-            VK_SAMPLE_COUNT_1_BIT,
-            VK_ATTACHMENT_LOAD_OP_CLEAR,
-            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-        }
-    };
-
-    // Light output attachment reference
-    VkAttachmentReference colorAttachmentReference =
-    {
-        0,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    };
-
-    VkAttachmentReference depthAttachmentReference =
-    {
-        1,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-    };
-
-    VkSubpassDescription subpass =
-    {
-        0, // flags
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        0, // input attachments
-        nullptr,
-        1, // color attachments
-        &colorAttachmentReference,
-        nullptr,
-        &depthAttachmentReference, // depth attachment
-        0,
-        nullptr
-    };
-
-    VkRenderPassCreateInfo ciRenderPass =
-    {
-        VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        nullptr,
-        0,
-        2,
-        attachments,
-        1,
-        &subpass,
-        0,
-        nullptr
-    };
-
-    if (vkCreateRenderPass(mDevice, &ciRenderPass, nullptr, &mHitCheckRenderPass) != VK_SUCCESS)
-    {
-        LogError("Failed to create renderpass");
-        OCT_ASSERT(0);
-    }
-
-    // Create Framebuffer
-    VkImageView imageAttachments[] = { mHitCheckImage->GetView(), mDepthImage->GetView() };
-
-    VkFramebufferCreateInfo ciFramebuffer = {};
-    ciFramebuffer.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    ciFramebuffer.renderPass = mHitCheckRenderPass;
-    ciFramebuffer.attachmentCount = 2;
-    ciFramebuffer.pAttachments = imageAttachments;
-    ciFramebuffer.width = mSceneWidth;
-    ciFramebuffer.height = mSceneHeight;
-    ciFramebuffer.layers = 1;
-
-    if (vkCreateFramebuffer(mDevice, &ciFramebuffer, nullptr, &mHitCheckFramebuffer) != VK_SUCCESS)
-    {
-        LogError("Failed to create framebuffer.");
-        OCT_ASSERT(0);
-    }
 }
 
 void VulkanContext::DestroyHitCheck()
 {
     if (mHitCheckImage != nullptr)
     {
-        vkDestroyFramebuffer(mDevice, mHitCheckFramebuffer, nullptr);
-        vkDestroyRenderPass(mDevice, mHitCheckRenderPass, nullptr);
-
         GetDestroyQueue()->Destroy(mHitCheckBuffer);
         mHitCheckBuffer = nullptr;
 
         GetDestroyQueue()->Destroy(mHitCheckImage);
         mHitCheckImage = nullptr;
-
-        mHitCheckFramebuffer = VK_NULL_HANDLE;
-        mHitCheckBuffer = VK_NULL_HANDLE;
-        mHitCheckRenderPass = VK_NULL_HANDLE;
     }
 }
 #endif // EDITOR

@@ -661,6 +661,7 @@
     <ClCompile Include="Source\Engine\Utilities.cpp" />
     <ClCompile Include="Source\Engine\World.cpp" />
     <ClCompile Include="Source\Graphics\GraphicsUtils.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\RenderPassCache.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VramAllocator.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\Buffer.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\DescriptorPool.cpp" />
@@ -888,6 +889,7 @@
     <ClInclude Include="Source\Graphics\GraphicsConstants.h" />
     <ClInclude Include="Source\Graphics\GraphicsTypes.h" />
     <ClInclude Include="Source\Graphics\GraphicsUtils.h" />
+    <ClInclude Include="Source\Graphics\Vulkan\RenderPassCache.h" />
     <ClInclude Include="Source\Graphics\Vulkan\VramAllocator.h" />
     <ClInclude Include="Source\Graphics\Vulkan\Buffer.h" />
     <ClInclude Include="Source\Graphics\Vulkan\DescriptorPool.h" />

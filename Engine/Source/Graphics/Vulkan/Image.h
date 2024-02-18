@@ -34,6 +34,9 @@ class Image
 public:
     Image(ImageDesc imageDesc, SamplerDesc samplerDesc, const char* debugObjectName);
 
+    // External image? Kind of a hack needed for using swapchain images with RenderPassCache
+    Image(VkImage image, VkImageView imageView, VkSampler sampler, VkFormat format, uint32_t width, uint32_t height);
+
     VkImage Get() const;
     VkImageView GetView() const;
     VkSampler GetSampler() const;
@@ -73,6 +76,8 @@ private:
     bool mAnisotropyEnable = false;
 
     VkImageLayout mLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+
+    bool mExternal = false;
 };
 
 #endif

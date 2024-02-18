@@ -176,7 +176,7 @@ void Pipeline::CreateGraphicsPipeline(VkPipelineCache cache, VkSpecializationInf
     ciPipeline.pColorBlendState = &colorBlending;
     ciPipeline.pDynamicState = &dynamicState;
     ciPipeline.layout = mPipelineLayout;
-    ciPipeline.renderPass = (mState.mRenderPass == VK_NULL_HANDLE) ? context->GetForwardRenderPass() : mState.mRenderPass;
+    ciPipeline.renderPass = mState.mRenderPass;
     ciPipeline.subpass = 0;
     ciPipeline.basePipelineHandle = VK_NULL_HANDLE;
     ciPipeline.basePipelineIndex = -1;

@@ -21,6 +21,7 @@
 #include "DescriptorPool.h"
 #include "DescriptorLayoutCache.h"
 #include "PipelineCache.h"
+#include "RenderPassCache.h"
 
 #if PLATFORM_LINUX
 #include <xcb/xcb.h>
@@ -70,7 +71,9 @@ public:
     void BeginFrame();
     void EndFrame();
     void BeginRenderPass(RenderPassId id);
+    void BeginVkRenderPass(const RenderPassConfig& rpConfig, bool insertBarrier);
     void EndRenderPass();
+    void EndVkRenderPass();
     void CommitPipeline();
     void DrawLines(const std::vector<Line>& lines);
     void DrawFullscreen();
@@ -92,10 +95,6 @@ public:
     Pipeline* GetBoundPipeline();
     PipelineCache& GetPipelineCache();
     void SavePipelineCacheToFile();
-
-    VkRenderPass GetForwardRenderPass();
-    VkRenderPass GetPostprocessRenderPass();
-    VkRenderPass GetUIRenderPass();
 
     void SetViewport(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes);
     void SetScissor(int32_t x, int32_t y, int32_t width, int32_t height, bool handlePrerotation, bool useSceneRes);
@@ -186,14 +185,10 @@ private:
     void CreateDebugCallback();
     void CreateSurface();
     void CreateLogicalDevice();
-    void CreateImageViews();
     void CreateFrameUniformBuffer();
     void DestroyFrameUniformBuffer();
     void CreateRenderPasses();
     void DestroyRenderPasses();
-    void CreatePipelineCache();
-    void DestroyPipelineCache();
-    void CreateFramebuffers();
     void CreateCommandPool();
     void CreateSemaphores();
     void CreateFences();
@@ -257,18 +252,11 @@ private:
     std::vector<VkImageView> mSwapchainImageViews;
     VkFormat mSwapchainImageFormat = VK_FORMAT_UNDEFINED;
     VkExtent2D mSwapchainExtent = {};
+    Image* mExtSwapchainImages[MAX_FRAMES] = {};
 
-    // Render Passes
-    VkRenderPass mShadowRenderPass = VK_NULL_HANDLE;
-    VkRenderPass mForwardRenderPass = VK_NULL_HANDLE;
-    VkRenderPass mPostprocessRenderPass = VK_NULL_HANDLE;
-    VkRenderPass mUIRenderPass = VK_NULL_HANDLE;
-    VkRenderPass mClearSwapchainPass = VK_NULL_HANDLE;
-
-    // Framebuffers
-    VkFramebuffer mSceneColorFramebuffer = VK_NULL_HANDLE;
-    VkFramebuffer mShadowFramebuffer = VK_NULL_HANDLE;
-    std::vector<VkFramebuffer> mSwapchainFramebuffers;
+    // RenderPasses
+    RenderPassCache mRenderPassCache;
+    VkRenderPass mImguiRenderPass = VK_NULL_HANDLE;
 
     // Images
     Image* mShadowMapImage = nullptr;
@@ -341,13 +329,10 @@ private:
 #if EDITOR
 public:
     class Node3D* ProcessHitCheck(World* world, int32_t pixelX, int32_t pixelY);
-    VkRenderPass GetHitCheckRenderPass();
 private:
     void CreateHitCheck();
     void DestroyHitCheck();
 
-    VkFramebuffer mHitCheckFramebuffer = VK_NULL_HANDLE;
-    VkRenderPass mHitCheckRenderPass = VK_NULL_HANDLE;
     Image* mHitCheckImage = nullptr;
     Buffer* mHitCheckBuffer = nullptr;
 #endif

@@ -123,20 +123,35 @@ Image::Image(ImageDesc imageDesc, SamplerDesc samplerDesc, const char* debugObje
     }
 }
 
+Image::Image(VkImage image, VkImageView imageView, VkSampler sampler, VkFormat format, uint32_t width, uint32_t height)
+{
+    mImage = image;
+    mImageView = imageView;
+    mSampler = sampler;
+    mFormat = format;
+    mWidth = width;
+    mHeight = height;
+
+    mExternal = true;
+}
+
 Image::~Image()
 {
-    VkDevice device = GetVulkanDevice();
+    if (!mExternal)
+    {
+        VkDevice device = GetVulkanDevice();
 
-    vkDestroySampler(device, mSampler, nullptr);
-    mSampler = VK_NULL_HANDLE;
+        vkDestroySampler(device, mSampler, nullptr);
+        mSampler = VK_NULL_HANDLE;
 
-    vkDestroyImageView(device, mImageView, nullptr);
-    mImageView = VK_NULL_HANDLE;
+        vkDestroyImageView(device, mImageView, nullptr);
+        mImageView = VK_NULL_HANDLE;
 
-    vkDestroyImage(device, mImage, nullptr);
-    mImage = VK_NULL_HANDLE;
+        vkDestroyImage(device, mImage, nullptr);
+        mImage = VK_NULL_HANDLE;
 
-    VramAllocator::Free(mMemory);
+        VramAllocator::Free(mMemory);
+    }
 }
 
 VkImage Image::Get() const

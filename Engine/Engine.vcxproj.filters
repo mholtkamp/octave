@@ -662,6 +662,9 @@
     <ClCompile Include="Source\Graphics\Vulkan\VramAllocator.cpp">
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Vulkan\RenderPassCache.cpp">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1297,6 +1300,9 @@
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="Source\Graphics\Vulkan\VramAllocator.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\RenderPassCache.h">
       <Filter>Source Files\Graphics\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
