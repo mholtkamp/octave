@@ -266,8 +266,8 @@ private:
     VkFormat mDepthImageFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
 
     // Synchronization
-    VkSemaphore mImageAvailableSemaphore = VK_NULL_HANDLE;
-    VkSemaphore mRenderFinishedSemaphore = VK_NULL_HANDLE;
+    VkSemaphore mImageAvailableSemaphore[MAX_FRAMES] = {};
+    VkSemaphore mRenderFinishedSemaphore[MAX_FRAMES] = {};
     VkFence mWaitFences[MAX_FRAMES] = {};
 
     // Pipelines

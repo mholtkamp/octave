@@ -82,8 +82,6 @@ VulkanContext::VulkanContext()
     mPresentQueue = 0;
     mSurface = 0;
     mSwapchain = 0;
-    mImageAvailableSemaphore = 0;
-    mRenderFinishedSemaphore = 0;
 
     // This format breaks shadow mesh rendering. If we want to 
     // bring back that feature, then change to RGBA16 possibly. 
@@ -247,11 +245,10 @@ void VulkanContext::Destroy()
 
     DestroyDescriptorPools();
 
-    vkDestroySemaphore(mDevice, mRenderFinishedSemaphore, nullptr);
-    vkDestroySemaphore(mDevice, mImageAvailableSemaphore, nullptr);
-
     for (uint32_t i = 0; i < MAX_FRAMES; ++i)
     {
+        vkDestroySemaphore(mDevice, mRenderFinishedSemaphore[i], nullptr);
+        vkDestroySemaphore(mDevice, mImageAvailableSemaphore[i], nullptr);
         vkDestroyFence(mDevice, mWaitFences[i], nullptr);
     }
 
@@ -280,7 +277,7 @@ void VulkanContext::BeginFrame()
         RecreateSwapchain(false);
     }
 
-    VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, std::numeric_limits<uint64_t>::max(), mImageAvailableSemaphore, VK_NULL_HANDLE, &mSwapchainImageIndex);
+    VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, std::numeric_limits<uint64_t>::max(), mImageAvailableSemaphore[mFrameIndex], VK_NULL_HANDLE, &mSwapchainImageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
@@ -342,7 +339,7 @@ void VulkanContext::EndFrame()
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = { mImageAvailableSemaphore };
+    VkSemaphore waitSemaphores[] = { mImageAvailableSemaphore[mFrameIndex]};
     VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
@@ -350,7 +347,7 @@ void VulkanContext::EndFrame()
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &cb;
 
-    VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphore };
+    VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphore[mFrameIndex] };
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -417,6 +414,7 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
         rpSetup.mDebugName = "Shadows";
+        barrierNeeded = true;
         break;
     case RenderPassId::Forward:
         rpSetup.mDepthImage = mDepthImage;
@@ -425,6 +423,7 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
         rpSetup.mDepthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         rpSetup.mDebugName = "Forward";
+        barrierNeeded = true;
         break;
     case RenderPassId::PostProcess:
         rpSetup.mColorImages[0] = mExtSwapchainImages[mFrameIndex];
@@ -532,13 +531,13 @@ void VulkanContext::BeginVkRenderPass(const RenderPassSetup& rpSetup, bool inser
         // This barrier is probably overkill. Might need to refine.
         VkMemoryBarrier memoryBarrier = {};
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-        memoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+        memoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+        memoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT;
 
         vkCmdPipelineBarrier(
             mCommandBuffers[mFrameIndex],
-            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT,
+            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
             0,
             1,
             &memoryBarrier,
@@ -789,6 +788,11 @@ void VulkanContext::CreateSwapchain()
     vkGetSwapchainImagesKHR(mDevice, mSwapchain, &imageCount, nullptr);
     mSwapchainImages.resize(imageCount);
     vkGetSwapchainImagesKHR(mDevice, mSwapchain, &imageCount, mSwapchainImages.data());
+
+    for (uint32_t i = 0; i < mSwapchainImages.size(); ++i)
+    {
+        SetDebugObjectName(VK_OBJECT_TYPE_IMAGE, (uint64_t)mSwapchainImages[i], "Swapchain Image");
+    }
 
     mSwapchainImageFormat = surfaceFormat.format;
     mSwapchainExtent = extent;
@@ -1795,11 +1799,14 @@ void VulkanContext::CreateSemaphores()
     VkSemaphoreCreateInfo ciSemaphore = {};
     ciSemaphore.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    if (vkCreateSemaphore(mDevice, &ciSemaphore, nullptr, &mImageAvailableSemaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(mDevice, &ciSemaphore, nullptr, &mRenderFinishedSemaphore) != VK_SUCCESS)
+    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
     {
-        LogError("Failed to create semaphores");
-        OCT_ASSERT(0);
+        if (vkCreateSemaphore(mDevice, &ciSemaphore, nullptr, &mImageAvailableSemaphore[i]) != VK_SUCCESS ||
+            vkCreateSemaphore(mDevice, &ciSemaphore, nullptr, &mRenderFinishedSemaphore[i]) != VK_SUCCESS)
+        {
+            LogError("Failed to create semaphores");
+            OCT_ASSERT(0);
+        }
     }
 }
 
