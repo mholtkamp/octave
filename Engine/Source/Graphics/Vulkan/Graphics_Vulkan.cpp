@@ -148,10 +148,13 @@ void GFX_DrawFullscreen()
 
 void GFX_ResizeWindow()
 {
+    // Just wait until the out-of-date error when presenting or acquiring swapchain image?
+#if 0
     if (gVulkanContext != nullptr)
     {
         gVulkanContext->RecreateSwapchain(false);
     }
+#endif
 }
 
 void GFX_Reset()
