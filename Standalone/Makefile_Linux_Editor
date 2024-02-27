@@ -70,7 +70,7 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-lEngineEditor -lvulkan -lxcb -lasound -lAssimp -lBullet -lpthread -lm
+LIBS	:=	-lEngineEditor -lspirv-cross-core -lshaderc_combined -lvulkan -lxcb -lasound -lAssimp -lBullet -lpthread -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

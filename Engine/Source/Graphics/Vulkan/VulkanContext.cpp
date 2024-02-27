@@ -426,7 +426,7 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         barrierNeeded = true;
         break;
     case RenderPassId::PostProcess:
-        rpSetup.mColorImages[0] = mExtSwapchainImages[mFrameIndex];
+        rpSetup.mColorImages[0] = mExtSwapchainImages[mSwapchainImageIndex];
         rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
         rpSetup.mPreLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
@@ -435,7 +435,7 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         barrierNeeded = true;
         break;
     case RenderPassId::Ui:
-        rpSetup.mColorImages[0] = mExtSwapchainImages[mFrameIndex];
+        rpSetup.mColorImages[0] = mExtSwapchainImages[mSwapchainImageIndex];
         rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
         rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
         rpSetup.mPreLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -443,7 +443,7 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         rpSetup.mDebugName = "UI";
         break;
     case RenderPassId::Clear:
-        rpSetup.mColorImages[0] = mExtSwapchainImages[mFrameIndex];
+        rpSetup.mColorImages[0] = mExtSwapchainImages[mSwapchainImageIndex];
         rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
         rpSetup.mPreLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
@@ -695,12 +695,12 @@ void VulkanContext::DestroySwapchain()
     GetDestroyQueue()->Destroy(mSceneColorImage);
     mSceneColorImage = nullptr;
 
-    // Create external Images for later use in RenderPassCache
-    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    for (uint32_t i = 0; i < mExtSwapchainImages.size(); ++i)
     {
         GetDestroyQueue()->Destroy(mExtSwapchainImages[i]);
         mExtSwapchainImages[i] = nullptr;
     }
+    mExtSwapchainImages.clear();
 
     for (size_t i = 0; i < mSwapchainImageViews.size(); ++i)
     {
@@ -833,7 +833,8 @@ void VulkanContext::CreateSwapchain()
     }
 
     // Create external Images for later use in RenderPassCache
-    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    mExtSwapchainImages.resize(mSwapchainImages.size());
+    for (uint32_t i = 0; i < mSwapchainImages.size(); ++i)
     {
         mExtSwapchainImages[i] = new Image(mSwapchainImages[i], mSwapchainImageViews[i], VK_NULL_HANDLE, mSwapchainImageFormat, extent.width, extent.height);
     }
@@ -1036,7 +1037,7 @@ void VulkanContext::CreateInstance()
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = ENGINE_NAME;
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
+    appInfo.apiVersion = VK_API_VERSION_1_1;
 
     VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT, VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT };
     VkValidationFeaturesEXT features = {};

@@ -252,7 +252,7 @@ private:
     std::vector<VkImageView> mSwapchainImageViews;
     VkFormat mSwapchainImageFormat = VK_FORMAT_UNDEFINED;
     VkExtent2D mSwapchainExtent = {};
-    Image* mExtSwapchainImages[MAX_FRAMES] = {};
+    std::vector<Image*> mExtSwapchainImages;
 
     // RenderPasses
     RenderPassCache mRenderPassCache;
