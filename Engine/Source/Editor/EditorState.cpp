@@ -65,6 +65,11 @@ void EditorState::Init()
 
 void EditorState::Shutdown()
 {
+    if (IsPlayingInEditor())
+    {
+        EndPlayInEditor();
+    }
+
     WriteEditorProjectSave();
     WriteEditorSave();
 

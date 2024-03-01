@@ -455,6 +455,7 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         rpSetup.mPreLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         rpSetup.mPostLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         rpSetup.mDebugName = "Clear";
+        barrierNeeded = true;
         break;
 #if EDITOR
     case RenderPassId::HitCheck:
