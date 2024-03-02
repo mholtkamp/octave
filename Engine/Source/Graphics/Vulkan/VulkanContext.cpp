@@ -129,6 +129,8 @@ void VulkanContext::Initialize()
     mRayTracer.CreateStaticRayTraceResources();
     mRayTracer.CreateDynamicRayTraceResources();
 
+    mPostProcessChain.Create();
+
     CreateCommandBuffers();
     CreateSemaphores();
     CreateFences();
@@ -431,11 +433,11 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         rpSetup.mDebugName = "Forward";
         barrierNeeded = true;
         break;
-    case RenderPassId::PostProcess:
+    case RenderPassId::Selected:
         rpSetup.mColorImages[0] = mExtSwapchainImages[mSwapchainImageIndex];
-        rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
         rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-        rpSetup.mPreLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        rpSetup.mPreLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         rpSetup.mPostLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         rpSetup.mDebugName = "PostProcess";
         barrierNeeded = true;
@@ -671,11 +673,16 @@ void VulkanContext::DrawFullscreen()
 {
     VkCommandBuffer cb = GetCommandBuffer();
 
+    BindFullscreenVertexBuffer(cb);
+
+    vkCmdDraw(cb, 4, 1, 0, 0);
+}
+
+void VulkanContext::BindFullscreenVertexBuffer(VkCommandBuffer cb)
+{
     VkBuffer vertexBuffers[] = { mFullScreenVertexBuffer->Get() };
     VkDeviceSize offsets[] = { 0 };
     vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
-
-    vkCmdDraw(cb, 4, 1, 0, 0);
 }
 
 void VulkanContext::DestroySwapchain()
@@ -691,6 +698,7 @@ void VulkanContext::DestroySwapchain()
     }
     mCommandBuffers.clear();
 
+    mPostProcessChain.Destroy();
     mRayTracer.DestroyDynamicRayTraceResources();
 
     GetDestroyQueue()->Destroy(mShadowMapImage);
@@ -1460,6 +1468,24 @@ VkFormat VulkanContext::GetSceneColorFormat()
     return mSceneColorImageFormat;
 }
 
+Image* VulkanContext::GetSceneColorImage()
+{
+    return mSceneColorImage;
+}
+
+Image* VulkanContext::GetSwapchainImage()
+{
+    Image* retImage = nullptr;
+
+    if (mExtSwapchainImages.size() > 0 &&
+        mSwapchainImageIndex < mExtSwapchainImages.size())
+    {
+        retImage = mExtSwapchainImages[mSwapchainImageIndex];
+    }
+
+    return retImage;
+}
+
 void VulkanContext::CreateRenderPasses()
 {
     // I was getting SYNC-HAZARD-READ-AFTER-WRITE validation warnings 
@@ -1722,15 +1748,6 @@ void VulkanContext::BindGlobalDescriptorSet()
     mGlobalDescriptorSet.Bind(mCommandBuffers[mFrameIndex], 0);
 }
 
-void VulkanContext::BindPostProcessDescriptorSet()
-{
-    DescriptorSet::Begin("PostProcess DS")
-        .WriteImage(0, mSceneColorImage)
-        .WriteImage(1, mSupportsRayTracing ? mRayTracer.GetPathTraceImage() : mSceneColorImage)
-        .Build()
-        .Bind(mCommandBuffers[mFrameIndex], 1);
-}
-
 void VulkanContext::CreateCommandPool()
 {
     QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(mPhysicalDevice);
@@ -1874,6 +1891,7 @@ void VulkanContext::RecreateSwapchain(bool recreateSurface)
     CreateSceneColorImage();
     CreateShadowMapImage();
     mRayTracer.CreateDynamicRayTraceResources();
+    mPostProcessChain.Create();
 
 #if EDITOR
     CreateHitCheck();
@@ -2533,9 +2551,20 @@ void VulkanContext::ReadTimeQueryResults()
 #endif
 }
 
+void VulkanContext::RenderPostProcessChain()
+{
+    BindPipelineConfig(PipelineConfig::PostProcess);
+    mPostProcessChain.Render();
+}
+
 RayTracer* VulkanContext::GetRayTracer()
 {
     return &mRayTracer;
+}
+
+PostProcessChain* VulkanContext::GetPostProcessChain()
+{
+    return &mPostProcessChain;
 }
 
 VkSurfaceTransformFlagBitsKHR VulkanContext::GetPreTransformFlag() const

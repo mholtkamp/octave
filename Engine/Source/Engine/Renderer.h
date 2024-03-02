@@ -127,6 +127,9 @@ public:
     void SetLightFadeSpeed(float speed);
     float GetLightFadeSpeed() const;
 
+    bool IsPostProcessPassEnabled(PostProcessPassId passId) const;
+    void EnablePostProcessPass(PostProcessPassId passId, bool enable);
+
     void SetResolutionScale(float scale);
     float GetResolutionScale() const;
 
@@ -253,4 +256,8 @@ private:
     uint32_t mBakeIndirectIterations = 20;
     uint32_t mBakeDiffuseDirectPasses = 2;
     uint32_t mBakeDiffuseIndirectPasses = 2;
+
+    // Post Process
+    bool mPostProcessEnables[(uint32_t)PostProcessPassId::Count] = { };
+
 };

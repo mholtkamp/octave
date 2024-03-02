@@ -134,3 +134,6 @@ void GFX_DrawPoly(Poly* poly);
 
 // Arbitrary mesh draw (for debug drawing)
 void GFX_DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& transform, glm::vec4 color);
+
+// PostProcess
+void GFX_RenderPostProcessPasses();

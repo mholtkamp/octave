@@ -90,6 +90,9 @@
     <Filter Include="Source Files\Editor\Imgui">
       <UniqueIdentifier>{228bd210-e49e-43f0-a677-ef19ebf3ba53}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Graphics\Vulkan\PostProcess">
+      <UniqueIdentifier>{11563a18-1f88-4214-ad85-f31d25c2aeea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Graphics\Vulkan\VulkanUtils.cpp">
@@ -664,6 +667,18 @@
     </ClCompile>
     <ClCompile Include="Source\Graphics\Vulkan\RenderPassCache.cpp">
       <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Vulkan\PostProcessChain.cpp">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Vulkan\PostProcess\BlurPass.cpp">
+      <Filter>Source Files\Graphics\Vulkan\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Vulkan\PostProcess\PostProcessPass.cpp">
+      <Filter>Source Files\Graphics\Vulkan\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Vulkan\PostProcess\TonemapPass.cpp">
+      <Filter>Source Files\Graphics\Vulkan\PostProcess</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1304,6 +1319,18 @@
     </ClInclude>
     <ClInclude Include="Source\Graphics\Vulkan\RenderPassCache.h">
       <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\PostProcessChain.h">
+      <Filter>Source Files\Graphics\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\PostProcess\BlurPass.h">
+      <Filter>Source Files\Graphics\Vulkan\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\PostProcess\PostProcessPass.h">
+      <Filter>Source Files\Graphics\Vulkan\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Vulkan\PostProcess\TonemapPass.h">
+      <Filter>Source Files\Graphics\Vulkan\PostProcess</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

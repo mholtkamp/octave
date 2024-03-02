@@ -80,7 +80,7 @@ void InitPipelineConfigs()
     // PostProcess
     PipelineState& statePostProcess = sPipelineConfigs[(uint32_t)PipelineConfig::PostProcess];
     statePostProcess.mVertexShader = gVulkanContext->GetGlobalShader("ScreenRect.vert");
-    statePostProcess.mFragmentShader = gVulkanContext->GetGlobalShader("PostProcess.frag");
+    statePostProcess.mFragmentShader = gVulkanContext->GetGlobalShader("Tonemap.frag");
     statePostProcess.mVertexType = VertexType::VertexUI;
     statePostProcess.mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     statePostProcess.mCullMode = VK_CULL_MODE_NONE;
@@ -186,12 +186,4 @@ void BindPipelineConfig(PipelineConfig config)
     uint32_t index = (uint32_t)config;
     
     GetVulkanContext()->SetPipelineState(sPipelineConfigs[index]);
-
-    // TODO: Figure out a better way / place to handle custom bindings.
-    if (config == PipelineConfig::PostProcess ||
-        config == PipelineConfig::NullPostProcess)
-    {
-        GetVulkanContext()->CommitPipeline();
-        GetVulkanContext()->BindPostProcessDescriptorSet();
-    }
 }

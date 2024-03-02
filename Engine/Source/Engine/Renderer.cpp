@@ -25,6 +25,13 @@
 #include "Viewport2d.h"
 #endif
 
+// TEMPORARY!
+#if API_VULKAN
+#include "Graphics/Vulkan/VulkanContext.h"
+#include "Graphics/Vulkan/VulkanUtils.h"
+#include "Graphics/Vulkan/PostProcessChain.h"
+#endif
+
 #include "Assertion.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -123,6 +130,11 @@ void Renderer::Initialize()
 void Renderer::GatherProperties(std::vector<Property>& props)
 {
     props.push_back(Property(DatumType::Float, "Resolution Scale", nullptr, &(GetEngineState()->mGraphics.mResolutionScale)));
+
+#if API_VULKAN
+    GetVulkanContext()->GetPostProcessChain()->GatherProperties(props);
+#endif
+
     props.push_back(Property(DatumType::Bool, "Light Fade", nullptr, &mEnableLightFade));
     props.push_back(Property(DatumType::Integer, "Light Fade Limit", nullptr, &mLightFadeLimit));
     props.push_back(Property(DatumType::Float, "Light Fade Speed", nullptr, &mLightFadeSpeed));
@@ -1292,30 +1304,24 @@ void Renderer::Render(World* world)
                 // ******************
                 //  Post Process
                 // ******************
-                // Rename the PostProcess pass to Composite pass? Especially to differentiate Bloom/SSAO/Custom post effects.
-                GFX_BeginRenderPass(RenderPassId::PostProcess);
 
-                // Tonemapping does not look good.
-                // Disabling it for now. Also need to totally rewrite postprocessing system.
-                // Make it smarter so that it can pingpong between render targets.
-
-                // The composite pass takes the scene image and composes anything else (e.g. path trace image) to the full swapchain resolution.
                 GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
                 GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
 
-                GFX_SetPipelineState(PipelineConfig::PostProcess /*mDebugMode == DEBUG_NONE ? PipelineConfig::PostProcess : PipelineConfig::NullPostProcess*/);
-                GFX_DrawFullscreen();
+                GFX_RenderPostProcessPasses();
 
 #if EDITOR
+                GFX_BeginRenderPass(RenderPassId::Selected);
+
                 GFX_SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
                 GFX_SetScissor(viewportX, viewportY, viewportWidth, viewportHeight);
 
                 RenderSelectedGeometry(world);
+
+                GFX_EndRenderPass();
 #endif
                 GFX_SetViewport(sceneViewportX, sceneViewportY, sceneViewportWidth, sceneViewportHeight);
                 GFX_SetScissor(sceneViewportX, sceneViewportY, sceneViewportWidth, sceneViewportHeight);
-
-                GFX_EndRenderPass();
             }
             else
             {
@@ -1471,6 +1477,36 @@ void Renderer::SetLightFadeSpeed(float speed)
 float Renderer::GetLightFadeSpeed() const
 {
     return mLightFadeSpeed;
+}
+
+bool Renderer::IsPostProcessPassEnabled(PostProcessPassId passId) const
+{
+    bool enabled = false;
+    uint32_t iPass = uint32_t(passId);
+
+    // Required post process passes.
+    if (passId == PostProcessPassId::Tonemap)
+        return true;
+
+    if (iPass >= 0 &&
+        iPass < uint32_t(PostProcessPassId::Count))
+    {
+        enabled = mPostProcessEnables[iPass];
+    }
+
+    return enabled;
+}
+
+void Renderer::EnablePostProcessPass(PostProcessPassId passId, bool enable)
+{
+    bool enabled = false;
+    uint32_t iPass = uint32_t(passId);
+
+    if (iPass >= 0 &&
+        iPass < uint32_t(PostProcessPassId::Count))
+    {
+        mPostProcessEnables[iPass] = enable;
+    }
 }
 
 void Renderer::SetResolutionScale(float scale)

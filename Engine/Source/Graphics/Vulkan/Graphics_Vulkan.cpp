@@ -457,4 +457,9 @@ void GFX_DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& t
     DrawStaticMesh(mesh, material, transform, color);
 }
 
+void GFX_RenderPostProcessPasses()
+{
+    gVulkanContext->RenderPostProcessChain();
+}
+
 #endif

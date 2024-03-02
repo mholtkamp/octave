@@ -76,7 +76,7 @@ enum class RenderPassId
 {
     Shadows,
     Forward,
-    PostProcess,
+    Selected,
     Ui,
     Clear,
 

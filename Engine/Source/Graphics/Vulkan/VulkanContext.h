@@ -22,6 +22,7 @@
 #include "DescriptorLayoutCache.h"
 #include "PipelineCache.h"
 #include "RenderPassCache.h"
+#include "PostProcessChain.h"
 
 #if PLATFORM_LINUX
 #include <xcb/xcb.h>
@@ -71,12 +72,13 @@ public:
     void BeginFrame();
     void EndFrame();
     void BeginRenderPass(RenderPassId id);
-    void BeginVkRenderPass(const RenderPassSetup& rpConfig, bool insertBarrier);
+    void BeginVkRenderPass(const RenderPassSetup& rpSetup, bool insertBarrier);
     void EndRenderPass();
     void EndVkRenderPass();
     void CommitPipeline();
     void DrawLines(const std::vector<Line>& lines);
     void DrawFullscreen();
+    void BindFullscreenVertexBuffer(VkCommandBuffer cb);
 
     VkDevice GetDevice();
     void CreateSwapchain();
@@ -91,6 +93,8 @@ public:
     VkExtent2D& GetSwapchainExtent();
     VkFormat GetSwapchainFormat();
     VkFormat GetSceneColorFormat();
+    Image* GetSceneColorImage();
+    Image* GetSwapchainImage();
 
     Pipeline* GetBoundPipeline();
     PipelineCache& GetPipelineCache();
@@ -115,7 +119,6 @@ public:
     void UpdateGlobalUniformData();
 
     void BindGlobalDescriptorSet();
-    void BindPostProcessDescriptorSet();
 
     GlobalUniformData& GetGlobalUniformData();
 
@@ -132,6 +135,9 @@ public:
     void ReadTimeQueryResults();
 
     RayTracer* GetRayTracer();
+    PostProcessChain* GetPostProcessChain();
+
+    void RenderPostProcessChain();
 
     VkSurfaceTransformFlagBitsKHR GetPreTransformFlag() const;
 
@@ -305,6 +311,9 @@ private:
 
     //Pipeline State
     PipelineState mPipelineState;
+
+    // PostProcess
+    PostProcessChain mPostProcessChain;
 
     // Misc
     int32_t mFrameIndex = 0;

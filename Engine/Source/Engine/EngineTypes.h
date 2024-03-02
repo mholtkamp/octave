@@ -132,6 +132,14 @@ enum class LightingDomain : uint8_t
     Count
 };
 
+enum class PostProcessPassId : uint8_t
+{
+    Blur,
+    Tonemap,
+
+    Count
+};
+
 struct Bounds
 {
     glm::vec3 mCenter = { };
