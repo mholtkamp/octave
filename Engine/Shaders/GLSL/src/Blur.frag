@@ -15,8 +15,8 @@ struct BlurUniforms
     float mSigmaRatio;
 
     int mBoxBlur;
-    int mPad0;
-    int mPad1;
+    int mInputWidth;
+    int mInputHeight;
     int mPad2;
 
     // Using a float array will align the floats to 16 bytes anyway.
@@ -50,7 +50,7 @@ void main()
 
     if (blur.mHorizontal != 0)
     {
-        float invAspect = global.mSceneViewport.w / global.mSceneViewport.z;
+        float invAspect = float(blur.mInputHeight) / blur.mInputWidth;
         blurSize = invAspect * blurSize;
 
         for (int i = 0; i < numSamples; ++i)

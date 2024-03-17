@@ -12,8 +12,8 @@ struct BlurUniforms
     float mSigmaRatio = 0.25f;
 
     int32_t mBoxBlur = 1;
-    int32_t mPad0 = 1337;
-    int32_t mPad1 = 1337;
+    int32_t mInputWidth = 1;
+    int32_t mInputHeight = 1;
     int32_t mPad2 = 1337;
 
     glm::vec4 mGaussianWeights[BLUR_MAX_SAMPLES] = { };
@@ -34,4 +34,9 @@ protected:
 
     Image* mXBlurImage = nullptr;
     BlurUniforms mUniforms = {};
+
+    // Extra render targets used when blurring at half or quarter resolution.
+    int32_t mDownsampleFactor = 1;
+    Image* mXBlurLowResImage = nullptr;
+    Image* mYBlurLowResImage = nullptr;
 };
