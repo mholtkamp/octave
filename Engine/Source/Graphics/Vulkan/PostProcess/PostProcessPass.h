@@ -12,7 +12,7 @@ public:
     virtual void Create();
     virtual void Destroy();
     virtual void Resize();
-    virtual void Render(Image* Input, Image* Output);
+    virtual void Render(Image* input, Image* output);
 
     const std::string& GetName() const;
 

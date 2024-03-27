@@ -42,6 +42,8 @@ void BlurPass::Destroy()
 
 void BlurPass::Render(Image* input, Image* output)
 {
+    PostProcessPass::Render(input, output);
+
     VulkanContext* context = GetVulkanContext();
     VkCommandBuffer cb = GetCommandBuffer();
 

@@ -16,8 +16,15 @@ void TonemapPass::Destroy()
 
 void TonemapPass::Render(Image* input, Image* output)
 {
+    PostProcessPass::Render(input, output);
+
     VulkanContext* context = GetVulkanContext();
     VkCommandBuffer cb = GetCommandBuffer();
+
+    // Override output. Special case for tonemap pass.
+    output = context->GetSwapchainImage();
+    context->SetViewport(0, 0, output->GetWidth(), output->GetHeight(), true, false);
+    context->SetScissor(0, 0, output->GetWidth(), output->GetHeight(), true, false);
 
     Image* pathTraceImage = context->IsRayTracingSupported() ? context->GetRayTracer()->GetPathTraceImage() : input;
 
@@ -26,7 +33,7 @@ void TonemapPass::Render(Image* input, Image* output)
 
     // Set render target
     RenderPassSetup rpSetup;
-    rpSetup.mColorImages[0] = context->GetSwapchainImage();
+    rpSetup.mColorImages[0] = output;
     rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
     rpSetup.mPreLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
