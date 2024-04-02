@@ -11,10 +11,16 @@
 
 static uint64_t sImageId = 0;
 
+static uint64_t GetNextImageId()
+{
+    ++sImageId;
+    return sImageId;
+}
+
 Image::Image(ImageDesc imageDesc, SamplerDesc samplerDesc, const char* debugObjectName)
 {
     // Images need unique IDs so they can be hashed for framebuffer cache lookups.
-    mId = ++sImageId;
+    mId = GetNextImageId();
 
     mWidth = imageDesc.mWidth;
     mHeight = imageDesc.mHeight;
@@ -130,6 +136,9 @@ Image::Image(ImageDesc imageDesc, SamplerDesc samplerDesc, const char* debugObje
 
 Image::Image(VkImage image, VkImageView imageView, VkSampler sampler, VkFormat format, uint32_t width, uint32_t height)
 {
+    // Images need unique IDs so they can be hashed for framebuffer cache lookups.
+    mId = GetNextImageId();
+
     mImage = image;
     mImageView = imageView;
     mSampler = sampler;
