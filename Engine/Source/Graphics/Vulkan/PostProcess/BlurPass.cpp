@@ -47,14 +47,27 @@ void BlurPass::Render(Image* input, Image* output)
     VulkanContext* context = GetVulkanContext();
     VkCommandBuffer cb = GetCommandBuffer();
 
-    int32_t downsampleFactor = glm::clamp<int32_t>(mDownsampleFactor, 1, 10);
-    bool downsample = mDownsampleFactor > 1;
+    int32_t kernelSize = int32_t(mUniforms.mBlurSize + 0.5f);
+    int32_t downsampleFactor = 1;
+
+    if (kernelSize > 32)
+    {
+        downsampleFactor = 4;
+        kernelSize /= 4;
+    }
+    else if (kernelSize > 8)
+    {
+        downsampleFactor = 2;
+        kernelSize /= 2;
+    }
+
+    bool downsample = downsampleFactor > 1;
 
     // Determine if we need to resize low res render targets
     if (downsample)
     {
-        int32_t lowWidth = input->GetWidth() / mDownsampleFactor;
-        int32_t lowHeight = input->GetHeight() / mDownsampleFactor;
+        int32_t lowWidth = input->GetWidth() / downsampleFactor;
+        int32_t lowHeight = input->GetHeight() / downsampleFactor;
 
         if (mXBlurLowResImage == nullptr ||
             mYBlurLowResImage == nullptr ||
@@ -98,7 +111,7 @@ void BlurPass::Render(Image* input, Image* output)
     mUniforms.mInputHeight = input->GetHeight();
 
     // Populate gaussian weights
-    mUniforms.mNumSamples = glm::clamp<int32_t>(mUniforms.mNumSamples, 1, BLUR_MAX_SAMPLES);
+    mUniforms.mNumSamples = glm::clamp<int32_t>(kernelSize, 1, BLUR_MAX_SAMPLES);
     const float E = 2.71828182846f;
     float stdDev = mUniforms.mSigmaRatio * mUniforms.mBlurSize;
     const float stdDev2 = stdDev * stdDev;
@@ -241,7 +254,7 @@ void BlurPass::GatherProperties(std::vector<Property>& props)
     PostProcessPass::GatherProperties(props);
     props.push_back(Property(DatumType::Integer, "Blur Samples", nullptr, &mUniforms.mNumSamples));
     props.push_back(Property(DatumType::Float, "Blur Size", nullptr, &mUniforms.mBlurSize));
-    props.push_back(Property(DatumType::Float, "Blur Sigma Ratio", nullptr, &mUniforms.mSigmaRatio));
+    props.push_back(Property(DatumType::Float, "Blur Sigma", nullptr, &mUniforms.mSigmaRatio));
     props.push_back(Property(DatumType::Bool, "Blur Box", nullptr, &mUniforms.mBoxBlur)); // Stored as integer, but it is simply a flag, so not zero = true
     props.push_back(Property(DatumType::Integer, "Blur Downsample Factor", nullptr, &mDownsampleFactor));
 }

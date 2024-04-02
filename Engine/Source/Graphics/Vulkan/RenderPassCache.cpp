@@ -273,12 +273,20 @@ bool FramebufferConfig::operator==(const FramebufferConfig& other) const
 {
     for (uint32_t i = 0; i < MAX_RENDER_TARGETS; ++i)
     {
-        if (mColorImages[i] != other.mColorImages[i])
+        uint64_t idThis = mColorImages[i] ? mColorImages[i]->GetId() : 0;
+        uint64_t idOther = other.mColorImages[i] ? other.mColorImages[i]->GetId() : 0;
+
+        if (idThis != idOther)
             return false;
     }
 
-    if (mDepthImage != other.mDepthImage)
-        return false;
+    {
+        uint64_t idThis = mDepthImage ? mDepthImage->GetId() : 0;
+        uint64_t idOther = other.mDepthImage ? other.mDepthImage->GetId() : 0;
+
+        if (idThis != idOther)
+            return false;
+    }
 
     if (mRenderPass != other.mRenderPass)
         return false;
@@ -296,10 +304,13 @@ size_t FramebufferConfig::Hash() const
 
     for (uint32_t i = 0; i < MAX_RENDER_TARGETS; ++i)
     {
-        result ^= sizeHasher((size_t)mColorImages[i]);
+        uint64_t colorId = mColorImages[i] ? mColorImages[i]->GetId() : 0;
+        result ^= sizeHasher((size_t)colorId);
     }
 
-    result ^= sizeHasher((size_t)mDepthImage);
+    uint64_t depthId = mDepthImage ? mDepthImage->GetId() : 0;
+    result ^= sizeHasher((size_t)depthId);
+
     result ^= sizeHasher((size_t)mRenderPass);
 
     return result;

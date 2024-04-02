@@ -7,14 +7,14 @@
 struct BlurUniforms
 {
     int32_t mHorizontal = 0;
-    int32_t mNumSamples = 5;
-    float mBlurSize = 0.05f;
+    int32_t mNumSamples = 4;
+    float mBlurSize = 4.0f;
     float mSigmaRatio = 0.25f;
 
     int32_t mBoxBlur = 1;
     int32_t mInputWidth = 1;
     int32_t mInputHeight = 1;
-    int32_t mPad2 = 1337;
+    int32_t mPad0 = 1337;
 
     glm::vec4 mGaussianWeights[BLUR_MAX_SAMPLES] = { };
 };

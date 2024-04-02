@@ -17,7 +17,7 @@ struct BlurUniforms
     int mBoxBlur;
     int mInputWidth;
     int mInputHeight;
-    int mPad2;
+    int mPad0;
 
     // Using a float array will align the floats to 16 bytes anyway.
     vec4 mGaussianWeights[BLUR_MAX_SAMPLES];
@@ -42,7 +42,7 @@ layout (location = 0) out vec4 outColor;
 void main()
 {
     int numSamples = clamp(blur.mNumSamples, 1, BLUR_MAX_SAMPLES);
-    float blurSize = blur.mBlurSize;
+    float offsetSize = 1.0;
 
     vec4 totalColor = vec4(0,0,0,0);
 
@@ -50,13 +50,12 @@ void main()
 
     if (blur.mHorizontal != 0)
     {
-        float invAspect = float(blur.mInputHeight) / blur.mInputWidth;
-        blurSize = invAspect * blurSize;
+        float dx = 1.0 / float(blur.mInputWidth);
 
         for (int i = 0; i < numSamples; ++i)
         {
-            float offset = i / (numSamples - 1.0) - 0.5;
-            vec2 uv = inTexcoord + vec2(offset * blurSize, 0);
+            float offset = i - (numSamples * 0.5);
+            vec2 uv = inTexcoord + vec2(offset * dx * offsetSize, 0);
 
             float sampleWeight = (blur.mBoxBlur != 0) ? 1.0 : blur.mGaussianWeights[i].x;
             weightSum += sampleWeight;
@@ -65,10 +64,12 @@ void main()
     }
     else
     {
+        float dy = 1.0 / float(blur.mInputHeight);
+
         for (int i = 0; i < numSamples; ++i)
         {
-            float offset = i / (numSamples - 1.0) - 0.5;
-            vec2 uv = inTexcoord + vec2(0, offset * blurSize);
+            float offset = i - (numSamples * 0.5);
+            vec2 uv = inTexcoord + vec2(0, offset * dy * offsetSize);
 
             float sampleWeight = (blur.mBoxBlur != 0) ? 1.0 : blur.mGaussianWeights[i].x;
             weightSum += sampleWeight;

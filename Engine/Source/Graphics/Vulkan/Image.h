@@ -51,11 +51,14 @@ public:
     void GenerateMips();
     void Clear(glm::vec4 color);
 
+    uint64_t GetId() const;
+
 private:
 
     friend class DestroyQueue;
     ~Image();
 
+    uint64_t mId = 0;
     VkImage mImage = VK_NULL_HANDLE;
     VkImageView mImageView = VK_NULL_HANDLE;
     VkSampler mSampler = VK_NULL_HANDLE;

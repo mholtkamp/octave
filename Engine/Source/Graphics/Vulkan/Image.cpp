@@ -9,8 +9,13 @@
 // TODO: Remove the renderer include
 #include "Renderer.h"
 
+static uint64_t sImageId = 0;
+
 Image::Image(ImageDesc imageDesc, SamplerDesc samplerDesc, const char* debugObjectName)
 {
+    // Images need unique IDs so they can be hashed for framebuffer cache lookups.
+    mId = ++sImageId;
+
     mWidth = imageDesc.mWidth;
     mHeight = imageDesc.mHeight;
     mFormat = imageDesc.mFormat;
@@ -381,6 +386,11 @@ void Image::Clear(glm::vec4 color)
 
         Transition(originalLayout != VK_IMAGE_LAYOUT_UNDEFINED ? originalLayout : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
+}
+
+uint64_t Image::GetId() const
+{
+    return mId;
 }
 
 #endif
