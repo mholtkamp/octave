@@ -32,11 +32,13 @@ void BlurPass::Destroy()
     if (mXBlurLowResImage != nullptr)
     {
         GetDestroyQueue()->Destroy(mXBlurLowResImage);
+        mXBlurLowResImage = nullptr;
     }
 
     if (mYBlurLowResImage != nullptr)
     {
         GetDestroyQueue()->Destroy(mYBlurLowResImage);
+        mYBlurLowResImage = nullptr;
     }
 }
 
