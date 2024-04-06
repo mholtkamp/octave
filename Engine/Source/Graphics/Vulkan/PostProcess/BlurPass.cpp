@@ -50,17 +50,28 @@ void BlurPass::Render(Image* input, Image* output)
     VkCommandBuffer cb = GetCommandBuffer();
 
     int32_t kernelSize = int32_t(mUniforms.mBlurSize + 0.5f);
+    kernelSize = glm::max<int32_t>(kernelSize, 1);
+
     int32_t downsampleFactor = 1;
 
-    if (kernelSize > 32)
+    if (mEnableDownsample)
     {
-        downsampleFactor = 4;
-        kernelSize /= 4;
+        if (kernelSize >= 64)
+        {
+            downsampleFactor = 4;
+            kernelSize /= 4;
+        }
+        else if (kernelSize > 9)
+        {
+            downsampleFactor = 2;
+            kernelSize /= 2;
+        }
     }
-    else if (kernelSize > 8)
+
+    // Kernel size should be odd
+    if (kernelSize % 2 == 0)
     {
-        downsampleFactor = 2;
-        kernelSize /= 2;
+        kernelSize++;
     }
 
     bool downsample = downsampleFactor > 1;
@@ -109,19 +120,66 @@ void BlurPass::Render(Image* input, Image* output)
         }
     }
 
+    // Pass 0 - (Only if downsampling) Downsample scene color to mYBlurLowResImage
+    if (downsample)
+    {
+        // Set render target
+        RenderPassSetup rpSetup;
+        rpSetup.mColorImages[0] = mYBlurLowResImage;
+        rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        context->BeginVkRenderPass(rpSetup, true);
+
+        context->SetViewport(0, 0, mYBlurLowResImage->GetWidth(), mYBlurLowResImage->GetHeight(), true, false);
+        context->SetScissor(0, 0, mYBlurLowResImage->GetWidth(), mYBlurLowResImage->GetHeight(), true, false);
+
+        // Bind vertex/index buffers for full screen quad.
+        context->BindFullscreenVertexBuffer(cb);
+
+        // Set vertex + fragment shader
+        context->SetVertexShader("ScreenRect.vert");
+        context->SetFragmentShader("Resample.frag");
+
+        // Commit graphics pipeline
+        context->CommitPipeline();
+
+        // Bind descriptor set
+        DescriptorSet::Begin("Blur Upsample DS")
+            .WriteImage(0, input)
+            .Build()
+            .Bind(cb, 1);
+
+        // Draw 
+        vkCmdDraw(cb, 4, 1, 0, 0);
+
+        // End render pass
+        context->EndVkRenderPass();
+
+        // Overr
+        input = mYBlurLowResImage;
+    }
+
     mUniforms.mInputWidth = input->GetWidth();
     mUniforms.mInputHeight = input->GetHeight();
 
     // Populate gaussian weights
     mUniforms.mNumSamples = glm::clamp<int32_t>(kernelSize, 1, BLUR_MAX_SAMPLES);
-    const float E = 2.71828182846f;
-    float stdDev = mUniforms.mSigmaRatio * mUniforms.mBlurSize;
-    const float stdDev2 = stdDev * stdDev;
-    for (int32_t i = 0; i < mUniforms.mNumSamples; ++i)
+
+    if (mUniforms.mNumSamples > 1)
     {
-        float offset = (i / (mUniforms.mNumSamples - 1.0f) - 0.5f) * mUniforms.mBlurSize;
-        float gauss = (1.0f / sqrtf(2.0f * PI * stdDev2)) * powf(E, -((offset * offset) / (2 * stdDev2)));
-        mUniforms.mGaussianWeights[i].x = gauss;
+        const float E = 2.71828182846f;
+        float stdDev = mUniforms.mSigmaRatio * kernelSize;
+        const float stdDev2 = stdDev * stdDev;
+        for (int32_t i = 0; i < mUniforms.mNumSamples; ++i)
+        {
+            float offset = (i / (mUniforms.mNumSamples - 1.0f) - 0.5f) * kernelSize;
+            float gauss = (1.0f / sqrtf(2.0f * PI * stdDev2)) * powf(E, -((offset * offset) / (2 * stdDev2)));
+            mUniforms.mGaussianWeights[i].x = gauss;
+        }
+    }
+    else
+    {
+        mUniforms.mGaussianWeights[0].x = 1.0f;
     }
 
     // Pass 1 - Horizontal Blur
@@ -254,9 +312,9 @@ void BlurPass::Render(Image* input, Image* output)
 void BlurPass::GatherProperties(std::vector<Property>& props)
 {
     PostProcessPass::GatherProperties(props);
-    props.push_back(Property(DatumType::Integer, "Blur Samples", nullptr, &mUniforms.mNumSamples));
     props.push_back(Property(DatumType::Float, "Blur Size", nullptr, &mUniforms.mBlurSize));
     props.push_back(Property(DatumType::Float, "Blur Sigma", nullptr, &mUniforms.mSigmaRatio));
     props.push_back(Property(DatumType::Bool, "Blur Box", nullptr, &mUniforms.mBoxBlur)); // Stored as integer, but it is simply a flag, so not zero = true
+    props.push_back(Property(DatumType::Bool, "Blur Enable Downsample", nullptr, &mEnableDownsample));
     props.push_back(Property(DatumType::Integer, "Blur Downsample Factor", nullptr, &mDownsampleFactor));
 }

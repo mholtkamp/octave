@@ -5,7 +5,7 @@
 
 #define BOX_BLUR 1
 
-#define BLUR_MAX_SAMPLES 32
+#define BLUR_MAX_SAMPLES 127
 
 struct BlurUniforms
 {
