@@ -1,0 +1,56 @@
+; Example PICA200 vertex shader
+
+; Uniforms
+.fvec WorldViewMtx[4]
+.fvec ProjMtx[4]
+.fvec UvOffsetScale
+
+; Constants
+.constf myconst(0.0, 1.0, -1.0, 0.1)
+.constf myconst2(0.3, 0.003922, 0.0, 0.0)
+.alias  zeros myconst.xxxx ; Vector full of zeros
+.alias  ones  myconst.yyyy ; Vector full of ones
+.alias  half  myconst.wwww
+.alias  rcp255 myconst2.yyyy ; 1/255.0
+
+; Outputs
+.out outpos position
+.out outtc0 texcoord0
+.out outclr color
+
+; Inputs (defined as aliases for convenience)
+.alias inpos v0
+.alias intc0 v1
+.alias inclr v2
+
+.proc main
+	; Force the w component of inpos to be 1.0
+	mov r0.xyz, inpos
+	mov r0.w,   ones
+
+	; r1 = WorldViewMtx * inpos
+	dp4 r1.x, WorldViewMtx[0], r0
+	dp4 r1.y, WorldViewMtx[1], r0
+	dp4 r1.z, WorldViewMtx[2], r0
+	dp4 r1.w, WorldViewMtx[3], r0
+	
+	; outpos = ProjMtx * r1
+	dp4 outpos.x, ProjMtx[0], r1
+	dp4 outpos.y, ProjMtx[1], r1
+	dp4 outpos.z, ProjMtx[2], r1
+	dp4 outpos.w, ProjMtx[3], r1
+
+	; outtc0 = intc0
+	add r1, UvOffsetScale.xyxy, intc0
+	mul r1, UvOffsetScale.zwzw, r1
+	mov outtc0, r1
+
+	; outclr = inclr * 1/255.0
+	mov r1, inclr
+	mov r2, rcp255
+	mul r2, r1, r2
+	mov outclr, r2
+
+	; We're finished
+	end
+.end

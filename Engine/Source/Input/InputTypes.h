@@ -8,6 +8,10 @@
 #if PLATFORM_WINDOWS
 #include <windows.h>
 #include <Xinput.h>
+#elif PLATFORM_DOLPHIN
+#include <gccore.h>
+#elif PLATFORM_3DS
+#include <3ds.h>
 #endif
 
 enum class GamepadType
@@ -357,6 +361,119 @@ enum GamepadCode
     GAMEPAD_AXIS_RTRIGGER = 18
 };
 */
+
+#elif PLATFORM_3DS
+
+// 3DS has conflicts with KEY_A, KEY_B, KEY_L, KEY_DOWN, etc
+// because it uses those names for the gamepad buttons.
+// For now this version of the enum omits those
+
+enum KeyCode
+{
+    KEY_BACK = 10,
+    KEY_ESCAPE = 255,
+
+    KEY_0 = 48,
+    KEY_1 = 49,
+    KEY_2 = 50,
+    KEY_3 = 51,
+    KEY_4 = 52,
+    KEY_5 = 53,
+    KEY_6 = 54,
+    KEY_7 = 55,
+    KEY_8 = 56,
+    KEY_9 = 57,
+
+    //KEY_A = 65,
+    //KEY_B = 66,
+    KEY_C = 67,
+    KEY_D = 68,
+    KEY_E = 69,
+    KEY_F = 70,
+    KEY_G = 71,
+    KEY_H = 72,
+    KEY_I = 73,
+    KEY_J = 74,
+    KEY_K = 75,
+    //KEY_L = 76,
+    KEY_M = 77,
+    KEY_N = 78,
+    KEY_O = 79,
+    KEY_P = 80,
+    KEY_Q = 81,
+    //KEY_R = 82,
+    KEY_S = 83,
+    KEY_T = 84,
+    KEY_U = 85,
+    KEY_V = 86,
+    KEY_W = 87,
+    //KEY_X = 88,
+    //KEY_Y = 89,
+    KEY_Z = 90,
+
+    KEY_SPACE = 32,
+    KEY_ENTER = 13,
+    KEY_BACKSPACE = 8,
+    KEY_TAB = 9,
+
+    KEY_SHIFT_L = 16,
+    KEY_CONTROL_L = 17,
+    KEY_ALT_L = 255,
+    KEY_SHIFT_R = 16,
+    KEY_CONTROL_R = 17,
+    KEY_ALT_R = 255,
+
+    KEY_INSERT = 255,
+    KEY_DELETE = 255,
+    KEY_HOME = 255,
+    KEY_END = 255,
+    KEY_PAGE_UP = 33,
+    KEY_PAGE_DOWN = 34,
+
+    //KEY_UP = 38,
+    //KEY_DOWN = 40,
+    //KEY_LEFT = 37,
+    //KEY_RIGHT = 39,
+
+    KEY_NUMPAD0 = 96,
+    KEY_NUMPAD1 = 97,
+    KEY_NUMPAD2 = 98,
+    KEY_NUMPAD3 = 99,
+    KEY_NUMPAD4 = 100,
+    KEY_NUMPAD5 = 101,
+    KEY_NUMPAD6 = 102,
+    KEY_NUMPAD7 = 103,
+    KEY_NUMPAD8 = 104,
+    KEY_NUMPAD9 = 105,
+
+    KEY_F1 = 112,
+    KEY_F2 = 113,
+    KEY_F3 = 114,
+    KEY_F4 = 115,
+    KEY_F5 = 116,
+    KEY_F6 = 117,
+    KEY_F7 = 118,
+    KEY_F8 = 119,
+    KEY_F9 = 120,
+    KEY_F10 = 121,
+    KEY_F11 = 122,
+    KEY_F12 = 123,
+
+    KEY_PERIOD = 0xBE,
+    KEY_COMMA = 0xBC,
+    KEY_PLUS = 0xBB,
+    KEY_MINUS = 0xBD,
+
+    KEY_COLON = 0xBA,
+    KEY_QUESTION = 0xBF,
+    KEY_SQUIGGLE = 0xC0,
+    KEY_LEFT_BRACKET = 0xDB,
+    KEY_BACK_SLASH = 0xDC,
+    KEY_RIGHT_BRACKET = 0xDD,
+    KEY_QUOTE = 0xDE,
+
+    KEY_DECIMAL = 0x6E
+};
 
 #elif PLATFORM_LINUX
 
