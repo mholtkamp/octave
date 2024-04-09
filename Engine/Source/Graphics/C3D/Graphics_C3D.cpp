@@ -1488,4 +1488,9 @@ void GFX_DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& t
     // TODO: For debug drawing
 }
 
+void GFX_RenderPostProcessPasses()
+{
+    
+}
+
 #endif

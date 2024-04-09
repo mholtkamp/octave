@@ -22,7 +22,7 @@ SOURCES		:=	Source \
 				Generated
 #DATA		:=	data
 #TEXTURES	:=	textures 
-INCLUDES	:=	../Engine/Include ../Engine/Include/Engine ../External ../External/Bullet
+INCLUDES	:=	../Engine/Source ../Engine/Source/Engine ../External ../External/Bullet
 OUTPUT_DIR	:=	$(CURDIR)/Build/GCN
 
 #---------------------------------------------------------------------------------
