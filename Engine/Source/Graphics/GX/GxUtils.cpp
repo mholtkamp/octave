@@ -204,7 +204,7 @@ bool IsCpuSkinningRequired(SkeletalMesh3D* component)
     }
 }
 
-void BindMaterial(Material* material, bool useVertexColor, bool useBakedLighting)
+void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLighting)
 {
     // If we are using vertex color modulation, then we need to use the first channel
     // since there is only one color vertex attribute.

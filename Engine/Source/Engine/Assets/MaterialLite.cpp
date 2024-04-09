@@ -1,6 +1,9 @@
 #include "Assets/MaterialLite.h"
 
 #include "Assets/Texture.h"
+#include "Assets/MaterialBase.h"
+#include "Assets/MaterialInstance.h"
+
 #include "Renderer.h"
 #include "AssetManager.h"
 #include "Constants.h"

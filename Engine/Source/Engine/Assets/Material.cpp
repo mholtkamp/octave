@@ -1,5 +1,9 @@
 #include "Material.h"
 
+#include "MaterialLite.h"
+#include "MaterialBase.h"
+#include "MaterialInstance.h"
+
 FORCE_LINK_DEF(Material);
 DEFINE_ASSET(Material);
 
@@ -279,6 +283,38 @@ int32_t Material::GetSortPriority() const { return 0; }
 bool Material::IsDepthTestDisabled() const { return false; }
 bool Material::ShouldApplyFog() const { return true; }
 CullMode Material::GetCullMode() const { return CullMode::Back; }
+
+
+MaterialLite* Material::AsLite(Material* material)
+{
+    MaterialLite* liteMat = nullptr;
+
+    if (material != nullptr)
+    {
+        TypeId typeId = material->GetType();
+
+        if (typeId == MaterialLite::GetStaticType())
+        {
+            liteMat = (MaterialLite*) material;
+        }
+        else if (typeId == MaterialBase::GetStaticType())
+        {
+            MaterialBase* baseMat = (MaterialBase*)material;
+            liteMat = baseMat->GetLiteFallback();
+        }
+        else if (typeId == MaterialInstance::GetStaticType())
+        {
+            MaterialInstance* instMat = (MaterialInstance*)material;
+            MaterialBase* baseMat = instMat->GetBaseMaterial();
+            if (baseMat != nullptr)
+            {
+                liteMat = baseMat->GetLiteFallback();
+            }
+        }
+    }
+
+    return liteMat;
+}
 
 void Material::OverwriteShaderParameters(std::vector<ShaderParameter>& dst, const std::vector<ShaderParameter>& src)
 {

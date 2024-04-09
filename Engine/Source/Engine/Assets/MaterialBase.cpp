@@ -1,5 +1,6 @@
 #include "Assets/MaterialBase.h"
 #include "Assets/MaterialInstance.h"
+#include "Assets/MaterialLite.h"
 #include "Assets/Texture.h"
 #include "Renderer.h"
 #include "AssetManager.h"
@@ -95,6 +96,9 @@ void MaterialBase::LoadStream(Stream& stream, Platform platform)
     Material::LoadStream(stream, platform);
 
     stream.ReadString(mShader);
+
+    // TODO: Serialize mLiteFallback.
+
     mBlendMode = (BlendMode)stream.ReadUint32();
     mMaskCutoff = stream.ReadFloat();
     mSortPriority = stream.ReadInt32();
@@ -129,6 +133,9 @@ void MaterialBase::SaveStream(Stream& stream, Platform platform)
     Material::SaveStream(stream, platform);
 
     stream.WriteString(mShader);
+    
+    // TODO: Serialize mLiteFallback.
+
     stream.WriteUint32((uint32_t)mBlendMode);
     stream.WriteFloat(mMaskCutoff);
     stream.WriteInt32(mSortPriority);
@@ -201,6 +208,8 @@ void MaterialBase::GatherProperties(std::vector<Property>& outProps)
     
     static bool sFakeCompile = false;
     outProps.push_back(Property(DatumType::Bool, "Compile", this, &sFakeCompile, 1, HandlePropChange));
+
+    outProps.push_back(Property(DatumType::Asset, "Lite Fallback", this, &mLiteFallback, 1, nullptr, int32_t(MaterialLite::GetStaticType())));
 
     outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mBlendMode, 1, HandlePropChange, 0, int32_t(BlendMode::Count), gBlendModeStrings));
     outProps.push_back(Property(DatumType::Byte, "Cull Mode", this, &mCullMode, 1, HandlePropChange, 0, int32_t(CullMode::Count), gCullModeStrings));
@@ -776,6 +785,7 @@ uint32_t MaterialBase::GetNumTextureParameters()
 
 uint32_t MaterialBase::GetUniformBufferSize()
 {
+    // vec4 = 16 bytes, float = 4 bytes
     return (16 * mNumVectorParams + 4 * mNumScalarParams);
 }
 
@@ -788,5 +798,17 @@ const std::vector<uint8_t>& MaterialBase::GetVertexShaderCode(VertexType type) c
 const std::vector<uint8_t>& MaterialBase::GetFragmentShaderCode()
 {
     return mFragmentCode;
+}
+
+MaterialLite* MaterialBase::GetLiteFallback() const
+{
+    MaterialLite* retLite = mLiteFallback.Get<MaterialLite>();
+
+    if (retLite == nullptr)
+    {
+        retLite = LoadAsset<MaterialLite>("M_Default");
+    }
+
+    return retLite;
 }
 

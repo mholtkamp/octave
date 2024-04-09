@@ -163,7 +163,7 @@ void GFX_EndRenderPass()
 
 }
 
-void GFX_BindPipeline(PipelineId pipelineId, VertexType vertexType)
+void GFX_SetPipelineState(PipelineConfig config)
 {
 
 }
@@ -496,7 +496,7 @@ void GFX_DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverri
 
         BindStaticMesh(mesh, instanceColors);
 
-        Material* material = staticMeshComp->GetMaterial();
+        MaterialLite* material = Material::AsLite(staticMeshComp->GetMaterial());
 
         if (material == nullptr)
         {
@@ -611,7 +611,7 @@ void GFX_DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
             BindSkeletalMesh(mesh);
         }
 
-        Material* material = skeletalMeshComp->GetMaterial();
+        MaterialLite* material = Material::AsLite(skeletalMeshComp->GetMaterial());
 
         if (material == nullptr)
         {
@@ -845,7 +845,7 @@ void GFX_DrawTextMeshComp(TextMesh3D* textMeshComp)
     DCFlushRange((void*)vertices, numVertices * sizeof(Vertex));
     GX_InvVtxCache();
 
-    Material* material = textMeshComp->GetMaterial();
+    MaterialLite* material = Material::AsLite(textMeshComp->GetMaterial());
 
     if (material == nullptr)
     {
@@ -936,7 +936,7 @@ void GFX_DrawParticleComp(Particle3D* particleComp)
         DCFlushRange((void*)vertices.data(), numVertices * sizeof(VertexParticle));
         GX_InvVtxCache();
 
-        Material* material = particleComp->GetMaterial();
+        MaterialLite* material = Material::AsLite(particleComp->GetMaterial());
 
         if (material == nullptr)
         {

@@ -14,13 +14,13 @@ void CopyMatrixGlmToC3d(C3D_Mtx* dst, const glm::mat4& src);
 
 void BindVertexShader(ShaderId shaderId);
 void BindStaticMesh(StaticMesh* mesh, const void* instanceColors);
-void BindMaterial(Material* material, bool useBakedLighting);
+void BindMaterial(MaterialLite* material, bool useBakedLighting);
 void SetupLighting();
 void SetupLightEnv(LightEnv& lightEnv, bool dynamicOnly);
 void PrepareForwardRendering();
 void PrepareUiRendering();
 
-void UploadUvOffsetScale(int8_t uniformLoc, Material* material, uint32_t uvIndex);
+void UploadUvOffsetScale(int8_t uniformLoc, MaterialLite* material, uint32_t uvIndex);
 
 void ResetTexEnv();
 void ResetLightingEnv();

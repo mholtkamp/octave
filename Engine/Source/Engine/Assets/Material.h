@@ -21,6 +21,7 @@
 
 class Material;
 class MaterialInstance;
+class MaterialLite;
 class Texture;
 
 enum class ShaderParameterType
@@ -82,6 +83,7 @@ public:
     virtual bool ShouldApplyFog() const;
     virtual CullMode GetCullMode() const;
 
+    static MaterialLite* AsLite(Material* material);
     static void OverwriteShaderParameters(std::vector<ShaderParameter>& dst, const std::vector<ShaderParameter>& src);
 
 protected:

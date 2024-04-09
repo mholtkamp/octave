@@ -1,5 +1,5 @@
 # octave
-A Simple 3D Game Engine for GameCube, Wii, 3DS, Windows, and Linux
+A Simple 3D Game Engine for GameCube, Wii, 3DS, Windows, Linux, and Android
 
 ## Windows Setup
 1. Download and Install:

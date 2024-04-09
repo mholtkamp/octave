@@ -20,10 +20,12 @@ TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	Intermediate/Wii
 SOURCES		:=	Source \
 				Source/Engine \
-				Source/Engine/Widgets \
-				Source/Engine/Components \
+				Source/Engine/Nodes \
+				Source/Engine/Nodes/3D \
+				Source/Engine/Nodes/Widgets \
 				Source/Engine/Assets \
-				Source/System Source/System/Dolphin \
+				Source/System \
+				Source/System/Dolphin \
 				Source/Graphics \
 				Source/Graphics/GX \
 				Source/Input \
@@ -37,7 +39,7 @@ SOURCES		:=	Source \
 				../External/Vorbis
 #DATA		:=	data
 #TEXTURES	:=	textures 
-INCLUDES	:=	Include Include/Engine ../External ../External/Bullet ../External/Vorbis 
+INCLUDES	:=	Source Source/Engine ../External ../External/Bullet ../External/Vorbis 
 OUTPUT_DIR	:=	$(CURDIR)/Build/Wii
 BULLET_DIR	:=	$(CURDIR)/../External/Bullet
 

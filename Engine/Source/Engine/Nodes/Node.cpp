@@ -244,7 +244,7 @@ void Node::SaveStream(Stream& stream)
 
     // Tags
     OCT_ASSERT(mTags.size() <= 255);
-    uint32_t numTags = glm::min((uint32_t)mTags.size(), 255u);
+    uint32_t numTags = glm::min<uint32_t>((uint32_t)mTags.size(), 255u);
     stream.WriteUint8(numTags);
 
     for (uint32_t i = 0; i < numTags; ++i)

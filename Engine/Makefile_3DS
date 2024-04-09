@@ -35,8 +35,9 @@ TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	Intermediate/3DS
 SOURCES		:=	Source \
 				Source/Engine \
-				Source/Engine/Widgets \
-				Source/Engine/Components \
+				Source/Engine/Nodes \
+				Source/Engine/Nodes/3D \
+				Source/Engine/Nodes/Widgets \
 				Source/Engine/Assets \
 				Source/System \
 				Source/System/3DS \
@@ -53,7 +54,7 @@ SOURCES		:=	Source \
 				../External/Vorbis \
 				Shaders/PICA200
 DATA		:=	Data
-INCLUDES	:=	Include Include/Engine ../External ../External/Bullet ../External/Vorbis 
+INCLUDES	:=	Source Source/Engine ../External ../External/Bullet ../External/Vorbis 
 GRAPHICS	:=	Graphics
 GFXBUILD	:=	$(BUILD)
 #ROMFS		:=	romfs

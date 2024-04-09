@@ -8,6 +8,7 @@
 #include "Graphics/GraphicsTypes.h"
 
 class Texture;
+class MaterialLite;
 
 class MaterialBase : public Material
 {
@@ -54,6 +55,8 @@ public:
     const std::vector<uint8_t>& GetVertexShaderCode(VertexType type) const;
     const std::vector<uint8_t>& GetFragmentShaderCode();
 
+    MaterialLite* GetLiteFallback() const;
+
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
 protected:
@@ -68,6 +71,7 @@ protected:
     CullMode mCullMode = CullMode::Back;
 
     // Misc
+    MaterialRef mLiteFallback;
     std::vector<uint8_t> mVertexCode[(uint32_t)VertexType::Max];
     std::vector<uint8_t> mFragmentCode;
     uint32_t mNumScalarParams = 0;

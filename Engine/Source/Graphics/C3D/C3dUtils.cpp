@@ -133,7 +133,7 @@ void BindStaticMesh(StaticMesh* mesh, const void* instanceColors)
     }
 }
 
-void BindMaterial(Material* material, bool useBakedLighting)
+void BindMaterial(MaterialLite* material, bool useBakedLighting)
 {
     if (material != gC3dContext.mLastBoundMaterial)
     {
@@ -474,7 +474,7 @@ void PrepareUiRendering()
     C3D_CullFace(GPU_CULL_NONE);
 }
 
-void UploadUvOffsetScale(int8_t uniformLoc, Material* material, uint32_t uvIndex)
+void UploadUvOffsetScale(int8_t uniformLoc, MaterialLite* material, uint32_t uvIndex)
 {
     glm::vec2 uvOffset = material->GetUvOffset(uvIndex);
     glm::vec2 uvScale = material->GetUvScale(uvIndex);
