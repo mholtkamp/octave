@@ -107,9 +107,13 @@ void GFX_BeginFrame()
 
     Mtx44 projection;
     Camera3D* camera = GetWorld()->GetActiveCamera();
-    glm::mat4 camProjection = camera->GetProjectionMatrix();
-    memcpy(&projection, &camProjection, sizeof(Mtx44));
-    GX_LoadProjectionMtx(projection, GX_PERSPECTIVE);
+
+    if (camera != nullptr)
+    {
+        glm::mat4 camProjection = camera->GetProjectionMatrix();
+        memcpy(&projection, &camProjection, sizeof(Mtx44));
+        GX_LoadProjectionMtx(projection, GX_PERSPECTIVE);
+    }
 }
 
 void GFX_EndFrame()
@@ -202,30 +206,33 @@ void GFX_SetFog(const FogSettings& fogSettings)
     float cameraFar = 100.0f;
     uint8_t fogType = GX_FOG_NONE;
 
-    if (camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC)
+    if (camera)
     {
-        OrthoSettings projSettings = camera->GetOrthoSettings();
-        cameraNear = projSettings.mNear;
-        cameraFar = projSettings.mFar;
-
-        switch (fogSettings.mDensityFunc)
+        if (camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC)
         {
-        case FogDensityFunc::Linear: fogType = GX_FOG_ORTHO_LIN; break;
-        case FogDensityFunc::Exponential: fogType = GX_FOG_ORTHO_EXP; break;
-        default: break;
+            OrthoSettings projSettings = camera->GetOrthoSettings();
+            cameraNear = projSettings.mNear;
+            cameraFar = projSettings.mFar;
+
+            switch (fogSettings.mDensityFunc)
+            {
+            case FogDensityFunc::Linear: fogType = GX_FOG_ORTHO_LIN; break;
+            case FogDensityFunc::Exponential: fogType = GX_FOG_ORTHO_EXP; break;
+            default: break;
+            }
         }
-    }
-    else
-    {
-        PerspectiveSettings projSettings = camera->GetPerspectiveSettings();
-        cameraNear = projSettings.mNear;
-        cameraFar = projSettings.mFar;
-
-        switch (fogSettings.mDensityFunc)
+        else
         {
-        case FogDensityFunc::Linear: fogType = GX_FOG_PERSP_LIN; break;
-        case FogDensityFunc::Exponential: fogType = GX_FOG_PERSP_EXP; break;
-        default: break;
+            PerspectiveSettings projSettings = camera->GetPerspectiveSettings();
+            cameraNear = projSettings.mNear;
+            cameraFar = projSettings.mFar;
+
+            switch (fogSettings.mDensityFunc)
+            {
+            case FogDensityFunc::Linear: fogType = GX_FOG_PERSP_LIN; break;
+            case FogDensityFunc::Exponential: fogType = GX_FOG_PERSP_EXP; break;
+            default: break;
+            }
         }
     }
 

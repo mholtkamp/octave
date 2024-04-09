@@ -251,7 +251,10 @@ void GFX_BeginView(uint32_t viewIndex)
 
         // Need to recompute perspective matrix
         Camera3D* camera = GetWorld()->GetActiveCamera();
-        camera->ComputeMatrices();
+        if (camera != nullptr)
+        {
+            camera->ComputeMatrices();
+        }
     }
 }
 
@@ -1490,7 +1493,7 @@ void GFX_DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& t
 
 void GFX_RenderPostProcessPasses()
 {
-    
+
 }
 
 #endif
