@@ -97,7 +97,7 @@ void RayTracer::UpdateRayTracingScene(
     std::vector<RayTraceLight>& lightData,
     int32_t* outBakeMeshIndex)
 {
-    World* world = GetWorld();
+    World* world = GetWorld(0);
 
     if (world == nullptr)
         return;
@@ -396,13 +396,13 @@ void RayTracer::UpdateBakeVertexData()
 void RayTracer::PathTraceWorld()
 {
     OCT_ASSERT(!IsLightBakeInProgress());
-    World* world = GetWorld();
+    World* world = GetWorld(0);
 
     if (world != nullptr)
     {
         // Check to see if camera moved. If so we need to reset our accumulated image data.
 
-        Camera3D* camera = GetWorld()->GetActiveCamera();
+        Camera3D* camera = world->GetActiveCamera();
         if (camera != nullptr)
         {
             glm::vec3 camPos = camera->GetAbsolutePosition();
@@ -473,7 +473,7 @@ void RayTracer::PathTraceWorld()
 
 void RayTracer::BeginLightBake()
 {
-    World* world = GetWorld();
+    World* world = GetWorld(0);
 
     if (world != nullptr &&
         mLightBakePhase == LightBakePhase::Count)
@@ -528,7 +528,7 @@ void RayTracer::UpdateLightBake()
             {
                 StaticMesh3D* meshComp = mLightBakeNodes[mNextBakingCompIndex].Get<StaticMesh3D>();
                 if (meshComp != nullptr &&
-                    meshComp->GetWorld() == GetWorld())
+                    meshComp->GetWorld() == GetWorld(0))
                 {
                     DispatchNextLightBake();
                 }
@@ -682,7 +682,7 @@ void RayTracer::DispatchNextLightBake()
 
     if (meshComp != nullptr &&
         meshComp->GetStaticMesh() != nullptr &&
-        meshComp->GetWorld() == GetWorld())
+        meshComp->GetWorld() == GetWorld(0))
     {
         // Update path tracing scene
         int32_t bakeMeshIndex = -1;
@@ -760,7 +760,7 @@ void RayTracer::DispatchNextBakeDiffuse()
 
     if (meshComp != nullptr &&
         meshComp->GetStaticMesh() != nullptr &&
-        meshComp->GetWorld() == GetWorld())
+        meshComp->GetWorld() == GetWorld(0))
     {
         StaticMesh* meshAsset = meshComp->GetStaticMesh();
         uint32_t numVerts = meshAsset->GetNumVertices();

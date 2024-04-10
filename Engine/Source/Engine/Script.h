@@ -41,6 +41,8 @@ public:
 
     bool IsActive() const;
 
+    void SetWorld(World* world);
+
     bool ReloadScriptFile(const std::string& fileName, bool restartScript = true);
 
     std::vector<ScriptNetDatum>& GetReplicatedData();

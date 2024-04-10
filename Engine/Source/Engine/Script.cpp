@@ -16,6 +16,7 @@
 #include "LuaBindings/Node_Lua.h"
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
+#include "LuaBindings/World_Lua.h"
 
 std::unordered_map<std::string, ScriptNetFuncMap> Script::sScriptNetFuncMap;
 
@@ -1124,6 +1125,17 @@ bool Script::IsActive() const
     return (mUserdataRef != LUA_REFNIL);
 }
 
+void Script::SetWorld(World* world)
+{
+    if (IsActive())
+    {
+        lua_State* L = GetLua();
+        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        World_Lua::Create(L, world);
+        lua_setfield(L, -2, "world");
+    }
+}
+
 bool Script::ReloadScriptFile(const std::string& fileName, bool restartScript)
 {
     bool success = ScriptUtils::ReloadScriptFile(fileName);
@@ -1617,6 +1629,8 @@ void Script::CreateScriptInstance()
             mHandleBeginOverlap = CheckIfFunctionExists("BeginOverlap");
             mHandleEndOverlap = CheckIfFunctionExists("EndOverlap");
             mHandleOnCollision = CheckIfFunctionExists("OnCollision");
+
+            SetWorld(mOwner->GetWorld());
 
             // Is calling Create() here causing issues? It used to be called after gathering properties.
             // If this causes a problem, consider calling a separate function like PreCreate() or Init() or something.

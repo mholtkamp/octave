@@ -1163,7 +1163,7 @@ static void DrawAddNodeMenu(Node* node)
         }
         else
         {
-            GetWorld()->PlaceNewlySpawnedNode(newNode);
+            GetWorld(0)->PlaceNewlySpawnedNode(newNode);
         }
         
         GetEditorState()->SetSelectedNode(newNode);
@@ -1182,7 +1182,7 @@ static void DrawAddNodeMenu(Node* node)
                 if (node)
                     node->AddChild(newNode);
                 else
-                    GetWorld()->PlaceNewlySpawnedNode(newNode);
+                    GetWorld(0)->PlaceNewlySpawnedNode(newNode);
 
                 GetEditorState()->SetSelectedNode(newNode);
             }
@@ -1203,7 +1203,7 @@ static void DrawAddNodeMenu(Node* node)
                 if (node)
                     node->AddChild(newNode);
                 else
-                    GetWorld()->PlaceNewlySpawnedNode(newNode);
+                    GetWorld(0)->PlaceNewlySpawnedNode(newNode);
 
                 GetEditorState()->SetSelectedNode(newNode);
             }
@@ -1225,7 +1225,7 @@ static void DrawAddNodeMenu(Node* node)
                 if (node)
                     node->AddChild(newNode);
                 else
-                    GetWorld()->PlaceNewlySpawnedNode(newNode);
+                    GetWorld(0)->PlaceNewlySpawnedNode(newNode);
 
                 GetEditorState()->SetSelectedNode(newNode);
             }
@@ -1288,7 +1288,7 @@ static void DrawSpawnBasicWidgetMenu(Node* node)
 
         if (node == nullptr)
         {
-            GetWorld()->PlaceNewlySpawnedNode(newWidget);
+            GetWorld(0)->PlaceNewlySpawnedNode(newWidget);
         }
         else
         {
@@ -1352,7 +1352,7 @@ static void DrawScenePanel()
         | ImGuiTreeNodeFlags_SpanAvailWidth
         | ImGuiTreeNodeFlags_DefaultOpen;
 
-    World* world = GetWorld();
+    World* world = GetWorld(0);
     Node* rootNode = world ? world->GetRootNode() : nullptr;
     bool sNodeContextActive = false;
 
@@ -2690,7 +2690,7 @@ static void DrawViewportPanel()
             renderer->BeginLightBake();
         if (ImGui::Selectable("Clear Baked Lighting"))
         {
-            const std::vector<Node*>& nodes = GetWorld()->GatherNodes();
+            const std::vector<Node*>& nodes = GetWorld(0)->GatherNodes();
             for (uint32_t a = 0; a < nodes.size(); ++a)
             {
                 StaticMesh3D* meshNode = nodes[a]->As<StaticMesh3D>();

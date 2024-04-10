@@ -46,7 +46,7 @@ void EditorState::Init()
     mEditorCamera = Node::Construct<Camera3D>();
     mEditorCamera->SetName("Editor Camera");
     // TODO-NODE: This is a little sketchy because this will call World::RegisterNode(), but that's probably fine.
-    mEditorCamera->SetWorld(GetWorld());
+    mEditorCamera->SetWorld(GetWorld(0));
 
     mViewport3D = new Viewport3D();
     mViewport2D = new Viewport2D();
@@ -486,8 +486,8 @@ void EditorState::BeginPlayInEditor()
 
     // TODO-NODE: This is overkill since the root node of the scene should have been removed in ShelveEditScene()
     //   Maybe we just want to assert that the root node is null.
-    GetWorld()->Clear();
-    OCT_ASSERT(GetWorld()->GetRootNode() == nullptr);
+    GetWorld(0)->Clear();
+    OCT_ASSERT(GetWorld(0)->GetRootNode() == nullptr);
 
     ShowEditorUi(false);
     Renderer::Get()->EnableProxyRendering(false);
@@ -506,7 +506,7 @@ void EditorState::BeginPlayInEditor()
         editScene->mRootNode != nullptr)
     {
         Node* clonedRoot = editScene->mRootNode->Clone(true, false);
-        GetWorld()->SetRootNode(clonedRoot);
+        GetWorld(0)->SetRootNode(clonedRoot);
     }
 }
 
@@ -516,12 +516,12 @@ void EditorState::EndPlayInEditor()
         return;
 
     glm::mat4 cameraTransform(1);
-    if (GetWorld()->GetActiveCamera())
+    if (GetWorld(0)->GetActiveCamera())
     {
-        cameraTransform = GetWorld()->GetActiveCamera()->GetTransform();
+        cameraTransform = GetWorld(0)->GetActiveCamera()->GetTransform();
     }
 
-    GetWorld()->DestroyRootNode();
+    GetWorld(0)->DestroyRootNode();
     GetTimerManager()->ClearAllTimers();
 
     AudioManager::StopAllSounds();
@@ -553,9 +553,9 @@ void EditorState::EndPlayInEditor()
     // Restore the scene we were working on
     OpenEditScene(mPieEditSceneIdx);
 
-    if (GetWorld()->GetActiveCamera())
+    if (GetWorld(0)->GetActiveCamera())
     {
-        GetWorld()->GetActiveCamera()->SetTransform(cameraTransform);
+        GetWorld(0)->GetActiveCamera()->SetTransform(cameraTransform);
     }
 }
 
@@ -568,7 +568,7 @@ void EditorState::EjectPlayInEditor()
 
         // Get the game's active camera. This should return the camera spawned in game, and not the editor camera,
         // as long as we get it here and not once mEjected has been set.
-        Camera3D* activeCam = GetWorld()->GetActiveCamera();
+        Camera3D* activeCam = GetWorld(0)->GetActiveCamera();
 
         if (!mHasEjectedOnce && activeCam)
         {
@@ -753,17 +753,17 @@ void EditorState::OpenEditScene(int32_t idx)
     // Shelve whatever we are working on.
     ShelveEditScene();
     
-    if (GetWorld()->GetRootNode() != nullptr)
+    if (GetWorld(0)->GetRootNode() != nullptr)
     {
         LogWarning("Destroying nodes without associated EditScene.");
-        GetWorld()->DestroyRootNode();
+        GetWorld(0)->DestroyRootNode();
     }
 
     if (idx >= 0 && idx < int32_t(mEditScenes.size()))
     {
         const EditScene& editScene = mEditScenes[idx];
         mEditSceneIndex = idx;
-        GetWorld()->SetRootNode(editScene.mRootNode); // could be nullptr.
+        GetWorld(0)->SetRootNode(editScene.mRootNode); // could be nullptr.
         GetEditorCamera()->SetTransform(editScene.mCameraTransform);
 
         // Reinstantiate scene-linked nodes
@@ -883,9 +883,9 @@ void EditorState::ShelveEditScene()
     if (mEditSceneIndex >= 0)
     {
         EditScene& editScene = mEditScenes[mEditSceneIndex];
-        editScene.mRootNode = GetWorld()->GetRootNode();
+        editScene.mRootNode = GetWorld(0)->GetRootNode();
         editScene.mCameraTransform = GetEditorCamera()->GetTransform();
-        GetWorld()->SetRootNode(nullptr);
+        GetWorld(0)->SetRootNode(nullptr);
 
         CacheEditSceneLinkedProps(editScene);
 
@@ -929,12 +929,12 @@ void EditorState::EnsureActiveScene()
     {
         // Save whatever is in the world and move it to the new scene.
         // For instance, the user has no open editscene, but spawns a Node3D.
-        Node* curWorldRoot = GetWorld()->GetRootNode();
-        GetWorld()->SetRootNode(nullptr);
+        Node* curWorldRoot = GetWorld(0)->GetRootNode();
+        GetWorld(0)->SetRootNode(nullptr);
 
         GetEditorState()->OpenEditScene(nullptr);
 
-        GetWorld()->SetRootNode(curWorldRoot);
+        GetWorld(0)->SetRootNode(curWorldRoot);
     }
 }
 
@@ -984,7 +984,7 @@ void EditorState::SetTransformLock(TransformLock lock)
 
     mTransformLock = lock;
 
-    World* world = GetWorld();
+    World* world = GetWorld(0);
 
     if (world != nullptr)
     {
@@ -1204,10 +1204,10 @@ void EditorState::CaptureAndSaveScene(AssetStub* stub, Node* rootNode)
 
     if (rootNode == nullptr)
     {
-        rootNode = GetWorld()->GetRootNode();
+        rootNode = GetWorld(0)->GetRootNode();
     }
 
-    bool worldRoot = (rootNode == GetWorld()->GetRootNode());
+    bool worldRoot = (rootNode == GetWorld(0)->GetRootNode());
 
     Scene* scene = (Scene*)stub->mAsset;
     scene->Capture(rootNode);

@@ -171,7 +171,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(SolutionDir)External;$(SolutionDir)Engine;$(SolutionDir)Engine/Source;$(SolutionDir)Engine/Source/Engine;$(SolutionDir)External/Bullet;$(ProjectDir);$(SolutionDir)Engine/Source/Editor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External;$(VULKAN_SDK)/Include;$(SolutionDir)Engine;$(SolutionDir)Engine/Source;$(SolutionDir)Engine/Source/Engine;$(SolutionDir)External/Bullet;$(ProjectDir);$(SolutionDir)Engine/Source/Editor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;NOMINMAX;_CRT_SECURE_NO_WARNINGS=1;EDITOR=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
@@ -191,7 +191,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(SolutionDir)External;$(SolutionDir)Engine;$(SolutionDir)Engine/Source;$(SolutionDir)Engine/Source/Engine;$(SolutionDir)External/Bullet;$(ProjectDir);$(SolutionDir)Engine/Source/Editor;$(SolutionDir)External/Assimp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External;$(VULKAN_SDK)/Include;$(SolutionDir)Engine;$(SolutionDir)Engine/Source;$(SolutionDir)Engine/Source/Engine;$(SolutionDir)External/Bullet;$(ProjectDir);$(SolutionDir)Engine/Source/Editor;$(SolutionDir)External/Assimp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;NOMINMAX;_CRT_SECURE_NO_WARNINGS=1;EDITOR=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
@@ -237,7 +237,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(SolutionDir)External;$(SolutionDir)Engine;$(SolutionDir)Engine/Source;$(SolutionDir)Engine/Source/Engine;$(SolutionDir)External/Bullet;$(ProjectDir);$(SolutionDir)Engine/Source/Editor;$(SolutionDir)External/Lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External;$(VULKAN_SDK)/Include;$(SolutionDir)Engine;$(SolutionDir)Engine/Source;$(SolutionDir)Engine/Source/Engine;$(SolutionDir)External/Bullet;$(ProjectDir);$(SolutionDir)Engine/Source/Editor;$(SolutionDir)External/Lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;NOMINMAX;_CRT_SECURE_NO_WARNINGS=1;EDITOR=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -253,7 +253,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)/Include;$(SolutionDir)External;$(SolutionDir)Engine;$(SolutionDir)Engine/Source;$(SolutionDir)Engine/Source/Engine;$(SolutionDir)External/Bullet;$(ProjectDir);$(SolutionDir)Engine/Source/Editor;$(SolutionDir)External/Lua;$(SolutionDir)External/Assimp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External;$(VULKAN_SDK)/Include;$(SolutionDir)Engine;$(SolutionDir)Engine/Source;$(SolutionDir)Engine/Source/Engine;$(SolutionDir)External/Bullet;$(ProjectDir);$(SolutionDir)Engine/Source/Editor;$(SolutionDir)External/Lua;$(SolutionDir)External/Assimp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_WINDOWS=1;API_VULKAN=1;NOMINMAX;_CRT_SECURE_NO_WARNINGS=1;EDITOR=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>

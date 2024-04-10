@@ -22,7 +22,7 @@ extern GxContext gGxContext;
 
 void SetupLights()
 {
-    Camera3D* cameraComp = GetWorld()->GetActiveCamera();
+    Camera3D* cameraComp = gGxContext.mWorld->GetActiveCamera();
     if (cameraComp == nullptr)
     {
         return;
@@ -290,7 +290,7 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
                                         uint8_t(materialColor.b * 255.0f),
                                         uint8_t(opacity * 255.f) });
 
-    glm::vec4 ambientColor = useBakedLighting ? glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) : GetWorld()->GetAmbientLightColor();
+    glm::vec4 ambientColor = useBakedLighting ? glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) : gGxContext.mWorld->GetAmbientLightColor();
     ambientColor = glm::clamp(ambientColor / GX_DYNAMIC_LIGHT_SCALE, 0.0f, 1.0f);
     ambientColor.a = 1.0f;
     GX_SetChanAmbColor(matColorChannel, { uint8_t(ambientColor.r * 255.0f),

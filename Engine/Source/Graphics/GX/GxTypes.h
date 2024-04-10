@@ -8,6 +8,8 @@
 
 #define GX_DYNAMIC_LIGHT_SCALE 4.0f
 
+class World;
+
 struct LightingState
 {
     bool mEnabled = false;
@@ -53,6 +55,7 @@ struct LightingState
 struct GxContext
 {
     void* mGpFifo = nullptr;
+    World* mWorld = nullptr;
 
     // Lighting/Channel control
     LightingState mLighting;

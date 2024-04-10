@@ -285,7 +285,7 @@ void AudioManager::Update(float deltaTime)
 
 
     // (1) Update Active Sources
-    Node3D* listener = GetWorld()->GetAudioReceiver();
+    Node3D* listener = GetWorld(0)->GetAudioReceiver();
     glm::vec3 listenerPos = listener ? listener->GetAbsolutePosition() : glm::vec3(0,0,0);
     glm::vec3 listenerRight = listener ? listener->GetRightVector() : glm::vec3(1.0f, 0.0f, 0.0f);
 
@@ -386,10 +386,10 @@ void AudioManager::Update(float deltaTime)
     }
 
     // (2) Play New Sounds
-    World* world = GetWorld();
+    World* world = GetWorld(0);
     if (world != nullptr)
     {
-        const std::vector<Audio3D*>& audioNodes = GetWorld()->GetAudios();
+        const std::vector<Audio3D*>& audioNodes = world->GetAudios();
 
         for (uint32_t i = 0; i < audioNodes.size(); ++i)
         {

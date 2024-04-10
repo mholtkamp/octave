@@ -487,14 +487,14 @@ Node* ActionManager::SpawnNode(TypeId nodeType, Node* parent)
     OCT_ASSERT(spawnedNode != nullptr);
     if (spawnedNode != nullptr)
     {
-        parent = parent ? parent : GetWorld()->GetRootNode();
+        parent = parent ? parent : GetWorld(0)->GetRootNode();
         if (parent != nullptr)
         {
             parent->AddChild(spawnedNode);
         }
         else
         {
-            GetWorld()->SetRootNode(spawnedNode);
+            GetWorld(0)->SetRootNode(spawnedNode);
         }
 
         GetEditorState()->SetSelectedNode(spawnedNode);
@@ -668,14 +668,14 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
 
     if (spawnedNode != nullptr)
     {
-        parent = parent ? parent : GetWorld()->GetRootNode();
+        parent = parent ? parent : GetWorld(0)->GetRootNode();
         if (parent != nullptr)
         {
             parent->AddChild(spawnedNode);
         }
         else
         {
-            GetWorld()->SetRootNode(spawnedNode);
+            GetWorld(0)->SetRootNode(spawnedNode);
         }
 
         GetEditorState()->SetSelectedNode(spawnedNode);
@@ -1140,7 +1140,7 @@ void ActionManager::SaveScene(bool saveAs)
     else if (editScene->mSceneAsset != nullptr)
     {
         Scene* scene = editScene->mSceneAsset.Get<Scene>();
-        scene->Capture(GetWorld()->GetRootNode());
+        scene->Capture(GetWorld(0)->GetRootNode());
         AssetManager::Get()->SaveAsset(scene->GetName());
     }
 }
@@ -1568,7 +1568,7 @@ void ActionManager::ClearWorld()
 {
     GetEditorState()->SetSelectedNode(nullptr);
     //SetActiveLevel(nullptr);
-    GetWorld()->Clear();
+    GetWorld(0)->Clear();
 
     ResetUndoRedo();
 }
@@ -1579,9 +1579,9 @@ void ActionManager::DeleteAllNodes()
     {
         GetEditorState()->SetSelectedNode(nullptr);
 
-        if (GetWorld()->GetRootNode() != nullptr)
+        if (GetWorld(0)->GetRootNode() != nullptr)
         {
-            EXE_DeleteNode(GetWorld()->GetRootNode());
+            EXE_DeleteNode(GetWorld(0)->GetRootNode());
         }
     }
 
@@ -1744,7 +1744,7 @@ void ActionManager::AttachSelectedNodes(Node* newParent, int32_t boneIdx)
 
             // Reparenting components should break the scene link.
             // For now, you cannot override scene instance children
-            if (newParent->GetParent() != GetWorld()->GetRootNode())
+            if (newParent->GetParent() != GetWorld(0)->GetRootNode())
             {
                 newParent->SetScene(nullptr);
             }
@@ -2007,8 +2007,8 @@ void ActionSpawnNodes::Execute()
             {
                 // This must have been the root node?
                 OCT_ASSERT(mNodes.size() == 1);
-                OCT_ASSERT(GetWorld()->GetRootNode() == nullptr);
-                GetWorld()->SetRootNode(mNodes[i]);
+                OCT_ASSERT(GetWorld(0)->GetRootNode() == nullptr);
+                GetWorld(0)->SetRootNode(mNodes[i]);
             }
         }
     }
@@ -2035,8 +2035,8 @@ void ActionSpawnNodes::Reverse()
         else
         {
             OCT_ASSERT(mNodes.size() == 1);
-            OCT_ASSERT(GetWorld()->GetRootNode() == mNodes[i]);
-            GetWorld()->SetRootNode(nullptr);
+            OCT_ASSERT(GetWorld(0)->GetRootNode() == mNodes[i]);
+            GetWorld(0)->SetRootNode(nullptr);
         }
 
         ActionManager::Get()->ExileNode(mNodes[i]);
@@ -2100,8 +2100,8 @@ void ActionDeleteNodes::Execute()
             {
                 // We must be deleting the root node
                 OCT_ASSERT(mNodes.size() == 1);
-                OCT_ASSERT(GetWorld()->GetRootNode() == mNodes[i]);
-                GetWorld()->SetRootNode(nullptr);
+                OCT_ASSERT(GetWorld(0)->GetRootNode() == mNodes[i]);
+                GetWorld(0)->SetRootNode(nullptr);
             }
 
             ActionManager::Get()->ExileNode(mNodes[i]);
@@ -2140,8 +2140,8 @@ void ActionDeleteNodes::Reverse()
         {
             // Must have deleted the root node.
             OCT_ASSERT(mNodes.size() == 1);
-            OCT_ASSERT(GetWorld()->GetRootNode() == nullptr);
-            GetWorld()->SetRootNode(mNodes[i]);
+            OCT_ASSERT(GetWorld(0)->GetRootNode() == nullptr);
+            GetWorld(0)->SetRootNode(mNodes[i]);
         }
     }
 }
@@ -2197,7 +2197,7 @@ void ActionAttachNode::Reverse()
 ActionSetRootNode::ActionSetRootNode(Node* newRoot)
 {
     mNewRoot = newRoot;
-    mOldRoot = GetWorld()->GetRootNode();
+    mOldRoot = GetWorld(0)->GetRootNode();
     mNewRootParent = mNewRoot->GetParent();
     mNewRootChildIndex = mNewRootParent ? mNewRootParent->FindChildIndex(mNewRoot) : -1;
 
@@ -2210,7 +2210,7 @@ ActionSetRootNode::ActionSetRootNode(Node* newRoot)
 void ActionSetRootNode::Execute()
 {
     mNewRoot->Detach(true);
-    GetWorld()->SetRootNode(mNewRoot);
+    GetWorld(0)->SetRootNode(mNewRoot);
     mOldRoot->Attach(mNewRoot, true);
     mOldRoot->SetScene(nullptr);
 }
@@ -2218,7 +2218,7 @@ void ActionSetRootNode::Execute()
 void ActionSetRootNode::Reverse()
 {
     mOldRoot->Detach(true);
-    GetWorld()->SetRootNode(mOldRoot);
+    GetWorld(0)->SetRootNode(mOldRoot);
     mNewRoot->Attach(mNewRootParent, true, mNewRootChildIndex);
     mNewRoot->SetScene(nullptr);
 }

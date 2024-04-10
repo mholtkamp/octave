@@ -76,7 +76,7 @@ void EditorMain(int32_t argc, char** argv)
     if (GetEditorState()->GetEditScene() == nullptr)
     {
         GetEditorState()->OpenEditScene(nullptr);
-        GetWorld()->SpawnNode<TestSpinner>();
+        GetWorld(0)->SpawnNode<TestSpinner>();
     }
 
     Renderer::Get()->EnableConsole(true);

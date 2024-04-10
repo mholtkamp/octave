@@ -226,7 +226,7 @@ int Renderer_Lua::AddDebugLine(lua_State* L)
     line.mColor = color;
     line.mLifetime = life;
 
-    GetWorld()->AddLine(line);
+    GetWorld(0)->AddLine(line);
 
     return 0;
 }

@@ -246,6 +246,20 @@ std::vector<Node*> World::GatherNodes()
     return nodeList;
 }
 
+void World::GatherNodes(std::vector<Node*>& outNodes)
+{
+    auto gatherNodes = [&](Node* node) -> bool
+    {
+        outNodes.push_back(node);
+        return true;
+    };
+
+    if (mRootNode != nullptr)
+    {
+        mRootNode->Traverse(gatherNodes);
+    }
+}
+
 void World::Clear()
 {
     DestroyRootNode();
@@ -1013,10 +1027,10 @@ void World::UpdateRenderSettings()
     else
     {
         // Default render settings
-        GetWorld()->SetAmbientLightColor(DEFAULT_AMBIENT_LIGHT_COLOR);
-        GetWorld()->SetShadowColor(DEFAULT_SHADOW_COLOR);
+        SetAmbientLightColor(DEFAULT_AMBIENT_LIGHT_COLOR);
+        SetShadowColor(DEFAULT_SHADOW_COLOR);
         FogSettings fogSettings;
-        GetWorld()->SetFogSettings(fogSettings);
+        SetFogSettings(fogSettings);
     }
 }
 

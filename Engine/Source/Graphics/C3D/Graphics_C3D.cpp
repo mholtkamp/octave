@@ -188,6 +188,8 @@ void GFX_Shutdown()
 
 void GFX_BeginFrame()
 {
+    gC3dContext.mWorld = Renderer::Get()->GetCurrentWorld();
+
     // According to Oreo:
     // C3D_GetDrawingTime() is the time in miliseconds between C3D_FrameEnd() and the callback when the gpu finishes processing the commands.
     // C3D_GetProcessingTime() is the time in miliseconds between C3D_FrameBegin() and C3D_FrameEnd()
@@ -218,14 +220,6 @@ void GFX_EndFrame()
 void GFX_BeginScreen(uint32_t screenIndex)
 {
     gC3dContext.mCurrentScreen = screenIndex;
-
-    // Top render targets are cleared and set for drawing in BeginView()
-
-    if (gC3dContext.mCurrentScreen == 1)
-    {
-        C3D_RenderTargetClear(gC3dContext.mRenderTargetBottom, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
-        C3D_FrameDrawOn(gC3dContext.mRenderTargetBottom);
-    }
 }
 
 void GFX_BeginView(uint32_t viewIndex)
@@ -250,11 +244,17 @@ void GFX_BeginView(uint32_t viewIndex)
         }
 
         // Need to recompute perspective matrix
-        Camera3D* camera = GetWorld()->GetActiveCamera();
+        Camera3D* camera = gC3dContext.mWorld->GetActiveCamera();
         if (camera != nullptr)
         {
             camera->ComputeMatrices();
         }
+    }
+    else if (gC3dContext.mCurrentScreen == 1)
+    {
+        // Only a single view on screen 2.
+        C3D_RenderTargetClear(gC3dContext.mRenderTargetBottom, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
+        C3D_FrameDrawOn(gC3dContext.mRenderTargetBottom);
     }
 }
 
@@ -331,7 +331,7 @@ void GFX_SetFog(const FogSettings& fogSettings)
     // TODO: Fog isn't really working as expected... I don't understand the fog lut format.
     if (fogSettings.mEnabled)
     {
-        Camera3D* camera = GetWorld()->GetActiveCamera();
+        Camera3D* camera = gC3dContext.mWorld->GetActiveCamera();
         float camNearZ = camera ? camera->GetNearZ() : 0.1f;
         float camFarZ = camera ? camera->GetFarZ() : 100.0f;
         float nearZ = fogSettings.mNear;
@@ -428,7 +428,7 @@ Node3D* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y)
 uint32_t GFX_GetNumViews()
 {
     SystemState& system = GetEngineState()->mSystem;
-    return (system.mSlider > 0.0f) ? 2 : 1;
+    return (gC3dContext.mCurrentScreen == 0 && system.mSlider > 0.0f) ? 2 : 1;
 }
 
 void GFX_SetFrameRate(int32_t frameRate)
@@ -719,14 +719,14 @@ void GFX_DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverri
         C3D_Mtx worldViewMtx;
 
         glm::mat4 modelSrc = staticMeshComp->GetRenderTransform();
-        glm::mat4 viewSrc = GetWorld()->GetActiveCamera()->GetViewMatrix();
+        glm::mat4 viewSrc = gC3dContext.mWorld->GetActiveCamera()->GetViewMatrix();
 
         CopyMatrixGlmToC3d(&worldMtx, modelSrc);
         CopyMatrixGlmToC3d(&viewMtx, viewSrc);
         Mtx_Multiply(&worldViewMtx, &viewMtx, &worldMtx);
 
         C3D_Mtx projMtx;
-        glm::mat4 projSrc = GetWorld()->GetActiveCamera()->GetProjectionMatrix();
+        glm::mat4 projSrc = gC3dContext.mWorld->GetActiveCamera()->GetProjectionMatrix();
         memcpy(&projMtx, &projSrc, sizeof(float) * 4 * 4);
 
         C3D_Mtx normalMtx;
@@ -879,14 +879,14 @@ void GFX_DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
         C3D_Mtx worldViewMtx;
 
         glm::mat4 modelSrc = skeletalMeshComp->GetRenderTransform();
-        glm::mat4 viewSrc = GetWorld()->GetActiveCamera()->GetViewMatrix();
+        glm::mat4 viewSrc = gC3dContext.mWorld->GetActiveCamera()->GetViewMatrix();
 
         CopyMatrixGlmToC3d(&worldMtx, modelSrc);
         CopyMatrixGlmToC3d(&viewMtx, viewSrc);
         Mtx_Multiply(&worldViewMtx, &viewMtx, &worldMtx);
 
         C3D_Mtx projMtx;
-        glm::mat4 projSrc = GetWorld()->GetActiveCamera()->GetProjectionMatrix();
+        glm::mat4 projSrc = gC3dContext.mWorld->GetActiveCamera()->GetProjectionMatrix();
         memcpy(&projMtx, &projSrc, sizeof(float) * 4 * 4);
 
         C3D_Mtx normalMtx;
@@ -938,14 +938,14 @@ void GFX_DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
         C3D_Mtx worldViewMtx;
 
         glm::mat4 modelSrc = shadowMeshComp->GetRenderTransform();
-        glm::mat4 viewSrc = GetWorld()->GetActiveCamera()->GetViewMatrix();
+        glm::mat4 viewSrc = gC3dContext.mWorld->GetActiveCamera()->GetViewMatrix();
 
         CopyMatrixGlmToC3d(&worldMtx, modelSrc);
         CopyMatrixGlmToC3d(&viewMtx, viewSrc);
         Mtx_Multiply(&worldViewMtx, &viewMtx, &worldMtx);
 
         C3D_Mtx projMtx;
-        glm::mat4 projSrc = GetWorld()->GetActiveCamera()->GetProjectionMatrix();
+        glm::mat4 projSrc = gC3dContext.mWorld->GetActiveCamera()->GetProjectionMatrix();
         memcpy(&projMtx, &projSrc, sizeof(float) * 4 * 4);
 
         C3D_Mtx normalMtx;
@@ -960,7 +960,7 @@ void GFX_DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
         ResetTexEnv();
         ResetLightingEnv();
 
-        glm::vec4 shadowColor = GetWorld()->GetShadowColor();
+        glm::vec4 shadowColor = gC3dContext.mWorld->GetShadowColor();
 
         shadowColor = glm::clamp(shadowColor, 0.0f, 1.0f);
         uint8_t matColor4[4] =
@@ -1085,14 +1085,14 @@ void GFX_DrawTextMeshComp(TextMesh3D* textMeshComp)
     C3D_Mtx worldViewMtx;
 
     glm::mat4 modelSrc = textMeshComp->GetRenderTransform();
-    glm::mat4 viewSrc = GetWorld()->GetActiveCamera()->GetViewMatrix();
+    glm::mat4 viewSrc = gC3dContext.mWorld->GetActiveCamera()->GetViewMatrix();
 
     CopyMatrixGlmToC3d(&worldMtx, modelSrc);
     CopyMatrixGlmToC3d(&viewMtx, viewSrc);
     Mtx_Multiply(&worldViewMtx, &viewMtx, &worldMtx);
 
     C3D_Mtx projMtx;
-    glm::mat4 projSrc = GetWorld()->GetActiveCamera()->GetProjectionMatrix();
+    glm::mat4 projSrc = gC3dContext.mWorld->GetActiveCamera()->GetProjectionMatrix();
     memcpy(&projMtx, &projSrc, sizeof(float) * 4 * 4);
 
     C3D_Mtx normalMtx;
@@ -1222,14 +1222,14 @@ void GFX_DrawParticleComp(Particle3D* particleComp)
         C3D_Mtx worldViewMtx;
 
         glm::mat4 modelSrc = particleComp->GetUseLocalSpace() ? particleComp->GetTransform() : glm::mat4(1);
-        glm::mat4 viewSrc = GetWorld()->GetActiveCamera()->GetViewMatrix();
+        glm::mat4 viewSrc = gC3dContext.mWorld->GetActiveCamera()->GetViewMatrix();
 
         CopyMatrixGlmToC3d(&worldMtx, modelSrc);
         CopyMatrixGlmToC3d(&viewMtx, viewSrc);
         Mtx_Multiply(&worldViewMtx, &viewMtx, &worldMtx);
 
         C3D_Mtx projMtx;
-        glm::mat4 projSrc = GetWorld()->GetActiveCamera()->GetProjectionMatrix();
+        glm::mat4 projSrc = gC3dContext.mWorld->GetActiveCamera()->GetProjectionMatrix();
         memcpy(&projMtx, &projSrc, sizeof(float) * 4 * 4);
 
         C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mParticleLocs.mWorldViewMtx, &worldViewMtx);

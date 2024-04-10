@@ -16,6 +16,8 @@
 #include "Nodes/3D/DirectionalLight3d.h"
 #include "Nodes/3D/Camera3d.h"
 
+extern C3dContext gC3dContext;
+
 static inline float LinearAttenFunc(float dist, float maxDist, float none)
 {
     return (1.0f - (dist / maxDist));
@@ -164,7 +166,7 @@ void BindMaterial(MaterialLite* material, bool useBakedLighting)
         if (shadingModel == ShadingModel::Lit ||
             shadingModel == ShadingModel::Toon)
         {
-            glm::vec4 ambientColor = useBakedLighting ? glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) : GetWorld()->GetAmbientLightColor();
+            glm::vec4 ambientColor = useBakedLighting ? glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) : gC3dContext.mWorld->GetAmbientLightColor();
             ambientColor /= C3D_DYNAMIC_LIGHT_SCALE;
             bool toon = (shadingModel == ShadingModel::Toon);
             specular = toon ? 0.0f : material->GetSpecular();
@@ -385,7 +387,7 @@ void SetupLightEnv(LightEnv& lightEnv, bool dynamicOnly)
     C3D_LightEnvBind(&lightEnv.mLightEnv);
     C3D_LightEnvLut(&lightEnv.mLightEnv, GPU_LUT_D0, GPU_LUTINPUT_NH, false, &gC3dContext.mLightLut[Shininess32]);
 
-    Camera3D* cameraComp = GetWorld()->GetActiveCamera();
+    Camera3D* cameraComp = gC3dContext.mWorld->GetActiveCamera();
     if (cameraComp == nullptr)
     {
         return;

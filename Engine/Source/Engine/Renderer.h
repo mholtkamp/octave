@@ -48,7 +48,7 @@ public:
     static void Destroy();
     static Renderer* Get();
 
-    void Render(World* world);
+    void Render(World* world, int32_t screenIndex);
     ~Renderer();
     void Initialize();
 
@@ -74,6 +74,7 @@ public:
     uint32_t GetFrameNumber() const;
     uint32_t GetFrameIndex() const;
     uint32_t GetScreenIndex() const;
+    World* GetCurrentWorld();
 
     glm::vec2 GetScreenResolution(int32_t screen = -1);
     glm::vec2 GetActiveScreenResolution();
@@ -224,6 +225,7 @@ private:
     std::vector<DebugDraw> mDebugDraws;
     std::vector<DebugDraw> mCollisionDraws;
 
+    World* mCurrentWorld = nullptr;
     uint32_t mFrameIndex = 0;
     uint32_t mScreenIndex = 0;
     uint32_t mFrameNumber = 0;

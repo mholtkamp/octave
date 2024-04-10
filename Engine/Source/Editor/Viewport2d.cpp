@@ -43,7 +43,7 @@ void Viewport2D::Update(float deltaTime)
         mouseY -= renderer->GetViewportY();
 
         uint32_t maxDepth = 0;
-        Node* rootNode = GetWorld()->GetRootNode();
+        Node* rootNode = GetWorld(0)->GetRootNode();
 
         if (rootNode != nullptr)
         {
@@ -184,7 +184,7 @@ void Viewport2D::HandleDefaultControls()
             Widget* hoveredWidget = nullptr;
             
             uint32_t maxDepth = 0;
-            hoveredWidget = FindHoveredWidget(GetWorld()->GetRootNode(), maxDepth, mouseX, mouseY);
+            hoveredWidget = FindHoveredWidget(GetWorld(0)->GetRootNode(), maxDepth, mouseX, mouseY);
 
             if (shiftDown || controlDown)
             {
@@ -272,7 +272,7 @@ void Viewport2D::HandleDefaultControls()
         }
         if (controlDown && IsKeyJustDown(KEY_A))
         {
-            std::vector<Node*> nodes = GetWorld()->GatherNodes();
+            std::vector<Node*> nodes = GetWorld(0)->GatherNodes();
 
             for (uint32_t i = 0; i < nodes.size(); ++i)
             {

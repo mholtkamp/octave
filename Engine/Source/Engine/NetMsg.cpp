@@ -228,8 +228,8 @@ void NetMsgSpawn::Execute(NetHost sender)
                 // Also, do we want to destroy the previous root node here?
                 // If we don't we might leak memory. However, this could cause problems
                 // if the user spawns a new node that gets set as the root.
-                GetWorld()->DestroyRootNode();
-                GetWorld()->SetRootNode(newNode);
+                GetWorld(0)->DestroyRootNode();
+                GetWorld(0)->SetRootNode(newNode);
             }
             else
             {
@@ -244,7 +244,7 @@ void NetMsgSpawn::Execute(NetHost sender)
                 else
                 {
                     LogError("Failed to find parent net node, attaching new net node to world root.");
-                    Node* rootNode = GetWorld()->GetRootNode();
+                    Node* rootNode = GetWorld(0)->GetRootNode();
                     if (rootNode)
                     {
                         rootNode->AddChild(newNode);
@@ -252,7 +252,7 @@ void NetMsgSpawn::Execute(NetHost sender)
                     else
                     {
                         // Hmm okay, well I guess this node will be the new world root.
-                        GetWorld()->SetRootNode(newNode);
+                        GetWorld(0)->SetRootNode(newNode);
                     }
                 }
             }

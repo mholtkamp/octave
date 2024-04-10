@@ -132,11 +132,6 @@ void BindLuaInterface()
     PolyRect_Lua::Bind();
 
     Misc_Lua::BindMisc();
-
-    // Setup a global "world" variable.
-    lua_State* L = GetLua();
-    World_Lua::Create(L, GetWorld());
-    lua_setglobal(L, "world");
 }
 
 void UpdateLuaPath()

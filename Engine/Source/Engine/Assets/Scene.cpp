@@ -498,12 +498,12 @@ bool Scene::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 
     // Just set value anyway
     datum->SetValueRaw(newValue, index);
-
-    if (GetWorld() != nullptr &&
-        GetWorld()->GetRootNode() != nullptr &&
-        GetWorld()->GetRootNode()->GetScene() == scene)
+    World* world = GetWorld(0);
+    if (world != nullptr &&
+        world->GetRootNode() != nullptr &&
+        world->GetRootNode()->GetScene() == scene)
     {
-        GetWorld()->UpdateRenderSettings();
+        world->UpdateRenderSettings();
     }
 
 #endif
@@ -839,14 +839,14 @@ void Scene::ApplyRenderSettings(World* world)
     {
         ambientLight = mAmbientLightColor;
     }
-    GetWorld()->SetAmbientLightColor(ambientLight);
+    world->SetAmbientLightColor(ambientLight);
 
     glm::vec4 shadowColor = DEFAULT_SHADOW_COLOR;
     if (mSetShadowColor)
     {
         shadowColor = mShadowColor;
     }
-    GetWorld()->SetShadowColor(shadowColor);
+    world->SetShadowColor(shadowColor);
 
     FogSettings fogSettings;
     if (mSetFog)
@@ -857,7 +857,7 @@ void Scene::ApplyRenderSettings(World* world)
         fogSettings.mNear = mFogNear;
         fogSettings.mFar = mFogFar;
     }
-    GetWorld()->SetFogSettings(fogSettings);
+    world->SetFogSettings(fogSettings);
 }
 
 //const Property* Scene::GetProperty(const std::string& widgetName, const std::string& propName)

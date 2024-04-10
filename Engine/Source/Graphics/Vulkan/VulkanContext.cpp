@@ -1588,7 +1588,7 @@ void VulkanContext::CreateDepthImage()
 void VulkanContext::UpdateGlobalUniformData()
 {
     // Update the camera
-    World* world = GetWorld();
+    World* world = Renderer::Get()->GetCurrentWorld();
 
     if (world != nullptr)
     {

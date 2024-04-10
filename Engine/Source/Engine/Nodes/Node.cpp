@@ -952,6 +952,11 @@ void Node::SetWorld(World * world)
             mWorld->RegisterNode(this);
         }
 
+        if (mScript != nullptr)
+        {
+            mScript->SetWorld(mWorld);
+        }
+
         for (uint32_t i = 0; i < GetNumChildren(); ++i)
         {
             GetChild(i)->SetWorld(world);

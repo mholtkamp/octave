@@ -46,7 +46,7 @@ void InitializeGrid()
 
 void EnableGrid(bool enable)
 {
-    World* world = GetWorld();
+    World* world = GetWorld(0);
     if (world == nullptr)
         return;
 

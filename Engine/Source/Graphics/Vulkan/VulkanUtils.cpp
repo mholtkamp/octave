@@ -2346,7 +2346,7 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
         VkCommandBuffer cb = GetCommandBuffer();
 
         GeometryData ubo = {};
-        WriteGeometryUniformData(ubo, GetWorld(), nullptr, transform);
+        WriteGeometryUniformData(ubo, Renderer::Get()->GetCurrentWorld(), nullptr, transform);
         ubo.mColor = color;
         ubo.mHitCheckId = hitCheckId;
         UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));

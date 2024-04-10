@@ -876,7 +876,7 @@ void NetworkManager::HandleConnect(NetHost host, uint32_t gameCode, uint32_t ver
                 return false;
             };
 
-            World* world = GetWorld();
+            World* world = GetWorld(0);
             Node* worldRoot = world ? world->GetRootNode() : nullptr;
             if (worldRoot != nullptr)
             {
@@ -1068,7 +1068,7 @@ void NetworkManager::HandleReady(NetHost host)
                 return false;
             };
 
-            World* world = GetWorld();
+            World* world = GetWorld(0);
             Node* worldRoot = world ? world->GetRootNode() : nullptr;
             if (worldRoot != nullptr)
             {
@@ -1309,12 +1309,13 @@ void NetworkManager::UpdateReplication(float deltaTime)
     // TODO: Handle multiple worlds. Pass world into update replication.
 
     Node* incRepNode = nullptr;
+    World* world = GetWorld(0);
 
     if (mIncrementalReplication)
     {
-        uint32_t& incTier = GetWorld()->GetIncrementalRepTier();
-        uint32_t& incIndex = GetWorld()->GetIncrementalRepIndex();
-        std::vector<Node*>& repVector = GetWorld()->GetReplicatedNodeVector((ReplicationRate)incTier);
+        uint32_t& incTier = world->GetIncrementalRepTier();
+        uint32_t& incIndex = world->GetIncrementalRepIndex();
+        std::vector<Node*>& repVector = world->GetReplicatedNodeVector((ReplicationRate)incTier);
 
         if (incIndex < repVector.size())
         {
@@ -1367,8 +1368,8 @@ void NetworkManager::UpdateReplication(float deltaTime)
 
     // High Priority
     {
-        const std::vector<Node*>& repVector = GetWorld()->GetReplicatedNodeVector(ReplicationRate::High);
-        uint32_t& repIndex = GetWorld()->GetReplicatedNodeIndex(ReplicationRate::High);
+        const std::vector<Node*>& repVector = world->GetReplicatedNodeVector(ReplicationRate::High);
+        uint32_t& repIndex = world->GetReplicatedNodeIndex(ReplicationRate::High);
         uint32_t vectorSize = (uint32_t) repVector.size();
         uint32_t count = vectorSize / 1;
         replicateTier(repVector, repIndex, count);
@@ -1376,16 +1377,16 @@ void NetworkManager::UpdateReplication(float deltaTime)
 
     // Medium Priority
     {
-        const std::vector<Node*>& repVector = GetWorld()->GetReplicatedNodeVector(ReplicationRate::Medium);
-        uint32_t& repIndex = GetWorld()->GetReplicatedNodeIndex(ReplicationRate::Medium);
+        const std::vector<Node*>& repVector = world->GetReplicatedNodeVector(ReplicationRate::Medium);
+        uint32_t& repIndex = world->GetReplicatedNodeIndex(ReplicationRate::Medium);
         uint32_t vectorSize = (uint32_t) repVector.size();
         uint32_t count = (vectorSize + 1) / 2;
         replicateTier(repVector, repIndex, count);
     }
     // Low Priority
     {
-        const std::vector<Node*>& repVector = GetWorld()->GetReplicatedNodeVector(ReplicationRate::Low);
-        uint32_t& repIndex = GetWorld()->GetReplicatedNodeIndex(ReplicationRate::Low);
+        const std::vector<Node*>& repVector = world->GetReplicatedNodeVector(ReplicationRate::Low);
+        uint32_t& repIndex = world->GetReplicatedNodeIndex(ReplicationRate::Low);
         uint32_t vectorSize = (uint32_t) repVector.size();
         uint32_t count = (vectorSize + 3) / 4;
         replicateTier(repVector, repIndex, count);

@@ -21,7 +21,8 @@ void Shutdown();
 
 void Quit();
 
-class World* GetWorld();
+class World* GetWorld(int32_t index);
+int32_t GetNumWorlds();
 
 struct EngineState* GetEngineState();
 struct EngineConfig* GetEngineConfig();

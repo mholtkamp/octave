@@ -28,7 +28,10 @@ int Engine_Lua::IsShuttingDown(lua_State* L)
 
 int Engine_Lua::GetWorld(lua_State* L)
 {
-    World* world = ::GetWorld();
+    int32_t worldIndex = 0;
+    if (!lua_isnone(L, 1)) { worldIndex = CHECK_INDEX(L, 1); }
+
+    World* world = ::GetWorld(worldIndex);
 
     World_Lua::Create(L, world);
     return 1;

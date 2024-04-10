@@ -107,7 +107,7 @@ float Viewport3D::GetFocalDistance() const
 void Viewport3D::HandleDefaultControls()
 {
     Renderer* renderer = Renderer::Get();
-    Camera3D* camera = GetWorld()->GetActiveCamera();
+    Camera3D* camera = GetWorld(0)->GetActiveCamera();
     glm::vec3 focus = camera->GetAbsolutePosition() + camera->GetForwardVector() * mFocalDistance;
 
     if (IsMouseInside())
@@ -129,7 +129,7 @@ void Viewport3D::HandleDefaultControls()
             int32_t mouseX = 0;
             int32_t mouseY = 0;
             GetMousePosition(mouseX, mouseY);
-            Node3D* selectNode = Renderer::Get()->ProcessHitCheck(GetWorld(), mouseX, mouseY);
+            Node3D* selectNode = Renderer::Get()->ProcessHitCheck(GetWorld(0), mouseX, mouseY);
 
             if (shiftDown || controlDown)
             {
@@ -227,7 +227,7 @@ void Viewport3D::HandleDefaultControls()
 
         if (IsKeyJustDown(KEY_NUMPAD5))
         {
-            Camera3D* camera = GetWorld()->GetActiveCamera();
+            Camera3D* camera = GetWorld(0)->GetActiveCamera();
             if (camera != nullptr)
             {
                 ProjectionMode newMode = (camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC) ? ProjectionMode::PERSPECTIVE : ProjectionMode::ORTHOGRAPHIC;
@@ -390,7 +390,7 @@ void Viewport3D::HandleDefaultControls()
         }
         if (controlDown && IsKeyJustDown(KEY_A))
         {
-            std::vector<Node*> nodes = GetWorld()->GatherNodes();
+            std::vector<Node*> nodes = GetWorld(0)->GatherNodes();
 
             for (uint32_t i = 0; i < nodes.size(); ++i)
             {
@@ -491,7 +491,7 @@ void Viewport3D::HandleDefaultControls()
                          primComp->EnableCollision(false);
                      }
 
-                     GetWorld()->RayTest(startPos, endPos, 0x02, rayResult);
+                     GetWorld(0)->RayTest(startPos, endPos, 0x02, rayResult);
 
                      if (primComp)
                      {
@@ -524,7 +524,7 @@ void Viewport3D::HandleDefaultControls()
         // Handle zoom
         if (scrollDelta != 0)
         {
-            Camera3D* camera = GetWorld()->GetActiveCamera();
+            Camera3D* camera = GetWorld(0)->GetActiveCamera();
 
             if (camera->GetProjectionMode() == ProjectionMode::PERSPECTIVE)
             {
@@ -568,7 +568,7 @@ void Viewport3D::HandleDefaultControls()
 
 void Viewport3D::HandlePilotControls()
 {
-    Camera3D* camera = GetWorld()->GetActiveCamera();
+    Camera3D* camera = GetWorld(0)->GetActiveCamera();
     float deltaTime = GetAppClock()->DeltaTime();
 
     int32_t scrollDelta = GetScrollWheelDelta();
@@ -664,7 +664,7 @@ void Viewport3D::HandleTransformControls()
         }
     }
 
-    Camera3D* camera = GetWorld()->GetActiveCamera();
+    Camera3D* camera = GetWorld(0)->GetActiveCamera();
     glm::mat4 invViewMat = camera->CalculateInvViewMatrix();
 
     HandleAxisLocking();
@@ -839,7 +839,7 @@ void Viewport3D::HandleTransformControls()
 void Viewport3D::HandlePanControls()
 {
     // Pan the camera
-    Camera3D* camera = GetWorld()->GetActiveCamera();
+    Camera3D* camera = GetWorld(0)->GetActiveCamera();
     glm::vec3 cameraPos = camera->GetAbsolutePosition();
     glm::vec3 right = camera->GetRightVector();
     glm::vec3 up = camera->GetUpVector();
@@ -856,7 +856,7 @@ void Viewport3D::HandlePanControls()
 
 void Viewport3D::HandleOrbitControls()
 {
-    Camera3D* camera = GetWorld()->GetActiveCamera();
+    Camera3D* camera = GetWorld(0)->GetActiveCamera();
     glm::vec2 delta = HandleLockedCursor();
     glm::vec3 cameraPos = camera->GetPosition();
     glm::vec3 cameraRot = camera->GetRotationEuler();

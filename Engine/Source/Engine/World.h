@@ -58,6 +58,7 @@ public:
     std::vector<Node*> FindNodesWithTag(const char* tag);
     std::vector<Node*> FindNodesWithName(const char* name);
     std::vector<Node*> GatherNodes();
+    void GatherNodes(std::vector<Node*>& outNodes);
 
     void Clear();
 

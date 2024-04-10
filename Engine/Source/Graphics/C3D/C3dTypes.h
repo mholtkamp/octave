@@ -11,6 +11,8 @@
 
 #define C3D_DYNAMIC_LIGHT_SCALE 4.0f
 
+class World;
+
 enum class ShaderId
 {
     StaticMesh,
@@ -104,6 +106,7 @@ struct LightEnv
 
 struct C3dContext
 {
+    World* mWorld = nullptr;
     C3D_RenderTarget* mRenderTargetLeft = nullptr;
     C3D_RenderTarget* mRenderTargetRight = nullptr;
     C3D_RenderTarget* mRenderTargetBottom = nullptr;

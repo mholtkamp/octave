@@ -41,7 +41,7 @@ void EditorMain(int32_t argc, char** argv);
 static EngineState sEngineState;
 static EngineConfig sEngineConfig;
 
-static World* sWorld = nullptr;
+static std::vector<World*> sWorlds;
 static Clock sClock;
 
 void ForceLinkage()
@@ -267,8 +267,13 @@ bool Initialize(InitOptions& initOptions)
 
     sClock.Start();
 
-    // There is only ever one world right now?
-    sWorld = new World();
+    sWorlds.push_back(new World());
+
+#if PLATFORM_3DS
+    // So far only 3DS can support a second screen and we have a one-world-per-screen setup.
+    sWorlds.push_back(new World());
+#endif
+
 
     Maths::SeedRand((uint32_t)SYS_GetTimeMicroseconds());
 
@@ -300,7 +305,7 @@ bool Initialize(InitOptions& initOptions)
     if (initOptions.mDefaultScene != "")
     {
         Asset* sceneAsset = LoadAsset(initOptions.mDefaultScene);
-        GetWorld()->LoadScene(initOptions.mDefaultScene.c_str(), true);
+        GetWorld(0)->LoadScene(initOptions.mDefaultScene.c_str(), true);
     }
 #endif 
 
@@ -374,7 +379,10 @@ bool Update()
 
     GetTimerManager()->Update(gameDeltaTime);
 
-    sWorld->Update(gameDeltaTime);
+    for (uint32_t i = 0; i < sWorlds.size(); ++i)
+    {
+        sWorlds[i]->Update(gameDeltaTime);
+    }
 
     TextField::StaticUpdate();
 
@@ -384,7 +392,10 @@ bool Update()
     EditorImguiDraw();
 #endif
 
-    Renderer::Get()->Render(sWorld);
+    for (int32_t i = 0; i < int32_t(sWorlds.size()); ++i)
+    {
+        Renderer::Get()->Render(sWorlds[i], i);
+    }
 
     AssetManager::Get()->Update(realDeltaTime);
 
@@ -404,9 +415,14 @@ void Shutdown()
 {
     NetworkManager::Get()->Shutdown();
 
-    sWorld->Destroy();
-    delete sWorld;
-    sWorld = nullptr;
+    for (uint32_t i = 0; i < sWorlds.size(); ++i)
+    {
+        sWorlds[i]->Destroy();
+        delete sWorlds[i];
+        sWorlds[i] = nullptr;
+    }
+
+    sWorlds.clear();
 
 #if LUA_ENABLED
     lua_close(sEngineState.mLua);
@@ -444,9 +460,16 @@ void Quit()
     sEngineState.mQuit = true;
 }
 
-World* GetWorld()
+World* GetWorld(int32_t index)
 {
-    return sWorld;
+    // Right now only supports two worlds
+    index = glm::clamp<int32_t>(index, 0, int32_t(sWorlds.size()) - 1);
+    return  sWorlds[index];
+}
+
+int32_t GetNumWorlds()
+{
+    return int32_t(sWorlds.size());
 }
 
 EngineState* GetEngineState()
@@ -607,7 +630,12 @@ void ReloadAllScripts(bool restartComponents)
     std::vector<Script*> scripts;
     std::vector<std::vector<Property> > scriptProps;
 
-    const std::vector<Node*>& nodes = GetWorld()->GatherNodes();
+    std::vector<Node*> nodes;
+
+    for (uint32_t i = 0; i < sWorlds.size(); ++i)
+    {
+        sWorlds[i]->GatherNodes(nodes);
+    }
 
     if (restartComponents)
     {

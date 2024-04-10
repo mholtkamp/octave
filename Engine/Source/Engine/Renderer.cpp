@@ -262,6 +262,11 @@ uint32_t Renderer::GetScreenIndex() const
     return mScreenIndex;
 }
 
+World* Renderer::GetCurrentWorld()
+{
+    return mCurrentWorld;
+}
+
 glm::vec2 Renderer::GetScreenResolution(int32_t screen)
 {
     glm::vec2 res = { 0.0f, 0.0f };
@@ -305,7 +310,7 @@ void Renderer::SetGlobalUiScale(float scale)
 void Renderer::BeginFrame()
 {
     GFX_BeginFrame();
-    GFX_SetFog(GetWorld()->GetFogSettings());
+    GFX_SetFog(mCurrentWorld->GetFogSettings());
 }
 
 void Renderer::EndFrame()
@@ -369,9 +374,9 @@ void Renderer::DirtyAllWidgets()
         mStatsWidget->MarkDirty();
 
     // TODO: Iterate over all worlds if we add multiple worlds
-    if (GetWorld() != nullptr)
+    for (int32_t i = 0; i < GetNumWorlds(); ++i)
     {
-        GetWorld()->DirtyAllWidgets();
+        GetWorld(i)->DirtyAllWidgets();
     }
 }
 
@@ -705,7 +710,7 @@ void Renderer::GatherLightData(World* world)
     {
         float deltaTime = GetEngineState()->mGameDeltaTime;
         uint32_t lightLimit = glm::min<uint32_t>(mLightFadeLimit, MAX_LIGHTS_PER_DRAW);
-        glm::vec3 camPos = GetWorld()->GetActiveCamera()->GetAbsolutePosition();
+        glm::vec3 camPos = world->GetActiveCamera()->GetAbsolutePosition();
 
         // Step 1 - Determine the closest N lights
         for (uint32_t i = 0; i < lights.size(); ++i)
@@ -1117,7 +1122,7 @@ int32_t Renderer::FrustumCullLights(const CameraFrustum& frustum, std::vector<Li
     return lightsCulled;
 }
 
-void Renderer::Render(World* world)
+void Renderer::Render(World* world, int32_t screenIndex)
 {
     if (world == nullptr ||
         GetEngineState()->mConsoleMode)
@@ -1125,6 +1130,9 @@ void Renderer::Render(World* world)
         // Cannot record command buffers yet.
         return;
     }
+
+    mCurrentWorld = world;
+    mScreenIndex = screenIndex;
 
     bool inGame = IsGameTickEnabled();
     float gameDeltaTime = GetEngineState()->mGameDeltaTime;
@@ -1139,7 +1147,8 @@ void Renderer::Render(World* world)
     }
 #endif
 
-    // Update Renderer's overlay widgets (not widgets in the world.
+    // Update Renderer's overlay widgets (not widgets in the world.)
+    if (mScreenIndex == 0)
     {
         SCOPED_FRAME_STAT("Overlay");
 
@@ -1149,19 +1158,6 @@ void Renderer::Render(World* world)
         mInModalWidgetUpdate = true;
         if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->RecursiveTick(gameDeltaTime, inGame); }
         mInModalWidgetUpdate = false;
-
-        // TODO-NODE: Handle two screens? Need to render two different worlds I believe.
-#if 0 //SUPPORTS_SECOND_SCREEN
-        mScreenIndex = 1;
-        for (uint32_t i = 0; i < mWidgets1.size(); ++i)
-        {
-            if (mWidgets1[i]->IsVisible())
-            {
-                mWidgets1[i]->RecursiveUpdate();
-            }
-        }
-        mScreenIndex = 0;
-#endif
     }
 
     Camera3D* activeCamera = world->GetActiveCamera();
@@ -1206,13 +1202,16 @@ void Renderer::Render(World* world)
             GFX_UpdateLightBake();
         }
 
-        GFX_BeginScreen(0);
+        GFX_BeginScreen(mScreenIndex);
 
         uint32_t numViews = GFX_GetNumViews();
 
         for (uint32_t view = 0; view < numViews; ++view)
         {
             GFX_BeginView(view);
+
+            uint32_t windowWidth = (mScreenIndex == 0) ? GetEngineState()->mWindowWidth : GetEngineState()->mSecondWindowWidth;
+            uint32_t windowHeight = (mScreenIndex == 0) ? GetEngineState()->mWindowHeight : GetEngineState()->mSecondWindowHeight;
 
             glm::uvec4 vp = GetViewport();
             glm::uvec4 svp = GetSceneViewport();
@@ -1305,8 +1304,8 @@ void Renderer::Render(World* world)
                 //  Post Process
                 // ******************
 
-                GFX_SetViewport(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
-                GFX_SetScissor(0, 0, mEngineState->mWindowWidth, mEngineState->mWindowHeight);
+                GFX_SetViewport(0, 0, windowWidth, windowHeight);
+                GFX_SetScissor(0, 0, windowWidth, windowHeight);
 
                 GFX_RenderPostProcessPasses();
 
@@ -1340,28 +1339,6 @@ void Renderer::Render(World* world)
             GFX_EndRenderPass();
         }
 
-#if 0 //SUPPORTS_SECOND_SCREEN
-        // TODO-NODE: Fix second-screen rendering
-        // Do 3DS bottom screen rendering
-        mScreenIndex = 1;
-        GFX_BeginScreen(1);
-
-        GFX_SetViewport(0, 0, mEngineState->mSecondWindowWidth, mEngineState->mSecondWindowHeight);
-        GFX_SetScissor(0, 0, mEngineState->mSecondWindowWidth, mEngineState->mSecondWindowHeight);
-
-        Widget::ResetScissor();
-
-        for (uint32_t i = 0; i < mWidgets1.size(); ++i)
-        {
-            if (mWidgets1[i]->IsVisible())
-            {
-                mWidgets1[i]->RecursiveRender();
-            }
-        }
-
-        mScreenIndex = 0;
-#endif
-
         END_FRAME_STAT("Render");
 
         {
@@ -1373,6 +1350,8 @@ void Renderer::Render(World* world)
     }
 
     UpdateDebugDraws();
+
+    mCurrentWorld = nullptr;
 }
 
 void Renderer::RenderShadowCasters(World* world)
@@ -1601,19 +1580,23 @@ uint32_t Renderer::GetViewportY()
 
 uint32_t Renderer::GetViewportWidth()
 {
+    uint32_t windowWidth = (mScreenIndex == 0) ? GetEngineState()->mWindowWidth : GetEngineState()->mSecondWindowWidth;
+
 #if EDITOR
-    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? GetEngineState()->mWindowWidth : GetEditorState()->mViewportWidth;
+    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? windowWidth : GetEditorState()->mViewportWidth;
 #else
-    return uint32_t(GetEngineState()->mWindowWidth);
+    return windowWidth;
 #endif
 }
 
 uint32_t Renderer::GetViewportHeight()
 {
+    uint32_t windowHeight = (mScreenIndex == 0) ? GetEngineState()->mWindowHeight : GetEngineState()->mSecondWindowHeight;
+
 #if EDITOR
-    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? GetEngineState()->mWindowHeight : GetEditorState()->mViewportHeight;
+    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? windowHeight : GetEditorState()->mViewportHeight;
 #else
-    return uint32_t(GetEngineState()->mWindowHeight);
+    return windowHeight;
 #endif
 }
 
