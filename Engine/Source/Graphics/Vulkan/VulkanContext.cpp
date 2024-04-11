@@ -39,7 +39,7 @@ PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT = nullptr;
 PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT = nullptr;
 PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
 
-#define ENABLE_FULL_VALIDATION 1
+#define ENABLE_FULL_VALIDATION 0
 #define MAX_GPU_TIMESPANS 64
 #define MAX_GPU_TIMESTAMPS (MAX_GPU_TIMESPANS * 2)
 
