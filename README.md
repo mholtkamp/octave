@@ -1,9 +1,9 @@
-# octave
-A Simple 3D Game Engine for GameCube, Wii, 3DS, Windows, Linux, and Android
+# Octave
+A 3D Game Engine for GameCube, Wii, 3DS, Windows, Linux, and Android
 
 ## Windows Setup
 1. Download and Install:
-	- Visual Studio Community 2017 (with C++ support)
+	- Visual Studio Community 2022 (with C++ support)
 	- Vulkan SDK
     - devkitPPC for GameCube/Wii development (Optional)
     - devkitARM for 3DS development (Optional)
