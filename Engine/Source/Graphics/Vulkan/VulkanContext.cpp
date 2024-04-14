@@ -665,6 +665,8 @@ void VulkanContext::DrawLines(const std::vector<Line>& lines)
         VkDeviceSize offset = 0;
         VkBuffer lineVertexBuffer = mLineVertexBuffer->Get();
         vkCmdBindVertexBuffers(cb, 0, 1, &lineVertexBuffer, &offset);
+
+        CommitPipeline();
         vkCmdDraw(cb, 2 * uint32_t(lines.size()), 1, 0, 0);
     }
 }
@@ -674,6 +676,8 @@ void VulkanContext::DrawFullscreen()
     VkCommandBuffer cb = GetCommandBuffer();
 
     BindFullscreenVertexBuffer(cb);
+
+    CommitPipeline();
 
     vkCmdDraw(cb, 4, 1, 0, 0);
 }
