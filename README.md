@@ -4,7 +4,7 @@ A 3D Game Engine for GameCube, Wii, 3DS, Windows, Linux, and Android
 ## Windows Setup
 1. Download and Install:
 	- Visual Studio Community 2022 (with C++ support)
-	- Vulkan SDK
+	- Vulkan SDK (During install select "Shader Toolchain Debug Symbols - 64 bit" and deselect all other options)
     - devkitPPC for GameCube/Wii development (Optional)
     - devkitARM for 3DS development (Optional)
 2. Build shaders by running compile.bat in Engine/Shaders/GLSL
