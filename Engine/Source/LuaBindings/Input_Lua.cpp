@@ -388,10 +388,13 @@ void Input_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, IsKeyDown);
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsKeyJustDownRepeat);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, IsKeyJustDownRepeat, "IsKeyPressedRepeat");
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsKeyJustDown);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, IsKeyJustDown, "IsKeyPressed");
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsKeyJustUp);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, IsKeyJustUp, "IsKeyReleased");
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsControlDown);
 
@@ -400,8 +403,10 @@ void Input_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, IsMouseButtonDown);
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsMouseButtonJustDown);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, IsMouseButtonJustDown, "IsMousePressed");
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsMouseButtonJustUp);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, IsMouseButtonJustUp, "IsMouseReleased");
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetMousePosition);
 
@@ -412,8 +417,10 @@ void Input_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, IsTouchDown);
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsPointerJustUp);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, IsPointerJustUp, "IsPointerReleased");
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsPointerJustDown);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, IsPointerJustDown, "IsPointerPressed");
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsPointerDown);
 
@@ -428,8 +435,10 @@ void Input_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, IsGamepadButtonDown);
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsGamepadButtonJustDown);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, IsGamepadButtonJustDown, "IsGamepadPressed");
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsGamepadButtonJustUp);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, IsGamepadButtonJustUp, "IsGamepadReleased");
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetGamepadAxisValue);
 
