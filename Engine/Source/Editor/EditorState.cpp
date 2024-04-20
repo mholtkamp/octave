@@ -1207,6 +1207,12 @@ void EditorState::CaptureAndSaveScene(AssetStub* stub, Node* rootNode)
         rootNode = GetWorld(0)->GetRootNode();
     }
 
+    if (rootNode == nullptr)
+    {
+        rootNode = GetWorld(0)->SpawnNode<Node>();
+        rootNode->SetName(stub ? stub->mName : "Root");
+    }
+
     bool worldRoot = (rootNode == GetWorld(0)->GetRootNode());
 
     Scene* scene = (Scene*)stub->mAsset;
