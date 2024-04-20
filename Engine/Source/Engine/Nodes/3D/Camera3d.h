@@ -108,6 +108,8 @@ public:
     glm::vec3 ScreenToWorldPosition(int32_t x, int32_t y);
     glm::vec3 TraceScreenToWorld(int32_t x, int32_t y, uint8_t colMask, Primitive3D** outComp = nullptr);
 
+    const bool IsEditorCamera();
+
 protected:
 
     ProjectionMode mProjectionMode;

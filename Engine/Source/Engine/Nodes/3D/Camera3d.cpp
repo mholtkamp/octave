@@ -10,6 +10,10 @@
 
 #include "Graphics/Graphics.h"
 
+#if EDITOR
+#include "EditorState.h"
+#endif
+
 FORCE_LINK_DEF(Camera3D);
 DEFINE_NODE(Camera3D, Node3D);
 
@@ -415,4 +419,13 @@ glm::vec3 Camera3D::TraceScreenToWorld(int32_t x, int32_t y, uint8_t colMask, Pr
     }
 
     return result.mHitPosition;
+}
+
+const bool Camera3D::IsEditorCamera()
+{
+#if EDITOR
+    return (this == GetEditorState()->mEditorCamera);
+#endif
+
+    return false;
 }

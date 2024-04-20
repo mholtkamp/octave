@@ -542,7 +542,8 @@ void World::RegisterNode(Node* node)
     }
     else if (nodeType == Camera3D::GetStaticType())
     {
-        if (mActiveCamera == nullptr)
+        if (mActiveCamera == nullptr ||
+            mActiveCamera->IsEditorCamera())
         {
             mActiveCamera = node->As<Camera3D>();
         }
