@@ -753,7 +753,7 @@ Node* Scene::Instantiate()
             node->GatherProperties(dstProps);
             CopyPropertyValues(dstProps, mNodeDefs[i].mProperties);
 
-            // If this node has a script, then it might have script properties, and thosse
+            // If this node has a script, then it might have script properties, and those
             // won't exist in the properties until the "Script File" property was assigned during the
             // copy we just did. So to copy all of the script properties we need to gather + copy them a second time.
             // During the second gather, node->mScript will be non-null and thus we can get the default script values that 
@@ -795,6 +795,13 @@ Node* Scene::Instantiate()
                         rootScript->SetField(node->GetName().c_str(), node);
                     }
                 }
+            }
+
+            // Call update transform on the root node, mainly to update the cached euler rotation.
+            Node3D* node3d = node->As<Node3D>();
+            if (node3d != nullptr)
+            {
+                node3d->UpdateTransform(true);
             }
 
             nodeList.push_back(node);
