@@ -51,13 +51,10 @@ void Camera3D::GatherProperties(std::vector<Property>& outProps)
     SCOPED_CATEGORY("Camera");
 
     outProps.push_back(Property(DatumType::Bool, "Perspective", this, &mProjectionMode));
-    outProps.push_back(Property(DatumType::Float, "Field Of View", this, &mPerspectiveSettings.mFovY));
-    outProps.push_back(Property(DatumType::Float, "Persp Near Plane", this, &mPerspectiveSettings.mNear));
-    outProps.push_back(Property(DatumType::Float, "Persp Far Plane", this, &mPerspectiveSettings.mFar));
-    outProps.push_back(Property(DatumType::Float, "Ortho Near Plane", this, &mOrthoSettings.mNear));
-    outProps.push_back(Property(DatumType::Float, "Ortho Far Plane", this, &mOrthoSettings.mFar));
-    outProps.push_back(Property(DatumType::Float, "Ortho Width", this, &mOrthoSettings.mWidth));
-    outProps.push_back(Property(DatumType::Float, "Ortho Height", this, &mOrthoSettings.mHeight));
+    outProps.push_back(Property(DatumType::Float, "Near Plane", this, &mNear));
+    outProps.push_back(Property(DatumType::Float, "Far Plane", this, &mFar));
+    outProps.push_back(Property(DatumType::Float, "Field Of View", this, &mFovY));
+    outProps.push_back(Property(DatumType::Float, "Ortho Width", this, &mOrthoWidth));
 }
 
 void Camera3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
@@ -82,30 +79,20 @@ void Camera3D::SaveStream(Stream& stream)
 {
     Node3D::SaveStream(stream);
     stream.WriteUint8(uint8_t(mProjectionMode));
-    stream.WriteFloat(mPerspectiveSettings.mFovY);
+    stream.WriteFloat(mFovY);
+    stream.WriteFloat(mOrthoWidth);
+    stream.WriteFloat(mNear);
+    stream.WriteFloat(mFar);
 }
 
 void Camera3D::LoadStream(Stream& stream)
 {
     Node3D::LoadStream(stream);
     mProjectionMode = ProjectionMode(stream.ReadUint8());
-    mPerspectiveSettings.mFovY = stream.ReadFloat();
-}
-
-void Camera3D::SetOrthoSettings(float width, float height, float zNear, float zFar)
-{
-    mOrthoSettings.mWidth = width;
-    mOrthoSettings.mHeight = height;
-    mOrthoSettings.mNear = zNear;
-    mOrthoSettings.mFar = zFar;
-}
-
-void Camera3D::SetPerspectiveSettings(float fovY, float aspectRatio, float zNear, float zFar)
-{
-    mPerspectiveSettings.mFovY = fovY;
-    mPerspectiveSettings.mAspectRatio = aspectRatio;
-    mPerspectiveSettings.mNear = zNear;
-    mPerspectiveSettings.mFar = zFar;
+    mFovY = stream.ReadFloat();
+    mOrthoWidth = stream.ReadFloat();
+    mNear = stream.ReadFloat();
+    mFar = stream.ReadFloat();
 }
 
 ProjectionMode Camera3D::GetProjectionMode() const
@@ -115,17 +102,20 @@ ProjectionMode Camera3D::GetProjectionMode() const
 
 void Camera3D::SetProjectionMode(ProjectionMode mode)
 {
-    mProjectionMode = mode;
+    if (mProjectionMode != mode)
+    {
+        mProjectionMode = mode;
+    }
 }
 
-PerspectiveSettings Camera3D::GetPerspectiveSettings() const
+void Camera3D::EnablePerspective(bool perspective)
 {
-    return mPerspectiveSettings;
+    SetProjectionMode(perspective ? ProjectionMode::PERSPECTIVE : ProjectionMode::ORTHOGRAPHIC);
 }
 
-OrthoSettings Camera3D::GetOrthoSettings() const
+bool Camera3D::IsPerspectiveEnabled() const
 {
-    return mOrthoSettings;
+    return mProjectionMode == ProjectionMode::PERSPECTIVE;
 }
 
 const glm::mat4& Camera3D::GetViewProjectionMatrix()
@@ -150,10 +140,10 @@ void Camera3D::ComputeMatrices()
 
     EngineState* engineState = GetEngineState();
     Renderer* renderer = Renderer::Get();
-    mPerspectiveSettings.mAspectRatio = static_cast<float>(renderer->GetViewportWidth()) / (renderer->GetViewportHeight());
+    mAspectRatio = static_cast<float>(renderer->GetViewportWidth()) / (renderer->GetViewportHeight());
 
     // Use the scaling factor to address Wii widescreen stretching
-    mPerspectiveSettings.mAspectRatio *= engineState->mAspectRatioScale;
+    mAspectRatio *= engineState->mAspectRatioScale;
 
     mViewMatrix = CalculateViewMatrix();
     mViewMatrix = glm::toMat4(glm::conjugate(GetAbsoluteRotationQuat()));
@@ -162,23 +152,25 @@ void Camera3D::ComputeMatrices()
 
     if (mProjectionMode == ProjectionMode::ORTHOGRAPHIC)
     {
+        float orthoHeight = mOrthoWidth / mAspectRatio;
+
         mProjectionMatrix = GFX_MakeOrthographicMatrix(
-            -mOrthoSettings.mWidth,
-            mOrthoSettings.mWidth,
-            -mOrthoSettings.mHeight,
-            mOrthoSettings.mHeight,
-            mOrthoSettings.mNear,
-            mOrthoSettings.mFar);
+            -mOrthoWidth,
+            mOrthoWidth,
+            -orthoHeight,
+            orthoHeight,
+            mNear,
+            mFar);
 
         mViewProjectionMatrix = mProjectionMatrix * mViewMatrix;
 
         glm::mat4 stdProjMtx = glm::ortho(
-            -mOrthoSettings.mWidth,
-            mOrthoSettings.mWidth,
-            -mOrthoSettings.mHeight,
-            mOrthoSettings.mHeight,
-            mOrthoSettings.mNear,
-            mOrthoSettings.mFar);
+            -mOrthoWidth,
+            mOrthoWidth,
+            -orthoHeight,
+            orthoHeight,
+            mNear,
+            mFar);
 
         stdProjMtx[1][1] *= -1.0f;
 
@@ -186,10 +178,10 @@ void Camera3D::ComputeMatrices()
     }
     else
     {
-        mProjectionMatrix = GFX_MakePerspectiveMatrix(mPerspectiveSettings.mFovY,
-            mPerspectiveSettings.mAspectRatio,
-            mPerspectiveSettings.mNear,
-            mPerspectiveSettings.mFar);
+        mProjectionMatrix = GFX_MakePerspectiveMatrix(mFovY,
+            mAspectRatio,
+            mNear,
+            mFar);
 
         mViewProjectionMatrix = mProjectionMatrix * mViewMatrix;
 
@@ -197,11 +189,11 @@ void Camera3D::ComputeMatrices()
         // derive the clipspace position for World-To-Screen conversions,
         // just create a standard perspective matrix and we can use it for the conversions.
         glm::mat4 stdProjMtx = glm::perspectiveFov(
-            glm::radians(mPerspectiveSettings.mFovY),
-            mPerspectiveSettings.mAspectRatio,
+            glm::radians(mFovY),
+            mAspectRatio,
             1.0f,
-            mPerspectiveSettings.mNear,
-            mPerspectiveSettings.mFar);
+            mNear,
+            mFar);
 
         stdProjMtx[1][1] *= -1.0f;
 
@@ -228,32 +220,28 @@ glm::mat4 Camera3D::CalculateInvViewMatrix()
 
 float Camera3D::GetNearZ() const
 {
-    return (mProjectionMode == ProjectionMode::ORTHOGRAPHIC) ?
-        mOrthoSettings.mNear :
-        mPerspectiveSettings.mNear;
+    return mNear;
 }
 
 float Camera3D::GetFarZ() const
 {
-    return (mProjectionMode == ProjectionMode::ORTHOGRAPHIC) ?
-        mOrthoSettings.mFar :
-        mPerspectiveSettings.mFar;
+    return mFar;
 }
 
 float Camera3D::GetFieldOfView() const
 {
-    return mPerspectiveSettings.mFovY;
+    return mFovY;
 }
 
 float Camera3D::GetFieldOfViewY() const
 {
-    return mPerspectiveSettings.mFovY;
+    return mFovY;
 }
 
 float Camera3D::GetFieldOfViewX() const
 {
-    float aspectRatio = mPerspectiveSettings.mAspectRatio;
-    float fovRadiansY = mPerspectiveSettings.mFovY * DEGREES_TO_RADIANS;
+    float aspectRatio = mAspectRatio;
+    float fovRadiansY = mFovY * DEGREES_TO_RADIANS;
 
     float fovRadiansX = 2 * atanf(tanf(fovRadiansY * 0.5f) * aspectRatio);
     float fovDegreesX = fovRadiansX * RADIANS_TO_DEGREES;
@@ -261,19 +249,19 @@ float Camera3D::GetFieldOfViewX() const
     return fovDegreesX;
 }
 
+float Camera3D::GetOrthoWidth() const
+{
+    return mOrthoWidth;
+}
+
+float Camera3D::GetOrthoHeight() const
+{
+    return (mOrthoWidth / mAspectRatio);
+}
+
 float Camera3D::GetAspectRatio() const
 {
-    return mPerspectiveSettings.mAspectRatio;
-}
-
-float Camera3D::GetWidth() const
-{
-    return mOrthoSettings.mWidth;
-}
-
-float Camera3D::GetHeight() const
-{
-    return mOrthoSettings.mHeight;
+    return mAspectRatio;
 }
 
 float Camera3D::GetNearWidth() const
@@ -282,11 +270,11 @@ float Camera3D::GetNearWidth() const
 
     if (mProjectionMode == ProjectionMode::PERSPECTIVE)
     {
-        width = GetNearHeight() * mPerspectiveSettings.mAspectRatio;
+        width = GetNearHeight() * mAspectRatio;
     }
     else
     {
-        width = mOrthoSettings.mWidth / 2.0f;
+        width = mOrthoWidth / 2.0f;
     }
 
     return width;
@@ -298,11 +286,12 @@ float Camera3D::GetNearHeight() const
 
     if (mProjectionMode == ProjectionMode::PERSPECTIVE)
     {
-        height = 2.0f * mPerspectiveSettings.mNear * tanf(mPerspectiveSettings.mFovY * 0.5f * DEGREES_TO_RADIANS);
+        height = 2.0f * mNear * tanf(mFovY * 0.5f * DEGREES_TO_RADIANS);
     }
     else
     {
-        height = mOrthoSettings.mHeight / 2.0f;
+        float orthoHeight = mOrthoWidth / mAspectRatio;
+        height = orthoHeight / 2.0f;
     }
 
     return height;
@@ -310,46 +299,22 @@ float Camera3D::GetNearHeight() const
 
 void Camera3D::SetNearZ(float nearZ)
 {
-    if (mProjectionMode == ProjectionMode::PERSPECTIVE)
-    {
-        mPerspectiveSettings.mNear = nearZ;
-    }
-    else
-    {
-        mOrthoSettings.mNear = nearZ;
-    }
+    mNear = nearZ;
 }
 
 void Camera3D::SetFarZ(float farZ)
 {
-    if (mProjectionMode == ProjectionMode::PERSPECTIVE)
-    {
-        mPerspectiveSettings.mNear = farZ;
-    }
-    else
-    {
-        mOrthoSettings.mNear = farZ;
-    }
+    mFar = farZ;
 }
 
 void Camera3D::SetFieldOfView(float fovY)
 {
-    mPerspectiveSettings.mFovY = fovY;
+    mFovY = fovY;
 }
 
-void Camera3D::SetAspectRatio(float aspectRatio)
+void Camera3D::SetOrthoWidth(float width)
 {
-    mPerspectiveSettings.mAspectRatio = aspectRatio;
-}
-
-void Camera3D::SetWidth(float width)
-{
-    mOrthoSettings.mWidth = width;
-}
-
-void Camera3D::SetHeight(float height)
-{
-    mOrthoSettings.mHeight = height;
+    mOrthoWidth = width;
 }
 
 glm::vec3 Camera3D::WorldToScreenPosition(glm::vec3 worldPos)

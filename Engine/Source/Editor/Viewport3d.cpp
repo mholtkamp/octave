@@ -449,8 +449,8 @@ void Viewport3D::HandleDefaultControls()
                          glm::vec3 rayDir = {};
                          if (camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC)
                          {
-                             float x = mouseX * camera->GetOrthoSettings().mWidth;
-                             float y = -mouseY * camera->GetOrthoSettings().mHeight;
+                             float x = mouseX * camera->GetOrthoWidth();
+                             float y = -mouseY * camera->GetOrthoHeight();
                              glm::vec3 nearPos = glm::vec3(x, y, -nearZ);
                              startPos = glm::vec3(camera->CalculateInvViewMatrix() * glm::vec4(nearPos, 1.0f));
                              rayDir = camera->GetForwardVector();
@@ -539,15 +539,18 @@ void Viewport3D::HandleDefaultControls()
                 // For orthographic, adjust the bounds of the projection.
                 const float xySpeed = 0.05f;
                 const float zSpeed = 0.05f;
-                OrthoSettings settings = camera->GetOrthoSettings();
-                settings.mWidth *= 1.0f + (xySpeed * -scrollDelta);
-                settings.mHeight *= 1.0f + (xySpeed * -scrollDelta);
-                settings.mFar *= 1.0f + (zSpeed * -scrollDelta);
 
-                settings.mWidth = glm::max(settings.mWidth, 0.05f);
-                settings.mHeight = glm::max(settings.mHeight, 0.05f);
-                settings.mFar = glm::max(settings.mFar, 50.0f);
-                camera->SetOrthoSettings(settings.mWidth, settings.mHeight, settings.mNear, settings.mFar);
+                float orthoWidth = camera->GetOrthoWidth();
+                float farZ = camera->GetFarZ();
+
+                orthoWidth *= 1.0f + (xySpeed * -scrollDelta);
+                farZ *= 1.0f + (zSpeed * -scrollDelta);
+
+                orthoWidth = glm::max(orthoWidth, 0.05f);
+                farZ = glm::max(farZ, 50.0f);
+
+                camera->SetOrthoWidth(orthoWidth);
+                camera->SetFarZ(farZ);
             }
         }
 

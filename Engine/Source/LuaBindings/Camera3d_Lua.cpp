@@ -7,35 +7,17 @@
 
 #if LUA_ENABLED
 
-int Camera3D_Lua::SetPerspective(lua_State* L)
+int Camera3D_Lua::EnablePerspective(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_3D(L, 1);
-    float fovY = CHECK_NUMBER(L, 2);
-    float aspectRatio = CHECK_NUMBER(L, 3);
-    float zNear = CHECK_NUMBER(L, 4);
-    float zFar = CHECK_NUMBER(L, 5);
+    bool persp = CHECK_BOOLEAN(L, 2);
 
-    comp->SetPerspectiveSettings(fovY, aspectRatio, zNear, zFar);
-    comp->SetProjectionMode(ProjectionMode::PERSPECTIVE);
+    comp->EnablePerspective(persp);
 
     return 0;
 }
 
-int Camera3D_Lua::SetOrtho(lua_State* L)
-{
-    Camera3D* comp = CHECK_CAMERA_3D(L, 1);
-    float width = CHECK_NUMBER(L, 2);
-    float height = CHECK_NUMBER(L, 3);
-    float zNear = CHECK_NUMBER(L, 4);
-    float zFar = CHECK_NUMBER(L, 5);
-
-    comp->SetOrthoSettings(width, height, zNear, zFar);
-    comp->SetProjectionMode(ProjectionMode::ORTHOGRAPHIC);
-
-    return 0;
-}
-
-int Camera3D_Lua::IsPerspective(lua_State* L)
+int Camera3D_Lua::IsPerspectiveEnabled(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_3D(L, 1);
 
@@ -79,7 +61,7 @@ int Camera3D_Lua::GetFieldOfView(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_3D(L, 1);
 
-    float ret = comp->GetPerspectiveSettings().mFovY;
+    float ret = comp->GetFieldOfViewY();
 
     lua_pushnumber(L, ret);
     return 1;
@@ -89,27 +71,27 @@ int Camera3D_Lua::GetAspectRatio(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_3D(L, 1);
 
-    float ret = comp->GetPerspectiveSettings().mAspectRatio;
+    float ret = comp->GetAspectRatio();
 
     lua_pushnumber(L, ret);
     return 1;
 }
 
-int Camera3D_Lua::GetWidth(lua_State* L)
+int Camera3D_Lua::GetOrthoWidth(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_3D(L, 1);
 
-    float ret = comp->GetOrthoSettings().mWidth;
+    float ret = comp->GetOrthoWidth();
 
     lua_pushnumber(L, ret);
     return 1;
 }
 
-int Camera3D_Lua::GetHeight(lua_State* L)
+int Camera3D_Lua::GetOrthoHeight(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_3D(L, 1);
 
-    float ret = comp->GetOrthoSettings().mHeight;
+    float ret = comp->GetOrthoHeight();
 
     lua_pushnumber(L, ret);
     return 1;
@@ -145,32 +127,12 @@ int Camera3D_Lua::SetFieldOfView(lua_State* L)
     return 0;
 }
 
-int Camera3D_Lua::SetAspectRatio(lua_State* L)
+int Camera3D_Lua::SetOrthoWidth(lua_State* L)
 {
     Camera3D* comp = CHECK_CAMERA_3D(L, 1);
     float value = CHECK_NUMBER(L, 2);
 
-    comp->SetAspectRatio(value);
-
-    return 0;
-}
-
-int Camera3D_Lua::SetWidth(lua_State* L)
-{
-    Camera3D* comp = CHECK_CAMERA_3D(L, 1);
-    float value = CHECK_NUMBER(L, 2);
-
-    comp->SetWidth(value);
-
-    return 0;
-}
-
-int Camera3D_Lua::SetHeight(lua_State* L)
-{
-    Camera3D* comp = CHECK_CAMERA_3D(L, 1);
-    float value = CHECK_NUMBER(L, 2);
-
-    comp->SetHeight(value);
+    comp->SetOrthoWidth(value);
 
     return 0;
 }
@@ -224,11 +186,9 @@ void Camera3D_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, SetPerspective);
+    REGISTER_TABLE_FUNC(L, mtIndex, EnablePerspective);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, SetOrtho);
-
-    REGISTER_TABLE_FUNC(L, mtIndex, IsPerspective);
+    REGISTER_TABLE_FUNC(L, mtIndex, IsPerspectiveEnabled);
 
     REGISTER_TABLE_FUNC(L, mtIndex, IsOrtho);
 
@@ -240,9 +200,9 @@ void Camera3D_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetAspectRatio);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, GetWidth);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOrthoWidth);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, GetHeight);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOrthoHeight);
 
     REGISTER_TABLE_FUNC(L, mtIndex, SetNear);
 
@@ -250,11 +210,7 @@ void Camera3D_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, mtIndex, SetFieldOfView);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, SetAspectRatio);
-
-    REGISTER_TABLE_FUNC(L, mtIndex, SetWidth);
-
-    REGISTER_TABLE_FUNC(L, mtIndex, SetHeight);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetOrthoWidth);
 
     REGISTER_TABLE_FUNC(L, mtIndex, WorldToScreenPosition);
 

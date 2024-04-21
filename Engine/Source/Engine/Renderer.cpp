@@ -932,23 +932,30 @@ void Renderer::FrustumCull(Camera3D* camera)
         camera->GetUpVector(),
         camera->GetRightVector());
 
+    float nearZ = camera->GetNearZ();
+    float farZ = camera->GetFarZ();
+
     ProjectionMode projMode = camera->GetProjectionMode();
     if (projMode == ProjectionMode::PERSPECTIVE)
     {
-        PerspectiveSettings persp = camera->GetPerspectiveSettings();
+        float fovY = camera->GetFieldOfViewY();
+        float aspectRatio = camera->GetAspectRatio();
+
         frustum.SetPerspective(
-            persp.mFovY,
-            persp.mAspectRatio,
-            persp.mNear,
-            persp.mFar);
+            fovY,
+            aspectRatio,
+            nearZ,
+            farZ);
     }
     else
     {
-        OrthoSettings ortho = camera->GetOrthoSettings();
-        frustum.SetOrthographic(ortho.mWidth,
-            ortho.mHeight,
-            ortho.mNear,
-            ortho.mFar);
+        float orthoWidth = camera->GetOrthoWidth();
+        float orthoHeight = camera->GetOrthoHeight();
+
+        frustum.SetOrthographic(orthoWidth,
+            orthoHeight,
+            nearZ,
+            farZ);
     }
 
     int32_t drawsCulled = 0;

@@ -17,22 +17,19 @@
 
 struct Camera3D_Lua
 {
-    static int SetPerspective(lua_State* L);
-    static int SetOrtho(lua_State* L);
-    static int IsPerspective(lua_State* L);
+    static int EnablePerspective(lua_State* L);
+    static int IsPerspectiveEnabled(lua_State* L);
     static int IsOrtho(lua_State* L);
     static int GetNear(lua_State* L);
     static int GetFar(lua_State* L);
     static int GetFieldOfView(lua_State* L);
     static int GetAspectRatio(lua_State* L);
-    static int GetWidth(lua_State* L);
-    static int GetHeight(lua_State* L);
+    static int GetOrthoWidth(lua_State* L);
+    static int GetOrthoHeight(lua_State* L);
     static int SetNear(lua_State* L);
     static int SetFar(lua_State* L);
     static int SetFieldOfView(lua_State* L);
-    static int SetAspectRatio(lua_State* L);
-    static int SetWidth(lua_State* L);
-    static int SetHeight(lua_State* L);
+    static int SetOrthoWidth(lua_State* L);
     static int WorldToScreenPosition(lua_State* L);
     static int ScreenToWorldPosition(lua_State* L);
     static int TraceScreenToWorld(lua_State* L);
