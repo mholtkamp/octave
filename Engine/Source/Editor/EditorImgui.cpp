@@ -2293,6 +2293,19 @@ static void DrawPropertiesPanel()
             {
                 bool inspectLocked = GetEditorState()->IsInspectLocked();
 
+                // Display object name (e.g. StaticMesh3D)
+                std::string objName = obj->RuntimeName();
+                ImVec2 sz = ImVec2(-FLT_MIN, 0.0f);
+                ImVec4 headerColor = kSelectedColor;
+                headerColor.w = 0.0f;
+                ImVec4 headerTextColor = ImVec4(0.18f, 0.75f, 0.70f, 1.00f);
+                ImGui::PushStyleColor(ImGuiCol_Text, headerTextColor);
+                ImGui::PushStyleColor(ImGuiCol_Button, headerColor);
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, headerColor);
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, headerColor);
+                ImGui::Button(objName.c_str(), sz);
+                ImGui::PopStyleColor(4);
+
                 Texture* texObj = obj->As<Texture>();
                 if (texObj != nullptr &&
                     texObj->GetResource()->mImage != nullptr)
