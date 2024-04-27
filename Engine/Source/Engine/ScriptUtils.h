@@ -36,6 +36,7 @@ public:
 private:
 
     static std::unordered_set<std::string> sLoadedLuaFiles;
+    static std::unordered_set<std::string> sLoadingLuaFiles;
     static EmbeddedFile* sEmbeddedScripts;
     static uint32_t sNumEmbeddedScripts;
     static uint32_t sNumScriptInstances;

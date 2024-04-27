@@ -2,6 +2,7 @@
 #include "System/System.h"
 
 std::unordered_set<std::string> ScriptUtils::sLoadedLuaFiles;
+std::unordered_set<std::string> ScriptUtils::sLoadingLuaFiles;
 EmbeddedFile* ScriptUtils::sEmbeddedScripts = nullptr;
 uint32_t ScriptUtils::sNumEmbeddedScripts = 0;
 uint32_t ScriptUtils::sNumScriptInstances = 0;
@@ -48,7 +49,16 @@ bool ScriptUtils::LoadScriptFile(const std::string& fileName, const std::string&
 {
     bool successful = false;
 
+    // Check if file is already being loaded (circular Script.Require() dependency)
+    if (sLoadingLuaFiles.find(fileName) != sLoadingLuaFiles.end())
+    {
+        LogDebug("Ignoring request to load %s as it is already in the process of being loaded. (Cyclical Script.Require()?)", fileName.c_str());
+        return false;
+    }
+
 #if LUA_ENABLED
+    sLoadingLuaFiles.insert(fileName);
+
     lua_State* L = GetLua();
     successful = RunScript(fileName.c_str());
 
@@ -75,6 +85,8 @@ bool ScriptUtils::LoadScriptFile(const std::string& fileName, const std::string&
         sLoadedLuaFiles.insert(className);
         successful = true;
     }
+
+    sLoadingLuaFiles.erase(fileName);
 #endif
 
     return successful;
