@@ -1492,7 +1492,8 @@ static void DrawScenePanel()
 
                 if (ImGui::InputText("Node Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
                 {
-                    node->SetName(sPopupInputBuffer);
+                    std::string newName = sPopupInputBuffer;
+                    am->EXE_EditProperty(node, PropertyOwnerType::Node, "Name", 0, newName);
                 }
 
                 ImGui::EndPopup();
