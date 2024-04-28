@@ -925,10 +925,10 @@ void Scene::AddNodeDef(Node* node, std::vector<Node*>& nodeList)
         }
 
         nodeDef.mScene = scene;
+        nodeDef.mName = node->GetName();
 
         GatherNonDefaultProperties(node, nodeDef.mProperties);
 
-        // Recursively add children. Do not add children of widgets spawned via maps.
         if (scene == nullptr)
         {
             for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
