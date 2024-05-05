@@ -210,12 +210,11 @@ void GFX_SetFog(const FogSettings& fogSettings)
 
     if (camera)
     {
+        cameraNear = camera->GetNearZ();
+        cameraFar = camera->GetFarZ();
+
         if (camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC)
         {
-            OrthoSettings projSettings = camera->GetOrthoSettings();
-            cameraNear = projSettings.mNear;
-            cameraFar = projSettings.mFar;
-
             switch (fogSettings.mDensityFunc)
             {
             case FogDensityFunc::Linear: fogType = GX_FOG_ORTHO_LIN; break;
@@ -225,10 +224,6 @@ void GFX_SetFog(const FogSettings& fogSettings)
         }
         else
         {
-            PerspectiveSettings projSettings = camera->GetPerspectiveSettings();
-            cameraNear = projSettings.mNear;
-            cameraFar = projSettings.mFar;
-
             switch (fogSettings.mDensityFunc)
             {
             case FogDensityFunc::Linear: fogType = GX_FOG_PERSP_LIN; break;

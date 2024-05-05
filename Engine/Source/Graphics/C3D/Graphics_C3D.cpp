@@ -320,7 +320,7 @@ glm::mat4 GFX_MakePerspectiveMatrix(float fovyDegrees, float aspectRatio, float 
 glm::mat4 GFX_MakeOrthographicMatrix(float left, float right, float bottom, float top, float zNear, float zFar)
 {
     C3D_Mtx projection;
-    Mtx_OrthoTilt(&projection, left, right, bottom, top, zNear, zFar, true);
+    Mtx_OrthoTilt(&projection, left, right, bottom, top, zNear, zFar, false);
     //Mtx_OrthoTilt(&projection, 0.0, 400.0, 0.0, 240.0, 0.0, 1.0, true);
     glm::mat4 retMatrix = *reinterpret_cast<glm::mat4*>(&projection);
     return retMatrix;

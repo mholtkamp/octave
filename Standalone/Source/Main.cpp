@@ -97,10 +97,10 @@ InitOptions OctPreInitialize()
     if (!embedded)
     {
         ReadIni();
-
         initOptions.mProjectName = sProjectName;
-        initOptions.mDefaultScene = (sDefaultScene != "") ? sDefaultScene : "SC_Default";
     }
+
+    initOptions.mDefaultScene = (sDefaultScene != "") ? sDefaultScene : "SC_Default";
 
 #endif
 
