@@ -136,7 +136,8 @@ int Node_Lua::Create(lua_State* L, Node* node)
 int Node_Lua::Construct(lua_State* L)
 {
     // Allow script to allocate a node.
-    const char* className = CHECK_STRING(L, 1);
+    const char* className = "Node";
+    if (!lua_isnone(L, 1)) { className = CHECK_STRING(L, 1); }
     
     Node* newNode = Node::Construct(className);
 

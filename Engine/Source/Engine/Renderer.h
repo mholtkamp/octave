@@ -74,6 +74,8 @@ public:
     uint32_t GetFrameNumber() const;
     uint32_t GetFrameIndex() const;
     uint32_t GetScreenIndex() const;
+    bool IsRenderingFirstScreen() const;
+    bool IsRenderingLastScreen() const;
     World* GetCurrentWorld();
 
     glm::vec2 GetScreenResolution(int32_t screen = -1);

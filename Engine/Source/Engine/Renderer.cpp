@@ -262,6 +262,20 @@ uint32_t Renderer::GetScreenIndex() const
     return mScreenIndex;
 }
 
+bool Renderer::IsRenderingFirstScreen() const
+{
+    return (mScreenIndex == 0);
+}
+
+bool Renderer::IsRenderingLastScreen() const
+{
+#if SUPPORTS_SECOND_SCREEN
+    return mScreenIndex == 1;
+#else
+    return mScreenIndex == 0;
+#endif
+}
+
 World* Renderer::GetCurrentWorld()
 {
     return mCurrentWorld;
@@ -317,8 +331,11 @@ void Renderer::EndFrame()
 {
     GFX_EndFrame();
 
-    mFrameNumber++;
-    mFrameIndex = mFrameNumber % MAX_FRAMES;
+    if (IsRenderingLastScreen())
+    {
+        mFrameNumber++;
+        mFrameIndex = mFrameNumber % MAX_FRAMES;
+    }
 }
 
 void Renderer::EnableStatsOverlay(bool enable)

@@ -190,15 +190,18 @@ void GFX_BeginFrame()
 {
     gC3dContext.mWorld = Renderer::Get()->GetCurrentWorld();
 
-    // According to Oreo:
-    // C3D_GetDrawingTime() is the time in miliseconds between C3D_FrameEnd() and the callback when the gpu finishes processing the commands.
-    // C3D_GetProcessingTime() is the time in miliseconds between C3D_FrameBegin() and C3D_FrameEnd()
-    //LogDebug("Draw: %.2f, Proc: %.2f", C3D_GetDrawingTime(), C3D_GetProcessingTime());
+    if (Renderer::Get()->IsRenderingFirstScreen())
+    {
+        // According to Oreo:
+        // C3D_GetDrawingTime() is the time in miliseconds between C3D_FrameEnd() and the callback when the gpu finishes processing the commands.
+        // C3D_GetProcessingTime() is the time in miliseconds between C3D_FrameBegin() and C3D_FrameEnd()
+        //LogDebug("Draw: %.2f, Proc: %.2f", C3D_GetDrawingTime(), C3D_GetProcessingTime());
 
-    C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+        C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
 
-    // Take care of pending deletes.
-    ProcessQueuedFrees();
+        // Take care of pending deletes.
+        ProcessQueuedFrees();
+    }
 
     SetupLighting();
 
@@ -208,13 +211,16 @@ void GFX_BeginFrame()
 
 void GFX_EndFrame()
 {
-    C3D_FrameEnd(0);
+    if (Renderer::Get()->IsRenderingLastScreen())
+    {
+        C3D_FrameEnd(0);
 
-    gC3dContext.mFrameIndex = (gC3dContext.mFrameIndex + 1) % MAX_FRAMES;
+        gC3dContext.mFrameIndex = (gC3dContext.mFrameIndex + 1) % MAX_FRAMES;
 
-    // For debugging - Finish processing command list
-    //C3D_FrameSplit(GX_CMDLIST_FLUSH);
-    //gspWaitForP3D();
+        // For debugging - Finish processing command list
+        //C3D_FrameSplit(GX_CMDLIST_FLUSH);
+        //gspWaitForP3D();
+    }
 }
 
 void GFX_BeginScreen(uint32_t screenIndex)
@@ -1271,6 +1277,12 @@ void GFX_UpdateQuadResource(Quad* quad)
 
 void GFX_DrawQuad(Quad* quad)
 {
+    if (quad->GetName() == "Bg")
+    {
+        Rect rect = quad->GetRect();
+        LogDebug("QuadBG: %.2f, %.2f, %.2f, %.2f", rect.mX, rect.mY, rect.mWidth, rect.mHeight);
+    }
+
     ResetTexEnv();
     ResetLightingEnv();
 
