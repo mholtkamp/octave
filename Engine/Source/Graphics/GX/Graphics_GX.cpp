@@ -114,7 +114,15 @@ void GFX_BeginFrame()
     {
         glm::mat4 camProjection = camera->GetProjectionMatrix();
         memcpy(&projection, &camProjection, sizeof(Mtx44));
-        GX_LoadProjectionMtx(projection, GX_PERSPECTIVE);
+
+        if (camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC)
+        {
+            GX_LoadProjectionMtx(projection, GX_ORTHOGRAPHIC);
+        }
+        else
+        {
+            GX_LoadProjectionMtx(projection, GX_PERSPECTIVE);
+        }
     }
 }
 
