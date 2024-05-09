@@ -1277,12 +1277,6 @@ void GFX_UpdateQuadResource(Quad* quad)
 
 void GFX_DrawQuad(Quad* quad)
 {
-    if (quad->GetName() == "Bg")
-    {
-        Rect rect = quad->GetRect();
-        LogDebug("QuadBG: %.2f, %.2f, %.2f, %.2f", rect.mX, rect.mY, rect.mWidth, rect.mHeight);
-    }
-
     ResetTexEnv();
     ResetLightingEnv();
 
