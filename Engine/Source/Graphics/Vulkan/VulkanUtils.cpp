@@ -2066,13 +2066,15 @@ void DestroyQuadResource(Quad* quad)
     }
 }
 
+void UpdateQuadResourceVertexData(Quad* quad)
+{
+    QuadResource* resource = quad->GetResource();
+    resource->mVertexBuffer->Update(quad->GetVertices(), sizeof(VertexUI) * 4, 0);
+}
+
 void BindGeometryDescriptorSet(Quad* quad)
 {
     VkCommandBuffer cb = GetCommandBuffer();
-
-    // Vertex Buffer
-    QuadResource* resource = quad->GetResource();
-    resource->mVertexBuffer->Update(quad->GetVertices(), sizeof(VertexUI) * 4, 0);
 
     // Uniform Buffer
     QuadUniformData ubo = {};

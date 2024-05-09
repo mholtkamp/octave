@@ -1269,7 +1269,7 @@ void GFX_DestroyQuadResource(Quad* quad)
     resource->mVertexData.Free();
 }
 
-void GFX_UpdateQuadResource(Quad* quad)
+void GFX_UpdateQuadResourceVertexData(Quad* quad)
 {
     QuadResource* resource = quad->GetResource();
     resource->mVertexData.Update(quad->GetVertices(), 4 * sizeof(VertexUI));

@@ -98,6 +98,7 @@ void Quad::TickCommon(float deltaTime)
     if (IsDirty())
     {
         UpdateVertexData();
+        GFX_UpdateQuadResourceVertexData(this);
     }
 }
 

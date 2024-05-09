@@ -151,6 +151,7 @@ void DrawParticleComp(Particle3D* particleComp);
 // Quad
 void CreateQuadResource(Quad* quad);
 void DestroyQuadResource(Quad* quad);
+void UpdateQuadResourceVertexData(Quad* quad);
 void BindGeometryDescriptorSet(Quad* quad);
 void DrawQuad(Quad* quad);
 

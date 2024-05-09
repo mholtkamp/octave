@@ -407,6 +407,11 @@ void GFX_DestroyQuadResource(Quad* quad)
     DestroyQuadResource(quad);
 }
 
+void GFX_UpdateQuadResourceVertexData(Quad* quad)
+{
+    UpdateQuadResourceVertexData(quad);
+}
+
 void GFX_DrawQuad(Quad* quad)
 {
     DrawQuad(quad);

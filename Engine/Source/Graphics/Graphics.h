@@ -118,6 +118,7 @@ void GFX_DrawParticleComp(Particle3D* particleComp);
 // Quad
 void GFX_CreateQuadResource(Quad* quad);
 void GFX_DestroyQuadResource(Quad* quad);
+void GFX_UpdateQuadResourceVertexData(Quad* quad);
 void GFX_DrawQuad(Quad* quad);
 
 // Text
