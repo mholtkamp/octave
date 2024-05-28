@@ -142,7 +142,9 @@ VkRenderPass RenderPassCache::ResolveRenderPass(const RenderPassConfig& config)
     ciRenderPass.dependencyCount = 1;
     ciRenderPass.pDependencies = &extDependency;
 
+#if VULKAN_VERBOSE_LOGGING
     LogDebug("Creating new RenderPass");
+#endif
 
     if (vkCreateRenderPass(device, &ciRenderPass, nullptr, &renderPass) != VK_SUCCESS)
     {
@@ -198,7 +200,9 @@ VkFramebuffer RenderPassCache::ResolveFramebuffer(const FramebufferConfig& confi
     ciFramebuffer.height = config.mDepthImage ? config.mDepthImage->GetHeight() : config.mColorImages[0]->GetHeight();
     ciFramebuffer.layers = 1;
 
+#if VULKAN_VERBOSE_LOGGING
     LogDebug("Creating new Framebuffer");
+#endif
 
     if (vkCreateFramebuffer(device, &ciFramebuffer, nullptr, &framebuffer) != VK_SUCCESS)
     {

@@ -63,7 +63,10 @@ VkDescriptorSetLayout DescriptorLayoutCache::CreateLayout(VkDescriptorSetLayoutC
     else
     {
         // Pre-existing layout not found, need to create it.
+
+#if VULKAN_VERBOSE_LOGGING
         LogDebug("Creating new descriptor set layout");
+#endif
         VkDescriptorSetLayout layout;
         vkCreateDescriptorSetLayout(device, info, nullptr, &layout);
 

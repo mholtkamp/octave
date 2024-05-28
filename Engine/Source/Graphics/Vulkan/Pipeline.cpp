@@ -234,7 +234,9 @@ void Pipeline::CreateComputePipeline(VkPipelineCache cache, VkSpecializationInfo
 
 void Pipeline::Create(const PipelineState& state, VkPipelineCache cache, VkSpecializationInfo* specInfo)
 {
+#if VULKAN_VERBOSE_LOGGING
     LogDebug("Creating new pipeline");
+#endif
 
     // We probably don't need to store the state internally, but it might help for debugging.
     // If we have tons of pipelines and its consuming a lot of memory, then we can pass a ref of the state

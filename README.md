@@ -43,3 +43,10 @@ A 3D Game Engine for GameCube, Wii, 3DS, Windows, Linux, and Android
 10. Run `make -f Makefile_Linux_Editor`
 11. Go back to the root directory `cd ..`
 12. Run `Standalone/Build/Linux/OctaveEditor.out` It's important that the working directory is the root directory where the Engine and Standalone folders are located.
+
+
+## Packaging
+1. For packing Windows, add your devenv.exe folder to your PATH. For instance: 
+    `C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE`
+2. For packaging GameCube, Wii, or 3DS, add your devkitPro tools folder to your PATH. For instance: 
+    `C:\devkitPro\tools\bin`

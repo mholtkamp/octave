@@ -76,7 +76,9 @@ VkDescriptorSet DescriptorPool::Allocate(VkDescriptorSetLayout layout, const cha
 
 VkDescriptorPool DescriptorPool::CreatePool()
 {
+#if VULKAN_VERBOSE_LOGGING
     LogDebug("CreatePool()");
+#endif
 
     VkDevice device = GetVulkanDevice();
 
