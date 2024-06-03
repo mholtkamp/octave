@@ -84,7 +84,7 @@ InitOptions OctPreInitialize()
 #endif
 
 #if PLATFORM_WII
-    initOptions.mWorkingDirectory = "sd://apps/RetroLeagueSD";
+    initOptions.mWorkingDirectory = "sd://apps/Octave";
 #endif
 
 

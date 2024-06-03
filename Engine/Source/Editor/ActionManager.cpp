@@ -976,7 +976,7 @@ static void HandleNewProjectCallback(const std::string& folderPath)
     }
 }
 
-void ActionManager::CreateNewProject(const char* folderPath)
+void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
 {
     std::string folderPathStr = folderPath ? folderPath : "";
 
@@ -1024,6 +1024,20 @@ void ActionManager::CreateNewProject(const char* folderPath)
 
             fclose(octpFile);
             octpFile = nullptr;
+        }
+
+        if (cpp)
+        {
+            // Create Proj folder
+            // Create Proj subfolder
+
+            // Copy Makefiles and replace "Octave"
+            // Copy and replace Standalone.vcxproj/filters/user and replace "Standalone" 
+            // Copy Source folder
+            // Copy android files (whatevers in git, exclude .cxx and build) - Replace "android:label="Standalone"" with the projectname in AndroidManifest.xml
+
+            // Copy Engine, External, to Proj folder (EXCLUDE Build and Intermediate folders)
+            // Copy Octave.sln  - Replace "Standalone" with Proj Name
         }
 
         // Finally, open the project
