@@ -421,11 +421,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     if (!needCompile)
     {
         // Override exe path for uncompiled standalone builds
-#if STANDALONE_RELEASE
-        exeSrc = "Standalone/Binaries/";
-#else
         exeSrc = "Standalone/Build/";
-#endif
     }
 
     switch (platform)
