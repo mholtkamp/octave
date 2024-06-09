@@ -964,15 +964,95 @@ void ActionManager::RestoreExiledNode(Node* node)
     OCT_ASSERT(restored);
 }
 
+static bool sHandleNewProjectCallbackCpp = false;
 static void HandleNewProjectCallback(const std::string& folderPath)
 {
     if (folderPath != "")
     {
-        ActionManager::Get()->CreateNewProject(folderPath.c_str());
+        ActionManager::Get()->CreateNewProject(folderPath.c_str(), sHandleNewProjectCallbackCpp);
     }
     else
     {
         LogError("Bad folder for CreateNewProject.");
+    }
+}
+
+void CpyFile(const std::string& srcFile, const std::string& dstFile)
+{
+    SYS_Exec((std::string("cp ") + srcFile + " " + dstFile).c_str());
+}
+
+void CpyDir(const std::string& srcFile, const std::string& dstFile)
+{
+    SYS_Exec((std::string("cp -r ") + srcFile + " " + dstFile).c_str());
+}
+
+void ReplaceAllStrings(std::string& str, const std::string& from, const std::string& to)
+{
+    if (from.empty())
+        return;
+
+    size_t startPos = 0;
+    while ((startPos = str.find(from, startPos)) != std::string::npos)
+    {
+        str.replace(startPos, from.length(), to);
+        startPos += to.length();
+    }
+}
+
+void ReplaceStringInFile(const std::string& file, const std::string& srcString, const std::string& dstString)
+{
+    Stream fileStream;
+    fileStream.ReadFile(file.c_str(), false);
+    std::string fileString = std::string(fileStream.GetData(), fileStream.GetSize());
+    ReplaceAllStrings(fileString, srcString, dstString);
+
+    Stream outStream(fileString.c_str(), (uint32_t)fileString.size());
+    outStream.WriteFile(file.c_str());
+}
+
+void CopyFileAndReplaceString(const std::string& srcFile, const std::string& dstFile, const std::string& srcString, const std::string& dstString)
+{
+    CpyFile(srcFile, dstFile);
+    ReplaceStringInFile(dstFile, srcString, dstString);
+}
+
+void CpyDirWithExclusions(const std::string& srcDir, const std::string& dstDir, const std::vector<std::string> exclusions)
+{
+    DirEntry dirEntry;
+    SYS_OpenDirectory(srcDir, dirEntry);
+
+    // Create dir if it doesn't exist.
+    CreateDir(dstDir.c_str());
+
+    std::vector<std::string> subDirs;
+
+    while (dirEntry.mValid)
+    {
+        std::string fileName = dirEntry.mFilename;
+        if (std::find(exclusions.begin(), exclusions.end(), fileName) == exclusions.end())
+        {
+            if (dirEntry.mDirectory)
+            {
+                if (fileName != "." && fileName != "..")
+                {
+                    subDirs.push_back(fileName);
+                }
+            }
+            else
+            {
+                CpyFile(srcDir + fileName, dstDir + fileName);
+            }
+        }
+
+        SYS_IterateDirectory(dirEntry);
+    }
+
+    SYS_CloseDirectory(dirEntry);
+
+    for (uint32_t i = 0; i < subDirs.size(); ++i)
+    {
+        CpyDirWithExclusions(srcDir + subDirs[i] + "/", dstDir + subDirs[i] + "/", exclusions);
     }
 }
 
@@ -983,6 +1063,7 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
     if (folderPathStr == "")
     {
 #if USE_IMGUI_FILE_BROWSER
+        sHandleNewProjectCallbackCpp = cpp;
         EditorOpenFileBrowser(HandleNewProjectCallback, true);
 #else
         folderPathStr = SYS_SelectFolderDialog();
@@ -1009,14 +1090,16 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
 
         LogDebug("CreateNewProject: %s @ %s", newProjName.c_str(), newProjDir.c_str());
 
+        newProjDir += "/";
+
         // Now that we have the folder, we need to populate it with an Assets and Scripts folder
-        std::string assetsFolder = newProjDir + "/Assets";
-        std::string scriptsFolder = newProjDir + "/Scripts";
+        std::string assetsFolder = newProjDir + "Assets";
+        std::string scriptsFolder = newProjDir + "Scripts";
         SYS_CreateDirectory(assetsFolder.c_str());
         SYS_CreateDirectory(scriptsFolder.c_str());
 
         // Also we need to create an octp so that user can open the project with Ctrl+P
-        std::string projectFile = newProjDir + "/" + newProjName.c_str() + ".octp";
+        std::string projectFile = newProjDir + newProjName.c_str() + ".octp";
         FILE* octpFile = fopen(projectFile.c_str(), "w");
         if (octpFile != nullptr)
         {
@@ -1028,16 +1111,70 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
 
         if (cpp)
         {
-            // Create Proj folder
-            // Create Proj subfolder
+            std::string standaloneDir = "Standalone/";
+
+            std::string subProjFolder = newProjDir + newProjName.c_str();
+            SYS_CreateDirectory(subProjFolder.c_str());
+            subProjFolder += "/";
+
+            // Create Proj subfolder (Assets and Scripts folders will need to be moved in the subfolder)
+            SYS_Exec((std::string("mv ") + assetsFolder.c_str() + " " + subProjFolder + "Assets").c_str());
+            SYS_Exec((std::string("mv ") + scriptsFolder.c_str() + " " + subProjFolder + "Scripts").c_str());
+            assetsFolder = subProjFolder + "Assets";
+            scriptsFolder = subProjFolder + "Scripts";
 
             // Copy Makefiles and replace "Octave"
-            // Copy and replace Standalone.vcxproj/filters/user and replace "Standalone" 
-            // Copy Source folder
-            // Copy android files (whatevers in git, exclude .cxx and build) - Replace "android:label="Standalone"" with the projectname in AndroidManifest.xml
+            CopyFileAndReplaceString(standaloneDir + "Makefile_3DS", subProjFolder + "Makefile_3DS", "Octave", newProjName);
+            CopyFileAndReplaceString(standaloneDir + "Makefile_GCN", subProjFolder + "Makefile_GCN", "Octave", newProjName);
+            CopyFileAndReplaceString(standaloneDir + "Makefile_Wii", subProjFolder + "Makefile_Wii", "Octave", newProjName);
+            CopyFileAndReplaceString(standaloneDir + "Makefile_Linux_Game", subProjFolder + "Makefile_Linux_Game", "Octave", newProjName);
+            CopyFileAndReplaceString(standaloneDir + "Makefile_Linux_Editor", subProjFolder + "Makefile_Linux_Editor", "Octave", newProjName);
 
+            // Copy and replace Standalone.vcxproj/filters and replace "Standalone" 
+            CopyFileAndReplaceString(standaloneDir + "Standalone.vcxproj", subProjFolder + newProjName + ".vcxproj", "Standlone", newProjName);
+            ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "Octave", newProjName);
+            ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "../", "../Octave/");
+            CpyFile(standaloneDir + "Standalone.vcxproj.filters", subProjFolder + newProjName + ".vcxproj.filters");
+
+            // Copy Source folder
+            CpyDir(standaloneDir + "Source", subProjFolder + "Source");
+            ReplaceStringInFile(subProjFolder + "Source/Main.cpp", "Octave", newProjName);
+            ReplaceStringInFile(subProjFolder + "Source/Main.cpp", "initOptions.mStandalone = true", "initOptions.mStandalone = false");
+
+            // Copy android files (whatevers in git, exclude .cxx and build) - Replace "android:label="Standalone"" with the projectname in AndroidManifest.xml
+            CreateDir((subProjFolder + "Android").c_str());
+            CreateDir((subProjFolder + "Android/" + "app").c_str());
+            CreateDir((subProjFolder + "Android/" + "gradle").c_str());
+            CpyFile(standaloneDir + "Android/" + ".gitignore", subProjFolder + "Android/" + ".gitignore");
+            CpyFile(standaloneDir + "Android/" + "build.gradle", subProjFolder + "Android/" + "build.gradle");
+            CpyFile(standaloneDir + "Android/" + "gradle.properties", subProjFolder + "Android/" + "gradle.properties");
+            CpyFile(standaloneDir + "Android/" + "gradlew", subProjFolder + "Android/" + "gradlew");
+            CpyFile(standaloneDir + "Android/" + "gradlew.bat", subProjFolder + "Android/" + "gradlew.bat");
+            CpyFile(standaloneDir + "Android/" + "settings.gradle", subProjFolder + "Android/" + "settings.gradle");
+            CpyFile(standaloneDir + "Android/" + "proguard-rules.pro", subProjFolder + "Android/" + "proguard-rules.pro");
+            CpyDir(standaloneDir + "Android/" + "gradle/wrapper", subProjFolder + "Android/" + "gradle/wrapper");
+            CpyDir(standaloneDir + "Android/" + "app/src", subProjFolder + "Android/" + "app/src");
+
+#if 1
+            // Create a symlink to the Octave directory
+            CreateSymLink(standaloneDir + "../../Octave", newProjDir + "Octave");
+#else
             // Copy Engine, External, to Proj folder (EXCLUDE Build and Intermediate folders)
+            CpyDirWithExclusions(standaloneDir + "../../Octave/", newProjDir + "Octave/", {"Build", "build", "Intermediate", "Standalone", ".cxx", ".vs", ".git", "imgui.ini"});
+#endif
+
             // Copy Octave.sln  - Replace "Standalone" with Proj Name
+            CpyFile(standaloneDir + "../Octave.sln", newProjDir + newProjName + ".sln");
+            ReplaceStringInFile(newProjDir + newProjName + ".sln", "Engine\\Engine.vcxproj", "Octave\\Engine\\Engine.vcxproj");
+            ReplaceStringInFile(newProjDir + newProjName + ".sln", "External\\", "Octave\\External\\");
+            ReplaceStringInFile(newProjDir + newProjName + ".sln", "Standalone", newProjName);
+            ReplaceStringInFile(newProjDir + newProjName + ".sln", "\"External\", \"External\",", "\"External\", \"Octave\\External\",");
+
+            // Copy .vscode folder from Octave to SubProjDir
+            CpyDir(standaloneDir + "../.vscode", newProjDir + ".vscode");
+            ReplaceStringInFile(newProjDir + ".vscode/tasks.json", "Standalone", newProjName);
+            ReplaceStringInFile(newProjDir + ".vscode/launch.json", "Standalone", newProjName);
+            ReplaceStringInFile(newProjDir + ".vscode/launch.json", "\"name\": \"Octave" , "\"name\": \"" + newProjName);
         }
 
         // Finally, open the project

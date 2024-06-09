@@ -28,6 +28,8 @@ void SetWorkingDirectory(const std::string& dirPath);
 bool DoesDirExist(const char* dirPath);
 void CreateDir(const char* dirPath);
 void RemoveDir(const char* dirPath);
+std::string GetDirShortName(const std::string& dirName);
+void CreateSymLink(const std::string& original, const std::string& link);
 
 btCollisionShape* CloneCollisionShape(btCollisionShape* srcShape);
 void DestroyCollisionShape(btCollisionShape* shape);

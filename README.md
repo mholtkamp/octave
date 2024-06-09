@@ -50,3 +50,4 @@ A 3D Game Engine for GameCube, Wii, 3DS, Windows, Linux, and Android
     `C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE`
 2. For packaging GameCube, Wii, or 3DS, add your devkitPro tools folder to your PATH. For instance: 
     `C:\devkitPro\tools\bin`
+3. For packaing Android... TODO (I'm currently using Android Studio 2022.2.1 Patch 2)

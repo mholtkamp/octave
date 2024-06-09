@@ -3,7 +3,7 @@
         {
             "type": "shell",
             "label": "Make Editor",
-            "command": "make -f Makefile_Linux -C ${workspaceFolder}/Editor/",
+            "command": "make -f Makefile_Linux -C ${workspaceFolder}/Standalone/",
             "args": [],
             "options": {
 

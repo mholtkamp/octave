@@ -104,6 +104,32 @@ void RemoveDir(const char* dirPath)
     SYS_RemoveDirectory(dirPath);
 }
 
+std::string GetDirShortName(const std::string& dirName)
+{
+    std::string shortName = dirName;
+    size_t slash1 = shortName.find_last_of("/\\", shortName.size() - 2);
+    size_t slash2 = shortName.find_last_of("/\\");
+
+    if (slash1 != std::string::npos &&
+        slash2 != std::string::npos)
+    {
+        shortName = shortName.substr(slash1 + 1, (slash2 - slash1 - 1));
+    }
+
+    return shortName;
+}
+
+void CreateSymLink(const std::string& original, const std::string& link)
+{
+#if PLATFORM_WINDOWS
+    std::string absOriginal = SYS_GetAbsolutePath(original);
+    std::string linkOriginal = SYS_GetAbsolutePath(link);
+    SYS_Exec(std::string("mklink /J " + linkOriginal + " " + absOriginal).c_str());
+#else
+    SYS_Exec(std::string("ln -s " + original + " " + link).c_str());
+#endif
+}
+
 btCollisionShape* CloneCollisionShape(btCollisionShape* srcShape)
 {
     btCollisionShape* retShape = nullptr;

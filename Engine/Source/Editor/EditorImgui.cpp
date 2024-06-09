@@ -268,21 +268,6 @@ static void DrawFileBrowserContextPopup(FileBrowserDirEntry* entry)
     }
 }
 
-static std::string GetDirShortName(const std::string& dirName)
-{
-    std::string shortName = dirName;
-    size_t slash1 = shortName.find_last_of("/\\", shortName.size() - 2);
-    size_t slash2 = shortName.find_last_of("/\\");
-
-    if (slash1 != std::string::npos &&
-        slash2 != std::string::npos)
-    {
-        shortName = shortName.substr(slash1 + 1, (slash2 - slash1 - 1));
-    }
-
-    return shortName;
-}
-
 static void DrawFileBrowser()
 {
     bool contextPopupOpen = false;
@@ -2494,6 +2479,8 @@ static void DrawViewportPanel()
         }
         if (ImGui::Selectable("New Project"))
             am->CreateNewProject();
+        if (ImGui::Selectable("New C++ Project"))
+            am->CreateNewProject(nullptr, true);
         if (ImGui::Selectable("New Scene"))
             GetEditorState()->OpenEditScene(nullptr);
         if (editScene && ImGui::Selectable("Save Scene"))
