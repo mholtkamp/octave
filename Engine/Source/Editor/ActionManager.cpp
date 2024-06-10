@@ -1134,6 +1134,9 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             CopyFileAndReplaceString(standaloneDir + "Standalone.vcxproj", subProjFolder + newProjName + ".vcxproj", "Standlone", newProjName);
             ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "Octave", newProjName);
             ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "../", "../Octave/");
+            ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "$(SolutionDir)Engine", "$(SolutionDir)Octave\\Engine");
+            ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "$(SolutionDir)External", "$(SolutionDir)Octave\\External");
+            ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "..\\Engine\\", "..\\Octave\\Engine\\");
             CpyFile(standaloneDir + "Standalone.vcxproj.filters", subProjFolder + newProjName + ".vcxproj.filters");
 
             // Copy Source folder
@@ -1155,12 +1158,12 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             CpyDir(standaloneDir + "Android/" + "gradle/wrapper", subProjFolder + "Android/" + "gradle/wrapper");
             CpyDir(standaloneDir + "Android/" + "app/src", subProjFolder + "Android/" + "app/src");
 
-#if 1
+#if 0
             // Create a symlink to the Octave directory
             CreateSymLink(standaloneDir + "../../Octave", newProjDir + "Octave");
 #else
             // Copy Engine, External, to Proj folder (EXCLUDE Build and Intermediate folders)
-            CpyDirWithExclusions(standaloneDir + "../../Octave/", newProjDir + "Octave/", {"Build", "build", "Intermediate", "Standalone", ".cxx", ".vs", ".git", "imgui.ini"});
+            CpyDirWithExclusions(standaloneDir + "../../Octave/", newProjDir + "Octave/", {"Build", "build", "Intermediate", ".gradle", ".cxx", ".vs", ".git", "imgui.ini"});
 #endif
 
             // Copy Octave.sln  - Replace "Standalone" with Proj Name
