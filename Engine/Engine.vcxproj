@@ -782,6 +782,9 @@
     <ProjectReference Include="..\External\Bullet\Bullet.vcxproj">
       <Project>{62666e6c-3f33-45a2-88a6-7a4dac19e439}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\External\LuaSocket\LuaSocket.vcxproj">
+      <Project>{df4f0435-e38d-465d-9bad-1382fe0e2624}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\External\Lua\Lua.vcxproj">
       <Project>{76b204c0-0490-46fa-ad50-8030f398a5ba}</Project>
     </ProjectReference>

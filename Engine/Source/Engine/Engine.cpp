@@ -24,6 +24,8 @@
 #include "Input/Input.h"
 #include "Audio/Audio.h"
 
+#include "LuaSocket/luasocket.h"
+
 #if PLATFORM_WINDOWS
 // I think this is needed for the WinMain parameters
 #include <Windows.h>
@@ -287,12 +289,16 @@ bool Initialize(InitOptions& initOptions)
         sEngineState.mLua = luaL_newstate();
         luaL_openlibs(sEngineState.mLua);
 
+        luaopen_socket_core(sEngineState.mLua);
+        lua_setglobal(sEngineState.mLua, "socket");
+
         BindLuaInterface();
         SetupLuaPath();
         InitAutoRegScripts();
         ScriptFunc::CreateRefTable();
 
         // Run Startup.lua if it exists.
+        ScriptUtils::RunScript("EngineStartup.lua");
         ScriptUtils::RunScript("Startup.lua");
     }
 #endif

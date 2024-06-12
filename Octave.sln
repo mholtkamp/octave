@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 17
+# Visual Studio Version 17
 VisualStudioVersion = 17
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcxproj", "{F08D83DC-D5D1-469D-BA01-BEAA593596CF}"
@@ -27,6 +27,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Standalone", "Standalone\Standalone.vcxproj", "{B306753D-ADF6-4D8C-ACE7-C8AF2F909565}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vorbis", "External\Vorbis\Vorbis.vcxproj", "{9CC47ACB-DFDE-4FDA-ADAE-CE660F8DD450}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LuaSocket", "External\LuaSocket\LuaSocket.vcxproj", "{DF4F0435-E38D-465D-9BAD-1382FE0E2624}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -172,8 +174,8 @@ Global
 		{76B204C0-0490-46FA-AD50-8030F398A5BA}.Debug|x86.Build.0 = Debug|Win32
 		{76B204C0-0490-46FA-AD50-8030F398A5BA}.DebugEditor|Android-arm64-v8a.ActiveCfg = Debug|Android-arm64-v8a
 		{76B204C0-0490-46FA-AD50-8030F398A5BA}.DebugEditor|Android-arm64-v8a.Build.0 = Debug|Android-arm64-v8a
-		{76B204C0-0490-46FA-AD50-8030F398A5BA}.DebugEditor|x64.ActiveCfg = Debug|x64
-		{76B204C0-0490-46FA-AD50-8030F398A5BA}.DebugEditor|x64.Build.0 = Debug|x64
+		{76B204C0-0490-46FA-AD50-8030F398A5BA}.DebugEditor|x64.ActiveCfg = DebugEditor|x64
+		{76B204C0-0490-46FA-AD50-8030F398A5BA}.DebugEditor|x64.Build.0 = DebugEditor|x64
 		{76B204C0-0490-46FA-AD50-8030F398A5BA}.DebugEditor|x86.ActiveCfg = Debug|Win32
 		{76B204C0-0490-46FA-AD50-8030F398A5BA}.DebugEditor|x86.Build.0 = Debug|Win32
 		{76B204C0-0490-46FA-AD50-8030F398A5BA}.Release|Android-arm64-v8a.ActiveCfg = Release|Android-arm64-v8a
@@ -184,8 +186,8 @@ Global
 		{76B204C0-0490-46FA-AD50-8030F398A5BA}.Release|x86.Build.0 = Release|Win32
 		{76B204C0-0490-46FA-AD50-8030F398A5BA}.ReleaseEditor|Android-arm64-v8a.ActiveCfg = Release|Android-arm64-v8a
 		{76B204C0-0490-46FA-AD50-8030F398A5BA}.ReleaseEditor|Android-arm64-v8a.Build.0 = Release|Android-arm64-v8a
-		{76B204C0-0490-46FA-AD50-8030F398A5BA}.ReleaseEditor|x64.ActiveCfg = Release|x64
-		{76B204C0-0490-46FA-AD50-8030F398A5BA}.ReleaseEditor|x64.Build.0 = Release|x64
+		{76B204C0-0490-46FA-AD50-8030F398A5BA}.ReleaseEditor|x64.ActiveCfg = ReleaseEditor|x64
+		{76B204C0-0490-46FA-AD50-8030F398A5BA}.ReleaseEditor|x64.Build.0 = ReleaseEditor|x64
 		{76B204C0-0490-46FA-AD50-8030F398A5BA}.ReleaseEditor|x86.ActiveCfg = Release|Win32
 		{76B204C0-0490-46FA-AD50-8030F398A5BA}.ReleaseEditor|x86.Build.0 = Release|Win32
 		{B306753D-ADF6-4D8C-ACE7-C8AF2F909565}.Debug|Android-arm64-v8a.ActiveCfg = Debug|Win32
@@ -232,6 +234,30 @@ Global
 		{9CC47ACB-DFDE-4FDA-ADAE-CE660F8DD450}.ReleaseEditor|x64.Build.0 = Release|x64
 		{9CC47ACB-DFDE-4FDA-ADAE-CE660F8DD450}.ReleaseEditor|x86.ActiveCfg = Release|Win32
 		{9CC47ACB-DFDE-4FDA-ADAE-CE660F8DD450}.ReleaseEditor|x86.Build.0 = Release|Win32
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.Debug|Android-arm64-v8a.ActiveCfg = Debug|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.Debug|Android-arm64-v8a.Build.0 = Debug|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.Debug|x64.ActiveCfg = Debug|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.Debug|x64.Build.0 = Debug|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.Debug|x86.ActiveCfg = Debug|Win32
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.Debug|x86.Build.0 = Debug|Win32
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.DebugEditor|Android-arm64-v8a.ActiveCfg = Debug|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.DebugEditor|Android-arm64-v8a.Build.0 = Debug|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.DebugEditor|x64.ActiveCfg = DebugEditor|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.DebugEditor|x64.Build.0 = DebugEditor|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.DebugEditor|x86.ActiveCfg = Debug|Win32
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.DebugEditor|x86.Build.0 = Debug|Win32
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.Release|Android-arm64-v8a.ActiveCfg = Release|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.Release|Android-arm64-v8a.Build.0 = Release|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.Release|x64.ActiveCfg = Release|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.Release|x64.Build.0 = Release|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.Release|x86.ActiveCfg = Release|Win32
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.Release|x86.Build.0 = Release|Win32
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.ReleaseEditor|Android-arm64-v8a.ActiveCfg = Release|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.ReleaseEditor|Android-arm64-v8a.Build.0 = Release|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.ReleaseEditor|x64.ActiveCfg = ReleaseEditor|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.ReleaseEditor|x64.Build.0 = ReleaseEditor|x64
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.ReleaseEditor|x86.ActiveCfg = Release|Win32
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624}.ReleaseEditor|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -243,6 +269,7 @@ Global
 		{62666E6C-3F33-45A2-88A6-7A4DAC19E439} = {DF60F810-B0E9-4351-9E38-EE3FE836C33C}
 		{76B204C0-0490-46FA-AD50-8030F398A5BA} = {DF60F810-B0E9-4351-9E38-EE3FE836C33C}
 		{9CC47ACB-DFDE-4FDA-ADAE-CE660F8DD450} = {DF60F810-B0E9-4351-9E38-EE3FE836C33C}
+		{DF4F0435-E38D-465D-9BAD-1382FE0E2624} = {DF60F810-B0E9-4351-9E38-EE3FE836C33C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CD1BFB4A-3E1E-46C4-9822-83AEDB52A280}
