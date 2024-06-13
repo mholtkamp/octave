@@ -279,6 +279,12 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     {
         SYS_Exec(std::string("cp -R Engine/Scripts " + packagedDir + "Engine/Scripts").c_str());
         SYS_Exec(std::string("cp -R " + projectDir + "Scripts " + packagedDir + projectName + "/Scripts").c_str());
+
+        if (platform != Platform::Windows && platform != Platform::Linux)
+        {
+            // Remove LuaPanda on consoles (it's a 148 KB file)
+            SYS_Exec(std::string("rm " + packagedDir + "Engine/Scripts" + "/LuaPanda.lua").c_str());
+        }
     }
 
     // Generate embedded script source files, even if not doing an embedded build. 
@@ -1690,7 +1696,8 @@ void ActionManager::GatherScriptFiles(const std::string& dir, std::vector<std::s
             {
                 const char* extension = strrchr(dirEntry.mFilename, '.');
 
-                if (extension != nullptr &&
+                if (strcmp(dirEntry.mFilename, "LuaPanda.lua") != 0 &&
+                    extension != nullptr &&
                     strcmp(extension, ".lua") == 0)
                 {
                     std::string path = dirPath + dirEntry.mFilename;
