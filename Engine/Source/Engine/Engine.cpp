@@ -24,13 +24,16 @@
 #include "Input/Input.h"
 #include "Audio/Audio.h"
 
-#include "LuaSocket/luasocket.h"
-
 #if PLATFORM_WINDOWS
 // I think this is needed for the WinMain parameters
 #include <Windows.h>
 #endif
 
+#define OCT_LUA_DEBUGGING (PLATFORM_WINDOWS)
+
+#if OCT_LUA_DEBUGGING
+#include "LuaSocket/luasocket.h"
+#endif
 
 #if EDITOR
 #include "EditorState.h"
@@ -289,13 +292,19 @@ bool Initialize(InitOptions& initOptions)
         sEngineState.mLua = luaL_newstate();
         luaL_openlibs(sEngineState.mLua);
 
+#if OCT_LUA_DEBUGGING
         luaopen_socket_core(sEngineState.mLua);
         lua_setglobal(sEngineState.mLua, "socket");
+#endif
 
         BindLuaInterface();
         SetupLuaPath();
         InitAutoRegScripts();
         ScriptFunc::CreateRefTable();
+
+#if OCT_LUA_DEBUGGING
+        ScriptUtils::RunScript("StartLuaPanda.lua");
+#endif
 
         // Run Startup.lua if it exists.
         ScriptUtils::RunScript("EngineStartup.lua");
