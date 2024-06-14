@@ -1150,19 +1150,8 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             ReplaceStringInFile(subProjFolder + "Source/Main.cpp", "Octave", newProjName);
             ReplaceStringInFile(subProjFolder + "Source/Main.cpp", "initOptions.mStandalone = true", "initOptions.mStandalone = false");
 
-            // Copy android files (whatevers in git, exclude .cxx and build) - Replace "android:label="Standalone"" with the projectname in AndroidManifest.xml
-            CreateDir((subProjFolder + "Android").c_str());
-            CreateDir((subProjFolder + "Android/" + "app").c_str());
-            CreateDir((subProjFolder + "Android/" + "gradle").c_str());
-            CpyFile(standaloneDir + "Android/" + ".gitignore", subProjFolder + "Android/" + ".gitignore");
-            CpyFile(standaloneDir + "Android/" + "build.gradle", subProjFolder + "Android/" + "build.gradle");
-            CpyFile(standaloneDir + "Android/" + "gradle.properties", subProjFolder + "Android/" + "gradle.properties");
-            CpyFile(standaloneDir + "Android/" + "gradlew", subProjFolder + "Android/" + "gradlew");
-            CpyFile(standaloneDir + "Android/" + "gradlew.bat", subProjFolder + "Android/" + "gradlew.bat");
-            CpyFile(standaloneDir + "Android/" + "settings.gradle", subProjFolder + "Android/" + "settings.gradle");
-            CpyFile(standaloneDir + "Android/" + "proguard-rules.pro", subProjFolder + "Android/" + "proguard-rules.pro");
-            CpyDir(standaloneDir + "Android/" + "gradle/wrapper", subProjFolder + "Android/" + "gradle/wrapper");
-            CpyDir(standaloneDir + "Android/" + "app/src", subProjFolder + "Android/" + "app/src");
+            // Copy android files (whatevers in git, exclude .cxx and build)
+            CpyDirWithExclusions(standaloneDir + "Android/", subProjFolder + "Android/", { "Build", "build", "Intermediate", ".gradle", ".cxx", ".vs", ".git", "imgui.ini", "assets"});
 
 #if 0
             // Create a symlink to the Octave directory
