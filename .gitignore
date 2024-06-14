@@ -16,7 +16,7 @@ AssetRegistry.txt
 *.elf
 CpuStats.csv
 imgui.ini
-Engine/Saves/
+Saves/
 
 # User-specific files
 *.suo
