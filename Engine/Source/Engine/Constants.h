@@ -3,7 +3,7 @@
 #define ENGINE_NAME "Octave"
 #define MAX_PATH_SIZE 260
 
-#define DEFAULT_GAME_NAME "Game"
+#define DEFAULT_GAME_NAME "Octave"
 #define DEFAULT_WINDOW_WIDTH 1280
 #define DEFAULT_WINDOW_HEIGHT 720
 
