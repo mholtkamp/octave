@@ -1123,6 +1123,9 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             SYS_CreateDirectory(subProjFolder.c_str());
             subProjFolder += "/";
 
+            // Copy .octp folder into the subfolder
+            SYS_Exec(("mv " + newProjDir + newProjName.c_str() + ".octp" + " " + subProjFolder + newProjName.c_str() + ".octp").c_str());
+
             // Create Proj subfolder (Assets and Scripts folders will need to be moved in the subfolder)
             SYS_Exec((std::string("mv ") + assetsFolder.c_str() + " " + subProjFolder + "Assets").c_str());
             SYS_Exec((std::string("mv ") + scriptsFolder.c_str() + " " + subProjFolder + "Scripts").c_str());
