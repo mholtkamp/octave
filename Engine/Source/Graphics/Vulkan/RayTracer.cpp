@@ -269,7 +269,7 @@ void RayTracer::UpdateRayTracingScene(
 
                 lightData.push_back(RayTraceLight());
                 RayTraceLight& light = lightData.back();
-                light.mPosition = pointLightComp->GetAbsolutePosition();
+                light.mPosition = pointLightComp->GetWorldPosition();
                 light.mRadius = pointLightComp->GetRadius();
                 light.mColor = pointLightComp->GetColor();
                 light.mDirection = { 0.0f, 0.0f, -1.0f };
@@ -282,7 +282,7 @@ void RayTracer::UpdateRayTracingScene(
 
                 lightData.push_back(RayTraceLight());
                 RayTraceLight& light = lightData.back();
-                light.mPosition = dirLightComp->GetAbsolutePosition();
+                light.mPosition = dirLightComp->GetWorldPosition();
                 light.mRadius = 10000.0f;
                 light.mColor = dirLightComp->GetColor();
                 light.mDirection = dirLightComp->GetDirection();
@@ -405,8 +405,8 @@ void RayTracer::PathTraceWorld()
         Camera3D* camera = world->GetActiveCamera();
         if (camera != nullptr)
         {
-            glm::vec3 camPos = camera->GetAbsolutePosition();
-            glm::vec3 camRot = camera->GetAbsoluteRotationEuler();
+            glm::vec3 camPos = camera->GetWorldPosition();
+            glm::vec3 camRot = camera->GetWorldRotationEuler();
 
             bool posChanged = glm::any(glm::epsilonNotEqual(mPathTracePrevCameraPos, camPos, 0.00001f));
             bool rotChanged = glm::any(glm::epsilonNotEqual(mPathTracePrevCameraRot, camRot, 0.00001f));

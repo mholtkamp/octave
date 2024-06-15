@@ -108,12 +108,12 @@ void Mesh3D::SetBillboard(bool billboard)
 glm::mat4 Mesh3D::ComputeBillboardTransform()
 {
     Camera3D* camera = GetWorld()->GetActiveCamera();
-    glm::quat camQuat = camera->GetAbsoluteRotationQuat();
+    glm::quat camQuat = camera->GetWorldRotationQuat();
 
     glm::mat4 transform = glm::mat4(1);
 
-    glm::vec3 pos = GetAbsolutePosition();
-    glm::vec3 scale = GetAbsoluteScale();
+    glm::vec3 pos = GetWorldPosition();
+    glm::vec3 scale = GetWorldScale();
     glm::quat rot = GetRotationQuat(); // Not absolute
 
     transform = glm::translate(transform, pos);
@@ -146,7 +146,7 @@ DrawData Mesh3D::GetDrawData()
     data.mNode = this;
     data.mMaterial = material;
     data.mBlendMode = material ? material->GetBlendMode() : BlendMode::Opaque;
-    data.mPosition = GetAbsolutePosition();
+    data.mPosition = GetWorldPosition();
     data.mBounds = GetBounds();
     data.mSortPriority = material ? material->GetSortPriority() : 0;
     data.mDepthless = material ? material->IsDepthTestDisabled() : false;

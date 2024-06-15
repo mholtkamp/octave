@@ -197,7 +197,7 @@ void Primitive3D::Tick(float deltaTime)
         else
         {
             // Sync the component transform with the physics transform
-            glm::vec3 worldScale = GetAbsoluteScale();
+            glm::vec3 worldScale = GetWorldScale();
             glm::mat4 physTransform(1);
 
             if (mPhysicsEnabled)
@@ -650,8 +650,8 @@ void Primitive3D::SyncRigidBodyTransform()
 
             if (mParent != nullptr)
             {
-                worldPos = GetAbsolutePosition();
-                worldRot = GetAbsoluteRotationQuat();
+                worldPos = GetWorldPosition();
+                worldRot = GetWorldRotationQuat();
 
                 //worldPos = glm::vec3(mParent->GetTransform() * glm::vec4(mPosition.x, mPosition.y, mPosition.z, 1.0f));
                 //worldRot = toquat(GetTransform) * mRotationQuat;
@@ -676,7 +676,7 @@ void Primitive3D::SyncRigidBodyTransform()
 
         if (mCollisionShape != nullptr)
         {
-            glm::vec3 worldScale = GetAbsoluteScale();
+            glm::vec3 worldScale = GetWorldScale();
             mCollisionShape->setLocalScaling(btVector3(worldScale.x, worldScale.y, worldScale.z));
         }
     }
@@ -802,7 +802,7 @@ void Primitive3D::SetCollisionShape(btCollisionShape* newShape)
 bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask)
 {
     bool hit = false;
-    glm::vec3 startPos = GetAbsolutePosition();
+    glm::vec3 startPos = GetWorldPosition();
 
     if (mask == 0)
     {
@@ -826,7 +826,7 @@ bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outS
 
         glm::vec3 fracDelta = outSweepResult.mHitFraction * delta;
 
-        SetAbsolutePosition(startPos + fracDelta + outSweepResult.mHitNormal * padding);
+        SetWorldPosition(startPos + fracDelta + outSweepResult.mHitNormal * padding);
 
         if (GetParent() != nullptr)
         {
@@ -835,7 +835,7 @@ bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outS
     }
     else
     {
-        SetAbsolutePosition(position);
+        SetWorldPosition(position);
     }
 
     return hit;

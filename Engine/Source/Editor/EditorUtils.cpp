@@ -26,7 +26,7 @@ glm::vec3 EditorGetFocusPosition()
 {
     Camera3D* camera = GetWorld(0)->GetActiveCamera();
     float focalDistance = GetEditorState()->GetViewport3D()->GetFocalDistance();
-    glm::vec3 focusPos = camera->GetAbsolutePosition() + focalDistance * camera->GetForwardVector();
+    glm::vec3 focusPos = camera->GetWorldPosition() + focalDistance * camera->GetForwardVector();
 
     return focusPos;
 }

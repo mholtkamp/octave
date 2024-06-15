@@ -629,7 +629,7 @@ void Renderer::GatherDrawData(World* world)
 
         if (camera)
         {
-            glm::vec3 cameraPos = camera->GetAbsolutePosition();
+            glm::vec3 cameraPos = camera->GetWorldPosition();
 
             auto materialSort = [cameraPos](const DrawData& l, const DrawData& r)
             {
@@ -693,7 +693,7 @@ void Renderer::GatherDrawData(World* world)
 static void SetLightData(LightData& lightData, Light3D* comp)
 {
     lightData.mDomain = comp->GetLightingDomain();
-    lightData.mPosition = comp->GetAbsolutePosition();
+    lightData.mPosition = comp->GetWorldPosition();
     lightData.mColor = comp->GetColor();
 
     RuntimeId id = comp->InstanceRuntimeId();
@@ -727,7 +727,7 @@ void Renderer::GatherLightData(World* world)
     {
         float deltaTime = GetEngineState()->mGameDeltaTime;
         uint32_t lightLimit = glm::min<uint32_t>(mLightFadeLimit, MAX_LIGHTS_PER_DRAW);
-        glm::vec3 camPos = world->GetActiveCamera()->GetAbsolutePosition();
+        glm::vec3 camPos = world->GetActiveCamera()->GetWorldPosition();
 
         // Step 1 - Determine the closest N lights
         for (uint32_t i = 0; i < lights.size(); ++i)
@@ -741,7 +741,7 @@ void Renderer::GatherLightData(World* world)
                 continue;
             }
 
-            glm::vec3 lightPos = lights[i]->GetAbsolutePosition();
+            glm::vec3 lightPos = lights[i]->GetWorldPosition();
             bool directional = lights[i]->IsDirectionalLight3D();
 
             float dist2 = directional ? 0.0f : glm::distance2(lightPos, camPos);
@@ -943,7 +943,7 @@ void Renderer::FrustumCull(Camera3D* camera)
         return;
 
     CameraFrustum frustum;
-    frustum.SetPosition(camera->GetAbsolutePosition());
+    frustum.SetPosition(camera->GetWorldPosition());
     frustum.SetBasis(
         camera->GetForwardVector(),
         camera->GetUpVector(),

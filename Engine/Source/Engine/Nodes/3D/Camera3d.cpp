@@ -146,9 +146,9 @@ void Camera3D::ComputeMatrices()
     mAspectRatio *= engineState->mAspectRatioScale;
 
     mViewMatrix = CalculateViewMatrix();
-    mViewMatrix = glm::toMat4(glm::conjugate(GetAbsoluteRotationQuat()));
+    mViewMatrix = glm::toMat4(glm::conjugate(GetWorldRotationQuat()));
 
-    mViewMatrix = translate(mViewMatrix, -GetAbsolutePosition());
+    mViewMatrix = translate(mViewMatrix, -GetWorldPosition());
 
     if (mProjectionMode == ProjectionMode::ORTHOGRAPHIC)
     {
@@ -203,8 +203,8 @@ void Camera3D::ComputeMatrices()
 
 glm::mat4 Camera3D::CalculateViewMatrix()
 {
-    glm::mat4 view = glm::toMat4(glm::conjugate(GetAbsoluteRotationQuat()));
-    view = translate(mViewMatrix, -GetAbsolutePosition());
+    glm::mat4 view = glm::toMat4(glm::conjugate(GetWorldRotationQuat()));
+    view = translate(mViewMatrix, -GetWorldPosition());
     return view;
 }
 
@@ -371,7 +371,7 @@ glm::vec3 Camera3D::TraceScreenToWorld(int32_t x, int32_t y, uint8_t colMask, Pr
 {
     glm::vec3 worldPos = ScreenToWorldPosition(x, y);
 
-    glm::vec3 startPos = GetAbsolutePosition();
+    glm::vec3 startPos = GetWorldPosition();
     glm::vec3 rayDir = Maths::SafeNormalize(worldPos - startPos);
     glm::vec3 endPos = startPos + rayDir * GetFarZ();
 

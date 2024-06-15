@@ -117,7 +117,7 @@ glm::vec3 DirectionalLight3D::GetDirection() const
 
 void DirectionalLight3D::SetDirection(const glm::vec3& dir)
 {
-    LookAt(GetAbsolutePosition() + dir, { 0.0f, 1.0f, 0.0f });
+    LookAt(GetWorldPosition() + dir, { 0.0f, 1.0f, 0.0f });
 }
 
 const glm::mat4& DirectionalLight3D::GetViewProjectionMatrix() const
@@ -134,7 +134,7 @@ void DirectionalLight3D::GenerateViewProjectionMatrix()
         glm::mat4 view;
         glm::mat4 proj;
 
-        glm::vec3 cameraPosition = camera->GetAbsolutePosition();
+        glm::vec3 cameraPosition = camera->GetWorldPosition();
         glm::vec3 direction = GetDirection();
 
         glm::vec3 upVector = fabs(direction.y) > 0.5f ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);

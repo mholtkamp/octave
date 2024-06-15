@@ -1602,7 +1602,7 @@ void VulkanContext::UpdateGlobalUniformData()
         if (camera != nullptr)
         {
             mGlobalUniformData.mViewProjMatrix = camera->GetViewProjectionMatrix();
-            mGlobalUniformData.mViewPosition = glm::vec4(camera->GetAbsolutePosition(), 1.0f);
+            mGlobalUniformData.mViewPosition = glm::vec4(camera->GetWorldPosition(), 1.0f);
             mGlobalUniformData.mViewDirection = glm::vec4(camera->GetForwardVector(), 0.0f);
             mGlobalUniformData.mViewToWorld = glm::inverse(camera->GetViewMatrix());
         }

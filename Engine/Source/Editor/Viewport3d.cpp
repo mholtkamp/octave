@@ -108,7 +108,7 @@ void Viewport3D::HandleDefaultControls()
 {
     Renderer* renderer = Renderer::Get();
     Camera3D* camera = GetWorld(0)->GetActiveCamera();
-    glm::vec3 focus = camera->GetAbsolutePosition() + camera->GetForwardVector() * mFocalDistance;
+    glm::vec3 focus = camera->GetWorldPosition() + camera->GetForwardVector() * mFocalDistance;
 
     if (IsMouseInside())
     {
@@ -262,14 +262,14 @@ void Viewport3D::HandleDefaultControls()
 
                 float focusDist = glm::max(boundsRadius + 1.0f, 2.0f);
 
-                glm::vec3 cameraPos = camera->GetAbsolutePosition();
-                glm::vec3 compPos = node3d->GetAbsolutePosition();
+                glm::vec3 cameraPos = camera->GetWorldPosition();
+                glm::vec3 compPos = node3d->GetWorldPosition();
                 glm::vec3 toCamera = Maths::SafeNormalize(cameraPos - compPos);
                 glm::vec3 newCamPos = compPos + toCamera * focusDist;
-                camera->SetAbsolutePosition(newCamPos);
+                camera->SetWorldPosition(newCamPos);
 
                 glm::quat cameraRot = glm::conjugate(glm::toQuat(glm::lookAt(toCamera, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f))));
-                camera->SetAbsoluteRotation(cameraRot);
+                camera->SetWorldRotation(cameraRot);
 
                 mFocalDistance = focusDist;
             }
@@ -280,14 +280,14 @@ void Viewport3D::HandleDefaultControls()
             // Back
             if (controlDown)
             {
-                camera->SetAbsoluteRotation(glm::vec3(0.0f, 180.0f, 0.0f));
-                camera->SetAbsolutePosition(focus + mFocalDistance * glm::vec3(0.0f, 0.0f, -1.0f));
+                camera->SetWorldRotation(glm::vec3(0.0f, 180.0f, 0.0f));
+                camera->SetWorldPosition(focus + mFocalDistance * glm::vec3(0.0f, 0.0f, -1.0f));
             }
             // Front
             else
             {
-                camera->SetAbsoluteRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-                camera->SetAbsolutePosition(focus + mFocalDistance * glm::vec3(0.0f, 0.0f, 1.0f));
+                camera->SetWorldRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+                camera->SetWorldPosition(focus + mFocalDistance * glm::vec3(0.0f, 0.0f, 1.0f));
             }
         }
 
@@ -296,14 +296,14 @@ void Viewport3D::HandleDefaultControls()
             // Left
             if (controlDown)
             {
-                camera->SetAbsoluteRotation(glm::vec3(0.0f, 270.0f, 0.0f));
-                camera->SetAbsolutePosition(focus + mFocalDistance * glm::vec3(-1.0f, 0.0f, 0.0f));
+                camera->SetWorldRotation(glm::vec3(0.0f, 270.0f, 0.0f));
+                camera->SetWorldPosition(focus + mFocalDistance * glm::vec3(-1.0f, 0.0f, 0.0f));
             }
             // Right
             else
             {
-                camera->SetAbsoluteRotation(glm::vec3(0.0f, 90.0f, 0.0f));
-                camera->SetAbsolutePosition(focus + mFocalDistance * glm::vec3(1.0f, 0.0f, 0.0f));
+                camera->SetWorldRotation(glm::vec3(0.0f, 90.0f, 0.0f));
+                camera->SetWorldPosition(focus + mFocalDistance * glm::vec3(1.0f, 0.0f, 0.0f));
             }
         }
 
@@ -312,18 +312,18 @@ void Viewport3D::HandleDefaultControls()
             // Bottom
             if (controlDown)
             {
-                camera->SetAbsoluteRotation(glm::vec3(90.0f, 0.0f, 0.0f));
-                camera->SetAbsolutePosition(focus + mFocalDistance * glm::vec3(0.0f, -1.0f, 0.0f));
+                camera->SetWorldRotation(glm::vec3(90.0f, 0.0f, 0.0f));
+                camera->SetWorldPosition(focus + mFocalDistance * glm::vec3(0.0f, -1.0f, 0.0f));
             }
             // Top
             else
             {
-                camera->SetAbsoluteRotation(glm::vec3(-90.0f, 0.0f, 0.0f));
-                camera->SetAbsolutePosition(focus + mFocalDistance * glm::vec3(0.0f, 1.0f, 0.0f));
+                camera->SetWorldRotation(glm::vec3(-90.0f, 0.0f, 0.0f));
+                camera->SetWorldPosition(focus + mFocalDistance * glm::vec3(0.0f, 1.0f, 0.0f));
             }
         }
 
-        glm::vec3 spawnPos = camera->GetAbsolutePosition() + mFocalDistance * camera->GetForwardVector();
+        glm::vec3 spawnPos = camera->GetWorldPosition() + mFocalDistance * camera->GetForwardVector();
         if (controlDown && IsKeyJustDown(KEY_1))
         {
             ActionManager::Get()->SpawnBasicNode(BASIC_STATIC_MESH, nullptr, nullptr, true, spawnPos);
@@ -422,12 +422,12 @@ void Viewport3D::HandleDefaultControls()
                      {
                          glm::mat4 rotMat = glm::orientation(sLastNormal, glm::vec3(0.0f, 1.0f, 0.0f));
                          glm::quat rotQuat = glm::quat(rotMat);
-                         ActionManager::Get()->EXE_SetAbsoluteRotation(transComp, rotQuat);
+                         ActionManager::Get()->EXE_SetWorldRotation(transComp, rotQuat);
                      }
                      else
                      {
                          // Avoid Nans when normal is almost identical to up vector.
-                         ActionManager::Get()->EXE_SetAbsoluteRotation(transComp, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
+                         ActionManager::Get()->EXE_SetWorldRotation(transComp, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
                      }
 
                      sLastPressedTime = 0.0f;
@@ -466,7 +466,7 @@ void Viewport3D::HandleDefaultControls()
                              float dy = nearZ * tanf(fovY / 2.0f);
 
                              glm::vec3 nearPos = glm::vec3(dx * mouseX, dy * -mouseY, -nearZ);
-                             startPos = camera->GetAbsolutePosition();
+                             startPos = camera->GetWorldPosition();
                              rayDir = Maths::SafeNormalize(nearPos);
                              rayDir = glm::vec3(camera->CalculateInvViewMatrix() * glm::vec4(rayDir, 0.0f));
                          }
@@ -475,7 +475,7 @@ void Viewport3D::HandleDefaultControls()
                      }
                      else
                      {
-                         startPos = transComp->GetAbsolutePosition();
+                         startPos = transComp->GetWorldPosition();
                          endPos = startPos + glm::vec3(0.0f, -1000.0f, 0.0f);
                      }
 
@@ -500,7 +500,7 @@ void Viewport3D::HandleDefaultControls()
 
                      if (rayResult.mHitNode != nullptr)
                      {
-                         ActionManager::Get()->EXE_SetAbsolutePosition(transComp, rayResult.mHitPosition);
+                         ActionManager::Get()->EXE_SetWorldPosition(transComp, rayResult.mHitPosition);
                          sLastNormal = rayResult.mHitNormal;
                      }
                  }
@@ -529,9 +529,9 @@ void Viewport3D::HandleDefaultControls()
             if (camera->GetProjectionMode() == ProjectionMode::PERSPECTIVE)
             {
                 glm::vec3 forwardVector = camera->GetForwardVector();
-                glm::vec3 cameraPos = camera->GetAbsolutePosition();
+                glm::vec3 cameraPos = camera->GetWorldPosition();
                 float deltaPos = mFocalDistance * 0.05f * scrollDelta;
-                camera->SetAbsolutePosition(cameraPos + forwardVector * deltaPos);
+                camera->SetWorldPosition(cameraPos + forwardVector * deltaPos);
                 mFocalDistance = glm::max(0.1f, mFocalDistance - deltaPos);
             }
             else
@@ -691,9 +691,9 @@ void Viewport3D::HandleTransformControls()
 
             for (uint32_t i = 0; i < transComps.size(); ++i)
             {
-                glm::vec3 pos = transComps[i]->GetAbsolutePosition();
+                glm::vec3 pos = transComps[i]->GetWorldPosition();
                 pos += speed * glm::vec3(worldDelta.x, worldDelta.y, worldDelta.z);
-                transComps[i]->SetAbsolutePosition(pos);
+                transComps[i]->SetWorldPosition(pos);
             }
         }
         else if (controlMode == ControlMode::Rotate)
@@ -715,12 +715,12 @@ void Viewport3D::HandleTransformControls()
             {
                 for (uint32_t i = 0; i < transComps.size(); ++i)
                 {
-                    transComps[i]->AddAbsoluteRotation(addQuat);
+                    transComps[i]->AddWorldRotation(addQuat);
                 }
             }
             else
             {
-                glm::vec3 pivot = transComp->GetAbsolutePosition();
+                glm::vec3 pivot = transComp->GetWorldPosition();
 
                 for (uint32_t i = 0; i < transComps.size(); ++i)
                 {
@@ -759,7 +759,7 @@ void Viewport3D::HandleTransformControls()
             }
             else
             {
-                glm::vec3 pivot = transComp->GetAbsolutePosition();
+                glm::vec3 pivot = transComp->GetWorldPosition();
 
                 for (uint32_t i = 0; i < transComps.size(); ++i)
                 {
@@ -773,13 +773,13 @@ void Viewport3D::HandleTransformControls()
                         scaleMat *= glm::scale(newScale / scale);
                         scaleMat *= glm::translate(-pivot);
 
-                        glm::vec3 scaledPos = scaleMat * glm::vec4(transComps[i]->GetAbsolutePosition(), 1.0f);
+                        glm::vec3 scaledPos = scaleMat * glm::vec4(transComps[i]->GetWorldPosition(), 1.0f);
 
                         glm::vec3 newScaleRot = newScale;
 
                         if (GetEditorState()->mTransformLock != TransformLock::None)
                         {
-                            glm::quat absRot = transComps[i]->GetAbsoluteRotationQuat();
+                            glm::quat absRot = transComps[i]->GetWorldRotationQuat();
                             glm::mat4 rotMat = glm::mat4(absRot);
                             glm::vec3 deltaScaleRot = rotMat * glm::vec4(deltaScale3, 0.0f);
 
@@ -795,7 +795,7 @@ void Viewport3D::HandleTransformControls()
                             newScaleRot = scale + deltaScaleRot;
                         }
 
-                        transComps[i]->SetAbsolutePosition(scaledPos);
+                        transComps[i]->SetWorldPosition(scaledPos);
                         transComps[i]->SetScale(newScaleRot);
                     }
                 }
@@ -843,13 +843,13 @@ void Viewport3D::HandlePanControls()
 {
     // Pan the camera
     Camera3D* camera = GetWorld(0)->GetActiveCamera();
-    glm::vec3 cameraPos = camera->GetAbsolutePosition();
+    glm::vec3 cameraPos = camera->GetWorldPosition();
     glm::vec3 right = camera->GetRightVector();
     glm::vec3 up = camera->GetUpVector();
 
     glm::vec2 deltaPosVS = HandleLockedCursor();
     glm::vec3 deltaPosWS = 0.002f * -(right * deltaPosVS.x - up * deltaPosVS.y);
-    camera->SetAbsolutePosition(cameraPos + deltaPosWS);
+    camera->SetWorldPosition(cameraPos + deltaPosWS);
 
     if (!IsMouseButtonDown(MOUSE_MIDDLE))
     {

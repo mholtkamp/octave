@@ -31,20 +31,20 @@ struct Node3D_Lua
 
     static int RotateAround(lua_State* L);
 
-    static int GetAbsolutePosition(lua_State* L);
-    static int GetAbsoluteRotationEuler(lua_State* L);
-    static int GetAbsoluteRotationQuat(lua_State* L);
-    static int GetAbsoluteScale(lua_State* L);
+    static int GetWorldPosition(lua_State* L);
+    static int GetWorldRotationEuler(lua_State* L);
+    static int GetWorldRotationQuat(lua_State* L);
+    static int GetWorldScale(lua_State* L);
 
-    static int SetAbsolutePosition(lua_State* L);
-    static int SetAbsoluteRotationEuler(lua_State* L);
-    static int SetAbsoluteRotationQuat(lua_State* L);
-    static int SetAbsoluteScale(lua_State* L);
+    static int SetWorldPosition(lua_State* L);
+    static int SetWorldRotationEuler(lua_State* L);
+    static int SetWorldRotationQuat(lua_State* L);
+    static int SetWorldScale(lua_State* L);
 
     static int AddRotationEuler(lua_State* L);
     static int AddRotationQuat(lua_State* L);
-    static int AddAbsoluteRotationEuler(lua_State* L);
-    static int AddAbsoluteRotationQuat(lua_State* L);
+    static int AddWorldRotationEuler(lua_State* L);
+    static int AddWorldRotationQuat(lua_State* L);
 
     static int LookAt(lua_State* L);
     static int GetForwardVector(lua_State* L);

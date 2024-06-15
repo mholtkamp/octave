@@ -512,7 +512,7 @@ Node* ActionManager::SpawnNode(TypeId nodeType, glm::vec3 position)
 
     if (node3d)
     {
-        node3d->SetAbsolutePosition(position);
+        node3d->SetWorldPosition(position);
     }
 
     return node;
@@ -686,7 +686,7 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
 
         if (setWorldPos && node3d)
         {
-            node3d->SetAbsolutePosition(worldPos);
+            node3d->SetWorldPosition(worldPos);
         }
     }
     else
@@ -871,21 +871,21 @@ void ActionManager::EXE_SetRootNode(Node* newRoot)
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_SetAbsoluteRotation(Node3D* comp, glm::quat rot)
+void ActionManager::EXE_SetWorldRotation(Node3D* comp, glm::quat rot)
 {
-    ActionSetAbsoluteRotation* action = new ActionSetAbsoluteRotation(comp, rot);
+    ActionSetWorldRotation* action = new ActionSetWorldRotation(comp, rot);
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_SetAbsolutePosition(Node3D* comp, glm::vec3 pos)
+void ActionManager::EXE_SetWorldPosition(Node3D* comp, glm::vec3 pos)
 {
-    ActionSetAbsolutePosition* action = new ActionSetAbsolutePosition(comp, pos);
+    ActionSetWorldPosition* action = new ActionSetWorldPosition(comp, pos);
     ActionManager::Get()->ExecuteAction(action);
 }
 
-void ActionManager::EXE_SetAbsoluteScale(Node3D* comp, glm::vec3 scale)
+void ActionManager::EXE_SetWorldScale(Node3D* comp, glm::vec3 scale)
 {
-    ActionSetAbsoluteScale* action = new ActionSetAbsoluteScale(comp, scale);
+    ActionSetWorldScale* action = new ActionSetWorldScale(comp, scale);
     ActionManager::Get()->ExecuteAction(action);
 }
 
@@ -2372,58 +2372,58 @@ void ActionSetRootNode::Reverse()
     mNewRoot->SetScene(nullptr);
 }
 
-ActionSetAbsoluteRotation::ActionSetAbsoluteRotation(Node3D* node, glm::quat rot)
+ActionSetWorldRotation::ActionSetWorldRotation(Node3D* node, glm::quat rot)
 {
     mNode = node;
     mNewRotation = rot;
-    mPrevRotation = node->GetAbsoluteRotationQuat();
+    mPrevRotation = node->GetWorldRotationQuat();
     OCT_ASSERT(mNode);
 }
 
-void ActionSetAbsoluteRotation::Execute()
+void ActionSetWorldRotation::Execute()
 {
-    mNode->SetAbsoluteRotation(mNewRotation);
+    mNode->SetWorldRotation(mNewRotation);
 }
 
-void ActionSetAbsoluteRotation::Reverse()
+void ActionSetWorldRotation::Reverse()
 {
-    mNode->SetAbsoluteRotation(mPrevRotation);
+    mNode->SetWorldRotation(mPrevRotation);
 }
 
-ActionSetAbsolutePosition::ActionSetAbsolutePosition(Node3D* node, glm::vec3 pos)
+ActionSetWorldPosition::ActionSetWorldPosition(Node3D* node, glm::vec3 pos)
 {
     mNode = node;
     mNewPosition = pos;
-    mPrevPosition = node->GetAbsolutePosition();
+    mPrevPosition = node->GetWorldPosition();
     OCT_ASSERT(mNode);
 }
 
-void ActionSetAbsolutePosition::Execute()
+void ActionSetWorldPosition::Execute()
 {
-    mNode->SetAbsolutePosition(mNewPosition);
+    mNode->SetWorldPosition(mNewPosition);
 }
 
-void ActionSetAbsolutePosition::Reverse()
+void ActionSetWorldPosition::Reverse()
 {
-    mNode->SetAbsolutePosition(mPrevPosition);
+    mNode->SetWorldPosition(mPrevPosition);
 }
 
-ActionSetAbsoluteScale::ActionSetAbsoluteScale(Node3D* node, glm::vec3 scale)
+ActionSetWorldScale::ActionSetWorldScale(Node3D* node, glm::vec3 scale)
 {
     mNode = node;
     mNewScale = scale;
-    mPrevScale = node->GetAbsoluteScale();
+    mPrevScale = node->GetWorldScale();
     OCT_ASSERT(mNode);
 }
 
-void ActionSetAbsoluteScale::Execute()
+void ActionSetWorldScale::Execute()
 {
-    mNode->SetAbsoluteScale(mNewScale);
+    mNode->SetWorldScale(mNewScale);
 }
 
-void ActionSetAbsoluteScale::Reverse()
+void ActionSetWorldScale::Reverse()
 {
-    mNode->SetAbsoluteScale(mPrevScale);
+    mNode->SetWorldScale(mPrevScale);
 }
 
 ActionUnlinkScene::ActionUnlinkScene(Node* node)

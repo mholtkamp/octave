@@ -238,7 +238,7 @@ void StaticMesh3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
             OCT_UNUSED(collisionMeshIndex); // Only used in EDITOR
 
             btCompoundShape* compoundShape = nullptr;
-            glm::vec3 invScale = 1.0f / GetAbsoluteScale();
+            glm::vec3 invScale = 1.0f / GetWorldScale();
 
             if (mCollisionShape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE)
             {
@@ -386,7 +386,7 @@ void StaticMesh3D::RecreateCollisionShape()
     {
         if (mUseTriangleCollision && staticMesh->GetTriangleCollisionShape())
         {
-            glm::vec3 scale = GetAbsoluteScale();
+            glm::vec3 scale = GetWorldScale();
             btVector3 btscale = btVector3(scale.x, scale.y, scale.z);
             btScaledBvhTriangleMeshShape* scaledTriangleShape = new btScaledBvhTriangleMeshShape(staticMesh->GetTriangleCollisionShape(), btscale);
             SetCollisionShape(scaledTriangleShape);

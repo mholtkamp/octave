@@ -369,10 +369,10 @@ void Node3D::SetTransform(const glm::mat4& transform)
 {
     mTransform = transform;
 
-    // Update the relative transforms to match the new absolute transform.
-    SetAbsolutePosition(Maths::ExtractPosition(transform));
-    SetAbsoluteScale(Maths::ExtractScale(transform));
-    SetAbsoluteRotation(Maths::ExtractRotation(transform));
+    // Update the relative transforms to match the new world transform.
+    SetWorldPosition(Maths::ExtractPosition(transform));
+    SetWorldScale(Maths::ExtractScale(transform));
+    SetWorldRotation(Maths::ExtractRotation(transform));
     mRotationEuler = GetRotationEuler();
 
     mTransformDirty = false;
@@ -388,13 +388,13 @@ void Node3D::SetTransform(const glm::mat4& transform)
     }
 }
 
-glm::vec3 Node3D::GetAbsolutePosition()
+glm::vec3 Node3D::GetWorldPosition()
 {
     UpdateTransform(false);
     return Maths::ExtractPosition(mTransform);
 }
 
-glm::vec3 Node3D::GetAbsoluteRotationEuler()
+glm::vec3 Node3D::GetWorldRotationEuler()
 {
     UpdateTransform(false);
 
@@ -405,19 +405,19 @@ glm::vec3 Node3D::GetAbsoluteRotationEuler()
     return eulerAngles;
 }
 
-glm::quat Node3D::GetAbsoluteRotationQuat()
+glm::quat Node3D::GetWorldRotationQuat()
 {
     UpdateTransform(false);
     return Maths::ExtractRotation(mTransform);
 }
 
-glm::vec3 Node3D::GetAbsoluteScale()
+glm::vec3 Node3D::GetWorldScale()
 {
     UpdateTransform(false);
     return Maths::ExtractScale(mTransform);
 }
 
-void Node3D::SetAbsolutePosition(glm::vec3 position)
+void Node3D::SetWorldPosition(glm::vec3 position)
 {
     if (mParent != nullptr)
     {
@@ -432,20 +432,20 @@ void Node3D::SetAbsolutePosition(glm::vec3 position)
     }
 }
 
-void Node3D::SetAbsoluteRotation(glm::vec3 rotation)
+void Node3D::SetWorldRotation(glm::vec3 rotation)
 {
     glm::quat quat = glm::quat(rotation * DEGREES_TO_RADIANS);
-    SetAbsoluteRotation(quat);
+    SetWorldRotation(quat);
 }
 
-void Node3D::SetAbsoluteRotation(glm::quat rotation)
+void Node3D::SetWorldRotation(glm::quat rotation)
 {
     glm::quat newRelativeRot = mRotationQuat;
 
     // Convert the world rotation to relative rotation
     if (mParent != nullptr && mParent->IsNode3D())
     {
-        glm::quat parentWorldRot = static_cast<Node3D*>(mParent)->GetAbsoluteRotationQuat();
+        glm::quat parentWorldRot = static_cast<Node3D*>(mParent)->GetWorldRotationQuat();
 
         if (mParentBoneIndex != -1 &&
             mParent->GetType() == SkeletalMesh3D::GetStaticType())
@@ -465,7 +465,7 @@ void Node3D::SetAbsoluteRotation(glm::quat rotation)
     SetRotation(newRelativeRot);
 }
 
-void Node3D::SetAbsoluteScale(glm::vec3 scale)
+void Node3D::SetWorldScale(glm::vec3 scale)
 {
     if (mParent != nullptr && mParent->IsNode3D())
     {
@@ -476,7 +476,7 @@ void Node3D::SetAbsoluteScale(glm::vec3 scale)
         glm::vec4 relScale4 = invParentTrans * scale4;
         SetScale(glm::vec3(relScale4.x, relScale4.y, relScale4.z));
 #else
-        glm::vec3 parentScale = static_cast<Node3D*>(mParent)->GetAbsoluteScale();
+        glm::vec3 parentScale = static_cast<Node3D*>(mParent)->GetWorldScale();
         glm::vec3 relScale;
         relScale.x = (parentScale.x != 0.0f) ? scale.x / parentScale.x : 0.0f;
         relScale.y = (parentScale.y != 0.0f) ? scale.y / parentScale.y : 0.0f;
@@ -502,21 +502,21 @@ void Node3D::AddRotation(glm::vec3 rotation)
     //SetRotation(GetRotationEuler() + rotation);
 }
 
-void Node3D::AddAbsoluteRotation(glm::quat rotation)
+void Node3D::AddWorldRotation(glm::quat rotation)
 {
     // Get component's world rotation first
-    glm::quat newWorldRot = GetAbsoluteRotationQuat();
+    glm::quat newWorldRot = GetWorldRotationQuat();
 
     // Add the world rotation to the component's world rotation (the new world rotation)
     newWorldRot = rotation * newWorldRot;
 
-    SetAbsoluteRotation(newWorldRot);
+    SetWorldRotation(newWorldRot);
 }
 
-void Node3D::AddAbsoluteRotation(glm::vec3 rotation)
+void Node3D::AddWorldRotation(glm::vec3 rotation)
 {
     glm::quat rotQuat = glm::quat(rotation);
-    AddAbsoluteRotation(rotQuat);
+    AddWorldRotation(rotQuat);
 }
 
 void Node3D::RotateAround(glm::vec3 pivot, glm::vec3 axis, float degrees)
@@ -534,9 +534,9 @@ void Node3D::RotateAround(glm::vec3 pivot, glm::vec3 axis, float degrees)
 
 void Node3D::LookAt(glm::vec3 target, glm::vec3 up)
 {
-    glm::mat4 rotMat = glm::lookAt(GetAbsolutePosition(), target, up);
+    glm::mat4 rotMat = glm::lookAt(GetWorldPosition(), target, up);
     glm::quat rotQuat = glm::conjugate(glm::toQuat(rotMat));
-    SetAbsoluteRotation(rotQuat);
+    SetWorldRotation(rotQuat);
 }
 
 glm::vec3 Node3D::GetCachedEulerRotation() const

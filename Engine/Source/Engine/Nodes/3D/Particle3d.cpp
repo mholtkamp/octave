@@ -192,7 +192,7 @@ DrawData Particle3D::GetDrawData()
     data.mNode = this;
     data.mMaterial = material;
     data.mBlendMode = material ? material->GetBlendMode() : BlendMode::Opaque;
-    data.mPosition = GetAbsolutePosition();
+    data.mPosition = GetWorldPosition();
     data.mBounds = GetBounds();
     data.mSortPriority = material ? material->GetSortPriority() : 0;
     data.mDepthless = material ? material->IsDepthTestDisabled() : false;

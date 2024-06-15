@@ -56,9 +56,9 @@ public:
     void EXE_DeleteNodes(const std::vector<Node*>& nodes);
     void EXE_AttachNode(Node* node, Node* newParent, int32_t childIndex, int32_t boneIndex);
     void EXE_SetRootNode(Node* newRoot);
-    void EXE_SetAbsoluteRotation(Node3D* node, glm::quat rot);
-    void EXE_SetAbsolutePosition(Node3D* node, glm::vec3 pos);
-    void EXE_SetAbsoluteScale(Node3D* node, glm::vec3 scale);
+    void EXE_SetWorldRotation(Node3D* node, glm::quat rot);
+    void EXE_SetWorldPosition(Node3D* node, glm::vec3 pos);
+    void EXE_SetWorldScale(Node3D* node, glm::vec3 scale);
     void EXE_UnlinkScene(Node* node);
 
     void ClearActionHistory();
@@ -226,33 +226,33 @@ protected:
     int32_t mNewRootChildIndex = -1;
 };
 
-class ActionSetAbsoluteRotation : public Action
+class ActionSetWorldRotation : public Action
 {
 public:
-    DECLARE_ACTION_INTERFACE(SetAbsoluteRotation)
-    ActionSetAbsoluteRotation(Node3D* node, glm::quat rot);
+    DECLARE_ACTION_INTERFACE(SetWorldRotation)
+    ActionSetWorldRotation(Node3D* node, glm::quat rot);
 protected:
     Node3D* mNode = nullptr;
     glm::quat mNewRotation;
     glm::quat mPrevRotation;
 };
 
-class ActionSetAbsolutePosition : public Action
+class ActionSetWorldPosition : public Action
 {
 public:
-    DECLARE_ACTION_INTERFACE(SetAbsolutePosition)
-    ActionSetAbsolutePosition(Node3D* node, glm::vec3 pos);
+    DECLARE_ACTION_INTERFACE(SetWorldPosition)
+    ActionSetWorldPosition(Node3D* node, glm::vec3 pos);
 protected:
     Node3D* mNode = nullptr;
     glm::vec3 mNewPosition;
     glm::vec3 mPrevPosition;
 };
 
-class ActionSetAbsoluteScale : public Action
+class ActionSetWorldScale : public Action
 {
 public:
-    DECLARE_ACTION_INTERFACE(SetAbsoluteScale)
-    ActionSetAbsoluteScale(Node3D* node, glm::vec3 scale);
+    DECLARE_ACTION_INTERFACE(SetWorldScale)
+    ActionSetWorldScale(Node3D* node, glm::vec3 scale);
 protected:
     Node3D* mNode = nullptr;
     glm::vec3 mNewScale;

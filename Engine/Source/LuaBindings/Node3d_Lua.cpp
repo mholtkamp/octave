@@ -136,82 +136,82 @@ int Node3D_Lua::RotateAround(lua_State* L)
     return 0;
 }
 
-int Node3D_Lua::GetAbsolutePosition(lua_State* L)
+int Node3D_Lua::GetWorldPosition(lua_State* L)
 {
     Node3D* comp = CHECK_NODE_3D(L, 1);
 
-    glm::vec3 absPos = comp->GetAbsolutePosition();
+    glm::vec3 absPos = comp->GetWorldPosition();
 
     Vector_Lua::Create(L, glm::vec4(absPos, 0.0f));
     return 1;
 }
 
-int Node3D_Lua::GetAbsoluteRotationEuler(lua_State* L)
+int Node3D_Lua::GetWorldRotationEuler(lua_State* L)
 {
     Node3D* comp = CHECK_NODE_3D(L, 1);
 
-    glm::vec3 absRotEuler = comp->GetAbsoluteRotationEuler();
+    glm::vec3 absRotEuler = comp->GetWorldRotationEuler();
 
     Vector_Lua::Create(L, glm::vec4(absRotEuler, 0.0f));
     return 1;
 }
 
-int Node3D_Lua::GetAbsoluteRotationQuat(lua_State* L)
+int Node3D_Lua::GetWorldRotationQuat(lua_State* L)
 {
     Node3D* comp = CHECK_NODE_3D(L, 1);
 
-    glm::quat absQuatEuler = comp->GetAbsoluteRotationQuat();
+    glm::quat absQuatEuler = comp->GetWorldRotationQuat();
 
     Vector_Lua::Create(L, LuaQuatToVector(absQuatEuler));
     return 1;
 }
 
-int Node3D_Lua::GetAbsoluteScale(lua_State* L)
+int Node3D_Lua::GetWorldScale(lua_State* L)
 {
     Node3D* comp = CHECK_NODE_3D(L, 1);
 
-    glm::vec3 absScale = comp->GetAbsoluteScale();
+    glm::vec3 absScale = comp->GetWorldScale();
 
     Vector_Lua::Create(L, glm::vec4(absScale, 0.0f));
     return 1;
 }
 
-int Node3D_Lua::SetAbsolutePosition(lua_State* L)
+int Node3D_Lua::SetWorldPosition(lua_State* L)
 {
     Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4& pos = CHECK_VECTOR(L, 2);
 
-    comp->SetAbsolutePosition(glm::vec3(pos));
+    comp->SetWorldPosition(glm::vec3(pos));
 
     return 0;
 }
 
-int Node3D_Lua::SetAbsoluteRotationEuler(lua_State* L)
+int Node3D_Lua::SetWorldRotationEuler(lua_State* L)
 {
     Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4& rotEuler = CHECK_VECTOR(L, 2);
 
-    comp->SetAbsoluteRotation(glm::vec3(rotEuler));
+    comp->SetWorldRotation(glm::vec3(rotEuler));
 
     return 0;
 }
 
-int Node3D_Lua::SetAbsoluteRotationQuat(lua_State* L)
+int Node3D_Lua::SetWorldRotationQuat(lua_State* L)
 {
     Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4& rotQuat = CHECK_VECTOR(L, 2);
 
-    comp->SetAbsoluteRotation(LuaVectorToQuat(rotQuat));
+    comp->SetWorldRotation(LuaVectorToQuat(rotQuat));
 
     return 0;
 }
 
-int Node3D_Lua::SetAbsoluteScale(lua_State* L)
+int Node3D_Lua::SetWorldScale(lua_State* L)
 {
     Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4& scale = CHECK_VECTOR(L, 2);
 
-    comp->SetAbsoluteScale(glm::vec3(scale));
+    comp->SetWorldScale(glm::vec3(scale));
 
     return 0;
 }
@@ -237,23 +237,23 @@ int Node3D_Lua::AddRotationQuat(lua_State* L)
     return 0;
 }
 
-int Node3D_Lua::AddAbsoluteRotationEuler(lua_State* L)
+int Node3D_Lua::AddWorldRotationEuler(lua_State* L)
 {
     Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec3 deltaDegrees = CHECK_VECTOR(L, 2);
 
-    comp->AddAbsoluteRotation(deltaDegrees);
+    comp->AddWorldRotation(deltaDegrees);
 
     return 0;
 }
 
-int Node3D_Lua::AddAbsoluteRotationQuat(lua_State* L)
+int Node3D_Lua::AddWorldRotationQuat(lua_State* L)
 {
     Node3D* comp = CHECK_NODE_3D(L, 1);
     glm::vec4 deltaVec = CHECK_VECTOR(L, 2);
 
     glm::quat deltaQuat = LuaVectorToQuat(deltaVec);
-    comp->AddAbsoluteRotation(deltaQuat);
+    comp->AddWorldRotation(deltaQuat);
 
     return 0;
 }
@@ -337,45 +337,45 @@ void Node3D_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, mtIndex, RotateAround);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, GetAbsolutePosition);
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetAbsolutePosition, "GetWorldPosition");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetWorldPosition);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetWorldPosition, "GetAbsolutePosition");
 
-    REGISTER_TABLE_FUNC(L, mtIndex, GetAbsoluteRotationEuler);
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetAbsoluteRotationEuler, "GetAbsoluteRotation");
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetAbsoluteRotationEuler, "GetWorldRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetWorldRotationEuler);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetWorldRotationEuler, "GetWorldRotation");
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetWorldRotationEuler, "GetAbsoluteRotation");
 
-    REGISTER_TABLE_FUNC(L, mtIndex, GetAbsoluteRotationQuat);
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetAbsoluteRotationQuat, "GetWorldRotationQuat");
-
-
-    REGISTER_TABLE_FUNC(L, mtIndex, GetAbsoluteScale);
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetAbsoluteScale, "GetWorldScale");
-
-    REGISTER_TABLE_FUNC(L, mtIndex, SetAbsolutePosition);
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetAbsolutePosition, "SetWorldPosition");
-
-    REGISTER_TABLE_FUNC(L, mtIndex, SetAbsoluteRotationEuler);
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetAbsoluteRotationEuler, "SetAbsoluteRotation");
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetAbsoluteRotationEuler, "SetWorldRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetWorldRotationQuat);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetWorldRotationQuat, "GetAbsoluteRotationQuat");
 
 
-    REGISTER_TABLE_FUNC(L, mtIndex, SetAbsoluteRotationQuat);
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetAbsoluteRotationQuat, "SetWorldRotationQuat");
+    REGISTER_TABLE_FUNC(L, mtIndex, GetWorldScale);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetWorldScale, "GetAbsoluteScale");
 
-    REGISTER_TABLE_FUNC(L, mtIndex, SetAbsoluteScale);
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetAbsoluteScale, "SetWorldScale");
+    REGISTER_TABLE_FUNC(L, mtIndex, SetWorldPosition);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetWorldPosition, "SetAbsolutePosition");
+
+    REGISTER_TABLE_FUNC(L, mtIndex, SetWorldRotationEuler);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetWorldRotationEuler, "SetWorldRotation");
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetWorldRotationEuler, "SetAbsoluteRotation");
+
+
+    REGISTER_TABLE_FUNC(L, mtIndex, SetWorldRotationQuat);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetWorldRotationQuat, "SetAbsoluteRotationQuat");
+
+    REGISTER_TABLE_FUNC(L, mtIndex, SetWorldScale);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetWorldScale, "SetAbsoluteScale");
 
     REGISTER_TABLE_FUNC(L, mtIndex, AddRotationEuler);
     REGISTER_TABLE_FUNC_EX(L, mtIndex, AddRotationEuler, "AddRotation");
 
     REGISTER_TABLE_FUNC(L, mtIndex, AddRotationQuat);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, AddAbsoluteRotationEuler);
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, AddAbsoluteRotationEuler, "AddAbsoluteRotation");
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, AddAbsoluteRotationEuler, "AddWorldRotation");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddWorldRotationEuler);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, AddWorldRotationEuler, "AddWorldRotation");
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, AddWorldRotationEuler, "AddAbsoluteRotation");
 
-    REGISTER_TABLE_FUNC(L, mtIndex, AddAbsoluteRotationQuat);
-    REGISTER_TABLE_FUNC_EX(L, mtIndex, AddAbsoluteRotationQuat, "AddWorldRotationQuat");
+    REGISTER_TABLE_FUNC(L, mtIndex, AddWorldRotationQuat);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, AddWorldRotationQuat, "AddAbsoluteRotationQuat");
 
     REGISTER_TABLE_FUNC(L, mtIndex, LookAt);
 

@@ -58,20 +58,20 @@ public:
     void SetScale(glm::vec3 scale);
     virtual void SetTransform(const glm::mat4& transform);
 
-    glm::vec3 GetAbsolutePosition();
-    glm::vec3 GetAbsoluteRotationEuler();
-    glm::quat GetAbsoluteRotationQuat();
-    glm::vec3 GetAbsoluteScale();
+    glm::vec3 GetWorldPosition();
+    glm::vec3 GetWorldRotationEuler();
+    glm::quat GetWorldRotationQuat();
+    glm::vec3 GetWorldScale();
 
-    void SetAbsolutePosition(glm::vec3 position);
-    void SetAbsoluteRotation(glm::vec3 rotation);
-    void SetAbsoluteRotation(glm::quat rotation);
-    void SetAbsoluteScale(glm::vec3 scale);
+    void SetWorldPosition(glm::vec3 position);
+    void SetWorldRotation(glm::vec3 rotation);
+    void SetWorldRotation(glm::quat rotation);
+    void SetWorldScale(glm::vec3 scale);
 
     void AddRotation(glm::quat rotation);
     void AddRotation(glm::vec3 rotation);
-    void AddAbsoluteRotation(glm::quat rotation);
-    void AddAbsoluteRotation(glm::vec3 rotation);
+    void AddWorldRotation(glm::quat rotation);
+    void AddWorldRotation(glm::vec3 rotation);
     void RotateAround(glm::vec3 pivot, glm::vec3 axis, float degrees);
 
     void LookAt(glm::vec3 target, glm::vec3 up);

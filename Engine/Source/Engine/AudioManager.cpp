@@ -286,7 +286,7 @@ void AudioManager::Update(float deltaTime)
 
     // (1) Update Active Sources
     Node3D* listener = GetWorld(0)->GetAudioReceiver();
-    glm::vec3 listenerPos = listener ? listener->GetAbsolutePosition() : glm::vec3(0,0,0);
+    glm::vec3 listenerPos = listener ? listener->GetWorldPosition() : glm::vec3(0,0,0);
     glm::vec3 listenerRight = listener ? listener->GetRightVector() : glm::vec3(1.0f, 0.0f, 0.0f);
 
     for (uint32_t i = 0; i < MAX_AUDIO_SOURCES; ++i)
@@ -325,7 +325,7 @@ void AudioManager::Update(float deltaTime)
                 if (sAudioSources[i].mComponent != nullptr)
                 {
                     Audio3D* comp = sAudioSources[i].mComponent;
-                    sAudioSources[i].mPosition = comp->GetAbsolutePosition();
+                    sAudioSources[i].mPosition = comp->GetWorldPosition();
                     sAudioSources[i].mVolumeMult = comp->GetVolume();
                 }
 
@@ -403,7 +403,7 @@ void AudioManager::Update(float deltaTime)
                 node->GetSoundWave() != nullptr)
             {
                 // We need to check the distance to the listener. Should it be audible?
-                glm::vec3 nodePosition = node->GetAbsolutePosition();
+                glm::vec3 nodePosition = node->GetWorldPosition();
                 float dist = glm::distance(listenerPos, nodePosition);
                 float outerRadius = glm::max(0.0f, node->GetOuterRadius());
 

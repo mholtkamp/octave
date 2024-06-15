@@ -995,7 +995,7 @@ void EditorState::SetTransformLock(TransformLock lock)
         Node* node = GetSelectedNode();
         if (node != nullptr && node->IsNode3D())
         {
-            glm::vec3 pos = static_cast<Node3D*>(node)->GetAbsolutePosition();
+            glm::vec3 pos = static_cast<Node3D*>(node)->GetWorldPosition();
             lineX.mStart = pos - glm::vec3(10000, 0, 0);;
             lineY.mStart = pos - glm::vec3(0, 10000, 0);;
             lineZ.mStart = pos - glm::vec3(0, 0, 10000);;
