@@ -71,7 +71,6 @@ enum class PipelineConfig
     Additive,
     ShadowMeshBack,
     ShadowMeshFront,
-    ShadowMeshClear,
     PostProcess,
     NullPostProcess,
     Quad,

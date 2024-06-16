@@ -67,29 +67,14 @@ void InitPipelineConfigs()
     stateShadowMeshFront.mDepthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
     stateShadowMeshFront.mDepthWriteEnabled = false;
     stateShadowMeshFront.mStencilTestEnabled = true;
-    stateShadowMeshFront.mStencilFront.failOp = VK_STENCIL_OP_KEEP;
-    stateShadowMeshFront.mStencilFront.depthFailOp = VK_STENCIL_OP_KEEP;
-    stateShadowMeshFront.mStencilFront.passOp = VK_STENCIL_OP_KEEP;
+    stateShadowMeshFront.mStencilFront.failOp = VK_STENCIL_OP_ZERO;
+    stateShadowMeshFront.mStencilFront.depthFailOp = VK_STENCIL_OP_ZERO;
+    stateShadowMeshFront.mStencilFront.passOp = VK_STENCIL_OP_ZERO;
     stateShadowMeshFront.mStencilFront.compareOp = VK_COMPARE_OP_EQUAL;
     stateShadowMeshFront.mStencilFront.compareMask = STENCIL_BIT_SCRATCH;
     stateShadowMeshFront.mStencilFront.writeMask = STENCIL_BIT_SCRATCH;
     stateShadowMeshFront.mStencilFront.reference = STENCIL_BIT_SCRATCH;
     stateShadowMeshFront.mBlendStates[0] = GetBasicBlendState(BasicBlendState::Translucent);
-
-    // ShadowMeshClear
-    PipelineState& stateShadowMeshClear = sPipelineConfigs[(uint32_t)PipelineConfig::ShadowMeshClear];
-    stateShadowMeshClear = stateShadowMeshFront;
-    stateShadowMeshClear.mDepthCompareOp = VK_COMPARE_OP_ALWAYS;
-    stateShadowMeshClear.mStencilTestEnabled = true;
-    stateShadowMeshClear.mStencilFront.failOp = VK_STENCIL_OP_KEEP;
-    stateShadowMeshClear.mStencilFront.depthFailOp = VK_STENCIL_OP_KEEP;
-    stateShadowMeshClear.mStencilFront.passOp = VK_STENCIL_OP_ZERO;
-    stateShadowMeshClear.mStencilFront.compareOp = VK_COMPARE_OP_ALWAYS;
-    stateShadowMeshClear.mStencilFront.compareMask = STENCIL_BIT_SCRATCH;
-    stateShadowMeshClear.mStencilFront.writeMask = STENCIL_BIT_SCRATCH;
-    stateShadowMeshClear.mStencilFront.reference = STENCIL_BIT_SCRATCH;
-    stateShadowMeshClear.mBlendStates[0].colorWriteMask = 0;
-    stateShadowMeshClear.mBlendStates[0].blendEnable = false;
 
     // PostProcess
     PipelineState& statePostProcess = sPipelineConfigs[(uint32_t)PipelineConfig::PostProcess];
