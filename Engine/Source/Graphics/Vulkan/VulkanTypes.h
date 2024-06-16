@@ -58,6 +58,12 @@ struct PipelineState
     bool mDepthTestEnabled = true;
     bool mDepthWriteEnabled = true;
     VkCompareOp mDepthCompareOp = VK_COMPARE_OP_LESS;
+    bool mDepthBoundsEnabled = false;
+    float mMinDepthBounds = 0.0f;
+    float mMaxDepthBounds = 1.0f;
+    bool mStencilTestEnabled = false;
+    VkStencilOpState mStencilFront = {};
+    VkStencilOpState mStencilBack = {};
 
     // Blending
     VkPipelineColorBlendAttachmentState mBlendStates[MAX_RENDER_TARGETS] = {};

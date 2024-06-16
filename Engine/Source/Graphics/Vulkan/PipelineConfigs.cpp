@@ -47,11 +47,16 @@ void InitPipelineConfigs()
     stateShadowMeshBack.mCullMode = VK_CULL_MODE_FRONT_BIT;
     stateShadowMeshBack.mDepthCompareOp = VK_COMPARE_OP_GREATER;
     stateShadowMeshBack.mDepthWriteEnabled = false;
-    stateShadowMeshBack.mBlendStates[0].colorWriteMask = VK_COLOR_COMPONENT_A_BIT;
-    stateShadowMeshBack.mBlendStates[0].blendEnable = true;
-    stateShadowMeshBack.mBlendStates[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    stateShadowMeshBack.mBlendStates[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-    stateShadowMeshBack.mBlendStates[0].alphaBlendOp = VK_BLEND_OP_ADD;
+    stateShadowMeshBack.mBlendStates[0].colorWriteMask = 0;
+    stateShadowMeshBack.mBlendStates[0].blendEnable = false;
+    stateShadowMeshBack.mStencilTestEnabled = true;
+    stateShadowMeshBack.mStencilBack.failOp = VK_STENCIL_OP_KEEP;
+    stateShadowMeshBack.mStencilBack.depthFailOp = VK_STENCIL_OP_KEEP;
+    stateShadowMeshBack.mStencilBack.passOp = VK_STENCIL_OP_REPLACE;
+    stateShadowMeshBack.mStencilBack.compareOp = VK_COMPARE_OP_ALWAYS;
+    stateShadowMeshBack.mStencilBack.compareMask = STENCIL_BIT_SCRATCH;
+    stateShadowMeshBack.mStencilBack.writeMask = STENCIL_BIT_SCRATCH;
+    stateShadowMeshBack.mStencilBack.reference = STENCIL_BIT_SCRATCH;
 
     // ShadowMeshFront
     PipelineState& stateShadowMeshFront = sPipelineConfigs[(uint32_t)PipelineConfig::ShadowMeshFront];
@@ -61,21 +66,30 @@ void InitPipelineConfigs()
     stateShadowMeshFront.mCullMode = VK_CULL_MODE_BACK_BIT;
     stateShadowMeshFront.mDepthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
     stateShadowMeshFront.mDepthWriteEnabled = false;
-    stateShadowMeshFront.mBlendStates[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT;
-    stateShadowMeshFront.mBlendStates[0].blendEnable = true;
-    stateShadowMeshFront.mBlendStates[0].srcColorBlendFactor = VK_BLEND_FACTOR_DST_ALPHA;
-    stateShadowMeshFront.mBlendStates[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-    stateShadowMeshFront.mBlendStates[0].colorBlendOp = VK_BLEND_OP_ADD;
+    stateShadowMeshFront.mStencilTestEnabled = true;
+    stateShadowMeshFront.mStencilFront.failOp = VK_STENCIL_OP_KEEP;
+    stateShadowMeshFront.mStencilFront.depthFailOp = VK_STENCIL_OP_KEEP;
+    stateShadowMeshFront.mStencilFront.passOp = VK_STENCIL_OP_KEEP;
+    stateShadowMeshFront.mStencilFront.compareOp = VK_COMPARE_OP_EQUAL;
+    stateShadowMeshFront.mStencilFront.compareMask = STENCIL_BIT_SCRATCH;
+    stateShadowMeshFront.mStencilFront.writeMask = STENCIL_BIT_SCRATCH;
+    stateShadowMeshFront.mStencilFront.reference = STENCIL_BIT_SCRATCH;
+    stateShadowMeshFront.mBlendStates[0] = GetBasicBlendState(BasicBlendState::Translucent);
 
     // ShadowMeshClear
     PipelineState& stateShadowMeshClear = sPipelineConfigs[(uint32_t)PipelineConfig::ShadowMeshClear];
     stateShadowMeshClear = stateShadowMeshFront;
     stateShadowMeshClear.mDepthCompareOp = VK_COMPARE_OP_ALWAYS;
-    stateShadowMeshClear.mBlendStates[0].colorWriteMask = VK_COLOR_COMPONENT_A_BIT;
-    stateShadowMeshClear.mBlendStates[0].blendEnable = true;
-    stateShadowMeshClear.mBlendStates[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-    stateShadowMeshClear.mBlendStates[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-    stateShadowMeshClear.mBlendStates[0].alphaBlendOp = VK_BLEND_OP_ADD;
+    stateShadowMeshClear.mStencilTestEnabled = true;
+    stateShadowMeshClear.mStencilFront.failOp = VK_STENCIL_OP_KEEP;
+    stateShadowMeshClear.mStencilFront.depthFailOp = VK_STENCIL_OP_KEEP;
+    stateShadowMeshClear.mStencilFront.passOp = VK_STENCIL_OP_ZERO;
+    stateShadowMeshClear.mStencilFront.compareOp = VK_COMPARE_OP_ALWAYS;
+    stateShadowMeshClear.mStencilFront.compareMask = STENCIL_BIT_SCRATCH;
+    stateShadowMeshClear.mStencilFront.writeMask = STENCIL_BIT_SCRATCH;
+    stateShadowMeshClear.mStencilFront.reference = STENCIL_BIT_SCRATCH;
+    stateShadowMeshClear.mBlendStates[0].colorWriteMask = 0;
+    stateShadowMeshClear.mBlendStates[0].blendEnable = false;
 
     // PostProcess
     PipelineState& statePostProcess = sPipelineConfigs[(uint32_t)PipelineConfig::PostProcess];

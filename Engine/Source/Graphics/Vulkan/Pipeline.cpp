@@ -133,12 +133,12 @@ void Pipeline::CreateGraphicsPipeline(VkPipelineCache cache, VkSpecializationInf
     depthStencil.depthTestEnable = mState.mDepthTestEnabled;
     depthStencil.depthWriteEnable = mState.mDepthWriteEnabled;
     depthStencil.depthCompareOp = mState.mDepthCompareOp;
-    depthStencil.depthBoundsTestEnable = VK_FALSE;
-    depthStencil.minDepthBounds = 0.0f;
-    depthStencil.maxDepthBounds = 1.0f;
-    depthStencil.stencilTestEnable = VK_FALSE;
-    depthStencil.front = {};
-    depthStencil.back = {};
+    depthStencil.depthBoundsTestEnable = mState.mDepthBoundsEnabled;
+    depthStencil.minDepthBounds = mState.mMinDepthBounds;
+    depthStencil.maxDepthBounds = mState.mMaxDepthBounds;
+    depthStencil.stencilTestEnable = mState.mStencilTestEnabled;
+    depthStencil.front = mState.mStencilFront;
+    depthStencil.back = mState.mStencilBack;
 
     VkPipelineColorBlendStateCreateInfo colorBlending = {};
     colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

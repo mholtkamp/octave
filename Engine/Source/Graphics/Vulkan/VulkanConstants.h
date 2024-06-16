@@ -24,3 +24,6 @@
 #define MAX_MATERIAL_UBO_SIZE (4 * 1024)
 
 #define VULKAN_VERBOSE_LOGGING 0
+
+// Stencil Bits
+#define STENCIL_BIT_SCRATCH 0x01
