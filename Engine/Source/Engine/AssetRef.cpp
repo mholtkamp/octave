@@ -49,19 +49,25 @@ void AssetRef::EraseReferencesToAsset(Asset* asset)
 
 void AssetRef::AddLiveRef(AssetRef* ref)
 {
-    SCOPED_LOCK(GetLiveRefMutex());
+    if (!IsShuttingDown())
+    {
+        SCOPED_LOCK(GetLiveRefMutex());
 
-    // Ensure that we are not adding this ref a second time to the list.
-    OCT_ASSERT(GetLiveRefMap().find(ref) == GetLiveRefMap().end());
+        // Ensure that we are not adding this ref a second time to the list.
+        OCT_ASSERT(GetLiveRefMap().find(ref) == GetLiveRefMap().end());
 
-    GetLiveRefMap().insert(ref);
+        GetLiveRefMap().insert(ref);
+    }
 }
 
 void AssetRef::RemoveLiveRef(AssetRef* ref)
 {
-    SCOPED_LOCK(GetLiveRefMutex());
+    if (!IsShuttingDown())
+    {
+        SCOPED_LOCK(GetLiveRefMutex());
 
-    GetLiveRefMap().erase(ref);
+        GetLiveRefMap().erase(ref);
+    }
 }
 #endif
 
@@ -124,10 +130,7 @@ AssetRef::~AssetRef()
     }
 
 #if ASSET_LIVE_REF_TRACKING
-    if (!IsShuttingDown())
-    {
-        RemoveLiveRef(this);
-    }
+    RemoveLiveRef(this);
 #endif
 }
 
