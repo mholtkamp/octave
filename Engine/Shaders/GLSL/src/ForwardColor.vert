@@ -38,5 +38,5 @@ void main()
     outTexcoord0 = inTexcoord0;    
     outTexcoord1 = inTexcoord1;    
     outNormal = normalize((geometry.mNormalMatrix * vec4(inNormal, 0.0)).xyz);
-    outColor = inColor;
+    outColor = SrgbToLinear(inColor);
 }
