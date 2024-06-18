@@ -608,23 +608,92 @@ void SkeletalMesh::Create(const aiScene& scene,
     boneIndices.resize(MAX_BONE_INFLUENCES * meshData.mNumVertices);
     boneWeights.resize(MAX_BONE_INFLUENCES * meshData.mNumVertices);
 
-    uint32_t realBoneIndex = 0;
-    for (uint32_t boneIndex = 0; boneIndex < meshData.mNumBones; ++boneIndex)
-    {
-        aiBone* bone = meshData.mBones[boneIndex];
+    // Setup bone hierarchy
+    SetupBoneHierarchy(*scene.mRootNode, meshData, boneIndices, boneWeights, -1);
 
+    // Register any "bones" used for animation events. These are prefixed with "Event_".
+    for (int32_t i = 0; i < (int32_t)meshData.mNumBones; ++i)
+    {
+        aiBone* bone = meshData.mBones[i];
         if (strncmp(bone->mName.C_Str(), "Event_", strlen("Event_")) == 0)
         {
-            // Event bones are just used for adding event key frames. They don't actually deform bones.
-            continue;
+            Bone boneData;
+            boneData.mName = bone->mName.C_Str();
+            boneData.mOffsetMatrix = glm::transpose(glm::make_mat4(&bone->mOffsetMatrix.a1));
+            boneData.mInvOffsetMatrix = glm::inverse(boneData.mOffsetMatrix);
+            boneData.mIndex = (int32_t)mBones.size();
+            mBones.push_back(boneData);
         }
+    }
 
+    // Verify that all bones now have parent indices.
+    //for (uint32_t i = 0; i < mBones.size(); ++i)
+    //{
+    //    if (i == 0)
+    //    {
+    //        OCT_ASSERT(mBones[i].mParentIndex == -1);
+    //    }
+    //    else
+    //    {
+    //        OCT_ASSERT(mBones[i].mParentIndex >= 0 && 
+    //               mBones[i].mParentIndex < mBones.size() &&
+    //               mBones[i].mParentIndex != i);
+    //    }
+    //}
+
+    // Import animations
+    SetupAnimations(scene);
+
+    // Setup vertex/index buffers
+    SetupResource(meshData, boneWeights, boneIndices);
+
+    mMaterial = Renderer::Get()->GetDefaultMaterial();
+
+    ComputeBounds();
+}
+
+void SkeletalMesh::SetupBoneHierarchy(
+    const aiNode& node,
+    const aiMesh& meshData,
+    std::vector<uint8_t>& boneIndices,
+    std::vector<float>& boneWeights,
+    int32_t parentBoneIndex)
+{
+    std::string nodeName = node.mName.C_Str();
+    int32_t boneIndex = -1;
+
+    aiBone* bone = nullptr;
+
+    for (boneIndex = 0; boneIndex < (int32_t)meshData.mNumBones; ++boneIndex)
+    {
+        if (meshData.mBones[boneIndex]->mName == node.mName)
+        {
+            bone = meshData.mBones[boneIndex];
+            break;
+        }
+    }
+
+    if (bone && nodeName.substr(0, 6) == "Event_")
+    {
+        // Event bones are handled separately from the main bone hierarchy.
+        return;
+    }
+
+    if (bone == nullptr)
+    {
+        boneIndex = -1;
+    }
+
+
+    if (bone != nullptr)
+    {
         Bone boneData;
         boneData.mName = bone->mName.C_Str();
         boneData.mOffsetMatrix = glm::transpose(glm::make_mat4(&bone->mOffsetMatrix.a1));
         boneData.mInvOffsetMatrix = glm::inverse(boneData.mOffsetMatrix);
-        boneData.mIndex = realBoneIndex;
-        mBones.emplace_back(boneData);
+        boneData.mIndex = (int32_t)mBones.size();
+        boneData.mParentIndex = parentBoneIndex;
+        mBones.push_back(boneData);
 
         for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
         {
@@ -656,73 +725,16 @@ void SkeletalMesh::Create(const aiScene& scene,
                     vertWeights[i] = vertWeights[i - 1];
                 }
 
-                vertIndices[insertIndex] = realBoneIndex;
+                vertIndices[insertIndex] = boneData.mIndex;
                 vertWeights[insertIndex] = weight.mWeight;
             }
         }
-
-        // Don't count event bones as real bones.
-        realBoneIndex++;
     }
 
-    // Setup bone hierarchy
-    SetupBoneHierarchy(*scene.mRootNode, -1);
-
-    // Verify that all bones now have parent indices.
-    //for (uint32_t i = 0; i < mBones.size(); ++i)
-    //{
-    //    if (i == 0)
-    //    {
-    //        OCT_ASSERT(mBones[i].mParentIndex == -1);
-    //    }
-    //    else
-    //    {
-    //        OCT_ASSERT(mBones[i].mParentIndex >= 0 && 
-    //               mBones[i].mParentIndex < mBones.size() &&
-    //               mBones[i].mParentIndex != i);
-    //    }
-    //}
-
-    // Import animations
-    SetupAnimations(scene);
-
-    // Setup vertex/index buffers
-    SetupResource(meshData, boneWeights, boneIndices);
-
-    mMaterial = Renderer::Get()->GetDefaultMaterial();
-
-    ComputeBounds();
-}
-
-void SkeletalMesh::SetupBoneHierarchy(const aiNode& node, int32_t parentBoneIndex)
-{
-    std::string nodeName = node.mName.C_Str();
-    int32_t boneIndex = -1;
-
-    if (nodeName.substr(0, 6) != "Event_")
-    {
-        for (uint32_t i = 0; i < mBones.size(); ++i)
-        {
-            if (nodeName == mBones[i].mName)
-            {
-                boneIndex = i;
-
-                if (parentBoneIndex != -1)
-                {
-                    // I'm assuming that all parent bones come before child bones in the mesh bone array.
-                    // This makes the bone matrix updates easier since we can iterate linearly from index 0.
-                    OCT_ASSERT(parentBoneIndex < (int32_t)i);
-                    mBones[i].mParentIndex = parentBoneIndex;
-                    break;
-                }
-            }
-        }
-    }
-
-    int32_t newParentIndex = (boneIndex != -1) ? boneIndex : parentBoneIndex;
+    int32_t newParentIndex = (bone != nullptr) ? boneIndex : parentBoneIndex;
     for (uint32_t i = 0; i < node.mNumChildren; ++i)
     {
-        SetupBoneHierarchy(*node.mChildren[i], newParentIndex);
+        SetupBoneHierarchy(*node.mChildren[i], meshData, boneIndices, boneWeights, newParentIndex);
     }
 }
 

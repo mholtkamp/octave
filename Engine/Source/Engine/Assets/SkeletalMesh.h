@@ -170,7 +170,13 @@ public:
         const aiMesh& meshData,
         std::vector<Material>* materials = nullptr);
 
-    void SetupBoneHierarchy(const aiNode& node, int32_t parentBoneIndex);
+    void SetupBoneHierarchy(
+        const aiNode& node,
+        const aiMesh& meshData,
+        std::vector<uint8_t>& boneIndices,
+        std::vector<float>& boneWeights,
+        int32_t parentBoneIndex);
+
     void SetupAnimations(const aiScene& scene);
     void SetupResource(const aiMesh& meshData,
         const std::vector<float>& boneWeights,
