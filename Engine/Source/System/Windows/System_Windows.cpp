@@ -498,9 +498,9 @@ void SYS_CloseDirectory(DirEntry& dirEntry)
     dirEntry.mFindHandle = nullptr;
 }
 
-std::string SYS_OpenFileDialog()
+std::vector<std::string> SYS_OpenFileDialog()
 {
-    std::string retPath = "";
+    std::vector<std::string> retPaths;
 
     OPENFILENAME ofn; // common dialog box structure
     char szFile[260]; // buffer for file name
@@ -520,24 +520,40 @@ std::string SYS_OpenFileDialog()
     ofn.lpstrFileTitle = NULL;
     ofn.nMaxFileTitle = 0;
     ofn.lpstrInitialDir = NULL;
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+    ofn.Flags = OFN_ALLOWMULTISELECT | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR | OFN_EXPLORER;
 
     // Display the Open dialog box. 
     if (GetOpenFileName(&ofn) != 0)
     {
-        retPath = ofn.lpstrFile;
-    }
+        // First string contains directory path
+        char* str = ofn.lpstrFile;
+        std::string dirStr = str;
+        str += (dirStr.length() + 1);
 
-    // Convert backslash to forward slashes.
-    for (uint32_t i = 0; i < retPath.size(); ++i)
-    {
-        if (retPath[i] == '\\')
+        while (*str)
         {
-            retPath[i] = '/';
+            std::string fileStr = str;
+            str += (fileStr.length() + 1);
+
+            fileStr = dirStr + "/" + fileStr;
+            retPaths.push_back(fileStr);
         }
     }
 
-    return retPath;
+    // Convert backslash to forward slashes.
+    for (uint32_t i = 0; i < retPaths.size(); ++i)
+    {
+        std::string& retPath = retPaths[i];
+        for (uint32_t i = 0; i < retPath.size(); ++i)
+        {
+            if (retPath[i] == '\\')
+            {
+                retPath[i] = '/';
+            }
+        }
+    }
+
+    return retPaths;
 }
 
 std::string SYS_SaveFileDialog()

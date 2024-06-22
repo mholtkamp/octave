@@ -1204,7 +1204,12 @@ void ActionManager::OpenProject(const char* path)
 #if USE_IMGUI_FILE_BROWSER
         EditorOpenFileBrowser(HandleOpenProjectCallback, false);
 #else
-        pathStr = SYS_OpenFileDialog();
+        std::vector<std::string> paths = SYS_OpenFileDialog();
+
+        if (paths.size() > 0)
+        {
+            pathStr = paths[0];
+        }
 #endif
     }
 
@@ -1225,12 +1230,12 @@ void ActionManager::OpenScene()
     if (GetEngineState()->mProjectPath == "")
         return;
 
-    std::string openPath = SYS_OpenFileDialog();
+    std::vector<std::string> openPaths = SYS_OpenFileDialog();
 
     // Display the Open dialog box. 
-    if (openPath != "")
+    if (openPaths.size() > 0)
     {
-        std::string filename = strrchr(openPath.c_str(), '/') + 1;
+        std::string filename = strrchr(openPaths[0].c_str(), '/') + 1;
         filename = filename.substr(0, filename.find_last_of('.'));
         AssetStub* stub = FetchAssetStub(filename);
 
@@ -1351,11 +1356,11 @@ void ActionManager::ImportAsset()
 #if USE_IMGUI_FILE_BROWSER
         EditorOpenFileBrowser(HandleImportCallback, false);
 #else
-        std::string filePath = SYS_OpenFileDialog();
+        std::vector<std::string> filePaths = SYS_OpenFileDialog();
 
-        if (filePath != "")
+        for (uint32_t i = 0; i < filePaths.size(); ++i)
         {
-            ImportAsset(filePath);
+            ImportAsset(filePaths[i]);
         }
 #endif
     }

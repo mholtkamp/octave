@@ -613,9 +613,9 @@ void SYS_CloseDirectory(DirEntry& dirEntry)
     dirEntry.mDir = nullptr;
 }
 
-std::string SYS_OpenFileDialog()
+std::vector<std::string> SYS_OpenFileDialog()
 {
-    return "";
+    return {};
 }
 
 std::string SYS_SaveFileDialog()

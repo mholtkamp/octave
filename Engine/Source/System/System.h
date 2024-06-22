@@ -3,6 +3,7 @@
 #include "System/SystemTypes.h"
 
 #include <string>
+#include <vector>
 #include <stdarg.h>
 
 class Stream;
@@ -25,7 +26,7 @@ void SYS_IterateDirectory(DirEntry& dirEntry);
 void SYS_CloseDirectory(DirEntry& dirEntry);
 void SYS_RemoveFile(const char* path);
 bool SYS_Rename(const char* oldPath, const char* newPath);
-std::string SYS_OpenFileDialog();
+std::vector<std::string> SYS_OpenFileDialog();
 std::string SYS_SaveFileDialog();
 std::string SYS_SelectFolderDialog();
 
