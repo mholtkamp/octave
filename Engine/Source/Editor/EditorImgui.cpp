@@ -48,6 +48,7 @@ struct FileBrowserDirEntry
     std::string mName;
     std::string mDirPath;
     bool mFolder = false;
+    bool mSelected = false;
 };
 
 static const float kSidePaneWidth = 200.0f;
@@ -73,7 +74,7 @@ static Texture* sPrevInspectTexture = nullptr;
 static bool sFileBrowserOpen = false;
 static bool sFileBrowserFolderMode = false;
 static FileBrowserCallbackFP sFileBrowserCallback = nullptr;
-static std::string sFileBrowserPath;
+static std::vector<std::string> sFileBrowserPaths;
 static std::string sFileBrowserCurDir;
 static std::vector<FileBrowserDirEntry> sFileBrowserEntries;
 static float sFileBrowserDoubleClickBlock = 0.0f;
@@ -134,7 +135,7 @@ void EditorOpenFileBrowser(FileBrowserCallbackFP callback, bool folderMode)
         sFileBrowserOpen = true;
         sFileBrowserFolderMode = folderMode;
         sFileBrowserCallback = callback;
-        sFileBrowserPath = "";
+        sFileBrowserPaths.clear();
 
         if (sFileBrowserCurDir == "")
         {
@@ -366,7 +367,8 @@ static void DrawFileBrowser()
 
                         if (sFileBrowserFolderMode)
                         {
-                            sFileBrowserPath = sFileBrowserCurDir;
+                            sFileBrowserPaths.clear();
+                            sFileBrowserPaths.push_back(sFileBrowserCurDir);
                         }
                     }
 
@@ -386,17 +388,55 @@ static void DrawFileBrowser()
             {
                 if (!sFileBrowserEntries[i].mFolder)
                 {
-                    if (ImGui::Selectable(sFileBrowserEntries[i].mName.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick))
+                    bool selected = sFileBrowserEntries[i].mSelected;
+
+                    if (selected)
+                    {
+                        ImGui::PushStyleColor(ImGuiCol_Header, kToggledColor);
+                        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, kToggledColor);
+                        ImGui::PushStyleColor(ImGuiCol_HeaderActive, kToggledColor);
+                    }
+
+                    if (ImGui::Selectable(sFileBrowserEntries[i].mName.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick))
                     {
                         if (!sFileBrowserFolderMode)
                         {
-                            if (doubleClicked)
+                            if (IsControlDown())
                             {
-                                confirmOpen = true;
+                                if (selected)
+                                {
+                                    sFileBrowserEntries[i].mSelected = false;
+                                    sFileBrowserPaths.erase(std::find(sFileBrowserPaths.begin(), sFileBrowserPaths.end(), sFileBrowserCurDir + sFileBrowserEntries[i].mName));
+                                }
+                                else
+                                {
+                                    sFileBrowserEntries[i].mSelected = true;
+                                    sFileBrowserPaths.push_back(sFileBrowserCurDir + sFileBrowserEntries[i].mName);
+                                }
                             }
+                            else
+                            {
+                                if (doubleClicked)
+                                {
+                                    confirmOpen = true;
+                                }
 
-                            sFileBrowserPath = sFileBrowserCurDir + sFileBrowserEntries[i].mName;
+                                sFileBrowserPaths.clear();
+                                sFileBrowserPaths.push_back(sFileBrowserCurDir + sFileBrowserEntries[i].mName);
+
+                                for (uint32_t x = 0; x < sFileBrowserEntries.size(); ++x)
+                                {
+                                    sFileBrowserEntries[x].mSelected = false;
+                                }
+
+                                sFileBrowserEntries[i].mSelected = true;
+                            }
                         }
+                    }
+
+                    if (selected)
+                    {
+                        ImGui::PopStyleColor(3);
                     }
 
                     if (ImGui::BeginPopupContextItem())
@@ -434,7 +474,12 @@ static void DrawFileBrowser()
             }
         }
 
-        std::string fileFolderName = sFileBrowserPath;
+        std::string fileFolderName = "";
+        if (sFileBrowserPaths.size() > 0)
+        {
+            fileFolderName = sFileBrowserPaths.back();
+        }
+
         if (sFileBrowserFolderMode && 
             fileFolderName.size() > 0 &&
             (fileFolderName.back() == '/' || fileFolderName.back() == '\\'))
@@ -451,22 +496,30 @@ static void DrawFileBrowser()
         ImGui::SetNextItemWidth(400);
         if (ImGui::InputText(sFileBrowserFolderMode ? "Folder" : "File", &fileFolderName))
         {
-            sFileBrowserPath = sFileBrowserCurDir + fileFolderName;
+            sFileBrowserPaths.clear();
+            sFileBrowserPaths.push_back(sFileBrowserCurDir + fileFolderName);
 
             // Add the trailing slash if its a folder.
             if (sFileBrowserFolderMode &&
-                sFileBrowserPath.size() > 0 &&
-                (sFileBrowserPath.back() != '/' && sFileBrowserPath.back() != '\\'))
+                sFileBrowserPaths[0].size() > 0 &&
+                (sFileBrowserPaths[0].back() != '/' && sFileBrowserPaths[0].back() != '\\'))
             {
 #if PLATFORM_WINDOWS
-                sFileBrowserPath.push_back('\\');
+                sFileBrowserPaths[0].push_back('\\');
 #else
-                sFileBrowserPath.push_back('/');
+                sFileBrowserPaths[0].push_back('/');
 #endif
             }
         }
 
-        ImGui::Text(sFileBrowserPath.c_str());
+        {
+            std::string curPath = "";
+            if (sFileBrowserPaths.size() > 0)
+            {
+                curPath = sFileBrowserPaths[0];
+            }
+            ImGui::Text(curPath.c_str());
+        }
 
         if (ImGui::Button("Open"))
         {
@@ -488,7 +541,7 @@ static void DrawFileBrowser()
         {
             if (sFileBrowserCallback != nullptr)
             {
-                sFileBrowserCallback(sFileBrowserPath);
+                sFileBrowserCallback(sFileBrowserPaths);
             }
 
             sFileBrowserOpen = false;

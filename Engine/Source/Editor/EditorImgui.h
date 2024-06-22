@@ -2,10 +2,11 @@
 
 #if EDITOR
 #include <cstdint>
+#include <vector>
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
 
-typedef void(*FileBrowserCallbackFP)(const std::string& filePath);
+typedef void(*FileBrowserCallbackFP)(const std::vector<std::string>& filePaths);
 
 
 void EditorImguiInit();

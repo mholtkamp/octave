@@ -971,11 +971,11 @@ void ActionManager::RestoreExiledNode(Node* node)
 }
 
 static bool sHandleNewProjectCallbackCpp = false;
-static void HandleNewProjectCallback(const std::string& folderPath)
+static void HandleNewProjectCallback(const std::vector<std::string>& folderPaths)
 {
-    if (folderPath != "")
+    if (folderPaths.size() > 0 && folderPaths[0] != "")
     {
-        ActionManager::Get()->CreateNewProject(folderPath.c_str(), sHandleNewProjectCallbackCpp);
+        ActionManager::Get()->CreateNewProject(folderPaths[0].c_str(), sHandleNewProjectCallbackCpp);
     }
     else
     {
@@ -1183,11 +1183,11 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
     }
 }
 
-static void HandleOpenProjectCallback(const std::string& filePath)
+static void HandleOpenProjectCallback(const std::vector<std::string>& filePaths)
 {
-    if (filePath != "")
+    if (filePaths.size() > 0 && filePaths[0] != "")
     {
-        ActionManager::Get()->OpenProject(filePath.c_str());
+        ActionManager::Get()->OpenProject(filePaths[0].c_str());
     }
     else
     {
@@ -1337,15 +1337,18 @@ void ActionManager::DeleteNode(Node* node)
     }
 }
 
-static void HandleImportCallback(const std::string& filePath)
+static void HandleImportCallback(const std::vector<std::string>& filePaths)
 {
-    if (filePath != "")
+    for (uint32_t i = 0; i < filePaths.size(); ++i)
     {
-        ActionManager::Get()->ImportAsset(filePath.c_str());
-    }
-    else
-    {
-        LogError("Bad file for ImportAsset.");
+        if (filePaths[i] != "")
+        {
+            ActionManager::Get()->ImportAsset(filePaths[i].c_str());
+        }
+        else
+        {
+            LogError("Bad file for ImportAsset.");
+        }
     }
 }
 
