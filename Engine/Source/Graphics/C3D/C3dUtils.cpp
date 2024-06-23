@@ -412,7 +412,7 @@ void SetupLightEnv(LightEnv& lightEnv, bool dynamicOnly)
         glm::vec3 lightPosWS = lightData.mPosition;
         if (lightData.mType == LightType::Directional)
         {
-            lightPosWS = cameraComp->GetAbsolutePosition() + -lightData.mDirection * 10000.0f;
+            lightPosWS = cameraComp->GetWorldPosition() + -lightData.mDirection * 10000.0f;
         }
 
         glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
