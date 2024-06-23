@@ -77,6 +77,17 @@ int StaticMesh_Lua::HasTriangleMeshCollision(lua_State* L)
     return 1;
 }
 
+int StaticMesh_Lua::EnableTriangleMeshCollision(lua_State* L)
+{
+    StaticMesh* mesh = CHECK_STATIC_MESH(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    mesh->SetGenerateTriangleCollisionMesh(value);
+
+    return 0;
+}
+
+
 void StaticMesh_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -100,6 +111,8 @@ void StaticMesh_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, HasVertexColor);
 
     REGISTER_TABLE_FUNC(L, mtIndex, HasTriangleMeshCollision);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableTriangleMeshCollision);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

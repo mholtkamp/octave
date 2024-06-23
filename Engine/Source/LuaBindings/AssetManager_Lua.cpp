@@ -27,6 +27,16 @@ int AssetManager_Lua::LoadAsset(lua_State* L)
     return 1;
 }
 
+int AssetManager_Lua::SaveAsset(lua_State* L)
+{
+#if EDITOR
+    const char* name = CHECK_STRING(L, 1);
+
+    AssetManager::Get()->SaveAsset(name);
+#endif
+    return 1;
+}
+
 int AssetManager_Lua::AsyncLoadAsset(lua_State* L)
 {
     const char* name = CHECK_STRING(L, 1);
@@ -66,6 +76,8 @@ void AssetManager_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, GetAsset);
 
     REGISTER_TABLE_FUNC(L, tableIdx, LoadAsset);
+
+    REGISTER_TABLE_FUNC(L, tableIdx, SaveAsset);
 
     REGISTER_TABLE_FUNC(L, tableIdx, AsyncLoadAsset);
 

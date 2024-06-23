@@ -23,6 +23,7 @@ struct StaticMesh_Lua
     static int GetNumVertices(lua_State* L);
     static int HasVertexColor(lua_State* L);
     static int HasTriangleMeshCollision(lua_State* L);
+    static int EnableTriangleMeshCollision(lua_State* L);
 
     static void Bind();
 };

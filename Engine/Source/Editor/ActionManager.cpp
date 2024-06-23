@@ -1337,6 +1337,30 @@ void ActionManager::DeleteNode(Node* node)
     }
 }
 
+static void HandleRunScriptCallback(const std::vector<std::string>& filePaths)
+{
+    lua_State* L = GetLua();
+
+    for (uint32_t i = 0; i < filePaths.size(); ++i)
+    {
+        // Don't use ScriptUtils::RunScript(). Allow script to exist outside of the project.
+        if (luaL_dofile(L, filePaths[i].c_str()))
+        {
+            LogError("Lua Error: %s\n", lua_tostring(L, -1));
+        }
+    }
+}
+
+void ActionManager::RunScript()
+{
+#if USE_IMGUI_FILE_BROWSER
+    EditorOpenFileBrowser(HandleRunScriptCallback, false);
+#else
+    std::vector<std::string> filePaths = SYS_OpenFileDialog();
+    HandleRunScriptCallback(filePaths);
+#endif
+}
+
 static void HandleImportCallback(const std::vector<std::string>& filePaths)
 {
     for (uint32_t i = 0; i < filePaths.size(); ++i)
@@ -1360,11 +1384,7 @@ void ActionManager::ImportAsset()
         EditorOpenFileBrowser(HandleImportCallback, false);
 #else
         std::vector<std::string> filePaths = SYS_OpenFileDialog();
-
-        for (uint32_t i = 0; i < filePaths.size(); ++i)
-        {
-            ImportAsset(filePaths[i]);
-        }
+        HandleImportCallback(filePaths);
 #endif
     }
     else

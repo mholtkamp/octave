@@ -527,16 +527,27 @@ std::vector<std::string> SYS_OpenFileDialog()
     {
         // First string contains directory path
         char* str = ofn.lpstrFile;
-        std::string dirStr = str;
-        str += (dirStr.length() + 1);
+        std::string firstStr = str;
+        str += (firstStr.length() + 1);
 
-        while (*str)
+        if (*str != '\0')
         {
-            std::string fileStr = str;
-            str += (fileStr.length() + 1);
+            std::string dirStr = firstStr;
 
-            fileStr = dirStr + "/" + fileStr;
-            retPaths.push_back(fileStr);
+            // There are multiple files. First string was dir name.
+            while (*str)
+            {
+                std::string fileStr = str;
+                str += (fileStr.length() + 1);
+
+                fileStr = dirStr + "/" + fileStr;
+                retPaths.push_back(fileStr);
+            }
+        }
+        else
+        {
+            // There was only one file
+            retPaths.push_back(firstStr);
         }
     }
 

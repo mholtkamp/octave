@@ -2559,6 +2559,8 @@ static void DrawViewportPanel()
         }
         if (ImGui::Selectable("Import Asset"))
             am->ImportAsset();
+        if (ImGui::Selectable("Run Script"))
+            am->RunScript();
         if (ImGui::Selectable("Recapture All Scenes"))
             am->RecaptureAndSaveAllScenes();
         if (ImGui::Selectable("Resave All Assets"))

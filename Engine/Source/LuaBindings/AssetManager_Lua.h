@@ -11,6 +11,7 @@ struct AssetManager_Lua
     static int RefSweep(lua_State* L);
     static int GetAsset(lua_State* L);
     static int LoadAsset(lua_State* L);
+    static int SaveAsset(lua_State* L);
     static int AsyncLoadAsset(lua_State* L);
     static int UnloadAsset(lua_State* L);
 
