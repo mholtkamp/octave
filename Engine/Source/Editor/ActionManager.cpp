@@ -1134,10 +1134,20 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
 
             // Copy Makefiles and replace "Octave"
             CopyFileAndReplaceString(standaloneDir + "Makefile_3DS", subProjFolder + "Makefile_3DS", "Octave", newProjName);
+            ReplaceStringInFile(subProjFolder + "Makefile_3DS", "../Engine", "../Octave/Engine");
+            ReplaceStringInFile(subProjFolder + "Makefile_3DS", "../External", "../Octave/External");
             CopyFileAndReplaceString(standaloneDir + "Makefile_GCN", subProjFolder + "Makefile_GCN", "Octave", newProjName);
+            ReplaceStringInFile(subProjFolder + "Makefile_GCN", "../Engine", "../Octave/Engine");
+            ReplaceStringInFile(subProjFolder + "Makefile_GCN", "../External", "../Octave/External");
             CopyFileAndReplaceString(standaloneDir + "Makefile_Wii", subProjFolder + "Makefile_Wii", "Octave", newProjName);
+            ReplaceStringInFile(subProjFolder + "Makefile_Wii", "../Engine", "../Octave/Engine");
+            ReplaceStringInFile(subProjFolder + "Makefile_Wii", "../External", "../Octave/External");
             CopyFileAndReplaceString(standaloneDir + "Makefile_Linux_Game", subProjFolder + "Makefile_Linux_Game", "Octave", newProjName);
+            ReplaceStringInFile(subProjFolder + "Makefile_Linux_Game", "../Engine", "../Octave/Engine");
+            ReplaceStringInFile(subProjFolder + "Makefile_Linux_Game", "../External", "../Octave/External");
             CopyFileAndReplaceString(standaloneDir + "Makefile_Linux_Editor", subProjFolder + "Makefile_Linux_Editor", "Octave", newProjName);
+            ReplaceStringInFile(subProjFolder + "Makefile_Linux_Editor", "../Engine", "../Octave/Engine");
+            ReplaceStringInFile(subProjFolder + "Makefile_Linux_Editor", "../External", "../Octave/External");
 
             // Copy and replace Standalone.vcxproj/filters and replace "Standalone" 
             CopyFileAndReplaceString(standaloneDir + "Standalone.vcxproj", subProjFolder + newProjName + ".vcxproj", "Standlone", newProjName);
