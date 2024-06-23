@@ -644,10 +644,8 @@ void StaticMesh::CreateTriangleCollisionShape()
     mTriangleIndexVertexArray->addIndexedMesh(mesh, sizeof(IndexType) == 2 ? PHY_SHORT : PHY_INTEGER);
 
     bool useQuantizedAabbCompression = true;
-    btVector3 aabbMin(-1000, -1000, -1000);
-    btVector3 aabbMax( 1000,  1000,  1000);
 
-    mTriangleCollisionShape = new btBvhTriangleMeshShape(mTriangleIndexVertexArray, useQuantizedAabbCompression, aabbMin, aabbMax);
+    mTriangleCollisionShape = new btBvhTriangleMeshShape(mTriangleIndexVertexArray, useQuantizedAabbCompression);
     mTriangleInfoMap = new btTriangleInfoMap();
     btGenerateInternalEdgeInfo(mTriangleCollisionShape, mTriangleInfoMap);
 }
