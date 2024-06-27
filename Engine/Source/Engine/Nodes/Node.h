@@ -26,15 +26,16 @@ class Scene;
 class World;
 class Script;
 
-#define DECLARE_NODE(Base, Parent) \
-        DECLARE_FACTORY(Base, Node); \
-        DECLARE_RTTI(Base, Parent); \
-        DECLARE_SCRIPT_LINK(Base, Parent, Node);
+#define DECLARE_NODE(Class, Parent) \
+        DECLARE_FACTORY(Class, Node); \
+        DECLARE_RTTI(Class, Parent); \
+        DECLARE_SCRIPT_LINK(Class, Parent, Node) \
+        typedef Parent Super;
 
-#define DEFINE_NODE(Base, Parent) \
-        DEFINE_FACTORY(Base, Node); \
-        DEFINE_RTTI(Base); \
-        DEFINE_SCRIPT_LINK(Base, Parent, Node);
+#define DEFINE_NODE(Class, Parent) \
+        DEFINE_FACTORY(Class, Node); \
+        DEFINE_RTTI(Class); \
+        DEFINE_SCRIPT_LINK(Class, Parent, Node);
 
 typedef std::unordered_map<std::string, NetFunc> NetFuncMap;
 
