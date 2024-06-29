@@ -557,60 +557,94 @@ bool SYS_Rename(const char* oldPath, const char* newPath)
     return (rename(oldPath, newPath) == 0);
 }
 
-void SYS_OpenDirectory(const std::string& dirPath, DirEntry& outDirEntry)
-{
-    strncpy(outDirEntry.mDirectoryPath, dirPath.c_str(), MAX_PATH_SIZE);
+static std::vector<std::string> sDirIterFiles;
 
-    outDirEntry.mDir = opendir(dirPath.c_str());
-    if (outDirEntry.mDir == nullptr)
+static std::vector<std::string> ConvertStringList(JNIEnv* env, jobject arrayList)
+{
+    static jclass java_util_ArrayList      = static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/util/ArrayList")));
+    static jmethodID java_util_ArrayList_     = env->GetMethodID(java_util_ArrayList, "<init>", "(I)V");
+    static jmethodID java_util_ArrayList_size = env->GetMethodID (java_util_ArrayList, "size", "()I");
+    static jmethodID java_util_ArrayList_get  = env->GetMethodID(java_util_ArrayList, "get", "(I)Ljava/lang/Object;");
+    static jmethodID java_util_ArrayList_add  = env->GetMethodID(java_util_ArrayList, "add", "(Ljava/lang/Object;)Z");
+
+    std::vector<std::string> vecList;
+
+    jint arrayListSize = env->CallIntMethod(arrayList, java_util_ArrayList_size);
+
+    for (jint i = 0; i < arrayListSize; ++i)
     {
-        LogError("Could not open directory.");
-        closedir(outDirEntry.mDir);
-        return;
+        jstring jStr = static_cast<jstring>(env->CallObjectMethod(arrayList, java_util_ArrayList_get, i));
+
+        const char* cStr = env->GetStringUTFChars(jStr, nullptr);
+        vecList.push_back(cStr);
+
+        env->ReleaseStringUTFChars(jStr, cStr);
+        env->DeleteLocalRef(jStr);
     }
 
-    dirent* ent = readdir(outDirEntry.mDir);
-    if (ent == nullptr)
+    return vecList;
+}
+
+void SYS_OpenDirectory(const std::string& dirPath, DirEntry& outDirEntry)
+{
+    SystemState& system = GetEngineState()->mSystem;
+
+    sDirIterFiles.clear();
+
+    strncpy(outDirEntry.mDirectoryPath, dirPath.c_str(), MAX_PATH_SIZE);
+
+    // Call JNI to get list of files and dirs
+    JNIEnv* env = nullptr;
+    JavaVM* vm = system.mActivity->vm;
+    vm->AttachCurrentThread(&env, nullptr);
+
+    {
+        jobject octActivity = system.mActivity->clazz;
+        jclass octClass = env->GetObjectClass(octActivity);
+        jmethodID javaMeth = env->GetMethodID(octClass, "iterateDirFiles",
+                                                       "(Ljava/lang/String;)Ljava/util/ArrayList;");
+
+        jstring jDir = env->NewStringUTF(dirPath.c_str());
+        jobject jArray = env->CallObjectMethod(octActivity, javaMeth, jDir);
+
+        sDirIterFiles = ConvertStringList(env, jArray);
+    }
+
+    vm->DetachCurrentThread();
+
+    if (sDirIterFiles.size() == 0)
     {
         outDirEntry.mValid = false;
     }
     else
     {
-        memcpy(outDirEntry.mFilename, ent->d_name, MAX_PATH_SIZE);
+        memcpy(outDirEntry.mFilename, sDirIterFiles.back().c_str(), MAX_PATH_SIZE);
 
-        struct stat statbuf;
-        std::string fullPath = dirPath + outDirEntry.mFilename;
-        stat(fullPath.c_str(), &statbuf);
-
-        outDirEntry.mDirectory = S_ISDIR(statbuf.st_mode);
+        outDirEntry.mDirectory = false;
         outDirEntry.mValid = true;
     }
 }
 
 void SYS_IterateDirectory(DirEntry& dirEntry)
 {
-    dirent* ent = readdir(dirEntry.mDir);
-    if (ent == nullptr)
+    sDirIterFiles.pop_back();
+
+    if (sDirIterFiles.size() == 0)
     {
         dirEntry.mValid = false;
     }
     else
     {
-        memcpy(dirEntry.mFilename, ent->d_name, MAX_PATH_SIZE);
+        memcpy(dirEntry.mFilename, sDirIterFiles.back().c_str(), MAX_PATH_SIZE);
 
-        struct stat statbuf;
-        std::string fullPath = std::string(dirEntry.mDirectoryPath) + dirEntry.mFilename;
-        stat(fullPath.c_str(), &statbuf);
-
-        dirEntry.mDirectory = S_ISDIR(statbuf.st_mode);
+        dirEntry.mDirectory = true;
         dirEntry.mValid = true;
     }
 }
 
 void SYS_CloseDirectory(DirEntry& dirEntry)
 {
-    closedir(dirEntry.mDir);
-    dirEntry.mDir = nullptr;
+    sDirIterFiles.clear();
 }
 
 std::vector<std::string> SYS_OpenFileDialog()

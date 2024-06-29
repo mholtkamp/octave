@@ -1963,6 +1963,8 @@ void VulkanContext::CreateGlobalShaders()
 
         SYS_IterateDirectory(dirEntry);
     }
+
+    SYS_CloseDirectory(dirEntry);
 }
 
 void VulkanContext::DestroyGlobalShaders()
