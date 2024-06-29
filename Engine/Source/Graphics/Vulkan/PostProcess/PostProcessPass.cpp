@@ -20,8 +20,8 @@ void PostProcessPass::Resize()
 void PostProcessPass::Render(Image* input, Image* output)
 {
     VulkanContext* context = GetVulkanContext();
-    context->SetViewport(0, 0, output->GetWidth(), output->GetHeight(), true, false);
-    context->SetScissor(0, 0, output->GetWidth(), output->GetHeight(), true, false);
+    context->SetViewport(0, 0, output->GetWidth(), output->GetHeight(), false, false);
+    context->SetScissor(0, 0, output->GetWidth(), output->GetHeight(), false, false);
 }
 
 const std::string& PostProcessPass::GetName() const
