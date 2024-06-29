@@ -21,6 +21,7 @@ add_definitions(-DPLATFORM_ANDROID=1 -DAPI_VULKAN=1 -DVK_USE_PLATFORM_ANDROID_KH
 
 file(GLOB SrcLua "../../../../../../External/Lua/*.c")
 file(GLOB SrcVorbis "../../../../../../External/Vorbis/*.c")
+file(GLOB SrcSpirvCross "../../../../../../External/Android/spirv_cross/*.cpp")
 file(GLOB SrcBullet
         "../../../../../../External/Bullet/BulletCollision/BroadphaseCollision/*.cpp"
         "../../../../../../External/Bullet/BulletCollision/CollisionDispatch/*.cpp"
@@ -43,6 +44,7 @@ include_directories("../../../../../../External/Bullet/")
 include_directories("../../../../../../Engine/Source/"
         "../../../../../../Engine/Source/Engine/"
         "../../../../../../External/"
+        "../../../../../../External/Android/"
         "../../../../../../External/Bullet/")
 include_directories("../../../../../../Standalone/Source")
 
@@ -53,7 +55,7 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        ${SrcLua} ${SrcVorbis} ${SrcBullet} ${SrcEngine} ${SrcStandalone})
+        ${SrcLua} ${SrcVorbis} ${SrcSpirvCross} ${SrcBullet} ${SrcEngine} ${SrcStandalone})
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
