@@ -218,6 +218,13 @@ void Pipeline::CreateGraphicsPipeline(VkSpecializationInfo* specInfo)
     {
         const VertexConfig vertexConfig = mVertexConfigs[i];
 
+#if PLATFORM_ANDROID
+        if (vertexConfig.mVertexType == VertexType::VertexSkinned)
+        {
+            continue;
+        }
+#endif
+
         Stream stream;
         stream.ReadFile(vertexConfig.mVertexShaderPath.c_str(), true);
 
