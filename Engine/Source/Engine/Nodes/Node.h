@@ -174,9 +174,9 @@ public:
 
     void SetName(const std::string& newName);
     const std::string& GetName() const;
-    void SetActive(bool active);
+    virtual void SetActive(bool active);
     bool IsActive(bool recurse = false) const;
-    void SetVisible(bool visible);
+    virtual void SetVisible(bool visible);
     bool IsVisible(bool recurse = false) const;
     void SetTransient(bool transient);
     virtual bool IsTransient() const;
