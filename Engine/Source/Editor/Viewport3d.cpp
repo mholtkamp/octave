@@ -34,6 +34,8 @@
 #include "Nodes/3D/TextMesh3d.h"
 #include "System/System.h"
 
+#include "imgui.h"
+
 static float sDefaultFocalDistance = 10.0f;
 constexpr float sMaxCameraPitch = 89.99f;
 
