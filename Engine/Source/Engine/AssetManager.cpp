@@ -196,6 +196,62 @@ AssetStub* AssetManager::CreateAndRegisterAsset(TypeId type, AssetDir* directory
     return stub;
 }
 
+AssetDir* AssetManager::GetAssetDirFromPath(const std::string& dirPath)
+{
+    // Path should be in format like:
+    // Levels/Zone1/Cells/
+    AssetDir* retDir = AssetManager::FindProjectDirectory();
+    if (retDir == nullptr)
+    {
+        LogError("Couldn't find project directory in GetAssetDirFromPath()");
+        return nullptr;
+    }
+
+    if (dirPath.size() == 0)
+    {
+        LogError("Empty path received in GetAssetDirFromPath()");
+        return nullptr;
+    }
+
+    // Make a mutable copy of the dir path
+    std::string path = dirPath;
+
+    if (path.front() == '/')
+    {
+        path.erase(0, 1);
+    }
+
+    if (path.back() != '/')
+    {
+        path.push_back('/');
+    }
+
+    std::string delimiter = "/";
+
+    size_t pos = 0;
+    std::string token;
+    while (retDir != nullptr &&
+        (pos = path.find(delimiter)) != std::string::npos)
+    {
+        token = path.substr(0, pos);
+
+        AssetDir* subDir = nullptr;
+        for (uint32_t i = 0; i < retDir->mChildDirs.size(); ++i)
+        {
+            if (retDir->mChildDirs[i]->mName == token)
+            {
+                subDir = retDir->mChildDirs[i];
+                break;
+            }
+        }
+
+        retDir = subDir;
+        path.erase(0, pos + delimiter.length());
+    }
+
+    return retDir;
+}
+
 bool AssetManager::IsPurging() const
 {
     return mPurging;
