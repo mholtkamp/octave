@@ -93,10 +93,6 @@ void main()
     vIn.mNormal = normalize((geometry.mNormalMatrix * vec4(skinnedNormal, 0.0)).xyz);
     vIn.mColor = vec4(1, 1, 1, 1);
 #endif
-
-    // Force the binding of the material descriptor set.
-    // the ForceMaterialSet param must always be set to 0
-    vOut.mPosition.x += ForceMaterialSet;
     
     // If the user's vertex shader does nothing, then the output should be the input.
     vOut.mPosition = vIn.mPosition;
@@ -106,6 +102,10 @@ void main()
     vOut.mColor = vIn.mColor;
 
     VertMain(vIn, vOut);
+
+    // Force the binding of the material descriptor set.
+    // the ForceMaterialSet param must always be set to 0
+    vOut.mPosition.x += ForceMaterialSet;
 
     outPosition = vOut.mPosition;
     outTexcoord0 = vOut.mUv0;
