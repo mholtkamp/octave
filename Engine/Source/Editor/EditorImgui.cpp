@@ -2278,6 +2278,12 @@ static void DrawMaterialShaderParams(Material* mat)
     {
         ShaderParameter& param = params[i];
 
+        // This is a hidden parameter needed for ensuring that the material descriptor set is compiled.
+        if (param.mName == "ForceMaterialSet")
+        {
+            continue;
+        }
+
         ImGui::Text(param.mName.c_str());
 
         ImGui::PushID(i);
