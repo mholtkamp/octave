@@ -8,6 +8,8 @@
 
 #include "Network/Network.h"
 #include "Network/NetworkConstants.h"
+#include "Network/NetPlatform.h"
+#include "Network/NetSession.h"
 
 #include <unordered_map>
 
@@ -16,19 +18,16 @@
 #undef SendMessage
 #endif
 
-#define OCT_DEFAULT_PORT 5151
-#define OCT_BROADCAST_PORT 15151
-#define OCT_RECV_BUFFER_SIZE 1024
-#define OCT_SEND_BUFFER_SIZE 1024
-#define OCT_MAX_MSG_BODY_SIZE 500
-#define OCT_SEQ_NUM_SIZE sizeof(uint16_t)
-#define OCT_PACKET_HEADER_SIZE (OCT_SEQ_NUM_SIZE + sizeof(bool))
-#define OCT_MAX_MSG_SIZE (OCT_PACKET_HEADER_SIZE + OCT_MAX_MSG_BODY_SIZE)
-#define OCT_PING_INTERVAL 1.0f
-#define OCT_BROADCAST_INTERVAL 5.0f
-
 class Node;
 class Script;
+
+struct NetSession
+{
+    NetHost mHost = {};
+    char mName[OCT_SESSION_NAME_LEN + 1] = {};
+    uint8_t mMaxPlayers = 0;
+    uint8_t mNumPlayers = 0;
+};
 
 bool NetIsClient();
 bool NetIsServer();
@@ -42,14 +41,6 @@ typedef void(*NetCallbackAcceptFP)();
 typedef void(*NetCallbackRejectFP)(NetMsgReject::Reason);
 typedef void(*NetCallbackDisconnectFP)(NetClient*);
 typedef void(*NetCallbackKickFP)(NetMsgKick::Reason);
-
-struct GameSession
-{
-    NetHost mHost = {};
-    char mName[OCT_SESSION_NAME_LEN + 1] = {};
-    uint8_t mMaxPlayers = 0;
-    uint8_t mNumPlayers = 0;
-};
 
 class NetworkManager
 {
@@ -73,7 +64,7 @@ public:
     void EndSessionSearch();
     void UpdateSearch();
     bool IsSearching() const;
-    const std::vector<GameSession>& GetSessions() const;
+    const std::vector<NetSession>& GetSessions() const;
 
     void Connect(const char* ipAddress, uint16_t port = OCT_DEFAULT_PORT);
     void Connect(uint32_t ipAddress, uint16_t port = OCT_DEFAULT_PORT);
@@ -178,7 +169,7 @@ private:
 
     NetStatus mNetStatus = NetStatus::Local;
     std::vector<NetClient> mClients;
-    std::vector<GameSession> mSessions;
+    std::vector<NetSession> mSessions;
     std::unordered_map<NetId, Node*> mNetNodeMap;
     NetServer mServer;
     uint32_t mBroadcastIp = 0;

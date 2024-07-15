@@ -7,7 +7,7 @@
 
 #define NETWORK_LUA_NAME "Network"
 
-void PushSession(lua_State* L, const GameSession& session);
+void PushSession(lua_State* L, const NetSession& session);
 void PushNetHostProfile(lua_State* L, const NetHostProfile& profile);
 void WriteNetHostProfile(const NetHostProfile& profile, Datum& table);
 

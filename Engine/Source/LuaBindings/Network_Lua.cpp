@@ -6,7 +6,7 @@
 
 #if LUA_ENABLED
 
-void PushSession(lua_State* L, const GameSession& session)
+void PushSession(lua_State* L, const NetSession& session)
 {
     lua_newtable(L);
     int sessionIdx = lua_gettop(L);
@@ -143,11 +143,11 @@ int Network_Lua::GetSession(lua_State* L)
 {
     int32_t index = (int32_t)CHECK_INDEX(L, 1);
 
-    const std::vector<GameSession>& sessions = NetworkManager::Get()->GetSessions();
+    const std::vector<NetSession>& sessions = NetworkManager::Get()->GetSessions();
     if (index >= 0 &&
         index < int32_t(sessions.size()))
     {
-        const GameSession& session = sessions[index];
+        const NetSession& session = sessions[index];
         PushSession(L, session);
         return 1;
     }
@@ -160,7 +160,7 @@ int Network_Lua::GetSession(lua_State* L)
 
 int Network_Lua::GetSessions(lua_State* L)
 {
-    const std::vector<GameSession>& sessions = NetworkManager::Get()->GetSessions();
+    const std::vector<NetSession>& sessions = NetworkManager::Get()->GetSessions();
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);

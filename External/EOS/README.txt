@@ -1,0 +1,1 @@
+Drop your EOS SDK files in this directory (should have binaries, includes, libraries, and tools)

@@ -449,7 +449,7 @@ bool NetworkManager::IsSearching() const
     return mSearching;
 }
 
-const std::vector<GameSession>& NetworkManager::GetSessions() const
+const std::vector<NetSession>& NetworkManager::GetSessions() const
 {
     return mSessions;
 }
@@ -1091,7 +1091,7 @@ void NetworkManager::HandleBroadcast(
         gameCode == GetEngineState()->mGameCode &&
         version == GetEngineState()->mVersion)
     {
-        GameSession* session = nullptr;
+        NetSession* session = nullptr;
 
         for (uint32_t i = 0; i < mSessions.size(); ++i)
         {
@@ -1107,7 +1107,7 @@ void NetworkManager::HandleBroadcast(
             mSessions.size() < OCT_MAX_SESSION_LIST_SIZE)
         {
             LogDebug("Found new session");
-            mSessions.push_back(GameSession());
+            mSessions.push_back(NetSession());
             session = &mSessions.back();
         }
 
