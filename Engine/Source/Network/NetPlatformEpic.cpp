@@ -57,11 +57,11 @@ void EOS_CALL EOSSDKLoggingCallback(const EOS_LogMessage* InMsg)
 	{
 		if (InMsg->Level == EOS_ELogLevel::EOS_LOG_Error || InMsg->Level == EOS_ELogLevel::EOS_LOG_Fatal)
 		{
-			LogError("[EOS SDK] %ls: %ls", InMsg->Category, InMsg->Message);
+			LogError("[EOS SDK Error] %s: %s", InMsg->Category, InMsg->Message);
 		}
 		else if (InMsg->Level == EOS_ELogLevel::EOS_LOG_Warning)
 		{
-			LogWarning("[EOS SDK] %ls: %ls", InMsg->Category, InMsg->Message);
+			LogWarning("[EOS SDK Warning] %s: %s", InMsg->Category, InMsg->Message);
 		}
 		else
 		{
@@ -124,20 +124,35 @@ void NetPlatformEpic::Create()
 	PlatformOptions.EncryptionKey = kEncryptionKey;
 	PlatformOptions.OverrideCountryCode = nullptr;
 	PlatformOptions.OverrideLocaleCode = nullptr;
-	PlatformOptions.Flags = EOS_PF_WINDOWS_ENABLE_OVERLAY_D3D9 | EOS_PF_WINDOWS_ENABLE_OVERLAY_D3D10 | EOS_PF_WINDOWS_ENABLE_OVERLAY_OPENGL; // Enable overlay support for D3D9/10 and OpenGL. This sample uses D3D11 or SDL.
+	PlatformOptions.Flags = 0; // Enable overlay support for D3D9/10 and OpenGL. This sample uses D3D11 or SDL.
 	PlatformOptions.CacheDirectory = nullptr;
 
 	PlatformOptions.ProductId = kProductId;
 	PlatformOptions.SandboxId = kSandboxId;
 	PlatformOptions.DeploymentId = kDeploymentId;
 
-	std::string ClientId = kClientCredentialsId;
-	std::string ClientSecret = kClientCredentialsSecret;
+	PlatformOptions.ClientCredentials.ClientId = kClientCredentialsId;
+	PlatformOptions.ClientCredentials.ClientSecret = kClientCredentialsSecret;
 
 	EOS_Platform_RTCOptions RtcOptions = { 0 };
 	RtcOptions.ApiVersion = EOS_PLATFORM_RTCOPTIONS_API_LATEST;
 	RtcOptions.BackgroundMode = EOS_ERTCBackgroundMode::EOS_RTCBM_LeaveRooms;
+
+#if PLATFORM_WINDOWS
+	// Get absolute path for xaudio2_9redist.dll file
+	char CurDir[MAX_PATH + 1] = {};
+	::GetCurrentDirectory(MAX_PATH + 1u, CurDir);
+	std::string XAudio29DllPath = CurDir;
+
+	XAudio29DllPath.append("/xaudio2_9redist.dll");
+
+	EOS_Windows_RTCOptions WindowsRtcOptions = { 0 };
+	WindowsRtcOptions.ApiVersion = EOS_WINDOWS_RTCOPTIONS_API_LATEST;
+	WindowsRtcOptions.XAudio29DllPath = XAudio29DllPath.c_str();
+	RtcOptions.PlatformSpecificOptions = &WindowsRtcOptions;
+#else
 	RtcOptions.PlatformSpecificOptions = NULL;
+#endif
 
 	PlatformOptions.RTCOptions = &RtcOptions;
 

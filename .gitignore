@@ -19,6 +19,7 @@ imgui.ini
 Saves/
 EOSSDK-Win64-Shipping.dll
 libEOSSDK-Linux-Shipping.so
+xaudio2_9redist.dll
 
 # User-specific files
 *.suo

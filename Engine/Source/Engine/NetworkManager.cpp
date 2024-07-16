@@ -274,6 +274,11 @@ void NetworkManager::PreTickUpdate(float deltaTime)
     {
         UpdateSearch();
     }
+
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->Update();
+    }
 }
 
 void NetworkManager::PostTickUpdate(float deltaTime)

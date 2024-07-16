@@ -8,6 +8,10 @@
 #include "eos_logging.h"
 #include "eos_auth.h"
 
+#if PLATFORM_WINDOWS
+#include "Windows/eos_Windows.h"
+#endif
+
 class NetPlatformEpic : public NetPlatform
 {
 public:
