@@ -27,6 +27,10 @@ void NetPlatform::Logout()
 
 }
 
+bool NetPlatform::IsLoggedIn() const
+{
+    return false;
+}
 
 // Matchmaking
 void NetPlatform::OpenSession()
@@ -56,7 +60,7 @@ void NetPlatform::UpdateSearch()
 
 bool NetPlatform::IsSearching() const
 {
-
+    return false;
 }
 
 

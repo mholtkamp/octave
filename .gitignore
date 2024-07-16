@@ -17,6 +17,8 @@ AssetRegistry.txt
 CpuStats.csv
 imgui.ini
 Saves/
+EOSSDK-Win64-Shipping.dll
+libEOSSDK-Linux-Shipping.so
 
 # User-specific files
 *.suo

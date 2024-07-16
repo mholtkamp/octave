@@ -21,14 +21,6 @@
 class Node;
 class Script;
 
-struct NetSession
-{
-    NetHost mHost = {};
-    char mName[OCT_SESSION_NAME_LEN + 1] = {};
-    uint8_t mMaxPlayers = 0;
-    uint8_t mNumPlayers = 0;
-};
-
 bool NetIsClient();
 bool NetIsServer();
 bool NetIsLocal();
@@ -54,6 +46,10 @@ public:
     void Shutdown();
     void PreTickUpdate(float deltaTime);
     void PostTickUpdate(float deltaTime);
+
+    void Login();
+    void Logout();
+    bool IsLoggedIn() const;
 
     void OpenSession(uint16_t port = OCT_DEFAULT_PORT);
     void CloseSession();
@@ -187,6 +183,7 @@ private:
     NetHostId mHostId = INVALID_HOST_ID;
     SocketHandle mSocket = NET_INVALID_SOCKET;
     SocketHandle mSearchSocket = NET_INVALID_SOCKET;
+    NetPlatform* mOnlinePlatform = nullptr;
     bool mSearching = false;
     bool mEnableSessionBroadcast = true;
     bool mIncrementalReplication = true;

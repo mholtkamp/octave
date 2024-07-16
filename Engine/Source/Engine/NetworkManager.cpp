@@ -10,6 +10,14 @@
 
 #include "LuaBindings/Network_Lua.h"
 
+#include "Network/NetPlatformEpic.h"
+
+#define OCT_ONLINE_PLATFORM_NONE 0
+#define OCT_ONLINE_PLATFORM_EPIC 1
+#define OCT_ONLINE_PLATFORM_STEAM 2
+
+#define OCT_ONLINE_PLATFORM OCT_ONLINE_PLATFORM_EPIC
+
 #ifdef SendMessage
 #undef SendMessage
 #endif
@@ -178,7 +186,16 @@ NetworkManager::NetworkManager()
 
 void NetworkManager::Initialize()
 {
-    
+#if OCT_ONLINE_PLATFORM == OCT_ONLINE_PLATFORM_EPIC
+    mOnlinePlatform = new NetPlatformEpic();
+#elif OCT_ONLINE_PLATFORM == OCT_ONLINE_PLATFORM_STEAM
+    mOnlinePlatform = new NetPlatformSteam();
+#endif
+
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->Create();
+    }
 }
 
 void NetworkManager::Shutdown()
@@ -191,6 +208,13 @@ void NetworkManager::Shutdown()
              mNetStatus == NetStatus::Connecting)
     {
         Disconnect();
+    }
+
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->Destroy();
+        delete mOnlinePlatform;
+        mOnlinePlatform = nullptr;
     }
 }
 
@@ -285,6 +309,28 @@ void NetworkManager::PostTickUpdate(float deltaTime)
 #if DEBUG_NETWORK_CONDITIONS
     UpdateDebugPackets(deltaTime);
 #endif
+}
+
+void NetworkManager::Login()
+{
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->Login();
+    }
+}
+
+void NetworkManager::Logout()
+{
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->Logout();
+    }
+}
+
+bool NetworkManager::IsLoggedIn() const
+{
+    bool loggedIn = mOnlinePlatform ? mOnlinePlatform->IsLoggedIn() : false;
+    return loggedIn;
 }
 
 void NetworkManager::OpenSession(uint16_t port)
@@ -388,6 +434,11 @@ void NetworkManager::BeginSessionSearch()
     {
         LogError("Failed to create search socket.");
     }
+
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->BeginSessionSearch();
+    }
 }
 
 void NetworkManager::EndSessionSearch()
@@ -398,6 +449,11 @@ void NetworkManager::EndSessionSearch()
     {
         NET_SocketClose(mSearchSocket);
         mSearchSocket = NET_INVALID_SOCKET;
+    }
+
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->EndSessionSearch();
     }
 }
 
@@ -442,6 +498,11 @@ void NetworkManager::UpdateSearch()
         sNumPacketsReceived++;
 #endif
     }
+
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->UpdateSearch();
+    }
 }
 
 bool NetworkManager::IsSearching() const
@@ -451,7 +512,23 @@ bool NetworkManager::IsSearching() const
 
 const std::vector<NetSession>& NetworkManager::GetSessions() const
 {
-    return mSessions;
+    static std::vector<NetSession> sSessions;
+
+    // Start with LAN sessions
+    sSessions = mSessions;
+
+    // Add Online sessions
+    if (mOnlinePlatform)
+    {
+        const std::vector<NetSession>& onlineSessions = mOnlinePlatform->GetSessions();
+
+        for (uint32_t i = 0; i < onlineSessions.size(); ++i)
+        {
+            sSessions.push_back(onlineSessions[i]);
+        }
+    }
+
+    return sSessions;
 }
 
 void NetworkManager::Connect(const char* ipAddress, uint16_t port)

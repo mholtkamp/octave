@@ -26,6 +26,7 @@ public:
     // Login
     virtual void Login();
     virtual void Logout();
+    virtual bool IsLoggedIn() const;
 
     // Matchmaking
     virtual void OpenSession();
@@ -39,5 +40,5 @@ public:
 
 protected:
 
-    std::vector<NetSession>& mSessions;
+    std::vector<NetSession> mSessions;
 };

@@ -4,6 +4,10 @@
 
 #if NET_PLATFORM_EOS
 
+#include "eos_sdk.h"
+#include "eos_logging.h"
+#include "eos_auth.h"
+
 class NetPlatformEpic : public NetPlatform
 {
 public:
@@ -16,6 +20,7 @@ public:
     // Login
     virtual void Login() override;
     virtual void Logout() override;
+    virtual bool IsLoggedIn() const override;
 
     // Matchmaking
     virtual void OpenSession() override;
@@ -27,8 +32,12 @@ public:
 
 protected:
 
+    static void LoginCompleteCb(const EOS_Auth_LoginCallbackInfo* Data);
+    static void LogoutCompleteCb(const EOS_Auth_LogoutCallbackInfo* Data);
+
     std::string mGameName;
     EOS_HPlatform mPlatformHandle = nullptr;
+    EOS_EpicAccountId mAccountId = {};
     bool mInitialized = false;
     bool mShuttingDown = false;
 };
