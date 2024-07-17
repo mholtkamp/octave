@@ -686,6 +686,9 @@
     <ClCompile Include="Source\Network\NetPlatformEpic.cpp">
       <Filter>Source Files\Network</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Network\NetPlatformSteam.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1345,6 +1348,9 @@
       <Filter>Source Files\Network</Filter>
     </ClInclude>
     <ClInclude Include="Source\Network\NetPlatformEpic.h">
+      <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Network\NetPlatformSteam.h">
       <Filter>Source Files\Network</Filter>
     </ClInclude>
   </ItemGroup>

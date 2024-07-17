@@ -2,6 +2,8 @@
 #include "Log.h"
 #include "Engine.h"
 
+#if NET_PLATFORM_EPIC
+
 #if PLATFORM_WINDOWS
 #pragma comment(lib, "EOSSDK-Win64-Shipping.lib")
 #endif
@@ -373,3 +375,5 @@ bool NetPlatformEpic::IsSearching() const
 {
 	return false;
 }
+
+#endif
