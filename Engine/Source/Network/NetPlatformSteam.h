@@ -27,6 +27,7 @@ public:
     // Matchmaking
     virtual void OpenSession() override;
     virtual void CloseSession() override;
+    virtual void JoinSession(uint64_t sessionId) override;
     virtual void BeginSessionSearch() override;
     virtual void EndSessionSearch() override;
     virtual void UpdateSearch() override;
@@ -34,8 +35,14 @@ public:
 
 protected:
 
-    //static void LoginCompleteCb(const EOS_Auth_LoginCallbackInfo* Data);
-    //static void LogoutCompleteCb(const EOS_Auth_LogoutCallbackInfo* Data);
+    void OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure);
+    CCallResult<NetPlatformSteam, LobbyCreated_t> mLobbyCreateCb;
+
+    uint64_t mLobbyId = 0;
+    HSteamNetConnection mNetConnection = 0;
+    HSteamListenSocket mListenSocket = 0;
+    HSteamNetPollGroup mPollGroup = 0;
+
 };
 
 #else

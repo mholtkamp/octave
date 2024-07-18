@@ -2,6 +2,8 @@
 #include "Assertion.h"
 #include "Log.h"
 
+#include "NetworkManager.h"
+
 #if NET_PLATFORM_STEAM
 
 #if PLATFORM_WINDOWS
@@ -97,14 +99,72 @@ bool NetPlatformSteam::IsLoggedIn() const
 
 
 // Matchmaking
+void NetPlatformSteam::OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure)
+{
+	if (mLobbyId != 0)
+	{
+		LogWarning("OnLobbyCreated: Already in lobby.");
+		return;
+	}
+
+	// record which lobby we're in
+	if (pCallback->m_eResult == k_EResultOK)
+	{
+		// success
+		mLobbyId = pCallback->m_ulSteamIDLobby;
+
+		// set the name of the lobby if it's ours
+		char rgchLobbyName[256];
+		snprintf(rgchLobbyName, 256, "%s's lobby", SteamFriends()->GetPersonaName());
+		SteamMatchmaking()->SetLobbyData(mLobbyId, "name", rgchLobbyName);
+
+		mListenSocket = SteamGameServerNetworkingSockets()->CreateListenSocketP2P(0, 0, nullptr);
+		mPollGroup = SteamGameServerNetworkingSockets()->CreatePollGroup();
+	}
+	else
+	{
+		LogError("Failed to create lobby");
+	}
+}
+
+
 void NetPlatformSteam::OpenSession()
 {
+	if (!mLobbyCreateCb.IsActive())
+	{
+		int32_t numPlayers = NetworkManager::Get()->GetMaxClients();
+		SteamAPICall_t hSteamAPICall = SteamMatchmaking()->CreateLobby(k_ELobbyTypePublic, numPlayers);
+		mLobbyCreateCb.Set(hSteamAPICall, this, &NetPlatformSteam::OnLobbyCreated);
+	}
 
+	SteamFriends()->SetRichPresence("status", "Creating a lobby");
 }
 
 void NetPlatformSteam::CloseSession()
 {
+	if (mLobbyId != 0)
+	{
+		SteamMatchmaking()->LeaveLobby(mLobbyId);
+		mLobbyId = 0;
+	}
 
+	if (mListenSocket != 0)
+	{
+		SteamGameServerNetworkingSockets()->CloseListenSocket(mListenSocket);
+	}
+
+	if (mPollGroup != 0)
+	{
+		SteamGameServerNetworkingSockets()->DestroyPollGroup(mPollGroup);
+	}
+}
+
+void NetPlatformSteam::JoinSession(uint64_t sessionId)
+{
+	SteamNetworkingIdentity identity;
+	identity.SetSteamID(sessionId);
+
+	mNetConnection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, nullptr);
 }
 
 void NetPlatformSteam::BeginSessionSearch()
