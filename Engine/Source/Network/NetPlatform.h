@@ -5,6 +5,12 @@
 #include "EngineTypes.h"
 #include "NetSession.h"
 
+#ifdef SendMessage
+#undef SendMessage
+#endif
+
+struct NetMsg;
+
 enum class NetPlatformType
 {
     LAN,
@@ -36,6 +42,10 @@ public:
     virtual void EndSessionSearch();
     virtual void UpdateSearch();
     virtual bool IsSearching() const;
+
+    // Messaging
+    void SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfile);
+    int32_t RecvMessage(char* recvBuffer, int32_t bufferSize, NetHost& outHost);
 
     const std::vector<NetSession>& GetSessions() const;
 

@@ -34,6 +34,10 @@ public:
     virtual void UpdateSearch() override;
     virtual bool IsSearching() const override;
 
+    // Messaging
+    void SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfile);
+    int32_t RecvMessage(char* recvBuffer, int32_t bufferSize, NetHost& outHost);
+
 protected:
 
     void StartServer();
@@ -47,7 +51,7 @@ protected:
     void OnLobbyEntered(LobbyEnter_t* pCallback, bool bIOFailure);
     CCallResult<NetPlatformSteam, LobbyEnter_t> mLobbyEnterCb;
 
-
+    STEAM_CALLBACK(NetPlatformSteam, OnLobbyGameCreated, LobbyGameCreated_t);
 
     CSteamID mLobbyId;
     CSteamID mServerId;
@@ -56,6 +60,8 @@ protected:
     HSteamNetPollGroup mPollGroup = 0;
     bool mServerRunning = false;
     bool mConnectingToServer = false;
+
+    SteamNetworkingIdentity mServerIdentity = {};
 
 
 };

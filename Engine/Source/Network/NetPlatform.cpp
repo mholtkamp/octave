@@ -68,6 +68,15 @@ bool NetPlatform::IsSearching() const
     return false;
 }
 
+void NetPlatform::SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfile)
+{
+
+}
+
+int32_t NetPlatform::RecvMessage(char* recvBuffer, int32_t bufferSize, NetHost& outHost)
+{
+    return 0;
+}
 
 const std::vector<NetSession>& NetPlatform::GetSessions() const
 {

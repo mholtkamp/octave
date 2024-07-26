@@ -65,6 +65,7 @@ public:
 
     void Connect(const char* ipAddress, uint16_t port = OCT_DEFAULT_PORT);
     void Connect(uint32_t ipAddress, uint16_t port = OCT_DEFAULT_PORT);
+    void Connect(const NetHost& host);
     void Disconnect();
     void Kick(NetHostId hostId, NetMsgKick::Reason reason);
 
@@ -76,6 +77,8 @@ public:
     void SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfile);
     void SendMessageToAllClients(const NetMsg* netMsg);
     void SendMessageImmediate(const NetMsg* netMsg, uint32_t ipAddress, uint16_t port);
+
+    int32_t RecvFrom(NetHost& outHost);
 
     void SendReplicateMsg(NetMsgReplicate& repMsg, uint32_t& numVars, NetHostId hostId);
     void SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func, uint32_t numParams, const Datum** params);
@@ -188,6 +191,7 @@ private:
     bool mSearching = false;
     bool mEnableSessionBroadcast = true;
     bool mIncrementalReplication = true;
+    bool mInOnlineSession = false;
 
     ScriptableFP<NetCallbackConnectFP> mConnectCallback;
     ScriptableFP<NetCallbackAcceptFP> mAcceptCallback;

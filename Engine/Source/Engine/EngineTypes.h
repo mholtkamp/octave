@@ -409,6 +409,7 @@ struct NetHost
     uint32_t mIpAddress = 0;
     uint16_t mPort = 0;
     NetHostId mId = INVALID_HOST_ID;
+    uint64_t mOnlineId = 0;
 };
 
 struct ReliablePacket

@@ -401,10 +401,7 @@ void NetworkManager::CloseSession()
             Kick(mClients[0].mHost.mId, NetMsgKick::Reason::SessionClose);
         }
 
-        NET_SocketClose(mSocket);
-        mSocket = NET_INVALID_SOCKET;
-        mNetStatus = NetStatus::Local;
-        mHostId = INVALID_HOST_ID;
+        ResetToLocalStatus();
     }
     else if (mNetStatus == NetStatus::Client ||
              mNetStatus == NetStatus::Connecting)
@@ -424,10 +421,12 @@ void NetworkManager::JoinSession(const NetSession& session)
         if (session.mLan)
         {
             Connect(session.mHost.mIpAddress, session.mHost.mPort);
+            mInOnlineSession = false;
         }
         else if (mOnlinePlatform)
         {
             mOnlinePlatform->JoinSession(session);
+            mInOnlineSession = true;
         }
     }
 }
@@ -568,32 +567,53 @@ void NetworkManager::Connect(const char* ipAddress, uint16_t port)
 
 void NetworkManager::Connect(uint32_t ipAddress, uint16_t port)
 {
+    NetHost host;
+    host.mIpAddress = ipAddress;
+    host.mPort = port;
+    host.mId = SERVER_HOST_ID;
+
+    Connect(host);
+}
+
+void NetworkManager::Connect(const NetHost& host)
+{
     if (!NET_IsActive())
         return;
 
     if (mNetStatus == NetStatus::Local)
     {
-        mSocket = NET_SocketCreate();
-        NET_SocketSetBlocking(mSocket, false);
+        LogDebug("Connecting to session...");
+        mNetStatus = NetStatus::Connecting;
+        mConnectTimer = 0.0f;
+        ResetHostProfile(&mServer);
+        mServer.mHost.mIpAddress = host.mIpAddress;
+        mServer.mHost.mPort = host.mPort;
+        mServer.mHost.mId = SERVER_HOST_ID;
 
-        if (mSocket >= 0)
+        NetMsgConnect connectMsg;
+        connectMsg.mGameCode = GetEngineState()->mGameCode;
+        connectMsg.mVersion = GetEngineState()->mVersion;
+
+        if (host.mOnlineId != 0 && mOnlinePlatform)
         {
-            LogDebug("Connecting to session...");
-            mNetStatus = NetStatus::Connecting;
-            mConnectTimer = 0.0f;
-            ResetHostProfile(&mServer);
-            mServer.mHost.mIpAddress = ipAddress;
-            mServer.mHost.mPort = port;
-            mServer.mHost.mId = SERVER_HOST_ID;
-
-            NetMsgConnect connectMsg;
-            connectMsg.mGameCode = GetEngineState()->mGameCode;
-            connectMsg.mVersion = GetEngineState()->mVersion;
-            NetworkManager::SendMessage(&connectMsg, &mServer);
+            mServer.mHost.mOnlineId = host.mOnlineId;
+            mOnlinePlatform->SendMessage(&connectMsg, &mServer);
         }
         else
         {
-            LogError("Failed to create socket.");
+            mSocket = NET_SocketCreate();
+            NET_SocketSetBlocking(mSocket, false);
+
+            if (mSocket >= 0)
+            {
+                NetworkManager::SendMessage(&connectMsg, &mServer);
+            }
+            else
+            {
+                LogError("Failed to create socket.");
+            }
+
+            ResetToLocalStatus();
         }
     }
     else
@@ -1616,22 +1636,34 @@ void NetworkManager::UpdateHostConnections(float deltaTime)
     }
 }
 
+int32_t NetworkManager::RecvFrom(NetHost& outHost)
+{
+    int32_t bytes = 0;
+
+    if (mInOnlineSession && mOnlinePlatform)
+    {
+        bytes = mOnlinePlatform->RecvMessage(sRecvBuffer, OCT_RECV_BUFFER_SIZE, outHost);
+    }
+    else
+    {
+        bytes = NET_SocketRecvFrom(mSocket, sRecvBuffer, OCT_RECV_BUFFER_SIZE, outHost.mIpAddress, outHost.mPort);
+    }
+
+    return bytes;
+}
+
 void NetworkManager::ProcessIncomingPackets(float deltaTime)
 {
     int32_t bytes = 0;
-    uint32_t address = 0;
-    uint16_t port = 0;
+    NetHost sender;
 
-    while ((bytes =  NET_SocketRecvFrom(mSocket, sRecvBuffer, OCT_RECV_BUFFER_SIZE, address, port)) > 0)
+    while ((bytes = RecvFrom(sender)) > 0)
     {   
         Stream stream(sRecvBuffer, bytes);
         NetMsgType msgType = (NetMsgType) sRecvBuffer[OCT_PACKET_HEADER_SIZE];
 
         // Find which NetHost the message was from.
         // if there is no matching NetHost then ignore this message (unless it is a "Connect" message)
-        NetHost sender;
-        sender.mIpAddress = address;
-        sender.mPort = port;
         sender.mId = INVALID_HOST_ID;
 
         NetHostProfile* senderProfile = nullptr;
@@ -1673,7 +1705,7 @@ void NetworkManager::ProcessIncomingPackets(float deltaTime)
         if (!connectMsg &&
             (sender.mId == INVALID_HOST_ID || senderProfile == nullptr))
         {
-            LogDebug("Unrecognized host: %08x:%u", address, port);
+            LogDebug("Unrecognized host: %08x:%u", sender.mIpAddress, sender.mPort);
             continue;
         }
 
@@ -1861,7 +1893,11 @@ void NetworkManager::ResetToLocalStatus()
 {
     if (mNetStatus != NetStatus::Local)
     {
-        NET_SocketClose(mSocket);
+        if (mSocket != NET_INVALID_SOCKET)
+        {
+            NET_SocketClose(mSocket);
+        }
+
         mSocket = NET_INVALID_SOCKET;
         mNetStatus = NetStatus::Local;
         mHostId = INVALID_HOST_ID;
@@ -1869,6 +1905,7 @@ void NetworkManager::ResetToLocalStatus()
         mServer.mHost.mPort = 0;
         mServer.mHost.mId = INVALID_HOST_ID;
         mServer.mTimeSinceLastMsg = 0.0f;
+        mInOnlineSession = false;
     }
 }
 

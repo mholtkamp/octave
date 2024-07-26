@@ -145,6 +145,19 @@ void NetPlatformSteam::OnLobbyEntered(LobbyEnter_t* pCallback, bool bIOFailure)
 	mLobbyId = pCallback->m_ulSteamIDLobby;
 }
 
+void NetPlatformSteam::OnLobbyGameCreated(LobbyGameCreated_t* pCallback)
+{
+	if (!mLobbyId.IsValid())
+		return;
+
+	// join the game server specified, via whichever method we can
+	if (CSteamID(pCallback->m_ulSteamIDGameServer).IsValid())
+	{
+		ConnectToServer(CSteamID(pCallback->m_ulSteamIDGameServer));
+	}
+}
+
+
 void NetPlatformSteam::OpenSession()
 {
 	if (!mLobbyCreateCb.IsActive())
@@ -174,11 +187,6 @@ void NetPlatformSteam::JoinSession(const NetSession& session)
 
 	// set the function to call when this API completes
 	mLobbyEnterCb.Set(hSteamAPICall, this, &NetPlatformSteam::OnLobbyEntered);
-
-	SteamNetworkingIdentity identity;
-	identity.SetSteamID(session.mLobbyId);
-
-	mServerConnection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, nullptr);
 }
 
 void NetPlatformSteam::BeginSessionSearch()
@@ -199,6 +207,16 @@ void NetPlatformSteam::UpdateSearch()
 bool NetPlatformSteam::IsSearching() const
 {
 	return false;
+}
+
+void NetPlatformSteam::SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfile)
+{
+
+}
+
+int32_t NetPlatformSteam::RecvMessage(char* recvBuffer, int32_t bufferSize, NetHost& outHost)
+{
+	return 0;
 }
 
 void NetPlatformSteam::StartServer()
@@ -300,13 +318,28 @@ void NetPlatformSteam::ConnectToServer(CSteamID serverId)
 	mServerId = serverId;
 
 	SteamNetworkingIdentity identity;
-	identity.SetSteamID(mServerId);
+	identity.SetSteamID(serverId);
+	mServerIdentity = identity;
 
-	mServerConnection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, nullptr);
+	NetHost serverHost;
+	serverHost.mOnlineId;
+	NetworkManager::Get()->Connect(serverHost);
+
+	//mServerConnection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, nullptr);
+
+	//SteamNetworkingIdentity identity;
+	//identity.SetSteamID(mServerId);
+
+	//mServerConnection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, nullptr);
 
 	// Update when we last retried the connection, as well as the last packet received time so we won't timeout too soon,
 	// and so we will retry at appropriate intervals if packets drop
 	//m_ulLastNetworkDataReceivedTime = m_ulLastConnectionAttemptRetryTime = m_pGameEngine->GetGameTickCount();
+}
+
+void NetPlatformSteam::DisconnectFromServer()
+{
+	CloseSession();
 }
 
 #endif
