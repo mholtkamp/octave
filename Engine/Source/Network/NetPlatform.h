@@ -31,7 +31,7 @@ public:
     // Matchmaking
     virtual void OpenSession();
     virtual void CloseSession();
-    virtual void JoinSession(uint64_t sessionId);
+    virtual void JoinSession(const NetSession& session);
     virtual void BeginSessionSearch();
     virtual void EndSessionSearch();
     virtual void UpdateSearch();

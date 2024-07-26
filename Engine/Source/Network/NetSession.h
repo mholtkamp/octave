@@ -6,6 +6,9 @@ struct NetSession
     char mName[OCT_SESSION_NAME_LEN + 1] = {};
     uint8_t mMaxPlayers = 0;
     uint8_t mNumPlayers = 0;
+
+    uint64_t mLobbyId = 0;
+    bool mLan = true;
 };
 
 struct NetSessionCreateOptions

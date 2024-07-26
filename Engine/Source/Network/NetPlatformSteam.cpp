@@ -72,12 +72,19 @@ void NetPlatformSteam::Create()
 
 void NetPlatformSteam::Destroy()
 {
+	StopServer();
 
+	SteamAPI_Shutdown();
 }
 
 void NetPlatformSteam::Update()
 {
+	SteamAPI_RunCallbacks();
 
+	if (mServerRunning)
+	{
+		SteamGameServer_RunCallbacks();
+	}
 }
 
 
@@ -101,7 +108,7 @@ bool NetPlatformSteam::IsLoggedIn() const
 // Matchmaking
 void NetPlatformSteam::OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure)
 {
-	if (mLobbyId != 0)
+	if (mLobbyId.IsValid())
 	{
 		LogWarning("OnLobbyCreated: Already in lobby.");
 		return;
@@ -110,6 +117,8 @@ void NetPlatformSteam::OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure
 	// record which lobby we're in
 	if (pCallback->m_eResult == k_EResultOK)
 	{
+		StartServer();
+
 		// success
 		mLobbyId = pCallback->m_ulSteamIDLobby;
 
@@ -117,9 +126,6 @@ void NetPlatformSteam::OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure
 		char rgchLobbyName[256];
 		snprintf(rgchLobbyName, 256, "%s's lobby", SteamFriends()->GetPersonaName());
 		SteamMatchmaking()->SetLobbyData(mLobbyId, "name", rgchLobbyName);
-
-		mListenSocket = SteamGameServerNetworkingSockets()->CreateListenSocketP2P(0, 0, nullptr);
-		mPollGroup = SteamGameServerNetworkingSockets()->CreatePollGroup();
 	}
 	else
 	{
@@ -127,6 +133,17 @@ void NetPlatformSteam::OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure
 	}
 }
 
+void NetPlatformSteam::OnLobbyEntered(LobbyEnter_t* pCallback, bool bIOFailure)
+{
+	if (pCallback->m_EChatRoomEnterResponse != k_EChatRoomEnterResponseSuccess)
+	{
+		LogError("Failed to enter lobby");
+		return;
+	}
+
+	// Success!
+	mLobbyId = pCallback->m_ulSteamIDLobby;
+}
 
 void NetPlatformSteam::OpenSession()
 {
@@ -142,29 +159,26 @@ void NetPlatformSteam::OpenSession()
 
 void NetPlatformSteam::CloseSession()
 {
-	if (mLobbyId != 0)
+	if (mLobbyId.IsValid())
 	{
 		SteamMatchmaking()->LeaveLobby(mLobbyId);
-		mLobbyId = 0;
+		mLobbyId.Clear();
 	}
 
-	if (mListenSocket != 0)
-	{
-		SteamGameServerNetworkingSockets()->CloseListenSocket(mListenSocket);
-	}
-
-	if (mPollGroup != 0)
-	{
-		SteamGameServerNetworkingSockets()->DestroyPollGroup(mPollGroup);
-	}
+	StopServer();
 }
 
-void NetPlatformSteam::JoinSession(uint64_t sessionId)
+void NetPlatformSteam::JoinSession(const NetSession& session)
 {
-	SteamNetworkingIdentity identity;
-	identity.SetSteamID(sessionId);
+	SteamAPICall_t hSteamAPICall = SteamMatchmaking()->JoinLobby(session.mLobbyId);
 
-	mNetConnection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, nullptr);
+	// set the function to call when this API completes
+	mLobbyEnterCb.Set(hSteamAPICall, this, &NetPlatformSteam::OnLobbyEntered);
+
+	SteamNetworkingIdentity identity;
+	identity.SetSteamID(session.mLobbyId);
+
+	mServerConnection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, nullptr);
 }
 
 void NetPlatformSteam::BeginSessionSearch()
@@ -185,6 +199,114 @@ void NetPlatformSteam::UpdateSearch()
 bool NetPlatformSteam::IsSearching() const
 {
 	return false;
+}
+
+void NetPlatformSteam::StartServer()
+{
+	if (mServerRunning)
+	{
+		LogWarning("Server is already running, ignoring call to NetPlatformSteam::StartServer()");
+		return;
+	}
+
+	const char* pchGameDir = "Octave";
+	const char* serverVersion = "1.0.0.0";
+	uint32_t unIP = INADDR_ANY;
+	uint16_t usMasterServerUpdaterPort = 27016;
+	uint16_t serverPort = 27015;
+
+	// Don't let Steam do authentication
+	EServerMode eMode = eServerModeNoAuthentication;
+
+	// Initialize the SteamGameServer interface, we tell it some info about us, and we request support
+	// for both Authentication (making sure users own games) and secure mode, VAC running in our game
+	// and kicking users who are VAC banned
+
+	// !FIXME! We need a way to pass the dedicated server flag here!
+
+	SteamErrMsg errMsg = { 0 };
+	if (SteamGameServer_InitEx(unIP, serverPort, usMasterServerUpdaterPort, eMode, serverVersion, &errMsg) != k_ESteamAPIInitResult_OK)
+	{
+		LogError("SteamGameServer_Init call failed: %s", errMsg);
+	}
+
+	if (SteamGameServer())
+	{
+
+		// Set the "game dir".
+		// This is currently required for all games.  However, soon we will be
+		// using the AppID for most purposes, and this string will only be needed
+		// for mods.  it may not be changed after the server has logged on
+		SteamGameServer()->SetModDir(pchGameDir);
+
+		// These fields are currently required, but will go away soon.
+		// See their documentation for more info
+		SteamGameServer()->SetProduct("SteamworksExample");
+		SteamGameServer()->SetGameDescription("Steamworks Example");
+
+		// We don't support specators in our game.
+		// .... but if we did:
+		//SteamGameServer()->SetSpectatorPort( ... );
+		//SteamGameServer()->SetSpectatorServerName( ... );
+
+		// Initiate Anonymous logon.
+		// Coming soon: Logging into authenticated, persistent game server account
+		SteamGameServer()->LogOnAnonymous();
+
+		// Initialize the peer to peer connection process.  This is not required, but we do it
+		// because we cannot accept connections until this initialization completes, and so we
+		// want to start it as soon as possible.
+		SteamNetworkingUtils()->InitRelayNetworkAccess();
+
+		mListenSocket = SteamGameServerNetworkingSockets()->CreateListenSocketP2P(0, 0, nullptr);
+		mPollGroup = SteamGameServerNetworkingSockets()->CreatePollGroup();
+
+		// server is up; tell everyone else to connect
+		SteamMatchmaking()->SetLobbyGameServer(mLobbyId, 0, 0, mServerId);
+	}
+	else
+	{
+		LogError("SteamGameServer() interface is invalid");
+	}
+}
+
+void NetPlatformSteam::StopServer()
+{
+	if (mServerRunning)
+	{
+		SteamGameServerNetworkingSockets()->CloseListenSocket(mListenSocket);
+		SteamGameServerNetworkingSockets()->DestroyPollGroup(mPollGroup);
+
+		mListenSocket = k_HSteamListenSocket_Invalid;
+		mPollGroup = k_HSteamNetPollGroup_Invalid;
+
+		// Disconnect from the steam servers
+		SteamGameServer()->LogOff();
+
+		// release our reference to the steam client library
+		SteamGameServer_Shutdown();
+	}
+}
+
+void NetPlatformSteam::ConnectToServer(CSteamID serverId)
+{
+	//if (mLobbyId.IsValid())
+	//{
+	//	SteamMatchmaking()->LeaveLobby(mLobbyId);
+	//}
+
+	mConnectingToServer = true;
+
+	mServerId = serverId;
+
+	SteamNetworkingIdentity identity;
+	identity.SetSteamID(mServerId);
+
+	mServerConnection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, nullptr);
+
+	// Update when we last retried the connection, as well as the last packet received time so we won't timeout too soon,
+	// and so we will retry at appropriate intervals if packets drop
+	//m_ulLastNetworkDataReceivedTime = m_ulLastConnectionAttemptRetryTime = m_pGameEngine->GetGameTickCount();
 }
 
 #endif

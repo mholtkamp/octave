@@ -53,6 +53,7 @@ public:
 
     void OpenSession(uint16_t port = OCT_DEFAULT_PORT);
     void CloseSession();
+    void JoinSession(const NetSession& session);
     void EnableSessionBroadcast(bool enable);
     bool IsSessionBroadcastEnabled() const;
 

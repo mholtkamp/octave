@@ -346,36 +346,44 @@ void NetworkManager::OpenSession(uint16_t port)
 
     if (mNetStatus == NetStatus::Local)
     {
-        mSocket = NET_SocketCreate();
-        NET_SocketSetBlocking(mSocket, false);
-        // Broadcast is used for LAN game discovery.
-        NET_SocketSetBroadcast(mSocket, true);
-
-        if (mSocket >= 0)
+        if (mOnlinePlatform != nullptr)
         {
-            NET_SocketBind(mSocket, NET_ANY_IP, port);
-            mNetStatus = NetStatus::Server;
-            mHostId = SERVER_HOST_ID;
-            LogDebug("Session opened.");
-
-            // Broadcasting using subnet mask wasn't working on android
-            // (Probably because the subnet mask was incorrect)
-            // Need to check this on other platforms, but 255.255.255.255 works fine?
-#if PLATFORM_ANDROID
-            mBroadcastIp = NET_IpStringToUint32("255.255.255.255");
-#else
-            // Determine the broadcast IP based on the subnet mask.
-            uint32_t subnetMask = NET_GetSubnetMask();
-            uint32_t localIp = NET_GetIpAddress();
-            uint32_t netIp = localIp & subnetMask;
-            mBroadcastIp = netIp | (~subnetMask);
-#endif
-
-            LogDebug("Broadcast IP: %08x", mBroadcastIp);
+            mOnlinePlatform->OpenSession();
         }
         else
         {
-            LogError("Failed to create socket.");
+
+            mSocket = NET_SocketCreate();
+            NET_SocketSetBlocking(mSocket, false);
+            // Broadcast is used for LAN game discovery.
+            NET_SocketSetBroadcast(mSocket, true);
+
+            if (mSocket >= 0)
+            {
+                NET_SocketBind(mSocket, NET_ANY_IP, port);
+                mNetStatus = NetStatus::Server;
+                mHostId = SERVER_HOST_ID;
+                LogDebug("Session opened.");
+
+                // Broadcasting using subnet mask wasn't working on android
+                // (Probably because the subnet mask was incorrect)
+                // Need to check this on other platforms, but 255.255.255.255 works fine?
+#if PLATFORM_ANDROID
+                mBroadcastIp = NET_IpStringToUint32("255.255.255.255");
+#else
+                // Determine the broadcast IP based on the subnet mask.
+                uint32_t subnetMask = NET_GetSubnetMask();
+                uint32_t localIp = NET_GetIpAddress();
+                uint32_t netIp = localIp & subnetMask;
+                mBroadcastIp = netIp | (~subnetMask);
+#endif
+
+                LogDebug("Broadcast IP: %08x", mBroadcastIp);
+            }
+            else
+            {
+                LogError("Failed to create socket.");
+            }
         }
     }
     else
@@ -406,6 +414,21 @@ void NetworkManager::CloseSession()
     else
     {
         LogWarning("NetworkManager::CloseSession() called but there is no active session.");
+    }
+}
+
+void NetworkManager::JoinSession(const NetSession& session)
+{
+    if (mNetStatus == NetStatus::Local)
+    {
+        if (session.mLan)
+        {
+            Connect(session.mHost.mIpAddress, session.mHost.mPort);
+        }
+        else if (mOnlinePlatform)
+        {
+            mOnlinePlatform->JoinSession(session);
+        }
     }
 }
 

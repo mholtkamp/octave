@@ -43,7 +43,7 @@ void NetPlatform::CloseSession()
 
 }
 
-void NetPlatform::JoinSession(uint64_t sessionId)
+void NetPlatform::JoinSession(const NetSession& session)
 {
 
 }

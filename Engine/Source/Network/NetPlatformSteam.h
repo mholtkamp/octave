@@ -27,7 +27,8 @@ public:
     // Matchmaking
     virtual void OpenSession() override;
     virtual void CloseSession() override;
-    virtual void JoinSession(uint64_t sessionId) override;
+    virtual void JoinSession(const NetSession& session) override;
+
     virtual void BeginSessionSearch() override;
     virtual void EndSessionSearch() override;
     virtual void UpdateSearch() override;
@@ -35,13 +36,27 @@ public:
 
 protected:
 
+    void StartServer();
+    void StopServer();
+    void ConnectToServer(CSteamID serverId);
+    void DisconnectFromServer();
+
     void OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure);
     CCallResult<NetPlatformSteam, LobbyCreated_t> mLobbyCreateCb;
 
-    uint64_t mLobbyId = 0;
-    HSteamNetConnection mNetConnection = 0;
+    void OnLobbyEntered(LobbyEnter_t* pCallback, bool bIOFailure);
+    CCallResult<NetPlatformSteam, LobbyEnter_t> mLobbyEnterCb;
+
+
+
+    CSteamID mLobbyId;
+    CSteamID mServerId;
+    HSteamNetConnection mServerConnection = 0;
     HSteamListenSocket mListenSocket = 0;
     HSteamNetPollGroup mPollGroup = 0;
+    bool mServerRunning = false;
+    bool mConnectingToServer = false;
+
 
 };
 
