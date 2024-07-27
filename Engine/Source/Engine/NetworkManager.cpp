@@ -338,10 +338,13 @@ void NetworkManager::OpenSession(bool lan, uint16_t port)
 
     if (mNetStatus == NetStatus::Local)
     {
+        bool sessionOpened = false;
+
         if (!lan && mOnlinePlatform != nullptr)
         {
             mOnlinePlatform->OpenSession();
             mInOnlineSession = true;
+            sessionOpened = true;
         }
         else
         {
@@ -353,9 +356,6 @@ void NetworkManager::OpenSession(bool lan, uint16_t port)
             if (mSocket >= 0)
             {
                 NET_SocketBind(mSocket, NET_ANY_IP, port);
-                mNetStatus = NetStatus::Server;
-                mHostId = SERVER_HOST_ID;
-                LogDebug("Session opened.");
 
                 // Broadcasting using subnet mask wasn't working on android
                 // (Probably because the subnet mask was incorrect)
@@ -371,11 +371,19 @@ void NetworkManager::OpenSession(bool lan, uint16_t port)
 #endif
 
                 LogDebug("Broadcast IP: %08x", mBroadcastIp);
+                sessionOpened = true;
             }
             else
             {
                 LogError("Failed to create socket.");
             }
+        }
+
+        if (sessionOpened)
+        {
+            mNetStatus = NetStatus::Server;
+            mHostId = SERVER_HOST_ID;
+            LogDebug("Session opened.");
         }
     }
     else
@@ -1919,7 +1927,7 @@ void NetworkManager::ResetToLocalStatus()
 
 void NetworkManager::BroadcastSession()
 {
-    if (mEnableSessionBroadcast)
+    if (mEnableSessionBroadcast && !mInOnlineSession)
     {
         NetMsgBroadcast bcMsg;
         bcMsg.mMagic = NetMsgBroadcast::sMagicNumber;
