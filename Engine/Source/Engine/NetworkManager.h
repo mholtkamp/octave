@@ -76,9 +76,10 @@ public:
     void SendMessage(const NetMsg* netMsg, NetHostId receiverId);
     void SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfile);
     void SendMessageToAllClients(const NetMsg* netMsg);
-    void SendMessageImmediate(const NetMsg* netMsg, uint32_t ipAddress, uint16_t port);
+    void SendMessageImmediate(const NetHost& host, const NetMsg* netMsg);
 
-    int32_t RecvFrom(NetHost& outHost);
+    int32_t RecvFrom(char* buffer, uint32_t size, NetHost& outHost);
+    void SendTo(const NetHost& host, const char* buffer, uint32_t size);
 
     void SendReplicateMsg(NetMsgReplicate& repMsg, uint32_t& numVars, NetHostId hostId);
     void SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func, uint32_t numParams, const Datum** params);

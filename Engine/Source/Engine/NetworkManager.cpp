@@ -44,28 +44,24 @@ struct DelayedPacket
 {
     SocketHandle mSocket = {};
     float mTime = 0.0f;
-    uint32_t mIpAddress = 0;
-    uint16_t mPort = 0;
     uint32_t mSize = 0;
     char mData[OCT_MAX_MSG_BODY_SIZE] = {};
+    NetHost mHost;
 };
 
 static std::vector<DelayedPacket> sDelayedPackets;
 
-int32_t DebugSendTo(SocketHandle socket, uint32_t ip, uint16_t port, uint32_t size, const char* data)
+void DebugSendTo(const NetHost& host, uint32_t size, const char* data)
 {
     float dropRoll = Maths::RandRange(0.0f, 1.0f);
 
     if (dropRoll >= sPacketLossFrac)
     {
-
         sDelayedPackets.emplace_back();
         DelayedPacket& packet = sDelayedPackets.back();
 
-        packet.mSocket = socket;
         packet.mTime = (1/1000.0f) * (sLatencyMs + Maths::RandRange(-sJitterMs, sJitterMs));
-        packet.mIpAddress = ip;
-        packet.mPort = port;
+        packet.mHost = host;
         packet.mSize = size;
         memcpy(packet.mData, data, size);
     }
@@ -73,8 +69,6 @@ int32_t DebugSendTo(SocketHandle socket, uint32_t ip, uint16_t port, uint32_t si
     {
         //LogWarning("Dropping packet");
     }
-
-    return size;
 }
 
 void UpdateDebugPackets(float deltaTime)
@@ -85,12 +79,10 @@ void UpdateDebugPackets(float deltaTime)
 
         if (sDelayedPackets[i].mTime <= 0.0f)
         {
-            NET_SocketSendTo(
-                sDelayedPackets[i].mSocket,
+            NetworkManager::Get()->SendTo(
+                sDelayedPackets[i].mHost,
                 sDelayedPackets[i].mData,
-                sDelayedPackets[i].mSize,
-                sDelayedPackets[i].mIpAddress,
-                sDelayedPackets[i].mPort);
+                sDelayedPackets[i].mSize);
 
             sDelayedPackets.erase(sDelayedPackets.begin() + i);
             --i;
@@ -750,7 +742,7 @@ void NetworkManager::SendMessageToAllClients(const NetMsg* netMsg)
     }
 }
 
-void NetworkManager::SendMessageImmediate(const NetMsg* netMsg, uint32_t ipAddress, uint16_t port)
+void NetworkManager::SendMessageImmediate(const NetHost& host, const NetMsg* netMsg)
 {
     // Immediate messages don't rely on a sequence number.
     // Connect and Reject should always be seq num 0 since they are the first messages sent between
@@ -766,14 +758,11 @@ void NetworkManager::SendMessageImmediate(const NetMsg* netMsg, uint32_t ipAddre
     {
 
 #if DEBUG_NETWORK_CONDITIONS
-        mBytesSent += DebugSendTo(mSocket, ipAddress, port, stream.GetPos(), stream.GetData());
+        DebugSendTo(host, stream.GetPos(), stream.GetData());
 #else
-        mBytesSent += NET_SocketSendTo(
-                mSocket,
-                stream.GetData(),
-                stream.GetPos(),
-                ipAddress,
-                port);
+        SendTo(host,
+               stream.GetData(),
+               stream.GetPos());
 #endif
 
 #if DEBUG_MSG_STATS
@@ -1038,7 +1027,7 @@ void NetworkManager::HandleConnect(NetHost host, uint32_t gameCode, uint32_t ver
             // Send back a Reject message to let them know why their connection was rejected.
             NetMsgReject rejectMsg;
             rejectMsg.mReason = rejectReason;
-            SendMessageImmediate(&rejectMsg, host.mIpAddress, host.mPort);
+            SendMessageImmediate(host, &rejectMsg);
         }
     }
 }
@@ -1386,12 +1375,9 @@ void NetworkManager::SendDestroyMessage(Node* node, NetClient* client)
 void NetworkManager::ResendPacket(NetHostProfile* hostProfile, ReliablePacket& packet)
 {
     // Resend the packet
-    mBytesSent += NET_SocketSendTo(
-        mSocket,
+    SendTo(hostProfile->mHost,
         packet.mData.data(),
-        (uint32_t)packet.mData.size(),
-        hostProfile->mHost.mIpAddress,
-        hostProfile->mHost.mPort);
+        (uint32_t)packet.mData.size());
 
     packet.mTimeSinceSend = 0.0f;
     packet.mNumSends++;
@@ -1637,20 +1623,38 @@ void NetworkManager::UpdateHostConnections(float deltaTime)
     }
 }
 
-int32_t NetworkManager::RecvFrom(NetHost& outHost)
+int32_t NetworkManager::RecvFrom(char* buffer, uint32_t size, NetHost& outHost)
 {
     int32_t bytes = 0;
 
     if (mInOnlineSession && mOnlinePlatform)
     {
-        bytes = mOnlinePlatform->RecvMessage(sRecvBuffer, OCT_RECV_BUFFER_SIZE, outHost);
+        bytes = mOnlinePlatform->RecvMessage(buffer, size, outHost);
     }
     else
     {
-        bytes = NET_SocketRecvFrom(mSocket, sRecvBuffer, OCT_RECV_BUFFER_SIZE, outHost.mIpAddress, outHost.mPort);
+        bytes = NET_SocketRecvFrom(mSocket, buffer, size, outHost.mIpAddress, outHost.mPort);
     }
 
     return bytes;
+}
+
+void NetworkManager::SendTo(const NetHost& host, const char* buffer, uint32_t size)
+{
+    if (mInOnlineSession && mOnlinePlatform)
+    {
+        mOnlinePlatform->SendMessage(host, buffer, size);
+        mBytesSent += size;
+    }
+    else
+    {
+        mBytesSent += NET_SocketSendTo(
+            mSocket,
+            buffer,
+            size,
+            host.mIpAddress,
+            host.mPort);
+    }
 }
 
 void NetworkManager::ProcessIncomingPackets(float deltaTime)
@@ -1658,7 +1662,7 @@ void NetworkManager::ProcessIncomingPackets(float deltaTime)
     int32_t bytes = 0;
     NetHost sender;
 
-    while ((bytes = RecvFrom(sender)) > 0)
+    while ((bytes = RecvFrom(sRecvBuffer, OCT_RECV_BUFFER_SIZE, sender)) > 0)
     {   
         Stream stream(sRecvBuffer, bytes);
         NetMsgType msgType = (NetMsgType) sRecvBuffer[OCT_PACKET_HEADER_SIZE];
@@ -1933,7 +1937,10 @@ void NetworkManager::BroadcastSession()
         bcMsg.mMaxPlayers = 1 + mMaxClients;
         bcMsg.mNumPlayers = 1 + uint8_t(mClients.size());
 
-        SendMessageImmediate(&bcMsg, mBroadcastIp, OCT_BROADCAST_PORT);
+        NetHost host;
+        host.mIpAddress = mBroadcastIp;
+        host.mPort = OCT_BROADCAST_PORT;
+        SendMessageImmediate(host, &bcMsg);
     }
 }
 
@@ -1969,19 +1976,11 @@ void NetworkManager::FlushSendBuffer(NetHostProfile* hostProfile, bool reliable)
             if (hostProfile->mReady)
             {
 #if DEBUG_NETWORK_CONDITIONS
-                mBytesSent += DebugSendTo(
-                    mSocket,
-                    hostProfile->mHost.mIpAddress,
-                    hostProfile->mHost.mPort,
+                DebugSendTo(hostProfile->mHost,
                     packetSize,
                     sSendBuffer);
 #else
-                mBytesSent += NET_SocketSendTo(
-                    mSocket,
-                    sSendBuffer,
-                    packetSize,
-                    hostProfile->mHost.mIpAddress,
-                    hostProfile->mHost.mPort);
+                SendTo(hostProfile->mHost, sSendBuffer, packetSize);
 #endif
 
 #if DEBUG_MSG_STATS
