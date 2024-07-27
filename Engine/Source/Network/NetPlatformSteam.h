@@ -51,7 +51,11 @@ protected:
     void OnLobbyEntered(LobbyEnter_t* pCallback, bool bIOFailure);
     CCallResult<NetPlatformSteam, LobbyEnter_t> mLobbyEnterCb;
 
+    void OnLobbyList(LobbyMatchList_t* pCallback, bool bIOFailure);
+    CCallResult<NetPlatformSteam, LobbyMatchList_t> mLobbyListCb;
+
     STEAM_CALLBACK(NetPlatformSteam, OnLobbyGameCreated, LobbyGameCreated_t);
+    STEAM_CALLBACK(NetPlatformSteam, OnLobbyDataUpdated, LobbyDataUpdate_t);
 
     CSteamID mLobbyId;
     CSteamID mServerId;
@@ -60,10 +64,9 @@ protected:
     HSteamNetPollGroup mPollGroup = 0;
     bool mServerRunning = false;
     bool mConnectingToServer = false;
+    bool mSearchingForLobbies = false;
 
     SteamNetworkingIdentity mServerIdentity = {};
-
-
 };
 
 #else

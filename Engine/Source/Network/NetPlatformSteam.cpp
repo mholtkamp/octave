@@ -145,6 +145,38 @@ void NetPlatformSteam::OnLobbyEntered(LobbyEnter_t* pCallback, bool bIOFailure)
 	mLobbyId = pCallback->m_ulSteamIDLobby;
 }
 
+void NetPlatformSteam::OnLobbyList(LobbyMatchList_t* pCallback, bool bIOFailure)
+{
+	mSessions.clear();
+	mSearchingForLobbies = false;
+
+	for (uint32 iLobby = 0; iLobby < pCallback->m_nLobbiesMatching; iLobby++)
+	{
+		CSteamID steamIDLobby = SteamMatchmaking()->GetLobbyByIndex(iLobby);
+
+		// add the lobby to the list
+		NetSession session;
+		session.mLobbyId = steamIDLobby.ConvertToUint64();
+
+		// pull the name from the lobby metadata
+		const char* pchLobbyName = SteamMatchmaking()->GetLobbyData(steamIDLobby, "name");
+		if (pchLobbyName && pchLobbyName[0])
+		{
+			// set the lobby name
+			strncpy(session.mName, pchLobbyName, OCT_SESSION_NAME_LEN);
+		}
+		else
+		{
+			// we don't have info about the lobby yet, request it
+			SteamMatchmaking()->RequestLobbyData(steamIDLobby);
+			// results will be returned via LobbyDataUpdate_t callback
+			snprintf(session.mName, OCT_SESSION_NAME_LEN, "Lobby %d", steamIDLobby.GetAccountID());
+		}
+
+		mSessions.push_back(session);
+	}
+}
+
 void NetPlatformSteam::OnLobbyGameCreated(LobbyGameCreated_t* pCallback)
 {
 	if (!mLobbyId.IsValid())
@@ -157,6 +189,24 @@ void NetPlatformSteam::OnLobbyGameCreated(LobbyGameCreated_t* pCallback)
 	}
 }
 
+void NetPlatformSteam::OnLobbyDataUpdated(LobbyDataUpdate_t* pCallback)
+{
+	for (uint32_t i = 0; i < mSessions.size(); ++i)
+	{
+		NetSession& session = mSessions[i];
+
+		if (session.mLobbyId == pCallback->m_ulSteamIDLobby)
+		{
+			const char* pchLobbyName = SteamMatchmaking()->GetLobbyData(session.mLobbyId, "name");
+			if (pchLobbyName[0])
+			{
+				strncpy(session.mName, pchLobbyName, OCT_SESSION_NAME_LEN);
+			}
+
+			return;
+		}
+	}
+}
 
 void NetPlatformSteam::OpenSession()
 {
@@ -191,12 +241,15 @@ void NetPlatformSteam::JoinSession(const NetSession& session)
 
 void NetPlatformSteam::BeginSessionSearch()
 {
+	mSessions.clear();
 
+	SteamAPICall_t hSteamAPICall = SteamMatchmaking()->RequestLobbyList();
+	mLobbyListCb.Set(hSteamAPICall, this, &NetPlatformSteam::OnLobbyList);
 }
 
 void NetPlatformSteam::EndSessionSearch()
 {
-
+	mSearchingForLobbies = false;
 }
 
 void NetPlatformSteam::UpdateSearch()
@@ -206,7 +259,7 @@ void NetPlatformSteam::UpdateSearch()
 
 bool NetPlatformSteam::IsSearching() const
 {
-	return false;
+	return mSearchingForLobbies;
 }
 
 void NetPlatformSteam::SendMessage(const NetHost& host, const char* buffer, uint32_t size)
