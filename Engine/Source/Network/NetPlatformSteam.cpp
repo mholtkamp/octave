@@ -310,9 +310,9 @@ int32_t NetPlatformSteam::RecvMessage(char* recvBuffer, int32_t bufferSize, NetH
 	int32_t bytes = 0;
 
 	SteamNetworkingMessage_t* steamMsg = nullptr;
-	SteamNetworkingMessages()->ReceiveMessagesOnChannel(0, &steamMsg, 1);
+	int numMessages = SteamNetworkingMessages()->ReceiveMessagesOnChannel(0, &steamMsg, 1);
 
-	if (bytes > 0 && 
+	if (numMessages > 0 &&
 		steamMsg != nullptr)
 	{
 		int32_t msgSize = (int32_t)steamMsg->GetSize();
