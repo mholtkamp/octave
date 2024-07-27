@@ -117,7 +117,7 @@ void NetPlatformSteam::OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure
 	// record which lobby we're in
 	if (pCallback->m_eResult == k_EResultOK)
 	{
-		StartServer();
+		//StartServer();
 
 		// success
 		mLobbyId = pCallback->m_ulSteamIDLobby;
@@ -143,6 +143,28 @@ void NetPlatformSteam::OnLobbyEntered(LobbyEnter_t* pCallback, bool bIOFailure)
 
 	// Success!
 	mLobbyId = pCallback->m_ulSteamIDLobby;
+
+#if 0
+	// Query game server
+	uint32_t ipAddress = 0;
+	uint16_t port = 0;
+	CSteamID serverId;
+	bool hasServer = SteamMatchmaking()->GetLobbyGameServer(mLobbyId, &ipAddress, &port, &serverId);
+
+	if (hasServer && serverId.IsValid())
+	{
+		ConnectToServer(serverId);
+	}
+#else
+
+	// Get lobby owner
+	CSteamID serverId = SteamMatchmaking()->GetLobbyOwner(mLobbyId);
+
+	if (serverId.IsValid())
+	{
+		ConnectToServer(serverId);
+	}
+#endif
 }
 
 void NetPlatformSteam::OnLobbyList(LobbyMatchList_t* pCallback, bool bIOFailure)
@@ -156,6 +178,7 @@ void NetPlatformSteam::OnLobbyList(LobbyMatchList_t* pCallback, bool bIOFailure)
 
 		// add the lobby to the list
 		NetSession session;
+		session.mLan = false;
 		session.mLobbyId = steamIDLobby.ConvertToUint64();
 
 		// pull the name from the lobby metadata
@@ -201,6 +224,7 @@ void NetPlatformSteam::OnLobbyDataUpdated(LobbyDataUpdate_t* pCallback)
 			if (pchLobbyName[0])
 			{
 				strncpy(session.mName, pchLobbyName, OCT_SESSION_NAME_LEN);
+				LogDebug("Lobby Name: %s", pchLobbyName);
 			}
 
 			return;
@@ -403,7 +427,7 @@ void NetPlatformSteam::ConnectToServer(CSteamID serverId)
 	mServerIdentity = identity;
 
 	NetHost serverHost;
-	serverHost.mOnlineId;
+	serverHost.mOnlineId = serverId.ConvertToUint64();
 	NetworkManager::Get()->Connect(serverHost);
 
 	//mServerConnection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, nullptr);
