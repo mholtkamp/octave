@@ -1,6 +1,9 @@
 # Octave
 A 3D Game Engine for GameCube, Wii, 3DS, Windows, Linux, and Android
 
+Tutorial Video: https://youtu.be/0CHLn0ie-DY?si=pq-s_hLgb71OX2Cc
+Setup instructions below.
+
 ## Windows Setup
 1. Download and Install:
 	- Visual Studio Community 2022 (with C++ support)
