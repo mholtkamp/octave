@@ -44,8 +44,8 @@ public:
     virtual bool IsSearching() const;
 
     // Messaging
-    void SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfile);
-    int32_t RecvMessage(char* recvBuffer, int32_t bufferSize, NetHost& outHost);
+    virtual void SendMessage(const NetHost& host, const char* buffer, uint32_t size);
+    virtual int32_t RecvMessage(char* recvBuffer, int32_t bufferSize, NetHost& outHost);
 
     const std::vector<NetSession>& GetSessions() const;
 

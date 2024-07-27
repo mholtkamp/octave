@@ -339,20 +339,20 @@ bool NetworkManager::IsLoggedIn() const
     return loggedIn;
 }
 
-void NetworkManager::OpenSession(uint16_t port)
+void NetworkManager::OpenSession(bool lan, uint16_t port)
 {
     if (!NET_IsActive())
         return;
 
     if (mNetStatus == NetStatus::Local)
     {
-        if (mOnlinePlatform != nullptr)
+        if (!lan && mOnlinePlatform != nullptr)
         {
             mOnlinePlatform->OpenSession();
+            mInOnlineSession = true;
         }
         else
         {
-
             mSocket = NET_SocketCreate();
             NET_SocketSetBlocking(mSocket, false);
             // Broadcast is used for LAN game discovery.
@@ -597,7 +597,7 @@ void NetworkManager::Connect(const NetHost& host)
         if (host.mOnlineId != 0 && mOnlinePlatform)
         {
             mServer.mHost.mOnlineId = host.mOnlineId;
-            mOnlinePlatform->SendMessage(&connectMsg, &mServer);
+            NetworkManager::SendMessage(&connectMsg, &mServer);
         }
         else
         {
@@ -983,6 +983,7 @@ void NetworkManager::HandleConnect(NetHost host, uint32_t gameCode, uint32_t ver
             newClient->mHost.mIpAddress = host.mIpAddress;
             newClient->mHost.mPort = host.mPort;
             newClient->mHost.mId = FindAvailableNetHostId();
+            newClient->mHost.mOnlineId = host.mOnlineId;
 
             NetMsgAccept acceptMsg;
             acceptMsg.mAssignedHostId = newClient->mHost.mId;
@@ -1676,8 +1677,9 @@ void NetworkManager::ProcessIncomingPackets(float deltaTime)
         {
             for (uint32_t i = 0; i < mClients.size(); ++i)
             {
-                if (mClients[i].mHost.mIpAddress == sender.mIpAddress &&
-                    mClients[i].mHost.mPort == sender.mPort)
+                if ((mInOnlineSession && mClients[i].mHost.mOnlineId == sender.mOnlineId) || 
+                    (mClients[i].mHost.mIpAddress == sender.mIpAddress &&
+                    mClients[i].mHost.mPort == sender.mPort))
                 {
                     OCT_ASSERT(mClients[i].mHost.mId != INVALID_HOST_ID);
                     sender.mId = mClients[i].mHost.mId;
@@ -1691,8 +1693,9 @@ void NetworkManager::ProcessIncomingPackets(float deltaTime)
         }
         else
         {
-            if (mServer.mHost.mIpAddress == sender.mIpAddress &&
-                mServer.mHost.mPort == sender.mPort)
+            if ((mInOnlineSession && mServer.mHost.mOnlineId == sender.mOnlineId) ||
+                (mServer.mHost.mIpAddress == sender.mIpAddress &&
+                mServer.mHost.mPort == sender.mPort))
             {
                 OCT_ASSERT(mServer.mHost.mId == SERVER_HOST_ID);
                 sender.mId = mServer.mHost.mId;
@@ -1904,6 +1907,7 @@ void NetworkManager::ResetToLocalStatus()
         mServer.mHost.mIpAddress = 0;
         mServer.mHost.mPort = 0;
         mServer.mHost.mId = INVALID_HOST_ID;
+        mServer.mHost.mOnlineId = 0;
         mServer.mTimeSinceLastMsg = 0.0f;
         mInOnlineSession = false;
     }

@@ -76,10 +76,11 @@ void WriteNetHostProfile(const NetHostProfile& profile, Datum& table)
 
 int Network_Lua::OpenSession(lua_State* L)
 {
+    bool lan = CHECK_BOOLEAN(L, 1);
     uint16_t port = OCT_DEFAULT_PORT;
-    if (!lua_isnone(L, 1)) { port = (uint16_t)CHECK_INTEGER(L, 1); }
+    if (!lua_isnone(L, 1)) { port = (uint16_t)CHECK_INTEGER(L, 2); }
 
-    NetworkManager::Get()->OpenSession(port);
+    NetworkManager::Get()->OpenSession(lan, port);
 
     return 0;
 }

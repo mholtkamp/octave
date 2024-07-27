@@ -68,7 +68,7 @@ bool NetPlatform::IsSearching() const
     return false;
 }
 
-void NetPlatform::SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfile)
+void NetPlatform::SendMessage(const NetHost& host, const char* buffer, uint32_t size)
 {
 
 }

@@ -209,14 +209,42 @@ bool NetPlatformSteam::IsSearching() const
 	return false;
 }
 
-void NetPlatformSteam::SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfile)
+void NetPlatformSteam::SendMessage(const NetHost& host, const char* buffer, uint32_t size)
 {
+	SteamNetworkingIdentity identity;
+	identity.SetSteamID(host.mOnlineId);
 
+	EResult result = SteamNetworkingMessages()->SendMessageToUser(identity, buffer, size, 0, 0);
+
+	if (result != k_EResultOK)
+	{
+		LogWarning("Failed to send message: result = %d", result);
+	}
 }
 
 int32_t NetPlatformSteam::RecvMessage(char* recvBuffer, int32_t bufferSize, NetHost& outHost)
 {
-	return 0;
+	int32_t bytes = 0;
+
+	SteamNetworkingMessage_t* steamMsg = nullptr;
+	bytes = SteamNetworkingMessages()->ReceiveMessagesOnChannel(0, &steamMsg, 1);
+
+	if (bytes > 0 && 
+		steamMsg != nullptr)
+	{
+		int32_t msgSize = (int32_t)steamMsg->GetSize();
+		if (msgSize < OCT_MAX_MSG_SIZE)
+		{
+			memcpy(recvBuffer, steamMsg->GetData(), msgSize);
+			steamMsg->Release();
+		}
+		else
+		{
+			LogError("Large steam message received. (Greater than OCT_MAX_MSG_SIZE). Shouldn't happen.");
+		}
+	}
+
+	return bytes;
 }
 
 void NetPlatformSteam::StartServer()

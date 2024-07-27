@@ -35,8 +35,8 @@ public:
     virtual bool IsSearching() const override;
 
     // Messaging
-    void SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfile);
-    int32_t RecvMessage(char* recvBuffer, int32_t bufferSize, NetHost& outHost);
+    virtual void SendMessage(const NetHost& host, const char* buffer, uint32_t size) override;
+    virtual int32_t RecvMessage(char* recvBuffer, int32_t bufferSize, NetHost& outHost) override;
 
 protected:
 
