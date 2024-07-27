@@ -232,6 +232,12 @@ void NetPlatformSteam::OnLobbyDataUpdated(LobbyDataUpdate_t* pCallback)
 	}
 }
 
+void NetPlatformSteam::OnMessageRequest(SteamNetworkingMessagesSessionRequest_t* pCallback)
+{
+	bool accepted = SteamNetworkingMessages()->AcceptSessionWithUser(pCallback->m_identityRemote);
+	LogDebug("Accepted Steam connection!");
+}
+
 void NetPlatformSteam::OpenSession()
 {
 	if (!mLobbyCreateCb.IsActive())

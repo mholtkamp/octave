@@ -56,6 +56,7 @@ protected:
 
     STEAM_CALLBACK(NetPlatformSteam, OnLobbyGameCreated, LobbyGameCreated_t);
     STEAM_CALLBACK(NetPlatformSteam, OnLobbyDataUpdated, LobbyDataUpdate_t);
+    STEAM_CALLBACK(NetPlatformSteam, OnMessageRequest, SteamNetworkingMessagesSessionRequest_t);
 
     CSteamID mLobbyId;
     CSteamID mServerId;
