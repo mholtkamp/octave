@@ -321,6 +321,7 @@ int32_t NetPlatformSteam::RecvMessage(char* recvBuffer, int32_t bufferSize, NetH
 			memcpy(recvBuffer, steamMsg->GetData(), msgSize);
 			steamMsg->Release();
 			bytes = msgSize;
+			outHost.mOnlineId = steamMsg->m_identityPeer.GetSteamID64();
 		}
 		else
 		{
