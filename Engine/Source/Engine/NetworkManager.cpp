@@ -412,6 +412,11 @@ void NetworkManager::CloseSession()
     {
         LogWarning("NetworkManager::CloseSession() called but there is no active session.");
     }
+
+    if (mOnlinePlatform != nullptr)
+    {
+        mOnlinePlatform->CloseSession();
+    }
 }
 
 void NetworkManager::JoinSession(const NetSession& session)
