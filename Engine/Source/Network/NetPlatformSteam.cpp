@@ -196,6 +196,16 @@ void NetPlatformSteam::OnMessageRequest(SteamNetworkingMessagesSessionRequest_t*
 	LogDebug("Accepted Steam connection!");
 }
 
+void NetPlatformSteam::OnLobbyJoinRequested(GameLobbyJoinRequested_t* pCallback)
+{
+	LogDebug("Received lobby join request");
+
+	NetSession session;
+	session.mLan = false;
+	session.mLobbyId = pCallback->m_steamIDLobby.ConvertToUint64();
+	NetworkManager::Get()->JoinSession(session);
+}
+
 void NetPlatformSteam::OpenSession()
 {
 	if (!mLobbyCreateCb.IsActive())

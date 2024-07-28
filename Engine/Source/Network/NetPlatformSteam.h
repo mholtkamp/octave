@@ -51,6 +51,7 @@ protected:
 
     STEAM_CALLBACK(NetPlatformSteam, OnLobbyDataUpdated, LobbyDataUpdate_t);
     STEAM_CALLBACK(NetPlatformSteam, OnMessageRequest, SteamNetworkingMessagesSessionRequest_t);
+    STEAM_CALLBACK(NetPlatformSteam, OnLobbyJoinRequested, GameLobbyJoinRequested_t);
 
     CSteamID mLobbyId;
     bool mSearchingForLobbies = false;
