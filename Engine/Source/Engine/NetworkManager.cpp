@@ -1928,14 +1928,15 @@ void NetworkManager::ResetToLocalStatus()
             NET_SocketClose(mSocket);
         }
 
+        if (mOnlinePlatform)
+        {
+            mOnlinePlatform->CloseSession();
+        }
+
         mSocket = NET_INVALID_SOCKET;
         mNetStatus = NetStatus::Local;
         mHostId = INVALID_HOST_ID;
-        mServer.mHost.mIpAddress = 0;
-        mServer.mHost.mPort = 0;
-        mServer.mHost.mId = INVALID_HOST_ID;
-        mServer.mHost.mOnlineId = 0;
-        mServer.mTimeSinceLastMsg = 0.0f;
+        mServer = NetServer();
         mInOnlineSession = false;
     }
 }
