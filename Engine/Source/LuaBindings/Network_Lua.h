@@ -15,6 +15,8 @@ struct Network_Lua
 {
     static int OpenSession(lua_State* L);
     static int CloseSession(lua_State* L);
+    static int JoinSession(lua_State* L);
+    static int SetSessionName(lua_State* L);
     static int BeginSessionSearch(lua_State* L);
     static int EndSessionSearch(lua_State* L);
     static int IsSearching(lua_State* L);

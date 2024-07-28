@@ -54,6 +54,8 @@ public:
     void OpenSession(bool lan, uint16_t port = OCT_DEFAULT_PORT);
     void CloseSession();
     void JoinSession(const NetSession& session);
+    void SetSessionName(const std::string& name);
+    std::string& GetSessionName();
     void EnableSessionBroadcast(bool enable);
     bool IsSessionBroadcastEnabled() const;
 
@@ -189,6 +191,7 @@ private:
     SocketHandle mSocket = NET_INVALID_SOCKET;
     SocketHandle mSearchSocket = NET_INVALID_SOCKET;
     NetPlatform* mOnlinePlatform = nullptr;
+    std::string mSessionName;
     bool mSearching = false;
     bool mEnableSessionBroadcast = true;
     bool mIncrementalReplication = true;

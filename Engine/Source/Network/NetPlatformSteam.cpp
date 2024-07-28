@@ -98,7 +98,7 @@ void NetPlatformSteam::OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure
 
 		// Set the name of the lobby if it's ours
 		char rgchLobbyName[256];
-		snprintf(rgchLobbyName, 256, "%s's lobby", SteamFriends()->GetPersonaName());
+		snprintf(rgchLobbyName, 256, "%s", NetworkManager::Get()->GetSessionName().c_str());
 		SteamMatchmaking()->SetLobbyData(mLobbyId, "name", rgchLobbyName);
 
 		char code[32];

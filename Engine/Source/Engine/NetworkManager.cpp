@@ -443,6 +443,21 @@ void NetworkManager::JoinSession(const NetSession& session)
     }
 }
 
+void NetworkManager::SetSessionName(const std::string& name)
+{
+    mSessionName = name;
+}
+
+std::string& NetworkManager::GetSessionName()
+{
+    if (mSessionName == "")
+    {
+        mSessionName = GetEngineState()->mProjectName;
+    }
+
+    return mSessionName;
+}
+
 void NetworkManager::EnableSessionBroadcast(bool enable)
 {
     mEnableSessionBroadcast = enable;

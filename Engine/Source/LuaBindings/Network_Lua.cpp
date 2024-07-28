@@ -4,6 +4,8 @@
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 
+#include "TableDatum.h"
+
 #if LUA_ENABLED
 
 void PushSession(lua_State* L, const NetSession& session)
@@ -20,6 +22,11 @@ void PushSession(lua_State* L, const NetSession& session)
     // Port
     lua_pushinteger(L, (int)session.mHost.mPort);
     lua_setfield(L, sessionIdx, "port");
+
+    char lobbyId[64];
+    snprintf(lobbyId, 64, "%llu", session.mLobbyId);
+    lua_pushstring(L, lobbyId);
+    lua_setfield(L, sessionIdx, "lobbyId");
 
     // Name
     lua_pushstring(L, session.mName);
@@ -53,6 +60,12 @@ void PushNetHostProfile(lua_State* L, const NetHostProfile& profile)
     lua_pushinteger(L, (int)profile.mHost.mId);
     lua_setfield(L, profIdx, "id");
 
+    // Id
+    char onlineId[64];
+    snprintf(onlineId, 64, "%llu", profile.mHost.mOnlineId);
+    lua_pushstring(L, onlineId);
+    lua_setfield(L, profIdx, "onlineId");
+
     // Ping
     lua_pushnumber(L, (float)profile.mPing);
     lua_setfield(L, profIdx, "ping");
@@ -66,9 +79,14 @@ void WriteNetHostProfile(const NetHostProfile& profile, Datum& table)
 {
     char ipString[32] = {};
     NET_IpUint32ToString(profile.mHost.mIpAddress, ipString);
+
+    char onlineId[64];
+    snprintf(onlineId, 64, "%llu", profile.mHost.mOnlineId);
+
     table.SetStringField("ipAddress", ipString);
     table.SetIntegerField("port", (int)profile.mHost.mPort);
     table.SetIntegerField("id", (int)profile.mHost.mId);
+    table.SetStringField("onlineId", onlineId);
     table.SetFloatField("ping", profile.mPing);
     table.SetBoolField("ready", profile.mReady);
 }
@@ -88,6 +106,32 @@ int Network_Lua::OpenSession(lua_State* L)
 int Network_Lua::CloseSession(lua_State* L)
 {
     NetworkManager::Get()->CloseSession();
+
+    return 0;
+}
+
+int Network_Lua::JoinSession(lua_State* L)
+{
+    CHECK_TABLE(L, 1);
+    Datum table = LuaObjectToDatum(L, 1);
+
+    NetSession session;
+    session.mHost.mIpAddress = NET_IpStringToUint32(table.GetStringField("ipAddress").c_str());
+    session.mHost.mPort = (uint16_t)table.GetIntegerField("port");
+    session.mHost.mId = table.GetIntegerField("id");
+    session.mLobbyId = (uint64_t)std::stoll(table.GetStringField("onlineId"));
+
+
+    NetworkManager::Get()->JoinSession(session);
+
+    return 0;
+}
+
+int Network_Lua::SetSessionName(lua_State* L)
+{
+    const char* value = CHECK_STRING(L, 1);
+
+    NetworkManager::Get()->SetSessionName(value);
 
     return 0;
 }
