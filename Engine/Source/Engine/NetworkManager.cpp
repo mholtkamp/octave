@@ -13,12 +13,6 @@
 #include "Network/NetPlatformEpic.h"
 #include "Network/NetPlatformSteam.h"
 
-#define OCT_ONLINE_PLATFORM_NONE 0
-#define OCT_ONLINE_PLATFORM_EPIC 1
-#define OCT_ONLINE_PLATFORM_STEAM 2
-
-#define OCT_ONLINE_PLATFORM OCT_ONLINE_PLATFORM_STEAM
-
 #ifdef SendMessage
 #undef SendMessage
 #endif
@@ -179,10 +173,10 @@ NetworkManager::NetworkManager()
 
 void NetworkManager::Initialize()
 {
-#if OCT_ONLINE_PLATFORM == OCT_ONLINE_PLATFORM_EPIC
-    mOnlinePlatform = new NetPlatformEpic();
-#elif OCT_ONLINE_PLATFORM == OCT_ONLINE_PLATFORM_STEAM
+#if NET_PLATFORM_STEAM
     mOnlinePlatform = new NetPlatformSteam();
+#elif NET_PLATFORM_EPIC
+    mOnlinePlatform = new NetPlatformEpic();
 #endif
 
     if (mOnlinePlatform)
