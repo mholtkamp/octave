@@ -40,11 +40,6 @@ public:
 
 protected:
 
-    void StartServer();
-    void StopServer();
-    void ConnectToServer(CSteamID serverId);
-    void DisconnectFromServer();
-
     void OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure);
     CCallResult<NetPlatformSteam, LobbyCreated_t> mLobbyCreateCb;
 
@@ -54,20 +49,11 @@ protected:
     void OnLobbyList(LobbyMatchList_t* pCallback, bool bIOFailure);
     CCallResult<NetPlatformSteam, LobbyMatchList_t> mLobbyListCb;
 
-    STEAM_CALLBACK(NetPlatformSteam, OnLobbyGameCreated, LobbyGameCreated_t);
     STEAM_CALLBACK(NetPlatformSteam, OnLobbyDataUpdated, LobbyDataUpdate_t);
     STEAM_CALLBACK(NetPlatformSteam, OnMessageRequest, SteamNetworkingMessagesSessionRequest_t);
 
     CSteamID mLobbyId;
-    CSteamID mServerId;
-    HSteamNetConnection mServerConnection = 0;
-    HSteamListenSocket mListenSocket = 0;
-    HSteamNetPollGroup mPollGroup = 0;
-    bool mServerRunning = false;
-    bool mConnectingToServer = false;
     bool mSearchingForLobbies = false;
-
-    SteamNetworkingIdentity mServerIdentity = {};
 };
 
 #else
