@@ -25,7 +25,7 @@ public:
     virtual bool IsLoggedIn() const override;
 
     // Matchmaking
-    virtual void OpenSession() override;
+    virtual void OpenSession(const NetSessionOpenOptions& options) override;
     virtual void CloseSession() override;
     virtual void JoinSession(const NetSession& session) override;
 
@@ -55,6 +55,7 @@ protected:
 
     CSteamID mLobbyId;
     bool mSearchingForLobbies = false;
+    NetSessionOpenOptions mSessionOptions;
 };
 
 #else

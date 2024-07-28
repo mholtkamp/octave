@@ -346,7 +346,7 @@ bool NetPlatformEpic::IsLoggedIn() const
 }
 
 // Matchmaking
-void NetPlatformEpic::OpenSession()
+void NetPlatformEpic::OpenSession(const NetSessionOpenOptions& options)
 {
 
 }

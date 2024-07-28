@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Constants.h"
+#include "Network/NetworkConstants.h"
+
 struct NetSession
 {
     NetHost mHost = {};
@@ -11,12 +14,13 @@ struct NetSession
     bool mLan = true;
 };
 
-struct NetSessionCreateOptions
+struct NetSessionOpenOptions
 {
-    std::string mName;
-    int32_t mMaxPlayers = 4;
-    uint16_t mPort = 5151;
-    bool mJoinInProgress = true;
+    std::string mName = "Session";
+    int32_t mMaxPlayers = 16;
+    uint16_t mPort = OCT_DEFAULT_PORT;
+    bool mLan = false;
+    bool mPrivate = false;
 };
 
 struct NetSessionSearchOptions

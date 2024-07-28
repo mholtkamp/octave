@@ -33,7 +33,7 @@ bool NetPlatform::IsLoggedIn() const
 }
 
 // Matchmaking
-void NetPlatform::OpenSession()
+void NetPlatform::OpenSession(const NetSessionOpenOptions& options)
 {
 
 }

@@ -98,7 +98,7 @@ void NetPlatformSteam::OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure
 
 		// Set the name of the lobby if it's ours
 		char rgchLobbyName[256];
-		snprintf(rgchLobbyName, 256, "%s", NetworkManager::Get()->GetSessionName().c_str());
+		snprintf(rgchLobbyName, 256, "%s", mSessionOptions.mName.c_str());
 		SteamMatchmaking()->SetLobbyData(mLobbyId, "name", rgchLobbyName);
 
 		char code[32];
@@ -206,12 +206,15 @@ void NetPlatformSteam::OnLobbyJoinRequested(GameLobbyJoinRequested_t* pCallback)
 	NetworkManager::Get()->JoinSession(session);
 }
 
-void NetPlatformSteam::OpenSession()
+void NetPlatformSteam::OpenSession(const NetSessionOpenOptions& options)
 {
 	if (!mLobbyCreateCb.IsActive())
 	{
-		int32_t numPlayers = NetworkManager::Get()->GetMaxClients();
-		SteamAPICall_t hSteamAPICall = SteamMatchmaking()->CreateLobby(k_ELobbyTypePublic, numPlayers);
+		mSessionOptions = options;
+
+		ELobbyType lobbyType = options.mPrivate ? k_ELobbyTypePrivate : k_ELobbyTypePublic;
+		int32_t numPlayers = options.mMaxPlayers;
+		SteamAPICall_t hSteamAPICall = SteamMatchmaking()->CreateLobby(lobbyType, numPlayers);
 		mLobbyCreateCb.Set(hSteamAPICall, this, &NetPlatformSteam::OnLobbyCreated);
 	}
 }

@@ -35,7 +35,7 @@ public:
     virtual bool IsLoggedIn() const;
 
     // Matchmaking
-    virtual void OpenSession();
+    virtual void OpenSession(const NetSessionOpenOptions& options);
     virtual void CloseSession();
     virtual void JoinSession(const NetSession& session);
     virtual void BeginSessionSearch();

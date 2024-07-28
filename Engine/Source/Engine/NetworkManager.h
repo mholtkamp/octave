@@ -51,11 +51,10 @@ public:
     void Logout();
     bool IsLoggedIn() const;
 
-    void OpenSession(bool lan, uint16_t port = OCT_DEFAULT_PORT);
+    void OpenSession(const NetSessionOpenOptions& options);
     void CloseSession();
     void JoinSession(const NetSession& session);
-    void SetSessionName(const std::string& name);
-    std::string& GetSessionName();
+    const std::string& GetSessionName() const;
     void EnableSessionBroadcast(bool enable);
     bool IsSessionBroadcastEnabled() const;
 
@@ -71,7 +70,6 @@ public:
     void Disconnect();
     void Kick(NetHostId hostId, NetMsgKick::Reason reason);
 
-    void SetMaxClients(uint32_t maxClients);
     uint32_t GetMaxClients();
     const std::vector<NetClient>& GetClients() const;
 
@@ -176,7 +174,7 @@ private:
     std::unordered_map<NetId, Node*> mNetNodeMap;
     NetServer mServer;
     uint32_t mBroadcastIp = 0;
-    uint32_t mMaxClients = 9;
+    uint32_t mMaxClients = 15;
     NetId mNextNetId = 1;
     float mConnectTimer = 0.0f;
     float mBroadcastTimer = 0.0f;

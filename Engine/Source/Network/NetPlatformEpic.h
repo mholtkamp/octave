@@ -27,7 +27,7 @@ public:
     virtual bool IsLoggedIn() const override;
 
     // Matchmaking
-    virtual void OpenSession() override;
+    virtual void OpenSession(const NetSessionOpenOptions& options) override;
     virtual void CloseSession() override;
     virtual void BeginSessionSearch() override;
     virtual void EndSessionSearch() override;

@@ -338,7 +338,7 @@ bool NetworkManager::IsLoggedIn() const
     return loggedIn;
 }
 
-void NetworkManager::OpenSession(bool lan, uint16_t port)
+void NetworkManager::OpenSession(const NetSessionOpenOptions& options)
 {
     if (!NET_IsActive())
         return;
@@ -347,9 +347,9 @@ void NetworkManager::OpenSession(bool lan, uint16_t port)
     {
         bool sessionOpened = false;
 
-        if (!lan && mOnlinePlatform != nullptr)
+        if (!options.mLan && mOnlinePlatform != nullptr)
         {
-            mOnlinePlatform->OpenSession();
+            mOnlinePlatform->OpenSession(options);
             mInOnlineSession = true;
             sessionOpened = true;
         }
@@ -362,7 +362,7 @@ void NetworkManager::OpenSession(bool lan, uint16_t port)
 
             if (mSocket >= 0)
             {
-                NET_SocketBind(mSocket, NET_ANY_IP, port);
+                NET_SocketBind(mSocket, NET_ANY_IP, options.mPort);
 
                 // Broadcasting using subnet mask wasn't working on android
                 // (Probably because the subnet mask was incorrect)
@@ -391,6 +391,9 @@ void NetworkManager::OpenSession(bool lan, uint16_t port)
             mNetStatus = NetStatus::Server;
             mHostId = SERVER_HOST_ID;
             LogDebug("Session opened.");
+
+            mSessionName = options.mName;
+            mMaxClients = (uint32_t)glm::clamp<int32_t>(options.mMaxPlayers - 1, 0, 256);
         }
     }
     else
@@ -443,18 +446,8 @@ void NetworkManager::JoinSession(const NetSession& session)
     }
 }
 
-void NetworkManager::SetSessionName(const std::string& name)
+const std::string& NetworkManager::GetSessionName() const
 {
-    mSessionName = name;
-}
-
-std::string& NetworkManager::GetSessionName()
-{
-    if (mSessionName == "")
-    {
-        mSessionName = GetEngineState()->mProjectName;
-    }
-
     return mSessionName;
 }
 
@@ -701,11 +694,6 @@ void NetworkManager::Kick(NetHostId hostId, NetMsgKick::Reason reason)
             break;
         }
     }
-}
-
-void NetworkManager::SetMaxClients(uint32_t maxClients)
-{
-    mMaxClients = maxClients;
 }
 
 uint32_t NetworkManager::GetMaxClients()
@@ -1962,12 +1950,8 @@ void NetworkManager::BroadcastSession()
         bcMsg.mVersion = GetEngineState()->mVersion;
 
         // For now, use project name for session name.
-        const char* sessionName = GetEngineState()->mProjectName.c_str();
-        if (sessionName != nullptr)
-        {
-            strncpy(bcMsg.mName, sessionName, OCT_SESSION_NAME_LEN);
-            bcMsg.mName[OCT_SESSION_NAME_LEN] = 0;
-        }
+        strncpy(bcMsg.mName, mSessionName.c_str(), OCT_SESSION_NAME_LEN);
+        bcMsg.mName[OCT_SESSION_NAME_LEN] = 0;
 
         bcMsg.mMaxPlayers = 1 + mMaxClients;
         bcMsg.mNumPlayers = 1 + uint8_t(mClients.size());

@@ -28,7 +28,6 @@ struct Network_Lua
     static int Connect(lua_State* L);
     static int Disconnect(lua_State* L);
     static int Kick(lua_State* L);
-    static int SetMaxClients(lua_State* L);
     static int GetMaxClients(lua_State* L);
     static int GetNumClients(lua_State* L);
     static int GetClients(lua_State* L);
