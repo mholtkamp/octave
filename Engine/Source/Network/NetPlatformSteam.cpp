@@ -88,18 +88,24 @@ void NetPlatformSteam::OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure
 		return;
 	}
 
-	// record which lobby we're in
+	// Record which lobby we're in
 	if (pCallback->m_eResult == k_EResultOK)
 	{
-		//StartServer();
-
-		// success
+		// Success
 		mLobbyId = pCallback->m_ulSteamIDLobby;
 
-		// set the name of the lobby if it's ours
+		// Set the name of the lobby if it's ours
 		char rgchLobbyName[256];
 		snprintf(rgchLobbyName, 256, "%s's lobby", SteamFriends()->GetPersonaName());
 		SteamMatchmaking()->SetLobbyData(mLobbyId, "name", rgchLobbyName);
+
+		char code[32];
+		snprintf(code, 32, "%d", GetEngineState()->mGameCode);
+		SteamMatchmaking()->SetLobbyData(mLobbyId, "code", code);
+
+		char version[32];
+		snprintf(version, 32, "%d", GetEngineState()->mVersion);
+		SteamMatchmaking()->SetLobbyData(mLobbyId, "version", version);
 	}
 	else
 	{
@@ -218,6 +224,9 @@ void NetPlatformSteam::JoinSession(const NetSession& session)
 void NetPlatformSteam::BeginSessionSearch()
 {
 	mSessions.clear();
+
+	SteamMatchmaking()->AddRequestLobbyListNumericalFilter("code", GetEngineState()->mGameCode, k_ELobbyComparisonEqual);
+	SteamMatchmaking()->AddRequestLobbyListNumericalFilter("version", GetEngineState()->mVersion, k_ELobbyComparisonEqual);
 
 	SteamAPICall_t hSteamAPICall = SteamMatchmaking()->RequestLobbyList();
 	mLobbyListCb.Set(hSteamAPICall, this, &NetPlatformSteam::OnLobbyList);
