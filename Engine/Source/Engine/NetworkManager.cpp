@@ -631,9 +631,8 @@ void NetworkManager::Connect(const NetHost& host)
             else
             {
                 LogError("Failed to create socket.");
+                ResetToLocalStatus();
             }
-
-            ResetToLocalStatus();
         }
     }
     else
