@@ -9,19 +9,19 @@
 #endif
 
 /** The product id for the running application, found on the dev portal */
-constexpr char kProductId[] = "94952f5034e640eb92e49fced42c1e05";
+constexpr char kProductId[] = "";
 
 /** The sandbox id for the running application, found on the dev portal */
-constexpr char kSandboxId[] = "3f880f2205cf40c2ba9be1101c7a3790";
+constexpr char kSandboxId[] = "";
 
 /** The deployment id for the running application, found on the dev portal */
-constexpr char kDeploymentId[] = "606ef27ef5a6413daf6108ad1a6ba11d";
+constexpr char kDeploymentId[] = "";
 
 /** Client id of the service permissions entry, found on the dev portal */
-constexpr char kClientCredentialsId[] = "xyza7891nUk0AiCq7QssjxLm2SfYmFtY";
+constexpr char kClientCredentialsId[] = "";
 
 /** Client secret for accessing the set of permissions, found on the dev portal */
-constexpr char kClientCredentialsSecret[] = "MDf4zNUN7o7VbreWdHIcc+pJSv/Ieta7ceERk2iF/Ww";
+constexpr char kClientCredentialsSecret[] = "";
 
 constexpr char kEncryptionKey[] = "1111111111111111111111111111111111111111111111111111111111111111";
 
@@ -73,7 +73,7 @@ void EOS_CALL EOSSDKLoggingCallback(const EOS_LogMessage* InMsg)
 }
 
 // Init/Shutdown
-void NetPlatformEpic::Create()
+bool NetPlatformEpic::Create()
 {
     LogDebug("Initializing Epic Online Services");
 
@@ -98,8 +98,7 @@ void NetPlatformEpic::Create()
 	if (InitResult != EOS_EResult::EOS_Success)
 	{
 		LogError("EOS SDK Init Failed!");
-		OCT_ASSERT(0);
-		return;
+		return false;
 	}
 
 	LogDebug("EOS SDK Initialized. Setting Logging Callback...");
@@ -186,10 +185,11 @@ void NetPlatformEpic::Create()
 	if (mPlatformHandle == nullptr)
 	{
 		LogError("Failed to create EOS platform handle");
-		OCT_ASSERT(0);
+		return false;
 	}
 
 	mInitialized = true;
+	return true;
 }
 
 void NetPlatformEpic::Destroy()

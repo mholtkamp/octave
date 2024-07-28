@@ -1,9 +1,9 @@
 #include "NetPlatform.h"
 
 // Lifecycle
-void NetPlatform::Create()
+bool NetPlatform::Create()
 {
-
+    return false;
 }
 
 void NetPlatform::Destroy()

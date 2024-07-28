@@ -187,7 +187,14 @@ void NetworkManager::Initialize()
 
     if (mOnlinePlatform)
     {
-        mOnlinePlatform->Create();
+        bool success = mOnlinePlatform->Create();
+
+        if (!success)
+        {
+            mOnlinePlatform->Destroy();
+            delete mOnlinePlatform;
+            mOnlinePlatform = nullptr;
+        }
     }
 }
 

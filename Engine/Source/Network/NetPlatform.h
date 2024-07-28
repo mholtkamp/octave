@@ -25,7 +25,7 @@ class NetPlatform
 public:
 
     // Lifecycle
-    virtual void Create();
+    virtual bool Create();
     virtual void Destroy();
     virtual void Update();
 

@@ -27,7 +27,7 @@ void SteamAPIDebugTextHook(int nSeverity, const char* pchDebugText)
 }
 
 // Lifecycle
-void NetPlatformSteam::Create()
+bool NetPlatformSteam::Create()
 {
 	SteamErrMsg errMsg = { 0 };
 	if (SteamAPI_InitEx(&errMsg) != k_ESteamAPIInitResult_OK)
@@ -35,7 +35,7 @@ void NetPlatformSteam::Create()
 		LogError("SteamAPI_Init() failed: ");
 		LogError(errMsg);
 
-		return;
+		return false;
 	}
 
 	// set our debug handler
@@ -47,8 +47,10 @@ void NetPlatformSteam::Create()
 	if (!SteamUser()->BLoggedOn())
 	{
 		LogWarning("Steam user is not logged in");
-		return;
+		return false;
 	}
+
+	return true;
 }
 
 void NetPlatformSteam::Destroy()

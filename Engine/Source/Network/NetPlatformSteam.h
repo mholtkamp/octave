@@ -15,7 +15,7 @@ class NetPlatformSteam : public NetPlatform
 public:
 
     // Init/Shutdown
-    virtual void Create() override;
+    virtual bool Create() override;
     virtual void Destroy() override;
     virtual void Update() override;
 
