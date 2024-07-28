@@ -133,6 +133,16 @@ void NetPlatformSteam::OnLobbyEntered(LobbyEnter_t* pCallback, bool bIOFailure)
 	{
 		NetHost serverHost;
 		serverHost.mOnlineId = serverId.ConvertToUint64();
+
+		// Before connecting, attempt to ready all messages (that may have been previously sent from the server 
+		// before we left the session and then rejoined)
+		char tempBuffer[OCT_MAX_MSG_SIZE];
+		NetHost tempHost;
+		while (RecvMessage(tempBuffer, OCT_MAX_MSG_SIZE, tempHost) > 0)
+		{
+			LogDebug("Ignoring old message");
+		}
+
 		NetworkManager::Get()->Connect(serverHost);
 	}
 }
@@ -286,7 +296,7 @@ int32_t NetPlatformSteam::RecvMessage(char* recvBuffer, int32_t bufferSize, NetH
 		steamMsg != nullptr)
 	{
 		int32_t msgSize = (int32_t)steamMsg->GetSize();
-		if (msgSize < OCT_MAX_MSG_SIZE)
+		if (msgSize <= bufferSize)
 		{
 			memcpy(recvBuffer, steamMsg->GetData(), msgSize);
 			steamMsg->Release();
