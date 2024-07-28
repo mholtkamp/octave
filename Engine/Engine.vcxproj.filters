@@ -680,6 +680,15 @@
     <ClCompile Include="Source\Graphics\Vulkan\PostProcess\TonemapPass.cpp">
       <Filter>Source Files\Graphics\Vulkan\PostProcess</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Network\NetPlatform.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Network\NetPlatformEpic.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Network\NetPlatformSteam.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1331,6 +1340,18 @@
     </ClInclude>
     <ClInclude Include="Source\Graphics\Vulkan\PostProcess\TonemapPass.h">
       <Filter>Source Files\Graphics\Vulkan\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Network\NetPlatform.h">
+      <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Network\NetSession.h">
+      <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Network\NetPlatformEpic.h">
+      <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Network\NetPlatformSteam.h">
+      <Filter>Source Files\Network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

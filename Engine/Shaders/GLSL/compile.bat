@@ -5,6 +5,6 @@ for %%f in (.\src\*) do (
   echo %%~xf
   
   if NOT "%%~xf" == ".glsl" (
-    (( %VULKAN_SDK%/Bin/glslc.exe %%f -O -g -o .\bin\%%~nxf ) && ( echo Compile Successful )) || pause 
+    (( %VULKAN_SDK%/Bin/glslc.exe %%f -O -g -fpreserve-bindings -o .\bin\%%~nxf ) && ( echo Compile Successful )) || pause 
   )
 )

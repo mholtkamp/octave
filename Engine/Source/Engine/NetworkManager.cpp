@@ -10,6 +10,9 @@
 
 #include "LuaBindings/Network_Lua.h"
 
+#include "Network/NetPlatformEpic.h"
+#include "Network/NetPlatformSteam.h"
+
 #ifdef SendMessage
 #undef SendMessage
 #endif
@@ -35,28 +38,24 @@ struct DelayedPacket
 {
     SocketHandle mSocket = {};
     float mTime = 0.0f;
-    uint32_t mIpAddress = 0;
-    uint16_t mPort = 0;
     uint32_t mSize = 0;
     char mData[OCT_MAX_MSG_BODY_SIZE] = {};
+    NetHost mHost;
 };
 
 static std::vector<DelayedPacket> sDelayedPackets;
 
-int32_t DebugSendTo(SocketHandle socket, uint32_t ip, uint16_t port, uint32_t size, const char* data)
+void DebugSendTo(const NetHost& host, uint32_t size, const char* data)
 {
     float dropRoll = Maths::RandRange(0.0f, 1.0f);
 
     if (dropRoll >= sPacketLossFrac)
     {
-
         sDelayedPackets.emplace_back();
         DelayedPacket& packet = sDelayedPackets.back();
 
-        packet.mSocket = socket;
         packet.mTime = (1/1000.0f) * (sLatencyMs + Maths::RandRange(-sJitterMs, sJitterMs));
-        packet.mIpAddress = ip;
-        packet.mPort = port;
+        packet.mHost = host;
         packet.mSize = size;
         memcpy(packet.mData, data, size);
     }
@@ -64,8 +63,6 @@ int32_t DebugSendTo(SocketHandle socket, uint32_t ip, uint16_t port, uint32_t si
     {
         //LogWarning("Dropping packet");
     }
-
-    return size;
 }
 
 void UpdateDebugPackets(float deltaTime)
@@ -76,12 +73,10 @@ void UpdateDebugPackets(float deltaTime)
 
         if (sDelayedPackets[i].mTime <= 0.0f)
         {
-            NET_SocketSendTo(
-                sDelayedPackets[i].mSocket,
+            NetworkManager::Get()->SendTo(
+                sDelayedPackets[i].mHost,
                 sDelayedPackets[i].mData,
-                sDelayedPackets[i].mSize,
-                sDelayedPackets[i].mIpAddress,
-                sDelayedPackets[i].mPort);
+                sDelayedPackets[i].mSize);
 
             sDelayedPackets.erase(sDelayedPackets.begin() + i);
             --i;
@@ -178,7 +173,23 @@ NetworkManager::NetworkManager()
 
 void NetworkManager::Initialize()
 {
-    
+#if NET_PLATFORM_STEAM
+    mOnlinePlatform = new NetPlatformSteam();
+#elif NET_PLATFORM_EPIC
+    mOnlinePlatform = new NetPlatformEpic();
+#endif
+
+    if (mOnlinePlatform)
+    {
+        bool success = mOnlinePlatform->Create();
+
+        if (!success)
+        {
+            mOnlinePlatform->Destroy();
+            delete mOnlinePlatform;
+            mOnlinePlatform = nullptr;
+        }
+    }
 }
 
 void NetworkManager::Shutdown()
@@ -191,6 +202,13 @@ void NetworkManager::Shutdown()
              mNetStatus == NetStatus::Connecting)
     {
         Disconnect();
+    }
+
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->Destroy();
+        delete mOnlinePlatform;
+        mOnlinePlatform = nullptr;
     }
 }
 
@@ -250,6 +268,11 @@ void NetworkManager::PreTickUpdate(float deltaTime)
     {
         UpdateSearch();
     }
+
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->Update();
+    }
 }
 
 void NetworkManager::PostTickUpdate(float deltaTime)
@@ -287,43 +310,84 @@ void NetworkManager::PostTickUpdate(float deltaTime)
 #endif
 }
 
-void NetworkManager::OpenSession(uint16_t port)
+void NetworkManager::Login()
+{
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->Login();
+    }
+}
+
+void NetworkManager::Logout()
+{
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->Logout();
+    }
+}
+
+bool NetworkManager::IsLoggedIn() const
+{
+    bool loggedIn = mOnlinePlatform ? mOnlinePlatform->IsLoggedIn() : false;
+    return loggedIn;
+}
+
+void NetworkManager::OpenSession(const NetSessionOpenOptions& options)
 {
     if (!NET_IsActive())
         return;
 
     if (mNetStatus == NetStatus::Local)
     {
-        mSocket = NET_SocketCreate();
-        NET_SocketSetBlocking(mSocket, false);
-        // Broadcast is used for LAN game discovery.
-        NET_SocketSetBroadcast(mSocket, true);
+        bool sessionOpened = false;
 
-        if (mSocket >= 0)
+        if (!options.mLan && mOnlinePlatform != nullptr)
         {
-            NET_SocketBind(mSocket, NET_ANY_IP, port);
+            mOnlinePlatform->OpenSession(options);
+            mInOnlineSession = true;
+            sessionOpened = true;
+        }
+        else
+        {
+            mSocket = NET_SocketCreate();
+            NET_SocketSetBlocking(mSocket, false);
+            // Broadcast is used for LAN game discovery.
+            NET_SocketSetBroadcast(mSocket, true);
+
+            if (mSocket >= 0)
+            {
+                NET_SocketBind(mSocket, NET_ANY_IP, options.mPort);
+
+                // Broadcasting using subnet mask wasn't working on android
+                // (Probably because the subnet mask was incorrect)
+                // Need to check this on other platforms, but 255.255.255.255 works fine?
+#if PLATFORM_ANDROID
+                mBroadcastIp = NET_IpStringToUint32("255.255.255.255");
+#else
+                // Determine the broadcast IP based on the subnet mask.
+                uint32_t subnetMask = NET_GetSubnetMask();
+                uint32_t localIp = NET_GetIpAddress();
+                uint32_t netIp = localIp & subnetMask;
+                mBroadcastIp = netIp | (~subnetMask);
+#endif
+
+                LogDebug("Broadcast IP: %08x", mBroadcastIp);
+                sessionOpened = true;
+            }
+            else
+            {
+                LogError("Failed to create socket.");
+            }
+        }
+
+        if (sessionOpened)
+        {
             mNetStatus = NetStatus::Server;
             mHostId = SERVER_HOST_ID;
             LogDebug("Session opened.");
 
-            // Broadcasting using subnet mask wasn't working on android
-            // (Probably because the subnet mask was incorrect)
-            // Need to check this on other platforms, but 255.255.255.255 works fine?
-#if PLATFORM_ANDROID
-            mBroadcastIp = NET_IpStringToUint32("255.255.255.255");
-#else
-            // Determine the broadcast IP based on the subnet mask.
-            uint32_t subnetMask = NET_GetSubnetMask();
-            uint32_t localIp = NET_GetIpAddress();
-            uint32_t netIp = localIp & subnetMask;
-            mBroadcastIp = netIp | (~subnetMask);
-#endif
-
-            LogDebug("Broadcast IP: %08x", mBroadcastIp);
-        }
-        else
-        {
-            LogError("Failed to create socket.");
+            mSessionName = options.mName;
+            mMaxClients = (uint32_t)glm::clamp<int32_t>(options.mMaxPlayers - 1, 0, 256);
         }
     }
     else
@@ -341,10 +405,7 @@ void NetworkManager::CloseSession()
             Kick(mClients[0].mHost.mId, NetMsgKick::Reason::SessionClose);
         }
 
-        NET_SocketClose(mSocket);
-        mSocket = NET_INVALID_SOCKET;
-        mNetStatus = NetStatus::Local;
-        mHostId = INVALID_HOST_ID;
+        ResetToLocalStatus();
     }
     else if (mNetStatus == NetStatus::Client ||
              mNetStatus == NetStatus::Connecting)
@@ -355,6 +416,33 @@ void NetworkManager::CloseSession()
     {
         LogWarning("NetworkManager::CloseSession() called but there is no active session.");
     }
+
+    if (mOnlinePlatform != nullptr)
+    {
+        mOnlinePlatform->CloseSession();
+    }
+}
+
+void NetworkManager::JoinSession(const NetSession& session)
+{
+    if (mNetStatus == NetStatus::Local)
+    {
+        if (session.mLan)
+        {
+            Connect(session.mHost.mIpAddress, session.mHost.mPort);
+            mInOnlineSession = false;
+        }
+        else if (mOnlinePlatform)
+        {
+            mOnlinePlatform->JoinSession(session);
+            mInOnlineSession = true;
+        }
+    }
+}
+
+const std::string& NetworkManager::GetSessionName() const
+{
+    return mSessionName;
 }
 
 void NetworkManager::EnableSessionBroadcast(bool enable)
@@ -388,6 +476,11 @@ void NetworkManager::BeginSessionSearch()
     {
         LogError("Failed to create search socket.");
     }
+
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->BeginSessionSearch();
+    }
 }
 
 void NetworkManager::EndSessionSearch()
@@ -398,6 +491,11 @@ void NetworkManager::EndSessionSearch()
     {
         NET_SocketClose(mSearchSocket);
         mSearchSocket = NET_INVALID_SOCKET;
+    }
+
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->EndSessionSearch();
     }
 }
 
@@ -442,6 +540,11 @@ void NetworkManager::UpdateSearch()
         sNumPacketsReceived++;
 #endif
     }
+
+    if (mOnlinePlatform)
+    {
+        mOnlinePlatform->UpdateSearch();
+    }
 }
 
 bool NetworkManager::IsSearching() const
@@ -449,9 +552,25 @@ bool NetworkManager::IsSearching() const
     return mSearching;
 }
 
-const std::vector<GameSession>& NetworkManager::GetSessions() const
+const std::vector<NetSession>& NetworkManager::GetSessions() const
 {
-    return mSessions;
+    static std::vector<NetSession> sSessions;
+
+    // Start with LAN sessions
+    sSessions = mSessions;
+
+    // Add Online sessions
+    if (mOnlinePlatform)
+    {
+        const std::vector<NetSession>& onlineSessions = mOnlinePlatform->GetSessions();
+
+        for (uint32_t i = 0; i < onlineSessions.size(); ++i)
+        {
+            sSessions.push_back(onlineSessions[i]);
+        }
+    }
+
+    return sSessions;
 }
 
 void NetworkManager::Connect(const char* ipAddress, uint16_t port)
@@ -462,32 +581,52 @@ void NetworkManager::Connect(const char* ipAddress, uint16_t port)
 
 void NetworkManager::Connect(uint32_t ipAddress, uint16_t port)
 {
+    NetHost host;
+    host.mIpAddress = ipAddress;
+    host.mPort = port;
+    host.mId = SERVER_HOST_ID;
+
+    Connect(host);
+}
+
+void NetworkManager::Connect(const NetHost& host)
+{
     if (!NET_IsActive())
         return;
 
     if (mNetStatus == NetStatus::Local)
     {
-        mSocket = NET_SocketCreate();
-        NET_SocketSetBlocking(mSocket, false);
+        LogDebug("Connecting to session...");
+        mNetStatus = NetStatus::Connecting;
+        mConnectTimer = 0.0f;
+        ResetHostProfile(&mServer);
+        mServer.mHost.mIpAddress = host.mIpAddress;
+        mServer.mHost.mPort = host.mPort;
+        mServer.mHost.mId = SERVER_HOST_ID;
 
-        if (mSocket >= 0)
+        NetMsgConnect connectMsg;
+        connectMsg.mGameCode = GetEngineState()->mGameCode;
+        connectMsg.mVersion = GetEngineState()->mVersion;
+
+        if (host.mOnlineId != 0 && mOnlinePlatform)
         {
-            LogDebug("Connecting to session...");
-            mNetStatus = NetStatus::Connecting;
-            mConnectTimer = 0.0f;
-            ResetHostProfile(&mServer);
-            mServer.mHost.mIpAddress = ipAddress;
-            mServer.mHost.mPort = port;
-            mServer.mHost.mId = SERVER_HOST_ID;
-
-            NetMsgConnect connectMsg;
-            connectMsg.mGameCode = GetEngineState()->mGameCode;
-            connectMsg.mVersion = GetEngineState()->mVersion;
+            mServer.mHost.mOnlineId = host.mOnlineId;
             NetworkManager::SendMessage(&connectMsg, &mServer);
         }
         else
         {
-            LogError("Failed to create socket.");
+            mSocket = NET_SocketCreate();
+            NET_SocketSetBlocking(mSocket, false);
+
+            if (mSocket >= 0)
+            {
+                NetworkManager::SendMessage(&connectMsg, &mServer);
+            }
+            else
+            {
+                LogError("Failed to create socket.");
+                ResetToLocalStatus();
+            }
         }
     }
     else
@@ -548,11 +687,6 @@ void NetworkManager::Kick(NetHostId hostId, NetMsgKick::Reason reason)
             break;
         }
     }
-}
-
-void NetworkManager::SetMaxClients(uint32_t maxClients)
-{
-    mMaxClients = maxClients;
 }
 
 uint32_t NetworkManager::GetMaxClients()
@@ -624,7 +758,7 @@ void NetworkManager::SendMessageToAllClients(const NetMsg* netMsg)
     }
 }
 
-void NetworkManager::SendMessageImmediate(const NetMsg* netMsg, uint32_t ipAddress, uint16_t port)
+void NetworkManager::SendMessageImmediate(const NetHost& host, const NetMsg* netMsg)
 {
     // Immediate messages don't rely on a sequence number.
     // Connect and Reject should always be seq num 0 since they are the first messages sent between
@@ -640,14 +774,11 @@ void NetworkManager::SendMessageImmediate(const NetMsg* netMsg, uint32_t ipAddre
     {
 
 #if DEBUG_NETWORK_CONDITIONS
-        mBytesSent += DebugSendTo(mSocket, ipAddress, port, stream.GetPos(), stream.GetData());
+        DebugSendTo(host, stream.GetPos(), stream.GetData());
 #else
-        mBytesSent += NET_SocketSendTo(
-                mSocket,
-                stream.GetData(),
-                stream.GetPos(),
-                ipAddress,
-                port);
+        SendTo(host,
+               stream.GetData(),
+               stream.GetPos());
 #endif
 
 #if DEBUG_MSG_STATS
@@ -857,6 +988,7 @@ void NetworkManager::HandleConnect(NetHost host, uint32_t gameCode, uint32_t ver
             newClient->mHost.mIpAddress = host.mIpAddress;
             newClient->mHost.mPort = host.mPort;
             newClient->mHost.mId = FindAvailableNetHostId();
+            newClient->mHost.mOnlineId = host.mOnlineId;
 
             NetMsgAccept acceptMsg;
             acceptMsg.mAssignedHostId = newClient->mHost.mId;
@@ -911,7 +1043,7 @@ void NetworkManager::HandleConnect(NetHost host, uint32_t gameCode, uint32_t ver
             // Send back a Reject message to let them know why their connection was rejected.
             NetMsgReject rejectMsg;
             rejectMsg.mReason = rejectReason;
-            SendMessageImmediate(&rejectMsg, host.mIpAddress, host.mPort);
+            SendMessageImmediate(host, &rejectMsg);
         }
     }
 }
@@ -1091,7 +1223,7 @@ void NetworkManager::HandleBroadcast(
         gameCode == GetEngineState()->mGameCode &&
         version == GetEngineState()->mVersion)
     {
-        GameSession* session = nullptr;
+        NetSession* session = nullptr;
 
         for (uint32_t i = 0; i < mSessions.size(); ++i)
         {
@@ -1107,7 +1239,7 @@ void NetworkManager::HandleBroadcast(
             mSessions.size() < OCT_MAX_SESSION_LIST_SIZE)
         {
             LogDebug("Found new session");
-            mSessions.push_back(GameSession());
+            mSessions.push_back(NetSession());
             session = &mSessions.back();
         }
 
@@ -1259,12 +1391,9 @@ void NetworkManager::SendDestroyMessage(Node* node, NetClient* client)
 void NetworkManager::ResendPacket(NetHostProfile* hostProfile, ReliablePacket& packet)
 {
     // Resend the packet
-    mBytesSent += NET_SocketSendTo(
-        mSocket,
+    SendTo(hostProfile->mHost,
         packet.mData.data(),
-        (uint32_t)packet.mData.size(),
-        hostProfile->mHost.mIpAddress,
-        hostProfile->mHost.mPort);
+        (uint32_t)packet.mData.size());
 
     packet.mTimeSinceSend = 0.0f;
     packet.mNumSends++;
@@ -1510,22 +1639,52 @@ void NetworkManager::UpdateHostConnections(float deltaTime)
     }
 }
 
+int32_t NetworkManager::RecvFrom(char* buffer, uint32_t size, NetHost& outHost)
+{
+    int32_t bytes = 0;
+
+    if (mInOnlineSession && mOnlinePlatform)
+    {
+        bytes = mOnlinePlatform->RecvMessage(buffer, size, outHost);
+    }
+    else
+    {
+        bytes = NET_SocketRecvFrom(mSocket, buffer, size, outHost.mIpAddress, outHost.mPort);
+    }
+
+    return bytes;
+}
+
+void NetworkManager::SendTo(const NetHost& host, const char* buffer, uint32_t size)
+{
+    if (mInOnlineSession && mOnlinePlatform)
+    {
+        mOnlinePlatform->SendMessage(host, buffer, size);
+        mBytesSent += size;
+    }
+    else
+    {
+        mBytesSent += NET_SocketSendTo(
+            mSocket,
+            buffer,
+            size,
+            host.mIpAddress,
+            host.mPort);
+    }
+}
+
 void NetworkManager::ProcessIncomingPackets(float deltaTime)
 {
     int32_t bytes = 0;
-    uint32_t address = 0;
-    uint16_t port = 0;
+    NetHost sender;
 
-    while ((bytes =  NET_SocketRecvFrom(mSocket, sRecvBuffer, OCT_RECV_BUFFER_SIZE, address, port)) > 0)
+    while ((bytes = RecvFrom(sRecvBuffer, OCT_RECV_BUFFER_SIZE, sender)) > 0)
     {   
         Stream stream(sRecvBuffer, bytes);
         NetMsgType msgType = (NetMsgType) sRecvBuffer[OCT_PACKET_HEADER_SIZE];
 
         // Find which NetHost the message was from.
         // if there is no matching NetHost then ignore this message (unless it is a "Connect" message)
-        NetHost sender;
-        sender.mIpAddress = address;
-        sender.mPort = port;
         sender.mId = INVALID_HOST_ID;
 
         NetHostProfile* senderProfile = nullptr;
@@ -1538,8 +1697,9 @@ void NetworkManager::ProcessIncomingPackets(float deltaTime)
         {
             for (uint32_t i = 0; i < mClients.size(); ++i)
             {
-                if (mClients[i].mHost.mIpAddress == sender.mIpAddress &&
-                    mClients[i].mHost.mPort == sender.mPort)
+                if ((mInOnlineSession && mClients[i].mHost.mOnlineId == sender.mOnlineId) || 
+                    (mClients[i].mHost.mIpAddress == sender.mIpAddress &&
+                    mClients[i].mHost.mPort == sender.mPort))
                 {
                     OCT_ASSERT(mClients[i].mHost.mId != INVALID_HOST_ID);
                     sender.mId = mClients[i].mHost.mId;
@@ -1553,8 +1713,9 @@ void NetworkManager::ProcessIncomingPackets(float deltaTime)
         }
         else
         {
-            if (mServer.mHost.mIpAddress == sender.mIpAddress &&
-                mServer.mHost.mPort == sender.mPort)
+            if ((mInOnlineSession && mServer.mHost.mOnlineId == sender.mOnlineId) ||
+                (mServer.mHost.mIpAddress == sender.mIpAddress &&
+                mServer.mHost.mPort == sender.mPort))
             {
                 OCT_ASSERT(mServer.mHost.mId == SERVER_HOST_ID);
                 sender.mId = mServer.mHost.mId;
@@ -1567,7 +1728,7 @@ void NetworkManager::ProcessIncomingPackets(float deltaTime)
         if (!connectMsg &&
             (sender.mId == INVALID_HOST_ID || senderProfile == nullptr))
         {
-            LogDebug("Unrecognized host: %08x:%u", address, port);
+            LogDebug("Unrecognized host: %08x:%u", sender.mIpAddress, sender.mPort);
             continue;
         }
 
@@ -1755,20 +1916,27 @@ void NetworkManager::ResetToLocalStatus()
 {
     if (mNetStatus != NetStatus::Local)
     {
-        NET_SocketClose(mSocket);
+        if (mSocket != NET_INVALID_SOCKET)
+        {
+            NET_SocketClose(mSocket);
+        }
+
+        if (mOnlinePlatform)
+        {
+            mOnlinePlatform->CloseSession();
+        }
+
         mSocket = NET_INVALID_SOCKET;
         mNetStatus = NetStatus::Local;
         mHostId = INVALID_HOST_ID;
-        mServer.mHost.mIpAddress = 0;
-        mServer.mHost.mPort = 0;
-        mServer.mHost.mId = INVALID_HOST_ID;
-        mServer.mTimeSinceLastMsg = 0.0f;
+        mServer = NetServer();
+        mInOnlineSession = false;
     }
 }
 
 void NetworkManager::BroadcastSession()
 {
-    if (mEnableSessionBroadcast)
+    if (mEnableSessionBroadcast && !mInOnlineSession)
     {
         NetMsgBroadcast bcMsg;
         bcMsg.mMagic = NetMsgBroadcast::sMagicNumber;
@@ -1776,17 +1944,16 @@ void NetworkManager::BroadcastSession()
         bcMsg.mVersion = GetEngineState()->mVersion;
 
         // For now, use project name for session name.
-        const char* sessionName = GetEngineState()->mProjectName.c_str();
-        if (sessionName != nullptr)
-        {
-            strncpy(bcMsg.mName, sessionName, OCT_SESSION_NAME_LEN);
-            bcMsg.mName[OCT_SESSION_NAME_LEN] = 0;
-        }
+        strncpy(bcMsg.mName, mSessionName.c_str(), OCT_SESSION_NAME_LEN);
+        bcMsg.mName[OCT_SESSION_NAME_LEN] = 0;
 
         bcMsg.mMaxPlayers = 1 + mMaxClients;
         bcMsg.mNumPlayers = 1 + uint8_t(mClients.size());
 
-        SendMessageImmediate(&bcMsg, mBroadcastIp, OCT_BROADCAST_PORT);
+        NetHost host;
+        host.mIpAddress = mBroadcastIp;
+        host.mPort = OCT_BROADCAST_PORT;
+        SendMessageImmediate(host, &bcMsg);
     }
 }
 
@@ -1822,19 +1989,11 @@ void NetworkManager::FlushSendBuffer(NetHostProfile* hostProfile, bool reliable)
             if (hostProfile->mReady)
             {
 #if DEBUG_NETWORK_CONDITIONS
-                mBytesSent += DebugSendTo(
-                    mSocket,
-                    hostProfile->mHost.mIpAddress,
-                    hostProfile->mHost.mPort,
+                DebugSendTo(hostProfile->mHost,
                     packetSize,
                     sSendBuffer);
 #else
-                mBytesSent += NET_SocketSendTo(
-                    mSocket,
-                    sSendBuffer,
-                    packetSize,
-                    hostProfile->mHost.mIpAddress,
-                    hostProfile->mHost.mPort);
+                SendTo(hostProfile->mHost, sSendBuffer, packetSize);
 #endif
 
 #if DEBUG_MSG_STATS

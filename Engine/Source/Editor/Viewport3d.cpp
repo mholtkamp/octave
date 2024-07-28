@@ -34,6 +34,8 @@
 #include "Nodes/3D/TextMesh3d.h"
 #include "System/System.h"
 
+#include "imgui.h"
+
 static float sDefaultFocalDistance = 10.0f;
 constexpr float sMaxCameraPitch = 89.99f;
 
@@ -244,6 +246,8 @@ void Viewport3D::HandleDefaultControls()
 
             if (node3d != nullptr && node3d != camera)
             {
+                glm::vec3 compPos = node3d->GetWorldPosition();
+
                 Primitive3D* prim = node3d->As<Primitive3D>();
 
                 float boundsRadius = 0.0f;
@@ -258,12 +262,13 @@ void Viewport3D::HandleDefaultControls()
                     {
                         boundsRadius = bounds.mRadius;
                     }
+
+                    compPos = bounds.mCenter;
                 }
 
                 float focusDist = glm::max(boundsRadius + 1.0f, 2.0f);
 
                 glm::vec3 cameraPos = camera->GetWorldPosition();
-                glm::vec3 compPos = node3d->GetWorldPosition();
                 glm::vec3 toCamera = Maths::SafeNormalize(cameraPos - compPos);
                 glm::vec3 newCamPos = compPos + toCamera * focusDist;
                 camera->SetWorldPosition(newCamPos);

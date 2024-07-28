@@ -110,6 +110,7 @@ public:
 
     AssetStub* RegisterAsset(const std::string& filename, TypeId type, AssetDir* directory, EmbeddedFile* embeddedAsset, bool engineAsset);
     AssetStub* CreateAndRegisterAsset(TypeId assetType, AssetDir* directory, const std::string& filename, bool engineAsset);
+    AssetDir* GetAssetDirFromPath(const std::string& dirPath);
 
     bool IsPurging() const;
 

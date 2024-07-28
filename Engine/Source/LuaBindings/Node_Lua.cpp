@@ -926,6 +926,8 @@ void Node_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, mtIndex, HasStarted);
 
+    REGISTER_TABLE_FUNC(L, mtIndex, Destroy);
+
     REGISTER_TABLE_FUNC(L, mtIndex, SetPendingDestroy);
 
     REGISTER_TABLE_FUNC(L, mtIndex, IsPendingDestroy);

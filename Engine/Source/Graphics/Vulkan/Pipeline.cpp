@@ -33,6 +33,7 @@ void Pipeline::CreateGraphicsPipeline(VkPipelineCache cache, VkSpecializationInf
 {
     VulkanContext* context = GetVulkanContext();
     VkDevice device = context->GetDevice();
+    mComputePipeline = false;
 
     // Limit features
     if (!context->HasFeatureWideLines())
@@ -200,6 +201,7 @@ void Pipeline::CreateGraphicsPipeline(VkPipelineCache cache, VkSpecializationInf
 void Pipeline::CreateComputePipeline(VkPipelineCache cache, VkSpecializationInfo* specInfo)
 {
     VkDevice device = GetVulkanDevice();
+    mComputePipeline = true;
 
     VkShaderModule computeShaderModule = mState.mComputeShader->mModule;
 
@@ -246,7 +248,7 @@ void Pipeline::Create(const PipelineState& state, VkPipelineCache cache, VkSpeci
     // Ensure that a renderpass has been set before creating the pipeline.
     OCT_ASSERT(mState.mRenderPass != VK_NULL_HANDLE || mState.mComputeShader != nullptr);
 
-    if (mComputePipeline)
+    if (mState.mComputeShader != nullptr)
     {
         CreateComputePipeline(cache, specInfo);
     }

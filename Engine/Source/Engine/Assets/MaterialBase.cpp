@@ -343,6 +343,14 @@ void MaterialBase::Compile()
 
     // (X) Extract shader parameters from user code
     std::vector<ShaderParameter> userParams;
+
+    // Always add a forced shader parameter to ensure material set is compiled into shader.
+    ShaderParameter forcedParam;
+    forcedParam.mName = "ForceMaterialSet";
+    forcedParam.mType = ShaderParameterType::Scalar;
+    forcedParam.mFloatValue = {}; // NEEDS TO BE ZERO!!
+    userParams.push_back(forcedParam);
+
     std::string userCode;
     {
         std::istringstream iss(rawUserCode);
@@ -481,6 +489,7 @@ void MaterialBase::Compile()
         shaderc_compile_options_set_source_language(options, shaderc_source_language_glsl);
         shaderc_compile_options_set_target_env(options, shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_0);
         shaderc_compile_options_set_target_spirv(options, shaderc_spirv_version_1_0);
+        shaderc_compile_options_set_preserve_bindings(options, true);
 
 #if DEBUG_MATERIAL_SHADERS
         shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_zero);

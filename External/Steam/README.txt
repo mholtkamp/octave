@@ -1,0 +1,1 @@
+Drop your Steamworks SDK files in this directory. Put headers into include folder.

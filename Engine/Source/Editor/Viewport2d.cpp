@@ -9,6 +9,8 @@
 #include "Maths.h"
 #include "Renderer.h"
 
+#include "imgui.h"
+
 Viewport2D::Viewport2D()
 {
     mWrapperWidget = Node::Construct<Widget>();

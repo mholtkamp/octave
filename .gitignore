@@ -17,6 +17,12 @@ AssetRegistry.txt
 CpuStats.csv
 imgui.ini
 Saves/
+EOSSDK-Win64-Shipping.dll
+libEOSSDK-Linux-Shipping.so
+xaudio2_9redist.dll
+steam_api64.dll
+sdkencryptedappticket64.dll
+steam_appid.txt
 
 # User-specific files
 *.suo

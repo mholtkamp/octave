@@ -3,9 +3,11 @@ package com.solarscapegames.standalone;
 import android.app.NativeActivity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.content.res.AssetManager;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
@@ -13,6 +15,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.solarscapegames.standalone.databinding.ActivityMainBinding;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class OctaveActivity extends NativeActivity {
 
@@ -135,5 +140,32 @@ public class OctaveActivity extends NativeActivity {
         // int imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
 
         return imeVisible;
+    }
+
+    public ArrayList<String> iterateDirFiles(String path)
+    {
+        ArrayList<String> retList = new ArrayList<>();
+
+        AssetManager assetMgr = getAssets();
+
+        try
+        {
+            String list[] = assetMgr.list(path);
+
+            if (list != null)
+            {
+                for (int i = 0; i < list.length; ++i)
+                {
+                    retList.add(list[i]);
+                }
+            }
+
+        }
+        catch (IOException e)
+        {
+            Log.d("Octave", "Can't iterate directory " + path);
+        }
+
+        return retList;
     }
 }

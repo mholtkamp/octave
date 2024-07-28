@@ -6,8 +6,6 @@
 #include "Maths.h"
 #include "ObjectRef.h"
 
-#include "imgui.h"
-
 class Node;
 class Widget;
 class Text;

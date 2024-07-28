@@ -34,7 +34,7 @@ int AssetManager_Lua::SaveAsset(lua_State* L)
 
     AssetManager::Get()->SaveAsset(name);
 #endif
-    return 1;
+    return 0;
 }
 
 int AssetManager_Lua::AsyncLoadAsset(lua_State* L)
@@ -62,6 +62,27 @@ int AssetManager_Lua::UnloadAsset(lua_State* L)
     return 0;
 }
 
+int AssetManager_Lua::CreateAndRegisterAsset(lua_State* L)
+{
+    const char* assetTypeStr = CHECK_STRING(L, 1);
+    const char* assetDirStr = CHECK_STRING(L, 2);
+    const char* assetNameStr = CHECK_STRING(L, 3);
+
+    Asset* retAsset = nullptr;
+
+    TypeId assetType = Asset::GetTypeIdFromName(assetTypeStr);
+    AssetDir* assetDir = AssetManager::Get()->GetAssetDirFromPath(assetDirStr);
+    AssetStub* stub = AssetManager::Get()->CreateAndRegisterAsset(assetType, assetDir, assetNameStr, false);
+
+    if (stub != nullptr)
+    {
+        retAsset = stub->mAsset;
+    }
+
+    Asset_Lua::Create(L, retAsset);
+    return 1;
+}
+
 
 void AssetManager_Lua::Bind()
 {
@@ -82,6 +103,8 @@ void AssetManager_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, AsyncLoadAsset);
 
     REGISTER_TABLE_FUNC(L, tableIdx, UnloadAsset);
+
+    REGISTER_TABLE_FUNC(L, tableIdx, CreateAndRegisterAsset);
 
     lua_setglobal(L, ASSET_MANAGER_LUA_NAME);
     OCT_ASSERT(lua_gettop(L) == 0);

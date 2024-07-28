@@ -14,6 +14,7 @@ struct AssetManager_Lua
     static int SaveAsset(lua_State* L);
     static int AsyncLoadAsset(lua_State* L);
     static int UnloadAsset(lua_State* L);
+    static int CreateAndRegisterAsset(lua_State* L);
 
     static void Bind();
     static void BindGlobalFunctions();

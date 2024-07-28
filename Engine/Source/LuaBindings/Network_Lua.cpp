@@ -4,9 +4,11 @@
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/LuaUtils.h"
 
+#include "TableDatum.h"
+
 #if LUA_ENABLED
 
-void PushSession(lua_State* L, const GameSession& session)
+void PushSession(lua_State* L, const NetSession& session)
 {
     lua_newtable(L);
     int sessionIdx = lua_gettop(L);
@@ -20,6 +22,11 @@ void PushSession(lua_State* L, const GameSession& session)
     // Port
     lua_pushinteger(L, (int)session.mHost.mPort);
     lua_setfield(L, sessionIdx, "port");
+
+    char lobbyId[64];
+    snprintf(lobbyId, 64, "%llu", session.mLobbyId);
+    lua_pushstring(L, lobbyId);
+    lua_setfield(L, sessionIdx, "lobbyId");
 
     // Name
     lua_pushstring(L, session.mName);
@@ -53,6 +60,12 @@ void PushNetHostProfile(lua_State* L, const NetHostProfile& profile)
     lua_pushinteger(L, (int)profile.mHost.mId);
     lua_setfield(L, profIdx, "id");
 
+    // Id
+    char onlineId[64];
+    snprintf(onlineId, 64, "%llu", profile.mHost.mOnlineId);
+    lua_pushstring(L, onlineId);
+    lua_setfield(L, profIdx, "onlineId");
+
     // Ping
     lua_pushnumber(L, (float)profile.mPing);
     lua_setfield(L, profIdx, "ping");
@@ -66,9 +79,14 @@ void WriteNetHostProfile(const NetHostProfile& profile, Datum& table)
 {
     char ipString[32] = {};
     NET_IpUint32ToString(profile.mHost.mIpAddress, ipString);
+
+    char onlineId[64];
+    snprintf(onlineId, 64, "%llu", profile.mHost.mOnlineId);
+
     table.SetStringField("ipAddress", ipString);
     table.SetIntegerField("port", (int)profile.mHost.mPort);
     table.SetIntegerField("id", (int)profile.mHost.mId);
+    table.SetStringField("onlineId", onlineId);
     table.SetFloatField("ping", profile.mPing);
     table.SetBoolField("ready", profile.mReady);
 }
@@ -76,10 +94,31 @@ void WriteNetHostProfile(const NetHostProfile& profile, Datum& table)
 
 int Network_Lua::OpenSession(lua_State* L)
 {
-    uint16_t port = OCT_DEFAULT_PORT;
-    if (!lua_isnone(L, 1)) { port = (uint16_t)CHECK_INTEGER(L, 1); }
+    NetSessionOpenOptions options;
 
-    NetworkManager::Get()->OpenSession(port);
+    if (lua_istable(L, 1))
+    {
+        CHECK_TABLE(L, 1);
+
+        Datum table = LuaObjectToDatum(L, 1);
+
+        if (table.HasField("name"))
+            options.mName = table.GetStringField("name");
+
+        if (table.HasField("lan"))
+            options.mLan = table.GetBoolField("lan");
+
+        if (table.HasField("private"))
+            options.mPrivate = table.GetBoolField("private");
+
+        if (table.HasField("port"))
+            options.mPort = (uint16_t)table.GetIntegerField("port");
+
+        if (table.HasField("maxPlayers"))
+            options.mMaxPlayers = table.GetIntegerField("maxPlayers");
+    }
+
+    NetworkManager::Get()->OpenSession(options);
 
     return 0;
 }
@@ -87,6 +126,27 @@ int Network_Lua::OpenSession(lua_State* L)
 int Network_Lua::CloseSession(lua_State* L)
 {
     NetworkManager::Get()->CloseSession();
+
+    return 0;
+}
+
+int Network_Lua::JoinSession(lua_State* L)
+{
+    CHECK_TABLE(L, 1);
+    Datum table = LuaObjectToDatum(L, 1);
+
+    NetSession session;
+
+    if (table.HasField("ipAddress"))
+        session.mHost.mIpAddress = NET_IpStringToUint32(table.GetStringField("ipAddress").c_str());
+
+    if (table.HasField("port"))
+        session.mHost.mPort = (uint16_t)table.GetIntegerField("port");
+
+    if (table.HasField("lobbyId"))
+        session.mLobbyId = (uint64_t)std::stoll(table.GetStringField("lobbyId"));
+
+    NetworkManager::Get()->JoinSession(session);
 
     return 0;
 }
@@ -143,11 +203,11 @@ int Network_Lua::GetSession(lua_State* L)
 {
     int32_t index = (int32_t)CHECK_INDEX(L, 1);
 
-    const std::vector<GameSession>& sessions = NetworkManager::Get()->GetSessions();
+    const std::vector<NetSession>& sessions = NetworkManager::Get()->GetSessions();
     if (index >= 0 &&
         index < int32_t(sessions.size()))
     {
-        const GameSession& session = sessions[index];
+        const NetSession& session = sessions[index];
         PushSession(L, session);
         return 1;
     }
@@ -160,7 +220,7 @@ int Network_Lua::GetSession(lua_State* L)
 
 int Network_Lua::GetSessions(lua_State* L)
 {
-    const std::vector<GameSession>& sessions = NetworkManager::Get()->GetSessions();
+    const std::vector<NetSession>& sessions = NetworkManager::Get()->GetSessions();
 
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
@@ -199,15 +259,6 @@ int Network_Lua::Kick(lua_State* L)
     NetMsgKick::Reason reason = NetMsgKick::Reason::Forced;
 
     NetworkManager::Get()->Kick(hostId, reason);
-
-    return 0;
-}
-
-int Network_Lua::SetMaxClients(lua_State* L)
-{
-    uint32_t value = (uint32_t) CHECK_INTEGER(L, 1);
-
-    NetworkManager::Get()->SetMaxClients(value);
 
     return 0;
 }
@@ -435,6 +486,8 @@ void Network_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, tableIdx, CloseSession);
 
+    REGISTER_TABLE_FUNC(L, tableIdx, JoinSession);
+
     REGISTER_TABLE_FUNC(L, tableIdx, BeginSessionSearch);
 
     REGISTER_TABLE_FUNC(L, tableIdx, EndSessionSearch);
@@ -452,8 +505,6 @@ void Network_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, Disconnect);
 
     REGISTER_TABLE_FUNC(L, tableIdx, Kick);
-
-    REGISTER_TABLE_FUNC(L, tableIdx, SetMaxClients);
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetMaxClients);
 

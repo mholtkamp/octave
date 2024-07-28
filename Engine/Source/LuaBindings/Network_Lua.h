@@ -7,7 +7,7 @@
 
 #define NETWORK_LUA_NAME "Network"
 
-void PushSession(lua_State* L, const GameSession& session);
+void PushSession(lua_State* L, const NetSession& session);
 void PushNetHostProfile(lua_State* L, const NetHostProfile& profile);
 void WriteNetHostProfile(const NetHostProfile& profile, Datum& table);
 
@@ -15,6 +15,8 @@ struct Network_Lua
 {
     static int OpenSession(lua_State* L);
     static int CloseSession(lua_State* L);
+    static int JoinSession(lua_State* L);
+    static int SetSessionName(lua_State* L);
     static int BeginSessionSearch(lua_State* L);
     static int EndSessionSearch(lua_State* L);
     static int IsSearching(lua_State* L);
@@ -26,7 +28,6 @@ struct Network_Lua
     static int Connect(lua_State* L);
     static int Disconnect(lua_State* L);
     static int Kick(lua_State* L);
-    static int SetMaxClients(lua_State* L);
     static int GetMaxClients(lua_State* L);
     static int GetNumClients(lua_State* L);
     static int GetClients(lua_State* L);

@@ -23,8 +23,8 @@ void TonemapPass::Render(Image* input, Image* output)
 
     // Override output. Special case for tonemap pass.
     output = context->GetSwapchainImage();
-    context->SetViewport(0, 0, output->GetWidth(), output->GetHeight(), true, false);
-    context->SetScissor(0, 0, output->GetWidth(), output->GetHeight(), true, false);
+    context->SetViewport(0, 0, output->GetWidth(), output->GetHeight(), false, false);
+    context->SetScissor(0, 0, output->GetWidth(), output->GetHeight(), false, false);
 
     Image* pathTraceImage = context->IsRayTracingSupported() ? context->GetRayTracer()->GetPathTraceImage() : input;
 

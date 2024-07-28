@@ -103,6 +103,10 @@ void main()
 
     VertMain(vIn, vOut);
 
+    // Force the binding of the material descriptor set.
+    // the ForceMaterialSet param must always be set to 0
+    vOut.mPosition.x += ForceMaterialSet;
+
     outPosition = vOut.mPosition;
     outTexcoord0 = vOut.mUv0;
     outTexcoord1 = vOut.mUv1;

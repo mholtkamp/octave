@@ -503,7 +503,7 @@ std::vector<std::string> SYS_OpenFileDialog()
     std::vector<std::string> retPaths;
 
     OPENFILENAME ofn; // common dialog box structure
-    char szFile[260]; // buffer for file name
+    char szFile[1024 * 16]; // buffer for file name
     HWND hwnd = GetActiveWindow(); // owner window
 
     // Initialize OPENFILENAME
