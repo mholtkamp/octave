@@ -212,7 +212,7 @@ void NetPlatformSteam::OpenSession(const NetSessionOpenOptions& options)
 	{
 		mSessionOptions = options;
 
-		ELobbyType lobbyType = options.mPrivate ? k_ELobbyTypePrivate : k_ELobbyTypePublic;
+		ELobbyType lobbyType = options.mPrivate ? k_ELobbyTypeFriendsOnly : k_ELobbyTypePublic;
 		int32_t numPlayers = options.mMaxPlayers;
 		SteamAPICall_t hSteamAPICall = SteamMatchmaking()->CreateLobby(lobbyType, numPlayers);
 		mLobbyCreateCb.Set(hSteamAPICall, this, &NetPlatformSteam::OnLobbyCreated);
