@@ -49,6 +49,15 @@ enum class EditorMode
     Count
 };
 
+enum class PaintMode
+{
+    None,
+    Color,
+    Instance,
+
+    Count
+};
+
 struct LinkedSceneProps
 {
     Node* mNode = nullptr;
@@ -110,6 +119,7 @@ struct EditorState
     Text* mOverlayText = nullptr;
     std::vector<std::string> mFavoritedDirs;
     std::vector<std::string> mRecentProjects;
+    PaintMode mPaintMode = PaintMode::None;
 
     // Methods
     void Init();
@@ -120,6 +130,9 @@ struct EditorState
 
     void SetEditorMode(EditorMode mode);
     EditorMode GetEditorMode();
+
+    void SetPaintMode(PaintMode paintMode);
+    PaintMode GetPaintMode();
 
     void ReadEditorSave();
     void WriteEditorSave();

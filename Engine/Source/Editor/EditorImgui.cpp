@@ -2511,10 +2511,34 @@ static void DrawViewportPanel()
 
     ImGui::SameLine();
     int curMode = (int)GetEditorState()->mMode;
-    const char* modeStrings[] = { "Scene", "3D", "2D" };
+    PaintMode paintMode = (GetEditorState()->mMode == EditorMode::Scene3D) ? GetEditorState()->mPaintMode : PaintMode::None;
+
+    if (paintMode != PaintMode::None && paintMode != PaintMode::Count)
+    {
+        curMode = int(EditorMode::Count) + int(paintMode) - 1;
+    }
+
+    const char* modeStrings[] = { "Scene", "3D", "2D", "Paint Colors", "Paint Instances"};
     ImGui::SetNextItemWidth(70);
-    ImGui::Combo("##EditorMode", &curMode, modeStrings, 3);
+    ImGui::Combo("##EditorMode", &curMode, modeStrings, 5);
+
+    if (curMode == 3)
+    {
+        curMode = (int)EditorMode::Scene3D;
+        paintMode = PaintMode::Color;
+    }
+    else if (curMode == 4)
+    {
+        curMode = (int)EditorMode::Scene3D;
+        paintMode = PaintMode::Instance;
+    }
+    else
+    {
+        paintMode = PaintMode::None;
+    }
+
     GetEditorState()->SetEditorMode((EditorMode)curMode);
+    GetEditorState()->SetPaintMode(paintMode);
 
     bool openSaveSceneAsModal = false;
 

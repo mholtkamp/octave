@@ -188,7 +188,25 @@ void EditorState::SetEditorMode(EditorMode mode)
         {
             ActionManager::Get()->ResetUndoRedo();
         }
+
+        if (mMode != EditorMode::Scene3D)
+        {
+            SetPaintMode(PaintMode::None);
+        }
     }
+}
+
+void EditorState::SetPaintMode(PaintMode paintMode)
+{
+    if (mPaintMode != paintMode)
+    {
+        mPaintMode = paintMode;
+    }
+}
+
+PaintMode EditorState::GetPaintMode()
+{
+    return mPaintMode;
 }
 
 EditorMode EditorState::GetEditorMode()
