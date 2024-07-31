@@ -74,6 +74,30 @@ void Viewport3D::Update(float deltaTime)
         case ControlMode::Pan: HandlePanControls(); break;
         case ControlMode::Orbit: HandleOrbitControls(); break;
         }
+
+        if (GetEditorState()->GetPaintMode() != PaintMode::None && controlMode == ControlMode::Default)
+        {
+            int32_t mouseX = 0;
+            int32_t mouseY = 0;
+            GetMousePosition(mouseX, mouseY);
+
+            glm::clamp<int32_t>(mouseX, 0, GetEngineState()->mWindowWidth);
+            glm::clamp<int32_t>(mouseY, 0, GetEngineState()->mWindowHeight);
+
+            Camera3D* camera = GetEditorState()->GetEditorCamera();
+            if (camera)
+            {
+                glm::vec3 worldPos = camera->TraceScreenToWorld(mouseX, mouseY, 0xff);
+
+                DebugDraw paintSphereDraw;
+                paintSphereDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
+                paintSphereDraw.mMaterial = LoadAsset<Material>("M_PaintSphere");
+                paintSphereDraw.mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+                paintSphereDraw.mTransform = glm::translate(worldPos);
+
+                Renderer::Get()->AddDebugDraw(paintSphereDraw);
+            }
+        }
     }
 
     INP_GetMousePosition(mPrevMouseX, mPrevMouseY);

@@ -647,6 +647,17 @@ void AssetManager::ImportEngineAssets()
         AssetStub* defaultUnlitStub = CreateAndRegisterAsset(MaterialLite::GetStaticType(), engineMaterials, "M_DefaultUnlit", true);
         MaterialLite* defaultUnlitMaterial = (MaterialLite*)defaultUnlitStub->mAsset;
         defaultUnlitMaterial->SetShadingModel(ShadingModel::Unlit);
+
+        AssetStub* paintMatStub = CreateAndRegisterAsset(MaterialLite::GetStaticType(), engineMaterials, "M_PaintSphere", true);
+        MaterialLite* paintMat = (MaterialLite*)paintMatStub->mAsset;
+        paintMat->SetShadingModel(ShadingModel::Unlit);
+        paintMat->SetBlendMode(BlendMode::Additive);
+        paintMat->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+        paintMat->SetFresnelEnabled(true);
+        paintMat->SetFresnelColor(glm::vec4(1.0f, 0.27f, 0.12f, 1.0f));
+        paintMat->SetFresnelPower(3.0f);
+        paintMat->SetApplyFog(false);
+
         Renderer::Get()->LoadDefaultMaterials();
 
         ImportEngineAsset(StaticMesh::GetStaticType(), engineMeshes, "SM_Cone");
