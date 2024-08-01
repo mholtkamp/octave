@@ -25,6 +25,7 @@
 #include "EditorImgui.h"
 #include "Viewport3d.h"
 #include "Viewport2d.h"
+#include "PaintManager.h"
 #include "Input/Input.h"
 
 static EditorState sEditorState;
@@ -50,6 +51,7 @@ void EditorState::Init()
 
     mViewport3D = new Viewport3D();
     mViewport2D = new Viewport2D();
+    mPaintManager = new PaintManager();
 
     mOverlayText = Node::Construct<Text>();
     mOverlayText->SetName("Overlay Text");
@@ -81,6 +83,9 @@ void EditorState::Shutdown()
 
     delete mViewport2D;
     mViewport2D = nullptr;
+
+    delete mPaintManager;
+    mPaintManager = nullptr;
 
     mEditorCamera->SetWorld(nullptr);
     Node::Destruct(mEditorCamera);
@@ -338,6 +343,20 @@ void EditorState::WriteEditorProjectSave()
         {
             LogError("Failed to create Project Saves directory while writing EditorProject.sav");
         }
+    }
+}
+
+void EditorState::HandleNodeDestroy(Node* node)
+{
+    DeselectNode(node);
+    if (GetInspectedObject() == node)
+    {
+        InspectObject(nullptr, true, false);
+    }
+
+    if (mPaintManager)
+    {
+        mPaintManager->HandleNodeDestroy(node);
     }
 }
 

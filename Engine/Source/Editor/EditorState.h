@@ -16,6 +16,7 @@ class Canvas;
 class Camera3D;
 class Viewport3D;
 class Viewport2D;
+class PaintManager;
 
 enum class ControlMode
 {
@@ -120,6 +121,7 @@ struct EditorState
     std::vector<std::string> mFavoritedDirs;
     std::vector<std::string> mRecentProjects;
     PaintMode mPaintMode = PaintMode::None;
+    PaintManager* mPaintManager = nullptr;
 
     // Methods
     void Init();
@@ -139,6 +141,8 @@ struct EditorState
 
     void ReadEditorProjectSave();
     void WriteEditorProjectSave();
+
+    void HandleNodeDestroy(Node* node);
 
     void SetSelectedNode(Node* newNode);
     void AddSelectedNode(Node* node, bool addAllChildren);

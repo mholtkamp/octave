@@ -689,6 +689,9 @@
     <ClCompile Include="Source\Network\NetPlatformSteam.cpp">
       <Filter>Source Files\Network</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\PaintManager.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1352,6 +1355,9 @@
     </ClInclude>
     <ClInclude Include="Source\Network\NetPlatformSteam.h">
       <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\PaintManager.h">
+      <Filter>Source Files\Editor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

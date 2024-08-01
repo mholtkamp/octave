@@ -580,6 +580,7 @@
     <ClCompile Include="Source\Editor\EditorUtils.cpp" />
     <ClCompile Include="Source\Editor\Grid.cpp" />
     <ClCompile Include="Source\Editor\InputManager.cpp" />
+    <ClCompile Include="Source\Editor\PaintManager.cpp" />
     <ClCompile Include="Source\Editor\Viewport2d.cpp" />
     <ClCompile Include="Source\Editor\Viewport3d.cpp" />
     <ClCompile Include="Source\Engine\Asset.cpp" />
@@ -808,6 +809,7 @@
     <ClInclude Include="Source\Editor\EditorUtils.h" />
     <ClInclude Include="Source\Editor\Grid.h" />
     <ClInclude Include="Source\Editor\InputManager.h" />
+    <ClInclude Include="Source\Editor\PaintManager.h" />
     <ClInclude Include="Source\Editor\Viewport2d.h" />
     <ClInclude Include="Source\Editor\Viewport3d.h" />
     <ClInclude Include="Source\Engine\Assertion.h" />

@@ -213,11 +213,7 @@ void Node::Destroy()
     NodeRef::EraseReferencesToObject(this);
 
 #if EDITOR
-    GetEditorState()->DeselectNode(this);
-    if (GetEditorState()->GetInspectedObject() == this)
-    {
-        GetEditorState()->InspectObject(nullptr, true, false);
-    }
+    GetEditorState()->HandleNodeDestroy(this);
 #endif
 
     if (isWorldRoot)
