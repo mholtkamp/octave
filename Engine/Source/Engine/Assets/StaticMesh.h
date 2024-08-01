@@ -69,6 +69,8 @@ public:
 
 private:
 
+    bool ShouldGenerateTriangleCollision() const;
+
     void CreateTriangleCollisionShape();
     void DestroyTriangleCollisionShape();
 

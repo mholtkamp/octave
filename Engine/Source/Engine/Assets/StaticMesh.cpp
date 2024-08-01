@@ -367,7 +367,7 @@ void StaticMesh::Create()
         mNumIndices,
         mIndices);
 
-    if (mGenerateTriangleCollisionMesh)
+    if (ShouldGenerateTriangleCollision())
     {
         CreateTriangleCollisionShape();
     }
@@ -534,7 +534,7 @@ Bounds StaticMesh::GetBounds() const
 
 btBvhTriangleMeshShape* StaticMesh::GetTriangleCollisionShape()
 {
-    return mGenerateTriangleCollisionMesh ? mTriangleCollisionShape : nullptr;
+    return ShouldGenerateTriangleCollision() ? mTriangleCollisionShape : nullptr;
 }
 
 btCollisionShape* StaticMesh::GetCollisionShape()
@@ -604,7 +604,7 @@ void StaticMesh::SetGenerateTriangleCollisionMesh(bool generate)
     {
         mGenerateTriangleCollisionMesh = generate;
 
-        if (generate)
+        if (ShouldGenerateTriangleCollision())
         {
             CreateTriangleCollisionShape();
         }
@@ -623,6 +623,17 @@ bool StaticMesh::IsTriangleCollisionMeshEnabled() const
 uint32_t StaticMesh::GetVertexSize() const
 {
     return mHasVertexColor ? sizeof(VertexColor) : sizeof(Vertex);
+}
+
+bool StaticMesh::ShouldGenerateTriangleCollision() const
+{
+#if EDITOR
+    // Always generate it in Editor. For vertex color and instance painting, we want to use the 
+    // triangle collision data for placing the paint sphere reticle.
+    return true;
+#else
+    return mGenerateTriangleCollisionMesh;
+#endif
 }
 
 void StaticMesh::CreateTriangleCollisionShape()
