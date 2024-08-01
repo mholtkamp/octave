@@ -122,6 +122,9 @@ public:
     Node* SpawnDefaultRoot();
     void PlaceNewlySpawnedNode(Node* node);
 
+    void OverrideDynamicsWorld(btDiscreteDynamicsWorld* world);
+    void RestoreDynamicsWorld();
+
     template<typename T>
     T* FindNode()
     {
@@ -190,11 +193,12 @@ private:
     uint32_t mIncrementalRepIndex = 0;
 
     // Physics
-    btDefaultCollisionConfiguration* mCollisionConfig;
-    btCollisionDispatcher* mCollisionDispatcher;
-    btDbvtBroadphase* mBroadphase;
-    btSequentialImpulseConstraintSolver* mSolver;
-    btDiscreteDynamicsWorld* mDynamicsWorld;
+    btDefaultCollisionConfiguration* mCollisionConfig = nullptr;
+    btCollisionDispatcher* mCollisionDispatcher = nullptr;
+    btDbvtBroadphase* mBroadphase = nullptr;
+    btSequentialImpulseConstraintSolver* mSolver = nullptr;
+    btDiscreteDynamicsWorld* mDynamicsWorld = nullptr;
+    btDiscreteDynamicsWorld* mDefaultDynamicsWorld = nullptr;;
     std::vector<PrimitivePair> mCurrentOverlaps;
     std::vector<PrimitivePair> mPreviousOverlaps;
 

@@ -65,8 +65,6 @@ public:
 
 protected:
 
-    void FixOrthoDimensions(bool keepWidthSame);
-
     ProjectionMode mProjectionMode;
     glm::mat4 mViewProjectionMatrix;
     glm::mat4 mViewMatrix;

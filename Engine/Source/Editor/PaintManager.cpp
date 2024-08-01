@@ -171,9 +171,9 @@ void PaintManager::UpdateDynamicsWorld()
     }
 }
 
+
 void PaintManager::UpdatePaintReticle()
 {
-
     int32_t mouseX = 0;
     int32_t mouseY = 0;
     GetMousePosition(mouseX, mouseY);
@@ -184,7 +184,9 @@ void PaintManager::UpdatePaintReticle()
     Camera3D* camera = GetEditorState()->GetEditorCamera();
     if (camera)
     {
+        GetWorld(0)->OverrideDynamicsWorld(mDynamicsWorld);
         glm::vec3 worldPos = camera->TraceScreenToWorld(mouseX, mouseY, 0xff);
+        GetWorld(0)->RestoreDynamicsWorld();
 
         DebugDraw paintSphereDraw;
         paintSphereDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");

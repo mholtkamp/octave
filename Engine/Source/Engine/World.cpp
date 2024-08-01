@@ -76,6 +76,8 @@ World::World() :
     mSolver = new btSequentialImpulseConstraintSolver();
     mDynamicsWorld = new btDiscreteDynamicsWorld(mCollisionDispatcher, mBroadphase, mSolver, mCollisionConfig);
     mDynamicsWorld->setGravity(btVector3(0, -10, 0));
+
+    mDefaultDynamicsWorld = mDynamicsWorld;
 }
 
 void World::Destroy()
@@ -84,6 +86,8 @@ void World::Destroy()
 
     OCT_ASSERT(mRootNode == nullptr);
     mActiveCamera = nullptr;
+
+    mDefaultDynamicsWorld = nullptr;
 
     delete mDynamicsWorld;
     delete mSolver;
@@ -881,6 +885,17 @@ void World::PlaceNewlySpawnedNode(Node* node)
             SetRootNode(node);
         }
     }
+}
+
+// These are pretty hacky... needed for doing raytests in the paint manager's mesh collision world
+void World::OverrideDynamicsWorld(btDiscreteDynamicsWorld* world)
+{
+    mDynamicsWorld = world;
+}
+
+void World::RestoreDynamicsWorld()
+{
+    mDynamicsWorld = mDefaultDynamicsWorld;
 }
 
 Node* World::SpawnNode(TypeId actorType)
