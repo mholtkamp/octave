@@ -44,12 +44,8 @@ protected:
     glm::vec3 GetLockedRotationAxis() const;
     glm::vec3 GetLockedScaleDelta();
 
-    bool IsMouseOnAnyButton() const;
-
     float mFirstPersonMoveSpeed;
     float mFirstPersonRotationSpeed;
-
-    std::vector<Button*> mButtons;
 
     // Transform Control vars
     int32_t mPrevMouseX;

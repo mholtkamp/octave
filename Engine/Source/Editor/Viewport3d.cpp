@@ -131,8 +131,7 @@ void Viewport3D::HandleDefaultControls()
             GetEditorState()->SetControlMode(ControlMode::Pilot);
         }
 
-        if (IsMouseButtonJustDown(MOUSE_LEFT) &&
-            !IsMouseOnAnyButton())
+        if (IsMouseButtonJustDown(MOUSE_LEFT))
         {
             int32_t mouseX = 0;
             int32_t mouseY = 0;
@@ -153,7 +152,7 @@ void Viewport3D::HandleDefaultControls()
                     }
                 }
             }
-            else
+            else if (GetEditorState()->GetPaintMode() == PaintMode::None)
             {
                 if (altDown)
                 {
@@ -1073,23 +1072,6 @@ glm::vec3 Viewport3D::GetLockedScaleDelta()
     glm::vec3 retDelta = glm::vec3(1, 1, 1);
     retDelta *= GetEditorState()->GetTransformLockVector(GetEditorState()->mTransformLock);
     return retDelta;
-}
-
-bool Viewport3D::IsMouseOnAnyButton() const
-{
-    bool ret = false;
-
-    for (uint32_t i = 0; i < mButtons.size(); ++i)
-    {
-        if (mButtons[i]->IsVisible() &&
-            mButtons[i]->ContainsMouse())
-        {
-            ret = true;
-            break;
-        }
-    }
-
-    return ret;
 }
 
 #endif
