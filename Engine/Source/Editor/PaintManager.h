@@ -16,6 +16,7 @@ struct PaintMeshCollision
     glm::vec3 mPosition = {};
     glm::quat mRotation = {};
     glm::vec3 mScale = {};
+    bool mActive = false;
 };
 
 class PaintManager

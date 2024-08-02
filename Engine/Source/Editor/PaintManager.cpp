@@ -98,6 +98,14 @@ void PaintManager::UpdateDynamicsWorld()
     World* world = GetWorld(0);
     Node* rootNode = world ? world->GetRootNode() : nullptr;
 
+    // Iterate over all collision data and set active to false
+    // When we traverse the world and update collision data, we will mark visited nodes as active
+    // At the end, we remove and collision data that wasn't visited
+    for (auto& meshColPair : mMeshCollisionMap)
+    {
+        meshColPair.second.mActive = false;
+    }
+
     if (rootNode != nullptr)
     {
         auto updateMeshDynamics = [&](Node* node) -> bool
@@ -159,12 +167,32 @@ void PaintManager::UpdateDynamicsWorld()
 
                         AddPaintMeshCollision(paintCol);
                     }
+
+                    paintCol.mActive = true;
                 }
 
                 return true;
             };
 
         rootNode->Traverse(updateMeshDynamics);
+
+        for (auto it = mMeshCollisionMap.begin(); it != mMeshCollisionMap.end(); )
+        {
+            if (it->second.mActive)
+            {
+                ++it;
+            }
+            else
+            {
+                // No longer in the world
+                RemovePaintMeshCollision(it->second);
+
+                delete it->second.mCollisionObject;
+                it->second.mCollisionObject = nullptr;
+
+                it = mMeshCollisionMap.erase(it);
+            }
+        }
 
         // Is this needed? We just need to update overlaps really
         mDynamicsWorld->stepSimulation(0.1f);
