@@ -378,6 +378,11 @@ bool StaticMesh3D::HasBakedLighting() const
     return (mBakeLighting && mInstanceColors.size() > 0);
 }
 
+bool StaticMesh3D::HasInstanceColors() const
+{
+    return (mInstanceColors.size() > 0);
+}
+
 void StaticMesh3D::RecreateCollisionShape()
 {
     StaticMesh* staticMesh = mStaticMesh.Get<StaticMesh>();

@@ -52,6 +52,7 @@ public:
     void SetInstanceColors(const std::vector<uint32_t>& colors);
     std::vector<uint32_t>& GetInstanceColors();
     bool HasBakedLighting() const;
+    bool HasInstanceColors() const;
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 

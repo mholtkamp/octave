@@ -260,16 +260,53 @@ void PaintManager::UpdatePaintReticle()
 
 void PaintManager::UpdatePaintDraw()
 {
-    if (IsMouseButtonJustDown(MOUSE_LEFT))
+    if (IsMouseButtonDown(MOUSE_LEFT))
     {
+        const float sphereRad2 = mSphereRadius * mSphereRadius;
+
         int32_t numOverlaps = mSphereGhost->getNumOverlappingObjects();
-        LogDebug("Num overlaps = %d", numOverlaps);
 
         for (int32_t i = 0; i < numOverlaps; ++i)
         {
             btCollisionObject* colObj = mSphereGhost->getOverlappingObject(i);
-            Primitive3D* prim = (Primitive3D*) colObj->getUserPointer();
-            LogDebug("ColObj: %s", prim->GetName().c_str());
+            StaticMesh3D* mesh3d = (StaticMesh3D*) colObj->getUserPointer();
+            StaticMesh* mesh = mesh3d ? mesh3d->GetStaticMesh() : nullptr;
+
+            if (mesh == nullptr)
+                continue;
+
+            uint32_t numVerts = mesh->GetNumVertices();
+            std::vector<uint32_t>& instColors = mesh3d->GetInstanceColors();
+            bool meshHasColor = mesh->HasVertexColor();
+            void* vertices = meshHasColor ? (void*)mesh->GetColorVertices() : (void*)mesh->GetVertices();
+
+            // If we don't have valid instance colors, resize and set them all to white.
+            if (instColors.size() != numVerts)
+            {
+                instColors.resize(numVerts);
+
+                for (uint32_t c = 0; c < numVerts; ++c)
+                {
+                    instColors[c] = 0xffffffff;
+                }
+            }
+
+            const glm::mat4& transform = mesh3d->GetTransform();
+
+            for (uint32_t v = 0; v < numVerts; ++v)
+            {
+                glm::vec3 vertLocalPos = meshHasColor ? ((VertexColor*)vertices)[v].mPosition : ((Vertex*)vertices)[v].mPosition;
+                glm::vec3 vertWorldPos = glm::vec3(transform * glm::vec4(vertLocalPos, 1.0f));
+
+                float dist2 = glm::distance2(mSpherePosition, vertWorldPos);
+
+                if (dist2 < sphereRad2)
+                {
+                    instColors[v] = ColorFloat4ToUint32({ 1.0f, 0.0f, 0.0f, 0.0f });
+                }
+            }
+
+            GFX_UpdateStaticMeshCompResourceColors(mesh3d);
         }
     }
 }
