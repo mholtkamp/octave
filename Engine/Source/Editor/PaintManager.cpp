@@ -249,6 +249,11 @@ void PaintManager::UpdatePaintReticle()
     INP_GetMouseDelta(deltaX, deltaY);
     float totalDelta = float(deltaX - deltaY);
 
+    if (!IsMouseButtonDown(MOUSE_LEFT))
+    {
+        mAdjustmentFinished = false;
+    }
+
     if (!mAdjustRadius && !mAdjustOpacity)
     {
         if (IsKeyJustDown(KEY_F))
@@ -275,6 +280,7 @@ void PaintManager::UpdatePaintReticle()
         if (IsMouseButtonJustDown(MOUSE_LEFT))
         {
             mAdjustRadius = false;
+            mAdjustmentFinished = true;
         }
         else if (IsMouseButtonJustDown(MOUSE_RIGHT))
         {
@@ -291,6 +297,7 @@ void PaintManager::UpdatePaintReticle()
         if (IsMouseButtonJustDown(MOUSE_LEFT))
         {
             mAdjustOpacity = false;
+            mAdjustmentFinished = true;
         }
         else if (IsMouseButtonJustDown(MOUSE_RIGHT))
         {
@@ -323,8 +330,27 @@ void PaintManager::UpdatePaintReticle()
 
 void PaintManager::UpdatePaintDraw()
 {
-    if (IsMouseButtonDown(MOUSE_LEFT))
+    bool paint = false;
+    if (IsMouseButtonJustDown(MOUSE_LEFT))
     {
+        paint = true;
+    }
+    else if (IsMouseButtonDown(MOUSE_LEFT))
+    {
+        float paintMoveDist = glm::distance(mLastPaintPosition, mSpherePosition);
+        paint = (paintMoveDist >= mSpacing);
+    }
+
+    // Don't paint if we just left clicked after adjusting radius or opacity
+    if (mAdjustmentFinished)
+    {
+        paint = false;
+    }
+
+    if (paint)
+    {
+        mLastPaintPosition = mSpherePosition;
+
         const float sphereRad2 = mRadius * mRadius;
 
         int32_t numOverlaps = mSphereGhost->getNumOverlappingObjects();
@@ -365,10 +391,14 @@ void PaintManager::UpdatePaintDraw()
 
                 if (dist2 < sphereRad2)
                 {
+                    float dist = sqrtf(dist2);
+
                     glm::vec4 dst = ColorUint32ToFloat4(instColors[v]);
                     glm::vec4 src = mColor;
                     glm::vec4 out = dst;
-                    float a = mOpacity;
+
+                    float falloff = 1.0f - (dist / mRadius);
+                    float a = mOpacity * falloff;
 
                     switch (mBlendMode)
                     {
