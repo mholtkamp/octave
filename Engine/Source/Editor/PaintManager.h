@@ -20,6 +20,18 @@ struct PaintMeshCollision
     bool mActive = false;
 };
 
+enum PaintBlendMode
+{
+    Mix,
+    Add,
+    Subtract,
+    Multiply,
+    AddAlpha,
+    SubtractAlpha,
+
+    Count
+};
+
 class PaintManager
 {
 public:
@@ -63,6 +75,10 @@ public:
     bool mAdjustRadius = false;
     bool mAdjustOpacity = false;
     glm::vec2 mAdjustmentAnchor = {};
+
+    // Vertex Color Options
+    PaintBlendMode mBlendMode = PaintBlendMode::Mix;
+    glm::vec4 mColor = { 0.0f, 1.0f, 0.0f, 1.0f };
 };
 
 #endif

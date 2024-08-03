@@ -365,7 +365,38 @@ void PaintManager::UpdatePaintDraw()
 
                 if (dist2 < sphereRad2)
                 {
-                    instColors[v] = ColorFloat4ToUint32({ 1.0f, 0.0f, 0.0f, 0.0f });
+                    glm::vec4 dst = ColorUint32ToFloat4(instColors[v]);
+                    glm::vec4 src = mColor;
+                    glm::vec4 out = dst;
+                    float a = mOpacity;
+
+                    switch (mBlendMode)
+                    {
+                    case PaintBlendMode::Mix:
+                        out = (src * a) + (dst * (1.0f - a));
+                        out.a = dst.a;
+                        break;
+                    case PaintBlendMode::Add:
+                        out = (src * a) + dst;
+                        out.a = dst.a;
+                        break;
+                    case PaintBlendMode::Subtract:
+                        out = dst - (src * a);
+                        out.a = dst.a;
+                        break;
+                    case PaintBlendMode::Multiply:
+                        out = glm::mix(dst, src * dst, a);
+                        out.a = dst.a;
+                        break;
+                    case PaintBlendMode::AddAlpha:
+                        out.a = dst.a + src.a * a;
+                        break;
+                    case PaintBlendMode::SubtractAlpha:
+                        out.a = dst.a - src.a * a;
+                        break;
+                    }
+
+                    instColors[v] = ColorFloat4ToUint32(out);
                 }
             }
 
