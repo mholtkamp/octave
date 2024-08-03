@@ -50,8 +50,19 @@ public:
     btSphereShape* mSphereGhostShape = nullptr;
     btGhostPairCallback* mGhostPairCallback = nullptr;
 
+    StaticMeshRef mSphereMesh;
+    MaterialRef mSphereMaterial;
+
     glm::vec3 mSpherePosition = {};
-    float mSphereRadius = 1.0f;
+    float mRadius = 1.0f;
+    float mOpacity = 1.0f;
+
+    float mPreAdjustRadius = 1.0f;
+    float mPreAdjustOpacity = 1.0f;
+
+    bool mAdjustRadius = false;
+    bool mAdjustOpacity = false;
+    glm::vec2 mAdjustmentAnchor = {};
 };
 
 #endif

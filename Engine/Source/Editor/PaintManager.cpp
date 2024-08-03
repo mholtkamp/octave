@@ -26,6 +26,9 @@ PaintManager::PaintManager()
     mSphereGhost->setCollisionFlags(mSphereGhost->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
     mDynamicsWorld->addCollisionObject(mSphereGhost, kPaintSphereColGroup, ~kPaintSphereColGroup);
     mDynamicsWorld->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(mGhostPairCallback);
+
+    mSphereMesh = LoadAsset<StaticMesh>("SM_Sphere");
+    mSphereMaterial = MaterialLite::New(LoadAsset<Material>("M_PaintSphere"));
 }
 
 PaintManager::~PaintManager()
@@ -222,8 +225,8 @@ void PaintManager::UpdateDynamicsWorld()
         btTransform sphereTransform = btTransform::getIdentity();
         sphereTransform.setOrigin(btVector3(mSpherePosition.x, mSpherePosition.y, mSpherePosition.z));
         mSphereGhost->setWorldTransform(sphereTransform);
-        mSphereGhostShape->setImplicitShapeDimensions(btVector3(mSphereRadius, 0.0f, 0.0f));
-        mSphereGhostShape->setMargin(mSphereRadius);
+        mSphereGhostShape->setImplicitShapeDimensions(btVector3(mRadius, 0.0f, 0.0f));
+        mSphereGhostShape->setMargin(mRadius);
         mDynamicsWorld->addCollisionObject(mSphereGhost, kPaintSphereColGroup, ~kPaintSphereColGroup);
 
         // Is this needed? We just need to update overlaps really
@@ -241,28 +244,88 @@ void PaintManager::UpdatePaintReticle()
     glm::clamp<int32_t>(mouseX, 0, GetEngineState()->mWindowWidth);
     glm::clamp<int32_t>(mouseY, 0, GetEngineState()->mWindowHeight);
 
-    Camera3D* camera = GetEditorState()->GetEditorCamera();
-    if (camera)
+    int32_t deltaX = 0;
+    int32_t deltaY = 0;
+    INP_GetMouseDelta(deltaX, deltaY);
+    float totalDelta = float(deltaX - deltaY);
+
+    if (!mAdjustRadius && !mAdjustOpacity)
     {
-        GetWorld(0)->OverrideDynamicsWorld(mDynamicsWorld);
-        mSpherePosition = camera->TraceScreenToWorld(mouseX, mouseY, ~kPaintSphereColGroup);
-        GetWorld(0)->RestoreDynamicsWorld();
-
-        DebugDraw paintSphereDraw;
-        paintSphereDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
-        paintSphereDraw.mMaterial = LoadAsset<Material>("M_PaintSphere");
-        paintSphereDraw.mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-        paintSphereDraw.mTransform = glm::translate(mSpherePosition);
-
-        Renderer::Get()->AddDebugDraw(paintSphereDraw);
+        if (IsKeyJustDown(KEY_F))
+        {
+            if (IsShiftDown())
+            {
+                mAdjustOpacity = true;
+                mPreAdjustOpacity = mOpacity;
+            }
+            else
+            {
+                mAdjustRadius = true;
+                mPreAdjustRadius = mRadius;
+            }
+        }
     }
+
+    if (mAdjustRadius)
+    {
+        float radiusDelta = totalDelta * 0.05f;
+        mRadius += radiusDelta;
+        mRadius = glm::clamp(mRadius, 0.01f, 10000.0f);
+
+        if (IsMouseButtonJustDown(MOUSE_LEFT))
+        {
+            mAdjustRadius = false;
+        }
+        else if (IsMouseButtonJustDown(MOUSE_RIGHT))
+        {
+            mRadius = mPreAdjustRadius;
+            mAdjustRadius = false;
+        }
+    }
+    else if (mAdjustOpacity)
+    {
+        float opacityDelta = totalDelta * 0.0025f;
+        mOpacity += opacityDelta;
+        mOpacity = glm::clamp(mOpacity, 0.0f, 1.0f);
+
+        if (IsMouseButtonJustDown(MOUSE_LEFT))
+        {
+            mAdjustOpacity = false;
+        }
+        else if (IsMouseButtonJustDown(MOUSE_RIGHT))
+        {
+            mOpacity = mPreAdjustOpacity;
+            mAdjustOpacity = false;
+        }
+    }
+    else
+    {
+        Camera3D* camera = GetEditorState()->GetEditorCamera();
+        if (camera)
+        {
+            GetWorld(0)->OverrideDynamicsWorld(mDynamicsWorld);
+            mSpherePosition = camera->TraceScreenToWorld(mouseX, mouseY, ~kPaintSphereColGroup);
+            GetWorld(0)->RestoreDynamicsWorld();
+        }
+    }
+
+    // Draw the sphere
+    glm::vec4 matColor = glm::mix(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), mOpacity);
+    mSphereMaterial.Get<MaterialLite>()->SetFresnelColor(matColor);
+
+    DebugDraw paintSphereDraw;
+    paintSphereDraw.mMesh = mSphereMesh.Get<StaticMesh>();
+    paintSphereDraw.mMaterial = mSphereMaterial.Get<Material>();
+    paintSphereDraw.mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    paintSphereDraw.mTransform = glm::translate(mSpherePosition) * glm::scale(glm::vec3(mRadius, mRadius, mRadius));
+    Renderer::Get()->AddDebugDraw(paintSphereDraw);
 }
 
 void PaintManager::UpdatePaintDraw()
 {
     if (IsMouseButtonDown(MOUSE_LEFT))
     {
-        const float sphereRad2 = mSphereRadius * mSphereRadius;
+        const float sphereRad2 = mRadius * mRadius;
 
         int32_t numOverlaps = mSphereGhost->getNumOverlappingObjects();
 
