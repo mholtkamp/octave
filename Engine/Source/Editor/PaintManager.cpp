@@ -335,6 +335,11 @@ void PaintManager::UpdatePaintReticle()
 
 void PaintManager::UpdatePaintDraw()
 {
+    int32_t mouseX = 0;
+    int32_t mouseY = 0;
+    GetMousePosition(mouseX, mouseY);
+    glm::vec2 curMousePos = glm::vec2(float(mouseX), float(mouseY));
+
     bool paint = false;
     if (IsMouseButtonJustDown(MOUSE_LEFT))
     {
@@ -342,7 +347,7 @@ void PaintManager::UpdatePaintDraw()
     }
     else if (IsMouseButtonDown(MOUSE_LEFT))
     {
-        float paintMoveDist = glm::distance(mLastPaintPosition, mSpherePosition);
+        float paintMoveDist = glm::distance(mLastPaintMousePos, curMousePos);
         paint = (paintMoveDist >= mSpacing);
     }
 
@@ -354,7 +359,7 @@ void PaintManager::UpdatePaintDraw()
 
     if (paint)
     {
-        mLastPaintPosition = mSpherePosition;
+        mLastPaintMousePos = curMousePos;
 
         const float sphereRad2 = mRadius * mRadius;
 

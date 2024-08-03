@@ -79,9 +79,9 @@ public:
     bool mAdjustmentFinished = false;
     glm::vec2 mAdjustmentAnchor = {};
 
-    // Spacing is the distance we need to move between paints (in world space currently)
-    float mSpacing = 1.0f;
-    glm::vec3 mLastPaintPosition = {};
+    // Spacing is the distance we need to move between paints (in screen space currently)
+    float mSpacing = 10.0f;
+    glm::vec2 mLastPaintMousePos = {};
 
     // Vertex Color Options
     PaintBlendMode mBlendMode = PaintBlendMode::Mix;
