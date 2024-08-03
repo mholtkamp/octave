@@ -7,6 +7,8 @@
 #include "EditorState.h"
 #include "InputDevices.h"
 
+constexpr uint8_t kPaintSphereColGroup = 0x80;
+
 PaintManager::PaintManager()
 {
     // Setup physics world
@@ -15,10 +17,29 @@ PaintManager::PaintManager()
     mBroadphase = new btDbvtBroadphase();
     mSolver = new btSequentialImpulseConstraintSolver();
     mDynamicsWorld = new btDiscreteDynamicsWorld(mCollisionDispatcher, mBroadphase, mSolver, mCollisionConfig);
+
+    mSphereGhost = new btPairCachingGhostObject();
+    mSphereGhostShape = new btSphereShape(1.0f);
+    mGhostPairCallback = new btGhostPairCallback();
+
+    mSphereGhost->setCollisionShape(mSphereGhostShape);
+    mSphereGhost->setCollisionFlags(mSphereGhost->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+    mDynamicsWorld->addCollisionObject(mSphereGhost, kPaintSphereColGroup, ~kPaintSphereColGroup);
+    mDynamicsWorld->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(mGhostPairCallback);
 }
 
 PaintManager::~PaintManager()
 {
+    mDynamicsWorld->removeCollisionObject(mSphereGhost);
+    mDynamicsWorld->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(nullptr);
+    mSphereGhost->setCollisionShape(nullptr);
+    delete mGhostPairCallback;
+    delete mSphereGhostShape;
+    delete mSphereGhost;
+    mGhostPairCallback = nullptr;
+    mSphereGhostShape = nullptr;
+    mSphereGhost = nullptr;
+
     delete mDynamicsWorld;
     delete mSolver;
     delete mBroadphase;
@@ -36,6 +57,7 @@ void PaintManager::Update()
 {
     UpdateDynamicsWorld();
     UpdatePaintReticle();
+    UpdatePaintDraw();
 }
 
 void PaintManager::HandleNodeDestroy(Node* node)
@@ -127,6 +149,7 @@ void PaintManager::UpdateDynamicsWorld()
                     if (it == mMeshCollisionMap.end())
                     {
                         btCollisionObject* colObject = new btCollisionObject();
+                        colObject->setUserPointer(meshNode);
 
                         PaintMeshCollision paintCol;
                         paintCol.mCollisionObject = colObject;
@@ -194,6 +217,15 @@ void PaintManager::UpdateDynamicsWorld()
             }
         }
 
+        // Update the sphere ghost
+        mDynamicsWorld->removeCollisionObject(mSphereGhost);
+        btTransform sphereTransform = btTransform::getIdentity();
+        sphereTransform.setOrigin(btVector3(mSpherePosition.x, mSpherePosition.y, mSpherePosition.z));
+        mSphereGhost->setWorldTransform(sphereTransform);
+        mSphereGhostShape->setImplicitShapeDimensions(btVector3(mSphereRadius, 0.0f, 0.0f));
+        mSphereGhostShape->setMargin(mSphereRadius);
+        mDynamicsWorld->addCollisionObject(mSphereGhost, kPaintSphereColGroup, ~kPaintSphereColGroup);
+
         // Is this needed? We just need to update overlaps really
         mDynamicsWorld->stepSimulation(0.1f);
     }
@@ -213,16 +245,32 @@ void PaintManager::UpdatePaintReticle()
     if (camera)
     {
         GetWorld(0)->OverrideDynamicsWorld(mDynamicsWorld);
-        glm::vec3 worldPos = camera->TraceScreenToWorld(mouseX, mouseY, 0xff);
+        mSpherePosition = camera->TraceScreenToWorld(mouseX, mouseY, ~kPaintSphereColGroup);
         GetWorld(0)->RestoreDynamicsWorld();
 
         DebugDraw paintSphereDraw;
         paintSphereDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
         paintSphereDraw.mMaterial = LoadAsset<Material>("M_PaintSphere");
         paintSphereDraw.mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-        paintSphereDraw.mTransform = glm::translate(worldPos);
+        paintSphereDraw.mTransform = glm::translate(mSpherePosition);
 
         Renderer::Get()->AddDebugDraw(paintSphereDraw);
+    }
+}
+
+void PaintManager::UpdatePaintDraw()
+{
+    if (IsMouseButtonJustDown(MOUSE_LEFT))
+    {
+        int32_t numOverlaps = mSphereGhost->getNumOverlappingObjects();
+        LogDebug("Num overlaps = %d", numOverlaps);
+
+        for (int32_t i = 0; i < numOverlaps; ++i)
+        {
+            btCollisionObject* colObj = mSphereGhost->getOverlappingObject(i);
+            Primitive3D* prim = (Primitive3D*) colObj->getUserPointer();
+            LogDebug("ColObj: %s", prim->GetName().c_str());
+        }
     }
 }
 

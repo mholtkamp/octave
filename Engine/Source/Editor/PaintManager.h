@@ -4,7 +4,8 @@
 
 #include <unordered_map>
 
-#include <Bullet/btBulletDynamicsCommon.h>
+#include "Bullet/btBulletDynamicsCommon.h"
+#include "Bullet/BulletCollision/CollisionDispatch/btGhostObject.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
 
@@ -33,6 +34,7 @@ public:
 
     void UpdateDynamicsWorld();
     void UpdatePaintReticle();
+    void UpdatePaintDraw();
 
     bool mInitialized = false;
 
@@ -43,6 +45,13 @@ public:
     btDiscreteDynamicsWorld* mDynamicsWorld = nullptr;
 
     std::unordered_map<StaticMesh3D*, PaintMeshCollision> mMeshCollisionMap;
+
+    btPairCachingGhostObject* mSphereGhost = nullptr;
+    btSphereShape* mSphereGhostShape = nullptr;
+    btGhostPairCallback* mGhostPairCallback = nullptr;
+
+    glm::vec3 mSpherePosition = {};
+    float mSphereRadius = 1.0f;
 };
 
 #endif
