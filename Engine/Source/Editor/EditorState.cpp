@@ -206,6 +206,13 @@ void EditorState::SetPaintMode(PaintMode paintMode)
     if (mPaintMode != paintMode)
     {
         mPaintMode = paintMode;
+
+        if (mPaintMode == PaintMode::None)
+        {
+            // Make sure cursor is visible and unlocked 
+            INP_ShowCursor(true);
+            INP_LockCursor(false);
+        }
     }
 }
 

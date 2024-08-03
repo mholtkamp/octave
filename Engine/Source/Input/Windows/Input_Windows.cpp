@@ -89,7 +89,9 @@ void INP_ShowCursor(bool show)
 {
     SystemState& system = GetEngineState()->mSystem;
 
-    if (system.mWindowHasFocus)
+    // Calling ShowCursor(true) twice will cause a sort of ref counting problem,
+    // and then future ShowCursor(false) calls won't work.
+    if (system.mWindowHasFocus && show != GetEngineState()->mInput.mCursorShown)
     {
         ShowCursor(show);
     }

@@ -48,6 +48,8 @@ public:
     void UpdatePaintReticle();
     void UpdatePaintDraw();
 
+    void FinishAdjustment();
+
     bool mInitialized = false;
 
     btDefaultCollisionConfiguration* mCollisionConfig = nullptr;

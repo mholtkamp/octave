@@ -268,6 +268,9 @@ void PaintManager::UpdatePaintReticle()
                 mAdjustRadius = true;
                 mPreAdjustRadius = mRadius;
             }
+
+            INP_ShowCursor(false);
+            INP_LockCursor(true);
         }
     }
 
@@ -280,12 +283,13 @@ void PaintManager::UpdatePaintReticle()
         if (IsMouseButtonJustDown(MOUSE_LEFT))
         {
             mAdjustRadius = false;
-            mAdjustmentFinished = true;
+            FinishAdjustment();
         }
         else if (IsMouseButtonJustDown(MOUSE_RIGHT))
         {
             mRadius = mPreAdjustRadius;
             mAdjustRadius = false;
+            FinishAdjustment();
         }
     }
     else if (mAdjustOpacity)
@@ -297,12 +301,13 @@ void PaintManager::UpdatePaintReticle()
         if (IsMouseButtonJustDown(MOUSE_LEFT))
         {
             mAdjustOpacity = false;
-            mAdjustmentFinished = true;
+            FinishAdjustment();
         }
         else if (IsMouseButtonJustDown(MOUSE_RIGHT))
         {
             mOpacity = mPreAdjustOpacity;
             mAdjustOpacity = false;
+            FinishAdjustment();
         }
     }
     else
@@ -433,6 +438,13 @@ void PaintManager::UpdatePaintDraw()
             GFX_UpdateStaticMeshCompResourceColors(mesh3d);
         }
     }
+}
+
+void PaintManager::FinishAdjustment()
+{
+    INP_ShowCursor(true);
+    INP_LockCursor(false);
+    mAdjustmentFinished = true;
 }
 
 #endif
