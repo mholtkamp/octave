@@ -8,6 +8,8 @@
 #include "EditorUtils.h"
 #include "EditorState.h"
 #include "Renderer.h"
+#include "Viewport3d.h"
+#include "Viewport2d.h"
 #include "Assets/Scene.h"
 #include "AssetManager.h"
 
@@ -173,6 +175,34 @@ void InputManager::UpdateHotkeys()
         else if (altDown && IsKeyJustDown(KEY_R) && !textFieldActive)
         {
             ReloadAllScripts();
+        }
+
+        if (altDown &&
+            (GetEditorState()->GetViewport3D()->ShouldHandleInput() || 
+             GetEditorState()->GetViewport2D()->ShouldHandleInput()))
+        {
+            if (IsKeyJustDown(KEY_1))
+            {
+                GetEditorState()->SetEditorMode(EditorMode::Scene);
+            }
+            else if (IsKeyJustDown(KEY_2))
+            {
+                GetEditorState()->SetEditorMode(EditorMode::Scene3D);
+            }
+            else if (IsKeyJustDown(KEY_3))
+            {
+                GetEditorState()->SetEditorMode(EditorMode::Scene2D);
+            }
+            else if (IsKeyJustDown(KEY_4))
+            {
+                GetEditorState()->SetEditorMode(EditorMode::Scene3D);
+                GetEditorState()->SetPaintMode(PaintMode::Color);
+            }
+            else if (IsKeyJustDown(KEY_5))
+            {
+                GetEditorState()->SetEditorMode(EditorMode::Scene3D);
+                GetEditorState()->SetPaintMode(PaintMode::Instance);
+            }
         }
 
         if (IsKeyJustDown(KEY_ESCAPE) &&
