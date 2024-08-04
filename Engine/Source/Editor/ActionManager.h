@@ -8,8 +8,10 @@
 #include "Asset.h"
 #include "AssetRef.h"
 #include "Nodes/Node.h"
+#include "Nodes/3D/StaticMesh3d.h"
 
 class Node3D;
+struct ActionSetInstanceColorsData;
 
 class Action
 {
@@ -60,6 +62,7 @@ public:
     void EXE_SetWorldPosition(Node3D* node, glm::vec3 pos);
     void EXE_SetWorldScale(Node3D* node, glm::vec3 scale);
     void EXE_UnlinkScene(Node* node);
+    void EXE_SetInstanceColors(const std::vector<ActionSetInstanceColorsData>& data);
 
     void ClearActionHistory();
     void ClearActionFuture();
@@ -271,4 +274,23 @@ protected:
     Node* mNode = nullptr;
     SceneRef mScene;
 
+};
+
+struct ActionSetInstanceColorsData
+{
+    StaticMesh3D* mMesh3d = nullptr;
+    std::vector<uint32_t> mColors;
+    bool mBakedLight = false;
+};
+
+class ActionSetInstanceColors : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(SetInstanceColors);
+    ActionSetInstanceColors(const std::vector<ActionSetInstanceColorsData>& data);
+
+protected:
+
+    std::vector<ActionSetInstanceColorsData> mData;
+    std::vector<ActionSetInstanceColorsData> mPrevData;
 };

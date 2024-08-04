@@ -8,7 +8,7 @@
 #include "Bullet/BulletCollision/CollisionDispatch/btGhostObject.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
-
+#include "ActionManager.h"
 
 struct PaintMeshCollision
 {
@@ -30,6 +30,15 @@ enum PaintBlendMode
     SubtractAlpha,
 
     Count
+};
+
+struct PendingColorData
+{
+    ActionSetInstanceColorsData mData;
+    ActionSetInstanceColorsData mOriginalData;
+    std::vector<uint32_t> mOriginalColors;
+    std::vector<float> mVertexDrawAlpha;
+    bool mAnyVertexPainted = false;
 };
 
 class PaintManager
@@ -89,7 +98,9 @@ public:
 
     // Vertex Color Options
     PaintBlendMode mBlendMode = PaintBlendMode::Mix;
-    glm::vec4 mColor = { 0.0f, 1.0f, 0.0f, 1.0f };
+    glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    std::vector<PendingColorData> mPendingColorData;
 };
 
 #endif

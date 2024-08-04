@@ -898,6 +898,12 @@ void ActionManager::EXE_UnlinkScene(Node* node)
     }
 }
 
+void ActionManager::EXE_SetInstanceColors(const std::vector<ActionSetInstanceColorsData>& data)
+{
+    ActionSetInstanceColors* action = new ActionSetInstanceColors(data);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
 void ActionManager::ClearActionHistory()
 {
     for (uint32_t i = 0; i < mActionHistory.size(); ++i)
@@ -2479,6 +2485,38 @@ void ActionUnlinkScene::Execute()
 void ActionUnlinkScene::Reverse()
 {
     mNode->SetScene(mScene.Get<Scene>());
+}
+
+ActionSetInstanceColors::ActionSetInstanceColors(const std::vector<ActionSetInstanceColorsData>& data)
+{
+    // Don't call this action with no color data to change.
+    OCT_ASSERT(data.size() > 0);
+
+    mData = data;
+
+    mPrevData.resize(mData.size());
+    for (uint32_t i = 0; i < data.size(); ++i)
+    {
+        mPrevData[i].mMesh3d = mData[i].mMesh3d;
+        mPrevData[i].mColors = mData[i].mMesh3d->GetInstanceColors();
+        mPrevData[i].mBakedLight = mData[i].mMesh3d->HasBakedLighting();
+    }
+}
+
+void ActionSetInstanceColors::Execute()
+{
+    for (uint32_t i = 0; i < mData.size(); ++i)
+    {
+        mData[i].mMesh3d->SetInstanceColors(mData[i].mColors, mData[i].mBakedLight);
+    }
+}
+
+void ActionSetInstanceColors::Reverse()
+{
+    for (uint32_t i = 0; i < mPrevData.size(); ++i)
+    {
+        mPrevData[i].mMesh3d->SetInstanceColors(mPrevData[i].mColors, mPrevData[i].mBakedLight);
+    }
 }
 
 #endif

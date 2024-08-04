@@ -7,6 +7,7 @@
 #include "EditorState.h"
 #include "InputDevices.h"
 #include "Viewport3d.h"
+#include "ActionManager.h"
 
 constexpr uint8_t kPaintSphereColGroup = 0x80;
 constexpr float kPaintMaxRadius = 10000.0f;
@@ -366,6 +367,7 @@ void PaintManager::UpdatePaintDraw()
     if (IsMouseButtonJustDown(MOUSE_LEFT))
     {
         paint = true;
+        mPendingColorData.clear();
     }
     else if (IsMouseButtonDown(MOUSE_LEFT))
     {
@@ -392,10 +394,10 @@ void PaintManager::UpdatePaintDraw()
 
     if (paint)
     {
+        std::vector<ActionSetInstanceColorsData> colorData;
+
         mLastPaintMousePos = curMousePos;
-
         const float sphereRad2 = mRadius * mRadius;
-
         int32_t numOverlaps = mSphereGhost->getNumOverlappingObjects();
 
         for (int32_t i = 0; i < numOverlaps; ++i)
@@ -408,22 +410,54 @@ void PaintManager::UpdatePaintDraw()
                 continue;
 
             uint32_t numVerts = mesh->GetNumVertices();
-            std::vector<uint32_t> instColors = mesh3d->GetInstanceColors();
             bool meshHasColor = mesh->HasVertexColor();
             void* vertices = meshHasColor ? (void*)mesh->GetColorVertices() : (void*)mesh->GetVertices();
+            std::vector<uint32_t>& instColors = mesh3d->GetInstanceColors();
 
-            // If we don't have valid instance colors, resize and set them all to white.
-            if (instColors.size() != numVerts)
+            // Do we already have a pending color data for this overlapped mesh?
+            PendingColorData* pendingData = nullptr;
+            for (uint32_t i = 0; i < mPendingColorData.size(); ++i)
             {
-                instColors.resize(numVerts);
-
-                for (uint32_t c = 0; c < numVerts; ++c)
+                if (mPendingColorData[i].mData.mMesh3d == mesh3d)
                 {
-                    instColors[c] = 0xffffffff;
+                    pendingData = &mPendingColorData[i];
+                    break;
                 }
             }
 
+            // Initialize pending draw data.
+            if (pendingData == nullptr)
+            {
+                PendingColorData newPendingData;
+                newPendingData.mData.mMesh3d = mesh3d;
+                newPendingData.mData.mColors = mesh3d->GetInstanceColors();
+                newPendingData.mData.mBakedLight = false;
+                newPendingData.mVertexDrawAlpha.resize(numVerts);
+                newPendingData.mOriginalData.mMesh3d = mesh3d;
+                newPendingData.mOriginalData.mColors = mesh3d->GetInstanceColors();
+                newPendingData.mOriginalData.mBakedLight = mesh3d->HasBakedLighting();
+
+                std::vector<uint32_t>& pendColors = newPendingData.mData.mColors;
+
+                // If we don't have valid instance colors, resize and set them all to white.
+                if (pendColors.size() != numVerts)
+                {
+                    pendColors.resize(numVerts);
+
+                    for (uint32_t c = 0; c < numVerts; ++c)
+                    {
+                        pendColors[c] = 0xffffffff;
+                    }
+                }
+
+                newPendingData.mOriginalColors = pendColors;
+
+                mPendingColorData.push_back(newPendingData);
+                pendingData = &mPendingColorData.back();
+            }
+
             const glm::mat4& transform = mesh3d->GetTransform();
+            bool anyVertColored = false;
 
             for (uint32_t v = 0; v < numVerts; ++v)
             {
@@ -447,7 +481,7 @@ void PaintManager::UpdatePaintDraw()
                 {
                     float dist = sqrtf(dist2);
 
-                    glm::vec4 dst = ColorUint32ToFloat4(instColors[v]);
+                    glm::vec4 dst = ColorUint32ToFloat4(pendingData->mOriginalColors[v]);
                     glm::vec4 src = mColor;
                     glm::vec4 out = dst;
 
@@ -480,11 +514,48 @@ void PaintManager::UpdatePaintDraw()
                         break;
                     }
 
-                    instColors[v] = ColorFloat4ToUint32(out);
+                    float drawAlpha = falloff;
+                    if (drawAlpha > pendingData->mVertexDrawAlpha[v])
+                    {
+                        pendingData->mVertexDrawAlpha[v] = drawAlpha;
+                        pendingData->mData.mColors[v] = ColorFloat4ToUint32(out);
+                        pendingData->mAnyVertexPainted = true;
+                        anyVertColored = true;
+                    }
                 }
             }
 
-            mesh3d->SetInstanceColors(instColors, false);
+            // Immediately set instance colors.
+            // Once we let go of the mouse, we will reset the colors to the original ones and
+            // then maked a call to the action manager with the new set of instance colors so
+            // that we can make use of the Undo/Redo system.
+            if (anyVertColored)
+            {
+                mesh3d->SetInstanceColors(pendingData->mData.mColors, false);
+            }
+        }
+    }
+
+    if (IsMouseButtonJustUp(MOUSE_LEFT) &&
+        mPendingColorData.size() > 0)
+    {
+        // Commit our pending color data changes
+        std::vector<ActionSetInstanceColorsData> actionData;
+
+        for (uint32_t i = 0; i < mPendingColorData.size(); ++i)
+        {
+            if (mPendingColorData[i].mAnyVertexPainted)
+            {
+                // Revert instance colors on mesh3d
+                mPendingColorData[i].mData.mMesh3d->SetInstanceColors(mPendingColorData[i].mOriginalData.mColors, mPendingColorData[i].mOriginalData.mBakedLight);
+
+                actionData.push_back(mPendingColorData[i].mData);
+            }
+        }
+
+        if (actionData.size() > 0)
+        {
+            ActionManager::Get()->EXE_SetInstanceColors(actionData);
         }
     }
 }
