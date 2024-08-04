@@ -242,7 +242,7 @@ void Viewport3D::HandleDefaultControls()
             }
         }
 
-        if (IsKeyDown(KEY_F) ||
+        if ((IsKeyDown(KEY_F) && GetEditorState()->GetPaintMode() == PaintMode::None) ||
             IsKeyDown(KEY_DECIMAL))
         {
             // Focus on selected object
