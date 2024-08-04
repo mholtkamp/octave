@@ -70,6 +70,7 @@ public:
     glm::vec3 mSpherePosition = {};
     float mRadius = 1.0f;
     float mOpacity = 1.0f;
+    bool mSphereValid = false;
 
     float mPreAdjustRadius = 1.0f;
     float mPreAdjustOpacity = 1.0f;
@@ -78,6 +79,8 @@ public:
     bool mAdjustOpacity = false;
     bool mAdjustmentFinished = false;
     glm::vec2 mAdjustmentAnchor = {};
+
+    bool mOnlyRenderSelected = true;
 
     // Spacing is the distance we need to move between paints (in screen space currently)
     float mSpacing = 10.0f;

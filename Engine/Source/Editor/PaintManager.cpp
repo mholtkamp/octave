@@ -135,13 +135,17 @@ void PaintManager::UpdateDynamicsWorld()
 
     if (rootNode != nullptr)
     {
+        bool onlySelected = GetEditorState()->GetSelectedNodes().size() > 0;
+
         auto updateMeshDynamics = [&](Node* node) -> bool
             {
                 if (!node->IsVisible())
                     return false;
 
                 StaticMesh3D* meshNode = node->As<StaticMesh3D>();
-                if (meshNode && meshNode->GetStaticMesh())
+                if (meshNode && 
+                    meshNode->GetStaticMesh() &&
+                    (!onlySelected || GetEditorState()->IsNodeSelected(node)))
                 {
                     StaticMesh* curMesh = meshNode->GetStaticMesh();
                     glm::vec3 curPosition = meshNode->GetWorldPosition();
@@ -318,7 +322,9 @@ void PaintManager::UpdatePaintReticle()
         if (camera)
         {
             GetWorld(0)->OverrideDynamicsWorld(mDynamicsWorld);
-            mSpherePosition = camera->TraceScreenToWorld(mouseX, mouseY, ~kPaintSphereColGroup);
+            Primitive3D* hitPrim = nullptr;
+            mSpherePosition = camera->TraceScreenToWorld(mouseX, mouseY, ~kPaintSphereColGroup, &hitPrim);
+            mSphereValid = (hitPrim != nullptr);
             GetWorld(0)->RestoreDynamicsWorld();
         }
     }
@@ -327,12 +333,15 @@ void PaintManager::UpdatePaintReticle()
     glm::vec4 matColor = glm::mix(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), mOpacity);
     mSphereMaterial.Get<MaterialLite>()->SetFresnelColor(matColor);
 
-    DebugDraw paintSphereDraw;
-    paintSphereDraw.mMesh = mSphereMesh.Get<StaticMesh>();
-    paintSphereDraw.mMaterial = mSphereMaterial.Get<Material>();
-    paintSphereDraw.mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-    paintSphereDraw.mTransform = glm::translate(mSpherePosition) * glm::scale(glm::vec3(mRadius, mRadius, mRadius));
-    Renderer::Get()->AddDebugDraw(paintSphereDraw);
+    if (mSphereValid)
+    {
+        DebugDraw paintSphereDraw;
+        paintSphereDraw.mMesh = mSphereMesh.Get<StaticMesh>();
+        paintSphereDraw.mMaterial = mSphereMaterial.Get<Material>();
+        paintSphereDraw.mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        paintSphereDraw.mTransform = glm::translate(mSpherePosition) * glm::scale(glm::vec3(mRadius, mRadius, mRadius));
+        Renderer::Get()->AddDebugDraw(paintSphereDraw);
+    }
 }
 
 void PaintManager::UpdatePaintDraw()
@@ -359,6 +368,17 @@ void PaintManager::UpdatePaintDraw()
     // Don't paint if we just left clicked after adjusting radius or opacity
     if (mAdjustmentFinished)
     {
+        paint = false;
+    }
+
+    if (!mSphereValid)
+    {
+        paint = false;
+    }
+
+    if (IsControlDown() || IsShiftDown())
+    {
+        // Ctrl and shift are used for selecting objects
         paint = false;
     }
 

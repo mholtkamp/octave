@@ -16,6 +16,7 @@
 #include "Log.h"
 #include "Line.h"
 #include "Maths.h"
+#include "InputDevices.h"
 
 #include "Graphics/Graphics.h"
 #include "Graphics/GraphicsConstants.h"
@@ -23,6 +24,7 @@
 #if EDITOR
 #include "EditorState.h"
 #include "Viewport2d.h"
+#include "PaintManager.h"
 #endif
 
 // TEMPORARY!
@@ -486,6 +488,7 @@ void Renderer::GatherDrawData(World* world)
 {
     bool enable3D = mEnable3dRendering;
     bool enable2D = mEnable2dRendering;
+    bool onlySelected = false;
 
 #if EDITOR
     if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
@@ -495,6 +498,14 @@ void Renderer::GatherDrawData(World* world)
     else if (GetEditorState()->GetEditorMode() == EditorMode::Scene3D)
     {
         enable2D = false;
+
+        if (GetEditorState()->GetPaintMode() != PaintMode::None)
+        {
+            onlySelected = GetEditorState()->GetSelectedNodes().size() > 0 &&
+                !IsControlDown() &&
+                !IsShiftDown() && 
+                GetEditorState()->mPaintManager->mOnlyRenderSelected;
+        }
     }
 #endif
 
@@ -518,6 +529,15 @@ void Renderer::GatherDrawData(World* world)
                 // on Node if we want to tread child visibility independent of the parent.
                 return false;
             }
+
+#if EDITOR
+            if (onlySelected &&
+                !GetEditorState()->IsNodeSelected(node))
+            {
+                // Return true since a child may be selected
+                return true;
+            }
+#endif
 
             if (enable3D && node->IsPrimitive3D())
             {
@@ -1392,6 +1412,14 @@ void Renderer::RenderShadowCasters(World* world)
 void Renderer::RenderSelectedGeometry(World* world)
 {
 #if EDITOR
+    // Don't render selected geometry when in paint mode
+    // We still want to make editing selection easy, so if Ctrl or Shift is down
+    // then render selected geometry still.
+    if (GetEditorState()->GetPaintMode() != PaintMode::None && 
+        !IsControlDown() &&
+        !IsShiftDown())
+        return;
+
     // Rendering selected geometry while playing looks bad,
     // so just skip rendering selected unless we find a good use-case.
     if (!GetEditorState()->mPlayInEditor ||
