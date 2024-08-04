@@ -49,7 +49,8 @@ static StaticMesh* GetDefaultMesh()
 StaticMesh3D::StaticMesh3D() :
     mStaticMesh(nullptr),
     mUseTriangleCollision(false),
-    mBakeLighting(false)
+    mBakeLighting(false),
+    mHasBakedLighting(false)
 {
     mName = "Static Mesh";
 }
@@ -359,12 +360,14 @@ Bounds StaticMesh3D::GetLocalBounds() const
 void StaticMesh3D::ClearInstanceColors()
 {
     mInstanceColors.clear();
+    mHasBakedLighting = false;
     GFX_UpdateStaticMeshCompResourceColors(this);
 }
 
-void StaticMesh3D::SetInstanceColors(const std::vector<uint32_t>& colors)
+void StaticMesh3D::SetInstanceColors(const std::vector<uint32_t>& colors, bool bakedLighting)
 {
     mInstanceColors = colors;
+    mHasBakedLighting = bakedLighting;
     GFX_UpdateStaticMeshCompResourceColors(this);
 }
 
@@ -375,7 +378,7 @@ std::vector<uint32_t>& StaticMesh3D::GetInstanceColors()
 
 bool StaticMesh3D::HasBakedLighting() const
 {
-    return (mBakeLighting && mInstanceColors.size() > 0);
+    return mHasBakedLighting;
 }
 
 bool StaticMesh3D::HasInstanceColors() const

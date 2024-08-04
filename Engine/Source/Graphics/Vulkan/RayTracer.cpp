@@ -909,7 +909,7 @@ static void AssignInstanceColors(StaticMesh3D* meshComp, std::vector<glm::vec4>&
         instanceColors.push_back(color32);
     }
 
-    meshComp->SetInstanceColors(instanceColors);
+    meshComp->SetInstanceColors(instanceColors, true);
 }
 
 void RayTracer::ReadbackLightBakeResults()

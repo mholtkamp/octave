@@ -49,7 +49,7 @@ public:
     virtual Bounds GetLocalBounds() const override;
 
     void ClearInstanceColors();
-    void SetInstanceColors(const std::vector<uint32_t>& colors);
+    void SetInstanceColors(const std::vector<uint32_t>& colors, bool bakedLighting);
     std::vector<uint32_t>& GetInstanceColors();
     bool HasBakedLighting() const;
     bool HasInstanceColors() const;
@@ -64,6 +64,7 @@ protected:
     std::vector<uint32_t> mInstanceColors; // e.g. baked lighting color
     bool mUseTriangleCollision;
     bool mBakeLighting;
+    bool mHasBakedLighting;
 
     // Graphics Resource
     StaticMeshCompResource mResource;

@@ -375,7 +375,7 @@ void PaintManager::UpdatePaintDraw()
                 continue;
 
             uint32_t numVerts = mesh->GetNumVertices();
-            std::vector<uint32_t>& instColors = mesh3d->GetInstanceColors();
+            std::vector<uint32_t> instColors = mesh3d->GetInstanceColors();
             bool meshHasColor = mesh->HasVertexColor();
             void* vertices = meshHasColor ? (void*)mesh->GetColorVertices() : (void*)mesh->GetVertices();
 
@@ -440,7 +440,7 @@ void PaintManager::UpdatePaintDraw()
                 }
             }
 
-            GFX_UpdateStaticMeshCompResourceColors(mesh3d);
+            mesh3d->SetInstanceColors(instColors, false);
         }
     }
 }
