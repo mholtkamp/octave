@@ -8,6 +8,8 @@
 #include "InputDevices.h"
 
 constexpr uint8_t kPaintSphereColGroup = 0x80;
+constexpr float kPaintMaxRadius = 10000.0f;
+constexpr float kPaintMinRadius = 0.01f;
 
 PaintManager::PaintManager()
 {
@@ -278,7 +280,7 @@ void PaintManager::UpdatePaintReticle()
     {
         float radiusDelta = totalDelta * 0.05f;
         mRadius += radiusDelta;
-        mRadius = glm::clamp(mRadius, 0.01f, 10000.0f);
+        mRadius = glm::clamp(mRadius, kPaintMinRadius, kPaintMaxRadius);
 
         if (IsMouseButtonJustDown(MOUSE_LEFT))
         {
@@ -339,6 +341,9 @@ void PaintManager::UpdatePaintDraw()
     int32_t mouseY = 0;
     GetMousePosition(mouseX, mouseY);
     glm::vec2 curMousePos = glm::vec2(float(mouseX), float(mouseY));
+
+    mRadius = glm::clamp(mRadius, kPaintMinRadius, kPaintMaxRadius);
+    mOpacity = glm::clamp(mOpacity, 0.0f, 1.0f);
 
     bool paint = false;
     if (IsMouseButtonJustDown(MOUSE_LEFT))

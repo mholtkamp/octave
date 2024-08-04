@@ -10,6 +10,7 @@
 #include "Log.h"
 #include "AssetDir.h"
 #include "Grid.h"
+#include "PaintManager.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
@@ -2915,6 +2916,33 @@ static void DrawViewportPanel()
 
 }
 
+static void DrawPaintColorsPanel()
+{
+    const float dispWidth = (float)GetEngineState()->mWindowWidth;
+    const float dispHeight = (float)GetEngineState()->mWindowHeight;
+
+    ImGui::SetNextWindowPos(ImVec2(kSidePaneWidth + 10.0f, 40.0f));
+    ImGui::SetNextWindowSize(ImVec2(250.0f, 130.0f));
+
+    ImGui::Begin("Paint Colors", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+
+    PaintManager* pm = GetEditorState()->mPaintManager;
+    ImGui::DragFloat("Radius", &pm->mRadius);
+    ImGui::DragFloat("Opacity", &pm->mOpacity);
+    ImGui::OctColorEdit4("Color", &pm->mColor[0], 0);
+    
+    const char* blendModeStrings[] = {"Mix", "Add", "Subtract", "Multiply", "+Alpha", "-Alpha"};
+    int32_t blendModeCount = OCT_ARRAY_SIZE(blendModeStrings);
+    ImGui::Combo("Blend Mode", (int*)&(pm->mBlendMode), blendModeStrings, blendModeCount);
+
+    ImGui::End();
+}
+
+static void DrawPaintInstancesPanel()
+{
+
+}
+
 static void Draw2dSelections()
 {
     const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
@@ -3036,6 +3064,16 @@ void EditorImguiDraw()
         }
 
         DrawViewportPanel();
+
+        PaintMode paintMode = GetEditorState()->GetPaintMode();
+        if (paintMode == PaintMode::Color)
+        {
+            DrawPaintColorsPanel();
+        }
+        else if (paintMode == PaintMode::Instance)
+        {
+            DrawPaintInstancesPanel();
+        }
 
         if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
         {
