@@ -503,7 +503,6 @@ void Renderer::GatherDrawData(World* world)
         {
             onlySelected = GetEditorState()->GetSelectedNodes().size() > 0 &&
                 !IsControlDown() &&
-                !IsShiftDown() && 
                 GetEditorState()->mPaintManager->mOnlyRenderSelected;
         }
     }
@@ -1413,11 +1412,10 @@ void Renderer::RenderSelectedGeometry(World* world)
 {
 #if EDITOR
     // Don't render selected geometry when in paint mode
-    // We still want to make editing selection easy, so if Ctrl or Shift is down
+    // We still want to make editing selection easy, so if Ctrl is down
     // then render selected geometry still.
     if (GetEditorState()->GetPaintMode() != PaintMode::None && 
-        !IsControlDown() &&
-        !IsShiftDown())
+        !IsControlDown())
         return;
 
     // Rendering selected geometry while playing looks bad,

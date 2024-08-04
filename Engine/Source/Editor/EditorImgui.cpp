@@ -2922,7 +2922,7 @@ static void DrawPaintColorsPanel()
     const float dispHeight = (float)GetEngineState()->mWindowHeight;
 
     ImGui::SetNextWindowPos(ImVec2(kSidePaneWidth + 10.0f, 40.0f));
-    ImGui::SetNextWindowSize(ImVec2(250.0f, 150.0f));
+    ImGui::SetNextWindowSize(ImVec2(250.0f, 170.0f));
 
     ImGui::Begin("Paint Colors", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
@@ -2935,6 +2935,7 @@ static void DrawPaintColorsPanel()
     int32_t blendModeCount = OCT_ARRAY_SIZE(blendModeStrings);
     ImGui::Combo("Blend Mode", (int*)&(pm->mBlendMode), blendModeStrings, blendModeCount);
 
+    ImGui::Checkbox("Only Facing Normals", &pm->mOnlyFacingNormals);
     ImGui::Checkbox("Only Render Selected", &pm->mOnlyRenderSelected);
 
     ImGui::End();

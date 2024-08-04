@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "EditorState.h"
 #include "InputDevices.h"
+#include "Viewport3d.h"
 
 constexpr uint8_t kPaintSphereColGroup = 0x80;
 constexpr float kPaintMaxRadius = 10000.0f;
@@ -60,9 +61,16 @@ PaintManager::~PaintManager()
 
 void PaintManager::Update()
 {
-    UpdateDynamicsWorld();
-    UpdatePaintReticle();
-    UpdatePaintDraw();
+    // Always clamp paint parameters (Imgui might be adjusting them)
+    mRadius = glm::clamp(mRadius, kPaintMinRadius, kPaintMaxRadius);
+    mOpacity = glm::clamp(mOpacity, 0.0f, 1.0f);
+
+    if (GetEditorState()->GetViewport3D()->ShouldHandleInput())
+    {
+        UpdateDynamicsWorld();
+        UpdatePaintReticle();
+        UpdatePaintDraw();
+    }
 }
 
 void PaintManager::HandleNodeDestroy(Node* node)
@@ -351,8 +359,8 @@ void PaintManager::UpdatePaintDraw()
     GetMousePosition(mouseX, mouseY);
     glm::vec2 curMousePos = glm::vec2(float(mouseX), float(mouseY));
 
-    mRadius = glm::clamp(mRadius, kPaintMinRadius, kPaintMaxRadius);
-    mOpacity = glm::clamp(mOpacity, 0.0f, 1.0f);
+    Camera3D* camera = GetWorld(0)->GetActiveCamera();
+    glm::vec3 cameraFwd = camera ? camera->GetForwardVector() : glm::vec3(0.0f, 0.0f, -1.0f);
 
     bool paint = false;
     if (IsMouseButtonJustDown(MOUSE_LEFT))
@@ -424,7 +432,18 @@ void PaintManager::UpdatePaintDraw()
 
                 float dist2 = glm::distance2(mSpherePosition, vertWorldPos);
 
-                if (dist2 < sphereRad2)
+                bool alignedNormal = true;
+                if (mOnlyFacingNormals)
+                {
+                    glm::vec3 normalLocal = meshHasColor ? ((VertexColor*)vertices)[v].mNormal : ((Vertex*)vertices)[v].mNormal;
+                    glm::vec3 normalWorld = glm::vec3(transform * glm::vec4(normalLocal, 0.0f));
+                    float normalDot = glm::dot(normalWorld, -cameraFwd);
+
+                    alignedNormal = normalDot >= 0.0f;
+                }
+
+                if (dist2 < sphereRad2 &&
+                    alignedNormal)
                 {
                     float dist = sqrtf(dist2);
 

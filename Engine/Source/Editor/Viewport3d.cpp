@@ -55,6 +55,8 @@ Viewport3D::~Viewport3D()
 
 void Viewport3D::Update(float deltaTime)
 {
+    ControlMode controlMode = GetEditorState()->GetControlMode();
+
     if (ShouldHandleInput())
     {
         if (GetEditorState()->mMouseNeedsRecenter)
@@ -62,8 +64,6 @@ void Viewport3D::Update(float deltaTime)
             EditorCenterCursor();
             GetEditorState()->mMouseNeedsRecenter = false;
         }
-
-        ControlMode controlMode = GetEditorState()->GetControlMode();
 
         switch (controlMode)
         {
@@ -75,11 +75,11 @@ void Viewport3D::Update(float deltaTime)
         case ControlMode::Pan: HandlePanControls(); break;
         case ControlMode::Orbit: HandleOrbitControls(); break;
         }
+    }
 
-        if (GetEditorState()->GetPaintMode() != PaintMode::None && controlMode == ControlMode::Default)
-        {
-            GetEditorState()->mPaintManager->Update();
-        }
+    if (GetEditorState()->GetPaintMode() != PaintMode::None && controlMode == ControlMode::Default)
+    {
+        GetEditorState()->mPaintManager->Update();
     }
 
     INP_GetMousePosition(mPrevMouseX, mPrevMouseY);

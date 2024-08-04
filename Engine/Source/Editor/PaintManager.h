@@ -81,6 +81,7 @@ public:
     glm::vec2 mAdjustmentAnchor = {};
 
     bool mOnlyRenderSelected = true;
+    bool mOnlyFacingNormals = true;
 
     // Spacing is the distance we need to move between paints (in screen space currently)
     float mSpacing = 10.0f;
