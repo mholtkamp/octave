@@ -96,7 +96,7 @@ bool Viewport3D::ShouldHandleInput() const
     bool imguiAnyPopupUp = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
     
 
-    bool handleInput = (modal == nullptr && !imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp);
+    bool handleInput = (modal == nullptr && !imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp && !imguiWantsMouse);
     return handleInput;
 }
 
