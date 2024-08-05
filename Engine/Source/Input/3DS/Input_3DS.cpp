@@ -27,6 +27,9 @@ void INP_Update()
     hidScanInput();
     uint32_t down = hidKeysHeld();
 
+    // Gamepad 0 is always connected on 3DS
+    input.mGamepads[0].mConnected = true;
+
     // Buttons
     input.mGamepads[0].mButtons[GAMEPAD_A] = down & KEY_A;
     input.mGamepads[0].mButtons[GAMEPAD_B] = down & KEY_B;
