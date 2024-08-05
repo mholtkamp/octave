@@ -102,6 +102,7 @@ void Font::LoadStream(Stream& stream, Platform platform)
         Texture* texture = NewTransientAsset<Texture>();
         texture->LoadStream(stream, platform);
         texture->Create();
+        texture->SetName("FontTexture");
 
         mTexture = texture;
     }
@@ -349,6 +350,7 @@ void Font::RebuildFont()
                 texture->SetMipmapped(mMipmapped);
                 texture->SetFormat(PixelFormat::LA4);
                 texture->Create();
+                texture->SetName("FontTexture");
                 mTexture = texture;
 
                 delete[] dataRgba;

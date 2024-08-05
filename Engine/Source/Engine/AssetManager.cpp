@@ -175,6 +175,7 @@ AssetStub* AssetManager::CreateAndRegisterAsset(TypeId type, AssetDir* directory
 {
     Asset* newAsset = Asset::CreateInstance(type);
     newAsset->Create();
+    newAsset->SetEngineAsset(engineAsset);
 
     AssetStub* stub = RegisterAsset(filename, type, directory, nullptr, engineAsset);
     
@@ -434,8 +435,11 @@ void AssetManager::Purge(bool purgeEngineAssets)
 
     for (int32_t i = int32_t(mTransientAssets.size()) - 1; i >= 0; --i)
     {
-        mTransientAssets[i]->Destroy();
-        delete mTransientAssets[i];
+        if (purgeEngineAssets || !mTransientAssets[i]->IsEngineAsset())
+        {
+            mTransientAssets[i]->Destroy();
+            delete mTransientAssets[i];
+        }
     }
     mTransientAssets.clear();
 
@@ -565,6 +569,7 @@ Asset* AssetManager::ImportEngineAsset(TypeId type, AssetDir* dir, const std::st
     std::string importPath = dir->mPath + filename + newAsset->GetTypeImportExt();
     newAsset->Import(importPath, options);
     newAsset->SetName(filename);
+    newAsset->SetEngineAsset(true);
     AssetStub* stub = RegisterAsset(filename + ".oct", newAsset->GetType(), dir, nullptr, true);
 
     if (stub == nullptr)
@@ -691,6 +696,12 @@ void AssetManager::ImportEngineAssets()
         // Import fonts
         Font* fontRoboto32 = (Font*) ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_Roboto32");
         Font* fontRobotoMono16 = (Font*)ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_RobotoMono16");
+
+        // Mark any transient assets that exist at this point as engine assets
+        for (uint32_t i = 0; i < mTransientAssets.size(); ++i)
+        {
+            mTransientAssets[i]->SetEngineAsset(true);
+        }
 
         imported = true;
     }
