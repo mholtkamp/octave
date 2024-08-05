@@ -145,6 +145,19 @@ int Node_Lua::Construct(lua_State* L)
     return 1;
 }
 
+int Node_Lua::Destruct(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+
+    Node::Destruct(node);
+    node = nullptr;
+
+    Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
+    nodeLua->mNode = nullptr;
+
+    return 0;
+}
+
 int Node_Lua::IsValid(lua_State* L)
 {
 #if LUA_SAFE_NODE
@@ -579,19 +592,6 @@ int Node_Lua::HasStarted(lua_State* L)
     return 1;
 }
 
-int Node_Lua::Destroy(lua_State* L)
-{
-    Node* node = CHECK_NODE(L, 1);
-
-    Node::Destruct(node);
-    node = nullptr;
-
-    Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
-    nodeLua->mNode = nullptr;
-
-    return 0;
-}
-
 int Node_Lua::SetPendingDestroy(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -862,6 +862,8 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, Construct);
     REGISTER_TABLE_FUNC_EX(L, mtIndex, Construct, "New"); // Alias
 
+    REGISTER_TABLE_FUNC(L, mtIndex, Destruct);
+
     REGISTER_TABLE_FUNC(L, mtIndex, IsValid);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetName);
@@ -925,8 +927,6 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, Start);
 
     REGISTER_TABLE_FUNC(L, mtIndex, HasStarted);
-
-    REGISTER_TABLE_FUNC(L, mtIndex, Destroy);
 
     REGISTER_TABLE_FUNC(L, mtIndex, SetPendingDestroy);
 
