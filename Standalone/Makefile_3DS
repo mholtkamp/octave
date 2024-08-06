@@ -42,7 +42,7 @@ GFXBUILD	:=	$(BUILD)
 #ROMFS		:=	$(CURDIR)/Build/3DS/romfs
 #GFXBUILD	:=	$(ROMFS)/gfx
 OUTPUT_DIR	:=	$(CURDIR)/Build/3DS
-APP_TITLE	:= RetroLeagueGX
+APP_TITLE	:= Octave
 
 #---------------------------------------------------------------------------------
 # options for code generation
