@@ -103,12 +103,12 @@ void EditorState::Update(float deltaTime)
             mViewport3D->Update(deltaTime);
             break;
 
-        case EditorMode::Scene3D:
-            mViewport3D->Update(deltaTime);
-            break;
-
         case EditorMode::Scene2D:
             mViewport2D->Update(deltaTime);
+            break;
+
+        case EditorMode::Scene3D:
+            mViewport3D->Update(deltaTime);
             break;
 
         default:
@@ -183,13 +183,13 @@ void EditorState::SetEditorMode(EditorMode mode)
 
         static_assert(
             (int32_t)EditorMode::Scene == 0 && 
-            (int32_t)EditorMode::Scene3D == 1 &&
-            (int32_t)EditorMode::Scene2D == 2,
+            (int32_t)EditorMode::Scene2D == 1 &&
+            (int32_t)EditorMode::Scene3D == 2,
             "Update this check below.");
 
         // Only reset undo history when changing out of "scene editing".
-        if (int32_t(prevMode) > int32_t(EditorMode::Scene2D) ||
-            int32_t(mMode) > int32_t(EditorMode::Scene2D))
+        if (int32_t(prevMode) > int32_t(EditorMode::Scene3D) ||
+            int32_t(mMode) > int32_t(EditorMode::Scene3D))
         {
             ActionManager::Get()->ResetUndoRedo();
         }

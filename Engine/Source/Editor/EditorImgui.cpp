@@ -2519,7 +2519,7 @@ static void DrawViewportPanel()
         curMode = int(EditorMode::Count) + int(paintMode) - 1;
     }
 
-    const char* modeStrings[] = { "Scene", "3D", "2D", "Paint Colors", "Paint Instances"};
+    const char* modeStrings[] = { "Scene", "2D", "3D", "Paint Colors", "Paint Instances"};
     ImGui::SetNextItemWidth(70);
     ImGui::Combo("##EditorMode", &curMode, modeStrings, 5);
 

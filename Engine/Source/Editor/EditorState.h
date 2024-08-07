@@ -44,8 +44,8 @@ enum class TransformLock
 enum class EditorMode
 {
     Scene,
-    Scene3D,
     Scene2D,
+    Scene3D,
 
     Count
 };

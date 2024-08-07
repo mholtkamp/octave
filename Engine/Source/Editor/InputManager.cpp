@@ -187,11 +187,11 @@ void InputManager::UpdateHotkeys()
             }
             else if (IsKeyJustDown(KEY_2))
             {
-                GetEditorState()->SetEditorMode(EditorMode::Scene3D);
+                GetEditorState()->SetEditorMode(EditorMode::Scene2D);
             }
             else if (IsKeyJustDown(KEY_3))
             {
-                GetEditorState()->SetEditorMode(EditorMode::Scene2D);
+                GetEditorState()->SetEditorMode(EditorMode::Scene3D);
             }
             else if (IsKeyJustDown(KEY_4))
             {
