@@ -198,6 +198,12 @@ void EditorState::SetEditorMode(EditorMode mode)
         {
             SetPaintMode(PaintMode::None);
         }
+
+        if (mMode != EditorMode::Scene2D)
+        {
+            // Dirty all widgets since they are no longer based off of the wrapper widget
+            GetWorld(0)->DirtyAllWidgets();
+        }
     }
 }
 
