@@ -74,7 +74,7 @@ bool Mesh3D::IsSkeletalMesh3D() const
     return false;
 }
 
-bool Mesh3D::IsInstanceMesh3D() const
+bool Mesh3D::IsInstancedMesh3D() const
 {
     return false;
 }

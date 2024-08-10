@@ -25,6 +25,7 @@ class SkeletalMesh;
 class StaticMesh3D;
 class SkeletalMesh3D;
 class ShadowMesh3D;
+class InstancedMesh3D;
 class TextMesh3D;
 class Particle3D;
 class Node3D;
@@ -135,6 +136,9 @@ bool IsCpuSkinningRequired(SkeletalMesh3D* skeletalMeshComp);
 
 // ShadowMeshComp
 void DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp);
+
+// InstancedMeshComp
+void DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp);
 
 // TextMeshComp
 void DestroyTextMeshCompResource(TextMesh3D* textMeshComp);

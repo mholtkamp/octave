@@ -357,6 +357,11 @@ void GFX_DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
     DrawShadowMeshComp(shadowMeshComp);
 }
 
+void GFX_DrawInstancedMesh(InstancedMesh3D* instancedMeshComp)
+{
+    DrawInstancedMeshComp(instancedMeshComp);
+}
+
 void GFX_CreateTextMeshCompResource(TextMesh3D* textMeshComp)
 {
 

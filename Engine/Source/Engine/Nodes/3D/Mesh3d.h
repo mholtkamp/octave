@@ -25,7 +25,7 @@ public:
 
     virtual bool IsStaticMesh3D() const;
     virtual bool IsSkeletalMesh3D() const;
-    virtual bool IsInstanceMesh3D() const;
+    virtual bool IsInstancedMesh3D() const;
     virtual bool IsShadowMesh3D() const;
 
     virtual Material* GetMaterial() = 0;

@@ -692,7 +692,7 @@
     <ClCompile Include="Source\Editor\PaintManager.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\3D\InstanceMesh3d.cpp">
+    <ClCompile Include="Source\Engine\Nodes\3D\InstancedMesh3d.cpp">
       <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1362,7 +1362,7 @@
     <ClInclude Include="Source\Editor\PaintManager.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\3D\InstanceMesh3d.h">
+    <ClInclude Include="Source\Engine\Nodes\3D\InstancedMesh3d.h">
       <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClInclude>
   </ItemGroup>

@@ -15,6 +15,7 @@
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Nodes/3D/ShadowMesh3d.h"
+#include "Nodes/3D/InstancedMesh3d.h"
 #include "Nodes/3D/TextMesh3d.h"
 #include "Nodes/3D/Particle3d.h"
 #include "Nodes/Widgets/Quad.h"
@@ -1164,7 +1165,7 @@ void DestroyTextureResource(Texture* texture)
     }
 }
 
-void BindForwardVertexType(VertexType vertType, Material* material)
+void BindForwardVertexType(VertexType vertType, Material* material, bool instanced = false)
 {
     VulkanContext* ctx = GetVulkanContext();
     MaterialResource* res = material ? material->GetResource() : nullptr;
@@ -1180,14 +1181,14 @@ void BindForwardVertexType(VertexType vertType, Material* material)
     // Always bind correct vert shader even
     Shader* vertShader = material ? res->mVertexShaders[(uint32_t)vertType] : nullptr;
 
-    const char* vertShaderName = "Forward.vert";
+    const char* vertShaderName = instanced ? "ForwardInstanced.vert" : "Forward.vert";
 
     switch (vertType)
     {
     case VertexType::VertexColor:
     case VertexType::VertexInstanceColor:
     case VertexType::VertexColorInstanceColor:
-        vertShaderName = "ForwardColor.vert";
+        vertShaderName = instanced ? "ForwardInstancedColor.vert" : "ForwardColor.vert";
         break;
     case VertexType::VertexSkinned:
         vertShaderName = "ForwardSkinned.vert";
@@ -1805,6 +1806,72 @@ void DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
         GetVulkanContext()->CommitPipeline();
         BindGeometryDescriptorSet(shadowMeshComp);
         vkCmdDrawIndexed(cb, mesh->GetNumIndices(), 1, 0, 0, 0);
+    }
+}
+
+void DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp)
+{
+    VulkanContext* context = GetVulkanContext();
+    StaticMesh* mesh = instancedMeshComp->GetStaticMesh();
+    StaticMeshCompResource* resource = instancedMeshComp->GetResource();
+
+    uint32_t numInstances = instancedMeshComp->GetNumInstances();
+    uint32_t totalNumVerts = instancedMeshComp->GetTotalVertexCount();
+
+    if (mesh != nullptr)
+    {
+        VkCommandBuffer cb = GetCommandBuffer();
+
+        BindStaticMeshResource(mesh);
+
+        bool useMaterial = GetVulkanContext()->AreMaterialsEnabled();
+
+        // Determine vertex type for binding appropriate pipeline
+        VertexType vertexType = VertexType::Vertex;
+        if (useMaterial &&
+            instancedMeshComp->GetInstanceColors().size() == totalNumVerts &&
+            resource->mColorVertexBuffer != nullptr)
+        {
+            if (mesh->HasVertexColor())
+            {
+                vertexType = VertexType::VertexColorInstanceColor;
+            }
+            else
+            {
+                vertexType = VertexType::VertexInstanceColor;
+            }
+
+            // Bind color instance buffer at binding #1
+            VkBuffer vertexBuffers[] = { resource->mColorVertexBuffer->Get() };
+            VkDeviceSize offsets[] = { 0 };
+            vkCmdBindVertexBuffers(cb, 1, 1, vertexBuffers, offsets);
+        }
+        else if (mesh->HasVertexColor())
+        {
+            vertexType = VertexType::VertexColor;
+        }
+
+        Material* material = nullptr;
+
+        if (useMaterial)
+        {
+            material = instancedMeshComp->GetMaterial();
+            material = material ? material : Renderer::Get()->GetDefaultMaterial();
+        }
+
+        BindForwardVertexType(vertexType, material, true);
+        BindMaterialResource(material);
+        GetVulkanContext()->CommitPipeline();
+
+        BindGeometryDescriptorSet(instancedMeshComp);
+        BindMaterialDescriptorSet(material);
+
+        vkCmdDrawIndexed(cb,
+            mesh->GetNumIndices(),
+            numInstances,
+            0,
+            0,
+            0);
     }
 }
 

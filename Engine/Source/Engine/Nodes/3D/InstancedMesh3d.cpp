@@ -1,39 +1,39 @@
-#include "Nodes/3D/InstanceMesh3d.h"
+#include "Nodes/3D/InstancedMesh3d.h"
 
-FORCE_LINK_DEF(InstanceMesh3D);
-DEFINE_NODE(InstanceMesh3D, StaticMesh3D);
+FORCE_LINK_DEF(InstancedMesh3D);
+DEFINE_NODE(InstancedMesh3D, StaticMesh3D);
 
-InstanceMesh3D::InstanceMesh3D()
+InstancedMesh3D::InstancedMesh3D()
 {
-    mName = "Instance Mesh";
+    mName = "Instanced Mesh";
 }
 
-InstanceMesh3D::~InstanceMesh3D()
+InstancedMesh3D::~InstancedMesh3D()
 {
 
 }
 
-const char* InstanceMesh3D::GetTypeName() const
+const char* InstancedMesh3D::GetTypeName() const
 {
-    return "InstanceMesh";
+    return "InstancedMesh";
 }
 
-void InstanceMesh3D::GatherProperties(std::vector<Property>& outProps)
+void InstancedMesh3D::GatherProperties(std::vector<Property>& outProps)
 {
     StaticMesh3D::GatherProperties(outProps);
 }
 
-void InstanceMesh3D::Create()
+void InstancedMesh3D::Create()
 {
     StaticMesh3D::Create();
 }
 
-void InstanceMesh3D::Destroy()
+void InstancedMesh3D::Destroy()
 {
     StaticMesh3D::Destroy();
 }
 
-void InstanceMesh3D::SaveStream(Stream& stream)
+void InstancedMesh3D::SaveStream(Stream& stream)
 {
     StaticMesh3D::SaveStream(stream);
 
@@ -46,7 +46,7 @@ void InstanceMesh3D::SaveStream(Stream& stream)
     }
 }
 
-void InstanceMesh3D::LoadStream(Stream& stream)
+void InstancedMesh3D::LoadStream(Stream& stream)
 {
     StaticMesh3D::LoadStream(stream);
     
@@ -60,40 +60,40 @@ void InstanceMesh3D::LoadStream(Stream& stream)
     }
 }
 
-bool InstanceMesh3D::IsInstanceMesh3D() const
+bool InstancedMesh3D::IsInstancedMesh3D() const
 {
     return true;
 }
 
-Bounds InstanceMesh3D::GetLocalBounds() const
+Bounds InstancedMesh3D::GetLocalBounds() const
 {
-    LogError("Implement InstanceMesh3D::GetLocalBounds()");
+    LogError("Implement InstancedMesh3D::GetLocalBounds()");
     return Bounds();
 }
 
-void InstanceMesh3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
+void InstancedMesh3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
-    LogError("Implement InstanceMesh3D::GatherProxyDraws()");
+    LogError("Implement InstancedMesh3D::GatherProxyDraws()");
 }
 
-uint32_t InstanceMesh3D::GetNumInstances() const
+uint32_t InstancedMesh3D::GetNumInstances() const
 {
     return uint32_t(mInstanceData.size());
 }
 
-const MeshInstanceData& InstanceMesh3D::GetInstanceData(int32_t index) const
+const MeshInstanceData& InstancedMesh3D::GetInstanceData(int32_t index) const
 {
     OCT_ASSERT(index >= 0 && index < int32_t(mInstanceData.size()));
     return mInstanceData[index];
 }
 
-MeshInstanceData& InstanceMesh3D::GetInstanceData(int32_t index)
+MeshInstanceData& InstancedMesh3D::GetInstanceData(int32_t index)
 {
     OCT_ASSERT(index >= 0 && index < int32_t(mInstanceData.size()));
     return mInstanceData[index];
 }
 
-void InstanceMesh3D::SetInstanceData(int32_t index, const MeshInstanceData& data)
+void InstancedMesh3D::SetInstanceData(int32_t index, const MeshInstanceData& data)
 {
     OCT_ASSERT(index >= 0 && index < int32_t(mInstanceData.size()));
     if (index >= 0 &&
@@ -104,19 +104,19 @@ void InstanceMesh3D::SetInstanceData(int32_t index, const MeshInstanceData& data
     }
 }
 
-void InstanceMesh3D::SetInstanceData(const std::vector<MeshInstanceData>& data)
+void InstancedMesh3D::SetInstanceData(const std::vector<MeshInstanceData>& data)
 {
     mInstanceData = data;
     RecreateCollisionShape();
 }
 
-void InstanceMesh3D::AddInstanceData(const MeshInstanceData& data)
+void InstancedMesh3D::AddInstanceData(const MeshInstanceData& data)
 {
     mInstanceData.push_back(data);
     RecreateCollisionShape();
 }
 
-void InstanceMesh3D::RemoveInstanceData(int32_t index)
+void InstancedMesh3D::RemoveInstanceData(int32_t index)
 {
     if (index == -1 &&
         mInstanceData.size() > 0)
@@ -131,7 +131,7 @@ void InstanceMesh3D::RemoveInstanceData(int32_t index)
     }
 }
 
-uint32_t InstanceMesh3D::GetTotalVertexCount() const
+uint32_t InstancedMesh3D::GetTotalVertexCount() const
 {
     StaticMesh* mesh = mStaticMesh.Get<StaticMesh>();
     uint32_t meshVertices = mesh ? mesh->GetNumVertices() : 0;
@@ -141,7 +141,7 @@ uint32_t InstanceMesh3D::GetTotalVertexCount() const
     return totalVertices;
 }
 
-void InstanceMesh3D::RecreateCollisionShape()
+void InstancedMesh3D::RecreateCollisionShape()
 {
-    LogError("Implement InstanceMesh3D::RecreateCollisionShape()");
+    LogError("Implement InstancedMesh3D::RecreateCollisionShape()");
 }

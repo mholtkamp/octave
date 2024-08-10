@@ -9,14 +9,14 @@ struct MeshInstanceData
     glm::vec3 mScale = {};
 };
 
-class InstanceMesh3D : public StaticMesh3D
+class InstancedMesh3D : public StaticMesh3D
 {
 public:
 
-    DECLARE_NODE(InstanceMesh3D, StaticMesh3D);
+    DECLARE_NODE(InstancedMesh3D, StaticMesh3D);
 
-    InstanceMesh3D();
-    ~InstanceMesh3D();
+    InstancedMesh3D();
+    ~InstancedMesh3D();
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
@@ -27,7 +27,7 @@ public:
     virtual void SaveStream(Stream& stream) override;
     virtual void LoadStream(Stream& stream) override;
 
-    virtual bool IsInstanceMesh3D() const override;
+    virtual bool IsInstancedMesh3D() const override;
 
     virtual Bounds GetLocalBounds() const override;
 
@@ -47,7 +47,5 @@ protected:
 
     virtual void RecreateCollisionShape() override;
 
-
     std::vector<MeshInstanceData> mInstanceData;
-
 };

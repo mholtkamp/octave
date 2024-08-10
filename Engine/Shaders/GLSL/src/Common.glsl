@@ -87,6 +87,13 @@ struct LightData
     uint mType;
 };
 
+struct MeshInstanceData
+{
+    mat4 mWorldMatrix;
+    mat4 mNormalMatrix;
+    mat4 mWvpMatrix;
+};
+
 struct GlobalUniforms
 {
     mat4 mViewProj;
