@@ -617,6 +617,7 @@
     <ClCompile Include="Source\Engine\Nodes\3D\Camera3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Capsule3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\DirectionalLight3d.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\InstanceMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Light3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Mesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Particle3d.cpp" />
@@ -852,6 +853,7 @@
     <ClInclude Include="Source\Engine\Nodes\3D\Camera3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Capsule3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\DirectionalLight3d.h" />
+    <ClInclude Include="Source\Engine\Nodes\3D\InstanceMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Light3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Mesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Particle3d.h" />

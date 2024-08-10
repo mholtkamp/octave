@@ -64,7 +64,22 @@ void Mesh3D::LoadStream(Stream& stream)
     mBillboard = stream.ReadBool();
 }
 
-bool Mesh3D::IsShadowMesh3D()
+bool Mesh3D::IsStaticMesh3D() const
+{
+    return false;
+}
+
+bool Mesh3D::IsSkeletalMesh3D() const
+{
+    return false;
+}
+
+bool Mesh3D::IsInstanceMesh3D() const
+{
+    return false;
+}
+
+bool Mesh3D::IsShadowMesh3D() const
 {
     return false;
 }
