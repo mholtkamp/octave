@@ -33,6 +33,11 @@ void InstancedMesh3D::Destroy()
     StaticMesh3D::Destroy();
 }
 
+void InstancedMesh3D::Render()
+{
+    GFX_DrawInstancedMeshComp(this);
+}
+
 void InstancedMesh3D::SaveStream(Stream& stream)
 {
     StaticMesh3D::SaveStream(stream);

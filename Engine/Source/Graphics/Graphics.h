@@ -105,7 +105,7 @@ bool GFX_IsCpuSkinningRequired(SkeletalMesh3D* skeletalMeshComp);
 void GFX_DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp);
 
 // InstancedMeshComp
-void GFX_DrawInstancedMesh(InstancedMesh3D* instancedMeshComp);
+void GFX_DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp);
 
 // TextMeshComp
 void GFX_CreateTextMeshCompResource(TextMesh3D* textMeshComp);

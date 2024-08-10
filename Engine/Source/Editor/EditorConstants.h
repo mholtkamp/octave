@@ -13,3 +13,4 @@
 #define BASIC_SCENE "Scene"
 #define BASIC_CAMERA "Camera"
 #define BASIC_TEXT_MESH "Text Mesh"
+#define BASIC_INSTANCED_MESH "Instanced Mesh"

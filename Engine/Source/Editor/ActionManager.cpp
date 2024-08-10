@@ -48,6 +48,7 @@
 #include "Nodes/3D/Particle3d.h"
 #include "Nodes/3D/Audio3d.h"
 #include "Nodes/3D/ShadowMesh3d.h"
+#include "Nodes/3D/InstancedMesh3d.h"
 #include "Nodes/3D/TextMesh3d.h"
 
 #include "System/System.h"
@@ -665,7 +666,11 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
     }
     else if (name == BASIC_TEXT_MESH)
     {
-    spawnedNode = EXE_SpawnNode(TextMesh3D::GetStaticType())->As<TextMesh3D>();
+        spawnedNode = EXE_SpawnNode(TextMesh3D::GetStaticType())->As<TextMesh3D>();
+    }
+    else if (name == BASIC_INSTANCED_MESH)
+    {
+        spawnedNode = EXE_SpawnNode(InstancedMesh3D::GetStaticType())->As<InstancedMesh3D>();
     }
 
     if (spawnedNode != nullptr)

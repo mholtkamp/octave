@@ -13,6 +13,7 @@
 #include "PaintManager.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
+#include "Nodes/3D/InstancedMesh3d.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
 
 #include "Assets/Scene.h"
@@ -1306,6 +1307,8 @@ static void DrawSpawnBasic3dMenu(Node* node, bool setFocusPos)
         am->SpawnBasicNode(BASIC_CAMERA, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_TEXT_MESH))
         am->SpawnBasicNode(BASIC_TEXT_MESH, node, selAsset, setFocusPos, spawnPos);
+    if (ImGui::MenuItem(BASIC_INSTANCED_MESH))
+        am->SpawnBasicNode(BASIC_INSTANCED_MESH, node, selAsset, setFocusPos, spawnPos);
 }
 static void DrawSpawnBasicWidgetMenu(Node* node)
 {
@@ -2309,6 +2312,56 @@ static void DrawMaterialShaderParams(Material* mat)
     ImGui::PopID();
 }
 
+static void DrawInstancedMeshExtra(InstancedMesh3D* instMesh)
+{
+    static int32_t sActiveInstance = 0;
+
+    ImGui::PushID(0);
+
+    int32_t numInstances = (int32_t)instMesh->GetNumInstances();
+    char instCountStr[32];
+    snprintf(instCountStr, 32, "Instances: %d", numInstances);
+    ImGui::Text(instCountStr);
+
+    if (ImGui::Button("Add Instance"))
+    {
+        instMesh->AddInstanceData(MeshInstanceData());
+        sActiveInstance = int32_t(instMesh->GetNumInstances()) - 1;
+    }
+
+    if (ImGui::Button("Remove Instance"))
+    {
+        sActiveInstance = glm::clamp<int32_t>(sActiveInstance, 0, numInstances - 1);
+        instMesh->RemoveInstanceData(sActiveInstance);
+        sActiveInstance = int32_t(instMesh->GetNumInstances()) - 1;
+    }
+
+    if (numInstances > 0)
+    {
+        sActiveInstance = glm::clamp<int32_t>(sActiveInstance, 0, numInstances - 1);
+        ImGui::SliderInt("Active Instance", &sActiveInstance, 0, numInstances - 1);
+    }
+
+    if (sActiveInstance >= 0 &&
+        sActiveInstance < numInstances)
+    {
+        MeshInstanceData& instData = instMesh->GetInstanceData(sActiveInstance);
+
+        ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.85f);
+        //ImGui::DragFloat3("", &propVal[0], 1.0f, 0.0f, 0.0f, "%.2f");
+        float vMin = 0.0f;
+        float vMax = 0.0f;
+        ImGui::OctDragScalarN("Position", ImGuiDataType_Float, &instData.mPosition, 3, 1.0f, &vMin, &vMax, "%.2f", 0);
+        ImGui::OctDragScalarN("Rotation", ImGuiDataType_Float, &instData.mRotation, 3, 1.0f, &vMin, &vMax, "%.2f", 0);
+        ImGui::OctDragScalarN("Scale", ImGuiDataType_Float, &instData.mScale, 3, 1.0f, &vMin, &vMax, "%.2f", 0);
+
+        ImGui::PopItemWidth();
+    }
+
+    ImGui::PopID();
+}
+
+
 static void DrawPropertiesPanel()
 {
     const float dispWidth = (float)GetEngineState()->mWindowWidth;
@@ -2386,10 +2439,16 @@ static void DrawPropertiesPanel()
 
                 DrawPropertyList(obj, props);
 
+                // Custom imgui drawing
                 if (obj->As<Material>())
                 {
                     Material* mat = obj->As<Material>();
                     DrawMaterialShaderParams(mat);
+                }
+                else if (obj->As<InstancedMesh3D>())
+                {
+                    InstancedMesh3D* instMesh = obj->As<InstancedMesh3D>();
+                    DrawInstancedMeshExtra(instMesh);
                 }
             }
 

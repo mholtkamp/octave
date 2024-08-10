@@ -1914,7 +1914,8 @@ void DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp)
     uint32_t numInstances = instancedMeshComp->GetNumInstances();
     uint32_t totalNumVerts = instancedMeshComp->GetTotalVertexCount();
 
-    if (mesh != nullptr)
+    if (mesh != nullptr &&
+        numInstances > 0)
     {
         if (instResource->mDirty)
         {
