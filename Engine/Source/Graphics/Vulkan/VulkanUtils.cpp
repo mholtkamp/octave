@@ -1513,10 +1513,24 @@ void BindGeometryDescriptorSet(StaticMesh3D* staticMeshComp)
 
     UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
 
-    DescriptorSet::Begin("StaticMesh3D DS")
-        .WriteUniformBuffer(GD_UNIFORM_BUFFER, uniformBlock)
-        .Build()
-        .Bind(cb, 1);
+    if (staticMeshComp->IsInstancedMesh3D())
+    {
+        InstancedMeshCompResource* instResource = ((InstancedMesh3D*)staticMeshComp)->GetInstancedMeshResource();
+
+        DescriptorSet::Begin("StaticMesh3D DS")
+            .WriteUniformBuffer(GD_UNIFORM_BUFFER, uniformBlock)
+            .WriteStorageBuffer(GD_INSTANCE_DATA_BUFFER, instResource->mInstanceDataBuffer)
+            //.WriteStoragebuffer(GD_INSTANCE_COLOR_BUFFER, instResource->mInstanceColorBuffer)
+            .Build()
+            .Bind(cb, 1);
+    }
+    else
+    {
+        DescriptorSet::Begin("StaticMesh3D DS")
+            .WriteUniformBuffer(GD_UNIFORM_BUFFER, uniformBlock)
+            .Build()
+            .Bind(cb, 1);
+    }
 }
 
 void UpdateStaticMeshCompResourceColors(StaticMesh3D* staticMeshComp)
@@ -1554,6 +1568,33 @@ void UpdateStaticMeshCompResourceColors(StaticMesh3D* staticMeshComp)
         }
 
         resource->mColorVertexBuffer->Update(instanceColors.data(), colorBufferSize);
+    }
+}
+
+void DestroyStaticMeshCompResource(StaticMesh3D* staticMeshComp)
+{
+    StaticMeshCompResource* resource = staticMeshComp->GetResource();
+    if (resource->mColorVertexBuffer)
+    {
+        GetDestroyQueue()->Destroy(resource->mColorVertexBuffer);
+        resource->mColorVertexBuffer = nullptr;
+    }
+
+    if (staticMeshComp->IsInstancedMesh3D())
+    {
+        InstancedMeshCompResource* instResource = ((InstancedMesh3D*)staticMeshComp)->GetInstancedMeshResource();
+
+        if (instResource->mInstanceDataBuffer != nullptr)
+        {
+            GetDestroyQueue()->Destroy(instResource->mInstanceDataBuffer);
+            instResource->mInstanceDataBuffer = nullptr;
+        }
+
+        if (instResource->mVertexColorBuffer != nullptr)
+        {
+            GetDestroyQueue()->Destroy(instResource->mVertexColorBuffer);
+            instResource->mVertexColorBuffer = nullptr;
+        }
     }
 }
 
@@ -1809,17 +1850,77 @@ void DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
     }
 }
 
+static void UpdateInstancedMeshResource(InstancedMesh3D* instancedMeshComp)
+{
+    Camera3D* camera = instancedMeshComp->GetWorld()->GetActiveCamera();
+
+    InstancedMeshCompResource* instResource = instancedMeshComp->GetInstancedMeshResource();
+    uint32_t numInstances = instancedMeshComp->GetNumInstances();
+    uint32_t totalNumVerts = instancedMeshComp->GetTotalVertexCount();
+
+    // Destroy existing buffers
+    if (instResource->mInstanceDataBuffer != nullptr)
+    {
+        GetDestroyQueue()->Destroy(instResource->mInstanceDataBuffer);
+        instResource->mInstanceDataBuffer = nullptr;
+    }
+
+    if (instResource->mVertexColorBuffer != nullptr)
+    {
+        GetDestroyQueue()->Destroy(instResource->mVertexColorBuffer);
+        instResource->mVertexColorBuffer = nullptr;
+    }
+
+    // Generate instance data
+    const std::vector<MeshInstanceData>& meshInstanceData = instancedMeshComp->GetInstanceData();
+    std::vector<MeshInstanceBufferData> meshInstanceBufferData;
+    meshInstanceBufferData.resize(numInstances);
+    OCT_ASSERT(meshInstanceData.size() == numInstances);
+
+    for (uint32_t i = 0; i < numInstances; ++i)
+    {
+        const MeshInstanceData& instData = meshInstanceData[i];
+
+        glm::quat rotQuat = glm::quat(instData.mRotation * DEGREES_TO_RADIANS);
+
+        glm::mat4 transform = glm::mat4(1);
+        transform = glm::translate(transform, instData.mPosition);
+        transform *= glm::toMat4(rotQuat);
+        transform = glm::scale(transform, instData.mScale);
+
+        meshInstanceBufferData[i].mWorldMatrix = transform;
+        meshInstanceBufferData[i].mNormalMatrix = glm::transpose(glm::inverse(transform));
+        meshInstanceBufferData[i].mWvpMatrix = camera->GetViewProjectionMatrix() * transform;
+    }
+
+    // Allocate and fill the buffers
+    instResource->mInstanceDataBuffer = new Buffer(
+        BufferType::Storage,
+        sizeof(MeshInstanceBufferData) * numInstances,
+        "InstanceDataBuffer",
+        meshInstanceBufferData.data(),
+        false);
+
+    instResource->mDirty = false;
+}
+
 void DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp)
 {
     VulkanContext* context = GetVulkanContext();
     StaticMesh* mesh = instancedMeshComp->GetStaticMesh();
     StaticMeshCompResource* resource = instancedMeshComp->GetResource();
+    InstancedMeshCompResource* instResource = instancedMeshComp->GetInstancedMeshResource();
 
     uint32_t numInstances = instancedMeshComp->GetNumInstances();
     uint32_t totalNumVerts = instancedMeshComp->GetTotalVertexCount();
 
     if (mesh != nullptr)
     {
+        if (instResource->mDirty)
+        {
+            UpdateInstancedMeshResource(instancedMeshComp);
+        }
+
         VkCommandBuffer cb = GetCommandBuffer();
 
         BindStaticMeshResource(mesh);
@@ -1829,7 +1930,7 @@ void DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp)
         // Determine vertex type for binding appropriate pipeline
         VertexType vertexType = VertexType::Vertex;
         if (useMaterial &&
-            instancedMeshComp->GetInstanceColors().size() == totalNumVerts &&
+            instancedMeshComp->GetInstanceColors().size() == mesh->GetNumVertices() &&
             resource->mColorVertexBuffer != nullptr)
         {
             if (mesh->HasVertexColor())

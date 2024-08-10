@@ -309,7 +309,7 @@ void GFX_CreateStaticMeshCompResource(StaticMesh3D* staticMeshComp)
 
 void GFX_DestroyStaticMeshCompResource(StaticMesh3D* staticMeshComp)
 {
-
+    DestroyStaticMeshCompResource(staticMeshComp);
 }
 
 void GFX_UpdateStaticMeshCompResourceColors(StaticMesh3D* staticMeshComp)

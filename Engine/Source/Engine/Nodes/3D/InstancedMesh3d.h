@@ -36,6 +36,7 @@ public:
     uint32_t GetNumInstances() const;
     const MeshInstanceData& GetInstanceData(int32_t index) const;
     MeshInstanceData& GetInstanceData(int32_t index);
+    const std::vector<MeshInstanceData>& GetInstanceData() const;
     void SetInstanceData(int32_t index, const MeshInstanceData& data);
     void SetInstanceData(const std::vector<MeshInstanceData>& data);
     void AddInstanceData(const MeshInstanceData& data);
@@ -43,9 +44,18 @@ public:
 
     uint32_t GetTotalVertexCount() const;
 
+    bool IsInstanceDataDirty() const;
+    void MarkInstanceDataDirty();
+    void UpdateInstanceData();
+
+    InstancedMeshCompResource* GetInstancedMeshResource();
+
 protected:
 
     virtual void RecreateCollisionShape() override;
 
     std::vector<MeshInstanceData> mInstanceData;
+    bool mInstanceDataDirty = true;
+
+    InstancedMeshCompResource mInstancedMeshResource;
 };

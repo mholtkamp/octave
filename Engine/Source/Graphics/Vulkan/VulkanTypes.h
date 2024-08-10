@@ -106,6 +106,13 @@ struct LightUniformData
     uint32_t mType;
 };
 
+struct MeshInstanceBufferData
+{
+    glm::mat4 mWorldMatrix;
+    glm::mat4 mNormalMatrix;
+    glm::mat4 mWvpMatrix;
+};
+
 struct GlobalUniformData
 {
     glm::mat4 mViewProjMatrix;

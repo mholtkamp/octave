@@ -15,6 +15,7 @@ class SkeletalMesh;
 class StaticMesh3D;
 class SkeletalMesh3D;
 class ShadowMesh3D;
+class InstancedMesh3D;
 class TextMesh3D;
 class Particle3D;
 class Camera3D;

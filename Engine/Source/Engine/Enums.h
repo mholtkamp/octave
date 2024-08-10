@@ -20,7 +20,8 @@ enum GlobalDescriptor
 
 enum GeometryDescriptor
 {
-    GD_UNIFORM_BUFFER
+    GD_UNIFORM_BUFFER,
+    GD_INSTANCE_DATA_BUFFER,
 };
 
 enum MaterialDescriptor

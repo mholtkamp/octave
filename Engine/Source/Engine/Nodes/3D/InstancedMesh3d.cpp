@@ -93,6 +93,11 @@ MeshInstanceData& InstancedMesh3D::GetInstanceData(int32_t index)
     return mInstanceData[index];
 }
 
+const std::vector<MeshInstanceData>& InstancedMesh3D::GetInstanceData() const
+{
+    return mInstanceData;
+}
+
 void InstancedMesh3D::SetInstanceData(int32_t index, const MeshInstanceData& data)
 {
     OCT_ASSERT(index >= 0 && index < int32_t(mInstanceData.size()));
@@ -100,20 +105,20 @@ void InstancedMesh3D::SetInstanceData(int32_t index, const MeshInstanceData& dat
         index < int32_t(mInstanceData.size()))
     {
         mInstanceData[index] = data;
-        RecreateCollisionShape();
+        MarkInstanceDataDirty();
     }
 }
 
 void InstancedMesh3D::SetInstanceData(const std::vector<MeshInstanceData>& data)
 {
     mInstanceData = data;
-    RecreateCollisionShape();
+    MarkInstanceDataDirty();
 }
 
 void InstancedMesh3D::AddInstanceData(const MeshInstanceData& data)
 {
     mInstanceData.push_back(data);
-    RecreateCollisionShape();
+    MarkInstanceDataDirty();
 }
 
 void InstancedMesh3D::RemoveInstanceData(int32_t index)
@@ -122,12 +127,12 @@ void InstancedMesh3D::RemoveInstanceData(int32_t index)
         mInstanceData.size() > 0)
     {
         mInstanceData.pop_back();
-        RecreateCollisionShape();
+        MarkInstanceDataDirty();
     }
     else if (index >= 0 && index < int32_t(mInstanceData.size()))
     {
         mInstanceData.erase(mInstanceData.begin() + index);
-        RecreateCollisionShape();
+        MarkInstanceDataDirty();
     }
 }
 
@@ -139,6 +144,26 @@ uint32_t InstancedMesh3D::GetTotalVertexCount() const
     uint32_t totalVertices = numInstances * meshVertices;
 
     return totalVertices;
+}
+
+bool InstancedMesh3D::IsInstanceDataDirty() const
+{
+    return mInstanceDataDirty;
+}
+
+void InstancedMesh3D::MarkInstanceDataDirty()
+{
+    mInstanceDataDirty = true;
+}
+
+void InstancedMesh3D::UpdateInstanceData()
+{
+    RecreateCollisionShape();
+}
+
+InstancedMeshCompResource* InstancedMesh3D::GetInstancedMeshResource()
+{
+    return &mInstancedMeshResource;
 }
 
 void InstancedMesh3D::RecreateCollisionShape()
