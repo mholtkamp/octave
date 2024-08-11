@@ -13,6 +13,8 @@
 FORCE_LINK_DEF(StaticMesh3D);
 DEFINE_NODE(StaticMesh3D, Mesh3D);
 
+static int32_t sDebugConvexCollisionMeshIndex = 0;
+
 bool StaticMesh3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
@@ -214,8 +216,6 @@ void StaticMesh3D::DrawDebugCollision(std::vector<DebugDraw>& inoutDraws, btColl
     uint32_t numCollisionShapes = 0;
     std::vector<btCollisionShape*> collisionShapes;
     std::vector<glm::mat4> collisionTransforms;
-    //uint32_t collisionMeshIndex = 0;
-    //OCT_UNUSED(collisionMeshIndex); // Only used in EDITOR
 
     glm::vec3 invScale = 1.0f / BulletToGlm(collisionShape->getLocalScaling()); // GetWorldScale();
 
@@ -256,9 +256,13 @@ void StaticMesh3D::DrawDebugCollision(std::vector<DebugDraw>& inoutDraws, btColl
     case CONVEX_HULL_SHAPE_PROXYTYPE:
     {
 #if CREATE_CONVEX_COLLISION_MESH
-        // We only create StaticMesh objects for convex hulls when in editor.
-        //debugDraw.mMesh = staticMesh->mCollisionMeshes[collisionMeshIndex];
-        //++collisionMeshIndex;
+        if (sDebugConvexCollisionMeshIndex < staticMesh->mCollisionMeshes.size())
+        {
+            // We only create StaticMesh objects for convex hulls when in editor.
+            debugDraw.mMesh = staticMesh->mCollisionMeshes[sDebugConvexCollisionMeshIndex];
+            staticMesh->mCollisionMeshes[sDebugConvexCollisionMeshIndex]->GetBounds();
+            ++sDebugConvexCollisionMeshIndex;
+        }
 #endif
         break;
     }
@@ -325,6 +329,7 @@ void StaticMesh3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
         if (staticMesh != nullptr &&
             mCollisionShape != nullptr)
         {
+            sDebugConvexCollisionMeshIndex = 0;
             DrawDebugCollision(inoutDraws, mCollisionShape, mTransform);
         }
     }

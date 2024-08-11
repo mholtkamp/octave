@@ -375,6 +375,8 @@ void StaticMesh::Create()
     {
         CreateTriangleCollisionShape();
     }
+
+    ComputeBounds();
 }
 
 void StaticMesh::Destroy()
@@ -925,8 +927,6 @@ void StaticMesh::Create(
     SetCollisionShapes(numCollisionShapes, collisionShapes.data(), collisionTransforms.data(), true);
 
     mMaterial = Renderer::Get()->GetDefaultMaterial();
-
-    ComputeBounds();
 
     Create();
 }
