@@ -58,6 +58,7 @@ public:
 
 protected:
 
+    void DrawDebugCollision(std::vector<DebugDraw>& inoutDraws, btCollisionShape* colShape, const glm::mat4& parentTransform);
     virtual void RecreateCollisionShape();
 
     StaticMeshRef mStaticMesh;
