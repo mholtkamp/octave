@@ -246,48 +246,6 @@ void Primitive3D::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Byte, "Collision Mask", this, &mCollisionMask, 1, HandlePropChange, (int32_t)ByteExtra::FlagWidget));
 }
 
-void Primitive3D::LoadStream(Stream& stream)
-{
-    Node3D::LoadStream(stream);
-    EnablePhysics(stream.ReadBool());
-    EnableCollision(stream.ReadBool());
-    EnableOverlaps(stream.ReadBool());
-    mCastShadows = stream.ReadBool();
-    mReceiveShadows = stream.ReadBool();
-    mReceiveSimpleShadows = stream.ReadBool();
-    SetMass(stream.ReadFloat());
-    SetRestitution(stream.ReadFloat());
-    SetFriction(stream.ReadFloat());
-    SetRollingFriction(stream.ReadFloat());
-    SetLinearDamping(stream.ReadFloat());
-    SetAngularDamping(stream.ReadFloat());
-    SetLinearFactor(stream.ReadVec3());
-    SetAngularFactor(stream.ReadVec3());
-    SetCollisionGroup(stream.ReadUint8());
-    SetCollisionMask(stream.ReadUint8());
-}
-
-void Primitive3D::SaveStream(Stream& stream)
-{
-    Node3D::SaveStream(stream);
-    stream.WriteBool(mPhysicsEnabled);
-    stream.WriteBool(mCollisionEnabled);
-    stream.WriteBool(mOverlapsEnabled);
-    stream.WriteBool(mCastShadows);
-    stream.WriteBool(mReceiveShadows);
-    stream.WriteBool(mReceiveSimpleShadows);
-    stream.WriteFloat(mMass);
-    stream.WriteFloat(mRestitution);
-    stream.WriteFloat(mFriction);
-    stream.WriteFloat(mRollingFriction);
-    stream.WriteFloat(mLinearDamping);
-    stream.WriteFloat(mAngularDamping);
-    stream.WriteVec3(mLinearFactor);
-    stream.WriteVec3(mAngularFactor);
-    stream.WriteUint8(mCollisionGroup);
-    stream.WriteUint8(mCollisionMask);
-}
-
 void Primitive3D::SetWorld(World* world)
 {
     // TODO-NODE: I am attempting to simplify this code. Does it still work?

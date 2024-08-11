@@ -166,40 +166,6 @@ void Audio3D::TickCommon(float deltaTime)
     }
 }
 
-void Audio3D::SaveStream(Stream& stream)
-{
-    Node3D::SaveStream(stream);
-
-    stream.WriteAsset(mSoundWave);
-    stream.WriteFloat(mInnerRadius);
-    stream.WriteFloat(mOuterRadius);
-    stream.WriteFloat(mVolume);
-    stream.WriteFloat(mPitch);
-    stream.WriteFloat(mStartOffset);
-    stream.WriteInt32(mPriority);
-    stream.WriteUint32((uint32_t)mAttenuationFunc);
-    //stream.WriteInt8((int8_t)mAudioClass);
-    stream.WriteBool(mLoop);
-    stream.WriteBool(mAutoPlay);
-}
-
-void Audio3D::LoadStream(Stream& stream)
-{
-    Node3D::LoadStream(stream);
-
-    stream.ReadAsset(mSoundWave);
-    mInnerRadius = stream.ReadFloat();
-    mOuterRadius = stream.ReadFloat();
-    mVolume = stream.ReadFloat();
-    mPitch = stream.ReadFloat();
-    mStartOffset = stream.ReadFloat();
-    mPriority = stream.ReadInt32();
-    mAttenuationFunc = (AttenuationFunc)stream.ReadUint32();
-    //mAudioClass = stream.ReadInt8();
-    mLoop = stream.ReadBool();
-    mAutoPlay = stream.ReadBool();
-}
-
 void Audio3D::SetSoundWave(SoundWave* soundWave)
 {
     mSoundWave = soundWave;

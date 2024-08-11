@@ -17,9 +17,6 @@ public:
 
     virtual void Create() override;
 
-    virtual void SaveStream(Stream& stream) override;
-    virtual void LoadStream(Stream& stream) override;
-
     float GetRadius() const;
     void SetRadius(float radius);
 

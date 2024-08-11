@@ -83,26 +83,6 @@ TextMeshCompResource* TextMesh3D::GetResource()
     return &mResource;
 }
 
-void TextMesh3D::SaveStream(Stream& stream)
-{
-    Mesh3D::SaveStream(stream);
-    stream.WriteAsset(mFont);
-    stream.WriteString(mText);
-    stream.WriteVec4(mColor);
-    stream.WriteFloat(mHorizontalJustification);
-    stream.WriteFloat(mVerticalJustification);
-}
-
-void TextMesh3D::LoadStream(Stream& stream)
-{
-    Mesh3D::LoadStream(stream);
-    stream.ReadAsset(mFont);
-    stream.ReadString(mText);
-    mColor = stream.ReadVec4();
-    mHorizontalJustification = stream.ReadFloat();
-    mVerticalJustification = stream.ReadFloat();
-}
-
 void TextMesh3D::Tick(float deltaTime)
 {
     Mesh3D::Tick(deltaTime);

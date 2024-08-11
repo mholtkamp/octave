@@ -59,9 +59,6 @@ public:
     virtual void Tick(float deltaTime) override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
-    virtual void LoadStream(Stream& stream) override;
-    virtual void SaveStream(Stream& stream) override;
-
     virtual void SetWorld(World* world) override;
     virtual void Render() override;
 

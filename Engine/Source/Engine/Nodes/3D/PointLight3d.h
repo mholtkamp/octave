@@ -38,9 +38,6 @@ public:
     virtual void GatherProperties(std::vector<Property>& outProps) override;
     virtual void GatherProxyDraws(std::vector<DebugDraw>& inoutDraws) override;
 
-    virtual void SaveStream(Stream& stream) override;
-	virtual void LoadStream(Stream& stream) override;
-
     virtual bool IsPointLight3D() const override;
     virtual bool IsDirectionalLight3D() const override;
 

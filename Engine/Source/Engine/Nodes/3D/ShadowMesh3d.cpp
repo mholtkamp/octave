@@ -41,16 +41,6 @@ void ShadowMesh3D::Render()
     GFX_DrawShadowMeshComp(this);
 }
 
-void ShadowMesh3D::SaveStream(Stream& stream)
-{
-    StaticMesh3D::SaveStream(stream);
-}
-
-void ShadowMesh3D::LoadStream(Stream& stream)
-{
-    StaticMesh3D::LoadStream(stream);
-}
-
 bool ShadowMesh3D::IsShadowMesh3D() const
 {
     return true;

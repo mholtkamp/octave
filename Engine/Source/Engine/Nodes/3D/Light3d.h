@@ -14,9 +14,6 @@ public:
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
-    virtual void SaveStream(Stream& stream) override;
-	virtual void LoadStream(Stream& stream) override;
-
     virtual bool IsLight3D() const;
     virtual bool IsPointLight3D() const = 0;
     virtual bool IsDirectionalLight3D() const = 0;

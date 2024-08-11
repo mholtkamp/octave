@@ -156,34 +156,6 @@ ParticleCompResource* Particle3D::GetResource()
     return &mResource;
 }
 
-void Particle3D::SaveStream(Stream& stream)
-{
-    Primitive3D::SaveStream(stream);
-
-    stream.WriteAsset(mParticleSystem);
-    stream.WriteAsset(mMaterialOverride);
-    stream.WriteFloat(mTimeMultiplier);
-    stream.WriteBool(mUseLocalSpace);
-    stream.WriteBool(mEmit);
-    stream.WriteBool(mAutoEmit);
-    stream.WriteBool(mAlwaysSimulate);
-    stream.WriteUint8((uint8_t)mOrientation);
-}
-
-void Particle3D::LoadStream(Stream& stream)
-{
-    Primitive3D::LoadStream(stream);
-
-    stream.ReadAsset(mParticleSystem);
-    stream.ReadAsset(mMaterialOverride);
-    mTimeMultiplier = stream.ReadFloat();
-    mUseLocalSpace = stream.ReadBool();
-    mEmit = stream.ReadBool();
-    mAutoEmit = stream.ReadBool();
-    mAlwaysSimulate = stream.ReadBool();
-    mOrientation = (ParticleOrientation)stream.ReadUint8();
-}
-
 DrawData Particle3D::GetDrawData()
 {
     DrawData data = {};

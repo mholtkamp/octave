@@ -75,26 +75,6 @@ void Camera3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif
 }
 
-void Camera3D::SaveStream(Stream& stream)
-{
-    Node3D::SaveStream(stream);
-    stream.WriteUint8(uint8_t(mProjectionMode));
-    stream.WriteFloat(mFovY);
-    stream.WriteFloat(mOrthoWidth);
-    stream.WriteFloat(mNear);
-    stream.WriteFloat(mFar);
-}
-
-void Camera3D::LoadStream(Stream& stream)
-{
-    Node3D::LoadStream(stream);
-    mProjectionMode = ProjectionMode(stream.ReadUint8());
-    mFovY = stream.ReadFloat();
-    mOrthoWidth = stream.ReadFloat();
-    mNear = stream.ReadFloat();
-    mFar = stream.ReadFloat();
-}
-
 ProjectionMode Camera3D::GetProjectionMode() const
 {
     return mProjectionMode;

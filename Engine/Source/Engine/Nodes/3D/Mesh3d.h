@@ -20,9 +20,6 @@ public:
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
-    virtual void SaveStream(Stream& stream) override;
-    virtual void LoadStream(Stream& stream) override;
-
     virtual bool IsStaticMesh3D() const;
     virtual bool IsSkeletalMesh3D() const;
     virtual bool IsInstancedMesh3D() const;

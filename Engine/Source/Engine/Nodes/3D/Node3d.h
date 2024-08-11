@@ -18,9 +18,6 @@ public:
     Node3D();
     virtual ~Node3D();
 
-    virtual void SaveStream(Stream& stream) override;
-	virtual void LoadStream(Stream& stream) override;
-
     virtual void Create() override;
     virtual void Destroy() override;
     virtual void Tick(float deltaTime) override;

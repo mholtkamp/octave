@@ -132,43 +132,6 @@ SkeletalMeshCompResource* SkeletalMesh3D::GetResource()
     return &mResource;
 }
 
-void SkeletalMesh3D::SaveStream(Stream& stream)
-{
-    Mesh3D::SaveStream(stream);
-    stream.WriteAsset(mSkeletalMesh);
-    stream.WriteString(mDefaultAnimation);
-    stream.WriteFloat(mAnimationSpeed);
-    stream.WriteBool(mAnimationPaused);
-    //stream.WriteBool(mRevertToBindPose);
-    //stream.WriteBool(mInheritPose);
-    stream.WriteUint32(uint32_t(mBoneInfluenceMode));
-    //stream.WriteUint32(uint32_t(mAnimationUpdateMode));
-}
-
-void SkeletalMesh3D::LoadStream(Stream& stream)
-{
-    Mesh3D::LoadStream(stream);
-
-    AssetRef meshRef;
-    stream.ReadAsset(meshRef);
-    if (meshRef.Get<SkeletalMesh>() == nullptr)
-        meshRef = GetDefaultMesh();
-    SetSkeletalMesh(meshRef.Get<SkeletalMesh>());
-
-    stream.ReadString(mDefaultAnimation);
-    mAnimationSpeed = stream.ReadFloat();
-    mAnimationPaused = stream.ReadBool();
-    //mRevertToBindPose = stream.ReadBool();
-    //mInheritPose = stream.ReadBool();
-    mBoneInfluenceMode = BoneInfluenceMode(stream.ReadUint32());
-    //mAnimationUpdateMode = AnimationUpdateMode(stream.ReadUint32());
-
-    if (mDefaultAnimation != "")
-    {
-        PlayAnimation(mDefaultAnimation.c_str(), true);
-    }
-}
-
 void SkeletalMesh3D::Tick(float deltaTime)
 {
     Mesh3D::Tick(deltaTime);

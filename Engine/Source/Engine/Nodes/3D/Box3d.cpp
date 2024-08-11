@@ -83,18 +83,6 @@ void Box3D::Create()
     UpdateRigidBody();
 }
 
-void Box3D::SaveStream(Stream& stream)
-{
-    Primitive3D::SaveStream(stream);
-    stream.WriteVec3(mExtents);
-}
-
-void Box3D::LoadStream(Stream& stream)
-{
-    Primitive3D::LoadStream(stream);
-    SetExtents(stream.ReadVec3());
-}
-
 glm::vec3 Box3D::GetExtents() const
 {
     return mExtents;

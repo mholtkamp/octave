@@ -90,22 +90,6 @@ Node3D::~Node3D()
 
 }
 
-void Node3D::SaveStream(Stream& stream)
-{
-    Node::SaveStream(stream);
-    stream.WriteVec3(mPosition);
-    stream.WriteQuat(mRotationQuat);
-    stream.WriteVec3(mScale);
-}
-
-void Node3D::LoadStream(Stream& stream)
-{
-    Node::LoadStream(stream);
-    mPosition = stream.ReadVec3();
-    mRotationQuat = stream.ReadQuat();
-    mScale = stream.ReadVec3();
-}
-
 void Node3D::Create()
 {
     Node::Create();

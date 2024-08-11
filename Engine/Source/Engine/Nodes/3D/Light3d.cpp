@@ -40,24 +40,6 @@ void Light3D::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Cast Shadows", this, &mCastShadows));
 }
 
-void Light3D::SaveStream(Stream& stream)
-{
-    Node3D::SaveStream(stream);
-    stream.WriteVec4(mColor);
-    stream.WriteFloat(mIntensity);
-    stream.WriteBool(mCastShadows);
-    stream.WriteUint8((uint8_t)mDomain);
-}
-
-void Light3D::LoadStream(Stream& stream)
-{
-    Node3D::LoadStream(stream);
-    mColor = stream.ReadVec4();
-    mIntensity = stream.ReadFloat();
-    mCastShadows = stream.ReadBool();
-    mDomain = (LightingDomain) stream.ReadUint8();
-}
-
 bool Light3D::IsLight3D() const
 {
     return true;

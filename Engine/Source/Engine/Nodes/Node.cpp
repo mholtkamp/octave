@@ -229,58 +229,12 @@ void Node::Destroy()
 
 void Node::SaveStream(Stream& stream)
 {
-    // TODO-NODE: Can we just entirely remove Save/LoadStream from Nodes 
-    // and just serialize the properties? Could simplify things. Or instead of
-    // totally removing Save/LoadStream(), still allow nodes to override it
-    // but just delete all of the stuff that could be serialized by properties.
-
-    stream.WriteString(mName);
-    stream.WriteBool(mActive);
-    stream.WriteBool(mVisible);
-
-    // Tags
-    OCT_ASSERT(mTags.size() <= 255);
-    uint32_t numTags = glm::min<uint32_t>((uint32_t)mTags.size(), 255u);
-    stream.WriteUint8(numTags);
-
-    for (uint32_t i = 0; i < numTags; ++i)
-    {
-        stream.WriteString(mTags[i]);
-    }
-
-    stream.WriteBool(mReplicate);
-    stream.WriteBool(mReplicateTransform);
-
-    // TODO-NODE: Script serailization? Possibly just serialize-by-properties.
+    // For serializing extra data besides properties
 }
 
 void Node::LoadStream(Stream& stream)
 {
-    // TODO-NODE: Remove old data loading after serializing everything.
-#if 1
-    // Load old data
-    stream.ReadString(mName);
-    mActive = stream.ReadBool();
-    mVisible = stream.ReadBool();
-#else
-    // Load new data
-    stream.ReadString(mName);
-    mActive = stream.ReadBool();
-    mVisible = stream.ReadBool();
-
-
-    uint32_t numTags = (uint32_t)stream.ReadUint8();
-    mTags.resize(numTags);
-    for (uint32_t i = 0; i < numTags; ++i)
-    {
-        stream.ReadString(mTags[i]);
-    }
-
-    mReplicate = stream.ReadBool();
-    mReplicateTransform = stream.ReadBool();
-
-    // TODO-NODE: Script serailization? Possibly just serialize-by-properties.
-#endif
+    // For serializing extra data besides properties
 }
 
 void Node::Copy(Node* srcNode, bool recurse)

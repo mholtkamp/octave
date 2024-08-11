@@ -117,20 +117,6 @@ void Capsule3D::Create()
     UpdateRigidBody();
 }
 
-void Capsule3D::SaveStream(Stream& stream)
-{
-    Primitive3D::SaveStream(stream);
-    stream.WriteFloat(mHeight);
-    stream.WriteFloat(mRadius);
-}
-
-void Capsule3D::LoadStream(Stream& stream)
-{
-    Primitive3D::LoadStream(stream);
-    SetHeight(stream.ReadFloat());
-    SetRadius(stream.ReadFloat());
-}
-
 float Capsule3D::GetHeight() const
 {
     return mHeight;

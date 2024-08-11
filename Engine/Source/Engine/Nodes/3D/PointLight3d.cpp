@@ -89,18 +89,6 @@ void PointLight3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif // DEBUG_DRAW_ENABLED
 }
 
-void PointLight3D::SaveStream(Stream& stream)
-{
-    Light3D::SaveStream(stream);
-    stream.WriteFloat(mRadius);
-}
-
-void PointLight3D::LoadStream(Stream& stream)
-{
-    Light3D::LoadStream(stream);
-    mRadius = stream.ReadFloat();
-}
-
 bool PointLight3D::IsPointLight3D() const
 {
     return true;

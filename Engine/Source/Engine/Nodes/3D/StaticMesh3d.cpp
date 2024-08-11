@@ -99,9 +99,6 @@ StaticMeshCompResource* StaticMesh3D::GetResource()
 void StaticMesh3D::SaveStream(Stream& stream)
 {
     Mesh3D::SaveStream(stream);
-    stream.WriteAsset(mStaticMesh);
-    stream.WriteBool(mUseTriangleCollision);
-    stream.WriteBool(mBakeLighting);
 
     uint32_t numInstanceColors = (uint32_t)mInstanceColors.size();
     stream.WriteUint32(numInstanceColors);
@@ -114,18 +111,7 @@ void StaticMesh3D::SaveStream(Stream& stream)
 void StaticMesh3D::LoadStream(Stream& stream)
 {
     Mesh3D::LoadStream(stream);
-
-    AssetRef meshRef;
-    stream.ReadAsset(meshRef);
-    if (meshRef.Get<StaticMesh>() == nullptr)
-        meshRef = GetDefaultMesh();
-
-    mUseTriangleCollision = stream.ReadBool();
-    mBakeLighting = stream.ReadBool();
-
-    // Set mesh only after determining if we need to use triangle collision.
-    SetStaticMesh(meshRef.Get<StaticMesh>());
-
+    
     // Load instance colors after setting the static mesh. Otherwise it will clear.
     uint32_t numInstanceColors = stream.ReadUint32();
     mInstanceColors.resize(numInstanceColors);

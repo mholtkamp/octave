@@ -21,8 +21,6 @@ public:
     virtual void Destroy() override;
     TextMeshCompResource* GetResource();
 
-    virtual void SaveStream(Stream& stream) override;
-    virtual void LoadStream(Stream& stream) override;
     virtual void Tick(float deltaTime) override;
     virtual void EditorTick(float deltaTime) override;
 

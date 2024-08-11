@@ -90,16 +90,6 @@ void DirectionalLight3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 #endif
 }
 
-void DirectionalLight3D::SaveStream(Stream& stream)
-{
-    Light3D::SaveStream(stream);
-}
-
-void DirectionalLight3D::LoadStream(Stream& stream)
-{
-    Light3D::LoadStream(stream);
-}
-
 bool DirectionalLight3D::IsPointLight3D() const
 {
     return false;

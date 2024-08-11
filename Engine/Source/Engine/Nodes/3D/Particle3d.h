@@ -48,9 +48,6 @@ public:
     virtual void Start() override;
     ParticleCompResource* GetResource();
 
-    virtual void SaveStream(Stream& stream) override;
-    virtual void LoadStream(Stream& stream) override;
-
     virtual DrawData GetDrawData() override;
     virtual void Render() override;
     virtual void Tick(float deltaTime) override;

@@ -79,18 +79,6 @@ void Sphere3D::Create()
     UpdateRigidBody();
 }
 
-void Sphere3D::SaveStream(Stream& stream)
-{
-    Primitive3D::SaveStream(stream);
-    stream.WriteFloat(mRadius);
-}
-
-void Sphere3D::LoadStream(Stream& stream)
-{
-    Primitive3D::LoadStream(stream);
-    SetRadius(stream.ReadFloat());
-}
-
 float Sphere3D::GetRadius() const
 {
     return mRadius;
