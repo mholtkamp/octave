@@ -219,8 +219,8 @@ void StaticMesh3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
             mCollisionShape != nullptr)
         {
             uint32_t numCollisionShapes = 0;
-            btCollisionShape* collisionShapes[MAX_COLLISION_SHAPES] = {};
-            glm::mat4 collisionTransforms[MAX_COLLISION_SHAPES] = {};
+            std::vector<btCollisionShape*> collisionShapes;
+            std::vector<glm::mat4> collisionTransforms;
             uint32_t collisionMeshIndex = 0;
             OCT_UNUSED(collisionMeshIndex); // Only used in EDITOR
 
@@ -232,13 +232,7 @@ void StaticMesh3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
                 compoundShape = static_cast<btCompoundShape*>(mCollisionShape);
                 for (uint32_t i = 0; i < uint32_t(compoundShape->getNumChildShapes()); ++i)
                 {
-                    if (i >= MAX_COLLISION_SHAPES)
-                    {
-                        LogError("Too many collision shapes");
-                        break;
-                    }
-
-                    collisionShapes[numCollisionShapes] = compoundShape->getChildShape(i);
+                    collisionShapes.push_back(compoundShape->getChildShape(i));
                     const btTransform& bTransform = compoundShape->getChildTransform(i);
                     btQuaternion bRotation = bTransform.getRotation();
                     btVector3 bPosition = bTransform.getOrigin();
@@ -246,18 +240,23 @@ void StaticMesh3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
                     glm::quat rotation = glm::quat(bRotation.w(), bRotation.x(), bRotation.y(), bRotation.z());
                     glm::vec3 position = { bPosition.x(), bPosition.y(), bPosition.z() };
 
-                    collisionTransforms[i] = glm::mat4(1);
-                    collisionTransforms[i] = glm::translate(collisionTransforms[i], position);
-                    collisionTransforms[i] *= glm::toMat4(rotation);
-                        
+                    glm::mat4 colTransform = glm::mat4(1);
+                    colTransform = glm::translate(colTransform, position);
+                    colTransform *= glm::toMat4(rotation);
+                    collisionTransforms.push_back(colTransform);
+
                     ++numCollisionShapes;
                 }
             }
             else
             {
-                collisionShapes[0] = mCollisionShape;
+                collisionShapes.push_back(mCollisionShape);
+                collisionTransforms.push_back(glm::mat4(1));
                 numCollisionShapes = 1;
             }
+
+            OCT_ASSERT(collisionShapes.size() == numCollisionShapes);
+            OCT_ASSERT(collisionTransforms.size() == numCollisionShapes);
 
             for (uint32_t i = 0; i < numCollisionShapes; ++i)
             {

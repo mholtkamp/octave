@@ -137,8 +137,8 @@ btCollisionShape* CloneCollisionShape(btCollisionShape* srcShape)
     if (srcShape != nullptr)
     {
         uint32_t numShapes = 0;
-        btCollisionShape* dstShapes[MAX_COLLISION_SHAPES] = {};
-        const btCollisionShape* srcShapes[MAX_COLLISION_SHAPES] = {};
+        std::vector<btCollisionShape*> dstShapes;
+        std::vector<const btCollisionShape*> srcShapes;
 
         const btCompoundShape* compoundShape = nullptr;
 
@@ -150,14 +150,17 @@ btCollisionShape* CloneCollisionShape(btCollisionShape* srcShape)
 
             for (uint32_t i = 0; i < numShapes; ++i)
             {
-                srcShapes[i] = compoundShape->getChildShape(i);
+                srcShapes.push_back(compoundShape->getChildShape(i));
             }
         }
         else
         {
             numShapes = 1;
-            srcShapes[0] = srcShape;
+            srcShapes.push_back(srcShape);
         }
+
+        OCT_ASSERT(srcShapes.size() == numShapes);
+        dstShapes.resize(numShapes);
 
         // Copy shapes
         for (uint32_t i = 0; i < numShapes; ++i)
@@ -187,6 +190,8 @@ btCollisionShape* CloneCollisionShape(btCollisionShape* srcShape)
                 dstShapes[i] = new btEmptyShape();
                 break;
             }
+
+            // TODO: For clone child compound shapes, can we recursively call this function?
             }
         }
 
