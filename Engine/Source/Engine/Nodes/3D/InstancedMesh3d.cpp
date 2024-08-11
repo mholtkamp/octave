@@ -231,9 +231,9 @@ void InstancedMesh3D::RecreateCollisionShape()
 
             if (mUseTriangleCollision && staticMesh->GetTriangleCollisionShape())
             {
-                glm::vec3 scale = GetWorldScale();
                 // Instances can only have uniform scale for now (based on X component)
-                btVector3 btscale = btVector3(scale.x, scale.x, scale.x);
+                float scale = mInstanceData[i].mScale.x;
+                btVector3 btscale = btVector3(scale, scale, scale);
                 btScaledBvhTriangleMeshShape* scaledTriangleShape = new btScaledBvhTriangleMeshShape(staticMesh->GetTriangleCollisionShape(), btscale);
                 
                 compoundShape->addChildShape(bTransform, scaledTriangleShape);
