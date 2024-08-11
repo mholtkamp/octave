@@ -1879,18 +1879,7 @@ static void UpdateInstancedMeshResource(InstancedMesh3D* instancedMeshComp)
 
     for (uint32_t i = 0; i < numInstances; ++i)
     {
-        const MeshInstanceData& instData = meshInstanceData[i];
-
-        glm::quat rotQuat = glm::quat(instData.mRotation * DEGREES_TO_RADIANS);
-        float scaleX = instData.mScale.x;
-        glm::vec3 scale = glm::vec3(scaleX, scaleX, scaleX);
-
-        glm::mat4 transform = glm::mat4(1);
-        transform = glm::translate(transform, instData.mPosition);
-        transform *= glm::toMat4(rotQuat);
-        transform = glm::scale(transform, scale);
-
-        meshInstanceBufferData[i].mTransform = transform;
+        meshInstanceBufferData[i].mTransform = instancedMeshComp->CalculateInstanceTransform(i);
     }
 
     // Allocate and fill the buffers

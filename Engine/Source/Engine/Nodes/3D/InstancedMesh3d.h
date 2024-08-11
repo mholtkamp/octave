@@ -24,11 +24,14 @@ public:
     virtual void Create() override;
     virtual void Destroy() override;
     virtual void Render() override;
+    virtual void Tick(float deltaTime) override;
 
     virtual void SaveStream(Stream& stream) override;
     virtual void LoadStream(Stream& stream) override;
 
     virtual bool IsInstancedMesh3D() const override;
+
+    virtual void SetStaticMesh(StaticMesh* staticMesh);
 
     virtual Bounds GetLocalBounds() const override;
 
@@ -50,12 +53,16 @@ public:
 
     InstancedMeshCompResource* GetInstancedMeshResource();
 
+    glm::mat4 CalculateInstanceTransform(int32_t instanceIndex);
+
 protected:
 
     virtual void RecreateCollisionShape() override;
+    void CalculateLocalBounds();
 
     std::vector<MeshInstanceData> mInstanceData;
     bool mInstanceDataDirty = true;
+    Bounds mBounds;
 
     InstancedMeshCompResource mInstancedMeshResource;
 };

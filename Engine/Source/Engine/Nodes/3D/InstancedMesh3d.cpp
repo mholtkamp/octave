@@ -38,6 +38,12 @@ void InstancedMesh3D::Render()
     GFX_DrawInstancedMeshComp(this);
 }
 
+void InstancedMesh3D::Tick(float deltaTime)
+{
+    StaticMesh3D::Tick(deltaTime);
+    UpdateInstanceData();
+}
+
 void InstancedMesh3D::SaveStream(Stream& stream)
 {
     StaticMesh3D::SaveStream(stream);
@@ -70,15 +76,28 @@ bool InstancedMesh3D::IsInstancedMesh3D() const
     return true;
 }
 
+void InstancedMesh3D::SetStaticMesh(StaticMesh* staticMesh)
+{
+    if (mStaticMesh.Get() != staticMesh)
+    {
+        StaticMesh3D::SetStaticMesh(staticMesh);
+        MarkInstanceDataDirty();
+    }
+}
+
 Bounds InstancedMesh3D::GetLocalBounds() const
 {
-    LogError("Implement InstancedMesh3D::GetLocalBounds()");
-    return Bounds();
+    if (mInstanceDataDirty)
+    {
+        const_cast<InstancedMesh3D*>(this)->UpdateInstanceData();
+    }
+
+    return mBounds;
 }
 
 void InstancedMesh3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 {
-    LogError("Implement InstancedMesh3D::GatherProxyDraws()");
+    StaticMesh3D::GatherProxyDraws(inoutDraws);
 }
 
 uint32_t InstancedMesh3D::GetNumInstances() const
@@ -158,7 +177,13 @@ void InstancedMesh3D::MarkInstanceDataDirty()
 
 void InstancedMesh3D::UpdateInstanceData()
 {
-    RecreateCollisionShape();
+    if (mInstanceDataDirty)
+    {
+        RecreateCollisionShape();
+        CalculateLocalBounds();
+
+        mInstanceDataDirty = false;
+    }
 }
 
 InstancedMeshCompResource* InstancedMesh3D::GetInstancedMeshResource()
@@ -166,7 +191,80 @@ InstancedMeshCompResource* InstancedMesh3D::GetInstancedMeshResource()
     return &mInstancedMeshResource;
 }
 
+glm::mat4 InstancedMesh3D::CalculateInstanceTransform(int32_t instanceIndex)
+{
+    glm::mat4 transform = glm::mat4(1);
+
+    if (instanceIndex >= 0 &&
+        instanceIndex < int32_t(mInstanceData.size()))
+    {
+        const MeshInstanceData& instData = mInstanceData[instanceIndex];
+
+        glm::quat rotQuat = glm::quat(instData.mRotation * DEGREES_TO_RADIANS);
+        float scaleX = instData.mScale.x;
+        glm::vec3 scale = glm::vec3(scaleX, scaleX, scaleX);
+
+        transform = glm::translate(transform, instData.mPosition);
+        transform *= glm::toMat4(rotQuat);
+        transform = glm::scale(transform, scale);
+    }
+
+    return transform;
+}
+
 void InstancedMesh3D::RecreateCollisionShape()
 {
     LogError("Implement InstancedMesh3D::RecreateCollisionShape()");
+}
+
+void InstancedMesh3D::CalculateLocalBounds()
+{
+    StaticMesh* mesh = GetStaticMesh();
+
+    if (mesh != nullptr && mInstanceData.size() > 0)
+    {
+        // TODO: This algorithm can be improved.
+        Bounds meshBounds = mesh->GetBounds();
+
+        std::vector<glm::vec3> instBoundsCenters;
+        instBoundsCenters.resize(mInstanceData.size());
+
+        // Determine center position (every instance weighted equally)
+        glm::vec3 sumPosition = {};
+        for (uint32_t i = 0; i < mInstanceData.size(); ++i)
+        {
+            glm::mat4 transform = CalculateInstanceTransform(i);
+            instBoundsCenters[i] = transform * glm::vec4(meshBounds.mCenter, 1.0f);
+            sumPosition += instBoundsCenters[i];
+        }
+
+        glm::vec3 centerPosition = sumPosition / float(mInstanceData.size());
+
+        // Determine farthest possible position from center
+        float maxDistance = 0.0f;
+        for (uint32_t i = 0; i < mInstanceData.size(); ++i)
+        {
+            float distFromCenter = glm::distance(instBoundsCenters[i], centerPosition);
+
+            // Right now, we only use x component scale for a uniform scale factor, but I'm leaving this code 
+            // here for the future in case we allow non-uniform scale.
+            float maxScale = glm::max(mInstanceData[i].mScale.x, mInstanceData[i].mScale.y);
+            maxScale = glm::max(maxScale, mInstanceData[i].mScale.z);
+
+            distFromCenter += meshBounds.mRadius * maxScale;
+
+            if (distFromCenter > maxDistance)
+            {
+                maxDistance = distFromCenter;
+            }
+        }
+
+        mBounds.mCenter = centerPosition;
+        mBounds.mRadius = maxDistance;
+    }
+    else
+    {
+        mBounds.mCenter = GetWorldPosition();
+        mBounds.mRadius = 0.0f;
+    }
 }

@@ -30,7 +30,7 @@ public:
     virtual bool IsStaticMesh3D() const override;
     virtual bool IsSkeletalMesh3D() const override;
 
-    void SetStaticMesh(StaticMesh* staticMesh);
+    virtual void SetStaticMesh(StaticMesh* staticMesh);
     StaticMesh* GetStaticMesh();
 
     void SetUseTriangleCollision(bool triangleCol);
