@@ -670,7 +670,25 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
     }
     else if (name == BASIC_INSTANCED_MESH)
     {
-        spawnedNode = EXE_SpawnNode(InstancedMesh3D::GetStaticType())->As<InstancedMesh3D>();
+        InstancedMesh3D* instMeshNode = EXE_SpawnNode(InstancedMesh3D::GetStaticType())->As<InstancedMesh3D>();
+        spawnedNode = instMeshNode;
+
+        StaticMesh* mesh = (StaticMesh*)LoadAsset("SM_Cube");
+
+        if (srcAsset != nullptr &&
+            srcAsset->GetType() == StaticMesh::GetStaticType())
+        {
+            mesh = static_cast<StaticMesh*>(srcAsset);
+            instMeshNode->SetName(mesh->GetName());
+        }
+
+        instMeshNode->SetStaticMesh(mesh);
+        instMeshNode->EnableOverlaps(false);
+        instMeshNode->EnableCollision(false);
+        instMeshNode->EnablePhysics(false);
+        instMeshNode->SetCollisionGroup(ColGroup1);
+        instMeshNode->SetCollisionMask(~ColGroup1);
+        instMeshNode->AddInstanceData(MeshInstanceData());
     }
 
     if (spawnedNode != nullptr)
