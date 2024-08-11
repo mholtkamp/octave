@@ -89,9 +89,7 @@ struct LightData
 
 struct MeshInstanceData
 {
-    mat4 mWorldMatrix;
-    mat4 mNormalMatrix;
-    mat4 mWvpMatrix;
+    mat4 mTransform;
 };
 
 struct GlobalUniforms

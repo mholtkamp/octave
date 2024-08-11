@@ -92,12 +92,6 @@ const MeshInstanceData& InstancedMesh3D::GetInstanceData(int32_t index) const
     return mInstanceData[index];
 }
 
-MeshInstanceData& InstancedMesh3D::GetInstanceData(int32_t index)
-{
-    OCT_ASSERT(index >= 0 && index < int32_t(mInstanceData.size()));
-    return mInstanceData[index];
-}
-
 const std::vector<MeshInstanceData>& InstancedMesh3D::GetInstanceData() const
 {
     return mInstanceData;
@@ -159,6 +153,7 @@ bool InstancedMesh3D::IsInstanceDataDirty() const
 void InstancedMesh3D::MarkInstanceDataDirty()
 {
     mInstanceDataDirty = true;
+    mInstancedMeshResource.mDirty = true;
 }
 
 void InstancedMesh3D::UpdateInstanceData()

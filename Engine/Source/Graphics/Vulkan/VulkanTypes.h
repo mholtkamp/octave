@@ -108,9 +108,7 @@ struct LightUniformData
 
 struct MeshInstanceBufferData
 {
-    glm::mat4 mWorldMatrix;
-    glm::mat4 mNormalMatrix;
-    glm::mat4 mWvpMatrix;
+    glm::mat4 mTransform;
 };
 
 struct GlobalUniformData

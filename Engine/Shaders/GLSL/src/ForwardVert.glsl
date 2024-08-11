@@ -36,9 +36,11 @@ out gl_PerVertex
 void main()
 {
 #if INSTANCED_DRAW
-    mat4 worldMatrix = instanceData[gl_InstanceIndex].mWorldMatrix;
-    mat4 normalMatrix = instanceData[gl_InstanceIndex].mNormalMatrix;
-    mat4 wvpMatrix = instanceData[gl_InstanceIndex].mWvpMatrix;
+    mat4 worldMatrix =  geometry.mWorldMatrix * instanceData[gl_InstanceIndex].mTransform;
+    // TODO: Branch on a uniform to determine if non-uniform scaling is supported.
+    //mat4 normalMatrix = instanceData[gl_InstanceIndex].mNormalMatrix;
+    mat4 normalMatrix = worldMatrix;
+    mat4 wvpMatrix =  global.mViewProj * worldMatrix;
 #else
     mat4 worldMatrix = geometry.mWorldMatrix;
     mat4 normalMatrix = geometry.mNormalMatrix;

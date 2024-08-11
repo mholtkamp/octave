@@ -4,9 +4,9 @@
 
 struct MeshInstanceData
 {
-    glm::vec3 mPosition = {};
-    glm::vec3 mRotation = {};
-    glm::vec3 mScale = {};
+    glm::vec3 mPosition = {0.0f, 0.0f, 0.0f};
+    glm::vec3 mRotation = {0.0f, 0.0f, 0.0f};
+    glm::vec3 mScale = {1.0f, 1.0f, 1.0f};
 };
 
 class InstancedMesh3D : public StaticMesh3D
@@ -36,7 +36,6 @@ public:
 
     uint32_t GetNumInstances() const;
     const MeshInstanceData& GetInstanceData(int32_t index) const;
-    MeshInstanceData& GetInstanceData(int32_t index);
     const std::vector<MeshInstanceData>& GetInstanceData() const;
     void SetInstanceData(int32_t index, const MeshInstanceData& data);
     void SetInstanceData(const std::vector<MeshInstanceData>& data);

@@ -1882,15 +1882,15 @@ static void UpdateInstancedMeshResource(InstancedMesh3D* instancedMeshComp)
         const MeshInstanceData& instData = meshInstanceData[i];
 
         glm::quat rotQuat = glm::quat(instData.mRotation * DEGREES_TO_RADIANS);
+        float scaleX = instData.mScale.x;
+        glm::vec3 scale = glm::vec3(scaleX, scaleX, scaleX);
 
         glm::mat4 transform = glm::mat4(1);
         transform = glm::translate(transform, instData.mPosition);
         transform *= glm::toMat4(rotQuat);
-        transform = glm::scale(transform, instData.mScale);
+        transform = glm::scale(transform, scale);
 
-        meshInstanceBufferData[i].mWorldMatrix = transform;
-        meshInstanceBufferData[i].mNormalMatrix = glm::transpose(glm::inverse(transform));
-        meshInstanceBufferData[i].mWvpMatrix = camera->GetViewProjectionMatrix() * transform;
+        meshInstanceBufferData[i].mTransform = transform;
     }
 
     // Allocate and fill the buffers

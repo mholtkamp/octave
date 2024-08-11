@@ -2316,49 +2316,69 @@ static void DrawInstancedMeshExtra(InstancedMesh3D* instMesh)
 {
     static int32_t sActiveInstance = 0;
 
-    ImGui::PushID(0);
-
-    int32_t numInstances = (int32_t)instMesh->GetNumInstances();
-    char instCountStr[32];
-    snprintf(instCountStr, 32, "Instances: %d", numInstances);
-    ImGui::Text(instCountStr);
-
-    if (ImGui::Button("Add Instance"))
+    if (ImGui::CollapsingHeader("Instance Data", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        instMesh->AddInstanceData(MeshInstanceData());
-        sActiveInstance = int32_t(instMesh->GetNumInstances()) - 1;
+        ImGui::PushID(0);
+
+        int32_t numInstances = (int32_t)instMesh->GetNumInstances();
+        char instCountStr[32];
+        snprintf(instCountStr, 32, "Instances: %d", numInstances);
+        ImGui::Text(instCountStr);
+
+        if (ImGui::Button("-"))
+        {
+            sActiveInstance = glm::clamp<int32_t>(sActiveInstance, 0, numInstances - 1);
+            instMesh->RemoveInstanceData(sActiveInstance);
+            sActiveInstance = int32_t(instMesh->GetNumInstances()) - 1;
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("+"))
+        {
+            instMesh->AddInstanceData(MeshInstanceData());
+            sActiveInstance = int32_t(instMesh->GetNumInstances()) - 1;
+        }
+
+        numInstances = (int32_t)instMesh->GetNumInstances();
+
+        if (numInstances > 0)
+        {
+            sActiveInstance = glm::clamp<int32_t>(sActiveInstance, 0, numInstances - 1);
+            ImGui::SliderInt("Active Instance", &sActiveInstance, 0, numInstances - 1);
+        }
+
+        if (sActiveInstance >= 0 &&
+            sActiveInstance < numInstances)
+        {
+            MeshInstanceData instData = instMesh->GetInstanceData(sActiveInstance);
+            bool positionChanged = false;
+            bool rotationChanged = false;
+            bool scaleChanged = false;
+
+            ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.85f);
+            //ImGui::DragFloat3("", &propVal[0], 1.0f, 0.0f, 0.0f, "%.2f");
+            float vMin = 0.0f;
+            float vMax = 0.0f;
+            ImGui::Text("Position");
+            positionChanged = ImGui::OctDragScalarN("Position", ImGuiDataType_Float, &instData.mPosition, 3, 1.0f, &vMin, &vMax, "%.2f", 0);
+            ImGui::Text("Rotation");
+            rotationChanged = ImGui::OctDragScalarN("Rotation", ImGuiDataType_Float, &instData.mRotation, 3, 1.0f, &vMin, &vMax, "%.2f", 0);
+            ImGui::Text("Scale");
+            scaleChanged = ImGui::OctDragScalarN("Scale", ImGuiDataType_Float, &instData.mScale, 3, 1.0f, &vMin, &vMax, "%.2f", 0);
+
+            if (positionChanged ||
+                rotationChanged ||
+                scaleChanged)
+            {
+                instMesh->SetInstanceData(sActiveInstance, instData);
+            }
+
+            ImGui::PopItemWidth();
+        }
+
+        ImGui::PopID();
     }
-
-    if (ImGui::Button("Remove Instance"))
-    {
-        sActiveInstance = glm::clamp<int32_t>(sActiveInstance, 0, numInstances - 1);
-        instMesh->RemoveInstanceData(sActiveInstance);
-        sActiveInstance = int32_t(instMesh->GetNumInstances()) - 1;
-    }
-
-    if (numInstances > 0)
-    {
-        sActiveInstance = glm::clamp<int32_t>(sActiveInstance, 0, numInstances - 1);
-        ImGui::SliderInt("Active Instance", &sActiveInstance, 0, numInstances - 1);
-    }
-
-    if (sActiveInstance >= 0 &&
-        sActiveInstance < numInstances)
-    {
-        MeshInstanceData& instData = instMesh->GetInstanceData(sActiveInstance);
-
-        ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.85f);
-        //ImGui::DragFloat3("", &propVal[0], 1.0f, 0.0f, 0.0f, "%.2f");
-        float vMin = 0.0f;
-        float vMax = 0.0f;
-        ImGui::OctDragScalarN("Position", ImGuiDataType_Float, &instData.mPosition, 3, 1.0f, &vMin, &vMax, "%.2f", 0);
-        ImGui::OctDragScalarN("Rotation", ImGuiDataType_Float, &instData.mRotation, 3, 1.0f, &vMin, &vMax, "%.2f", 0);
-        ImGui::OctDragScalarN("Scale", ImGuiDataType_Float, &instData.mScale, 3, 1.0f, &vMin, &vMax, "%.2f", 0);
-
-        ImGui::PopItemWidth();
-    }
-
-    ImGui::PopID();
 }
 
 
