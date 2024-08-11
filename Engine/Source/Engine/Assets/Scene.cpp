@@ -567,6 +567,16 @@ void Scene::LoadStream(Stream& stream, Platform platform)
         {
             def.mProperties[p].ReadStream(stream, false);
         }
+
+        if (mVersion >= ASSET_VERSION_SCENE_EXTRA_DATA)
+        {
+            uint32_t extraDataSize = stream.ReadUint32();
+            if (extraDataSize > 0)
+            {
+                def.mExtraData.resize(extraDataSize);
+                stream.ReadBytes(def.mExtraData.data(), extraDataSize);
+            }
+        }
     }
 
     // World render properties
@@ -604,6 +614,9 @@ void Scene::SaveStream(Stream& stream, Platform platform)
         {
             def.mProperties[p].WriteStream(stream);
         }
+
+        stream.WriteUint32((uint32_t)def.mExtraData.size());
+        stream.WriteBytes(def.mExtraData.data(), (uint32_t)def.mExtraData.size());
     }
 
     // World render properties
@@ -752,6 +765,12 @@ Node* Scene::Instantiate()
             std::vector<Property> dstProps;
             node->GatherProperties(dstProps);
             CopyPropertyValues(dstProps, mNodeDefs[i].mProperties);
+
+            if (mNodeDefs[i].mExtraData.size() > 0)
+            {
+                Stream extraStream((char*)mNodeDefs[i].mExtraData.data(), (uint32_t)mNodeDefs[i].mExtraData.size());
+                node->LoadStream(extraStream);
+            }
 
             // If this node has a script, then it might have script properties, and those
             // won't exist in the properties until the "Script File" property was assigned during the
@@ -926,6 +945,14 @@ void Scene::AddNodeDef(Node* node, std::vector<Node*>& nodeList)
 
         nodeDef.mScene = scene;
         nodeDef.mName = node->GetName();
+
+        Stream extraDataStream;
+        node->SaveStream(extraDataStream);
+        if (extraDataStream.GetSize() > 0)
+        {
+            nodeDef.mExtraData.resize(extraDataStream.GetSize());
+            memcpy(nodeDef.mExtraData.data(), extraDataStream.GetData(), extraDataStream.GetSize());
+        }
 
         GatherNonDefaultProperties(node, nodeDef.mProperties);
 

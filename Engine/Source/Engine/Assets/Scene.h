@@ -15,6 +15,7 @@ struct SceneNodeDef
     SceneRef mScene;
     std::string mName;
     std::vector<Property> mProperties;
+    std::vector<uint8_t> mExtraData;
     int8_t mParentBone = -1;
     bool mExposeVariable = false;
 };
