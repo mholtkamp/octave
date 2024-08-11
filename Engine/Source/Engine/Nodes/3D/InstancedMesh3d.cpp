@@ -216,7 +216,10 @@ void InstancedMesh3D::RecreateCollisionShape()
 {
     StaticMesh* staticMesh = mStaticMesh.Get<StaticMesh>();
 
-    if (staticMesh != nullptr && mInstanceData.size() > 0)
+    if (staticMesh != nullptr && 
+        mInstanceData.size() > 0 &&
+        ((mUseTriangleCollision && staticMesh->GetTriangleCollisionShape()) ||
+        (!mUseTriangleCollision && staticMesh->GetCollisionShape())))
     {
         btCompoundShape* compoundShape = new btCompoundShape();
 
