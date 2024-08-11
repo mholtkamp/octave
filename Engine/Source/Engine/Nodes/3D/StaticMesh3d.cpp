@@ -218,21 +218,30 @@ void StaticMesh3D::DrawDebugCollision(std::vector<DebugDraw>& inoutDraws, btColl
     OCT_UNUSED(collisionMeshIndex); // Only used in EDITOR
 
     btCompoundShape* compoundShape = nullptr;
-    glm::vec3 invScale = 1.0f / GetWorldScale();
+    glm::vec3 invScale = 1.0f / BulletToGlm(colShape->getLocalScaling()); // GetWorldScale();
 
-    if (mCollisionShape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE)
+    if (colShape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE)
     {
-        compoundShape = static_cast<btCompoundShape*>(mCollisionShape);
+        compoundShape = static_cast<btCompoundShape*>(colShape);
         for (uint32_t i = 0; i < uint32_t(compoundShape->getNumChildShapes()); ++i)
         {
-            collisionShapes.push_back(compoundShape->getChildShape(i));
+            btCollisionShape* childShape = compoundShape->getChildShape(i);
+            collisionShapes.push_back(childShape);
             const btTransform& bTransform = compoundShape->getChildTransform(i);
             btQuaternion bRotation = bTransform.getRotation();
             btVector3 bPosition = bTransform.getOrigin();
 
             glm::quat rotation = glm::quat(bRotation.w(), bRotation.x(), bRotation.y(), bRotation.z());
             glm::vec3 position = { bPosition.x(), bPosition.y(), bPosition.z() };
-            glm::vec3 scale = BulletToGlm(compoundShape->getChildShape(i)->getLocalScaling());
+            glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
+            
+            // Compound shapes scale their children immediately??
+            // I mean, setLocalScale() on a compound shape will iterate through children and 
+            // call setLocalScale() on them... This is not what I would expect.
+            //if (childShape->getShapeType() == SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE)
+            {
+                scale = invScale * BulletToGlm(childShape->getLocalScaling());
+            }
 
             glm::mat4 colTransform = glm::mat4(1);
             colTransform = glm::translate(colTransform, position);
@@ -245,7 +254,7 @@ void StaticMesh3D::DrawDebugCollision(std::vector<DebugDraw>& inoutDraws, btColl
     }
     else
     {
-        collisionShapes.push_back(mCollisionShape);
+        collisionShapes.push_back(colShape);
         collisionTransforms.push_back(glm::mat4(1));
         numCollisionShapes = 1;
     }
@@ -311,15 +320,23 @@ void StaticMesh3D::DrawDebugCollision(std::vector<DebugDraw>& inoutDraws, btColl
 
             break;
         }
-        }
-
-        if (compoundShape != nullptr)
+        case COMPOUND_SHAPE_PROXYTYPE:
         {
-            debugDraw.mTransform = debugDraw.mTransform * collisionTransforms[i];
+            DrawDebugCollision(inoutDraws, collisionShape, parentTransform * collisionTransforms[i]);
+            break;
+        }
         }
 
-        debugDraw.mColor = GetCollisionDebugColor();
-        inoutDraws.push_back(debugDraw);
+        if (shapeType != COMPOUND_SHAPE_PROXYTYPE)
+        {
+            if (compoundShape != nullptr)
+            {
+                debugDraw.mTransform = debugDraw.mTransform * collisionTransforms[i];
+            }
+
+            debugDraw.mColor = GetCollisionDebugColor();
+            inoutDraws.push_back(debugDraw);
+        }
     }
 }
 

@@ -229,18 +229,19 @@ void InstancedMesh3D::RecreateCollisionShape()
             btVector3 bPosition = { pos.x, pos.y, pos.z };
             btTransform bTransform = btTransform(bRotation, bPosition);
 
+            // Instances can only have uniform scale for now (based on X component)
+            float scale = mInstanceData[i].mScale.x;
+            btVector3 btscale = btVector3(scale, scale, scale);
+
             if (mUseTriangleCollision && staticMesh->GetTriangleCollisionShape())
             {
-                // Instances can only have uniform scale for now (based on X component)
-                float scale = mInstanceData[i].mScale.x;
-                btVector3 btscale = btVector3(scale, scale, scale);
                 btScaledBvhTriangleMeshShape* scaledTriangleShape = new btScaledBvhTriangleMeshShape(staticMesh->GetTriangleCollisionShape(), btscale);
-                
                 compoundShape->addChildShape(bTransform, scaledTriangleShape);
             }
             else
             {
                 btCollisionShape* newShape = CloneCollisionShape(staticMesh->GetCollisionShape());
+                newShape->setLocalScaling(btscale);
                 compoundShape->addChildShape(bTransform, newShape);
             }
         }
