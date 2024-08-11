@@ -31,7 +31,7 @@ void RemoveDir(const char* dirPath);
 std::string GetDirShortName(const std::string& dirName);
 void CreateSymLink(const std::string& original, const std::string& link);
 
-btCollisionShape* CloneCollisionShape(btCollisionShape* srcShape);
+btCollisionShape* CloneCollisionShape(const btCollisionShape* srcShape);
 void DestroyCollisionShape(btCollisionShape* shape);
 
 uint32_t OctHashString(const char* key);

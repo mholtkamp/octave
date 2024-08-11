@@ -214,7 +214,43 @@ glm::mat4 InstancedMesh3D::CalculateInstanceTransform(int32_t instanceIndex)
 
 void InstancedMesh3D::RecreateCollisionShape()
 {
-    LogError("Implement InstancedMesh3D::RecreateCollisionShape()");
+    StaticMesh* staticMesh = mStaticMesh.Get<StaticMesh>();
+
+    if (staticMesh != nullptr && mInstanceData.size() > 0)
+    {
+        btCompoundShape* compoundShape = new btCompoundShape();
+
+        for (uint32_t i = 0; i < mInstanceData.size(); ++i)
+        {
+            glm::quat rotQuat = glm::quat(mInstanceData[i].mRotation * DEGREES_TO_RADIANS);
+            glm::vec3 pos = mInstanceData[i].mPosition;
+
+            btQuaternion bRotation = btQuaternion(rotQuat.x, rotQuat.y, rotQuat.z, rotQuat.w);
+            btVector3 bPosition = { pos.x, pos.y, pos.z };
+            btTransform bTransform = btTransform(bRotation, bPosition);
+
+            if (mUseTriangleCollision && staticMesh->GetTriangleCollisionShape())
+            {
+                glm::vec3 scale = GetWorldScale();
+                // Instances can only have uniform scale for now (based on X component)
+                btVector3 btscale = btVector3(scale.x, scale.x, scale.x);
+                btScaledBvhTriangleMeshShape* scaledTriangleShape = new btScaledBvhTriangleMeshShape(staticMesh->GetTriangleCollisionShape(), btscale);
+                
+                compoundShape->addChildShape(bTransform, scaledTriangleShape);
+            }
+            else
+            {
+                btCollisionShape* newShape = CloneCollisionShape(staticMesh->GetCollisionShape());
+                compoundShape->addChildShape(bTransform, newShape);
+            }
+        }
+
+        SetCollisionShape(compoundShape);
+    }
+    else
+    {
+        SetCollisionShape(Primitive3D::GetEmptyCollisionShape());
+    }
 }
 
 void InstancedMesh3D::CalculateLocalBounds()

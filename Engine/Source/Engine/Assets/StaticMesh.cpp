@@ -627,27 +627,31 @@ bool StaticMesh::ShouldGenerateTriangleCollision() const
 
 void StaticMesh::CreateTriangleCollisionShape()
 {
-    OCT_ASSERT(mTriangleIndexVertexArray == nullptr);
-    OCT_ASSERT(mTriangleCollisionShape == nullptr);
     OCT_ASSERT(mNumIndices % 3 == 0);
 
-    mTriangleIndexVertexArray = new btTriangleIndexVertexArray();
+    // Don't do anything if we already have triangle collision data generated
+    // Note: In EDITOR, we always generate triangle collision data even if it's disabled.
+    if (mTriangleIndexVertexArray == nullptr &&
+        mTriangleCollisionShape == nullptr)
+    {
+        mTriangleIndexVertexArray = new btTriangleIndexVertexArray();
 
-    btIndexedMesh mesh;
-    mesh.m_numTriangles = mNumIndices / 3;
-    mesh.m_triangleIndexBase = (const unsigned char *)mIndices;
-    mesh.m_triangleIndexStride = sizeof(IndexType) * 3;
-    mesh.m_numVertices = mNumVertices;
-    mesh.m_vertexBase = (const unsigned char *)mVertices;
-    mesh.m_vertexStride = GetVertexSize();
+        btIndexedMesh mesh;
+        mesh.m_numTriangles = mNumIndices / 3;
+        mesh.m_triangleIndexBase = (const unsigned char*)mIndices;
+        mesh.m_triangleIndexStride = sizeof(IndexType) * 3;
+        mesh.m_numVertices = mNumVertices;
+        mesh.m_vertexBase = (const unsigned char*)mVertices;
+        mesh.m_vertexStride = GetVertexSize();
 
-    mTriangleIndexVertexArray->addIndexedMesh(mesh, sizeof(IndexType) == 2 ? PHY_SHORT : PHY_INTEGER);
+        mTriangleIndexVertexArray->addIndexedMesh(mesh, sizeof(IndexType) == 2 ? PHY_SHORT : PHY_INTEGER);
 
-    bool useQuantizedAabbCompression = true;
+        bool useQuantizedAabbCompression = true;
 
-    mTriangleCollisionShape = new btBvhTriangleMeshShape(mTriangleIndexVertexArray, useQuantizedAabbCompression);
-    mTriangleInfoMap = new btTriangleInfoMap();
-    btGenerateInternalEdgeInfo(mTriangleCollisionShape, mTriangleInfoMap);
+        mTriangleCollisionShape = new btBvhTriangleMeshShape(mTriangleIndexVertexArray, useQuantizedAabbCompression);
+        mTriangleInfoMap = new btTriangleInfoMap();
+        btGenerateInternalEdgeInfo(mTriangleCollisionShape, mTriangleInfoMap);
+    }
 }
 
 void StaticMesh::DestroyTriangleCollisionShape()
@@ -869,7 +873,6 @@ void StaticMesh::Create(
             node->mTransformation.Decompose(scale, rotation, position);
 
             bScale = { scale.x, scale.y, scale.z };
-            // Why do I need to reorder the quaternion values so that w comes first?
             bRotation = btQuaternion(rotation.x, rotation.y, rotation.z, rotation.w);
             bPosition = { position.x, position.y, position.z };
 

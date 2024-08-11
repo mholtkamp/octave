@@ -130,7 +130,7 @@ void CreateSymLink(const std::string& original, const std::string& link)
 #endif
 }
 
-btCollisionShape* CloneCollisionShape(btCollisionShape* srcShape)
+btCollisionShape* CloneCollisionShape(const btCollisionShape* srcShape)
 {
     btCollisionShape* retShape = nullptr;
 
@@ -191,7 +191,11 @@ btCollisionShape* CloneCollisionShape(btCollisionShape* srcShape)
                 break;
             }
 
-            // TODO: For clone child compound shapes, can we recursively call this function?
+            case COMPOUND_SHAPE_PROXYTYPE:
+            {
+                dstShapes[i] = CloneCollisionShape(srcShapes[i]);
+                break;
+            }
             }
         }
 
@@ -226,10 +230,9 @@ void DestroyCollisionShape(btCollisionShape* shape)
             btCompoundShape* compoundShape = static_cast<btCompoundShape*>(shape);
             uint32_t numShape = compoundShape->getNumChildShapes();
 
-
             for (uint32_t i = 0; i < numShape; ++i)
             {
-                delete compoundShape->getChildShape(i);
+                DestroyCollisionShape(compoundShape->getChildShape(i));
             }
         }
         
