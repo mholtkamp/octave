@@ -206,7 +206,7 @@ VertexType StaticMesh3D::GetVertexType() const
     return retType;
 }
 
-void StaticMesh3D::DrawDebugCollision(std::vector<DebugDraw>& inoutDraws, btCollisionShape* colShape, const glm::mat4& parentTransform)
+void StaticMesh3D::DrawDebugCollision(std::vector<DebugDraw>& inoutDraws, btCollisionShape* collisionShape, const glm::mat4& parentTransform)
 {
     // This function assumes that there is only one possible mesh that can be associated with the colShape or its children.
     StaticMesh* staticMesh = GetStaticMesh();
@@ -214,16 +214,65 @@ void StaticMesh3D::DrawDebugCollision(std::vector<DebugDraw>& inoutDraws, btColl
     uint32_t numCollisionShapes = 0;
     std::vector<btCollisionShape*> collisionShapes;
     std::vector<glm::mat4> collisionTransforms;
-    uint32_t collisionMeshIndex = 0;
-    OCT_UNUSED(collisionMeshIndex); // Only used in EDITOR
+    //uint32_t collisionMeshIndex = 0;
+    //OCT_UNUSED(collisionMeshIndex); // Only used in EDITOR
 
-    btCompoundShape* compoundShape = nullptr;
-    glm::vec3 invScale = 1.0f / BulletToGlm(colShape->getLocalScaling()); // GetWorldScale();
+    glm::vec3 invScale = 1.0f / BulletToGlm(collisionShape->getLocalScaling()); // GetWorldScale();
 
-    if (colShape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE)
+    int shapeType = collisionShape->getShapeType();
+
+    if (shapeType == EMPTY_SHAPE_PROXYTYPE)
+        return;
+
+    DebugDraw debugDraw;
+    glm::mat4 shapeTransform = glm::mat4(1);
+
+    switch (shapeType)
     {
-        compoundShape = static_cast<btCompoundShape*>(colShape);
-        for (uint32_t i = 0; i < uint32_t(compoundShape->getNumChildShapes()); ++i)
+    case BOX_SHAPE_PROXYTYPE:
+    {
+        // Assuming that default cube mesh has half extents equal to 1,1,1
+        btBoxShape* boxShape = static_cast<btBoxShape*>(collisionShape);
+        btVector3 halfExtents = boxShape->getHalfExtentsWithMargin();
+
+        shapeTransform = glm::scale(shapeTransform, invScale);
+        shapeTransform = glm::scale(shapeTransform, { halfExtents.x(), halfExtents.y(), halfExtents.z() });
+
+        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cube");
+        break;
+    }
+    case SPHERE_SHAPE_PROXYTYPE:
+    {
+        // Assuming that default sphere mesh has a radius of 1
+        btSphereShape* sphereShape = static_cast<btSphereShape*>(collisionShape);
+        float radius = sphereShape->getRadius();
+
+        shapeTransform = glm::scale(shapeTransform, invScale);
+        shapeTransform = glm::scale(shapeTransform, { radius, radius, radius });
+
+        debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
+        break;
+    }
+    case CONVEX_HULL_SHAPE_PROXYTYPE:
+    {
+#if CREATE_CONVEX_COLLISION_MESH
+        // We only create StaticMesh objects for convex hulls when in editor.
+        //debugDraw.mMesh = staticMesh->mCollisionMeshes[collisionMeshIndex];
+        //++collisionMeshIndex;
+#endif
+        break;
+    }
+    case SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE:
+    {
+        debugDraw.mMesh = staticMesh;
+
+        break;
+    }
+    case COMPOUND_SHAPE_PROXYTYPE:
+    {
+        btCompoundShape* compoundShape = static_cast<btCompoundShape*>(collisionShape);
+
+        for (int32_t i = 0; i < compoundShape->getNumChildShapes(); ++i)
         {
             btCollisionShape* childShape = compoundShape->getChildShape(i);
             collisionShapes.push_back(childShape);
@@ -234,109 +283,33 @@ void StaticMesh3D::DrawDebugCollision(std::vector<DebugDraw>& inoutDraws, btColl
             glm::quat rotation = glm::quat(bRotation.w(), bRotation.x(), bRotation.y(), bRotation.z());
             glm::vec3 position = { bPosition.x(), bPosition.y(), bPosition.z() };
             glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
-            
+
             // Compound shapes scale their children immediately??
             // I mean, setLocalScale() on a compound shape will iterate through children and 
             // call setLocalScale() on them... This is not what I would expect.
             //if (childShape->getShapeType() == SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE)
             {
-                scale = invScale * BulletToGlm(childShape->getLocalScaling());
+                scale = BulletToGlm(childShape->getLocalScaling());
             }
 
             glm::mat4 colTransform = glm::mat4(1);
+            colTransform = glm::scale(invScale);
             colTransform = glm::translate(colTransform, position);
             colTransform *= glm::toMat4(rotation);
             colTransform = glm::scale(colTransform, scale);
             collisionTransforms.push_back(colTransform);
 
-            ++numCollisionShapes;
+            DrawDebugCollision(inoutDraws, childShape, parentTransform * colTransform);
         }
+        break;
     }
-    else
-    {
-        collisionShapes.push_back(colShape);
-        collisionTransforms.push_back(glm::mat4(1));
-        numCollisionShapes = 1;
     }
 
-    OCT_ASSERT(collisionShapes.size() == numCollisionShapes);
-    OCT_ASSERT(collisionTransforms.size() == numCollisionShapes);
-
-    for (uint32_t i = 0; i < numCollisionShapes; ++i)
+    if (shapeType != COMPOUND_SHAPE_PROXYTYPE)
     {
-        btCollisionShape* collisionShape = collisionShapes[i];
-        int shapeType = collisionShape->getShapeType();
-
-        if (shapeType == EMPTY_SHAPE_PROXYTYPE)
-            continue;
-
-        DebugDraw debugDraw;
-
-        switch (shapeType)
-        {
-        case BOX_SHAPE_PROXYTYPE:
-        {
-            // Assuming that default cube mesh has half extents equal to 1,1,1
-            btBoxShape* boxShape = static_cast<btBoxShape*>(collisionShape);
-            btVector3 halfExtents = boxShape->getHalfExtentsWithMargin();
-
-            glm::mat4 scale = glm::scale(invScale);
-            collisionTransforms[i] = scale * collisionTransforms[i];
-            collisionTransforms[i] = glm::scale(collisionTransforms[i], { halfExtents.x(), halfExtents.y(), halfExtents.z() });
-
-            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Cube");
-            debugDraw.mTransform = parentTransform;
-            break;
-        }
-        case SPHERE_SHAPE_PROXYTYPE:
-        {
-            // Assuming that default sphere mesh has a radius of 1
-            btSphereShape* sphereShape = static_cast<btSphereShape*>(collisionShape);
-            float radius = sphereShape->getRadius();
-
-            glm::mat4 scale = glm::scale(invScale);
-            collisionTransforms[i] = scale * collisionTransforms[i];
-            collisionTransforms[i] = glm::scale(collisionTransforms[i], { radius, radius, radius });
-
-            debugDraw.mMesh = LoadAsset<StaticMesh>("SM_Sphere");
-            debugDraw.mTransform = parentTransform;
-            break;
-        }
-        case CONVEX_HULL_SHAPE_PROXYTYPE:
-        {
-#if CREATE_CONVEX_COLLISION_MESH
-            // We only create StaticMesh objects for convex hulls when in editor.
-            debugDraw.mMesh = staticMesh->mCollisionMeshes[collisionMeshIndex];
-            debugDraw.mTransform = parentTransform;
-
-            ++collisionMeshIndex;
-#endif
-            break;
-        }
-        case SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE:
-        {
-            debugDraw.mMesh = staticMesh;
-            debugDraw.mTransform = parentTransform;
-
-            break;
-        }
-        case COMPOUND_SHAPE_PROXYTYPE:
-        {
-            DrawDebugCollision(inoutDraws, collisionShape, parentTransform * collisionTransforms[i]);
-            break;
-        }
-        }
-
-        if (shapeType != COMPOUND_SHAPE_PROXYTYPE)
-        {
-            if (compoundShape != nullptr)
-            {
-                debugDraw.mTransform = debugDraw.mTransform * collisionTransforms[i];
-            }
-
-            debugDraw.mColor = GetCollisionDebugColor();
-            inoutDraws.push_back(debugDraw);
-        }
+        debugDraw.mTransform = parentTransform * shapeTransform;
+        debugDraw.mColor = GetCollisionDebugColor();
+        inoutDraws.push_back(debugDraw);
     }
 }
 
