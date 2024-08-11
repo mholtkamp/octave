@@ -301,6 +301,15 @@ void Node::Copy(Node* srcNode, bool recurse)
 
     mScene = srcNode->GetScene();
 
+    // Copy extra data
+    Stream extraDataStream;
+    srcNode->SaveStream(extraDataStream);
+    if (extraDataStream.GetSize() > 0)
+    {
+        extraDataStream.SetPos(0);
+        LoadStream(extraDataStream);
+    }
+
     if (recurse)
     {
 
