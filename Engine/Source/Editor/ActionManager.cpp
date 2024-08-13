@@ -927,6 +927,12 @@ void ActionManager::EXE_SetInstanceColors(const std::vector<ActionSetInstanceCol
     ActionManager::Get()->ExecuteAction(action);
 }
 
+void ActionManager::EXE_SetInstanceData(InstancedMesh3D* instMesh, int32_t startIndex, const std::vector<MeshInstanceData>& data)
+{
+    ActionSetInstanceData* action = new ActionSetInstanceData(instMesh, startIndex, data);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
 void ActionManager::ClearActionHistory()
 {
     for (uint32_t i = 0; i < mActionHistory.size(); ++i)
@@ -2539,6 +2545,76 @@ void ActionSetInstanceColors::Reverse()
     for (uint32_t i = 0; i < mPrevData.size(); ++i)
     {
         mPrevData[i].mMesh3d->SetInstanceColors(mPrevData[i].mColors, mPrevData[i].mBakedLight);
+    }
+}
+
+ActionSetInstanceData::ActionSetInstanceData(InstancedMesh3D* instMesh, int32_t startIndex, const std::vector<MeshInstanceData>& data)
+{
+    mInstMesh = instMesh;
+    mData = data;
+    mStartIndex = startIndex;
+    mData = data;
+
+    if (mStartIndex < 0)
+    {
+        // Negative start index means set entire array of instance data
+        mPrevData = mInstMesh->GetInstanceData();
+    }
+    else
+    {
+        // We are only setting a subset of the data
+        for (int32_t i = mStartIndex; (i < (int32_t)mInstMesh->GetNumInstances()) && (i < mStartIndex + data.size()); ++i)
+        {
+            mPrevData.push_back(mInstMesh->GetInstanceData(i));
+        }
+    }
+}
+
+void ActionSetInstanceData::Execute()
+{
+    if (mStartIndex < 0)
+    {
+        mInstMesh->SetInstanceData(mData);
+    }
+    else
+    {
+        // Remove X num of instance data
+        int32_t removeEnd = int32_t(mStartIndex + mData.size());
+        removeEnd = glm::min<uint32_t>(removeEnd, (int32_t)mInstMesh->GetNumInstances());
+        for (int32_t i = removeEnd - 1; i >= mStartIndex; --i)
+        {
+            mInstMesh->RemoveInstanceData(i);
+        }
+
+        // Add X num of new instance data
+        for (int32_t i = 0; i < mData.size(); ++i)
+        {
+            mInstMesh->AddInstanceData(mData[i], mStartIndex + i);
+        }
+    }
+}
+
+void ActionSetInstanceData::Reverse()
+{
+    if (mStartIndex < 0)
+    {
+        mInstMesh->SetInstanceData(mPrevData);
+    }
+    else
+    {
+        // Remove X num of instance data
+        int32_t removeEnd = int32_t(mStartIndex + mPrevData.size());
+        removeEnd = glm::min<uint32_t>(removeEnd, (int32_t)mInstMesh->GetNumInstances());
+        for (int32_t i = removeEnd - 1; i >= mStartIndex; --i)
+        {
+            mInstMesh->RemoveInstanceData(i);
+        }
+
+        // Add X num of new instance data
+        for (int32_t i = 0; i < mPrevData.size(); ++i)
+        {
+            mInstMesh->AddInstanceData(mPrevData[i], mStartIndex + i);
+        }
     }
 }
 

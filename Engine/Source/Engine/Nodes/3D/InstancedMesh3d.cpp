@@ -133,9 +133,25 @@ void InstancedMesh3D::SetInstanceData(const std::vector<MeshInstanceData>& data)
     MarkInstanceDataDirty();
 }
 
-void InstancedMesh3D::AddInstanceData(const MeshInstanceData& data)
+void InstancedMesh3D::AddInstanceData(const MeshInstanceData& data, int32_t index)
 {
-    mInstanceData.push_back(data);
+    if (index < 0)
+    {
+        mInstanceData.push_back(data);
+    }
+    else
+    {
+        if (index >= 0 &&
+            index <= mInstanceData.size())
+        {
+            mInstanceData.insert(mInstanceData.begin() + index, data);
+        }
+        else
+        {
+            LogError("Out of bounds insertion index in AddInstanceData");
+        }
+    }
+    
     MarkInstanceDataDirty();
 }
 

@@ -11,7 +11,9 @@
 #include "Nodes/3D/StaticMesh3d.h"
 
 class Node3D;
+class InstancedMesh3D;
 struct ActionSetInstanceColorsData;
+struct MeshInstanceData;
 
 class Action
 {
@@ -63,6 +65,7 @@ public:
     void EXE_SetWorldScale(Node3D* node, glm::vec3 scale);
     void EXE_UnlinkScene(Node* node);
     void EXE_SetInstanceColors(const std::vector<ActionSetInstanceColorsData>& data);
+    void EXE_SetInstanceData(InstancedMesh3D* instMesh, int32_t startIndex, const std::vector<MeshInstanceData>& data);
 
     void ClearActionHistory();
     void ClearActionFuture();
@@ -293,4 +296,18 @@ protected:
 
     std::vector<ActionSetInstanceColorsData> mData;
     std::vector<ActionSetInstanceColorsData> mPrevData;
+};
+
+class ActionSetInstanceData : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(SetInstanceData);
+    ActionSetInstanceData(InstancedMesh3D* instMesh, int32_t startIndex, const std::vector<MeshInstanceData>& data);
+
+protected:
+    InstancedMesh3D* mInstMesh = nullptr;
+    int32_t mStartIndex = -1;
+
+    std::vector<MeshInstanceData> mData;
+    std::vector<MeshInstanceData> mPrevData;
 };

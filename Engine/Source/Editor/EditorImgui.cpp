@@ -2327,16 +2327,26 @@ static void DrawInstancedMeshExtra(InstancedMesh3D* instMesh)
 
         if (ImGui::Button("-"))
         {
-            sActiveInstance = glm::clamp<int32_t>(sActiveInstance, 0, numInstances - 1);
-            instMesh->RemoveInstanceData(sActiveInstance);
-            sActiveInstance = int32_t(instMesh->GetNumInstances()) - 1;
+            if (instMesh->GetNumInstances() > 0)
+            {
+                sActiveInstance = glm::clamp<int32_t>(sActiveInstance, 0, numInstances - 1);
+                std::vector<MeshInstanceData> newInstData = instMesh->GetInstanceData();
+                newInstData.erase(newInstData.begin() + sActiveInstance);
+                ActionManager::Get()->EXE_SetInstanceData(instMesh, -1, newInstData);
+
+                sActiveInstance = int32_t(instMesh->GetNumInstances()) - 1;
+            }
         }
 
         ImGui::SameLine();
 
         if (ImGui::Button("+"))
         {
-            instMesh->AddInstanceData(MeshInstanceData());
+            // Not efficient, but lets use the same EXE_SetInstanceData() action
+            std::vector<MeshInstanceData> newInstData = instMesh->GetInstanceData();
+            newInstData.push_back(MeshInstanceData());
+            ActionManager::Get()->EXE_SetInstanceData(instMesh, -1, newInstData);
+
             sActiveInstance = int32_t(instMesh->GetNumInstances()) - 1;
         }
 
@@ -2360,14 +2370,38 @@ static void DrawInstancedMeshExtra(InstancedMesh3D* instMesh)
             //ImGui::DragFloat3("", &propVal[0], 1.0f, 0.0f, 0.0f, "%.2f");
             float vMin = 0.0f;
             float vMax = 0.0f;
+
+            static MeshInstanceData sOrigVal;
+            MeshInstanceData preVal = instData;
+            bool itemActivated = false;
+            bool itemDeactivated = false;
+            
             ImGui::Text("Position");
             positionChanged = ImGui::OctDragScalarN("Position", ImGuiDataType_Float, &instData.mPosition, 3, 1.0f, &vMin, &vMax, "%.2f", 0);
+            itemActivated = itemActivated || ImGui::IsItemActivated();
+            itemDeactivated = itemDeactivated || ImGui::IsItemDeactivatedAfterEdit();
+
             ImGui::Text("Rotation");
             rotationChanged = ImGui::OctDragScalarN("Rotation", ImGuiDataType_Float, &instData.mRotation, 3, 1.0f, &vMin, &vMax, "%.2f", 0);
+            itemActivated = itemActivated || ImGui::IsItemActivated();
+            itemDeactivated = itemDeactivated || ImGui::IsItemDeactivatedAfterEdit();
+
             ImGui::Text("Scale");
             scaleChanged = ImGui::OctDragScalarN("Scale", ImGuiDataType_Float, &instData.mScale, 3, 1.0f, &vMin, &vMax, "%.2f", 0);
+            itemActivated = itemActivated || ImGui::IsItemActivated();
+            itemDeactivated = itemDeactivated || ImGui::IsItemDeactivatedAfterEdit();
 
-            if (positionChanged ||
+            if (itemActivated)
+            {
+                sOrigVal = preVal;
+            }
+
+            if (itemDeactivated && (memcmp(&sOrigVal, &instData, sizeof(MeshInstanceData)) != 0))
+            {
+                instMesh->SetInstanceData(sActiveInstance, sOrigVal);
+                ActionManager::Get()->EXE_SetInstanceData(instMesh, sActiveInstance, { instData });
+            }
+            else if (positionChanged ||
                 rotationChanged ||
                 scaleChanged)
             {

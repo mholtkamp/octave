@@ -42,7 +42,7 @@ public:
     const std::vector<MeshInstanceData>& GetInstanceData() const;
     void SetInstanceData(int32_t index, const MeshInstanceData& data);
     void SetInstanceData(const std::vector<MeshInstanceData>& data);
-    void AddInstanceData(const MeshInstanceData& data);
+    void AddInstanceData(const MeshInstanceData& data, int32_t index = -1);
     void RemoveInstanceData(int32_t index);
 
     uint32_t GetTotalVertexCount() const;
