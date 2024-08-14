@@ -78,6 +78,7 @@ struct EditorState
     // Data
     EditorMode mMode;
     std::vector<Node*> mSelectedNodes;
+    int32_t mSelectedInstance = -1;
     std::vector<EditScene> mEditScenes;
     AssetStub* mSelectedAssetStub = nullptr;
     ControlMode mControlMode = ControlMode::Default;
@@ -166,6 +167,8 @@ struct EditorState
     const std::vector<Node*>& GetSelectedNodes();
     bool IsNodeSelected(Node* node);
     void DeselectNode(Node* node);
+    int32_t GetSelectedInstance();
+    void SetSelectedInstance(int32_t instance);
     //void ShowTextPrompt(const char* title, TextFieldHandlerFP confirmHandler, const char* defaultText = nullptr);
 
     void OpenEditScene(Scene* scene);

@@ -385,6 +385,7 @@ void EditorState::SetSelectedNode(Node* newNode)
         mSelectedNodes[0] != newNode)
     {
         mSelectedNodes.clear();
+        mSelectedInstance = -1;
 
         if (newNode != nullptr)
         {
@@ -435,6 +436,8 @@ void EditorState::AddSelectedNode(Node* node, bool addAllChildren)
 
         nodes.push_back(node);
         InspectObject(node);
+
+        mSelectedInstance = -1;
     }
 }
 
@@ -460,6 +463,8 @@ void EditorState::RemoveSelectedNode(Node* node)
         {
             InspectObject(nullptr);
         }
+
+        mSelectedInstance = -1;
     }
 }
 
@@ -720,6 +725,16 @@ void EditorState::DeselectNode(Node* node)
     {
         ActionManager::Get()->OnSelectedNodeChanged();
     }
+}
+
+int32_t EditorState::GetSelectedInstance()
+{
+    return mSelectedInstance;
+}
+
+void EditorState::SetSelectedInstance(int32_t instance)
+{
+    mSelectedInstance = instance;
 }
 
 void CacheEditSceneLinkedProps(EditScene& editScene)

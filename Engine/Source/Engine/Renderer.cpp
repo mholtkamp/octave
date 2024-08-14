@@ -156,9 +156,9 @@ void Renderer::GatherProperties(std::vector<Property>& props)
 
 }
 
-Node3D* Renderer::ProcessHitCheck(World* world, int32_t x, int32_t y)
+Node3D* Renderer::ProcessHitCheck(World* world, int32_t x, int32_t y, uint32_t* outInstance)
 {
-    return GFX_ProcessHitCheck(world, x, y);
+    return GFX_ProcessHitCheck(world, x, y, outInstance);
 }
 
 void Renderer::SetDebugMode(DebugMode mode)

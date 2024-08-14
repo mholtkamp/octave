@@ -93,6 +93,36 @@
     <Filter Include="Source Files\Graphics\Vulkan\PostProcess">
       <UniqueIdentifier>{11563a18-1f88-4214-ad85-f31d25c2aeea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Audio\Dolphin">
+      <UniqueIdentifier>{9872c477-1e14-44fc-9e74-af00c06a8969}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Audio\3DS">
+      <UniqueIdentifier>{3df35c8d-8f5d-44dc-8216-5b9cfdd0949f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\GX">
+      <UniqueIdentifier>{f34985e2-0917-41c2-81f6-dbc5d6ab2a49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\C3D">
+      <UniqueIdentifier>{15f6e41c-cc10-4f23-8ae8-e0b308cec8ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input\Dolphin">
+      <UniqueIdentifier>{f36d08db-4bb4-4460-867a-60dbb472530e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input\3DS">
+      <UniqueIdentifier>{7680b534-759d-4e6d-bada-f0321db0e4cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Network\Dolphin">
+      <UniqueIdentifier>{551b6d02-c2c4-458b-a0f4-2edd0274d55f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Network\3DS">
+      <UniqueIdentifier>{441aa36d-88de-4dd2-bcb2-0dd4403341af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\System\Dolphin">
+      <UniqueIdentifier>{cdd57a47-e084-47e7-9c91-68b41f0425d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\System\3DS">
+      <UniqueIdentifier>{f006b897-795f-4568-9c40-b8de91cf5068}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Graphics\Vulkan\VulkanUtils.cpp">
@@ -694,6 +724,45 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\3D\InstancedMesh3d.cpp">
       <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Audio\Dolphin\Audio_Dolphin.cpp">
+      <Filter>Source Files\Audio\Dolphin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Audio\3DS\Audio_3DS.cpp">
+      <Filter>Source Files\Audio\3DS</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\GX\Graphics_GX.cpp">
+      <Filter>Source Files\Graphics\GX</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\GX\GxUtils.cpp">
+      <Filter>Source Files\Graphics\GX</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\C3D\C3dUtils.cpp">
+      <Filter>Source Files\Graphics\C3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\C3D\DoubleBuffer.cpp">
+      <Filter>Source Files\Graphics\C3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\C3D\Graphics_C3D.cpp">
+      <Filter>Source Files\Graphics\C3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Input\Dolphin\Input_Dolphin.cpp">
+      <Filter>Source Files\Input\Dolphin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Input\3DS\Input_3DS.cpp">
+      <Filter>Source Files\Input\3DS</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Network\Dolphin\Network_Dolphin.cpp">
+      <Filter>Source Files\Network\Dolphin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Network\3DS\Network_3DS.cpp">
+      <Filter>Source Files\Network\3DS</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\System\Dolphin\System_Dolphin.cpp">
+      <Filter>Source Files\System\Dolphin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\System\3DS\System_3DS.cpp">
+      <Filter>Source Files\System\3DS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1364,6 +1433,21 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\3D\InstancedMesh3d.h">
       <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\GX\GxTypes.h">
+      <Filter>Source Files\Graphics\GX</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\GX\GxUtils.h">
+      <Filter>Source Files\Graphics\GX</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\C3D\C3dTypes.h">
+      <Filter>Source Files\Graphics\C3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\C3D\C3dUtils.h">
+      <Filter>Source Files\Graphics\C3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\C3D\DoubleBuffer.h">
+      <Filter>Source Files\Graphics\C3D</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

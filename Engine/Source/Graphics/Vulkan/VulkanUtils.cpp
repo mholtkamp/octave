@@ -1952,6 +1952,16 @@ void DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp)
 
         BindForwardVertexType(vertexType, material, true);
         BindMaterialResource(material);
+
+#if EDITOR
+        Shader* prevFragShader = context->GetPipelineState().mFragmentShader;
+        if (context->GetCurrentRenderPassId() == RenderPassId::HitCheck)
+        {
+            Shader* instancedHitCheckFragShader = context->GetGlobalShader("HitCheckInstanced.frag");
+            context->SetFragmentShader(instancedHitCheckFragShader);
+        }
+#endif
+
         GetVulkanContext()->CommitPipeline();
 
         BindGeometryDescriptorSet(instancedMeshComp);
@@ -1963,6 +1973,13 @@ void DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp)
             0,
             0,
             0);
+
+#if EDITOR
+        if (context->GetCurrentRenderPassId() == RenderPassId::HitCheck)
+        {
+            context->SetFragmentShader(prevFragShader);
+        }
+#endif
     }
 }
 

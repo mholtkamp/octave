@@ -165,10 +165,10 @@ void GFX_Reset()
     }
 }
 
-Node3D* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y)
+Node3D* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y, uint32_t* outInstance)
 {
 #if EDITOR
-    return gVulkanContext->ProcessHitCheck(world, x, y);
+    return gVulkanContext->ProcessHitCheck(world, x, y, outInstance);
 #else
     return nullptr;
 #endif

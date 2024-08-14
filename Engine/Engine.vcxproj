@@ -568,8 +568,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Source\Audio\3DS\Audio_3DS.cpp" />
     <ClCompile Include="Source\Audio\Android\Audio_Android.cpp" />
     <ClCompile Include="Source\Audio\Audio.cpp" />
+    <ClCompile Include="Source\Audio\Dolphin\Audio_Dolphin.cpp" />
     <ClCompile Include="Source\Audio\Linux\Audio_Linux.cpp" />
     <ClCompile Include="Source\Audio\Windows\Audio_Windows.cpp" />
     <ClCompile Include="Source\Editor\ActionManager.cpp" />
@@ -662,7 +664,12 @@
     <ClCompile Include="Source\Engine\TimerManager.cpp" />
     <ClCompile Include="Source\Engine\Utilities.cpp" />
     <ClCompile Include="Source\Engine\World.cpp" />
+    <ClCompile Include="Source\Graphics\C3D\C3dUtils.cpp" />
+    <ClCompile Include="Source\Graphics\C3D\DoubleBuffer.cpp" />
+    <ClCompile Include="Source\Graphics\C3D\Graphics_C3D.cpp" />
     <ClCompile Include="Source\Graphics\GraphicsUtils.cpp" />
+    <ClCompile Include="Source\Graphics\GX\Graphics_GX.cpp" />
+    <ClCompile Include="Source\Graphics\GX\GxUtils.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\PostProcessChain.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\PostProcess\BlurPass.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\PostProcess\PostProcessPass.cpp" />
@@ -686,7 +693,9 @@
     <ClCompile Include="Source\Graphics\Vulkan\Graphics_Vulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanTypes.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanUtils.cpp" />
+    <ClCompile Include="Source\Input\3DS\Input_3DS.cpp" />
     <ClCompile Include="Source\Input\Android\Input_Android.cpp" />
+    <ClCompile Include="Source\Input\Dolphin\Input_Dolphin.cpp" />
     <ClCompile Include="Source\Input\Input.cpp" />
     <ClCompile Include="Source\Input\InputUtils.cpp" />
     <ClCompile Include="Source\Input\Linux\Input_Linux.cpp" />
@@ -753,13 +762,17 @@
     <ClCompile Include="Source\LuaBindings\VerticalList_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Widget_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\World_Lua.cpp" />
+    <ClCompile Include="Source\Network\3DS\Network_3DS.cpp" />
     <ClCompile Include="Source\Network\Android\Network_Android.cpp" />
+    <ClCompile Include="Source\Network\Dolphin\Network_Dolphin.cpp" />
     <ClCompile Include="Source\Network\Linux\Network_Linux.cpp" />
     <ClCompile Include="Source\Network\NetPlatform.cpp" />
     <ClCompile Include="Source\Network\NetPlatformEpic.cpp" />
     <ClCompile Include="Source\Network\NetPlatformSteam.cpp" />
     <ClCompile Include="Source\Network\Windows\Network_Windows.cpp" />
+    <ClCompile Include="Source\System\3DS\System_3DS.cpp" />
     <ClCompile Include="Source\System\Android\System_Android.cpp" />
+    <ClCompile Include="Source\System\Dolphin\System_Dolphin.cpp" />
     <ClCompile Include="Source\System\Linux\System_Linux.cpp" />
     <ClCompile Include="Source\System\Windows\System_Windows.cpp" />
   </ItemGroup>
@@ -899,10 +912,15 @@
     <ClInclude Include="Source\Engine\Utilities.h" />
     <ClInclude Include="Source\Engine\Vertex.h" />
     <ClInclude Include="Source\Engine\World.h" />
+    <ClInclude Include="Source\Graphics\C3D\C3dTypes.h" />
+    <ClInclude Include="Source\Graphics\C3D\C3dUtils.h" />
+    <ClInclude Include="Source\Graphics\C3D\DoubleBuffer.h" />
     <ClInclude Include="Source\Graphics\Graphics.h" />
     <ClInclude Include="Source\Graphics\GraphicsConstants.h" />
     <ClInclude Include="Source\Graphics\GraphicsTypes.h" />
     <ClInclude Include="Source\Graphics\GraphicsUtils.h" />
+    <ClInclude Include="Source\Graphics\GX\GxTypes.h" />
+    <ClInclude Include="Source\Graphics\GX\GxUtils.h" />
     <ClInclude Include="Source\Graphics\Vulkan\PostProcessChain.h" />
     <ClInclude Include="Source\Graphics\Vulkan\PostProcess\BlurPass.h" />
     <ClInclude Include="Source\Graphics\Vulkan\PostProcess\PostProcessPass.h" />

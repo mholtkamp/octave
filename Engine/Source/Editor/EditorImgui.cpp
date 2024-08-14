@@ -2316,6 +2316,12 @@ static void DrawInstancedMeshExtra(InstancedMesh3D* instMesh)
 {
     static int32_t sActiveInstance = 0;
 
+    int32_t selInstance = GetEditorState()->GetSelectedInstance();
+    if (selInstance != -1)
+    {
+        sActiveInstance = selInstance;
+    }
+
     if (ImGui::CollapsingHeader("Instance Data", ImGuiTreeNodeFlags_DefaultOpen))
     {
         ImGui::PushID(0);
@@ -2355,7 +2361,13 @@ static void DrawInstancedMeshExtra(InstancedMesh3D* instMesh)
         if (numInstances > 0)
         {
             sActiveInstance = glm::clamp<int32_t>(sActiveInstance, 0, numInstances - 1);
-            ImGui::SliderInt("Active Instance", &sActiveInstance, 0, numInstances - 1);
+            if (ImGui::SliderInt("Active Instance", &sActiveInstance, 0, numInstances - 1))
+            {
+                if (selInstance != -1)
+                {
+                    GetEditorState()->SetSelectedInstance(sActiveInstance);
+                }
+            }
         }
 
         if (sActiveInstance >= 0 &&

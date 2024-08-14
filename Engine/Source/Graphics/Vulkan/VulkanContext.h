@@ -337,7 +337,7 @@ private:
 
 #if EDITOR
 public:
-    class Node3D* ProcessHitCheck(World* world, int32_t pixelX, int32_t pixelY);
+    class Node3D* ProcessHitCheck(World* world, int32_t pixelX, int32_t pixelY, uint32_t* outInstance = nullptr);
 private:
     void CreateHitCheck();
     void DestroyHitCheck();

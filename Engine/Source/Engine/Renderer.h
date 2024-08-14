@@ -84,7 +84,7 @@ public:
     float GetGlobalUiScale() const;
     void SetGlobalUiScale(float scale);
 
-    Node3D* ProcessHitCheck(World* world, int32_t x, int32_t y);
+    Node3D* ProcessHitCheck(World* world, int32_t x, int32_t y, uint32_t* outInstance = nullptr);
 
     void SetDebugMode(DebugMode mode);
     DebugMode GetDebugMode() const;

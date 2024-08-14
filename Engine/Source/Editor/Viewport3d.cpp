@@ -28,6 +28,7 @@
 #include "Nodes/3D/DirectionalLight3d.h"
 #include "Nodes/3D/Node3d.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
+#include "Nodes/3D/InstancedMesh3d.h"
 #include "Nodes/3D/Box3d.h"
 #include "Nodes/3D/Sphere3d.h"
 #include "Nodes/3D/Particle3d.h"
@@ -136,7 +137,9 @@ void Viewport3D::HandleDefaultControls()
             int32_t mouseX = 0;
             int32_t mouseY = 0;
             GetMousePosition(mouseX, mouseY);
-            Node3D* selectNode = Renderer::Get()->ProcessHitCheck(GetWorld(0), mouseX, mouseY);
+
+            uint32_t selectInstance = 0;
+            Node3D* selectNode = Renderer::Get()->ProcessHitCheck(GetWorld(0), mouseX, mouseY, &selectInstance);
 
             if (shiftDown || controlDown)
             {
@@ -167,7 +170,18 @@ void Viewport3D::HandleDefaultControls()
                     }
                     else
                     {
-                        GetEditorState()->SetSelectedNode(nullptr);
+                        int32_t curSelInstance = GetEditorState()->GetSelectedInstance();
+                        InstancedMesh3D* instMesh = selectNode ? selectNode->As<InstancedMesh3D>() : nullptr;
+                        if (instMesh != nullptr &&
+                            curSelInstance != int32_t(selectInstance))
+                        {
+                            // We clicked a different instance. Don't deselect, just change the sel instance
+                            GetEditorState()->SetSelectedInstance((int32_t)selectInstance);
+                        }
+                        else
+                        {
+                            GetEditorState()->SetSelectedNode(nullptr);
+                        }
                     }
                 }
             }

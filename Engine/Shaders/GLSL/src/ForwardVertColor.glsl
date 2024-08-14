@@ -28,6 +28,9 @@ layout(location = 1) out vec2 outTexcoord0;
 layout(location = 2) out vec2 outTexcoord1;
 layout(location = 3) out vec3 outNormal;
 layout(location = 4) out vec4 outColor;
+#if INSTANCED_DRAW
+layout(location = 5) out uint outInstanceIndex;
+#endif
 
 out gl_PerVertex 
 {
@@ -54,4 +57,8 @@ void main()
     outTexcoord1 = inTexcoord1;    
     outNormal = normalize((normalMatrix * vec4(inNormal, 0.0)).xyz);
     outColor = SrgbToLinear(inColor);
+
+#if INSTANCED_DRAW
+    outInstanceIndex = gl_InstanceIndex;
+#endif
 }

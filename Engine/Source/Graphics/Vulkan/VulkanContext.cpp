@@ -2697,7 +2697,7 @@ void VulkanContext::SetScissor(int32_t x, int32_t y, int32_t width, int32_t heig
 }
 
 #if EDITOR
-Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pixelY)
+Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pixelY, uint32_t* outInstance)
 {
     if (world == nullptr)
     {
@@ -2811,7 +2811,16 @@ Node3D* VulkanContext::ProcessHitCheck(World* world, int32_t pixelX, int32_t pix
     hitId = hitData[pixelX + pixelY * mSceneWidth];
     mHitCheckBuffer->Unmap();
 
-    Node3D* hitNode = (hitId != 0) ? nodes[hitId - 1] : nullptr;
+    // Node index is in high half, instance index is in the low half
+    uint32_t hitNodeIdx = (0xffff0000 & hitId) >> 16;
+    uint32_t hitInstanceIdx = 0x0000ffff & hitId;
+
+    Node3D* hitNode = (hitNodeIdx != 0) ? nodes[hitNodeIdx - 1] : nullptr;
+
+    if (outInstance != nullptr)
+    {
+        *outInstance = hitInstanceIdx;
+    }
 
     return hitNode;
 }

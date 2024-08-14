@@ -52,7 +52,7 @@ void GFX_DrawFullscreen();
 
 void GFX_ResizeWindow();
 void GFX_Reset();
-Node3D* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y);
+Node3D* GFX_ProcessHitCheck(World* world, int32_t x, int32_t y, uint32_t* outInstance = nullptr);
 uint32_t GFX_GetNumViews();
 
 void GFX_SetFrameRate(int32_t frameRate);
