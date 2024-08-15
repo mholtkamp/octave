@@ -126,9 +126,9 @@ struct GlobalUniforms
     uint mPathTracingEnabled;
 
     uint mNumLights;
+    int mSelectedInstance;
     uint mPad0;
     uint mPad1;
-    uint mPad2;
 
     LightData mLights[MAX_LIGHTS_PER_FRAME];
 };

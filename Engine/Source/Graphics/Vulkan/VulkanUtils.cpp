@@ -1960,6 +1960,11 @@ void DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp)
             Shader* instancedHitCheckFragShader = context->GetGlobalShader("HitCheckInstanced.frag");
             context->SetFragmentShader(instancedHitCheckFragShader);
         }
+        else if (context->GetCurrentRenderPassId() == RenderPassId::Selected)
+        {
+            Shader* instancedSelectedFragShader = context->GetGlobalShader("SelectedInstanced.frag");
+            context->SetFragmentShader(instancedSelectedFragShader);
+        }
 #endif
 
         GetVulkanContext()->CommitPipeline();
@@ -1975,7 +1980,8 @@ void DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp)
             0);
 
 #if EDITOR
-        if (context->GetCurrentRenderPassId() == RenderPassId::HitCheck)
+        if (context->GetCurrentRenderPassId() == RenderPassId::HitCheck || 
+            context->GetCurrentRenderPassId() == RenderPassId::Selected)
         {
             context->SetFragmentShader(prevFragShader);
         }

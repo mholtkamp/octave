@@ -1685,6 +1685,10 @@ void VulkanContext::UpdateGlobalUniformData()
     }
 
     mGlobalUniformData.mInterfaceResolution = Renderer::Get()->GetScreenResolution();
+
+#if EDITOR
+    mGlobalUniformData.mSelectedInstance = GetEditorState()->GetSelectedInstance();
+#endif
 }
 
 VkPhysicalDevice VulkanContext::GetPhysicalDevice()
