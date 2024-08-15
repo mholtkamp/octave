@@ -2,8 +2,10 @@
 
 #include "EditorState.h"
 #include "Nodes/Widgets/ModalList.h"
+#include "Nodes/3D/InstancedMesh3d.h"
 
 class Button;
+
 
 class Viewport3D
 {
@@ -20,6 +22,8 @@ public:
     void ToggleTransformMode();
 
 protected:
+
+    static constexpr float sDefaultFocalDistance = 10.0f;
 
     static void HandleFilePressed(Button* button);
     static void HandleViewPressed(Button* button);
@@ -43,16 +47,19 @@ protected:
     glm::vec3 GetLockedTranslationDelta(glm::vec3 deltaWS) const;
     glm::vec3 GetLockedRotationAxis() const;
     glm::vec3 GetLockedScaleDelta();
+    bool ShouldTransformInstance() const;
 
-    float mFirstPersonMoveSpeed;
-    float mFirstPersonRotationSpeed;
+    float mFirstPersonMoveSpeed = 10.0f;
+    float mFirstPersonRotationSpeed = 0.07f;
 
     // Transform Control vars
-    int32_t mPrevMouseX;
-    int32_t mPrevMouseY;
+    int32_t mPrevMouseX = 0;
+    int32_t mPrevMouseY = 0;
     std::vector<glm::mat4> mPreTransforms;
 
-    float mFocalDistance;
+    float mFocalDistance = sDefaultFocalDistance;
     bool mNeedsMouseRecenter = false;
     bool mTransformLocal = false;
+
+    MeshInstanceData mInstancePreTransform;
 };
