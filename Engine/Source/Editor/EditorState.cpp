@@ -1061,9 +1061,21 @@ void EditorState::SetTransformLock(TransformLock lock)
         if (node != nullptr && node->IsNode3D())
         {
             glm::vec3 pos = static_cast<Node3D*>(node)->GetWorldPosition();
-            lineX.mStart = pos - glm::vec3(10000, 0, 0);;
-            lineY.mStart = pos - glm::vec3(0, 10000, 0);;
-            lineZ.mStart = pos - glm::vec3(0, 0, 10000);;
+
+            if (node->As<InstancedMesh3D>() &&
+                mSelectedInstance != -1)
+            {
+                InstancedMesh3D* instMesh = node->As<InstancedMesh3D>();
+                if (mSelectedInstance >= 0 &&
+                    mSelectedInstance < (int32_t)instMesh->GetNumInstances())
+                {
+                    pos += instMesh->GetInstanceData(mSelectedInstance).mPosition;
+                }
+            }
+
+            lineX.mStart = pos - glm::vec3(10000, 0, 0);
+            lineY.mStart = pos - glm::vec3(0, 10000, 0);
+            lineZ.mStart = pos - glm::vec3(0, 0, 10000);
             lineX.mEnd = pos + glm::vec3(10000,0,0);
             lineY.mEnd = pos + glm::vec3(0, 10000, 0);
             lineZ.mEnd = pos + glm::vec3(0, 0, 10000);
