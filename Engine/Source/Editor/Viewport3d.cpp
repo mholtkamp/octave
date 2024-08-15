@@ -176,6 +176,7 @@ void Viewport3D::HandleDefaultControls()
                             curSelInstance != int32_t(selectInstance))
                         {
                             // We clicked a different instance. Don't deselect, just change the sel instance
+                            GetEditorState()->SetSelectedNode(selectNode);
                             GetEditorState()->SetSelectedInstance((int32_t)selectInstance);
                         }
                         else
