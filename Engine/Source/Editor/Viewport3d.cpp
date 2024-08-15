@@ -727,8 +727,9 @@ void Viewport3D::HandleTransformControls()
 
             if (instance)
             {
-                // TODO: Move in world space
-                instData.mPosition += speed * glm::vec3(worldDelta.x, worldDelta.y, worldDelta.z);
+                glm::mat4 invTransform = glm::inverse(instMesh->GetTransform());
+                glm::vec3 localDelta = invTransform * glm::vec4(worldDelta.x, worldDelta.y, worldDelta.z, 0.0f);
+                instData.mPosition += speed * localDelta;
                 instMesh->SetInstanceData(selInstance, instData);
             }
             else
@@ -758,9 +759,12 @@ void Viewport3D::HandleTransformControls()
 
             if (instance)
             {
-                // TODO: Move in world space
+                glm::mat4 invTransform = glm::inverse(instMesh->GetTransform());
+                glm::vec3 localRotateAxis = invTransform * glm::vec4(rotateAxisWS, 0.0f);
+                glm::quat localAddQuat = glm::angleAxis(-totalDelta * speed, localRotateAxis);
+
                 glm::quat instRotQuat = glm::quat(instData.mRotation * DEGREES_TO_RADIANS);
-                instRotQuat = addQuat * instRotQuat;
+                instRotQuat = localAddQuat * instRotQuat;
                 glm::vec3 eulerAngles = glm::eulerAngles(instRotQuat) * RADIANS_TO_DEGREES;
                 eulerAngles = EnforceEulerRange(eulerAngles);
 
