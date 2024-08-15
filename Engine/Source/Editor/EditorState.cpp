@@ -1069,7 +1069,10 @@ void EditorState::SetTransformLock(TransformLock lock)
                 if (mSelectedInstance >= 0 &&
                     mSelectedInstance < (int32_t)instMesh->GetNumInstances())
                 {
-                    pos += instMesh->GetInstanceData(mSelectedInstance).mPosition;
+                    MeshInstanceData instData = instMesh->GetInstanceData(mSelectedInstance);
+                    glm::mat4 instTransform = MakeTransform(instData.mPosition, instData.mRotation, instData.mScale);
+                    glm::mat4 totalTransform = instMesh->GetTransform() * instTransform;
+                    pos = totalTransform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
                 }
             }
 
