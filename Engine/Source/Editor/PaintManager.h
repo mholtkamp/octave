@@ -33,6 +33,27 @@ enum PaintBlendMode
     Count
 };
 
+struct PaintColorOptions
+{
+    PaintBlendMode mBlendMode = PaintBlendMode::Mix;
+    glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+};
+
+struct PaintInstanceOptions
+{
+    StaticMeshRef mMesh;
+    float mDensity = 1.0f;
+    float mMinSeparation = 0.0f;
+    glm::vec3 mMinPosition = {};
+    glm::vec3 mMaxPosition = {};
+    glm::vec3 mMinRotation = {};
+    glm::vec3 mMaxRotation = {};
+    float mMinScale = 1.0f;
+    float mMaxScale = 1.0f;
+    bool mAlignWithNormal = false;
+    bool mErase = false;
+};
+
 struct PendingColorData
 {
     ActionSetInstanceColorsData mData;
@@ -56,7 +77,8 @@ public:
 
     void UpdateDynamicsWorld();
     void UpdatePaintReticle();
-    void UpdatePaintDraw();
+    void UpdatePaintDrawColors();
+    void UpdatePaintDrawInstances();
 
     void FinishAdjustment();
 
@@ -97,10 +119,11 @@ public:
     float mSpacing = 10.0f;
     glm::vec2 mLastPaintMousePos = {};
 
-    // Vertex Color Options
-    PaintBlendMode mBlendMode = PaintBlendMode::Mix;
-    glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    // Options
+    PaintColorOptions mColorOptions;
+    PaintInstanceOptions mInstanceOptions;
 
+    // Pending data
     std::vector<PendingColorData> mPendingColorData;
 };
 

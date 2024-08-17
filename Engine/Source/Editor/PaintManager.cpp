@@ -75,7 +75,16 @@ void PaintManager::Update()
     {
         UpdateDynamicsWorld();
         UpdatePaintReticle();
-        UpdatePaintDraw();
+
+        PaintMode paintMode = GetEditorState()->GetPaintMode();
+        if (paintMode == PaintMode::Color)
+        {
+            UpdatePaintDrawColors();
+        }
+        else if (paintMode == PaintMode::Instance)
+        {
+            UpdatePaintDrawInstances();
+        }
     }
 }
 
@@ -180,6 +189,7 @@ void PaintManager::UpdateDynamicsWorld()
                     meshNode->GetStaticMesh() &&
                     (!onlySelected || GetEditorState()->IsNodeSelected(node)))
                 {
+                    InstancedMesh3D* instMesh = meshNode->As<InstancedMesh3D>();
                     StaticMesh* curMesh = meshNode->GetStaticMesh();
                     glm::vec3 curPosition = meshNode->GetWorldPosition();
                     glm::quat curRotation = meshNode->GetWorldRotationQuat();
@@ -218,11 +228,13 @@ void PaintManager::UpdateDynamicsWorld()
                     bool posChanged = glm::any(glm::epsilonNotEqual(paintCol.mPosition, curPosition, 0.00001f));
                     bool rotChanged = glm::any(glm::epsilonNotEqual(paintCol.mRotation, curRotation, 0.00001f));
                     bool sclChanged = glm::any(glm::epsilonNotEqual(paintCol.mScale, curScale, 0.00001f));
+                    bool instChanged = instMesh ? instMesh->WasInstanceDataUpdatedThisFrame() : false;
 
                     if (meshChanged ||
                         posChanged ||
                         rotChanged ||
-                        sclChanged)
+                        sclChanged ||
+                        instChanged)
                     {
                         RemovePaintMeshCollision(paintCol);
 
@@ -378,7 +390,7 @@ void PaintManager::UpdatePaintReticle()
     }
 }
 
-void PaintManager::UpdatePaintDraw()
+void PaintManager::UpdatePaintDrawColors()
 {
     int32_t mouseX = 0;
     int32_t mouseY = 0;
@@ -507,13 +519,13 @@ void PaintManager::UpdatePaintDraw()
                     float dist = sqrtf(dist2);
 
                     glm::vec4 dst = ColorUint32ToFloat4(pendingData->mOriginalColors[v]);
-                    glm::vec4 src = mColor;
+                    glm::vec4 src = mColorOptions.mColor;
                     glm::vec4 out = dst;
 
                     float falloff = 1.0f - (dist / mRadius);
                     float a = mOpacity * falloff;
 
-                    switch (mBlendMode)
+                    switch (mColorOptions.mBlendMode)
                     {
                     case PaintBlendMode::Mix:
                         out = (src * a) + (dst * (1.0f - a));
@@ -583,6 +595,11 @@ void PaintManager::UpdatePaintDraw()
             ActionManager::Get()->EXE_SetInstanceColors(actionData);
         }
     }
+}
+
+void PaintManager::UpdatePaintDrawInstances()
+{
+
 }
 
 void PaintManager::FinishAdjustment()

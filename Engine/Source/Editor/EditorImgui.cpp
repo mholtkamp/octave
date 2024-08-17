@@ -732,7 +732,7 @@ static void DrawAssetProperty(Property& prop, uint32_t index, RTTI* owner, Prope
     static std::string sOrigVal;
     sTempString = asset ? asset->GetName() : "";
 
-    ImGui::InputText("", &sTempString);
+    ImGui::InputText("##AssetNameStr", &sTempString);
 
     if (ImGui::IsItemDeactivatedAfterEdit())
     {
@@ -3054,11 +3054,11 @@ static void DrawPaintColorsPanel()
     PaintManager* pm = GetEditorState()->mPaintManager;
     ImGui::DragFloat("Radius", &pm->mRadius);
     ImGui::DragFloat("Opacity", &pm->mOpacity);
-    ImGui::OctColorEdit4("Color", &pm->mColor[0], 0);
+    ImGui::OctColorEdit4("Color", &pm->mColorOptions.mColor[0], 0);
     
     const char* blendModeStrings[] = {"Mix", "Add", "Subtract", "Multiply", "+Alpha", "-Alpha"};
     int32_t blendModeCount = OCT_ARRAY_SIZE(blendModeStrings);
-    ImGui::Combo("Blend Mode", (int*)&(pm->mBlendMode), blendModeStrings, blendModeCount);
+    ImGui::Combo("Blend Mode", (int*)&(pm->mColorOptions.mBlendMode), blendModeStrings, blendModeCount);
 
     ImGui::Checkbox("Only Facing Normals", &pm->mOnlyFacingNormals);
     ImGui::Checkbox("Only Render Selected", &pm->mOnlyRenderSelected);
@@ -3068,7 +3068,39 @@ static void DrawPaintColorsPanel()
 
 static void DrawPaintInstancesPanel()
 {
+    const float dispWidth = (float)GetEngineState()->mWindowWidth;
+    const float dispHeight = (float)GetEngineState()->mWindowHeight;
 
+    ImGui::SetNextWindowPos(ImVec2(kSidePaneWidth + 10.0f, 40.0f));
+    ImGui::SetNextWindowSize(ImVec2(250.0f, 210.0f));
+
+    ImGui::Begin("Paint Instances", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+    
+    ImGui::PushItemWidth(120.0f);
+
+    PaintManager* pm = GetEditorState()->mPaintManager;
+
+    Property prop(DatumType::Asset, "Instance Mesh", nullptr, &pm->mInstanceOptions.mMesh, 1, nullptr, (int32_t)StaticMesh::GetStaticType());
+    DrawAssetProperty(prop, 0, nullptr, PropertyOwnerType::Count);
+    ImGui::SameLine();
+    ImGui::Text("Mesh");
+
+    ImGui::DragFloat("Radius", &pm->mRadius);
+    ImGui::DragFloat("Opacity", &pm->mOpacity);
+    ImGui::DragFloat("Density", &pm->mInstanceOptions.mDensity);
+    ImGui::DragFloat("Min Separation", &pm->mInstanceOptions.mMinSeparation);
+    ImGui::OctDragScalarN("Min Position", ImGuiDataType_Float, &pm->mInstanceOptions.mMinPosition[0], 3, 1.0f, nullptr, nullptr, "%.2f", 0);
+    ImGui::OctDragScalarN("Max Position", ImGuiDataType_Float, &pm->mInstanceOptions.mMaxPosition[0], 3, 1.0f, nullptr, nullptr, "%.2f", 0);
+    ImGui::OctDragScalarN("Min Rotation", ImGuiDataType_Float, &pm->mInstanceOptions.mMinRotation[0], 3, 1.0f, nullptr, nullptr, "%.2f", 0);
+    ImGui::OctDragScalarN("Max Rotation", ImGuiDataType_Float, &pm->mInstanceOptions.mMaxRotation[0], 3, 1.0f, nullptr, nullptr, "%.2f", 0);
+    ImGui::DragFloat("Min Scale", &pm->mInstanceOptions.mMinScale);
+    ImGui::DragFloat("Max Scale", &pm->mInstanceOptions.mMaxScale);
+    ImGui::Checkbox("Align With Normal", &pm->mInstanceOptions.mAlignWithNormal);
+    ImGui::Checkbox("Erase", &pm->mInstanceOptions.mErase);
+
+    ImGui::PopItemWidth();
+
+    ImGui::End();
 }
 
 static void Draw2dSelections()

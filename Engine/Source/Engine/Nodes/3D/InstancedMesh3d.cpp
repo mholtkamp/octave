@@ -41,6 +41,7 @@ void InstancedMesh3D::Render()
 void InstancedMesh3D::Tick(float deltaTime)
 {
     StaticMesh3D::Tick(deltaTime);
+    mInstanceDataUpdatedThisFrame = false;
     UpdateInstanceData();
 }
 
@@ -199,7 +200,13 @@ void InstancedMesh3D::UpdateInstanceData()
         CalculateLocalBounds();
 
         mInstanceDataDirty = false;
+        mInstanceDataUpdatedThisFrame = true;
     }
+}
+
+bool InstancedMesh3D::WasInstanceDataUpdatedThisFrame() const
+{
+    return mInstanceDataUpdatedThisFrame;
 }
 
 InstancedMeshCompResource* InstancedMesh3D::GetInstancedMeshResource()

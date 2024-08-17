@@ -50,6 +50,7 @@ public:
     bool IsInstanceDataDirty() const;
     void MarkInstanceDataDirty();
     void UpdateInstanceData();
+    bool WasInstanceDataUpdatedThisFrame() const;
 
     InstancedMeshCompResource* GetInstancedMeshResource();
 
@@ -67,6 +68,7 @@ protected:
 
     std::vector<MeshInstanceData> mInstanceData;
     bool mInstanceDataDirty = true;
+    bool mInstanceDataUpdatedThisFrame = false;
     Bounds mBounds;
 
     InstancedMeshCompResource mInstancedMeshResource;
