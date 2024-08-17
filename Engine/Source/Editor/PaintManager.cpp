@@ -11,7 +11,10 @@
 
 #include "Nodes/3D/InstancedMesh3d.h"
 
+constexpr uint8_t kMeshColGroup = 0x02;
+constexpr uint8_t kInstanceColGroup = 0x04;
 constexpr uint8_t kPaintSphereColGroup = 0x80;
+
 constexpr float kPaintMaxRadius = 10000.0f;
 constexpr float kPaintMinRadius = 0.01f;
 
@@ -130,7 +133,7 @@ void PaintManager::AddPaintMeshCollision(const PaintMeshCollision& paintCol)
         paintCol.mCollisionObject->setCollisionShape(triShape);
     }
 
-    int colGroup = instMesh ? ColGroup0 : ColGroup1;
+    int colGroup = instMesh ? kInstanceColGroup : kMeshColGroup;
     int colMask = ~colGroup;
 
     mDynamicsWorld->addCollisionObject(paintCol.mCollisionObject, colGroup, colMask);
@@ -354,7 +357,7 @@ void PaintManager::UpdatePaintReticle()
         {
             GetWorld(0)->OverrideDynamicsWorld(mDynamicsWorld);
             Primitive3D* hitPrim = nullptr;
-            mSpherePosition = camera->TraceScreenToWorld(mouseX, mouseY, ~kPaintSphereColGroup, &hitPrim);
+            mSpherePosition = camera->TraceScreenToWorld(mouseX, mouseY, ~(kPaintSphereColGroup | kInstanceColGroup), &hitPrim);
             mSphereValid = (hitPrim != nullptr);
             GetWorld(0)->RestoreDynamicsWorld();
         }
