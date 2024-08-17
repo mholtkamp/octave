@@ -878,7 +878,7 @@ void GatherGeometryLightUniformData(GeometryData& outData, Material* material, c
 
     if (staticMeshComp != nullptr)
     {
-        bool useBakedLighting = staticMeshComp->GetBakeLighting();
+        bool useBakedLighting = staticMeshComp->HasBakedLighting();
         bool hasBakedColor = (staticMeshComp->GetInstanceColors().size() > 0);
 
         // Don't reapply static/all lighting if the mesh already has baked lighting.
