@@ -136,10 +136,11 @@ public:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
+    glm::vec4 GetCollisionDebugColor();
+
 protected:
 
     static btCollisionShape* GetEmptyCollisionShape();
-    glm::vec4 GetCollisionDebugColor();
 
     bool IsRigidBodyInWorld() const;
     void EnableRigidBody(bool enable);

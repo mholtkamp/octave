@@ -45,6 +45,13 @@ void InstancedMesh3D::Tick(float deltaTime)
     UpdateInstanceData();
 }
 
+void InstancedMesh3D::EditorTick(float deltaTime)
+{
+    StaticMesh3D::EditorTick(deltaTime);
+    mInstanceDataUpdatedThisFrame = false;
+    UpdateInstanceData();
+}
+
 void InstancedMesh3D::SaveStream(Stream& stream)
 {
     StaticMesh3D::SaveStream(stream);
@@ -281,9 +288,14 @@ btCompoundShape* InstancedMesh3D::GeneratePaintCollisionShape()
         for (uint32_t i = 0; i < mInstanceData.size(); ++i)
         {
             // Add sphere children!
-            glm::vec3 center = staticMesh->GetBounds().mCenter + mInstanceData[i].mPosition;
-            float radius = staticMesh->GetBounds().mRadius * mInstanceData[i].mScale.x;
-            btSphereShape* sphereShape = new btSphereShape(radius);
+            glm::mat4 instTransform = MakeTransform(
+                mInstanceData[i].mPosition,
+                mInstanceData[i].mRotation,
+                mInstanceData[i].mScale);
+
+            float scale = staticMesh->GetBounds().mRadius * mInstanceData[i].mScale.x;
+            glm::vec3 center = instTransform * glm::vec4(staticMesh->GetBounds().mCenter * scale, 1.0f);
+            btSphereShape* sphereShape = new btSphereShape(scale);
             btTransform transform = MakeBulletTransform(center, {0.0f, 0.0f, 0.0f});
             compoundShape->addChildShape(transform, sphereShape);
         }

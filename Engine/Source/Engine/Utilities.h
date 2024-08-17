@@ -33,6 +33,7 @@ void CreateSymLink(const std::string& original, const std::string& link);
 
 btCollisionShape* CloneCollisionShape(const btCollisionShape* srcShape);
 void DestroyCollisionShape(btCollisionShape* shape);
+void DebugDrawCollisionShape(btCollisionShape* collisionShape, Node3D* node, const glm::mat4& parentTransform, std::vector<DebugDraw>* inoutDraws = nullptr);
 
 uint32_t OctHashString(const char* key);
 void GatherAllNodeNames(std::vector<std::string>& outNames);

@@ -71,9 +71,10 @@ void PaintManager::Update()
     mRadius = glm::clamp(mRadius, kPaintMinRadius, kPaintMaxRadius);
     mOpacity = glm::clamp(mOpacity, 0.0f, 1.0f);
 
+    UpdateDynamicsWorld();
+
     if (GetEditorState()->GetViewport3D()->ShouldHandleInput())
     {
-        UpdateDynamicsWorld();
         UpdatePaintReticle();
 
         PaintMode paintMode = GetEditorState()->GetPaintMode();
@@ -194,6 +195,11 @@ void PaintManager::UpdateDynamicsWorld()
                     glm::vec3 curPosition = meshNode->GetWorldPosition();
                     glm::quat curRotation = meshNode->GetWorldRotationQuat();
                     glm::vec3 curScale = meshNode->GetWorldScale();
+
+                    if (instMesh != nullptr)
+                    {
+                        instMesh->UpdateInstanceData();
+                    }
 
                     // Does this node already exist in the map?
                     auto it = mMeshCollisionMap.find(meshNode);
@@ -599,7 +605,23 @@ void PaintManager::UpdatePaintDrawColors()
 
 void PaintManager::UpdatePaintDrawInstances()
 {
+    // Debug collision
+#if 0
+    for (int32_t i = 0; i < mDynamicsWorld->getNumCollisionObjects(); ++i)
+    {
+        btCollisionObject* colObj = mDynamicsWorld->getCollisionObjectArray()[i];
+        btCollisionShape* colShape = colObj->getCollisionShape();
 
+        if (colObj && colShape)
+        {
+            Primitive3D* prim3d = (Primitive3D*)colObj->getUserPointer();
+            if (prim3d != nullptr)
+            {
+                DebugDrawCollisionShape(colShape, prim3d, prim3d->GetTransform());
+            }
+        }
+    }
+#endif
 }
 
 void PaintManager::FinishAdjustment()
