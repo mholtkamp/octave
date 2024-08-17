@@ -404,6 +404,20 @@ glm::mat4 MakeTransform(glm::vec3 translation, glm::vec3 rotation, glm::vec3 sca
     return transform;
 }
 
+btTransform MakeBulletTransform(glm::vec3 translation, glm::vec3 rotationDegrees)
+{
+    btTransform retTransform;
+
+    glm::quat rotQuat = glm::quat(rotationDegrees * DEGREES_TO_RADIANS);
+    glm::vec3 pos = translation;
+
+    btQuaternion bRotation = btQuaternion(rotQuat.x, rotQuat.y, rotQuat.z, rotQuat.w);
+    btVector3 bPosition = { pos.x, pos.y, pos.z };
+    retTransform = btTransform(bRotation, bPosition);
+
+    return retTransform;
+}
+
 void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
 {
     std::vector<Property> extProps;

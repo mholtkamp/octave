@@ -13,6 +13,7 @@
 struct PaintMeshCollision
 {
     btCollisionObject* mCollisionObject = nullptr;
+    StaticMesh3D* mNode = nullptr;
     StaticMeshRef mMesh;
     glm::vec3 mPosition = {};
     glm::quat mRotation = {};

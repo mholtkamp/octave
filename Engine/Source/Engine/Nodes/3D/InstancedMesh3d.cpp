@@ -207,6 +207,19 @@ InstancedMeshCompResource* InstancedMesh3D::GetInstancedMeshResource()
     return &mInstancedMeshResource;
 }
 
+btTransform InstancedMesh3D::CalculateInstanceBulletTransform(int32_t instanceIndex)
+{
+    btTransform retTransform;
+
+    if (instanceIndex >= 0 &&
+        instanceIndex < int32_t(mInstanceData.size()))
+    {
+        retTransform = MakeBulletTransform(mInstanceData[instanceIndex].mPosition, mInstanceData[instanceIndex].mRotation);
+    }
+
+    return retTransform;
+}
+
 glm::mat4 InstancedMesh3D::CalculateInstanceTransform(int32_t instanceIndex)
 {
     glm::mat4 transform = glm::mat4(1);
@@ -228,25 +241,66 @@ glm::mat4 InstancedMesh3D::CalculateInstanceTransform(int32_t instanceIndex)
     return transform;
 }
 
-void InstancedMesh3D::RecreateCollisionShape()
+Bounds InstancedMesh3D::CalculateInstanceBounds(int32_t instanceIndex)
 {
+    Bounds retBounds;
+
+    if (instanceIndex >= 0 &&
+        instanceIndex < int32_t(mInstanceData.size()))
+    {
+        glm::mat4 instTransform = MakeTransform(
+            mInstanceData[instanceIndex].mPosition,
+            mInstanceData[instanceIndex].mRotation,
+            mInstanceData[instanceIndex].mScale);
+
+        retBounds.mCenter = GetTransform() * instTransform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        retBounds.mRadius = glm::vec3(GetTransform() * instTransform * glm::vec4(1.0f, 1.0f, 1.0f, 0.0f)).x;
+    }
+
+    return retBounds;
+}
+
+btCompoundShape* InstancedMesh3D::GeneratePaintCollisionShape()
+{
+    btCompoundShape* compoundShape = nullptr;
+
     StaticMesh* staticMesh = mStaticMesh.Get<StaticMesh>();
 
-    if (staticMesh != nullptr && 
-        mInstanceData.size() > 0 &&
-        ((mUseTriangleCollision && staticMesh->GetTriangleCollisionShape()) ||
-        (!mUseTriangleCollision && staticMesh->GetCollisionShape())))
+    if (staticMesh != nullptr &&
+        mInstanceData.size() > 0)
     {
-        btCompoundShape* compoundShape = new btCompoundShape();
+        compoundShape = new btCompoundShape();
 
         for (uint32_t i = 0; i < mInstanceData.size(); ++i)
         {
-            glm::quat rotQuat = glm::quat(mInstanceData[i].mRotation * DEGREES_TO_RADIANS);
-            glm::vec3 pos = mInstanceData[i].mPosition;
+            // Add sphere children!
+            glm::vec3 center = staticMesh->GetBounds().mCenter + mInstanceData[i].mPosition;
+            float radius = staticMesh->GetBounds().mRadius * mInstanceData[i].mScale.x;
+            btSphereShape* sphereShape = new btSphereShape(radius);
+            btTransform transform = MakeBulletTransform(center, {0.0f, 0.0f, 0.0f});
+            compoundShape->addChildShape(transform, sphereShape);
+        }
 
-            btQuaternion bRotation = btQuaternion(rotQuat.x, rotQuat.y, rotQuat.z, rotQuat.w);
-            btVector3 bPosition = { pos.x, pos.y, pos.z };
-            btTransform bTransform = btTransform(bRotation, bPosition);
+        float nodeScale = GetWorldScale().x;
+        compoundShape->setLocalScaling(btVector3(nodeScale, nodeScale, nodeScale));
+    }
+
+    return compoundShape;
+}
+
+btCompoundShape* InstancedMesh3D::GenerateTriangleCollisionShape()
+{
+    btCompoundShape* compoundShape = nullptr;
+    StaticMesh* staticMesh = mStaticMesh.Get<StaticMesh>();
+
+    if (staticMesh != nullptr &&
+        mInstanceData.size() > 0)
+    {
+        compoundShape = new btCompoundShape();
+
+        for (uint32_t i = 0; i < mInstanceData.size(); ++i)
+        {
+            btTransform bTransform = CalculateInstanceBulletTransform(i);
 
             // Instances can only have uniform scale for now (based on X component)
             float scale = mInstanceData[i].mScale.x;
@@ -264,7 +318,21 @@ void InstancedMesh3D::RecreateCollisionShape()
                 compoundShape->addChildShape(bTransform, newShape);
             }
         }
+    }
 
+    return compoundShape;
+}
+
+void InstancedMesh3D::RecreateCollisionShape()
+{
+    StaticMesh* staticMesh = mStaticMesh.Get<StaticMesh>();
+
+    if (staticMesh != nullptr && 
+        mInstanceData.size() > 0 &&
+        ((mUseTriangleCollision && staticMesh->GetTriangleCollisionShape()) ||
+        (!mUseTriangleCollision && staticMesh->GetCollisionShape())))
+    {
+        btCompoundShape* compoundShape = GenerateTriangleCollisionShape();
         SetCollisionShape(compoundShape);
     }
     else

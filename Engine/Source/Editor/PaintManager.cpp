@@ -9,6 +9,8 @@
 #include "Viewport3d.h"
 #include "ActionManager.h"
 
+#include "Nodes/3D/InstancedMesh3d.h"
+
 constexpr uint8_t kPaintSphereColGroup = 0x80;
 constexpr float kPaintMaxRadius = 10000.0f;
 constexpr float kPaintMinRadius = 0.01f;
@@ -106,13 +108,32 @@ static btCollisionShape* CreateTriCollisionShape(StaticMesh* mesh, glm::vec3 sca
 
 void PaintManager::AddPaintMeshCollision(const PaintMeshCollision& paintCol)
 {
-    btTransform transform = ConvertToBulletTransform(paintCol.mPosition, paintCol.mRotation);
-    paintCol.mCollisionObject->setWorldTransform(transform);
+    InstancedMesh3D* instMesh = paintCol.mNode->As<InstancedMesh3D>();
 
-    btCollisionShape* triShape = CreateTriCollisionShape(paintCol.mMesh.Get<StaticMesh>(), paintCol.mScale);
-    paintCol.mCollisionObject->setCollisionShape(triShape);
+    if (instMesh)
+    {
+        btCollisionShape* colShape = instMesh->GeneratePaintCollisionShape();
 
-    mDynamicsWorld->addCollisionObject(paintCol.mCollisionObject);
+        if (colShape != nullptr)
+        {
+            btTransform transform = ConvertToBulletTransform(paintCol.mPosition, paintCol.mRotation);
+            paintCol.mCollisionObject->setWorldTransform(transform);
+            paintCol.mCollisionObject->setCollisionShape(colShape);
+        }
+    }
+    else
+    {
+        btTransform transform = ConvertToBulletTransform(paintCol.mPosition, paintCol.mRotation);
+        paintCol.mCollisionObject->setWorldTransform(transform);
+
+        btCollisionShape* triShape = CreateTriCollisionShape(paintCol.mMesh.Get<StaticMesh>(), paintCol.mScale);
+        paintCol.mCollisionObject->setCollisionShape(triShape);
+    }
+
+    int colGroup = instMesh ? ColGroup0 : ColGroup1;
+    int colMask = ~colGroup;
+
+    mDynamicsWorld->addCollisionObject(paintCol.mCollisionObject, colGroup, colMask);
 }
 
 void PaintManager::RemovePaintMeshCollision(const PaintMeshCollision& paintCol)
@@ -124,7 +145,7 @@ void PaintManager::RemovePaintMeshCollision(const PaintMeshCollision& paintCol)
     if (colShape != nullptr)
     {
         paintCol.mCollisionObject->setCollisionShape(nullptr);
-        delete colShape;
+        DestroyCollisionShape(colShape);
         colShape = nullptr;
     }
 }
@@ -171,6 +192,7 @@ void PaintManager::UpdateDynamicsWorld()
 
                         PaintMeshCollision paintCol;
                         paintCol.mCollisionObject = colObject;
+                        paintCol.mNode = meshNode;
                         paintCol.mPosition = curPosition;
                         paintCol.mRotation = curRotation;
                         paintCol.mScale = curScale;

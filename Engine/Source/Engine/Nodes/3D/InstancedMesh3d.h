@@ -53,7 +53,12 @@ public:
 
     InstancedMeshCompResource* GetInstancedMeshResource();
 
+    btTransform CalculateInstanceBulletTransform(int32_t instanceIndex);
     glm::mat4 CalculateInstanceTransform(int32_t instanceIndex);
+    Bounds CalculateInstanceBounds(int32_t instanceIndex);
+
+    btCompoundShape* GeneratePaintCollisionShape();
+    btCompoundShape* GenerateTriangleCollisionShape();
 
 protected:
 
