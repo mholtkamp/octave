@@ -672,9 +672,12 @@ void PaintManager::UpdatePaintDraw()
                         randPoint += mSpherePosition;
 
                         RayTestResult rayResult;
-                        world->RayTest(randPoint + normal * 1000.0f, randPoint + normal * -1000.0f, kMeshColGroup, rayResult);
+                        world->RayTest(randPoint + normal * mRadius, randPoint + normal * -mRadius, kMeshColGroup, rayResult);
 
-                        if (rayResult.mHitNode != nullptr)
+                        float dist2 = glm::distance2(randPoint, mSpherePosition);
+
+                        if (rayResult.mHitNode != nullptr &&
+                            dist2 < (mRadius * mRadius))
                         {
                             randPoint = rayResult.mHitPosition;
 
