@@ -645,6 +645,8 @@ void PaintManager::UpdatePaintDraw()
 
                 int32_t numMeshes = int32_t(fNumMeshes + 0.5f);
 
+                glm::mat4 invParentTransform = glm::inverse(instMesh->GetParentTransform());
+
                 if (numMeshes > 0)
                 {
                     glm::vec3 normal = mSphereNormal;
@@ -674,6 +676,12 @@ void PaintManager::UpdatePaintDraw()
                     newInstData.mRotation = instRot + Maths::RandRange(mInstanceOptions.mMinRotation, mInstanceOptions.mMaxRotation);
                     float instScale = Maths::RandRange(mInstanceOptions.mMinScale, mInstanceOptions.mMaxScale);
                     newInstData.mScale = glm::vec3(instScale, instScale, instScale);
+
+                    // Transform from world to local space... at least position (probably need to do same for rot/scale)
+                    if (instMesh->GetParent())
+                    {
+                        newInstData.mPosition = invParentTransform * glm::vec4(newInstData.mPosition, 1.0f);
+                    }
 
                     mPendingInstanceData.mData.push_back(newInstData);
                     instMesh->AddInstanceData(newInstData);
@@ -711,7 +719,7 @@ void PaintManager::UpdatePaintDraw()
             mPendingInstanceData.mMeshNode->SetInstanceData(mPendingInstanceData.mOriginalData);
             ActionManager::Get()->EXE_SetInstanceData(
                 mPendingInstanceData.mMeshNode,
-                0,
+                -1,
                 mPendingInstanceData.mData);
         }
     }
