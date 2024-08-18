@@ -83,6 +83,7 @@ public:
     void RemovePaintMeshCollision(const PaintMeshCollision& col);
 
     void UpdateDynamicsWorld();
+    void UpdateHotkeys();
     void UpdatePaintReticle();
     void UpdatePaintDraw();
 

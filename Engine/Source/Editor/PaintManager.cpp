@@ -76,6 +76,7 @@ void PaintManager::Update()
 
     if (GetEditorState()->GetViewport3D()->ShouldHandleInput())
     {
+        UpdateHotkeys();
         UpdatePaintReticle();
         UpdatePaintDraw();
     }
@@ -290,6 +291,13 @@ void PaintManager::UpdateDynamicsWorld()
     }
 }
 
+void PaintManager::UpdateHotkeys()
+{
+    if (IsKeyJustDown(KEY_E))
+    {
+        mInstanceOptions.mErase = !mInstanceOptions.mErase;
+    }
+}
 
 void PaintManager::UpdatePaintReticle()
 {
@@ -644,7 +652,63 @@ void PaintManager::UpdatePaintDraw()
             {
                 if (mInstanceOptions.mErase)
                 {
+                    glm::mat4 nodeTransform = instMesh->GetTransform();
 
+#if 0
+                    // Use bounds to determine erase
+                    auto it = mMeshCollisionMap.find(instMesh);
+                    if (it != mMeshCollisionMap.end())
+                    {
+                        btCollisionShape* colShape = it->second.mCollisionObject->getCollisionShape();
+                        btCompoundShape* compShape = nullptr;
+                        if (colShape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE)
+                        {
+                            compShape = (btCompoundShape*)colShape;
+                        }
+
+                        OCT_ASSERT(compShape);
+                        int32_t numChildren = compShape->getNumChildShapes();
+                        for (int32_t c = numChildren - 1; c >= 0; --c)
+                        {
+                            btCollisionShape* childShape = compShape->getChildShape(c);
+                            OCT_ASSERT(childShape->getShapeType() == SPHERE_SHAPE_PROXYTYPE);
+                            btSphereShape* childSphere = (btSphereShape*) childShape;
+
+                            const btTransform& childTransform = compShape->getChildTransform(c);
+                            glm::vec3 childPos = BulletToGlm(childTransform.getOrigin());
+                            glm::vec3 childWorldPos = nodeTransform * glm::vec4(childPos, 1.0f);
+
+                            float dist2 = glm::distance2(childWorldPos, mSpherePosition);
+                            float boundsRad = (mRadius);
+                            float boundsRad2 = boundsRad * boundsRad;
+                            bool eraseInstance = (dist2 < boundsRad2);
+
+                            if (eraseInstance)
+                            {
+                                mPendingInstanceData.mData.erase(mPendingInstanceData.mData.begin() + c);
+                                instMesh->RemoveInstanceData(c);
+                            }
+                        }
+                    }
+#else
+                    // Use instance position to determine erase
+                    const float sphereRad2 = mRadius * mRadius;
+                    int32_t numInst = (int32_t)instMesh->GetNumInstances();
+
+                    for (int32_t i = numInst - 1; i >= 0; --i)
+                    {
+                        glm::vec3 instPos = instMesh->GetInstanceData(i).mPosition;
+                        instPos = nodeTransform * glm::vec4(instPos, 1.0f);
+
+                        float dist2 = glm::distance2(mSpherePosition, instPos);
+
+                        if (dist2 < sphereRad2)
+                        {
+                            mPendingInstanceData.mData.erase(mPendingInstanceData.mData.begin() + i);
+                            instMesh->RemoveInstanceData(i);
+                        }
+                    }
+#endif
                 }
                 else
                 {

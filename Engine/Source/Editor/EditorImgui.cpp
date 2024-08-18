@@ -3088,6 +3088,7 @@ static void DrawPaintInstancesPanel()
 
     ImGui::DragFloat("Radius", &pm->mRadius);
     ImGui::DragFloat("Opacity", &pm->mOpacity);
+    ImGui::DragFloat("Spacing", &pm->mSpacing);
     ImGui::DragFloat("Density", &pm->mInstanceOptions.mDensity);
     ImGui::DragFloat("Min Separation", &pm->mInstanceOptions.mMinSeparation);
     ImGui::OctDragScalarN("Min Position", ImGuiDataType_Float, &pm->mInstanceOptions.mMinPosition[0], 3, 1.0f, nullptr, nullptr, "%.2f", 0);
