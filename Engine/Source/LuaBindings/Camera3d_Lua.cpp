@@ -168,11 +168,13 @@ int Camera3D_Lua::TraceScreenToWorld(lua_State* L)
     uint8_t colMask = 0xff;
     if (!lua_isnone(L, 4)) { colMask = (uint8_t)CHECK_INTEGER(L, 4); }
 
-    Primitive3D* hitComp = nullptr;
-    glm::vec3 worldPos = comp->TraceScreenToWorld(x, y, colMask, &hitComp);
+    RayTestResult rayResult;
+    glm::vec3 worldPos = comp->TraceScreenToWorld(x, y, colMask, rayResult);
+
+    // TODO: Might want to return the ray test result as a table instead
 
     Vector_Lua::Create(L, worldPos);
-    Node_Lua::Create(L, hitComp);
+    Node_Lua::Create(L, rayResult.mHitNode);
     return 2;
 }
 

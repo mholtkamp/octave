@@ -70,22 +70,14 @@ void PaintManager::Update()
     // Always clamp paint parameters (Imgui might be adjusting them)
     mRadius = glm::clamp(mRadius, kPaintMinRadius, kPaintMaxRadius);
     mOpacity = glm::clamp(mOpacity, 0.0f, 1.0f);
+    mSpacing = glm::clamp(mSpacing, 1.0f, 100.0f);
 
     UpdateDynamicsWorld();
 
     if (GetEditorState()->GetViewport3D()->ShouldHandleInput())
     {
         UpdatePaintReticle();
-
-        PaintMode paintMode = GetEditorState()->GetPaintMode();
-        if (paintMode == PaintMode::Color)
-        {
-            UpdatePaintDrawColors();
-        }
-        else if (paintMode == PaintMode::Instance)
-        {
-            UpdatePaintDrawInstances();
-        }
+        UpdatePaintDraw();
     }
 }
 
@@ -374,9 +366,10 @@ void PaintManager::UpdatePaintReticle()
         if (camera)
         {
             GetWorld(0)->OverrideDynamicsWorld(mDynamicsWorld);
-            Primitive3D* hitPrim = nullptr;
-            mSpherePosition = camera->TraceScreenToWorld(mouseX, mouseY, ~(kPaintSphereColGroup | kInstanceColGroup), &hitPrim);
-            mSphereValid = (hitPrim != nullptr);
+            RayTestResult rayResult;
+            mSpherePosition = camera->TraceScreenToWorld(mouseX, mouseY, ~(kPaintSphereColGroup | kInstanceColGroup), rayResult);
+            mSphereNormal = rayResult.mHitNormal;
+            mSphereValid = (rayResult.mHitNode != nullptr);
             GetWorld(0)->RestoreDynamicsWorld();
         }
     }
@@ -396,14 +389,17 @@ void PaintManager::UpdatePaintReticle()
     }
 }
 
-void PaintManager::UpdatePaintDrawColors()
+void PaintManager::UpdatePaintDraw()
 {
+    World* world = GetWorld(0);
+    PaintMode paintMode = GetEditorState()->GetPaintMode();
+
     int32_t mouseX = 0;
     int32_t mouseY = 0;
     GetMousePosition(mouseX, mouseY);
     glm::vec2 curMousePos = glm::vec2(float(mouseX), float(mouseY));
 
-    Camera3D* camera = GetWorld(0)->GetActiveCamera();
+    Camera3D* camera = world->GetActiveCamera();
     glm::vec3 cameraFwd = camera ? camera->GetForwardVector() : glm::vec3(0.0f, 0.0f, -1.0f);
 
     bool paint = false;
@@ -411,6 +407,7 @@ void PaintManager::UpdatePaintDrawColors()
     {
         paint = true;
         mPendingColorData.clear();
+        mPendingInstanceData = PendingInstanceData();
     }
     else if (IsMouseButtonDown(MOUSE_LEFT))
     {
@@ -435,7 +432,7 @@ void PaintManager::UpdatePaintDrawColors()
         paint = false;
     }
 
-    if (paint)
+    if (paint && paintMode == PaintMode::Color)
     {
         std::vector<ActionSetInstanceColorsData> colorData;
 
@@ -578,50 +575,146 @@ void PaintManager::UpdatePaintDrawColors()
             }
         }
     }
-
-    if (IsMouseButtonJustUp(MOUSE_LEFT) &&
-        mPendingColorData.size() > 0)
+    else if (paint && paintMode == PaintMode::Instance)
     {
-        // Commit our pending color data changes
-        std::vector<ActionSetInstanceColorsData> actionData;
-
-        for (uint32_t i = 0; i < mPendingColorData.size(); ++i)
-        {
-            if (mPendingColorData[i].mAnyVertexPainted)
-            {
-                // Revert instance colors on mesh3d
-                mPendingColorData[i].mData.mMesh3d->SetInstanceColors(mPendingColorData[i].mOriginalData.mColors, mPendingColorData[i].mOriginalData.mBakedLight);
-
-                actionData.push_back(mPendingColorData[i].mData);
-            }
-        }
-
-        if (actionData.size() > 0)
-        {
-            ActionManager::Get()->EXE_SetInstanceColors(actionData);
-        }
-    }
-}
-
-void PaintManager::UpdatePaintDrawInstances()
-{
-    // Debug collision
 #if 0
-    for (int32_t i = 0; i < mDynamicsWorld->getNumCollisionObjects(); ++i)
-    {
-        btCollisionObject* colObj = mDynamicsWorld->getCollisionObjectArray()[i];
-        btCollisionShape* colShape = colObj->getCollisionShape();
-
-        if (colObj && colShape)
+        for (int32_t i = 0; i < mDynamicsWorld->getNumCollisionObjects(); ++i)
         {
-            Primitive3D* prim3d = (Primitive3D*)colObj->getUserPointer();
-            if (prim3d != nullptr)
+            btCollisionObject* colObj = mDynamicsWorld->getCollisionObjectArray()[i];
+            btCollisionShape* colShape = colObj->getCollisionShape();
+
+            if (colObj && colShape)
             {
-                DebugDrawCollisionShape(colShape, prim3d, prim3d->GetTransform());
+                Primitive3D* prim3d = (Primitive3D*)colObj->getUserPointer();
+                if (prim3d != nullptr)
+                {
+                    DebugDrawCollisionShape(colShape, prim3d, prim3d->GetTransform());
+                }
+            }
+        }
+#endif
+        InstancedMesh3D* instMesh = nullptr;
+
+        if (mPendingInstanceData.mMeshNode != nullptr)
+        {
+            instMesh = mPendingInstanceData.mMeshNode;
+        }
+        else
+        {
+            StaticMesh* staticMesh = mInstanceOptions.mMesh.Get<StaticMesh>();
+            if (staticMesh != nullptr)
+            {
+                std::vector<InstancedMesh3D*> instNodes;
+                world->FindNodes<InstancedMesh3D>(instNodes);
+
+                for (uint32_t i = 0; i < instNodes.size(); ++i)
+                {
+                    if (instNodes[i]->GetStaticMesh() == staticMesh &&
+                        instNodes[i]->HasTag("Paint"))
+                    {
+                        instMesh = instNodes[i];
+                        break;
+                    }
+                }
+
+                if (instMesh == nullptr)
+                {
+                    instMesh = world->SpawnNode<InstancedMesh3D>();
+                    instMesh->SetName("Painted_" + staticMesh->GetName());
+                    instMesh->AddTag("Paint");
+                    instMesh->SetStaticMesh(staticMesh);
+                }
+            }
+
+            mPendingInstanceData.mMeshNode = instMesh;
+            mPendingInstanceData.mOriginalData = instMesh->GetInstanceData();
+        }
+
+        if (instMesh != nullptr)
+        {
+            if (mInstanceOptions.mErase)
+            {
+
+            }
+            else
+            {
+                // Determine number of meshes to paint. Function of Radius, Density, and Opacity.
+                float area = PI * mRadius * mRadius;
+                float fNumMeshes = area * mInstanceOptions.mDensity;
+                fNumMeshes *= mOpacity;
+
+                int32_t numMeshes = int32_t(fNumMeshes + 0.5f);
+
+                if (numMeshes > 0)
+                {
+                    glm::vec3 normal = mSphereNormal;
+                    glm::vec3 helperVec = fabs(normal.y > 0.9f) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+                    glm::vec3 tangent = glm::cross(normal, helperVec);
+
+                    // Cast N ray tests at random points.
+                    float randDist = mRadius * sqrtf(Maths::RandRange(0.0f, 1.0f));
+                    float angle = Maths::RandRange(0.0f, 360.0f);
+
+                    glm::vec3 randPoint = tangent * randDist;
+                    randPoint = glm::rotate(randPoint, angle * DEGREES_TO_RADIANS, normal);
+                    randPoint += mSpherePosition;
+
+                    RayTestResult rayResult;
+                    world->RayTest(randPoint + normal * 1000.0f, randPoint + normal * -1000.0f, kMeshColGroup, rayResult);
+                    randPoint = rayResult.mHitPosition;
+
+                    glm::vec3 instRot = glm::vec3(0.0f, 0.0f, 0.0f);
+                    if (mInstanceOptions.mAlignWithNormal)
+                    {
+                        instRot = Maths::VectorToRotation(rayResult.mHitNormal);
+                    }
+
+                    MeshInstanceData newInstData;
+                    newInstData.mPosition = randPoint + Maths::RandRange(mInstanceOptions.mMinPosition, mInstanceOptions.mMaxPosition);
+                    newInstData.mRotation = instRot + Maths::RandRange(mInstanceOptions.mMinRotation, mInstanceOptions.mMaxRotation);
+                    float instScale = Maths::RandRange(mInstanceOptions.mMinScale, mInstanceOptions.mMaxScale);
+                    newInstData.mScale = glm::vec3(instScale, instScale, instScale);
+
+                    mPendingInstanceData.mData.push_back(newInstData);
+                    instMesh->AddInstanceData(newInstData);
+                }
             }
         }
     }
-#endif
+
+    if (IsMouseButtonJustUp(MOUSE_LEFT))
+    {
+
+        if (mPendingColorData.size() > 0)
+        {
+            // Commit our pending color data changes
+            std::vector<ActionSetInstanceColorsData> actionData;
+
+            for (uint32_t i = 0; i < mPendingColorData.size(); ++i)
+            {
+                if (mPendingColorData[i].mAnyVertexPainted)
+                {
+                    // Revert instance colors on mesh3d
+                    mPendingColorData[i].mData.mMesh3d->SetInstanceColors(mPendingColorData[i].mOriginalData.mColors, mPendingColorData[i].mOriginalData.mBakedLight);
+
+                    actionData.push_back(mPendingColorData[i].mData);
+                }
+            }
+
+            if (actionData.size() > 0)
+            {
+                ActionManager::Get()->EXE_SetInstanceColors(actionData);
+            }
+        }
+        else if (mPendingInstanceData.mMeshNode != nullptr)
+        {
+            mPendingInstanceData.mMeshNode->SetInstanceData(mPendingInstanceData.mOriginalData);
+            ActionManager::Get()->EXE_SetInstanceData(
+                mPendingInstanceData.mMeshNode,
+                0,
+                mPendingInstanceData.mData);
+        }
+    }
 }
 
 void PaintManager::FinishAdjustment()

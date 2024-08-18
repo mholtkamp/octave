@@ -63,6 +63,13 @@ struct PendingColorData
     bool mAnyVertexPainted = false;
 };
 
+struct PendingInstanceData
+{
+    InstancedMesh3D* mMeshNode = nullptr;
+    std::vector<MeshInstanceData> mData;
+    std::vector<MeshInstanceData> mOriginalData;
+};
+
 class PaintManager
 {
 public:
@@ -77,8 +84,7 @@ public:
 
     void UpdateDynamicsWorld();
     void UpdatePaintReticle();
-    void UpdatePaintDrawColors();
-    void UpdatePaintDrawInstances();
+    void UpdatePaintDraw();
 
     void FinishAdjustment();
 
@@ -100,6 +106,7 @@ public:
     MaterialRef mSphereMaterial;
 
     glm::vec3 mSpherePosition = {};
+    glm::vec3 mSphereNormal = { 0.0f, 1.0f, 0.0f };
     float mRadius = 1.0f;
     float mOpacity = 1.0f;
     bool mSphereValid = false;
@@ -125,6 +132,7 @@ public:
 
     // Pending data
     std::vector<PendingColorData> mPendingColorData;
+    PendingInstanceData mPendingInstanceData;
 };
 
 #endif

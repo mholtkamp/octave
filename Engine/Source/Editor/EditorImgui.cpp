@@ -3054,6 +3054,7 @@ static void DrawPaintColorsPanel()
     PaintManager* pm = GetEditorState()->mPaintManager;
     ImGui::DragFloat("Radius", &pm->mRadius);
     ImGui::DragFloat("Opacity", &pm->mOpacity);
+    ImGui::DragFloat("Spacing", &pm->mSpacing);
     ImGui::OctColorEdit4("Color", &pm->mColorOptions.mColor[0], 0);
     
     const char* blendModeStrings[] = {"Mix", "Add", "Subtract", "Multiply", "+Alpha", "-Alpha"};
@@ -3080,7 +3081,7 @@ static void DrawPaintInstancesPanel()
 
     PaintManager* pm = GetEditorState()->mPaintManager;
 
-    Property prop(DatumType::Asset, "Instance Mesh", nullptr, &pm->mInstanceOptions.mMesh, 1, nullptr, (int32_t)StaticMesh::GetStaticType());
+    Property prop(DatumType::Asset, "Instance Mesh", nullptr, &(pm->mInstanceOptions.mMesh), 1, nullptr, (int32_t)StaticMesh::GetStaticType());
     DrawAssetProperty(prop, 0, nullptr, PropertyOwnerType::Count);
     ImGui::SameLine();
     ImGui::Text("Mesh");

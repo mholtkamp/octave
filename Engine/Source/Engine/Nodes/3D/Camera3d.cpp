@@ -347,7 +347,7 @@ glm::vec3 Camera3D::ScreenToWorldPosition(int32_t x, int32_t y)
     return worldPos;
 }
 
-glm::vec3 Camera3D::TraceScreenToWorld(int32_t x, int32_t y, uint8_t colMask, Primitive3D** outComp)
+glm::vec3 Camera3D::TraceScreenToWorld(int32_t x, int32_t y, uint8_t colMask, RayTestResult& rayResult)
 {
     glm::vec3 worldPos = ScreenToWorldPosition(x, y);
 
@@ -355,15 +355,9 @@ glm::vec3 Camera3D::TraceScreenToWorld(int32_t x, int32_t y, uint8_t colMask, Pr
     glm::vec3 rayDir = Maths::SafeNormalize(worldPos - startPos);
     glm::vec3 endPos = startPos + rayDir * GetFarZ();
 
-    RayTestResult result;
-    GetWorld()->RayTest(startPos, endPos, colMask, result);
+    GetWorld()->RayTest(startPos, endPos, colMask, rayResult);
 
-    if (outComp != nullptr)
-    {
-        *outComp = result.mHitNode;
-    }
-
-    return result.mHitPosition;
+    return rayResult.mHitPosition;
 }
 
 const bool Camera3D::IsEditorCamera()
