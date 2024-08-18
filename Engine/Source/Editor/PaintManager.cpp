@@ -628,6 +628,7 @@ void PaintManager::UpdatePaintDraw()
 
             mPendingInstanceData.mMeshNode = instMesh;
             mPendingInstanceData.mOriginalData = instMesh->GetInstanceData();
+            mPendingInstanceData.mData = mPendingInstanceData.mOriginalData;
         }
 
         if (instMesh != nullptr)
