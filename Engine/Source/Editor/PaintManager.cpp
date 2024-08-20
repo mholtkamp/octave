@@ -714,14 +714,20 @@ void PaintManager::UpdatePaintDraw()
                 {
                     // Determine number of meshes to paint. Function of Radius, Density, and Opacity.
                     float area = PI * mRadius * mRadius;
-                    float fNumMeshes = area * mInstanceOptions.mDensity;
+                    float density = mInstanceOptions.mDensity;
+                    if (density < 1.0f)
+                    {
+                        density = pow(density, 2.0f);
+                    }
+                    float fNumMeshes = area * mInstanceOptions.mDensity * 0.01f;
                     fNumMeshes *= mOpacity;
 
                     int32_t numMeshes = int32_t(fNumMeshes + 0.5f);
+                    numMeshes = glm::clamp(numMeshes, 1, 1000);
 
                     glm::mat4 invParentTransform = glm::inverse(instMesh->GetParentTransform());
 
-                    if (numMeshes > 0)
+                    for (int32_t i = 0; i < numMeshes; ++i)
                     {
                         glm::vec3 normal = mSphereNormal;
                         glm::vec3 helperVec = (fabs(normal.y) > 0.9f) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
