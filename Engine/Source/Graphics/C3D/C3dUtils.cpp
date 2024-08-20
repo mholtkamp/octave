@@ -276,11 +276,6 @@ void BindMaterial(MaterialLite* material, bool useBakedLighting)
         C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
         C3D_TexEnvFunc(env, C3D_Alpha, alphaBlend ? GPU_MODULATE : GPU_REPLACE);
 
-        if (!unlit || useBakedLighting)
-        {
-            C3D_TexEnvScale(env, C3D_RGB, GPU_TEVSCALE_4);
-        }
-
         if (vertexColorBlend && (unlit || useBakedLighting))
         {
             C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_ALPHA, GPU_TEVOP_RGB_SRC_COLOR);
@@ -419,6 +414,10 @@ void SetupLightEnv(LightEnv& lightEnv, bool dynamicOnly)
         float lightRadius = lightData.mRadius;
 
         glm::vec4 lightColor = lightData.mColor / C3D_DYNAMIC_LIGHT_SCALE;
+        lightColor *= lightData.mIntensity;
+        lightColor = glm::clamp(lightColor,
+            glm::vec4(0.0f, 0.0f, 0.0f, 0.0f),
+            glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
         C3D_FVec lightVec = FVec4_New(lightPosVS.x, lightPosVS.y, lightPosVS.z, 1.0f);
 

@@ -15,7 +15,7 @@ public:
 
     void CopyParticleSystem(const ParticleSystem* src);
 
-    virtual void SaveStream(Stream& stream);
-    virtual void LoadStream(Stream& stream);
+    virtual void SaveStream(Stream& stream, Platform platform) override;
+    virtual void LoadStream(Stream& stream, Platform platform) override;
 };
 

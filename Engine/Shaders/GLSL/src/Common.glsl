@@ -85,6 +85,11 @@ struct LightData
     
     vec3 mDirection;
     uint mType;
+
+    float mIntensity;
+    float mPad0;
+    float mPad1;
+    float mPad2;
 };
 
 struct MeshInstanceData

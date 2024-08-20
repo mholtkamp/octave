@@ -714,6 +714,7 @@ static void SetLightData(LightData& lightData, Light3D* comp)
     lightData.mDomain = comp->GetLightingDomain();
     lightData.mPosition = comp->GetWorldPosition();
     lightData.mColor = comp->GetColor();
+    lightData.mIntensity = glm::max(comp->GetIntensity(), 0.0f);
 
     RuntimeId id = comp->InstanceRuntimeId();
 

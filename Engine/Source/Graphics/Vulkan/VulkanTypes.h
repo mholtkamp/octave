@@ -104,6 +104,11 @@ struct LightUniformData
 
     glm::vec3 mDirection;
     uint32_t mType;
+
+    float mIntensity;
+    float mPad0;
+    float mPad1;
+    float mPad2;
 };
 
 struct MeshInstanceBufferData

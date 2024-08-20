@@ -1644,6 +1644,7 @@ void VulkanContext::UpdateGlobalUniformData()
                 lightUni.mColor = light.mColor;
                 lightUni.mDirection = light.mDirection;
                 lightUni.mType = (uint32_t)light.mType;
+                lightUni.mIntensity = light.mIntensity;
             }
             else
             {
@@ -1652,6 +1653,7 @@ void VulkanContext::UpdateGlobalUniformData()
                 lightUni.mColor = glm::vec4(0, 0, 0, 1);
                 lightUni.mDirection = glm::vec3(1.0f, 0.0f, 0.0f);
                 lightUni.mType = (uint32_t)LightType::Count;
+                lightUni.mIntensity = 0.0f;
             }
         }
 

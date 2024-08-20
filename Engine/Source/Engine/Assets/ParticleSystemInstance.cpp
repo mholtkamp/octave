@@ -48,12 +48,12 @@ void ParticleSystemInstance::CopyParticleSystem(const ParticleSystem* src)
     SetParams(src->GetParams());
 }
 
-void ParticleSystemInstance::SaveStream(Stream& stream)
+void ParticleSystemInstance::SaveStream(Stream& stream, Platform platform)
 {
     // Do nothing
 }
 
-void ParticleSystemInstance::LoadStream(Stream& stream)
+void ParticleSystemInstance::LoadStream(Stream& stream, Platform platform)
 {
     // Do nothing
 }

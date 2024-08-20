@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include "EngineTypes.h"
 
-#define GX_DYNAMIC_LIGHT_SCALE 4.0f
+#define GX_DYNAMIC_LIGHT_SCALE 1.0f
 
 class World;
 

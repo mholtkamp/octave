@@ -155,7 +155,7 @@ void main()
             if (light.mType == LIGHT_TYPE_DIRECTIONAL)
             {
                 vec3 L = -1.0 * normalize(light.mDirection);
-                vec4 lightColor = light.mColor;
+                vec4 lightColor = light.mColor * light.mIntensity;
 
                 vec4 dirLighting = CalculateLighting(shadingModel, L, N, V, lightColor, 1.0);
                 float shadowVis = 1.0; //CalculateShadow(inShadowCoordinate);
@@ -164,7 +164,7 @@ void main()
             else if (light.mType == LIGHT_TYPE_POINT)
             {
                 vec3 lightPos = light.mPosition;
-                vec4 lightColor = light.mColor;
+                vec4 lightColor = light.mColor * light.mIntensity;
                 float lightRadius = light.mRadius;
 
                 vec3 toLight = lightPos - inPosition;

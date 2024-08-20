@@ -166,6 +166,7 @@ struct LightData
     glm::vec4 mColor;
     glm::vec3 mDirection;
     float mRadius;
+    float mIntensity;
 };
 
 struct DebugDraw
