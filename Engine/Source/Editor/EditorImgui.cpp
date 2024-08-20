@@ -3086,17 +3086,17 @@ static void DrawPaintInstancesPanel()
     ImGui::SameLine();
     ImGui::Text("Mesh");
 
-    ImGui::DragFloat("Radius", &pm->mRadius);
-    ImGui::DragFloat("Opacity", &pm->mOpacity);
-    ImGui::DragFloat("Spacing", &pm->mSpacing);
-    ImGui::DragFloat("Density", &pm->mInstanceOptions.mDensity);
-    ImGui::DragFloat("Min Separation", &pm->mInstanceOptions.mMinSeparation);
+    ImGui::DragFloat("Radius", &pm->mRadius, 0.1f, 0.0f, 100.0f);
+    ImGui::DragFloat("Opacity", &pm->mOpacity, 0.01f, 0.0f, 1.0f);
+    ImGui::DragFloat("Spacing", &pm->mSpacing, 0.5f, 0.0f, 500.0f);
+    ImGui::DragFloat("Density", &pm->mInstanceOptions.mDensity, 0.05f, 0.0f, 100.0f);
+    ImGui::DragFloat("Min Separation", &pm->mInstanceOptions.mMinSeparation, 0.05f, 0.0f, 100.0f);
     ImGui::OctDragScalarN("Min Position", ImGuiDataType_Float, &pm->mInstanceOptions.mMinPosition[0], 3, 1.0f, nullptr, nullptr, "%.2f", 0);
     ImGui::OctDragScalarN("Max Position", ImGuiDataType_Float, &pm->mInstanceOptions.mMaxPosition[0], 3, 1.0f, nullptr, nullptr, "%.2f", 0);
     ImGui::OctDragScalarN("Min Rotation", ImGuiDataType_Float, &pm->mInstanceOptions.mMinRotation[0], 3, 1.0f, nullptr, nullptr, "%.2f", 0);
     ImGui::OctDragScalarN("Max Rotation", ImGuiDataType_Float, &pm->mInstanceOptions.mMaxRotation[0], 3, 1.0f, nullptr, nullptr, "%.2f", 0);
-    ImGui::DragFloat("Min Scale", &pm->mInstanceOptions.mMinScale);
-    ImGui::DragFloat("Max Scale", &pm->mInstanceOptions.mMaxScale);
+    ImGui::DragFloat("Min Scale", &pm->mInstanceOptions.mMinScale, 0.05f, 0.0f, 100.0f);
+    ImGui::DragFloat("Max Scale", &pm->mInstanceOptions.mMaxScale, 0.05f, 0.0f, 100.0f);
     ImGui::Checkbox("Align With Normal", &pm->mInstanceOptions.mAlignWithNormal);
     ImGui::Checkbox("Only Render Selected", &pm->mOnlyRenderSelected);
     ImGui::Checkbox("Erase", &pm->mInstanceOptions.mErase);

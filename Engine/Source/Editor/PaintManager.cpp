@@ -725,6 +725,8 @@ void PaintManager::UpdatePaintDraw()
                     int32_t numMeshes = int32_t(fNumMeshes + 0.5f);
                     numMeshes = glm::clamp(numMeshes, 1, 1000);
 
+                    const float minSep2 = mInstanceOptions.mMinSeparation * mInstanceOptions.mMinSeparation;
+
                     glm::mat4 invParentTransform = glm::inverse(instMesh->GetParentTransform());
 
                     for (int32_t i = 0; i < numMeshes; ++i)
@@ -750,6 +752,29 @@ void PaintManager::UpdatePaintDraw()
                             dist2 < (mRadius * mRadius))
                         {
                             randPoint = rayResult.mHitPosition;
+
+                            if (mInstanceOptions.mMinSeparation > 0.0f)
+                            {
+                                glm::vec3 randPointLocal = invParentTransform * glm::vec4(randPoint, 1.0f);
+
+                                const std::vector<MeshInstanceData>& instData = instMesh->GetInstanceData();
+                                bool tooClose = false;
+
+                                for (const MeshInstanceData& instDatum : instData)
+                                {
+                                    float instDist2 = glm::distance2(randPointLocal, instDatum.mPosition);
+                                    if (instDist2 < minSep2)
+                                    {
+                                        tooClose = true;
+                                        break;;
+                                    }
+                                }
+
+                                if (tooClose)
+                                {
+                                    continue;
+                                }
+                            }
 
                             glm::vec3 instRot = glm::vec3(0.0f, 0.0f, 0.0f);
                             if (mInstanceOptions.mAlignWithNormal)
@@ -790,7 +815,6 @@ void PaintManager::UpdatePaintDraw()
 
     if (IsMouseButtonJustUp(MOUSE_LEFT))
     {
-
         if (mPendingColorData.size() > 0)
         {
             // Commit our pending color data changes
