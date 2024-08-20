@@ -389,7 +389,15 @@ void PaintManager::UpdatePaintReticle()
     }
 
     // Draw the sphere
-    glm::vec4 matColor = glm::mix(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), mOpacity);
+    const glm::vec4 kFullOpacityColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    const glm::vec4 kZeroOpacityColor = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+    glm::vec4 matColor = glm::mix(kZeroOpacityColor, kFullOpacityColor, mOpacity);
+    if (GetEditorState()->GetPaintMode() == PaintMode::Instance)
+    {
+        // In instance paint mode, use full opacity color when painting, and zero opacity color when erasing.
+        matColor = mInstanceOptions.mErase ? kZeroOpacityColor : kFullOpacityColor;
+    }
+
     mSphereMaterial.Get<MaterialLite>()->SetFresnelColor(matColor);
 
     if (mSphereValid)
@@ -712,7 +720,7 @@ void PaintManager::UpdatePaintDraw()
                 }
                 else
                 {
-                    // Determine number of meshes to paint. Function of Radius, Density, and Opacity.
+                    // Determine number of meshes to paint. Function of Radius and Density.
                     float area = PI * mRadius * mRadius;
                     float density = mInstanceOptions.mDensity;
                     if (density < 1.0f)
@@ -720,7 +728,6 @@ void PaintManager::UpdatePaintDraw()
                         density = pow(density, 2.0f);
                     }
                     float fNumMeshes = area * mInstanceOptions.mDensity * 0.01f;
-                    fNumMeshes *= mOpacity;
 
                     int32_t numMeshes = int32_t(fNumMeshes + 0.5f);
                     numMeshes = glm::clamp(numMeshes, 1, 1000);

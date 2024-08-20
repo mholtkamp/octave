@@ -3052,9 +3052,9 @@ static void DrawPaintColorsPanel()
     ImGui::Begin("Paint Colors", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
     PaintManager* pm = GetEditorState()->mPaintManager;
-    ImGui::DragFloat("Radius", &pm->mRadius);
-    ImGui::DragFloat("Opacity", &pm->mOpacity);
-    ImGui::DragFloat("Spacing", &pm->mSpacing);
+    ImGui::DragFloat("Radius", &pm->mRadius, 0.1f, 0.0f, 100.0f);
+    ImGui::DragFloat("Opacity", &pm->mOpacity, 0.01f, 0.0f, 1.0f);
+    ImGui::DragFloat("Spacing", &pm->mSpacing, 0.5f, 0.0f, 500.0f);
     ImGui::OctColorEdit4("Color", &pm->mColorOptions.mColor[0], 0);
     
     const char* blendModeStrings[] = {"Mix", "Add", "Subtract", "Multiply", "+Alpha", "-Alpha"};
@@ -3087,7 +3087,6 @@ static void DrawPaintInstancesPanel()
     ImGui::Text("Mesh");
 
     ImGui::DragFloat("Radius", &pm->mRadius, 0.1f, 0.0f, 100.0f);
-    ImGui::DragFloat("Opacity", &pm->mOpacity, 0.01f, 0.0f, 1.0f);
     ImGui::DragFloat("Spacing", &pm->mSpacing, 0.5f, 0.0f, 500.0f);
     ImGui::DragFloat("Density", &pm->mInstanceOptions.mDensity, 0.05f, 0.0f, 100.0f);
     ImGui::DragFloat("Min Separation", &pm->mInstanceOptions.mMinSeparation, 0.05f, 0.0f, 100.0f);
