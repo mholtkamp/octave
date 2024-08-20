@@ -524,7 +524,7 @@ void PaintManager::UpdatePaintDraw()
                     float dist2 = glm::distance2(mSpherePosition, vertWorldPos);
 
                     bool alignedNormal = true;
-                    if (mOnlyFacingNormals)
+                    if (mColorOptions.mOnlyFacingNormals)
                     {
                         glm::vec3 normalLocal = meshHasColor ? ((VertexColor*)vertices)[v].mNormal : ((Vertex*)vertices)[v].mNormal;
                         glm::vec3 normalWorld = glm::vec3(transform * glm::vec4(normalLocal, 0.0f));

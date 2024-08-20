@@ -37,6 +37,7 @@ struct PaintColorOptions
 {
     PaintBlendMode mBlendMode = PaintBlendMode::Mix;
     glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    bool mOnlyFacingNormals = true;
 };
 
 struct PaintInstanceOptions
@@ -120,8 +121,7 @@ public:
     bool mAdjustmentFinished = false;
     glm::vec2 mAdjustmentAnchor = {};
 
-    bool mOnlyRenderSelected = true;
-    bool mOnlyFacingNormals = true;
+    bool mOnlyRenderSelected = false;
 
     // Spacing is the distance we need to move between paints (in screen space currently)
     float mSpacing = 10.0f;

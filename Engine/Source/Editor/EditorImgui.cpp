@@ -3061,7 +3061,7 @@ static void DrawPaintColorsPanel()
     int32_t blendModeCount = OCT_ARRAY_SIZE(blendModeStrings);
     ImGui::Combo("Blend Mode", (int*)&(pm->mColorOptions.mBlendMode), blendModeStrings, blendModeCount);
 
-    ImGui::Checkbox("Only Facing Normals", &pm->mOnlyFacingNormals);
+    ImGui::Checkbox("Only Facing Normals", &pm->mColorOptions.mOnlyFacingNormals);
     ImGui::Checkbox("Only Render Selected", &pm->mOnlyRenderSelected);
 
     ImGui::End();
@@ -3098,6 +3098,7 @@ static void DrawPaintInstancesPanel()
     ImGui::DragFloat("Min Scale", &pm->mInstanceOptions.mMinScale);
     ImGui::DragFloat("Max Scale", &pm->mInstanceOptions.mMaxScale);
     ImGui::Checkbox("Align With Normal", &pm->mInstanceOptions.mAlignWithNormal);
+    ImGui::Checkbox("Only Render Selected", &pm->mOnlyRenderSelected);
     ImGui::Checkbox("Erase", &pm->mInstanceOptions.mErase);
 
     ImGui::PopItemWidth();
