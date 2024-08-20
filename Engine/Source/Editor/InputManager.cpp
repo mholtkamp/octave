@@ -192,6 +192,7 @@ void InputManager::UpdateHotkeys()
             else if (IsKeyJustDown(KEY_3))
             {
                 GetEditorState()->SetEditorMode(EditorMode::Scene3D);
+                GetEditorState()->SetPaintMode(PaintMode::None);
             }
             else if (IsKeyJustDown(KEY_4))
             {
