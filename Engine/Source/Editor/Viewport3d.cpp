@@ -389,7 +389,28 @@ void Viewport3D::HandleDefaultControls()
 
         if (IsKeyJustDown(KEY_DELETE))
         {
-            ActionManager::Get()->DeleteSelectedNodes();
+            Node* selNode = GetEditorState()->GetSelectedNode();
+            int32_t selInstance = GetEditorState()->GetSelectedInstance();
+            InstancedMesh3D* instMesh = selNode ? selNode->As<InstancedMesh3D>() : nullptr;
+
+            if (instMesh && selInstance >= 0)
+            {
+                // If a specific instance is selected, delete that instance
+                std::vector<MeshInstanceData> meshInstData = instMesh->GetInstanceData();
+                if (selInstance < meshInstData.size())
+                {
+                    meshInstData.erase(meshInstData.begin() + selInstance);
+                    ActionManager::Get()->EXE_SetInstanceData(instMesh, -1, meshInstData);
+                }
+                else
+                {
+                    LogError("Can't delete invalid instance index");
+                }
+            }
+            else
+            {
+                ActionManager::Get()->DeleteSelectedNodes();
+            }
         }
 
         if (controlDown && IsKeyJustDown(KEY_D))
