@@ -177,7 +177,7 @@ void InputManager::UpdateHotkeys()
             ReloadAllScripts();
         }
 
-        if (altDown &&
+        if (ctrlDown &&
             (GetEditorState()->GetViewport3D()->ShouldHandleInput() || 
              GetEditorState()->GetViewport2D()->ShouldHandleInput()))
         {
