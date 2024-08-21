@@ -55,6 +55,7 @@ SOURCES		:=	Source \
 				Source/System Source/System/Linux \
 				Source/Graphics \
 				Source/Graphics/Vulkan \
+				Source/Graphics/Vulkan/PostProcess \
 				Source/Input \
 				Source/Input/Linux \
 				Source/Audio \
