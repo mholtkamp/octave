@@ -764,6 +764,9 @@
     <ClCompile Include="Source\System\3DS\System_3DS.cpp">
       <Filter>Source Files\System\3DS</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\InstancedMesh3d_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1448,6 +1451,9 @@
     </ClInclude>
     <ClInclude Include="Source\Graphics\C3D\DoubleBuffer.h">
       <Filter>Source Files\Graphics\C3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\InstancedMesh3d_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

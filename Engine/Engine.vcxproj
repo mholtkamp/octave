@@ -711,6 +711,7 @@
     <ClCompile Include="Source\LuaBindings\Capsule3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\CheckBox_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\ComboBox_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\InstancedMesh3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\MaterialBase_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Material_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\NodeRef_Lua.cpp" />
@@ -959,6 +960,7 @@
     <ClInclude Include="Source\LuaBindings\Capsule3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\CheckBox_Lua.h" />
     <ClInclude Include="Source\LuaBindings\ComboBox_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\InstancedMesh3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\MaterialBase_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Material_Lua.h" />
     <ClInclude Include="Source\LuaBindings\NodeRef_Lua.h" />
