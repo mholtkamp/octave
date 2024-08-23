@@ -533,7 +533,7 @@ enum KeyCode
     KEY_ALT_R = 113,
 
     KEY_INSERT = 106,
-    KEY_DELETE = 107,
+    KEY_DELETE = 119,
     KEY_HOME = 97,
     KEY_END = 103,
     KEY_PAGE_UP = 112,
