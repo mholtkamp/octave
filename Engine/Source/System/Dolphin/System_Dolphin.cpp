@@ -665,8 +665,22 @@ std::string SYS_GetClipboardText()
 // Misc
 void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 {
+#if 1
     vprintf(format, arg);
     printf("\n");
+#else
+    // Log to file (for easier debugging)
+    // DO NOT DO BOTH! arg list can only be used once.
+    FILE* file = fopen("Log.txt", "a");
+
+    if (file != nullptr)
+    {
+        vfprintf(file, format, arg);
+        fprintf(file, "\n");
+        fclose(file);
+        file = nullptr;
+    }
+#endif
 }
 
 void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
