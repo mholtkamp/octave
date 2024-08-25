@@ -912,6 +912,7 @@ void Renderer::GatherLightData(World* world)
             previewLight.mDomain = LightingDomain::Dynamic;
             previewLight.mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
             previewLight.mRadius = 0.0f;
+            previewLight.mIntensity = 1.0f;
             previewLight.mType = LightType::Directional;
             mLightData.push_back(previewLight);
         }
