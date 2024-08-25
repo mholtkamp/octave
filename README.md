@@ -7,7 +7,7 @@ Setup instructions below.
 ## Windows Setup
 1. Download and Install:
 	- Visual Studio Community 2022 (with C++ support)
-	- Vulkan SDK (During install select "Shader Toolchain Debug Symbols - 64 bit" and deselect all other options)
+	- Vulkan SDK version 1.3.275.0 (During install select "Shader Toolchain Debug Symbols - 64 bit" and deselect all other options)
     - devkitPPC for GameCube/Wii development (Optional)
     - devkitARM for 3DS development (Optional)
 2. Build shaders by running compile.bat in Engine/Shaders/GLSL
@@ -22,11 +22,7 @@ Setup instructions below.
 2. sudo apt-get install make
 3. sudo apt-get install libx11-dev
 4. sudo apt-get install libasound2-dev
-5. Install Vulkan SDK
-    - wget -qO - http://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -
-    - sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-focal.list http://packages.lunarg.com/vulkan/lunarg-vulkan-focal.list
-    - sudo apt update
-    - sudo apt install vulkan-sdk
+5. Install Vulkan SDK version 1.3.275.0
 6. Install devkitPro Pacman for GameCube/Wii/3DS development (Optional) (https://devkitpro.org/wiki/devkitPro_pacman)
     - wget https://apt.devkitpro.org/install-devkitpro-pacman
     - chmod +x ./install-devkitpro-pacman
