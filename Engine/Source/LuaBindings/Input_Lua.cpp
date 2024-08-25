@@ -433,6 +433,7 @@ void Input_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, GetPointerPositionNormalized);
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsGamepadButtonDown);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, IsGamepadButtonDown, "IsGamepadDown");
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsGamepadButtonJustDown);
     REGISTER_TABLE_FUNC_EX(L, tableIdx, IsGamepadButtonJustDown, "IsGamepadPressed");
