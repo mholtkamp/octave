@@ -17,6 +17,23 @@
 #include <fat.h>
 #include <ogc/lwp_watchdog.h>
 
+static bool sFatInit = false;
+static void InitFAT()
+{
+    if (!sFatInit)
+    {
+        if (fatInitDefault())
+        {
+            LogDebug("FAT Initialized Successfully.\n");
+            sFatInit = true;
+        }
+        else
+        {
+            LogDebug("fatInitDefault() failure.\n");
+        }
+    }
+}
+
 void SYS_Initialize()
 {
     EngineState& engine = *GetEngineState();
@@ -64,14 +81,7 @@ void SYS_Initialize()
 
     //printf("\x1b[2;0H");
 
-    if (fatInitDefault())
-    {
-        LogDebug("FAT Initialized Successfully.\n");
-    }
-    else
-    {
-        LogDebug("fatInitDefault() failure.\n");
-    }
+    InitFAT();
 }
 
 void SYS_Shutdown()
@@ -103,6 +113,9 @@ bool SYS_DoesFileExist(const char* path, bool isAsset)
 
 void SYS_AcquireFileData(const char* path, bool isAsset, int32_t maxSize, char*& outData, uint32_t& outSize)
 {
+    // Need to init fat in case opening the Engine.ini in OctPreInitialize()
+    InitFAT();
+
     outData = nullptr;
     outSize = 0;
 
