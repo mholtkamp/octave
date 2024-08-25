@@ -159,9 +159,14 @@ bool Initialize(InitOptions& initOptions)
         initOptions.mHeight = sEngineConfig.mWindowHeight;
     }
 
-    if (GetPlatform() == Platform::Android)
+    if (GetPlatform() == Platform::Android ||
+        GetPlatform() == Platform::GameCube ||
+        GetPlatform() == Platform::Wii ||
+        GetPlatform() == Platform::N3DS)
     {
-        // Android is required to use the asset registry because you can't (easily) iterate directories.
+        // Use the asset registry to make loading faster. On consoles, scanning the SD card directories 
+        // can be extremely slow. Android used to require the asset registry, but I did add support for 
+        // iterating over the assets directory via Java. It's still probably faster to use the asset registry though.
         initOptions.mUseAssetRegistry = true;
     }
 
