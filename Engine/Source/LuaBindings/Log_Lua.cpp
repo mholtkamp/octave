@@ -44,6 +44,23 @@ int Log_Lua::Console(lua_State* L)
     return 0;
 }
 
+int Log_Lua::Enable(lua_State* L)
+{
+    bool value = CHECK_BOOLEAN(L, 1);
+
+    EnableLog(value);
+
+    return 0;
+}
+
+int Log_Lua::IsEnabled(lua_State* L)
+{
+    bool ret = IsLogEnabled();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 void Log_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -59,6 +76,9 @@ void Log_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, Error);
 
     REGISTER_TABLE_FUNC(L, tableIdx, Console);
+
+    REGISTER_TABLE_FUNC(L, tableIdx, Enable);
+    REGISTER_TABLE_FUNC(L, tableIdx, IsEnabled);
 
     lua_setglobal(L, LOG_LUA_NAME);
 

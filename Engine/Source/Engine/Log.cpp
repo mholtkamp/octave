@@ -8,6 +8,7 @@
 
 static bool sInitialized = false;
 static MutexObject* sMutex = nullptr;
+static bool sLoggingEnabled = false;
 
 void InitializeLog()
 {
@@ -16,6 +17,13 @@ void InitializeLog()
         sMutex = SYS_CreateMutex();
         sInitialized = true;
     }
+
+#if LOGGING_ENABLED
+    sLoggingEnabled = true;
+#else
+    sLoggingEnabled = false;
+#endif
+
 }
 
 void ShutdownLog()
@@ -26,6 +34,19 @@ void ShutdownLog()
         SYS_DestroyMutex(sMutex);
         sMutex = nullptr;
     }
+}
+
+
+void EnableLog(bool enable)
+{
+#if LOGGING_ENABLED
+    sLoggingEnabled = enable;
+#endif
+}
+
+bool IsLogEnabled()
+{
+    return sLoggingEnabled;
 }
 
 void LockLog()
@@ -64,6 +85,10 @@ void WriteConsoleMessage(glm::vec4 color, const char* format, va_list args)
 void LogDebug(const char* format, ...)
 {
 #if LOGGING_ENABLED
+
+    if (!sLoggingEnabled)
+        return;
+
     LockLog();
 
     {
@@ -93,6 +118,10 @@ void LogDebug(const char* format, ...)
 void LogWarning(const char* format, ...)
 {
 #if LOGGING_ENABLED
+
+    if (!sLoggingEnabled)
+        return;
+
     LockLog();
 
     {
@@ -121,6 +150,9 @@ void LogWarning(const char* format, ...)
 void LogError(const char* format, ...)
 {
 #if LOGGING_ENABLED
+
+    if (!sLoggingEnabled)
+        return;
 
     LockLog();
 
@@ -151,6 +183,9 @@ void LogError(const char* format, ...)
 void LogConsole(glm::vec4 color, const char* format, ...)
 {
 #if LOGGING_ENABLED
+
+    if (!sLoggingEnabled)
+        return;
 
     LockLog();
 

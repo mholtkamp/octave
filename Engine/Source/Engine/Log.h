@@ -8,6 +8,9 @@
 void InitializeLog();
 void ShutdownLog();
 
+void EnableLog(bool enable);
+bool IsLogEnabled();
+
 void LockLog();
 void UnlockLog();
 
