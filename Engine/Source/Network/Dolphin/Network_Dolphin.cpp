@@ -21,7 +21,7 @@ static bool sActive = false;
 void NET_Initialize()
 {
     struct in_addr localIp, netMask, gateway;
-    int32_t result = if_configex(&localIp, &netMask, &gateway, true, 3);
+    int32_t result = if_configex(&localIp, &netMask, &gateway, true, 1);
 
     if (result >= 0)
     {
