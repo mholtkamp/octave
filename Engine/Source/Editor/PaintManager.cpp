@@ -751,7 +751,9 @@ void PaintManager::UpdatePaintDraw()
                         randPoint += mSpherePosition;
 
                         RayTestResult rayResult;
+                        world->OverrideDynamicsWorld(mDynamicsWorld);
                         world->RayTest(randPoint + normal * mRadius, randPoint + normal * -mRadius, kMeshColGroup, rayResult);
+                        world->RestoreDynamicsWorld();
 
                         float dist2 = glm::distance2(randPoint, mSpherePosition);
 
