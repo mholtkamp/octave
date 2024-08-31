@@ -276,7 +276,9 @@ void StaticMesh3D::RecreateCollisionShape()
 
     if (staticMesh != nullptr)
     {
-        if (mUseTriangleCollision && staticMesh->GetTriangleCollisionShape())
+        if (mUseTriangleCollision && 
+            staticMesh->IsTriangleCollisionMeshEnabled() &&
+            staticMesh->GetTriangleCollisionShape())
         {
             glm::vec3 scale = GetWorldScale();
             btVector3 btscale = btVector3(scale.x, scale.y, scale.z);
