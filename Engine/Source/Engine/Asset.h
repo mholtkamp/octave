@@ -44,10 +44,6 @@ struct AssetHeader
     uint32_t mVersion = ASSET_CURRENT_VERSION;
     TypeId mType = INVALID_TYPE_ID;
     uint8_t mEmbedded = false;
-
-#if OCT_SCENE_CONVERSION
-    TypeId mOldType = INVALID_TYPE_ID;
-#endif
 };
 
 struct AssetStub
@@ -142,8 +138,4 @@ protected:
 
     std::string mName = "Asset";
     int32_t mRefCount = 0;
-
-#if OCT_SCENE_CONVERSION
-    TypeId mOldType = INVALID_TYPE_ID;
-#endif
 };

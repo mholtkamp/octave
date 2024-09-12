@@ -60,6 +60,3 @@
 #define LUA_TYPE_CHECK 1
 #define LUA_SAFE_NODE 0
 
-// Flag to enable conversion of old Level + Blueprint assets into new Scene format.
-// Delete this after converting Yami to nodes.
-#define OCT_SCENE_CONVERSION 1
