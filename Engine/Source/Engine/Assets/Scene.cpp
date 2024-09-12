@@ -705,12 +705,6 @@ Node* Scene::Instantiate()
                 // the root node spawned other nodes on Create() in C++.
                 Node* existingChild = parent->FindChild(mNodeDefs[i].mName, false);
 
-                // Hack for Rocket Rotators.
-                if (existingChild == nullptr && parent->GetType() == 1500601734)
-                {
-                    existingChild = parent->GetChild(0);
-                }
-
                 if (existingChild != nullptr &&
                     existingChild->GetType() == mNodeDefs[i].mType &&
                     existingChild->GetScene() == mNodeDefs[i].mScene.Get())
@@ -729,6 +723,13 @@ Node* Scene::Instantiate()
                         {
                             nativeChildren.erase(nativeChildren.begin() + n);
                             isNativeChild = true;
+
+                            // Add this node's children as new native child nodes.
+                            for (uint32_t c = 0; c < node->GetNumChildren(); ++c)
+                            {
+                                nativeChildren.push_back(node->GetChild(c));
+                            }
+
                             break;
                         }
                     }
