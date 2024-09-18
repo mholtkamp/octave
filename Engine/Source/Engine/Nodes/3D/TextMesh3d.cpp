@@ -100,7 +100,7 @@ void TextMesh3D::TickCommon(float deltaTime)
     UpdateVertexData();
     UploadVertexData();
 
-    LogError("Need to update TextMesh3D to properly use new material system");
+    // TODO: Need to update TextMesh3D to properly use new material system.
 
     // Update default material instance
     MaterialLite* matInst = mDefaultMatInstance.Get<MaterialLite>();
