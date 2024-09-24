@@ -276,6 +276,11 @@ void BindMaterial(MaterialLite* material, bool useBakedLighting)
         C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
         C3D_TexEnvFunc(env, C3D_Alpha, alphaBlend ? GPU_MODULATE : GPU_REPLACE);
 
+        if (!unlit || useBakedLighting)
+        {
+            C3D_TexEnvScale(env, C3D_RGB, GPU_TEVSCALE_4);
+        }
+
         if (vertexColorBlend && (unlit || useBakedLighting))
         {
             C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_ALPHA, GPU_TEVOP_RGB_SRC_COLOR);

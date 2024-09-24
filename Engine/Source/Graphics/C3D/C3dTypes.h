@@ -9,7 +9,7 @@
 #include "Graphics/GraphicsConstants.h"
 #include "EngineTypes.h"
 
-#define C3D_DYNAMIC_LIGHT_SCALE 1.0f
+#define C3D_DYNAMIC_LIGHT_SCALE 4.0f
 
 class World;
 
