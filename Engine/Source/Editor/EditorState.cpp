@@ -406,7 +406,11 @@ void EditorState::SetSelectedNode(Node* newNode)
 
         if (!IsShuttingDown())
         {
-            InspectObject(newNode);
+            if (newNode || GetSelectedNode())
+            {
+                InspectObject(newNode);
+            }
+
             ActionManager::Get()->OnSelectedNodeChanged();
         }
     }
@@ -455,11 +459,11 @@ void EditorState::RemoveSelectedNode(Node* node)
             nodes.erase(it);
         }
 
-        if (nodes.size() > 0)
+        if (nodes.size() > 0 && GetInspectedAsset() == nullptr)
         {
             InspectObject(nodes.back());
         }
-        else
+        else if (GetInspectedNode() == node)
         {
             InspectObject(nullptr);
         }
