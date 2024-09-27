@@ -111,11 +111,6 @@ Primitive3D::Primitive3D() :
     mMass(1.0f),
     mRestitution(0.0f),
     mFriction(0.5f),
-    mRollingFriction(0.0f),
-    mLinearDamping(0.0f),
-    mAngularDamping(0.0f),
-    mLinearFactor(1.0f, 1.0f, 1.0f),
-    mAngularFactor(1.0f, 1.0f, 1.0f),
     mCollisionGroup(ColGroup0),
     mCollisionMask(ColGroupAll),
     mPhysicsEnabled(false),
@@ -237,11 +232,6 @@ void Primitive3D::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Mass", this, &mMass, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Restitution", this, &mRestitution, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Friction", this, &mFriction, 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Float, "Rolling Friction", this, &mRollingFriction, 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Float, "Linear Damping", this, &mLinearDamping, 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Float, "Angular Damping", this, &mAngularDamping, 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Vector, "Linear Factor", this, &mLinearFactor, 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Vector, "Angular Factor", this, &mAngularFactor, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Byte, "Collision Group", this, &mCollisionGroup, 1, HandlePropChange, (int32_t)ByteExtra::FlagWidget));
     outProps.push_back(Property(DatumType::Byte, "Collision Mask", this, &mCollisionMask, 1, HandlePropChange, (int32_t)ByteExtra::FlagWidget));
 }
@@ -363,12 +353,12 @@ float Primitive3D::GetMass() const
 
 float Primitive3D::GetLinearDamping() const
 {
-    return mLinearDamping;
+    return mRigidBody ? mRigidBody->getLinearDamping() : 0.0f;
 }
 
 float Primitive3D::GetAngularDamping() const
 {
-    return mAngularDamping;
+    return mRigidBody ? mRigidBody->getAngularDamping() : 0.0f;
 }
 
 float Primitive3D::GetRestitution() const
@@ -383,17 +373,17 @@ float Primitive3D::GetFriction() const
 
 float Primitive3D::GetRollingFriction()
 {
-    return mRollingFriction;
+    return mRigidBody ? mRigidBody->getRollingFriction() : 0.0f;
 }
 
 glm::vec3 Primitive3D::GetLinearFactor() const
 {
-    return mLinearFactor;
+    return mRigidBody ? BulletToGlm(mRigidBody->getLinearFactor()) : glm::vec3(1.0f, 1.0f, 1.0f);
 }
 
 glm::vec3 Primitive3D::GetAngularFactor() const
 {
-    return mAngularFactor;
+    return mRigidBody ? BulletToGlm(mRigidBody->getAngularFactor()) : glm::vec3(1.0f, 1.0f, 1.0f);
 }
 
 uint8_t Primitive3D::GetCollisionGroup() const
@@ -421,22 +411,16 @@ void Primitive3D::SetMass(float mass)
 
 void Primitive3D::SetLinearDamping(float linearDamping)
 {
-    UPDATE_RIGID_BODY_PROPERTY
-    (
-        mLinearDamping,
-        linearDamping,
-        mRigidBody->setDamping(mLinearDamping, mAngularDamping)
-    );
+    EnableRigidBody(false);
+    if (mRigidBody) mRigidBody->setDamping(linearDamping, mRigidBody->getAngularDamping());
+    EnableRigidBody(true);
 }
 
 void Primitive3D::SetAngularDamping(float angularDamping)
 {
-    UPDATE_RIGID_BODY_PROPERTY
-    (
-        mAngularDamping,
-        angularDamping,
-        mRigidBody->setDamping(mLinearDamping, mAngularDamping)
-    );
+    EnableRigidBody(false);
+    if (mRigidBody) mRigidBody->setDamping(mRigidBody->getLinearDamping(), angularDamping);
+    EnableRigidBody(true);
 }
 
 void Primitive3D::SetRestitution(float restitution)
@@ -461,32 +445,23 @@ void Primitive3D::SetFriction(float friction)
 
 void Primitive3D::SetRollingFriction(float rollingFriction)
 {
-    UPDATE_RIGID_BODY_PROPERTY
-    (
-        mRollingFriction,
-        rollingFriction,
-        mRigidBody->setRollingFriction(rollingFriction)
-    );
+        EnableRigidBody(false);
+        if (mRigidBody) mRigidBody->setRollingFriction(rollingFriction);
+        EnableRigidBody(true);
 }
 
 void Primitive3D::SetLinearFactor(glm::vec3 linearFactor)
 {
-    UPDATE_RIGID_BODY_PROPERTY
-    (
-        mLinearFactor,
-        linearFactor,
-        mRigidBody->setLinearFactor({ linearFactor.x, linearFactor.y, linearFactor.z })
-    );
+    EnableRigidBody(false);
+    if (mRigidBody) mRigidBody->setLinearFactor(GlmToBullet(linearFactor));
+    EnableRigidBody(true);
 }
 
 void Primitive3D::SetAngularFactor(glm::vec3 angularFactor)
 {
-    UPDATE_RIGID_BODY_PROPERTY
-    (
-        mAngularFactor,
-        angularFactor,
-        mRigidBody->setAngularFactor({ angularFactor.x, angularFactor.y, angularFactor.z })
-    );
+    EnableRigidBody(false);
+    if (mRigidBody) mRigidBody->setAngularFactor(GlmToBullet(angularFactor));
+    EnableRigidBody(true);
 }
 
 void Primitive3D::SetCollisionGroup(uint8_t group)
@@ -919,12 +894,8 @@ void Primitive3D::EnableRigidBody(bool enable)
             // These values might have been set before the primitive had a valid mWorld, 
             // so initialize them here. Afterwards calls to the respective Primitive3D functions
             // will relay the changes to the mRigidbody.
-            mRigidBody->setDamping(mLinearDamping, mAngularDamping);
             mRigidBody->setRestitution(mRestitution);
             mRigidBody->setFriction(mFriction);
-            mRigidBody->setRollingFriction(mRollingFriction);
-            mRigidBody->setLinearFactor({ mLinearFactor.x, mLinearFactor.y, mLinearFactor.z });
-            mRigidBody->setAngularFactor({ mAngularFactor.x, mAngularFactor.y, mAngularFactor.z });
         }
 
         if (!IsRigidBodyInWorld())

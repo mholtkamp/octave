@@ -154,11 +154,6 @@ protected:
     float mMass;
     float mRestitution;
     float mFriction;
-    float mRollingFriction;
-    float mLinearDamping;
-    float mAngularDamping;
-    glm::vec3 mLinearFactor;
-    glm::vec3 mAngularFactor;
     uint8_t mCollisionGroup;
     uint8_t mCollisionMask;
 
