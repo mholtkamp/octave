@@ -24,6 +24,8 @@ struct Light3D_Lua
     static int SetCastShadows(lua_State* L);
     static int ShouldCastShadows(lua_State* L);
     static int GetDomain(lua_State* L);
+    static int GetLightingChannels(lua_State* L);
+    static int SetLightingChannels(lua_State* L);
 
     static void Bind();
 };

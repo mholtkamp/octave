@@ -414,6 +414,26 @@ int Primitive3D_Lua::ShouldReceiveSimpleShadows(lua_State* L)
     return 1;
 }
 
+int Primitive3D_Lua::GetLightingChannels(lua_State* L)
+{
+    Primitive3D* comp = CHECK_PRIMITIVE_3D(L, 1);
+
+    int32_t ret = (int32_t)comp->GetLightingChannels();
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+
+int Primitive3D_Lua::SetLightingChannels(lua_State* L)
+{
+    Primitive3D* comp = CHECK_PRIMITIVE_3D(L, 1);
+    int32_t value = CHECK_INTEGER(L, 2);
+
+    comp->SetLightingChannels((uint8_t)value);
+
+    return 0;
+}
+
 int Primitive3D_Lua::SweepToWorldPosition(lua_State* L)
 {
     Primitive3D* prim = CHECK_PRIMITIVE_3D(L, 1);
@@ -531,6 +551,10 @@ void Primitive3D_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, EnableReceiveSimpleShadows);
 
     REGISTER_TABLE_FUNC(L, mtIndex, ShouldReceiveSimpleShadows);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, GetLightingChannels);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, SetLightingChannels);
 
     REGISTER_TABLE_FUNC(L, mtIndex, SweepToWorldPosition);
     REGISTER_TABLE_FUNC_EX(L, mtIndex, SweepToWorldPosition, "SweepToPosition"); // Alias

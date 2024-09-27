@@ -712,6 +712,7 @@ void Renderer::GatherDrawData(World* world)
 static void SetLightData(LightData& lightData, Light3D* comp)
 {
     lightData.mDomain = comp->GetLightingDomain();
+    lightData.mLightingChannels = comp->GetLightingChannels();
     lightData.mPosition = comp->GetWorldPosition();
     lightData.mColor = comp->GetColor();
     lightData.mIntensity = glm::max(comp->GetIntensity(), 0.0f);
@@ -910,6 +911,7 @@ void Renderer::GatherLightData(World* world)
             previewLight.mColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
             previewLight.mDirection = glm::vec3(0.57735f, -0.57735, -0.57735);
             previewLight.mDomain = LightingDomain::Dynamic;
+            previewLight.mLightingChannels = 0x01;
             previewLight.mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
             previewLight.mRadius = 0.0f;
             previewLight.mIntensity = 1.0f;

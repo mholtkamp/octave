@@ -104,24 +104,7 @@ bool Primitive3D::HandlePropChange(Datum* datum, uint32_t index, const void* new
     return success;
 }
 
-Primitive3D::Primitive3D() :
-    mRigidBody(nullptr),
-    mMotionState(nullptr),
-    mCollisionShape(nullptr),
-    mMass(1.0f),
-    mRestitution(0.0f),
-    mFriction(0.5f),
-    mCollisionGroup(ColGroup0),
-    mCollisionMask(ColGroupAll),
-    mPhysicsEnabled(false),
-    mCollisionEnabled(false),
-    mOverlapsEnabled(false),
-    mCastShadows(false),
-    mReceiveShadows(true),
-    mReceiveSimpleShadows(true)
-    //mBeginOverlapHandler(nullptr),
-    //mEndOverlapHandler(nullptr),
-    //mCollisionHandler(nullptr)
+Primitive3D::Primitive3D()
 {
 
 }
@@ -234,6 +217,7 @@ void Primitive3D::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Friction", this, &mFriction, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Byte, "Collision Group", this, &mCollisionGroup, 1, HandlePropChange, (int32_t)ByteExtra::FlagWidget));
     outProps.push_back(Property(DatumType::Byte, "Collision Mask", this, &mCollisionMask, 1, HandlePropChange, (int32_t)ByteExtra::FlagWidget));
+    outProps.push_back(Property(DatumType::Byte, "Lighting Channels", this, &mLightingChannels, 1, nullptr, (int32_t)ByteExtra::FlagWidget));
 }
 
 void Primitive3D::SetWorld(World* world)
@@ -700,6 +684,16 @@ void Primitive3D::EnableReceiveSimpleShadows(bool enable)
 bool Primitive3D::ShouldReceiveSimpleShadows() const
 {
     return mReceiveSimpleShadows;
+}
+
+uint8_t Primitive3D::GetLightingChannels() const
+{
+    return mLightingChannels;
+}
+
+void Primitive3D::SetLightingChannels(uint8_t channels)
+{
+    mLightingChannels = channels;
 }
 
 VertexType Primitive3D::GetVertexType() const

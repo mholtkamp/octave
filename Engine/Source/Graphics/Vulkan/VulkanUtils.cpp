@@ -868,16 +868,19 @@ void WriteGeometryUniformData(GeometryData& outData, World* world, Node3D* comp,
     }
 }
 
-void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds, StaticMesh3D* staticMeshComp)
+void GatherGeometryLightUniformData(GeometryData& outData, Primitive3D* primitive, Material* material, bool isStaticMesh)
 {
     // Find overlapping point lights
     uint32_t numLights = 0;
 
     bool useAllDomain = true;
     bool useStaticDomain = false;
+    uint8_t lightingChannels = primitive->GetLightingChannels();
+    Bounds bounds = primitive->GetBounds();
 
-    if (staticMeshComp != nullptr)
+    if (isStaticMesh)
     {
+        StaticMesh3D* staticMeshComp = (StaticMesh3D*)primitive;
         bool useBakedLighting = staticMeshComp->HasBakedLighting();
         bool hasBakedColor = (staticMeshComp->GetInstanceColors().size() > 0);
 
@@ -899,7 +902,8 @@ void GatherGeometryLightUniformData(GeometryData& outData, Material* material, c
             LightingDomain domain = lights[i].mDomain;
 
             if ((domain == LightingDomain::Static && !useStaticDomain) ||
-                (domain == LightingDomain::All && !useAllDomain))
+                (domain == LightingDomain::All && !useAllDomain) ||
+                ((lights[i].mLightingChannels & lightingChannels) == 0))
             {
                 continue;
             }
@@ -1509,7 +1513,7 @@ void BindGeometryDescriptorSet(StaticMesh3D* staticMeshComp)
     WriteGeometryUniformData(ubo, world, staticMeshComp, staticMeshComp->GetRenderTransform());
     ubo.mHasBakedLighting = staticMeshComp->HasBakedLighting();
 
-    GatherGeometryLightUniformData(ubo, staticMeshComp->GetMaterial(), staticMeshComp->GetBounds(), staticMeshComp);
+    GatherGeometryLightUniformData(ubo, staticMeshComp, staticMeshComp->GetMaterial(), true);
 
     UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
 
@@ -1725,7 +1729,7 @@ void BindGeometryDescriptorSet(SkeletalMesh3D* skeletalMeshComp)
     {
         SkinnedGeometryData ubo = {};
         WriteGeometryUniformData(ubo.mBase, world, skeletalMeshComp, transform);
-        GatherGeometryLightUniformData(ubo.mBase, skeletalMeshComp->GetMaterial(), skeletalMeshComp->GetBounds());
+        GatherGeometryLightUniformData(ubo.mBase, skeletalMeshComp, skeletalMeshComp->GetMaterial(), false);
 
         for (uint32_t i = 0; i < skeletalMeshComp->GetNumBones(); ++i)
         {
@@ -1739,7 +1743,7 @@ void BindGeometryDescriptorSet(SkeletalMesh3D* skeletalMeshComp)
     {
         GeometryData ubo = {};
         WriteGeometryUniformData(ubo, world, skeletalMeshComp, transform);
-        GatherGeometryLightUniformData(ubo, skeletalMeshComp->GetMaterial(), skeletalMeshComp->GetBounds());
+        GatherGeometryLightUniformData(ubo, skeletalMeshComp, skeletalMeshComp->GetMaterial(), false);
 
         uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
     }
@@ -2065,7 +2069,7 @@ void BindGeometryDescriptorSet(TextMesh3D* textMeshComp)
     GeometryData ubo = {};
 
     WriteGeometryUniformData(ubo, world, textMeshComp, textMeshComp->GetRenderTransform());
-    GatherGeometryLightUniformData(ubo, textMeshComp->GetMaterial(), textMeshComp->GetBounds());
+    GatherGeometryLightUniformData(ubo, textMeshComp, textMeshComp->GetMaterial(), false);
 
     UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
     DescriptorSet::Begin("TextMesh3D DS")
@@ -2107,7 +2111,7 @@ void BindGeometryDescriptorSet(Particle3D* particleComp)
 
     GeometryData ubo = {};
     WriteGeometryUniformData(ubo, world, particleComp, transform);
-    GatherGeometryLightUniformData(ubo, particleComp->GetMaterial(), particleComp->GetBounds());
+    GatherGeometryLightUniformData(ubo, particleComp, particleComp->GetMaterial(), false);
 
     UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
     DescriptorSet::Begin("Particle3D DS")

@@ -30,10 +30,14 @@ public:
     void SetCastShadows(bool castShadows);
     bool ShouldCastShadows() const;
 
+    uint8_t GetLightingChannels() const;
+    void SetLightingChannels(uint8_t channels);
+
 protected:
 
-    glm::vec4 mColor;
-    float mIntensity;
-    LightingDomain mDomain;
-    bool mCastShadows;
+    glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float mIntensity = 1.0f;
+    LightingDomain mDomain = LightingDomain::Dynamic;
+    bool mCastShadows = true;
+    uint8_t mLightingChannels = 0x01;
 };

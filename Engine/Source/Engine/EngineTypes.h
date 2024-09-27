@@ -162,6 +162,7 @@ struct LightData
 {
     LightType mType;
     LightingDomain mDomain;
+    uint8_t mLightingChannels;
     glm::vec3 mPosition;
     glm::vec4 mColor;
     glm::vec3 mDirection;

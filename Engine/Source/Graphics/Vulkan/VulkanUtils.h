@@ -28,6 +28,7 @@ class ShadowMesh3D;
 class InstancedMesh3D;
 class TextMesh3D;
 class Particle3D;
+class Primitive3D;
 class Node3D;
 class Quad;
 class Text;
@@ -93,7 +94,7 @@ void EndDebugLabel();
 void WriteGeometryUniformData(GeometryData& outData, World* world, Node3D* comp, const glm::mat4& transform);
 void WriteMaterialLiteUniformData(MaterialData& outData, MaterialLite* material);
 void WriteMaterialCustomUniformData(MaterialData& outData, Material* material);
-void GatherGeometryLightUniformData(GeometryData& outData, Material* material, const Bounds& bounds, StaticMesh3D* staticMeshComp = nullptr);
+void GatherGeometryLightUniformData(GeometryData& outData, Primitive3D* primitive, Material* material, bool isStaticMesh);
 
 VkPipelineColorBlendAttachmentState GetBasicBlendState(BasicBlendState basicBlendState);
 
