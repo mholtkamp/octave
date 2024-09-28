@@ -14,7 +14,7 @@ class Widget;
 #include <gccore.h>
 
 void SetupLights();
-void SetupLightMask(ShadingModel shadingModel, bool useBakedLight);
+void SetupLightMask(ShadingModel shadingModel,  uint8_t lightingChannels, bool useBakedLight);
 void SetupLightingChannels();
 
 void PrepareForwardRendering();

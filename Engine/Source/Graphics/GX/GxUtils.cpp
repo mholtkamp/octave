@@ -78,7 +78,7 @@ void SetupLights()
     }
 }
 
-void SetupLightMask(ShadingModel shadingModel, bool useBakedLight)
+void SetupLightMask(ShadingModel shadingModel, uint8_t lightingChannels, bool useBakedLight)
 {
     uint8_t lightMask = 0;
 
@@ -91,6 +91,11 @@ void SetupLightMask(ShadingModel shadingModel, bool useBakedLight)
             const LightData& lightData = gGxContext.mLightData[i];
 
             if ((lightData.mDomain == LightingDomain::All) && useBakedLight)
+            {
+                continue;
+            }
+
+            if ((lightData.mLightingChannels & lightingChannels) == 0)
             {
                 continue;
             }
