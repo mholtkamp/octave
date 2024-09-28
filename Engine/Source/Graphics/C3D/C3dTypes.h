@@ -102,6 +102,8 @@ struct LightEnv
     C3D_LightLutDA mLightAttenuationLuts[8] = {};
     float mLightRadii[8] = {};
     C3D_Light mLights[8] = {};
+    uint8_t mLightingChannels = 0x01;
+    bool mBakedLighting = false;
 };
 
 struct C3dContext
@@ -119,7 +121,6 @@ struct C3dContext
     shaderProgram_s mShaderPrograms[uint32_t(ShaderId::Count)] = {};
 
     LightEnv mLightEnv;
-    LightEnv mBakedLightEnv;
     C3D_LightEnv mNoLightEnv = {};
     C3D_LightLut mLightLut[NumShininessLevels] = {};
     C3D_LightLut mFresnelLut[NumFresnelPowerLevels] = {};

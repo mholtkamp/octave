@@ -9,14 +9,15 @@
 #include "Maths.h"
 
 class StaticMesh;
+class Primitive3D;
 
 void CopyMatrixGlmToC3d(C3D_Mtx* dst, const glm::mat4& src);
 
 void BindVertexShader(ShaderId shaderId);
 void BindStaticMesh(StaticMesh* mesh, const void* instanceColors);
-void BindMaterial(MaterialLite* material, bool useBakedLighting);
-void SetupLighting();
-void SetupLightEnv(LightEnv& lightEnv, bool dynamicOnly);
+void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedLighting);
+void SetupLighting(uint8_t lightingChannels, bool bakedLighting);
+void SetupLightEnv(LightEnv& lightEnv, uint8_t lightingChannels, bool bakedLighting);
 void PrepareForwardRendering();
 void PrepareUiRendering();
 

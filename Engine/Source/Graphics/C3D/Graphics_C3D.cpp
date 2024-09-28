@@ -205,7 +205,8 @@ void GFX_BeginFrame()
         ProcessQueuedFrees();
     }
 
-    SetupLighting();
+    // Setup lighting now that our light array might have changed this frame
+    SetupLighting(0x01, false);
 
     gC3dContext.mLastBoundShaderId = ShaderId::Count;
     gC3dContext.mLastBoundMaterial = nullptr;
@@ -719,7 +720,7 @@ void GFX_DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverri
             OCT_ASSERT(material != nullptr);
         }
 
-        BindMaterial(material, useBakedLighting);
+        BindMaterial(material, staticMeshComp, useBakedLighting);
 
         // Upload Uniforms
         C3D_Mtx worldMtx;
@@ -879,7 +880,7 @@ void GFX_DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
             OCT_ASSERT(material != nullptr);
         }
 
-        BindMaterial(material, false);
+        BindMaterial(material, skeletalMeshComp, false);
 
         // Upload Uniforms
         C3D_Mtx worldMtx;
@@ -1091,7 +1092,7 @@ void GFX_DrawTextMeshComp(TextMesh3D* textMeshComp)
         OCT_ASSERT(material != nullptr);
     }
 
-    BindMaterial(material, false);
+    BindMaterial(material, textMeshComp, false);
 
     // Upload Uniforms
     C3D_Mtx worldMtx;
@@ -1228,7 +1229,7 @@ void GFX_DrawParticleComp(Particle3D* particleComp)
             OCT_ASSERT(material != nullptr);
         }
 
-        BindMaterial(material, false);
+        BindMaterial(material, particleComp, false);
 
         // Upload Uniforms
         C3D_Mtx worldMtx;
