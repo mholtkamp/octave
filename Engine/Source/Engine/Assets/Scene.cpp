@@ -341,12 +341,21 @@ Node* Scene::Instantiate()
 
         rootNode->SetScene(this);
 
+        // Do we want this behavior for native nodes? I ran into a problem where...
+        // I changed my scene for Buggy (in Navi) so that the root component was no longer a Sphere
+        // and instead made the Buggy node inherit from Node3D. I added a Sphere3D collider node as a childe.
+        // And when I loaded the Scene, it was removing the new sphere? I think the native nodes shouldn't be 
+        // deletable (like in Unreal) but... I feel like I added this loop to destroy unused nodes for a reason...
+        // Update: I think it might be if you rename a native node then you would get duplicates next time you open.
+        // So maybe, we should disable renaming native nodes (force them to be named in C++)
+#if 0
         // Destruct any native nodes that weren't matched by a SceneNodeDef
         for (uint32_t n = 0; n < nativeChildren.size(); ++n)
         {
             Node::Destruct(nativeChildren[n]);
             nativeChildren[n] = nullptr;
         }
+#endif
     }
 
     // Destruct any replicated non-root nodes. The server will need to send the NetMsgSpawn for those.
