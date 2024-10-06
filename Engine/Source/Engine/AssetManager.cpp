@@ -674,6 +674,7 @@ void AssetManager::ImportEngineAssets()
         ImportEngineAsset(StaticMesh::GetStaticType(), engineMeshes, "SM_Torus");
         ImportEngineAsset(StaticMesh::GetStaticType(), engineMeshes, "SM_CapsuleCylinder");
         ImportEngineAsset(StaticMesh::GetStaticType(), engineMeshes, "SM_CapsuleCap");
+        ImportEngineAsset(SkeletalMesh::GetStaticType(), engineMeshes, "SK_EighthNote");
         Renderer::Get()->LoadDefaultMeshes();
 
         // Create a default particle system

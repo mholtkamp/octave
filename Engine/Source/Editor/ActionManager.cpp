@@ -584,8 +584,7 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
     {
         SkeletalMesh3D* skNode = EXE_SpawnNode(SkeletalMesh3D::GetStaticType())->As<SkeletalMesh3D>();
 
-        // TODO: Add a default SkeletalMesh to Engine assets
-        SkeletalMesh* mesh = nullptr;
+        SkeletalMesh* mesh = LoadAsset<SkeletalMesh>("SK_EighthNote");
 
         if (srcAsset != nullptr &&
             srcAsset->GetType() == SkeletalMesh::GetStaticType())

@@ -309,13 +309,13 @@ void SkeletalMesh::Import(const std::string& path, ImportOptions* options)
 
         if (scene == nullptr)
         {
-            LogError("Failed to load dae file");
+            LogError("Failed to load dae/gltf file");
             OCT_ASSERT(0);
         }
 
         if (scene->mNumMeshes < 1)
         {
-            LogError("Failed to find any meshes in dae file");
+            LogError("Failed to find any meshes in dae/gltf file");
             OCT_ASSERT(0);
         }
 
