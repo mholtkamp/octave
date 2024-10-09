@@ -85,9 +85,27 @@ public:
     btDbvtBroadphase* GetBroadphase();
     void PurgeOverlaps(Primitive3D* prim);
 
-    void RayTest(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTestResult& outResult);
-    void RayTestMulti(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTestMultiResult& outResult);
-    void SweepTest(Primitive3D* primComp, glm::vec3 start, glm::vec3 end, uint8_t collisionMask, SweepTestResult& outResult);
+    void RayTest(
+        glm::vec3 start,
+        glm::vec3 end,
+        uint8_t collisionMask,
+        RayTestResult& outResult,
+        uint32_t numIgnoredObjects = 0,
+        btCollisionObject** ignoreObjects = nullptr);
+
+    void RayTestMulti(
+        glm::vec3 start,
+        glm::vec3 end,
+        uint8_t collisionMask,
+        RayTestMultiResult& outResult);
+
+    void SweepTest(
+        Primitive3D* primComp,
+        glm::vec3 start,
+        glm::vec3 end,
+        uint8_t collisionMask,
+        SweepTestResult& outResult);
+
     void SweepTest(
         btConvexShape* convexShape, 
         glm::vec3 start,

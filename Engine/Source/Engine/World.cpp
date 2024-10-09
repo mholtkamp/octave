@@ -398,7 +398,7 @@ void World::PurgeOverlaps(Primitive3D* prim)
     }
 }
 
-void World::RayTest(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTestResult& outResult)
+void World::RayTest(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTestResult& outResult, uint32_t numIgnoredObjects, btCollisionObject** ignoreObjects)
 {
     outResult.mStart = start;
     outResult.mEnd = end;
@@ -406,9 +406,11 @@ void World::RayTest(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTe
     btVector3 fromWorld = btVector3(start.x, start.y, start.z);
     btVector3 toWorld = btVector3(end.x, end.y, end.z);
 
-    btCollisionWorld::ClosestRayResultCallback result(fromWorld, toWorld);
+    IgnoreRayResultCallback result(fromWorld, toWorld);
     result.m_collisionFilterGroup = (short)ColGroupAll;
     result.m_collisionFilterMask = collisionMask;
+    result.mNumIgnoreObjects = numIgnoredObjects;
+    result.mIgnoreObjects = ignoreObjects;
 
     //mDynamicsWorld->rayTestSingle()
     mDynamicsWorld->rayTest(fromWorld, toWorld, result);

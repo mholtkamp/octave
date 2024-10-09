@@ -344,6 +344,15 @@ struct SweepTestResult
     float mHitFraction = 0.0f;
 };
 
+struct IgnoreRayResultCallback : btCollisionWorld::ClosestRayResultCallback
+{
+    IgnoreRayResultCallback(const btVector3& rayFromWorld, const btVector3& rayToWorld);
+    virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult & rayResult, bool normalInWorldSpace) override;
+
+    uint32_t mNumIgnoreObjects = 0;
+    btCollisionObject** mIgnoreObjects = nullptr;
+};
+
 struct IgnoreConvexResultCallback : btCollisionWorld::ClosestConvexResultCallback
 {
     IgnoreConvexResultCallback(

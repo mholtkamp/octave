@@ -281,9 +281,27 @@ int World_Lua::RayTest(lua_State* L)
     glm::vec3 start = CHECK_VECTOR(L, 2);
     glm::vec3 end = CHECK_VECTOR(L, 3);
     uint8_t colMask = (uint8_t) CHECK_INTEGER(L, 4);
+    std::vector<btCollisionObject*> ignoreObjects;
+
+    if (!lua_isnone(L, 5))
+    {
+        CHECK_TABLE(L, 5);
+        Datum ignoreTable = LuaObjectToDatum(L, 5);
+
+        for (uint32_t i = 1; i <= ignoreTable.GetCount(); ++i)
+        {
+            RTTI* rtti = ignoreTable.GetPointerField(i);
+            Primitive3D* prim = rtti ? rtti->As<Primitive3D>() : nullptr;
+
+            if (prim && prim->GetRigidBody())
+            {
+                ignoreObjects.push_back(prim->GetRigidBody());
+            }
+        }
+    }
 
     RayTestResult result;
-    world->RayTest(start, end, colMask, result);
+    world->RayTest(start, end, colMask, result, uint32_t(ignoreObjects.size()), ignoreObjects.data());
 
     lua_newtable(L);
     Vector_Lua::Create(L, result.mStart);

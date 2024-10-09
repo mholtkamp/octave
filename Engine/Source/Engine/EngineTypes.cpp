@@ -3,6 +3,26 @@
 
 #include <Bullet/btBulletDynamicsCommon.h>
 
+IgnoreRayResultCallback::IgnoreRayResultCallback(const btVector3& rayFromWorld, const btVector3& rayToWorld) :
+    ClosestRayResultCallback(rayFromWorld, rayToWorld)
+{
+
+}
+
+btScalar IgnoreRayResultCallback::addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
+{
+    for (uint32_t i = 0; i < mNumIgnoreObjects; ++i)
+    {
+        if (mIgnoreObjects[i] == rayResult.m_collisionObject)
+        {
+            // What are we supposed to return here?
+            return rayResult.m_hitFraction;
+        }
+    }
+
+    return btCollisionWorld::ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
+}
+
 IgnoreConvexResultCallback::IgnoreConvexResultCallback(
     const btVector3& convexFromWorld,
     const btVector3& convexToWorld) : 
