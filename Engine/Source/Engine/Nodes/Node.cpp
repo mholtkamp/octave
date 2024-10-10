@@ -142,6 +142,19 @@ void Node::Destruct(Node* node)
 {
     if (node != nullptr)
     {
+        // Recursively stop children first before calling Destroy
+        auto stopNodeFunc = [](Node* node) -> bool
+            {
+                if (node->HasStarted())
+                {
+                    node->Stop();
+                }
+
+                return true;
+            };
+
+        node->Traverse(stopNodeFunc, true);
+
         node->Destroy();
         delete node;
     }
@@ -166,17 +179,10 @@ void Node::Destroy()
 {
     bool isWorldRoot = (mParent == nullptr && mWorld != nullptr);
 
-    // Destroy+Stop children first. Maybe we need to split up Stop + Destroy()?
-    // Could call RecursiveStop() before destroying everything?
     for (int32_t i = int32_t(GetNumChildren()) - 1; i >= 0; --i)
     {
         Node* child = GetChild(i);
         Node::Destruct(child);
-    }
-
-    if (mHasStarted)
-    {
-        Stop();
     }
 
     if (IsPrimitive3D() && GetWorld())
@@ -403,6 +409,8 @@ void Node::Stop()
         // RemoveNetNode should be called whether or not it's the server.
         NetworkManager::Get()->RemoveNetNode(this);
     }
+
+    mHasStarted = false;
 }
 
 void Node::RecursiveTick(float deltaTime, bool game)
