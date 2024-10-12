@@ -361,17 +361,27 @@ Node* Scene::Instantiate()
     // Destruct any replicated non-root nodes. The server will need to send the NetMsgSpawn for those.
     if (!NetIsAuthority())
     {
+        std::vector<Node*> repNodesToDelete;
+
         auto pruneReplicated = [&](Node* node) -> bool
         {
             if (node != rootNode && node->IsReplicated())
             {
-                Node::Destruct(node);
-                node = nullptr;
+                repNodesToDelete.push_back(node);
+
+                // We are going to destroy this node, so no need to traverse children
+                return false;
             }
 
             return true;
         };
         rootNode->Traverse(pruneReplicated, true);
+
+        for (uint32_t i = 0; i < repNodesToDelete.size(); ++i)
+        {
+            Node::Destruct(repNodesToDelete[i]);
+            repNodesToDelete[i] = nullptr;
+        }
     }
 
     return rootNode;

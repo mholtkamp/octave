@@ -89,8 +89,6 @@ void UpdateDebugPackets(float deltaTime)
 // Avoid dynamic allocations when appropriate. Reuse static messages.
 static NetMsgReplicate sMsgReplicate;
 static NetMsgReplicateScript sMsgReplicateScript;
-static NetMsgInvoke sMsgInvoke;
-static NetMsgInvokeScript sMsgInvokeScript;
 
 // Reliable messaging
 static float sReliableResendTime = 0.1f;
@@ -388,6 +386,18 @@ void NetworkManager::OpenSession(const NetSessionOpenOptions& options)
 
             mSessionName = options.mName;
             mMaxClients = (uint32_t)glm::clamp<int32_t>(options.mMaxPlayers - 1, 0, 256);
+
+            // Iterate through world and assign Net IDs
+            // TODO: Support multiple worlds
+            Node* rootNode = GetWorld(0)->GetRootNode();
+            if (rootNode)
+            {
+                rootNode->Traverse([](Node* node) -> bool
+                    {
+                        NetworkManager::Get()->AddNetNode(node, INVALID_NET_ID);
+                        return true;
+                    });
+            }
         }
     }
     else
@@ -920,8 +930,6 @@ void NetworkManager::RemoveNetNode(Node* node)
 {
     NetId netId = node->GetNetId();
 
-    OCT_ASSERT(netId != INVALID_NET_ID);
-
     if (netId != INVALID_NET_ID)
     {
         // Send destroy message
@@ -1333,13 +1341,15 @@ void NetworkManager::SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func,
 
 void NetworkManager::SendInvokeMsg(Node* actor, NetFunc* func, uint32_t numParams, const Datum** params)
 {
-    SendInvokeMsg(sMsgInvoke, actor, func, numParams, params);
+    NetMsgInvoke netMsgInvoke;
+    SendInvokeMsg(netMsgInvoke, actor, func, numParams, params);
 }
 
 void NetworkManager::SendInvokeScriptMsg(Script* script, ScriptNetFunc* func, uint32_t numParams, const Datum** params)
 {
+    NetMsgInvokeScript netMsgInvokeScript;
     Node* node = script->GetOwner();
-    SendInvokeMsg(sMsgInvokeScript, node, func, numParams, params);
+    SendInvokeMsg(netMsgInvokeScript, node, func, numParams, params);
 }
 
 void NetworkManager::SendSpawnMessage(Node* node, NetClient* client)
@@ -1605,11 +1615,13 @@ bool NetworkManager::ReplicateNode(Node* node, NetId hostId, bool force, bool re
 
 void NetworkManager::UpdateHostConnections(float deltaTime)
 {
+    float clampedDeltaTime = glm::min(deltaTime, 0.333f);
+
     if (IsServer())
     {
         for (int32_t i = int32_t(mClients.size()) - 1; i >= 0; --i)
         {
-            mClients[i].mTimeSinceLastMsg += deltaTime;
+            mClients[i].mTimeSinceLastMsg += clampedDeltaTime;
 
             if (mClients[i].mTimeSinceLastMsg >= mInactiveTimeout ||
                 mClients[i].mOutgoingPackets.size() > sMaxOutgoingPackets)
@@ -1620,7 +1632,7 @@ void NetworkManager::UpdateHostConnections(float deltaTime)
     }
     else if (IsClient())
     {
-        mServer.mTimeSinceLastMsg += deltaTime;
+        mServer.mTimeSinceLastMsg += clampedDeltaTime;
         if (mServer.mTimeSinceLastMsg >= mInactiveTimeout ||
             mServer.mOutgoingPackets.size() > sMaxOutgoingPackets)
         {
@@ -1846,8 +1858,8 @@ void NetworkManager::ProcessMessages(NetHost sender, Stream& stream)
             NET_MSG_CASE(Ping)
             NET_MSG_STATIC_CASE(Replicate)
             NET_MSG_STATIC_CASE(ReplicateScript)
-            NET_MSG_STATIC_CASE(Invoke)
-            NET_MSG_STATIC_CASE(InvokeScript)
+            NET_MSG_CASE(Invoke)
+            NET_MSG_CASE(InvokeScript)
             //NET_MSG_CASE(Broadcast)
             NET_MSG_CASE(Ack)
 
@@ -1931,6 +1943,18 @@ void NetworkManager::ResetToLocalStatus()
         mHostId = INVALID_HOST_ID;
         mServer = NetServer();
         mInOnlineSession = false;
+
+        // Invalidate all net IDs
+        // TODO: Support multiple worlds
+        Node* rootNode = GetWorld(0)->GetRootNode();
+        if (rootNode)
+        {
+            rootNode->Traverse([](Node* node) -> bool
+                {
+                    NetworkManager::Get()->RemoveNetNode(node);
+                    return true;
+                });
+        }
     }
 }
 
