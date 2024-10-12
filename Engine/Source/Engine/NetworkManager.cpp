@@ -941,6 +941,8 @@ void NetworkManager::RemoveNetNode(Node* node)
         // This node was assigned a net id, so it should exist in our net actor map.
         OCT_ASSERT(mNetNodeMap.find(netId) != mNetNodeMap.end());
         mNetNodeMap.erase(netId);
+
+        node->SetNetId(INVALID_NET_ID);
     }
 }
 
@@ -1938,12 +1940,6 @@ void NetworkManager::ResetToLocalStatus()
             mOnlinePlatform->CloseSession();
         }
 
-        mSocket = NET_INVALID_SOCKET;
-        mNetStatus = NetStatus::Local;
-        mHostId = INVALID_HOST_ID;
-        mServer = NetServer();
-        mInOnlineSession = false;
-
         // Invalidate all net IDs
         // TODO: Support multiple worlds
         Node* rootNode = GetWorld(0)->GetRootNode();
@@ -1955,6 +1951,12 @@ void NetworkManager::ResetToLocalStatus()
                     return true;
                 });
         }
+
+        mSocket = NET_INVALID_SOCKET;
+        mNetStatus = NetStatus::Local;
+        mHostId = INVALID_HOST_ID;
+        mServer = NetServer();
+        mInOnlineSession = false;
     }
 }
 
