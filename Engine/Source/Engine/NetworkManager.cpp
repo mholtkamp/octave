@@ -907,13 +907,6 @@ void NetworkManager::AddNetNode(Node* node, NetId netId)
                 node->SetNetId(netId);
                 mNetNodeMap.insert({ netId, node });
 
-                if (node->GetWorld() != nullptr)
-                {
-                    // If this node is somehow not in the world yet, it will get added to the rep vector once SetWorld()/RegisterNode() is called.
-                    std::vector<Node*>& repNodeVector = node->GetWorld()->GetReplicatedNodeVector(node->GetReplicationRate());
-                    repNodeVector.push_back(node);
-                }
-
                 // The server needs to send Spawn messages for newly added network actors.
                 if (NetIsServer())
                 {

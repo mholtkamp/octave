@@ -557,8 +557,7 @@ void World::RegisterNode(Node* node)
 
     if (node->GetNetId() != INVALID_NET_ID)
     {
-        std::vector<Node*>& repNodeVector = GetReplicatedNodeVector(node->GetReplicationRate());
-        repNodeVector.push_back(node);
+        AddNodeToRepVector(node);
     }
 }
 
@@ -591,26 +590,7 @@ void World::UnregisterNode(Node* node)
 
     if (node->GetNetId() != INVALID_NET_ID)
     {
-        // Remove the destroyed actor from their assigned replication vector.
-        std::vector<Node*>& repVector = GetReplicatedNodeVector(node->GetReplicationRate());
-        uint32_t& repIndex = GetReplicatedNodeIndex(node->GetReplicationRate());
-
-        for (uint32_t i = 0; i < repVector.size(); ++i)
-        {
-            if (repVector[i] == node)
-            {
-                repVector.erase(repVector.begin() + i);
-
-                // Decrement the rep index so that an actor doesn't get skipped for one cycle.
-                if (repIndex > 0 &&
-                    repIndex > i)
-                {
-                    repIndex = repIndex - 1;
-                }
-
-                break;
-            }
-        }
+        RemoveNodeFromRepVector(node);
     }
 }
 
@@ -639,6 +619,36 @@ uint32_t& World::GetIncrementalRepTier()
 uint32_t& World::GetIncrementalRepIndex()
 {
     return mIncrementalRepIndex;
+}
+
+void World::AddNodeToRepVector(Node* node)
+{
+    std::vector<Node*>& repNodeVector = GetReplicatedNodeVector(node->GetReplicationRate());
+    repNodeVector.push_back(node);
+}
+
+void World::RemoveNodeFromRepVector(Node* node)
+{
+    // Remove the destroyed actor from their assigned replication vector.
+    std::vector<Node*>& repVector = GetReplicatedNodeVector(node->GetReplicationRate());
+    uint32_t& repIndex = GetReplicatedNodeIndex(node->GetReplicationRate());
+
+    for (uint32_t i = 0; i < repVector.size(); ++i)
+    {
+        if (repVector[i] == node)
+        {
+            repVector.erase(repVector.begin() + i);
+
+            // Decrement the rep index so that an actor doesn't get skipped for one cycle.
+            if (repIndex > 0 &&
+                repIndex > i)
+            {
+                repIndex = repIndex - 1;
+            }
+
+            break;
+        }
+    }
 }
 
 void World::UpdateLines(float deltaTime)

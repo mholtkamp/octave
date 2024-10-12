@@ -124,6 +124,8 @@ public:
     uint32_t& GetReplicatedNodeIndex(ReplicationRate rate);
     uint32_t& GetIncrementalRepTier();
     uint32_t& GetIncrementalRepIndex();
+    void AddNodeToRepVector(Node* node);
+    void RemoveNodeFromRepVector(Node* node);
 
     void LoadScene(const char* name, bool instant);
     void QueueRootScene(const char* name);

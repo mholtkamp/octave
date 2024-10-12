@@ -953,7 +953,24 @@ std::vector<NetDatum>& Node::GetReplicatedData()
 
 void Node::SetNetId(NetId id)
 {
-    mNetId = id;
+    if (mNetId != id)
+    {
+        mNetId = id;
+
+        if (mWorld != nullptr)
+        {
+            if (mNetId != INVALID_NET_ID)
+            {
+                // Ensure it exists in the replication vector
+                mWorld->AddNodeToRepVector(this);
+            }
+            else
+            {
+                // Remove it from its world replication vector
+                mWorld->RemoveNodeFromRepVector(this);
+            }
+        }
+    }
 }
 
 NetId Node::GetNetId() const
