@@ -154,6 +154,7 @@ struct DrawData
     glm::vec3 mPosition;
     Bounds mBounds;
     int32_t mSortPriority;
+    float mDistance2;
     TypeId mNodeType;
     bool mDepthless;
 };

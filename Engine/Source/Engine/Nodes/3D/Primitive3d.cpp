@@ -212,6 +212,8 @@ void Primitive3D::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Receive Projected Shadows", this, &mReceiveShadows));
     outProps.push_back(Property(DatumType::Bool, "Receive Simple Shadows", this, &mReceiveSimpleShadows));
 
+    outProps.push_back(Property(DatumType::Float, "Cull Distance", this, &mCullDistance));
+
     outProps.push_back(Property(DatumType::Float, "Mass", this, &mMass, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Restitution", this, &mRestitution, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Friction", this, &mFriction, 1, HandlePropChange));
@@ -328,6 +330,16 @@ bool Primitive3D::IsCollisionEnabled() const
 bool Primitive3D::AreOverlapsEnabled() const
 {
     return mOverlapsEnabled;
+}
+
+float Primitive3D::GetCullDistance() const
+{
+    return mCullDistance;
+}
+
+void Primitive3D::SetCullDistance(float cullDistance)
+{
+    mCullDistance = cullDistance;
 }
 
 float Primitive3D::GetMass() const

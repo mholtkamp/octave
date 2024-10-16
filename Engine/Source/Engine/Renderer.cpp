@@ -519,6 +519,9 @@ void Renderer::GatherDrawData(World* world)
 
     if (world != nullptr)
     {
+        Camera3D* camera = world->GetActiveCamera();
+        glm::vec3 cameraPos = camera->GetWorldPosition();
+
         auto gatherDrawData = [&](Node* node) -> bool
         {
             if (!node->IsVisible())
@@ -546,7 +549,20 @@ void Renderer::GatherDrawData(World* world)
                 Primitive3D* prim = (Primitive3D*)node;
                 bool simpleShadow = (data.mNodeType == ShadowMesh3D::GetStaticType());
 
-                if (data.mNode != nullptr)
+                bool distanceCulled = false;
+                data.mDistance2 = glm::distance2(cameraPos, data.mPosition);
+                const float cullDist = prim ? prim->GetCullDistance() : 0.0f;
+                if (cullDist > 0.0f)
+                {
+                    const float cullDist2 = cullDist * cullDist;
+                    if (data.mDistance2 > cullDist2)
+                    {
+                        distanceCulled = true;
+                    }
+                }
+
+                if (data.mNode != nullptr &&
+                    !distanceCulled)
                 {
                     if (simpleShadow)
                     {
@@ -644,68 +660,59 @@ void Renderer::GatherDrawData(World* world)
 #endif
         }
 
-        Camera3D* camera = world->GetActiveCamera();
-
-        if (camera)
+        auto materialSort = [](const DrawData& l, const DrawData& r)
         {
-            glm::vec3 cameraPos = camera->GetWorldPosition();
-
-            auto materialSort = [cameraPos](const DrawData& l, const DrawData& r)
+            // Depthless materials should render last.
+            if (l.mDepthless != r.mDepthless)
             {
-                // Depthless materials should render last.
-                if (l.mDepthless != r.mDepthless)
-                {
-                    return r.mDepthless;
-                }
+                return r.mDepthless;
+            }
 
-                // Sort by blend mode. Render opaque first, then masked.
-                if (l.mBlendMode != r.mBlendMode)
-                {
-                    return l.mBlendMode > r.mBlendMode;
-                }
+            // Sort by blend mode. Render opaque first, then masked.
+            if (l.mBlendMode != r.mBlendMode)
+            {
+                return l.mBlendMode > r.mBlendMode;
+            }
 
-                // Sort by material first (just use address)
-                if (l.mMaterial != r.mMaterial)
-                {
-                    return l.mMaterial < r.mMaterial;
-                }
+            // Sort by material first (just use address)
+            if (l.mMaterial != r.mMaterial)
+            {
+                return l.mMaterial < r.mMaterial;
+            }
 
-                // Then sort by distance, render closer objects first to get
-                // more early depth testing kills.
-                float distL = glm::distance2(l.mPosition, cameraPos);
-                float distR = glm::distance2(r.mPosition, cameraPos);
-                return distL < distR;
-            };
+            // Then sort by distance, render closer objects first to get
+            // more early depth testing kills.
+            return l.mDistance2 < r.mDistance2;
+        };
 
-            // Sort opaque draw and masked draws by material
-            std::sort(mOpaqueDraws.begin(),
-                      mOpaqueDraws.end(),
-                      materialSort);
+        // Sort opaque draw and masked draws by material
+        std::sort(mOpaqueDraws.begin(),
+                    mOpaqueDraws.end(),
+                    materialSort);
 
-            std::sort(mPostShadowOpaqueDraws.begin(),
-                      mPostShadowOpaqueDraws.end(),
-                      materialSort);
+        std::sort(mPostShadowOpaqueDraws.begin(),
+                    mPostShadowOpaqueDraws.end(),
+                    materialSort);
 
-            // Sort translucent draws by distance
-            std::sort(mTranslucentDraws.begin(), 
-                      mTranslucentDraws.end(),
-                      [cameraPos](const DrawData& l, const DrawData& r)
-                      {
-                          if (l.mDepthless != r.mDepthless)
-                          {
-                              return r.mDepthless;
-                          }
+        // Sort translucent draws by distance
+        std::sort(mTranslucentDraws.begin(), 
+                    mTranslucentDraws.end(),
+                    [cameraPos](const DrawData& l, const DrawData& r)
+                    {
+                        if (l.mDepthless != r.mDepthless)
+                        {
+                            return r.mDepthless;
+                        }
 
-                          if (l.mSortPriority != r.mSortPriority)
-                          {
-                              return l.mSortPriority < r.mSortPriority;
-                          }
+                        if (l.mSortPriority != r.mSortPriority)
+                        {
+                            return l.mSortPriority < r.mSortPriority;
+                        }
 
-                          float distL = glm::distance2(l.mPosition, cameraPos);
-                          float distR = glm::distance2(r.mPosition, cameraPos);
-                          return distL > distR;
-                      });
-        }
+                        float distL = glm::distance2(l.mPosition, cameraPos);
+                        float distR = glm::distance2(r.mPosition, cameraPos);
+                        return distL > distR;
+                    });
     }
 }
 

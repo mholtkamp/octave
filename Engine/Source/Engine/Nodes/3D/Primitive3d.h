@@ -72,6 +72,9 @@ public:
     bool IsCollisionEnabled() const;
     bool AreOverlapsEnabled() const;
 
+    float GetCullDistance() const;
+    void SetCullDistance(float cullDistance);
+
     float GetMass() const;
     float GetLinearDamping() const;
     float GetAngularDamping() const;
@@ -152,6 +155,8 @@ protected:
     btRigidBody* mRigidBody = nullptr;
     OctaveMotionState* mMotionState = nullptr;
     btCollisionShape* mCollisionShape = nullptr;
+
+    float mCullDistance = 0.0f;
 
     // Physics Properties
     float mMass = 1.0f;
