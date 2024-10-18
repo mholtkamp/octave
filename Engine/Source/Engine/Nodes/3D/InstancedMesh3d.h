@@ -27,8 +27,8 @@ public:
     virtual void Tick(float deltaTime) override;
     virtual void EditorTick(float deltaTime) override;
 
-    virtual void SaveStream(Stream& stream) override;
-    virtual void LoadStream(Stream& stream) override;
+    virtual void SaveStream(Stream& stream, Platform platform) override;
+    virtual void LoadStream(Stream& stream, Platform platform) override;
 
     virtual bool IsInstancedMesh3D() const override;
 
@@ -68,6 +68,9 @@ protected:
     void CalculateLocalBounds();
 
     std::vector<MeshInstanceData> mInstanceData;
+    float mUnrolledCullDistance = 0.0f;
+    float mUnrolledCellSize = 25.0f;
+
     bool mInstanceDataDirty = true;
     bool mInstanceDataUpdatedThisFrame = false;
     Bounds mBounds;

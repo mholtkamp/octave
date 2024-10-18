@@ -24,8 +24,8 @@ public:
     virtual void Destroy() override;
     StaticMeshCompResource* GetResource();
 
-    virtual void SaveStream(Stream& stream) override;
-    virtual void LoadStream(Stream& stream) override;
+    virtual void SaveStream(Stream& stream, Platform platform) override;
+    virtual void LoadStream(Stream& stream, Platform platform) override;
 
     virtual bool IsStaticMesh3D() const override;
     virtual bool IsSkeletalMesh3D() const override;

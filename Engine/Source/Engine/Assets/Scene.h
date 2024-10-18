@@ -38,7 +38,7 @@ public:
     virtual glm::vec4 GetTypeColor() override;
     virtual const char* GetTypeName() override;
 
-    void Capture(Node* root);
+    void Capture(Node* root, Platform platform = Platform::Count);
     Node* Instantiate();
 
     void ApplyRenderSettings(World* world);
@@ -47,7 +47,7 @@ protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
-    void AddNodeDef(Node* node, std::vector<Node*>& nodeList);
+    void AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeList);
     int32_t FindNodeIndex(Node* node, const std::vector<Node*>& nodeList);
 
     std::vector<SceneNodeDef> mNodeDefs;

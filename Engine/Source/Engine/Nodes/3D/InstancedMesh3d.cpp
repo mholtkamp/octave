@@ -3,6 +3,24 @@
 FORCE_LINK_DEF(InstancedMesh3D);
 DEFINE_NODE(InstancedMesh3D, StaticMesh3D);
 
+static bool DoesPlatformSupportInstancedRendering(Platform platform)
+{
+    if (platform == Platform::Windows ||
+        platform == Platform::Linux ||
+        platform == Platform::Android)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+struct UnrolledInstancedMeshCell
+{
+    uint32_t mNumMeshes = 0;
+    std::vector<Vertex> mVertices;
+};
+
 InstancedMesh3D::InstancedMesh3D()
 {
     mName = "Instanced Mesh";
@@ -21,6 +39,9 @@ const char* InstancedMesh3D::GetTypeName() const
 void InstancedMesh3D::GatherProperties(std::vector<Property>& outProps)
 {
     StaticMesh3D::GatherProperties(outProps);
+
+    outProps.push_back(Property(DatumType::Float, "Unrolled Cull Distance", this, &mUnrolledCullDistance));
+    outProps.push_back(Property(DatumType::Float, "Unrolled Cell Size", this, &mUnrolledCellSize));
 }
 
 void InstancedMesh3D::Create()
@@ -52,30 +73,79 @@ void InstancedMesh3D::EditorTick(float deltaTime)
     UpdateInstanceData();
 }
 
-void InstancedMesh3D::SaveStream(Stream& stream)
+void InstancedMesh3D::SaveStream(Stream& stream, Platform platform)
 {
-    StaticMesh3D::SaveStream(stream);
+    StaticMesh3D::SaveStream(stream, platform);
 
-    stream.WriteUint32((uint32_t)mInstanceData.size());
-    for (uint32_t i = 0; i < mInstanceData.size(); ++i)
+    if (DoesPlatformSupportInstancedRendering(platform))
     {
-        stream.WriteVec3(mInstanceData[i].mPosition);
-        stream.WriteVec3(mInstanceData[i].mRotation);
-        stream.WriteVec3(mInstanceData[i].mScale);
+        std::vector<UnrolledInstancedMeshCell> unrolledCells;
+        CaptureUnrolledCells(unrolledCells);
+
+        stream.WriteUint32(uint32_t(unrolledCells.size()));
+        for (uint32_t i = 0; i < unrolledCells.size(); ++i)
+        {
+            const std::vector<Vertex>& vertices = unrolledCells[i].mVertices;
+            stream.WriteUint32(uint32_t(vertices.size()));
+
+            for (uint32_t i = 0; i < vertices.size(); ++i)
+            {
+                static_assert(sizeof(Vertex) == 40, "Update or make utility function.");
+                stream.WriteVec3(vertices[i].mPosition);
+                stream.WriteVec2(vertices[i].mTexcoord0);
+                stream.WriteVec2(vertices[i].mTexcoord1);
+                stream.WriteVec3(vertices[i].mNormal);
+            }
+        }
+    }
+    else
+    {
+        stream.WriteUint32((uint32_t)mInstanceData.size());
+        for (uint32_t i = 0; i < mInstanceData.size(); ++i)
+        {
+            stream.WriteVec3(mInstanceData[i].mPosition);
+            stream.WriteVec3(mInstanceData[i].mRotation);
+            stream.WriteVec3(mInstanceData[i].mScale);
+        }
     }
 }
 
-void InstancedMesh3D::LoadStream(Stream& stream)
+void InstancedMesh3D::LoadStream(Stream& stream, Platform platform)
 {
-    StaticMesh3D::LoadStream(stream);
-    
-    uint32_t numInstances = stream.ReadUint32();
-    mInstanceData.resize(numInstances);
-    for (uint32_t i = 0; i < numInstances; ++i)
+    StaticMesh3D::LoadStream(stream, platform);
+
+    if (DoesPlatformSupportInstancedRendering(platform))
     {
-        mInstanceData[i].mPosition = stream.ReadVec3();
-        mInstanceData[i].mRotation = stream.ReadVec3();
-        mInstanceData[i].mScale = stream.ReadVec3();
+        std::vector<UnrolledInstancedMeshCell> unrolledCells;
+
+        unrolledCells.resize(stream.ReadUint32());
+        for (uint32_t i = 0; i < unrolledCells.size(); ++i)
+        {
+            std::vector<Vertex>& vertices = unrolledCells[i].mVertices;
+            vertices.resize(stream.ReadUint32());
+
+            for (uint32_t i = 0; i < vertices.size(); ++i)
+            {
+                static_assert(sizeof(Vertex) == 40, "Update or make utility function.");
+                vertices[i].mPosition = stream.ReadVec3();
+                vertices[i].mTexcoord0 = stream.ReadVec2();
+                vertices[i].mTexcoord1 = stream.ReadVec2();
+                vertices[i].mNormal = stream.ReadVec3();
+            }
+        }
+
+        InstantiateUnrolledCells(unrolledCells);
+    }
+    else
+    {
+        uint32_t numInstances = stream.ReadUint32();
+        mInstanceData.resize(numInstances);
+        for (uint32_t i = 0; i < numInstances; ++i)
+        {
+            mInstanceData[i].mPosition = stream.ReadVec3();
+            mInstanceData[i].mRotation = stream.ReadVec3();
+            mInstanceData[i].mScale = stream.ReadVec3();
+        }
     }
 }
 

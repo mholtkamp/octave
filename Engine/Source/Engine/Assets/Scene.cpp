@@ -105,11 +105,27 @@ void Scene::SaveStream(Stream& stream, Platform platform)
 {
     Asset::SaveStream(stream, platform);
 
-    stream.WriteUint32((uint32_t)mNodeDefs.size());
+    Scene* srcScene = this;
 
-    for (uint32_t i = 0; i < mNodeDefs.size(); ++i)
+    if (platform != Platform::Count)
     {
-        SceneNodeDef& def = mNodeDefs[i];
+        // Capture the scene for the given platform. This was originally
+        // added so we can unroll InstancedMesh3D nodes on platforms that
+        // don't suppose instanced mesh rendering.
+        srcScene = NewTransientAsset<Scene>();
+        Node* tempRoot = Instantiate();
+        srcScene->Capture(tempRoot, platform);
+        Node::Destruct(tempRoot);
+
+        // These transient scene that was created should get garbage collected since 
+        // no AssetRefs are pointing to it.
+    }
+
+    stream.WriteUint32((uint32_t)srcScene->mNodeDefs.size());
+
+    for (uint32_t i = 0; i < srcScene->mNodeDefs.size(); ++i)
+    {
+        const SceneNodeDef& def = srcScene->mNodeDefs[i];
         stream.WriteUint32((uint32_t)def.mType);
         stream.WriteInt32(def.mParentIndex);
 
@@ -129,16 +145,16 @@ void Scene::SaveStream(Stream& stream, Platform platform)
     }
 
     // World render properties
-    stream.WriteBool(mSetAmbientLightColor);
-    stream.WriteBool(mSetShadowColor);
-    stream.WriteBool(mSetFog);
-    stream.WriteVec4(mAmbientLightColor);
-    stream.WriteVec4(mShadowColor);
-    stream.WriteBool(mFogEnabled);
-    stream.WriteVec4(mFogColor);
-    stream.WriteUint8(uint8_t(mFogDensityFunc));
-    stream.WriteFloat(mFogNear);
-    stream.WriteFloat(mFogFar);
+    stream.WriteBool(srcScene->mSetAmbientLightColor);
+    stream.WriteBool(srcScene->mSetShadowColor);
+    stream.WriteBool(srcScene->mSetFog);
+    stream.WriteVec4(srcScene->mAmbientLightColor);
+    stream.WriteVec4(srcScene->mShadowColor);
+    stream.WriteBool(srcScene->mFogEnabled);
+    stream.WriteVec4(srcScene->mFogColor);
+    stream.WriteUint8(uint8_t(srcScene->mFogDensityFunc));
+    stream.WriteFloat(srcScene->mFogNear);
+    stream.WriteFloat(srcScene->mFogFar);
 }
 
 void Scene::Create()
@@ -179,7 +195,7 @@ const char* Scene::GetTypeName()
     return "Scene";
 }
 
-void Scene::Capture(Node* root)
+void Scene::Capture(Node* root, Platform platform)
 {
     mNodeDefs.clear();
 
@@ -187,7 +203,7 @@ void Scene::Capture(Node* root)
         return;
 
     std::vector<Node*> nodeList;
-    AddNodeDef(root, nodeList);
+    AddNodeDef(root, platform, nodeList);
 }
 
 Node* Scene::Instantiate()
@@ -279,7 +295,7 @@ Node* Scene::Instantiate()
             if (mNodeDefs[i].mExtraData.size() > 0)
             {
                 Stream extraStream((char*)mNodeDefs[i].mExtraData.data(), (uint32_t)mNodeDefs[i].mExtraData.size());
-                node->LoadStream(extraStream);
+                node->LoadStream(extraStream, GetPlatform());
             }
 
             // If this node has a script, then it might have script properties, and those
@@ -425,7 +441,7 @@ void Scene::ApplyRenderSettings(World* world)
 //
 //}
 
-void Scene::AddNodeDef(Node* node, std::vector<Node*>& nodeList)
+void Scene::AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeList)
 {
     OCT_ASSERT(node != nullptr);
 
@@ -476,7 +492,7 @@ void Scene::AddNodeDef(Node* node, std::vector<Node*>& nodeList)
         nodeDef.mName = node->GetName();
 
         Stream extraDataStream;
-        node->SaveStream(extraDataStream);
+        node->SaveStream(extraDataStream, platform);
         if (extraDataStream.GetSize() > 0)
         {
             nodeDef.mExtraData.resize(extraDataStream.GetSize());
@@ -489,7 +505,7 @@ void Scene::AddNodeDef(Node* node, std::vector<Node*>& nodeList)
         {
             for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
             {
-                AddNodeDef(node->GetChild(i), nodeList);
+                AddNodeDef(node->GetChild(i), platform, nodeList);
             }
         }
     }

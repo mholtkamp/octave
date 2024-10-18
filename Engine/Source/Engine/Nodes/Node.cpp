@@ -233,12 +233,12 @@ void Node::Destroy()
     }
 }
 
-void Node::SaveStream(Stream& stream)
+void Node::SaveStream(Stream& stream, Platform platorm)
 {
     // For serializing extra data besides properties
 }
 
-void Node::LoadStream(Stream& stream)
+void Node::LoadStream(Stream& stream, Platform platorm)
 {
     // For serializing extra data besides properties
 }
@@ -309,11 +309,11 @@ void Node::Copy(Node* srcNode, bool recurse)
 
     // Copy extra data
     Stream extraDataStream;
-    srcNode->SaveStream(extraDataStream);
+    srcNode->SaveStream(extraDataStream, Platform::Count);
     if (extraDataStream.GetSize() > 0)
     {
         extraDataStream.SetPos(0);
-        LoadStream(extraDataStream);
+        LoadStream(extraDataStream, Platform::Count);
     }
 
     if (recurse)

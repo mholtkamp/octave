@@ -74,8 +74,8 @@ public:
     virtual void Create();
     virtual void Destroy();
     
-    virtual void SaveStream(Stream& stream);
-    virtual void LoadStream(Stream& stream);
+    virtual void SaveStream(Stream& stream, Platform platorm);
+    virtual void LoadStream(Stream& stream, Platform platorm);
 
     virtual void Copy(Node* srcNode, bool recurse);
     virtual void Render(PipelineConfig pipelineConfig);
