@@ -9,12 +9,6 @@ struct MeshInstanceData
     glm::vec3 mScale = {1.0f, 1.0f, 1.0f};
 };
 
-struct UnrolledInstancedMeshCell
-{
-    uint32_t mNumMeshes = 0;
-    std::vector<Vertex> mVertices;
-};
-
 class InstancedMesh3D : public StaticMesh3D
 {
 public:
@@ -59,7 +53,7 @@ public:
     void UpdateInstanceData();
     bool WasInstanceDataUpdatedThisFrame() const;
 
-    bool ShouldUnroll(Platform platform) const;
+    bool ShouldUnroll() const;
 
     InstancedMeshCompResource* GetInstancedMeshResource();
 
@@ -75,8 +69,7 @@ protected:
     virtual void RecreateCollisionShape() override;
     void CalculateLocalBounds();
 
-    void CaptureUnrolledCells(std::vector<UnrolledInstancedMeshCell>& unrolledCells);
-    void InstantiateUnrolledCells(const std::vector<UnrolledInstancedMeshCell>& unrolledCells);
+    void Unroll();
 
     std::vector<MeshInstanceData> mInstanceData;
     float mUnrolledCullDistance = 0.0f;
@@ -85,6 +78,7 @@ protected:
 
     bool mInstanceDataDirty = true;
     bool mInstanceDataUpdatedThisFrame = false;
+    bool mUnrolled = false;
     Bounds mBounds;
 
     InstancedMeshCompResource mInstancedMeshResource;

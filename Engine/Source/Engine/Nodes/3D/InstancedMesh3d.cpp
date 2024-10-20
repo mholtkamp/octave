@@ -1,4 +1,5 @@
 #include "Nodes/3D/InstancedMesh3d.h"
+#include "Assets/StaticMesh.h"
 
 FORCE_LINK_DEF(InstancedMesh3D);
 DEFINE_NODE(InstancedMesh3D, StaticMesh3D);
@@ -60,39 +61,12 @@ void InstancedMesh3D::SaveStream(Stream& stream, Platform platform)
 {
     StaticMesh3D::SaveStream(stream, platform);
 
-    bool unroll = ShouldUnroll(platform);
-    stream.WriteBool(unroll);
-
-    if (unroll)
+    stream.WriteUint32((uint32_t)mInstanceData.size());
+    for (uint32_t i = 0; i < mInstanceData.size(); ++i)
     {
-        std::vector<UnrolledInstancedMeshCell> unrolledCells;
-        CaptureUnrolledCells(unrolledCells);
-
-        stream.WriteUint32(uint32_t(unrolledCells.size()));
-        for (uint32_t i = 0; i < unrolledCells.size(); ++i)
-        {
-            const std::vector<Vertex>& vertices = unrolledCells[i].mVertices;
-            stream.WriteUint32(uint32_t(vertices.size()));
-
-            for (uint32_t i = 0; i < vertices.size(); ++i)
-            {
-                static_assert(sizeof(Vertex) == 40, "Update or make utility function.");
-                stream.WriteVec3(vertices[i].mPosition);
-                stream.WriteVec2(vertices[i].mTexcoord0);
-                stream.WriteVec2(vertices[i].mTexcoord1);
-                stream.WriteVec3(vertices[i].mNormal);
-            }
-        }
-    }
-    else
-    {
-        stream.WriteUint32((uint32_t)mInstanceData.size());
-        for (uint32_t i = 0; i < mInstanceData.size(); ++i)
-        {
-            stream.WriteVec3(mInstanceData[i].mPosition);
-            stream.WriteVec3(mInstanceData[i].mRotation);
-            stream.WriteVec3(mInstanceData[i].mScale);
-        }
+        stream.WriteVec3(mInstanceData[i].mPosition);
+        stream.WriteVec3(mInstanceData[i].mRotation);
+        stream.WriteVec3(mInstanceData[i].mScale);
     }
 }
 
@@ -100,43 +74,18 @@ void InstancedMesh3D::LoadStream(Stream& stream, Platform platform, uint32_t ver
 {
     StaticMesh3D::LoadStream(stream, platform, version);
 
-    if (version < ASSET_VERSION_SCENE_UNROLLED_INSTANCES)
-        return;
-
-    bool unrolled = stream.ReadBool();
-
-    if (unrolled)
+    uint32_t numInstances = stream.ReadUint32();
+    mInstanceData.resize(numInstances);
+    for (uint32_t i = 0; i < numInstances; ++i)
     {
-        std::vector<UnrolledInstancedMeshCell> unrolledCells;
-
-        unrolledCells.resize(stream.ReadUint32());
-        for (uint32_t i = 0; i < unrolledCells.size(); ++i)
-        {
-            std::vector<Vertex>& vertices = unrolledCells[i].mVertices;
-            vertices.resize(stream.ReadUint32());
-
-            for (uint32_t i = 0; i < vertices.size(); ++i)
-            {
-                static_assert(sizeof(Vertex) == 40, "Update or make utility function.");
-                vertices[i].mPosition = stream.ReadVec3();
-                vertices[i].mTexcoord0 = stream.ReadVec2();
-                vertices[i].mTexcoord1 = stream.ReadVec2();
-                vertices[i].mNormal = stream.ReadVec3();
-            }
-        }
-
-        InstantiateUnrolledCells(unrolledCells);
+        mInstanceData[i].mPosition = stream.ReadVec3();
+        mInstanceData[i].mRotation = stream.ReadVec3();
+        mInstanceData[i].mScale = stream.ReadVec3();
     }
-    else
+
+    if (ShouldUnroll())
     {
-        uint32_t numInstances = stream.ReadUint32();
-        mInstanceData.resize(numInstances);
-        for (uint32_t i = 0; i < numInstances; ++i)
-        {
-            mInstanceData[i].mPosition = stream.ReadVec3();
-            mInstanceData[i].mRotation = stream.ReadVec3();
-            mInstanceData[i].mScale = stream.ReadVec3();
-        }
+        Unroll();
     }
 }
 
@@ -277,8 +226,10 @@ bool InstancedMesh3D::WasInstanceDataUpdatedThisFrame() const
     return mInstanceDataUpdatedThisFrame;
 }
 
-bool InstancedMesh3D::ShouldUnroll(Platform platform) const
+bool InstancedMesh3D::ShouldUnroll() const
 {
+    Platform platform = GetPlatform();
+
     if (platform == Platform::Count)
     {
         // If we aren't cooking, then don't unroll.
@@ -496,13 +447,30 @@ void InstancedMesh3D::CalculateLocalBounds()
     }
 }
 
-void InstancedMesh3D::CaptureUnrolledCells(std::vector<UnrolledInstancedMeshCell>& unrolledCells)
+void InstancedMesh3D::Unroll()
 {
-    unrolledCells.clear();
+    if (!ShouldUnroll())
+    {
+        LogError("InstancedMesh3D::Unroll() called when it shouldn't be.");
+        return;
+    }
+
+    if (mUnrolled)
+    {
+        LogError("Already unrolled mesh. Currently we only support unrolling once on load");
+        return;
+    }
+
     StaticMesh* mesh = GetStaticMesh();
 
+    if (mesh->HasVertexColor())
+    {
+        LogError("Instanced Mesh unrolling only supports meshes without vertex color currently.");
+    }
+
     if (mInstanceData.size() == 0 ||
-        mesh == nullptr)
+        mesh == nullptr ||
+        mesh->HasVertexColor())
         return;
 
     glm::vec3 minExt = mInstanceData[0].mPosition;
@@ -523,12 +491,23 @@ void InstancedMesh3D::CaptureUnrolledCells(std::vector<UnrolledInstancedMeshCell
     uint32_t numCellsX = uint32_t(dim.x / mUnrolledCellSize) + 1;
     uint32_t numCellsZ = uint32_t(dim.z / mUnrolledCellSize) + 1;
     uint32_t numCells = numCellsX * numCellsZ;
-    unrolledCells.resize(numCells);
+
+    std::vector<std::vector<Vertex>> unrolledVertexData;
+    std::vector<std::vector<IndexType>> unrolledIndexData;
+    unrolledVertexData.resize(numCells);
+    unrolledIndexData.resize(numCells);
+
+    uint32_t numVertices = mesh->GetNumVertices();
+    uint32_t numIndices = mesh->GetNumIndices();
+    Vertex* srcVertexData = mesh->GetVertices();
+    IndexType* srcIndexData = mesh->GetIndices();
 
     // Then iterate over all instances, determine which cell it lies in, and then add it to that cell data
     for (uint32_t i = 0; i < mInstanceData.size(); ++i)
     {
         glm::vec3 pos = mInstanceData[i].mPosition;
+        glm::vec3 rot = mInstanceData[i].mRotation;
+        glm::vec3 scale = mInstanceData[i].mScale;
 
         uint32_t x = uint32_t(pos.x / mUnrolledCellSize);
         uint32_t z = uint32_t(pos.z / mUnrolledCellSize);
@@ -536,21 +515,58 @@ void InstancedMesh3D::CaptureUnrolledCells(std::vector<UnrolledInstancedMeshCell
         OCT_ASSERT(x < numCellsX);
         OCT_ASSERT(z < numCellsZ);
 
-        UnrolledInstancedMeshCell& cell = unrolledCells[z * numCellsX + x];
-        cell.mNumMeshes++;
+        std::vector<Vertex>& dstVertexData = unrolledVertexData[z * numCellsX + x];
+        std::vector<IndexType>& dstIndexData = unrolledIndexData[z * numCellsX + x];
 
-        for (uint32_t v = 0; v < )
-        cell.m
+        // We need to offset all of the index data for this new mesh instance data
+        uint32_t indexOffset = dstIndexData.size();
+
+        if (indexOffset + numIndices > MAX_MESH_VERTEX_COUNT)
+        {
+            LogWarning("Failing to unroll instances because vertex count has been exceeded.");
+            continue;
+        }
+
+        const glm::mat4 instTransform = MakeTransform(pos, rot, scale);
+
+        for (uint32_t v = 0; v < numVertices; ++v)
+        {
+            dstVertexData.push_back(srcVertexData[v]);
+            Vertex& vert = dstVertexData.back();
+            vert.mPosition = instTransform * glm::vec4(vert.mPosition, 1);
+            vert.mNormal = instTransform * glm::vec4(vert.mNormal, 0);
+        }
+
+        for (uint32_t x = 0; x < numIndices; ++x)
+        {
+            dstIndexData.push_back(IndexType(srcIndexData[x] + indexOffset));
+        }
     }
 
     // Iterate over all cell datas and remove ones that have 0 instances
-}
+    uint32_t numUnrolledCells = 0;
+    for (uint32_t i = 0; i < unrolledVertexData.size() > 0; ++i)
+    {
+        if (unrolledVertexData[i].size() == 0)
+            continue;
 
-void InstancedMesh3D::InstantiateUnrolledCells(const std::vector<UnrolledInstancedMeshCell>& unrolledCells)
-{
-    // Iterate over all cell data
+        OCT_ASSERT(unrolledIndexData[i].size() > 0);
 
-    // Create a transient static mesh, pass in the vertex data for the cell
+        StaticMesh* unrolledMesh = NewTransientAsset<StaticMesh>();
+        unrolledMesh->SetName("Unrolled Mesh");
+        unrolledMesh->CreateRaw(
+            (uint32_t)unrolledVertexData[i].size(),
+            unrolledVertexData[i].data(),
+            (uint32_t)unrolledIndexData[i].size(),
+            unrolledIndexData[i].data());
 
-    // Create a static mesh node child and assign the static mesh to it.
+        char nodeName[64];
+        snprintf(nodeName, 64, "Unrolled %d", numUnrolledCells);
+        StaticMesh3D* cellNode = CreateChild<StaticMesh3D>(nodeName);
+        cellNode->SetStaticMesh(unrolledMesh);
+
+        ++numUnrolledCells;
+    }
+
+    mUnrolled = true;
 }
