@@ -75,7 +75,7 @@ public:
     virtual void Destroy();
     
     virtual void SaveStream(Stream& stream, Platform platorm);
-    virtual void LoadStream(Stream& stream, Platform platorm);
+    virtual void LoadStream(Stream& stream, Platform platorm, uint32_t version);
 
     virtual void Copy(Node* srcNode, bool recurse);
     virtual void Render(PipelineConfig pipelineConfig);

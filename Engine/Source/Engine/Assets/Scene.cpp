@@ -295,7 +295,7 @@ Node* Scene::Instantiate()
             if (mNodeDefs[i].mExtraData.size() > 0)
             {
                 Stream extraStream((char*)mNodeDefs[i].mExtraData.data(), (uint32_t)mNodeDefs[i].mExtraData.size());
-                node->LoadStream(extraStream, GetPlatform());
+                node->LoadStream(extraStream, GetPlatform(), mVersion);
             }
 
             // If this node has a script, then it might have script properties, and those

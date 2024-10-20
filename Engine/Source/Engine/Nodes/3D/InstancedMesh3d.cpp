@@ -3,18 +3,6 @@
 FORCE_LINK_DEF(InstancedMesh3D);
 DEFINE_NODE(InstancedMesh3D, StaticMesh3D);
 
-static bool DoesPlatformSupportInstancedRendering(Platform platform)
-{
-    if (platform == Platform::Windows ||
-        platform == Platform::Linux ||
-        platform == Platform::Android)
-    {
-        return true;
-    }
-
-    return false;
-}
-
 InstancedMesh3D::InstancedMesh3D()
 {
     mName = "Instanced Mesh";
@@ -36,6 +24,7 @@ void InstancedMesh3D::GatherProperties(std::vector<Property>& outProps)
 
     outProps.push_back(Property(DatumType::Float, "Unrolled Cull Distance", this, &mUnrolledCullDistance));
     outProps.push_back(Property(DatumType::Float, "Unrolled Cell Size", this, &mUnrolledCellSize));
+    outProps.push_back(Property(DatumType::Bool, "Always Unroll", this, &mAlwaysUnroll));
 }
 
 void InstancedMesh3D::Create()
@@ -71,7 +60,10 @@ void InstancedMesh3D::SaveStream(Stream& stream, Platform platform)
 {
     StaticMesh3D::SaveStream(stream, platform);
 
-    if (DoesPlatformSupportInstancedRendering(platform))
+    bool unroll = ShouldUnroll(platform);
+    stream.WriteBool(unroll);
+
+    if (unroll)
     {
         std::vector<UnrolledInstancedMeshCell> unrolledCells;
         CaptureUnrolledCells(unrolledCells);
@@ -104,11 +96,16 @@ void InstancedMesh3D::SaveStream(Stream& stream, Platform platform)
     }
 }
 
-void InstancedMesh3D::LoadStream(Stream& stream, Platform platform)
+void InstancedMesh3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
 {
-    StaticMesh3D::LoadStream(stream, platform);
+    StaticMesh3D::LoadStream(stream, platform, version);
 
-    if (DoesPlatformSupportInstancedRendering(platform))
+    if (version < ASSET_VERSION_SCENE_UNROLLED_INSTANCES)
+        return;
+
+    bool unrolled = stream.ReadBool();
+
+    if (unrolled)
     {
         std::vector<UnrolledInstancedMeshCell> unrolledCells;
 
@@ -278,6 +275,29 @@ void InstancedMesh3D::UpdateInstanceData()
 bool InstancedMesh3D::WasInstanceDataUpdatedThisFrame() const
 {
     return mInstanceDataUpdatedThisFrame;
+}
+
+bool InstancedMesh3D::ShouldUnroll(Platform platform) const
+{
+    if (platform == Platform::Count)
+    {
+        // If we aren't cooking, then don't unroll.
+        return false;
+    }
+
+    if (mAlwaysUnroll)
+    {
+        return true;
+    }
+
+    if (platform == Platform::Windows ||
+        platform == Platform::Linux ||
+        platform == Platform::Android)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 InstancedMeshCompResource* InstancedMesh3D::GetInstancedMeshResource()
@@ -478,11 +498,50 @@ void InstancedMesh3D::CalculateLocalBounds()
 
 void InstancedMesh3D::CaptureUnrolledCells(std::vector<UnrolledInstancedMeshCell>& unrolledCells)
 {
+    unrolledCells.clear();
+    StaticMesh* mesh = GetStaticMesh();
+
+    if (mInstanceData.size() == 0 ||
+        mesh == nullptr)
+        return;
+
+    glm::vec3 minExt = mInstanceData[0].mPosition;
+    glm::vec3 maxExt = minExt;
+
     // Find min/max extents (and thus the dimensions)
+    for (uint32_t i = 1; i < mInstanceData.size(); ++i)
+    {
+        glm::vec3 pos = mInstanceData[i].mPosition;
+
+        minExt = glm::min(minExt, pos);
+        maxExt = glm::max(maxExt, pos);
+    }
+
+    glm::vec3 dim = maxExt - minExt;
 
     // Determine the total (maximum) numbers of cells in X/Z direction and resize vector
+    uint32_t numCellsX = uint32_t(dim.x / mUnrolledCellSize) + 1;
+    uint32_t numCellsZ = uint32_t(dim.z / mUnrolledCellSize) + 1;
+    uint32_t numCells = numCellsX * numCellsZ;
+    unrolledCells.resize(numCells);
 
     // Then iterate over all instances, determine which cell it lies in, and then add it to that cell data
+    for (uint32_t i = 0; i < mInstanceData.size(); ++i)
+    {
+        glm::vec3 pos = mInstanceData[i].mPosition;
+
+        uint32_t x = uint32_t(pos.x / mUnrolledCellSize);
+        uint32_t z = uint32_t(pos.z / mUnrolledCellSize);
+
+        OCT_ASSERT(x < numCellsX);
+        OCT_ASSERT(z < numCellsZ);
+
+        UnrolledInstancedMeshCell& cell = unrolledCells[z * numCellsX + x];
+        cell.mNumMeshes++;
+
+        for (uint32_t v = 0; v < )
+        cell.m
+    }
 
     // Iterate over all cell datas and remove ones that have 0 instances
 }

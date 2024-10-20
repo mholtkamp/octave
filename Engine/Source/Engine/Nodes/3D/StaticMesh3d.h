@@ -25,7 +25,7 @@ public:
     StaticMeshCompResource* GetResource();
 
     virtual void SaveStream(Stream& stream, Platform platform) override;
-    virtual void LoadStream(Stream& stream, Platform platform) override;
+    virtual void LoadStream(Stream& stream, Platform platform, uint32_t version) override;
 
     virtual bool IsStaticMesh3D() const override;
     virtual bool IsSkeletalMesh3D() const override;

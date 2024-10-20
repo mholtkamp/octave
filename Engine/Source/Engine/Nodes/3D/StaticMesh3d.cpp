@@ -108,9 +108,9 @@ void StaticMesh3D::SaveStream(Stream& stream, Platform platform)
     }
 }
 
-void StaticMesh3D::LoadStream(Stream& stream, Platform platform)
+void StaticMesh3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
 {
-    Mesh3D::LoadStream(stream, platform);
+    Mesh3D::LoadStream(stream, platform, version);
     
     // Load instance colors after setting the static mesh. Otherwise it will clear.
     uint32_t numInstanceColors = stream.ReadUint32();

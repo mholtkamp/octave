@@ -34,7 +34,7 @@ public:
     virtual void EditorTick(float deltaTime) override;
 
     virtual void SaveStream(Stream& stream, Platform platform) override;
-    virtual void LoadStream(Stream& stream, Platform platform) override;
+    virtual void LoadStream(Stream& stream, Platform platform, uint32_t version) override;
 
     virtual bool IsInstancedMesh3D() const override;
 
@@ -59,6 +59,8 @@ public:
     void UpdateInstanceData();
     bool WasInstanceDataUpdatedThisFrame() const;
 
+    bool ShouldUnroll(Platform platform) const;
+
     InstancedMeshCompResource* GetInstancedMeshResource();
 
     btTransform CalculateInstanceBulletTransform(int32_t instanceIndex);
@@ -79,6 +81,7 @@ protected:
     std::vector<MeshInstanceData> mInstanceData;
     float mUnrolledCullDistance = 0.0f;
     float mUnrolledCellSize = 25.0f;
+    bool mAlwaysUnroll = false;
 
     bool mInstanceDataDirty = true;
     bool mInstanceDataUpdatedThisFrame = false;

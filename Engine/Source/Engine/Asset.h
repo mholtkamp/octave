@@ -21,8 +21,9 @@ class AssetDir;
 // ---------------------------------------------------
 #define ASSET_VERSION_BASE 1
 #define ASSET_VERSION_SCENE_EXTRA_DATA 2
+#define ASSET_VERSION_SCENE_UNROLLED_INSTANCES 3
 
-#define ASSET_CURRENT_VERSION 2
+#define ASSET_CURRENT_VERSION 3
 // ----------------------------------------------------
 
 #define DECLARE_ASSET(Base, Parent) DECLARE_FACTORY(Base, Asset); DECLARE_RTTI(Base, Parent);

@@ -238,7 +238,7 @@ void Node::SaveStream(Stream& stream, Platform platorm)
     // For serializing extra data besides properties
 }
 
-void Node::LoadStream(Stream& stream, Platform platorm)
+void Node::LoadStream(Stream& stream, Platform platorm, uint32_t version)
 {
     // For serializing extra data besides properties
 }
