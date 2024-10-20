@@ -15,12 +15,6 @@ static bool DoesPlatformSupportInstancedRendering(Platform platform)
     return false;
 }
 
-struct UnrolledInstancedMeshCell
-{
-    uint32_t mNumMeshes = 0;
-    std::vector<Vertex> mVertices;
-};
-
 InstancedMesh3D::InstancedMesh3D()
 {
     mName = "Instanced Mesh";
@@ -480,4 +474,24 @@ void InstancedMesh3D::CalculateLocalBounds()
         mBounds.mCenter = GetWorldPosition();
         mBounds.mRadius = 0.0f;
     }
+}
+
+void InstancedMesh3D::CaptureUnrolledCells(std::vector<UnrolledInstancedMeshCell>& unrolledCells)
+{
+    // Find min/max extents (and thus the dimensions)
+
+    // Determine the total (maximum) numbers of cells in X/Z direction and resize vector
+
+    // Then iterate over all instances, determine which cell it lies in, and then add it to that cell data
+
+    // Iterate over all cell datas and remove ones that have 0 instances
+}
+
+void InstancedMesh3D::InstantiateUnrolledCells(const std::vector<UnrolledInstancedMeshCell>& unrolledCells)
+{
+    // Iterate over all cell data
+
+    // Create a transient static mesh, pass in the vertex data for the cell
+
+    // Create a static mesh node child and assign the static mesh to it.
 }
