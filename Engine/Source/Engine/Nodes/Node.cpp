@@ -313,7 +313,7 @@ void Node::Copy(Node* srcNode, bool recurse)
     if (extraDataStream.GetSize() > 0)
     {
         extraDataStream.SetPos(0);
-        LoadStream(extraDataStream, Platform::Count);
+        LoadStream(extraDataStream, Platform::Count, ASSET_VERSION_CURRENT);
     }
 
     if (recurse)

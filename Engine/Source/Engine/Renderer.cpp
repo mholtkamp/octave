@@ -517,9 +517,11 @@ void Renderer::GatherDrawData(World* world)
     mCollisionDraws.clear();
     mWidgetDraws.clear();
 
-    if (world != nullptr)
+    Camera3D* camera = world ? world->GetActiveCamera() : nullptr;
+
+    if (world != nullptr &&
+        camera != nullptr)
     {
-        Camera3D* camera = world->GetActiveCamera();
         glm::vec3 cameraPos = camera->GetWorldPosition();
 
         auto gatherDrawData = [&](Node* node) -> bool

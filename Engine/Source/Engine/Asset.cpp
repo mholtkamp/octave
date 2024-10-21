@@ -266,7 +266,7 @@ AssetHeader Asset::ReadHeader(Stream& stream)
 void Asset::WriteHeader(Stream& stream)
 {
     stream.WriteUint32(ASSET_MAGIC_NUMBER);
-    stream.WriteUint32(ASSET_CURRENT_VERSION);
+    stream.WriteUint32(ASSET_VERSION_CURRENT);
     stream.WriteUint32(uint32_t(mType));
     stream.WriteUint8(mEmbedded);
 }

@@ -230,11 +230,13 @@ bool InstancedMesh3D::ShouldUnroll() const
 {
     Platform platform = GetPlatform();
 
-    if (platform == Platform::Count)
+#if EDITOR
+    if (!IsPlayingInEditor())
     {
-        // If we aren't cooking, then don't unroll.
+        // In editor, never unroll.
         return false;
     }
+#endif
 
     if (mAlwaysUnroll)
     {
@@ -509,8 +511,8 @@ void InstancedMesh3D::Unroll()
         glm::vec3 rot = mInstanceData[i].mRotation;
         glm::vec3 scale = mInstanceData[i].mScale;
 
-        uint32_t x = uint32_t(pos.x / mUnrolledCellSize);
-        uint32_t z = uint32_t(pos.z / mUnrolledCellSize);
+        uint32_t x = uint32_t((pos.x - minExt.x) / mUnrolledCellSize);
+        uint32_t z = uint32_t((pos.z - minExt.z) / mUnrolledCellSize);
 
         OCT_ASSERT(x < numCellsX);
         OCT_ASSERT(z < numCellsZ);
@@ -519,7 +521,7 @@ void InstancedMesh3D::Unroll()
         std::vector<IndexType>& dstIndexData = unrolledIndexData[z * numCellsX + x];
 
         // We need to offset all of the index data for this new mesh instance data
-        uint32_t indexOffset = dstIndexData.size();
+        uint32_t indexOffset = (uint32_t)dstIndexData.size();
 
         if (indexOffset + numIndices > MAX_MESH_VERTEX_COUNT)
         {
@@ -545,7 +547,7 @@ void InstancedMesh3D::Unroll()
 
     // Iterate over all cell datas and remove ones that have 0 instances
     uint32_t numUnrolledCells = 0;
-    for (uint32_t i = 0; i < unrolledVertexData.size() > 0; ++i)
+    for (uint32_t i = 0; i < unrolledVertexData.size(); ++i)
     {
         if (unrolledVertexData[i].size() == 0)
             continue;
