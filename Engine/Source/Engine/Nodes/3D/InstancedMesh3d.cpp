@@ -40,7 +40,10 @@ void InstancedMesh3D::Destroy()
 
 void InstancedMesh3D::Render()
 {
-    GFX_DrawInstancedMeshComp(this);
+    if (!mUnrolled)
+    {
+        GFX_DrawInstancedMeshComp(this);
+    }
 }
 
 void InstancedMesh3D::Tick(float deltaTime)
@@ -521,7 +524,7 @@ void InstancedMesh3D::Unroll()
         std::vector<IndexType>& dstIndexData = unrolledIndexData[z * numCellsX + x];
 
         // We need to offset all of the index data for this new mesh instance data
-        uint32_t indexOffset = (uint32_t)dstIndexData.size();
+        uint32_t indexOffset = (uint32_t)dstVertexData.size();
 
         if (indexOffset + numIndices > MAX_MESH_VERTEX_COUNT)
         {
@@ -556,6 +559,7 @@ void InstancedMesh3D::Unroll()
 
         StaticMesh* unrolledMesh = NewTransientAsset<StaticMesh>();
         unrolledMesh->SetName("Unrolled Mesh");
+        unrolledMesh->SetMaterial(GetMaterial());
         unrolledMesh->CreateRaw(
             (uint32_t)unrolledVertexData[i].size(),
             unrolledVertexData[i].data(),
@@ -566,6 +570,7 @@ void InstancedMesh3D::Unroll()
         snprintf(nodeName, 64, "Unrolled %d", numUnrolledCells);
         StaticMesh3D* cellNode = CreateChild<StaticMesh3D>(nodeName);
         cellNode->SetStaticMesh(unrolledMesh);
+        cellNode->SetCullDistance(mUnrolledCullDistance);
 
         ++numUnrolledCells;
     }

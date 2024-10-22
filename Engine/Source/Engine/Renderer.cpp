@@ -552,7 +552,7 @@ void Renderer::GatherDrawData(World* world)
                 bool simpleShadow = (data.mNodeType == ShadowMesh3D::GetStaticType());
 
                 bool distanceCulled = false;
-                data.mDistance2 = glm::distance2(cameraPos, data.mPosition);
+                data.mDistance2 = glm::distance2(cameraPos, data.mBounds.mCenter);
                 const float cullDist = prim ? prim->GetCullDistance() : 0.0f;
                 if (cullDist > 0.0f)
                 {
