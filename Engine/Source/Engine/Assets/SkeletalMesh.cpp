@@ -647,6 +647,15 @@ void SkeletalMesh::Create(const aiScene& scene,
     // Setup vertex/index buffers
     SetupResource(meshData, boneWeights, boneIndices);
 
+    // Remove event bones. Those are a work around for exporting animation events.
+    for (int32_t i = int32_t(mBones.size()) - 1; i >= 0; --i)
+    {
+        if (mBones[i].mName.substr(0, 6) == "Event_")
+        {
+            mBones.erase(mBones.begin() + i);
+        }
+    }
+
     mMaterial = Renderer::Get()->GetDefaultMaterial();
 
     ComputeBounds();
