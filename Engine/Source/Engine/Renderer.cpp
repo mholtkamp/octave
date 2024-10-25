@@ -111,18 +111,17 @@ void Renderer::Initialize()
 
     mStatsWidget = Node::Construct<StatsOverlay>();
 
-#if !_DEBUG
-    // In release builds, default these to hidden.
+#if (PLATFORM_WINDOWS || PLATFORM_LINUX || PLATFORM_ANDROID) && !_DEBUG
     if (mConsoleWidget != nullptr)
     {
         mConsoleWidget->SetVisible(false);
     }
+#endif
 
     if (mStatsWidget != nullptr)
     {
         mStatsWidget->SetVisible(false);
     }
-#endif
 
 #if EDITOR
     EnableProxyRendering(true);
