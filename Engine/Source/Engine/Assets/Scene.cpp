@@ -144,17 +144,21 @@ void Scene::SaveStream(Stream& stream, Platform platform)
         stream.WriteBytes(def.mExtraData.data(), (uint32_t)def.mExtraData.size());
     }
 
+    // Now that we've written out the platform-cooked scene data, write out the rest of the data for this scene
+    // from this instance itself. This data is platform independent.
+    srcScene = nullptr;
+
     // World render properties
-    stream.WriteBool(srcScene->mSetAmbientLightColor);
-    stream.WriteBool(srcScene->mSetShadowColor);
-    stream.WriteBool(srcScene->mSetFog);
-    stream.WriteVec4(srcScene->mAmbientLightColor);
-    stream.WriteVec4(srcScene->mShadowColor);
-    stream.WriteBool(srcScene->mFogEnabled);
-    stream.WriteVec4(srcScene->mFogColor);
-    stream.WriteUint8(uint8_t(srcScene->mFogDensityFunc));
-    stream.WriteFloat(srcScene->mFogNear);
-    stream.WriteFloat(srcScene->mFogFar);
+    stream.WriteBool(mSetAmbientLightColor);
+    stream.WriteBool(mSetShadowColor);
+    stream.WriteBool(mSetFog);
+    stream.WriteVec4(mAmbientLightColor);
+    stream.WriteVec4(mShadowColor);
+    stream.WriteBool(mFogEnabled);
+    stream.WriteVec4(mFogColor);
+    stream.WriteUint8(uint8_t(mFogDensityFunc));
+    stream.WriteFloat(mFogNear);
+    stream.WriteFloat(mFogFar);
 }
 
 void Scene::Create()
