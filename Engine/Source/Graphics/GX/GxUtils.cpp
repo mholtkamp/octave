@@ -310,7 +310,6 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
     GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
     tevStage++;
 
-
     // Vertex color modulation
     if (useVertexColor)
     {
@@ -409,6 +408,15 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
                 0.0f,
                 {0,0,0,0});
         }
+    }
+
+    CullMode cullMode = material->GetCullMode();
+    switch (cullMode)
+    {
+        // Note: Culling is reversed on GX for some reason.
+        case CullMode::None: GX_SetCullMode(GX_CULL_NONE); break;
+        case CullMode::Back: GX_SetCullMode(GX_CULL_FRONT); break;
+        case CullMode::Front: GX_SetCullMode(GX_CULL_BACK); break;
     }
 }
 

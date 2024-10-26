@@ -378,6 +378,14 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
             }
         }
 
+        CullMode cullMode = material->GetCullMode();
+        switch (cullMode)
+        {
+            case CullMode::None: C3D_CullFace(GPU_CULL_NONE); break;
+            case CullMode::Back: C3D_CullFace(GPU_CULL_BACK_CCW); break;
+            case CullMode::Front: C3D_CullFace(GPU_CULL_FRONT_CCW); break;
+        }
+
         gC3dContext.mLastBoundMaterial = material;
     }
 }
