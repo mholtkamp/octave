@@ -702,9 +702,10 @@ void GFX_DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverri
     if (mesh != nullptr)
     {
         bool useBakedLighting = staticMeshComp->HasBakedLighting();
-
+        bool hasInstanceColors = staticMeshComp->HasInstanceColors();
         const void* instanceColors = nullptr;
-        if (useBakedLighting)
+
+        if (hasInstanceColors)
         {
             OCT_ASSERT(meshCompResource->mColorVertexData != nullptr);
             instanceColors = meshCompResource->mColorVertexData;

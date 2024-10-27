@@ -498,10 +498,11 @@ void GFX_DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverri
         StaticMeshResource* meshResource = mesh->GetResource();
 
         bool hasBakedLighting = staticMeshComp->HasBakedLighting();
-        bool hasColor = mesh->HasVertexColor() || hasBakedLighting;
+        bool hasInstanceColors = staticMeshComp->HasInstanceColors();
+        bool hasColor = mesh->HasVertexColor() || hasInstanceColors;
         
         uint32_t* instanceColors = nullptr;
-        if (hasBakedLighting)
+        if (hasInstanceColors)
         {
             instanceColors = staticMeshComp->GetInstanceColors().data();
         }
