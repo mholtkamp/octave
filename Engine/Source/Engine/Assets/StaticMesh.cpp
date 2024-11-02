@@ -42,7 +42,7 @@ StaticMesh::StaticMesh() :
     mMaterial(nullptr),
     mNumVertices(0),
     mNumIndices(0),
-    mNumUvMaps(1),
+    mNumUvMaps(2),
     mVertices(nullptr),
     mIndices(nullptr),
     mCollisionShape(nullptr),
@@ -796,14 +796,16 @@ void StaticMesh::Create(
     mNumVertices = meshData.mNumVertices;
     mNumIndices = meshData.mNumFaces * 3;
     
-    mNumUvMaps = glm::clamp(meshData.GetNumUVChannels(), 0u, MAX_UV_MAPS - 1u);
+    // Always set the num uv maps to 2 since we are storing two sets of UVs no matter what.
+    mNumUvMaps = 2;
+    //mNumUvMaps = glm::clamp(meshData.GetNumUVChannels(), 0u, MAX_UV_MAPS - 1u);
 
     mHasVertexColor = meshData.GetNumColorChannels() > 0;
 
     // Get pointers to vertex attributes
     glm::vec3* positions = reinterpret_cast<glm::vec3*>(meshData.mVertices);
     glm::vec3* texcoords0 = meshData.HasTextureCoords(0) ? reinterpret_cast<glm::vec3*>(meshData.mTextureCoords[0]) : nullptr;
-    glm::vec3* texcoords1 = meshData.HasTextureCoords(1) ? reinterpret_cast<glm::vec3*>(meshData.mTextureCoords[1]) : nullptr;
+    glm::vec3* texcoords1 = meshData.HasTextureCoords(1) ? reinterpret_cast<glm::vec3*>(meshData.mTextureCoords[1]) : texcoords0;
     glm::vec3* normals = reinterpret_cast<glm::vec3*>(meshData.mNormals);
     glm::vec4* colors = mHasVertexColor ? reinterpret_cast<glm::vec4*>(meshData.mColors[0]) : nullptr;
 
