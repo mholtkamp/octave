@@ -1591,7 +1591,7 @@ void Script::CreateScriptInstance()
 
             if (lua_getmetatable(L, classTableIdx) == 0)
             {
-                LogDebug("Auto-parenting script Class table to native node's table.");
+                LogDebug("Auto-parenting %s to %s.", mClassName.c_str(), mOwner->GetClassName());
 
                 luaL_getmetatable(L, mOwner->GetClassName());
                 if (lua_isnil(L, -1))

@@ -22,7 +22,7 @@ SkeletalMesh::SkeletalMesh() :
     mMaterial(nullptr),
     mNumVertices(0),
     mNumIndices(0),
-    mNumUvMaps(1)
+    mNumUvMaps(2)
 {
     mType = SkeletalMesh::GetStaticType();
 }
@@ -914,7 +914,7 @@ void SkeletalMesh::SetupResource(const aiMesh& meshData,
     // Get pointers to vertex attributes
     glm::vec3* positions = reinterpret_cast<glm::vec3*>(meshData.mVertices);
     glm::vec3* texcoords0 = meshData.HasTextureCoords(0) ? reinterpret_cast<glm::vec3*>(meshData.mTextureCoords[0]) : nullptr;
-    glm::vec3* texcoords1 = meshData.HasTextureCoords(1) ? reinterpret_cast<glm::vec3*>(meshData.mTextureCoords[1]) : nullptr;
+    glm::vec3* texcoords1 = meshData.HasTextureCoords(1) ? reinterpret_cast<glm::vec3*>(meshData.mTextureCoords[1]) : texcoords0;
     glm::vec3* normals = reinterpret_cast<glm::vec3*>(meshData.mNormals);
 
     aiFace* faces = meshData.mFaces;
@@ -923,7 +923,9 @@ void SkeletalMesh::SetupResource(const aiMesh& meshData,
     mVertices.resize(mNumVertices);
     mIndices.resize(mNumIndices);
 
-    mNumUvMaps = glm::clamp(meshData.GetNumUVChannels(), 0u, MAX_UV_MAPS - 1u);
+    // Always set the num uv maps to 2 since we are storing two sets of UVs no matter what.
+    mNumUvMaps = 2;
+    //mNumUvMaps = glm::clamp(meshData.GetNumUVChannels(), 0u, MAX_UV_MAPS - 1u);
 
     // Create an interleaved VBO
     for (uint32_t i = 0; i < meshData.mNumVertices; ++i)
