@@ -180,7 +180,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>LuaSocket.lib;Lua.lib;spirv-cross-core.lib;shaderc_combined.lib;vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)/Bin;$(VULKAN_SDK)/Lib;$(SolutionDir)Engine/External/lib/Lib/;$(ProjectDir)../External/Lua/Build/Windows/$(Platform)/$(Configuration)/;$(ProjectDir)../External/LuaSocket/Build/Windows/$(Platform)/$(Configuration)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)/Bin;$(VULKAN_SDK)/Lib;$(SolutionDir)Engine/External/lib/Lib/;$(ProjectDir)../External/Lua/Build/Windows/$(Platform)/$(Configuration)/;$(ProjectDir)../External/LuaSocket/Build/Windows/$(Platform)/$(Configuration)/;$(ProjectDir)../External/Steam/redistributable_bin/win64/;$(ProjectDir)../External/Steam/public/steam/lib/win64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseEditor|x64'">
