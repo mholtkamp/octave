@@ -360,7 +360,16 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 solutionPath = engineState->mSolutionPath;
             }
 
-            std::string devenvCmd = std::string("devenv ") + solutionPath + " /Build \"Release|x64\" /Project " + buildProjName;
+            std::string devenvCmd;
+
+            if (GetEngineConfig()->mPackageForSteam)
+            {
+                devenvCmd = std::string("devenv ") + solutionPath + " /Build \"ReleaseSteam|x64\" /Project " + buildProjName;
+            }
+            else
+            {
+                devenvCmd = std::string("devenv ") + solutionPath + " /Build \"Release|x64\" /Project " + buildProjName;
+            }
 
             SYS_Exec(devenvCmd.c_str());
         }
@@ -467,6 +476,20 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         // Rename the executable to the project name
         std::string renameCmd = std::string("mv ") + packagedDir + "Octave" + extension + " " + packagedDir + projectName + extension;
         SYS_Exec(renameCmd.c_str());
+    }
+
+    if (platform == Platform::Windows &&
+        GetEngineConfig()->mPackageForSteam)
+    {
+        // (1) Copy over redistributable DLL
+        std::string cpSteamDllCmd1 = std::string("cp ") + projectDir + (standalone ? "../" : "../Octave/") + "External/Steam/redistributable_bin/win64/steam_api64.dll " + packagedDir;
+        SYS_Exec(cpSteamDllCmd1.c_str());
+
+        // (2) Create a steam_appid.txt with 480
+        Stream idStream;
+        const char* txtId = "480";
+        idStream.WriteBytes((uint8_t*)txtId, (uint32_t)strlen(txtId));
+        idStream.WriteFile((packagedDir + "steam_appid.txt").c_str());
     }
 
     LogDebug("Build Finished");

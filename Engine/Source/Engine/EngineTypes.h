@@ -265,6 +265,7 @@ struct EngineConfig
     int32_t mWindowHeight = 0;
     bool mValidateGraphics = false;
     bool mFullscreen = false;
+    bool mPackageForSteam = false;
 };
 
 enum class ConsoleMode
