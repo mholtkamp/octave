@@ -250,8 +250,8 @@ Global
 		{B306753D-ADF6-4D8C-ACE7-C8AF2F909565}.ReleaseEditor|x86.ActiveCfg = ReleaseEditor|Win32
 		{B306753D-ADF6-4D8C-ACE7-C8AF2F909565}.ReleaseEditor|x86.Build.0 = ReleaseEditor|Win32
 		{B306753D-ADF6-4D8C-ACE7-C8AF2F909565}.ReleaseSteam|Android-arm64-v8a.ActiveCfg = Release|Win32
-		{B306753D-ADF6-4D8C-ACE7-C8AF2F909565}.ReleaseSteam|x64.ActiveCfg = Release|x64
-		{B306753D-ADF6-4D8C-ACE7-C8AF2F909565}.ReleaseSteam|x64.Build.0 = Release|x64
+		{B306753D-ADF6-4D8C-ACE7-C8AF2F909565}.ReleaseSteam|x64.ActiveCfg = ReleaseSteam|x64
+		{B306753D-ADF6-4D8C-ACE7-C8AF2F909565}.ReleaseSteam|x64.Build.0 = ReleaseSteam|x64
 		{B306753D-ADF6-4D8C-ACE7-C8AF2F909565}.ReleaseSteam|x86.ActiveCfg = Release|Win32
 		{B306753D-ADF6-4D8C-ACE7-C8AF2F909565}.ReleaseSteam|x86.Build.0 = Release|Win32
 		{9CC47ACB-DFDE-4FDA-ADAE-CE660F8DD450}.Debug|Android-arm64-v8a.ActiveCfg = Debug|Android-arm64-v8a
