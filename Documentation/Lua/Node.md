@@ -220,58 +220,172 @@ Sig: `child = Node:CreateChildClone(srcNode, recurse)`
  - Ret: `Node child` The newly cloned node
 ---
 ### Clone
+Create a copy of node. If the recurse option is set to true, it will copy all child nodes as well.
+
+Sig: `node = Node:Clone(srcNode, recurse)`
+ - Arg: `Node srcNode` The source node to copy from
+ - Arg: `boolean recurse` If true, clone all children nodes as well
+ - Ret: `Node node` Newly created, cloned node
 ---
 ### DestroyChild
+Destroy a child node based on a given name or index.
+Note: This function seems excessive. Can we remove it?
+
+Sig: `Node:DestroyChild(nameOrIndex)`
+ - Arg: `string/integer nameOrIndex` Name (string) or index (integer) of child node to destroy
 ---
 ### DestroyAllChildren
+Destroy all child nodes.
+
+Sig: `Node:DestroyAllChildren()`
+
 ---
 ### Start
+Manually invoke the Start function of the node if it hasn't been started already. Normally a node will have its Start() function called on the first frame it ticks, but sometimes it can be useful to manually invoke Start() to control the order that nodes are started.
+
+Sig: `Node:Start()`
+
 ---
 ### HasStarted
----
-### Destroy
+Check if the node has already started (i.e. has had its Start() function called)
+
+Sig: `hasStarted = Node:HasStarted()`
+ - Ret: `boolean hasStarted` true if Start() has been called for this node
 ---
 ### SetPendingDestroy
+Mark the node to be destroyed at the end of the frame.
+
+Sig: `Node:SetPendingDestroy(destroy)`
+ - Arg: `boolean destroy` true to mark for destruction
 ---
 ### IsPendingDestroy
+Check if the node is marked to be destroyed at the end of the frame.
+
+Sig: `pendingDestroy = Node:IsPendingDestroy()`
+ - Ret: `boolean pendingDestroy` true if marked for destruction 
 ---
 ### EnableTick
+Set whether or not this node should tick every frame.
+Note: I don't think there is any difference between this and SetActive() right now, so this function might be removed in the future.
+
+Sig: `Node:EnableTick(enable)`
+ - Arg: `boolean enable` Whether to tick
 ---
 ### IsTickEnabled
+Check if this node will have its Tick() function called.
+Note: I don't think there is any difference between this and IsActive() right now, so this function might be removed in the future.
+
+Sig: `enabled = Node:IsTickEnabled()`
+ - Ret: `boolean enabled` true if can tick
 ---
 ### GetScene
+Return this node's associated Scene. When a scene is instantiated, the newly instantiated root node will hold a reference to the Scene asset which it was instantiated from. GetScene() will return this reference.
+
+Sig: `scene = Node:GetScene()`
+ - Arg: `Scene scene` The node's associated scene
 ---
 ### GetNetId
+Return the net id associated with this node. A NetId will be assigned to nodes with replication enabled when hosting a session or connected to another session. NetIds are the internal mechanism for referencing the same node across different instances of the game.
+
+Sig: `netId = Node:GetNetId()`
+ - Arg: `integer netId` The node's NetId, 0 is an invalid net id
 ---
 ### GetOwningHost
+Return the owning host id. Only useful in net play sessions for determining which player/host should control the node.
+
+Sig: `hostId = Node:GetOwningHost()`
+ - Ret: `integer hostId` Owning host id
 ---
 ### SetOwningHost
+Set which host should own the node. The owning host id will be replicated to clients, so this function should only be called on the server. Ownership doesn't do anything on it's own, it's up to the game code to handle what ownership means (e.g. only the owning player can tell the player node where to move)
+
+Sig: `Node:SetOwningHost(hostId)`
+ - Arg: `integer hostId` The new host id that should own the node
 ---
 ### SetReplicate
+Enable or disable network replication for this node.
+Note: The replicate flag should probably be set in the Editor via the Properties panel. I don't think setting it at runtime is advised.
+
+Sig: `Node:SetReplicate(replicate)`
+ - Arg: `boolean replicate` true to replicate over the network
 ---
 ### IsReplicated
+Check if this node is replicated over the network.
+
+Sig: `replicated = Node:IsReplicated()`
+ - Ret: `boolean replicated` true if replicated over the network
 ---
 ### SetReplicateTransform
+Set whether the transform (position/rotation/scale) should be replicated for this node. This is currently only used by 3D nodes, but in the future it might be expanded to work for widgets or 2D nodes.
+Note: Should probably be set in the editor instead of changed at runtime.
+
+Sig: `Node:SetReplicateTransform(replicateTransform)`
+ - Arg: `boolean replicateTransform` true to replicate transform
 ---
 ### IsTransformReplicated
+Check if this node's transform is replicated.
+
+Sig: `transformReplicated = Node:IsTransformReplicated()`
+ - Ret: `boolean transformReplicated` true if trasnform is replicated
 ---
 ### ForceReplication
+Forcefully replicate properties of this node on the next network update, even if nothing has changed.
+
+Sig: `Node:ForceReplication()`
+
 ---
 ### HasTag
+Check if a node has a given tag assigned to it. Tags are strings that can be assigned to a node. Nodes can have an unlimited number of tags assigned to them.
+
+Sig: `hasTag = Node:HasTag(tag)`
+ - Arg: `string tag` tag
+ - Ret: `boolean hasTag` true if the node has that tag assigned to it
 ---
 ### AddTag
+Add a tag to this node. Nothing will happen if this node already has the tag assigned to it.
+
+Sig: `Node:AddTag(tag)`
+ - Arg: `string tag` Tag to assign
 ---
 ### RemoveTag
+Remove a tag on this node. Does nothing if the tag hasn't been assigned.
+
+Sig: `Node:RemoveTag(tag)`
+ - Arg: `string tag` Tag to remove
 ---
 ### HasAuthority
+This function was added to match Unreal functionality, but the server will have network authority on all nodes. This function calls Network.IsAuthority(), it does not really matter which node this function is invoked on.
+
+Sig: `hasAuthority = Node:HasAuthority()`
+ - Arg: `boolean hasAuthority` true if this host is a server
 ---
 ### IsOwned
+Check whether this computer host owns this node. Will always return true if in a local game. Otherwise will return true if the OwningHost is equivalent to this computer's host id.
+
+Sig: `owned = Node:IsOwned()`
+ - Ret: `boolean owned` true if owned by this host
 ---
 ### IsLateTickEnabled
+Check if late tick is enabled. Late tick means that the node will tick all of its children before it ticks itself. By default, the parent node will tick first.
+
+Sig: `lateTick = Node:IsLateTickEnabled()`
+ - Ret: `boolean lateTick` true if node will tick after its children
 ---
 ### EnableLateTick
+Enable late tick on this node. Late tick means that the node will tick all of its children before it ticks itself. By default, the parent node will tick first.
+
+Sig: `Node:EnableLateTick(lateTick)`
+ - Arg: `boolean lateTick` true to tick this node after its children
 ---
 ### InvokeNetFunc
+Used to invoke a remote procedure call on this node. Up to 8 arguments can be passed.
+
+Sig: `Node:InvokeNetFunc(name, arg1, arg2, ... arg8)`
+ - Arg: `string name` name of net func (must exist in GatherNetFuncs())
 ---
 ### CheckType
+Check if this node is of a given type.
+
+Sig: `Node:CheckType(className)`
+ - Arg: `string className` type name to check (e.g. "Primitive3D")
 ---
