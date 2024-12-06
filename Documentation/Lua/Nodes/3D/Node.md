@@ -1,5 +1,7 @@
 # Node
 
+The base object that can be added to a world and saved in a scene.
+
 ### Node.Construct
 Construct a node from a given class name. (e.g. "Node3D", "Primitive3D", "Text", "Image")
 
