@@ -399,6 +399,25 @@ void BindNetConstants()
     OCT_ASSERT(lua_gettop(L) == 0);
 }
 
+void BindAttenuationFunc()
+{
+    lua_State* L = GetLua();
+    OCT_ASSERT(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushinteger(L, (int)AttenuationFunc::Constant);
+    lua_setfield(L, tableIdx, "Constant");
+
+    lua_pushinteger(L, (int)AttenuationFunc::Linear);
+    lua_setfield(L, tableIdx, "Linear");
+
+    lua_setglobal(L, "AttenuationFunc");
+
+    OCT_ASSERT(lua_gettop(L) == 0);
+}
+
 void Misc_Lua::BindMisc()
 {
     BindBlendMode();
@@ -413,6 +432,7 @@ void Misc_Lua::BindMisc()
     BindScreenOrientation();
     BindParticleOrientation();
     BindNetConstants();
+    BindAttenuationFunc();
 }
 
 #endif

@@ -2,6 +2,8 @@
 
 A node with a 3D transform associated with it. A Node3D's transform is determined by its relative position, rotation, scale and its parent's transform.
 
+---
+
 ### GetPosition
 Get this node's position relative to its parent.
 

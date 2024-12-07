@@ -2,6 +2,8 @@
 
 A node that plays sounds in 3D space. It can be used to play a looping sound or a one-off sound. See the Audio system for playing audio without using a node.
 
+---
+
 ### SetSoundWave
 Assign a sound wave asset to be played.
 
@@ -89,7 +91,7 @@ Sig: `priority = Audio3D:GetPriority()`
 ### SetAttenuationFunc
 Set the sound intensity attenuation function. The attenuation controls how quickly a sound's volume fades out when moving from the inner radius to the outer radius, or alternatively, how quickly a sound's volume fades in when moving the outer radius to the inner radius.
 
-See the [AttenuationFunc](#../../Misc/Enums.md#AttenuationFunc) enumeration.
+See the [AttenuationFunc](../../Misc/Enums.md#attenuationfunc) enumeration.
 
 Sig: `Audio3D:SetAttenuationFunc(attenFunc)`
  - Arg: `AttenuationFunc(integer) attenFunc` Attenuation function
@@ -97,7 +99,7 @@ Sig: `Audio3D:SetAttenuationFunc(attenFunc)`
 ### GetAttenuationFunc
 Get the sound intensity attenuation function. The attenuation controls how quickly a sound's volume fades out when moving from the inner radius to the outer radius, or alternatively, how quickly a sound's volume fades in when moving the outer radius to the inner radius.
 
-See the [AttenuationFunc](#../../Misc/Enums.md#AttenuationFunc) enumeration.
+See the [AttenuationFunc](../../Misc/Enums.md#attenuationfunc) enumeration.
 
 Sig: `attenFunc = Audio3D:GetAttenuationFunc()`
  - Ret: `AttenuationFunc(integer) attenFunc` Attenuation function
