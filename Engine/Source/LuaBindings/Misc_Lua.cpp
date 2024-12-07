@@ -413,6 +413,9 @@ void BindAttenuationFunc()
     lua_pushinteger(L, (int)AttenuationFunc::Linear);
     lua_setfield(L, tableIdx, "Linear");
 
+    lua_pushinteger(L, (int)AttenuationFunc::Count);
+    lua_setfield(L, tableIdx, "Count");
+
     lua_setglobal(L, "AttenuationFunc");
 
     OCT_ASSERT(lua_gettop(L) == 0);
