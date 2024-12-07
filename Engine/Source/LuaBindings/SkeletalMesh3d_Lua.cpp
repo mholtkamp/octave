@@ -98,7 +98,7 @@ int SkeletalMesh3D_Lua::QueueAnimation(lua_State* L)
     float weight = 1.0f;
     uint8_t priority = 255;
 
-    if (!lua_isnone(L, 4)) { dependentAnimName = CHECK_STRING(L, 4); }
+    if (!lua_isnone(L, 4) && !lua_isnil(L, 4)) { dependentAnimName = CHECK_STRING(L, 4); }
     if (!lua_isnone(L, 5)) { speed = CHECK_NUMBER(L, 5); }
     if (!lua_isnone(L, 6)) { weight = CHECK_NUMBER(L, 6); }
     if (!lua_isnone(L, 7)) { priority = (uint8_t)CHECK_INTEGER(L, 7); }
