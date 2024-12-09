@@ -256,30 +256,92 @@ Sig: `dirty = Widget:IsDirty()`
  - `boolean dirty` Is widget dirty
 ---
 ### ContainsMouse
+Check if the mouse is contained within the area of the widget (inside the Rect). The mouse will not be considered inside the Rect if it is outside the scissor bounds.
+
+Sig: `contained = Widget:ContainsMouse()`
+ - Ret: `boolean contained` Widget contains mouse
 ---
 ### ContainsPoint
+Check if a point is within the area of the widget (inside the Rect). Clamps within the scissor bounds if scissor is enabled.
+
+Sig: `contained = Widget:ContainsPoint(x,y)`
+ - Arg: `number x` X screen position in pixels
+ - Arg: `number y` Y screen position in pixels
+ - Ret: `boolean contained` Widget contains point
 ---
 ### SetRotation
+Set the widget rotation in degrees.
+
+Sig: `Widget:SetRotation(rotation)`
+ - Arg: `number rotation` Rotation in degrees
 ---
 ### GetRotation
+Get the widget rotation in degrees.
+
+Sig: `rotation = Widget:GetRotation()`
+ - Ret: `number rotation` Rotation in degrees
 ---
 ### SetPivot
+Set the widget's pivot point which it will rotate around. A pivot of <0,0> is the top left corner. <0.5, 0.5> would be in the middle. <1, 1> would be the bottom right.
+
+Sig: `Widget:SetPivot(x, y)`
+ - Arg: `number x` X pivot (should likely be between 0 and 1)
+ - Arg: `number y` Y pivot (should likely be between 0 and 1)
 ---
 ### GetPivot
+Get the widget's pivot point which it will rotate around. A pivot of <0,0> is the top left corner. <0.5, 0.5> would be in the middle. <1, 1> would be the bottom right.
+
+Sig: `pivot = Widget:GetPivot()`
+ - Ret: `Vector pivot` The pivot point (as a ratio in the range 0 to 1)
 ---
 ### SetScale
+Set the widget's scale.
+
+A single Vector argument can be used instead of the two number arguments.
+
+Sig: `Widget:SetScale(x, y)`
+ - Arg: `number x` X scale
+ - Arg: `number y` Y scale
 ---
 ### GetScale
+Get the widget's scale.
+
+Sig: `scale = Widget:GetScale()`
+ - Ret: `Vector scale` Widget scale
 ---
 ### IsScissorEnabled
+Check if the scissor is enabled. When the scissor is enabled, child widgets will be clipped to stay within the bounds of this widget.
+
+Sig: `scissor = Widget:IsScissorEnabled()`
+ - Ret: `boolean scissor` Whether scissor is enabled
 ---
 ### EnableScissor
+Set whether to enable the scissor. When the scissor is enabled, child widgets will be clipped to stay within the bounds of this widget.
+
+Sig: `Widget:EnableScissor(scissor)`
+ - Arg: `boolean scissor` Whether to enable scissor
 ---
 ### SetOpacity
+Set the widget's opacity as an integer between 0 and 255. When rendered, a widget's opacity is compounded with its parent opacity.
+
+Sig: `Widget:SetOpacity(opacity)`
+ - Arg: `integer opacity` Widget opacity (0 to 255)
 ---
 ### SetOpacityFloat
+Set the widget's opacity as a floating point number between 0 and 1. When rendered, a widget's opacity is compounded with its parent opacity.
+
+Sig: `Widget:SetOpacityFloat(opacity)`
+ - Arg: `number opacity` Widget opacity (0 to 1)
 ---
 ### GetOpacity
+Get the widget's opacity as an integer between 0 and 255. When rendered, a widget's opacity is compounded with its parent opacity.
+
+Sig: `opacity = Widget:GetOpacity()`
+ - Ret: `integer opacity` Widget opacity (0 to 255)
 ---
 ### GetOpacityFloat
+Get the widget's opacity as a floating point number between 0 and 1. When rendered, a widget's opacity is compounded with its parent opacity.
+
+Sig: `opacity = Widget:GetOpacityFloat()`
+ - Ret: `number opacity` Widget opacity (0 to 1)
 ---
