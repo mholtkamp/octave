@@ -92,3 +92,8 @@ Tables that act as enumerations.
 
  - `Constant` No attenuation based on distance from sound source
  - `Linear` Linear falloff as sound receiver moves away from sound source
+
+## CullMode
+ - `None` Do not cull triangle no matter which way it is facing
+ - `Back` Cull triangles that are facing away from the camera
+ - `Front` Cull triangles that are facing the camera

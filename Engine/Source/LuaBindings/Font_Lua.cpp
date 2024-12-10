@@ -52,7 +52,7 @@ int Font_Lua::IsBold(lua_State* L)
 
     bool ret = font->IsBold();
 
-    lua_pushinteger(L, ret);
+    lua_pushboolean(L, ret);
     return 1;
 }
 
@@ -62,7 +62,7 @@ int Font_Lua::IsItalic(lua_State* L)
 
     bool ret = font->IsItalic();
 
-    lua_pushinteger(L, ret);
+    lua_pushboolean(L, ret);
     return 1;
 }
 

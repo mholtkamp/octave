@@ -367,7 +367,7 @@ void BindParticleOrientation()
     lua_setfield(L, tableIdx, "NX");
 
     lua_pushinteger(L, (int)ParticleOrientation::NY);
-    lua_setfield(L, tableIdx, "Ny");
+    lua_setfield(L, tableIdx, "NY");
 
     lua_pushinteger(L, (int)ParticleOrientation::NZ);
     lua_setfield(L, tableIdx, "NZ");
@@ -421,6 +421,31 @@ void BindAttenuationFunc()
     OCT_ASSERT(lua_gettop(L) == 0);
 }
 
+void BindCullMode()
+{
+    lua_State* L = GetLua();
+    OCT_ASSERT(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushinteger(L, (int)CullMode::None);
+    lua_setfield(L, tableIdx, "None");
+
+    lua_pushinteger(L, (int)CullMode::Back);
+    lua_setfield(L, tableIdx, "Back");
+
+    lua_pushinteger(L, (int)CullMode::Front);
+    lua_setfield(L, tableIdx, "Front");
+
+    lua_pushinteger(L, (int)CullMode::Count);
+    lua_setfield(L, tableIdx, "Count");
+
+    lua_setglobal(L, "CullMode");
+
+    OCT_ASSERT(lua_gettop(L) == 0);
+}
+
 void Misc_Lua::BindMisc()
 {
     BindBlendMode();
@@ -436,6 +461,7 @@ void Misc_Lua::BindMisc()
     BindParticleOrientation();
     BindNetConstants();
     BindAttenuationFunc();
+    BindCullMode();
 }
 
 #endif
