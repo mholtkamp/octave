@@ -2,6 +2,8 @@
 
 System that manages loading and unloading assets.
 
+Some of these functions are available as global functions, so you can just call `LoadAsset(name)` instead of `AssetManager.LoadAsset(name)`. See [Globals](../Misc/Globals.md).
+
 ---
 ### RefSweep
 Unload any assets that are no longer references.
