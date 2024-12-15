@@ -1,6 +1,6 @@
 # Asset
 
-Base class for any any assets that can be loaded into memory from file. Most assets are created by importing source files in the editor (like a Texture by importing a .png file).
+Base class for any assets that can be loaded into memory from file. Most assets are created by importing source files in the editor (like a Texture by importing a .png file).
 
 Assets can only be unloaded from memory once nothing else references them. To unload all unreferenced assets, call AssetManager.RefSweep(). In the future, options for incremental asset cleanup will be implemented.
 
@@ -15,7 +15,7 @@ Sig: `name = Asset:GetName()`
 Get the number of references that are pointing to this asset. These references include variables in both C++ and Lua code.
 
 Sig: `count = Asset:GetRefCount()`
- - Ret: `integer count`
+ - Ret: `integer count` Reference count
 ---
 ### GetTypeName
 Get the asset's type as a string. For instance "Texture".

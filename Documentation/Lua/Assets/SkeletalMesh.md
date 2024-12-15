@@ -1,6 +1,6 @@
 # SkeletalMesh
 
-A mesh that can contain a bone heirarchy and animations.
+A mesh that can contain a bone hierarchy and animations.
 
 ---
 ### GetMaterial
@@ -47,7 +47,7 @@ Sig: `num = SkeletalMesh:GetNumBones()`
  - Ret: `integer num` Num bones
 ---
 ### GetAnimationName
-Get an animation name from it's index.
+Get an animation name from its index.
 
 Sig: `name = SkeletalMesh:GetAnimationName(index)`
  - Arg: `integer index` Animation index

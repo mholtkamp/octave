@@ -17,8 +17,8 @@ Sig: `base = MaterialInstance:GetBaseMaterial()`
  - Ret: `MaterialBase base` Referenced base material
 ---
 ### SetBaseMaterial
-Set the base material use by this instance.
+Set the base material used by this instance.
 
 Sig: `MaterialInstance:SetBaseMaterial(base)`
-- Arg: `MaterialBase base` Base material to reference
+ - Arg: `MaterialBase base` Base material to reference
 ---

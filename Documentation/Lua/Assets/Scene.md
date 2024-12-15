@@ -1,6 +1,6 @@
 # Scene
 
-A an asset that describes a collection of nodes. It can be thought of as a Prefab, Level, Blueprint, or Collection in other game engines.
+An asset that describes a collection of nodes. It can be thought of as a Prefab, Level, Blueprint, or Collection in other game engines.
 
 ---
 ### Capture

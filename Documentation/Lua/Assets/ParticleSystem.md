@@ -24,7 +24,7 @@ Sig: `ParticleSystem:SetDuration(duration)`
 ### GetDuration
 Get the duration. A duration of 0 means infinite duration.
 
-Sig: `duration = ParticleSystem:GettDuration()`
+Sig: `duration = ParticleSystem:GetDuration()`
  - Ret: `number duration` System duration
 ---
 ### SetSpawnRate
@@ -64,13 +64,13 @@ Sig: `window = ParticleSystem:GetBurstWindow()`
  - Ret: `number window` Burst window
 ---
 ### SetMaxParticles
-Set the maximum number of particles. New particles will not be emit if the system has reached its max particle count.
+Set the maximum number of particles. New particles will not be emitted if the system has reached its max particle count.
 
 Sig: `ParticleSystem:SetMaxParticles(max)`
  - Arg: `integer max` Maximum number of particles
 ---
 ### GetMaxParticles
-Get the maximum number of particles. New particles will not be emit if the system has reached its max particle count.
+Get the maximum number of particles. New particles will not be emitted if the system has reached its max particle count.
 
 Sig: `max = ParticleSystem:GetMaxParticles()`
  - Ret: `integer max` Maximum number of particles
@@ -79,13 +79,13 @@ Sig: `max = ParticleSystem:GetMaxParticles()`
 Set the number of loops. 0 = infinite loops.
 
 Sig: `ParticleSystem:SetLoops(loops)`
- - Arg: `integer loop` Num loops
+ - Arg: `integer loops` Num loops
 ---
 ### GetLoops
 Get the number of loops. 0 = infinite loops.
 
 Sig: `loops = ParticleSystem:GetLoops()`
- - Ret: `integer loop` Num loops
+ - Ret: `integer loops` Num loops
 ---
 ### SetRadialVelocity
 Set whether the particle system should use radial velocity. If using radial velocity, velocity will point away from the center and only the X component of the velocity is used.
@@ -200,7 +200,7 @@ Sig: `max = ParticleSystem:GetSizeMax()`
  - Ret: `Vector max` Max size
 ---
 ### SetRotation
-Set the minimum and maximum intial particle rotation in radians.
+Set the minimum and maximum initial particle rotation in radians.
 
 Sig: `ParticleSystem:SetRotation(min, max)`
  - Arg: `number min` Min rotation in radians
@@ -277,23 +277,23 @@ Sig: `ease = ParticleSystem:GetScaleEase()`
 Set the starting particle color.
 
 Sig: `ParticleSystem:SetColorStart(color)`
- - Arg: `Vector color` Start Color
+ - Arg: `Vector color` Start color
 ---
 ### GetColorStart
 Get the starting particle color.
 
 Sig: `color = ParticleSystem:GetColorStart()`
- - Ret: `Vector color` Start Color
+ - Ret: `Vector color` Start color
 ---
 ### SetColorEnd
 Set the end particle color.
 
 Sig: `ParticleSystem:SetColorEnd(color)`
- - Arg: `Vector color` End Color
+ - Arg: `Vector color` End color
 ---
 ### GetColorEnd
 Get the end particle color.
 
 Sig: `color = ParticleSystem:GetColorEnd()`
- - Ret: `Vector color` End Color
+ - Ret: `Vector color` End color
 ---

@@ -91,7 +91,7 @@ Sig: `priority = Material:GetSortPriority()`
 Check if depth testing is disabled for this material. TODO: This should probably be changed to "IsDepthTestingEnabled()".
 
 Sig: `disabled = Material:IsDepthTestDisabled()`
- - Ret:` boolean disabled` True if depth testing is DISABLED
+ - Ret: `boolean disabled` True if depth testing is DISABLED
 ---
 ### ShouldApplyFog
 Check if fog should be applied to the resulting shaded fragment.

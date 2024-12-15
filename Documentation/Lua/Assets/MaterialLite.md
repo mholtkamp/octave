@@ -13,7 +13,7 @@ Sig: `matLite = MaterialLite.Create(srcMat=nil)`
 ### SetTexture
 Set the texture at a given slot. MaterialLite supports up to 4 textures.
 
-Sig: `MatrialLite:SetTexture(slot, texture)`
+Sig: `MaterialLite:SetTexture(slot, texture)`
  - Arg: `integer slot` Texture slot
  - Arg: `Texture texture` Texture asset
 ---
@@ -46,7 +46,7 @@ Set the blend mode.
 See [BlendMode](../Misc/Enums.md#blendmode)
 
 Sig: `MaterialLite:SetBlendMode(blendMode)`
- - Ret: `BlendMode(integer) blendMode` Material blend mode
+ - Arg: `BlendMode(integer) blendMode` Material blend mode
 ---
 ### GetUvOffset
 Get the UV offset for a given UV channel.
@@ -73,7 +73,7 @@ Sig: `scale = MaterialLite:GetUvScale(index=1)`
 Set the UV scale for a given UV channel.
 
 Sig: `MaterialLite:SetUvScale(scale, index=1)`
- - Arg: `Vector scale` UV offset
+ - Arg: `Vector scale` UV scale
  - Arg: `integer index` UV index (either 1 or 2)
 ---
 ### GetColor
@@ -125,13 +125,13 @@ Sig: `MaterialLite:SetEmission(emission)`
  - Arg: `number emission` Emission intensity
 ---
 ### GetWrapLighting
-Get the wrap lighting intensity. This only supported on Vulkan platforms.
+Get the wrap lighting intensity. This is only supported on Vulkan platforms.
 
 Sig: `wrap = MaterialLite:GetWrapLighting()`
  - Ret: `number wrap` Wrap lighting intensity
 ---
 ### SetWrapLighting
-Set the wrap lighting intensity. This only supported on Vulkan platforms.
+Set the wrap lighting intensity. This is only supported on Vulkan platforms.
 
 Sig: `MaterialLite:SetWrapLighting(wrap)`
  - Arg: `number wrap` Wrap lighting intensity
@@ -175,7 +175,7 @@ Sig: `MaterialLite:SetSortPriority(priority)`
 ### SetDepthTestDisabled
 Set whether depth testing is disabled for this material. TODO: This should probably be changed to "SetDepthTestingEnabled()".
 
-Sig: `MaterialLite:SetDepthTestDisable(disabled)`
+Sig: `MaterialLite:SetDepthTestDisabled(disabled)`
  - Arg: `boolean disabled` True to DISABLE depth testing
 ---
 ### GetUvMap
@@ -188,7 +188,7 @@ Sig: `uvMap = MaterialLite:GetUvMap(slot)`
 ### SetUvMap
 Set the assigned UV map for a given texture slot.
 
-Sig: `MaterialLite:GetUvMap(slot, uvMap)`
+Sig: `MaterialLite:SetUvMap(slot, uvMap)`
  - Arg: `integer slot` Texture slot
  - Arg: `integer uvMap` UV map index (either 1 or 2)
 ---
