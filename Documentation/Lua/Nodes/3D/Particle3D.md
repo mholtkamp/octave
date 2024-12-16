@@ -157,6 +157,12 @@ See [ParticleOrientation](../../Misc/Enums.md#particleorientation)
 Sig: `orientation = Particle3D:GetParticleOrientation()`
  - Ret: `ParticleOrientation(integer) orientation` Particle orientation
 ---
+### EnableAutoDestroy
+Enable the particle to automatically destroy itself after its duration has finished.
+
+Sig: `Particle3D:EnableAutoDestroy(autoDestroy)`
+ - Arg: `boolean autoDestroy` Enable auto-destroy
+---
 ### InstantiateParticleSystem
 Create a new instance of the particle system asset this node is currently using. This can be useful for adjusting particle system settings for a specific node without changing all other particles using the same ParticleSystem asset.
 

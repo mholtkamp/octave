@@ -273,6 +273,16 @@ int Particle3D_Lua::GetParticleOrientation(lua_State* L)
     return 1;
 }
 
+int Particle3D_Lua::EnableAutoDestroy(lua_State* L)
+{
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    comp->EnableAutoDestroy(value);
+
+    return 0;
+}
+
 int Particle3D_Lua::InstantiateParticleSystem(lua_State* L)
 {
     Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
@@ -336,6 +346,8 @@ void Particle3D_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetParticleOrientation);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetParticleOrientation);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableAutoDestroy);
 
     REGISTER_TABLE_FUNC(L, mtIndex, InstantiateParticleSystem);
 

@@ -4,14 +4,14 @@ The base object that can be added to a world and saved in a scene.
 
 ---
 
-### Node.Construct
+### Construct
 Construct a node from a given class name. (e.g. "Node3D", "Primitive3D", "Text", "Image")
 
 Sig: `node = Node.Construct(className="Node")`
  - Arg: `string className` The class of the node to create. Default = "Node".
  - Ret: `Node node` The newly constructed node.
 ---
-### Node.Destruct
+### Destruct
 Destruct a node, freeing the memory and making it unsuable.
 
 Sig: `Node.Destruct(node)`

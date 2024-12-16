@@ -42,6 +42,8 @@ struct Particle3D_Lua
     static int SetParticleOrientation(lua_State* L);
     static int GetParticleOrientation(lua_State* L);
 
+    static int EnableAutoDestroy(lua_State* L);
+
     static int InstantiateParticleSystem(lua_State* L);
 
     static void Bind();
