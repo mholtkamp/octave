@@ -215,9 +215,9 @@ void Engine_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, GetRealDeltaTime);
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetGameElapsedTime);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, GetGameElapsedTime, "GetElapsedTime");
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetRealElapsedTime);
-    REGISTER_TABLE_FUNC_EX(L, tableIdx, GetRealElapsedTime, "GetElapsedTime");
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetPlatform);
 

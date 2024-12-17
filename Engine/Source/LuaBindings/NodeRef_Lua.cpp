@@ -37,6 +37,26 @@ int NodeRef_Lua::Destroy(lua_State* L)
     return 0;
 }
 
+int NodeRef_Lua::Equals(lua_State* L)
+{
+    NodeRef& refA = CHECK_NODE_REF(L, 1);
+
+    bool ret = false;
+
+    if (lua_isuserdata(L, 2))
+    {
+        NodeRef& refB = CHECK_NODE_REF(L, 2);
+        ret = (refA.Get() == refB.Get());
+    }
+    else if (lua_isnil(L, 2))
+    {
+        ret = (refA.Get() == nullptr);
+    }
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int NodeRef_Lua::Get(lua_State* L)
 {
     NodeRef& ref = CHECK_NODE_REF(L, 1);
@@ -68,6 +88,10 @@ void NodeRef_Lua::Bind()
 
     luaL_newmetatable(L, NODE_REF_LUA_NAME);
     int mtIndex = lua_gettop(L);
+
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Destroy, "__gc");
+
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Equals, "__eq");
 
     REGISTER_TABLE_FUNC(L, mtIndex, Create);
 

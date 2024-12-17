@@ -266,7 +266,7 @@ int Node_Lua::Attach(lua_State* L)
     }
     if (!lua_isnone(L, 4))
     {
-        childIndex = CHECK_INTEGER(L, 4);
+        childIndex = CHECK_INDEX(L, 4);
     }
 
     node->Attach(newParent, keepWorldTransform, childIndex);
@@ -468,6 +468,9 @@ int Node_Lua::Traverse(lua_State* L)
     Node* node = CHECK_NODE(L, 1);
     CHECK_FUNCTION(L, 2);
     ScriptFunc scriptFunc(L, 2);
+    bool inverted = false;
+
+    if (!lua_isnone(L, 3)) { inverted = CHECK_BOOLEAN(L, 3); }
 
     auto callScriptFunc = [&](Node* node) -> bool
     {
@@ -476,7 +479,7 @@ int Node_Lua::Traverse(lua_State* L)
         return ret;
     };
 
-    node->Traverse(callScriptFunc);
+    node->Traverse(callScriptFunc, inverted);
 
     return 0;
 }
@@ -486,6 +489,9 @@ int Node_Lua::ForEach(lua_State* L)
     Node* node = CHECK_NODE(L, 1);
     CHECK_FUNCTION(L, 2);
     ScriptFunc scriptFunc(L, 2);
+    bool inverted = false;
+
+    if (!lua_isnone(L, 3)) { inverted = CHECK_BOOLEAN(L, 3); }
 
     auto callScriptFunc = [&](Node* node) -> bool
     {
@@ -494,7 +500,7 @@ int Node_Lua::ForEach(lua_State* L)
         return ret;
     };
 
-    bool ret = node->ForEach(callScriptFunc);
+    bool ret = node->ForEach(callScriptFunc, inverted);
 
     lua_pushboolean(L, ret);
     return ret;

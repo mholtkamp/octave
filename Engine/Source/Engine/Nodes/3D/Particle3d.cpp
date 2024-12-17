@@ -367,7 +367,7 @@ uint32_t Particle3D::GetNumVertices()
     return (uint32_t)mVertices.size();
 }
 
-const std::vector<Particle>& Particle3D::GetParticles()
+std::vector<Particle>& Particle3D::GetParticles()
 {
     return mParticles;
 }

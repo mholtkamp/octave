@@ -91,7 +91,7 @@ public:
 
     uint32_t GetNumParticles();
     uint32_t GetNumVertices();
-    const std::vector<Particle>& GetParticles();
+    std::vector<Particle>& GetParticles();
     const std::vector<VertexParticle>& GetVertices();
 
     void SetParticleVelocity(int32_t index, glm::vec3 velocity);

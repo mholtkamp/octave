@@ -401,6 +401,7 @@ void Input_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, IsShiftDown);
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsMouseButtonDown);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, IsMouseButtonDown, "IsMouseDown");
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsMouseButtonJustDown);
     REGISTER_TABLE_FUNC_EX(L, tableIdx, IsMouseButtonJustDown, "IsMousePressed");
@@ -442,6 +443,7 @@ void Input_Lua::Bind()
     REGISTER_TABLE_FUNC_EX(L, tableIdx, IsGamepadButtonJustUp, "IsGamepadReleased");
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetGamepadAxisValue);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, GetGamepadAxisValue, "GetGamepadAxis");
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetGamepadType);
 

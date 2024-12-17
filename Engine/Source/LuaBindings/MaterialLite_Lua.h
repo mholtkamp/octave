@@ -52,6 +52,7 @@ struct MaterialLite_Lua
     static int SetUvMap(lua_State* L);
     static int GetTevMode(lua_State* L);
     static int SetTevMode(lua_State* L);
+    static int SetCullMode(lua_State* L);
 
     static void Bind();
 };

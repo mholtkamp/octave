@@ -62,7 +62,7 @@ int SkeletalMesh_Lua::FindBoneIndex(lua_State* L)
     SkeletalMesh* mesh = CHECK_SKELETAL_MESH(L, 1);
     const char* name = CHECK_STRING(L, 2);
 
-    int32_t index = mesh->FindBoneIndex(name);
+    int32_t index = 1 + mesh->FindBoneIndex(name);
 
     lua_pushinteger(L, index);
     return 1;
@@ -81,7 +81,7 @@ int SkeletalMesh_Lua::GetNumBones(lua_State* L)
 int SkeletalMesh_Lua::GetAnimationName(lua_State* L)
 {
     SkeletalMesh* mesh = CHECK_SKELETAL_MESH(L, 1);
-    int32_t index = CHECK_INTEGER(L, 2);
+    int32_t index = CHECK_INDEX(L, 2);
 
     const char* ret = nullptr;
     const std::vector<Animation>& animations = mesh->GetAnimations();

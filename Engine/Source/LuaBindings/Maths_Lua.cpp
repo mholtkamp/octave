@@ -402,6 +402,7 @@ void Maths_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, ApproachAngle);
 
     REGISTER_TABLE_FUNC(L, tableIdx, NormalizeRange);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, NormalizeRange, "Wrap");
 
     REGISTER_TABLE_FUNC(L, tableIdx, Map);
 
@@ -416,6 +417,7 @@ void Maths_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, Clamp);
 
     REGISTER_TABLE_FUNC(L, tableIdx, Lerp);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, Lerp, "Mix");
 
     REGISTER_TABLE_FUNC(L, tableIdx, Sign);
 

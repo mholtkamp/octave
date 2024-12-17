@@ -31,7 +31,7 @@ int Texture_Lua::GetWidth(lua_State* L)
 
     uint32_t ret = texture->GetWidth();
 
-    lua_pushboolean(L, (int)ret);
+    lua_pushinteger(L, (int)ret);
     return 1;
 }
 
@@ -41,7 +41,7 @@ int Texture_Lua::GetHeight(lua_State* L)
 
     uint32_t ret = texture->GetHeight();
 
-    lua_pushboolean(L, (int)ret);
+    lua_pushinteger(L, (int)ret);
     return 1;
 }
 
@@ -51,7 +51,7 @@ int Texture_Lua::GetMipLevels(lua_State* L)
 
     uint32_t ret = texture->GetMipLevels();
 
-    lua_pushboolean(L, (int)ret);
+    lua_pushinteger(L, (int)ret);
     return 1;
 }
 
@@ -61,7 +61,7 @@ int Texture_Lua::GetLayers(lua_State* L)
 
     uint32_t ret = texture->GetLayers();
 
-    lua_pushboolean(L, (int)ret);
+    lua_pushinteger(L, (int)ret);
     return 1;
 }
 
@@ -71,7 +71,7 @@ int Texture_Lua::GetFormat(lua_State* L)
 
     PixelFormat ret = texture->GetFormat();
 
-    lua_pushboolean(L, (int)ret);
+    lua_pushinteger(L, (int)ret);
     return 1;
 }
 
@@ -81,7 +81,7 @@ int Texture_Lua::GetFilterType(lua_State* L)
 
     FilterType ret = texture->GetFilterType();
 
-    lua_pushboolean(L, (int)ret);
+    lua_pushinteger(L, (int)ret);
     return 1;
 }
 
@@ -91,7 +91,7 @@ int Texture_Lua::GetWrapMode(lua_State* L)
 
     WrapMode ret = texture->GetWrapMode();
 
-    lua_pushboolean(L, (int)ret);
+    lua_pushinteger(L, (int)ret);
     return 1;
 }
 

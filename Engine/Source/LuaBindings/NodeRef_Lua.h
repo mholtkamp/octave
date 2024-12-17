@@ -16,6 +16,7 @@ struct NodeRef_Lua
 
     static int Create(lua_State* L);
     static int Destroy(lua_State* L);
+    static int Equals(lua_State* L);
     static int Get(lua_State* L);
     static int Set(lua_State* L);
 

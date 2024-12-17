@@ -615,6 +615,7 @@ void Vector_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, Distance);
 
     REGISTER_TABLE_FUNC(L, mtIndex, Distance2);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Distance2, "DistanceSquared");
 
     REGISTER_TABLE_FUNC(L, mtIndex, Angle);
 

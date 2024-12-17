@@ -283,7 +283,7 @@ int World_Lua::RayTest(lua_State* L)
     uint8_t colMask = (uint8_t) CHECK_INTEGER(L, 4);
     std::vector<btCollisionObject*> ignoreObjects;
 
-    if (!lua_isnone(L, 5))
+    if (!lua_isnoneornil(L, 5))
     {
         CHECK_TABLE(L, 5);
         Datum ignoreTable = LuaObjectToDatum(L, 5);

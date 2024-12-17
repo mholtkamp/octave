@@ -91,7 +91,7 @@ int Renderer_Lua::GetScreenIndex(lua_State* L)
 int Renderer_Lua::GetScreenResolution(lua_State* L)
 {
     int32_t screenIndex = -1;
-    if (!lua_isnone(L, 1)) { screenIndex = CHECK_INTEGER(L, 1); }
+    if (!lua_isnone(L, 1)) { screenIndex = CHECK_INDEX(L, 1); }
 
     glm::vec2 res = Renderer::Get()->GetScreenResolution(screenIndex);
 

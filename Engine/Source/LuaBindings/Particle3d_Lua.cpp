@@ -192,57 +192,63 @@ int Particle3D_Lua::GetNumParticles(lua_State* L)
     return 1;
 }
 
-int Particle3D_Lua::SetParticleVelocity(lua_State* L)
+int Particle3D_Lua::GetParticleData(lua_State* L)
 {
     Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
-    int32_t index = CHECK_INTEGER(L, 2);
-    glm::vec3 velocity = CHECK_VECTOR(L, 3);
+    int32_t index = CHECK_INDEX(L, 2);
 
-    comp->SetParticleVelocity(index, velocity);
+    if (index >= 0 && index < int32_t(comp->GetNumParticles()))
+    {
+        const Particle& particleData = comp->GetParticles()[index];
+        Datum dataTable;
+        dataTable.SetColorField("position", (glm::vec4(particleData.mPosition, 0)));
+        dataTable.SetColorField("velocity", (glm::vec4(particleData.mVelocity, 0)));
+        dataTable.SetColorField("size", (glm::vec4(particleData.mSize, 0, 0)));
+        dataTable.SetFloatField("elapsedTime", particleData.mElapsedTime);
+        dataTable.SetFloatField("lifeTime", particleData.mLifetime);
+        dataTable.SetFloatField("rotationSpeed", particleData.mRotationSpeed);
+        dataTable.SetFloatField("rotation", particleData.mRotation);
+        LuaPushDatum(L, dataTable);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
 
-    return 0;
-}
-
-int Particle3D_Lua::GetParticleVelocity(lua_State* L)
-{
-    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
-    int32_t index = CHECK_INTEGER(L, 2);
-
-    glm::vec3 ret = comp->GetParticleVelocity(index);
-
-    Vector_Lua::Create(L, ret);
     return 1;
 }
 
-int Particle3D_Lua::SetParticlePosition(lua_State* L)
+int Particle3D_Lua::SetParticleData(lua_State* L)
 {
     Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
-    int32_t index = CHECK_INTEGER(L, 2);
-    glm::vec3 position = CHECK_VECTOR(L, 3);
+    int32_t index = CHECK_INDEX(L, 2);
+    Datum dataTable = LuaObjectToDatum(L, 3);
 
-    comp->SetParticlePosition(index, position);
+    if (index >= 0 && index < int32_t(comp->GetNumParticles()))
+    {
+        Particle& particleData = comp->GetParticles()[index];
 
-    return 0;
-}
+        if (dataTable.HasField("position"))
+            particleData.mPosition = dataTable.GetColorField("position");
 
-int Particle3D_Lua::GetParticlePosition(lua_State* L)
-{
-    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
-    int32_t index = CHECK_INTEGER(L, 2);
+        if (dataTable.HasField("velocity"))
+            particleData.mVelocity = dataTable.GetColorField("velocity");
 
-    glm::vec3 ret = comp->GetParticlePosition(index);
+        if (dataTable.HasField("size"))
+            particleData.mSize = dataTable.GetColorField("size");
+        
+        if (dataTable.HasField("elapsedTime"))
+            particleData.mElapsedTime = dataTable.GetFloatField("elapsedTime");
 
-    Vector_Lua::Create(L, ret);
-    return 1;
-}
+        if (dataTable.HasField("lifeTime"))
+            particleData.mLifetime = dataTable.GetFloatField("lifeTime");
 
-int Particle3D_Lua::SetParticleSpeed(lua_State* L)
-{
-    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
-    int32_t index = CHECK_INTEGER(L, 2);
-    float speed = CHECK_NUMBER(L, 3);
+        if (dataTable.HasField("rotationSpeed"))
+            particleData.mRotationSpeed = dataTable.GetFloatField("rotationSpeed");
 
-    comp->SetParticleSpeed(index, speed);
+        if (dataTable.HasField("rotation"))
+            particleData.mRotation = dataTable.GetFloatField("rotation");
+    }
 
     return 0;
 }
@@ -265,6 +271,16 @@ int Particle3D_Lua::GetParticleOrientation(lua_State* L)
 
     lua_pushinteger(L, ret);
     return 1;
+}
+
+int Particle3D_Lua::EnableAutoDestroy(lua_State* L)
+{
+    Particle3D* comp = CHECK_PARTICLE_3D(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    comp->EnableAutoDestroy(value);
+
+    return 0;
 }
 
 int Particle3D_Lua::InstantiateParticleSystem(lua_State* L)
@@ -319,15 +335,9 @@ void Particle3D_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetNumParticles);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, SetParticleVelocity);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetParticleData);
 
-    REGISTER_TABLE_FUNC(L, mtIndex, GetParticleVelocity);
-
-    REGISTER_TABLE_FUNC(L, mtIndex, SetParticlePosition);
-
-    REGISTER_TABLE_FUNC(L, mtIndex, GetParticlePosition);
-
-    REGISTER_TABLE_FUNC(L, mtIndex, SetParticleSpeed);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetParticleData);
 
     REGISTER_TABLE_FUNC(L, mtIndex, EnableAutoEmit);
 
@@ -336,6 +346,8 @@ void Particle3D_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetParticleOrientation);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetParticleOrientation);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableAutoDestroy);
 
     REGISTER_TABLE_FUNC(L, mtIndex, InstantiateParticleSystem);
 
