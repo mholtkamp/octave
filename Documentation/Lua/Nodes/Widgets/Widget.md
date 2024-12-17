@@ -67,25 +67,25 @@ Sig: `Widget:SetHeightRatio(heightRatio)`
 Set the left margin.
 
 Sig: `Widget:SetLeftMargin(margin)`
- - Arg: `margin` Left margin
+ - Arg: `number margin` Left margin
 ---
 ### SetTopMargin
 Set the top margin.
 
 Sig: `Widget:SetTopMargin(margin)`
- - Arg: `margin` Top margin
+ - Arg: `number margin` Top margin
 ---
 ### SetRightMargin
 Set the right margin.
 
 Sig: `Widget:SetRightMargin(margin)`
- - Arg: `margin` Right margin
+ - Arg: `number margin` Right margin
 ---
 ### SetBottomMargin
 Set the bottom margin.
 
 Sig: `Widget:SetBottomMargin(margin)`
- - Arg: `margin` Bottom margin
+ - Arg: `number margin` Bottom margin
 ---
 ### SetPosition
 Set the position of this widget in pixels. A single Vector may be passed instead of the two separate arguments.
@@ -95,20 +95,20 @@ Sig: `Widget:SetPosition(x, y)`
  - Arg: `number y` Y position
 ---
 ### SetDimensions
-Set the dimensons of this widget in pixels. A single Vector may be passed instead of the two separate arguments.
+Set the dimensions of this widget in pixels. A single Vector may be passed instead of the two separate arguments.
 
 Sig: `Widget:SetDimensions(width, height)`
  - Arg: `number width` Width
  - Arg: `number height` Height
 ---
 ### SetRect
-Set position and dimensions. Note: this is not the same thing that GetRect() will return. GetRect() returns the final screen-space position/dimensions. Sorry for the confusion.
+Set position and dimensions. Note: this is not the same thing that GetRect() will return. GetRect() returns the final screen-space position/dimensions.
 
 Sig: `Widget:SetRect(rect)`
- - Arg: `Rect rect` Local rect (x,y,w,h)
+ - Arg: `Rect rect` Local rect (x, y, w, h)
 ---
 ### SetRatios
-Set the position / dimensions of this widget as ratios of the parent dimensions.
+Set the position/dimensions of this widget as ratios of the parent dimensions.
 
 Sig: `Widget:SetRatios(x, y, width, height)`
  - Arg: `number x` X ratio
@@ -126,7 +126,7 @@ Sig: `Widget:SetMargins(left, top, right, bottom)`
  - Arg: `number bottom` Bottom margin
 ---
 ### SetOffset
-Explicitly set the widget's offset. The offset may be interpretted as either a pixel offset or a parent-ratio offset depending on the AnchorMode of the widget.
+Explicitly set the widget's offset. The offset may be interpreted as either a pixel offset or a parent-ratio offset depending on the AnchorMode of the widget.
 
 A single Vector may be passed instead of the two separate numbers.
 
@@ -138,10 +138,10 @@ Sig: `Widget:SetOffset(x, y)`
 Get the widget's offset.
 
 Sig: `offset = Widget:GetOffset()`
- - Arg: `Vector offset` Offset (in .x and .y)
+ - Ret: `Vector offset` Offset (in .x and .y)
 ---
 ### SetSize
-Set the widget's size. The size may be interpretted as either a pixel size or a parent-ratio size depending on the AnchorMode of the widget.
+Set the widget's size. The size may be interpreted as either a pixel size or a parent-ratio size depending on the AnchorMode of the widget.
 
 A single Vector may be passed instead of the two separate numbers.
 
@@ -153,10 +153,10 @@ Sig: `Widget:SetSize(x, y)`
 Get the widget's size.
 
 Sig: `size = Widget:GetSize()`
- - Arg: `Vector size` Size (in .x and .y)
+ - Ret: `Vector size` Size (in .x and .y)
 ---
 ### GetAnchorMode
-Get the widget's anchor mode. The anchor mode determines how a widget is positioned and sized relative to it's parent.
+Get the widget's anchor mode. The anchor mode determines how a widget is positioned and sized relative to its parent.
 
 See [AnchorMode](../../Misc/Enums.md#anchormode)
 
@@ -164,7 +164,7 @@ Sig: `anchorMode = Widget:GetAnchorMode()`
  - Ret: `AnchorMode(integer) anchorMode` Widget anchor mode
 ---
 ### SetAnchorMode
-Set the widget's anchor mode. The anchor mode determines how a widget is positioned and sized relative to it's parent.
+Set the widget's anchor mode. The anchor mode determines how a widget is positioned and sized relative to its parent.
 
 See [AnchorMode](../../Misc/Enums.md#anchormode)
 
@@ -235,7 +235,7 @@ Sig: `height = Widget:GetParentHeight()`
 Set the widget's color.
 
 Sig: `Widget:SetColor(color)`
- - Ret: `Vector color` Widget color
+ - Arg: `Vector color` Widget color
 ---
 ### ShouldHandleInput
 Check if this widget should handle input.
@@ -244,7 +244,7 @@ Sig: `handle = Widget:ShouldHandleInput()`
  - Ret: `boolean handle` Handle input
 ---
 ### MarkDirty
-Mark this widget as dirty. When a widget is dirty, it will need to have it's Rect updated on Tick(). Other data may be updated as well depending on the type of widget.
+Mark this widget as dirty. When a widget is dirty, it will need to have its Rect updated on Tick(). Other data may be updated as well depending on the type of widget.
 
 Sig: `Widget:MarkDirty()`
 
@@ -253,7 +253,7 @@ Sig: `Widget:MarkDirty()`
 Check if the widget is marked as dirty.
 
 Sig: `dirty = Widget:IsDirty()`
- - `boolean dirty` Is widget dirty
+ - Ret: `boolean dirty` Is widget dirty
 ---
 ### ContainsMouse
 Check if the mouse is contained within the area of the widget (inside the Rect). The mouse will not be considered inside the Rect if it is outside the scissor bounds.
@@ -264,7 +264,7 @@ Sig: `contained = Widget:ContainsMouse()`
 ### ContainsPoint
 Check if a point is within the area of the widget (inside the Rect). Clamps within the scissor bounds if scissor is enabled.
 
-Sig: `contained = Widget:ContainsPoint(x,y)`
+Sig: `contained = Widget:ContainsPoint(x, y)`
  - Arg: `number x` X screen position in pixels
  - Arg: `number y` Y screen position in pixels
  - Ret: `boolean contained` Widget contains point

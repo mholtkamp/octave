@@ -40,11 +40,11 @@ Sig: `uvScale = Quad:GetUvScale()`
 Adjust the offset of the UVs. Useful for scrolling backgrounds.
 
 Sig: `Quad:SetUvOffset(uvOffset)`
- - Arg: `uvOffset` UV offset
+ - Arg: `Vector uvOffset` UV offset
 ---
 ### GetUvOffset
 Get the UV offset.
 
 Sig: `uvOffset = Quad:GetUvOffset()`
- - Ret: `uvOffset` UV offset
+ - Ret: `Vector uvOffset` UV offset
 ---

@@ -110,6 +110,6 @@ Sig: `Text:EnableWordWrap(wrap)`
 ### IsWordWrapEnabled
 Check if word wrap is enabled. Word wrap will put characters on a new line after they pass the dimensions of this widget's rect.
 
-Sig: `wrap = Text:EnableWordWrap()`
+Sig: `wrap = Text:IsWordWrapEnabled()`
  - Ret: `boolean wrap` Word wrap
 ---

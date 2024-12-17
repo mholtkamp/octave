@@ -21,7 +21,7 @@ Sig: `Poly:ClearVertices()`
 Get the number of vertices.
 
 Sig: `numVertices = Poly:GetNumVertices()`
- - Arg: `integer numVertices` Number of vertices
+ - Ret: `integer numVertices` Number of vertices
 ---
 ### GetVertex
 Get a specific vertex.
