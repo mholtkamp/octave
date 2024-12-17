@@ -1,10 +1,10 @@
 # Vector
 
-A table that represents a 4 dimensional vector. Even though the vector has 4 components, it can be used for 2D and 3D vectors as well. Vectors are also used to store colors, euler rotations, and quaternions.
+A table that represents a 4-dimensional vector. Even though the vector has 4 components, it can be used for 2D and 3D vectors as well. Vectors are also used to store colors, Euler rotations, and quaternions.
 
 The .x, .y, .z, .w keys can be used to read and write to the components individually. Alternatively, .r, .g, .b, .a can be used, which makes more sense for Vectors that store color data.
 
-Vectors can be created by using the `Vec()` global func. This is equivalent to calling Vector.Create().
+Vectors can be created by using the `Vec()` global function. This is equivalent to calling Vector.Create().
 
 Examples:
 `local pos = Vec()` Creates a vector with all components set to 0
@@ -14,7 +14,7 @@ Addition, subtraction, multiplication, and division of vectors can be performed 
 
 Vector equality can be tested by using == and ~= operators.
 
-NOTE: Many of the functions in Vector are written as static non-member functions because it may be easier to think of the operation that way instead invoking a member function on a Vector instance. However, these functions may be called either way. For instance, you can take the max of two vectors like this `max = Vector.Max(a, b)` but you can also do the exact same thing like this `max = a:Max(b)`.
+NOTE: Many of the functions in Vector are written as static non-member functions because it may be easier to think of the operation that way instead of invoking a member function on a Vector instance. However, these functions may be called either way. For instance, you can take the max of two vectors like this `max = Vector.Max(a, b)` but you can also do the exact same thing like this `max = a:Max(b)`.
 
 ---
 ### Create
@@ -135,7 +135,7 @@ Sig: `damped = Vector.Damp(source, target, smoothing, deltaTime)`
  - Arg: `Vector target` Target vector
  - Arg: `number smoothing` Smoothing factor (0 - 1) Lower values will move slower. Try 0.005.
  - Arg: `number deltaTime` Delta time
- - Ret: `number damped` Damped vector
+ - Ret: `Vector damped` Damped vector
 ---
 ### Rotate
 Rotate a vector around an axis.

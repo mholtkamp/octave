@@ -1,6 +1,6 @@
 # Rect 
 
-A table that represent a 2D rectangle.
+A table that represents a 2D rectangle.
 
 ---
 ### Create

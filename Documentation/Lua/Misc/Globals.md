@@ -4,7 +4,7 @@ Global functions.
 
 ---
 ### RefSweep
-Unload any assets that are no longer references.
+Unload any assets that are no longer referenced.
 
 Sig: `RefSweep()`
 
@@ -24,7 +24,7 @@ Sig: `asset = LoadAsset(name)`
  - Ret: `Asset asset` Loaded asset
 ---
 ### AsyncLoadAsset
-Request the an asset be loaded asynchronously. This function will return a reference to an asset, and you can check if it has been loaded. Call asset:IsLoaded() to see if it has been loaded. TODO: Add function callback to handle when asset is loaded.
+Request an asset be loaded asynchronously. This function will return a reference to an asset, and you can check if it has been loaded. Call `asset:IsLoaded()` to see if it has been loaded. TODO: Add function callback to handle when asset is loaded.
 
 Sig: `asset = AsyncLoadAsset(name)`
  - Arg: `string name` Asset name

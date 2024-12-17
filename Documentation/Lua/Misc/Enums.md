@@ -9,16 +9,16 @@ Tables that act as enumerations.
  - `Translucent` Mix color with existing scene color
  - `Additive` Add color with existing scene color
 
- ## ShadingModel
+## ShadingModel
 
  - `Unlit` No lighting
  - `Lit` Standard lighting
  - `Toon` Toon shading (Only supported on Vulkan / 3DS right now)
 
- ## TevMode
+## TevMode
 
  - `Replace` Replace previous color
- - `Modulate`  Multiply against previous color
+ - `Modulate` Multiply against previous color
  - `Decal` Blend with previous color based on alpha
  - `Add` Add with previous color
  - `SignedAdd` Add (color - 0.5) to previous color
@@ -240,4 +240,3 @@ Tables that act as enumerations.
  - `RightBracket`
  - `Quote`
  - `Decimal`
- 

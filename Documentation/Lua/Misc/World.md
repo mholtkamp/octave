@@ -30,7 +30,8 @@ Sig: `World:SetAudioReceiver(receiver)`
 ### SpawnNode
 Spawn a node from a given class. The spawned node will be attached to the world's root node. If there is no root node, this newly spawned node will become the world's root node.
 
-Sig: `node = World:SpawnNode()`
+Sig: `node = World:SpawnNode(className)`
+ - Arg: `string className` Name of the class to spawn
  - Ret: `Node node` Newly created node
 ---
 ### SpawnScene
@@ -142,7 +143,7 @@ Sig: `res = World:RayTest(start, end, colMask, ignoreObjects=nil)`
  - Arg: `Vector start` Start position
  - Arg: `Vector end` End position
  - Arg: `integer colMask` Collision mask (use 0xff for all collision groups)
- - Arg: `table ignoreObjects` Array of Primtive3D nodes to ignore in test
+ - Arg: `table ignoreObjects` Array of Primitive3D nodes to ignore in test
  - Ret: `table res` Ray test result
    - `Vector start`
    - `Vector end`
@@ -152,7 +153,7 @@ Sig: `res = World:RayTest(start, end, colMask, ignoreObjects=nil)`
    - `number hitFraction`
 ---
 ### RayTestMulti
-Find the all primitive nodes that intersects a ray.
+Find all primitive nodes that intersect a ray.
 
 Sig: `res = World:RayTestMulti(start, end, colMask, ignoreObjects=nil)`
  - Arg: `Vector start` Start position
@@ -209,7 +210,7 @@ Sig: `enable = World:IsInternalEdgeSmoothingEnabled()`
  - Ret: `boolean enable` Internal edge smoothing enabled
 ---
 ### SpawnParticle
-Spawn a particle system at specific location and set it to automatically destroy itself after it finishes.
+Spawn a particle system at a specific location and set it to automatically destroy itself after it finishes.
 
 Sig: `particle = World:SpawnParticle(system, position)`
  - Arg: `ParticleSystem system` Particle system asset to instantiate

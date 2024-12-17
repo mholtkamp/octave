@@ -1,6 +1,6 @@
 # Stream
 
-A table which can process a stream of bytes. A stream can be used to read and write to files. They can read/write both binary and ascii files. 
+A table which can process a stream of bytes. A stream can be used to read and write to files. They can read/write both binary and ASCII files. 
 
 ---
 ### Create
@@ -16,13 +16,13 @@ Sig: `size = Stream:GetSize()`
  - Ret: `integer size` Size in bytes
 ---
 ### GetPos
-Get the Stream cursor position (byte offset where are we reading from or writing to).
+Get the Stream cursor position (byte offset where we are reading from or writing to).
 
 Sig: `pos = Stream:GetPos()`
  - Ret: `integer pos` Cursor position
 ---
 ### SetPos
-Set the Stream cursor position (byte offset where are we reading from or writing to).
+Set the Stream cursor position (byte offset where we are reading from or writing to).
 
 Sig: `Stream:SetPos(pos)`
  - Arg: `integer pos` Cursor position
@@ -50,7 +50,7 @@ Sig: `asset = Stream:ReadAsset()`
 Write an asset descriptor to the Stream.
 
 Sig: `Stream:WriteAsset(asset)`
- - Ret: `Asset asset` Asset
+ - Arg: `Asset asset` Asset
 ---
 ### ReadString
 Read a string from the Stream.
@@ -125,7 +125,7 @@ Sig: `Stream:WriteInt16(int)`
  - Arg: `integer int` Integer
 ---
 ### WriteInt8
-Write a 8-bit integer to the Stream.
+Write an 8-bit integer to the Stream.
 
 Sig: `Stream:WriteInt8(int)`
  - Arg: `integer int` Integer
