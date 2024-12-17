@@ -40,7 +40,7 @@ Sig: `castShadows = Light3D:ShouldCastShadows()`
  - Ret: `boolean castShadows` Whether this light should cast shadows
 ---
 ### GetDomain
-Get this lights domain (static light (baked), dynamic light, or both).
+Get this light's domain (static light (baked), dynamic light, or both).
 TODO: Add LightingDomain enum.
 Static=0
 Dynamic=1

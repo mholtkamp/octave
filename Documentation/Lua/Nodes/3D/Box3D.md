@@ -12,6 +12,6 @@ Sig: `extents = Box3D:GetExtents()`
 ### SetExtents
 Sets the extents of the box. Note: These are the full extents, not half-extents.
 
-Sig: `Box3D:SetExtents()`
- - Arg: `Vector extents`Extents of box
+Sig: `Box3D:SetExtents(extents)`
+ - Arg: `Vector extents` Extents of box
 ---

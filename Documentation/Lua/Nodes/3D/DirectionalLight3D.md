@@ -13,5 +13,5 @@ Sig: `direction = DirectionalLight3D:GetDirection()`
 Set the light direction. This will adjust the node's rotation (see Node3D).
 
 Sig: `DirectionalLight3D:SetDirection(direction)`
- - Arg: `Vector direction` light direction
+ - Arg: `Vector direction` Light direction
 ---

@@ -50,7 +50,7 @@ Sig: `Node3D:SetRotationQuat(rotQuat)`
 Set this node's relative scale.
 
 Sig: `Node3D:SetScale(scale)`
- - Arg; `Vector scale` Relative scale
+ - Arg: `Vector scale` Relative scale
 ---
 ### RotateAround
 Rotate this node around a given pivot point in world space.
@@ -163,11 +163,11 @@ Attach this node to a SkeletalMesh3D node at a specific bone.
 Sig: `Node3D:AttachToBone(skelMeshNode, boneName, keepWorldTransform=false, childIndex=0)`
  - Arg: `SkeletalMesh3D skelMeshNode` Mesh node to attach to
  - Arg: `string boneName` Name of the bone to attach to
- - Arg: `boolean keepWorldTransform` Whether to main the same world-space transform after attaching to skelMeshNode
+ - Arg: `boolean keepWorldTransform` Whether to maintain the same world-space transform after attaching to skelMeshNode
  - Arg: `integer childIndex` The specific child index this node should be placed at in the parent's child array. If 0, place this node at the end of the array.
 ---
 ### UpdateTransform
-Update the this node's transformation matrix. When a Node3D has its position, rotation, or scale changed, it's transform matrix will remain unchanged until it is needed. Generally, game code will not need to call this. Functions like GetWorldPosition() will automatically update the transform if it is dirty.
+Update this node's transformation matrix. When a Node3D has its position, rotation, or scale changed, its transform matrix will remain unchanged until it is needed. Generally, game code will not need to call this. Functions like GetWorldPosition() will automatically update the transform if it is dirty.
 
 Sig: `Node3D:UpdateTransform(updateChildren=false)`
  - Arg: `boolean updateChildren` Should children recursively be updated?

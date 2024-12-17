@@ -18,7 +18,7 @@ Sig: `mesh = StaticMesh3D:GetStaticMesh()`
 ### SetUseTriangleCollision
 Allow/disallow this node to use triangle collision. In addition to setting this flag, the StaticMesh asset assigned to this node must also have "GenerateTriangleCollision" enabled.
 
-Triangle collision should only be used for objects that don't move. Triangle collision on a moving object can a significant performance impact.
+Triangle collision should only be used for objects that don't move. Triangle collision on a moving object can have a significant performance impact.
 
 Sig: `StaticMesh3D:SetUseTriangleCollision(triCollision)`
  - Arg: `boolean triCollision` Enable triangle collision

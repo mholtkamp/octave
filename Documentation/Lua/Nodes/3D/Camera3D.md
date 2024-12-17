@@ -5,12 +5,12 @@ A node that represents a camera viewpoint which can be rendered. Change the came
 ---
 
 ### EnablePerspective
-Enable rendering with a perspective projection. When enabled, the camera's field of fiew will be used in conjunction with the Near and Far plane values. When disabled, an othographic projection will be created using OrthoWidth, OrthoHeight, Near, and Far plane values.
+Enable rendering with a perspective projection. When enabled, the camera's field of view will be used in conjunction with the Near and Far plane values. When disabled, an orthographic projection will be created using OrthoWidth, OrthoHeight, Near, and Far plane values.
 
 Sig: `Camera3D:EnablePerspective(perspective)`
- - Arg: `boolean perspective` True for persepctive, false for orthographic
+ - Arg: `boolean perspective` True for perspective, false for orthographic
 ---
-### IsPerspective
+### IsPerspectiveEnabled
 Check if this camera is using a perspective projection.
 
 Sig: `perspective = Camera3D:IsPerspectiveEnabled()`
@@ -61,7 +61,7 @@ Sig: `orthoHeight = Camera3D:GetOrthoHeight()`
 ### SetNear
 Set the near plane distance. Anything in front of the near plane won't be rendered. Lowering the near plane value may lower depth precision and cause z-fighting artifacts.
 
-Sig: `Camear3D:SetNear(near)`
+Sig: `Camera3D:SetNear(near)`
  - Arg: `number near` Near plane distance
 ---
 ### SetFar

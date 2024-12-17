@@ -19,7 +19,7 @@ Sig: `mesh = SkeletalMesh3D:GetSkeletalMesh()`
 ### PlayAnimation
 Play an animation contained within the skeletal mesh asset. The priority is actually what index to place the animation within the array of active animations. Animations at the end of the array will be processed last, and thus overwrite previous animations depending on what bones are animated and the weight of the animation. Priority should be in the range 0 to 255.
 
-Note: You can update an animation (for instance, change it's speed) by calling PlayAnimation() a second time with the same animation name and updated options.
+Note: You can update an animation (for instance, change its speed) by calling PlayAnimation() a second time with the same animation name and updated options.
 
 Sig: `SkeletalMesh3D:PlayAnimation(animName, loop=false, speed=1, weight=1, priority=255)`
  - Arg: `string animName` Name of the animation to play
@@ -33,7 +33,7 @@ Stop a specific animation.
 
 Sig: `SkeletalMesh3D:StopAnimation(animName, cancelQueued=false)`
  - Arg: `string animName` Name of the animation to cancel
- - Arg: `boolean cancelQueued` Whether to removed the animation from play queue if it hasn't been played yet.
+ - Arg: `boolean cancelQueued` Whether to remove the animation from play queue if it hasn't been played yet.
 ---
 ### StopAllAnimations
 Stop all animations.
@@ -54,9 +54,9 @@ Queue an animation to be played. A target animation name can be provided to wait
 Sig: `SkeletalMesh3D:QueueAnimation(animName, loop, dependentAnimName=nil, speed=1, weight=1, priority=255)`
  - Arg: `string animName` Name of animation to queue
  - Arg: `boolean loop` Whether to loop
- - Arg: `string dependentAnimName` Name of dependend anim to wait on
+ - Arg: `string dependentAnimName` Name of dependent anim to wait on
  - Arg: `number speed` Speed multiplier
- - Arg: `number weight` Animtion blending weight (0 - 1)
+ - Arg: `number weight` Animation blending weight (0 - 1)
  - Arg: `integer priority` Animation priority
 ---
 ### CancelQueuedAnimation
@@ -72,13 +72,13 @@ Sig: `SkeletalMesh3D:CancelAllQueuedAnimations()`
 
 ---
 ### SetInheritPose
-Whether this skeletal mesh node should inherit its pose from its parent node (assuming it's parent node is also a SkeletalMesh3D node). This is useful for things like having clothing or accessories animate when the base body mesh moves on a character for instance.
+Whether this skeletal mesh node should inherit its pose from its parent node (assuming its parent node is also a SkeletalMesh3D node). This is useful for things like having clothing or accessories animate when the base body mesh moves on a character for instance.
 
 Sig: `SkeletalMesh3D:SetInheritPose(inheritPose)`
  - Arg: `boolean inheritPose` Whether to inherit parent pose
 ---
 ### IsInheritPoseEnabled
-Check if this node is set to inherit it's parent's pose.
+Check if this node is set to inherit its parent's pose.
 
 Sig: `inheritPose = SkeletalMesh3D:IsInheritPoseEnabled()`
  - Ret: `boolean inheritPose` Whether pose is inherited
@@ -154,7 +154,7 @@ Sig: `SkeletalMesh3D:SetBoneRotation(boneName, rotEuler)`
 ---
 ### SetBoneScale
 Set a bone's local space scale. Not yet implemented.
-TODO: Implement SetBoneRotation().
+TODO: Implement SetBoneScale().
 
 Sig: `SkeletalMesh3D:SetBoneScale(boneName, scale)`
  - Arg: `string boneName` Name of bone to adjust
@@ -171,7 +171,7 @@ Set an animation event handler. An animation event can be setup by creating a bo
 
 Events will be triggered wherever there is a keyframe on the timeline (I don't think it matters if it's position, rotation, or scale). Make sure your asset is not using Sampled frames when exporting the animation.
 
-Sig: `SetAnimEventHandler(handlerFunc)`
+Sig: `SkeletalMesh3D:SetAnimEventHandler(handlerFunc)`
  - Arg: `function handlerFunc` Anim event function handler that will be called when an anim event is triggered/played.
 ---
 ### SetBoundsRadiusOverride

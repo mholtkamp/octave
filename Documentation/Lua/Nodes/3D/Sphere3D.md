@@ -7,7 +7,7 @@ Defines a sphere in 3D space. Can be used for collision and overlap detection.
 ### GetRadius
 Get the sphere's radius.
 
-Sig: `radius = Sphere3D::GetRadius()`
+Sig: `radius = Sphere3D:GetRadius()`
  - Ret: `number radius` Sphere radius
 ---
 ### SetRadius

@@ -4,7 +4,7 @@ A base class for 3D nodes that are capable of using collision and/or being rende
 
 ---
 ### EnablePhysics
-Whether this node be physically simulated.
+Whether this node should be physically simulated.
 
 Sig: `Primitive3D:EnablePhysics(enable)`
  - Arg: `boolean enable` Enable physics simulation
@@ -30,7 +30,7 @@ Sig: `enabled = Primitive3D:IsPhysicsEnabled()`
 ### IsCollisionEnabled
 Check whether collision is enabled.
 
-Sig: `enabled = Primitived3D:IsCollisionEnabled()`
+Sig: `enabled = Primitive3D:IsCollisionEnabled()`
  - Ret: `boolean enabled` Is collision enabled
 ---
 ### AreOverlapsEnabled
@@ -42,17 +42,17 @@ Sig: `enabled = Primitive3D:AreOverlapsEnabled()`
 ### GetMass
 Get the mass of the node. Used for physics simulation only.
 
-Sig: `mass = Primtive3D:GetMass()`
+Sig: `mass = Primitive3D:GetMass()`
  - Ret: `number mass` Physical mass
 ---
 ### GetLinearDamping
-Get the linear damping of the node. Use by physics simulation to control how the nodes linear velocity should change over time.
+Get the linear damping of the node. Used by physics simulation to control how the node's linear velocity should change over time.
 
 Sig: `linearDamping = Primitive3D:GetLinearDamping()`
  - Ret: `number linearDamping` Linear damping
 ---
 ### GetAngularDamping
-Get the angular damping of the node. Use by physics simulation to control how the nodes angular velocity should change over time.
+Get the angular damping of the node. Used by physics simulation to control how the node's angular velocity should change over time.
 
 Sig: `angularDamping = Primitive3D:GetAngularDamping()`
  - Ret: `number angularDamping` Angular damping
@@ -88,13 +88,13 @@ Sig: `factor = Primitive3D:GetAngularFactor()`
  - Ret: `Vector factor` Angular factor
 ---
 ### GetCollisionGroup
-Get the collision group of this node. The collision group is used in conjunction with collision mask to determine which nodes can collide with each other (or overlap). There are only 8 collision groups because they are stored within one byte of data (0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80). It's possible for a node to be assigned to multiple groups by taking the "bitwise or" of multiple groups (e.g. 0x03 = groups 0x01 and 0x02). 
+Get the collision group of this node. The collision group is used in conjunction with the collision mask to determine which nodes can collide with each other (or overlap). There are only 8 collision groups because they are stored within one byte of data (0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80). It's possible for a node to be assigned to multiple groups by taking the "bitwise or" of multiple groups (e.g. 0x03 = groups 0x01 and 0x02).
 
 Sig: `group = Primitive3D:GetCollisionGroup()`
  - Ret: `integer group` Collision group
 ---
 ### GetCollisionMask
-Get this node's collison mask. The collision group is used in conjunction with collision mask to determine which nodes can collide with each other (or overlap). Given two nodes nodeA and nodeB, they will overlap and collide only if `nodeA:GetCollisionMask() & nodeB:GetCollisionGroup() and nodeB:GetCollisionMask() 7 nodeA:GetCollisionGroup()`.
+Get this node's collision mask. The collision group is used in conjunction with the collision mask to determine which nodes can collide with each other (or overlap). Given two nodes nodeA and nodeB, they will overlap and collide only if `nodeA:GetCollisionMask() & nodeB:GetCollisionGroup()` and `nodeB:GetCollisionMask() & nodeA:GetCollisionGroup()`.
 
 Sig: `mask = Primitive3D:GetCollisionMask()`
  - Ret: `integer mask` Collision mask
@@ -102,17 +102,17 @@ Sig: `mask = Primitive3D:GetCollisionMask()`
 ### SetMass
 Set the mass of the node. Used for physics simulation only.
 
-Sig: `Primtive3D:SetMass(mass)`
+Sig: `Primitive3D:SetMass(mass)`
  - Arg: `number mass` Physical mass
 ---
 ### SetLinearDamping
-Set the linear damping of the node. Use by physics simulation to control how the nodes linear velocity should change over time.
+Set the linear damping of the node. Used by physics simulation to control how the node's linear velocity should change over time.
 
 Sig: `Primitive3D:SetLinearDamping(linearDamping)`
  - Arg: `number linearDamping` Linear damping
 ---
 ### SetAngularDamping
-Set the angular damping of the node. Use by physics simulation to control how the nodes angular velocity should change over time.
+Set the angular damping of the node. Used by physics simulation to control how the node's angular velocity should change over time.
 
 Sig: `Primitive3D:SetAngularDamping(angularDamping)`
  - Arg: `number angularDamping` Angular damping
@@ -148,13 +148,13 @@ Sig: `Primitive3D:SetAngularFactor(factor)`
  - Arg: `Vector factor` Angular factor
 ---
 ### SetCollisionGroup
-Set the collision group of this node. The collision group is used in conjunction with collision mask to determine which nodes can collide with each other (or overlap). There are only 8 collision groups because they are stored within one byte of data (0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80). It's possible for a node to be assigned to multiple groups by taking the "bitwise or" of multiple groups (e.g. 0x03 = groups 0x01 and 0x02). 
+Set the collision group of this node. The collision group is used in conjunction with the collision mask to determine which nodes can collide with each other (or overlap). There are only 8 collision groups because they are stored within one byte of data (0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80). It's possible for a node to be assigned to multiple groups by taking the "bitwise or" of multiple groups (e.g. 0x03 = groups 0x01 and 0x02).
 
 Sig: `Primitive3D:SetCollisionGroup(group)`
  - Arg: `integer group` Collision group
 ---
 ### SetCollisionMask
-Set this node's collison mask. The collision group is used in conjunction with collision mask to determine which nodes can collide with each other (or overlap). Given two nodes nodeA and nodeB, they will overlap and collide only if `nodeA:GetCollisionMask() & nodeB:GetCollisionGroup() and nodeB:GetCollisionMask() 7 nodeA:GetCollisionGroup()`.
+Set this node's collision mask. The collision group is used in conjunction with the collision mask to determine which nodes can collide with each other (or overlap). Given two nodes nodeA and nodeB, they will overlap and collide only if `nodeA:GetCollisionMask() & nodeB:GetCollisionGroup()` and `nodeB:GetCollisionMask() & nodeA:GetCollisionGroup()`.
 
 Sig: `Primitive3D:SetCollisionMask(mask)`
  - Arg: `integer mask` Collision mask
@@ -204,7 +204,7 @@ Sig: `Primitive3D:AddForce(force)`
 ### AddImpulse
 Add an impulse to this node. Only used by physics simulation.
 
-Sig: `Primitive3D:AddImpulse(force)`
+Sig: `Primitive3D:AddImpulse(impulse)`
  - Arg: `Vector impulse` Impulse
 ---
 ### ClearForces
@@ -240,7 +240,7 @@ Sig: `receiveShadows = Primitive3D:ShouldReceiveShadows()`
 ### EnableReceiveSimpleShadows
 Enable this node to receive simple shadows from ShadowMesh3D nodes. Simple shadows are supported on all platforms.
 
-Sig: `Primtive3D:EnableReceiveSimpleShadows(enable)`
+Sig: `Primitive3D:EnableReceiveSimpleShadows(enable)`
  - Arg: `boolean enable` Enable receiving simple shadows
 ---
 ### ShouldReceiveSimpleShadows

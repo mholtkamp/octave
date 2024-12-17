@@ -30,7 +30,7 @@ Sig: `Particle3D:EnableSimulation(simulate)`
 ### IsSimulationEnabled
 Check if particle simulation is enabled.
 
-Sig: `smiulate = Particle3D:IsSimulationEnabled()`
+Sig: `simulate = Particle3D:IsSimulationEnabled()`
  - Ret: `boolean simulate` Whether to simulate particles
 ---
 ### EnableAutoEmit
@@ -128,9 +128,7 @@ Sig: `data = Particle3D:GetParticleData(index)`
 ### SetParticleData
 Set the particle data for a specific particle.
 
-Get the particle data of a specific particle.
-
-Sig: `Particle3D:GetParticleData(index, data)`
+Sig: `Particle3D:SetParticleData(index, data)`
  - Arg: `integer index` Particle index
  - Arg: `table data` Particle data
    - `Vector position`

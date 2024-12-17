@@ -12,7 +12,7 @@ Sig: `node = Node.Construct(className="Node")`
  - Ret: `Node node` The newly constructed node.
 ---
 ### Destruct
-Destruct a node, freeing the memory and making it unsuable.
+Destruct a node, freeing the memory and making it unusable.
 
 Sig: `Node.Destruct(node)`
  - Arg: `Node node` The node to be destroyed.
@@ -330,7 +330,7 @@ Sig: `Node:SetReplicateTransform(replicateTransform)`
 Check if this node's transform is replicated.
 
 Sig: `transformReplicated = Node:IsTransformReplicated()`
- - Ret: `boolean transformReplicated` true if trasnform is replicated
+ - Ret: `boolean transformReplicated` true if transform is replicated
 ---
 ### ForceReplication
 Forcefully replicate properties of this node on the next network update, even if nothing has changed.

@@ -54,29 +54,29 @@ Get the blend mode.
 See [BlendMode](../../Misc/Enums.md#blendmode)
 
 Sig: `blendMode = TextMesh3D:GetBlendMode()`
- - Ret: `BlendMode(integer blendMode)` Blending mode
+ - Ret: `BlendMode(integer) blendMode` Blending mode
 ---
 ### SetHorizontalJustification
-Set the horizontal text justification. Justification should be between 0 and 1 (inclusive). 0.5 justifcation would be middle-justified.
+Set the horizontal text justification. Justification should be between 0 and 1 (inclusive). 0.5 justification would be middle-justified.
 
 Sig: `TextMesh3D:SetHorizontalJustification(justification)`
  - Arg: `number justification` Text justification
 
 ---
 ### GetHorizontalJustification
-Get the horizontal text justification. Justification should be between 0 and 1 (inclusive). 0.5 justifcation would be middle-justified.
+Get the horizontal text justification. Justification should be between 0 and 1 (inclusive). 0.5 justification would be middle-justified.
 
 Sig: `justification = TextMesh3D:GetHorizontalJustification()`
  - Ret: `number justification` Text justification
 ---
 ### SetVerticalJustification
-Set the vertical text justification. Justification should be between 0 and 1 (inclusive). 0.5 justifcation would be middle-justified.
+Set the vertical text justification. Justification should be between 0 and 1 (inclusive). 0.5 justification would be middle-justified.
 
 Sig: `TextMesh3D:SetVerticalJustification(justification)`
- - Ret: `number justification` Text justification
+ - Arg: `number justification` Text justification
 ---
 ### GetVerticalJustification
-Get the vertical text justification. Justification should be between 0 and 1 (inclusive). 0.5 justifcation would be middle-justified.
+Get the vertical text justification. Justification should be between 0 and 1 (inclusive). 0.5 justification would be middle-justified.
 
 Sig: `justification = TextMesh3D:GetVerticalJustification()`
  - Ret: `number justification` Text justification

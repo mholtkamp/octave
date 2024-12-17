@@ -13,7 +13,7 @@ Sig: `Audio3D:SetSoundWave(soundWave)`
 ### GetSoundWave
 Get the currently assigned sound wave.
 
-Sig: `soundWave Audio3D:GetSoundWave()`
+Sig: `soundWave = Audio3D:GetSoundWave()`
  - Ret: `SoundWave soundWave` SoundWave asset
 ---
 ### SetInnerRadius
@@ -29,31 +29,31 @@ Sig: `radius = Audio3D:GetInnerRadius()`
  - Ret: `number radius` Inner radius
 ---
 ### SetOuterRadius
-Set the outer radius. The outer radius defines the distance away from the node at which the sound can't be heard anymore. Volume will increase when moving from the outer radius distance to the inner radis distance.
+Set the outer radius. The outer radius defines the distance away from the node at which the sound can't be heard anymore. Volume will increase when moving from the outer radius distance to the inner radius distance.
 
 Sig: `Audio3D:SetOuterRadius(radius)`
  - Arg: `number radius` Outer radius
 ---
 ### GetOuterRadius
-Set the outer radius. The outer radius defines the distance away from the node at which the sound can't be heard anymore. Volume will increase when moving from the outer radius distance to the inner radis distance.
+Get the outer radius. The outer radius defines the distance away from the node at which the sound can't be heard anymore. Volume will increase when moving from the outer radius distance to the inner radius distance.
 
-Sig: `radius = Audio3D:SetOuterRadius()`
+Sig: `radius = Audio3D:GetOuterRadius()`
  - Ret: `number radius` Outer radius
 ---
 ### SetVolume
-Set the volume multipler.
+Set the volume multiplier.
 
 Sig: `Audio3D:SetVolume(volume)`
  - Arg: `number volume` Volume
 ---
 ### GetVolume
-Get the volume multipler.
+Get the volume multiplier.
 
 Sig: `volume = Audio3D:GetVolume()`
  - Ret: `number volume` Volume
 ---
 ### SetPitch
-Set the pitch mulitpler.
+Set the pitch multiplier.
 
 Sig: `Audio3D:SetPitch(pitch)`
  - Arg: `number pitch` Pitch
@@ -86,10 +86,10 @@ Sig: `Audio3D:SetPriority(priority)`
 Get the audio priority of this node. If the number of concurrent sounds has been reached, sounds with lower priority will be stopped to allow sounds with higher priority to play. Default priority is 0. Priority is stored as 32-bit integer and can be negative.
 
 Sig: `priority = Audio3D:GetPriority()`
- - Ret: `number priority` Sound priority
+ - Ret: `integer priority` Sound priority
 ---
 ### SetAttenuationFunc
-Set the sound intensity attenuation function. The attenuation controls how quickly a sound's volume fades out when moving from the inner radius to the outer radius, or alternatively, how quickly a sound's volume fades in when moving the outer radius to the inner radius.
+Set the sound intensity attenuation function. The attenuation controls how quickly a sound's volume fades out when moving from the inner radius to the outer radius, or alternatively, how quickly a sound's volume fades in when moving from the outer radius to the inner radius.
 
 See the [AttenuationFunc](../../Misc/Enums.md#attenuationfunc) enumeration.
 
@@ -97,7 +97,7 @@ Sig: `Audio3D:SetAttenuationFunc(attenFunc)`
  - Arg: `AttenuationFunc(integer) attenFunc` Attenuation function
 ---
 ### GetAttenuationFunc
-Get the sound intensity attenuation function. The attenuation controls how quickly a sound's volume fades out when moving from the inner radius to the outer radius, or alternatively, how quickly a sound's volume fades in when moving the outer radius to the inner radius.
+Get the sound intensity attenuation function. The attenuation controls how quickly a sound's volume fades out when moving from the inner radius to the outer radius, or alternatively, how quickly a sound's volume fades in when moving from the outer radius to the inner radius.
 
 See the [AttenuationFunc](../../Misc/Enums.md#attenuationfunc) enumeration.
 
@@ -147,7 +147,7 @@ Sig: `audible = Audio3D:IsAudible()`
  - Ret: `boolean audible` True if receiver can hear the audio
 ---
 ### PlayAudio
-Play this node's assigned sound wave. If this node is already playing a soundwave, this function won't do anything. You can use ResetAudio() if you want to replay from the beginning of the sound wave. An Audio3D node can only play one sound wave at a time.
+Play this node's assigned sound wave. If this node is already playing a sound wave, this function won't do anything. You can use ResetAudio() if you want to replay from the beginning of the sound wave. An Audio3D node can only play one sound wave at a time.
 
 Sig: `Audio3D:PlayAudio()`
 
@@ -159,7 +159,7 @@ Sig: `Audio3D:PauseAudio()`
 
 ---
 ### StopAudio
-Stop the sound wave that is being played. This will also reset the current play time back to the beginning of the sound wave. Use PauseAudio() if you want to pickup where it left off.
+Stop the sound wave that is being played. This will also reset the current play time back to the beginning of the sound wave. Use PauseAudio() if you want to pick up where it left off.
 
 Sig: `Audio3D:StopAudio()`
 

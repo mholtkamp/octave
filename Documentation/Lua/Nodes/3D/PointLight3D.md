@@ -1,4 +1,4 @@
-# DirectionalLight3D
+# PointLight3D
 
 A node that emits light from a single point. Light intensity will attenuate as distance from the node increases.
 
