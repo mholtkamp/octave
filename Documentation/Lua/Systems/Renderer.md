@@ -7,7 +7,7 @@ System that controls graphical rendering.
 Enable the stats overlay which can be used for displaying performance information.
 
 Sig: `Renderer.EnableStatsOverlay(enable)`
- - `boolean enable` Enable stats overlay
+ - Arg: `boolean enable` Enable stats overlay
 ---
 ### EnableConsole
 Enable the console. The console will display log messages on screen. It currently doesn't accept any sort of console commands.
@@ -54,7 +54,7 @@ Sig: `scale = Renderer.GetGlobalUiScale()`
 ### SetGlobalUiScale
 Set the global UI scale.
 
-Sig: `Renderer.GetGlobalUiScale(scale)` 
+Sig: `Renderer.SetGlobalUiScale(scale)` 
  - Arg: `number scale` Global UI scale
 ---
 ### SetDebugMode
@@ -76,7 +76,7 @@ Debug mode:
  - 2 = Wireframe
  - 3 = Collision
 
-Sig: `mode = Renderer.SetDebugMode()`
+Sig: `mode = Renderer.GetDebugMode()`
  - Ret: `integer mode` Debug mode
 ---
 ### EnableProxyRendering
@@ -130,8 +130,8 @@ Add a debug draw.
 
 Sig: `Renderer.AddDebugDraw(mesh, pos, rot=Vec(0,0,0), scale=Vec(1,1,1), color=Vec(0.25, 0.25, 1.0, 1.0), life=0, material=nil)`
  - Arg: `StaticMesh mesh` Mesh to render
- - Arg: `Vector position` Position
- - Arg: `Vector rotation` Rotation
+ - Arg: `Vector pos` Position
+ - Arg: `Vector rot` Rotation
  - Arg: `Vector scale` Scale
  - Arg: `Vector color` Color (for wireframe rendering)
  - Arg: `number life` Life of draw (0 = draw for current frame only)
@@ -171,16 +171,16 @@ Sig: `enabled = Renderer.Is2dRenderingEnabled()`
  - Ret: `boolean enabled` Is 2D rendering enabled
 ---
 ### IsLightFadeEnabled
-Check if light fade is enabled. Light fading is a way to reduce the number of active lights to improve performance. The lights closest the camera will be visible.
+Check if light fade is enabled. Light fading is a way to reduce the number of active lights to improve performance. The lights closest to the camera will be visible.
 
 Sig: `enabled = Renderer.IsLightFadeEnabled()`
  - Ret: `boolean enabled` Is light fade enabled
 ---
 ### EnableLightFade
-Set wheter light fade is enabled. Light fading is a way to reduce the number of active lights to improve performance. The lights closest the camera will be visible.
+Set whether light fade is enabled. Light fading is a way to reduce the number of active lights to improve performance. The lights closest to the camera will be visible.
 
 Sig: `Renderer.EnableLightFade(enable)`
- - Ret: `boolean enable` Enable light fade
+ - Arg: `boolean enable` Enable light fade
 ---
 ### SetLightFadeLimit
 Set the maximum number of lights that can be rendered when light fade is enabled.

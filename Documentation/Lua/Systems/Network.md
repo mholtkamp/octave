@@ -25,7 +25,7 @@ Join a multiplayer session.
 
 Sig: `Network.JoinSession(data)`
  - Arg: `table data`
-   - `string ipAddress` Server ip address (use for LAN)
+   - `string ipAddress` Server IP address (use for LAN)
    - `integer port` Server port (use for LAN)
    - `string lobbyId` Online platform Lobby ID (use for Steam)
 ---
@@ -48,7 +48,7 @@ Sig: `searching = Network.IsSearching()`
  - Ret: `boolean searching` Searching for sessions
 ---
 ### EnableSessionBroadcast
-Set whether to broadcast this active session on the network. I believe this is only used by LAN sessions. Steam sessions do not need this enabled to be discovered.
+Set whether to broadcast this active session on the network. This is only used by LAN sessions. Steam sessions do not need this enabled to be discovered.
 
 Sig: `Network.EnableSessionBroadcast(enable)`
  - Arg: `boolean enable` Enable broadcast
@@ -60,7 +60,7 @@ Sig: `enabled = Network.IsSessionBroadcastEnabled()`
  - Ret: `boolean enabled` Broadcast enabled
 ---
 ### GetNumSessions
-Get the number of found network sessions found. Network sessions will only be discovered once Network.BeginSessionSearch() has been invoked.
+Get the number of found network sessions. Network sessions will only be discovered once Network.BeginSessionSearch() has been invoked.
 
 Sig: `num = Network.GetNumSessions()`
  - Ret: `integer num` Number of network sessions found
@@ -68,7 +68,8 @@ Sig: `num = Network.GetNumSessions()`
 ### GetSession
 Get info on a discovered network session. Network sessions will only be discovered once Network.BeginSessionSearch() has been invoked.
 
-Sig: `sessionData = Network.GetSession()`
+Sig: `sessionData = Network.GetSession(index)`
+ - Arg: `integer index` Index of the session
  - Ret: `table sessionData`
    - `string ipAddress`
    - `integer port`
@@ -91,7 +92,7 @@ Sig: `sessionArray = Network.GetSessions()`
      - `integer numPlayers`
 ---
 ### Connect
-Connect to a game sessions by ip and port.
+Connect to a game session by IP and port.
 Note: You should probably use Network.JoinSession() instead.
 
 Sig: `Network.Connect(ipAddress, port=DefaultPort)`
@@ -100,7 +101,7 @@ Sig: `Network.Connect(ipAddress, port=DefaultPort)`
 ---
 ### Disconnect
 Disconnect from a network session.
-Nort: This is the same as calling Network.CloseSession().
+Note: This is the same as calling Network.CloseSession().
 
 Sig: `Network.Disconnect()`
 
@@ -108,11 +109,11 @@ Sig: `Network.Disconnect()`
 ### Kick
 Kick a player from the network session. Only callable by the server host.
 
-Sig: `NetworkManager.Kick(hostId)`
+Sig: `Network.Kick(hostId)`
  - Arg: `integer hostId` Host to kick
 ---
 ### GetMaxClients
-Get the maximum number of clients. Only call as the server host. Otherwise it will not provide an accurate number.
+Get the maximum number of clients. Only call as the server host. Otherwise, it will not provide an accurate number.
 
 Sig: `max = Network.GetMaxClients()`
  - Ret: `integer max` Max number of clients
@@ -215,7 +216,7 @@ Sig: `local = Network.IsLocal()`
  - Ret: `boolean local` Is local
 ---
 ### IsAuthority
-Check if this host has gameplay authority. This will be true if this host is a Server of is playing locally.
+Check if this host has gameplay authority. This will be true if this host is a Server or is playing locally.
 
 Sig: `authority = Network.IsAuthority()`
  - Ret: `boolean authority` Is the gameplay authority
@@ -229,30 +230,30 @@ Sig: `hostId = Network.GetHostId()`
 ### SetConnectCallback
 Set a callback function that will be called when a Connect message is received.
 
-sig: `Network.SetConnectCallback(func)`
+Sig: `Network.SetConnectCallback(func)`
  - Arg: `function func` Callback function
 ---
 ### SetAcceptCallback
 Set a callback function that will be called when an Accept message is received.
 
-sig: `Network.SetAcceptCallback(func)`
+Sig: `Network.SetAcceptCallback(func)`
  - Arg: `function func` Callback function
 ---
 ### SetRejectCallback
 Set a callback function that will be called when a Reject message is received.
 
-sig: `Network.SetRejectCallback(func)`
+Sig: `Network.SetRejectCallback(func)`
  - Arg: `function func` Callback function
 ---
 ### SetDisconnectCallback
 Set a callback function that will be called when a Disconnect message is received.
 
-sig: `Network.SetDisconnectCallback(func)`
+Sig: `Network.SetDisconnectCallback(func)`
  - Arg: `function func` Callback function
 ---
 ### SetKickCallback
 Set a callback function that will be called when a Kick message is received.
 
-sig: `Network.SetKickCallback(func)`
+Sig: `Network.SetKickCallback(func)`
  - Arg: `function func` Callback function
 ---

@@ -5,28 +5,28 @@ System to play and manage sounds.
 ---
 ### PlaySound2D
 Play a sound with no positional data.
-TODO: Rename to PlaySound() in we add 2D support.
+TODO: Rename to PlaySound() if we add 2D support.
 
 Sig: `Audio.PlaySound(sound, volume=1, pitch=1, startTime=0, loop=false, priority=0)`
  - Arg: `SoundWave sound` Sound wave to play
  - Arg: `number volume` Volume multiplier
- - Arg: `number pitch` Pitch mulitplier
+ - Arg: `number pitch` Pitch multiplier
  - Arg: `number startTime` Start time offset
  - Arg: `boolean loop` Loop sound
  - Arg: `integer priority` Sound priority
 ---
 ### PlaySound3D
-Play a sound with at a position in 3D space.
-TODO: Rename to PlaySoundAtPosition() to handle 2D and 3D.
+Play a sound at a position in 3D space.
+TODO: Rename to PlaySoundAtPosition() to handle both 2D and 3D.
 
 Sig: `Audio.PlaySound3D(sound, position, innerRadius, outerRadius, attenuationFunc=AttenuationFunc.Linear, volume=1, pitch=1, startTime=0, loop=false, priority=0)`
  - Arg: `SoundWave sound` Sound wave to play
  - Arg: `Vector position` Position of sound
  - Arg: `number innerRadius` Inner radius
  - Arg: `number outerRadius` Outer radius
- - Arg: `AttenutationFunc(integer) attenuationFunc` Attenuation
+ - Arg: `AttenuationFunc(integer) attenuationFunc` Attenuation function
  - Arg: `number volume` Volume multiplier
- - Arg: `number pitch` Pitch mulitplier
+ - Arg: `number pitch` Pitch multiplier
  - Arg: `number startTime` Start time offset
  - Arg: `boolean loop` Loop sound
  - Arg: `integer priority` Sound priority

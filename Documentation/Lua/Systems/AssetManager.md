@@ -6,7 +6,7 @@ Some of these functions are available as global functions, so you can just call 
 
 ---
 ### RefSweep
-Unload any assets that are no longer references.
+Unload any assets that are no longer referenced.
 
 Sig: `AssetManager.RefSweep()`
 
@@ -28,11 +28,11 @@ Sig: `asset = AssetManager.LoadAsset(name)`
 ### SaveAsset
 Save an asset. Only available in Editor.
 
-Sig: `AssetManager.Save(name)`
+Sig: `AssetManager.SaveAsset(name)`
  - Arg: `string name` Asset name
 ---
 ### AsyncLoadAsset
-Request the an asset be loaded asynchronously. This function will return a reference to an asset, and you can check if it has been loaded. Call asset:IsLoaded() to see if it has been loaded. TODO: Add function callback to handle when asset is loaded.
+Request that an asset be loaded asynchronously. This function will return a reference to an asset, and you can check if it has been loaded. Call `asset:IsLoaded()` to see if it has been loaded. TODO: Add function callback to handle when asset is loaded.
 
 Sig: `asset = AssetManager.AsyncLoadAsset(name)`
  - Arg: `string name` Asset name

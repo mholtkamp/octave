@@ -28,7 +28,7 @@ Approach a target value from a source value based on a given speed.
 
 Sig: `value = Math.Approach(source, target, speed, deltaTime)`
  - Arg: `Vector/number source` Source value
- - Arg: `Vector/number source` Target value
+ - Arg: `Vector/number target` Target value
  - Arg: `number speed` Rate at which the source should be moving toward the target
  - Arg: `number deltaTime` Delta time
  - Ret: `number value` The updated value
@@ -36,9 +36,9 @@ Sig: `value = Math.Approach(source, target, speed, deltaTime)`
 ### ApproachAngle
 Approach a target angle from a source angle based on a given speed.
 
-Sig: `value = Math.Approach(source, target, speed, deltaTime)`
+Sig: `value = Math.ApproachAngle(source, target, speed, deltaTime)`
  - Arg: `number source` Source angle in degrees
- - Arg: `number source` Target angle in degrees
+ - Arg: `number target` Target angle in degrees
  - Arg: `number speed` Rate at which the source should be moving toward the target
  - Arg: `number deltaTime` Delta time
  - Ret: `number value` The updated value
@@ -94,7 +94,7 @@ Sig: `min = Math.Min(a, b)`
 ### Max
 Get the maximum of two numbers.
 
-Sig: `min = Math.Max(a, b)`
+Sig: `max = Math.Max(a, b)`
  - Arg: `integer/number a` First number
  - Arg: `integer/number b` Second number
  - Ret: `integer/number max` Maximum number
@@ -103,7 +103,7 @@ Sig: `min = Math.Max(a, b)`
 Clamp an input value between two numbers.
 
 Sig: `clamped = Math.Clamp(value, min, max)`
- - Arg: `integer/number` Input value
+ - Arg: `integer/number value` Input value
  - Arg: `integer/number min` Min value
  - Arg: `integer/number max` Max value
  - Ret: `integer/number clamped` Clamped value
@@ -134,7 +134,7 @@ Sig: `resYaw = Math.RotateYawTowardDirection(srcYaw, dir, speed, deltaTime)`
  - Arg: `Vector dir` Direction to rotate towards
  - Arg: `number speed` Angular speed
  - Arg: `number deltaTime` Delta time
- - Ret: `number res` Resulting yaw
+ - Ret: `number resYaw` Resulting yaw
 ---
 ### Reflect
 Reflect a vector against a normal.
@@ -142,7 +142,7 @@ Reflect a vector against a normal.
 Sig: `res = Math.Reflect(incident, normal)`
  - Arg: `Vector incident` Incident vector
  - Arg: `Vector normal` Normal direction
- - Arg: `Vector res` Reflected vector 
+ - Ret: `Vector res` Reflected vector 
 ---
 ### VectorToRotation
 Convert a vector to an euler angle rotation that would map the forward vector (0,0,-1) to the input vector.
@@ -152,9 +152,9 @@ Sig: `rotEuler = Math.VectorToRotation(vector)`
  - Ret: `Vector rotEuler` Rotation as euler angles in degrees
 ---
 ### VectorToQuat
-Convert a vector to an quaternion rotation that would map the forward vector (0,0,-1) to the input vector.
+Convert a vector to a quaternion rotation that would map the forward vector (0,0,-1) to the input vector.
 
-Sig: `rotQuat = Math.VectorToRotation(vector)`
+Sig: `rotQuat = Math.VectorToQuat(vector)`
  - Arg: `Vector vector` Input vector
  - Ret: `Vector rotQuat` Rotation as a quaternion
 ---
@@ -168,8 +168,8 @@ Sig: `vect = Math.RotationToVector(rotEuler)`
 ### QuatToVector
 Convert a quaternion rotation to a normalized directional vector.
 
-Sig: `vect = Math.RotationToVector(rotEuler)`
- - Arg: `Vector rotEuler` Quaternion rotation
+Sig: `vect = Math.QuatToVector(rotQuat)`
+ - Arg: `Vector rotQuat` Quaternion rotation
  - Ret: `Vector vect` Equivalent vector
 ---
 ### SeedRand

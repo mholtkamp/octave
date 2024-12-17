@@ -78,7 +78,7 @@ Sig: `Engine.Break()`
 Send an alert message. Useful for debugging.
 
 Sig: `Engine.Alert(msg)`
- - Arg: `string msg` Messasge string 
+ - Arg: `string msg` Message string 
 ---
 ### SetBreakOnScriptError
 Enable breaking the debugger on Lua errors.

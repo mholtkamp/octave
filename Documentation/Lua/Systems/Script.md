@@ -21,10 +21,10 @@ Sig: `Script.Run(path)`
 Extend one class table from another class table. Useful for creating inheritance hierarchies.
 
 Example in a Goblin.lua file: 
-```
+```lua
 Script.Load(Monster) -- Load parent class script (if not already loaded)
 Goblin = {} -- Create your new class's global table
-Script.Inherit(Goblin, Monster) -- Extend your new class table from it's parent class
+Script.Inherit(Goblin, Monster) -- Extend your new class table from its parent class
 ```
 
 Alias: `Extend`

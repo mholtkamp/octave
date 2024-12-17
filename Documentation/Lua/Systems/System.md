@@ -61,7 +61,7 @@ Sig: `System.SetFullscreen(fullscreen)`
 ### IsFullscreen
 Check if fullscreen is enabled.
 
-Sig: `fullscreen = System.SetFullscreen()`
+Sig: `fullscreen = System.IsFullscreen()`
  - Ret: `boolean fullscreen` Whether fullscreen is enabled
 ---
 ### SetWindowTitle

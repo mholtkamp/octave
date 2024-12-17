@@ -94,7 +94,7 @@ Sig: `delta = Input.GetScrollWheelDelta()`
 ### GetMouseDelta
 Get the change in mouse position from last frame to this frame in screen space (pixels).
 
-Sig: `deltaX, deltaY = Input.GetMousePosition()`
+Sig: `deltaX, deltaY = Input.GetMouseDelta()`
  - Ret: `integer deltaX` Mouse position delta x
  - Ret: `integer deltaY` Mouse position delta y
 ---

@@ -4,7 +4,7 @@ A system that can be used to set timers which will invoke a given callback funct
 
 ---
 ### SetTimer
-Set a timer that will invoke a callback function after its duration elapsed. This function will return an ID that can be used to pause/resume/clear the timer later.
+Set a timer that will invoke a callback function after its duration has elapsed. This function will return an ID that can be used to pause/resume/clear the timer later.
 
 Sig: `id = TimerManager.SetTimer(func, time, loop=false)`
  - Arg: `function func` Callback function
@@ -22,25 +22,25 @@ Sig: `TimerManager.ClearAllTimers()`
 Clear a specific timer.
 
 Sig: `TimerManager.ClearTimer(id)`
- - `interger id` Timer ID
+ - Arg: `integer id` Timer ID
 ---
 ### PauseTimer
 Pause a timer.
 
 Sig: `TimerManager.PauseTimer(id)`
- - `integer id` Timer ID
+ - Arg: `integer id` Timer ID
 ---
 ### ResumeTimer
 Resume a timer that was previously paused.
 
 Sig: `TimerManager.ResumeTimer(id)`
- - `integer id` Timer ID
+ - Arg: `integer id` Timer ID
 ---
 ### ResetTimer
 Reset a timer, restoring its time remaining to the initial time given.
 
 Sig: `TimerManager.ResetTimer(id)`
- - `integer id` Timer ID
+ - Arg: `integer id` Timer ID
 ---
 ### GetTimeRemaining
 Get the time remaining on a timer.

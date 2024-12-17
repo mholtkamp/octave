@@ -31,7 +31,7 @@ Sig: `Log.Console(msg, color)`
  - Arg: `Vector color` Text color
 ---
 ### Enable
-Whether to enable logging and screen console printing.
+Enable or disable logging and screen console printing.
 
 Sig: `Log.Enable(enable)`
  - Arg: `boolean enable` Whether to enable logging
