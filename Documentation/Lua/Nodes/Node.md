@@ -7,6 +7,8 @@ The base object that can be added to a world and saved in a scene.
 ### Construct
 Construct a node from a given class name. (e.g. "Node3D", "Primitive3D", "Text", "Image")
 
+Alias: `New`
+
 Sig: `node = Node.Construct(className="Node")`
  - Arg: `string className` The class of the node to create. Default = "Node".
  - Ret: `Node node` The newly constructed node.
@@ -50,7 +52,7 @@ Sig: `active = Node:IsActive(recurse=false)`
  - Ret: `boolean active` Active status
 ---
 ### SetVisible
-Sets the visibility of the node. Only visible nodes will be rendered. If a node is not visible none of its children nodes will be rendered either.
+Sets the visibility of the node. Only visible nodes will be rendered. If a node is not visible, none of its children nodes will be rendered either.
 
 Sig: `Node:SetVisible(visible)`
  - Arg: `boolean visible` Visible status
@@ -389,6 +391,10 @@ Sig: `Node:InvokeNetFunc(name, arg1, arg2, ... arg8)`
 ---
 ### CheckType
 Check if this node is of a given type.
+
+Alias: `Is`
+
+Alias: `IsA`
 
 Sig: `Node:CheckType(className)`
  - Arg: `string className` type name to check (e.g. "Primitive3D")

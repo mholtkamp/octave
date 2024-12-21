@@ -278,4 +278,3 @@ Sig: `result = Primitive3D:SweepToWorldPosition(position, mask=0)`
    - `Vector hitPosition`
    - `number hitFraction` (0 to 1, how far along the sweep did we make it?)
 ---
-
