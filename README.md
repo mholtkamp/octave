@@ -1,8 +1,13 @@
 # Octave
 A 3D Game Engine for GameCube, Wii, 3DS, Windows, Linux, and Android
 
-Tutorial Video: https://youtu.be/0CHLn0ie-DY?si=pq-s_hLgb71OX2Cc
-Setup instructions below.
+[Tutorial Video](https://youtu.be/0CHLn0ie-DY?si=pq-s_hLgb71OX2Cc)
+
+[Lua Documentation](Documentation/Lua/README.md)
+
+Check out the Releases page for precompiled standalone builds.
+
+Instructions for building from source below.
 
 ## Windows Setup
 1. Download and Install:
