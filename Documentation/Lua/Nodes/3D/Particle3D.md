@@ -2,6 +2,11 @@
 
 A node that will simulate and render particles.
 
+Inheritance:
+* [Node](../Node.md)
+* [Node3D](Node3D.md)
+* [Primitive3D](Primitive3D.md)
+
 ---
 ### Reset
 Reset the particle system. Destroys all particles and sets the elapsed time and loop count back to 0.

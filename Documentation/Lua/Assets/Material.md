@@ -6,6 +6,9 @@ There are 2 different material systems in Octave.
  - MaterialLite: Can be used on ALL platforms. The downside is that they only support a limited number of features.
  - MaterialBase / MaterialInstance: These are only supported on Vulkan platforms. MaterialBase allows you to provide a custom Vertex / Fragment shader in a GLSL file. MaterialInstance allows you to make a new instance of the base material with different parameter values.
 
+Inheritance:
+* [Asset](Asset.md)
+
 ---
 ### IsBase
 Check if this material is a MaterialBase.

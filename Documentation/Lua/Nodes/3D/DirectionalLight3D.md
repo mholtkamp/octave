@@ -2,6 +2,11 @@
 
 A node that emits directional light, like a sun.
 
+Inheritance:
+* [Node](../Node.md)
+* [Node3D](Node3D.md)
+* [Light3D](Light3D.md)
+
 ---
 ### GetDirection
 Get the direction the light is emitting from. Direction is derived from the node's rotation.

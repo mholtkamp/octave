@@ -2,6 +2,13 @@
 
 A node that will render multiple instances of a static mesh. This rendering is performed efficiently when using the Vulkan API. On consoles, instanced meshes are baked into multiple static meshes at packaging time. Consoles cannot create instanced mesh nodes on-the-fly during gameplay.
 
+Inheritance:
+* [Node](../Node.md)
+* [Node3D](Node3D.md)
+* [Primitive3D](Primitive3D.md)
+* [Mesh3D](Mesh3D.md)
+* [StaticMesh3D](StaticMesh3D.md)
+
 ---
 
 ### GetNumInstances

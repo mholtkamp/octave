@@ -2,6 +2,9 @@
 
 An asset that represents a sound wave.
 
+Inheritance:
+* [Asset](Asset.md)
+
 ---
 ### GetVolumeMultiplier
 Get the volume multiplier.

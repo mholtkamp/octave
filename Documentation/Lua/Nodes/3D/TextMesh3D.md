@@ -2,6 +2,12 @@
 
 A dynamic mesh that can render text strings using a Font asset.
 
+Inheritance:
+* [Node](../Node.md)
+* [Node3D](Node3D.md)
+* [Primitive3D](Primitive3D.md)
+* [Mesh3D](Mesh3D.md)
+
 ---
 
 ### SetText

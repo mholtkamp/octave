@@ -2,6 +2,10 @@
 
 Base class for lights.
 
+Inheritance:
+* [Node](../Node.md)
+* [Node3D](Node3D.md)
+
 ---
 ### SetColor
 Set the light color.

@@ -2,6 +2,12 @@
 
 A node that renders a skeletal mesh. Multiple animations can be played at the same time.
 
+Inheritance:
+* [Node](../Node.md)
+* [Node3D](Node3D.md)
+* [Primitive3D](Primitive3D.md)
+* [Mesh3D](Mesh3D.md)
+
 ---
 
 ### SetSkeletalMesh

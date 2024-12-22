@@ -2,6 +2,9 @@
 
 A mesh that can contain a bone hierarchy and animations.
 
+Inheritance:
+* [Asset](Asset.md)
+
 ---
 ### GetMaterial
 Get the mesh's default material.

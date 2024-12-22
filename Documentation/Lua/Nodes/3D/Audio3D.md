@@ -2,8 +2,11 @@
 
 A node that plays sounds in 3D space. It can be used to play a looping sound or a one-off sound. See the Audio system for playing audio without using a node.
 
+Inheritance:
+* [Node](../Node.md)
+* [Node3D](Node3D.md)
+    
 ---
-
 ### SetSoundWave
 Assign a sound wave asset to be played.
 

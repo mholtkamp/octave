@@ -2,6 +2,9 @@
 
 A node which represents a user interface element and is rendered in 2D.
 
+Inheritance:
+* [Node](../Node.md)
+
 ---
 ### GetRect
 Get the screen space (pixels) rectangle that determines where the widget is rendered. This is computed on Tick().

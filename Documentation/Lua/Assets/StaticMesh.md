@@ -2,6 +2,9 @@
 
 An asset that contains a triangle mesh.
 
+Inheritance:
+* [Asset](Asset.md)
+
 ---
 ### GetMaterial
 Get the default material.

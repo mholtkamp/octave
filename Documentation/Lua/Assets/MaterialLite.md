@@ -2,6 +2,10 @@
 
 A material that is supported on all platforms.
 
+Inheritance:
+* [Asset](Asset.md)
+* [Material](Material.md)
+
 ---
 ### MaterialLite.Create(srcMat)
 Create a new MaterialLite instance. A source MaterialLite can be passed in to initialize the new material's parameters.

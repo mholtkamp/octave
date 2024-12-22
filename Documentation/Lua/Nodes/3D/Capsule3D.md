@@ -2,6 +2,11 @@
 
 Defines a capsule in 3D space. Can be used for collision and overlap detection.
 
+Inheritance:
+* [Node](../Node.md)
+* [Node3D](Node3D.md)
+* [Primitive3D](Primitive3D.md)
+
 ---
 ### GetHeight
 Get the height of the capsule.

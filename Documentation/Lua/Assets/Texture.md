@@ -2,6 +2,9 @@
 
 An asset containing image data.
 
+Inheritance:
+* [Asset](Asset.md)
+
 ---
 ### IsMipmapped
 Check if the texture is mipmapped.

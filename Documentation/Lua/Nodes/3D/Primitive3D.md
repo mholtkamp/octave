@@ -2,6 +2,10 @@
 
 A base class for 3D nodes that are capable of using collision and/or being rendered.
 
+Inheritance:
+* [Node](../Node.md)
+* [Node3D](Node3D.md)
+
 ---
 ### EnablePhysics
 Whether this node should be physically simulated.

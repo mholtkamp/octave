@@ -21,7 +21,6 @@
             * [Particle3D](Nodes/3D/Particle3D.md)
             * [Sphere3D](Nodes/3D/Sphere3D.md)
     * [Widget](Nodes/Widgets/Widget.md)
-        * [ArrayWidget](Nodes/Widgets/ArrayWidget.md)
         * [Poly](Nodes/Widgets/Poly.md)
             * [PolyRect](Nodes/Widgets/PolyRect.md)
         * [Quad](Nodes/Widgets/Quad.md)

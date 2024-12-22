@@ -2,6 +2,10 @@
 
 A widget that can render a text string.
 
+Inheritance:
+* [Node](../Node.md)
+* [Widget](Widget.md)
+
 ---
 ### SetFont
 Set the font asset.

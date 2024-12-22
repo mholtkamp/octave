@@ -2,6 +2,9 @@
 
 An asset that describes a collection of nodes. It can be thought of as a Prefab, Level, Blueprint, or Collection in other game engines.
 
+Inheritance:
+* [Asset](Asset.md)
+
 ---
 ### Capture
 Save a node tree into this scene asset.

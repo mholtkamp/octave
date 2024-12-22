@@ -2,6 +2,11 @@
 
 Base class for a node that can be rendered using a triangle mesh.
 
+Inheritance:
+* [Node](../Node.md)
+* [Node3D](Node3D.md)
+* [Primitive3D](Primitive3D.md)
+
 ---
 ### GetMaterial
 Get the material that this mesh will use for rendering. If a material override has been assigned using SetMaterialOverride(), then this function will return that overridden material. Otherwise, the material assigned on the mesh asset will be returned.

@@ -2,6 +2,10 @@
 
 A widget that renders a textured rectangle.
 
+Inheritance:
+* [Node](../Node.md)
+* [Widget](Widget.md)
+
 ---
 ### SetTexture
 Set the texture asset to use.

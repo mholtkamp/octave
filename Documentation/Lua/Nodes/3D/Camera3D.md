@@ -2,6 +2,10 @@
 
 A node that represents a camera viewpoint which can be rendered. Change the camera used for rendering by calling World:SetActiveCamera().
 
+Inheritance:
+* [Node](../Node.md)
+* [Node3D](Node3D.md)
+
 ---
 
 ### EnablePerspective

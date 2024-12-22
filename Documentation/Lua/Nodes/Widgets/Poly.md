@@ -2,6 +2,10 @@
 
 A widget that can render polygons. Poly widgets are currently only supported on Vulkan.
 
+Inheritance:
+* [Node](../Node.md)
+* [Widget](Widget.md)
+
 ---
 ### AddVertex
 Add a vertex to the polygon.

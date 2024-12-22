@@ -2,6 +2,9 @@
 
 An asset that describes how a particle node should emit particles.
 
+Inheritance:
+* [Asset](Asset.md)
+
 ---
 ### SetMaterial
 Set the material that should be used for rendering.

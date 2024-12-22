@@ -2,6 +2,10 @@
 
 A material instance can override default parameters on a base material. MaterialInstances do not have unique shaders compiled for them, instead they reference the MaterialBase compiled shader. MaterialInstance is only supported on Vulkan platforms.
 
+Inheritance:
+* [Asset](Asset.md)
+* [Material](Material.md)
+
 ---
 ### MaterialInstance.Create(srcMat)
 Create a new material instance from a given source material. The source material can be either a MaterialBase or another MaterialInstance.

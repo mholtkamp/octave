@@ -2,6 +2,12 @@
 
 A node that renders a static (no animation) mesh.
 
+Inheritance:
+* [Node](../Node.md)
+* [Node3D](Node3D.md)
+* [Primitive3D](Primitive3D.md)
+* [Mesh3D](Mesh3D.md)
+
 ---
 ### SetStaticMesh
 Set the static mesh asset that is rendered.

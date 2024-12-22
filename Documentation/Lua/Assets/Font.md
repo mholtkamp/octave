@@ -2,6 +2,9 @@
 
 Fonts can be loaded from .ttf files. The engine only supports ASCII characters.
 
+Inheritance:
+* [Asset](Asset.md)
+
 ---
 ### GetSize
 Get the font size.
