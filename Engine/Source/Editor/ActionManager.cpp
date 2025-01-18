@@ -1328,10 +1328,11 @@ void ActionManager::OpenScene(Scene* scene)
 
 void ActionManager::SaveScene(bool saveAs)
 {
-    if (GetEngineState()->mProjectPath == "")
-        return;
-
     EditScene* editScene = GetEditorState()->GetEditScene();
+
+    if (GetEngineState()->mProjectPath == "" ||
+        editScene == nullptr)
+        return;
 
     if (saveAs || editScene->mSceneAsset == nullptr)
     {
