@@ -6,14 +6,14 @@
 #include "EngineTypes.h"
 #include "Property.h"
 
-extern InitOptions OctPreInitialize();
+extern void OctPreInitialize(EngineConfig& config);
 extern void OctPostInitialize();
 extern void OctPreUpdate();
 extern void OctPostUpdate();
 extern void OctPreShutdown();
 extern void OctPostShutdown();
 
-bool Initialize(InitOptions& initOptions);
+bool Initialize();
 
 bool Update();
 
@@ -25,7 +25,8 @@ class World* GetWorld(int32_t index);
 int32_t GetNumWorlds();
 
 struct EngineState* GetEngineState();
-struct EngineConfig* GetEngineConfig();
+const struct EngineConfig* GetEngineConfig();
+struct EngineConfig* GetMutableEngineConfig();
 
 const class Clock* GetAppClock();
 

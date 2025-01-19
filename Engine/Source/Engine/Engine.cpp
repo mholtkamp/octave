@@ -148,21 +148,32 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
     }
 }
 
-bool Initialize(InitOptions& initOptions)
+void ReadEngineIni()
 {
-    // Override initOptions with commandline options
-    if (sEngineConfig.mDefaultScene != "")
-    {
-        initOptions.mDefaultScene = sEngineConfig.mDefaultScene;
-    }
+    Stream iniStream;
+    iniStream.ReadFile("Engine.ini", true);
 
-    if (sEngineConfig.mWindowWidth > 0 &&
-        sEngineConfig.mWindowHeight > 0)
+    if (iniStream.GetSize() > 0)
     {
-        initOptions.mWidth = sEngineConfig.mWindowWidth;
-        initOptions.mHeight = sEngineConfig.mWindowHeight;
-    }
+        char key[MAX_PATH_SIZE] = {};
+        char value[MAX_PATH_SIZE] = {};
 
+        while (iniStream.Scan("%[^=]=%s\n", key, value) != -1)
+        {
+            if (strncmp(key, "project", MAX_PATH_SIZE) == 0)
+            {
+                sEngineConfig.mProjectName = value;
+            }
+            else if (strncmp(key, "defaultScene", MAX_PATH_SIZE) == 0)
+            {
+                sEngineConfig.mDefaultScene = value;
+            }
+        }
+    }
+}
+
+bool Initialize()
+{
     if (GetPlatform() == Platform::Android ||
         GetPlatform() == Platform::GameCube ||
         GetPlatform() == Platform::Wii ||
@@ -171,7 +182,7 @@ bool Initialize(InitOptions& initOptions)
         // Use the asset registry to make loading faster. On consoles, scanning the SD card directories 
         // can be extremely slow. Android used to require the asset registry, but I did add support for 
         // iterating over the assets directory via Java. It's still probably faster to use the asset registry though.
-        initOptions.mUseAssetRegistry = true;
+        sEngineConfig.mUseAssetRegistry = true;
     }
 
     InitializeLog();
@@ -191,21 +202,21 @@ bool Initialize(InitOptions& initOptions)
 
     renderer->SetEngineState(&sEngineState);
 
-    sEngineState.mStandalone = initOptions.mStandalone;
-    sEngineState.mWindowWidth = initOptions.mWidth;
-    sEngineState.mWindowHeight = initOptions.mHeight;
-    sEngineState.mProjectName = (initOptions.mProjectName != "") ? initOptions.mProjectName : DEFAULT_GAME_NAME;
-    sEngineState.mGameCode = initOptions.mGameCode;
-    sEngineState.mVersion = initOptions.mVersion;
+    sEngineState.mStandalone = sEngineConfig.mStandalone;
+    sEngineState.mWindowWidth = sEngineConfig.mWindowWidth;
+    sEngineState.mWindowHeight = sEngineConfig.mWindowHeight;
+    sEngineState.mProjectName = (sEngineConfig.mProjectName != "") ? sEngineConfig.mProjectName : DEFAULT_GAME_NAME;
+    sEngineState.mGameCode = sEngineConfig.mGameCode;
+    sEngineState.mVersion = sEngineConfig.mVersion;
 
     {
         SCOPED_STAT("SYS_Initialize");
         SYS_Initialize();
     }
 
-    if (initOptions.mWorkingDirectory != "")
+    if (sEngineConfig.mWorkingDirectory != "")
     {
-        SYS_SetWorkingDirectory(initOptions.mWorkingDirectory);
+        SYS_SetWorkingDirectory(sEngineConfig.mWorkingDirectory);
     }
 
     AssetManager::Get()->Initialize();
@@ -220,41 +231,41 @@ bool Initialize(InitOptions& initOptions)
         sEngineState.mProjectDirectory = path.substr(0, path.find_last_of("/\\") + 1);
 #else
         // Editor uses ActionManager::OpenProject()
-        LoadProject(sEngineConfig.mProjectPath, !initOptions.mUseAssetRegistry);
+        LoadProject(sEngineConfig.mProjectPath, !sEngineConfig.mUseAssetRegistry);
 #endif
     }
-    else if (initOptions.mProjectName != "")
+    else if (sEngineConfig.mProjectName != "")
     {
-        std::string projectName = initOptions.mProjectName;
+        std::string projectName = sEngineConfig.mProjectName;
         std::string projectPath = projectName + "/" + projectName + ".octp";
-        LoadProject(projectPath, !initOptions.mUseAssetRegistry);
+        LoadProject(projectPath, !sEngineConfig.mUseAssetRegistry);
     }
 
 #if !EDITOR
     if (GetEngineState()->mProjectDirectory != "" &&
-        initOptions.mUseAssetRegistry)
+        sEngineConfig.mUseAssetRegistry)
     {
         AssetManager::Get()->DiscoverAssetRegistry((GetEngineState()->mProjectDirectory + "AssetRegistry.txt").c_str());
     }
 #endif
 
-    if (initOptions.mEmbeddedAssetCount > 0 &&
-        initOptions.mEmbeddedAssets != nullptr)
+    if (sEngineConfig.mEmbeddedAssetCount > 0 &&
+        sEngineConfig.mEmbeddedAssets != nullptr)
     {
-        AssetManager::Get()->DiscoverEmbeddedAssets(initOptions.mEmbeddedAssets, initOptions.mEmbeddedAssetCount);
+        AssetManager::Get()->DiscoverEmbeddedAssets(sEngineConfig.mEmbeddedAssets, sEngineConfig.mEmbeddedAssetCount);
     }
 
-    if (initOptions.mEmbeddedScriptCount > 0 &&
-        initOptions.mEmbeddedScripts != nullptr)
+    if (sEngineConfig.mEmbeddedScriptCount > 0 &&
+        sEngineConfig.mEmbeddedScripts != nullptr)
     {
-        ScriptUtils::SetEmbeddedScripts(initOptions.mEmbeddedScripts, initOptions.mEmbeddedScriptCount);
+        ScriptUtils::SetEmbeddedScripts(sEngineConfig.mEmbeddedScripts, sEngineConfig.mEmbeddedScriptCount);
     }
 
 #if !EDITOR
     // In editor, it's expected that all engine assets are imported manually...
     // At least for now. This is to prevent breaking the editor when a file format changes.
     // Building Data (Ctrl+B) in editor will regenerate .oct files from the source data.
-    if (!initOptions.mUseAssetRegistry)
+    if (!sEngineConfig.mUseAssetRegistry)
     {
         AssetManager::Get()->Discover("Engine", "Engine/Assets/");
     }
@@ -327,10 +338,10 @@ bool Initialize(InitOptions& initOptions)
     ForceLinkage();
 
 #if !EDITOR
-    if (initOptions.mDefaultScene != "")
+    if (sEngineConfig.mDefaultScene != "")
     {
-        Asset* sceneAsset = LoadAsset(initOptions.mDefaultScene);
-        GetWorld(0)->LoadScene(initOptions.mDefaultScene.c_str(), true);
+        Asset* sceneAsset = LoadAsset(sEngineConfig.mDefaultScene);
+        GetWorld(0)->LoadScene(sEngineConfig.mDefaultScene.c_str(), true);
     }
 #endif 
 
@@ -502,7 +513,12 @@ EngineState* GetEngineState()
     return &sEngineState;
 }
 
-EngineConfig* GetEngineConfig()
+const EngineConfig* GetEngineConfig()
+{
+    return &sEngineConfig;
+}
+
+EngineConfig* GetMutableEngineConfig()
 {
     return &sEngineConfig;
 }
@@ -763,8 +779,9 @@ void GameMain(int32_t argc, char** argv)
     sEngineState.mArgC = argc;
     sEngineState.mArgV = argv;
     ReadCommandLineArgs(argc, argv);
-    InitOptions initOptions = OctPreInitialize();
-    Initialize(initOptions);
+    ReadEngineIni();
+    OctPreInitialize(sEngineConfig);
+    Initialize();
     OctPostInitialize();
 
     EnableConsole(true);

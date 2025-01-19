@@ -33,33 +33,32 @@
 #include "Assets/Font.h"
 #include "EditorState.h"
 
-InitOptions OctPreInitialize();
+void OctPreInitialize(EngineConfig& config);
 extern void ReadCommandLineArgs(int32_t argc, char** argv);
+extern void ReadEngineIni();
 
 void EditorMain(int32_t argc, char** argv)
 {
     GetEngineState()->mArgC = argc;
     GetEngineState()->mArgV = argv;
     ReadCommandLineArgs(argc, argv);
-    InitOptions initOptions = OctPreInitialize();
-    Initialize(initOptions);
+    ReadEngineIni();
+
+    {
+        EngineConfig* mutableConfig = GetMutableEngineConfig();
+        OctPreInitialize(*mutableConfig);
+    }
+
+    Initialize();
 
     GetEditorState()->Init();
 
     ActionManager::Create();
     InputManager::Create();
 
-
-
     InitializeGrid();
 
-    //if (initOptions.mProjectName != nullptr)
-    //{
-    //    std::string projectFile = std::string() + initOptions.mProjectName + "/" + initOptions.mProjectName + ".octp";
-    //    ActionManager::Get()->OpenProject(projectFile.c_str());
-    //}
-
-    EngineConfig* engineConfig = GetEngineConfig();
+    const EngineConfig* engineConfig = GetEngineConfig();
     if (engineConfig->mProjectPath != "")
     {
         // Clear the project path so we don't overwrite the EditorProject.sav file with default data.

@@ -1218,7 +1218,7 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             // Copy Source folder
             CpyDir(standaloneDir + "Source", subProjFolder + "Source");
             ReplaceStringInFile(subProjFolder + "Source/Main.cpp", "Octave", newProjName);
-            ReplaceStringInFile(subProjFolder + "Source/Main.cpp", "initOptions.mStandalone = true", "initOptions.mStandalone = false");
+            ReplaceStringInFile(subProjFolder + "Source/Main.cpp", "config.mStandalone = true", "config.mStandalone = false");
 
             // Copy android files (whatevers in git, exclude .cxx and build)
             CpyDirWithExclusions(standaloneDir + "Android/", subProjFolder + "Android/", { "Build", "build", "Intermediate", ".gradle", ".cxx", ".vs", ".git", "imgui.ini", "assets"});

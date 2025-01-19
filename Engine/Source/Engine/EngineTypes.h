@@ -232,24 +232,6 @@ struct PrimitivePair
     }
 };
 
-
-struct InitOptions
-{
-    int32_t mWidth = 1280;
-    int32_t mHeight = 720;
-    std::string mProjectName;
-    bool mUseAssetRegistry = false;
-    bool mStandalone = false;
-    struct EmbeddedFile* mEmbeddedAssets = nullptr;
-    uint32_t mEmbeddedAssetCount = 0;
-    struct EmbeddedFile* mEmbeddedScripts = nullptr;
-    uint32_t mEmbeddedScriptCount = 0;
-    std::string mWorkingDirectory;
-    uint32_t mGameCode = 0;
-    uint32_t mVersion = 0;
-    std::string mDefaultScene;
-};
-
 struct EngineConfig
 {
     EngineConfig()
@@ -259,13 +241,25 @@ struct EngineConfig
 #endif
     }
 
+    std::string mProjectName;
     std::string mProjectPath;
-    std::string mDefaultScene;
-    int32_t mWindowWidth = 0;
-    int32_t mWindowHeight = 0;
+    std::string mDefaultScene = "SC_Main";
+    uint32_t mGameCode = 0;
+    uint32_t mVersion = 0;
+    int32_t mWindowWidth = DEFAULT_WINDOW_WIDTH;
+    int32_t mWindowHeight = DEFAULT_WINDOW_HEIGHT;
+    std::string mWorkingDirectory;
+
     bool mValidateGraphics = false;
     bool mFullscreen = false;
     bool mPackageForSteam = false;
+    bool mUseAssetRegistry = false;
+    bool mStandalone = false;
+
+    struct EmbeddedFile* mEmbeddedAssets = nullptr;
+    uint32_t mEmbeddedAssetCount = 0;
+    struct EmbeddedFile* mEmbeddedScripts = nullptr;
+    uint32_t mEmbeddedScriptCount = 0;
 };
 
 enum class ConsoleMode
