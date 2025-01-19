@@ -518,10 +518,9 @@ void Renderer::GatherDrawData(World* world)
 
     Camera3D* camera = world ? world->GetActiveCamera() : nullptr;
 
-    if (world != nullptr &&
-        camera != nullptr)
+    if (world != nullptr)
     {
-        glm::vec3 cameraPos = camera->GetWorldPosition();
+        glm::vec3 cameraPos = camera ? camera->GetWorldPosition() : glm::vec3(0.0f, 0.0f, 0.0f);
 
         auto gatherDrawData = [&](Node* node) -> bool
         {
@@ -542,7 +541,9 @@ void Renderer::GatherDrawData(World* world)
             }
 #endif
 
-            if (enable3D && node->IsPrimitive3D())
+            if (enable3D &&
+                camera != nullptr &&
+                node->IsPrimitive3D())
             {
                 DrawData data = node->GetDrawData();
                 data.mNodeType = node->GetType();
