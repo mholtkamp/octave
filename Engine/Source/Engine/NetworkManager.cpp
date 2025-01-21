@@ -906,6 +906,7 @@ void NetworkManager::AddNetNode(Node* node, NetId netId)
             {
                 node->SetNetId(netId);
                 mNetNodeMap.insert({ netId, node });
+                mNetNodes.push_back(node);
 
                 // The server needs to send Spawn messages for newly added network actors.
                 if (NetIsServer())
@@ -934,6 +935,15 @@ void NetworkManager::RemoveNetNode(Node* node)
         // This node was assigned a net id, so it should exist in our net actor map.
         OCT_ASSERT(mNetNodeMap.find(netId) != mNetNodeMap.end());
         mNetNodeMap.erase(netId);
+
+        for (uint32_t i = 0; i < mNetNodes.size(); ++i)
+        {
+            if (mNetNodes[i] == node)
+            {
+                mNetNodes.erase(mNetNodes.begin() + i);
+                break;
+            }
+        }
 
         node->SetNetId(INVALID_NET_ID);
     }
@@ -1447,83 +1457,32 @@ void NetworkManager::UpdateReplication(float deltaTime)
 
     if (mIncrementalReplication)
     {
-        uint32_t& incTier = world->GetIncrementalRepTier();
-        uint32_t& incIndex = world->GetIncrementalRepIndex();
-        std::vector<Node*>& repVector = world->GetReplicatedNodeVector((ReplicationRate)incTier);
-
-        if (incIndex < repVector.size())
+        if (mIncrementalRepIndex < mNetNodes.size())
         {
-            incRepNode = repVector[incIndex];
+            incRepNode = mNetNodes[mIncrementalRepIndex];
         }
 
-        ++incIndex;
+        ++mIncrementalRepIndex;
 
-        // If we've iterated over all these actors in this rep tier, move on to the next.
-        if (incIndex > repVector.size())
+        // Wrap around to front of array if we reached the end
+        if (mIncrementalRepIndex > mNetNodes.size())
         {
-            incIndex = 0;
-            incTier++;
-            if (incTier == (uint32_t)ReplicationRate::Count)
-            {
-                incTier = (uint32_t)ReplicationRate::Low;
-            }
+            mIncrementalRepIndex = 0;
         }
     }
 
     uint32_t numNodesReplicated = 0;
 
-    auto replicateTier = [this, incRepNode, &numNodesReplicated](const std::vector<Node*>& repVector, uint32_t& repIndex, uint32_t count)
+    for (uint32_t i = 0; i < mNetNodes.size(); ++i)
     {
-        // Loop back around if the index is somehow past the vector size already
-        if (repIndex >= repVector.size())
+        Node* node = mNetNodes[i];
+        bool forceRep = (node == incRepNode);
+        bool nodeReplicated = ReplicateNode(node, INVALID_HOST_ID, forceRep, false);
+
+        if (nodeReplicated)
         {
-            repIndex = 0;
+            numNodesReplicated++;
         }
-
-        for (uint32_t i = 0; i < count; ++i)
-        {
-            Node* node = repVector[repIndex];
-            bool forceRep = (node == incRepNode);
-            bool nodeReplicated = ReplicateNode(node, INVALID_HOST_ID, forceRep, false);
-
-            if (nodeReplicated)
-            {
-                numNodesReplicated++;
-            }
-
-            ++repIndex;
-
-            if (repIndex >= repVector.size())
-            {
-                repIndex = 0;
-            }
-        }
-    };
-
-    // High Priority
-    {
-        const std::vector<Node*>& repVector = world->GetReplicatedNodeVector(ReplicationRate::High);
-        uint32_t& repIndex = world->GetReplicatedNodeIndex(ReplicationRate::High);
-        uint32_t vectorSize = (uint32_t) repVector.size();
-        uint32_t count = vectorSize / 1;
-        replicateTier(repVector, repIndex, count);
-    }
-
-    // Medium Priority
-    {
-        const std::vector<Node*>& repVector = world->GetReplicatedNodeVector(ReplicationRate::Medium);
-        uint32_t& repIndex = world->GetReplicatedNodeIndex(ReplicationRate::Medium);
-        uint32_t vectorSize = (uint32_t) repVector.size();
-        uint32_t count = (vectorSize + 1) / 2;
-        replicateTier(repVector, repIndex, count);
-    }
-    // Low Priority
-    {
-        const std::vector<Node*>& repVector = world->GetReplicatedNodeVector(ReplicationRate::Low);
-        uint32_t& repIndex = world->GetReplicatedNodeIndex(ReplicationRate::Low);
-        uint32_t vectorSize = (uint32_t) repVector.size();
-        uint32_t count = (vectorSize + 3) / 4;
-        replicateTier(repVector, repIndex, count);
     }
 }
 

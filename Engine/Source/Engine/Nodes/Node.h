@@ -51,7 +51,6 @@ struct NodeNetData
     bool mReplicate = false;
     bool mReplicateTransform = false;
     bool mForceReplicate = false;
-    ReplicationRate mReplicationRate = ReplicationRate::High;
 };
 #endif
 
@@ -164,9 +163,6 @@ public:
     void ForceReplication();
     void ClearForcedReplication();
     bool NeedsForcedReplication();
-
-    ReplicationRate GetReplicationRate() const;
-    //void SetReplicationRate(ReplicationRate rate);
 
     bool HasTag(const std::string& tag);
     void AddTag(const std::string& tag);
@@ -397,7 +393,6 @@ protected:
     bool mReplicate = false;
     bool mReplicateTransform = false;
     bool mForceReplicate = false;
-    ReplicationRate mReplicationRate = ReplicationRate::High;
 
     Script* mScript = nullptr;
     int mUserdataRef = LUA_REFNIL;

@@ -554,11 +554,6 @@ void World::RegisterNode(Node* node)
             mActiveCamera = node->As<Camera3D>();
         }
     }
-
-    if (node->GetNetId() != INVALID_NET_ID)
-    {
-        AddNodeToRepVector(node);
-    }
 }
 
 void World::UnregisterNode(Node* node)
@@ -587,68 +582,11 @@ void World::UnregisterNode(Node* node)
     {
         SetActiveCamera(nullptr);
     }
-
-    if (node->GetNetId() != INVALID_NET_ID)
-    {
-        RemoveNodeFromRepVector(node);
-    }
 }
 
 const std::vector<Audio3D*>& World::GetAudios() const
 {
     return mAudios;
-}
-
-std::vector<Node*>& World::GetReplicatedNodeVector(ReplicationRate rate)
-{
-    OCT_ASSERT(rate != ReplicationRate::Count);
-    return mRepNodes[(uint32_t)rate];
-}
-
-uint32_t& World::GetReplicatedNodeIndex(ReplicationRate rate)
-{
-    OCT_ASSERT(rate != ReplicationRate::Count);
-    return mRepIndices[(uint32_t)rate];
-}
-
-uint32_t& World::GetIncrementalRepTier()
-{
-    return mIncrementalRepTier;
-}
-
-uint32_t& World::GetIncrementalRepIndex()
-{
-    return mIncrementalRepIndex;
-}
-
-void World::AddNodeToRepVector(Node* node)
-{
-    std::vector<Node*>& repNodeVector = GetReplicatedNodeVector(node->GetReplicationRate());
-    repNodeVector.push_back(node);
-}
-
-void World::RemoveNodeFromRepVector(Node* node)
-{
-    // Remove the destroyed actor from their assigned replication vector.
-    std::vector<Node*>& repVector = GetReplicatedNodeVector(node->GetReplicationRate());
-    uint32_t& repIndex = GetReplicatedNodeIndex(node->GetReplicationRate());
-
-    for (uint32_t i = 0; i < repVector.size(); ++i)
-    {
-        if (repVector[i] == node)
-        {
-            repVector.erase(repVector.begin() + i);
-
-            // Decrement the rep index so that an actor doesn't get skipped for one cycle.
-            if (repIndex > 0 &&
-                repIndex > i)
-            {
-                repIndex = repIndex - 1;
-            }
-
-            break;
-        }
-    }
 }
 
 void World::UpdateLines(float deltaTime)

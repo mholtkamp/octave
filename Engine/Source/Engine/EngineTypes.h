@@ -2,6 +2,7 @@
 
 #include <string>
 #include <string.h>
+#include <unordered_set>
 
 #include "Constants.h"
 #include "Maths.h"
@@ -437,6 +438,7 @@ struct NetHostProfile
     NetHost mHost;
     float mPing = 0.0f;
     float mTimeSinceLastMsg = 0.0f;
+    std::unordered_set<NetId> mRelevantNetIds;
     std::vector<char> mSendBuffer;
     std::vector<char> mReliableSendBuffer;
     std::vector<ReliablePacket> mOutgoingPackets;
@@ -450,15 +452,6 @@ struct NetHostProfile
 
 typedef NetHostProfile NetClient;
 typedef NetHostProfile NetServer;
-
-enum class ReplicationRate : uint8_t
-{
-    Low,
-    Medium,
-    High,
-
-    Count
-};
 
 enum class Platform
 {

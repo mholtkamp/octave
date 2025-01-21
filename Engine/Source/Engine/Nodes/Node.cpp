@@ -956,20 +956,6 @@ void Node::SetNetId(NetId id)
     if (mNetId != id)
     {
         mNetId = id;
-
-        if (mWorld != nullptr)
-        {
-            if (mNetId != INVALID_NET_ID)
-            {
-                // Ensure it exists in the replication vector
-                mWorld->AddNodeToRepVector(this);
-            }
-            else
-            {
-                // Remove it from its world replication vector
-                mWorld->RemoveNodeFromRepVector(this);
-            }
-        }
     }
 }
 
@@ -1026,11 +1012,6 @@ void Node::ClearForcedReplication()
 bool Node::NeedsForcedReplication()
 {
     return mForceReplicate;
-}
-
-ReplicationRate Node::GetReplicationRate() const
-{
-    return mReplicationRate;
 }
 
 bool Node::HasTag(const std::string& tag)

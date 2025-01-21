@@ -172,9 +172,11 @@ private:
     std::vector<NetClient> mClients;
     std::vector<NetSession> mSessions;
     std::unordered_map<NetId, Node*> mNetNodeMap;
+    std::vector<Node*> mNetNodes;
     NetServer mServer;
     uint32_t mBroadcastIp = 0;
     uint32_t mMaxClients = 15;
+    uint32_t mIncrementalRepIndex = 0;
     NetId mNextNetId = 1;
     float mConnectTimer = 0.0f;
     float mBroadcastTimer = 0.0f;

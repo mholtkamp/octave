@@ -120,13 +120,6 @@ public:
     void UnregisterNode(Node* node);
     const std::vector<Audio3D*>& GetAudios() const;
 
-    std::vector<Node*>& GetReplicatedNodeVector(ReplicationRate rate);
-    uint32_t& GetReplicatedNodeIndex(ReplicationRate rate);
-    uint32_t& GetIncrementalRepTier();
-    uint32_t& GetIncrementalRepIndex();
-    void AddNodeToRepVector(Node* node);
-    void RemoveNodeFromRepVector(Node* node);
-
     void LoadScene(const char* name, bool instant);
     void QueueRootScene(const char* name);
     void QueueRootNode(Node* node);
@@ -205,12 +198,6 @@ private:
     Camera3D* mActiveCamera;
     Node3D* mAudioReceiver;
     bool mPendingClear = false;
-
-    // Replication tiers
-    std::vector<Node*> mRepNodes[(uint32_t)ReplicationRate::Count];
-    uint32_t mRepIndices[(uint32_t)ReplicationRate::Count] = {};
-    uint32_t mIncrementalRepTier = 0;
-    uint32_t mIncrementalRepIndex = 0;
 
     // Physics
     btDefaultCollisionConfiguration* mCollisionConfig = nullptr;
