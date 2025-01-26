@@ -768,6 +768,21 @@ void NetworkManager::SendMessageToAllClients(const NetMsg* netMsg)
     }
 }
 
+void NetworkManager::SendMessageToAllRelevantClients(const NetMsg* netMsg, NetId nodeNetId)
+{
+    OCT_ASSERT(IsServer());
+    for (uint32_t i = 0; i < mClients.size(); ++i)
+    {
+        auto it = mClients[i].mRelevantNetIds.find(nodeNetId);
+        bool relevant = (it != mClients[i].mRelevantNetIds.end());
+
+        if (relevant)
+        {
+            SendMessage(netMsg, &mClients[i]);
+        }
+    }
+}
+
 void NetworkManager::SendMessageImmediate(const NetHost& host, const NetMsg* netMsg)
 {
     // Immediate messages don't rely on a sequence number.
@@ -831,6 +846,54 @@ void NetworkManager::EnableIncrementalReplication(bool enable)
 bool NetworkManager::IsIncrementalReplicationEnabled() const
 {
     return mIncrementalReplication;
+}
+
+void NetworkManager::SetRelevancyDistance(float dist)
+{
+    mRelevancyDistanceSquared = (dist * dist);
+}
+
+float NetworkManager::GetRelevancyDistanceSquared() const
+{
+    return mRelevancyDistanceSquared;
+}
+
+void NetworkManager::SetPlayerNode(NetHostId id, Node* node)
+{
+    if (NetIsServer())
+    {
+        if (id == SERVER_HOST_ID)
+        {
+            // Not sure if the player node will be used by the server, but
+            // allow it to be set anyway, in case it's used in the future.
+            // mPlayerNode is only used for net relevancy, which is done for clients only.
+            mServer.mPlayerNode = node;
+        }
+        else if (id != INVALID_HOST_ID)
+        {
+            bool wasSet = false;
+
+            for (uint32_t i = 0; i < mClients.size(); ++i)
+            {
+                if (mClients[i].mHost.mId == id)
+                {
+                    mClients[i].mPlayerNode = node;
+
+                    wasSet = true;
+                    break;
+                }
+            }
+
+            if (!wasSet)
+            {
+                LogError("Could not find client host profile %d in SetPlayerNode()", id);
+            }
+        }
+        else
+        {
+            LogError("Invalid host id received in SetPlayerNode()");
+        }
+    }
 }
 
 int32_t NetworkManager::GetBytesSent() const
@@ -909,9 +972,12 @@ void NetworkManager::AddNetNode(Node* node, NetId netId)
                 mNetNodes.push_back(node);
 
                 // The server needs to send Spawn messages for newly added network actors.
+                // Only if they are always relevant. Otherwise let net relevancy send the spawn message.
                 if (NetIsServer())
                 {
-                    NetworkManager::Get()->SendSpawnMessage(node, nullptr);
+                    // Update node relevancy, which will cause NetMsgSpawn to be sent
+                    // to all clients which this node is relevant to
+                    UpdateNodeRelevancy(node);
                 }
             }
         }
@@ -941,6 +1007,19 @@ void NetworkManager::RemoveNetNode(Node* node)
             if (mNetNodes[i] == node)
             {
                 mNetNodes.erase(mNetNodes.begin() + i);
+
+                // Adjust these indices so we don't skip a node when doing incremental replication
+                // and incremental relevancy udpates
+                if (i < mIncrementalRepIndex && i > 0)
+                {
+                    --mIncrementalRepIndex;
+                }
+
+                if (i < mRelevancyUpdateIndex && i > 0)
+                {
+                    --mRelevancyUpdateIndex;
+                }
+
                 break;
             }
         }
@@ -1007,10 +1086,11 @@ void NetworkManager::HandleConnect(NetHost host, uint32_t gameCode, uint32_t ver
             acceptMsg.mAssignedHostId = newClient->mHost.mId;
             SendMessage(&acceptMsg, newClient);
 
-            // Spawn any replicated actors.
+            // Spawn any replicated actors that are always relevant
+            // Otherwise let net relevancy updates determine when to send spawn message
             auto spawnNode = [&](Node* node) -> bool
             {
-                if (node->IsReplicated())
+                if (node->IsReplicated() && node->IsAlwaysRelevant())
                 {
                     SendSpawnMessage(node, newClient);
                     return true;
@@ -1287,11 +1367,16 @@ void NetworkManager::SendReplicateMsg(NetMsgReplicate& repMsg, uint32_t& numVars
 
     if (hostId == INVALID_HOST_ID)
     {
-        SendMessageToAllClients(&repMsg);
+        SendMessageToAllRelevantClients(&repMsg, repMsg.mNodeNetId);
     }
     else
     {
-        SendMessage(&repMsg, hostId);
+        bool relevant = IsNetIdRelevantToHost(repMsg.mNodeNetId, hostId);
+
+        if (relevant)
+        {
+            SendMessage(&repMsg, hostId);
+        }
     }
 
     repMsg.mIndices.clear();
@@ -1331,12 +1416,17 @@ void NetworkManager::SendInvokeMsg(NetMsgInvoke& msg, Node* node, NetFunc* func,
         OCT_ASSERT(mNetStatus == NetStatus::Server);
         OCT_ASSERT(node->GetOwningHost() != INVALID_HOST_ID);
         OCT_ASSERT(node->GetOwningHost() != SERVER_HOST_ID);
-        SendMessage(&msg, node->GetOwningHost());
+
+        NetHostId owningHost = node->GetOwningHost();
+        if (IsNetIdRelevantToHost(node->GetNetId(), owningHost))
+        {
+            SendMessage(&msg, owningHost);
+        }
         break;
     }
     case NetFuncType::Multicast:
     {
-        SendMessageToAllClients(&msg);
+        SendMessageToAllRelevantClients(&msg, node->GetNetId());
         break;
     }
 
@@ -1380,10 +1470,12 @@ void NetworkManager::SendSpawnMessage(Node* node, NetClient* client)
     if (client == nullptr)
     {
         SendMessageToAllClients(&spawnMsg);
+        SetIdRelevantToClient(spawnMsg.mNetId, true, INVALID_NET_ID);
     }
     else
     {
         SendMessage(&spawnMsg, client);
+        SetIdRelevantToClient(spawnMsg.mNetId, true, client->mHost.mId);
     }
 }
 
@@ -1396,10 +1488,12 @@ void NetworkManager::SendDestroyMessage(Node* node, NetClient* client)
     if (client == nullptr)
     {
         SendMessageToAllClients(&destroyMsg);
+        SetIdRelevantToClient(destroyMsg.mNetId, false, INVALID_NET_ID);
     }
     else
     {
         SendMessage(&destroyMsg, client);
+        SetIdRelevantToClient(destroyMsg.mNetId, false, client->mHost.mId);
     }
 }
 
@@ -1471,6 +1565,24 @@ void NetworkManager::UpdateReplication(float deltaTime)
         }
     }
 
+    // Update relevancy
+    if (mNetNodes.size() > 0)
+    {
+        const uint32_t kRelevancyUpdatesPerFrame = 10;
+
+        if (mRelevancyUpdateIndex >= mNetNodes.size())
+        {
+            mRelevancyUpdateIndex = 0;
+        }
+
+        for (uint32_t i = 0; i < kRelevancyUpdatesPerFrame && mRelevancyUpdateIndex < mNetNodes.size(); ++i)
+        {
+            UpdateNodeRelevancy(mNetNodes[mRelevancyUpdateIndex]);
+            ++mRelevancyUpdateIndex;
+        }
+    }
+
+    // Do the replication
     uint32_t numNodesReplicated = 0;
 
     for (uint32_t i = 0; i < mNetNodes.size(); ++i)
@@ -2084,4 +2196,79 @@ bool NetworkManager::SeqNumLess(uint16_t s1, uint16_t s2)
     return
         ((i1 < i2) && (i2 - i1 < limit)) ||
         ((i1 > i2) && (i1 - i2 > limit));
+}
+
+bool NetworkManager::IsNetIdRelevantToHost(NetId netId, NetHostId host)
+{
+    bool relevant = false;
+    NetClient* client = NetworkManager::Get()->FindNetClient(host);
+
+    if (client)
+    {
+        auto it = client->mRelevantNetIds.find(netId);
+        relevant = (it != client->mRelevantNetIds.end());
+    }
+
+    return relevant;
+}
+
+void NetworkManager::SetIdRelevantToClient(NetId netId, bool relevant, NetHostId hostId)
+{
+    if (hostId == INVALID_HOST_ID)
+    {
+        for (uint32_t c = 0; c < mClients.size(); ++c)
+        {
+            if (relevant)
+            {
+                mClients[c].mRelevantNetIds.insert(netId);
+            }
+            else
+            {
+                mClients[c].mRelevantNetIds.erase(netId);
+            }
+        }
+    }
+    else
+    {
+        NetClient* client = FindNetClient(hostId);
+        if (client)
+        {
+            if (relevant)
+            {
+                client->mRelevantNetIds.insert(netId);
+            }
+            else
+            {
+                client->mRelevantNetIds.erase(netId);
+            }
+        }
+    }
+}
+
+void NetworkManager::UpdateNodeRelevancy(Node* testNode)
+{
+    NetId testNetId = testNode->GetNetId();
+
+    for (uint32_t c = 0; c < mClients.size(); ++c)
+    {
+        Node* playerNode = mClients[c].mPlayerNode;
+        bool relevant = playerNode ? testNode->CheckNetRelevance(playerNode) : true;
+
+        std::unordered_set<NetId>& clientRelIds = mClients[c].mRelevantNetIds;
+
+        auto it = clientRelIds.find(testNetId);
+
+        if (relevant && it == clientRelIds.end())
+        {
+            // Send spawn message (this will also mark the netId as relevant to the client).
+            SendSpawnMessage(testNode, &mClients[c]);
+            LogDebug("+++ Relevant +++");
+        }
+        else if (!relevant && it != mClients[c].mRelevantNetIds.end())
+        {
+            // Send destroy message (this will also clear the netId from the relevant id set).
+            SendDestroyMessage(testNode, &mClients[c]);
+            LogDebug("--- Relevant ---");
+        }
+    }
 }

@@ -76,6 +76,7 @@ public:
     void SendMessage(const NetMsg* netMsg, NetHostId receiverId);
     void SendMessage(const NetMsg* netMsg, NetHostProfile* hostProfile);
     void SendMessageToAllClients(const NetMsg* netMsg);
+    void SendMessageToAllRelevantClients(const NetMsg* netMsg, NetId nodeNetId);
     void SendMessageImmediate(const NetHost& host, const NetMsg* netMsg);
 
     int32_t RecvFrom(char* buffer, uint32_t size, NetHost& outHost);
@@ -99,6 +100,10 @@ public:
 
     void EnableIncrementalReplication(bool enable);
     bool IsIncrementalReplicationEnabled() const;
+
+    void SetRelevancyDistance(float dist);
+    float GetRelevancyDistanceSquared() const;
+    void SetPlayerNode(NetHostId id, Node* node);
 
     int32_t GetBytesSent() const;
     int32_t GetBytesReceived() const;
@@ -166,7 +171,9 @@ private:
     void ResetHostProfile(NetHostProfile* profile);
     bool HostProfileHasIncomingPacket(NetHostProfile* profile, uint16_t seq);
     bool SeqNumLess(uint16_t s1, uint16_t s2);
-
+    bool IsNetIdRelevantToHost(NetId netId, NetHostId host);
+    void SetIdRelevantToClient(NetId netId, bool relevant, NetHostId hostId);
+    void UpdateNodeRelevancy(Node* testNode);
 
     NetStatus mNetStatus = NetStatus::Local;
     std::vector<NetClient> mClients;
@@ -177,6 +184,7 @@ private:
     uint32_t mBroadcastIp = 0;
     uint32_t mMaxClients = 15;
     uint32_t mIncrementalRepIndex = 0;
+    uint32_t mRelevancyUpdateIndex = 0;
     NetId mNextNetId = 1;
     float mConnectTimer = 0.0f;
     float mBroadcastTimer = 0.0f;
@@ -185,6 +193,7 @@ private:
     float mInactiveTimeout = 15.0f;
     float mUploadRate = 0;
     float mDownloadRate = 0;
+    float mRelevancyDistanceSquared = (200.0f * 200.0f);
     int32_t mBytesSent = 0;
     int32_t mBytesReceived = 0;
     NetHostId mHostId = INVALID_HOST_ID;

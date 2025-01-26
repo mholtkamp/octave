@@ -35,6 +35,8 @@ public:
     bool IsTransformDirty() const;
     virtual void UpdateTransform(bool updateChildren);
 
+    virtual bool CheckNetRelevance(Node* playerNode) override;
+
     virtual void GatherProxyDraws(std::vector<DebugDraw>& inoutDraws);
 
     glm::vec3 GetPosition() const;

@@ -5,6 +5,7 @@
 #include "World.h"
 #include "Renderer.h"
 #include "Maths.h"
+#include "NetworkManager.h"
 #include "Assets/SkeletalMesh.h"
 
 #include "Nodes/3D/SkeletalMesh3d.h"
@@ -253,6 +254,37 @@ void Node3D::UpdateTransform(bool updateChildren)
                 child3d->UpdateTransform(updateChildren);
             }
         }
+    }
+}
+
+bool Node3D::CheckNetRelevance(Node* playerNode)
+{
+    if (mAlwaysRelevant || this == playerNode)
+    {
+        return true;
+    }
+
+    Node3D* player3D = playerNode->As<Node3D>();
+
+    if (player3D)
+    {
+        glm::vec3 thisPos = GetWorldPosition();
+        glm::vec3 playerPos = player3D->GetWorldPosition();
+
+        float dist2 = glm::distance2(thisPos, playerPos);
+        const float netRelDist2 = NetworkManager::Get()->GetRelevancyDistanceSquared();
+
+        // TODO: Use slightly larger distance for checking irrelevance so we don't
+        // spawn spawn/destroy messages for nodes just along the relevancy cusp.
+        bool relevant = (dist2 < netRelDist2);
+        return relevant;
+    }
+    else
+    {
+        // How do we handle the case where the player node is a 2D node, but
+        // we need to check relevance for a 3D node? I say, just fallback to the 
+        // parent class, which will return true
+        return Node::CheckNetRelevance(playerNode);
     }
 }
 

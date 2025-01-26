@@ -512,6 +512,7 @@ void Node::GatherProperties(std::vector<Property>& outProps)
 
         outProps.push_back(Property(DatumType::Bool, "Replicate", this, &mReplicate));
         outProps.push_back(Property(DatumType::Bool, "Replicate Transform", this, &mReplicateTransform));
+        outProps.push_back(Property(DatumType::Bool, "Always Relevant", this, &mAlwaysRelevant));
         outProps.push_back(Property(DatumType::String, "Tags", this, &mTags).MakeVector());
     }
 
@@ -1014,6 +1015,18 @@ bool Node::NeedsForcedReplication()
     return mForceReplicate;
 }
 
+bool Node::CheckNetRelevance(Node* playerNode)
+{
+    // Node3D will override this to check based on position
+    // A future Node2D may do the same in 2D-space
+    return true;
+}
+
+bool Node::IsAlwaysRelevant() const
+{
+    return mAlwaysRelevant;
+}
+
 bool Node::HasTag(const std::string& tag)
 {
     bool hasTag = false;
@@ -1241,7 +1254,9 @@ void Node::AddChild(Node* child, int32_t index)
         }
 
 #if EDITOR
-        if (mParent != nullptr && mScene != nullptr)
+        if (!IsPlaying() && 
+            mParent != nullptr && 
+            mScene != nullptr)
         {
             BreakSceneLink();
         }

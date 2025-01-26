@@ -447,6 +447,7 @@ struct NetHostProfile
     uint16_t mIncomingReliableSeq = 0;
     uint16_t mOutgoingUnreliableSeq = 0;
     uint16_t mIncomingUnreliableSeq = 0;
+    Node* mPlayerNode = nullptr;
     bool mReady = true;
 };
 

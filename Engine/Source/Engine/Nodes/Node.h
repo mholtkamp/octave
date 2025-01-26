@@ -164,6 +164,9 @@ public:
     void ClearForcedReplication();
     bool NeedsForcedReplication();
 
+    virtual bool CheckNetRelevance(Node* playerNode);
+    bool IsAlwaysRelevant() const;
+
     bool HasTag(const std::string& tag);
     void AddTag(const std::string& tag);
     void RemoveTag(const std::string& tag);
@@ -393,6 +396,7 @@ protected:
     bool mReplicate = false;
     bool mReplicateTransform = false;
     bool mForceReplicate = false;
+    bool mAlwaysRelevant = true;
 
     Script* mScript = nullptr;
     int mUserdataRef = LUA_REFNIL;
