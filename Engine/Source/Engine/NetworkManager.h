@@ -101,6 +101,7 @@ public:
     void EnableIncrementalReplication(bool enable);
     bool IsIncrementalReplicationEnabled() const;
 
+    void EnableNetRelevancy(bool enable);
     void SetRelevancyDistance(float dist);
     float GetRelevancyDistanceSquared() const;
     void SetPlayerNode(NetHostId id, Node* node);
@@ -205,6 +206,7 @@ private:
     bool mEnableSessionBroadcast = true;
     bool mIncrementalReplication = true;
     bool mInOnlineSession = false;
+    bool mEnableNetRelevancy = false;
 
     ScriptableFP<NetCallbackConnectFP> mConnectCallback;
     ScriptableFP<NetCallbackAcceptFP> mAcceptCallback;

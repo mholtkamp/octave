@@ -773,8 +773,13 @@ void NetworkManager::SendMessageToAllRelevantClients(const NetMsg* netMsg, NetId
     OCT_ASSERT(IsServer());
     for (uint32_t i = 0; i < mClients.size(); ++i)
     {
-        auto it = mClients[i].mRelevantNetIds.find(nodeNetId);
-        bool relevant = (it != mClients[i].mRelevantNetIds.end());
+        bool relevant = true;
+
+        if (mEnableNetRelevancy)
+        {
+            auto it = mClients[i].mRelevantNetIds.find(nodeNetId);
+            relevant = (it != mClients[i].mRelevantNetIds.end());
+        }
 
         if (relevant)
         {
@@ -851,6 +856,11 @@ bool NetworkManager::IsIncrementalReplicationEnabled() const
 void NetworkManager::SetRelevancyDistance(float dist)
 {
     mRelevancyDistanceSquared = (dist * dist);
+}
+
+void NetworkManager::EnableNetRelevancy(bool enable)
+{
+    mEnableNetRelevancy = enable;
 }
 
 float NetworkManager::GetRelevancyDistanceSquared() const
@@ -972,12 +982,18 @@ void NetworkManager::AddNetNode(Node* node, NetId netId)
                 mNetNodes.push_back(node);
 
                 // The server needs to send Spawn messages for newly added network actors.
-                // Only if they are always relevant. Otherwise let net relevancy send the spawn message.
                 if (NetIsServer())
                 {
-                    // Update node relevancy, which will cause NetMsgSpawn to be sent
-                    // to all clients which this node is relevant to
-                    UpdateNodeRelevancy(node);
+                    if (mEnableNetRelevancy)
+                    {
+                        // Update node relevancy, which will cause NetMsgSpawn to be sent
+                        // to all clients which this node is relevant to
+                        UpdateNodeRelevancy(node);
+                    }
+                    else
+                    {
+                        SendSpawnMessage(node, nullptr);
+                    }
                 }
             }
         }
@@ -1090,7 +1106,8 @@ void NetworkManager::HandleConnect(NetHost host, uint32_t gameCode, uint32_t ver
             // Otherwise let net relevancy updates determine when to send spawn message
             auto spawnNode = [&](Node* node) -> bool
             {
-                if (node->IsReplicated() && node->IsAlwaysRelevant())
+                if (node->IsReplicated() && 
+                    (!mEnableNetRelevancy || node->IsAlwaysRelevant()))
                 {
                     SendSpawnMessage(node, newClient);
                     return true;
@@ -1566,7 +1583,8 @@ void NetworkManager::UpdateReplication(float deltaTime)
     }
 
     // Update relevancy
-    if (mNetNodes.size() > 0)
+    if (mNetNodes.size() > 0 &&
+        mEnableNetRelevancy)
     {
         const uint32_t kRelevancyUpdatesPerFrame = 10;
 
@@ -2200,6 +2218,11 @@ bool NetworkManager::SeqNumLess(uint16_t s1, uint16_t s2)
 
 bool NetworkManager::IsNetIdRelevantToHost(NetId netId, NetHostId host)
 {
+    if (!mEnableNetRelevancy)
+    {
+        return true;
+    }
+
     bool relevant = false;
     NetClient* client = NetworkManager::Get()->FindNetClient(host);
 
@@ -2262,13 +2285,13 @@ void NetworkManager::UpdateNodeRelevancy(Node* testNode)
         {
             // Send spawn message (this will also mark the netId as relevant to the client).
             SendSpawnMessage(testNode, &mClients[c]);
-            LogDebug("+++ Relevant +++");
+            //LogDebug("+++ Relevant +++");
         }
         else if (!relevant && it != mClients[c].mRelevantNetIds.end())
         {
             // Send destroy message (this will also clear the netId from the relevant id set).
             SendDestroyMessage(testNode, &mClients[c]);
-            LogDebug("--- Relevant ---");
+            //LogDebug("--- Relevant ---");
         }
     }
 }
