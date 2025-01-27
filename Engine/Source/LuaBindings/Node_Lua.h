@@ -91,6 +91,9 @@ struct Node_Lua
     static int IsLateTickEnabled(lua_State* L);
     static int EnableLateTick(lua_State* L);
 
+    static int IsAlwaysRelevant(lua_State* L);
+    static int SetAlwaysRelevant(lua_State* L);
+
     static int InvokeNetFunc(lua_State* L);
 
     static int CheckType(lua_State* L);

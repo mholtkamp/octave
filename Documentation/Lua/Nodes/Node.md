@@ -383,6 +383,18 @@ Enable late tick on this node. Late tick means that the node will tick all of it
 Sig: `Node:EnableLateTick(lateTick)`
  - Arg: `boolean lateTick` true to tick this node after its children
 ---
+### IsAlwaysRelevant
+Check if this node is always relevant to clients
+
+Sig: `alwaysRelevant = Node:IsAlwaysRelevant()`
+ - Ret: `boolean alwaysRelevant` Whether node should always relevant to clients
+---
+### SetAlwaysRelevant
+Set whether the node should always be relevant to clients.
+
+Sig: `Node:SetAlwaysRelevant(alwaysRelevant)`
+ - Arg: `boolean alwaysRelevant` Whether node should always relevant to clients
+---
 ### InvokeNetFunc
 Used to invoke a remote procedure call on this node. Up to 8 arguments can be passed.
 

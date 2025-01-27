@@ -44,6 +44,10 @@ struct Network_Lua
     static int IsLocal(lua_State* L);
     static int IsAuthority(lua_State* L);
     static int GetHostId(lua_State* L);
+    static int SetRelevancyDistance(lua_State* L);
+    static int SetPawn(lua_State* L);
+    static int GetPawn(lua_State* L);
+    static int EnableNetRelevancy(lua_State* L);
 
     // Callbacks
     static int SetConnectCallback(lua_State* L);

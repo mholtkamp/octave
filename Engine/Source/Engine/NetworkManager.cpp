@@ -868,7 +868,7 @@ float NetworkManager::GetRelevancyDistanceSquared() const
     return mRelevancyDistanceSquared;
 }
 
-void NetworkManager::SetPlayerNode(NetHostId id, Node* node)
+void NetworkManager::SetPawn(NetHostId id, Node* pawn)
 {
     if (NetIsServer())
     {
@@ -877,7 +877,7 @@ void NetworkManager::SetPlayerNode(NetHostId id, Node* node)
             // Not sure if the player node will be used by the server, but
             // allow it to be set anyway, in case it's used in the future.
             // mPlayerNode is only used for net relevancy, which is done for clients only.
-            mServer.mPlayerNode = node;
+            mServer.mPawn = pawn;
         }
         else if (id != INVALID_HOST_ID)
         {
@@ -887,7 +887,7 @@ void NetworkManager::SetPlayerNode(NetHostId id, Node* node)
             {
                 if (mClients[i].mHost.mId == id)
                 {
-                    mClients[i].mPlayerNode = node;
+                    mClients[i].mPawn = pawn;
 
                     wasSet = true;
                     break;
@@ -904,6 +904,26 @@ void NetworkManager::SetPlayerNode(NetHostId id, Node* node)
             LogError("Invalid host id received in SetPlayerNode()");
         }
     }
+}
+
+Node* NetworkManager::GetPawn(NetHostId id)
+{
+    Node* pawn = nullptr;
+
+    if (id == SERVER_HOST_ID)
+    {
+        pawn = mServer.mPawn.Get<Node>();
+    }
+    else
+    {
+        NetClient* client = FindNetClient(id);
+        if (client)
+        {
+            pawn = client->mPawn.Get<Node>();
+        }
+    }
+
+    return pawn;
 }
 
 int32_t NetworkManager::GetBytesSent() const
@@ -2274,8 +2294,8 @@ void NetworkManager::UpdateNodeRelevancy(Node* testNode)
 
     for (uint32_t c = 0; c < mClients.size(); ++c)
     {
-        Node* playerNode = mClients[c].mPlayerNode;
-        bool relevant = playerNode ? testNode->CheckNetRelevance(playerNode) : true;
+        Node* pawn = mClients[c].mPawn.Get<Node>();
+        bool relevant = pawn ? testNode->CheckNetRelevance(pawn) : true;
 
         std::unordered_set<NetId>& clientRelIds = mClients[c].mRelevantNetIds;
 

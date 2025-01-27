@@ -6,6 +6,7 @@
 
 #include "Constants.h"
 #include "Maths.h"
+#include "ObjectRef.h"
 
 #include "System/SystemTypes.h"
 #include "Graphics/GraphicsTypes.h"
@@ -447,7 +448,7 @@ struct NetHostProfile
     uint16_t mIncomingReliableSeq = 0;
     uint16_t mOutgoingUnreliableSeq = 0;
     uint16_t mIncomingUnreliableSeq = 0;
-    Node* mPlayerNode = nullptr;
+    NodeRef mPawn = nullptr;
     bool mReady = true;
 };
 

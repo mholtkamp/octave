@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string>
 #include "ObjectRef.h"
+#include "ScriptFunc.h"
 
 class ScriptComponent;
 class Node;

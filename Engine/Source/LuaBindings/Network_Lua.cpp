@@ -3,6 +3,7 @@
 
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/LuaUtils.h"
+#include "LuaBindings/Node_Lua.h"
 
 #include "TableDatum.h"
 
@@ -424,6 +425,44 @@ int Network_Lua::GetHostId(lua_State* L)
     return 1;
 }
 
+int Network_Lua::SetRelevancyDistance(lua_State* L)
+{
+    float dist = CHECK_NUMBER(L, 1);
+
+    NetworkManager::Get()->SetRelevancyDistance(dist);
+
+    return 0;
+}
+
+int Network_Lua::SetPawn(lua_State* L)
+{
+    NetHostId hostId = (NetHostId) CHECK_INTEGER(L, 1);
+    Node* node = CHECK_NODE(L, 2);
+
+    NetworkManager::Get()->SetPawn(hostId, node);
+
+    return 0;
+}
+
+int Network_Lua::GetPawn(lua_State* L)
+{
+    NetHostId hostId = (NetHostId)CHECK_INTEGER(L, 1);
+
+    Node* pawn = NetworkManager::Get()->GetPawn(hostId);
+
+    Node_Lua::Create(L, pawn);
+    return 1;
+}
+
+int Network_Lua::EnableNetRelevancy(lua_State* L)
+{
+    bool value = CHECK_BOOLEAN(L, 1);
+
+    NetworkManager::Get()->EnableNetRelevancy(value);
+
+    return 0;
+}
+
 // Callbacks
 int Network_Lua::SetConnectCallback(lua_State* L)
 {
@@ -537,6 +576,14 @@ void Network_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, IsAuthority);
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetHostId);
+
+    REGISTER_TABLE_FUNC(L, tableIdx, SetRelevancyDistance);
+
+    REGISTER_TABLE_FUNC(L, tableIdx, SetPawn);
+
+    REGISTER_TABLE_FUNC(L, tableIdx, GetPawn);
+
+    REGISTER_TABLE_FUNC(L, tableIdx, EnableNetRelevancy);
 
     REGISTER_TABLE_FUNC(L, tableIdx, SetConnectCallback);
 

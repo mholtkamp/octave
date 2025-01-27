@@ -4,9 +4,12 @@
 
 #include <string>
 #include "Maths.h"
+#include "AssetRef.h"
 #include "ObjectRef.h"
+#include "Property.h"
 
 class Node;
+class Scene;
 class Widget;
 class Text;
 class Asset;

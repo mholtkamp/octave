@@ -153,7 +153,7 @@ public:
     NetId GetNetId() const;
 
     NetHostId GetOwningHost() const;
-    void SetOwningHost(NetHostId hostId);
+    void SetOwningHost(NetHostId hostId, bool setAsPawn = false);
 
     void SetReplicate(bool replicate);
     bool IsReplicated() const;
@@ -166,6 +166,7 @@ public:
 
     virtual bool CheckNetRelevance(Node* playerNode);
     bool IsAlwaysRelevant() const;
+    void SetAlwaysRelevant(bool alwaysRelevant);
 
     bool HasTag(const std::string& tag);
     void AddTag(const std::string& tag);

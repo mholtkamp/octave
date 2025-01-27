@@ -970,9 +970,14 @@ NetHostId Node::GetOwningHost() const
     return mOwningHost;
 }
 
-void Node::SetOwningHost(NetHostId hostId)
+void Node::SetOwningHost(NetHostId hostId, bool setAsPawn)
 {
     mOwningHost = hostId;
+
+    if (setAsPawn)
+    {
+        NetworkManager::Get()->SetPawn(hostId, this);
+    }
 
     if (mScript != nullptr)
     {
@@ -1025,6 +1030,11 @@ bool Node::CheckNetRelevance(Node* playerNode)
 bool Node::IsAlwaysRelevant() const
 {
     return mAlwaysRelevant;
+}
+
+void Node::SetAlwaysRelevant(bool alwaysRelevant)
+{
+    mAlwaysRelevant = alwaysRelevant;
 }
 
 bool Node::HasTag(const std::string& tag)

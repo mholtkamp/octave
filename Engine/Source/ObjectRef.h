@@ -1,8 +1,10 @@
 #pragma once
 
-#include "Nodes/Node.h"
 #include <vector>
 #include <stdint.h>
+#include "Assertion.h"
+
+class Node;
 
 template<typename T>
 class ObjectRef

@@ -227,6 +227,32 @@ Get this host's HostID.
 Sig: `hostId = Network.GetHostId()`
  - Ret: `integer hostId` Host ID
 ---
+### SetRelevancyDistance
+Sets the global network relevancy distance. Only used if Network.EnableNetRelevancy(true) is set.
+
+Sig: `Network.SetRelevancyDistance(distance)`
+ - Arg: `number distance` Distance at which nodes will become relevant to clients
+---
+### SetPawn
+Sets a host's pawn. The host pawn is used for things like network relevancy checks.
+
+Sig: `Network.SetPawn(hostId, node)`
+ - Arg: `integer hostId` NetHostId of host to assign pawn
+ - Arg: `Node node` Node to serve as host pawn
+---
+### GetPawn
+Gets a host's pawn. The host pawn is used for things like network relevancy checks.
+
+Sig: `pawn = Network.GetPawn(hostId)`
+ - Arg: `integer hostId` NetHostId of host to query
+ - Ret: `Node pawn` Currently assigned pawn of the host
+---
+### EnableNetRelevancy
+Enable or disable net relevancy. When net relevancy is enabled, replicated nodes that are far away from a client won't get replicated anymore. This is an optimization to save network bandwidth.
+
+Sig: `Network.EnableNetRelevancy(enable)`
+ - Arg: `boolean enable` Whether to enable net relevancy
+---
 ### SetConnectCallback
 Set a callback function that will be called when a Connect message is received.
 

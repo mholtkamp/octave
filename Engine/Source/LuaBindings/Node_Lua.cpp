@@ -672,8 +672,10 @@ int Node_Lua::SetOwningHost(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
     int netHostId = CHECK_INTEGER(L, 2);
+    bool setPawn = false;
+    if (!lua_isnone(L, 1)) { setPawn = CHECK_BOOLEAN(L, 3); }
 
-    node->SetOwningHost(netHostId);
+    node->SetOwningHost(netHostId, setPawn);
 
     return 0;
 }
@@ -794,6 +796,26 @@ int Node_Lua::EnableLateTick(lua_State* L)
     bool value = CHECK_BOOLEAN(L, 2);
 
     node->EnableLateTick(value);
+
+    return 0;
+}
+
+int Node_Lua::IsAlwaysRelevant(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+
+    bool ret = node->IsAlwaysRelevant();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Node_Lua::SetAlwaysRelevant(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    node->SetAlwaysRelevant(value);
 
     return 0;
 }
@@ -973,6 +995,10 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, IsLateTickEnabled);
 
     REGISTER_TABLE_FUNC(L, mtIndex, EnableLateTick);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, IsAlwaysRelevant);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAlwaysRelevant);
 
     REGISTER_TABLE_FUNC(L, mtIndex, InvokeNetFunc);
 
