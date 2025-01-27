@@ -673,7 +673,7 @@ int Node_Lua::SetOwningHost(lua_State* L)
     Node* node = CHECK_NODE(L, 1);
     int netHostId = CHECK_INTEGER(L, 2);
     bool setPawn = false;
-    if (!lua_isnone(L, 1)) { setPawn = CHECK_BOOLEAN(L, 3); }
+    if (!lua_isnone(L, 3)) { setPawn = CHECK_BOOLEAN(L, 3); }
 
     node->SetOwningHost(netHostId, setPawn);
 
