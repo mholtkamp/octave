@@ -767,6 +767,9 @@
     <ClCompile Include="Source\LuaBindings\InstancedMesh3d_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Assets\RawFile.cpp">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1454,6 +1457,9 @@
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\InstancedMesh3d_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\RawFile.h">
+      <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

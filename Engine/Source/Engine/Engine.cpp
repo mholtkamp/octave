@@ -81,6 +81,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(StaticMesh);
     FORCE_LINK_CALL(Texture);
     FORCE_LINK_CALL(Font);
+    FORCE_LINK_CALL(RawFile);
 
     // Widget Types
     FORCE_LINK_CALL(ArrayWidget);

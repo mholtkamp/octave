@@ -638,6 +638,7 @@
     <ClCompile Include="Source\Engine\Assets\MaterialLite.cpp" />
     <ClCompile Include="Source\Engine\Assets\ParticleSystem.cpp" />
     <ClCompile Include="Source\Engine\Assets\ParticleSystemInstance.cpp" />
+    <ClCompile Include="Source\Engine\Assets\RawFile.cpp" />
     <ClCompile Include="Source\Engine\Assets\Scene.cpp" />
     <ClCompile Include="Source\Engine\Assets\SkeletalMesh.cpp" />
     <ClCompile Include="Source\Engine\Assets\SoundWave.cpp" />
@@ -874,6 +875,7 @@
     <ClInclude Include="Source\Engine\AssetDir.h" />
     <ClInclude Include="Source\Engine\AssetManager.h" />
     <ClInclude Include="Source\Engine\AssetRef.h" />
+    <ClInclude Include="Source\Engine\Assets\RawFile.h" />
     <ClInclude Include="Source\Engine\Assets\Font.h" />
     <ClInclude Include="Source\Engine\Assets\MaterialBase.h" />
     <ClInclude Include="Source\Engine\Assets\MaterialInstance.h" />

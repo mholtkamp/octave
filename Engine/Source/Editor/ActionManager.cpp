@@ -30,6 +30,7 @@
 #include "Assets/SkeletalMesh.h"
 #include "Assets/SoundWave.h"
 #include "Assets/Font.h"
+#include "Assets/RawFile.h"
 #include "AssetDir.h"
 #include "EmbeddedFile.h"
 #include "Utilities.h"
@@ -1495,6 +1496,10 @@ Asset* ActionManager::ImportAsset(const std::string& path)
     else if (extension == ".ttf" || extension == ".xml")
     {
         newType = Font::GetStaticType();
+    }
+    else
+    {
+        newType = RawFile::GetStaticType();
     }
 
     if (newType != INVALID_TYPE_ID)
