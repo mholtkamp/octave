@@ -1404,7 +1404,8 @@ static void DrawScenePanel()
     std::function<void(Node*)> drawTree = [&](Node* node)
     {
         bool nodeSelected = GetEditorState()->IsNodeSelected(node);
-        bool nodeSceneLinked = (node->GetScene() != nullptr && node != rootNode);
+        bool nodeSceneLinked = node->IsSceneLinked();
+        bool nodeHasScene = (node->GetScene() != nullptr);
 
         ImGuiTreeNodeFlags nodeFlags = treeNodeFlags;
         if (nodeSelected)
@@ -1417,7 +1418,7 @@ static void DrawScenePanel()
             nodeFlags |= ImGuiTreeNodeFlags_Leaf;
         }
 
-        if (nodeSceneLinked)
+        if (nodeHasScene)
         {
             ImGui::PushStyleColor(ImGuiCol_Text, sceneColorIm);
         }
@@ -1425,7 +1426,7 @@ static void DrawScenePanel()
         bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
         bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
 
-        if (nodeSceneLinked)
+        if (nodeHasScene)
         {
             ImGui::PopStyleColor();
         }

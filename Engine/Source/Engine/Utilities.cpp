@@ -549,7 +549,7 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
     std::vector<Property> extProps;
     node->GatherProperties(extProps);
 
-    Scene* scene = node->IsSceneLinked() ? node->GetScene() : nullptr;
+    Scene* scene = node->IsSceneLinked(false) ? node->GetScene() : nullptr;
 
     {
         // For native nodes, determine which properties are different than the defaults

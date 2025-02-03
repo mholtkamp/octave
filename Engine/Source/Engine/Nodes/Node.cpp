@@ -1583,11 +1583,23 @@ bool Node::DoChildrenHaveUniqueNames() const
 
 void Node::BreakSceneLink()
 {
-    mScene = nullptr;
+#if EDITOR
+    if (!IsPlaying())
+    {
+        mScene = nullptr;
+    }
+#endif
 }
 
-bool Node::IsSceneLinked() const
+bool Node::IsSceneLinked(bool ignoreInPie) const
 {
+#if EDITOR
+    if (ignoreInPie && IsPlaying())
+    {
+        return false;
+    }
+#endif
+
     return (mScene != nullptr && mParent != nullptr);
 }
 
