@@ -63,6 +63,8 @@ These global hotkeys can be activated no matter where the mouse cursor is locate
  - `Ctrl + Numpad1` Back view
  - `Ctrl + Numpad3` Left view
  - `Ctrl + Numpad7` Bottom view
+ - `Shift + A` Spawn node (as a child of the root node)
+ - `Shift + Q` Quick spawn 3D node (as a child of the root node)
  - `Alt + 1` Spawn StaticMesh3D node
  - `Alt + 2` Spawn PointLight3D node
  - `Alt + 3` Spawn Node3D node
