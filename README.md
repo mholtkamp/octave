@@ -5,6 +5,8 @@ A 3D Game Engine for GameCube, Wii, 3DS, Windows, Linux, and Android
 
 [Lua Documentation](Documentation/Lua/README.md)
 
+[Editor Hotkeys](Documentation/Info/Editor.md)
+
 Check out the Releases page for precompiled standalone builds.
 
 Instructions for building from source below.
@@ -61,8 +63,9 @@ Instructions for building from source below.
 
 
 ## Packaging
-1. For packing Windows, add your devenv.exe folder to your PATH. For instance: 
+1. For packaging Windows, add your devenv.exe folder to your PATH. For instance: 
     `C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE`
-2. For packaging GameCube, Wii, or 3DS, add your devkitPro tools folder to your PATH. For instance: 
+2. When packaging for GameCube, Wii, or 3DS on a Windows machine, add your devkitPro tools folder to your PATH. For instance: 
     `C:\devkitPro\tools\bin`
-3. For packaing Android... TODO (I'm currently using Android Studio 2022.2.1 Patch 2)
+3. For packaging Android... TODO (I'm currently using Android Studio 2022.2.1 Patch 2)
+4. When packaging for any platform on a Windows machine, you will likely need to install Msys2 so that linux commands can be executed. This comes packaged along with devkitPro libraries, so you if you install the devkitPro libraries, you shouldn't need to worry about this.
