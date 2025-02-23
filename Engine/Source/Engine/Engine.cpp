@@ -141,7 +141,7 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
             sEngineConfig.mValidateGraphics = (validate != 0);
             ++i;
         }
-        else if (strcmp(argv[i], "-packageForSteam"))
+        else if (strcmp(argv[i], "-packageForSteam") == 0)
         {
             sEngineConfig.mPackageForSteam = true;
         }
