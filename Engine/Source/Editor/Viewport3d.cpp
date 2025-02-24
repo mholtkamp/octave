@@ -155,7 +155,30 @@ void Viewport3D::HandleDefaultControls()
             {
                 if (altDown)
                 {
-                    GetEditorState()->SetSelectedNode(selectNode);
+                    static float sAltDoubleClickTime = 0.0f;
+                    float time = GetEngineState()->mRealElapsedTime;
+                    Node* nodeToTrack = selectNode;
+
+                    // Double click will select the node's containing scene
+                    if (fabs(time - sAltDoubleClickTime) < 0.5f &&
+                        !selectNode->IsWorldRoot())
+                    {
+                        Node* parent = selectNode->GetParent();
+                        while (parent != nullptr)
+                        {
+                            if (parent->GetScene() != nullptr)
+                            {
+                                nodeToTrack = parent;
+                                break;
+                            }
+
+                            parent = parent->GetParent();
+                        }
+                    }
+
+                    sAltDoubleClickTime = time;
+
+                    GetEditorState()->SetSelectedNode(nodeToTrack);
                     GetEditorState()->mTrackSelectedNode = true;
                 }
                 else
