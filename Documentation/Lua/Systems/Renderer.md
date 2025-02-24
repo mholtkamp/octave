@@ -43,7 +43,8 @@ Sig: `index = Renderer.GetScreenIndex()`
 Get the screen resolution.
 
 Sig: `res = Renderer.GetScreenResolution(index=1)`
- - Arg: `integer index` Screen index 
+ - Arg: `integer index` Screen index
+ - Ret: `Vector res` Screen resolution (width in x, height in y)
 ---
 ### GetGlobalUiScale
 Get the global UI scale.
