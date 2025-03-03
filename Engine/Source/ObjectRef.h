@@ -133,6 +133,18 @@ private:
 
 typedef ObjectRef<Node> NodeRef;
 
+namespace std
+{
+    template<typename T>
+    struct hash<ObjectRef<T> >
+    {
+        size_t operator()(const ObjectRef<T>& k) const
+        {
+            return std::hash<T*>{}(k.Get());
+        }
+    };
+}
+
 template <typename T>
 std::vector<ObjectRef<T>*> ObjectRef<T>::sLiveRefs;
 

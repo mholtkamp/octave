@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "RTTI.h"
+#include "Signal.h"
 #include "Assertion.h"
 #include "EngineTypes.h"
 #include "Property.h"
@@ -370,6 +371,7 @@ protected:
     Node* mParent = nullptr;
     std::vector<Node*> mChildren;
     std::unordered_map<std::string, Node*> mChildNameMap;
+    std::unordered_map<std::string, Signal> mSignalMap;
     std::string mScriptFile;
 
     bool mActive = true;

@@ -1,0 +1,34 @@
+#pragma once
+
+#include "ObjectRef.h"
+#include "ScriptFunc.h"
+#include "Datum.h"
+
+#include <unordered_map>
+
+class Node;
+
+typedef void (Node::* SignalHandlerFP) (const std::vector<Datum>&);
+
+struct SignalHandlerFunc
+{
+    SignalHandlerFP mFuncPointer = nullptr;
+    mutable ScriptFunc mScriptFunc;
+};
+
+class Signal
+{
+public:
+
+    void Emit(const std::vector<Datum>& args);
+    void Connect(Node* node, SignalHandlerFP func);
+    void Connect(Node* node, const ScriptFunc& func);
+    void Disconnect(Node* node);
+
+private:
+
+    void CleanupDeadConnections();
+
+    std::unordered_map<NodeRef, SignalHandlerFunc> mConnectionMap;
+
+};
