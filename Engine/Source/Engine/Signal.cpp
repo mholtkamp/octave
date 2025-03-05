@@ -17,7 +17,7 @@ void Signal::Emit(const std::vector<Datum>& args)
             if (it->second.mFuncPointer != nullptr)
             {
                 SignalHandlerFP handler = it->second.mFuncPointer;
-                (node->*handler)(args);
+                handler(node, args);
             }
 
             if (it->second.mScriptFunc.IsValid())

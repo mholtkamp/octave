@@ -8,7 +8,7 @@
 
 class Node;
 
-typedef void (Node::* SignalHandlerFP) (const std::vector<Datum>&);
+typedef void (*SignalHandlerFP)(Node*, const std::vector<Datum>&);
 
 struct SignalHandlerFunc
 {
