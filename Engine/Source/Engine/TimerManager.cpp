@@ -60,7 +60,7 @@ void TimerManager::Update(float deltaTime)
             }
             break;
         }
-        case TimerType::Pointer:
+        case TimerType::Object:
         {
             if (timer->mHandler != nullptr)
             {
@@ -121,7 +121,7 @@ int32_t TimerManager::SetTimer(void* vp, PointerTimerHandlerFP handler, float ti
     TimerData timerData;
     timerData.mId = id;
     timerData.mHandler = (void*)handler;
-    timerData.mType = TimerType::Pointer;
+    timerData.mType = TimerType::Object;
     timerData.mPointer = vp;
     timerData.mDuration = time;
     timerData.mLoop = loop;

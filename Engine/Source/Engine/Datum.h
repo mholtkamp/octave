@@ -6,6 +6,11 @@
 
 #include <string>
 
+// Conflict with Windows preprocessor
+#ifdef GetObject
+#undef GetObject
+#endif
+
 typedef bool(*DatumChangeHandlerFP)(class Datum* prop, uint32_t index, const void* newValue);
 
 class Asset;
@@ -26,7 +31,7 @@ enum class DatumType : uint8_t
     Asset,
     Byte,
     Table,
-    Pointer,
+    Object,
     Short,
     Function,
 
@@ -109,7 +114,7 @@ public:
     operator Asset*() const { return GetAsset(); }
     //operator AssetRef() const; Not sure if needed??
     operator uint8_t() const { return (mType == DatumType::Integer) ? uint8_t(GetInteger()) : GetByte(); }
-    operator Object*() const { return (mType == DatumType::Asset) ? ((Object*)GetAsset()) : GetPointer(); }
+    operator Object*() const { return (mType == DatumType::Asset) ? ((Object*)GetAsset()) : GetObject(); }
     operator int16_t() const { return (mType == DatumType::Integer) ? int16_t(GetInteger()) : GetShort(); }
     // ScriptFunc conversion is defined as a constructor in ScriptFunc class
 
@@ -139,7 +144,7 @@ public:
     void SetAsset(const Asset* value, uint32_t index = 0);
     void SetByte(uint8_t value, uint32_t index = 0);
     void SetTableDatum(const TableDatum& value, uint32_t index = 0);
-    void SetPointer(Object* value, uint32_t index = 0);
+    void SetObject(Object* value, uint32_t index = 0);
     void SetShort(int16_t value, uint32_t index = 0);
     void SetFunction(const ScriptFunc& value, uint32_t index = 0);
 
@@ -171,7 +176,7 @@ public:
     uint8_t GetByte(uint32_t index = 0) const;
     TableDatum& GetTableDatum(uint32_t index = 0);
     const TableDatum& GetTableDatum(uint32_t index = 0) const;
-    Object* GetPointer(uint32_t index = 0) const;
+    Object* GetObject(uint32_t index = 0) const;
     int16_t GetShort(uint32_t index = 0) const;
     const ScriptFunc& GetFunction(uint32_t index = 0) const;
 
@@ -184,7 +189,7 @@ public:
     glm::vec4& GetColorRef(uint32_t index = 0);
     AssetRef& GetAssetRef(uint32_t index = 0);
     uint8_t& GetByteRef(uint32_t index = 0);
-    Object*& GetPointerRef(uint32_t index = 0);
+    Object*& GetObjectRef(uint32_t index = 0);
     int16_t& GetShortRef(uint32_t index = 0);
     ScriptFunc& GetFunctionRef(uint32_t index = 0);
 
@@ -221,7 +226,7 @@ public:
     glm::vec3 GetVectorField(const char* key);
     glm::vec4 GetColorField(const char* key);
     Asset* GetAssetField(const char* key);
-    Object* GetPointerField(const char* key);
+    Object* GetObjectField(const char* key);
     TableDatum& GetTableField(const char* key);
     ScriptFunc GetFunctionField(const char* key);
 
@@ -233,7 +238,7 @@ public:
     glm::vec3 GetVectorField(int32_t key);
     glm::vec4 GetColorField(int32_t key);
     Asset* GetAssetField(int32_t key);
-    Object* GetPointerField(int32_t key);
+    Object* GetObjectField(int32_t key);
     TableDatum& GetTableField(int32_t key);
     ScriptFunc GetFunctionField(int32_t key);
 
@@ -245,7 +250,7 @@ public:
     void SetVectorField(const char* key, glm::vec3 value);
     void SetColorField(const char* key, glm::vec4 value);
     void SetAssetField(const char* key, Asset* value);
-    void SetPointerField(const char* key, Object* value);
+    void SetObjectField(const char* key, Object* value);
     void SetTableField(const char* key, const TableDatum& value);
     void SetFunctionField(const char* key, const ScriptFunc& value);
 
@@ -257,7 +262,7 @@ public:
     void SetVectorField(int32_t key, glm::vec3 value);
     void SetColorField(int32_t key, glm::vec4 value);
     void SetAssetField(int32_t key, Asset* value);
-    void SetPointerField(int32_t key, Object* value);
+    void SetObjectField(int32_t key, Object* value);
     void SetTableField(int32_t key, const TableDatum& value);
     void SetFunctionField(int32_t key, const ScriptFunc& value);
 

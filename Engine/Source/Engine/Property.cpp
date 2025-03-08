@@ -189,7 +189,7 @@ void Property::PushBackVector(void* value)
             OCT_ASSERT(0);
             break;
         }
-        case DatumType::Pointer:
+        case DatumType::Object:
         {
             // Pointer not supported as vector.
             OCT_ASSERT(0);
@@ -286,7 +286,7 @@ void Property::EraseVector(uint32_t index)
             OCT_ASSERT(0);
             break;
         }
-        case DatumType::Pointer:
+        case DatumType::Object:
         {
             // Pointer not supported as Vector
             OCT_ASSERT(0);
@@ -397,7 +397,7 @@ void Property::ResizeVector(uint32_t count)
             OCT_ASSERT(0);
             break;
         }
-        case DatumType::Pointer:
+        case DatumType::Object:
         {
             // Pointer not supported as Vector
             OCT_ASSERT(0);
@@ -512,7 +512,7 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
             OCT_ASSERT(0);
             break;
         }
-        case DatumType::Pointer:
+        case DatumType::Object:
         {
             // Pointer not supported as vector
             OCT_ASSERT(0);

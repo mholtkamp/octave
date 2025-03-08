@@ -220,7 +220,7 @@ void Script::GatherScriptProperties()
                             if (newProp.mName != "" &&
                                 type != DatumType::Count &&
                                 type != DatumType::Table &&
-                                type != DatumType::Pointer)
+                                type != DatumType::Object)
                             {
                                 int32_t count = 1;
                                 int tableIdx = -1;
@@ -361,9 +361,9 @@ void Script::GatherScriptProperties()
                                         break;
                                     }
 
-                                    case DatumType::Pointer:
+                                    case DatumType::Object:
                                     {
-                                        LogError("Pointer script properties are not supported.");
+                                        LogError("Object script properties are not supported.");
                                         OCT_ASSERT(0);
                                         break;
                                     }
@@ -615,7 +615,7 @@ void Script::GatherReplicatedData()
                                     break;
                                 }
 
-                                case DatumType::Pointer:
+                                case DatumType::Object:
                                 {
                                     // Only actor pointers are supported right now.
                                     Node* nodePointer = CHECK_NODE(L, -1);
@@ -975,10 +975,10 @@ bool Script::DownloadDatum(lua_State* L, Datum& datum, int udIdx, const char* va
             break;
         }
 
-        case DatumType::Pointer:
+        case DatumType::Object:
         {
             success = false;
-            LogError("Pointer script properties are not supported.");
+            LogError("Object script properties are not supported.");
             break;
         }
 
@@ -1052,7 +1052,7 @@ void Script::UploadDatum(Datum& datum, const char* varName)
             case DatumType::Short: lua_pushinteger(L, (int32_t)datum.GetShort(i)); break;
 
             case DatumType::Table:
-            case DatumType::Pointer:
+            case DatumType::Object:
             case DatumType::Function:
             case DatumType::Count:
                 // These datum types are not supported.

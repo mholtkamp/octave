@@ -1065,7 +1065,7 @@ void SkeletalMesh3D::UpdateAnimation(float deltaTime, bool updateBones)
                 sAnimEvents[i].mNode = this;
 
                 Datum animTable;
-                animTable.SetPointerField("node", sAnimEvents[i].mNode);
+                animTable.SetObjectField("node", sAnimEvents[i].mNode);
                 animTable.SetStringField("name", sAnimEvents[i].mName);
                 animTable.SetStringField("animation", sAnimEvents[i].mAnimation);
                 animTable.SetFloatField("time", sAnimEvents[i].mTime);

@@ -15,7 +15,7 @@ typedef void(*NodeTimerHandlerFP)(Node* node);
 enum class TimerType
 {
     Void,
-    Pointer,
+    Object,
     Node,
     ScriptFunc,
 
