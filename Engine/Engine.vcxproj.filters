@@ -770,6 +770,9 @@
     <ClCompile Include="Source\Engine\Signals.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Signal_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1458,11 +1461,11 @@
     <ClInclude Include="Source\LuaBindings\InstancedMesh3d_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Signal.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Engine\Signals.h">
       <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Signal_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

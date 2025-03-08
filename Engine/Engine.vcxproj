@@ -788,6 +788,7 @@
     <ClCompile Include="Source\LuaBindings\Script_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Selector_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\ShadowMesh3d_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Signal_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\SkeletalMesh3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\SkeletalMesh_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\SoundWave_Lua.cpp" />
@@ -950,7 +951,6 @@
     <ClInclude Include="Source\Engine\ScriptFunc.h" />
     <ClInclude Include="Source\Engine\ScriptMacros.h" />
     <ClInclude Include="Source\Engine\ScriptUtils.h" />
-    <ClInclude Include="Source\Engine\Signal.h" />
     <ClInclude Include="Source\Engine\Signals.h" />
     <ClInclude Include="Source\Engine\Stream.h" />
     <ClInclude Include="Source\Engine\TableDatum.h" />
@@ -1038,6 +1038,7 @@
     <ClInclude Include="Source\LuaBindings\Script_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Selector_Lua.h" />
     <ClInclude Include="Source\LuaBindings\ShadowMesh3d_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\Signal_Lua.h" />
     <ClInclude Include="Source\LuaBindings\SkeletalMesh3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\SkeletalMesh_Lua.h" />
     <ClInclude Include="Source\LuaBindings\SoundWave_Lua.h" />

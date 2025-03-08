@@ -58,6 +58,7 @@
 #include "LuaBindings/Poly_Lua.h"
 #include "LuaBindings/PolyRect_Lua.h"
 #include "LuaBindings/NodeRef_Lua.h"
+#include "LuaBindings/Signal_Lua.h"
 #include "LuaBindings/Stream_Lua.h"
 #include "LuaBindings/TimerManager_Lua.h"
 
@@ -82,6 +83,7 @@ void BindLuaInterface()
     AssetManager_Lua::Bind();
     NodeRef_Lua::Bind();
     Stream_Lua::Bind();
+    Signal_Lua::Bind();
     TimerManager_Lua::Bind();
 
     // Components need to be bound in hierarchy order.
