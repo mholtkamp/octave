@@ -772,7 +772,7 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
             break;
         case DatumType::Pointer:
         {
-            RTTI* pointer = arg.GetPointer(i);
+            Object* pointer = arg.GetPointer(i);
             if (pointer == nullptr)
             {
                 lua_pushnil(L);

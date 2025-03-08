@@ -700,7 +700,7 @@
     <ClCompile Include="Source\Engine\ScriptAutoReg.cpp" />
     <ClCompile Include="Source\Engine\ScriptFunc.cpp" />
     <ClCompile Include="Source\Engine\ScriptUtils.cpp" />
-    <ClCompile Include="Source\Engine\Signal.cpp" />
+    <ClCompile Include="Source\Engine\Signals.cpp" />
     <ClCompile Include="Source\Engine\stb_implementation.cpp" />
     <ClCompile Include="Source\Engine\Stream.cpp" />
     <ClCompile Include="Source\Engine\TableDatum.cpp" />
@@ -944,13 +944,14 @@
     <ClInclude Include="Source\Engine\Property.h" />
     <ClInclude Include="Source\Engine\Rect.h" />
     <ClInclude Include="Source\Engine\Renderer.h" />
-    <ClInclude Include="Source\Engine\RTTI.h" />
+    <ClInclude Include="Source\Engine\Object.h" />
     <ClInclude Include="Source\Engine\Script.h" />
     <ClInclude Include="Source\Engine\ScriptAutoReg.h" />
     <ClInclude Include="Source\Engine\ScriptFunc.h" />
     <ClInclude Include="Source\Engine\ScriptMacros.h" />
     <ClInclude Include="Source\Engine\ScriptUtils.h" />
     <ClInclude Include="Source\Engine\Signal.h" />
+    <ClInclude Include="Source\Engine\Signals.h" />
     <ClInclude Include="Source\Engine\Stream.h" />
     <ClInclude Include="Source\Engine\TableDatum.h" />
     <ClInclude Include="Source\Engine\TimerManager.h" />

@@ -2,7 +2,7 @@
 
 #include "Datum.h"
 
-class RTTI;
+class Object;
 
 class TableDatum : public Datum
 {
@@ -21,7 +21,7 @@ public:
     TableDatum(const char* key, glm::vec4 value);
     TableDatum(const char* key, Asset* value);
     TableDatum(const char* key, uint32_t value);
-    TableDatum(const char* key, RTTI* value);
+    TableDatum(const char* key, Object* value);
     TableDatum(const char* key, const ScriptFunc& value);
     //TableDatum(const char* key, const TableDatum& value);
 
@@ -35,7 +35,7 @@ public:
     TableDatum(int32_t key, glm::vec4 value);
     TableDatum(int32_t key, Asset* value);
     TableDatum(int32_t key, uint32_t value);
-    TableDatum(int32_t key, RTTI* value);
+    TableDatum(int32_t key, Object* value);
     TableDatum(int32_t key, const ScriptFunc& value);
     //TableDatum(int32_t key, const TableDatum& value);
 

@@ -12,7 +12,7 @@ class Mesh3D : public Primitive3D
 {
 public:
 
-    DECLARE_RTTI(Mesh3D, Primitive3D);
+    DECLARE_OBJECT(Mesh3D, Primitive3D);
 
     Mesh3D();
     virtual ~Mesh3D();

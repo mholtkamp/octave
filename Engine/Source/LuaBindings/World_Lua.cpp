@@ -290,8 +290,8 @@ int World_Lua::RayTest(lua_State* L)
 
         for (uint32_t i = 1; i <= ignoreTable.GetCount(); ++i)
         {
-            RTTI* rtti = ignoreTable.GetPointerField(i);
-            Primitive3D* prim = rtti ? rtti->As<Primitive3D>() : nullptr;
+            Object* obj = ignoreTable.GetPointerField(i);
+            Primitive3D* prim = obj ? obj->As<Primitive3D>() : nullptr;
 
             if (prim && prim->GetRigidBody())
             {

@@ -48,9 +48,9 @@ Node* CheckNodeLuaType(lua_State* L, int arg, const char* className, const char*
 #endif
 }
 
-RTTI* CheckRttiLuaType(lua_State* L, int arg)
+Object* CheckObjectLuaType(lua_State* L, int arg)
 {
-    RTTI* rtti = nullptr;
+    Object* obj = nullptr;
     luaL_checktype(L, arg, LUA_TUSERDATA);
 
     // Only nodes support script-to-native function calls.
@@ -59,14 +59,14 @@ RTTI* CheckRttiLuaType(lua_State* L, int arg)
 
     if (isNode)
     {
-        rtti = ((Node_Lua*)lua_touserdata(L, arg))->mNode;
+        obj = ((Node_Lua*)lua_touserdata(L, arg))->mNode;
     }
     else
     {
         luaL_error(L, "Error: Arg #%d: Expected Node", arg);
     }
 
-    return rtti;
+    return obj;
 }
 
 Asset* CheckAssetOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
@@ -79,9 +79,9 @@ Node* CheckNodeOrNilLuaType(lua_State* L, int arg, const char* className, const 
     return lua_isnil(L, arg) ? nullptr : CheckNodeLuaType(L, arg, className, classFlag);
 }
 
-RTTI* CheckRttiOrNilLuaType(lua_State* L, int arg)
+Object* CheckObjectOrNilLuaType(lua_State* L, int arg)
 {
-    return lua_isnil(L, arg) ? nullptr : CheckRttiLuaType(L, arg);
+    return lua_isnil(L, arg) ? nullptr : CheckObjectLuaType(L, arg);
 }
 
 const char* CheckTableName(lua_State* L, int arg)

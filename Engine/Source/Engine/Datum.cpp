@@ -119,7 +119,7 @@ Datum::Datum(uint8_t value)
     PushBack(value);
 }
 
-Datum::Datum(RTTI* value)
+Datum::Datum(Object* value)
 {
     Reset();
     PushBack(value);
@@ -228,7 +228,7 @@ uint32_t Datum::GetDataTypeSize() const
         case DatumType::Asset: size = sizeof(AssetRef); break;
         case DatumType::Byte: size = sizeof(uint8_t); break;
         case DatumType::Table: size = sizeof(TableDatum); break;
-        case DatumType::Pointer: size = sizeof(RTTI*); break;
+        case DatumType::Pointer: size = sizeof(Object*); break;
         case DatumType::Short: size = sizeof(int16_t); break;
         case DatumType::Function: size = sizeof(ScriptFunc); break;
         
@@ -279,7 +279,7 @@ uint32_t Datum::GetDataTypeSerializationSize() const
     else if (mType == DatumType::Pointer)
     {
         // Pointers are serialized as NetId's, which are 32 bits.
-        // So this will be different from sizeof(RTTI*) on 64 bit architectures.
+        // So this will be different from sizeof(Object*) on 64 bit architectures.
         retSize += (mCount * sizeof(NetId));
     }
     else
@@ -403,8 +403,8 @@ void Datum::WriteStream(Stream& stream) const
                 // Pointers can only be serialized if it is an actor AND we
                 // are serializing across the network.
                 NetId netId = INVALID_NET_ID; 
-                RTTI* rtti = mData.p[i];
-                Node* node = rtti ? rtti->As<Node>() : nullptr;
+                Object* obj = mData.p[i];
+                Node* node = obj ? obj->As<Node>() : nullptr;
 
                 if (node != nullptr)
                 {
@@ -504,7 +504,7 @@ void Datum::SetTableDatum(const TableDatum& value, uint32_t index)
         mData.t[index] = value;
 }
 
-void Datum::SetPointer(RTTI* value, uint32_t index)
+void Datum::SetPointer(Object* value, uint32_t index)
 {
     PreSet(index, DatumType::Pointer);
     if (!mChangeHandler || !mChangeHandler(this, index, &value))
@@ -551,7 +551,7 @@ void Datum::SetValue(const void* value, uint32_t index, uint32_t count)
             case DatumType::Asset: SetAsset((reinterpret_cast<const AssetRef*>(value) + i)->Get(),    index + i); break;
             case DatumType::Byte: SetByte(*(reinterpret_cast<const uint8_t*>(value) + i),             index + i); break;
             case DatumType::Table: SetTableDatum(*(reinterpret_cast<const TableDatum*>(value) + i),   index + i); break;
-            case DatumType::Pointer: SetPointer(*(((RTTI**)value) + i),                               index + i); break;
+            case DatumType::Pointer: SetPointer(*(((Object**)value) + i),                               index + i); break;
             case DatumType::Short: SetShort(*(reinterpret_cast<const int16_t*>(value) + i),           index + i); break;
             case DatumType::Function: SetFunction(*(reinterpret_cast<const ScriptFunc*>(value) + i),  index + i); break;
             case DatumType::Count: break;
@@ -574,7 +574,7 @@ void Datum::SetValueRaw(const void* value, uint32_t index)
     case DatumType::Asset: mData.as[index] = *reinterpret_cast<const Asset* const*>(value); break;
     case DatumType::Byte: mData.by[index] = *reinterpret_cast<const uint8_t*>(value); break;
     case DatumType::Table: mData.t[index] = *reinterpret_cast<const TableDatum*>(value); break;
-    case DatumType::Pointer: mData.p[index] = *((RTTI**)value); break;
+    case DatumType::Pointer: mData.p[index] = *((Object**)value); break;
     case DatumType::Short: mData.sh[index] = *reinterpret_cast<const int16_t*>(value); break;
     case DatumType::Function: mData.fn[index] = *reinterpret_cast<const ScriptFunc*>(value); break;
 
@@ -644,7 +644,7 @@ void Datum::SetExternal(TableDatum* data, uint32_t count)
     PostSetExternal(DatumType::Table, count);
 }
 
-void Datum::SetExternal(RTTI** data, uint32_t count)
+void Datum::SetExternal(Object** data, uint32_t count)
 {
     PreSetExternal(DatumType::Pointer);
     mData.p = data;
@@ -731,7 +731,7 @@ const TableDatum& Datum::GetTableDatum(uint32_t index) const
     return mData.t[index];
 }
 
-RTTI* Datum::GetPointer(uint32_t index) const
+Object* Datum::GetPointer(uint32_t index) const
 {
     PreGet(index, DatumType::Pointer);
     return mData.p[index];
@@ -803,7 +803,7 @@ uint8_t& Datum::GetByteRef(uint32_t index)
     return mData.by[index];
 }
 
-RTTI*& Datum::GetPointerRef(uint32_t index)
+Object*& Datum::GetPointerRef(uint32_t index)
 {
     PreGet(index, DatumType::Pointer);
     return mData.p[index];
@@ -967,10 +967,10 @@ TableDatum* Datum::PushBackTableDatum(const TableDatum& value)
     return (mData.t + (mCount - 1));
 }
 
-void Datum::PushBack(RTTI* value)
+void Datum::PushBack(Object* value)
 {
     PrePushBack(DatumType::Pointer);
-    new (mData.p + mCount) RTTI*(value);
+    new (mData.p + mCount) Object*(value);
     mCount++;
 }
 
@@ -1068,7 +1068,7 @@ DEFINE_GET_FIELD(const char*, Vector2D, glm::vec2, {})
 DEFINE_GET_FIELD(const char*, Vector, glm::vec3, {})
 DEFINE_GET_FIELD(const char*, Color, glm::vec4, {})
 DEFINE_GET_FIELD(const char*, Asset, Asset*, nullptr)
-DEFINE_GET_FIELD(const char*, Pointer, RTTI*, nullptr)
+DEFINE_GET_FIELD(const char*, Pointer, Object*, nullptr)
 DEFINE_GET_FIELD(const char*, Function, ScriptFunc, {})
 
 //DEFINE_GET_FIELD(int32_t, Integer, int32_t, 0)
@@ -1122,7 +1122,7 @@ DEFINE_GET_FIELD(int32_t, Vector2D, glm::vec2, {})
 DEFINE_GET_FIELD(int32_t, Vector, glm::vec3, {})
 DEFINE_GET_FIELD(int32_t, Color, glm::vec4, {})
 DEFINE_GET_FIELD(int32_t, Asset, Asset*, nullptr)
-DEFINE_GET_FIELD(int32_t, Pointer, RTTI*, nullptr)
+DEFINE_GET_FIELD(int32_t, Pointer, Object*, nullptr)
 DEFINE_GET_FIELD(int32_t, Function, ScriptFunc, {})
 
 TableDatum& Datum::GetTableField(const char* key)
@@ -1188,7 +1188,7 @@ DEFINE_SET_FIELD(const char*, Vector2D, glm::vec2)
 DEFINE_SET_FIELD(const char*, Vector, glm::vec3)
 DEFINE_SET_FIELD(const char*, Color, glm::vec4)
 DEFINE_SET_FIELD(const char*, Asset, Asset*)
-DEFINE_SET_FIELD(const char*, Pointer, RTTI*)
+DEFINE_SET_FIELD(const char*, Pointer, Object*)
 DEFINE_SET_FIELD(const char*, Function, const ScriptFunc&)
 
 DEFINE_SET_FIELD(int32_t, Integer, int32_t)
@@ -1199,7 +1199,7 @@ DEFINE_SET_FIELD(int32_t, Vector2D, glm::vec2)
 DEFINE_SET_FIELD(int32_t, Vector, glm::vec3)
 DEFINE_SET_FIELD(int32_t, Color, glm::vec4)
 DEFINE_SET_FIELD(int32_t, Asset, Asset*)
-DEFINE_SET_FIELD(int32_t, Pointer, RTTI*)
+DEFINE_SET_FIELD(int32_t, Pointer, Object*)
 DEFINE_SET_FIELD(int32_t, Function, const ScriptFunc&)
 
 void Datum::SetTableField(const char* key, const TableDatum& value)
@@ -1337,7 +1337,7 @@ Datum& Datum::operator=(uint8_t src)
     return *this;
 }
 
-Datum& Datum::operator=(RTTI* src)
+Datum& Datum::operator=(Object* src)
 {
     PreAssign(DatumType::Pointer);
     mData.p[0] = src;
@@ -1532,7 +1532,7 @@ bool Datum::operator==(const uint8_t& other) const
     return mData.by[0] == other;
 }
 
-bool Datum::operator==(const RTTI*& other) const
+bool Datum::operator==(const Object*& other) const
 {
     if (mCount == 0 ||
         mType != DatumType::Pointer)
@@ -1625,7 +1625,7 @@ bool Datum::operator!=(const uint8_t& other) const
     return !operator==(other);
 }
 
-bool Datum::operator!=(const RTTI*& other) const
+bool Datum::operator!=(const Object*& other) const
 {
     return !operator==(other);
 }

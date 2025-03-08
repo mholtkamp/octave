@@ -3,6 +3,8 @@
 #include <string>
 #include <string.h>
 #include <unordered_set>
+#include <unordered_map>
+#include <algorithm>
 
 #include "Constants.h"
 #include "Maths.h"

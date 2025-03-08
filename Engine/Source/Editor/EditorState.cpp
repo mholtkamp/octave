@@ -1118,7 +1118,7 @@ void EditorState::SetTransformLock(TransformLock lock)
     }
 }
 
-RTTI* EditorState::GetInspectedObject()
+Object* EditorState::GetInspectedObject()
 {
     return mInspectedObject;
 }
@@ -1133,7 +1133,7 @@ Asset* EditorState::GetInspectedAsset()
     return mInspectedObject ? mInspectedObject->As<Asset>() : nullptr;
 }
 
-void EditorState::InspectObject(RTTI* obj, bool force, bool recordHistory)
+void EditorState::InspectObject(Object* obj, bool force, bool recordHistory)
 {
     if (force || !mInspectLocked)
     {
@@ -1192,7 +1192,7 @@ void EditorState::ProgressInspectFuture()
             mInspectPast.push_back(mInspectedObject);
         }
 
-        RTTI* futureObj = mInspectFuture.back();
+        Object* futureObj = mInspectFuture.back();
         OCT_ASSERT(futureObj != nullptr);
         mInspectFuture.pop_back();
 
@@ -1212,7 +1212,7 @@ void EditorState::RegressInspectPast()
             mInspectFuture.push_back(mInspectedObject);
         }
 
-        RTTI* pastObj = mInspectPast.back();
+        Object* pastObj = mInspectPast.back();
         OCT_ASSERT(pastObj != nullptr);
         mInspectPast.pop_back();
 

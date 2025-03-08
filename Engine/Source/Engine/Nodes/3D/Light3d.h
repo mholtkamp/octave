@@ -6,7 +6,7 @@ class Light3D : public Node3D
 {
 public:
 
-    DECLARE_RTTI(Light3D, Node3D);
+    DECLARE_OBJECT(Light3D, Node3D);
 
     Light3D();
     ~Light3D();

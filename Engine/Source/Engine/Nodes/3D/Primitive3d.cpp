@@ -13,7 +13,7 @@
 #include "EditorState.h"
 #endif
 
-DEFINE_RTTI(Primitive3D);
+DEFINE_OBJECT(Primitive3D);
 
 static btEmptyShape* sEmptyCollisionShape = nullptr;
 

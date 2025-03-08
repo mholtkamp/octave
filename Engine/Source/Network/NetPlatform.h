@@ -24,6 +24,8 @@ class NetPlatform
 {
 public:
 
+    virtual ~NetPlatform() { }
+
     // Lifecycle
     virtual bool Create();
     virtual void Destroy();

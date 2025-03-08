@@ -46,7 +46,7 @@ class Primitive3D : public Node3D
 {
 public:
 
-    DECLARE_RTTI(Primitive3D, Node3D);
+    DECLARE_OBJECT(Primitive3D, Node3D);
 
     Primitive3D();
     virtual ~Primitive3D();

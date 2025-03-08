@@ -3,8 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "RTTI.h"
-#include "Signal.h"
+#include "Object.h"
 #include "Assertion.h"
 #include "EngineTypes.h"
 #include "Property.h"
@@ -15,6 +14,7 @@
 #include "NetFunc.h"
 #include "ScriptUtils.h"
 #include "ScriptAutoReg.h"
+#include "Signals.h"
 #include "Assets/StaticMesh.h"
 
 #include "Bullet/btBulletCollisionCommon.h"
@@ -29,13 +29,13 @@ class Script;
 
 #define DECLARE_NODE(Class, Parent) \
         DECLARE_FACTORY(Class, Node); \
-        DECLARE_RTTI(Class, Parent); \
+        DECLARE_OBJECT(Class, Parent); \
         DECLARE_SCRIPT_LINK(Class, Parent, Node) \
         typedef Parent Super;
 
 #define DEFINE_NODE(Class, Parent) \
         DEFINE_FACTORY(Class, Node); \
-        DEFINE_RTTI(Class); \
+        DEFINE_OBJECT(Class); \
         DEFINE_SCRIPT_LINK(Class, Parent, Node);
 
 typedef std::unordered_map<std::string, NetFunc> NetFuncMap;
@@ -55,13 +55,13 @@ struct NodeNetData
 };
 #endif
 
-class Node : public RTTI
+class Node : public Object
 {
 public:
 
     DECLARE_FACTORY_MANAGER(Node);
     DECLARE_FACTORY(Node, Node);
-    DECLARE_RTTI(Node, RTTI);
+    DECLARE_OBJECT(Node, Object);
     DECLARE_SCRIPT_LINK_BASE(Node);
 
     static Node* Construct(const std::string& name);

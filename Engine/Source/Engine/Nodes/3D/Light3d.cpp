@@ -1,6 +1,6 @@
 #include "Nodes/3D/Light3d.h"
 
-DEFINE_RTTI(Light3D);
+DEFINE_OBJECT(Light3D);
 
 static const char* sLightingDomainStrings[] =
 {

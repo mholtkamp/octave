@@ -13,11 +13,11 @@
 
 #define SF_CHECK_NODE(L, arg) CheckNodeLuaType(L, arg, "Node", "cfNode")
 #define SF_CHECK_ASSET(L, Arg) CheckAssetLuaType<Asset>(L, Arg, "Asset", "cfAsset")
-#define SF_CHECK_RTTI(L, Arg) CheckRttiLuaType(L, Arg)
+#define SF_CHECK_OBJECT(L, Arg) CheckObjectLuaType(L, Arg)
 
 #define SF_CHECK_NODE_OR_NIL(L, arg) CheckNodeOrNilLuaType(L, arg, "Node", "cfNode")
 #define SF_CHECK_ASSET_OR_NIL(L, Arg) CheckAssetOrNilLuaType<Asset>(L, Arg, "Asset", "cfAsset")
-#define SF_CHECK_RTTI_OR_NIL(L, Arg) CheckRttiOrNilLuaType(L, Arg)
+#define SF_CHECK_OBJECT_OR_NIL(L, Arg) CheckObjectOrNilLuaType(L, Arg)
 
 // Parameter macros
 #define SpNode(idx) SF_CHECK_NODE(L, idx)
@@ -43,7 +43,7 @@
 #define SCRIPT_FUNC_X_1(ClassName, FuncName, P0)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         object->FuncName(P0(2));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
@@ -52,7 +52,7 @@
 #define SCRIPT_FUNC_X_2(ClassName, FuncName, P0, P1)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         object->FuncName(P0(2), P1(3));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
@@ -61,7 +61,7 @@
 #define SCRIPT_FUNC_X_3(ClassName, FuncName, P0, P1, P2)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         object->FuncName(P0(2), P1(3), P2(4));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
@@ -70,7 +70,7 @@
 #define SCRIPT_FUNC_X_4(ClassName, FuncName, P0, P1, P2, P3)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         object->FuncName(P0(2), P1(3), P2(4), P3(5));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
@@ -79,7 +79,7 @@
 #define SCRIPT_FUNC_X_5(ClassName, FuncName, P0, P1, P2, P3, P4)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         object->FuncName(P0(2), P1(3), P2(4), P3(5), P4(6));                                                             \
         return 0;                                                                                               \
     }                                                                                                           \
@@ -88,7 +88,7 @@
 #define SCRIPT_FUNC_X_R(ClassName, FuncName, RC)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum ret = RC object->FuncName();                                                             \
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
@@ -98,7 +98,7 @@
 #define SCRIPT_FUNC_X_R_1(ClassName, FuncName, RC, P0)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum ret = RC object->FuncName(P0(2));                                                             \
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
@@ -108,7 +108,7 @@
 #define SCRIPT_FUNC_X_R_2(ClassName, FuncName, RC, P0, P1)                                                                        \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum ret = RC object->FuncName(P0(2), P1(3));                                                             \
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
@@ -118,7 +118,7 @@
 #define SCRIPT_FUNC_X_R_3(ClassName, FuncName, RC, P0, P1, P2)                                                                  \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum ret = RC object->FuncName(P0(2), P1(3), P2(4));                                                       \
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
@@ -128,7 +128,7 @@
 #define SCRIPT_FUNC_X_R_4(ClassName, FuncName, RC, P0, P1, P2, P3)                                                              \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum ret = RC object->FuncName(P0(2), P1(3), P2(4), P3(5));                                                \
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
@@ -218,7 +218,7 @@
 #define SCRIPT_FUNC(ClassName, FuncName)                                                                                   \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         object->FuncName();                                                                                      \
         return 0;                                                                                               \
     }                                                                                                           \
@@ -227,7 +227,7 @@
 #define SCRIPT_FUNC_1(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         object->FuncName(param0);                                                                                \
         return 0;                                                                                               \
@@ -237,7 +237,7 @@
 #define SCRIPT_FUNC_2(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         object->FuncName(param0, param1);                                                                        \
@@ -248,7 +248,7 @@
 #define SCRIPT_FUNC_3(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         Datum param2; LuaObjectToDatum(L, 4, param2);                                                           \
@@ -260,7 +260,7 @@
 #define SCRIPT_FUNC_4(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         Datum param2; LuaObjectToDatum(L, 4, param2);                                                           \
@@ -273,7 +273,7 @@
 #define SCRIPT_FUNC_5(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         Datum param2; LuaObjectToDatum(L, 4, param2);                                                           \
@@ -287,7 +287,7 @@
 #define SCRIPT_FUNC_6(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         Datum param2; LuaObjectToDatum(L, 4, param2);                                                           \
@@ -302,7 +302,7 @@
 #define SCRIPT_FUNC_7(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         Datum param2; LuaObjectToDatum(L, 4, param2);                                                           \
@@ -318,7 +318,7 @@
 #define SCRIPT_FUNC_8(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         Datum param2; LuaObjectToDatum(L, 4, param2);                                                           \
@@ -335,7 +335,7 @@
 #define SCRIPT_FUNC_R(ClassName, FuncName)                                                                                 \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum ret = object->FuncName();                                                                          \
         LuaPushDatum(L, ret);                                                                                   \
         return 1;                                                                                               \
@@ -345,7 +345,7 @@
 #define SCRIPT_FUNC_R_1(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum ret = object->FuncName(param0);                                                                    \
         LuaPushDatum(L, ret);                                                                                   \
@@ -356,7 +356,7 @@
 #define SCRIPT_FUNC_R_2(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         Datum ret = object->FuncName(param0, param1);                                                            \
@@ -368,7 +368,7 @@
 #define SCRIPT_FUNC_R_3(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         Datum param2; LuaObjectToDatum(L, 4, param2);                                                           \
@@ -381,7 +381,7 @@
 #define SCRIPT_FUNC_R_4(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         Datum param2; LuaObjectToDatum(L, 4, param2);                                                           \
@@ -395,7 +395,7 @@
 #define SCRIPT_FUNC_R_5(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         Datum param2; LuaObjectToDatum(L, 4, param2);                                                           \
@@ -410,7 +410,7 @@
 #define SCRIPT_FUNC_R_6(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         Datum param2; LuaObjectToDatum(L, 4, param2);                                                           \
@@ -426,7 +426,7 @@
 #define SCRIPT_FUNC_R_7(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         Datum param2; LuaObjectToDatum(L, 4, param2);                                                           \
@@ -443,7 +443,7 @@
 #define SCRIPT_FUNC_R_8(ClassName, FuncName)                                                                               \
     static int ScriptFunc_##FuncName(lua_State* L)                                                              \
     {                                                                                                           \
-        ClassName* object = SF_CHECK_RTTI(L, 1)->As<ClassName>();                                 \
+        ClassName* object = SF_CHECK_OBJECT(L, 1)->As<ClassName>();                                 \
         Datum param0; LuaObjectToDatum(L, 2, param0);                                                           \
         Datum param1; LuaObjectToDatum(L, 3, param1);                                                           \
         Datum param2; LuaObjectToDatum(L, 4, param2);                                                           \

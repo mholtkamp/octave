@@ -3,7 +3,7 @@
 #include "EngineTypes.h"
 #include "EmbeddedFile.h"
 #include "Factory.h"
-#include "RTTI.h"
+#include "Object.h"
 #include "Maths.h"
 
 #include <string>
@@ -25,8 +25,8 @@ class AssetDir;
 #define ASSET_VERSION_CURRENT 2
 // ----------------------------------------------------
 
-#define DECLARE_ASSET(Base, Parent) DECLARE_FACTORY(Base, Asset); DECLARE_RTTI(Base, Parent);
-#define DEFINE_ASSET(Base) DEFINE_FACTORY(Base, Asset); DEFINE_RTTI(Base);
+#define DECLARE_ASSET(Base, Parent) DECLARE_FACTORY(Base, Asset); DECLARE_OBJECT(Base, Parent);
+#define DEFINE_ASSET(Base) DEFINE_FACTORY(Base, Asset); DEFINE_OBJECT(Base);
 
 enum class AssetLoadState
 {
@@ -71,13 +71,13 @@ protected:
     std::unordered_map<std::string, Datum> mOptions;
 };
 
-class Asset : public RTTI
+class Asset : public Object
 {
 public:
 
     DECLARE_FACTORY_MANAGER(Asset);
     DECLARE_FACTORY(Asset, Asset);
-    DECLARE_RTTI(Asset, RTTI);
+    DECLARE_OBJECT(Asset, Object);
 
     Asset();
     virtual ~Asset();

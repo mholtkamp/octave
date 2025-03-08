@@ -767,7 +767,7 @@
     <ClCompile Include="Source\LuaBindings\InstancedMesh3d_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Signal.cpp">
+    <ClCompile Include="Source\Engine\Signals.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1023,7 +1023,7 @@
     <ClInclude Include="Source\Engine\Renderer.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\RTTI.h">
+    <ClInclude Include="Source\Engine\Object.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\ScriptAutoReg.h">
@@ -1460,6 +1460,9 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\Signal.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Signals.h">
+      <Filter>Source Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

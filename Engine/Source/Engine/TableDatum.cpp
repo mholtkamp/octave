@@ -72,7 +72,7 @@ TableDatum::TableDatum(const char* key, uint32_t value)
     SetStringKey(key);
 }
 
-TableDatum::TableDatum(const char* key, RTTI* value)
+TableDatum::TableDatum(const char* key, Object* value)
 {
     PushBack(value);
     SetStringKey(key);
@@ -150,7 +150,7 @@ TableDatum::TableDatum(int32_t key, uint32_t value)
     SetIntegerKey(key);
 }
 
-TableDatum::TableDatum(int32_t key, RTTI* value)
+TableDatum::TableDatum(int32_t key, Object* value)
 {
     PushBack(value);
     SetIntegerKey(key);

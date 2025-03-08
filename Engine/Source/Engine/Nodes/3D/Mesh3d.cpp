@@ -6,7 +6,7 @@
 #include "Engine.h"
 #include "World.h"
 
-DEFINE_RTTI(Mesh3D);
+DEFINE_OBJECT(Mesh3D);
 
 bool Mesh3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {

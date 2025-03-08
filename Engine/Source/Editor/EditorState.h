@@ -99,10 +99,10 @@ struct EditorState
     AssetDir* mCurrentDir = nullptr;
     std::vector<AssetDir*> mDirPast;
     std::vector<AssetDir*> mDirFuture;
-    std::vector<RTTI*> mInspectPast;
-    std::vector<RTTI*> mInspectFuture;
-    RTTI* mInspectedObject;
-    RTTI* mPrevInspectedObject;
+    std::vector<Object*> mInspectPast;
+    std::vector<Object*> mInspectFuture;
+    Object* mInspectedObject;
+    Object* mPrevInspectedObject;
     AssetRef mInspectedAsset;
     bool mInspectLocked = false;
     Viewport3D* mViewport3D = nullptr;
@@ -190,10 +190,10 @@ struct EditorState
     glm::vec3 GetTransformLockVector(TransformLock lock);
     void SetTransformLock(TransformLock lock);
 
-    RTTI* GetInspectedObject();
+    Object* GetInspectedObject();
     Node* GetInspectedNode();
     Asset* GetInspectedAsset();
-    void InspectObject(RTTI* obj, bool force = false, bool recordHistory = true);
+    void InspectObject(Object* obj, bool force = false, bool recordHistory = true);
     void LockInspect(bool lock);
     bool IsInspectLocked();
     void RecordInspectHistory();

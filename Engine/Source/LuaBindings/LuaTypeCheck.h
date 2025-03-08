@@ -56,11 +56,11 @@ T* CheckAssetLuaType(lua_State* L, int arg, const char* className, const char* c
 
 Node* CheckNodeWrapper(lua_State* L, int arg);
 Node* CheckNodeLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
-RTTI* CheckRttiLuaType(lua_State* L, int arg);
+Object* CheckObjectLuaType(lua_State* L, int arg);
 
 Asset* CheckAssetOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
 Node* CheckNodeOrNilLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
-RTTI* CheckRttiOrNilLuaType(lua_State* L, int arg);
+Object* CheckObjectOrNilLuaType(lua_State* L, int arg);
 
 
 const char* CheckTableName(lua_State* L, int arg);

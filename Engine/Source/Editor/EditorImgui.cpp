@@ -640,7 +640,7 @@ static void CreateNewAsset(TypeId assetType, const char* assetName)
     }
 }
 
-static void AssignAssetToProperty(RTTI* owner, PropertyOwnerType ownerType, Property& prop, uint32_t index, Asset* newAsset)
+static void AssignAssetToProperty(Object* owner, PropertyOwnerType ownerType, Property& prop, uint32_t index, Asset* newAsset)
 {
     if (newAsset != nullptr &&
         newAsset != prop.GetAsset())
@@ -674,7 +674,7 @@ static void AssignAssetToProperty(RTTI* owner, PropertyOwnerType ownerType, Prop
     }
 }
 
-static void DrawAssetProperty(Property& prop, uint32_t index, RTTI* owner, PropertyOwnerType ownerType)
+static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOwnerType ownerType)
 {
     Asset* asset = prop.GetAsset(index);
     ActionManager* am = ActionManager::Get();
@@ -763,7 +763,7 @@ static void DrawAssetProperty(Property& prop, uint32_t index, RTTI* owner, Prope
     }
 }
 
-static void DrawPropertyList(RTTI* owner, std::vector<Property>& props)
+static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 {
     ActionManager* am = ActionManager::Get();
     const float kIndentWidth = 0.0f;
@@ -2453,7 +2453,7 @@ static void DrawPropertiesPanel()
         if (ImGui::BeginTabItem("Object"))
         {
             sObjectTabOpen = true;
-            RTTI* obj = GetEditorState()->GetInspectedObject();
+            Object* obj = GetEditorState()->GetInspectedObject();
 
             if (obj != nullptr)
             {

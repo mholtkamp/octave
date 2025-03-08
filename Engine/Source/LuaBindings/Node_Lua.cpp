@@ -46,8 +46,6 @@ int NodeWrapperIndex(lua_State* L)
 int NodeWrapperNewIndex(lua_State* L)
 {
     luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
-    // TODO: Do we want to support integer keys??
-    const char* key = CHECK_STRING(L, 2);
 
     // Add the key/value to the Node userdata's associated uservalue
     lua_getuservalue(L, 1);

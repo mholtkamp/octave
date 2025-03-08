@@ -1,4 +1,4 @@
-#include "Signal.h"
+#include "Signals.h"
 #include "Script.h"
 #include "Nodes/Node.h"
 

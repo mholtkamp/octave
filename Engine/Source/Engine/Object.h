@@ -8,18 +8,18 @@
 
 int CreateClassMetatable(const char* className, const char* classFlag, const char* parentClassName);
 
-class RTTI
+class Object
 {
 public:
-    virtual ~RTTI() = default;
+    virtual ~Object() = default;
 
     virtual const char* RuntimeName() const = 0;
     virtual const char* RuntimeParentName() const = 0;
     virtual RuntimeId InstanceRuntimeId() const = 0;
 
-    static const char* ClassRuntimeName() { return "RTTI"; }
+    static const char* ClassRuntimeName() { return "Object"; }
 
-    virtual RTTI* QueryInterface(RuntimeId id) const
+    virtual Object* QueryInterface(RuntimeId id) const
     {
         OCT_UNUSED(id);
         return nullptr;
@@ -53,23 +53,23 @@ public:
         return nullptr;
     }
 
-    virtual bool Equals(const RTTI* rhs) const
+    virtual bool Equals(const Object* rhs) const
     {
         return this == rhs;
     }
 };
 
-#define DECLARE_RTTI(Type, ParentType)                                                                      \
+#define DECLARE_OBJECT(Type, ParentType)                                                                    \
     public:                                                                                                 \
         static const char* ClassRuntimeName() { return #Type; }                                             \
         virtual const char* RuntimeName() const override { return Type::ClassRuntimeName(); }               \
         virtual const char* RuntimeParentName() const override { return ParentType::ClassRuntimeName(); }   \
         static RuntimeId ClassRuntimeId() { return sRuntimeId; }                                            \
         virtual RuntimeId InstanceRuntimeId() const override { return Type::ClassRuntimeId(); }             \
-        virtual RTTI* QueryInterface(RuntimeId id) const override                                           \
+        virtual Object* QueryInterface(RuntimeId id) const override                                         \
         {                                                                                                   \
             if (id == sRuntimeId)                                                                           \
-                { return (RTTI*)this; }                                                                     \
+                { return (Object*)this; }                                                                   \
             else                                                                                            \
                 { return ParentType::QueryInterface(id); }                                                  \
         }                                                                                                   \
@@ -91,4 +91,4 @@ public:
         static RuntimeId sRuntimeId;                                                                        \
     public:
 
-#define DEFINE_RTTI(Type) RuntimeId Type::sRuntimeId = reinterpret_cast<RuntimeId>(&Type::sRuntimeId);
+#define DEFINE_OBJECT(Type) RuntimeId Type::sRuntimeId = reinterpret_cast<RuntimeId>(&Type::sRuntimeId);

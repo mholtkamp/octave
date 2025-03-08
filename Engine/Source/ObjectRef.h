@@ -85,7 +85,7 @@ public:
         return mObject;
     }
 
-    // For getting a subclass. T must support RTTI
+    // For getting a subclass. T must support Object
     template<typename S>
     S* Get() const
     {

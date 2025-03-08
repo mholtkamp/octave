@@ -13,7 +13,7 @@
 
 DEFINE_FACTORY_MANAGER(Asset);
 DEFINE_FACTORY(Asset, Asset);
-DEFINE_RTTI(Asset);
+DEFINE_OBJECT(Asset);
 
 bool HandleAssetNamePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
