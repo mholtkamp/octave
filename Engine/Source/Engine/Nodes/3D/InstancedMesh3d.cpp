@@ -163,7 +163,7 @@ void InstancedMesh3D::AddInstanceData(const MeshInstanceData& data, int32_t inde
     else
     {
         if (index >= 0 &&
-            index <= mInstanceData.size())
+            index <= int32_t(mInstanceData.size()))
         {
             mInstanceData.insert(mInstanceData.begin() + index, data);
         }

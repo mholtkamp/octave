@@ -417,6 +417,8 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
         case CullMode::None: GX_SetCullMode(GX_CULL_NONE); break;
         case CullMode::Back: GX_SetCullMode(GX_CULL_FRONT); break;
         case CullMode::Front: GX_SetCullMode(GX_CULL_BACK); break;
+
+        default: break;
     }
 }
 

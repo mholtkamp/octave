@@ -531,6 +531,8 @@ glm::vec2 Widget::GetAnchorRatio() const
     case AnchorMode::RightStretch: ratio = { 1.0f, 0.5f }; break;
 
     case AnchorMode::FullStretch: ratio = { 0.5f, 0.5f }; break;
+
+    default: break;
     }
 
     return ratio;

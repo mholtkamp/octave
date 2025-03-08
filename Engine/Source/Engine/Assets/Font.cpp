@@ -29,10 +29,11 @@ bool Font::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
     Property* prop = static_cast<Property*>(datum);
 
     OCT_ASSERT(prop != nullptr);
-    Font* font = static_cast<Font*>(prop->mOwner);
     bool success = false;
 
 #if EDITOR
+    Font* font = static_cast<Font*>(prop->mOwner);
+
     if (prop->mName == "Size")
     {
         int32_t newSize = *((int32_t*)newValue);
@@ -49,7 +50,6 @@ bool Font::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 
         success = true;
     }
-
 #endif
 
     return success;
@@ -185,9 +185,9 @@ void Font::Import(const std::string& path, ImportOptions* options)
 {
     Asset::Import(path, options);
 
-    bool ttf = path.size() > 4 && !(path.substr(path.size() - 4) == ".xml");
-
 #if EDITOR
+
+    bool ttf = path.size() > 4 && !(path.substr(path.size() - 4) == ".xml");
 
     if (ttf)
     {

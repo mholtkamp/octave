@@ -64,6 +64,7 @@ void SoundWave::LoadStream(Stream& stream, Platform platform)
     if (compressed)
     {
         uint32_t compressedSize = stream.ReadUint32();
+        OCT_UNUSED(compressedSize); // Unused in non-editor
 
 #if EDITOR
         // In Editor, we want to keep the compressed data around so in case we save the file again,

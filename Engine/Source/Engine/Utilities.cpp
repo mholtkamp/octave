@@ -245,7 +245,6 @@ static int32_t sDebugConvexCollisionMeshIndex = 0;
 
 void DebugDrawCollisionShape(btCollisionShape* collisionShape, Node3D* node, const glm::mat4& parentTransform, std::vector<DebugDraw>* inoutDraws)
 {
-    uint32_t numCollisionShapes = 0;
     std::vector<btCollisionShape*> collisionShapes;
     std::vector<glm::mat4> collisionTransforms;
 

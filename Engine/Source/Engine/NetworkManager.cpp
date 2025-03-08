@@ -1584,7 +1584,6 @@ void NetworkManager::UpdateReplication(float deltaTime)
     // TODO: Handle multiple worlds. Pass world into update replication.
 
     Node* incRepNode = nullptr;
-    World* world = GetWorld(0);
 
     if (mIncrementalReplication)
     {

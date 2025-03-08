@@ -412,7 +412,7 @@ void Particle3D::SetParticlePosition(int32_t index, glm::vec3 position)
             mParticles[i].mPosition = position;
         }
     }
-    else if (index >= 0 && index < mParticles.size())
+    else if (index >= 0 && index < int32_t(mParticles.size()))
     {
         mParticles[index].mPosition = position;
     }
@@ -421,7 +421,7 @@ void Particle3D::SetParticlePosition(int32_t index, glm::vec3 position)
 glm::vec3 Particle3D::GetParticlePosition(int32_t index)
 {
     glm::vec3 ret = { 0.0f, 0.0f, 0.0f };
-    if (index >= 0 && index < mParticles.size())
+    if (index >= 0 && index < int32_t(mParticles.size()))
     {
         ret = mParticles[index].mPosition;
     }
@@ -437,7 +437,7 @@ void Particle3D::SetParticleSpeed(int32_t index, float speed)
             mParticles[i].mVelocity = Maths::SafeNormalize(mParticles[i].mVelocity) * speed;
         }
     }
-    else if (index >= 0 && index < mParticles.size())
+    else if (index >= 0 && index < int32_t(mParticles.size()))
     {
         mParticles[index].mVelocity = Maths::SafeNormalize(mParticles[index].mVelocity) * speed;
     }
@@ -578,9 +578,6 @@ void Particle3D::SpawnNewParticles(float deltaTime)
                 newPos = glm::rotate(newPos, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
                 newPos = glm::rotate(newPos, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
                 newParticle.mPosition = newPos;
-
-                float dist = powf(distUnit, 1 / 3.0f);
-
             }
             else
             {

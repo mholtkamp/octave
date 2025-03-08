@@ -263,8 +263,6 @@ bool ScriptUtils::RunScript(const char* fileName, Datum* ret)
     {
         LogDebug("Loading script: %s", className.c_str());
 
-        int numResults = (ret != nullptr) ? 1 : 0;
-
         std::string luaString;
 
         if (embeddedScript != nullptr)

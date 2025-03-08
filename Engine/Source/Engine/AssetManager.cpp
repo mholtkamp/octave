@@ -340,9 +340,9 @@ void AssetManager::DiscoverAssetRegistry(const char* registryPath)
     if (regStream.GetData() != nullptr)
     {
         constexpr uint32_t kLineSize = MAX_PATH_SIZE + 42;
-        char line[kLineSize];
-        char typeString[32];
-        char filename[MAX_PATH_SIZE];
+        char line[kLineSize] = { };
+        char typeString[32] = { };
+        char filename[MAX_PATH_SIZE] = { };
 
         std::string lineStr;
         while (true)
@@ -353,13 +353,14 @@ void AssetManager::DiscoverAssetRegistry(const char* registryPath)
                 break;
             }
 
-            strncpy(line, lineStr.c_str(), kLineSize);
+            strncpy(line, lineStr.c_str(), kLineSize - 1);
 
             char* comma = strchr(line, ',');
             OCT_ASSERT(comma != nullptr);
             *comma = '\0';
 
             strncpy(typeString, line, 31);
+            typeString[31] = '\0';
             strncpy(filename, comma + 1, MAX_PATH_SIZE - 1);
 
             // Replace newline with null terminator
@@ -696,7 +697,9 @@ void AssetManager::ImportEngineAssets()
 
         // Import fonts
         Font* fontRoboto32 = (Font*) ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_Roboto32");
+        OCT_UNUSED(fontRoboto32);
         Font* fontRobotoMono16 = (Font*)ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_RobotoMono16");
+        OCT_UNUSED(fontRobotoMono16);
 
         // Mark any transient assets that exist at this point as engine assets
         for (uint32_t i = 0; i < mTransientAssets.size(); ++i)

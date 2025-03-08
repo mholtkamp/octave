@@ -340,7 +340,6 @@ bool Initialize()
 #if !EDITOR
     if (sEngineConfig.mDefaultScene != "")
     {
-        Asset* sceneAsset = LoadAsset(sEngineConfig.mDefaultScene);
         GetWorld(0)->LoadScene(sEngineConfig.mDefaultScene.c_str(), true);
     }
 #endif 

@@ -378,7 +378,7 @@ void AudioManager::Update(float deltaTime)
                     if (sAudioSources[i].mPitchMult != sAudioSources[i].mComponent->GetPitch())
                     {
                         sAudioSources[i].mPitchMult = sAudioSources[i].mComponent->GetPitch();
-                        AUD_SetPitch(i, sAudioSources[i].mPitchMult);
+                        AUD_SetPitch(i, sAudioSources[i].mPitchMult * classPitch * sMasterPitch);
                     }
                 }
             }

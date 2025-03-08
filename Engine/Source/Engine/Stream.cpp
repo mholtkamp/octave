@@ -507,7 +507,6 @@ std::string Stream::GetLine()
             endPos++;
         }
 
-        uint32_t strSize = (endPos - mPos);
         for (uint32_t i = mPos; i < endPos; ++i)
         {
             if (mData[i] != '\0' &&

@@ -36,7 +36,6 @@ void AUD_EncodeVorbis(Stream& inStream, Stream& outStream, PcmFormat format)
     vorbis_info_init(&vi);
     ret = vorbis_encode_init_vbr(&vi, (long)format.mNumChannels, (long) format.mSampleRate, 0.1f);
 
-    int bytesPerSample = (int)format.mBytesPerSample;
     int bytesPerFrame = (int)(format.mNumChannels * format.mBytesPerSample);
 
     if (ret)

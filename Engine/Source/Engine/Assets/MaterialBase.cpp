@@ -165,11 +165,11 @@ void MaterialBase::Create()
 {
     Material::Create();
 
+    // Do we want to default all textures to White? Or just leave null.
+    // If we do, this should probably be moved up to Material::Create().
+#if 0
     Renderer* renderer = Renderer::Get();
 
-    // Do we want to default all textures to White? Or just leave null.
-    // If we do, this should probably be movedup to Material::Create().
-#if 0
     for (uint32_t i = 0; i < mParameters.size(); ++i)
     {
         if (mParameters[i].mType == ShaderParameterType::Texture;

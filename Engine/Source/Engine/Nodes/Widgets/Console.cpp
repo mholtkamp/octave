@@ -11,8 +11,6 @@ DEFINE_NODE(Console, Canvas);
 
 Console::Console()
 {
-    glm::vec2 res = Renderer::Get()->GetScreenResolution(0);
-
     mFont = LoadAsset<Font>("F_RobotoMono16");
 
     mOutputCanvas = CreateChild<Canvas>("OutputCanvas");

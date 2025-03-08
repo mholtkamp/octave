@@ -12,10 +12,11 @@ bool MaterialInstance::HandlePropChange(Datum* datum, uint32_t index, const void
     Property* prop = static_cast<Property*>(datum);
 
     OCT_ASSERT(prop != nullptr);
-    MaterialInstance* matInst = static_cast<MaterialInstance*>(prop->mOwner);
     bool success = false;
 
 #if EDITOR
+    MaterialInstance* matInst = static_cast<MaterialInstance*>(prop->mOwner);
+
     if (prop->mName == "Base Material")
     {
         MaterialBase* baseMaterial = (*(Asset**)newValue)->As<MaterialBase>();

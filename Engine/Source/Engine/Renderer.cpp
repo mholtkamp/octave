@@ -488,6 +488,7 @@ void Renderer::GatherDrawData(World* world)
     bool enable3D = mEnable3dRendering;
     bool enable2D = mEnable2dRendering;
     bool onlySelected = false;
+    OCT_UNUSED(onlySelected); // Unused in non-editor
 
 #if EDITOR
     if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
@@ -1192,9 +1193,7 @@ void Renderer::Render(World* world, int32_t screenIndex)
 
     bool inGame = IsGameTickEnabled();
     float gameDeltaTime = GetEngineState()->mGameDeltaTime;
-    float realDeltaTime = GetEngineState()->mRealDeltaTime;
     bool enable3D = mEnable3dRendering;
-    bool enable2D = mEnable2dRendering;
 
 #if EDITOR
     if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
@@ -1541,7 +1540,6 @@ bool Renderer::IsPostProcessPassEnabled(PostProcessPassId passId) const
 
 void Renderer::EnablePostProcessPass(PostProcessPassId passId, bool enable)
 {
-    bool enabled = false;
     uint32_t iPass = uint32_t(passId);
 
     if (iPass >= 0 &&
