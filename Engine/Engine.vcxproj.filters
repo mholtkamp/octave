@@ -1242,9 +1242,6 @@
     <ClInclude Include="Source\System\System.h">
       <Filter>Source Files\System</Filter>
     </ClInclude>
-    <ClInclude Include="Source\ObjectRef.h">
-      <Filter>Source Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\3D\Audio3d.h">
       <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClInclude>
@@ -1466,6 +1463,9 @@
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Signal_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\ObjectRef.h">
+      <Filter>Source Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

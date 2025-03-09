@@ -849,11 +849,15 @@ void LuaObjectToDatum(lua_State* L, int idx, Datum& datum)
             Node* node = CHECK_NODE(L, idx);
             datum.PushBack(node);
         }
-        else //if (CheckClassFlag(L, idx, ASSET_LUA_FLAG))
+        else if (CheckClassFlag(L, idx, ASSET_LUA_FLAG))
         {
             // If the type check failed here, then an unsupported userdata is being received.
             Asset* asset = CHECK_ASSET(L, idx);
             datum.PushBack(asset);
+        }
+        else
+        {
+            luaL_error(L, "Error: Arg #%d: Unknown userdata type. LuaToDatum only supports Vector, Node, and Asset.", idx);
         }
         break;
     case LUA_TTABLE:

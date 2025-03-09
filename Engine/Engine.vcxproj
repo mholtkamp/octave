@@ -941,6 +941,7 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\TextField.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\VerticalList.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Widget.h" />
+    <ClInclude Include="Source\Engine\ObjectRef.h" />
     <ClInclude Include="Source\Engine\Profiler.h" />
     <ClInclude Include="Source\Engine\Property.h" />
     <ClInclude Include="Source\Engine\Rect.h" />
@@ -1064,7 +1065,6 @@
     <ClInclude Include="Source\Network\NetworkConstants.h" />
     <ClInclude Include="Source\Network\NetworkTypes.h" />
     <ClInclude Include="Source\Network\NetPlatform.h" />
-    <ClInclude Include="Source\ObjectRef.h" />
     <ClInclude Include="Source\System\System.h" />
     <ClInclude Include="Source\System\SystemConstants.h" />
     <ClInclude Include="Source\System\SystemTypes.h" />

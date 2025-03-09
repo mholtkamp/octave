@@ -28,10 +28,15 @@ int Signal_Lua::Emit(lua_State* L)
     Signal& signal = CHECK_SIGNAL(L, 1);
 
     std::vector<Datum> args;
-    int numArgs = lua_gettop(L);
-    args.resize(numArgs);
+    // How many args is this emit sending? (do not include self at idx 1)
+    int numArgs = lua_gettop(L) - 1;
 
-    for (int32_t i = 1; i <= numArgs; ++i)
+    if (numArgs > 0)
+    {
+        args.reserve(numArgs);
+    }
+
+    for (int32_t i = 2; i <= 1 + numArgs; ++i)
     {
         args.push_back(LuaObjectToDatum(L, i));
     }
