@@ -691,7 +691,6 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\TextField.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\VerticalList.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp" />
-    <ClCompile Include="Source\Engine\ObjectRef.cpp" />
     <ClCompile Include="Source\Engine\Profiler.cpp" />
     <ClCompile Include="Source\Engine\Property.cpp" />
     <ClCompile Include="Source\Engine\Rect.cpp" />
@@ -941,7 +940,7 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\TextField.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\VerticalList.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Widget.h" />
-    <ClInclude Include="Source\Engine\ObjectRef.h" />
+    <ClInclude Include="Source\Engine\SmartPointer.h" />
     <ClInclude Include="Source\Engine\Profiler.h" />
     <ClInclude Include="Source\Engine\Property.h" />
     <ClInclude Include="Source\Engine\Rect.h" />

@@ -296,9 +296,6 @@
     <ClCompile Include="Source\LuaBindings\AssetManager_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\ObjectRef.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Source\LuaBindings\Audio_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
@@ -1464,7 +1461,7 @@
     <ClInclude Include="Source\LuaBindings\Signal_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\ObjectRef.h">
+    <ClInclude Include="Source\Engine\SmartPointer.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
