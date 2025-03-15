@@ -9,7 +9,7 @@
 #include "DestroyQueue.h"
 #include "Buffer.h"
 #include "Image.h"
-#include "ObjectRef.h"
+#include "SmartPointer.h"
 
 class RayTracer
 {

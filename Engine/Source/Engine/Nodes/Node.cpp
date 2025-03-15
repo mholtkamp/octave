@@ -8,7 +8,6 @@
 #include "Utilities.h"
 #include "Engine.h"
 #include "Script.h"
-#include "ObjectRef.h"
 #include "NetworkManager.h"
 #include "Assets/Scene.h"
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine.h"
-#include "ObjectRef.h"
+#include "SmartPointer.h"
 
 #include "LuaBindings/LuaUtils.h"
 

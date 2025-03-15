@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <string>
-#include "ObjectRef.h"
+#include "SmartPointer.h"
 #include "ScriptFunc.h"
 
 class ScriptComponent;

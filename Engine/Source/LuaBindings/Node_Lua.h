@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine.h"
-#include "ObjectRef.h"
+#include "SmartPointer.h"
 
 #if LUA_ENABLED
 

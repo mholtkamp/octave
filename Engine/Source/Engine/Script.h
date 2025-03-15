@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Nodes/Node.h"
-#include "ObjectRef.h"
 #include "ScriptFunc.h"
 #include "NetFunc.h"
 

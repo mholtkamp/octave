@@ -13,7 +13,6 @@
 #include "Clock.h"
 #include "Line.h"
 #include "EngineTypes.h"
-#include "ObjectRef.h"
 #include "Nodes/3D/Camera3d.h"
 #include "Nodes/3D/DirectionalLight3d.h"
 

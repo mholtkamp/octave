@@ -15,7 +15,7 @@
 #include "Buffer.h"
 #include "Image.h"
 #include "Line.h"
-#include "ObjectRef.h"
+#include "SmartPointer.h"
 #include "RayTracer.h"
 #include "Profiler.h"
 #include "DescriptorPool.h"

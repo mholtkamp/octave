@@ -8,7 +8,7 @@
 
 #include "Constants.h"
 #include "Maths.h"
-#include "ObjectRef.h"
+#include "SmartPointer.h"
 
 #include "System/SystemTypes.h"
 #include "Graphics/GraphicsTypes.h"

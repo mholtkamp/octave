@@ -5,7 +5,7 @@
 #include <string>
 #include "Maths.h"
 #include "AssetRef.h"
-#include "ObjectRef.h"
+#include "SmartPointer.h"
 #include "Property.h"
 
 class Node;
