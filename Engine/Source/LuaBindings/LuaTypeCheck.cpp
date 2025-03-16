@@ -14,15 +14,18 @@ Node* CheckNodeWrapper(lua_State* L, int arg)
 
     if (nodeLua->mNode == nullptr)
     {
-        luaL_error(L, "Attempting to use destroyed node at arg %d", arg);
+        luaL_error(L, "Attempting to use an invalid node at arg %d", arg);
+    }
+    else if (nodeLua->mNode->IsDestroyed())
+    {
+        luaL_error(L, "Attempting to use a destroyed node at arg %d", arg);
     }
 
-    return nodeLua->mNode;
+    return nodeLua->mNode.Get();
 }
 
 Node* CheckNodeLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
 {
-#if LUA_SAFE_NODE
     Node* ret = nullptr;
     Node_Lua* luaObj = static_cast<Node_Lua*>(CheckHierarchyLuaType<Node_Lua>(L, arg, className, classFlag));
 
@@ -31,21 +34,15 @@ Node* CheckNodeLuaType(lua_State* L, int arg, const char* className, const char*
         ret = luaObj->mNode.Get();
         if (ret == nullptr)
         {
-            luaL_error(L, "Attempting to use destroyed node at arg %d", arg);
+            luaL_error(L, "Attempting to use invalid Node at arg %d", arg);
+        }
+        else if (ret->IsDestroyed())
+        {
+            luaL_error(L, "Attempting to use a destroyed Node at arg %d", arg);
         }
     }
 
     return ret;
-#else
-    Node_Lua* nodeLua = CheckHierarchyLuaType<Node_Lua>(L, arg, className, classFlag);
-
-    if (nodeLua->mNode == nullptr)
-    {
-        luaL_error(L, "Attempting to use destroyed node at arg %d", arg);
-    }
-
-    return nodeLua->mNode;
-#endif
 }
 
 Object* CheckObjectLuaType(lua_State* L, int arg)

@@ -147,28 +147,19 @@ int Node_Lua::Destruct(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
 
-    Node::Destruct(node);
-    node = nullptr;
-
-    Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
-    nodeLua->mNode = nullptr;
+    node->SetPendingDestroy(true);
 
     return 0;
 }
 
 int Node_Lua::IsValid(lua_State* L)
 {
-#if LUA_SAFE_NODE
     Node_Lua* luaObj = static_cast<Node_Lua*>(CheckHierarchyLuaType<Node_Lua>(L, 1, NODE_LUA_NAME, NODE_LUA_FLAG));
 
-    bool ret = (luaObj->mNode.Get() != nullptr);
+    bool ret = (luaObj->mNode.IsValid());
 
     lua_pushboolean(L, ret);
     return 1;
-#else
-    lua_pushboolean(L, true);
-    return 1;
-#endif
 }
 
 int Node_Lua::GetName(lua_State* L)
@@ -560,7 +551,10 @@ int Node_Lua::DestroyChild(lua_State* L)
         child = CHECK_NODE(L, 2);
     }
 
-    node->DestroyChild(child);
+    if (child)
+    {
+        child->SetPendingDestroy(true);
+    }
 
     return 0;
 }
@@ -596,7 +590,7 @@ int Node_Lua::HasStarted(lua_State* L)
     return 1;
 }
 
-int Node_Lua::SetPendingDestroy(lua_State* L)
+int Node_Lua::Destroy(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
     bool destroy = CHECK_BOOLEAN(L, 2);
@@ -606,11 +600,11 @@ int Node_Lua::SetPendingDestroy(lua_State* L)
     return 0;
 }
 
-int Node_Lua::IsPendingDestroy(lua_State* L)
+int Node_Lua::IsDestroyed(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
 
-    bool destroy = node->IsPendingDestroy();
+    bool destroy = node->IsDestroyed();
 
     lua_pushboolean(L, destroy);
     return 1;

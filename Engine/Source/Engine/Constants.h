@@ -58,5 +58,3 @@
 
 #define LUA_ENABLED 1
 #define LUA_TYPE_CHECK 1
-#define LUA_SAFE_NODE 0
-

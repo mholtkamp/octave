@@ -8,6 +8,7 @@
 #include "Utilities.h"
 #include "Engine.h"
 #include "Script.h"
+#include "SmartPointer.h"
 #include "NetworkManager.h"
 #include "Assets/Scene.h"
 
@@ -122,41 +123,31 @@ bool Node::OnRep_OwningHost(Datum* datum, uint32_t index, const void* newValue)
     return true;
 }
 
+static void NodeDeleter(Node* node)
+{
+    node->Destroy();
+}
 
-Node* Node::Construct(const std::string& name)
+NodePtr Node::Construct(const std::string& name)
 {
     Node* newNode = Node::CreateInstance(name.c_str());
-    newNode->Create();
-    return newNode;
+    NodePtr newNodePtr;
+    newNodePtr.Set(newNode, nullptr);
+    newNodePtr.SetDeleter(NodeDeleter);
+    newNodePtr->mSelf = newNodePtr;
+    newNodePtr->Create();
+    return newNodePtr;
 }
 
-Node* Node::Construct(TypeId typeId)
+NodePtr Node::Construct(TypeId typeId)
 {
     Node* newNode = Node::CreateInstance(typeId);
-    newNode->Create();
-    return newNode;
-}
-
-void Node::Destruct(Node* node)
-{
-    if (node != nullptr)
-    {
-        // Recursively stop children first before calling Destroy
-        auto stopNodeFunc = [](Node* node) -> bool
-            {
-                if (node->HasStarted())
-                {
-                    node->Stop();
-                }
-
-                return true;
-            };
-
-        node->Traverse(stopNodeFunc, true);
-
-        node->Destroy();
-        delete node;
-    }
+    NodePtr newNodePtr;
+    newNodePtr.Set(newNode, nullptr);
+    newNodePtr.SetDeleter(NodeDeleter);
+    newNodePtr->mSelf = newNodePtr;
+    newNodePtr->Create();
+    return newNodePtr;
 }
 
 Node::Node()
@@ -176,12 +167,20 @@ void Node::Create()
 
 void Node::Destroy()
 {
+    if (mDestroyed)
+        return;
+
     bool isWorldRoot = (mParent == nullptr && mWorld != nullptr);
 
-    for (int32_t i = int32_t(GetNumChildren()) - 1; i >= 0; --i)
+    if (HasStarted())
     {
-        Node* child = GetChild(i);
-        Node::Destruct(child);
+        Stop();
+    }
+
+    for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
+    {
+        // Destroy will detach child from this
+        mChildren[i]->Destroy();
     }
 
     if (IsPrimitive3D() && GetWorld())
@@ -208,14 +207,12 @@ void Node::Destroy()
         // Clear the userdata's mNode member.
         lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
         Node_Lua* nodeLua = (Node_Lua*) lua_touserdata(L, -1);
-        nodeLua->mNode = nullptr;
+        nodeLua->mNode.Reset();
         lua_pop(L, 1);
 
         luaL_unref(L, LUA_REGISTRYINDEX, mUserdataRef);
         mUserdataRef = LUA_REFNIL;
     }
-
-    NodeRef::EraseReferencesToObject(this);
 
 #if EDITOR
     GetEditorState()->HandleNodeDestroy(this);
@@ -227,9 +224,11 @@ void Node::Destroy()
         OCT_ASSERT(worldRoot == this);
         if (worldRoot == this)
         {
-            GetWorld()->SetRootNode(nullptr);
+            GetWorld()->SetRootNode(NodePtr());
         }
     }
+
+    mDestroyed = true;
 }
 
 void Node::SaveStream(Stream& stream, Platform platorm)
@@ -320,7 +319,7 @@ void Node::Copy(Node* srcNode, bool recurse)
 
         for (uint32_t i = 0; i < srcNode->GetNumChildren(); ++i)
         {
-            Node* srcChild = srcNode->GetChild(i);
+            Node* srcChild = srcNode->GetChild(i).Get();
             Node* dstChild = nullptr;
 
             if (i >= GetNumChildren())
@@ -331,7 +330,7 @@ void Node::Copy(Node* srcNode, bool recurse)
             }
             else
             {
-                dstChild = GetChild(i);
+                dstChild = GetChild(i).Get();
             }
 
             OCT_ASSERT(dstChild);
@@ -380,12 +379,12 @@ void Node::Start()
         }
 
         // TODO-NODE: Start children first? We could add a bool mLateStart.
-        for (uint32_t i = 0; i < GetNumChildren(); ++i)
+        for (uint32_t i = 0; i < mChildren.size(); ++i)
         {
-            Node* child = GetChild(i);
+            NodePtr& child = mChildren[i];
             if (!child->HasStarted())
             {
-                GetChild(i)->Start();
+                child->Start();
             }
         }
 
@@ -412,58 +411,29 @@ void Node::Stop()
     mHasStarted = false;
 }
 
-void Node::RecursiveTick(float deltaTime, bool game)
+void Node::PrepareTick(const NodePtr& selfPtr, std::vector<NodePtrWeak>& outTickNodes, bool game)
 {
-    // TODO-NODE: Add a bool on Node for mLateTick.
-    // If late tick is set, then tick after children tick.
-
     if (game && !mHasStarted)
     {
         Start();
     }
 
-    if (IsTickEnabled() && IsActive() && !mPendingDestroy)
+    if (IsTickEnabled() && IsActive() && !IsDestroyed())
     {
         if (!mLateTick)
         {
-            if (game)
-            {
-                Tick(deltaTime);
-            }
-            else
-            {
-                EditorTick(deltaTime);
-            }
+            outTickNodes.push_back(selfPtr);
         }
 
-        for (int32_t i = 0; i < (int32_t)GetNumChildren(); ++i)
+        for (int32_t i = 0; i < (int32_t)mChildren.size(); ++i)
         {
-            Node* child = GetChild(i);
-            child->RecursiveTick(deltaTime, game);
-
-            if (child->IsPendingDestroy())
-            {
-                Node::Destruct(child);
-                child = nullptr;
-                --i;
-            }
+            NodePtr& child = mChildren[i];
+            child->PrepareTick(child, outTickNodes, game);
         }
 
         if (mLateTick)
         {
-            if (game)
-            {
-                Tick(deltaTime);
-            }
-            else
-            {
-                EditorTick(deltaTime);
-            }
-        }
-
-        if (mPendingDestroy && mParent == nullptr)
-        {
-            Destroy();
+            outTickNodes.push_back(selfPtr);
         }
     }
 }
@@ -715,9 +685,9 @@ void Node::RenderSelected(bool renderChildren)
 #endif
 }
 
-Node* Node::CreateChild(TypeId nodeType)
+NodePtr Node::CreateChild(TypeId nodeType)
 {
-    Node* subNode = Node::Construct(nodeType);
+    NodePtr subNode = Node::Construct(nodeType);
 
     if (subNode != nullptr)
     {
@@ -736,9 +706,9 @@ Node* Node::CreateChild(TypeId nodeType)
     return subNode;
 }
 
-Node* Node::CreateChild(const char* typeName)
+NodePtr Node::CreateChild(const char* typeName)
 {
-    Node* subNode = nullptr;
+    NodePtr subNode = nullptr;
     const std::vector<Factory*>& factories = Node::GetFactoryList();
     for (uint32_t i = 0; i < factories.size(); ++i)
     {
@@ -752,9 +722,9 @@ Node* Node::CreateChild(const char* typeName)
     return subNode;
 }
 
-Node* Node::CreateChildClone(Node* srcNode, bool recurse)
+NodePtr Node::CreateChildClone(const NodePtr& srcNode, bool recurse)
 {
-    Node* subNode = srcNode->Clone(recurse);
+    NodePtr subNode = srcNode->Clone(recurse);
     AddChild(subNode);
 
     if (HasStarted())
@@ -765,9 +735,9 @@ Node* Node::CreateChildClone(Node* srcNode, bool recurse)
     return subNode;
 }
 
-Node* Node::Clone(bool recurse, bool instantiateLinkedScene)
+NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene)
 {
-    Node* clonedNode = nullptr;
+    NodePtr clonedNode = nullptr;
     Scene* srcScene = instantiateLinkedScene ? GetScene() : nullptr;
     bool hasNativeChildren = false;
 
@@ -799,7 +769,7 @@ Node* Node::Clone(bool recurse, bool instantiateLinkedScene)
                 // That option was added just for PIE when cloning the EditScene. Because
                 // in that case we don't want to instantiate from the Scene. It may not be saved 
                 // and we want to carry over the current state instead of what was last saved.
-                Node* childClone = GetChild(i)->Clone(recurse);
+                NodePtr childClone = GetChild(i)->Clone(recurse);
                 clonedNode->AddChild(childClone);
             }
         }
@@ -813,29 +783,21 @@ Node* Node::Clone(bool recurse, bool instantiateLinkedScene)
     return clonedNode;
 }
 
-void Node::DestroyChild(Node* childNode)
-{
-    // TODO-NODE: This working right? Destroy() should detach the node. And 
-    // I think we want to still have the parent set while Stop() / Destroy() is called.
-    Node::Destruct(childNode);
-}
-
 void Node::DestroyAllChildren()
 {
-    for (int32_t i = int32_t(GetNumChildren()) - 1; i >= 0; --i)
+    for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
     {
-        Node* child = GetChild(i);
-        Node::Destruct(child);
+        mChildren[i]->Destroy();
     }
 }
 
-Node* Node::GetRoot()
+NodePtr Node::GetRoot()
 {
-    Node* root = this;
+    NodePtr root = mSelf.Lock();
 
-    if (GetParent() != nullptr)
+    if (mParent.IsValid())
     {
-        root = GetParent()->GetRoot();
+        root = mParent->GetRoot();
     }
 
     return root;
@@ -853,39 +815,9 @@ bool Node::IsWorldRoot() const
     return isWorldRoot;
 }
 
-void Node::SetPendingDestroy(bool pendingDestroy)
+bool Node::IsDestroyed() const
 {
-    mPendingDestroy = pendingDestroy;
-
-    // Do we need to mark children as pending destroy? I think it could cause problems...
-    // A parent node may be expecting its children to be alive during Tick(), but if they are 
-    // already set to pending destroy (and the parent uses Late Tick) then the parent will tick 
-    // after the children have already been destroyed.
-#if 0
-    for (uint32_t i = 0; i < GetNumChildren(); ++i)
-    {
-        GetChild(i)->SetPendingDestroy(pendingDestroy);
-    }
-#endif
-}
-
-bool Node::IsPendingDestroy() const
-{
-    return mPendingDestroy;
-}
-
-void Node::FlushPendingDestroys()
-{
-    for (int32_t i = 0; i < (int32_t)mChildren.size(); ++i)
-    {
-        Node* child = GetChild(i);
-        if (child->IsPendingDestroy())
-        {
-            Node::Destruct(child);
-            child = nullptr;
-            --i;
-        }
-    }
+    return mDestroyed;
 }
 
 bool Node::HasStarted() const
@@ -975,7 +907,7 @@ void Node::SetOwningHost(NetHostId hostId, bool setAsPawn)
 
     if (setAsPawn)
     {
-        NetworkManager::Get()->SetPawn(hostId, this);
+        NetworkManager::Get()->SetPawn(hostId, mSelf.Lock());
     }
 
     if (mScript != nullptr)
@@ -1185,22 +1117,17 @@ bool Node::IsLight3D() const
     return false;
 }
 
-Node* Node::GetParent()
+NodePtr Node::GetParent() const
 {
-    return mParent;
+    return mParent.Lock();
 }
 
-const Node* Node::GetParent() const
-{
-    return mParent;
-}
-
-const std::vector<Node*>& Node::GetChildren() const
+const std::vector<NodePtr>& Node::GetChildren() const
 {
     return mChildren;
 }
 
-void Node::Attach(Node* parent, bool keepWorldTransform, int32_t index)
+void Node::Attach(const NodePtr& parent, bool keepWorldTransform, int32_t index)
 {
     // Can't attach to self.
     OCT_ASSERT(parent != this);
@@ -1212,13 +1139,13 @@ void Node::Attach(Node* parent, bool keepWorldTransform, int32_t index)
     // Detach from parent first
     if (mParent != nullptr)
     {
-        mParent->RemoveChild(this);
+        mParent->RemoveChild(mSelf.Lock());
     }
 
     // Attach to new parent
     if (parent != nullptr)
     {
-        parent->AddChild(this, index);
+        parent->AddChild(mSelf.Lock(), index);
     }
 }
 
@@ -1227,7 +1154,7 @@ void Node::Detach(bool keepWorldTransform)
     Attach(nullptr, keepWorldTransform);
 }
 
-void Node::AddChild(Node* child, int32_t index)
+void Node::AddChild(const NodePtr& child, int32_t index)
 {
     if (child == this)
     {
@@ -1251,7 +1178,7 @@ void Node::AddChild(Node* child, int32_t index)
         }
 
         // Ensure unique name
-        ValidateUniqueChildName(child);
+        ValidateUniqueChildName(child.Get());
 
         if (index >= 0 && index <= (int32_t)mChildren.size())
         {
@@ -1271,14 +1198,14 @@ void Node::AddChild(Node* child, int32_t index)
         }
 #endif
 
-        mChildNameMap.insert({ child->GetName(), child });
+        mChildNameMap.insert({ child->GetName(), child.Get()});
 
-        child->SetParent(this);
+        child->SetParent(mSelf.Lock());
         child->SetWorld(mWorld);
     }
 }
 
-void Node::RemoveChild(Node* child)
+void Node::RemoveChild(const NodePtr& child)
 {
     if (child != nullptr)
     {
@@ -1312,7 +1239,7 @@ void Node::RemoveChild(int32_t index)
     OCT_ASSERT(index >= 0 && index < int32_t(mChildren.size()));
     if (index >= 0 && index < int32_t(mChildren.size()))
     {
-        Node* child = mChildren[index];
+        NodePtr& child = mChildren[index];
 
         child->SetWorld(nullptr);
 
@@ -1340,7 +1267,7 @@ int32_t Node::FindChildIndex(const std::string& name) const
     return index;
 }
 
-int32_t Node::FindChildIndex(Node* child) const
+int32_t Node::FindChildIndex(const NodePtr& child) const
 {
     int32_t index = -1;
 
@@ -1357,9 +1284,9 @@ int32_t Node::FindChildIndex(Node* child) const
 }
 
 
-Node* Node::FindChild(const std::string& name, bool recurse) const
+NodePtr Node::FindChild(const std::string& name, bool recurse) const
 {
-    Node* retNode = nullptr;
+    NodePtr retNode;
 
     for (uint32_t i = 0; i < mChildren.size(); ++i)
     {
@@ -1387,9 +1314,9 @@ Node* Node::FindChild(const std::string& name, bool recurse) const
     return retNode;
 }
 
-Node* Node::FindChildWithTag(const std::string& tag, bool recurse) const
+NodePtr Node::FindChildWithTag(const std::string& tag, bool recurse) const
 {
-    Node* retNode = nullptr;
+    NodePtr retNode;
 
     for (uint32_t i = 0; i < mChildren.size(); ++i)
     {
@@ -1417,20 +1344,20 @@ Node* Node::FindChildWithTag(const std::string& tag, bool recurse) const
     return retNode;
 }
 
-Node* Node::FindDescendant(const std::string& name)
+NodePtr Node::FindDescendant(const std::string& name)
 {
     return FindChild(name, true);
 }
 
-Node* Node::FindAncestor(const std::string& name)
+NodePtr Node::FindAncestor(const std::string& name)
 {
-    Node* ret = nullptr;
+    NodePtr ret = nullptr;
 
     if (mParent != nullptr)
     {
         if (mParent->GetName() == name)
         {
-            ret = mParent;
+            ret = mParent.Lock();
         }
         else
         {
@@ -1459,9 +1386,9 @@ bool Node::HasAncestor(Node* node)
     return hasAncestor;
 }
 
-Node* Node::GetChild(int32_t index) const
+NodePtr Node::GetChild(int32_t index) const
 {
-    Node* retNode = nullptr;
+    NodePtr retNode;
     if (index >= 0 &&
         index < (int32_t)mChildren.size())
     {
@@ -1470,13 +1397,13 @@ Node* Node::GetChild(int32_t index) const
     return retNode;
 }
 
-Node* Node::GetChildByType(TypeId type) const
+NodePtr Node::GetChildByType(TypeId type) const
 {
-    Node* ret = nullptr;
+    NodePtr ret;
 
-    for (uint32_t i = 0; i < GetNumChildren(); ++i)
+    for (uint32_t i = 0; i < mChildren.size(); ++i)
     {
-        Node* child = GetChild(i);
+        const NodePtr& child = mChildren[i];
         if (child->GetType() == type)
         {
             ret = child;
@@ -1485,6 +1412,27 @@ Node* Node::GetChildByType(TypeId type) const
     }
 
     return ret;
+}
+
+NodePtr Node::GetChildPtr(int32_t index) const
+{
+    if (index >= 0 &&
+        index < (int32_t)mChildren.size())
+    {
+        return mChildren[index];
+    }
+
+    return NodePtr();
+}
+
+NodePtr Node::FindChildPtr(const std::string& name, bool recurse) const
+{
+
+}
+
+NodePtr Node::ResolvePtr()
+{
+    return mSelf.Lock();
 }
 
 uint32_t Node::GetNumChildren() const
@@ -1498,7 +1446,7 @@ int32_t Node::FindParentNodeIndex() const
 
     if (mParent != nullptr)
     {
-        const std::vector<Node*>& children = mParent->GetChildren();
+        const std::vector<NodePtr>& children = mParent->GetChildren();
         for (uint32_t i = 0; i < children.size(); ++i)
         {
             if (children[i] == mParent)
@@ -1814,7 +1762,7 @@ NetFunc* Node::FindNetFunc(uint16_t index)
     return retFunc;
 }
 
-void Node::SetParent(Node* parent)
+void Node::SetParent(const NodePtr& parent)
 {
     mParent = parent;
 }

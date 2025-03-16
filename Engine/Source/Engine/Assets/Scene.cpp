@@ -210,7 +210,7 @@ void Scene::Capture(Node* root, Platform platform)
     AddNodeDef(root, platform, nodeList);
 }
 
-Node* Scene::Instantiate()
+NodePtr Scene::Instantiate()
 {
     Node* rootNode = nullptr;
 

@@ -102,25 +102,17 @@ void World::Destroy()
     mCollisionConfig = nullptr;
 }
 
-void World::FlushPendingDestroys()
+Node* World::GetRootNode()
 {
-    if (mRootNode != nullptr)
-    {
-        mRootNode->FlushPendingDestroys();
-
-        if (mRootNode->IsPendingDestroy())
-        {
-            DestroyRootNode();
-        }
-    }
+    return mRootNode.Get();
 }
 
-Node* World::GetRootNode()
+NodePtr World::GetRootNodePtr()
 {
     return mRootNode;
 }
 
-void World::SetRootNode(Node* node)
+void World::SetRootNode(const NodePtr& node)
 {
     if (mRootNode != node)
     {
@@ -144,12 +136,7 @@ void World::DestroyRootNode()
 {
     if (mRootNode != nullptr)
     {
-        Node::Destruct(mRootNode);
-        
-        // Node::Destroy should clear the world root node
-        // Make sure derived class Destroy() is calling parent.
-        OCT_ASSERT(mRootNode == nullptr);
-        // Calling SetRootNode() just in case, but it's unnecessary.
+        mRootNode->Destroy();
         SetRootNode(nullptr);
     }
 }
@@ -162,7 +149,7 @@ Node* World::FindNode(const std::string& name)
     {
         if (mRootNode->GetName() == name)
         {
-            ret = mRootNode;
+            ret = mRootNode.Get();
         }
         else
         {
@@ -614,14 +601,13 @@ void World::Update(float deltaTime)
     // Load any queued levels.
     if (mQueuedRootNode != nullptr)
     {
-        Node* newRoot = mQueuedRootNode.Get<Node>();
-        newRoot->Detach();
+        mQueuedRootNode->Detach();
 
         DestroyRootNode();
 
-        SetRootNode(newRoot);
+        SetRootNode(mQueuedRootNode);
 
-        mQueuedRootNode = nullptr;
+        mQueuedRootNode.Reset();
     }
 
     // Ensure world root node is set to replicate. (Otherwise clients will see nothing)
@@ -737,7 +723,29 @@ void World::Update(float deltaTime)
         SCOPED_FRAME_STAT("Tick");
         if (mRootNode != nullptr)
         {
-            mRootNode->RecursiveTick(deltaTime, gameTickEnabled);
+            // To allow dynamically removing / reparenting nodes, gather up all the nodes that
+            // need to tick first, then iterate over them and call tick if they are valid / not destroyed.
+            static std::vector<NodePtrWeak> sNodesToTick;
+            sNodesToTick.clear();
+
+            mRootNode->PrepareTick(mRootNode, sNodesToTick, gameTickEnabled);
+
+            for (uint32_t i = 0; i < sNodesToTick.size(); ++i)
+            {
+                Node* node = sNodesToTick[i].Get();
+
+                if (node)
+                {
+                    if (gameTickEnabled)
+                    {
+                        node->Tick(deltaTime);
+                    }
+                    else
+                    {
+                        node->EditorTick(deltaTime);
+                    }
+                }
+            }
         }
     }
 
@@ -822,7 +830,7 @@ void World::SetAudioReceiver(Node3D* newReceiver)
     mAudioReceiver = newReceiver;
 }
 
-void World::PlaceNewlySpawnedNode(Node* node)
+void World::PlaceNewlySpawnedNode(NodePtr node)
 {
     if (node != nullptr)
     {
@@ -848,9 +856,9 @@ void World::RestoreDynamicsWorld()
     mDynamicsWorld = mDefaultDynamicsWorld;
 }
 
-Node* World::SpawnNode(TypeId actorType)
+Node World::SpawnNode(TypeId actorType)
 {
-    Node* newNode = Node::Construct(actorType);
+    NodePtr newNode = Node::Construct(actorType);
 
     if (newNode != nullptr)
     {

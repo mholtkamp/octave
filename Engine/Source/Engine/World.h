@@ -48,9 +48,9 @@ public:
         return (NodeClass*)SpawnNode(NodeClass::GetStaticType());
     }
 
-    void FlushPendingDestroys();
     Node* GetRootNode();
-    void SetRootNode(Node* node);
+    NodePtr GetRootNodePtr();
+    void SetRootNode(const NodePtr& node);
     void DestroyRootNode();
     Node* FindNode(const std::string& name);
     Node* GetNetNode(NetId netId);
@@ -186,11 +186,11 @@ private:
 
 private:
 
-    Node* mRootNode = nullptr;
+    NodePtr mRootNode;
     std::vector<Line> mLines;
     std::vector<class Light3D*> mLights;
     std::vector<class Audio3D*> mAudios;
-    NodeRef mQueuedRootNode;
+    NodePtr mQueuedRootNode;
     glm::vec4 mAmbientLightColor;
     glm::vec4 mShadowColor;
     FogSettings mFogSettings;

@@ -39,7 +39,7 @@ public:
     virtual const char* GetTypeName() override;
 
     void Capture(Node* root, Platform platform = Platform::Count);
-    Node* Instantiate();
+    NodePtr Instantiate();
 
     void ApplyRenderSettings(World* world);
 

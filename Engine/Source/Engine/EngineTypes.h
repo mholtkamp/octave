@@ -450,7 +450,7 @@ struct NetHostProfile
     uint16_t mIncomingReliableSeq = 0;
     uint16_t mOutgoingUnreliableSeq = 0;
     uint16_t mIncomingUnreliableSeq = 0;
-    NodeRef mPawn = nullptr;
+    WeakPtr<Node> mPawn;
     bool mReady = true;
 };
 

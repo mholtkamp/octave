@@ -14,11 +14,7 @@
 
 struct Node_Lua
 {
-#if LUA_SAFE_NODE
-    NodeRef mNode;
-#else
-    Node* mNode = nullptr;
-#endif
+    NodePtr mNode;
 
     static int Create(lua_State* L, Node* node);
     static int Construct(lua_State* L);
@@ -64,8 +60,7 @@ struct Node_Lua
     static int HasStarted(lua_State* L);
 
     static int Destroy(lua_State* L);
-    static int SetPendingDestroy(lua_State* L);
-    static int IsPendingDestroy(lua_State* L);
+    static int IsDestroyed(lua_State* L);
     static int EnableTick(lua_State* L);
     static int IsTickEnabled(lua_State* L);
 

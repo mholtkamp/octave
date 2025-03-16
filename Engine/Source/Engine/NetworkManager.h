@@ -104,7 +104,7 @@ public:
     void EnableNetRelevancy(bool enable);
     void SetRelevancyDistance(float dist);
     float GetRelevancyDistanceSquared() const;
-    void SetPawn(NetHostId id, Node* pawn);
+    void SetPawn(NetHostId id, NodePtr pawn);
     Node* GetPawn(NetHostId id);
 
     int32_t GetBytesSent() const;

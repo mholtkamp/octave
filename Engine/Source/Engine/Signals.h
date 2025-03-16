@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ObjectRef.h"
+#include "SmartPointer.h"
 #include "ScriptFunc.h"
 #include "Datum.h"
 

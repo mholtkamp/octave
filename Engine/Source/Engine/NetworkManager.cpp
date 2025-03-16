@@ -868,7 +868,7 @@ float NetworkManager::GetRelevancyDistanceSquared() const
     return mRelevancyDistanceSquared;
 }
 
-void NetworkManager::SetPawn(NetHostId id, Node* pawn)
+void NetworkManager::SetPawn(NetHostId id, NodePtr pawn)
 {
     if (NetIsServer())
     {

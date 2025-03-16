@@ -6,18 +6,20 @@
 
 class Node;
 
+template<typename T>
 struct RefCount
 {
+    typedef void(*DeleterFP)(T*);
+
     int32_t mSharedCount = 0;
     int32_t mWeakCount = 0;
+    DeleterFP mDeleter = nullptr;
 };
 
 template<typename T>
 class SharedPtr
 {
 public:
-
-    friend class WeakPtr<T>;
 
     SharedPtr()
     {
@@ -36,6 +38,11 @@ public:
 
         src.mPointer = nullptr;
         src.mRefCount = nullptr;
+    }
+
+    SharedPtr(std::nullptr_t)
+    {
+        Clear();
     }
 
     ~SharedPtr()
@@ -90,7 +97,12 @@ public:
         return *mPointer;
     }
 
-    void Set(T* pointer, RefCount* refCount)
+    operator bool() const
+    {
+        return IsValid();
+    }
+
+    void Set(T* pointer, RefCount<T>* refCount)
     {
         if (mPointer != pointer)
         {
@@ -131,6 +143,11 @@ public:
 
             if (mRefCount->mSharedCount <= 0)
             {
+                if (mRefCount->mDeleter)
+                {
+                    mRefCount->mDeleter(mPointer);
+                }
+
                 delete mPointer;
             }
 
@@ -150,6 +167,14 @@ public:
         }
     }
 
+    void SetDeleter(RefCount<T>::DeleterFP deleteFunc)
+    {
+        if (IsValid())
+        {
+            mRefCount->mDeleter = deleteFunc;
+        }
+    }
+
     void Reset()
     {
         Clear();
@@ -157,12 +182,17 @@ public:
 
     T* Get() const
     {
-        return mObject;
+        return mPointer;
     }
 
     T*& GetRef()
     {
-        return mObject;
+        return mPointer;
+    }
+
+    RefCount<T>* GetRefCount()
+    {
+        return mRefCount;
     }
 
     int32_t GetUseCount()
@@ -196,7 +226,7 @@ public:
 private:
 
     T* mPointer = nullptr;
-    RefCount* mRefCount = nullptr;
+    RefCount<T>* mRefCount = nullptr;
 };
 
 template<typename T>
@@ -215,7 +245,7 @@ public:
 
     WeakPtr(const SharedPtr<T>& src)
     {
-        Set(src.mPointer, src.mRefCount);
+        Set(src.Get(), src.GetRefCount());
     }
 
     WeakPtr(WeakPtr<T>&& src)
@@ -240,7 +270,7 @@ public:
 
     WeakPtr<T>& operator=(const SharedPtr<T>& src)
     {
-        Set(src.mPointer, src.mRefCount);
+        Set(src.Get(), src.GetRefCount());
     }
 
     WeakPtr<T>& operator=(WeakPtr<T>&& src)
@@ -254,22 +284,22 @@ public:
         src.mRefCount = nullptr;
     }
 
-    bool operator==(const SharedPtr& other) const
+    bool operator==(const SharedPtr<T>& other) const
     {
-        return mPointer == other.mPointer;
+        return mPointer == other.Get();
     }
 
-    bool operator!=(const SharedPtr& other) const
+    bool operator!=(const SharedPtr<T>& other) const
     {
         return !operator==(other);
     }
 
-    bool operator==(const WeakPtr& other) const
+    bool operator==(const WeakPtr<T>& other) const
     {
         return mPointer == other.mPointer;
     }
 
-    bool operator!=(const WeakPtr& other) const
+    bool operator!=(const WeakPtr<T>& other) const
     {
         return !operator==(other);
     }
@@ -294,7 +324,12 @@ public:
         return *mPointer;
     }
 
-    void Set(T* pointer, RefCount* refCount)
+    operator bool() const
+    {
+        return IsValid();
+    }
+
+    void Set(T* pointer, RefCount<T>* refCount)
     {
         // We must always receive a valid refcount if given a valid pointer.
         OCT_ASSERT((pointer != nullptr) == (refCount != nullptr));
@@ -346,9 +381,9 @@ public:
         }
     }
 
-    TSharedPtr<T> Lock() const
+    SharedPtr<T> Lock() const
     {
-        TSharedPtr<T> ret;
+        SharedPtr<T> ret;
 
         if (IsValid())
         {
@@ -363,10 +398,58 @@ public:
         return (mPointer != nullptr && mRefCount != nullptr);
     }
 
+    void Reset()
+    {
+        Clear();
+    }
+
+    T* Get() const
+    {
+        return IsValid() ? mPointer : nullptr;
+    }
+
+    T*& GetRef()
+    {
+        return IsValid() ? mPointer : nullptr;
+    }
+
+    RefCount<T>* GetRefCount()
+    {
+        return mRefCount;
+    }
+
+    int32_t GetUseCount()
+    {
+        return mRefCount ? mRefCount->mSharedCount : 0;
+    }
+
+    int32_t GetSharedCount()
+    {
+        return GetUseCount();
+    }
+
+    int32_t GetWeakCount()
+    {
+        return mRefCount ? mRefCount->mWeakCount : 0;
+    }
+
+    // For getting a subclass. T must inherit from Object.
+    template<typename S>
+    S* Get() const
+    {
+        if (!IsValid())
+        {
+            return nullptr;
+        }
+
+        OCT_ASSERT(!mPointer || mPointer->Is(S::ClassRuntimeId()));
+        return static_cast<S*>(Get());
+    }
+
 private:
 
     T* mPointer = nullptr;
-    RefCount* mRefCount = nullptr;
+    RefCount<T>* mRefCount = nullptr;
 };
 
 // TODO: Perfect forwarding
