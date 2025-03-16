@@ -569,9 +569,6 @@
     <ClCompile Include="Source\LuaBindings\Node_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
-    <ClCompile Include="Source\LuaBindings\NodeRef_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
     <ClCompile Include="Source\LuaBindings\DirectionalLight3d_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
@@ -1300,9 +1297,6 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Node_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\LuaBindings\NodeRef_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\DirectionalLight3d_Lua.h">

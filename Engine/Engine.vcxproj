@@ -756,7 +756,6 @@
     <ClCompile Include="Source\LuaBindings\InstancedMesh3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\MaterialBase_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Material_Lua.cpp" />
-    <ClCompile Include="Source\LuaBindings\NodeRef_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\DirectionalLight3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Font_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Input_Lua.cpp" />
@@ -1008,7 +1007,6 @@
     <ClInclude Include="Source\LuaBindings\InstancedMesh3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\MaterialBase_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Material_Lua.h" />
-    <ClInclude Include="Source\LuaBindings\NodeRef_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Node_Lua.h" />
     <ClInclude Include="Source\LuaBindings\DirectionalLight3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Engine_Lua.h" />

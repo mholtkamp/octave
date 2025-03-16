@@ -167,7 +167,7 @@ public:
         }
     }
 
-    void SetDeleter(RefCount<T>::DeleterFP deleteFunc)
+    void SetDeleter(typename RefCount<T>::DeleterFP deleteFunc)
     {
         if (IsValid())
         {
