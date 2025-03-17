@@ -224,7 +224,7 @@ void Node::Destroy()
         OCT_ASSERT(worldRoot == this);
         if (worldRoot == this)
         {
-            GetWorld()->SetRootNode(NodePtr());
+            GetWorld()->SetRootNode(nullptr);
         }
     }
 
@@ -319,7 +319,7 @@ void Node::Copy(Node* srcNode, bool recurse)
 
         for (uint32_t i = 0; i < srcNode->GetNumChildren(); ++i)
         {
-            Node* srcChild = srcNode->GetChild(i).Get();
+            Node* srcChild = srcNode->GetChild(i);
             Node* dstChild = nullptr;
 
             if (i >= GetNumChildren())
@@ -330,7 +330,7 @@ void Node::Copy(Node* srcNode, bool recurse)
             }
             else
             {
-                dstChild = GetChild(i).Get();
+                dstChild = GetChild(i);
             }
 
             OCT_ASSERT(dstChild);
@@ -379,12 +379,12 @@ void Node::Start()
         }
 
         // TODO-NODE: Start children first? We could add a bool mLateStart.
-        for (uint32_t i = 0; i < mChildren.size(); ++i)
+        for (uint32_t i = 0; i < GetNumChildren(); ++i)
         {
-            NodePtr& child = mChildren[i];
+            Node* child = GetChild(i);
             if (!child->HasStarted())
             {
-                child->Start();
+                GetChild(i)->Start();
             }
         }
 
@@ -684,13 +684,13 @@ void Node::RenderSelected(bool renderChildren)
 #endif
 }
 
-NodePtr Node::CreateChild(TypeId nodeType)
+Node* Node::CreateChild(TypeId nodeType)
 {
     NodePtr subNode = Node::Construct(nodeType);
 
     if (subNode != nullptr)
     {
-        AddChild(subNode);
+        AddChild(subNode.Get());
 
         if (HasStarted())
         {
@@ -702,12 +702,12 @@ NodePtr Node::CreateChild(TypeId nodeType)
         LogError("Failed to create child node.");
     }
 
-    return subNode;
+    return subNode.Get();
 }
 
-NodePtr Node::CreateChild(const char* typeName)
+Node* Node::CreateChild(const char* typeName)
 {
-    NodePtr subNode = nullptr;
+    Node* subNode = nullptr;
     const std::vector<Factory*>& factories = Node::GetFactoryList();
     for (uint32_t i = 0; i < factories.size(); ++i)
     {
@@ -721,22 +721,22 @@ NodePtr Node::CreateChild(const char* typeName)
     return subNode;
 }
 
-NodePtr Node::CreateChildClone(const NodePtr& srcNode, bool recurse)
+Node* Node::CreateChildClone(Node* srcNode, bool recurse)
 {
     NodePtr subNode = srcNode->Clone(recurse);
-    AddChild(subNode);
+    AddChild(subNode.Get());
 
     if (HasStarted())
     {
         subNode->Start();
     }
 
-    return subNode;
+    return subNode.Get();
 }
 
 NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene)
 {
-    NodePtr clonedNode = nullptr;
+    NodePtr clonedNode;
     Scene* srcScene = instantiateLinkedScene ? GetScene() : nullptr;
     bool hasNativeChildren = false;
 
@@ -769,7 +769,7 @@ NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene)
                 // in that case we don't want to instantiate from the Scene. It may not be saved 
                 // and we want to carry over the current state instead of what was last saved.
                 NodePtr childClone = GetChild(i)->Clone(recurse);
-                clonedNode->AddChild(childClone);
+                clonedNode->AddChild(childClone.Get());
             }
         }
 
@@ -784,19 +784,20 @@ NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene)
 
 void Node::DestroyAllChildren()
 {
-    for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
+    for (int32_t i = int32_t(GetNumChildren()) - 1; i >= 0; --i)
     {
-        mChildren[i]->Destroy();
+        Node* child = GetChild(i);
+        child->Destroy();
     }
 }
 
-NodePtr Node::GetRoot()
+Node* Node::GetRoot()
 {
-    NodePtr root = mSelf.Lock();
+    Node* root = this;
 
-    if (mParent.IsValid())
+    if (GetParent() != nullptr)
     {
-        root = mParent->GetRoot();
+        root = GetParent()->GetRoot();
     }
 
     return root;
@@ -906,7 +907,7 @@ void Node::SetOwningHost(NetHostId hostId, bool setAsPawn)
 
     if (setAsPawn)
     {
-        NetworkManager::Get()->SetPawn(hostId, mSelf.Lock());
+        NetworkManager::Get()->SetPawn(hostId, this);
     }
 
     if (mScript != nullptr)
@@ -1116,9 +1117,14 @@ bool Node::IsLight3D() const
     return false;
 }
 
-NodePtr Node::GetParent() const
+Node* Node::GetParent()
 {
-    return mParent.Lock();
+    return mParent.Get();
+}
+
+const Node* Node::GetParent() const
+{
+    return mParent.Get();
 }
 
 const std::vector<NodePtr>& Node::GetChildren() const
@@ -1126,7 +1132,7 @@ const std::vector<NodePtr>& Node::GetChildren() const
     return mChildren;
 }
 
-void Node::Attach(const NodePtr& parent, bool keepWorldTransform, int32_t index)
+void Node::Attach(Node* parent, bool keepWorldTransform, int32_t index)
 {
     // Can't attach to self.
     OCT_ASSERT(parent != this);
@@ -1135,16 +1141,19 @@ void Node::Attach(const NodePtr& parent, bool keepWorldTransform, int32_t index)
         return;
     }
 
+    // Lock in case removing child will reduce refcount to 0
+    NodePtr self = mSelf.Lock();
+
     // Detach from parent first
     if (mParent != nullptr)
     {
-        mParent->RemoveChild(mSelf.Lock());
+        mParent->RemoveChild(this);
     }
 
     // Attach to new parent
     if (parent != nullptr)
     {
-        parent->AddChild(mSelf.Lock(), index);
+        parent->AddChild(this, index);
     }
 }
 
@@ -1153,7 +1162,7 @@ void Node::Detach(bool keepWorldTransform)
     Attach(nullptr, keepWorldTransform);
 }
 
-void Node::AddChild(const NodePtr& child, int32_t index)
+void Node::AddChild(Node* child, int32_t index)
 {
     if (child == this)
     {
@@ -1177,15 +1186,17 @@ void Node::AddChild(const NodePtr& child, int32_t index)
         }
 
         // Ensure unique name
-        ValidateUniqueChildName(child.Get());
+        ValidateUniqueChildName(child);
+
+        NodePtr childPtr = Node::ResolvePtr(child);
 
         if (index >= 0 && index <= (int32_t)mChildren.size())
         {
-            mChildren.insert(mChildren.begin() + index, child);
+            mChildren.insert(mChildren.begin() + index, childPtr);
         }
         else
         {
-            mChildren.push_back(child);
+            mChildren.push_back(childPtr);
         }
 
 #if EDITOR
@@ -1197,14 +1208,14 @@ void Node::AddChild(const NodePtr& child, int32_t index)
         }
 #endif
 
-        mChildNameMap.insert({ child->GetName(), child.Get()});
+        mChildNameMap.insert({ child->GetName(), child });
 
-        child->SetParent(mSelf.Lock());
+        child->SetParent(this);
         child->SetWorld(mWorld);
     }
 }
 
-void Node::RemoveChild(const NodePtr& child)
+void Node::RemoveChild(Node* child)
 {
     if (child != nullptr)
     {
@@ -1238,15 +1249,15 @@ void Node::RemoveChild(int32_t index)
     OCT_ASSERT(index >= 0 && index < int32_t(mChildren.size()));
     if (index >= 0 && index < int32_t(mChildren.size()))
     {
-        NodePtr& child = mChildren[index];
+        NodeRef childPtr = mChildren[index];
 
-        child->SetWorld(nullptr);
+        childPtr->SetWorld(nullptr);
 
-        child->SetParent(nullptr);
+        childPtr->SetParent(nullptr);
         mChildren.erase(mChildren.begin() + index);
 
         // This child's name should be in the map. When a node is renamed, the parent's map needs to be udpated.
-        size_t elemRemoved = mChildNameMap.erase(child->GetName());
+        size_t elemRemoved = mChildNameMap.erase(childPtr->GetName());
         OCT_ASSERT(elemRemoved == 1);
     }
 }
@@ -1266,7 +1277,7 @@ int32_t Node::FindChildIndex(const std::string& name) const
     return index;
 }
 
-int32_t Node::FindChildIndex(const NodePtr& child) const
+int32_t Node::FindChildIndex(Node* child) const
 {
     int32_t index = -1;
 
@@ -1283,15 +1294,15 @@ int32_t Node::FindChildIndex(const NodePtr& child) const
 }
 
 
-NodePtr Node::FindChild(const std::string& name, bool recurse) const
+Node* Node::FindChild(const std::string& name, bool recurse) const
 {
-    NodePtr retNode;
+    Node* retNode = nullptr;
 
     for (uint32_t i = 0; i < mChildren.size(); ++i)
     {
         if (mChildren[i]->GetName() == name)
         {
-            retNode = mChildren[i];
+            retNode = mChildren[i].Get();
             break;
         }
     }
@@ -1313,15 +1324,15 @@ NodePtr Node::FindChild(const std::string& name, bool recurse) const
     return retNode;
 }
 
-NodePtr Node::FindChildWithTag(const std::string& tag, bool recurse) const
+Node* Node::FindChildWithTag(const std::string& tag, bool recurse) const
 {
-    NodePtr retNode;
+    Node* retNode = nullptr;
 
     for (uint32_t i = 0; i < mChildren.size(); ++i)
     {
         if (mChildren[i]->HasTag(tag))
         {
-            retNode = mChildren[i];
+            retNode = mChildren[i].Get();
             break;
         }
     }
@@ -1343,20 +1354,20 @@ NodePtr Node::FindChildWithTag(const std::string& tag, bool recurse) const
     return retNode;
 }
 
-NodePtr Node::FindDescendant(const std::string& name)
+Node* Node::FindDescendant(const std::string& name)
 {
     return FindChild(name, true);
 }
 
-NodePtr Node::FindAncestor(const std::string& name)
+Node* Node::FindAncestor(const std::string& name)
 {
-    NodePtr ret = nullptr;
+    Node* ret = nullptr;
 
     if (mParent != nullptr)
     {
         if (mParent->GetName() == name)
         {
-            ret = mParent.Lock();
+            ret = mParent.Get();
         }
         else
         {
@@ -1385,53 +1396,32 @@ bool Node::HasAncestor(Node* node)
     return hasAncestor;
 }
 
-NodePtr Node::GetChild(int32_t index) const
+Node* Node::GetChild(int32_t index) const
 {
-    NodePtr retNode;
+    Node* retNode = nullptr;
     if (index >= 0 &&
         index < (int32_t)mChildren.size())
     {
-        retNode = mChildren[index];
+        retNode = mChildren[index].Get();
     }
     return retNode;
 }
 
-NodePtr Node::GetChildByType(TypeId type) const
+Node* Node::GetChildByType(TypeId type) const
 {
-    NodePtr ret;
+    Node* ret;
 
     for (uint32_t i = 0; i < mChildren.size(); ++i)
     {
         const NodePtr& child = mChildren[i];
         if (child->GetType() == type)
         {
-            ret = child;
+            ret = child.Get();
             break;
         }
     }
 
     return ret;
-}
-
-NodePtr Node::GetChildPtr(int32_t index) const
-{
-    if (index >= 0 &&
-        index < (int32_t)mChildren.size())
-    {
-        return mChildren[index];
-    }
-
-    return NodePtr();
-}
-
-NodePtr Node::FindChildPtr(const std::string& name, bool recurse) const
-{
-
-}
-
-NodePtr Node::ResolvePtr()
-{
-    return mSelf.Lock();
 }
 
 uint32_t Node::GetNumChildren() const
@@ -1673,6 +1663,16 @@ void Node::InvokeNetFunc(const char* name, const std::vector<Datum>& params)
     }
 }
 
+NodePtr Node::ResolvePtr(Node* node)
+{
+    return node ? node->mSelf.Lock() : nullptr;
+}
+
+NodePtrWeak Node::ResolveWeakPtr(Node* node)
+{
+    return node ? node->mSelf : nullptr;
+}
+
 void Node::RegisterNetFuncs(Node* node)
 {
     TypeId nodeType = node->GetType();
@@ -1761,9 +1761,9 @@ NetFunc* Node::FindNetFunc(uint16_t index)
     return retFunc;
 }
 
-void Node::SetParent(const NodePtr& parent)
+void Node::SetParent(Node* parent)
 {
-    mParent = parent;
+    mParent = Node::ResolveWeakPtr(parent);
 }
 
 void Node::ValidateUniqueChildName(Node* newChild)

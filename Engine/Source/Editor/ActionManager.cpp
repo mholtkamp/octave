@@ -827,7 +827,7 @@ Node* ActionManager::EXE_SpawnNode(TypeId srcType)
     ActionManager::Get()->ExecuteAction(action);
 
     OCT_ASSERT(action->GetNodes().size() == 1);
-    Node* retNode = action->GetNodes()[0];
+    Node* retNode = action->GetNodes()[0].Get();
     return retNode;
 }
 
@@ -842,7 +842,7 @@ Node* ActionManager::EXE_SpawnNode(const char* srcTypeName)
     ActionManager::Get()->ExecuteAction(action);
 
     OCT_ASSERT(action->GetNodes().size() == 1);
-    Node* retNode = action->GetNodes()[0];
+    Node* retNode = action->GetNodes()[0].Get();
     return retNode;
 }
 
@@ -857,7 +857,7 @@ Node* ActionManager::EXE_SpawnNode(Scene* srcScene)
     ActionManager::Get()->ExecuteAction(action);
 
     OCT_ASSERT(action->GetNodes().size() == 1);
-    Node* retNode = action->GetNodes()[0];
+    Node* retNode = action->GetNodes()[0].Get();
     return retNode;
 }
 
@@ -872,7 +872,7 @@ Node* ActionManager::EXE_SpawnNode(Node* srcNode)
     ActionManager::Get()->ExecuteAction(action);
 
     OCT_ASSERT(action->GetNodes().size() == 1);
-    Node* retNode = action->GetNodes()[0];
+    Node* retNode = action->GetNodes()[0].Get();
     return retNode;
 }
 
@@ -895,7 +895,16 @@ std::vector<Node*> ActionManager::EXE_SpawnNodes(const std::vector<Node*>& srcNo
     ActionManager::Get()->ExecuteAction(action);
 
     OCT_ASSERT(action->GetNodes().size() > 0);
-    return action->GetNodes();
+
+    std::vector<Node*> retNodes;
+    retNodes.resize(action->GetNodes().size());
+
+    for (uint32_t i = 0; i < retNodes.size(); ++i)
+    {
+        retNodes[i] = action->GetNodes()[i].Get();
+    }
+
+    return retNodes;
 }
 
 void ActionManager::EXE_DeleteNodes(const std::vector<Node*>& nodes)
@@ -984,7 +993,7 @@ void ActionManager::ResetUndoRedo()
 
     for (int32_t i = (int32_t)mExiledNodes.size() - 1; i >= 0; --i)
     {
-        Node::Destruct(mExiledNodes[i]);
+        mExiledNodes[i]->Destroy();
         mExiledNodes.erase(mExiledNodes.begin() + i);
     }
 
@@ -992,25 +1001,25 @@ void ActionManager::ResetUndoRedo()
     GetEditorState()->ClearInspectHistory();
 }
 
-void ActionManager::ExileNode(Node* node)
+void ActionManager::ExileNode(NodePtr node)
 {
     OCT_ASSERT(std::find(mExiledNodes.begin(), mExiledNodes.end(), node) == mExiledNodes.end());
     OCT_ASSERT(node->GetParent() == nullptr);
 
     mExiledNodes.push_back(node);
 
-    if (GetEditorState()->IsNodeSelected(node))
+    if (GetEditorState()->IsNodeSelected(node.Get()))
     {
         GetEditorState()->SetSelectedNode(nullptr);
     }
 
-    if (GetEditorState()->GetInspectedObject() == node)
+    if (GetEditorState()->GetInspectedObject() == node.Get())
     {
         GetEditorState()->InspectObject(nullptr, true);
     }
 }
 
-void ActionManager::RestoreExiledNode(Node* node)
+void ActionManager::RestoreExiledNode(NodePtr node)
 {
     bool restored = false;
 
@@ -1845,10 +1854,10 @@ void ActionManager::RecaptureAndSaveAllScenes()
             Scene* scene = static_cast<Scene*>(asset);
             OCT_ASSERT(scene != nullptr);
 
-            Node* temp = scene->Instantiate();
-            scene->Capture(temp);
+            NodePtr temp = scene->Instantiate();
+            scene->Capture(temp.Get());
 
-            Node::Destruct(temp);
+            temp->Destroy();
             temp = nullptr;
 
             AssetManager::Get()->SaveAsset(*pair.second);
@@ -2177,8 +2186,16 @@ ActionSpawnNodes::ActionSpawnNodes(const std::vector<SceneRef>& scenes)
 
 ActionSpawnNodes::ActionSpawnNodes(const std::vector<Node*>& srcNodes)
 {
-    mSrcNodes = srcNodes;
-    RemoveRedundantDescendants(mSrcNodes);
+    std::vector<Node*> trimmedSrcNodes = srcNodes;
+
+    RemoveRedundantDescendants(trimmedSrcNodes);
+
+    mSrcNodes.resize(trimmedSrcNodes.size());
+
+    for (uint32_t i = 0; i < mSrcNodes.size(); ++i)
+    {
+        mSrcNodes[i] = Node::ResolvePtr(trimmedSrcNodes[i]);
+    }
 }
 
 void ActionSpawnNodes::Execute()
@@ -2190,7 +2207,7 @@ void ActionSpawnNodes::Execute()
         {
             for (uint32_t i = 0; i < mSrcTypes.size(); ++i)
             {
-                Node* newNode = Node::Construct(mSrcTypes[i]);
+                NodePtr newNode = Node::Construct(mSrcTypes[i]);
                 OCT_ASSERT(newNode);
                 mNodes.push_back(newNode);
             }
@@ -2199,7 +2216,7 @@ void ActionSpawnNodes::Execute()
         {
             for (uint32_t i = 0; i < mSrcTypeNames.size(); ++i)
             {
-                Node* newNode = Node::Construct(mSrcTypeNames[i]);
+                NodePtr newNode = Node::Construct(mSrcTypeNames[i]);
                 OCT_ASSERT(newNode);
                 mNodes.push_back(newNode);
             }
@@ -2211,7 +2228,7 @@ void ActionSpawnNodes::Execute()
                 Scene* scene = mSrcScenes[i].Get<Scene>();
                 if (scene != nullptr)
                 {
-                    Node* newNode = scene->Instantiate();
+                    NodePtr newNode = scene->Instantiate();
                     OCT_ASSERT(newNode);
                     mNodes.push_back(newNode);
                 }
@@ -2227,7 +2244,7 @@ void ActionSpawnNodes::Execute()
             {
                 OCT_ASSERT(mSrcNodes[i] != nullptr);
 
-                Node* newNode = mSrcNodes[i]->Clone(true);
+                NodePtr newNode = mSrcNodes[i]->Clone(true);
                 OCT_ASSERT(newNode);
                 mNodes.push_back(newNode);
             }
@@ -2246,14 +2263,14 @@ void ActionSpawnNodes::Execute()
 
             if (mParents[i] != nullptr)
             {
-                mNodes[i]->Attach(mParents[i]);
+                mNodes[i]->Attach(mParents[i].Get());
             }
             else
             {
                 // This must have been the root node?
                 OCT_ASSERT(mNodes.size() == 1);
                 OCT_ASSERT(GetWorld(0)->GetRootNode() == nullptr);
-                GetWorld(0)->SetRootNode(mNodes[i]);
+                GetWorld(0)->SetRootNode(mNodes[i].Get());
             }
         }
     }
@@ -2267,7 +2284,7 @@ void ActionSpawnNodes::Reverse()
         for (uint32_t i = 0; i < mNodes.size(); ++i)
         {
             Node* parent = mNodes[i]->GetParent();
-            mParents.push_back(parent);
+            mParents.push_back(Node::ResolvePtr(parent));
         }
     }
 
@@ -2280,7 +2297,7 @@ void ActionSpawnNodes::Reverse()
         else
         {
             OCT_ASSERT(mNodes.size() == 1);
-            OCT_ASSERT(GetWorld(0)->GetRootNode() == mNodes[i]);
+            OCT_ASSERT(mNodes[i] == GetWorld(0)->GetRootNode());
             GetWorld(0)->SetRootNode(nullptr);
         }
 
@@ -2290,16 +2307,21 @@ void ActionSpawnNodes::Reverse()
 
 ActionDeleteNodes::ActionDeleteNodes(const std::vector<Node*>& nodes)
 {
-    mNodes = nodes;
+    std::vector<Node*> trimmedNodes = nodes;
+    RemoveRedundantDescendants(trimmedNodes);
 
-    RemoveRedundantDescendants(mNodes);
+    mNodes.resize(trimmedNodes.size());
+    for (uint32_t i = 0; i < mNodes.size(); ++i)
+    {
+        mNodes[i] = Node::ResolvePtr(nodes[i]);
+    }
 
     for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
-        mParents.push_back(mNodes[i]->GetParent());
+        mParents.push_back(Node::ResolvePtr(mNodes[i]->GetParent()));
         if (mParents[i] != nullptr)
         {
-            int32_t childIdx = mParents[i]->FindChildIndex(mNodes[i]);
+            int32_t childIdx = mParents[i]->FindChildIndex(mNodes[i].Get());
             OCT_ASSERT(childIdx != -1);
             mChildIndices.push_back(childIdx);
 
@@ -2333,7 +2355,7 @@ void ActionDeleteNodes::Execute()
 
         if (IsPlayingInEditor())
         {
-            mNodes[i]->SetPendingDestroy(true);
+            mNodes[i]->Destroy();
         }
         else
         {
@@ -2345,7 +2367,7 @@ void ActionDeleteNodes::Execute()
             {
                 // We must be deleting the root node
                 OCT_ASSERT(mNodes.size() == 1);
-                OCT_ASSERT(GetWorld(0)->GetRootNode() == mNodes[i]);
+                OCT_ASSERT(mNodes[i] == GetWorld(0)->GetRootNode());
                 GetWorld(0)->SetRootNode(nullptr);
             }
 
@@ -2376,7 +2398,7 @@ void ActionDeleteNodes::Reverse()
             else
             {
                 // Normal attachment
-                mParents[i]->AddChild(mNodes[i], mChildIndices[i]);
+                mParents[i]->AddChild(mNodes[i].Get(), mChildIndices[i]);
             }
             // TODO: Support attaching to the correct bone. 
             // Probably need to add extra parameter to Attach() to include child index.
@@ -2386,16 +2408,16 @@ void ActionDeleteNodes::Reverse()
             // Must have deleted the root node.
             OCT_ASSERT(mNodes.size() == 1);
             OCT_ASSERT(GetWorld(0)->GetRootNode() == nullptr);
-            GetWorld(0)->SetRootNode(mNodes[i]);
+            GetWorld(0)->SetRootNode(mNodes[i].Get());
         }
     }
 }
 
 ActionAttachNode::ActionAttachNode(Node* node, Node* newParent, int32_t childIndex, int32_t boneIndex)
 {
-    mNode = node;
-    mNewParent = newParent;
-    mPrevParent = node->GetParent();
+    mNode = Node::ResolvePtr(node);
+    mNewParent = Node::ResolvePtr(newParent);
+    mPrevParent = Node::ResolvePtr(node->GetParent());
     mChildIndex = childIndex;
     mPrevChildIndex = node->GetParent() ? node->GetParent()->FindChildIndex(node) : -1;
     mBoneIndex = boneIndex;
@@ -2418,7 +2440,7 @@ void ActionAttachNode::Execute()
     }
     else
     {
-       mNode->Attach(mNewParent, true, mChildIndex);
+       mNode->Attach(mNewParent.Get(), true, mChildIndex);
     }
 }
 
@@ -2435,16 +2457,16 @@ void ActionAttachNode::Reverse()
     }
     else
     {
-        mNode->Attach(mPrevParent, true, mPrevChildIndex);
+        mNode->Attach(mPrevParent.Get(), true, mPrevChildIndex);
     }
 }
 
 ActionSetRootNode::ActionSetRootNode(Node* newRoot)
 {
-    mNewRoot = newRoot;
-    mOldRoot = GetWorld(0)->GetRootNode();
-    mNewRootParent = mNewRoot->GetParent();
-    mNewRootChildIndex = mNewRootParent ? mNewRootParent->FindChildIndex(mNewRoot) : -1;
+    mNewRoot = Node::ResolvePtr(newRoot);
+    mOldRoot = Node::ResolvePtr(GetWorld(0)->GetRootNode());
+    mNewRootParent = Node::ResolvePtr(mNewRoot->GetParent());
+    mNewRootChildIndex = mNewRootParent ? mNewRootParent->FindChildIndex(mNewRoot.Get()) : -1;
 
     OCT_ASSERT(mNewRoot != mOldRoot);
     OCT_ASSERT(mNewRoot != nullptr);
@@ -2455,16 +2477,16 @@ ActionSetRootNode::ActionSetRootNode(Node* newRoot)
 void ActionSetRootNode::Execute()
 {
     mNewRoot->Detach(true);
-    GetWorld(0)->SetRootNode(mNewRoot);
-    mOldRoot->Attach(mNewRoot, true);
+    GetWorld(0)->SetRootNode(mNewRoot.Get());
+    mOldRoot->Attach(mNewRoot.Get(), true);
     mOldRoot->SetScene(nullptr);
 }
 
 void ActionSetRootNode::Reverse()
 {
     mOldRoot->Detach(true);
-    GetWorld(0)->SetRootNode(mOldRoot);
-    mNewRoot->Attach(mNewRootParent, true, mNewRootChildIndex);
+    GetWorld(0)->SetRootNode(mOldRoot.Get());
+    mNewRoot->Attach(mNewRootParent.Get(), true, mNewRootChildIndex);
     mNewRoot->SetScene(nullptr);
 }
 

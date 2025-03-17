@@ -868,7 +868,7 @@ float NetworkManager::GetRelevancyDistanceSquared() const
     return mRelevancyDistanceSquared;
 }
 
-void NetworkManager::SetPawn(NetHostId id, NodePtr pawn)
+void NetworkManager::SetPawn(NetHostId id, Node* pawn)
 {
     if (NetIsServer())
     {
@@ -877,7 +877,7 @@ void NetworkManager::SetPawn(NetHostId id, NodePtr pawn)
             // Not sure if the player node will be used by the server, but
             // allow it to be set anyway, in case it's used in the future.
             // mPlayerNode is only used for net relevancy, which is done for clients only.
-            mServer.mPawn = pawn;
+            mServer.mPawn = Node::ResolveWeakPtr(pawn);
         }
         else if (id != INVALID_HOST_ID)
         {
@@ -887,7 +887,7 @@ void NetworkManager::SetPawn(NetHostId id, NodePtr pawn)
             {
                 if (mClients[i].mHost.mId == id)
                 {
-                    mClients[i].mPawn = pawn;
+                    mClients[i].mPawn = Node::ResolveWeakPtr(pawn);
 
                     wasSet = true;
                     break;

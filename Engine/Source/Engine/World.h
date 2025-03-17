@@ -49,8 +49,8 @@ public:
     }
 
     Node* GetRootNode();
+    void SetRootNode(Node* node);
     NodePtr GetRootNodePtr();
-    void SetRootNode(const NodePtr& node);
     void DestroyRootNode();
     Node* FindNode(const std::string& name);
     Node* GetNetNode(NetId netId);

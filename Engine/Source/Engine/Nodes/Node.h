@@ -107,14 +107,14 @@ public:
     void RenderShadow();
     void RenderSelected(bool renderChildren);
 
-    NodePtr CreateChild(TypeId nodeType);
-    NodePtr CreateChild(const char* typeName);
-    NodePtr CreateChildClone(const NodePtr& srcNode, bool recurse);
+    Node* CreateChild(TypeId nodeType);
+    Node* CreateChild(const char* typeName);
+    Node* CreateChildClone(Node* srcNode, bool recurse);
     // Clone note: useLinkedScene defaults to false 
     NodePtr Clone(bool recurse, bool instantiateLinkedScene = true);
     void DestroyAllChildren();
 
-    NodePtr GetRoot();
+    Node* GetRoot();
     bool IsWorldRoot() const;
 
     template<class NodeClass>
@@ -131,9 +131,7 @@ public:
         return ret;
     }
 
-    void SetPendingDestroy(bool pendingDestroy);
     bool IsDestroyed() const;
-    void FlushPendingDestroys();
 
     bool HasStarted() const;
 
@@ -191,27 +189,25 @@ public:
     virtual bool IsPrimitive3D() const;
     virtual bool IsLight3D() const;
 
-    NodePtr GetParent() const;
+    Node* GetParent();
+    const Node* GetParent() const;
     const std::vector<NodePtr>& GetChildren() const;
 
-    virtual void Attach(const NodePtr& parent, bool keepWorldTransform = false, int32_t index = -1);
+    virtual void Attach(Node* parent, bool keepWorldTransform = false, int32_t index = -1);
     void Detach(bool keepWorldTransform = false);
-    void AddChild(const NodePtr& child, int32_t index = -1);
-    void RemoveChild(const NodePtr& child);
+    void AddChild(Node* child, int32_t index = -1);
+    void RemoveChild(Node* child);
     void RemoveChild(int32_t index);
 
     int32_t FindChildIndex(const std::string& name) const;
-    int32_t FindChildIndex(const NodePtr& child) const;
-    NodePtr FindChild(const std::string& name, bool recurse) const;
-    NodePtr FindChildWithTag(const std::string& name, bool recurse) const;
-    NodePtr FindDescendant(const std::string& name);
-    NodePtr FindAncestor(const std::string& name);
+    int32_t FindChildIndex(Node* child) const;
+    Node* FindChild(const std::string& name, bool recurse) const;
+    Node* FindChildWithTag(const std::string& name, bool recurse) const;
+    Node* FindDescendant(const std::string& name);
+    Node* FindAncestor(const std::string& name);
     bool HasAncestor(Node* node);
-    NodePtr GetChild(int32_t index) const;
-    NodePtr GetChildByType(TypeId type) const;
-    NodePtr GetChildPtr(int32_t index) const;
-    NodePtr FindChildPtr(const std::string& name, bool recurse) const;
-    NodePtr ResolvePtr();
+    Node* GetChild(int32_t index) const;
+    Node* GetChildByType(TypeId type) const;
     uint32_t GetNumChildren() const;
     int32_t FindParentNodeIndex() const;
 
@@ -249,18 +245,22 @@ public:
     void InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5, Datum param6, Datum param7);
     void InvokeNetFunc(const char* name, const std::vector<Datum>& params);
 
+    static NodePtr ResolvePtr(Node* node);
+    static NodePtrWeak ResolveWeakPtr(Node* node);
+
     static void RegisterNetFuncs(Node* node);
 
     template<typename T>
-    NodePtr FindChild(const std::string& name, bool recurse)
+    T* FindChild(const std::string& name, bool recurse)
     {
-        NodePtr child = FindChild(name, recurse);
-        if (child != nullptr && child->As<T>())
+        T* ret = nullptr;
+        Node* child = FindChild(name, recurse);
+        if (child != nullptr)
         {
-            return child;
+            ret = child->As<T>();
         }
 
-        return nullptr;
+        return ret;
     }
 
     template<typename T>
@@ -357,7 +357,7 @@ protected:
 
     void TickCommon(float deltaTime);
 
-    virtual void SetParent(const NodePtr& parent);
+    virtual void SetParent(Node* parent);
     void ValidateUniqueChildName(Node* newChild);
 
     void SendNetFunc(NetFunc* func, uint32_t numParams, const Datum** params);

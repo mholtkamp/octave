@@ -70,8 +70,8 @@ public:
     void ClearActionHistory();
     void ClearActionFuture();
     void ResetUndoRedo();
-    void ExileNode(Node* node);
-    void RestoreExiledNode(Node* node);
+    void ExileNode(NodePtr node);
+    void RestoreExiledNode(NodePtr node);
 
 protected:
 
@@ -92,7 +92,7 @@ protected:
 
     std::vector<Action*> mActionHistory;
     std::vector<Action*> mActionFuture;
-    std::vector<Node*> mExiledNodes;
+    std::vector<NodePtr> mExiledNodes;
 
 public:
 
@@ -177,7 +177,7 @@ public:
     ActionSpawnNodes(const std::vector<SceneRef>& scenes);
     ActionSpawnNodes(const std::vector<Node*>& srcNodes);
 
-    const std::vector<Node*>& GetNodes() const { return mNodes; }
+    const std::vector<NodePtr>& GetNodes() const { return mNodes; }
 
 protected:
 
@@ -185,13 +185,13 @@ protected:
     std::vector<TypeId> mSrcTypes;
     std::vector<const char*> mSrcTypeNames;
     std::vector<SceneRef> mSrcScenes;
-    std::vector<Node*> mSrcNodes;
+    std::vector<NodePtr> mSrcNodes;
 
     // Populated after first Execute()
-    std::vector<Node*> mNodes;
+    std::vector<NodePtr> mNodes;
 
     // Populated after first Reverse()
-    std::vector<Node*> mParents;
+    std::vector<NodePtr> mParents;
 };
 
 class ActionDeleteNodes : public Action
@@ -200,8 +200,8 @@ public:
     DECLARE_ACTION_INTERFACE(DeleteNodes)
     ActionDeleteNodes(const std::vector<Node*>& nodes);
 protected:
-    std::vector<Node*> mNodes;
-    std::vector<Node*> mParents;
+    std::vector<NodePtr> mNodes;
+    std::vector<NodePtr> mParents;
     std::vector<int32_t> mChildIndices;
     std::vector<int32_t> mBoneIndices;
 };
@@ -212,9 +212,9 @@ public:
     DECLARE_ACTION_INTERFACE(AttachNode)
     ActionAttachNode(Node* node, Node* newParent, int32_t childIndex, int32_t boneIndex);
 protected:
-    Node* mNode = nullptr;
-    Node* mNewParent = nullptr;
-    Node* mPrevParent = nullptr;
+    NodePtr mNode = nullptr;
+    NodePtr mNewParent = nullptr;
+    NodePtr mPrevParent = nullptr;
     int32_t mChildIndex = -1;
     int32_t mPrevChildIndex = -1;
     int32_t mBoneIndex = -1;
@@ -227,9 +227,9 @@ public:
     DECLARE_ACTION_INTERFACE(SetRootNode)
     ActionSetRootNode(Node* newRoot);
 protected:
-    Node* mNewRoot = nullptr;
-    Node* mOldRoot = nullptr;
-    Node* mNewRootParent = nullptr;
+    NodePtr mNewRoot = nullptr;
+    NodePtr mOldRoot = nullptr;
+    NodePtr mNewRootParent = nullptr;
     int32_t mNewRootChildIndex = -1;
 };
 

@@ -118,7 +118,7 @@ public:
             if (mPointer != nullptr && mRefCount == nullptr)
             {
                 // Initialize ref count
-                mRefCount = new RefCount();
+                mRefCount = new RefCount<T>();
             }
 
             if (mRefCount != nullptr)
@@ -246,6 +246,11 @@ public:
     WeakPtr(const SharedPtr<T>& src)
     {
         Set(src.Get(), src.GetRefCount());
+    }
+
+    WeakPtr(std::nullptr_t)
+    {
+        Clear();
     }
 
     WeakPtr(WeakPtr<T>&& src)
