@@ -411,7 +411,7 @@ void Node::Stop()
     mHasStarted = false;
 }
 
-void Node::PrepareTick(const NodePtr& selfPtr, std::vector<NodePtrWeak>& outTickNodes, bool game)
+void Node::PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game)
 {
     if (game && !mHasStarted)
     {
@@ -422,18 +422,17 @@ void Node::PrepareTick(const NodePtr& selfPtr, std::vector<NodePtrWeak>& outTick
     {
         if (!mLateTick)
         {
-            outTickNodes.push_back(selfPtr);
+            outTickNodes.push_back(mSelf);
         }
 
         for (int32_t i = 0; i < (int32_t)mChildren.size(); ++i)
         {
-            NodePtr& child = mChildren[i];
-            child->PrepareTick(child, outTickNodes, game);
+            mChildren[i]->PrepareTick(outTickNodes, game);
         }
 
         if (mLateTick)
         {
-            outTickNodes.push_back(selfPtr);
+            outTickNodes.push_back(mSelf);
         }
     }
 }

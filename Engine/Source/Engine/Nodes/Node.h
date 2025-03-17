@@ -81,7 +81,7 @@ public:
 
     virtual void Start();
     virtual void Stop();
-    virtual void PrepareTick(const NodePtr& selfPtr, std::vector<NodePtrWeak>& outTickNodes, bool game);
+    virtual void PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game);
     virtual void Tick(float deltaTime);
     virtual void EditorTick(float deltaTime);
     virtual void Render();
@@ -112,7 +112,6 @@ public:
     NodePtr CreateChildClone(const NodePtr& srcNode, bool recurse);
     // Clone note: useLinkedScene defaults to false 
     NodePtr Clone(bool recurse, bool instantiateLinkedScene = true);
-    void DestroyChild(const NodePtr& node);
     void DestroyAllChildren();
 
     NodePtr GetRoot();

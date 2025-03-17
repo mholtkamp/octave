@@ -140,12 +140,12 @@ VertexType Widget::GetVertexType() const
 
 // Refresh any data used for rendering based on this widget's state. Use dirty flag.
 // Recursively update children.
-void Widget::RecursiveTick(float deltaTime, bool game)
+void Widget::PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game)
 {
     // Widgets only tick when visible.
     if (IsVisible())
     {
-        Node::RecursiveTick(deltaTime, game);
+        Node::PrepareTick(outTickNodes, game);
         mDirty[Renderer::Get()->GetFrameIndex()] = false;
     }
 }
