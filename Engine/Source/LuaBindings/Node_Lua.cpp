@@ -610,6 +610,16 @@ int Node_Lua::IsDestroyed(lua_State* L)
     return 1;
 }
 
+int Node_Lua::IsPendingDestroy(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+
+    bool ret = node->IsPendingDestroy();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Node_Lua::EnableTick(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -951,6 +961,11 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, Start);
 
     REGISTER_TABLE_FUNC(L, mtIndex, HasStarted);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, IsDestroyed);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, IsPendingDestroy);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, IsPendingDestroy, "IsDoomed");
 
     REGISTER_TABLE_FUNC(L, mtIndex, EnableTick);
 

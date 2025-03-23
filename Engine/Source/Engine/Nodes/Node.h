@@ -135,6 +135,8 @@ public:
     }
 
     bool IsDestroyed() const;
+    bool IsPendingDestroy() const;
+    bool IsDoomed() const;
 
     bool HasStarted() const;
 

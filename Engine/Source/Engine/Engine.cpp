@@ -82,6 +82,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(Font);
 
     // Widget Types
+    FORCE_LINK_CALL(ArrayWidget);
     FORCE_LINK_CALL(Canvas);
     FORCE_LINK_CALL(Console);
     FORCE_LINK_CALL(Quad);

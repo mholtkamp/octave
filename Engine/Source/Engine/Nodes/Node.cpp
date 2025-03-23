@@ -846,6 +846,16 @@ bool Node::IsDestroyed() const
     return mDestroyed;
 }
 
+bool Node::IsPendingDestroy() const
+{
+    return (sPendingDestroySet.find(mSelf) != sPendingDestroySet.end());
+}
+
+bool Node::IsDoomed() const
+{
+    return IsPendingDestroy();
+}
+
 bool Node::HasStarted() const
 {
     return mHasStarted;

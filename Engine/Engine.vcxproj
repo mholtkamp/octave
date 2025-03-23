@@ -675,6 +675,7 @@
     <ClCompile Include="Source\Engine\Nodes\3D\TextMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Node3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Node.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ArrayWidget.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Canvas.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Console.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Poly.cpp" />
@@ -909,6 +910,7 @@
     <ClInclude Include="Source\Engine\Nodes\3D\TextMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Node3d.h" />
     <ClInclude Include="Source\Engine\Nodes\Node.h" />
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ArrayWidget.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Canvas.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Console.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Poly.h" />
