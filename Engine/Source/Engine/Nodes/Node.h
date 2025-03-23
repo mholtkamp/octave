@@ -73,7 +73,9 @@ public:
 
     virtual void Create();
     virtual void Destroy();
-    
+    void DestroyDeferred();
+    void Doom(); // Alias for DestroyDeferred
+
     virtual void SaveStream(Stream& stream, Platform platorm);
     virtual void LoadStream(Stream& stream, Platform platorm, uint32_t version);
 
@@ -246,6 +248,7 @@ public:
     void InvokeNetFunc(const char* name, Datum param0, Datum param1, Datum param2, Datum param3, Datum param4, Datum param5, Datum param6, Datum param7);
     void InvokeNetFunc(const char* name, const std::vector<Datum>& params);
 
+    static void ProcessPendingDestroys();
     static NodePtr ResolvePtr(Node* node);
     static NodePtrWeak ResolveWeakPtr(Node* node);
 
@@ -385,6 +388,7 @@ protected:
     void SendNetFunc(NetFunc* func, uint32_t numParams, const Datum** params);
 
     static std::unordered_map<TypeId, NetFuncMap> sTypeNetFuncMap;
+    static std::unordered_set<NodePtrWeak> sPendingDestroySet;
 
     std::string mName;
 

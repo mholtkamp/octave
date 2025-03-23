@@ -56,6 +56,8 @@
     }
 
 std::unordered_map<TypeId, NetFuncMap> Node::sTypeNetFuncMap;
+std::unordered_set<NodePtrWeak> Node::sPendingDestroySet;
+
 
 #define ENABLE_SCRIPT_FUNCS 1
 
@@ -243,6 +245,16 @@ void Node::Destroy()
     }
 
     mDestroyed = true;
+}
+
+void Node::DestroyDeferred()
+{
+    sPendingDestroySet.insert(mSelf);
+}
+
+void Node::Doom()
+{
+    DestroyDeferred();
 }
 
 void Node::SaveStream(Stream& stream, Platform platorm)
@@ -1675,6 +1687,17 @@ void Node::InvokeNetFunc(const char* name, const std::vector<Datum>& params)
     case 7: InvokeNetFunc(name, params[0], params[1], params[2], params[3], params[4], params[5], params[6]); break;
     case 8: InvokeNetFunc(name, params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7]); break;
     }
+}
+
+void Node::ProcessPendingDestroys()
+{
+    for (auto it = sPendingDestroySet.begin(); it != sPendingDestroySet.end();)
+    {
+        (*it)->Destroy();
+        it = sPendingDestroySet.erase(it);
+    }
+
+    OCT_ASSERT(sPendingDestroySet.size() == 0);
 }
 
 NodePtr Node::ResolvePtr(Node* node)

@@ -20,6 +20,7 @@ struct Node_Lua
     static int Create(lua_State* L, Node* node);
     static int Construct(lua_State* L);
     static int Destruct(lua_State* L);
+    static int DestroyDeferred(lua_State* L);
 
     static int IsValid(lua_State* L);
 

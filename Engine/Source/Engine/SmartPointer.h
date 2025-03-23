@@ -71,7 +71,7 @@ public:
 
     bool operator==(const SharedPtr& other) const
     {
-        return mPointer == other.mPointer;
+        return Get() == other.Get();
     }
 
     bool operator!=(const SharedPtr& other) const
@@ -81,7 +81,7 @@ public:
 
     bool operator==(const T* other) const
     {
-        return mPointer == other;
+        return Get() == other;
     }
 
     bool operator!=(const T* other) const
@@ -220,6 +220,11 @@ public:
         return mRefCount ? mRefCount->mWeakCount : 0;
     }
 
+    const T* GetPointerRaw() const
+    {
+        return mPointer;
+    }
+
     // For getting a subclass. T must inherit from Object.
     template<typename S>
     S* Get() const
@@ -304,7 +309,7 @@ public:
 
     bool operator==(const SharedPtr<T>& other) const
     {
-        return mPointer == other.Get();
+        return Get() == other.Get();
     }
 
     bool operator!=(const SharedPtr<T>& other) const
@@ -314,7 +319,7 @@ public:
 
     bool operator==(const WeakPtr<T>& other) const
     {
-        return mPointer == other.mPointer;
+        return Get() == other.Get();
     }
 
     bool operator!=(const WeakPtr<T>& other) const
@@ -324,7 +329,7 @@ public:
 
     bool operator==(const T* other) const
     {
-        return mPointer == other;
+        return Get() == other;
     }
 
     bool operator!=(const T* other) const
@@ -451,6 +456,11 @@ public:
         return mRefCount ? mRefCount->mWeakCount : 0;
     }
 
+    const T* GetPointerRaw() const
+    {
+        return mPointer;
+    }
+
     // For getting a subclass. T must inherit from Object.
     template<typename S>
     S* Get() const
@@ -524,7 +534,7 @@ namespace std
     {
         size_t operator()(const SharedPtr<T>& k) const
         {
-            return std::hash<T*>{}(k.Get());
+            return std::hash<const T*>{}(k.GetPointerRaw());
         }
     };
 
@@ -533,7 +543,7 @@ namespace std
     {
         size_t operator()(const WeakPtr<T>& k) const
         {
-            return std::hash<T*>{}(k.Get());
+            return std::hash<const T*>{}(k.GetPointerRaw());
         }
     };
 }

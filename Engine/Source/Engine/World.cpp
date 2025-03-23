@@ -751,6 +751,8 @@ void World::Update(float deltaTime)
         }
     }
 
+    Node::ProcessPendingDestroys();
+
     {
         // TODO-NODE: Adding this! Make sure it works. I think we need to
         // make sure transforms are updated so that the bullet dynamics world is in sync.

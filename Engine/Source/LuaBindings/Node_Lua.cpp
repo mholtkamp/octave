@@ -153,6 +153,15 @@ int Node_Lua::Destruct(lua_State* L)
     return 0;
 }
 
+int Node_Lua::DestroyDeferred(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+
+    node->DestroyDeferred();
+
+    return 0;
+}
+
 int Node_Lua::IsValid(lua_State* L)
 {
     Node_Lua* luaObj = static_cast<Node_Lua*>(CheckHierarchyLuaType<Node_Lua>(L, 1, NODE_LUA_NAME, NODE_LUA_FLAG));
@@ -874,6 +883,10 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC_EX(L, mtIndex, Construct, "New"); // Alias
 
     REGISTER_TABLE_FUNC(L, mtIndex, Destruct);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, DestroyDeferred);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, DestroyDeferred, "Doom"); // Alias
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, DestroyDeferred, "SetPendingDestroy"); // Alias (arg 2 ignored)
 
     REGISTER_TABLE_FUNC(L, mtIndex, IsValid);
 
