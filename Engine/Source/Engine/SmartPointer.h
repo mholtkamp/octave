@@ -65,6 +65,8 @@ public:
 
         src.mPointer = nullptr;
         src.mRefCount = nullptr;
+
+        return *this;
     }
 
     bool operator==(const SharedPtr& other) const
@@ -143,12 +145,20 @@ public:
 
             if (mRefCount->mSharedCount <= 0)
             {
+                // In the case where Node maintains a weak pointer to itself,
+                // it's possible that deleting the pointer will trigger a weak
+                // pointer cleanup which will destroy the mRefCount data.
+                // So temporarily up the weak count so that doesn't happen.
+                mRefCount->mWeakCount++;
+
                 if (mRefCount->mDeleter)
                 {
                     mRefCount->mDeleter(mPointer);
                 }
 
                 delete mPointer;
+
+                mRefCount->mWeakCount--;
             }
 
             if (mRefCount->mSharedCount <= 0 &&
@@ -190,22 +200,22 @@ public:
         return mPointer;
     }
 
-    RefCount<T>* GetRefCount()
+    RefCount<T>* GetRefCount() const
     {
         return mRefCount;
     }
 
-    int32_t GetUseCount()
+    int32_t GetUseCount() const
     {
         return mRefCount ? mRefCount->mSharedCount : 0;
     }
 
-    int32_t GetSharedCount()
+    int32_t GetSharedCount() const
     {
         return GetUseCount();
     }
 
-    int32_t GetWeakCount()
+    int32_t GetWeakCount() const
     {
         return mRefCount ? mRefCount->mWeakCount : 0;
     }
@@ -276,6 +286,7 @@ public:
     WeakPtr<T>& operator=(const SharedPtr<T>& src)
     {
         Set(src.Get(), src.GetRefCount());
+        return *this;
     }
 
     WeakPtr<T>& operator=(WeakPtr<T>&& src)
@@ -287,6 +298,8 @@ public:
 
         src.mPointer = nullptr;
         src.mRefCount = nullptr;
+
+        return *this;
     }
 
     bool operator==(const SharedPtr<T>& other) const
@@ -400,7 +413,7 @@ public:
 
     bool IsValid() const
     {
-        return (mPointer != nullptr && mRefCount != nullptr);
+        return (mPointer != nullptr && mRefCount != nullptr && mRefCount->mSharedCount > 0);
     }
 
     void Reset()
@@ -418,22 +431,22 @@ public:
         return IsValid() ? mPointer : nullptr;
     }
 
-    RefCount<T>* GetRefCount()
+    RefCount<T>* GetRefCount() const
     {
         return mRefCount;
     }
 
-    int32_t GetUseCount()
+    int32_t GetUseCount() const
     {
         return mRefCount ? mRefCount->mSharedCount : 0;
     }
 
-    int32_t GetSharedCount()
+    int32_t GetSharedCount() const
     {
         return GetUseCount();
     }
 
-    int32_t GetWeakCount()
+    int32_t GetWeakCount() const
     {
         return mRefCount ? mRefCount->mWeakCount : 0;
     }
@@ -465,6 +478,39 @@ SharedPtr<T> MakeShared()
     T* newPtr = new T();
     ret.Set(newPtr, nullptr);
     return ret;
+}
+
+template<typename T, typename U>
+SharedPtr<T> PtrStaticCast(const SharedPtr<U>& src)
+{
+    T* pointer = static_cast<T*>(src.Get());
+    SharedPtr<T> dst;
+    dst.Set(pointer, (RefCount<T>*)src.GetRefCount());
+    return dst;
+}
+
+template<typename T, typename U>
+SharedPtr<T> PtrDynamicCast(const SharedPtr<U>& src)
+{
+    U* srcPointer = src.Get();
+    T* dstPointer = nullptr;
+
+    if (srcPointer)
+    {
+        dstPointer = srcPointer->template As<T>();
+    }
+
+    if (dstPointer)
+    {
+        SharedPtr<T> dst;
+        dst.Set(dstPointer, (RefCount<T>*)src.GetRefCount());
+        return dst;
+    }
+    else
+    {
+        return SharedPtr<T>();
+    }
+
 }
 
 typedef SharedPtr<Node> NodeRef;

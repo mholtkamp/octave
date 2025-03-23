@@ -3,8 +3,6 @@
 #include "InputManager.h"
 #include "ActionManager.h"
 #include "InputDevices.h"
-#include "Nodes/Widgets/TextField.h"
-#include "Nodes/Widgets/Button.h"
 #include "EditorUtils.h"
 #include "EditorState.h"
 #include "Renderer.h"
@@ -18,26 +16,6 @@
 #include "imgui.h"
 
 InputManager* InputManager::sInstance = nullptr;
-
-class PlatformBuildButton : public Button
-{
-public:
-    Platform mPlatform = Platform::Count;
-    bool mEmbedded = false;
-};
-
-void HandleBuildPlatformSelect(Button* button)
-{
-    PlatformBuildButton* platformButton = (PlatformBuildButton*) button;
-
-    Platform platform = platformButton->mPlatform;
-    bool embedded = platformButton->mEmbedded;
-
-    ActionManager::Get()->BuildData(platform, embedded);
-
-    // Hide the modal platform build list
-    Renderer::Get()->SetModalWidget(nullptr);
-}
 
 void InputManager::Create()
 {

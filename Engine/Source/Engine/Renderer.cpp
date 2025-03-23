@@ -80,13 +80,13 @@ Renderer::~Renderer()
 {
     if (mConsoleWidget != nullptr)
     {
-        Node::Destruct(mConsoleWidget);
+        mConsoleWidget->Destroy();
         mConsoleWidget = nullptr;
     }
 
     if (mStatsWidget != nullptr)
     {
-        Node::Destruct(mStatsWidget);
+        mStatsWidget->Destroy();
         mStatsWidget = nullptr;
     }
 
@@ -367,12 +367,12 @@ bool Renderer::IsConsoleEnabled()
 
 void Renderer::SetModalWidget(Widget* widget)
 {
-    mModalWidget = widget;
+    mModalWidget = PtrStaticCast<Widget>(Node::ResolvePtr(widget));
 }
 
 Widget* Renderer::GetModalWidget()
 {
-    return mModalWidget;
+    return mModalWidget.Get();
 }
 
 bool Renderer::IsInModalWidgetUpdate() const
@@ -400,12 +400,12 @@ void Renderer::DirtyAllWidgets()
 
 Console* Renderer::GetConsoleWidget()
 {
-    return mConsoleWidget;
+    return mConsoleWidget.Get();
 }
 
 StatsOverlay* Renderer::GetStatsWidget()
 {
-    return mStatsWidget;
+    return mStatsWidget.Get();
 }
 
 Renderer::Renderer()
@@ -1193,6 +1193,7 @@ void Renderer::Render(World* world, int32_t screenIndex)
 
     bool inGame = IsGameTickEnabled();
     float gameDeltaTime = GetEngineState()->mGameDeltaTime;
+    float realDeltatime = GetEngineState()->mRealDeltaTime;
     bool enable3D = mEnable3dRendering;
 
 #if EDITOR
@@ -1207,12 +1208,32 @@ void Renderer::Render(World* world, int32_t screenIndex)
     {
         SCOPED_FRAME_STAT("Overlay");
 
-        if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->RecursiveTick(gameDeltaTime, inGame); }
-        if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->RecursiveTick(gameDeltaTime, inGame); }
+        static std::vector<NodePtrWeak> sTickNodes;
+        sTickNodes.clear();
+
+        if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->PrepareTick(sTickNodes, inGame); }
+        if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->PrepareTick(sTickNodes, inGame); }
 
         mInModalWidgetUpdate = true;
-        if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->RecursiveTick(gameDeltaTime, inGame); }
+        if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->PrepareTick(sTickNodes, inGame); }
         mInModalWidgetUpdate = false;
+
+        for (uint32_t i = 0; i < sTickNodes.size(); ++i)
+        {
+            Node* node = sTickNodes[i].Get();
+
+            if (node)
+            {
+                if (inGame)
+                {
+                    node->Tick(gameDeltaTime);
+                }
+                else
+                {
+                    node->EditorTick(realDeltatime);
+                }
+            }
+        }
     }
 
     Camera3D* activeCamera = world->GetActiveCamera();

@@ -23,7 +23,6 @@
 #include "AssetManager.h"
 #include "EditorState.h"
 #include "EditorUtils.h"
-#include "Nodes/Widgets/Button.h"
 #include "Assets/Scene.h"
 #include "Assets/Texture.h"
 #include "Assets/StaticMesh.h"

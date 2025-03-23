@@ -17,7 +17,6 @@
 #include "ScriptAutoReg.h"
 #include "ScriptFunc.h"
 #include "TimerManager.h"
-#include "Nodes/Widgets/TextField.h"
 
 #include "System/System.h"
 #include "Graphics/Graphics.h"
@@ -83,21 +82,13 @@ void ForceLinkage()
     FORCE_LINK_CALL(Font);
 
     // Widget Types
-    FORCE_LINK_CALL(ArrayWidget);
-    FORCE_LINK_CALL(Button);
     FORCE_LINK_CALL(Canvas);
-    FORCE_LINK_CALL(CheckBox);
-    FORCE_LINK_CALL(ComboBox);
     FORCE_LINK_CALL(Console);
-    FORCE_LINK_CALL(ModalList);
     FORCE_LINK_CALL(Quad);
     FORCE_LINK_CALL(PolyRect);
     FORCE_LINK_CALL(Poly);
-    FORCE_LINK_CALL(Selector);
     FORCE_LINK_CALL(StatsOverlay);
     FORCE_LINK_CALL(Text);
-    FORCE_LINK_CALL(TextField);
-    FORCE_LINK_CALL(VerticalList);
     FORCE_LINK_CALL(Widget);
 }
 
@@ -418,8 +409,6 @@ bool Update()
     {
         sWorlds[i]->Update(gameDeltaTime);
     }
-
-    TextField::StaticUpdate();
 
     NetworkManager::Get()->PostTickUpdate(realDeltaTime);
 

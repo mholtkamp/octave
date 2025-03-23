@@ -150,6 +150,15 @@ NodePtr Node::Construct(TypeId typeId)
     return newNodePtr;
 }
 
+void Node::Destruct(Node* node)
+{
+    // Do we need to lock a shared pointer?
+    //NodePtr lockPtr = Node::ResolvePtr(node);
+    //lockPtr->Destroy();
+
+    node->Destroy();
+}
+
 Node::Node()
 {
     mName = "Node";
@@ -169,6 +178,11 @@ void Node::Destroy()
 {
     if (mDestroyed)
         return;
+
+    // Lock a shared pointer so we don't delete ourselves midway through destruction.
+    // If we are destroying a node because the last shared pointer was deleted, then this 
+    // locked ptr might be invalid (since SharedCount is already 0).
+    NodePtr LockedPtr = mSelf.Lock();
 
     bool isWorldRoot = (mParent == nullptr && mWorld != nullptr);
 
@@ -1409,7 +1423,7 @@ Node* Node::GetChild(int32_t index) const
 
 Node* Node::GetChildByType(TypeId type) const
 {
-    Node* ret;
+    Node* ret = nullptr;
 
     for (uint32_t i = 0; i < mChildren.size(); ++i)
     {

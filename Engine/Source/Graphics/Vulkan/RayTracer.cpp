@@ -492,7 +492,7 @@ void RayTracer::BeginLightBake()
                 meshComp->GetBakeLighting())
             {
                 meshComp->ClearInstanceColors();
-                mLightBakeNodes.push_back(meshComp);
+                mLightBakeNodes.push_back(Node::ResolvePtr(meshComp));
             }
         }
 

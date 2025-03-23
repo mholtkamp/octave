@@ -133,14 +133,14 @@ void Particle3D::Create()
 
 void Particle3D::Destroy()
 {
-    Primitive3D::Destroy();
-    
     EnableEmission(false);
 
     GFX_DestroyParticleCompResource(this);
 
     mParticles.clear();
     mParticles.shrink_to_fit();
+
+    Primitive3D::Destroy();
 }
 
 void Particle3D::Start()
@@ -202,7 +202,7 @@ void Particle3D::TickCommon(float deltaTime)
             !IsEmissionEnabled() &&
             GetNumParticles() == 0)
         {
-            SetPendingDestroy(true);
+            Destroy();
         }
     }
 }

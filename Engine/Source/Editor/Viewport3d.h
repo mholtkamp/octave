@@ -1,11 +1,7 @@
 #pragma once
 
 #include "EditorState.h"
-#include "Nodes/Widgets/ModalList.h"
 #include "Nodes/3D/InstancedMesh3d.h"
-
-class Button;
-
 
 class Viewport3D
 {
@@ -24,12 +20,6 @@ public:
 protected:
 
     static constexpr float sDefaultFocalDistance = 10.0f;
-
-    static void HandleFilePressed(Button* button);
-    static void HandleViewPressed(Button* button);
-    static void HandleWorldPressed(Button* button);
-    static void HandlePlayPressed(Button* button);
-    static void HandleStopPressed(Button* button);
 
     void HandleDefaultControls();
     void HandlePilotControls();

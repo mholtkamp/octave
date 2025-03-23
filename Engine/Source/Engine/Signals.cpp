@@ -44,7 +44,8 @@ void Signal::Connect(Node* node, SignalHandlerFP func)
     if (node != nullptr)
     {
         CleanupDeadConnections();
-        mConnectionMap[node].mFuncPointer = func;
+        NodePtrWeak nodePtrWeak = Node::ResolveWeakPtr(node);
+        mConnectionMap[nodePtrWeak].mFuncPointer = func;
     }
 }
 
@@ -53,7 +54,8 @@ void Signal::Connect(Node* node, const ScriptFunc& func)
     if (node != nullptr)
     {
         CleanupDeadConnections();
-        mConnectionMap[node].mScriptFunc = func;
+        NodePtrWeak nodePtrWeak = Node::ResolveWeakPtr(node);
+        mConnectionMap[nodePtrWeak].mScriptFunc = func;
     }
 }
 
@@ -61,7 +63,8 @@ void Signal::Disconnect(Node* node)
 {
     if (node != nullptr)
     {
-        mConnectionMap.erase(node);
+        NodePtrWeak nodePtrWeak = Node::ResolveWeakPtr(node);
+        mConnectionMap.erase(nodePtrWeak);
     }
 }
 

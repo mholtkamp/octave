@@ -7,7 +7,7 @@
 
 #if LUA_ENABLED
 
-Node* CheckNodeWrapper(lua_State* L, int arg)
+NodePtr& CheckNodeWrapperPtr(lua_State* L, int arg)
 {
     luaL_checkudata(L, arg, NODE_WRAPPER_TABLE_NAME);
     Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, arg);
@@ -21,7 +21,12 @@ Node* CheckNodeWrapper(lua_State* L, int arg)
         luaL_error(L, "Attempting to use a destroyed node at arg %d", arg);
     }
 
-    return nodeLua->mNode.Get();
+    return nodeLua->mNode;
+}
+
+Node* CheckNodeWrapper(lua_State* L, int arg)
+{
+    return CheckNodeWrapperPtr(L, arg).Get();
 }
 
 Node* CheckNodeLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
@@ -56,7 +61,7 @@ Object* CheckObjectLuaType(lua_State* L, int arg)
 
     if (isNode)
     {
-        obj = ((Node_Lua*)lua_touserdata(L, arg))->mNode;
+        obj = ((Node_Lua*)lua_touserdata(L, arg))->mNode.Get();
     }
     else
     {

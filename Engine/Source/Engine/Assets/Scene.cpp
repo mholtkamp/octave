@@ -113,9 +113,9 @@ void Scene::SaveStream(Stream& stream, Platform platform)
         // added so we can unroll InstancedMesh3D nodes on platforms that
         // don't suppose instanced mesh rendering.
         srcScene = NewTransientAsset<Scene>();
-        Node* tempRoot = Instantiate();
-        srcScene->Capture(tempRoot, platform);
-        Node::Destruct(tempRoot);
+        NodePtr tempRoot = Instantiate();
+        srcScene->Capture(tempRoot.Get(), platform);
+        tempRoot->Destroy();
 
         // These transient scene that was created should get garbage collected since 
         // no AssetRefs are pointing to it.
@@ -212,11 +212,11 @@ void Scene::Capture(Node* root, Platform platform)
 
 NodePtr Scene::Instantiate()
 {
-    Node* rootNode = nullptr;
+    NodePtr rootNode = nullptr;
 
     if (mNodeDefs.size() > 0)
     {
-        std::vector<Node*> nodeList;
+        std::vector<NodePtr> nodeList;
 
         // The nativeChildren vector holds a list of all children by created in C++ for the nodes in this scene.
         // If there is no SceneNodeDef for the nativeChild, then we must destroy it. This will happen
@@ -225,8 +225,8 @@ NodePtr Scene::Instantiate()
 
         for (uint32_t i = 0; i < mNodeDefs.size(); ++i)
         {
-            Node* node = nullptr;
-            Node* parent = (i > 0) ? nodeList[mNodeDefs[i].mParentIndex] : nullptr;
+            NodePtr nodePtr;
+            NodePtr parent = (i > 0) ? nodeList[mNodeDefs[i].mParentIndex] : nullptr;
 
             if (parent != nullptr)
             {
@@ -238,25 +238,25 @@ NodePtr Scene::Instantiate()
                     existingChild->GetType() == mNodeDefs[i].mType &&
                     existingChild->GetScene() == mNodeDefs[i].mScene.Get())
                 {
-                    node = existingChild;
+                    nodePtr = Node::ResolvePtr(existingChild);
                 }
 
-                if (node != nullptr)
+                if (nodePtr != nullptr)
                 {
                     // Double check that we found a natively spawned child.
                     // Otherwise do we have conflicting SceneNodeDefs with same name?!
                     bool isNativeChild = false;
                     for (uint32_t n = 0; n < nativeChildren.size(); ++n)
                     {
-                        if (nativeChildren[n] == node)
+                        if (nodePtr == nativeChildren[n])
                         {
                             nativeChildren.erase(nativeChildren.begin() + n);
                             isNativeChild = true;
 
                             // Add this node's children as new native child nodes.
-                            for (uint32_t c = 0; c < node->GetNumChildren(); ++c)
+                            for (uint32_t c = 0; c < nodePtr->GetNumChildren(); ++c)
                             {
-                                nativeChildren.push_back(node->GetChild(c));
+                                nativeChildren.push_back(nodePtr->GetChild(c));
                             }
 
                             break;
@@ -268,29 +268,30 @@ NodePtr Scene::Instantiate()
             }
 
             // We aren't overriding a native child, so we need to create a new node.
-            if (node == nullptr)
+            if (nodePtr == nullptr)
             {
                 if (mNodeDefs[i].mScene != nullptr)
                 {
                     Scene* scene = mNodeDefs[i].mScene.Get<Scene>();
-                    node = scene->Instantiate();
+                    nodePtr = scene->Instantiate();
 
 #if EDITOR
-                    node->SetExposeVariable(mNodeDefs[i].mExposeVariable);
+                    nodePtr->SetExposeVariable(mNodeDefs[i].mExposeVariable);
 #endif
                 }
                 else
                 {
-                    node = Node::Construct(mNodeDefs[i].mType);
+                    nodePtr = Node::Construct(mNodeDefs[i].mType);
 
-                    for (uint32_t c = 0; c < node->GetNumChildren(); ++c)
+                    for (uint32_t c = 0; c < nodePtr->GetNumChildren(); ++c)
                     {
-                        nativeChildren.push_back(node->GetChild(c));
+                        nativeChildren.push_back(nodePtr->GetChild(c));
                     }
                 }
             }
 
-            OCT_ASSERT(node);
+            OCT_ASSERT(nodePtr);
+            Node* node = nodePtr.Get();
 
             std::vector<Property> dstProps;
             node->GatherProperties(dstProps);
@@ -353,7 +354,7 @@ NodePtr Scene::Instantiate()
                 node3d->UpdateTransform(true);
             }
 
-            nodeList.push_back(node);
+            nodeList.push_back(nodePtr);
         }
 
         rootNode = nodeList[0];
@@ -385,7 +386,7 @@ NodePtr Scene::Instantiate()
 
         auto pruneReplicated = [&](Node* node) -> bool
         {
-            if (node != rootNode && node->IsReplicated())
+            if (rootNode != node && node->IsReplicated())
             {
                 repNodesToDelete.push_back(node);
 

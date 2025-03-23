@@ -206,9 +206,9 @@ private:
 
     void UpdateDebugDraws();
 
-    Widget* mModalWidget = nullptr;
-    StatsOverlay* mStatsWidget = nullptr;
-    Console* mConsoleWidget = nullptr;
+    SharedPtr<Widget> mModalWidget;
+    SharedPtr<StatsOverlay> mStatsWidget;
+    SharedPtr<Console> mConsoleWidget;
 
     EngineState* mEngineState = nullptr;
 

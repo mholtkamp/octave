@@ -1,7 +1,6 @@
 #include "LuaBindings/Misc_Lua.h"
 
 #include "Nodes/Widgets/Widget.h"
-#include "Nodes/Widgets/Button.h"
 #include "Nodes/Widgets/Text.h"
 
 #include "Nodes/3D/Particle3d.h"
@@ -189,35 +188,6 @@ void BindAnchorMode()
 
     OCT_ASSERT(lua_gettop(L) == 0);
 }
-
-void BindButtonState()
-{
-    lua_State* L = GetLua();
-    OCT_ASSERT(lua_gettop(L) == 0);
-
-    lua_newtable(L);
-    int tableIdx = lua_gettop(L);
-
-    lua_pushinteger(L, (int)ButtonState::Normal);
-    lua_setfield(L, tableIdx, "Normal");
-
-    lua_pushinteger(L, (int)ButtonState::Hovered);
-    lua_setfield(L, tableIdx, "Hovered");
-
-    lua_pushinteger(L, (int)ButtonState::Pressed);
-    lua_setfield(L, tableIdx, "Pressed");
-
-    lua_pushinteger(L, (int)ButtonState::Disabled);
-    lua_setfield(L, tableIdx, "Disabled");
-
-    lua_pushinteger(L, (int)ButtonState::Num);
-    lua_setfield(L, tableIdx, "Num");
-
-    lua_setglobal(L, "ButtonState");
-
-    OCT_ASSERT(lua_gettop(L) == 0);
-}
-
 
 void BindDatumType()
 {
@@ -453,7 +423,6 @@ void Misc_Lua::BindMisc()
     BindTevMode();
     BindTextureSlot();
     BindAnchorMode();
-    BindButtonState();
     BindDatumType();
     BindNetFuncType();
     BindJustification();

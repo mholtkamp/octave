@@ -71,7 +71,7 @@ struct LinkedSceneProps
 struct EditScene
 {
     SceneRef mSceneAsset;
-    Node* mRootNode = nullptr;
+    NodePtr mRootNode;
     glm::mat4 mCameraTransform;
     std::vector<LinkedSceneProps> mLinkedSceneProps;
 };
@@ -86,7 +86,7 @@ struct EditorState
     AssetStub* mSelectedAssetStub = nullptr;
     ControlMode mControlMode = ControlMode::Default;
     TransformLock mTransformLock = TransformLock::None;
-    Camera3D* mEditorCamera = nullptr;
+    SharedPtr<Camera3D> mEditorCamera;
     bool mMouseNeedsRecenter = false;
     bool mUiEnabled = true;
     bool mPlayInEditor = false;
@@ -121,7 +121,7 @@ struct EditorState
     bool mShowRightPane = true;
     bool mShowInterface = true;
     bool mPreviewLighting = true;
-    Text* mOverlayText = nullptr;
+    SharedPtr<Text> mOverlayText = nullptr;
     std::vector<std::string> mFavoritedDirs;
     std::vector<std::string> mRecentProjects;
     PaintMode mPaintMode = PaintMode::None;

@@ -40,7 +40,6 @@ public:
     Node* SpawnNode(const char* typeName);
     Node* SpawnScene(const char* sceneName);
     Particle3D* SpawnParticle(ParticleSystem* sys, glm::vec3 position);
-    void DestroyNode(Node* node);
 
     template<class NodeClass>
     NodeClass* SpawnNode()
@@ -132,7 +131,7 @@ public:
 
     Camera3D* SpawnDefaultCamera();
     Node* SpawnDefaultRoot();
-    void PlaceNewlySpawnedNode(Node* node);
+    void PlaceNewlySpawnedNode(NodePtr node);
 
     void OverrideDynamicsWorld(btDiscreteDynamicsWorld* world);
     void RestoreDynamicsWorld();

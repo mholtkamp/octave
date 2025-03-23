@@ -20,7 +20,7 @@ Viewport2D::Viewport2D()
 
 Viewport2D::~Viewport2D()
 {
-    Node::Destruct(mWrapperWidget);
+    Node::Destruct(mWrapperWidget.Get());
     mWrapperWidget = nullptr;
 }
 
@@ -56,7 +56,7 @@ void Viewport2D::Update(float deltaTime)
     if (hoverWidget &&
         hoverWidget != selWidget)
     {
-        mHoveredWidget = hoverWidget;
+        mHoveredWidget = Node::ResolveWeakPtr<Widget>(hoverWidget);
     }
     else
     {
@@ -85,7 +85,7 @@ bool Viewport2D::IsMouseInside() const
 
 Widget* Viewport2D::GetWrapperWidget()
 {
-    return mWrapperWidget;
+    return mWrapperWidget.Get();
 }
 
 Widget* Viewport2D::GetHoveredWidget()

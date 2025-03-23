@@ -48,16 +48,9 @@
 #include "LuaBindings/Widget_Lua.h"
 #include "LuaBindings/Quad_Lua.h"
 #include "LuaBindings/Text_Lua.h"
-#include "LuaBindings/Button_Lua.h"
 #include "LuaBindings/Canvas_Lua.h"
-#include "LuaBindings/CheckBox_Lua.h"
-#include "LuaBindings/ComboBox_Lua.h"
-#include "LuaBindings/Selector_Lua.h"
-#include "LuaBindings/TextField_Lua.h"
-#include "LuaBindings/VerticalList_Lua.h"
 #include "LuaBindings/Poly_Lua.h"
 #include "LuaBindings/PolyRect_Lua.h"
-#include "LuaBindings/NodeRef_Lua.h"
 #include "LuaBindings/Signal_Lua.h"
 #include "LuaBindings/Stream_Lua.h"
 #include "LuaBindings/TimerManager_Lua.h"
@@ -81,7 +74,6 @@ void BindLuaInterface()
     System_Lua::Bind();
     World_Lua::Bind();
     AssetManager_Lua::Bind();
-    NodeRef_Lua::Bind();
     Stream_Lua::Bind();
     Signal_Lua::Bind();
     TimerManager_Lua::Bind();
@@ -125,13 +117,7 @@ void BindLuaInterface()
     Widget_Lua::Bind();
     Quad_Lua::Bind();
     Text_Lua::Bind();
-    Button_Lua::Bind();
-    Selector_Lua::Bind();
     Canvas_Lua::Bind();
-    CheckBox_Lua::Bind();
-    ComboBox_Lua::Bind();
-    TextField_Lua::Bind();
-    VerticalList_Lua::Bind();
     Poly_Lua::Bind();
     PolyRect_Lua::Bind();
 

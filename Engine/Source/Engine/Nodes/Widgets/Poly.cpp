@@ -29,8 +29,9 @@ void Poly::Create()
 
 void Poly::Destroy()
 {
-    Widget::Destroy();
     GFX_DestroyPolyResource(this);
+
+    Widget::Destroy();
 }
 
 PolyResource* Poly::GetResource()

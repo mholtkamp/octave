@@ -363,7 +363,7 @@ glm::vec3 Camera3D::TraceScreenToWorld(int32_t x, int32_t y, uint8_t colMask, Ra
 const bool Camera3D::IsEditorCamera()
 {
 #if EDITOR
-    return (this == GetEditorState()->mEditorCamera);
+    return (GetEditorState()->mEditorCamera == this);
 #endif
 
     return false;

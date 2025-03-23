@@ -83,7 +83,7 @@ int Node_Lua::Create(lua_State* L, Node* node)
             // Create new userdata
             Node_Lua* nodeLua = (Node_Lua*)lua_newuserdata(L, sizeof(Node_Lua));
             new (nodeLua) Node_Lua();
-            nodeLua->mNode = node;
+            nodeLua->mNode = Node::ResolvePtr(node);
             int udIdx = lua_gettop(L);
 
             // Create a uservalue for storing script related values.
@@ -137,9 +137,9 @@ int Node_Lua::Construct(lua_State* L)
     const char* className = "Node";
     if (!lua_isnone(L, 1)) { className = CHECK_STRING(L, 1); }
     
-    Node* newNode = Node::Construct(className);
+    NodePtr newNode = Node::Construct(className);
 
-    Node_Lua::Create(L, newNode);
+    Node_Lua::Create(L, newNode.Get());
     return 1;
 }
 
@@ -147,7 +147,8 @@ int Node_Lua::Destruct(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
 
-    node->SetPendingDestroy(true);
+    node->Destroy();
+    node = nullptr;
 
     return 0;
 }
@@ -511,9 +512,9 @@ int Node_Lua::Clone(lua_State* L)
     Node* node = CHECK_NODE(L, 1);
     bool recurse = CHECK_BOOLEAN(L, 2);
 
-    Node* clonedNode = node->Clone(recurse);
+    NodePtr clonedNode = node->Clone(recurse);
 
-    Node_Lua::Create(L, clonedNode);
+    Node_Lua::Create(L, clonedNode.Get());
     return 1;
 }
 
@@ -553,7 +554,7 @@ int Node_Lua::DestroyChild(lua_State* L)
 
     if (child)
     {
-        child->SetPendingDestroy(true);
+        child->Destroy();
     }
 
     return 0;
@@ -588,16 +589,6 @@ int Node_Lua::HasStarted(lua_State* L)
 
     lua_pushboolean(L, ret);
     return 1;
-}
-
-int Node_Lua::Destroy(lua_State* L)
-{
-    Node* node = CHECK_NODE(L, 1);
-    bool destroy = CHECK_BOOLEAN(L, 2);
-
-    node->SetPendingDestroy(destroy);
-
-    return 0;
 }
 
 int Node_Lua::IsDestroyed(lua_State* L)
@@ -947,10 +938,6 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, Start);
 
     REGISTER_TABLE_FUNC(L, mtIndex, HasStarted);
-
-    REGISTER_TABLE_FUNC(L, mtIndex, SetPendingDestroy);
-
-    REGISTER_TABLE_FUNC(L, mtIndex, IsPendingDestroy);
 
     REGISTER_TABLE_FUNC(L, mtIndex, EnableTick);
 

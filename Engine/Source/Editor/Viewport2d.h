@@ -1,10 +1,8 @@
 #pragma once
 
 #include "EditorState.h"
-#include "Nodes/Widgets/ModalList.h"
 #include "Nodes/Widgets/PolyRect.h"
 
-class Button;
 
 struct VpWidgetTransform
 {
@@ -69,8 +67,8 @@ protected:
     WidgetControlMode mControlMode = WidgetControlMode::Default;
     WidgetAxisLock mAxisLock = WidgetAxisLock::None;
 
-    Widget* mWrapperWidget = nullptr;
-    NodeRef mHoveredWidget;
+    SharedPtr<Widget> mWrapperWidget;
+    WeakPtr<Widget> mHoveredWidget;
 
     int32_t mPrevMouseX = 0;
     int32_t mPrevMouseY = 0;

@@ -323,24 +323,6 @@
     <ClCompile Include="Source\LuaBindings\Text_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
-    <ClCompile Include="Source\LuaBindings\Button_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\LuaBindings\CheckBox_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\LuaBindings\Selector_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\LuaBindings\ComboBox_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\LuaBindings\TextField_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\LuaBindings\VerticalList_Lua.cpp">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClCompile>
     <ClCompile Include="Source\LuaBindings\Misc_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
@@ -461,16 +443,7 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\Canvas.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\Widgets\CheckBox.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\Widgets\ComboBox.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Widgets\Console.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\Widgets\ModalList.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Widgets\Poly.cpp">
@@ -482,28 +455,13 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\Quad.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\Widgets\Selector.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Widgets\StatsOverlay.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Widgets\Text.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\Widgets\TextField.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\Widgets\VerticalList.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\Widgets\ArrayWidget.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\Widgets\Button.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\3D\Audio3d.cpp">
@@ -876,13 +834,7 @@
     <ClInclude Include="Source\Engine\Nodes\Node.h">
       <Filter>Source Files\Engine\Nodes</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\Widgets\ComboBox.h">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\Console.h">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\Widgets\ModalList.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\Poly.h">
@@ -894,34 +846,16 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\Quad.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\Widgets\Selector.h">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\StatsOverlay.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\Text.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\Widgets\TextField.h">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\Widgets\VerticalList.h">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\Widget.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\Widgets\ArrayWidget.h">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\Widgets\Button.h">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\Canvas.h">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\Widgets\CheckBox.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\TableDatum.h">
@@ -1101,9 +1035,6 @@
     <ClInclude Include="Source\Input\InputConstants.h">
       <Filter>Source Files\Input</Filter>
     </ClInclude>
-    <ClInclude Include="Source\LuaBindings\VerticalList_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
     <ClInclude Include="Source\LuaBindings\Widget_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
@@ -1119,16 +1050,7 @@
     <ClInclude Include="Source\LuaBindings\Audio_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
-    <ClInclude Include="Source\LuaBindings\Button_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
     <ClInclude Include="Source\LuaBindings\Canvas_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\LuaBindings\CheckBox_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\LuaBindings\ComboBox_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Engine_Lua.h">
@@ -1185,9 +1107,6 @@
     <ClInclude Include="Source\LuaBindings\Script_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
-    <ClInclude Include="Source\LuaBindings\Selector_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
     <ClInclude Include="Source\LuaBindings\SkeletalMesh_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
@@ -1204,9 +1123,6 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Text_Lua.h">
-      <Filter>Source Files\LuaBindings</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\LuaBindings\TextField_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Texture_Lua.h">

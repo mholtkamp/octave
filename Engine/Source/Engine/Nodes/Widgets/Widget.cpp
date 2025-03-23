@@ -836,7 +836,7 @@ void Widget::MarkDirty()
     {
         if (mChildren[i]->IsWidget())
         {
-            static_cast<Widget*>(mChildren[i])->MarkDirty();
+            static_cast<Widget*>(mChildren[i].Get())->MarkDirty();
         }
     }
 }

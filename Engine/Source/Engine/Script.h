@@ -10,9 +10,6 @@
 #include <unordered_map>
 
 struct AnimEvent;
-class Button;
-class Selector;
-class TextField;
 struct Node_Lua;
 
 typedef std::unordered_map<std::string, ScriptNetFunc> ScriptNetFuncMap;

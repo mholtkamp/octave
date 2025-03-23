@@ -128,8 +128,6 @@ void Primitive3D::Create()
 
 void Primitive3D::Destroy()
 {
-    Node3D::Destroy();
-
     if (GetWorld() && IsRigidBodyInWorld())
     {
         GetWorld()->GetDynamicsWorld()->removeRigidBody(mRigidBody);
@@ -148,6 +146,8 @@ void Primitive3D::Destroy()
     }
 
     DestroyComponentCollisionShape();
+
+    Node3D::Destroy();
 }
 
 const char* Primitive3D::GetTypeName() const

@@ -187,7 +187,7 @@ void NetMsgSpawn::Execute(NetHost sender)
 
     if (NetIsClient())
     {
-        Node* newNode = nullptr;
+        NodePtr newNode = nullptr;
         
         if (mSceneName != "")
         {
@@ -219,7 +219,7 @@ void NetMsgSpawn::Execute(NetHost sender)
             newNode->SetReplicate(true);
             newNode->SetReplicateTransform(mReplicateTransform);
 
-            NetworkManager::Get()->AddNetNode(newNode, mNetId);
+            NetworkManager::Get()->AddNetNode(newNode.Get(), mNetId);
 
             if (mParentNetId == INVALID_NET_ID)
             {
@@ -229,7 +229,7 @@ void NetMsgSpawn::Execute(NetHost sender)
                 // If we don't we might leak memory. However, this could cause problems
                 // if the user spawns a new node that gets set as the root.
                 GetWorld(0)->DestroyRootNode();
-                GetWorld(0)->SetRootNode(newNode);
+                GetWorld(0)->SetRootNode(newNode.Get());
             }
             else
             {
@@ -239,7 +239,7 @@ void NetMsgSpawn::Execute(NetHost sender)
 
                 if (parent != nullptr)
                 {
-                    parent->AddChild(newNode);
+                    parent->AddChild(newNode.Get());
                 }
                 else
                 {
@@ -247,12 +247,12 @@ void NetMsgSpawn::Execute(NetHost sender)
                     Node* rootNode = GetWorld(0)->GetRootNode();
                     if (rootNode)
                     {
-                        rootNode->AddChild(newNode);
+                        rootNode->AddChild(newNode.Get());
                     }
                     else
                     {
                         // Hmm okay, well I guess this node will be the new world root.
-                        GetWorld(0)->SetRootNode(newNode);
+                        GetWorld(0)->SetRootNode(newNode.Get());
                     }
                 }
             }
@@ -292,8 +292,7 @@ void NetMsgDestroy::Execute(NetHost sender)
 
         if (node != nullptr)
         {
-            Node::Destruct(node);
-            node = nullptr;
+            node->Destroy();
         }
         else
         {

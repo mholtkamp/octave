@@ -54,6 +54,7 @@ T* CheckAssetLuaType(lua_State* L, int arg, const char* className, const char* c
     return ret;
 }
 
+NodePtr& CheckNodeWrapperPtr(lua_State* L, int arg);
 Node* CheckNodeWrapper(lua_State* L, int arg);
 Node* CheckNodeLuaType(lua_State* L, int arg, const char* className, const char* classFlag);
 Object* CheckObjectLuaType(lua_State* L, int arg);

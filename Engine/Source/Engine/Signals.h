@@ -29,6 +29,6 @@ private:
 
     void CleanupDeadConnections();
 
-    std::unordered_map<NodeRef, SignalHandlerFunc> mConnectionMap;
+    std::unordered_map<NodePtrWeak, SignalHandlerFunc> mConnectionMap;
 
 };

@@ -394,7 +394,7 @@ void Font::RebuildFont()
             {
                 if (GetEditorState()->GetEditScene(i)->mRootNode != nullptr)
                 {
-                    Node* rootNode = GetEditorState()->GetEditScene(i)->mRootNode;
+                    Node* rootNode = GetEditorState()->GetEditScene(i)->mRootNode.Get();
 
                     auto dirtyText = [&](Node* node) -> bool
                     {

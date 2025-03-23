@@ -87,8 +87,9 @@ void StaticMesh3D::Create()
 
 void StaticMesh3D::Destroy()
 {
-    Mesh3D::Destroy();
     GFX_DestroyStaticMeshCompResource(this);
+
+    Mesh3D::Destroy();
 }
 
 StaticMeshCompResource* StaticMesh3D::GetResource()

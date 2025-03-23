@@ -75,7 +75,7 @@ void EditorState::Shutdown()
     WriteEditorProjectSave();
     WriteEditorSave();
 
-    Node::Destruct(mOverlayText);
+    mOverlayText->Destroy();
     mOverlayText = nullptr;
 
     delete mViewport3D;
@@ -88,7 +88,7 @@ void EditorState::Shutdown()
     mPaintManager = nullptr;
 
     mEditorCamera->SetWorld(nullptr);
-    Node::Destruct(mEditorCamera);
+    mEditorCamera->Destroy();
     mEditorCamera = nullptr;
 }
 
@@ -564,8 +564,8 @@ void EditorState::BeginPlayInEditor()
     if (editScene != nullptr &&
         editScene->mRootNode != nullptr)
     {
-        Node* clonedRoot = editScene->mRootNode->Clone(true, false);
-        GetWorld(0)->SetRootNode(clonedRoot);
+        NodePtr clonedRoot = editScene->mRootNode->Clone(true, false);
+        GetWorld(0)->SetRootNode(clonedRoot.Get());
     }
 }
 
@@ -664,7 +664,7 @@ bool EditorState::IsPlayInEditorPaused()
 
 Camera3D* EditorState::GetEditorCamera()
 {
-    return mEditorCamera;
+    return mEditorCamera.Get();
 }
 
 void EditorState::LoadStartupScene()
@@ -832,7 +832,7 @@ void EditorState::OpenEditScene(int32_t idx)
     {
         const EditScene& editScene = mEditScenes[idx];
         mEditSceneIndex = idx;
-        GetWorld(0)->SetRootNode(editScene.mRootNode); // could be nullptr.
+        GetWorld(0)->SetRootNode(editScene.mRootNode.Get()); // could be nullptr.
         GetEditorCamera()->SetTransform(editScene.mCameraTransform);
 
         // Reinstantiate scene-linked nodes
@@ -852,12 +852,15 @@ void EditorState::OpenEditScene(int32_t idx)
 
                 // Replace this scene-linked node with a newly instantiated version
                 // to make sure we grab new changes that have been made to the scene.
-                Node* newNode = node->GetScene()->Instantiate(); // node->Clone(true);
+                NodePtr newNode = node->GetScene()->Instantiate(); // node->Clone(true);
                 Node* parent = node->GetParent();
                 int32_t nodeIdx = parent->FindChildIndex(node);
 
-                parent->RemoveChild(node);
-                parent->AddChild(newNode, nodeIdx);
+                // This will unparent it from parent
+                node->Destroy();
+                node = nullptr;
+
+                parent->AddChild(newNode.Get(), nodeIdx);
 
                 // Copy non-default props.
                 if (nonDefProps != nullptr)
@@ -866,9 +869,6 @@ void EditorState::OpenEditScene(int32_t idx)
                     newNode->GatherProperties(dstProps);
                     CopyPropertyValues(dstProps, *nonDefProps);
                 }
-
-                Node::Destruct(node);
-                node = nullptr;
             }
 
             return true;
@@ -903,7 +903,7 @@ void EditorState::CloseEditScene(int32_t idx)
         }
 
         // Destroy the root node
-        Node::Destruct(mEditScenes[idx].mRootNode);
+        mEditScenes[idx].mRootNode->Destroy();
 
         // Remove this EditScene entry.
         mEditScenes.erase(mEditScenes.begin() + idx);
@@ -952,7 +952,7 @@ void EditorState::ShelveEditScene()
     if (mEditSceneIndex >= 0)
     {
         EditScene& editScene = mEditScenes[mEditSceneIndex];
-        editScene.mRootNode = GetWorld(0)->GetRootNode();
+        editScene.mRootNode = GetWorld(0)->GetRootNodePtr();
         editScene.mCameraTransform = GetEditorCamera()->GetTransform();
         GetWorld(0)->SetRootNode(nullptr);
 

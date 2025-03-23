@@ -51,9 +51,9 @@ void Quad::Create()
 
 void Quad::Destroy()
 {
-    Widget::Destroy();
-
     GFX_DestroyQuadResource(this);
+
+    Widget::Destroy();
 }
 
 QuadResource* Quad::GetResource()

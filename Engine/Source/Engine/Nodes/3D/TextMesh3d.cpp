@@ -74,8 +74,9 @@ void TextMesh3D::Create()
 
 void TextMesh3D::Destroy()
 {
-    Mesh3D::Destroy();
     GFX_DestroyTextMeshCompResource(this);
+
+    Mesh3D::Destroy();
 }
 
 TextMeshCompResource* TextMesh3D::GetResource()

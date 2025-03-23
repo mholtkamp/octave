@@ -11,6 +11,7 @@
 #define NODE_LUA_NAME "Node"
 #define NODE_LUA_FLAG "cfNode"
 #define CHECK_NODE(L, arg)  CheckNodeWrapper(L, arg);
+#define CHECK_NODE_PTR(L, arg)  CheckNodeWrapperPtr(L, arg);
 
 struct Node_Lua
 {
@@ -59,7 +60,6 @@ struct Node_Lua
     static int Start(lua_State* L);
     static int HasStarted(lua_State* L);
 
-    static int Destroy(lua_State* L);
     static int IsDestroyed(lua_State* L);
     static int EnableTick(lua_State* L);
     static int IsTickEnabled(lua_State* L);

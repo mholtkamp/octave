@@ -112,7 +112,7 @@ NodePtr World::GetRootNodePtr()
     return mRootNode;
 }
 
-void World::SetRootNode(const NodePtr& node)
+void World::SetRootNode(Node* node)
 {
     if (mRootNode != node)
     {
@@ -121,7 +121,7 @@ void World::SetRootNode(const NodePtr& node)
             mRootNode->SetWorld(nullptr);
         }
 
-        mRootNode = node;
+        mRootNode = Node::ResolvePtr(node);
 
         if (mRootNode != nullptr)
         {
@@ -605,7 +605,7 @@ void World::Update(float deltaTime)
 
         DestroyRootNode();
 
-        SetRootNode(mQueuedRootNode);
+        SetRootNode(mQueuedRootNode.Get());
 
         mQueuedRootNode.Reset();
     }
@@ -728,7 +728,7 @@ void World::Update(float deltaTime)
             static std::vector<NodePtrWeak> sNodesToTick;
             sNodesToTick.clear();
 
-            mRootNode->PrepareTick(mRootNode, sNodesToTick, gameTickEnabled);
+            mRootNode->PrepareTick(sNodesToTick, gameTickEnabled);
 
             for (uint32_t i = 0; i < sNodesToTick.size(); ++i)
             {
@@ -816,7 +816,7 @@ Node3D* World::GetAudioReceiver()
 void World::SetActiveCamera(Camera3D* activeCamera)
 {
 #if EDITOR
-    if (activeCamera != GetEditorState()->mEditorCamera)
+    if (GetEditorState()->mEditorCamera != activeCamera)
     {
         mActiveCamera = activeCamera;
     }
@@ -836,11 +836,11 @@ void World::PlaceNewlySpawnedNode(NodePtr node)
     {
         if (mRootNode != nullptr)
         {
-            mRootNode->AddChild(node);
+            mRootNode->AddChild(node.Get());
         }
         else
         {
-            SetRootNode(node);
+            SetRootNode(node.Get());
         }
     }
 }
@@ -856,7 +856,7 @@ void World::RestoreDynamicsWorld()
     mDynamicsWorld = mDefaultDynamicsWorld;
 }
 
-Node World::SpawnNode(TypeId actorType)
+Node* World::SpawnNode(TypeId actorType)
 {
     NodePtr newNode = Node::Construct(actorType);
 
@@ -869,12 +869,14 @@ Node World::SpawnNode(TypeId actorType)
         LogError("Failed to spawn node with type: %d.", (int)actorType);
     }
 
-    return newNode;
+    // Safe to return a pointer here since the newly constructed
+    // node should be a child in the world's node tree now.
+    return newNode.Get();
 }
 
 Node* World::SpawnNode(const char* typeName)
 {
-    Node* newNode = Node::Construct(typeName);
+    NodePtr newNode = Node::Construct(typeName);
 
     if (newNode != nullptr)
     {
@@ -885,13 +887,13 @@ Node* World::SpawnNode(const char* typeName)
         LogError("Failed to spawn node with type name: %s.", typeName);
     }
 
-    return newNode;
+    return newNode.Get();
 }
 
 Node* World::SpawnScene(const char* sceneName)
 {
     Scene* scene = LoadAsset<Scene>(sceneName);
-    Node* newNode = scene ? scene->Instantiate() : nullptr;
+    NodePtr newNode = scene ? scene->Instantiate() : nullptr;
 
     if (newNode != nullptr)
     {
@@ -902,7 +904,7 @@ Node* World::SpawnScene(const char* sceneName)
         LogError("Failed to spawn scene with type: %s.", sceneName);
     }
 
-    return newNode;
+    return newNode.Get();
 }
 
 Particle3D* World::SpawnParticle(ParticleSystem* sys, glm::vec3 position)
@@ -916,14 +918,6 @@ Particle3D* World::SpawnParticle(ParticleSystem* sys, glm::vec3 position)
     return ret;
 }
 
-void World::DestroyNode(Node* node)
-{
-    if (node->GetWorld() == this)
-    {
-        Node::Destruct(node);
-    }
-}
-
 void World::LoadScene(const char* name, bool instant)
 {
     if (instant)
@@ -934,8 +928,8 @@ void World::LoadScene(const char* name, bool instant)
         {
             DestroyRootNode();
 
-            Node* newRoot = scene->Instantiate();
-            SetRootNode(newRoot);
+            NodePtr newRoot = scene->Instantiate();
+            SetRootNode(newRoot.Get());
         }
     }
     else
@@ -952,14 +946,14 @@ void World::QueueRootScene(const char* name)
 
     if (scene != nullptr)
     {
-        Node* sceneNode = scene->Instantiate();
-        QueueRootNode(sceneNode);
+        NodePtr sceneNode = scene->Instantiate();
+        QueueRootNode(sceneNode.Get());
     }
 }
 
 void World::QueueRootNode(Node* node)
 {
-    mQueuedRootNode = node;
+    mQueuedRootNode = Node::ResolvePtr(node);
 }
 
 void World::EnableInternalEdgeSmoothing(bool enable)
@@ -1027,9 +1021,9 @@ Node* World::SpawnDefaultRoot()
 {
     if (mRootNode == nullptr)
     {
-        mRootNode = SpawnNode<Node>();
+        mRootNode = Node::ResolvePtr(SpawnNode<Node>());
         mRootNode->SetName("Default Root");
     }
 
-    return mRootNode;
+    return mRootNode.Get();
 }

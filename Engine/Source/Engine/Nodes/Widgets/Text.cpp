@@ -118,8 +118,6 @@ void Text::Create()
 
 void Text::Destroy()
 {
-    Widget::Destroy();
-
     if (mVertices != nullptr)
     {
         delete[] mVertices;
@@ -127,6 +125,8 @@ void Text::Destroy()
     }
 
     GFX_DestroyTextResource(this);
+
+    Widget::Destroy();
 }
 
 TextResource* Text::GetResource()

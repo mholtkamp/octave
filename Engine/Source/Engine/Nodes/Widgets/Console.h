@@ -44,5 +44,5 @@ protected:
     Canvas* mOutputCanvas = nullptr;
     Canvas* mInputCanvas = nullptr;
     Text* mInputLine = nullptr;
-    std::vector<ConsoleOutputText*> mOutputLines;
+    std::vector<SharedPtr<ConsoleOutputText> > mOutputLines;
 };

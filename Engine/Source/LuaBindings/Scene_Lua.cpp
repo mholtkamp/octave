@@ -20,9 +20,9 @@ int Scene_Lua::Instantiate(lua_State* L)
 {
     Scene* scene = CHECK_SCENE(L, 1);
 
-    Node* ret = scene->Instantiate();
+    NodePtr ret = scene->Instantiate();
 
-    Node_Lua::Create(L, ret);
+    Node_Lua::Create(L, ret.Get());
     return 1;
 }
 

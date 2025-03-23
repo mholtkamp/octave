@@ -123,8 +123,9 @@ void SkeletalMesh3D::Create()
 
 void SkeletalMesh3D::Destroy()
 {
-    Mesh3D::Destroy();
     GFX_DestroySkeletalMeshCompResource(this);
+
+    Mesh3D::Destroy();
 }
 
 SkeletalMeshCompResource* SkeletalMesh3D::GetResource()
@@ -1104,7 +1105,7 @@ void SkeletalMesh3D::UpdateAttachedChildren(float deltaTime)
     {
         for (uint32_t i = 0; i < mChildren.size(); ++i)
         {
-            Node3D* child3D = mChildren[i]->IsNode3D() ? static_cast<Node3D*>(mChildren[i]) : nullptr;
+            Node3D* child3D = mChildren[i]->IsNode3D() ? static_cast<Node3D*>(mChildren[i].Get()) : nullptr;
 
             if (child3D && child3D->GetParentBoneIndex() != -1)
             {

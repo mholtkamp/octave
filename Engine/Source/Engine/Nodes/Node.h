@@ -66,6 +66,7 @@ public:
 
     static NodePtr Construct(const std::string& name);
     static NodePtr Construct(TypeId typeId);
+    static void Destruct(Node* node);
 
     Node();
     virtual ~Node();
@@ -248,6 +249,20 @@ public:
     static NodePtr ResolvePtr(Node* node);
     static NodePtrWeak ResolveWeakPtr(Node* node);
 
+    template<typename T>
+    static SharedPtr<T> ResolvePtr(Node* node)
+    {
+        NodePtr nodePtr = node ? node->mSelf.Lock() : nullptr;
+        return PtrStaticCast<T>(nodePtr);
+    }
+
+    template<typename T>
+    static WeakPtr<T> ResolveWeakPtr(Node* node)
+    {
+        NodePtr nodePtr = node ? node->mSelf.Lock() : nullptr;
+        return PtrStaticCast<T>(nodePtr);
+    }
+
     static void RegisterNetFuncs(Node* node);
 
     template<typename T>
@@ -344,9 +359,16 @@ public:
     }
 
     template<class NodeClass>
-    static NodeClass* Construct()
+    static SharedPtr<NodeClass> Construct()
     {
-        return (NodeClass*)Construct(NodeClass::GetStaticType());
+        // Code copied across other Construct() functions
+        NodeClass* newNode = (NodeClass*)Node::CreateInstance(NodeClass::GetStaticType());
+        SharedPtr<NodeClass> newNodePtr;
+        newNodePtr.Set(newNode, nullptr);
+        newNodePtr.SetDeleter([](NodeClass* node) { node->Destroy(); });
+        newNodePtr->mSelf = PtrStaticCast<Node>(newNodePtr);
+        newNodePtr->Create();
+        return newNodePtr;
     }
 
 protected:

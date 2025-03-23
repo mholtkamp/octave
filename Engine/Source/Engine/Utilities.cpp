@@ -553,7 +553,7 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
     {
         // For native nodes, determine which properties are different than the defaults
         // and only save those to reduce storage/memory of the scene.
-        Node* defaultNode = scene ? scene->Instantiate() : Node::Construct(node->GetType());
+        NodePtr defaultNode = scene ? scene->Instantiate() : Node::Construct(node->GetType());
         std::vector<Property> defaultProps;
         defaultNode->GatherProperties(defaultProps);
 
@@ -571,7 +571,7 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
             }
         }
 
-        Node::Destruct(defaultNode);
+        defaultNode->Destroy();
         defaultNode = nullptr;
     }
 }
