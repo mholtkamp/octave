@@ -170,7 +170,11 @@ public:
     void EnableScissor(bool enable);
     Rect GetScissorRect() const;
 
+    static void CleanTickedWidget();
+
 protected:
+
+    static WeakPtr<Widget> sWidgetToClean;
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 

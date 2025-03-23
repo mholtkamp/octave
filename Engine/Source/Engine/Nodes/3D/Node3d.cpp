@@ -99,7 +99,11 @@ void Node3D::Create()
 void Node3D::Destroy()
 {
 #if DEBUG_DRAW_ENABLED
-    Renderer::Get()->RemoveDebugDrawsForNode(this);
+    Renderer* renderer = Renderer::Get();
+    if (renderer)
+    {
+        Renderer::Get()->RemoveDebugDrawsForNode(this);
+    }
 #endif
 
     Node::Destroy();
@@ -624,6 +628,10 @@ void Node3D::Attach(Node* parent, bool keepWorldTransform, int32_t index)
     {
         return;
     }
+
+    // Lock pointer so we don't delete this node if the parent is
+    // the only one maintaining a shared pointer to it.
+    NodePtr lockPtr = mSelf.Lock();
 
     if (keepWorldTransform && IsTransformDirty())
     {

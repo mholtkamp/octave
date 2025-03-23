@@ -17,6 +17,8 @@
 FORCE_LINK_DEF(Widget);
 DEFINE_NODE(Widget, Node);
 
+WeakPtr<Widget> Widget::sWidgetToClean;
+
 static const char* sAnchorModeStrings[] =
 {
     "Top Left",
@@ -85,6 +87,15 @@ bool Widget::HandlePropChange(Datum* datum, uint32_t index, const void* newValue
     return success;
 }
 
+void Widget::CleanTickedWidget()
+{
+    if (sWidgetToClean)
+    {
+        sWidgetToClean->mDirty[Renderer::Get()->GetFrameIndex()] = false;
+        sWidgetToClean = nullptr;
+    }
+}
+
 Widget::Widget() :
     mTransform(1.0f),
     mColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)),
@@ -146,7 +157,6 @@ void Widget::PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game)
     if (IsVisible())
     {
         Node::PrepareTick(outTickNodes, game);
-        mDirty[Renderer::Get()->GetFrameIndex()] = false;
     }
 }
 
@@ -164,8 +174,11 @@ void Widget::EditorTick(float deltaTime)
 
 void Widget::TickCommon(float deltaTime)
 {
+
     if (IsDirty())
     {
+        sWidgetToClean = Node::ResolveWeakPtr<Widget>(this);
+
         UpdateRect();
         UpdateColor();
     }

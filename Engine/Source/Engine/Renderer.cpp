@@ -1232,6 +1232,8 @@ void Renderer::Render(World* world, int32_t screenIndex)
                 {
                     node->EditorTick(realDeltatime);
                 }
+
+                Widget::CleanTickedWidget();
             }
         }
     }

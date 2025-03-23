@@ -41,6 +41,13 @@ public:
     void Capture(Node* root, Platform platform = Platform::Count);
     NodePtr Instantiate();
 
+    template<typename T>
+    SharedPtr<T> Instantiate()
+    {
+        NodePtr root = Instantiate();
+        return Node::template ResolvePtr<T>(root.Get());
+    }
+
     void ApplyRenderSettings(World* world);
 
 protected:
