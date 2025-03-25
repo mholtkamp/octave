@@ -542,7 +542,12 @@ void World::RegisterNode(Node* node)
         }
     }
 
-    mNewlyRegisteredNodes.insert(Node::ResolveWeakPtr(node));
+    NodePtrWeak weakNode = Node::ResolveWeakPtr(node);
+    if (mNodesRegisteredThisFrame.find(weakNode) == mNodesRegisteredThisFrame.end())
+    {
+        mNewlyRegisteredNodes.insert(Node::ResolveWeakPtr(node));
+        mNodesRegisteredThisFrame.insert(weakNode);
+    }
 }
 
 void World::UnregisterNode(Node* node)
@@ -724,6 +729,8 @@ void World::Update(float deltaTime)
     UpdateLines(deltaTime);
 
     {
+        mNodesRegisteredThisFrame.clear();
+
         SCOPED_FRAME_STAT("Tick");
         if (mRootNode != nullptr)
         {

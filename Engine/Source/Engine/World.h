@@ -186,7 +186,6 @@ private:
 private:
 
     NodePtr mRootNode;
-    std::unordered_set<NodePtrWeak> mNewlyRegisteredNodes;
     std::vector<Line> mLines;
     std::vector<class Light3D*> mLights;
     std::vector<class Audio3D*> mAudios;
@@ -197,6 +196,9 @@ private:
     Camera3D* mActiveCamera;
     Node3D* mAudioReceiver;
     bool mPendingClear = false;
+    std::unordered_set<NodePtrWeak> mNewlyRegisteredNodes;
+    std::unordered_set<NodePtrWeak> mNodesRegisteredThisFrame;
+
 
     // Physics
     btDefaultCollisionConfiguration* mCollisionConfig = nullptr;
