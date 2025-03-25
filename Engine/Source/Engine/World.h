@@ -186,6 +186,7 @@ private:
 private:
 
     NodePtr mRootNode;
+    std::unordered_set<NodePtrWeak> mNewlyRegisteredNodes;
     std::vector<Line> mLines;
     std::vector<class Light3D*> mLights;
     std::vector<class Audio3D*> mAudios;
