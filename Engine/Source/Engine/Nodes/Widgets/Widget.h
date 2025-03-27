@@ -57,13 +57,13 @@ public:
 
     Widget();
 
+    virtual void Start() override;
+
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
     // Refresh any data used for rendering based on this widget's state. Use dirty flag.
     // Recursively update children.
     virtual void PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game) override;
-    virtual void Tick(float deltaTime) override;
-    virtual void EditorTick(float deltaTime) override;
     virtual void Render() override;
     virtual VertexType GetVertexType() const override;
 
@@ -71,6 +71,8 @@ public:
     Widget* GetParentWidget();
     const Widget* GetParentWidget() const;
     Widget* GetChildWidget(int32_t index);
+
+    virtual void PreRender();
 
     Rect GetRect();
 
@@ -147,6 +149,7 @@ public:
     virtual bool ShouldHandleInput();
 
     virtual void MarkDirty();
+    void MarkClean();
     bool IsDirty() const;
 
     static float InterfaceToNormalized(float interfaceCoord, float interfaceSize);
@@ -170,8 +173,6 @@ public:
     void EnableScissor(bool enable);
     Rect GetScissorRect() const;
 
-    static void CleanTickedWidget();
-
 protected:
 
     static WeakPtr<Widget> sWidgetToClean;
@@ -179,8 +180,6 @@ protected:
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
     virtual void SetParent(Node* parent) override;
-
-    void TickCommon(float deltaTime);
 
     float PixelsToRatioX(float x) const;
     float PixelsToRatioY(float y) const;

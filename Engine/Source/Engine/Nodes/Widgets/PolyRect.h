@@ -11,10 +11,6 @@ public:
     PolyRect();
     virtual ~PolyRect();
 
-    virtual void UpdateGeometry(float deltaTime) override;
-
-protected:
-
-    void TickCommon(float deltaTime);
+    virtual void UpdateGeometry() override;
 
 };

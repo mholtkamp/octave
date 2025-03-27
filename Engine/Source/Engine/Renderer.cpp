@@ -608,6 +608,10 @@ void Renderer::GatherDrawData(World* world)
             }
             else if (enable2D && node->IsWidget())
             {
+                Widget* widget = (Widget*)node;
+                widget->PreRender();
+                widget->MarkClean();
+
                 DrawData data = node->GetDrawData();
                 data.mNodeType = node->GetType();
 
@@ -1232,8 +1236,6 @@ void Renderer::Render(World* world, int32_t screenIndex)
                 {
                     node->EditorTick(realDeltatime);
                 }
-
-                Widget::CleanTickedWidget();
             }
         }
     }

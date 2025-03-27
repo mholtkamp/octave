@@ -38,8 +38,7 @@ public:
 
     virtual DrawData GetDrawData() override;
 
-    virtual void Tick(float deltaTime) override;
-    virtual void EditorTick(float deltaTime) override;
+    virtual void PreRender() override;
 
     virtual void Render() override;
 
@@ -93,7 +92,6 @@ protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
-    void TickCommon(float deltaTime);
     void UpdateVertexData();
     void UploadVertexData();
     void JustifyLine(VertexUI* vertices, Justification just, int32_t& lineVertStart, int32_t numVerts);

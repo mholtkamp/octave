@@ -13,7 +13,7 @@ PolyRect::~PolyRect()
 
 }
 
-void PolyRect::UpdateGeometry(float deltaTime)
+void PolyRect::UpdateGeometry()
 {
     if (IsDirty())
     {

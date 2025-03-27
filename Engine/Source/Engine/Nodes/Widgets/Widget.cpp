@@ -17,8 +17,6 @@
 FORCE_LINK_DEF(Widget);
 DEFINE_NODE(Widget, Node);
 
-WeakPtr<Widget> Widget::sWidgetToClean;
-
 static const char* sAnchorModeStrings[] =
 {
     "Top Left",
@@ -87,15 +85,6 @@ bool Widget::HandlePropChange(Datum* datum, uint32_t index, const void* newValue
     return success;
 }
 
-void Widget::CleanTickedWidget()
-{
-    if (sWidgetToClean)
-    {
-        sWidgetToClean->mDirty[Renderer::Get()->GetFrameIndex()] = false;
-        sWidgetToClean = nullptr;
-    }
-}
-
 Widget::Widget() :
     mTransform(1.0f),
     mColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)),
@@ -115,6 +104,11 @@ Widget::Widget() :
     SetName("Widget");
 
     mScissorRect = Rect(0.0f, 0.0f, LARGE_BOUNDS, LARGE_BOUNDS);
+}
+
+void Widget::Start()
+{
+    Node::Start();
 }
 
 void Widget::GatherProperties(std::vector<Property>& outProps)
@@ -160,30 +154,6 @@ void Widget::PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game)
     }
 }
 
-void Widget::Tick(float deltaTime)
-{
-    Node::Tick(deltaTime);
-    TickCommon(deltaTime);
-}
-
-void Widget::EditorTick(float deltaTime)
-{
-    Node::EditorTick(deltaTime);
-    TickCommon(deltaTime);
-}
-
-void Widget::TickCommon(float deltaTime)
-{
-
-    if (IsDirty())
-    {
-        sWidgetToClean = Node::ResolveWeakPtr<Widget>(this);
-
-        UpdateRect();
-        UpdateColor();
-    }
-}
-
 bool Widget::IsWidget() const
 {
     return true;
@@ -218,6 +188,15 @@ Widget* Widget::GetChildWidget(int32_t index)
     }
 
     return childWidget;
+}
+
+void Widget::PreRender()
+{
+    if (IsDirty())
+    {
+        UpdateRect();
+        UpdateColor();
+    }
 }
 
 Rect Widget::GetRect()
@@ -852,6 +831,11 @@ void Widget::MarkDirty()
             static_cast<Widget*>(mChildren[i].Get())->MarkDirty();
         }
     }
+}
+
+void Widget::MarkClean()
+{
+    mDirty[Renderer::Get()->GetFrameIndex()] = false;
 }
 
 bool Widget::IsDirty() const

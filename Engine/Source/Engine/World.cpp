@@ -744,8 +744,6 @@ void World::Update(float deltaTime)
                     {
                         node->EditorTick(deltaTime);
                     }
-
-                    Widget::CleanTickedWidget();
                 }
             }
         }

@@ -81,27 +81,6 @@ DrawData Quad::GetDrawData()
     return data;
 }
 
-void Quad::Tick(float deltaTime)
-{
-    Widget::Tick(deltaTime);
-    TickCommon(deltaTime);
-}
-
-void Quad::EditorTick(float deltaTime)
-{
-    Widget::EditorTick(deltaTime);
-    TickCommon(deltaTime);
-}
-
-void Quad::TickCommon(float deltaTime)
-{
-    if (IsDirty())
-    {
-        UpdateVertexData();
-        GFX_UpdateQuadResourceVertexData(this);
-    }
-}
-
 void Quad::SetTexture(class Texture* texture)
 {
     mTexture = texture;
@@ -228,6 +207,17 @@ void Quad::Render()
 {
     Widget::Render();
     GFX_DrawQuad(this);
+}
+
+void Quad::PreRender()
+{
+    Super::PreRender();
+
+    if (IsDirty())
+    {
+        UpdateVertexData();
+        GFX_UpdateQuadResourceVertexData(this);
+    }
 }
 
 VertexUI* Quad::GetVertices()

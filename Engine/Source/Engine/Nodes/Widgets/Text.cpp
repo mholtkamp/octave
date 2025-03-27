@@ -157,20 +157,10 @@ DrawData Text::GetDrawData()
     return data;
 }
 
-void Text::Tick(float deltaTime)
+void Text::PreRender()
 {
-    Widget::Tick(deltaTime);
-    TickCommon(deltaTime);
-}
+    Super::PreRender();
 
-void Text::EditorTick(float deltaTime)
-{
-    Widget::EditorTick(deltaTime);
-    TickCommon(deltaTime);
-}
-
-void Text::TickCommon(float deltaTime)
-{
     UpdateVertexData();
     UploadVertexData();
 }
