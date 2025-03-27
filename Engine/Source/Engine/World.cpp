@@ -541,8 +541,6 @@ void World::RegisterNode(Node* node)
             mActiveCamera = node->As<Camera3D>();
         }
     }
-
-    mNewlyRegisteredNodes.insert(Node::ResolveWeakPtr(node));
 }
 
 void World::UnregisterNode(Node* node)
@@ -571,8 +569,6 @@ void World::UnregisterNode(Node* node)
     {
         SetActiveCamera(nullptr);
     }
-
-    mNewlyRegisteredNodes.erase(Node::ResolveWeakPtr(node));
 }
 
 const std::vector<Audio3D*>& World::GetAudios() const
@@ -733,46 +729,25 @@ void World::Update(float deltaTime)
             sNodesToTick.clear();
 
             mRootNode->PrepareTick(sNodesToTick, gameTickEnabled);
-            float effectiveDeltaTime = deltaTime;
 
-            int32_t tickIteration = 0;
-            while (sNodesToTick.size() > 0 && tickIteration < 5)
+            for (uint32_t i = 0; i < sNodesToTick.size(); ++i)
             {
-                for (uint32_t i = 0; i < sNodesToTick.size(); ++i)
-                {
-                    Node* node = sNodesToTick[i].Get();
+                Node* node = sNodesToTick[i].Get();
 
-                    if (node)
+                if (node)
+                {
+                    if (gameTickEnabled)
                     {
-                        if (gameTickEnabled)
-                        {
-                            node->Tick(effectiveDeltaTime);
-                        }
-                        else
-                        {
-                            node->EditorTick(effectiveDeltaTime);
-                        }
-
-                        Widget::CleanTickedWidget();
+                        node->Tick(deltaTime);
                     }
+                    else
+                    {
+                        node->EditorTick(deltaTime);
+                    }
+
+                    Widget::CleanTickedWidget();
                 }
-
-                // Any nodes that were newly added to the world need to tick (with 0.0f dt)
-                sNodesToTick.clear();
-                for (auto node : mNewlyRegisteredNodes)
-                {
-                    sNodesToTick.push_back(node);
-                }
-                mNewlyRegisteredNodes.clear();
-
-                // Newly spawned nodes will tick with 0.0f delta time.
-                effectiveDeltaTime = 0.0f;
-
-                // Prevent infinite loops (if two nodes continously add / remove each other)
-                ++tickIteration;
             }
-
-            mNewlyRegisteredNodes.clear();
         }
     }
 
