@@ -70,7 +70,7 @@ int NodeWrapperGarbageCollect(lua_State* L)
 
 int Node_Lua::Create(lua_State* L, Node* node)
 {
-    if (node != nullptr)
+    if (node != nullptr && !node->IsDestroyed())
     {
         if (node->GetUserdataRef() != LUA_REFNIL)
         {
