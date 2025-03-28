@@ -884,6 +884,9 @@ void Node::SetWorld(World * world)
 
         if (mWorld != nullptr)
         {
+            // We should never be adding destroyed nodes to a world.
+            OCT_ASSERT(!mDestroyed);
+
             mWorld->RegisterNode(this);
         }
 
@@ -1200,55 +1203,64 @@ void Node::Detach(bool keepWorldTransform)
 
 void Node::AddChild(Node* child, int32_t index)
 {
-    if (child == this)
+    if (child == nullptr)
     {
-        LogError("Cannot add a node as its own child.");
+        LogWarning("Null child received in AddChild()");
         return;
     }
 
-    if (child != nullptr)
+    if (child == this)
     {
-        // TODO-NODE: Is this a good way to handle the world root getting attached elsewhere?
-        // Another possibility is that we could make this node's new root node the world root?
-        // Could cause problems anyway if the new root is already a different world's root. Idk.
-        if (child->IsWorldRoot())
-        {
-            child->GetWorld()->SetRootNode(nullptr);
-        }
+        LogWarning("Cannot add a node as its own child.");
+        return;
+    }
 
-        if (child->mParent != nullptr)
-        {
-            child->mParent->RemoveChild(child);
-        }
+    if (child->IsDestroyed())
+    {
+        LogWarning("Cannot add a destroyed node as a child");
+        return;
+    }
 
-        // Ensure unique name
-        ValidateUniqueChildName(child);
+    // TODO-NODE: Is this a good way to handle the world root getting attached elsewhere?
+    // Another possibility is that we could make this node's new root node the world root?
+    // Could cause problems anyway if the new root is already a different world's root. Idk.
+    if (child->IsWorldRoot())
+    {
+        child->GetWorld()->SetRootNode(nullptr);
+    }
 
-        NodePtr childPtr = Node::ResolvePtr(child);
+    if (child->mParent != nullptr)
+    {
+        child->mParent->RemoveChild(child);
+    }
 
-        if (index >= 0 && index <= (int32_t)mChildren.size())
-        {
-            mChildren.insert(mChildren.begin() + index, childPtr);
-        }
-        else
-        {
-            mChildren.push_back(childPtr);
-        }
+    // Ensure unique name
+    ValidateUniqueChildName(child);
+
+    NodePtr childPtr = Node::ResolvePtr(child);
+
+    if (index >= 0 && index <= (int32_t)mChildren.size())
+    {
+        mChildren.insert(mChildren.begin() + index, childPtr);
+    }
+    else
+    {
+        mChildren.push_back(childPtr);
+    }
 
 #if EDITOR
-        if (!IsPlaying() && 
-            mParent != nullptr && 
-            mScene != nullptr)
-        {
-            BreakSceneLink();
-        }
+    if (!IsPlaying() && 
+        mParent != nullptr && 
+        mScene != nullptr)
+    {
+        BreakSceneLink();
+    }
 #endif
 
-        mChildNameMap.insert({ child->GetName(), child });
+    mChildNameMap.insert({ child->GetName(), child });
 
-        child->SetParent(this);
-        child->SetWorld(mWorld);
-    }
+    child->SetParent(this);
+    child->SetWorld(mWorld);
 }
 
 void Node::RemoveChild(Node* child)

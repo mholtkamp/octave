@@ -123,6 +123,12 @@ void World::SetRootNode(Node* node)
 
         mRootNode = Node::ResolvePtr(node);
 
+        if (mRootNode != nullptr && mRootNode->IsDestroyed())
+        {
+            LogWarning("Failed to set root node. Node is destroyed.");
+            mRootNode = nullptr;
+        }
+
         if (mRootNode != nullptr)
         {
             mRootNode->SetWorld(this);
