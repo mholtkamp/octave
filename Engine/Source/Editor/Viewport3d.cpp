@@ -83,7 +83,6 @@ void Viewport3D::Update(float deltaTime)
 
 bool Viewport3D::ShouldHandleInput() const
 {
-    Widget* modal = Renderer::Get()->GetModalWidget();
     bool imguiWantsKeyboard = ImGui::GetIO().WantCaptureKeyboard;
     bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse;
     bool imguiWantsText = ImGui::GetIO().WantTextInput;
@@ -92,7 +91,7 @@ bool Viewport3D::ShouldHandleInput() const
     bool imguiAnyPopupUp = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
     
 
-    bool handleInput = (modal == nullptr && !imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp && !imguiWantsMouse);
+    bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp && !imguiWantsMouse);
     return handleInput;
 }
 

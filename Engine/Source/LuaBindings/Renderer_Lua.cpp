@@ -32,31 +32,6 @@ int Renderer_Lua::EnableConsole(lua_State* L)
     return 0;
 }
 
-int Renderer_Lua::SetModalWidget(lua_State* L)
-{
-    Widget* widget = CHECK_WIDGET(L, 1);
-
-    Renderer::Get()->SetModalWidget(widget);
-
-    return 0;
-}
-
-int Renderer_Lua::GetModalWidget(lua_State* L)
-{
-    Widget* modalWidget = Renderer::Get()->GetModalWidget();
-
-    Node_Lua::Create(L, modalWidget);
-    return 1;
-}
-
-int Renderer_Lua::IsInModalWidgetUpdate(lua_State* L)
-{
-    bool ret = Renderer::Get()->IsInModalWidgetUpdate();
-
-    lua_pushboolean(L, ret);
-    return 1;
-}
-
 int Renderer_Lua::DirtyAllWidgets(lua_State* L)
 {
     Renderer::Get()->DirtyAllWidgets();
@@ -344,12 +319,6 @@ void Renderer_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, EnableStatsOverlay);
 
     REGISTER_TABLE_FUNC(L, tableIdx, EnableConsole);
-
-    REGISTER_TABLE_FUNC(L, tableIdx, SetModalWidget);
-
-    REGISTER_TABLE_FUNC(L, tableIdx, GetModalWidget);
-
-    REGISTER_TABLE_FUNC(L, tableIdx, IsInModalWidgetUpdate);
 
     REGISTER_TABLE_FUNC(L, tableIdx, DirtyAllWidgets);
 

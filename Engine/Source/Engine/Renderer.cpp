@@ -89,8 +89,6 @@ Renderer::~Renderer()
         mStatsWidget->Destroy();
         mStatsWidget = nullptr;
     }
-
-    // Renderer does not assume ownership of a modal widget.
 }
 
 void Renderer::Initialize()
@@ -365,26 +363,8 @@ bool Renderer::IsConsoleEnabled()
     return mConsoleWidget && mConsoleWidget->IsVisible();
 }
 
-void Renderer::SetModalWidget(Widget* widget)
-{
-    mModalWidget = PtrStaticCast<Widget>(Node::ResolvePtr(widget));
-}
-
-Widget* Renderer::GetModalWidget()
-{
-    return mModalWidget.Get();
-}
-
-bool Renderer::IsInModalWidgetUpdate() const
-{
-    return mInModalWidgetUpdate;
-}
-
 void Renderer::DirtyAllWidgets()
 {
-    if (mModalWidget != nullptr)
-        mModalWidget->MarkDirty();
-
     if (mConsoleWidget != nullptr)
         mConsoleWidget->MarkDirty();
 
@@ -656,7 +636,6 @@ void Renderer::GatherDrawData(World* world)
 
             if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->Traverse(gatherDrawData); }
             if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->Traverse(gatherDrawData); }
-            if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->Traverse(gatherDrawData); }
 
 #if EDITOR
             // Kinda hacky but doing this to draw overlay text when in editor.
@@ -1217,10 +1196,6 @@ void Renderer::Render(World* world, int32_t screenIndex)
 
         if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->PrepareTick(sTickNodes, inGame); }
         if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->PrepareTick(sTickNodes, inGame); }
-
-        mInModalWidgetUpdate = true;
-        if (mModalWidget != nullptr && mModalWidget->IsVisible()) { mModalWidget->PrepareTick(sTickNodes, inGame); }
-        mInModalWidgetUpdate = false;
 
         for (uint32_t i = 0; i < sTickNodes.size(); ++i)
         {

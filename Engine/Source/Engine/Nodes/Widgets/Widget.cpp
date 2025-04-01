@@ -812,9 +812,7 @@ float Widget::GetOpacityFloat() const
 
 bool Widget::ShouldHandleInput()
 {
-    Widget* modal = Renderer::Get()->GetModalWidget();
-    bool handleInput = ((modal == nullptr) || (Renderer::Get()->IsInModalWidgetUpdate()));
-    return handleInput;
+    return true;
 }
 
 void Widget::MarkDirty()

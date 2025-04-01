@@ -59,12 +59,6 @@ public:
     void EnableConsole(bool enable);
     bool IsConsoleEnabled();
 
-    // Renderer never assumes ownership of the modal widget.
-    // The caller needs to hold on to the widget so they can free it when needed.
-    void SetModalWidget(Widget* widget);
-    Widget* GetModalWidget();
-    bool IsInModalWidgetUpdate() const;
-
     void DirtyAllWidgets();
 
     Console* GetConsoleWidget();
@@ -206,7 +200,6 @@ private:
 
     void UpdateDebugDraws();
 
-    SharedPtr<Widget> mModalWidget;
     SharedPtr<StatsOverlay> mStatsWidget;
     SharedPtr<Console> mConsoleWidget;
 
@@ -239,7 +232,6 @@ private:
     bool mEnable3dRendering = true;
     bool mEnable2dRendering = true;
     bool mEnablePathTracing = false;
-    bool mInModalWidgetUpdate = false;
     bool mEnableLightFade = false;
     uint32_t mLightFadeLimit = 4;
     float mLightFadeSpeed = 1.0f;
