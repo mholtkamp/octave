@@ -14,10 +14,19 @@ Sig: `node = Node.Construct(className="Node")`
  - Ret: `Node node` The newly constructed node.
 ---
 ### Destruct
-Destruct a node, freeing the memory and making it unusable.
+Destruct a node and make it unusable.
 
 Sig: `Node.Destruct(node)`
  - Arg: `Node node` The node to be destroyed.
+---
+### DestroyDeferred
+Destroy this node at the end of the frame. Usually a safer and more stable option that immediately destroying a node with Destruct.
+
+Alias: `Doom`
+Alias: `SetPendingDestroy`
+
+Sig: `Node:DestroyDeferred()`
+
 ---
 ### IsValid
 Check whether a node is valid. This function currently always returns true, but when the engine is compiled using LUA_SAFE_NODE, this function will return true only if the underlying node reference is valid.
@@ -258,14 +267,16 @@ Check if the node has already started (i.e. has had its Start() function called)
 Sig: `hasStarted = Node:HasStarted()`
  - Ret: `boolean hasStarted` true if Start() has been called for this node
 ---
-### SetPendingDestroy
-Mark the node to be destroyed at the end of the frame.
+### IsDestroyed
+Check if the node has been destroyed.
 
-Sig: `Node:SetPendingDestroy(destroy)`
- - Arg: `boolean destroy` true to mark for destruction
+Sig: `destroyed = Node:IsDestroyed()`
+ - Ret: `boolean destroyed` Is the node destroyed
 ---
 ### IsPendingDestroy
 Check if the node is marked to be destroyed at the end of the frame.
+
+Alias: `IsDoomed`
 
 Sig: `pendingDestroy = Node:IsPendingDestroy()`
  - Ret: `boolean pendingDestroy` true if marked for destruction 
