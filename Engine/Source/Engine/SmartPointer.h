@@ -523,7 +523,6 @@ SharedPtr<T> PtrDynamicCast(const SharedPtr<U>& src)
 
 }
 
-typedef SharedPtr<Node> NodeRef;
 typedef SharedPtr<Node> NodePtr;
 typedef WeakPtr<Node> NodePtrWeak;
 

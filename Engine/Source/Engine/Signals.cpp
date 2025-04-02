@@ -9,7 +9,7 @@ void Signal::Emit(const std::vector<Datum>& args)
         Node* node = it->first.Get<Node>();
         if (node == nullptr)
         {
-            // The noderef is invalid (it was destroyed)
+            // The NodePtr is invalid (it was destroyed)
             it = mConnectionMap.erase(it);
         }
         else
@@ -75,7 +75,7 @@ void Signal::CleanupDeadConnections()
         Node* node = it->first.Get<Node>();
         if (node == nullptr)
         {
-            // The noderef is invalid (it was destroyed)
+            // The NodePtr is invalid (it was destroyed)
             it = mConnectionMap.erase(it);
         }
         else

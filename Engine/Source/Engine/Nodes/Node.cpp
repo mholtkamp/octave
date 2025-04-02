@@ -1297,7 +1297,7 @@ void Node::RemoveChild(int32_t index)
     OCT_ASSERT(index >= 0 && index < int32_t(mChildren.size()));
     if (index >= 0 && index < int32_t(mChildren.size()))
     {
-        NodeRef childPtr = mChildren[index];
+        NodePtr childPtr = mChildren[index];
 
         childPtr->SetWorld(nullptr);
 

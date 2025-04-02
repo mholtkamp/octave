@@ -27,7 +27,7 @@ struct TimerData
     // Can this be made a union?
     // Not sure about ActorRef construction/destruction...
     void* mPointer = nullptr;
-    NodeRef mNode;
+    NodePtr mNode;
     ScriptFunc mScriptFunc;
 
     int32_t mId = -1;

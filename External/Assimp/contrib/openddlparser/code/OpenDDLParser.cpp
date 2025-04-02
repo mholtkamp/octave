@@ -368,7 +368,7 @@ static void setNodeValues( DDLNode *currentNode, Value *values ) {
     }
 }
 
-static void setNodeReferences( DDLNode *currentNode, Reference *refs ) {
+static void setNodePtrerences( DDLNode *currentNode, Reference *refs ) {
     if( ddl_nullptr != refs ) {
         if( ddl_nullptr != currentNode ) {
             currentNode->setReferences( refs );
@@ -404,7 +404,7 @@ char *OpenDDLParser::parseStructureBody( char *in, char *end, bool &error ) {
                 size_t numRefs( 0 ), numValues( 0 );
                 in = parseDataList( in, end, type, &values, numValues, &refs, numRefs );
                 setNodeValues( top(), values );
-                setNodeReferences( top(), refs );
+                setNodePtrerences( top(), refs );
             } else if( arrayLen > 1 ) {
                 in = parseDataArrayList( in, end, type, &dtArrayList );
                 setNodeDataArrayList( top(), dtArrayList );

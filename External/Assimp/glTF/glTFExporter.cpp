@@ -403,19 +403,19 @@ bool FindMeshNode(Ref<Node>& nodeIn, Ref<Node>& meshNode, std::string meshID)
  */
 Ref<Node> FindSkeletonRootJoint(Ref<Skin>& skinRef)
 {
-    Ref<Node> startNodeRef;
-    Ref<Node> parentNodeRef;
+    Ref<Node> startNodePtr;
+    Ref<Node> parentNodePtr;
 
     // Arbitrarily use the first joint to start the search.
-    startNodeRef = skinRef->jointNames[0];
-    parentNodeRef = skinRef->jointNames[0];
+    startNodePtr = skinRef->jointNames[0];
+    parentNodePtr = skinRef->jointNames[0];
 
     do {
-        startNodeRef = parentNodeRef;
-        parentNodeRef = startNodeRef->parent;
-    } while (!parentNodeRef->jointName.empty());
+        startNodePtr = parentNodePtr;
+        parentNodePtr = startNodePtr->parent;
+    } while (!parentNodePtr->jointName.empty());
 
-    return parentNodeRef;
+    return parentNodePtr;
 }
 
 void ExportSkin(Asset& mAsset, const aiMesh* aimesh, Ref<Mesh>& meshRef, Ref<Buffer>& bufferRef, Ref<Skin>& skinRef, std::vector<aiMatrix4x4>& inverseBindMatricesData)
@@ -442,20 +442,20 @@ void ExportSkin(Asset& mAsset, const aiMesh* aimesh, Ref<Mesh>& meshRef, Ref<Buf
 
         // aib->mName   =====>  skinRef->jointNames
         // Find the node with id = mName.
-        Ref<Node> nodeRef = mAsset.nodes.Get(aib->mName.C_Str());
-        nodeRef->jointName = nodeRef->id;
+        Ref<Node> NodePtr = mAsset.nodes.Get(aib->mName.C_Str());
+        NodePtr->jointName = NodePtr->id;
 
         unsigned int jointNamesIndex = 0;
         bool addJointToJointNames = true;
         for ( unsigned int idx_joint = 0; idx_joint < skinRef->jointNames.size(); ++idx_joint) {
-            if (skinRef->jointNames[idx_joint]->jointName.compare(nodeRef->jointName) == 0) {
+            if (skinRef->jointNames[idx_joint]->jointName.compare(NodePtr->jointName) == 0) {
                 addJointToJointNames = false;
                 jointNamesIndex = idx_joint;
             }
         }
 
         if (addJointToJointNames) {
-            skinRef->jointNames.push_back(nodeRef);
+            skinRef->jointNames.push_back(NodePtr);
 
             // aib->mOffsetMatrix   =====>  skinRef->inverseBindMatrices
             aiMatrix4x4 tmpMatrix4;
