@@ -343,6 +343,10 @@ bool Initialize()
 
 bool Update()
 {
+    // In case there is a Lua stack leak, just reset it to 0 every frame.
+    lua_State* L = GetLua();
+    lua_settop(L, 0);
+
     if (sEngineState.mSuspended)
     {
         SYS_Update();
