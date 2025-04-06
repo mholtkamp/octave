@@ -23,12 +23,8 @@ void SharedPtr<Node>::Set(Node* pointer, RefCount<Node>* refCount)
         {
             int nodeId = (int)node->GetNodeId();
 
-            LogDebug("zzz FIRST REF: %s", node->GetName().c_str());
-
             lua_State* L = GetLua();
             int preTop = lua_gettop(L);
-
-            LogDebug("zzz ReviveRef: %d", node->GetNodeId());
 
             // We need to move the ref from the strong table to the weak table
             // Strong/Weak tables should be created when first userdata is created in Node_Lua::Create()
@@ -80,12 +76,8 @@ void SharedPtr<Node>::Clear()
         {
             int nodeId = (int)node->GetNodeId();
 
-            LogDebug("zzz LAST REF: %s", node->GetName().c_str());
-
             lua_State* L = GetLua();
             int preTop = lua_gettop(L);
-
-            LogDebug("zzz RemoveRef: %d", node->GetNodeId());
 
             // We need to move the ref from the strong table to the weak table
             // Strong/Weak tables should be created when first userdata is created in Node_Lua::Create()
@@ -116,20 +108,6 @@ void SharedPtr<Node>::Clear()
             int postTop = lua_gettop(L);
 
             OCT_ASSERT(preTop == postTop);
-        }
-    }
-
-    // DEBUG DELETE!!!
-    if (node != nullptr && 
-        mRefCount->mSharedCount == 1)
-    {
-        if (node->IsUserdataCreated())
-        {
-            LogDebug("zzz DESTROY SCRIPTED NODE");
-        }
-        else
-        {
-            LogDebug("zzz DESTROY REGULAR NODE");
         }
     }
 

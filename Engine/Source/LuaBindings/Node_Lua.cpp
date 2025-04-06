@@ -181,7 +181,6 @@ int Node_Lua::Create(lua_State* L, Node* node)
             lua_seti(L, nodeRefTableIdx, node->GetNodeId());
 
             node->MarkUserdataCreated();
-            LogDebug("zzz UserdataCreate: %d", node->GetNodeId());
 
             // We need to return the newly created userdata.
             OCT_ASSERT(lua_gettop(L) == udIdx);
