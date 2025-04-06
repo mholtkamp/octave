@@ -75,6 +75,8 @@ void EditorState::Shutdown()
     WriteEditorProjectSave();
     WriteEditorSave();
 
+    mEditScenes.clear();
+
     mOverlayText->Destroy();
     mOverlayText = nullptr;
 
