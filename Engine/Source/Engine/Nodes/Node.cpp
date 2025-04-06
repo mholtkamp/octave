@@ -58,6 +58,8 @@
 std::unordered_map<TypeId, NetFuncMap> Node::sTypeNetFuncMap;
 std::unordered_set<NodePtrWeak> Node::sPendingDestroySet;
 
+NodeId Node::sNextNodeId = NodeId(1);
+
 
 #define ENABLE_SCRIPT_FUNCS 1
 
@@ -173,6 +175,13 @@ Node::~Node()
 
 void Node::Create()
 {
+    mNodeId = sNextNodeId;
+    sNextNodeId = NodeId(int(sNextNodeId) + 1);
+
+    // Did we seriously overflow the uint32_t limit?
+    // Stop making so many nodes or change to uint64_t.
+    OCT_ASSERT(sNextNodeId != INVALID_NODE_ID);
+
     REGISTER_SCRIPT_FUNCS();
 }
 
@@ -213,21 +222,6 @@ void Node::Destroy()
     {
         delete mScript;
         mScript = nullptr;
-    }
-
-    // Unref userdata is it was created by Node_Lua::Create().
-    if (mUserdataRef != LUA_REFNIL)
-    {
-        lua_State* L = GetLua();
-
-        // Clear the userdata's mNode member.
-        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
-        Node_Lua* nodeLua = (Node_Lua*) lua_touserdata(L, -1);
-        nodeLua->mNode.Reset();
-        lua_pop(L, 1);
-
-        luaL_unref(L, LUA_REGISTRYINDEX, mUserdataRef);
-        mUserdataRef = LUA_REFNIL;
     }
 
 #if EDITOR
@@ -654,6 +648,11 @@ void Node::OnCollision(
     {
         mParent->OnCollision(thisNode, otherNode, impactPoint, impactNormal, manifold);
     }
+}
+
+NodeId Node::GetNodeId() const
+{
+    return mNodeId;
 }
 
 void Node::RenderShadow()
@@ -1605,19 +1604,6 @@ bool Node::IsForeign() const
 bool Node::HasAuthority() const
 {
     return NetIsAuthority();
-}
-
-int Node::GetUserdataRef() const
-{
-    return mUserdataRef;
-}
-
-void Node::SetUserdataRef(int ref)
-{
-    // This should only be called once.
-    OCT_ASSERT(mUserdataRef == LUA_REFNIL);
-
-    mUserdataRef = ref;
 }
 
 bool Node::IsOwned() const

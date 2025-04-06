@@ -30,6 +30,7 @@ class Material;
 
 typedef uint32_t TypeId;
 typedef uint32_t NetId;
+typedef uint32_t NodeId;
 typedef uint64_t RuntimeId;
 
 // Bullet Types

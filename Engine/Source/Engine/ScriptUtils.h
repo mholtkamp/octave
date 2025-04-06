@@ -3,6 +3,8 @@
 #include "ScriptMacros.h"
 #include <unordered_set>
 
+class Script;
+
 class ScriptUtils
 {
 public:
@@ -22,16 +24,18 @@ public:
 
     static uint32_t GetNextScriptInstanceNumber();
 
-    static void CallMethod(int userdataIdx, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret);
+    static void CallMethod(Script* script, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret);
     static void SetBreakOnScriptError(bool enableBreak);
 
     static void GarbageCollect();
 
-    static Datum GetField(int userdataIdx, const char* key);
-    static void SetField(int userdataIdx, const char* key, const Datum& value);
+    static Datum GetField(Script* script, const char* key);
+    static void SetField(Script* script, const char* key, const Datum& value);
 
-    static Datum GetField(int userdataIdx, int32_t key);
-    static void SetField(int userdataIdx, int32_t key, const Datum& value);
+    static Datum GetField(Script* script, int32_t key);
+    static void SetField(Script* script, int32_t key, const Datum& value);
+
+    static void DumpStack();
 
 private:
 

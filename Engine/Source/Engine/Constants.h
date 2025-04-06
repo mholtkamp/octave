@@ -37,6 +37,7 @@
 
 #define INVALID_TYPE_ID 0
 #define INVALID_NET_ID 0
+#define INVALID_NODE_ID 0
 
 #define INVALID_HOST_ID 0
 #define SERVER_HOST_ID 1

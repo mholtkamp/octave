@@ -1,5 +1,7 @@
 #include "ScriptUtils.h"
+#include "Script.h"
 #include "System/System.h"
+#include "LuaBindings/Node_Lua.h"
 
 std::unordered_set<std::string> ScriptUtils::sLoadedLuaFiles;
 std::unordered_set<std::string> ScriptUtils::sLoadingLuaFiles;
@@ -307,14 +309,12 @@ uint32_t ScriptUtils::GetNextScriptInstanceNumber()
     return retNum;
 }
 
-void ScriptUtils::CallMethod(int userdataIdx, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret)
+void ScriptUtils::CallMethod(Script* script, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret)
 {
 #if LUA_ENABLED
     lua_State* L = GetLua();
 
-    OCT_ASSERT(userdataIdx != LUA_REFNIL);
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, userdataIdx);
+    Node_Lua::Create(L, script->GetOwner());
     OCT_ASSERT(lua_isuserdata(L, -1));
     lua_getfield(L, -1, funcName);
 
@@ -367,7 +367,7 @@ void ScriptUtils::GarbageCollect()
 #endif
 }
 
-Datum ScriptUtils::GetField(int userdataIdx, const char* key)
+Datum ScriptUtils::GetField(Script* script, const char* key)
 {
     Datum ret;
 
@@ -375,7 +375,7 @@ Datum ScriptUtils::GetField(int userdataIdx, const char* key)
     lua_State* L = GetLua();
 
     // Grab the script instance table
-    lua_rawgeti(L, LUA_REGISTRYINDEX, userdataIdx);
+    Node_Lua::Create(L, script->GetOwner());
     OCT_ASSERT(lua_isuserdata(L, -1));
     lua_getfield(L, -1, key);
 
@@ -388,12 +388,12 @@ Datum ScriptUtils::GetField(int userdataIdx, const char* key)
     return ret;
 }
 
-void ScriptUtils::SetField(int userdataIdx, const char* key, const Datum& value)
+void ScriptUtils::SetField(Script* script, const char* key, const Datum& value)
 {
 #if LUA_ENABLED
     lua_State* L = GetLua();
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, userdataIdx);
+    Node_Lua::Create(L, script->GetOwner());
     OCT_ASSERT(lua_isuserdata(L, -1));
 
     LuaPushDatum(L, value);
@@ -404,14 +404,14 @@ void ScriptUtils::SetField(int userdataIdx, const char* key, const Datum& value)
 #endif
 }
 
-Datum ScriptUtils::GetField(int userdataIdx, int32_t key)
+Datum ScriptUtils::GetField(Script* script, int32_t key)
 {
     Datum ret;
 
 #if LUA_ENABLED
     lua_State* L = GetLua();
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, userdataIdx);
+    Node_Lua::Create(L, script->GetOwner());
     OCT_ASSERT(lua_isuserdata(L, -1));
     lua_geti(L, -1, key);
 
@@ -424,13 +424,13 @@ Datum ScriptUtils::GetField(int userdataIdx, int32_t key)
     return ret;
 }
 
-void ScriptUtils::SetField(int userdataIdx, int32_t key, const Datum& value)
+void ScriptUtils::SetField(Script* script, int32_t key, const Datum& value)
 {
 #if LUA_ENABLED
     lua_State* L = GetLua();
 
     // Grab the script instance table
-    lua_rawgeti(L, LUA_REGISTRYINDEX, userdataIdx);
+    Node_Lua::Create(L, script->GetOwner());
     OCT_ASSERT(lua_isuserdata(L, -1));
 
     LuaPushDatum(L, value);
@@ -439,5 +439,42 @@ void ScriptUtils::SetField(int userdataIdx, int32_t key, const Datum& value)
     // Pop userdata
     lua_pop(L, 1);
 #endif
+}
+
+void ScriptUtils::DumpStack()
+{
+    lua_State* L = GetLua();
+
+    // Taken from https://www.lua.org/pil/24.2.3.html
+
+    LogWarning("===== LUA STACK =====");
+
+    int i;
+    int top = lua_gettop(L);
+    for (i = 1; i <= top; i++)
+    {
+        int t = lua_type(L, i);
+        switch (t)
+        {
+        case LUA_TSTRING:
+            LogWarning("[%d] `%s'", i, lua_tostring(L, i));
+            break;
+
+        case LUA_TBOOLEAN:
+            LogWarning("[%d] %s", i, lua_toboolean(L, i) ? "true" : "false");
+            break;
+
+        case LUA_TNUMBER:
+            LogWarning("[%d] %g", i, lua_tonumber(L, i));
+            break;
+
+        default:
+            LogWarning("[%d] %s", i, lua_typename(L, t));
+            break;
+        }
+    }
+
+    LogWarning("=====================");
+
 }
 

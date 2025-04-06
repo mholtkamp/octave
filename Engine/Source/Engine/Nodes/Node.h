@@ -107,6 +107,8 @@ public:
         glm::vec3 impactNormal,
         btPersistentManifold* manifold);
 
+    NodeId GetNodeId() const;
+
     void RenderShadow();
     void RenderSelected(bool renderChildren);
 
@@ -232,9 +234,6 @@ public:
 
     bool HasAuthority() const;
     bool IsOwned() const;
-
-    int GetUserdataRef() const;
-    void SetUserdataRef(int ref);
 
     NetFunc* FindNetFunc(const char* name);
     NetFunc* FindNetFunc(uint16_t index);
@@ -378,6 +377,7 @@ public:
 
 protected:
 
+
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
     static bool OnRep_OwningHost(Datum* datum, uint32_t index, const void* newValue);
@@ -391,6 +391,7 @@ protected:
 
     static std::unordered_map<TypeId, NetFuncMap> sTypeNetFuncMap;
     static std::unordered_set<NodePtrWeak> sPendingDestroySet;
+    static NodeId sNextNodeId;
 
     std::string mName;
 
@@ -409,6 +410,7 @@ protected:
     // Merged from Actor
     SceneRef mScene;
     std::vector<std::string> mTags;
+    NodeId mNodeId = INVALID_NODE_ID;
     uint32_t mHitCheckId = 0;
 
     bool mHasStarted = false;
@@ -429,7 +431,6 @@ protected:
     bool mAlwaysRelevant = true;
 
     Script* mScript = nullptr;
-    int mUserdataRef = LUA_REFNIL;
     //NodeNetData* mNetData = nullptr;
 
 #if EDITOR

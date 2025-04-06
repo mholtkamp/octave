@@ -115,11 +115,11 @@ protected:
     static std::unordered_map<std::string, ScriptNetFuncMap> sScriptNetFuncMap;
 
     Node* mOwner = nullptr;
-    int mUserdataRef = LUA_REFNIL;
     std::string mFileName;
     std::string mClassName;
     std::vector<Property> mScriptProps;
     std::vector<ScriptNetDatum> mReplicatedData;
+    bool mActive = false;
     bool mTickEnabled = false;
     bool mHandleBeginOverlap = false;
     bool mHandleEndOverlap = false;

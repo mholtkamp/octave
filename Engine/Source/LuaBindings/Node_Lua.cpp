@@ -12,6 +12,8 @@
 
 #if LUA_ENABLED
 
+#define NODE_REF_TABLE_KEY "NodeRefs"
+
 int NodeWrapperIndex(lua_State* L)
 {
     luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
@@ -67,19 +69,47 @@ int NodeWrapperGarbageCollect(lua_State* L)
     return 0;
 }
 
-
 int Node_Lua::Create(lua_State* L, Node* node)
 {
+    int preTop = lua_gettop(L);
+
     if (node != nullptr && !node->IsDestroyed())
     {
-        if (node->GetUserdataRef() != LUA_REFNIL)
+        lua_pushstring(L, NODE_REF_TABLE_KEY);
+        lua_rawget(L, LUA_REGISTRYINDEX);
+
+        if (lua_isnil(L, -1))
         {
-            // The user data already exists. Grab it from the registry.
-            lua_rawgeti(L, LUA_REGISTRYINDEX, node->GetUserdataRef());
-            OCT_ASSERT(lua_isuserdata(L, -1));
+            lua_pop(L, 1);
+
+            // We need to create the table
+            lua_newtable(L);
+            int nodeRefTableIdx = lua_gettop(L);
+
+            lua_newtable(L);
+            int metaTableIdx = lua_gettop(L);
+
+            lua_pushstring(L, "v");
+            lua_setfield(L, metaTableIdx, "__mode");
+
+            lua_setmetatable(L, nodeRefTableIdx);
+
+            lua_pushvalue(L, nodeRefTableIdx);
+            lua_setfield(L, LUA_REGISTRYINDEX, NODE_REF_TABLE_KEY);
+
+            // The nodereftable should be on the top of the stack
         }
-        else
+
+        int nodeRefTableIdx = lua_gettop(L);
+
+        // Attempt to get an existing Node_Lua userdata in the NODE_REF_TABLE
+        // If it exists, return it, otherwise we need to create it.
+        lua_geti(L, nodeRefTableIdx, (int)node->GetNodeId());
+
+        if (lua_isnil(L, -1))
         {
+            lua_pop(L, 1);
+
             // Create new userdata
             Node_Lua* nodeLua = (Node_Lua*)lua_newuserdata(L, sizeof(Node_Lua));
             new (nodeLua) Node_Lua();
@@ -113,20 +143,26 @@ int Node_Lua::Create(lua_State* L, Node* node)
             OCT_ASSERT(lua_istable(L, -1));
             lua_setmetatable(L, udIdx);
 
-            // Create a registry reference to the new userdata, and then save it on Node
-            // so we can reference it next time. The corresponding unref() call is done in Node::Destroy()
+            // Save it to our ref table so it can be reused.
             lua_pushvalue(L, udIdx);
-            int ref = luaL_ref(L, LUA_REGISTRYINDEX);
-            node->SetUserdataRef(ref);
+            lua_seti(L, nodeRefTableIdx, node->GetNodeId());
 
             // We need to return the newly created userdata.
             OCT_ASSERT(lua_gettop(L) == udIdx);
         }
+
+        // Replace the node ref table
+        lua_replace(L, -2);
     }
     else
     {
         lua_pushnil(L);
     }
+
+    int postTop = lua_gettop(L);
+
+    // We should always be pushing 1 value (userdata or nil)
+    OCT_ASSERT(postTop - preTop == 1);
 
     return 1;
 }

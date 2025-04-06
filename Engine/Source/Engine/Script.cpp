@@ -139,7 +139,7 @@ void Script::GatherScriptProperties()
         mScriptProps.clear();
 
         lua_State* L = GetLua();
-        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        Node_Lua::Create(L, mOwner);
 
         if (lua_isuserdata(L, -1))
         {
@@ -447,7 +447,7 @@ void Script::GatherReplicatedData()
         bool isServer = NetIsServer();
 
         lua_State* L = GetLua();
-        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        Node_Lua::Create(L, mOwner);
         if (lua_isuserdata(L, -1))
         {
             int udIdx = lua_gettop(L);
@@ -703,7 +703,7 @@ void Script::GatherNetFuncs(std::vector<ScriptNetFunc>& outFuncs)
     if (IsActive())
     {
         lua_State* L = GetLua();
-        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        Node_Lua::Create(L, mOwner);
 
         if (lua_isuserdata(L, -1))
         {
@@ -789,7 +789,7 @@ void Script::DownloadReplicatedData()
 
     if (IsActive())
     {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        Node_Lua::Create(L, mOwner);
 
         OCT_ASSERT(lua_isuserdata(L, -1));
         int udIdx = lua_gettop(L);
@@ -857,7 +857,7 @@ void Script::ExecuteNetFunc(uint16_t index, uint32_t numParams, const Datum** pa
 
         if (netFunc != nullptr)
         {
-            lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+            Node_Lua::Create(L, mOwner);
 
             if (lua_isuserdata(L, -1))
             {
@@ -1016,7 +1016,7 @@ void Script::UploadDatum(Datum& datum, const char* varName)
 {
 #if LUA_ENABLED
     lua_State* L = GetLua();
-    lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+    Node_Lua::Create(L, mOwner);
 
     if (lua_isuserdata(L, -1))
     {
@@ -1118,7 +1118,7 @@ void Script::StopScript()
 
 bool Script::IsActive() const
 {
-    return (mUserdataRef != LUA_REFNIL);
+    return mActive;
 }
 
 void Script::SetWorld(World* world)
@@ -1126,9 +1126,12 @@ void Script::SetWorld(World* world)
     if (IsActive())
     {
         lua_State* L = GetLua();
-        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        Node_Lua::Create(L, mOwner);
         World_Lua::Create(L, world);
         lua_setfield(L, -2, "world");
+
+        // Pop Node_Lua userdata
+        lua_pop(L, 1);
     }
 }
 
@@ -1205,7 +1208,7 @@ void Script::BeginOverlap(Primitive3D* thisNode, Primitive3D* otherNode)
         lua_State* L = GetLua();
 
         // Grab the ud
-        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        Node_Lua::Create(L, mOwner);
 
         OCT_ASSERT(lua_isuserdata(L, -1));
         int udIdx = lua_gettop(L);
@@ -1241,7 +1244,7 @@ void Script::EndOverlap(Primitive3D* thisNode, Primitive3D* otherNode)
     {
         lua_State* L = GetLua();
 
-        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        Node_Lua::Create(L, mOwner);
 
         OCT_ASSERT(lua_isuserdata(L, -1));
         int udIdx = lua_gettop(L);
@@ -1282,7 +1285,7 @@ void Script::OnCollision(
     {
         lua_State* L = GetLua();
 
-        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        Node_Lua::Create(L, mOwner);
         OCT_ASSERT(lua_isuserdata(L, -1));
         int udIdx = lua_gettop(L);
         lua_getfield(L, udIdx, "OnCollision");
@@ -1316,7 +1319,7 @@ bool Script::HasFunction(const char* name) const
     {
         lua_State* L = GetLua();
 
-        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        Node_Lua::Create(L, mOwner);
         OCT_ASSERT(lua_isuserdata(L, -1));
         lua_getfield(L, -1, name);
 
@@ -1462,7 +1465,7 @@ void Script::CallFunction(const char* name, uint32_t numParams, const Datum** pa
 {
     if (IsActive())
     {
-        ScriptUtils::CallMethod(mUserdataRef, name, numParams, params, ret);
+        ScriptUtils::CallMethod(this, name, numParams, params, ret);
     }
 }
 
@@ -1472,7 +1475,7 @@ Datum Script::GetField(const char* key)
 
     if (IsActive())
     {
-        ret = ScriptUtils::GetField(mUserdataRef, key);
+        ret = ScriptUtils::GetField(this, key);
     }
 
     return ret;
@@ -1483,7 +1486,7 @@ void Script::SetField(const char* key, const Datum& value)
 {
     if (IsActive())
     {
-        ScriptUtils::SetField(mUserdataRef, key, value);
+        ScriptUtils::SetField(this, key, value);
     }
 }
 
@@ -1512,7 +1515,7 @@ bool Script::OnRepHandler(Datum* datum, uint32_t index, const void* newValue)
 
     if (onRepFunc)
     {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, script->mUserdataRef);
+        Node_Lua::Create(L, script->mOwner);
 
         OCT_ASSERT(lua_isuserdata(L, -1));
         int udIdx = lua_gettop(L);
@@ -1568,13 +1571,11 @@ void Script::CreateScriptInstance()
 
         if (classLoaded)
         {
+            mActive = true;
+
             // Create a new userdata if the node previously didn't have one.
             Node_Lua::Create(L, mOwner);
             int udIdx = lua_gettop(L);
-
-            mUserdataRef = mOwner->GetUserdataRef();
-            // The userdata ref should be assigned in Node_Lua::Create().
-            OCT_ASSERT(mUserdataRef != LUA_REFNIL);
 
             lua_getuservalue(L, udIdx);
             int uvIdx = lua_gettop(L);
@@ -1665,7 +1666,7 @@ void Script::DestroyScriptInstance()
 
             // Clear the actor and component fields of the table in case anything else tries to access it.
             // Also set a destroyed field that can be queried.
-            lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+            Node_Lua::Create(L, mOwner);
             OCT_ASSERT(lua_isuserdata(L, -1));
             int udIdx = lua_gettop(L);
 
@@ -1688,11 +1689,12 @@ void Script::DestroyScriptInstance()
             lua_pop(L, 1); // Pop userdata
         }
 
-        mUserdataRef = LUA_REFNIL;
         mClassName = "";
 
         mScriptProps.clear();
         mReplicatedData.clear();
+
+        mActive = false;
     }
 
     mTickEnabled = false;
@@ -1768,7 +1770,7 @@ bool Script::CheckIfFunctionExists(const char* funcName)
     {
         lua_State* L = GetLua();
 
-        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        Node_Lua::Create(L, mOwner);
         OCT_ASSERT(lua_isuserdata(L, -1));
 
         lua_getfield(L, -1, funcName);
