@@ -12,8 +12,6 @@
 
 #if LUA_ENABLED
 
-#define NODE_REF_TABLE_KEY "NodeRefs"
-
 int NodeWrapperIndex(lua_State* L)
 {
     luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
@@ -75,41 +73,76 @@ int Node_Lua::Create(lua_State* L, Node* node)
 
     if (node != nullptr && !node->IsDestroyed())
     {
-        lua_pushstring(L, NODE_REF_TABLE_KEY);
+        lua_pushstring(L, OCT_NODE_STRONG_TABLE_KEY);
         lua_rawget(L, LUA_REGISTRYINDEX);
 
         if (lua_isnil(L, -1))
         {
             lua_pop(L, 1);
 
-            // We need to create the table
-            lua_newtable(L);
-            int nodeRefTableIdx = lua_gettop(L);
+            // We need to create a strong ref table and a weak ref table
+            // Once there are no more references to the node in C++, the 
+            // user data will be moved to the weak table. This is so that
+            // lua will garbage collect the node when nothing else references it.
+            // A node ref can be moved back to the strong table if is referenced in C++ again.
 
-            lua_newtable(L);
-            int metaTableIdx = lua_gettop(L);
+            // Weak Table
+            {
+                lua_newtable(L);
+                int weakTableIdx = lua_gettop(L);
 
-            lua_pushstring(L, "v");
-            lua_setfield(L, metaTableIdx, "__mode");
+                lua_newtable(L);
+                int metaTableIdx = lua_gettop(L);
 
-            lua_setmetatable(L, nodeRefTableIdx);
+                lua_pushstring(L, "v");
+                lua_setfield(L, metaTableIdx, "__mode");
 
-            lua_pushvalue(L, nodeRefTableIdx);
-            lua_setfield(L, LUA_REGISTRYINDEX, NODE_REF_TABLE_KEY);
+                lua_setmetatable(L, weakTableIdx);
 
-            // The nodereftable should be on the top of the stack
+                lua_pushvalue(L, weakTableIdx);
+                lua_setfield(L, LUA_REGISTRYINDEX, OCT_NODE_WEAK_TABLE_KEY);
+
+                lua_pop(L, 1);
+            }
+
+            // Strong Table
+            {
+                lua_newtable(L);
+                int nodeRefTableIdx = lua_gettop(L);
+
+                lua_pushvalue(L, nodeRefTableIdx);
+                lua_setfield(L, LUA_REGISTRYINDEX, OCT_NODE_STRONG_TABLE_KEY);
+            }
+
+            // The strong ref table should be on the top of the stack
         }
 
         int nodeRefTableIdx = lua_gettop(L);
 
-        // Attempt to get an existing Node_Lua userdata in the NODE_REF_TABLE
-        // If it exists, return it, otherwise we need to create it.
-        lua_geti(L, nodeRefTableIdx, (int)node->GetNodeId());
-
-        if (lua_isnil(L, -1))
+        if (node->IsUserdataCreated())
         {
-            lua_pop(L, 1);
+            // Attempt to get an existing Node_Lua userdata in the NODE_REF_TABLE
+            // If it exists, return it, otherwise we need to create it.
+            lua_geti(L, nodeRefTableIdx, (int)node->GetNodeId());
 
+            if (lua_isnil(L, -1))
+            {
+                // Didn't find the strong ref... check the weak table
+                // Pop nil and the strong table
+                lua_pop(L, 2);
+
+                lua_getfield(L, LUA_REGISTRYINDEX, OCT_NODE_WEAK_TABLE_KEY);
+                nodeRefTableIdx = lua_gettop(L);
+
+                lua_geti(L, nodeRefTableIdx, (int)node->GetNodeId());
+
+                // We should never not be able to find a reference for a node with userdatacreated.
+                // If totally unreferenced in lua, then it should have been destroyed.
+                OCT_ASSERT(!lua_isnil(L, -1));
+            }
+        }
+        else
+        {
             // Create new userdata
             Node_Lua* nodeLua = (Node_Lua*)lua_newuserdata(L, sizeof(Node_Lua));
             new (nodeLua) Node_Lua();
@@ -146,6 +179,9 @@ int Node_Lua::Create(lua_State* L, Node* node)
             // Save it to our ref table so it can be reused.
             lua_pushvalue(L, udIdx);
             lua_seti(L, nodeRefTableIdx, node->GetNodeId());
+
+            node->MarkUserdataCreated();
+            LogDebug("zzz UserdataCreate: %d", node->GetNodeId());
 
             // We need to return the newly created userdata.
             OCT_ASSERT(lua_gettop(L) == udIdx);

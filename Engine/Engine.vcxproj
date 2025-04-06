@@ -693,6 +693,7 @@
     <ClCompile Include="Source\Engine\ScriptFunc.cpp" />
     <ClCompile Include="Source\Engine\ScriptUtils.cpp" />
     <ClCompile Include="Source\Engine\Signals.cpp" />
+    <ClCompile Include="Source\Engine\SmartPointer.cpp" />
     <ClCompile Include="Source\Engine\stb_implementation.cpp" />
     <ClCompile Include="Source\Engine\Stream.cpp" />
     <ClCompile Include="Source\Engine\TableDatum.cpp" />

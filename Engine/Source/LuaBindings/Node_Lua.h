@@ -6,6 +6,8 @@
 #if LUA_ENABLED
 
 #define OCT_CLASS_TABLE_KEY "octClassTable"
+#define OCT_NODE_STRONG_TABLE_KEY "octStrongRefs"
+#define OCT_NODE_WEAK_TABLE_KEY "octWeakRefs"
 #define NODE_WRAPPER_TABLE_NAME "NodeWrapper"
 
 #define NODE_LUA_NAME "Node"

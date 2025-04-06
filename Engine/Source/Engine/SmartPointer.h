@@ -104,7 +104,7 @@ public:
         return IsValid();
     }
 
-    void Set(T* pointer, RefCount<T>* refCount)
+    void SetCommon(T* pointer, RefCount<T>* refCount)
     {
         if (mPointer != pointer)
         {
@@ -135,7 +135,12 @@ public:
         }
     }
 
-    void Clear()
+    void Set(T* pointer, RefCount<T>* refCount)
+    {
+        SetCommon(pointer, refCount);
+    }
+
+    void ClearCommon()
     {
         if (mPointer != nullptr)
         {
@@ -175,6 +180,11 @@ public:
             // If we have no assigned pointer, we should have no ref count.
             OCT_ASSERT(mRefCount == nullptr);
         }
+    }
+
+    void Clear()
+    {
+        ClearCommon();
     }
 
     void SetDeleter(typename RefCount<T>::DeleterFP deleteFunc)
@@ -243,6 +253,12 @@ private:
     T* mPointer = nullptr;
     RefCount<T>* mRefCount = nullptr;
 };
+
+template <>
+void SharedPtr<Node>::Set(Node* pointer, RefCount<Node>* refCount);
+
+template <>
+void SharedPtr<Node>::Clear();
 
 template<typename T>
 class WeakPtr

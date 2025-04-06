@@ -728,8 +728,8 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\ArrayWidget.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Nodes\Widgets\VerticalList.cpp">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    <ClCompile Include="Source\Engine\SmartPointer.cpp">
+      <Filter>Source Files\Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1381,9 +1381,6 @@
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\ArrayWidget.h">
-      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Nodes\Widgets\VerticalList.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
   </ItemGroup>

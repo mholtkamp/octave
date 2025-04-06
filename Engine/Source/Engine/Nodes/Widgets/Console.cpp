@@ -31,7 +31,8 @@ void Console::WriteOutput(const char* output, glm::vec4 color)
     // Or can these functions also lock the log mutex?
     // Either way I think we need to be locking some mutex here. For instance if the main
     // thread called SetNumOutputLines() but the async load thread is calling WriteOutput() via LogX()
-    if (mNumOutputLines > 0)
+    if (!IsShuttingDown() &&
+        mNumOutputLines > 0)
     {
         uint32_t numChildren = mOutputCanvas->GetNumChildren();
         OCT_ASSERT(numChildren > 0);

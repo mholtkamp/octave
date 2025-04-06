@@ -1122,6 +1122,16 @@ bool Node::IsDefault() const
     return mDefault;
 }
 
+void Node::MarkUserdataCreated()
+{
+    mUserdataCreated = true;
+}
+
+bool Node::IsUserdataCreated() const
+{
+    return mUserdataCreated;
+}
+
 const char* Node::GetTypeName() const
 {
     return "Node";

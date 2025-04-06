@@ -188,6 +188,9 @@ public:
     void SetDefault(bool isDefault);
     bool IsDefault() const;
 
+    void MarkUserdataCreated();
+    bool IsUserdataCreated() const;
+
     virtual const char* GetTypeName() const;
     virtual DrawData GetDrawData();
 
@@ -406,6 +409,7 @@ protected:
     bool mVisible = true;
     bool mTransient = false;
     bool mDefault = false;
+    bool mUserdataCreated = false;
 
     // Merged from Actor
     SceneRef mScene;
