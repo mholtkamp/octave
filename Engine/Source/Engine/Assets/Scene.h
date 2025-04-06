@@ -4,9 +4,9 @@
 #include "Property.h"
 #include "Factory.h"
 #include "AssetRef.h"
+#include "Nodes/Node.h"
 
 class World;
-class Node;
 
 struct SceneNodeDef
 {

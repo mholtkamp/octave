@@ -1732,7 +1732,7 @@ void Script::CallTick(float deltaTime)
     {
         lua_State* L = GetLua();
 
-        lua_rawgeti(L, LUA_REGISTRYINDEX, mUserdataRef);
+        Node_Lua::Create(L, mOwner);
         OCT_ASSERT(lua_isuserdata(L, -1));
 
         lua_getfield(L, -1, "Tick");
