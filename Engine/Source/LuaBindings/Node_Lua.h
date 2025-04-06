@@ -63,6 +63,11 @@ struct Node_Lua
     static int Start(lua_State* L);
     static int HasStarted(lua_State* L);
 
+    static int GetNodeId(lua_State* L);
+    static int EmitSignal(lua_State* L);
+    static int ConnectSignal(lua_State* L);
+    static int DisconnectSignal(lua_State* L);
+
     static int IsDestroyed(lua_State* L);
     static int IsPendingDestroy(lua_State* L);
     static int EnableTick(lua_State* L);

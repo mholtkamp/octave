@@ -109,6 +109,11 @@ public:
 
     NodeId GetNodeId() const;
 
+    void EmitSignal(const std::string& name, const std::vector<Datum>& args);
+    void ConnectSignal(const std::string& name, Node* listener, SignalHandlerFP func);
+    void ConnectSignal(const std::string& name, Node* listener, const ScriptFunc& func);
+    void DisconnectSignal(const std::string& name, Node* listener);
+
     void RenderShadow();
     void RenderSelected(bool renderChildren);
 
@@ -188,7 +193,7 @@ public:
     void SetDefault(bool isDefault);
     bool IsDefault() const;
 
-    void MarkUserdataCreated();
+    void SetUserdataCreated(bool created);
     bool IsUserdataCreated() const;
 
     virtual const char* GetTypeName() const;
@@ -403,6 +408,7 @@ protected:
     NodePtrWeak mSelf;
     std::vector<NodePtr> mChildren;
     std::unordered_map<std::string, Node*> mChildNameMap;
+    std::unordered_map<std::string, Signal> mSignalMap;
     std::string mScriptFile;
 
     bool mActive = true;

@@ -63,6 +63,7 @@ int NodeWrapperGarbageCollect(lua_State* L)
 {
     luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
     Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
+    nodeLua->mNode->SetUserdataCreated(false);
     nodeLua->~Node_Lua();
     return 0;
 }
@@ -180,7 +181,7 @@ int Node_Lua::Create(lua_State* L, Node* node)
             lua_pushvalue(L, udIdx);
             lua_seti(L, nodeRefTableIdx, node->GetNodeId());
 
-            node->MarkUserdataCreated();
+            node->SetUserdataCreated(true);
 
             // We need to return the newly created userdata.
             OCT_ASSERT(lua_gettop(L) == udIdx);
@@ -671,6 +672,64 @@ int Node_Lua::HasStarted(lua_State* L)
     return 1;
 }
 
+int Node_Lua::GetNodeId(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+
+    int ret = (int)node->GetNodeId();
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+
+int Node_Lua::EmitSignal(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    const char* signalName = CHECK_STRING(L, 2);
+
+    std::vector<Datum> args;
+    // How many args is this emit sending? exclude node and signalName args
+    int numArgs = lua_gettop(L) - 2;
+
+    if (numArgs > 0)
+    {
+        args.reserve(numArgs);
+    }
+
+    for (int32_t i = 3; i <= 2 + numArgs; ++i)
+    {
+        args.push_back(LuaObjectToDatum(L, i));
+    }
+
+    node->EmitSignal(signalName, args);
+
+    return 0;
+}
+
+int Node_Lua::ConnectSignal(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    const char* signalName = CHECK_STRING(L, 2);
+    Node* listener = CHECK_NODE(L, 3);
+    CHECK_FUNCTION(L, 4);
+    ScriptFunc listenerFunc(L, 4);
+
+    node->ConnectSignal(signalName, listener, listenerFunc);
+
+    return 0;
+}
+
+int Node_Lua::DisconnectSignal(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    const char* signalName = CHECK_STRING(L, 2);
+    Node* listener = CHECK_NODE(L, 3);
+
+    node->DisconnectSignal(signalName, listener);
+
+    return 0;
+}
+
 int Node_Lua::IsDestroyed(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -1032,6 +1091,14 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, Start);
 
     REGISTER_TABLE_FUNC(L, mtIndex, HasStarted);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNodeId);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, EmitSignal);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, ConnectSignal);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, DisconnectSignal);
 
     REGISTER_TABLE_FUNC(L, mtIndex, IsDestroyed);
 

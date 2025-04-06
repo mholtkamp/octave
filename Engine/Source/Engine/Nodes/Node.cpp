@@ -655,6 +655,26 @@ NodeId Node::GetNodeId() const
     return mNodeId;
 }
 
+void Node::EmitSignal(const std::string& name, const std::vector<Datum>& args)
+{
+    mSignalMap[name].Emit(args);
+}
+
+void Node::ConnectSignal(const std::string& name, Node* listener, SignalHandlerFP func)
+{
+    mSignalMap[name].Connect(listener, func);
+}
+
+void Node::ConnectSignal(const std::string& name, Node* listener, const ScriptFunc& func)
+{
+    mSignalMap[name].Connect(listener, func);
+}
+
+void Node::DisconnectSignal(const std::string& name, Node* listener)
+{
+    mSignalMap[name].Disconnect(listener);
+}
+
 void Node::RenderShadow()
 {
 #if 0
@@ -1122,9 +1142,9 @@ bool Node::IsDefault() const
     return mDefault;
 }
 
-void Node::MarkUserdataCreated()
+void Node::SetUserdataCreated(bool created)
 {
-    mUserdataCreated = true;
+    mUserdataCreated = created;
 }
 
 bool Node::IsUserdataCreated() const
