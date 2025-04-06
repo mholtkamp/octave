@@ -69,6 +69,12 @@ public:
         return *this;
     }
 
+    SharedPtr<T>& operator=(std::nullptr_t)
+    {
+        Clear();
+        return *this;
+    }
+
     bool operator==(const SharedPtr& other) const
     {
         return Get() == other.Get();
@@ -307,6 +313,12 @@ public:
     WeakPtr<T>& operator=(const SharedPtr<T>& src)
     {
         Set(src.Get(), src.GetRefCount());
+        return *this;
+    }
+
+    WeakPtr<T>& operator=(std::nullptr_t)
+    {
+        Clear();
         return *this;
     }
 
