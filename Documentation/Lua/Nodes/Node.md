@@ -20,7 +20,7 @@ Sig: `Node.Destruct(node)`
  - Arg: `Node node` The node to be destroyed.
 ---
 ### DestroyDeferred
-Destroy this node at the end of the frame. Usually a safer and more stable option that immediately destroying a node with Destruct.
+Destroy this node at the end of the frame. Usually a safer and more stable option than immediately destroying a node with Destruct.
 
 Alias: `Doom`
 Alias: `SetPendingDestroy`
@@ -266,6 +266,34 @@ Check if the node has already started (i.e. has had its Start() function called)
 
 Sig: `hasStarted = Node:HasStarted()`
  - Ret: `boolean hasStarted` true if Start() has been called for this node
+---
+### GetNodeId
+Get this node's unique ID.
+
+Sig: `id = Node:GetNodeId()`
+ - Ret: `integer id` Node's unique identifier
+---
+### EmitSignal
+Broadcast a signal by name so that any nodes that are connected to the signal can react. There is no need to create a signal first, you can simple emit any signal by name.
+
+Sig: `Node:EmitSignal(signalName, args...)`
+ - Arg: `string signalName` Name of the signal to emit
+ - Arg: `args...` Any number of arguments that you wish to pass
+ ---
+### ConnectSignal
+Connect a listener to a signal on this node.
+
+Sig: `Node:ConnectSignal(signalName, listener, func)`
+ - Arg: `string signalName` Name of the signal to connect to
+ - Arg: `Node listener` The node that will be reacting to the signal
+ - Arg: `function func` The function on the listener node that will be invoked when the signal is emit.
+ ---
+### DisconnectSignal
+Disconnect a listener from a signal on this node.
+
+Sig: `Node:DisconnectSignal(signalName, listener)`
+ - Arg: `string signalName` Name of the signal to disconnect from
+ - Arg: `Node listener` The node that was connected to the signal (and will now be disconnected)
 ---
 ### IsDestroyed
 Check if the node has been destroyed.
