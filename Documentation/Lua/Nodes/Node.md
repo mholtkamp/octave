@@ -283,6 +283,19 @@ Sig: `Node:EmitSignal(signalName, args...)`
 ### ConnectSignal
 Connect a listener to a signal on this node.
 
+The function passed in should be a member function of the node's table.
+For instance:
+
+```lua
+function HealthBar:OnHealthChanged(newHp)
+    self.quad:SetXRatio(newHp / Player.MaxHp)
+end
+
+function HealthBar:Start()
+    GetPlayer():ConnectSignal("healthChanged", self, HealthBar.OnHealthChanged)
+end
+```
+
 Sig: `Node:ConnectSignal(signalName, listener, func)`
  - Arg: `string signalName` Name of the signal to connect to
  - Arg: `Node listener` The node that will be reacting to the signal
