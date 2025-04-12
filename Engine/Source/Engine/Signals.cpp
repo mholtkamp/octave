@@ -4,6 +4,8 @@
 
 void Signal::Emit(const std::vector<Datum>& args)
 {
+    mEmitting = true;
+
     for (auto it = mConnectionMap.begin(); it != mConnectionMap.end();)
     {
         Node* node = it->first.Get<Node>();
@@ -37,6 +39,18 @@ void Signal::Emit(const std::vector<Datum>& args)
             it++;
         }
     }
+
+    mEmitting = false;
+
+    // Handle any pending connects/disconnects
+    for (uint32_t i = 0; i < mPendingDisconnects.size(); ++i)
+    {
+        mConnectionMap.erase(mPendingDisconnects[i]);
+    }
+    for (uint32_t i = 0; i < mPendingConnects.size(); ++i)
+    {
+        mConnectionMap.insert({ mPendingConnects[i] });
+    }
 }
 
 void Signal::Connect(Node* node, SignalHandlerFP func)
@@ -45,7 +59,17 @@ void Signal::Connect(Node* node, SignalHandlerFP func)
     {
         CleanupDeadConnections();
         NodePtrWeak nodePtrWeak = Node::ResolveWeakPtr(node);
-        mConnectionMap[nodePtrWeak].mFuncPointer = func;
+
+        if (mEmitting)
+        {
+            SignalHandlerFunc handler;
+            handler.mFuncPointer = func;
+            mPendingConnects.push_back({ nodePtrWeak, handler });
+        }
+        else
+        {
+            mConnectionMap[nodePtrWeak].mFuncPointer = func;
+        }
     }
 }
 
@@ -55,7 +79,17 @@ void Signal::Connect(Node* node, const ScriptFunc& func)
     {
         CleanupDeadConnections();
         NodePtrWeak nodePtrWeak = Node::ResolveWeakPtr(node);
-        mConnectionMap[nodePtrWeak].mScriptFunc = func;
+
+        if (mEmitting)
+        {
+            SignalHandlerFunc handler;
+            handler.mScriptFunc = func;
+            mPendingConnects.push_back({ nodePtrWeak, handler });
+        }
+        else
+        {
+            mConnectionMap[nodePtrWeak].mScriptFunc = func;
+        }
     }
 }
 
@@ -64,12 +98,23 @@ void Signal::Disconnect(Node* node)
     if (node != nullptr)
     {
         NodePtrWeak nodePtrWeak = Node::ResolveWeakPtr(node);
-        mConnectionMap.erase(nodePtrWeak);
+
+        if (mEmitting)
+        {
+            mPendingDisconnects.push_back(nodePtrWeak);
+        }
+        else
+        {
+            mConnectionMap.erase(nodePtrWeak);
+        }
     }
 }
 
 void Signal::CleanupDeadConnections()
 {
+    if (mEmitting)
+        return;
+
     for (auto it = mConnectionMap.begin(); it != mConnectionMap.end();)
     {
         Node* node = it->first.Get<Node>();

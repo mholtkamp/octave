@@ -30,5 +30,8 @@ private:
     void CleanupDeadConnections();
 
     std::unordered_map<NodePtrWeak, SignalHandlerFunc> mConnectionMap;
+    std::vector <std::pair<NodePtrWeak, SignalHandlerFunc>> mPendingConnects;
+    std::vector <NodePtrWeak> mPendingDisconnects;
+    bool mEmitting = false;
 
 };
