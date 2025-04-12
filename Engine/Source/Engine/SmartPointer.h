@@ -1,10 +1,14 @@
 #pragma once
 
 #include <vector>
+#include <type_traits>
 #include <stdint.h>
 #include "Assertion.h"
 
 class Node;
+
+void MakeNodeUserdataStrong(Node* node);
+void MakeNodeUserdataWeak(Node* node);
 
 template<typename T>
 struct RefCount
@@ -143,7 +147,21 @@ public:
 
     void Set(T* pointer, RefCount<T>* refCount)
     {
+        bool diffPointer = (mPointer != pointer);
+
         SetCommon(pointer, refCount);
+
+        if (std::is_base_of<Node, T>())
+        {
+            if (diffPointer &&
+                mPointer != nullptr &&
+                mRefCount != nullptr &&
+                mRefCount->mSharedCount == 2)
+            {
+                Node* node = (Node*)mPointer;
+                MakeNodeUserdataStrong(node);
+            }
+        }
     }
 
     void ClearCommon()
@@ -190,6 +208,18 @@ public:
 
     void Clear()
     {
+        if (std::is_base_of<Node, T>())
+        {
+            Node* node = (Node*)mPointer;
+
+            if (node != nullptr &&
+                mRefCount != nullptr &&
+                mRefCount->mSharedCount == 2)
+            {
+                MakeNodeUserdataWeak(node);
+            }
+        }
+
         ClearCommon();
     }
 
@@ -259,12 +289,6 @@ private:
     T* mPointer = nullptr;
     RefCount<T>* mRefCount = nullptr;
 };
-
-template <>
-void SharedPtr<Node>::Set(Node* pointer, RefCount<Node>* refCount);
-
-template <>
-void SharedPtr<Node>::Clear();
 
 template<typename T>
 class WeakPtr

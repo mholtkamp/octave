@@ -178,6 +178,9 @@ int Node_Lua::Create(lua_State* L, Node* node)
             lua_setmetatable(L, udIdx);
 
             // Save it to our ref table so it can be reused.
+            // This will save it to the strong table OCT_NODE_STRONG_TABLE_KEY 
+            // which is where we want to save any userdata for nodes that have SharedPtr refs > 1
+            // See SmartPointer.cpp for how we move these userdata references between the strong/weak tables.
             lua_pushvalue(L, udIdx);
             lua_seti(L, nodeRefTableIdx, node->GetNodeId());
 
