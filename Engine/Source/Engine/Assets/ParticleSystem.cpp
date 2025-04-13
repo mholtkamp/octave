@@ -33,7 +33,10 @@ void ParticleSystem::LoadStream(Stream& stream, Platform platform)
     mMaxParticles = stream.ReadUint32();
     mLoops = stream.ReadUint32();
     mRadialVelocity = stream.ReadBool();
-    //mRadialSpawn = stream.ReadBool();
+    if (mVersion >= ASSET_VERSION_PARTICLE_RADIAL_SPAWN)
+    {
+        mRadialSpawn = stream.ReadBool();
+    }
     mLockedRatio = stream.ReadBool();
 
     stream.ReadAsset(mMaterial);
@@ -83,7 +86,7 @@ void ParticleSystem::SaveStream(Stream& stream, Platform platform)
     stream.WriteUint32(mMaxParticles);
     stream.WriteUint32(mLoops);
     stream.WriteBool(mRadialVelocity);
-    //stream.WriteBool(mRadialSpawn);
+    stream.WriteBool(mRadialSpawn);
     stream.WriteBool(mLockedRatio);
 
     stream.WriteAsset(mMaterial);
