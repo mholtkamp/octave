@@ -17,6 +17,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <vector>
+
 #define PI 3.14159265359f
 #define DEGREES_TO_RADIANS (PI / 180)
 #define RADIANS_TO_DEGREES (180 / PI)
@@ -35,6 +37,8 @@ public:
         }
         return retRand;
     }
+
+    static int32_t RandIndexWeighted(const std::vector<float>& weights);
 
     static void SeedRand(uint32_t seed);
 

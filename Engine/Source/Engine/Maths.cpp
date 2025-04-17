@@ -330,6 +330,37 @@ glm::vec3 Maths::ExtractScale(const glm::mat4& mat)
 #endif
 }
 
+int32_t Maths::RandIndexWeighted(const std::vector<float>& weights)
+{
+    int32_t retIndex = 0;
+
+    float totalWeight = 0.0f;
+    for (uint32_t i = 0; i < weights.size(); ++i)
+    {
+        totalWeight += weights[i];
+    }
+
+    if (totalWeight > 0.0f)
+    {
+        float roll = Maths::RandRange(0.0f, totalWeight);
+
+        for (uint32_t i = 0; i < weights.size(); ++i)
+        {
+            if (weights[i] != 0.0f)
+            {
+                if (roll <= weights[i])
+                {
+                    retIndex = i;
+                    break;
+                }
+
+                roll -= weights[i];
+            }
+        }
+    }
+
+    return retIndex;
+}
 
 void Maths::SeedRand(uint32_t seed)
 {

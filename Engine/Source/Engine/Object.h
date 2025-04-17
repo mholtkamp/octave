@@ -59,6 +59,28 @@ public:
     }
 };
 
+template <typename T>
+T* Cast(Object* object)
+{
+    if (object->Is(T::ClassRuntimeId()))
+    {
+        return (T*)object;
+    }
+
+    return nullptr;
+}
+
+template <typename T, typename U>
+SharedPtr<T> Cast(const SharedPtr<U>& object)
+{
+    if (object->Is(T::ClassRuntimeId()))
+    {
+        return PtrStaticCast<T>(object);
+    }
+
+    return nullptr;
+}
+
 #define DECLARE_OBJECT(Type, ParentType)                                                                    \
     public:                                                                                                 \
         static const char* ClassRuntimeName() { return #Type; }                                             \
