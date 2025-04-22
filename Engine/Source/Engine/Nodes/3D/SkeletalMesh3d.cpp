@@ -878,7 +878,6 @@ void SkeletalMesh3D::UpdateAnimation(float deltaTime, bool updateBones)
         else
         {
             LogError("Cannot inherit pose because number of bones differs between components.");
-            OCT_ASSERT(0);
         }
     }
 
