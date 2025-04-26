@@ -1561,6 +1561,29 @@ static void DrawScenePanel()
                     }
                 }
 
+                if (ImGui::BeginMenu("Bones"))
+                {
+                    SkeletalMesh3D* skNode = node->As<SkeletalMesh3D>();
+                    SkeletalMesh* skMesh = skNode ? skNode->GetSkeletalMesh() : nullptr;
+
+                    if (skMesh)
+                    {
+                        for (uint32_t i = 0; i < skMesh->GetNumBones(); ++i)
+                        {
+                            ImGui::PushID(i);
+                            if (ImGui::MenuItem(skMesh->GetBone(i).mName.c_str()))
+                            {
+                                am->AttachSelectedNodes(skNode, (int32_t)i);
+                                ImGui::CloseCurrentPopup();
+                                closeContextPopup = true;
+                            }
+                            ImGui::PopID();
+                        }
+                    }
+
+                    ImGui::EndMenu();
+                }
+
                 ImGui::EndPopup();
             }
 
