@@ -1098,7 +1098,7 @@ void SkeletalMesh3D::UpdateAttachedChildren(float deltaTime)
 {
     bool isAnimating = !mAnimationPaused &&
         (mAnimationSpeed != 0.0f) &&
-        mActiveAnimations.size() > 0;
+        (mActiveAnimations.size() > 0 || mInheritPose);
 
     if (isAnimating)
     {
