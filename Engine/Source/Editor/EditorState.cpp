@@ -858,6 +858,11 @@ void EditorState::OpenEditScene(int32_t idx)
                 Node* parent = node->GetParent();
                 int32_t nodeIdx = parent->FindChildIndex(node);
 
+                // Preserve transient status
+                // Doing this because in Navi, we can load transient neighbor cells to give 
+                // use some reference when editing a cell.
+                bool transient = node->IsTransient();
+
                 // This will unparent it from parent
                 node->Destroy();
                 node = nullptr;
@@ -871,6 +876,8 @@ void EditorState::OpenEditScene(int32_t idx)
                     newNode->GatherProperties(dstProps);
                     CopyPropertyValues(dstProps, *nonDefProps);
                 }
+
+                newNode->SetTransient(transient);
             }
 
             return true;
