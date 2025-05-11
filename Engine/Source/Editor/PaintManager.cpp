@@ -635,7 +635,8 @@ void PaintManager::UpdatePaintDraw()
                     for (uint32_t i = 0; i < instNodes.size(); ++i)
                     {
                         if (instNodes[i]->GetStaticMesh() == staticMesh &&
-                            instNodes[i]->HasTag("Paint"))
+                            instNodes[i]->HasTag("Paint") &&
+                            instNodes[i]->GetParent() == world->GetRootNode())
                         {
                             instMesh = instNodes[i];
                             break;
