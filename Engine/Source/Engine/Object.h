@@ -62,7 +62,7 @@ public:
 template <typename T>
 T* Cast(Object* object)
 {
-    if (object->Is(T::ClassRuntimeId()))
+    if (object && object->Is(T::ClassRuntimeId()))
     {
         return (T*)object;
     }
@@ -73,7 +73,7 @@ T* Cast(Object* object)
 template <typename T, typename U>
 SharedPtr<T> Cast(const SharedPtr<U>& object)
 {
-    if (object->Is(T::ClassRuntimeId()))
+    if (object && object->Is(T::ClassRuntimeId()))
     {
         return PtrStaticCast<T>(object);
     }
