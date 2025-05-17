@@ -1308,6 +1308,26 @@ void EditorState::CaptureAndSaveScene(AssetStub* stub, Node* rootNode)
 
     bool worldRoot = (rootNode == GetWorld(0)->GetRootNode());
 
+    bool hasSavedPos = false;
+    glm::vec3 savedPos = {};
+
+    if (!worldRoot)
+    {
+        if (rootNode->As<Node3D>())
+        {
+            savedPos = rootNode->As<Node3D>()->GetPosition();
+            rootNode->As<Node3D>()->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+            hasSavedPos = true;
+        }
+
+        if (rootNode->As<Widget>())
+        {
+            savedPos = glm::vec3(rootNode->As<Widget>()->GetOffset(), 0.0f);
+            rootNode->As<Widget>()->SetOffset(0.0f, 0.0f);
+            hasSavedPos = true;
+        }
+    }
+
     Scene* scene = (Scene*)stub->mAsset;
     scene->Capture(rootNode);
     rootNode->SetScene(scene);
@@ -1322,6 +1342,19 @@ void EditorState::CaptureAndSaveScene(AssetStub* stub, Node* rootNode)
     }
 
     AssetManager::Get()->SaveAsset(*stub);
+
+    if (hasSavedPos)
+    {
+        if (rootNode->As<Node3D>())
+        {
+            rootNode->As<Node3D>()->SetPosition(savedPos);
+        }
+
+        if (rootNode->As<Widget>())
+        {
+            rootNode->As<Widget>()->SetOffset(savedPos.x, savedPos.y);
+        }
+    }
 }
 
 void EditorState::DuplicateAsset(AssetStub* srcStub)
