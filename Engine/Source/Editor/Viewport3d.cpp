@@ -502,9 +502,18 @@ void Viewport3D::HandleDefaultControls()
 
                      if (IsKeyJustDown(KEY_INSERT))
                      {
-                         float mouseX = 0.0f;
-                         float mouseY = 0.0f;
-                         INP_GetPointerPositionNormalized(mouseX, mouseY);
+                         int32_t iMouseX = 0;
+                         int32_t iMouseY = 0;
+                         INP_GetPointerPosition(iMouseX, iMouseY);
+
+                         int32_t vpX = Renderer::Get()->GetViewportX();
+                         int32_t vpY = Renderer::Get()->GetViewportY();
+                         int32_t vpWidth = Renderer::Get()->GetViewportWidth();
+                         int32_t vpHeight = Renderer::Get()->GetViewportHeight();
+                         float fMouseX = glm::clamp(float(iMouseX - vpX) / float(vpWidth), 0.0f, 1.0f);
+                         float fMouseY = glm::clamp(float(iMouseY - vpY) / float(vpHeight), 0.0f, 1.0f);
+                         fMouseX = Maths::MapClamped(fMouseX, 0.0f, 1.0f, -1.0f, 1.0f);
+                         fMouseY = Maths::MapClamped(fMouseY, 0.0f, 1.0f, -1.0f, 1.0f);
 
                          float nearZ = camera->GetNearZ();
                          float farZ = camera->GetFarZ();
@@ -512,8 +521,8 @@ void Viewport3D::HandleDefaultControls()
                          glm::vec3 rayDir = {};
                          if (camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC)
                          {
-                             float x = mouseX * camera->GetOrthoWidth();
-                             float y = -mouseY * camera->GetOrthoHeight();
+                             float x = fMouseX * camera->GetOrthoWidth();
+                             float y = -fMouseY * camera->GetOrthoHeight();
                              glm::vec3 nearPos = glm::vec3(x, y, -nearZ);
                              startPos = glm::vec3(camera->CalculateInvViewMatrix() * glm::vec4(nearPos, 1.0f));
                              rayDir = camera->GetForwardVector();
@@ -528,7 +537,7 @@ void Viewport3D::HandleDefaultControls()
                              float dx = nearZ * tanf(fovX / 2.0f);
                              float dy = nearZ * tanf(fovY / 2.0f);
 
-                             glm::vec3 nearPos = glm::vec3(dx * mouseX, dy * -mouseY, -nearZ);
+                             glm::vec3 nearPos = glm::vec3(dx * fMouseX, dy * -fMouseY, -nearZ);
                              startPos = camera->GetWorldPosition();
                              rayDir = Maths::SafeNormalize(nearPos);
                              rayDir = glm::vec3(camera->CalculateInvViewMatrix() * glm::vec4(rayDir, 0.0f));

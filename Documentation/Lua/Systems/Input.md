@@ -135,12 +135,12 @@ Sig: `x, y = Input.GetTouchPosition(index=1)`
  - Ret: `integer y` Y position
 ---
 ### GetTouchPositionNormalized
-Get a touch position in normalized screen space (0 to 1 instead of pixels).
+Get a touch position in normalized screen space (-1 to 1 instead of pixels).
 
 Sig: `x, y = Input.GetTouchPositionNormalized(index=1)`
  - Arg: `integer index` Touch index
- - Ret: `number x` Normalized x position (0 - 1)
- - Ret: `number y` Normalized y position (0 - 1)
+ - Ret: `number x` Normalized x position (-1 to 1)
+ - Ret: `number y` Normalized y position (-1 to 1)
 ---
 ### GetPointerPosition
 Get a pointer position in screen space.
@@ -151,12 +151,12 @@ Sig: `x, y = Input.GetPointerPosition(index=1)`
  - Ret: `integer y` Y position
 ---
 ### GetPointerPositionNormalized
-Get a pointer position in normalized screen space (0 to 1 instead of pixels).
+Get a pointer position in normalized screen space (-1 to 1 instead of pixels).
 
 Sig: `x, y = Input.GetPointerPositionNormalized(index=1)`
  - Arg: `integer index` Pointer index
- - Ret: `number x` Normalized x position (0 - 1)
- - Ret: `number y` Normalized y position (0 - 1)
+ - Ret: `number x` Normalized x position (-1 to 1)
+ - Ret: `number y` Normalized y position (-1 to 1)
 ---
 ### IsGamepadDown
 Check if a gamepad button is held down.
