@@ -258,22 +258,6 @@ public:
     void InvokeNetFunc(const char* name, const std::vector<Datum>& params);
 
     static void ProcessPendingDestroys();
-    static NodePtr ResolvePtr(Node* node);
-    static NodePtrWeak ResolveWeakPtr(Node* node);
-
-    template<typename T>
-    static SharedPtr<T> ResolvePtr(Node* node)
-    {
-        NodePtr nodePtr = node ? node->mSelf.Lock() : nullptr;
-        return PtrStaticCast<T>(nodePtr);
-    }
-
-    template<typename T>
-    static WeakPtr<T> ResolveWeakPtr(Node* node)
-    {
-        NodePtr nodePtr = node ? node->mSelf.Lock() : nullptr;
-        return PtrStaticCast<T>(nodePtr);
-    }
 
     static void RegisterNetFuncs(Node* node);
 
@@ -405,7 +389,6 @@ protected:
 
     World* mWorld = nullptr;
     NodePtrWeak mParent;
-    NodePtrWeak mSelf;
     std::vector<NodePtr> mChildren;
     std::unordered_map<std::string, Node*> mChildNameMap;
     std::unordered_map<std::string, Signal> mSignalMap;

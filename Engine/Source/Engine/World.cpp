@@ -121,7 +121,7 @@ void World::SetRootNode(Node* node)
             mRootNode->SetWorld(nullptr);
         }
 
-        mRootNode = Node::ResolvePtr(node);
+        mRootNode = ResolvePtr(node);
 
         if (mRootNode != nullptr && mRootNode->IsDestroyed())
         {
@@ -966,7 +966,7 @@ void World::QueueRootScene(const char* name)
 
 void World::QueueRootNode(Node* node)
 {
-    mQueuedRootNode = Node::ResolvePtr(node);
+    mQueuedRootNode = ResolvePtr(node);
 }
 
 void World::EnableInternalEdgeSmoothing(bool enable)
@@ -1034,7 +1034,7 @@ Node* World::SpawnDefaultRoot()
 {
     if (mRootNode == nullptr)
     {
-        mRootNode = Node::ResolvePtr(SpawnNode<Node>());
+        mRootNode = ResolvePtr(SpawnNode<Node>());
         mRootNode->SetName("Default Root");
     }
 

@@ -5,6 +5,7 @@
 #include "ScriptAutoReg.h"
 #include <string>
 #include <stdint.h>
+#include <type_traits>
 
 int CreateClassMetatable(const char* className, const char* classFlag, const char* parentClassName);
 
@@ -57,12 +58,20 @@ public:
     {
         return this == rhs;
     }
+
+protected:
+
+    WeakPtr<Object> mSelf;
 };
 
 template <typename T>
 T* Cast(Object* object)
 {
-    if (object && object->Is(T::ClassRuntimeId()))
+    if (std::is_same_v<T, Object>())
+    {
+        return object;
+    }
+    else if (object && object->Is(T::ClassRuntimeId()))
     {
         return (T*)object;
     }
@@ -73,12 +82,45 @@ T* Cast(Object* object)
 template <typename T, typename U>
 SharedPtr<T> Cast(const SharedPtr<U>& object)
 {
-    if (object && object->Is(T::ClassRuntimeId()))
+    if (std::is_same_v<T, Object>())
+    {
+        return object;
+    }
+    else if (object && object->Is(T::ClassRuntimeId()))
     {
         return PtrStaticCast<T>(object);
     }
 
     return nullptr;
+}
+
+template <typename T, typename U>
+WeakPtr<T> Cast(const WeakPtr<U>& object)
+{
+    if (std::is_same_v<T, Object>())
+    {
+        return object;
+    }
+    else if (object && object->Is(T::ClassRuntimeId()))
+    {
+        return PtrStaticCast<T>(object);
+    }
+
+    return nullptr;
+}
+
+template<typename T>
+inline SharedPtr<T> ResolvePtr(Object* obj)
+{
+    SharePtr<T> ptr = obj ? obj->mSelf.Lock() : nullptr;
+    return Cast<T>(ptr);
+}
+
+template<typename T>
+inline WeakPtr<T> ResolveWeakPtr(Object* obj)
+{
+    WeakPtr<T> ptr = obj ? obj->mSelf : nullptr;
+    return Cast<T>(ptr);
 }
 
 #define DECLARE_OBJECT(Type, ParentType)                                                                    \

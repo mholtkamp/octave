@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "Assertion.h"
 
+class Object;
 class Node;
 
 void MakeNodeUserdataStrong(Node* node);
@@ -572,8 +573,22 @@ SharedPtr<T> PtrDynamicCast(const SharedPtr<U>& src)
     {
         return SharedPtr<T>();
     }
-
 }
+
+template<typename T, typename U>
+WeakPtr<T> PtrStaticCast(const WeakPtr<U>& src)
+{
+    return PtrStaticCast(src.Lock());
+}
+
+template<typename T, typename U>
+WeakPtr<T> PtrDynamicCast(const WeakPtr<U>& src)
+{
+    return PtrDynamicCast(src.Lock());
+}
+
+typedef SharedPtr<Object> ObjectPtr;
+typedef WeakPtr<Object> ObjectPtrWeak;
 
 typedef SharedPtr<Node> NodePtr;
 typedef WeakPtr<Node> NodePtrWeak;

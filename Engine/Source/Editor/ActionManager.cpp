@@ -2193,7 +2193,7 @@ ActionSpawnNodes::ActionSpawnNodes(const std::vector<Node*>& srcNodes)
 
     for (uint32_t i = 0; i < mSrcNodes.size(); ++i)
     {
-        mSrcNodes[i] = Node::ResolvePtr(trimmedSrcNodes[i]);
+        mSrcNodes[i] = ResolvePtr(trimmedSrcNodes[i]);
     }
 }
 
@@ -2283,7 +2283,7 @@ void ActionSpawnNodes::Reverse()
         for (uint32_t i = 0; i < mNodes.size(); ++i)
         {
             Node* parent = mNodes[i]->GetParent();
-            mParents.push_back(Node::ResolvePtr(parent));
+            mParents.push_back(ResolvePtr<Node>(parent));
         }
     }
 
@@ -2312,12 +2312,12 @@ ActionDeleteNodes::ActionDeleteNodes(const std::vector<Node*>& nodes)
     mNodes.resize(trimmedNodes.size());
     for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
-        mNodes[i] = Node::ResolvePtr(nodes[i]);
+        mNodes[i] = ResolvePtr<Node>(nodes[i]);
     }
 
     for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
-        mParents.push_back(Node::ResolvePtr(mNodes[i]->GetParent()));
+        mParents.push_back(ResolvePtr<Node>(mNodes[i]->GetParent()));
         if (mParents[i] != nullptr)
         {
             int32_t childIdx = mParents[i]->FindChildIndex(mNodes[i].Get());
@@ -2414,9 +2414,9 @@ void ActionDeleteNodes::Reverse()
 
 ActionAttachNode::ActionAttachNode(Node* node, Node* newParent, int32_t childIndex, int32_t boneIndex)
 {
-    mNode = Node::ResolvePtr(node);
-    mNewParent = Node::ResolvePtr(newParent);
-    mPrevParent = Node::ResolvePtr(node->GetParent());
+    mNode = ResolvePtr<Node>(node);
+    mNewParent = ResolvePtr<Node>(newParent);
+    mPrevParent = ResolvePtr<Node>(node->GetParent());
     mChildIndex = childIndex;
     mPrevChildIndex = node->GetParent() ? node->GetParent()->FindChildIndex(node) : -1;
     mBoneIndex = boneIndex;
@@ -2462,9 +2462,9 @@ void ActionAttachNode::Reverse()
 
 ActionSetRootNode::ActionSetRootNode(Node* newRoot)
 {
-    mNewRoot = Node::ResolvePtr(newRoot);
-    mOldRoot = Node::ResolvePtr(GetWorld(0)->GetRootNode());
-    mNewRootParent = Node::ResolvePtr(mNewRoot->GetParent());
+    mNewRoot = ResolvePtr(newRoot);
+    mOldRoot = ResolvePtr(GetWorld(0)->GetRootNode());
+    mNewRootParent = ResolvePtr(mNewRoot->GetParent());
     mNewRootChildIndex = mNewRootParent ? mNewRootParent->FindChildIndex(mNewRoot.Get()) : -1;
 
     OCT_ASSERT(mNewRoot != mOldRoot);
