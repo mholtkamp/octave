@@ -1,6 +1,7 @@
 #include "Datum.h"
 #include "TableDatum.h"
 #include "ScriptFunc.h"
+#include "SmartPointer.h"
 #include "Asset.h"
 #include "AssetRef.h"
 #include "Log.h"
@@ -403,7 +404,7 @@ void Datum::WriteStream(Stream& stream) const
                 // Objects can only be serialized if it is an actor AND we
                 // are serializing across the network.
                 NetId netId = INVALID_NET_ID; 
-                Object* obj = mData.p[i];
+                Object* obj = mData.p[i].Get();
                 Node* node = obj ? obj->As<Node>() : nullptr;
 
                 if (node != nullptr)
@@ -504,7 +505,7 @@ void Datum::SetTableDatum(const TableDatum& value, uint32_t index)
         mData.t[index] = value;
 }
 
-void Datum::SetObject(Object* value, uint32_t index)
+void Datum::SetObject(const WeakPtr<Object>& value, uint32_t index)
 {
     PreSet(index, DatumType::Object);
     if (!mChangeHandler || !mChangeHandler(this, index, &value))
@@ -551,7 +552,7 @@ void Datum::SetValue(const void* value, uint32_t index, uint32_t count)
             case DatumType::Asset: SetAsset((reinterpret_cast<const AssetRef*>(value) + i)->Get(),    index + i); break;
             case DatumType::Byte: SetByte(*(reinterpret_cast<const uint8_t*>(value) + i),             index + i); break;
             case DatumType::Table: SetTableDatum(*(reinterpret_cast<const TableDatum*>(value) + i),   index + i); break;
-            case DatumType::Object: SetObject(*(((Object**)value) + i),                               index + i); break;
+            case DatumType::Object: SetObject(*(reinterpret_cast<const WeakPtr<Object>*>(value) + i), index + i); break;
             case DatumType::Short: SetShort(*(reinterpret_cast<const int16_t*>(value) + i),           index + i); break;
             case DatumType::Function: SetFunction(*(reinterpret_cast<const ScriptFunc*>(value) + i),  index + i); break;
             case DatumType::Count: break;
@@ -574,7 +575,7 @@ void Datum::SetValueRaw(const void* value, uint32_t index)
     case DatumType::Asset: mData.as[index] = *reinterpret_cast<const Asset* const*>(value); break;
     case DatumType::Byte: mData.by[index] = *reinterpret_cast<const uint8_t*>(value); break;
     case DatumType::Table: mData.t[index] = *reinterpret_cast<const TableDatum*>(value); break;
-    case DatumType::Object: mData.p[index] = *((Object**)value); break;
+    case DatumType::Object: mData.p[index] = *reinterpret_cast<const WeakPtr<Object>*>(value); break;
     case DatumType::Short: mData.sh[index] = *reinterpret_cast<const int16_t*>(value); break;
     case DatumType::Function: mData.fn[index] = *reinterpret_cast<const ScriptFunc*>(value); break;
 
@@ -644,7 +645,7 @@ void Datum::SetExternal(TableDatum* data, uint32_t count)
     PostSetExternal(DatumType::Table, count);
 }
 
-void Datum::SetExternal(Object** data, uint32_t count)
+void Datum::SetExternal(WeakPtr<Object>* data, uint32_t count)
 {
     PreSetExternal(DatumType::Object);
     mData.p = data;
@@ -731,7 +732,7 @@ const TableDatum& Datum::GetTableDatum(uint32_t index) const
     return mData.t[index];
 }
 
-Object* Datum::GetObject(uint32_t index) const
+WeakPtr<Object> Datum::GetObject(uint32_t index) const
 {
     PreGet(index, DatumType::Object);
     return mData.p[index];
@@ -803,7 +804,7 @@ uint8_t& Datum::GetByteRef(uint32_t index)
     return mData.by[index];
 }
 
-Object*& Datum::GetObjectRef(uint32_t index)
+WeakPtr<Object>& Datum::GetObjectRef(uint32_t index)
 {
     PreGet(index, DatumType::Object);
     return mData.p[index];
@@ -1068,7 +1069,7 @@ DEFINE_GET_FIELD(const char*, Vector2D, glm::vec2, {})
 DEFINE_GET_FIELD(const char*, Vector, glm::vec3, {})
 DEFINE_GET_FIELD(const char*, Color, glm::vec4, {})
 DEFINE_GET_FIELD(const char*, Asset, Asset*, nullptr)
-DEFINE_GET_FIELD(const char*, Object, Object*, nullptr)
+DEFINE_GET_FIELD(const char*, Object, WeakPtr<Object>, {})
 DEFINE_GET_FIELD(const char*, Function, ScriptFunc, {})
 
 //DEFINE_GET_FIELD(int32_t, Integer, int32_t, 0)
@@ -1122,7 +1123,7 @@ DEFINE_GET_FIELD(int32_t, Vector2D, glm::vec2, {})
 DEFINE_GET_FIELD(int32_t, Vector, glm::vec3, {})
 DEFINE_GET_FIELD(int32_t, Color, glm::vec4, {})
 DEFINE_GET_FIELD(int32_t, Asset, Asset*, nullptr)
-DEFINE_GET_FIELD(int32_t, Object, Object*, nullptr)
+DEFINE_GET_FIELD(int32_t, Object, WeakPtr<Object>, {})
 DEFINE_GET_FIELD(int32_t, Function, ScriptFunc, {})
 
 TableDatum& Datum::GetTableField(const char* key)
@@ -1188,7 +1189,7 @@ DEFINE_SET_FIELD(const char*, Vector2D, glm::vec2)
 DEFINE_SET_FIELD(const char*, Vector, glm::vec3)
 DEFINE_SET_FIELD(const char*, Color, glm::vec4)
 DEFINE_SET_FIELD(const char*, Asset, Asset*)
-DEFINE_SET_FIELD(const char*, Object, Object*)
+DEFINE_SET_FIELD(const char*, Object, WeakPtr<Object>)
 DEFINE_SET_FIELD(const char*, Function, const ScriptFunc&)
 
 DEFINE_SET_FIELD(int32_t, Integer, int32_t)
@@ -1199,7 +1200,7 @@ DEFINE_SET_FIELD(int32_t, Vector2D, glm::vec2)
 DEFINE_SET_FIELD(int32_t, Vector, glm::vec3)
 DEFINE_SET_FIELD(int32_t, Color, glm::vec4)
 DEFINE_SET_FIELD(int32_t, Asset, Asset*)
-DEFINE_SET_FIELD(int32_t, Object, Object*)
+DEFINE_SET_FIELD(int32_t, Object, WeakPtr<Object>)
 DEFINE_SET_FIELD(int32_t, Function, const ScriptFunc&)
 
 void Datum::SetTableField(const char* key, const TableDatum& value)
@@ -1337,7 +1338,7 @@ Datum& Datum::operator=(uint8_t src)
     return *this;
 }
 
-Datum& Datum::operator=(Object* src)
+Datum& Datum::operator=(const WeakPtr<Object>& src)
 {
     PreAssign(DatumType::Object);
     mData.p[0] = src;

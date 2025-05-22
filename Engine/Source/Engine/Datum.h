@@ -51,7 +51,7 @@ union DatumData
     //ActorRef* ac;
     uint8_t* by;
     TableDatum* t;
-    Object** p;
+    WeakPtr<Object>* p;
     int16_t* sh;
     ScriptFunc* fn;
     void* vp;
@@ -114,7 +114,7 @@ public:
     operator Asset*() const { return GetAsset(); }
     //operator AssetRef() const; Not sure if needed??
     operator uint8_t() const { return (mType == DatumType::Integer) ? uint8_t(GetInteger()) : GetByte(); }
-    operator Object*() const { return (mType == DatumType::Asset) ? ((Object*)GetAsset()) : GetObject(); }
+    operator WeakPtr<Object>() const { return (mType == DatumType::Asset) ? ((Object*)GetAsset()) : GetObject().Get(); }
     operator int16_t() const { return (mType == DatumType::Integer) ? int16_t(GetInteger()) : GetShort(); }
     // ScriptFunc conversion is defined as a constructor in ScriptFunc class
 
@@ -144,7 +144,7 @@ public:
     void SetAsset(const Asset* value, uint32_t index = 0);
     void SetByte(uint8_t value, uint32_t index = 0);
     void SetTableDatum(const TableDatum& value, uint32_t index = 0);
-    void SetObject(Object* value, uint32_t index = 0);
+    void SetObject(const WeakPtr<Object>& value, uint32_t index = 0);
     void SetShort(int16_t value, uint32_t index = 0);
     void SetFunction(const ScriptFunc& value, uint32_t index = 0);
 
@@ -161,7 +161,7 @@ public:
     void SetExternal(AssetRef* data,  uint32_t count = 1);
     void SetExternal(uint8_t* data,  uint32_t count = 1);
     void SetExternal(TableDatum* data, uint32_t count = 1);
-    void SetExternal(Object** data, uint32_t count = 1);
+    void SetExternal(WeakPtr<Object>* data, uint32_t count = 1);
     void SetExternal(int16_t* data, uint32_t count = 1);
     void SetExternal(ScriptFunc* data, uint32_t count = 1);
 
@@ -176,7 +176,7 @@ public:
     uint8_t GetByte(uint32_t index = 0) const;
     TableDatum& GetTableDatum(uint32_t index = 0);
     const TableDatum& GetTableDatum(uint32_t index = 0) const;
-    Object* GetObject(uint32_t index = 0) const;
+    WeakPtr<Object> GetObject(uint32_t index = 0) const;
     int16_t GetShort(uint32_t index = 0) const;
     const ScriptFunc& GetFunction(uint32_t index = 0) const;
 
@@ -189,7 +189,7 @@ public:
     glm::vec4& GetColorRef(uint32_t index = 0);
     AssetRef& GetAssetRef(uint32_t index = 0);
     uint8_t& GetByteRef(uint32_t index = 0);
-    Object*& GetObjectRef(uint32_t index = 0);
+    WeakPtr<Object>& GetObjectRef(uint32_t index = 0);
     int16_t& GetShortRef(uint32_t index = 0);
     ScriptFunc& GetFunctionRef(uint32_t index = 0);
 
@@ -250,7 +250,7 @@ public:
     void SetVectorField(const char* key, glm::vec3 value);
     void SetColorField(const char* key, glm::vec4 value);
     void SetAssetField(const char* key, Asset* value);
-    void SetObjectField(const char* key, Object* value);
+    void SetObjectField(const char* key, const WeakPtr<Object>& value);
     void SetTableField(const char* key, const TableDatum& value);
     void SetFunctionField(const char* key, const ScriptFunc& value);
 
@@ -262,7 +262,7 @@ public:
     void SetVectorField(int32_t key, glm::vec3 value);
     void SetColorField(int32_t key, glm::vec4 value);
     void SetAssetField(int32_t key, Asset* value);
-    void SetObjectField(int32_t key, Object* value);
+    void SetObjectField(int32_t key, const WeakPtr<Object>& value);
     void SetTableField(int32_t key, const TableDatum& value);
     void SetFunctionField(int32_t key, const ScriptFunc& value);
 
@@ -282,7 +282,8 @@ public:
     Datum& operator=(const glm::vec4& src);
     Datum& operator=(Asset* src);
     Datum& operator=(uint8_t src);
-    Datum& operator=(Object* srC);
+    //Datum& operator=(Object* src);
+    Datum& operator=(const WeakPtr<Object>& src);
     Datum& operator=(int16_t src);
     Datum& operator=(const ScriptFunc& src);
 
