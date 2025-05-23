@@ -684,6 +684,7 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\StatsOverlay.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Text.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp" />
+    <ClCompile Include="Source\Engine\Object.cpp" />
     <ClCompile Include="Source\Engine\Profiler.cpp" />
     <ClCompile Include="Source\Engine\Property.cpp" />
     <ClCompile Include="Source\Engine\Rect.cpp" />

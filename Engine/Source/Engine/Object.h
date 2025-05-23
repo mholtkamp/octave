@@ -3,6 +3,8 @@
 #include "Utilities.h"
 #include "EngineTypes.h"
 #include "ScriptAutoReg.h"
+#include "Factory.h"
+
 #include <string>
 #include <stdint.h>
 #include <type_traits>
@@ -11,11 +13,16 @@ int CreateClassMetatable(const char* className, const char* classFlag, const cha
 
 class Object
 {
+
 public:
+
+    DECLARE_FACTORY_MANAGER(Object);
+    DECLARE_FACTORY(Object, Object);
+
     virtual ~Object() = default;
 
-    virtual const char* RuntimeName() const = 0;
-    virtual const char* RuntimeParentName() const = 0;
+    virtual const char* RuntimeName() const { return Object::ClassRuntimeName(); }
+    virtual const char* RuntimeParentName() const { return ""; };
     virtual RuntimeId InstanceRuntimeId() const = 0;
 
     static const char* ClassRuntimeName() { return "Object"; }
@@ -57,6 +64,27 @@ public:
     virtual bool Equals(const Object* rhs) const
     {
         return this == rhs;
+    }
+
+    template<typename T>
+    static SharedPtr<T> New()
+    {
+        SharedPtr<T> ret = MakeShared<T>();
+        ret->mSelf = ret;
+        return ret;
+    }
+
+    template<typename T>
+    static SharedPtr<T> New()
+    {
+        SharedPtr<T> ret = MakeShared<T>();
+        ret->mSelf = ret;
+        return ret;
+    }
+
+    inline const WeakPtr<Object>& GetSelfPtr()
+    {
+        return mSelf;
     }
 
 protected:
@@ -112,15 +140,21 @@ WeakPtr<T> Cast(const WeakPtr<U>& object)
 template<typename T>
 inline SharedPtr<T> ResolvePtr(Object* obj)
 {
-    SharePtr<T> ptr = obj ? obj->mSelf.Lock() : nullptr;
+    SharePtr<T> ptr = obj ? obj->GetSelfPtr().Lock() : nullptr;
     return Cast<T>(ptr);
 }
 
 template<typename T>
 inline WeakPtr<T> ResolveWeakPtr(Object* obj)
 {
-    WeakPtr<T> ptr = obj ? obj->mSelf : nullptr;
+    WeakPtr<T> ptr = obj ? obj->GetSelfPtr() : nullptr;
     return Cast<T>(ptr);
+}
+
+template<typename T>
+SharedPtr<T> NewObject()
+{
+    return Object::New();
 }
 
 #define DECLARE_OBJECT(Type, ParentType)                                                                    \

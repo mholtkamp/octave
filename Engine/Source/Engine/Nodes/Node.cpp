@@ -66,8 +66,6 @@ NodeId Node::sNextNodeId = NodeId(1);
 DEFINE_SCRIPT_LINK_BASE(Node);
 
 FORCE_LINK_DEF(Node);
-DEFINE_FACTORY_MANAGER(Node);
-DEFINE_FACTORY(Node, Node);
 DEFINE_OBJECT(Node);
 
 bool Node::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)

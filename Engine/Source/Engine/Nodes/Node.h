@@ -59,8 +59,6 @@ class Node : public Object
 {
 public:
 
-    DECLARE_FACTORY_MANAGER(Node);
-    DECLARE_FACTORY(Node, Node);
     DECLARE_OBJECT(Node, Object);
     DECLARE_SCRIPT_LINK_BASE(Node);
 

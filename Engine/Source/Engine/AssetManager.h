@@ -143,10 +143,10 @@ protected:
 };
 
 template<typename T>
-T* NewTransientAsset()
+SharedPtr<T> NewTransientAsset()
 {
-    T* ret = new T();
-    AssetManager::Get()->RegisterTransientAsset(ret);
+    SharedPtr<T> ret = NewObject<T>();
+    AssetManager::Get()->RegisterTransientAsset(ret.Get());
     return ret;
 
     // Caller still needs to call Create() when ready!

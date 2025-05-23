@@ -731,6 +731,9 @@
     <ClCompile Include="Source\Engine\SmartPointer.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Object.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
