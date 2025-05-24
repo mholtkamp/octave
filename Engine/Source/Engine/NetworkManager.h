@@ -64,6 +64,11 @@ public:
     bool IsSearching() const;
     const std::vector<NetSession>& GetSessions() const;
 
+    void SetReplicationInterval(float interval);
+    float GetReplicationInterval() const;
+    void EnableReliableReplication(bool reliable);
+    bool IsReliableReplicationEnabled() const;
+
     void Connect(const char* ipAddress, uint16_t port = OCT_DEFAULT_PORT);
     void Connect(uint32_t ipAddress, uint16_t port = OCT_DEFAULT_PORT);
     void Connect(const NetHost& host);
@@ -185,6 +190,7 @@ private:
     NetServer mServer;
     uint32_t mBroadcastIp = 0;
     uint32_t mMaxClients = 15;
+    uint32_t mReplicationIndex = 0;
     uint32_t mIncrementalRepIndex = 0;
     uint32_t mRelevancyUpdateIndex = 0;
     NetId mNextNetId = 1;
@@ -196,6 +202,8 @@ private:
     float mUploadRate = 0;
     float mDownloadRate = 0;
     float mRelevancyDistanceSquared = (200.0f * 200.0f);
+    float mReplicationInterval = 0.0f;
+    float mReplicationTimer = 0.0f;
     int32_t mBytesSent = 0;
     int32_t mBytesReceived = 0;
     NetHostId mHostId = INVALID_HOST_ID;
@@ -205,9 +213,10 @@ private:
     std::string mSessionName;
     bool mSearching = false;
     bool mEnableSessionBroadcast = true;
-    bool mIncrementalReplication = true;
     bool mInOnlineSession = false;
     bool mEnableNetRelevancy = false;
+    bool mEnableReliableReplication = false;
+    bool mEnableIncrementalReplication = true;
 
     ScriptableFP<NetCallbackConnectFP> mConnectCallback;
     ScriptableFP<NetCallbackAcceptFP> mAcceptCallback;

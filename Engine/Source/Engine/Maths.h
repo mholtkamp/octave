@@ -54,6 +54,7 @@ public:
     static float NormalizeRange(float value, float start, float end);
     static float Map(float inX, float inMin, float inMax, float outMin, float outMax);
     static float MapClamped(float inX, float inMin, float inMax, float outMin, float outMax);
+    static float WindRelativeAngle(float angle0, float angle1);
 
     static glm::vec3 SafeNormalize(glm::vec3 vector);
 

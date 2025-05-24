@@ -226,6 +226,19 @@ float Maths::MapClamped(float inX, float inMin, float inMax, float outMin, float
     return outX;
 }
 
+float Maths::WindRelativeAngle(float angle0, float angle1)
+{
+    float diff = angle0 - angle1;
+    float absDiff = fabs(diff);
+
+    if (absDiff > 180.0f)
+    {
+        return (angle1 + (360.0f * glm::sign(diff) * floorf((absDiff / 360.0f) + 0.5f)));
+    }
+
+    return angle1;
+}
+
 glm::vec3 Maths::SafeNormalize(glm::vec3 vector)
 {
     glm::vec3 normalizedVector = glm::vec3(0.0f, 0.0f, 0.0f);

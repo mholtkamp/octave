@@ -583,6 +583,26 @@ const std::vector<NetSession>& NetworkManager::GetSessions() const
     return sSessions;
 }
 
+void NetworkManager::SetReplicationInterval(float interval)
+{
+    mReplicationInterval = glm::max(interval, 0.0f);
+}
+
+float NetworkManager::GetReplicationInterval() const
+{
+    return mReplicationInterval;
+}
+
+void NetworkManager::EnableReliableReplication(bool reliable)
+{
+    mEnableReliableReplication = reliable;
+}
+
+bool NetworkManager::IsReliableReplicationEnabled() const
+{
+    return mEnableReliableReplication;
+}
+
 void NetworkManager::Connect(const char* ipAddress, uint16_t port)
 {
     uint32_t ipAddrInt = NET_IpStringToUint32(ipAddress);
@@ -845,12 +865,12 @@ NetStatus NetworkManager::GetNetStatus() const
 
 void NetworkManager::EnableIncrementalReplication(bool enable)
 {
-    mIncrementalReplication = enable;
+    mEnableIncrementalReplication = enable;
 }
 
 bool NetworkManager::IsIncrementalReplicationEnabled() const
 {
-    return mIncrementalReplication;
+    return mEnableIncrementalReplication && !mEnableReliableReplication;
 }
 
 void NetworkManager::SetRelevancyDistance(float dist)
@@ -1044,8 +1064,12 @@ void NetworkManager::RemoveNetNode(Node* node)
             {
                 mNetNodes.erase(mNetNodes.begin() + i);
 
-                // Adjust these indices so we don't skip a node when doing incremental replication
-                // and incremental relevancy udpates
+                // Adjust these indices so we don't skip a node when doing replication and relevancy updates
+                if (i < mReplicationIndex && i > 0)
+                {
+                    --mReplicationIndex;
+                }
+
                 if (i < mIncrementalRepIndex && i > 0)
                 {
                     --mIncrementalRepIndex;
@@ -1585,7 +1609,7 @@ void NetworkManager::UpdateReplication(float deltaTime)
 
     Node* incRepNode = nullptr;
 
-    if (mIncrementalReplication)
+    if (IsIncrementalReplicationEnabled())
     {
         if (mIncrementalRepIndex < mNetNodes.size())
         {
@@ -1621,17 +1645,45 @@ void NetworkManager::UpdateReplication(float deltaTime)
 
     // Do the replication
     uint32_t numNodesReplicated = 0;
+    float remainingDeltaTime = deltaTime;
 
-    for (uint32_t i = 0; i < mNetNodes.size(); ++i)
+    int32_t loopCount = 0;
+
+    while (loopCount < 2 && remainingDeltaTime > 0.0f)
     {
-        Node* node = mNetNodes[i];
-        bool forceRep = (node == incRepNode);
-        bool nodeReplicated = ReplicateNode(node, INVALID_HOST_ID, forceRep, false);
+        mReplicationTimer += remainingDeltaTime;
+        float repRatio = (mReplicationInterval > 0.0f) ? (mReplicationTimer / mReplicationInterval) : 1.0f;
+        repRatio = glm::clamp(repRatio, 0.0f, 1.0f);
 
-        if (nodeReplicated)
+        uint32_t startIndex = mReplicationIndex;
+        mReplicationIndex = uint32_t(repRatio * mNetNodes.size() + 0.5f);
+        mReplicationIndex = glm::clamp(mReplicationIndex, 0u, uint32_t(mNetNodes.size()));
+
+        for (uint32_t i = startIndex; i < mReplicationIndex; ++i)
         {
-            numNodesReplicated++;
+            Node* node = mNetNodes[i];
+            bool forceRep = (node == incRepNode);
+            bool nodeReplicated = ReplicateNode(node, INVALID_HOST_ID, forceRep, false);
+
+            if (nodeReplicated)
+            {
+                numNodesReplicated++;
+            }
         }
+
+        if (mReplicationTimer >= mReplicationInterval)
+        {
+            // Wrap around
+            remainingDeltaTime = (mReplicationTimer - mReplicationInterval);
+            mReplicationTimer = 0.0f;
+            mReplicationIndex = 0;
+        }
+        else
+        {
+            remainingDeltaTime = 0.0f;
+        }
+
+        loopCount++;
     }
 }
 
@@ -1695,7 +1747,7 @@ bool NetworkManager::ReplicateNode(Node* node, NetId hostId, bool force, bool re
     bool nodeReplicated = false;
     bool needsForcedRep = node->NeedsForcedReplication();
     force = (force || needsForcedRep);
-    reliable = (reliable || needsForcedRep);
+    reliable = (reliable || needsForcedRep || mEnableReliableReplication);
     sMsgReplicate.mNodeNetId = node->GetNetId();
 
     std::vector<NetDatum>& repData = node->GetReplicatedData();
