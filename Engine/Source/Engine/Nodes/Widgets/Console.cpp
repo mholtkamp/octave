@@ -127,7 +127,7 @@ void Console::SetNumOutputLines(uint32_t numLines)
             // Allocate Text widgets and parent them to this widget.
             char name[32];
             snprintf(name, 32, "Line%d", (int)i);
-            SharedPtr<ConsoleOutputText> newText = Node::ResolvePtr<ConsoleOutputText>(mOutputCanvas->CreateChild<ConsoleOutputText>(name));
+            SharedPtr<ConsoleOutputText> newText = ResolvePtr<ConsoleOutputText>(mOutputCanvas->CreateChild<ConsoleOutputText>(name));
             newText->SetText("");
             mOutputLines.push_back(newText);
         }

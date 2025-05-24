@@ -64,6 +64,11 @@ public:
     DECLARE_OBJECT(Node, Object);
     DECLARE_SCRIPT_LINK_BASE(Node);
 
+    template<typename T>
+    friend SharedPtr<T> ResolvePtr(Node*);
+    template<typename T>
+    friend WeakPtr<T> ResolveWeakPtr(Node*);
+
     static NodePtr Construct(const std::string& name);
     static NodePtr Construct(TypeId typeId);
     static void Destruct(Node* node);
@@ -258,22 +263,6 @@ public:
     void InvokeNetFunc(const char* name, const std::vector<Datum>& params);
 
     static void ProcessPendingDestroys();
-    static NodePtr ResolvePtr(Node* node);
-    static NodePtrWeak ResolveWeakPtr(Node* node);
-
-    template<typename T>
-    static SharedPtr<T> ResolvePtr(Node* node)
-    {
-        NodePtr nodePtr = node ? node->mSelf.Lock() : nullptr;
-        return PtrStaticCast<T>(nodePtr);
-    }
-
-    template<typename T>
-    static WeakPtr<T> ResolveWeakPtr(Node* node)
-    {
-        NodePtr nodePtr = node ? node->mSelf.Lock() : nullptr;
-        return PtrStaticCast<T>(nodePtr);
-    }
 
     static void RegisterNetFuncs(Node* node);
 
@@ -455,3 +444,18 @@ protected:
     bool mExposeVariable = false;
 #endif
 };
+
+// Eventually, if we move the mSelf pointer into Object, we will have to
+// move these functions also (and make them take Object* param)
+template<typename T = Node>
+SharedPtr<T> ResolvePtr(Node* node)
+{
+    NodePtr nodePtr = node ? node->mSelf.Lock() : nullptr;
+    return PtrStaticCast<T>(nodePtr);
+}
+
+template<typename T = Node>
+WeakPtr<T> ResolveWeakPtr(Node* node)
+{
+    return PtrStaticCast<T>(node ? node->mSelf : nullptr);
+}

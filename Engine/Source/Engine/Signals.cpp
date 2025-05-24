@@ -58,7 +58,7 @@ void Signal::Connect(Node* node, SignalHandlerFP func)
     if (node != nullptr)
     {
         CleanupDeadConnections();
-        NodePtrWeak nodePtrWeak = Node::ResolveWeakPtr(node);
+        NodePtrWeak nodePtrWeak = ResolveWeakPtr(node);
 
         if (mEmitting)
         {
@@ -78,7 +78,7 @@ void Signal::Connect(Node* node, const ScriptFunc& func)
     if (node != nullptr)
     {
         CleanupDeadConnections();
-        NodePtrWeak nodePtrWeak = Node::ResolveWeakPtr(node);
+        NodePtrWeak nodePtrWeak = ResolveWeakPtr(node);
 
         if (mEmitting)
         {
@@ -97,7 +97,7 @@ void Signal::Disconnect(Node* node)
 {
     if (node != nullptr)
     {
-        NodePtrWeak nodePtrWeak = Node::ResolveWeakPtr(node);
+        NodePtrWeak nodePtrWeak = ResolveWeakPtr(node);
 
         if (mEmitting)
         {

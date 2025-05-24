@@ -157,7 +157,7 @@ NodePtr Node::Construct(TypeId typeId)
 void Node::Destruct(Node* node)
 {
     // Do we need to lock a shared pointer?
-    //NodePtr lockPtr = Node::ResolvePtr(node);
+    //NodePtr lockPtr = ResolvePtr(node);
     //lockPtr->Destroy();
 
     node->Destroy();
@@ -1266,7 +1266,7 @@ void Node::AddChild(Node* child, int32_t index)
     // Ensure unique name
     ValidateUniqueChildName(child);
 
-    NodePtr childPtr = Node::ResolvePtr(child);
+    NodePtr childPtr = ResolvePtr(child);
 
     if (index >= 0 && index <= (int32_t)mChildren.size())
     {
@@ -1738,16 +1738,6 @@ void Node::ProcessPendingDestroys()
     OCT_ASSERT(sPendingDestroySet.size() == 0);
 }
 
-NodePtr Node::ResolvePtr(Node* node)
-{
-    return node ? node->mSelf.Lock() : nullptr;
-}
-
-NodePtrWeak Node::ResolveWeakPtr(Node* node)
-{
-    return node ? node->mSelf : nullptr;
-}
-
 void Node::RegisterNetFuncs(Node* node)
 {
     TypeId nodeType = node->GetType();
@@ -1838,7 +1828,7 @@ NetFunc* Node::FindNetFunc(uint16_t index)
 
 void Node::SetParent(Node* parent)
 {
-    mParent = Node::ResolveWeakPtr(parent);
+    mParent = ResolveWeakPtr(parent);
 }
 
 void Node::ValidateUniqueChildName(Node* newChild)

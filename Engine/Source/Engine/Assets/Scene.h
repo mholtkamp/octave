@@ -44,8 +44,7 @@ public:
     template<typename T>
     SharedPtr<T> Instantiate()
     {
-        NodePtr root = Instantiate();
-        return Node::template ResolvePtr<T>(root.Get());
+        return Cast<T>(Instantiate());
     }
 
     void ApplyRenderSettings(World* world);

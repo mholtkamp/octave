@@ -56,7 +56,7 @@ void Viewport2D::Update(float deltaTime)
     if (hoverWidget &&
         hoverWidget != selWidget)
     {
-        mHoveredWidget = Node::ResolveWeakPtr<Widget>(hoverWidget);
+        mHoveredWidget = ResolveWeakPtr<Widget>(hoverWidget);
     }
     else
     {

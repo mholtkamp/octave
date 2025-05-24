@@ -552,6 +552,12 @@ SharedPtr<T> PtrStaticCast(const SharedPtr<U>& src)
 }
 
 template<typename T, typename U>
+WeakPtr<T> PtrStaticCast(const WeakPtr<U>& src)
+{
+    return PtrStaticCast<T>(src.Lock());
+}
+
+template<typename T, typename U>
 SharedPtr<T> PtrDynamicCast(const SharedPtr<U>& src)
 {
     U* srcPointer = src.Get();
@@ -568,11 +574,14 @@ SharedPtr<T> PtrDynamicCast(const SharedPtr<U>& src)
         dst.Set(dstPointer, (RefCount<T>*)src.GetRefCount());
         return dst;
     }
-    else
-    {
-        return SharedPtr<T>();
-    }
 
+    return SharedPtr<T>();
+}
+
+template<typename T, typename U>
+WeakPtr<T> PtrDynamicCast(const WeakPtr<U>& src)
+{
+    return PtrDynamicCast<T>(src.Lock());
 }
 
 typedef SharedPtr<Node> NodePtr;

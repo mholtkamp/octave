@@ -81,6 +81,17 @@ SharedPtr<T> Cast(const SharedPtr<U>& object)
     return nullptr;
 }
 
+template <typename T, typename U>
+WeakPtr<T> Cast(const WeakPtr<U>& object)
+{
+    if (object && object->Is(T::ClassRuntimeId()))
+    {
+        return PtrStaticCast<T>(object);
+    }
+
+    return nullptr;
+}
+
 #define DECLARE_OBJECT(Type, ParentType)                                                                    \
     public:                                                                                                 \
         static const char* ClassRuntimeName() { return #Type; }                                             \

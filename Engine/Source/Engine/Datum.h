@@ -84,7 +84,8 @@ public:
     Datum(Asset* value);
     Datum(const AssetRef& value);
     Datum(uint8_t value);
-    Datum(Object* value);
+    Datum(const WeakPtr<Object>& value);
+    Datum(Node* value);
     Datum(int16_t value);
     Datum(const ScriptFunc& func);
 
@@ -114,7 +115,7 @@ public:
     operator Asset*() const { return GetAsset(); }
     //operator AssetRef() const; Not sure if needed??
     operator uint8_t() const { return (mType == DatumType::Integer) ? uint8_t(GetInteger()) : GetByte(); }
-    operator WeakPtr<Object>() const { return (mType == DatumType::Asset) ? ((Object*)GetAsset()) : GetObject().Get(); }
+    operator WeakPtr<Object>() const { return GetObject(); }
     operator int16_t() const { return (mType == DatumType::Integer) ? int16_t(GetInteger()) : GetShort(); }
     // ScriptFunc conversion is defined as a constructor in ScriptFunc class
 
@@ -204,7 +205,8 @@ public:
     void PushBack(Asset* value);
     void PushBack(uint8_t value);
     TableDatum* PushBackTableDatum(const TableDatum& value);
-    void PushBack(Object* value);
+    void PushBack(const WeakPtr<Object>& value);
+    void PushBack(Node* node);
     void PushBack(int16_t value);
     void PushBack(const ScriptFunc& value);
 
@@ -226,7 +228,7 @@ public:
     glm::vec3 GetVectorField(const char* key);
     glm::vec4 GetColorField(const char* key);
     Asset* GetAssetField(const char* key);
-    Object* GetObjectField(const char* key);
+    WeakPtr<Object> GetObjectField(const char* key);
     TableDatum& GetTableField(const char* key);
     ScriptFunc GetFunctionField(const char* key);
 
@@ -238,7 +240,7 @@ public:
     glm::vec3 GetVectorField(int32_t key);
     glm::vec4 GetColorField(int32_t key);
     Asset* GetAssetField(int32_t key);
-    Object* GetObjectField(int32_t key);
+    WeakPtr<Object> GetObjectField(int32_t key);
     TableDatum& GetTableField(int32_t key);
     ScriptFunc GetFunctionField(int32_t key);
 
@@ -302,6 +304,7 @@ public:
     bool operator==(const uint32_t& other) const;
     bool operator==(const uint8_t& other) const;
     bool operator==(const Object*& other) const;
+    bool operator==(const WeakPtr<Object>& other) const;
     bool operator==(const int16_t& other) const;
     bool operator==(const ScriptFunc& other) const;
 
@@ -319,6 +322,7 @@ public:
     bool operator!=(const uint32_t& other) const;
     bool operator!=(const uint8_t& other) const;
     bool operator!=(const Object*& other) const;
+    bool operator!=(const WeakPtr<Object>& other) const;
     bool operator!=(const int16_t& other) const;
     bool operator!=(const ScriptFunc& other) const;
 

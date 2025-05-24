@@ -139,7 +139,7 @@ int32_t TimerManager::SetTimer(Node* node, NodeTimerHandlerFP handler, float tim
     timerData.mId = id;
     timerData.mHandler = (void*)handler;
     timerData.mType = TimerType::Node;
-    timerData.mNode = Node::ResolvePtr(node);
+    timerData.mNode = ResolvePtr(node);
     timerData.mDuration = time;
     timerData.mLoop = loop;
     timerData.mTimeRemaining = time;

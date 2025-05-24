@@ -80,7 +80,7 @@ void NetDatum::PostReplicate()
     if (mPrevData.vp == nullptr)
     {
         OCT_ASSERT(mPrevCount == 0);
-        mPrevData.vp = malloc(mCount * GetDataTypeSize());
+        mPrevData.vp = calloc(mCount, GetDataTypeSize());
         for (uint32_t i = 0; i < mCount; ++i)
         {
             ConstructData(mPrevData, i);

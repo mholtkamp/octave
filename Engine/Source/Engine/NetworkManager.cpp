@@ -877,7 +877,7 @@ void NetworkManager::SetPawn(NetHostId id, Node* pawn)
             // Not sure if the player node will be used by the server, but
             // allow it to be set anyway, in case it's used in the future.
             // mPlayerNode is only used for net relevancy, which is done for clients only.
-            mServer.mPawn = Node::ResolveWeakPtr(pawn);
+            mServer.mPawn = ResolveWeakPtr(pawn);
         }
         else if (id != INVALID_HOST_ID)
         {
@@ -887,7 +887,7 @@ void NetworkManager::SetPawn(NetHostId id, Node* pawn)
             {
                 if (mClients[i].mHost.mId == id)
                 {
-                    mClients[i].mPawn = Node::ResolveWeakPtr(pawn);
+                    mClients[i].mPawn = ResolveWeakPtr(pawn);
 
                     wasSet = true;
                     break;

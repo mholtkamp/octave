@@ -238,7 +238,7 @@ NodePtr Scene::Instantiate()
                     existingChild->GetType() == mNodeDefs[i].mType &&
                     existingChild->GetScene() == mNodeDefs[i].mScene.Get())
                 {
-                    nodePtr = Node::ResolvePtr(existingChild);
+                    nodePtr = ResolvePtr(existingChild);
                 }
 
                 if (nodePtr != nullptr)

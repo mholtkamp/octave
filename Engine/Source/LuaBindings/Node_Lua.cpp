@@ -147,7 +147,7 @@ int Node_Lua::Create(lua_State* L, Node* node)
             // Create new userdata
             Node_Lua* nodeLua = (Node_Lua*)lua_newuserdata(L, sizeof(Node_Lua));
             new (nodeLua) Node_Lua();
-            nodeLua->mNode = Node::ResolvePtr(node);
+            nodeLua->mNode = ResolvePtr(node);
             int udIdx = lua_gettop(L);
 
             // Create a uservalue for storing script related values.

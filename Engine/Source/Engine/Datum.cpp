@@ -120,7 +120,13 @@ Datum::Datum(uint8_t value)
     PushBack(value);
 }
 
-Datum::Datum(Object* value)
+Datum::Datum(const WeakPtr<Object>& value)
+{
+    Reset();
+    PushBack(value);
+}
+
+Datum::Datum(Node* value)
 {
     Reset();
     PushBack(value);
@@ -229,7 +235,7 @@ uint32_t Datum::GetDataTypeSize() const
         case DatumType::Asset: size = sizeof(AssetRef); break;
         case DatumType::Byte: size = sizeof(uint8_t); break;
         case DatumType::Table: size = sizeof(TableDatum); break;
-        case DatumType::Object: size = sizeof(Object*); break;
+        case DatumType::Object: size = sizeof(WeakPtr<Object>); break;
         case DatumType::Short: size = sizeof(int16_t); break;
         case DatumType::Function: size = sizeof(ScriptFunc); break;
         
@@ -968,11 +974,16 @@ TableDatum* Datum::PushBackTableDatum(const TableDatum& value)
     return (mData.t + (mCount - 1));
 }
 
-void Datum::PushBack(Object* value)
+void Datum::PushBack(const WeakPtr<Object>& value)
 {
     PrePushBack(DatumType::Object);
-    new (mData.p + mCount) Object*(value);
+    new (mData.p + mCount) WeakPtr<Object>(value);
     mCount++;
+}
+
+void Datum::PushBack(Node* node)
+{
+    PushBack(ResolveWeakPtr<Object>(node));
 }
 
 void Datum::PushBack(int16_t value)
@@ -1189,7 +1200,7 @@ DEFINE_SET_FIELD(const char*, Vector2D, glm::vec2)
 DEFINE_SET_FIELD(const char*, Vector, glm::vec3)
 DEFINE_SET_FIELD(const char*, Color, glm::vec4)
 DEFINE_SET_FIELD(const char*, Asset, Asset*)
-DEFINE_SET_FIELD(const char*, Object, WeakPtr<Object>)
+DEFINE_SET_FIELD(const char*, Object, const WeakPtr<Object>&)
 DEFINE_SET_FIELD(const char*, Function, const ScriptFunc&)
 
 DEFINE_SET_FIELD(int32_t, Integer, int32_t)
@@ -1200,7 +1211,7 @@ DEFINE_SET_FIELD(int32_t, Vector2D, glm::vec2)
 DEFINE_SET_FIELD(int32_t, Vector, glm::vec3)
 DEFINE_SET_FIELD(int32_t, Color, glm::vec4)
 DEFINE_SET_FIELD(int32_t, Asset, Asset*)
-DEFINE_SET_FIELD(int32_t, Object, WeakPtr<Object>)
+DEFINE_SET_FIELD(int32_t, Object, const WeakPtr<Object>&)
 DEFINE_SET_FIELD(int32_t, Function, const ScriptFunc&)
 
 void Datum::SetTableField(const char* key, const TableDatum& value)
@@ -1544,6 +1555,17 @@ bool Datum::operator==(const Object*& other) const
     return mData.p[0] == other;
 }
 
+bool Datum::operator==(const WeakPtr<Object>& other) const
+{
+    if (mCount == 0 ||
+        mType != DatumType::Object)
+    {
+        return false;
+    }
+
+    return mData.p[0] == other;
+}
+
 bool Datum::operator==(const int16_t& other) const
 {
     if (mCount == 0 ||
@@ -1627,6 +1649,11 @@ bool Datum::operator!=(const uint8_t& other) const
 }
 
 bool Datum::operator!=(const Object*& other) const
+{
+    return !operator==(other);
+}
+
+bool Datum::operator!=(const WeakPtr<Object>& other) const
 {
     return !operator==(other);
 }
