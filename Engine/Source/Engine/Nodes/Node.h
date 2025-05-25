@@ -64,11 +64,6 @@ public:
     DECLARE_OBJECT(Node, Object);
     DECLARE_SCRIPT_LINK_BASE(Node);
 
-    template<typename T>
-    friend SharedPtr<T> ResolvePtr(Node*);
-    template<typename T>
-    friend WeakPtr<T> ResolveWeakPtr(Node*);
-
     static NodePtr Construct(const std::string& name);
     static NodePtr Construct(TypeId typeId);
     static void Destruct(Node* node);
@@ -266,6 +261,8 @@ public:
 
     static void RegisterNetFuncs(Node* node);
 
+    const WeakPtr<Node>& GetSelfPtr() const { return mSelf; }
+
     template<typename T>
     T* FindChild(const std::string& name, bool recurse)
     {
@@ -450,12 +447,12 @@ protected:
 template<typename T = Node>
 SharedPtr<T> ResolvePtr(Node* node)
 {
-    NodePtr nodePtr = node ? node->mSelf.Lock() : nullptr;
+    NodePtr nodePtr = node ? node->GetSelfPtr().Lock() : nullptr;
     return PtrStaticCast<T>(nodePtr);
 }
 
 template<typename T = Node>
 WeakPtr<T> ResolveWeakPtr(Node* node)
 {
-    return PtrStaticCast<T>(node ? node->mSelf : nullptr);
+    return PtrStaticCast<T>(node ? node->GetSelfPtr() : nullptr);
 }

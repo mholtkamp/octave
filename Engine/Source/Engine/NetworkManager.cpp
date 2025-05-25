@@ -1664,7 +1664,7 @@ void NetworkManager::UpdateReplication(float deltaTime)
 
         uint32_t startIndex = mReplicationIndex;
         mReplicationIndex = uint32_t(repRatio * mNetNodes.size() + 0.5f);
-        mReplicationIndex = glm::clamp(mReplicationIndex, 0u, uint32_t(mNetNodes.size()));
+        mReplicationIndex = glm::clamp<uint32_t>(mReplicationIndex, 0u, uint32_t(mNetNodes.size()));
 
         for (uint32_t i = startIndex; i < mReplicationIndex; ++i)
         {
