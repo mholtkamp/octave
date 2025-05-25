@@ -345,12 +345,13 @@ int Network_Lua::EnableIncrementalReplication(lua_State* L)
     return 0;
 }
 
-int Network_Lua::IsIncrementalReplicationEnabled(lua_State* L)
+int Network_Lua::EnableReliableReplication(lua_State* L)
 {
-    bool ret = NetworkManager::Get()->IsIncrementalReplicationEnabled();
+    bool value = CHECK_BOOLEAN(L, 1);
 
-    lua_pushboolean(L, ret);
-    return 1;
+    NetworkManager::Get()->EnableReliableReplication(value);
+
+    return 0;
 }
 
 int Network_Lua::GetBytesSent(lua_State* L)
@@ -557,7 +558,7 @@ void Network_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, tableIdx, EnableIncrementalReplication);
 
-    REGISTER_TABLE_FUNC(L, tableIdx, IsIncrementalReplicationEnabled);
+    REGISTER_TABLE_FUNC(L, tableIdx, EnableReliableReplication);
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetBytesSent);
 

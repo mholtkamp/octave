@@ -167,11 +167,11 @@ Set whether incremental replication should be used.
 Sig: `Network.EnableIncrementalReplication(enable)`
  - Arg: `boolean enable` Enable incremental replication
 ---
-### IsIncrementalReplicationEnabled
-Check whether incremental replication is enabled.
+### EnableReliableReplication
+Set whether all replication should be sent using reliable messaging, meaning replicated state is guaranteed to eventually be received and in order that the state updates happen. This may result in lag spikes if there is a lot of data being replicated.
 
-Sig: `enabled = Network.IsIncrementalReplicationEnabled()`
- - Ret: `boolean enabled` Incremental replication enabled
+Sig: `Network.EnableReliableReplication(enable)`
+ - Arg: `boolean enable` Enable reliable replication
 ---
 ### GetBytesSent
 Get the number of bytes sent over the network this frame.
