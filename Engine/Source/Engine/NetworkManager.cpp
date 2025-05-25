@@ -999,6 +999,12 @@ void NetworkManager::AddNetNode(Node* node, NetId netId)
     OCT_ASSERT(node != nullptr);
     OCT_ASSERT(node->GetNetId() == INVALID_NET_ID);
 
+    if (node->GetNetId() != INVALID_NET_ID)
+    {
+        LogWarning("Failed to add node to network. Already has NetId.");
+        return;
+    }
+
     if (node->IsReplicated())
     {
         // Gather net functions (even if local)
@@ -1037,9 +1043,7 @@ void NetworkManager::AddNetNode(Node* node, NetId netId)
                 }
             }
         }
-
     }
-
 }
 
 void NetworkManager::RemoveNetNode(Node* node)
@@ -1345,6 +1349,7 @@ void NetworkManager::HandleReady(NetHost host)
             {
                 if (node->IsReplicated())
                 {
+                    //UpdateNodeRelevancy(node);
                     ReplicateNode(node, client->mHost.mId, true, true);
                     return true;
                 }
@@ -1531,12 +1536,14 @@ void NetworkManager::SendSpawnMessage(Node* node, NetClient* client)
     if (client == nullptr)
     {
         SendMessageToAllClients(&spawnMsg);
-        SetIdRelevantToClient(spawnMsg.mNetId, true, INVALID_NET_ID);
+        SetIdRelevantToClient(spawnMsg.mNetId, true, INVALID_HOST_ID);
+        ReplicateNode(node, INVALID_HOST_ID, true, true);
     }
     else
     {
         SendMessage(&spawnMsg, client);
         SetIdRelevantToClient(spawnMsg.mNetId, true, client->mHost.mId);
+        ReplicateNode(node, client->mHost.mId, true, true);
     }
 }
 

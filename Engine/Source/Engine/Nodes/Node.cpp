@@ -390,7 +390,12 @@ void Node::Start()
             {
                 // The server will add the net node as soon as Start() is called.
                 // On the client, the net node will be added once the NetMsgSpawnNode is executed.
-                NetworkManager::Get()->AddNetNode(this, INVALID_NET_ID);
+                // Technically if a node is spawned on the same frame that a session opens,
+                // it may be added to the network before its own Start() is called.
+                if (mNetId == INVALID_NET_ID)
+                {
+                    NetworkManager::Get()->AddNetNode(this, INVALID_NET_ID);
+                }
 
                 // Send a reliable forced replication message to ensure the initial state
                 // is received by the clients.
@@ -961,16 +966,19 @@ NetHostId Node::GetOwningHost() const
 
 void Node::SetOwningHost(NetHostId hostId, bool setAsPawn)
 {
-    mOwningHost = hostId;
-
     if (setAsPawn)
     {
         NetworkManager::Get()->SetPawn(hostId, this);
     }
 
-    if (mScript != nullptr)
+    if (mOwningHost != hostId)
     {
-        mScript->CallFunction("OwnerChanged");
+        mOwningHost = hostId;
+
+        if (mScript != nullptr)
+        {
+            mScript->CallFunction("OwnerChanged");
+        }
     }
 }
 
