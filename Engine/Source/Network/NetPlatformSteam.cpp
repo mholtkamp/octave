@@ -29,6 +29,8 @@ void SteamAPIDebugTextHook(int nSeverity, const char* pchDebugText)
 // Lifecycle
 bool NetPlatformSteam::Create()
 {
+	LogDebug("Initializing NetPlatformSteam");
+
 	SteamErrMsg errMsg = { 0 };
 	if (SteamAPI_InitEx(&errMsg) != k_ESteamAPIInitResult_OK)
 	{

@@ -344,6 +344,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     std::string buildProjName = standalone ? "Standalone" : projectName;
     std::string buildProjDir = standalone ? "Standalone/" : projectDir;
     std::string buildDstExeName = standalone ? "Octave" : projectName;
+    bool useSteam = GetEngineConfig()->mPackageForSteam;
 
     if (needCompile)
     {
@@ -360,8 +361,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             }
 
             std::string devenvCmd;
-
-            if (GetEngineConfig()->mPackageForSteam)
+            if (useSteam)
             {
                 devenvCmd = std::string("devenv ") + solutionPath + " /Build \"ReleaseSteam|x64\" /Project " + buildProjName;
             }
@@ -441,7 +441,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     switch (platform)
     {
-    case Platform::Windows: exeSrc += "Windows/x64/Release/"; break;
+    case Platform::Windows:exeSrc += (useSteam ? "Windows/x64/ReleaseSteam/" : "Windows/x64/Release/"); break;
     case Platform::Linux: exeSrc += "Linux/"; break;
     case Platform::Android: exeSrc += "Android/app/build/outputs/apk/release/"; break;
     case Platform::GameCube: exeSrc += "GCN/"; break;
@@ -477,8 +477,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         SYS_Exec(renameCmd.c_str());
     }
 
-    if (platform == Platform::Windows &&
-        GetEngineConfig()->mPackageForSteam)
+    if (platform == Platform::Windows && useSteam)
     {
         // (1) Copy over redistributable DLL
         std::string cpSteamDllCmd1 = std::string("cp ") + projectDir + (standalone ? "../" : "../Octave/") + "External/Steam/redistributable_bin/win64/steam_api64.dll " + packagedDir;
