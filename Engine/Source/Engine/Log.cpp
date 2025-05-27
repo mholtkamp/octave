@@ -10,11 +10,43 @@ static bool sInitialized = false;
 static MutexObject* sMutex = nullptr;
 static bool sLoggingEnabled = false;
 
+static void OpenLogFile()
+{
+    EngineState* engineState = GetEngineState();
+
+    if (engineState->mLogFile == nullptr)
+    {
+        std::string projName = engineState->mProjectName;
+        if (projName == "")
+        {
+            projName = "Octave";
+        }
+        std::string logName = projName + ".log";
+        engineState->mLogFile = fopen(logName.c_str(), "w");
+    }
+}
+
+static void CloseLogFile()
+{
+    EngineState* engineState = GetEngineState();
+    if (engineState->mLogFile != nullptr)
+    {
+        fclose(engineState->mLogFile);
+        engineState->mLogFile = nullptr;
+    }
+}
+
 void InitializeLog()
 {
     if (!sInitialized)
     {
         sMutex = SYS_CreateMutex();
+
+        if (GetEngineConfig()->mLogToFile)
+        {
+            OpenLogFile();
+        }
+
         sInitialized = true;
     }
 
@@ -31,11 +63,32 @@ void ShutdownLog()
     if (sInitialized)
     {
         sInitialized = false;
+
         SYS_DestroyMutex(sMutex);
         sMutex = nullptr;
+
+        CloseLogFile();
     }
 }
 
+void LogToFile(const char* format, va_list arg)
+{
+    FILE* logFile = GetEngineState()->mLogFile;
+    if (logFile)
+    {
+        vfprintf(logFile, format, arg);
+        fprintf(logFile, "\n");
+    }
+}
+
+#define LOG_TO_FILE() \
+    if (GetEngineConfig()->mLogToFile) \
+    { \
+        va_list argptr; \
+        va_start(argptr, format); \
+        LogToFile(format, argptr); \
+        va_end(argptr); \
+    }
 
 void EnableLog(bool enable)
 {
@@ -109,7 +162,9 @@ void LogDebug(const char* format, ...)
 
         va_end(argptr);
     }
-    
+
+    LOG_TO_FILE();
+
     UnlockLog();
 #endif
 }
@@ -142,7 +197,9 @@ void LogWarning(const char* format, ...)
 
         va_end(argptr);
     }
-    
+
+    LOG_TO_FILE();
+
     UnlockLog();
 #endif
 }
@@ -174,7 +231,9 @@ void LogError(const char* format, ...)
 
         va_end(argptr);
     }
-    
+
+    LOG_TO_FILE();
+
     UnlockLog();
 
 #endif

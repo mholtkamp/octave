@@ -260,6 +260,7 @@ struct EngineConfig
     bool mPackageForSteam = false;
     bool mUseAssetRegistry = false;
     bool mStandalone = false;
+    bool mLogToFile = false;
 
     struct EmbeddedFile* mEmbeddedAssets = nullptr;
     uint32_t mEmbeddedAssetCount = 0;
@@ -299,6 +300,7 @@ struct EngineState
     bool mFrameStep = false;
     bool mInitialized = false;
     bool mSuspended = false;
+    FILE* mLogFile = nullptr;
 
 #if LUA_ENABLED
     lua_State* mLua = nullptr;

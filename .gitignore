@@ -23,6 +23,7 @@ xaudio2_9redist.dll
 steam_api64.dll
 sdkencryptedappticket64.dll
 steam_appid.txt
+Engine.ini
 
 # User-specific files
 *.suo

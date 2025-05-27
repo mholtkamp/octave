@@ -150,15 +150,34 @@ void ReadEngineIni()
         char key[MAX_PATH_SIZE] = {};
         char value[MAX_PATH_SIZE] = {};
 
+        std::string keyStr;
+        std::string valueStr;
+
+        auto strToBool = [](const std::string& str)
+        {
+            if (str == "true") return true;
+            if (str == "false") return false;
+
+            int32_t intVal = atoi(str.c_str());
+            return (intVal != 0);
+        };
+
         while (iniStream.Scan("%[^=]=%s\n", key, value) != -1)
         {
-            if (strncmp(key, "project", MAX_PATH_SIZE) == 0)
+            keyStr = key;
+            valueStr = value;
+
+            if (keyStr == "project")
             {
                 sEngineConfig.mProjectName = value;
             }
-            else if (strncmp(key, "defaultScene", MAX_PATH_SIZE) == 0)
+            else if (keyStr == "defaultScene")
             {
                 sEngineConfig.mDefaultScene = value;
+            }
+            else if (keyStr == "logToFile")
+            {
+                sEngineConfig.mLogToFile = strToBool(value);
             }
         }
     }
