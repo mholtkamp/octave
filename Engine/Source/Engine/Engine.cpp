@@ -91,6 +91,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(StatsOverlay);
     FORCE_LINK_CALL(Text);
     FORCE_LINK_CALL(Widget);
+    FORCE_LINK_CALL(Button);
 }
 
 void ReadCommandLineArgs(int32_t argc, char** argv)

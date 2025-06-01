@@ -26,6 +26,8 @@ public:
 
     DECLARE_NODE(Text, Widget);
 
+    friend class Button;
+
     Text();
     virtual ~Text();
 
@@ -35,6 +37,7 @@ public:
     TextResource* GetResource();
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
+    void GatherTextProperties(std::vector<Property>& outProps);
 
     virtual DrawData GetDrawData() override;
 

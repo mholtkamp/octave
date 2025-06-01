@@ -435,10 +435,10 @@ public:
     // Could consider moving this up to Node if it would be useful from avoiding FindChild() calls in Start().
     bool ShouldExposeVariable() const;
     void SetExposeVariable(bool expose);
-
-protected:
+    bool AreAllChildrenHiddenInTree() const;
 
     bool mExposeVariable = false;
+    bool mHiddenInTree = false;
 #endif
 };
 

@@ -1323,6 +1323,8 @@ static void DrawSpawnBasicWidgetMenu(Node* node)
         widgetTypeName = "Quad";
     if (ImGui::MenuItem("Text"))
         widgetTypeName = "Text";
+    if (ImGui::MenuItem("Button"))
+        widgetTypeName = "Button";
 
     if (widgetTypeName != nullptr)
     {
@@ -1413,7 +1415,9 @@ static void DrawScenePanel()
             nodeFlags |= ImGuiTreeNodeFlags_Selected;
         }
 
-        if (node->GetNumChildren() == 0 || nodeSceneLinked)
+        if (node->GetNumChildren() == 0 || 
+            node->AreAllChildrenHiddenInTree() ||
+            nodeSceneLinked)
         {
             nodeFlags |= ImGuiTreeNodeFlags_Leaf;
         }
@@ -1602,7 +1606,10 @@ static void DrawScenePanel()
                 for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
                 {
                     Node* child = node->GetChild(i);
-                    drawTree(child);
+                    if (!child->mHiddenInTree)
+                    {
+                        drawTree(child);
+                    }
                 }
             }
 

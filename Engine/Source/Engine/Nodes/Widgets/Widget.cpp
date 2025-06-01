@@ -17,7 +17,7 @@
 FORCE_LINK_DEF(Widget);
 DEFINE_NODE(Widget, Node);
 
-static const char* sAnchorModeStrings[] =
+const char* Widget::sAnchorModeStrings[] =
 {
     "Top Left",
     "Top Mid",

@@ -731,6 +731,9 @@
     <ClCompile Include="Source\Engine\SmartPointer.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Button.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1381,6 +1384,9 @@
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\ArrayWidget.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Button.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
   </ItemGroup>

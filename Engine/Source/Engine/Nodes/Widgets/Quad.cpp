@@ -64,9 +64,13 @@ QuadResource* Quad::GetResource()
 void Quad::GatherProperties(std::vector<Property>& outProps)
 {
     Widget::GatherProperties(outProps);
-
+    
     SCOPED_CATEGORY("Quad");
+    GatherQuadProperties(outProps);
+}
 
+void Quad::GatherQuadProperties(std::vector<Property>& outProps)
+{
     outProps.push_back(Property(DatumType::Asset, "Texture", this, &mTexture, 1, Quad::HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Vector2D, "UV Scale", this, &mUvScale, 1, Quad::HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "UV Offset", this, &mUvOffset, 1, Quad::HandlePropChange));

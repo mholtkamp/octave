@@ -139,7 +139,11 @@ void Text::GatherProperties(std::vector<Property>& outProps)
     Widget::GatherProperties(outProps);
 
     SCOPED_CATEGORY("Text");
+    GatherTextProperties(outProps);
+}
 
+void Text::GatherTextProperties(std::vector<Property>& outProps)
+{
     outProps.push_back(Property(DatumType::Asset, "Font", this, &mFont, 1, Text::HandlePropChange, int32_t(Font::GetStaticType())));
     outProps.push_back(Property(DatumType::String, "Text", this, &mText, 1, Text::HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Text Size", this, &mTextSize, 1, Text::HandlePropChange));

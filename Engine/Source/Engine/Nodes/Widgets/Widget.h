@@ -176,6 +176,7 @@ public:
 protected:
 
     static WeakPtr<Widget> sWidgetToClean;
+    static const char* sAnchorModeStrings[];
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 

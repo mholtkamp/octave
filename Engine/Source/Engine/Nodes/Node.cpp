@@ -1928,4 +1928,15 @@ void Node::SetExposeVariable(bool expose)
     mExposeVariable = expose;
 }
 
+bool Node::AreAllChildrenHiddenInTree() const
+{
+    for (uint32_t i = 0; i < mChildren.size(); ++i)
+    {
+        if (!mChildren[i]->mHiddenInTree)
+            return false;
+    }
+
+    return true;
+}
+
 #endif

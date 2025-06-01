@@ -538,7 +538,7 @@ Widget* Viewport2D::FindHoveredWidget(Node* node, uint32_t& maxDepth, int32_t mo
     Widget* retWidget = nullptr;
     Widget* widget = node->As<Widget>();
 
-    if (widget)
+    if (widget && !widget->mHiddenInTree)
     {
         Rect rect = widget->GetRect();
 

@@ -13,6 +13,8 @@ public:
 
     DECLARE_NODE(Quad, Widget);
 
+    friend class Button;
+
     Quad();
     virtual ~Quad();
 
@@ -22,6 +24,7 @@ public:
     QuadResource* GetResource();
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
+    void GatherQuadProperties(std::vector<Property>& outProps);
 
     virtual DrawData GetDrawData() override;
 
