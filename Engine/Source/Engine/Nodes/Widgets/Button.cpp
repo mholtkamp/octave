@@ -5,6 +5,9 @@
 #include "InputDevices.h"
 #include "Engine.h"
 #include "Renderer.h"
+#include "Script.h"
+#include "ScriptUtils.h"
+#include "LuaBindings/Node_Lua.h"
 
 FORCE_LINK_DEF(Button);
 DEFINE_NODE(Button, Widget);
@@ -12,6 +15,7 @@ DEFINE_NODE(Button, Widget);
 // Button that can be "selected" programmatically
 // Will not become unhovered when mouse is off of it.
 WeakPtr<Button> Button::sSelectedButton;
+static bool sUpdatingMouse = false;
 
 bool Button::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
@@ -105,6 +109,8 @@ void Button::Tick(float deltaTime)
         mState != ButtonState::Locked &&
         ShouldHandleInput())
     {
+        sUpdatingMouse = true;
+
         const bool containsMouse = ContainsMouse();
         const bool mouseDown = IsMouseButtonDown(MOUSE_LEFT) || (mRightClickPress && IsMouseButtonDown(MOUSE_RIGHT));
         const bool mouseJustDown = IsMouseButtonJustDown(MOUSE_LEFT) || (mRightClickPress && IsMouseButtonJustDown(MOUSE_RIGHT));
@@ -115,6 +121,7 @@ void Button::Tick(float deltaTime)
             if (mouseJustUp &&
                 mState == ButtonState::Pressed)
             {
+                Activate();
                 SetState(ButtonState::Hovered);
             }
             else if (mouseJustDown)
@@ -130,6 +137,8 @@ void Button::Tick(float deltaTime)
         {
             SetState(ButtonState::Normal);
         }
+
+        sUpdatingMouse = false;
     }
 }
 
@@ -207,16 +216,25 @@ void Button::SetState(ButtonState newState)
 
         if (newState == ButtonState::Hovered)
         {
-            if (oldState == ButtonState::Pressed)
-            {
-                Activate();
-            }
-
             EmitSignal("Hovered", {});
         }
         else if (newState == ButtonState::Pressed)
         {
             EmitSignal("Pressed", {});
+        }
+
+        if (!sUpdatingMouse)
+        {
+            bool selected = (mState == ButtonState::Hovered || mState == ButtonState::Pressed);
+            if (selected)
+            {
+                sSelectedButton = ResolveWeakPtr<Button>(this);
+            }
+            else if (sSelectedButton == this)
+            {
+                // This button was programmatically selected, now it isn't.
+                sSelectedButton = nullptr;
+            }
         }
     }
 }
@@ -341,15 +359,7 @@ Quad* Button::GetQuad()
 void Button::Activate()
 {
     EmitSignal("Activated", {});
+    Datum selfArg = this;
+    const Datum* args[] = { &selfArg };
+    ScriptUtils::CallMethod(this, "OnActivated", OCT_ARRAY_SIZE(args), args, nullptr);
 }
-
-void Button::SetSelectedButton(Button* button)
-{
-    sSelectedButton = ResolveWeakPtr<Button>(button);
-}
-
-Button* Button::GetSelectedButton()
-{
-    return sSelectedButton.Get();
-}
-

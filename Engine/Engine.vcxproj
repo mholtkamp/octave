@@ -742,6 +742,7 @@
     <ClCompile Include="Source\LuaBindings\Audio3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Audio_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Box3d_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Button_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Camera3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Canvas_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Capsule3d_Lua.cpp" />
@@ -981,6 +982,7 @@
     <ClInclude Include="Source\LuaBindings\Audio3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Audio_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Box3d_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\Button_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Camera3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Canvas_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Capsule3d_Lua.h" />

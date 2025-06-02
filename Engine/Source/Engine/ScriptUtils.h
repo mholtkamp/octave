@@ -25,6 +25,7 @@ public:
     static uint32_t GetNextScriptInstanceNumber();
 
     static void CallMethod(Script* script, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret);
+    static void CallMethod(Node* node, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret);
     static void SetBreakOnScriptError(bool enableBreak);
 
     static void GarbageCollect();

@@ -48,6 +48,7 @@
 #include "LuaBindings/Widget_Lua.h"
 #include "LuaBindings/Quad_Lua.h"
 #include "LuaBindings/Text_Lua.h"
+#include "LuaBindings/Button_Lua.h"
 #include "LuaBindings/Canvas_Lua.h"
 #include "LuaBindings/Poly_Lua.h"
 #include "LuaBindings/PolyRect_Lua.h"
@@ -117,6 +118,7 @@ void BindLuaInterface()
     Widget_Lua::Bind();
     Quad_Lua::Bind();
     Text_Lua::Bind();
+    Button_Lua::Bind();
     Canvas_Lua::Bind();
     Poly_Lua::Bind();
     PolyRect_Lua::Bind();

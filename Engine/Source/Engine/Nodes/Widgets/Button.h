@@ -66,9 +66,6 @@ protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
-    static void SetSelectedButton(Button* button);
-    static Button* GetSelectedButton();
-
     TextureRef mNormalTexture;
     TextureRef mHoveredTexture;
     TextureRef mPressedTexture;

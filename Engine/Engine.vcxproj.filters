@@ -734,6 +734,9 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\Button.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Button_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1388,6 +1391,9 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\Button.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Button_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -311,10 +311,15 @@ uint32_t ScriptUtils::GetNextScriptInstanceNumber()
 
 void ScriptUtils::CallMethod(Script* script, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret)
 {
-#if LUA_ENABLED
+    Node* node = script ? script->GetOwner() : nullptr;
+    CallMethod(node, funcName, numParams, params, ret);
+}
+
+void ScriptUtils::CallMethod(Node* node, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret)
+{
     lua_State* L = GetLua();
 
-    Node_Lua::Create(L, script->GetOwner());
+    Node_Lua::Create(L, node);
     OCT_ASSERT(lua_isuserdata(L, -1));
     lua_getfield(L, -1, funcName);
 
@@ -345,7 +350,6 @@ void ScriptUtils::CallMethod(Script* script, const char* funcName, uint32_t numP
     }
 
     lua_pop(L, 1);
-#endif
 }
 
 void ScriptUtils::SetBreakOnScriptError(bool enableBreak)
