@@ -2,6 +2,7 @@
 
 #include "Nodes/Widgets/Widget.h"
 #include "Nodes/Widgets/Text.h"
+#include "Nodes/Widgets/Button.h"
 
 #include "Nodes/3D/Particle3d.h"
 
@@ -416,6 +417,31 @@ void BindCullMode()
     OCT_ASSERT(lua_gettop(L) == 0);
 }
 
+void BindButtonState()
+{
+    lua_State* L = GetLua();
+    OCT_ASSERT(lua_gettop(L) == 0);
+
+    lua_newtable(L);
+    int tableIdx = lua_gettop(L);
+
+    lua_pushinteger(L, (int)ButtonState::Normal);
+    lua_setfield(L, tableIdx, "Normal");
+
+    lua_pushinteger(L, (int)ButtonState::Hovered);
+    lua_setfield(L, tableIdx, "Hovered");
+
+    lua_pushinteger(L, (int)ButtonState::Pressed);
+    lua_setfield(L, tableIdx, "Pressed");
+
+    lua_pushinteger(L, (int)ButtonState::Locked);
+    lua_setfield(L, tableIdx, "Locked");
+
+    lua_setglobal(L, "ButtonState");
+
+    OCT_ASSERT(lua_gettop(L) == 0);
+}
+
 void Misc_Lua::BindMisc()
 {
     BindBlendMode();
@@ -431,6 +457,7 @@ void Misc_Lua::BindMisc()
     BindNetConstants();
     BindAttenuationFunc();
     BindCullMode();
+    BindButtonState();
 }
 
 #endif

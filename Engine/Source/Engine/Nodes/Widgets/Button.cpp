@@ -132,6 +132,9 @@ void Button::Tick(float deltaTime)
             {
                 SetState(ButtonState::Hovered);
             }
+
+            // Override selected button when using mouse
+            sSelectedButton = nullptr;
         }
         else if (sSelectedButton != this)
         {
