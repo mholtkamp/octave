@@ -1644,6 +1644,8 @@ static void DrawScenePanel()
         ImGui::PopStyleVar();
     }
 
+    bool setKeyboardFocus = false;
+
     // If no popup is open and we aren't inputting text...
     if (!ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup) &&
         ImGui::IsWindowHovered() &&
@@ -1689,8 +1691,31 @@ static void DrawScenePanel()
             {
                 am->DuplicateNodes(selNodes);
             }
+            else if (!ctrlDown && IsKeyJustDown(KEY_F2))
+            {
+                ImGui::OpenPopup("Rename Node F2");
+                strncpy(sPopupInputBuffer, selNodes[0]->GetName().c_str(), kPopupInputBufferSize);
+                setKeyboardFocus = true;
+            }
+        }
+    }
+
+    if (ImGui::BeginPopup("Rename Node F2"))
+    {
+        if (setKeyboardFocus)
+        {
+            ImGui::SetKeyboardFocusHere();
         }
 
+        if (ImGui::InputText("Node Name F2", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
+            std::string newName = sPopupInputBuffer;
+            am->EXE_EditProperty(selNodes[0], PropertyOwnerType::Node, "Name", 0, newName);
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
     }
 
     if (ImGui::BeginPopup("Null Node Context"))
