@@ -16,7 +16,6 @@ DEFINE_NODE(Button, Widget);
 // Will not become unhovered when mouse is off of it.
 WeakPtr<Button> Button::sSelectedButton;
 bool Button::sHandleMouseInput = true;
-static bool sUpdatingMouse = false;
 
 Button* Button::GetSelectedButton()
 {
@@ -27,12 +26,13 @@ void Button::SetSelectedButton(Button* button)
 {
     if (sSelectedButton != button)
     {
-        if (sSelectedButton != nullptr)
-        {
-            sSelectedButton->SetState(ButtonState::Normal);
-        }
-
+        Button* oldSel = sSelectedButton.Get();
         sSelectedButton = ResolvePtr<Button>(button);
+
+        if (oldSel != nullptr)
+        {
+            oldSel->SetState(ButtonState::Normal);
+        }
 
         if (sSelectedButton)
         {
@@ -132,8 +132,6 @@ void Button::Tick(float deltaTime)
         mState != ButtonState::Locked &&
         ShouldHandleInput())
     {
-        sUpdatingMouse = true;
-
         const bool containsMouse = ContainsMouse();
         const bool mouseDown = IsMouseButtonDown(MOUSE_LEFT) || (mRightClickPress && IsMouseButtonDown(MOUSE_RIGHT));
         const bool mouseJustDown = IsMouseButtonJustDown(MOUSE_LEFT) || (mRightClickPress && IsMouseButtonJustDown(MOUSE_RIGHT));
@@ -162,8 +160,6 @@ void Button::Tick(float deltaTime)
         {
             sSelectedButton->SetState(ButtonState::Hovered);
         }
-
-        sUpdatingMouse = false;
     }
 }
 
@@ -239,20 +235,9 @@ void Button::SetState(ButtonState newState)
         mState = newState;
         MarkDirty();
 
-        EmitSignal("StateChanged", { this });
-
-        if (!sUpdatingMouse)
+        if (!IsDestroyed())
         {
-            bool selected = (mState == ButtonState::Hovered || mState == ButtonState::Pressed);
-            if (selected)
-            {
-                sSelectedButton = ResolveWeakPtr<Button>(this);
-            }
-            else if (sSelectedButton == this)
-            {
-                // This button was programmatically selected, now it isn't.
-                sSelectedButton = nullptr;
-            }
+            EmitSignal("StateChanged", { this });
         }
     }
 }
