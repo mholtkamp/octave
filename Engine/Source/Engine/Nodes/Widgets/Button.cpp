@@ -217,14 +217,7 @@ void Button::SetState(ButtonState newState)
         mState = newState;
         MarkDirty();
 
-        if (newState == ButtonState::Hovered)
-        {
-            EmitSignal("Hovered", {});
-        }
-        else if (newState == ButtonState::Pressed)
-        {
-            EmitSignal("Pressed", {});
-        }
+        EmitSignal("StateChanged", { this });
 
         if (!sUpdatingMouse)
         {
