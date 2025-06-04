@@ -53,12 +53,11 @@ int Button_Lua::GetState(lua_State* L)
     return 1;
 }
 
-int Button_Lua::SetState(lua_State* L)
+int Button_Lua::SetLocked(lua_State* L)
 {
     Button* button = CHECK_BUTTON(L, 1);
-    int32_t value = CHECK_INTEGER(L, 2);
 
-    button->SetState((ButtonState)value);
+    button->SetState(ButtonState::Locked);
 
     return 0;
 }
@@ -154,7 +153,7 @@ void Button_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, EnableMouseHandling);
     REGISTER_TABLE_FUNC(L, mtIndex, Activate);
     REGISTER_TABLE_FUNC(L, mtIndex, GetState);
-    REGISTER_TABLE_FUNC(L, mtIndex, SetState);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetLocked);
     REGISTER_TABLE_FUNC(L, mtIndex, SetTextString);
     REGISTER_TABLE_FUNC(L, mtIndex, GetTextString);
     REGISTER_TABLE_FUNC(L, mtIndex, SetStateTextures);

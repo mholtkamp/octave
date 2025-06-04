@@ -20,7 +20,7 @@ struct Button_Lua
     static int EnableMouseHandling(lua_State* L);
     static int Activate(lua_State* L);
     static int GetState(lua_State* L);
-    static int SetState(lua_State* L);
+    static int SetLocked(lua_State* L);
     static int SetTextString(lua_State* L);
     static int GetTextString(lua_State* L);
     static int SetStateTextures(lua_State* L);
