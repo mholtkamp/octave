@@ -15,7 +15,31 @@ DEFINE_NODE(Button, Widget);
 // Button that can be "selected" programmatically
 // Will not become unhovered when mouse is off of it.
 WeakPtr<Button> Button::sSelectedButton;
+bool Button::sHandleMouseInput = true;
 static bool sUpdatingMouse = false;
+
+Button* Button::GetSelectedButton()
+{
+    return sSelectedButton.Get();
+}
+
+void Button::SetSelectedButton(Button* button)
+{
+    if (sSelectedButton != button)
+    {
+        if (sSelectedButton != nullptr)
+        {
+            sSelectedButton->SetState(ButtonState::Normal);
+        }
+
+        sSelectedButton = ResolvePtr<Button>(button);
+
+        if (sSelectedButton)
+        {
+            sSelectedButton->SetState(ButtonState::Hovered);
+        }
+    }
+}
 
 bool Button::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
@@ -79,7 +103,6 @@ void Button::GatherProperties(std::vector<Property>& props)
 
         props.push_back(Property(DatumType::Bool, "Text State Color", this, &mUseTextStateColor, 1, HandlePropChange));
         props.push_back(Property(DatumType::Bool, "Quad State Color", this, &mUseQuadStateColor, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Bool, "Handle Mouse", this, &mHandleMouseInput, 1, HandlePropChange));
         props.push_back(Property(DatumType::Bool, "Auto Size Text", this, &mAutoSizeText, 1, HandlePropChange));
         props.push_back(Property(DatumType::Bool, "Right Click Press", this, &mRightClickPress, 1, HandlePropChange));
     }
@@ -105,7 +128,7 @@ void Button::Tick(float deltaTime)
 {
     Super::Tick(deltaTime);
 
-    if (mHandleMouseInput &&
+    if (sHandleMouseInput &&
         mState != ButtonState::Locked &&
         ShouldHandleInput())
     {
@@ -118,6 +141,8 @@ void Button::Tick(float deltaTime)
 
         if (containsMouse)
         {
+            SetSelectedButton(this);
+
             if (mouseJustUp &&
                 mState == ButtonState::Pressed)
             {
@@ -132,13 +157,10 @@ void Button::Tick(float deltaTime)
             {
                 SetState(ButtonState::Hovered);
             }
-
-            // Override selected button when using mouse
-            sSelectedButton = nullptr;
         }
-        else if (sSelectedButton != this)
+        else if (sSelectedButton == this && mouseDown)
         {
-            SetState(ButtonState::Normal);
+            sSelectedButton->SetState(ButtonState::Hovered);
         }
 
         sUpdatingMouse = false;
@@ -319,7 +341,7 @@ void Button::SetUseTextStateColor(bool inUse)
 
 void Button::SetHandleMouseInput(bool inHandle)
 {
-    mHandleMouseInput = inHandle;
+    sHandleMouseInput = inHandle;
 }
 
 void Button::EnableRightClickPress(bool enable)

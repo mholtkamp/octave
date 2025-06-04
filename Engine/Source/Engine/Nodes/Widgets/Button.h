@@ -46,7 +46,7 @@ public:
 
     void SetUseQuadStateColor(bool inUse);
     void SetUseTextStateColor(bool inUse);
-    void SetHandleMouseInput(bool inHandle);
+    static void SetHandleMouseInput(bool inHandle);
 
     //void SetHoverHandler(ButtonHandlerFP newHandler);
     //void SetPressedHandler(ButtonHandlerFP newHandler);
@@ -61,6 +61,9 @@ public:
 
     Text* GetText();
     Quad* GetQuad();
+
+    static Button* GetSelectedButton();
+    static void SetSelectedButton(Button* button);
 
 protected:
 
@@ -80,7 +83,6 @@ protected:
 
     bool mUseTextStateColor = false;
     bool mUseQuadStateColor = true;
-    bool mHandleMouseInput = true;
     bool mAutoSizeText = false;
     bool mRightClickPress = false;
     glm::vec2 mTextPaddingRatio = { 0.035f, 0.05f };
@@ -89,4 +91,5 @@ protected:
     Text* mText = nullptr;
 
     static WeakPtr<Button> sSelectedButton;
+    static bool sHandleMouseInput;
 };

@@ -15,6 +15,9 @@
 
 struct Button_Lua
 {
+    static int SetSelected(lua_State* L);
+    static int GetSelected(lua_State* L);
+    static int EnableMouseHandling(lua_State* L);
     static int Activate(lua_State* L);
     static int GetState(lua_State* L);
     static int SetState(lua_State* L);
