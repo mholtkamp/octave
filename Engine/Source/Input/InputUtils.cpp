@@ -19,7 +19,7 @@ void InputAdvanceFrame()
 #endif
 
 #if INPUT_MOUSE_SUPPORT
-    memcpy(input.mPrevMouseButtons, input.mMouseButtons, INPUT_MAX_MOUSE_BUTTONS * sizeof(bool));
+    memcpy(input.mPrevMouseButtons, input.mMouseButtons, MOUSE_BUTTON_COUNT * sizeof(bool));
 
     if (INP_IsCursorLocked() && SYS_DoesWindowHaveFocus())
     {
@@ -41,4 +41,22 @@ void InputAdvanceFrame()
 #if INPUT_GAMEPAD_SUPPORT
     memcpy(input.mPrevGamepads, input.mGamepads, INPUT_MAX_GAMEPADS * sizeof(GamepadState));
 #endif
+}
+
+void InputPostUpdate()
+{
+    InputState& input = GetEngineState()->mInput;
+
+    // Update axes as buttons
+    for (int32_t i = 0; i < INPUT_MAX_GAMEPADS; ++i)
+    {
+        input.mGamepads[i].mButtons[GAMEPAD_L_LEFT] = input.mGamepads[i].mAxes[GAMEPAD_AXIS_LTHUMB_X] < -0.5f;
+        input.mGamepads[i].mButtons[GAMEPAD_L_RIGHT] = input.mGamepads[i].mAxes[GAMEPAD_AXIS_LTHUMB_X] > 0.5f;
+        input.mGamepads[i].mButtons[GAMEPAD_L_DOWN] = input.mGamepads[i].mAxes[GAMEPAD_AXIS_LTHUMB_Y] < -0.5f;
+        input.mGamepads[i].mButtons[GAMEPAD_L_UP] = input.mGamepads[i].mAxes[GAMEPAD_AXIS_LTHUMB_Y] > 0.5f;
+        input.mGamepads[i].mButtons[GAMEPAD_R_LEFT] = input.mGamepads[i].mAxes[GAMEPAD_AXIS_RTHUMB_X] < -0.5f;
+        input.mGamepads[i].mButtons[GAMEPAD_R_RIGHT] = input.mGamepads[i].mAxes[GAMEPAD_AXIS_RTHUMB_X] > 0.5f;
+        input.mGamepads[i].mButtons[GAMEPAD_R_DOWN] = input.mGamepads[i].mAxes[GAMEPAD_AXIS_RTHUMB_Y] < -0.5f;
+        input.mGamepads[i].mButtons[GAMEPAD_R_UP] = input.mGamepads[i].mAxes[GAMEPAD_AXIS_RTHUMB_Y] > 0.5f;
+    }
 }

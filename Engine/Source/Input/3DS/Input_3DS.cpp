@@ -67,15 +67,7 @@ void INP_Update()
     if (down & KEY_CSTICK_DOWN)
         input.mGamepads[0].mAxes[GAMEPAD_AXIS_RTHUMB_Y] = -1.0f;
 
-    //LogDebug("Circle: %.2f, %.2f ... Cstick: %.2f, %.2f",
-    //    input.mGamepads[0].mAxes[GAMEPAD_AXIS_LTHUMB_X],
-    //    input.mGamepads[0].mAxes[GAMEPAD_AXIS_LTHUMB_Y],
-    //    input.mGamepads[0].mAxes[GAMEPAD_AXIS_RTHUMB_X],
-    //    input.mGamepads[0].mAxes[GAMEPAD_AXIS_RTHUMB_Y]);
-
     // Touch
-
-
     if (down & KEY_TOUCH)
     {
         INP_SetTouch(0);
@@ -90,6 +82,8 @@ void INP_Update()
     {
         INP_ClearTouch(0);
     }
+
+    InputPostUpdate();
 }
 
 void INP_SetCursorPos(int32_t x, int32_t y)

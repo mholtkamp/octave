@@ -820,6 +820,22 @@ void Input_Lua::BindGamepadTable()
     lua_setfield(L, tableIdx, "Down");
     lua_pushinteger(L, GAMEPAD_HOME);
     lua_setfield(L, tableIdx, "Home");
+    lua_pushinteger(L, GAMEPAD_L_LEFT);
+    lua_setfield(L, tableIdx, "LsLeft");
+    lua_pushinteger(L, GAMEPAD_L_RIGHT);
+    lua_setfield(L, tableIdx, "LsRight");
+    lua_pushinteger(L, GAMEPAD_L_UP);
+    lua_setfield(L, tableIdx, "LsUp");
+    lua_pushinteger(L, GAMEPAD_L_DOWN);
+    lua_setfield(L, tableIdx, "LsDown");
+    lua_pushinteger(L, GAMEPAD_R_LEFT);
+    lua_setfield(L, tableIdx, "RsLeft");
+    lua_pushinteger(L, GAMEPAD_R_RIGHT);
+    lua_setfield(L, tableIdx, "RsRight");
+    lua_pushinteger(L, GAMEPAD_R_UP);
+    lua_setfield(L, tableIdx, "RsUp");
+    lua_pushinteger(L, GAMEPAD_R_DOWN);
+    lua_setfield(L, tableIdx, "RsDown");
 
     // Axes
     lua_pushinteger(L, GAMEPAD_AXIS_LTRIGGER);

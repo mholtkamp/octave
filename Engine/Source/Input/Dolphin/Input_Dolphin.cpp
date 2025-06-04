@@ -194,6 +194,8 @@ void INP_Update()
         input.mGamepads[i].mAxes[GAMEPAD_AXIS_LTRIGGER] = pads[i].triggerL / 255.0f;
         input.mGamepads[i].mAxes[GAMEPAD_AXIS_RTRIGGER] = pads[i].triggerR / 255.0f;
     }
+
+    InputPostUpdate();
 }
 
 void INP_SetCursorPos(int32_t x, int32_t y)

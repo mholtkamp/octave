@@ -73,6 +73,8 @@ void INP_Update()
             input.mGamepads[i].mConnected = false;
         }
     }
+
+    InputPostUpdate();
 }
 
 void INP_SetCursorPos(int32_t x, int32_t y)

@@ -24,11 +24,67 @@ enum class GamepadType
     Count
 };
 
+enum MouseCode
+{
+    MOUSE_LEFT,
+    MOUSE_RIGHT,
+    MOUSE_MIDDLE,
+    MOUSE_X1,
+    MOUSE_X2,
+
+    MOUSE_BUTTON_COUNT
+};
+
+enum GamepadButtonCode
+{
+    GAMEPAD_A,
+    GAMEPAD_B,
+    GAMEPAD_C,
+    GAMEPAD_X,
+    GAMEPAD_Y,
+    GAMEPAD_Z,
+    GAMEPAD_L1,
+    GAMEPAD_R1,
+    GAMEPAD_L2,
+    GAMEPAD_R2,
+    GAMEPAD_THUMBL,
+    GAMEPAD_THUMBR,
+    GAMEPAD_START,
+    GAMEPAD_SELECT,
+    GAMEPAD_LEFT,
+    GAMEPAD_RIGHT,
+    GAMEPAD_UP,
+    GAMEPAD_DOWN,
+    GAMEPAD_L_LEFT,
+    GAMEPAD_L_RIGHT,
+    GAMEPAD_L_UP,
+    GAMEPAD_L_DOWN,
+    GAMEPAD_R_LEFT,
+    GAMEPAD_R_RIGHT,
+    GAMEPAD_R_UP,
+    GAMEPAD_R_DOWN,
+    GAMEPAD_HOME,
+
+    GAMEPAD_BUTTON_COUNT
+};
+
+enum GamepadAxisCode
+{
+    GAMEPAD_AXIS_LTRIGGER,
+    GAMEPAD_AXIS_RTRIGGER,
+    GAMEPAD_AXIS_LTHUMB_X,
+    GAMEPAD_AXIS_LTHUMB_Y,
+    GAMEPAD_AXIS_RTHUMB_X,
+    GAMEPAD_AXIS_RTHUMB_Y,
+
+    GAMEPAD_AXIS_COUNT
+};
+
 struct GamepadState
 {
     int32_t mDevice = -1;
-    int32_t mButtons[INPUT_MAX_GAMEPAD_BUTTONS] = { };
-    float mAxes[INPUT_MAX_GAMEPAD_AXES] = { };
+    int32_t mButtons[GAMEPAD_BUTTON_COUNT] = { };
+    float mAxes[GAMEPAD_AXIS_COUNT] = { };
     GamepadType mType = GamepadType::Standard;
     bool mConnected = false;
 };
@@ -36,12 +92,12 @@ struct GamepadState
 struct InputState
 {
     bool mKeys[INPUT_MAX_KEYS] = { };
-    bool mMouseButtons[INPUT_MAX_MOUSE_BUTTONS] = { };
+    bool mMouseButtons[MOUSE_BUTTON_COUNT] = { };
     bool mTouches[INPUT_MAX_TOUCHES] = { };
     GamepadState mGamepads[INPUT_MAX_GAMEPADS];
 
     bool mPrevKeys[INPUT_MAX_KEYS] = { };
-    bool mPrevMouseButtons[INPUT_MAX_MOUSE_BUTTONS] = { };
+    bool mPrevMouseButtons[MOUSE_BUTTON_COUNT] = { };
     bool mPrevTouches[INPUT_MAX_TOUCHES] = { };
     GamepadState mPrevGamepads[INPUT_MAX_GAMEPADS];
 
@@ -65,48 +121,6 @@ struct InputState
     XINPUT_STATE mXinputPrevStates[INPUT_MAX_GAMEPADS] = { };
     bool mActiveControllers[INPUT_MAX_GAMEPADS] = { };
 #endif
-};
-
-enum MouseCode
-{
-    MOUSE_LEFT,
-    MOUSE_RIGHT,
-    MOUSE_MIDDLE,
-    MOUSE_X1,
-    MOUSE_X2
-};
-
-enum GamepadButtonCode
-{
-    GAMEPAD_A,
-    GAMEPAD_B,
-    GAMEPAD_C,
-    GAMEPAD_X,
-    GAMEPAD_Y,
-    GAMEPAD_Z,
-    GAMEPAD_L1,
-    GAMEPAD_R1,
-    GAMEPAD_L2,
-    GAMEPAD_R2,
-    GAMEPAD_THUMBL,
-    GAMEPAD_THUMBR,
-    GAMEPAD_START,
-    GAMEPAD_SELECT,
-    GAMEPAD_LEFT,
-    GAMEPAD_RIGHT,
-    GAMEPAD_UP,
-    GAMEPAD_DOWN,
-    GAMEPAD_HOME
-};
-
-enum GamepadAxisCode
-{
-    GAMEPAD_AXIS_LTRIGGER,
-    GAMEPAD_AXIS_RTRIGGER,
-    GAMEPAD_AXIS_LTHUMB_X,
-    GAMEPAD_AXIS_LTHUMB_Y,
-    GAMEPAD_AXIS_RTHUMB_X,
-    GAMEPAD_AXIS_RTHUMB_Y
 };
 
 #if PLATFORM_WINDOWS

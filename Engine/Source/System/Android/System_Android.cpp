@@ -396,6 +396,8 @@ void SYS_Update()
         }
     }
 
+    InputPostUpdate();
+
     if (system.mOrientationChanged)
     {
         uint32_t newWidth = ANativeWindow_getWidth(system.mWindow);

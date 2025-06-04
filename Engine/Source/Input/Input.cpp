@@ -179,7 +179,7 @@ char INP_ConvertKeyCodeToChar(int32_t key)
 
 void INP_SetMouseButton(int32_t button)
 {
-    if (button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS)
+    if (button >= 0 && button < MOUSE_BUTTON_COUNT)
     {
         InputState& input = GetEngineState()->mInput;
         input.mMouseButtons[button] = true;
@@ -193,7 +193,7 @@ void INP_SetMouseButton(int32_t button)
 
 void INP_ClearMouseButton(int32_t button)
 {
-    if (button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS)
+    if (button >= 0 && button < MOUSE_BUTTON_COUNT)
     {
         InputState& input = GetEngineState()->mInput;
         input.mMouseButtons[button] = false;
@@ -212,7 +212,7 @@ void INP_SetScrollWheelDelta(int32_t delta)
 
 bool INP_IsMouseButtonDown(int32_t button)
 {
-    if (button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS)
+    if (button >= 0 && button < MOUSE_BUTTON_COUNT)
     {
         return GetEngineState()->mInput.mMouseButtons[button];
     }
@@ -222,7 +222,7 @@ bool INP_IsMouseButtonDown(int32_t button)
 
 bool INP_IsMouseButtonJustDown(int32_t button)
 {
-    if (button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS)
+    if (button >= 0 && button < MOUSE_BUTTON_COUNT)
     {
         InputState& input = GetEngineState()->mInput;
         return input.mMouseButtons[button] && !input.mPrevMouseButtons[button];
@@ -233,7 +233,7 @@ bool INP_IsMouseButtonJustDown(int32_t button)
 
 bool INP_IsMouseButtonJustUp(int32_t button)
 {
-    if (button >= 0 && button < INPUT_MAX_MOUSE_BUTTONS)
+    if (button >= 0 && button < MOUSE_BUTTON_COUNT)
     {
         InputState& input = GetEngineState()->mInput;
         return !input.mMouseButtons[button] && input.mPrevMouseButtons[button];
@@ -252,7 +252,7 @@ void INP_ClearAllMouseButtons()
 #if INPUT_MOUSE_SUPPORT
     InputState& input = GetEngineState()->mInput;
 
-    for (uint32_t i = 0; i < INPUT_MAX_MOUSE_BUTTONS; i++)
+    for (uint32_t i = 0; i < MOUSE_BUTTON_COUNT; i++)
     {
         input.mMouseButtons[i] = false;
     }
@@ -424,7 +424,7 @@ bool INP_IsGamepadButtonDown(int32_t gamepadButton, int32_t gamepadIndex)
 {
     InputState& input = GetEngineState()->mInput;
     if ((gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS) &&
-        (gamepadButton >= 0 && gamepadButton < INPUT_MAX_GAMEPAD_BUTTONS))
+        (gamepadButton >= 0 && gamepadButton < GAMEPAD_BUTTON_COUNT))
     {
         return input.mGamepads[gamepadIndex].mButtons[gamepadButton];
     }
@@ -436,7 +436,7 @@ bool INP_IsGamepadButtonJustDown(int32_t gamepadButton, int32_t gamepadIndex)
 {
     InputState& input = GetEngineState()->mInput;
     if ((gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS) &&
-        (gamepadButton >= 0 && gamepadButton < INPUT_MAX_GAMEPAD_BUTTONS))
+        (gamepadButton >= 0 && gamepadButton < GAMEPAD_BUTTON_COUNT))
     {
         return input.mGamepads[gamepadIndex].mButtons[gamepadButton] &&
             !input.mPrevGamepads[gamepadIndex].mButtons[gamepadButton];
@@ -449,7 +449,7 @@ bool INP_IsGamepadButtonJustUp(int32_t gamepadButton, int32_t gamepadIndex)
 {
     InputState& input = GetEngineState()->mInput;
     if ((gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS) &&
-        (gamepadButton >= 0 && gamepadButton < INPUT_MAX_GAMEPAD_BUTTONS))
+        (gamepadButton >= 0 && gamepadButton < GAMEPAD_BUTTON_COUNT))
     {
         return !input.mGamepads[gamepadIndex].mButtons[gamepadButton] &&
             input.mPrevGamepads[gamepadIndex].mButtons[gamepadButton];
@@ -462,7 +462,7 @@ float INP_GetGamepadAxisValue(int32_t gamepadAxis, int32_t gamepadIndex)
 {
     InputState& input = GetEngineState()->mInput;
     if ((gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS) &&
-        (gamepadAxis >= 0 && gamepadAxis < INPUT_MAX_GAMEPAD_AXES))
+        (gamepadAxis >= 0 && gamepadAxis < GAMEPAD_AXIS_COUNT))
     {
         return input.mGamepads[gamepadIndex].mAxes[gamepadAxis];
     }
