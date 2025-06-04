@@ -200,6 +200,13 @@ void Button::UpdateAppearance()
         break;
     }
 
+    // If a given state's texture is null, fall back to normal texture.
+    // If that is still null, then it will be rendered as pure white.
+    if (quadTexture == nullptr)
+    {
+        quadTexture = mNormalTexture.Get<Texture>();
+    }
+
     mQuad->SetTexture(quadTexture);
 
     if (mUseQuadStateColor)

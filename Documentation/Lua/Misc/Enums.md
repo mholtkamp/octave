@@ -98,6 +98,12 @@ Tables that act as enumerations.
  - `Back` Cull triangles that are facing away from the camera
  - `Front` Cull triangles that are facing the camera
 
+## ButtonState
+ - `Normal`
+ - `Hovered`
+ - `Pressed`
+ - `Locked`
+
 ## Mouse
  - `Left`
  - `Right`
@@ -130,6 +136,14 @@ Tables that act as enumerations.
  - `Up`
  - `Down`
  - `Home`
+ - `LsLeft`
+ - `LsRight`
+ - `LsUp`
+ - `LsDown`
+ - `RsLeft`
+ - `RsRight`
+ - `RsUp`
+ - `RsDown`
  - `AxisL`
  - `AxisR`
  - `AxisLX`
