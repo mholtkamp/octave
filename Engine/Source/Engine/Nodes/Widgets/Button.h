@@ -29,6 +29,7 @@ public:
     virtual void PreRender() override;
     void UpdateAppearance();
 
+    bool IsSelected() const;
     void Activate();
 
     ButtonState GetState();

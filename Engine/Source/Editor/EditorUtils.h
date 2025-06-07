@@ -8,7 +8,6 @@
 #include "EngineTypes.h"
 struct AssetStub;
 class AssetDir;
-class WidgetMap;
 class Node;
 
 void EditorCenterCursor();

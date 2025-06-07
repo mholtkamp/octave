@@ -19,11 +19,23 @@ Get the currently selected button. Out of all Button nodes, there may only be a 
 Sig: `selButton = Button.GetSelected()`
  - Ret: `Button selButton` Button that is selected
 ---
-### GetSelected
-Get the currently selected button. Out of all Button nodes, there may only be a single selected node. If mouse handling is enabled, then if a mouse hovers over a button, it will forcefully change the selected node.
+### EnableMouseHandling
+Enable mouse handling globally for all buttons.
 
 Sig: `Button.EnableMouseHandling(enable)`
  - Arg: `boolean enable` Enable mouse handling for all buttons
+ ---
+ ### IsSelected
+Check if this button is currently the selected button.
+
+Sig: `Button:Activate()`
+ - Ret: `boolean selected` True if the selected button
+---
+### Activate
+Activate the button (as if it were clicked).
+
+Sig: `Button:Activate()`
+
 ---
 ### GetState
 Get the button's state.

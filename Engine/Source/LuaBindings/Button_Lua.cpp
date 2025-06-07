@@ -36,6 +36,16 @@ int Button_Lua::EnableMouseHandling(lua_State* L)
     return 0;
 }
 
+int Button_Lua::IsSelected(lua_State* L)
+{
+    Button* button = CHECK_BUTTON(L, 1);
+    
+    bool selected = button->IsSelected();
+
+    lua_pushboolean(L, selected);
+    return 1;
+}
+
 int Button_Lua::Activate(lua_State* L)
 {
     Button* button = CHECK_BUTTON(L, 1);
@@ -151,6 +161,7 @@ void Button_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetSelected);
     REGISTER_TABLE_FUNC(L, mtIndex, GetSelected);
     REGISTER_TABLE_FUNC(L, mtIndex, EnableMouseHandling);
+    REGISTER_TABLE_FUNC(L, mtIndex, IsSelected);
     REGISTER_TABLE_FUNC(L, mtIndex, Activate);
     REGISTER_TABLE_FUNC(L, mtIndex, GetState);
     REGISTER_TABLE_FUNC(L, mtIndex, SetLocked);

@@ -14,7 +14,6 @@
 #include "Graphics/GraphicsConstants.h"
 
 class Widget;
-class WidgetMap;
 
 enum class AnchorMode : uint8_t
 {

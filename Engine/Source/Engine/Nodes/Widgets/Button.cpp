@@ -229,6 +229,11 @@ void Button::UpdateAppearance()
     //mText->SetPosition(GetWidth() * mTextPaddingRatio.x, GetHeight() * mTextPaddingRatio.y);
 }
 
+bool Button::IsSelected() const
+{
+    return (Button::GetSelectedButton() == this);
+}
+
 ButtonState Button::GetState()
 {
     return mState;
