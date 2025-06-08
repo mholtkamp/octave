@@ -242,6 +242,7 @@ public:
 
     bool HasAuthority() const;
     bool IsOwned() const;
+    bool IsLocallyControlled() const;
 
     NetFunc* FindNetFunc(const char* name);
     NetFunc* FindNetFunc(uint16_t index);

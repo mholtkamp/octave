@@ -365,6 +365,9 @@ void BindNetConstants()
     lua_pushinteger(L, SERVER_HOST_ID);
     lua_setfield(L, tableIdx, "Server");
 
+    lua_pushinteger(L, AUTHORITY_HOST_ID);
+    lua_setfield(L, tableIdx, "Authority");
+
     lua_setglobal(L, "NetHost");
 
     OCT_ASSERT(lua_gettop(L) == 0);

@@ -41,6 +41,7 @@
 
 #define INVALID_HOST_ID 0
 #define SERVER_HOST_ID 1
+#define AUTHORITY_HOST_ID 1
 
 #define MAX_NET_FUNC_PARAMS 8
 

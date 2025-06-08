@@ -418,7 +418,7 @@ Sig: `hasAuthority = Node:HasAuthority()`
  - Arg: `boolean hasAuthority` true if this host is a server
 ---
 ### IsOwned
-Check whether this computer host owns this node. Will always return true if in a local game. Otherwise will return true if the OwningHost is equivalent to this computer's host id.
+Check whether this computer host owns this node. In a local game, will return true if node:SetOwningHost(NetHost.Authority) was called on this node. If in a networked game, this function will return true if the OwningHost is equivalent to this computer's host id.
 
 Sig: `owned = Node:IsOwned()`
  - Ret: `boolean owned` true if owned by this host

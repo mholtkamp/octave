@@ -1646,7 +1646,13 @@ bool Node::HasAuthority() const
 
 bool Node::IsOwned() const
 {
-    return (NetIsLocal() || mOwningHost == NetGetHostId());
+    return (mOwningHost == NetGetHostId());
+}
+
+bool Node::IsLocallyControlled() const
+{
+    // Alias for IsOwned
+    return IsOwned();
 }
 
 void Node::InvokeNetFunc(const char* name)

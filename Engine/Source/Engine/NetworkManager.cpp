@@ -930,16 +930,19 @@ Node* NetworkManager::GetPawn(NetHostId id)
 {
     Node* pawn = nullptr;
 
-    if (id == SERVER_HOST_ID)
+    if (!NetIsLocal())
     {
-        pawn = mServer.mPawn.Get<Node>();
-    }
-    else
-    {
-        NetClient* client = FindNetClient(id);
-        if (client)
+        if (id == SERVER_HOST_ID)
         {
-            pawn = client->mPawn.Get<Node>();
+            pawn = mServer.mPawn.Get<Node>();
+        }
+        else
+        {
+            NetClient* client = FindNetClient(id);
+            if (client)
+            {
+                pawn = client->mPawn.Get<Node>();
+            }
         }
     }
 
@@ -2114,7 +2117,7 @@ void NetworkManager::ResetToLocalStatus()
 
         mSocket = NET_INVALID_SOCKET;
         mNetStatus = NetStatus::Local;
-        mHostId = INVALID_HOST_ID;
+        mHostId = AUTHORITY_HOST_ID;
         mServer = NetServer();
         mInOnlineSession = false;
     }

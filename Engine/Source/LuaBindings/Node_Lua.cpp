@@ -1139,6 +1139,7 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, HasAuthority);
 
     REGISTER_TABLE_FUNC(L, mtIndex, IsOwned);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, IsOwned, "IsLocallyControlled");
 
     REGISTER_TABLE_FUNC(L, mtIndex, IsLateTickEnabled);
 

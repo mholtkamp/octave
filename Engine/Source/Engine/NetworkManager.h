@@ -206,7 +206,7 @@ private:
     float mReplicationTimer = 0.0f;
     int32_t mBytesSent = 0;
     int32_t mBytesReceived = 0;
-    NetHostId mHostId = INVALID_HOST_ID;
+    NetHostId mHostId = AUTHORITY_HOST_ID;
     SocketHandle mSocket = NET_INVALID_SOCKET;
     SocketHandle mSearchSocket = NET_INVALID_SOCKET;
     NetPlatform* mOnlinePlatform = nullptr;
