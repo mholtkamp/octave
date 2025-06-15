@@ -21,7 +21,7 @@ VkShaderStageFlags GetShaderStageFlags(ShaderStage stage)
     return flags;
 }
 
-Shader::Shader(const char* filePath, ShaderStage stage, const char* name)
+Shader::Shader(const std::string& filePath, ShaderStage stage, const std::string& name)
 {
     mName = name;
     mStage = stage;
@@ -32,7 +32,7 @@ Shader::Shader(const char* filePath, ShaderStage stage, const char* name)
 
     if (filePath != "")
     {
-        stream.ReadFile(filePath, true);
+        stream.ReadFile(filePath.c_str(), true);
 
         data = stream.GetData();
         size = stream.GetSize();
@@ -49,7 +49,7 @@ Shader::Shader(const char* filePath, ShaderStage stage, const char* name)
 
 }
 
-Shader::Shader(const char* data, uint32_t size, ShaderStage stage, const char* name)
+Shader::Shader(const char* data, uint32_t size, ShaderStage stage, const std::string& name)
 {
     mName = name;
     mStage = stage;

@@ -1961,7 +1961,7 @@ void VulkanContext::CreateGlobalShaders()
         if (shaderStage != ShaderStage::Count)
         {
             std::string shaderPath = std::string(ENGINE_SHADER_DIR) + fileName;
-            Shader* newShader = new Shader(shaderPath.c_str(), shaderStage, fileName.c_str());
+            Shader* newShader = new Shader(shaderPath, shaderStage, fileName);
             mGlobalShaders.insert({ fileName, newShader });
 
             LogDebug("Loaded Shader: %s", fileName.c_str());

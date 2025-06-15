@@ -7,6 +7,7 @@
 #include "AssetRef.h"
 #include "SmartPointer.h"
 #include "Property.h"
+#include "Nodes/Widgets/Text.h"
 
 class Node;
 class Scene;

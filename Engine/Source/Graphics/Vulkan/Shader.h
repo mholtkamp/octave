@@ -18,8 +18,8 @@ class Shader
 {
 public:
 
-    Shader(const char* filePath, ShaderStage stage, const char* name = "");
-    Shader(const char* data, uint32_t size, ShaderStage stage, const char* name = "");
+    Shader(const std::string& filePath, ShaderStage stage, const std::string& name);
+    Shader(const char* data, uint32_t size, ShaderStage stage, const std::string& name);
 
 
 protected:
