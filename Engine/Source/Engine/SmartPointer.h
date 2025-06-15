@@ -151,7 +151,7 @@ public:
 
         SetCommon(pointer, refCount);
 
-        if (std::is_base_of_v<Node, T>)
+        if (std::is_base_of<Node, T>::value)
         {
             if (diffPointer &&
                 mPointer != nullptr &&
@@ -208,7 +208,7 @@ public:
 
     void Clear()
     {
-        if (std::is_base_of_v<Node, T>)
+        if (std::is_base_of<Node, T>::value)
         {
             Node* node = (Node*)mPointer;
 
