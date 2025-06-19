@@ -30,7 +30,7 @@ public:
     void UpdateAppearance();
 
     bool IsSelected() const;
-    void Activate();
+    virtual void Activate();
 
     ButtonState GetState();
     virtual void SetState(ButtonState newState);

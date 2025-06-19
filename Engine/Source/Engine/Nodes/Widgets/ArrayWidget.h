@@ -21,8 +21,7 @@ public:
 
     DECLARE_NODE(ArrayWidget, Widget);
 
-    ArrayWidget();
-
+    virtual void Create() override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
     virtual void Tick(float deltaTime) override;
     virtual void EditorTick(float deltaTime) override;

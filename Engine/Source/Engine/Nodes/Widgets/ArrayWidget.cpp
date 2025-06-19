@@ -11,9 +11,10 @@ static const char* sArrayOrientationStrings[] =
 static_assert(int32_t(ArrayOrientation::Count) == 2, "Need to update string conversion table");
 
 
-ArrayWidget::ArrayWidget()
+void ArrayWidget::Create()
 {
-
+    Super::Create();
+    SetName("Array");
 }
 
 void ArrayWidget::GatherProperties(std::vector<Property>& outProps)
