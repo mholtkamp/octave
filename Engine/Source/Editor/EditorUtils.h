@@ -16,3 +16,4 @@ AssetStub* EditorAddUniqueAsset(const char* baseName, AssetDir* dir, TypeId asse
 std::string EditorGetAssetNameFromPath(const std::string& path);
 
 void RemoveRedundantDescendants(std::vector<Node*>& nodes);
+std::string GetDevkitproPath();

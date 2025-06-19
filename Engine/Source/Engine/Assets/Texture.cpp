@@ -7,6 +7,7 @@
 #include <malloc.h>
 
 #if EDITOR
+#include "EditorUtils.h"
 #include <stb_image.h>
 #include <stb_image_write.h>
 #endif
@@ -139,11 +140,7 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
     case Platform::GameCube:
     case Platform::Wii:
     {
-#if PLATFORM_WINDOWS
-        cookCmd += "gxtexconv.exe";
-#else
-        cookCmd += "$DEVKITPRO/tools/bin/gxtexconv";
-#endif
+        cookCmd += GetDevkitproPath() + "/tools/bin/gxtexconv";
 
         cookCmd += " -i ";
         cookCmd += pngPath.c_str();

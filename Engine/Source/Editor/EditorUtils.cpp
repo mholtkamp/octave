@@ -154,4 +154,26 @@ void RemoveRedundantDescendants(std::vector<Node*>& nodes)
     }
 }
 
+std::string GetDevkitproPath()
+{
+    static std::string dkpPath;
+
+    if (dkpPath == "")
+    {
+#if PLATFORM_WINDOWS
+        // Need to convert the msys2 path to actual windows path
+        SYS_Exec("cygpath.exe -w %DEVKITPRO%", &dkpPath);
+#else
+        dkpPath = "$DEVKITPRO";
+#endif
+
+        if (dkpPath == "")
+        {
+            LogError("Cannot find devkitpro path.");
+        }
+    }
+
+    return dkpPath;
+}
+
 #endif
