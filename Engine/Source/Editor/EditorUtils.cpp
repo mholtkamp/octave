@@ -176,4 +176,24 @@ std::string GetDevkitproPath()
     return dkpPath;
 }
 
+std::string GetDevenvPath()
+{
+    std::string devenvPath;
+    SYS_Exec("External\\vswhere\\vswhere.exe | grep productPath", &devenvPath);
+
+    size_t keySize = strlen("productPath: ");
+    if (devenvPath.size() > keySize)
+    {
+        devenvPath = devenvPath.substr(keySize);
+        devenvPath.insert(devenvPath.begin(), '\"');
+        devenvPath.push_back('\"');
+    }
+    else
+    {
+        devenvPath = "";
+    }
+
+    return devenvPath;
+}
+
 #endif

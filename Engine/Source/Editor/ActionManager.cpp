@@ -360,15 +360,16 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 solutionPath = engineState->mSolutionPath;
             }
 
-            std::string devenvCmd;
+            std::string devenvCmd = "\"" + GetDevenvPath();
             if (useSteam)
             {
-                devenvCmd = std::string("devenv ") + solutionPath + " /Build \"ReleaseSteam|x64\" /Project " + buildProjName;
+                devenvCmd += std::string(" ") + solutionPath + " /Build \"ReleaseSteam|x64\" /Project " + buildProjName;
             }
             else
             {
-                devenvCmd = std::string("devenv ") + solutionPath + " /Build \"Release|x64\" /Project " + buildProjName;
+                devenvCmd += std::string(" ") + solutionPath + " /Build \"Release|x64\" /Project " + buildProjName;
             }
+            devenvCmd += "\"";
 
             SYS_Exec(devenvCmd.c_str());
         }
