@@ -248,7 +248,7 @@ struct EngineConfig
 
     std::string mProjectName;
     std::string mProjectPath;
-    std::string mDefaultScene = "SC_Main";
+    std::string mDefaultScene = "";
     uint32_t mGameCode = 0;
     uint32_t mVersion = 0;
     int32_t mWindowWidth = DEFAULT_WINDOW_WIDTH;

@@ -350,11 +350,48 @@ bool Initialize()
     ForceLinkage();
 
 #if !EDITOR
+    Scene* defaultScene = nullptr;
+
+    // If a given default scene was provided via config, load that one.
     if (sEngineConfig.mDefaultScene != "")
     {
-        GetWorld(0)->LoadScene(sEngineConfig.mDefaultScene.c_str(), true);
+        defaultScene = LoadAsset<Scene>(sEngineConfig.mDefaultScene.c_str());
+
+        if (defaultScene == nullptr)
+        {
+            LogWarning("Could not find specified default scene: %s", sEngineConfig.mDefaultScene.c_str());
+        }
     }
-#endif 
+
+    if (defaultScene == nullptr)
+    {
+        LogDebug("Looking for default scene (\"SC_Main\" or \"SC_Default\")");
+    }
+
+    // If no explicit scene is provided, look for SC_Default first
+    if (defaultScene == nullptr)
+    {
+        defaultScene = LoadAsset<Scene>("SC_Default");
+    }
+
+    // And then looks for SC_Main
+    // Both are used as default scenes for historical purposes.
+    if (defaultScene == nullptr)
+    {
+        defaultScene = LoadAsset<Scene>("SC_Main");
+    }
+
+    // Then spawn it on world 0
+    if (defaultScene != nullptr)
+    {
+        GetWorld(0)->LoadScene(defaultScene->GetName().c_str(), true);
+    }
+    else
+    {
+        LogWarning("No default scene found.");
+    }
+
+#endif
 
     sEngineState.mInitialized = true;
 
