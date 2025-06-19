@@ -15,8 +15,8 @@ Instructions for building from source below.
 1. Download and Install:
 	- Visual Studio Community 2022 (with C++ support)
 	- Vulkan SDK version 1.3.275.0 (During install select "Shader Toolchain Debug Symbols - 64 bit" and deselect all other options)
-    - devkitPPC for GameCube/Wii development (Optional)
-    - devkitARM for 3DS development (Optional)
+    - devkitPPC for GameCube/Wii development
+    - devkitARM for 3DS development
 2. Build shaders by running compile.bat in Engine/Shaders/GLSL
 3. Open Octave.sln
 4. Switch to the DebugEditor solution configuration
@@ -61,11 +61,8 @@ Instructions for building from source below.
 11. Go back to the root directory `cd ..`
 12. Run `Standalone/Build/Linux/OctaveEditor.out` It's important that the working directory is the root directory where the Engine and Standalone folders are located.
 
-
 ## Packaging
 1. For packaging Windows, add your devenv.exe folder to your PATH. For instance: 
     `C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE`
-2. When packaging for GameCube, Wii, or 3DS on a Windows machine, add your devkitPro tools folder to your PATH. For instance: 
-    `C:\devkitPro\tools\bin`
-3. For packaging Android... TODO (I'm currently using Android Studio 2022.2.1 Patch 2)
-4. When packaging for any platform on a Windows machine, you will likely need to install Msys2 so that linux commands can be executed. This comes packaged along with devkitPro libraries, so you if you install the devkitPro libraries, you shouldn't need to worry about this.
+2. For packaging Android... TODO (I'm currently using Android Studio 2022.2.1 Patch 2)
+3. When packaging for any platform on a Windows machine, you will likely need to install Msys2 so that linux commands can be executed. This comes packaged along with devkitPro libraries, so you if you install the devkitPro libraries, you shouldn't need to worry about this.

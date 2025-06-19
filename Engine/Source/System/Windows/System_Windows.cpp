@@ -1,6 +1,7 @@
 #if PLATFORM_WINDOWS
 
 #include "System/System.h"
+#include "System/SystemUtils.h"
 #include "Graphics/Graphics.h"
 
 #include "Engine.h"
@@ -762,45 +763,7 @@ uint64_t SYS_GetTimeMicroseconds()
 // Process
 void SYS_Exec(const char* cmd, std::string* output)
 {
-    LogDebug("[Exec] %s", cmd);
-
-    if (output != nullptr)
-    {
-        FILE* file = _popen(cmd, "r");
-
-        if (file != nullptr)
-        {
-            char buffer[1024];
-            if (fgets(buffer, 1024, file))
-            {
-                *output = buffer;
-            }
-
-            // Strip newlines
-            std::string& str = *output;
-            for (int32_t i = int32_t(str.size()) - 1; i >= 0; --i)
-            {
-                if (str[i] == '\n' ||
-                    str[i] == '\r')
-                {
-                    str.erase(str.begin() + i);
-                }
-            }
-
-            LogDebug(" >> %s", output->c_str());
-
-            _pclose(file);
-            file = nullptr;
-        }
-        else
-        {
-            LogError("Failed to run command");
-        }
-    }
-    else
-    {
-        system(cmd);
-    }
+    ExecCommon(cmd, output);
 }
 
 // Memory

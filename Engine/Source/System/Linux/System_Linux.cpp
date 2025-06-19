@@ -1,6 +1,7 @@
 #if PLATFORM_LINUX
 
 #include "System/System.h"
+#include "System/SystemUtils.h"
 #include "Graphics/Graphics.h"
 
 #include "Engine.h"
@@ -809,8 +810,7 @@ uint64_t SYS_GetTimeMicroseconds()
 // Process
 void SYS_Exec(const char* cmd, std::string* output)
 {
-    LogDebug("[Exec] %s", cmd);
-    system(cmd);
+    ExecCommon(cmd, output);
 }
 
 // Memory

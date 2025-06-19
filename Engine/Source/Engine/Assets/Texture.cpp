@@ -192,14 +192,7 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
     }
     case Platform::N3DS:
     {
-#if PLATFORM_WINDOWS
-        // Need to add devkitpro/tools/bin to your path. Sorry, couldn't access the directory in commandline using the env variable
-        // since "/opt" doesn't exist. Not sure if I can replace "/opt/" with "C:/" ? ... Oh but it could be installed on a different drive...
-        cookCmd += "tex3ds.exe";
-#else
-        cookCmd += "$DEVKITPRO/tools/bin/tex3ds";
-#endif
-
+        cookCmd += GetDevkitproPath() + "/tools/bin/tex3ds";
         cookCmd += " -o ";
         cookCmd += outPath.c_str();
         cookCmd += " -f ";

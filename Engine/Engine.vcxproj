@@ -807,6 +807,7 @@
     <ClCompile Include="Source\System\Android\System_Android.cpp" />
     <ClCompile Include="Source\System\Dolphin\System_Dolphin.cpp" />
     <ClCompile Include="Source\System\Linux\System_Linux.cpp" />
+    <ClCompile Include="Source\System\SystemUtils.cpp" />
     <ClCompile Include="Source\System\Windows\System_Windows.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -1044,6 +1045,7 @@
     <ClInclude Include="Source\System\System.h" />
     <ClInclude Include="Source\System\SystemConstants.h" />
     <ClInclude Include="Source\System\SystemTypes.h" />
+    <ClInclude Include="Source\System\SystemUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
