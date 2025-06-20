@@ -231,7 +231,10 @@ bool Initialize()
         SYS_SetWorkingDirectory(sEngineConfig.mWorkingDirectory);
     }
 
+    LogDebug("zzz AssetManager Init");
     AssetManager::Get()->Initialize();
+
+    LogDebug("zzz Load Project");
 
     if (sEngineConfig.mProjectPath != "")
     {
@@ -261,11 +264,16 @@ bool Initialize()
     }
 #endif
 
+    LogDebug("zzz Embedded Assets");
+
     if (sEngineConfig.mEmbeddedAssetCount > 0 &&
         sEngineConfig.mEmbeddedAssets != nullptr)
     {
         AssetManager::Get()->DiscoverEmbeddedAssets(sEngineConfig.mEmbeddedAssets, sEngineConfig.mEmbeddedAssetCount);
     }
+
+
+    LogDebug("zzz Embedded Scripts");
 
     if (sEngineConfig.mEmbeddedScriptCount > 0 &&
         sEngineConfig.mEmbeddedScripts != nullptr)
@@ -284,6 +292,7 @@ bool Initialize()
 #endif
 
     {
+        LogDebug("zzz GFX_Initialize");
         SCOPED_STAT("GFX_Initialize");
         GFX_Initialize();
     }
@@ -295,6 +304,10 @@ bool Initialize()
         SCOPED_STAT("AUD_Initialize");
         AUD_Initialize();
     }
+
+
+    LogDebug("zzz NET_Initialize");
+
     {
         SCOPED_STAT("NET_Initialize");
         NET_Initialize();
@@ -394,6 +407,9 @@ bool Initialize()
 #endif
 
     sEngineState.mInitialized = true;
+
+    LogDebug("zzz Init finished");
+
 
     return true;
 }

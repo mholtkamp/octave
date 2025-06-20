@@ -82,6 +82,8 @@ void SYS_Initialize()
     //printf("\x1b[2;0H");
 
     InitFAT();
+
+    LogDebug("zzz SYS_Initialize() finished");
 }
 
 void SYS_Shutdown()

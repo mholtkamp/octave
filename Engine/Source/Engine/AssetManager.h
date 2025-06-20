@@ -88,7 +88,7 @@ public:
     Asset* ImportEngineAsset(TypeId assetType, AssetDir* dir, const std::string& filename, ImportOptions* options = nullptr);
     void ImportEngineAssets();
 
-    AssetStub* GetAssetStub(const std::string& name);
+    AssetStub* GetAssetStub(std::string name);
     Asset* GetAsset(const std::string& name);
     Asset* LoadAsset(const std::string& name);
     Asset* LoadAsset(AssetStub& stub);
@@ -108,7 +108,7 @@ public:
     void UnloadProjectDirectory();
     std::unordered_map<std::string, AssetStub*>& GetAssetMap();
 
-    AssetStub* RegisterAsset(const std::string& filename, TypeId type, AssetDir* directory, EmbeddedFile* embeddedAsset, bool engineAsset);
+    AssetStub* RegisterAsset(std::string filename, TypeId type, AssetDir* directory, EmbeddedFile* embeddedAsset, bool engineAsset);
     AssetStub* CreateAndRegisterAsset(TypeId assetType, AssetDir* directory, const std::string& filename, bool engineAsset);
     AssetDir* GetAssetDirFromPath(const std::string& dirPath);
 

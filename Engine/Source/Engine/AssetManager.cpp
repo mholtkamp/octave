@@ -108,7 +108,7 @@ void AssetManager::Initialize()
     mRootDirectory = new AssetDir("Root", "", nullptr);
 
     mMutex = SYS_CreateMutex();
-    mAsyncLoadThread = SYS_CreateThread(AsyncLoadThreadFunc, this);
+    //mAsyncLoadThread = SYS_CreateThread(AsyncLoadThreadFunc, this);
 }
 
 void AssetManager::Update(float deltaTime)
@@ -116,17 +116,33 @@ void AssetManager::Update(float deltaTime)
     UpdateEndLoadQueue();
 }
 
-AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type, AssetDir* directory, EmbeddedFile* embeddedAsset, bool engineAsset)
+AssetStub* AssetManager::RegisterAsset(std::string filename, TypeId type, AssetDir* directory, EmbeddedFile* embeddedAsset, bool engineAsset)
 {
+    LogDebug("zzz RegisterAsset: %s", filename.c_str());
+
+    LogDebug("hmm?");
+
     std::string fixedFilename = filename;
+
+    LogDebug("initted fixed filename");
+
 
     if (filename.size() < 4 ||
         filename.substr(filename.size() - 4, 4) != ".oct")
     {
+        LogDebug("Append .oct");
+
         fixedFilename += ".oct";
     }
 
+    LogDebug("fixedFileName");
+    LogDebug("%s", fixedFilename.c_str());
+
     std::string name = Asset::GetNameFromPath(fixedFilename);
+
+    LogDebug("We got name from path...");
+
+
     std::string path = directory ? directory->mPath + fixedFilename : "";
 
 #if EDITOR || _DEBUG
@@ -378,21 +394,44 @@ void AssetManager::DiscoverAssetRegistry(const char* registryPath)
 
 void AssetManager::DiscoverEmbeddedAssets(EmbeddedFile* assets, uint32_t numAssets)
 {
+    //LogDebug("Bout to crash");
+    //*((int*)0) = 1337;
+
     SCOPED_STAT("DiscoverEmbeddedAssets");
     if (numAssets > 0)
     {
-        for (uint32_t i = 0; i < numAssets; ++i)
+        for (uint32_t i = 16; i < numAssets; ++i)
         {
             EmbeddedFile* embeddedAsset = &assets[i];
 
             Stream stream(embeddedAsset->mData, sizeof(AssetHeader));
 
+            LogDebug("zzz Read Header");
             AssetHeader header = Asset::ReadHeader(stream);
-            AssetStub* stub = GetAssetStub(embeddedAsset->mName);
+
+            LogDebug("zzz Get Stub: %p", embeddedAsset);
+            LogDebug("zzz EmbAsset = %s", embeddedAsset->mName);
+            LogDebug("zzz Here we goo...", embeddedAsset->mName);
+            LogDebug("zzz Memory = %llu", SYS_GetNumBytesFree());
+            
+            void* p = malloc(512000);
+            LogDebug("p = %p", &p);
+
+            char buffer[2048];
+            snprintf(buffer, 2048, "Meeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeep");
+            LogDebug("Buffer: %s", buffer);
+
+            char assName[256];
+            snprintf(assName, 255, "SuperLongNameAssetPleaseCrashOrSomethingIdk%d", i);
+            std::string assNameStr = assName;
+            LogDebug("Assname = %s", assNameStr.c_str());
+            AssetStub* stub = GetAssetStub(assNameStr /*embeddedAsset->mName*/);
+
+            LogDebug("zzz Pre RegisterAsset");
 
             if (stub == nullptr)
             {
-                stub = RegisterAsset(embeddedAsset->mName, header.mType, nullptr, embeddedAsset, embeddedAsset->mEngine);
+                stub = RegisterAsset(assNameStr/*embeddedAsset->mName*/, header.mType, nullptr, embeddedAsset, embeddedAsset->mEngine);
             }
         }
     }
@@ -711,10 +750,24 @@ void AssetManager::ImportEngineAssets()
     }
 }
 
-AssetStub* AssetManager::GetAssetStub(const std::string& name)
+AssetStub* AssetManager::GetAssetStub(std::string name)
 {
+    LogDebug("-------GetAssetStub------");
+    LogDebug("mAssetMap.size() = %d", (int)mAssetMap.size());
+
     AssetStub* stub = nullptr;
+    LogDebug("Name = %s", name.c_str());
     auto itr = mAssetMap.find(name);
+
+    if (itr != mAssetMap.end())
+    {
+        LogDebug("itr->first = %s", itr->first.c_str());
+        LogDebug("itr->second = %p", (void*)itr->second);
+    }
+    else
+    {
+        LogDebug("itr == end");
+    }
     stub = (itr != mAssetMap.end()) ? itr->second : nullptr;
     return stub;
 }

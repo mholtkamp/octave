@@ -47,7 +47,7 @@ BULLET_DIR	:=	$(CURDIR)/../External/Bullet
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) -DPLATFORM_WII=1 -DPLATFORM_DOLPHIN=1 -DAPI_GX=1
+CFLAGS	= -g -O0 -Wall $(MACHDEP) $(INCLUDE) -DPLATFORM_WII=1 -DPLATFORM_DOLPHIN=1 -DAPI_GX=1
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
