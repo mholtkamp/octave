@@ -10,10 +10,23 @@
 #include "LuaBindings/Stream_Lua.h"
 #include "LuaBindings/World_Lua.h"
 
+#if EDITOR
+#include "EditorState.h"
+#endif
+
 #if LUA_ENABLED
 
 int Engine_Lua::Quit(lua_State* L)
 {
+#if EDITOR
+    if (::IsPlayingInEditor())
+    {
+        // Calls to quit during PIE should just end PIE.
+        GetEditorState()->EndPlayInEditor();
+        return 0;
+    }
+#endif
+
     ::Quit();
     return 0;
 }
