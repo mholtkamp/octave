@@ -25,6 +25,7 @@
             * [PolyRect](Nodes/Widgets/PolyRect.md)
         * [Quad](Nodes/Widgets/Quad.md)
         * [Text](Nodes/Widgets/Text.md)
+        * [Button](Nodes/Widgets/Button.md)
 
 ## Assets
 

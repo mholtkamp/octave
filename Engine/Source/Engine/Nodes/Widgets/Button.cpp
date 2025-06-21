@@ -243,7 +243,6 @@ void Button::SetState(ButtonState newState)
 {
     if (mState != newState)
     {
-        ButtonState oldState = mState;
         mState = newState;
         MarkDirty();
 
