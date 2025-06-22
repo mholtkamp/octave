@@ -220,7 +220,7 @@ Sig: `scale = Renderer.GetResolutionScale()`
  - Ret: `number scale` Resolution scale
 ---
 ### SetClearColor
-Set the scene images's clear color. On platforms with multiple screens, the same clear color will be used for both.
+Set the scene images's clear color. On platforms with multiple screens, the same clear color will be used for both. Make sure to provide an alpha of 1.0 to be able to see the color. NOTE: Currently on Wii and GameCube, a non-zero alpha will break shadow mesh rendering, so it's best to stick to black with zero alpha if you are using shadow meshes.
 
 Sig: `Renderer.SetClearColor(color)`
  - Arg: `Vector color` Clear color
