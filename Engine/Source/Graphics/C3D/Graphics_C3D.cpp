@@ -7,6 +7,7 @@
 #include "Renderer.h"
 #include "Log.h"
 #include "Maths.h"
+#include "Swap.h"
 #include "Assets/Material.h"
 #include "Assets/SkeletalMesh.h"
 #include "Assets/StaticMesh.h"
@@ -68,9 +69,6 @@ static uint32_t sVertexShaderSizes[uint32_t(ShaderId::Count)] =
     Text_shbin_size
 };
 static_assert(uint32_t(ShaderId::Count) == 5, "Need to update shader binary size array");
-
-#define CLEAR_COLOR 0x000000FF
-//#define CLEAR_COLOR 0x333333FF
 
 #define DISPLAY_TRANSFER_FLAGS \
 	(GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) | \
@@ -233,6 +231,9 @@ void GFX_BeginScreen(uint32_t screenIndex)
 
 void GFX_BeginView(uint32_t viewIndex)
 {
+    uint32_t clearColor = ColorFloat4ToUint32(Renderer::Get()->GetClearColor());
+    Swap32(clearColor);
+
     if (gC3dContext.mCurrentScreen == 0)
     {
         gC3dContext.mCurrentView = viewIndex;
@@ -243,12 +244,12 @@ void GFX_BeginView(uint32_t viewIndex)
         if (viewIndex == 0)
         {
             gC3dContext.mIod *= -1.0f;
-            C3D_RenderTargetClear(gC3dContext.mRenderTargetLeft, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
+            C3D_RenderTargetClear(gC3dContext.mRenderTargetLeft, C3D_CLEAR_ALL, clearColor, 0);
             C3D_FrameDrawOn(gC3dContext.mRenderTargetLeft);
         }
         else
         {
-            C3D_RenderTargetClear(gC3dContext.mRenderTargetRight, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
+            C3D_RenderTargetClear(gC3dContext.mRenderTargetRight, C3D_CLEAR_ALL, clearColor, 0);
             C3D_FrameDrawOn(gC3dContext.mRenderTargetRight);
         }
 
@@ -262,7 +263,7 @@ void GFX_BeginView(uint32_t viewIndex)
     else if (gC3dContext.mCurrentScreen == 1)
     {
         // Only a single view on screen 2.
-        C3D_RenderTargetClear(gC3dContext.mRenderTargetBottom, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
+        C3D_RenderTargetClear(gC3dContext.mRenderTargetBottom, C3D_CLEAR_ALL, clearColor, 0);
         C3D_FrameDrawOn(gC3dContext.mRenderTargetBottom);
     }
 }

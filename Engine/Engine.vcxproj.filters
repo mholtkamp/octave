@@ -1401,5 +1401,8 @@
     <ClInclude Include="Source\System\SystemUtils.h">
       <Filter>Source Files\System</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Swap.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

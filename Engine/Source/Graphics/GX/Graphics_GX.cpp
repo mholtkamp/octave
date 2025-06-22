@@ -128,6 +128,14 @@ void GFX_BeginFrame()
 
 void GFX_EndFrame()
 {
+    glm::vec4 clearColor = Renderer::Get()->GetClearColor();
+    GXColor gxClear;
+    gxClear.r = uint8_t(glm::clamp(clearColor.r * 255.0f, 0.0f, 255.0f));
+    gxClear.g = uint8_t(glm::clamp(clearColor.g * 255.0f, 0.0f, 255.0f));
+    gxClear.b = uint8_t(glm::clamp(clearColor.b * 255.0f, 0.0f, 255.0f));
+    gxClear.a = uint8_t(glm::clamp(clearColor.a * 255.0f, 0.0f, 255.0f));
+    GX_SetCopyClear(gxClear, 0x00ffffff);
+
     SystemState* systemState = &GetEngineState()->mSystem;
     systemState->mFrameIndex ^= 1; // flip framebuffer
 

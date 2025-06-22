@@ -1042,6 +1042,7 @@
     <ClInclude Include="Source\Network\NetworkConstants.h" />
     <ClInclude Include="Source\Network\NetworkTypes.h" />
     <ClInclude Include="Source\Network\NetPlatform.h" />
+    <ClInclude Include="Source\Swap.h" />
     <ClInclude Include="Source\System\System.h" />
     <ClInclude Include="Source\System\SystemConstants.h" />
     <ClInclude Include="Source\System\SystemTypes.h" />
