@@ -479,6 +479,7 @@ void World_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetRootNode);
 
     REGISTER_TABLE_FUNC(L, mtIndex, DestroyRootNode);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, DestroyRootNode, "Clear");
 
     REGISTER_TABLE_FUNC(L, mtIndex, FindNode);
 
