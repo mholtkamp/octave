@@ -1470,6 +1470,16 @@ const std::vector<LightData>& Renderer::GetLightData() const
     return mLightData;
 }
 
+void Renderer::SetClearColor(const glm::vec4& color)
+{
+    mClearColor = color;
+}
+
+glm::vec4 Renderer::GetClearColor() const
+{
+    return mClearColor;
+}
+
 void Renderer::BeginLightBake()
 {
     GFX_BeginLightBake();

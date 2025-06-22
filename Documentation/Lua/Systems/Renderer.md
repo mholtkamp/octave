@@ -219,3 +219,9 @@ Get the resolution scale. Resolution scale is only supported on Vulkan platforms
 Sig: `scale = Renderer.GetResolutionScale()`
  - Ret: `number scale` Resolution scale
 ---
+### SetClearColor
+Set the scene images's clear color. On platforms with multiple screens, the same clear color will be used for both.
+
+Sig: `Renderer.SetClearColor(color)`
+ - Arg: `Vector color` Clear color
+---

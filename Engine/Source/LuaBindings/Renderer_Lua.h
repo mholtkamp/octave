@@ -41,6 +41,7 @@ struct Renderer_Lua
     static int GetLightFadeSpeed(lua_State* L);
     static int SetResolutionScale(lua_State* L);
     static int GetResolutionScale(lua_State* L);
+    static int SetClearColor(lua_State* L);
 
     static void Bind();
 };

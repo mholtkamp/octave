@@ -112,6 +112,9 @@ public:
 
     const std::vector<LightData>& GetLightData() const;
 
+    void SetClearColor(const glm::vec4& color);
+    glm::vec4 GetClearColor() const;
+
     void BeginLightBake();
     void EndLightBake();
     bool IsLightBakeInProgress() const;
@@ -236,6 +239,7 @@ private:
     uint32_t mLightFadeLimit = 4;
     float mLightFadeSpeed = 1.0f;
     std::vector<FadingLight> mFadingLights;
+    glm::vec4 mClearColor = {};
 
     // Path tracing
     uint32_t mRaysPerPixel = 4;

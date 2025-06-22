@@ -477,6 +477,8 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
 
     BeginDebugLabel(GetRenderPassName(id));
 
+    glm::vec4 clearColor = {};
+
     if (mCurrentRenderPassId != RenderPassId::HitCheck)
     {
         BeginGpuTimestamp(GetRenderPassName(mCurrentRenderPassId));
@@ -488,15 +490,21 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         glm::uvec4 vp = Renderer::Get()->GetSceneViewport();
         SetViewport(vp.x, vp.y, vp.z, vp.w, true, true);
         SetScissor(vp.x, vp.y, vp.z, vp.w, true, true);
+        clearColor = Renderer::Get()->GetClearColor();
     }
 
-    BeginVkRenderPass(rpSetup, barrierNeeded);
+    if (mCurrentRenderPassId == RenderPassId::Clear)
+    {
+        clearColor = Renderer::Get()->GetClearColor();
+    }
+
+    BeginVkRenderPass(rpSetup, barrierNeeded, clearColor);
 }
 
-void VulkanContext::BeginVkRenderPass(const RenderPassSetup& rpSetup, bool insertBarrier)
+void VulkanContext::BeginVkRenderPass(const RenderPassSetup& rpSetup, bool insertBarrier, glm::vec4 clearColor)
 {
     VkClearValue clearValues[2] = {};
-    clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
+    clearValues[0].color = { clearColor.r, clearColor.g, clearColor.b, clearColor.a };
     clearValues[1].depthStencil = { 1.0f, 0 };
 
     VkRenderPassBeginInfo renderPassInfo = {};

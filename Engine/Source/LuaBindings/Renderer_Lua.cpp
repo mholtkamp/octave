@@ -309,6 +309,15 @@ int Renderer_Lua::GetResolutionScale(lua_State* L)
     return 1;
 }
 
+int Renderer_Lua::SetClearColor(lua_State* L)
+{
+    glm::vec4 value = CHECK_VECTOR(L, 1);
+
+    Renderer::Get()->SetClearColor(value);
+
+    return 0;
+}
+
 void Renderer_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -379,6 +388,8 @@ void Renderer_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, SetResolutionScale);
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetResolutionScale);
+
+    REGISTER_TABLE_FUNC(L, tableIdx, SetClearColor);
 
     lua_setglobal(L, RENDERER_LUA_NAME);
 

@@ -72,7 +72,7 @@ public:
     void BeginFrame();
     void EndFrame();
     void BeginRenderPass(RenderPassId id);
-    void BeginVkRenderPass(const RenderPassSetup& rpSetup, bool insertBarrier);
+    void BeginVkRenderPass(const RenderPassSetup& rpSetup, bool insertBarrier, glm::vec4 clearColor = {});
     void EndRenderPass();
     void EndVkRenderPass();
     void CommitPipeline();
