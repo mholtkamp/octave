@@ -944,6 +944,10 @@ void World::LoadScene(const char* name, bool instant)
             NodePtr newRoot = scene->Instantiate();
             SetRootNode(newRoot.Get());
         }
+        else
+        {
+            LogError("Failed to load scene %s", name);
+        }
     }
     else
     {
@@ -961,6 +965,10 @@ void World::QueueRootScene(const char* name)
     {
         NodePtr sceneNode = scene->Instantiate();
         QueueRootNode(sceneNode.Get());
+    }
+    else
+    {
+        LogError("Failed to load scene %s", name);
     }
 }
 

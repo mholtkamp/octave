@@ -353,7 +353,7 @@ int Input_Lua::ConvertKeyCodeToChar(lua_State* L)
 
     // Make a string with a single char (and null terminator)
     char keyChar[2];
-    keyChar[0] = INP_ConvertKeyCodeToChar(keyCode);
+    keyChar[0] = ::ConvertKeyCodeToChar(keyCode, ::IsShiftDown());
     keyChar[1] = 0;
 
     lua_pushstring(L, keyChar);
@@ -454,6 +454,7 @@ void Input_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, SetCursorPosition);
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetKeysJustDown);
+    REGISTER_TABLE_FUNC_EX(L, tableIdx, GetKeysJustDown, "GetKeysPressed");
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsAnyKeyJustDown);
 
