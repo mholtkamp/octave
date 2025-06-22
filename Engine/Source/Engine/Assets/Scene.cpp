@@ -114,8 +114,16 @@ void Scene::SaveStream(Stream& stream, Platform platform)
         // don't suppose instanced mesh rendering.
         srcScene = NewTransientAsset<Scene>();
         NodePtr tempRoot = Instantiate();
-        srcScene->Capture(tempRoot.Get(), platform);
-        tempRoot->Destroy();
+
+        if (tempRoot)
+        {
+            srcScene->Capture(tempRoot.Get(), platform);
+            tempRoot->Destroy();
+        }
+        else
+        {
+            srcScene = this;
+        }
 
         // These transient scene that was created should get garbage collected since 
         // no AssetRefs are pointing to it.
