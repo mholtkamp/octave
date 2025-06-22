@@ -27,7 +27,7 @@ void Button::SetSelectedButton(Button* button)
     if (sSelectedButton != button)
     {
         Button* oldSel = sSelectedButton.Get();
-        sSelectedButton = ResolvePtr<Button>(button);
+        sSelectedButton = ResolveWeakPtr<Button>(button);
 
         if (oldSel != nullptr)
         {
@@ -133,9 +133,9 @@ void Button::Tick(float deltaTime)
         ShouldHandleInput())
     {
         const bool containsMouse = ContainsMouse();
-        const bool mouseDown = IsMouseButtonDown(MOUSE_LEFT) || (mRightClickPress && IsMouseButtonDown(MOUSE_RIGHT));
-        const bool mouseJustDown = IsMouseButtonJustDown(MOUSE_LEFT) || (mRightClickPress && IsMouseButtonJustDown(MOUSE_RIGHT));
-        const bool mouseJustUp = IsMouseButtonJustUp(MOUSE_LEFT) || (mRightClickPress && IsMouseButtonJustUp(MOUSE_RIGHT));
+        const bool mouseDown = IsPointerDown(0) || (mRightClickPress && IsMouseButtonDown(MOUSE_RIGHT));
+        const bool mouseJustDown = IsPointerJustDown(0)  || (mRightClickPress && IsMouseButtonJustDown(MOUSE_RIGHT));
+        const bool mouseJustUp = IsPointerJustUp(0)  || (mRightClickPress && IsMouseButtonJustUp(MOUSE_RIGHT));
 
         if (containsMouse)
         {

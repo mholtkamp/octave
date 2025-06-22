@@ -278,7 +278,8 @@ void INP_ClearTouch(int32_t touch)
         // and then the pointer at index 1 is released, the pointer at index 2 now becomes pointer 1.
         for (uint32_t i = touch; i < INPUT_MAX_TOUCHES; ++i)
         {
-            if (i < INPUT_MAX_TOUCHES - 1)
+            if (i < INPUT_MAX_TOUCHES - 1 &&
+                input.mTouches[i+1])
             {
                 input.mTouches[i] = input.mTouches[i + 1];
                 input.mPointerX[i] = input.mPointerX[i + 1];
@@ -287,8 +288,6 @@ void INP_ClearTouch(int32_t touch)
             else
             {
                 input.mTouches[i] = false;
-                input.mPointerX[i] = 0;
-                input.mPointerY[i] = 0;
             }
         }
     }
