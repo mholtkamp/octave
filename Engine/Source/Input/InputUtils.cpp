@@ -13,9 +13,9 @@ void InputInit()
 {
     InputState& input = GetEngineState()->mInput;
 
-    if (input.mSoftwareKeyboardInputSignal == nullptr)
+    if (input.mSoftwareKeyboardEntrySignal == nullptr)
     {
-        input.mSoftwareKeyboardInputSignal = new Signal();
+        input.mSoftwareKeyboardEntrySignal = new Signal();
     }
 }
 
@@ -23,10 +23,10 @@ void InputShutdown()
 {
     InputState& input = GetEngineState()->mInput;
 
-    if (input.mSoftwareKeyboardInputSignal != nullptr)
+    if (input.mSoftwareKeyboardEntrySignal != nullptr)
     {
-        delete input.mSoftwareKeyboardInputSignal;
-        input.mSoftwareKeyboardInputSignal = nullptr;
+        delete input.mSoftwareKeyboardEntrySignal;
+        input.mSoftwareKeyboardEntrySignal = nullptr;
     }
 }
 
