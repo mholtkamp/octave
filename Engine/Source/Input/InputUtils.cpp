@@ -4,9 +4,31 @@
 #include "System/System.h"
 
 #include "Engine.h"
+#include "Signals.h"
 
 #include <stdlib.h>
 #include <string.h>
+
+void InputInit()
+{
+    InputState& input = GetEngineState()->mInput;
+
+    if (input.mSoftwareKeyboardInputSignal == nullptr)
+    {
+        input.mSoftwareKeyboardInputSignal = new Signal();
+    }
+}
+
+void InputShutdown()
+{
+    InputState& input = GetEngineState()->mInput;
+
+    if (input.mSoftwareKeyboardInputSignal != nullptr)
+    {
+        delete input.mSoftwareKeyboardInputSignal;
+        input.mSoftwareKeyboardInputSignal = nullptr;
+    }
+}
 
 void InputAdvanceFrame()
 {

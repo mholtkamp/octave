@@ -65,3 +65,5 @@ void INP_ClearGamepadButton(GamepadButtonCode buttonCode, int32_t gamepadIndex);
 bool INP_IsCursorLocked();
 bool INP_IsCursorTrapped();
 bool INP_IsCursorShown();
+
+Signal* INP_GetSoftwareKeyboardEntrySignal();

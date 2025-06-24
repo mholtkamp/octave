@@ -14,6 +14,8 @@
 #include <3ds.h>
 #endif
 
+class Signal;
+
 enum class GamepadType
 {
     Standard,
@@ -111,6 +113,8 @@ struct InputState
     int32_t mNumControllers = 0;
 
     std::vector<int32_t> mJustDownKeys;
+
+    Signal* mSoftwareKeyboardEntrySignal = nullptr;
 
     bool mCursorLocked = false;
     bool mCursorTrapped = false;

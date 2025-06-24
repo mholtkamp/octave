@@ -568,3 +568,8 @@ bool INP_IsCursorShown()
 {
     return GetEngineState()->mInput.mCursorShown;
 }
+
+Signal* INP_GetSoftwareKeyboardEntrySignal()
+{
+    return GetEngineState()->mInput.mSoftwareKeyboardEntrySignal;
+}

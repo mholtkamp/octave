@@ -20,11 +20,13 @@ void INP_Initialize()
     {
         LogError("Failed to register RawInput device");
     }
+
+    InputInit();
 }
 
 void INP_Shutdown()
 {
-
+    InputShutdown();
 }
 
 void INP_Update()

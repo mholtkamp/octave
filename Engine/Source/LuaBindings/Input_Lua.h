@@ -54,6 +54,8 @@ struct Input_Lua
 
     static int ShowSoftKeyboard(lua_State* L);
     static int IsSoftKeyboardShown(lua_State* L);
+    static int ConnectToSoftKeyboardSignal(lua_State* L);
+    static int DisconnectFromSoftKeyboardSignal(lua_State* L);
 
     static void Bind();
     static void BindKeyTable();

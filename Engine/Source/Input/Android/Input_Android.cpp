@@ -8,12 +8,12 @@
 
 void INP_Initialize()
 {
-
+    InputInit();
 }
 
 void INP_Shutdown()
 {
-
+    InputShutdown();
 }
 
 void INP_Update()

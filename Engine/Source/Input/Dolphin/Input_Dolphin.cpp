@@ -30,11 +30,13 @@ void INP_Initialize()
 #else
     PAD_Init();
 #endif
+
+    InputInit();
 }
 
 void INP_Shutdown()
 {
-
+    InputShutdown();
 }
 
 void INP_Update()

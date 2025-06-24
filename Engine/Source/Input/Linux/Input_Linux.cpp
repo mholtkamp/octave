@@ -127,12 +127,12 @@ void HandleJoystickAxisEvent(int32_t gamepadIndex, int32_t number, int32_t value
 
 void INP_Initialize()
 {
-
+    InputInit();
 }
 
 void INP_Shutdown()
 {
-
+    InputShutdown();
 }
 
 void INP_Update()

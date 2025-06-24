@@ -11,12 +11,12 @@
 
 void INP_Initialize()
 {
-
+    InputInit();
 }
 
 void INP_Shutdown()
 {
-
+    InputShutdown();
 }
 
 void INP_Update()
@@ -108,7 +108,22 @@ void INP_TrapCursor(bool trap)
 
 void INP_ShowSoftKeyboard(bool show)
 {
+    static char sTextBuffer[256] = {};
 
+    SwkbdState swkbd;
+    swkbdInit(&swkbd, SWKBD_TYPE_NORMAL, 3, -1);
+    //swkbdSetInitialText(&swkbd, mybuf);
+    swkbdSetHintText(&swkbd, "Enter Name");
+    SwkbdButton button = swkbdInputText(&swkbd, sTextBuffer, sizeof(sTextBuffer));
+
+    LogDebug("SWKBD Text = %s", sTextBuffer);
+
+    InputState& input = GetEngineState()->mInput;
+    if (input.mSoftwareKeyboardEntrySignal)
+    {
+        std::vector<Datum> args = { sTextBuffer };
+        input.mSoftwareKeyboardEntrySignal->Emit(args);
+    }
 }
 
 bool INP_IsSoftKeyboardShown()
