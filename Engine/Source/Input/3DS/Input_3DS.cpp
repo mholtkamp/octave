@@ -11,67 +11,15 @@
 
 #include <3ds.h>
 
-//Ref
-ThreadObject* SYS_CreateThread(ThreadFuncFP func, void* arg);
-void SYS_JoinThread(ThreadObject* thread);
-void SYS_DestroyThread(ThreadObject* thread);
-MutexObject* SYS_CreateMutex();
-void SYS_LockMutex(MutexObject* mutex);
-void SYS_UnlockMutex(MutexObject* mutex);
-void SYS_DestroyMutex(MutexObject* mutex);
-
-enum class SwkbdStatus : uint8_t
-{
-    Closed,
-    Open,
-    Finished,
-
-    Count
-};
-
 #define SWKBD_BUFFER_SIZE 256
-static ThreadObject* sSwkbdThread = nullptr;
-static MutexObject* sSwkbdMutex = nullptr;
-static SwkbdStatus sSwkbdStatus = SwkbdStatus::Closed;
-static std::string sSwkbdText;
-
-static ThreadFuncRet SwkbdThreadFunc(void* in)
-{
-    static char sTextBuffer[SWKBD_BUFFER_SIZE] = {};
-
-    SwkbdState swkbd;
-    swkbdInit(&swkbd, SWKBD_TYPE_NORMAL, 3, -1);
-    swkbdSetHintText(&swkbd, "Enter Name");
-    SwkbdButton button = swkbdInputText(&swkbd, sTextBuffer, sizeof(sTextBuffer));
-
-    LogDebug("SWKBD Text = %s", sTextBuffer);
-
-    {
-        SCOPED_LOCK(sSwkbdMutex);
-        sSwkbdText = sTextBuffer;
-        sSwkbdStatus = SwkbdStatus::Finished;
-    }
-}
 
 void INP_Initialize()
 {
     InputInit();
-
-    sSwkbdMutex = SYS_CreateMutex();
 }
 
 void INP_Shutdown()
 {
-    if (sSwkbdThread != nullptr)
-    {
-        // Will this destroy the thread properly?
-        SYS_DestroyThread(sSwkbdThread);
-        sSwkbdThread = nullptr;
-    }
-
-    SYS_DestroyMutex(sSwkbdMutex);
-    sSwkbdMutex = nullptr;
-
     InputShutdown();
 }
 
@@ -131,31 +79,10 @@ void INP_Update()
         touchPosition touch;
         hidTouchRead(&touch);
         INP_SetTouchPosition(touch.px, touch.py, 0);
-
-        //LogDebug("Touch: %d, %d", touch.px, touch.py);
     }
     else
     {
         INP_ClearTouch(0);
-    }
-
-    {
-        SCOPED_LOCK(sSwkbdMutex);
-
-        if (sSwkbdStatus == SwkbdStatus::Finished)
-        {
-            InputState& input = GetEngineState()->mInput;
-            if (input.mSoftwareKeyboardEntrySignal)
-            {
-                std::vector<Datum> args = { sSwkbdText };
-                input.mSoftwareKeyboardEntrySignal->Emit(args);
-            }
-
-            sSwkbdStatus = SwkbdStatus::Closed;
-            SYS_JoinThread(sSwkbdThread);
-            SYS_DestroyThread(sSwkbdThread);
-            sSwkbdThread = nullptr;
-        }
     }
 
     InputPostUpdate();
@@ -163,7 +90,7 @@ void INP_Update()
 
 void INP_SetCursorPos(int32_t x, int32_t y)
 {
-    
+
 }
 
 void INP_ShowCursor(bool show)
@@ -181,26 +108,23 @@ void INP_TrapCursor(bool trap)
 
 }
 
-void INP_ShowSoftKeyboard(bool show)
+const char* INP_ShowSoftKeyboard(bool show)
 {
-    SCOPED_LOCK(sSwkbdMutex);
-
-    if (sSwkbdStatus != SwkbdStatus::Closed)
-    {
-        return;
-    }
-
-    // I don't think we can externally close the keyboard if it's up.
     if (show)
     {
-        if (sSwkbdThread != nullptr)
-        {
-            LogError("Keyboard thread is already running!");
-        }
+        static char sTextBuffer[SWKBD_BUFFER_SIZE] = {};
 
-        sSwkbdThread = SYS_CreateThread(SwkbdThreadFunc, nullptr);
-        sSwkbdStatus = SwkbdStatus::Open;
+        SwkbdState swkbd;
+        swkbdInit(&swkbd, SWKBD_TYPE_NORMAL, 2, -1);
+        SwkbdButton button = swkbdInputText(&swkbd, sTextBuffer, SWKBD_BUFFER_SIZE);
+
+        if (button == SWKBD_BUTTON_CONFIRM)
+        {
+            return sTextBuffer;
+        }
     }
+
+    return nullptr;
 }
 
 bool INP_IsSoftKeyboardShown()

@@ -13,7 +13,7 @@ void INP_SetCursorPos(int32_t x, int32_t y);
 void INP_ShowCursor(bool show);
 void INP_LockCursor(bool lock);
 void INP_TrapCursor(bool trap);
-void INP_ShowSoftKeyboard(bool show);
+const char* INP_ShowSoftKeyboard(bool show);
 bool INP_IsSoftKeyboardShown();
 
 // Platform Agnostic
@@ -66,4 +66,3 @@ bool INP_IsCursorLocked();
 bool INP_IsCursorTrapped();
 bool INP_IsCursorShown();
 
-Signal* INP_GetSoftwareKeyboardEntrySignal();

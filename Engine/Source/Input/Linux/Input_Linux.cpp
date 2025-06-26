@@ -244,9 +244,9 @@ void INP_TrapCursor(bool trap)
     input.mCursorTrapped = trap;
 }
 
-void INP_ShowSoftKeyboard(bool show)
+const char* INP_ShowSoftKeyboard(bool show)
 {
-
+    return nullptr;
 }
 
 bool INP_IsSoftKeyboardShown()

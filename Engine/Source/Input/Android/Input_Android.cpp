@@ -42,7 +42,7 @@ void INP_TrapCursor(bool trap)
 
 }
 
-void INP_ShowSoftKeyboard(bool show)
+const char* INP_ShowSoftKeyboard(bool show)
 {
     SystemState& system = GetEngineState()->mSystem;
 
@@ -71,6 +71,8 @@ void INP_ShowSoftKeyboard(bool show)
 
     vm->DetachCurrentThread();
 #endif
+
+    return nullptr;
 }
 
 bool INP_IsSoftKeyboardShown()

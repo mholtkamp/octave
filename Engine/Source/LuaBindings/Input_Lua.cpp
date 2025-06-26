@@ -366,9 +366,18 @@ int Input_Lua::ShowSoftKeyboard(lua_State* L)
 {
     bool show = CHECK_BOOLEAN(L, 1);
 
-    INP_ShowSoftKeyboard(show);
+    const char* text = INP_ShowSoftKeyboard(show);
 
-    return 0;
+    if (show && text != nullptr)
+    {
+        lua_pushstring(L, text);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+
+    return 1;
 }
 
 int Input_Lua::IsSoftKeyboardShown(lua_State* L)
@@ -377,44 +386,6 @@ int Input_Lua::IsSoftKeyboardShown(lua_State* L)
 
     lua_pushboolean(L, ret);
     return 1;
-}
-
-int Input_Lua::ConnectToSoftKeyboardSignal(lua_State* L)
-{
-    Node* listener = CHECK_NODE(L, 1);
-    CHECK_FUNCTION(L, 2);
-    ScriptFunc func(L, 2);
-
-    Signal* entrySig = INP_GetSoftwareKeyboardEntrySignal();
-
-    if (entrySig)
-    {
-        entrySig->Connect(listener, func);
-    }
-    else
-    {
-        LogError("Software keyboard entry signal hasn't been initialized");
-    }
-
-    return 0;
-}
-
-int Input_Lua::DisconnectFromSoftKeyboardSignal(lua_State* L)
-{
-    Node* listener = CHECK_NODE(L, 1);
-
-    Signal* entrySig = INP_GetSoftwareKeyboardEntrySignal();
-
-    if (entrySig)
-    {
-        entrySig->Disconnect(listener);
-    }
-    else
-    {
-        LogError("Software keyboard entry signal hasn't been initialized");
-    }
-
-    return 0;
 }
 
 void Input_Lua::Bind()
@@ -503,10 +474,6 @@ void Input_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, ShowSoftKeyboard);
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsSoftKeyboardShown);
-
-    REGISTER_TABLE_FUNC(L, tableIdx, ConnectToSoftKeyboardSignal);
-
-    REGISTER_TABLE_FUNC(L, tableIdx, DisconnectFromSoftKeyboardSignal);
 
     lua_setglobal(L, INPUT_LUA_NAME);
     OCT_ASSERT(lua_gettop(L) == 0);

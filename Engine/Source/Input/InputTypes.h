@@ -114,8 +114,6 @@ struct InputState
 
     std::vector<int32_t> mJustDownKeys;
 
-    Signal* mSoftwareKeyboardEntrySignal = nullptr;
-
     bool mCursorLocked = false;
     bool mCursorTrapped = false;
     bool mCursorShown = true;

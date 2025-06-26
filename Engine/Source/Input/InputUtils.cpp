@@ -11,23 +11,12 @@
 
 void InputInit()
 {
-    InputState& input = GetEngineState()->mInput;
 
-    if (input.mSoftwareKeyboardEntrySignal == nullptr)
-    {
-        input.mSoftwareKeyboardEntrySignal = new Signal();
-    }
 }
 
 void InputShutdown()
 {
-    InputState& input = GetEngineState()->mInput;
 
-    if (input.mSoftwareKeyboardEntrySignal != nullptr)
-    {
-        delete input.mSoftwareKeyboardEntrySignal;
-        input.mSoftwareKeyboardEntrySignal = nullptr;
-    }
 }
 
 void InputAdvanceFrame()
