@@ -253,8 +253,9 @@ Sig: `char = Input.ConvertKeyCodeToChar(code)`
 Show/hide the software keyboard if one is available for the platform. Currently, only Android soft keyboard is supported.
 TODO: Support for 3DS and Wii
 
-Sig: `Input.ShowSoftKeyboard(show)`
+Sig: `text = Input.ShowSoftKeyboard(show)`
  - Arg: `boolean show` Whether to show soft keyboard
+ - Ret: `string/nil text` If software keyboard input happens synchronously (on 3DS), the input text string will be returned here when show is true. Otherwise nil is returned.
 ---
 ### IsSoftKeyboardShown
 Check if the software keyboard is currently shown.
