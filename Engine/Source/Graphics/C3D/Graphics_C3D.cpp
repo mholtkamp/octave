@@ -266,6 +266,9 @@ void GFX_BeginView(uint32_t viewIndex)
         C3D_RenderTargetClear(gC3dContext.mRenderTargetBottom, C3D_CLEAR_ALL, clearColor, 0);
         C3D_FrameDrawOn(gC3dContext.mRenderTargetBottom);
     }
+
+    gC3dContext.mLastBoundShaderId = ShaderId::Count;
+    gC3dContext.mLastBoundMaterial = nullptr;
 }
 
 bool GFX_ShouldCullLights()
