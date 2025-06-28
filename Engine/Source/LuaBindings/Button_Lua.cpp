@@ -128,6 +128,38 @@ int Button_Lua::SetStateColors(lua_State* L)
     return 0;
 }
 
+int Button_Lua::GetStateTextures(lua_State* L)
+{
+    Button* button = CHECK_BUTTON(L, 1);
+
+    Texture* normal = button->GetNormalTexture();
+    Texture* hovered = button->GetHoveredTexture();
+    Texture* pressed = button->GetPressedTexture();
+    Texture* locked = button->GetLockedTexture();
+
+    Asset_Lua::Create(L, normal);
+    Asset_Lua::Create(L, hovered);
+    Asset_Lua::Create(L, pressed);
+    Asset_Lua::Create(L, locked);
+    return 4;
+}
+
+int Button_Lua::GetStateColors(lua_State* L)
+{
+    Button* button = CHECK_BUTTON(L, 1);
+
+    glm::vec4 normal = button->GetNormalColor();
+    glm::vec4 hovered = button->GetHoveredColor();
+    glm::vec4 pressed = button->GetPressedColor();
+    glm::vec4 locked = button->GetLockedColor();
+
+    Vector_Lua::Create(L, normal);
+    Vector_Lua::Create(L, hovered);
+    Vector_Lua::Create(L, pressed);
+    Vector_Lua::Create(L, locked);
+    return 4;
+}
+
 int Button_Lua::GetText(lua_State* L)
 {
     Button* button = CHECK_BUTTON(L, 1);
@@ -169,6 +201,8 @@ void Button_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, GetTextString);
     REGISTER_TABLE_FUNC(L, mtIndex, SetStateTextures);
     REGISTER_TABLE_FUNC(L, mtIndex, SetStateColors);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetStateTextures);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetStateColors);
     REGISTER_TABLE_FUNC(L, mtIndex, GetText);
     REGISTER_TABLE_FUNC(L, mtIndex, GetQuad);
 

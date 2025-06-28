@@ -81,6 +81,24 @@ Sig: `Button:SetStateTextures(normal, hovered, pressed, locked)`
  - Arg: `Vector pressed` Pressed color
  - Arg: `Vector locked` Locked color
 ---
+### GetStateTextures
+Get the textures that are displayed based on the button state.
+
+Sig: `normal, hovered, pressed, locked = Button:GetStateTextures()`
+ - Ret: `Texture normal` Normal texture
+ - Ret: `Texture hovered` Hovered texture
+ - Ret: `Texture pressed` Pressed texture
+ - Ret: `Texture locked` Locked texture
+---
+### GetStateColors
+Get the quad colors (or possibly text colors) that are displayed based on the button state.
+
+Sig: `normal, hovered, pressed, locked = Button:SetStateTextures()`
+ - Ret: `Vector normal` Normal color
+ - Ret: `Vector hovered` Hovered color
+ - Ret: `Vector pressed` Pressed color
+ - Ret: `Vector locked` Locked color
+---
 ### GetText
 Get the internal Text widget used by this Button.
 

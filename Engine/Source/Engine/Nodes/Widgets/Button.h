@@ -40,10 +40,20 @@ public:
     void SetPressedTexture(Texture* texture);
     void SetLockedTexture(Texture* texture);
 
+    Texture* GetNormalTexture();
+    Texture* GetHoveredTexture();
+    Texture* GetPressedTexture();
+    Texture* GetLockedTexture();
+
     void SetNormalColor(glm::vec4 color);
     void SetHoveredColor(glm::vec4 color);
     void SetPressedColor(glm::vec4 color);
     void SetLockedColor(glm::vec4 color);
+
+    glm::vec4 GetNormalColor();
+    glm::vec4 GetHoveredColor();
+    glm::vec4 GetPressedColor();
+    glm::vec4 GetLockedColor();
 
     void SetUseQuadStateColor(bool inUse);
     void SetUseTextStateColor(bool inUse);

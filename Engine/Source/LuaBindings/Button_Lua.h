@@ -26,6 +26,8 @@ struct Button_Lua
     static int GetTextString(lua_State* L);
     static int SetStateTextures(lua_State* L);
     static int SetStateColors(lua_State* L);
+    static int GetStateTextures(lua_State* L);
+    static int GetStateColors(lua_State* L);
     static int GetText(lua_State* L);
     static int GetQuad(lua_State* L);
 

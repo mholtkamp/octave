@@ -289,6 +289,26 @@ void Button::SetLockedTexture(Texture* texture)
     }
 }
 
+Texture* Button::GetNormalTexture()
+{
+    return mNormalTexture.Get<Texture>();
+}
+
+Texture* Button::GetHoveredTexture()
+{
+    return mHoveredTexture.Get<Texture>();
+}
+
+Texture* Button::GetPressedTexture()
+{
+    return mPressedTexture.Get<Texture>();
+}
+
+Texture* Button::GetLockedTexture()
+{
+    return mLockedTexture.Get<Texture>();
+}
+
 void Button::SetNormalColor(glm::vec4 color)
 {
     if (mNormalColor != color)
@@ -323,6 +343,26 @@ void Button::SetLockedColor(glm::vec4 color)
         mLockedColor = color;
         MarkDirty();
     }
+}
+
+glm::vec4 Button::GetNormalColor()
+{
+    return mNormalColor;
+}
+
+glm::vec4 Button::GetHoveredColor()
+{
+    return mHoveredColor;
+}
+
+glm::vec4 Button::GetPressedColor()
+{
+    return mPressedColor;
+}
+
+glm::vec4 Button::GetLockedColor()
+{
+    return mLockedColor;
 }
 
 void Button::SetUseQuadStateColor(bool inUse)
