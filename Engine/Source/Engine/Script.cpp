@@ -1465,7 +1465,7 @@ void Script::CallFunction(const char* name, uint32_t numParams, const Datum** pa
 {
     if (IsActive())
     {
-        ScriptUtils::CallMethod(this, name, numParams, params, ret);
+        ScriptUtils::CallMethod(mOwner, name, numParams, params, ret);
     }
 }
 
@@ -1475,7 +1475,7 @@ Datum Script::GetField(const char* key)
 
     if (IsActive())
     {
-        ret = ScriptUtils::GetField(this, key);
+        ret = ScriptUtils::GetField(mOwner, key);
     }
 
     return ret;
@@ -1486,7 +1486,7 @@ void Script::SetField(const char* key, const Datum& value)
 {
     if (IsActive())
     {
-        ScriptUtils::SetField(this, key, value);
+        ScriptUtils::SetField(mOwner, key, value);
     }
 }
 

@@ -244,6 +244,12 @@ public:
     bool IsOwned() const;
     bool IsLocallyControlled() const;
 
+    Datum GetField(const std::string& key);
+    void SetField(const std::string& name, const Datum& value);
+    Datum GetField(int32_t key);
+    void SetField(int32_t key, const Datum& value);
+    Datum CallFunction(const std::string& name, const std::vector<Datum>& args = {});
+
     NetFunc* FindNetFunc(const char* name);
     NetFunc* FindNetFunc(uint16_t index);
 

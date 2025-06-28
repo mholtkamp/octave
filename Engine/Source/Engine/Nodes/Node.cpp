@@ -1655,6 +1655,41 @@ bool Node::IsLocallyControlled() const
     return IsOwned();
 }
 
+Datum Node::GetField(const std::string& key)
+{
+    return ScriptUtils::GetField(this, key.c_str());
+}
+
+void Node::SetField(const std::string& name, const Datum& value)
+{
+    ScriptUtils::SetField(this, name.c_str(), value);
+}
+
+Datum Node::GetField(int32_t key)
+{
+    return ScriptUtils::GetField(this, key);
+}
+
+void Node::SetField(int32_t key, const Datum& value)
+{
+    ScriptUtils::SetField(this, key, value);
+}
+
+Datum Node::CallFunction(const std::string& name, const std::vector<Datum>& args)
+{
+    Datum ret;
+
+    static std::vector<const Datum*> sArgs;
+    sArgs.resize(args.size());
+    for (uint32_t i = 0; i < args.size(); ++i)
+    {
+        sArgs[i] = &args[i];
+    }
+
+    ScriptUtils::CallMethod(this, name.c_str(), (uint32_t)sArgs.size(), sArgs.data(), &ret);
+    return ret;
+}
+
 void Node::InvokeNetFunc(const char* name)
 {
     const Datum** params = nullptr;

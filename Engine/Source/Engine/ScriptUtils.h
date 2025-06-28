@@ -24,17 +24,16 @@ public:
 
     static uint32_t GetNextScriptInstanceNumber();
 
-    static void CallMethod(Script* script, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret);
     static void CallMethod(Node* node, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret);
     static void SetBreakOnScriptError(bool enableBreak);
 
     static void GarbageCollect();
 
-    static Datum GetField(Script* script, const char* key);
-    static void SetField(Script* script, const char* key, const Datum& value);
+    static Datum GetField(Node* node, const char* key);
+    static void SetField(Node* node, const char* key, const Datum& value);
 
-    static Datum GetField(Script* script, int32_t key);
-    static void SetField(Script* script, int32_t key, const Datum& value);
+    static Datum GetField(Node* node, int32_t key);
+    static void SetField(Node* node, int32_t key, const Datum& value);
 
     static void DumpStack();
 

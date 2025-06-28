@@ -309,12 +309,6 @@ uint32_t ScriptUtils::GetNextScriptInstanceNumber()
     return retNum;
 }
 
-void ScriptUtils::CallMethod(Script* script, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret)
-{
-    Node* node = script ? script->GetOwner() : nullptr;
-    CallMethod(node, funcName, numParams, params, ret);
-}
-
 void ScriptUtils::CallMethod(Node* node, const char* funcName, uint32_t numParams, const Datum** params, Datum* ret)
 {
     lua_State* L = GetLua();
@@ -371,7 +365,7 @@ void ScriptUtils::GarbageCollect()
 #endif
 }
 
-Datum ScriptUtils::GetField(Script* script, const char* key)
+Datum ScriptUtils::GetField(Node* node, const char* key)
 {
     Datum ret;
 
@@ -379,7 +373,7 @@ Datum ScriptUtils::GetField(Script* script, const char* key)
     lua_State* L = GetLua();
 
     // Grab the script instance table
-    Node_Lua::Create(L, script->GetOwner());
+    Node_Lua::Create(L, node);
     OCT_ASSERT(lua_isuserdata(L, -1));
     lua_getfield(L, -1, key);
 
@@ -392,12 +386,12 @@ Datum ScriptUtils::GetField(Script* script, const char* key)
     return ret;
 }
 
-void ScriptUtils::SetField(Script* script, const char* key, const Datum& value)
+void ScriptUtils::SetField(Node* node, const char* key, const Datum& value)
 {
 #if LUA_ENABLED
     lua_State* L = GetLua();
 
-    Node_Lua::Create(L, script->GetOwner());
+    Node_Lua::Create(L, node);
     OCT_ASSERT(lua_isuserdata(L, -1));
 
     LuaPushDatum(L, value);
@@ -408,14 +402,14 @@ void ScriptUtils::SetField(Script* script, const char* key, const Datum& value)
 #endif
 }
 
-Datum ScriptUtils::GetField(Script* script, int32_t key)
+Datum ScriptUtils::GetField(Node* node, int32_t key)
 {
     Datum ret;
 
 #if LUA_ENABLED
     lua_State* L = GetLua();
 
-    Node_Lua::Create(L, script->GetOwner());
+    Node_Lua::Create(L, node);
     OCT_ASSERT(lua_isuserdata(L, -1));
     lua_geti(L, -1, key);
 
@@ -428,13 +422,13 @@ Datum ScriptUtils::GetField(Script* script, int32_t key)
     return ret;
 }
 
-void ScriptUtils::SetField(Script* script, int32_t key, const Datum& value)
+void ScriptUtils::SetField(Node* node, int32_t key, const Datum& value)
 {
 #if LUA_ENABLED
     lua_State* L = GetLua();
 
     // Grab the script instance table
-    Node_Lua::Create(L, script->GetOwner());
+    Node_Lua::Create(L, node);
     OCT_ASSERT(lua_isuserdata(L, -1));
 
     LuaPushDatum(L, value);
