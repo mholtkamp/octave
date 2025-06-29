@@ -14,6 +14,8 @@
 #include "LuaBindings/Widget_Lua.h"
 #include "LuaBindings/World_Lua.h"
 
+DEFINE_OBJECT(Script);
+
 std::unordered_map<std::string, ScriptNetFuncMap> Script::sScriptNetFuncMap;
 
 bool Script::HandleScriptPropChange(Datum* datum, uint32_t index, const void* newValue)

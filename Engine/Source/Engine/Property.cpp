@@ -3,6 +3,8 @@
 #include "Asset.h"
 #include "AssetRef.h"
 #include "Log.h"
+#include "Script.h"
+#include "NodePath.h"
 
 Property::Property()
 {
@@ -33,7 +35,8 @@ Property::Property(
         }
         else
         {
-            mExtra = new Datum(extra);
+            CreateExtraData();
+            *mExtra = extra;
         }
     }
 
@@ -56,7 +59,8 @@ Property::Property(const Property& src) :
 
     if (src.mExtra)
     {
-        mExtra = new Datum(src.mExtra);
+        CreateExtraData();
+        *mExtra = *src.mExtra;
     }
 
 #if EDITOR
@@ -85,13 +89,13 @@ void Property::ReadStream(Stream& stream, uint32_t version, bool net, bool exter
 
         if (hasExtra)
         {
-            mExtra = new Datum();
+            CreateExtraData();
             mExtra->ReadStream(stream, version, net, external);
         }
     }
     else
     {
-        mExtra = new Datum();
+        CreateExtraData();
         mExtra->PushBack(stream.ReadInt32());
     }
 
@@ -103,6 +107,29 @@ void Property::ReadStream(Stream& stream, uint32_t version, bool net, bool exter
 void Property::WriteStream(Stream& stream, bool net) const
 {
     Datum::WriteStream(stream, net);
+
+    if (!net)
+    {
+        if (mType == DatumType::Node)
+        {
+            CreateExtraData();
+
+            for (uint32_t i = 0; i < mCount; ++i)
+            {
+                Node* srcNode = mOwner->As<Node>();
+                if (srcNode == nullptr && mOwner->As<Script>())
+                {
+                    srcNode = mOwner->As<Script>()->GetOwner();
+                }
+
+                const WeakPtr<Node>& dstNode = mData.n[i];
+                std::string nodePath = FindRelativeNodePath(srcNode, dstNode.Get());
+
+                mExtra->SetString(nodePath, i);
+            }
+        }
+    }
+
     stream.WriteString(mName);
 
     stream.WriteBool(mExtra != nullptr);
@@ -110,6 +137,11 @@ void Property::WriteStream(Stream& stream, bool net) const
     if (mExtra != nullptr)
     {
         mExtra->WriteStream(stream, net);
+    }
+
+    if (mType == DatumType::Node)
+    {
+        DestroyExtraData();
     }
 
     // We don't really need to write mIsVector since the values are copied
@@ -139,12 +171,15 @@ void Property::DeepCopy(const Datum& src, bool forceInternalStorage)
         const Property& srcProp = (const Property&)src;
         mName = srcProp.mName;
 
-        if (mExtra != nullptr)
+        if (srcProp.mExtra)
         {
-            delete mExtra;
-            mExtra = nullptr;
+            CreateExtraData();
+            *mExtra = *srcProp.mExtra;
         }
-        mExtra = srcProp.mExtra;
+        else
+        {
+            DestroyExtraData();
+        }
 
         mEnumCount = srcProp.mEnumCount;
         mEnumStrings = srcProp.mEnumStrings;
@@ -160,11 +195,7 @@ void Property::Destroy()
 {
     Datum::Destroy();
 
-    if (mExtra != nullptr)
-    {
-        delete mExtra;
-        mExtra = nullptr;
-    }
+    DestroyExtraData();
 }
 
 // TODO: Replace with individual functions for better type safety.
@@ -611,6 +642,23 @@ bool Property::IsArray() const
     return (IsVector() || mCount > 1);
 }
 
+void Property::CreateExtraData() const
+{
+    if (mExtra == nullptr)
+    {
+        mExtra = new Datum();
+    }
+}
+
+void Property::DestroyExtraData() const
+{
+    if (mExtra != nullptr)
+    {
+        delete mExtra;
+        mExtra = nullptr;
+    }
+}
+
 void Property::Reset()
 {
     Datum::Reset();
@@ -622,11 +670,7 @@ void Property::Reset()
     mMaxCount = 255;
     mIsVector = false;
 
-    if (mExtra != nullptr)
-    {
-        delete mExtra;
-        mExtra = nullptr;
-    }
+    DestroyExtraData();
 }
 
 

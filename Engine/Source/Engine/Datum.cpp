@@ -425,6 +425,9 @@ void Datum::WriteStream(Stream& stream, bool net) const
             case DatumType::Table: mData.t[i].WriteStream(stream, net); break;
             case DatumType::Node:
             {
+                // Node Datums are only serialized over the network.
+                // If this Datum is a Property, then a nodepath will stored in the 
+                // Property's mExtra data (see Propery::WriteStream())
                 if (net)
                 {
                     NetId netId = INVALID_NET_ID;
@@ -436,14 +439,6 @@ void Datum::WriteStream(Stream& stream, bool net) const
                     }
 
                     stream.WriteUint32((uint32_t)netId);
-                }
-                else if (mOwner->As<Node>())
-                {
-                    Node* srcNode = mOwner->As<Node>();
-                    const WeakPtr<Node>& dstNode = mData.n[i];
-                    std::string nodePath = FindRelativeNodePath(srcNode, dstNode.Get());
-
-                    stream.WriteString(nodePath);
                 }
                 break;
             }

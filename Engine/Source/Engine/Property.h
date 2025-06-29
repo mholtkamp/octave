@@ -43,6 +43,9 @@ public:
     bool IsVector() const;
     bool IsArray() const;
 
+    void CreateExtraData() const;
+    void DestroyExtraData() const;
+
 #if EDITOR
     static void SetCategory(const char* category);
     static void ClearCategory();
@@ -57,7 +60,7 @@ public:
     static const char* sCategory;
 
     std::string mName;
-    Datum* mExtra = nullptr;
+    mutable Datum* mExtra = nullptr;
     void* mVector = nullptr;
     uint8_t mMinCount = 0;
     uint8_t mMaxCount = 255;
