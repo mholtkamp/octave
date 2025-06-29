@@ -1117,6 +1117,7 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
             case DatumType::Node:
             {
                 DrawNodeProperty(prop, i, owner, ownerType);
+                break;
             }
             case DatumType::Asset:
             {
