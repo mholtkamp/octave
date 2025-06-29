@@ -11,7 +11,7 @@ Property::Property()
 Property::Property(
     DatumType type,
     const std::string& name,
-    void* owner,
+    Object* owner,
     void* data,
     uint32_t count,
     DatumChangeHandlerFP changeHandler,
@@ -58,9 +58,9 @@ Property& Property::operator=(const Property& src)
     return *this;
 }
 
-void Property::ReadStream(Stream& stream, bool external)
+void Property::ReadStream(Stream& stream, bool net, bool external)
 {
-    Datum::ReadStream(stream, external);
+    Datum::ReadStream(stream, net, external);
     stream.ReadString(mName);
     mExtra = stream.ReadInt32();
 
@@ -69,9 +69,9 @@ void Property::ReadStream(Stream& stream, bool external)
     //mIsVector = stream.ReadBool();
 }
 
-void Property::WriteStream(Stream& stream) const
+void Property::WriteStream(Stream& stream, bool net) const
 {
-    Datum::WriteStream(stream);
+    Datum::WriteStream(stream, net);
     stream.WriteString(mName);
     stream.WriteInt32(mExtra);
 
@@ -80,9 +80,9 @@ void Property::WriteStream(Stream& stream) const
     //stream.WriteBool(mIsVector);
 }
 
-uint32_t Property::GetSerializationSize() const
+uint32_t Property::GetSerializationSize(bool net) const
 {
-    return Datum::GetSerializationSize() + 
+    return Datum::GetSerializationSize(net) +
         GetStringSerializationSize(mName) + 
         sizeof(mExtra);
 }
@@ -189,10 +189,11 @@ void Property::PushBackVector(void* value)
             OCT_ASSERT(0);
             break;
         }
-        case DatumType::Object:
+        case DatumType::Node:
         {
-            // Pointer not supported as vector.
-            OCT_ASSERT(0);
+            std::vector<NodePtrWeak>& vect = *((std::vector<NodePtrWeak>*) mVector);
+            vect.push_back(value ? *((NodePtrWeak*)value) : NodePtrWeak());
+            mData.n = vect.data();
             break;
         }
         case DatumType::Short:
@@ -286,10 +287,10 @@ void Property::EraseVector(uint32_t index)
             OCT_ASSERT(0);
             break;
         }
-        case DatumType::Object:
+        case DatumType::Node:
         {
-            // Pointer not supported as Vector
-            OCT_ASSERT(0);
+            std::vector<NodePtrWeak>& vect = *((std::vector<NodePtrWeak>*) mVector);
+            vect.erase(vect.begin() + index);
             break;
         }
         case DatumType::Short:
@@ -397,10 +398,11 @@ void Property::ResizeVector(uint32_t count)
             OCT_ASSERT(0);
             break;
         }
-        case DatumType::Object:
+        case DatumType::Node:
         {
-            // Pointer not supported as Vector
-            OCT_ASSERT(0);
+            std::vector<NodePtrWeak>& vect = *((std::vector<NodePtrWeak>*) mVector);
+            vect.resize(count);
+            mData.n = vect.data();
             break;
         }
         case DatumType::Short:
@@ -512,10 +514,11 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
             OCT_ASSERT(0);
             break;
         }
-        case DatumType::Object:
+        case DatumType::Node:
         {
-            // Pointer not supported as vector
-            OCT_ASSERT(0);
+            std::vector<NodePtrWeak>& vect = *((std::vector<NodePtrWeak>*) mVector);
+            mData.n = vect.data();
+            mCount = (uint8_t)vect.size();
             break;
         }
         case DatumType::Short:

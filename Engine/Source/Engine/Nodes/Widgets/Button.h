@@ -98,6 +98,11 @@ protected:
     bool mRightClickPress = false;
     glm::vec2 mTextPaddingRatio = { 0.035f, 0.05f };
 
+    WeakPtr<Button> mNavUp;
+    WeakPtr<Button> mNavDown;
+    WeakPtr<Button> mNavLeft;
+    WeakPtr<Button> mNavRight;
+
     Quad* mQuad = nullptr;
     Text* mText = nullptr;
 

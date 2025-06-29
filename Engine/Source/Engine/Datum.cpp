@@ -8,6 +8,8 @@
 #include "Stream.h"
 #include "World.h"
 #include "NetworkManager.h"
+#include "NodePath.h"
+#include "Nodes/Node.h"
 
 #include "System/System.h"
 
@@ -19,7 +21,7 @@ Datum::Datum()
 
 Datum::Datum(
     DatumType type,
-    void* owner,
+    Object* owner,
     void* data,
     uint32_t count,
     DatumChangeHandlerFP changeHandler)
@@ -120,7 +122,7 @@ Datum::Datum(uint8_t value)
     PushBack(value);
 }
 
-Datum::Datum(const WeakPtr<Object>& value)
+Datum::Datum(const WeakPtr<Node>& value)
 {
     Reset();
     PushBack(value);
@@ -235,7 +237,7 @@ uint32_t Datum::GetDataTypeSize() const
         case DatumType::Asset: size = sizeof(AssetRef); break;
         case DatumType::Byte: size = sizeof(uint8_t); break;
         case DatumType::Table: size = sizeof(TableDatum); break;
-        case DatumType::Object: size = sizeof(WeakPtr<Object>); break;
+        case DatumType::Node: size = sizeof(WeakPtr<Node>); break;
         case DatumType::Short: size = sizeof(int16_t); break;
         case DatumType::Function: size = sizeof(ScriptFunc); break;
         
@@ -245,7 +247,7 @@ uint32_t Datum::GetDataTypeSize() const
     return size;
 }
 
-uint32_t Datum::GetDataTypeSerializationSize() const
+uint32_t Datum::GetDataTypeSerializationSize(bool net) const
 {
     uint32_t retSize = 0;
 
@@ -259,7 +261,7 @@ uint32_t Datum::GetDataTypeSerializationSize() const
             if (mType == DatumType::Table)
             {
                 // Tables rely on recursion to determine their total size
-                retSize += mData.t[i].GetDataTypeSerializationSize();
+                retSize += mData.t[i].GetDataTypeSerializationSize(net);
             }
             else
             {
@@ -283,11 +285,26 @@ uint32_t Datum::GetDataTypeSerializationSize() const
             }
         }
     }
-    else if (mType == DatumType::Object)
+    else if (mType == DatumType::Node)
     {
-        // Objects are serialized as NetId's, which are 32 bits.
-        // So this will be different from sizeof(Object*) on 64 bit architectures.
-        retSize += (mCount * sizeof(NetId));
+        if (net)
+        {
+            // Nodes are serialized as NetId's, which are 32 bits.
+            retSize += (mCount * sizeof(NetId));
+        }
+        else
+        {
+            for (uint32_t i = 0; i < mCount; ++i)
+            {
+                Node* srcNode = mOwner->As<Node>();
+                const WeakPtr<Node>& dstNode = mData.n[i];
+                std::string nodePath = FindRelativeNodePath(srcNode, dstNode.Get());
+
+                // Strings serialized as 4 bytes + num chars
+                retSize += sizeof(uint32_t);
+                retSize += uint32_t(nodePath.size());
+            }
+        }
     }
     else
     {
@@ -308,7 +325,7 @@ bool Datum::IsValid() const
     return (mType != DatumType::Count && mCount > 0);
 }
 
-void Datum::ReadStream(Stream& stream, bool external)
+void Datum::ReadStream(Stream& stream, bool net, bool external)
 {
     // If the datum was previously in use, destroy it.
     Destroy();
@@ -364,13 +381,21 @@ void Datum::ReadStream(Stream& stream, bool external)
                     break;
                 }
 
-                case DatumType::Object:
+                case DatumType::Node:
                 {
-                    // Objects can only be serialized if it is an actor AND we
-                    // are serializing across the network.
-                    NetId netId = (NetId)stream.ReadUint32();
-                    Node* localNode = NetworkManager::Get()->GetNetNode(netId);
-                    PushBack(localNode);
+                    if (net)
+                    {
+                        NetId netId = (NetId)stream.ReadUint32();
+                        Node* localNode = NetworkManager::Get()->GetNetNode(netId);
+                        PushBack(localNode);
+                    }
+                    else if (mOwner->As<Node>())
+                    {
+                        // Nodes can reference other nodes
+                        std::string nodePath;
+                        stream.ReadString(nodePath);
+                        AddPendingNodePath(ResolveWeakPtr<Object>(mOwner), this, nodePath);
+                    }
                     break;
                 }
                 case DatumType::Short: PushBack(stream.ReadInt16()); break;
@@ -384,7 +409,7 @@ void Datum::ReadStream(Stream& stream, bool external)
     }
 }
 
-void Datum::WriteStream(Stream& stream) const
+void Datum::WriteStream(Stream& stream, bool net) const
 {
     stream.WriteUint8(uint8_t(mType));
     stream.WriteUint8(mCount);
@@ -405,20 +430,28 @@ void Datum::WriteStream(Stream& stream) const
             case DatumType::Asset: stream.WriteAsset(mData.as[i]); break;
             case DatumType::Byte: stream.WriteUint8(mData.by[i]); break;
             case DatumType::Table: mData.t[i].WriteStream(stream); break;
-            case DatumType::Object:
+            case DatumType::Node:
             {
-                // Objects can only be serialized if it is an actor AND we
-                // are serializing across the network.
-                NetId netId = INVALID_NET_ID; 
-                Object* obj = mData.p[i].Get();
-                Node* node = obj ? obj->As<Node>() : nullptr;
-
-                if (node != nullptr)
+                if (net)
                 {
-                    netId = node->GetNetId();
-                }
+                    NetId netId = INVALID_NET_ID;
+                    Node* node = mData.n[i].Get();
 
-                stream.WriteUint32((uint32_t)netId);
+                    if (node != nullptr)
+                    {
+                        netId = node->GetNetId();
+                    }
+
+                    stream.WriteUint32((uint32_t)netId);
+                }
+                else if (mOwner->As<Node>())
+                {
+                    Node* srcNode = mOwner->As<Node>();
+                    const WeakPtr<Node>& dstNode = mData.n[i];
+                    std::string nodePath = FindRelativeNodePath(srcNode, dstNode.Get());
+
+                    stream.WriteString(nodePath);
+                }
                 break;
             }
             case DatumType::Short: stream.WriteInt16(mData.sh[i]); break;
@@ -431,12 +464,12 @@ void Datum::WriteStream(Stream& stream) const
     }
 }
 
-uint32_t Datum::GetSerializationSize() const
+uint32_t Datum::GetSerializationSize(bool net) const
 {
     uint32_t retSize = 
         sizeof(mType) + 
         sizeof(mCount) + 
-        GetDataTypeSerializationSize();
+        GetDataTypeSerializationSize(net);
 
     return retSize;
 }
@@ -511,11 +544,11 @@ void Datum::SetTableDatum(const TableDatum& value, uint32_t index)
         mData.t[index] = value;
 }
 
-void Datum::SetObject(const WeakPtr<Object>& value, uint32_t index)
+void Datum::SetNode(const WeakPtr<Node>& value, uint32_t index)
 {
-    PreSet(index, DatumType::Object);
+    PreSet(index, DatumType::Node);
     if (!mChangeHandler || !mChangeHandler(this, index, &value))
-        mData.p[index] = value;
+        mData.n[index] = value;
 }
 
 void Datum::SetShort(int16_t value, uint32_t index)
@@ -558,7 +591,7 @@ void Datum::SetValue(const void* value, uint32_t index, uint32_t count)
             case DatumType::Asset: SetAsset((reinterpret_cast<const AssetRef*>(value) + i)->Get(),    index + i); break;
             case DatumType::Byte: SetByte(*(reinterpret_cast<const uint8_t*>(value) + i),             index + i); break;
             case DatumType::Table: SetTableDatum(*(reinterpret_cast<const TableDatum*>(value) + i),   index + i); break;
-            case DatumType::Object: SetObject(*(reinterpret_cast<const WeakPtr<Object>*>(value) + i), index + i); break;
+            case DatumType::Node: SetNode(*(reinterpret_cast<const WeakPtr<Node>*>(value) + i),       index + i); break;
             case DatumType::Short: SetShort(*(reinterpret_cast<const int16_t*>(value) + i),           index + i); break;
             case DatumType::Function: SetFunction(*(reinterpret_cast<const ScriptFunc*>(value) + i),  index + i); break;
             case DatumType::Count: break;
@@ -581,7 +614,7 @@ void Datum::SetValueRaw(const void* value, uint32_t index)
     case DatumType::Asset: mData.as[index] = *reinterpret_cast<const Asset* const*>(value); break;
     case DatumType::Byte: mData.by[index] = *reinterpret_cast<const uint8_t*>(value); break;
     case DatumType::Table: mData.t[index] = *reinterpret_cast<const TableDatum*>(value); break;
-    case DatumType::Object: mData.p[index] = *reinterpret_cast<const WeakPtr<Object>*>(value); break;
+    case DatumType::Node: mData.n[index] = *reinterpret_cast<const WeakPtr<Node>*>(value); break;
     case DatumType::Short: mData.sh[index] = *reinterpret_cast<const int16_t*>(value); break;
     case DatumType::Function: mData.fn[index] = *reinterpret_cast<const ScriptFunc*>(value); break;
 
@@ -651,11 +684,11 @@ void Datum::SetExternal(TableDatum* data, uint32_t count)
     PostSetExternal(DatumType::Table, count);
 }
 
-void Datum::SetExternal(WeakPtr<Object>* data, uint32_t count)
+void Datum::SetExternal(WeakPtr<Node>* data, uint32_t count)
 {
-    PreSetExternal(DatumType::Object);
-    mData.p = data;
-    PostSetExternal(DatumType::Object, count);
+    PreSetExternal(DatumType::Node);
+    mData.n = data;
+    PostSetExternal(DatumType::Node, count);
 }
 
 void Datum::SetExternal(int16_t* data, uint32_t count)
@@ -738,10 +771,10 @@ const TableDatum& Datum::GetTableDatum(uint32_t index) const
     return mData.t[index];
 }
 
-WeakPtr<Object> Datum::GetObject(uint32_t index) const
+WeakPtr<Node> Datum::GetNode(uint32_t index) const
 {
-    PreGet(index, DatumType::Object);
-    return mData.p[index];
+    PreGet(index, DatumType::Node);
+    return mData.n[index];
 }
 
 int16_t Datum::GetShort(uint32_t index) const
@@ -810,10 +843,10 @@ uint8_t& Datum::GetByteRef(uint32_t index)
     return mData.by[index];
 }
 
-WeakPtr<Object>& Datum::GetObjectRef(uint32_t index)
+WeakPtr<Node>& Datum::GetNodeRef(uint32_t index)
 {
-    PreGet(index, DatumType::Object);
-    return mData.p[index];
+    PreGet(index, DatumType::Node);
+    return mData.n[index];
 }
 
 int16_t& Datum::GetShortRef(uint32_t index)
@@ -827,7 +860,6 @@ ScriptFunc& Datum::GetFunctionRef(uint32_t index)
     PreGet(index, DatumType::Function);
     return mData.fn[index];
 }
-
 
 TableDatum* Datum::FindTableDatum(const char* key)
 {
@@ -974,16 +1006,16 @@ TableDatum* Datum::PushBackTableDatum(const TableDatum& value)
     return (mData.t + (mCount - 1));
 }
 
-void Datum::PushBack(const WeakPtr<Object>& value)
+void Datum::PushBack(const WeakPtr<Node>& value)
 {
-    PrePushBack(DatumType::Object);
-    new (mData.p + mCount) WeakPtr<Object>(value);
+    PrePushBack(DatumType::Node);
+    new (mData.n + mCount) WeakPtr<Node>(value);
     mCount++;
 }
 
 void Datum::PushBack(Node* node)
 {
-    PushBack(ResolveWeakPtr<Object>(node));
+    PushBack(ResolveWeakPtr<Node>(node));
 }
 
 void Datum::PushBack(int16_t value)
@@ -1080,7 +1112,7 @@ DEFINE_GET_FIELD(const char*, Vector2D, glm::vec2, {})
 DEFINE_GET_FIELD(const char*, Vector, glm::vec3, {})
 DEFINE_GET_FIELD(const char*, Color, glm::vec4, {})
 DEFINE_GET_FIELD(const char*, Asset, Asset*, nullptr)
-DEFINE_GET_FIELD(const char*, Object, WeakPtr<Object>, {})
+DEFINE_GET_FIELD(const char*, Node, WeakPtr<Node>, {})
 DEFINE_GET_FIELD(const char*, Function, ScriptFunc, {})
 
 //DEFINE_GET_FIELD(int32_t, Integer, int32_t, 0)
@@ -1134,7 +1166,7 @@ DEFINE_GET_FIELD(int32_t, Vector2D, glm::vec2, {})
 DEFINE_GET_FIELD(int32_t, Vector, glm::vec3, {})
 DEFINE_GET_FIELD(int32_t, Color, glm::vec4, {})
 DEFINE_GET_FIELD(int32_t, Asset, Asset*, nullptr)
-DEFINE_GET_FIELD(int32_t, Object, WeakPtr<Object>, {})
+DEFINE_GET_FIELD(int32_t, Node, WeakPtr<Node>, {})
 DEFINE_GET_FIELD(int32_t, Function, ScriptFunc, {})
 
 TableDatum& Datum::GetTableField(const char* key)
@@ -1200,7 +1232,7 @@ DEFINE_SET_FIELD(const char*, Vector2D, glm::vec2)
 DEFINE_SET_FIELD(const char*, Vector, glm::vec3)
 DEFINE_SET_FIELD(const char*, Color, glm::vec4)
 DEFINE_SET_FIELD(const char*, Asset, Asset*)
-DEFINE_SET_FIELD(const char*, Object, const WeakPtr<Object>&)
+DEFINE_SET_FIELD(const char*, Node, const WeakPtr<Node>&)
 DEFINE_SET_FIELD(const char*, Function, const ScriptFunc&)
 
 DEFINE_SET_FIELD(int32_t, Integer, int32_t)
@@ -1211,7 +1243,7 @@ DEFINE_SET_FIELD(int32_t, Vector2D, glm::vec2)
 DEFINE_SET_FIELD(int32_t, Vector, glm::vec3)
 DEFINE_SET_FIELD(int32_t, Color, glm::vec4)
 DEFINE_SET_FIELD(int32_t, Asset, Asset*)
-DEFINE_SET_FIELD(int32_t, Object, const WeakPtr<Object>&)
+DEFINE_SET_FIELD(int32_t, Node, const WeakPtr<Node>&)
 DEFINE_SET_FIELD(int32_t, Function, const ScriptFunc&)
 
 void Datum::SetTableField(const char* key, const TableDatum& value)
@@ -1349,10 +1381,10 @@ Datum& Datum::operator=(uint8_t src)
     return *this;
 }
 
-Datum& Datum::operator=(const WeakPtr<Object>& src)
+Datum& Datum::operator=(const WeakPtr<Node>& src)
 {
-    PreAssign(DatumType::Object);
-    mData.p[0] = src;
+    PreAssign(DatumType::Node);
+    mData.n[0] = src;
     return *this;
 }
 
@@ -1544,26 +1576,26 @@ bool Datum::operator==(const uint8_t& other) const
     return mData.by[0] == other;
 }
 
-bool Datum::operator==(const Object*& other) const
+bool Datum::operator==(const Node*& other) const
 {
     if (mCount == 0 ||
-        mType != DatumType::Object)
+        mType != DatumType::Node)
     {
         return false;
     }
 
-    return mData.p[0] == other;
+    return mData.n[0] == other;
 }
 
-bool Datum::operator==(const WeakPtr<Object>& other) const
+bool Datum::operator==(const WeakPtr<Node>& other) const
 {
     if (mCount == 0 ||
-        mType != DatumType::Object)
+        mType != DatumType::Node)
     {
         return false;
     }
 
-    return mData.p[0] == other;
+    return mData.n[0] == other;
 }
 
 bool Datum::operator==(const int16_t& other) const
@@ -1648,12 +1680,12 @@ bool Datum::operator!=(const uint8_t& other) const
     return !operator==(other);
 }
 
-bool Datum::operator!=(const Object*& other) const
+bool Datum::operator!=(const Node*& other) const
 {
     return !operator==(other);
 }
 
-bool Datum::operator!=(const WeakPtr<Object>& other) const
+bool Datum::operator!=(const WeakPtr<Node>& other) const
 {
     return !operator==(other);
 }
@@ -1802,8 +1834,8 @@ void Datum::DeepCopy(const Datum& src, bool forceInternalStorage)
             case DatumType::Table:
                 PushBackTableDatum(*(src.mData.t + i));
                 break;
-            case DatumType::Object:
-                PushBack(*(src.mData.p + i));
+            case DatumType::Node:
+                PushBack(*(src.mData.n + i));
                 break;
             case DatumType::Short:
                 PushBack(*(src.mData.sh + i));
@@ -1975,8 +2007,8 @@ void Datum::ConstructData(DatumData& dataUnion, uint32_t index)
     case DatumType::Table:
         new (dataUnion.t + index) TableDatum();
         break;
-    case DatumType::Object:
-        dataUnion.p[index] = nullptr;
+    case DatumType::Node:
+        dataUnion.n[index] = nullptr;
         break;
     case DatumType::Short:
         dataUnion.sh[index] = 0;

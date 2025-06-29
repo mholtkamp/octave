@@ -18,6 +18,7 @@ class AssetRef;
 class TableDatum;
 class ScriptFunc;
 class Object;
+class Node;
 
 enum class DatumType : uint8_t
 {
@@ -31,7 +32,7 @@ enum class DatumType : uint8_t
     Asset,
     Byte,
     Table,
-    Object,
+    Node,
     Short,
     Function,
 
@@ -51,7 +52,7 @@ union DatumData
     //ActorRef* ac;
     uint8_t* by;
     TableDatum* t;
-    WeakPtr<Object>* p;
+    WeakPtr<Node>* n;
     int16_t* sh;
     ScriptFunc* fn;
     void* vp;
@@ -64,7 +65,7 @@ public:
     Datum();
     Datum(
         DatumType type,
-        void* owner,
+        Object* owner,
         void* data,
         uint32_t count = 1u,
         DatumChangeHandlerFP changeHandler = nullptr);
@@ -84,7 +85,7 @@ public:
     Datum(Asset* value);
     Datum(const AssetRef& value);
     Datum(uint8_t value);
-    Datum(const WeakPtr<Object>& value);
+    Datum(const WeakPtr<Node>& value);
     Datum(Node* value);
     Datum(int16_t value);
     Datum(const ScriptFunc& func);
@@ -115,7 +116,7 @@ public:
     operator Asset*() const { return GetAsset(); }
     //operator AssetRef() const; Not sure if needed??
     operator uint8_t() const { return (mType == DatumType::Integer) ? uint8_t(GetInteger()) : GetByte(); }
-    operator WeakPtr<Object>() const { return GetObject(); }
+    operator WeakPtr<Node>() const { return GetNode(); }
     operator int16_t() const { return (mType == DatumType::Integer) ? int16_t(GetInteger()) : GetShort(); }
     // ScriptFunc conversion is defined as a constructor in ScriptFunc class
 
@@ -126,14 +127,14 @@ public:
     void SetCount(uint32_t count);
     
     uint32_t GetDataTypeSize() const;
-    uint32_t GetDataTypeSerializationSize() const;
+    uint32_t GetDataTypeSerializationSize(bool net) const;
 
     bool IsExternal() const;
     bool IsValid() const;
 
-    virtual void ReadStream(Stream& stream, bool external);
-    virtual void WriteStream(Stream& stream) const;
-    virtual uint32_t GetSerializationSize() const;
+    virtual void ReadStream(Stream& stream, bool net, bool external);
+    virtual void WriteStream(Stream& stream, bool net) const;
+    virtual uint32_t GetSerializationSize(bool net) const;
 
     void SetInteger(int32_t value, uint32_t index = 0);
     void SetFloat(float value, uint32_t index = 0);
@@ -145,7 +146,7 @@ public:
     void SetAsset(const Asset* value, uint32_t index = 0);
     void SetByte(uint8_t value, uint32_t index = 0);
     void SetTableDatum(const TableDatum& value, uint32_t index = 0);
-    void SetObject(const WeakPtr<Object>& value, uint32_t index = 0);
+    void SetNode(const WeakPtr<Node>& value, uint32_t index = 0);
     void SetShort(int16_t value, uint32_t index = 0);
     void SetFunction(const ScriptFunc& value, uint32_t index = 0);
 
@@ -162,7 +163,7 @@ public:
     void SetExternal(AssetRef* data,  uint32_t count = 1);
     void SetExternal(uint8_t* data,  uint32_t count = 1);
     void SetExternal(TableDatum* data, uint32_t count = 1);
-    void SetExternal(WeakPtr<Object>* data, uint32_t count = 1);
+    void SetExternal(WeakPtr<Node>* data, uint32_t count = 1);
     void SetExternal(int16_t* data, uint32_t count = 1);
     void SetExternal(ScriptFunc* data, uint32_t count = 1);
 
@@ -177,7 +178,7 @@ public:
     uint8_t GetByte(uint32_t index = 0) const;
     TableDatum& GetTableDatum(uint32_t index = 0);
     const TableDatum& GetTableDatum(uint32_t index = 0) const;
-    WeakPtr<Object> GetObject(uint32_t index = 0) const;
+    WeakPtr<Node> GetNode(uint32_t index = 0) const;
     int16_t GetShort(uint32_t index = 0) const;
     const ScriptFunc& GetFunction(uint32_t index = 0) const;
 
@@ -190,7 +191,7 @@ public:
     glm::vec4& GetColorRef(uint32_t index = 0);
     AssetRef& GetAssetRef(uint32_t index = 0);
     uint8_t& GetByteRef(uint32_t index = 0);
-    WeakPtr<Object>& GetObjectRef(uint32_t index = 0);
+    WeakPtr<Node>& GetNodeRef(uint32_t index = 0);
     int16_t& GetShortRef(uint32_t index = 0);
     ScriptFunc& GetFunctionRef(uint32_t index = 0);
 
@@ -205,7 +206,7 @@ public:
     void PushBack(Asset* value);
     void PushBack(uint8_t value);
     TableDatum* PushBackTableDatum(const TableDatum& value);
-    void PushBack(const WeakPtr<Object>& value);
+    void PushBack(const WeakPtr<Node>& value);
     void PushBack(Node* node);
     void PushBack(int16_t value);
     void PushBack(const ScriptFunc& value);
@@ -228,7 +229,7 @@ public:
     glm::vec3 GetVectorField(const char* key);
     glm::vec4 GetColorField(const char* key);
     Asset* GetAssetField(const char* key);
-    WeakPtr<Object> GetObjectField(const char* key);
+    WeakPtr<Node> GetNodeField(const char* key);
     TableDatum& GetTableField(const char* key);
     ScriptFunc GetFunctionField(const char* key);
 
@@ -240,7 +241,7 @@ public:
     glm::vec3 GetVectorField(int32_t key);
     glm::vec4 GetColorField(int32_t key);
     Asset* GetAssetField(int32_t key);
-    WeakPtr<Object> GetObjectField(int32_t key);
+    WeakPtr<Node> GetNodeField(int32_t key);
     TableDatum& GetTableField(int32_t key);
     ScriptFunc GetFunctionField(int32_t key);
 
@@ -252,7 +253,7 @@ public:
     void SetVectorField(const char* key, glm::vec3 value);
     void SetColorField(const char* key, glm::vec4 value);
     void SetAssetField(const char* key, Asset* value);
-    void SetObjectField(const char* key, const WeakPtr<Object>& value);
+    void SetNodeField(const char* key, const WeakPtr<Node>& value);
     void SetTableField(const char* key, const TableDatum& value);
     void SetFunctionField(const char* key, const ScriptFunc& value);
 
@@ -264,7 +265,7 @@ public:
     void SetVectorField(int32_t key, glm::vec3 value);
     void SetColorField(int32_t key, glm::vec4 value);
     void SetAssetField(int32_t key, Asset* value);
-    void SetObjectField(int32_t key, const WeakPtr<Object>& value);
+    void SetNodeField(int32_t key, const WeakPtr<Node>& value);
     void SetTableField(int32_t key, const TableDatum& value);
     void SetFunctionField(int32_t key, const ScriptFunc& value);
 
@@ -284,8 +285,8 @@ public:
     Datum& operator=(const glm::vec4& src);
     Datum& operator=(Asset* src);
     Datum& operator=(uint8_t src);
-    //Datum& operator=(Object* src);
-    Datum& operator=(const WeakPtr<Object>& src);
+    //Datum& operator=(Node* src);
+    Datum& operator=(const WeakPtr<Node>& src);
     Datum& operator=(int16_t src);
     Datum& operator=(const ScriptFunc& src);
 
@@ -303,8 +304,8 @@ public:
     bool operator==(const Asset*& other) const;
     bool operator==(const uint32_t& other) const;
     bool operator==(const uint8_t& other) const;
-    bool operator==(const Object*& other) const;
-    bool operator==(const WeakPtr<Object>& other) const;
+    bool operator==(const Node*& other) const;
+    bool operator==(const WeakPtr<Node>& other) const;
     bool operator==(const int16_t& other) const;
     bool operator==(const ScriptFunc& other) const;
 
@@ -321,8 +322,8 @@ public:
     bool operator!=(const Asset*& other) const;
     bool operator!=(const uint32_t& other) const;
     bool operator!=(const uint8_t& other) const;
-    bool operator!=(const Object*& other) const;
-    bool operator!=(const WeakPtr<Object>& other) const;
+    bool operator!=(const Node*& other) const;
+    bool operator!=(const WeakPtr<Node>& other) const;
     bool operator!=(const int16_t& other) const;
     bool operator!=(const ScriptFunc& other) const;
 
@@ -355,7 +356,7 @@ public:
     DatumType mType = DatumType::Count;
     bool mExternal : 1;
     bool mForceScriptArray : 1;
-    void* mOwner = nullptr;
+    Object* mOwner = nullptr;
     DatumData mData = {};
     DatumChangeHandlerFP mChangeHandler = nullptr;
     uint8_t mCount = 0;

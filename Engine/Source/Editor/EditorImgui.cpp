@@ -674,6 +674,71 @@ static void AssignAssetToProperty(Object* owner, PropertyOwnerType ownerType, Pr
     }
 }
 
+static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, PropertyOwnerType ownerType)
+{
+    Node* node = prop.GetNode(index).Get();
+    ActionManager* am = ActionManager::Get();
+ 
+    if (IsControlDown())
+    {
+        if (ImGui::Button("<*") && node)
+        {
+            GetEditorState()->SetSelectedNode(node);
+        }
+    }
+    else if (IsAltDown())
+    {
+        if (ImGui::Button("^*") && node)
+        {
+            GetEditorState()->InspectObject(node);
+        }
+    }
+    else
+    {
+        if (ImGui::Button("*>"))
+        {
+            Node* selNode = GetEditorState()->GetSelectedNode();
+            if (selNode != nullptr)
+            {
+                ActionManager::Get()->EXE_EditProperty(owner, ownerType, prop.mName, index, selNode);
+            }
+        }
+
+        if (node != nullptr &&
+            ImGui::IsItemHovered() &&
+            IsKeyJustDown(KEY_DELETE))
+        {
+            am->EXE_EditProperty(owner, ownerType, prop.mName, index, (Node*) nullptr);
+        }
+    }
+
+    ImGui::SameLine();
+
+    static std::string sTempString;
+    sTempString = GetRelativeNodePath(owner, node);
+
+    ImGui::InputText("##NodeNameStr", &sTempString);
+
+    if (ImGui::IsItemDeactivatedAfterEdit())
+    {
+        if (sTempString == "null" ||
+            sTempString == "NULL" ||
+            sTempString == "Null")
+        {
+            Node* nullNode = nullptr;
+            if (ownerType != PropertyOwnerType::Count)
+            {
+                am->EXE_EditProperty(owner, ownerType, prop.mName, index, nullNode);
+            }
+        }
+        else
+        {
+            Node* newNode = ResolveRelativeNodePath(mOwner, sTempString);
+            am->EXE_EditProperty(owner, ownerType, prop.mName, index, newNode);
+        }
+    }
+}
+
 static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOwnerType ownerType)
 {
     Asset* asset = prop.GetAsset(index);
@@ -729,7 +794,6 @@ static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, Pro
     ImGui::SameLine();
 
     static std::string sTempString;
-    static std::string sOrigVal;
     sTempString = asset ? asset->GetName() : "";
 
     ImGui::InputText("##AssetNameStr", &sTempString);
@@ -1039,6 +1103,10 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                     prop.SetColor(propVal, i);
                 }
                 break;
+            }
+            case DatumType::Node:
+            {
+                DrawNodeProperty(prop, i, owner, ownerType);
             }
             case DatumType::Asset:
             {

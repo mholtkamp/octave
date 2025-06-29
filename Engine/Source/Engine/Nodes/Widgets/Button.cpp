@@ -105,6 +105,11 @@ void Button::GatherProperties(std::vector<Property>& props)
         props.push_back(Property(DatumType::Bool, "Quad State Color", this, &mUseQuadStateColor, 1, HandlePropChange));
         props.push_back(Property(DatumType::Bool, "Auto Size Text", this, &mAutoSizeText, 1, HandlePropChange));
         props.push_back(Property(DatumType::Bool, "Right Click Press", this, &mRightClickPress, 1, HandlePropChange));
+
+        props.push_back(Property(DatumType::Object, "Nav Up", this, &mNavUp));
+        props.push_back(Property(DatumType::Object, "Nav Down", this, &mNavDown));
+        props.push_back(Property(DatumType::Object, "Nav Left", this, &mNavLeft));
+        props.push_back(Property(DatumType::Object, "Nav Right", this, &mNavRight));
     }
 
     {
