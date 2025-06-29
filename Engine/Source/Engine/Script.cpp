@@ -216,7 +216,7 @@ void Script::GatherScriptProperties()
                             if (newProp.mName != "" &&
                                 type != DatumType::Count &&
                                 type != DatumType::Table &&
-                                type != DatumType::Object)
+                                type != DatumType::Node)
                             {
                                 int32_t count = 1;
                                 int tableIdx = -1;
@@ -357,10 +357,14 @@ void Script::GatherScriptProperties()
                                         break;
                                     }
 
-                                    case DatumType::Object:
+                                    case DatumType::Node:
                                     {
-                                        LogError("Object script properties are not supported.");
-                                        OCT_ASSERT(0);
+                                        Node* node = nullptr;
+                                        if (!lua_isnil(L, -1))
+                                        {
+                                            node = CHECK_NODE(L, -1);
+                                        }
+                                        newProp.PushBack(node);
                                         break;
                                     }
 
@@ -611,9 +615,8 @@ void Script::GatherReplicatedData()
                                     break;
                                 }
 
-                                case DatumType::Object:
+                                case DatumType::Node:
                                 {
-                                    // Only actor pointers are supported right now.
                                     Node* nodePointer = CHECK_NODE(L, -1);
                                     newDatum.PushBack(nodePointer);
                                     break;
@@ -971,10 +974,14 @@ bool Script::DownloadDatum(lua_State* L, Datum& datum, int udIdx, const char* va
             break;
         }
 
-        case DatumType::Object:
+        case DatumType::Node:
         {
-            success = false;
-            LogError("Object script properties are not supported.");
+            Node* node = nullptr;
+            if (!lua_isnil(L, -1))
+            {
+                node = CHECK_NODE(L, -1);
+            }
+            datum.SetNode(ResolveWeakPtr<Node>(node));
             break;
         }
 
@@ -1046,9 +1053,9 @@ void Script::UploadDatum(Datum& datum, const char* varName)
             case DatumType::Asset: Asset_Lua::Create(L, datum.GetAsset(i)); break;
             case DatumType::Byte: lua_pushinteger(L, (int32_t)datum.GetByte(i)); break;
             case DatumType::Short: lua_pushinteger(L, (int32_t)datum.GetShort(i)); break;
+            case DatumType::Node: Node_Lua::Create(L, datum.GetNode(i).Get()); break;
 
             case DatumType::Table:
-            case DatumType::Object:
             case DatumType::Function:
             case DatumType::Count:
                 // These datum types are not supported.

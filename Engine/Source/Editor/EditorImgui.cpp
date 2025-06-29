@@ -10,7 +10,9 @@
 #include "Log.h"
 #include "AssetDir.h"
 #include "Grid.h"
+#include "Script.h"
 #include "PaintManager.h"
+#include "NodePath.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/InstancedMesh3d.h"
@@ -646,9 +648,9 @@ static void AssignAssetToProperty(Object* owner, PropertyOwnerType ownerType, Pr
         newAsset != prop.GetAsset())
     {
         TypeId newType = newAsset->GetType();
-        TypeId propId = (TypeId)prop.mExtra;
+        TypeId propId = prop.mExtra ? (TypeId)prop.mExtra->GetInteger() : 0;
 
-        bool matchingType = (prop.mExtra == 0 || newType == TypeId(prop.mExtra));
+        bool matchingType = (prop.mExtra == nullptr || newType == TypeId(prop.mExtra->GetInteger()));
 
         // HACK: Handle derived class types.
         if (propId == Material::GetStaticType() &&
@@ -715,7 +717,15 @@ static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, Prop
     ImGui::SameLine();
 
     static std::string sTempString;
-    sTempString = GetRelativeNodePath(owner, node);
+
+    Node* src = owner->As<Node>();
+
+    if (!src && owner->As<Script>())
+    {
+        src = owner->As<Script>()->GetOwner();
+    }
+
+    sTempString = FindRelativeNodePath(src, node);
 
     ImGui::InputText("##NodeNameStr", &sTempString);
 
@@ -733,7 +743,7 @@ static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, Prop
         }
         else
         {
-            Node* newNode = ResolveRelativeNodePath(mOwner, sTempString);
+            Node* newNode = ResolveNodePath(src, sTempString);
             am->EXE_EditProperty(owner, ownerType, prop.mName, index, newNode);
         }
     }
@@ -747,7 +757,7 @@ static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, Pro
     bool useAssetColor = (prop.mExtra != 0);
     if (useAssetColor)
     {
-        glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor((TypeId)prop.mExtra);
+        glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor(prop.mExtra ? (TypeId)prop.mExtra->GetInteger() : 0);
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
     }
 
@@ -1126,8 +1136,9 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                         am->EXE_EditProperty(owner, ownerType, prop.mName, i, (uint8_t)propVal);
                     }
                 }
-                else if (prop.mExtra == int32_t(ByteExtra::FlagWidget) ||
-                    prop.mExtra == int32_t(ByteExtra::ExclusiveFlagWidget)) // Should these be bitwise checks?
+                else if (prop.mExtra &&
+                    (prop.mExtra->GetInteger() == int32_t(ByteExtra::FlagWidget) ||
+                    prop.mExtra->GetInteger() == int32_t(ByteExtra::ExclusiveFlagWidget))) // Should these be bitwise checks?
                 {
                     ImVec2 itemSpacing = ImGui::GetStyle().ItemSpacing;
                     itemSpacing.x = 2.0f;

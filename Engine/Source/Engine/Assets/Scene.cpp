@@ -74,7 +74,7 @@ void Scene::LoadStream(Stream& stream, Platform platform)
         def.mProperties.resize(numProps);
         for (uint32_t p = 0; p < numProps; ++p)
         {
-            def.mProperties[p].ReadStream(stream, false);
+            def.mProperties[p].ReadStream(stream, false, false);
         }
 
         if (mVersion >= ASSET_VERSION_SCENE_EXTRA_DATA)
@@ -145,7 +145,7 @@ void Scene::SaveStream(Stream& stream, Platform platform)
         stream.WriteUint32((uint32_t)def.mProperties.size());
         for (uint32_t p = 0; p < def.mProperties.size(); ++p)
         {
-            def.mProperties[p].WriteStream(stream);
+            def.mProperties[p].WriteStream(stream, false);
         }
 
         stream.WriteUint32((uint32_t)def.mExtraData.size());

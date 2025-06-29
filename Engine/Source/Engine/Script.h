@@ -3,6 +3,7 @@
 #include "Nodes/Node.h"
 #include "ScriptFunc.h"
 #include "NetFunc.h"
+#include "Object.h"
 
 #include "NetworkManager.h"
 
@@ -14,9 +15,11 @@ struct Node_Lua;
 
 typedef std::unordered_map<std::string, ScriptNetFunc> ScriptNetFuncMap;
 
-class Script
+class Script : public Object
 {
 public:
+
+    DECLARE_OBJECT(Script, Object);
 
     Script(Node* owner);
     virtual ~Script();

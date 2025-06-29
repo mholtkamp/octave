@@ -377,7 +377,7 @@ void Datum::ReadStream(Stream& stream, bool net, bool external)
                 case DatumType::Table:
                 {
                     PushBackTableDatum((TableDatum()));
-                    mData.t[i].ReadStream(stream, external);
+                    mData.t[i].ReadStream(stream, net, external);
                     break;
                 }
 
@@ -388,13 +388,6 @@ void Datum::ReadStream(Stream& stream, bool net, bool external)
                         NetId netId = (NetId)stream.ReadUint32();
                         Node* localNode = NetworkManager::Get()->GetNetNode(netId);
                         PushBack(localNode);
-                    }
-                    else if (mOwner->As<Node>())
-                    {
-                        // Nodes can reference other nodes
-                        std::string nodePath;
-                        stream.ReadString(nodePath);
-                        AddPendingNodePath(ResolveWeakPtr<Object>(mOwner), this, nodePath);
                     }
                     break;
                 }
@@ -429,7 +422,7 @@ void Datum::WriteStream(Stream& stream, bool net) const
             case DatumType::Color: stream.WriteVec4(mData.v4[i]); break;
             case DatumType::Asset: stream.WriteAsset(mData.as[i]); break;
             case DatumType::Byte: stream.WriteUint8(mData.by[i]); break;
-            case DatumType::Table: mData.t[i].WriteStream(stream); break;
+            case DatumType::Table: mData.t[i].WriteStream(stream, net); break;
             case DatumType::Node:
             {
                 if (net)

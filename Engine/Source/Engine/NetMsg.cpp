@@ -323,7 +323,7 @@ void NetMsgReplicate::Read(Stream& stream)
         // We are assuming the stream data will persist for the duration
         // of this message's life cycle (until Execute() is called).
         // This avoids allocation and copying data.
-        mData[i].ReadStream(stream, false);
+        mData[i].ReadStream(stream, true, false);
     }
 }
 
@@ -339,7 +339,7 @@ void NetMsgReplicate::Write(Stream& stream) const
     for (uint32_t i = 0; i < mNumVariables; ++i)
     {
         stream.WriteUint16(mIndices[i]);
-        mData[i].WriteStream(stream);
+        mData[i].WriteStream(stream, true);
     }
 
     // Multiple replicate messages will need to be send for an actor
@@ -463,7 +463,7 @@ void NetMsgInvoke::Read(Stream& stream)
 
     for (uint32_t i = 0; i < mNumParams; ++i)
     {
-        mParams[i].ReadStream(stream, false);
+        mParams[i].ReadStream(stream, true, false);
     }
 }
 
@@ -478,7 +478,7 @@ void NetMsgInvoke::Write(Stream& stream) const
 
     for (uint32_t i = 0; i < mNumParams; ++i)
     {
-        mParams[i].WriteStream(stream);
+        mParams[i].WriteStream(stream, true);
     }
 
     OCT_ASSERT(stream.GetPos() < OCT_MAX_MSG_BODY_SIZE);

@@ -1,4 +1,5 @@
 #include "Property.h"
+#include "TableDatum.h"
 #include "Asset.h"
 #include "AssetRef.h"
 #include "Log.h"
@@ -15,15 +16,26 @@ Property::Property(
     void* data,
     uint32_t count,
     DatumChangeHandlerFP changeHandler,
-    int32_t extra,
+    Datum extra,
     int32_t enumCount,
     const char** enumStrings) :
     Datum(type, owner, data, count, changeHandler)
 {
     mName = name;
-    mExtra = extra;
     mEnumCount = enumCount;
     mEnumStrings = enumStrings;
+
+    if (extra.IsValid())
+    {
+        if (extra == 0)
+        {
+            LogWarning("[%s] Zero extra", mName.c_str());
+        }
+        else
+        {
+            mExtra = new Datum(extra);
+        }
+    }
 
 #if EDITOR
     mCategory = sCategory;
@@ -34,7 +46,6 @@ Property::Property(const Property& src) :
     Datum(src)
 {
     mName = src.mName;
-    mExtra = src.mExtra;
     mEnumCount = src.mEnumCount;
     mEnumStrings = src.mEnumStrings;
 
@@ -42,6 +53,11 @@ Property::Property(const Property& src) :
     mMinCount = src.mMinCount;
     mMaxCount = src.mMaxCount;
     mIsVector = src.mIsVector;
+
+    if (src.mExtra)
+    {
+        mExtra = new Datum(src.mExtra);
+    }
 
 #if EDITOR
     mCategory = src.mCategory;
@@ -62,7 +78,22 @@ void Property::ReadStream(Stream& stream, bool net, bool external)
 {
     Datum::ReadStream(stream, net, external);
     stream.ReadString(mName);
-    mExtra = stream.ReadInt32();
+
+    if (version >= ASSET_VERSION_PROPERTY_EXTRA)
+    {
+        bool hasExtra = stream.ReadBool();
+
+        if (hasExtra)
+        {
+            mExtra = new Datum();
+            mExtra->ReadStream(stream, net, external);
+        }
+    }
+    else
+    {
+        mExtra = new Datum();
+        mExtra->PushBack(stream.ReadInt32());
+    }
 
     // We don't really need to write mIsVector since the values are copied
     // over to the script property which already has mIsVector set.
@@ -73,7 +104,13 @@ void Property::WriteStream(Stream& stream, bool net) const
 {
     Datum::WriteStream(stream, net);
     stream.WriteString(mName);
-    stream.WriteInt32(mExtra);
+
+    stream.WriteBool(mExtra != nullptr);
+
+    if (mExtra != nullptr)
+    {
+        mExtra->WriteStream(stream, net);
+    }
 
     // We don't really need to write mIsVector since the values are copied
     // over to the script property which already has mIsVector set.
@@ -83,8 +120,9 @@ void Property::WriteStream(Stream& stream, bool net) const
 uint32_t Property::GetSerializationSize(bool net) const
 {
     return Datum::GetSerializationSize(net) +
-        GetStringSerializationSize(mName) + 
-        sizeof(mExtra);
+        GetStringSerializationSize(mName) +
+        sizeof(uint8_t) + // Has extra?
+        mExtra ? mExtra->GetSerializationSize(net) : 0;
 }
 
 bool Property::IsProperty() const
@@ -100,7 +138,14 @@ void Property::DeepCopy(const Datum& src, bool forceInternalStorage)
     {
         const Property& srcProp = (const Property&)src;
         mName = srcProp.mName;
+
+        if (mExtra != nullptr)
+        {
+            delete mExtra;
+            mExtra = nullptr;
+        }
         mExtra = srcProp.mExtra;
+
         mEnumCount = srcProp.mEnumCount;
         mEnumStrings = srcProp.mEnumStrings;
 
@@ -559,13 +604,18 @@ void Property::Reset()
 {
     Datum::Reset();
     mName = "";
-    mExtra = 0;
     mEnumCount = 0;
     mEnumStrings = nullptr;
     mVector = nullptr;
     mMinCount = 0;
     mMaxCount = 255;
     mIsVector = false;
+
+    if (mExtra != nullptr)
+    {
+        delete mExtra;
+        mExtra = nullptr;
+    }
 }
 
 
