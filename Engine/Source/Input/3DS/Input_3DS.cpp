@@ -16,10 +16,14 @@
 void INP_Initialize()
 {
     InputInit();
+
+    irrstInit();
 }
 
 void INP_Shutdown()
 {
+    irrstExit();
+
     InputShutdown();
 }
 
@@ -29,6 +33,8 @@ void INP_Update()
     InputState& input = GetEngineState()->mInput;
 
     hidScanInput();
+    irrstScanInput();
+
     uint32_t down = hidKeysHeld();
 
     // Gamepad 0 is always connected on 3DS
@@ -62,14 +68,12 @@ void INP_Update()
     input.mGamepads[0].mAxes[GAMEPAD_AXIS_LTRIGGER] = (down & KEY_L || down & KEY_ZL) ? 1.0 : 0.0;
     input.mGamepads[0].mAxes[GAMEPAD_AXIS_RTRIGGER] = (down & KEY_R || down & KEY_ZR) ? 1.0 : 0.0;
 
-    if (down & KEY_CSTICK_RIGHT)
-        input.mGamepads[0].mAxes[GAMEPAD_AXIS_RTHUMB_X] = 1.0f;
-    if (down & KEY_CSTICK_LEFT)
-        input.mGamepads[0].mAxes[GAMEPAD_AXIS_RTHUMB_X] = -1.0f;
-    if (down & KEY_CSTICK_UP)
-        input.mGamepads[0].mAxes[GAMEPAD_AXIS_RTHUMB_Y] = 1.0f;
-    if (down & KEY_CSTICK_DOWN)
-        input.mGamepads[0].mAxes[GAMEPAD_AXIS_RTHUMB_Y] = -1.0f;
+    // New 3DS Right-Stick
+    circlePosition rsPos;
+    irrstCstickRead(&rsPos);
+
+    input.mGamepads[0].mAxes[GAMEPAD_AXIS_RTHUMB_X] = glm::clamp(rsPos.dx / 145.0f, -1.0f, 1.0f);
+    input.mGamepads[0].mAxes[GAMEPAD_AXIS_RTHUMB_Y] = glm::clamp(rsPos.dy / 145.0f, -1.0f, 1.0f);
 
     // Touch
     if (down & KEY_TOUCH)
