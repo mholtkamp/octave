@@ -656,6 +656,7 @@
     <ClCompile Include="Source\Engine\NetFunc.cpp" />
     <ClCompile Include="Source\Engine\NetMsg.cpp" />
     <ClCompile Include="Source\Engine\NetworkManager.cpp" />
+    <ClCompile Include="Source\Engine\NodePath.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Audio3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Box3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Camera3d.cpp" />
@@ -895,6 +896,7 @@
     <ClInclude Include="Source\Engine\NetFunc.h" />
     <ClInclude Include="Source\Engine\NetMsg.h" />
     <ClInclude Include="Source\Engine\NetworkManager.h" />
+    <ClInclude Include="Source\Engine\NodePath.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Audio3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Box3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Camera3d.h" />

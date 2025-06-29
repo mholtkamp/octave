@@ -57,13 +57,14 @@ public:
 
     std::string mName;
     int32_t mExtra = 0;
-    int32_t mEnumCount = 0;
-    const char** mEnumStrings = nullptr;
     void* mVector = nullptr;
     uint8_t mMinCount = 0;
     uint8_t mMaxCount = 255;
     bool mIsVector = false;
+    std::string* mMisc = nullptr;
 #if EDITOR
+    int32_t mEnumCount = 0;
+    const char** mEnumStrings = nullptr;
     const char* mCategory = "";
 #endif
 };

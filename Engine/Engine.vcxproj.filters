@@ -740,6 +740,9 @@
     <ClCompile Include="Source\System\SystemUtils.cpp">
       <Filter>Source Files\System</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\NodePath.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1402,6 +1405,9 @@
       <Filter>Source Files\System</Filter>
     </ClInclude>
     <ClInclude Include="Source\Swap.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodePath.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
