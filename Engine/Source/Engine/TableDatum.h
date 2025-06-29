@@ -42,7 +42,7 @@ public:
     TableDatum(const TableDatum& src);
     TableDatum& operator=(const TableDatum& src);
 
-    virtual void ReadStream(Stream& stream, bool net, bool external) override;
+    virtual void ReadStream(Stream& stream, uint32_t version, bool net, bool external) override;
     virtual void WriteStream(Stream& stream, bool net) const override;
     virtual uint32_t GetSerializationSize(bool net) const override;
     virtual bool IsTableDatum() const override;

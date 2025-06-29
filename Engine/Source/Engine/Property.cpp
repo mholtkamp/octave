@@ -74,9 +74,9 @@ Property& Property::operator=(const Property& src)
     return *this;
 }
 
-void Property::ReadStream(Stream& stream, bool net, bool external)
+void Property::ReadStream(Stream& stream, uint32_t version, bool net, bool external)
 {
-    Datum::ReadStream(stream, net, external);
+    Datum::ReadStream(stream, version, net, external);
     stream.ReadString(mName);
 
     if (version >= ASSET_VERSION_PROPERTY_EXTRA)
@@ -86,7 +86,7 @@ void Property::ReadStream(Stream& stream, bool net, bool external)
         if (hasExtra)
         {
             mExtra = new Datum();
-            mExtra->ReadStream(stream, net, external);
+            mExtra->ReadStream(stream, version, net, external);
         }
     }
     else
@@ -153,6 +153,17 @@ void Property::DeepCopy(const Datum& src, bool forceInternalStorage)
         mMinCount = srcProp.mMinCount;
         mMaxCount = srcProp.mMaxCount;
         mIsVector = srcProp.mIsVector;
+    }
+}
+
+void Property::Destroy()
+{
+    Datum::Destroy();
+
+    if (mExtra != nullptr)
+    {
+        delete mExtra;
+        mExtra = nullptr;
     }
 }
 

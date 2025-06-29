@@ -28,12 +28,13 @@ public:
     Property& operator=(const Property& src);
 
 
-    virtual void ReadStream(Stream& stream, bool net, bool external) override;
+    virtual void ReadStream(Stream& stream, uint32_t version, bool net, bool external) override;
     virtual void WriteStream(Stream& stream, bool net) const override;
     virtual uint32_t GetSerializationSize(bool net) const override;
 
     virtual bool IsProperty() const override;
     virtual void DeepCopy(const Datum& src, bool forceInternalStorage) override;
+    virtual void Destroy() override;
 
     void PushBackVector(void* value = nullptr);
     void EraseVector(uint32_t index);

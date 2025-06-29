@@ -132,7 +132,7 @@ public:
     bool IsExternal() const;
     bool IsValid() const;
 
-    virtual void ReadStream(Stream& stream, bool net, bool external);
+    virtual void ReadStream(Stream& stream, uint32_t version, bool net, bool external);
     virtual void WriteStream(Stream& stream, bool net) const;
     virtual uint32_t GetSerializationSize(bool net) const;
 

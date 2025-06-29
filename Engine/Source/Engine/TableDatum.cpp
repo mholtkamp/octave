@@ -185,9 +185,9 @@ TableDatum& TableDatum::operator=(const TableDatum& src)
     return *this;
 }
 
-void TableDatum::ReadStream(Stream& stream, bool net, bool external)
+void TableDatum::ReadStream(Stream& stream, uint32_t version, bool net, bool external)
 {
-    Datum::ReadStream(stream, net, external);
+    Datum::ReadStream(stream, version, net, external);
     stream.ReadString(mStringKey);
     mIntegerKey = stream.ReadInt32();
 }

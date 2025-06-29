@@ -325,7 +325,7 @@ bool Datum::IsValid() const
     return (mType != DatumType::Count && mCount > 0);
 }
 
-void Datum::ReadStream(Stream& stream, bool net, bool external)
+void Datum::ReadStream(Stream& stream, uint32_t version, bool net, bool external)
 {
     // If the datum was previously in use, destroy it.
     Destroy();
@@ -377,7 +377,7 @@ void Datum::ReadStream(Stream& stream, bool net, bool external)
                 case DatumType::Table:
                 {
                     PushBackTableDatum((TableDatum()));
-                    mData.t[i].ReadStream(stream, net, external);
+                    mData.t[i].ReadStream(stream, version, net, external);
                     break;
                 }
 

@@ -323,7 +323,7 @@ void NetMsgReplicate::Read(Stream& stream)
         // We are assuming the stream data will persist for the duration
         // of this message's life cycle (until Execute() is called).
         // This avoids allocation and copying data.
-        mData[i].ReadStream(stream, true, false);
+        mData[i].ReadStream(stream, ASSET_VERSION_CURRENT, true, false);
     }
 }
 
@@ -463,7 +463,7 @@ void NetMsgInvoke::Read(Stream& stream)
 
     for (uint32_t i = 0; i < mNumParams; ++i)
     {
-        mParams[i].ReadStream(stream, true, false);
+        mParams[i].ReadStream(stream, ASSET_VERSION_CURRENT, true, false);
     }
 }
 

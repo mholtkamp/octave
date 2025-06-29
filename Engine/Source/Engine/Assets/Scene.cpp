@@ -74,7 +74,7 @@ void Scene::LoadStream(Stream& stream, Platform platform)
         def.mProperties.resize(numProps);
         for (uint32_t p = 0; p < numProps; ++p)
         {
-            def.mProperties[p].ReadStream(stream, false, false);
+            def.mProperties[p].ReadStream(stream, mVersion, false, false);
         }
 
         if (mVersion >= ASSET_VERSION_SCENE_EXTRA_DATA)
