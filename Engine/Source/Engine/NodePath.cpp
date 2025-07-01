@@ -41,6 +41,9 @@ std::string FindRelativeNodePath(Node* src, Node* dst)
             }
         }
 
+        if (commonIndex != -1)
+            break;
+
         path += "../";
         commonAncestor = commonAncestor->GetParent();
     }
@@ -52,7 +55,7 @@ std::string FindRelativeNodePath(Node* src, Node* dst)
     OCT_ASSERT(commonIndex >= 0);
 
     // Go backwards and append dst ancestor nodes onto the path until reaching the dst node
-    int32_t dstIndex = commonIndex;
+    int32_t dstIndex = commonIndex - 1;
     while (dstIndex >= 0)
     {
         path += dstAncestors[dstIndex]->GetName();
@@ -61,6 +64,8 @@ std::string FindRelativeNodePath(Node* src, Node* dst)
         {
             path += "/";
         }
+
+        --dstIndex;
     }
 
     return path;
@@ -106,8 +111,7 @@ Node* ResolveNodePath(Node* src, const std::string& path)
     int32_t start = 0;
     for (int32_t i = 0; i < path.size(); ++i)
     {
-        if (path[i] == '/' ||
-            i == int32_t(path.size()) - 1)
+        if (path[i] == '/')
         {
             // Add a token
             if (start != i)
@@ -117,6 +121,13 @@ Node* ResolveNodePath(Node* src, const std::string& path)
                 tokens.push_back(token);
 
                 start = i + 1;
+            }
+        }
+        else if (i == int32_t(path.size()) - 1)
+        {
+            if (start != i)
+            {
+                tokens.push_back(path.substr(start));
             }
         }
     }

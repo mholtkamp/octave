@@ -1996,7 +1996,7 @@ void Datum::ConstructData(DatumData& dataUnion, uint32_t index)
         new (dataUnion.t + index) TableDatum();
         break;
     case DatumType::Node:
-        dataUnion.n[index] = nullptr;
+        new (dataUnion.n + index) WeakPtr<Node>();
         break;
     case DatumType::Short:
         dataUnion.sh[index] = 0;
@@ -2020,6 +2020,9 @@ void Datum::DestructData(DatumData& dataUnion, uint32_t index)
         break;
     case DatumType::Asset:
         dataUnion.as[index].AssetRef::~AssetRef();
+        break;
+    case DatumType::Node:
+        dataUnion.n[index].WeakPtr<Node>::~WeakPtr<Node>();
         break;
     case DatumType::Table:
         // WARNING! I don't understand why this is happening, but invoking the TableDatum destructor
