@@ -389,6 +389,11 @@ void Datum::ReadStream(Stream& stream, uint32_t version, bool net, bool external
                         Node* localNode = NetworkManager::Get()->GetNetNode(netId);
                         PushBack(localNode);
                     }
+                    else
+                    {
+                        // Push a nullptr, needs to be resolved later.
+                        PushBack(WeakPtr<Node>());
+                    }
                     break;
                 }
                 case DatumType::Short: PushBack(stream.ReadInt16()); break;

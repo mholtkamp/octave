@@ -4,11 +4,15 @@
 #include "Engine.h"
 #include "Script.h"
 #include "NetworkManager.h"
+#include "NodePath.h"
 #include "Nodes/Node.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
 
 FORCE_LINK_DEF(Scene);
 DEFINE_ASSET(Scene);
+
+int32_t Scene::sInstantiationCount = 0;
+std::vector<NodePtrWeak> Scene::sPendingNodePaths;
 
 static const char* sFogDensityStrings[] =
 {
@@ -16,7 +20,6 @@ static const char* sFogDensityStrings[] =
     "Exponential",
 };
 static_assert(int32_t(FogDensityFunc::Count) == 2, "Need to update string conversion table");
-
 
 bool Scene::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
@@ -224,6 +227,8 @@ NodePtr Scene::Instantiate()
 
     if (mNodeDefs.size() > 0)
     {
+        sInstantiationCount++;
+
         std::vector<NodePtr> nodeList;
 
         // The nativeChildren vector holds a list of all children by created in C++ for the nodes in this scene.
@@ -300,9 +305,11 @@ NodePtr Scene::Instantiate()
 
             OCT_ASSERT(nodePtr);
             Node* node = nodePtr.Get();
+            bool hasNodeProps = false;
 
             std::vector<Property> dstProps;
             node->GatherProperties(dstProps);
+            hasNodeProps = CheckForNodeProps(dstProps);
             CopyPropertyValues(dstProps, mNodeDefs[i].mProperties);
 
             if (mNodeDefs[i].mExtraData.size() > 0)
@@ -320,7 +327,13 @@ NodePtr Scene::Instantiate()
             {
                 dstProps.clear();
                 node->GatherProperties(dstProps);
+                hasNodeProps = hasNodeProps || CheckForNodeProps(dstProps);
                 CopyPropertyValues(dstProps, mNodeDefs[i].mProperties);
+            }
+
+            if (hasNodeProps)
+            {
+                sPendingNodePaths.push_back(ResolveWeakPtr<Node>(node));
             }
 
             if (i > 0)
@@ -411,6 +424,33 @@ NodePtr Scene::Instantiate()
             Node::Destruct(repNodesToDelete[i]);
             repNodesToDelete[i] = nullptr;
         }
+    }
+
+    sInstantiationCount--;
+
+    // Finished loading a top-level scene, try to resolve all node paths
+    if (sInstantiationCount == 0)
+    {
+        for (uint32_t i = 0; i < sPendingNodePaths.size(); ++i)
+        {
+            Node* node = sPendingNodePaths[i].Get();
+
+            if (node)
+            {
+                std::vector<Property> props;
+                node->GatherProperties(props);
+
+                for (uint32_t p = 0; p < props.size(); ++p)
+                {
+                    if (props[p].GetType() == DatumType::Node)
+                    {
+                        props[p].ResolveNodePaths();
+                    }
+                }
+            }
+        }
+
+        sPendingNodePaths.clear();
     }
 
     return rootNode;
@@ -540,3 +580,17 @@ int32_t Scene::FindNodeIndex(Node* node, const std::vector<Node*>& nodeList)
     return index;
 }
 
+bool Scene::CheckForNodeProps(std::vector<Property>& props)
+{
+    bool hasNodeProp = false;
+    for (uint32_t i = 0; i < props.size(); ++i)
+    {
+        if (props[i].GetType() == DatumType::Node)
+        {
+            hasNodeProp = true;
+            break;
+        }
+    }
+
+    return hasNodeProp;
+}

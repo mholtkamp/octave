@@ -214,11 +214,10 @@ void Script::GatherScriptProperties()
                             }
 
                             // Setup initial value and push it onto the outProps vector.
-                            // Table and pointer datum types are not supported for script props.
+                            // Table datum type is not supported for script props.
                             if (newProp.mName != "" &&
                                 type != DatumType::Count &&
-                                type != DatumType::Table &&
-                                type != DatumType::Node)
+                                type != DatumType::Table)
                             {
                                 int32_t count = 1;
                                 int tableIdx = -1;

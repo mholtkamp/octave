@@ -56,6 +56,11 @@ protected:
     void AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeList);
     int32_t FindNodeIndex(Node* node, const std::vector<Node*>& nodeList);
 
+    bool CheckForNodeProps(std::vector<Property>& props);
+
+    static int32_t sInstantiationCount;
+    static std::vector<NodePtrWeak> sPendingNodePaths;
+
     std::vector<SceneNodeDef> mNodeDefs;
 
     // World render properties (used when this scene is the world root).
