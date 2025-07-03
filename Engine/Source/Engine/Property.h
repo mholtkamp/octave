@@ -22,6 +22,7 @@ public:
         Datum extra = Datum(),
         int32_t enumCount = 0,
         const char** enumStrings = nullptr);
+    virtual ~Property();
 
     Property(const Property& src);
 

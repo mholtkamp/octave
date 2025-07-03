@@ -45,6 +45,11 @@ Property::Property(
 #endif
 }
 
+Property::~Property()
+{
+    DestroyExtraData();
+}
+
 Property::Property(const Property& src) :
     Datum(src)
 {
@@ -194,7 +199,6 @@ void Property::DeepCopy(const Datum& src, bool forceInternalStorage)
 void Property::Destroy()
 {
     Datum::Destroy();
-
     DestroyExtraData();
 }
 

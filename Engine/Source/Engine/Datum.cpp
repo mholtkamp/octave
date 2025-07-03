@@ -46,6 +46,8 @@ Datum::Datum(const Datum& src)
 
 Datum::~Datum()
 {
+    // Note: This won't be a virtual invocation since we are in a destructor
+    // Property will have destroy its own data in its destructor. Can't rely on Destroy().
     Destroy();
 }
 
