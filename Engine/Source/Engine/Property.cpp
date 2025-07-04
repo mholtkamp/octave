@@ -29,15 +29,8 @@ Property::Property(
 
     if (extra.IsValid())
     {
-        if (extra == 0)
-        {
-            LogWarning("[%s] Zero extra", mName.c_str());
-        }
-        else
-        {
-            CreateExtraData();
-            *mExtra = extra;
-        }
+        CreateExtraData();
+        *mExtra = extra;
     }
 
 #if EDITOR
