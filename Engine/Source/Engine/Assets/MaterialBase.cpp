@@ -211,8 +211,8 @@ void MaterialBase::GatherProperties(std::vector<Property>& outProps)
 
     outProps.push_back(Property(DatumType::Asset, "Lite Fallback", this, &mLiteFallback, 1, nullptr, int32_t(MaterialLite::GetStaticType())));
 
-    outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mBlendMode, 1, HandlePropChange, 0, int32_t(BlendMode::Count), gBlendModeStrings));
-    outProps.push_back(Property(DatumType::Byte, "Cull Mode", this, &mCullMode, 1, HandlePropChange, 0, int32_t(CullMode::Count), gCullModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mBlendMode, 1, HandlePropChange, NULL_DATUM, int32_t(BlendMode::Count), gBlendModeStrings));
+    outProps.push_back(Property(DatumType::Byte, "Cull Mode", this, &mCullMode, 1, HandlePropChange, NULL_DATUM, int32_t(CullMode::Count), gCullModeStrings));
     outProps.push_back(Property(DatumType::Float, "Mask Cutoff", this, &mMaskCutoff, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Integer, "Sort Priority", this, &mSortPriority, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Disable Depth Test", this, &mDisableDepthTest, 1, HandlePropChange));

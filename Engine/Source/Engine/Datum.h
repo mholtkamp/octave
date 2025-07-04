@@ -11,6 +11,8 @@
 #undef GetObject
 #endif
 
+#define NULL_DATUM Datum::sNullDatum
+
 typedef bool(*DatumChangeHandlerFP)(class Datum* prop, uint32_t index, const void* newValue);
 
 class Asset;
@@ -333,6 +335,8 @@ public:
 
     void* GetValue(uint32_t index);
     virtual void Destroy();
+
+    static const Datum sNullDatum;
 
 protected:
 

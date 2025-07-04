@@ -19,7 +19,7 @@ public:
         void* data,
         uint32_t count = 1,
         DatumChangeHandlerFP changeHandler = nullptr,
-        Datum extra = Datum(),
+        Datum extra = NULL_DATUM,
         int32_t enumCount = 0,
         const char** enumStrings = nullptr);
     virtual ~Property();

@@ -114,7 +114,7 @@ void Button::GatherProperties(std::vector<Property>& props)
 
     {
         SCOPED_CATEGORY("Text");
-        props.push_back(Property(DatumType::Byte, "Text-Anchor", this, &mText->mAnchorMode, 1, Widget::HandlePropChange, 0, int32_t(AnchorMode::Count), Widget::sAnchorModeStrings));
+        props.push_back(Property(DatumType::Byte, "Text-Anchor", this, &mText->mAnchorMode, 1, Widget::HandlePropChange, NULL_DATUM, int32_t(AnchorMode::Count), Widget::sAnchorModeStrings));
         props.push_back(Property(DatumType::Vector2D, "Text-Offset", this, &mText->mOffset, 1, Widget::HandlePropChange));
         props.push_back(Property(DatumType::Vector2D, "Text-Size", this, &mText->mSize, 1, Widget::HandlePropChange));
         props.push_back(Property(DatumType::Color, "Text-Color", this, &mText->mColor, 1, HandlePropChange));

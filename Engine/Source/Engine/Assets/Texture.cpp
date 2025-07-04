@@ -411,9 +411,9 @@ void Texture::GatherProperties(std::vector<Property>& outProps)
 
     outProps.push_back(Property(DatumType::Bool, "Mipmapped", this, &mMipmapped));
     outProps.push_back(Property(DatumType::Bool, "sRGB", this, &mSrgb));
-    outProps.push_back(Property(DatumType::Integer, "Format", this, &mFormat, 1, Texture::HandlePropChange, 0, 5, sPixelFormatEnumStrings));
-    outProps.push_back(Property(DatumType::Integer, "Filter Type", this, &mFilterType, 1, Texture::HandlePropChange, 0, int32_t(FilterType::Count), gFilterEnumStrings));
-    outProps.push_back(Property(DatumType::Integer, "Wrap Mode", this, &mWrapMode, 1, Texture::HandlePropChange, 0, int32_t(WrapMode::Count), gWrapEnumStrings));
+    outProps.push_back(Property(DatumType::Integer, "Format", this, &mFormat, 1, Texture::HandlePropChange, NULL_DATUM, 5, sPixelFormatEnumStrings));
+    outProps.push_back(Property(DatumType::Integer, "Filter Type", this, &mFilterType, 1, Texture::HandlePropChange, NULL_DATUM, int32_t(FilterType::Count), gFilterEnumStrings));
+    outProps.push_back(Property(DatumType::Integer, "Wrap Mode", this, &mWrapMode, 1, Texture::HandlePropChange, NULL_DATUM, int32_t(WrapMode::Count), gWrapEnumStrings));
 }
 
 glm::vec4 Texture::GetTypeColor()

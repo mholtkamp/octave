@@ -244,21 +244,21 @@ void MaterialLite::GatherProperties(std::vector<Property>& outProps)
 {
     Material::GatherProperties(outProps);
 
-    outProps.push_back(Property(DatumType::Integer, "Shading Model", this, &mLiteParams.mShadingModel, 1, HandlePropChange, 0, int32_t(ShadingModel::Count), sShadingModelStrings));
-    outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mLiteParams.mBlendMode, 1, HandlePropChange, 0, int32_t(BlendMode::Count), gBlendModeStrings));
-    outProps.push_back(Property(DatumType::Integer, "Vertex Color Mode", this, &mLiteParams.mVertexColorMode, 1, HandlePropChange, 0, int32_t(VertexColorMode::Count), sVertexColorModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "Shading Model", this, &mLiteParams.mShadingModel, 1, HandlePropChange, NULL_DATUM, int32_t(ShadingModel::Count), sShadingModelStrings));
+    outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mLiteParams.mBlendMode, 1, HandlePropChange, NULL_DATUM, int32_t(BlendMode::Count), gBlendModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "Vertex Color Mode", this, &mLiteParams.mVertexColorMode, 1, HandlePropChange, NULL_DATUM, int32_t(VertexColorMode::Count), sVertexColorModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 0", this, &mLiteParams.mTextures[TEXTURE_0], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 0", this, &mLiteParams.mUvMaps[TEXTURE_0], 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Integer, "TEV Mode 0", this, &mLiteParams.mTevModes[TEXTURE_0], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "TEV Mode 0", this, &mLiteParams.mTevModes[TEXTURE_0], 1, HandlePropChange, NULL_DATUM, int32_t(TevMode::Count), sTevModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 1", this, &mLiteParams.mTextures[TEXTURE_1], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 1", this, &mLiteParams.mUvMaps[TEXTURE_1], 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Integer, "TEV Mode 1", this, &mLiteParams.mTevModes[TEXTURE_1], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "TEV Mode 1", this, &mLiteParams.mTevModes[TEXTURE_1], 1, HandlePropChange, NULL_DATUM, int32_t(TevMode::Count), sTevModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 2", this, &mLiteParams.mTextures[TEXTURE_2], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 2", this, &mLiteParams.mUvMaps[TEXTURE_2], 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Integer, "TEV Mode 2", this, &mLiteParams.mTevModes[TEXTURE_2], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "TEV Mode 2", this, &mLiteParams.mTevModes[TEXTURE_2], 1, HandlePropChange, NULL_DATUM, int32_t(TevMode::Count), sTevModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 3", this, &mLiteParams.mTextures[TEXTURE_3], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 3", this, &mLiteParams.mUvMaps[TEXTURE_3], 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Integer, "TEV Mode 3", this, &mLiteParams.mTevModes[TEXTURE_3], 1, HandlePropChange, 0, int32_t(TevMode::Count), sTevModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "TEV Mode 3", this, &mLiteParams.mTevModes[TEXTURE_3], 1, HandlePropChange, NULL_DATUM, int32_t(TevMode::Count), sTevModeStrings));
     outProps.push_back(Property(DatumType::Vector2D, "UV Offset 0", this, &mLiteParams.mUvOffsets[0], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "UV Scale 0", this, &mLiteParams.mUvScales[0], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "UV Offset 1", this, &mLiteParams.mUvOffsets[1], 1, HandlePropChange));
@@ -277,7 +277,7 @@ void MaterialLite::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Emission", this, &mLiteParams.mEmission, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Wrap Lighting", this, &mLiteParams.mWrapLighting, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Apply Fog", this, &mLiteParams.mApplyFog, 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Byte, "Cull Mode", this, &mLiteParams.mCullMode, 1, HandlePropChange, 0, int32_t(CullMode::Count), gCullModeStrings));
+    outProps.push_back(Property(DatumType::Byte, "Cull Mode", this, &mLiteParams.mCullMode, 1, HandlePropChange, NULL_DATUM, int32_t(CullMode::Count), gCullModeStrings));
 }
 
 glm::vec4 MaterialLite::GetTypeColor()

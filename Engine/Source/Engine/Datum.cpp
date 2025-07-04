@@ -13,6 +13,8 @@
 
 #include "System/System.h"
 
+const Datum Datum::sNullDatum = Datum();
+
 Datum::Datum()
 {
     mForceScriptArray = false;

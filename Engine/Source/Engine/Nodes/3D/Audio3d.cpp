@@ -76,7 +76,7 @@ void Audio3D::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Pitch", this, &mPitch));
     outProps.push_back(Property(DatumType::Float, "Start Offset", this, &mStartOffset));
     outProps.push_back(Property(DatumType::Integer, "Priority", this, &mPriority));
-    outProps.push_back(Property(DatumType::Integer, "Attenuation Func", this, &mAttenuationFunc, 1, nullptr, 0, int32_t(AttenuationFunc::Count), sAttenuationFuncStrings));
+    outProps.push_back(Property(DatumType::Integer, "Attenuation Func", this, &mAttenuationFunc, 1, nullptr, NULL_DATUM, int32_t(AttenuationFunc::Count), sAttenuationFuncStrings));
     outProps.push_back(Property(DatumType::Byte, "Audio Class", this, &mAudioClass));
     outProps.push_back(Property(DatumType::Bool, "Loop", this, &mLoop));
     outProps.push_back(Property(DatumType::Bool, "Auto Play", this, &mAutoPlay));
