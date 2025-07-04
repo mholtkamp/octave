@@ -664,6 +664,34 @@ bool EditorState::IsPlayInEditorPaused()
     return mPaused;
 }
 
+void EditorState::SetNodePropertySelect(bool enable, int32_t index, const std::string& propName)
+{
+    GetEditorState()->mNodePropertySelect = true;
+    GetEditorState()->mNodePropertySelectIndex = index;
+    GetEditorState()->mNodePropertySelectName = propName;
+}
+
+void EditorState::ClearNodePropertySelect()
+{
+    GetEditorState()->mNodePropertySelect = false;
+    GetEditorState()->mNodePropertySelectIndex = 0;
+    GetEditorState()->mNodePropertySelectName = "";
+}
+
+void EditorState::AssignNodePropertySelect(Node* targetNode)
+{
+    Node* inspNode = GetEditorState()->GetInspectedNode();
+    int32_t targetIdx = GetEditorState()->mNodePropertySelectIndex;
+    const std::string& targetName = GetEditorState()->mNodePropertySelectName;
+
+    if (inspNode)
+    {
+        ActionManager::Get()->EXE_EditProperty(inspNode, PropertyOwnerType::Node, targetName, targetIdx, targetNode);
+    }
+
+    GetEditorState()->ClearNodePropertySelect();
+}
+
 Camera3D* EditorState::GetEditorCamera()
 {
     return mEditorCamera.Get();

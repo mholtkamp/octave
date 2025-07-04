@@ -699,10 +699,13 @@ static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, Prop
     {
         if (ImGui::Button("*>"))
         {
-            Node* selNode = GetEditorState()->GetSelectedNode();
-            if (selNode != nullptr)
+            if (GetEditorState()->mNodePropertySelect)
             {
-                ActionManager::Get()->EXE_EditProperty(owner, ownerType, prop.mName, index, selNode);
+                GetEditorState()->ClearNodePropertySelect();
+            }
+            else
+            {
+                GetEditorState()->SetNodePropertySelect(true, index, prop.mName);
             }
         }
 
@@ -1698,19 +1701,26 @@ static void DrawScenePanel()
 
         if (nodeClicked)
         {
-            if (nodeSelected)
+            if (GetEditorState()->mNodePropertySelect)
             {
-                GetEditorState()->DeselectNode(node);
+                GetEditorState()->AssignNodePropertySelect(node);
             }
             else
             {
-                if (ImGui::GetIO().KeyCtrl)
+                if (nodeSelected)
                 {
-                    GetEditorState()->AddSelectedNode(node, false);
+                    GetEditorState()->DeselectNode(node);
                 }
                 else
                 {
-                    GetEditorState()->SetSelectedNode(node);
+                    if (ImGui::GetIO().KeyCtrl)
+                    {
+                        GetEditorState()->AddSelectedNode(node, false);
+                    }
+                    else
+                    {
+                        GetEditorState()->SetSelectedNode(node);
+                    }
                 }
             }
         }
@@ -3320,6 +3330,36 @@ static void Draw2dSelections()
     }
 }
 
+static void DrawNodePropertySelectOverlay()
+{
+    int32_t mX;
+    int32_t mY;
+    GetMousePosition(mX, mY);
+    float rot = GetEngineState()->mRealElapsedTime * 3.0f;
+
+    const float lineLength = 40.0f;
+    const float lineWidth = 3.0f;
+    glm::vec2 point1a = glm::vec2(-lineLength * 0.5f, 0.0f);
+    glm::vec2 point1b = glm::vec2( lineLength * 0.5f, 0.0f);
+    glm::vec2 point2a = glm::vec2(0.0f, -lineLength * 0.5f);
+    glm::vec2 point2b = glm::vec2(0.0f,  lineLength * 0.5f);
+
+    point1a = glm::rotate(point1a, rot);
+    point1b = glm::rotate(point1b, rot);
+    point2a = glm::rotate(point2a, rot);
+    point2b = glm::rotate(point2b, rot);
+
+    glm::vec2 offset = glm::vec2((float)mX, (float)mY);
+
+    point1a += offset;
+    point1b += offset;
+    point2a += offset;
+    point2b += offset;
+
+    ImGui::GetForegroundDrawList()->AddLine({ point1a.x, point1a.y }, { point1b.x, point1b.y }, IM_COL32(255, 0, 0, 200), lineWidth);
+    ImGui::GetForegroundDrawList()->AddLine({ point2a.x, point2a.y }, { point2b.x, point2b.y }, IM_COL32(255, 0, 0, 200), lineWidth);
+}
+
 void EditorImguiInit()
 {
     IMGUI_CHECKVERSION();
@@ -3377,6 +3417,11 @@ void EditorImguiDraw()
         if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
         {
             Draw2dSelections();
+        }
+
+        if (GetEditorState()->mNodePropertySelect)
+        {
+            DrawNodePropertySelectOverlay();
         }
 
         DrawFileBrowser();

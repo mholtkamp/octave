@@ -127,6 +127,9 @@ struct EditorState
     std::vector<std::string> mRecentProjects;
     PaintMode mPaintMode = PaintMode::None;
     PaintManager* mPaintManager = nullptr;
+    bool mNodePropertySelect = false;
+    int32_t mNodePropertySelectIndex = 0;
+    std::string mNodePropertySelectName = "";
 
     // Methods
     void Init();
@@ -161,6 +164,10 @@ struct EditorState
     void InjectPlayInEditor();
     void SetPlayInEditorPaused(bool paused);
     bool IsPlayInEditorPaused();
+
+    void SetNodePropertySelect(bool enable, int32_t index, const std::string& propName);
+    void ClearNodePropertySelect();
+    void AssignNodePropertySelect(Node* targetNode);
 
     Camera3D* GetEditorCamera();
 

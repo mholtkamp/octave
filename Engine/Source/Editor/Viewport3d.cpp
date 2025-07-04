@@ -135,70 +135,78 @@ void Viewport3D::HandleDefaultControls()
             uint32_t selectInstance = 0;
             Node3D* selectNode = Renderer::Get()->ProcessHitCheck(GetWorld(0), mouseX, mouseY, &selectInstance);
 
-            if (shiftDown || controlDown)
+            if (selectNode != nullptr &&
+                GetEditorState()->mNodePropertySelect)
             {
-                if (selectNode != nullptr)
-                {
-                    if (GetEditorState()->IsNodeSelected(selectNode))
-                    {
-                        GetEditorState()->RemoveSelectedNode(selectNode);
-                    }
-                    else
-                    {
-                        GetEditorState()->AddSelectedNode(selectNode, false);
-                    }
-                }
+                GetEditorState()->AssignNodePropertySelect(selectNode);
             }
-            else if (GetEditorState()->GetPaintMode() == PaintMode::None)
+            else
             {
-                if (altDown)
+                if (shiftDown || controlDown)
                 {
-                    static float sAltDoubleClickTime = 0.0f;
-                    float time = GetEngineState()->mRealElapsedTime;
-                    Node* nodeToTrack = selectNode;
-
-                    // Double click will select the node's containing scene
-                    if (fabs(time - sAltDoubleClickTime) < 0.5f &&
-                        !selectNode->IsWorldRoot())
+                    if (selectNode != nullptr)
                     {
-                        Node* parent = selectNode->GetParent();
-                        while (parent != nullptr)
+                        if (GetEditorState()->IsNodeSelected(selectNode))
                         {
-                            if (parent->GetScene() != nullptr)
-                            {
-                                nodeToTrack = parent;
-                                break;
-                            }
-
-                            parent = parent->GetParent();
-                        }
-                    }
-
-                    sAltDoubleClickTime = time;
-
-                    GetEditorState()->SetSelectedNode(nodeToTrack);
-                    GetEditorState()->mTrackSelectedNode = true;
-                }
-                else
-                {
-                    if (GetEditorState()->GetSelectedNode() != selectNode)
-                    {
-                        GetEditorState()->SetSelectedNode(selectNode);
-                    }
-                    else
-                    {
-                        int32_t curSelInstance = GetEditorState()->GetSelectedInstance();
-                        InstancedMesh3D* instMesh = selectNode ? selectNode->As<InstancedMesh3D>() : nullptr;
-                        if (instMesh != nullptr &&
-                            curSelInstance != int32_t(selectInstance))
-                        {
-                            // We clicked a different instance. Don't deselect, just change the sel instance
-                            GetEditorState()->SetSelectedNode(selectNode);
-                            GetEditorState()->SetSelectedInstance((int32_t)selectInstance);
+                            GetEditorState()->RemoveSelectedNode(selectNode);
                         }
                         else
                         {
-                            GetEditorState()->SetSelectedNode(nullptr);
+                            GetEditorState()->AddSelectedNode(selectNode, false);
+                        }
+                    }
+                }
+                else if (GetEditorState()->GetPaintMode() == PaintMode::None)
+                {
+                    if (altDown)
+                    {
+                        static float sAltDoubleClickTime = 0.0f;
+                        float time = GetEngineState()->mRealElapsedTime;
+                        Node* nodeToTrack = selectNode;
+
+                        // Double click will select the node's containing scene
+                        if (fabs(time - sAltDoubleClickTime) < 0.5f &&
+                            !selectNode->IsWorldRoot())
+                        {
+                            Node* parent = selectNode->GetParent();
+                            while (parent != nullptr)
+                            {
+                                if (parent->GetScene() != nullptr)
+                                {
+                                    nodeToTrack = parent;
+                                    break;
+                                }
+
+                                parent = parent->GetParent();
+                            }
+                        }
+
+                        sAltDoubleClickTime = time;
+
+                        GetEditorState()->SetSelectedNode(nodeToTrack);
+                        GetEditorState()->mTrackSelectedNode = true;
+                    }
+                    else
+                    {
+                        if (GetEditorState()->GetSelectedNode() != selectNode)
+                        {
+                            GetEditorState()->SetSelectedNode(selectNode);
+                        }
+                        else
+                        {
+                            int32_t curSelInstance = GetEditorState()->GetSelectedInstance();
+                            InstancedMesh3D* instMesh = selectNode ? selectNode->As<InstancedMesh3D>() : nullptr;
+                            if (instMesh != nullptr &&
+                                curSelInstance != int32_t(selectInstance))
+                            {
+                                // We clicked a different instance. Don't deselect, just change the sel instance
+                                GetEditorState()->SetSelectedNode(selectNode);
+                                GetEditorState()->SetSelectedInstance((int32_t)selectInstance);
+                            }
+                            else
+                            {
+                                GetEditorState()->SetSelectedNode(nullptr);
+                            }
                         }
                     }
                 }
