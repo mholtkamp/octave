@@ -12,7 +12,7 @@ FORCE_LINK_DEF(Scene);
 DEFINE_ASSET(Scene);
 
 int32_t Scene::sInstantiationCount = 0;
-std::vector<NodePtrWeak> Scene::sPendingNodePaths;
+std::vector<PendingNodePath> Scene::sPendingNodePaths;
 
 static const char* sFogDensityStrings[] =
 {
@@ -305,11 +305,9 @@ NodePtr Scene::Instantiate()
 
             OCT_ASSERT(nodePtr);
             Node* node = nodePtr.Get();
-            bool hasNodeProps = false;
 
             std::vector<Property> dstProps;
             node->GatherProperties(dstProps);
-            hasNodeProps = CheckForNodeProps(dstProps);
             CopyPropertyValues(dstProps, mNodeDefs[i].mProperties);
 
             if (mNodeDefs[i].mExtraData.size() > 0)
@@ -327,13 +325,22 @@ NodePtr Scene::Instantiate()
             {
                 dstProps.clear();
                 node->GatherProperties(dstProps);
-                hasNodeProps = hasNodeProps || CheckForNodeProps(dstProps);
                 CopyPropertyValues(dstProps, mNodeDefs[i].mProperties);
             }
 
-            if (hasNodeProps)
+            // See if there are any nodepaths that need to be resolved.
+            for (auto& prop : mNodeDefs[i].mProperties)
             {
-                sPendingNodePaths.push_back(ResolveWeakPtr<Node>(node));
+                if (prop.mType == DatumType::Node &&
+                    prop.mExtra != nullptr &&
+                    prop.mCount > 0)
+                {
+                    PendingNodePath path;
+                    path.mNode = ResolvePtr<Node>(node);
+                    path.mPropName = prop.mName;
+                    path.mPath = *prop.mExtra;
+                    sPendingNodePaths.push_back(path);
+                }
             }
 
             if (i > 0)
@@ -433,7 +440,9 @@ NodePtr Scene::Instantiate()
     {
         for (uint32_t i = 0; i < sPendingNodePaths.size(); ++i)
         {
-            Node* node = sPendingNodePaths[i].Get();
+            Node* node = sPendingNodePaths[i].mNode.Get();
+            const std::string& propName = sPendingNodePaths[i].mPropName;
+            const Datum& path = sPendingNodePaths[i].mPath;
 
             if (node)
             {
@@ -442,9 +451,22 @@ NodePtr Scene::Instantiate()
 
                 for (uint32_t p = 0; p < props.size(); ++p)
                 {
-                    if (props[p].GetType() == DatumType::Node)
+                    Property& prop = props[p];
+                    if (prop.mName != propName)
+                        continue;
+
+                    if (prop.mType == DatumType::Node &&
+                        prop.mCount == path.mCount)
                     {
-                        props[p].ResolveNodePaths();
+                        for (uint32_t n = 0; n < prop.mCount; ++n)
+                        {
+                            Node* targetNode = ResolveNodePath(node, path.GetString(n));
+                            prop.SetNode(ResolveWeakPtr<Node>(targetNode), n);
+                        }
+                    }
+                    else
+                    {
+                        LogWarning("Failed to resolve node path. Type or count mismatch.");
                     }
                 }
             }

@@ -20,6 +20,13 @@ struct SceneNodeDef
     bool mExposeVariable = false;
 };
 
+struct PendingNodePath
+{
+    WeakPtr<Node> mNode;
+    std::string mPropName;
+    Datum mPath;
+};
+
 class Scene : public Asset
 {
 public:
@@ -59,7 +66,7 @@ protected:
     bool CheckForNodeProps(std::vector<Property>& props);
 
     static int32_t sInstantiationCount;
-    static std::vector<NodePtrWeak> sPendingNodePaths;
+    static std::vector<PendingNodePath> sPendingNodePaths;
 
     std::vector<SceneNodeDef> mNodeDefs;
 
