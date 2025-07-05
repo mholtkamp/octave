@@ -120,8 +120,7 @@ public:
     Node* CreateChild(TypeId nodeType);
     Node* CreateChild(const char* typeName);
     Node* CreateChildClone(Node* srcNode, bool recurse);
-    // Clone note: useLinkedScene defaults to false 
-    NodePtr Clone(bool recurse, bool instantiateLinkedScene = true);
+    NodePtr Clone(bool recurse, bool instantiateLinkedScene = true, bool resolveNodePaths = false);
     void DestroyAllChildren();
 
     Node* GetRoot();

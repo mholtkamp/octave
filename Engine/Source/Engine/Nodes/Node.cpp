@@ -10,6 +10,7 @@
 #include "Script.h"
 #include "SmartPointer.h"
 #include "NetworkManager.h"
+#include "NodePath.h"
 #include "Assets/Scene.h"
 
 #include "Nodes/3D/Node3d.h"
@@ -784,8 +785,19 @@ Node* Node::CreateChildClone(Node* srcNode, bool recurse)
     return subNode.Get();
 }
 
-NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene)
+NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene, bool resolveNodePaths)
 {
+    static int32_t sCloneCount = 0;
+    static std::vector<PendingNodePath> sPendingNodePaths;
+    static WeakPtr<Node> sTopLevelSourceNode;
+
+    if (sCloneCount == 0)
+    {
+        sTopLevelSourceNode = ResolveWeakPtr<Node>(this);
+    }
+
+    sCloneCount++;
+
     NodePtr clonedNode;
     Scene* srcScene = instantiateLinkedScene ? GetScene() : nullptr;
     bool hasNativeChildren = false;
@@ -809,6 +821,54 @@ NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene)
         // Might need to move copy after recurse block if properties aren't getting copied correctly.
         clonedNode->Copy(this, hasNativeChildren);
 
+        if (resolveNodePaths &&
+            (sTopLevelSourceNode.IsValid()))
+        {
+            // See if there are any nodepaths that need to be resolved.
+            // Determine the nodepath from the source node (this)
+            // But later resolve the nodepath for the cloned node
+            std::vector<Property> props;
+            GatherProperties(props);
+
+            for (auto& prop : props)
+            {
+                if (prop.mType == DatumType::Node &&
+                    prop.mCount > 0)
+                {
+                    Datum extraData;
+                    for (uint32_t x = 0; x < prop.mCount; ++x)
+                    {
+                        Node* targetNode = prop.GetNode(x).Get();
+
+                        // Only resolve internal nodes.
+                        // If we duplicate a node in editor for instance, then we want to
+                        // make a deep copy for any of the internal node references. But if 
+                        // a node property is outside of the top level node being duplicated, then
+                        // we want to leave the "shallow" reference because when we resolve the
+                        // pending node paths, top level cloned node won't be parented to anything.
+                        // Meaning it won't be able to reference the higher level nodes.
+                        if (targetNode != nullptr &&
+                            targetNode->HasAncestor(sTopLevelSourceNode.Get()))
+                        {
+                            std::string nodePath = FindRelativeNodePath(this, targetNode);
+                            extraData.PushBack(nodePath);
+                        }
+                        else
+                        {
+                            extraData.PushBack("");
+                        }
+
+                    }
+
+                    PendingNodePath pendingPath;
+                    pendingPath.mNode = clonedNode;
+                    pendingPath.mPropName = prop.mName;
+                    pendingPath.mPath = extraData;
+                    sPendingNodePaths.push_back(pendingPath);
+                }
+            }
+        }
+
         if (recurse && !srcScene && !hasNativeChildren)
         {
             // Clone children
@@ -818,7 +878,7 @@ NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene)
                 // That option was added just for PIE when cloning the EditScene. Because
                 // in that case we don't want to instantiate from the Scene. It may not be saved 
                 // and we want to carry over the current state instead of what was last saved.
-                NodePtr childClone = GetChild(i)->Clone(recurse);
+                NodePtr childClone = GetChild(i)->Clone(recurse, true, resolveNodePaths);
                 clonedNode->AddChild(childClone.Get());
             }
         }
@@ -827,6 +887,20 @@ NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene)
         {
             clonedNode->Start();
         }
+    }
+
+    sCloneCount--;
+
+    if (sCloneCount == 0)
+    {
+        if (resolveNodePaths &&
+            sPendingNodePaths.size() > 0)
+        {
+            ResolvePendingNodePaths(sPendingNodePaths);
+            sPendingNodePaths.clear();
+        }
+
+        sTopLevelSourceNode = nullptr;
     }
 
     return clonedNode;

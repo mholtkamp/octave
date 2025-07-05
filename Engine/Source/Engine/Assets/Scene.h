@@ -4,6 +4,7 @@
 #include "Property.h"
 #include "Factory.h"
 #include "AssetRef.h"
+#include "NodePath.h"
 #include "Nodes/Node.h"
 
 class World;
@@ -18,13 +19,6 @@ struct SceneNodeDef
     std::vector<uint8_t> mExtraData;
     int8_t mParentBone = -1;
     bool mExposeVariable = false;
-};
-
-struct PendingNodePath
-{
-    WeakPtr<Node> mNode;
-    std::string mPropName;
-    Datum mPath;
 };
 
 class Scene : public Asset

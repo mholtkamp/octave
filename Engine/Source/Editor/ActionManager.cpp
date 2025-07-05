@@ -2243,7 +2243,7 @@ void ActionSpawnNodes::Execute()
             {
                 OCT_ASSERT(mSrcNodes[i] != nullptr);
 
-                NodePtr newNode = mSrcNodes[i]->Clone(true);
+                NodePtr newNode = mSrcNodes[i]->Clone(true, true, true);
                 OCT_ASSERT(newNode);
                 mNodes.push_back(newNode);
             }

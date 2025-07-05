@@ -162,3 +162,44 @@ Node* ResolveNodePath(Node* src, const std::string& path)
 
     return dst;
 }
+
+void ResolvePendingNodePaths(std::vector<PendingNodePath>& pending)
+{
+    for (uint32_t i = 0; i < pending.size(); ++i)
+    {
+        Node* node = pending[i].mNode.Get();
+        const std::string& propName = pending[i].mPropName;
+        const Datum& path = pending[i].mPath;
+
+        if (node)
+        {
+            std::vector<Property> props;
+            node->GatherProperties(props);
+
+            for (uint32_t p = 0; p < props.size(); ++p)
+            {
+                Property& prop = props[p];
+                if (prop.mName != propName)
+                    continue;
+
+                if (prop.mType == DatumType::Node &&
+                    prop.mCount == path.mCount)
+                {
+                    for (uint32_t n = 0; n < prop.mCount; ++n)
+                    {
+                        const std::string& nPath = path.GetString(n);
+                        if (nPath != "")
+                        {
+                            Node* targetNode = ResolveNodePath(node, nPath);
+                            prop.SetNode(ResolveWeakPtr<Node>(targetNode), n);
+                        }
+                    }
+                }
+                else
+                {
+                    LogWarning("Failed to resolve node path. Type or count mismatch.");
+                }
+            }
+        }
+    }
+}

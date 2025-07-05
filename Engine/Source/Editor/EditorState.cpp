@@ -566,7 +566,7 @@ void EditorState::BeginPlayInEditor()
     if (editScene != nullptr &&
         editScene->mRootNode != nullptr)
     {
-        NodePtr clonedRoot = editScene->mRootNode->Clone(true, false);
+        NodePtr clonedRoot = editScene->mRootNode->Clone(true, false, true);
         GetWorld(0)->SetRootNode(clonedRoot.Get());
     }
 }
