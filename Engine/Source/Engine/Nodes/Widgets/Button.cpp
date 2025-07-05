@@ -148,6 +148,14 @@ void Button::Tick(float deltaTime)
         mState != ButtonState::Locked &&
         ShouldHandleInput())
     {
+        // Need accurate Rect to detect if cursor is inside mouse
+        // Was seeing issue where mouse at 0,0 would always overlap buttons that
+        // were just spawned in.
+        if (IsDirty())
+        {
+            UpdateRect();
+        }
+
         const bool containsMouse = ContainsMouse();
         const bool mouseDown = IsPointerDown(0) || (mRightClickPress && IsMouseButtonDown(MOUSE_RIGHT));
         const bool mouseJustDown = IsPointerJustDown(0) || (mRightClickPress && IsMouseButtonJustDown(MOUSE_RIGHT));
