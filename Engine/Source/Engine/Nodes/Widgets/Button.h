@@ -76,6 +76,8 @@ public:
     static Button* GetSelectedButton();
     static void SetSelectedButton(Button* button);
 
+    static void StaticUpdate();
+
 protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
@@ -107,5 +109,9 @@ protected:
     Text* mText = nullptr;
 
     static WeakPtr<Button> sSelectedButton;
+    static bool sSelButtonChangedThisFrame;
+
     static bool sHandleMouseInput;
+    static bool sHandleGamepadInput;
+    static bool sHandleKeyboardInput;
 };

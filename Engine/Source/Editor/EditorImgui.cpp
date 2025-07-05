@@ -697,7 +697,7 @@ static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, Prop
     }
     else
     {
-        if (ImGui::Button("*>"))
+        if (ImGui::Button("*"))
         {
             if (GetEditorState()->mNodePropertySelect)
             {

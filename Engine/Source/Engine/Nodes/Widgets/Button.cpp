@@ -15,7 +15,11 @@ DEFINE_NODE(Button, Widget);
 // Button that can be "selected" programmatically
 // Will not become unhovered when mouse is off of it.
 WeakPtr<Button> Button::sSelectedButton;
+bool Button::sSelButtonChangedThisFrame = false;
+
 bool Button::sHandleMouseInput = true;
+bool Button::sHandleGamepadInput = true;
+bool Button::sHandleKeyboardInput = true;
 
 Button* Button::GetSelectedButton()
 {
@@ -38,7 +42,14 @@ void Button::SetSelectedButton(Button* button)
         {
             sSelectedButton->SetState(ButtonState::Hovered);
         }
+
+        sSelButtonChangedThisFrame = true;
     }
+}
+
+void Button::StaticUpdate()
+{
+    sSelButtonChangedThisFrame = false;
 }
 
 bool Button::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
@@ -139,8 +150,8 @@ void Button::Tick(float deltaTime)
     {
         const bool containsMouse = ContainsMouse();
         const bool mouseDown = IsPointerDown(0) || (mRightClickPress && IsMouseButtonDown(MOUSE_RIGHT));
-        const bool mouseJustDown = IsPointerJustDown(0)  || (mRightClickPress && IsMouseButtonJustDown(MOUSE_RIGHT));
-        const bool mouseJustUp = IsPointerJustUp(0)  || (mRightClickPress && IsMouseButtonJustUp(MOUSE_RIGHT));
+        const bool mouseJustDown = IsPointerJustDown(0) || (mRightClickPress && IsMouseButtonJustDown(MOUSE_RIGHT));
+        const bool mouseJustUp = IsPointerJustUp(0) || (mRightClickPress && IsMouseButtonJustUp(MOUSE_RIGHT));
 
         if (containsMouse)
         {
@@ -164,6 +175,77 @@ void Button::Tick(float deltaTime)
         else if (sSelectedButton == this && mouseDown)
         {
             sSelectedButton->SetState(ButtonState::Hovered);
+        }
+    }
+
+    if (sSelectedButton == this &&
+        !sSelButtonChangedThisFrame)
+    {
+        if (sHandleGamepadInput)
+        {
+            // Allow activating the button with A button
+            if (IsGamepadButtonJustDown(GAMEPAD_A, 0))
+            {
+                Activate();
+            }
+
+            // Allow hopping to different options based on up/down/left/right input
+            if (mNavUp.IsValid() &&
+                IsGamepadButtonJustDown(GAMEPAD_L_UP, 0) || IsGamepadButtonJustDown(GAMEPAD_UP, 0))
+            {
+                SetSelectedButton(mNavUp.Get());
+            }
+
+            if (mNavDown.IsValid() &&
+                IsGamepadButtonJustDown(GAMEPAD_L_DOWN, 0) || IsGamepadButtonJustDown(GAMEPAD_DOWN, 0))
+            {
+                SetSelectedButton(mNavDown.Get());
+            }
+
+            if (mNavLeft.IsValid() &&
+                IsGamepadButtonJustDown(GAMEPAD_L_LEFT, 0) || IsGamepadButtonJustDown(GAMEPAD_LEFT, 0))
+            {
+                SetSelectedButton(mNavLeft.Get());
+            }
+
+            if (mNavRight.IsValid() &&
+                IsGamepadButtonJustDown(GAMEPAD_L_RIGHT, 0) || IsGamepadButtonJustDown(GAMEPAD_RIGHT, 0))
+            {
+                SetSelectedButton(mNavRight.Get());
+            }
+        }
+
+        if (sHandleKeyboardInput)
+        {
+            if (IsKeyJustDown(KEY_SPACE) || IsKeyJustDown(KEY_ENTER))
+            {
+                Activate();
+            }
+
+            // Allow hopping to different options based on up/down/left/right input
+            if (mNavUp.IsValid() &&
+                IsKeyJustDown(KEY_LEFT))
+            {
+                SetSelectedButton(mNavUp.Get());
+            }
+
+            if (mNavDown.IsValid() &&
+                IsKeyJustDown(KEY_DOWN))
+            {
+                SetSelectedButton(mNavDown.Get());
+            }
+
+            if (mNavLeft.IsValid() &&
+                IsKeyJustDown(KEY_LEFT))
+            {
+                SetSelectedButton(mNavLeft.Get());
+            }
+
+            if (mNavRight.IsValid() &&
+                IsKeyJustDown(KEY_RIGHT))
+            {
+                SetSelectedButton(mNavRight.Get());
+            }
         }
     }
 }
