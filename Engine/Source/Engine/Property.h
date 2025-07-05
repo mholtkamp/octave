@@ -47,8 +47,6 @@ public:
     void CreateExtraData() const;
     void DestroyExtraData() const;
 
-    void ResolveNodePaths();
-
 #if EDITOR
     static void SetCategory(const char* category);
     static void ClearCategory();

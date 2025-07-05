@@ -106,40 +106,16 @@ void Property::WriteStream(Stream& stream, bool net) const
 {
     Datum::WriteStream(stream, net);
 
-    if (!net)
-    {
-        if (mType == DatumType::Node)
-        {
-            CreateExtraData();
-
-            for (uint32_t i = 0; i < mCount; ++i)
-            {
-                Node* srcNode = mOwner->As<Node>();
-                if (srcNode == nullptr && mOwner->As<Script>())
-                {
-                    srcNode = mOwner->As<Script>()->GetOwner();
-                }
-
-                const WeakPtr<Node>& dstNode = mData.n[i];
-                std::string nodePath = FindRelativeNodePath(srcNode, dstNode.Get());
-
-                mExtra->PushBack(nodePath);
-            }
-        }
-    }
-
     stream.WriteString(mName);
 
-    stream.WriteBool(mExtra != nullptr);
-
-    if (mExtra != nullptr)
+    if (!net)
     {
-        mExtra->WriteStream(stream, net);
-    }
+        stream.WriteBool(mExtra != nullptr);
 
-    if (mType == DatumType::Node)
-    {
-        DestroyExtraData();
+        if (mExtra != nullptr)
+        {
+            mExtra->WriteStream(stream, net);
+        }
     }
 
     // We don't really need to write mIsVector since the values are copied
@@ -655,28 +631,6 @@ void Property::DestroyExtraData() const
     {
         delete mExtra;
         mExtra = nullptr;
-    }
-}
-
-void Property::ResolveNodePaths()
-{
-    if (GetType() == DatumType::Node &&
-        mExtra != nullptr &&
-        mOwner != nullptr &&
-        mOwner->As<Node>())
-    {
-        Node* ownerNode = mOwner->As<Node>();
-        
-        for (uint32_t i = 0; i < mCount; ++i)
-        {
-            const std::string& path = mExtra->GetString();
-            Node* dstNode = ::ResolveNodePath(ownerNode, path);
-            LogDebug("Resolve [%s] -> %p", path.c_str(), dstNode);
-            SetNode(ResolveWeakPtr<Node>(dstNode), i);
-        }
-
-        // Now that paths have been resolved, free up the string data.
-        DestroyExtraData();
     }
 }
 
