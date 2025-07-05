@@ -24,8 +24,6 @@ Property::Property(
     Datum(type, owner, data, count, changeHandler)
 {
     mName = name;
-    mEnumCount = enumCount;
-    mEnumStrings = enumStrings;
 
     if (extra.IsValid())
     {
@@ -34,6 +32,8 @@ Property::Property(
     }
 
 #if EDITOR
+    mEnumCount = enumCount;
+    mEnumStrings = enumStrings;
     mCategory = sCategory;
 #endif
 }
@@ -47,8 +47,6 @@ Property::Property(const Property& src) :
     Datum(src)
 {
     mName = src.mName;
-    mEnumCount = src.mEnumCount;
-    mEnumStrings = src.mEnumStrings;
 
     mVector = src.mVector;
     mMinCount = src.mMinCount;
@@ -62,6 +60,8 @@ Property::Property(const Property& src) :
     }
 
 #if EDITOR
+    mEnumCount = src.mEnumCount;
+    mEnumStrings = src.mEnumStrings;
     mCategory = src.mCategory;
 #endif
 }
@@ -179,13 +179,15 @@ void Property::DeepCopy(const Datum& src, bool forceInternalStorage)
             DestroyExtraData();
         }
 
-        mEnumCount = srcProp.mEnumCount;
-        mEnumStrings = srcProp.mEnumStrings;
-
         mVector = srcProp.mVector;
         mMinCount = srcProp.mMinCount;
         mMaxCount = srcProp.mMaxCount;
         mIsVector = srcProp.mIsVector;
+
+#if EDITOR
+        mEnumCount = srcProp.mEnumCount;
+        mEnumStrings = srcProp.mEnumStrings;
+#endif
     }
 }
 
@@ -682,12 +684,15 @@ void Property::Reset()
 {
     Datum::Reset();
     mName = "";
-    mEnumCount = 0;
-    mEnumStrings = nullptr;
     mVector = nullptr;
     mMinCount = 0;
     mMaxCount = 255;
     mIsVector = false;
+
+#if EDITOR
+    mEnumCount = 0;
+    mEnumStrings = nullptr;
+#endif
 
     DestroyExtraData();
 }
