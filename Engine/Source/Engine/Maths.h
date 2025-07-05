@@ -71,6 +71,10 @@ public:
     static glm::vec3 QuatToVector(glm::quat quat);
     static glm::vec3 RotationToVector(glm::vec3 rotation);
 
+    static glm::vec4 LinearToSrgb(const glm::vec4& linearColor);
+    static glm::vec4 SrgbToLinear(glm::vec4 srgbColor);
+
+
 private:
 
     static bool mRandSeeded;

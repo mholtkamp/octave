@@ -490,7 +490,7 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         glm::uvec4 vp = Renderer::Get()->GetSceneViewport();
         SetViewport(vp.x, vp.y, vp.z, vp.w, true, true);
         SetScissor(vp.x, vp.y, vp.z, vp.w, true, true);
-        clearColor = Renderer::Get()->GetClearColor();
+        clearColor = Maths::SrgbToLinear(Renderer::Get()->GetClearColor());
     }
 
     if (mCurrentRenderPassId == RenderPassId::Clear)
