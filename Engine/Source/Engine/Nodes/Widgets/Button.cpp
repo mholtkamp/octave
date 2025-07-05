@@ -191,25 +191,25 @@ void Button::Tick(float deltaTime)
 
             // Allow hopping to different options based on up/down/left/right input
             if (mNavUp.IsValid() &&
-                IsGamepadButtonJustDown(GAMEPAD_L_UP, 0) || IsGamepadButtonJustDown(GAMEPAD_UP, 0))
+                (IsGamepadButtonJustDown(GAMEPAD_L_UP, 0) || IsGamepadButtonJustDown(GAMEPAD_UP, 0)))
             {
                 SetSelectedButton(mNavUp.Get());
             }
 
             if (mNavDown.IsValid() &&
-                IsGamepadButtonJustDown(GAMEPAD_L_DOWN, 0) || IsGamepadButtonJustDown(GAMEPAD_DOWN, 0))
+                (IsGamepadButtonJustDown(GAMEPAD_L_DOWN, 0) || IsGamepadButtonJustDown(GAMEPAD_DOWN, 0)))
             {
                 SetSelectedButton(mNavDown.Get());
             }
 
             if (mNavLeft.IsValid() &&
-                IsGamepadButtonJustDown(GAMEPAD_L_LEFT, 0) || IsGamepadButtonJustDown(GAMEPAD_LEFT, 0))
+                (IsGamepadButtonJustDown(GAMEPAD_L_LEFT, 0) || IsGamepadButtonJustDown(GAMEPAD_LEFT, 0)))
             {
                 SetSelectedButton(mNavLeft.Get());
             }
 
             if (mNavRight.IsValid() &&
-                IsGamepadButtonJustDown(GAMEPAD_L_RIGHT, 0) || IsGamepadButtonJustDown(GAMEPAD_RIGHT, 0))
+                (IsGamepadButtonJustDown(GAMEPAD_L_RIGHT, 0) || IsGamepadButtonJustDown(GAMEPAD_RIGHT, 0)))
             {
                 SetSelectedButton(mNavRight.Get());
             }
@@ -224,7 +224,7 @@ void Button::Tick(float deltaTime)
 
             // Allow hopping to different options based on up/down/left/right input
             if (mNavUp.IsValid() &&
-                IsKeyJustDown(KEY_LEFT))
+                IsKeyJustDown(KEY_UP))
             {
                 SetSelectedButton(mNavUp.Get());
             }
