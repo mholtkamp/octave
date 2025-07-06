@@ -442,6 +442,13 @@ NodePtr Scene::Instantiate()
         sPendingNodePaths.clear();
     }
 
+    // Negative instantiation count should never happen!
+    OCT_ASSERT(sInstantiationCount >= 0);
+    if (sInstantiationCount < 0)
+    {
+        sInstantiationCount = 0;
+    }
+
     return rootNode;
 }
 

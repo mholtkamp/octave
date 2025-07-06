@@ -903,6 +903,13 @@ NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene, bool resolveNodeP
         sTopLevelSourceNode = nullptr;
     }
 
+    // Negative clone count should never happen!
+    OCT_ASSERT(sCloneCount >= 0);
+    if (sCloneCount < 0)
+    {
+        sCloneCount = 0;
+    }
+
     return clonedNode;
 }
 
