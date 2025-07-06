@@ -549,23 +549,7 @@ void Scene::AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeLi
         }
 
         GatherNonDefaultProperties(node, nodeDef.mProperties);
-
-        // Find node paths for Node properties
-        for (uint32_t i = 0; i < nodeDef.mProperties.size(); ++i)
-        {
-            Property& prop = nodeDef.mProperties[i];
-            if (prop.mType == DatumType::Node)
-            {
-                prop.CreateExtraData();
-
-                for (uint32_t c = 0; c < prop.mCount; ++c)
-                {
-                    const WeakPtr<Node>& dstNode = prop.mData.n[c];
-                    std::string nodePath = FindRelativeNodePath(node, dstNode.Get());
-                    prop.mExtra->PushBack(nodePath);
-                }
-            }
-        }
+        RecordNodePaths(node, nodeDef.mProperties);
 
         if (scene == nullptr)
         {

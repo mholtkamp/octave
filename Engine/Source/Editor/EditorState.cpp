@@ -13,6 +13,7 @@
 #include "Nodes/Widgets/Text.h"
 #include "Engine.h"
 #include "Renderer.h"
+#include "NodePath.h"
 #include "Grid.h"
 #include "World.h"
 #include "ScriptUtils.h"
@@ -785,6 +786,7 @@ void CacheEditSceneLinkedProps(EditScene& editScene)
                 LinkedSceneProps& nonDefProps = editScene.mLinkedSceneProps.back();
                 nonDefProps.mNode = node;
                 GatherNonDefaultProperties(node, nonDefProps.mProps);
+                RecordNodePaths(node, nonDefProps.mProps);
             }
 
             return false;
@@ -860,6 +862,8 @@ void EditorState::OpenEditScene(int32_t idx)
 
     if (idx >= 0 && idx < int32_t(mEditScenes.size()))
     {
+        std::vector<PendingNodePath> pendingNodePaths;
+
         const EditScene& editScene = mEditScenes[idx];
         mEditSceneIndex = idx;
         GetWorld(0)->SetRootNode(editScene.mRootNode.Get()); // could be nullptr.
@@ -903,6 +907,20 @@ void EditorState::OpenEditScene(int32_t idx)
                     std::vector<Property> dstProps;
                     newNode->GatherProperties(dstProps);
                     CopyPropertyValues(dstProps, *nonDefProps);
+
+                    // Find pending node paths
+                    for (auto& prop : *nonDefProps)
+                    {
+                        if (prop.mType == DatumType::Node &&
+                            prop.mExtra != nullptr)
+                        {
+                            PendingNodePath pendingPath;
+                            pendingPath.mNode = newNode;
+                            pendingPath.mPropName = prop.mName;
+                            pendingPath.mPath = *prop.mExtra;
+                            pendingNodePaths.push_back(pendingPath);
+                        }
+                    }
                 }
 
                 newNode->SetTransient(transient);
@@ -914,6 +932,8 @@ void EditorState::OpenEditScene(int32_t idx)
         if (editScene.mRootNode != nullptr)
         {
             editScene.mRootNode->Traverse(respawnSceneLinks);
+
+            ResolvePendingNodePaths(pendingNodePaths);
 
             if (editScene.mRootNode->IsNode3D())
                 GetEditorState()->SetEditorMode(EditorMode::Scene3D);

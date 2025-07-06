@@ -203,3 +203,23 @@ void ResolvePendingNodePaths(std::vector<PendingNodePath>& pending)
         }
     }
 }
+
+void RecordNodePaths(Node* node, std::vector<Property>& props)
+{
+    // Find node paths for Node properties
+    for (uint32_t i = 0; i < props.size(); ++i)
+    {
+        Property& prop = props[i];
+        if (prop.mType == DatumType::Node)
+        {
+            prop.CreateExtraData();
+
+            for (uint32_t c = 0; c < prop.mCount; ++c)
+            {
+                const WeakPtr<Node>& dstNode = prop.mData.n[c];
+                std::string nodePath = FindRelativeNodePath(node, dstNode.Get());
+                prop.mExtra->PushBack(nodePath);
+            }
+        }
+    }
+}

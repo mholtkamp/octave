@@ -563,11 +563,12 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
             Property* defaultProp = FindProperty(defaultProps, extProps[i].mName);
 
             if (defaultProp == nullptr ||
-                (extProps[i].mType == DatumType::Asset && scene == nullptr) || 
+                (extProps[i].mType == DatumType::Asset && scene == nullptr) ||
                 extProps[i] != *defaultProp)
             {
                 props.push_back(Property());
-                props.back().DeepCopy(extProps[i], true);
+                Property& prop = props.back();
+                prop.DeepCopy(extProps[i], true);
             }
         }
 
