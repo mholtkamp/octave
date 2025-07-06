@@ -32,7 +32,21 @@ int Button_Lua::GetSelected(lua_State* L)
 int Button_Lua::EnableMouseHandling(lua_State* L)
 {
     bool enable = CHECK_BOOLEAN(L, 1);
-    Button::SetHandleMouseInput(enable);
+    Button::SetHandleMouse(enable);
+    return 0;
+}
+
+int Button_Lua::EnableGamepadHandling(lua_State* L)
+{
+    bool enable = CHECK_BOOLEAN(L, 1);
+    Button::SetHandleGamepad(enable);
+    return 0;
+}
+
+int Button_Lua::EnableKeyboardHandling(lua_State* L)
+{
+    bool enable = CHECK_BOOLEAN(L, 1);
+    Button::SetHandleKeyboard(enable);
     return 0;
 }
 
@@ -160,6 +174,39 @@ int Button_Lua::GetStateColors(lua_State* L)
     return 4;
 }
 
+int Button_Lua::SetNavigation(lua_State* L)
+{
+    Button* button = CHECK_BUTTON(L, 1);
+    Node* up = lua_isnoneornil(L, 2) ? nullptr : CHECK_NODE(L, 2);
+    Node* down = lua_isnoneornil(L, 3) ? nullptr : CHECK_NODE(L, 3);
+    Node* left = lua_isnoneornil(L, 4) ? nullptr : CHECK_NODE(L, 4);
+    Node* right = lua_isnoneornil(L, 5) ? nullptr : CHECK_NODE(L, 5);
+
+    button->SetNavUp(up);
+    button->SetNavDown(down);
+    button->SetNavLeft(left);
+    button->SetNavRight(right);
+
+    return 0;
+}
+
+int Button_Lua::GetNavigation(lua_State* L)
+{
+    Button* button = CHECK_BUTTON(L, 1);
+
+    Node* up = button->GetNavUp();
+    Node* down = button->GetNavDown();
+    Node* left = button->GetNavLeft();
+    Node* right = button->GetNavRight();
+
+    Node_Lua::Create(L, up);
+    Node_Lua::Create(L, down);
+    Node_Lua::Create(L, left);
+    Node_Lua::Create(L, right);
+
+    return 4;
+}
+
 int Button_Lua::GetText(lua_State* L)
 {
     Button* button = CHECK_BUTTON(L, 1);
@@ -193,6 +240,8 @@ void Button_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetSelected);
     REGISTER_TABLE_FUNC(L, mtIndex, GetSelected);
     REGISTER_TABLE_FUNC(L, mtIndex, EnableMouseHandling);
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableGamepadHandling);
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableKeyboardHandling);
     REGISTER_TABLE_FUNC(L, mtIndex, IsSelected);
     REGISTER_TABLE_FUNC(L, mtIndex, Activate);
     REGISTER_TABLE_FUNC(L, mtIndex, GetState);
@@ -203,6 +252,8 @@ void Button_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetStateColors);
     REGISTER_TABLE_FUNC(L, mtIndex, GetStateTextures);
     REGISTER_TABLE_FUNC(L, mtIndex, GetStateColors);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetNavigation);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetNavigation);
     REGISTER_TABLE_FUNC(L, mtIndex, GetText);
     REGISTER_TABLE_FUNC(L, mtIndex, GetQuad);
 

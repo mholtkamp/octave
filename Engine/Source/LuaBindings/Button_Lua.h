@@ -18,6 +18,8 @@ struct Button_Lua
     static int SetSelected(lua_State* L);
     static int GetSelected(lua_State* L);
     static int EnableMouseHandling(lua_State* L);
+    static int EnableGamepadHandling(lua_State* L);
+    static int EnableKeyboardHandling(lua_State* L);
     static int IsSelected(lua_State* L);
     static int Activate(lua_State* L);
     static int GetState(lua_State* L);
@@ -28,6 +30,8 @@ struct Button_Lua
     static int SetStateColors(lua_State* L);
     static int GetStateTextures(lua_State* L);
     static int GetStateColors(lua_State* L);
+    static int SetNavigation(lua_State* L);
+    static int GetNavigation(lua_State* L);
     static int GetText(lua_State* L);
     static int GetQuad(lua_State* L);
 

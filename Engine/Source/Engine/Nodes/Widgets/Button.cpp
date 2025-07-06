@@ -470,9 +470,19 @@ void Button::SetUseTextStateColor(bool inUse)
     mUseTextStateColor = inUse;
 }
 
-void Button::SetHandleMouseInput(bool inHandle)
+void Button::SetHandleMouse(bool inHandle)
 {
     sHandleMouseInput = inHandle;
+}
+
+void Button::SetHandleGamepad(bool inHandle)
+{
+    sHandleGamepadInput = inHandle;
+}
+
+void Button::SetHandleKeyboard(bool inHandle)
+{
+    sHandleKeyboardInput = inHandle;
 }
 
 void Button::EnableRightClickPress(bool enable)
@@ -493,6 +503,46 @@ void Button::SetTextString(const std::string& newTextString)
 const std::string& Button::GetTextString() const
 {
     return mText->GetText();
+}
+
+void Button::SetNavUp(Node* up)
+{
+    mNavUp = ResolveWeakPtr<Button>(up);
+}
+
+void Button::SetNavDown(Node* down)
+{
+    mNavDown = ResolveWeakPtr<Button>(down);
+}
+
+void Button::SetNavLeft(Node* left)
+{
+    mNavLeft = ResolveWeakPtr<Button>(left);
+}
+
+void Button::SetNavRight(Node* right)
+{
+    mNavRight = ResolveWeakPtr<Button>(right);
+}
+
+Node* Button::GetNavUp()
+{
+    return mNavUp.Get();
+}
+
+Node* Button::GetNavDown()
+{
+    return mNavDown.Get();
+}
+
+Node* Button::GetNavLeft()
+{
+    return mNavLeft.Get();
+}
+
+Node* Button::GetNavRight()
+{
+    return mNavRight.Get();
 }
 
 Text* Button::GetText()

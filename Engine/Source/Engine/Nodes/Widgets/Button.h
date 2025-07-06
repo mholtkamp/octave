@@ -57,18 +57,25 @@ public:
 
     void SetUseQuadStateColor(bool inUse);
     void SetUseTextStateColor(bool inUse);
-    static void SetHandleMouseInput(bool inHandle);
-
-    //void SetHoverHandler(ButtonHandlerFP newHandler);
-    //void SetPressedHandler(ButtonHandlerFP newHandler);
-    //void SetScriptHoverHandler(const char* tableName, const char* funcName);
-    //void SetScriptPressedHandler(const char* tableName, const char* funcName);
+    static void SetHandleMouse(bool inHandle);
+    static void SetHandleGamepad(bool inHandle);
+    static void SetHandleKeyboard(bool inHandle);
 
     void EnableRightClickPress(bool enable);
     bool IsRightClickPressEnabled();
 
     virtual void SetTextString(const std::string& newTextString);
     const std::string& GetTextString() const;
+
+    void SetNavUp(Node* up);
+    void SetNavDown(Node* down);
+    void SetNavLeft(Node* left);
+    void SetNavRight(Node* right);
+
+    Node* GetNavUp();
+    Node* GetNavDown();
+    Node* GetNavLeft();
+    Node* GetNavRight();
 
     Text* GetText();
     Quad* GetQuad();
