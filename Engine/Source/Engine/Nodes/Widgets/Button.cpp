@@ -344,6 +344,7 @@ void Button::SetState(ButtonState newState)
         if (!IsDestroyed())
         {
             EmitSignal("StateChanged", { this });
+            CallFunction("OnStateChanged", { this });
         }
     }
 }
@@ -558,7 +559,5 @@ Quad* Button::GetQuad()
 void Button::Activate()
 {
     EmitSignal("Activated", { this });
-    Datum selfArg = this;
-    const Datum* args[] = { &selfArg };
-    ScriptUtils::CallMethod(this, "OnActivated", OCT_ARRAY_SIZE(args), args, nullptr);
+    CallFunction("OnActivated", { this });
 }
