@@ -25,6 +25,18 @@ Enable mouse handling globally for all buttons.
 Sig: `Button.EnableMouseHandling(enable)`
  - Arg: `boolean enable` Enable mouse handling for all buttons
  ---
+ ### EnableGamepadHandling
+Enable gamepad handling globally for all buttons.
+
+Sig: `Button.EnableGamepadHandling(enable)`
+ - Arg: `boolean enable` Enable gamepad handling for all buttons
+ ---
+ ### EnableKeyboardHandling
+Enable keyboard handling globally for all buttons.
+
+Sig: `Button.EnableKeyboardHandling(enable)`
+ - Arg: `boolean enable` Enable keyboard handling for all buttons
+ ---
  ### IsSelected
 Check if this button is currently the selected button.
 
@@ -98,6 +110,24 @@ Sig: `normal, hovered, pressed, locked = Button:SetStateTextures()`
  - Ret: `Vector hovered` Hovered color
  - Ret: `Vector pressed` Pressed color
  - Ret: `Vector locked` Locked color
+---
+### SetNavigation
+Set the buttons that can be nagivated to when this button is selected. For instance, if down is pressed on the D-pad and Gamepad Handling is enabled for buttons, then the selected button will change to whatever button is pointed to by `down`. If `down` is nil, nothing will happen and the currently selected button remains selected.
+
+Sig: `Button:SetStateTexSetNavigationtures(up, down, left, right)`
+ - Arg: `Button up` Up button
+ - Arg: `Button down` Down button
+ - Arg: `Button left` Left button
+ - Arg: `Button right` Right button
+---
+### GetNavigation
+Get a button's directional navigation (to other buttons).
+
+Sig: `up, down, left, right = Button:GetNavigation()`
+ - Ret: `Button up` Up button
+ - Ret: `Button down` Down button
+ - Ret: `Button left` Left button
+ - Ret: `Button right` Right button
 ---
 ### GetText
 Get the internal Text widget used by this Button.

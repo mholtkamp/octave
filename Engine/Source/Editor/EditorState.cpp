@@ -13,6 +13,7 @@
 #include "Nodes/Widgets/Text.h"
 #include "Engine.h"
 #include "Renderer.h"
+#include "NodePath.h"
 #include "Grid.h"
 #include "World.h"
 #include "ScriptUtils.h"
@@ -566,7 +567,7 @@ void EditorState::BeginPlayInEditor()
     if (editScene != nullptr &&
         editScene->mRootNode != nullptr)
     {
-        NodePtr clonedRoot = editScene->mRootNode->Clone(true, false);
+        NodePtr clonedRoot = editScene->mRootNode->Clone(true, false, true);
         GetWorld(0)->SetRootNode(clonedRoot.Get());
     }
 }
@@ -664,6 +665,34 @@ bool EditorState::IsPlayInEditorPaused()
     return mPaused;
 }
 
+void EditorState::SetNodePropertySelect(bool enable, int32_t index, const std::string& propName)
+{
+    GetEditorState()->mNodePropertySelect = true;
+    GetEditorState()->mNodePropertySelectIndex = index;
+    GetEditorState()->mNodePropertySelectName = propName;
+}
+
+void EditorState::ClearNodePropertySelect()
+{
+    GetEditorState()->mNodePropertySelect = false;
+    GetEditorState()->mNodePropertySelectIndex = 0;
+    GetEditorState()->mNodePropertySelectName = "";
+}
+
+void EditorState::AssignNodePropertySelect(Node* targetNode)
+{
+    Node* inspNode = GetEditorState()->GetInspectedNode();
+    int32_t targetIdx = GetEditorState()->mNodePropertySelectIndex;
+    const std::string& targetName = GetEditorState()->mNodePropertySelectName;
+
+    if (inspNode)
+    {
+        ActionManager::Get()->EXE_EditProperty(inspNode, PropertyOwnerType::Node, targetName, targetIdx, targetNode);
+    }
+
+    GetEditorState()->ClearNodePropertySelect();
+}
+
 Camera3D* EditorState::GetEditorCamera()
 {
     return mEditorCamera.Get();
@@ -757,6 +786,7 @@ void CacheEditSceneLinkedProps(EditScene& editScene)
                 LinkedSceneProps& nonDefProps = editScene.mLinkedSceneProps.back();
                 nonDefProps.mNode = node;
                 GatherNonDefaultProperties(node, nonDefProps.mProps);
+                RecordNodePaths(node, nonDefProps.mProps);
             }
 
             return false;
@@ -832,6 +862,8 @@ void EditorState::OpenEditScene(int32_t idx)
 
     if (idx >= 0 && idx < int32_t(mEditScenes.size()))
     {
+        std::vector<PendingNodePath> pendingNodePaths;
+
         const EditScene& editScene = mEditScenes[idx];
         mEditSceneIndex = idx;
         GetWorld(0)->SetRootNode(editScene.mRootNode.Get()); // could be nullptr.
@@ -875,6 +907,20 @@ void EditorState::OpenEditScene(int32_t idx)
                     std::vector<Property> dstProps;
                     newNode->GatherProperties(dstProps);
                     CopyPropertyValues(dstProps, *nonDefProps);
+
+                    // Find pending node paths
+                    for (auto& prop : *nonDefProps)
+                    {
+                        if (prop.mType == DatumType::Node &&
+                            prop.mExtra != nullptr)
+                        {
+                            PendingNodePath pendingPath;
+                            pendingPath.mNode = newNode;
+                            pendingPath.mPropName = prop.mName;
+                            pendingPath.mPath = *prop.mExtra;
+                            pendingNodePaths.push_back(pendingPath);
+                        }
+                    }
                 }
 
                 newNode->SetTransient(transient);
@@ -886,6 +932,8 @@ void EditorState::OpenEditScene(int32_t idx)
         if (editScene.mRootNode != nullptr)
         {
             editScene.mRootNode->Traverse(respawnSceneLinks);
+
+            ResolvePendingNodePaths(pendingNodePaths);
 
             if (editScene.mRootNode->IsNode3D())
                 GetEditorState()->SetEditorMode(EditorMode::Scene3D);

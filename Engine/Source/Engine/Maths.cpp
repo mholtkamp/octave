@@ -429,3 +429,18 @@ glm::vec3 Maths::RotationToVector(glm::vec3 rotation)
     return retVec;
 }
 
+glm::vec4 Maths::LinearToSrgb(const glm::vec4& linearColor)
+{
+    // Leave alpha channel unaffected.
+    glm::vec3 srgbColor = linearColor;
+    srgbColor = glm::pow(srgbColor, glm::vec3(1.0f / 2.2f));
+    return glm::vec4(srgbColor, linearColor.a);
+}
+
+glm::vec4 Maths::SrgbToLinear(glm::vec4 srgbColor)
+{
+    // Leave alpha channel unaffected.
+    glm::vec3 linearColor = srgbColor;
+    linearColor = glm::pow(linearColor, glm::vec3(2.2f));
+    return glm::vec4(linearColor, srgbColor.a);
+}

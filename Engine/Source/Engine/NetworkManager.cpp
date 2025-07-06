@@ -1717,7 +1717,7 @@ bool ReplicateData(std::vector<T>& repData, NetMsgReplicate& msg, NetId hostId, 
             // First check if the replicated variable will fit into the message.
             // If not, we will need to send a message for all of the replicated vars
             // that have been processed to this point, and then begin a new message.
-            uint32_t datumSerializeSize = repData[i].GetSerializationSize();
+            uint32_t datumSerializeSize = repData[i].GetSerializationSize(true);
 
             // If the replicated variable is too large, then skip it.
             if (datumSerializeSize > MaxDatumNetSerializeSize)

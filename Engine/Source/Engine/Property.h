@@ -15,25 +15,27 @@ public:
     Property();
     Property(DatumType type,
         const std::string& name,
-        void* owner,
+        Object* owner,
         void* data,
         uint32_t count = 1,
         DatumChangeHandlerFP changeHandler = nullptr,
-        int32_t extra = 0,
+        Datum extra = NULL_DATUM,
         int32_t enumCount = 0,
         const char** enumStrings = nullptr);
+    virtual ~Property();
 
     Property(const Property& src);
 
     Property& operator=(const Property& src);
 
 
-    virtual void ReadStream(Stream& stream, bool external) override;
-    virtual void WriteStream(Stream& stream) const override;
-    virtual uint32_t GetSerializationSize() const override;
+    virtual void ReadStream(Stream& stream, uint32_t version, bool net, bool external) override;
+    virtual void WriteStream(Stream& stream, bool net) const override;
+    virtual uint32_t GetSerializationSize(bool net) const override;
 
     virtual bool IsProperty() const override;
     virtual void DeepCopy(const Datum& src, bool forceInternalStorage) override;
+    virtual void Destroy() override;
 
     void PushBackVector(void* value = nullptr);
     void EraseVector(uint32_t index);
@@ -41,6 +43,9 @@ public:
     Property& MakeVector(uint8_t minCount = 0, uint8_t maxCount = 255);
     bool IsVector() const;
     bool IsArray() const;
+
+    void CreateExtraData() const;
+    void DestroyExtraData() const;
 
 #if EDITOR
     static void SetCategory(const char* category);
@@ -56,14 +61,14 @@ public:
     static const char* sCategory;
 
     std::string mName;
-    int32_t mExtra = 0;
-    int32_t mEnumCount = 0;
-    const char** mEnumStrings = nullptr;
+    mutable Datum* mExtra = nullptr;
     void* mVector = nullptr;
     uint8_t mMinCount = 0;
     uint8_t mMaxCount = 255;
     bool mIsVector = false;
 #if EDITOR
+    int32_t mEnumCount = 0;
+    const char** mEnumStrings = nullptr;
     const char* mCategory = "";
 #endif
 };

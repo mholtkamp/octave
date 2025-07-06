@@ -1,7 +1,10 @@
 #include "Property.h"
+#include "TableDatum.h"
 #include "Asset.h"
 #include "AssetRef.h"
 #include "Log.h"
+#include "Script.h"
+#include "NodePath.h"
 
 Property::Property()
 {
@@ -11,39 +14,54 @@ Property::Property()
 Property::Property(
     DatumType type,
     const std::string& name,
-    void* owner,
+    Object* owner,
     void* data,
     uint32_t count,
     DatumChangeHandlerFP changeHandler,
-    int32_t extra,
+    Datum extra,
     int32_t enumCount,
     const char** enumStrings) :
     Datum(type, owner, data, count, changeHandler)
 {
     mName = name;
-    mExtra = extra;
-    mEnumCount = enumCount;
-    mEnumStrings = enumStrings;
+
+    if (extra.IsValid())
+    {
+        CreateExtraData();
+        *mExtra = extra;
+    }
 
 #if EDITOR
+    mEnumCount = enumCount;
+    mEnumStrings = enumStrings;
     mCategory = sCategory;
 #endif
+}
+
+Property::~Property()
+{
+    DestroyExtraData();
 }
 
 Property::Property(const Property& src) :
     Datum(src)
 {
     mName = src.mName;
-    mExtra = src.mExtra;
-    mEnumCount = src.mEnumCount;
-    mEnumStrings = src.mEnumStrings;
 
     mVector = src.mVector;
     mMinCount = src.mMinCount;
     mMaxCount = src.mMaxCount;
     mIsVector = src.mIsVector;
 
+    if (src.mExtra)
+    {
+        CreateExtraData();
+        *mExtra = *src.mExtra;
+    }
+
 #if EDITOR
+    mEnumCount = src.mEnumCount;
+    mEnumStrings = src.mEnumStrings;
     mCategory = src.mCategory;
 #endif
 }
@@ -58,33 +76,59 @@ Property& Property::operator=(const Property& src)
     return *this;
 }
 
-void Property::ReadStream(Stream& stream, bool external)
+void Property::ReadStream(Stream& stream, uint32_t version, bool net, bool external)
 {
-    Datum::ReadStream(stream, external);
+    Datum::ReadStream(stream, version, net, external);
     stream.ReadString(mName);
-    mExtra = stream.ReadInt32();
+
+    if (version >= ASSET_VERSION_PROPERTY_EXTRA)
+    {
+        bool hasExtra = stream.ReadBool();
+
+        if (hasExtra)
+        {
+            CreateExtraData();
+            mExtra->ReadStream(stream, version, net, external);
+        }
+    }
+    else
+    {
+        CreateExtraData();
+        mExtra->PushBack(stream.ReadInt32());
+    }
 
     // We don't really need to write mIsVector since the values are copied
     // over to the script property which already has mIsVector set.
     //mIsVector = stream.ReadBool();
 }
 
-void Property::WriteStream(Stream& stream) const
+void Property::WriteStream(Stream& stream, bool net) const
 {
-    Datum::WriteStream(stream);
+    Datum::WriteStream(stream, net);
+
     stream.WriteString(mName);
-    stream.WriteInt32(mExtra);
+
+    if (!net)
+    {
+        stream.WriteBool(mExtra != nullptr);
+
+        if (mExtra != nullptr)
+        {
+            mExtra->WriteStream(stream, net);
+        }
+    }
 
     // We don't really need to write mIsVector since the values are copied
     // over to the script property which already has mIsVector set.
     //stream.WriteBool(mIsVector);
 }
 
-uint32_t Property::GetSerializationSize() const
+uint32_t Property::GetSerializationSize(bool net) const
 {
-    return Datum::GetSerializationSize() + 
-        GetStringSerializationSize(mName) + 
-        sizeof(mExtra);
+    return Datum::GetSerializationSize(net) +
+        GetStringSerializationSize(mName) +
+        sizeof(uint8_t) + // Has extra?
+        mExtra ? mExtra->GetSerializationSize(net) : 0;
 }
 
 bool Property::IsProperty() const
@@ -100,15 +144,33 @@ void Property::DeepCopy(const Datum& src, bool forceInternalStorage)
     {
         const Property& srcProp = (const Property&)src;
         mName = srcProp.mName;
-        mExtra = srcProp.mExtra;
-        mEnumCount = srcProp.mEnumCount;
-        mEnumStrings = srcProp.mEnumStrings;
+
+        if (srcProp.mExtra)
+        {
+            CreateExtraData();
+            *mExtra = *srcProp.mExtra;
+        }
+        else
+        {
+            DestroyExtraData();
+        }
 
         mVector = srcProp.mVector;
         mMinCount = srcProp.mMinCount;
         mMaxCount = srcProp.mMaxCount;
         mIsVector = srcProp.mIsVector;
+
+#if EDITOR
+        mEnumCount = srcProp.mEnumCount;
+        mEnumStrings = srcProp.mEnumStrings;
+#endif
     }
+}
+
+void Property::Destroy()
+{
+    Datum::Destroy();
+    DestroyExtraData();
 }
 
 // TODO: Replace with individual functions for better type safety.
@@ -189,10 +251,11 @@ void Property::PushBackVector(void* value)
             OCT_ASSERT(0);
             break;
         }
-        case DatumType::Object:
+        case DatumType::Node:
         {
-            // Pointer not supported as vector.
-            OCT_ASSERT(0);
+            std::vector<NodePtrWeak>& vect = *((std::vector<NodePtrWeak>*) mVector);
+            vect.push_back(value ? *((NodePtrWeak*)value) : NodePtrWeak());
+            mData.n = vect.data();
             break;
         }
         case DatumType::Short:
@@ -286,10 +349,10 @@ void Property::EraseVector(uint32_t index)
             OCT_ASSERT(0);
             break;
         }
-        case DatumType::Object:
+        case DatumType::Node:
         {
-            // Pointer not supported as Vector
-            OCT_ASSERT(0);
+            std::vector<NodePtrWeak>& vect = *((std::vector<NodePtrWeak>*) mVector);
+            vect.erase(vect.begin() + index);
             break;
         }
         case DatumType::Short:
@@ -397,10 +460,11 @@ void Property::ResizeVector(uint32_t count)
             OCT_ASSERT(0);
             break;
         }
-        case DatumType::Object:
+        case DatumType::Node:
         {
-            // Pointer not supported as Vector
-            OCT_ASSERT(0);
+            std::vector<NodePtrWeak>& vect = *((std::vector<NodePtrWeak>*) mVector);
+            vect.resize(count);
+            mData.n = vect.data();
             break;
         }
         case DatumType::Short:
@@ -512,10 +576,11 @@ Property& Property::MakeVector(uint8_t minCount, uint8_t maxCount)
             OCT_ASSERT(0);
             break;
         }
-        case DatumType::Object:
+        case DatumType::Node:
         {
-            // Pointer not supported as vector
-            OCT_ASSERT(0);
+            std::vector<NodePtrWeak>& vect = *((std::vector<NodePtrWeak>*) mVector);
+            mData.n = vect.data();
+            mCount = (uint8_t)vect.size();
             break;
         }
         case DatumType::Short:
@@ -552,17 +617,38 @@ bool Property::IsArray() const
     return (IsVector() || mCount > 1);
 }
 
+void Property::CreateExtraData() const
+{
+    if (mExtra == nullptr)
+    {
+        mExtra = new Datum();
+    }
+}
+
+void Property::DestroyExtraData() const
+{
+    if (mExtra != nullptr)
+    {
+        delete mExtra;
+        mExtra = nullptr;
+    }
+}
+
 void Property::Reset()
 {
     Datum::Reset();
     mName = "";
-    mExtra = 0;
-    mEnumCount = 0;
-    mEnumStrings = nullptr;
     mVector = nullptr;
     mMinCount = 0;
     mMaxCount = 255;
     mIsVector = false;
+
+#if EDITOR
+    mEnumCount = 0;
+    mEnumStrings = nullptr;
+#endif
+
+    DestroyExtraData();
 }
 
 

@@ -17,6 +17,7 @@
 #include "ScriptAutoReg.h"
 #include "ScriptFunc.h"
 #include "TimerManager.h"
+#include "Nodes/Widgets/Button.h"
 
 #include "System/System.h"
 #include "Graphics/Graphics.h"
@@ -464,6 +465,8 @@ bool Update()
     sEngineState.mGameDeltaTime = gameDeltaTime;
     sEngineState.mGameElapsedTime += gameDeltaTime;
     sEngineState.mRealElapsedTime += realDeltaTime;
+
+    Button::StaticUpdate();
 
     GetTimerManager()->Update(gameDeltaTime);
 

@@ -4,6 +4,7 @@
 #include "Property.h"
 #include "Factory.h"
 #include "AssetRef.h"
+#include "NodePath.h"
 #include "Nodes/Node.h"
 
 class World;
@@ -55,6 +56,11 @@ protected:
 
     void AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeList);
     int32_t FindNodeIndex(Node* node, const std::vector<Node*>& nodeList);
+
+    bool CheckForNodeProps(std::vector<Property>& props);
+
+    static int32_t sInstantiationCount;
+    static std::vector<PendingNodePath> sPendingNodePaths;
 
     std::vector<SceneNodeDef> mNodeDefs;
 

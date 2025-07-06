@@ -188,36 +188,44 @@ void Viewport2D::HandleDefaultControls()
             uint32_t maxDepth = 0;
             hoveredWidget = FindHoveredWidget(GetWorld(0)->GetRootNode(), maxDepth, mouseX, mouseY);
 
-            if (shiftDown || controlDown)
+            if (hoveredWidget != nullptr &&
+                GetEditorState()->mNodePropertySelect)
             {
-                if (hoveredWidget != nullptr)
-                {
-                    if (GetEditorState()->IsNodeSelected(hoveredWidget))
-                    {
-                        GetEditorState()->RemoveSelectedNode(hoveredWidget);
-                    }
-                    else
-                    {
-                        GetEditorState()->AddSelectedNode(hoveredWidget, false);
-                    }
-                }
+                GetEditorState()->AssignNodePropertySelect(hoveredWidget);
             }
             else
             {
-                if (altDown)
+                if (shiftDown || controlDown)
                 {
-                    GetEditorState()->SetSelectedNode(hoveredWidget);
-                    GetEditorState()->mTrackSelectedNode = true;
+                    if (hoveredWidget != nullptr)
+                    {
+                        if (GetEditorState()->IsNodeSelected(hoveredWidget))
+                        {
+                            GetEditorState()->RemoveSelectedNode(hoveredWidget);
+                        }
+                        else
+                        {
+                            GetEditorState()->AddSelectedNode(hoveredWidget, false);
+                        }
+                    }
                 }
                 else
                 {
-                    if (GetEditorState()->GetSelectedWidget() != hoveredWidget)
+                    if (altDown)
                     {
                         GetEditorState()->SetSelectedNode(hoveredWidget);
+                        GetEditorState()->mTrackSelectedNode = true;
                     }
                     else
                     {
-                        GetEditorState()->SetSelectedNode(nullptr);
+                        if (GetEditorState()->GetSelectedWidget() != hoveredWidget)
+                        {
+                            GetEditorState()->SetSelectedNode(hoveredWidget);
+                        }
+                        else
+                        {
+                            GetEditorState()->SetSelectedNode(nullptr);
+                        }
                     }
                 }
             }

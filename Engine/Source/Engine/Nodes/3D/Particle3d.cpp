@@ -73,7 +73,7 @@ void Particle3D::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Emit", this, &mEmit, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Auto Emit", this, &mAutoEmit));
     outProps.push_back(Property(DatumType::Bool, "Always Simulate", this, &mAlwaysSimulate));
-    outProps.push_back(Property(DatumType::Byte, "Orientation", this, &mOrientation, 1, nullptr, 0, int32_t(ParticleOrientation::Count), sParticleOrientationStrings));
+    outProps.push_back(Property(DatumType::Byte, "Orientation", this, &mOrientation, 1, nullptr, NULL_DATUM, int32_t(ParticleOrientation::Count), sParticleOrientationStrings));
 }
 
 void Particle3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)

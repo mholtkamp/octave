@@ -57,12 +57,9 @@ public:
 
     void SetUseQuadStateColor(bool inUse);
     void SetUseTextStateColor(bool inUse);
-    static void SetHandleMouseInput(bool inHandle);
-
-    //void SetHoverHandler(ButtonHandlerFP newHandler);
-    //void SetPressedHandler(ButtonHandlerFP newHandler);
-    //void SetScriptHoverHandler(const char* tableName, const char* funcName);
-    //void SetScriptPressedHandler(const char* tableName, const char* funcName);
+    static void SetHandleMouse(bool inHandle);
+    static void SetHandleGamepad(bool inHandle);
+    static void SetHandleKeyboard(bool inHandle);
 
     void EnableRightClickPress(bool enable);
     bool IsRightClickPressEnabled();
@@ -70,11 +67,23 @@ public:
     virtual void SetTextString(const std::string& newTextString);
     const std::string& GetTextString() const;
 
+    void SetNavUp(Node* up);
+    void SetNavDown(Node* down);
+    void SetNavLeft(Node* left);
+    void SetNavRight(Node* right);
+
+    Node* GetNavUp();
+    Node* GetNavDown();
+    Node* GetNavLeft();
+    Node* GetNavRight();
+
     Text* GetText();
     Quad* GetQuad();
 
     static Button* GetSelectedButton();
     static void SetSelectedButton(Button* button);
+
+    static void StaticUpdate();
 
 protected:
 
@@ -98,9 +107,18 @@ protected:
     bool mRightClickPress = false;
     glm::vec2 mTextPaddingRatio = { 0.035f, 0.05f };
 
+    WeakPtr<Button> mNavUp;
+    WeakPtr<Button> mNavDown;
+    WeakPtr<Button> mNavLeft;
+    WeakPtr<Button> mNavRight;
+
     Quad* mQuad = nullptr;
     Text* mText = nullptr;
 
     static WeakPtr<Button> sSelectedButton;
+    static bool sSelButtonChangedThisFrame;
+
     static bool sHandleMouseInput;
+    static bool sHandleGamepadInput;
+    static bool sHandleKeyboardInput;
 };

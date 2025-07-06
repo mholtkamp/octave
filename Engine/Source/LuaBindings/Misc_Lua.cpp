@@ -228,8 +228,8 @@ void BindDatumType()
     lua_pushinteger(L, (int)DatumType::Table);
     lua_setfield(L, tableIdx, "Table");
 
-    lua_pushinteger(L, (int)DatumType::Object);
-    lua_setfield(L, tableIdx, "Object");
+    lua_pushinteger(L, (int)DatumType::Node);
+    lua_setfield(L, tableIdx, "Node");
 
     lua_pushinteger(L, (int)DatumType::Short);
     lua_setfield(L, tableIdx, "Short");

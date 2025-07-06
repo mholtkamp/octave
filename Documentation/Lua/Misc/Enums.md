@@ -55,7 +55,7 @@ Tables that act as enumerations.
  - `Asset`
  - `Byte`
  - `Table`
- - `Pointer`
+ - `Node`
  - `Short`
 
 ## NetFuncType

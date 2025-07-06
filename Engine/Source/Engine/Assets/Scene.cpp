@@ -4,11 +4,15 @@
 #include "Engine.h"
 #include "Script.h"
 #include "NetworkManager.h"
+#include "NodePath.h"
 #include "Nodes/Node.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
 
 FORCE_LINK_DEF(Scene);
 DEFINE_ASSET(Scene);
+
+int32_t Scene::sInstantiationCount = 0;
+std::vector<PendingNodePath> Scene::sPendingNodePaths;
 
 static const char* sFogDensityStrings[] =
 {
@@ -16,7 +20,6 @@ static const char* sFogDensityStrings[] =
     "Exponential",
 };
 static_assert(int32_t(FogDensityFunc::Count) == 2, "Need to update string conversion table");
-
 
 bool Scene::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
@@ -74,7 +77,7 @@ void Scene::LoadStream(Stream& stream, Platform platform)
         def.mProperties.resize(numProps);
         for (uint32_t p = 0; p < numProps; ++p)
         {
-            def.mProperties[p].ReadStream(stream, false);
+            def.mProperties[p].ReadStream(stream, mVersion, false, false);
         }
 
         if (mVersion >= ASSET_VERSION_SCENE_EXTRA_DATA)
@@ -145,7 +148,7 @@ void Scene::SaveStream(Stream& stream, Platform platform)
         stream.WriteUint32((uint32_t)def.mProperties.size());
         for (uint32_t p = 0; p < def.mProperties.size(); ++p)
         {
-            def.mProperties[p].WriteStream(stream);
+            def.mProperties[p].WriteStream(stream, false);
         }
 
         stream.WriteUint32((uint32_t)def.mExtraData.size());
@@ -191,7 +194,7 @@ void Scene::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Bool, "Set Fog", this, &mSetFog, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Fog Enabled", this, &mFogEnabled, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Color, "Fog Color", this, &mFogColor, 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Byte, "Fog Density", this, &mFogDensityFunc, 1, HandlePropChange, 0, int32_t(FogDensityFunc::Count), sFogDensityStrings));
+    outProps.push_back(Property(DatumType::Byte, "Fog Density", this, &mFogDensityFunc, 1, HandlePropChange, NULL_DATUM, int32_t(FogDensityFunc::Count), sFogDensityStrings));
     outProps.push_back(Property(DatumType::Float, "Fog Near", this, &mFogNear, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Fog Far", this, &mFogFar, 1, HandlePropChange));
 }
@@ -224,6 +227,8 @@ NodePtr Scene::Instantiate()
 
     if (mNodeDefs.size() > 0)
     {
+        sInstantiationCount++;
+
         std::vector<NodePtr> nodeList;
 
         // The nativeChildren vector holds a list of all children by created in C++ for the nodes in this scene.
@@ -323,6 +328,21 @@ NodePtr Scene::Instantiate()
                 CopyPropertyValues(dstProps, mNodeDefs[i].mProperties);
             }
 
+            // See if there are any nodepaths that need to be resolved.
+            for (auto& prop : mNodeDefs[i].mProperties)
+            {
+                if (prop.mType == DatumType::Node &&
+                    prop.mExtra != nullptr &&
+                    prop.mCount > 0)
+                {
+                    PendingNodePath path;
+                    path.mNode = ResolvePtr<Node>(node);
+                    path.mPropName = prop.mName;
+                    path.mPath = *prop.mExtra;
+                    sPendingNodePaths.push_back(path);
+                }
+            }
+
             if (i > 0)
             {
                 OCT_ASSERT(parent != nullptr);
@@ -411,6 +431,22 @@ NodePtr Scene::Instantiate()
             Node::Destruct(repNodesToDelete[i]);
             repNodesToDelete[i] = nullptr;
         }
+    }
+
+    sInstantiationCount--;
+
+    // Finished loading a top-level scene, try to resolve all node paths
+    if (sInstantiationCount == 0)
+    {
+        ResolvePendingNodePaths(sPendingNodePaths);
+        sPendingNodePaths.clear();
+    }
+
+    // Negative instantiation count should never happen!
+    OCT_ASSERT(sInstantiationCount >= 0);
+    if (sInstantiationCount < 0)
+    {
+        sInstantiationCount = 0;
     }
 
     return rootNode;
@@ -513,6 +549,7 @@ void Scene::AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeLi
         }
 
         GatherNonDefaultProperties(node, nodeDef.mProperties);
+        RecordNodePaths(node, nodeDef.mProperties);
 
         if (scene == nullptr)
         {
@@ -540,3 +577,17 @@ int32_t Scene::FindNodeIndex(Node* node, const std::vector<Node*>& nodeList)
     return index;
 }
 
+bool Scene::CheckForNodeProps(std::vector<Property>& props)
+{
+    bool hasNodeProp = false;
+    for (uint32_t i = 0; i < props.size(); ++i)
+    {
+        if (props[i].GetType() == DatumType::Node)
+        {
+            hasNodeProp = true;
+            break;
+        }
+    }
+
+    return hasNodeProp;
+}

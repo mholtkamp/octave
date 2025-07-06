@@ -33,7 +33,7 @@ void Light3D::GatherProperties(std::vector<Property>& outProps)
 
     outProps.push_back(Property(DatumType::Color, "Color", this, &mColor));
     outProps.push_back(Property(DatumType::Float, "Intensity", this, &mIntensity));
-    outProps.push_back(Property(DatumType::Byte, "Lighting Domain", this, &mDomain, 1, nullptr, 0, int32_t(LightingDomain::Count), sLightingDomainStrings));
+    outProps.push_back(Property(DatumType::Byte, "Lighting Domain", this, &mDomain, 1, nullptr, NULL_DATUM, int32_t(LightingDomain::Count), sLightingDomainStrings));
     outProps.push_back(Property(DatumType::Bool, "Cast Shadows", this, &mCastShadows));
     outProps.push_back(Property(DatumType::Byte, "Lighting Channels", this, &mLightingChannels, 1, nullptr, (int32_t)ByteExtra::FlagWidget));
 }

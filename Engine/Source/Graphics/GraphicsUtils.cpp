@@ -10,6 +10,7 @@ const char* GetRenderPassName(RenderPassId id)
     case RenderPassId::Forward: name = "Forward"; break;
     case RenderPassId::Selected: name = "Selected"; break;
     case RenderPassId::Ui: name = "UI"; break;
+    case RenderPassId::Clear: name = "Clear"; break;
     case RenderPassId::HitCheck: name = "Hit Check"; break;
     default: break;
     }

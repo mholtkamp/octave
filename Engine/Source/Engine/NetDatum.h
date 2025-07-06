@@ -10,7 +10,7 @@ public:
     NetDatum();
     NetDatum(
         DatumType type,
-        void* owner,
+        Object* owner,
         void* data,
         uint32_t count = 1u,
         DatumChangeHandlerFP changeHandler = nullptr,
@@ -33,7 +33,7 @@ public:
     ScriptNetDatum(
         const char* varName,
         DatumType type,
-        void* owner,
+        Object* owner,
         void* data,
         uint32_t count = 1u,
         const char* onRepFuncName = nullptr,

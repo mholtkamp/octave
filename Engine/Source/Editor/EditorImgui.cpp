@@ -10,7 +10,9 @@
 #include "Log.h"
 #include "AssetDir.h"
 #include "Grid.h"
+#include "Script.h"
 #include "PaintManager.h"
+#include "NodePath.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/InstancedMesh3d.h"
@@ -646,9 +648,9 @@ static void AssignAssetToProperty(Object* owner, PropertyOwnerType ownerType, Pr
         newAsset != prop.GetAsset())
     {
         TypeId newType = newAsset->GetType();
-        TypeId propId = (TypeId)prop.mExtra;
+        TypeId propId = prop.mExtra ? (TypeId)prop.mExtra->GetInteger() : 0;
 
-        bool matchingType = (prop.mExtra == 0 || newType == TypeId(prop.mExtra));
+        bool matchingType = (prop.mExtra == nullptr || newType == TypeId(prop.mExtra->GetInteger()));
 
         // HACK: Handle derived class types.
         if (propId == Material::GetStaticType() &&
@@ -674,6 +676,82 @@ static void AssignAssetToProperty(Object* owner, PropertyOwnerType ownerType, Pr
     }
 }
 
+static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, PropertyOwnerType ownerType)
+{
+    Node* node = prop.GetNode(index).Get();
+    ActionManager* am = ActionManager::Get();
+ 
+    if (IsControlDown())
+    {
+        if (ImGui::Button("<*") && node)
+        {
+            GetEditorState()->SetSelectedNode(node);
+        }
+    }
+    else if (IsAltDown())
+    {
+        if (ImGui::Button("^*") && node)
+        {
+            GetEditorState()->InspectObject(node);
+        }
+    }
+    else
+    {
+        if (ImGui::Button("*"))
+        {
+            if (GetEditorState()->mNodePropertySelect)
+            {
+                GetEditorState()->ClearNodePropertySelect();
+            }
+            else
+            {
+                GetEditorState()->SetNodePropertySelect(true, index, prop.mName);
+            }
+        }
+
+        if (node != nullptr &&
+            ImGui::IsItemHovered() &&
+            IsKeyJustDown(KEY_DELETE))
+        {
+            am->EXE_EditProperty(owner, ownerType, prop.mName, index, (Node*) nullptr);
+        }
+    }
+
+    ImGui::SameLine();
+
+    static std::string sTempString;
+
+    Node* src = owner->As<Node>();
+
+    if (!src && owner->As<Script>())
+    {
+        src = owner->As<Script>()->GetOwner();
+    }
+
+    sTempString = FindRelativeNodePath(src, node);
+
+    ImGui::InputText("##NodeNameStr", &sTempString);
+
+    if (ImGui::IsItemDeactivatedAfterEdit())
+    {
+        if (sTempString == "null" ||
+            sTempString == "NULL" ||
+            sTempString == "Null")
+        {
+            Node* nullNode = nullptr;
+            if (ownerType != PropertyOwnerType::Count)
+            {
+                am->EXE_EditProperty(owner, ownerType, prop.mName, index, nullNode);
+            }
+        }
+        else
+        {
+            Node* newNode = ResolveNodePath(src, sTempString);
+            am->EXE_EditProperty(owner, ownerType, prop.mName, index, newNode);
+        }
+    }
+}
+
 static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOwnerType ownerType)
 {
     Asset* asset = prop.GetAsset(index);
@@ -682,7 +760,7 @@ static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, Pro
     bool useAssetColor = (prop.mExtra != 0);
     if (useAssetColor)
     {
-        glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor((TypeId)prop.mExtra);
+        glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor(prop.mExtra ? (TypeId)prop.mExtra->GetInteger() : 0);
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
     }
 
@@ -729,7 +807,6 @@ static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, Pro
     ImGui::SameLine();
 
     static std::string sTempString;
-    static std::string sOrigVal;
     sTempString = asset ? asset->GetName() : "";
 
     ImGui::InputText("##AssetNameStr", &sTempString);
@@ -1040,6 +1117,11 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                 }
                 break;
             }
+            case DatumType::Node:
+            {
+                DrawNodeProperty(prop, i, owner, ownerType);
+                break;
+            }
             case DatumType::Asset:
             {
                 DrawAssetProperty(prop, i, owner, ownerType);
@@ -1058,8 +1140,9 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                         am->EXE_EditProperty(owner, ownerType, prop.mName, i, (uint8_t)propVal);
                     }
                 }
-                else if (prop.mExtra == int32_t(ByteExtra::FlagWidget) ||
-                    prop.mExtra == int32_t(ByteExtra::ExclusiveFlagWidget)) // Should these be bitwise checks?
+                else if (prop.mExtra &&
+                    (prop.mExtra->GetInteger() == int32_t(ByteExtra::FlagWidget) ||
+                    prop.mExtra->GetInteger() == int32_t(ByteExtra::ExclusiveFlagWidget))) // Should these be bitwise checks?
                 {
                     ImVec2 itemSpacing = ImGui::GetStyle().ItemSpacing;
                     itemSpacing.x = 2.0f;
@@ -1618,19 +1701,26 @@ static void DrawScenePanel()
 
         if (nodeClicked)
         {
-            if (nodeSelected)
+            if (GetEditorState()->mNodePropertySelect)
             {
-                GetEditorState()->DeselectNode(node);
+                GetEditorState()->AssignNodePropertySelect(node);
             }
             else
             {
-                if (ImGui::GetIO().KeyCtrl)
+                if (nodeSelected)
                 {
-                    GetEditorState()->AddSelectedNode(node, false);
+                    GetEditorState()->DeselectNode(node);
                 }
                 else
                 {
-                    GetEditorState()->SetSelectedNode(node);
+                    if (ImGui::GetIO().KeyCtrl)
+                    {
+                        GetEditorState()->AddSelectedNode(node, false);
+                    }
+                    else
+                    {
+                        GetEditorState()->SetSelectedNode(node);
+                    }
                 }
             }
         }
@@ -3240,6 +3330,36 @@ static void Draw2dSelections()
     }
 }
 
+static void DrawNodePropertySelectOverlay()
+{
+    int32_t mX;
+    int32_t mY;
+    GetMousePosition(mX, mY);
+    float rot = GetEngineState()->mRealElapsedTime * 3.0f;
+
+    const float lineLength = 40.0f;
+    const float lineWidth = 3.0f;
+    glm::vec2 point1a = glm::vec2(-lineLength * 0.5f, 0.0f);
+    glm::vec2 point1b = glm::vec2( lineLength * 0.5f, 0.0f);
+    glm::vec2 point2a = glm::vec2(0.0f, -lineLength * 0.5f);
+    glm::vec2 point2b = glm::vec2(0.0f,  lineLength * 0.5f);
+
+    point1a = glm::rotate(point1a, rot);
+    point1b = glm::rotate(point1b, rot);
+    point2a = glm::rotate(point2a, rot);
+    point2b = glm::rotate(point2b, rot);
+
+    glm::vec2 offset = glm::vec2((float)mX, (float)mY);
+
+    point1a += offset;
+    point1b += offset;
+    point2a += offset;
+    point2b += offset;
+
+    ImGui::GetForegroundDrawList()->AddLine({ point1a.x, point1a.y }, { point1b.x, point1b.y }, IM_COL32(255, 0, 0, 200), lineWidth);
+    ImGui::GetForegroundDrawList()->AddLine({ point2a.x, point2a.y }, { point2b.x, point2b.y }, IM_COL32(255, 0, 0, 200), lineWidth);
+}
+
 void EditorImguiInit()
 {
     IMGUI_CHECKVERSION();
@@ -3297,6 +3417,11 @@ void EditorImguiDraw()
         if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
         {
             Draw2dSelections();
+        }
+
+        if (GetEditorState()->mNodePropertySelect)
+        {
+            DrawNodePropertySelectOverlay();
         }
 
         DrawFileBrowser();

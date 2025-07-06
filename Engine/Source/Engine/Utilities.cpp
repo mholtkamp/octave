@@ -563,11 +563,12 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
             Property* defaultProp = FindProperty(defaultProps, extProps[i].mName);
 
             if (defaultProp == nullptr ||
-                (extProps[i].mType == DatumType::Asset && scene == nullptr) || 
+                (extProps[i].mType == DatumType::Asset && scene == nullptr) ||
                 extProps[i] != *defaultProp)
             {
                 props.push_back(Property());
-                props.back().DeepCopy(extProps[i], true);
+                Property& prop = props.back();
+                prop.DeepCopy(extProps[i], true);
             }
         }
 
@@ -769,21 +770,16 @@ void LuaPushDatum(lua_State* L, const Datum& arg)
         case DatumType::Function:
             arg.GetFunction(i).Push(L);
             break;
-        case DatumType::Object:
+        case DatumType::Node:
         {
-            Object* pointer = arg.GetObject(i).Get();
-            if (pointer == nullptr)
+            Node* node = arg.GetNode(i).Get();
+            if (node == nullptr)
             {
                 lua_pushnil(L);
-            }
-            else if (pointer->Is(Node::ClassRuntimeId()))
-            {
-                Node_Lua::Create(L, (Node*)pointer);
             }
             else
             {
-                LogError("Unsupported pointer type in LuaPushDatum.");
-                lua_pushnil(L);
+                Node_Lua::Create(L, (Node*)node);
             }
             break;
         }

@@ -67,7 +67,14 @@ void InputManager::UpdateHotkeys()
     {
         if (IsKeyJustDown(KEY_ESCAPE))
         {
-            GetEditorState()->EndPlayInEditor();
+            if (GetEditorState()->mNodePropertySelect)
+            {
+                GetEditorState()->ClearNodePropertySelect();
+            }
+            else
+            {
+                GetEditorState()->EndPlayInEditor();
+            }
         }
         else if (IsKeyJustDown(KEY_P) && altDown)
         {
@@ -184,12 +191,24 @@ void InputManager::UpdateHotkeys()
             }
         }
 
-        if (IsKeyJustDown(KEY_ESCAPE) &&
-            editorMode != EditorMode::Scene)
+        if (IsKeyJustDown(KEY_ESCAPE))
         {
-            // TODO: Show save prompt if edited asset has unsaved changes?
-            GetEditorState()->SetEditorMode(EditorMode::Scene);
+            if (GetEditorState()->mNodePropertySelect)
+            {
+                GetEditorState()->ClearNodePropertySelect();
+            }
+            else
+            {
+                GetEditorState()->SetEditorMode(EditorMode::Scene);
+            }
         }
+    }
+
+    // Clicked but nothing was selected? Just clear node prop select mode.
+    if (GetEditorState()->mNodePropertySelect &&
+        IsMouseButtonJustDown(MOUSE_LEFT))
+    {
+        GetEditorState()->ClearNodePropertySelect();
     }
 
     if (!IsPlaying() || GetEditorState()->mEjected)

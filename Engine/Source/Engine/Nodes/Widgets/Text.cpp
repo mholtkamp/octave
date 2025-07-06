@@ -148,8 +148,8 @@ void Text::GatherTextProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::String, "Text", this, &mText, 1, Text::HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Text Size", this, &mTextSize, 1, Text::HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Word Wrap", this, &mWordWrap, 1, Text::HandlePropChange));
-    outProps.push_back(Property(DatumType::Byte, "Hori Justification", this, &mHoriJust, 1, Text::HandlePropChange, 0, int32_t(Justification::Count), sHoriJustStrings));
-    outProps.push_back(Property(DatumType::Byte, "Vert Justification", this, &mVertJust, 1, Text::HandlePropChange, 0, int32_t(Justification::Count), sVertJustStrings));
+    outProps.push_back(Property(DatumType::Byte, "Hori Justification", this, &mHoriJust, 1, Text::HandlePropChange, NULL_DATUM, int32_t(Justification::Count), sHoriJustStrings));
+    outProps.push_back(Property(DatumType::Byte, "Vert Justification", this, &mVertJust, 1, Text::HandlePropChange, NULL_DATUM, int32_t(Justification::Count), sVertJustStrings));
 }
 
 DrawData Text::GetDrawData()

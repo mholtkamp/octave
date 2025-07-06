@@ -185,23 +185,23 @@ TableDatum& TableDatum::operator=(const TableDatum& src)
     return *this;
 }
 
-void TableDatum::ReadStream(Stream& stream, bool external)
+void TableDatum::ReadStream(Stream& stream, uint32_t version, bool net, bool external)
 {
-    Datum::ReadStream(stream, external);
+    Datum::ReadStream(stream, version, net, external);
     stream.ReadString(mStringKey);
     mIntegerKey = stream.ReadInt32();
 }
 
-void TableDatum::WriteStream(Stream& stream) const
+void TableDatum::WriteStream(Stream& stream, bool net) const
 {
-    Datum::WriteStream(stream);
+    Datum::WriteStream(stream, net);
     stream.WriteString(mStringKey);
     stream.WriteInt32(mIntegerKey);
 }
 
-uint32_t TableDatum::GetSerializationSize() const
+uint32_t TableDatum::GetSerializationSize(bool net) const
 {
-    return Datum::GetSerializationSize() +
+    return Datum::GetSerializationSize(net) +
         GetStringSerializationSize(mStringKey) +
         sizeof(mIntegerKey);
 }
