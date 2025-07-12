@@ -39,6 +39,7 @@ public:
     Node* SpawnNode(TypeId actorType);
     Node* SpawnNode(const char* typeName);
     Node* SpawnScene(const char* sceneName);
+    Node* SpawnScene(Scene* scene);
     Particle3D* SpawnParticle(ParticleSystem* sys, glm::vec3 position);
 
     template<class NodeClass>

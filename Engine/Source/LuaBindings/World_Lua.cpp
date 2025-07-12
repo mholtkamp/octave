@@ -7,6 +7,7 @@
 #include "LuaBindings/Camera3d_Lua.h"
 #include "LuaBindings/DirectionalLight3d_Lua.h"
 #include "LuaBindings/ParticleSystem_Lua.h"
+#include "LuaBindings/Scene_Lua.h"
 
 #include "Nodes/3D/Primitive3d.h"
 #include "Nodes/3D/Particle3d.h"
@@ -91,9 +92,9 @@ int World_Lua::SpawnNode(lua_State* L)
 int World_Lua::SpawnScene(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
-    const char* sceneName = CHECK_STRING(L, 2);
+    Scene* scene = CHECK_SCENE(L, 2);
 
-    Node* spawnedNode = world->SpawnScene(sceneName);
+    Node* spawnedNode = world->SpawnScene(scene);
 
     Node_Lua::Create(L, spawnedNode);
     return 1;

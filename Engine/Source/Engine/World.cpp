@@ -901,6 +901,11 @@ Node* World::SpawnNode(const char* typeName)
 Node* World::SpawnScene(const char* sceneName)
 {
     Scene* scene = LoadAsset<Scene>(sceneName);
+    return SpawnScene(scene);
+}
+
+Node* World::SpawnScene(Scene* scene)
+{
     NodePtr newNode = scene ? scene->Instantiate() : nullptr;
 
     if (newNode != nullptr)
@@ -909,7 +914,7 @@ Node* World::SpawnScene(const char* sceneName)
     }
     else
     {
-        LogError("Failed to spawn scene with type: %s.", sceneName);
+        LogError("Failed to spawn scene with type: %s.", scene->GetName());
     }
 
     return newNode.Get();
