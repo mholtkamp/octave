@@ -37,8 +37,8 @@ Sig: `node = World:SpawnNode(className)`
 ### SpawnScene
 Spawn a scene. The spawned node will be attached to the world's root node. If there is no root node, this newly spawned node will become the world's root node.
 
-Sig: `node = World:SpawnScene(sceneName)`
- - Arg: `string sceneName` Name of the scene asset to spawn
+Sig: `node = World:SpawnScene(scene)`
+ - Arg: `Scene scene` Scene asset to spawn
  - Ret: `Node node` Newly spawned node (root of spawned scene)
 ---
 ### GetRootNode
