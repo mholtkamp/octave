@@ -56,7 +56,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cwchar>
 #include <vector>
 //#include <stdio.h>
-//#include <cstdint>
+#include <cstdint>
 #ifdef ASSIMP_USE_HUNTER
 #  include <irrXML/irrXML.h>
 #else

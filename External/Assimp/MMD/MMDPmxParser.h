@@ -47,6 +47,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fstream>
 #include <memory>
 #include "MMDCpp14.h"
+#include <cstdint>
 
 namespace pmx
 {
