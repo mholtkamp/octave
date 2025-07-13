@@ -225,10 +225,10 @@ NodePtr Scene::Instantiate()
 {
     NodePtr rootNode = nullptr;
 
+    sInstantiationCount++;
+
     if (mNodeDefs.size() > 0)
     {
-        sInstantiationCount++;
-
         std::vector<NodePtr> nodeList;
 
         // The nativeChildren vector holds a list of all children by created in C++ for the nodes in this scene.
