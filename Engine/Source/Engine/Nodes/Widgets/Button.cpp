@@ -156,10 +156,17 @@ void Button::Tick(float deltaTime)
             UpdateRect();
         }
 
-        const bool containsMouse = ContainsMouse();
+        bool containsMouse = ContainsMouse();
         const bool mouseDown = IsPointerDown(0) || (mRightClickPress && IsMouseButtonDown(MOUSE_RIGHT));
         const bool mouseJustDown = IsPointerJustDown(0) || (mRightClickPress && IsMouseButtonJustDown(MOUSE_RIGHT));
         const bool mouseJustUp = IsPointerJustUp(0) || (mRightClickPress && IsMouseButtonJustUp(MOUSE_RIGHT));
+
+#if PLATFORM_3DS || PLATFORM_ANDROID
+        if (!mouseJustUp && !IsPointerDown(0))
+        {
+            containsMouse = false;
+        }
+#endif
 
         if (containsMouse)
         {
