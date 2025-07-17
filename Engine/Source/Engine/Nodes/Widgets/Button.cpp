@@ -176,7 +176,13 @@ void Button::Tick(float deltaTime)
                 mState == ButtonState::Pressed)
             {
                 Activate();
-                SetState(ButtonState::Hovered);
+
+                // Handle situation where activating the button
+                // changed the selected button.
+                if (GetSelectedButton() == this)
+                {
+                    SetState(ButtonState::Hovered);
+                }
             }
             else if (mouseJustDown)
             {
