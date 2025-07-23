@@ -11,30 +11,35 @@ void Material::LoadStream(Stream& stream, Platform platform)
 {
     Asset::LoadStream(stream, platform);
 
-    uint32_t numParams = stream.ReadUint32();
-    mParameters.resize(numParams);
-    for (uint32_t i = 0; i < numParams; ++i)
+    // If we are converting a legacy "Material" then do not read anything.
+    // MaterialLite will read the stream properly.
+    if (mOldType != Material::GetStaticType())
     {
-        ShaderParameter& param = mParameters[i];
-        stream.ReadString(param.mName);
-        param.mType = (ShaderParameterType)stream.ReadUint8();
-        param.mOffset = stream.ReadUint32();
-
-        switch (param.mType)
+        uint32_t numParams = stream.ReadUint32();
+        mParameters.resize(numParams);
+        for (uint32_t i = 0; i < numParams; ++i)
         {
-        case ShaderParameterType::Scalar:
-            param.mFloatValue.x = stream.ReadFloat();
-            break;
-        case ShaderParameterType::Vector:
-            param.mFloatValue = stream.ReadVec4();
-            break;
-        case ShaderParameterType::Texture:
-            stream.ReadAsset(param.mTextureValue);
-            break;
-        default:
-            LogError("Invalid shader parameter type serialized.");
-            OCT_ASSERT(0);
-            break;
+            ShaderParameter& param = mParameters[i];
+            stream.ReadString(param.mName);
+            param.mType = (ShaderParameterType)stream.ReadUint8();
+            param.mOffset = stream.ReadUint32();
+
+            switch (param.mType)
+            {
+            case ShaderParameterType::Scalar:
+                param.mFloatValue.x = stream.ReadFloat();
+                break;
+            case ShaderParameterType::Vector:
+                param.mFloatValue = stream.ReadVec4();
+                break;
+            case ShaderParameterType::Texture:
+                stream.ReadAsset(param.mTextureValue);
+                break;
+            default:
+                LogError("Invalid shader parameter type serialized.");
+                OCT_ASSERT(0);
+                break;
+            }
         }
     }
 }
