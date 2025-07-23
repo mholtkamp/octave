@@ -32,14 +32,10 @@ std::vector<PendingNodePath> Scene::sPendingNodePaths;
 #include "Nodes/Widgets/ArrayWidget.h"
 #include "Nodes/Widgets/Button.h"
 #include "Nodes/Widgets/Canvas.h"
-#include "Nodes/Widgets/CheckBox.h"
 #include "Nodes/Widgets/Poly.h"
 #include "Nodes/Widgets/PolyRect.h"
 #include "Nodes/Widgets/Quad.h"
-#include "Nodes/Widgets/Selector.h"
 #include "Nodes/Widgets/Text.h"
-#include "Nodes/Widgets/TextField.h"
-#include "Nodes/Widgets/VerticalList.h"
 
 #include <unordered_set>
 
@@ -126,7 +122,7 @@ void Scene::LoadStreamActor(Stream& stream)
 
     // Components
     uint32_t numComponents = stream.ReadUint32();
-    std::vector<Node*> compsToLoad;
+    std::vector<NodePtr> compsToLoad;
     std::vector<int32_t> compParents;
 
     for (uint32_t i = 0; i < numComponents; ++i)
@@ -134,11 +130,11 @@ void Scene::LoadStreamActor(Stream& stream)
         TypeId type = TypeId(stream.ReadUint32());
         type = ConvertOldType(type);
 
-        Node* node = Node::Construct(type);
+        SharedPtr<Node> node = Node::Construct(type);
         OCT_ASSERT(node);
 
         compsToLoad.push_back(node);
-        node->LoadStream(stream);
+        node->LoadStream(stream, Platform::Count, ASSET_VERSION_BASE);
 
         compParents.push_back(-1);
     }
@@ -158,7 +154,7 @@ void Scene::LoadStreamActor(Stream& stream)
         OCT_ASSERT(compsToLoad[compIndex]->IsNode3D());
         OCT_ASSERT(parentIndex == -1 || compsToLoad[parentIndex]->IsNode3D());
 
-        Node3D* transComp = static_cast<Node3D*>(compsToLoad[compIndex]);
+        Node3D* transComp = static_cast<Node3D*>(compsToLoad[compIndex].Get());
 
         if (parentIndex == -1)
         {
@@ -176,7 +172,7 @@ void Scene::LoadStreamActor(Stream& stream)
     if (basicActor && numComponents == 1)
     {
         // Just add the component as a single node.
-        Node* node = compsToLoad[0];
+        Node* node = compsToLoad[0].Get();
         mNodeDefs.push_back(SceneNodeDef());
         SceneNodeDef& def = mNodeDefs.back();
         def.mType = node->GetType();
@@ -217,7 +213,7 @@ void Scene::LoadStreamActor(Stream& stream)
         actorDef.mName = actorName;
 
         {
-            Node* actorNode = Node::Construct(actorType);
+            NodePtr actorNode = Node::Construct(actorType);
             std::vector<Property> actorProps;
             actorNode->GatherProperties(actorProps);
 
@@ -226,8 +222,6 @@ void Scene::LoadStreamActor(Stream& stream)
                 actorDef.mProperties.push_back(Property());
                 actorDef.mProperties.back().DeepCopy(actorProps[p], true);
             }
-
-            Node::Destruct(actorNode);
         }
 
         for (uint32_t i = 0; i < compsToLoad.size(); ++i)
@@ -235,7 +229,7 @@ void Scene::LoadStreamActor(Stream& stream)
             mNodeDefs.push_back(SceneNodeDef());
             SceneNodeDef& compDef = mNodeDefs.back();
 
-            Node* node = compsToLoad[i];
+            Node* node = compsToLoad[i].Get();
 
             int32_t parentNodeDefIdx = compParents[i];
             if (parentNodeDefIdx == -1)
@@ -264,18 +258,14 @@ void Scene::LoadStreamActor(Stream& stream)
     }
 
     // Destroy temporary Nodes that were constructed
-    for (uint32_t i = 0; i < compsToLoad.size(); ++i)
-    {
-        Node::Destruct(compsToLoad[i]);
-        compsToLoad[i] = nullptr;
-    }
+    compsToLoad.clear();
 
     // Hacky hand-written loading for anything that overrode Actor::LoadStream()
     // MAKE SURE TO DELETE THE CALL TO Actor::LoadStream() in these classes (since that is done by hand above)
     if (actorType == 1500601734) // Rotator
     {
-        Node* hackNode = Node::Construct((TypeId)1500601734);
-        hackNode->LoadStream(stream);
+        NodePtr hackNode = Node::Construct((TypeId)1500601734);
+        hackNode->LoadStream(stream, Platform::Count, ASSET_VERSION_BASE);
     }
 }
 
@@ -328,7 +318,7 @@ void Scene::LoadStreamLevel(Stream& stream)
             {
                 int32_t overIndex = stream.ReadInt32();
                 Property overProp;
-                overProp.ReadStream(stream, false);
+                overProp.ReadStream(stream, ASSET_VERSION_BASE, false, false);
 
                 // Only apply overrides on root of BP. Will need to handle all children if required for Yami.
                 if (overIndex == 0)
@@ -358,7 +348,7 @@ void Scene::LoadStreamBlueprint(Stream& stream)
 
     for (uint32_t i = 0; i < rootDef.mProperties.size(); ++i)
     {
-        rootDef.mProperties[i].ReadStream(stream, false);
+        rootDef.mProperties[i].ReadStream(stream, ASSET_VERSION_BASE, false, false);
 
         if (rootDef.mProperties[i].mName == "Name")
         {
@@ -385,7 +375,7 @@ void Scene::LoadStreamBlueprint(Stream& stream)
 
         for (uint32_t p = 0; p < mNodeDefs[c].mProperties.size(); ++p)
         {
-            mNodeDefs[c].mProperties[p].ReadStream(stream, false);
+            mNodeDefs[c].mProperties[p].ReadStream(stream, ASSET_VERSION_BASE, false, false);
 
             if (mNodeDefs[c].mProperties[p].mName == "Name")
             {
@@ -448,7 +438,7 @@ void Scene::LoadStreamWidgetMap(Stream& stream)
         def.mProperties.resize(numProps);
         for (uint32_t p = 0; p < numProps; ++p)
         {
-            def.mProperties[p].ReadStream(stream, false);
+            def.mProperties[p].ReadStream(stream, ASSET_VERSION_BASE, false, false);
 
             // Name needed for Scene
             if (def.mProperties[p].mName == "Name")
