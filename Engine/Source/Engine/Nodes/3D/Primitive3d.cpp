@@ -738,7 +738,7 @@ void Primitive3D::SetCollisionShape(btCollisionShape* newShape)
     EnableRigidBody(true);
 }
 
-bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask)
+bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask, bool testOnly)
 {
     bool hit = false;
     glm::vec3 startPos = GetWorldPosition();
@@ -765,19 +765,30 @@ bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outS
 
         glm::vec3 fracDelta = outSweepResult.mHitFraction * delta;
 
-        SetWorldPosition(startPos + fracDelta + outSweepResult.mHitNormal * padding);
-
-        if (GetParent() != nullptr)
+        if (!testOnly)
         {
-            GetParent()->OnCollision(this, outSweepResult.mHitNode, outSweepResult.mHitPosition, outSweepResult.mHitNormal, nullptr);
+            SetWorldPosition(startPos + fracDelta + outSweepResult.mHitNormal * padding);
+
+            if (GetParent() != nullptr)
+            {
+                GetParent()->OnCollision(this, outSweepResult.mHitNode, outSweepResult.mHitPosition, outSweepResult.mHitNormal, nullptr);
+            }
         }
     }
     else
     {
-        SetWorldPosition(position);
+        if (!testOnly)
+        {
+            SetWorldPosition(position);
+        }
     }
 
     return hit;
+}
+
+bool Primitive3D::SweepTest(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask = 0)
+{
+    SweepToWorldPosition(position, outSweepResult, mask, true);
 }
 
 Bounds Primitive3D::GetBounds() const

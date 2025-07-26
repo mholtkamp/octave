@@ -271,9 +271,10 @@ TODO: Add support for sweeping children as well.
 
 Alias: `SweepToPosition`
 
-Sig: `result = Primitive3D:SweepToWorldPosition(position, mask=0)`
+Sig: `result = Primitive3D:SweepToWorldPosition(position, mask=0, testOnly=false)`
  - Arg: `Vector position` World position
  - Arg: `integer mask` Collision mask to use (if 0, use this node's collision mask)
+ - Arg: `bool testOnly` If true, do not move the primitive and do not trigger OnCollision functions 
  - Ret: `table result` Result of the sweep test
    - `Vector start`
    - `Vector end`

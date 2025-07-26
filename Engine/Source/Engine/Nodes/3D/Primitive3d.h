@@ -133,7 +133,8 @@ public:
     void SetCollisionShape(btCollisionShape* newShape);
 
     // When passing in the mask as 0, it means use the primitive's collision mask
-    bool SweepToWorldPosition(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask = 0);
+    bool SweepToWorldPosition(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask = 0, bool testOnly = false);
+    bool SweepTest(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask = 0);
 
     Bounds GetBounds() const;
     virtual Bounds GetLocalBounds() const;

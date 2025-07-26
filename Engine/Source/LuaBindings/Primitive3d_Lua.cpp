@@ -439,9 +439,9 @@ int Primitive3D_Lua::SweepToWorldPosition(lua_State* L)
     Primitive3D* prim = CHECK_PRIMITIVE_3D(L, 1);
     glm::vec3 pos = CHECK_VECTOR(L, 2);
     uint8_t mask = (lua_gettop(L) >= 3) ? (uint8_t)lua_tointeger(L, 3) : 0;
-
+    bool testOnly = (lua_isboolean(L, 4) ? lua_toboolean(L, 4) : false);
     SweepTestResult result;
-    prim->SweepToWorldPosition(pos, result, mask);
+    prim->SweepToWorldPosition(pos, result, mask, testOnly);
 
     lua_newtable(L);
     Vector_Lua::Create(L, result.mStart);

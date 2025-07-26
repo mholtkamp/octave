@@ -83,8 +83,8 @@ public:
     void DestroyDeferred();
     void Doom(); // Alias for DestroyDeferred
 
-    virtual void SaveStream(Stream& stream, Platform platorm);
-    virtual void LoadStream(Stream& stream, Platform platorm, uint32_t version);
+    virtual void SaveStream(Stream& stream, Platform platform);
+    virtual void LoadStream(Stream& stream, Platform platform, uint32_t version);
 
     virtual void Copy(Node* srcNode, bool recurse);
     virtual void Render(PipelineConfig pipelineConfig);
