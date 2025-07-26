@@ -132,6 +132,7 @@ public:
 
     Node* GetRoot();
     bool IsWorldRoot() const;
+    Node* GetSubRoot();
 
     template<class NodeClass>
     NodeClass* CreateChild()
