@@ -786,7 +786,7 @@ bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outS
     return hit;
 }
 
-bool Primitive3D::SweepTest(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask = 0)
+bool Primitive3D::SweepTest(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask)
 {
     SweepToWorldPosition(position, outSweepResult, mask, true);
 }
