@@ -43,6 +43,13 @@ typedef std::unordered_map<std::string, NetFunc> NetFuncMap;
 // Can also use a lambda for Traverse() and ForEach() functions
 typedef bool(*NodeTraversalFP)(Node*);
 
+// Forward declarations so we can use these in the Node class below
+template<typename T = Node>
+SharedPtr<T> ResolvePtr(Node* node);
+
+template<typename T = Node>
+WeakPtr<T> ResolveWeakPtr(Node* node);
+
 #if 0
 struct NodeNetData
 {
@@ -464,14 +471,14 @@ public:
 
 // Eventually, if we move the mSelf pointer into Object, we will have to
 // move these functions also (and make them take Object* param)
-template<typename T = Node>
+template<typename T>
 SharedPtr<T> ResolvePtr(Node* node)
 {
     NodePtr nodePtr = node ? node->GetSelfPtr().Lock() : nullptr;
     return PtrStaticCast<T>(nodePtr);
 }
 
-template<typename T = Node>
+template<typename T>
 WeakPtr<T> ResolveWeakPtr(Node* node)
 {
     return PtrStaticCast<T>(node ? node->GetSelfPtr() : nullptr);

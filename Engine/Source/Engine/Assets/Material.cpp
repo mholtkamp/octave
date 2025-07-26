@@ -126,6 +126,11 @@ bool Material::IsLite() const
     return false;
 }
 
+MaterialLite* Material::AsLite()
+{
+    return Material::AsLite(this);
+}
+
 std::vector<ShaderParameter>& Material::GetParameters()
 {
     return mParameters;
