@@ -133,11 +133,25 @@ public:
     }
 
     template<class NodeClass>
+    SharedPtr<NodeClass> CreateChildSp()
+    {
+        return ResolvePtr<NodeClass>(CreateChild(NodeClass::GetStaticType()));
+    }
+
+    template<class NodeClass>
     NodeClass* CreateChild(const char* name)
     {
         NodeClass* ret = (NodeClass*)CreateChild(NodeClass::GetStaticType());
         ret->SetName(name);
         return ret;
+    }
+
+    template<class NodeClass>
+    SharedPtr<NodeClass> CreateChildSp(const char* name)
+    {
+        NodeClass* ret = (NodeClass*)CreateChild(NodeClass::GetStaticType());
+        ret->SetName(name);
+        return ResolvePtr<NodeClass>(ret);
     }
 
     bool IsDestroyed() const;
