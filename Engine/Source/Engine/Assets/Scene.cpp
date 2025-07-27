@@ -120,21 +120,43 @@ void Scene::LoadStreamActor(Stream& stream)
         stream.ReadString(tags[i]);
     }
 
-    // Components
-    uint32_t numComponents = stream.ReadUint32();
     std::vector<NodePtr> compsToLoad;
     std::vector<int32_t> compParents;
+
+    // Before we read in any of the component information,
+    // construct a copy of the actor to determine how many default children (components) it has.
+    NodePtr actorPtr = Node::Construct(actorType);
+
+    for (uint32_t i = 0; i < actorPtr->GetNumChildren(); ++i)
+    {
+        if (!actorPtr->GetChild(i)->IsTransient())
+        {
+            compsToLoad.push_back(ResolvePtr(actorPtr->GetChild(i)));
+        }
+    }
+
+    // Components
+    uint32_t numComponents = stream.ReadUint32();
 
     for (uint32_t i = 0; i < numComponents; ++i)
     {
         TypeId type = TypeId(stream.ReadUint32());
         type = ConvertOldType(type);
 
-        SharedPtr<Node> node = Node::Construct(type);
-        OCT_ASSERT(node);
+        NodePtr comp = nullptr;
+        if (i < compsToLoad.size())
+        {
+            comp = compsToLoad[i];
+            OCT_ASSERT(type == comp->GetType());
+        }
+        else
+        {
+            comp = Node::Construct(type);
+            OCT_ASSERT(comp);
+            compsToLoad.push_back(comp);
+        }
 
-        compsToLoad.push_back(node);
-        node->LoadStream(stream, Platform::Count, ASSET_VERSION_BASE);
+        comp->LoadStream(stream, Platform::Count, ASSET_VERSION_BASE);
 
         compParents.push_back(-1);
     }

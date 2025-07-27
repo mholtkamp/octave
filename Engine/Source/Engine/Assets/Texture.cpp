@@ -274,7 +274,11 @@ void Texture::LoadStream(Stream& stream, Platform platform)
 
     mMipmapped = stream.ReadBool();
     mRenderTarget = stream.ReadBool();
+
+#if TEMP_CONVERT
     mSrgb = stream.ReadBool();
+#endif
+    mSrgb = true;
 
     if (UseCookedTextures(platform))
     {
