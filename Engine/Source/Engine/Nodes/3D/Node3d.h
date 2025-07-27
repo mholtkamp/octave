@@ -15,6 +15,9 @@ public:
 
     DECLARE_NODE(Node3D, Node);
 
+    virtual void LoadStreamEx(Stream& stream) override;
+
+
     Node3D();
     virtual ~Node3D();
 

@@ -48,6 +48,9 @@ public:
 
     DECLARE_OBJECT(Primitive3D, Node3D);
 
+    virtual void LoadStreamEx(Stream& stream) override;
+
+
     Primitive3D();
     virtual ~Primitive3D();
 

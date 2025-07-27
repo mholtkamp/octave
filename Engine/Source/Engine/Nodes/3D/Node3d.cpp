@@ -13,6 +13,14 @@
 FORCE_LINK_DEF(Node3D);
 DEFINE_NODE(Node3D, Node);
 
+void Node3D::LoadStreamEx(Stream& stream)
+{
+    Node::LoadStreamEx(stream);
+    mPosition = stream.ReadVec3();
+    mRotationQuat = stream.ReadQuat();
+    mScale = stream.ReadVec3();
+}
+
 bool HandleTransformPropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);

@@ -27,6 +27,30 @@ static_assert(int32_t(AnimationUpdateMode::Count) == 3, "Need to update string c
 FORCE_LINK_DEF(SkeletalMesh3D);
 DEFINE_NODE(SkeletalMesh3D, Mesh3D);
 
+void SkeletalMesh3D::LoadStreamEx(Stream& stream)
+{
+    Mesh3D::LoadStreamEx(stream);
+
+    AssetRef meshRef;
+    stream.ReadAsset(meshRef);
+    if (meshRef.Get<SkeletalMesh>() == nullptr)
+        meshRef = GetDefaultMesh();
+    SetSkeletalMesh(meshRef.Get<SkeletalMesh>());
+
+    stream.ReadString(mDefaultAnimation);
+    mAnimationSpeed = stream.ReadFloat();
+    mAnimationPaused = stream.ReadBool();
+    //mRevertToBindPose = stream.ReadBool();
+    //mInheritPose = stream.ReadBool();
+    mBoneInfluenceMode = BoneInfluenceMode(stream.ReadUint32());
+    //mAnimationUpdateMode = AnimationUpdateMode(stream.ReadUint32());
+
+    if (mDefaultAnimation != "")
+    {
+        PlayAnimation(mDefaultAnimation.c_str(), true);
+    }
+}
+
 struct DecompTransform
 {
     glm::vec3 mPosition = { 0.0f, 0.0f, 0.0f };

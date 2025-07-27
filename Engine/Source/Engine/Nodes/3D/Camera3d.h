@@ -14,6 +14,9 @@ public:
 
     DECLARE_NODE(Camera3D, Node3D);
 
+    virtual void LoadStreamEx(Stream& stream) override;
+
+
     Camera3D();
     ~Camera3D();
 

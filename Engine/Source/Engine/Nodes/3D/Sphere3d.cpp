@@ -8,6 +8,12 @@
 FORCE_LINK_DEF(Sphere3D);
 DEFINE_NODE(Sphere3D, Primitive3D);
 
+void Sphere3D::LoadStreamEx(Stream& stream)
+{
+    Primitive3D::LoadStreamEx(stream);
+    SetRadius(stream.ReadFloat());
+}
+
 bool Sphere3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);

@@ -12,6 +12,16 @@
 FORCE_LINK_DEF(TextMesh3D);
 DEFINE_NODE(TextMesh3D, Mesh3D);
 
+void TextMesh3D::LoadStreamEx(Stream& stream)
+{
+    Mesh3D::LoadStreamEx(stream);
+    stream.ReadAsset(mFont);
+    stream.ReadString(mText);
+    mColor = stream.ReadVec4();
+    mHorizontalJustification = stream.ReadFloat();
+    mVerticalJustification = stream.ReadFloat();
+}
+
 extern const char* gBlendModeStrings[];
 
 bool TextMesh3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)

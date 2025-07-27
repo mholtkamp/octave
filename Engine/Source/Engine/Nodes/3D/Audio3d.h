@@ -10,6 +10,8 @@ public:
 
     DECLARE_NODE(Audio3D, Node3D);
 
+    virtual void LoadStreamEx(Stream& stream) override;
+
     Audio3D();
     ~Audio3D();
 

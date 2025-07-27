@@ -17,6 +17,20 @@
 FORCE_LINK_DEF(Particle3D);
 DEFINE_NODE(Particle3D, Primitive3D);
 
+void Particle3D::LoadStreamEx(Stream& stream)
+{
+    Primitive3D::LoadStreamEx(stream);
+
+    stream.ReadAsset(mParticleSystem);
+    stream.ReadAsset(mMaterialOverride);
+    mTimeMultiplier = stream.ReadFloat();
+    mUseLocalSpace = stream.ReadBool();
+    mEmit = stream.ReadBool();
+    mAutoEmit = stream.ReadBool();
+    mAlwaysSimulate = stream.ReadBool();
+    mOrientation = (ParticleOrientation)stream.ReadUint8();
+}
+
 const char* sParticleOrientationStrings[] =
 {
     "X",

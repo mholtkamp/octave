@@ -28,6 +28,8 @@ public:
 
     DECLARE_NODE(PointLight3D, Light3D);
 
+    virtual void LoadStreamEx(Stream& stream) override;
+
     PointLight3D();
     ~PointLight3D();
 

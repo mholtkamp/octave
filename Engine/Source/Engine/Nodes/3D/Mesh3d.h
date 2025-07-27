@@ -14,6 +14,9 @@ public:
 
     DECLARE_OBJECT(Mesh3D, Primitive3D);
 
+    virtual void LoadStreamEx(Stream& stream) override;
+
+
     Mesh3D();
     virtual ~Mesh3D();
 

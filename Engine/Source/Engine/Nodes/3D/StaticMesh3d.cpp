@@ -13,6 +13,36 @@
 FORCE_LINK_DEF(StaticMesh3D);
 DEFINE_NODE(StaticMesh3D, Mesh3D);
 
+void StaticMesh3D::LoadStreamEx(Stream& stream)
+{
+    Mesh3D::LoadStreamEx(stream);
+
+    AssetRef meshRef;
+    stream.ReadAsset(meshRef);
+    if (meshRef.Get<StaticMesh>() == nullptr)
+        meshRef = GetDefaultMesh();
+
+    mUseTriangleCollision = stream.ReadBool();
+    mBakeLighting = stream.ReadBool();
+
+    // Set mesh only after determining if we need to use triangle collision.
+    SetStaticMesh(meshRef.Get<StaticMesh>());
+
+    // Load instance colors after setting the static mesh. Otherwise it will clear.
+    uint32_t numInstanceColors = stream.ReadUint32();
+    mInstanceColors.resize(numInstanceColors);
+    for (uint32_t i = 0; i < numInstanceColors; ++i)
+    {
+        mInstanceColors[i] = stream.ReadUint32();
+
+#if PLATFORM_DOLPHIN
+        ReverseColorUint32(mInstanceColors[i]);
+#endif
+    }
+
+    //GFX_UpdateStaticMeshCompResourceColors(this);
+}
+
 bool StaticMesh3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);

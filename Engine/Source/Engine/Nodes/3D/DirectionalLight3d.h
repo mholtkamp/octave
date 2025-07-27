@@ -8,6 +8,9 @@ public:
 
     DECLARE_NODE(DirectionalLight3D, Light3D);
 
+    virtual void LoadStreamEx(Stream& stream) override;
+
+
     DirectionalLight3D();
     ~DirectionalLight3D();
 

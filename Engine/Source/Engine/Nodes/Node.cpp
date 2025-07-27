@@ -71,6 +71,13 @@ DEFINE_FACTORY_MANAGER(Node);
 DEFINE_FACTORY(Node, Node);
 DEFINE_OBJECT(Node);
 
+void Node::LoadStreamEx(Stream & stream)
+{
+    stream.ReadString(mName);
+    mActive = stream.ReadBool();
+    mVisible = stream.ReadBool();
+}
+
 bool Node::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);

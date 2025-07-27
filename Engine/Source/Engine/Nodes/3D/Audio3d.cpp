@@ -21,6 +21,24 @@ static_assert(int32_t(AttenuationFunc::Count) == 2, "Need to update string conve
 FORCE_LINK_DEF(Audio3D);
 DEFINE_NODE(Audio3D, Node3D);
 
+void Audio3D::LoadStreamEx(Stream& stream)
+{
+    Super::LoadStreamEx(stream);
+
+    stream.ReadAsset(mSoundWave);
+    mInnerRadius = stream.ReadFloat();
+    mOuterRadius = stream.ReadFloat();
+    mVolume = stream.ReadFloat();
+    mPitch = stream.ReadFloat();
+    mStartOffset = stream.ReadFloat();
+    mPriority = stream.ReadInt32();
+    mAttenuationFunc = (AttenuationFunc)stream.ReadUint32();
+    //mAudioClass = stream.ReadInt8();
+    mLoop = stream.ReadBool();
+    mAutoPlay = stream.ReadBool();
+}
+
+
 bool Audio3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);

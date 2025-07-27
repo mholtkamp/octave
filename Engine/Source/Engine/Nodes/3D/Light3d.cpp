@@ -2,6 +2,15 @@
 
 DEFINE_OBJECT(Light3D);
 
+void Light3D::LoadStreamEx(Stream& stream)
+{
+    Node3D::LoadStreamEx(stream);
+    mColor = stream.ReadVec4();
+    mIntensity = stream.ReadFloat();
+    mCastShadows = stream.ReadBool();
+    mDomain = (LightingDomain)stream.ReadUint8();
+}
+
 static const char* sLightingDomainStrings[] =
 {
     "Static",

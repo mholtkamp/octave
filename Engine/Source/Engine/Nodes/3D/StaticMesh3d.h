@@ -14,6 +14,9 @@ public:
 
     DECLARE_NODE(StaticMesh3D, Mesh3D);
 
+    virtual void LoadStreamEx(Stream& stream) override;
+
+
     StaticMesh3D();
     ~StaticMesh3D();
 

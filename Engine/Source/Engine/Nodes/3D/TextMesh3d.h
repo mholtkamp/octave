@@ -11,6 +11,9 @@ class TextMesh3D : public Mesh3D
 public:
     DECLARE_NODE(TextMesh3D, Mesh3D);
 
+    virtual void LoadStreamEx(Stream& stream) override;
+
+
     TextMesh3D();
     ~TextMesh3D();
 

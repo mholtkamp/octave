@@ -36,6 +36,9 @@ public:
 
     DECLARE_NODE(Particle3D, Primitive3D);
 
+    virtual void LoadStreamEx(Stream& stream) override;
+
+
     Particle3D();
     virtual ~Particle3D();
 

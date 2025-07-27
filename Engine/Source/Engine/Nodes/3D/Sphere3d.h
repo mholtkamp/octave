@@ -8,6 +8,9 @@ public:
 
     DECLARE_NODE(Sphere3D, Primitive3D);
 
+    virtual void LoadStreamEx(Stream& stream) override;
+
+
     Sphere3D();
     ~Sphere3D();
 

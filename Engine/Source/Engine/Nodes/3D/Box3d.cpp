@@ -8,6 +8,12 @@
 FORCE_LINK_DEF(Box3D);
 DEFINE_NODE(Box3D, Primitive3D);
 
+void Box3D::LoadStreamEx(Stream& stream)
+{
+    Primitive3D::LoadStreamEx(stream);
+    SetExtents(stream.ReadVec3());
+}
+
 bool Box3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);

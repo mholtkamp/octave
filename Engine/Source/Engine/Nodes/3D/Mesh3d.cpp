@@ -8,6 +8,13 @@
 
 DEFINE_OBJECT(Mesh3D);
 
+void Mesh3D::LoadStreamEx(Stream& stream)
+{
+    Primitive3D::LoadStreamEx(stream);
+    stream.ReadAsset(mMaterialOverride);
+    mBillboard = stream.ReadBool();
+}
+
 bool Mesh3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
