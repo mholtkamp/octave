@@ -156,7 +156,7 @@ void Scene::LoadStreamActor(Stream& stream)
             compsToLoad.push_back(comp);
         }
 
-        comp->LoadStream(stream, Platform::Count, ASSET_VERSION_BASE);
+        comp->LoadStreamEx(stream);
 
         compParents.push_back(-1);
     }
