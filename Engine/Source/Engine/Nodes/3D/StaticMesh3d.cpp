@@ -20,7 +20,7 @@ void StaticMesh3D::LoadStreamEx(Stream& stream)
     AssetRef meshRef;
     stream.ReadAsset(meshRef);
     if (meshRef.Get<StaticMesh>() == nullptr)
-        meshRef = GetDefaultMesh();
+        meshRef = LoadAsset("SM_Cube");
 
     mUseTriangleCollision = stream.ReadBool();
     mBakeLighting = stream.ReadBool();

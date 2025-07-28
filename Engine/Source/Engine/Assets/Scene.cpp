@@ -450,6 +450,8 @@ void Scene::LoadStreamBlueprint(Stream& stream)
     std::vector<std::string> parentNames;
     parentNames.resize(numComps + 1);
 
+    int32_t scriptIdx = -1;
+
     for (uint32_t c = 1; c < numComps + 1; ++c)
     {
         stream.ReadString(mNodeDefs[c].mName);
@@ -470,6 +472,36 @@ void Scene::LoadStreamBlueprint(Stream& stream)
                 mNodeDefs[c].mName = mNodeDefs[c].mProperties[p].GetString();
             }
         }
+
+        if (mNodeDefs[c].mType == 3012054486ul)
+        {
+            // Only expecting one script
+            OCT_ASSERT(scriptIdx == -1);
+            scriptIdx = int32_t(c);
+        }
+    }
+
+    // Script component
+    if (scriptIdx != -1)
+    {
+        // Move the properties to the root node.
+        SceneNodeDef& scriptDef = mNodeDefs[scriptIdx];
+        const std::vector<Property>& props = scriptDef.mProperties;
+        for (uint32_t p = 0; p < scriptDef.mProperties.size(); ++p)
+        {
+            // Ignore base Component properties
+            if (props[p].mName != "Name" &&
+                props[p].mName != "Active" &&
+                props[p].mName != "Visible")
+            {
+                mNodeDefs[0].mProperties.push_back(props[p]);
+            }
+        }
+
+        // Delete the nodedef for the script comp
+        --numComps;
+        mNodeDefs.erase(mNodeDefs.begin() + scriptIdx);
+        parentNames.erase(parentNames.begin() + scriptIdx);
     }
 
     std::string rootName;

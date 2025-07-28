@@ -34,7 +34,7 @@ void SkeletalMesh3D::LoadStreamEx(Stream& stream)
     AssetRef meshRef;
     stream.ReadAsset(meshRef);
     if (meshRef.Get<SkeletalMesh>() == nullptr)
-        meshRef = GetDefaultMesh();
+        meshRef = nullptr;
     SetSkeletalMesh(meshRef.Get<SkeletalMesh>());
 
     stream.ReadString(mDefaultAnimation);
@@ -84,11 +84,7 @@ bool SkeletalMesh3D::HandlePropChange(Datum* datum, uint32_t index, const void* 
 
 static SkeletalMesh* GetDefaultMesh()
 {
-    // TODO: Create a default skeletal mesh
-    //static SkeletalMeshRef defaultMesh = LoadAsset("SK_Flower");
-    //return defaultMesh.GetSkeletalMesh();
-
-    return nullptr;
+    return LoadAsset<SkeletalMesh>("SK_EighthNote");
 }
 
 SkeletalMesh3D::SkeletalMesh3D() :
