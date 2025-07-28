@@ -66,7 +66,7 @@ void SceneConversionInit()
         sTypeConversionMap.insert({ 360869361ul, Sphere3D::GetStaticType() });
         sTypeConversionMap.insert({ 1549886543ul, SkeletalMesh3D::GetStaticType() });
         sTypeConversionMap.insert({ 1166207443ul, Camera3D::GetStaticType() });
-        sTypeConversionMap.insert({ 3012054486ul, Node::GetStaticType() }); // ScriptComponent
+        //sTypeConversionMap.insert({ 3012054486ul, Node::GetStaticType() }); // ScriptComponent
         sTypeConversionMap.insert({ 3929081410ul, DirectionalLight3D::GetStaticType() });
         sTypeConversionMap.insert({ 2255870423ul, Box3D::GetStaticType() });
         sTypeConversionMap.insert({ 1231172680ul, PointLight3D::GetStaticType() });
@@ -91,6 +91,63 @@ TypeId ConvertOldType(TypeId typeId)
     }
 
     return newType;
+}
+
+void LoadStreamEx_Script(Stream& stream, Node* actorNode)
+{
+    OCT_ASSERT(actorNode != nullptr);
+    OCT_ASSERT(actorNode->GetScript() == nullptr);
+
+    //Component::LoadStream(stream);
+    std::string name;
+    stream.ReadString(name);
+    bool active = stream.ReadBool();
+    bool visible = stream.ReadBool();
+    LogDebug("======= Ex Script =======");
+
+    LogDebug("Comp: %s, %d, %d", name.c_str(), active, visible);
+
+    std::string fileName;
+    stream.ReadString(fileName);
+    LogDebug("Filename: %s", fileName.c_str());
+
+
+    // Load script properties
+    uint32_t numProps = stream.ReadUint32();
+    std::vector<Property> savedProps;
+    savedProps.resize(numProps);
+
+#if 0
+    // Start the script before updating the saved props
+    // (because the props won't exist until we start the script)
+    StartScript();
+#endif
+
+    actorNode->SetScriptFile(fileName);
+    std::vector<Property> scriptProps = actorNode->GetScript()->GetScriptProperties();
+
+    for (uint32_t i = 0; i < numProps; ++i)
+    {
+        savedProps[i].ReadStream(stream, ASSET_VERSION_BASE, false, false);
+
+        for (uint32_t j = 0; j < scriptProps.size(); ++j)
+        {
+            if (scriptProps[j].mName == savedProps[i].mName &&
+                scriptProps[j].mType == savedProps[i].mType)
+            {
+                if (scriptProps[i].mCount < savedProps[i].mCount)
+                {
+                    scriptProps[i].SetCount(savedProps[i].mCount);
+                }
+
+                uint32_t count = savedProps[i].mCount;
+                scriptProps[j].SetValue(savedProps[i].mData.vp, 0, count);
+                break;
+            }
+        }
+    }
+
+    actorNode->GetScript()->SetScriptProperties(scriptProps);
 }
 
 void Scene::LoadStreamActor(Stream& stream)
@@ -143,6 +200,12 @@ void Scene::LoadStreamActor(Stream& stream)
         TypeId type = TypeId(stream.ReadUint32());
         type = ConvertOldType(type);
 
+        // Script component
+        if (type == 3012054486ul)
+        {
+            LoadStreamEx_Script(stream, actorPtr.Get());
+        }
+
         NodePtr comp = nullptr;
         if (i < compsToLoad.size())
         {
@@ -164,9 +227,12 @@ void Scene::LoadStreamActor(Stream& stream)
     // Hierarchy
     for (int32_t i = 0; i < int32_t(numComponents); ++i)
     {
-        // TODO-NODE: IS THIS BAD???! REMOVE?
         if (!compsToLoad[i]->IsNode3D())
         {
+            // I don't think we should hit this. Assuming we
+            // don't construct nodes for ScriptComponents, I don't think
+            // there are any other non-transform components?
+            OCT_ASSERT(false);
             continue;
         }
 
