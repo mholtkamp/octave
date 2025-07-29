@@ -355,6 +355,10 @@ void Scene::LoadStreamActor(Stream& stream)
         NodePtr hackNode = Node::Construct((TypeId)1500601734);
         hackNode->LoadStream(stream, Platform::Count, ASSET_VERSION_BASE);
     }
+    else if (!basicActor)
+    {
+        actorPtr->LoadStreamEx(stream);
+    }
 }
 
 void Scene::LoadStreamLevel(Stream& stream)
@@ -409,8 +413,17 @@ void Scene::LoadStreamLevel(Stream& stream)
                 overProp.ReadStream(stream, ASSET_VERSION_BASE, false, false);
 
                 // Only apply overrides on root of BP. Will need to handle all children if required for Yami.
-                if (overIndex == 0)
+                // What are the overrides that would be on the root node and not actor? Just pos/rot/scale really?
+                if (overIndex == 0 || overIndex == -1)
                 {
+                    if (overIndex == 0 &&
+                        overProp.mName != "Position" &&
+                        overProp.mName != "Rotation" &&
+                        overProp.mName != "Scale")
+                    {
+                        LogError("zzz Non-root override: %s", overProp.mName.c_str());
+                    }
+
                     def.mProperties.push_back(overProp);
                 }
             }
