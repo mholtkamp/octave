@@ -486,7 +486,7 @@ void Scene::LoadStreamBlueprint(Stream& stream)
     {
         // Move the properties to the root node.
         SceneNodeDef& scriptDef = mNodeDefs[scriptIdx];
-        const std::vector<Property>& props = scriptDef.mProperties;
+        std::vector<Property>& props = scriptDef.mProperties;
         for (uint32_t p = 0; p < scriptDef.mProperties.size(); ++p)
         {
             // Ignore base Component properties
@@ -494,6 +494,12 @@ void Scene::LoadStreamBlueprint(Stream& stream)
                 props[p].mName != "Active" &&
                 props[p].mName != "Visible")
             {
+                // Script component's "Filename" was renamed to "Scipt" in Node.
+                if (props[p].mName == "Filename")
+                {
+                    props[p].mName = "Script";
+                }
+
                 mNodeDefs[0].mProperties.push_back(props[p]);
             }
         }
