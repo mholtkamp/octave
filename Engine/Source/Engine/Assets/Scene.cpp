@@ -205,27 +205,29 @@ void Scene::LoadStreamActor(Stream& stream)
         {
             LoadStreamEx_Script(stream, actorPtr.Get());
         }
-
-        NodePtr comp = nullptr;
-        if (i < compsToLoad.size())
-        {
-            comp = compsToLoad[i];
-            OCT_ASSERT(type == comp->GetType());
-        }
         else
         {
-            comp = Node::Construct(type);
-            OCT_ASSERT(comp);
-            compsToLoad.push_back(comp);
+            NodePtr comp = nullptr;
+            if (i < compsToLoad.size())
+            {
+                comp = compsToLoad[i];
+                OCT_ASSERT(type == comp->GetType());
+            }
+            else
+            {
+                comp = Node::Construct(type);
+                OCT_ASSERT(comp);
+                compsToLoad.push_back(comp);
+            }
+
+            comp->LoadStreamEx(stream);
+
+            compParents.push_back(-1);
         }
-
-        comp->LoadStreamEx(stream);
-
-        compParents.push_back(-1);
     }
 
     // Hierarchy
-    for (int32_t i = 0; i < int32_t(numComponents); ++i)
+    for (int32_t i = 0; i < int32_t(compsToLoad.size()); ++i)
     {
         if (!compsToLoad[i]->IsNode3D())
         {
@@ -257,7 +259,7 @@ void Scene::LoadStreamActor(Stream& stream)
     }
 
     // Add NodeDefs
-    if (basicActor && numComponents == 1)
+    if (basicActor && compsToLoad.size() == 1)
     {
         // Just add the component as a single node.
         Node* node = compsToLoad[0].Get();
