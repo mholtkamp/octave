@@ -428,12 +428,18 @@ void Scene::LoadStreamLevel(Stream& stream)
 
                     def.mProperties.push_back(overProp);
                 }
+
+                def.mScene = bpRef;
+                def.mParentIndex = 0;
             }
         }
         else
         {
             LoadStreamActor(stream);
         }
+
+        // All actors are parented to new root level node
+        mNodeDefs.back().mParentIndex = 0;
     }
 
     ConvEnforceUniqueNames();
