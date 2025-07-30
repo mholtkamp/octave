@@ -144,10 +144,15 @@ NodePtr Node::Construct(const std::string& name)
 {
     Node* newNode = Node::CreateInstance(name.c_str());
     NodePtr newNodePtr;
-    newNodePtr.Set(newNode, nullptr);
-    newNodePtr.SetDeleter(NodeDeleter);
-    newNodePtr->mSelf = newNodePtr;
-    newNodePtr->Create();
+
+    if (newNode != nullptr)
+    {
+        newNodePtr.Set(newNode, nullptr);
+        newNodePtr.SetDeleter(NodeDeleter);
+        newNodePtr->mSelf = newNodePtr;
+        newNodePtr->Create();
+    }
+
     return newNodePtr;
 }
 
@@ -155,10 +160,15 @@ NodePtr Node::Construct(TypeId typeId)
 {
     Node* newNode = Node::CreateInstance(typeId);
     NodePtr newNodePtr;
-    newNodePtr.Set(newNode, nullptr);
-    newNodePtr.SetDeleter(NodeDeleter);
-    newNodePtr->mSelf = newNodePtr;
-    newNodePtr->Create();
+
+    if (newNode != nullptr)
+    {
+        newNodePtr.Set(newNode, nullptr);
+        newNodePtr.SetDeleter(NodeDeleter);
+        newNodePtr->mSelf = newNodePtr;
+        newNodePtr->Create();
+    }
+
     return newNodePtr;
 }
 

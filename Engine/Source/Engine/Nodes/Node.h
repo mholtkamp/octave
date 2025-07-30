@@ -392,10 +392,15 @@ public:
         // Code copied across other Construct() functions
         NodeClass* newNode = (NodeClass*)Node::CreateInstance(NodeClass::GetStaticType());
         SharedPtr<NodeClass> newNodePtr;
-        newNodePtr.Set(newNode, nullptr);
-        newNodePtr.SetDeleter([](NodeClass* node) { node->Destroy(); });
-        newNodePtr->mSelf = PtrStaticCast<Node>(newNodePtr);
-        newNodePtr->Create();
+
+        if (newNode != nullptr)
+        {
+            newNodePtr.Set(newNode, nullptr);
+            newNodePtr.SetDeleter([](NodeClass* node) { node->Destroy(); });
+            newNodePtr->mSelf = PtrStaticCast<Node>(newNodePtr);
+            newNodePtr->Create();
+        }
+
         return newNodePtr;
     }
 
