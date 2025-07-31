@@ -558,6 +558,45 @@ void Scene::LoadStreamBlueprint(Stream& stream)
         {
             mNodeDefs[c].mParentIndex = 0;
         }
+
+        // For the prev root node, transfer the pos/rot/scale to the new root
+        if (mNodeDefs[c].mName == rootName)
+        {
+            for (int32_t p = int32_t(mNodeDefs[c].mProperties.size()) - 1; p >= 0; --p)
+            {
+                std::vector<Property>& oldProps = mNodeDefs[c].mProperties;
+                std::vector<Property>& newProps = mNodeDefs[0].mProperties;
+
+                if (oldProps[p].mName == "Position" ||
+                    oldProps[p].mName == "Rotation" ||
+                    oldProps[p].mName == "Scale")
+                {
+                    // Find existing prop?
+                    Property* existingProp = nullptr;
+                    for (auto& prop : newProps)
+                    {
+                        if (prop.mName == oldProps[p].mName)
+                        {
+                            existingProp = &prop;
+                            break;
+                        }
+                    }
+
+                    // Replace / add prop
+                    if (existingProp)
+                    {
+                        *existingProp = oldProps[p];
+                    }
+                    else
+                    {
+                        newProps.push_back(oldProps[p]);
+                    }
+
+                    // Remove prop from old root
+                    oldProps.erase(oldProps.begin() + p);
+                }
+            }
+        }
     }
 
     ConvEnforceUniqueNames();
