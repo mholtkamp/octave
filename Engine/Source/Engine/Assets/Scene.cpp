@@ -258,6 +258,16 @@ void Scene::LoadStreamActor(Stream& stream)
         }
     }
 
+    for (uint32_t i = 0; i < compsToLoad.size(); ++i)
+    {
+        Node* node = compsToLoad[i].Get();
+        if (Cast<Node3D>(node))
+        {
+            Node3D* node3D = Cast<Node3D>(node);
+            node3D->UpdateTransform(false);
+        }
+    }
+
     // Add NodeDefs
     if (basicActor && compsToLoad.size() == 1)
     {
