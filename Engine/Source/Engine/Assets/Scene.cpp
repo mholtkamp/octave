@@ -281,7 +281,7 @@ void Scene::LoadStreamActor(Stream& stream)
         def.mType = node->GetType();
         def.mParentIndex = 0; // This should be index of the Node3D root we made for the level.
         
-        const bool kUseCompName = true;
+        const bool kUseCompName = false;
         def.mName = kUseCompName ? node->GetName() : actorName;
 
         std::vector<Property> extProps;
@@ -322,8 +322,11 @@ void Scene::LoadStreamActor(Stream& stream)
 
             for (uint32_t p = 0; p < actorProps.size(); ++p)
             {
-                actorDef.mProperties.push_back(Property());
-                actorDef.mProperties.back().DeepCopy(actorProps[p], true);
+                if (actorProps[p].mName != "Name")
+                {
+                    actorDef.mProperties.push_back(Property());
+                    actorDef.mProperties.back().DeepCopy(actorProps[p], true);
+                }
             }
         }
 
@@ -450,9 +453,6 @@ void Scene::LoadStreamLevel(Stream& stream)
         {
             LoadStreamActor(stream);
         }
-
-        // All actors are parented to new root level node
-        mNodeDefs.back().mParentIndex = 0;
     }
 
     ConvEnforceUniqueNames();
