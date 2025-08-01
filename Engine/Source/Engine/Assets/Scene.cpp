@@ -93,19 +93,20 @@ TypeId ConvertOldType(TypeId typeId)
     return newType;
 }
 
-void LoadStreamEx_Script(Stream& stream, Node* actorNode)
+void LoadStreamEx_Script(Stream& stream, Node* scriptNode)
 {
-    OCT_ASSERT(actorNode != nullptr);
-    OCT_ASSERT(actorNode->GetScript() == nullptr);
+    OCT_ASSERT(scriptNode != nullptr);
+    OCT_ASSERT(scriptNode->GetScript() == nullptr);
 
     //Component::LoadStream(stream);
     std::string name;
     stream.ReadString(name);
-    bool active = stream.ReadBool();
-    bool visible = stream.ReadBool();
+    scriptNode->SetName(name);
+    scriptNode->SetActive(stream.ReadBool());
+    scriptNode->SetVisible(stream.ReadBool());
     LogDebug("======= Ex Script =======");
 
-    LogDebug("Comp: %s, %d, %d", name.c_str(), active, visible);
+    LogDebug("zzz ExScript: %s", name.c_str());
 
     std::string fileName;
     stream.ReadString(fileName);
@@ -123,8 +124,8 @@ void LoadStreamEx_Script(Stream& stream, Node* actorNode)
     StartScript();
 #endif
 
-    actorNode->SetScriptFile(fileName);
-    std::vector<Property> scriptProps = actorNode->GetScript()->GetScriptProperties();
+    scriptNode->SetScriptFile(fileName);
+    std::vector<Property> scriptProps = scriptNode->GetScript()->GetScriptProperties();
 
     for (uint32_t i = 0; i < numProps; ++i)
     {
@@ -147,7 +148,7 @@ void LoadStreamEx_Script(Stream& stream, Node* actorNode)
         }
     }
 
-    actorNode->GetScript()->SetScriptProperties(scriptProps);
+    scriptNode->GetScript()->SetScriptProperties(scriptProps);
 }
 
 void Scene::LoadStreamActor(Stream& stream)
@@ -201,29 +202,32 @@ void Scene::LoadStreamActor(Stream& stream)
         type = ConvertOldType(type);
 
         // Script component
-        if (type == 3012054486ul)
+        NodePtr comp = nullptr;
+        if (i < compsToLoad.size())
         {
-            LoadStreamEx_Script(stream, actorPtr.Get());
+            comp = compsToLoad[i];
+            OCT_ASSERT(type == comp->GetType());
+
+            comp->LoadStreamEx(stream);
         }
         else
         {
-            NodePtr comp = nullptr;
-            if (i < compsToLoad.size())
+            if (type == 3012054486ul)
             {
-                comp = compsToLoad[i];
-                OCT_ASSERT(type == comp->GetType());
+                comp = Node::Construct<Node>();
+                LoadStreamEx_Script(stream, comp.Get());
+                compsToLoad.push_back(comp);
             }
             else
             {
                 comp = Node::Construct(type);
                 OCT_ASSERT(comp);
+                comp->LoadStreamEx(stream);
                 compsToLoad.push_back(comp);
             }
-
-            comp->LoadStreamEx(stream);
-
-            compParents.push_back(-1);
         }
+
+        compParents.push_back(-1);
     }
 
     // Hierarchy
@@ -234,7 +238,6 @@ void Scene::LoadStreamActor(Stream& stream)
             // I don't think we should hit this. Assuming we
             // don't construct nodes for ScriptComponents, I don't think
             // there are any other non-transform components?
-            OCT_ASSERT(false);
             continue;
         }
 
