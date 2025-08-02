@@ -1619,8 +1619,7 @@ void Script::CreateScriptInstance()
                 
                 if (!hasFlag)
                 {
-                    LogError("Bad inheritance chain! Make sure the script class table inherits (eventually) from the native node it is being used on.");
-                    OCT_ASSERT(0);
+                    LogWarning("Multiple inheritance chains used for same script: %s", mFileName.c_str());
                 }
 
                 lua_pop(L, 2); // Pop class flag + metatable
