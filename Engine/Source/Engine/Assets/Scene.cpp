@@ -186,16 +186,18 @@ void Scene::LoadStreamActor(Stream& stream)
 
     // Before we read in any of the component information,
     // construct a copy of the actor to determine how many default children (components) it has.
-    NodePtr actorPtr = Node::Construct(actorType);
-
-    for (uint32_t i = 0; i < actorPtr->GetNumChildren(); ++i)
+    
     {
-        if (!actorPtr->GetChild(i)->IsTransient())
+        NodePtr actorPtr = Node::Construct(actorType);
+
+        for (uint32_t i = 0; i < actorPtr->GetNumChildren(); ++i)
         {
-            compsToLoad.push_back(ResolvePtr(actorPtr->GetChild(i)));
+            if (!actorPtr->GetChild(i)->IsTransient())
+            {
+                compsToLoad.push_back(ResolvePtr(actorPtr->GetChild(i)));
+            }
         }
     }
-
     // Components
     uint32_t numComponents = stream.ReadUint32();
 
@@ -374,13 +376,13 @@ void Scene::LoadStreamActor(Stream& stream)
                     mNodeDefs[actorNodeIdx].mProperties.back().DeepCopy(extProps[p], true);
 
                     if (extProps[p].mName == "Position")
-                        Cast<Node3D>(actorPtr)->SetPosition(extProps[p].GetVector());
+                        Cast<Node3D>(actorNode)->SetPosition(extProps[p].GetVector());
 
                     if (extProps[p].mName == "Rotation")
-                        Cast<Node3D>(actorPtr)->SetRotation(extProps[p].GetVector());
+                        Cast<Node3D>(actorNode)->SetRotation(extProps[p].GetVector());
 
                     if (extProps[p].mName == "Scale")
-                        Cast<Node3D>(actorPtr)->SetScale(extProps[p].GetVector());
+                        Cast<Node3D>(actorNode)->SetScale(extProps[p].GetVector());
                 }
                 else
                 {
@@ -403,12 +405,17 @@ void Scene::LoadStreamActor(Stream& stream)
     }
     else if (!basicActor)
     {
-        actorPtr->LoadStreamEx(stream);
+        actorNode->LoadStreamEx(stream);
 
-        if (actorNodeIdx != -1 && actorPtr != nullptr)
+        if (actorNodeIdx != -1 && actorNode != nullptr)
         {
             std::vector<Property> extProps;
-            actorPtr->GatherProperties(extProps);
+            actorNode->GatherProperties(extProps);
+
+            if (strstr(actorNode->GetName().c_str(), "Space") != nullptr)
+            {
+                LogDebug("SPACE!");
+            }
 
             // Rewrite all properties
             CopyPropertyValues(mNodeDefs[actorNodeIdx].mProperties, extProps);
