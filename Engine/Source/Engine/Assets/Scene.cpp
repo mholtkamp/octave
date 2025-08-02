@@ -675,6 +675,7 @@ void Scene::LoadStreamWidgetMap(Stream& stream)
         SceneNodeDef& def = mNodeDefs[i];
 
         def.mType = (TypeId)stream.ReadUint32();
+        def.mType = ConvertOldType(def.mType);
         def.mParentIndex = stream.ReadInt32();
         int32_t childSlot = stream.ReadInt32();
         int32_t nativeChildSlot = stream.ReadInt32();
