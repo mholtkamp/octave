@@ -360,6 +360,7 @@ public:
     DatumType mType = DatumType::Count;
     bool mExternal : 1;
     bool mForceScriptArray : 1;
+    bool mIsNetDatum : 1;
     Object* mOwner = nullptr;
     DatumData mData = {};
     DatumChangeHandlerFP mChangeHandler = nullptr;

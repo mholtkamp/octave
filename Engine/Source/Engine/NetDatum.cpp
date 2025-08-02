@@ -8,7 +8,7 @@
 
 NetDatum::NetDatum()
 {
-
+    mIsNetDatum = true;
 }
 
 NetDatum::NetDatum(
