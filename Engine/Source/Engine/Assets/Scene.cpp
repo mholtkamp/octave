@@ -159,6 +159,9 @@ void Scene::LoadStreamActor(Stream& stream)
         (actorType == 4284921748ul); // ParticleActor
     actorType = ConvertOldType(actorType);
 
+    int32_t actorNodeIdx = -1;
+    NodePtr actorNode = nullptr;
+
     if (basicActor)
     {
         actorType = Node3D::GetStaticType();
@@ -308,7 +311,7 @@ void Scene::LoadStreamActor(Stream& stream)
     else
     {
         // Otherwise, we are going to save a node for the Actor and then save all of the components as children.
-        int32_t actorNodeIdx = (int32_t)mNodeDefs.size();
+        actorNodeIdx = (int32_t)mNodeDefs.size();
         mNodeDefs.push_back(SceneNodeDef());
         SceneNodeDef& actorDef = mNodeDefs.back();
         actorDef.mType = actorType;
@@ -316,7 +319,7 @@ void Scene::LoadStreamActor(Stream& stream)
         actorDef.mName = actorName;
 
         {
-            NodePtr actorNode = Node::Construct(actorType);
+            actorNode = Node::Construct(actorType);
             std::vector<Property> actorProps;
             actorNode->GatherProperties(actorProps);
 
@@ -328,6 +331,8 @@ void Scene::LoadStreamActor(Stream& stream)
                     actorDef.mProperties.back().DeepCopy(actorProps[p], true);
                 }
             }
+
+            actorNode->SetName(actorDef.mName);
         }
 
         for (uint32_t i = 0; i < compsToLoad.size(); ++i)
@@ -367,6 +372,15 @@ void Scene::LoadStreamActor(Stream& stream)
                     // Set transform props onto the new root
                     mNodeDefs[actorNodeIdx].mProperties.push_back(Property());
                     mNodeDefs[actorNodeIdx].mProperties.back().DeepCopy(extProps[p], true);
+
+                    if (extProps[p].mName == "Position")
+                        Cast<Node3D>(actorPtr)->SetPosition(extProps[p].GetVector());
+
+                    if (extProps[p].mName == "Rotation")
+                        Cast<Node3D>(actorPtr)->SetRotation(extProps[p].GetVector());
+
+                    if (extProps[p].mName == "Scale")
+                        Cast<Node3D>(actorPtr)->SetScale(extProps[p].GetVector());
                 }
                 else
                 {
@@ -390,6 +404,20 @@ void Scene::LoadStreamActor(Stream& stream)
     else if (!basicActor)
     {
         actorPtr->LoadStreamEx(stream);
+
+        if (actorNodeIdx != -1 && actorPtr != nullptr)
+        {
+            std::vector<Property> extProps;
+            actorPtr->GatherProperties(extProps);
+
+            // Rewrite all properties
+            CopyPropertyValues(mNodeDefs[actorNodeIdx].mProperties, extProps);
+
+        }
+        else
+        {
+            LogError("zzz INVALID ACTOR PTR/IDX");
+        }
     }
 }
 

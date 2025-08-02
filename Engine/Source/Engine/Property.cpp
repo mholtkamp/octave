@@ -158,7 +158,7 @@ void Property::DeepCopy(const Datum& src, bool forceInternalStorage)
         mVector = srcProp.mVector;
         mMinCount = srcProp.mMinCount;
         mMaxCount = srcProp.mMaxCount;
-        mIsVector = srcProp.mIsVector;
+        mIsVector = mExternal ? srcProp.mIsVector : false;
 
 #if EDITOR
         mEnumCount = srcProp.mEnumCount;
