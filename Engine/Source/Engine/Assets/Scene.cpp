@@ -334,6 +334,7 @@ void Scene::LoadStreamActor(Stream& stream)
         {
             mNodeDefs.push_back(SceneNodeDef());
             SceneNodeDef& compDef = mNodeDefs.back();
+            bool oldRoot = false;
 
             Node* node = compsToLoad[i].Get();
 
@@ -342,6 +343,7 @@ void Scene::LoadStreamActor(Stream& stream)
             {
                 // This was the root, so now it's attached to the actor node.
                 parentNodeDefIdx = actorNodeIdx;
+                oldRoot = true;
             }
             else
             {
@@ -357,8 +359,20 @@ void Scene::LoadStreamActor(Stream& stream)
             node->GatherProperties(extProps);
             for (uint32_t p = 0; p < extProps.size(); ++p)
             {
-                compDef.mProperties.push_back(Property());
-                compDef.mProperties.back().DeepCopy(extProps[p], true);
+                if (oldRoot &&
+                    (extProps[p].mName == "Position" ||
+                    extProps[p].mName == "Rotation" ||
+                    extProps[p].mName == "Scale"))
+                {
+                    // Set transform props onto the new root
+                    mNodeDefs[actorNodeIdx].mProperties.push_back(Property());
+                    mNodeDefs[actorNodeIdx].mProperties.back().DeepCopy(extProps[p], true);
+                }
+                else
+                {
+                    compDef.mProperties.push_back(Property());
+                    compDef.mProperties.back().DeepCopy(extProps[p], true);
+                }
             }
         }
     }
