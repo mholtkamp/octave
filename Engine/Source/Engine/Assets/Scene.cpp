@@ -694,6 +694,10 @@ void Scene::LoadStreamWidgetMap(Stream& stream)
             {
                 def.mName = def.mProperties[p].GetString();
             }
+            else if (def.mProperties[p].mName == "File")
+            {
+                def.mProperties[p].mName = "Script";
+            }
         }
     }
 
