@@ -276,9 +276,10 @@ void Texture::LoadStream(Stream& stream, Platform platform)
     mRenderTarget = stream.ReadBool();
 
 #if TEMP_CONVERT
+    mSrgb = true;
+#else
     mSrgb = stream.ReadBool();
 #endif
-    mSrgb = true;
 
     if (UseCookedTextures(platform))
     {

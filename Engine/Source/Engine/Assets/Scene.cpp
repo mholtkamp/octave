@@ -1008,6 +1008,12 @@ NodePtr Scene::Instantiate()
                 CopyPropertyValues(dstProps, mNodeDefs[i].mProperties);
             }
 
+            if (mNodeDefs[i].mScene == nullptr &&
+                mNodeDefs[i].mName != "")
+            {
+                node->SetName(mNodeDefs[i].mName);
+            }
+
             // See if there are any nodepaths that need to be resolved.
             for (auto& prop : mNodeDefs[i].mProperties)
             {

@@ -69,6 +69,45 @@ void Font::LoadStream(Stream& stream, Platform platform)
 {
     Asset::LoadStream(stream, platform);
 
+#if TEMP_CONVERT
+    mSize = stream.ReadInt32();
+    mWidth = stream.ReadInt32();
+    mHeight = stream.ReadInt32();
+    mBold = stream.ReadBool();
+    mItalic = stream.ReadBool();
+    stream.ReadAsset(mTexture);
+
+    int32_t numChars = stream.ReadInt32();
+    mCharacters.resize(numChars);
+    for (int32_t i = 0; i < numChars; ++i)
+    {
+        Character& charData = mCharacters[i];
+        charData.mCodePoint = stream.ReadInt32();
+        charData.mX = (float)stream.ReadInt32();
+        charData.mY = (float)stream.ReadInt32();
+        charData.mWidth = (float)stream.ReadInt32();
+        charData.mHeight = (float)stream.ReadInt32();
+        charData.mOriginX = (float)stream.ReadInt32();
+        charData.mOriginY = (float)stream.ReadInt32();
+        charData.mAdvance = (float)stream.ReadInt32();
+    }
+
+
+    mLineSpacing = (float)mSize;
+
+    Texture* srcTex = mTexture.Get<Texture>();
+
+    if (srcTex)
+    {
+        Texture* texture = NewTransientAsset<Texture>();
+        texture->Copy(srcTex);
+        texture->Create();
+        texture->SetName("FontTexture");
+
+        mTexture = texture;
+    }
+
+#else
     mSize = stream.ReadInt32();
     mWidth = stream.ReadInt32();
     mHeight = stream.ReadInt32();
@@ -116,6 +155,8 @@ void Font::LoadStream(Stream& stream, Platform platform)
         stream.SetPos(stream.GetPos() + ttfDataSize);
     }
 #endif
+
+#endif // TEMP_CONVERT
 }
 
 void Font::SaveStream(Stream& stream, Platform platform)
