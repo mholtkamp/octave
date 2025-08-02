@@ -919,7 +919,13 @@ NodePtr Scene::Instantiate()
         for (uint32_t i = 0; i < mNodeDefs.size(); ++i)
         {
             NodePtr nodePtr;
-            NodePtr parent = (i > 0) ? nodeList[mNodeDefs[i].mParentIndex] : nullptr;
+            NodePtr parent = (i > 0 && nodeList.size() > mNodeDefs[i].mParentIndex) ? nodeList[mNodeDefs[i].mParentIndex] : nullptr;
+
+            if (i > 0 && nodeList.size() <= mNodeDefs[i].mParentIndex)
+            {
+                LogError("zzz Out-of-order parent for node: %s", mNodeDefs[i].mName.c_str());
+                parent = nodeList[0];
+            }
 
             if (parent != nullptr)
             {
