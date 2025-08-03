@@ -187,17 +187,16 @@ void Scene::LoadStreamActor(Stream& stream)
     // Before we read in any of the component information,
     // construct a copy of the actor to determine how many default children (components) it has.
     
-    {
-        NodePtr actorPtr = Node::Construct(actorType);
+    actorNode = Node::Construct(actorType);
 
-        for (uint32_t i = 0; i < actorPtr->GetNumChildren(); ++i)
+    for (uint32_t i = 0; i < actorNode->GetNumChildren(); ++i)
+    {
+        if (!actorNode->GetChild(i)->IsTransient())
         {
-            if (!actorPtr->GetChild(i)->IsTransient())
-            {
-                compsToLoad.push_back(ResolvePtr(actorPtr->GetChild(i)));
-            }
+            compsToLoad.push_back(ResolvePtr(actorNode->GetChild(i)));
         }
     }
+
     // Components
     uint32_t numComponents = stream.ReadUint32();
 
@@ -321,7 +320,6 @@ void Scene::LoadStreamActor(Stream& stream)
         actorDef.mName = actorName;
 
         {
-            actorNode = Node::Construct(actorType);
             std::vector<Property> actorProps;
             actorNode->GatherProperties(actorProps);
 
