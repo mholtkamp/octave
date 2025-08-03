@@ -222,8 +222,15 @@ void Node::Destroy()
 
     for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
     {
-        // Destroy will detach child from this
-        mChildren[i]->Destroy();
+        if (false /*forceDestroyChildren*/)
+        {
+            // Destroy will detach child from this
+            mChildren[i]->Destroy();
+        }
+        else
+        {
+            mChildren[i]->Detach();
+        }
     }
 
     if (IsPrimitive3D() && GetWorld())
