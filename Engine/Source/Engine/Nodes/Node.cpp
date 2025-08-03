@@ -229,7 +229,7 @@ void Node::Destroy()
         }
         else
         {
-            mChildren[i]->Detach();
+            RemoveChild(i);
         }
     }
 
