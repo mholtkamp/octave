@@ -237,6 +237,18 @@ public:
     void RemoveChild(Node* child);
     void RemoveChild(int32_t index);
 
+    template<typename T>
+    void AddChild(const SharedPtr<T>& child, int32_t index = -1)
+    {
+        AddChild(child.Get(), index);
+    }
+
+    template<typename T>
+    void RemoveChild(const SharedPtr<Node>& child)
+    {
+        RemoveChild(child.Get());
+    }
+
     int32_t FindChildIndex(const std::string& name) const;
     int32_t FindChildIndex(Node* child) const;
     Node* FindChild(const std::string& name, bool recurse) const;
