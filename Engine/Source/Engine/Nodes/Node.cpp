@@ -1073,7 +1073,7 @@ void Node::SetWorld(World * world)
         // Awake after children world has been set (and possibly awoken)
         if (mWorld != nullptr)
         {
-            if (!HasAwoken())
+            if (IsPlaying() && !HasAwoken())
             {
                 Awake();
             }
