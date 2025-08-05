@@ -400,6 +400,28 @@ void Node::Render(PipelineConfig pipelineConfig)
     }
 }
 
+void Node::Awake()
+{
+    if (!mHasAwoken)
+    {
+        mHasAwoken = true;
+
+        for (uint32_t i = 0; i < GetNumChildren(); ++i)
+        {
+            Node* child = GetChild(i);
+            if (!child->HasAwoken())
+            {
+                GetChild(i)->Awake();
+            }
+        }
+
+        if (mScript != nullptr)
+        {
+            mScript->CallFunction("Awake");
+        }
+    }
+}
+
 void Node::Start()
 {
     if (!mHasStarted && GetWorld() != nullptr)
@@ -1004,6 +1026,11 @@ bool Node::HasStarted() const
     return mHasStarted;
 }
 
+bool Node::HasAwoken() const
+{
+    return mHasAwoken;
+}
+
 void Node::EnableTick(bool enable)
 {
     mTickEnabled = enable;
@@ -1041,6 +1068,15 @@ void Node::SetWorld(World * world)
         for (uint32_t i = 0; i < GetNumChildren(); ++i)
         {
             GetChild(i)->SetWorld(world);
+        }
+
+        // Awake after children world has been set (and possibly awoken)
+        if (mWorld != nullptr)
+        {
+            if (!HasAwoken())
+            {
+                Awake();
+            }
         }
     }
 }

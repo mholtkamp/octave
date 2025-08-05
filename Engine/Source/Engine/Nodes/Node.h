@@ -91,6 +91,7 @@ public:
     virtual void Copy(Node* srcNode, bool recurse);
     virtual void Render(PipelineConfig pipelineConfig);
 
+    virtual void Awake();
     virtual void Start();
     virtual void Stop();
     virtual void PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game);
@@ -169,6 +170,7 @@ public:
     bool IsDoomed() const;
 
     bool HasStarted() const;
+    bool HasAwoken() const;
 
     void EnableTick(bool enable);
     bool IsTickEnabled() const;
@@ -449,17 +451,17 @@ protected:
     bool mTransient = false;
     bool mDefault = false;
     bool mUserdataCreated = false;
+    bool mHasStarted = false;
+    bool mHasAwoken = false;
+    bool mDestroyed = false;
+    bool mTickEnabled = true;
+    bool mLateTick = false;
 
     // Merged from Actor
     SceneRef mScene;
     std::vector<std::string> mTags;
     NodeId mNodeId = INVALID_NODE_ID;
     uint32_t mHitCheckId = 0;
-
-    bool mHasStarted = false;
-    bool mDestroyed = false;
-    bool mTickEnabled = true;
-    bool mLateTick = false;
 
     // Network Data
     // This is only about 44 bytes, so right now, we will keep this data as direct members of Node.
