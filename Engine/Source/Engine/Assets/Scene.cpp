@@ -959,9 +959,10 @@ NodePtr Scene::Instantiate()
 
     sInstantiationCount++;
 
+    std::vector<NodePtr> nodeList;
+
     if (mNodeDefs.size() > 0)
     {
-        std::vector<NodePtr> nodeList;
 
         // The nativeChildren vector holds a list of all children by created in C++ for the nodes in this scene.
         // If there is no SceneNodeDef for the nativeChild, then we must destroy it. This will happen
@@ -1174,6 +1175,17 @@ NodePtr Scene::Instantiate()
         {
             Node::Destruct(repNodesToDelete[i]);
             repNodesToDelete[i] = nullptr;
+        }
+    }
+
+    // Nodes that are instantiated from Scenes get awoken right after
+    // all the scene's nodes have been created. If a node is manually constructed
+    // it's Awake() will be called once it is added to a world.
+    for (uint32_t i = 0; i < nodeList.size(); ++i)
+    {
+        if (!nodeList[i]->HasAwoken())
+        {
+            nodeList[i]->Awake();
         }
     }
 
