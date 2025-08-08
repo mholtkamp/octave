@@ -990,6 +990,13 @@ void Datum::PushBack(Asset* value)
     mCount++;
 }
 
+void Datum::PushBack(const AssetRef& value)
+{
+    PrePushBack(DatumType::Asset);
+    new (mData.as + mCount) AssetRef(value);
+    mCount++;
+}
+
 void Datum::PushBack(uint8_t value)
 {
     PrePushBack(DatumType::Byte);
@@ -1826,7 +1833,7 @@ void Datum::DeepCopy(const Datum& src, bool forceInternalStorage)
                 PushBack(*(src.mData.v4 + i));
                 break;
             case DatumType::Asset:
-                PushBack((src.mData.as + i)->Get());
+                PushBack(*(src.mData.as + i));
                 break;
             case DatumType::Byte:
                 PushBack(*(src.mData.by + i));

@@ -97,7 +97,6 @@ public:
     void SaveAsset(AssetStub& stub);
     bool UnloadAsset(const std::string& name);
     bool UnloadAsset(AssetStub& stub);
-    void EraseAsyncLoadRef(AssetRef& assetRef);
 
     bool DoesAssetExist(const std::string& name);
     bool RenameAsset(Asset* asset, const std::string& newName);

@@ -206,6 +206,7 @@ public:
     void PushBack(const glm::vec3& value);
     void PushBack(const glm::vec4& value);
     void PushBack(Asset* value);
+    void PushBack(const AssetRef& value);
     void PushBack(uint8_t value);
     TableDatum* PushBackTableDatum(const TableDatum& value);
     void PushBack(const WeakPtr<Node>& value);
