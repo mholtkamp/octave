@@ -117,7 +117,6 @@ AssetRef::AssetRef(Asset* asset) :
 
 AssetRef::AssetRef(const AssetRef& src)
 {
-    SCOPED_LOCK(GetAssetRefMutex());
     mAsset = src.mAsset;
 
 #if ASSET_LIVE_REF_TRACKING
@@ -137,8 +136,6 @@ AssetRef::AssetRef(const AssetRef& src)
 
 AssetRef::~AssetRef()
 {
-    SCOPED_LOCK(GetAssetRefMutex());
-
     // Make sure an async load request isn't referencing deleted memory
     if (mLoadRequest != nullptr)
     {
@@ -161,8 +158,6 @@ AssetRef::~AssetRef()
 
 AssetRef& AssetRef::operator=(const AssetRef& src)
 {
-    SCOPED_LOCK(GetAssetRefMutex());
-
     operator=(src.mAsset);
 
     if (src.mLoadRequest)
@@ -175,8 +170,6 @@ AssetRef& AssetRef::operator=(const AssetRef& src)
 
 AssetRef& AssetRef::operator=(const Asset* srcAsset)
 {
-    SCOPED_LOCK(GetAssetRefMutex());
-
     AssetManager* am = AssetManager::Get();
     bool purging = am && am->IsPurging();
     bool decrement = !(purging || IsShuttingDown());
@@ -247,7 +240,6 @@ void AssetRef::SetLoadRequest(AsyncLoadRequest* loadRequest)
 
 AsyncLoadRequest* AssetRef::GetLoadRequest()
 {
-    SCOPED_LOCK(GetAssetRefMutex());
     AsyncLoadRequest* request = mLoadRequest;
     return request;
 }
