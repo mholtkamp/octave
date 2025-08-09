@@ -42,9 +42,6 @@ std::vector<PendingNodePath> Scene::sPendingNodePaths;
 static bool sSceneConversionInit = false;
 static std::unordered_map<TypeId, TypeId> sTypeConversionMap;
 
-static int32_t sConvUniqueNum = 1;
-static std::unordered_set<std::string> sConvNodeNames;
-
 void SceneConversionInit()
 {
     if (!sSceneConversionInit)
@@ -704,23 +701,26 @@ void Scene::LoadStreamWidgetMap(Stream& stream)
 
 void Scene::ConvEnforceUniqueNames()
 {
-    sConvNodeNames.clear();
-    sConvUniqueNum = 1;
-
     for (uint32_t i = 0; i < mNodeDefs.size(); ++i)
     {
-        auto it = sConvNodeNames.find(mNodeDefs[i].mName);
+        int32_t convUniqueNum = 1;
 
-        if (it != sConvNodeNames.end())
+        for (uint32_t j = 0; j < mNodeDefs.size(); ++j)
         {
-            mNodeDefs[i].mName = mNodeDefs[i].mName + "#" + std::to_string(sConvUniqueNum);
-            sConvUniqueNum++;
+            if (i == j)
+                continue;
 
-            it = sConvNodeNames.find(mNodeDefs[i].mName);
-            OCT_ASSERT(it == sConvNodeNames.end()); // Should be unique now!!
+            // Different parents, no need to have unique names
+            if (mNodeDefs[i].mParentIndex != mNodeDefs[j].mParentIndex)
+                continue;
+
+            // Different names
+            if (mNodeDefs[i].mName != mNodeDefs[j].mName)
+                continue;
+
+            mNodeDefs[j].mName = mNodeDefs[j].mName + "#" + std::to_string(convUniqueNum);
+            convUniqueNum++;
         }
-
-        sConvNodeNames.insert(mNodeDefs[i].mName);
     }
 }
 
