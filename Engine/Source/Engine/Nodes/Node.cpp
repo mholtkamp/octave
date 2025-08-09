@@ -233,11 +233,6 @@ void Node::Destroy()
         }
     }
 
-    if (IsPrimitive3D() && GetWorld())
-    {
-        GetWorld()->PurgeOverlaps(static_cast<Primitive3D*>(this));
-    }
-
     if (mParent != nullptr)
     {
         Attach(nullptr);
@@ -1048,6 +1043,11 @@ void Node::SetWorld(World * world)
         if (mWorld != nullptr)
         {
             mWorld->UnregisterNode(this);
+
+            if (IsPrimitive3D())
+            {
+                GetWorld()->PurgeOverlaps(static_cast<Primitive3D*>(this));
+            }
         }
 
         mWorld = world;

@@ -247,9 +247,18 @@ void Primitive3D::SetWorld(World* world)
 {
     // TODO-NODE: I am attempting to simplify this code. Does it still work?
 #if 1
-    EnableRigidBody(false);
-    Node3D::SetWorld(world);
-    EnableRigidBody(true);
+    if (mWorld != world)
+    {
+        EnableRigidBody(false);
+
+        if (mWorld != nullptr)
+        {
+            mWorld->PurgeOverlaps(static_cast<Primitive3D*>(this));
+        }
+
+        Node3D::SetWorld(world);
+        EnableRigidBody(true);
+    }
 #else
     bool rigidBodyInWorld = IsRigidBodyInWorld();
 
