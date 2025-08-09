@@ -129,6 +129,12 @@ Datum::Datum(uint8_t value)
     PushBack(value);
 }
 
+Datum::Datum(const SharedPtr<Node>& value)
+{
+    Reset();
+    PushBack(value);
+}
+
 Datum::Datum(const WeakPtr<Node>& value)
 {
     Reset();
@@ -1013,6 +1019,11 @@ TableDatum* Datum::PushBackTableDatum(const TableDatum& value)
     return (mData.t + (mCount - 1));
 }
 
+void Datum::PushBack(const SharedPtr<Node>& value)
+{
+    PushBack(value.Get());
+}
+
 void Datum::PushBack(const WeakPtr<Node>& value)
 {
     PrePushBack(DatumType::Node);
@@ -1605,6 +1616,17 @@ bool Datum::operator==(const WeakPtr<Node>& other) const
     return mData.n[0] == other;
 }
 
+bool Datum::operator==(const SharedPtr<Node>& other) const
+{
+    if (mCount == 0 ||
+        mType != DatumType::Node)
+    {
+        return false;
+    }
+
+    return mData.n[0] == other;
+}
+
 bool Datum::operator==(const int16_t& other) const
 {
     if (mCount == 0 ||
@@ -1693,6 +1715,11 @@ bool Datum::operator!=(const Node*& other) const
 }
 
 bool Datum::operator!=(const WeakPtr<Node>& other) const
+{
+    return !operator==(other);
+}
+
+bool Datum::operator!=(const SharedPtr<Node>& other) const
 {
     return !operator==(other);
 }

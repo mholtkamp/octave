@@ -87,6 +87,7 @@ public:
     Datum(Asset* value);
     Datum(const AssetRef& value);
     Datum(uint8_t value);
+    Datum(const SharedPtr<Node>& value);
     Datum(const WeakPtr<Node>& value);
     Datum(Node* value);
     Datum(int16_t value);
@@ -100,6 +101,32 @@ public:
         for (uint32_t i = 0; i < arr.size(); ++i)
         {
             PushBack(arr[i]);
+        }
+
+        mForceScriptArray = true;
+    }
+
+    template<typename T>
+    Datum(const std::vector<SharedPtr<T > >& arr)
+    {
+        Reset();
+
+        for (uint32_t i = 0; i < arr.size(); ++i)
+        {
+            PushBack(arr[i].Get());
+        }
+
+        mForceScriptArray = true;
+    }
+
+    template<typename T>
+    Datum(const std::vector<WeakPtr<T > >& arr)
+    {
+        Reset();
+
+        for (uint32_t i = 0; i < arr.size(); ++i)
+        {
+            PushBack(arr[i].Get());
         }
 
         mForceScriptArray = true;
@@ -209,6 +236,7 @@ public:
     void PushBack(const AssetRef& value);
     void PushBack(uint8_t value);
     TableDatum* PushBackTableDatum(const TableDatum& value);
+    void PushBack(const SharedPtr<Node>& value);
     void PushBack(const WeakPtr<Node>& value);
     void PushBack(Node* node);
     void PushBack(int16_t value);
@@ -309,6 +337,7 @@ public:
     bool operator==(const uint8_t& other) const;
     bool operator==(const Node*& other) const;
     bool operator==(const WeakPtr<Node>& other) const;
+    bool operator==(const SharedPtr<Node>& other) const;
     bool operator==(const int16_t& other) const;
     bool operator==(const ScriptFunc& other) const;
 
@@ -327,6 +356,7 @@ public:
     bool operator!=(const uint8_t& other) const;
     bool operator!=(const Node*& other) const;
     bool operator!=(const WeakPtr<Node>& other) const;
+    bool operator!=(const SharedPtr<Node>& other) const;
     bool operator!=(const int16_t& other) const;
     bool operator!=(const ScriptFunc& other) const;
 
