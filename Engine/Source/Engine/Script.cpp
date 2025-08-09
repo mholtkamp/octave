@@ -823,7 +823,11 @@ ScriptNetFunc* Script::FindNetFunc(const char* funcName)
         }
         else
         {
-            LogError("Can't find NetFunc %s on Script %s", funcName, mClassName.c_str());
+            // No need to log the warning here. A net func may not exist
+            // on the script, but the C++ node may have implemented it.
+            // If the net func can't be found later on the C++ node, then
+            // the warning will be reported.
+            //LogWarning("Can't find NetFunc %s on Script %s", funcName, mClassName.c_str());
         }
     }
 
