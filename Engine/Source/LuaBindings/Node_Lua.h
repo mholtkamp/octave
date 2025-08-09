@@ -47,6 +47,7 @@ struct Node_Lua
     static int FindDescendant(lua_State* L);
     static int FindAncestor(lua_State* L);
     static int HasAncestor(lua_State* L);
+    static int GetSubRoot(lua_State* L);
 
     static int GetRoot(lua_State* L);
     static int IsWorldRoot(lua_State* L);

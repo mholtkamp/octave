@@ -517,6 +517,16 @@ int Node_Lua::HasAncestor(lua_State* L)
     return 1;
 }
 
+int Node_Lua::GetSubRoot(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+
+    Node* ret = node->GetSubRoot();
+
+    Node_Lua::Create(L, ret);
+    return 1;
+}
+
 int Node_Lua::GetRoot(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -1072,6 +1082,8 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, FindAncestor);
 
     REGISTER_TABLE_FUNC(L, mtIndex, HasAncestor);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSubRoot);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetRoot);
     
