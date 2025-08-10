@@ -58,10 +58,6 @@ void SkeletalMesh::LoadStream(Stream& stream, Platform platform)
 
     stream.ReadAsset(mMaterial);
     stream.ReadAsset(mAnimationLookupMesh);
-    if (mMaterial.Get() == nullptr)
-    {
-        mMaterial = Renderer::Get()->GetDefaultMaterial();
-    }
 
     mInvRootTransform = stream.ReadMatrix();
 

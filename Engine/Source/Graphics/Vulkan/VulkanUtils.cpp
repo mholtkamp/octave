@@ -870,6 +870,11 @@ void WriteGeometryUniformData(GeometryData& outData, World* world, Node3D* comp,
 
 void GatherGeometryLightUniformData(GeometryData& outData, Primitive3D* primitive, Material* material, bool isStaticMesh)
 {
+    if (material == nullptr)
+    {
+        material = Renderer::Get()->GetDefaultMaterial();
+    }
+
     // Find overlapping point lights
     uint32_t numLights = 0;
 
