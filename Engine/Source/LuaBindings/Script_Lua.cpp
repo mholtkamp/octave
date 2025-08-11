@@ -35,16 +35,52 @@ int Script_Lua::Run(lua_State* L)
 int Script_Lua::Inherit(lua_State* L)
 {
     luaL_checktype(L, 1, LUA_TTABLE); // Derived Table
-    luaL_checktype(L, 2, LUA_TTABLE); // Parent Table
+
+    int parentIdx = 2;
+    if (lua_isstring(L, 2))
+    {
+        const char* className = CHECK_STRING(L, 2);
+        luaL_getmetatable(L, className);
+
+        if (lua_isnil(L, -1))
+        {
+            lua_pop(L, 1);
+
+            // Metatable isn't created, see if we can construct the class,
+            // this should automatically register the metatable
+            NodePtr tempNode = Node::Construct(className);
+
+            if (tempNode == nullptr)
+            {
+                LogError("Unknown class received in Inherit");
+            }
+
+            luaL_getmetatable(L, className);
+        }
+
+        if (!lua_isnil(L, -1))
+        {
+            parentIdx = lua_gettop(L);
+        }
+        else
+        {
+            LogError("Could not find parent class metatable in Inherit");
+            lua_pop(L, 1);
+        }
+    }
+    else
+    {
+        luaL_checktype(L, 2, LUA_TTABLE); // Parent Table
+    }
 
     // Set index to same table for both derived and parent
     lua_pushvalue(L, 1);
     lua_setfield(L, 1, "__index");
-    lua_pushvalue(L, 2);
-    lua_setfield(L, 2, "__index");
+    lua_pushvalue(L, parentIdx);
+    lua_setfield(L, parentIdx, "__index");
 
     // Assign the parent table as the metatable for the child table
-    lua_pushvalue(L, 2); // Not sure if needed
+    lua_pushvalue(L, parentIdx); // Not sure if needed
     lua_setmetatable(L, 1);
 
     return 0;
