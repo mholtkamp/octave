@@ -66,11 +66,11 @@ public:
     VertexColorMode GetVertexColorMode() const;
     void SetVertexColorMode(VertexColorMode mode);
 
-    glm::vec2 GetUvOffset(uint32_t uvIndex = 0) const;
-    void SetUvOffset(glm::vec2 offset, uint32_t uvIndex = 0);
+    glm::vec2 GetUvOffset(int32_t uvIndex = 0) const;
+    void SetUvOffset(glm::vec2 offset, int32_t uvIndex = 0);
 
-    glm::vec2 GetUvScale(uint32_t uvIndex = 0) const;
-    void SetUvScale(glm::vec2 scale, uint32_t uvIndex = 0);
+    glm::vec2 GetUvScale(int32_t uvIndex = 0) const;
+    void SetUvScale(glm::vec2 scale, int32_t uvIndex = 0);
 
     glm::vec4 GetColor() const;
     void SetColor(const glm::vec4& color);
