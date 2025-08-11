@@ -483,91 +483,91 @@ uint32_t Datum::GetSerializationSize(bool net) const
 void Datum::SetInteger(int32_t value, uint32_t index)
 {
     PreSet(index, DatumType::Integer);
-    if ((!mExternal && !mIsNetDatum) || !mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.i[index] = value;
 }
 
 void Datum::SetFloat(float value, uint32_t index)
 {
     PreSet(index, DatumType::Float);
-    if ((!mExternal && !mIsNetDatum) || !mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.f[index] = value;
 }
 
 void Datum::SetBool(bool value, uint32_t index)
 {
     PreSet(index, DatumType::Bool);
-    if ((!mExternal && !mIsNetDatum) || !mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.b[index] = value;
 }
 
 void Datum::SetString(const std::string& value, uint32_t index)
 {
     PreSet(index, DatumType::String);
-    if ((!mExternal && !mIsNetDatum) || !mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.s[index] = value;
 }
 
 void Datum::SetVector2D(const glm::vec2& value, uint32_t index)
 {
     PreSet(index, DatumType::Vector2D);
-    if ((!mExternal && !mIsNetDatum) || !mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.v2[index] = value;
 }
 
 void Datum::SetVector(const glm::vec3& value, uint32_t index)
 {
     PreSet(index, DatumType::Vector);
-    if ((!mExternal && !mIsNetDatum) || !mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.v3[index] = value;
 }
 
 void Datum::SetColor(const glm::vec4& value, uint32_t index)
 {
     PreSet(index, DatumType::Color);
-    if ((!mExternal && !mIsNetDatum) || !mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.v4[index] = value;
 }
 
 void Datum::SetAsset(const Asset* value, uint32_t index)
 {
-    PreSet(index, DatumType::Asset);
-    if ((!mExternal && !mIsNetDatum) || !mChangeHandler || !mChangeHandler(this, index, const_cast<Asset**>(&value)))
+    PreSet(index, DatumType::Asset); 
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, const_cast<Asset**>(&value)))
         mData.as[index] = value;
 }
 
 void Datum::SetByte(uint8_t value, uint32_t index)
 {
     PreSet(index, DatumType::Byte);
-    if ((!mExternal && !mIsNetDatum) || !mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.by[index] = value;
 }
 
 void Datum::SetTableDatum(const TableDatum& value, uint32_t index)
 {
     PreSet(index, DatumType::Table);
-    if ((!mExternal && !mIsNetDatum) || !mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.t[index] = value;
 }
 
 void Datum::SetNode(const WeakPtr<Node>& value, uint32_t index)
 {
     PreSet(index, DatumType::Node);
-    if ((!mExternal && !mIsNetDatum) || !mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.n[index] = value;
 }
 
 void Datum::SetShort(int16_t value, uint32_t index)
 {
     PreSet(index, DatumType::Short);
-    if ((!mExternal && !mIsNetDatum) || !mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.sh[index] = value;
 }
 
 void Datum::SetFunction(const ScriptFunc& value, uint32_t index)
 {
     PreSet(index, DatumType::Function);
-    if ((!mExternal && !mIsNetDatum) || !mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.fn[index] = value;
 }
 
