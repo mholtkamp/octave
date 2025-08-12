@@ -379,7 +379,7 @@ void EditorState::HandleNodeDestroy(Node* node)
 
 void EditorState::SetSelectedNode(Node* newNode)
 {
-    if (newNode != nullptr && (newNode->GetWorld() == nullptr || newNode->IsForeign()))
+    if (newNode != nullptr && newNode->GetWorld() == nullptr)
     {
         return;
     }

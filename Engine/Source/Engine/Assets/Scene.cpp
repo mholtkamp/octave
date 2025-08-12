@@ -1073,6 +1073,15 @@ NodePtr Scene::Instantiate()
                 node->SetName(mNodeDefs[i].mName);
             }
 
+            // Apply subscene overrides if they exist
+            if (mNodeDefs[i].mScene != nullptr)
+            {
+                for (auto& over : mNodeDefs[i].mSubSceneOverrides)
+                {
+                    ApplySubSceneOverride(node, over);
+                }
+            }
+
             // See if there are any nodepaths that need to be resolved.
             for (auto& prop : mNodeDefs[i].mProperties)
             {
@@ -1314,6 +1323,63 @@ void Scene::AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeLi
                 AddNodeDef(node->GetChild(i), platform, nodeList);
             }
         }
+        else
+        {
+            // Find all of the overridden properties for child nodes
+            for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
+            {
+                GatherSubSceneOverrides(node->GetChild(i), node, nodeDef);
+            }
+        }
+    }
+}
+
+void Scene::GatherSubSceneOverrides(Node* node, Node* sceneRoot, SceneNodeDef& nodeDef)
+{
+    if (node == nullptr)
+        return;
+
+    SubSceneOverride over;
+    over.mPath = FindRelativeNodePath(sceneRoot, node);
+    OCT_ASSERT(over.mPath != "");
+
+    GatherNonDefaultProperties(node, over.mProperties);
+
+    nodeDef.mSubSceneOverrides.push_back(over);
+
+    for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
+    {
+        GatherSubSceneOverrides(node->GetChild(i), sceneRoot, nodeDef);
+    }
+}
+
+void Scene::ApplySubSceneOverride(Node* sceneRoot, const SubSceneOverride& over)
+{
+    if (over.mPath == "")
+    {
+        LogWarning("Invalid subscene override path");
+        return;
+    }
+
+    Node* dst = ResolveNodePath(sceneRoot, over.mPath);
+
+    if (dst == nullptr)
+    {
+        LogWarning("Could not resolve sub scene override destination");
+        return;
+    }
+
+    std::vector<Property> dstProps;
+    dst->GatherProperties(dstProps);
+    CopyPropertyValues(dstProps, over.mProperties);
+
+    // A script filename may have possibly been set.
+    // Need to copy properties a second time to change newly created script properties.
+    if (dst->GetScript() != nullptr)
+    {
+        dstProps.clear();
+        dst->GatherProperties(dstProps);
+        CopyPropertyValues(dstProps, over.mProperties);
     }
 }
 

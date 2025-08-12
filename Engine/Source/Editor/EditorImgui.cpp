@@ -1499,8 +1499,7 @@ static void DrawScenePanel()
         }
 
         if (node->GetNumChildren() == 0 || 
-            node->AreAllChildrenHiddenInTree() ||
-            nodeSceneLinked)
+            node->AreAllChildrenHiddenInTree())
         {
             nodeFlags |= ImGuiTreeNodeFlags_Leaf;
         }
@@ -1684,7 +1683,7 @@ static void DrawScenePanel()
 
         if (nodeOpen)
         {
-            if (!nodeSceneLinked)
+            if (true/*!nodeSceneLinked*/)
             {
                 for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
                 {

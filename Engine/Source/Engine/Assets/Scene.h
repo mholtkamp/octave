@@ -9,6 +9,12 @@
 
 class World;
 
+struct SubSceneOverride
+{
+    std::string mPath;
+    std::vector<Property> mProperties;
+};
+
 struct SceneNodeDef
 {
     TypeId mType = INVALID_TYPE_ID;
@@ -17,6 +23,7 @@ struct SceneNodeDef
     std::string mName;
     std::vector<Property> mProperties;
     std::vector<uint8_t> mExtraData;
+    std::vector<SubSceneOverride> mSubSceneOverrides;
     int8_t mParentBone = -1;
     bool mExposeVariable = false;
 };
@@ -63,6 +70,8 @@ protected:
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
     void AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeList);
+    void GatherSubSceneOverrides(Node* node, Node* sceneRoot, SceneNodeDef& nodeDef);
+    void ApplySubSceneOverride(Node* sceneRoot, const SubSceneOverride& over);
     int32_t FindNodeIndex(Node* node, const std::vector<Node*>& nodeList);
 
     bool CheckForNodeProps(std::vector<Property>& props);
