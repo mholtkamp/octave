@@ -139,6 +139,12 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
         {
             sEngineConfig.mPackageForSteam = true;
         }
+        else if (strcmp(argv[i], "-linearColorSpace") == 0)
+        {
+            OCT_ASSERT(i + 1 < argc);
+            int32_t linear = atoi(argv[i + 1]);
+            sEngineConfig.mLinearColorSpace = linear;
+        }
     }
 }
 
@@ -180,6 +186,10 @@ void ReadEngineIni()
             else if (keyStr == "logToFile")
             {
                 sEngineConfig.mLogToFile = strToBool(value);
+            }
+            else if (keyStr == "linearColorSpace")
+            {
+                sEngineConfig.mLinearColorSpace = strToBool(value);
             }
         }
     }

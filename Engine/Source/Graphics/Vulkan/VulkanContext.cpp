@@ -1702,6 +1702,7 @@ void VulkanContext::UpdateGlobalUniformData()
         mGlobalUniformData.mPathTracingEnabled = Renderer::Get()->IsPathTracingEnabled();
     }
 
+    mGlobalUniformData.mLinearColorSpace = (int32_t)GetEngineConfig()->mLinearColorSpace;
     mGlobalUniformData.mInterfaceResolution = Renderer::Get()->GetScreenResolution();
 
 #if EDITOR
