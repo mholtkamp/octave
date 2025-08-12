@@ -132,8 +132,8 @@ struct GlobalUniforms
 
     uint mNumLights;
     int mSelectedInstance;
+    int mLinearColorSpace;
     uint mPad0;
-    uint mPad1;
 
     LightData mLights[MAX_LIGHTS_PER_FRAME];
 };

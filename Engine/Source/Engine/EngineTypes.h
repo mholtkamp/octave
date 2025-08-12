@@ -257,6 +257,7 @@ struct EngineConfig
 
     bool mValidateGraphics = false;
     bool mFullscreen = false;
+    bool mLinearColorSpace = false;
     bool mPackageForSteam = false;
     bool mUseAssetRegistry = false;
     bool mStandalone = false;

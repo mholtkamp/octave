@@ -1104,7 +1104,7 @@ void CreateTextureResource(Texture* texture, uint8_t* pixels)
     TextureResource* resource = texture->GetResource();
 
     // TODO: Handle other pixel formats
-    VkFormat format = ConvertPixelFormat(PixelFormat::RGBA8 /*texture->GetFormat()*/, texture->IsSrgb());
+    VkFormat format = ConvertPixelFormat(PixelFormat::RGBA8 /*texture->GetFormat()*/, GetEngineConfig()->mLinearColorSpace ? texture->IsSrgb() : false);
 
     ImageDesc imageDesc;
     imageDesc.mWidth = texture->GetWidth();
