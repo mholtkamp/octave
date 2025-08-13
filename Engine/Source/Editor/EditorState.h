@@ -21,6 +21,7 @@ class Camera3D;
 class Viewport3D;
 class Viewport2D;
 class PaintManager;
+struct SubSceneOverride;
 
 enum class ControlMode
 {
@@ -67,6 +68,7 @@ struct LinkedSceneProps
 {
     Node* mNode = nullptr;
     std::vector<Property> mProps;
+    std::vector<SubSceneOverride> mSubSceneOverrides;
 };
 
 struct EditScene

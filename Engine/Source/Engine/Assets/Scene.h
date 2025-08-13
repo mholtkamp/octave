@@ -70,8 +70,6 @@ protected:
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
     void AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeList);
-    void GatherSubSceneOverrides(Node* node, Node* sceneRoot, SceneNodeDef& nodeDef);
-    void ApplySubSceneOverride(Node* sceneRoot, const SubSceneOverride& over);
     int32_t FindNodeIndex(Node* node, const std::vector<Node*>& nodeList);
 
     bool CheckForNodeProps(std::vector<Property>& props);

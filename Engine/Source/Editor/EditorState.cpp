@@ -783,10 +783,19 @@ void CacheEditSceneLinkedProps(EditScene& editScene)
             if (linkedScene != nullptr)
             {
                 editScene.mLinkedSceneProps.push_back(LinkedSceneProps());
-                LinkedSceneProps& nonDefProps = editScene.mLinkedSceneProps.back();
-                nonDefProps.mNode = node;
-                GatherNonDefaultProperties(node, nonDefProps.mProps);
-                RecordNodePaths(node, nonDefProps.mProps);
+                LinkedSceneProps& linkedSceneProps = editScene.mLinkedSceneProps.back();
+                linkedSceneProps.mNode = node;
+                GatherNonDefaultProperties(node, linkedSceneProps.mProps);
+
+                // Cache subscene overrides of child nodes
+                Node* sceneRoot = node;
+                for (uint32_t i = 0; i < sceneRoot->GetNumChildren(); ++i)
+                {
+                    Node* child = sceneRoot->GetChild(i);
+                    GatherSubSceneOverrides(child, sceneRoot, linkedSceneProps.mSubSceneOverrides);
+                }
+
+                RecordNodePaths(node, linkedSceneProps.mProps);
             }
 
             return false;
@@ -875,11 +884,15 @@ void EditorState::OpenEditScene(int32_t idx)
             if (node->IsSceneLinked())
             {
                 const std::vector<Property>* nonDefProps = nullptr;
+                const std::vector<SubSceneOverride>* subSceneOverrides = nullptr;
+
                 for (uint32_t i = 0; i < editScene.mLinkedSceneProps.size(); ++i)
                 {
                     if (editScene.mLinkedSceneProps[i].mNode == node)
                     {
                         nonDefProps = &editScene.mLinkedSceneProps[i].mProps;
+                        subSceneOverrides = &editScene.mLinkedSceneProps[i].mSubSceneOverrides;
+
                         break;
                     }
                 }
@@ -920,6 +933,14 @@ void EditorState::OpenEditScene(int32_t idx)
                             pendingPath.mPath = *prop.mExtra;
                             pendingNodePaths.push_back(pendingPath);
                         }
+                    }
+                }
+
+                if (subSceneOverrides != nullptr)
+                {
+                    for (auto& over : *subSceneOverrides)
+                    {
+                        ApplySubSceneOverride(newNode.Get(), over);
                     }
                 }
 
