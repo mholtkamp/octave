@@ -1485,11 +1485,13 @@ static void DrawScenePanel()
 
     glm::vec4 sceneColor = AssetManager::Get()->GetEditorAssetColor(Scene::GetStaticType());
     ImVec4 sceneColorIm = ImVec4(sceneColor.r, sceneColor.g, sceneColor.b, sceneColor.a);
+    ImVec4 subSceneColorIm = ImVec4(0.5f, 0.8f, 0.2f, 1.0f);
 
-    std::function<void(Node*)> drawTree = [&](Node* node)
+    std::function<void(Node*, Scene*)> drawTree = [&](Node* node, Scene* subScene)
     {
         bool nodeSelected = GetEditorState()->IsNodeSelected(node);
         bool nodeSceneLinked = node->IsSceneLinked();
+        bool inSubScene = (subScene != nullptr);
         bool nodeHasScene = (node->GetScene() != nullptr);
 
         ImGuiTreeNodeFlags nodeFlags = treeNodeFlags;
@@ -1504,7 +1506,11 @@ static void DrawScenePanel()
             nodeFlags |= ImGuiTreeNodeFlags_Leaf;
         }
 
-        if (nodeHasScene)
+        if (inSubScene)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, subSceneColorIm);
+        }
+        else if (nodeHasScene)
         {
             ImGui::PushStyleColor(ImGuiCol_Text, sceneColorIm);
         }
@@ -1512,7 +1518,7 @@ static void DrawScenePanel()
         bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
         bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
 
-        if (nodeHasScene)
+        if (inSubScene || nodeHasScene)
         {
             ImGui::PopStyleColor();
         }
@@ -1535,6 +1541,7 @@ static void DrawScenePanel()
                 GetEditorState()->OpenEditScene(node->GetScene());
             }
             if (node->GetParent() != nullptr &&
+                !inSubScene &&
                 ImGui::BeginMenu("Move"))
             {
                 Node* parent = node->GetParent();
@@ -1557,15 +1564,15 @@ static void DrawScenePanel()
                 strncpy(sPopupInputBuffer, node->GetName().c_str(), kPopupInputBufferSize);
                 setTextInputFocus = true;
             }
-            if (ImGui::Selectable("Duplicate"))
+            if (!inSubScene && ImGui::Selectable("Duplicate"))
             {
                 am->DuplicateNodes({ node });
             }
-            if (!nodeSceneLinked && ImGui::Selectable("Attach Selected"))
+            if (!nodeSceneLinked && !inSubScene && ImGui::Selectable("Attach Selected"))
             {
                 am->AttachSelectedNodes(node, -1);
             }
-            if (!nodeSceneLinked && node->As<SkeletalMesh3D>())
+            if (!nodeSceneLinked && !inSubScene && node->As<SkeletalMesh3D>())
             {
                 if (ImGui::Selectable("Attach Selected To Bone", false, ImGuiSelectableFlags_DontClosePopups))
                 {
@@ -1577,30 +1584,31 @@ static void DrawScenePanel()
             {
                 am->EXE_SetRootNode(node);
             }
-            if (nodeSceneLinked && ImGui::Selectable("Unlink Scene"))
+            if ((nodeSceneLinked || inSubScene) && ImGui::Selectable("Unlink Scene"))
             {
-                am->EXE_UnlinkScene(node);
+                am->EXE_UnlinkScene(node->GetSubRoot());
             }
-            if (ImGui::Selectable("Delete"))
+            if (!inSubScene && ImGui::Selectable("Delete"))
             {
                 am->EXE_DeleteNode(node);
             }
-            if (node->As<StaticMesh3D>() &&
+            if (!inSubScene &&
+                node->As<StaticMesh3D>() &&
                 ImGui::Selectable("Merge"))
             {
                 LogDebug("TODO: Implement Merge for static meshes.");
             }
-            if (!nodeSceneLinked && ImGui::BeginMenu("Add Node"))
+            if (!nodeSceneLinked && !inSubScene && ImGui::BeginMenu("Add Node"))
             {
                 DrawAddNodeMenu(node);
                 ImGui::EndMenu();
             }
-            if (!nodeSceneLinked && ImGui::BeginMenu("Add Basic 3D"))
+            if (!nodeSceneLinked && !inSubScene && ImGui::BeginMenu("Add Basic 3D"))
             {
                 DrawSpawnBasic3dMenu(node, false);
                 ImGui::EndMenu();
             }
-            if (!nodeSceneLinked && ImGui::BeginMenu("Add Basic Widget"))
+            if (!nodeSceneLinked && !inSubScene && ImGui::BeginMenu("Add Basic Widget"))
             {
                 DrawSpawnBasicWidgetMenu(node);
                 ImGui::EndMenu();
@@ -1628,7 +1636,7 @@ static void DrawScenePanel()
                 ImGui::EndPopup();
             }
 
-            if (ImGui::BeginPopup("Attach Selected To Bone"))
+            if (!inSubScene && ImGui::BeginPopup("Attach Selected To Bone"))
             {
                 if (setTextInputFocus)
                 {
@@ -1687,10 +1695,12 @@ static void DrawScenePanel()
             {
                 for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
                 {
+                    Scene* newSubScene = nodeSceneLinked ? node->GetScene() : subScene;
+
                     Node* child = node->GetChild(i);
                     if (!child->mHiddenInTree)
                     {
-                        drawTree(child);
+                        drawTree(child, newSubScene);
                     }
                 }
             }
@@ -1729,7 +1739,7 @@ static void DrawScenePanel()
     if (rootNode != nullptr)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 6.0f);
-        drawTree(rootNode);
+        drawTree(rootNode, nullptr);
         ImGui::PopStyleVar();
     }
 
