@@ -924,6 +924,21 @@ NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene, bool resolveNodeP
             }
         }
 
+        if (srcScene)
+        {
+            // Copy all subscene overrides
+            std::vector<SubSceneOverride> overs;
+            for (uint32_t i = 0; i < GetNumChildren(); ++i)
+            {
+                GatherSubSceneOverrides(GetChild(i), this, overs);
+            }
+
+            for (uint32_t i = 0; i < overs.size(); ++i)
+            {
+                ApplySubSceneOverride(clonedNode.Get(), overs[i]);
+            }
+        }
+
         if (HasStarted() && clonedNode->GetParent() != nullptr)
         {
             clonedNode->Start();
