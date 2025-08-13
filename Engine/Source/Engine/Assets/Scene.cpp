@@ -821,6 +821,25 @@ void Scene::LoadStream(Stream& stream, Platform platform)
                 stream.ReadBytes(def.mExtraData.data(), extraDataSize);
             }
         }
+
+        if (mVersion >= ASSET_VERSION_SCENE_SUB_SCENE_OVERRIDE)
+        {
+            uint32_t numOverrides = stream.ReadUint32();
+            def.mSubSceneOverrides.resize(numOverrides);
+            std::vector<SubSceneOverride>& overs = def.mSubSceneOverrides;
+
+            for (uint32_t o = 0; o < overs.size(); ++o)
+            {
+                stream.ReadString(overs[o].mPath);
+                uint32_t numProps = stream.ReadUint32();
+                overs[o].mProperties.resize(numProps);
+
+                for (uint32_t p = 0; p < overs[o].mProperties.size(); ++p)
+                {
+                    overs[o].mProperties[p].ReadStream(stream, mVersion, false, false);
+                }
+            }
+        }
     }
 
     // World render properties
@@ -885,6 +904,17 @@ void Scene::SaveStream(Stream& stream, Platform platform)
 
         stream.WriteUint32((uint32_t)def.mExtraData.size());
         stream.WriteBytes(def.mExtraData.data(), (uint32_t)def.mExtraData.size());
+
+        stream.WriteUint32((uint32_t)def.mSubSceneOverrides.size());
+        for (auto& over : def.mSubSceneOverrides)
+        {
+            stream.WriteString(over.mPath);
+            stream.WriteUint32((uint32_t)over.mProperties.size());
+            for (uint32_t p = 0; p < over.mProperties.size(); ++p)
+            {
+                over.mProperties[p].WriteStream(stream, false);
+            }
+        }
     }
 
     // Now that we've written out the platform-cooked scene data, write out the rest of the data for this scene
@@ -1336,6 +1366,9 @@ void Scene::AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeLi
 
 void Scene::GatherSubSceneOverrides(Node* node, Node* sceneRoot, SceneNodeDef& nodeDef)
 {
+    OCT_ASSERT(node && sceneRoot);
+    OCT_ASSERT(node != sceneRoot);
+
     if (node == nullptr)
         return;
 
@@ -1343,9 +1376,22 @@ void Scene::GatherSubSceneOverrides(Node* node, Node* sceneRoot, SceneNodeDef& n
     over.mPath = FindRelativeNodePath(sceneRoot, node);
     OCT_ASSERT(over.mPath != "");
 
-    GatherNonDefaultProperties(node, over.mProperties);
+    NodePtr defaultSceneRoot = sceneRoot->GetScene()->Instantiate();
+    NodePtr defaultNode = ResolvePtr(ResolveNodePath(defaultSceneRoot.Get(), over.mPath));
 
-    nodeDef.mSubSceneOverrides.push_back(over);
+    if (defaultNode == nullptr)
+    {
+        LogError("Could not find ref node in GatherSubSceneOverrides()");
+        OCT_ASSERT(false);
+        return;
+    }
+
+    GatherNonDefaultProperties(node, over.mProperties, defaultNode);
+
+    if (over.mProperties.size() > 0)
+    {
+        nodeDef.mSubSceneOverrides.push_back(over);
+    }
 
     for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
     {
@@ -1355,6 +1401,8 @@ void Scene::GatherSubSceneOverrides(Node* node, Node* sceneRoot, SceneNodeDef& n
 
 void Scene::ApplySubSceneOverride(Node* sceneRoot, const SubSceneOverride& over)
 {
+    OCT_ASSERT(sceneRoot != nullptr);
+
     if (over.mPath == "")
     {
         LogWarning("Invalid subscene override path");

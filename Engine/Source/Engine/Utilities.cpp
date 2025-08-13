@@ -543,8 +543,10 @@ btTransform MakeBulletTransform(glm::vec3 translation, glm::vec3 rotationDegrees
     return retTransform;
 }
 
-void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
+void GatherNonDefaultProperties(Node* node, std::vector<Property>& props, NodePtr refNode)
 {
+    bool existingRefNode = refNode.IsValid();
+
     std::vector<Property> extProps;
     node->GatherProperties(extProps);
 
@@ -553,9 +555,15 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
     {
         // For native nodes, determine which properties are different than the defaults
         // and only save those to reduce storage/memory of the scene.
-        NodePtr defaultNode = scene ? scene->Instantiate() : Node::Construct(node->GetType());
+        if (refNode == nullptr)
+        {
+            refNode = scene ? scene->Instantiate() : Node::Construct(node->GetType());
+        }
+
+        OCT_ASSERT(refNode != nullptr);
+
         std::vector<Property> defaultProps;
-        defaultNode->GatherProperties(defaultProps);
+        refNode->GatherProperties(defaultProps);
 
         props.reserve(extProps.size());
         for (uint32_t i = 0; i < extProps.size(); ++i)
@@ -563,7 +571,7 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
             Property* defaultProp = FindProperty(defaultProps, extProps[i].mName);
 
             if (defaultProp == nullptr ||
-                (extProps[i].mType == DatumType::Asset && scene == nullptr) ||
+                (extProps[i].mType == DatumType::Asset && scene == nullptr && !existingRefNode) ||
                 extProps[i] != *defaultProp)
             {
                 props.push_back(Property());
@@ -571,9 +579,6 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
                 prop.DeepCopy(extProps[i], true);
             }
         }
-
-        defaultNode->Destroy();
-        defaultNode = nullptr;
     }
 }
 
