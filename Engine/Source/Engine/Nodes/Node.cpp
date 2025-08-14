@@ -1016,6 +1016,18 @@ Node* Node::GetSubRoot()
     return GetParent()->GetSubRoot();
 }
 
+bool Node::IsSubSceneChild()
+{
+    Node* root = GetRoot();
+
+    if (root == this)
+        return false;
+
+    Node* parentSubRoot = GetParent()->GetSubRoot();
+
+    return (parentSubRoot != root);
+}
+
 bool Node::IsDestroyed() const
 {
     return mDestroyed;

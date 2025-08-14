@@ -1580,7 +1580,7 @@ static void DrawScenePanel()
                     setTextInputFocus = true;
                 }
             }
-            if (!node->IsWorldRoot() && ImGui::Selectable("Set Root Node"))
+            if (!node->IsWorldRoot() && !inSubScene && ImGui::Selectable("Set Root Node"))
             {
                 am->EXE_SetRootNode(node);
             }

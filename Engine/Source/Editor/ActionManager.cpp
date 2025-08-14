@@ -60,6 +60,8 @@
 
 #define USE_IMGUI_FILE_BROWSER (!PLATFORM_WINDOWS)
 
+#define SUB_SCENE_HIER_WARN_TEXT "Cannot modify sub-scene hierarchy. Must unlink scene first."
+
 ActionManager* ActionManager::sInstance = nullptr;
 
 TypeId CheckDaeAssetType(const char* path)
@@ -862,6 +864,12 @@ Node* ActionManager::EXE_SpawnNode(Scene* srcScene)
 
 Node* ActionManager::EXE_SpawnNode(Node* srcNode)
 {
+    if (srcNode->IsSubSceneChild())
+    {
+        LogError(SUB_SCENE_HIER_WARN_TEXT);
+        return nullptr;
+    }
+
     std::vector<Node*> srcNodes;
     srcNodes.push_back(srcNode);
 
@@ -877,6 +885,12 @@ Node* ActionManager::EXE_SpawnNode(Node* srcNode)
 
 void ActionManager::EXE_DeleteNode(Node* node)
 {
+    if (node->IsSubSceneChild())
+    {
+        LogError(SUB_SCENE_HIER_WARN_TEXT);
+        return;
+    }
+
     std::vector<Node*> nodes;
     nodes.push_back(node);
 
@@ -887,15 +901,27 @@ void ActionManager::EXE_DeleteNode(Node* node)
 std::vector<Node*> ActionManager::EXE_SpawnNodes(const std::vector<Node*>& srcNodes)
 {
     OCT_ASSERT(srcNodes.size() > 0);
+    std::vector<Node*> retNodes;
+
+    std::vector<Node*> trimmedSrcNodes = srcNodes;
+    RemoveRedundantDescendants(trimmedSrcNodes);
+
+    for (auto node : trimmedSrcNodes)
+    {
+        if (node->IsSubSceneChild())
+        {
+            LogError(SUB_SCENE_HIER_WARN_TEXT);
+            return retNodes;
+        }
+    }
 
     GetEditorState()->EnsureActiveScene();
 
-    ActionSpawnNodes* action = new ActionSpawnNodes(srcNodes);
+    ActionSpawnNodes* action = new ActionSpawnNodes(trimmedSrcNodes);
     ActionManager::Get()->ExecuteAction(action);
 
     OCT_ASSERT(action->GetNodes().size() > 0);
 
-    std::vector<Node*> retNodes;
     retNodes.resize(action->GetNodes().size());
 
     for (uint32_t i = 0; i < retNodes.size(); ++i)
@@ -908,18 +934,48 @@ std::vector<Node*> ActionManager::EXE_SpawnNodes(const std::vector<Node*>& srcNo
 
 void ActionManager::EXE_DeleteNodes(const std::vector<Node*>& nodes)
 {
-    ActionDeleteNodes* action = new ActionDeleteNodes(nodes);
+    std::vector<Node*> trimmedNodes = nodes;
+    RemoveRedundantDescendants(trimmedNodes);
+
+    for (auto node : trimmedNodes)
+    {
+        if (node == nullptr)
+        {
+            LogError("Delete Node: Invalid node(s)");
+            return;
+        }
+
+        if (node->IsSubSceneChild())
+        {
+            LogError(SUB_SCENE_HIER_WARN_TEXT);
+            return;
+        }
+    }
+
+    ActionDeleteNodes* action = new ActionDeleteNodes(trimmedNodes);
     ActionManager::Get()->ExecuteAction(action);
 }
 
 void ActionManager::EXE_AttachNode(Node* node, Node* newParent, int32_t childIndex, int32_t boneIndex)
 {
+    if (node->IsSubSceneChild() || newParent->IsSubSceneChild())
+    {
+        LogError(SUB_SCENE_HIER_WARN_TEXT);
+        return;
+    }
+
     ActionAttachNode* action = new ActionAttachNode(node, newParent, childIndex, boneIndex);
     ActionManager::Get()->ExecuteAction(action);
 }
 
 void ActionManager::EXE_SetRootNode(Node* newRoot)
 {
+    if (newRoot->IsSubSceneChild())
+    {
+        LogError(SUB_SCENE_HIER_WARN_TEXT);
+        return;
+    }
+
     ActionSetRootNode* action = new ActionSetRootNode(newRoot);
     ActionManager::Get()->ExecuteAction(action);
 }
@@ -1928,12 +1984,10 @@ bool ActionManager::DuplicateNodes(std::vector<Node*> srcNodes)
 
     // Don't use a vector reference for nodes param because we are going to modify the vector anyway.
     std::vector<Node*> dupedNodes;
-
     RemoveRedundantDescendants(srcNodes);
 
     OCT_ASSERT(srcNodes.size() > 0);
     dupedNodes = EXE_SpawnNodes(srcNodes);
-    OCT_ASSERT(dupedNodes.size() == srcNodes.size());
 
     if (dupedNodes.size() > 0 &&
         dupedNodes.size() == srcNodes.size())
@@ -2192,7 +2246,6 @@ ActionSpawnNodes::ActionSpawnNodes(const std::vector<SceneRef>& scenes)
 ActionSpawnNodes::ActionSpawnNodes(const std::vector<Node*>& srcNodes)
 {
     std::vector<Node*> trimmedSrcNodes = srcNodes;
-
     RemoveRedundantDescendants(trimmedSrcNodes);
 
     mSrcNodes.resize(trimmedSrcNodes.size());

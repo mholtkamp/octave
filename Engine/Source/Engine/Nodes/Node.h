@@ -136,6 +136,7 @@ public:
     Node* GetRoot();
     bool IsWorldRoot() const;
     Node* GetSubRoot();
+    bool IsSubSceneChild();
 
     template<class NodeClass>
     NodeClass* CreateChild()
