@@ -449,9 +449,13 @@ void Viewport3D::HandleDefaultControls()
 
             if (selectedNodes.size() > 0)
             {
-                ActionManager::Get()->DuplicateNodes(selectedNodes);
-                GetEditorState()->SetControlMode(ControlMode::Translate);
-                SavePreTransforms();
+                bool duplicated = ActionManager::Get()->DuplicateNodes(selectedNodes);
+
+                if (duplicated)
+                {
+                    GetEditorState()->SetControlMode(ControlMode::Translate);
+                    SavePreTransforms();
+                }
             }
         }
 
@@ -734,7 +738,10 @@ void Viewport3D::HandleTransformControls()
     const std::vector<Node*>& selectedComps = GetEditorState()->GetSelectedNodes();
 
     if (node == nullptr || !node->IsNode3D())
+    {
+        GetEditorState()->SetControlMode(ControlMode::Default);
         return;
+    }
 
     Node3D* transComp = static_cast<Node3D*>(node);
 

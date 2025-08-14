@@ -1922,8 +1922,10 @@ void ActionManager::DeleteAssetDir(AssetDir* dir)
     }
 }
 
-void ActionManager::DuplicateNodes(std::vector<Node*> srcNodes)
+bool ActionManager::DuplicateNodes(std::vector<Node*> srcNodes)
 {
+    bool duplicated = false;
+
     // Don't use a vector reference for nodes param because we are going to modify the vector anyway.
     std::vector<Node*> dupedNodes;
 
@@ -1936,6 +1938,8 @@ void ActionManager::DuplicateNodes(std::vector<Node*> srcNodes)
     if (dupedNodes.size() > 0 &&
         dupedNodes.size() == srcNodes.size())
     {
+        duplicated = true;
+
         for (uint32_t i = 0; i < srcNodes.size(); ++i)
         {
             Node* srcNode = srcNodes[i];
@@ -1956,6 +1960,8 @@ void ActionManager::DuplicateNodes(std::vector<Node*> srcNodes)
             GetEditorState()->AddSelectedNode(dupedNodes[i], false);
         }
     }
+
+    return duplicated;
 }
 
 void ActionManager::AttachSelectedNodes(Node* newParent, int32_t boneIdx)
