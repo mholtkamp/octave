@@ -753,7 +753,14 @@ void SYS_DestroyThread(ThreadObject* thread)
 MutexObject* SYS_CreateMutex()
 {
     MutexObject* retMutex = new MutexObject();
-    int status = pthread_mutex_init(retMutex, nullptr);
+
+    pthread_mutexattr_t mutexAttrib;
+    pthread_mutexattr_init(&mutexAttrib);
+    pthread_mutexattr_settype(&mutexAttrib, PTHREAD_MUTEX_RECURSIVE);
+
+    int status = pthread_mutex_init(retMutex, &mutexAttrib);
+
+    pthread_mutexattr_destroy(&mutexAttrib);
 
     if (status != 0)
     {

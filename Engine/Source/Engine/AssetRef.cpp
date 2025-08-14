@@ -246,7 +246,6 @@ AsyncLoadRequest* AssetRef::GetLoadRequest()
 
 void AssetRef::EraseAsyncLoadRef()
 {
-    SCOPED_LOCK(GetAssetRefMutex());
     // Mutex should be locked priority to calling
     if (mLoadRequest != nullptr)
     {
