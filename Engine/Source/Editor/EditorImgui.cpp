@@ -1691,17 +1691,14 @@ static void DrawScenePanel()
 
         if (nodeOpen)
         {
-            if (true/*!nodeSceneLinked*/)
+            for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
             {
-                for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
-                {
-                    Scene* newSubScene = nodeSceneLinked ? node->GetScene() : subScene;
+                Scene* newSubScene = nodeSceneLinked ? node->GetScene() : subScene;
 
-                    Node* child = node->GetChild(i);
-                    if (!child->mHiddenInTree)
-                    {
-                        drawTree(child, newSubScene);
-                    }
+                Node* child = node->GetChild(i);
+                if (!child->mHiddenInTree)
+                {
+                    drawTree(child, newSubScene);
                 }
             }
 
