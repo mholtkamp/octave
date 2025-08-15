@@ -56,7 +56,12 @@ void main()
     outTexcoord0 = inTexcoord0;    
     outTexcoord1 = inTexcoord1;    
     outNormal = normalize((normalMatrix * vec4(inNormal, 0.0)).xyz);
-    outColor = SrgbToLinear(inColor);
+    outColor = inColor;
+
+    if (global.mLinearColorSpace != 0)
+    {
+        outColor = SrgbToLinear(inColor);
+    }
 
 #if INSTANCED_DRAW
     outInstanceIndex = gl_InstanceIndex;
