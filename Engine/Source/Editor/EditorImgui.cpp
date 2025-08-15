@@ -1517,6 +1517,9 @@ static void DrawScenePanel()
 
         bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
         bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
+        bool nodeMiddleClicked = ImGui::IsItemClicked(ImGuiMouseButton_Middle);
+        bool expandChildren = nodeMiddleClicked && IsControlDown();
+        bool collapseChildren = !expandChildren && nodeMiddleClicked;
 
         if (inSubScene || nodeHasScene)
         {
@@ -1698,6 +1701,15 @@ static void DrawScenePanel()
                 Node* child = node->GetChild(i);
                 if (!child->mHiddenInTree)
                 {
+                    if (collapseChildren)
+                    {
+                        ImGui::SetNextItemOpen(false);
+                    }
+                    else if (expandChildren)
+                    {
+                        ImGui::SetNextItemOpen(true);
+                    }
+
                     drawTree(child, newSubScene);
                 }
             }
