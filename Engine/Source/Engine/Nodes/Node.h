@@ -136,7 +136,6 @@ public:
     Node* GetRoot();
     bool IsWorldRoot() const;
     Node* GetSubRoot();
-    bool IsSubSceneChild();
 
     template<class NodeClass>
     NodeClass* CreateChild()
@@ -276,6 +275,7 @@ public:
     bool DoChildrenHaveUniqueNames() const;
     void BreakSceneLink();
     bool IsSceneLinked(bool ignoreInPie = true) const;
+    bool IsSceneLinkedChild(bool ignoreInPie = true);
     bool IsForeign() const;
 
     bool HasAuthority() const;

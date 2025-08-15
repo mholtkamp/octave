@@ -1016,18 +1016,6 @@ Node* Node::GetSubRoot()
     return GetParent()->GetSubRoot();
 }
 
-bool Node::IsSubSceneChild()
-{
-    Node* root = GetRoot();
-
-    if (root == this)
-        return false;
-
-    Node* parentSubRoot = GetParent()->GetSubRoot();
-
-    return (parentSubRoot != root);
-}
-
 bool Node::IsDestroyed() const
 {
     return mDestroyed;
@@ -1804,6 +1792,25 @@ bool Node::IsSceneLinked(bool ignoreInPie) const
 #endif
 
     return (mScene != nullptr && mParent != nullptr);
+}
+
+bool Node::IsSceneLinkedChild(bool ignoreInPie)
+{
+#if EDITOR
+    if (ignoreInPie && IsPlaying())
+    {
+        return false;
+    }
+#endif
+
+    Node* root = GetRoot();
+
+    if (root == this)
+        return false;
+
+    Node* parentSubRoot = GetParent()->GetSubRoot();
+
+    return (parentSubRoot != root);
 }
 
 bool Node::IsForeign() const

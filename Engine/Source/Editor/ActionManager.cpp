@@ -864,7 +864,7 @@ Node* ActionManager::EXE_SpawnNode(Scene* srcScene)
 
 Node* ActionManager::EXE_SpawnNode(Node* srcNode)
 {
-    if (srcNode->IsSubSceneChild())
+    if (srcNode->IsSceneLinkedChild())
     {
         LogError(SUB_SCENE_HIER_WARN_TEXT);
         return nullptr;
@@ -885,7 +885,7 @@ Node* ActionManager::EXE_SpawnNode(Node* srcNode)
 
 void ActionManager::EXE_DeleteNode(Node* node)
 {
-    if (node->IsSubSceneChild())
+    if (node->IsSceneLinkedChild())
     {
         LogError(SUB_SCENE_HIER_WARN_TEXT);
         return;
@@ -908,7 +908,7 @@ std::vector<Node*> ActionManager::EXE_SpawnNodes(const std::vector<Node*>& srcNo
 
     for (auto node : trimmedSrcNodes)
     {
-        if (node->IsSubSceneChild())
+        if (node->IsSceneLinkedChild())
         {
             LogError(SUB_SCENE_HIER_WARN_TEXT);
             return retNodes;
@@ -945,7 +945,7 @@ void ActionManager::EXE_DeleteNodes(const std::vector<Node*>& nodes)
             return;
         }
 
-        if (node->IsSubSceneChild())
+        if (node->IsSceneLinkedChild())
         {
             LogError(SUB_SCENE_HIER_WARN_TEXT);
             return;
@@ -958,7 +958,7 @@ void ActionManager::EXE_DeleteNodes(const std::vector<Node*>& nodes)
 
 void ActionManager::EXE_AttachNode(Node* node, Node* newParent, int32_t childIndex, int32_t boneIndex)
 {
-    if (node->IsSubSceneChild() || newParent->IsSubSceneChild())
+    if (node->IsSceneLinkedChild() || newParent->IsSceneLinkedChild())
     {
         LogError(SUB_SCENE_HIER_WARN_TEXT);
         return;
@@ -970,7 +970,7 @@ void ActionManager::EXE_AttachNode(Node* node, Node* newParent, int32_t childInd
 
 void ActionManager::EXE_SetRootNode(Node* newRoot)
 {
-    if (newRoot->IsSubSceneChild())
+    if (newRoot->IsSceneLinkedChild())
     {
         LogError(SUB_SCENE_HIER_WARN_TEXT);
         return;
