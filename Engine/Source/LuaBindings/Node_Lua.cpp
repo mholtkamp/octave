@@ -63,8 +63,15 @@ int NodeWrapperGarbageCollect(lua_State* L)
 {
     luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
     Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
+
+    Node_Lua::SetGcNodeId(nodeLua->mNode->GetNodeId());
+
+    Node::Deleter(nodeLua->mNode.Get());
     nodeLua->mNode->SetUserdataCreated(false);
     nodeLua->~Node_Lua();
+
+    Node_Lua::SetGcNodeId(INVALID_NODE_ID);
+
     return 0;
 }
 
@@ -137,9 +144,24 @@ int Node_Lua::Create(lua_State* L, Node* node)
 
                 lua_geti(L, nodeRefTableIdx, (int)node->GetNodeId());
 
-                // We should never not be able to find a reference for a node with userdatacreated.
-                // If totally unreferenced in lua, then it should have been destroyed.
-                OCT_ASSERT(!lua_isnil(L, -1));
+                if (lua_isnil(L, -1))
+                {
+                    lua_pop(L, 1);
+
+                    if (Node_Lua::GetGcNodeId() == node->GetNodeId())
+                    {
+                        // Our node userdata is at stack pos #1 (passed to our NodeWrapper GC function)
+                        luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
+                        lua_pushvalue(L, 1);
+                    }
+                    else
+                    {
+                        // We should never not be able to find a reference for a node with userdatacreated.
+                        // If totally unreferenced in lua, then it should have been destroyed.
+                        lua_pushnil(L);
+                        OCT_ASSERT(false);
+                    }
+                }
             }
         }
         else
@@ -235,6 +257,20 @@ int Node_Lua::DestroyDeferred(lua_State* L)
     node->DestroyDeferred();
 
     return 0;
+}
+
+static NodeId sGcNodeId = INVALID_NODE_ID;
+void Node_Lua::SetGcNodeId(NodeId id)
+{
+    // We should never be recursively garbage collecting
+    OCT_ASSERT(sGcNodeId == INVALID_NODE_ID || id == INVALID_NODE_ID);
+
+    sGcNodeId = id;
+}
+
+NodeId Node_Lua::GetGcNodeId()
+{
+    return sGcNodeId;
 }
 
 int Node_Lua::IsValid(lua_State* L)

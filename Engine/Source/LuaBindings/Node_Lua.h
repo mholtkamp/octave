@@ -24,6 +24,9 @@ struct Node_Lua
     static int Destruct(lua_State* L);
     static int DestroyDeferred(lua_State* L);
 
+    static void SetGcNodeId(NodeId id);
+    static NodeId GetGcNodeId();
+
     static int IsValid(lua_State* L);
 
     static int GetName(lua_State* L);

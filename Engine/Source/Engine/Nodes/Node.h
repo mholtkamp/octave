@@ -308,6 +308,8 @@ public:
 
     static void RegisterNetFuncs(Node* node);
 
+    static void Deleter(Node* node);
+
     const WeakPtr<Node>& GetSelfPtr() const { return mSelf; }
 
     template<typename T>
@@ -413,7 +415,7 @@ public:
         if (newNode != nullptr)
         {
             newNodePtr.Set(newNode, nullptr);
-            newNodePtr.SetDeleter([](NodeClass* node) { node->Destroy(); });
+            newNodePtr.SetDeleter([](NodeClass* node) { Node::Deleter(node); });
             newNodePtr->mSelf = PtrStaticCast<Node>(newNodePtr);
             newNodePtr->Create();
         }
@@ -422,7 +424,6 @@ public:
     }
 
 protected:
-
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 

@@ -135,7 +135,7 @@ bool Node::OnRep_OwningHost(Datum* datum, uint32_t index, const void* newValue)
     return true;
 }
 
-static void NodeDeleter(Node* node)
+void Node::Deleter(Node* node)
 {
     // Destroy the node first.
     // In case there is a shared pointer referencing a child,
@@ -159,7 +159,7 @@ NodePtr Node::Construct(const std::string& name)
     if (newNode != nullptr)
     {
         newNodePtr.Set(newNode, nullptr);
-        newNodePtr.SetDeleter(NodeDeleter);
+        newNodePtr.SetDeleter(Node::Deleter);
         newNodePtr->mSelf = newNodePtr;
         newNodePtr->Create();
     }
@@ -175,7 +175,7 @@ NodePtr Node::Construct(TypeId typeId)
     if (newNode != nullptr)
     {
         newNodePtr.Set(newNode, nullptr);
-        newNodePtr.SetDeleter(NodeDeleter);
+        newNodePtr.SetDeleter(Node::Deleter);
         newNodePtr->mSelf = newNodePtr;
         newNodePtr->Create();
     }
@@ -242,8 +242,11 @@ void Node::Destroy()
         }
         else
         {
-            // Destroy will detach child from this
-            mChildren[i]->Destroy();
+            // Destroy will detach child from this node
+            if (!mChildren[i]->IsDestroyed())
+            {
+                mChildren[i]->Destroy();
+            }
         }
     }
 
