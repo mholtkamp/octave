@@ -518,12 +518,14 @@ void Scene::LoadStreamLevel(Stream& stream)
                         over.mProperties.push_back(overProp);
                         def.mSubSceneOverrides.push_back(over);
 
-                        LogDebug("zzz SUBOVER: Node = %s, Prop = %s", overNode->GetName().c_str(), overProp.mName.c_str());
+                        LogDebug("zzz SUBOVER: Scene = %s, Node = %s, Prop = %s", sceneRoot->GetName().c_str(), overNode->GetName().c_str(), overProp.mName.c_str());
                     }
                     else
                     {
+                        LogDebug("zzz OOB-SUBOVER: Scene = %s, Prop = %s", sceneRoot->GetName().c_str(), overProp.mName.c_str());
+
                         LogError("Out of bounds override?! Possibly script node.");
-                        OCT_ASSERT(0);
+                        def.mProperties.push_back(overProp);
                     }
                 }
 
