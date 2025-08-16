@@ -476,17 +476,55 @@ void Scene::LoadStreamLevel(Stream& stream)
 
                 // Only apply overrides on root of BP. Will need to handle all children if required for Yami.
                 // What are the overrides that would be on the root node and not actor? Just pos/rot/scale really?
-                if (overIndex == 0 || overIndex == -1)
+                if (overIndex == -1)
                 {
-                    if (overIndex == 0 &&
-                        overProp.mName != "Position" &&
-                        overProp.mName != "Rotation" &&
-                        overProp.mName != "Scale")
-                    {
-                        LogError("zzz Non-root override: %s", overProp.mName.c_str());
-                    }
-
                     def.mProperties.push_back(overProp);
+                }
+                else if (overIndex == 0 && 
+                    (overProp.mName == "Position" ||
+                    overProp.mName == "Rotation" ||
+                    overProp.mName == "Scale"))
+                {
+                    def.mProperties.push_back(overProp);
+                }
+                else
+                {
+                    // Okay, we need to make a subscene override.
+                    Scene* scene = bpRef.Get<Scene>();
+                    OCT_ASSERT(scene);
+
+                    NodePtr sceneRoot = scene->Instantiate();
+                    std::vector<Node*> descendents;
+
+                    sceneRoot->Traverse(
+                        [&descendents, sceneRoot](Node* node) -> bool
+                        {
+                            if (sceneRoot != node)
+                            {
+                                descendents.push_back(node);
+                            }
+
+                            return true;
+                        }
+                    );
+
+                    if (overIndex < descendents.size())
+                    {
+                        SubSceneOverride over;
+                        Node* overNode = descendents[overIndex];
+                        over.mPath = FindRelativeNodePath(sceneRoot.Get(), overNode);
+                        OCT_ASSERT(over.mPath != "");
+
+                        over.mProperties.push_back(overProp);
+                        def.mSubSceneOverrides.push_back(over);
+
+                        LogDebug("zzz SUBOVER: Node = %s, Prop = %s", overNode->GetName().c_str(), overProp.mName.c_str());
+                    }
+                    else
+                    {
+                        LogError("Out of bounds override?! Possibly script node.");
+                        OCT_ASSERT(0);
+                    }
                 }
 
                 def.mScene = bpRef;
