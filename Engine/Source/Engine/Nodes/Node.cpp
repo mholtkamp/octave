@@ -137,7 +137,18 @@ bool Node::OnRep_OwningHost(Datum* datum, uint32_t index, const void* newValue)
 
 static void NodeDeleter(Node* node)
 {
-    node->Destroy();
+    // Destroy the node first.
+    // In case there is a shared pointer referencing a child,
+    // we will first remove all children (which will destroy them too if nothing references them)
+    for (int32_t i = int32_t(node->GetNumChildren()) - 1; i >= 0; --i)
+    {
+        node->RemoveChild(i);
+    }
+
+    if (!node->IsDestroyed())
+    {
+        node->Destroy();
+    }
 }
 
 NodePtr Node::Construct(const std::string& name)
@@ -222,7 +233,7 @@ void Node::Destroy()
 
     for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
     {
-        if (false /*forceDestroyChildren*/)
+        if (true /*forceDestroyChildren*/)
         {
             // Destroy will detach child from this
             mChildren[i]->Destroy();
