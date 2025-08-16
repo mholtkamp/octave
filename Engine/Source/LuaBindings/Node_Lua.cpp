@@ -313,6 +313,26 @@ int Node_Lua::IsVisible(lua_State* L)
     return 1;
 }
 
+int Node_Lua::SetPersistent(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    node->SetPersistent(value);
+
+    return 0;
+}
+
+int Node_Lua::IsPersistent(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+
+    bool ret = node->IsPersistent();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Node_Lua::GetWorld(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -1054,6 +1074,10 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetVisible);
 
     REGISTER_TABLE_FUNC(L, mtIndex, IsVisible);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPersistent);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, IsPersistent);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetWorld);
 

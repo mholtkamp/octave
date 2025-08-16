@@ -32,6 +32,8 @@ struct Node_Lua
     static int IsActive(lua_State* L);
     static int SetVisible(lua_State* L);
     static int IsVisible(lua_State* L);
+    static int SetPersistent(lua_State* L);
+    static int IsPersistent(lua_State* L);
     static int GetWorld(lua_State* L);
 
     static int GetParent(lua_State* L);
