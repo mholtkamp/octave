@@ -30,15 +30,17 @@ Sig: `World:SetAudioReceiver(receiver)`
 ### SpawnNode
 Spawn a node from a given class. The spawned node will be attached to the world's root node. If there is no root node, this newly spawned node will become the world's root node.
 
-Sig: `node = World:SpawnNode(className)`
+Sig: `node = World:SpawnNode(className, position=Vec(0,0,0))`
  - Arg: `string className` Name of the class to spawn
+ - Arg: `Vector position` World position to place new node
  - Ret: `Node node` Newly created node
 ---
 ### SpawnScene
 Spawn a scene. The spawned node will be attached to the world's root node. If there is no root node, this newly spawned node will become the world's root node.
 
-Sig: `node = World:SpawnScene(scene)`
+Sig: `node = World:SpawnScene(scene, position=Vec(0,0,0))`
  - Arg: `Scene scene` Scene asset to spawn
+ - Arg: `Vector position` World position to place new node
  - Ret: `Node node` Newly spawned node (root of spawned scene)
 ---
 ### GetRootNode

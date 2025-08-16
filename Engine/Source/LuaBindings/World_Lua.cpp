@@ -82,8 +82,13 @@ int World_Lua::SpawnNode(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
     const char* nodeClass = CHECK_STRING(L, 2);
+    glm::vec3 position = {};
+    if (!lua_isnone(L, 3))
+    {
+        position = CHECK_VECTOR(L, 3);
+    }
 
-    Node* spawnedNode = world->SpawnNode(nodeClass);
+    Node* spawnedNode = world->SpawnNode(nodeClass, position);
 
     Node_Lua::Create(L, spawnedNode);
     return 1;
@@ -93,8 +98,13 @@ int World_Lua::SpawnScene(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
     Scene* scene = CHECK_SCENE(L, 2);
+    glm::vec3 position = {};
+    if (!lua_isnone(L, 3))
+    {
+        position = CHECK_VECTOR(L, 3);
+    }
 
-    Node* spawnedNode = world->SpawnScene(scene);
+    Node* spawnedNode = world->SpawnScene(scene, position);
 
     Node_Lua::Create(L, spawnedNode);
     return 1;

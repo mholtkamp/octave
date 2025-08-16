@@ -36,16 +36,16 @@ public:
     void SetActiveCamera(Camera3D* activeCamera);
     void SetAudioReceiver(Node3D* newReceiver);
 
-    Node* SpawnNode(TypeId actorType);
-    Node* SpawnNode(const char* typeName);
-    Node* SpawnScene(const char* sceneName);
-    Node* SpawnScene(Scene* scene);
+    Node* SpawnNode(TypeId actorType, glm::vec3 position = {});
+    Node* SpawnNode(const char* typeName, glm::vec3 position = {});
+    Node* SpawnScene(const char* sceneName, glm::vec3 position = {});
+    Node* SpawnScene(Scene* scene, glm::vec3 position = {});
     Particle3D* SpawnParticle(ParticleSystem* sys, glm::vec3 position);
 
     template<class NodeClass>
-    NodeClass* SpawnNode()
+    NodeClass* SpawnNode(glm::vec3 position = {})
     {
-        return (NodeClass*)SpawnNode(NodeClass::GetStaticType());
+        return (NodeClass*)SpawnNode(NodeClass::GetStaticType(), position);
     }
 
     Node* GetRootNode();
@@ -132,7 +132,7 @@ public:
 
     Camera3D* SpawnDefaultCamera();
     Node* SpawnDefaultRoot();
-    void PlaceNewlySpawnedNode(NodePtr node);
+    void PlaceNewlySpawnedNode(NodePtr node, glm::vec3 position);
 
     void OverrideDynamicsWorld(btDiscreteDynamicsWorld* world);
     void RestoreDynamicsWorld();

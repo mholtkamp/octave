@@ -879,13 +879,23 @@ void World::SetAudioReceiver(Node3D* newReceiver)
     mAudioReceiver = newReceiver;
 }
 
-void World::PlaceNewlySpawnedNode(NodePtr node)
+void World::PlaceNewlySpawnedNode(NodePtr node, glm::vec3 position)
 {
     if (node != nullptr)
     {
         if (mRootNode != nullptr)
         {
             mRootNode->AddChild(node.Get());
+
+            if (position != glm::vec3(0.0f, 0.0f, 0.0f))
+            {
+                Node3D* node3d = Cast<Node3D>(node.Get());
+                if (node3d)
+                {
+                    node3d->SetWorldPosition(position);
+                    node3d->UpdateTransform(true);
+                }
+            }
         }
         else
         {
@@ -905,13 +915,13 @@ void World::RestoreDynamicsWorld()
     mDynamicsWorld = mDefaultDynamicsWorld;
 }
 
-Node* World::SpawnNode(TypeId actorType)
+Node* World::SpawnNode(TypeId actorType, glm::vec3 position)
 {
     NodePtr newNode = Node::Construct(actorType);
 
     if (newNode != nullptr)
     {
-        PlaceNewlySpawnedNode(newNode);
+        PlaceNewlySpawnedNode(newNode, position);
     }
     else
     {
@@ -923,13 +933,13 @@ Node* World::SpawnNode(TypeId actorType)
     return newNode.Get();
 }
 
-Node* World::SpawnNode(const char* typeName)
+Node* World::SpawnNode(const char* typeName, glm::vec3 position)
 {
     NodePtr newNode = Node::Construct(typeName);
 
     if (newNode != nullptr)
     {
-        PlaceNewlySpawnedNode(newNode);
+        PlaceNewlySpawnedNode(newNode, position);
     }
     else
     {
@@ -939,19 +949,19 @@ Node* World::SpawnNode(const char* typeName)
     return newNode.Get();
 }
 
-Node* World::SpawnScene(const char* sceneName)
+Node* World::SpawnScene(const char* sceneName, glm::vec3 position)
 {
     Scene* scene = LoadAsset<Scene>(sceneName);
-    return SpawnScene(scene);
+    return SpawnScene(scene, position);
 }
 
-Node* World::SpawnScene(Scene* scene)
+Node* World::SpawnScene(Scene* scene, glm::vec3 position)
 {
     NodePtr newNode = scene ? scene->Instantiate() : nullptr;
 
     if (newNode != nullptr)
     {
-        PlaceNewlySpawnedNode(newNode);
+        PlaceNewlySpawnedNode(newNode, position);
     }
     else
     {

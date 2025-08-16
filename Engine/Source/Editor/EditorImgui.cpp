@@ -1286,7 +1286,7 @@ static void DrawAddNodeMenu(Node* node)
         }
         else
         {
-            GetWorld(0)->PlaceNewlySpawnedNode(ResolvePtr(newNode));
+            GetWorld(0)->PlaceNewlySpawnedNode(ResolvePtr(newNode), {});
         }
         
         GetEditorState()->SetSelectedNode(newNode);
@@ -1305,7 +1305,7 @@ static void DrawAddNodeMenu(Node* node)
                 if (node)
                     node->AddChild(newNode);
                 else
-                    GetWorld(0)->PlaceNewlySpawnedNode(ResolvePtr(newNode));
+                    GetWorld(0)->PlaceNewlySpawnedNode(ResolvePtr(newNode), {});
 
                 GetEditorState()->SetSelectedNode(newNode);
             }
@@ -1326,7 +1326,7 @@ static void DrawAddNodeMenu(Node* node)
                 if (node)
                     node->AddChild(newNode);
                 else
-                    GetWorld(0)->PlaceNewlySpawnedNode(ResolvePtr(newNode));
+                    GetWorld(0)->PlaceNewlySpawnedNode(ResolvePtr(newNode), {});
 
                 GetEditorState()->SetSelectedNode(newNode);
             }
@@ -1348,7 +1348,7 @@ static void DrawAddNodeMenu(Node* node)
                 if (node)
                     node->AddChild(newNode);
                 else
-                    GetWorld(0)->PlaceNewlySpawnedNode(ResolvePtr(newNode));
+                    GetWorld(0)->PlaceNewlySpawnedNode(ResolvePtr(newNode), {});
 
                 GetEditorState()->SetSelectedNode(newNode);
             }
@@ -1415,7 +1415,7 @@ static void DrawSpawnBasicWidgetMenu(Node* node)
 
         if (node == nullptr)
         {
-            GetWorld(0)->PlaceNewlySpawnedNode(ResolvePtr(newWidget));
+            GetWorld(0)->PlaceNewlySpawnedNode(ResolvePtr(newWidget), {});
         }
         else
         {
