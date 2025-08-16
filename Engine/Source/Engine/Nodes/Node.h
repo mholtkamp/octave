@@ -214,6 +214,8 @@ public:
     bool IsVisible(bool recurse = false) const;
     void SetTransient(bool transient);
     virtual bool IsTransient() const;
+    void SetPersistent(bool persistent);
+    bool IsPersistent() const;
 
     void SetDefault(bool isDefault);
     bool IsDefault() const;
@@ -450,6 +452,7 @@ protected:
     bool mActive = true;
     bool mVisible = true;
     bool mTransient = false;
+    bool mPersistent = false;
     bool mDefault = false;
     bool mUserdataCreated = false;
     bool mHasStarted = false;

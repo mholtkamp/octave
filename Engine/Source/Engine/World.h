@@ -183,10 +183,12 @@ public:
 private:
 
     void UpdateLines(float deltaTime);
+    void ExtractPersistingNodes();
 
 private:
 
     NodePtr mRootNode;
+    std::vector<NodePtr> mPersistingNodes;
     std::vector<Line> mLines;
     std::vector<class Light3D*> mLights;
     std::vector<class Audio3D*> mAudios;

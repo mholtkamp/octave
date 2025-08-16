@@ -118,6 +118,11 @@ void World::SetRootNode(Node* node)
     {
         if (mRootNode != nullptr)
         {
+            if (IsPlaying())
+            {
+                ExtractPersistingNodes();
+            }
+
             mRootNode->SetWorld(nullptr);
         }
 
@@ -134,6 +139,19 @@ void World::SetRootNode(Node* node)
             mRootNode->SetWorld(this);
         }
 
+        if (mRootNode != nullptr)
+        {
+            if (IsPlaying())
+            {
+                for (auto& persNode : mPersistingNodes)
+                {
+                    mRootNode->AddChild(persNode);
+                }
+            }
+
+            mPersistingNodes.clear();
+        }
+
         UpdateRenderSettings();
     }
 }
@@ -142,6 +160,11 @@ void World::DestroyRootNode()
 {
     if (mRootNode != nullptr)
     {
+        if (IsPlaying())
+        {
+            ExtractPersistingNodes();
+        }
+
         mRootNode->Destroy();
         SetRootNode(nullptr);
     }
@@ -598,6 +621,24 @@ void World::UpdateLines(float deltaTime)
             }
         }
     }
+}
+
+void World::ExtractPersistingNodes()
+{
+    // Extract persistent nodes that will be added to world when next root node is set
+    mRootNode->Traverse(
+        [this](Node* node) -> bool
+        {
+            if (node->IsPersistent())
+            {
+                mPersistingNodes.push_back(ResolvePtr(node));
+                node->Detach();
+                return false;
+            }
+
+            return true;
+        },
+        true);
 }
 
 void World::Update(float deltaTime)

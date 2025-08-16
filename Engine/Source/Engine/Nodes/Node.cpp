@@ -233,14 +233,17 @@ void Node::Destroy()
 
     for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
     {
-        if (true /*forceDestroyChildren*/)
+        if (IsPlaying() && mPersistent)
         {
-            // Destroy will detach child from this
-            mChildren[i]->Destroy();
+            // Persistent nodes are not destroyed if a parent is destroyed.
+            // They are also not removed from the world when it is cleared or
+            // a new rootnode is set.
+            RemoveChild(i);
         }
         else
         {
-            RemoveChild(i);
+            // Destroy will detach child from this
+            mChildren[i]->Destroy();
         }
     }
 
@@ -1319,6 +1322,16 @@ void Node::SetTransient(bool transient)
 bool Node::IsTransient() const
 {
     return mTransient;
+}
+
+void Node::SetPersistent(bool persistent)
+{
+    mPersistent = persistent;
+}
+
+bool Node::IsPersistent() const
+{
+    return mPersistent;
 }
 
 void Node::SetDefault(bool isDefault)
