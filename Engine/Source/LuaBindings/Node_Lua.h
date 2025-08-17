@@ -80,6 +80,7 @@ struct Node_Lua
     static int IsTickEnabled(lua_State* L);
 
     static int GetScene(lua_State* L);
+    static int SetScript(lua_State* L);
 
     static int GetNetId(lua_State* L);
     static int GetOwningHost(lua_State* L);

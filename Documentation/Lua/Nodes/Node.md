@@ -354,6 +354,14 @@ Return this node's associated Scene. When a scene is instantiated, the newly ins
 Sig: `scene = Node:GetScene()`
  - Arg: `Scene scene` The node's associated scene
 ---
+### SetScript
+Set the script file on a particular node.
+
+Alias: `SetScriptFile`
+
+Sig: `Node:SetScript(filename)`
+ - Arg: `string filename` Script filename
+---
 ### GetNetId
 Return the net id associated with this node. A NetId will be assigned to nodes with replication enabled when hosting a session or connected to another session. NetIds are the internal mechanism for referencing the same node across different instances of the game.
 

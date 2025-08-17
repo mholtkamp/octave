@@ -849,6 +849,16 @@ int Node_Lua::GetScene(lua_State* L)
     return 1;
 }
 
+int Node_Lua::SetScript(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    const char* value = CHECK_STRING(L, 2);
+
+    node->SetScriptFile(value);
+
+    return 0;
+}
+
 int Node_Lua::GetNetId(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -1185,6 +1195,9 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, IsTickEnabled);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetScene);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, SetScript);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetScript, "SetScriptFile");
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetNetId);
 
