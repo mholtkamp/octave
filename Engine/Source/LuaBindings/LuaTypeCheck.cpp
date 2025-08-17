@@ -12,9 +12,9 @@ NodePtr& CheckNodeWrapperPtr(lua_State* L, int arg)
     luaL_checkudata(L, arg, NODE_WRAPPER_TABLE_NAME);
     Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, arg);
 
-    if (nodeLua->mNode == nullptr)
+    if (!nodeLua->mNode.IsValid())
     {
-        luaL_error(L, "Attempting to use an invalid/destroyed node at arg %d", arg);
+        luaL_error(L, "Invalid or Destroyed node at arg %d", arg);
     }
     else if (nodeLua->mNode->IsDestroyed())
     {
