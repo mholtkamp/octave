@@ -94,9 +94,10 @@ public:
     virtual void Awake();
     virtual void Start();
     virtual void Stop();
-    virtual void PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game);
+    virtual void PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game, bool recurse);
     virtual void Tick(float deltaTime);
     virtual void EditorTick(float deltaTime);
+    uint32_t GetLastTickedFrame() const;
     virtual void Render();
     virtual VertexType GetVertexType() const;
 
@@ -449,7 +450,7 @@ protected:
     std::unordered_map<std::string, Node*> mChildNameMap;
     std::unordered_map<std::string, Signal> mSignalMap;
     std::string mScriptFile;
-
+    uint32_t mLastTickedFrame = 0;
     bool mActive = true;
     bool mVisible = true;
     bool mTransient = false;
@@ -466,7 +467,6 @@ protected:
     SceneRef mScene;
     std::vector<std::string> mTags;
     NodeId mNodeId = INVALID_NODE_ID;
-    uint32_t mHitCheckId = 0;
 
     // Network Data
     // This is only about 44 bytes, so right now, we will keep this data as direct members of Node.
@@ -491,6 +491,7 @@ public:
     void SetExposeVariable(bool expose);
     bool AreAllChildrenHiddenInTree() const;
 
+    uint32_t mHitCheckId = 0;
     bool mExposeVariable = false;
     bool mHiddenInTree = false;
 #endif

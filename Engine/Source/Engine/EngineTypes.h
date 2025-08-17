@@ -284,6 +284,7 @@ struct EngineState
     uint32_t mSecondWindowHeight = DEFAULT_WINDOW_HEIGHT;
     uint32_t mGameCode = 0;
     uint32_t mVersion = 0;
+    uint32_t mFrameNumber = 0;
     std::string mProjectPath;
     std::string mProjectDirectory;
     std::string mProjectName;

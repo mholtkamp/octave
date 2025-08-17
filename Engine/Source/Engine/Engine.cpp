@@ -421,8 +421,8 @@ bool Update()
         return !sEngineState.mQuit;
     }
 
+    sEngineState.mFrameNumber++;
     GetProfiler()->BeginFrame();
-
     BEGIN_FRAME_STAT("Frame");
 
     {

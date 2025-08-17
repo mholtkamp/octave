@@ -27,6 +27,8 @@
 
 using namespace std;
 
+std::unordered_set<NodePtrWeak> World::sNewlyRegisteredNodes;
+
 bool ContactAddedHandler(btManifoldPoint& cp,
     const btCollisionObjectWrapper* colObj0Wrap,
     int partId0,
@@ -570,6 +572,8 @@ void World::RegisterNode(Node* node)
             mActiveCamera = node->As<Camera3D>();
         }
     }
+
+    sNewlyRegisteredNodes.insert(ResolveWeakPtr(node));
 }
 
 void World::UnregisterNode(Node* node)
@@ -775,22 +779,55 @@ void World::Update(float deltaTime)
             static std::vector<NodePtrWeak> sNodesToTick;
             sNodesToTick.clear();
 
-            mRootNode->PrepareTick(sNodesToTick, gameTickEnabled);
+            mRootNode->PrepareTick(sNodesToTick, gameTickEnabled, true);
 
-            for (uint32_t i = 0; i < sNodesToTick.size(); ++i)
+            // Setting a limit of 10 iterations. If we go over this, there is
+            // likely an infinite chain of node creation
+            const int32_t kMaxTickIterations = 10;
+            int32_t tickIteration = 0;
+            uint32_t currentFrame = GetEngineState()->mFrameNumber;
+
+            // Tick all of the nodes that need to be ticked, and then keep iterating
+            // until all newly spawned nodes / added nodes have ticked (and maybe start)
+            while (sNodesToTick.size() > 0 && tickIteration < kMaxTickIterations)
             {
-                Node* node = sNodesToTick[i].Get();
-
-                if (node)
+                for (uint32_t i = 0; i < sNodesToTick.size(); ++i)
                 {
-                    if (gameTickEnabled)
+                    Node* node = sNodesToTick[i].Get();
+
+                    // Node may have been destroyed or removed from the world
+                    if (node &&
+                        node->GetWorld() == this &&
+                        node->GetLastTickedFrame() != currentFrame)
                     {
-                        node->Tick(deltaTime);
+                        if (gameTickEnabled)
+                        {
+                            node->Tick(deltaTime);
+                        }
+                        else
+                        {
+                            node->EditorTick(deltaTime);
+                        }
                     }
-                    else
+                }
+
+                tickIteration++;
+                sNodesToTick.clear();
+
+                for (auto& nodePtr : sNewlyRegisteredNodes)
+                {
+                    if (nodePtr.IsValid() &&
+                        nodePtr->GetWorld() == this &&
+                        nodePtr->GetLastTickedFrame() != currentFrame)
                     {
-                        node->EditorTick(deltaTime);
+                        nodePtr->PrepareTick(sNodesToTick, gameTickEnabled, false);
                     }
+                }
+                sNewlyRegisteredNodes.clear();
+
+                if (tickIteration == kMaxTickIterations)
+                {
+                    LogWarning("Reached tick iteration limit");
                 }
             }
         }

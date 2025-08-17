@@ -495,7 +495,7 @@ void Node::Stop()
     mHasStarted = false;
 }
 
-void Node::PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game)
+void Node::PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game, bool recurse)
 {
     if (game && !mHasStarted)
     {
@@ -504,17 +504,24 @@ void Node::PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game)
 
     if (IsTickEnabled() && IsActive() && !IsDestroyed())
     {
-        if (!mLateTick)
+        if (recurse)
         {
-            outTickNodes.push_back(mSelf);
-        }
+            if (!mLateTick)
+            {
+                outTickNodes.push_back(mSelf);
+            }
 
-        for (int32_t i = 0; i < (int32_t)mChildren.size(); ++i)
-        {
-            mChildren[i]->PrepareTick(outTickNodes, game);
-        }
+            for (int32_t i = 0; i < (int32_t)mChildren.size(); ++i)
+            {
+                mChildren[i]->PrepareTick(outTickNodes, game, recurse);
+            }
 
-        if (mLateTick)
+            if (mLateTick)
+            {
+                outTickNodes.push_back(mSelf);
+            }
+        }
+        else
         {
             outTickNodes.push_back(mSelf);
         }
@@ -531,8 +538,15 @@ void Node::EditorTick(float deltaTime)
     TickCommon(deltaTime);
 }
 
+uint32_t Node::GetLastTickedFrame() const
+{
+    return mLastTickedFrame;
+}
+
 void Node::TickCommon(float deltaTime)
 {
+    mLastTickedFrame = GetEngineState()->mFrameNumber;
+
     if (mScript != nullptr)
     {
         mScript->Tick(deltaTime);
@@ -1733,12 +1747,18 @@ int32_t Node::FindParentNodeIndex() const
 
 void Node::SetHitCheckId(uint32_t id)
 {
+#if EDITOR
     mHitCheckId = id;
+#endif
 }
 
 uint32_t Node::GetHitCheckId() const
 {
+#if EDITOR
     return mHitCheckId;
+#else
+    return 0;
+#endif
 }
 
 bool Node::IsLateTickEnabled() const

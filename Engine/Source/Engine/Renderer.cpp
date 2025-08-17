@@ -1194,8 +1194,8 @@ void Renderer::Render(World* world, int32_t screenIndex)
         static std::vector<NodePtrWeak> sTickNodes;
         sTickNodes.clear();
 
-        if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->PrepareTick(sTickNodes, inGame); }
-        if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->PrepareTick(sTickNodes, inGame); }
+        if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->PrepareTick(sTickNodes, inGame, true); }
+        if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->PrepareTick(sTickNodes, inGame, true); }
 
         for (uint32_t i = 0; i < sTickNodes.size(); ++i)
         {

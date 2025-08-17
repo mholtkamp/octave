@@ -187,6 +187,8 @@ private:
 
 private:
 
+    static std::unordered_set<NodePtrWeak> sNewlyRegisteredNodes;
+
     NodePtr mRootNode;
     std::vector<NodePtr> mPersistingNodes;
     std::vector<Line> mLines;

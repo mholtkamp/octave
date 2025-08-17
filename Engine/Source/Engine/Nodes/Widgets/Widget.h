@@ -62,7 +62,7 @@ public:
 
     // Refresh any data used for rendering based on this widget's state. Use dirty flag.
     // Recursively update children.
-    virtual void PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game) override;
+    virtual void PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game, bool recurse) override;
     virtual void Render() override;
     virtual VertexType GetVertexType() const override;
 
