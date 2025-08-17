@@ -243,7 +243,7 @@ void Primitive3D::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Byte, "Lighting Channels", this, &mLightingChannels, 1, nullptr, (int32_t)ByteExtra::FlagWidget));
 }
 
-void Primitive3D::SetWorld(World* world)
+void Primitive3D::SetWorld(World* world, bool subRoot)
 {
     // TODO-NODE: I am attempting to simplify this code. Does it still work?
 #if 1
@@ -256,7 +256,7 @@ void Primitive3D::SetWorld(World* world)
             mWorld->PurgeOverlaps(static_cast<Primitive3D*>(this));
         }
 
-        Node3D::SetWorld(world);
+        Node3D::SetWorld(world, subRoot);
         EnableRigidBody(true);
     }
 #else
@@ -268,7 +268,7 @@ void Primitive3D::SetWorld(World* world)
         EnableRigidBody(false);
     }
 
-    Node3D::SetWorld(world);
+    Node3D::SetWorld(world, subRoot);
 
     if (rigidBodyInWorld)
     {

@@ -152,6 +152,14 @@ void Widget::PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game, bool
     {
         Node::PrepareTick(outTickNodes, game, recurse);
     }
+    else
+    {
+        // Still want to start the widgets when they would have ticked
+        if (game && !mHasStarted)
+        {
+            Start();
+        }
+    }
 }
 
 bool Widget::IsWidget() const

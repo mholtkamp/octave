@@ -115,8 +115,8 @@ public:
         uint32_t numIgnoreObjects = 0,
         btCollisionObject** ignoreObjects = nullptr);
 
-    void RegisterNode(Node* node);
-    void UnregisterNode(Node* node);
+    void RegisterNode(Node* node, bool subRoot);
+    void UnregisterNode(Node* node, bool subRoot);
     const std::vector<Audio3D*>& GetAudios() const;
 
     void LoadScene(const char* name, bool instant);

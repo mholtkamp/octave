@@ -630,7 +630,6 @@ void Scene::LoadStreamBlueprint(Stream& stream)
 
     std::string rootName;
     stream.ReadString(rootName);
-    LogDebug("RootName = %s", rootName.c_str());
 
     // Find parent index for all components
     for (uint32_t c = 1; c < numComps + 1; ++c)

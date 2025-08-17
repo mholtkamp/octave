@@ -48,7 +48,7 @@ void EditorState::Init()
     mEditorCamera = Node::Construct<Camera3D>();
     mEditorCamera->SetName("Editor Camera");
     // TODO-NODE: This is a little sketchy because this will call World::RegisterNode(), but that's probably fine.
-    mEditorCamera->SetWorld(GetWorld(0));
+    mEditorCamera->SetWorld(GetWorld(0), false);
 
     mViewport3D = new Viewport3D();
     mViewport2D = new Viewport2D();
@@ -90,7 +90,7 @@ void EditorState::Shutdown()
     delete mPaintManager;
     mPaintManager = nullptr;
 
-    mEditorCamera->SetWorld(nullptr);
+    mEditorCamera->SetWorld(nullptr, false);
     mEditorCamera->Destroy();
     mEditorCamera = nullptr;
 }

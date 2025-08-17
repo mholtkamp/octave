@@ -1082,13 +1082,13 @@ bool Node::IsTickEnabled() const
     return mTickEnabled;
 }
 
-void Node::SetWorld(World * world)
+void Node::SetWorld(World* world, bool subRoot)
 {
     if (mWorld != world)
     {
         if (mWorld != nullptr)
         {
-            mWorld->UnregisterNode(this);
+            mWorld->UnregisterNode(this, subRoot);
 
             if (IsPrimitive3D())
             {
@@ -1103,7 +1103,7 @@ void Node::SetWorld(World * world)
             // We should never be adding destroyed nodes to a world.
             OCT_ASSERT(!mDestroyed);
 
-            mWorld->RegisterNode(this);
+            mWorld->RegisterNode(this, subRoot);
         }
 
         if (mScript != nullptr)
@@ -1113,7 +1113,7 @@ void Node::SetWorld(World * world)
 
         for (uint32_t i = 0; i < GetNumChildren(); ++i)
         {
-            GetChild(i)->SetWorld(world);
+            GetChild(i)->SetWorld(world, false);
         }
 
         // Awake after children world has been set (and possibly awoken)
@@ -1508,7 +1508,7 @@ void Node::AddChild(Node* child, int32_t index)
     mChildNameMap.insert({ child->GetName(), child });
 
     child->SetParent(this);
-    child->SetWorld(mWorld);
+    child->SetWorld(mWorld, true);
 }
 
 void Node::RemoveChild(Node* child)
@@ -1547,7 +1547,7 @@ void Node::RemoveChild(int32_t index)
     {
         NodePtr childPtr = mChildren[index];
 
-        childPtr->SetWorld(nullptr);
+        childPtr->SetWorld(nullptr, true);
 
         childPtr->SetParent(nullptr);
         mChildren.erase(mChildren.begin() + index);

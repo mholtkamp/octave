@@ -176,7 +176,7 @@ public:
     void EnableTick(bool enable);
     bool IsTickEnabled() const;
 
-    virtual void SetWorld(World* world);
+    virtual void SetWorld(World* world, bool subRoot);
     World* GetWorld();
 
     void SetScene(Scene* scene);

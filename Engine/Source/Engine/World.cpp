@@ -125,7 +125,7 @@ void World::SetRootNode(Node* node)
                 ExtractPersistingNodes();
             }
 
-            mRootNode->SetWorld(nullptr);
+            mRootNode->SetWorld(nullptr, true);
         }
 
         mRootNode = ResolvePtr(node);
@@ -138,7 +138,7 @@ void World::SetRootNode(Node* node)
 
         if (mRootNode != nullptr)
         {
-            mRootNode->SetWorld(this);
+            mRootNode->SetWorld(this, true);
         }
 
         if (mRootNode != nullptr)
@@ -544,7 +544,7 @@ void World::SweepTest(
     }
 }
 
-void World::RegisterNode(Node* node)
+void World::RegisterNode(Node* node, bool subRoot)
 {
     TypeId nodeType = node->GetType();
 
@@ -573,10 +573,13 @@ void World::RegisterNode(Node* node)
         }
     }
 
-    sNewlyRegisteredNodes.insert(ResolveWeakPtr(node));
+    if (subRoot)
+    {
+        sNewlyRegisteredNodes.insert(ResolveWeakPtr(node));
+    }
 }
 
-void World::UnregisterNode(Node* node)
+void World::UnregisterNode(Node* node, bool subRoot)
 {
     TypeId nodeType = node->GetType();
 
@@ -601,6 +604,11 @@ void World::UnregisterNode(Node* node)
     if (node == mActiveCamera)
     {
         SetActiveCamera(nullptr);
+    }
+
+    if (subRoot)
+    {
+        sNewlyRegisteredNodes.erase(ResolveWeakPtr(node));
     }
 }
 
@@ -814,16 +822,24 @@ void World::Update(float deltaTime)
                 tickIteration++;
                 sNodesToTick.clear();
 
-                for (auto& nodePtr : sNewlyRegisteredNodes)
+                if (sNewlyRegisteredNodes.size() > 0)
                 {
-                    if (nodePtr.IsValid() &&
-                        nodePtr->GetWorld() == this &&
-                        nodePtr->GetLastTickedFrame() != currentFrame)
+                    // Make a copy otherwise sNewlyRegisteredNodes might get altered while 
+                    // we are calling PrepareTick()
+                    std::unordered_set<NodePtrWeak> newNodes = sNewlyRegisteredNodes;
+                    sNewlyRegisteredNodes.clear();
+
+                    for (const NodePtrWeak& nodePtr : newNodes)
                     {
-                        nodePtr->PrepareTick(sNodesToTick, gameTickEnabled, false);
+                        if (nodePtr.IsValid() &&
+                            nodePtr->GetWorld() == this &&
+                            nodePtr->GetLastTickedFrame() != currentFrame)
+                        {
+                            nodePtr->PrepareTick(sNodesToTick, gameTickEnabled, true);
+                        }
                     }
                 }
-                sNewlyRegisteredNodes.clear();
+
 
                 if (tickIteration == kMaxTickIterations)
                 {

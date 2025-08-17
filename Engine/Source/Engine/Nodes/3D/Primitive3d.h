@@ -62,7 +62,7 @@ public:
     virtual void Tick(float deltaTime) override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
 
-    virtual void SetWorld(World* world) override;
+    virtual void SetWorld(World* world, bool subRoot) override;
     virtual void Render() override;
 
     virtual void UpdateTransform(bool updateChildren) override;
