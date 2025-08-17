@@ -1824,6 +1824,7 @@ void Datum::DeepCopy(const Datum& src, bool forceInternalStorage)
     if (forceInternalStorage)
     {
         mExternal = false;
+        mOwner = nullptr;
     }
 
     if (mExternal)
