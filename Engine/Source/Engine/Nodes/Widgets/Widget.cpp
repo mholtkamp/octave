@@ -130,6 +130,22 @@ void Widget::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Rotation", this, &mRotation, 1, Widget::HandlePropChange));
 }
 
+void Widget::SetVisible(bool visible)
+{
+    if (mVisible != visible)
+    {
+        Super::SetVisible(visible);
+
+        // Because ticking is tied to visibility for widgets, we want to add
+        // newly registered nodes to the World's newly registered list so that
+        // it will tick before it is first rendered.
+        if (mVisible && GetWorld() != nullptr)
+        {
+            GetWorld()->AddNewlyRegisteredNode(this);
+        }
+    }
+}
+
 void Widget::Render()
 {
     GFX_SetScissor(int32_t(mScissorRect.mX + 0.5f),

@@ -129,6 +129,7 @@ public:
     void DirtyAllWidgets();
 
     void UpdateRenderSettings();
+    void AddNewlyRegisteredNode(Node* node);
 
     Camera3D* SpawnDefaultCamera();
     Node* SpawnDefaultRoot();

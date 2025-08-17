@@ -57,8 +57,8 @@ public:
     Widget();
 
     virtual void Start() override;
-
     virtual void GatherProperties(std::vector<Property>& outProps) override;
+    virtual void SetVisible(bool visible) override;
 
     // Refresh any data used for rendering based on this widget's state. Use dirty flag.
     // Recursively update children.

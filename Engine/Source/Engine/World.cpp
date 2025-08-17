@@ -1132,6 +1132,15 @@ void World::UpdateRenderSettings()
     }
 }
 
+void World::AddNewlyRegisteredNode(Node* node)
+{
+    if (node != nullptr)
+    {
+        // This should really only be called for Widgets when they are first made visible
+        sNewlyRegisteredNodes.insert(ResolveWeakPtr(node));
+    }
+}
+
 Camera3D* World::SpawnDefaultCamera()
 {
     if (mRootNode == nullptr)
