@@ -714,6 +714,11 @@ void Scene::LoadStreamWidgetMap(Stream& stream)
         int32_t childSlot = stream.ReadInt32();
         int32_t nativeChildSlot = stream.ReadInt32();
 
+        if (nativeChildSlot >= 0)
+        {
+            LogDebug("zzz Native Child for parent: [type=%u] %s", mNodeDefs[def.mParentIndex].mType, mNodeDefs[def.mParentIndex].mName.c_str());
+        }
+
         stream.ReadAsset(def.mScene);
         def.mExposeVariable = stream.ReadBool();
 
