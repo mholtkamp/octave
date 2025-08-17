@@ -74,7 +74,7 @@
 
 #define dummynode		(&dummynode_)
 
-static const Node dummynode_ = {
+static const LuaNode dummynode_ = {
   {NILCONSTANT},  /* value */
   {{NILCONSTANT, 0}}  /* key */
 };
@@ -114,7 +114,7 @@ static int l_hashfloat (lua_Number n) {
 ** returns the 'main' position of an element in a table (that is, the index
 ** of its hash value)
 */
-static Node *mainposition (const Table *t, const TValue *key) {
+static LuaNode *mainposition (const Table *t, const TValue *key) {
   switch (ttype(key)) {
     case LUA_TNUMINT:
       return hashint(t, ivalue(key));
@@ -164,7 +164,7 @@ static unsigned int findindex (lua_State *L, Table *t, StkId key) {
     return i;  /* yes; that's the index */
   else {
     int nx;
-    Node *n = mainposition(t, key);
+    LuaNode *n = mainposition(t, key);
     for (;;) {  /* check whether 'key' is somewhere in the chain */
       /* key may be dead already, but it is ok to use it in 'next' */
       if (luaV_rawequalobj(gkey(n), key) ||
@@ -287,7 +287,7 @@ static int numusehash (const Table *t, unsigned int *nums, unsigned int *pna) {
   int ause = 0;  /* elements added to 'nums' (can go to array part) */
   int i = sizenode(t);
   while (i--) {
-    Node *n = &t->node[i];
+    LuaNode *n = &t->node[i];
     if (!ttisnil(gval(n))) {
       ause += countint(gkey(n), nums);
       totaluse++;
@@ -309,7 +309,7 @@ static void setarrayvector (lua_State *L, Table *t, unsigned int size) {
 
 static void setnodevector (lua_State *L, Table *t, unsigned int size) {
   if (size == 0) {  /* no elements to hash part? */
-    t->node = cast(Node *, dummynode);  /* use common 'dummynode' */
+    t->node = cast(LuaNode *, dummynode);  /* use common 'dummynode' */
     t->lsizenode = 0;
     t->lastfree = NULL;  /* signal that it is using dummy node */
   }
@@ -319,9 +319,9 @@ static void setnodevector (lua_State *L, Table *t, unsigned int size) {
     if (lsize > MAXHBITS)
       luaG_runerror(L, "table overflow");
     size = twoto(lsize);
-    t->node = luaM_newvector(L, size, Node);
+    t->node = luaM_newvector(L, size, LuaNode);
     for (i = 0; i < (int)size; i++) {
-      Node *n = gnode(t, i);
+      LuaNode *n = gnode(t, i);
       gnext(n) = 0;
       setnilvalue(wgkey(n));
       setnilvalue(gval(n));
@@ -351,7 +351,7 @@ void luaH_resize (lua_State *L, Table *t, unsigned int nasize,
   AuxsetnodeT asn;
   unsigned int oldasize = t->sizearray;
   int oldhsize = allocsizenode(t);
-  Node *nold = t->node;  /* save old hash ... */
+  LuaNode *nold = t->node;  /* save old hash ... */
   if (nasize > oldasize)  /* array part must grow? */
     setarrayvector(L, t, nasize);
   /* create new hash part with appropriate size */
@@ -372,7 +372,7 @@ void luaH_resize (lua_State *L, Table *t, unsigned int nasize,
   }
   /* re-insert elements from hash part */
   for (j = oldhsize - 1; j >= 0; j--) {
-    Node *old = nold + j;
+    LuaNode *old = nold + j;
     if (!ttisnil(gval(old))) {
       /* doesn't need barrier/invalidate cache, as entry was
          already present in the table */
@@ -438,7 +438,7 @@ void luaH_free (lua_State *L, Table *t) {
 }
 
 
-static Node *getfreepos (Table *t) {
+static LuaNode *getfreepos (Table *t) {
   if (!isdummy(t)) {
     while (t->lastfree > t->node) {
       t->lastfree--;
@@ -459,7 +459,7 @@ static Node *getfreepos (Table *t) {
 ** position), new key goes to an empty position.
 */
 TValue *luaH_newkey (lua_State *L, Table *t, const TValue *key) {
-  Node *mp;
+  LuaNode *mp;
   TValue aux;
   if (ttisnil(key)) luaG_runerror(L, "table index is nil");
   else if (ttisfloat(key)) {
@@ -473,8 +473,8 @@ TValue *luaH_newkey (lua_State *L, Table *t, const TValue *key) {
   }
   mp = mainposition(t, key);
   if (!ttisnil(gval(mp)) || isdummy(t)) {  /* main position is taken? */
-    Node *othern;
-    Node *f = getfreepos(t);  /* get a free place */
+    LuaNode *othern;
+    LuaNode *f = getfreepos(t);  /* get a free place */
     if (f == NULL) {  /* cannot find a free place? */
       rehash(L, t, key);  /* grow table */
       /* whatever called 'newkey' takes care of TM cache */
@@ -518,7 +518,7 @@ const TValue *luaH_getint (Table *t, lua_Integer key) {
   if (l_castS2U(key) - 1 < t->sizearray)
     return &t->array[key - 1];
   else {
-    Node *n = hashint(t, key);
+    LuaNode *n = hashint(t, key);
     for (;;) {  /* check whether 'key' is somewhere in the chain */
       if (ttisinteger(gkey(n)) && ivalue(gkey(n)) == key)
         return gval(n);  /* that's it */
@@ -537,7 +537,7 @@ const TValue *luaH_getint (Table *t, lua_Integer key) {
 ** search function for short strings
 */
 const TValue *luaH_getshortstr (Table *t, TString *key) {
-  Node *n = hashstr(t, key);
+  LuaNode *n = hashstr(t, key);
   lua_assert(key->tt == LUA_TSHRSTR);
   for (;;) {  /* check whether 'key' is somewhere in the chain */
     const TValue *k = gkey(n);
@@ -558,7 +558,7 @@ const TValue *luaH_getshortstr (Table *t, TString *key) {
 ** which may be in array part, nor for floats with integral values.)
 */
 static const TValue *getgeneric (Table *t, const TValue *key) {
-  Node *n = mainposition(t, key);
+  LuaNode *n = mainposition(t, key);
   for (;;) {  /* check whether 'key' is somewhere in the chain */
     if (luaV_rawequalobj(gkey(n), key))
       return gval(n);  /* that's it */
@@ -679,7 +679,7 @@ lua_Unsigned luaH_getn (Table *t) {
 
 #if defined(LUA_DEBUG)
 
-Node *luaH_mainposition (const Table *t, const TValue *key) {
+LuaNode *luaH_mainposition (const Table *t, const TValue *key) {
   return mainposition(t, key);
 }
 
