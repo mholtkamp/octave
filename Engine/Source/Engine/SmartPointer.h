@@ -281,7 +281,15 @@ public:
 
     bool IsValid() const
     {
-        return (mPointer != nullptr && mRefCount != nullptr);
+        if (std::is_base_of<Node, T>::value)
+        {
+            return (mPointer != nullptr && mRefCount != nullptr && !mPointer->IsDestroyed());
+
+        }
+        else
+        {
+            return (mPointer != nullptr && mRefCount != nullptr);
+        }
     }
 
 private:
@@ -470,7 +478,14 @@ public:
 
     bool IsValid() const
     {
-        return (mPointer != nullptr && mRefCount != nullptr && mRefCount->mSharedCount > 0);
+        if (std::is_base_of<Node, T>::value)
+        {
+            return (mPointer != nullptr && mRefCount != nullptr && mRefCount->mSharedCount > 0 && !mPointer->IsDestroyed());
+        }
+        else
+        {
+            return (mPointer != nullptr && mRefCount != nullptr && mRefCount->mSharedCount > 0);
+        }
     }
 
     void Reset()
