@@ -737,6 +737,10 @@ void Scene::LoadStreamWidgetMap(Stream& stream)
             {
                 def.mProperties[p].mName = "Script";
             }
+            else if (def.mProperties[p].mName == "Tint")
+            {
+                def.mProperties[p].mName = "Color";
+            }
         }
     }
 
