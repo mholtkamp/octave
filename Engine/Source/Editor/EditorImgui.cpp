@@ -1494,7 +1494,7 @@ static void DrawScenePanel()
 
     if (filterCleared && GetEditorState()->GetSelectedNode() != nullptr)
     {
-        GetEditorState()->mTrackSelectedNode = GetEditorState()->GetSelectedNode();
+        GetEditorState()->mTrackSelectedNode = true;
     }
 
     ImGuiTreeNodeFlags treeNodeFlags =
@@ -1506,6 +1506,7 @@ static void DrawScenePanel()
     World* world = GetWorld(0);
     Node* rootNode = world ? world->GetRootNode() : nullptr;
     bool sNodeContextActive = false;
+    bool trackingNode = GetEditorState()->mTrackSelectedNode;
 
     glm::vec4 sceneColor = AssetManager::Get()->GetEditorAssetColor(Scene::GetStaticType());
     ImVec4 sceneColorIm = ImVec4(sceneColor.r, sceneColor.g, sceneColor.b, sceneColor.a);
@@ -1558,7 +1559,7 @@ static void DrawScenePanel()
             bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
             bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
             bool nodeMiddleClicked = ImGui::IsItemClicked(ImGuiMouseButton_Middle);
-            bool expandChildren = nodeMiddleClicked && IsControlDown();
+            bool expandChildren = trackingNode || (nodeMiddleClicked && IsControlDown());
             bool collapseChildren = !expandChildren && nodeMiddleClicked;
 
             if (inSubScene || nodeHasScene)
