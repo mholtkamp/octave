@@ -1473,6 +1473,30 @@ static void DrawScenePanel()
 
     ImGui::Begin("Scene", nullptr, kPaneWindowFlags);
 
+    static std::string sFilterStrTemp;
+    static std::string sFilterStr;
+    bool filterCleared = false;
+
+    if (ImGui::InputText("Filter", &sFilterStrTemp, ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+        sFilterStr = sFilterStrTemp;
+        if (sFilterStr == "")
+        {
+            filterCleared = true;
+        }
+    }
+
+    std::string filterStrUpper = sFilterStr;
+    for (uint32_t c = 0; c < filterStrUpper.size(); ++c)
+    {
+        filterStrUpper[c] = toupper(filterStrUpper[c]);
+    }
+
+    if (filterCleared && GetEditorState()->GetSelectedNode() != nullptr)
+    {
+        GetEditorState()->mTrackSelectedNode = GetEditorState()->GetSelectedNode();
+    }
+
     ImGuiTreeNodeFlags treeNodeFlags =
         ImGuiTreeNodeFlags_OpenOnArrow
         | ImGuiTreeNodeFlags_OpenOnDoubleClick
@@ -1494,255 +1518,281 @@ static void DrawScenePanel()
         bool inSubScene = (subScene != nullptr);
         bool nodeHasScene = (node->GetScene() != nullptr);
 
-        ImGuiTreeNodeFlags nodeFlags = treeNodeFlags;
-        if (nodeSelected)
+        bool drawTreeNode = true;
+
+        if (filterStrUpper != "")
         {
-            nodeFlags |= ImGuiTreeNodeFlags_Selected;
-        }
-
-        if (node->GetNumChildren() == 0 || 
-            node->AreAllChildrenHiddenInTree())
-        {
-            nodeFlags |= ImGuiTreeNodeFlags_Leaf;
-        }
-
-        if (inSubScene)
-        {
-            ImGui::PushStyleColor(ImGuiCol_Text, subSceneColorIm);
-        }
-        else if (nodeHasScene)
-        {
-            ImGui::PushStyleColor(ImGuiCol_Text, sceneColorIm);
-        }
-
-        bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
-        bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
-        bool nodeMiddleClicked = ImGui::IsItemClicked(ImGuiMouseButton_Middle);
-        bool expandChildren = nodeMiddleClicked && IsControlDown();
-        bool collapseChildren = !expandChildren && nodeMiddleClicked;
-
-        if (inSubScene || nodeHasScene)
-        {
-            ImGui::PopStyleColor();
-        }
-
-        if (nodeSelected && GetEditorState()->mTrackSelectedNode)
-        {
-            ImGui::SetScrollHereY(0.5f);
-            GetEditorState()->mTrackSelectedNode = false;
-        }
-
-        if (ImGui::BeginPopupContextItem())
-        {
-            bool setTextInputFocus = false;
-            bool closeContextPopup = false;
-
-            sNodeContextActive = true;
-
-            if (node->IsSceneLinked() && ImGui::Selectable("Open Scene"))
+            std::string upperName = node->GetName();
+            for (uint32_t c = 0; c < upperName.size(); ++c)
             {
-                GetEditorState()->OpenEditScene(node->GetScene());
+                upperName[c] = toupper(upperName[c]);
             }
-            if (node->GetParent() != nullptr &&
-                !inSubScene &&
-                ImGui::BeginMenu("Move"))
-            {
-                Node* parent = node->GetParent();
-                int32_t childSlot = parent->FindChildIndex(node);
 
-                if (ImGui::Selectable("Top"))
-                    am->EXE_AttachNode(node, parent, 0, -1);
-                if (ImGui::Selectable("Up"))
-                    am->EXE_AttachNode(node, parent, glm::max<int32_t>(childSlot - 1, 0), -1);
-                if (ImGui::Selectable("Down"))
-                    am->EXE_AttachNode(node, parent, childSlot + 1, -1);
-                if (ImGui::Selectable("Bottom"))
-                    am->EXE_AttachNode(node, parent, -1, -1);
+            drawTreeNode = (upperName.find(filterStrUpper) != std::string::npos);
+        }
 
-                ImGui::EndMenu();
-            }
-            if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
+        if (drawTreeNode)
+        {
+            ImGuiTreeNodeFlags nodeFlags = treeNodeFlags;
+            if (nodeSelected)
             {
-                ImGui::OpenPopup("Rename Node");
-                strncpy(sPopupInputBuffer, node->GetName().c_str(), kPopupInputBufferSize);
-                setTextInputFocus = true;
+                nodeFlags |= ImGuiTreeNodeFlags_Selected;
             }
-            if (!inSubScene && ImGui::Selectable("Duplicate"))
+
+            if (node->GetNumChildren() == 0 ||
+                node->AreAllChildrenHiddenInTree())
             {
-                am->DuplicateNodes({ node });
+                nodeFlags |= ImGuiTreeNodeFlags_Leaf;
             }
-            if (!nodeSceneLinked && !inSubScene && ImGui::Selectable("Attach Selected"))
+
+            if (inSubScene)
             {
-                am->AttachSelectedNodes(node, -1);
+                ImGui::PushStyleColor(ImGuiCol_Text, subSceneColorIm);
             }
-            if (!nodeSceneLinked && !inSubScene && node->As<SkeletalMesh3D>())
+            else if (nodeHasScene)
             {
-                if (ImGui::Selectable("Attach Selected To Bone", false, ImGuiSelectableFlags_DontClosePopups))
+                ImGui::PushStyleColor(ImGuiCol_Text, sceneColorIm);
+            }
+
+            bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
+            bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
+            bool nodeMiddleClicked = ImGui::IsItemClicked(ImGuiMouseButton_Middle);
+            bool expandChildren = nodeMiddleClicked && IsControlDown();
+            bool collapseChildren = !expandChildren && nodeMiddleClicked;
+
+            if (inSubScene || nodeHasScene)
+            {
+                ImGui::PopStyleColor();
+            }
+
+            if (nodeSelected && GetEditorState()->mTrackSelectedNode)
+            {
+                ImGui::SetScrollHereY(0.5f);
+                GetEditorState()->mTrackSelectedNode = false;
+            }
+
+            if (ImGui::BeginPopupContextItem())
+            {
+                bool setTextInputFocus = false;
+                bool closeContextPopup = false;
+
+                sNodeContextActive = true;
+
+                if (node->IsSceneLinked() && ImGui::Selectable("Open Scene"))
                 {
-                    ImGui::OpenPopup("Attach Selected To Bone");
-                    setTextInputFocus = true;
+                    GetEditorState()->OpenEditScene(node->GetScene());
                 }
-            }
-            if (!node->IsWorldRoot() && !inSubScene && ImGui::Selectable("Set Root Node"))
-            {
-                am->EXE_SetRootNode(node);
-            }
-            if ((nodeSceneLinked || inSubScene) && ImGui::Selectable("Unlink Scene"))
-            {
-                am->EXE_UnlinkScene(node->GetSubRoot());
-            }
-            if (!inSubScene && ImGui::Selectable("Delete"))
-            {
-                am->EXE_DeleteNode(node);
-            }
-            if (!inSubScene &&
-                node->As<StaticMesh3D>() &&
-                ImGui::Selectable("Merge"))
-            {
-                LogDebug("TODO: Implement Merge for static meshes.");
-            }
-            if (!nodeSceneLinked && !inSubScene && ImGui::BeginMenu("Add Node"))
-            {
-                DrawAddNodeMenu(node);
-                ImGui::EndMenu();
-            }
-            if (!nodeSceneLinked && !inSubScene && ImGui::BeginMenu("Add Basic 3D"))
-            {
-                DrawSpawnBasic3dMenu(node, false);
-                ImGui::EndMenu();
-            }
-            if (!nodeSceneLinked && !inSubScene && ImGui::BeginMenu("Add Basic Widget"))
-            {
-                DrawSpawnBasicWidgetMenu(node);
-                ImGui::EndMenu();
-            }
-            //if (ImGui::Selectable("Add Scene..."))
-            //{
-
-            //}
-
-            // Sub Popups
-
-            if (ImGui::BeginPopup("Rename Node"))
-            {
-                if (setTextInputFocus)
+                if (node->GetParent() != nullptr &&
+                    !inSubScene &&
+                    ImGui::BeginMenu("Move"))
                 {
-                    ImGui::SetKeyboardFocusHere();
-                }
+                    Node* parent = node->GetParent();
+                    int32_t childSlot = parent->FindChildIndex(node);
 
-                if (ImGui::InputText("Node Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
-                {
-                    std::string newName = sPopupInputBuffer;
-                    am->EXE_EditProperty(node, PropertyOwnerType::Node, "Name", 0, newName);
-                }
-
-                ImGui::EndPopup();
-            }
-
-            if (!inSubScene && ImGui::BeginPopup("Attach Selected To Bone"))
-            {
-                if (setTextInputFocus)
-                {
-                    ImGui::SetKeyboardFocusHere();
-                }
-
-                if (ImGui::InputText("Bone Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
-                {
-                    SkeletalMesh3D* skNode = node->As<SkeletalMesh3D>();
-                    if (skNode)
-                    {
-                        int32_t boneIdx = skNode->FindBoneIndex(sPopupInputBuffer);
-                        am->AttachSelectedNodes(skNode, boneIdx);
-                        ImGui::CloseCurrentPopup();
-                        closeContextPopup = true;
-                    }
-                }
-
-                if (ImGui::BeginMenu("Bones"))
-                {
-                    SkeletalMesh3D* skNode = node->As<SkeletalMesh3D>();
-                    SkeletalMesh* skMesh = skNode ? skNode->GetSkeletalMesh() : nullptr;
-
-                    if (skMesh)
-                    {
-                        for (uint32_t i = 0; i < skMesh->GetNumBones(); ++i)
-                        {
-                            ImGui::PushID(i);
-                            if (ImGui::MenuItem(skMesh->GetBone(i).mName.c_str()))
-                            {
-                                am->AttachSelectedNodes(skNode, (int32_t)i);
-                                ImGui::CloseCurrentPopup();
-                                closeContextPopup = true;
-                            }
-                            ImGui::PopID();
-                        }
-                    }
+                    if (ImGui::Selectable("Top"))
+                        am->EXE_AttachNode(node, parent, 0, -1);
+                    if (ImGui::Selectable("Up"))
+                        am->EXE_AttachNode(node, parent, glm::max<int32_t>(childSlot - 1, 0), -1);
+                    if (ImGui::Selectable("Down"))
+                        am->EXE_AttachNode(node, parent, childSlot + 1, -1);
+                    if (ImGui::Selectable("Bottom"))
+                        am->EXE_AttachNode(node, parent, -1, -1);
 
                     ImGui::EndMenu();
                 }
+                if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
+                {
+                    ImGui::OpenPopup("Rename Node");
+                    strncpy(sPopupInputBuffer, node->GetName().c_str(), kPopupInputBufferSize);
+                    setTextInputFocus = true;
+                }
+                if (!inSubScene && ImGui::Selectable("Duplicate"))
+                {
+                    am->DuplicateNodes({ node });
+                }
+                if (!nodeSceneLinked && !inSubScene && ImGui::Selectable("Attach Selected"))
+                {
+                    am->AttachSelectedNodes(node, -1);
+                }
+                if (!nodeSceneLinked && !inSubScene && node->As<SkeletalMesh3D>())
+                {
+                    if (ImGui::Selectable("Attach Selected To Bone", false, ImGuiSelectableFlags_DontClosePopups))
+                    {
+                        ImGui::OpenPopup("Attach Selected To Bone");
+                        setTextInputFocus = true;
+                    }
+                }
+                if (!node->IsWorldRoot() && !inSubScene && ImGui::Selectable("Set Root Node"))
+                {
+                    am->EXE_SetRootNode(node);
+                }
+                if ((nodeSceneLinked || inSubScene) && ImGui::Selectable("Unlink Scene"))
+                {
+                    am->EXE_UnlinkScene(node->GetSubRoot());
+                }
+                if (!inSubScene && ImGui::Selectable("Delete"))
+                {
+                    am->EXE_DeleteNode(node);
+                }
+                if (!inSubScene &&
+                    node->As<StaticMesh3D>() &&
+                    ImGui::Selectable("Merge"))
+                {
+                    LogDebug("TODO: Implement Merge for static meshes.");
+                }
+                if (!nodeSceneLinked && !inSubScene && ImGui::BeginMenu("Add Node"))
+                {
+                    DrawAddNodeMenu(node);
+                    ImGui::EndMenu();
+                }
+                if (!nodeSceneLinked && !inSubScene && ImGui::BeginMenu("Add Basic 3D"))
+                {
+                    DrawSpawnBasic3dMenu(node, false);
+                    ImGui::EndMenu();
+                }
+                if (!nodeSceneLinked && !inSubScene && ImGui::BeginMenu("Add Basic Widget"))
+                {
+                    DrawSpawnBasicWidgetMenu(node);
+                    ImGui::EndMenu();
+                }
+                //if (ImGui::Selectable("Add Scene..."))
+                //{
+
+                //}
+
+                // Sub Popups
+
+                if (ImGui::BeginPopup("Rename Node"))
+                {
+                    if (setTextInputFocus)
+                    {
+                        ImGui::SetKeyboardFocusHere();
+                    }
+
+                    if (ImGui::InputText("Node Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+                    {
+                        std::string newName = sPopupInputBuffer;
+                        am->EXE_EditProperty(node, PropertyOwnerType::Node, "Name", 0, newName);
+                    }
+
+                    ImGui::EndPopup();
+                }
+
+                if (!inSubScene && ImGui::BeginPopup("Attach Selected To Bone"))
+                {
+                    if (setTextInputFocus)
+                    {
+                        ImGui::SetKeyboardFocusHere();
+                    }
+
+                    if (ImGui::InputText("Bone Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+                    {
+                        SkeletalMesh3D* skNode = node->As<SkeletalMesh3D>();
+                        if (skNode)
+                        {
+                            int32_t boneIdx = skNode->FindBoneIndex(sPopupInputBuffer);
+                            am->AttachSelectedNodes(skNode, boneIdx);
+                            ImGui::CloseCurrentPopup();
+                            closeContextPopup = true;
+                        }
+                    }
+
+                    if (ImGui::BeginMenu("Bones"))
+                    {
+                        SkeletalMesh3D* skNode = node->As<SkeletalMesh3D>();
+                        SkeletalMesh* skMesh = skNode ? skNode->GetSkeletalMesh() : nullptr;
+
+                        if (skMesh)
+                        {
+                            for (uint32_t i = 0; i < skMesh->GetNumBones(); ++i)
+                            {
+                                ImGui::PushID(i);
+                                if (ImGui::MenuItem(skMesh->GetBone(i).mName.c_str()))
+                                {
+                                    am->AttachSelectedNodes(skNode, (int32_t)i);
+                                    ImGui::CloseCurrentPopup();
+                                    closeContextPopup = true;
+                                }
+                                ImGui::PopID();
+                            }
+                        }
+
+                        ImGui::EndMenu();
+                    }
+
+                    ImGui::EndPopup();
+                }
+
+                if (closeContextPopup)
+                {
+                    ImGui::CloseCurrentPopup();
+                }
 
                 ImGui::EndPopup();
             }
 
-            if (closeContextPopup)
+            if (nodeOpen)
             {
-                ImGui::CloseCurrentPopup();
-            }
-
-            ImGui::EndPopup();
-        }
-
-        if (nodeOpen)
-        {
-            for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
-            {
-                Scene* newSubScene = nodeSceneLinked ? node->GetScene() : subScene;
-
-                Node* child = node->GetChild(i);
-                if (!child->mHiddenInTree)
+                for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
                 {
-                    if (collapseChildren)
-                    {
-                        ImGui::SetNextItemOpen(false);
-                    }
-                    else if (expandChildren)
-                    {
-                        ImGui::SetNextItemOpen(true);
-                    }
+                    Scene* newSubScene = nodeSceneLinked ? node->GetScene() : subScene;
 
-                    drawTree(child, newSubScene);
+                    Node* child = node->GetChild(i);
+                    if (!child->mHiddenInTree)
+                    {
+                        if (collapseChildren)
+                        {
+                            ImGui::SetNextItemOpen(false);
+                        }
+                        else if (expandChildren)
+                        {
+                            ImGui::SetNextItemOpen(true);
+                        }
+
+                        drawTree(child, newSubScene);
+                    }
                 }
+
+                ImGui::TreePop();
             }
 
-            ImGui::TreePop();
-        }
-
-        if (nodeClicked)
-        {
-            if (GetEditorState()->mNodePropertySelect)
+            if (nodeClicked)
             {
-                GetEditorState()->AssignNodePropertySelect(node);
-            }
-            else
-            {
-                if (nodeSelected)
+                if (GetEditorState()->mNodePropertySelect)
                 {
-                    GetEditorState()->DeselectNode(node);
+                    GetEditorState()->AssignNodePropertySelect(node);
                 }
                 else
                 {
-                    if (ImGui::GetIO().KeyCtrl)
+                    if (nodeSelected)
                     {
-                        GetEditorState()->AddSelectedNode(node, false);
+                        GetEditorState()->DeselectNode(node);
                     }
                     else
                     {
-                        GetEditorState()->SetSelectedNode(node);
+                        if (ImGui::GetIO().KeyCtrl)
+                        {
+                            GetEditorState()->AddSelectedNode(node, false);
+                        }
+                        else
+                        {
+                            GetEditorState()->SetSelectedNode(node);
+                        }
                     }
                 }
             }
         }
+        else if (filterStrUpper != "")
+        {
+            // If we have a filter string but didnt draw the node,
+            // we still need to traverse the tree to see if there are matching children.
+            Scene* newSubScene = nodeSceneLinked ? node->GetScene() : subScene;
 
+            for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
+            {
+                drawTree(node->GetChild(i), newSubScene);
+            }
+        }
     };
 
     if (rootNode != nullptr)
