@@ -1540,7 +1540,8 @@ static void DrawScenePanel()
             }
 
             if (node->GetNumChildren() == 0 ||
-                node->AreAllChildrenHiddenInTree())
+                node->AreAllChildrenHiddenInTree() ||
+                filterStrUpper != "")
             {
                 nodeFlags |= ImGuiTreeNodeFlags_Leaf;
             }
@@ -1733,6 +1734,11 @@ static void DrawScenePanel()
 
             if (nodeOpen)
             {
+                if (filterStrUpper != "")
+                {
+                    ImGui::TreePop();
+                }
+
                 for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
                 {
                     Scene* newSubScene = nodeSceneLinked ? node->GetScene() : subScene;
@@ -1753,7 +1759,10 @@ static void DrawScenePanel()
                     }
                 }
 
-                ImGui::TreePop();
+                if (filterStrUpper == "")
+                {
+                    ImGui::TreePop();
+                }
             }
 
             if (nodeClicked)
