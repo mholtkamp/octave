@@ -224,30 +224,56 @@ int Particle3D_Lua::SetParticleData(lua_State* L)
     int32_t index = CHECK_INDEX(L, 2);
     Datum dataTable = LuaObjectToDatum(L, 3);
 
-    if (index >= 0 && index < int32_t(comp->GetNumParticles()))
+    int32_t startIdx = (index == -1) ? 0 : index;
+    int32_t endIdx = (index == -1) ? int32_t(comp->GetNumParticles()) : index;
+    const int32_t numParticles = int32_t(comp->GetNumParticles());
+    std::vector<Particle>& particles = comp->GetParticles();
+
+    bool setPosition = dataTable.HasField("position");
+    glm::vec3 position = setPosition ? dataTable.GetColorField("position") : glm::vec3();
+
+    bool setVelocity = dataTable.HasField("velocity");
+    glm::vec4 velocity = setVelocity ? dataTable.GetColorField("velocity") : glm::vec4();
+
+    bool setSize = dataTable.HasField("size");
+    glm::vec2 size = setSize ? dataTable.GetColorField("size") : glm::vec2();
+
+    bool setElapsedTime = dataTable.HasField("elapsedTime");
+    float elapsedTime = setElapsedTime ? dataTable.GetFloatField("elapsedTime") : 0.0f;
+
+    bool setLifeTime = dataTable.HasField("lifeTime");
+    float lifeTime = setLifeTime ? dataTable.GetFloatField("lifeTime") : 0.0f;
+
+    bool setRotationSpeed = dataTable.HasField("rotationSpeed");
+    float rotationSpeed = setRotationSpeed ? dataTable.GetFloatField("rotationSpeed") : 0.0f;
+
+    bool setRotation = dataTable.HasField("rotation");
+    float rotation = setRotation ? dataTable.GetFloatField("rotation") : 0.0f;
+
+    for (int32_t i = 0; i < numParticles; ++i)
     {
-        Particle& particleData = comp->GetParticles()[index];
+        Particle& particleData = particles[i];
 
-        if (dataTable.HasField("position"))
-            particleData.mPosition = dataTable.GetColorField("position");
+        if (setPosition)
+            particleData.mPosition = position;
 
-        if (dataTable.HasField("velocity"))
-            particleData.mVelocity = dataTable.GetColorField("velocity");
+        if (setVelocity)
+            particleData.mVelocity = velocity;
 
-        if (dataTable.HasField("size"))
-            particleData.mSize = dataTable.GetColorField("size");
+        if (setSize)
+            particleData.mSize = size;
         
-        if (dataTable.HasField("elapsedTime"))
-            particleData.mElapsedTime = dataTable.GetFloatField("elapsedTime");
+        if (setElapsedTime)
+            particleData.mElapsedTime = elapsedTime;
 
-        if (dataTable.HasField("lifeTime"))
-            particleData.mLifetime = dataTable.GetFloatField("lifeTime");
+        if (setLifeTime)
+            particleData.mLifetime = lifeTime;
 
-        if (dataTable.HasField("rotationSpeed"))
-            particleData.mRotationSpeed = dataTable.GetFloatField("rotationSpeed");
+        if (setRotationSpeed)
+            particleData.mRotationSpeed = rotationSpeed;
 
-        if (dataTable.HasField("rotation"))
-            particleData.mRotation = dataTable.GetFloatField("rotation");
+        if (setRotation)
+            particleData.mRotation = rotation;
     }
 
     return 0;
