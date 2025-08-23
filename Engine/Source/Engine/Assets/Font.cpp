@@ -76,6 +76,11 @@ void Font::LoadStream(Stream& stream, Platform platform)
     mBold = stream.ReadBool();
     mItalic = stream.ReadBool();
 
+    if (mVersion >= ASSET_VERSION_FONT_TTF_FLAG)
+    {
+        mTtf = stream.ReadBool();
+    }
+
     mFilterType = (FilterType)stream.ReadUint8();
     mWrapMode = (WrapMode)stream.ReadUint8();
     mMipmapped = stream.ReadBool();
@@ -95,16 +100,23 @@ void Font::LoadStream(Stream& stream, Platform platform)
         charData.mAdvance = stream.ReadFloat();
     }
 
-    bool validTexture = stream.ReadBool();
-
-    if (validTexture)
+    if (mTtf)
     {
-        Texture* texture = NewTransientAsset<Texture>();
-        texture->LoadStream(stream, platform);
-        texture->Create();
-        texture->SetName("FontTexture");
+        bool validTexture = stream.ReadBool();
 
-        mTexture = texture;
+        if (validTexture)
+        {
+            Texture* texture = NewTransientAsset<Texture>();
+            texture->LoadStream(stream, platform);
+            texture->Create();
+            texture->SetName("FontTexture");
+
+            mTexture = texture;
+        }
+    }
+    else
+    {
+        stream.ReadAsset(mTexture);
     }
 
 #if EDITOR
@@ -116,11 +128,6 @@ void Font::LoadStream(Stream& stream, Platform platform)
         stream.SetPos(stream.GetPos() + ttfDataSize);
     }
 #endif
-
-    if (mVersion >= ASSET_VERSION_FONT_TTF_FLAG)
-    {
-        mTtf = stream.ReadBool();
-    }
 }
 
 void Font::SaveStream(Stream& stream, Platform platform)
@@ -133,6 +140,7 @@ void Font::SaveStream(Stream& stream, Platform platform)
     stream.WriteFloat(mLineSpacing);
     stream.WriteBool(mBold);
     stream.WriteBool(mItalic);
+    stream.WriteBool(mTtf);
 
     stream.WriteUint8((uint8_t)mFilterType);
     stream.WriteUint8((uint8_t)mWrapMode);
@@ -152,13 +160,20 @@ void Font::SaveStream(Stream& stream, Platform platform)
         stream.WriteFloat(charData.mAdvance);
     }
 
-    Texture* texture = mTexture.Get<Texture>();
-    bool validTexture = (texture != nullptr);
-    stream.WriteBool(validTexture);
-
-    if (validTexture)
+    if (mTtf)
     {
-        texture->SaveStream(stream, platform);
+        Texture* texture = mTexture.Get<Texture>();
+        bool validTexture = (texture != nullptr);
+        stream.WriteBool(validTexture);
+
+        if (validTexture)
+        {
+            texture->SaveStream(stream, platform);
+        }
+    }
+    else
+    {
+        stream.WriteAsset(mTexture);
     }
 
 #if EDITOR
@@ -174,8 +189,6 @@ void Font::SaveStream(Stream& stream, Platform platform)
         }
     }
 #endif
-
-    stream.WriteBool(mTtf);
 }
 
 void Font::Create()
@@ -208,7 +221,6 @@ void Font::Import(const std::string& path, ImportOptions* options)
     {
         mTtf = false;
         ImportXml(path, options);
-        LogError("Invalid truetype font file.");
     }
 
 #endif // EDITOR
