@@ -741,7 +741,8 @@ void Renderer::GatherLightData(World* world)
     {
         float deltaTime = GetEngineState()->mGameDeltaTime;
         uint32_t lightLimit = glm::min<uint32_t>(mLightFadeLimit, MAX_LIGHTS_PER_DRAW);
-        glm::vec3 camPos = world->GetActiveCamera()->GetWorldPosition();
+        Camera3D* camera = world->GetActiveCamera();
+        glm::vec3 camPos = camera ? camera->GetWorldPosition() : glm::vec3(0.0f, 0.0f, 0.0f);
 
         // Step 1 - Determine the closest N lights
         for (uint32_t i = 0; i < lights.size(); ++i)

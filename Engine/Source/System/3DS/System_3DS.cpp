@@ -476,9 +476,6 @@ void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 
 void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
 {
-    consoleInit(GFX_BOTTOM, &GetEngineState()->mSystem.mPrintConsole);
-    consoleSelect(&GetEngineState()->mSystem.mPrintConsole);
-
     const char* fileName = strrchr(fileString, '/') ? strrchr(fileString, '/') + 1 : fileString;
     char str[256];
     snprintf(str, 256, "[Assert] %s, %s, line %d", exprString, fileName, lineNumber);
@@ -488,6 +485,9 @@ void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNum
 
 void SYS_Alert(const char* message)
 {
+    consoleInit(GFX_BOTTOM, &GetEngineState()->mSystem.mPrintConsole);
+    consoleSelect(&GetEngineState()->mSystem.mPrintConsole);
+
     LogError("%s", message);
 
     // Display alert message in console view and wait for player to hit A button.
@@ -497,9 +497,13 @@ void SYS_Alert(const char* message)
     INP_Update();
     while (!IsGamepadButtonJustDown(GAMEPAD_A, 0))
     {
-        SYS_Sleep(5);
         INP_Update();
     }
+
+    // Add some small feedback to show that 
+    // user is attempting to proceed.
+    LogError(">>>");
+    SYS_Sleep(100);
 
     EnableConsole(false);
 }

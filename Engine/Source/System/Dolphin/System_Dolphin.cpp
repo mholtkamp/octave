@@ -706,6 +706,11 @@ void SYS_Alert(const char* message)
         INP_Update();
     }
 
+    // Add some small feedback to show that 
+    // user is attempting to proceed.
+    LogError(">>>");
+    SYS_Sleep(100);
+
     EnableConsole(false);
 }
 
