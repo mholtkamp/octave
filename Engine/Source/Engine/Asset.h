@@ -24,8 +24,8 @@ class AssetDir;
 #define ASSET_VERSION_PARTICLE_RADIAL_SPAWN 3
 #define ASSET_VERSION_PROPERTY_EXTRA 4
 #define ASSET_VERSION_SCENE_SUB_SCENE_OVERRIDE 5
-
-#define ASSET_VERSION_CURRENT 5
+#define ASSET_VERSION_FONT_TTF_FLAG 6
+#define ASSET_VERSION_CURRENT 6
 // ----------------------------------------------------
 
 #define DECLARE_ASSET(Base, Parent) DECLARE_FACTORY(Base, Asset); DECLARE_OBJECT(Base, Parent);

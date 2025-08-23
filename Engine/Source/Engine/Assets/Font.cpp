@@ -117,6 +117,10 @@ void Font::LoadStream(Stream& stream, Platform platform)
     }
 #endif
 
+    if (mVersion >= ASSET_VERSION_FONT_TTF_FLAG)
+    {
+        mTtf = stream.ReadBool();
+    }
 }
 
 void Font::SaveStream(Stream& stream, Platform platform)
@@ -170,6 +174,8 @@ void Font::SaveStream(Stream& stream, Platform platform)
         }
     }
 #endif
+
+    stream.WriteBool(mTtf);
 }
 
 void Font::Create()
@@ -193,12 +199,15 @@ void Font::Import(const std::string& path, ImportOptions* options)
     if (ttf)
     {
         // Reset the ttf data.
+        mTtf = true;
         mTtfData.Reset();
         mTtfData.ReadFile(path.c_str(), false);
         RebuildFont();
     }
     else
     {
+        mTtf = false;
+        ImportXml(path, options);
         LogError("Invalid truetype font file.");
     }
 
@@ -209,7 +218,7 @@ void Font::GatherProperties(std::vector<Property>& outProps)
 {
     Asset::GatherProperties(outProps);
 
-    //outProps.push_back(Property(DatumType::Asset, "Texture", this, &mTexture, 1, nullptr, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::Asset, "Texture", this, &mTexture, 1, nullptr, int32_t(Texture::GetStaticType())));
 
     outProps.push_back(Property(DatumType::Integer, "Size", this, &mSize, 1, Font::HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Line Spacing", this, &mLineSpacing));
@@ -423,5 +432,98 @@ void Font::RebuildFont()
             }
         }
     }
+#endif
+}
+
+void Font::ImportXml(const std::string& path, ImportOptions* options)
+{
+#if EDITOR
+    mTtf = false;
+
+    // This xml reading code is taken from the sample in irrXML.h
+    IrrXMLReader* xml = createIrrXMLReader(path.c_str());
+
+    while (xml && xml->read())
+    {
+        switch (xml->getNodeType())
+        {
+        case EXN_TEXT:
+            // in this xml file, the only text which occurs is the messageText
+            //messageText = xml->getNodeData();
+            break;
+        case EXN_ELEMENT:
+        {
+            if (!strcmp("font", xml->getNodeName()))
+            {
+                std::string size = xml->getAttributeValue("size");
+                std::string width = xml->getAttributeValue("width");
+                std::string height = xml->getAttributeValue("height");
+                std::string bold = xml->getAttributeValue("bold");
+                std::string italic = xml->getAttributeValue("italic");
+
+                try
+                {
+                    mSize = std::stoi(size);
+                    mWidth = std::stoi(width);
+                    mHeight = std::stoi(height);
+                    mBold = (bold == "true");
+                    mItalic = (italic == "true");
+                }
+                catch (...)
+                {
+
+                }
+
+            }
+            else if (!strcmp("character", xml->getNodeName()))
+            {
+                std::string codePoint = xml->getAttributeValue("text");
+                std::string x = xml->getAttributeValue("x");
+                std::string y = xml->getAttributeValue("y");
+                std::string width = xml->getAttributeValue("width");
+                std::string height = xml->getAttributeValue("height");
+                std::string originX = xml->getAttributeValue("origin-x");
+                std::string originY = xml->getAttributeValue("origin-y");
+                std::string advance = xml->getAttributeValue("advance");
+
+                if (codePoint == "&quot")
+                    codePoint = "\"";
+                else if (codePoint == "&amp")
+                    codePoint = "&";
+                else if (codePoint == "&lt")
+                    codePoint = "<";
+                else if (codePoint == "&gt")
+                    codePoint = ">";
+
+                if (codePoint.length() >= 1)
+                {
+                    try
+                    {
+                        Character newChar;
+                        newChar.mCodePoint = codePoint[0];
+                        newChar.mX = std::stof(x);
+                        newChar.mY = std::stof(y);
+                        newChar.mWidth = std::stof(width);
+                        newChar.mHeight = std::stof(height);
+                        newChar.mOriginX = std::stof(originX);
+                        newChar.mOriginY = std::stof(originY);
+                        newChar.mAdvance = std::stof(advance);
+
+                        mCharacters.push_back(newChar);
+                    }
+                    catch (...)
+                    {
+
+                    }
+                }
+            }
+        }
+        break;
+        }
+    }
+
+    delete xml;
+    xml = nullptr;
+
 #endif
 }

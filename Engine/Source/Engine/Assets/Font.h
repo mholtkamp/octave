@@ -52,6 +52,8 @@ public:
 
 protected:
 
+    void ImportXml(const std::string& path, ImportOptions* options);
+
     int32_t mSize = 32;
     int32_t mWidth = 0;
     int32_t mHeight = 0;
@@ -60,6 +62,7 @@ protected:
     float mLineSpacing = 0.0f;
     bool mBold = false;
     bool mItalic = false;
+    bool mTtf = true;
 
     FilterType mFilterType = FilterType::Linear;
     WrapMode mWrapMode = WrapMode::Clamp;
