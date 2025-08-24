@@ -138,6 +138,28 @@ void World::SetRootNode(Node* node)
 
         if (mRootNode != nullptr)
         {
+            // The new root node should not be attached to any other node.
+            if (mRootNode->GetParent() != nullptr)
+            {
+                mRootNode->Detach();
+            }
+
+            // If this node is already a root node for a different world, first
+            // clear it as the root node in that world.
+            World* prevWorld = mRootNode->GetWorld();
+
+            // This shouldn't be possible.
+            OCT_ASSERT(prevWorld != this);
+
+            if (prevWorld &&
+                prevWorld->GetRootNode() == mRootNode.Get())
+            {
+                prevWorld->SetRootNode(nullptr);
+            }
+
+            // The new root node should no longer be associated with a world.
+            OCT_ASSERT(mRootNode->GetWorld() == nullptr);
+
             mRootNode->SetWorld(this, true);
         }
 
