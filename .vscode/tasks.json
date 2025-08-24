@@ -3,7 +3,7 @@
         {
             "type": "shell",
             "label": "Make Editor",
-            "command": "make -f Makefile_Linux -C ${workspaceFolder}/Standalone/",
+            "command": "make -j 16 -f Makefile_Linux -C ${workspaceFolder}/Standalone/",
             "args": [],
             "options": {
 
@@ -21,7 +21,7 @@
         {
             "type": "shell",
             "label": "Make Standalone Game",
-            "command": "make -f Makefile_Linux_Game -C ${workspaceFolder}/Standalone/",
+            "command": "make -j 16 -f Makefile_Linux_Game -C ${workspaceFolder}/Standalone/",
             "args": [],
             "options": {
 
@@ -40,7 +40,7 @@
         {
             "type": "shell",
             "label": "Make Standalone Editor",
-            "command": "make -f Makefile_Linux_Editor -C ${workspaceFolder}/Standalone/",
+            "command": "make -j 16 -f Makefile_Linux_Editor -C ${workspaceFolder}/Standalone/",
             "args": [],
             "options": {
 
@@ -58,7 +58,7 @@
         {
             "type": "shell",
             "label": "Make Standalone Wii",
-            "command": "make -f Makefile_Wii -C ${workspaceFolder}/Standalone/",
+            "command": "make -j 16 -f Makefile_Wii -C ${workspaceFolder}/Standalone/",
             "args": [],
             "options": {
 
@@ -76,7 +76,7 @@
         {
             "type": "shell",
             "label": "Make Standalone 3DS",
-            "command": "make -f Makefile_3DS -C ${workspaceFolder}/Standalone/",
+            "command": "make -j 16 -f Makefile_3DS -C ${workspaceFolder}/Standalone/",
             "args": [],
             "options": {
 
