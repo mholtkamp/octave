@@ -14,6 +14,7 @@
 #include <psapi.h>
 #include <Shlobj.h>
 #include <assert.h>
+#include <errno.h>
 
 #if EDITOR
 #include "imgui.h"
@@ -433,7 +434,14 @@ void SYS_SetWorkingDirectory(const std::string& dirPath)
 
 bool SYS_CreateDirectory(const char* dirPath)
 {
-    return (_mkdir(dirPath) == 0);
+    int32_t ret = _mkdir(dirPath);
+
+    if (ret < 0)
+    {
+        LogWarning("_mkdir error: %s", strerror(errno));
+    }
+
+    return (ret == 0);
 }
 
 void SYS_RemoveDirectory(const char* dirPath)

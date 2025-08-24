@@ -61,7 +61,14 @@ bool SYS_DoesFileExist(const char* path, bool isAsset)
     struct stat info;
     bool exists = false;
 
-    int32_t retStatus = stat(path, &info);
+    std::string truePath = path;
+
+    if (isAsset)
+    {
+        truePath = "romfs:/" + truePath;
+    }
+
+    int32_t retStatus = stat(truePath.c_str(), &info);
 
     if (retStatus == 0)
     {
@@ -77,7 +84,14 @@ void SYS_AcquireFileData(const char* path, bool isAsset, int32_t maxSize, char*&
     outData = nullptr;
     outSize = 0;
 
-    FILE* file = fopen(path, "rb");
+    std::string truePath = path;
+
+    if (isAsset)
+    {
+        truePath = "romfs:/" + truePath;
+    }
+
+    FILE* file = fopen(truePath.c_str(), "rb");
 
     if (file != nullptr)
     {
@@ -470,8 +484,13 @@ std::string SYS_GetClipboardText()
 // Misc
 void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 {
-    vprintf(format, arg);
-    printf("\n");
+    char buffer[256];
+    vsnprintf(buffer, 256, format, arg);
+
+    std::string outStr = buffer;
+    outStr += "\n";
+
+    svcOutputDebugString(outStr.data(), (int32_t)outStr.size());
 }
 
 void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)

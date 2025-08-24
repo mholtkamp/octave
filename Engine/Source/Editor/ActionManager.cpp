@@ -337,6 +337,21 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         SYS_Exec(std::string("cp -R Engine/Shaders/GLSL/bin " + packagedDir + "Engine/Shaders/GLSL/bin").c_str());
     }
 
+    // If we are running a 3DS build, copy all the packaged data to the
+    // Intermediate/Romfs directory.
+    if (platform == Platform::N3DS)
+    {
+        LogDebug("Copying packaged data to Romfs staging directory.");
+
+        std::string intermediateDir = standalone ? "Standalone/Intermediate" : (projectName + "/Intermediate");
+        std::string romfsDir = intermediateDir + "/Romfs";
+
+        CreateDir(intermediateDir.c_str());
+        CreateDir(romfsDir.c_str());
+
+        SYS_Exec(std::string("cp -R " + packagedDir + "/* " + romfsDir).c_str());
+    }
+
     // ( ) Run the makefile to compile the game.
 #if STANDALONE_RELEASE
     bool needCompile = !standalone || embedded || platform == Platform::Android;
