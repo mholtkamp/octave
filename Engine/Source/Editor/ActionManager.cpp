@@ -115,12 +115,37 @@ void ActionManager::Update()
 
 }
 
+void ReplaceAllStrings(std::string& str, const std::string& from, const std::string& to)
+{
+    if (from.empty())
+        return;
+
+    size_t startPos = 0;
+    while ((startPos = str.find(from, startPos)) != std::string::npos)
+    {
+        str.replace(startPos, from.length(), to);
+        startPos += to.length();
+    }
+}
+
+void ReplaceStringInFile(const std::string& file, const std::string& srcString, const std::string& dstString)
+{
+    Stream fileStream;
+    fileStream.ReadFile(file.c_str(), false);
+    std::string fileString = std::string(fileStream.GetData(), fileStream.GetSize());
+    ReplaceAllStrings(fileString, srcString, dstString);
+
+    Stream outStream(fileString.c_str(), (uint32_t)fileString.size());
+    outStream.WriteFile(file.c_str());
+}
+
 void ActionManager::BuildData(Platform platform, bool embedded)
 {
     const EngineState* engineState = GetEngineState();
     bool standalone = engineState->mStandalone;
     const std::string& projectDir = engineState->mProjectDirectory;
     const std::string& projectName = engineState->mProjectName;
+    bool useRomfs = (platform == Platform::N3DS) && embedded;
 
     std::vector<std::pair<AssetStub*, std::string> > embeddedAssets;
 
@@ -193,7 +218,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             // Currently either embed everything or embed nothing...
             // Embed flag on Asset does nothing, but if we want to keep that feature, then 
             // we need to load the asset if it's not loaded, add to embedded list if it's flagged and then probably unload it after.
-            if (embedded)
+            if (embedded && !useRomfs)
             {
                 embeddedAssets.push_back({ stub, packFile });
             }
@@ -272,7 +297,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     // Generate embedded script source files. If not doing an embedded build, copy over the script folders.
     std::vector<std::string> scriptFiles;
 
-    if (embedded)
+    if (embedded && !useRomfs)
     {
         GatherScriptFiles("Engine/Scripts/", scriptFiles);
         GatherScriptFiles(projectDir + "/Scripts/", scriptFiles);
@@ -339,7 +364,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     // If we are running a 3DS build, copy all the packaged data to the
     // Intermediate/Romfs directory.
-    if (platform == Platform::N3DS)
+    if (useRomfs)
     {
         LogDebug("Copying packaged data to Romfs staging directory.");
 
@@ -432,8 +457,28 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             default: OCT_ASSERT(0); break;
             }
 
-            std::string makeCmd = std::string("make -C ") + (buildProjDir) + " -f " + makefilePath + " -j 6";
+            std::string srcMakefile = buildProjDir + "/" + makefilePath;
+            std::string tmpMakefile = buildProjDir + "/Makefile_TEMP";
+            // Make a copy of the makefile so we can change the app name and things like that
+            SYS_Exec(std::string("cp " + srcMakefile + " " + tmpMakefile).c_str());
+
+            // This is fragile, but we're going to modify the temp makefile to compile
+            // the way we need to for a given platform.
+            if (platform == Platform::N3DS)
+            {
+                ReplaceStringInFile(tmpMakefile, "OctaveApp", projectName);
+
+                if (useRomfs)
+                {
+                    ReplaceStringInFile(tmpMakefile, "#ROMFS", "ROMFS");
+                }
+            }
+
+            std::string makeCmd = std::string("make -C ") + (buildProjDir) + " -f Makefile_TEMP -j 12";
             SYS_Exec(makeCmd.c_str());
+
+            // Delete the temp makefile
+            SYS_Exec(std::string("rm " + tmpMakefile).c_str());
         }
     }
     else
@@ -1127,30 +1172,6 @@ void CpyFile(const std::string& srcFile, const std::string& dstFile)
 void CpyDir(const std::string& srcFile, const std::string& dstFile)
 {
     SYS_Exec((std::string("cp -r ") + srcFile + " " + dstFile).c_str());
-}
-
-void ReplaceAllStrings(std::string& str, const std::string& from, const std::string& to)
-{
-    if (from.empty())
-        return;
-
-    size_t startPos = 0;
-    while ((startPos = str.find(from, startPos)) != std::string::npos)
-    {
-        str.replace(startPos, from.length(), to);
-        startPos += to.length();
-    }
-}
-
-void ReplaceStringInFile(const std::string& file, const std::string& srcString, const std::string& dstString)
-{
-    Stream fileStream;
-    fileStream.ReadFile(file.c_str(), false);
-    std::string fileString = std::string(fileStream.GetData(), fileStream.GetSize());
-    ReplaceAllStrings(fileString, srcString, dstString);
-
-    Stream outStream(fileString.c_str(), (uint32_t)fileString.size());
-    outStream.WriteFile(file.c_str());
 }
 
 void CopyFileAndReplaceString(const std::string& srcFile, const std::string& dstFile, const std::string& srcString, const std::string& dstString)
