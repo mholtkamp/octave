@@ -42,7 +42,7 @@ GFXBUILD	:=	$(BUILD)
 #ROMFS		:=	Intermediate/Romfs
 #GFXBUILD	:=	$(ROMFS)/gfx
 OUTPUT_DIR	:=	$(CURDIR)/Build/3DS
-APP_TITLE	:= OctaveApp
+APP_TITLE	:=	OctaveApp
 
 #---------------------------------------------------------------------------------
 # options for code generation

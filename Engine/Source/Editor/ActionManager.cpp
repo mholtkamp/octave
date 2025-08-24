@@ -467,6 +467,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             if (platform == Platform::N3DS)
             {
                 ReplaceStringInFile(tmpMakefile, "OctaveApp", projectName);
+                ReplaceStringInFile(tmpMakefile, "$(CURDIR)/Makefile_3DS", "$(CURDIR)/Makefile_TEMP");
 
                 if (useRomfs)
                 {
