@@ -260,7 +260,7 @@ bool AssetManager::IsPurging() const
 
 void AssetManager::Discover(const char* directoryName, const char* directoryPath)
 {
-    SCOPED_STAT("DiscoverAssets")
+    SCOPED_STAT("DiscoverAssets");
 
     // Make sure directory path ends with 
     std::string dirPath = directoryPath;

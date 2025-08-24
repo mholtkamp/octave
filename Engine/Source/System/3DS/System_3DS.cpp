@@ -17,8 +17,16 @@
 
 #define ENABLE_SYSTEM_CONSOLE 0
 
+static bool sRomfsInit = false;
+
 void SYS_Initialize()
 {
+    if (!sRomfsInit)
+    {
+        romfsInit();
+        sRomfsInit = true;
+    }
+
     // Initialize graphics
     gfxInitDefault();
     gfxSet3D(true); // Enable stereoscopic 3D
@@ -58,6 +66,12 @@ void SYS_Update()
 // Files
 bool SYS_DoesFileExist(const char* path, bool isAsset)
 {
+    if (!sRomfsInit)
+    {
+        romfsInit();
+        sRomfsInit = true;
+    }
+
     struct stat info;
     bool exists = false;
 
@@ -81,6 +95,12 @@ bool SYS_DoesFileExist(const char* path, bool isAsset)
 
 void SYS_AcquireFileData(const char* path, bool isAsset, int32_t maxSize, char*& outData, uint32_t& outSize)
 {
+    if (!sRomfsInit)
+    {
+        romfsInit();
+        sRomfsInit = true;
+    }
+
     outData = nullptr;
     outSize = 0;
 
