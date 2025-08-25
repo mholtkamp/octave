@@ -59,7 +59,7 @@ void StatsOverlay::TickCommon(float deltaTime)
         numStats += (uint32_t)GetProfiler()->GetGpuStats().size();
         break;
     case StatDisplayMode::Memory:
-        numStats = 1;
+        numStats = (uint32_t)SYS_GetMemoryStats().size();
         break;
     case StatDisplayMode::Network:
         numStats = 2;
@@ -102,11 +102,26 @@ void StatsOverlay::TickCommon(float deltaTime)
 
     if (mDisplayMode == StatDisplayMode::Memory)
     {
-#if PLATFORM_WINDOWS || PLATFORM_LINUX
-        SetStatText(0, "Used Memory", SYS_GetNumBytesAllocated() / static_cast<float>(1024 * 1024), DEFAULT_STAT_COLOR, statY);
-#else
-        SetStatText(0, "Free Memory", SYS_GetNumBytesFree() / static_cast<float>(1024 * 1024), DEFAULT_STAT_COLOR, statY);
-#endif
+        std::vector<MemoryStat> stats = SYS_GetMemoryStats();
+
+        for (uint32_t i = 0; i < stats.size(); ++i)
+        {
+            std::string statText = stats[i].mName;
+            uint64_t statValue = 0;
+
+            if (stats[i].mBytesAllocated == 0)
+            {
+                statText += ": (Free)";
+                statValue = stats[i].mBytesFree;
+            }
+            else
+            {
+                statText += ": (Used)";
+                statValue = stats[i].mBytesAllocated;
+            }
+
+            SetStatText(i, statText.c_str(), statValue / static_cast<float>(1024 * 1024), DEFAULT_STAT_COLOR, statY);
+        }
     }
     else if (mDisplayMode == StatDisplayMode::Network)
     {

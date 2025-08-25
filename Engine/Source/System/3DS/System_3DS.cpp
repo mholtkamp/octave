@@ -391,14 +391,27 @@ void SYS_AlignedFree(void* pointer)
     free(pointer);
 }
 
-uint64_t SYS_GetNumBytesFree()
+std::vector<MemoryStat> SYS_GetMemoryStats()
 {
-    return linearSpaceFree();
-}
+    std::vector<MemoryStat> stats;
 
-uint64_t SYS_GetNumBytesAllocated()
-{
-    return 0;
+    {
+        MemoryStat stat;
+        stat.mName = "Linear";
+        stat.mBytesFree = linearSpaceFree();
+        stat.mBytesAllocated = 0;
+        stats.push_back(stat);
+    }
+
+    {
+        MemoryStat stat;
+        stat.mName = "Vram";
+        stat.mBytesFree = vramSpaceFree();
+        stat.mBytesAllocated = 0;
+        stats.push_back(stat);
+    }
+
+    return stats;
 }
 
 bool SYS_ReadSave(const char* saveName, Stream& outStream)

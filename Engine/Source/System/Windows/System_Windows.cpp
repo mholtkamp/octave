@@ -786,18 +786,23 @@ void SYS_AlignedFree(void* pointer)
     _aligned_free(pointer);
 }
 
-uint64_t SYS_GetNumBytesFree()
+std::vector<MemoryStat> SYS_GetMemoryStats()
 {
-    // What do?
-    return 0;
-}
+    std::vector<MemoryStat> stats;
 
-uint64_t SYS_GetNumBytesAllocated()
-{
     HANDLE procHandle = GetCurrentProcess();
     PROCESS_MEMORY_COUNTERS counters;
     GetProcessMemoryInfo(procHandle, &counters, sizeof(PROCESS_MEMORY_COUNTERS));
-    return counters.WorkingSetSize;
+    
+    {
+        MemoryStat stat;
+        stat.mName = "Main";
+        stat.mBytesFree = 0;
+        stat.mBytesAllocated = counters.WorkingSetSize;
+        stats.push_back(stat);
+    }
+
+    return stats;
 }
 
 // Save Game
