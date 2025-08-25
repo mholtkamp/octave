@@ -365,7 +365,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     // If we are running a 3DS build, copy all the packaged data to the
     // Intermediate/Romfs directory.
     // Clear existing Romfs directory first.
-    std::string intermediateDir = standalone ? "Standalone/Intermediate" : (projectName + "/Intermediate");
+    std::string intermediateDir = standalone ? "Standalone/Intermediate" : (projectDir + "/Intermediate");
     std::string romfsDir = intermediateDir + "/Romfs";
     RemoveDir(romfsDir.c_str());
 

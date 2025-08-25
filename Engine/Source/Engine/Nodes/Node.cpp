@@ -1036,8 +1036,6 @@ bool Node::IsWorldRoot() const
 Node* Node::GetSubRoot()
 {
     // This is for finding what "sub-scene tree" a node is a part of.
-    Node* subRoot = this;
-
     if (mScene != nullptr ||
         mParent == nullptr)
     {
