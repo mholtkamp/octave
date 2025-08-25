@@ -21,17 +21,6 @@ class CameraFrustum;
 
 struct EngineState;
 
-struct FadingLight
-{
-    // mNode should only be used for comparisons!! If deleted, we want to fade it out, not crash.
-    Light3D* mComponent = nullptr;
-    LightData mData = {};
-    glm::vec4 mColor = { 0.0f, 0.0f, 0.0f, 0.0f };
-    float mAlpha = 0.0f;
-
-    FadingLight(Light3D* comp) : mComponent(comp) {}
-};
-
 struct LightDistance2
 {
     Light3D* mComponent = nullptr;
@@ -238,7 +227,6 @@ private:
     bool mEnableLightFade = false;
     uint32_t mLightFadeLimit = 4;
     float mLightFadeSpeed = 1.0f;
-    std::vector<FadingLight> mFadingLights;
     glm::vec4 mClearColor = {};
 
     // Path tracing

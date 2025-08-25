@@ -736,6 +736,7 @@ void Renderer::GatherLightData(World* world)
 
     mLightData.clear();
     const std::vector<Light3D*>& lights = world->GetLights();
+    std::vector<FadingLight>& fadingLights = world->GetFadingLights();
 
     if (mEnableLightFade)
     {
@@ -799,12 +800,12 @@ void Renderer::GatherLightData(World* world)
 
         for (uint32_t i = 0; i < sClosestLights.size(); ++i)
         {
-            if (mFadingLights.size() < lightLimit)
+            if (fadingLights.size() < lightLimit)
             {
                 bool alreadyFading = false;
-                for (uint32_t j = 0; j < mFadingLights.size(); ++j)
+                for (uint32_t j = 0; j < fadingLights.size(); ++j)
                 {
-                    if (mFadingLights[j].mComponent == sClosestLights[i].mComponent)
+                    if (fadingLights[j].mComponent == sClosestLights[i].mComponent)
                     {
                         alreadyFading = true;
                         break;
@@ -813,7 +814,7 @@ void Renderer::GatherLightData(World* world)
 
                 if (!alreadyFading)
                 {
-                    mFadingLights.push_back(FadingLight(sClosestLights[i].mComponent));
+                    fadingLights.push_back(FadingLight(sClosestLights[i].mComponent));
                 }
             }
             else
@@ -823,11 +824,11 @@ void Renderer::GatherLightData(World* world)
             }
         }
 
-        for (int32_t i = int32_t(mFadingLights.size()) - 1; i >= 0; --i)
+        for (int32_t i = int32_t(fadingLights.size()) - 1; i >= 0; --i)
         {
             // Step 3 - Determine which of the persistent N lights need to be faded out.
             bool active = false;
-            FadingLight& fadingLight = mFadingLights[i];
+            FadingLight& fadingLight = fadingLights[i];
 
             for (uint32_t j = 0; j < sClosestLights.size(); ++j)
             {
@@ -860,7 +861,7 @@ void Renderer::GatherLightData(World* world)
             // Step 5 - Copy persistent light data to mLightData if alpha > 0, otherwise remove it from fading light vector
             if (fadingLight.mAlpha <= 0.0f)
             {
-                mFadingLights.erase(mFadingLights.begin() + i);
+                fadingLights.erase(fadingLights.begin() + i);
             }
             else
             {

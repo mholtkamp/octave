@@ -67,6 +67,7 @@ public:
     const std::vector<Line>& GetLines() const;
 
     const std::vector<class Light3D*>& GetLights();
+    std::vector<FadingLight>& GetFadingLights();
 
     void SetAmbientLightColor(glm::vec4 color);
     glm::vec4 GetAmbientLightColor() const;
@@ -195,6 +196,7 @@ private:
     std::vector<Line> mLines;
     std::vector<class Light3D*> mLights;
     std::vector<class Audio3D*> mAudios;
+    std::vector<FadingLight> mFadingLights;
     NodePtr mQueuedRootNode;
     glm::vec4 mAmbientLightColor;
     glm::vec4 mShadowColor;

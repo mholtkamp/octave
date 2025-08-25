@@ -22,6 +22,7 @@
 
 class Level;
 class Primitive3D;
+class Light3D;
 class Node3D;
 class Node;
 
@@ -472,4 +473,15 @@ enum class Platform
     N3DS,
 
     Count
+};
+
+struct FadingLight
+{
+    // mNode should only be used for comparisons!! If deleted, we want to fade it out, not crash.
+    Light3D* mComponent = nullptr;
+    LightData mData = {};
+    glm::vec4 mColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float mAlpha = 0.0f;
+
+    FadingLight(Light3D* comp) : mComponent(comp) {}
 };

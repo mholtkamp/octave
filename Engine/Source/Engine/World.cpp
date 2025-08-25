@@ -361,6 +361,11 @@ const std::vector<Light3D*>& World::GetLights()
     return mLights;
 }
 
+std::vector<FadingLight>& World::GetFadingLights()
+{
+    return mFadingLights;
+}
+
 void World::SetAmbientLightColor(glm::vec4 color)
 {
     mAmbientLightColor = color;
