@@ -11,7 +11,9 @@
 FORCE_LINK_DEF(SoundWave);
 DEFINE_ASSET(SoundWave);
 
-#define LQ_CONSOLE_AUDIO 1
+// This is causing very loud sound corruption on 3DS, need to
+// debug this if we are going to turn it back on.
+#define LQ_CONSOLE_AUDIO 0
 
 bool SoundWave::HandlePreviewPropChange(Datum* datum, uint32_t index, const void* newValue)
 {
