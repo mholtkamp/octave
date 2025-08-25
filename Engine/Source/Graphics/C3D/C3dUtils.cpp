@@ -498,6 +498,7 @@ void PrepareUiRendering()
     C3D_DepthTest(false, GPU_GREATER, GPU_WRITE_COLOR);
     C3D_EarlyDepthTest(false, GPU_EARLYDEPTH_GREATER, 0);
     C3D_AlphaBlend(GPU_BLEND_ADD, GPU_BLEND_ADD, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA);
+    C3D_FogGasMode(GPU_NO_FOG, GPU_PLAIN_DENSITY, false);
 
     ResetTexEnv();
     ResetLightingEnv();
