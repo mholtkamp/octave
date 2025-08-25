@@ -75,19 +75,30 @@ bool SYS_DoesFileExist(const char* path, bool isAsset)
     struct stat info;
     bool exists = false;
 
-    std::string truePath = path;
+    // First check in romfs
+    std::string romfsPath = path;
 
     if (isAsset)
     {
-        truePath = "romfs:/" + truePath;
+        romfsPath = "romfs:/" + romfsPath;
     }
 
-    int32_t retStatus = stat(truePath.c_str(), &info);
+    int32_t retStatus = stat(romfsPath.c_str(), &info);
 
     if (retStatus == 0)
     {
         // If the file is actually a directory, than return false.
         exists = !(info.st_mode & S_IFDIR);
+    }
+    else
+    {
+        // Second, check in normal filepath
+        retStatus = stat(path, &info);
+
+        if (retStatus == 0)
+        {
+            exists = !(info.st_mode & S_IFDIR);
+        }
     }
 
     return exists;
@@ -104,14 +115,21 @@ void SYS_AcquireFileData(const char* path, bool isAsset, int32_t maxSize, char*&
     outData = nullptr;
     outSize = 0;
 
-    std::string truePath = path;
+    // First try romfs path
+    std::string romfsPath = path;
 
     if (isAsset)
     {
-        truePath = "romfs:/" + truePath;
+        romfsPath = "romfs:/" + romfsPath;
     }
 
-    FILE* file = fopen(truePath.c_str(), "rb");
+    FILE* file = fopen(romfsPath.c_str(), "rb");
+
+    if (file == nullptr)
+    {
+        // Second, try normal file path
+        file = fopen(path, "rb");
+    }
 
     if (file != nullptr)
     {

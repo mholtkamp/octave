@@ -471,10 +471,10 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 ReplaceStringInFile(tmpMakefile, "OctaveApp", projectName);
                 ReplaceStringInFile(tmpMakefile, "$(CURDIR)/Makefile_3DS", "$(CURDIR)/Makefile_TEMP");
 
-                if (useRomfs)
-                {
-                    ReplaceStringInFile(tmpMakefile, "#ROMFS", "ROMFS");
-                }
+                //if (!useRomfs)
+                //{
+                //    ReplaceStringInFile(tmpMakefile, "ROMFS :=", "#ROMFS :=");
+                //}
             }
 
             std::string makeCmd = std::string("make -C ") + (buildProjDir) + " -f Makefile_TEMP -j 12";
