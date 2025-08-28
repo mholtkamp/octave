@@ -632,19 +632,6 @@ void AssetManager::ImportEngineAssets()
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_TriShape");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_MiniArrow");
 
-        ImportOptions fontOptions;
-        // Do we want to disable mip maps? Mipmaps can cause artifacts on edges of characters
-        // But if we disable mipmaps, then large fonts look coarse and aliased at smaller sizes.
-        //fontOptions.SetOptionValue("mipmapped", false);
-        Texture* roboto16Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Roboto16", &fontOptions);
-        roboto16Tex->SetMipmapped(false);
-        Texture* roboto32Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Roboto32", &fontOptions);
-        roboto32Tex->SetMipmapped(false);
-        Texture* robotoMono8Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_RobotoMono8", &fontOptions);
-        robotoMono8Tex->SetMipmapped(false);
-        Texture* robotoMono16Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_RobotoMono16", &fontOptions);
-        robotoMono16Tex->SetMipmapped(false);
-
         // Need to fetch these loaded textures so that the default materials can use them.
         Renderer::Get()->LoadDefaultTextures();
 
@@ -697,9 +684,9 @@ void AssetManager::ImportEngineAssets()
 
         // Import fonts
         Font* fontRoboto32 = (Font*) ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_Roboto32");
-        OCT_UNUSED(fontRoboto32);
+        fontRoboto32->GetTexture()->SetFormat(PixelFormat::LA4);
         Font* fontRobotoMono16 = (Font*)ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_RobotoMono16");
-        OCT_UNUSED(fontRobotoMono16);
+        fontRobotoMono16->GetTexture()->SetFormat(PixelFormat::LA4);
 
         // Mark any transient assets that exist at this point as engine assets
         for (uint32_t i = 0; i < mTransientAssets.size(); ++i)
