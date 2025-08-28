@@ -2722,6 +2722,9 @@ static void DrawPropertiesPanel()
                     {
                         ImGui::Image(sInspectTexId, ImVec2(128, 128), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1,1,1,1), ImVec4(0.5f, 0.2f, 0.2f, 1.0f));
                     }
+
+                    ImGui::Text("%d x %d", texObj->GetWidth(), texObj->GetHeight());
+                    ImGui::NewLine();
                 }
 
                 std::vector<Property> props;
