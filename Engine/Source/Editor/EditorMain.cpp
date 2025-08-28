@@ -36,7 +36,7 @@ void EditorMain(int32_t argc, char** argv)
     GetEngineState()->mArgC = argc;
     GetEngineState()->mArgV = argv;
     ReadCommandLineArgs(argc, argv);
-    ReadEngineConfig("Config.ini");
+    ReadEngineConfig();
 
     {
         EngineConfig* mutableConfig = GetMutableEngineConfig();

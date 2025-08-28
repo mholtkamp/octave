@@ -1967,8 +1967,8 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 
         if (ImGui::Selectable("Set Startup Scene"))
         {
-            GetEditorState()->mStartupSceneName = stub->mName;
-            GetEditorState()->WriteEditorProjectSave();
+            GetMutableEngineConfig()->mDefaultEditorScene = stub->mName;
+            WriteEngineConfig();
         }
     }
 

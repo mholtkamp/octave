@@ -96,7 +96,6 @@ struct EditorState
     bool mEjected = false;
     bool mPaused = false;
     bool mHasEjectedOnce = false;
-    std::string mStartupSceneName;
     int32_t mEditSceneIndex = -1;
     int32_t mPieEditSceneIdx = -1;
     AssetDir* mCurrentDir = nullptr;

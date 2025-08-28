@@ -33,7 +33,7 @@ static EditorState sEditorState;
 
 constexpr const char* kEditorProjectSaveFile = "EditorProject.sav";
 constexpr const char* kEditorSaveFile = "Editor.sav";
-constexpr int32_t kEditorProjectSaveVersion = 1;
+constexpr int32_t kEditorProjectSaveVersion = 2;
 constexpr int32_t kEditorSaveVersion = 1;
 
 constexpr const uint32_t kMaxRecentProjects = 10;
@@ -310,8 +310,6 @@ void EditorState::ReadEditorProjectSave()
 
         if (version == kEditorProjectSaveVersion)
         {
-            stream.ReadString(mStartupSceneName);
-
             uint32_t numFavDirs = stream.ReadUint32();
             mFavoritedDirs.clear();
             for (uint32_t i = 0; i < numFavDirs; ++i)
@@ -335,7 +333,6 @@ void EditorState::WriteEditorProjectSave()
     {
         Stream stream;
         stream.WriteInt32(kEditorProjectSaveVersion);
-        stream.WriteString(mStartupSceneName);
         stream.WriteUint32((uint32_t)mFavoritedDirs.size());
         for (uint32_t i = 0; i < mFavoritedDirs.size(); ++i)
         {
@@ -700,9 +697,10 @@ Camera3D* EditorState::GetEditorCamera()
 
 void EditorState::LoadStartupScene()
 {
-    if (mStartupSceneName != "")
+    std::string startupSceneName = GetEngineConfig()->mDefaultEditorScene;
+    if (startupSceneName != "")
     {
-        Scene* scene = LoadAsset<Scene>(mStartupSceneName);
+        Scene* scene = LoadAsset<Scene>(startupSceneName);
 
         if (scene != nullptr)
         {

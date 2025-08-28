@@ -598,6 +598,9 @@ void LoadProject(const std::string& path, bool discoverAssets)
         }
     }
 
+    std::string configPath = sEngineState.mProjectDirectory + "Config.ini";
+    ReadEngineConfig(configPath);
+
     if (discoverAssets &&
         sEngineState.mProjectName != "")
     {
@@ -626,6 +629,7 @@ void LoadProject(const std::string& path, bool discoverAssets)
     if (sEngineState.mProjectPath != "")
     {
         GetEditorState()->AddRecentProject(sEngineState.mProjectPath);
+        GetEditorState()->WriteEditorProjectSave();
     }
 #endif
 }
@@ -786,14 +790,29 @@ void WriteEngineConfig(std::string path)
 {
     if (path == "")
     {
-        path = GetEngineState()->mProjectDirectory + "/Config.ini";
+        if (GetEngineState()->mProjectDirectory != "")
+        {
+            path = GetEngineState()->mProjectDirectory + "/Config.ini";
+        }
+    }
+
+    if (path == "")
+    {
+        LogError("Cannot save config. Invalid project directory");
+        return;
     }
 
     // Write out an Engine.ini file which is used by Standalone game exe.
     FILE* configIni = fopen(path.c_str(), "w");
     if (configIni != nullptr)
     {
-        fprintf(configIni, "project=%s\n", sEngineConfig.mProjectName.c_str());
+        std::string projName = sEngineConfig.mProjectName;
+        if (projName == "")
+        {
+            projName = GetEngineState()->mProjectName;
+        }
+
+        fprintf(configIni, "project=%s\n", projName.c_str());
         fprintf(configIni, "standalone=%d\n", sEngineConfig.mStandalone);
 
         fprintf(configIni, "defaultScene=%s\n", sEngineConfig.mDefaultScene.c_str());
@@ -820,6 +839,14 @@ void WriteEngineConfig(std::string path)
 
 void ReadEngineConfig(std::string path)
 {
+    // Config is generally read twice:
+    // (1) When game/editor is first launched, Config.ini is read in working directory.
+    // (2) Whenever a project is loaded, ProjectDir/Config.ini is read.
+    if (path == "")
+    {
+        path = "Config.ini";
+    }
+
     Stream iniStream;
     iniStream.ReadFile(path.c_str(), true);
 
@@ -880,6 +907,9 @@ void ReadEngineConfig(std::string path)
                 sEngineConfig.mConsoleMaxTextureSize = atoi(value);
             else if (keyStr == "consoleEnableMipMaps")
                 sEngineConfig.mConsoleEnableMipMaps = atoi(value);
+
+            strcpy(key, "");
+            strcpy(value, "");
         }
     }
 }
