@@ -326,20 +326,13 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         SYS_Exec(copyGeneratedFolder.c_str());
     }
 
-    // ( ) Maybe copy Project .octp file into the Packaged folder? Are we actually using it?
+    // Copy .octp and Config.ini
     {
         std::string copyOctpCmd = "cp " + projectDir + projectName + ".octp " + packagedDir + projectName;
         SYS_Exec(copyOctpCmd.c_str());
-    }
 
-    // Write out an Engine.ini file which is used by Standalone game exe.
-    FILE* engineIni = fopen(std::string(packagedDir + "Engine.ini").c_str(), "w");
-    if (engineIni != nullptr)
-    {
-        fprintf(engineIni, "project=%s", projectName.c_str());
-
-        fclose(engineIni);
-        engineIni = nullptr;
+        std::string copyConfigCmd = "cp " + projectDir + "Config.ini " + packagedDir + projectName;
+        SYS_Exec(copyConfigCmd.c_str());
     }
 
     // Handle SpirV shaders on Vulkan platforms
@@ -1222,6 +1215,19 @@ void CpyDirWithExclusions(const std::string& srcDir, const std::string& dstDir, 
     }
 }
 
+static void CreateConfigIni(const std::string& projDir, const std::string projName)
+{
+    // Write out an Engine.ini file which is used by Standalone game exe.
+    FILE* engineIni = fopen(std::string(projDir + "Config.ini").c_str(), "w");
+    if (engineIni != nullptr)
+    {
+        fprintf(engineIni, "project=%s", projName.c_str());
+
+        fclose(engineIni);
+        engineIni = nullptr;
+    }
+}
+
 void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
 {
     std::string folderPathStr = folderPath ? folderPath : "";
@@ -1347,6 +1353,10 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             ReplaceStringInFile(newProjDir + ".vscode/launch.json", "Standalone", newProjName);
             ReplaceStringInFile(newProjDir + ".vscode/launch.json", "\"name\": \"Octave" , "\"name\": \"" + newProjName);
         }
+
+        ResetEngineConfig();
+        GetMutableEngineConfig()->mProjectName = newProjName;
+        WriteEngineConfig(newProjDir + "/Config.ini");
 
         // Finally, open the project
         OpenProject(projectFile.c_str());

@@ -2950,6 +2950,8 @@ static void DrawViewportPanel()
             am->ResaveAllAssets();
         if (ImGui::Selectable("Reload All Scripts"))
             ReloadAllScripts();
+        if (ImGui::Selectable("Write Config"))
+            WriteEngineConfig();
         //if (ImGui::Selectable("Import Scene"))
         //    YYY;
         if (ImGui::BeginMenu("Package Project"))

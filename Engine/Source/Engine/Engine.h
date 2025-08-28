@@ -59,6 +59,13 @@ void GatherGlobalProperties(std::vector<Property>& props);
 void SetScreenOrientation(ScreenOrientation mode);
 ScreenOrientation GetScreenOrientation();
 
+void WriteEngineConfig(std::string path = "");
+void ReadEngineConfig(std::string path);
+void ResetEngineConfig();
+
+void ReadCommandLineArgs(int32_t argc, char** argv);
+
+
 #if LUA_ENABLED
 lua_State* GetLua();
 #endif

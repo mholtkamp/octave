@@ -248,21 +248,27 @@ struct EngineConfig
     }
 
     std::string mProjectName;
-    std::string mProjectPath;
+    bool mStandalone = false;
+
     std::string mDefaultScene = "";
+    std::string mDefaultEditorScene = "";
     uint32_t mGameCode = 0;
     uint32_t mVersion = 0;
     int32_t mWindowWidth = DEFAULT_WINDOW_WIDTH;
     int32_t mWindowHeight = DEFAULT_WINDOW_HEIGHT;
-    std::string mWorkingDirectory;
 
-    bool mValidateGraphics = false;
     bool mFullscreen = false;
+    bool mValidateGraphics = false;
     bool mLinearColorSpace = false;
     bool mPackageForSteam = false;
     bool mUseAssetRegistry = false;
-    bool mStandalone = false;
     bool mLogToFile = false;
+
+    int32_t mConsoleMaxTextureSize = 0;
+    int32_t mConsoleEnableMipMaps = 0;
+
+    std::string mProjectPath;
+    std::string mWorkingDirectory;
 
     struct EmbeddedFile* mEmbeddedAssets = nullptr;
     uint32_t mEmbeddedAssetCount = 0;

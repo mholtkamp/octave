@@ -148,53 +148,6 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
     }
 }
 
-void ReadEngineIni()
-{
-    Stream iniStream;
-    iniStream.ReadFile("Engine.ini", true);
-
-    if (iniStream.GetSize() > 0)
-    {
-        char key[MAX_PATH_SIZE] = {};
-        char value[MAX_PATH_SIZE] = {};
-
-        std::string keyStr;
-        std::string valueStr;
-
-        auto strToBool = [](const std::string& str)
-        {
-            if (str == "true") return true;
-            if (str == "false") return false;
-
-            int32_t intVal = atoi(str.c_str());
-            return (intVal != 0);
-        };
-
-        while (iniStream.Scan("%[^=]=%s\n", key, value) != -1)
-        {
-            keyStr = key;
-            valueStr = value;
-
-            if (keyStr == "project")
-            {
-                sEngineConfig.mProjectName = value;
-            }
-            else if (keyStr == "defaultScene")
-            {
-                sEngineConfig.mDefaultScene = value;
-            }
-            else if (keyStr == "logToFile")
-            {
-                sEngineConfig.mLogToFile = strToBool(value);
-            }
-            else if (keyStr == "linearColorSpace")
-            {
-                sEngineConfig.mLinearColorSpace = strToBool(value);
-            }
-        }
-    }
-}
-
 bool Initialize()
 {
     if (GetPlatform() == Platform::Android ||
@@ -829,6 +782,113 @@ ScreenOrientation GetScreenOrientation()
     return SYS_GetScreenOrientation();
 }
 
+void WriteEngineConfig(std::string path)
+{
+    if (path == "")
+    {
+        path = GetEngineState()->mProjectDirectory + "/Config.ini";
+    }
+
+    // Write out an Engine.ini file which is used by Standalone game exe.
+    FILE* configIni = fopen(path.c_str(), "w");
+    if (configIni != nullptr)
+    {
+        fprintf(configIni, "project=%s\n", sEngineConfig.mProjectName.c_str());
+        fprintf(configIni, "standalone=%d\n", sEngineConfig.mStandalone);
+
+        fprintf(configIni, "defaultScene=%s\n", sEngineConfig.mDefaultScene.c_str());
+        fprintf(configIni, "defaultEditorScene=%s\n", sEngineConfig.mDefaultEditorScene.c_str());
+        fprintf(configIni, "gameCode=%u\n", sEngineConfig.mGameCode);
+        fprintf(configIni, "version=%u\n", sEngineConfig.mVersion);
+        fprintf(configIni, "windowWidth=%u\n", sEngineConfig.mWindowWidth);
+        fprintf(configIni, "windowHeight=%u\n", sEngineConfig.mWindowHeight);
+
+        fprintf(configIni, "fullscreen=%d\n", sEngineConfig.mFullscreen);
+        fprintf(configIni, "validateGraphics=%d\n", sEngineConfig.mValidateGraphics);
+        fprintf(configIni, "linearColorSpace=%d\n", sEngineConfig.mLinearColorSpace);
+        fprintf(configIni, "packageForSteam=%d\n", sEngineConfig.mPackageForSteam);
+        fprintf(configIni, "useAssetRegistry=%d\n", sEngineConfig.mUseAssetRegistry);
+        fprintf(configIni, "logToFile=%d\n", sEngineConfig.mLogToFile);
+
+        fprintf(configIni, "consoleMaxTextureSize=%d\n", sEngineConfig.mConsoleMaxTextureSize);
+        fprintf(configIni, "consoleEnableMipMaps=%d\n", sEngineConfig.mConsoleEnableMipMaps);
+
+        fclose(configIni);
+        configIni = nullptr;
+    }
+}
+
+void ReadEngineConfig(std::string path)
+{
+    Stream iniStream;
+    iniStream.ReadFile(path.c_str(), true);
+
+    if (iniStream.GetSize() > 0)
+    {
+        char key[MAX_PATH_SIZE] = {};
+        char value[MAX_PATH_SIZE] = {};
+
+        std::string keyStr;
+        std::string valueStr;
+
+        auto strToBool = [](const std::string& str)
+            {
+                if (str == "true") return true;
+                if (str == "false") return false;
+
+                int32_t intVal = atoi(str.c_str());
+                return (intVal != 0);
+            };
+
+        while (iniStream.Scan("%[^=]=%s\n", key, value) != -1)
+        {
+            keyStr = key;
+            valueStr = value;
+
+            if (keyStr == "project")
+                sEngineConfig.mProjectName = value;
+            else if (keyStr == "standalone")
+                sEngineConfig.mStandalone = strToBool(value);
+
+            else if (keyStr == "defaultScene")
+                sEngineConfig.mDefaultScene = value;
+            else if (keyStr == "defaultEditorScene")
+                sEngineConfig.mDefaultEditorScene = value;
+            else if (keyStr == "gameCode")
+                sEngineConfig.mGameCode = (uint32_t)atoi(value);
+            else if (keyStr == "version")
+                sEngineConfig.mVersion = (uint32_t)atoi(value);
+            else if (keyStr == "windowWidth")
+                sEngineConfig.mWindowWidth = atoi(value);
+            else if (keyStr == "windowHeight")
+                sEngineConfig.mWindowHeight = atoi(value);
+
+            else if (keyStr == "fullscreen")
+                sEngineConfig.mFullscreen = strToBool(value);
+            else if (keyStr == "validateGraphics")
+                sEngineConfig.mValidateGraphics = strToBool(value);
+            else if (keyStr == "linearColorSpace")
+                sEngineConfig.mLinearColorSpace = strToBool(value);
+            else if (keyStr == "packageForSteam")
+                sEngineConfig.mPackageForSteam = strToBool(value);
+            else if (keyStr == "useAssetRegistry")
+                sEngineConfig.mUseAssetRegistry = strToBool(value);
+            else if (keyStr == "logToFile")
+                sEngineConfig.mLogToFile = strToBool(value);
+
+            else if (keyStr == "consoleMaxTextureSize")
+                sEngineConfig.mConsoleMaxTextureSize = atoi(value);
+            else if (keyStr == "consoleEnableMipMaps")
+                sEngineConfig.mConsoleEnableMipMaps = atoi(value);
+        }
+    }
+}
+
+void ResetEngineConfig()
+{
+    sEngineConfig = EngineConfig();
+}
+
 #if LUA_ENABLED
 lua_State* GetLua()
 {
@@ -842,7 +902,7 @@ void GameMain(int32_t argc, char** argv)
     sEngineState.mArgC = argc;
     sEngineState.mArgV = argv;
     ReadCommandLineArgs(argc, argv);
-    ReadEngineIni();
+    ReadEngineConfig();
     OctPreInitialize(sEngineConfig);
     Initialize();
     OctPostInitialize();

@@ -30,15 +30,13 @@
 #include "EditorState.h"
 
 void OctPreInitialize(EngineConfig& config);
-extern void ReadCommandLineArgs(int32_t argc, char** argv);
-extern void ReadEngineIni();
 
 void EditorMain(int32_t argc, char** argv)
 {
     GetEngineState()->mArgC = argc;
     GetEngineState()->mArgV = argv;
     ReadCommandLineArgs(argc, argv);
-    ReadEngineIni();
+    ReadEngineConfig("Config.ini");
 
     {
         EngineConfig* mutableConfig = GetMutableEngineConfig();
