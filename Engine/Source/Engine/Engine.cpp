@@ -150,17 +150,6 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
 
 bool Initialize()
 {
-    if (GetPlatform() == Platform::Android ||
-        GetPlatform() == Platform::GameCube ||
-        GetPlatform() == Platform::Wii ||
-        GetPlatform() == Platform::N3DS)
-    {
-        // Use the asset registry to make loading faster. On consoles, scanning the SD card directories 
-        // can be extremely slow. Android used to require the asset registry, but I did add support for 
-        // iterating over the assets directory via Java. It's still probably faster to use the asset registry though.
-        sEngineConfig.mUseAssetRegistry = true;
-    }
-
     InitializeLog();
 
     CreateProfiler();
@@ -215,6 +204,17 @@ bool Initialize()
         std::string projectName = sEngineConfig.mProjectName;
         std::string projectPath = projectName + "/" + projectName + ".octp";
         LoadProject(projectPath, !sEngineConfig.mUseAssetRegistry);
+    }
+
+    if (GetPlatform() == Platform::Android ||
+        GetPlatform() == Platform::GameCube ||
+        GetPlatform() == Platform::Wii ||
+        GetPlatform() == Platform::N3DS)
+    {
+        // Use the asset registry to make loading faster. On consoles, scanning the SD card directories 
+        // can be extremely slow. Android used to require the asset registry, but I did add support for 
+        // iterating over the assets directory via Java. It's still probably faster to use the asset registry though.
+        sEngineConfig.mUseAssetRegistry = true;
     }
 
 #if !EDITOR
@@ -841,10 +841,23 @@ void ReadEngineConfig(std::string path)
 {
     // Config is generally read twice:
     // (1) When game/editor is first launched, Config.ini is read in working directory.
+    //     or if a project commandline arg was passed, the config is read from that directory.
     // (2) Whenever a project is loaded, ProjectDir/Config.ini is read.
     if (path == "")
     {
+        // Initial Config.ini is loaded from working directory in packaged game.
         path = "Config.ini";
+
+        // But if we pass in a project via commandline when running unpackaged,
+        // use the project directory to search for Config.ini.
+        const std::string& projPath = sEngineConfig.mProjectPath;
+        std::string projDir = projPath.substr(0, projPath.find_last_of("/\\") + 1);
+        std::string projIni = projDir + "Config.ini";
+
+        if (SYS_DoesFileExist(projIni.c_str(), true))
+        {
+            path = projIni;
+        }
     }
 
     Stream iniStream;
@@ -906,7 +919,7 @@ void ReadEngineConfig(std::string path)
             else if (keyStr == "consoleMaxTextureSize")
                 sEngineConfig.mConsoleMaxTextureSize = atoi(value);
             else if (keyStr == "consoleEnableMipMaps")
-                sEngineConfig.mConsoleEnableMipMaps = atoi(value);
+                sEngineConfig.mConsoleEnableMipMaps = strToBool(value);
 
             strcpy(key, "");
             strcpy(value, "");

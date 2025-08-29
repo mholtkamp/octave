@@ -265,7 +265,7 @@ struct EngineConfig
     bool mLogToFile = false;
 
     int32_t mConsoleMaxTextureSize = 0;
-    int32_t mConsoleEnableMipMaps = 0;
+    bool mConsoleEnableMipMaps = true;
 
     std::string mProjectPath;
     std::string mWorkingDirectory;

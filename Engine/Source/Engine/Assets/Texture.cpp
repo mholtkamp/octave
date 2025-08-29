@@ -10,6 +10,7 @@
 #include "EditorUtils.h"
 #include <stb_image.h>
 #include <stb_image_write.h>
+#include <stb_image_resize2.h>
 #endif
 
 using namespace std;
@@ -102,7 +103,14 @@ bool UseCookedTextures(Platform platform)
     return cook;
 }
 
-void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>& srcPixels, std::vector<uint8_t>& outData)
+void CookTexture(
+    Texture* texture,
+    Platform platform,
+    const std::vector<uint8_t>& srcPixels,
+    std::vector<uint8_t>& outData,
+    uint32_t& outWidth,
+    uint32_t& outHeight,
+    uint32_t& outNumMips)
 {
 #if EDITOR
     // (1) Save a temporary PNG in the Intermediate directory.
@@ -128,9 +136,46 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
         }
     }
 
+    std::vector<uint8_t> pixels = srcPixels;
+    int32_t texWidth = texture->GetWidth();
+    int32_t texHeight = texture->GetHeight();
+    int32_t maxLod = 0;
+
+    if (platform == Platform::GameCube ||
+        platform == Platform::Wii ||
+        platform == Platform::N3DS)
+    {
+        int32_t consoleMaxTextureSize = GetEngineConfig()->mConsoleMaxTextureSize;
+
+        if (consoleMaxTextureSize != 0 && texture->GetName() != "FontTexture")
+        {
+            texWidth = glm::clamp<uint32_t>(texture->GetWidth(), 1, consoleMaxTextureSize);
+            texHeight = glm::clamp<uint32_t>(texture->GetHeight(), 1, consoleMaxTextureSize);
+
+            if (texWidth != texture->GetWidth() ||
+                texHeight != texture->GetHeight())
+            {
+                pixels.resize(texWidth * texHeight * sizeof(uint32_t));
+
+                stbir_resize_uint8_srgb(
+                    srcPixels.data(),
+                    texture->GetWidth(),
+                    texture->GetHeight(),
+                    texture->GetWidth() * sizeof(uint32_t),
+                    pixels.data(),
+                    texWidth,
+                    texHeight,
+                    texWidth * sizeof(uint32_t),
+                    stbir_pixel_layout::STBIR_RGBA);
+            }
+        }
+    }
+
+    int32_t consoleEnableMips = GetEngineConfig()->mConsoleEnableMipMaps;
+
     const uint32_t comps = 4;
     stbi_flip_vertically_on_write(platform == Platform::N3DS);
-    stbi_write_png(pngPath.c_str(), texture->GetWidth(), texture->GetHeight(), comps, srcPixels.data(), texture->GetWidth() * 4);
+    stbi_write_png(pngPath.c_str(), texWidth, texHeight, comps, pixels.data(), texWidth * 4);
 
     // (2) Exec platform-specific texture converter with relevant args, and output to another temp file in Intermediate.
     std::string cookCmd = "";
@@ -168,10 +213,10 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
         default: cookCmd += "6"; break;
         }
 
-        if (texture->IsMipmapped())
+        if (texture->IsMipmapped() && consoleEnableMips)
         {
             //int32_t maxLod = int32_t(texture->GetMipLevels()) - 1;
-            int32_t maxLod = static_cast<int32_t>(floor(log2(std::min(texture->GetWidth(), texture->GetHeight()))) + 1) - 3;
+            maxLod = static_cast<int32_t>(floor(log2(std::min(texWidth, texHeight))) + 1) - 3;
 
             maxLod = glm::max(maxLod, 0);
             cookCmd += " mipmap=yes ";
@@ -185,8 +230,8 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
             cookCmd += " mipmap=no ";
         }
 
-        cookCmd += "width=" + std::to_string(texture->GetWidth());
-        cookCmd += " height=" + std::to_string(texture->GetHeight()) + " ";
+        cookCmd += "width=" + std::to_string(texWidth);
+        cookCmd += " height=" + std::to_string(texHeight) + " ";
 
         break;
     }
@@ -207,7 +252,7 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
         default: cookCmd += "rgba8"; break;
         }
 
-        if (texture->IsMipmapped())
+        if (texture->IsMipmapped() && consoleEnableMips)
         {
             cookCmd += " -m triangle ";
         }
@@ -231,6 +276,10 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
     stream.ReadFile(outPath.c_str(), false);
     outData.resize(stream.GetSize());
     memcpy(outData.data(), stream.GetData(), stream.GetSize());
+
+    outWidth = texWidth;
+    outHeight = texHeight;
+    outNumMips = maxLod + 1;
 #endif
 }
 
@@ -278,6 +327,15 @@ void Texture::LoadStream(Stream& stream, Platform platform)
 
     if (UseCookedTextures(platform))
     {
+        if (mVersion >= ASSET_VERSION_TEXTURE_COOKED_PROPERTIES)
+        {
+            mWidth = stream.ReadUint32();
+            mHeight = stream.ReadUint32();
+            mMipLevels = stream.ReadUint32();
+            mFilterType = (FilterType)stream.ReadUint32();
+            mMipmapped = mMipLevels > 1;
+        }
+
         uint32_t cookedDataSize = stream.ReadUint32();
         mPixels.resize(cookedDataSize);
         stream.ReadBytes(mPixels.data(), cookedDataSize);
@@ -316,7 +374,17 @@ void Texture::SaveStream(Stream& stream, Platform platform)
     if (UseCookedTextures(platform))
     {
         std::vector<uint8_t> cookedData;
-        CookTexture(this, platform, mPixels, cookedData);
+        uint32_t texWidth = mWidth;
+        uint32_t texHeight = mHeight;
+        uint32_t numMips = mMipLevels;
+        CookTexture(this, platform, mPixels, cookedData, texWidth, texHeight, numMips);
+
+        stream.WriteUint32(texWidth);
+        stream.WriteUint32(texHeight);
+        stream.WriteUint32(numMips);
+        // In the future, might support option for forcing filter type;
+        stream.WriteUint32(uint32_t(mFilterType));
+
         uint32_t cookedDataSize = (uint32_t)cookedData.size();
         stream.WriteUint32(cookedDataSize);
         stream.WriteBytes(cookedData.data(), cookedDataSize);

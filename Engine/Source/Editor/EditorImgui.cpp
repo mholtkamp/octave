@@ -1965,7 +1965,14 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             }
         }
 
-        if (ImGui::Selectable("Set Startup Scene"))
+
+        if (ImGui::Selectable("Set Default Game Scene"))
+        {
+            GetMutableEngineConfig()->mDefaultScene = stub->mName;
+            WriteEngineConfig();
+        }
+
+        if (ImGui::Selectable("Set Default Editor Scene"))
         {
             GetMutableEngineConfig()->mDefaultEditorScene = stub->mName;
             WriteEngineConfig();

@@ -331,7 +331,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         std::string copyOctpCmd = "cp " + projectDir + projectName + ".octp " + packagedDir + projectName;
         SYS_Exec(copyOctpCmd.c_str());
 
-        std::string copyConfigCmd = "cp " + projectDir + "Config.ini " + packagedDir + projectName;
+        std::string copyConfigCmd = "cp " + projectDir + "Config.ini " + packagedDir;
         SYS_Exec(copyConfigCmd.c_str());
     }
 
