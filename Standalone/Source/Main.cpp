@@ -27,10 +27,11 @@ void OctPreInitialize(EngineConfig& config)
 
 #if !EDITOR
 
-    config.mWindowWidth = 1280;
-    config.mWindowHeight = 720;
-    config.mUseAssetRegistry = false;
-    config.mVersion = 0;
+    if (config.mWindowWidth == 0)
+        config.mWindowWidth = 1280;
+
+    if (config.mWindowHeight == 0)
+        config.mWindowHeight = 720;
 
 #if EMBEDDED_ENABLED
     config.mEmbeddedAssetCount = gNumEmbeddedAssets;

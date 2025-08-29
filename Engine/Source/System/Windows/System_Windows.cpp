@@ -279,7 +279,12 @@ void SYS_Initialize()
         exit(1);
     }
     // Create window with the registered class:
-    RECT wr = { 0, 0, LONG(engineState->mWindowWidth), LONG(engineState->mWindowHeight) };
+    uint32_t winWidth = GetEngineConfig()->mWindowWidth;
+    uint32_t winHeight = GetEngineConfig()->mWindowHeight;
+    engineState->mWindowWidth = winWidth;
+    engineState->mWindowHeight = winHeight;
+
+    RECT wr = { 0, 0, LONG(winWidth), LONG(winHeight) };
     AdjustWindowRect(&wr, WS_OVERLAPPEDWINDOW, FALSE);
     engineState->mSystem.mWindow = CreateWindowEx(0,
         engineState->mProjectName.c_str(), // class name
