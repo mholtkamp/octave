@@ -145,7 +145,7 @@ void CookTexture(
         platform == Platform::Wii ||
         platform == Platform::N3DS)
     {
-        int32_t consoleMaxTextureSize = GetEngineConfig()->mConsoleMaxTextureSize;
+        int32_t consoleMaxTextureSize = GetEngineConfig()->mLqMaxTextureSize;
 
         if (consoleMaxTextureSize != 0 && texture->GetName() != "FontTexture")
         {
@@ -190,7 +190,7 @@ void CookTexture(
         }
     }
 
-    int32_t consoleEnableMips = GetEngineConfig()->mConsoleEnableMipMaps;
+    int32_t consoleEnableMips = GetEngineConfig()->mLqEnableMipMaps;
 
     const uint32_t comps = 4;
     stbi_flip_vertically_on_write(platform == Platform::N3DS);

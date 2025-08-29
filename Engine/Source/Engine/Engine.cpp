@@ -812,26 +812,26 @@ void WriteEngineConfig(std::string path)
             projName = GetEngineState()->mProjectName;
         }
 
-        fprintf(configIni, "project=%s\n", projName.c_str());
-        fprintf(configIni, "standalone=%d\n", sEngineConfig.mStandalone);
+        fprintf(configIni, "Project=%s\n", projName.c_str());
+        fprintf(configIni, "Standalone=%d\n", sEngineConfig.mStandalone);
 
-        fprintf(configIni, "defaultScene=%s\n", sEngineConfig.mDefaultScene.c_str());
-        fprintf(configIni, "defaultEditorScene=%s\n", sEngineConfig.mDefaultEditorScene.c_str());
-        fprintf(configIni, "gameCode=%u\n", sEngineConfig.mGameCode);
-        fprintf(configIni, "version=%u\n", sEngineConfig.mVersion);
-        fprintf(configIni, "windowWidth=%u\n", sEngineConfig.mWindowWidth);
-        fprintf(configIni, "windowHeight=%u\n", sEngineConfig.mWindowHeight);
+        fprintf(configIni, "DefaultScene=%s\n", sEngineConfig.mDefaultScene.c_str());
+        fprintf(configIni, "DefaultEditorScene=%s\n", sEngineConfig.mDefaultEditorScene.c_str());
+        fprintf(configIni, "GameCode=%u\n", sEngineConfig.mGameCode);
+        fprintf(configIni, "Version=%u\n", sEngineConfig.mVersion);
+        fprintf(configIni, "WindowWidth=%u\n", sEngineConfig.mWindowWidth);
+        fprintf(configIni, "WindowHeight=%u\n", sEngineConfig.mWindowHeight);
 
-        fprintf(configIni, "fullscreen=%d\n", sEngineConfig.mFullscreen);
-        fprintf(configIni, "validateGraphics=%d\n", sEngineConfig.mValidateGraphics);
-        fprintf(configIni, "linearColorSpace=%d\n", sEngineConfig.mLinearColorSpace);
-        fprintf(configIni, "packageForSteam=%d\n", sEngineConfig.mPackageForSteam);
-        fprintf(configIni, "useAssetRegistry=%d\n", sEngineConfig.mUseAssetRegistry);
-        fprintf(configIni, "logging=%d\n", sEngineConfig.mLogging);
-        fprintf(configIni, "logToFile=%d\n", sEngineConfig.mLogToFile);
+        fprintf(configIni, "Fullscreen=%d\n", sEngineConfig.mFullscreen);
+        fprintf(configIni, "ValidateGraphics=%d\n", sEngineConfig.mValidateGraphics);
+        fprintf(configIni, "LinearColorSpace=%d\n", sEngineConfig.mLinearColorSpace);
+        fprintf(configIni, "PackageForSteam=%d\n", sEngineConfig.mPackageForSteam);
+        fprintf(configIni, "UseAssetRegistry=%d\n", sEngineConfig.mUseAssetRegistry);
+        fprintf(configIni, "Logging=%d\n", sEngineConfig.mLogging);
+        fprintf(configIni, "LogToFile=%d\n", sEngineConfig.mLogToFile);
 
-        fprintf(configIni, "consoleMaxTextureSize=%d\n", sEngineConfig.mConsoleMaxTextureSize);
-        fprintf(configIni, "consoleEnableMipMaps=%d\n", sEngineConfig.mConsoleEnableMipMaps);
+        fprintf(configIni, "LqMaxTextureSize=%d\n", sEngineConfig.mLqMaxTextureSize);
+        fprintf(configIni, "LqEnableMipMaps=%d\n", sEngineConfig.mLqEnableMipMaps);
 
         fclose(configIni);
         configIni = nullptr;
@@ -893,43 +893,43 @@ void ReadEngineConfig(std::string path)
             keyStr = key;
             valueStr = value;
 
-            if (keyStr == "project")
+            if (keyStr == "Project")
                 sEngineConfig.mProjectName = value;
-            else if (keyStr == "standalone")
+            else if (keyStr == "Standalone")
                 sEngineConfig.mStandalone = strToBool(value);
 
-            else if (keyStr == "defaultScene")
+            else if (keyStr == "DefaultScene")
                 sEngineConfig.mDefaultScene = value;
-            else if (keyStr == "defaultEditorScene")
+            else if (keyStr == "DefaultEditorScene")
                 sEngineConfig.mDefaultEditorScene = value;
-            else if (keyStr == "gameCode")
+            else if (keyStr == "GameCode")
                 sEngineConfig.mGameCode = (uint32_t)atoi(value);
-            else if (keyStr == "version")
+            else if (keyStr == "Version")
                 sEngineConfig.mVersion = (uint32_t)atoi(value);
-            else if (keyStr == "windowWidth")
+            else if (keyStr == "WindowWidth")
                 sEngineConfig.mWindowWidth = atoi(value);
-            else if (keyStr == "windowHeight")
+            else if (keyStr == "WindowHeight")
                 sEngineConfig.mWindowHeight = atoi(value);
 
-            else if (keyStr == "fullscreen")
+            else if (keyStr == "Fullscreen")
                 sEngineConfig.mFullscreen = strToBool(value);
-            else if (keyStr == "validateGraphics")
+            else if (keyStr == "ValidateGraphics")
                 sEngineConfig.mValidateGraphics = strToBool(value);
-            else if (keyStr == "linearColorSpace")
+            else if (keyStr == "LinearColorSpace")
                 sEngineConfig.mLinearColorSpace = strToBool(value);
-            else if (keyStr == "packageForSteam")
+            else if (keyStr == "PackageForSteam")
                 sEngineConfig.mPackageForSteam = strToBool(value);
-            else if (keyStr == "useAssetRegistry")
+            else if (keyStr == "UseAssetRegistry")
                 sEngineConfig.mUseAssetRegistry = strToBool(value);
-            else if (keyStr == "logging")
+            else if (keyStr == "Logging")
                 sEngineConfig.mLogging = strToBool(value);
-            else if (keyStr == "logToFile")
+            else if (keyStr == "LogToFile")
                 sEngineConfig.mLogToFile = strToBool(value);
 
-            else if (keyStr == "consoleMaxTextureSize")
-                sEngineConfig.mConsoleMaxTextureSize = atoi(value);
-            else if (keyStr == "consoleEnableMipMaps")
-                sEngineConfig.mConsoleEnableMipMaps = strToBool(value);
+            else if (keyStr == "LqMaxTextureSize")
+                sEngineConfig.mLqMaxTextureSize = atoi(value);
+            else if (keyStr == "LqEnableMipMaps")
+                sEngineConfig.mLqEnableMipMaps = strToBool(value);
 
             strcpy(key, "");
             strcpy(value, "");
