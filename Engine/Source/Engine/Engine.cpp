@@ -827,6 +827,7 @@ void WriteEngineConfig(std::string path)
         fprintf(configIni, "linearColorSpace=%d\n", sEngineConfig.mLinearColorSpace);
         fprintf(configIni, "packageForSteam=%d\n", sEngineConfig.mPackageForSteam);
         fprintf(configIni, "useAssetRegistry=%d\n", sEngineConfig.mUseAssetRegistry);
+        fprintf(configIni, "logging=%d\n", sEngineConfig.mLogging);
         fprintf(configIni, "logToFile=%d\n", sEngineConfig.mLogToFile);
 
         fprintf(configIni, "consoleMaxTextureSize=%d\n", sEngineConfig.mConsoleMaxTextureSize);
@@ -861,7 +862,14 @@ void ReadEngineConfig(std::string path)
     }
 
     Stream iniStream;
-    iniStream.ReadFile(path.c_str(), true);
+    // First check non-nonembedded files
+    iniStream.ReadFile(path.c_str(), false);
+
+    // If no loose config, check the embedded config (for instance, on 3DS's romfs)
+    if (iniStream.GetSize() == 0)
+    {
+        iniStream.ReadFile(path.c_str(), true);
+    }
 
     if (iniStream.GetSize() > 0)
     {
@@ -913,6 +921,8 @@ void ReadEngineConfig(std::string path)
                 sEngineConfig.mPackageForSteam = strToBool(value);
             else if (keyStr == "useAssetRegistry")
                 sEngineConfig.mUseAssetRegistry = strToBool(value);
+            else if (keyStr == "logging")
+                sEngineConfig.mLogging = strToBool(value);
             else if (keyStr == "logToFile")
                 sEngineConfig.mLogToFile = strToBool(value);
 

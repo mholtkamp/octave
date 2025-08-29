@@ -242,9 +242,7 @@ struct EngineConfig
 {
     EngineConfig()
     {
-#if _DEBUG
-        mValidateGraphics = true;
-#endif
+
     }
 
     std::string mProjectName;
@@ -262,6 +260,7 @@ struct EngineConfig
     bool mLinearColorSpace = false;
     bool mPackageForSteam = false;
     bool mUseAssetRegistry = false;
+    bool mLogging = true;
     bool mLogToFile = false;
 
     int32_t mConsoleMaxTextureSize = 0;

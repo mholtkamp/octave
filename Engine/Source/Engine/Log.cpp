@@ -51,7 +51,7 @@ void InitializeLog()
     }
 
 #if LOGGING_ENABLED
-    sLoggingEnabled = true;
+    sLoggingEnabled = GetEngineConfig()->mLogging;
 #else
     sLoggingEnabled = false;
 #endif
