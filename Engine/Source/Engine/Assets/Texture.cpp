@@ -149,8 +149,27 @@ void CookTexture(
 
         if (consoleMaxTextureSize != 0 && texture->GetName() != "FontTexture")
         {
+            float whRatio = float(texture->GetWidth()) / float(texture->GetHeight());
+            bool nonSquare = (texture->GetWidth() != texture->GetHeight());
+
             texWidth = glm::clamp<uint32_t>(texture->GetWidth(), 1, consoleMaxTextureSize);
             texHeight = glm::clamp<uint32_t>(texture->GetHeight(), 1, consoleMaxTextureSize);
+
+            if (nonSquare)
+            {
+                if (texture->GetWidth() > texture->GetHeight())
+                {
+                    float texHeightFloat = texWidth * (1 / whRatio);
+                    texHeight = uint32_t(texHeightFloat + 0.5f);
+                    texHeight = glm::clamp<uint32_t>(texHeight, 1, consoleMaxTextureSize);
+                }
+                else
+                {
+                    float texWidthFloat = texHeight * whRatio;
+                    texWidth = uint32_t(texWidthFloat + 0.5f);
+                    texWidth = glm::clamp<uint32_t>(texWidth, 1, consoleMaxTextureSize);
+                }
+            }
 
             if (texWidth != texture->GetWidth() ||
                 texHeight != texture->GetHeight())
