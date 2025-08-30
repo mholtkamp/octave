@@ -40,6 +40,16 @@ void ArrayWidget::EditorTick(float deltaTime)
     TickCommon(deltaTime);
 }
 
+void ArrayWidget::SetCentered(bool center)
+{
+    mCenter = center;
+}
+
+bool ArrayWidget::IsCentered() const
+{
+    return mCenter;
+}
+
 void ArrayWidget::TickCommon(float deltaTime)
 {
     float offset = 0.0f;
@@ -53,25 +63,24 @@ void ArrayWidget::TickCommon(float deltaTime)
 
         if (vertical)
         {
-            float x = 0.0f;
-
             if (mCenter)
             {
-                x = GetWidth() / 2.0f - child->GetWidth() / 2.0f;
+                float x = GetWidth() / 2.0f - child->GetWidth() / 2.0f;
+                child->SetX(x);
             }
 
-            child->SetPosition(x, offset);
+            child->SetY(offset);
             offset += child->GetHeight() + mSpacing;
         }
         else
         {
-            float y = 0.0f;
             if (mCenter)
             {
-                y = GetHeight() / 2.0f - child->GetHeight() / 2.0f;
+                float y = GetHeight() / 2.0f - child->GetHeight() / 2.0f;
+                child->SetY(y);
             }
 
-            child->SetPosition(offset, y);
+            child->SetX(offset);
             offset += child->GetWidth() + mSpacing;
         }
     }
