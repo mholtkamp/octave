@@ -249,12 +249,15 @@ void AssetRef::EraseAsyncLoadRef()
     // Mutex should be locked priority to calling
     if (mLoadRequest != nullptr)
     {
-        std::vector<AssetRef*>& refs = mLoadRequest->mTargetRefs;
-        for (int32_t r = int32_t(refs.size()) - 1; r >= 0; --r)
+        if (!IsShuttingDown())
         {
-            if (refs[r] == this)
+            std::vector<AssetRef*>& refs = mLoadRequest->mTargetRefs;
+            for (int32_t r = int32_t(refs.size()) - 1; r >= 0; --r)
             {
-                refs.erase(refs.begin() + r);
+                if (refs[r] == this)
+                {
+                    refs.erase(refs.begin() + r);
+                }
             }
         }
 
