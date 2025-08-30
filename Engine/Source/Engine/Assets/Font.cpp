@@ -110,6 +110,7 @@ void Font::LoadStream(Stream& stream, Platform platform)
             texture->LoadStream(stream, platform);
             texture->Create();
             texture->SetName("FontTexture");
+            texture->SetForceHighQuality(true);
 
             mTexture = texture;
         }

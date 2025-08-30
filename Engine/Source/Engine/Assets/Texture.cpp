@@ -145,19 +145,27 @@ void CookTexture(
         platform == Platform::Wii ||
         platform == Platform::N3DS)
     {
+        bool forceHq = texture->IsForcedHighQuality();
+        int32_t downsampleFactor = texture->GetLowQualityDownsampleFactor();
         int32_t consoleMaxTextureSize = GetEngineConfig()->mLqMaxTextureSize;
 
-        if (consoleMaxTextureSize != 0 && texture->GetName() != "FontTexture")
+        if (!forceHq && (consoleMaxTextureSize != 0 || downsampleFactor > 1))
         {
-            float whRatio = float(texture->GetWidth()) / float(texture->GetHeight());
-            bool nonSquare = (texture->GetWidth() != texture->GetHeight());
+            if (downsampleFactor > 1)
+            {
+                texWidth = glm::max(texWidth >> downsampleFactor, 1);
+                texHeight = glm::max(texHeight >> downsampleFactor, 1);
+            }
 
-            texWidth = glm::clamp<uint32_t>(texture->GetWidth(), 1, consoleMaxTextureSize);
-            texHeight = glm::clamp<uint32_t>(texture->GetHeight(), 1, consoleMaxTextureSize);
+            float whRatio = float(texWidth) / float(texHeight);
+            bool nonSquare = (texWidth != texHeight);
+
+            texWidth = glm::clamp<uint32_t>(texWidth, 1, consoleMaxTextureSize);
+            texHeight = glm::clamp<uint32_t>(texHeight, 1, consoleMaxTextureSize);
 
             if (nonSquare)
             {
-                if (texture->GetWidth() > texture->GetHeight())
+                if (texWidth > texHeight)
                 {
                     float texHeightFloat = texWidth * (1 / whRatio);
                     texHeight = uint32_t(texHeightFloat + 0.5f);
@@ -170,23 +178,26 @@ void CookTexture(
                     texWidth = glm::clamp<uint32_t>(texWidth, 1, consoleMaxTextureSize);
                 }
             }
+        }
 
-            if (texWidth != texture->GetWidth() ||
-                texHeight != texture->GetHeight())
-            {
-                pixels.resize(texWidth * texHeight * sizeof(uint32_t));
+        // TODO: Resize to a power-of-two?
 
-                stbir_resize_uint8_srgb(
-                    srcPixels.data(),
-                    texture->GetWidth(),
-                    texture->GetHeight(),
-                    texture->GetWidth() * sizeof(uint32_t),
-                    pixels.data(),
-                    texWidth,
-                    texHeight,
-                    texWidth * sizeof(uint32_t),
-                    stbir_pixel_layout::STBIR_RGBA);
-            }
+        // Resize texture if downsampled for LQ, or non-power-of-two
+        if (texWidth != texture->GetWidth() ||
+            texHeight != texture->GetHeight())
+        {
+            pixels.resize(texWidth * texHeight * sizeof(uint32_t));
+
+            stbir_resize_uint8_srgb(
+                srcPixels.data(),
+                texture->GetWidth(),
+                texture->GetHeight(),
+                texture->GetWidth() * sizeof(uint32_t),
+                pixels.data(),
+                texWidth,
+                texHeight,
+                texWidth * sizeof(uint32_t),
+                stbir_pixel_layout::STBIR_RGBA);
         }
     }
 
@@ -313,7 +324,9 @@ Texture::Texture() :
     mWrapMode(WrapMode::Repeat),
     mMipmapped(true),
     mRenderTarget(false),
-    mSrgb(true)
+    mSrgb(true),
+    mForceHighQuality(false),
+    mLowQualityDownsampleFactor(1)
 {
     mType = Texture::GetStaticType();
 }
@@ -343,6 +356,12 @@ void Texture::LoadStream(Stream& stream, Platform platform)
     mMipmapped = stream.ReadBool();
     mRenderTarget = stream.ReadBool();
     mSrgb = stream.ReadBool();
+
+    if (mVersion >= ASSET_VERSION_TEXTURE_LOW_QUALITY)
+    {
+        mForceHighQuality = stream.ReadBool();
+        mLowQualityDownsampleFactor = stream.ReadUint8();
+    }
 
     if (UseCookedTextures(platform))
     {
@@ -389,6 +408,9 @@ void Texture::SaveStream(Stream& stream, Platform platform)
     stream.WriteBool(mMipmapped);
     stream.WriteBool(mRenderTarget);
     stream.WriteBool(mSrgb);
+
+    stream.WriteBool(mForceHighQuality);
+    stream.WriteUint8(mLowQualityDownsampleFactor);
 
     if (UseCookedTextures(platform))
     {
@@ -501,6 +523,8 @@ void Texture::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Integer, "Format", this, &mFormat, 1, Texture::HandlePropChange, NULL_DATUM, 5, sPixelFormatEnumStrings));
     outProps.push_back(Property(DatumType::Integer, "Filter Type", this, &mFilterType, 1, Texture::HandlePropChange, NULL_DATUM, int32_t(FilterType::Count), gFilterEnumStrings));
     outProps.push_back(Property(DatumType::Integer, "Wrap Mode", this, &mWrapMode, 1, Texture::HandlePropChange, NULL_DATUM, int32_t(WrapMode::Count), gWrapEnumStrings));
+    outProps.push_back(Property(DatumType::Bool, "Force High Quality", this, &mForceHighQuality));
+    outProps.push_back(Property(DatumType::Byte, "LQ Downsample Factor", this, &mLowQualityDownsampleFactor));
 }
 
 glm::vec4 Texture::GetTypeColor()
@@ -553,6 +577,11 @@ bool Texture::IsSrgb() const
     return mSrgb;
 }
 
+bool Texture::IsForcedHighQuality() const
+{
+    return mForceHighQuality;
+}
+
 uint32_t Texture::GetWidth() const
 {
     return mWidth;
@@ -588,6 +617,11 @@ WrapMode Texture::GetWrapMode() const
     return mWrapMode;
 }
 
+int32_t Texture::GetLowQualityDownsampleFactor() const
+{
+    return mLowQualityDownsampleFactor;
+}
+
 // These Set***() calls need to be called before Create().
 void Texture::SetFormat(PixelFormat format)
 {
@@ -604,3 +638,7 @@ void Texture::SetWrapMode(WrapMode wrapMode)
     mWrapMode = wrapMode;
 }
 
+void Texture::SetForceHighQuality(bool forceHq)
+{
+    mForceHighQuality = forceHq;
+}
