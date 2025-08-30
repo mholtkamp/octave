@@ -309,6 +309,23 @@ void World::Clear()
     DestroyRootNode();
 }
 
+int32_t World::GetIndex() const
+{
+    int32_t worldIdx = -1;
+    int32_t numWorlds = GetNumWorlds();
+
+    for (int32_t i = 0; i < numWorlds; ++i)
+    {
+        if (::GetWorld(i) == this)
+        {
+            worldIdx = i;
+            break;
+        }
+    }
+
+    return worldIdx;
+}
+
 void World::AddLine(const Line& line)
 {
     // Add unique

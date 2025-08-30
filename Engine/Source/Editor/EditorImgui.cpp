@@ -3350,7 +3350,7 @@ static void Draw2dSelections()
     ImColor selColor(0.0f, 1.0f, 0.0f, 1.0f);
     ImColor hoverColor(0.0f, 1.0f, 1.0f, 1.0f);
     float thickness = 3.0f;
-    glm::vec4 vp = Renderer::Get()->GetViewport();
+    glm::vec4 vp = Renderer::Get()->GetViewport(0);
     Rect boundsRect;
     boundsRect.mX = 0.0f;
     boundsRect.mY = 0.0f;

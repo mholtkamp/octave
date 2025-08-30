@@ -61,6 +61,8 @@ public:
 
     void Clear();
 
+    int32_t GetIndex() const;
+
     void AddLine(const Line& line);
     void RemoveLine(const Line& line);
     void RemoveAllLines();

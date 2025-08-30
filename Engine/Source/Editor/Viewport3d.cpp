@@ -518,10 +518,10 @@ void Viewport3D::HandleDefaultControls()
                          int32_t iMouseY = 0;
                          INP_GetPointerPosition(iMouseX, iMouseY);
 
-                         int32_t vpX = Renderer::Get()->GetViewportX();
-                         int32_t vpY = Renderer::Get()->GetViewportY();
-                         int32_t vpWidth = Renderer::Get()->GetViewportWidth();
-                         int32_t vpHeight = Renderer::Get()->GetViewportHeight();
+                         int32_t vpX = Renderer::Get()->GetViewportX(0);
+                         int32_t vpY = Renderer::Get()->GetViewportY(0);
+                         int32_t vpWidth = Renderer::Get()->GetViewportWidth(0);
+                         int32_t vpHeight = Renderer::Get()->GetViewportHeight(0);
                          float fMouseX = glm::clamp(float(iMouseX - vpX) / float(vpWidth), 0.0f, 1.0f);
                          float fMouseY = glm::clamp(float(iMouseY - vpY) / float(vpHeight), 0.0f, 1.0f);
                          fMouseX = Maths::MapClamped(fMouseX, 0.0f, 1.0f, -1.0f, 1.0f);

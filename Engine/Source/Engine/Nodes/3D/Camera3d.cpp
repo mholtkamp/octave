@@ -122,12 +122,16 @@ const glm::mat4& Camera3D::GetProjectionMatrix()
 
 void Camera3D::ComputeMatrices()
 {
+    World* world = GetWorld();
+    int32_t worldIdx = world ? world->GetIndex() : 0;
+    worldIdx = (worldIdx == -1) ? 0 : worldIdx;
+
     // Make sure transform is up to date.
     UpdateTransform(false);
 
     EngineState* engineState = GetEngineState();
     Renderer* renderer = Renderer::Get();
-    mAspectRatio = static_cast<float>(renderer->GetViewportWidth()) / (renderer->GetViewportHeight());
+    mAspectRatio = static_cast<float>(renderer->GetViewportWidth(worldIdx)) / (renderer->GetViewportHeight(worldIdx));
 
     // Use the scaling factor to address Wii widescreen stretching
     mAspectRatio *= engineState->mAspectRatioScale;
@@ -307,11 +311,15 @@ void Camera3D::SetOrthoWidth(float width)
 glm::vec3 Camera3D::WorldToScreenPosition(glm::vec3 worldPos)
 {
     glm::vec3 screenPos = {};
+    World* world = GetWorld();
 
-    if (GetWorld())
+    if (world)
     {
         Renderer* renderer = Renderer::Get();
         glm::vec4 clipPos = mStandardViewProjectionMatrix * glm::vec4(worldPos, 1.0f);
+
+        int32_t worldIdx = world->GetIndex();
+        worldIdx = (worldIdx == -1) ? 0 : worldIdx;
 
         float w = clipPos.w;
         clipPos /= w;
@@ -319,8 +327,8 @@ glm::vec3 Camera3D::WorldToScreenPosition(glm::vec3 worldPos)
         glm::vec2 screen2d = glm::vec2(clipPos);
         screen2d += glm::vec2(1.0f, 1.0f);
         screen2d *= glm::vec2(0.5f, 0.5f);
-        screen2d *= glm::vec2(renderer->GetViewportWidth(), renderer->GetViewportHeight());
-        screen2d += glm::vec2(renderer->GetViewportX(), renderer->GetViewportY());
+        screen2d *= glm::vec2(renderer->GetViewportWidth(worldIdx), renderer->GetViewportHeight(worldIdx));
+        screen2d += glm::vec2(renderer->GetViewportX(worldIdx), renderer->GetViewportY(worldIdx));
 
         screenPos.x = screen2d.x;
         screenPos.y = screen2d.y;
@@ -332,24 +340,33 @@ glm::vec3 Camera3D::WorldToScreenPosition(glm::vec3 worldPos)
 
 glm::vec3 Camera3D::ScreenToWorldPosition(int32_t x, int32_t y)
 {
-    Renderer* renderer = Renderer::Get();
-    float screenX = float(x);
-    float screenY = float(y);
-    float vpX = (float)renderer->GetViewportX();
-    float vpY = (float)renderer->GetViewportY();
-    float vpWidth = (float)renderer->GetViewportWidth();
-    float vpHeight = (float)renderer->GetViewportHeight();
+    glm::vec3 worldPos = {};
 
-    float cX = ((screenX - vpX) / vpWidth) * 2.0f - 1.0f;
-    float cY = ((screenY - vpY) / vpHeight) * 2.0f - 1.0f;
-    float cZ = 0.0f; // Near Plane
+    World* world = GetWorld();
+    if (world != nullptr)
+    {
+        int32_t worldIdx = world->GetIndex();
+        worldIdx = (worldIdx == -1) ? 0 : worldIdx;
 
-    // Use standard VP here because android might rotate the proj matrix.
-    glm::mat4 invViewProj = glm::inverse(mStandardViewProjectionMatrix);
-    glm::vec4 worldPos4 = invViewProj * glm::vec4(cX, cY, cZ, 1.0f);
-    worldPos4 = worldPos4 / worldPos4.w;
+        Renderer* renderer = Renderer::Get();
+        float screenX = float(x);
+        float screenY = float(y);
+        float vpX = (float)renderer->GetViewportX(worldIdx);
+        float vpY = (float)renderer->GetViewportY(worldIdx);
+        float vpWidth = (float)renderer->GetViewportWidth(worldIdx);
+        float vpHeight = (float)renderer->GetViewportHeight(worldIdx);
 
-    glm::vec3 worldPos = glm::vec3(worldPos4.x, worldPos4.y, worldPos4.z);
+        float cX = ((screenX - vpX) / vpWidth) * 2.0f - 1.0f;
+        float cY = ((screenY - vpY) / vpHeight) * 2.0f - 1.0f;
+        float cZ = 0.0f; // Near Plane
+
+        // Use standard VP here because android might rotate the proj matrix.
+        glm::mat4 invViewProj = glm::inverse(mStandardViewProjectionMatrix);
+        glm::vec4 worldPos4 = invViewProj * glm::vec4(cX, cY, cZ, 1.0f);
+        worldPos4 = worldPos4 / worldPos4.w;
+
+        worldPos = glm::vec3(worldPos4.x, worldPos4.y, worldPos4.z);
+    }
 
     return worldPos;
 }

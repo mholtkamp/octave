@@ -32,7 +32,7 @@ void Viewport2D::Update(float deltaTime)
 
     mWrapperWidget->SetPosition(mRootOffset);
     mWrapperWidget->SetScale({ mZoom, mZoom });
-    mWrapperWidget->SetDimensions((float)renderer->GetViewportWidth(), (float)renderer->GetViewportHeight());
+    mWrapperWidget->SetDimensions((float)renderer->GetViewportWidth(0), (float)renderer->GetViewportHeight(0));
 
     Widget* selWidget = GetEditorState()->GetSelectedWidget();
     Widget* hoverWidget = nullptr;
@@ -41,8 +41,8 @@ void Viewport2D::Update(float deltaTime)
         int32_t mouseX = 0;
         int32_t mouseY = 0;
         GetMousePosition(mouseX, mouseY);
-        mouseX -= renderer->GetViewportX();
-        mouseY -= renderer->GetViewportY();
+        mouseX -= renderer->GetViewportX(0);
+        mouseY -= renderer->GetViewportY(0);
 
         uint32_t maxDepth = 0;
         Node* rootNode = GetWorld(0)->GetRootNode();
@@ -180,8 +180,8 @@ void Viewport2D::HandleDefaultControls()
             int32_t mouseX = 0;
             int32_t mouseY = 0;
             GetMousePosition(mouseX, mouseY);
-            mouseX -= Renderer::Get()->GetViewportX();
-            mouseY -= Renderer::Get()->GetViewportY();
+            mouseX -= Renderer::Get()->GetViewportX(0);
+            mouseY -= Renderer::Get()->GetViewportY(0);
 
             Widget* hoveredWidget = nullptr;
             
@@ -304,8 +304,8 @@ void Viewport2D::HandleDefaultControls()
             int32_t mouseX = 0;
             int32_t mouseY = 0;
             GetMousePosition(mouseX, mouseY);
-            float fMouseX = float(mouseX) - Renderer::Get()->GetViewportX();
-            float fMouseY = float(mouseY) - Renderer::Get()->GetViewportY();
+            float fMouseX = float(mouseX) - Renderer::Get()->GetViewportX(0);
+            float fMouseY = float(mouseY) - Renderer::Get()->GetViewportY(0);
             
             float dx = fMouseX / mZoom - fMouseX / prevZoom;
             float dy = fMouseY / mZoom - fMouseY / prevZoom;

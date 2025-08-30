@@ -122,12 +122,12 @@ public:
     void SetResolutionScale(float scale);
     float GetResolutionScale() const;
 
-    uint32_t GetViewportX();
-    uint32_t GetViewportY();
-    uint32_t GetViewportWidth();
-    uint32_t GetViewportHeight();
-    glm::uvec4 GetViewport();
-    glm::uvec4 GetSceneViewport();
+    uint32_t GetViewportX(int32_t screenIdx = -1);
+    uint32_t GetViewportY(int32_t screenIdx = -1);
+    uint32_t GetViewportWidth(int32_t screenIdx = -1);
+    uint32_t GetViewportHeight(int32_t screenIdx = -1);
+    glm::uvec4 GetViewport(int32_t screenIdx = -1);
+    glm::uvec4 GetSceneViewport(int32_t screenIdx = -1);
 
     // Property Getters
     uint32_t GetRaysPerPixel() const;
