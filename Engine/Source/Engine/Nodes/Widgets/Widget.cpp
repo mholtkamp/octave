@@ -489,13 +489,13 @@ void Widget::SetAnchorMode(AnchorMode anchorMode)
 
         if (oldStretchY && !newStretchY)
         {
-            mOffset.y = RatioToPixelsX(mOffset.y);
-            mSize.y = RatioToPixelsX(mSize.y);
+            mOffset.y = PixelsToRatioY(mOffset.y);
+            mSize.y = PixelsToRatioY(mSize.y);
         }
         else if (!oldStretchY && newStretchY)
         {
-            mOffset.y = PixelsToRatioX(mOffset.y);
-            mSize.y = PixelsToRatioX(mSize.y);
+            mOffset.y = PixelsToRatioY(mOffset.y);
+            mSize.y = PixelsToRatioY(mSize.y);
         }
 
         mAnchorMode = anchorMode;
