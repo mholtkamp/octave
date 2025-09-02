@@ -2014,8 +2014,11 @@ void Node::ProcessPendingDestroys()
 {
     for (auto it = sPendingDestroySet.begin(); it != sPendingDestroySet.end();)
     {
-        (*it)->Destroy();
-        it = sPendingDestroySet.erase(it);
+        if (it->IsValid())
+        {
+            (*it)->Destroy();
+            it = sPendingDestroySet.erase(it);
+        }
     }
 
     OCT_ASSERT(sPendingDestroySet.size() == 0);
