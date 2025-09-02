@@ -87,6 +87,8 @@ struct GamepadState
     int32_t mDevice = -1;
     int32_t mButtons[GAMEPAD_BUTTON_COUNT] = { };
     float mAxes[GAMEPAD_AXIS_COUNT] = { };
+    float mAccel[3] = { }; // x, y, z accelerometer values
+    float mGyro[3] = { };  // x, y, z gyroscope values
     GamepadType mType = GamepadType::Standard;
     bool mConnected = false;
 };

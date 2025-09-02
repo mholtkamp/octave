@@ -279,7 +279,7 @@ void INP_ClearTouch(int32_t touch)
         for (uint32_t i = touch; i < INPUT_MAX_TOUCHES; ++i)
         {
             if (i < INPUT_MAX_TOUCHES - 1 &&
-                input.mTouches[i+1])
+                input.mTouches[i + 1])
             {
                 input.mTouches[i] = input.mTouches[i + 1];
                 input.mPointerX[i] = input.mPointerX[i + 1];
@@ -551,6 +551,36 @@ void INP_ClearGamepadButton(GamepadButtonCode buttonCode, int32_t gamepadIndex)
     {
         InputState& input = GetEngineState()->mInput;
         input.mGamepads[gamepadIndex].mButtons[(int32_t)buttonCode] = 0;
+    }
+}
+
+void INP_GetGamepadGyro(float& x, float& y, float& z, int32_t gamepadIndex)
+{
+    if (gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS)
+    {
+        InputState& input = GetEngineState()->mInput;
+        x = input.mGamepads[gamepadIndex].mGyro[0];
+        y = input.mGamepads[gamepadIndex].mGyro[1];
+        z = input.mGamepads[gamepadIndex].mGyro[2];
+    }
+    else
+    {
+        x = y = z = 0.0f;
+    }
+}
+
+void INP_GetGamepadAcceleration(float& x, float& y, float& z, int32_t gamepadIndex)
+{
+    if (gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS)
+    {
+        InputState& input = GetEngineState()->mInput;
+        x = input.mGamepads[gamepadIndex].mAccel[0];
+        y = input.mGamepads[gamepadIndex].mAccel[1];
+        z = input.mGamepads[gamepadIndex].mAccel[2];
+    }
+    else
+    {
+        x = y = z = 0.0f;
     }
 }
 

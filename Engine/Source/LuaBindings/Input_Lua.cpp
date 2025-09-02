@@ -1,6 +1,7 @@
 #include "LuaBindings/Input_Lua.h"
 #include "LuaBindings/Signal_Lua.h"
 #include "LuaBindings/Node_Lua.h"
+#include "LuaBindings/Vector_Lua.h"
 
 #include "InputDevices.h"
 #include "Input/Input.h"
@@ -277,7 +278,7 @@ int Input_Lua::GetGamepadAxisValue(lua_State* L)
 
 int Input_Lua::GetGamepadType(lua_State* L)
 {
-    int index = lua_isinteger(L, 1) ? lua_tointeger(L, 1) - 1: 0;
+    int index = lua_isinteger(L, 1) ? lua_tointeger(L, 1) - 1 : 0;
 
     GamepadType padType = ::GetGamepadType(index);
 
@@ -316,6 +317,34 @@ int Input_Lua::IsGamepadConnected(lua_State* L)
     return 1;
 }
 
+int Input_Lua::GetGamepadGyro(lua_State* L)
+{
+    int index = lua_isinteger(L, 1) ? lua_tointeger(L, 1) - 1 : 0;
+
+    float x = 0.0f;
+    float y = 0.0f;
+    float z = 0.0f;
+
+    INP_GetGamepadGyro(x, y, z, index);
+
+    // Create a Vector object with the gyro data
+    return Vector_Lua::Create(L, glm::vec3(x, y, z));
+}
+
+int Input_Lua::GetGamepadAcceleration(lua_State* L)
+{
+    int index = lua_isinteger(L, 1) ? lua_tointeger(L, 1) - 1 : 0;
+
+    float x = 0.0f;
+    float y = 0.0f;
+    float z = 0.0f;
+
+    INP_GetGamepadAcceleration(x, y, z, index);
+
+    // Create a Vector object with the acceleration data
+    return Vector_Lua::Create(L, glm::vec3(x, y, z));
+}
+
 int Input_Lua::ShowCursor(lua_State* L)
 {
     bool show = CHECK_BOOLEAN(L, 1);
@@ -337,8 +366,8 @@ int Input_Lua::SetCursorPosition(lua_State* L)
 
 int Input_Lua::GetKeysJustDown(lua_State* L)
 {
-     LuaPushDatum(L, GetEngineState()->mInput.mJustDownKeys);
-     return 1;
+    LuaPushDatum(L, GetEngineState()->mInput.mJustDownKeys);
+    return 1;
 }
 
 int Input_Lua::IsAnyKeyJustDown(lua_State* L)
@@ -459,6 +488,10 @@ void Input_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, GetGamepadType);
 
     REGISTER_TABLE_FUNC(L, tableIdx, IsGamepadConnected);
+
+    REGISTER_TABLE_FUNC(L, tableIdx, GetGamepadGyro);
+
+    REGISTER_TABLE_FUNC(L, tableIdx, GetGamepadAcceleration);
 
     REGISTER_TABLE_FUNC(L, tableIdx, ShowCursor);
 
