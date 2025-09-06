@@ -61,6 +61,8 @@ int32_t INP_GetGamepadIndex(int32_t inputDevice);
 void INP_SetGamepadAxisValue(GamepadAxisCode axisCode, float axisValue, int32_t gamepadIndex);
 void INP_SetGamepadButton(GamepadButtonCode buttonCode, int32_t gamepadIndex);
 void INP_ClearGamepadButton(GamepadButtonCode buttonCode, int32_t gamepadIndex);
+void INP_GetGamepadGyro(float& x, float& y, float& z, int32_t gamepadIndex);
+void INP_GetGamepadAcceleration(float& x, float& y, float& z, int32_t gamepadIndex);
 
 bool INP_IsCursorLocked();
 bool INP_IsCursorTrapped();

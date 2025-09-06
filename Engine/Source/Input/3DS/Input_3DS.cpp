@@ -18,11 +18,19 @@ void INP_Initialize()
     InputInit();
 
     irrstInit();
+
+    // Initialize accelerometer and gyroscope
+    HIDUSER_EnableAccelerometer();
+    HIDUSER_EnableGyroscope();
 }
 
 void INP_Shutdown()
 {
     irrstExit();
+
+    // Disable accelerometer and gyroscope
+    HIDUSER_DisableAccelerometer();
+    HIDUSER_DisableGyroscope();
 
     InputShutdown();
 }
@@ -74,6 +82,26 @@ void INP_Update()
 
     input.mGamepads[0].mAxes[GAMEPAD_AXIS_RTHUMB_X] = glm::clamp(rsPos.dx / 145.0f, -1.0f, 1.0f);
     input.mGamepads[0].mAxes[GAMEPAD_AXIS_RTHUMB_Y] = glm::clamp(rsPos.dy / 145.0f, -1.0f, 1.0f);
+
+    // Accelerometer
+    accelVector accel;
+    hidAccelRead(&accel);
+
+    // Convert from s16 to normalized float (-1.0f to 1.0f)
+    const float ACCEL_SCALE = 1.0f / 512.0f; // Approximate normalization factor
+    input.mGamepads[0].mAccel[0] = accel.x * ACCEL_SCALE;
+    input.mGamepads[0].mAccel[1] = accel.y * ACCEL_SCALE;
+    input.mGamepads[0].mAccel[2] = accel.z * ACCEL_SCALE;
+
+    // Gyroscope
+    angularRate gyro;
+    hidGyroRead(&gyro);
+
+    // Convert from s16 to normalized float (-1.0f to 1.0f)
+    const float GYRO_SCALE = 1.0f / 1024.0f; // Approximate normalization factor
+    input.mGamepads[0].mGyro[0] = gyro.x * GYRO_SCALE;
+    input.mGamepads[0].mGyro[1] = gyro.y * GYRO_SCALE;
+    input.mGamepads[0].mGyro[2] = gyro.z * GYRO_SCALE;
 
     // Touch
     if (down & KEY_TOUCH)

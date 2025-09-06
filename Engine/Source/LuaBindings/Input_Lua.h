@@ -44,6 +44,8 @@ struct Input_Lua
     static int GetGamepadAxisValue(lua_State* L);
     static int GetGamepadType(lua_State* L);
     static int IsGamepadConnected(lua_State* L);
+    static int GetGamepadGyro(lua_State* L);
+    static int GetGamepadAcceleration(lua_State* L);
 
     static int ShowCursor(lua_State* L);
     static int SetCursorPosition(lua_State* L);

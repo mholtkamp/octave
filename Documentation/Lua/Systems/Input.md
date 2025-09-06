@@ -199,6 +199,20 @@ Sig: `value = Input.GetGamepadAxis(axis, index=1)`
  - Arg: `integer index` Gamepad index/port
  - Ret: `number value` Axis value (0 to 1)
 ---
+### GetGamepadGyro
+Get a vector containing the x,y,z values of your gamepads gyroscope. Currently only supported on the 3DS.
+
+Sig: `value = Input.GetGamepadGyro(index=1)`
+ - Arg: `integer index` Gamepad index/port
+ - Ret: `Vector value` Gyroscope vector
+---
+### GetGamepadAcceleration
+Get a vector containing the x,y,z values of your gamepads accelerometer. Currently only supported on the 3DS.
+
+Sig: `value = Input.GetGamepadAcceleration(index=1)`
+ - Arg: `integer index` Gamepad index/port
+ - Ret: `Vector value` Accelerometer vector
+---
 ### GetGamepadType
 Check what type of gamepad is connected. This is really only useful on Wii where you might have a Wiimote, Wii classic, or GameCube controller.
 
