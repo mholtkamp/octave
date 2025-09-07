@@ -14,7 +14,6 @@
 #include <string>
 #include <functional>
 #include <algorithm>
-#include <filesystem>
 
 #include "Log.h"
 #include "EditorConstants.h"
@@ -1162,7 +1161,7 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
 
         LogDebug("CreateNewProject: %s @ %s", newProjName.c_str(), newProjDir.c_str());
         {
-            if (!std::filesystem::exists(newProjDir))
+            if (!DoesDirExist(newProjDir.c_str()))
             {
                 LogDebug("The specified folder was not found, it will now be created @ %s",newProjDir.c_str());
                 SYS_CreateDirectory(newProjDir.c_str());
