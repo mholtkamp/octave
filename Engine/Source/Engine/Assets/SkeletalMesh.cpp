@@ -291,11 +291,15 @@ void SkeletalMesh::Destroy()
 }
 
 
-void SkeletalMesh::Import(const std::string& path, ImportOptions* options)
+bool SkeletalMesh::Import(const std::string& path, ImportOptions* options)
 {
-#if EDITOR
-    Asset::Import(path, options);
+    bool success = Asset::Import(path, options);
+    if (!success)
+    {
+        return false;
+    }
 
+#if EDITOR
     // Loads a .DAE file and loads the first mesh in the mesh library.
     if (mResource.mVertexBuffer == VK_NULL_HANDLE)
     {
@@ -324,6 +328,8 @@ void SkeletalMesh::Import(const std::string& path, ImportOptions* options)
         Create(*scene, *scene->mMeshes[0]);
     }
 #endif
+
+    return true;
 }
 
 void SkeletalMesh::GatherProperties(std::vector<Property>& outProps)

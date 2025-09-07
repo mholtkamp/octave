@@ -402,11 +402,15 @@ void StaticMesh::Destroy()
     mMaterial = nullptr;
 }
 
-void StaticMesh::Import(const std::string& path, ImportOptions* options)
+bool StaticMesh::Import(const std::string& path, ImportOptions* options)
 {
-#if EDITOR
-    Asset::Import(path, options);
+    bool success = Asset::Import(path, options);
+    if (!success)
+    {
+        return false;
+    }
 
+#if EDITOR
     // Loads a .DAE file and loads the first mesh in the mesh library.
     if (mResource.mVertexBuffer == VK_NULL_HANDLE)
     {
@@ -419,45 +423,50 @@ void StaticMesh::Import(const std::string& path, ImportOptions* options)
         if (scene == nullptr)
         {
             LogError("Failed to load dae file");
-            return;
+            success = false;
         }
 
         if (scene->mNumMeshes < 1)
         {
             LogError("Failed to find any meshes in dae file");
-            return;
+            success = false;
         }
 
-        const aiMesh* mainMesh = nullptr;
-        std::vector<const aiMesh*> collisionMeshes;
-
-        for (uint32_t i = 0; i < scene->mNumMeshes; ++i)
+        if (success)
         {
-            const aiMesh* mesh = scene->mMeshes[i];
-            const char* meshName = mesh->mName.C_Str();
+            const aiMesh* mainMesh = nullptr;
+            std::vector<const aiMesh*> collisionMeshes;
 
-            if (strncmp(meshName, "UCX", 3) == 0 ||
-                strncmp(meshName, "UBX", 3) == 0 ||
-                strncmp(meshName, "USP", 3) == 0)
+            for (uint32_t i = 0; i < scene->mNumMeshes; ++i)
             {
-                collisionMeshes.push_back(mesh);
-            }
-            else
-            {
-                if (mainMesh == nullptr)
+                const aiMesh* mesh = scene->mMeshes[i];
+                const char* meshName = mesh->mName.C_Str();
+
+                if (strncmp(meshName, "UCX", 3) == 0 ||
+                    strncmp(meshName, "UBX", 3) == 0 ||
+                    strncmp(meshName, "USP", 3) == 0)
                 {
-                    mainMesh = mesh;
+                    collisionMeshes.push_back(mesh);
                 }
                 else
                 {
-                    LogError("More than one non-collision mesh found");
+                    if (mainMesh == nullptr)
+                    {
+                        mainMesh = mesh;
+                    }
+                    else
+                    {
+                        LogError("More than one non-collision mesh found");
+                    }
                 }
             }
-        }
 
-        Create(scene, *mainMesh, (uint32_t)collisionMeshes.size(), collisionMeshes.data());
+            Create(scene, *mainMesh, (uint32_t)collisionMeshes.size(), collisionMeshes.data());
+        }
     }
 #endif
+
+    return success;
 }
 
 void StaticMesh::GatherProperties(std::vector<Property>& outProps)

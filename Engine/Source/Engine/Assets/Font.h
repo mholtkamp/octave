@@ -29,7 +29,7 @@ public:
     virtual void SaveStream(Stream& stream, Platform platform) override;
     virtual void Create() override;
     virtual void Destroy() override;
-    virtual void Import(const std::string& path, ImportOptions* options) override;
+    virtual bool Import(const std::string& path, ImportOptions* options) override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
     virtual glm::vec4 GetTypeColor() override;
     virtual const char* GetTypeName() override;

@@ -195,9 +195,9 @@ void MaterialBase::Destroy()
     GFX_DestroyMaterialResource(this);
 }
 
-void MaterialBase::Import(const std::string& path, ImportOptions* options)
+bool MaterialBase::Import(const std::string& path, ImportOptions* options)
 {
-    Material::Import(path, options);
+    return Material::Import(path, options);
 }
 
 void MaterialBase::GatherProperties(std::vector<Property>& outProps)

@@ -217,9 +217,9 @@ void Asset::SaveStream(Stream& stream, Platform platform)
 #endif
 }
 
-void Asset::Import(const std::string& path, ImportOptions* options)
+bool Asset::Import(const std::string& path, ImportOptions* options)
 {
-
+    return true;
 }
 
 void Asset::GatherProperties(std::vector<Property>& outProps)

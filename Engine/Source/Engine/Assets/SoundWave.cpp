@@ -307,9 +307,13 @@ void SoundWave::Destroy()
 }
 
 
-void SoundWave::Import(const std::string& path, ImportOptions* options)
+bool SoundWave::Import(const std::string& path, ImportOptions* options)
 {
-    Asset::Import(path, options);
+    bool success = Asset::Import(path, options);
+    if (!success)
+    {
+        return false;
+    }
 
 #if EDITOR
     Stream wavStream;
@@ -350,6 +354,8 @@ void SoundWave::Import(const std::string& path, ImportOptions* options)
         LogError("Unsupported WAV Format");
         LogError("BitDepth = %dh (expected 8 or 16)", bitsPerSample);
         LogError("NumChannels = %dh (expected 1 or 2)", numChannels);
+
+        success = false;
     }
 
     mNumChannels = (uint32_t)numChannels;
@@ -359,8 +365,13 @@ void SoundWave::Import(const std::string& path, ImportOptions* options)
     mBlockAlign = blockAlign;
     mByteRate = byteRate;
 
-    AUD_ProcessWaveBuffer(this);
+    if (success)
+    {
+        AUD_ProcessWaveBuffer(this);
+    }
 #endif
+
+    return success;
 }
 
 void SoundWave::GatherProperties(std::vector<Property>& outProps)

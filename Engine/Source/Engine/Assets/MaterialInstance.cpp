@@ -91,9 +91,9 @@ void MaterialInstance::Destroy()
     Material::Destroy();
 }
 
-void MaterialInstance::Import(const std::string& path, ImportOptions* options)
+bool MaterialInstance::Import(const std::string& path, ImportOptions* options)
 {
-    Material::Import(path, options);
+    return Material::Import(path, options);
 }
 
 glm::vec4 MaterialInstance::GetTypeColor()

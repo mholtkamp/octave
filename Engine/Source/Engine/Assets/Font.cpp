@@ -202,9 +202,13 @@ void Font::Destroy()
     Asset::Destroy();
 }
 
-void Font::Import(const std::string& path, ImportOptions* options)
+bool Font::Import(const std::string& path, ImportOptions* options)
 {
-    Asset::Import(path, options);
+    bool success = Asset::Import(path, options);
+    if (!success)
+    {
+        return false;
+    }
 
 #if EDITOR
 
@@ -225,6 +229,8 @@ void Font::Import(const std::string& path, ImportOptions* options)
     }
 
 #endif // EDITOR
+
+    return true;
 }
 
 void Font::GatherProperties(std::vector<Property>& outProps)

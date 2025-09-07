@@ -464,9 +464,13 @@ void Texture::Destroy()
     GFX_DestroyTextureResource(this);
 }
 
-void Texture::Import(const std::string& path, ImportOptions* options)
+bool Texture::Import(const std::string& path, ImportOptions* options)
 {
-    Asset::Import(path, options);
+    bool success = Asset::Import(path, options);
+    if (!success)
+    {
+        return false;
+    }
 
 #if EDITOR
     int32_t texWidth;
@@ -481,37 +485,47 @@ void Texture::Import(const std::string& path, ImportOptions* options)
     if (pixels == nullptr)
     {
         LogError("Failed to load texture image");
-        OCT_ASSERT(0);
+        success = false;
     }
 
-    mPixels.resize(imageSize);
-    memcpy(mPixels.data(), pixels, imageSize);
-
-
-    mWidth = texWidth;
-    mHeight = texHeight;
-    mFormat = format;
-    mRenderTarget = false;
-    mMipmapped = true;
-    mMipLevels = mMipmapped ? static_cast<int32_t>(floor(log2(std::max(mWidth, mHeight))) + 1) : 1;
-
-    if (options != nullptr)
+    if (!Maths::IsPowerOfTwo(texWidth) || !Maths::IsPowerOfTwo(texHeight))
     {
-        if (options->HasOption("mipmapped"))
-        {
-            mMipmapped = options->GetOptionValue("mipmapped");
+        LogError("Texture dimensions must be power-of-two (e.g. 256x128, 64x64)");
+        success = false;
+    }
 
-            if (!mMipmapped)
+    if (success)
+    {
+        mPixels.resize(imageSize);
+        memcpy(mPixels.data(), pixels, imageSize);
+
+        mWidth = texWidth;
+        mHeight = texHeight;
+        mFormat = format;
+        mRenderTarget = false;
+        mMipmapped = true;
+        mMipLevels = mMipmapped ? static_cast<int32_t>(floor(log2(std::max(mWidth, mHeight))) + 1) : 1;
+
+        if (options != nullptr)
+        {
+            if (options->HasOption("mipmapped"))
             {
-                mMipLevels = 1;
+                mMipmapped = options->GetOptionValue("mipmapped");
+
+                if (!mMipmapped)
+                {
+                    mMipLevels = 1;
+                }
             }
         }
-    }
 
-    Create();
+        Create();
+    }
 
     stbi_image_free(pixels);
 #endif
+
+    return success;
 }
 
 void Texture::GatherProperties(std::vector<Property>& outProps)

@@ -235,9 +235,9 @@ void MaterialLite::Destroy()
     }
 }
 
-void MaterialLite::Import(const std::string& path, ImportOptions* options)
+bool MaterialLite::Import(const std::string& path, ImportOptions* options)
 {
-    Material::Import(path, options);
+    return Material::Import(path, options);
 }
 
 void MaterialLite::GatherProperties(std::vector<Property>& outProps)

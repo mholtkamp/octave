@@ -1620,67 +1620,77 @@ Asset* ActionManager::ImportAsset(const std::string& path)
     if (newType != INVALID_TYPE_ID)
     {
         Asset* newAsset = Asset::CreateInstance(newType);
-        newAsset->Import(path);
+        bool success = newAsset->Import(path);
 
-        AssetDir* assetDir = GetEditorState()->GetAssetDirectory();
-        std::string assetName = filename.substr(0, dotIndex);
-        filename = assetName + ".oct";
-
-        // Clear inspected asset if we are reimporting that same asset.
-        Asset* oldAsset = FetchAsset(assetName.c_str());
-
-        if (oldAsset != nullptr)
+        if (success)
         {
-            if (GetEditorState()->GetInspectedObject() == oldAsset)
+            AssetDir* assetDir = GetEditorState()->GetAssetDirectory();
+            std::string assetName = filename.substr(0, dotIndex);
+            filename = assetName + ".oct";
+
+            // Clear inspected asset if we are reimporting that same asset.
+            Asset* oldAsset = FetchAsset(assetName.c_str());
+
+            if (oldAsset != nullptr)
             {
-                GetEditorState()->InspectObject(nullptr, true);
+                if (GetEditorState()->GetInspectedObject() == oldAsset)
+                {
+                    GetEditorState()->InspectObject(nullptr, true);
+                }
             }
-        }
 
-#if ASSET_LIVE_REF_TRACKING
-        // If this asset already exists, then we are about to delete it and replace it.
-        // So let's fix up any references now or else they will be lost (replaced with nullptr).
-        if (oldAsset != nullptr)
-        {
-            AssetRef::ReplaceReferencesToAsset(oldAsset, newAsset);
-        }
-#endif
-
-        // If asset already exists, overwrite it. So delete existing asset.
-        bool purged = AssetManager::Get()->PurgeAsset(assetName.c_str());
-        if (purged)
-        {
-            LogWarning("Reimporting asset");
-        }
-
-        AssetStub* stub = AssetManager::Get()->RegisterAsset(filename, newAsset->GetType(), assetDir, nullptr, false);
-        stub->mAsset = newAsset;
-        newAsset->SetName(stub->mName);
-
-        // If a StaticMesh/SkeletalMesh is being imported, and there is a selected material, then assign
-        // the material to that static mesh.
-        if (newAsset != nullptr &&
-            (newAsset->Is(StaticMesh::ClassRuntimeId()) || newAsset->Is(SkeletalMesh::ClassRuntimeId())) &&
-            GetEditorState()->GetSelectedAsset() != nullptr &&
-            GetEditorState()->GetSelectedAsset()->Is(Material::ClassRuntimeId()))
-        {
-            Material* material = GetEditorState()->GetSelectedAsset()->As<Material>();
-
-            if (newAsset->Is(StaticMesh::ClassRuntimeId()))
+    #if ASSET_LIVE_REF_TRACKING
+            // If this asset already exists, then we are about to delete it and replace it.
+            // So let's fix up any references now or else they will be lost (replaced with nullptr).
+            if (oldAsset != nullptr)
             {
-                StaticMesh* mesh = newAsset->As<StaticMesh>();
-                mesh->SetMaterial(material);
+                AssetRef::ReplaceReferencesToAsset(oldAsset, newAsset);
             }
-            else if (newAsset->Is(SkeletalMesh::ClassRuntimeId()))
+    #endif
+
+            // If asset already exists, overwrite it. So delete existing asset.
+            bool purged = AssetManager::Get()->PurgeAsset(assetName.c_str());
+            if (purged)
             {
-                SkeletalMesh* mesh = newAsset->As<SkeletalMesh>();
-                mesh->SetMaterial(material);
+                LogWarning("Reimporting asset");
             }
+
+            AssetStub* stub = AssetManager::Get()->RegisterAsset(filename, newAsset->GetType(), assetDir, nullptr, false);
+            stub->mAsset = newAsset;
+            newAsset->SetName(stub->mName);
+
+            // If a StaticMesh/SkeletalMesh is being imported, and there is a selected material, then assign
+            // the material to that static mesh.
+            if (newAsset != nullptr &&
+                (newAsset->Is(StaticMesh::ClassRuntimeId()) || newAsset->Is(SkeletalMesh::ClassRuntimeId())) &&
+                GetEditorState()->GetSelectedAsset() != nullptr &&
+                GetEditorState()->GetSelectedAsset()->Is(Material::ClassRuntimeId()))
+            {
+                Material* material = GetEditorState()->GetSelectedAsset()->As<Material>();
+
+                if (newAsset->Is(StaticMesh::ClassRuntimeId()))
+                {
+                    StaticMesh* mesh = newAsset->As<StaticMesh>();
+                    mesh->SetMaterial(material);
+                }
+                else if (newAsset->Is(SkeletalMesh::ClassRuntimeId()))
+                {
+                    SkeletalMesh* mesh = newAsset->As<SkeletalMesh>();
+                    mesh->SetMaterial(material);
+                }
+            }
+
+            AssetManager::Get()->SaveAsset(*stub);
+
+            retAsset = newAsset;
         }
+        else
+        {
+            LogError("Failed to import asset.");
 
-        AssetManager::Get()->SaveAsset(*stub);
-
-        retAsset = newAsset;
+            delete newAsset;
+            newAsset = nullptr;
+        }
     }
     else
     {

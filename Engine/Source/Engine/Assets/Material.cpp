@@ -81,9 +81,9 @@ void Material::Destroy()
     Asset::Destroy();
 }
 
-void Material::Import(const std::string& path, ImportOptions* options)
+bool Material::Import(const std::string& path, ImportOptions* options)
 {
-    Asset::Import(path, options);
+    return Asset::Import(path, options);
 }
 
 void Material::GatherProperties(std::vector<Property>& outProps)
