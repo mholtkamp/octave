@@ -669,12 +669,18 @@ void SkeletalMesh::SetupBoneHierarchy(
 
     aiBone* bone = nullptr;
 
-    for (boneIndex = 0; boneIndex < (int32_t)meshData.mNumBones; ++boneIndex)
+    // The root node can't be a bone.
+    // If the node has meshes associated with it, then it's not a bone node.
+    if (node.mParent != nullptr &&
+        node.mNumMeshes == 0)
     {
-        if (meshData.mBones[boneIndex]->mName == node.mName)
+        for (boneIndex = 0; boneIndex < (int32_t)meshData.mNumBones; ++boneIndex)
         {
-            bone = meshData.mBones[boneIndex];
-            break;
+            if (meshData.mBones[boneIndex]->mName == node.mName)
+            {
+                bone = meshData.mBones[boneIndex];
+                break;
+            }
         }
     }
 
