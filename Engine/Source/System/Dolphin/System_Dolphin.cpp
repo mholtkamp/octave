@@ -390,7 +390,7 @@ std::vector<MemoryStat> SYS_GetMemoryStats()
     {
         MemoryStat stat;
         stat.mName = "Main";
-        stat.mBytesFree = retBytes;
+        stat.mBytesFree = mainBytes;
         stat.mBytesAllocated = 0;
         stats.push_back(stat);
     }
