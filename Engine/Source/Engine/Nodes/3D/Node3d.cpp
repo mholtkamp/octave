@@ -573,22 +573,37 @@ glm::vec3 Node3D::GetCachedEulerRotation() const
     return mRotationEuler;
 }
 
-glm::vec3 Node3D::GetForwardVector() const
+glm::vec3 Node3D::GetForwardVector()
 {
-     glm::vec3 forwardVector = mTransform * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
-     forwardVector = Maths::SafeNormalize(forwardVector);
+    if (mTransformDirty)
+    {
+        UpdateTransform(false);
+    }
+
+    glm::vec3 forwardVector = mTransform * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+    forwardVector = Maths::SafeNormalize(forwardVector);
     return forwardVector;
 }
 
-glm::vec3 Node3D::GetRightVector() const
+glm::vec3 Node3D::GetRightVector()
 {
+    if (mTransformDirty)
+    {
+        UpdateTransform(false);
+    }
+
     glm::vec3 rightVector = mTransform * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
     rightVector = Maths::SafeNormalize(rightVector);
     return rightVector;
 }
 
-glm::vec3 Node3D::GetUpVector() const
+glm::vec3 Node3D::GetUpVector()
 {
+    if (mTransformDirty)
+    {
+        UpdateTransform(false);
+    }
+
     glm::vec3 upVector = mTransform * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
     upVector = Maths::SafeNormalize(upVector);
     return upVector;

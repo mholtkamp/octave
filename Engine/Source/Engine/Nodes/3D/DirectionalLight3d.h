@@ -23,7 +23,7 @@ public:
     virtual bool IsPointLight3D() const override;
     virtual bool IsDirectionalLight3D() const override;
 
-    glm::vec3 GetDirection() const;
+    glm::vec3 GetDirection();
     void SetDirection(const glm::vec3& dir);
 
     const glm::mat4& GetViewProjectionMatrix() const;

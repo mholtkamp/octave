@@ -80,9 +80,9 @@ public:
 
     glm::vec3 GetCachedEulerRotation() const;
 
-    glm::vec3 GetForwardVector() const;
-    glm::vec3 GetRightVector() const;
-    glm::vec3 GetUpVector() const;
+    glm::vec3 GetForwardVector();
+    glm::vec3 GetRightVector();
+    glm::vec3 GetUpVector();
 
     glm::mat4 GetParentTransform();
     int32_t GetParentBoneIndex() const;
