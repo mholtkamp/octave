@@ -19,6 +19,7 @@ Datum::Datum()
 {
     mForceScriptArray = false;
     mExternal = false;
+    mIsNetDatum = false;
 }
 
 Datum::Datum(
@@ -34,6 +35,7 @@ Datum::Datum(
     mCount = (uint8_t) count;
     mChangeHandler = changeHandler;
     mForceScriptArray = false;
+    mIsNetDatum = false;
 
     OCT_ASSERT(count <= 255);
 
@@ -43,6 +45,7 @@ Datum::Datum(
 
 Datum::Datum(const Datum& src)
 {
+    mIsNetDatum = false;
     DeepCopy(src, false);
 }
 
@@ -121,6 +124,12 @@ Datum::Datum(const AssetRef& value)
 }
 
 Datum::Datum(uint8_t value)
+{
+    Reset();
+    PushBack(value);
+}
+
+Datum::Datum(const SharedPtr<Node>& value)
 {
     Reset();
     PushBack(value);
@@ -474,91 +483,91 @@ uint32_t Datum::GetSerializationSize(bool net) const
 void Datum::SetInteger(int32_t value, uint32_t index)
 {
     PreSet(index, DatumType::Integer);
-    if (!mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.i[index] = value;
 }
 
 void Datum::SetFloat(float value, uint32_t index)
 {
     PreSet(index, DatumType::Float);
-    if (!mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.f[index] = value;
 }
 
 void Datum::SetBool(bool value, uint32_t index)
 {
     PreSet(index, DatumType::Bool);
-    if (!mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.b[index] = value;
 }
 
 void Datum::SetString(const std::string& value, uint32_t index)
 {
     PreSet(index, DatumType::String);
-    if (!mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.s[index] = value;
 }
 
 void Datum::SetVector2D(const glm::vec2& value, uint32_t index)
 {
     PreSet(index, DatumType::Vector2D);
-    if (!mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.v2[index] = value;
 }
 
 void Datum::SetVector(const glm::vec3& value, uint32_t index)
 {
     PreSet(index, DatumType::Vector);
-    if (!mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.v3[index] = value;
 }
 
 void Datum::SetColor(const glm::vec4& value, uint32_t index)
 {
     PreSet(index, DatumType::Color);
-    if (!mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.v4[index] = value;
 }
 
 void Datum::SetAsset(const Asset* value, uint32_t index)
 {
-    PreSet(index, DatumType::Asset);
-    if (!mChangeHandler || !mChangeHandler(this, index, const_cast<Asset**>(&value)))
+    PreSet(index, DatumType::Asset); 
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, const_cast<Asset**>(&value)))
         mData.as[index] = value;
 }
 
 void Datum::SetByte(uint8_t value, uint32_t index)
 {
     PreSet(index, DatumType::Byte);
-    if (!mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.by[index] = value;
 }
 
 void Datum::SetTableDatum(const TableDatum& value, uint32_t index)
 {
     PreSet(index, DatumType::Table);
-    if (!mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.t[index] = value;
 }
 
 void Datum::SetNode(const WeakPtr<Node>& value, uint32_t index)
 {
     PreSet(index, DatumType::Node);
-    if (!mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.n[index] = value;
 }
 
 void Datum::SetShort(int16_t value, uint32_t index)
 {
     PreSet(index, DatumType::Short);
-    if (!mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.sh[index] = value;
 }
 
 void Datum::SetFunction(const ScriptFunc& value, uint32_t index)
 {
     PreSet(index, DatumType::Function);
-    if (!mChangeHandler || !mChangeHandler(this, index, &value))
+    if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.fn[index] = value;
 }
 
@@ -987,6 +996,13 @@ void Datum::PushBack(Asset* value)
     mCount++;
 }
 
+void Datum::PushBack(const AssetRef& value)
+{
+    PrePushBack(DatumType::Asset);
+    new (mData.as + mCount) AssetRef(value);
+    mCount++;
+}
+
 void Datum::PushBack(uint8_t value)
 {
     PrePushBack(DatumType::Byte);
@@ -1001,6 +1017,11 @@ TableDatum* Datum::PushBackTableDatum(const TableDatum& value)
     mCount++;
 
     return (mData.t + (mCount - 1));
+}
+
+void Datum::PushBack(const SharedPtr<Node>& value)
+{
+    PushBack(value.Get());
 }
 
 void Datum::PushBack(const WeakPtr<Node>& value)
@@ -1595,6 +1616,17 @@ bool Datum::operator==(const WeakPtr<Node>& other) const
     return mData.n[0] == other;
 }
 
+bool Datum::operator==(const SharedPtr<Node>& other) const
+{
+    if (mCount == 0 ||
+        mType != DatumType::Node)
+    {
+        return false;
+    }
+
+    return mData.n[0] == other;
+}
+
 bool Datum::operator==(const int16_t& other) const
 {
     if (mCount == 0 ||
@@ -1683,6 +1715,11 @@ bool Datum::operator!=(const Node*& other) const
 }
 
 bool Datum::operator!=(const WeakPtr<Node>& other) const
+{
+    return !operator==(other);
+}
+
+bool Datum::operator!=(const SharedPtr<Node>& other) const
 {
     return !operator==(other);
 }
@@ -1787,6 +1824,7 @@ void Datum::DeepCopy(const Datum& src, bool forceInternalStorage)
     if (forceInternalStorage)
     {
         mExternal = false;
+        mOwner = nullptr;
     }
 
     if (mExternal)
@@ -1823,7 +1861,7 @@ void Datum::DeepCopy(const Datum& src, bool forceInternalStorage)
                 PushBack(*(src.mData.v4 + i));
                 break;
             case DatumType::Asset:
-                PushBack((src.mData.as + i)->Get());
+                PushBack(*(src.mData.as + i));
                 break;
             case DatumType::Byte:
                 PushBack(*(src.mData.by + i));

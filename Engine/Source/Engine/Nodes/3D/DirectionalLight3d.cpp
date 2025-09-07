@@ -100,7 +100,7 @@ bool DirectionalLight3D::IsDirectionalLight3D() const
     return true;
 }
 
-glm::vec3 DirectionalLight3D::GetDirection() const
+glm::vec3 DirectionalLight3D::GetDirection()
 {
     return GetForwardVector();
 }

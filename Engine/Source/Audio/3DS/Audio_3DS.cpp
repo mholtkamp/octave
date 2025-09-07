@@ -63,8 +63,8 @@ void AUD_Play(
 
     sSampleRates[voiceIndex] = soundWave->GetSampleRate();
 
-    float volumeLeft = spatial ? 0.0f : 1.0f;
-    float volumeRight = spatial ? 0.0f : 1.0f;
+    float volumeLeft = spatial ? 0.0f : volume;
+    float volumeRight = spatial ? 0.0f : volume;
 
 #if USE_DSP
     ndspChnReset(voiceIndex);

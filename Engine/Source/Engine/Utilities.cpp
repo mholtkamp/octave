@@ -543,8 +543,10 @@ btTransform MakeBulletTransform(glm::vec3 translation, glm::vec3 rotationDegrees
     return retTransform;
 }
 
-void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
+void GatherNonDefaultProperties(Node* node, std::vector<Property>& props, NodePtr refNode)
 {
+    bool existingRefNode = refNode.IsValid();
+
     std::vector<Property> extProps;
     node->GatherProperties(extProps);
 
@@ -553,9 +555,15 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
     {
         // For native nodes, determine which properties are different than the defaults
         // and only save those to reduce storage/memory of the scene.
-        NodePtr defaultNode = scene ? scene->Instantiate() : Node::Construct(node->GetType());
+        if (refNode == nullptr)
+        {
+            refNode = scene ? scene->Instantiate() : Node::Construct(node->GetType());
+        }
+
+        OCT_ASSERT(refNode != nullptr);
+
         std::vector<Property> defaultProps;
-        defaultNode->GatherProperties(defaultProps);
+        refNode->GatherProperties(defaultProps);
 
         props.reserve(extProps.size());
         for (uint32_t i = 0; i < extProps.size(); ++i)
@@ -563,7 +571,7 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
             Property* defaultProp = FindProperty(defaultProps, extProps[i].mName);
 
             if (defaultProp == nullptr ||
-                (extProps[i].mType == DatumType::Asset && scene == nullptr) ||
+                (extProps[i].mType == DatumType::Asset && scene == nullptr && !existingRefNode) ||
                 extProps[i] != *defaultProp)
             {
                 props.push_back(Property());
@@ -571,9 +579,73 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props)
                 prop.DeepCopy(extProps[i], true);
             }
         }
+    }
+}
 
-        defaultNode->Destroy();
-        defaultNode = nullptr;
+void GatherSubSceneOverrides(Node* node, Node* sceneRoot, std::vector<SubSceneOverride>& overs)
+{
+    OCT_ASSERT(node && sceneRoot);
+    OCT_ASSERT(node != sceneRoot);
+
+    if (node == nullptr)
+        return;
+
+    SubSceneOverride over;
+    over.mPath = FindRelativeNodePath(sceneRoot, node);
+    OCT_ASSERT(over.mPath != "");
+
+    NodePtr defaultSceneRoot = sceneRoot->GetScene()->Instantiate();
+    NodePtr defaultNode = ResolvePtr(ResolveNodePath(defaultSceneRoot.Get(), over.mPath));
+
+    if (defaultNode == nullptr)
+    {
+        LogError("Could not find ref node in GatherSubSceneOverrides()");
+        OCT_ASSERT(false);
+        return;
+    }
+
+    GatherNonDefaultProperties(node, over.mProperties, defaultNode);
+
+    if (over.mProperties.size() > 0)
+    {
+        overs.push_back(over);
+    }
+
+    for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
+    {
+        GatherSubSceneOverrides(node->GetChild(i), sceneRoot, overs);
+    }
+}
+
+void ApplySubSceneOverride(Node* sceneRoot, const SubSceneOverride& over)
+{
+    OCT_ASSERT(sceneRoot != nullptr);
+
+    if (over.mPath == "")
+    {
+        LogWarning("Invalid subscene override path");
+        return;
+    }
+
+    Node* dst = ResolveNodePath(sceneRoot, over.mPath);
+
+    if (dst == nullptr)
+    {
+        LogWarning("Could not resolve sub scene override destination");
+        return;
+    }
+
+    std::vector<Property> dstProps;
+    dst->GatherProperties(dstProps);
+    CopyPropertyValues(dstProps, over.mProperties);
+
+    // A script filename may have possibly been set.
+    // Need to copy properties a second time to change newly created script properties.
+    if (dst->GetScript() != nullptr)
+    {
+        dstProps.clear();
+        dst->GatherProperties(dstProps);
+        CopyPropertyValues(dstProps, over.mProperties);
     }
 }
 

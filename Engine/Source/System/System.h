@@ -49,8 +49,7 @@ void SYS_Exec(const char* cmd, std::string* output = nullptr);
 // Memory
 void* SYS_AlignedMalloc(uint32_t size, uint32_t alignment);
 void SYS_AlignedFree(void* pointer);
-uint64_t SYS_GetNumBytesFree();
-uint64_t SYS_GetNumBytesAllocated();
+std::vector<MemoryStat> SYS_GetMemoryStats();
 
 // Save / Memcard
 bool SYS_ReadSave(const char* saveName, Stream& outStream);

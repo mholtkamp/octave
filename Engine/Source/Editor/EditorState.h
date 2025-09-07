@@ -21,6 +21,7 @@ class Camera3D;
 class Viewport3D;
 class Viewport2D;
 class PaintManager;
+struct SubSceneOverride;
 
 enum class ControlMode
 {
@@ -67,6 +68,7 @@ struct LinkedSceneProps
 {
     Node* mNode = nullptr;
     std::vector<Property> mProps;
+    std::vector<SubSceneOverride> mSubSceneOverrides;
 };
 
 struct EditScene
@@ -94,7 +96,6 @@ struct EditorState
     bool mEjected = false;
     bool mPaused = false;
     bool mHasEjectedOnce = false;
-    std::string mStartupSceneName;
     int32_t mEditSceneIndex = -1;
     int32_t mPieEditSceneIdx = -1;
     AssetDir* mCurrentDir = nullptr;

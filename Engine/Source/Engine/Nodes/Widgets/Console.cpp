@@ -9,8 +9,10 @@ FORCE_LINK_DEF(Console);
 DEFINE_NODE(ConsoleOutputText, Text);
 DEFINE_NODE(Console, Canvas);
 
-Console::Console()
+void Console::Create()
 {
+    Super::Create();
+
     mFont = LoadAsset<Font>("F_RobotoMono16");
 
     mOutputCanvas = CreateChild<Canvas>("OutputCanvas");

@@ -439,6 +439,83 @@ void ScriptUtils::SetField(Node* node, int32_t key, const Datum& value)
 #endif
 }
 
+Datum ScriptUtils::GetField(const char* table, const char* key)
+{
+    Datum ret;
+
+#if LUA_ENABLED
+    lua_State* L = GetLua();
+
+    // Grab the script instance table
+    lua_getglobal(L, table);
+    OCT_ASSERT(lua_istable(L, -1));
+    lua_getfield(L, -1, key);
+
+    LuaObjectToDatum(L, -1, ret);
+
+    // Pop field and instance table
+    lua_pop(L, 2);
+#endif
+
+    return ret;
+}
+
+void ScriptUtils::SetField(const char* table, const char* key, const Datum& value)
+{
+#if LUA_ENABLED
+    lua_State* L = GetLua();
+
+    // Grab the script instance table
+    lua_getglobal(L, table);
+    OCT_ASSERT(lua_istable(L, -1));
+
+    LuaPushDatum(L, value);
+    lua_setfield(L, -2, key);
+
+    // Pop instance table
+    lua_pop(L, 1);
+#endif
+}
+
+Datum ScriptUtils::GetField(const char* table, int32_t key)
+{
+    Datum ret;
+
+#if LUA_ENABLED
+    lua_State* L = GetLua();
+
+    // Grab the script instance table
+    lua_getglobal(L, table);
+    OCT_ASSERT(lua_istable(L, -1));
+    lua_geti(L, -1, key);
+
+    LuaObjectToDatum(L, -1, ret);
+
+    // Pop field and instance table
+    lua_pop(L, 2);
+#endif
+
+    return ret;
+}
+
+void ScriptUtils::SetField(const char* table, int32_t key, const Datum& value)
+{
+#if LUA_ENABLED
+    lua_State* L = GetLua();
+
+    // Grab the script instance table
+    lua_getglobal(L, table);
+    OCT_ASSERT(lua_istable(L, -1));
+
+    LuaPushDatum(L, value);
+    lua_seti(L, -2, key);
+
+    // Pop instance table
+    lua_pop(L, 1);
+#endif
+}
+
+
 void ScriptUtils::DumpStack()
 {
     lua_State* L = GetLua();

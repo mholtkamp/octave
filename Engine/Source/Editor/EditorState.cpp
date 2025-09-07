@@ -33,7 +33,7 @@ static EditorState sEditorState;
 
 constexpr const char* kEditorProjectSaveFile = "EditorProject.sav";
 constexpr const char* kEditorSaveFile = "Editor.sav";
-constexpr int32_t kEditorProjectSaveVersion = 1;
+constexpr int32_t kEditorProjectSaveVersion = 2;
 constexpr int32_t kEditorSaveVersion = 1;
 
 constexpr const uint32_t kMaxRecentProjects = 10;
@@ -48,7 +48,7 @@ void EditorState::Init()
     mEditorCamera = Node::Construct<Camera3D>();
     mEditorCamera->SetName("Editor Camera");
     // TODO-NODE: This is a little sketchy because this will call World::RegisterNode(), but that's probably fine.
-    mEditorCamera->SetWorld(GetWorld(0));
+    mEditorCamera->SetWorld(GetWorld(0), false);
 
     mViewport3D = new Viewport3D();
     mViewport2D = new Viewport2D();
@@ -90,7 +90,7 @@ void EditorState::Shutdown()
     delete mPaintManager;
     mPaintManager = nullptr;
 
-    mEditorCamera->SetWorld(nullptr);
+    mEditorCamera->SetWorld(nullptr, false);
     mEditorCamera->Destroy();
     mEditorCamera = nullptr;
 }
@@ -310,8 +310,6 @@ void EditorState::ReadEditorProjectSave()
 
         if (version == kEditorProjectSaveVersion)
         {
-            stream.ReadString(mStartupSceneName);
-
             uint32_t numFavDirs = stream.ReadUint32();
             mFavoritedDirs.clear();
             for (uint32_t i = 0; i < numFavDirs; ++i)
@@ -335,7 +333,6 @@ void EditorState::WriteEditorProjectSave()
     {
         Stream stream;
         stream.WriteInt32(kEditorProjectSaveVersion);
-        stream.WriteString(mStartupSceneName);
         stream.WriteUint32((uint32_t)mFavoritedDirs.size());
         for (uint32_t i = 0; i < mFavoritedDirs.size(); ++i)
         {
@@ -379,7 +376,7 @@ void EditorState::HandleNodeDestroy(Node* node)
 
 void EditorState::SetSelectedNode(Node* newNode)
 {
-    if (newNode != nullptr && (newNode->GetWorld() == nullptr || newNode->IsForeign()))
+    if (newNode != nullptr && newNode->GetWorld() == nullptr)
     {
         return;
     }
@@ -700,9 +697,10 @@ Camera3D* EditorState::GetEditorCamera()
 
 void EditorState::LoadStartupScene()
 {
-    if (mStartupSceneName != "")
+    std::string startupSceneName = GetEngineConfig()->mDefaultEditorScene;
+    if (startupSceneName != "")
     {
-        Scene* scene = LoadAsset<Scene>(mStartupSceneName);
+        Scene* scene = LoadAsset<Scene>(startupSceneName);
 
         if (scene != nullptr)
         {
@@ -783,10 +781,19 @@ void CacheEditSceneLinkedProps(EditScene& editScene)
             if (linkedScene != nullptr)
             {
                 editScene.mLinkedSceneProps.push_back(LinkedSceneProps());
-                LinkedSceneProps& nonDefProps = editScene.mLinkedSceneProps.back();
-                nonDefProps.mNode = node;
-                GatherNonDefaultProperties(node, nonDefProps.mProps);
-                RecordNodePaths(node, nonDefProps.mProps);
+                LinkedSceneProps& linkedSceneProps = editScene.mLinkedSceneProps.back();
+                linkedSceneProps.mNode = node;
+                GatherNonDefaultProperties(node, linkedSceneProps.mProps);
+
+                // Cache subscene overrides of child nodes
+                Node* sceneRoot = node;
+                for (uint32_t i = 0; i < sceneRoot->GetNumChildren(); ++i)
+                {
+                    Node* child = sceneRoot->GetChild(i);
+                    GatherSubSceneOverrides(child, sceneRoot, linkedSceneProps.mSubSceneOverrides);
+                }
+
+                RecordNodePaths(node, linkedSceneProps.mProps);
             }
 
             return false;
@@ -875,11 +882,15 @@ void EditorState::OpenEditScene(int32_t idx)
             if (node->IsSceneLinked())
             {
                 const std::vector<Property>* nonDefProps = nullptr;
+                const std::vector<SubSceneOverride>* subSceneOverrides = nullptr;
+
                 for (uint32_t i = 0; i < editScene.mLinkedSceneProps.size(); ++i)
                 {
                     if (editScene.mLinkedSceneProps[i].mNode == node)
                     {
                         nonDefProps = &editScene.mLinkedSceneProps[i].mProps;
+                        subSceneOverrides = &editScene.mLinkedSceneProps[i].mSubSceneOverrides;
+
                         break;
                     }
                 }
@@ -920,6 +931,14 @@ void EditorState::OpenEditScene(int32_t idx)
                             pendingPath.mPath = *prop.mExtra;
                             pendingNodePaths.push_back(pendingPath);
                         }
+                    }
+                }
+
+                if (subSceneOverrides != nullptr)
+                {
+                    for (auto& over : *subSceneOverrides)
+                    {
+                        ApplySubSceneOverride(newNode.Get(), over);
                     }
                 }
 

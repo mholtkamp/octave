@@ -39,10 +39,12 @@ DATA		:=	Data
 INCLUDES	:=	../Engine/Source ../Engine/Source/Engine ../External ../External/Bullet
 GRAPHICS	:=	Graphics
 GFXBUILD	:=	$(BUILD)
-#ROMFS		:=	$(CURDIR)/Build/3DS/romfs
 #GFXBUILD	:=	$(ROMFS)/gfx
 OUTPUT_DIR	:=	$(CURDIR)/Build/3DS
-APP_TITLE	:= Octave
+
+# Modified by packaging process
+ROMFS := Intermediate/Romfs
+APP_TITLE := OctaveApp
 
 #---------------------------------------------------------------------------------
 # options for code generation

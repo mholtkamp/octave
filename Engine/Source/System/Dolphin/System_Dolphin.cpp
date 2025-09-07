@@ -377,21 +377,25 @@ void SYS_AlignedFree(void* pointer)
     free(pointer);
 }
 
-uint64_t SYS_GetNumBytesFree()
+std::vector<MemoryStat> SYS_GetMemoryStats()
 {
-    uint64_t retBytes = SYS_GetArena1Size();
+    std::vector<MemoryStat> stats;
+
+    uint64_t mainBytes = SYS_GetArena1Size();
 
 #if PLATFORM_WII
-    retBytes += SYS_GetArena2Size();
+    mainBytes += SYS_GetArena2Size();
 #endif
 
-    return retBytes;
-}
+    {
+        MemoryStat stat;
+        stat.mName = "Main";
+        stat.mBytesFree = mainBytes;
+        stat.mBytesAllocated = 0;
+        stats.push_back(stat);
+    }
 
-uint64_t SYS_GetNumBytesAllocated()
-{
-    uint64_t totalMem = 24 * 1024 * 1024;
-    return totalMem - SYS_GetNumBytesFree();
+    return stats;
 }
 
 static bool IsMemoryCardMounted()
@@ -705,6 +709,11 @@ void SYS_Alert(const char* message)
         SYS_Sleep(5);
         INP_Update();
     }
+
+    // Add some small feedback to show that 
+    // user is attempting to proceed.
+    LogError(">>>");
+    SYS_Sleep(100);
 
     EnableConsole(false);
 }

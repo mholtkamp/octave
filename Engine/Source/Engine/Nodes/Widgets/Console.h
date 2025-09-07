@@ -16,7 +16,7 @@ public:
 
     DECLARE_NODE(Console, Canvas);
 
-    Console();
+    virtual void Create() override;
 
     void WriteOutput(const char* output, glm::vec4 color = { 1, 1, 1, 1 });
 

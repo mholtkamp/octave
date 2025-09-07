@@ -490,7 +490,15 @@ void VulkanContext::BeginRenderPass(RenderPassId id)
         glm::uvec4 vp = Renderer::Get()->GetSceneViewport();
         SetViewport(vp.x, vp.y, vp.z, vp.w, true, true);
         SetScissor(vp.x, vp.y, vp.z, vp.w, true, true);
-        clearColor = Maths::SrgbToLinear(Renderer::Get()->GetClearColor());
+
+        if (GetEngineConfig()->mLinearColorSpace)
+        {
+            clearColor = Maths::SrgbToLinear(Renderer::Get()->GetClearColor());
+        }
+        else
+        {
+            clearColor = Renderer::Get()->GetClearColor();
+        }
     }
 
     if (mCurrentRenderPassId == RenderPassId::Clear)
@@ -1694,6 +1702,7 @@ void VulkanContext::UpdateGlobalUniformData()
         mGlobalUniformData.mPathTracingEnabled = Renderer::Get()->IsPathTracingEnabled();
     }
 
+    mGlobalUniformData.mLinearColorSpace = (int32_t)GetEngineConfig()->mLinearColorSpace;
     mGlobalUniformData.mInterfaceResolution = Renderer::Get()->GetScreenResolution();
 
 #if EDITOR

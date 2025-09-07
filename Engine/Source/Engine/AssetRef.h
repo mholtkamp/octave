@@ -11,11 +11,11 @@
 class AssetManager;
 struct AsyncLoadRequest;
 
+MutexObject* GetAssetRefMutex();
+
 class AssetRef
 {
 public:
-
-    friend AssetManager;
 
     AssetRef();
     AssetRef(Asset* asset);
@@ -38,7 +38,12 @@ public:
         return static_cast<T*>(Get());
     }
 
+    void SetLoadRequest(AsyncLoadRequest* loadRequest);
+    AsyncLoadRequest* GetLoadRequest();
+
 private:
+
+    void EraseAsyncLoadRef();
 
     Asset* mAsset = nullptr;
     AsyncLoadRequest* mLoadRequest = nullptr;

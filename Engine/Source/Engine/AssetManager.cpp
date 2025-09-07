@@ -260,7 +260,7 @@ bool AssetManager::IsPurging() const
 
 void AssetManager::Discover(const char* directoryName, const char* directoryPath)
 {
-    SCOPED_STAT("DiscoverAssets")
+    SCOPED_STAT("DiscoverAssets");
 
     // Make sure directory path ends with 
     std::string dirPath = directoryPath;
@@ -632,19 +632,6 @@ void AssetManager::ImportEngineAssets()
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_TriShape");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_MiniArrow");
 
-        ImportOptions fontOptions;
-        // Do we want to disable mip maps? Mipmaps can cause artifacts on edges of characters
-        // But if we disable mipmaps, then large fonts look coarse and aliased at smaller sizes.
-        //fontOptions.SetOptionValue("mipmapped", false);
-        Texture* roboto16Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Roboto16", &fontOptions);
-        roboto16Tex->SetMipmapped(false);
-        Texture* roboto32Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Roboto32", &fontOptions);
-        roboto32Tex->SetMipmapped(false);
-        Texture* robotoMono8Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_RobotoMono8", &fontOptions);
-        robotoMono8Tex->SetMipmapped(false);
-        Texture* robotoMono16Tex = (Texture*) ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_RobotoMono16", &fontOptions);
-        robotoMono16Tex->SetMipmapped(false);
-
         // Need to fetch these loaded textures so that the default materials can use them.
         Renderer::Get()->LoadDefaultTextures();
 
@@ -697,9 +684,9 @@ void AssetManager::ImportEngineAssets()
 
         // Import fonts
         Font* fontRoboto32 = (Font*) ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_Roboto32");
-        OCT_UNUSED(fontRoboto32);
+        fontRoboto32->GetTexture()->SetFormat(PixelFormat::LA4);
         Font* fontRobotoMono16 = (Font*)ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_RobotoMono16");
-        OCT_UNUSED(fontRobotoMono16);
+        fontRobotoMono16->GetTexture()->SetFormat(PixelFormat::LA4);
 
         // Mark any transient assets that exist at this point as engine assets
         for (uint32_t i = 0; i < mTransientAssets.size(); ++i)
@@ -771,10 +758,9 @@ void AssetManager::AsyncLoadAsset(const std::string& name, AssetRef* targetRef)
     }
 
     // Erase ref from current pending request
-    if (targetRef != nullptr &&
-        targetRef->mLoadRequest != nullptr)
+    if (targetRef != nullptr)
     {
-        EraseAsyncLoadRef(*targetRef);
+        targetRef->SetLoadRequest(nullptr);
     }
 
     // (2) Check to see if the asset is already loaded. If so, assign the target ref immediately.
@@ -793,7 +779,11 @@ void AssetManager::AsyncLoadAsset(const std::string& name, AssetRef* targetRef)
     {
         if (mBeginLoadQueue[i]->mName == name)
         {
-            mBeginLoadQueue[i]->mTargetRefs.push_back(targetRef);
+            if (targetRef != nullptr)
+            {
+                targetRef->SetLoadRequest(mBeginLoadQueue[i]);
+            }
+
             return;
         }
     }
@@ -802,7 +792,11 @@ void AssetManager::AsyncLoadAsset(const std::string& name, AssetRef* targetRef)
     {
         if (mEndLoadQueue[i]->mName == name)
         {
-            mEndLoadQueue[i]->mTargetRefs.push_back(targetRef);
+            if (targetRef != nullptr)
+            {
+                targetRef->SetLoadRequest(mEndLoadQueue[i]);
+            }
+
             return;
         }
     }
@@ -819,10 +813,8 @@ void AssetManager::AsyncLoadAsset(const std::string& name, AssetRef* targetRef)
 
     if (targetRef != nullptr)
     {
-        newRequest->mTargetRefs.push_back(targetRef);
-
         // (6) Set the request pointer on the AssetRef.
-        targetRef->mLoadRequest = newRequest;
+        targetRef->SetLoadRequest(newRequest);
     }
 }
 
@@ -912,32 +904,6 @@ bool AssetManager::UnloadAsset(AssetStub& stub)
     }
 
     return unloaded;
-}
-
-void AssetManager::EraseAsyncLoadRef(AssetRef& assetRef)
-{
-    SCOPED_LOCK(mMutex);
-
-    auto eraseRef = [](std::deque<AsyncLoadRequest*>& queue, AssetRef& ref)
-    {
-        for (uint32_t i = 0; i < queue.size(); ++i)
-        {
-            std::vector<AssetRef*>& refs = queue[i]->mTargetRefs;
-
-            for (int32_t r = int32_t(refs.size()) - 1; r >= 0; --r)
-            {
-                if (refs[r] == &ref)
-                {
-                    refs.erase(refs.begin() + r);
-                }
-            }
-        }
-    };
-
-    eraseRef(mBeginLoadQueue, assetRef);
-    eraseRef(mEndLoadQueue, assetRef);
-
-    assetRef.mLoadRequest = nullptr;
 }
 
 bool AssetManager::DoesAssetExist(const std::string& name)
@@ -1185,6 +1151,9 @@ void AssetManager::UpdateEndLoadQueue()
 
                 AssetStub* stub = GetAssetStub(loadRequest->mName);
 
+                // Lock the AssetRefLock while we update asset members
+                SCOPED_LOCK(GetAssetRefMutex());
+
                 if (stub == nullptr)
                 {
                     LogError("Cannot find asset for async load request");
@@ -1203,18 +1172,18 @@ void AssetManager::UpdateEndLoadQueue()
                     stub->mAsset = loadRequest->mAsset;
 
                     // Now assign the asset to all of the refs that had requested the load
-                    for (uint32_t i = 0; i < loadRequest->mTargetRefs.size(); ++i)
+                    for (int32_t i = int32_t(loadRequest->mTargetRefs.size()) - 1; i >= 0; --i)
                     {
                         if (loadRequest->mTargetRefs[i] != nullptr)
                         {
                             // The load request of the target ref should match this load request but...
                             // We need to make sure we handle the case where an AssetRef is assigned twice to an async load
                             // before the first one finishes. Might mean Canceling the request if one already exists in AsyncLoadAsset()
-                            OCT_ASSERT(loadRequest->mTargetRefs[i]->mLoadRequest == nullptr ||
-                                loadRequest->mTargetRefs[i]->mLoadRequest == loadRequest);
+                            OCT_ASSERT(loadRequest->mTargetRefs[i]->GetLoadRequest() == nullptr ||
+                                loadRequest->mTargetRefs[i]->GetLoadRequest() == loadRequest);
 
+                            // This will clear the existing load request (and also remove the entry from loadRequest->mTargetRefs
                             (*loadRequest->mTargetRefs[i]) = loadRequest->mAsset;
-                            loadRequest->mTargetRefs[i]->mLoadRequest = nullptr;
                         }
                     }
                 }

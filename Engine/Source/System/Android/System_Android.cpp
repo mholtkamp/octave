@@ -771,15 +771,10 @@ void SYS_AlignedFree(void* pointer)
     free(pointer);
 }
 
-uint64_t SYS_GetNumBytesFree()
+std::vector<MemoryStat> SYS_GetMemoryStats()
 {
     // What do?
-    return 0;
-}
-
-uint64_t SYS_GetNumBytesAllocated()
-{
-    return 0;
+    return {};
 }
 
 // Save Game

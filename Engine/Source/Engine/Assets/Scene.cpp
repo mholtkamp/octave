@@ -89,6 +89,25 @@ void Scene::LoadStream(Stream& stream, Platform platform)
                 stream.ReadBytes(def.mExtraData.data(), extraDataSize);
             }
         }
+
+        if (mVersion >= ASSET_VERSION_SCENE_SUB_SCENE_OVERRIDE)
+        {
+            uint32_t numOverrides = stream.ReadUint32();
+            def.mSubSceneOverrides.resize(numOverrides);
+            std::vector<SubSceneOverride>& overs = def.mSubSceneOverrides;
+
+            for (uint32_t o = 0; o < overs.size(); ++o)
+            {
+                stream.ReadString(overs[o].mPath);
+                uint32_t numProps = stream.ReadUint32();
+                overs[o].mProperties.resize(numProps);
+
+                for (uint32_t p = 0; p < overs[o].mProperties.size(); ++p)
+                {
+                    overs[o].mProperties[p].ReadStream(stream, mVersion, false, false);
+                }
+            }
+        }
     }
 
     // World render properties
@@ -153,6 +172,17 @@ void Scene::SaveStream(Stream& stream, Platform platform)
 
         stream.WriteUint32((uint32_t)def.mExtraData.size());
         stream.WriteBytes(def.mExtraData.data(), (uint32_t)def.mExtraData.size());
+
+        stream.WriteUint32((uint32_t)def.mSubSceneOverrides.size());
+        for (auto& over : def.mSubSceneOverrides)
+        {
+            stream.WriteString(over.mPath);
+            stream.WriteUint32((uint32_t)over.mProperties.size());
+            for (uint32_t p = 0; p < over.mProperties.size(); ++p)
+            {
+                over.mProperties[p].WriteStream(stream, false);
+            }
+        }
     }
 
     // Now that we've written out the platform-cooked scene data, write out the rest of the data for this scene
@@ -227,9 +257,10 @@ NodePtr Scene::Instantiate()
 
     sInstantiationCount++;
 
+    std::vector<NodePtr> nodeList;
+
     if (mNodeDefs.size() > 0)
     {
-        std::vector<NodePtr> nodeList;
 
         // The nativeChildren vector holds a list of all children by created in C++ for the nodes in this scene.
         // If there is no SceneNodeDef for the nativeChild, then we must destroy it. This will happen
@@ -239,7 +270,13 @@ NodePtr Scene::Instantiate()
         for (uint32_t i = 0; i < mNodeDefs.size(); ++i)
         {
             NodePtr nodePtr;
-            NodePtr parent = (i > 0) ? nodeList[mNodeDefs[i].mParentIndex] : nullptr;
+            NodePtr parent = (i > 0 && nodeList.size() > mNodeDefs[i].mParentIndex) ? nodeList[mNodeDefs[i].mParentIndex] : nullptr;
+
+            if (i > 0 && nodeList.size() <= mNodeDefs[i].mParentIndex)
+            {
+                LogError("zzz Out-of-order parent for node: %s", mNodeDefs[i].mName.c_str());
+                parent = nodeList[0];
+            }
 
             if (parent != nullptr)
             {
@@ -326,6 +363,21 @@ NodePtr Scene::Instantiate()
                 dstProps.clear();
                 node->GatherProperties(dstProps);
                 CopyPropertyValues(dstProps, mNodeDefs[i].mProperties);
+            }
+
+            if (mNodeDefs[i].mScene == nullptr &&
+                mNodeDefs[i].mName != "")
+            {
+                node->SetName(mNodeDefs[i].mName);
+            }
+
+            // Apply subscene overrides if they exist
+            if (mNodeDefs[i].mScene != nullptr)
+            {
+                for (auto& over : mNodeDefs[i].mSubSceneOverrides)
+                {
+                    ApplySubSceneOverride(node, over);
+                }
             }
 
             // See if there are any nodepaths that need to be resolved.
@@ -433,6 +485,17 @@ NodePtr Scene::Instantiate()
         }
     }
 
+    // Nodes that are instantiated from Scenes get awoken right after
+    // all the scene's nodes have been created. If a node is manually constructed
+    // it's Awake() will be called once it is added to a world.
+    for (uint32_t i = 0; i < nodeList.size(); ++i)
+    {
+        if (!nodeList[i]->HasAwoken())
+        {
+            nodeList[i]->Awake();
+        }
+    }
+
     sInstantiationCount--;
 
     // Finished loading a top-level scene, try to resolve all node paths
@@ -479,16 +542,6 @@ void Scene::ApplyRenderSettings(World* world)
     }
     world->SetFogSettings(fogSettings);
 }
-
-//const Property* Scene::GetProperty(const std::string& widgetName, const std::string& propName)
-//{
-//
-//}
-//
-//NodeDef* Scene::FindWidgetDef(const std::string& name, int32_t* outIndex)
-//{
-//
-//}
 
 void Scene::AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeList)
 {
@@ -556,6 +609,14 @@ void Scene::AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeLi
             for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
             {
                 AddNodeDef(node->GetChild(i), platform, nodeList);
+            }
+        }
+        else
+        {
+            // Find all of the overridden properties for child nodes
+            for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
+            {
+                GatherSubSceneOverrides(node->GetChild(i), node, nodeDef.mSubSceneOverrides);
             }
         }
     }

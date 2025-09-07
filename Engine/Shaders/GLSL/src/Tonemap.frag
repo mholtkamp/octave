@@ -30,22 +30,27 @@ layout (location = 0) out vec4 outFinalColor;
 
 void main()
 {
-    vec4 linearColor = vec4(0,0,0,1);
+    vec4 sceneColor = vec4(0,0,0,1);
 
     if (tonemap.mPathTracingEnabled != 0)
     {
-        linearColor = texture(pathTraceImage, inTexcoord);
+        sceneColor = texture(pathTraceImage, inTexcoord);
     }
     else
     {
-        linearColor = texture(samplerLitColor, inTexcoord);
+        sceneColor = texture(samplerLitColor, inTexcoord);
     }
 
-    // HDR tonemapping
-    //color = color / (color + vec3(1.0));
+    if (global.mLinearColorSpace != 0)
+    {
+        // HDR tonemapping
+        //color = color / (color + vec3(1.0));
 
-    // Gamma correct
-    vec4 srgbColor = LinearToSrgb(linearColor);
-
-    outFinalColor = srgbColor;
+        // Gamma correct
+        outFinalColor = LinearToSrgb(sceneColor);
+    }
+    else
+    {
+        outFinalColor = sceneColor;
+    }
 }

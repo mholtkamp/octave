@@ -24,6 +24,9 @@ struct Node_Lua
     static int Destruct(lua_State* L);
     static int DestroyDeferred(lua_State* L);
 
+    static void SetGcNodeId(NodeId id);
+    static NodeId GetGcNodeId();
+
     static int IsValid(lua_State* L);
 
     static int GetName(lua_State* L);
@@ -32,6 +35,8 @@ struct Node_Lua
     static int IsActive(lua_State* L);
     static int SetVisible(lua_State* L);
     static int IsVisible(lua_State* L);
+    static int SetPersistent(lua_State* L);
+    static int IsPersistent(lua_State* L);
     static int GetWorld(lua_State* L);
 
     static int GetParent(lua_State* L);
@@ -47,6 +52,7 @@ struct Node_Lua
     static int FindDescendant(lua_State* L);
     static int FindAncestor(lua_State* L);
     static int HasAncestor(lua_State* L);
+    static int GetSubRoot(lua_State* L);
 
     static int GetRoot(lua_State* L);
     static int IsWorldRoot(lua_State* L);
@@ -74,6 +80,7 @@ struct Node_Lua
     static int IsTickEnabled(lua_State* L);
 
     static int GetScene(lua_State* L);
+    static int SetScript(lua_State* L);
 
     static int GetNetId(lua_State* L);
     static int GetOwningHost(lua_State* L);

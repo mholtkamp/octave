@@ -82,8 +82,13 @@ int World_Lua::SpawnNode(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
     const char* nodeClass = CHECK_STRING(L, 2);
+    glm::vec3 position = {};
+    if (!lua_isnone(L, 3))
+    {
+        position = CHECK_VECTOR(L, 3);
+    }
 
-    Node* spawnedNode = world->SpawnNode(nodeClass);
+    Node* spawnedNode = world->SpawnNode(nodeClass, position);
 
     Node_Lua::Create(L, spawnedNode);
     return 1;
@@ -93,8 +98,13 @@ int World_Lua::SpawnScene(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
     Scene* scene = CHECK_SCENE(L, 2);
+    glm::vec3 position = {};
+    if (!lua_isnone(L, 3))
+    {
+        position = CHECK_VECTOR(L, 3);
+    }
 
-    Node* spawnedNode = world->SpawnScene(scene);
+    Node* spawnedNode = world->SpawnScene(scene, position);
 
     Node_Lua::Create(L, spawnedNode);
     return 1;
@@ -223,18 +233,26 @@ int World_Lua::GetShadowColor(lua_State* L)
 int World_Lua::SetFogSettings(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
-    bool enabled = CHECK_BOOLEAN(L, 2);
-    glm::vec4 color = CHECK_VECTOR(L, 3);
-    bool exponential = CHECK_BOOLEAN(L, 4);
-    float zNear = CHECK_NUMBER(L, 5);
-    float zFar = CHECK_NUMBER(L, 6);
+    CHECK_TABLE(L, 2);
+    Datum fogTable = LuaObjectToDatum(L, 2);
 
-    FogSettings settings;
-    settings.mEnabled = enabled;
-    settings.mColor = color;
-    settings.mDensityFunc = exponential ? FogDensityFunc::Exponential : FogDensityFunc::Linear;
-    settings.mNear = zNear;
-    settings.mFar = zFar;
+    FogSettings settings = world->GetFogSettings();
+
+    if (fogTable.HasField("enable"))
+        settings.mEnabled = fogTable.GetBoolField("enable");
+
+    if (fogTable.HasField("color"))
+        settings.mColor = fogTable.GetColorField("color");
+
+    if (fogTable.HasField("exponential"))
+        settings.mDensityFunc = fogTable.GetBoolField("exponential") ? FogDensityFunc::Exponential : FogDensityFunc::Linear;
+
+    if (fogTable.HasField("near"))
+        settings.mNear = fogTable.GetFloatField("near");
+
+    if (fogTable.HasField("far"))
+        settings.mFar = fogTable.GetFloatField("far");
+
     world->SetFogSettings(settings);
 
     return 0;
@@ -246,14 +264,19 @@ int World_Lua::GetFogSettings(lua_State* L)
 
     const FogSettings& settings = world->GetFogSettings();
 
-    // Should we convert this into a table?
+    lua_newtable(L);
     lua_pushboolean(L, settings.mEnabled);
+    lua_setfield(L, -2, "enable");
     Vector_Lua::Create(L, settings.mColor);
-    lua_pushboolean(L, settings.mDensityFunc == FogDensityFunc::Exponential);
+    lua_setfield(L, -2, "color");
+    bool exp = (settings.mDensityFunc == FogDensityFunc::Exponential);
+    lua_pushboolean(L, exp);
+    lua_setfield(L, -2, "exponential");
     lua_pushnumber(L, settings.mNear);
+    lua_setfield(L, -2, "near");
     lua_pushnumber(L, settings.mFar);
-
-    return 5;
+    lua_setfield(L, -2, "far");
+    return 1;
 }
 
 int World_Lua::SetGravity(lua_State* L)
@@ -497,8 +520,10 @@ void World_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, GetShadowColor);
 
     REGISTER_TABLE_FUNC(L, mtIndex, SetFogSettings);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetFogSettings, "SetFog");
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetFogSettings);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, GetFogSettings, "GetFog");
 
     REGISTER_TABLE_FUNC(L, mtIndex, SetGravity);
 

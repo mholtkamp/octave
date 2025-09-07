@@ -22,6 +22,7 @@
 
 class Level;
 class Primitive3D;
+class Light3D;
 class Node3D;
 class Node;
 
@@ -241,26 +242,32 @@ struct EngineConfig
 {
     EngineConfig()
     {
-#if _DEBUG
-        mValidateGraphics = true;
-#endif
+
     }
 
     std::string mProjectName;
-    std::string mProjectPath;
+    bool mStandalone = false;
+
     std::string mDefaultScene = "";
+    std::string mDefaultEditorScene = "";
     uint32_t mGameCode = 0;
     uint32_t mVersion = 0;
     int32_t mWindowWidth = DEFAULT_WINDOW_WIDTH;
     int32_t mWindowHeight = DEFAULT_WINDOW_HEIGHT;
-    std::string mWorkingDirectory;
 
-    bool mValidateGraphics = false;
     bool mFullscreen = false;
+    bool mValidateGraphics = false;
+    bool mLinearColorSpace = false;
     bool mPackageForSteam = false;
     bool mUseAssetRegistry = false;
-    bool mStandalone = false;
+    bool mLogging = true;
     bool mLogToFile = false;
+
+    int32_t mLqMaxTextureSize = 0;
+    bool mLqEnableMipMaps = true;
+
+    std::string mProjectPath;
+    std::string mWorkingDirectory;
 
     struct EmbeddedFile* mEmbeddedAssets = nullptr;
     uint32_t mEmbeddedAssetCount = 0;
@@ -283,6 +290,7 @@ struct EngineState
     uint32_t mSecondWindowHeight = DEFAULT_WINDOW_HEIGHT;
     uint32_t mGameCode = 0;
     uint32_t mVersion = 0;
+    uint32_t mFrameNumber = 0;
     std::string mProjectPath;
     std::string mProjectDirectory;
     std::string mProjectName;
@@ -470,4 +478,15 @@ enum class Platform
     N3DS,
 
     Count
+};
+
+struct FadingLight
+{
+    // mNode should only be used for comparisons!! If deleted, we want to fade it out, not crash.
+    Light3D* mComponent = nullptr;
+    LightData mData = {};
+    glm::vec4 mColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float mAlpha = 0.0f;
+
+    FadingLight(Light3D* comp) : mComponent(comp) {}
 };

@@ -12,12 +12,15 @@ NodePtr& CheckNodeWrapperPtr(lua_State* L, int arg)
     luaL_checkudata(L, arg, NODE_WRAPPER_TABLE_NAME);
     Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, arg);
 
-    if (nodeLua->mNode == nullptr)
+    if (!nodeLua->mNode.IsValid())
     {
-        luaL_error(L, "Attempting to use an invalid node at arg %d", arg);
+        luaL_error(L, "Invalid or Destroyed node at arg %d", arg);
     }
     else if (nodeLua->mNode->IsDestroyed())
     {
+        // We should actually never reach this code because
+        // SharedPtr<Node> and WeakPtr<Node> now check if a node is destroyed in IsValid()
+        OCT_ASSERT(false);
         luaL_error(L, "Attempting to use a destroyed node at arg %d", arg);
     }
 

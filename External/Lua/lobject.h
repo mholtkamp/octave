@@ -488,10 +488,10 @@ typedef union TKey {
 	  (void)L; checkliveness(L,io_); }
 
 
-typedef struct Node {
+typedef struct LuaNode {
   TValue i_val;
   TKey i_key;
-} Node;
+} LuaNode;
 
 
 typedef struct Table {
@@ -500,8 +500,8 @@ typedef struct Table {
   lu_byte lsizenode;  /* log2 of size of 'node' array */
   unsigned int sizearray;  /* size of 'array' array */
   TValue *array;  /* array part */
-  Node *node;
-  Node *lastfree;  /* any free position is before this position */
+  LuaNode *node;
+  LuaNode *lastfree;  /* any free position is before this position */
   struct Table *metatable;
   GCObject *gclist;
 } Table;

@@ -139,65 +139,17 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
         {
             sEngineConfig.mPackageForSteam = true;
         }
-    }
-}
-
-void ReadEngineIni()
-{
-    Stream iniStream;
-    iniStream.ReadFile("Engine.ini", true);
-
-    if (iniStream.GetSize() > 0)
-    {
-        char key[MAX_PATH_SIZE] = {};
-        char value[MAX_PATH_SIZE] = {};
-
-        std::string keyStr;
-        std::string valueStr;
-
-        auto strToBool = [](const std::string& str)
+        else if (strcmp(argv[i], "-linearColorSpace") == 0)
         {
-            if (str == "true") return true;
-            if (str == "false") return false;
-
-            int32_t intVal = atoi(str.c_str());
-            return (intVal != 0);
-        };
-
-        while (iniStream.Scan("%[^=]=%s\n", key, value) != -1)
-        {
-            keyStr = key;
-            valueStr = value;
-
-            if (keyStr == "project")
-            {
-                sEngineConfig.mProjectName = value;
-            }
-            else if (keyStr == "defaultScene")
-            {
-                sEngineConfig.mDefaultScene = value;
-            }
-            else if (keyStr == "logToFile")
-            {
-                sEngineConfig.mLogToFile = strToBool(value);
-            }
+            OCT_ASSERT(i + 1 < argc);
+            int32_t linear = atoi(argv[i + 1]);
+            sEngineConfig.mLinearColorSpace = linear;
         }
     }
 }
 
 bool Initialize()
 {
-    if (GetPlatform() == Platform::Android ||
-        GetPlatform() == Platform::GameCube ||
-        GetPlatform() == Platform::Wii ||
-        GetPlatform() == Platform::N3DS)
-    {
-        // Use the asset registry to make loading faster. On consoles, scanning the SD card directories 
-        // can be extremely slow. Android used to require the asset registry, but I did add support for 
-        // iterating over the assets directory via Java. It's still probably faster to use the asset registry though.
-        sEngineConfig.mUseAssetRegistry = true;
-    }
-
     InitializeLog();
 
     CreateProfiler();
@@ -252,6 +204,17 @@ bool Initialize()
         std::string projectName = sEngineConfig.mProjectName;
         std::string projectPath = projectName + "/" + projectName + ".octp";
         LoadProject(projectPath, !sEngineConfig.mUseAssetRegistry);
+    }
+
+    if (GetPlatform() == Platform::Android ||
+        GetPlatform() == Platform::GameCube ||
+        GetPlatform() == Platform::Wii ||
+        GetPlatform() == Platform::N3DS)
+    {
+        // Use the asset registry to make loading faster. On consoles, scanning the SD card directories 
+        // can be extremely slow. Android used to require the asset registry, but I did add support for 
+        // iterating over the assets directory via Java. It's still probably faster to use the asset registry though.
+        sEngineConfig.mUseAssetRegistry = true;
     }
 
 #if !EDITOR
@@ -411,8 +374,8 @@ bool Update()
         return !sEngineState.mQuit;
     }
 
+    sEngineState.mFrameNumber++;
     GetProfiler()->BeginFrame();
-
     BEGIN_FRAME_STAT("Frame");
 
     {
@@ -635,6 +598,9 @@ void LoadProject(const std::string& path, bool discoverAssets)
         }
     }
 
+    std::string configPath = sEngineState.mProjectDirectory + "Config.ini";
+    ReadEngineConfig(configPath);
+
     if (discoverAssets &&
         sEngineState.mProjectName != "")
     {
@@ -663,6 +629,7 @@ void LoadProject(const std::string& path, bool discoverAssets)
     if (sEngineState.mProjectPath != "")
     {
         GetEditorState()->AddRecentProject(sEngineState.mProjectPath);
+        GetEditorState()->WriteEditorProjectSave();
     }
 #endif
 }
@@ -819,6 +786,162 @@ ScreenOrientation GetScreenOrientation()
     return SYS_GetScreenOrientation();
 }
 
+void WriteEngineConfig(std::string path)
+{
+    if (path == "")
+    {
+        if (GetEngineState()->mProjectDirectory != "")
+        {
+            path = GetEngineState()->mProjectDirectory + "/Config.ini";
+        }
+    }
+
+    if (path == "")
+    {
+        LogError("Cannot save config. Invalid project directory");
+        return;
+    }
+
+    // Write out an Engine.ini file which is used by Standalone game exe.
+    FILE* configIni = fopen(path.c_str(), "w");
+    if (configIni != nullptr)
+    {
+        std::string projName = sEngineConfig.mProjectName;
+        if (projName == "")
+        {
+            projName = GetEngineState()->mProjectName;
+        }
+
+        fprintf(configIni, "Project=%s\n", projName.c_str());
+        fprintf(configIni, "Standalone=%d\n", sEngineConfig.mStandalone);
+
+        fprintf(configIni, "DefaultScene=%s\n", sEngineConfig.mDefaultScene.c_str());
+        fprintf(configIni, "DefaultEditorScene=%s\n", sEngineConfig.mDefaultEditorScene.c_str());
+        fprintf(configIni, "GameCode=%u\n", sEngineConfig.mGameCode);
+        fprintf(configIni, "Version=%u\n", sEngineConfig.mVersion);
+        fprintf(configIni, "WindowWidth=%u\n", sEngineConfig.mWindowWidth);
+        fprintf(configIni, "WindowHeight=%u\n", sEngineConfig.mWindowHeight);
+
+        fprintf(configIni, "Fullscreen=%d\n", sEngineConfig.mFullscreen);
+        fprintf(configIni, "ValidateGraphics=%d\n", sEngineConfig.mValidateGraphics);
+        fprintf(configIni, "LinearColorSpace=%d\n", sEngineConfig.mLinearColorSpace);
+        fprintf(configIni, "PackageForSteam=%d\n", sEngineConfig.mPackageForSteam);
+        fprintf(configIni, "UseAssetRegistry=%d\n", sEngineConfig.mUseAssetRegistry);
+        fprintf(configIni, "Logging=%d\n", sEngineConfig.mLogging);
+        fprintf(configIni, "LogToFile=%d\n", sEngineConfig.mLogToFile);
+
+        fprintf(configIni, "LqMaxTextureSize=%d\n", sEngineConfig.mLqMaxTextureSize);
+        fprintf(configIni, "LqEnableMipMaps=%d\n", sEngineConfig.mLqEnableMipMaps);
+
+        fclose(configIni);
+        configIni = nullptr;
+    }
+}
+
+void ReadEngineConfig(std::string path)
+{
+    // Config is generally read twice:
+    // (1) When game/editor is first launched, Config.ini is read in working directory.
+    //     or if a project commandline arg was passed, the config is read from that directory.
+    // (2) Whenever a project is loaded, ProjectDir/Config.ini is read.
+    if (path == "")
+    {
+        // Initial Config.ini is loaded from working directory in packaged game.
+        path = "Config.ini";
+
+        // But if we pass in a project via commandline when running unpackaged,
+        // use the project directory to search for Config.ini.
+        const std::string& projPath = sEngineConfig.mProjectPath;
+        std::string projDir = projPath.substr(0, projPath.find_last_of("/\\") + 1);
+        std::string projIni = projDir + "Config.ini";
+
+        if (SYS_DoesFileExist(projIni.c_str(), true))
+        {
+            path = projIni;
+        }
+    }
+
+    Stream iniStream;
+    // First check non-nonembedded files
+    iniStream.ReadFile(path.c_str(), false);
+
+    // If no loose config, check the embedded config (for instance, on 3DS's romfs)
+    if (iniStream.GetSize() == 0)
+    {
+        iniStream.ReadFile(path.c_str(), true);
+    }
+
+    if (iniStream.GetSize() > 0)
+    {
+        char key[MAX_PATH_SIZE] = {};
+        char value[MAX_PATH_SIZE] = {};
+
+        std::string keyStr;
+        std::string valueStr;
+
+        auto strToBool = [](const std::string& str)
+            {
+                if (str == "true") return true;
+                if (str == "false") return false;
+
+                int32_t intVal = atoi(str.c_str());
+                return (intVal != 0);
+            };
+
+        while (iniStream.Scan("%[^=]=%s\n", key, value) != -1)
+        {
+            keyStr = key;
+            valueStr = value;
+
+            if (keyStr == "Project")
+                sEngineConfig.mProjectName = value;
+            else if (keyStr == "Standalone")
+                sEngineConfig.mStandalone = strToBool(value);
+
+            else if (keyStr == "DefaultScene")
+                sEngineConfig.mDefaultScene = value;
+            else if (keyStr == "DefaultEditorScene")
+                sEngineConfig.mDefaultEditorScene = value;
+            else if (keyStr == "GameCode")
+                sEngineConfig.mGameCode = (uint32_t)atoi(value);
+            else if (keyStr == "Version")
+                sEngineConfig.mVersion = (uint32_t)atoi(value);
+            else if (keyStr == "WindowWidth")
+                sEngineConfig.mWindowWidth = atoi(value);
+            else if (keyStr == "WindowHeight")
+                sEngineConfig.mWindowHeight = atoi(value);
+
+            else if (keyStr == "Fullscreen")
+                sEngineConfig.mFullscreen = strToBool(value);
+            else if (keyStr == "ValidateGraphics")
+                sEngineConfig.mValidateGraphics = strToBool(value);
+            else if (keyStr == "LinearColorSpace")
+                sEngineConfig.mLinearColorSpace = strToBool(value);
+            else if (keyStr == "PackageForSteam")
+                sEngineConfig.mPackageForSteam = strToBool(value);
+            else if (keyStr == "UseAssetRegistry")
+                sEngineConfig.mUseAssetRegistry = strToBool(value);
+            else if (keyStr == "Logging")
+                sEngineConfig.mLogging = strToBool(value);
+            else if (keyStr == "LogToFile")
+                sEngineConfig.mLogToFile = strToBool(value);
+
+            else if (keyStr == "LqMaxTextureSize")
+                sEngineConfig.mLqMaxTextureSize = atoi(value);
+            else if (keyStr == "LqEnableMipMaps")
+                sEngineConfig.mLqEnableMipMaps = strToBool(value);
+
+            strcpy(key, "");
+            strcpy(value, "");
+        }
+    }
+}
+
+void ResetEngineConfig()
+{
+    sEngineConfig = EngineConfig();
+}
+
 #if LUA_ENABLED
 lua_State* GetLua()
 {
@@ -832,7 +955,7 @@ void GameMain(int32_t argc, char** argv)
     sEngineState.mArgC = argc;
     sEngineState.mArgV = argv;
     ReadCommandLineArgs(argc, argv);
-    ReadEngineIni();
+    ReadEngineConfig();
     OctPreInitialize(sEngineConfig);
     Initialize();
     OctPostInitialize();

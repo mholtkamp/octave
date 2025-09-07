@@ -21,17 +21,6 @@ class CameraFrustum;
 
 struct EngineState;
 
-struct FadingLight
-{
-    // mNode should only be used for comparisons!! If deleted, we want to fade it out, not crash.
-    Light3D* mComponent = nullptr;
-    LightData mData = {};
-    glm::vec4 mColor = { 0.0f, 0.0f, 0.0f, 0.0f };
-    float mAlpha = 0.0f;
-
-    FadingLight(Light3D* comp) : mComponent(comp) {}
-};
-
 struct LightDistance2
 {
     Light3D* mComponent = nullptr;
@@ -133,12 +122,12 @@ public:
     void SetResolutionScale(float scale);
     float GetResolutionScale() const;
 
-    uint32_t GetViewportX();
-    uint32_t GetViewportY();
-    uint32_t GetViewportWidth();
-    uint32_t GetViewportHeight();
-    glm::uvec4 GetViewport();
-    glm::uvec4 GetSceneViewport();
+    uint32_t GetViewportX(int32_t screenIdx = -1);
+    uint32_t GetViewportY(int32_t screenIdx = -1);
+    uint32_t GetViewportWidth(int32_t screenIdx = -1);
+    uint32_t GetViewportHeight(int32_t screenIdx = -1);
+    glm::uvec4 GetViewport(int32_t screenIdx = -1);
+    glm::uvec4 GetSceneViewport(int32_t screenIdx = -1);
 
     // Property Getters
     uint32_t GetRaysPerPixel() const;
@@ -238,7 +227,6 @@ private:
     bool mEnableLightFade = false;
     uint32_t mLightFadeLimit = 4;
     float mLightFadeSpeed = 1.0f;
-    std::vector<FadingLight> mFadingLights;
     glm::vec4 mClearColor = {};
 
     // Path tracing

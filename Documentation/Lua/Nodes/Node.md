@@ -73,6 +73,18 @@ Sig: `visible = Node:IsVisible(recurse=false)`
  - Arg: `boolean recurse` Recursively check ancestors
  - Ret: `boolean visible` Visible status
 ---
+### SetPersistent
+Set the persistence of a node. A persistent node will remain in a world when a world is cleared or a new root node is set. It will only be removed if it is explicitly removed. A persistent node will also not be destroyed if its parent is destroyed.
+
+Sig: `Node:SetPersistent(persistent)`
+ - Arg: `boolean persistent` Is persistent
+---
+### IsPersistent
+Checks if the node is persistent. A persistent node will remain in a world when a world is cleared or a new root node is set. It will only be removed if it is explicitly removed. A persistent node will also not be destroyed if its parent is destroyed.
+
+Sig: `persistent = Node:IsPersistent()`
+ - Ret: `boolean persistent` Is persistent
+---
 ### GetWorld
 Returns the World that the node is currently in. Returns nil if not part of a World.
 
@@ -341,6 +353,14 @@ Return this node's associated Scene. When a scene is instantiated, the newly ins
 
 Sig: `scene = Node:GetScene()`
  - Arg: `Scene scene` The node's associated scene
+---
+### SetScript
+Set the script file on a particular node.
+
+Alias: `SetScriptFile`
+
+Sig: `Node:SetScript(filename)`
+ - Arg: `string filename` Script filename
 ---
 ### GetNetId
 Return the net id associated with this node. A NetId will be assigned to nodes with replication enabled when hosting a session or connected to another session. NetIds are the internal mechanism for referencing the same node across different instances of the game.

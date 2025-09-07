@@ -131,7 +131,9 @@ Sig: `data = Particle3D:GetParticleData(index)`
    - `number rotation`
 ---
 ### SetParticleData
-Set the particle data for a specific particle.
+Set the particle data for a specific particle, or all particles if index = 0.
+
+For example, `node:SetParticleData(0, { velocity = Vec(0, 1, 0) })` will set all particles velocity upward (and leave any other properties unaffected).
 
 Sig: `Particle3D:SetParticleData(index, data)`
  - Arg: `integer index` Particle index

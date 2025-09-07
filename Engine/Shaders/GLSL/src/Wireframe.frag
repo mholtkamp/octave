@@ -19,5 +19,10 @@ layout(location = 0) out vec4 outColor;
 
 void main()
 {
-    outColor = SrgbToLinear(geometry.mColor);
+    outColor = geometry.mColor;
+
+	if (global.mLinearColorSpace != 0)
+	{
+		outColor = SrgbToLinear(geometry.mColor);
+	} 
 }

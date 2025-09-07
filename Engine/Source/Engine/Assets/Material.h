@@ -63,6 +63,8 @@ public:
     virtual bool IsBase() const;
     virtual bool IsInstance() const;
     virtual bool IsLite() const;
+    MaterialLite* AsLite();
+
 
     std::vector<ShaderParameter>& GetParameters();
 

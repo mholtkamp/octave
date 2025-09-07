@@ -222,13 +222,22 @@ void Primitive3D::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Byte, "Lighting Channels", this, &mLightingChannels, 1, nullptr, (int32_t)ByteExtra::FlagWidget));
 }
 
-void Primitive3D::SetWorld(World* world)
+void Primitive3D::SetWorld(World* world, bool subRoot)
 {
     // TODO-NODE: I am attempting to simplify this code. Does it still work?
 #if 1
-    EnableRigidBody(false);
-    Node3D::SetWorld(world);
-    EnableRigidBody(true);
+    if (mWorld != world)
+    {
+        EnableRigidBody(false);
+
+        if (mWorld != nullptr)
+        {
+            mWorld->PurgeOverlaps(static_cast<Primitive3D*>(this));
+        }
+
+        Node3D::SetWorld(world, subRoot);
+        EnableRigidBody(true);
+    }
 #else
     bool rigidBodyInWorld = IsRigidBodyInWorld();
 
@@ -238,7 +247,7 @@ void Primitive3D::SetWorld(World* world)
         EnableRigidBody(false);
     }
 
-    Node3D::SetWorld(world);
+    Node3D::SetWorld(world, subRoot);
 
     if (rigidBodyInWorld)
     {
@@ -738,7 +747,7 @@ void Primitive3D::SetCollisionShape(btCollisionShape* newShape)
     EnableRigidBody(true);
 }
 
-bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask)
+bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask, bool testOnly)
 {
     bool hit = false;
     glm::vec3 startPos = GetWorldPosition();
@@ -765,19 +774,30 @@ bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outS
 
         glm::vec3 fracDelta = outSweepResult.mHitFraction * delta;
 
-        SetWorldPosition(startPos + fracDelta + outSweepResult.mHitNormal * padding);
-
-        if (GetParent() != nullptr)
+        if (!testOnly)
         {
-            GetParent()->OnCollision(this, outSweepResult.mHitNode, outSweepResult.mHitPosition, outSweepResult.mHitNormal, nullptr);
+            SetWorldPosition(startPos + fracDelta + outSweepResult.mHitNormal * padding);
+
+            if (GetParent() != nullptr)
+            {
+                GetParent()->OnCollision(this, outSweepResult.mHitNode, outSweepResult.mHitPosition, outSweepResult.mHitNormal, nullptr);
+            }
         }
     }
     else
     {
-        SetWorldPosition(position);
+        if (!testOnly)
+        {
+            SetWorldPosition(position);
+        }
     }
 
     return hit;
+}
+
+bool Primitive3D::SweepTest(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask)
+{
+    return SweepToWorldPosition(position, outSweepResult, mask, true);
 }
 
 Bounds Primitive3D::GetBounds() const

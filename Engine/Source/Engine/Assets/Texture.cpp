@@ -10,6 +10,7 @@
 #include "EditorUtils.h"
 #include <stb_image.h>
 #include <stb_image_write.h>
+#include <stb_image_resize2.h>
 #endif
 
 using namespace std;
@@ -102,7 +103,14 @@ bool UseCookedTextures(Platform platform)
     return cook;
 }
 
-void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>& srcPixels, std::vector<uint8_t>& outData)
+void CookTexture(
+    Texture* texture,
+    Platform platform,
+    const std::vector<uint8_t>& srcPixels,
+    std::vector<uint8_t>& outData,
+    uint32_t& outWidth,
+    uint32_t& outHeight,
+    uint32_t& outNumMips)
 {
 #if EDITOR
     // (1) Save a temporary PNG in the Intermediate directory.
@@ -128,9 +136,76 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
         }
     }
 
+    std::vector<uint8_t> pixels = srcPixels;
+    int32_t texWidth = texture->GetWidth();
+    int32_t texHeight = texture->GetHeight();
+    int32_t maxLod = 0;
+
+    if (platform == Platform::GameCube ||
+        platform == Platform::Wii ||
+        platform == Platform::N3DS)
+    {
+        bool forceHq = texture->IsForcedHighQuality();
+        int32_t downsampleFactor = texture->GetLowQualityDownsampleFactor();
+        int32_t consoleMaxTextureSize = GetEngineConfig()->mLqMaxTextureSize;
+
+        if (!forceHq && (consoleMaxTextureSize != 0 || downsampleFactor > 1))
+        {
+            if (downsampleFactor > 1)
+            {
+                texWidth = glm::max(texWidth >> downsampleFactor, 1);
+                texHeight = glm::max(texHeight >> downsampleFactor, 1);
+            }
+
+            float whRatio = float(texWidth) / float(texHeight);
+            bool nonSquare = (texWidth != texHeight);
+
+            texWidth = glm::clamp<uint32_t>(texWidth, 1, consoleMaxTextureSize);
+            texHeight = glm::clamp<uint32_t>(texHeight, 1, consoleMaxTextureSize);
+
+            if (nonSquare)
+            {
+                if (texWidth > texHeight)
+                {
+                    float texHeightFloat = texWidth * (1 / whRatio);
+                    texHeight = uint32_t(texHeightFloat + 0.5f);
+                    texHeight = glm::clamp<uint32_t>(texHeight, 1, consoleMaxTextureSize);
+                }
+                else
+                {
+                    float texWidthFloat = texHeight * whRatio;
+                    texWidth = uint32_t(texWidthFloat + 0.5f);
+                    texWidth = glm::clamp<uint32_t>(texWidth, 1, consoleMaxTextureSize);
+                }
+            }
+        }
+
+        // TODO: Resize to a power-of-two?
+
+        // Resize texture if downsampled for LQ, or non-power-of-two
+        if (texWidth != texture->GetWidth() ||
+            texHeight != texture->GetHeight())
+        {
+            pixels.resize(texWidth * texHeight * sizeof(uint32_t));
+
+            stbir_resize_uint8_srgb(
+                srcPixels.data(),
+                texture->GetWidth(),
+                texture->GetHeight(),
+                texture->GetWidth() * sizeof(uint32_t),
+                pixels.data(),
+                texWidth,
+                texHeight,
+                texWidth * sizeof(uint32_t),
+                stbir_pixel_layout::STBIR_RGBA);
+        }
+    }
+
+    int32_t consoleEnableMips = GetEngineConfig()->mLqEnableMipMaps;
+
     const uint32_t comps = 4;
     stbi_flip_vertically_on_write(platform == Platform::N3DS);
-    stbi_write_png(pngPath.c_str(), texture->GetWidth(), texture->GetHeight(), comps, srcPixels.data(), texture->GetWidth() * 4);
+    stbi_write_png(pngPath.c_str(), texWidth, texHeight, comps, pixels.data(), texWidth * 4);
 
     // (2) Exec platform-specific texture converter with relevant args, and output to another temp file in Intermediate.
     std::string cookCmd = "";
@@ -168,10 +243,10 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
         default: cookCmd += "6"; break;
         }
 
-        if (texture->IsMipmapped())
+        if (texture->IsMipmapped() && consoleEnableMips)
         {
             //int32_t maxLod = int32_t(texture->GetMipLevels()) - 1;
-            int32_t maxLod = static_cast<int32_t>(floor(log2(std::min(texture->GetWidth(), texture->GetHeight()))) + 1) - 3;
+            maxLod = static_cast<int32_t>(floor(log2(std::min(texWidth, texHeight))) + 1) - 3;
 
             maxLod = glm::max(maxLod, 0);
             cookCmd += " mipmap=yes ";
@@ -185,8 +260,8 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
             cookCmd += " mipmap=no ";
         }
 
-        cookCmd += "width=" + std::to_string(texture->GetWidth());
-        cookCmd += " height=" + std::to_string(texture->GetHeight()) + " ";
+        cookCmd += "width=" + std::to_string(texWidth);
+        cookCmd += " height=" + std::to_string(texHeight) + " ";
 
         break;
     }
@@ -207,7 +282,7 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
         default: cookCmd += "rgba8"; break;
         }
 
-        if (texture->IsMipmapped())
+        if (texture->IsMipmapped() && consoleEnableMips)
         {
             cookCmd += " -m triangle ";
         }
@@ -231,6 +306,10 @@ void CookTexture(Texture* texture, Platform platform, const std::vector<uint8_t>
     stream.ReadFile(outPath.c_str(), false);
     outData.resize(stream.GetSize());
     memcpy(outData.data(), stream.GetData(), stream.GetSize());
+
+    outWidth = texWidth;
+    outHeight = texHeight;
+    outNumMips = maxLod + 1;
 #endif
 }
 
@@ -245,7 +324,9 @@ Texture::Texture() :
     mWrapMode(WrapMode::Repeat),
     mMipmapped(true),
     mRenderTarget(false),
-    mSrgb(true)
+    mSrgb(true),
+    mForceHighQuality(false),
+    mLowQualityDownsampleFactor(1)
 {
     mType = Texture::GetStaticType();
 }
@@ -276,8 +357,23 @@ void Texture::LoadStream(Stream& stream, Platform platform)
     mRenderTarget = stream.ReadBool();
     mSrgb = stream.ReadBool();
 
+    if (mVersion >= ASSET_VERSION_TEXTURE_LOW_QUALITY)
+    {
+        mForceHighQuality = stream.ReadBool();
+        mLowQualityDownsampleFactor = stream.ReadUint8();
+    }
+
     if (UseCookedTextures(platform))
     {
+        if (mVersion >= ASSET_VERSION_TEXTURE_COOKED_PROPERTIES)
+        {
+            mWidth = stream.ReadUint32();
+            mHeight = stream.ReadUint32();
+            mMipLevels = stream.ReadUint32();
+            mFilterType = (FilterType)stream.ReadUint32();
+            mMipmapped = mMipLevels > 1;
+        }
+
         uint32_t cookedDataSize = stream.ReadUint32();
         mPixels.resize(cookedDataSize);
         stream.ReadBytes(mPixels.data(), cookedDataSize);
@@ -313,10 +409,23 @@ void Texture::SaveStream(Stream& stream, Platform platform)
     stream.WriteBool(mRenderTarget);
     stream.WriteBool(mSrgb);
 
+    stream.WriteBool(mForceHighQuality);
+    stream.WriteUint8(mLowQualityDownsampleFactor);
+
     if (UseCookedTextures(platform))
     {
         std::vector<uint8_t> cookedData;
-        CookTexture(this, platform, mPixels, cookedData);
+        uint32_t texWidth = mWidth;
+        uint32_t texHeight = mHeight;
+        uint32_t numMips = mMipLevels;
+        CookTexture(this, platform, mPixels, cookedData, texWidth, texHeight, numMips);
+
+        stream.WriteUint32(texWidth);
+        stream.WriteUint32(texHeight);
+        stream.WriteUint32(numMips);
+        // In the future, might support option for forcing filter type;
+        stream.WriteUint32(uint32_t(mFilterType));
+
         uint32_t cookedDataSize = (uint32_t)cookedData.size();
         stream.WriteUint32(cookedDataSize);
         stream.WriteBytes(cookedData.data(), cookedDataSize);
@@ -414,6 +523,8 @@ void Texture::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Integer, "Format", this, &mFormat, 1, Texture::HandlePropChange, NULL_DATUM, 5, sPixelFormatEnumStrings));
     outProps.push_back(Property(DatumType::Integer, "Filter Type", this, &mFilterType, 1, Texture::HandlePropChange, NULL_DATUM, int32_t(FilterType::Count), gFilterEnumStrings));
     outProps.push_back(Property(DatumType::Integer, "Wrap Mode", this, &mWrapMode, 1, Texture::HandlePropChange, NULL_DATUM, int32_t(WrapMode::Count), gWrapEnumStrings));
+    outProps.push_back(Property(DatumType::Bool, "Force High Quality", this, &mForceHighQuality));
+    outProps.push_back(Property(DatumType::Byte, "LQ Downsample Factor", this, &mLowQualityDownsampleFactor));
 }
 
 glm::vec4 Texture::GetTypeColor()
@@ -466,6 +577,11 @@ bool Texture::IsSrgb() const
     return mSrgb;
 }
 
+bool Texture::IsForcedHighQuality() const
+{
+    return mForceHighQuality;
+}
+
 uint32_t Texture::GetWidth() const
 {
     return mWidth;
@@ -501,6 +617,11 @@ WrapMode Texture::GetWrapMode() const
     return mWrapMode;
 }
 
+int32_t Texture::GetLowQualityDownsampleFactor() const
+{
+    return mLowQualityDownsampleFactor;
+}
+
 // These Set***() calls need to be called before Create().
 void Texture::SetFormat(PixelFormat format)
 {
@@ -517,3 +638,7 @@ void Texture::SetWrapMode(WrapMode wrapMode)
     mWrapMode = wrapMode;
 }
 
+void Texture::SetForceHighQuality(bool forceHq)
+{
+    mForceHighQuality = forceHq;
+}

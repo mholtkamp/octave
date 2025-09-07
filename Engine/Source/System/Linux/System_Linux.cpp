@@ -308,8 +308,8 @@ void SYS_Initialize()
                     system.mXcbScreen->root, 
                     0, 
                     0, 
-                    engine.mWindowWidth, 
-                    engine.mWindowHeight, 
+                    GetEngineConfig()->mWindowWidth,
+                    GetEngineConfig()->mWindowHeight,
                     0,
                     XCB_WINDOW_CLASS_INPUT_OUTPUT, 
                     system.mXcbScreen->root_visual, 
@@ -753,7 +753,14 @@ void SYS_DestroyThread(ThreadObject* thread)
 MutexObject* SYS_CreateMutex()
 {
     MutexObject* retMutex = new MutexObject();
-    int status = pthread_mutex_init(retMutex, nullptr);
+
+    pthread_mutexattr_t mutexAttrib;
+    pthread_mutexattr_init(&mutexAttrib);
+    pthread_mutexattr_settype(&mutexAttrib, PTHREAD_MUTEX_RECURSIVE);
+
+    int status = pthread_mutex_init(retMutex, &mutexAttrib);
+
+    pthread_mutexattr_destroy(&mutexAttrib);
 
     if (status != 0)
     {
@@ -825,15 +832,10 @@ void SYS_AlignedFree(void* pointer)
     free(pointer);
 }
 
-uint64_t SYS_GetNumBytesFree()
+std::vector<MemoryStat> SYS_GetMemoryStats()
 {
     // What do?
-    return 0;
-}
-
-uint64_t SYS_GetNumBytesAllocated()
-{
-    return 0;
+    return {};
 }
 
 // Save Game

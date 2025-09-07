@@ -103,11 +103,6 @@ void StaticMesh::LoadStream(Stream& stream, Platform platform)
 
     stream.ReadAsset(mMaterial);
 
-    if (mMaterial.Get() == nullptr)
-    {
-        mMaterial = Renderer::Get()->GetDefaultMaterial();
-    }
-
     mGenerateTriangleCollisionMesh = stream.ReadBool();
     mHasVertexColor = stream.ReadBool();
 

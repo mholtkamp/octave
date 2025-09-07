@@ -130,6 +130,22 @@ void Widget::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Float, "Rotation", this, &mRotation, 1, Widget::HandlePropChange));
 }
 
+void Widget::SetVisible(bool visible)
+{
+    if (mVisible != visible)
+    {
+        Super::SetVisible(visible);
+
+        // Because ticking is tied to visibility for widgets, we want to add
+        // newly registered nodes to the World's newly registered list so that
+        // it will tick before it is first rendered.
+        if (mVisible && GetWorld() != nullptr)
+        {
+            GetWorld()->AddNewlyRegisteredNode(this);
+        }
+    }
+}
+
 void Widget::Render()
 {
     GFX_SetScissor(int32_t(mScissorRect.mX + 0.5f),
@@ -145,12 +161,20 @@ VertexType Widget::GetVertexType() const
 
 // Refresh any data used for rendering based on this widget's state. Use dirty flag.
 // Recursively update children.
-void Widget::PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game)
+void Widget::PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game, bool recurse)
 {
     // Widgets only tick when visible.
     if (IsVisible())
     {
-        Node::PrepareTick(outTickNodes, game);
+        Node::PrepareTick(outTickNodes, game, recurse);
+    }
+    else
+    {
+        // Still want to start the widgets when they would have ticked
+        if (game && !mHasStarted)
+        {
+            Start();
+        }
     }
 }
 
@@ -465,13 +489,13 @@ void Widget::SetAnchorMode(AnchorMode anchorMode)
 
         if (oldStretchY && !newStretchY)
         {
-            mOffset.y = RatioToPixelsX(mOffset.y);
-            mSize.y = RatioToPixelsX(mSize.y);
+            mOffset.y = PixelsToRatioY(mOffset.y);
+            mSize.y = PixelsToRatioY(mSize.y);
         }
         else if (!oldStretchY && newStretchY)
         {
-            mOffset.y = PixelsToRatioX(mOffset.y);
-            mSize.y = PixelsToRatioX(mSize.y);
+            mOffset.y = PixelsToRatioY(mOffset.y);
+            mSize.y = PixelsToRatioY(mSize.y);
         }
 
         mAnchorMode = anchorMode;

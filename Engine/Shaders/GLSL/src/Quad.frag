@@ -23,6 +23,11 @@ layout (location = 0) out vec4 outFinalColor;
 
 void main()
 {
-    vec4 textureColor = LinearToSrgb(texture(quadSampler, inTexcoord));
+    vec4 textureColor = texture(quadSampler, inTexcoord);
+    if (global.mLinearColorSpace != 0)
+    {
+        textureColor = LinearToSrgb(textureColor);
+    }
+
     outFinalColor = textureColor * inColor * quadData.mColor;
 }

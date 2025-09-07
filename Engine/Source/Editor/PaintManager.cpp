@@ -38,6 +38,7 @@ PaintManager::PaintManager()
 
     mSphereMesh = LoadAsset<StaticMesh>("SM_Sphere");
     mSphereMaterial = MaterialLite::New(LoadAsset<Material>("M_PaintSphere"));
+    mSphereMaterial.Get<MaterialLite>()->SetEngineAsset(true);
 }
 
 PaintManager::~PaintManager()

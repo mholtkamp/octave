@@ -27,6 +27,8 @@
 
 using namespace std;
 
+std::unordered_set<NodePtrWeak> World::sNewlyRegisteredNodes;
+
 bool ContactAddedHandler(btManifoldPoint& cp,
     const btCollisionObjectWrapper* colObj0Wrap,
     int partId0,
@@ -118,7 +120,12 @@ void World::SetRootNode(Node* node)
     {
         if (mRootNode != nullptr)
         {
-            mRootNode->SetWorld(nullptr);
+            if (IsPlaying())
+            {
+                ExtractPersistingNodes();
+            }
+
+            mRootNode->SetWorld(nullptr, true);
         }
 
         mRootNode = ResolvePtr(node);
@@ -131,7 +138,42 @@ void World::SetRootNode(Node* node)
 
         if (mRootNode != nullptr)
         {
-            mRootNode->SetWorld(this);
+            // The new root node should not be attached to any other node.
+            if (mRootNode->GetParent() != nullptr)
+            {
+                mRootNode->Detach();
+            }
+
+            // If this node is already a root node for a different world, first
+            // clear it as the root node in that world.
+            World* prevWorld = mRootNode->GetWorld();
+
+            // This shouldn't be possible.
+            OCT_ASSERT(prevWorld != this);
+
+            if (prevWorld &&
+                prevWorld->GetRootNode() == mRootNode.Get())
+            {
+                prevWorld->SetRootNode(nullptr);
+            }
+
+            // The new root node should no longer be associated with a world.
+            OCT_ASSERT(mRootNode->GetWorld() == nullptr);
+
+            mRootNode->SetWorld(this, true);
+        }
+
+        if (mRootNode != nullptr)
+        {
+            if (IsPlaying())
+            {
+                for (auto& persNode : mPersistingNodes)
+                {
+                    mRootNode->AddChild(persNode);
+                }
+            }
+
+            mPersistingNodes.clear();
         }
 
         UpdateRenderSettings();
@@ -142,6 +184,11 @@ void World::DestroyRootNode()
 {
     if (mRootNode != nullptr)
     {
+        if (IsPlaying())
+        {
+            ExtractPersistingNodes();
+        }
+
         mRootNode->Destroy();
         SetRootNode(nullptr);
     }
@@ -262,6 +309,23 @@ void World::Clear()
     DestroyRootNode();
 }
 
+int32_t World::GetIndex() const
+{
+    int32_t worldIdx = -1;
+    int32_t numWorlds = GetNumWorlds();
+
+    for (int32_t i = 0; i < numWorlds; ++i)
+    {
+        if (::GetWorld(i) == this)
+        {
+            worldIdx = i;
+            break;
+        }
+    }
+
+    return worldIdx;
+}
+
 void World::AddLine(const Line& line)
 {
     // Add unique
@@ -312,6 +376,11 @@ const std::vector<Line>& World::GetLines() const
 const std::vector<Light3D*>& World::GetLights()
 {
     return mLights;
+}
+
+std::vector<FadingLight>& World::GetFadingLights()
+{
+    return mFadingLights;
 }
 
 void World::SetAmbientLightColor(glm::vec4 color)
@@ -519,7 +588,7 @@ void World::SweepTest(
     }
 }
 
-void World::RegisterNode(Node* node)
+void World::RegisterNode(Node* node, bool subRoot)
 {
     TypeId nodeType = node->GetType();
 
@@ -547,9 +616,14 @@ void World::RegisterNode(Node* node)
             mActiveCamera = node->As<Camera3D>();
         }
     }
+
+    if (subRoot)
+    {
+        sNewlyRegisteredNodes.insert(ResolveWeakPtr(node));
+    }
 }
 
-void World::UnregisterNode(Node* node)
+void World::UnregisterNode(Node* node, bool subRoot)
 {
     TypeId nodeType = node->GetType();
 
@@ -575,6 +649,11 @@ void World::UnregisterNode(Node* node)
     {
         SetActiveCamera(nullptr);
     }
+
+    if (subRoot)
+    {
+        sNewlyRegisteredNodes.erase(ResolveWeakPtr(node));
+    }
 }
 
 const std::vector<Audio3D*>& World::GetAudios() const
@@ -598,6 +677,24 @@ void World::UpdateLines(float deltaTime)
             }
         }
     }
+}
+
+void World::ExtractPersistingNodes()
+{
+    // Extract persistent nodes that will be added to world when next root node is set
+    mRootNode->Traverse(
+        [this](Node* node) -> bool
+        {
+            if (node->IsPersistent())
+            {
+                mPersistingNodes.push_back(ResolvePtr(node));
+                node->Detach();
+                return false;
+            }
+
+            return true;
+        },
+        true);
 }
 
 void World::Update(float deltaTime)
@@ -734,22 +831,63 @@ void World::Update(float deltaTime)
             static std::vector<NodePtrWeak> sNodesToTick;
             sNodesToTick.clear();
 
-            mRootNode->PrepareTick(sNodesToTick, gameTickEnabled);
+            mRootNode->PrepareTick(sNodesToTick, gameTickEnabled, true);
 
-            for (uint32_t i = 0; i < sNodesToTick.size(); ++i)
+            // Setting a limit of 10 iterations. If we go over this, there is
+            // likely an infinite chain of node creation
+            const int32_t kMaxTickIterations = 10;
+            int32_t tickIteration = 0;
+            uint32_t currentFrame = GetEngineState()->mFrameNumber;
+
+            // Tick all of the nodes that need to be ticked, and then keep iterating
+            // until all newly spawned nodes / added nodes have ticked (and maybe start)
+            while (sNodesToTick.size() > 0 && tickIteration < kMaxTickIterations)
             {
-                Node* node = sNodesToTick[i].Get();
-
-                if (node)
+                for (uint32_t i = 0; i < sNodesToTick.size(); ++i)
                 {
-                    if (gameTickEnabled)
+                    Node* node = sNodesToTick[i].Get();
+
+                    // Node may have been destroyed or removed from the world
+                    if (node &&
+                        node->GetWorld() == this &&
+                        node->GetLastTickedFrame() != currentFrame)
                     {
-                        node->Tick(deltaTime);
+                        if (gameTickEnabled)
+                        {
+                            node->Tick(deltaTime);
+                        }
+                        else
+                        {
+                            node->EditorTick(deltaTime);
+                        }
                     }
-                    else
+                }
+
+                tickIteration++;
+                sNodesToTick.clear();
+
+                if (sNewlyRegisteredNodes.size() > 0)
+                {
+                    // Make a copy otherwise sNewlyRegisteredNodes might get altered while 
+                    // we are calling PrepareTick()
+                    std::unordered_set<NodePtrWeak> newNodes = sNewlyRegisteredNodes;
+                    sNewlyRegisteredNodes.clear();
+
+                    for (const NodePtrWeak& nodePtr : newNodes)
                     {
-                        node->EditorTick(deltaTime);
+                        if (nodePtr.IsValid() &&
+                            nodePtr->GetWorld() == this &&
+                            nodePtr->GetLastTickedFrame() != currentFrame)
+                        {
+                            nodePtr->PrepareTick(sNodesToTick, gameTickEnabled, true);
+                        }
                     }
+                }
+
+
+                if (tickIteration == kMaxTickIterations)
+                {
+                    LogWarning("Reached tick iteration limit");
                 }
             }
         }
@@ -838,13 +976,23 @@ void World::SetAudioReceiver(Node3D* newReceiver)
     mAudioReceiver = newReceiver;
 }
 
-void World::PlaceNewlySpawnedNode(NodePtr node)
+void World::PlaceNewlySpawnedNode(NodePtr node, glm::vec3 position)
 {
     if (node != nullptr)
     {
         if (mRootNode != nullptr)
         {
             mRootNode->AddChild(node.Get());
+
+            if (position != glm::vec3(0.0f, 0.0f, 0.0f))
+            {
+                Node3D* node3d = Cast<Node3D>(node.Get());
+                if (node3d)
+                {
+                    node3d->SetWorldPosition(position);
+                    node3d->UpdateTransform(true);
+                }
+            }
         }
         else
         {
@@ -864,13 +1012,13 @@ void World::RestoreDynamicsWorld()
     mDynamicsWorld = mDefaultDynamicsWorld;
 }
 
-Node* World::SpawnNode(TypeId actorType)
+Node* World::SpawnNode(TypeId actorType, glm::vec3 position)
 {
     NodePtr newNode = Node::Construct(actorType);
 
     if (newNode != nullptr)
     {
-        PlaceNewlySpawnedNode(newNode);
+        PlaceNewlySpawnedNode(newNode, position);
     }
     else
     {
@@ -882,13 +1030,13 @@ Node* World::SpawnNode(TypeId actorType)
     return newNode.Get();
 }
 
-Node* World::SpawnNode(const char* typeName)
+Node* World::SpawnNode(const char* typeName, glm::vec3 position)
 {
     NodePtr newNode = Node::Construct(typeName);
 
     if (newNode != nullptr)
     {
-        PlaceNewlySpawnedNode(newNode);
+        PlaceNewlySpawnedNode(newNode, position);
     }
     else
     {
@@ -898,19 +1046,19 @@ Node* World::SpawnNode(const char* typeName)
     return newNode.Get();
 }
 
-Node* World::SpawnScene(const char* sceneName)
+Node* World::SpawnScene(const char* sceneName, glm::vec3 position)
 {
     Scene* scene = LoadAsset<Scene>(sceneName);
-    return SpawnScene(scene);
+    return SpawnScene(scene, position);
 }
 
-Node* World::SpawnScene(Scene* scene)
+Node* World::SpawnScene(Scene* scene, glm::vec3 position)
 {
     NodePtr newNode = scene ? scene->Instantiate() : nullptr;
 
     if (newNode != nullptr)
     {
-        PlaceNewlySpawnedNode(newNode);
+        PlaceNewlySpawnedNode(newNode, position);
     }
     else
     {
@@ -1025,6 +1173,15 @@ void World::UpdateRenderSettings()
         SetShadowColor(DEFAULT_SHADOW_COLOR);
         FogSettings fogSettings;
         SetFogSettings(fogSettings);
+    }
+}
+
+void World::AddNewlyRegisteredNode(Node* node)
+{
+    if (node != nullptr)
+    {
+        // This should really only be called for Widgets when they are first made visible
+        sNewlyRegisteredNodes.insert(ResolveWeakPtr(node));
     }
 }
 

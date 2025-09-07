@@ -12,6 +12,30 @@
 
 #include "Assertion.h"
 
+class AssetRefLock
+{
+public :
+
+    MutexObject* mMutex = nullptr;
+
+    AssetRefLock()
+    {
+        mMutex = SYS_CreateMutex();
+    }
+
+    ~AssetRefLock()
+    {
+        SYS_DestroyMutex(mMutex);
+        mMutex = nullptr;
+    }
+};
+
+MutexObject* GetAssetRefMutex()
+{
+    static AssetRefLock sLock;
+    return sLock.mMutex;
+}
+
 #if ASSET_LIVE_REF_TRACKING
 // Need a mutex so that newly added AssetRefs during async load won't mess up operations.
 static MutexObject* GetLiveRefMutex()
@@ -99,15 +123,14 @@ AssetRef::AssetRef(const AssetRef& src)
     AddLiveRef(this);
 #endif
 
+    if (src.mLoadRequest)
+    {
+        SetLoadRequest(src.mLoadRequest);
+    }
+
     if (mAsset != nullptr)
     {
         mAsset->IncrementRefCount();
-    }
-
-    if (mLoadRequest != nullptr)
-    {
-        AssetManager::Get()->EraseAsyncLoadRef(*this);
-        mLoadRequest = nullptr;
     }
 }
 
@@ -116,8 +139,7 @@ AssetRef::~AssetRef()
     // Make sure an async load request isn't referencing deleted memory
     if (mLoadRequest != nullptr)
     {
-        AssetManager::Get()->EraseAsyncLoadRef(*this);
-        mLoadRequest = nullptr;
+        SetLoadRequest(nullptr);
     }
 
     AssetManager* am = AssetManager::Get();
@@ -136,7 +158,14 @@ AssetRef::~AssetRef()
 
 AssetRef& AssetRef::operator=(const AssetRef& src)
 {
-    return operator=(src.mAsset);
+    operator=(src.mAsset);
+
+    if (src.mLoadRequest)
+    {
+        SetLoadRequest(src.mLoadRequest);
+    }
+
+    return *this;
 }
 
 AssetRef& AssetRef::operator=(const Asset* srcAsset)
@@ -149,6 +178,8 @@ AssetRef& AssetRef::operator=(const Asset* srcAsset)
     {
         mAsset->DecrementRefCount();
     }
+
+    SetLoadRequest(nullptr);
 
     mAsset = const_cast<Asset*>(srcAsset);
 
@@ -186,4 +217,50 @@ Asset* AssetRef::Get() const
     // Only return non-nullptr if asset is loaded.
     //return mAsset->IsLoaded() ? mAsset : nullptr;
     return mAsset;
+}
+
+void AssetRef::SetLoadRequest(AsyncLoadRequest* loadRequest)
+{
+    SCOPED_LOCK(GetAssetRefMutex());
+    if (mLoadRequest != loadRequest)
+    {
+        if (mLoadRequest != nullptr)
+        {
+            EraseAsyncLoadRef();
+        }
+
+        mLoadRequest = loadRequest;
+
+        if (mLoadRequest)
+        {
+            mLoadRequest->mTargetRefs.push_back(this);
+        }
+    }
+}
+
+AsyncLoadRequest* AssetRef::GetLoadRequest()
+{
+    AsyncLoadRequest* request = mLoadRequest;
+    return request;
+}
+
+void AssetRef::EraseAsyncLoadRef()
+{
+    // Mutex should be locked priority to calling
+    if (mLoadRequest != nullptr)
+    {
+        if (!IsShuttingDown())
+        {
+            std::vector<AssetRef*>& refs = mLoadRequest->mTargetRefs;
+            for (int32_t r = int32_t(refs.size()) - 1; r >= 0; --r)
+            {
+                if (refs[r] == this)
+                {
+                    refs.erase(refs.begin() + r);
+                }
+            }
+        }
+
+        mLoadRequest = nullptr;
+    }
 }

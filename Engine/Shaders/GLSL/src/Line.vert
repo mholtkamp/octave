@@ -21,5 +21,10 @@ out gl_PerVertex
 void main()
 {
     gl_Position = global.mViewProj * vec4(inPosition, 1.0);
-    outColor = SrgbToLinear(inColor);
+    outColor = inColor;
+
+    if (global.mLinearColorSpace != 0)
+    {
+        outColor = SrgbToLinear(inColor);
+    }
 }

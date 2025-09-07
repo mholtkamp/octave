@@ -37,7 +37,7 @@
 
 /* returns the key, given the value of a table entry */
 #define keyfromval(v) \
-  (gkey(cast(Node *, cast(char *, (v)) - offsetof(Node, i_val))))
+  (gkey(cast(LuaNode *, cast(char *, (v)) - offsetof(LuaNode, i_val))))
 
 
 LUAI_FUNC const TValue *luaH_getint (Table *t, lua_Integer key);
@@ -58,7 +58,7 @@ LUAI_FUNC lua_Unsigned luaH_getn (Table *t);
 
 
 #if defined(LUA_DEBUG)
-LUAI_FUNC Node *luaH_mainposition (const Table *t, const TValue *key);
+LUAI_FUNC LuaNode *luaH_mainposition (const Table *t, const TValue *key);
 LUAI_FUNC int luaH_isdummy (const Table *t);
 #endif
 

@@ -823,7 +823,11 @@ ScriptNetFunc* Script::FindNetFunc(const char* funcName)
         }
         else
         {
-            LogError("Can't find NetFunc %s on Script %s", funcName, mClassName.c_str());
+            // No need to log the warning here. A net func may not exist
+            // on the script, but the C++ node may have implemented it.
+            // If the net func can't be found later on the C++ node, then
+            // the warning will be reported.
+            //LogWarning("Can't find NetFunc %s on Script %s", funcName, mClassName.c_str());
         }
     }
 
@@ -1619,8 +1623,7 @@ void Script::CreateScriptInstance()
                 
                 if (!hasFlag)
                 {
-                    LogError("Bad inheritance chain! Make sure the script class table inherits (eventually) from the native node it is being used on.");
-                    OCT_ASSERT(0);
+                    LogWarning("Multiple inheritance chains used for same script: %s", mFileName.c_str());
                 }
 
                 lua_pop(L, 2); // Pop class flag + metatable

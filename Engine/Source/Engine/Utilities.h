@@ -10,6 +10,7 @@
 #include "Maths.h"
 
 class Node;
+struct SubSceneOverride;
 
 #define OCT_ARRAY_SIZE(array) (int(sizeof(array) / sizeof(array[0])))
 
@@ -50,7 +51,9 @@ uint8_t ConvertKeyCodeToChar(uint8_t keyCode, bool shiftDown);
 glm::mat4 MakeTransform(glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale);
 btTransform MakeBulletTransform(glm::vec3 translation, glm::vec3 rotationDegrees);
 
-void GatherNonDefaultProperties(Node* node, std::vector<Property>& props);
+void GatherNonDefaultProperties(Node* node, std::vector<Property>& props, NodePtr refNode = nullptr);
+void GatherSubSceneOverrides(Node* node, Node* sceneRoot, std::vector<SubSceneOverride>& overs);
+void ApplySubSceneOverride(Node* sceneRoot, const SubSceneOverride& over);
 
 void RemoveSpacesFromString(std::string& str);
 

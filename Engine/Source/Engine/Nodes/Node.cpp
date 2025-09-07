@@ -128,19 +128,35 @@ bool Node::OnRep_OwningHost(Datum* datum, uint32_t index, const void* newValue)
     return true;
 }
 
-static void NodeDeleter(Node* node)
+void Node::Deleter(Node* node)
 {
-    node->Destroy();
+    // Destroy the node first.
+    // In case there is a shared pointer referencing a child,
+    // we will first remove all children (which will destroy them too if nothing references them)
+    for (int32_t i = int32_t(node->GetNumChildren()) - 1; i >= 0; --i)
+    {
+        node->RemoveChild(i);
+    }
+
+    if (!node->IsDestroyed())
+    {
+        node->Destroy();
+    }
 }
 
 NodePtr Node::Construct(const std::string& name)
 {
     Node* newNode = Node::CreateInstance(name.c_str());
     NodePtr newNodePtr;
-    newNodePtr.Set(newNode, nullptr);
-    newNodePtr.SetDeleter(NodeDeleter);
-    newNodePtr->mSelf = newNodePtr;
-    newNodePtr->Create();
+
+    if (newNode != nullptr)
+    {
+        newNodePtr.Set(newNode, nullptr);
+        newNodePtr.SetDeleter(Node::Deleter);
+        newNodePtr->mSelf = newNodePtr;
+        newNodePtr->Create();
+    }
+
     return newNodePtr;
 }
 
@@ -148,10 +164,15 @@ NodePtr Node::Construct(TypeId typeId)
 {
     Node* newNode = Node::CreateInstance(typeId);
     NodePtr newNodePtr;
-    newNodePtr.Set(newNode, nullptr);
-    newNodePtr.SetDeleter(NodeDeleter);
-    newNodePtr->mSelf = newNodePtr;
-    newNodePtr->Create();
+
+    if (newNode != nullptr)
+    {
+        newNodePtr.Set(newNode, nullptr);
+        newNodePtr.SetDeleter(Node::Deleter);
+        newNodePtr->mSelf = newNodePtr;
+        newNodePtr->Create();
+    }
+
     return newNodePtr;
 }
 
@@ -205,13 +226,21 @@ void Node::Destroy()
 
     for (int32_t i = int32_t(mChildren.size()) - 1; i >= 0; --i)
     {
-        // Destroy will detach child from this
-        mChildren[i]->Destroy();
-    }
-
-    if (IsPrimitive3D() && GetWorld())
-    {
-        GetWorld()->PurgeOverlaps(static_cast<Primitive3D*>(this));
+        if (IsPlaying() && mPersistent)
+        {
+            // Persistent nodes are not destroyed if a parent is destroyed.
+            // They are also not removed from the world when it is cleared or
+            // a new rootnode is set.
+            RemoveChild(i);
+        }
+        else
+        {
+            // Destroy will detach child from this node
+            if (!mChildren[i]->IsDestroyed())
+            {
+                mChildren[i]->Destroy();
+            }
+        }
     }
 
     if (mParent != nullptr)
@@ -376,6 +405,28 @@ void Node::Render(PipelineConfig pipelineConfig)
     }
 }
 
+void Node::Awake()
+{
+    if (!mHasAwoken)
+    {
+        mHasAwoken = true;
+
+        for (uint32_t i = 0; i < GetNumChildren(); ++i)
+        {
+            Node* child = GetChild(i);
+            if (!child->HasAwoken())
+            {
+                GetChild(i)->Awake();
+            }
+        }
+
+        if (mScript != nullptr)
+        {
+            mScript->CallFunction("Awake");
+        }
+    }
+}
+
 void Node::Start()
 {
     if (!mHasStarted && GetWorld() != nullptr)
@@ -437,7 +488,7 @@ void Node::Stop()
     mHasStarted = false;
 }
 
-void Node::PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game)
+void Node::PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game, bool recurse)
 {
     if (game && !mHasStarted)
     {
@@ -446,17 +497,24 @@ void Node::PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game)
 
     if (IsTickEnabled() && IsActive() && !IsDestroyed())
     {
-        if (!mLateTick)
+        if (recurse)
         {
-            outTickNodes.push_back(mSelf);
-        }
+            if (!mLateTick)
+            {
+                outTickNodes.push_back(mSelf);
+            }
 
-        for (int32_t i = 0; i < (int32_t)mChildren.size(); ++i)
-        {
-            mChildren[i]->PrepareTick(outTickNodes, game);
-        }
+            for (int32_t i = 0; i < (int32_t)mChildren.size(); ++i)
+            {
+                mChildren[i]->PrepareTick(outTickNodes, game, recurse);
+            }
 
-        if (mLateTick)
+            if (mLateTick)
+            {
+                outTickNodes.push_back(mSelf);
+            }
+        }
+        else
         {
             outTickNodes.push_back(mSelf);
         }
@@ -473,8 +531,15 @@ void Node::EditorTick(float deltaTime)
     TickCommon(deltaTime);
 }
 
+uint32_t Node::GetLastTickedFrame() const
+{
+    return mLastTickedFrame;
+}
+
 void Node::TickCommon(float deltaTime)
 {
+    mLastTickedFrame = GetEngineState()->mFrameNumber;
+
     if (mScript != nullptr)
     {
         mScript->Tick(deltaTime);
@@ -883,6 +948,21 @@ NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene, bool resolveNodeP
             }
         }
 
+        if (srcScene)
+        {
+            // Copy all subscene overrides
+            std::vector<SubSceneOverride> overs;
+            for (uint32_t i = 0; i < GetNumChildren(); ++i)
+            {
+                GatherSubSceneOverrides(GetChild(i), this, overs);
+            }
+
+            for (uint32_t i = 0; i < overs.size(); ++i)
+            {
+                ApplySubSceneOverride(clonedNode.Get(), overs[i]);
+            }
+        }
+
         if (HasStarted() && clonedNode->GetParent() != nullptr)
         {
             clonedNode->Start();
@@ -946,6 +1026,18 @@ bool Node::IsWorldRoot() const
     return isWorldRoot;
 }
 
+Node* Node::GetSubRoot()
+{
+    // This is for finding what "sub-scene tree" a node is a part of.
+    if (mScene != nullptr ||
+        mParent == nullptr)
+    {
+        return this;
+    }
+
+    return GetParent()->GetSubRoot();
+}
+
 bool Node::IsDestroyed() const
 {
     return mDestroyed;
@@ -966,6 +1058,11 @@ bool Node::HasStarted() const
     return mHasStarted;
 }
 
+bool Node::HasAwoken() const
+{
+    return mHasAwoken;
+}
+
 void Node::EnableTick(bool enable)
 {
     mTickEnabled = enable;
@@ -976,13 +1073,18 @@ bool Node::IsTickEnabled() const
     return mTickEnabled;
 }
 
-void Node::SetWorld(World * world)
+void Node::SetWorld(World* world, bool subRoot)
 {
     if (mWorld != world)
     {
         if (mWorld != nullptr)
         {
-            mWorld->UnregisterNode(this);
+            mWorld->UnregisterNode(this, subRoot);
+
+            if (IsPrimitive3D())
+            {
+                GetWorld()->PurgeOverlaps(static_cast<Primitive3D*>(this));
+            }
         }
 
         mWorld = world;
@@ -992,7 +1094,7 @@ void Node::SetWorld(World * world)
             // We should never be adding destroyed nodes to a world.
             OCT_ASSERT(!mDestroyed);
 
-            mWorld->RegisterNode(this);
+            mWorld->RegisterNode(this, subRoot);
         }
 
         if (mScript != nullptr)
@@ -1002,7 +1104,16 @@ void Node::SetWorld(World * world)
 
         for (uint32_t i = 0; i < GetNumChildren(); ++i)
         {
-            GetChild(i)->SetWorld(world);
+            GetChild(i)->SetWorld(world, false);
+        }
+
+        // Awake after children world has been set (and possibly awoken)
+        if (mWorld != nullptr)
+        {
+            if (IsPlaying() && !HasAwoken())
+            {
+                Awake();
+            }
         }
     }
 }
@@ -1221,6 +1332,16 @@ bool Node::IsTransient() const
     return mTransient;
 }
 
+void Node::SetPersistent(bool persistent)
+{
+    mPersistent = persistent;
+}
+
+bool Node::IsPersistent() const
+{
+    return mPersistent;
+}
+
 void Node::SetDefault(bool isDefault)
 {
     mDefault = isDefault;
@@ -1378,7 +1499,7 @@ void Node::AddChild(Node* child, int32_t index)
     mChildNameMap.insert({ child->GetName(), child });
 
     child->SetParent(this);
-    child->SetWorld(mWorld);
+    child->SetWorld(mWorld, true);
 }
 
 void Node::RemoveChild(Node* child)
@@ -1417,7 +1538,7 @@ void Node::RemoveChild(int32_t index)
     {
         NodePtr childPtr = mChildren[index];
 
-        childPtr->SetWorld(nullptr);
+        childPtr->SetWorld(nullptr, true);
 
         childPtr->SetParent(nullptr);
         mChildren.erase(mChildren.begin() + index);
@@ -1617,12 +1738,18 @@ int32_t Node::FindParentNodeIndex() const
 
 void Node::SetHitCheckId(uint32_t id)
 {
+#if EDITOR
     mHitCheckId = id;
+#endif
 }
 
 uint32_t Node::GetHitCheckId() const
 {
+#if EDITOR
     return mHitCheckId;
+#else
+    return 0;
+#endif
 }
 
 bool Node::IsLateTickEnabled() const
@@ -1703,6 +1830,25 @@ bool Node::IsSceneLinked(bool ignoreInPie) const
 #endif
 
     return (mScene != nullptr && mParent != nullptr);
+}
+
+bool Node::IsSceneLinkedChild(bool ignoreInPie)
+{
+#if EDITOR
+    if (ignoreInPie && IsPlaying())
+    {
+        return false;
+    }
+#endif
+
+    Node* root = GetRoot();
+
+    if (root == this)
+        return false;
+
+    Node* parentSubRoot = GetParent()->GetSubRoot();
+
+    return (parentSubRoot != root);
 }
 
 bool Node::IsForeign() const
@@ -1861,7 +2007,11 @@ void Node::ProcessPendingDestroys()
 {
     for (auto it = sPendingDestroySet.begin(); it != sPendingDestroySet.end();)
     {
-        (*it)->Destroy();
+        if (it->IsValid())
+        {
+            (*it)->Destroy();
+        }
+
         it = sPendingDestroySet.erase(it);
     }
 

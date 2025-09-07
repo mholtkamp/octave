@@ -30,15 +30,17 @@ Sig: `World:SetAudioReceiver(receiver)`
 ### SpawnNode
 Spawn a node from a given class. The spawned node will be attached to the world's root node. If there is no root node, this newly spawned node will become the world's root node.
 
-Sig: `node = World:SpawnNode(className)`
+Sig: `node = World:SpawnNode(className, position=Vec(0,0,0))`
  - Arg: `string className` Name of the class to spawn
+ - Arg: `Vector position` World position to place new node
  - Ret: `Node node` Newly created node
 ---
 ### SpawnScene
 Spawn a scene. The spawned node will be attached to the world's root node. If there is no root node, this newly spawned node will become the world's root node.
 
-Sig: `node = World:SpawnScene(scene)`
+Sig: `node = World:SpawnScene(scene, position=Vec(0,0,0))`
  - Arg: `Scene scene` Scene asset to spawn
+ - Arg: `Vector position` World position to place new node
  - Ret: `Node node` Newly spawned node (root of spawned scene)
 ---
 ### GetRootNode
@@ -104,25 +106,27 @@ Get the world's shadow color. Shadow color is used by both projected shadows and
 Sig: `color = World:GetShadowColor()`
  - Ret: `Vector color` Shadow color
 ---
-### SetFogSettings
+### SetFog
 Set the world's fog settings.
 
-Sig: `World:SetFogSettings(enabled, color, exponential, near, far)`
- - Arg: `boolean enabled` Enable fog
- - Arg: `Vector color` Fog color
- - Arg: `boolean exponential` Exponential fog falloff (vs linear)
- - Arg: `number near` Distance at which fog starts to accumulate
- - Arg: `number far` Distance at which fog is 100% dense
+Sig: `World:SetFog(fogData)`
+ - Arg: `table fogData` Table of fog attributes to change
+   - `boolean enable` Enable fog
+   - `Vector color` Fog color
+   - `boolean exponential` Exponential fog falloff (vs linear)
+   - `number near` Distance at which fog starts to accumulate
+   - `number far` Distance at which fog is 100% dense
 ---
-### GetFogSettings
+### GetFog
 Get the world's fog settings.
 
-Sig: `enabled, color, exponential, near, far = World:GetFogSettings()`
- - Ret: `boolean enabled` Fog enabled
- - Ret: `Vector color` Fog color
- - Ret: `boolean exponential` Exponential fog falloff (vs linear)
- - Ret: `number near` Distance at which fog starts to accumulate
- - Ret: `number far` Distance at which fog is 100% dense
+Sig: `fogData = World:GetFog()`
+ - Ret: `table fogData` Fog data table
+   - `boolean enable` Enable fog
+   - `Vector color` Fog color
+   - `boolean exponential` Exponential fog falloff (vs linear)
+   - `number near` Distance at which fog starts to accumulate
+   - `number far` Distance at which fog is 100% dense
 ---
 ### SetGravity
 Set the world's gravity. Only used by Primitive3D nodes with physics enabled.

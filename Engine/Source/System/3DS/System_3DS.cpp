@@ -17,8 +17,16 @@
 
 #define ENABLE_SYSTEM_CONSOLE 0
 
+static bool sRomfsInit = false;
+
 void SYS_Initialize()
 {
+    if (!sRomfsInit)
+    {
+        romfsInit();
+        sRomfsInit = true;
+    }
+
     // Initialize graphics
     gfxInitDefault();
     gfxSet3D(true); // Enable stereoscopic 3D
@@ -58,15 +66,39 @@ void SYS_Update()
 // Files
 bool SYS_DoesFileExist(const char* path, bool isAsset)
 {
+    if (!sRomfsInit)
+    {
+        romfsInit();
+        sRomfsInit = true;
+    }
+
     struct stat info;
     bool exists = false;
 
-    int32_t retStatus = stat(path, &info);
+    // First check in romfs
+    std::string romfsPath = path;
+
+    if (isAsset)
+    {
+        romfsPath = "romfs:/" + romfsPath;
+    }
+
+    int32_t retStatus = stat(romfsPath.c_str(), &info);
 
     if (retStatus == 0)
     {
         // If the file is actually a directory, than return false.
         exists = !(info.st_mode & S_IFDIR);
+    }
+    else
+    {
+        // Second, check in normal filepath
+        retStatus = stat(path, &info);
+
+        if (retStatus == 0)
+        {
+            exists = !(info.st_mode & S_IFDIR);
+        }
     }
 
     return exists;
@@ -74,10 +106,30 @@ bool SYS_DoesFileExist(const char* path, bool isAsset)
 
 void SYS_AcquireFileData(const char* path, bool isAsset, int32_t maxSize, char*& outData, uint32_t& outSize)
 {
+    if (!sRomfsInit)
+    {
+        romfsInit();
+        sRomfsInit = true;
+    }
+
     outData = nullptr;
     outSize = 0;
 
-    FILE* file = fopen(path, "rb");
+    // First try romfs path
+    std::string romfsPath = path;
+
+    if (isAsset)
+    {
+        romfsPath = "romfs:/" + romfsPath;
+    }
+
+    FILE* file = fopen(romfsPath.c_str(), "rb");
+
+    if (file == nullptr)
+    {
+        // Second, try normal file path
+        file = fopen(path, "rb");
+    }
 
     if (file != nullptr)
     {
@@ -339,14 +391,27 @@ void SYS_AlignedFree(void* pointer)
     free(pointer);
 }
 
-uint64_t SYS_GetNumBytesFree()
+std::vector<MemoryStat> SYS_GetMemoryStats()
 {
-    return linearSpaceFree();
-}
+    std::vector<MemoryStat> stats;
 
-uint64_t SYS_GetNumBytesAllocated()
-{
-    return 0;
+    {
+        MemoryStat stat;
+        stat.mName = "Linear";
+        stat.mBytesFree = linearSpaceFree();
+        stat.mBytesAllocated = 0;
+        stats.push_back(stat);
+    }
+
+    {
+        MemoryStat stat;
+        stat.mName = "Vram";
+        stat.mBytesFree = vramSpaceFree();
+        stat.mBytesAllocated = 0;
+        stats.push_back(stat);
+    }
+
+    return stats;
 }
 
 bool SYS_ReadSave(const char* saveName, Stream& outStream)
@@ -470,15 +535,17 @@ std::string SYS_GetClipboardText()
 // Misc
 void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 {
-    vprintf(format, arg);
-    printf("\n");
+    char buffer[256];
+    vsnprintf(buffer, 256, format, arg);
+
+    std::string outStr = buffer;
+    outStr += "\n";
+
+    svcOutputDebugString(outStr.data(), (int32_t)outStr.size());
 }
 
 void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
 {
-    consoleInit(GFX_BOTTOM, &GetEngineState()->mSystem.mPrintConsole);
-    consoleSelect(&GetEngineState()->mSystem.mPrintConsole);
-
     const char* fileName = strrchr(fileString, '/') ? strrchr(fileString, '/') + 1 : fileString;
     char str[256];
     snprintf(str, 256, "[Assert] %s, %s, line %d", exprString, fileName, lineNumber);
@@ -488,6 +555,9 @@ void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNum
 
 void SYS_Alert(const char* message)
 {
+    consoleInit(GFX_BOTTOM, &GetEngineState()->mSystem.mPrintConsole);
+    consoleSelect(&GetEngineState()->mSystem.mPrintConsole);
+
     LogError("%s", message);
 
     // Display alert message in console view and wait for player to hit A button.
@@ -497,9 +567,13 @@ void SYS_Alert(const char* message)
     INP_Update();
     while (!IsGamepadButtonJustDown(GAMEPAD_A, 0))
     {
-        SYS_Sleep(5);
         INP_Update();
     }
+
+    // Add some small feedback to show that 
+    // user is attempting to proceed.
+    LogError(">>>");
+    SYS_Sleep(100);
 
     EnableConsole(false);
 }

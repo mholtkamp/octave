@@ -14,6 +14,7 @@
 #include <psapi.h>
 #include <Shlobj.h>
 #include <assert.h>
+#include <errno.h>
 
 #if EDITOR
 #include "imgui.h"
@@ -278,7 +279,12 @@ void SYS_Initialize()
         exit(1);
     }
     // Create window with the registered class:
-    RECT wr = { 0, 0, LONG(engineState->mWindowWidth), LONG(engineState->mWindowHeight) };
+    uint32_t winWidth = GetEngineConfig()->mWindowWidth;
+    uint32_t winHeight = GetEngineConfig()->mWindowHeight;
+    engineState->mWindowWidth = winWidth;
+    engineState->mWindowHeight = winHeight;
+
+    RECT wr = { 0, 0, LONG(winWidth), LONG(winHeight) };
     AdjustWindowRect(&wr, WS_OVERLAPPEDWINDOW, FALSE);
     engineState->mSystem.mWindow = CreateWindowEx(0,
         engineState->mProjectName.c_str(), // class name
@@ -433,7 +439,14 @@ void SYS_SetWorkingDirectory(const std::string& dirPath)
 
 bool SYS_CreateDirectory(const char* dirPath)
 {
-    return (_mkdir(dirPath) == 0);
+    int32_t ret = _mkdir(dirPath);
+
+    if (ret < 0)
+    {
+        LogWarning("_mkdir error: %s", strerror(errno));
+    }
+
+    return (ret == 0);
 }
 
 void SYS_RemoveDirectory(const char* dirPath)
@@ -778,18 +791,23 @@ void SYS_AlignedFree(void* pointer)
     _aligned_free(pointer);
 }
 
-uint64_t SYS_GetNumBytesFree()
+std::vector<MemoryStat> SYS_GetMemoryStats()
 {
-    // What do?
-    return 0;
-}
+    std::vector<MemoryStat> stats;
 
-uint64_t SYS_GetNumBytesAllocated()
-{
     HANDLE procHandle = GetCurrentProcess();
     PROCESS_MEMORY_COUNTERS counters;
     GetProcessMemoryInfo(procHandle, &counters, sizeof(PROCESS_MEMORY_COUNTERS));
-    return counters.WorkingSetSize;
+    
+    {
+        MemoryStat stat;
+        stat.mName = "Main";
+        stat.mBytesFree = 0;
+        stat.mBytesAllocated = counters.WorkingSetSize;
+        stats.push_back(stat);
+    }
+
+    return stats;
 }
 
 // Save Game

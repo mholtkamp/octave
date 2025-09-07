@@ -35,6 +35,7 @@ public:
     bool IsMipmapped() const;
     bool IsRenderTarget() const;
     bool IsSrgb() const;
+    bool IsForcedHighQuality() const;
 
     uint32_t GetWidth() const;
     uint32_t GetHeight() const;
@@ -43,10 +44,12 @@ public:
     PixelFormat GetFormat() const;
     FilterType GetFilterType() const;
     WrapMode GetWrapMode() const;
+    int32_t GetLowQualityDownsampleFactor() const;
 
     void SetFormat(PixelFormat format);
     void SetFilterType(FilterType filterType);
     void SetWrapMode(WrapMode wrapMode);
+    void SetForceHighQuality(bool forceHq);
 
     static bool HandlePropChange(class Datum* datum, uint32_t index, const void* newValue);
 
@@ -62,6 +65,8 @@ protected:
     bool mMipmapped;
     bool mRenderTarget;
     bool mSrgb;
+    bool mForceHighQuality;
+    uint8_t mLowQualityDownsampleFactor;
 
     // This pixel array is used as an intermediate storage between LoadStream() and Create()
     // It is cleared and shrunk within Create() except when compiled for EDITOR

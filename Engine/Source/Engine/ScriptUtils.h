@@ -31,9 +31,13 @@ public:
 
     static Datum GetField(Node* node, const char* key);
     static void SetField(Node* node, const char* key, const Datum& value);
-
     static Datum GetField(Node* node, int32_t key);
     static void SetField(Node* node, int32_t key, const Datum& value);
+
+    static Datum GetField(const char* table, const char* key);
+    static void SetField(const char* table, const char* key, const Datum& value);
+    static Datum GetField(const char* table, int32_t key);
+    static void SetField(const char* table, int32_t key, const Datum& value);
 
     static void DumpStack();
 

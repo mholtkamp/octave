@@ -166,7 +166,11 @@ void Stream::ReadAsset(AssetRef& asset)
     std::string assetName;
     ReadString(assetName);
 
-    if (mAsyncRequest != nullptr)
+    if (assetName == "")
+    {
+        asset = nullptr;
+    }
+    else if (mAsyncRequest != nullptr)
     {
         // If we are currently async loading, then we need to also async load this dependency.
         Asset* reqAsset = FetchAsset(assetName);

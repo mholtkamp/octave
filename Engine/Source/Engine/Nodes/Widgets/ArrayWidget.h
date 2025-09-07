@@ -26,6 +26,9 @@ public:
     virtual void Tick(float deltaTime) override;
     virtual void EditorTick(float deltaTime) override;
 
+    void SetCentered(bool center);
+    bool IsCentered() const;
+
 protected:
 
     void TickCommon(float deltaTime);

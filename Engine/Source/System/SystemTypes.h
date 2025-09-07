@@ -143,3 +143,10 @@ enum class LogSeverity : uint32_t
 
     Count
 };
+
+struct MemoryStat
+{
+    std::string mName;
+    uint64_t mBytesFree = 0;
+    uint64_t mBytesAllocated = 0;
+};

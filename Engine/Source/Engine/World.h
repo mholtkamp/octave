@@ -36,16 +36,16 @@ public:
     void SetActiveCamera(Camera3D* activeCamera);
     void SetAudioReceiver(Node3D* newReceiver);
 
-    Node* SpawnNode(TypeId actorType);
-    Node* SpawnNode(const char* typeName);
-    Node* SpawnScene(const char* sceneName);
-    Node* SpawnScene(Scene* scene);
+    Node* SpawnNode(TypeId actorType, glm::vec3 position = {});
+    Node* SpawnNode(const char* typeName, glm::vec3 position = {});
+    Node* SpawnScene(const char* sceneName, glm::vec3 position = {});
+    Node* SpawnScene(Scene* scene, glm::vec3 position = {});
     Particle3D* SpawnParticle(ParticleSystem* sys, glm::vec3 position);
 
     template<class NodeClass>
-    NodeClass* SpawnNode()
+    NodeClass* SpawnNode(glm::vec3 position = {})
     {
-        return (NodeClass*)SpawnNode(NodeClass::GetStaticType());
+        return (NodeClass*)SpawnNode(NodeClass::GetStaticType(), position);
     }
 
     Node* GetRootNode();
@@ -61,12 +61,15 @@ public:
 
     void Clear();
 
+    int32_t GetIndex() const;
+
     void AddLine(const Line& line);
     void RemoveLine(const Line& line);
     void RemoveAllLines();
     const std::vector<Line>& GetLines() const;
 
     const std::vector<class Light3D*>& GetLights();
+    std::vector<FadingLight>& GetFadingLights();
 
     void SetAmbientLightColor(glm::vec4 color);
     glm::vec4 GetAmbientLightColor() const;
@@ -115,8 +118,8 @@ public:
         uint32_t numIgnoreObjects = 0,
         btCollisionObject** ignoreObjects = nullptr);
 
-    void RegisterNode(Node* node);
-    void UnregisterNode(Node* node);
+    void RegisterNode(Node* node, bool subRoot);
+    void UnregisterNode(Node* node, bool subRoot);
     const std::vector<Audio3D*>& GetAudios() const;
 
     void LoadScene(const char* name, bool instant);
@@ -129,10 +132,11 @@ public:
     void DirtyAllWidgets();
 
     void UpdateRenderSettings();
+    void AddNewlyRegisteredNode(Node* node);
 
     Camera3D* SpawnDefaultCamera();
     Node* SpawnDefaultRoot();
-    void PlaceNewlySpawnedNode(NodePtr node);
+    void PlaceNewlySpawnedNode(NodePtr node, glm::vec3 position);
 
     void OverrideDynamicsWorld(btDiscreteDynamicsWorld* world);
     void RestoreDynamicsWorld();
@@ -183,13 +187,18 @@ public:
 private:
 
     void UpdateLines(float deltaTime);
+    void ExtractPersistingNodes();
 
 private:
 
+    static std::unordered_set<NodePtrWeak> sNewlyRegisteredNodes;
+
     NodePtr mRootNode;
+    std::vector<NodePtr> mPersistingNodes;
     std::vector<Line> mLines;
     std::vector<class Light3D*> mLights;
     std::vector<class Audio3D*> mAudios;
+    std::vector<FadingLight> mFadingLights;
     NodePtr mQueuedRootNode;
     glm::vec4 mAmbientLightColor;
     glm::vec4 mShadowColor;

@@ -63,8 +63,15 @@ int NodeWrapperGarbageCollect(lua_State* L)
 {
     luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
     Node_Lua* nodeLua = (Node_Lua*)lua_touserdata(L, 1);
+
+    Node_Lua::SetGcNodeId(nodeLua->mNode->GetNodeId());
+
+    Node::Deleter(nodeLua->mNode.Get());
     nodeLua->mNode->SetUserdataCreated(false);
     nodeLua->~Node_Lua();
+
+    Node_Lua::SetGcNodeId(INVALID_NODE_ID);
+
     return 0;
 }
 
@@ -137,9 +144,24 @@ int Node_Lua::Create(lua_State* L, Node* node)
 
                 lua_geti(L, nodeRefTableIdx, (int)node->GetNodeId());
 
-                // We should never not be able to find a reference for a node with userdatacreated.
-                // If totally unreferenced in lua, then it should have been destroyed.
-                OCT_ASSERT(!lua_isnil(L, -1));
+                if (lua_isnil(L, -1))
+                {
+                    lua_pop(L, 1);
+
+                    if (Node_Lua::GetGcNodeId() == node->GetNodeId())
+                    {
+                        // Our node userdata is at stack pos #1 (passed to our NodeWrapper GC function)
+                        luaL_checkudata(L, 1, NODE_WRAPPER_TABLE_NAME);
+                        lua_pushvalue(L, 1);
+                    }
+                    else
+                    {
+                        // We should never not be able to find a reference for a node with userdatacreated.
+                        // If totally unreferenced in lua, then it should have been destroyed.
+                        lua_pushnil(L);
+                        OCT_ASSERT(false);
+                    }
+                }
             }
         }
         else
@@ -237,6 +259,20 @@ int Node_Lua::DestroyDeferred(lua_State* L)
     return 0;
 }
 
+static NodeId sGcNodeId = INVALID_NODE_ID;
+void Node_Lua::SetGcNodeId(NodeId id)
+{
+    // We should never be recursively garbage collecting
+    OCT_ASSERT(sGcNodeId == INVALID_NODE_ID || id == INVALID_NODE_ID);
+
+    sGcNodeId = id;
+}
+
+NodeId Node_Lua::GetGcNodeId()
+{
+    return sGcNodeId;
+}
+
 int Node_Lua::IsValid(lua_State* L)
 {
     Node_Lua* luaObj = static_cast<Node_Lua*>(CheckHierarchyLuaType<Node_Lua>(L, 1, NODE_LUA_NAME, NODE_LUA_FLAG));
@@ -310,6 +346,26 @@ int Node_Lua::IsVisible(lua_State* L)
     bool isVisible = node->IsVisible(recurse);
 
     lua_pushboolean(L, isVisible);
+    return 1;
+}
+
+int Node_Lua::SetPersistent(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    node->SetPersistent(value);
+
+    return 0;
+}
+
+int Node_Lua::IsPersistent(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+
+    bool ret = node->IsPersistent();
+
+    lua_pushboolean(L, ret);
     return 1;
 }
 
@@ -514,6 +570,16 @@ int Node_Lua::HasAncestor(lua_State* L)
     bool ret = node->HasAncestor(otherNode);
 
     lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Node_Lua::GetSubRoot(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+
+    Node* ret = node->GetSubRoot();
+
+    Node_Lua::Create(L, ret);
     return 1;
 }
 
@@ -783,6 +849,16 @@ int Node_Lua::GetScene(lua_State* L)
     return 1;
 }
 
+int Node_Lua::SetScript(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    const char* value = CHECK_STRING(L, 2);
+
+    node->SetScriptFile(value);
+
+    return 0;
+}
+
 int Node_Lua::GetNetId(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -1045,6 +1121,10 @@ void Node_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, mtIndex, IsVisible);
 
+    REGISTER_TABLE_FUNC(L, mtIndex, SetPersistent);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, IsPersistent);
+
     REGISTER_TABLE_FUNC(L, mtIndex, GetWorld);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetParent);
@@ -1072,6 +1152,8 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, FindAncestor);
 
     REGISTER_TABLE_FUNC(L, mtIndex, HasAncestor);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, GetSubRoot);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetRoot);
     
@@ -1113,6 +1195,9 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, IsTickEnabled);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetScene);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, SetScript);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, SetScript, "SetScriptFile");
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetNetId);
 

@@ -43,6 +43,13 @@ typedef std::unordered_map<std::string, NetFunc> NetFuncMap;
 // Can also use a lambda for Traverse() and ForEach() functions
 typedef bool(*NodeTraversalFP)(Node*);
 
+// Forward declarations so we can use these in the Node class below
+template<typename T = Node>
+SharedPtr<T> ResolvePtr(Node* node);
+
+template<typename T = Node>
+WeakPtr<T> ResolveWeakPtr(Node* node);
+
 #if 0
 struct NodeNetData
 {
@@ -76,17 +83,19 @@ public:
     void DestroyDeferred();
     void Doom(); // Alias for DestroyDeferred
 
-    virtual void SaveStream(Stream& stream, Platform platorm);
-    virtual void LoadStream(Stream& stream, Platform platorm, uint32_t version);
+    virtual void SaveStream(Stream& stream, Platform platform);
+    virtual void LoadStream(Stream& stream, Platform platform, uint32_t version);
 
     virtual void Copy(Node* srcNode, bool recurse);
     virtual void Render(PipelineConfig pipelineConfig);
 
+    virtual void Awake();
     virtual void Start();
     virtual void Stop();
-    virtual void PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game);
+    virtual void PrepareTick(std::vector<NodePtrWeak>& outTickNodes, bool game, bool recurse);
     virtual void Tick(float deltaTime);
     virtual void EditorTick(float deltaTime);
+    uint32_t GetLastTickedFrame() const;
     virtual void Render();
     virtual VertexType GetVertexType() const;
 
@@ -125,11 +134,18 @@ public:
 
     Node* GetRoot();
     bool IsWorldRoot() const;
+    Node* GetSubRoot();
 
     template<class NodeClass>
     NodeClass* CreateChild()
     {
         return (NodeClass*)CreateChild(NodeClass::GetStaticType());
+    }
+
+    template<class NodeClass>
+    SharedPtr<NodeClass> CreateChildSp()
+    {
+        return ResolvePtr<NodeClass>(CreateChild(NodeClass::GetStaticType()));
     }
 
     template<class NodeClass>
@@ -140,16 +156,25 @@ public:
         return ret;
     }
 
+    template<class NodeClass>
+    SharedPtr<NodeClass> CreateChildSp(const char* name)
+    {
+        NodeClass* ret = (NodeClass*)CreateChild(NodeClass::GetStaticType());
+        ret->SetName(name);
+        return ResolvePtr<NodeClass>(ret);
+    }
+
     bool IsDestroyed() const;
     bool IsPendingDestroy() const;
     bool IsDoomed() const;
 
     bool HasStarted() const;
+    bool HasAwoken() const;
 
     void EnableTick(bool enable);
     bool IsTickEnabled() const;
 
-    virtual void SetWorld(World* world);
+    virtual void SetWorld(World* world, bool subRoot);
     World* GetWorld();
 
     void SetScene(Scene* scene);
@@ -188,6 +213,8 @@ public:
     bool IsVisible(bool recurse = false) const;
     void SetTransient(bool transient);
     virtual bool IsTransient() const;
+    void SetPersistent(bool persistent);
+    bool IsPersistent() const;
 
     void SetDefault(bool isDefault);
     bool IsDefault() const;
@@ -213,6 +240,18 @@ public:
     void RemoveChild(Node* child);
     void RemoveChild(int32_t index);
 
+    template<typename T>
+    void AddChild(const SharedPtr<T>& child, int32_t index = -1)
+    {
+        AddChild(child.Get(), index);
+    }
+
+    template<typename T>
+    void RemoveChild(const SharedPtr<Node>& child)
+    {
+        RemoveChild(child.Get());
+    }
+
     int32_t FindChildIndex(const std::string& name) const;
     int32_t FindChildIndex(Node* child) const;
     Node* FindChild(const std::string& name, bool recurse) const;
@@ -237,6 +276,7 @@ public:
     bool DoChildrenHaveUniqueNames() const;
     void BreakSceneLink();
     bool IsSceneLinked(bool ignoreInPie = true) const;
+    bool IsSceneLinkedChild(bool ignoreInPie = true);
     bool IsForeign() const;
 
     bool HasAuthority() const;
@@ -266,6 +306,8 @@ public:
     static void ProcessPendingDestroys();
 
     static void RegisterNetFuncs(Node* node);
+
+    static void Deleter(Node* node);
 
     const WeakPtr<Node>& GetSelfPtr() const { return mSelf; }
 
@@ -368,15 +410,19 @@ public:
         // Code copied across other Construct() functions
         NodeClass* newNode = (NodeClass*)Node::CreateInstance(NodeClass::GetStaticType());
         SharedPtr<NodeClass> newNodePtr;
-        newNodePtr.Set(newNode, nullptr);
-        newNodePtr.SetDeleter([](NodeClass* node) { node->Destroy(); });
-        newNodePtr->mSelf = PtrStaticCast<Node>(newNodePtr);
-        newNodePtr->Create();
+
+        if (newNode != nullptr)
+        {
+            newNodePtr.Set(newNode, nullptr);
+            newNodePtr.SetDeleter([](NodeClass* node) { Node::Deleter(node); });
+            newNodePtr->mSelf = PtrStaticCast<Node>(newNodePtr);
+            newNodePtr->Create();
+        }
+
         return newNodePtr;
     }
 
 protected:
-
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
@@ -402,23 +448,23 @@ protected:
     std::unordered_map<std::string, Node*> mChildNameMap;
     std::unordered_map<std::string, Signal> mSignalMap;
     std::string mScriptFile;
-
+    uint32_t mLastTickedFrame = 0;
     bool mActive = true;
     bool mVisible = true;
     bool mTransient = false;
+    bool mPersistent = false;
     bool mDefault = false;
     bool mUserdataCreated = false;
+    bool mHasStarted = false;
+    bool mHasAwoken = false;
+    bool mDestroyed = false;
+    bool mTickEnabled = true;
+    bool mLateTick = false;
 
     // Merged from Actor
     SceneRef mScene;
     std::vector<std::string> mTags;
     NodeId mNodeId = INVALID_NODE_ID;
-    uint32_t mHitCheckId = 0;
-
-    bool mHasStarted = false;
-    bool mDestroyed = false;
-    bool mTickEnabled = true;
-    bool mLateTick = false;
 
     // Network Data
     // This is only about 44 bytes, so right now, we will keep this data as direct members of Node.
@@ -443,6 +489,7 @@ public:
     void SetExposeVariable(bool expose);
     bool AreAllChildrenHiddenInTree() const;
 
+    uint32_t mHitCheckId = 0;
     bool mExposeVariable = false;
     bool mHiddenInTree = false;
 #endif
@@ -450,14 +497,14 @@ public:
 
 // Eventually, if we move the mSelf pointer into Object, we will have to
 // move these functions also (and make them take Object* param)
-template<typename T = Node>
+template<typename T>
 SharedPtr<T> ResolvePtr(Node* node)
 {
     NodePtr nodePtr = node ? node->GetSelfPtr().Lock() : nullptr;
     return PtrStaticCast<T>(nodePtr);
 }
 
-template<typename T = Node>
+template<typename T>
 WeakPtr<T> ResolveWeakPtr(Node* node)
 {
     return PtrStaticCast<T>(node ? node->GetSelfPtr() : nullptr);

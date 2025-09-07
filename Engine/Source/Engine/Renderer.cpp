@@ -736,12 +736,14 @@ void Renderer::GatherLightData(World* world)
 
     mLightData.clear();
     const std::vector<Light3D*>& lights = world->GetLights();
+    std::vector<FadingLight>& fadingLights = world->GetFadingLights();
 
     if (mEnableLightFade)
     {
         float deltaTime = GetEngineState()->mGameDeltaTime;
         uint32_t lightLimit = glm::min<uint32_t>(mLightFadeLimit, MAX_LIGHTS_PER_DRAW);
-        glm::vec3 camPos = world->GetActiveCamera()->GetWorldPosition();
+        Camera3D* camera = world->GetActiveCamera();
+        glm::vec3 camPos = camera ? camera->GetWorldPosition() : glm::vec3(0.0f, 0.0f, 0.0f);
 
         // Step 1 - Determine the closest N lights
         for (uint32_t i = 0; i < lights.size(); ++i)
@@ -798,12 +800,12 @@ void Renderer::GatherLightData(World* world)
 
         for (uint32_t i = 0; i < sClosestLights.size(); ++i)
         {
-            if (mFadingLights.size() < lightLimit)
+            if (fadingLights.size() < lightLimit)
             {
                 bool alreadyFading = false;
-                for (uint32_t j = 0; j < mFadingLights.size(); ++j)
+                for (uint32_t j = 0; j < fadingLights.size(); ++j)
                 {
-                    if (mFadingLights[j].mComponent == sClosestLights[i].mComponent)
+                    if (fadingLights[j].mComponent == sClosestLights[i].mComponent)
                     {
                         alreadyFading = true;
                         break;
@@ -812,7 +814,7 @@ void Renderer::GatherLightData(World* world)
 
                 if (!alreadyFading)
                 {
-                    mFadingLights.push_back(FadingLight(sClosestLights[i].mComponent));
+                    fadingLights.push_back(FadingLight(sClosestLights[i].mComponent));
                 }
             }
             else
@@ -822,11 +824,11 @@ void Renderer::GatherLightData(World* world)
             }
         }
 
-        for (int32_t i = int32_t(mFadingLights.size()) - 1; i >= 0; --i)
+        for (int32_t i = int32_t(fadingLights.size()) - 1; i >= 0; --i)
         {
             // Step 3 - Determine which of the persistent N lights need to be faded out.
             bool active = false;
-            FadingLight& fadingLight = mFadingLights[i];
+            FadingLight& fadingLight = fadingLights[i];
 
             for (uint32_t j = 0; j < sClosestLights.size(); ++j)
             {
@@ -859,7 +861,7 @@ void Renderer::GatherLightData(World* world)
             // Step 5 - Copy persistent light data to mLightData if alpha > 0, otherwise remove it from fading light vector
             if (fadingLight.mAlpha <= 0.0f)
             {
-                mFadingLights.erase(mFadingLights.begin() + i);
+                fadingLights.erase(fadingLights.begin() + i);
             }
             else
             {
@@ -1194,8 +1196,8 @@ void Renderer::Render(World* world, int32_t screenIndex)
         static std::vector<NodePtrWeak> sTickNodes;
         sTickNodes.clear();
 
-        if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->PrepareTick(sTickNodes, inGame); }
-        if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->PrepareTick(sTickNodes, inGame); }
+        if (mStatsWidget != nullptr && mStatsWidget->IsVisible()) { mStatsWidget->PrepareTick(sTickNodes, inGame, true); }
+        if (mConsoleWidget != nullptr && mConsoleWidget->IsVisible()) { mConsoleWidget->PrepareTick(sTickNodes, inGame, true); }
 
         for (uint32_t i = 0; i < sTickNodes.size(); ++i)
         {
@@ -1631,8 +1633,10 @@ glm::vec4 Renderer::GetGroundColor() const
 }
 
 // TODO: Might have to adjust these to handle 3DS (two screens) and split-screen
-uint32_t Renderer::GetViewportX()
+uint32_t Renderer::GetViewportX(int32_t screenIdx)
 {
+    OCT_UNUSED(screenIdx);
+
 #if EDITOR
     return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? 0 : GetEditorState()->mViewportX;
 #else
@@ -1640,8 +1644,10 @@ uint32_t Renderer::GetViewportX()
 #endif
 }
 
-uint32_t Renderer::GetViewportY()
+uint32_t Renderer::GetViewportY(int32_t screenIdx)
 {
+    OCT_UNUSED(screenIdx);
+
 #if EDITOR
     return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? 0 : GetEditorState()->mViewportY;
 #else
@@ -1649,9 +1655,14 @@ uint32_t Renderer::GetViewportY()
 #endif
 }
 
-uint32_t Renderer::GetViewportWidth()
+uint32_t Renderer::GetViewportWidth(int32_t screenIdx)
 {
-    uint32_t windowWidth = (mScreenIndex == 0) ? GetEngineState()->mWindowWidth : GetEngineState()->mSecondWindowWidth;
+    if (screenIdx == -1)
+    {
+        screenIdx = mScreenIndex;
+    }
+
+    uint32_t windowWidth = (screenIdx == 0) ? GetEngineState()->mWindowWidth : GetEngineState()->mSecondWindowWidth;
 
 #if EDITOR
     return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? windowWidth : GetEditorState()->mViewportWidth;
@@ -1660,9 +1671,14 @@ uint32_t Renderer::GetViewportWidth()
 #endif
 }
 
-uint32_t Renderer::GetViewportHeight()
+uint32_t Renderer::GetViewportHeight(int32_t screenIdx)
 {
-    uint32_t windowHeight = (mScreenIndex == 0) ? GetEngineState()->mWindowHeight : GetEngineState()->mSecondWindowHeight;
+    if (screenIdx == -1)
+    {
+        screenIdx = mScreenIndex;
+    }
+
+    uint32_t windowHeight = (screenIdx == 0) ? GetEngineState()->mWindowHeight : GetEngineState()->mSecondWindowHeight;
 
 #if EDITOR
     return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? windowHeight : GetEditorState()->mViewportHeight;
@@ -1671,18 +1687,18 @@ uint32_t Renderer::GetViewportHeight()
 #endif
 }
 
-glm::uvec4 Renderer::GetViewport()
+glm::uvec4 Renderer::GetViewport(int32_t screenIdx)
 {
-    return glm::uvec4(GetViewportX(), GetViewportY(), GetViewportWidth(), GetViewportHeight());
+    return glm::uvec4(GetViewportX(screenIdx), GetViewportY(screenIdx), GetViewportWidth(screenIdx), GetViewportHeight(screenIdx));
 }
 
-glm::uvec4 Renderer::GetSceneViewport()
+glm::uvec4 Renderer::GetSceneViewport(int32_t screenIdx)
 {
     float resScale = GetEngineState()->mGraphics.mResolutionScale;
-    int32_t vx = GetViewportX();
-    int32_t vy = GetViewportY();
-    int32_t vw = GetViewportWidth();
-    int32_t vh = GetViewportHeight();
+    int32_t vx = GetViewportX(screenIdx);
+    int32_t vy = GetViewportY(screenIdx);
+    int32_t vw = GetViewportWidth(screenIdx);
+    int32_t vh = GetViewportHeight(screenIdx);
 
     vx = uint32_t(vx * resScale + 0.5f);
     vy = uint32_t(vy * resScale + 0.5f);

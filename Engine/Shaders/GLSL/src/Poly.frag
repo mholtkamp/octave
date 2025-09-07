@@ -28,6 +28,10 @@ layout (location = 0) out vec4 outFinalColor;
 
 void main()
 {
-    vec4 textureColor = LinearToSrgb(texture(polySampler, inTexcoord));
+    vec4 textureColor = texture(polySampler, inTexcoord);
+    if (global.mLinearColorSpace != 0)
+    {
+        textureColor = LinearToSrgb(textureColor);
+    }
     outFinalColor = textureColor * inColor * polyData.mColor;
 }

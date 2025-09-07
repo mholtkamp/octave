@@ -348,27 +348,47 @@ void MaterialLite::SetVertexColorMode(VertexColorMode mode)
     mLiteParams.mVertexColorMode = mode;
 }
 
-glm::vec2 MaterialLite::GetUvOffset(uint32_t uvIndex) const
+glm::vec2 MaterialLite::GetUvOffset(int32_t uvIndex) const
 {
-    OCT_ASSERT(uvIndex < MAX_UV_MAPS);
+    if (uvIndex < 0 || uvIndex >= MAX_UV_MAPS)
+    {
+        //LogWarning("Out of range UV index");
+        uvIndex = glm::clamp<int32_t>(uvIndex, 0, MAX_UV_MAPS - 1);
+    }
+
     return mLiteParams.mUvOffsets[uvIndex];
 }
 
-void MaterialLite::SetUvOffset(glm::vec2 offset, uint32_t uvIndex)
+void MaterialLite::SetUvOffset(glm::vec2 offset, int32_t uvIndex)
 {
-    OCT_ASSERT(uvIndex < MAX_UV_MAPS);
+    if (uvIndex < 0 || uvIndex >= MAX_UV_MAPS)
+    {
+        //LogWarning("Out of range UV index");
+        uvIndex = glm::clamp<int32_t>(uvIndex, 0, MAX_UV_MAPS - 1);
+    }
+
     mLiteParams.mUvOffsets[uvIndex] = offset;
 }
 
-glm::vec2 MaterialLite::GetUvScale(uint32_t uvIndex) const
+glm::vec2 MaterialLite::GetUvScale(int32_t uvIndex) const
 {
-    OCT_ASSERT(uvIndex < MAX_UV_MAPS);
+    if (uvIndex < 0 || uvIndex >= MAX_UV_MAPS)
+    {
+        //LogWarning("Out of range UV index");
+        uvIndex = glm::clamp<int32_t>(uvIndex, 0, MAX_UV_MAPS - 1);
+    }
+
     return mLiteParams.mUvScales[uvIndex];
 }
 
-void MaterialLite::SetUvScale(glm::vec2 scale, uint32_t uvIndex)
+void MaterialLite::SetUvScale(glm::vec2 scale, int32_t uvIndex)
 {
-    OCT_ASSERT(uvIndex < MAX_UV_MAPS);
+    if (uvIndex < 0 || uvIndex >= MAX_UV_MAPS)
+    {
+        //LogWarning("Out of range UV index");
+        uvIndex = glm::clamp<int32_t>(uvIndex, 0, MAX_UV_MAPS - 1);
+    }
+
     mLiteParams.mUvScales[uvIndex] = scale;
 }
 

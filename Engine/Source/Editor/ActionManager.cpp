@@ -60,6 +60,8 @@
 
 #define USE_IMGUI_FILE_BROWSER (!PLATFORM_WINDOWS)
 
+#define SUB_SCENE_HIER_WARN_TEXT "Cannot modify sub-scene hierarchy. Must unlink scene first."
+
 ActionManager* ActionManager::sInstance = nullptr;
 
 TypeId CheckDaeAssetType(const char* path)
@@ -113,12 +115,37 @@ void ActionManager::Update()
 
 }
 
+void ReplaceAllStrings(std::string& str, const std::string& from, const std::string& to)
+{
+    if (from.empty())
+        return;
+
+    size_t startPos = 0;
+    while ((startPos = str.find(from, startPos)) != std::string::npos)
+    {
+        str.replace(startPos, from.length(), to);
+        startPos += to.length();
+    }
+}
+
+void ReplaceStringInFile(const std::string& file, const std::string& srcString, const std::string& dstString)
+{
+    Stream fileStream;
+    fileStream.ReadFile(file.c_str(), false);
+    std::string fileString = std::string(fileStream.GetData(), fileStream.GetSize());
+    ReplaceAllStrings(fileString, srcString, dstString);
+
+    Stream outStream(fileString.c_str(), (uint32_t)fileString.size());
+    outStream.WriteFile(file.c_str());
+}
+
 void ActionManager::BuildData(Platform platform, bool embedded)
 {
     const EngineState* engineState = GetEngineState();
     bool standalone = engineState->mStandalone;
     const std::string& projectDir = engineState->mProjectDirectory;
     const std::string& projectName = engineState->mProjectName;
+    bool useRomfs = (platform == Platform::N3DS) && embedded;
 
     std::vector<std::pair<AssetStub*, std::string> > embeddedAssets;
 
@@ -191,7 +218,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             // Currently either embed everything or embed nothing...
             // Embed flag on Asset does nothing, but if we want to keep that feature, then 
             // we need to load the asset if it's not loaded, add to embedded list if it's flagged and then probably unload it after.
-            if (embedded)
+            if (embedded && !useRomfs)
             {
                 embeddedAssets.push_back({ stub, packFile });
             }
@@ -270,7 +297,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     // Generate embedded script source files. If not doing an embedded build, copy over the script folders.
     std::vector<std::string> scriptFiles;
 
-    if (embedded)
+    if (embedded && !useRomfs)
     {
         GatherScriptFiles("Engine/Scripts/", scriptFiles);
         GatherScriptFiles(projectDir + "/Scripts/", scriptFiles);
@@ -299,20 +326,13 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         SYS_Exec(copyGeneratedFolder.c_str());
     }
 
-    // ( ) Maybe copy Project .octp file into the Packaged folder? Are we actually using it?
+    // Copy .octp and Config.ini
     {
         std::string copyOctpCmd = "cp " + projectDir + projectName + ".octp " + packagedDir + projectName;
         SYS_Exec(copyOctpCmd.c_str());
-    }
 
-    // Write out an Engine.ini file which is used by Standalone game exe.
-    FILE* engineIni = fopen(std::string(packagedDir + "Engine.ini").c_str(), "w");
-    if (engineIni != nullptr)
-    {
-        fprintf(engineIni, "project=%s", projectName.c_str());
-
-        fclose(engineIni);
-        engineIni = nullptr;
+        std::string copyConfigCmd = "cp " + projectDir + "Config.ini " + packagedDir;
+        SYS_Exec(copyConfigCmd.c_str());
     }
 
     // Handle SpirV shaders on Vulkan platforms
@@ -333,6 +353,23 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         CreateDir((packagedDir + "Engine/Shaders/GLSL/").c_str());
 
         SYS_Exec(std::string("cp -R Engine/Shaders/GLSL/bin " + packagedDir + "Engine/Shaders/GLSL/bin").c_str());
+    }
+
+    // If we are running a 3DS build, copy all the packaged data to the
+    // Intermediate/Romfs directory.
+    // Clear existing Romfs directory first.
+    std::string intermediateDir = standalone ? "Standalone/Intermediate" : (projectDir + "/Intermediate");
+    std::string romfsDir = intermediateDir + "/Romfs";
+    RemoveDir(romfsDir.c_str());
+
+    if (useRomfs)
+    {
+        LogDebug("Copying packaged data to Romfs staging directory.");
+
+        CreateDir(intermediateDir.c_str());
+        CreateDir(romfsDir.c_str());
+
+        SYS_Exec(std::string("cp -R " + packagedDir + "/* " + romfsDir).c_str());
     }
 
     // ( ) Run the makefile to compile the game.
@@ -415,8 +452,29 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             default: OCT_ASSERT(0); break;
             }
 
-            std::string makeCmd = std::string("make -C ") + (buildProjDir) + " -f " + makefilePath + " -j 6";
+            std::string srcMakefile = buildProjDir + "/" + makefilePath;
+            std::string tmpMakefile = buildProjDir + "/Makefile_TEMP";
+            // Make a copy of the makefile so we can change the app name and things like that
+            SYS_Exec(std::string("cp " + srcMakefile + " " + tmpMakefile).c_str());
+
+            // This is fragile, but we're going to modify the temp makefile to compile
+            // the way we need to for a given platform.
+            if (platform == Platform::N3DS)
+            {
+                ReplaceStringInFile(tmpMakefile, "OctaveApp", projectName);
+                ReplaceStringInFile(tmpMakefile, "$(CURDIR)/Makefile_3DS", "$(CURDIR)/Makefile_TEMP");
+
+                //if (!useRomfs)
+                //{
+                //    ReplaceStringInFile(tmpMakefile, "ROMFS :=", "#ROMFS :=");
+                //}
+            }
+
+            std::string makeCmd = std::string("make -C ") + (buildProjDir) + " -f Makefile_TEMP -j 12";
             SYS_Exec(makeCmd.c_str());
+
+            // Delete the temp makefile
+            SYS_Exec(std::string("rm " + tmpMakefile).c_str());
         }
     }
     else
@@ -862,6 +920,12 @@ Node* ActionManager::EXE_SpawnNode(Scene* srcScene)
 
 Node* ActionManager::EXE_SpawnNode(Node* srcNode)
 {
+    if (srcNode->IsSceneLinkedChild())
+    {
+        LogError(SUB_SCENE_HIER_WARN_TEXT);
+        return nullptr;
+    }
+
     std::vector<Node*> srcNodes;
     srcNodes.push_back(srcNode);
 
@@ -877,6 +941,12 @@ Node* ActionManager::EXE_SpawnNode(Node* srcNode)
 
 void ActionManager::EXE_DeleteNode(Node* node)
 {
+    if (node->IsSceneLinkedChild())
+    {
+        LogError(SUB_SCENE_HIER_WARN_TEXT);
+        return;
+    }
+
     std::vector<Node*> nodes;
     nodes.push_back(node);
 
@@ -887,15 +957,27 @@ void ActionManager::EXE_DeleteNode(Node* node)
 std::vector<Node*> ActionManager::EXE_SpawnNodes(const std::vector<Node*>& srcNodes)
 {
     OCT_ASSERT(srcNodes.size() > 0);
+    std::vector<Node*> retNodes;
+
+    std::vector<Node*> trimmedSrcNodes = srcNodes;
+    RemoveRedundantDescendants(trimmedSrcNodes);
+
+    for (auto node : trimmedSrcNodes)
+    {
+        if (node->IsSceneLinkedChild())
+        {
+            LogError(SUB_SCENE_HIER_WARN_TEXT);
+            return retNodes;
+        }
+    }
 
     GetEditorState()->EnsureActiveScene();
 
-    ActionSpawnNodes* action = new ActionSpawnNodes(srcNodes);
+    ActionSpawnNodes* action = new ActionSpawnNodes(trimmedSrcNodes);
     ActionManager::Get()->ExecuteAction(action);
 
     OCT_ASSERT(action->GetNodes().size() > 0);
 
-    std::vector<Node*> retNodes;
     retNodes.resize(action->GetNodes().size());
 
     for (uint32_t i = 0; i < retNodes.size(); ++i)
@@ -908,18 +990,48 @@ std::vector<Node*> ActionManager::EXE_SpawnNodes(const std::vector<Node*>& srcNo
 
 void ActionManager::EXE_DeleteNodes(const std::vector<Node*>& nodes)
 {
-    ActionDeleteNodes* action = new ActionDeleteNodes(nodes);
+    std::vector<Node*> trimmedNodes = nodes;
+    RemoveRedundantDescendants(trimmedNodes);
+
+    for (auto node : trimmedNodes)
+    {
+        if (node == nullptr)
+        {
+            LogError("Delete Node: Invalid node(s)");
+            return;
+        }
+
+        if (node->IsSceneLinkedChild())
+        {
+            LogError(SUB_SCENE_HIER_WARN_TEXT);
+            return;
+        }
+    }
+
+    ActionDeleteNodes* action = new ActionDeleteNodes(trimmedNodes);
     ActionManager::Get()->ExecuteAction(action);
 }
 
 void ActionManager::EXE_AttachNode(Node* node, Node* newParent, int32_t childIndex, int32_t boneIndex)
 {
+    if (node->IsSceneLinkedChild() || newParent->IsSceneLinkedChild())
+    {
+        LogError(SUB_SCENE_HIER_WARN_TEXT);
+        return;
+    }
+
     ActionAttachNode* action = new ActionAttachNode(node, newParent, childIndex, boneIndex);
     ActionManager::Get()->ExecuteAction(action);
 }
 
 void ActionManager::EXE_SetRootNode(Node* newRoot)
 {
+    if (newRoot->IsSceneLinkedChild())
+    {
+        LogError(SUB_SCENE_HIER_WARN_TEXT);
+        return;
+    }
+
     ActionSetRootNode* action = new ActionSetRootNode(newRoot);
     ActionManager::Get()->ExecuteAction(action);
 }
@@ -1058,30 +1170,6 @@ void CpyDir(const std::string& srcFile, const std::string& dstFile)
     SYS_Exec((std::string("cp -r ") + srcFile + " " + dstFile).c_str());
 }
 
-void ReplaceAllStrings(std::string& str, const std::string& from, const std::string& to)
-{
-    if (from.empty())
-        return;
-
-    size_t startPos = 0;
-    while ((startPos = str.find(from, startPos)) != std::string::npos)
-    {
-        str.replace(startPos, from.length(), to);
-        startPos += to.length();
-    }
-}
-
-void ReplaceStringInFile(const std::string& file, const std::string& srcString, const std::string& dstString)
-{
-    Stream fileStream;
-    fileStream.ReadFile(file.c_str(), false);
-    std::string fileString = std::string(fileStream.GetData(), fileStream.GetSize());
-    ReplaceAllStrings(fileString, srcString, dstString);
-
-    Stream outStream(fileString.c_str(), (uint32_t)fileString.size());
-    outStream.WriteFile(file.c_str());
-}
-
 void CopyFileAndReplaceString(const std::string& srcFile, const std::string& dstFile, const std::string& srcString, const std::string& dstString)
 {
     CpyFile(srcFile, dstFile);
@@ -1124,6 +1212,19 @@ void CpyDirWithExclusions(const std::string& srcDir, const std::string& dstDir, 
     for (uint32_t i = 0; i < subDirs.size(); ++i)
     {
         CpyDirWithExclusions(srcDir + subDirs[i] + "/", dstDir + subDirs[i] + "/", exclusions);
+    }
+}
+
+static void CreateConfigIni(const std::string& projDir, const std::string projName)
+{
+    // Write out an Engine.ini file which is used by Standalone game exe.
+    FILE* engineIni = fopen(std::string(projDir + "Config.ini").c_str(), "w");
+    if (engineIni != nullptr)
+    {
+        fprintf(engineIni, "project=%s", projName.c_str());
+
+        fclose(engineIni);
+        engineIni = nullptr;
     }
 }
 
@@ -1259,6 +1360,10 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             ReplaceStringInFile(newProjDir + ".vscode/launch.json", "Standalone", newProjName);
             ReplaceStringInFile(newProjDir + ".vscode/launch.json", "\"name\": \"Octave" , "\"name\": \"" + newProjName);
         }
+
+        ResetEngineConfig();
+        GetMutableEngineConfig()->mProjectName = newProjName;
+        WriteEngineConfig(newProjDir + "/Config.ini");
 
         // Finally, open the project
         OpenProject(projectFile.c_str());
@@ -1929,20 +2034,22 @@ void ActionManager::DeleteAssetDir(AssetDir* dir)
     }
 }
 
-void ActionManager::DuplicateNodes(std::vector<Node*> srcNodes)
+bool ActionManager::DuplicateNodes(std::vector<Node*> srcNodes)
 {
+    bool duplicated = false;
+
     // Don't use a vector reference for nodes param because we are going to modify the vector anyway.
     std::vector<Node*> dupedNodes;
-
     RemoveRedundantDescendants(srcNodes);
 
     OCT_ASSERT(srcNodes.size() > 0);
     dupedNodes = EXE_SpawnNodes(srcNodes);
-    OCT_ASSERT(dupedNodes.size() == srcNodes.size());
 
     if (dupedNodes.size() > 0 &&
         dupedNodes.size() == srcNodes.size())
     {
+        duplicated = true;
+
         for (uint32_t i = 0; i < srcNodes.size(); ++i)
         {
             Node* srcNode = srcNodes[i];
@@ -1963,6 +2070,8 @@ void ActionManager::DuplicateNodes(std::vector<Node*> srcNodes)
             GetEditorState()->AddSelectedNode(dupedNodes[i], false);
         }
     }
+
+    return duplicated;
 }
 
 void ActionManager::AttachSelectedNodes(Node* newParent, int32_t boneIdx)
@@ -2193,7 +2302,6 @@ ActionSpawnNodes::ActionSpawnNodes(const std::vector<SceneRef>& scenes)
 ActionSpawnNodes::ActionSpawnNodes(const std::vector<Node*>& srcNodes)
 {
     std::vector<Node*> trimmedSrcNodes = srcNodes;
-
     RemoveRedundantDescendants(trimmedSrcNodes);
 
     mSrcNodes.resize(trimmedSrcNodes.size());
