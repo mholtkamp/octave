@@ -8,9 +8,6 @@ public:
 
     DECLARE_NODE(Capsule3D, Primitive3D);
 
-    virtual void LoadStreamEx(Stream& stream) override;
-
-
     Capsule3D();
     ~Capsule3D();
 

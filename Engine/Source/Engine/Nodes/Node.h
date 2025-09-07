@@ -71,8 +71,6 @@ public:
     DECLARE_OBJECT(Node, Object);
     DECLARE_SCRIPT_LINK_BASE(Node);
 
-    virtual void LoadStreamEx(Stream& stream);
-
     static NodePtr Construct(const std::string& name);
     static NodePtr Construct(TypeId typeId);
     static void Destruct(Node* node);

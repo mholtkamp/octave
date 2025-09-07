@@ -8,9 +8,6 @@ public:
 
     DECLARE_NODE(Box3D, Primitive3D);
 
-    virtual void LoadStreamEx(Stream& stream) override;
-
-
     Box3D();
     ~Box3D();
 

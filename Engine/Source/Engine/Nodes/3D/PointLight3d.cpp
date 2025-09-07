@@ -16,12 +16,6 @@
 FORCE_LINK_DEF(PointLight3D);
 DEFINE_NODE(PointLight3D, Light3D);
 
-void PointLight3D::LoadStreamEx(Stream& stream)
-{
-    Light3D::LoadStreamEx(stream);
-    mRadius = stream.ReadFloat();
-}
-
 PointLight3D::PointLight3D() :
     mRadius(5)
 {

@@ -53,9 +53,6 @@ public:
 
     DECLARE_NODE(SkeletalMesh3D, Mesh3D);
 
-    virtual void LoadStreamEx(Stream& stream) override;
-
-
     SkeletalMesh3D();
     ~SkeletalMesh3D();
 

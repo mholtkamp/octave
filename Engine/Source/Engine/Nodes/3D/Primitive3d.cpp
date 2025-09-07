@@ -15,27 +15,6 @@
 
 DEFINE_OBJECT(Primitive3D);
 
-void Primitive3D::LoadStreamEx(Stream& stream)
-{
-    Node3D::LoadStreamEx(stream);
-    EnablePhysics(stream.ReadBool());
-    EnableCollision(stream.ReadBool());
-    EnableOverlaps(stream.ReadBool());
-    mCastShadows = stream.ReadBool();
-    mReceiveShadows = stream.ReadBool();
-    mReceiveSimpleShadows = stream.ReadBool();
-    SetMass(stream.ReadFloat());
-    SetRestitution(stream.ReadFloat());
-    SetFriction(stream.ReadFloat());
-    SetRollingFriction(stream.ReadFloat());
-    SetLinearDamping(stream.ReadFloat());
-    SetAngularDamping(stream.ReadFloat());
-    SetLinearFactor(stream.ReadVec3());
-    SetAngularFactor(stream.ReadVec3());
-    SetCollisionGroup(stream.ReadUint8());
-    SetCollisionMask(stream.ReadUint8());
-}
-
 static btEmptyShape* sEmptyCollisionShape = nullptr;
 
 #define UPDATE_RIGID_BODY_PROPERTY(primVariable, newValue, rigidBodyUpdate)    \

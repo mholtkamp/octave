@@ -8,13 +8,6 @@
 FORCE_LINK_DEF(Capsule3D);
 DEFINE_NODE(Capsule3D, Primitive3D);
 
-void Capsule3D::LoadStreamEx(Stream& stream)
-{
-    Primitive3D::LoadStreamEx(stream);
-    SetHeight(stream.ReadFloat());
-    SetRadius(stream.ReadFloat());
-}
-
 bool Capsule3D::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);

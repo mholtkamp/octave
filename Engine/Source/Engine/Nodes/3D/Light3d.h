@@ -8,8 +8,6 @@ public:
 
     DECLARE_OBJECT(Light3D, Node3D);
 
-    virtual void LoadStreamEx(Stream& stream) override;
-
     Light3D();
     ~Light3D();
 

@@ -17,13 +17,6 @@
 FORCE_LINK_DEF(Camera3D);
 DEFINE_NODE(Camera3D, Node3D);
 
-void Camera3D::LoadStreamEx(Stream& stream)
-{
-    Node3D::LoadStreamEx(stream);
-    mProjectionMode = ProjectionMode(stream.ReadUint8());
-    mFovY = stream.ReadFloat();
-}
-
 Camera3D::Camera3D() :
     mProjectionMode(ProjectionMode::PERSPECTIVE),
     mViewProjectionMatrix(1)
