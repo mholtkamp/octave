@@ -74,8 +74,40 @@ void OnScriptFileChanged(const FileChangeEvent& event)
                 }
             }
             
+            // Find all script instances using this file and save their properties
+            std::vector<Script*> affectedScripts;
+            std::vector<std::vector<Property>> scriptProps;
+            std::vector<Node*> nodes;
+
+            for (uint32_t i = 0; i < sWorlds.size(); ++i)
+            {
+                sWorlds[i]->GatherNodes(nodes);
+            }
+
+            for (uint32_t i = 0; i < nodes.size(); ++i)
+            {
+                Script* script = nodes[i]->GetScript();
+                if (script != nullptr)
+                {
+                    std::string scriptFileName = script->GetFile() + ".lua";
+                    if (scriptFileName == relativePath)
+                    {
+                        affectedScripts.push_back(script);
+                        scriptProps.push_back(script->GetScriptProperties());
+                    }
+                }
+            }
             // Reload the specific script file
-            if (!ScriptUtils::ReloadScriptFile(relativePath))
+            if (ScriptUtils::ReloadScriptFile(relativePath))
+            {
+                // Restart affected script instances from any nodes running in play mode
+                for (uint32_t i = 0; i < affectedScripts.size(); ++i)
+                {
+                    affectedScripts[i]->RestartScript();
+                    affectedScripts[i]->SetScriptProperties(scriptProps[i]);
+                }
+            }
+            else
             {
                 LogWarning("Failed to hot-reload script: %s", relativePath.c_str());
             }
