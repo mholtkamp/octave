@@ -2957,6 +2957,13 @@ static void DrawViewportPanel()
             am->ResaveAllAssets();
         if (ImGui::Selectable("Reload All Scripts"))
             ReloadAllScripts();
+        
+        // Script Hot-Reload toggle
+        bool hotReloadEnabled = IsScriptHotReloadEnabled();
+        std::string hotReloadText = hotReloadEnabled ? "Disable Script Hot-Reload" : "Enable Script Hot-Reload";
+        if (ImGui::Selectable(hotReloadText.c_str()))
+            SetScriptHotReloadEnabled(!hotReloadEnabled);
+        
         if (ImGui::Selectable("Write Config"))
             WriteEngineConfig();
         //if (ImGui::Selectable("Import Scene"))

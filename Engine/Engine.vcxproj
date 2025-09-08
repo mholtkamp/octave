@@ -648,6 +648,7 @@
     <ClCompile Include="Source\Engine\Datum.cpp" />
     <ClCompile Include="Source\Engine\Engine.cpp" />
     <ClCompile Include="Source\Engine\EngineTypes.cpp" />
+    <ClCompile Include="Source\Engine\FileWatcher.cpp" />
     <ClCompile Include="Source\Engine\CameraFrustum.cpp" />
     <ClCompile Include="Source\Engine\InputDevices.cpp" />
     <ClCompile Include="Source\Engine\Log.cpp" />
@@ -888,6 +889,7 @@
     <ClInclude Include="Source\Engine\EngineTypes.h" />
     <ClInclude Include="Source\Engine\Enums.h" />
     <ClInclude Include="Source\Engine\Factory.h" />
+    <ClInclude Include="Source\Engine\FileWatcher.h" />
     <ClInclude Include="Source\Engine\InputDevices.h" />
     <ClInclude Include="Source\Engine\Line.h" />
     <ClInclude Include="Source\Engine\Log.h" />
