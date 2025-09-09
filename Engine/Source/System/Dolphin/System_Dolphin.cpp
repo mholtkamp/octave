@@ -17,6 +17,8 @@
 #include <fat.h>
 #include <ogc/lwp_watchdog.h>
 
+#define ENABLE_LIBOGC_CONSOLE 0
+
 static bool sFatInit = false;
 static void InitFAT()
 {
@@ -59,9 +61,6 @@ void SYS_Initialize()
     }
 #endif
 
-    // Initialize the console, required for printf
-    system.mConsoleBuffer = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-
     // allocate 2 framebuffers for double buffering
     system.mFrameBuffers[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
     system.mFrameBuffers[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
@@ -77,9 +76,14 @@ void SYS_Initialize()
         VIDEO_WaitVSync();
     }
 
+#if ENABLE_LIBOGC_CONSOLE
+    // Initialize the console, required for printf
+    system.mConsoleBuffer = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+
     console_init(system.mConsoleBuffer, 20, 20, rmode->fbWidth, rmode->xfbHeight, rmode->fbWidth * VI_DISPLAY_PIX_SZ);
 
     //printf("\x1b[2;0H");
+#endif
 
     InitFAT();
 }
@@ -701,6 +705,7 @@ void SYS_Alert(const char* message)
     // Display alert message in console view and wait for player to hit A button.
     LogError("%s", message);
 
+#if ENABLE_LIBOGC_CONSOLE
     EnableConsole(true);
     SYS_Sleep(500);
     INP_Update();
@@ -716,10 +721,12 @@ void SYS_Alert(const char* message)
     SYS_Sleep(100);
 
     EnableConsole(false);
+#endif
 }
 
 void SYS_UpdateConsole()
 {
+#if ENABLE_LIBOGC_CONSOLE
     SystemState& system = GetEngineState()->mSystem;
     void* fb = GetEngineState()->mConsoleMode ? system.mConsoleBuffer : system.mFrameBuffers[system.mFrameIndex];
 
@@ -727,6 +734,7 @@ void SYS_UpdateConsole()
     VIDEO_SetBlack(FALSE);
     VIDEO_Flush();
     VIDEO_WaitVSync();
+#endif
 }
 
 int32_t SYS_GetPlatformTier()
