@@ -61,6 +61,7 @@ public:
     static const char* sCategory;
 
     std::string mName;
+    std::string mDisplayName;  // Display name for editor UI
     mutable Datum* mExtra = nullptr;
     void* mVector = nullptr;
     uint8_t mMinCount = 0;

@@ -464,6 +464,7 @@ void Script::GatherAutoProperties()
     {
         Property newProp;
         newProp.mName = autoProp.varName; // Use variable name as property name
+        newProp.mDisplayName = autoProp.displayName.empty() ? autoProp.varName : autoProp.displayName;
         newProp.mType = autoProp.type;
         newProp.mOwner = this;
         newProp.mExternal = false;
@@ -471,8 +472,6 @@ void Script::GatherAutoProperties()
         
 #if EDITOR
         newProp.mCategory = "Script";
-        // Note: In the future, you might want to add a separate display name field to Property
-        // For now, the display name is stored in AutoProperty but not used in the final Property
 #endif
         
         // Set the initial value
