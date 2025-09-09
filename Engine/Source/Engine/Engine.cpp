@@ -89,7 +89,13 @@ void OnScriptFileChanged(const FileChangeEvent& event)
                 Script* script = nodes[i]->GetScript();
                 if (script != nullptr)
                 {
-                    std::string scriptFileName = script->GetFile() + ".lua";
+                    // if string doesnt end with .lua, add it for comparison
+                    std::string scriptFileName = script->GetFile();
+                    if (scriptFileName.length() > 4
+                        && scriptFileName.substr(scriptFileName.length() - 4) != ".lua")
+                    {
+                        scriptFileName += ".lua";
+                    }
                     if (scriptFileName == relativePath)
                     {
                         affectedScripts.push_back(script);
