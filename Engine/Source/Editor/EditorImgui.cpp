@@ -887,7 +887,8 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
         // Bools handle name on same line after checkbox
         if (propType != DatumType::Bool || prop.GetCount() > 1)
         {
-            ImGui::Text(prop.mDisplayName.empty() ? prop.mName.c_str() : prop.mDisplayName.c_str());
+            const char* displayText = prop.mDisplayName.empty() ? prop.mName.c_str() : prop.mDisplayName.c_str();
+            ImGui::Text(displayText);
 
             if (kIndentWidth > 0.0f)
             {
@@ -1006,7 +1007,8 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                 }
 
                 ImGui::SameLine();
-                ImGui::Text(prop.mDisplayName.empty() ? prop.mName.c_str() : prop.mDisplayName.c_str());
+                const char* displayText = prop.mDisplayName.empty() ? prop.mName.c_str() : prop.mDisplayName.c_str();
+                ImGui::Text(displayText);
                 break;
             }
             case DatumType::String:

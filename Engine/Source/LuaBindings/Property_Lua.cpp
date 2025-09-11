@@ -203,7 +203,7 @@ int Property_Lua::Create(lua_State* L)
         lua_pushstring(L, "__tostring");
         lua_pushcfunction(L, [](lua_State* L) -> int {
             PropertyTracker* tracker = (PropertyTracker*)lua_touserdata(L, 1);
-            std::string str = "PropertyTracker(type=" + std::to_string((int)tracker->type) + ")";
+            std::string str = "PropertyTracker(type=" + std::to_string((int)tracker->mType) + ")";
             lua_pushstring(L, str.c_str());
             return 1;
         });
@@ -362,10 +362,10 @@ void Property_Lua::ClearPendingProperties()
 void Property_Lua::AddPendingAutoProperty(const std::string& varName, const std::string& displayName, DatumType type, const Datum& defaultValue)
 {
     AutoPropertyInfo info;
-    info.varName = varName;
-    info.displayName = displayName;
-    info.type = type;
-    info.defaultValue = defaultValue;
+    info.mVarName = varName;
+    info.mDisplayName = displayName;
+    info.mType = type;
+    info.mDefaultValue = defaultValue;
     sPendingAutoProperties.push_back(info);
 }
 

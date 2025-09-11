@@ -61,13 +61,13 @@ public:
     static const char* sCategory;
 
     std::string mName;
-    std::string mDisplayName;  // Display name for editor UI
     mutable Datum* mExtra = nullptr;
     void* mVector = nullptr;
     uint8_t mMinCount = 0;
     uint8_t mMaxCount = 255;
     bool mIsVector = false;
 #if EDITOR
+    std::string mDisplayName;  // Display name for editor UI
     int32_t mEnumCount = 0;
     const char** mEnumStrings = nullptr;
     const char* mCategory = "";

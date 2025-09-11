@@ -10,10 +10,10 @@
 
 struct AutoPropertyInfo
 {
-    std::string varName;
-    std::string displayName;
-    DatumType type;
-    Datum defaultValue;
+    std::string mVarName;
+    std::string mDisplayName;
+    DatumType mType;
+    Datum mDefaultValue;
 };
 
 struct Property_Lua

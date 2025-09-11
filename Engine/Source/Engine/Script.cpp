@@ -464,13 +464,13 @@ void Script::GatherAutoProperties()
     {
         Property newProp;
         newProp.mName = autoProp.mVarName; // Use variable name as property name
-        newProp.mDisplayName = autoProp.mDisplayName.empty() ? autoProp.mVarName : autoProp.mDisplayName;
         newProp.mType = autoProp.mType;
         newProp.mOwner = this;
         newProp.mExternal = false;
         newProp.mChangeHandler = HandleScriptPropChange;
         
 #if EDITOR
+        newProp.mDisplayName = autoProp.mDisplayName.empty() ? autoProp.mVarName : autoProp.mDisplayName;
         newProp.mCategory = "Script";
 #endif
         
