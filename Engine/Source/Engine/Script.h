@@ -15,10 +15,10 @@ struct Node_Lua;
 
 struct AutoProperty
 {
-    std::string varName;
-    std::string displayName;
-    DatumType type;
-    Datum defaultValue;
+    std::string mVarName;
+    std::string mDisplayName;
+    DatumType mType;
+    Datum mDefaultValue;
 };
 
 typedef std::unordered_map<std::string, ScriptNetFunc> ScriptNetFuncMap;

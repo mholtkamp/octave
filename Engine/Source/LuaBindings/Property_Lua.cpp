@@ -16,9 +16,9 @@ std::vector<AutoPropertyInfo> Property_Lua::sPendingAutoProperties;
 // Custom userdata type that tracks property information
 struct PropertyTracker
 {
-    DatumType type;
-    Datum value;
-    std::string displayName;
+    DatumType mType;
+    Datum mValue;
+    std::string mDisplayName;
 };
 
 #define PROPERTY_TRACKER_LUA_NAME "PropertyTracker"
@@ -178,9 +178,9 @@ int Property_Lua::Create(lua_State* L)
     // Create a PropertyTracker userdata that we can detect later
     PropertyTracker* tracker = (PropertyTracker*)lua_newuserdata(L, sizeof(PropertyTracker));
     new (tracker) PropertyTracker();
-    tracker->type = type;
-    tracker->value = defaultValue;
-    tracker->displayName = displayName;
+    tracker->mType = type;
+    tracker->mValue = defaultValue;
+    tracker->mDisplayName = displayName;
     
     // Set the metatable for the PropertyTracker
     luaL_getmetatable(L, PROPERTY_TRACKER_LUA_NAME);
@@ -292,47 +292,47 @@ void Property_Lua::ProcessPendingAutoProperties(Script* script)
                 const std::string& varName = trackerKeys[i];
                 const PropertyTracker& tracker = trackerData[i];
                 
-                LogDebug("Auto property detected: %s (type: %d)", varName.c_str(), (int)tracker.type);
+                LogDebug("Auto property detected: %s (type: %d)", varName.c_str(), (int)tracker.mType);
                 
                 // Add this as an auto property
-                std::string displayName = tracker.displayName.empty() ? varName : tracker.displayName;
-                script->AddAutoProperty(varName, displayName, tracker.type, tracker.value);
+                std::string displayName = tracker.mDisplayName.empty() ? varName : tracker.mDisplayName;
+                script->AddAutoProperty(varName, displayName, tracker.mType, tracker.mValue);
                 
                 // Replace the tracker with the actual value
-                switch (tracker.type)
+                switch (tracker.mType)
                 {
                 case DatumType::Integer:
-                    lua_pushinteger(L, tracker.value.GetInteger());
+                    lua_pushinteger(L, tracker.mValue.GetInteger());
                     break;
                 case DatumType::Float:
-                    lua_pushnumber(L, tracker.value.GetFloat());
+                    lua_pushnumber(L, tracker.mValue.GetFloat());
                     break;
                 case DatumType::Bool:
-                    lua_pushboolean(L, tracker.value.GetBool());
+                    lua_pushboolean(L, tracker.mValue.GetBool());
                     break;
                 case DatumType::String:
-                    lua_pushstring(L, tracker.value.GetString().c_str());
+                    lua_pushstring(L, tracker.mValue.GetString().c_str());
                     break;
                 case DatumType::Vector2D:
-                    Vector_Lua::Create(L, tracker.value.GetVector2D());
+                    Vector_Lua::Create(L, tracker.mValue.GetVector2D());
                     break;
                 case DatumType::Vector:
-                    Vector_Lua::Create(L, tracker.value.GetVector());
+                    Vector_Lua::Create(L, tracker.mValue.GetVector());
                     break;
                 case DatumType::Color:
-                    Vector_Lua::Create(L, tracker.value.GetColor());
+                    Vector_Lua::Create(L, tracker.mValue.GetColor());
                     break;
                 case DatumType::Asset:
-                    Asset_Lua::Create(L, tracker.value.GetAsset(), true);
+                    Asset_Lua::Create(L, tracker.mValue.GetAsset(), true);
                     break;
                 case DatumType::Node:
-                    Node_Lua::Create(L, tracker.value.GetNode().Get());
+                    Node_Lua::Create(L, tracker.mValue.GetNode().Get());
                     break;
                 case DatumType::Byte:
-                    lua_pushinteger(L, (int32_t)tracker.value.GetByte());
+                    lua_pushinteger(L, (int32_t)tracker.mValue.GetByte());
                     break;
                 case DatumType::Short:
-                    lua_pushinteger(L, (int32_t)tracker.value.GetShort());
+                    lua_pushinteger(L, (int32_t)tracker.mValue.GetShort());
                     break;
                 default:
                     lua_pushnil(L);

@@ -444,10 +444,10 @@ void Script::SetScriptProperties(const std::vector<Property>& srcProps)
 void Script::AddAutoProperty(const std::string& varName, const std::string& displayName, DatumType type, const Datum& defaultValue)
 {
     AutoProperty autoProp;
-    autoProp.varName = varName;
-    autoProp.displayName = displayName;
-    autoProp.type = type;
-    autoProp.defaultValue = defaultValue;
+    autoProp.mVarName = varName;
+    autoProp.mDisplayName = displayName;
+    autoProp.mType = type;
+    autoProp.mDefaultValue = defaultValue;
     mAutoProperties.push_back(autoProp);
 }
 
@@ -463,9 +463,9 @@ void Script::GatherAutoProperties()
     for (const AutoProperty& autoProp : mAutoProperties)
     {
         Property newProp;
-        newProp.mName = autoProp.varName; // Use variable name as property name
-        newProp.mDisplayName = autoProp.displayName.empty() ? autoProp.varName : autoProp.displayName;
-        newProp.mType = autoProp.type;
+        newProp.mName = autoProp.mVarName; // Use variable name as property name
+        newProp.mDisplayName = autoProp.mDisplayName.empty() ? autoProp.mVarName : autoProp.mDisplayName;
+        newProp.mType = autoProp.mType;
         newProp.mOwner = this;
         newProp.mExternal = false;
         newProp.mChangeHandler = HandleScriptPropChange;
@@ -475,40 +475,40 @@ void Script::GatherAutoProperties()
 #endif
         
         // Set the initial value
-        switch (autoProp.type)
+        switch (autoProp.mType)
         {
         case DatumType::Integer:
-            newProp.PushBack(autoProp.defaultValue.GetInteger());
+            newProp.PushBack(autoProp.mDefaultValue.GetInteger());
             break;
         case DatumType::Float:
-            newProp.PushBack(autoProp.defaultValue.GetFloat());
+            newProp.PushBack(autoProp.mDefaultValue.GetFloat());
             break;
         case DatumType::Bool:
-            newProp.PushBack(autoProp.defaultValue.GetBool());
+            newProp.PushBack(autoProp.mDefaultValue.GetBool());
             break;
         case DatumType::String:
-            newProp.PushBack(autoProp.defaultValue.GetString());
+            newProp.PushBack(autoProp.mDefaultValue.GetString());
             break;
         case DatumType::Vector2D:
-            newProp.PushBack(autoProp.defaultValue.GetVector2D());
+            newProp.PushBack(autoProp.mDefaultValue.GetVector2D());
             break;
         case DatumType::Vector:
-            newProp.PushBack(autoProp.defaultValue.GetVector());
+            newProp.PushBack(autoProp.mDefaultValue.GetVector());
             break;
         case DatumType::Color:
-            newProp.PushBack(autoProp.defaultValue.GetColor());
+            newProp.PushBack(autoProp.mDefaultValue.GetColor());
             break;
         case DatumType::Asset:
-            newProp.PushBack(autoProp.defaultValue.GetAsset());
+            newProp.PushBack(autoProp.mDefaultValue.GetAsset());
             break;
         case DatumType::Node:
-            newProp.PushBack(autoProp.defaultValue.GetNode());
+            newProp.PushBack(autoProp.mDefaultValue.GetNode());
             break;
         case DatumType::Byte:
-            newProp.PushBack(autoProp.defaultValue.GetByte());
+            newProp.PushBack(autoProp.mDefaultValue.GetByte());
             break;
         case DatumType::Short:
-            newProp.PushBack(autoProp.defaultValue.GetShort());
+            newProp.PushBack(autoProp.mDefaultValue.GetShort());
             break;
         default:
             break;
