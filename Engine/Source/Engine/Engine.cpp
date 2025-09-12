@@ -18,6 +18,8 @@
 #include "ScriptFunc.h"
 #include "TimerManager.h"
 #include "Nodes/Widgets/Button.h"
+#include "FileWatcher.h"
+#include "ScriptUtils.h"
 
 #include "System/System.h"
 #include "Graphics/Graphics.h"
@@ -48,6 +50,76 @@ static EngineConfig sEngineConfig;
 
 static std::vector<World*> sWorlds;
 static Clock sClock;
+
+// File watcher callback for script hot-reloading
+void OnScriptFileChanged(const FileChangeEvent& event)
+{
+    if (event.action == FileAction::Modified || event.action == FileAction::Added)
+    {
+        // Get relative path from project directory
+        std::string projectDir = GetEngineState()->mProjectDirectory;
+        std::string scriptDir = projectDir + "Scripts/";
+
+        if (event.filePath.find(scriptDir) == 0)
+        {
+            // Extract relative script path
+            std::string relativePath = event.filePath.substr(scriptDir.length());
+            
+            // Replace backslashes with forward slashes for consistency
+            for (size_t i = 0; i < relativePath.length(); ++i)
+            {
+                if (relativePath[i] == '\\')
+                {
+                    relativePath[i] = '/';
+                }
+            }
+            
+            // Find all script instances using this file and save their properties
+            std::vector<Script*> affectedScripts;
+            std::vector<std::vector<Property>> scriptProps;
+            std::vector<Node*> nodes;
+
+            for (uint32_t i = 0; i < sWorlds.size(); ++i)
+            {
+                sWorlds[i]->GatherNodes(nodes);
+            }
+
+            for (uint32_t i = 0; i < nodes.size(); ++i)
+            {
+                Script* script = nodes[i]->GetScript();
+                if (script != nullptr)
+                {
+                    // if string doesnt end with .lua, add it for comparison
+                    std::string scriptFileName = script->GetFile();
+                    if (scriptFileName.length() > 4
+                        && scriptFileName.substr(scriptFileName.length() - 4) != ".lua")
+                    {
+                        scriptFileName += ".lua";
+                    }
+                    if (scriptFileName == relativePath)
+                    {
+                        affectedScripts.push_back(script);
+                        scriptProps.push_back(script->GetScriptProperties());
+                    }
+                }
+            }
+            // Reload the specific script file
+            if (ScriptUtils::ReloadScriptFile(relativePath))
+            {
+                // Restart affected script instances from any nodes running in play mode
+                for (uint32_t i = 0; i < affectedScripts.size(); ++i)
+                {
+                    affectedScripts[i]->RestartScript();
+                    affectedScripts[i]->SetScriptProperties(scriptProps[i]);
+                }
+            }
+            else
+            {
+                LogWarning("Failed to hot-reload script: %s", relativePath.c_str());
+            }
+        }
+    }
+}
 
 void ForceLinkage()
 {
@@ -267,6 +339,16 @@ bool Initialize()
     renderer->Initialize();
     NetworkManager::Get()->Initialize();
 
+#if EDITOR
+    // Initialize FileWatcher for script hot-reloading
+    CreateFileWatcher();
+    if (GetFileWatcher())
+    {
+        GetFileWatcher()->Initialize();
+        GetFileWatcher()->SetFileChangeCallback(OnScriptFileChanged);
+    }
+#endif
+
     sClock.Start();
 
     sWorlds.push_back(new World());
@@ -368,6 +450,14 @@ bool Update()
     lua_State* L = GetLua();
     lua_settop(L, 0);
 
+#if EDITOR
+    // Update FileWatcher for script hot-reloading
+    if (GetFileWatcher())
+    {
+        GetFileWatcher()->Update();
+    }
+#endif
+
     if (sEngineState.mSuspended)
     {
         SYS_Update();
@@ -465,6 +555,11 @@ bool Update()
 
 void Shutdown()
 {
+#if EDITOR
+    // Shutdown FileWatcher first
+    DestroyFileWatcher();
+#endif
+
     NetworkManager::Get()->Shutdown();
 
     for (uint32_t i = 0; i < sWorlds.size(); ++i)
@@ -624,6 +719,28 @@ void LoadProject(const std::string& path, bool discoverAssets)
 #endif
 
 #if EDITOR
+    // Start watching the Scripts directory for hot-reloading
+    if (GetFileWatcher() && sEngineState.mProjectDirectory != "")
+    {
+        std::string scriptsDir = sEngineState.mProjectDirectory + "Scripts";
+        
+        // Check if Scripts directory exists by trying to open it as a directory
+        DirEntry dirEntry = {};
+        SYS_OpenDirectory(scriptsDir, dirEntry);
+        bool scriptsExists = dirEntry.mValid;
+        if (dirEntry.mValid)
+        {
+            SYS_CloseDirectory(dirEntry);
+        }
+        
+        if (scriptsExists)
+        {
+            GetFileWatcher()->WatchDirectory(scriptsDir, true);
+        }
+    }
+#endif
+
+#if EDITOR
     GetEditorState()->ReadEditorProjectSave();
     GetEditorState()->LoadStartupScene();
     if (sEngineState.mProjectPath != "")
@@ -734,6 +851,27 @@ void ReloadAllScripts(bool restartComponents)
     LogDebug("--Reloaded All Scripts--");
 
 #endif
+}
+
+void SetScriptHotReloadEnabled(bool enabled)
+{
+#if EDITOR
+    if (GetFileWatcher())
+    {
+        GetFileWatcher()->SetEnabled(enabled);
+    }
+#endif
+}
+
+bool IsScriptHotReloadEnabled()
+{
+#if EDITOR
+    if (GetFileWatcher())
+    {
+        return GetFileWatcher()->IsEnabled();
+    }
+#endif
+    return false;
 }
 
 void SetPaused(bool paused)

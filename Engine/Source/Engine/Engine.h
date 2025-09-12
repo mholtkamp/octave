@@ -45,6 +45,11 @@ bool IsGameTickEnabled();
 
 void ReloadAllScripts(bool restartComponents = true);
 
+#if EDITOR
+void SetScriptHotReloadEnabled(bool enabled);
+bool IsScriptHotReloadEnabled();
+#endif
+
 void SetPaused(bool paused);
 bool IsPaused();
 void FrameStep();
