@@ -8,7 +8,9 @@
 
 Property::Property()
 {
-    
+#if EDITOR
+    mDisplayName = mName;  // Default to using name as display name
+#endif
 }
 
 Property::Property(
@@ -24,6 +26,9 @@ Property::Property(
     Datum(type, owner, data, count, changeHandler)
 {
     mName = name;
+#if EDITOR
+    mDisplayName = name;  // Default to using name as display name
+#endif
 
     if (extra.IsValid())
     {
@@ -47,6 +52,9 @@ Property::Property(const Property& src) :
     Datum(src)
 {
     mName = src.mName;
+#if EDITOR
+    mDisplayName = src.mDisplayName;
+#endif
 
     mVector = src.mVector;
     mMinCount = src.mMinCount;
@@ -71,6 +79,11 @@ Property& Property::operator=(const Property& src)
     if (this != &src)
     {
         Datum::operator=(src);
+        mName = src.mName;
+#if EDITOR
+        mDisplayName = src.mDisplayName;
+#endif
+        // Note: Other members are handled by copy constructor or don't need copying in assignment
     }
 
     return *this;
@@ -80,6 +93,14 @@ void Property::ReadStream(Stream& stream, uint32_t version, bool net, bool exter
 {
     Datum::ReadStream(stream, version, net, external);
     stream.ReadString(mName);
+    
+#if EDITOR
+    // For auto-properties loaded from stream, default display name to name
+    if (mDisplayName.empty())
+    {
+        mDisplayName = mName;
+    }
+#endif
 
     if (version >= ASSET_VERSION_PROPERTY_EXTRA)
     {

@@ -13,6 +13,7 @@
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
 #include "LuaBindings/World_Lua.h"
+#include "LuaBindings/Property_Lua.h"
 
 DEFINE_OBJECT(Script);
 
@@ -438,6 +439,84 @@ const std::vector<Property>& Script::GetScriptProperties() const
 void Script::SetScriptProperties(const std::vector<Property>& srcProps)
 {
     CopyPropertyValues(mScriptProps, srcProps);
+}
+
+void Script::AddAutoProperty(const std::string& varName, const std::string& displayName, DatumType type, const Datum& defaultValue)
+{
+    AutoProperty autoProp;
+    autoProp.mVarName = varName;
+    autoProp.mDisplayName = displayName;
+    autoProp.mType = type;
+    autoProp.mDefaultValue = defaultValue;
+    mAutoProperties.push_back(autoProp);
+}
+
+void Script::ClearAutoProperties()
+{
+    mAutoProperties.clear();
+}
+
+void Script::GatherAutoProperties()
+{
+#if LUA_ENABLED
+    // Convert auto properties to regular Properties and add them to mScriptProps
+    for (const AutoProperty& autoProp : mAutoProperties)
+    {
+        Property newProp;
+        newProp.mName = autoProp.mVarName; // Use variable name as property name
+        newProp.mType = autoProp.mType;
+        newProp.mOwner = this;
+        newProp.mExternal = false;
+        newProp.mChangeHandler = HandleScriptPropChange;
+        
+#if EDITOR
+        newProp.mDisplayName = autoProp.mDisplayName.empty() ? autoProp.mVarName : autoProp.mDisplayName;
+        newProp.mCategory = "Script";
+#endif
+        
+        // Set the initial value
+        switch (autoProp.mType)
+        {
+        case DatumType::Integer:
+            newProp.PushBack(autoProp.mDefaultValue.GetInteger());
+            break;
+        case DatumType::Float:
+            newProp.PushBack(autoProp.mDefaultValue.GetFloat());
+            break;
+        case DatumType::Bool:
+            newProp.PushBack(autoProp.mDefaultValue.GetBool());
+            break;
+        case DatumType::String:
+            newProp.PushBack(autoProp.mDefaultValue.GetString());
+            break;
+        case DatumType::Vector2D:
+            newProp.PushBack(autoProp.mDefaultValue.GetVector2D());
+            break;
+        case DatumType::Vector:
+            newProp.PushBack(autoProp.mDefaultValue.GetVector());
+            break;
+        case DatumType::Color:
+            newProp.PushBack(autoProp.mDefaultValue.GetColor());
+            break;
+        case DatumType::Asset:
+            newProp.PushBack(autoProp.mDefaultValue.GetAsset());
+            break;
+        case DatumType::Node:
+            newProp.PushBack(autoProp.mDefaultValue.GetNode());
+            break;
+        case DatumType::Byte:
+            newProp.PushBack(autoProp.mDefaultValue.GetByte());
+            break;
+        case DatumType::Short:
+            newProp.PushBack(autoProp.mDefaultValue.GetShort());
+            break;
+        default:
+            break;
+        }
+        
+        mScriptProps.push_back(newProp);
+    }
+#endif
 }
 
 void Script::GatherReplicatedData()
@@ -1640,12 +1719,27 @@ void Script::CreateScriptInstance()
 
             SetWorld(mOwner->GetWorld());
 
+            // Set this script as the currently initializing script for future auto property detection
+            Property_Lua::SetCurrentInitializingScript(this);
+            
+            // Clear any existing auto properties
+            ClearAutoProperties();
+
             // Is calling Create() here causing issues? It used to be called after gathering properties.
             // If this causes a problem, consider calling a separate function like PreCreate() or Init() or something.
             CallFunction("Create");
+            
+            // Process any auto properties that were detected (for future implementation)
+            Property_Lua::ProcessPendingAutoProperties(this);
+            
+            // Clear the current initializing script
+            Property_Lua::SetCurrentInitializingScript(nullptr);
 
             UploadScriptProperties();
+            
+            // Gather traditional properties first, then auto properties
             GatherScriptProperties();
+            GatherAutoProperties();
 
             if (GetOwner()->IsReplicated())
             {
@@ -1704,6 +1798,7 @@ void Script::DestroyScriptInstance()
 
         mScriptProps.clear();
         mReplicatedData.clear();
+        mAutoProperties.clear();
 
         mActive = false;
     }

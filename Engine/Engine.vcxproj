@@ -773,6 +773,7 @@
     <ClCompile Include="Source\LuaBindings\PolyRect_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Poly_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Primitive3d_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Property_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Quad_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Rect_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Renderer_Lua.cpp" />
@@ -1014,6 +1015,7 @@
     <ClInclude Include="Source\LuaBindings\PolyRect_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Poly_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Primitive3d_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\Property_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Quad_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Rect_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Renderer_Lua.h" />

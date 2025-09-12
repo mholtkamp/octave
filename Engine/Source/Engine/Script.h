@@ -13,6 +13,14 @@
 struct AnimEvent;
 struct Node_Lua;
 
+struct AutoProperty
+{
+    std::string mVarName;
+    std::string mDisplayName;
+    DatumType mType;
+    Datum mDefaultValue;
+};
+
 typedef std::unordered_map<std::string, ScriptNetFunc> ScriptNetFuncMap;
 
 class Script : public Object
@@ -93,6 +101,11 @@ public:
     const std::vector<Property>& GetScriptProperties() const;
     void SetScriptProperties(const std::vector<Property>& srcProps);
 
+    // Auto property support
+    void AddAutoProperty(const std::string& varName, const std::string& displayName, DatumType type, const Datum& defaultValue);
+    void ClearAutoProperties();
+    void GatherAutoProperties();
+
     static bool OnRepHandler(Datum* datum, uint32_t index, const void* newValue);
 
 protected:
@@ -123,6 +136,7 @@ protected:
     std::string mClassName;
     std::vector<Property> mScriptProps;
     std::vector<ScriptNetDatum> mReplicatedData;
+    std::vector<AutoProperty> mAutoProperties;
     bool mActive = false;
     bool mTickEnabled = false;
     bool mHandleBeginOverlap = false;

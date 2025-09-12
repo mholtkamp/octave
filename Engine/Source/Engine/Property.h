@@ -67,6 +67,7 @@ public:
     uint8_t mMaxCount = 255;
     bool mIsVector = false;
 #if EDITOR
+    std::string mDisplayName;  // Display name for editor UI
     int32_t mEnumCount = 0;
     const char** mEnumStrings = nullptr;
     const char* mCategory = "";

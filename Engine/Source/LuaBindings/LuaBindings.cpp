@@ -55,6 +55,7 @@
 #include "LuaBindings/Signal_Lua.h"
 #include "LuaBindings/Stream_Lua.h"
 #include "LuaBindings/TimerManager_Lua.h"
+#include "LuaBindings/Property_Lua.h"
 
 #include "LuaBindings/Misc_Lua.h"
 
@@ -78,6 +79,7 @@ void BindLuaInterface()
     Stream_Lua::Bind();
     Signal_Lua::Bind();
     TimerManager_Lua::Bind();
+    Property_Lua::Bind();
 
     // Components need to be bound in hierarchy order.
     // Derived classes need to come after parent classes.
