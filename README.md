@@ -48,7 +48,7 @@ Instructions for building from source below.
     - sudo dkp-pacman -S gamecube-dev
     - sudo dkp-pacman -S wii-dev
     - sudo dkp-pacman -S 3ds-dev
-8. Run Engine/Shaders/GLSL/compile.sh
+8. cd Engine/Shaders/GLSL/ then run ./compile.sh
 
 ### Linux Setup (Visual Studio Code)
 9. Open the root octave folder in VsCode (where this README is located).
