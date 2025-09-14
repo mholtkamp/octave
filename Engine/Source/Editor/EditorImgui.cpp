@@ -1086,15 +1086,6 @@ static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, Pro
                 {
                     typeMatches = true;
                 }
-                // Make sure we don't match material assets when we want a model
-                else if (assetTypeFilter == StaticMesh::GetStaticType() && 
-                         (stub->mType == MaterialBase::GetStaticType() ||
-                          stub->mType == MaterialInstance::GetStaticType() ||
-                          stub->mType == MaterialLite::GetStaticType() ||
-                          stub->mType == Material::GetStaticType()))
-                {
-                    typeMatches = false; // Explicitly exclude materials when looking for models
-                }
             }
             
             if (stub && typeMatches)
