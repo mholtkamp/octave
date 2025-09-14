@@ -825,7 +825,11 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
         ImVec2 inputPos = ImGui::GetItemRectMin();
         ImVec2 inputSize = ImGui::GetItemRectSize();
         ImGui::SetNextWindowPos(ImVec2(inputPos.x, inputPos.y + inputSize.y));
-        ImGui::SetNextWindowSize(ImVec2(inputSize.x, 0)); // Height will adjust automatically
+        
+        // Set maximum height for 4 items plus a bit of padding
+        const float itemHeight = ImGui::GetTextLineHeightWithSpacing();
+        const float maxHeight = itemHeight * 4 + ImGui::GetStyle().WindowPadding.y * 2;
+        ImGui::SetNextWindowSizeConstraints(ImVec2(inputSize.x, 0), ImVec2(inputSize.x, maxHeight));
         
         // Make sure the dropdown appears above other elements
         ImGui::SetNextWindowBgAlpha(1.0f); // Fully opaque background
@@ -835,7 +839,6 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | 
                                 ImGuiWindowFlags_NoResize | 
                                 ImGuiWindowFlags_NoMove | 
-                                ImGuiWindowFlags_NoScrollbar | 
                                 ImGuiWindowFlags_NoSavedSettings |
                                 ImGuiWindowFlags_AlwaysAutoResize |
                                 ImGuiWindowFlags_Tooltip; // Use tooltip flag to ensure it draws on top
@@ -915,6 +918,22 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
             }
             
             // Display filtered items
+            // Ensure the selected item is always visible by scrolling to it
+            if (hasSelection && selectedIndex < filteredItems.size())
+            {
+                // Calculate where we need to scroll to make the selected item visible
+                float itemHeight = ImGui::GetTextLineHeightWithSpacing();
+                float targetY = itemHeight * selectedIndex;
+                
+                // ImGui will handle the scrolling if we set focus on the selected item
+                // We'll also make sure to scroll into view if arrow keys are pressed
+                if (upArrowPressed || downArrowPressed)
+                {
+                    ImGui::SetScrollY(targetY - itemHeight); // Position selected item one row from top
+                }
+            }
+
+            // Display all filtered items in a scrollable area
             for (size_t i = 0; i < filteredItems.size(); i++)
             {
                 bool isSelected = (hasSelection && i == selectedIndex);
@@ -927,7 +946,7 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
                 
                 if (isSelected)
                 {
-                    ImGui::SetItemDefaultFocus();
+                    ImGui::SetItemDefaultFocus(); // This also scrolls to make the item visible
                     ImGui::PopStyleColor();
                 }
                 
