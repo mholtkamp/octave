@@ -33,6 +33,7 @@
 #include "EditorState.h"
 
 #include <functional>
+#include <algorithm>
 
 // TODO: If we ever support an OpenGL backend, gotta change this.
 #include "backends/imgui_impl_vulkan.cpp"
@@ -752,6 +753,144 @@ static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, Prop
     }
 }
 
+// A reusable autocomplete dropdown function that works with various input types
+// Returns true if a selection was made, and updates the input string
+template<typename FilterFuncType>
+static bool DrawAutocompleteDropdown(const char* dropdownId, 
+                                     std::string& inputText, 
+                                     const std::vector<std::string>& suggestions, 
+                                     FilterFuncType filterFunc)
+{
+    bool selectionMade = false;
+    static size_t selectedIndex = 0;
+    static bool hasSelection = false;
+    static bool dropdownActive = false;
+    static std::string lastInputText = "";
+    static std::vector<std::string> filteredItems;
+    
+    // Check if this is the active dropdown
+    ImGuiID inputId = ImGui::GetItemID();
+    bool isInputActive = ImGui::IsItemActive();
+    bool isInputFocused = ImGui::IsItemFocused();
+    
+    // Reset selection when input text changes
+    if (lastInputText != inputText)
+    {
+        lastInputText = inputText;
+        hasSelection = false;
+        
+        // Filter suggestions based on input text
+        filteredItems.clear();
+        for (const auto& suggestion : suggestions)
+        {
+            if (filterFunc(suggestion, inputText))
+            {
+                filteredItems.push_back(suggestion);
+            }
+        }
+    }
+    
+    // Only show dropdown when input is active and we have filtered items
+    if ((isInputActive || isInputFocused) && !filteredItems.empty())
+    {
+        dropdownActive = true;
+        
+        // Calculate popup position below the input field
+        ImVec2 inputPos = ImGui::GetItemRectMin();
+        ImVec2 inputSize = ImGui::GetItemRectSize();
+        ImGui::SetNextWindowPos(ImVec2(inputPos.x, inputPos.y + inputSize.y));
+        ImGui::SetNextWindowSize(ImVec2(inputSize.x, 0)); // Height will adjust automatically
+        
+        // Make sure the dropdown appears above other elements
+        ImGui::SetNextWindowBgAlpha(1.0f); // Fully opaque background
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f); // Add a border for better visibility
+        
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | 
+                                ImGuiWindowFlags_NoResize | 
+                                ImGuiWindowFlags_NoMove | 
+                                ImGuiWindowFlags_NoScrollbar | 
+                                ImGuiWindowFlags_NoSavedSettings |
+                                ImGuiWindowFlags_AlwaysAutoResize |
+                                ImGuiWindowFlags_Tooltip; // Use tooltip flag to ensure it draws on top
+        
+        if (ImGui::Begin(dropdownId, nullptr, flags))
+        {
+            // Handle keyboard navigation
+            if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)))
+            {
+                if (!hasSelection && !filteredItems.empty())
+                {
+                    selectedIndex = filteredItems.size() - 1;
+                    hasSelection = true;
+                }
+                else if (hasSelection)
+                {
+                    selectedIndex = (selectedIndex > 0) ? selectedIndex - 1 : filteredItems.size() - 1;
+                }
+            }
+            else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow)) || 
+                     ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab))) // Add Tab key support
+            {
+                if (!hasSelection && !filteredItems.empty())
+                {
+                    selectedIndex = 0;
+                    hasSelection = true;
+                }
+                else if (hasSelection)
+                {
+                    selectedIndex = (selectedIndex + 1) % filteredItems.size();
+                }
+            }
+            else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter)) && hasSelection && selectedIndex < filteredItems.size())
+            {
+                inputText = filteredItems[selectedIndex];
+                selectionMade = true;
+                dropdownActive = false;
+                ImGui::CloseCurrentPopup();
+            }
+            else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+            {
+                dropdownActive = false;
+                ImGui::CloseCurrentPopup();
+            }
+            
+            // Display filtered items
+            for (size_t i = 0; i < filteredItems.size(); i++)
+            {
+                bool isSelected = (hasSelection && i == selectedIndex);
+                
+                if (isSelected)
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
+                
+                // Only make selection on click, don't autofill
+                bool clicked = ImGui::Selectable(filteredItems[i].c_str(), isSelected);
+                
+                if (isSelected)
+                {
+                    ImGui::SetItemDefaultFocus();
+                    ImGui::PopStyleColor();
+                }
+                
+                if (clicked)
+                {
+                    inputText = filteredItems[i];
+                    selectionMade = true;
+                    dropdownActive = false;
+                }
+            }
+        }
+        ImGui::End();
+        ImGui::PopStyleVar(); // Pop the window border style
+    }
+    else if (!isInputActive && !isInputFocused && !ImGui::IsMouseDown(0))
+    {
+        // Close dropdown when input loses focus and mouse is not down
+        dropdownActive = false;
+    }
+    
+    return selectionMade;
+}
+
 static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOwnerType ownerType)
 {
     Asset* asset = prop.GetAsset(index);
@@ -809,9 +948,81 @@ static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, Pro
     static std::string sTempString;
     sTempString = asset ? asset->GetName() : "";
 
+    // Use ImGui::InputText but capture whether it's active for the dropdown
     ImGui::InputText("##AssetNameStr", &sTempString);
 
-    if (ImGui::IsItemDeactivatedAfterEdit())
+    // If we have an extra property with type information, use it to filter assets
+    TypeId assetTypeFilter = 0;
+    if (prop.mExtra)
+    {
+        assetTypeFilter = (TypeId)prop.mExtra->GetInteger();
+    }
+
+    // Get asset suggestions based on type
+    static std::vector<std::string> assetSuggestions;
+    static TypeId lastAssetTypeFilter = 0;
+    static double lastUpdateTime = 0.0;
+    double currentTime = ImGui::GetTime();
+
+    // Only refresh the suggestions list occasionally to avoid performance issues
+    if (assetTypeFilter != lastAssetTypeFilter || currentTime - lastUpdateTime > 2.0)
+    {
+        assetSuggestions.clear();
+        const auto& assetMap = AssetManager::Get()->GetAssetMap();
+        
+        for (const auto& pair : assetMap)
+        {
+            AssetStub* stub = pair.second;
+            // If assetTypeFilter is 0 or matches the asset type, add it to suggestions
+            bool typeMatches = false;
+            
+            if (assetTypeFilter == 0)
+            {
+                typeMatches = true; // Accept all types when no filter
+            }
+            else if (stub)
+            {
+                // Check for exact type match
+                if (stub->mType == assetTypeFilter)
+                {
+                    typeMatches = true;
+                }
+                // Special handling for Material types
+                else if (assetTypeFilter == Material::GetStaticType() && 
+                         (stub->mType == MaterialBase::GetStaticType() ||
+                          stub->mType == MaterialInstance::GetStaticType() ||
+                          stub->mType == MaterialLite::GetStaticType()))
+                {
+                    typeMatches = true;
+                }
+            }
+            
+            if (stub && typeMatches)
+            {
+                assetSuggestions.push_back(stub->mName);
+            }
+        }
+        
+        lastAssetTypeFilter = assetTypeFilter;
+        lastUpdateTime = currentTime;
+    }
+
+    // Define a filter function for our assets
+    auto assetFilter = [](const std::string& suggestion, const std::string& input) {
+        if (input.empty()) return true;
+        // Case-insensitive substring search
+        std::string lowerSuggestion = suggestion;
+        std::string lowerInput = input;
+        std::transform(lowerSuggestion.begin(), lowerSuggestion.end(), lowerSuggestion.begin(), ::tolower);
+        std::transform(lowerInput.begin(), lowerInput.end(), lowerInput.begin(), ::tolower);
+        return lowerSuggestion.find(lowerInput) != std::string::npos;
+    };
+
+    // Draw the autocomplete dropdown for asset selection
+    bool selectionMade = DrawAutocompleteDropdown("AssetAutocomplete", sTempString, assetSuggestions, assetFilter);
+
+    // If a selection was made or the input was deactivated after editing, apply the change
+    if (selectionMade || ImGui::IsItemDeactivatedAfterEdit())
     {
         if (sTempString == "null" ||
             sTempString == "NULL" ||
