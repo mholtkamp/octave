@@ -1053,14 +1053,6 @@ static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, Pro
         assetTypeFilter = (TypeId)prop.mExtra->GetInteger();
     }
 
-    // Make sure we're not defaulting to zero, which means "all types"
-    // If assetTypeFilter is 0, it might be incorrectly set
-    if (assetTypeFilter == 0)
-    {
-        // Log or add debug output
-        LogDebug("Asset property missing type filter: %s", prop.mName.c_str());
-    }
-
     // Get asset suggestions based on type
     static std::vector<std::string> assetSuggestions;
     static TypeId lastAssetTypeFilter = 0;
