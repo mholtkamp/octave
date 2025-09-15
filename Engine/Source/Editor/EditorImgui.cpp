@@ -1082,13 +1082,6 @@ static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, Pro
             if (assetTypeFilter == 0)
             {
                 typeMatches = true; // Accept all types when no filter
-                
-                // But log which assets we're accepting to help debugging
-                if (stub && !(currentTime - lastUpdateTime > 5.0)) // Don't spam the log
-                {
-                    LogDebug("No type filter for %s, showing all asset types including: %s (type: %u)",
-                            sTempString.c_str(), stub->mName.c_str(), stub->mType);
-                }
             }
             else if (stub)
             {
