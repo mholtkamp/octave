@@ -46,7 +46,11 @@ bool Script::HandleForeignScriptPropChange(Datum* datum, uint32_t index, const v
     OCT_ASSERT(!prop->mExternal);
     Script* script = static_cast<Script*>(prop->mOwner);
 
-    prop->SetValueRaw(newValue, index);
+    // Only set the value if we have a valid newValue and the index is within bounds
+    if (newValue != nullptr && index < prop->GetCount())
+    {
+        prop->SetValueRaw(newValue, index);
+    }
 
     Property* scriptProp = nullptr;
     for (uint32_t i = 0; i < script->mScriptProps.size(); ++i)
@@ -66,7 +70,11 @@ bool Script::HandleForeignScriptPropChange(Datum* datum, uint32_t index, const v
             scriptProp->SetCount(prop->GetCount());
         }
 
-        scriptProp->SetValue(newValue, index);
+        // Only set the value if we have a valid newValue and the index is within bounds
+        if (newValue != nullptr && index < prop->GetCount())
+        {
+            scriptProp->SetValue(newValue, index);
+        }
     }
 
     return true;
@@ -1221,9 +1229,25 @@ void Script::UploadDatum(Datum& datum, const char* varName)
 
         if (arrayTableIdx != -1)
         {
-            // Set value at count + 1 to nil
-            lua_pushnil(L);
-            lua_seti(L, arrayTableIdx, count + 1);
+            // For arrays, we need to clear all elements beyond the current count
+            // Start from count + 1 and clear until we find a nil value
+            int clearIndex = count + 1;
+            while (true)
+            {
+                lua_geti(L, arrayTableIdx, clearIndex);
+                bool isNil = lua_isnil(L, -1);
+                lua_pop(L, 1); // pop the value we just checked
+                
+                if (isNil)
+                {
+                    break; // No more elements to clear
+                }
+                
+                // Set this index to nil
+                lua_pushnil(L);
+                lua_seti(L, arrayTableIdx, clearIndex);
+                clearIndex++;
+            }
 
             // Pop array table.
             lua_pop(L, 1);
