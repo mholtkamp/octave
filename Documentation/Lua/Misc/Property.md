@@ -23,3 +23,24 @@ Sig: `value = Property.Create(type, defaultValue, displayName)`
  - Arg: `string displayName` *(optional)* Custom name to display in the editor. If not provided, the variable name will be used
  - Ret: `any value` Returns the default value
 ---
+
+### Property.CreateArray
+Creates an array property that will appear in the editor as a list with + and - buttons to add/remove elements. This function should be called during the script's `Create()` method and assigned to a variable on `self`. Each element in the array will have the appropriate UI control based on the specified type.
+
+See [DatumType](./Enums.md#datumtype)
+
+**Basic Usage:**
+```lua
+function MyScript:Create()
+    self.myNumberList = Property.CreateArray(DatumType.Float, {1.0, 2.5, 3.7})
+    self.myAssetList = Property.CreateArray(DatumType.Asset, {})
+    self.nameList = Property.CreateArray(DatumType.String, {"Player1", "Player2"}, "Player Names")
+end
+```
+
+Sig: `value = Property.CreateArray(type, arrayValues, displayName)`
+ - Arg: `DatumType type` The data type of each element in the array (see DatumType enum)
+ - Arg: `table arrayValues` Table containing the initial values for the array
+ - Arg: `string displayName` *(optional)* Custom name to display in the editor. If not provided, the variable name will be used
+ - Ret: `table value` Returns the array of values as a Lua table
+---
