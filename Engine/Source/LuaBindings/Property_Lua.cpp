@@ -473,8 +473,6 @@ void Property_Lua::ProcessPendingAutoProperties(Script* script)
                 const std::string& varName = trackerKeys[i];
                 const PropertyTracker& tracker = trackerData[i];
                 
-                LogDebug("Auto property detected: %s (type: %d)", varName.c_str(), (int)tracker.mType);
-                
                 // Add this as an auto property
                 std::string displayName = tracker.mDisplayName.empty() ? varName : tracker.mDisplayName;
                 if (tracker.mIsArray)
