@@ -927,8 +927,24 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                             // Script properties use internal storage
                             prop.Erase(prop.GetCount() - 1);
 
-                            // HACK: Re-assign values so that we trigger the script prop change handler to propagate changes to script.
-                            prop.SetValue(prop.GetValue(0), 0, prop.GetCount());
+                            // We need to trigger the script prop change handler to propagate changes to script.
+                            uint32_t currentCount = prop.GetCount();
+                            if (currentCount > 0)
+                            {
+                                // For non-empty arrays, use the normal approach
+                                prop.SetValue(prop.GetValue(0), 0, currentCount);
+                            }
+                            else
+                            {
+                                // For empty arrays, we need to ensure the change propagates to the script property
+                                // Call the change handler directly to sync the empty state
+                                if (prop.mChangeHandler)
+                                {
+                                    // The change handler expects the property to already be modified, so call it
+                                    // with a null pointer to indicate this is a count change, not a value change
+                                    prop.mChangeHandler(&prop, 0, nullptr);
+                                }
+                            }
                         }
                     }
                 }
@@ -964,7 +980,7 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                     if (ImGui::IsItemDeactivatedAfterEdit())
                     {
-                        prop.SetInteger(sOrigVal);
+                        prop.SetInteger(sOrigVal, i);
                         am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
                     }
                     else if (propVal != preVal)
@@ -989,7 +1005,7 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                 if (ImGui::IsItemDeactivatedAfterEdit())
                 {
-                    prop.SetFloat(sOrigVal);
+                    prop.SetFloat(sOrigVal, i);
                     am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
                 }
                 else if (propVal != preVal)
@@ -1048,7 +1064,7 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                 if (ImGui::IsItemDeactivatedAfterEdit())
                 {
-                    prop.SetVector2D(sOrigVal);
+                    prop.SetVector2D(sOrigVal, i);
                     am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
                 }
                 else if (propVal != preVal)
@@ -1077,7 +1093,7 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                 if (ImGui::IsItemDeactivatedAfterEdit())
                 {
-                    prop.SetVector(sOrigVal);
+                    prop.SetVector(sOrigVal, i);
 
                     // Handle edge case where Rotation property is reset so we need to recompute transform to update mRotationEuler.
                     if (owner->As<Node3D>())
@@ -1110,7 +1126,7 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                 if (ImGui::IsItemDeactivatedAfterEdit())
                 {
-                    prop.SetColor(sOrigVal);
+                    prop.SetColor(sOrigVal, i);
                     am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
                 }
                 else if (propVal != preVal)
@@ -1207,7 +1223,7 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                     if (ImGui::IsItemDeactivatedAfterEdit())
                     {
-                        prop.SetByte((uint8_t)sOrigVal);
+                        prop.SetByte((uint8_t)sOrigVal, i);
                         am->EXE_EditProperty(owner, ownerType, prop.mName, i, uint8_t(propVal));
                     }
                     else if (propVal != preVal)
@@ -1241,7 +1257,7 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                     if (ImGui::IsItemDeactivatedAfterEdit())
                     {
-                        prop.SetShort((int16_t)sOrigVal);
+                        prop.SetShort((int16_t)sOrigVal, i);
                         am->EXE_EditProperty(owner, ownerType, prop.mName, i, int16_t(propVal));
                     }
                     else if (propVal != preVal)

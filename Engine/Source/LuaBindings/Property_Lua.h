@@ -19,6 +19,7 @@ struct AutoPropertyInfo
 struct Property_Lua
 {
     static int Create(lua_State* L);
+    static int CreateArray(lua_State* L);
     
     static void Bind();
     

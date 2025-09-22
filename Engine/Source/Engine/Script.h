@@ -19,6 +19,8 @@ struct AutoProperty
     std::string mDisplayName;
     DatumType mType;
     Datum mDefaultValue;
+    bool mIsArray = false;
+    std::vector<Datum> mArrayValues;
 };
 
 typedef std::unordered_map<std::string, ScriptNetFunc> ScriptNetFuncMap;
@@ -103,6 +105,7 @@ public:
 
     // Auto property support
     void AddAutoProperty(const std::string& varName, const std::string& displayName, DatumType type, const Datum& defaultValue);
+    void AddAutoPropertyArray(const std::string& varName, const std::string& displayName, DatumType type, const std::vector<Datum>& arrayValues);
     void ClearAutoProperties();
     void GatherAutoProperties();
 
