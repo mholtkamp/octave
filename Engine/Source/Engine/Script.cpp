@@ -46,7 +46,11 @@ bool Script::HandleForeignScriptPropChange(Datum* datum, uint32_t index, const v
     OCT_ASSERT(!prop->mExternal);
     Script* script = static_cast<Script*>(prop->mOwner);
 
-    prop->SetValueRaw(newValue, index);
+    // Only set the value if we have a valid newValue and the index is within bounds
+    if (newValue != nullptr && index < prop->GetCount())
+    {
+        prop->SetValueRaw(newValue, index);
+    }
 
     Property* scriptProp = nullptr;
     for (uint32_t i = 0; i < script->mScriptProps.size(); ++i)
@@ -66,7 +70,11 @@ bool Script::HandleForeignScriptPropChange(Datum* datum, uint32_t index, const v
             scriptProp->SetCount(prop->GetCount());
         }
 
-        scriptProp->SetValue(newValue, index);
+        // Only set the value if we have a valid newValue and the index is within bounds
+        if (newValue != nullptr && index < prop->GetCount())
+        {
+            scriptProp->SetValue(newValue, index);
+        }
     }
 
     return true;
@@ -448,6 +456,19 @@ void Script::AddAutoProperty(const std::string& varName, const std::string& disp
     autoProp.mDisplayName = displayName;
     autoProp.mType = type;
     autoProp.mDefaultValue = defaultValue;
+    autoProp.mIsArray = false;
+    mAutoProperties.push_back(autoProp);
+}
+
+void Script::AddAutoPropertyArray(const std::string& varName, const std::string& displayName, DatumType type, const std::vector<Datum>& arrayValues)
+{
+    AutoProperty autoProp;
+    autoProp.mVarName = varName;
+    autoProp.mDisplayName = displayName;
+    autoProp.mType = type;
+    autoProp.mDefaultValue = arrayValues.empty() ? Datum() : arrayValues[0]; // Default for new entries
+    autoProp.mIsArray = true;
+    autoProp.mArrayValues = arrayValues;
     mAutoProperties.push_back(autoProp);
 }
 
@@ -473,45 +494,94 @@ void Script::GatherAutoProperties()
         newProp.mDisplayName = autoProp.mDisplayName.empty() ? autoProp.mVarName : autoProp.mDisplayName;
         newProp.mCategory = "Script";
 #endif
-        
-        // Set the initial value
-        switch (autoProp.mType)
+
+        if (autoProp.mIsArray)
         {
-        case DatumType::Integer:
-            newProp.PushBack(autoProp.mDefaultValue.GetInteger());
-            break;
-        case DatumType::Float:
-            newProp.PushBack(autoProp.mDefaultValue.GetFloat());
-            break;
-        case DatumType::Bool:
-            newProp.PushBack(autoProp.mDefaultValue.GetBool());
-            break;
-        case DatumType::String:
-            newProp.PushBack(autoProp.mDefaultValue.GetString());
-            break;
-        case DatumType::Vector2D:
-            newProp.PushBack(autoProp.mDefaultValue.GetVector2D());
-            break;
-        case DatumType::Vector:
-            newProp.PushBack(autoProp.mDefaultValue.GetVector());
-            break;
-        case DatumType::Color:
-            newProp.PushBack(autoProp.mDefaultValue.GetColor());
-            break;
-        case DatumType::Asset:
-            newProp.PushBack(autoProp.mDefaultValue.GetAsset());
-            break;
-        case DatumType::Node:
-            newProp.PushBack(autoProp.mDefaultValue.GetNode());
-            break;
-        case DatumType::Byte:
-            newProp.PushBack(autoProp.mDefaultValue.GetByte());
-            break;
-        case DatumType::Short:
-            newProp.PushBack(autoProp.mDefaultValue.GetShort());
-            break;
-        default:
-            break;
+            // For arrays, make it a vector and add all the initial values
+            newProp.MakeVector();
+            for (const Datum& value : autoProp.mArrayValues)
+            {
+                switch (autoProp.mType)
+                {
+                case DatumType::Integer:
+                    newProp.PushBack(value.GetInteger());
+                    break;
+                case DatumType::Float:
+                    newProp.PushBack(value.GetFloat());
+                    break;
+                case DatumType::Bool:
+                    newProp.PushBack(value.GetBool());
+                    break;
+                case DatumType::String:
+                    newProp.PushBack(value.GetString());
+                    break;
+                case DatumType::Vector2D:
+                    newProp.PushBack(value.GetVector2D());
+                    break;
+                case DatumType::Vector:
+                    newProp.PushBack(value.GetVector());
+                    break;
+                case DatumType::Color:
+                    newProp.PushBack(value.GetColor());
+                    break;
+                case DatumType::Asset:
+                    newProp.PushBack(value.GetAsset());
+                    break;
+                case DatumType::Node:
+                    newProp.PushBack(value.GetNode());
+                    break;
+                case DatumType::Byte:
+                    newProp.PushBack(value.GetByte());
+                    break;
+                case DatumType::Short:
+                    newProp.PushBack(value.GetShort());
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+        else
+        {
+            // Set the initial value for non-array properties
+            switch (autoProp.mType)
+            {
+            case DatumType::Integer:
+                newProp.PushBack(autoProp.mDefaultValue.GetInteger());
+                break;
+            case DatumType::Float:
+                newProp.PushBack(autoProp.mDefaultValue.GetFloat());
+                break;
+            case DatumType::Bool:
+                newProp.PushBack(autoProp.mDefaultValue.GetBool());
+                break;
+            case DatumType::String:
+                newProp.PushBack(autoProp.mDefaultValue.GetString());
+                break;
+            case DatumType::Vector2D:
+                newProp.PushBack(autoProp.mDefaultValue.GetVector2D());
+                break;
+            case DatumType::Vector:
+                newProp.PushBack(autoProp.mDefaultValue.GetVector());
+                break;
+            case DatumType::Color:
+                newProp.PushBack(autoProp.mDefaultValue.GetColor());
+                break;
+            case DatumType::Asset:
+                newProp.PushBack(autoProp.mDefaultValue.GetAsset());
+                break;
+            case DatumType::Node:
+                newProp.PushBack(autoProp.mDefaultValue.GetNode());
+                break;
+            case DatumType::Byte:
+                newProp.PushBack(autoProp.mDefaultValue.GetByte());
+                break;
+            case DatumType::Short:
+                newProp.PushBack(autoProp.mDefaultValue.GetShort());
+                break;
+            default:
+                break;
+            }
         }
         
         mScriptProps.push_back(newProp);
@@ -1159,9 +1229,25 @@ void Script::UploadDatum(Datum& datum, const char* varName)
 
         if (arrayTableIdx != -1)
         {
-            // Set value at count + 1 to nil
-            lua_pushnil(L);
-            lua_seti(L, arrayTableIdx, count + 1);
+            // For arrays, we need to clear all elements beyond the current count
+            // Start from count + 1 and clear until we find a nil value
+            int clearIndex = count + 1;
+            while (true)
+            {
+                lua_geti(L, arrayTableIdx, clearIndex);
+                bool isNil = lua_isnil(L, -1);
+                lua_pop(L, 1); // pop the value we just checked
+                
+                if (isNil)
+                {
+                    break; // No more elements to clear
+                }
+                
+                // Set this index to nil
+                lua_pushnil(L);
+                lua_seti(L, arrayTableIdx, clearIndex);
+                clearIndex++;
+            }
 
             // Pop array table.
             lua_pop(L, 1);

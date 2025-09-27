@@ -1799,7 +1799,6 @@ void Datum::Destroy()
         mData.vp != nullptr)
     {
         OCT_ASSERT(mType != DatumType::Count);
-        OCT_ASSERT(mCount > 0);
 
         for (uint32_t i = 0; i < mCount; i++)
         {
