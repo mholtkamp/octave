@@ -836,12 +836,15 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f); // Add a border for better visibility
         
         // Use flags to ensure the dropdown stays on top
-        ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | 
-                                ImGuiWindowFlags_NoResize | 
-                                ImGuiWindowFlags_NoMove | 
-                                ImGuiWindowFlags_NoSavedSettings |
-                                ImGuiWindowFlags_AlwaysAutoResize |
-                                ImGuiWindowFlags_Tooltip; // Use tooltip flag to ensure it draws on top
+        // Disabling mouse control because there are some issues that I can't figure out.
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoSavedSettings |
+            ImGuiWindowFlags_AlwaysAutoResize |
+            ImGuiWindowFlags_Tooltip | // Use tooltip flag to ensure it draws on top
+            ImGuiWindowFlags_NoMouseInputs |
+            ImGuiWindowFlags_NoScrollbar;
         
         if (ImGui::Begin(dropdownId, nullptr, flags))
         {
@@ -851,6 +854,7 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
             bool tabPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab));
             bool enterPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter));
             bool escapePressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape));
+            bool backspacePressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Backspace));
             
             // Handle keyboard navigation
             if (upArrowPressed)
@@ -915,6 +919,11 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
                 
                 // Consume the event
                 ImGui::GetIO().KeysDown[ImGui::GetKeyIndex(ImGuiKey_Escape)] = false;
+            }
+
+            if (inputText == "" && backspacePressed)
+            {
+                selectedIndex = -1;
             }
             
             // Display filtered items
