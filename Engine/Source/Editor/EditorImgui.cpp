@@ -33,6 +33,7 @@
 #include "EditorState.h"
 
 #include <functional>
+#include <algorithm>
 
 // TODO: If we ever support an OpenGL backend, gotta change this.
 #include "backends/imgui_impl_vulkan.cpp"
@@ -752,6 +753,224 @@ static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, Prop
     }
 }
 
+// A reusable autocomplete dropdown function that works with various input types
+// Returns true if a selection was made, and updates the input string
+template<typename FilterFuncType>
+static bool DrawAutocompleteDropdown(const char* dropdownId, 
+                                     std::string& inputText, 
+                                     const std::vector<std::string>& suggestions, 
+                                     FilterFuncType filterFunc,
+                                     bool forceActive = false)
+{
+    bool selectionMade = false;
+    
+    // Use static variables with the ID to handle multiple instances correctly
+    static ImGuiID activeDropdownId = 0;
+    static size_t selectedIndex = 0;
+    static bool hasSelection = false;
+    static bool dropdownActive = false;
+    static std::string lastInputText = "";
+    static std::vector<std::string> filteredItems;
+    
+    // If forceActive is true, force the dropdown to show
+    if (forceActive) {
+        dropdownActive = true;
+    }
+    
+    // Check if this is the active dropdown
+    ImGuiID inputId = ImGui::GetItemID();
+    bool isInputActive = ImGui::IsItemActive();
+    bool isInputFocused = ImGui::IsItemFocused();
+    
+    // If we have a new active item, reset state
+    if (activeDropdownId != inputId && (isInputActive || isInputFocused))
+    {
+        activeDropdownId = inputId;
+        hasSelection = false;
+        dropdownActive = true; // Set to true to ensure dropdown shows
+        selectedIndex = 0;
+    }
+    // Only hide dropdown when input completely loses focus
+    // This prevents the dropdown from disappearing immediately when clicking on it
+    else if (!isInputActive && !isInputFocused && activeDropdownId == inputId)
+    {
+        // Use a small delay to allow interaction with the dropdown itself
+        static float hideTimer = 0.0f;
+        if (hideTimer > 0.1f) {
+            dropdownActive = false;
+            hideTimer = 0.0f;
+        } else {
+            hideTimer += ImGui::GetIO().DeltaTime;
+        }
+    }
+    
+    // Always update filtered items, don't just update when text changes
+    // This ensures navigation works even with text entered
+    filteredItems.clear();
+    for (const auto& suggestion : suggestions)
+    {
+        if (filterFunc(suggestion, inputText))
+        {
+            filteredItems.push_back(suggestion);
+        }
+    }
+    
+    // Only show dropdown when we have filtered items and the dropdown is active
+    // Either the input should be active/focused OR we're in the process of selecting an item
+    if (!filteredItems.empty() && dropdownActive && (isInputActive || isInputFocused || activeDropdownId == inputId))
+    {
+        activeDropdownId = inputId; // Keep track of which dropdown is active
+        
+        // Calculate popup position below the input field
+        ImVec2 inputPos = ImGui::GetItemRectMin();
+        ImVec2 inputSize = ImGui::GetItemRectSize();
+        ImGui::SetNextWindowPos(ImVec2(inputPos.x, inputPos.y + inputSize.y));
+        
+        // Set maximum height for 4 items plus a bit of padding
+        const float itemHeight = ImGui::GetTextLineHeightWithSpacing();
+        const float maxHeight = itemHeight * 4 + ImGui::GetStyle().WindowPadding.y * 2;
+        ImGui::SetNextWindowSizeConstraints(ImVec2(inputSize.x, 0), ImVec2(inputSize.x, maxHeight));
+        
+        // Make sure the dropdown appears above other elements
+        ImGui::SetNextWindowBgAlpha(1.0f); // Fully opaque background
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f); // Add a border for better visibility
+        
+        // Use flags to ensure the dropdown stays on top
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | 
+                                ImGuiWindowFlags_NoResize | 
+                                ImGuiWindowFlags_NoMove | 
+                                ImGuiWindowFlags_NoSavedSettings |
+                                ImGuiWindowFlags_AlwaysAutoResize |
+                                ImGuiWindowFlags_Tooltip; // Use tooltip flag to ensure it draws on top
+        
+        if (ImGui::Begin(dropdownId, nullptr, flags))
+        {
+            // Get current key state
+            bool upArrowPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow));
+            bool downArrowPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow));
+            bool tabPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab));
+            bool enterPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter));
+            bool escapePressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape));
+            
+            // Handle keyboard navigation
+            if (upArrowPressed)
+            {
+                if (!hasSelection && !filteredItems.empty())
+                {
+                    selectedIndex = filteredItems.size() - 1;
+                    hasSelection = true;
+                }
+                else if (hasSelection)
+                {
+                    selectedIndex = (selectedIndex > 0) ? selectedIndex - 1 : filteredItems.size() - 1;
+                }
+                
+                // Consume the event
+                ImGui::GetIO().KeysDown[ImGui::GetKeyIndex(ImGuiKey_UpArrow)] = false;
+            }
+            else if (downArrowPressed || tabPressed)
+            {
+                if (!hasSelection && !filteredItems.empty())
+                {
+                    selectedIndex = 0;
+                    hasSelection = true;
+                }
+                else if (hasSelection)
+                {
+                    selectedIndex = (selectedIndex + 1) % filteredItems.size();
+                }
+                
+                // Consume the events
+                if (downArrowPressed)
+                    ImGui::GetIO().KeysDown[ImGui::GetKeyIndex(ImGuiKey_DownArrow)] = false;
+                if (tabPressed)
+                    ImGui::GetIO().KeysDown[ImGui::GetKeyIndex(ImGuiKey_Tab)] = false;
+            }
+            else if (enterPressed)
+            {
+                // Always hide dropdown when Enter is pressed
+                dropdownActive = false;
+                
+                if (hasSelection && selectedIndex < filteredItems.size())
+                {
+                    inputText = filteredItems[selectedIndex];
+                    selectionMade = true;
+                }
+                else if (inputText.empty())
+                {
+                    // If Enter is pressed with empty input, set to null
+                    inputText = "null";
+                    selectionMade = true;
+                }
+                
+                ImGui::CloseCurrentPopup();
+                
+                // Consume the event
+                ImGui::GetIO().KeysDown[ImGui::GetKeyIndex(ImGuiKey_Enter)] = false;
+            }
+            else if (escapePressed)
+            {
+                dropdownActive = false;
+                ImGui::CloseCurrentPopup();
+                
+                // Consume the event
+                ImGui::GetIO().KeysDown[ImGui::GetKeyIndex(ImGuiKey_Escape)] = false;
+            }
+            
+            // Display filtered items
+            // Ensure the selected item is always visible by scrolling to it
+            if (hasSelection && selectedIndex < filteredItems.size())
+            {
+                // Calculate where we need to scroll to make the selected item visible
+                float itemHeight = ImGui::GetTextLineHeightWithSpacing();
+                float targetY = itemHeight * selectedIndex;
+                
+                // ImGui will handle the scrolling if we set focus on the selected item
+                // We'll also make sure to scroll into view if arrow keys are pressed
+                if (upArrowPressed || downArrowPressed)
+                {
+                    ImGui::SetScrollY(targetY - itemHeight); // Position selected item one row from top
+                }
+            }
+
+            // Display all filtered items in a scrollable area
+            for (size_t i = 0; i < filteredItems.size(); i++)
+            {
+                bool isSelected = (hasSelection && i == selectedIndex);
+                
+                if (isSelected)
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
+                
+                // Only make selection on click, don't autofill
+                bool clicked = ImGui::Selectable(filteredItems[i].c_str(), isSelected);
+                
+                if (isSelected)
+                {
+                    ImGui::SetItemDefaultFocus(); // This also scrolls to make the item visible
+                    ImGui::PopStyleColor();
+                }
+                
+                if (clicked)
+                {
+                    inputText = filteredItems[i];
+                    selectionMade = true;
+                    dropdownActive = false;
+                }
+            }
+        }
+        ImGui::End();
+        ImGui::PopStyleVar(); // Pop the window border style
+    }
+    else if (filteredItems.empty() && isInputActive)
+    {
+        // Only hide the dropdown if there are no filtered items AND the input is active
+        // This way we don't hide it when the user is trying to interact with it
+        dropdownActive = false;
+    }
+    
+    return selectionMade;
+}
+
 static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOwnerType ownerType)
 {
     Asset* asset = prop.GetAsset(index);
@@ -809,9 +1028,101 @@ static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, Pro
     static std::string sTempString;
     sTempString = asset ? asset->GetName() : "";
 
-    ImGui::InputText("##AssetNameStr", &sTempString);
+    // Create a unique ID for this input
+    ImGui::PushID((prop.mName + std::to_string(index)).c_str());
+    
+    // Use ImGui::InputText and get the active status for the dropdown
+    // Capture keys to prevent input field from intercepting arrow keys
+    ImGuiInputTextFlags flags = ImGuiInputTextFlags_None;
+    if (ImGui::IsItemFocused() || ImGui::IsItemActive()) {
+        // If dropdown is about to be shown, don't allow up/down keys to affect the input
+        flags |= ImGuiInputTextFlags_CharsNoBlank;
+    }
+    
+    // Check if input will be activated this frame
+    bool willBeActivated = ImGui::IsItemHovered() && ImGui::IsMouseClicked(0);
+    
+    bool textActive = ImGui::InputText("##AssetNameStr", &sTempString, flags);
+    bool isInputFocused = ImGui::IsItemFocused();
+    bool isInputActivated = ImGui::IsItemActivated();
+    
+    // If we have an extra property with type information, use it to filter assets
+    TypeId assetTypeFilter = 0;
+    if (prop.mExtra)
+    {
+        assetTypeFilter = (TypeId)prop.mExtra->GetInteger();
+    }
 
-    if (ImGui::IsItemDeactivatedAfterEdit())
+    // Get asset suggestions based on type
+    static std::vector<std::string> assetSuggestions;
+    static TypeId lastAssetTypeFilter = 0;
+    static double lastUpdateTime = 0.0;
+    double currentTime = ImGui::GetTime();
+
+    // Only refresh the suggestions list occasionally to avoid performance issues
+    if (assetTypeFilter != lastAssetTypeFilter || currentTime - lastUpdateTime > 2.0)
+    {
+        assetSuggestions.clear();
+        const auto& assetMap = AssetManager::Get()->GetAssetMap();
+        
+        for (const auto& pair : assetMap)
+        {
+            AssetStub* stub = pair.second;
+            // If assetTypeFilter is 0 or matches the asset type, add it to suggestions
+            bool typeMatches = false;
+            
+            if (assetTypeFilter == 0)
+            {
+                typeMatches = true; // Accept all types when no filter
+            }
+            else if (stub)
+            {
+                // Check for exact type match
+                if (stub->mType == assetTypeFilter)
+                {
+                    typeMatches = true;
+                }
+                // Special handling for Material types
+                else if (assetTypeFilter == Material::GetStaticType() && 
+                         (stub->mType == MaterialBase::GetStaticType() ||
+                          stub->mType == MaterialInstance::GetStaticType() ||
+                          stub->mType == MaterialLite::GetStaticType()))
+                {
+                    typeMatches = true;
+                }
+            }
+            
+            if (stub && typeMatches)
+            {
+                assetSuggestions.push_back(stub->mName);
+            }
+        }
+        
+        lastAssetTypeFilter = assetTypeFilter;
+        lastUpdateTime = currentTime;
+    }
+
+    // Define a filter function for our assets
+    auto assetFilter = [](const std::string& suggestion, const std::string& input) {
+        if (input.empty()) return true;
+        // Case-insensitive substring search
+        std::string lowerSuggestion = suggestion;
+        std::string lowerInput = input;
+        std::transform(lowerSuggestion.begin(), lowerSuggestion.end(), lowerSuggestion.begin(), ::tolower);
+        std::transform(lowerInput.begin(), lowerInput.end(), lowerInput.begin(), ::tolower);
+        return lowerSuggestion.find(lowerInput) != std::string::npos;
+    };
+
+    // Draw the autocomplete dropdown for asset selection
+    // Force the dropdown to be active when the input is activated or text changes
+    bool selectionMade = DrawAutocompleteDropdown("AssetAutocomplete", sTempString, assetSuggestions, assetFilter, 
+                                                isInputActivated || textActive || willBeActivated);
+    
+    // Pop the ID we pushed earlier
+    ImGui::PopID();
+
+    // If a selection was made or the input was deactivated after editing, apply the change
+    if (selectionMade || ImGui::IsItemDeactivatedAfterEdit())
     {
         if (sTempString == "null" ||
             sTempString == "NULL" ||
