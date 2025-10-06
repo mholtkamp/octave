@@ -14,7 +14,7 @@
 #include "Graphics/GraphicsTypes.h"
 #include "Input/InputTypes.h"
 
-#include <Bullet/BulletCollision/CollisionDispatch/btCollisionWorld.h>
+#include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 
 #if LUA_ENABLED
 #include <Lua/lua.hpp>
