@@ -1838,7 +1838,11 @@ void Script::CreateScriptInstance()
         }
         else
         {
-            LogError("Failed to create script instance. Class has not been loaded.");
+            std::string ownerName = "Null";
+            if (mOwner != nullptr){
+                ownerName = mOwner->GetName();
+            }
+            LogError("Failed to create script instance: %s.lua. It is attached to Node: %s. Class has not been loaded.", mClassName, ownerName);
         }
     }
 #endif
