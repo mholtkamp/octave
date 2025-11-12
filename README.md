@@ -63,7 +63,7 @@ Instructions for building from source below.
 
 ## Packaging
 1. When packaging for any platform on a Windows machine, you will likely need to install Msys2 so that linux commands can be executed. This comes packaged along with devkitPro libraries, so you if you install the devkitPro libraries, you shouldn't need to worry about this.
-2. Packaging for Andorid requires installing Android Studio (Last tested with Android Studio 2022.2.1 Patch 2) with the following tools installed via the SDK Manager:
+2. Packaging for Android requires installing Android Studio (Last tested with Android Studio 2022.2.1 Patch 2) with the following tools installed via the SDK Manager:
     - Android SDK Build Tools: 34.0.0
     - Android NDK (Side by side): 25.2.9519653
     - CMake: 3.22.1
