@@ -3251,7 +3251,8 @@ static void DrawViewportPanel()
             const std::vector<std::string>& recentProjects = GetEditorState()->mRecentProjects;
             for (uint32_t i = 0; i < recentProjects.size(); ++i)
             {
-                if (ImGui::MenuItem(recentProjects[i].c_str()))
+                if (recentProjects[i] != "" &&
+                    ImGui::MenuItem(recentProjects[i].c_str()))
                 {
                     am->OpenProject(recentProjects[i].c_str());
                 }
