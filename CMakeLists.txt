@@ -1,6 +1,7 @@
-project(octave)
 # Version 3.7 needed for find_vulkan
 cmake_minimum_required(VERSION 3.7)
+
+project(octave)
 
 add_subdirectory(External)
 
