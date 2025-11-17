@@ -1,4 +1,9 @@
+<p align="center">
+  <img src="OctaveLogo_128.png"/>
+</p>
+
 # Octave
+
 A 3D Game Engine for GameCube, Wii, 3DS, Windows, Linux, and Android
 
 [Tutorial Video](https://youtu.be/0CHLn0ie-DY?si=pq-s_hLgb71OX2Cc)
@@ -32,7 +37,7 @@ Instructions for building from source below.
 5. Install Vulkan SDK version 1.3.275.0
     - Download the 1.3.275.0 tar file from https://vulkan.lunarg.com/sdk/home#linux
     - Extract the tar file somewhere (e.g. ~/VulkanSDK/)
-    - Add these to your ~/.bashrc file (replace `~/VulkanSDK` with the directory where you extracted the files to)
+    - Add these to your ~/.bashrc file (replace `~/VulkanSDK` with the directory where you extracted the files to). You may instead add these to a .sh file in your /etc/profiles.d directory to set up Vulkan for all users.
         ```
         export VULKAN_SDK=~/VulkanSDK/1.3.275.0/x86_64
         export PATH=$VULKAN_SDK/bin:$PATH
@@ -48,6 +53,7 @@ Instructions for building from source below.
     - sudo dkp-pacman -S gamecube-dev
     - sudo dkp-pacman -S wii-dev
     - sudo dkp-pacman -S 3ds-dev
+    - Restart computer
 8. cd Engine/Shaders/GLSL/ then run ./compile.sh
 
 ### Linux Setup (Visual Studio Code)
@@ -67,3 +73,12 @@ Instructions for building from source below.
     - Android SDK Build Tools: 34.0.0
     - Android NDK (Side by side): 25.2.9519653
     - CMake: 3.22.1
+
+## CMake Support
+CMake support is currently a work-in-progress, and only Linux support has been implemented and tested. If you want to try building with CMake, here are some tips:
+ - Make sure you pull all submodules `git submodule update --init --recursive`
+ - Install pkg-config `sudo apt install pkg-config`
+ - Install vorbis dev libraries `sudo apt install libvorbis-dev`
+
+## Special Thanks
+ - Octave logo designed by overcookedchips.
