@@ -309,7 +309,10 @@ public:
 
     WeakPtr(const WeakPtr<T>& src)
     {
-        Set(src.mPointer, src.mRefCount);
+        if (src.IsValid())
+        {
+            Set(src.mPointer, src.mRefCount);
+        }
     }
 
     WeakPtr(const SharedPtr<T>& src)
@@ -338,7 +341,15 @@ public:
 
     WeakPtr<T>& operator=(const WeakPtr<T>& src)
     {
-        Set(src.mPointer, src.mRefCount);
+        if (src.IsValid())
+        {
+            Set(src.mPointer, src.mRefCount);
+        }
+        else
+        {
+            Clear();
+        }
+
         return *this;
     }
 
@@ -416,6 +427,11 @@ public:
     {
         // We must always receive a valid refcount if given a valid pointer.
         OCT_ASSERT((pointer != nullptr) == (refCount != nullptr));
+
+        if (!IsValid())
+        {
+            Clear();
+        }
 
         if (mPointer != pointer)
         {
