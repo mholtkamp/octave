@@ -1842,7 +1842,7 @@ void Script::CreateScriptInstance()
             if (mOwner != nullptr){
                 ownerName = mOwner->GetName();
             }
-            LogError("Failed to create script instance: %s.lua. It is attached to Node: %s. Class has not been loaded.", mClassName, ownerName);
+            LogError("Failed to create script instance: %s.lua. It is attached to Node: %s. Class has not been loaded.", mClassName.c_str(), ownerName.c_str());
         }
     }
 #endif
