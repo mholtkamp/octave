@@ -258,6 +258,54 @@ bool AssetManager::IsPurging() const
     return mPurging;
 }
 
+void AssetManager::DiscoverDirectory(AssetDir* directory, bool engineDir)
+{
+    std::vector<std::string> subDirectories;
+    DirEntry dirEntry = { };
+
+    SYS_OpenDirectory(directory->mPath, dirEntry);
+
+    while (dirEntry.mValid)
+    {
+        if (dirEntry.mDirectory)
+        {
+            // Ignore this directory and parent directory.
+            if (dirEntry.mFilename[0] != '.')
+            {
+                subDirectories.push_back(dirEntry.mFilename);
+            }
+        }
+        else
+        {
+            // TODO: Read the asset header to check the asset type.
+            const char* extension = strrchr(dirEntry.mFilename, '.');
+
+            if (extension != nullptr &&
+                strcmp(extension, ".oct") == 0)
+            {
+                Stream stream;
+                std::string path = directory->mPath + dirEntry.mFilename;
+                stream.ReadFile(path.c_str(), true, sizeof(AssetHeader));
+
+                AssetHeader header = Asset::ReadHeader(stream);
+                RegisterAsset(dirEntry.mFilename, header.mType, directory, nullptr, engineDir);
+            }
+        }
+
+        SYS_IterateDirectory(dirEntry);
+    }
+
+    SYS_CloseDirectory(dirEntry);
+
+    // Discover assets of subdirectories.
+    for (uint32_t i = 0; i < subDirectories.size(); ++i)
+    {
+        std::string dirPath = directory->mPath + subDirectories[i] + "/";
+        AssetDir* subDir = new AssetDir(subDirectories[i], dirPath, directory);
+        DiscoverDirectory(subDir, engineDir);
+    }
+};
+
 void AssetManager::Discover(const char* directoryName, const char* directoryPath)
 {
     SCOPED_STAT("DiscoverAssets");
@@ -277,56 +325,7 @@ void AssetManager::Discover(const char* directoryName, const char* directoryPath
     // and register an Asset to the map. At this point, we also want to read the oct 
     // header and determine the asset type so we can instantiate the correct Asset derived class.
 
-    std::function<void(AssetDir*, bool)> searchDirectory = [&](AssetDir* directory, bool engineDir)
-    {
-
-        std::vector<std::string> subDirectories;
-        DirEntry dirEntry = { };
-
-        SYS_OpenDirectory(directory->mPath, dirEntry);
-
-        while (dirEntry.mValid)
-        {
-            if (dirEntry.mDirectory)
-            {
-                // Ignore this directory and parent directory.
-                if (dirEntry.mFilename[0] != '.')
-                {
-                    subDirectories.push_back(dirEntry.mFilename);
-                }
-            }
-            else
-            {
-                // TODO: Read the asset header to check the asset type.
-                const char* extension = strrchr(dirEntry.mFilename, '.');
-
-                if (extension != nullptr &&
-                    strcmp(extension, ".oct") == 0)
-                {
-                    Stream stream;
-                    std::string path = directory->mPath + dirEntry.mFilename;
-                    stream.ReadFile(path.c_str(), true, sizeof(AssetHeader));
-
-                    AssetHeader header = Asset::ReadHeader(stream);
-                    RegisterAsset(dirEntry.mFilename, header.mType, directory, nullptr, engineDir);
-                }
-            }
-
-            SYS_IterateDirectory(dirEntry);
-        }
-
-        SYS_CloseDirectory(dirEntry);
-
-        // Discover assets of subdirectories.
-        for (uint32_t i = 0; i < subDirectories.size(); ++i)
-        {
-            std::string dirPath = directory->mPath + subDirectories[i] + "/";
-            AssetDir* subDir = new AssetDir(subDirectories[i], dirPath, directory);
-            searchDirectory(subDir, engineDir);
-        }
-    };
-
-    searchDirectory(newDir, isEngineDir);
+    DiscoverDirectory(newDir, isEngineDir);
 }
 
 void AssetManager::DiscoverAssetRegistry(const char* registryPath)
@@ -619,6 +618,7 @@ void AssetManager::ImportEngineAssets()
         AssetDir* engineMeshes = engineDir->CreateSubdirectory("Meshes");
         AssetDir* engineParticles = engineDir->CreateSubdirectory("Particles");
         AssetDir* engineFonts = engineDir->CreateSubdirectory("Fonts");
+        AssetDir* engineScenes = engineDir->CreateSubdirectory("Scenes");
 
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_White");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Black");
@@ -687,6 +687,9 @@ void AssetManager::ImportEngineAssets()
         fontRoboto32->GetTexture()->SetFormat(PixelFormat::LA4);
         Font* fontRobotoMono16 = (Font*)ImportEngineAsset(Font::GetStaticType(), engineFonts, "F_RobotoMono16");
         fontRobotoMono16->GetTexture()->SetFormat(PixelFormat::LA4);
+
+        // Load non-transient engine assets
+        DiscoverDirectory(engineScenes, true);
 
         // Mark any transient assets that exist at this point as engine assets
         for (uint32_t i = 0; i < mTransientAssets.size(); ++i)

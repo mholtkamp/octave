@@ -75,6 +75,7 @@ public:
 
     void Initialize();
     void Update(float deltaTime);
+    void DiscoverDirectory(AssetDir* directory, bool engineDir);
     void Discover(const char* directoryName, const char* directoryPath);
     void DiscoverAssetRegistry(const char* registryPath);
     void DiscoverEmbeddedAssets(struct EmbeddedFile* assets, uint32_t numAssets);

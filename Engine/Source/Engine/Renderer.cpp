@@ -95,9 +95,6 @@ void Renderer::Initialize()
 {
     SCOPED_STAT("Renderer::Initialize")
 
-#if EDITOR
-    AssetManager::Get()->ImportEngineAssets();
-#endif
     LoadDefaultTextures();
     LoadDefaultMaterials();
     LoadDefaultMeshes();

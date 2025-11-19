@@ -918,20 +918,6 @@ void EditorState::OpenEditScene(int32_t idx)
                     std::vector<Property> dstProps;
                     newNode->GatherProperties(dstProps);
                     CopyPropertyValues(dstProps, *nonDefProps);
-
-                    // Find pending node paths
-                    for (auto& prop : *nonDefProps)
-                    {
-                        if (prop.mType == DatumType::Node &&
-                            prop.mExtra != nullptr)
-                        {
-                            PendingNodePath pendingPath;
-                            pendingPath.mNode = newNode;
-                            pendingPath.mPropName = prop.mName;
-                            pendingPath.mPath = *prop.mExtra;
-                            pendingNodePaths.push_back(pendingPath);
-                        }
-                    }
                 }
 
                 if (subSceneOverrides != nullptr)
@@ -952,7 +938,7 @@ void EditorState::OpenEditScene(int32_t idx)
         {
             editScene.mRootNode->Traverse(respawnSceneLinks);
 
-            ResolvePendingNodePaths(pendingNodePaths);
+            ResolveAllNodePathsRecursive(editScene.mRootNode.Get());
 
             if (editScene.mRootNode->IsNode3D())
                 GetEditorState()->SetEditorMode(EditorMode::Scene3D);

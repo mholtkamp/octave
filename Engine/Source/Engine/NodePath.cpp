@@ -1,6 +1,7 @@
 #include "NodePath.h"
 #include "Nodes/Node.h"
 #include "Property.h"
+#include "Script.h"
 
 std::string FindRelativeNodePath(Node* src, Node* dst)
 {
@@ -96,7 +97,7 @@ void ResolveNodePaths(Node* node, bool recurseChildren)
                 prop.SetNode(ResolveWeakPtr<Node>(dst), i);
             }
 
-            prop.DestroyExtraData();
+            //prop.DestroyExtraData();
         }
     }
 }
@@ -204,6 +205,41 @@ void ResolvePendingNodePaths(std::vector<PendingNodePath>& pending)
     }
 }
 
+void ResolveAllNodePathsRecursive(Node* node)
+{
+    auto resolvePaths = [](Node* node, std::vector<Property>& props)
+    {
+        for (uint32_t p = 0; p < props.size(); ++p)
+        {
+            Property& prop = props[p];
+            if (prop.mType == DatumType::Node &&
+                prop.mExtra != nullptr)
+            {
+                for (uint32_t c = 0; c < prop.GetCount(); ++c)
+                {
+                    Node* targetNode = ResolveNodePath(node, prop.mExtra->GetString(c));
+                    prop.SetNode(ResolveWeakPtr(targetNode), c);
+                }
+            }
+        }
+    };
+
+    std::vector<Property> props;
+    node->GatherProperties(props);
+    resolvePaths(node, props);
+
+    if (node->GetScript())
+    {
+        std::vector<Property>& scriptProps = node->GetScript()->GetScriptProperties();
+        resolvePaths(node, scriptProps);
+    }
+
+    for (uint32_t c = 0; c < node->GetNumChildren(); ++c)
+    {
+        ResolveAllNodePathsRecursive(node->GetChild(c));
+    }
+}
+
 void RecordNodePaths(Node* node, std::vector<Property>& props)
 {
     // Find node paths for Node properties
@@ -213,6 +249,7 @@ void RecordNodePaths(Node* node, std::vector<Property>& props)
         if (prop.mType == DatumType::Node)
         {
             prop.CreateExtraData();
+            prop.mExtra->Destroy();
 
             for (uint32_t c = 0; c < prop.mCount; ++c)
             {

@@ -274,7 +274,7 @@ NodePtr Scene::Instantiate()
 
             if (i > 0 && nodeList.size() <= mNodeDefs[i].mParentIndex)
             {
-                LogError("zzz Out-of-order parent for node: %s", mNodeDefs[i].mName.c_str());
+                LogError("Out-of-order parent for node: %s", mNodeDefs[i].mName.c_str());
                 parent = nodeList[0];
             }
 
@@ -377,6 +377,20 @@ NodePtr Scene::Instantiate()
                 for (auto& over : mNodeDefs[i].mSubSceneOverrides)
                 {
                     ApplySubSceneOverride(node, over);
+
+                    for (const auto& prop : over.mProperties)
+                    {
+                        if (prop.mType == DatumType::Node)
+                        {
+                            Node* targ = ResolveNodePath(node, over.mPath);
+
+                            PendingNodePath path;
+                            path.mNode = ResolvePtr<Node>(targ);
+                            path.mPropName = prop.mName;
+                            path.mPath = *prop.mExtra;
+                            sPendingNodePaths.push_back(path);
+                        }
+                    }
                 }
             }
 

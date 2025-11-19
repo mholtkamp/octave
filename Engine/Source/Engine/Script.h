@@ -101,6 +101,7 @@ public:
     void SetArrayScriptPropCount(const std::string& name, uint32_t count);
     void UploadScriptProperties();
     const std::vector<Property>& GetScriptProperties() const;
+    std::vector<Property>& GetScriptProperties();
     void SetScriptProperties(const std::vector<Property>& srcProps);
 
     // Auto property support

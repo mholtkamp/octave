@@ -540,6 +540,37 @@ int Node_Lua::FindChildWithTag(lua_State* L)
     return 1;
 }
 
+int Node_Lua::FindChildOfType(lua_State* L)
+{
+    Node* node = CHECK_NODE(L, 1);
+    const char* typeName = CHECK_STRING(L, 2);
+    bool recurse = false;
+
+    if (!lua_isnone(L, 3)) { recurse = CHECK_BOOLEAN(L, 3); }
+
+    Node* foundChild = nullptr;
+
+    if (node)
+    {
+        node->Traverse(
+            [&](Node* node) -> bool
+            {
+                if (node->Is(typeName))
+                {
+                    foundChild = node;
+                    return false;
+                }
+
+                return true;
+            }
+        );
+    }
+
+    Node_Lua::Create(L, foundChild);
+    return 1;
+}
+
+
 int Node_Lua::FindDescendant(lua_State* L)
 {
     Node* node = CHECK_NODE(L, 1);
@@ -1146,6 +1177,8 @@ void Node_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, FindChild);
 
     REGISTER_TABLE_FUNC(L, mtIndex, FindChildWithTag);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, FindChildOfType);
 
     REGISTER_TABLE_FUNC(L, mtIndex, FindDescendant);
 

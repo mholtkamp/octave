@@ -444,6 +444,11 @@ const std::vector<Property>& Script::GetScriptProperties() const
     return mScriptProps;
 }
 
+std::vector<Property>& Script::GetScriptProperties()
+{
+    return mScriptProps;
+}
+
 void Script::SetScriptProperties(const std::vector<Property>& srcProps)
 {
     CopyPropertyValues(mScriptProps, srcProps);

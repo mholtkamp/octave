@@ -336,6 +336,10 @@ bool Initialize()
         NET_Initialize();
     }
 
+#if EDITOR
+    AssetManager::Get()->ImportEngineAssets();
+#endif
+
     renderer->Initialize();
     NetworkManager::Get()->Initialize();
 

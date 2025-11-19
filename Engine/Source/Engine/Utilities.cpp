@@ -20,6 +20,8 @@
 
 #include <btBulletDynamicsCommon.h>
 
+#include "Script.h"
+
 #if LUA_ENABLED
 #include "LuaBindings/Vector_Lua.h"
 #include "LuaBindings/Asset_Lua.h"
@@ -444,6 +446,13 @@ void CopyPropertyValues(std::vector<Property>& dstProps, const std::vector<Prope
             }
             
             dstProp->SetValue(srcProp->mData.vp, 0, srcProp->mCount);
+
+            // Copy extra data (needed for node paths).
+            if (srcProp->mExtra)
+            {
+                dstProp->CreateExtraData();
+                *dstProp->mExtra = *srcProp->mExtra;
+            }
         }
     }
 }
@@ -577,6 +586,18 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props, NodePt
                 props.push_back(Property());
                 Property& prop = props.back();
                 prop.DeepCopy(extProps[i], true);
+
+                if (prop.mType == DatumType::Node)
+                {
+                    prop.CreateExtraData();
+                    prop.mExtra->Destroy();
+
+                    for (uint32_t index = 0; index < prop.GetCount(); ++index)
+                    {
+                        std::string path = FindRelativeNodePath(node, prop.GetNode(index).Get());
+                        prop.mExtra->PushBack(path);
+                    }
+                }
             }
         }
     }
@@ -643,9 +664,8 @@ void ApplySubSceneOverride(Node* sceneRoot, const SubSceneOverride& over)
     // Need to copy properties a second time to change newly created script properties.
     if (dst->GetScript() != nullptr)
     {
-        dstProps.clear();
-        dst->GatherProperties(dstProps);
-        CopyPropertyValues(dstProps, over.mProperties);
+        std::vector<Property>& scriptDstProps = dst->GetScript()->GetScriptProperties();
+        CopyPropertyValues(scriptDstProps, over.mProperties);
     }
 }
 

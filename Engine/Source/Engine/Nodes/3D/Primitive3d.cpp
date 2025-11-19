@@ -749,6 +749,9 @@ void Primitive3D::SetCollisionShape(btCollisionShape* newShape)
 
 bool Primitive3D::SweepToWorldPosition(glm::vec3 position, SweepTestResult& outSweepResult, uint8_t mask, bool testOnly)
 {
+    if (GetWorld() == nullptr)
+        return false;
+
     bool hit = false;
     glm::vec3 startPos = GetWorldPosition();
 
