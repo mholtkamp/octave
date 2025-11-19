@@ -1966,7 +1966,7 @@ void ActionManager::RecaptureAndSaveAllScenes()
 {
     std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
 
-    // This will load all assets! 
+    // This will load all assets!
     for (auto& pair : assetMap)
     {
         if (pair.second->mType == Scene::GetStaticType())
@@ -1984,8 +1984,6 @@ void ActionManager::RecaptureAndSaveAllScenes()
             AssetManager::Get()->SaveAsset(*pair.second);
         }
     }
-
-    ClearWorld();
 }
 
 void ActionManager::ResaveAllAssets()
