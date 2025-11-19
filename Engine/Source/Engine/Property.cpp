@@ -5,6 +5,7 @@
 #include "Log.h"
 #include "Script.h"
 #include "NodePath.h"
+#include "Assets/MaterialLite.h"
 
 Property::Property()
 {
@@ -118,6 +119,26 @@ void Property::ReadStream(Stream& stream, uint32_t version, bool net, bool exter
         mExtra->PushBack(stream.ReadInt32());
     }
 
+    if (version >= ASSET_VERSION_PROPERTY_EMBEDDED_ASSET)
+    {
+        if (mType == DatumType::Asset)
+        {
+            bool embeddedAsset = stream.ReadBool();
+
+            if (embeddedAsset)
+            {
+                uint32_t embeddedType = stream.ReadUint32();
+                Asset* asset = NewTransientAsset(embeddedType);
+                asset->Create();
+
+                OCT_ASSERT(asset);
+                asset->LoadStream(stream, Platform::Count);
+
+                SetAsset(asset, 0);
+            }
+        }
+    }
+
     // We don't really need to write mIsVector since the values are copied
     // over to the script property which already has mIsVector set.
     //mIsVector = stream.ReadBool();
@@ -136,6 +157,23 @@ void Property::WriteStream(Stream& stream, bool net) const
         if (mExtra != nullptr)
         {
             mExtra->WriteStream(stream, net);
+        }
+    }
+
+    if (mType == DatumType::Asset)
+    {
+        bool embeddedAsset = IsEmbeddedAsset();
+        stream.WriteBool(embeddedAsset);
+
+        if (embeddedAsset)
+        {
+            Asset* asset = GetEmbeddedAsset();
+            OCT_ASSERT(asset);
+
+            uint32_t embeddedType = asset->GetType();
+            stream.WriteUint32(embeddedType);
+
+            asset->SaveStream(stream, Platform::Count);
         }
     }
 
@@ -654,6 +692,36 @@ void Property::DestroyExtraData() const
         mExtra = nullptr;
     }
 }
+
+bool Property::IsEmbeddedAsset() const
+{
+    bool embedded = false;
+
+    if (mType == DatumType::Asset && mCount >= 1)
+    {
+        Asset* asset = GetAsset(0);
+        TypeId typeId = asset ? asset->GetType() : 0;
+
+        if (typeId == MaterialEmbedded::GetStaticType())
+        {
+            embedded = true;
+        }
+    }
+
+    return embedded;
+}
+
+Asset* Property::GetEmbeddedAsset() const
+{
+    if (!IsEmbeddedAsset())
+        return nullptr;
+
+    Asset* asset = GetAsset(0);
+    OCT_ASSERT(asset != nullptr);
+
+    return asset;
+}
+
 
 void Property::Reset()
 {

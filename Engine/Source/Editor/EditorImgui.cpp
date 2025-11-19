@@ -657,7 +657,8 @@ static void AssignAssetToProperty(Object* owner, PropertyOwnerType ownerType, Pr
         if (propId == Material::GetStaticType() &&
             (newType == MaterialBase::GetStaticType() ||
              newType == MaterialInstance::GetStaticType() ||
-             newType == MaterialLite::GetStaticType()))
+             newType == MaterialLite::GetStaticType() ||
+             newType == MaterialEmbedded::GetStaticType()))
         {
             matchingType = true;
         }
@@ -984,6 +985,8 @@ static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, Pro
 {
     Asset* asset = prop.GetAsset(index);
     ActionManager* am = ActionManager::Get();
+
+    bool canEmbed = prop.mExtra && prop.mExtra->GetInteger() == int32_t(Material::GetStaticType());
  
     bool useAssetColor = (prop.mExtra != 0);
     if (useAssetColor)
@@ -1004,6 +1007,15 @@ static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, Pro
         if (ImGui::Button("^^") && asset)
         {
             GetEditorState()->InspectObject(asset);
+        }
+    }
+    else if (canEmbed && IsShiftDown())
+    {
+        if (ImGui::Button("++"))
+        {
+            // Create embedded material...
+            MaterialEmbedded* embeddedMat = MaterialEmbedded::New();
+            AssignAssetToProperty(owner, ownerType, prop, index, embeddedMat);
         }
     }
     else

@@ -1370,11 +1370,10 @@ void BindMaterialDescriptorSet(Material* material)
         Renderer* renderer = Renderer::Get();
         for (uint32_t i = 0; i < 4; ++i)
         {
-            Texture* texture = textures[i];
-            if (texture == nullptr)
+            if (textures[i] == nullptr)
             {
-                texture = renderer->mWhiteTexture.Get<Texture>();
-                OCT_ASSERT(texture != nullptr);
+                textures[i] = renderer->mWhiteTexture.Get<Texture>();
+                OCT_ASSERT(textures[i] != nullptr);
             }
         }
 

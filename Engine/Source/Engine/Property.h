@@ -47,6 +47,9 @@ public:
     void CreateExtraData() const;
     void DestroyExtraData() const;
 
+    bool IsEmbeddedAsset() const;
+    Asset* GetEmbeddedAsset() const;
+
 #if EDITOR
     static void SetCategory(const char* category);
     static void ClearCategory();

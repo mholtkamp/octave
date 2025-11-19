@@ -151,3 +151,10 @@ T* NewTransientAsset()
 
     // Caller still needs to call Create() when ready!
 }
+
+inline Asset* NewTransientAsset(TypeId typeId)
+{
+    Asset* ret = Asset::CreateInstance(typeId);
+    AssetManager::Get()->RegisterTransientAsset(ret);
+    return ret;
+}

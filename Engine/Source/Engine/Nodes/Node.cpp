@@ -339,6 +339,14 @@ void Node::Copy(Node* srcNode, bool recurse)
             }
 
             dstProp->SetValue(srcProp->mData.vp, 0, srcProp->mCount);
+
+            if (dstProp->IsEmbeddedAsset())
+            {
+                Asset* embAsset = dstProp->GetEmbeddedAsset();
+                Asset* clonedAsset =  NewTransientAsset(embAsset->GetType());
+                clonedAsset->Copy(embAsset);
+                dstProp->SetAsset(clonedAsset);
+            }
         }
 
         // TODO-NODE: Gather properties if this uses a script.

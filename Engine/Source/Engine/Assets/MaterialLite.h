@@ -130,3 +130,16 @@ protected:
     // Properties
     MaterialLiteParams mLiteParams;
 };
+
+class MaterialEmbedded : public MaterialLite
+{
+public:
+    DECLARE_ASSET(MaterialEmbedded, MaterialLite);
+
+    static MaterialEmbedded* New(Material* src = nullptr);
+
+    virtual const char* GetTypeName() override;
+
+    MaterialEmbedded();
+
+};
