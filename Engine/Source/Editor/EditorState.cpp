@@ -575,6 +575,10 @@ void EditorState::EndPlayInEditor()
     if (!mPlayInEditor)
         return;
 
+    INP_TrapCursor(false);
+    INP_ShowCursor(true);
+    INP_LockCursor(false);
+
     glm::mat4 cameraTransform(1);
     if (GetWorld(0)->GetActiveCamera())
     {
@@ -634,6 +638,10 @@ void EditorState::EjectPlayInEditor()
         {
             mEditorCamera->SetTransform(activeCam->GetTransform());
         }
+
+        INP_TrapCursor(false);
+        INP_ShowCursor(true);
+        INP_LockCursor(false);
 
         ShowEditorUi(true);
         mEjected = true;

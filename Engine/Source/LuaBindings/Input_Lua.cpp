@@ -354,6 +354,24 @@ int Input_Lua::ShowCursor(lua_State* L)
     return 0;
 }
 
+int Input_Lua::TrapCursor(lua_State* L)
+{
+    bool value = CHECK_BOOLEAN(L, 1);
+
+    INP_TrapCursor(value);
+
+    return 0;
+}
+
+int Input_Lua::LockCursor(lua_State* L)
+{
+    bool value = CHECK_BOOLEAN(L, 1);
+
+    INP_LockCursor(value);
+
+    return 0;
+}
+
 int Input_Lua::SetCursorPosition(lua_State* L)
 {
     int32_t x = CHECK_INTEGER(L, 1);
@@ -494,6 +512,8 @@ void Input_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, GetGamepadAcceleration);
 
     REGISTER_TABLE_FUNC(L, tableIdx, ShowCursor);
+    REGISTER_TABLE_FUNC(L, tableIdx, TrapCursor);
+    REGISTER_TABLE_FUNC(L, tableIdx, LockCursor);
 
     REGISTER_TABLE_FUNC(L, tableIdx, SetCursorPosition);
 

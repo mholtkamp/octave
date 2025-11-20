@@ -233,6 +233,18 @@ Show/hide the mouse cursor.
 Sig: `Input.ShowCursor(show)`
  - Arg: `boolean show` Whether to show cursor
 ---
+### TrapCursor
+Enable trapping the mouse cursor to the active window.
+
+Sig: `Input.TrapCursor(show)`
+ - Arg: `boolean trap` Whether to trap cursor
+---
+### LockCursor
+Enable locking the cursor to the center of the screen. Usually used in combination with ShowCursor() and TrapCursor().
+
+Sig: `Input.LockCursor(show)`
+ - Arg: `boolean lock` Whether to lock cursor
+---
 ### SetCursorPosition
 Set the mouse cursor position.
 

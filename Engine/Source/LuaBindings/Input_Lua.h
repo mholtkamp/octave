@@ -48,6 +48,8 @@ struct Input_Lua
     static int GetGamepadAcceleration(lua_State* L);
 
     static int ShowCursor(lua_State* L);
+    static int TrapCursor(lua_State* L);
+    static int LockCursor(lua_State* L);
     static int SetCursorPosition(lua_State* L);
 
     static int GetKeysJustDown(lua_State* L);

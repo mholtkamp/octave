@@ -157,7 +157,7 @@ void InputManager::UpdateHotkeys()
         {
             ActionManager::Get()->Undo();
         }
-        else if (altDown && IsKeyJustDown(KEY_R) && !textFieldActive)
+        else if ((altDown || ctrlDown) && IsKeyJustDown(KEY_R) && !textFieldActive)
         {
             ReloadAllScripts();
         }

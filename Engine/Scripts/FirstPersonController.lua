@@ -19,7 +19,7 @@ function FirstPersonController:Create()
     self.drag = Property.Create(DatumType.Float, 0.001)
     self.enableControl = Property.Create(DatumType.Bool, true)
     self.enableJump = Property.Create(DatumType.Bool, true)
-    self.mouseSensitivity = Property.Create(DatumType.Float, 0.01)
+    self.mouseSensitivity = Property.Create(DatumType.Float, 0.05)
 
     self.moveDir = Vec()
     self.lookVec = Vec()
@@ -32,6 +32,10 @@ function FirstPersonController:Create()
 end
 
 function FirstPersonController:Start()
+
+    Input.LockCursor(true)
+    Input.TrapCursor(true)
+    Input.ShowCursor(false)
 
     if (not self.collider) then
         self.collider = self:GetParent()
@@ -196,8 +200,6 @@ function FirstPersonController:UpdateLook(deltaTime)
 end
 
 function FirstPersonController:Move(velocity, deltaTime)
-
-    Log.Debug("Move: velocity = " .. tostring(velocity))
 
     local startPos = self.collider:GetWorldPosition()
     local endPos = startPos + velocity * deltaTime
