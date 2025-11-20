@@ -2106,6 +2106,9 @@ void ActionManager::AttachSelectedNodes(Node* newParent, int32_t boneIdx)
         if (child == parent)
             continue;
 
+        if (parent->GetParent() == child)
+            continue;
+
         int32_t boneIndex = -1;
 
         if (child->As<Node3D>())
