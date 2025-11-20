@@ -27,8 +27,7 @@ class AssetDir;
 #define ASSET_VERSION_FONT_TTF_FLAG 6
 #define ASSET_VERSION_TEXTURE_COOKED_PROPERTIES 7
 #define ASSET_VERSION_TEXTURE_LOW_QUALITY 8
-#define ASSET_VERSION_PROPERTY_EMBEDDED_ASSET 9
-#define ASSET_VERSION_CURRENT 9
+#define ASSET_VERSION_CURRENT 8
 // ----------------------------------------------------
 
 #define DECLARE_ASSET(Base, Parent) DECLARE_FACTORY(Base, Asset); DECLARE_OBJECT(Base, Parent);

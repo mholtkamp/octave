@@ -49,9 +49,7 @@ static const char* sTevModeStrings[] =
 static_assert(int32_t(TevMode::Count) == 8, "Need to update string conversion table");
 
 FORCE_LINK_DEF(MaterialLite);
-FORCE_LINK_DEF(MaterialEmbedded);
 DEFINE_ASSET(MaterialLite);
-DEFINE_ASSET(MaterialEmbedded);
 
 bool MaterialLite::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
@@ -85,14 +83,16 @@ bool MaterialLite::HandlePropChange(Datum* datum, uint32_t index, const void* ne
     return success;
 }
 
-static void InitMaterialFromSrc(MaterialLite* lite, Material* src)
+MaterialLite* MaterialLite::New(Material* src)
 {
+    MaterialLite* ret = NewTransientAsset<MaterialLite>();
+
     if (src != nullptr)
     {
         if (src->IsLite())
         {
             MaterialLite* srcLite = (MaterialLite*)src;
-            lite->SetLiteParams(srcLite->GetLiteParams());
+            ret->SetLiteParams(srcLite->GetLiteParams());
         }
         else
         {
@@ -110,31 +110,15 @@ static void InitMaterialFromSrc(MaterialLite* lite, Material* src)
 
             if (tex != nullptr)
             {
-                lite->SetTexture(TEXTURE_0, tex);
+                ret->SetTexture(TEXTURE_0, tex);
             }
         }
     }
-}
 
-MaterialLite* MaterialLite::New(Material* src)
-{
-    MaterialLite* ret = NewTransientAsset<MaterialLite>();
-    InitMaterialFromSrc(ret, src);
     ret->Create();
 
     return ret;
 }
-
-MaterialEmbedded* MaterialEmbedded::New(Material* src)
-{
-    MaterialEmbedded* ret = NewTransientAsset<MaterialEmbedded>();
-    ret->SetName("EmbeddedMaterial");
-    InitMaterialFromSrc(ret, src);
-    ret->Create();
-
-    return ret;
-}
-
 
 MaterialLite::MaterialLite()
 {
@@ -601,14 +585,4 @@ void MaterialLite::SetTevMode(uint32_t textureSlot, TevMode mode)
     {
         mLiteParams.mTevModes[textureSlot] = mode;
     }
-}
-
-MaterialEmbedded::MaterialEmbedded()
-{
-    mType = MaterialEmbedded::GetStaticType();
-}
-
-const char* MaterialEmbedded::GetTypeName()
-{
-    return "MaterialEmbedded";
 }
