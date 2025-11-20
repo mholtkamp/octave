@@ -548,12 +548,12 @@ enum KeyCode
     KEY_ALT_L = 64,
     KEY_SHIFT_R = 62,
     KEY_CONTROL_R = 105,
-    KEY_ALT_R = 113,
+    KEY_ALT_R = 108,
 
-    KEY_INSERT = 106,
+    KEY_INSERT = 118,
     KEY_DELETE = 119,
-    KEY_HOME = 97,
-    KEY_END = 103,
+    KEY_HOME = 110,
+    KEY_END = 115,
     KEY_PAGE_UP = 112,
     KEY_PAGE_DOWN = 117,
 
