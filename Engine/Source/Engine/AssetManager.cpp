@@ -631,6 +631,7 @@ void AssetManager::ImportEngineAssets()
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Circle");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_TriShape");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_MiniArrow");
+        ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Checker");
 
         // Need to fetch these loaded textures so that the default materials can use them.
         Renderer::Get()->LoadDefaultTextures();
