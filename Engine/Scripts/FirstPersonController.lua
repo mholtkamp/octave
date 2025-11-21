@@ -9,25 +9,45 @@ FirstPersonController.kGroundingDot = 0.9
 
 function FirstPersonController:Create()
 
-    self.collider = Property.Create(DatumType.Node, nil)
-    self.camera = Property.Create(DatumType.Node, nil)
+    -- Properties
+    self.collider = nil
+    self.camera = nil
+    self.gravity = -9.8
+    self.moveSpeed = 7.0
+    self.lookSpeed = 200.0
+    self.jumpSpeed = 7.0
+    self.drag = 0.001
+    self.enableControl = true
+    self.enableJump = true
+    self.enableTankControls = false
+    self.mouseSensitivity = 0.05
 
-    self.gravity = Property.Create(DatumType.Float, -9.8)
-    self.moveSpeed = Property.Create(DatumType.Float, 7.0)
-    self.lookSpeed = Property.Create(DatumType.Float, 200.0)
-    self.jumpSpeed = Property.Create(DatumType.Float, 7.0)
-    self.drag = Property.Create(DatumType.Float, 0.001)
-    self.enableControl = Property.Create(DatumType.Bool, true)
-    self.enableJump = Property.Create(DatumType.Bool, true)
-    self.mouseSensitivity = Property.Create(DatumType.Float, 0.05)
-
+    -- State
     self.moveDir = Vec()
     self.lookVec = Vec()
-
     self.jumpTimer = 0.0
     self.ignoreGroundingTimer = 0.0
     self.grounded = false
     self.velocity = Vec()
+
+end
+
+function FirstPersonController:GatherProperties()
+
+    return
+    {
+        { name = "collider", type = DatumType.Node },
+        { name = "camera", type = DatumType.Node },
+        { name = "gravity", type = DatumType.Float },
+        { name = "moveSpeed", type = DatumType.Float },
+        { name = "lookSpeed", type = DatumType.Float },
+        { name = "jumpSpeed", type = DatumType.Float },
+        { name = "drag", type = DatumType.Float },
+        { name = "enableControl", type = DatumType.Bool },
+        { name = "enableJump", type = DatumType.Bool },
+        { name = "enableTankControls", type = DatumType.Bool },
+        { name = "mouseSensitivity", type = DatumType.Float },
+    }
 
 end
 
@@ -61,6 +81,8 @@ function FirstPersonController:UpdateInput(deltaTime)
 
     if (self.enableControl) then
 
+        local tank = self.enableTankControls
+
         -- moveDir
         self.moveDir = Vec()
         if (Input.IsKeyDown(Key.A)) then
@@ -83,7 +105,7 @@ function FirstPersonController:UpdateInput(deltaTime)
         local leftAxisY = Input.GetGamepadAxis(Gamepad.AxisLY)
 
         -- Only add analog stick input beyond a deadzone limit
-        if (math.abs(leftAxisX) > 0.1) then
+        if (math.abs(leftAxisX) > 0.1 and not tank) then
             self.moveDir.x = self.moveDir.x + leftAxisX
         end
         if (math.abs(leftAxisY) > 0.1) then
@@ -100,7 +122,7 @@ function FirstPersonController:UpdateInput(deltaTime)
         self.lookVec.x, self.lookVec.y = Input.GetMouseDelta()
         self.lookVec = self.lookVec * self.mouseSensitivity
         local gamepadLook = Vec()
-        local rightAxisX = Input.GetGamepadAxis(Gamepad.AxisRX)
+        local rightAxisX = Input.GetGamepadAxis(tank and Gamepad.AxisLY or Gamepad.AxisRX)
         local rightAxisY = Input.GetGamepadAxis(Gamepad.AxisRY)
         if (math.abs(rightAxisX) > 0.1) then
             gamepadLook.x = rightAxisX
