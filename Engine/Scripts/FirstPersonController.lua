@@ -15,8 +15,11 @@ function FirstPersonController:Create()
     self.gravity = -9.8
     self.moveSpeed = 7.0
     self.lookSpeed = 200.0
+    self.moveAccel = 100.0
     self.jumpSpeed = 7.0
-    self.drag = 0.001
+    self.moveDrag = 100.0
+    self.extDrag = 5.0
+    self.airControl = 0.1
     self.enableControl = true
     self.enableJump = true
     self.enableTankControls = false
@@ -28,7 +31,8 @@ function FirstPersonController:Create()
     self.jumpTimer = 0.0
     self.ignoreGroundingTimer = 0.0
     self.grounded = false
-    self.velocity = Vec()
+    self.extVelocity = Vec()
+    self.moveVelocity = Vec()
 
 end
 
@@ -41,8 +45,11 @@ function FirstPersonController:GatherProperties()
         { name = "gravity", type = DatumType.Float },
         { name = "moveSpeed", type = DatumType.Float },
         { name = "lookSpeed", type = DatumType.Float },
+        { name = "moveAccel", type = DatumType.Float },
         { name = "jumpSpeed", type = DatumType.Float },
-        { name = "drag", type = DatumType.Float },
+        { name = "moveDrag", type = DatumType.Float },
+        { name = "extDrag", type = DatumType.Float },
+        { name = "airControl", type = DatumType.Float },
         { name = "enableControl", type = DatumType.Bool },
         { name = "enableJump", type = DatumType.Bool },
         { name = "enableTankControls", type = DatumType.Bool },
@@ -71,6 +78,7 @@ function FirstPersonController:Tick(deltaTime)
 
     self:UpdateInput(deltaTime)
     self:UpdateJump(deltaTime)
+    self:UpdateDrag(deltaTime)
     self:UpdateMovement(deltaTime)
     self:UpdateGrounding(deltaTime)
     self:UpdateLook(deltaTime)
@@ -155,30 +163,55 @@ function FirstPersonController:UpdateJump(deltaTime)
 
 end
 
+function FirstPersonController:UpdateDrag(deltaTime)
+
+    -- Update drag
+    local function updateDrag(velocity, drag)
+        local velXZ = Vec(velocity.x, 0, velocity.z)
+        local speed = velXZ:Magnitude()
+        local dir = speed > 0.0  and (velXZ / speed) or Vec()
+        speed = math.max(speed - drag * deltaTime, 0)
+        return dir * speed
+    end
+
+    if (self.grounded) then
+        -- Only apply move drag when player is not moving
+        if (self.moveDir == Vec(0,0,0)) then
+            self.moveVelocity = updateDrag(self.moveVelocity, self.moveDrag)
+        end
+        self.extVelocity = updateDrag(self.extVelocity, self.extDrag)
+    end
+
+end
+
 function FirstPersonController:UpdateMovement(deltaTime)
 
     -- Apply gravity
     if (not self.grounded) then
-        self.velocity.y = self.velocity.y + self.gravity * deltaTime
+        self.extVelocity.y = self.extVelocity.y + self.gravity * deltaTime
     end
 
-    local moveVelocity = self.moveDir * self.moveSpeed
-
+    -- Add velocity based on player input vector
+    local deltaMoveVel = self.moveDir * self.moveAccel * deltaTime
     local yaw = self.collider:GetRotation().y
-    moveVelocity = Vector.Rotate(moveVelocity, yaw, Vec(0,1,0))
+    deltaMoveVel = Vector.Rotate(deltaMoveVel, yaw, Vec(0,1,0))
+
+    -- Reduce move velocity when in air
+    if (not self.grounded) then
+        deltaMoveVel = deltaMoveVel * self.airControl
+    end
+
+    self.moveVelocity = self.moveVelocity + deltaMoveVel
+
+    if (self.moveVelocity:Magnitude() > self.moveSpeed) then
+        self.moveVelocity = self.moveVelocity:Normalize() * self.moveSpeed
+    end
 
     -- First apply motion based on internal move velocity
-    moveVelocity = self:Move(moveVelocity, deltaTime)
+    self.moveVelocity = self:Move(self.moveVelocity, deltaTime)
 
     -- Then apply motion based on external velocity (like gravity)
-    self.velocity = self:Move(self.velocity, deltaTime)
-
-
-    -- Apply drag on horizontal movement
-    if (self.grounded) then
-        self.velocity.x = Math.Damp(self.velocity.x, 0, self.drag, deltaTime)
-        self.velocity.z = Math.Damp(self.velocity.z, 0, self.drag, deltaTime)
-    end
+    self.extVelocity = self:Move(self.extVelocity, deltaTime)
 
 end
 
@@ -201,7 +234,6 @@ function FirstPersonController:UpdateGrounding(deltaTime)
             self:SetGrounded(false)
         end
     end
-
 end
 
 function FirstPersonController:UpdateLook(deltaTime)
@@ -250,7 +282,7 @@ end
 function FirstPersonController:Jump()
 
     if (self.enableJump and self.grounded) then
-        self.velocity.y = self.jumpSpeed
+        self.extVelocity.y = self.jumpSpeed
         self:SetGrounded(false)
         self.ignoreGroundingTimer = 0.2
     end
@@ -269,7 +301,7 @@ function FirstPersonController:SetGrounded(grounded)
         self.grounded = grounded
 
         if (self.grounded) then
-            self.velocity.y = 0.0
+            self.extVelocity.y = 0.0
         end
     end
 end
