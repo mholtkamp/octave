@@ -291,8 +291,11 @@ void Primitive3D::EnablePhysics(bool enable)
 
         if (enable)
         {
-            // Lazily allocate the motion state the first time physics is enabled.
-            mMotionState = new OctaveMotionState();
+            if (mMotionState == nullptr)
+            {
+                // Lazily allocate the motion state the first time physics is enabled.
+                mMotionState = new OctaveMotionState();
+            }
 
             if (mRigidBody != nullptr)
             {
