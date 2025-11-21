@@ -130,9 +130,10 @@ function FirstPersonController:UpdateInput(deltaTime)
         self.lookVec.x, self.lookVec.y = Input.GetMouseDelta()
         self.lookVec = self.lookVec * self.mouseSensitivity
         local gamepadLook = Vec()
-        local rightAxisX = Input.GetGamepadAxis(tank and Gamepad.AxisLY or Gamepad.AxisRX)
+        local rightAxisX = Input.GetGamepadAxis(tank and Gamepad.AxisLX or Gamepad.AxisRX)
         local rightAxisY = Input.GetGamepadAxis(Gamepad.AxisRY)
-        if (math.abs(rightAxisX) > 0.1) then
+        local rightAxisDeadZone = tank and 0.3 or 0.1
+        if (math.abs(rightAxisX) > rightAxisDeadZone) then
             gamepadLook.x = rightAxisX
         end
         if (math.abs(rightAxisY) > 0.1) then
