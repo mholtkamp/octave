@@ -179,7 +179,7 @@ function FirstPersonController:UpdateGrounding(deltaTime)
             self:SetGrounded(false)
         end
     end
-    
+
 end
 
 function FirstPersonController:UpdateLook(deltaTime)
@@ -201,28 +201,23 @@ end
 
 function FirstPersonController:Move(velocity, deltaTime)
 
-    local startPos = self.collider:GetWorldPosition()
-    local endPos = startPos + velocity * deltaTime
-    local sweepRes = self.collider:SweepToWorldPosition(endPos)
+    local kMaxIterations = 3
 
-    if (sweepRes.hitNode) then
-
-        if (sweepRes.hitNormal.y > self.kGroundingDot) then
-            self:SetGrounded(true)
-        end
-
-        startPos = self.collider:GetWorldPosition()
-        velocity = velocity - (sweepRes.hitNormal * Vector.Dot(velocity, sweepRes.hitNormal))
-        endPos = startPos + velocity * deltaTime
-
-        sweepRes = self.collider:SweepToPosition(endPos)
+    for i = 1, kMaxIterations do
+        local startPos = self.collider:GetWorldPosition()
+        local endPos = startPos + velocity * deltaTime
+        local sweepRes = self.collider:SweepToWorldPosition(endPos)
 
         if (sweepRes.hitNode) then
+
             if (sweepRes.hitNormal.y > self.kGroundingDot) then
                 self:SetGrounded(true)
             end
 
             velocity = velocity - (sweepRes.hitNormal * Vector.Dot(velocity, sweepRes.hitNormal))
+            deltaTime = deltaTime * (1.0 - sweepRes.hitFraction)
+        else
+            break
         end
     end
 
