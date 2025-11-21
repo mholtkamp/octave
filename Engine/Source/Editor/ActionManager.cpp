@@ -64,7 +64,7 @@
 
 ActionManager* ActionManager::sInstance = nullptr;
 
-TypeId CheckDaeAssetType(const char* path)
+TypeId CheckMeshAssetType(const char* path)
 {
     TypeId retType = 0;
 
@@ -1598,15 +1598,21 @@ Asset* ActionManager::ImportAsset(const std::string& path)
 
     TypeId newType = INVALID_TYPE_ID;
 
-    if (extension == ".png")
+    if (extension == ".png" ||
+        extension == ".bmp" ||
+        extension == ".jpeg" ||
+        extension == ".jpg" ||
+        extension == ".tga")
     {
         newType = Texture::GetStaticType();
     }
     else if (extension == ".dae" ||
         extension == ".fbx" ||
-        extension == ".glb")
+        extension == ".glb" ||
+        extension == ".gltf" ||
+        extension == ".obj")
     {
-        newType = CheckDaeAssetType(path.c_str());
+        newType = CheckMeshAssetType(path.c_str());
     }
     else if (extension == ".wav")
     {
