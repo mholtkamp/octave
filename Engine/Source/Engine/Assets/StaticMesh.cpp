@@ -418,7 +418,7 @@ bool StaticMesh::Import(const std::string& path, ImportOptions* options)
 
         // TODO: If supporting lightmap textures and automatic lightmap UV generation, then do not
         // join identical vertices. Auto-generated lightmap UVs will have all-unique vertices.
-        const aiScene* scene = importer.ReadFile(path, aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
+        const aiScene* scene = importer.ReadFile(path, aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
 
         if (scene == nullptr)
         {
