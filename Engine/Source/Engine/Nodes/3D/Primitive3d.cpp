@@ -613,6 +613,7 @@ void Primitive3D::SyncRigidBodyTransform()
             }
 
             mRigidBody->setWorldTransform(worldTransform);
+            mRigidBody->setInterpolationWorldTransform(worldTransform);
         }
 
         if (mCollisionShape != nullptr)
