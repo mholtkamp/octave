@@ -74,6 +74,14 @@ function FirstPersonController:Start()
 
 end
 
+function FirstPersonController:Stop()
+
+    Input.LockCursor(false)
+    Input.TrapCursor(false)
+    Input.ShowCursor(true)
+
+end
+
 function FirstPersonController:Tick(deltaTime)
 
     self:UpdateInput(deltaTime)
