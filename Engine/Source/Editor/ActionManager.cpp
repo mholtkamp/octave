@@ -1717,6 +1717,42 @@ static std::string GetFixedFilename(const char* name, const char* prefix)
     return nameStr;
 }
 
+static void ConvertFileToByteString(
+    const std::string& filePath,
+    const std::string& name,
+    std::string& outString,
+    uint32_t& outSize)
+{
+    Stream stream;
+
+    stream.ReadFile(filePath.c_str(), false);
+    outSize = uint32_t(stream.GetSize());
+    char* data = stream.GetData();
+
+    outString.clear();
+    outString.reserve(2048);
+
+    std::string assetDataVar = name;
+    outString += "extern const char ";
+    outString += assetDataVar;
+    outString += "[] = \n{\n";
+
+    for (uint32_t byte = 0; byte < outSize; ++byte)
+    {
+        char byteString[8] = {};
+        sprintf(byteString, "'\\x%02X',", uint8_t(data[byte]));
+
+        outString += byteString;
+
+        if (byte % 8 == 7)
+        {
+            outString += "\n";
+        }
+    }
+
+    outString += "\n};\n\n";
+}
+
 void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*, std::string> >& assets,
     const char* headerPath,
     const char* sourcePath)
@@ -1733,6 +1769,8 @@ void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*,
 
         fprintf(headerFile, "extern uint32_t gNumEmbeddedAssets;\n");
         fprintf(headerFile, "extern EmbeddedFile gEmbeddedAssets[];\n\n");
+        fprintf(headerFile, "extern const char gEmbeddedConfig_Data[];\n\n");
+        fprintf(headerFile, "extern uint32_t gEmbeddedConfig_Size;\n\n");
 
         fprintf(sourceFile, "#include <stdint.h>\n");
         fprintf(sourceFile, "#include \"EmbeddedFile.h\"\n\n");
@@ -1743,42 +1781,21 @@ void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*,
         {
             AssetStub* stub = assets[i].first;
             const std::string& packPath = assets[i].second;
-
-            Stream stream;
-            
-            // Handle special case for level
-            stream.ReadFile(packPath.c_str(), false);
-            uint32_t size = uint32_t(stream.GetSize());
-            char* data = stream.GetData();
+            std::string dataVarName = stub->mName + "_Data";
+            uint32_t dataSize = 0;
 
             std::string sourceString;
-            sourceString.reserve(2048);
-
-            std::string assetDataVar = stub->mName + "_Data";
-            sourceString += "const char ";
-            sourceString += assetDataVar;
-            sourceString += "[] = \n{\n";
-
-            for (uint32_t byte = 0; byte < size; ++byte)
-            {
-                char byteString[8] = {};
-                sprintf(byteString, "'\\x%02X',", uint8_t(data[byte]));
-
-                sourceString += byteString;
-
-                if (byte % 8 == 7)
-                {
-                    sourceString += "\n";
-                }
-            }
-
-            sourceString += "\n};\n\n";
+            ConvertFileToByteString(
+                packPath,
+                dataVarName,
+                sourceString,
+                dataSize);
 
             fprintf(sourceFile, "%s", sourceString.c_str());
 
             initializer += "{" + ("\"" + stub->mName + "\",") +
-                                 (assetDataVar + ",") +
-                                 (std::to_string(size) + ",") +
+                                 (dataVarName + ",") +
+                                 (std::to_string(dataSize) + ",") +
                                  (stub->mEngineAsset ? "true" : "false") +
                                  "}, \n";
         }
@@ -1794,6 +1811,22 @@ void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*,
         else
         {
             fprintf(sourceFile, "\n\nEmbeddedFile gEmbeddedAssets[] = { {} };\n");
+        }
+
+
+        {
+            std::string sourceString;
+            uint32_t dataSize = 0;
+            ConvertFileToByteString(
+                GetEngineState()->mProjectDirectory + "Config.ini",
+                "gEmbeddedConfig_Data",
+                sourceString,
+                dataSize);
+
+            fprintf(sourceFile, "%s", sourceString.c_str());
+
+            fprintf(sourceFile, "extern const uint32_t gEmbeddedConfig_Size = %d;\n", dataSize);
+
         }
 
         fclose(headerFile);

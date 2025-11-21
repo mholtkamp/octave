@@ -246,7 +246,6 @@ struct EngineConfig
     }
 
     std::string mProjectName;
-    bool mStandalone = false;
 
     std::string mDefaultScene = "";
     std::string mDefaultEditorScene = "";
@@ -273,6 +272,8 @@ struct EngineConfig
     uint32_t mEmbeddedAssetCount = 0;
     struct EmbeddedFile* mEmbeddedScripts = nullptr;
     uint32_t mEmbeddedScriptCount = 0;
+    const char* mEmbeddedConfig = nullptr;
+    uint32_t mEmbeddedConfigSize = 0;
 };
 
 enum class ConsoleMode

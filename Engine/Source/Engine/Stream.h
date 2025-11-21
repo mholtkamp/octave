@@ -31,6 +31,8 @@ public:
     void Reset();
     void Resize(uint32_t size);
 
+    void SetExternalData(const char* externalData, uint32_t externalSize);
+
     void ReadFile(const char* path, bool isAsset, int32_t maxSize = 0);
     void WriteFile(const char* path);
 

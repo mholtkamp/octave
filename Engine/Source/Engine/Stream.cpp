@@ -91,6 +91,15 @@ void Stream::Resize(uint32_t size)
     Grow(size);
 }
 
+void Stream::SetExternalData(const char* externalData, uint32_t externalSize)
+{
+    mData = const_cast<char*>(externalData);
+    mSize = externalSize;
+    mCapacity = externalSize;
+    mPos = 0;
+    mExternal = true;
+}
+
 void Stream::ReadFile(const char* path, bool isAsset, int32_t maxSize)
 {
     OCT_ASSERT(!mExternal);

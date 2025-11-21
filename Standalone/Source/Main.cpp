@@ -23,7 +23,7 @@ extern uint32_t gNumEmbeddedAssets;
 
 void OctPreInitialize(EngineConfig& config)
 {
-    config.mStandalone = true;
+    GetEngineState()->mStandalone = true;
 
 #if !EDITOR
 
@@ -38,6 +38,8 @@ void OctPreInitialize(EngineConfig& config)
     config.mEmbeddedAssets = gEmbeddedAssets;
     config.mEmbeddedScriptCount = gNumEmbeddedScripts;
     config.mEmbeddedScripts = gEmbeddedScripts;
+    config.mEmbeddedConfig = gEmbeddedConfig_Data;
+    config.mEmbeddedConfigSize = gEmbeddedConfig_Size;
 #endif
 
 #endif

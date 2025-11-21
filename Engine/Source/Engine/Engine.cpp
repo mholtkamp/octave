@@ -239,7 +239,6 @@ bool Initialize()
 
     renderer->SetEngineState(&sEngineState);
 
-    sEngineState.mStandalone = sEngineConfig.mStandalone;
     sEngineState.mWindowWidth = sEngineConfig.mWindowWidth;
     sEngineState.mWindowHeight = sEngineConfig.mWindowHeight;
     sEngineState.mProjectName = (sEngineConfig.mProjectName != "") ? sEngineConfig.mProjectName : DEFAULT_GAME_NAME;
@@ -955,7 +954,7 @@ void WriteEngineConfig(std::string path)
         }
 
         fprintf(configIni, "Project=%s\n", projName.c_str());
-        fprintf(configIni, "Standalone=%d\n", sEngineConfig.mStandalone);
+        //fprintf(configIni, "Standalone=%d\n", sEngineConfig.mStandalone);
 
         fprintf(configIni, "DefaultScene=%s\n", sEngineConfig.mDefaultScene.c_str());
         fprintf(configIni, "DefaultEditorScene=%s\n", sEngineConfig.mDefaultEditorScene.c_str());
@@ -1013,6 +1012,14 @@ void ReadEngineConfig(std::string path)
         iniStream.ReadFile(path.c_str(), true);
     }
 
+    // Attempt to read embedded config in executable
+    if (iniStream.GetSize() == 0 &&
+        GetEngineConfig()->mEmbeddedConfig != nullptr &&
+        GetEngineConfig()->mEmbeddedConfigSize > 0)
+    {
+        iniStream.SetExternalData(GetEngineConfig()->mEmbeddedConfig, GetEngineConfig()->mEmbeddedConfigSize);
+    }
+
     if (iniStream.GetSize() > 0)
     {
         char key[MAX_PATH_SIZE] = {};
@@ -1037,9 +1044,6 @@ void ReadEngineConfig(std::string path)
 
             if (keyStr == "Project")
                 sEngineConfig.mProjectName = value;
-            else if (keyStr == "Standalone")
-                sEngineConfig.mStandalone = strToBool(value);
-
             else if (keyStr == "DefaultScene")
                 sEngineConfig.mDefaultScene = value;
             else if (keyStr == "DefaultEditorScene")
@@ -1097,8 +1101,8 @@ void GameMain(int32_t argc, char** argv)
     sEngineState.mArgC = argc;
     sEngineState.mArgV = argv;
     ReadCommandLineArgs(argc, argv);
-    ReadEngineConfig();
     OctPreInitialize(sEngineConfig);
+    ReadEngineConfig();
     Initialize();
     OctPostInitialize();
 

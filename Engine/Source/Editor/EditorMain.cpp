@@ -36,12 +36,13 @@ void EditorMain(int32_t argc, char** argv)
     GetEngineState()->mArgC = argc;
     GetEngineState()->mArgV = argv;
     ReadCommandLineArgs(argc, argv);
-    ReadEngineConfig();
 
     {
         EngineConfig* mutableConfig = GetMutableEngineConfig();
         OctPreInitialize(*mutableConfig);
     }
+
+    ReadEngineConfig();
 
     Initialize();
 
