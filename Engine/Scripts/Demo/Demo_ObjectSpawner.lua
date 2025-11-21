@@ -19,15 +19,13 @@ function Demo_ObjectSpawner:Interact()
     spawnPos.x = spawnPos.x + Math.RandRange(-10.0, 0.0, 10.0)
     spawnPos.z = spawnPos.z + Math.RandRange(-10.0, 0.0, 10.0)
     newMeshNode:SetWorldPosition(spawnPos)
-
-    local velocity = Math.RandRangeVec(Vec(-5, -5, -5), Vec(5, 5, 5))
-
     newMeshNode:SetRotation(Math.RandRangeVec(Vec(0, 0, 0), Vec(360, 360, 360)))
 
     -- Add it to the world
     self.world:GetRootNode():AddChild(newMeshNode)
-    newMeshNode:UpdateTransform()
 
+    -- Give it some random velocity
+    local velocity = Math.RandRangeVec(Vec(-5, -5, -5), Vec(5, 5, 5))
     newMeshNode:SetLinearVelocity(velocity)
 
 

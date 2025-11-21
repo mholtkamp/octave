@@ -60,6 +60,8 @@ end
 
 function FirstPersonController:Start()
 
+    self:AddTag("Controller")
+
     Input.LockCursor(true)
     Input.TrapCursor(true)
     Input.ShowCursor(false)
