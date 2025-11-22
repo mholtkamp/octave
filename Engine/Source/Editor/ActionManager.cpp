@@ -64,20 +64,31 @@
 
 ActionManager* ActionManager::sInstance = nullptr;
 
-TypeId CheckMeshAssetType(const char* path)
+static void GatherMeshImportTypes(const char* path, std::vector<TypeId>& outImportTypes, std::vector<int32_t>& meshIndices)
 {
-    TypeId retType = 0;
-
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_FlipUVs);
+    
+    bool hasCollisionMeshes = false;
 
-    if (scene != nullptr &&
-        scene->mNumMeshes >= 1)
+    for (uint32_t m = 0; m < scene->mNumMeshes; ++m)
     {
-        retType = scene->mMeshes[0]->HasBones() ? SkeletalMesh::GetStaticType() : StaticMesh::GetStaticType();
+        if (IsAiCollisionMesh(scene->mMeshes[m]))
+        {
+            hasCollisionMeshes = true;
+        }
+        else
+        {
+            TypeId typeId = scene->mMeshes[m]->HasBones() ? SkeletalMesh::GetStaticType() : StaticMesh::GetStaticType();
+            outImportTypes.push_back(typeId);
+            meshIndices.push_back(int32_t(m));
+        }
     }
 
-    return retType;
+    if (outImportTypes.size() > 1 && hasCollisionMeshes)
+    {
+        LogWarning("File has collision meshes but more than one non-collision mesh. Simple collision importing will be ignored.");
+    }
 }
 
 void ActionManager::Create()
@@ -1587,6 +1598,8 @@ Asset* ActionManager::ImportAsset(const std::string& path)
 
     std::string filename = path;
     size_t lastSlashIdx = filename.find_last_of("/\\");
+    std::vector<TypeId> importTypes;
+    std::vector<int32_t> meshIndices;
 
     if (lastSlashIdx != std::string::npos)
     {
@@ -1596,15 +1609,13 @@ Asset* ActionManager::ImportAsset(const std::string& path)
     int32_t dotIndex = int32_t(filename.find_last_of('.'));
     std::string extension = filename.substr(dotIndex, filename.size() - dotIndex);
 
-    TypeId newType = INVALID_TYPE_ID;
-
     if (extension == ".png" ||
         extension == ".bmp" ||
         extension == ".jpeg" ||
         extension == ".jpg" ||
         extension == ".tga")
     {
-        newType = Texture::GetStaticType();
+        importTypes.push_back(Texture::GetStaticType());
     }
     else if (extension == ".dae" ||
         extension == ".fbx" ||
@@ -1612,26 +1623,53 @@ Asset* ActionManager::ImportAsset(const std::string& path)
         extension == ".gltf" ||
         extension == ".obj")
     {
-        newType = CheckMeshAssetType(path.c_str());
+        GatherMeshImportTypes(path.c_str(), importTypes, meshIndices);
     }
     else if (extension == ".wav")
     {
-        newType = SoundWave::GetStaticType();
+        importTypes.push_back(SoundWave::GetStaticType());
     }
     else if (extension == ".ttf" || extension == ".xml")
     {
-        newType = Font::GetStaticType();
+        importTypes.push_back(Font::GetStaticType());
     }
 
-    if (newType != INVALID_TYPE_ID)
+    if (importTypes.size() == 0)
     {
-        Asset* newAsset = Asset::CreateInstance(newType);
-        bool success = newAsset->Import(path);
+        LogError("Failed to import Asset. Unrecognized source asset extension.");
+    }
+
+    for (uint32_t i = 0; i < importTypes.size(); ++i)
+    {
+        Asset* newAsset = nullptr;
+        bool success = false;
+        TypeId typeId = importTypes[i];
+        ImportOptions options;
+
+        if (typeId == StaticMesh::GetStaticType() ||
+            typeId == SkeletalMesh::GetStaticType())
+        {
+            OCT_ASSERT(meshIndices.size() == importTypes.size());
+            if (importTypes.size() > 1)
+            {
+                options.SetOptionValue("meshIndex", meshIndices[i]);
+            }
+        }
+
+        newAsset = Asset::CreateInstance(typeId);
+
+        std::string assetName = filename.substr(0, dotIndex);
+        newAsset->SetName(assetName);
+
+        success = newAsset->Import(path, &options);
 
         if (success)
         {
+            // Update the asset name in case it was changed by the Import() function.
+            // This happens when importing multiple meshes within the same file
+            assetName = newAsset->GetName();
+
             AssetDir* assetDir = GetEditorState()->GetAssetDirectory();
-            std::string assetName = filename.substr(0, dotIndex);
             filename = assetName + ".oct";
 
             // Clear inspected asset if we are reimporting that same asset.
@@ -1645,14 +1683,14 @@ Asset* ActionManager::ImportAsset(const std::string& path)
                 }
             }
 
-    #if ASSET_LIVE_REF_TRACKING
+#if ASSET_LIVE_REF_TRACKING
             // If this asset already exists, then we are about to delete it and replace it.
             // So let's fix up any references now or else they will be lost (replaced with nullptr).
             if (oldAsset != nullptr)
             {
                 AssetRef::ReplaceReferencesToAsset(oldAsset, newAsset);
             }
-    #endif
+#endif
 
             // If asset already exists, overwrite it. So delete existing asset.
             bool purged = AssetManager::Get()->PurgeAsset(assetName.c_str());
@@ -1697,10 +1735,6 @@ Asset* ActionManager::ImportAsset(const std::string& path)
             delete newAsset;
             newAsset = nullptr;
         }
-    }
-    else
-    {
-        LogError("Failed to import Asset. Unrecognized source asset extension.");
     }
 
     return retAsset;

@@ -1,3 +1,5 @@
+#if EDITOR
+
 #if PLATFORM_WINDOWS
 #include <Windows.h>
 #endif
@@ -9,6 +11,7 @@
 struct AssetStub;
 class AssetDir;
 class Node;
+struct aiMesh;
 
 void EditorCenterCursor();
 glm::vec3 EditorGetFocusPosition();
@@ -18,3 +21,7 @@ std::string EditorGetAssetNameFromPath(const std::string& path);
 void RemoveRedundantDescendants(std::vector<Node*>& nodes);
 std::string GetDevkitproPath();
 std::string GetDevenvPath();
+
+bool IsAiCollisionMesh(const aiMesh* mesh);
+
+#endif

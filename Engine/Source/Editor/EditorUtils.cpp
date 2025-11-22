@@ -196,4 +196,19 @@ std::string GetDevenvPath()
     return devenvPath;
 }
 
+bool IsAiCollisionMesh(const aiMesh* mesh)
+{
+    bool isColMesh = false;
+
+    const char* meshName = mesh->mName.C_Str();
+    if (strncmp(meshName, "UCX", 3) == 0 ||
+        strncmp(meshName, "UBX", 3) == 0 ||
+        strncmp(meshName, "USP", 3) == 0)
+    {
+        isColMesh = true;
+    }
+
+    return isColMesh;
+}
+
 #endif

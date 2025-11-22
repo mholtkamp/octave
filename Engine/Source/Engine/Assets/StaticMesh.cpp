@@ -21,6 +21,44 @@ using namespace std;
 FORCE_LINK_DEF(StaticMesh);
 DEFINE_ASSET(StaticMesh);
 
+#if EDITOR
+
+const aiNode* FindMeshNode(const aiScene* scene, const aiNode* node, const aiMesh* mesh)
+{
+    if (node == nullptr)
+        return nullptr;
+
+    const aiNode* retNode = nullptr;
+    for (uint32_t i = 0; i < node->mNumMeshes; ++i)
+    {
+        int32_t meshIdx = (int32_t)node->mMeshes[i];
+        if (meshIdx < int32_t(scene->mNumMeshes) &&
+            scene->mMeshes[meshIdx] == mesh)
+        {
+            retNode = node;
+            break;
+        }
+    }
+
+    if (retNode == nullptr)
+    {
+        for (uint32_t i = 0; i < node->mNumChildren; ++i)
+        {
+            retNode = FindMeshNode(scene, node->mChildren[i], mesh);
+
+            if (retNode != nullptr)
+            {
+                break;
+            }
+        }
+    }
+
+    return retNode;
+};
+
+
+#endif
+
 bool StaticMesh::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
@@ -416,6 +454,16 @@ bool StaticMesh::Import(const std::string& path, ImportOptions* options)
     {
         Assimp::Importer importer;
 
+        int32_t meshIndex = -1;
+
+        if (options)
+        {
+            if (options->HasOption("meshIndex"))
+            {
+                meshIndex = options->GetOptionValue("meshIndex").GetInteger();
+            }
+        }
+
         // TODO: If supporting lightmap textures and automatic lightmap UV generation, then do not
         // join identical vertices. Auto-generated lightmap UVs will have all-unique vertices.
         const aiScene* scene = importer.ReadFile(path, aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
@@ -432,36 +480,55 @@ bool StaticMesh::Import(const std::string& path, ImportOptions* options)
             success = false;
         }
 
+        if (meshIndex != -1 &&
+            int32_t(scene->mNumMeshes) <= meshIndex)
+        {
+            LogError("Out of bounds mesh index??? Aborting mesh import.");
+            success = false;
+        }
+
+        const bool singleMeshImport = (meshIndex == -1);
+
         if (success)
         {
-            const aiMesh* mainMesh = nullptr;
             std::vector<const aiMesh*> collisionMeshes;
 
-            for (uint32_t i = 0; i < scene->mNumMeshes; ++i)
+            // Single mesh import mode (allows for custom simplified collision)
+            if (meshIndex == -1)
             {
-                const aiMesh* mesh = scene->mMeshes[i];
-                const char* meshName = mesh->mName.C_Str();
+                for (uint32_t i = 0; i < scene->mNumMeshes; ++i)
+                {
+                    const aiMesh* mesh = scene->mMeshes[i];
+                    const char* meshName = mesh->mName.C_Str();
 
-                if (strncmp(meshName, "UCX", 3) == 0 ||
-                    strncmp(meshName, "UBX", 3) == 0 ||
-                    strncmp(meshName, "USP", 3) == 0)
-                {
-                    collisionMeshes.push_back(mesh);
-                }
-                else
-                {
-                    if (mainMesh == nullptr)
+                    if (strncmp(meshName, "UCX", 3) == 0 ||
+                        strncmp(meshName, "UBX", 3) == 0 ||
+                        strncmp(meshName, "USP", 3) == 0)
                     {
-                        mainMesh = mesh;
+                        collisionMeshes.push_back(mesh);
                     }
                     else
                     {
-                        LogError("More than one non-collision mesh found");
+                        OCT_ASSERT(meshIndex == -1);
+                        if (meshIndex == -1)
+                        {
+                            meshIndex = i;
+                        }
+                        else
+                        {
+                            LogError("More than one non-collision mesh found");
+                        }
                     }
                 }
             }
 
-            Create(scene, *mainMesh, (uint32_t)collisionMeshes.size(), collisionMeshes.data());
+            Create(scene, *scene->mMeshes[meshIndex], (uint32_t)collisionMeshes.size(), collisionMeshes.data());
+
+            if (!singleMeshImport)
+            {
+                const aiNode* meshNode = FindMeshNode(scene, scene->mRootNode, scene->mMeshes[meshIndex]);
+                SetName(GetName() + "_" + meshNode->mName.C_Str());
+            }
         }
     }
 #endif
@@ -761,29 +828,6 @@ void StaticMesh::ComputeBounds()
 
 #if EDITOR
 
-const aiNode* FindMeshNode(const aiNode* node, const aiMesh* mesh)
-{
-    const aiNode* retNode = nullptr;
-    if (mesh->mName == node->mName)
-    {
-        retNode = node;
-    }
-    else
-    {
-        for (uint32_t i = 0; i < node->mNumChildren; ++i)
-        {
-            retNode = FindMeshNode(node->mChildren[i], mesh);
-
-            if (retNode != nullptr)
-            {
-                break;
-            }
-        }
-    }
-
-    return retNode;
-};
-
 void StaticMesh::Create(
     const aiScene* scene,
     const aiMesh& meshData,
@@ -866,7 +910,7 @@ void StaticMesh::Create(
     {
         const aiMesh* colMesh = collisionMeshes[i];
 
-        const aiNode* node = FindMeshNode(scene->mRootNode, colMesh);
+        const aiNode* node = FindMeshNode(scene, scene->mRootNode, colMesh);
 
         btVector3 bScale = { 1.0f, 1.0f, 1.0f };
         btQuaternion bRotation = btQuaternion(0.0f, 0.0f, 0.0f, 1.0f);

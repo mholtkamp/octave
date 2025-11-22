@@ -303,6 +303,16 @@ bool SkeletalMesh::Import(const std::string& path, ImportOptions* options)
     // Loads a .DAE file and loads the first mesh in the mesh library.
     if (mResource.mVertexBuffer == VK_NULL_HANDLE)
     {
+        int32_t meshIndex = 0;
+
+        if (options)
+        {
+            if (options->HasOption("meshIndex"))
+            {
+                meshIndex = options->GetOptionValue("meshIndex");
+            }
+        }
+
         Assimp::Importer importer;
 
         const aiScene* scene = importer.ReadFile(path, aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
@@ -319,13 +329,13 @@ bool SkeletalMesh::Import(const std::string& path, ImportOptions* options)
             OCT_ASSERT(0);
         }
 
-        if (!scene->mMeshes[0]->HasBones())
+        if (!scene->mMeshes[meshIndex]->HasBones())
         {
             LogError("Skeletal mesh has no bones");
             OCT_ASSERT(0);
         }
 
-        Create(*scene, *scene->mMeshes[0]);
+        Create(*scene, *scene->mMeshes[meshIndex]);
     }
 #endif
 
