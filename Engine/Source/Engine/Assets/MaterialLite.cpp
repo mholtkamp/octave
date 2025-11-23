@@ -19,7 +19,7 @@
 extern const char* gBlendModeStrings[];
 extern const char* gCullModeStrings[];
 
-static const char* sShadingModelStrings[] =
+extern const char* gShadingModelStrings[] =
 {
     "Unlit",
     "Lit",
@@ -244,7 +244,7 @@ void MaterialLite::GatherProperties(std::vector<Property>& outProps)
 {
     Material::GatherProperties(outProps);
 
-    outProps.push_back(Property(DatumType::Integer, "Shading Model", this, &mLiteParams.mShadingModel, 1, HandlePropChange, NULL_DATUM, int32_t(ShadingModel::Count), sShadingModelStrings));
+    outProps.push_back(Property(DatumType::Integer, "Shading Model", this, &mLiteParams.mShadingModel, 1, HandlePropChange, NULL_DATUM, int32_t(ShadingModel::Count), gShadingModelStrings));
     outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mLiteParams.mBlendMode, 1, HandlePropChange, NULL_DATUM, int32_t(BlendMode::Count), gBlendModeStrings));
     outProps.push_back(Property(DatumType::Integer, "Vertex Color Mode", this, &mLiteParams.mVertexColorMode, 1, HandlePropChange, NULL_DATUM, int32_t(VertexColorMode::Count), sVertexColorModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 0", this, &mLiteParams.mTextures[TEXTURE_0], 1, HandlePropChange, int32_t(Texture::GetStaticType())));

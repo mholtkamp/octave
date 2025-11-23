@@ -3288,6 +3288,8 @@ static void DrawViewportPanel()
         }
         if (ImGui::Selectable("Import Asset"))
             am->ImportAsset();
+        if (ImGui::Selectable("Import Scene"))
+            am->BeginImportScene();
         if (ImGui::Selectable("Run Script"))
             am->RunScript();
         if (ImGui::Selectable("Recapture All Scenes"))
@@ -3417,6 +3419,53 @@ static void DrawViewportPanel()
             {
                 ImGui::CloseCurrentPopup();
             }
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (!ImGui::IsPopupOpen("Import Scene") && GetEditorState()->mPendingSceneImportPath != "")
+    {
+        ImGui::OpenPopup("Import Scene");
+    }
+
+    if (ImGui::IsPopupOpen("Import Scene"))
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    }
+
+    if (ImGui::BeginPopupModal("Import Scene", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        static SceneImportOptions sSceneImportOptions;
+
+        // File path
+        sSceneImportOptions.mFilePath = GetEditorState()->mPendingSceneImportPath;
+        ImGui::Text(GetEditorState()->mPendingSceneImportPath.c_str());
+        ImGui::InputText("Prefix", &sSceneImportOptions.mPrefix);
+        ImGui::Checkbox("Clean Directory", &sSceneImportOptions.mCleanDirectory);
+        ImGui::Checkbox("Clear World", &sSceneImportOptions.mClearWorld);
+        ImGui::Checkbox("Import Meshes", &sSceneImportOptions.mImportMeshes);
+        ImGui::Checkbox("Import Materials", &sSceneImportOptions.mImportMaterials);
+        ImGui::Checkbox("Import Textures", &sSceneImportOptions.mImportTextures);
+        ImGui::Checkbox("Import Lights", &sSceneImportOptions.mImportLights);
+        ImGui::Checkbox("Import Nodes", &sSceneImportOptions.mImportNodes);
+
+        int32_t shadingModelCount = int32_t(ShadingModel::Count);
+        ImGui::Combo("Shading Model", (int*)&(sSceneImportOptions.mDefaultShadingModel), gShadingModelStrings, shadingModelCount);
+
+        if (ImGui::Button("Import"))
+        {
+            am->ImportScene(sSceneImportOptions);
+            GetEditorState()->mPendingSceneImportPath = "";
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+        {
+            GetEditorState()->mPendingSceneImportPath = "";
+            ImGui::CloseCurrentPopup();
         }
 
         ImGui::EndPopup();

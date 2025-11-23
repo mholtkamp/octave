@@ -2,6 +2,8 @@
 
 #include "Assets/Material.h"
 
+extern const char* gShadingModelStrings[];
+
 struct MaterialLiteParams
 {
     ShadingModel mShadingModel = ShadingModel::Lit;

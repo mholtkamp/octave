@@ -108,6 +108,8 @@ public:
     void RunScript();
     void ImportAsset();
     Asset* ImportAsset(const std::string& path);
+    void ImportScene(const SceneImportOptions& options);
+    void BeginImportScene();
     void BuildData(Platform platform, bool embedded);
     void ClearWorld();
     void DeleteAllNodes();
