@@ -1827,7 +1827,6 @@ static void SpawnAiNode(aiNode* node, const glm::mat4& parentTransform, const st
             newMesh->SetBakeLighting(true);
             newMesh->SetUseTriangleCollision(true);
             newMesh->EnableCollision(options.mEnableCollision);
-            newMesh->AddTag("Scene");
         }
     }
 
@@ -1908,24 +1907,8 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
             if (options.mClearWorld)
             {
-                DeleteAllNodes();
-            }
-            else
-            {
-                // Destroy all actors with a Scene tag.
-                // Kinda hacky, but for now, to mark anything spawned as part of a scene,
-                // I'm adding a Scene tag. This is to make reimporting scenes easier.
                 const std::vector<Node*>& nodes = world->GatherNodes();
-                std::vector<Node*> delNodes;
-                for (int32_t i = int32_t(nodes.size()) - 1; i >= 0; --i)
-                {
-                    if (nodes[i]->HasTag("Scene"))
-                    {
-                        delNodes.push_back(nodes[i]);
-                    }
-                }
-
-                EXE_DeleteNodes(delNodes);
+                EXE_DeleteNodes(nodes);
             }
 
             if (world->GetRootNode() == nullptr)
@@ -2123,6 +2106,8 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                         lightColor = Maths::SafeNormalize(lightColor);
                         pointLight->SetColor(glm::vec4(lightColor, 1.0f));
 
+                        pointLight->SetLightingDomain(LightingDomain::All);
+
                         // For now, set lights to a default radius to 50.0f.
                         // Not sure how to convert attenutation data into a radius.
                         // Maybe I need to rethink how light attenuation is specified.
@@ -2141,7 +2126,6 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                         pointLight->UpdateTransform(true);
 
                         pointLight->SetName(aLight->mName.C_Str());
-                        pointLight->AddTag("Scene");
                     }
                 }
             }

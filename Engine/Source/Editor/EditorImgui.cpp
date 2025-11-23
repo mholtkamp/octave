@@ -2384,6 +2384,11 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             actMan->ImportAsset();
         }
 
+        if (ImGui::Selectable("Import Scene"))
+        {
+            actMan->BeginImportScene();
+        }
+
         if (ImGui::BeginMenu("Create Asset"))
         {
             bool showPopup = false;
