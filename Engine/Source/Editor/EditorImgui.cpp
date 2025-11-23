@@ -3102,6 +3102,18 @@ static void DrawPropertiesPanel()
                     InstancedMesh3D* instMesh = obj->As<InstancedMesh3D>();
                     DrawInstancedMeshExtra(instMesh);
                 }
+                else if (obj->As<SkeletalMesh>())
+                {
+                    SkeletalMesh* skelMesh = obj->As<SkeletalMesh>();
+                    ImGui::Text("Animations");
+                    ImGui::Indent();
+                    const std::vector<Animation>& animations = skelMesh->GetAnimations();
+                    for (uint32_t a = 0; a < animations.size(); ++a)
+                    {
+                        ImGui::Text(animations[a].mName.c_str());
+                    }
+                    ImGui::Unindent();
+                }
             }
 
             ImGui::EndTabItem();
