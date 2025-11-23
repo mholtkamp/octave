@@ -1807,32 +1807,33 @@ static void ConvertFileToByteString(
     outString += "\n};\n\n";
 }
 
-static void SpawnAiNode(aiNode* node, const glm::mat4& parentTransform, const std::vector<StaticMesh*>& meshList, const SceneImportOptions& options)
+static void SpawnAiNode(aiNode* node, Node* root, const glm::mat4& parentTransform, const std::vector<StaticMesh*>& meshList, const SceneImportOptions& options)
 {
+    if (node == nullptr || root == nullptr)
+        return;
+
     World* world = GetWorld(0);
 
-    if (node != nullptr)
-    {
-        glm::mat4 transform = parentTransform * glm::transpose(glm::make_mat4(&node->mTransformation.a1));
+    glm::mat4 transform = parentTransform * glm::transpose(glm::make_mat4(&node->mTransformation.a1));
 
-        for (uint32_t i = 0; i < node->mNumMeshes; ++i)
-        {
-            uint32_t meshIndex = node->mMeshes[i];
-            StaticMesh3D* newMesh = world->SpawnNode<StaticMesh3D>();
-            newMesh->SetStaticMesh(meshList[meshIndex]);
-            newMesh->SetUseTriangleCollision(meshList[meshIndex]->IsTriangleCollisionMeshEnabled());
-            newMesh->SetTransform(transform);
-            newMesh->SetName(/*options.mPrefix + */node->mName.C_Str());
-            newMesh->EnableCastShadows(true);
-            newMesh->SetBakeLighting(true);
-            newMesh->SetUseTriangleCollision(true);
-            newMesh->EnableCollision(options.mEnableCollision);
-        }
+    for (uint32_t i = 0; i < node->mNumMeshes; ++i)
+    {
+        uint32_t meshIndex = node->mMeshes[i];
+        StaticMesh3D* newMesh = root->CreateChild<StaticMesh3D>();
+
+        newMesh->SetStaticMesh(meshList[meshIndex]);
+        newMesh->SetUseTriangleCollision(meshList[meshIndex]->IsTriangleCollisionMeshEnabled());
+        newMesh->SetTransform(transform);
+        newMesh->SetName(/*options.mPrefix + */node->mName.C_Str());
+        newMesh->EnableCastShadows(true);
+        newMesh->SetBakeLighting(true);
+        newMesh->SetUseTriangleCollision(true);
+        newMesh->EnableCollision(options.mEnableCollision);
     }
 
     for (uint32_t i = 0; i < node->mNumChildren; ++i)
     {
-        SpawnAiNode(node->mChildren[i], parentTransform, meshList, options);
+        SpawnAiNode(node->mChildren[i], root, parentTransform, meshList, options);
     }
 }
 
@@ -1891,31 +1892,23 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
             }
 
             // Get the current directory in the asset panel (all assets will be saved there)
-            AssetDir* dir = GetEditorState()->GetAssetDirectory();
+            AssetDir* curDir = GetEditorState()->GetAssetDirectory();
 
-            if (dir == nullptr ||
-                dir->mParentDir == nullptr)
+            const std::string& sceneName = options.mSceneName;
+            AssetDir* sceneDir = curDir->CreateSubdirectory(sceneName);
+
+            if (sceneDir == nullptr ||
+                sceneDir->mParentDir == nullptr)
             {
                 LogError("Invalid directory. Use the asset panel to navigate to a valid directory");
                 return;
             }
 
-            if (options.mCleanDirectory)
-            {
-                dir->Purge();
-            }
+            sceneDir->Purge();
+            GetEditorState()->SetAssetDirectory(sceneDir, true);
 
-            if (options.mClearWorld)
-            {
-                const std::vector<Node*>& nodes = world->GatherNodes();
-                EXE_DeleteNodes(nodes);
-            }
-
-            if (world->GetRootNode() == nullptr)
-            {
-                Node3D* defaultRoot = world->SpawnNode<Node3D>();
-                defaultRoot->SetName("Root");
-            }
+            SharedPtr<Node3D> rootNode = Node::Construct<Node3D>();
+            rootNode->SetName(sceneName);
 
             std::vector<Texture*> textureList;
             std::vector<Material*> materialList;
@@ -1937,7 +1930,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                 MaterialLite* newMaterial = nullptr;
                 if (options.mImportMaterials)
                 {
-                    materialStub = EditorAddUniqueAsset(materialName.c_str(), dir, MaterialLite::GetStaticType(), true);
+                    materialStub = EditorAddUniqueAsset(materialName.c_str(), sceneDir, MaterialLite::GetStaticType(), true);
                     newMaterial = static_cast<MaterialLite*>(materialStub->mAsset);
                     newMaterial->SetShadingModel(options.mDefaultShadingModel);
                     newMaterial->SetVertexColorMode(options.mDefaultVertexColorMode);
@@ -1982,7 +1975,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                             assetName = GetFixedFilename(assetName.c_str(), "T_");
 
                             AssetStub* existingStub = AssetManager::Get()->GetAssetStub(assetName);
-                            if (existingStub && existingStub->mDirectory != dir)
+                            if (existingStub && existingStub->mDirectory != sceneDir)
                             {
                                 textureToAssign = LoadAsset<Texture>(assetName);
                             }
@@ -2077,7 +2070,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                         newMesh->SetMaterial(materialList[materialIndex]);
                     }
 
-                    AssetStub* meshStub = EditorAddUniqueAsset(meshName.c_str(), dir, StaticMesh::GetStaticType(), false);
+                    AssetStub* meshStub = EditorAddUniqueAsset(meshName.c_str(), sceneDir, StaticMesh::GetStaticType(), false);
                     meshStub->mAsset = newMesh;
                     newMesh->SetName(meshName);
                     newMesh->SetGenerateTriangleCollisionMesh(true);
@@ -2097,7 +2090,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                     if (aLight->mType == aiLightSource_POINT)
                     {
-                        PointLight3D* pointLight = world->SpawnNode<PointLight3D>();
+                        PointLight3D* pointLight = rootNode->CreateChild<PointLight3D>();
 
                         glm::vec3 lightColor;
                         lightColor.r = aLight->mColorDiffuse.r;
@@ -2130,10 +2123,23 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                 }
             }
 
-            if (options.mImportNodes)
+            aiNode* node = scene->mRootNode;
+            SpawnAiNode(node, rootNode.Get(), glm::mat4(1), meshList, options);
+
+            std::string fullSceneName = "SC_" + sceneName;
+            AssetStub* sceneStub = EditorAddUniqueAsset(fullSceneName.c_str(), sceneDir, Scene::GetStaticType(), true);
+            Scene* newScene = sceneStub->mAsset ? sceneStub->mAsset->As<Scene>() : nullptr;
+
+            if (newScene)
             {
-                aiNode* node = scene->mRootNode;
-                SpawnAiNode(node, glm::mat4(1), meshList, options);
+                newScene->Capture(rootNode.Get());
+                AssetManager::Get()->SaveAsset(*sceneStub);
+
+                GetEditorState()->OpenEditScene(newScene);
+            }
+            else
+            {
+                LogError("Failed to create new scene asset for scene import");
             }
         }
         else

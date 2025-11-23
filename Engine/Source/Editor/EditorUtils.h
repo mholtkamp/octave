@@ -24,4 +24,6 @@ std::string GetDevenvPath();
 
 bool IsAiCollisionMesh(const aiMesh* mesh);
 
+std::string GetFileNameFromPath(const std::string& path);
+
 #endif

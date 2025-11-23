@@ -484,6 +484,8 @@ bool AssetManager::PurgeAsset(const char* name)
                 UnloadAsset(*delStub);
             }
 
+            delStub->mDirectory = nullptr;
+
             delete delStub;
             delStub = nullptr;
 

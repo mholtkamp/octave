@@ -113,6 +113,7 @@ AssetStub* EditorAddUniqueAsset(const char* baseName, AssetDir* dir, TypeId asse
             if (stub != nullptr)
             {
                 Asset* newAsset = Asset::CreateInstance(assetType);
+                newAsset->SetName(name);
                 stub->mAsset = newAsset;
             }
         }
@@ -209,6 +210,22 @@ bool IsAiCollisionMesh(const aiMesh* mesh)
     }
 
     return isColMesh;
+}
+
+std::string GetFileNameFromPath(const std::string& path)
+{
+    std::string filename = path;
+    size_t lastSlashIdx = filename.find_last_of("/\\");
+
+    if (lastSlashIdx != std::string::npos)
+    {
+        filename = filename.substr(lastSlashIdx + 1);
+    }
+
+    int32_t dotIndex = int32_t(filename.find_last_of('.'));
+    filename = filename.substr(0, dotIndex);
+
+    return filename;
 }
 
 #endif

@@ -47,10 +47,30 @@ bool AssetDir::RemoveAssetStub(AssetStub* stub)
     return removed;
 }
 
+AssetDir* AssetDir::GetSubdirectory(const std::string& name)
+{
+    AssetDir* retDir = nullptr;
+
+    for (uint32_t i = 0; i < mChildDirs.size(); ++i)
+    {
+        if (mChildDirs[i]->mName == name)
+        {
+            retDir = mChildDirs[i];
+            break;
+        }
+    }
+
+    return retDir;
+}
+
 AssetDir* AssetDir::CreateSubdirectory(const std::string& name)
 {
-    AssetDir* subdir = new AssetDir(name, mPath + name + "/", this);
-    return subdir;
+    AssetDir* subDir = GetSubdirectory(name);
+    if (subDir == nullptr)
+    {
+        subDir = new AssetDir(name, mPath + name + "/", this);
+    }
+    return subDir;
 }
 
 void AssetDir::DeleteSubdirectory(const char* name)

@@ -87,6 +87,9 @@ static bool sFileBrowserNeedsRefresh = false;
 
 static bool sObjectTabOpen = false;
 
+static SceneImportOptions sSceneImportOptions;
+
+
 static void PopulateFileBrowserDirs()
 {
     sFileBrowserDoubleClickBlock = 0.2f;
@@ -3431,6 +3434,8 @@ static void DrawViewportPanel()
 
     if (!ImGui::IsPopupOpen("Import Scene") && GetEditorState()->mPendingSceneImportPath != "")
     {
+        std::string sceneName = GetFileNameFromPath(GetEditorState()->mPendingSceneImportPath);
+        sSceneImportOptions.mSceneName = sceneName;
         ImGui::OpenPopup("Import Scene");
     }
 
@@ -3442,19 +3447,15 @@ static void DrawViewportPanel()
 
     if (ImGui::BeginPopupModal("Import Scene", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
-        static SceneImportOptions sSceneImportOptions;
-
         // File path
         sSceneImportOptions.mFilePath = GetEditorState()->mPendingSceneImportPath;
         ImGui::Text(GetEditorState()->mPendingSceneImportPath.c_str());
+        ImGui::InputText("Scene Name", &sSceneImportOptions.mSceneName);
         ImGui::InputText("Prefix", &sSceneImportOptions.mPrefix);
-        ImGui::Checkbox("Clean Directory", &sSceneImportOptions.mCleanDirectory);
-        ImGui::Checkbox("Clear World", &sSceneImportOptions.mClearWorld);
         ImGui::Checkbox("Import Meshes", &sSceneImportOptions.mImportMeshes);
         ImGui::Checkbox("Import Materials", &sSceneImportOptions.mImportMaterials);
         ImGui::Checkbox("Import Textures", &sSceneImportOptions.mImportTextures);
         ImGui::Checkbox("Import Lights", &sSceneImportOptions.mImportLights);
-        ImGui::Checkbox("Import Nodes", &sSceneImportOptions.mImportNodes);
         ImGui::Checkbox("Enable Collision", &sSceneImportOptions.mEnableCollision);
 
         int32_t shadingModelCount = int32_t(ShadingModel::Count);

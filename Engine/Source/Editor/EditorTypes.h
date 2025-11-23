@@ -7,14 +7,12 @@
 struct SceneImportOptions
 {
     std::string mFilePath;
+    std::string mSceneName;
     std::string mPrefix;
-    bool mCleanDirectory = true;
-    bool mClearWorld = true;
     bool mImportMeshes = true;
     bool mImportMaterials = true;
     bool mImportTextures = true;
     bool mImportLights = true;
-    bool mImportNodes = true;
     bool mEnableCollision = true;
     ShadingModel mDefaultShadingModel = ShadingModel::Lit;
     VertexColorMode mDefaultVertexColorMode = VertexColorMode::None;

@@ -23,6 +23,7 @@ public:
             AssetDir* parent);
     AssetDir();
 
+    AssetDir* GetSubdirectory(const std::string& name);
     AssetDir* CreateSubdirectory(const std::string& name);
     void DeleteSubdirectory(const char* name);
     bool RemoveAssetStub(AssetStub* stub);
