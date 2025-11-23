@@ -2596,6 +2596,30 @@ void ActionManager::AttachSelectedNodes(Node* newParent, int32_t boneIdx)
 // --------- ACTIONS ---------
 // ---------------------------
 
+static void MarkEditSceneDirty()
+{
+    Scene* sceneToDirty = nullptr;
+    EditScene* editScene = GetEditorState()->GetEditScene();
+    if (editScene)
+    {
+        sceneToDirty = editScene->mSceneAsset.Get<Scene>();
+    }
+
+    if (sceneToDirty)
+    {
+        sceneToDirty->SetDirtyFlag();
+    }
+}
+void Action::Execute()
+{
+    MarkEditSceneDirty();
+}
+
+void Action::Reverse()
+{
+    MarkEditSceneDirty();
+}
+
 ActionEditProperty::ActionEditProperty(
     void* owner,
     PropertyOwnerType ownerType,
@@ -2655,6 +2679,8 @@ Property* ActionEditProperty::FindProp(std::vector<Property>& props, const std::
 
 void ActionEditProperty::Execute()
 {
+    Action::Execute();
+
     std::vector<Property> sProps;
     GatherProps(sProps);
 
@@ -2697,6 +2723,8 @@ void ActionEditProperty::Execute()
 
 void ActionEditProperty::Reverse()
 {
+    Action::Reverse();
+
     std::vector<Property> sProps;
     GatherProps(sProps);
 
@@ -2735,6 +2763,8 @@ ActionEditTransforms::ActionEditTransforms(
 
 void ActionEditTransforms::Execute()
 {
+    Action::Execute();
+
     mPrevTransforms.clear();
 
     for (uint32_t i = 0; i < mNodes.size(); ++i)
@@ -2746,6 +2776,8 @@ void ActionEditTransforms::Execute()
 
 void ActionEditTransforms::Reverse()
 {
+    Action::Reverse();
+
     OCT_ASSERT(mPrevTransforms.size() == mNodes.size());
 
     for (uint32_t i = 0; i < mNodes.size(); ++i)
@@ -2784,6 +2816,8 @@ ActionSpawnNodes::ActionSpawnNodes(const std::vector<Node*>& srcNodes)
 
 void ActionSpawnNodes::Execute()
 {
+    Action::Execute();
+
     if (mNodes.size() == 0)
     {
         // First time executing this action. We need to create the nodes from the src data.
@@ -2862,6 +2896,8 @@ void ActionSpawnNodes::Execute()
 
 void ActionSpawnNodes::Reverse()
 {
+    Action::Reverse();
+
     if (mParents.size() == 0)
     {
         // First time reversing, track the parents and parent scene-links.
@@ -2932,6 +2968,8 @@ ActionDeleteNodes::ActionDeleteNodes(const std::vector<Node*>& nodes)
 
 void ActionDeleteNodes::Execute()
 {
+    Action::Execute();
+
     for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
         // Actor is already spawned at this point.
@@ -2962,6 +3000,8 @@ void ActionDeleteNodes::Execute()
 
 void ActionDeleteNodes::Reverse()
 {
+    Action::Reverse();
+
     for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
         ActionManager::Get()->RestoreExiledNode(mNodes[i]);
@@ -3012,6 +3052,8 @@ ActionAttachNode::ActionAttachNode(Node* node, Node* newParent, int32_t childInd
 
 void ActionAttachNode::Execute()
 {
+    Action::Execute();
+
     if (mBoneIndex >= 0 &&
         mNewParent != nullptr &&
         mNewParent->As<SkeletalMesh3D>() &&
@@ -3030,6 +3072,8 @@ void ActionAttachNode::Execute()
 
 void ActionAttachNode::Reverse()
 {
+    Action::Reverse();
+
     if (mPrevBoneIndex >= 0 &&
         mPrevParent != nullptr &&
         mPrevParent->As<SkeletalMesh3D>() &&
@@ -3060,6 +3104,8 @@ ActionSetRootNode::ActionSetRootNode(Node* newRoot)
 
 void ActionSetRootNode::Execute()
 {
+    Action::Execute();
+
     mNewRoot->Detach(true);
     GetWorld(0)->SetRootNode(mNewRoot.Get());
     mOldRoot->Attach(mNewRoot.Get(), true);
@@ -3068,6 +3114,8 @@ void ActionSetRootNode::Execute()
 
 void ActionSetRootNode::Reverse()
 {
+    Action::Reverse();
+
     mOldRoot->Detach(true);
     GetWorld(0)->SetRootNode(mOldRoot.Get());
     mNewRoot->Attach(mNewRootParent.Get(), true, mNewRootChildIndex);
@@ -3084,11 +3132,15 @@ ActionSetWorldRotation::ActionSetWorldRotation(Node3D* node, glm::quat rot)
 
 void ActionSetWorldRotation::Execute()
 {
+    Action::Execute();
+
     mNode->SetWorldRotation(mNewRotation);
 }
 
 void ActionSetWorldRotation::Reverse()
 {
+    Action::Reverse();
+
     mNode->SetWorldRotation(mPrevRotation);
 }
 
@@ -3102,11 +3154,15 @@ ActionSetWorldPosition::ActionSetWorldPosition(Node3D* node, glm::vec3 pos)
 
 void ActionSetWorldPosition::Execute()
 {
+    Action::Execute();
+
     mNode->SetWorldPosition(mNewPosition);
 }
 
 void ActionSetWorldPosition::Reverse()
 {
+    Action::Reverse();
+
     mNode->SetWorldPosition(mPrevPosition);
 }
 
@@ -3120,11 +3176,15 @@ ActionSetWorldScale::ActionSetWorldScale(Node3D* node, glm::vec3 scale)
 
 void ActionSetWorldScale::Execute()
 {
+    Action::Execute();
+
     mNode->SetWorldScale(mNewScale);
 }
 
 void ActionSetWorldScale::Reverse()
 {
+    Action::Reverse();
+
     mNode->SetWorldScale(mPrevScale);
 }
 
@@ -3137,11 +3197,15 @@ ActionUnlinkScene::ActionUnlinkScene(Node* node)
 
 void ActionUnlinkScene::Execute()
 {
+    Action::Execute();
+
     mNode->BreakSceneLink();
 }
 
 void ActionUnlinkScene::Reverse()
 {
+    Action::Reverse();
+
     mNode->SetScene(mScene.Get<Scene>());
 }
 
@@ -3163,6 +3227,8 @@ ActionSetInstanceColors::ActionSetInstanceColors(const std::vector<ActionSetInst
 
 void ActionSetInstanceColors::Execute()
 {
+    Action::Execute();
+
     for (uint32_t i = 0; i < mData.size(); ++i)
     {
         mData[i].mMesh3d->SetInstanceColors(mData[i].mColors, mData[i].mBakedLight);
@@ -3171,6 +3237,8 @@ void ActionSetInstanceColors::Execute()
 
 void ActionSetInstanceColors::Reverse()
 {
+    Action::Reverse();
+
     for (uint32_t i = 0; i < mPrevData.size(); ++i)
     {
         mPrevData[i].mMesh3d->SetInstanceColors(mPrevData[i].mColors, mPrevData[i].mBakedLight);
@@ -3201,6 +3269,8 @@ ActionSetInstanceData::ActionSetInstanceData(InstancedMesh3D* instMesh, int32_t 
 
 void ActionSetInstanceData::Execute()
 {
+    Action::Execute();
+
     if (mStartIndex < 0)
     {
         mInstMesh->SetInstanceData(mData);
@@ -3225,6 +3295,8 @@ void ActionSetInstanceData::Execute()
 
 void ActionSetInstanceData::Reverse()
 {
+    Action::Reverse();
+
     if (mStartIndex < 0)
     {
         mInstMesh->SetInstanceData(mPrevData);

@@ -3588,11 +3588,16 @@ static void DrawViewportPanel()
             const EditScene& scene = scenes[n];
 
             bool opened = true;
-            const char* sceneName = "[Unsaved]";
+            std::string sceneName = "*New";
 
             if (scene.mSceneAsset != nullptr)
             {
-                sceneName = scene.mSceneAsset.Get<Scene>()->GetName().c_str();
+                Scene* sceneAsset = scene.mSceneAsset.Get<Scene>();
+                sceneName = sceneAsset->GetName();
+                if (sceneAsset->GetDirtyFlag())
+                {
+                    sceneName = "*" + sceneName;
+                }
             }
 
             ImGuiTabItemFlags tabFlags = ImGuiTabItemFlags_None;
@@ -3601,7 +3606,7 @@ static void DrawViewportPanel()
                 tabFlags = ImGuiTabItemFlags_SetSelected;
             }
 
-            if (ImGui::BeginTabItem(sceneName, &opened, tabFlags))
+            if (ImGui::BeginTabItem(sceneName.c_str(), &opened, tabFlags))
             {
                 if (n != activeSceneIdx)
                 {

@@ -19,8 +19,8 @@ class Action
 {
 public:
     virtual ~Action() {}
-    virtual void Execute() = 0;
-    virtual void Reverse() = 0;
+    virtual void Execute();
+    virtual void Reverse();
     virtual const char* GetName() = 0;
 };
 
