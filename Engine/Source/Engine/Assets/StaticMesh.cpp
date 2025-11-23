@@ -73,6 +73,8 @@ bool StaticMesh::HandlePropChange(Datum* datum, uint32_t index, const void* newV
         handled = true;
     }
 
+    HandleAssetPropChange(datum, index, newValue);
+
     return handled;
 }
 
@@ -539,7 +541,7 @@ bool StaticMesh::Import(const std::string& path, ImportOptions* options)
 void StaticMesh::GatherProperties(std::vector<Property>& outProps)
 {
     Asset::GatherProperties(outProps);
-    outProps.push_back(Property(DatumType::Asset, "Material", this, &mMaterial, 1, nullptr, int32_t(Material::GetStaticType())));
+    outProps.push_back(Property(DatumType::Asset, "Material", this, &mMaterial, 1, HandleAssetPropChange, int32_t(Material::GetStaticType())));
     outProps.push_back(Property(DatumType::Bool, "Generate Triangle Collision Mesh", this, &mGenerateTriangleCollisionMesh, 1, HandlePropChange));
 }
 

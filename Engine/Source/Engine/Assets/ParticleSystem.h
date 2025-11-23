@@ -107,6 +107,8 @@ public:
 
     Bounds GetBounds() const;
 
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
+
 protected:
 
     float mDuration = 1.0f;

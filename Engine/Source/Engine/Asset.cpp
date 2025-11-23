@@ -25,7 +25,19 @@ bool HandleAssetNamePropChange(Datum* datum, uint32_t index, const void* newValu
     std::string newName = *reinterpret_cast<const std::string*>(newValue);
     Asset* asset = reinterpret_cast<Asset*>(prop->mOwner);
     AssetManager::Get()->RenameAsset(asset, newName);
+
+    HandleAssetPropChange(datum, index, newValue);
     return true;
+}
+
+bool HandleAssetPropChange(Datum* datum, uint32_t index, const void* newValue)
+{
+#if EDITOR
+    Property* prop = static_cast<Property*>(datum);
+    Asset* asset = reinterpret_cast<Asset*>(prop->mOwner);
+    asset->SetDirtyFlag();
+    return false;
+#endif
 }
 
 bool ImportOptions::HasOption(const std::string& key)
@@ -65,6 +77,10 @@ void Asset::Create()
 {
     OCT_ASSERT(!mLoaded);
     mLoaded = true;
+
+#if EDITOR
+    ClearDirtyFlag();
+#endif
 }
 
 void Asset::Destroy()
@@ -181,6 +197,7 @@ void Asset::SaveFile(const char* path, Platform platform)
     SaveStream(stream, platform);
     stream.WriteFile(path);
     LogDebug("Asset saved: %s", mName.c_str());
+    ClearDirtyFlag();
 #endif
 }
 
@@ -338,3 +355,17 @@ TypeId Asset::GetTypeIdFromName(const char* name)
     return retId;
 }
 
+void Asset::ClearDirtyFlag()
+{
+    mDirty = false;
+}
+
+void Asset::SetDirtyFlag()
+{
+    mDirty = true;
+}
+
+bool Asset::GetDirtyFlag()
+{
+    return mDirty;
+}

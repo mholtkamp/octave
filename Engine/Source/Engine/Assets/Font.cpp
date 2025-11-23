@@ -52,6 +52,8 @@ bool Font::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
     }
 #endif
 
+    HandleAssetPropChange(datum, index, newValue);
+
     return success;
 }
 
@@ -237,12 +239,12 @@ void Font::GatherProperties(std::vector<Property>& outProps)
 {
     Asset::GatherProperties(outProps);
 
-    outProps.push_back(Property(DatumType::Asset, "Texture", this, &mTexture, 1, nullptr, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::Asset, "Texture", this, &mTexture, 1, HandleAssetPropChange, int32_t(Texture::GetStaticType())));
 
     outProps.push_back(Property(DatumType::Integer, "Size", this, &mSize, 1, Font::HandlePropChange));
-    outProps.push_back(Property(DatumType::Float, "Line Spacing", this, &mLineSpacing));
+    outProps.push_back(Property(DatumType::Float, "Line Spacing", this, &mLineSpacing, 1, HandleAssetPropChange));
 
-    outProps.push_back(Property(DatumType::Bool, "Mipmapped", this, &mMipmapped));
+    outProps.push_back(Property(DatumType::Bool, "Mipmapped", this, &mMipmapped, 1, HandleAssetPropChange));
     outProps.push_back(Property(DatumType::Integer, "Filter Type", this, &mFilterType, 1, Font::HandlePropChange, NULL_DATUM, int32_t(FilterType::Count), gFilterEnumStrings));
     outProps.push_back(Property(DatumType::Integer, "Wrap Mode", this, &mWrapMode, 1, Font::HandlePropChange, NULL_DATUM, int32_t(WrapMode::Count), gWrapEnumStrings));
 

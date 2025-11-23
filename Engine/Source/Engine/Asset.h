@@ -33,6 +33,8 @@ class AssetDir;
 #define DECLARE_ASSET(Base, Parent) DECLARE_FACTORY(Base, Asset); DECLARE_OBJECT(Base, Parent);
 #define DEFINE_ASSET(Base) DEFINE_FACTORY(Base, Asset); DEFINE_OBJECT(Base);
 
+extern bool HandleAssetPropChange(Datum* datum, uint32_t index, const void* newValue);
+
 enum class AssetLoadState
 {
     Unloaded,
@@ -143,4 +145,14 @@ protected:
 
     std::string mName = "Asset";
     int32_t mRefCount = 0;
+
+#if EDITOR
+public:
+    void ClearDirtyFlag();
+    void SetDirtyFlag();
+    bool GetDirtyFlag();
+
+protected:
+    bool mDirty = false;
+#endif
 };

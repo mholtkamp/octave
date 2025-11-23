@@ -18,6 +18,11 @@ using namespace std;
 FORCE_LINK_DEF(SkeletalMesh);
 DEFINE_ASSET(SkeletalMesh);
 
+bool SkeletalMesh::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+{
+    return HandleAssetPropChange(datum, index, newValue);
+}
+
 SkeletalMesh::SkeletalMesh() :
     mMaterial(nullptr),
     mNumVertices(0),
@@ -345,9 +350,9 @@ bool SkeletalMesh::Import(const std::string& path, ImportOptions* options)
 void SkeletalMesh::GatherProperties(std::vector<Property>& outProps)
 {
     Asset::GatherProperties(outProps);
-    outProps.push_back(Property(DatumType::Asset, "Material", this, &mMaterial, 1, nullptr, int32_t(Material::GetStaticType())));
-    outProps.push_back(Property(DatumType::Asset, "Animation Lookup", this, &mAnimationLookupMesh, 1, nullptr, int32_t(SkeletalMesh::GetStaticType())));
-    outProps.push_back(Property(DatumType::Float, "Bounds Scale", this, &mBoundsScale));
+    outProps.push_back(Property(DatumType::Asset, "Material", this, &mMaterial, 1, HandlePropChange, int32_t(Material::GetStaticType())));
+    outProps.push_back(Property(DatumType::Asset, "Animation Lookup", this, &mAnimationLookupMesh, 1, HandlePropChange, int32_t(SkeletalMesh::GetStaticType())));
+    outProps.push_back(Property(DatumType::Float, "Bounds Scale", this, &mBoundsScale, 1, HandlePropChange));
 
     // TODO: Do we want default animations?
     //outProps.push_back(Property(DatumType::String, "Default Animation", this, &mDefaultAnimation));

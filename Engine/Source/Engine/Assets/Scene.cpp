@@ -39,6 +39,9 @@ bool Scene::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
     }
 
 #endif
+
+    HandleAssetPropChange(datum, index, newValue);
+
     return success;
 }
 

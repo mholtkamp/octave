@@ -25,6 +25,8 @@ bool MaterialInstance::HandlePropChange(Datum* datum, uint32_t index, const void
     }
 #endif
 
+    HandleAssetPropChange(datum, index, newValue);
+
     return success;
 }
 

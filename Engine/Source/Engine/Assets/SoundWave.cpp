@@ -15,7 +15,7 @@ DEFINE_ASSET(SoundWave);
 // debug this if we are going to turn it back on.
 #define LQ_CONSOLE_AUDIO 0
 
-bool SoundWave::HandlePreviewPropChange(Datum* datum, uint32_t index, const void* newValue)
+bool SoundWave::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
     SoundWave* soundWave = (SoundWave*)prop->mOwner;
@@ -28,6 +28,8 @@ bool SoundWave::HandlePreviewPropChange(Datum* datum, uint32_t index, const void
     {
         AudioManager::StopSounds(soundWave);
     }
+
+    HandleAssetPropChange(datum, index, newValue);
 
     return true;
 }
@@ -379,16 +381,16 @@ void SoundWave::GatherProperties(std::vector<Property>& outProps)
     Asset::GatherProperties(outProps);
 
     static bool sFakePlay = false;
-    outProps.push_back(Property(DatumType::Bool, "Play", this, &sFakePlay, 1, HandlePreviewPropChange));
+    outProps.push_back(Property(DatumType::Bool, "Play", this, &sFakePlay, 1, HandlePropChange));
 
     static bool sFakeStop = false;
-    outProps.push_back(Property(DatumType::Bool, "Stop", this, &sFakeStop, 1, HandlePreviewPropChange));
+    outProps.push_back(Property(DatumType::Bool, "Stop", this, &sFakeStop, 1, HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Float, "Volume Multiplier", this, &mVolumeMultiplier));
-    outProps.push_back(Property(DatumType::Float, "Pitch Multiplier", this, &mPitchMultiplier));
-    outProps.push_back(Property(DatumType::Byte, "Audio Class", this, &mAudioClass));
-    outProps.push_back(Property(DatumType::Bool, "Compress", this, &mCompress));
-    outProps.push_back(Property(DatumType::Bool, "Compress Internal", this, &mCompressInternal));
+    outProps.push_back(Property(DatumType::Float, "Volume Multiplier", this, &mVolumeMultiplier, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Pitch Multiplier", this, &mPitchMultiplier, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Byte, "Audio Class", this, &mAudioClass, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Compress", this, &mCompress, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Compress Internal", this, &mCompressInternal, 1, HandlePropChange));
 }
 
 glm::vec4 SoundWave::GetTypeColor()

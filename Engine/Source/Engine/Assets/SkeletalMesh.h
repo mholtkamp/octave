@@ -139,6 +139,8 @@ public:
     SkeletalMesh* GetAnimationLookupMesh();
     void SetAnimationLookupMesh(SkeletalMesh* lookupMesh);
 
+    static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
+
 private:
 
     void InitBindPose();

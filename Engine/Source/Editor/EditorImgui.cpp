@@ -2705,7 +2705,13 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
             glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor(stub->mType);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
 
-            if (ImGui::Selectable(stub->mName.c_str(), isSelectedStub))
+            std::string assetDispText = stub->mName;
+            if (stub && stub->mAsset && stub->mAsset->GetDirtyFlag())
+            {
+                assetDispText = "*" + assetDispText;
+            }
+
+            if (ImGui::Selectable(assetDispText.c_str(), isSelectedStub))
             {
                 if (selStub != stub)
                 {

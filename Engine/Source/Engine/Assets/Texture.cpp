@@ -86,6 +86,8 @@ bool Texture::HandlePropChange(Datum* datum, uint32_t index, const void* newValu
 #endif
     }
 
+    HandleAssetPropChange(datum, index, newValue);
+
     return success;
 }
 

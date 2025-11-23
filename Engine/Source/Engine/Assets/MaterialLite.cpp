@@ -80,6 +80,8 @@ bool MaterialLite::HandlePropChange(Datum* datum, uint32_t index, const void* ne
         success = true;
     }
 
+    HandleAssetPropChange(datum, index, newValue);
+
     return success;
 }
 

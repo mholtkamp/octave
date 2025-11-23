@@ -78,6 +78,8 @@ bool MaterialBase::HandlePropChange(Datum* datum, uint32_t index, const void* ne
     }
 #endif
 
+    HandleAssetPropChange(datum, index, newValue);
+
     return success;
 }
 
@@ -209,7 +211,7 @@ void MaterialBase::GatherProperties(std::vector<Property>& outProps)
     static bool sFakeCompile = false;
     outProps.push_back(Property(DatumType::Bool, "Compile", this, &sFakeCompile, 1, HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Asset, "Lite Fallback", this, &mLiteFallback, 1, nullptr, int32_t(MaterialLite::GetStaticType())));
+    outProps.push_back(Property(DatumType::Asset, "Lite Fallback", this, &mLiteFallback, 1, HandlePropChange, int32_t(MaterialLite::GetStaticType())));
 
     outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mBlendMode, 1, HandlePropChange, NULL_DATUM, int32_t(BlendMode::Count), gBlendModeStrings));
     outProps.push_back(Property(DatumType::Byte, "Cull Mode", this, &mCullMode, 1, HandlePropChange, NULL_DATUM, int32_t(CullMode::Count), gCullModeStrings));

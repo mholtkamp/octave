@@ -9,6 +9,11 @@
 FORCE_LINK_DEF(ParticleSystem);
 DEFINE_ASSET(ParticleSystem);
 
+bool ParticleSystem::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
+{
+    return HandleAssetPropChange(datum, index, newValue);
+}
+
 ParticleSystem::ParticleSystem()
 {
     mType = ParticleSystem::GetStaticType();
@@ -144,49 +149,49 @@ void ParticleSystem::GatherProperties(std::vector<Property>& outProps)
 {
     Asset::GatherProperties(outProps);
 
-    outProps.push_back(Property(DatumType::Float, "Duration", this, &mDuration));
-    outProps.push_back(Property(DatumType::Float, "Spawn Rate", this, &mSpawnRate));
-    outProps.push_back(Property(DatumType::Integer, "Burst Count", this, &mBurstCount));
-    outProps.push_back(Property(DatumType::Float, "Burst Window", this, &mBurstWindow));
-    outProps.push_back(Property(DatumType::Integer, "Max Particles", this, &mMaxParticles));
-    outProps.push_back(Property(DatumType::Integer, "Loops", this, &mLoops));
-    outProps.push_back(Property(DatumType::Bool, "Radial Velocity", this, &mRadialVelocity));
-    outProps.push_back(Property(DatumType::Bool, "Radial Spawn", this, &mRadialSpawn));
-    outProps.push_back(Property(DatumType::Bool, "Locked Ratio", this, &mLockedRatio));
+    outProps.push_back(Property(DatumType::Float, "Duration", this, &mDuration, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Spawn Rate", this, &mSpawnRate, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Integer, "Burst Count", this, &mBurstCount, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Burst Window", this, &mBurstWindow, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Integer, "Max Particles", this, &mMaxParticles, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Integer, "Loops", this, &mLoops, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Radial Velocity", this, &mRadialVelocity, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Radial Spawn", this, &mRadialSpawn, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Locked Ratio", this, &mLockedRatio, 1, HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Vector, "Bounds Center", this, &mBounds.mCenter));
-    outProps.push_back(Property(DatumType::Float, "Bounds Radius", this, &mBounds.mRadius));
+    outProps.push_back(Property(DatumType::Vector, "Bounds Center", this, &mBounds.mCenter, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Bounds Radius", this, &mBounds.mRadius, 1, HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Asset, "Material", this, &mMaterial, 1, nullptr, int32_t(Material::GetStaticType())));
+    outProps.push_back(Property(DatumType::Asset, "Material", this, &mMaterial, 1, HandlePropChange, int32_t(Material::GetStaticType())));
 
-    outProps.push_back(Property(DatumType::Float, "Lifetime Min", this, &mParams.mLifetimeMin));
-    outProps.push_back(Property(DatumType::Float, "Lifetime Max", this, &mParams.mLifetimeMax));
+    outProps.push_back(Property(DatumType::Float, "Lifetime Min", this, &mParams.mLifetimeMin, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Lifetime Max", this, &mParams.mLifetimeMax, 1, HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Vector, "Position Min", this, &mParams.mPositionMin));
-    outProps.push_back(Property(DatumType::Vector, "Position Max", this, &mParams.mPositionMax));
+    outProps.push_back(Property(DatumType::Vector, "Position Min", this, &mParams.mPositionMin, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Vector, "Position Max", this, &mParams.mPositionMax, 1, HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Vector, "Velocity Min", this, &mParams.mVelocityMin));
-    outProps.push_back(Property(DatumType::Vector, "Velocity Max", this, &mParams.mVelocityMax));
+    outProps.push_back(Property(DatumType::Vector, "Velocity Min", this, &mParams.mVelocityMin, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Vector, "Velocity Max", this, &mParams.mVelocityMax, 1, HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Vector2D, "Size Min", this, &mParams.mSizeMin));
-    outProps.push_back(Property(DatumType::Vector2D, "Size Max", this, &mParams.mSizeMax));
+    outProps.push_back(Property(DatumType::Vector2D, "Size Min", this, &mParams.mSizeMin, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Vector2D, "Size Max", this, &mParams.mSizeMax, 1, HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Float, "Rotation Min", this, &mParams.mRotationMin));
-    outProps.push_back(Property(DatumType::Float, "Rotation Max", this, &mParams.mRotationMax));
+    outProps.push_back(Property(DatumType::Float, "Rotation Min", this, &mParams.mRotationMin, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Rotation Max", this, &mParams.mRotationMax, 1, HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Float, "Rotation Speed Min", this, &mParams.mRotationSpeedMin));
-    outProps.push_back(Property(DatumType::Float, "Rotation Speed Max", this, &mParams.mRotationSpeedMax));
+    outProps.push_back(Property(DatumType::Float, "Rotation Speed Min", this, &mParams.mRotationSpeedMin, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Rotation Speed Max", this, &mParams.mRotationSpeedMax, 1, HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Vector, "Acceleration", this, &mParams.mAcceleration));
+    outProps.push_back(Property(DatumType::Vector, "Acceleration", this, &mParams.mAcceleration, 1, HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Float, "Alpha Ease", this, &mParams.mAlphaEase));
-    outProps.push_back(Property(DatumType::Float, "Scale Ease", this, &mParams.mScaleEase));
+    outProps.push_back(Property(DatumType::Float, "Alpha Ease", this, &mParams.mAlphaEase, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Float, "Scale Ease", this, &mParams.mScaleEase, 1, HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Color, "Color Start", this, &mParams.mColorStart));
-    outProps.push_back(Property(DatumType::Color, "Color End", this, &mParams.mColorEnd));
+    outProps.push_back(Property(DatumType::Color, "Color Start", this, &mParams.mColorStart, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Color, "Color End", this, &mParams.mColorEnd, 1, HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Vector2D, "Scale Start", this, &mParams.mScaleStart));
-    outProps.push_back(Property(DatumType::Vector2D, "Scale End", this, &mParams.mScaleEnd));
+    outProps.push_back(Property(DatumType::Vector2D, "Scale Start", this, &mParams.mScaleStart, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Vector2D, "Scale End", this, &mParams.mScaleEnd, 1, HandlePropChange));
 }
 
 glm::vec4 ParticleSystem::GetTypeColor()
