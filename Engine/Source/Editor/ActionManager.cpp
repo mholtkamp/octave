@@ -1897,6 +1897,19 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
             const std::string& sceneName = options.mSceneName;
             AssetDir* sceneDir = curDir->CreateSubdirectory(sceneName);
 
+            std::string fullSceneName = "SC_" + sceneName;
+            for (uint32_t i = 0; i < GetEditorState()->mEditScenes.size(); ++i)
+            {
+                Scene* scene = GetEditorState()->mEditScenes[i].mSceneAsset.Get<Scene>();
+                if (scene && scene->GetName() == fullSceneName)
+                {
+                    GetEditorState()->CloseEditScene((int32_t)i);
+                    break;
+                }
+            }
+
+            GarbageCollect();
+
             if (sceneDir == nullptr ||
                 sceneDir->mParentDir == nullptr)
             {
@@ -2126,7 +2139,6 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
             aiNode* node = scene->mRootNode;
             SpawnAiNode(node, rootNode.Get(), glm::mat4(1), meshList, options);
 
-            std::string fullSceneName = "SC_" + sceneName;
             AssetStub* sceneStub = EditorAddUniqueAsset(fullSceneName.c_str(), sceneDir, Scene::GetStaticType(), true);
             Scene* newScene = sceneStub->mAsset ? sceneStub->mAsset->As<Scene>() : nullptr;
 
