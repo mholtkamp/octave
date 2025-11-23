@@ -1826,6 +1826,7 @@ static void SpawnAiNode(aiNode* node, const glm::mat4& parentTransform, const st
             newMesh->EnableCastShadows(true);
             newMesh->SetBakeLighting(true);
             newMesh->SetUseTriangleCollision(true);
+            newMesh->EnableCollision(options.mEnableCollision);
             newMesh->AddTag("Scene");
         }
     }

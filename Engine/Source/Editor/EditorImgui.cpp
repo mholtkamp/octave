@@ -3450,6 +3450,7 @@ static void DrawViewportPanel()
         ImGui::Checkbox("Import Textures", &sSceneImportOptions.mImportTextures);
         ImGui::Checkbox("Import Lights", &sSceneImportOptions.mImportLights);
         ImGui::Checkbox("Import Nodes", &sSceneImportOptions.mImportNodes);
+        ImGui::Checkbox("Enable Collision", &sSceneImportOptions.mEnableCollision);
 
         int32_t shadingModelCount = int32_t(ShadingModel::Count);
         ImGui::Combo("Shading Model", (int*)&(sSceneImportOptions.mDefaultShadingModel), gShadingModelStrings, shadingModelCount);

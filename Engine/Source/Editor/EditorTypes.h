@@ -15,6 +15,7 @@ struct SceneImportOptions
     bool mImportTextures = true;
     bool mImportLights = true;
     bool mImportNodes = true;
+    bool mEnableCollision = true;
     ShadingModel mDefaultShadingModel = ShadingModel::Lit;
     VertexColorMode mDefaultVertexColorMode = VertexColorMode::None;
 };
