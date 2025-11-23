@@ -27,7 +27,7 @@ extern const char* gShadingModelStrings[] =
 };
 static_assert(int32_t(ShadingModel::Count) == 3, "Need to update string conversion table");
 
-static const char* sVertexColorModeStrings[] =
+extern const char* gVertexColorModeStrings[] =
 {
     "None",
     "Modulate",
@@ -246,7 +246,7 @@ void MaterialLite::GatherProperties(std::vector<Property>& outProps)
 
     outProps.push_back(Property(DatumType::Integer, "Shading Model", this, &mLiteParams.mShadingModel, 1, HandlePropChange, NULL_DATUM, int32_t(ShadingModel::Count), gShadingModelStrings));
     outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mLiteParams.mBlendMode, 1, HandlePropChange, NULL_DATUM, int32_t(BlendMode::Count), gBlendModeStrings));
-    outProps.push_back(Property(DatumType::Integer, "Vertex Color Mode", this, &mLiteParams.mVertexColorMode, 1, HandlePropChange, NULL_DATUM, int32_t(VertexColorMode::Count), sVertexColorModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "Vertex Color Mode", this, &mLiteParams.mVertexColorMode, 1, HandlePropChange, NULL_DATUM, int32_t(VertexColorMode::Count), gVertexColorModeStrings));
     outProps.push_back(Property(DatumType::Asset, "Texture 0", this, &mLiteParams.mTextures[TEXTURE_0], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
     outProps.push_back(Property(DatumType::Byte, "UV Map 0", this, &mLiteParams.mUvMaps[TEXTURE_0], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Integer, "TEV Mode 0", this, &mLiteParams.mTevModes[TEXTURE_0], 1, HandlePropChange, NULL_DATUM, int32_t(TevMode::Count), sTevModeStrings));

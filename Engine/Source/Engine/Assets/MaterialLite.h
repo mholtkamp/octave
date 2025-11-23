@@ -3,6 +3,7 @@
 #include "Assets/Material.h"
 
 extern const char* gShadingModelStrings[];
+extern const char* gVertexColorModeStrings[];
 
 struct MaterialLiteParams
 {

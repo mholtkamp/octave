@@ -1956,6 +1956,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                     materialStub = EditorAddUniqueAsset(materialName.c_str(), dir, MaterialLite::GetStaticType(), true);
                     newMaterial = static_cast<MaterialLite*>(materialStub->mAsset);
                     newMaterial->SetShadingModel(options.mDefaultShadingModel);
+                    newMaterial->SetVertexColorMode(options.mDefaultVertexColorMode);
                 }
 
                 uint32_t numBaseTextures = aMaterial->GetTextureCount(aiTextureType_DIFFUSE);

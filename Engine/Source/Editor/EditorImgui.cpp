@@ -3454,6 +3454,9 @@ static void DrawViewportPanel()
         int32_t shadingModelCount = int32_t(ShadingModel::Count);
         ImGui::Combo("Shading Model", (int*)&(sSceneImportOptions.mDefaultShadingModel), gShadingModelStrings, shadingModelCount);
 
+        int32_t vertColorMode = int32_t(VertexColorMode::Count);
+        ImGui::Combo("Vertex Color Mode", (int*)&(sSceneImportOptions.mDefaultVertexColorMode), gVertexColorModeStrings, vertColorMode);
+
         if (ImGui::Button("Import"))
         {
             am->ImportScene(sSceneImportOptions);
