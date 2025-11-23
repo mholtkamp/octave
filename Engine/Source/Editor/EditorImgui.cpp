@@ -3600,13 +3600,16 @@ static void DrawViewportPanel()
                 }
             }
 
+            static char sTabId[128];
+            snprintf(sTabId, 127, "%s###%d", sceneName.c_str(), n);
+
             ImGuiTabItemFlags tabFlags = ImGuiTabItemFlags_None;
             if (sceneJustChanged && n == activeSceneIdx)
             {
                 tabFlags = ImGuiTabItemFlags_SetSelected;
             }
 
-            if (ImGui::BeginTabItem(sceneName.c_str(), &opened, tabFlags))
+            if (ImGui::BeginTabItem(sTabId, &opened, tabFlags))
             {
                 if (n != activeSceneIdx)
                 {
