@@ -528,8 +528,33 @@ bool StaticMesh::Import(const std::string& path, ImportOptions* options)
 
             if (!singleMeshImport)
             {
+                // Make the name unique
+                std::string fullName = GetName();
+
                 const aiNode* meshNode = FindMeshNode(scene, scene->mRootNode, scene->mMeshes[meshIndex]);
-                SetName(GetName() + "_" + meshNode->mName.C_Str());
+                if (meshNode)
+                {
+                    fullName = fullName + "_" + meshNode->mName.C_Str();
+
+                    if (meshNode->mNumMeshes > 1)
+                    {
+                        int32_t nodeMeshIdx = -1;
+                        for (uint32_t m = 0; m < meshNode->mNumMeshes; ++m)
+                        {
+                            if (meshNode->mMeshes[m] == meshIndex)
+                            {
+                                nodeMeshIdx = int32_t(m);
+                                break;
+                            }
+                        }
+
+                        char meshIdxStr[32];
+                        snprintf(meshIdxStr, 31, "%d", nodeMeshIdx);
+                        fullName = fullName + "_" + meshIdxStr;
+                    }
+                }
+
+                SetName(fullName);
             }
         }
     }
