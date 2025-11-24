@@ -81,7 +81,7 @@ void main()
 
     uint shadingModel = material.mShadingModel;
 
-    vec4 diffuse = vec4(0,0,0,0);
+    vec4 diffuse = vec4(1,1,1,1);
 
     diffuse = BlendTexture(material, diffuse, 0, sampler0, texCoord0, texCoord1, inColor.r, material.mTevModes[0], material.mVertexColorMode);
     diffuse = BlendTexture(material, diffuse, 1, sampler1, texCoord0, texCoord1, inColor.g, material.mTevModes[1], material.mVertexColorMode);

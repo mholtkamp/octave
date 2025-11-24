@@ -155,15 +155,21 @@ void CookTexture(
         {
             if (downsampleFactor > 1)
             {
-                texWidth = glm::max(texWidth >> downsampleFactor, 1);
-                texHeight = glm::max(texHeight >> downsampleFactor, 1);
+                texWidth = glm::max(texWidth >> (downsampleFactor - 1), 1);
+                texHeight = glm::max(texHeight >> (downsampleFactor - 1), 1);
             }
 
             float whRatio = float(texWidth) / float(texHeight);
             bool nonSquare = (texWidth != texHeight);
 
-            texWidth = glm::clamp<uint32_t>(texWidth, 1, consoleMaxTextureSize);
-            texHeight = glm::clamp<uint32_t>(texHeight, 1, consoleMaxTextureSize);
+            texWidth = glm::max(texWidth, 1);
+            texHeight = glm::max(texHeight, 1);
+
+            if (consoleMaxTextureSize > 0)
+            {
+                texWidth = glm::min(texWidth, consoleMaxTextureSize);
+                texHeight = glm::min(texHeight,consoleMaxTextureSize);
+            }
 
             if (nonSquare)
             {
@@ -534,13 +540,13 @@ void Texture::GatherProperties(std::vector<Property>& outProps)
 {
     Asset::GatherProperties(outProps);
 
-    outProps.push_back(Property(DatumType::Bool, "Mipmapped", this, &mMipmapped));
-    outProps.push_back(Property(DatumType::Bool, "sRGB", this, &mSrgb));
+    outProps.push_back(Property(DatumType::Bool, "Mipmapped", this, &mMipmapped, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "sRGB", this, &mSrgb, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Integer, "Format", this, &mFormat, 1, Texture::HandlePropChange, NULL_DATUM, 5, sPixelFormatEnumStrings));
     outProps.push_back(Property(DatumType::Integer, "Filter Type", this, &mFilterType, 1, Texture::HandlePropChange, NULL_DATUM, int32_t(FilterType::Count), gFilterEnumStrings));
     outProps.push_back(Property(DatumType::Integer, "Wrap Mode", this, &mWrapMode, 1, Texture::HandlePropChange, NULL_DATUM, int32_t(WrapMode::Count), gWrapEnumStrings));
-    outProps.push_back(Property(DatumType::Bool, "Force High Quality", this, &mForceHighQuality));
-    outProps.push_back(Property(DatumType::Byte, "LQ Downsample Factor", this, &mLowQualityDownsampleFactor));
+    outProps.push_back(Property(DatumType::Bool, "Force High Quality", this, &mForceHighQuality, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Byte, "LQ Downsample Factor", this, &mLowQualityDownsampleFactor, 1, HandlePropChange));
 }
 
 glm::vec4 Texture::GetTypeColor()

@@ -970,10 +970,10 @@ void GatherGeometryLightUniformData(GeometryData& outData, Primitive3D* primitiv
 void WriteMaterialLiteUniformData(MaterialData& outData, MaterialLite* material)
 {
     Texture* textures[4] = {};
-    textures[0] = material->GetTexture((TextureSlot)0);
-    textures[1] = material->GetTexture((TextureSlot)1);
-    textures[2] = material->GetTexture((TextureSlot)2);
-    textures[3] = material->GetTexture((TextureSlot)3);
+    textures[0] = material->GetTexture(0);
+    textures[1] = material->GetTexture(1);
+    textures[2] = material->GetTexture(2);
+    textures[3] = material->GetTexture(3);
 
     outData.mUvOffset0 = material->GetUvOffset(0);
     outData.mUvScale0 = material->GetUvScale(0);
@@ -1355,10 +1355,10 @@ void BindMaterialDescriptorSet(Material* material)
         MaterialLite* matLite = (MaterialLite*)material;
 
         Texture* textures[4] = {};
-        textures[0] = matLite->GetTexture((TextureSlot)0);
-        textures[1] = matLite->GetTexture((TextureSlot)1);
-        textures[2] = matLite->GetTexture((TextureSlot)2);
-        textures[3] = matLite->GetTexture((TextureSlot)3);
+        textures[0] = matLite->GetTexture(0);
+        textures[1] = matLite->GetTexture(1);
+        textures[2] = matLite->GetTexture(2);
+        textures[3] = matLite->GetTexture(3);
 
         // Update uniform buffer data
         MaterialData ubo = {};

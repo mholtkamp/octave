@@ -18,7 +18,7 @@ function FirstPersonController:Create()
     self.moveAccel = 100.0
     self.jumpSpeed = 7.0
     self.moveDrag = 100.0
-    self.extDrag = 5.0
+    self.extDrag = 20.0
     self.airControl = 0.1
     self.enableControl = true
     self.enableJump = true

@@ -36,8 +36,9 @@ bool HandleAssetPropChange(Datum* datum, uint32_t index, const void* newValue)
     Property* prop = static_cast<Property*>(datum);
     Asset* asset = reinterpret_cast<Asset*>(prop->mOwner);
     asset->SetDirtyFlag();
-    return false;
 #endif
+
+    return false;
 }
 
 bool ImportOptions::HasOption(const std::string& key)
@@ -355,6 +356,7 @@ TypeId Asset::GetTypeIdFromName(const char* name)
     return retId;
 }
 
+#if EDITOR
 void Asset::ClearDirtyFlag()
 {
     mDirty = false;
@@ -369,3 +371,4 @@ bool Asset::GetDirtyFlag()
 {
     return mDirty;
 }
+#endif

@@ -66,7 +66,7 @@ void TextMesh3D::Create()
 
     // To make things easier, each TextMesh3D creates a material instance
     // to use in the case that a material override is not provided.
-    // Each frame, the default mat instance is updated so that it's TEXTURE_0 is the font texture
+    // Each frame, the default mat instance is updated so that it's first texture is the font texture
     // And its color is set to mColor.
     mDefaultMatInstance = MaterialLite::New(LoadAsset<MaterialLite>("M_DefaultUnlit"));
     mDefaultMatInstance.Get<MaterialLite>()->SetBlendMode(mBlendMode);
@@ -109,7 +109,7 @@ void TextMesh3D::TickCommon(float deltaTime)
 
     if (font)
     {
-        matInst->SetTexture(TEXTURE_0, font->GetTexture());
+        matInst->SetTexture(0, font->GetTexture());
     }
 
     matInst->SetColor(mColor);

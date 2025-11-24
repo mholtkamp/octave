@@ -233,7 +233,7 @@ vec3 PathTrace(Ray ray, inout uint rngState)
             bool unlit = (material.mShadingModel == SHADING_MODEL_UNLIT);
             bool hasBakedLighting = (mesh.mHasBakedLighting != 0);
             
-            vec4 surfaceColor = vec4(0,0,0,0);
+            vec4 surfaceColor = vec4(1,1,1,1);
             vec4 surfaceLitColor = vec4(0,0,0,0);
             vec2 uv0 = (hit.mUv0 + material.mUvOffset0) * material.mUvScale0;
             vec2 uv1 = (hit.mUv1 + material.mUvOffset1) * material.mUvScale1;

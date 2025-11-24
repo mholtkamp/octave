@@ -622,8 +622,8 @@ static void CreateNewAsset(TypeId assetType, const char* assetName)
             MaterialLite* matLite = stub->mAsset->As<MaterialLite>();
             Texture* texture = selAsset->As<Texture>();
 
-            // Auto assign the selected texture to Texture_0
-            matLite->SetTexture(TEXTURE_0, texture);
+            // Auto assign the selected texture to index 0
+            matLite->SetTexture(0, texture);
 
             std::string newMatName = texture->GetName();
 
@@ -983,7 +983,7 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
     return selectionMade;
 }
 
-static void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOwnerType ownerType)
+void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOwnerType ownerType)
 {
     Asset* asset = prop.GetAsset(index);
     ActionManager* am = ActionManager::Get();
@@ -1207,6 +1207,15 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
         ImGui::PushID(p);
 
+        // Allow custom property drawing
+        bool custom = owner ? owner->DrawCustomProperty(prop) : false;
+
+        if (custom)
+        {
+            ImGui::PopID();
+            continue;
+        }
+
         // Bools handle name on same line after checkbox
         if (propType != DatumType::Bool || prop.GetCount() > 1)
         {
@@ -1277,6 +1286,7 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
         for (uint32_t i = 0; i < prop.GetCount(); ++i)
         {
             ImGui::PushID(i);
+
             switch (propType)
             {
             case DatumType::Integer:

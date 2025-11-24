@@ -2019,7 +2019,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                         if (newMaterial != nullptr && textureToAssign != nullptr)
                         {
-                            newMaterial->SetTexture(TextureSlot(TEXTURE_0 + t), textureToAssign);
+                            newMaterial->SetTexture(t, textureToAssign);
                         }
                     }
                 }

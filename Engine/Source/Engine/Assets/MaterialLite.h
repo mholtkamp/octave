@@ -12,7 +12,7 @@ struct MaterialLiteParams
     VertexColorMode mVertexColorMode = VertexColorMode::Modulate;
     TextureRef mTextures[MATERIAL_LITE_MAX_TEXTURES];
     uint8_t mUvMaps[MATERIAL_LITE_MAX_TEXTURES] = { };
-    TevMode mTevModes[MATERIAL_LITE_MAX_TEXTURES] = { TevMode::Replace, TevMode::Pass, TevMode::Pass, TevMode::Pass };
+    TevMode mTevModes[MATERIAL_LITE_MAX_TEXTURES] = { TevMode::Replace, TevMode::Modulate, TevMode::Modulate, TevMode::Modulate };
     glm::vec2 mUvOffsets[MAX_UV_MAPS] = { { 0.0f, 0.0f }, {0.0f, 0.0f} };
     glm::vec2 mUvScales[MAX_UV_MAPS] = { { 1.0f, 1.0f }, {1.0f, 1.0f} };
     glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -26,6 +26,7 @@ struct MaterialLiteParams
     float mMaskCutoff = 0.5f;
     float mShininess = 32.0f;
     int32_t mSortPriority = 0;
+    uint32_t mNumTextures = 1;
     bool mDisableDepthTest = false;
     bool mFresnelEnabled = false;
     bool mApplyFog = true;
@@ -51,14 +52,15 @@ public:
     virtual void GatherProperties(std::vector<Property>& outProps) override;
     virtual glm::vec4 GetTypeColor() override;
     virtual const char* GetTypeName() override;
+    virtual bool DrawCustomProperty(Property& prop) override;
 
     virtual bool IsLite() const override;
 
     const MaterialLiteParams& GetLiteParams() const;
     void SetLiteParams(const MaterialLiteParams& params);
 
-    void SetTexture(TextureSlot slot, Texture* texture);
-    Texture* GetTexture(TextureSlot slot);
+    void SetTexture(uint32_t slot, Texture* texture);
+    Texture* GetTexture(uint32_t slot);
 
     ShadingModel GetShadingModel() const;
     void SetShadingModel(ShadingModel shadingModel);

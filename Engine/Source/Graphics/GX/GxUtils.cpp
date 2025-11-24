@@ -244,14 +244,15 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
     uint32_t texIdx = 0;
     for (uint32_t i = 0; i < 4; ++i)
     {
-        Texture* texture = material->GetTexture(TextureSlot(TEXTURE_0 + i));
+        Texture* texture = material->GetTexture(i);
         TevMode tevMode = (i == 0) ? TevMode::Replace : material->GetTevMode(i);
-        uint32_t uvMap = material->GetUvMap(TextureSlot(TEXTURE_0 + i));
+        uint32_t uvMap = material->GetUvMap(i);
 
         if (i == 0 && texture == nullptr)
             texture = Renderer::Get()->mWhiteTexture.Get<Texture>();
 
         if (tevMode != TevMode::Pass &&
+            tevMode != TevMode::Count &&
             texture != nullptr)
         {
             // First texture sample is done in TEV 0, if we have to add earlier stages,

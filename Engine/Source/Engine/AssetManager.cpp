@@ -474,6 +474,8 @@ bool AssetManager::PurgeAsset(const char* name)
             }
 
             GetEditorState()->RemoveFilteredAssetStub(delStub);
+
+            delStub->mDirectory = nullptr;
 #endif
 
             if (delStub->mAsset != nullptr)
@@ -483,8 +485,6 @@ bool AssetManager::PurgeAsset(const char* name)
 
                 UnloadAsset(*delStub);
             }
-
-            delStub->mDirectory = nullptr;
 
             delete delStub;
             delStub = nullptr;

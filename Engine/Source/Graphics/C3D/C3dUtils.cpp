@@ -156,9 +156,9 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
         BlendMode blendMode = material->GetBlendMode();
         VertexColorMode vertexColorMode = material->GetVertexColorMode();
         glm::vec4 color = material->GetColor();
-        float opacity = material->GetOpacity();
-        bool depthless = material->IsDepthTestDisabled();
         bool alphaBlend = (blendMode == BlendMode::Additive || blendMode == BlendMode::Translucent);
+        float opacity = alphaBlend ? material->GetOpacity() : 1.0;
+        bool depthless = material->IsDepthTestDisabled();
 
         C3D_LightEnv* lightEnv = &gC3dContext.mLightEnv.mLightEnv;
 
@@ -243,13 +243,14 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
         bool vertexColorBlend = (vertexColorMode == VertexColorMode::TextureBlend);
         for (uint32_t i = 0; i < 3; ++i)
         {
-            Texture* texture = material->GetTexture((TextureSlot)i);
+            Texture* texture = material->GetTexture(i);
             TevMode tevMode = (i == 0) ? TevMode::Replace : material->GetTevMode(i);
 
             if (i == 0 && texture == nullptr)
                 texture = Renderer::Get()->mWhiteTexture.Get<Texture>();
 
             if (tevMode != TevMode::Pass &&
+                tevMode != TevMode::Count &&
                 texture != nullptr)
             {
                 C3D_TexBind(i, &texture->GetResource()->mTex);

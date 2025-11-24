@@ -16,6 +16,10 @@
 
 #include "Graphics/Graphics.h"
 
+#if EDITOR
+#include "EditorImgui.h"
+#endif
+
 extern const char* gBlendModeStrings[];
 extern const char* gCullModeStrings[];
 
@@ -61,22 +65,22 @@ bool MaterialLite::HandlePropChange(Datum* datum, uint32_t index, const void* ne
 
     if (prop->mName == "Texture 0")
     {
-        material->SetTexture(TEXTURE_0, *(Texture**)newValue);
+        material->SetTexture(0, *(Texture**)newValue);
         success = true;
     }
     else if (prop->mName == "Texture 1")
     {
-        material->SetTexture(TEXTURE_1, *(Texture**)newValue);
+        material->SetTexture(1, *(Texture**)newValue);
         success = true;
     }
     else if (prop->mName == "Texture 2")
     {
-        material->SetTexture(TEXTURE_2, *(Texture**)newValue);
+        material->SetTexture(2, *(Texture**)newValue);
         success = true;
     }
     else if (prop->mName == "Texture 3")
     {
-        material->SetTexture(TEXTURE_3, *(Texture**)newValue);
+        material->SetTexture(3, *(Texture**)newValue);
         success = true;
     }
 
@@ -112,7 +116,7 @@ MaterialLite* MaterialLite::New(Material* src)
 
             if (tex != nullptr)
             {
-                ret->SetTexture(TEXTURE_0, tex);
+                ret->SetTexture(0, tex);
             }
         }
     }
@@ -139,6 +143,15 @@ void MaterialLite::LoadStream(Stream& stream, Platform platform)
     mLiteParams.mShadingModel = ShadingModel(stream.ReadUint32());
     mLiteParams.mBlendMode = BlendMode(stream.ReadUint32());
     mLiteParams.mVertexColorMode = VertexColorMode(stream.ReadUint32());
+
+    if (mVersion < ASSET_VERSION_MATERIAL_LITE_TEXTURE_COUNT)
+    {
+        mLiteParams.mNumTextures = MATERIAL_LITE_MAX_TEXTURES;
+    }
+    else
+    {
+        mLiteParams.mNumTextures = stream.ReadUint32();
+    }
 
     for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
     {
@@ -177,6 +190,8 @@ void MaterialLite::SaveStream(Stream& stream, Platform platform)
     stream.WriteUint32(uint32_t(mLiteParams.mShadingModel));
     stream.WriteUint32(uint32_t(mLiteParams.mBlendMode));
     stream.WriteUint32(uint32_t(mLiteParams.mVertexColorMode));
+
+    stream.WriteUint32(mLiteParams.mNumTextures);
 
     for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
     {
@@ -249,18 +264,19 @@ void MaterialLite::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Integer, "Shading Model", this, &mLiteParams.mShadingModel, 1, HandlePropChange, NULL_DATUM, int32_t(ShadingModel::Count), gShadingModelStrings));
     outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mLiteParams.mBlendMode, 1, HandlePropChange, NULL_DATUM, int32_t(BlendMode::Count), gBlendModeStrings));
     outProps.push_back(Property(DatumType::Integer, "Vertex Color Mode", this, &mLiteParams.mVertexColorMode, 1, HandlePropChange, NULL_DATUM, int32_t(VertexColorMode::Count), gVertexColorModeStrings));
-    outProps.push_back(Property(DatumType::Asset, "Texture 0", this, &mLiteParams.mTextures[TEXTURE_0], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
-    outProps.push_back(Property(DatumType::Byte, "UV Map 0", this, &mLiteParams.mUvMaps[TEXTURE_0], 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Integer, "TEV Mode 0", this, &mLiteParams.mTevModes[TEXTURE_0], 1, HandlePropChange, NULL_DATUM, int32_t(TevMode::Count), sTevModeStrings));
-    outProps.push_back(Property(DatumType::Asset, "Texture 1", this, &mLiteParams.mTextures[TEXTURE_1], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
-    outProps.push_back(Property(DatumType::Byte, "UV Map 1", this, &mLiteParams.mUvMaps[TEXTURE_1], 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Integer, "TEV Mode 1", this, &mLiteParams.mTevModes[TEXTURE_1], 1, HandlePropChange, NULL_DATUM, int32_t(TevMode::Count), sTevModeStrings));
-    outProps.push_back(Property(DatumType::Asset, "Texture 2", this, &mLiteParams.mTextures[TEXTURE_2], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
-    outProps.push_back(Property(DatumType::Byte, "UV Map 2", this, &mLiteParams.mUvMaps[TEXTURE_2], 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Integer, "TEV Mode 2", this, &mLiteParams.mTevModes[TEXTURE_2], 1, HandlePropChange, NULL_DATUM, int32_t(TevMode::Count), sTevModeStrings));
-    outProps.push_back(Property(DatumType::Asset, "Texture 3", this, &mLiteParams.mTextures[TEXTURE_3], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
-    outProps.push_back(Property(DatumType::Byte, "UV Map 3", this, &mLiteParams.mUvMaps[TEXTURE_3], 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Integer, "TEV Mode 3", this, &mLiteParams.mTevModes[TEXTURE_3], 1, HandlePropChange, NULL_DATUM, int32_t(TevMode::Count), sTevModeStrings));
+    outProps.push_back(Property(DatumType::Integer, "Num Textures", this, &mLiteParams.mNumTextures, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Asset, "Texture 0", this, &mLiteParams.mTextures[0], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::Byte, "UV Map 0", this, &mLiteParams.mUvMaps[0], 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Integer, "TEV Mode 0", this, &mLiteParams.mTevModes[0], 1, HandlePropChange, NULL_DATUM, int32_t(TevMode::Count), sTevModeStrings));
+    outProps.push_back(Property(DatumType::Asset, "Texture 1", this, &mLiteParams.mTextures[1], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::Byte, "UV Map 1", this, &mLiteParams.mUvMaps[1], 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Integer, "TEV Mode 1", this, &mLiteParams.mTevModes[1], 1, HandlePropChange, NULL_DATUM, int32_t(TevMode::Count), sTevModeStrings));
+    outProps.push_back(Property(DatumType::Asset, "Texture 2", this, &mLiteParams.mTextures[2], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::Byte, "UV Map 2", this, &mLiteParams.mUvMaps[2], 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Integer, "TEV Mode 2", this, &mLiteParams.mTevModes[2], 1, HandlePropChange, NULL_DATUM, int32_t(TevMode::Count), sTevModeStrings));
+    outProps.push_back(Property(DatumType::Asset, "Texture 3", this, &mLiteParams.mTextures[3], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::Byte, "UV Map 3", this, &mLiteParams.mUvMaps[3], 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Integer, "TEV Mode 3", this, &mLiteParams.mTevModes[3], 1, HandlePropChange, NULL_DATUM, int32_t(TevMode::Count), sTevModeStrings));
     outProps.push_back(Property(DatumType::Vector2D, "UV Offset 0", this, &mLiteParams.mUvOffsets[0], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "UV Scale 0", this, &mLiteParams.mUvScales[0], 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "UV Offset 1", this, &mLiteParams.mUvOffsets[1], 1, HandlePropChange));
@@ -292,6 +308,88 @@ const char* MaterialLite::GetTypeName()
     return "MaterialLite";
 }
 
+bool MaterialLite::DrawCustomProperty(Property& prop)
+{
+#if EDITOR
+    if (prop.mName == "Num Textures")
+    {
+        ImGui::Text("Num Textures");
+        ImGui::SliderInt("##NumTexSlide", (int*)&mLiteParams.mNumTextures, 0, 4);
+        return true;
+    }
+    else if (prop.mName.find("Texture") != std::string::npos)
+    {
+        uint32_t texIdx = 0;
+        bool hideProp = false;
+        if (prop.mName == "Texture 0")
+        {
+            hideProp = (mLiteParams.mNumTextures < 1);
+            texIdx = 0;
+        }
+        else if (prop.mName == "Texture 1")
+        {
+            hideProp = (mLiteParams.mNumTextures < 2);
+            texIdx = 1;
+        }
+        else if (prop.mName == "Texture 2")
+        {
+            hideProp = (mLiteParams.mNumTextures < 3);
+            texIdx = 2;
+        }
+        else if (prop.mName == "Texture 3")
+        {
+            hideProp = (mLiteParams.mNumTextures < 4);
+            texIdx = 3;
+        }
+
+        if (!hideProp)
+        {
+            // Draw a 
+            ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+
+            float red = glm::mix(75.0f, 135.0f, texIdx / 3.0f);
+
+            ImGui::GetWindowDrawList()->AddRectFilled(
+                ImVec2(cursorPos.x - 50.0f, cursorPos.y),
+                ImVec2(cursorPos.x + 210.0f + 50.0f, cursorPos.y + 120.0f),
+                //(texIdx % 2 == 0) ? IM_COL32(25, 128, 120, 255) : IM_COL32(12, 64, 60, 255)
+                IM_COL32(int32_t(red + 0.5f), 32, 32, 255)
+            );
+        }
+
+        return hideProp;
+    }
+    else if (prop.mName.find("UV Map") != std::string::npos)
+    {
+        if (prop.mName == "UV Map 0")
+            return (mLiteParams.mNumTextures < 1);
+        else if (prop.mName == "UV Map 1")
+            return (mLiteParams.mNumTextures < 2);
+        else if (prop.mName == "UV Map 2")
+            return (mLiteParams.mNumTextures < 3);
+        else if (prop.mName == "UV Map 3")
+            return (mLiteParams.mNumTextures < 4);
+
+        return true;
+    }
+    else if (prop.mName.find("TEV Mode") != std::string::npos)
+    {
+        if (prop.mName == "TEV Mode 0")
+            return (mLiteParams.mNumTextures < 1);
+        else if (prop.mName == "TEV Mode 1")
+            return (mLiteParams.mNumTextures < 2);
+        else if (prop.mName == "TEV Mode 2")
+            return (mLiteParams.mNumTextures < 3);
+        else if (prop.mName == "TEV Mode 3")
+            return (mLiteParams.mNumTextures < 4);
+
+        return true;
+    }
+#endif
+
+    return false;
+}
+
 bool MaterialLite::IsLite() const
 {
     return true;
@@ -307,16 +405,25 @@ void MaterialLite::SetLiteParams(const MaterialLiteParams& params)
     mLiteParams = params;
 }
 
-void MaterialLite::SetTexture(TextureSlot slot, Texture* texture)
+void MaterialLite::SetTexture(uint32_t slot, Texture* texture)
 {
+    if (slot >= MATERIAL_LITE_MAX_TEXTURES)
+    {
+        LogWarning("Invalid texture slot in MaterialLite::SetTexture()");
+        return;
+    }
+
     if (mLiteParams.mTextures[slot].Get<Texture>() != texture)
     {
         mLiteParams.mTextures[slot] = texture;
     }
 }
 
-Texture* MaterialLite::GetTexture(TextureSlot slot)
+Texture* MaterialLite::GetTexture(uint32_t slot)
 {
+    if (slot >= uint32_t(mLiteParams.mNumTextures) || slot >= MATERIAL_LITE_MAX_TEXTURES)
+        return Renderer::Get()->mWhiteTexture.Get<Texture>();
+
     return mLiteParams.mTextures[slot].Get<Texture>();
 }
 
@@ -547,7 +654,7 @@ void MaterialLite::SetCullMode(CullMode cullMode)
 uint32_t MaterialLite::GetUvMap(uint32_t textureSlot)
 {
     OCT_ASSERT(textureSlot < MATERIAL_LITE_MAX_TEXTURES);
-    if (textureSlot < MATERIAL_LITE_MAX_TEXTURES)
+    if (textureSlot < uint32_t(mLiteParams.mNumTextures) && textureSlot < MATERIAL_LITE_MAX_TEXTURES)
     {
         return mLiteParams.mUvMaps[textureSlot];
     }
@@ -569,12 +676,12 @@ void MaterialLite::SetUvMap(uint32_t textureSlot, uint32_t uvMapIndex)
 TevMode MaterialLite::GetTevMode(uint32_t textureSlot)
 {
     OCT_ASSERT(textureSlot < MATERIAL_LITE_MAX_TEXTURES);
-    if (textureSlot < MATERIAL_LITE_MAX_TEXTURES)
+    if (textureSlot < uint32_t(mLiteParams.mNumTextures) && textureSlot < MATERIAL_LITE_MAX_TEXTURES)
     {
         return mLiteParams.mTevModes[textureSlot];
     }
 
-    return TevMode::Count;
+    return TevMode::Pass;
 }
 
 void MaterialLite::SetTevMode(uint32_t textureSlot, TevMode mode)

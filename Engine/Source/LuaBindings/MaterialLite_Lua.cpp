@@ -24,7 +24,7 @@ int MaterialLite_Lua::SetTexture(lua_State* L)
     Texture* texture = nullptr;
     if (!lua_isnil(L, 3)) { texture = CHECK_TEXTURE(L, 3); }
 
-    mat->SetTexture((TextureSlot)slot, texture);
+    mat->SetTexture((uint32_t)slot, texture);
 
     return 0;
 }
@@ -34,7 +34,7 @@ int MaterialLite_Lua::GetTexture(lua_State* L)
     MaterialLite* mat = CHECK_MATERIAL_LITE(L, 1);
     int32_t slot = CHECK_INDEX(L, 2);
 
-    Texture* ret = mat->GetTexture((TextureSlot)slot);
+    Texture* ret = mat->GetTexture((uint32_t)slot);
 
     Asset_Lua::Create(L, ret);
     return 1;
@@ -294,7 +294,7 @@ int MaterialLite_Lua::GetUvMap(lua_State* L)
     int32_t slot = CHECK_INTEGER(L, 2);
 
     // Conver to lua-style index starting at 1
-    int32_t ret = 1 + mat->GetUvMap((TextureSlot)slot);
+    int32_t ret = 1 + mat->GetUvMap(slot);
 
     lua_pushinteger(L, ret);
     return 1;
@@ -306,7 +306,7 @@ int MaterialLite_Lua::SetUvMap(lua_State* L)
     int32_t slot = CHECK_INTEGER(L, 2);
     int32_t uvMapIdx = CHECK_INTEGER(L, 3);
 
-    mat->SetUvMap((TextureSlot)slot, uvMapIdx);
+    mat->SetUvMap((uint32_t)slot, uvMapIdx);
 
     return 0;
 }
@@ -316,7 +316,7 @@ int MaterialLite_Lua::GetTevMode(lua_State* L)
     MaterialLite* mat = CHECK_MATERIAL_LITE(L, 1);
     int32_t slot = CHECK_INTEGER(L, 2);
 
-    TevMode ret = mat->GetTevMode((TextureSlot)slot);
+    TevMode ret = mat->GetTevMode((uint32_t)slot);
 
     lua_pushinteger(L, (int32_t)ret);
     return 1;
@@ -328,7 +328,7 @@ int MaterialLite_Lua::SetTevMode(lua_State* L)
     int32_t slot = CHECK_INTEGER(L, 2);
     int32_t tevMode = CHECK_INTEGER(L, 3);
 
-    mat->SetTevMode((TextureSlot)slot, (TevMode)tevMode);
+    mat->SetTevMode((uint32_t)slot, (TevMode)tevMode);
 
     return 0;
 }

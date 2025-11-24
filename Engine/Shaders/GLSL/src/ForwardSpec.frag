@@ -101,7 +101,7 @@ void main()
     uint shadingModel = kShadingModel;
 
     vec4 vertColor = (kVertexColorMode == VERTEX_COLOR_NONE) ? vec4(1,1,1,1) : inColor;
-    vec4 diffuse = vec4(0,0,0,0);
+    vec4 diffuse = vec4(1,1,1,1);
 
     if (kNumTextures >= 1)
         diffuse = BlendTexture(material, diffuse, 0, sampler0, texCoord0, texCoord1, vertColor.r, kTev0, kVertexColorMode);

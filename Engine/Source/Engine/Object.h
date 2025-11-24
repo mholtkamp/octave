@@ -42,6 +42,11 @@ public:
 
     }
 
+    virtual bool DrawCustomProperty(Property& prop)
+    {
+        return false;
+    }
+
     template <typename T>
     T* As() const
     {

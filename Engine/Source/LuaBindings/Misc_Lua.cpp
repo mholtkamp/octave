@@ -112,16 +112,16 @@ void BindTextureSlot()
     lua_newtable(L);
     int tableIdx = lua_gettop(L);
 
-    lua_pushinteger(L, (int)TextureSlot::TEXTURE_0);
+    lua_pushinteger(L, 0);
     lua_setfield(L, tableIdx, "Slot0");
 
-    lua_pushinteger(L, (int)TextureSlot::TEXTURE_1);
+    lua_pushinteger(L, 1);
     lua_setfield(L, tableIdx, "Slot1");
 
-    lua_pushinteger(L, (int)TextureSlot::TEXTURE_2);
+    lua_pushinteger(L, 2);
     lua_setfield(L, tableIdx, "Slot2");
 
-    lua_pushinteger(L, (int)TextureSlot::TEXTURE_3);
+    lua_pushinteger(L, 3);
     lua_setfield(L, tableIdx, "Slot3");
 
     lua_setglobal(L, "TextureSlot");
