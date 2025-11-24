@@ -3053,13 +3053,25 @@ static void DrawPropertiesPanel()
 
                 if (obj->As<Asset>())
                 {
+                    Asset* asset = obj->As<Asset>();
+
                     if (ImGui::Button("<<"))
                     {
-                        Asset* asset = obj->As<Asset>();
                         GetEditorState()->BrowseToAsset(asset->GetName());
                     }
 
                     ImGui::SameLine();
+
+                    if (ImGui::Button("Save"))
+                    {
+                        AssetManager::Get()->SaveAsset(asset->GetName());
+                    }
+
+                    if (asset->GetDirtyFlag())
+                    {
+                        ImGui::SameLine();
+                        ImGui::Text("*");
+                    }
                 }
 
                 // Display object name (e.g. StaticMesh3D)

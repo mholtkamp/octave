@@ -313,8 +313,15 @@ bool MaterialLite::DrawCustomProperty(Property& prop)
 #if EDITOR
     if (prop.mName == "Num Textures")
     {
+        uint32_t prevNum = mLiteParams.mNumTextures;
         ImGui::Text("Num Textures");
         ImGui::SliderInt("##NumTexSlide", (int*)&mLiteParams.mNumTextures, 0, 4);
+
+        if (prevNum != mLiteParams.mNumTextures)
+        {
+            SetDirtyFlag();
+        }
+
         return true;
     }
     else if (prop.mName.find("Texture") != std::string::npos)
