@@ -3041,6 +3041,17 @@ static void DrawPropertiesPanel()
             {
                 bool inspectLocked = GetEditorState()->IsInspectLocked();
 
+                if (obj->As<Asset>())
+                {
+                    if (ImGui::Button("<<"))
+                    {
+                        Asset* asset = obj->As<Asset>();
+                        GetEditorState()->BrowseToAsset(asset->GetName());
+                    }
+
+                    ImGui::SameLine();
+                }
+
                 // Display object name (e.g. StaticMesh3D)
                 std::string objName = obj->RuntimeName();
                 ImVec2 sz = ImVec2(-FLT_MIN, 0.0f);
