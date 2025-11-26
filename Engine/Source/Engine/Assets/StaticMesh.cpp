@@ -89,7 +89,7 @@ StaticMesh::StaticMesh() :
     mTriangleCollisionShape(nullptr),
     mTriangleIndexVertexArray(nullptr),
     mTriangleInfoMap(nullptr),
-    mGenerateTriangleCollisionMesh(false),
+    mGenerateTriangleCollisionMesh(true),
     mHasVertexColor(false)
 {
     mType = StaticMesh::GetStaticType();
