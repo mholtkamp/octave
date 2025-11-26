@@ -20,6 +20,7 @@ function FirstPersonController:Create()
     self.moveDrag = 100.0
     self.extDrag = 20.0
     self.airControl = 0.1
+    self.vertSlideLimit = 0.3
     self.enableControl = true
     self.enableJump = true
     self.enableTankControls = false
@@ -50,6 +51,7 @@ function FirstPersonController:GatherProperties()
         { name = "moveDrag", type = DatumType.Float },
         { name = "extDrag", type = DatumType.Float },
         { name = "airControl", type = DatumType.Float },
+        { name = "vertSlideLimit", type = DatumType.Float },
         { name = "enableControl", type = DatumType.Bool },
         { name = "enableJump", type = DatumType.Bool },
         { name = "enableTankControls", type = DatumType.Bool },
@@ -219,10 +221,10 @@ function FirstPersonController:UpdateMovement(deltaTime)
     end
 
     -- First apply motion based on internal move velocity
-    self.moveVelocity = self:Move(self.moveVelocity, deltaTime)
+    self.moveVelocity = self:Move(self.moveVelocity, deltaTime, self.vertSlideLimit)
 
     -- Then apply motion based on external velocity (like gravity)
-    self.extVelocity = self:Move(self.extVelocity, deltaTime)
+    self.extVelocity = self:Move(self.extVelocity, deltaTime, 0.0)
 
 end
 
@@ -264,7 +266,7 @@ function FirstPersonController:UpdateCamera(deltaTime)
 
 end
 
-function FirstPersonController:Move(velocity, deltaTime)
+function FirstPersonController:Move(velocity, deltaTime, vertSlideNormalLimit)
 
     local kMaxIterations = 3
 
@@ -279,8 +281,14 @@ function FirstPersonController:Move(velocity, deltaTime)
                 self:SetGrounded(true)
             end
 
+            local initialVelocityY = velocity.y
+
             velocity = velocity - (sweepRes.hitNormal * Vector.Dot(velocity, sweepRes.hitNormal))
             deltaTime = deltaTime * (1.0 - sweepRes.hitFraction)
+
+            if (math.abs(sweepRes.hitNormal.y) < vertSlideNormalLimit) then
+                velocity.y = initialVelocityY
+            end
         else
             break
         end

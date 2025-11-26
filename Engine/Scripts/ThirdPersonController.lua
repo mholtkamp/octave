@@ -64,6 +64,7 @@ function ThirdPersonController:GatherProperties()
         { name = "moveDrag", type = DatumType.Float },
         { name = "extDrag", type = DatumType.Float },
         { name = "airControl", type = DatumType.Float },
+        { name = "vertSlideLimit", type = DatumType.Float },
         { name = "followCamHeight", type = DatumType.Float },
         { name = "enableControl", type = DatumType.Bool },
         { name = "enableJump", type = DatumType.Bool },
@@ -242,7 +243,7 @@ function ThirdPersonController:UpdateMovement(deltaTime)
     end
 
     -- First apply motion based on internal move velocity
-    self.moveVelocity = self:Move(self.moveVelocity, deltaTime, 0.3)
+    self.moveVelocity = self:Move(self.moveVelocity, deltaTime, self.vertSlideLimit)
 
     -- Then apply motion based on external velocity (like gravity)
     self.extVelocity = self:Move(self.extVelocity, deltaTime, 0.0)
