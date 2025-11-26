@@ -27,12 +27,17 @@ Play an animation contained within the skeletal mesh asset. Multiple animations 
 
 Note: You can update an animation (for instance, change its speed) by calling PlayAnimation() a second time with the same animation name and updated options.
 
-Sig: `SkeletalMesh3D:PlayAnimation(animName, loop=false, speed=1, weight=1, slot=-1)`
+Sig: `SkeletalMesh3D:PlayAnimation(animName, slot=-1, loop=false, speed=1, weight=1)`
  - Arg: `string animName` Name of the animation to play
+ - Arg: `integer slot` Animation slot (0 - 7, or -1 to place at next available slot)
  - Arg: `boolean loop` Should the animation loop once reaching the end
  - Arg: `number speed` Speed multiplier. 1 = normal speed.
  - Arg: `number weight` How much weight should be given to the animation. (1 = default)
- - Arg: `integer slot` Animation slot (0 - 7, or -1 to place at next available slot)
+
+Old signature kept for backwards compatibility:
+
+Sig: `SkeletalMesh3D:PlayAnimation(animName, loop=false, speed=1, weight=1, slot=-1)`
+
 ---
 ### StopAnimation
 Stop a specific animation.
@@ -57,13 +62,18 @@ Sig: `playing = SkeletalMesh3D:IsAnimationPlaying(animName)`
 ### QueueAnimation
 Queue an animation to be played. A target animation name can be provided to wait on, otherwise the queued animation will be played after the animation in the highest slot finishes.
 
-Sig: `SkeletalMesh3D:QueueAnimation(animName, loop, dependentAnimName=nil, speed=1, weight=1, slot=-1)`
+Sig: `SkeletalMesh3D:QueueAnimation(animName, dependentAnimName=nil, slot=-1, loop=false, speed=1, weight=1)`
  - Arg: `string animName` Name of animation to queue
- - Arg: `boolean loop` Whether to loop
  - Arg: `string dependentAnimName` Name of dependent anim to wait on
+ - Arg: `integer slot` Animation slot (0 - 7, or -1 to place at next available slot)
+ - Arg: `boolean loop` Whether to loop
  - Arg: `number speed` Speed multiplier
  - Arg: `number weight` Animation blending weight (0 - 1)
- - Arg: `integer slot` Animation slot (0 - 7, or -1 to place at next available slot)
+
+ Old signature kept for backwards compatibility:
+
+ Sig: `SkeletalMesh3D:QueueAnimation(animName, loop, dependentAnimName=nil, speed=1, weight=1, slot=-1)`
+
 ---
 ### CancelQueuedAnimation
 Cancel a queued animation by name.

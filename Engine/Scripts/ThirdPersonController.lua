@@ -287,11 +287,16 @@ function ThirdPersonController:UpdateMesh(deltaTime)
 
     -- Update looping animation
     if (not self.grounded) then
-        self.mesh:PlayAnimation("Fall", true, 1, 1, 0)
-    elseif (self.moveVelocity:Distance2(Vec()) > 1.0) then
-        self.mesh:PlayAnimation("Run", true, 1.5, 1, 0)
+        -- Don't play fall animation if jump animation is playing.
+        -- Wait until it finishes so that we get a seamless transition between
+        -- the end of the jump animation and the beginning of the fall animation.
+        if (not self.mesh:IsAnimationPlaying("Jump")) then
+            self.mesh:PlayAnimation("Fall", 0, true, 1, 1)
+        end
+    elseif (self.moveVelocity:Length2() > 1.0) then
+        self.mesh:PlayAnimation("Run", 0, true, 1.5, 1)
     else
-        self.mesh:PlayAnimation("Idle", true, 1, 1, 0)
+        self.mesh:PlayAnimation("Idle", 0, true, 1, 1)
     end
 end
 
@@ -327,6 +332,10 @@ function ThirdPersonController:Jump()
         self.extVelocity.y = self.jumpSpeed
         self:SetGrounded(false)
         self.ignoreGroundingTimer = 0.2
+
+        self.mesh:StopAnimation("Fall")
+        self.mesh:PlayAnimation("Jump", 1, false)
+        self.mesh:QueueAnimation("Fall", "Jump", 0, true, 1, 1)
     end
 
 end

@@ -41,10 +41,22 @@ int SkeletalMesh3D_Lua::PlayAnimation(lua_State* L)
     float weight = 1.0f;
     int32_t slot = -1;
 
-    if (!lua_isnone(L, 3)) { loop = CHECK_BOOLEAN(L, 3); }
-    if (!lua_isnone(L, 4)) { speed = CHECK_NUMBER(L, 4); }
-    if (!lua_isnone(L, 5)) { weight = CHECK_NUMBER(L, 5); }
-    if (!lua_isnone(L, 6)) { slot = CHECK_INTEGER(L, 6); }
+    if (lua_isinteger(L, 3))
+    {
+        // New signature, slot is the next parameter
+        if (!lua_isnone(L, 3)) { slot = CHECK_INTEGER(L, 3); }
+        if (!lua_isnone(L, 4)) { loop = CHECK_BOOLEAN(L, 4); }
+        if (!lua_isnone(L, 5)) { speed = CHECK_NUMBER(L, 5); }
+        if (!lua_isnone(L, 6)) { weight = CHECK_NUMBER(L, 6); }
+    }
+    else if (lua_isboolean(L, 3))
+    {
+        // Old signature, kept for backwards compatibility
+        if (!lua_isnone(L, 3)) { loop = CHECK_BOOLEAN(L, 3); }
+        if (!lua_isnone(L, 4)) { speed = CHECK_NUMBER(L, 4); }
+        if (!lua_isnone(L, 5)) { weight = CHECK_NUMBER(L, 5); }
+        if (!lua_isnone(L, 6)) { slot = CHECK_INTEGER(L, 6); }
+    }
 
     comp->PlayAnimation(animName, loop, speed, weight, slot);
 
@@ -91,17 +103,33 @@ int SkeletalMesh3D_Lua::QueueAnimation(lua_State* L)
 {
     SkeletalMesh3D* comp = CHECK_SKELETAL_MESH_3D(L, 1);
     const char* animName = CHECK_STRING(L, 2);
-    bool loop = CHECK_BOOLEAN(L, 3);
+    bool loop = false;
     const char* dependentAnimName = nullptr;
 
     float speed = 1.0f;
     float weight = 1.0f;
     int32_t slot = -1;
 
-    if (!lua_isnone(L, 4) && !lua_isnil(L, 4)) { dependentAnimName = CHECK_STRING(L, 4); }
-    if (!lua_isnone(L, 5)) { speed = CHECK_NUMBER(L, 5); }
-    if (!lua_isnone(L, 6)) { weight = CHECK_NUMBER(L, 6); }
-    if (!lua_isnone(L, 7)) { slot = CHECK_INTEGER(L, 7); }
+
+    if (lua_isstring(L, 3))
+    {
+        // New signature.
+        if (!lua_isnone(L, 3) && !lua_isnil(L, 3)) { dependentAnimName = CHECK_STRING(L, 3); }
+        if (!lua_isnone(L, 4)) { slot = CHECK_INTEGER(L, 4); }
+        if (!lua_isnone(L, 5)) { loop = CHECK_BOOLEAN(L, 5) };
+        if (!lua_isnone(L, 6)) { speed = CHECK_NUMBER(L, 6); }
+        if (!lua_isnone(L, 7)) { weight = CHECK_NUMBER(L, 7); }
+
+    }
+    else if (lua_isboolean(L, 3))
+    {
+        // Old signature, kept for backwards compatibility.
+        if (!lua_isnone(L, 3)) { loop = CHECK_BOOLEAN(L, 3) };
+        if (!lua_isnone(L, 4) && !lua_isnil(L, 4)) { dependentAnimName = CHECK_STRING(L, 4); }
+        if (!lua_isnone(L, 5)) { speed = CHECK_NUMBER(L, 5); }
+        if (!lua_isnone(L, 6)) { weight = CHECK_NUMBER(L, 6); }
+        if (!lua_isnone(L, 7)) { slot = CHECK_INTEGER(L, 7); }
+    }
 
     comp->QueueAnimation(animName, loop, dependentAnimName, speed, weight, slot);
 

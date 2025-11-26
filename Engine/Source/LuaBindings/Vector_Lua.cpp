@@ -491,6 +491,16 @@ int Vector_Lua::Length(lua_State* L)
     return 1;
 }
 
+int Vector_Lua::Length2(lua_State* L)
+{
+    glm::vec4 vect = CHECK_VECTOR(L, 1);
+
+    float ret = glm::length2(vect);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
 int Vector_Lua::Distance(lua_State* L)
 {
     glm::vec4 a = CHECK_VECTOR(L, 1);
@@ -611,6 +621,11 @@ void Vector_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, mtIndex, Length);
     REGISTER_TABLE_FUNC_EX(L, mtIndex, Length, "Magnitude");
+
+    REGISTER_TABLE_FUNC(L, mtIndex, Length2);
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Length2, "LengthSquared");
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Length2, "Magnitude2");
+    REGISTER_TABLE_FUNC_EX(L, mtIndex, Length2, "MagnitudeSquared");
 
     REGISTER_TABLE_FUNC(L, mtIndex, Distance);
 

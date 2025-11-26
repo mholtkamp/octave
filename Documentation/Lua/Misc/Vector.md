@@ -153,6 +153,17 @@ Alias: `Magnitude`
 Sig: `length = Vector:Length()`
  - Ret: `number length` Vector length/size/magnitude
 ---
+### Length2
+Get the squared length of this Vector.
+
+Alias: `LengthSquared`
+Alias: `Magnitude2`
+Alias: `MagnitudeSquared`
+
+Sig: `length2 = Vector:Length2()`
+ - Ret: `number length2` Vector length squared
+
+---
 ### Distance
 Get the distance between two vectors.
 
@@ -163,6 +174,8 @@ Sig: `dist = Vector.Distance(a, b)`
 ---
 ### Distance2
 Get the squared distance between two vectors.
+
+Alias: `DistanceSquared`
 
 Sig: `dist = Vector.Distance2(a, b)`
  - Arg: `Vector a` First vector
