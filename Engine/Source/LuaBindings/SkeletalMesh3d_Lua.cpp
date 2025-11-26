@@ -39,14 +39,14 @@ int SkeletalMesh3D_Lua::PlayAnimation(lua_State* L)
     bool loop = false;
     float speed = 1.0f;
     float weight = 1.0f;
-    uint8_t priority = 255;
+    int32_t slot = -1;
 
     if (!lua_isnone(L, 3)) { loop = CHECK_BOOLEAN(L, 3); }
     if (!lua_isnone(L, 4)) { speed = CHECK_NUMBER(L, 4); }
     if (!lua_isnone(L, 5)) { weight = CHECK_NUMBER(L, 5); }
-    if (!lua_isnone(L, 6)) { priority = (uint8_t) CHECK_INTEGER(L, 6); }
+    if (!lua_isnone(L, 6)) { slot = CHECK_INTEGER(L, 6); }
 
-    comp->PlayAnimation(animName, loop, speed, weight, priority);
+    comp->PlayAnimation(animName, loop, speed, weight, slot);
 
     return 0;
 }
@@ -96,14 +96,14 @@ int SkeletalMesh3D_Lua::QueueAnimation(lua_State* L)
 
     float speed = 1.0f;
     float weight = 1.0f;
-    uint8_t priority = 255;
+    int32_t slot = -1;
 
     if (!lua_isnone(L, 4) && !lua_isnil(L, 4)) { dependentAnimName = CHECK_STRING(L, 4); }
     if (!lua_isnone(L, 5)) { speed = CHECK_NUMBER(L, 5); }
     if (!lua_isnone(L, 6)) { weight = CHECK_NUMBER(L, 6); }
-    if (!lua_isnone(L, 7)) { priority = (uint8_t)CHECK_INTEGER(L, 7); }
+    if (!lua_isnone(L, 7)) { slot = CHECK_INTEGER(L, 7); }
 
-    comp->QueueAnimation(animName, loop, dependentAnimName, speed, weight, priority);
+    comp->QueueAnimation(animName, loop, dependentAnimName, speed, weight, slot);
 
     return 0;
 }

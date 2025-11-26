@@ -27,6 +27,8 @@ static_assert(int32_t(AnimationUpdateMode::Count) == 3, "Need to update string c
 FORCE_LINK_DEF(SkeletalMesh3D);
 DEFINE_NODE(SkeletalMesh3D, Mesh3D);
 
+#define NUM_ANIMATION_SLOTS 8
+
 struct DecompTransform
 {
     glm::vec3 mPosition = { 0.0f, 0.0f, 0.0f };
@@ -51,7 +53,7 @@ bool SkeletalMesh3D::HandlePropChange(Datum* datum, uint32_t index, const void* 
     {
         meshComp->StopAllAnimations();
         meshComp->mDefaultAnimation = *((std::string*) newValue);
-        meshComp->PlayAnimation(meshComp->mDefaultAnimation.c_str(), true);
+        meshComp->PlayAnimation(meshComp->mDefaultAnimation.c_str(), true, 1.0f, 1.0f, 0);
         success = true;
     }
 
@@ -113,7 +115,7 @@ void SkeletalMesh3D::Create()
 
     if (mDefaultAnimation != "")
     {
-        PlayAnimation(mDefaultAnimation.c_str(), true);
+        PlayAnimation(mDefaultAnimation.c_str(), true, 1.0f, 1.0f, 0);
     }
 }
 
@@ -196,7 +198,7 @@ SkeletalMesh* SkeletalMesh3D::GetSkeletalMesh()
     return mSkeletalMesh.Get<SkeletalMesh>();
 }
 
-void SkeletalMesh3D::PlayAnimation(const char* animName, bool loop, float speed, float weight, uint8_t priority)
+void SkeletalMesh3D::PlayAnimation(const char* animName, bool loop, float speed, float weight, int32_t slot)
 {
     if (animName == nullptr ||
         animName[0] == '\0')
@@ -204,28 +206,101 @@ void SkeletalMesh3D::PlayAnimation(const char* animName, bool loop, float speed,
         return;
     }
 
+    if (slot >= NUM_ANIMATION_SLOTS)
+    {
+        LogWarning("Invalid animation slot in SkeletalMesh3D::PlayAnimation()");
+        return;
+    }
+
+    // If a slot of -1 is passed in (or any negative number), that means, make it the next highest available slot.
+    if (slot < 0)
+    {
+        for (uint32_t i = 0; i < mActiveAnimations.size(); ++i)
+        {
+            OCT_ASSERT(mActiveAnimations[i].mSlot >= 0);
+            slot = glm::max<int32_t>(slot, mActiveAnimations[i].mSlot);
+        }
+
+        slot++;
+        OCT_ASSERT(slot >= 0);
+    }
+
+    slot = glm::clamp<int32_t>(slot, 0, NUM_ANIMATION_SLOTS - 1);
+
+    ActiveAnimation newAnimData;
+    newAnimData.mName = animName;
+    newAnimData.mTime = 0.0;
+    newAnimData.mSpeed = speed;
+    newAnimData.mWeight = weight;
+    newAnimData.mLoop = loop;
+    newAnimData.mSlot = slot;
+
     ActiveAnimation* anim = FindActiveAnimation(animName);
+
+    if (anim != nullptr)
+    {
+        // Preserve the active animation time if looping
+        newAnimData.mTime = loop ? anim->mTime : 0.0f;
+
+        // The slot changed. We need to remove it from the active anim list
+        // and then reinsert it to ensure that the array remains in ascending slot.
+        if (anim->mSlot != slot)
+        {
+            for (uint32_t i = 0; i < mActiveAnimations.size(); ++i)
+            {
+                if (mActiveAnimations[i].mName == animName)
+                {
+                    mActiveAnimations.erase(mActiveAnimations.begin() + i);
+                    break;
+                }
+            }
+
+            anim = nullptr;
+        }
+    }
+
+    if (mActiveAnimations.size() >= NUM_ANIMATION_SLOTS)
+    {
+        LogWarning("Too many active animations. Cannot play animation.");
+        return;
+    }
 
     if (anim == nullptr)
     {
-        // Animation isn't playing yet.
-        uint32_t index = (uint32_t)priority;
-        index = glm::min(index, (uint32_t)mActiveAnimations.size());
-        mActiveAnimations.insert(mActiveAnimations.begin() + index, ActiveAnimation());
+        // Animation isn't playing, we need to insert it.
+        for (uint32_t i = 0; i < mActiveAnimations.size(); ++i)
+        {
+            if (mActiveAnimations[i].mSlot == slot)
+            {
+                // There is a different animation in the same slot. Overwrite that animation.
+                anim = &mActiveAnimations[i];
+                break;
+            }
 
-        anim = &mActiveAnimations[index];
+            if (mActiveAnimations[i].mSlot > slot)
+            {
+                mActiveAnimations.insert(mActiveAnimations.begin() + i, ActiveAnimation());
+                anim = &mActiveAnimations[i];
+                break;
+            }
+        }
+
+        if (anim == nullptr)
+        {
+            // This is the highest slot anim, place it on the end
+            mActiveAnimations.push_back(ActiveAnimation());
+            anim = &mActiveAnimations.back();
+        }
     }
 
     OCT_ASSERT(anim != nullptr);
-
-    anim->mName = animName;
-    anim->mTime = loop ? anim->mTime : 0.0f;
-    anim->mSpeed = speed;
-    anim->mWeight = weight;
-    anim->mLoop = loop;
+    if (anim != nullptr)
+    {
+        *anim = newAnimData;
+    }
 }
 
-void SkeletalMesh3D::QueueAnimation(const char* animName, bool loop, const char* targetAnim, float speed, float weight, uint8_t priority)
+void SkeletalMesh3D::QueueAnimation(const char* animName, bool loop, const char* targetAnim, float speed, float weight, int32_t slot)
 {
     if (animName == nullptr ||
         animName[0] == '\0')
@@ -241,7 +316,7 @@ void SkeletalMesh3D::QueueAnimation(const char* animName, bool loop, const char*
         if (mActiveAnimations.size() == 0)
         {
             // Default queued, just play it immediately.
-            PlayAnimation(animName, loop, speed, weight, priority);
+            PlayAnimation(animName, loop, speed, weight, slot);
         }
         else
         {
@@ -284,7 +359,7 @@ void SkeletalMesh3D::QueueAnimation(const char* animName, bool loop, const char*
         queuedAnim->mLoop = loop;
         queuedAnim->mSpeed = speed;
         queuedAnim->mWeight = weight;
-        queuedAnim->mPriority = priority;
+        queuedAnim->mSlot = slot;
     }
 }
 
@@ -1004,7 +1079,7 @@ void SkeletalMesh3D::UpdateAnimation(float deltaTime, bool updateBones)
                             queuedAnim.mLoop,
                             queuedAnim.mSpeed,
                             queuedAnim.mWeight,
-                            queuedAnim.mPriority);
+                            queuedAnim.mSlot);
 
                         mQueuedAnimations.erase(mQueuedAnimations.begin() + q);
                     }

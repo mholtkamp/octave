@@ -29,8 +29,9 @@ struct ActiveAnimation
 {
     std::string mName;
     float mTime = 0.0f;
-    float mSpeed = 1.0f;;
+    float mSpeed = 1.0f;
     float mWeight = 0.0f;
+    int32_t mSlot = 0;
     bool mLoop = false;
 };
 
@@ -42,7 +43,7 @@ struct QueuedAnimation
     float mSpeed = 1.0f;;
     float mWeight = 0.0f;
     bool mLoop = false;
-    uint8_t mPriority = 255;
+    int32_t mSlot = -1;
 };
 
 typedef void(*AnimEventHandlerFP)(const AnimEvent& animEvent);
@@ -72,8 +73,8 @@ public:
     void SetSkeletalMesh(SkeletalMesh* skeletalMesh);
     SkeletalMesh* GetSkeletalMesh();
 
-    void PlayAnimation(const char* animName, bool loop, float speed = 1.0f, float weight = 1.0f, uint8_t priority = 255);
-    void QueueAnimation(const char* animName, bool loop, const char* targetAnim = nullptr, float speed = 1.0f, float weight = 1.0f, uint8_t priority = 255);
+    void PlayAnimation(const char* animName, bool loop, float speed = 1.0f, float weight = 1.0f, int32_t priority = -1);
+    void QueueAnimation(const char* animName, bool loop, const char* targetAnim = nullptr, float speed = 1.0f, float weight = 1.0f, int32_t priority = -1);
     void StopAnimation(const char* animName, bool cancelQueued = false);
     void StopAllAnimations(bool cancelQueued = false);
     void CancelQueuedAnimation(const char* animName);

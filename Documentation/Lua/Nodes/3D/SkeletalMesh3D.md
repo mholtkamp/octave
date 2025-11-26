@@ -23,16 +23,16 @@ Sig: `mesh = SkeletalMesh3D:GetSkeletalMesh()`
  - Ret: `SkeletalMesh mesh` The skeletal mesh asset
 ---
 ### PlayAnimation
-Play an animation contained within the skeletal mesh asset. The priority is actually what index to place the animation within the array of active animations. Animations at the end of the array will be processed last, and thus overwrite previous animations depending on what bones are animated and the weight of the animation. Priority should be in the range 0 to 255.
+Play an animation contained within the skeletal mesh asset. Multiple animations can be played at the same time by placing them into different slots. There are 8 available animation slots (0 through 7). Animations in higher slots will be processed after earlier slots. Blending between animations can be accomplished by adjusting the weight parameter.
 
 Note: You can update an animation (for instance, change its speed) by calling PlayAnimation() a second time with the same animation name and updated options.
 
-Sig: `SkeletalMesh3D:PlayAnimation(animName, loop=false, speed=1, weight=1, priority=255)`
+Sig: `SkeletalMesh3D:PlayAnimation(animName, loop=false, speed=1, weight=1, slot=-1)`
  - Arg: `string animName` Name of the animation to play
  - Arg: `boolean loop` Should the animation loop once reaching the end
  - Arg: `number speed` Speed multiplier. 1 = normal speed.
  - Arg: `number weight` How much weight should be given to the animation. (1 = default)
- - Arg: `integer priority` Animation priority (0-255)
+ - Arg: `integer slot` Animation slot (0 - 7, or -1 to place at next available slot)
 ---
 ### StopAnimation
 Stop a specific animation.
@@ -55,15 +55,15 @@ Sig: `playing = SkeletalMesh3D:IsAnimationPlaying(animName)`
  - Ret: `boolean playing` Is animation playing
 ---
 ### QueueAnimation
-Queue an animation to be played. A target animation name can be provided to wait on, otherwise the queued animation will be played after the animation with the highest priority finishes.
+Queue an animation to be played. A target animation name can be provided to wait on, otherwise the queued animation will be played after the animation in the highest slot finishes.
 
-Sig: `SkeletalMesh3D:QueueAnimation(animName, loop, dependentAnimName=nil, speed=1, weight=1, priority=255)`
+Sig: `SkeletalMesh3D:QueueAnimation(animName, loop, dependentAnimName=nil, speed=1, weight=1, slot=-1)`
  - Arg: `string animName` Name of animation to queue
  - Arg: `boolean loop` Whether to loop
  - Arg: `string dependentAnimName` Name of dependent anim to wait on
  - Arg: `number speed` Speed multiplier
  - Arg: `number weight` Animation blending weight (0 - 1)
- - Arg: `integer priority` Animation priority
+ - Arg: `integer slot` Animation slot (0 - 7, or -1 to place at next available slot)
 ---
 ### CancelQueuedAnimation
 Cancel a queued animation by name.
