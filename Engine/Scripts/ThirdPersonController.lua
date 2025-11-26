@@ -20,6 +20,7 @@ function ThirdPersonController:Create()
     self.lookSpeed = 200.0
     self.moveAccel = 100.0
     self.jumpSpeed = 7.0
+    self.jumpGravScale = 0.5
     self.moveDrag = 100.0
     self.extDrag = 20.0
     self.airControl = 0.1
@@ -32,6 +33,8 @@ function ThirdPersonController:Create()
     self.moveDir = Vec()
     self.lookVec = Vec()
     self.jumpTimer = 0.0
+    self.isJumping = false
+    self.isJumpHeld = false
     self.ignoreGroundingTimer = 0.0
     self.timeSinceGrounded = 0.0
     self.grounded = false
@@ -55,6 +58,7 @@ function ThirdPersonController:GatherProperties()
         { name = "lookSpeed", type = DatumType.Float },
         { name = "moveAccel", type = DatumType.Float },
         { name = "jumpSpeed", type = DatumType.Float },
+        { name = "jumpGravScale", type = DatumType.Float },
         { name = "moveDrag", type = DatumType.Float },
         { name = "extDrag", type = DatumType.Float },
         { name = "airControl", type = DatumType.Float },
@@ -169,6 +173,10 @@ function ThirdPersonController:UpdateJump(deltaTime)
 
     local jumpPressed = Input.IsKeyPressed(Key.Space) or Input.IsGamepadPressed(Gamepad.A)
 
+    if (self.isJumpHeld) then
+        self.isJumpHeld = Input.IsKeyDown(Key.Space) or Input.IsGamepadDown(Gamepad.A)
+    end
+
     self.jumpTimer = math.max(self.jumpTimer - deltaTime, 0.0)
 
     if (jumpPressed) then
@@ -206,7 +214,11 @@ function ThirdPersonController:UpdateMovement(deltaTime)
 
     -- Apply gravity
     if (not self.grounded) then
-        self.extVelocity.y = self.extVelocity.y + self.gravity * deltaTime
+        local gravity = self.gravity
+        if (self.isJumping and self.isJumpHeld) then
+            gravity = gravity * self.jumpGravScale
+        end
+        self.extVelocity.y = self.extVelocity.y + gravity * deltaTime
     end
 
     -- Add velocity based on player input vector
@@ -338,6 +350,8 @@ end
 function ThirdPersonController:Jump()
 
     if (self.enableJump and self.grounded) then
+        self.isJumping = true
+        self.isJumpHeld = true
         self.extVelocity.y = self.jumpSpeed
         self:SetGrounded(false)
         self.ignoreGroundingTimer = 0.2
@@ -363,6 +377,7 @@ function ThirdPersonController:SetGrounded(grounded)
         if (self.grounded) then
             self.extVelocity.y = 0.0
             self.timeSinceGrounded = 0.0
+            self.isJumping = false
         end
     end
 end
