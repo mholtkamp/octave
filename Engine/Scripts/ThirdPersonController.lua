@@ -27,6 +27,7 @@ function ThirdPersonController:Create()
     self.enableControl = true
     self.enableJump = true
     self.enableFollowCam = false
+    self.enableCameraTrace = true
     self.mouseSensitivity = 0.05
 
     -- State
@@ -65,6 +66,7 @@ function ThirdPersonController:GatherProperties()
         { name = "enableControl", type = DatumType.Bool },
         { name = "enableJump", type = DatumType.Bool },
         { name = "enableFollowCam", type = DatumType.Bool },
+        { name = "enableCameraTrace", type = DatumType.Bool },
         { name = "mouseSensitivity", type = DatumType.Float },
     }
 
@@ -282,6 +284,18 @@ function ThirdPersonController:UpdateLook(deltaTime)
     -- Adjust camera distance
     self.camera:SetPosition(Vec(0, 0, self.cameraDistance))
 
+    if (self.enableCameraTrace) then
+        local rayStart = self.collider:GetWorldPosition()
+        local rayEnd = self.camera:GetWorldPosition()
+        local colMask = 0x02 -- Default collision group for environment
+        local res = self.world:RayTest(rayStart, rayEnd, colMask)
+
+        if (res.hitNode) then
+            -- The trace hit something, so place the camera at the hit location
+            local pos = Vector.Lerp(rayStart, rayEnd, res.hitFraction)
+            self.camera:SetWorldPosition(pos)
+        end
+    end
 end
 
 function ThirdPersonController:UpdateMesh(deltaTime)
