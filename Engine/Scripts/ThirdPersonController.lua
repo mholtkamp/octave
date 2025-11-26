@@ -33,6 +33,7 @@ function ThirdPersonController:Create()
     self.lookVec = Vec()
     self.jumpTimer = 0.0
     self.ignoreGroundingTimer = 0.0
+    self.timeSinceGrounded = 0.0
     self.grounded = false
     self.extVelocity = Vec()
     self.moveVelocity = Vec()
@@ -225,10 +226,10 @@ function ThirdPersonController:UpdateMovement(deltaTime)
     end
 
     -- First apply motion based on internal move velocity
-    self.moveVelocity = self:Move(self.moveVelocity, deltaTime)
+    self.moveVelocity = self:Move(self.moveVelocity, deltaTime, 0.3)
 
     -- Then apply motion based on external velocity (like gravity)
-    self.extVelocity = self:Move(self.extVelocity, deltaTime)
+    self.extVelocity = self:Move(self.extVelocity, deltaTime, 0.0)
 
 end
 
@@ -250,6 +251,8 @@ function ThirdPersonController:UpdateGrounding(deltaTime)
             self.collider:SetWorldPosition(startPos)
             self:SetGrounded(false)
         end
+    else
+        self.timeSinceGrounded = self.timeSinceGrounded + deltaTime
     end
 end
 
@@ -286,7 +289,7 @@ function ThirdPersonController:UpdateMesh(deltaTime)
     end
 
     -- Update looping animation
-    if (not self.grounded) then
+    if (not self.grounded and self.timeSinceGrounded > 0.1) then
         -- Don't play fall animation if jump animation is playing.
         -- Wait until it finishes so that we get a seamless transition between
         -- the end of the jump animation and the beginning of the fall animation.
@@ -300,7 +303,7 @@ function ThirdPersonController:UpdateMesh(deltaTime)
     end
 end
 
-function ThirdPersonController:Move(velocity, deltaTime)
+function ThirdPersonController:Move(velocity, deltaTime, vertSlideNormalLimit)
 
     local kMaxIterations = 3
 
@@ -315,8 +318,14 @@ function ThirdPersonController:Move(velocity, deltaTime)
                 self:SetGrounded(true)
             end
 
+            local initialVelocityY = velocity.y
+
             velocity = velocity - (sweepRes.hitNormal * Vector.Dot(velocity, sweepRes.hitNormal))
             deltaTime = deltaTime * (1.0 - sweepRes.hitFraction)
+
+            if (math.abs(sweepRes.hitNormal.y) < vertSlideNormalLimit) then
+                velocity.y = initialVelocityY
+            end
         else
             break
         end
@@ -353,6 +362,7 @@ function ThirdPersonController:SetGrounded(grounded)
 
         if (self.grounded) then
             self.extVelocity.y = 0.0
+            self.timeSinceGrounded = 0.0
         end
     end
 end
