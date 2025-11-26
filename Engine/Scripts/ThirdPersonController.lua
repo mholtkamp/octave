@@ -3,15 +3,18 @@
 --     Camera (Camera3D)
 --     Controller (Node, with this script)
 
-FirstPersonController = {}
+ThirdPersonController = {}
 
-FirstPersonController.kGroundingDot = 0.9
+ThirdPersonController.kGroundingDot = 0.9
 
-function FirstPersonController:Create()
+function ThirdPersonController:Create()
 
     -- Properties
     self.collider = nil
     self.camera = nil
+    self.cameraPivot = nil
+    self.mesh = nil
+    self.cameraDistance = 10.0
     self.gravity = -9.8
     self.moveSpeed = 7.0
     self.lookSpeed = 200.0
@@ -22,7 +25,7 @@ function FirstPersonController:Create()
     self.airControl = 0.1
     self.enableControl = true
     self.enableJump = true
-    self.enableTankControls = false
+    self.enableFollowCam = false
     self.mouseSensitivity = 0.05
 
     -- State
@@ -33,15 +36,19 @@ function FirstPersonController:Create()
     self.grounded = false
     self.extVelocity = Vec()
     self.moveVelocity = Vec()
+    self.meshYaw = 0.0
 
 end
 
-function FirstPersonController:GatherProperties()
+function ThirdPersonController:GatherProperties()
 
     return
     {
         { name = "collider", type = DatumType.Node },
         { name = "camera", type = DatumType.Node },
+        { name = "cameraPivot", type = DatumType.Node },
+        { name = "mesh", type = DatumType.Node },
+        { name = "cameraDistance", type = DatumType.Float },
         { name = "gravity", type = DatumType.Float },
         { name = "moveSpeed", type = DatumType.Float },
         { name = "lookSpeed", type = DatumType.Float },
@@ -52,13 +59,13 @@ function FirstPersonController:GatherProperties()
         { name = "airControl", type = DatumType.Float },
         { name = "enableControl", type = DatumType.Bool },
         { name = "enableJump", type = DatumType.Bool },
-        { name = "enableTankControls", type = DatumType.Bool },
+        { name = "enableFollowCam", type = DatumType.Bool },
         { name = "mouseSensitivity", type = DatumType.Float },
     }
 
 end
 
-function FirstPersonController:Start()
+function ThirdPersonController:Start()
 
     self:AddTag("Controller")
 
@@ -76,7 +83,7 @@ function FirstPersonController:Start()
 
 end
 
-function FirstPersonController:Stop()
+function ThirdPersonController:Stop()
 
     Input.LockCursor(false)
     Input.TrapCursor(false)
@@ -84,7 +91,7 @@ function FirstPersonController:Stop()
 
 end
 
-function FirstPersonController:Tick(deltaTime)
+function ThirdPersonController:Tick(deltaTime)
 
     self:UpdateInput(deltaTime)
     self:UpdateJump(deltaTime)
@@ -92,14 +99,13 @@ function FirstPersonController:Tick(deltaTime)
     self:UpdateMovement(deltaTime)
     self:UpdateGrounding(deltaTime)
     self:UpdateLook(deltaTime)
+    self:UpdateMesh(deltaTime)
 
 end
 
-function FirstPersonController:UpdateInput(deltaTime)
+function ThirdPersonController:UpdateInput(deltaTime)
 
     if (self.enableControl) then
-
-        local tank = self.enableTankControls
 
         -- moveDir
         self.moveDir = Vec()
@@ -123,7 +129,7 @@ function FirstPersonController:UpdateInput(deltaTime)
         local leftAxisY = Input.GetGamepadAxis(Gamepad.AxisLY)
 
         -- Only add analog stick input beyond a deadzone limit
-        if (math.abs(leftAxisX) > 0.1 and not tank) then
+        if (math.abs(leftAxisX) > 0.1) then
             self.moveDir.x = self.moveDir.x + leftAxisX
         end
         if (math.abs(leftAxisY) > 0.1) then
@@ -140,9 +146,9 @@ function FirstPersonController:UpdateInput(deltaTime)
         self.lookVec.x, self.lookVec.y = Input.GetMouseDelta()
         self.lookVec = self.lookVec * self.mouseSensitivity
         local gamepadLook = Vec()
-        local rightAxisX = Input.GetGamepadAxis(tank and Gamepad.AxisLX or Gamepad.AxisRX)
+        local rightAxisX = Input.GetGamepadAxis(Gamepad.AxisRX)
         local rightAxisY = Input.GetGamepadAxis(Gamepad.AxisRY)
-        local rightAxisDeadZone = tank and 0.3 or 0.1
+        local rightAxisDeadZone = 0.1
         if (math.abs(rightAxisX) > rightAxisDeadZone) then
             gamepadLook.x = rightAxisX
         end
@@ -158,7 +164,7 @@ function FirstPersonController:UpdateInput(deltaTime)
 
 end
 
-function FirstPersonController:UpdateJump(deltaTime)
+function ThirdPersonController:UpdateJump(deltaTime)
 
     local jumpPressed = Input.IsKeyPressed(Key.Space) or Input.IsGamepadPressed(Gamepad.A)
 
@@ -174,7 +180,7 @@ function FirstPersonController:UpdateJump(deltaTime)
 
 end
 
-function FirstPersonController:UpdateDrag(deltaTime)
+function ThirdPersonController:UpdateDrag(deltaTime)
 
     -- Update drag
     local function updateDrag(velocity, drag)
@@ -195,7 +201,7 @@ function FirstPersonController:UpdateDrag(deltaTime)
 
 end
 
-function FirstPersonController:UpdateMovement(deltaTime)
+function ThirdPersonController:UpdateMovement(deltaTime)
 
     -- Apply gravity
     if (not self.grounded) then
@@ -204,7 +210,7 @@ function FirstPersonController:UpdateMovement(deltaTime)
 
     -- Add velocity based on player input vector
     local deltaMoveVel = self.moveDir * self.moveAccel * deltaTime
-    local yaw = self.collider:GetRotation().y
+    local yaw = self.cameraPivot:GetRotation().y
     deltaMoveVel = Vector.Rotate(deltaMoveVel, yaw, Vec(0,1,0))
 
     -- Reduce move velocity when in air
@@ -226,7 +232,7 @@ function FirstPersonController:UpdateMovement(deltaTime)
 
 end
 
-function FirstPersonController:UpdateGrounding(deltaTime)
+function ThirdPersonController:UpdateGrounding(deltaTime)
 
     self.ignoreGroundingTimer = math.max(self.ignoreGroundingTimer - deltaTime, 0.0)
 
@@ -247,24 +253,49 @@ function FirstPersonController:UpdateGrounding(deltaTime)
     end
 end
 
-function FirstPersonController:UpdateLook(deltaTime)
+function ThirdPersonController:UpdateLook(deltaTime)
 
     local lookRot = self.lookVec * self.lookSpeed
 
-    -- Adjust yaw of root node
-    local rootRot = self.collider:GetRotation()
-    rootRot.y = rootRot.y - lookRot.x * deltaTime
-    self.collider:SetRotation(rootRot)
+    -- Adjust rotation of camera pivot based on player input
+    local camPivotRot = self.cameraPivot:GetRotation()
+    camPivotRot.y = camPivotRot.y - lookRot.x * deltaTime
+    camPivotRot.x = camPivotRot.x - lookRot.y * deltaTime
+    camPivotRot.x = Math.Clamp(camPivotRot.x, -89.9, 89.9)
+    self.cameraPivot:SetRotation(camPivotRot)
 
-    -- Adjust pitch of camera
-    local camRot = self.camera:GetRotation()
-    camRot.x = camRot.x - lookRot.y * deltaTime
-    camRot.x = Math.Clamp(camRot.x, -89.9, 89.9)
-    self.camera:SetRotation(camRot)
+    -- Adjust camera distance
+    self.camera:SetPosition(Vec(0, 0, self.cameraDistance))
 
 end
 
-function FirstPersonController:Move(velocity, deltaTime)
+function ThirdPersonController:UpdateMesh(deltaTime)
+
+    -- Update orientation of the mesh if the player is moving
+    if (math.abs(self.moveDir.x) >= 0.01 or
+        math.abs(self.moveDir.z) >= 0.01) then
+
+        local camYaw = self.cameraPivot:GetRotation().y
+        local moveDir = Vector.Rotate(self.moveDir, camYaw, Vec(0,1,0))
+
+        local targetYaw = math.atan(-moveDir.x, -moveDir.z)
+        targetYaw = math.deg(targetYaw)
+
+        self.meshYaw = Math.ApproachAngle(self.meshYaw, targetYaw, 1000.0, deltaTime)
+        self.mesh:SetRotation(Vec(0, self.meshYaw, 0))
+    end
+
+    -- Update looping animation
+    if (not self.grounded) then
+        self.mesh:PlayAnimation("Fall", true, 1, 1, 0)
+    elseif (self.moveVelocity:Distance2(Vec()) > 1.0) then
+        self.mesh:PlayAnimation("Run", true, 1.5, 1, 0)
+    else
+        self.mesh:PlayAnimation("Idle", true, 1, 1, 0)
+    end
+end
+
+function ThirdPersonController:Move(velocity, deltaTime)
 
     local kMaxIterations = 3
 
@@ -290,7 +321,7 @@ function FirstPersonController:Move(velocity, deltaTime)
 
 end
 
-function FirstPersonController:Jump()
+function ThirdPersonController:Jump()
 
     if (self.enableJump and self.grounded) then
         self.extVelocity.y = self.jumpSpeed
@@ -301,7 +332,7 @@ function FirstPersonController:Jump()
 end
 
 
-function FirstPersonController:SetGrounded(grounded)
+function ThirdPersonController:SetGrounded(grounded)
 
     -- Don't allow grounding if we are ignoring it temporarily (just began jumping)
     if (grounded and self.ignoreGroundingTimer > 0.0) then

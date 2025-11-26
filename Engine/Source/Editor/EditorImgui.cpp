@@ -2276,7 +2276,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
     if ((stub && stub->mEngineAsset) ||
         (dir && dir->mEngineDir))
     {
-        engineFile = true;
+        //engineFile = true;
     }
 
     bool canInstantiate = false;
