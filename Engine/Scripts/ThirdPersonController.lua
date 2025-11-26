@@ -24,6 +24,7 @@ function ThirdPersonController:Create()
     self.moveDrag = 100.0
     self.extDrag = 20.0
     self.airControl = 0.1
+    self.followCamHeight = 4.0
     self.enableControl = true
     self.enableJump = true
     self.enableFollowCam = false
@@ -63,6 +64,7 @@ function ThirdPersonController:GatherProperties()
         { name = "moveDrag", type = DatumType.Float },
         { name = "extDrag", type = DatumType.Float },
         { name = "airControl", type = DatumType.Float },
+        { name = "followCamHeight", type = DatumType.Float },
         { name = "enableControl", type = DatumType.Bool },
         { name = "enableJump", type = DatumType.Bool },
         { name = "enableFollowCam", type = DatumType.Bool },
@@ -105,7 +107,7 @@ function ThirdPersonController:Tick(deltaTime)
     self:UpdateDrag(deltaTime)
     self:UpdateMovement(deltaTime)
     self:UpdateGrounding(deltaTime)
-    self:UpdateLook(deltaTime)
+    self:UpdateCamera(deltaTime)
     self:UpdateMesh(deltaTime)
 
 end
@@ -225,7 +227,7 @@ function ThirdPersonController:UpdateMovement(deltaTime)
 
     -- Add velocity based on player input vector
     local deltaMoveVel = self.moveDir * self.moveAccel * deltaTime
-    local yaw = self.cameraPivot:GetRotation().y
+    local yaw = self:GetCameraYaw()
     deltaMoveVel = Vector.Rotate(deltaMoveVel, yaw, Vec(0,1,0))
 
     -- Reduce move velocity when in air
@@ -270,20 +272,60 @@ function ThirdPersonController:UpdateGrounding(deltaTime)
     end
 end
 
-function ThirdPersonController:UpdateLook(deltaTime)
+function ThirdPersonController:UpdateCamera(deltaTime)
 
-    local lookRot = self.lookVec * self.lookSpeed
+    local kFollowMinDistXZ = 4.0
 
-    -- Adjust rotation of camera pivot based on player input
-    local camPivotRot = self.cameraPivot:GetRotation()
-    camPivotRot.y = camPivotRot.y - lookRot.x * deltaTime
-    camPivotRot.x = camPivotRot.x - lookRot.y * deltaTime
-    camPivotRot.x = Math.Clamp(camPivotRot.x, -89.9, 89.9)
-    self.cameraPivot:SetRotation(camPivotRot)
+    if (self.enableFollowCam) then
 
-    -- Adjust camera distance
-    self.camera:SetPosition(Vec(0, 0, self.cameraDistance))
+        -- Ensure proper attachment in case follow cam is toggled
+        self.camera:Attach(self.world:GetRootNode())
 
+        local colliderPos = self.collider:GetWorldPosition()
+
+        if (Input.IsKeyPressed(Key.Q) or Input.IsGamepadPressed(Gamepad.L1)) then
+            -- Move camera behind player
+            self.camera:SetWorldPosition(colliderPos - self.mesh:GetForwardVector() * self.cameraDistance)
+        end
+
+        local deltaPos = self.camera:GetWorldPosition() - colliderPos
+        local deltaPosXZ = Vec(deltaPos.x, 0, deltaPos.z)
+
+        deltaPosXZ.y = 0.0
+
+        local dist = deltaPosXZ:Magnitude()
+
+        if (dist > self.cameraDistance) then
+            deltaPosXZ = deltaPosXZ:Normalize() * self.cameraDistance
+        elseif (dist < kFollowMinDistXZ) then
+            deltaPosXZ = deltaPosXZ:Normalize() * kFollowMinDistXZ
+        end
+
+        deltaPos = Vec(deltaPosXZ.x, self.followCamHeight, deltaPosXZ.z)
+
+        local worldPos = colliderPos + deltaPos
+        self.camera:SetWorldPosition(worldPos)
+        self.camera:LookAt(colliderPos)
+    else
+
+        -- Ensure proper attachment in case follow cam is toggled
+        self.camera:Attach(self.cameraPivot)
+        self.camera:SetRotation(Vec(0,0,0))
+
+        local lookRot = self.lookVec * self.lookSpeed
+
+        -- Adjust rotation of camera pivot based on player input
+        local camPivotRot = self.cameraPivot:GetRotation()
+        camPivotRot.y = camPivotRot.y - lookRot.x * deltaTime
+        camPivotRot.x = camPivotRot.x - lookRot.y * deltaTime
+        camPivotRot.x = Math.Clamp(camPivotRot.x, -89.9, 89.9)
+        self.cameraPivot:SetRotation(camPivotRot)
+
+        -- Adjust camera distance
+        self.camera:SetPosition(Vec(0, 0, self.cameraDistance))
+    end
+
+    -- Do camera collision tracing
     if (self.enableCameraTrace) then
         local rayStart = self.collider:GetWorldPosition()
         local rayEnd = self.camera:GetWorldPosition()
@@ -304,7 +346,7 @@ function ThirdPersonController:UpdateMesh(deltaTime)
     if (math.abs(self.moveDir.x) >= 0.01 or
         math.abs(self.moveDir.z) >= 0.01) then
 
-        local camYaw = self.cameraPivot:GetRotation().y
+        local camYaw = self:GetCameraYaw()
         local moveDir = Vector.Rotate(self.moveDir, camYaw, Vec(0,1,0))
 
         local targetYaw = math.atan(-moveDir.x, -moveDir.z)
@@ -394,4 +436,10 @@ function ThirdPersonController:SetGrounded(grounded)
             self.isJumping = false
         end
     end
+end
+
+function ThirdPersonController:GetCameraYaw()
+    return self.enableFollowCam and
+        self.camera:GetRotation().y or
+        self.cameraPivot:GetRotation().y
 end

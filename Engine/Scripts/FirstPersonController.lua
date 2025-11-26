@@ -91,7 +91,7 @@ function FirstPersonController:Tick(deltaTime)
     self:UpdateDrag(deltaTime)
     self:UpdateMovement(deltaTime)
     self:UpdateGrounding(deltaTime)
-    self:UpdateLook(deltaTime)
+    self:UpdateCamera(deltaTime)
 
 end
 
@@ -247,7 +247,7 @@ function FirstPersonController:UpdateGrounding(deltaTime)
     end
 end
 
-function FirstPersonController:UpdateLook(deltaTime)
+function FirstPersonController:UpdateCamera(deltaTime)
 
     local lookRot = self.lookVec * self.lookSpeed
 

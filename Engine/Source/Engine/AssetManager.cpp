@@ -585,12 +585,7 @@ Asset* AssetManager::ImportEngineAsset(TypeId type, AssetDir* dir, const std::st
 
         if (type == StaticMesh::GetStaticType())
         {
-            bool noTriangleCollision = (filename == "SM_Cube") || (filename == "SM_Sphere");
-
-            if (noTriangleCollision)
-            {
-                static_cast<StaticMesh*>(newAsset)->SetGenerateTriangleCollisionMesh(false);
-            }
+            static_cast<StaticMesh*>(newAsset)->SetGenerateTriangleCollisionMesh(true);
         }
 
         // Was saving right on startup but in Debug config this is very slow for some reason.
