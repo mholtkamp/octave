@@ -3573,6 +3573,18 @@ static void DrawViewportPanel()
             }
         }
 
+        if (ImGui::BeginMenu("Interface Scale"))
+        {
+            static float sInterfaceScale = GetEngineConfig()->mEditorInterfaceScale;
+            ImGui::SliderFloat("IntScale", &sInterfaceScale, 0.5f, 3.0f);
+            if (ImGui::Button("Apply"))
+            {
+                GetMutableEngineConfig()->mEditorInterfaceScale = sInterfaceScale;
+                WriteEngineConfig();
+            }
+            ImGui::EndMenu();
+        }
+
         ImGui::EndPopup();
     }
 
