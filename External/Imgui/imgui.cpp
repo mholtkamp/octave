@@ -8888,6 +8888,11 @@ void ImGui::UpdateInputEvents(bool trickle_fast_inputs)
                 break;
             io.MousePos = event_pos;
             io.MouseSource = e->MousePos.MouseSource;
+
+            // Octave Hack
+            io.MousePos.x /= io.OctaveInterfaceScale;
+            io.MousePos.y /= io.OctaveInterfaceScale;
+
             mouse_moved = true;
         }
         else if (e->Type == ImGuiInputEventType_MouseButton)

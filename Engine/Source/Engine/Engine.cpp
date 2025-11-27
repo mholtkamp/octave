@@ -974,6 +974,8 @@ void WriteEngineConfig(std::string path)
         fprintf(configIni, "LqMaxTextureSize=%d\n", sEngineConfig.mLqMaxTextureSize);
         fprintf(configIni, "LqEnableMipMaps=%d\n", sEngineConfig.mLqEnableMipMaps);
 
+        fprintf(configIni, "EditorInterfaceScale=%f", sEngineConfig.mEditorInterfaceScale);
+
         fclose(configIni);
         configIni = nullptr;
     }
@@ -1076,6 +1078,9 @@ void ReadEngineConfig(std::string path)
                 sEngineConfig.mLqMaxTextureSize = atoi(value);
             else if (keyStr == "LqEnableMipMaps")
                 sEngineConfig.mLqEnableMipMaps = strToBool(value);
+
+            else if (keyStr == "EditorInterfaceScale")
+                sEngineConfig.mEditorInterfaceScale = (float)atof(value);
 
             strcpy(key, "");
             strcpy(value, "");

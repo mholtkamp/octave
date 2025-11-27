@@ -1817,7 +1817,7 @@ static void DrawScenePanel()
 {
     ActionManager* am = ActionManager::Get();
 
-    const float halfHeight = (float)GetEngineState()->mWindowHeight / 2.0f;
+    const float halfHeight = ImGui::GetIO().DisplaySize.y / 2.0f;
 
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
     ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, halfHeight));
@@ -2845,7 +2845,7 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
 
 static void DrawAssetsPanel()
 {
-    const float halfHeight = (float)GetEngineState()->mWindowHeight / 2.0f;
+    const float halfHeight = ImGui::GetIO().DisplaySize.y / 2.0f;
 
     ImGui::SetNextWindowPos(ImVec2(0.0f, halfHeight));
     ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, halfHeight));
@@ -3023,8 +3023,8 @@ static void DrawInstancedMeshExtra(InstancedMesh3D* instMesh)
 
 static void DrawPropertiesPanel()
 {
-    const float dispWidth = (float)GetEngineState()->mWindowWidth;
-    const float dispHeight = (float)GetEngineState()->mWindowHeight;
+    const float dispWidth = ImGui::GetIO().DisplaySize.x;
+    const float dispHeight = ImGui::GetIO().DisplaySize.y;
 
     ImGui::SetNextWindowPos(ImVec2(dispWidth - kSidePaneWidth, 0.0f));
     ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, dispHeight));
@@ -3216,7 +3216,7 @@ static void DrawViewportPanel()
     ActionManager* am = ActionManager::Get();
 
     float viewportBarX = GetEditorState()->mShowLeftPane ? kSidePaneWidth : 0.0f;
-    float viewportBarWidth = (float)GetEngineState()->mWindowWidth;
+    float viewportBarWidth = ImGui::GetIO().DisplaySize.x;
     if (GetEditorState()->mShowLeftPane)
         viewportBarWidth -= kSidePaneWidth;
     if (GetEditorState()->mShowRightPane)
@@ -3743,8 +3743,8 @@ static void DrawViewportPanel()
 
 static void DrawPaintColorsPanel()
 {
-    const float dispWidth = (float)GetEngineState()->mWindowWidth;
-    const float dispHeight = (float)GetEngineState()->mWindowHeight;
+    const float dispWidth = ImGui::GetIO().DisplaySize.x;
+    const float dispHeight = ImGui::GetIO().DisplaySize.y;
 
     ImGui::SetNextWindowPos(ImVec2(kSidePaneWidth + 10.0f, 40.0f));
     ImGui::SetNextWindowSize(ImVec2(250.0f, 170.0f));
@@ -3769,8 +3769,8 @@ static void DrawPaintColorsPanel()
 
 static void DrawPaintInstancesPanel()
 {
-    const float dispWidth = (float)GetEngineState()->mWindowWidth;
-    const float dispHeight = (float)GetEngineState()->mWindowHeight;
+    const float dispWidth = ImGui::GetIO().DisplaySize.x;
+    const float dispHeight = ImGui::GetIO().DisplaySize.y;
 
     ImGui::SetNextWindowPos(ImVec2(kSidePaneWidth + 10.0f, 40.0f));
     ImGui::SetNextWindowSize(ImVec2(250.0f, 210.0f));
@@ -3941,6 +3941,19 @@ void EditorImguiInit()
 
 void EditorImguiDraw()
 {
+    EngineState* engState = GetEngineState();
+
+    ImGuiIO& io = ImGui::GetIO();
+    float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
+    if (interfaceScale == 0.0f)
+    {
+        interfaceScale = 1.0f;
+    }
+
+    io.OctaveInterfaceScale = interfaceScale;
+    io.DisplaySize = ImVec2(engState->mWindowWidth / interfaceScale, engState->mWindowHeight / interfaceScale);
+    io.DisplayFramebufferScale = ImVec2(interfaceScale, interfaceScale);
+
     ImGui::NewFrame();
 
     if (EditorIsInterfaceVisible())
@@ -4003,23 +4016,32 @@ void EditorImguiGetViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t&
 {
     if (EditorIsInterfaceVisible())
     {
+        ImGuiIO& io = ImGui::GetIO();
+
+        float scale = io.OctaveInterfaceScale;
+        if (scale == 0.0f)
+        {
+            scale = 1.0f;
+        }
+        float invScale = 1.0f / scale;
+
         x = 0;
-        y = uint32_t(kViewportBarHeight + 0.5f);
-        int32_t iWidth = (int32_t)GetEngineState()->mWindowWidth;
-        int32_t iHeight = int32_t(GetEngineState()->mWindowHeight - kViewportBarHeight + 0.5f);
+        y = uint32_t(kViewportBarHeight * scale + 0.5f);
+        int32_t iWidth = (int32_t)io.DisplaySize.x;
+        int32_t iHeight = int32_t(io.DisplaySize.y - kViewportBarHeight * scale + 0.5f);
 
         if (GetEditorState()->mShowLeftPane)
         {
-            x = int32_t(kSidePaneWidth + 0.5f);
-            iWidth -= int32_t(kSidePaneWidth + 0.5f);
+            x = int32_t(kSidePaneWidth * scale + 0.5f);
+            iWidth -= int32_t(kSidePaneWidth * scale + 0.5f);
         }
         if (GetEditorState()->mShowRightPane)
         {
-            iWidth -= int32_t(kSidePaneWidth + 0.5f);
+            iWidth -= int32_t(kSidePaneWidth * scale + 0.5f);
         }
 
-        iWidth = glm::clamp<int32_t>(iWidth, 100, GetEngineState()->mWindowWidth);
-        iHeight = glm::clamp<int32_t>(iHeight, 100, GetEngineState()->mWindowHeight);
+        iWidth = glm::clamp<int32_t>(iWidth, 100, int32_t(ImGui::GetIO().DisplaySize.x + 0.5f));
+        iHeight = glm::clamp<int32_t>(iHeight, 100, int32_t(ImGui::GetIO().DisplaySize.y + 0.5f));
 
         width = uint32_t(iWidth);
         height = uint32_t(iHeight);
@@ -4028,8 +4050,8 @@ void EditorImguiGetViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t&
     {
         x = 0;
         y = 0;
-        width = GetEngineState()->mWindowWidth;
-        height = GetEngineState()->mWindowHeight;
+        width = uint32_t(ImGui::GetIO().DisplaySize.x + 0.5f);
+        height = uint32_t(ImGui::GetIO().DisplaySize.y + 0.5f);
     }
 }
 

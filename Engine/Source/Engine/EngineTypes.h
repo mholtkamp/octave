@@ -274,6 +274,8 @@ struct EngineConfig
     uint32_t mEmbeddedScriptCount = 0;
     const char* mEmbeddedConfig = nullptr;
     uint32_t mEmbeddedConfigSize = 0;
+
+    float mEditorInterfaceScale = 1.0f;
 };
 
 enum class ConsoleMode
