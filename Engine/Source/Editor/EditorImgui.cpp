@@ -3830,6 +3830,14 @@ static void Draw2dSelections()
     ImColor hoverColor(0.0f, 1.0f, 1.0f, 1.0f);
     float thickness = 3.0f;
     glm::vec4 vp = Renderer::Get()->GetViewport(0);
+
+    float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
+    if (interfaceScale == 0.0f)
+    {
+        interfaceScale = 1.0f;
+    }
+    float invInterfaceScale = 1.0f / interfaceScale;
+
     Rect boundsRect;
     boundsRect.mX = 0.0f;
     boundsRect.mY = 0.0f;
@@ -3849,10 +3857,10 @@ static void Draw2dSelections()
             {
                 rect.Clamp(boundsRect);
 
-                float x = rect.mX + vp.x;
-                float y = rect.mY + vp.y;
-                float w = rect.mWidth;
-                float h = rect.mHeight;
+                float x = invInterfaceScale * (rect.mX + vp.x);
+                float y = invInterfaceScale * (rect.mY + vp.y);
+                float w = invInterfaceScale * rect.mWidth;
+                float h = invInterfaceScale * rect.mHeight;
                 draw_list->AddRect(ImVec2(x, y), ImVec2(x + w, y + h), mutliSelColor, 0.0f, ImDrawFlags_None, thickness);
             }
         }
@@ -3871,10 +3879,10 @@ static void Draw2dSelections()
             {
                 rect.Clamp(boundsRect);
 
-                float x = rect.mX + vp.x;
-                float y = rect.mY + vp.y;
-                float w = rect.mWidth;
-                float h = rect.mHeight;
+                float x = invInterfaceScale * (rect.mX + vp.x);
+                float y = invInterfaceScale * (rect.mY + vp.y);
+                float w = invInterfaceScale * (rect.mWidth);
+                float h = invInterfaceScale * (rect.mHeight);
                 draw_list->AddRect(ImVec2(x, y), ImVec2(x + w, y + h), selColor, 0.0f, ImDrawFlags_None, thickness);
             }
         }
@@ -3890,10 +3898,10 @@ static void Draw2dSelections()
         {
             rect.Clamp(boundsRect);
 
-            float x = rect.mX + vp.x;
-            float y = rect.mY + vp.y;
-            float w = rect.mWidth;
-            float h = rect.mHeight;
+            float x = invInterfaceScale * (rect.mX + vp.x);
+            float y = invInterfaceScale * (rect.mY + vp.y);
+            float w = invInterfaceScale * (rect.mWidth);
+            float h = invInterfaceScale * (rect.mHeight);
             draw_list->AddRect(ImVec2(x, y), ImVec2(x + w, y + h), hoverColor, 0.0f, ImDrawFlags_None, thickness);
         }
     }
