@@ -629,6 +629,7 @@ void AssetManager::ImportEngineAssets()
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_TriShape");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_MiniArrow");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Checker");
+        ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Allegro");
 
         // Need to fetch these loaded textures so that the default materials can use them.
         Renderer::Get()->LoadDefaultTextures();
@@ -649,6 +650,13 @@ void AssetManager::ImportEngineAssets()
         paintMat->SetFresnelPower(3.0f);
         paintMat->SetApplyFog(false);
 
+        AssetStub* allegroMatStub = CreateAndRegisterAsset(MaterialLite::GetStaticType(), engineMaterials, "M_Allegro", true);
+        MaterialLite* allegroMat = (MaterialLite*)allegroMatStub->mAsset;
+        Texture* allegroTex = ::LoadAsset<Texture>("T_Allegro");
+        allegroMat->SetTexture(0, allegroTex);
+        allegroMat->SetSpecular(1.0f);
+        allegroMat->SetShininess(16.0f);
+
         Renderer::Get()->LoadDefaultMaterials();
 
         ImportEngineAsset(StaticMesh::GetStaticType(), engineMeshes, "SM_Cone");
@@ -660,7 +668,9 @@ void AssetManager::ImportEngineAssets()
         ImportEngineAsset(StaticMesh::GetStaticType(), engineMeshes, "SM_Torus");
         ImportEngineAsset(StaticMesh::GetStaticType(), engineMeshes, "SM_CapsuleCylinder");
         ImportEngineAsset(StaticMesh::GetStaticType(), engineMeshes, "SM_CapsuleCap");
-        ImportEngineAsset(SkeletalMesh::GetStaticType(), engineMeshes, "SK_EighthNote");
+        SkeletalMesh* allegroMesh = (SkeletalMesh*) ImportEngineAsset(SkeletalMesh::GetStaticType(), engineMeshes, "SK_Allegro");
+        allegroMesh->SetMaterial(allegroMat);
+
         Renderer::Get()->LoadDefaultMeshes();
 
         // Create a default particle system
