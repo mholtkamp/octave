@@ -349,6 +349,7 @@ bool Initialize()
     {
         GetFileWatcher()->Initialize();
         GetFileWatcher()->SetFileChangeCallback(OnScriptFileChanged);
+        GetFileWatcher()->SetEnabled(GetEngineConfig()->mScriptHotReload);
     }
 #endif
 
@@ -859,6 +860,7 @@ void ReloadAllScripts(bool restartComponents)
 void SetScriptHotReloadEnabled(bool enabled)
 {
 #if EDITOR
+    GetMutableEngineConfig()->mScriptHotReload = enabled;
     if (GetFileWatcher())
     {
         GetFileWatcher()->SetEnabled(enabled);
@@ -869,10 +871,7 @@ void SetScriptHotReloadEnabled(bool enabled)
 bool IsScriptHotReloadEnabled()
 {
 #if EDITOR
-    if (GetFileWatcher())
-    {
-        return GetFileWatcher()->IsEnabled();
-    }
+    return GetEngineConfig()->mScriptHotReload;
 #endif
     return false;
 }
@@ -974,7 +973,8 @@ void WriteEngineConfig(std::string path)
         fprintf(configIni, "LqMaxTextureSize=%d\n", sEngineConfig.mLqMaxTextureSize);
         fprintf(configIni, "LqEnableMipMaps=%d\n", sEngineConfig.mLqEnableMipMaps);
 
-        fprintf(configIni, "EditorInterfaceScale=%f", sEngineConfig.mEditorInterfaceScale);
+        fprintf(configIni, "EditorInterfaceScale=%f\n", sEngineConfig.mEditorInterfaceScale);
+        fprintf(configIni, "ScriptHotReload=%d\n", sEngineConfig.mScriptHotReload);
 
         fclose(configIni);
         configIni = nullptr;
@@ -1081,6 +1081,8 @@ void ReadEngineConfig(std::string path)
 
             else if (keyStr == "EditorInterfaceScale")
                 sEngineConfig.mEditorInterfaceScale = (float)atof(value);
+            else if (keyStr == "ScriptHotReload")
+                sEngineConfig.mScriptHotReload = strToBool(value);
 
             strcpy(key, "");
             strcpy(value, "");

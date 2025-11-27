@@ -3362,7 +3362,10 @@ static void DrawViewportPanel()
         bool hotReloadEnabled = IsScriptHotReloadEnabled();
         std::string hotReloadText = hotReloadEnabled ? "Disable Script Hot-Reload" : "Enable Script Hot-Reload";
         if (ImGui::Selectable(hotReloadText.c_str()))
+        {
             SetScriptHotReloadEnabled(!hotReloadEnabled);
+            WriteEngineConfig();
+        }
         
         if (ImGui::Selectable("Write Config"))
             WriteEngineConfig();

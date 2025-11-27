@@ -19,7 +19,7 @@ These global hotkeys can be activated no matter where the mouse cursor is locate
  - `Ctrl + I` Import asset
  - `Ctrl + Shift + Z` Redo action
  - `Ctrl + Z` Undo action
- - `Alt + R` Reload all scripts (Note: If not working, this hotkey may conflict with AMD/Nvidia overlays.)
+ - `Alt + R` or `Ctrl + R` Reload all scripts (Note: If not working, this hotkey may conflict with AMD/Nvidia overlays.)
  - `Ctrl + 1` Switch to "Scene" editor mode
  - `Ctrl + 2` Switch to "2D" editor mode
  - `Ctrl + 3` Switch to "3D" editor mode

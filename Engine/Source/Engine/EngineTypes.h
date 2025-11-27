@@ -261,6 +261,7 @@ struct EngineConfig
     bool mUseAssetRegistry = false;
     bool mLogging = true;
     bool mLogToFile = false;
+    bool mScriptHotReload = false;
 
     int32_t mLqMaxTextureSize = 0;
     bool mLqEnableMipMaps = true;
