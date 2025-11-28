@@ -431,6 +431,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseEditor|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Standalone.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Octave.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
