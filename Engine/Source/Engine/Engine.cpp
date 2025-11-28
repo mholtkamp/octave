@@ -669,6 +669,10 @@ void LoadProject(const std::string& path, bool discoverAssets)
     }
 #endif
 
+#if EDITOR
+    ResetEngineConfig();
+#endif
+
     sEngineState.mProjectPath = path;
     sEngineState.mProjectDirectory = path.substr(0, path.find_last_of("/\\") + 1);
 
