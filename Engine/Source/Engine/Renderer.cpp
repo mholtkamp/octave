@@ -1662,10 +1662,11 @@ uint32_t Renderer::GetViewportWidth(int32_t screenIdx)
     uint32_t windowWidth = (screenIdx == 0) ? GetEngineState()->mWindowWidth : GetEngineState()->mSecondWindowWidth;
 
 #if EDITOR
-    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? windowWidth : GetEditorState()->mViewportWidth;
-#else
-    return windowWidth;
+    windowWidth = (IsPlayingInEditor() && !GetEditorState()->mEjected) ? windowWidth : GetEditorState()->mViewportWidth;
 #endif
+
+    windowWidth = glm::max<uint32_t>(windowWidth, 1);
+    return windowWidth;
 }
 
 uint32_t Renderer::GetViewportHeight(int32_t screenIdx)
@@ -1678,10 +1679,11 @@ uint32_t Renderer::GetViewportHeight(int32_t screenIdx)
     uint32_t windowHeight = (screenIdx == 0) ? GetEngineState()->mWindowHeight : GetEngineState()->mSecondWindowHeight;
 
 #if EDITOR
-    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? windowHeight : GetEditorState()->mViewportHeight;
-#else
-    return windowHeight;
+    windowHeight = (IsPlayingInEditor() && !GetEditorState()->mEjected) ? windowHeight : GetEditorState()->mViewportHeight;
 #endif
+
+    windowHeight = glm::max<uint32_t>(windowHeight, 1);
+    return windowHeight;
 }
 
 glm::uvec4 Renderer::GetViewport(int32_t screenIdx)
