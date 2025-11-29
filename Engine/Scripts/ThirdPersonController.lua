@@ -24,6 +24,7 @@ function ThirdPersonController:Create()
     self.moveDrag = 100.0
     self.extDrag = 20.0
     self.airControl = 0.1
+    self.vertSlideLimit = 0.35
     self.followCamHeight = 4.0
     self.enableControl = true
     self.enableJump = true
