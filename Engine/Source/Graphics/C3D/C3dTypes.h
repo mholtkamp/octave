@@ -9,8 +9,6 @@
 #include "Graphics/GraphicsConstants.h"
 #include "EngineTypes.h"
 
-#define C3D_DYNAMIC_LIGHT_SCALE 4.0f
-
 class World;
 
 enum class ShaderId

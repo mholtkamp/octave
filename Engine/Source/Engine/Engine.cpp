@@ -979,6 +979,7 @@ void WriteEngineConfig(std::string path)
 
         fprintf(configIni, "EditorInterfaceScale=%f\n", sEngineConfig.mEditorInterfaceScale);
         fprintf(configIni, "ScriptHotReload=%d\n", sEngineConfig.mScriptHotReload);
+        fprintf(configIni, "LightScale=%d\n", sEngineConfig.mLightScale);
 
         fclose(configIni);
         configIni = nullptr;
@@ -1087,9 +1088,17 @@ void ReadEngineConfig(std::string path)
                 sEngineConfig.mEditorInterfaceScale = (float)atof(value);
             else if (keyStr == "ScriptHotReload")
                 sEngineConfig.mScriptHotReload = strToBool(value);
+            else if (keyStr == "LightScale")
+                sEngineConfig.mLightScale = atoi(value);
 
             strcpy(key, "");
             strcpy(value, "");
+        }
+
+        Renderer* renderer = Renderer::Get();
+        if (renderer)
+        {
+            Renderer::Get()->SetLightScale((float)sEngineConfig.mLightScale);
         }
     }
 }

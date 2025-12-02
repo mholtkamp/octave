@@ -121,6 +121,8 @@ void Renderer::Initialize()
 #if EDITOR
     EnableProxyRendering(true);
 #endif
+
+    SetLightScale(GetEngineConfig()->mLightScale);
 }
 
 void Renderer::GatherProperties(std::vector<Property>& props)
@@ -1527,6 +1529,33 @@ void Renderer::SetLightFadeSpeed(float speed)
 float Renderer::GetLightFadeSpeed() const
 {
     return mLightFadeSpeed;
+}
+
+void Renderer::SetLightScale(float lightScale)
+{
+    int32_t intLightScale = uint32_t(lightScale + 0.5f);
+
+    // Only 1, 2, 4 are supported.
+    if (intLightScale == 4)
+    {
+        mLightScale = 4.0f;
+    }
+    else if (intLightScale == 2)
+    {
+        mLightScale = 2.0f;
+    }
+    else
+    {
+        mLightScale = 1.0f;
+    }
+
+    mLightScale = lightScale;
+}
+
+float Renderer::GetLightScale() const
+{
+    OCT_ASSERT(mLightScale == 1.0f || mLightScale == 2.0f || mLightScale == 4.0f);
+    return mLightScale;
 }
 
 bool Renderer::IsPostProcessPassEnabled(PostProcessPassId passId) const
