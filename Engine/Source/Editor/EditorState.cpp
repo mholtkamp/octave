@@ -974,7 +974,10 @@ void EditorState::CloseEditScene(int32_t idx)
         }
 
         // Destroy the root node
-        mEditScenes[idx].mRootNode->Destroy();
+        if (mEditScenes[idx].mRootNode)
+        {
+            mEditScenes[idx].mRootNode->Destroy();
+        }
 
         // Remove this EditScene entry.
         mEditScenes.erase(mEditScenes.begin() + idx);
