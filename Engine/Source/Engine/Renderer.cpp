@@ -122,7 +122,7 @@ void Renderer::Initialize()
     EnableProxyRendering(true);
 #endif
 
-    SetLightScale(GetEngineConfig()->mLightScale);
+    SetLightScale((float)GetEngineConfig()->mLightScale);
 }
 
 void Renderer::GatherProperties(std::vector<Property>& props)
