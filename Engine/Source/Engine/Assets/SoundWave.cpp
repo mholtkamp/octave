@@ -19,19 +19,24 @@ bool SoundWave::HandlePropChange(Datum* datum, uint32_t index, const void* newVa
 {
     Property* prop = static_cast<Property*>(datum);
     SoundWave* soundWave = (SoundWave*)prop->mOwner;
+    bool handled = false;
 
     if (prop->mName == "Play")
     {
         AudioManager::PlaySound2D(soundWave);
+        handled = true;
     }
     else if (prop->mName == "Stop")
     {
         AudioManager::StopSounds(soundWave);
+        handled = true;
+    }
+    else
+    {
+        HandleAssetPropChange(datum, index, newValue);
     }
 
-    HandleAssetPropChange(datum, index, newValue);
-
-    return true;
+    return handled;
 }
 
 SoundWave::SoundWave()
@@ -354,8 +359,8 @@ bool SoundWave::Import(const std::string& path, ImportOptions* options)
     else
     {
         LogError("Unsupported WAV Format");
-        LogError("BitDepth = %dh (expected 8 or 16)", bitsPerSample);
-        LogError("NumChannels = %dh (expected 1 or 2)", numChannels);
+        LogError("BitDepth = %d (expected 8 or 16)", bitsPerSample);
+        LogError("NumChannels = %d (expected 1 or 2)", numChannels);
 
         success = false;
     }
