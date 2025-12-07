@@ -196,9 +196,11 @@ void Asset::SaveFile(const char* path, Platform platform)
 #if EDITOR
     Stream stream;
     SaveStream(stream, platform);
-    stream.WriteFile(path);
-    LogDebug("Asset saved: %s", mName.c_str());
-    ClearDirtyFlag();
+    if (stream.WriteFile(path))
+    {
+        LogDebug("Asset saved: %s", mName.c_str());
+        ClearDirtyFlag();
+    }
 #endif
 }
 

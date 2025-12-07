@@ -100,13 +100,13 @@ void Stream::SetExternalData(const char* externalData, uint32_t externalSize)
     mExternal = true;
 }
 
-void Stream::ReadFile(const char* path, bool isAsset, int32_t maxSize)
+bool Stream::ReadFile(const char* path, bool isAsset, int32_t maxSize)
 {
     OCT_ASSERT(!mExternal);
     if (mExternal)
     {
         LogError("Cannot ReadFile() using an external Stream");
-        return;
+        return false;
     }
 
 #if ACQUIRE_FILE_DIRECTLY
@@ -125,6 +125,7 @@ void Stream::ReadFile(const char* path, bool isAsset, int32_t maxSize)
     if (mData == nullptr)
     {
         LogError("Stream failed to read file: %s", path);
+        return false;
     }
 #else
     char* fileData = nullptr;
@@ -146,14 +147,17 @@ void Stream::ReadFile(const char* path, bool isAsset, int32_t maxSize)
     else
     {
         LogError("Stream failed to read file: %s", path);
+        return false;
     }
 #endif
+
+    return true;
 }
 
-void Stream::WriteFile(const char* path)
+bool Stream::WriteFile(const char* path)
 {
+    bool success = false;
     FILE* file = fopen(path, "wb");
-    OCT_ASSERT(file != nullptr);
 
     if (file != nullptr)
     {
@@ -161,7 +165,14 @@ void Stream::WriteFile(const char* path)
 
         fclose(file);
         file = nullptr;
+        success = true;
     }
+    else
+    {
+        LogWarning("Failed to write file. fopen failed");
+    }
+
+    return success;
 }
 
 void Stream::SetAsyncRequest(AsyncLoadRequest* request)
