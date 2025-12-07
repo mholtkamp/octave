@@ -238,6 +238,13 @@ EditorMode EditorState::GetEditorMode()
 void EditorState::ReadEditorSave()
 {
     std::string saveFilePath = std::string("Engine/Saves/") + kEditorSaveFile;
+#if PLATFORM_LINUX
+    const char* homeDir = getenv("HOME");
+    homeDir = homeDir ? homeDir : "";
+    saveFilePath = std::string(homeDir) + "/.config/Octave/" + kEditorSaveFile;
+#endif
+
+    std::string saveAbsPath = SYS_GetAbsolutePath(saveFilePath);
 
     if (SYS_DoesFileExist(saveFilePath.c_str(), false))
     {
@@ -250,6 +257,7 @@ void EditorState::ReadEditorSave()
         {
             uint32_t numRecentProjects = stream.ReadUint32();
             mRecentProjects.clear();
+
             for (uint32_t i = 0; i < numRecentProjects; ++i)
             {
                 std::string recentProj;
@@ -262,6 +270,10 @@ void EditorState::ReadEditorSave()
             SYS_RemoveFile(saveFilePath.c_str());
         }
     }
+    else
+    {
+        LogWarning("Editor save file not found: %s", saveFilePath.c_str());
+    }
 }
 
 void EditorState::WriteEditorSave()
@@ -269,23 +281,40 @@ void EditorState::WriteEditorSave()
     Stream stream;
     stream.WriteInt32(kEditorSaveVersion);
     stream.WriteUint32((uint32_t)mRecentProjects.size());
+
     for (uint32_t i = 0; i < mRecentProjects.size(); ++i)
     {
         stream.WriteString(mRecentProjects[i]);
     }
 
 
-    bool saveDirExists = DoesDirExist("Engine/Saves");
+    std::string saveDir = "Engine/Saves/";
+
+#if PLATFORM_LINUX
+    const char* homeDir = getenv("HOME");
+    homeDir = homeDir ? homeDir : "";
+    saveDir = std::string(homeDir) + "/.config/Octave/";
+#endif
+
+    bool saveDirExists = DoesDirExist(saveDir.c_str());
 
     if (!saveDirExists)
     {
-        saveDirExists = SYS_CreateDirectory("Engine/Saves");
+        saveDirExists = SYS_CreateDirectory(saveDir.c_str());
+
+        if (!saveDirExists)
+        {
+            LogError("Could not create editor save directory");
+        }
     }
 
     if (saveDirExists)
     {
-        std::string saveFilePath = std::string("Engine/Saves/") + kEditorSaveFile;
+        std::string saveFilePath = saveDir + kEditorSaveFile;
         stream.WriteFile(saveFilePath.c_str());
+
+        std::string absPath = SYS_GetAbsolutePath(saveFilePath.c_str());
+
     }
     else
     {
