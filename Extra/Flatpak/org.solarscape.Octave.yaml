@@ -27,6 +27,8 @@ modules:
       - cp Standalone/Build/Linux/OctaveEditor.out /app/Octave/OctaveEditor
       - git clean -xdf "*/Intermediate/*" "*/Build/*"
       - cp -r Engine External Documentation OctaveLogo*.png Standalone /app/Octave
+      - install -Dm644 Extra/Flatpak/${FLATPAK_ID}.desktop -t /app/share/applications
+      - install -Dm644 OctaveLogo_128.png /app/share/icons/hicolor/128x128/apps/${FLATPAK_ID}.png
       #- rsync -a --exclude 'Build' --exclude 'Intermediate' Engine External Documentation OctaveLogo*.png Standalone /app/Octave
     build-options:
       env:

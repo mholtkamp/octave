@@ -1,0 +1,10 @@
+[Desktop Entry]
+Categories=Game;Development;
+Keywords=Game Engine;Editor;
+Comment=A cross-platform retro 3D game engine, allowing you to create games for GameCube, Wii, 3DS, Linux, Windows, and Android.
+Exec=OctaveEditor
+Icon=org.solarscape.Octave
+Name=Octave
+Terminal=false
+Type=Application
+Version=1.0
