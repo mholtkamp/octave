@@ -1,1 +1,2 @@
 flatpak-builder --force-clean --user --install-deps-from=flathub --repo=repo --install Build org.solarscape.Octave.yaml 
+flatpak build-bundle repo Octave.flatpak org.solarscape.Octave --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo

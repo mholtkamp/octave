@@ -43,7 +43,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/mholtkamp/octave.git
-        tag: alpha-4
+        branch: main
   - name: OctaveScript
     buildsystem: simple
     build-commands:
