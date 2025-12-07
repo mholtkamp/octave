@@ -27,6 +27,7 @@ modules:
       - cp Standalone/Build/Linux/OctaveEditor.out /app/Octave/OctaveEditor
       - git clean -xdf "*/Intermediate/*" "*/Build/*"
       - cp -r Engine External Documentation OctaveLogo*.png Standalone /app/Octave
+      - echo BEEP
       #- rsync -a --exclude 'Build' --exclude 'Intermediate' Engine External Documentation OctaveLogo*.png Standalone /app/Octave
     build-options:
       env:
@@ -37,7 +38,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/mholtkamp/octave.git
-        branch: main
+        branch: flatpak-debug
         disable-submodules: true
   - name: OctaveScript
     buildsystem: simple

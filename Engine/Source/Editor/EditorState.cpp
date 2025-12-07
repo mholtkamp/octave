@@ -238,9 +238,19 @@ EditorMode EditorState::GetEditorMode()
 void EditorState::ReadEditorSave()
 {
     std::string saveFilePath = std::string("Engine/Saves/") + kEditorSaveFile;
+#if PLATFORM_LINUX
+    const char* homeDir = getenv("HOME");
+    homeDir = homeDir ? homeDir : "";
+    saveFilePath = std::string(homeDir) + "/.config/Octave/" + kEditorSaveFile;
+#endif
 
+    std::string saveAbsPath = SYS_GetAbsolutePath(saveFilePath);
+
+    LogDebug("zzz ReadEditorSave: %s", saveAbsPath.c_str());
     if (SYS_DoesFileExist(saveFilePath.c_str(), false))
     {
+        LogDebug("Found editor state! %s", saveFilePath.c_str());
+
         Stream stream;
         stream.ReadFile(saveFilePath.c_str(), false);
 
@@ -250,42 +260,76 @@ void EditorState::ReadEditorSave()
         {
             uint32_t numRecentProjects = stream.ReadUint32();
             mRecentProjects.clear();
+
+            LogDebug("zzz Num recent projects %d", numRecentProjects);
+
             for (uint32_t i = 0; i < numRecentProjects; ++i)
             {
                 std::string recentProj;
                 stream.ReadString(recentProj);
                 mRecentProjects.push_back(recentProj);
+
+                LogDebug("zzz Recent Proj: %s", recentProj.c_str());
             }
         }
         else
         {
+            LogError("zzz Old version");
             SYS_RemoveFile(saveFilePath.c_str());
         }
+    }
+    else
+    {
+        LogError("zzz Editor save file not found: %s", saveFilePath.c_str());
     }
 }
 
 void EditorState::WriteEditorSave()
 {
+    LogDebug("zzz WriteEditorSave");
+
     Stream stream;
     stream.WriteInt32(kEditorSaveVersion);
     stream.WriteUint32((uint32_t)mRecentProjects.size());
+
+    LogDebug("zzz Num Recent Projects: %d", (int)mRecentProjects.size());
     for (uint32_t i = 0; i < mRecentProjects.size(); ++i)
     {
         stream.WriteString(mRecentProjects[i]);
+        LogDebug("zzz Recent Project: %s", mRecentProjects[i].c_str());
     }
 
 
-    bool saveDirExists = DoesDirExist("Engine/Saves");
+    std::string saveDir = "Engine/Saves/";
+
+#if PLATFORM_LINUX
+    const char* homeDir = getenv("HOME");
+    homeDir = homeDir ? homeDir : "";
+    saveDir = std::string(homeDir) + "/.config/Octave/";
+#endif
+
+    bool saveDirExists = DoesDirExist(saveDir.c_str());
 
     if (!saveDirExists)
     {
-        saveDirExists = SYS_CreateDirectory("Engine/Saves");
+        LogDebug("zzz Create Save Dir: %s", saveDir.c_str());
+        LogDebug("zzz Abspath: %s", SYS_GetAbsolutePath(saveDir.c_str()).c_str());
+        saveDirExists = SYS_CreateDirectory(saveDir.c_str());
+
+        if (!saveDirExists)
+        {
+            LogError("zzz COULD NOT CREATE SAVES DIR");
+        }
     }
 
     if (saveDirExists)
     {
-        std::string saveFilePath = std::string("Engine/Saves/") + kEditorSaveFile;
+        std::string saveFilePath = saveDir + kEditorSaveFile;
         stream.WriteFile(saveFilePath.c_str());
+
+        std::string absPath = SYS_GetAbsolutePath(saveFilePath.c_str());
+        LogDebug("zzz Wrote editor save: %s", absPath.c_str());
+
     }
     else
     {
