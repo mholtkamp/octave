@@ -9,12 +9,6 @@ modules:
     build-commands:
       - ls -lah
       - cp -r x86_64 /app/VulkanSDK
-    build-options:
-      env:
-        VULKAN_SDK: /app/VulkanSDK
-        PATH: /app/VulkanSDK/bin:/usr/bin:/app/bin
-        LIBRARY_PATH: /app/VulkanSDK/lib:${LIBRARY_PATH}
-        LD_LIBRARY_PATH: /app/VulkanSDK/lib:${LD_LIBRARY_PATH}
     sources:
       - type: archive
         url: https://sdk.lunarg.com/sdk/download/1.3.275.0/linux/vulkansdk-linux-x86_64-1.3.275.0.tar.xz
@@ -72,4 +66,4 @@ finish-args:
   # Needs to talk to the network:
   - --share=network
   # Needs to save files locally
-  - --filesystem=xdg-documents
+  - --filesystem=host
