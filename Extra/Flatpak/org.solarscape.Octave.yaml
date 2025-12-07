@@ -21,8 +21,8 @@ modules:
       - echo $VULKAN_SDK
       - which glslc
       - cd Standalone && make -j 12 -f Makefile_Linux_Editor
+      - cd Standalone && make -j 12 -f Makefile_Linux_Game
       - cd Engine/Shaders/GLSL && ./compile.sh
-      - #install -Dm755 Standalone/Build/Linux/OctaveEditor.out /app/bin/OctaveEditor
       - mkdir /app/Octave
       - cp Standalone/Build/Linux/OctaveEditor.out /app/Octave/OctaveEditor
       - git clean -xdf "*/Intermediate/*" "*/Build/*"
@@ -38,6 +38,7 @@ modules:
       - type: git
         url: https://github.com/mholtkamp/octave.git
         branch: main
+        disable-submodules: true
   - name: OctaveScript
     buildsystem: simple
     build-commands:
