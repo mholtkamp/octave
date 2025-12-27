@@ -473,6 +473,8 @@ void RayTracer::PathTraceWorld()
 
 void RayTracer::BeginLightBake()
 {
+    LogDebug("Light bake started...");
+
     World* world = GetWorld(0);
 
     if (world != nullptr &&
@@ -604,6 +606,8 @@ void RayTracer::EndLightBake()
     mBakingCompIndex = -1;
     mNextBakingCompIndex = 0;
     mBakedFrame = -1;
+
+    LogDebug("Light bake finished!");
 }
 
 bool RayTracer::IsLightBakeInProgress()

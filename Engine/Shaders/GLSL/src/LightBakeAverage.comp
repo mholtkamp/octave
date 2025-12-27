@@ -20,6 +20,11 @@ layout(std140, set = 1, binding = 1) buffer BakeVertexData
    LightBakeVertex bakeVertices[];
 };
 
+layout(std140, set = 1, binding = 2) buffer DiffuseTriangleData
+{
+   DiffuseTriangle triangles[];
+};
+
 layout(std140, set = 1, binding = 3) buffer LightAverageData 
 {
    VertexLightData avgData[];

@@ -32,6 +32,8 @@ layout(std140, set = 1, binding = 3) buffer RtLightData
 
 layout (set = 1, binding = 4) uniform sampler2D textures[PATH_TRACE_MAX_TEXTURES];
 
+layout (set = 1, binding = 5, rgba8) uniform image2D UNUSED_outputImage;
+
 layout(std140, set = 1, binding = 6) buffer BakeVertexData  
 {
    LightBakeVertex bakeVertices[];
