@@ -380,14 +380,12 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     std::string intermediateDir = standalone ? "Standalone/Intermediate" : (projectDir + "/Intermediate");
     std::string romfsDir = intermediateDir + "/Romfs";
     RemoveDir(romfsDir.c_str());
+    CreateDir(intermediateDir.c_str());
+    CreateDir(romfsDir.c_str());
 
     if (useRomfs)
     {
         LogDebug("Copying packaged data to Romfs staging directory.");
-
-        CreateDir(intermediateDir.c_str());
-        CreateDir(romfsDir.c_str());
-
         SYS_Exec(std::string("cp -R " + packagedDir + "/* " + romfsDir).c_str());
     }
 
