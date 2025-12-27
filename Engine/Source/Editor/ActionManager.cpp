@@ -153,19 +153,6 @@ void ReplaceStringInFile(const std::string& file, const std::string& srcString, 
 
 void ActionManager::BuildData(Platform platform, bool embedded)
 {
-#if PLATFORM_LINUX
-    // Because of the read-only nature of the application directory for flatpaks, we need
-    // to copy everything to somewhere we can access, so /tmp?
-    SYS_RemoveDirectory("/tmp/Octave");
-    SYS_CreateDirectory("/tmp/Octave");
-    SYS_Exec("cp -R . /tmp/Octave");
-
-    std::string linuxOriginalWorkingDirectory = SYS_GetAbsolutePath(".");
-
-    LogDebug("Changing working directory to /tmp/Octave");
-    chdir("/tmp/Octave");
-#endif
-
     const EngineState* engineState = GetEngineState();
     bool standalone = engineState->mStandalone;
     const std::string& projectDir = engineState->mProjectDirectory;
@@ -405,7 +392,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 #endif
     std::string buildProjName = standalone ? "Standalone" : projectName;
     std::string buildProjDir = standalone ? "Standalone/" : projectDir;
-
     std::string buildDstExeName = standalone ? "Octave" : projectName;
     bool useSteam = GetEngineConfig()->mPackageForSteam;
 
@@ -576,11 +562,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     }
 
     LogDebug("Build Finished");
-
-#if PLATFORM_LINUX
-    LogDebug("Changing working directory to %s", linuxOriginalWorkingDirectory.c_str());
-    chdir(linuxOriginalWorkingDirectory.c_str());
-#endif
 }
 
 void ActionManager::OnSelectedNodeChanged()
