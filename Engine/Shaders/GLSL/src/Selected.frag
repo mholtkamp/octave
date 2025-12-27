@@ -13,8 +13,6 @@ layout (set = 1, binding = 0) uniform GeometryUniformBuffer
 	GeometryUniforms geometry;
 };
 
-layout(location = 0) in vec2 inTexcoord;
-
 layout (location = 0) out vec4 outColor;
 
 void main()
