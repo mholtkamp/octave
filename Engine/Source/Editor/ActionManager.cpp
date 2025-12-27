@@ -391,16 +391,11 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     // ( ) Run the makefile to compile the game.
 #if STANDALONE_RELEASE
-    bool needCompile = !standalone || embedded || platform == Platform::Android;
-
-    // If devkitpro is installed, then compile even for non-embedded builds.
-    if (dkpInstalled &&
-        (platform == Platform::GameCube ||
+    bool needCompile = !standalone ||
+        platform == Platform::Android ||
+        platform == Platform::GameCube ||
         platform == Platform::Wii ||
-        platform == Platform::N3DS))
-    {
-        needCompile = true;
-    }
+        platform == Platform::N3DS;
 #else
     bool needCompile = true;
 #endif
