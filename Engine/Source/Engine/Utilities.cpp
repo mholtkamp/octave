@@ -50,6 +50,14 @@ Platform GetPlatform()
 #endif
 }
 
+#if __GNUC__
+#include <execinfo.h>
+#endif
+
+#if PLATFORM_WINDOWS
+#include <Windows.h>
+#endif
+
 bool IsPlatformConsole(Platform platform)
 {
     return platform == Platform::GameCube ||
@@ -75,6 +83,31 @@ std::string StringToUpper(const std::string& str)
     {
         ret.push_back(toupper(str[i]));
     }
+
+    return ret;
+}
+
+std::string GetBacktrace()
+{
+    std::string ret;
+#if __GNUC__
+    void* btArray[16] = {};
+    size_t btSize = 0;
+
+    btSize = backtrace(btArray, 16);
+
+    char** btSyms = backtrace_symbols(btArray, btSize);
+
+    for (uint32_t i = 0; i < btSize; ++i)
+    {
+        ret += btSyms[i];
+        ret += "\n";
+    }
+
+    free(btSyms);
+#elif PLATFORM_WINDOWS
+    LogDebug("TODO: Implement GetBacktrace() on Windows");
+#endif
 
     return ret;
 }

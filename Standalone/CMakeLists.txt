@@ -10,3 +10,5 @@ add_executable(${TARGET}
 target_link_libraries(${TARGET}
     EngineEditorLib
 )
+
+target_link_options(${TARGET} PRIVATE "-rdynamic")

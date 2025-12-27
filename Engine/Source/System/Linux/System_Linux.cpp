@@ -263,8 +263,19 @@ void HandleXcbEvent(xcb_generic_event_t* event)
     }
 }
 
+static void SigHandler(int sig)
+{
+    LogError("Signal Received: %d", sig);
+    std::string backtrace = GetBacktrace();
+    LogError("===Backtrace===\n%s", backtrace.c_str());
+
+    abort();
+}
+
 void SYS_Initialize()
 {
+    signal(SIGSEGV, SigHandler);
+
     EngineState& engine = *GetEngineState();
     SystemState& system = engine.mSystem;
 
