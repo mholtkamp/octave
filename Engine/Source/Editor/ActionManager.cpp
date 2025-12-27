@@ -153,6 +153,8 @@ void ReplaceStringInFile(const std::string& file, const std::string& srcString, 
 
 void ActionManager::BuildData(Platform platform, bool embedded)
 {
+    LogDebug("Begin packaging...");
+
     const EngineState* engineState = GetEngineState();
     bool standalone = engineState->mStandalone;
     const std::string& projectDir = engineState->mProjectDirectory;
@@ -166,6 +168,11 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         LogError("Project directory not set?");
         return;
     }
+
+    std::string dkpPath = GetDevkitproPath();
+    bool dkpInstalled = (dkpPath != "");
+
+    LogDebug("DevkitPro is %s.", dkpInstalled ? "installed" : "not installed");
 
     // Build Data is responsible for 3 things
     // (1) Create a Packaged directory in ProjectDir/Packaged. Erase previous packaged first.
@@ -387,6 +394,15 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     // ( ) Run the makefile to compile the game.
 #if STANDALONE_RELEASE
     bool needCompile = !standalone || embedded || platform == Platform::Android;
+
+    // If devkitpro is installed, then compile even for non-embedded builds.
+    if (dkpInstalled &&
+        (platform == Platform::GameCube ||
+        platform == Platform::Wii ||
+        platform == Platform::N3DS))
+    {
+        needCompile = true;
+    }
 #else
     bool needCompile = true;
 #endif
@@ -561,7 +577,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         idStream.WriteFile((packagedDir + "steam_appid.txt").c_str());
     }
 
-    LogDebug("Build Finished");
+    LogDebug("Finished packaging!");
 }
 
 void ActionManager::OnSelectedNodeChanged()

@@ -50,6 +50,13 @@ Platform GetPlatform()
 #endif
 }
 
+bool IsPlatformConsole(Platform platform)
+{
+    return platform == Platform::GameCube ||
+        platform == Platform::Wii ||
+        platform == Platform::N3DS;
+}
+
 std::string StringToLower(const std::string& str)
 {
     std::string ret;

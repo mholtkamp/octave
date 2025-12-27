@@ -20,6 +20,7 @@ struct SubSceneOverride;
 #define FORCE_LINK_CALL(x) { extern int gForceLink_##x; gForceLink_##x = 1; }
 
 Platform GetPlatform();
+bool IsPlatformConsole(Platform platform);
 
 std::string StringToLower(const std::string& str);
 std::string StringToUpper(const std::string& str);

@@ -15,6 +15,8 @@
 #include "Input/Input.h"
 #include "InputDevices.h"
 
+#include <stdlib.h>
+
 void EditorCenterCursor()
 {
     int32_t centerX = Renderer::Get()->GetViewportWidth() / 2;
@@ -165,7 +167,11 @@ std::string GetDevkitproPath()
         // Need to convert the msys2 path to actual windows path
         SYS_Exec("cygpath.exe -w %DEVKITPRO%", &dkpPath);
 #else
-        dkpPath = "$DEVKITPRO";
+        const char* dkpEnv = getenv("DEVKITPRO");
+        if (dkpEnv != nullptr)
+        {
+            dkpPath = dkpEnv;
+        }
 #endif
 
         if (dkpPath == "")
