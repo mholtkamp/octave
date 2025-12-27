@@ -10,6 +10,18 @@ uint32_t ScriptUtils::sNumEmbeddedScripts = 0;
 uint32_t ScriptUtils::sNumScriptInstances = 0;
 bool ScriptUtils::sBreakOnScriptError = false;
 
+static std::string AppendLuaExtension(const std::string& str)
+{
+    std::string ret = str;
+    if (ret.length() < 4 ||
+    ret.compare(ret.length() - 4, 4, ".lua") != 0)
+    {
+        ret.append(".lua");
+    }
+
+    return ret;
+}
+
 bool ScriptUtils::IsScriptLoaded(const std::string& className)
 {
     return sLoadedLuaFiles.find(className) != sLoadedLuaFiles.end();
@@ -69,23 +81,31 @@ bool ScriptUtils::LoadScriptFile(const std::string& fileName, const std::string&
         // Assign the __index metamethod to itself, so that tables with the class metatable
         // will have access to its methods/properties.
         lua_getglobal(L, className.c_str());
-        OCT_ASSERT(lua_istable(L, -1));
-        int classTableIdx = lua_gettop(L);
+        if (lua_istable(L, -1))
+        {
+            int classTableIdx = lua_gettop(L);
 
-        // Set class flag (doing a raw set here just to make sure it goes on the actual class table.
-        char classFlag[64];
-        snprintf(classFlag, 64, "cf%s", className.c_str());
-        lua_pushstring(L, classFlag);
-        lua_pushboolean(L, true);
-        lua_rawset(L, classTableIdx);
+            // Set class flag (doing a raw set here just to make sure it goes on the actual class table.
+            char classFlag[64];
+            snprintf(classFlag, 64, "cf%s", className.c_str());
+            lua_pushstring(L, classFlag);
+            lua_pushboolean(L, true);
+            lua_rawset(L, classTableIdx);
 
-        lua_pushvalue(L, classTableIdx);
-        lua_setfield(L, classTableIdx, "__index");
+            lua_pushvalue(L, classTableIdx);
+            lua_setfield(L, classTableIdx, "__index");
 
-        lua_pop(L, 1);
+            lua_pop(L, 1);
 
-        sLoadedLuaFiles.insert(className);
-        successful = true;
+            sLoadedLuaFiles.insert(className);
+            successful = true;
+        }
+        else
+        {
+            LogError("Could not find table named %s in script file %s", className.c_str(), AppendLuaExtension(fileName).c_str());
+            lua_pop(L, 1);
+            successful = false;
+        }
     }
 
     sLoadingLuaFiles.erase(fileName);
@@ -228,13 +248,7 @@ bool ScriptUtils::RunScript(const char* fileName, Datum* ret)
 #if LUA_ENABLED
     lua_State* L = GetLua();
 
-    std::string relativeFileName = fileName;
-
-    if (relativeFileName.length() < 4 ||
-        relativeFileName.compare(relativeFileName.length() - 4, 4, ".lua") != 0)
-    {
-        relativeFileName.append(".lua");
-    }
+    std::string relativeFileName = AppendLuaExtension(fileName);
 
     bool fileExists = false;
     std::string className = GetClassNameFromFileName(fileName);
