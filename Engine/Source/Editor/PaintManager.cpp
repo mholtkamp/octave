@@ -416,6 +416,8 @@ void PaintManager::UpdatePaintDraw()
 {
     World* world = GetWorld(0);
     PaintMode paintMode = GetEditorState()->GetPaintMode();
+    float vertColorScale = Renderer::Get()->GetVertexColorScale();
+    float invVertColorScale = 1.0f / vertColorScale;
 
     int32_t mouseX = 0;
     int32_t mouseY = 0;
@@ -509,10 +511,20 @@ void PaintManager::UpdatePaintDraw()
                     if (pendColors.size() != numVerts)
                     {
                         pendColors.resize(numVerts);
+                        int32_t vertColorScale = GetEngineConfig()->mVertexColorScale;
+                        uint32_t initColor = 0xffffffff;
+                        if (vertColorScale == 2)
+                        {
+                            initColor = 0x7f7f7f7f;
+                        }
+                        else if (vertColorScale == 4)
+                        {
+                            initColor = 0x3f3f3f3f;
+                        }
 
                         for (uint32_t c = 0; c < numVerts; ++c)
                         {
-                            pendColors[c] = 0xffffffff;
+                            pendColors[c] = initColor;
                         }
                     }
 
@@ -547,7 +559,7 @@ void PaintManager::UpdatePaintDraw()
                     {
                         float dist = sqrtf(dist2);
 
-                        glm::vec4 dst = ColorUint32ToFloat4(pendingData->mOriginalColors[v]);
+                        glm::vec4 dst = ColorUint32ToFloat4(pendingData->mOriginalColors[v]) * vertColorScale;
                         glm::vec4 src = mColorOptions.mColor;
                         glm::vec4 out = dst;
 
@@ -584,7 +596,7 @@ void PaintManager::UpdatePaintDraw()
                         if (drawAlpha > pendingData->mVertexDrawAlpha[v])
                         {
                             pendingData->mVertexDrawAlpha[v] = drawAlpha;
-                            pendingData->mData.mColors[v] = ColorFloat4ToUint32(out);
+                            pendingData->mData.mColors[v] = ColorFloat4ToUint32(out * invVertColorScale);
                             pendingData->mAnyVertexPainted = true;
                             anyVertColored = true;
                         }

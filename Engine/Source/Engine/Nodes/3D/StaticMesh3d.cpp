@@ -127,9 +127,10 @@ void StaticMesh3D::LoadStream(Stream& stream, Platform platform, uint32_t versio
 #endif
     }
 
-#if ASSET_VERSION_STATIC_MESH_3D_HAS_BAKED_LIGHTING
-    mHasBakedLighting = stream.ReadBool();
-#endif
+    if (version >= ASSET_VERSION_STATIC_MESH_3D_HAS_BAKED_LIGHTING)
+    {
+        mHasBakedLighting = stream.ReadBool();
+    }
 
     GFX_UpdateStaticMeshCompResourceColors(this);
 }

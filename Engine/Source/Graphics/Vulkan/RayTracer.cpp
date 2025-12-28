@@ -893,7 +893,7 @@ static void AssignInstanceColors(StaticMesh3D* meshComp, std::vector<glm::vec4>&
     for (uint32_t v = 0; v < numVerts; ++v)
     {
         glm::vec4 directClamped = glm::clamp(
-            colors[v] / Renderer::Get()->GetLightScale(),
+            colors[v] / Renderer::Get()->GetVertexColorScale(),
             glm::vec4(0.0f, 0.0f, 0.0f, 0.0f),
             glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 

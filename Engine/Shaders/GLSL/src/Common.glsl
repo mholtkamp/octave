@@ -34,8 +34,6 @@
 #define MAX_BONES 64
 #define MAX_BONE_INFLUENCES 4
 
-#define LIGHT_BAKE_SCALE 4.0
-
 #define PI 3.14159265359
 
 #define PATH_TRACE_MAX_TEXTURES 1024
@@ -137,7 +135,7 @@ struct GlobalUniforms
     uint mNumLights;
     int mSelectedInstance;
     int mLinearColorSpace;
-    uint mPad0;
+    float mVertexColorScale;
 
     LightData mLights[MAX_LIGHTS_PER_FRAME];
 };

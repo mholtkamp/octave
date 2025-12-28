@@ -152,7 +152,7 @@ struct GlobalUniformData
     uint32_t mNumLights;
     int32_t mSelectedInstance;
     int32_t mLinearColorSpace;
-    uint32_t mPad0;
+    float mVertexColorScale;
 
     LightUniformData mLights[MAX_LIGHTS_PER_FRAME];
 };

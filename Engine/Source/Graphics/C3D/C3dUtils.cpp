@@ -178,7 +178,7 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
         {
             glm::vec4 ambientColor = useBakedLighting ? glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) : gC3dContext.mWorld->GetAmbientLightColor();
 
-            ambientColor /= Renderer::Get()->GetLightScale();
+            ambientColor *= Renderer::Get()->GetVertexColorScaleInverse();
             bool toon = (shadingModel == ShadingModel::Toon);
             specular = toon ? 0.0f : material->GetSpecular();
             float specular1 = toon ? 1.0f : 0.0f;
@@ -290,11 +290,11 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
 
         if (!unlit || useBakedLighting)
         {
-            float lightScale = Renderer::Get()->GetLightScale();
+            float colorScale = Renderer::Get()->GetVertexColorScale();
             GPU_TEVSCALE tevScale = GPU_TEVSCALE_1;
-            if (lightScale > 1.0f)
+            if (colorScale > 1.0f)
             {
-                tevScale = (lightScale == 2.0f) ? GPU_TEVSCALE_2 : GPU_TEVSCALE_4;
+                tevScale = (colorScale == 2.0f) ? GPU_TEVSCALE_2 : GPU_TEVSCALE_4;
             }
 
             C3D_TexEnvScale(env, C3D_RGB, tevScale);
@@ -449,7 +449,7 @@ void SetupLightEnv(LightEnv& lightEnv, uint8_t lightingChannels, bool bakedLight
         glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
         float lightRadius = lightData.mRadius;
 
-        glm::vec4 lightColor = lightData.mColor / Renderer::Get()->GetLightScale();
+        glm::vec4 lightColor = lightData.mColor * Renderer::Get()->GetVertexColorScaleInverse();
         lightColor *= lightData.mIntensity;
         lightColor = glm::clamp(lightColor,
             glm::vec4(0.0f, 0.0f, 0.0f, 0.0f),

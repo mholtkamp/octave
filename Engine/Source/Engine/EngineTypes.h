@@ -277,7 +277,7 @@ struct EngineConfig
     uint32_t mEmbeddedConfigSize = 0;
 
     float mEditorInterfaceScale = 1.0f;
-    int32_t mLightScale = 2;
+    int32_t mVertexColorScale = 2;
 };
 
 enum class ConsoleMode

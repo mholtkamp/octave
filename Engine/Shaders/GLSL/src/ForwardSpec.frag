@@ -132,20 +132,11 @@ void main()
         if (kVertexColorMode == VERTEX_COLOR_MODULATE)
         {
             vec4 modColor = vertColor;
-            if (hasBakedLighting)
-            {
-                modColor *= LIGHT_BAKE_SCALE;
-            }
             outColor *= modColor;
         }
         else if (kVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
         {
             float modValue = vertColor.a;
-            if (hasBakedLighting)
-            {
-                modValue *= LIGHT_BAKE_SCALE;
-            }
-
             outColor *= modValue;
         }
     }

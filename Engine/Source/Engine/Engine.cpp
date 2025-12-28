@@ -979,7 +979,7 @@ void WriteEngineConfig(std::string path)
 
         fprintf(configIni, "EditorInterfaceScale=%f\n", sEngineConfig.mEditorInterfaceScale);
         fprintf(configIni, "ScriptHotReload=%d\n", sEngineConfig.mScriptHotReload);
-        fprintf(configIni, "LightScale=%d\n", sEngineConfig.mLightScale);
+        fprintf(configIni, "VertexColorScale=%d\n", sEngineConfig.mVertexColorScale);
 
         fclose(configIni);
         configIni = nullptr;
@@ -1088,8 +1088,8 @@ void ReadEngineConfig(std::string path)
                 sEngineConfig.mEditorInterfaceScale = (float)atof(value);
             else if (keyStr == "ScriptHotReload")
                 sEngineConfig.mScriptHotReload = strToBool(value);
-            else if (keyStr == "LightScale")
-                sEngineConfig.mLightScale = atoi(value);
+            else if (keyStr == "VertexColorScale")
+                sEngineConfig.mVertexColorScale = atoi(value);
 
             strcpy(key, "");
             strcpy(value, "");
@@ -1098,7 +1098,7 @@ void ReadEngineConfig(std::string path)
         Renderer* renderer = Renderer::Get();
         if (renderer)
         {
-            Renderer::Get()->SetLightScale((float)sEngineConfig.mLightScale);
+            Renderer::Get()->SetVertexColorScale((float)sEngineConfig.mVertexColorScale);
         }
     }
 }

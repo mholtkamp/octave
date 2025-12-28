@@ -1739,6 +1739,7 @@ void VulkanContext::UpdateGlobalUniformData()
 
     mGlobalUniformData.mLinearColorSpace = (int32_t)GetEngineConfig()->mLinearColorSpace;
     mGlobalUniformData.mInterfaceResolution = Renderer::Get()->GetScreenResolution();
+    mGlobalUniformData.mVertexColorScale = Renderer::Get()->GetVertexColorScale();
 
 #if EDITOR
     mGlobalUniformData.mSelectedInstance = GetEditorState()->GetSelectedInstance();
