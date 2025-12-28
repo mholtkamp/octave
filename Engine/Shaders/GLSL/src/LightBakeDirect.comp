@@ -95,7 +95,7 @@ void main()
 
                     float attenuation =  1.0 - clamp(dist / light.mRadius, 0.0, 1.0);
                     float intensity = CalcLightIntensity(N, L, mesh.mMaterial.mWrapLighting);
-                    vec3 lightColor = (intensity * attenuation * light.mColor).rgb;
+                    vec3 lightColor = (intensity * attenuation * light.mColor * light.mIntensity).rgb;
 
                     const float power = 1.0 / 2.0;
                     lightColor = pow(lightColor, vec3(power, power, power));
@@ -128,7 +128,7 @@ void main()
                     }
 
                     float intensity = CalcLightIntensity(N, L, mesh.mMaterial.mWrapLighting);
-                    totalLight += (intensity * light.mColor).rgb;
+                    totalLight += (intensity * light.mColor * light.mIntensity).rgb;
                 }
             }
         }

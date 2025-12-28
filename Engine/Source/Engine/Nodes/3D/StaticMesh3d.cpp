@@ -107,6 +107,8 @@ void StaticMesh3D::SaveStream(Stream& stream, Platform platform)
     {
         stream.WriteUint32(mInstanceColors[i]);
     }
+
+    stream.WriteBool(mHasBakedLighting);
 }
 
 void StaticMesh3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
@@ -124,6 +126,10 @@ void StaticMesh3D::LoadStream(Stream& stream, Platform platform, uint32_t versio
         ReverseColorUint32(mInstanceColors[i]);
 #endif
     }
+
+#if ASSET_VERSION_STATIC_MESH_3D_HAS_BAKED_LIGHTING
+    mHasBakedLighting = stream.ReadBool();
+#endif
 
     GFX_UpdateStaticMeshCompResourceColors(this);
 }

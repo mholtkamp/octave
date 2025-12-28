@@ -22,7 +22,6 @@
 #define MAX_BONE_INFLUENCES 4
 #define MAX_BONES 128
 #define MAX_UV_MAPS 2
-#define LIGHT_BAKE_SCALE 4.0f
 
 #define DEFAULT_AMBIENT_LIGHT_COLOR glm::vec4(0.1f, 0.1f, 0.1f, 1.0f)
 #define DEFAULT_SHADOW_COLOR glm::vec4(0.0f, 0.0f, 0.0f, 0.8f)

@@ -52,9 +52,9 @@ struct RayTraceLight
     uint mLightType;
 
     uint mCastShadows;
+    float mIntensity;
     uint mPad0;
     uint mPad1;
-    uint mPad2;
 };
 
 struct LightBakeVertex

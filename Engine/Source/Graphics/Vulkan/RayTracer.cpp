@@ -275,6 +275,7 @@ void RayTracer::UpdateRayTracingScene(
                 light.mDirection = { 0.0f, 0.0f, -1.0f };
                 light.mLightType = uint32_t(RayTraceLightType::Point);
                 light.mCastShadows = (uint32_t)pointLightComp->ShouldCastShadows();
+                light.mIntensity = pointLightComp->GetIntensity();
             }
             else if (lightComp->Is(DirectionalLight3D::ClassRuntimeId()))
             {
@@ -288,6 +289,7 @@ void RayTracer::UpdateRayTracingScene(
                 light.mDirection = dirLightComp->GetDirection();
                 light.mLightType = uint32_t(RayTraceLightType::Directional);
                 light.mCastShadows = (uint32_t)dirLightComp->ShouldCastShadows();
+                light.mIntensity = dirLightComp->GetIntensity();
             }
         }
     }
@@ -891,7 +893,7 @@ static void AssignInstanceColors(StaticMesh3D* meshComp, std::vector<glm::vec4>&
     for (uint32_t v = 0; v < numVerts; ++v)
     {
         glm::vec4 directClamped = glm::clamp(
-            colors[v] / LIGHT_BAKE_SCALE,
+            colors[v] / Renderer::Get()->GetLightScale(),
             glm::vec4(0.0f, 0.0f, 0.0f, 0.0f),
             glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 

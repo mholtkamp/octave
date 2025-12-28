@@ -337,9 +337,9 @@ struct RayTraceLight
     uint32_t mLightType = uint32_t(RayTraceLightType::Point);
 
     uint32_t mCastShadows = 1;
+    float mIntensity = 1.0f;
     uint32_t mPad0 = 1337;
     uint32_t mPad1 = 1338;
-    uint32_t mPad2 = 1339;
 };
 
 struct LightBakeVertex
