@@ -128,6 +128,14 @@ void Scene::LoadStream(Stream& stream, Platform platform)
 
 void Scene::SaveStream(Stream& stream, Platform platform)
 {
+    // If we increased the asset version, we also need to recapture the scene,
+    // because instantiating nodes relies on the asset verison when processing extra data.
+    if (mVersion != ASSET_VERSION_CURRENT)
+    {
+        NodePtr recaptureRoot = Instantiate();
+        Capture(recaptureRoot.Get());
+    }
+
     Asset::SaveStream(stream, platform);
 
     Scene* srcScene = this;
@@ -245,6 +253,13 @@ const char* Scene::GetTypeName()
 
 void Scene::Capture(Node* root, Platform platform)
 {
+    // Need to update asset version after capturing scene.
+    // In Scene::SaveStream(), the scene's asset version is checked
+    // to see if it differs from the compiled ASSET_CURRENT_VERSION, and if
+    // so, re-instantiates and re-captures the scene. If we don't
+    // update the version here, then changes could be lost.
+    mVersion = ASSET_VERSION_CURRENT;
+
     mNodeDefs.clear();
 
     if (root == nullptr)
