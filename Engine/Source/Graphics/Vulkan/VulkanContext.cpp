@@ -31,15 +31,15 @@ VulkanContext* gVulkanContext = nullptr;
 static const char* sValidationLayers[] = { "VK_LAYER_KHRONOS_validation" };
 static uint32_t sNumValidationLayers = 1;
 
-static const char* sDeviceExtensions[] = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-static uint32_t sNumDeviceExtensions = 1;
+std::vector<const char*> sRequiredDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 PFN_vkCmdBeginDebugUtilsLabelEXT CmdBeginDebugUtilsLabelEXT = nullptr;
 PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT = nullptr;
 PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT = nullptr;
 PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
 
-#define ENABLE_FULL_VALIDATION 0
+#define ENABLE_DEBUG_PRINTF 0
+#define ENABLE_FULL_VALIDATION (0 || ENABLE_DEBUG_PRINTF)
 #define MAX_GPU_TIMESPANS 64
 #define MAX_GPU_TIMESTAMPS (MAX_GPU_TIMESPANS * 2)
 
@@ -888,6 +888,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
     OCT_ASSERT(message);
 
     bool isError = false;
+    bool isPrintf = (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) &&
+        strstr(callbackData->pMessage, "PRINTF") != nullptr;
 
     // Severity
     if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
@@ -975,6 +977,21 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::DebugCallback(
     {
         LogError("%s\n", message);
     }
+    else if (isPrintf)
+    {
+        const char* preambleEnd = "vkQueueSubmit(): ";
+        const char* subStr = strstr(message, preambleEnd);
+        std::string spPrint = message;
+
+        if (subStr)
+        {
+            spPrint = subStr;
+            spPrint = spPrint.substr(strlen(preambleEnd));
+            spPrint = "[SP] " + spPrint;
+        }
+
+        LogDebug("%s\n", spPrint.c_str());
+    }
     else
     {
         // Don't log warnings for now? So far these are all perf warnings about unconsumed inputs.
@@ -1048,6 +1065,7 @@ void VulkanContext::CreateInstance()
                     debugUtilsExtFound = true;
                 }
             }
+
             OCT_ASSERT(mEnabledExtensionCount < MAX_ENABLED_EXTENSIONS);
         }
 
@@ -1074,10 +1092,15 @@ void VulkanContext::CreateInstance()
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_1;
 
+
+#if ENABLE_DEBUG_PRINTF
+    VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT };
+#else
     VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT, VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT };
+#endif
     VkValidationFeaturesEXT features = {};
     features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-    features.enabledValidationFeatureCount = 2;
+    features.enabledValidationFeatureCount = OCT_ARRAY_SIZE(enables);
     features.pEnabledValidationFeatures = enables;
 
     VkInstanceCreateInfo ciInstance = {};
@@ -1089,7 +1112,10 @@ void VulkanContext::CreateInstance()
     ciInstance.ppEnabledLayerNames = mEnabledLayers;
 
 #if ENABLE_FULL_VALIDATION
-    ciInstance.pNext = &features;
+    if (mValidate)
+    {
+        ciInstance.pNext = &features;
+    }
 #endif
 
     result = vkCreateInstance(&ciInstance, nullptr, &mInstance);
@@ -1143,6 +1169,9 @@ void VulkanContext::CreateDebugCallback()
     ciDebugMessenger.pNext = NULL;
     ciDebugMessenger.flags = 0;
     ciDebugMessenger.messageSeverity =
+#if ENABLE_DEBUG_PRINTF
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+#endif
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     ciDebugMessenger.messageType =
@@ -1311,6 +1340,12 @@ void VulkanContext::PickPhysicalDevice()
 
 void VulkanContext::CreateLogicalDevice()
 {
+    std::vector<const char*> deviceExtensions = sRequiredDeviceExtensions;
+
+#if ENABLE_DEBUG_PRINTF
+    deviceExtensions.push_back(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME);
+#endif
+
     QueueFamilyIndices indices = FindQueueFamilies(mPhysicalDevice);
 
     float priorities = 1.0f;
@@ -1340,8 +1375,8 @@ void VulkanContext::CreateLogicalDevice()
     ciDevice.pQueueCreateInfos = ciDeviceQueues;
     ciDevice.queueCreateInfoCount = queueCount;
     ciDevice.pEnabledFeatures = &deviceFeatures;
-    ciDevice.enabledExtensionCount = sNumDeviceExtensions;
-    ciDevice.ppEnabledExtensionNames = sDeviceExtensions;
+    ciDevice.enabledExtensionCount = (uint32_t)deviceExtensions.size();
+    ciDevice.ppEnabledExtensionNames = deviceExtensions.data();
 
     if (mValidate)
     {
@@ -2022,7 +2057,7 @@ bool VulkanContext::IsDeviceSuitable(VkPhysicalDevice device)
     VkPhysicalDeviceFeatures deviceFeatures;
     vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
-    bool extensionsSupported = CheckDeviceExtensionSupport(device, sDeviceExtensions, sNumDeviceExtensions);
+    bool extensionsSupported = CheckDeviceExtensionSupport(device, sRequiredDeviceExtensions.data(), (uint32_t)sRequiredDeviceExtensions.size());
 
     QueueFamilyIndices indices = FindQueueFamilies(device);
 
@@ -2235,9 +2270,9 @@ bool VulkanContext::CheckDeviceExtensionSupport(VkPhysicalDevice device,
 
     std::set<std::string> requiredExtensions;
 
-    for (uint32_t i = 0; i < sNumDeviceExtensions; ++i)
+    for (uint32_t i = 0; i < sRequiredDeviceExtensions.size(); ++i)
     {
-        requiredExtensions.insert(sDeviceExtensions[i]);
+        requiredExtensions.insert(sRequiredDeviceExtensions[i]);
     }
 
     for (const auto& extension : availableExtensions)

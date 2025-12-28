@@ -40,6 +40,10 @@
 
 #define PATH_TRACE_MAX_TEXTURES 1024
 
+// To enable shader print use:
+// #extension GL_EXT_debug_printf : enable
+#define ShaderPrint debugPrintfEXT
+
 //#define MAT_UNIFORMS layout (set = 2, binding = 0) uniform MaterialUniformBuffer
 //#define MAT_TEXTURE(name, bindLoc) layout (set = 2, binding = bindLoc) uniform sampler2D name;
 
