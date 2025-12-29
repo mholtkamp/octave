@@ -112,7 +112,9 @@ void BindStaticMesh(StaticMesh* mesh, const void* instanceColors)
     else
     {
         AttrInfo_AddFixed(attrInfo, 4); // v4=color
-        C3D_FixedAttribSet(4, 255.0f, 255.0f, 255.0f, 255.0f);
+
+        float defaultColor = 255.0f * Renderer::Get()->GetVertexColorScaleInverse();
+        C3D_FixedAttribSet(4, defaultColor, defaultColor, defaultColor, defaultColor);
     }
 
     // Setup vertex buffer state
@@ -288,17 +290,14 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
         C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
         C3D_TexEnvFunc(env, C3D_Alpha, alphaBlend ? GPU_MODULATE : GPU_REPLACE);
 
-        if (!unlit || useBakedLighting)
+        float colorScale = Renderer::Get()->GetVertexColorScale();
+        GPU_TEVSCALE tevScale = GPU_TEVSCALE_1;
+        if (colorScale > 1.0f)
         {
-            float colorScale = Renderer::Get()->GetVertexColorScale();
-            GPU_TEVSCALE tevScale = GPU_TEVSCALE_1;
-            if (colorScale > 1.0f)
-            {
-                tevScale = (colorScale == 2.0f) ? GPU_TEVSCALE_2 : GPU_TEVSCALE_4;
-            }
-
-            C3D_TexEnvScale(env, C3D_RGB, tevScale);
+            tevScale = (colorScale == 2.0f) ? GPU_TEVSCALE_2 : GPU_TEVSCALE_4;
         }
+
+        C3D_TexEnvScale(env, C3D_RGB, tevScale);
 
         if (vertexColorBlend && (unlit || useBakedLighting))
         {

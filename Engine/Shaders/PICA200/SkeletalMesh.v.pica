@@ -7,6 +7,7 @@
 .fvec UvOffsetScale0
 .fvec UvOffsetScale1
 .fvec UvMaps
+.fvec InvColorScale
 .fvec BoneMtx[4 * 16]
 
 ; Constants
@@ -98,9 +99,8 @@
 	.else
 		mov outtc2, r2
 	.end
-	
-	; outclr = (1,1,1,1)
-	mov outclr, myconst.yyyy
+
+	mov outclr, InvColorScale
 
 	; Transform normal using inv transpose of ModelViewMtx (NormalMtx)
 	; But first apply bone transformation

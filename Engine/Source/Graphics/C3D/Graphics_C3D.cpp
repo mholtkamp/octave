@@ -136,6 +136,7 @@ void GFX_Initialize()
         gC3dContext.mStaticMeshLocs.mUvOffsetScale0 = shaderInstanceGetUniformLocation(shader, "UvOffsetScale0");
         gC3dContext.mStaticMeshLocs.mUvOffsetScale1 = shaderInstanceGetUniformLocation(shader, "UvOffsetScale1");
         gC3dContext.mStaticMeshLocs.mUvMaps = shaderInstanceGetUniformLocation(shader, "UvMaps");
+        gC3dContext.mStaticMeshLocs.mColorMult = shaderInstanceGetUniformLocation(shader, "ColorMult");
     }
 
     // SkeletalMesh Uniforms
@@ -147,6 +148,7 @@ void GFX_Initialize()
         gC3dContext.mSkeletalMeshLocs.mUvOffsetScale0 = shaderInstanceGetUniformLocation(shader, "UvOffsetScale0");
         gC3dContext.mSkeletalMeshLocs.mUvOffsetScale1 = shaderInstanceGetUniformLocation(shader, "UvOffsetScale1");
         gC3dContext.mSkeletalMeshLocs.mUvMaps = shaderInstanceGetUniformLocation(shader, "UvMaps");
+        gC3dContext.mSkeletalMeshLocs.mInvColorScale = shaderInstanceGetUniformLocation(shader, "InvColorScale");
         gC3dContext.mSkeletalMeshLocs.mBoneMtx = shaderInstanceGetUniformLocation(shader, "BoneMtx");
     }
 
@@ -757,6 +759,17 @@ void GFX_DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverri
         
         C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mUvMaps, material->GetUvMap(0), material->GetUvMap(1), material->GetUvMap(2), 0);
 
+        float colorScale = Renderer::Get()->GetVertexColorScale();
+        if (material->GetVertexColorMode() == VertexColorMode::TextureBlend)
+        {
+            // Texture blending weights should not adhere to color scale because they are directly used for interpolating between textures.
+            C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mColorMult, colorScale, colorScale, colorScale, 1.0f);
+        }
+        else
+        {
+            C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mColorMult, 1.0f, 1.0f, 1.0f, 1.0f);
+        }
+
         // Draw
         C3D_DrawElements(
             GPU_TRIANGLES,
@@ -916,6 +929,17 @@ void GFX_DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
         UploadUvOffsetScale(uvOffsetScaleLoc1, material, 1);
         C3D_FVUnifSet(GPU_VERTEX_SHADER, uvMapsLoc, material->GetUvMap(0), material->GetUvMap(1), material->GetUvMap(2), 0);
 
+        // Handle color scale
+        if (cpuSkinned)
+        {
+            C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mColorMult, 1.0f, 1.0f, 1.0f, 1.0f);
+        }
+        else
+        {
+            float invColorScale = Renderer::Get()->GetVertexColorScaleInverse();
+            C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mSkeletalMeshLocs.mInvColorScale, invColorScale, invColorScale, invColorScale, invColorScale);
+        }
+
         // Draw
         C3D_DrawElements(
             GPU_TRIANGLES,
@@ -970,6 +994,10 @@ void GFX_DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
         C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mWorldViewMtx, &worldViewMtx);
         C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mNormalMtx, &normalMtx);
         C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mProjMtx, &projMtx);
+
+        C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mUvOffsetScale0, 0.0f, 0.0f, 1.0f, 1.0f);
+        C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mUvOffsetScale1, 0.0f, 0.0f, 1.0f, 1.0f);
+        C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mColorMult, 1.0f, 1.0f, 1.0f, 1.0f);
 
         ResetTexEnv();
         ResetLightingEnv();
@@ -1128,6 +1156,7 @@ void GFX_DrawTextMeshComp(TextMesh3D* textMeshComp)
     UploadUvOffsetScale(gC3dContext.mStaticMeshLocs.mUvOffsetScale1, material, 1);
 
     C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mUvMaps, material->GetUvMap(0), material->GetUvMap(1), material->GetUvMap(2), 0);
+    C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mColorMult, 1.0f, 1.0f, 1.0f, 1.0f);
 
     // Draw
     C3D_DrawArrays(GPU_TRIANGLES, 0, numVertices);
