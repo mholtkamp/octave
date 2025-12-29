@@ -3613,7 +3613,7 @@ static void DrawViewportPanel()
             for (uint32_t a = 0; a < nodes.size(); ++a)
             {
                 StaticMesh3D* meshNode = nodes[a]->As<StaticMesh3D>();
-                if (meshNode != nullptr)
+                if (meshNode != nullptr && meshNode->GetBakeLighting())
                 {
                     meshNode->ClearInstanceColors();
                 }
