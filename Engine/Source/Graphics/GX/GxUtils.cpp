@@ -335,6 +335,17 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
         gGxContext.mLighting.mColorChannel = false;
     }
 
+    if (gGxContext.mColorScale != 1.0f)
+    {
+        // Apply color scale
+        GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+        GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_CPREV);
+        GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+        GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, gGxContext.mColorScaleEnum, GX_TRUE, GX_TEVPREV);
+        GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        tevStage++;
+    }
+
     OCT_ASSERT(tevStage <= 16);
     GX_SetNumTevStages(tevStage);
 
