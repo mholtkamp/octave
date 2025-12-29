@@ -283,7 +283,7 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
         tevStage++;
     }
 
-    if (gGxContext.mColorScale != 1.0f && !useVertexColor)
+    if (gGxContext.mColorScale != 1.0f && (!useVertexColor || vertexColorMode == VertexColorMode::TextureBlend))
     {
         // Need to put current color into the reduced range.
         GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
