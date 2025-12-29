@@ -71,6 +71,11 @@ struct GxContext
     float mFogNearZ = 0.0f;
     float mFogFarZ = 0.0f;
     GXColor mFogColor = {0,0,0,0};
+
+    // Color Scale
+    float mColorScale = 1.0f;
+    float mInvColorScale = 1.0f;
+    uint8_t mColorScaleEnum = GX_CS_SCALE_1;
 };
 
 #endif

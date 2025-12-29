@@ -546,15 +546,7 @@ uint8_t ConfigTev(uint8_t tevStage, uint32_t textureSlot, TevMode mode, bool ver
 
     if (vertexColorBlend)
     {
-        float colorScale = Renderer::Get()->GetVertexColorScale();
-        float invColorScale = Renderer::Get()->GetVertexColorScaleInverse();
-        uint8_t colorScaleEnum = GX_CS_SCALE_1;
-        if (colorScale == 2.0f)
-            colorScaleEnum = GX_CS_SCALE_2;
-        else if (colorScale == 4.0f)
-            colorScaleEnum = GX_CS_SCALE_4;
-
-        if (colorScale != 1.0f)
+        if (gGxContext.mColorScale != 1.0f)
         {
             GX_SetTevSwapMode(tevStage, GX_TEV_SWAP1 + textureSlot, GX_TEV_SWAP0);
             GX_SetTevSwapModeTable(GX_TEV_SWAP1 + textureSlot, blendChannel, blendChannel, blendChannel, GX_CH_ALPHA);
@@ -563,7 +555,7 @@ uint8_t ConfigTev(uint8_t tevStage, uint32_t textureSlot, TevMode mode, bool ver
             GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
             GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_RASC, GX_CC_ONE, GX_CC_ZERO);
             GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_RASA);
-            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, colorScaleEnum, GX_TRUE, GX_TEVREG0);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, gGxContext.mColorScaleEnum, GX_TRUE, GX_TEVREG0);
             GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
             tevStage++;
 

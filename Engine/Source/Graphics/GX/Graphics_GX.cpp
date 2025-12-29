@@ -124,6 +124,18 @@ void GFX_BeginFrame()
             GX_LoadProjectionMtx(projection, GX_PERSPECTIVE);
         }
     }
+
+    gGxContext.mColorScale = Renderer::Get()->GetVertexColorScale();
+    gGxContext.mInvColorScale = Renderer::Get()->GetVertexColorScaleInverse();
+    gGxContext.mColorScaleEnum = GX_CS_SCALE_1;
+    if (gGxContext.mColorScale == 2.0f)
+    {
+        gGxContext.mColorScaleEnum = GX_CS_SCALE_2;
+    }
+    else if (gGxContext.mColorScale == 4.0f)
+    {
+        gGxContext.mColorScaleEnum = GX_CS_SCALE_4;
+    }
 }
 
 void GFX_EndFrame()
