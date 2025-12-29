@@ -283,6 +283,28 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
         tevStage++;
     }
 
+    if (gGxContext.mColorScale != 1.0f && !useVertexColor)
+    {
+        // Need to put current color into the reduced range.
+        GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+        GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_CPREV);
+        GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+        GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_DIVIDE_2, GX_TRUE, GX_TEVPREV);
+        GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        tevStage++;
+
+        if (gGxContext.mColorScale == 4.0f)
+        {
+            // Only GX_CS_DIVIDE_2 is prodivded. So for 4x scale, we need to use another TEV stage.
+            GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+            GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_CPREV);
+            GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_DIVIDE_2, GX_TRUE, GX_TEVPREV);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            tevStage++;
+        }
+    }
+
     glm::vec4 materialColor = color;
     materialColor = glm::clamp(materialColor, 0.0f, 1.0f);
     GX_SetChanMatColor(matColorChannel, { uint8_t(materialColor.r * 255.0f),
