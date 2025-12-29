@@ -26,7 +26,7 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
 void BindStaticMesh(StaticMesh* staticMesh, uint32_t* instanceColors);
 void BindSkeletalMesh(SkeletalMesh* skeletalMesh);
 
-void ConfigTev(uint32_t textureSlot, TevMode mode, bool vertexColorBlend);
+uint8_t ConfigTev(uint8_t tevStage, uint32_t textureSlot, TevMode mode, bool vertexColorBlend);
 
 void ApplyWidgetRotation(Mtx& mtx, Widget* widget);
 

@@ -255,18 +255,12 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
             tevMode != TevMode::Count &&
             texture != nullptr)
         {
-            // First texture sample is done in TEV 0, if we have to add earlier stages,
-            // then this assertion will need to be modified.
-            OCT_ASSERT(texIdx == tevStage);
-
             GX_SetTexCoordGen(GX_TEXCOORD0 + texIdx, GX_TG_MTX3x4, GX_TG_TEX0 + uvMap, GX_TEXMTX0 + uvMap * 3);
             GX_LoadTexObj(&texture->GetResource()->mGxTexObj, GX_TEXMAP0 + texIdx);
-            GX_SetTevOrder(GX_TEVSTAGE0 + texIdx, GX_TEXCOORD0 + texIdx, GX_TEXMAP0 + texIdx, GX_COLOR0A0);
 
-            ConfigTev(texIdx, tevMode, vertexColorBlend);
+            tevStage = ConfigTev(tevStage, texIdx, tevMode, vertexColorBlend);
 
             texIdx++;
-            tevStage++;
         }
     }
 
@@ -534,9 +528,8 @@ void BindSkeletalMesh(SkeletalMesh* skeletalMesh)
     GX_InvVtxCache();
 }
 
-void ConfigTev(uint32_t textureSlot, TevMode mode, bool vertexColorBlend)
+uint8_t ConfigTev(uint8_t tevStage, uint32_t textureSlot, TevMode mode, bool vertexColorBlend)
 {
-    uint8_t tevStage = (uint8_t) (GX_TEVSTAGE0 + textureSlot);
     uint8_t blendChannel = GX_CH_RED;
 
     switch (textureSlot)
@@ -553,19 +546,54 @@ void ConfigTev(uint32_t textureSlot, TevMode mode, bool vertexColorBlend)
 
     if (vertexColorBlend)
     {
-        GX_SetTevSwapMode(tevStage, GX_TEV_SWAP1 + textureSlot, GX_TEV_SWAP0);
-        GX_SetTevSwapModeTable(GX_TEV_SWAP1 + textureSlot, blendChannel, blendChannel, blendChannel, GX_CH_ALPHA);
+        float colorScale = Renderer::Get()->GetVertexColorScale();
+        float invColorScale = Renderer::Get()->GetVertexColorScaleInverse();
+        uint8_t colorScaleEnum = GX_CS_SCALE_1;
+        if (colorScale == 2.0f)
+            colorScaleEnum = GX_CS_SCALE_2;
+        else if (colorScale == 4.0f)
+            colorScaleEnum = GX_CS_SCALE_4;
 
-        uint8_t prevColor = textureSlot == 0 ? GX_CC_ZERO : GX_CC_CPREV;
+        if (colorScale != 1.0f)
+        {
+            GX_SetTevSwapMode(tevStage, GX_TEV_SWAP1 + textureSlot, GX_TEV_SWAP0);
+            GX_SetTevSwapModeTable(GX_TEV_SWAP1 + textureSlot, blendChannel, blendChannel, blendChannel, GX_CH_ALPHA);
 
-        GX_SetTevColorIn(tevStage, prevColor, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO);
-        GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
-        GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
-        GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            // Multiply the RGB vertex colors based on color scale. Leave alpha unchanged
+            GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+            GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_RASC, GX_CC_ONE, GX_CC_ZERO);
+            GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_RASA);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, colorScaleEnum, GX_TRUE, GX_TEVREG0);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
+            tevStage++;
+
+            uint8_t prevColor = textureSlot == 0 ? GX_CC_ZERO : GX_CC_CPREV;
+
+            // Then do the texture blending
+            GX_SetTevOrder(tevStage, GX_TEXCOORD0 + textureSlot, GX_TEXMAP0 + textureSlot, GX_COLOR0A0);
+            GX_SetTevColorIn(tevStage, prevColor, GX_CC_TEXC, GX_CC_C0, GX_CC_ZERO);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        }
+        else
+        {
+            GX_SetTevSwapMode(tevStage, GX_TEV_SWAP1 + textureSlot, GX_TEV_SWAP0);
+            GX_SetTevSwapModeTable(GX_TEV_SWAP1 + textureSlot, blendChannel, blendChannel, blendChannel, GX_CH_ALPHA);
+
+            uint8_t prevColor = textureSlot == 0 ? GX_CC_ZERO : GX_CC_CPREV;
+
+            GX_SetTevOrder(tevStage, GX_TEXCOORD0 + textureSlot, GX_TEXMAP0 + textureSlot, GX_COLOR0A0);
+            GX_SetTevColorIn(tevStage, prevColor, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        }
     }
     else
     {
         GX_SetTevSwapMode(tevStage, GX_TEV_SWAP0, GX_TEV_SWAP0);
+        GX_SetTevOrder(tevStage, GX_TEXCOORD0 + textureSlot, GX_TEXMAP0 + textureSlot, GX_COLOR0A0);
 
         switch (mode)
         {
@@ -613,6 +641,9 @@ void ConfigTev(uint32_t textureSlot, TevMode mode, bool vertexColorBlend)
             break;
         }
     }
+
+    ++tevStage;
+    return tevStage;
 }
 
 void ApplyWidgetRotation(Mtx& mtx, Widget* widget)
