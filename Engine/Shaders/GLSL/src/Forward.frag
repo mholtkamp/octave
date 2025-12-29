@@ -109,7 +109,7 @@ void main()
         }
         else if (material.mVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
         {
-            float modValue = inColor.a * global.mVertexColorScale;
+            float modValue = inColor.a;
             outColor *= modValue;
         }
     }
@@ -179,7 +179,7 @@ void main()
         }
         else if (material.mVertexColorMode == VERTEX_COLOR_TEXTURE_BLEND)
         {
-            outColor *= (inColor.a * global.mVertexColorScale);
+            outColor *= inColor.a;
         }
     }
 
