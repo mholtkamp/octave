@@ -114,7 +114,7 @@ void BindStaticMesh(StaticMesh* mesh, const void* instanceColors)
         AttrInfo_AddFixed(attrInfo, 4); // v4=color
 
         float defaultColor = 255.0f * Renderer::Get()->GetVertexColorScaleInverse();
-        C3D_FixedAttribSet(4, defaultColor, defaultColor, defaultColor, defaultColor);
+        C3D_FixedAttribSet(4, defaultColor, defaultColor, defaultColor, 255.0f);
     }
 
     // Setup vertex buffer state

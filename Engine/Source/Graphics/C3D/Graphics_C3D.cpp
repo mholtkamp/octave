@@ -937,7 +937,7 @@ void GFX_DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
         else
         {
             float invColorScale = Renderer::Get()->GetVertexColorScaleInverse();
-            C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mSkeletalMeshLocs.mInvColorScale, invColorScale, invColorScale, invColorScale, invColorScale);
+            C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mSkeletalMeshLocs.mInvColorScale, invColorScale, invColorScale, invColorScale, 1.0f);
         }
 
         // Draw
@@ -1020,6 +1020,14 @@ void GFX_DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
         C3D_TexEnvSrc(env, C3D_Both, GPU_CONSTANT, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
         C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
 
+        float colorScale = Renderer::Get()->GetVertexColorScale();
+        GPU_TEVSCALE tevScale = GPU_TEVSCALE_1;
+        if (colorScale > 1.0f)
+        {
+            tevScale = (colorScale == 2.0f) ? GPU_TEVSCALE_2 : GPU_TEVSCALE_4;
+        }
+        C3D_TexEnvScale(env, C3D_RGB, tevScale);
+
         C3D_AlphaTest(false, GPU_ALWAYS, 0);
 
         // (1) Back faces. Reverse depth test. Write shadow opacity in alpha.
@@ -1034,7 +1042,7 @@ void GFX_DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
         C3D_CullFace(GPU_CULL_BACK_CCW);
         C3D_DrawElements(GPU_TRIANGLES, mesh->GetNumIndices(), C3D_UNSIGNED_SHORT, mesh->GetResource()->mIndexData);
 
-        // (3) Clear faces. Normal depth test. Blend shadow color based on framebuffer alpha.
+        // (3) Clear faces. Normal depth test.
         C3D_DepthTest(false, GPU_ALWAYS, GPU_WRITE_COLOR);
         C3D_AlphaBlend(GPU_BLEND_ADD, GPU_BLEND_ADD, GPU_ZERO, GPU_ONE, GPU_ZERO, GPU_ZERO);
         C3D_CullFace(GPU_CULL_BACK_CCW);

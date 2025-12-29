@@ -634,6 +634,7 @@ void Particle3D::UpdateVertexBuffer()
     const float invScaleEase2 = (scaleEase != 0.0f) ? (0.5f / scaleEase) : 1.0f;
 
     const float invColorScale = Renderer::Get()->GetVertexColorScaleInverse();
+    const glm::vec4 invColorScale4 = glm::vec4(invColorScale, invColorScale, invColorScale, 1.0f);
 
     glm::vec3 right = { 1.0f, 0.0f, 0.0f };
     glm::vec3 up = { 0.0f, 1.0f, 0.0f };
@@ -715,7 +716,7 @@ void Particle3D::UpdateVertexBuffer()
 
         glm::vec3 pos = mParticles[i].mPosition;
         glm::vec2 halfSize = mParticles[i].mSize * scale * 0.5f;
-        color *= invColorScale;
+        color *= invColorScale4;
         uint8_t colors[4] =
         {
             uint8_t(glm::clamp(color.r * 255.0f, 0.0f, 255.0f)),
