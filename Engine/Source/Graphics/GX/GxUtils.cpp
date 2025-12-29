@@ -49,7 +49,7 @@ void SetupLights()
         }
         glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
 
-        glm::vec4 lightColor = lightData.mColor / GX_DYNAMIC_LIGHT_SCALE;
+        glm::vec4 lightColor = lightData.mColor;
         lightColor *= lightData.mIntensity;
         lightColor.a = 1.0f;
         lightColor = glm::clamp(lightColor, 0.0f, 1.0f);
@@ -291,7 +291,7 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
                                         uint8_t(opacity * 255.f) });
 
     glm::vec4 ambientColor = useBakedLighting ? glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) : gGxContext.mWorld->GetAmbientLightColor();
-    ambientColor = glm::clamp(ambientColor / GX_DYNAMIC_LIGHT_SCALE, 0.0f, 1.0f);
+    ambientColor = glm::clamp(ambientColor, 0.0f, 1.0f);
     ambientColor.a = 1.0f;
     GX_SetChanAmbColor(matColorChannel, { uint8_t(ambientColor.r * 255.0f),
                                       uint8_t(ambientColor.g * 255.0f),

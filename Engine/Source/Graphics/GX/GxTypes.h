@@ -6,8 +6,6 @@
 #include <stdint.h>
 #include "EngineTypes.h"
 
-#define GX_DYNAMIC_LIGHT_SCALE 1.0f
-
 class World;
 
 struct LightingState

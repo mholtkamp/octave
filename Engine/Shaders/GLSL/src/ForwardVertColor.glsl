@@ -56,7 +56,8 @@ void main()
     outTexcoord0 = inTexcoord0;    
     outTexcoord1 = inTexcoord1;    
     outNormal = normalize((normalMatrix * vec4(inNormal, 0.0)).xyz);
-    outColor = inColor * global.mVertexColorScale;
+    outColor = inColor;
+    outColor.rgb = outColor.rgb * global.mVertexColorScale;
 
     if (global.mLinearColorSpace != 0)
     {
