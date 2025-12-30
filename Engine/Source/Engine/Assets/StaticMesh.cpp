@@ -159,6 +159,22 @@ void StaticMesh::LoadStream(Stream& stream, Platform platform)
             vertices[i].mNormal = stream.ReadVec3();
             vertices[i].mColor = stream.ReadUint32();
         }
+
+        // Only allow vertex colors to go beyond 1.0 when painted.
+        // For meshes with vertex colors, convert to reduced color space.
+        uint32_t colorScale = GetEngineConfig()->mVertexColorScale;
+        if (colorScale != 1)
+        {
+            uint32_t shiftCount = (colorScale >> 1);
+            for (uint32_t i = 0; i < mNumVertices; ++i)
+            {
+                uint8_t* color8 = (uint8_t*)(&vertices[i].mColor);
+                color8[0] = color8[0] >> shiftCount;
+                color8[1] = color8[1] >> shiftCount;
+                color8[2] = color8[2] >> shiftCount;
+                color8[3] = color8[3] >> shiftCount;
+            }
+        }
     }
     else
     {
