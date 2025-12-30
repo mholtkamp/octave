@@ -208,6 +208,15 @@ void GFX_BeginFrame()
     // Setup lighting now that our light array might have changed this frame
     SetupLighting(0x01, false);
 
+    // Refresh color scale (this should really stay constant the entire lifespan of game though)
+    gC3dContext.mColorScale = Renderer::Get()->GetVertexColorScale();
+    gC3dContext.mInvColorScale = Renderer::Get()->GetVertexColorScaleInverse();
+    GPU_TEVSCALE tevScale = GPU_TEVSCALE_1;
+    if (gC3dContext.mColorScale > 1.0f)
+    {
+        gC3dContext.mColorScaleEnum = (gC3dContext.mColorScale == 2.0f) ? GPU_TEVSCALE_2 : GPU_TEVSCALE_4;
+    }
+
     gC3dContext.mLastBoundShaderId = ShaderId::Count;
     gC3dContext.mLastBoundMaterial = nullptr;
 }
@@ -759,7 +768,7 @@ void GFX_DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverri
         
         C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mUvMaps, material->GetUvMap(0), material->GetUvMap(1), material->GetUvMap(2), 0);
 
-        float colorScale = Renderer::Get()->GetVertexColorScale();
+        float colorScale = gC3dContext.mColorScale;
         if (material->GetVertexColorMode() == VertexColorMode::TextureBlend)
         {
             // Texture blending weights should not adhere to color scale because they are directly used for interpolating between textures.
@@ -936,8 +945,8 @@ void GFX_DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
         }
         else
         {
-            float invColorScale = Renderer::Get()->GetVertexColorScaleInverse();
-            C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mSkeletalMeshLocs.mInvColorScale, invColorScale, invColorScale, invColorScale, 1.0f);
+            float invColorScale = gC3dContext.mInvColorScale;
+            C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mSkeletalMeshLocs.mInvColorScale, invColorScale, invColorScale, invColorScale, invColorScale);
         }
 
         // Draw
@@ -1019,14 +1028,7 @@ void GFX_DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
         C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(matColor4));
         C3D_TexEnvSrc(env, C3D_Both, GPU_CONSTANT, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
         C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
-
-        float colorScale = Renderer::Get()->GetVertexColorScale();
-        GPU_TEVSCALE tevScale = GPU_TEVSCALE_1;
-        if (colorScale > 1.0f)
-        {
-            tevScale = (colorScale == 2.0f) ? GPU_TEVSCALE_2 : GPU_TEVSCALE_4;
-        }
-        C3D_TexEnvScale(env, C3D_RGB, tevScale);
+        C3D_TexEnvScale(env, C3D_Both, gC3dContext.mColorScaleEnum);
 
         C3D_AlphaTest(false, GPU_ALWAYS, 0);
 

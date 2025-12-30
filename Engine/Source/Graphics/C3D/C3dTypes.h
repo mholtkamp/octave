@@ -133,6 +133,10 @@ struct C3dContext
     bool mMaterialApplyFog = true;
     bool mFogEnabled = false;
 
+    float mColorScale = 1.0f;
+    float mInvColorScale = 1.0f;
+    GPU_TEVSCALE mColorScaleEnum = GPU_TEVSCALE_1; 
+
     ShaderId mLastBoundShaderId = ShaderId::Count;
     Material* mLastBoundMaterial = nullptr;
 

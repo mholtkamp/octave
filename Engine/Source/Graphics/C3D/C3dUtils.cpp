@@ -113,8 +113,8 @@ void BindStaticMesh(StaticMesh* mesh, const void* instanceColors)
     {
         AttrInfo_AddFixed(attrInfo, 4); // v4=color
 
-        float defaultColor = 255.0f * Renderer::Get()->GetVertexColorScaleInverse();
-        C3D_FixedAttribSet(4, defaultColor, defaultColor, defaultColor, 255.0f);
+        float defaultColor = 255.0f * gC3dContext.mInvColorScale;
+        C3D_FixedAttribSet(4, defaultColor, defaultColor, defaultColor, defaultColor);
     }
 
     // Setup vertex buffer state
@@ -180,7 +180,7 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
         {
             glm::vec4 ambientColor = useBakedLighting ? glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) : gC3dContext.mWorld->GetAmbientLightColor();
 
-            ambientColor *= Renderer::Get()->GetVertexColorScaleInverse();
+            ambientColor *= gC3dContext.mInvColorScale;
             bool toon = (shadingModel == ShadingModel::Toon);
             specular = toon ? 0.0f : material->GetSpecular();
             float specular1 = toon ? 1.0f : 0.0f;
@@ -289,15 +289,7 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
 
         C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
         C3D_TexEnvFunc(env, C3D_Alpha, alphaBlend ? GPU_MODULATE : GPU_REPLACE);
-
-        float colorScale = Renderer::Get()->GetVertexColorScale();
-        GPU_TEVSCALE tevScale = GPU_TEVSCALE_1;
-        if (colorScale > 1.0f)
-        {
-            tevScale = (colorScale == 2.0f) ? GPU_TEVSCALE_2 : GPU_TEVSCALE_4;
-        }
-
-        C3D_TexEnvScale(env, C3D_RGB, tevScale);
+        C3D_TexEnvScale(env, C3D_Both, gC3dContext.mColorScaleEnum);
 
         if (vertexColorBlend && (unlit || useBakedLighting))
         {
@@ -448,7 +440,7 @@ void SetupLightEnv(LightEnv& lightEnv, uint8_t lightingChannels, bool bakedLight
         glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
         float lightRadius = lightData.mRadius;
 
-        glm::vec4 lightColor = lightData.mColor * Renderer::Get()->GetVertexColorScaleInverse();
+        glm::vec4 lightColor = lightData.mColor * gC3dContext.mInvColorScale;
         lightColor *= lightData.mIntensity;
         lightColor = glm::clamp(lightColor,
             glm::vec4(0.0f, 0.0f, 0.0f, 0.0f),
