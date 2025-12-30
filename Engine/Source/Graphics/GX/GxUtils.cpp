@@ -49,7 +49,7 @@ void SetupLights()
         }
         glm::vec4 lightPosVS = cameraComp->GetViewMatrix() * glm::vec4(lightPosWS, 1.0f);
 
-        glm::vec4 lightColor = lightData.mColor;
+        glm::vec4 lightColor = lightData.mColor * gGxContext.mInvColorScale;
         lightColor *= lightData.mIntensity;
         lightColor.a = 1.0f;
         lightColor = glm::clamp(lightColor, 0.0f, 1.0f);
@@ -269,7 +269,7 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
     bool unlit = (shadingModel == ShadingModel::Unlit);
     gGxContext.mLighting.mEnabled = !unlit;
 
-    if (gGxContext.mColorScale != 1.0f && (!useVertexColor || vertexColorMode == VertexColorMode::TextureBlend))
+    if (gGxContext.mColorScale != 1.0f && unlit && (!useVertexColor || vertexColorMode == VertexColorMode::TextureBlend))
     {
         // Need to put current color into the reduced range.
         GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
@@ -313,7 +313,7 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
                                         uint8_t(opacity * 255.f) });
 
     glm::vec4 ambientColor = useBakedLighting ? glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) : gGxContext.mWorld->GetAmbientLightColor();
-    ambientColor = glm::clamp(ambientColor, 0.0f, 1.0f);
+    ambientColor = glm::clamp(ambientColor * gGxContext.mInvColorScale, 0.0f, 1.0f);
     ambientColor.a = 1.0f;
     GX_SetChanAmbColor(matColorChannel, { uint8_t(ambientColor.r * 255.0f),
                                       uint8_t(ambientColor.g * 255.0f),
