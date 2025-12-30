@@ -148,6 +148,10 @@ void StaticMesh::LoadStream(Stream& stream, Platform platform)
 
     ResizeVertexArray(mNumVertices);
 
+#if EDITOR
+    mPureVertexColors.clear();
+#endif
+
     if (mHasVertexColor)
     {
         VertexColor* vertices = GetColorVertices();
@@ -158,6 +162,10 @@ void StaticMesh::LoadStream(Stream& stream, Platform platform)
             vertices[i].mTexcoord1 = stream.ReadVec2();
             vertices[i].mNormal = stream.ReadVec3();
             vertices[i].mColor = stream.ReadUint32();
+#if EDITOR
+            // Cache these to save later. Should not be affected by color scale config.
+            mPureVertexColors.push_back(vertices[i].mColor);
+#endif
         }
 
         // Only allow vertex colors to go beyond 1.0 when painted.
@@ -292,7 +300,9 @@ void StaticMesh::SaveStream(Stream& stream, Platform platform)
             stream.WriteVec2(vertices[i].mTexcoord0);
             stream.WriteVec2(vertices[i].mTexcoord1);
             stream.WriteVec3(vertices[i].mNormal);
-            stream.WriteUint32(vertices[i].mColor);
+
+            // Save pure vertex color, unaffected by color scale config setting.
+            stream.WriteUint32(mPureVertexColors[i]);
         }
     }
     else

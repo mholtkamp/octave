@@ -106,6 +106,8 @@ public:
         const aiMesh& meshData,
         uint32_t numCollisionMeshes,
         const aiMesh** collisionMeshes);
+protected:
+    std::vector<uint32_t> mPureVertexColors;
 #endif
 
 #if CREATE_CONVEX_COLLISION_MESH
