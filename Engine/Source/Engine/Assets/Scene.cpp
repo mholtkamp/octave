@@ -1,6 +1,5 @@
 #include "Assets/Scene.h"
 
-#include "EditorState.h"
 #include "World.h"
 #include "Log.h"
 #include "Engine.h"
@@ -9,6 +8,10 @@
 #include "NodePath.h"
 #include "Nodes/Node.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
+
+#if EDITOR
+#include "EditorState.h"
+#endif
 
 FORCE_LINK_DEF(Scene);
 DEFINE_ASSET(Scene);

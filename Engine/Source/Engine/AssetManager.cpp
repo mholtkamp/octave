@@ -1064,6 +1064,7 @@ std::vector<AssetStub*> AssetManager::GatherDirtyAssets()
 {
     std::vector<AssetStub*> retAssets;
 
+#if EDITOR
     for (auto it = mAssetMap.begin(); it != mAssetMap.end(); ++it)
     {
         if (it->second != nullptr &&
@@ -1073,7 +1074,7 @@ std::vector<AssetStub*> AssetManager::GatherDirtyAssets()
             retAssets.push_back(it->second);
         }
     }
-
+#endif
     return retAssets;
 }
 
