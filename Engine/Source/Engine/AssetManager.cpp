@@ -1060,6 +1060,23 @@ std::unordered_map<std::string, AssetStub*>& AssetManager::GetAssetMap()
     return mAssetMap;
 }
 
+std::vector<AssetStub*> AssetManager::GatherDirtyAssets()
+{
+    std::vector<AssetStub*> retAssets;
+
+    for (auto it = mAssetMap.begin(); it != mAssetMap.end(); ++it)
+    {
+        if (it->second != nullptr &&
+            it->second->mAsset != nullptr &&
+            it->second->mAsset->GetDirtyFlag())
+        {
+            retAssets.push_back(it->second);
+        }
+    }
+
+    return retAssets;
+}
+
 ThreadFuncRet AssetManager::AsyncLoadThreadFunc(void* in)
 {
     AssetManager& am = *((AssetManager*)in);

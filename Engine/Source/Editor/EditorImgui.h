@@ -10,6 +10,7 @@
 
 class Object;
 class Property;
+class AssetStub;
 
 typedef void(*FileBrowserCallbackFP)(const std::vector<std::string>& filePaths);
 
@@ -23,6 +24,7 @@ void EditorImguiGetViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t&
 bool EditorIsInterfaceVisible();
 void EditorOpenFileBrowser(FileBrowserCallbackFP callback, bool folderMode);
 void EditorSetFileBrowserDir(const std::string& dir);
+void EditorShowUnsavedAssetsModal(const std::vector<AssetStub*>& unsavedStubs);
 
 void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOwnerType ownerType);
 

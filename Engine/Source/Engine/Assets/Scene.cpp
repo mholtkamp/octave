@@ -1,4 +1,6 @@
 #include "Assets/Scene.h"
+
+#include "EditorState.h"
 #include "World.h"
 #include "Log.h"
 #include "Engine.h"
@@ -128,6 +130,20 @@ void Scene::LoadStream(Stream& stream, Platform platform)
 
 void Scene::SaveStream(Stream& stream, Platform platform)
 {
+#if EDITOR
+    // When saving a scene in editor, first check to see if it is opened as an edit scene.
+    // If so, capture the current node first.
+    const std::vector<EditScene>& editScenes = GetEditorState()->mEditScenes;
+    for (uint32_t i = 0; i < editScenes.size(); ++i)
+    {
+        if (editScenes[i].mSceneAsset == this)
+        {
+            Capture(editScenes[i].mRootNode.Get());
+            break;
+        }
+    }
+#endif
+
     // If we increased the asset version, we also need to recapture the scene,
     // because instantiating nodes relies on the asset verison when processing extra data.
     if (mVersion != ASSET_VERSION_CURRENT)

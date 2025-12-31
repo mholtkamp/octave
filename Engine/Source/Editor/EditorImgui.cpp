@@ -89,6 +89,9 @@ static bool sObjectTabOpen = false;
 
 static SceneImportOptions sSceneImportOptions;
 
+static std::vector<AssetStub*> sUnsavedAssets;
+static std::vector<bool> sUnsavedAssetsSelected;
+static bool sUnsavedModalActive = false;
 
 static void PopulateFileBrowserDirs()
 {
@@ -182,6 +185,17 @@ void EditorOpenFileBrowser(FileBrowserCallbackFP callback, bool folderMode)
 void EditorSetFileBrowserDir(const std::string& dir)
 {
     sFileBrowserCurDir = dir;
+}
+
+void EditorShowUnsavedAssetsModal(const std::vector<AssetStub*>& unsavedStubs)
+{
+    if (!sUnsavedModalActive)
+    {
+        sUnsavedModalActive = true;
+        sUnsavedAssets = unsavedStubs;
+        sUnsavedAssetsSelected.clear();
+        sUnsavedAssetsSelected.resize(sUnsavedAssets.size());
+    }
 }
 
 static void DrawFileBrowserContextPopup(FileBrowserDirEntry* entry)
@@ -553,6 +567,113 @@ static void DrawFileBrowser()
             }
 
             sFileBrowserOpen = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+static void DrawUnsavedCheck()
+{
+    if (sUnsavedModalActive)
+    {
+        ImGui::OpenPopup("Unsaved Changes");
+    }
+
+    // Center the modal
+    if (ImGui::IsPopupOpen("Unsaved Changes"))
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(400,260));
+    }
+
+    if (ImGui::BeginPopupModal("Unsaved Changes", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        // Scrolling list
+        if (ImGui::BeginListBox("##UnsavedAssetListBox", ImVec2(390, 200)))
+        {
+            for (uint32_t i = 0; i < sUnsavedAssets.size(); ++i)
+            {
+                if (sUnsavedAssets[i] == nullptr ||
+                    sUnsavedAssets[i]->mAsset == nullptr)
+                {
+                    continue;
+                }
+
+                glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor(sUnsavedAssets[i]->mType);
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
+
+                if (ImGui::Selectable(sUnsavedAssets[i]->mAsset->GetName().c_str(), sUnsavedAssetsSelected[i]))
+                {
+                    sUnsavedAssetsSelected[i] = !sUnsavedAssetsSelected[i];
+                }
+
+                ImGui::PopStyleColor();
+            }
+            ImGui::EndListBox();
+        }
+
+        bool closePopup = false;
+
+        if (ImGui::Button("Save All"))
+        {
+            for (uint32_t i = 0; i < sUnsavedAssets.size(); ++i)
+            {
+                if (sUnsavedAssets[i] != nullptr)
+                {
+                    AssetManager::Get()->SaveAsset(*sUnsavedAssets[i]);
+                }
+            }
+
+            GetEditorState()->mShutdownUnsavedCheck = true;
+            GetEngineState()->mQuit = true;
+            closePopup = true;
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Save Selected"))
+        {
+            for (uint32_t i = 0; i < sUnsavedAssets.size(); ++i)
+            {
+                if (sUnsavedAssets[i] != nullptr &&
+                    sUnsavedAssetsSelected[i])
+                {
+                    AssetManager::Get()->SaveAsset(*sUnsavedAssets[i]);
+                }
+            }
+            GetEditorState()->mShutdownUnsavedCheck = true;
+            GetEngineState()->mQuit = true;
+            closePopup = true;
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Don't Save"))
+        {
+            GetEditorState()->mShutdownUnsavedCheck = true;
+            GetEngineState()->mQuit = true;
+            closePopup = true;
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+        {
+            GetEditorState()->mShutdownUnsavedCheck = false;
+            GetEngineState()->mQuit = false;
+            closePopup = true;
+        }
+
+        if (IsKeyJustDown(KEY_ESCAPE))
+        {
+            GetEditorState()->mShutdownUnsavedCheck = false;
+            GetEngineState()->mQuit = false;
+            closePopup = true;
+        }
+
+        if (closePopup)
+        {
+            sUnsavedModalActive = false;
             ImGui::CloseCurrentPopup();
         }
 
@@ -4022,6 +4143,8 @@ void EditorImguiDraw()
         }
 
         DrawFileBrowser();
+
+        DrawUnsavedCheck();
     }
 
     ImGui::Render();

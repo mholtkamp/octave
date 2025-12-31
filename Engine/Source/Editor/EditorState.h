@@ -132,6 +132,7 @@ struct EditorState
     int32_t mNodePropertySelectIndex = 0;
     std::string mNodePropertySelectName = "";
     std::string mPendingSceneImportPath = "";
+    bool mShutdownUnsavedCheck = false;
 
     // Methods
     void Init();

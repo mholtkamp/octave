@@ -28,6 +28,7 @@
 #include "Assets/StaticMesh.h"
 #include "Assets/Font.h"
 #include "EditorState.h"
+#include "EditorImgui.h"
 
 void OctPreInitialize(EngineConfig& config);
 
@@ -91,6 +92,23 @@ void EditorMain(int32_t argc, char** argv)
         }
 
         ret = Update();
+
+        // We are trying to quit, and haven't done the shutdown check yet
+        if (!ret && !GetEditorState()->mShutdownUnsavedCheck)
+        {
+            GetEditorState()->mShutdownUnsavedCheck = true;
+            std::vector<AssetStub*> unsavedAssets = AssetManager::Get()->GatherDirtyAssets();
+
+            if (unsavedAssets.size() > 0)
+            {
+                // Need to wait on user response.
+                ret = true;
+                GetEngineState()->mQuit = false;
+
+                // Have the imgui callbacks set / clear the Quit and Shutdown check flags as appropriate.
+                EditorShowUnsavedAssetsModal(unsavedAssets);
+            }
+        }
 
         if (playInEditor)
         {
