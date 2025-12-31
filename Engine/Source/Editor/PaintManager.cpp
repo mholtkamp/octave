@@ -416,7 +416,7 @@ void PaintManager::UpdatePaintDraw()
 {
     World* world = GetWorld(0);
     PaintMode paintMode = GetEditorState()->GetPaintMode();
-    float vertColorScale = Renderer::Get()->GetVertexColorScale();
+    float vertColorScale = Renderer::Get()->GetColorScale();
     float invVertColorScale = 1.0f / vertColorScale;
 
     int32_t mouseX = 0;
@@ -511,7 +511,7 @@ void PaintManager::UpdatePaintDraw()
                     if (pendColors.size() != numVerts)
                     {
                         pendColors.resize(numVerts);
-                        int32_t vertColorScale = GetEngineConfig()->mVertexColorScale;
+                        int32_t vertColorScale = GetEngineConfig()->mColorScale;
                         uint32_t initColor = 0xffffffff;
                         if (vertColorScale == 2)
                         {

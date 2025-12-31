@@ -125,8 +125,8 @@ void GFX_BeginFrame()
         }
     }
 
-    gGxContext.mColorScale = Renderer::Get()->GetVertexColorScale();
-    gGxContext.mInvColorScale = Renderer::Get()->GetVertexColorScaleInverse();
+    gGxContext.mColorScale = Renderer::Get()->GetColorScale();
+    gGxContext.mInvColorScale = Renderer::Get()->GetColorScaleInverse();
     gGxContext.mColorScaleEnum = GX_CS_SCALE_1;
     if (gGxContext.mColorScale == 2.0f)
     {

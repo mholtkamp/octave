@@ -209,8 +209,8 @@ void GFX_BeginFrame()
     SetupLighting(0x01, false);
 
     // Refresh color scale (this should really stay constant the entire lifespan of game though)
-    gC3dContext.mColorScale = Renderer::Get()->GetVertexColorScale();
-    gC3dContext.mInvColorScale = Renderer::Get()->GetVertexColorScaleInverse();
+    gC3dContext.mColorScale = Renderer::Get()->GetColorScale();
+    gC3dContext.mInvColorScale = Renderer::Get()->GetColorScaleInverse();
     GPU_TEVSCALE tevScale = GPU_TEVSCALE_1;
     if (gC3dContext.mColorScale > 1.0f)
     {

@@ -116,9 +116,9 @@ public:
     void SetLightFadeSpeed(float speed);
     float GetLightFadeSpeed() const;
 
-    void SetVertexColorScale(float colorScale);
-    float GetVertexColorScale() const;
-    float GetVertexColorScaleInverse() const;
+    void SetColorScale(float colorScale);
+    float GetColorScale() const;
+    float GetColorScaleInverse() const;
 
     bool IsPostProcessPassEnabled(PostProcessPassId passId) const;
     void EnablePostProcessPass(PostProcessPassId passId, bool enable);
@@ -232,7 +232,7 @@ private:
     uint32_t mLightFadeLimit = 4;
     float mLightFadeSpeed = 1.0f;
     glm::vec4 mClearColor = {};
-    float mVertexColorScale = 1.0f;
+    float mColorScale = 1.0f;
 
     // Path tracing
     uint32_t mRaysPerPixel = 4;

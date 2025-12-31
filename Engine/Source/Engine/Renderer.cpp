@@ -122,7 +122,7 @@ void Renderer::Initialize()
     EnableProxyRendering(true);
 #endif
 
-    SetVertexColorScale((float)GetEngineConfig()->mVertexColorScale);
+    SetColorScale((float)GetEngineConfig()->mColorScale);
 }
 
 void Renderer::GatherProperties(std::vector<Property>& props)
@@ -1531,36 +1531,36 @@ float Renderer::GetLightFadeSpeed() const
     return mLightFadeSpeed;
 }
 
-void Renderer::SetVertexColorScale(float colorScale)
+void Renderer::SetColorScale(float colorScale)
 {
     int32_t intColorScale = uint32_t(colorScale + 0.5f);
 
     // Only 1, 2, 4 are supported.
     if (intColorScale == 4)
     {
-        mVertexColorScale = 4.0f;
+        mColorScale = 4.0f;
     }
     else if (intColorScale == 2)
     {
-        mVertexColorScale = 2.0f;
+        mColorScale = 2.0f;
     }
     else
     {
-        mVertexColorScale = 1.0f;
+        mColorScale = 1.0f;
     }
 }
 
-float Renderer::GetVertexColorScale() const
+float Renderer::GetColorScale() const
 {
-    OCT_ASSERT(mVertexColorScale == 1.0f || mVertexColorScale == 2.0f || mVertexColorScale == 4.0f);
-    return mVertexColorScale;
+    OCT_ASSERT(mColorScale == 1.0f || mColorScale == 2.0f || mColorScale == 4.0f);
+    return mColorScale;
 }
 
-float Renderer::GetVertexColorScaleInverse() const
+float Renderer::GetColorScaleInverse() const
 {
-    if (mVertexColorScale == 2.0f)
+    if (mColorScale == 2.0f)
         return 0.5f;
-    else if (mVertexColorScale == 4.0f)
+    else if (mColorScale == 4.0f)
         return 0.25f;
 
     return 1.0f;

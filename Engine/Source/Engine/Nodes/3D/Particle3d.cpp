@@ -633,7 +633,7 @@ void Particle3D::UpdateVertexBuffer()
     const float invAlphaEase2 = (alphaEase != 0.0f) ? (0.5f / alphaEase) : 1.0f;
     const float invScaleEase2 = (scaleEase != 0.0f) ? (0.5f / scaleEase) : 1.0f;
 
-    const float invColorScale = Renderer::Get()->GetVertexColorScaleInverse();
+    const float invColorScale = Renderer::Get()->GetColorScaleInverse();
 
     glm::vec3 right = { 1.0f, 0.0f, 0.0f };
     glm::vec3 up = { 0.0f, 1.0f, 0.0f };

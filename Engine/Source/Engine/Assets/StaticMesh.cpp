@@ -170,7 +170,7 @@ void StaticMesh::LoadStream(Stream& stream, Platform platform)
 
         // Only allow vertex colors to go beyond 1.0 when painted.
         // For meshes with vertex colors, convert to reduced color space.
-        uint32_t colorScale = GetEngineConfig()->mVertexColorScale;
+        uint32_t colorScale = GetEngineConfig()->mColorScale;
         if (colorScale != 1)
         {
             uint32_t shiftCount = (colorScale >> 1);
