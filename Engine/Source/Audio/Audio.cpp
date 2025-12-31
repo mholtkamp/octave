@@ -416,6 +416,15 @@ void AUD_DecodeVorbis(Stream& inStream, Stream& outStream, PcmFormat format)
                                                 clipflag = 1;
                                             }
                                             *ptr = val;
+
+#if PLATFORM_DOLPHIN
+                                            if (format.mBytesPerSample == 2)
+                                            {
+                                                // Need to convert to little endian.
+                                                Swap16(*ptr);
+                                            }
+#endif
+
                                             ptr += vi.channels;
                                         }
                                     }

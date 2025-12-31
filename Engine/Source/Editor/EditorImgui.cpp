@@ -3147,6 +3147,13 @@ static void DrawPropertiesPanel()
                     }
                     ImGui::Unindent();
                 }
+                else if (obj->As<SoundWave>())
+                {
+                    SoundWave* soundWave = obj->As<SoundWave>();
+                    ImGui::Text("Num Channels: %d", soundWave->GetNumChannels());
+                    ImGui::Text("Bits Per Sample: %d", soundWave->GetBitsPerSample());
+                    ImGui::Text("Sample Rate: %d", soundWave->GetSampleRate());
+                }
             }
 
             ImGui::EndTabItem();

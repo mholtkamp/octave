@@ -7,7 +7,7 @@ System to play and manage sounds.
 Play a sound with no positional data.
 TODO: Rename to PlaySound() if we add 2D support.
 
-Sig: `Audio.PlaySound(sound, volume=1, pitch=1, startTime=0, loop=false, priority=0)`
+Sig: `Audio.PlaySound2D(sound, volume=1, pitch=1, startTime=0, loop=false, priority=0)`
  - Arg: `SoundWave sound` Sound wave to play
  - Arg: `number volume` Volume multiplier
  - Arg: `number pitch` Pitch multiplier
