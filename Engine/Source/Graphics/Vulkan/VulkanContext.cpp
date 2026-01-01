@@ -283,8 +283,11 @@ void VulkanContext::BeginFrame()
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        RecreateSwapchain(false);
-        result = vkAcquireNextImageKHR(mDevice, mSwapchain, std::numeric_limits<uint64_t>::max(), mImageAvailableSemaphore[mFrameIndex], VK_NULL_HANDLE, &mSwapchainImageIndex);
+        while (result != VK_SUCCESS)
+        {
+            RecreateSwapchain(false);
+            result = vkAcquireNextImageKHR(mDevice, mSwapchain, std::numeric_limits<uint64_t>::max(), mImageAvailableSemaphore[mFrameIndex], VK_NULL_HANDLE, &mSwapchainImageIndex);
+        }
     }
     else if (result != VK_SUCCESS &&
              result != VK_SUBOPTIMAL_KHR)
