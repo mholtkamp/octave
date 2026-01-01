@@ -570,6 +570,32 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         idStream.WriteFile((packagedDir + "steam_appid.txt").c_str());
     }
 
+    // ISO building for GameCube and Wii, non-embedded builds
+    if (/*!embedded &&*/
+        (platform == Platform::GameCube ||
+        platform == Platform::Wii))
+    {
+        // TODO: Check if we have the tools available for building an iso
+
+        // (1) Run dollz3 on the .dol file (I
+        std::string dollzPath = "External/ISO/dollz3";
+#if PLATFORM_WINDOWS
+        dollzPath += ".exe";
+#endif
+
+        std::string dollzCmd = dollzPath + " " + packagedDir + projectName + ".dol " + packagedDir + "bootldr.dol -m";
+        SYS_Exec(dollzCmd.c_str());
+
+        // (2) Run mkisofs using the provided gbi.hdr file
+        std::string gbiPath = "External/ISO/gbi.hdr";
+        std::string mkisofsPath = "mkisofs";
+#if PLATFORM_WINDOWS
+        mkisofsPath = "External/ISO/mkisofs.exe";
+#endif
+        std::string isoCmd = mkisofsPath + " -R -J -G " + gbiPath + " -no-emul-boot -b bootldr.dol -o "  + packagedDir + projectName + ".iso " + packagedDir;
+        SYS_Exec(isoCmd.c_str());
+    }
+
     LogDebug("Finished packaging!");
 }
 
