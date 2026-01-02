@@ -30,7 +30,7 @@ bool StaticMesh3D::HandlePropChange(Datum* datum, uint32_t index, const void* ne
         meshComp->SetUseTriangleCollision(*(bool*)newValue);
         success = true;
     }
-    else if (prop->mName == "Clear Baked Lighting")
+    else if (prop->mName == "Clear Instance Colors")
     {
         meshComp->ClearInstanceColors();
         success = true;
@@ -75,7 +75,7 @@ void StaticMesh3D::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Asset, "Static Mesh", this, &mStaticMesh, 1, HandlePropChange, int32_t(StaticMesh::GetStaticType())));
     outProps.push_back(Property(DatumType::Bool, "Use Triangle Collision", this, &mUseTriangleCollision, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Bake Lighting", this, &mBakeLighting, 1, HandlePropChange));
-    outProps.push_back(Property(DatumType::Bool, "Clear Baked Lighting", this, &sFakeBool, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Clear Instance Colors", this, &sFakeBool, 1, HandlePropChange));
 }
 
 void StaticMesh3D::Create()

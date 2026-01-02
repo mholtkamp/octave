@@ -492,6 +492,7 @@ void RayTracer::BeginLightBake()
             StaticMesh3D* meshComp = node->As<StaticMesh3D>();
 
             if (meshComp != nullptr &&
+                meshComp->GetStaticMesh() &&
                 meshComp->IsVisible() &&
                 meshComp->GetBakeLighting())
             {

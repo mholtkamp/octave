@@ -3256,6 +3256,12 @@ static void DrawPropertiesPanel()
                     InstancedMesh3D* instMesh = obj->As<InstancedMesh3D>();
                     DrawInstancedMeshExtra(instMesh);
                 }
+                else if (obj->As<StaticMesh>())
+                {
+                    StaticMesh* staticMesh = obj->As<StaticMesh>();
+                    bool hasVertColor = staticMesh->HasVertexColor();
+                    ImGui::Text("Vertex Color: %s", hasVertColor ? "Yes" : "No");
+                }
                 else if (obj->As<SkeletalMesh>())
                 {
                     SkeletalMesh* skelMesh = obj->As<SkeletalMesh>();
