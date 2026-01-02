@@ -128,6 +128,7 @@ struct SystemState
     uint32_t mFrameIndex = 0;
     void* mMemoryCardMountArea = nullptr;
     bool mMemoryCardMounted = false;
+    bool mDvdMounted = false;
 #elif PLATFORM_3DS
     PrintConsole mPrintConsole = {};
     float mSlider = 0.0f;
