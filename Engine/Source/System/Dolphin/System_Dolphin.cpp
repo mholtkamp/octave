@@ -674,8 +674,20 @@ std::string SYS_GetClipboardText()
 void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 {
 #if 1
-    vprintf(format, arg);
-    printf("\n");
+    // SYS_Report() allows logging in Dolphin with a .dol file.
+    // Printf logging requires .elf.
+    // Not sure if there's a way to turn the va_list back into a variadic args
+    // to pass to SYS_Report, so just vsprintf it to a buffer first.
+    char logBuffer[256];
+    vsnprintf(logBuffer, 255, format, arg);
+
+    SYS_Report(logBuffer);
+    SYS_Report("\n");
+
+    // I'm not sure if printf() is needed for the libogc console, but the console
+    // is currently broken right now and causes octave to crash.
+    //vprintf(format, arg);
+    //printf("\n");
 #else
     // Log to file (for easier debugging)
     // DO NOT DO BOTH! arg list can only be used once.
