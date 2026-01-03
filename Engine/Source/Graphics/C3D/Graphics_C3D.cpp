@@ -1120,7 +1120,8 @@ void GFX_DrawTextMeshComp(TextMesh3D* textMeshComp)
     AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, 2); // v2=texcoord1
     AttrInfo_AddLoader(attrInfo, 3, GPU_FLOAT, 3); // v3=normal
     AttrInfo_AddFixed(attrInfo, 4); // v4=color
-    C3D_FixedAttribSet(4, 255.0f, 255.0f, 255.0f, 255.0f);
+    float defaultColor = gC3dContext.mInvColorScale * 255.0f;
+    C3D_FixedAttribSet(4, defaultColor, defaultColor, defaultColor, defaultColor);
 
     // Setup vertex buffer state
     C3D_BufInfo* bufInfo = C3D_GetBufInfo();
