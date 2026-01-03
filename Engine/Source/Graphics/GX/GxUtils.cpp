@@ -269,28 +269,7 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
     bool unlit = (shadingModel == ShadingModel::Unlit);
     gGxContext.mLighting.mEnabled = !unlit;
 
-    if (gGxContext.mColorScale != 1.0f && unlit && !useBakedLighting)
-    {
-        // Need to put current color into the reduced range.
-        // Since we aren't multiplying the lighting value, the base texture color needs to be reduced.
-        GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
-        GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_CPREV);
-        GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
-        GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_DIVIDE_2, GX_TRUE, GX_TEVPREV);
-        GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_DIVIDE_2, GX_TRUE, GX_TEVPREV);
-        tevStage++;
-
-        if (gGxContext.mColorScale == 4.0f)
-        {
-            // Only GX_CS_DIVIDE_2 is prodivded. So for 4x scale, we need to use another TEV stage.
-            GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
-            GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_CPREV);
-            GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
-            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_DIVIDE_2, GX_TRUE, GX_TEVPREV);
-            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_DIVIDE_2, GX_TRUE, GX_TEVPREV);
-            tevStage++;
-        }
-    }
+    bool applyColorScale = gGxContext.mColorScale != 1.0f && !(unlit && !useBakedLighting);
 
     if (useVertexColor)
     {
@@ -324,7 +303,7 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
     GX_SetChanMatColor(matColorChannel, { uint8_t(materialColor.r * 255.0f),
                                         uint8_t(materialColor.g * 255.0f),
                                         uint8_t(materialColor.b * 255.0f),
-                                        uint8_t(opacity * 255.f /** (unlit ? gGxContext.mInvColorScale : 1.0f)*/) });
+                                        uint8_t(opacity * 255.f * (applyColorScale ? gGxContext.mInvColorScale : 1.0f)) });
 
     glm::vec4 ambientColor = useBakedLighting ? glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) : gGxContext.mWorld->GetAmbientLightColor();
     ambientColor = glm::clamp(ambientColor * gGxContext.mInvColorScale, 0.0f, 1.0f);
@@ -371,7 +350,7 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
         gGxContext.mLighting.mColorChannel = false;
     }
 
-    if (gGxContext.mColorScale != 1.0f)
+    if (applyColorScale)
     {
         // Apply color scale
         GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
