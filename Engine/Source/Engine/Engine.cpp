@@ -277,17 +277,6 @@ bool Initialize()
         LoadProject(projectPath, !sEngineConfig.mUseAssetRegistry);
     }
 
-    if (GetPlatform() == Platform::Android ||
-        GetPlatform() == Platform::GameCube ||
-        GetPlatform() == Platform::Wii ||
-        GetPlatform() == Platform::N3DS)
-    {
-        // Use the asset registry to make loading faster. On consoles, scanning the SD card directories 
-        // can be extremely slow. Android used to require the asset registry, but I did add support for 
-        // iterating over the assets directory via Java. It's still probably faster to use the asset registry though.
-        sEngineConfig.mUseAssetRegistry = true;
-    }
-
 #if !EDITOR
     if (GetEngineState()->mProjectDirectory != "" &&
         sEngineConfig.mUseAssetRegistry)
@@ -1093,6 +1082,18 @@ void ReadEngineConfig(std::string path)
 
             strcpy(key, "");
             strcpy(value, "");
+        }
+
+        // On consoles, force UseAssetRegistry=true for faster loading performance.
+        if (GetPlatform() == Platform::Android ||
+            GetPlatform() == Platform::GameCube ||
+            GetPlatform() == Platform::Wii ||
+            GetPlatform() == Platform::N3DS)
+        {
+            // Use the asset registry to make loading faster. On consoles, scanning the SD card directories
+            // can be extremely slow. Android used to require the asset registry, but I did add support for
+            // iterating over the assets directory via Java. It's still probably faster to use the asset registry though.
+            sEngineConfig.mUseAssetRegistry = true;
         }
 
         Renderer* renderer = Renderer::Get();
