@@ -269,14 +269,15 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
     bool unlit = (shadingModel == ShadingModel::Unlit);
     gGxContext.mLighting.mEnabled = !unlit;
 
-    if (gGxContext.mColorScale != 1.0f && unlit && (!useVertexColor || vertexColorMode == VertexColorMode::TextureBlend))
+    if (gGxContext.mColorScale != 1.0f && unlit && !useBakedLighting)
     {
         // Need to put current color into the reduced range.
+        // Since we aren't multiplying the lighting value, the base texture color needs to be reduced.
         GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
         GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_CPREV);
         GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
         GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_DIVIDE_2, GX_TRUE, GX_TEVPREV);
-        GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+        GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_DIVIDE_2, GX_TRUE, GX_TEVPREV);
         tevStage++;
 
         if (gGxContext.mColorScale == 4.0f)
@@ -286,23 +287,36 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
             GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_CPREV);
             GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
             GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_DIVIDE_2, GX_TRUE, GX_TEVPREV);
-            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_DIVIDE_2, GX_TRUE, GX_TEVPREV);
             tevStage++;
         }
     }
 
-    if (useBakedLighting)
+    if (useVertexColor)
     {
-        // Compute the baked color first and save it out to a scratch register.
-        // After resolving the final (dynamically lit) color, add this baked color to it.
-        bool fullBake = (vertexColorMode != VertexColorMode::TextureBlend);
+        if (useBakedLighting)
+        {
+            // Compute the baked color first and save it out to a scratch register.
+            // After resolving the final (dynamically lit) color, add this baked color to it.
+            bool fullBake = (vertexColorMode != VertexColorMode::TextureBlend);
 
-        GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
-        GX_SetTevColorIn(tevStage, GX_CC_ZERO, fullBake ? GX_CC_RASC : GX_CC_RASA, GX_CC_CPREV, GX_CC_ZERO);
-        GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
-        GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
-        GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
-        tevStage++;
+            GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+            GX_SetTevColorIn(tevStage, GX_CC_ZERO, fullBake ? GX_CC_RASC : GX_CC_RASA, GX_CC_CPREV, GX_CC_ZERO);
+            GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
+            tevStage++;
+        }
+        else
+        {
+            // Move vertex color to scratch register
+            GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+            GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC);
+            GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_RASA);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, gGxContext.mColorScaleEnum, GX_TRUE, GX_TEVREG0);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, gGxContext.mColorScaleEnum, GX_TRUE, GX_TEVREG0);
+            tevStage++;
+        }
     }
 
     glm::vec4 materialColor = color;
@@ -310,7 +324,7 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
     GX_SetChanMatColor(matColorChannel, { uint8_t(materialColor.r * 255.0f),
                                         uint8_t(materialColor.g * 255.0f),
                                         uint8_t(materialColor.b * 255.0f),
-                                        uint8_t(opacity * 255.f) });
+                                        uint8_t(opacity * 255.f /** (unlit ? gGxContext.mInvColorScale : 1.0f)*/) });
 
     glm::vec4 ambientColor = useBakedLighting ? glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) : gGxContext.mWorld->GetAmbientLightColor();
     ambientColor = glm::clamp(ambientColor * gGxContext.mInvColorScale, 0.0f, 1.0f);
@@ -343,10 +357,10 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
         else if (vertexColorMode == VertexColorMode::Modulate)
         {
             GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
-            GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_RASC, GX_CC_CPREV, GX_CC_ZERO);
-            GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_RASA, GX_CA_APREV, GX_CA_ZERO);
-            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, unlit ? GX_CS_SCALE_1 : gGxContext.mColorScaleEnum, GX_TRUE, GX_TEVPREV);
-            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, unlit ? GX_CS_SCALE_1 : gGxContext.mColorScaleEnum, GX_TRUE, GX_TEVPREV);
+            GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_C0, GX_CC_CPREV, GX_CC_ZERO);
+            GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_A0, GX_CA_APREV, GX_CA_ZERO);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
             tevStage++;
         }
 
