@@ -269,7 +269,7 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
     bool unlit = (shadingModel == ShadingModel::Unlit);
     gGxContext.mLighting.mEnabled = !unlit;
 
-    bool applyColorScale = gGxContext.mColorScale != 1.0f && !(unlit && !useBakedLighting);
+    bool applyColorScale = gGxContext.mColorScale != 1.0f && !(unlit && !useVertexColor);
 
     if (useVertexColor)
     {
@@ -292,8 +292,8 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
             GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
             GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC);
             GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_RASA);
-            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, gGxContext.mColorScaleEnum, GX_TRUE, GX_TEVREG0);
-            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, gGxContext.mColorScaleEnum, GX_TRUE, GX_TEVREG0);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, unlit ? GX_CS_SCALE_1 : gGxContext.mColorScaleEnum, GX_TRUE, GX_TEVREG0);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, unlit ? GX_CS_SCALE_1 : gGxContext.mColorScaleEnum, GX_TRUE, GX_TEVREG0);
             tevStage++;
         }
     }
