@@ -1032,6 +1032,8 @@ void EditorState::ShelveEditScene()
 
         CacheEditSceneLinkedProps(editScene);
 
+        GetEditorState()->SetSelectedNode(nullptr);
+
         mEditSceneIndex = -1;
 
         ActionManager::Get()->ResetUndoRedo();
