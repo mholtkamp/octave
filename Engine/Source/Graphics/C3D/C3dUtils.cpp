@@ -140,7 +140,8 @@ void BindStaticMesh(StaticMesh* mesh, const void* instanceColors)
 
 void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedLighting)
 {
-    if (material != gC3dContext.mLastBoundMaterial)
+    if (material != gC3dContext.mLastBoundMaterial ||
+        useBakedLighting != gC3dContext.mLastUseBakedLighting)
     {
         ResetTexEnv();
         ResetLightingEnv();
@@ -387,6 +388,7 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
         }
 
         gC3dContext.mLastBoundMaterial = material;
+        gC3dContext.mLastUseBakedLighting = useBakedLighting;
     }
 }
 
