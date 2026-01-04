@@ -138,7 +138,7 @@ AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type,
         if (foundAsset->second->mPath != path &&
             foundAsset->second->mEmbeddedData == embeddedAsset)
         {
-            LogDebug("Asset name conflict: %s", name.c_str());
+            LogError("Asset name conflict: %s", name.c_str());
             OCT_ASSERT(false);
         }
         else

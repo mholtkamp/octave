@@ -3443,6 +3443,10 @@ static void DrawViewportPanel()
         ImGui::OpenPopup("WorldPopup");
 
     ImGui::SameLine();
+    if (ImGui::Button("Extra"))
+        ImGui::OpenPopup("ExtraPopup");
+
+    ImGui::SameLine();
     bool inPie = IsPlayingInEditor();
     if (ImGui::Button(inPie ? "Stop" : "Play"))
     {
@@ -3811,6 +3815,15 @@ static void DrawViewportPanel()
         }
         if (ImGui::Selectable("Toggle Transform Mode"))
             GetEditorState()->GetViewport3D()->ToggleTransformMode();
+
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("ExtraPopup"))
+    {
+        char versionStr[32];
+        snprintf(versionStr, 31, "Version: %d", OCTAVE_VERSION);
+        ImGui::Selectable(versionStr);
 
         ImGui::EndPopup();
     }
