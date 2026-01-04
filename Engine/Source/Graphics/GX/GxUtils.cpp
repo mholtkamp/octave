@@ -271,6 +271,9 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
 
     bool applyColorScale = gGxContext.mColorScale != 1.0f && !(unlit && !useVertexColor);
 
+    // If we are using two reduced range values (vertex color + light color) then we need to scale twice.
+    bool doubleColorScale = applyColorScale && !unlit && useVertexColor && !useBakedLighting;
+
     if (useVertexColor)
     {
         if (useBakedLighting)
@@ -292,8 +295,8 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
             GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
             GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC);
             GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_RASA);
-            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, unlit ? GX_CS_SCALE_1 : gGxContext.mColorScaleEnum, GX_TRUE, GX_TEVREG0);
-            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, unlit ? GX_CS_SCALE_1 : gGxContext.mColorScaleEnum, GX_TRUE, GX_TEVREG0);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
             tevStage++;
         }
     }
@@ -315,9 +318,9 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
 
     GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, matColorChannel);
     GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_CPREV, (unlit && useBakedLighting) ? GX_CC_ZERO : GX_CC_RASC, GX_CC_ZERO);
-    GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
     GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_APREV, GX_CA_RASA, GX_CA_ZERO);
-    GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, doubleColorScale ? gGxContext.mColorScaleEnum : GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, doubleColorScale ? gGxContext.mColorScaleEnum : GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
     tevStage++;
 
     // Vertex color modulation
