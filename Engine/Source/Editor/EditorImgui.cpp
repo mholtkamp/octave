@@ -93,6 +93,8 @@ static std::vector<AssetStub*> sUnsavedAssets;
 static std::vector<bool> sUnsavedAssetsSelected;
 static bool sUnsavedModalActive = false;
 
+static std::vector<std::string> sSceneList;
+
 static void PopulateFileBrowserDirs()
 {
     sFileBrowserDoubleClickBlock = 0.2f;
@@ -1805,6 +1807,60 @@ static void DrawAddNodeMenu(Node* node)
         }
 
         ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("Scene"))
+    {
+        // Populate the scene list if needed
+        if (sSceneList.size() == 0)
+        {
+            auto& assetMap = AssetManager::Get()->GetAssetMap();
+            for (auto it : assetMap)
+            {
+                if (it.second &&
+                    it.second->mType == Scene::GetStaticType())
+                {
+                    sSceneList.push_back(it.second->mName);
+                }
+            }
+
+            std::sort(sSceneList.begin(), sSceneList.end());
+        }
+
+        for (uint32_t i = 0; i < sSceneList.size(); ++i)
+        {
+            if (ImGui::MenuItem(sSceneList[i].c_str()))
+            {
+                Scene* scene = LoadAsset<Scene>(sSceneList[i]);
+                if (scene != nullptr)
+                {
+                    Node* spawnedNode = ActionManager::Get()->EXE_SpawnNode(scene);
+
+                    if (spawnedNode)
+                    {
+                        Node* selNode = GetEditorState()->GetSelectedNode();
+                        Node* parent = selNode ? selNode : GetWorld(0)->GetRootNode();
+
+                        if (parent != nullptr)
+                        {
+                            parent->AddChild(spawnedNode);
+                        }
+                        else
+                        {
+                            GetWorld(0)->SetRootNode(spawnedNode);
+                        }
+
+                        GetEditorState()->SetSelectedNode(spawnedNode);
+                    }
+                }
+            }
+        }
+
+        ImGui::EndMenu();
+    }
+    else
+    {
+        sSceneList.clear();
     }
 
     if (sNodeOtherNames.size() > 0 &&
