@@ -269,7 +269,7 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
     bool unlit = (shadingModel == ShadingModel::Unlit);
     gGxContext.mLighting.mEnabled = !unlit;
 
-    bool applyColorScale = gGxContext.mColorScale != 1.0f && !(unlit && !useVertexColor);
+    bool applyColorScale = gGxContext.mColorScale != 1.0f && !(unlit && (!useVertexColor));
 
     // If we are using two reduced range values (vertex color + light color) then we need to scale twice.
     bool doubleColorScale = applyColorScale && !unlit && useVertexColor && !useBakedLighting;
@@ -341,6 +341,15 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
         {
             GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
             GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_C0, GX_CC_CPREV, GX_CC_ZERO);
+            GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_A0, GX_CA_APREV, GX_CA_ZERO);
+            GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            tevStage++;
+        }
+        else if (vertexColorMode == VertexColorMode::TextureBlend)
+        {
+            GX_SetTevOrder(tevStage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+            GX_SetTevColorIn(tevStage, GX_CC_ZERO, GX_CC_A0, GX_CC_CPREV, GX_CC_ZERO);
             GX_SetTevAlphaIn(tevStage, GX_CA_ZERO, GX_CA_A0, GX_CA_APREV, GX_CA_ZERO);
             GX_SetTevColorOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
             GX_SetTevAlphaOp(tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
