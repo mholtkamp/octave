@@ -303,10 +303,11 @@ void BindMaterial(MaterialLite* material, bool useVertexColor, bool useBakedLigh
 
     glm::vec4 materialColor = color;
     materialColor = glm::clamp(materialColor, 0.0f, 1.0f);
+    float opacityScale = !(useVertexColor || unlit) ? gGxContext.mInvColorScale : 1.0f;
     GX_SetChanMatColor(matColorChannel, { uint8_t(materialColor.r * 255.0f),
                                         uint8_t(materialColor.g * 255.0f),
                                         uint8_t(materialColor.b * 255.0f),
-                                        uint8_t(opacity * 255.f * (applyColorScale ? gGxContext.mInvColorScale : 1.0f)) });
+                                        uint8_t(opacity * 255.f * opacityScale) });
 
     glm::vec4 ambientColor = useBakedLighting ? glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) : gGxContext.mWorld->GetAmbientLightColor();
     ambientColor = glm::clamp(ambientColor * gGxContext.mInvColorScale, 0.0f, 1.0f);
