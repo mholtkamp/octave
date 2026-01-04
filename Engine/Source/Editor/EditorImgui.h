@@ -10,7 +10,7 @@
 
 class Object;
 class Property;
-class AssetStub;
+struct AssetStub;
 
 typedef void(*FileBrowserCallbackFP)(const std::vector<std::string>& filePaths);
 
