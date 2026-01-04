@@ -126,10 +126,18 @@ void InputManager::UpdateHotkeys()
         {
             if (isScene)
             {
-                const bool saveAs = IsShiftDown();
-                ActionManager::Get()->SaveScene(saveAs);
-                ClearControlDown();
-                ClearShiftDown();
+                if (IsShiftDown())
+                {
+                    // Save all assets
+                    ActionManager::Get()->ResaveAllAssets();
+                }
+                else
+                {
+                    ActionManager::Get()->SaveScene(false);
+                    ClearControlDown();
+                    ClearShiftDown();
+                }
+
                 INP_ClearKey(KEY_S);
             }
         }

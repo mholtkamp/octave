@@ -13,7 +13,7 @@ These global hotkeys can be activated no matter where the mouse cursor is locate
  - `Ctrl + P` Open project
  - `Ctrl + Shift + P` Create new project
  - `Ctrl + S` Save currently opened scene
- - `Ctrl + Shift + S` Save currently opened scene as...
+ - `Ctrl + Shift + S` Save all assets
  - `Shift + S` Save selected asset
  - `Ctrl + O` Open scene
  - `Ctrl + I` Import asset
