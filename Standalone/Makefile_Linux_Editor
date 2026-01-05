@@ -29,7 +29,7 @@ endif
 	$(SILENTCMD)$(AR) -rc $@ $^
 
 #---------------------------------------------------------------------------------
-%.out:
+%.elf:
 	$(SILENTMSG) linking ... $(notdir $@)
 	$(SILENTCMD)$(LD)  $^ $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $@
 
@@ -122,7 +122,7 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
 					-L$(CURDIR)/../External/Bullet/Build/Linux \
 					-L$(CURDIR)/../Engine/Build/Linux
 
-export OUTPUT	:=	$(OUTPUT_DIR)/$(TARGET)Editor.out
+export OUTPUT	:=	$(OUTPUT_DIR)/$(TARGET)Editor.elf
 export ENGINE_LIB := $(CURDIR)/../Engine/Build/Linux/libEngineEditor.a
 export OCTAVE_EDITOR	:= 1
 .PHONY: $(BUILD) clean

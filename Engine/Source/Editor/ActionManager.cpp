@@ -389,7 +389,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     // ( ) Run the makefile to compile the game.
     bool needCompile = true;
-    std::string prebuiltExeName = (platform == Platform::Windows) ? "Octave.exe" : "Octave";
+    std::string prebuiltExeName = (platform == Platform::Windows) ? "Octave.exe" : "Octave.elf";
 
     // If packaging for Windows or Linux in standalone editor, we can use the existing octave executables.
     if (standalone &&
@@ -515,12 +515,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         exeSrc = buildProjDir;
     }
 
-    if (!needCompile)
-    {
-        // Override exe path for uncompiled standalone builds
-        exeSrc = prebuiltExeName;
-    }
-
     switch (platform)
     {
     case Platform::Windows:exeSrc += (useSteam ? "Windows/x64/ReleaseSteam/" : "Windows/x64/Release/"); break;
@@ -532,14 +526,15 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     default: OCT_ASSERT(0); break;
     }
 
-    exeSrc += standalone ? "Octave" : projectName;
+    std::string exeNameBase = standalone ? "Octave" : projectName;
+    std::string exeName = exeNameBase;
 
     std::string extension = ".exe";
 
     switch (platform)
     {
     case Platform::Windows: extension = ".exe"; break;
-    case Platform::Linux: extension = ".out"; break;
+    case Platform::Linux: extension = ".elf"; break;
     case Platform::Android: extension = ".apk"; break;
     case Platform::GameCube: extension = ".dol"; break;
     case Platform::Wii: extension = ".dol"; break;
@@ -547,7 +542,14 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     default: OCT_ASSERT(0); break;
     }
 
-    exeSrc += extension;
+    exeName += extension;
+    exeSrc += exeName;
+
+    if (!needCompile)
+    {
+        // Override exe path for uncompiled standalone builds
+        exeSrc = prebuiltExeName;
+    }
 
     std::string exeCopyCmd = std::string("cp ") + exeSrc + " " + packagedDir;
     SYS_Exec(exeCopyCmd.c_str());
@@ -607,7 +609,7 @@ void ActionManager::PrepareRelease()
     SYS_CreateDirectory(stagingDir.c_str());
 
     // [ ] Copy specific directories. See if we can use rsync on windows?
-    std::string cpCmd = std::string("cp -R ./* ") + stagingDir;
+    std::string cpCmd = std::string("cp -R . ") + stagingDir;
     SYS_Exec(cpCmd.c_str());
     std::string cleanCmd = std::string("cd ") + stagingDir + " && git clean -xdf";
     SYS_Exec(cleanCmd.c_str());
@@ -616,7 +618,7 @@ void ActionManager::PrepareRelease()
 #if PLATFORM_WINDOWS
     std::string cpEditorCmd = std::string("cp Standalone/Build/Windows/OctaveEditor.exe") + stagingDir;
 #else
-    std::string cpEditorCmd = std::string("cp Standalone/Build/Linux/OctaveEditor ") + stagingDir + std::string("OctaveEditor");
+    std::string cpEditorCmd = std::string("cp Standalone/Build/Linux/OctaveEditor.elf ") + stagingDir;// + std::string("OctaveEditor");
 #endif
 
     SYS_Exec(cpEditorCmd.c_str());
@@ -625,18 +627,14 @@ void ActionManager::PrepareRelease()
 #if PLATFORM_WINDOWS
     std::string cpGameCmd = std::string("cp Standalone/Build/Windows/Octave.exe") + stagingDir;
 #else
-    std::string cpGameCmd = std::string("cp Standalone/Build/Linux/Octave ") + stagingDir + std::string("Octave");
+    std::string cpGameCmd = std::string("cp Standalone/Build/Linux/Octave.elf ") + stagingDir;// + std::string("Octave");
 #endif
 
     SYS_Exec(cpGameCmd.c_str());
 
-    // TODO!!!!!
-    //COPY TO BUILD DIRECTORY!
-#if PLATFORM_WINDOWS
-    std::string cpGameBuildCmd = std::string("cp Stan")
-#else
-
-#endif
+    // Delete any .git files
+    std::string deleteGitCmd = std::string("find ") + stagingDir + "-name '.*'";
+    SYS_Exec(deleteGitCmd.c_str());
 }
 
 void ActionManager::OnSelectedNodeChanged()

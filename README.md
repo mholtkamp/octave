@@ -65,7 +65,7 @@ Instructions for building from source below.
 9. From the project's root directory (where this README is located) `cd Standalone`
 10. Run `make -f Makefile_Linux_Editor`
 11. Go back to the root directory `cd ..`
-12. Run `Standalone/Build/Linux/OctaveEditor.out` It's important that the working directory is the root directory where the Engine and Standalone folders are located.
+12. Run `Standalone/Build/Linux/OctaveEditor.elf` It's important that the working directory is the root directory where the Engine and Standalone folders are located.
 
 ## Packaging
 1. When packaging for any platform on a Windows machine, you will likely need to install Msys2 so that linux commands can be executed. This comes packaged along with devkitPro libraries, so you if you install the devkitPro libraries, you shouldn't need to worry about this.

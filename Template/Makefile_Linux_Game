@@ -29,7 +29,7 @@ endif
 	$(SILENTCMD)$(AR) -rc $@ $^
 
 #---------------------------------------------------------------------------------
-%.out:
+%.elf:
 	$(SILENTMSG) linking ... $(notdir $@)
 	$(SILENTCMD)$(LD)  $^ $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $@
 
@@ -120,7 +120,7 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
 					-L$(CURDIR)/../External/Bullet/Build/Linux \
 					-L$(CURDIR)/../Engine/Build/Linux
 
-export OUTPUT	:=	$(OUTPUT_DIR)/$(TARGET).out
+export OUTPUT	:=	$(OUTPUT_DIR)/$(TARGET).elf
 export ENGINE_LIB := $(CURDIR)/../Engine/Build/Linux/libEngineGame.a
 .PHONY: $(BUILD) clean
 
