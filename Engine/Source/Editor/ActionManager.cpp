@@ -57,8 +57,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#define STANDALONE_RELEASE 0
-
 #define USE_IMGUI_FILE_BROWSER (!PLATFORM_WINDOWS)
 
 #define SUB_SCENE_HIER_WARN_TEXT "Cannot modify sub-scene hierarchy. Must unlink scene first."
@@ -390,15 +388,16 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     }
 
     // ( ) Run the makefile to compile the game.
-#if STANDALONE_RELEASE
-    bool needCompile = !standalone ||
-        platform == Platform::Android ||
-        platform == Platform::GameCube ||
-        platform == Platform::Wii ||
-        platform == Platform::N3DS;
-#else
     bool needCompile = true;
-#endif
+    std::string prebuiltExeName = (platform == Platform::Windows) ? "Octave.exe" : "Octave";
+
+    // If packaging for Windows or Linux in standalone editor, we can use the existing octave executables.
+    if (standalone &&
+        (platform == Platform::Windows || platform == Platform::Linux))
+    {
+        needCompile = !SYS_DoesFileExist(prebuiltExeName.c_str(), false);
+    }
+
     std::string buildProjName = standalone ? "Standalone" : projectName;
     std::string buildProjDir = standalone ? "Standalone/" : projectDir;
     std::string buildDstExeName = standalone ? "Octave" : projectName;
@@ -406,6 +405,8 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     if (needCompile)
     {
+        LogDebug("Compiling game executable.");
+
         if (platform == Platform::Windows)
         {
             // If devenv can't be found, add it to your PATH
@@ -500,6 +501,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     }
     else
     {
+        LogDebug("Reusing pre-compiled game executable.");
         // When running the standalone editor, we don't need to compile 
         // (unless we are embeddeding assets into the executable).
         // But we do need to copy over the Octave.exe and ideally rename it to the project name to make it more official :)
@@ -516,7 +518,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     if (!needCompile)
     {
         // Override exe path for uncompiled standalone builds
-        exeSrc = "Standalone/Build/";
+        exeSrc = prebuiltExeName;
     }
 
     switch (platform)
@@ -575,8 +577,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
 void ActionManager::PrepareRelease()
 {
-    // Editor should have already been built in Release with
-    // the correct OCTAVE_VERSION defined and STANDALONE_RELEASE set to 1.
+    // Make sure to change the OCTAVE_VERSION definition in Constants.h first.
 
     // [ ] Package the project for current platform
     std::string platformName = "";
@@ -586,14 +587,17 @@ void ActionManager::PrepareRelease()
 #else
     ActionManager::Get()->BuildData(Platform::Linux, false);
     platformName = "Linux";
+
+    // On Linux, make the editor too, in case we are using a cmake-build
+    SYS_Exec("make -j 12 -C Standalone -f Makefile_Linux_Editor");
 #endif
 
     // [ ] Destroy/Create directory in CWD for release
     const char* homePath = nullptr;
 #if PLATFORM_WINDOWS
-    homePath = getenv("HOME");
-#else
     homePath = getenv("USERPROFILE");
+#else
+    homePath = getenv("HOME");
 #endif
     OCT_ASSERT(homePath != nullptr);
     LogDebug("Home path = %s", homePath);
@@ -604,6 +608,7 @@ void ActionManager::PrepareRelease()
 
     // [ ] Copy specific directories. See if we can use rsync on windows?
     std::string cpCmd = std::string("cp -R ./* ") + stagingDir;
+    SYS_Exec(cpCmd.c_str());
     std::string cleanCmd = std::string("cd ") + stagingDir + " && git clean -xdf";
     SYS_Exec(cleanCmd.c_str());
 
@@ -611,14 +616,26 @@ void ActionManager::PrepareRelease()
 #if PLATFORM_WINDOWS
     std::string cpEditorCmd = std::string("cp Standalone/Build/Windows/OctaveEditor.exe") + stagingDir;
 #else
-    std::string cpEditorCmd = std::string("cp Standalone/Build/Linux/OctaveEditor.out ") + stagingDir + std::string("OctaveEditor");
+    std::string cpEditorCmd = std::string("cp Standalone/Build/Linux/OctaveEditor ") + stagingDir + std::string("OctaveEditor");
 #endif
 
-    // [ ] Copy the packaged platform's Octave.out/.exe to the staging directory
+    SYS_Exec(cpEditorCmd.c_str());
+
+    // [ ] Copy the packaged platform's Octave exe to the staging directory
 #if PLATFORM_WINDOWS
     std::string cpGameCmd = std::string("cp Standalone/Build/Windows/Octave.exe") + stagingDir;
 #else
-    std::string cpGameCmd = std::string("cp Standalone/Build/Linux/Octave.out ") + stagingDir + std::string("Octave");
+    std::string cpGameCmd = std::string("cp Standalone/Build/Linux/Octave ") + stagingDir + std::string("Octave");
+#endif
+
+    SYS_Exec(cpGameCmd.c_str());
+
+    // TODO!!!!!
+    //COPY TO BUILD DIRECTORY!
+#if PLATFORM_WINDOWS
+    std::string cpGameBuildCmd = std::string("cp Stan")
+#else
+
 #endif
 }
 
