@@ -573,6 +573,55 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     LogDebug("Finished packaging!");
 }
 
+void ActionManager::PrepareRelease()
+{
+    // Editor should have already been built in Release with
+    // the correct OCTAVE_VERSION defined and STANDALONE_RELEASE set to 1.
+
+    // [ ] Package the project for current platform
+    std::string platformName = "";
+#if PLATFORM_WINDOWS
+    ActionManager::Get()->BuildData(Platform::Windows, false);
+    platformName = "Windows";
+#else
+    ActionManager::Get()->BuildData(Platform::Linux, false);
+    platformName = "Linux";
+#endif
+
+    // [ ] Destroy/Create directory in CWD for release
+    const char* homePath = nullptr;
+#if PLATFORM_WINDOWS
+    homePath = getenv("HOME");
+#else
+    homePath = getenv("USERPROFILE");
+#endif
+    OCT_ASSERT(homePath != nullptr);
+    LogDebug("Home path = %s", homePath);
+
+    std::string stagingDir = std::string(homePath) + "/OctaveRelease/";
+    SYS_RemoveDirectory(stagingDir.c_str());
+    SYS_CreateDirectory(stagingDir.c_str());
+
+    // [ ] Copy specific directories. See if we can use rsync on windows?
+    std::string cpCmd = std::string("cp -R ./* ") + stagingDir;
+    std::string cleanCmd = std::string("cd ") + stagingDir + " && git clean -xdf";
+    SYS_Exec(cleanCmd.c_str());
+
+    // [ ] Copy this exectubable (Release Editor) to the staging directory, rename to OctaveEditor
+#if PLATFORM_WINDOWS
+    std::string cpEditorCmd = std::string("cp Standalone/Build/Windows/OctaveEditor.exe") + stagingDir;
+#else
+    std::string cpEditorCmd = std::string("cp Standalone/Build/Linux/OctaveEditor.out ") + stagingDir + std::string("OctaveEditor");
+#endif
+
+    // [ ] Copy the packaged platform's Octave.out/.exe to the staging directory
+#if PLATFORM_WINDOWS
+    std::string cpGameCmd = std::string("cp Standalone/Build/Windows/Octave.exe") + stagingDir;
+#else
+    std::string cpGameCmd = std::string("cp Standalone/Build/Linux/Octave.out ") + stagingDir + std::string("Octave");
+#endif
+}
+
 void ActionManager::OnSelectedNodeChanged()
 {
 

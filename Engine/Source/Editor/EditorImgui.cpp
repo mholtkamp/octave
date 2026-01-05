@@ -3825,6 +3825,14 @@ static void DrawViewportPanel()
         snprintf(versionStr, 31, "Version: %d", OCTAVE_VERSION);
         ImGui::Selectable(versionStr);
 
+#ifndef NDEBUG
+        if (GetEngineState()->mStandalone &&
+            ImGui::Selectable("Prepare Release"))
+        {
+            ActionManager::Get()->PrepareRelease();
+        }
+#endif
+
         ImGui::EndPopup();
     }
 

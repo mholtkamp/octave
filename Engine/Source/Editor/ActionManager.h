@@ -111,6 +111,7 @@ public:
     void ImportScene(const SceneImportOptions& options);
     void BeginImportScene();
     void BuildData(Platform platform, bool embedded);
+    void PrepareRelease();
     void ClearWorld();
     void DeleteAllNodes();
     void RecaptureAndSaveAllScenes();
