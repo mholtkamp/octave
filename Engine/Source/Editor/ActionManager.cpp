@@ -497,6 +497,14 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
             // Delete the temp makefile
             SYS_Exec(std::string("rm " + tmpMakefile).c_str());
+
+            if (platform == Platform::Linux)
+            {
+                // Strip out debug symbols to keep the file size small.
+                std::string exeName = standalone ? "Octave" : projectName;
+                std::string stripCmd = std::string("strip --strip-debug ") + buildProjDir + "Build/Linux/" + exeName + ".elf";
+                SYS_Exec(stripCmd.c_str());
+            }
         }
     }
     else
@@ -632,8 +640,31 @@ void ActionManager::PrepareRelease()
 
     SYS_Exec(cpGameCmd.c_str());
 
-    // Delete any .git files
-    std::string deleteGitCmd = std::string("find ") + stagingDir + "-name '.*'";
+#if PLATFORM_LINUX
+    // Strip out debug symbols to keep the file size small.
+    std::string stripEditorCmd = std::string("strip --strip-debug ") + stagingDir + "OctaveEditor.elf";
+    SYS_Exec(stripEditorCmd.c_str());
+    std::string stripCmd = std::string("strip --strip-debug ") + stagingDir + "Octave.elf";
+    SYS_Exec(stripCmd.c_str());
+#endif
+
+    // Compile shaders
+#if PLATFORM_WINDOWS
+    SYS_Exec("cd Engine/Shaders/GLSL && \"./compile.bat\"");
+    std::string shadersCmd = "cd " + stagingDir + "/Engine/Shaders/GLSL && \"./compile.bat\"";
+#else
+    std::string shadersCmd = "cd " + stagingDir + "/Engine/Shaders/GLSL && \"./compile.sh\"";
+#endif
+    SYS_Exec(shadersCmd.c_str());
+
+    // Remove git submodules
+    std::string rmBulletSubmodule = std::string("rm -rf ") + stagingDir + "/External/bullet3";
+    SYS_Exec(rmBulletSubmodule.c_str());
+    std::string rmAssimpSubmodule = std::string("rm -rf ") + stagingDir + "/External/assimp";
+    SYS_Exec(rmAssimpSubmodule.c_str());
+
+    // Delete all dot files
+    std::string deleteGitCmd = std::string("find ") + stagingDir + " -name '.*' -exec rm -rf \"{}\" \\;";
     SYS_Exec(deleteGitCmd.c_str());
 }
 
