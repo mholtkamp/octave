@@ -127,29 +127,36 @@ void Renderer::Initialize()
 
 void Renderer::GatherProperties(std::vector<Property>& props)
 {
-    props.push_back(Property(DatumType::Float, "Resolution Scale", nullptr, &(GetEngineState()->mGraphics.mResolutionScale)));
+    {
+        SCOPED_CATEGORY("Rendering")
+
+        props.push_back(Property(DatumType::Float, "Resolution Scale", nullptr, &(GetEngineState()->mGraphics.mResolutionScale)));
 
 #if API_VULKAN
-    GetVulkanContext()->GetPostProcessChain()->GatherProperties(props);
+        GetVulkanContext()->GetPostProcessChain()->GatherProperties(props);
 #endif
 
-    props.push_back(Property(DatumType::Bool, "Light Fade", nullptr, &mEnableLightFade));
-    props.push_back(Property(DatumType::Integer, "Light Fade Limit", nullptr, &mLightFadeLimit));
-    props.push_back(Property(DatumType::Float, "Light Fade Speed", nullptr, &mLightFadeSpeed));
+        props.push_back(Property(DatumType::Bool, "Light Fade", nullptr, &mEnableLightFade));
+        props.push_back(Property(DatumType::Integer, "Light Fade Limit", nullptr, &mLightFadeLimit));
+        props.push_back(Property(DatumType::Float, "Light Fade Speed", nullptr, &mLightFadeSpeed));
+    }
 
-    props.push_back(Property(DatumType::Integer, "Rays Per Pixel", nullptr, &mRaysPerPixel));
-    props.push_back(Property(DatumType::Integer, "Max Bounces", nullptr, &mMaxBounces));
-    props.push_back(Property(DatumType::Bool, "Accumulate", nullptr, &mPathTraceAccumulate));
-    props.push_back(Property(DatumType::Integer, "Bake Rays Per Vertex", nullptr, &mBakeRaysPerVertex));
-    props.push_back(Property(DatumType::Integer, "Bake Max Bounces", nullptr, &mBakeMaxBounces));
-    props.push_back(Property(DatumType::Float, "Bake Shadow Bias", nullptr, &mBakeShadowBias));
-    props.push_back(Property(DatumType::Integer, "Bake Indirect Iterations", nullptr, &mBakeIndirectIterations));
-    props.push_back(Property(DatumType::Integer, "Bake Direct Diffusals", nullptr, &mBakeDiffuseDirectPasses));
-    props.push_back(Property(DatumType::Integer, "Bake Indirect Diffusals", nullptr, &mBakeDiffuseIndirectPasses));
-    props.push_back(Property(DatumType::Color, "Sky Zenith Color", nullptr, &mSkyZenithColor));
-    props.push_back(Property(DatumType::Color, "Sky Horizon Color", nullptr, &mSkyHorizonColor));
-    props.push_back(Property(DatumType::Color, "Ground Color", nullptr, &mGroundColor));
+    {
+        SCOPED_CATEGORY("Light Baking")
 
+        props.push_back(Property(DatumType::Integer, "Rays Per Pixel", nullptr, &mRaysPerPixel));
+        props.push_back(Property(DatumType::Integer, "Max Bounces", nullptr, &mMaxBounces));
+        props.push_back(Property(DatumType::Bool, "Accumulate", nullptr, &mPathTraceAccumulate));
+        props.push_back(Property(DatumType::Integer, "Bake Rays Per Vertex", nullptr, &mBakeRaysPerVertex));
+        props.push_back(Property(DatumType::Integer, "Bake Max Bounces", nullptr, &mBakeMaxBounces));
+        props.push_back(Property(DatumType::Float, "Bake Shadow Bias", nullptr, &mBakeShadowBias));
+        props.push_back(Property(DatumType::Integer, "Bake Indirect Iterations", nullptr, &mBakeIndirectIterations));
+        props.push_back(Property(DatumType::Integer, "Bake Direct Diffusals", nullptr, &mBakeDiffuseDirectPasses));
+        props.push_back(Property(DatumType::Integer, "Bake Indirect Diffusals", nullptr, &mBakeDiffuseIndirectPasses));
+        props.push_back(Property(DatumType::Color, "Sky Zenith Color", nullptr, &mSkyZenithColor));
+        props.push_back(Property(DatumType::Color, "Sky Horizon Color", nullptr, &mSkyHorizonColor));
+        props.push_back(Property(DatumType::Color, "Ground Color", nullptr, &mGroundColor));
+    }
 }
 
 Node3D* Renderer::ProcessHitCheck(World* world, int32_t x, int32_t y, uint32_t* outInstance)
