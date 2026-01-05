@@ -133,6 +133,7 @@ struct EditorState
     std::string mNodePropertySelectName = "";
     std::string mPendingSceneImportPath = "";
     bool mShutdownUnsavedCheck = false;
+    bool mDevMode = false;
 
     // Methods
     void Init();

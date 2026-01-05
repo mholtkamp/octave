@@ -94,6 +94,7 @@ static std::vector<bool> sUnsavedAssetsSelected;
 static bool sUnsavedModalActive = false;
 
 static std::vector<std::string> sSceneList;
+static int32_t sDevModeClicks = 0;
 
 static void PopulateFileBrowserDirs()
 {
@@ -3825,13 +3826,21 @@ static void DrawViewportPanel()
         snprintf(versionStr, 31, "Version: %d", OCTAVE_VERSION);
         ImGui::Selectable(versionStr);
 
-#ifndef NDEBUG
-        if (GetEngineState()->mStandalone &&
+        if (ImGui::IsItemHovered() && IsMouseButtonJustUp(MOUSE_RIGHT))
+        {
+            sDevModeClicks++;
+            if (sDevModeClicks >= 5)
+            {
+                GetEditorState()->mDevMode = true;
+            }
+        }
+
+        if (GetEditorState()->mDevMode &&
+            GetEngineState()->mStandalone &&
             ImGui::Selectable("Prepare Release"))
         {
             ActionManager::Get()->PrepareRelease();
         }
-#endif
 
         ImGui::EndPopup();
     }
