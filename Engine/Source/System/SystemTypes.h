@@ -46,7 +46,7 @@ typedef pthread_mutex_t MutexObject;
 typedef void* ThreadFuncRet;
 #elif PLATFORM_DOLPHIN
 typedef lwp_t ThreadObject;
-typedef uint32_t MutexObject;
+typedef mutex_t MutexObject;
 typedef void* ThreadFuncRet;
 #elif PLATFORM_3DS
 typedef Thread ThreadObject;
