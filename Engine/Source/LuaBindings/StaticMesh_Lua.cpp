@@ -4,6 +4,8 @@
 
 #include "LuaBindings/Vector_Lua.h"
 
+#include "TableDatum.h"
+
 #if LUA_ENABLED
 
 int StaticMesh_Lua::GetMaterial(lua_State* L)
@@ -67,6 +69,65 @@ int StaticMesh_Lua::HasVertexColor(lua_State* L)
     return 1;
 }
 
+int StaticMesh_Lua::GetVertices(lua_State* L)
+{
+    StaticMesh* mesh = CHECK_STATIC_MESH(L, 1);
+
+    int32_t numVerts = (int32_t)mesh->GetNumVertices();
+    bool hasColor = mesh->HasVertexColor();
+    Vertex* verts = hasColor ? nullptr : mesh->GetVertices();
+    VertexColor* cverts = hasColor ? mesh->GetColorVertices() : nullptr;
+
+    lua_newtable(L);
+    int vertArrayIdx = lua_gettop(L);
+
+    for (int32_t i = 0; i < numVerts; ++i)
+    {
+        lua_newtable(L);
+        int vertTableIdx = lua_gettop(L);
+
+        Vector_Lua::Create(L, hasColor ? cverts[i].mPosition : verts[i].mPosition);
+        lua_setfield(L, vertTableIdx, "position");
+        Vector_Lua::Create(L, hasColor ? cverts[i].mTexcoord0 : verts[i].mTexcoord0);
+        lua_setfield(L, vertTableIdx, "texcoord0");
+        Vector_Lua::Create(L, hasColor ? cverts[i].mTexcoord1 : verts[i].mTexcoord1);
+        lua_setfield(L, vertTableIdx, "texcoord1");
+        Vector_Lua::Create(L, hasColor ? cverts[i].mNormal : verts[i].mNormal);
+        lua_setfield(L, vertTableIdx, "normal");
+
+        if (hasColor)
+        {
+            lua_pushinteger(L, (int)cverts[i].mColor);
+            lua_setfield(L, vertTableIdx, "color");
+        }
+
+        lua_seti(L, vertArrayIdx, i + 1);
+    }
+
+    // vertArray table should be on top
+    return 1;
+}
+
+int StaticMesh_Lua::GetIndices(lua_State* L)
+{
+    StaticMesh* mesh = CHECK_STATIC_MESH(L, 1);
+
+    IndexType* indices = mesh->GetIndices();
+    int32_t numIndices = (int32_t)mesh->GetNumIndices();
+
+    lua_newtable(L);
+    int indexArrayIdx = lua_gettop(L);
+
+    for (int32_t i = 0; i < numIndices; ++i)
+    {
+        lua_pushinteger(L, (int32_t)indices[i]);
+        lua_seti(L, indexArrayIdx, i + 1);
+    }
+
+    // indexArray table should be on top.
+    return 1;
+}
+
 int StaticMesh_Lua::HasTriangleMeshCollision(lua_State* L)
 {
     StaticMesh* mesh = CHECK_STATIC_MESH(L, 1);
@@ -109,6 +170,10 @@ void StaticMesh_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, GetNumVertices);
 
     REGISTER_TABLE_FUNC(L, mtIndex, HasVertexColor);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, GetVertices);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, GetIndices);
 
     REGISTER_TABLE_FUNC(L, mtIndex, HasTriangleMeshCollision);
 

@@ -22,6 +22,8 @@ struct StaticMesh_Lua
     static int GetNumFaces(lua_State* L);
     static int GetNumVertices(lua_State* L);
     static int HasVertexColor(lua_State* L);
+    static int GetVertices(lua_State* L);
+    static int GetIndices(lua_State* L);
     static int HasTriangleMeshCollision(lua_State* L);
     static int EnableTriangleMeshCollision(lua_State* L);
 
