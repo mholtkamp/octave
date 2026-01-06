@@ -624,7 +624,7 @@ void ActionManager::PrepareRelease()
 
     // [ ] Copy this exectubable (Release Editor) to the staging directory, rename to OctaveEditor
 #if PLATFORM_WINDOWS
-    std::string cpEditorCmd = std::string("cp Standalone/Build/Windows/OctaveEditor.exe") + stagingDir;
+    std::string cpEditorCmd = std::string("cp Standalone/Build/Windows/x64/ReleaseEditor/Octave.exe ") + stagingDir + "/OctaveEditor.exe";
 #else
     std::string cpEditorCmd = std::string("cp Standalone/Build/Linux/OctaveEditor.elf ") + stagingDir;// + std::string("OctaveEditor");
 #endif
@@ -633,7 +633,7 @@ void ActionManager::PrepareRelease()
 
     // [ ] Copy the packaged platform's Octave exe to the staging directory
 #if PLATFORM_WINDOWS
-    std::string cpGameCmd = std::string("cp Standalone/Build/Windows/Octave.exe") + stagingDir;
+    std::string cpGameCmd = std::string("cp Standalone/Build/Windows/x64/Release/Octave.exe ") + stagingDir;
 #else
     std::string cpGameCmd = std::string("cp Standalone/Build/Linux/Octave.elf ") + stagingDir;// + std::string("Octave");
 #endif

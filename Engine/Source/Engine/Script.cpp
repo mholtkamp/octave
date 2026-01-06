@@ -1793,7 +1793,9 @@ void Script::CreateScriptInstance()
                 
                 if (!hasFlag)
                 {
-                    LogWarning("Multiple inheritance chains used for same script: %s", mFileName.c_str());
+                    // Disable warning for now.
+                    // In future, maybe only warn once.
+                    //LogWarning("Multiple inheritance chains used for same script: %s", mFileName.c_str());
                 }
 
                 lua_pop(L, 2); // Pop class flag + metatable
