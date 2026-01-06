@@ -46,7 +46,7 @@ typedef pthread_mutex_t MutexObject;
 typedef void* ThreadFuncRet;
 #elif PLATFORM_DOLPHIN
 typedef lwp_t ThreadObject;
-typedef uint32_t MutexObject;
+typedef mutex_t MutexObject;
 typedef void* ThreadFuncRet;
 #elif PLATFORM_3DS
 typedef Thread ThreadObject;
@@ -124,7 +124,7 @@ struct SystemState
 #elif PLATFORM_DOLPHIN
     void* mFrameBuffers[2] = { };
     void* mConsoleBuffer = nullptr;
-    GXRModeObj* mGxrMode = nullptr;
+    GXRModeObj mGxRmode = { };
     uint32_t mFrameIndex = 0;
     void* mMemoryCardMountArea = nullptr;
     bool mMemoryCardMounted = false;
