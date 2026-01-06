@@ -75,6 +75,7 @@ struct SkeletalMeshUniformLocations
     int8_t mUvOffsetScale0 = -1;
     int8_t mUvOffsetScale1 = -1;
     int8_t mUvMaps = -1;
+    int8_t mUniformColor = -1;
 };
 
 struct ParticleUniformLocations

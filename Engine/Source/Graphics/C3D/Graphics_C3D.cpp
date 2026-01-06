@@ -148,6 +148,7 @@ void GFX_Initialize()
         gC3dContext.mSkeletalMeshLocs.mUvOffsetScale0 = shaderInstanceGetUniformLocation(shader, "UvOffsetScale0");
         gC3dContext.mSkeletalMeshLocs.mUvOffsetScale1 = shaderInstanceGetUniformLocation(shader, "UvOffsetScale1");
         gC3dContext.mSkeletalMeshLocs.mUvMaps = shaderInstanceGetUniformLocation(shader, "UvMaps");
+        gC3dContext.mSkeletalMeshLocs.mUniformColor = shaderInstanceGetUniformLocation(shader, "UniformColor");
         gC3dContext.mSkeletalMeshLocs.mBoneMtx = shaderInstanceGetUniformLocation(shader, "BoneMtx");
     }
 
@@ -849,7 +850,8 @@ void GFX_DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
             AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, 2); // v2=texcoord1
             AttrInfo_AddLoader(attrInfo, 3, GPU_FLOAT, 3); // v3=normal
             AttrInfo_AddFixed(attrInfo, 4); // v4=color
-            C3D_FixedAttribSet(3, 255.0f, 255.0f, 255.0f, 255.0f);
+            float defaultColor = 255.0f * gC3dContext.mInvColorScale;
+            C3D_FixedAttribSet(4, defaultColor, defaultColor, defaultColor, defaultColor);
 
             C3D_BufInfo* bufInfo = C3D_GetBufInfo();
             BufInfo_Init(bufInfo);
@@ -941,6 +943,11 @@ void GFX_DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
         if (cpuSkinned)
         {
             C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mStaticMeshLocs.mColorMult, 1.0f, 1.0f, 1.0f, 1.0f);
+        }
+        else
+        {
+            float invColorScale = gC3dContext.mInvColorScale;
+            C3D_FVUnifSet(GPU_VERTEX_SHADER, gC3dContext.mSkeletalMeshLocs.mUniformColor, invColorScale, invColorScale, invColorScale, invColorScale);
         }
 
         // Draw
