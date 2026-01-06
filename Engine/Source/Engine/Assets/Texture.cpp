@@ -236,7 +236,7 @@ void CookTexture(
         // Alpha doesn't seem to be working with CMPR textures with gxtexconv, but I think
         // the CMPR does support 1 bit alpha. So I'm not sure what the problem is, but for now we can use a slightly
         // more compressed format for these.
-        if (format == PixelFormat::CMPR && !opaque)
+        if (format == PixelFormat::CMPR && platform == Platform::Wii && !opaque)
         {
             format = PixelFormat::RGBA5551;
         }
