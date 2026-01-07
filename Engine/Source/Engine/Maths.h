@@ -6,6 +6,8 @@
 #define GLM_FORCE_INLINE
 #endif
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE 1
+
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/quaternion.hpp>
