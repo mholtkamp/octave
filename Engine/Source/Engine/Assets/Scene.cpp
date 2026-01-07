@@ -141,7 +141,8 @@ void Scene::SaveStream(Stream& stream, Platform platform)
     {
         if (editScenes[i].mSceneAsset == this)
         {
-            Capture(editScenes[i].mRootNode.Get());
+            Node* root = GetWorld(0)->GetRootNode();
+            Capture(root);
             break;
         }
     }
