@@ -1819,7 +1819,8 @@ static void DrawAddNodeMenu(Node* node)
             for (auto it : assetMap)
             {
                 if (it.second &&
-                    it.second->mType == Scene::GetStaticType())
+                    it.second->mType == Scene::GetStaticType() &&
+                    !it.second->mEngineAsset)
                 {
                     sSceneList.push_back(it.second->mName);
                 }
