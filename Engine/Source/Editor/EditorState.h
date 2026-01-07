@@ -90,6 +90,12 @@ struct EditorState
     ControlMode mControlMode = ControlMode::Default;
     TransformLock mTransformLock = TransformLock::None;
     SharedPtr<Camera3D> mEditorCamera;
+    float mPerspectiveNearZ = 0.25f;
+    float mPerspectiveFarZ = 4096.0f;
+    float mPerspectiveFov = 70.0f;
+    float mOrthoNearZ = -2048.0f;
+    float mOrthoFarZ = 2048.0f;
+    float mOrthoWidth = 12.8f;
     bool mMouseNeedsRecenter = false;
     bool mUiEnabled = true;
     bool mPlayInEditor = false;
@@ -174,6 +180,8 @@ struct EditorState
     void AssignNodePropertySelect(Node* targetNode);
 
     Camera3D* GetEditorCamera();
+    void ToggleEditorCameraProjection();
+    void ApplyEditorCameraSettings();
 
     void LoadStartupScene();
 

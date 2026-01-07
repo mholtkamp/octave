@@ -3742,6 +3742,13 @@ static void DrawViewportPanel()
 
     if (ImGui::BeginPopup("ViewPopup"))
     {
+        Camera3D* cam = GetEditorState()->GetEditorCamera();
+        ProjectionMode projMode = cam ? cam->GetProjectionMode() : ProjectionMode::PERSPECTIVE;
+        if ((projMode == ProjectionMode::PERSPECTIVE && ImGui::Selectable("Orthographic")) ||
+            (projMode == ProjectionMode::ORTHOGRAPHIC && ImGui::Selectable("Perspective")))
+        {
+            GetEditorState()->ToggleEditorCameraProjection();
+        }
         if (ImGui::Selectable("Wireframe"))
             renderer->SetDebugMode(renderer->GetDebugMode() == DEBUG_WIREFRAME ? DEBUG_NONE : DEBUG_WIREFRAME);
         if (ImGui::Selectable("Collision"))

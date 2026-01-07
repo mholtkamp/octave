@@ -49,6 +49,7 @@ void EditorState::Init()
     mEditorCamera->SetName("Editor Camera");
     // TODO-NODE: This is a little sketchy because this will call World::RegisterNode(), but that's probably fine.
     mEditorCamera->SetWorld(GetWorld(0), false);
+    ApplyEditorCameraSettings();
 
     mViewport3D = new Viewport3D();
     mViewport2D = new Viewport2D();
@@ -703,6 +704,38 @@ Camera3D* EditorState::GetEditorCamera()
 {
     return mEditorCamera.Get();
 }
+
+void EditorState::ToggleEditorCameraProjection()
+{
+    if (mEditorCamera == nullptr)
+        return;
+
+    ProjectionMode newMode = (mEditorCamera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC) ? ProjectionMode::PERSPECTIVE : ProjectionMode::ORTHOGRAPHIC;
+    mEditorCamera->SetProjectionMode(newMode);
+
+    ApplyEditorCameraSettings();
+}
+
+void EditorState::ApplyEditorCameraSettings()
+{
+    if (mEditorCamera == nullptr)
+        return;
+
+    // Update near / far planes
+    if (mEditorCamera->GetProjectionMode() == ProjectionMode::PERSPECTIVE)
+    {
+        mEditorCamera->SetNearZ(mPerspectiveNearZ);
+        mEditorCamera->SetFarZ(mPerspectiveFarZ);
+        mEditorCamera->SetFieldOfView(mPerspectiveFov);
+    }
+    else
+    {
+        mEditorCamera->SetNearZ(mOrthoNearZ);
+        mEditorCamera->SetFarZ(mOrthoFarZ);
+        mEditorCamera->SetFieldOfView(mOrthoWidth);
+    }
+}
+
 
 void EditorState::LoadStartupScene()
 {

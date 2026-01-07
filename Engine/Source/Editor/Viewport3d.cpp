@@ -274,12 +274,7 @@ void Viewport3D::HandleDefaultControls()
 
         if (IsKeyJustDown(KEY_NUMPAD5))
         {
-            Camera3D* camera = GetWorld(0)->GetActiveCamera();
-            if (camera != nullptr)
-            {
-                ProjectionMode newMode = (camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC) ? ProjectionMode::PERSPECTIVE : ProjectionMode::ORTHOGRAPHIC;
-                camera->SetProjectionMode(newMode);
-            }
+            GetEditorState()->ToggleEditorCameraProjection();
         }
 
         if ((IsKeyDown(KEY_F) && GetEditorState()->GetPaintMode() == PaintMode::None) ||
