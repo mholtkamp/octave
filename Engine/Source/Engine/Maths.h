@@ -6,7 +6,9 @@
 #define GLM_FORCE_INLINE
 #endif
 
+#ifndef GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE 1
+#endif
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
