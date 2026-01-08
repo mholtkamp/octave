@@ -320,7 +320,7 @@ bool SkeletalMesh::Import(const std::string& path, ImportOptions* options)
 
         Assimp::Importer importer;
 
-        const aiScene* scene = importer.ReadFile(path, aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
+        const aiScene* scene = importer.ReadFile(path, aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
 
         if (scene == nullptr)
         {
