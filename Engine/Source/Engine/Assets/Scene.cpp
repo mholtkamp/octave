@@ -137,11 +137,20 @@ void Scene::SaveStream(Stream& stream, Platform platform)
     // When saving a scene in editor, first check to see if it is opened as an edit scene.
     // If so, capture the current node first.
     const std::vector<EditScene>& editScenes = GetEditorState()->mEditScenes;
+    EditScene* curEditScene = GetEditorState()->GetEditScene();
+
     for (uint32_t i = 0; i < editScenes.size(); ++i)
     {
         if (editScenes[i].mSceneAsset == this)
         {
-            Node* root = GetWorld(0)->GetRootNode();
+            Node* root = editScenes[i].mRootNode.Get();
+
+            if (curEditScene == &editScenes[i])
+            {
+                // This is the currently edited scene, so the cached root node isn't up-to-date.
+                root = GetWorld(0)->GetRootNode();
+            }
+
             Capture(root);
             break;
         }
