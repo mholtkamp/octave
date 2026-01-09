@@ -4,10 +4,15 @@
 #include <Windows.h>
 #endif
 
-#include <stdint.h>
 #include "Maths.h"
-
 #include "EngineTypes.h"
+
+#include <stdint.h>
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 struct AssetStub;
 class AssetDir;
 class Node;
@@ -24,6 +29,8 @@ std::string GetDevenvPath();
 
 bool IsAiCollisionMesh(const aiMesh* mesh);
 
+const aiNode* FindMeshNode(const aiScene* scene, const aiNode* node, const aiMesh* mesh);
 std::string GetFileNameFromPath(const std::string& path);
+std::string GenerateUniqueMeshName(const std::string& baseName, const aiScene* scene, int32_t meshIndex);
 
 #endif

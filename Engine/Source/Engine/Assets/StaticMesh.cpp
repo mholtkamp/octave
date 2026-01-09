@@ -11,6 +11,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "EditorUtils.h"
 #endif
 
 #include "btBulletDynamicsCommon.h"
@@ -20,44 +21,6 @@ using namespace std;
 
 FORCE_LINK_DEF(StaticMesh);
 DEFINE_ASSET(StaticMesh);
-
-#if EDITOR
-
-const aiNode* FindMeshNode(const aiScene* scene, const aiNode* node, const aiMesh* mesh)
-{
-    if (node == nullptr)
-        return nullptr;
-
-    const aiNode* retNode = nullptr;
-    for (uint32_t i = 0; i < node->mNumMeshes; ++i)
-    {
-        int32_t meshIdx = (int32_t)node->mMeshes[i];
-        if (meshIdx < int32_t(scene->mNumMeshes) &&
-            scene->mMeshes[meshIdx] == mesh)
-        {
-            retNode = node;
-            break;
-        }
-    }
-
-    if (retNode == nullptr)
-    {
-        for (uint32_t i = 0; i < node->mNumChildren; ++i)
-        {
-            retNode = FindMeshNode(scene, node->mChildren[i], mesh);
-
-            if (retNode != nullptr)
-            {
-                break;
-            }
-        }
-    }
-
-    return retNode;
-};
-
-
-#endif
 
 bool StaticMesh::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
@@ -555,32 +518,8 @@ bool StaticMesh::Import(const std::string& path, ImportOptions* options)
             if (!singleMeshImport)
             {
                 // Make the name unique
-                std::string fullName = GetName();
-
-                const aiNode* meshNode = FindMeshNode(scene, scene->mRootNode, scene->mMeshes[meshIndex]);
-                if (meshNode)
-                {
-                    fullName = fullName + "_" + meshNode->mName.C_Str();
-
-                    if (meshNode->mNumMeshes > 1)
-                    {
-                        int32_t nodeMeshIdx = -1;
-                        for (uint32_t m = 0; m < meshNode->mNumMeshes; ++m)
-                        {
-                            if (meshNode->mMeshes[m] == meshIndex)
-                            {
-                                nodeMeshIdx = int32_t(m);
-                                break;
-                            }
-                        }
-
-                        char meshIdxStr[32];
-                        snprintf(meshIdxStr, 31, "%d", nodeMeshIdx);
-                        fullName = fullName + "_" + meshIdxStr;
-                    }
-                }
-
-                SetName(fullName);
+                std::string newName = GenerateUniqueMeshName(GetName(), scene, meshIndex);
+                SetName(newName);
             }
         }
     }

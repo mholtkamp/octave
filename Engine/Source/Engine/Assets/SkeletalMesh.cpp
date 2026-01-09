@@ -11,6 +11,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "EditorUtils.h"
 #endif
 
 using namespace std;
@@ -318,6 +319,8 @@ bool SkeletalMesh::Import(const std::string& path, ImportOptions* options)
             }
         }
 
+        const bool singleMeshImport = (meshIndex == -1);
+
         Assimp::Importer importer;
 
         const aiScene* scene = importer.ReadFile(path, aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
@@ -341,6 +344,13 @@ bool SkeletalMesh::Import(const std::string& path, ImportOptions* options)
         }
 
         Create(*scene, *scene->mMeshes[meshIndex]);
+
+        if (!singleMeshImport)
+        {
+            // Make the name unique
+            std::string newName = GenerateUniqueMeshName(GetName(), scene, meshIndex);
+            SetName(newName);
+        }
     }
 #endif
 
