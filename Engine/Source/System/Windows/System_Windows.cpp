@@ -991,13 +991,21 @@ void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNum
 {
     const char* fileName = strrchr(fileString, '\\') ? strrchr(fileString, '\\') + 1 : fileString;
     LogError("[Assert] %s, %s, line %d", exprString, fileName, lineNumber);
-    DebugBreak();
+
+    if (IsDebuggerPresent())
+    {
+        DebugBreak();
+    }
 }
 
 void SYS_Alert(const char* message)
 {
     LogError("%s", message);
-    DebugBreak();
+
+    if (IsDebuggerPresent())
+    {
+        DebugBreak();
+    }
 }
 
 void SYS_UpdateConsole()
