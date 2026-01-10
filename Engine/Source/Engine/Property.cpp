@@ -61,7 +61,7 @@ Property::Property(const Property& src) :
     mMaxCount = src.mMaxCount;
     mIsVector = src.mIsVector;
 
-    if (src.mExtra)
+    if (src.mExtra && src.mExtra->IsValid())
     {
         CreateExtraData();
         *mExtra = *src.mExtra;
@@ -131,9 +131,10 @@ void Property::WriteStream(Stream& stream, bool net) const
 
     if (!net)
     {
-        stream.WriteBool(mExtra != nullptr);
+        bool hasExtra = (mExtra != nullptr && mExtra->IsValid());
+        stream.WriteBool(hasExtra);
 
-        if (mExtra != nullptr)
+        if (hasExtra)
         {
             mExtra->WriteStream(stream, net);
         }
@@ -149,7 +150,7 @@ uint32_t Property::GetSerializationSize(bool net) const
     return Datum::GetSerializationSize(net) +
         GetStringSerializationSize(mName) +
         sizeof(uint8_t) + // Has extra?
-        mExtra ? mExtra->GetSerializationSize(net) : 0;
+        (mExtra && mExtra->IsValid()) ? mExtra->GetSerializationSize(net) : 0;
 }
 
 bool Property::IsProperty() const
@@ -166,7 +167,7 @@ void Property::DeepCopy(const Datum& src, bool forceInternalStorage)
         const Property& srcProp = (const Property&)src;
         mName = srcProp.mName;
 
-        if (srcProp.mExtra)
+        if (srcProp.mExtra && srcProp.mExtra->IsValid())
         {
             CreateExtraData();
             *mExtra = *srcProp.mExtra;
