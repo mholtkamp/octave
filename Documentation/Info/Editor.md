@@ -78,6 +78,9 @@ These global hotkeys can be activated no matter where the mouse cursor is locate
  - `End` Drop 3D node onto surface below (double tap to align to surface normal)
  - `Insert` Move selected node to where mouse is hovering (double tap to align to surface normal)
  - `Numpad0` Position selected node at current viewport camera location
+ - `E` (Paint Instances) Toggle erase mode
+ - `F` (Paint Colors / Instances) Adjust size of brush
+ - `Shift + F` (Paint Colors) Adjust opacity of brush
 
 ### Scene Panel
  - `Minus` Move node up in child list
