@@ -303,43 +303,50 @@ void Script::GatherScriptProperties()
                                     {
                                     case DatumType::Integer:
                                     {
-                                        int32_t value = CHECK_INTEGER(L, -1);
+                                        int32_t value = lua_tointeger(L, -1);
                                         newProp.PushBack(value);
                                         break;
                                     }
                                     case DatumType::Float:
                                     {
-                                        float value = CHECK_NUMBER(L, -1);
+                                        float value = lua_tonumber(L, -1);
                                         newProp.PushBack(value);
                                         break;
                                     }
                                     case DatumType::Bool:
                                     {
-                                        bool value = CHECK_BOOLEAN(L, -1);
+                                        bool value = lua_toboolean(L, -1);
                                         newProp.PushBack(value);
                                         break;
                                     }
                                     case DatumType::String:
                                     {
-                                        const char* value = CHECK_STRING(L, -1);
+                                        const char* value = lua_tostring(L, -1);
+                                        if (value == nullptr)
+                                        {
+                                            value = "";
+                                        }
                                         newProp.PushBack(value);
                                         break;
                                     }
                                     case DatumType::Vector2D:
                                     {
-                                        glm::vec2 value = CHECK_VECTOR(L, -1);
+                                        Vector_Lua* vecLua = CheckLuaType<Vector_Lua>(L, -1, VECTOR_LUA_NAME, false);
+                                        glm::vec2 value = vecLua ? vecLua->mVector : glm::vec2();
                                         newProp.PushBack(value);
                                         break;
                                     }
                                     case DatumType::Vector:
                                     {
-                                        glm::vec3 value = CHECK_VECTOR(L, -1);
+                                        Vector_Lua* vecLua = CheckLuaType<Vector_Lua>(L, -1, VECTOR_LUA_NAME, false);
+                                        glm::vec3 value = vecLua ? vecLua->mVector : glm::vec3();
                                         newProp.PushBack(value);
                                         break;
                                     }
                                     case DatumType::Color:
                                     {
-                                        glm::vec4 value = CHECK_VECTOR(L, -1);
+                                        Vector_Lua* vecLua = CheckLuaType<Vector_Lua>(L, -1, VECTOR_LUA_NAME, false);
+                                        glm::vec4 value = vecLua ? vecLua->mVector : glm::vec4();
                                         newProp.PushBack(value);
                                         break;
                                     }
@@ -348,14 +355,14 @@ void Script::GatherScriptProperties()
                                         Asset* asset = nullptr;
                                         if (!lua_isnil(L, -1))
                                         {
-                                            asset = CHECK_ASSET(L, -1);
+                                            asset = CheckAssetLuaType<Asset>(L, -1, ASSET_LUA_NAME, ASSET_LUA_FLAG, false);
                                         }
                                         newProp.PushBack(asset);
                                         break;
                                     }
                                     case DatumType::Byte:
                                     {
-                                        int32_t value = CHECK_INTEGER(L, -1);
+                                        int32_t value = lua_tointeger(L, -1);
                                         newProp.PushBack((uint8_t)value);
                                         break;
                                     }
@@ -370,7 +377,7 @@ void Script::GatherScriptProperties()
                                     case DatumType::Node:
                                     {
                                         Node* node = nullptr;
-                                        if (!lua_isnil(L, -1))
+                                        if (luaL_testudata(L, -1, NODE_WRAPPER_TABLE_NAME))
                                         {
                                             node = CHECK_NODE(L, -1);
                                         }
@@ -380,7 +387,7 @@ void Script::GatherScriptProperties()
 
                                     case DatumType::Short:
                                     {
-                                        int32_t value = CHECK_INTEGER(L, -1);
+                                        int32_t value = lua_tointeger(L, -1);
                                         newProp.PushBack((int16_t)value);
                                         break;
                                     }

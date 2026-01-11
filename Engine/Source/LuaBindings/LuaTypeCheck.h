@@ -10,13 +10,15 @@ class Node;
 #if LUA_ENABLED
 
 template<typename T>
-T* CheckLuaType(lua_State* L, int arg, const char* typeName)
+T* CheckLuaType(lua_State* L, int arg, const char* typeName, bool throwError = true)
 {
-    return (T*)luaL_checkudata(L, arg, typeName);
+    return throwError ?
+        (T*)luaL_checkudata(L, arg, typeName) :
+        (T*)luaL_testudata(L, arg, typeName);
 }
 
 template<typename T>
-T* CheckHierarchyLuaType(lua_State* L, int arg, const char* typeName, const char* classFlag)
+T* CheckHierarchyLuaType(lua_State* L, int arg, const char* typeName, const char* classFlag, bool throwError = true)
 {
     luaL_checktype(L, arg, LUA_TUSERDATA);
     T* ret = (T*)lua_touserdata(L, arg);
@@ -30,7 +32,11 @@ T* CheckHierarchyLuaType(lua_State* L, int arg, const char* typeName, const char
         if (!hasClassFlag)
         {
             ret = nullptr;
-            luaL_error(L, "Error: Arg #%d: Expected %s", arg, typeName);
+
+            if (throwError)
+            {
+                luaL_error(L, "Error: Arg #%d: Expected %s", arg, typeName);
+            }
         }
     }
 
@@ -38,7 +44,7 @@ T* CheckHierarchyLuaType(lua_State* L, int arg, const char* typeName, const char
 }
 
 template<typename T>
-T* CheckAssetLuaType(lua_State* L, int arg, const char* className, const char* classFlag)
+T* CheckAssetLuaType(lua_State* L, int arg, const char* className, const char* classFlag, bool throwError = true)
 {
     T* ret = nullptr;
     if (lua_isstring(L, arg))
@@ -48,7 +54,8 @@ T* CheckAssetLuaType(lua_State* L, int arg, const char* className, const char* c
     }
     else
     {
-        ret = static_cast<T*>(CheckHierarchyLuaType<Asset_Lua>(L, arg, className, classFlag)->mAsset.Get());
+        Asset_Lua* assetLua = CheckHierarchyLuaType<Asset_Lua>(L, arg, className, classFlag, throwError);
+        ret = static_cast<T*>(assetLua ? assetLua->mAsset.Get() : nullptr);
     }
 
     return ret;
