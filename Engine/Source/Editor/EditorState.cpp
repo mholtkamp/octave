@@ -27,6 +27,7 @@
 #include "Viewport3d.h"
 #include "Viewport2d.h"
 #include "PaintManager.h"
+#include "Script.h"
 #include "Input/Input.h"
 
 static EditorState sEditorState;
@@ -957,9 +958,31 @@ void EditorState::OpenEditScene(int32_t idx)
                 // Copy non-default props.
                 if (nonDefProps != nullptr)
                 {
+                    const std::vector<Property>& srcProps = *nonDefProps;
                     std::vector<Property> dstProps;
                     newNode->GatherProperties(dstProps);
-                    CopyPropertyValues(dstProps, *nonDefProps);
+                    CopyPropertyValues(dstProps, srcProps);
+
+                    if (newNode->GetScript())
+                    {
+                        std::vector<Property>& scriptProps = newNode->GetScript()->GetScriptProperties();
+
+                        // Manually copy node path extras to ScriptProps
+                        for (uint32_t p = 0; p < srcProps.size(); ++p)
+                        {
+                            if (srcProps[p].mType == DatumType::Node &&
+                                srcProps[p].mExtra != nullptr)
+                            {
+                                Property* dstProp = FindProperty(scriptProps, srcProps[p].mName);
+                                if (dstProp)
+                                {
+                                    dstProp->DestroyExtraData();
+                                    dstProp->CreateExtraData();
+                                    *dstProp->mExtra = *srcProps[p].mExtra;
+                                }
+                            }
+                        }
+                    }
                 }
 
                 if (subSceneOverrides != nullptr)
