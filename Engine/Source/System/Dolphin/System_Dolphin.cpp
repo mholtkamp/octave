@@ -1,4 +1,5 @@
 #if PLATFORM_DOLPHIN
+#include "Engine.h"
 
 #include "System/System.h"
 
@@ -250,9 +251,18 @@ void SYS_OpenDirectory(const std::string& dirPath, DirEntry& outDirEntry)
     strncpy(outDirEntry.mDirectoryPath, dirPath.c_str(), MAX_PATH_SIZE);
 
     outDirEntry.mDir = opendir(dirPath.c_str());
+
+    if (outDirEntry.mDir == nullptr &&
+        GetEngineState()->mSystem.mDvdMounted)
+    {
+        // Attempt to read DVD directory
+        std::string dvdPath = std::string("dvd:/") + dirPath;
+        outDirEntry.mDir = opendir(dvdPath.c_str());
+    }
+
     if (outDirEntry.mDir == nullptr)
     {
-        LogError("Could not open directory.");
+        LogError("Could not open directory: %s", dirPath.c_str());
         closedir(outDirEntry.mDir);
         return;
     }

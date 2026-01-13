@@ -620,7 +620,7 @@ void SYS_OpenDirectory(const std::string& dirPath, DirEntry& outDirEntry)
     outDirEntry.mDir = opendir(dirPath.c_str());
     if (outDirEntry.mDir == nullptr)
     {
-        LogError("Could not open directory.");
+        LogError("Could not open directory: %s", dirPath.c_str());
         closedir(outDirEntry.mDir);
         return;
     }
