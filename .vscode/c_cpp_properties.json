@@ -20,8 +20,8 @@
             "name": "Octave-GCN",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/opt/devkitpro/libogc/include",
-                "/opt/devkitpro/libogc/include/**"
+                "/opt/devkitpro/libogc2/gamecube/include",
+                "/opt/devkitpro/libogc2/gamecube/include/**"
             ],
             "defines": [
                 "GEKKO",

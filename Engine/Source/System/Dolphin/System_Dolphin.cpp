@@ -20,16 +20,14 @@
 
 #define ENABLE_LIBOGC_CONSOLE 0
 
-#ifdef PLATFORM_WII
-static const DISC_INTERFACE* sDvdInterface = &__io_wiidvd;
-#else
-static const DISC_INTERFACE* sDvdInterface = &__io_gcdvd;
+#ifdef PLATFORM_GAMECUBE
+static DISC_INTERFACE* sDvdInterface = &__io_gcdvd;
 #endif
 
 static bool sFatInit = false;
 static void InitFAT()
 {
-    if (!sFatInit)
+    if (!sFatInit && !GetEngineState()->mSystem.mDvdMounted)
     {
         if (fatInitDefault())
         {
@@ -92,14 +90,9 @@ void SYS_Initialize()
 
     InitFAT();
 
-#if PLATFORM_WII
-    DI_Init();
-#endif
-
 #if PLATFORM_GAMECUBE
     DVD_Init();
-#endif
- 
+
     if (ISO9660_Mount("dvd", sDvdInterface))
     {
         system.mDvdMounted = true;
@@ -109,6 +102,7 @@ void SYS_Initialize()
     {
         LogWarning("No DVD mounted");
     }
+#endif
 }
 
 void SYS_Shutdown()
@@ -127,7 +121,16 @@ bool SYS_DoesFileExist(const char* path, bool isAsset)
     struct stat info;
     bool exists = false;
 
-    int32_t retStatus = stat(path, &info);
+    int32_t retStatus = 0;
+    if (isAsset && GetEngineState()->mSystem.mDvdMounted)
+    {
+        std::string dvdPath = std::string("dvd:/") + path;
+        retStatus = stat(dvdPath.c_str(), &info);
+    }
+    else
+    {
+        retStatus = stat(path, &info);
+    }
 
     if (retStatus == 0)
     {
