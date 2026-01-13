@@ -15,8 +15,16 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <fat.h>
+#include <di/di.h>
+#include <iso9660.h>
 
 #define ENABLE_LIBOGC_CONSOLE 0
+
+#ifdef PLATFORM_WII
+static const DISC_INTERFACE* sDvdInterface = &__io_wiidvd;
+#else
+static const DISC_INTERFACE* sDvdInterface = &__io_gcdvd;
+#endif
 
 static bool sFatInit = false;
 static void InitFAT()
@@ -83,6 +91,24 @@ void SYS_Initialize()
 #endif
 
     InitFAT();
+
+#if PLATFORM_WII
+    DI_Init();
+#endif
+
+#if PLATFORM_GAMECUBE
+    DVD_Init();
+#endif
+ 
+    if (ISO9660_Mount("dvd", sDvdInterface))
+    {
+        system.mDvdMounted = true;
+        LogWarning("DVD mounted");
+    }
+    else
+    {
+        LogWarning("No DVD mounted");
+    }
 }
 
 void SYS_Shutdown()
@@ -120,9 +146,20 @@ void SYS_AcquireFileData(const char* path, bool isAsset, int32_t maxSize, char*&
     outData = nullptr;
     outSize = 0;
 
-    FILE* file = fopen(path, "rb");
-
-    // TODO: Handle reading from ISO
+    FILE* file = nullptr;
+    
+    // Try DVD first
+    if (GetEngineState()->mSystem.mDvdMounted)
+    {
+        std::string dvdPath = std::string("dvd:/") + path;
+        file = fopen(dvdPath.c_str(), "rb");
+    }
+    
+    // Then try SD?
+    if (file == nullptr)
+    {
+        file = fopen(path, "rb");
+    }
 
     if (file != nullptr)
     {
