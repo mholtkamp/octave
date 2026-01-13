@@ -690,7 +690,12 @@ void LoadProject(const std::string& path, bool discoverAssets)
         }
     }
 
-    std::string configPath = sEngineState.mProjectDirectory + "Config.ini";
+    // In Game, the config will always be at the root.
+    std::string configPath = "Config.ini";
+#if EDITOR
+    // Only in editor, we look for the Config.ini in the project dir.
+    configPath = sEngineState.mProjectDirectory + "Config.ini";
+#endif
     ReadEngineConfig(configPath);
 
     if (discoverAssets &&
