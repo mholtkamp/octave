@@ -1106,6 +1106,8 @@ void ReadEngineConfig(std::string path)
         {
             Renderer::Get()->SetColorScale((float)sEngineConfig.mColorScale);
         }
+
+        EnableLog(sEngineConfig.mLogging);
     }
 }
 

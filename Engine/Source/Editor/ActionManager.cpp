@@ -583,9 +583,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     }
 
     // ISO building for GameCube and Wii, non-embedded builds
-    if (/*!embedded &&*/
-        (platform == Platform::GameCube ||
-        platform == Platform::Wii))
+    if (!embedded && platform == Platform::GameCube)
     {
         // TODO: Check if we have the tools available for building an iso
 
@@ -2383,9 +2381,13 @@ void ActionManager::GenerateEmbeddedAssetFiles(
                     "gEmbeddedConfig_Data",
                     sourceString,
                     dataSize);
-            }
 
-            fprintf(sourceFile, "%s", sourceString.c_str());
+                fprintf(sourceFile, "%s", sourceString.c_str());
+            }
+            else
+            {
+                fprintf(sourceFile, "extern const char gEmbeddedConfig_Data[] = {};\n");
+            }
 
             fprintf(sourceFile, "extern const uint32_t gEmbeddedConfig_Size = %d;\n", dataSize);
 

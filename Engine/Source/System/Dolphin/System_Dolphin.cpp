@@ -98,6 +98,10 @@ void SYS_Initialize()
     {
         system.mDvdMounted = true;
         LogWarning("DVD mounted");
+
+        // Re-read the default Config.ini, which wasn't read because the
+        // file system couldn't have been accessed.
+        ReadEngineConfig();
     }
     else
     {
