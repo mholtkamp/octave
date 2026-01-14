@@ -94,7 +94,8 @@ void SYS_Initialize()
 #if PLATFORM_GAMECUBE
     DVD_Init();
 
-    if (ISO9660_Mount("dvd", sDvdInterface))
+    if (!sFatInit &&
+        ISO9660_Mount("dvd", sDvdInterface))
     {
         system.mDvdMounted = true;
         LogWarning("DVD mounted");
