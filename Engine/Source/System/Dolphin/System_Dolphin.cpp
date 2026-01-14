@@ -92,21 +92,24 @@ void SYS_Initialize()
     InitFAT();
 
 #if PLATFORM_GAMECUBE
-    DVD_Init();
-
     if (!sFatInit &&
-        ISO9660_Mount("dvd", sDvdInterface))
+        GetEngineConfig()->mEmbeddedAssetCount == 0)
     {
-        system.mDvdMounted = true;
-        LogWarning("DVD mounted");
+        DVD_Init();
 
-        // Re-read the default Config.ini, which wasn't read because the
-        // file system couldn't have been accessed.
-        ReadEngineConfig();
-    }
-    else
-    {
-        LogWarning("No DVD mounted");
+        if (ISO9660_Mount("dvd", sDvdInterface))
+        {
+            system.mDvdMounted = true;
+            LogWarning("DVD mounted");
+
+            // Re-read the default Config.ini, which wasn't read because the
+            // file system couldn't have been accessed.
+            ReadEngineConfig();
+        }
+        else
+        {
+            LogWarning("No DVD mounted");
+        }
     }
 #endif
 }
