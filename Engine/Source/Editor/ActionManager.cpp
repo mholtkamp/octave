@@ -309,7 +309,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     std::string embeddedHeaderPath = projectDir + "Generated/EmbeddedAssets.h";
     std::string embeddedSourcePath = projectDir + "Generated/EmbeddedAssets.cpp";
-    GenerateEmbeddedAssetFiles(embeddedAssets, embeddedHeaderPath.c_str(), embeddedSourcePath.c_str());
+    GenerateEmbeddedAssetFiles(embedded, embeddedAssets, embeddedHeaderPath.c_str(), embeddedSourcePath.c_str());
 
     // Generate embedded script source files. If not doing an embedded build, copy over the script folders.
     std::vector<std::string> scriptFiles;
@@ -335,7 +335,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     // So we don't need to worry about whether we include code that links to the embedded script array / script count.
     std::string scriptHeaderPath = projectDir + "Generated/EmbeddedScripts.h";
     std::string scriptSourcePath = projectDir + "Generated/EmbeddedScripts.cpp";
-    GenerateEmbeddedScriptFiles(scriptFiles, scriptHeaderPath.c_str(), scriptSourcePath.c_str());
+    GenerateEmbeddedScriptFiles(embedded, scriptFiles, scriptHeaderPath.c_str(), scriptSourcePath.c_str());
 
     if (standalone)
     {
@@ -2309,7 +2309,9 @@ void ActionManager::BeginImportScene()
 
 }
 
-void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*, std::string> >& assets,
+void ActionManager::GenerateEmbeddedAssetFiles(
+    bool embeddedBuild,
+    std::vector<std::pair<AssetStub*, std::string> >& assets,
     const char* headerPath,
     const char* sourcePath)
 {
@@ -2373,11 +2375,15 @@ void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*,
         {
             std::string sourceString;
             uint32_t dataSize = 0;
-            ConvertFileToByteString(
-                GetEngineState()->mProjectDirectory + "Config.ini",
-                "gEmbeddedConfig_Data",
-                sourceString,
-                dataSize);
+
+            if (embeddedBuild)
+            {
+                ConvertFileToByteString(
+                    GetEngineState()->mProjectDirectory + "Config.ini",
+                    "gEmbeddedConfig_Data",
+                    sourceString,
+                    dataSize);
+            }
 
             fprintf(sourceFile, "%s", sourceString.c_str());
 
@@ -2393,6 +2399,7 @@ void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*,
 }
 
 void ActionManager::GenerateEmbeddedScriptFiles(
+    bool embeddedBuild,
     std::vector<std::string> files,
     const char* headerPath,
     const char* sourcePath)

@@ -79,11 +79,13 @@ protected:
     ActionManager();
 
     void GenerateEmbeddedAssetFiles(
+        bool embeddedBuild,
         std::vector<std::pair<AssetStub*, std::string> >& assets,
         const char* headerPath,
         const char* sourcePath);
 
     void GenerateEmbeddedScriptFiles(
+        bool embeddedBuild,
         std::vector<std::string> files,
         const char* headerPath,
         const char* sourcePath);
