@@ -4140,6 +4140,14 @@ static void DrawNodePropertySelectOverlay()
     int32_t mX;
     int32_t mY;
     GetMousePosition(mX, mY);
+
+    float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
+    if (interfaceScale == 0.0f)
+    {
+        interfaceScale = 1.0f;
+    }
+    float invInterfaceScale = 1.0f / interfaceScale;
+
     float rot = GetEngineState()->mRealElapsedTime * 3.0f;
 
     const float lineLength = 40.0f;
@@ -4154,7 +4162,7 @@ static void DrawNodePropertySelectOverlay()
     point2a = glm::rotate(point2a, rot);
     point2b = glm::rotate(point2b, rot);
 
-    glm::vec2 offset = glm::vec2((float)mX, (float)mY);
+    glm::vec2 offset = glm::vec2((float)mX * invInterfaceScale, (float)mY * invInterfaceScale);
 
     point1a += offset;
     point1b += offset;
