@@ -949,6 +949,24 @@ void EditorState::OpenEditScene(int32_t idx)
                 // use some reference when editing a cell.
                 bool transient = node->IsTransient();
 
+                // Now... were any other nodes referencing this previous node?
+                // If so we need to update them. Consider optimizing this in the future
+                // Maybe use a flag to track which nodes have Node properties, or track with an array/map.
+                node->GetRoot()->Traverse([node, newNode](Node* exNode) -> bool
+                {
+                    std::vector<Property> props;
+                    exNode->GatherProperties(props);
+                    for (auto& prop : props)
+                    {
+                        if (prop.mType == DatumType::Node &&
+                            prop.GetNode() == node)
+                        {
+                            prop.SetNode(newNode);
+                        }
+                    }
+                   return true;
+                });
+
                 // This will unparent it from parent
                 node->Destroy();
                 node = nullptr;
