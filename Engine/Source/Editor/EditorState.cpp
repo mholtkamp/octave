@@ -912,12 +912,31 @@ void EditorState::OpenEditScene(int32_t idx)
 
     if (idx >= 0 && idx < int32_t(mEditScenes.size()))
     {
-        std::vector<PendingNodePath> pendingNodePaths;
+        std::vector<NodePtr> nodesWithNodeRefs;
+        std::unordered_map<NodePtr, NodePtr> replacedNodeMap;
 
         const EditScene& editScene = mEditScenes[idx];
         mEditSceneIndex = idx;
         GetWorld(0)->SetRootNode(editScene.mRootNode.Get()); // could be nullptr.
         GetEditorCamera()->SetTransform(editScene.mCameraTransform);
+
+        auto findExistingNodeProps = [&](Node* node) -> bool
+        {
+            std::vector<Property> props;
+            node->GatherProperties(props);
+
+            for (auto& prop : props)
+            {
+                if (prop.GetType() == DatumType::Node &&
+                    prop.GetNode() != nullptr)
+                {
+                    nodesWithNodeRefs.push_back(ResolvePtr(node));
+                    break;
+                }
+            }
+
+            return true;
+        };
 
         // Reinstantiate scene-linked nodes
         auto respawnSceneLinks = [&](Node* node) -> bool
@@ -945,31 +964,12 @@ void EditorState::OpenEditScene(int32_t idx)
                 int32_t nodeIdx = parent->FindChildIndex(node);
 
                 // Preserve transient status
-                // Doing this because in Navi, we can load transient neighbor cells to give 
+                // Doing this because in Navi, we can load transient neighbor cells to give
                 // use some reference when editing a cell.
                 bool transient = node->IsTransient();
 
-                // Now... were any other nodes referencing this previous node?
-                // If so we need to update them. Consider optimizing this in the future
-                // Maybe use a flag to track which nodes have Node properties, or track with an array/map.
-                node->GetRoot()->Traverse([node, newNode](Node* exNode) -> bool
-                {
-                    std::vector<Property> props;
-                    exNode->GatherProperties(props);
-                    for (auto& prop : props)
-                    {
-                        if (prop.mType == DatumType::Node &&
-                            prop.GetNode() == node)
-                        {
-                            prop.SetNode(newNode);
-                        }
-                    }
-                   return true;
-                });
-
-                // This will unparent it from parent
-                node->Destroy();
-                node = nullptr;
+                replacedNodeMap.insert({ResolvePtr(node), newNode});
+                node->Detach();
 
                 parent->AddChild(newNode.Get(), nodeIdx);
 
@@ -1019,7 +1019,37 @@ void EditorState::OpenEditScene(int32_t idx)
 
         if (editScene.mRootNode != nullptr)
         {
+            editScene.mRootNode->Traverse(findExistingNodeProps);
             editScene.mRootNode->Traverse(respawnSceneLinks);
+
+            // Go through all existing nodes with node props.
+            // For each node prop, if the node is in the replacement map,
+            // replace it with the new node.
+            for (auto& nodeWithRefs : nodesWithNodeRefs)
+            {
+                std::vector<Property> props;
+                nodeWithRefs->GatherProperties(props);
+
+                for (auto& prop : props)
+                {
+                    if (prop.GetType() == DatumType::Node &&
+                        prop.GetNode() != nullptr)
+                    {
+                        auto it = replacedNodeMap.find(prop.GetNode().Lock());
+                        if (it != replacedNodeMap.end())
+                        {
+                            prop.SetNode(it->second);
+                        }
+                    }
+                }
+            }
+
+            // Destroy the old nodes.
+            for (auto it : replacedNodeMap)
+            {
+                it.first->Destroy();
+            }
+            replacedNodeMap.clear();
 
             ResolveAllNodePathsRecursive(editScene.mRootNode.Get());
 
