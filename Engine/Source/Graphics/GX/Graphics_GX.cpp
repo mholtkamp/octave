@@ -43,7 +43,7 @@ void GFX_Initialize()
 
     EngineState* engineState = GetEngineState();
     SystemState* systemState = &engineState->mSystem;
-    GXRModeObj* rmode = systemState->mGxrMode;
+    GXRModeObj* rmode = &systemState->mGxRmode;
 
     // Alloc fifo
     gGxContext.mGpFifo = memalign(32, DEFAULT_FIFO_SIZE);
@@ -51,7 +51,7 @@ void GFX_Initialize()
 
     GX_Init(gGxContext.mGpFifo, DEFAULT_FIFO_SIZE);
 
-    GX_SetCopyClear({ 0, 0x00, 0x00, 0x00 }, 0x00ffffff);
+    GX_SetCopyClear({ 0, 0, 0, 0 }, GX_MAX_Z24);
 
 
     // other gx setup
@@ -83,8 +83,8 @@ void GFX_Initialize()
     // setup our projection matrix
     // this creates a perspective matrix with a view angle of 90,
     // and aspect ratio based on the display resolution
-    f32 w = rmode->viWidth;
-    f32 h = rmode->viHeight;
+    f32 w = rmode->fbWidth;
+    f32 h = rmode->efbHeight;
     guPerspective(perspective, 45, (f32)w / h, 0.1F, 300.0F);
     GX_LoadProjectionMtx(perspective, GX_PERSPECTIVE);
 
@@ -101,7 +101,7 @@ void GFX_BeginFrame()
 {
     gGxContext.mWorld = Renderer::Get()->GetCurrentWorld();
 
-    GXRModeObj* rmode = GetEngineState()->mSystem.mGxrMode;
+    GXRModeObj* rmode = &GetEngineState()->mSystem.mGxRmode;
 
     SetupLights();
 
@@ -146,7 +146,7 @@ void GFX_EndFrame()
     gxClear.g = uint8_t(glm::clamp(clearColor.g * 255.0f, 0.0f, 255.0f));
     gxClear.b = uint8_t(glm::clamp(clearColor.b * 255.0f, 0.0f, 255.0f));
     gxClear.a = uint8_t(glm::clamp(clearColor.a * 255.0f, 0.0f, 255.0f));
-    GX_SetCopyClear(gxClear, 0x00ffffff);
+    GX_SetCopyClear(gxClear, GX_MAX_Z24);
 
     SystemState* systemState = &GetEngineState()->mSystem;
     systemState->mFrameIndex ^= 1; // flip framebuffer
