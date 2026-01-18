@@ -1597,7 +1597,9 @@ void ActionManager::SaveScene(bool saveAs)
     else if (editScene->mSceneAsset != nullptr)
     {
         Scene* scene = editScene->mSceneAsset.Get<Scene>();
-        scene->Capture(GetWorld(0)->GetRootNode());
+        Node* root = GetWorld(0)->GetRootNode();
+        scene->Capture(root);
+        root->SetScene(scene);
         AssetManager::Get()->SaveAsset(scene->GetName());
     }
 }
