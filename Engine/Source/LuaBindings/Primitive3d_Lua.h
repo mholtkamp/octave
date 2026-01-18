@@ -72,6 +72,8 @@ struct Primitive3D_Lua
     static int SweepToWorldPosition(lua_State* L);
     static int SweepTest(lua_State* L);
 
+    static int GetBounds(lua_State* L);
+
     static void Bind();
 };
 

@@ -145,6 +145,14 @@ void Capsule3D::SetRadius(float radius)
     }
 }
 
+Bounds Capsule3D::GetLocalBounds() const
+{
+    Bounds bounds;
+    bounds.mCenter = glm::vec3(0.0f, 0.0f, 0.0f);
+    bounds.mRadius = mRadius + mHeight * 0.5f;
+    return bounds;
+}
+
 void Capsule3D::UpdateRigidBody()
 {
     EnableRigidBody(false);

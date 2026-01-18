@@ -97,6 +97,16 @@ void Box3D::SetExtents(glm::vec3 extents)
     }
 }
 
+Bounds Box3D::GetLocalBounds() const
+{
+    Bounds bounds;
+    bounds.mCenter = glm::vec3();
+    // Radius is sqrt(3)/2 * side for cube. So just do this for the longest side.
+    // This means the bounds won't be as tight as possible.
+    bounds.mRadius = 0.866025404f * glm::max(glm::max(mExtents.x, mExtents.y), mExtents.z);
+    return bounds;
+}
+
 void Box3D::UpdateRigidBody()
 {
     EnableRigidBody(false);

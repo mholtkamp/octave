@@ -20,6 +20,8 @@ public:
     glm::vec3 GetExtents() const;
     void SetExtents(glm::vec3 extents);
 
+    virtual Bounds GetLocalBounds() const override;
+
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
 protected:

@@ -93,6 +93,14 @@ void Sphere3D::SetRadius(float radius)
     }
 }
 
+Bounds Sphere3D::GetLocalBounds() const
+{
+    Bounds bounds;
+    bounds.mCenter = glm::vec3(0.0f, 0.0f, 0.0f);
+    bounds.mRadius = mRadius;
+    return bounds;
+}
+
 void Sphere3D::UpdateRigidBody()
 {
     EnableRigidBody(false);

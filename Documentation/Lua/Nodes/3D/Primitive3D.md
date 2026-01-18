@@ -283,3 +283,11 @@ Sig: `result = Primitive3D:SweepToWorldPosition(position, mask=0, testOnly=false
    - `Vector hitPosition`
    - `number hitFraction` (0 to 1, how far along the sweep did we make it?)
 ---
+### GetBounds
+Get the spherical bounds of the primitive. Bounds are used to determine what primitives will be rendered. The returned bounds are the post-transform, world-space bounds.
+
+Sig: `bounds = Primitive3D:GetBounds()`
+ - Ret: `table bounds`
+   - `Vector center` Bounds center in world-space
+   - `number radius` Bounds radius in world-space
+---
