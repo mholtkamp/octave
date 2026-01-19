@@ -452,7 +452,7 @@ int Node_Lua::GetChildByType(lua_State* L)
     for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
     {
         Node* child = node->GetChild(i);
-        if (strncmp(node->GetClassName(), typeName, MAX_PATH_SIZE) == 0)
+        if (strncmp(child->GetClassName(), typeName, MAX_PATH_SIZE) == 0)
         {
             ret = child;
             break;
