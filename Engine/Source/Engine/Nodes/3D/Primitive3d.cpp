@@ -901,7 +901,7 @@ void Primitive3D::EnableRigidBody(bool enable)
         world->GetDynamicsWorld()->removeRigidBody(mRigidBody);
     }
     
-    if (enable && (mPhysicsEnabled || mCollisionEnabled || mOverlapsEnabled))
+    if (enable && (mPhysicsEnabled || mCollisionEnabled || mOverlapsEnabled) && mCollisionShape != nullptr)
     {
         if (mRigidBody == nullptr)
         {

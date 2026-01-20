@@ -1346,7 +1346,7 @@ void GFX_DrawQuad(Quad* quad)
     AttrInfo_Init(attrInfo);
     AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 2); // v0=position
     AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // v1=texcoord0
-    AttrInfo_AddLoader(attrInfo, 2, GPU_UNSIGNED_BYTE, 4); // v1=color
+    AttrInfo_AddLoader(attrInfo, 2, GPU_UNSIGNED_BYTE, 4); // v2=color
 
     // Setup vertex buffer state
     C3D_BufInfo* bufInfo = C3D_GetBufInfo();
