@@ -212,6 +212,11 @@ void Node::Destroy()
     if (mDestroyed)
         return;
 
+    if (mSignalMap.size() > 0)
+    {
+        EmitSignal("OnDestroy", { this });
+    }
+
     // Lock a shared pointer so we don't delete ourselves midway through destruction.
     // If we are destroying a node because the last shared pointer was deleted, then this 
     // locked ptr might be invalid (since SharedCount is already 0).
@@ -477,6 +482,11 @@ void Node::Stop()
     if (mScript != nullptr)
     {
         mScript->CallFunction("Stop");
+    }
+
+    if (mSignalMap.size() > 0)
+    {
+        EmitSignal("OnStop", { this });
     }
 
     if (mNetId != INVALID_NET_ID)
