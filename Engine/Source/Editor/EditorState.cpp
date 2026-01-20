@@ -928,6 +928,7 @@ void EditorState::OpenEditScene(int32_t idx)
             for (auto& prop : props)
             {
                 if (prop.GetType() == DatumType::Node &&
+                    prop.GetCount() > 0 &&
                     prop.GetNode() != nullptr)
                 {
                     nodesWithNodeRefs.push_back(ResolvePtr(node));
@@ -1032,13 +1033,18 @@ void EditorState::OpenEditScene(int32_t idx)
 
                 for (auto& prop : props)
                 {
-                    if (prop.GetType() == DatumType::Node &&
-                        prop.GetNode() != nullptr)
+                    if (prop.GetType() == DatumType::Node)
                     {
-                        auto it = replacedNodeMap.find(prop.GetNode().Lock());
-                        if (it != replacedNodeMap.end())
+                        for (uint32_t nodeIdx = 0; nodeIdx < prop.GetCount(); ++nodeIdx)
                         {
-                            prop.SetNode(it->second);
+                            if (prop.GetNode() != nullptr)
+                            {
+                                auto it = replacedNodeMap.find(prop.GetNode().Lock());
+                                if (it != replacedNodeMap.end())
+                                {
+                                    prop.SetNode(it->second);
+                                }
+                            }
                         }
                     }
                 }
