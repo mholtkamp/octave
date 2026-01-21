@@ -140,10 +140,11 @@ void BindStaticMesh(StaticMesh* mesh, const void* instanceColors)
     }
 }
 
-void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedLighting)
+void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useVertexColor, bool useBakedLighting)
 {
     if (material != gC3dContext.mLastBoundMaterial ||
-        useBakedLighting != gC3dContext.mLastUseBakedLighting)
+        useBakedLighting != gC3dContext.mLastUseBakedLighting ||
+        useVertexColor != gC3dContext.mLastUseVertexColor)
     {
         ResetTexEnv();
         ResetLightingEnv();
@@ -270,7 +271,7 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
 
         bool unlit = (shadingModel == ShadingModel::Unlit);
 
-        if (!unlit && vertexColorMode == VertexColorMode::Modulate)
+        if (!unlit && useVertexColor && vertexColorMode == VertexColorMode::Modulate)
         {
             // For objects with vertex color AND are lit, we need to multiply vert color first
             env = C3D_GetTexEnv(tevIdx);
@@ -409,6 +410,7 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
 
         gC3dContext.mLastBoundMaterial = material;
         gC3dContext.mLastUseBakedLighting = useBakedLighting;
+        gC3dContext.mLastUseVertexColor = useVertexColor;
     }
 }
 

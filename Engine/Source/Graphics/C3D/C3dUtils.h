@@ -15,7 +15,7 @@ void CopyMatrixGlmToC3d(C3D_Mtx* dst, const glm::mat4& src);
 
 void BindVertexShader(ShaderId shaderId);
 void BindStaticMesh(StaticMesh* mesh, const void* instanceColors);
-void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedLighting);
+void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useVertexColor, bool useBakedLighting);
 void SetupLighting(uint8_t lightingChannels, bool bakedLighting);
 void SetupLightEnv(LightEnv& lightEnv, uint8_t lightingChannels, bool bakedLighting);
 void PrepareForwardRendering();

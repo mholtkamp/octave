@@ -736,7 +736,9 @@ void GFX_DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverri
             OCT_ASSERT(material != nullptr);
         }
 
-        BindMaterial(material, staticMeshComp, useBakedLighting);
+        bool useVertexColor = hasInstanceColors || mesh->HasVertexColor();
+
+        BindMaterial(material, staticMeshComp, useVertexColor, useBakedLighting);
 
         // Upload Uniforms
         C3D_Mtx worldMtx;
@@ -908,7 +910,7 @@ void GFX_DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
             OCT_ASSERT(material != nullptr);
         }
 
-        BindMaterial(material, skeletalMeshComp, false);
+        BindMaterial(material, skeletalMeshComp, false, false);
 
         // Upload Uniforms
         C3D_Mtx worldMtx;
@@ -1137,7 +1139,7 @@ void GFX_DrawTextMeshComp(TextMesh3D* textMeshComp)
         OCT_ASSERT(material != nullptr);
     }
 
-    BindMaterial(material, textMeshComp, false);
+    BindMaterial(material, textMeshComp, false, false);
 
     // Upload Uniforms
     C3D_Mtx worldMtx;
@@ -1275,7 +1277,7 @@ void GFX_DrawParticleComp(Particle3D* particleComp)
             OCT_ASSERT(material != nullptr);
         }
 
-        BindMaterial(material, particleComp, false);
+        BindMaterial(material, particleComp, true, false);
 
         // Upload Uniforms
         C3D_Mtx worldMtx;

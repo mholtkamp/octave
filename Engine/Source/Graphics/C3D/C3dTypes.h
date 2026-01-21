@@ -140,6 +140,7 @@ struct C3dContext
     ShaderId mLastBoundShaderId = ShaderId::Count;
     Material* mLastBoundMaterial = nullptr;
     bool mLastUseBakedLighting = false;
+    bool mLastUseVertexColor = false;
 
     std::vector<void*> mLinearDestroyQueue[MAX_FRAMES];
     std::vector<C3D_Tex> mTexDestroyQueue[MAX_FRAMES];
