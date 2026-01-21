@@ -743,9 +743,10 @@ void World::Update(float deltaTime)
         mPreviousOverlaps = mCurrentOverlaps;
         mCurrentOverlaps.clear();
 
-        int32_t numManifolds = mDynamicsWorld->getDispatcher()->getNumManifolds();
-
-        for (int32_t i = 0; i < numManifolds; ++i)
+        // Check the number of manifolds each loop iteration, since an overlap/collision callbacks
+        // may reduce the number of manifolds if an collision object gets removed from the dynamics world.
+        btDispatcher* dispatcher = mDynamicsWorld->getDispatcher();
+        for (int32_t i = 0; i < dispatcher->getNumManifolds(); ++i)
         {
             btPersistentManifold* manifold = mDynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
             int32_t numPoints = manifold->getNumContacts();
