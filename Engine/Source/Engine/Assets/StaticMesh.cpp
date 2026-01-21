@@ -855,6 +855,8 @@ void StaticMesh::Create(
 
     // Create an interleaved VBO
 
+    mPureVertexColors.clear();
+
     if (mHasVertexColor)
     {
         VertexColor* vertices = GetColorVertices();
@@ -867,6 +869,8 @@ void StaticMesh::Create(
 
             glm::vec4 color4f = glm::vec4(colors[i].r, colors[i].g, colors[i].b, colors[i].a);
             vertices[i].mColor = ColorFloat4ToUint32(color4f);
+
+            mPureVertexColors.push_back(vertices[i].mColor);
         }
     }
     else
