@@ -124,7 +124,10 @@ void BindStaticMesh(StaticMesh* mesh, const void* instanceColors)
     BufInfo_Init(bufInfo);
     if (hasColor)
     {
-        if (hasInstanceColors)
+        // NOTE: My 3DS was freezing when I tried binding instance colors with a VertexColor mesh.
+        // I don't know what I'm doing wrong, but for now, VertexColor meshes can't use instance colors :[
+        if (hasInstanceColors &&
+            !meshHasColors /* TODO: Remove this check. See note above.*/)
         {
             BufInfo_Add(bufInfo, mesh->GetResource()->mVertexData, meshHasColors ? sizeof(VertexColor) : sizeof(Vertex), 4, 0x3210);
             BufInfo_Add(bufInfo, instanceColors, sizeof(uint32_t), 1, 0x4);
