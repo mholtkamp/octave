@@ -142,14 +142,15 @@ void BindStaticMesh(StaticMesh* mesh, const void* instanceColors)
 
 void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useVertexColor, bool useBakedLighting)
 {
+    uint8_t lightingChannels = primitive->GetLightingChannels();
+
     if (material != gC3dContext.mLastBoundMaterial ||
         useBakedLighting != gC3dContext.mLastUseBakedLighting ||
-        useVertexColor != gC3dContext.mLastUseVertexColor)
+        useVertexColor != gC3dContext.mLastUseVertexColor ||
+        lightingChannels != gC3dContext.mLastLightingChannels)
     {
         ResetTexEnv();
         ResetLightingEnv();
-
-        uint8_t lightingChannels = primitive->GetLightingChannels();
 
         // Reconfigure lighting environment if light channels or baked lighting changed
         if (gC3dContext.mLightEnv.mLightingChannels != lightingChannels ||
@@ -411,6 +412,7 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useVertex
         gC3dContext.mLastBoundMaterial = material;
         gC3dContext.mLastUseBakedLighting = useBakedLighting;
         gC3dContext.mLastUseVertexColor = useVertexColor;
+        gC3dContext.mLastLightingChannels = lightingChannels;
     }
 }
 

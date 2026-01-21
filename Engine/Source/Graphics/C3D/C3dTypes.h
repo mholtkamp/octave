@@ -141,6 +141,7 @@ struct C3dContext
     Material* mLastBoundMaterial = nullptr;
     bool mLastUseBakedLighting = false;
     bool mLastUseVertexColor = false;
+    uint8_t mLastLightingChannels = 0;
 
     std::vector<void*> mLinearDestroyQueue[MAX_FRAMES];
     std::vector<C3D_Tex> mTexDestroyQueue[MAX_FRAMES];
