@@ -17,7 +17,7 @@ void INP_Initialize()
     PAD_Init();
     WPAD_Init();
 
-    WPAD_SetVRes(0, 640, 480);
+    WPAD_SetVRes(WPAD_CHAN_ALL, 640, 480);
     
     for (uint32_t i = 0; i < INPUT_MAX_GAMEPADS; ++i)
     {

@@ -21,7 +21,11 @@ static bool sActive = false;
 void NET_Initialize()
 {
     struct in_addr localIp, netMask, gateway;
+#if PLATFORM_WII
     int32_t result = if_configex(&localIp, &netMask, &gateway, true, 1);
+#else
+    int32_t result = if_configex(&localIp, &netMask, &gateway, true);
+#endif
 
     if (result >= 0)
     {
@@ -131,7 +135,11 @@ void NET_SocketSetBroadcast(SocketHandle socketHandle, bool broadcast)
 
 void NET_SocketGetIpAndPort(SocketHandle socketHandle, uint32_t& ipAddr, uint16_t& port)
 {
-    // TODO
+    struct sockaddr_in localAddr = {};
+    socklen_t len = sizeof(localAddr);
+    net_getsockname(socketHandle, (struct sockaddr *) &localAddr, &len);
+    ipAddr = ntohl(localAddr.sin_addr.s_addr);
+    port = ntohs(localAddr.sin_port);
 }
 
 uint32_t NET_IpStringToUint32(const char* ipString)

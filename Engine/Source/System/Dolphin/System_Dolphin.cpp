@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <fat.h>
-#include <ogc/lwp_watchdog.h>
 
 #define ENABLE_LIBOGC_CONSOLE 0
 
@@ -44,13 +43,11 @@ void SYS_Initialize()
     system.mFrameIndex = 0;
 
     VIDEO_Init();
-    GXRModeObj* rmode = VIDEO_GetPreferredMode(NULL);
-    system.mGxrMode = rmode;
+    GXRModeObj* rmode = VIDEO_GetPreferredMode(&system.mGxRmode);
     engine.mWindowWidth = rmode->fbWidth;
     engine.mWindowHeight = rmode->efbHeight;
 
 #if PLATFORM_WII
-    CONF_Init();
     int32_t aspectRatio = CONF_GetAspectRatio();
     if (aspectRatio == CONF_ASPECT_16_9)
     {
@@ -65,22 +62,23 @@ void SYS_Initialize()
     system.mFrameBuffers[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
     system.mFrameBuffers[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
 
-    VIDEO_Configure(system.mGxrMode);
+    VIDEO_Configure(&system.mGxRmode);
     VIDEO_SetNextFramebuffer(system.mFrameBuffers[system.mFrameIndex]);
-    VIDEO_SetBlack(FALSE);
+    VIDEO_SetBlack(false);
     VIDEO_Flush();
+#if PLATFORM_WII
     VIDEO_WaitVSync();
-
-    if (system.mGxrMode->viTVMode & VI_NON_INTERLACE)
-    {
-        VIDEO_WaitVSync();
-    }
+    VIDEO_WaitVSync();
+#else
+    VIDEO_WaitForFlush();
+    engine.mAspectRatioScale = VIDEO_GetAspectRatio() / ((float)engine.mWindowWidth / engine.mWindowHeight);
+#endif
 
 #if ENABLE_LIBOGC_CONSOLE
     // Initialize the console, required for printf
     system.mConsoleBuffer = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
 
-    console_init(system.mConsoleBuffer, 20, 20, rmode->fbWidth, rmode->xfbHeight, rmode->fbWidth * VI_DISPLAY_PIX_SZ);
+    CON_Init(system.mConsoleBuffer, 0, 0, rmode->fbWidth, rmode->xfbHeight, rmode->fbWidth * VI_DISPLAY_PIX_SZ);
 
     //printf("\x1b[2;0H");
 #endif
@@ -292,9 +290,9 @@ ThreadObject* SYS_CreateThread(ThreadFuncFP func, void* arg)
         arg,            /* arg pointer for thread */
         nullptr,        /* stack base */
         16 * 1024,      /* stack size */
-        50              /* thread priority */);
+        64              /* thread priority */);
 
-    if (createStatus < 0)
+    if (createStatus != 0)
     {
         LogError("Failed to create Thread");
     }
@@ -304,8 +302,7 @@ ThreadObject* SYS_CreateThread(ThreadFuncFP func, void* arg)
 
 void SYS_JoinThread(ThreadObject* thread)
 {
-    void* retValue = nullptr;
-    LWP_JoinThread(*thread, &retValue);
+    LWP_JoinThread(*thread, nullptr);
 }
 
 void SYS_DestroyThread(ThreadObject* thread)
@@ -320,7 +317,7 @@ MutexObject* SYS_CreateMutex()
     // Pass true in second param to allow recursive locking
     int32_t status = LWP_MutexInit(retMutex, true);
 
-    if (status < 0)
+    if (status != 0)
     {
         LogError("Failed to create Mutex");
     }
@@ -346,21 +343,16 @@ void SYS_DestroyMutex(MutexObject* mutex)
 
 void SYS_Sleep(uint32_t milliseconds)
 {
-    // Uh... not sure how to sleep for a given duration.
-    // But this sleep function at least yields to other threads I think...
-    lwp_t thisThread = LWP_GetSelf();
-    LWP_ThreadSleep(thisThread);
-
-    OCT_UNUSED(milliseconds);
+    usleep(milliseconds * 1000);
 }
 
 // Time
 uint64_t SYS_GetTimeMicroseconds()
 {
-    // There is another function called gettick(), and im not quite sure
-    // what the difference is, but gettick() returns only a u32 and I got really 
-    // weird results when I used it instead of gettime().
-    return ticks_to_microsecs(gettime());
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    uint64_t microseconds = 1000000 * tv.tv_sec + tv.tv_usec;
+    return microseconds;
 }
 
 // Process
@@ -419,7 +411,7 @@ static void MountMemoryCard()
     if (!IsMemoryCardMounted())
     {
         LogDebug("Initializing CARD");
-        GetEngineState()->mSystem.mMemoryCardMountArea = SYS_AlignedMalloc(CARD_WORKAREA_SIZE, 32);
+        GetEngineState()->mSystem.mMemoryCardMountArea = SYS_AlignedMalloc(CARD_WORKAREA, 32);
         CARD_Init("OCTA","00");
         int errorSlotA = CARD_Mount(CARD_SLOTA, GetEngineState()->mSystem.mMemoryCardMountArea, UnmountMemoryCard);
         LogDebug("Memory card code: %d", errorSlotA);
@@ -675,6 +667,7 @@ void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 {
     // SYS_Report() allows logging in Dolphin with a .dol file.
     // Printf logging requires .elf.
+#if PLATFORM_WII
     // Not sure if there's a way to turn the va_list back into a variadic args
     // to pass to SYS_Report, so just vsprintf it to a buffer first.
     char logBuffer[256];
@@ -682,6 +675,10 @@ void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 
     SYS_Report(logBuffer);
     SYS_Report("\n");
+#else
+    SYS_Reportv(format, arg);
+    SYS_Report("\n");
+#endif
 
     // I'm not sure if printf() is needed for the libogc console, but the console
     // is currently broken right now and causes octave to crash.
@@ -729,7 +726,7 @@ void SYS_UpdateConsole()
     void* fb = GetEngineState()->mConsoleMode ? system.mConsoleBuffer : system.mFrameBuffers[system.mFrameIndex];
 
     VIDEO_SetNextFramebuffer(fb);
-    VIDEO_SetBlack(FALSE);
+    VIDEO_SetBlack(false);
     VIDEO_Flush();
     VIDEO_WaitVSync();
 #endif
