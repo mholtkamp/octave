@@ -114,6 +114,25 @@ void Scene::LoadStream(Stream& stream, Platform platform)
                 {
                     overs[o].mProperties[p].ReadStream(stream, mVersion, false, false);
                 }
+
+                if (mVersion >= ASSET_VERSION_SCENE_SUBSCENE_INSTANCE_COLORS)
+                {
+                    overs[o].mOverrideColors = stream.ReadBool();
+                    if (overs[o].mOverrideColors)
+                    {
+                        uint32_t numCols = stream.ReadUint32();
+                        overs[o].mInstanceColors.resize(numCols);
+                        for (uint32_t c = 0; c < numCols; ++c)
+                        {
+                            overs[o].mInstanceColors[c] = stream.ReadUint32();
+#if PLATFORM_DOLPHIN
+                            ReverseColorUint32(overs[o].mInstanceColors[c]);
+#endif
+                        }
+
+                        overs[o].mBakedLighting = stream.ReadBool();
+                    }
+                }
             }
         }
     }
@@ -221,6 +240,17 @@ void Scene::SaveStream(Stream& stream, Platform platform)
             for (uint32_t p = 0; p < over.mProperties.size(); ++p)
             {
                 over.mProperties[p].WriteStream(stream, false);
+            }
+
+            stream.WriteBool(over.mOverrideColors);
+            if (over.mOverrideColors)
+            {
+                stream.WriteUint32((uint32_t)over.mInstanceColors.size());
+                for (uint32_t c = 0; c < over.mInstanceColors.size(); ++c)
+                {
+                    stream.WriteUint32(over.mInstanceColors[c]);
+                }
+                stream.WriteBool(over.mBakedLighting);
             }
         }
     }

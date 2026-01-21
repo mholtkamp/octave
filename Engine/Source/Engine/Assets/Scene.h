@@ -13,6 +13,9 @@ struct SubSceneOverride
 {
     std::string mPath;
     std::vector<Property> mProperties;
+    bool mOverrideColors = false;
+    bool mBakedLighting = false;
+    std::vector<uint32_t> mInstanceColors;
 };
 
 struct SceneNodeDef

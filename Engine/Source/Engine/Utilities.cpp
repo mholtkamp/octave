@@ -634,7 +634,23 @@ void GatherSubSceneOverrides(Node* node, Node* sceneRoot, std::vector<SubSceneOv
 
     GatherNonDefaultProperties(node, over.mProperties, defaultNode);
 
-    if (over.mProperties.size() > 0)
+    if (node->As<StaticMesh3D>() && defaultNode->As<StaticMesh3D>())
+    {
+        // Check if we have overridden instance colors
+        StaticMesh3D* mesh = node->As<StaticMesh3D>();
+        StaticMesh3D* defaultMesh = defaultNode->As<StaticMesh3D>();
+
+        if (mesh->GetInstanceColors() != defaultMesh->GetInstanceColors() ||
+            mesh->HasBakedLighting() != defaultMesh->HasBakedLighting())
+        {
+            over.mOverrideColors = true;
+            over.mInstanceColors = mesh->GetInstanceColors();
+            over.mBakedLighting = mesh->HasBakedLighting();
+        }
+    }
+
+    if (over.mProperties.size() > 0 ||
+        over.mOverrideColors > 0)
     {
         overs.push_back(over);
     }
@@ -666,6 +682,13 @@ void ApplySubSceneOverride(Node* sceneRoot, const SubSceneOverride& over)
     std::vector<Property> dstProps;
     dst->GatherProperties(dstProps);
     CopyPropertyValues(dstProps, over.mProperties);
+
+    if (over.mOverrideColors &&
+        dst->As<StaticMesh3D>())
+    {
+        StaticMesh3D* dstMesh = dst->As<StaticMesh3D>();
+        dstMesh->SetInstanceColors(over.mInstanceColors, over.mBakedLighting);
+    }
 
     // A script filename may have possibly been set.
     // Need to copy properties a second time to change newly created script properties.
