@@ -17,6 +17,8 @@
 #include "Nodes/3D/Camera3d.h"
 #include "Nodes/3D/Primitive3d.h"
 
+#define MAX_TEV_UNITS 6
+
 extern C3dContext gC3dContext;
 
 static inline float LinearAttenFunc(float dist, float maxDist, float none)
@@ -268,6 +270,19 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
 
         bool unlit = (shadingModel == ShadingModel::Unlit);
 
+        if (!unlit && vertexColorMode == VertexColorMode::Modulate)
+        {
+            // For objects with vertex color AND are lit, we need to multiply vert color first
+            env = C3D_GetTexEnv(tevIdx);
+            C3D_TexEnvInit(env);
+            C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+            C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
+            C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+            C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+            C3D_TexEnvScale(env, C3D_Both, gC3dContext.mColorScaleEnum);
+            ++tevIdx;
+        }
+
         GPU_TEVSRC lightSrc = GPU_PRIMARY_COLOR;
         if (shadingModel == ShadingModel::Toon)
             lightSrc = GPU_FRAGMENT_SECONDARY_COLOR;
@@ -298,7 +313,8 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
         }
         ++tevIdx;
 
-        if (shadingModel == ShadingModel::Lit && specular > 0.0f)
+        if (tevIdx < MAX_TEV_UNITS &&
+            shadingModel == ShadingModel::Lit && specular > 0.0f)
         {
             env = C3D_GetTexEnv(tevIdx);
             C3D_TexEnvInit(env);
@@ -309,16 +325,20 @@ void BindMaterial(MaterialLite* material, Primitive3D* primitive, bool useBakedL
             ++tevIdx;
         }
 
-        env = C3D_GetTexEnv(tevIdx);
-        C3D_TexEnvInit(env);
-        C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(matColor4));
-        C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_CONSTANT, GPU_PRIMARY_COLOR);
-        C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
-        C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_CONSTANT, GPU_PRIMARY_COLOR);
-        C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
-        ++tevIdx;
+        if (tevIdx < MAX_TEV_UNITS)
+        {
+            env = C3D_GetTexEnv(tevIdx);
+            C3D_TexEnvInit(env);
+            C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(matColor4));
+            C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_CONSTANT, GPU_PRIMARY_COLOR);
+            C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+            C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_CONSTANT, GPU_PRIMARY_COLOR);
+            C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+            ++tevIdx;
+        }
 
-        if (fresnelEnabled)
+        if (tevIdx < MAX_TEV_UNITS &&
+            fresnelEnabled)
         {
             env = C3D_GetTexEnv(tevIdx);
             C3D_TexEnvInit(env);
