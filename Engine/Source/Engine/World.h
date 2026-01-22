@@ -93,12 +93,14 @@ public:
         uint8_t collisionMask,
         RayTestResult& outResult,
         uint32_t numIgnoredObjects = 0,
-        btCollisionObject** ignoreObjects = nullptr);
+        btCollisionObject** ignoreObjects = nullptr,
+        bool ignorePureOverlap = true);
 
     void RayTestMulti(
         glm::vec3 start,
         glm::vec3 end,
         uint8_t collisionMask,
+        bool ignorePureOverlap,
         RayTestMultiResult& outResult);
 
     void SweepTest(

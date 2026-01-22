@@ -460,7 +460,7 @@ void World::PurgeOverlaps(Primitive3D* prim)
     }
 }
 
-void World::RayTest(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTestResult& outResult, uint32_t numIgnoredObjects, btCollisionObject** ignoreObjects)
+void World::RayTest(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTestResult& outResult, uint32_t numIgnoredObjects, btCollisionObject** ignoreObjects, bool ignorePureOverlap)
 {
     outResult.mStart = start;
     outResult.mEnd = end;
@@ -473,6 +473,7 @@ void World::RayTest(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTe
     result.m_collisionFilterMask = collisionMask;
     result.mNumIgnoreObjects = numIgnoredObjects;
     result.mIgnoreObjects = ignoreObjects;
+    result.mIgnorePureOverlap = ignorePureOverlap;
 
     //mDynamicsWorld->rayTestSingle()
     mDynamicsWorld->rayTest(fromWorld, toWorld, result);
@@ -491,7 +492,7 @@ void World::RayTest(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTe
     }
 }
 
-void World::RayTestMulti(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, RayTestMultiResult& outResult)
+void World::RayTestMulti(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, bool ignorePureOverlap, RayTestMultiResult& outResult)
 {
     outResult.mStart = start;
     outResult.mEnd = end;
@@ -509,6 +510,9 @@ void World::RayTestMulti(glm::vec3 start, glm::vec3 end, uint8_t collisionMask, 
 
     for (uint32_t i = 0; i < outResult.mNumHits; ++i)
     {
+        if (ignorePureOverlap && (result.m_collisionObjects[i]->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE))
+            continue;
+
         outResult.mHitPositions.push_back({ result.m_hitPointWorld[i].x(), result.m_hitPointWorld[i].y(), result.m_hitPointWorld[i].z() });
         outResult.mHitNormals.push_back({ result.m_hitNormalWorld[i].x(), result.m_hitNormalWorld[i].y(), result.m_hitNormalWorld[i].z() });
         outResult.mHitFractions.push_back(result.m_hitFractions[i]);

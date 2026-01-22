@@ -367,6 +367,7 @@ struct IgnoreRayResultCallback : btCollisionWorld::ClosestRayResultCallback
 
     uint32_t mNumIgnoreObjects = 0;
     btCollisionObject** mIgnoreObjects = nullptr;
+    bool mIgnorePureOverlap = true;
 };
 
 struct IgnoreConvexResultCallback : btCollisionWorld::ClosestConvexResultCallback
