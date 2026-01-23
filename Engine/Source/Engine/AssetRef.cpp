@@ -8,9 +8,15 @@
 #include "Assets/ParticleSystem.h"
 #include "Assets/SoundWave.h"
 
+#include "Nodes/3D/StaticMesh3d.h"
+
 #include "AssetManager.h"
 
 #include "Assertion.h"
+
+#if EDITOR
+#include "EditorState.h"
+#endif
 
 class AssetRefLock
 {
@@ -61,6 +67,30 @@ void AssetRef::ReplaceReferencesToAsset(Asset* oldAsset, Asset* newAsset)
             if (ref->Get() == oldAsset)
             {
                 *ref = newAsset;
+            }
+        }
+
+
+        // Hacky special case...
+        if ((oldAsset && oldAsset->GetType() == StaticMesh::GetStaticType()) ||
+            (newAsset && newAsset->GetType() == StaticMesh::GetStaticType()))
+        {
+            // If we are replacing refs to a static mesh, we need to update any StaticMesh3D that may be using their
+            // triangle collision data.
+            for (auto& editScene : GetEditorState()->mEditScenes)
+            {
+                if (editScene.mRootNode == nullptr)
+                    continue;
+
+                editScene.mRootNode->Traverse([](Node* node) -> bool
+                {
+                    StaticMesh3D* mesh3d = node->As<StaticMesh3D>();
+                    if (mesh3d)
+                    {
+                        mesh3d->RecreateCollisionShape();
+                    }
+                    return true;
+                });
             }
         }
     }
