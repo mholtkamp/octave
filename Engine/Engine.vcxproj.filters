@@ -90,6 +90,9 @@
     <Filter Include="Source Files\Editor\Imgui">
       <UniqueIdentifier>{228bd210-e49e-43f0-a677-ef19ebf3ba53}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Editor\ImGuizmo">
+      <UniqueIdentifier>{a7c8d290-f5b2-4d61-9c34-2e8f1a3b5d7e}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\Graphics\Vulkan\PostProcess">
       <UniqueIdentifier>{11563a18-1f88-4214-ad85-f31d25c2aeea}</UniqueIdentifier>
     </Filter>
@@ -605,6 +608,9 @@
     <ClCompile Include="..\External\Imgui\misc\cpp\imgui_stdlib.cpp">
       <Filter>Source Files\Editor\Imgui</Filter>
     </ClCompile>
+    <ClCompile Include="..\External\ImGuizmo\ImGuizmo.cpp">
+      <Filter>Source Files\Editor\ImGuizmo</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Editor\CustomImgui.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
@@ -827,6 +833,9 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\EditorState.h">
       <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\ImGuizmo\ImGuizmo.h">
+      <Filter>Source Files\Editor\ImGuizmo</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\EditorTypes.h">
       <Filter>Source Files\Editor</Filter>
