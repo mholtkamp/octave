@@ -962,6 +962,26 @@ bool AssetManager::RenameAsset(Asset* asset, const std::string& newName)
 
     return success;
 }
+std::string AssetManager::GetParentDirectory(const std::string& path)
+{
+    std::string result = path;
+
+    // Remove trailing separators
+    while (result.size() > 0 && (result.back() == '/' || result.back() == '\\'))
+    {
+        result.pop_back();
+    }
+
+    // Find last separator (check for both / and \)
+    size_t lastSlash = result.find_last_of("/\\");
+
+    if (lastSlash != std::string::npos)
+    {
+        result = result.substr(0, lastSlash);
+    }
+
+    return result;
+}
 
 bool AssetManager::RenameDirectory(AssetDir* dir, const std::string& newName)
 {
@@ -996,6 +1016,65 @@ bool AssetManager::RenameDirectory(AssetDir* dir, const std::string& newName)
     }
 
     return success;
+}
+void AssetManager::GatherScriptFilesRecursive(const std::string& dirPath, const std::string& relativePath, std::vector<std::string>& scriptFiles)
+{
+    DirEntry dirEntry;
+    std::vector<std::string> subDirectories;
+
+    SYS_OpenDirectory(dirPath, dirEntry);
+
+    while (dirEntry.mValid)
+    {
+        if (dirEntry.mDirectory)
+        {
+            // Ignore this directory and parent directory
+            if (dirEntry.mFilename[0] != '.')
+            {
+                subDirectories.push_back(dirEntry.mFilename);
+            }
+        }
+        else
+        {
+            // Check for script files
+            if (EndsWith(dirEntry.mFilename, ".lua"))
+            {
+                // Build the relative path
+                std::string scriptPath = relativePath.empty() ? dirEntry.mFilename : relativePath + "/" + dirEntry.mFilename;
+                scriptFiles.push_back(scriptPath);
+            }
+        }
+
+        SYS_IterateDirectory(dirEntry);
+    }
+
+    SYS_CloseDirectory(dirEntry);
+
+    // Recursively search subdirectories
+    for (uint32_t i = 0; i < subDirectories.size(); ++i)
+    {
+        std::string subDirPath = dirPath + subDirectories[i] + "\\";
+        std::string subRelativePath = relativePath.empty() ? subDirectories[i] : relativePath + "/" + subDirectories[i];
+        GatherScriptFilesRecursive(subDirPath, subRelativePath, scriptFiles);
+    }
+}
+
+
+std::vector<std::string> AssetManager::GetAvailableScriptFiles()
+{
+    std::vector<std::string> scriptFiles;
+    AssetDir* projDir = AssetManager::FindProjectDirectory();
+    if (projDir == nullptr)
+    {
+        return scriptFiles;
+    }
+
+    std::string scriptDir = GetParentDirectory(projDir->mPath) + "\\Scripts\\";
+
+    // Recursively gather script files
+    GatherScriptFilesRecursive(scriptDir, "", scriptFiles);
+
+    return scriptFiles;
 }
 
 AssetDir* AssetManager::FindProjectDirectory()

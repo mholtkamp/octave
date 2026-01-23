@@ -101,8 +101,12 @@ public:
 
     bool DoesAssetExist(const std::string& name);
     bool RenameAsset(Asset* asset, const std::string& newName);
+    std::string GetParentDirectory(const std::string& path);
     bool RenameDirectory(AssetDir* dir, const std::string& newName);
+    void GatherScriptFilesRecursive(const std::string& dirPath, const std::string& relativePath, std::vector<std::string>& scriptFiles);
+    std::vector<std::string> GetAvailableScriptFiles();
     AssetDir* FindProjectDirectory();
+    AssetDir* FindProjectRootDirectory();
     AssetDir* FindEngineDirectory();
     AssetDir* GetRootDirectory();
     void UnloadProjectDirectory();

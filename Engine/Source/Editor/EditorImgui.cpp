@@ -1112,6 +1112,7 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
     return selectionMade;
 }
 
+
 void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOwnerType ownerType)
 {
     Asset* asset = prop.GetAsset(index);
@@ -1290,6 +1291,49 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
     {
         ImGui::PopStyleColor();
     }
+}
+
+static bool HandleScriptSelection( std::string sTempString,
+ std::string sOrigVal) {
+    // Get available script files
+    static std::vector<std::string> scriptSuggestions;
+    static double lastUpdateTime = 0.0;
+    double currentTime = ImGui::GetTime();
+
+
+
+    // Case-insensitive filter
+    auto scriptFilter = [](const std::string& suggestion, const std::string& input) {
+        if (input.empty()) return true;
+        std::string lowerSuggestion = suggestion, lowerInput = input;
+        std::transform(lowerSuggestion.begin(), lowerSuggestion.end(), lowerSuggestion.begin(), ::tolower);
+        std::transform(lowerInput.begin(), lowerInput.end(), lowerInput.begin(), ::tolower);
+        return lowerSuggestion.find(lowerInput) != std::string::npos;
+        };
+
+    // Draw the input field first
+    bool textActive = ImGui::InputText("##ScriptInput", &sTempString);
+
+    // Capture input state IMMEDIATELY after InputText
+    bool isInputFocused = ImGui::IsItemFocused();
+    bool isInputActivated = ImGui::IsItemActivated();
+
+    // Then draw the autocomplete dropdown with the correct state
+    bool selectionMade = DrawAutocompleteDropdown("ScriptAutocomplete", sTempString, scriptSuggestions, scriptFilter,
+        isInputActivated || textActive || isInputFocused);
+
+    // Capture activation for sOrigVal AFTER the dropdown
+    if (isInputActivated)
+    {
+        // Refresh script list every 2 seconds
+        if (scriptSuggestions.empty() || currentTime - lastUpdateTime > 2.0)
+        {
+            scriptSuggestions = AssetManager::Get()->GetAvailableScriptFiles();
+            lastUpdateTime = currentTime;
+        }
+        sOrigVal = sTempString;
+    }
+	return selectionMade;
 }
 
 static void DrawPropertyList(Object* owner, std::vector<Property>& props)
@@ -1495,18 +1539,75 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                 static std::string sOrigVal;
                 sTempString = prop.GetString(i);
 
-                ImGui::InputTextMultiline("", &sTempString, ImVec2(ImGui::CalcItemWidth(), 19.0f), ImGuiInputTextFlags_CtrlEnterForNewLine);
-
-                if (ImGui::IsItemActivated())
+                if (prop.mName == "Script")
                 {
-                    sOrigVal = sTempString;
-                }
+                    // Get available script files
+                    // Then draw the autocomplete dropdown with the correct state
+                  /*  bool selectionMade = HandleScriptSelection( sTempString,
+						sOrigVal);*/
 
-                if (ImGui::IsItemDeactivatedAfterEdit())
-                {
-                    if (sTempString != sOrigVal)
+                    static std::vector<std::string> scriptSuggestions;
+                    static double lastUpdateTime = 0.0;
+                    double currentTime = ImGui::GetTime();
+
+
+
+                    // Case-insensitive filter
+                    auto scriptFilter = [](const std::string& suggestion, const std::string& input) {
+                        if (input.empty()) return true;
+                        std::string lowerSuggestion = suggestion, lowerInput = input;
+                        std::transform(lowerSuggestion.begin(), lowerSuggestion.end(), lowerSuggestion.begin(), ::tolower);
+                        std::transform(lowerInput.begin(), lowerInput.end(), lowerInput.begin(), ::tolower);
+                        return lowerSuggestion.find(lowerInput) != std::string::npos;
+                        };
+
+                    // Draw the input field first
+                    bool textActive = ImGui::InputText("##ScriptInput", &sTempString);
+
+                    // Capture input state IMMEDIATELY after InputText
+                    bool isInputFocused = ImGui::IsItemFocused();
+                    bool isInputActivated = ImGui::IsItemActivated();
+
+                    // Then draw the autocomplete dropdown with the correct state
+                    bool selectionMade = DrawAutocompleteDropdown("ScriptAutocomplete", sTempString, scriptSuggestions, scriptFilter,
+                        isInputActivated || textActive || isInputFocused);
+
+                    // Capture activation for sOrigVal AFTER the dropdown
+                    if (isInputActivated)
                     {
-                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, sTempString);
+                        // Refresh script list every 2 seconds
+                        if (scriptSuggestions.empty() || currentTime - lastUpdateTime > 2.0)
+                        {
+                            scriptSuggestions = AssetManager::Get()->GetAvailableScriptFiles();
+                            lastUpdateTime = currentTime;
+                        }
+                        sOrigVal = sTempString;
+                    }
+
+                    if (selectionMade || ImGui::IsItemDeactivatedAfterEdit())
+                    {
+                        if (sTempString != sOrigVal)
+                        {
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, sTempString);
+                        }
+                    }
+                }
+                else
+                {
+
+                    ImGui::InputTextMultiline("", &sTempString, ImVec2(ImGui::CalcItemWidth(), 19.0f), ImGuiInputTextFlags_CtrlEnterForNewLine);
+
+                    if (ImGui::IsItemActivated())
+                    {
+                        sOrigVal = sTempString;
+                    }
+
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                    {
+                        if (sTempString != sOrigVal)
+                        {
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, sTempString);
+                        }
                     }
                 }
                 break;
