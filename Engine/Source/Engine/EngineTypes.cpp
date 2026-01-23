@@ -3,6 +3,8 @@
 
 #include <Bullet/btBulletDynamicsCommon.h>
 
+#include "Nodes/3D/Primitive3d.h"
+
 IgnoreRayResultCallback::IgnoreRayResultCallback(const btVector3& rayFromWorld, const btVector3& rayToWorld) :
     ClosestRayResultCallback(rayFromWorld, rayToWorld)
 {
@@ -11,6 +13,15 @@ IgnoreRayResultCallback::IgnoreRayResultCallback(const btVector3& rayFromWorld, 
 
 btScalar IgnoreRayResultCallback::addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
 {
+    if (mIgnorePureOverlap)
+    {
+        int flags = rayResult.m_collisionObject->getCollisionFlags();
+        if (flags & btCollisionObject::CF_NO_CONTACT_RESPONSE)
+        {
+            return rayResult.m_hitFraction;
+        }
+    }
+
     for (uint32_t i = 0; i < mNumIgnoreObjects; ++i)
     {
         if (mIgnoreObjects[i] == rayResult.m_collisionObject)

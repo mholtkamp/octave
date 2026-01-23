@@ -306,6 +306,7 @@ int World_Lua::RayTest(lua_State* L)
     glm::vec3 end = CHECK_VECTOR(L, 3);
     uint8_t colMask = (uint8_t) CHECK_INTEGER(L, 4);
     std::vector<btCollisionObject*> ignoreObjects;
+    bool ignorePureOverlap = true;
 
     if (!lua_isnoneornil(L, 5))
     {
@@ -324,8 +325,13 @@ int World_Lua::RayTest(lua_State* L)
         }
     }
 
+    if (!lua_isnoneornil(L, 6))
+    {
+        ignorePureOverlap = CHECK_BOOLEAN(L ,6);
+    }
+
     RayTestResult result;
-    world->RayTest(start, end, colMask, result, uint32_t(ignoreObjects.size()), ignoreObjects.data());
+    world->RayTest(start, end, colMask, result, uint32_t(ignoreObjects.size()), ignoreObjects.data(), ignorePureOverlap);
 
     lua_newtable(L);
     Vector_Lua::Create(L, result.mStart);
@@ -349,9 +355,14 @@ int World_Lua::RayTestMulti(lua_State* L)
     glm::vec3 start = CHECK_VECTOR(L, 2);
     glm::vec3 end = CHECK_VECTOR(L, 3);
     uint8_t colMask = (uint8_t)CHECK_INTEGER(L, 4);
+    bool ignorePureOverlap = true;
+    if (!lua_isnoneornil(L, 5))
+    {
+        ignorePureOverlap = CHECK_BOOLEAN(L, 5);
+    }
 
     RayTestMultiResult result;
-    world->RayTestMulti(start, end, colMask, result);
+    world->RayTestMulti(start, end, colMask, ignorePureOverlap, result);
 
     // Setup Top Table
     lua_newtable(L);

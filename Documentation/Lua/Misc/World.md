@@ -143,11 +143,12 @@ Sig: `gravity = World:GetGravity()`
 ### RayTest
 Find the first primitive node that intersects a ray.
 
-Sig: `res = World:RayTest(start, end, colMask, ignoreObjects=nil)`
+Sig: `res = World:RayTest(start, end, colMask, ignoreObjects=nil, ignorePureOverlaps=true)`
  - Arg: `Vector start` Start position
  - Arg: `Vector end` End position
  - Arg: `integer colMask` Collision mask (use 0xff for all collision groups)
  - Arg: `table ignoreObjects` Array of Primitive3D nodes to ignore in test
+ - Arg: `bool ignorePureOverlap` Ignore primitives that have Overlaps enabled and Collision disabled
  - Ret: `table res` Ray test result
    - `Vector start`
    - `Vector end`
@@ -159,10 +160,11 @@ Sig: `res = World:RayTest(start, end, colMask, ignoreObjects=nil)`
 ### RayTestMulti
 Find all primitive nodes that intersect a ray.
 
-Sig: `res = World:RayTestMulti(start, end, colMask, ignoreObjects=nil)`
+Sig: `res = World:RayTestMulti(start, end, colMask, ignoreObjects=nil, ignorePureOverlaps=true)`
  - Arg: `Vector start` Start position
  - Arg: `Vector end` End position
  - Arg: `integer colMask` Collision mask (use 0xff for all collision groups)
+ - Arg: `bool ignorePureOverlap` Ignore primitives that have Overlaps enabled and Collision disabled
  - Ret: `table results` Array of results
    - `table res` Element of the array
      - `Primitive3D node`
