@@ -903,11 +903,16 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
     static bool dropdownActive = false;
     static std::string lastInputText = "";
     static std::vector<std::string> filteredItems;
-    
+    static bool mouseOverDropdown = false;
+    static bool selectionJustMade = false;
+
     // If forceActive is true, force the dropdown to show
-    if (forceActive) {
+    // But not if a selection was just made (prevents immediate reopen)
+    if (forceActive && !selectionJustMade) {
         dropdownActive = true;
     }
+    // Reset the flag after one frame
+    selectionJustMade = false;
     
     // Check if this is the active dropdown
     ImGuiID inputId = ImGui::GetItemID();
@@ -922,9 +927,9 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
         dropdownActive = true; // Set to true to ensure dropdown shows
         selectedIndex = 0;
     }
-    // Only hide dropdown when input completely loses focus
-    // This prevents the dropdown from disappearing immediately when clicking on it
-    else if (!isInputActive && !isInputFocused && activeDropdownId == inputId)
+    // Only hide dropdown when input completely loses focus AND mouse is not over dropdown
+    // This prevents the dropdown from disappearing when clicking on it
+    else if (!isInputActive && !isInputFocused && activeDropdownId == inputId && !mouseOverDropdown)
     {
         // Use a small delay to allow interaction with the dropdown itself
         static float hideTimer = 0.0f;
@@ -949,37 +954,38 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
     
     // Only show dropdown when we have filtered items and the dropdown is active
     // Either the input should be active/focused OR we're in the process of selecting an item
-    if (!filteredItems.empty() && dropdownActive && (isInputActive || isInputFocused || activeDropdownId == inputId))
+    if (!filteredItems.empty() && dropdownActive && (isInputActive || isInputFocused || activeDropdownId == inputId || mouseOverDropdown))
     {
         activeDropdownId = inputId; // Keep track of which dropdown is active
-        
+
         // Calculate popup position below the input field
         ImVec2 inputPos = ImGui::GetItemRectMin();
         ImVec2 inputSize = ImGui::GetItemRectSize();
         ImGui::SetNextWindowPos(ImVec2(inputPos.x, inputPos.y + inputSize.y));
-        
+
         // Set maximum height for 4 items plus a bit of padding
         const float itemHeight = ImGui::GetTextLineHeightWithSpacing();
         const float maxHeight = itemHeight * 4 + ImGui::GetStyle().WindowPadding.y * 2;
         ImGui::SetNextWindowSizeConstraints(ImVec2(inputSize.x, 0), ImVec2(inputSize.x, maxHeight));
-        
+
         // Make sure the dropdown appears above other elements
         ImGui::SetNextWindowBgAlpha(1.0f); // Fully opaque background
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f); // Add a border for better visibility
-        
+
         // Use flags to ensure the dropdown stays on top
-        // Disabling mouse control because there are some issues that I can't figure out.
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar |
             ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoSavedSettings |
             ImGuiWindowFlags_AlwaysAutoResize |
             ImGuiWindowFlags_Tooltip | // Use tooltip flag to ensure it draws on top
-            ImGuiWindowFlags_NoMouseInputs |
             ImGuiWindowFlags_NoScrollbar;
         
         if (ImGui::Begin(dropdownId, nullptr, flags))
         {
+            // Track if mouse is hovering over this window
+            mouseOverDropdown = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+
             // Get current key state
             bool upArrowPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow));
             bool downArrowPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow));
@@ -1026,7 +1032,8 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
             {
                 // Always hide dropdown when Enter is pressed
                 dropdownActive = false;
-                
+                selectionJustMade = true;
+
                 if (hasSelection && selectedIndex < filteredItems.size())
                 {
                     inputText = filteredItems[selectedIndex];
@@ -1038,9 +1045,9 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
                     inputText = "null";
                     selectionMade = true;
                 }
-                
+
                 ImGui::CloseCurrentPopup();
-                
+
                 // Consume the event
                 ImGui::GetIO().KeysDown[ImGui::GetKeyIndex(ImGuiKey_Enter)] = false;
             }
@@ -1078,37 +1085,52 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
             for (size_t i = 0; i < filteredItems.size(); i++)
             {
                 bool isSelected = (hasSelection && i == selectedIndex);
-                
+
                 if (isSelected)
                     ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
-                
+
                 // Only make selection on click, don't autofill
                 bool clicked = ImGui::Selectable(filteredItems[i].c_str(), isSelected);
-                
+
+                // Update selection on mouse hover
+                if (ImGui::IsItemHovered())
+                {
+                    selectedIndex = i;
+                    hasSelection = true;
+                }
+
                 if (isSelected)
                 {
                     ImGui::SetItemDefaultFocus(); // This also scrolls to make the item visible
                     ImGui::PopStyleColor();
                 }
-                
+
                 if (clicked)
                 {
                     inputText = filteredItems[i];
                     selectionMade = true;
                     dropdownActive = false;
+                    mouseOverDropdown = false;
+                    selectionJustMade = true;
                 }
             }
         }
         ImGui::End();
         ImGui::PopStyleVar(); // Pop the window border style
     }
-    else if (filteredItems.empty() && isInputActive)
+    else
     {
-        // Only hide the dropdown if there are no filtered items AND the input is active
-        // This way we don't hide it when the user is trying to interact with it
-        dropdownActive = false;
+        // Dropdown is not showing, reset mouse tracking
+        mouseOverDropdown = false;
+
+        if (filteredItems.empty() && isInputActive)
+        {
+            // Only hide the dropdown if there are no filtered items AND the input is active
+            // This way we don't hide it when the user is trying to interact with it
+            dropdownActive = false;
+        }
     }
-    
+
     return selectionMade;
 }
 
