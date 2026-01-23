@@ -4280,6 +4280,20 @@ static void DrawImGuizmo()
     // Set orthographic mode if needed
     ImGuizmo::SetOrthographic(camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC);
 
+    // Track undo state: cache the original transform when manipulation starts
+    static bool wasUsing = false;
+    static glm::mat4 originalMatrix;
+    static Node3D* lastManipulatedNode = nullptr;
+
+    bool isUsing = ImGuizmo::IsUsing();
+
+    // Gizmo manipulation started - cache the original transform
+    if (isUsing && !wasUsing)
+    {
+        originalMatrix = node3d->GetTransform();
+        lastManipulatedNode = node3d;
+    }
+
     // Store the delta matrix so we can apply incremental changes
     glm::mat4 deltaMatrix = glm::mat4(1.0f);
 
@@ -4300,6 +4314,27 @@ static void DrawImGuizmo()
     {
         node3d->SetTransform(modelMatrix);
     }
+
+    // Gizmo manipulation ended - commit to undo system
+    if (!isUsing && wasUsing && lastManipulatedNode != nullptr)
+    {
+        glm::mat4 newMatrix = lastManipulatedNode->GetTransform();
+        
+        // Only commit if the transform actually changed
+        if (originalMatrix != newMatrix)
+        {
+            // Temporarily restore original transform
+            lastManipulatedNode->SetTransform(originalMatrix);
+            lastManipulatedNode->UpdateTransform(false);
+            
+            // Commit the change through ActionManager for undo support
+            ActionManager::Get()->EXE_EditTransform(lastManipulatedNode, newMatrix);
+        }
+        
+        lastManipulatedNode = nullptr;
+    }
+
+    wasUsing = isUsing;
 }
 
 void EditorImguiInit()

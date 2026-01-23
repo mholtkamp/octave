@@ -314,3 +314,7 @@ __pycache__/
 # Vim temporary files
 .*.swp
 /.claude
+
+# Octave builds at the root level
+Octave.ex*
+Octave.lib
