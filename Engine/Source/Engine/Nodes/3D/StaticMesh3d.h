@@ -54,12 +54,13 @@ public:
     bool HasBakedLighting() const;
     bool HasInstanceColors() const;
 
+    virtual void RecreateCollisionShape();
+
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
 protected:
 
     void DrawDebugCollision(std::vector<DebugDraw>& inoutDraws, btCollisionShape* colShape, const glm::mat4& parentTransform);
-    virtual void RecreateCollisionShape();
 
     StaticMeshRef mStaticMesh;
     std::vector<uint32_t> mInstanceColors; // e.g. baked lighting color
