@@ -84,15 +84,13 @@ void Viewport3D::Update(float deltaTime)
 
 bool Viewport3D::ShouldHandleInput() const
 {
-    bool imguiWantsKeyboard = ImGui::GetIO().WantCaptureKeyboard;
-    bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse;
     bool imguiWantsText = ImGui::GetIO().WantTextInput;
-    bool imguiAnyItemHovered = ImGui::IsAnyItemHovered();
     bool imguiAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
     bool imguiAnyPopupUp = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
-    bool imguizmoUsing = ImGuizmo::IsUsing();
 
-    bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp && !imguiWantsMouse && !imguizmoUsing);
+    // Note: Don't check ImGuizmo::IsUsing() or WantCaptureMouse here - we want right/middle
+    // click to work even while the gizmo is active. Left-click is blocked separately via IsOver().
+    bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp);
     return handleInput;
 }
 
@@ -127,7 +125,7 @@ void Viewport3D::HandleDefaultControls()
             GetEditorState()->SetControlMode(ControlMode::Pilot);
         }
 
-        if (IsMouseButtonJustDown(MOUSE_LEFT))
+        if (IsMouseButtonJustDown(MOUSE_LEFT) && !ImGuizmo::IsOver())
         {
             int32_t mouseX = 0;
             int32_t mouseY = 0;

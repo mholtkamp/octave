@@ -73,9 +73,10 @@ bool Viewport2D::ShouldHandleInput() const
     bool imguiWantsText = ImGui::GetIO().WantTextInput;
     bool imguiAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
     bool imguiAnyPopupUp = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
-    bool imguizmoUsing = ImGuizmo::IsUsing();
 
-    bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp && !imguizmoUsing);
+    // Note: Don't check ImGuizmo::IsUsing() here - we want right/middle click to work
+    // even while the gizmo is active. Left-click is blocked separately via IsOver().
+    bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp);
     return handleInput;
 }
 
