@@ -313,3 +313,4 @@ __pycache__/
 
 # Vim temporary files
 .*.swp
+/.claude
