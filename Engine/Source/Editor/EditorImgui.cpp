@@ -17,6 +17,10 @@
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/InstancedMesh3d.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
+#include "Nodes/3D/Camera3d.h"
+#include "World.h"
+
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Assets/Scene.h"
 #include "Assets/SoundWave.h"
@@ -3509,7 +3513,7 @@ static void DrawViewportPanel()
     if (ImGui::Button("T##Translate"))
         gizmoOp = ImGuizmo::TRANSLATE;
     if (isTranslate) ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Translate (G)");
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Translate (Space+G)");
 
     // Rotate button
     ImGui::SameLine();
@@ -3518,7 +3522,7 @@ static void DrawViewportPanel()
     if (ImGui::Button("R##Rotate"))
         gizmoOp = ImGuizmo::ROTATE;
     if (isRotate) ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Rotate (R)");
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Rotate (Space+R)");
 
     // Scale button
     ImGui::SameLine();
@@ -3527,7 +3531,7 @@ static void DrawViewportPanel()
     if (ImGui::Button("S##Scale"))
         gizmoOp = ImGuizmo::SCALE;
     if (isScale) ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Scale (S)");
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Scale (Space+S)");
 
     // Local/World mode toggle
     ImGui::SameLine();
@@ -4229,6 +4233,75 @@ static void DrawNodePropertySelectOverlay()
     ImGui::GetForegroundDrawList()->AddLine({ point2a.x, point2a.y }, { point2b.x, point2b.y }, IM_COL32(255, 0, 0, 200), lineWidth);
 }
 
+static void DrawImGuizmo()
+{
+    EditorState* edState = GetEditorState();
+
+    // Only draw gizmos in 3D mode when not playing in editor
+    if (edState->GetEditorMode() != EditorMode::Scene3D &&
+        edState->GetEditorMode() != EditorMode::Scene)
+    {
+        return;
+    }
+
+    if (IsPlayingInEditor() && !edState->mEjected)
+    {
+        return;
+    }
+
+    // Get the selected node
+    Node* selectedNode = edState->GetSelectedNode();
+    if (selectedNode == nullptr || !selectedNode->IsNode3D())
+    {
+        return;
+    }
+
+    Node3D* node3d = static_cast<Node3D*>(selectedNode);
+
+    // Get the editor camera
+    Camera3D* camera = edState->GetEditorCamera();
+    if (camera == nullptr)
+    {
+        return;
+    }
+
+    // Get view and projection matrices
+    glm::mat4 viewMatrix = camera->GetViewMatrix();
+    glm::mat4 projMatrix = camera->GetProjectionMatrix();
+
+    // The engine's projection matrix has Y flipped for Vulkan (projMatrix[1][1] is negated).
+    // ImGuizmo expects OpenGL-style projection, so we need to un-flip Y.
+    glm::mat4 imguizmoProjMatrix = projMatrix;
+    imguizmoProjMatrix[1][1] *= -1.0f;
+
+    // Get the node's world transform
+    glm::mat4 modelMatrix = node3d->GetTransform();
+
+    // Set orthographic mode if needed
+    ImGuizmo::SetOrthographic(camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC);
+
+    // Store the delta matrix so we can apply incremental changes
+    glm::mat4 deltaMatrix = glm::mat4(1.0f);
+
+    // Call Manipulate with delta matrix
+    bool manipulated = ImGuizmo::Manipulate(
+        glm::value_ptr(viewMatrix),
+        glm::value_ptr(imguizmoProjMatrix),
+        edState->mGizmoOperation,
+        edState->mGizmoMode,
+        glm::value_ptr(modelMatrix),
+        glm::value_ptr(deltaMatrix),
+        nullptr   // snap
+    );
+
+    // If the gizmo was manipulated, apply the new transform using SetTransform
+    // which uses the engine's own decomposition logic
+    if (manipulated)
+    {
+        node3d->SetTransform(modelMatrix);
+    }
+}
+
 void EditorImguiInit()
 {
     IMGUI_CHECKVERSION();
@@ -4287,6 +4360,9 @@ void EditorImguiDraw()
         }
 
         DrawViewportPanel();
+
+        // Draw ImGuizmo gizmos for selected 3D nodes
+        DrawImGuizmo();
 
         PaintMode paintMode = GetEditorState()->GetPaintMode();
         if (paintMode == PaintMode::Color)

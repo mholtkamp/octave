@@ -90,9 +90,9 @@ bool Viewport3D::ShouldHandleInput() const
     bool imguiAnyItemHovered = ImGui::IsAnyItemHovered();
     bool imguiAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
     bool imguiAnyPopupUp = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
-    
+    bool imguizmoUsing = ImGuizmo::IsUsing();
 
-    bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp && !imguiWantsMouse);
+    bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp && !imguiWantsMouse && !imguizmoUsing);
     return handleInput;
 }
 
@@ -217,20 +217,37 @@ void Viewport3D::HandleDefaultControls()
         if (GetEditorState()->GetSelectedNode() != nullptr &&
             GetEditorState()->GetSelectedNode()->IsNode3D())
         {
-            // G/R/S keys now set the gizmo operation mode instead of entering legacy ControlMode
-            if (!controlDown && !altDown && IsKeyJustDown(KEY_G))
+            // Space+G/R/S keys set the gizmo operation mode (Blender-style shortcuts)
+            const bool spaceDown = IsKeyDown(KEY_SPACE);
+
+            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(KEY_G))
+            {
+                GetEditorState()->SetControlMode(ControlMode::Translate);
+                SavePreTransforms();
+            }
+            if (!controlDown && !altDown && spaceDown && IsKeyJustDown(KEY_G))
             {
                 GetEditorState()->mGizmoOperation = ImGuizmo::TRANSLATE;
             }
-
-            if (!controlDown && !altDown && IsKeyJustDown(KEY_R))
+            if (!controlDown && !altDown && spaceDown && IsKeyJustDown(KEY_R))
             {
                 GetEditorState()->mGizmoOperation = ImGuizmo::ROTATE;
             }
-
-            if (!controlDown && !altDown && IsKeyJustDown(KEY_S))
+            if (!controlDown && !altDown && spaceDown && IsKeyJustDown(KEY_S))
             {
                 GetEditorState()->mGizmoOperation = ImGuizmo::SCALE;
+            }
+
+            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(KEY_R))
+            {
+                GetEditorState()->SetControlMode(ControlMode::Rotate);
+                SavePreTransforms();
+            }
+
+            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(KEY_S))
+            {
+                GetEditorState()->SetControlMode(ControlMode::Scale);
+                SavePreTransforms();
             }
         }
 
