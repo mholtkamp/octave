@@ -4337,6 +4337,211 @@ static void DrawImGuizmo()
     wasUsing = isUsing;
 }
 
+static void DrawImGuizmo2D()
+{
+    EditorState* edState = GetEditorState();
+
+    // Only draw gizmos in 2D mode when not playing in editor
+    if (edState->GetEditorMode() != EditorMode::Scene2D)
+    {
+        return;
+    }
+
+    if (IsPlayingInEditor() && !edState->mEjected)
+    {
+        return;
+    }
+
+    // Get the selected widget
+    Widget* widget = edState->GetSelectedWidget();
+    if (widget == nullptr)
+    {
+        return;
+    }
+
+    // Get viewport info
+    Viewport2D* vp2d = edState->GetViewport2D();
+    float zoom = vp2d->GetZoom();
+
+    float vpWidth = (float)edState->mViewportWidth;
+    float vpHeight = (float)edState->mViewportHeight;
+
+    // Build orthographic projection matrix (Y down for screen coords)
+    glm::mat4 projMatrix = glm::ortho(0.0f, vpWidth, vpHeight, 0.0f, -1.0f, 1.0f);
+
+    // View matrix is identity since GetRect() already returns screen-space coordinates
+    // (zoom and rootOffset are already applied via the wrapper widget)
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+
+    // Get widget's rect (already in screen space after zoom/offset transform)
+    Rect rect = widget->GetRect();
+    glm::vec2 pivot = widget->GetPivot();
+
+    // Calculate pivot point in screen space
+    float pivotX = rect.mX + rect.mWidth * pivot.x;
+    float pivotY = rect.mY + rect.mHeight * pivot.y;
+
+    // For scale mode, include current size in the model matrix so ImGuizmo can scale it
+    // For translate/rotate, just use position and rotation
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(pivotX, pivotY, 0.0f));
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(widget->GetRotation()), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    // For scale, encode the widget's screen-space size into the matrix
+    if (edState->mGizmoOperation == ImGuizmo::SCALE)
+    {
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(rect.mWidth, rect.mHeight, 1.0f));
+    }
+
+    // Set orthographic mode
+    ImGuizmo::SetOrthographic(true);
+
+    // Track undo state: cache the original transform when manipulation starts
+    static bool wasUsing2D = false;
+    static glm::vec2 originalOffset;
+    static glm::vec2 originalSize;
+    static float originalRotation;
+    static glm::vec2 startSize;  // Size when gizmo manipulation started (for scale)
+    static Widget* lastManipulatedWidget = nullptr;
+
+    bool isUsing = ImGuizmo::IsUsing();
+
+    // Gizmo manipulation started - cache the original transform
+    if (isUsing && !wasUsing2D)
+    {
+        originalOffset = widget->GetOffset();
+        originalSize = widget->GetSize();
+        originalRotation = widget->GetRotation();
+        startSize = widget->GetSize();
+        lastManipulatedWidget = widget;
+    }
+
+    // Store the delta matrix
+    glm::mat4 deltaMatrix = glm::mat4(1.0f);
+
+    // Call Manipulate
+    bool manipulated = ImGuizmo::Manipulate(
+        glm::value_ptr(viewMatrix),
+        glm::value_ptr(projMatrix),
+        edState->mGizmoOperation,
+        ImGuizmo::LOCAL,  // Use local mode for 2D
+        glm::value_ptr(modelMatrix),
+        glm::value_ptr(deltaMatrix),
+        nullptr   // snap
+    );
+
+    // Apply transform changes
+    if (manipulated)
+    {
+        if (edState->mGizmoOperation == ImGuizmo::TRANSLATE)
+        {
+            // Extract translation delta from deltaMatrix
+            glm::vec3 deltaTrans(deltaMatrix[3]);
+
+            // Convert screen delta to widget offset units (account for zoom)
+            glm::vec2 offsetDelta = glm::vec2(deltaTrans.x, deltaTrans.y) / zoom;
+
+            // Handle stretch mode - convert to ratio if needed
+            if (widget->StretchX())
+            {
+                offsetDelta.x *= 0.002f;
+            }
+            if (widget->StretchY())
+            {
+                offsetDelta.y *= 0.002f;
+            }
+
+            glm::vec2 newOffset = widget->GetOffset() + offsetDelta;
+            widget->SetOffset(newOffset.x, newOffset.y);
+        }
+        else if (edState->mGizmoOperation == ImGuizmo::ROTATE)
+        {
+            // Extract rotation delta from deltaMatrix
+            // For 2D, we only care about Z rotation
+            glm::vec3 deltaScale, deltaTrans, deltaSkew;
+            glm::vec4 deltaPerspective;
+            glm::quat deltaRot;
+            glm::decompose(deltaMatrix, deltaScale, deltaRot, deltaTrans, deltaSkew, deltaPerspective);
+
+            // Convert quaternion to euler and extract Z rotation
+            // Negate because screen space Y is down, inverting rotation direction
+            glm::vec3 eulerDelta = glm::eulerAngles(deltaRot);
+            float deltaRotDeg = -glm::degrees(eulerDelta.z);
+
+            float newRotation = widget->GetRotation() + deltaRotDeg;
+            widget->SetRotation(newRotation);
+        }
+        else if (edState->mGizmoOperation == ImGuizmo::SCALE)
+        {
+            // Extract the new scale from the modified modelMatrix
+            glm::vec3 newScale, trans, skew;
+            glm::vec4 perspective;
+            glm::quat rot;
+            glm::decompose(modelMatrix, newScale, rot, trans, skew, perspective);
+
+            // The modelMatrix was initialized with (rect.mWidth, rect.mHeight, 1)
+            // After manipulation, newScale contains the scaled dimensions
+            // Convert back to widget size units by dividing by zoom
+            glm::vec2 newScreenSize(newScale.x, newScale.y);
+            glm::vec2 newSize = newScreenSize / zoom;
+
+            // Handle stretch mode
+            if (widget->StretchX())
+            {
+                // For stretch, convert pixel change to ratio
+                float pixelChange = newScreenSize.x - rect.mWidth;
+                newSize.x = widget->GetSize().x + pixelChange * 0.00002f;
+            }
+            if (widget->StretchY())
+            {
+                float pixelChange = newScreenSize.y - rect.mHeight;
+                newSize.y = widget->GetSize().y + pixelChange * 0.00002f;
+            }
+
+            widget->SetSize(newSize.x, newSize.y);
+        }
+    }
+
+    // Gizmo manipulation ended - commit to undo system
+    if (!isUsing && wasUsing2D && lastManipulatedWidget != nullptr)
+    {
+        glm::vec2 newOffset = lastManipulatedWidget->GetOffset();
+        glm::vec2 newSize = lastManipulatedWidget->GetSize();
+        float newRotation = lastManipulatedWidget->GetRotation();
+
+        // Only commit if the transform actually changed
+        bool offsetChanged = (originalOffset != newOffset);
+        bool sizeChanged = (originalSize != newSize);
+        bool rotationChanged = (originalRotation != newRotation);
+
+        if (offsetChanged || sizeChanged || rotationChanged)
+        {
+            // Temporarily restore original transform
+            lastManipulatedWidget->SetOffset(originalOffset.x, originalOffset.y);
+            lastManipulatedWidget->SetSize(originalSize.x, originalSize.y);
+            lastManipulatedWidget->SetRotation(originalRotation);
+
+            // Commit changes through ActionManager for undo support
+            if (offsetChanged)
+            {
+                ActionManager::Get()->EXE_EditProperty(lastManipulatedWidget, PropertyOwnerType::Node, "Offset", 0, newOffset);
+            }
+            if (sizeChanged)
+            {
+                ActionManager::Get()->EXE_EditProperty(lastManipulatedWidget, PropertyOwnerType::Node, "Size", 0, newSize);
+            }
+            if (rotationChanged)
+            {
+                ActionManager::Get()->EXE_EditProperty(lastManipulatedWidget, PropertyOwnerType::Node, "Rotation", 0, newRotation);
+            }
+        }
+
+        lastManipulatedWidget = nullptr;
+    }
+
+    wasUsing2D = isUsing;
+}
+
 void EditorImguiInit()
 {
     IMGUI_CHECKVERSION();
@@ -4398,6 +4603,8 @@ void EditorImguiDraw()
 
         // Draw ImGuizmo gizmos for selected 3D nodes
         DrawImGuizmo();
+        // Draw ImGuizmo gizmos for selected 2D widgets
+        DrawImGuizmo2D();
 
         PaintMode paintMode = GetEditorState()->GetPaintMode();
         if (paintMode == PaintMode::Color)
