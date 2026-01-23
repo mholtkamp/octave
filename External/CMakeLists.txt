@@ -17,4 +17,6 @@ add_subdirectory(Lua)
 
 add_subdirectory(Imgui)
 
+add_subdirectory(ImGuizmo)
+
 add_subdirectory(IrrXML)

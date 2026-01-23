@@ -41,6 +41,7 @@
 #include "Graphics/Vulkan/VulkanUtils.h"
 
 #include "CustomImgui.h"
+#include "ImGuizmo/ImGuizmo.h"
 
 #if PLATFORM_WINDOWS
 #include "backends/imgui_impl_win32.cpp"
@@ -3493,6 +3494,53 @@ static void DrawViewportPanel()
     GetEditorState()->SetEditorMode((EditorMode)curMode);
     GetEditorState()->SetPaintMode(paintMode);
 
+    // Gizmo Operation Buttons (Translate/Rotate/Scale)
+    ImGui::SameLine();
+    ImGui::Separator();
+    ImGui::SameLine();
+
+    EditorState* edState = GetEditorState();
+    ImGuizmo::OPERATION& gizmoOp = edState->mGizmoOperation;
+    ImGuizmo::MODE& gizmoMode = edState->mGizmoMode;
+
+    // Translate button
+    bool isTranslate = (gizmoOp == ImGuizmo::TRANSLATE);
+    if (isTranslate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
+    if (ImGui::Button("T##Translate"))
+        gizmoOp = ImGuizmo::TRANSLATE;
+    if (isTranslate) ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Translate (G)");
+
+    // Rotate button
+    ImGui::SameLine();
+    bool isRotate = (gizmoOp == ImGuizmo::ROTATE);
+    if (isRotate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
+    if (ImGui::Button("R##Rotate"))
+        gizmoOp = ImGuizmo::ROTATE;
+    if (isRotate) ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Rotate (R)");
+
+    // Scale button
+    ImGui::SameLine();
+    bool isScale = (gizmoOp == ImGuizmo::SCALE);
+    if (isScale) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
+    if (ImGui::Button("S##Scale"))
+        gizmoOp = ImGuizmo::SCALE;
+    if (isScale) ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Scale (S)");
+
+    // Local/World mode toggle
+    ImGui::SameLine();
+    ImGui::Separator();
+    ImGui::SameLine();
+
+    bool isLocal = (gizmoMode == ImGuizmo::LOCAL);
+    if (isLocal) ImGui::PushStyleColor(ImGuiCol_Button, kToggledColor);
+    if (ImGui::Button(isLocal ? "Local" : "World"))
+        gizmoMode = isLocal ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+    if (isLocal) ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle Local/World (Ctrl+T)");
+
     bool openSaveSceneAsModal = false;
 
     if (ImGui::BeginPopup("FilePopup"))
@@ -3982,6 +4030,14 @@ static void DrawViewportPanel()
 
     ImGui::End();
 
+    // Set up ImGuizmo rect for the viewport area
+    // edState was already declared earlier in this function
+    ImGuizmo::SetRect(
+        (float)edState->mViewportX,
+        (float)edState->mViewportY,
+        (float)edState->mViewportWidth,
+        (float)edState->mViewportHeight
+    );
 }
 
 static void DrawPaintColorsPanel()
@@ -4177,6 +4233,7 @@ void EditorImguiInit()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     
     // Disabling keyboard controls because it interferes with Alt hotkeys.
@@ -4214,6 +4271,7 @@ void EditorImguiDraw()
     io.DisplayFramebufferScale = ImVec2(interfaceScale, interfaceScale);
 
     ImGui::NewFrame();
+    ImGuizmo::BeginFrame();
 
     if (EditorIsInterfaceVisible())
     {

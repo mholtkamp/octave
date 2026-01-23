@@ -994,7 +994,7 @@ void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNum
 
     if (IsDebuggerPresent())
     {
-        DebugBreak();
+        //DebugBreak();
     }
 }
 

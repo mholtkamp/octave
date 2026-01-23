@@ -36,6 +36,7 @@
 #include "System/System.h"
 
 #include "imgui.h"
+#include "ImGuizmo/ImGuizmo.h"
 
 constexpr float sMaxCameraPitch = 89.99f;
 
@@ -216,22 +217,20 @@ void Viewport3D::HandleDefaultControls()
         if (GetEditorState()->GetSelectedNode() != nullptr &&
             GetEditorState()->GetSelectedNode()->IsNode3D())
         {
+            // G/R/S keys now set the gizmo operation mode instead of entering legacy ControlMode
             if (!controlDown && !altDown && IsKeyJustDown(KEY_G))
             {
-                GetEditorState()->SetControlMode(ControlMode::Translate);
-                SavePreTransforms();
+                GetEditorState()->mGizmoOperation = ImGuizmo::TRANSLATE;
             }
 
             if (!controlDown && !altDown && IsKeyJustDown(KEY_R))
             {
-                GetEditorState()->SetControlMode(ControlMode::Rotate);
-                SavePreTransforms();
+                GetEditorState()->mGizmoOperation = ImGuizmo::ROTATE;
             }
 
             if (!controlDown && !altDown && IsKeyJustDown(KEY_S))
             {
-                GetEditorState()->SetControlMode(ControlMode::Scale);
-                SavePreTransforms();
+                GetEditorState()->mGizmoOperation = ImGuizmo::SCALE;
             }
         }
 
@@ -270,6 +269,9 @@ void Viewport3D::HandleDefaultControls()
         if (controlDown && IsKeyJustDown(KEY_T))
         {
             ToggleTransformMode();
+            // Also toggle the ImGuizmo mode to stay in sync
+            EditorState* edState = GetEditorState();
+            edState->mGizmoMode = (edState->mGizmoMode == ImGuizmo::LOCAL) ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
         }
 
         if (IsKeyJustDown(KEY_NUMPAD5))
