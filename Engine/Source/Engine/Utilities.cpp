@@ -650,7 +650,7 @@ void GatherSubSceneOverrides(Node* node, Node* sceneRoot, std::vector<SubSceneOv
     }
 
     if (over.mProperties.size() > 0 ||
-        over.mOverrideColors > 0)
+        over.mOverrideColors == true)
     {
         overs.push_back(over);
     }
