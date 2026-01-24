@@ -903,7 +903,6 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
     static bool dropdownActive = false;
     static std::string lastInputText = "";
     static std::vector<std::string> filteredItems;
-    static bool mouseOverDropdown = false;
     static bool selectionJustMade = false;
 
     // If forceActive is true, force the dropdown to show
@@ -929,7 +928,7 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
     }
     // Only hide dropdown when input completely loses focus AND mouse is not over dropdown
     // This prevents the dropdown from disappearing when clicking on it
-    else if (!isInputActive && !isInputFocused && activeDropdownId == inputId && !mouseOverDropdown)
+    else if (!isInputActive && !isInputFocused && activeDropdownId == inputId )
     {
         // Use a small delay to allow interaction with the dropdown itself
         static float hideTimer = 0.0f;
@@ -954,7 +953,7 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
     
     // Only show dropdown when we have filtered items and the dropdown is active
     // Either the input should be active/focused OR we're in the process of selecting an item
-    if (!filteredItems.empty() && dropdownActive && (isInputActive || isInputFocused || activeDropdownId == inputId || mouseOverDropdown))
+    if (!filteredItems.empty() && dropdownActive && (isInputActive || isInputFocused || activeDropdownId == inputId ))
     {
         activeDropdownId = inputId; // Keep track of which dropdown is active
 
@@ -979,12 +978,13 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
             ImGuiWindowFlags_NoSavedSettings |
             ImGuiWindowFlags_AlwaysAutoResize |
             ImGuiWindowFlags_Tooltip | // Use tooltip flag to ensure it draws on top
+            ImGuiWindowFlags_NoMouseInputs |
             ImGuiWindowFlags_NoScrollbar;
         
         if (ImGui::Begin(dropdownId, nullptr, flags))
         {
             // Track if mouse is hovering over this window
-            mouseOverDropdown = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+            // mouseOverDropdown = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
 
             // Get current key state
             bool upArrowPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow));
@@ -1032,7 +1032,6 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
             {
                 // Always hide dropdown when Enter is pressed
                 dropdownActive = false;
-                selectionJustMade = true;
 
                 if (hasSelection && selectedIndex < filteredItems.size())
                 {
@@ -1092,12 +1091,6 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
                 // Only make selection on click, don't autofill
                 bool clicked = ImGui::Selectable(filteredItems[i].c_str(), isSelected);
 
-                // Update selection on mouse hover
-                if (ImGui::IsItemHovered())
-                {
-                    selectedIndex = i;
-                    hasSelection = true;
-                }
 
                 if (isSelected)
                 {
@@ -1105,14 +1098,6 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
                     ImGui::PopStyleColor();
                 }
 
-                if (clicked)
-                {
-                    inputText = filteredItems[i];
-                    selectionMade = true;
-                    dropdownActive = false;
-                    mouseOverDropdown = false;
-                    selectionJustMade = true;
-                }
             }
         }
         ImGui::End();
@@ -1120,8 +1105,6 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
     }
     else
     {
-        // Dropdown is not showing, reset mouse tracking
-        mouseOverDropdown = false;
 
         if (filteredItems.empty() && isInputActive)
         {
