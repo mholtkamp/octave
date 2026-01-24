@@ -4460,6 +4460,22 @@ static void DrawImGuizmo()
 {
     EditorState* edState = GetEditorState();
 
+    // Clear gizmo block when mouse is released
+    if (edState->mGizmoBlockedBySelection && !IsMouseButtonDown(MouseCode::MOUSE_LEFT))
+    {
+        edState->mGizmoBlockedBySelection = false;
+    }
+
+    // If gizmo is blocked by recent selection, disable interaction
+    if (edState->mGizmoBlockedBySelection)
+    {
+        ImGuizmo::Enable(false);
+    }
+    else
+    {
+        ImGuizmo::Enable(true);
+    }
+
     // Only draw gizmos in 3D mode when not playing in editor
     if (edState->GetEditorMode() != EditorMode::Scene3D &&
         edState->GetEditorMode() != EditorMode::Scene)
@@ -4563,6 +4579,22 @@ static void DrawImGuizmo()
 static void DrawImGuizmo2D()
 {
     EditorState* edState = GetEditorState();
+
+    // Clear gizmo block when mouse is released
+    if (edState->mGizmoBlockedBySelection && !IsMouseButtonDown(MouseCode::MOUSE_LEFT))
+    {
+        edState->mGizmoBlockedBySelection = false;
+    }
+
+    // If gizmo is blocked by recent selection, disable interaction
+    if (edState->mGizmoBlockedBySelection)
+    {
+        ImGuizmo::Enable(false);
+    }
+    else
+    {
+        ImGuizmo::Enable(true);
+    }
 
     // Only draw gizmos in 2D mode when not playing in editor
     if (edState->GetEditorMode() != EditorMode::Scene2D)

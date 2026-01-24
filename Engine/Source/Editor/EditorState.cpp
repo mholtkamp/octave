@@ -389,6 +389,10 @@ void EditorState::SetSelectedNode(Node* newNode)
         mSelectedNodes.clear();
         mSelectedInstance = -1;
 
+        // Block gizmo interaction until mouse is released to prevent
+        // accidental gizmo manipulation when clicking to select
+        mGizmoBlockedBySelection = true;
+
         if (newNode != nullptr)
         {
             mSelectedNodes.push_back(newNode);

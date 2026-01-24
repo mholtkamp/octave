@@ -146,6 +146,7 @@ struct EditorState
     // ImGuizmo state
     ImGuizmo::OPERATION mGizmoOperation = ImGuizmo::TRANSLATE;
     ImGuizmo::MODE mGizmoMode = ImGuizmo::WORLD;
+    bool mGizmoBlockedBySelection = false;
 
     // Methods
     void Init();
