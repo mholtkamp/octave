@@ -4251,11 +4251,19 @@ static void DrawViewportPanel()
 
     // Set up ImGuizmo rect for the viewport area
     // edState was already declared earlier in this function
+    // Account for interface scale - ImGui operates in scaled coordinates
+    float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
+    if (interfaceScale == 0.0f)
+    {
+        interfaceScale = 1.0f;
+    }
+    float invInterfaceScale = 1.0f / interfaceScale;
+
     ImGuizmo::SetRect(
-        (float)edState->mViewportX,
-        (float)edState->mViewportY,
-        (float)edState->mViewportWidth,
-        (float)edState->mViewportHeight
+        (float)edState->mViewportX * invInterfaceScale,
+        (float)edState->mViewportY * invInterfaceScale,
+        (float)edState->mViewportWidth * invInterfaceScale,
+        (float)edState->mViewportHeight * invInterfaceScale
     );
 }
 
@@ -4578,8 +4586,17 @@ static void DrawImGuizmo2D()
     Viewport2D* vp2d = edState->GetViewport2D();
     float zoom = vp2d->GetZoom();
 
-    float vpWidth = (float)edState->mViewportWidth;
-    float vpHeight = (float)edState->mViewportHeight;
+    // Account for interface scale - ImGuizmo operates in scaled ImGui coordinates
+    float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
+    if (interfaceScale == 0.0f)
+    {
+        interfaceScale = 1.0f;
+    }
+    float invInterfaceScale = 1.0f / interfaceScale;
+
+    // Viewport dimensions in scaled coordinates (matching ImGuizmo::SetRect)
+    float vpWidth = (float)edState->mViewportWidth * invInterfaceScale;
+    float vpHeight = (float)edState->mViewportHeight * invInterfaceScale;
 
     // Build orthographic projection matrix (Y down for screen coords)
     glm::mat4 projMatrix = glm::ortho(0.0f, vpWidth, vpHeight, 0.0f, -1.0f, 1.0f);
@@ -4589,10 +4606,15 @@ static void DrawImGuizmo2D()
     glm::mat4 viewMatrix = glm::mat4(1.0f);
 
     // Get widget's rect (already in screen space after zoom/offset transform)
+    // Scale to match ImGuizmo's coordinate space
     Rect rect = widget->GetRect();
+    rect.mX *= invInterfaceScale;
+    rect.mY *= invInterfaceScale;
+    rect.mWidth *= invInterfaceScale;
+    rect.mHeight *= invInterfaceScale;
     glm::vec2 pivot = widget->GetPivot();
 
-    // Calculate pivot point in screen space
+    // Calculate pivot point in screen space (already scaled)
     float pivotX = rect.mX + rect.mWidth * pivot.x;
     float pivotY = rect.mY + rect.mHeight * pivot.y;
 
@@ -4650,11 +4672,12 @@ static void DrawImGuizmo2D()
     {
         if (edState->mGizmoOperation == ImGuizmo::TRANSLATE)
         {
-            // Extract translation delta from deltaMatrix
+            // Extract translation delta from deltaMatrix (in scaled coordinates)
             glm::vec3 deltaTrans(deltaMatrix[3]);
 
-            // Convert screen delta to widget offset units (account for zoom)
-            glm::vec2 offsetDelta = glm::vec2(deltaTrans.x, deltaTrans.y) / zoom;
+            // Convert from scaled screen coordinates back to render target pixels,
+            // then to widget offset units (account for zoom)
+            glm::vec2 offsetDelta = glm::vec2(deltaTrans.x, deltaTrans.y) * interfaceScale / zoom;
 
             // Handle stretch mode - convert to ratio if needed
             if (widget->StretchX())
@@ -4688,29 +4711,30 @@ static void DrawImGuizmo2D()
         }
         else if (edState->mGizmoOperation == ImGuizmo::SCALE)
         {
-            // Extract the new scale from the modified modelMatrix
+            // Extract the new scale from the modified modelMatrix (in scaled coordinates)
             glm::vec3 newScale, trans, skew;
             glm::vec4 perspective;
             glm::quat rot;
             glm::decompose(modelMatrix, newScale, rot, trans, skew, perspective);
 
-            // The modelMatrix was initialized with (rect.mWidth, rect.mHeight, 1)
+            // The modelMatrix was initialized with (rect.mWidth, rect.mHeight, 1) in scaled coordinates
             // After manipulation, newScale contains the scaled dimensions
-            // Convert back to widget size units by dividing by zoom
-            glm::vec2 newScreenSize(newScale.x, newScale.y);
+            // Convert from scaled coordinates back to render target pixels, then to widget size units
+            glm::vec2 newScreenSize(newScale.x * interfaceScale, newScale.y * interfaceScale);
             glm::vec2 newSize = newScreenSize / zoom;
 
             // Handle stretch mode
+            // Note: rect is in scaled coordinates, so convert newScale for comparison
             if (widget->StretchX())
             {
-                // For stretch, convert pixel change to ratio
-                float pixelChange = newScreenSize.x - rect.mWidth;
-                newSize.x = widget->GetSize().x + pixelChange * 0.00002f;
+                // For stretch, convert pixel change to ratio (in scaled coordinates)
+                float pixelChange = newScale.x - rect.mWidth;
+                newSize.x = widget->GetSize().x + pixelChange * interfaceScale * 0.00002f;
             }
             if (widget->StretchY())
             {
-                float pixelChange = newScreenSize.y - rect.mHeight;
-                newSize.y = widget->GetSize().y + pixelChange * 0.00002f;
+                float pixelChange = newScale.y - rect.mHeight;
+                newSize.y = widget->GetSize().y + pixelChange * interfaceScale * 0.00002f;
             }
 
             widget->SetSize(newSize.x, newSize.y);
@@ -4767,11 +4791,13 @@ void EditorImguiInit()
     // Disabling keyboard controls because it interferes with Alt hotkeys.
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-    // Setup Dear ImGui style
-    // ImGui::StyleColorsDark();
-        SetupImGuiStyle();
-        std::string fontPath = SYS_GetAbsolutePath("Engine/Assets/Fonts/F_InterRegular18.ttf");
-        ImFont* myFont = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 15.0f);
+    // Setup Dear ImGui default style
+    ImGui::StyleColorsDark();
+
+    // TODO: Unlock theming when you and the world is ready.
+        // SetupImGuiStyle();
+        // std::string fontPath = SYS_GetAbsolutePath("Engine/Assets/Fonts/F_InterRegular18.ttf");
+        // ImFont* myFont = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 15.0f);
 
 
     //ImGui::StyleColorsLight();
