@@ -500,6 +500,16 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 //    ReplaceStringInFile(tmpMakefile, "ROMFS :=", "#ROMFS :=");
                 //}
             }
+            SYS_CreateDirectory((buildProjDir + "Generated").c_str());
+
+			// Copy over Generated files, sometimes they may have been modified or deleted.
+			SYS_CopyFile(embeddedHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.h").c_str());
+			SYS_CopyFile(embeddedSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.cpp").c_str());
+			SYS_CopyFile(scriptHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.h").c_str());
+			SYS_CopyFile(scriptSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.cpp").c_str());
+
+
+
 
             std::string makeCmd = std::string("make -C ") + (buildProjDir) + " -f Makefile_TEMP -j 12";
             SYS_Exec(makeCmd.c_str());
@@ -569,7 +579,9 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         exeSrc = prebuiltExeName;
     }
 
+
 	SYS_CopyDirectory(exeSrc.c_str(), packagedDir.c_str());
+
     //std::string exeCopyCmd = std::string("cp ") + exeSrc + " " + packagedDir;
     //SYS_Exec(exeCopyCmd.c_str());
 
