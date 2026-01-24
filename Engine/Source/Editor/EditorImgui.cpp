@@ -3011,7 +3011,7 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
                 assetDispText = "*" + assetDispText;
             }
 
-            if (ImGui::Selectable(assetDispText.c_str(), isSelectedStub))
+            if (ImGui::Selectable(assetDispText.c_str(), isSelectedStub, ImGuiSelectableFlags_AllowDoubleClick))
             {
                 if (selStub != stub)
                 {
@@ -3027,6 +3027,24 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
                     stub->mAsset != nullptr)
                 {
                     GetEditorState()->InspectObject(stub->mAsset);
+                }
+
+                if (ImGui::IsMouseDoubleClicked(0))
+                {
+                    if (stub->mAsset == nullptr)
+                        AssetManager::Get()->LoadAsset(*stub);
+
+                    if (stub->mType == Scene::GetStaticType())
+                    {
+                        Scene* scene = stub->mAsset ? stub->mAsset->As<Scene>() : nullptr;
+                        if (scene)
+                            GetEditorState()->OpenEditScene(scene);
+                    }
+                    else
+                    {
+                        if (stub->mAsset)
+                            GetEditorState()->InspectObject(stub->mAsset);
+                    }
                 }
             }
 
