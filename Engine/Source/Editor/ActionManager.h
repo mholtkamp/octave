@@ -72,6 +72,7 @@ public:
     void ResetUndoRedo();
     void ExileNode(NodePtr node);
     void RestoreExiledNode(NodePtr node);
+    void GatherScriptFiles(const std::string& dir, std::vector<std::string>& outFiles);
 
 protected:
 
@@ -88,7 +89,6 @@ protected:
         const char* headerPath,
         const char* sourcePath);
 
-    void GatherScriptFiles(const std::string& dir, std::vector<std::string>& outFiles);
 
     std::vector<Action*> mActionHistory;
     std::vector<Action*> mActionFuture;

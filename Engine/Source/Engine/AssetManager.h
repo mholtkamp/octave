@@ -109,6 +109,7 @@ public:
     AssetDir* FindProjectRootDirectory();
     AssetDir* FindEngineDirectory();
     AssetDir* GetRootDirectory();
+    void GatherScriptFiles(const std::string& dir, std::vector<std::string>& outFiles);
     void UnloadProjectDirectory();
     std::unordered_map<std::string, AssetStub*>& GetAssetMap();
     std::vector<AssetStub*> GatherDirtyAssets();
