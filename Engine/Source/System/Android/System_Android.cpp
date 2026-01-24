@@ -752,6 +752,30 @@ uint64_t SYS_GetTimeMicroseconds()
     return value.count();
 }
 
+void SYS_CopyDirectory(const char* sourceDir, const char* destDir)
+{
+    std::string cmd = std::string("cp -r \"") + sourceDir + "\" \"" + destDir + "\"";
+	SYS_Exec(cmd.c_str());
+}
+
+void SYS_CopyFile(const char* sourcePath, const char* destPath)
+{
+    std::string cmd = std::string("cp \"") + sourcePath + "\" \"" + destPath + "\"";
+    SYS_Exec(cmd.c_str());
+}
+
+void SYS_MoveDirectory(const char* sourceDir, const char* destDir)
+{
+    std::string cmd = std::string("mv \"") + sourceDir + "\" \"" + destDir + "\"";
+    SYS_Exec(cmd.c_str());
+}
+
+void SYS_MoveFile(const char* sourcePath, const char* destPath)
+{
+    std::string cmd = std::string("mv \"") + sourcePath + "\" \"" + destPath + "\"";
+    SYS_Exec(cmd.c_str());
+}
+
 // Process
 void SYS_Exec(const char* cmd, std::string* output)
 {

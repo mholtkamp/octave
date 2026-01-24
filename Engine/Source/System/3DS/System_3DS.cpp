@@ -378,7 +378,25 @@ void SYS_Exec(const char* cmd, std::string* output)
 {
 
 }
+void SYS_CopyDirectory(const char* sourceDir, const char* destDir)
+{
 
+}
+
+void SYS_CopyFile(const char* sourcePath, const char* destPath)
+{
+
+}
+
+void SYS_MoveDirectory(const char* sourceDir, const char* destDir)
+{
+
+}
+
+void SYS_MoveFile(const char* sourcePath, const char* destPath)
+{
+
+}
 // Memory
 void* SYS_AlignedMalloc(uint32_t size, uint32_t alignment)
 {

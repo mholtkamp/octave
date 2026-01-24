@@ -355,6 +355,26 @@ uint64_t SYS_GetTimeMicroseconds()
     return microseconds;
 }
 
+void SYS_CopyDirectory(const char* sourceDir, const char* destDir)
+{
+
+}
+
+void SYS_CopyFile(const char* sourcePath, const char* destPath)
+{
+
+}
+
+void SYS_MoveDirectory(const char* sourceDir, const char* destDir)
+{
+
+}
+
+void SYS_MoveFile(const char* sourcePath, const char* destPath)
+{
+
+}
+
 // Process
 void SYS_Exec(const char* cmd, std::string* output)
 {
