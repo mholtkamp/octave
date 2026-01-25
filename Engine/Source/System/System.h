@@ -25,6 +25,8 @@ void SYS_OpenDirectory(const std::string& dirPath, DirEntry& outDirEntry);
 void SYS_IterateDirectory(DirEntry& dirEntry);
 void SYS_CopyDirectory(const char* sourceDir, const char* destDir);
 void SYS_CopyFile(const char* sourcePath, const char* destPath);
+bool SYS_CopyDirectoryRecursive(const std::string& sourceDir,
+                                const std::string& destDir);
 void SYS_MoveDirectory(const char* sourceDir, const char* destDir);
 void SYS_MoveFile(const char* sourcePath, const char* destPath);
 void SYS_CloseDirectory(DirEntry& dirEntry);

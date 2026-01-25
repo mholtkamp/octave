@@ -117,7 +117,7 @@ public:
     void SaveFile(const char* path, Platform platform);
 
     virtual void LoadStream(Stream& stream, Platform platform);
-	virtual void SaveStream(Stream& stream, Platform platform);
+    virtual void SaveStream(Stream& stream, Platform platform);
     virtual bool Import(const std::string& path, ImportOptions* options = nullptr);
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;

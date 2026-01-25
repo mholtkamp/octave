@@ -157,7 +157,7 @@ void HandleXcbEvent(xcb_generic_event_t* event)
     {
         if ((*(xcb_client_message_event_t*)event).data.data32[0] == (*system.mAtomDeleteWindow).atom)
         {
-        	engine.mQuit = true;
+            engine.mQuit = true;
         }
         break;
     }
@@ -291,14 +291,14 @@ void SYS_Initialize()
     uint32_t valueMask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;;
     uint32_t valueList[32] = {};
     valueList[0] = 0x00000000;
-	valueList[1] =
-		XCB_EVENT_MASK_KEY_RELEASE |
-		XCB_EVENT_MASK_KEY_PRESS |
-		XCB_EVENT_MASK_EXPOSURE |
-		XCB_EVENT_MASK_STRUCTURE_NOTIFY |
-		XCB_EVENT_MASK_POINTER_MOTION |
-		XCB_EVENT_MASK_BUTTON_PRESS |
-		XCB_EVENT_MASK_BUTTON_RELEASE | 
+    valueList[1] =
+        XCB_EVENT_MASK_KEY_RELEASE |
+        XCB_EVENT_MASK_KEY_PRESS |
+        XCB_EVENT_MASK_EXPOSURE |
+        XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+        XCB_EVENT_MASK_POINTER_MOTION |
+        XCB_EVENT_MASK_BUTTON_PRESS |
+        XCB_EVENT_MASK_BUTTON_RELEASE | 
         XCB_EVENT_MASK_FOCUS_CHANGE;
 
     xcb_create_window(
@@ -319,26 +319,26 @@ void SYS_Initialize()
     // BEGIN - Code taken from Sascha Willems' vulkan samples
     // https://github.com/SaschaWillems/Vulkan/blob/master/base/vulkanexamplebase.cpp
 
-	/* Magic code that will send notification when window is destroyed */
+    /* Magic code that will send notification when window is destroyed */
     auto intern_atom_helper = [](xcb_connection_t *conn, bool only_if_exists, const char *str) -> xcb_intern_atom_reply_t*
     {
         xcb_intern_atom_cookie_t cookie = xcb_intern_atom(conn, only_if_exists, strlen(str), str);
         return xcb_intern_atom_reply(conn, cookie, NULL);
     };
 
-	xcb_intern_atom_reply_t* reply = intern_atom_helper(system.mXcbConnection, true, "WM_PROTOCOLS");
-	system.mAtomDeleteWindow = intern_atom_helper(system.mXcbConnection, false, "WM_DELETE_WINDOW");
+    xcb_intern_atom_reply_t* reply = intern_atom_helper(system.mXcbConnection, true, "WM_PROTOCOLS");
+    system.mAtomDeleteWindow = intern_atom_helper(system.mXcbConnection, false, "WM_DELETE_WINDOW");
 
-	xcb_change_property(system.mXcbConnection, XCB_PROP_MODE_REPLACE,
-		system.mXcbWindow, (*reply).atom, 4, 32, 1,
-		&(*system.mAtomDeleteWindow).atom);
+    xcb_change_property(system.mXcbConnection, XCB_PROP_MODE_REPLACE,
+        system.mXcbWindow, (*reply).atom, 4, 32, 1,
+        &(*system.mAtomDeleteWindow).atom);
 
-	std::string windowTitle = GetEngineState()->mProjectName;
-	xcb_change_property(system.mXcbConnection, XCB_PROP_MODE_REPLACE,
-		system.mXcbWindow, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-		windowTitle.size(), windowTitle.c_str());
+    std::string windowTitle = GetEngineState()->mProjectName;
+    xcb_change_property(system.mXcbConnection, XCB_PROP_MODE_REPLACE,
+        system.mXcbWindow, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+        windowTitle.size(), windowTitle.c_str());
 
-	free(reply);
+    free(reply);
 
     if (GetEngineConfig()->mFullscreen)
     {
@@ -356,17 +356,17 @@ void SYS_Initialize()
             &(atomFullscreen));
     }
 
-	// /**
-	//  * Set the WM_CLASS property to display
-	//  * title in dash tooltip and application menu
-	//  * on GNOME and other desktop environments
-	//  */
-	// std::string wm_class;
-	// wm_class = wm_class.insert(0, name);
-	// wm_class = wm_class.insert(name.size(), 1, '\0');
-	// wm_class = wm_class.insert(name.size() + 1, title);
-	// wm_class = wm_class.insert(wm_class.size(), 1, '\0');
-	// xcb_change_property(connection, XCB_PROP_MODE_REPLACE, window, XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, 8, wm_class.size() + 2, wm_class.c_str());
+    // /**
+    //  * Set the WM_CLASS property to display
+    //  * title in dash tooltip and application menu
+    //  * on GNOME and other desktop environments
+    //  */
+    // std::string wm_class;
+    // wm_class = wm_class.insert(0, name);
+    // wm_class = wm_class.insert(name.size(), 1, '\0');
+    // wm_class = wm_class.insert(name.size() + 1, title);
+    // wm_class = wm_class.insert(wm_class.size(), 1, '\0');
+    // xcb_change_property(connection, XCB_PROP_MODE_REPLACE, window, XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, 8, wm_class.size() + 2, wm_class.c_str());
 
     // END - Code taken from Sascha Willems' vulkan samples
 
@@ -830,6 +830,17 @@ std::string SYS_GetFileName(const std::string& relativePath)
     return relativePath.substr(start, dot - start);
 
 }
+
+bool SYS_CopyDirectoryRecursive(const std::string& sourceDir,
+                                const std::string& destDir)
+{
+    std::string cmd =
+    std::string("cp -R \"") + sourceDir + "/.\" \"" + destDir + "\"";
+
+    SYS_Exec(cmd.c_str());
+    return true;
+}
+
 void SYS_CopyDirectory(const char* sourceDir, const char* destDir)
 {
     std::string cmd = std::string("cp -r \"") + sourceDir + "\" \"" + destDir + "\"";
@@ -1100,9 +1111,9 @@ int32_t SYS_GetPlatformTier()
 void SYS_SetWindowTitle(const char* title)
 {
     SystemState& system = GetEngineState()->mSystem;
-	xcb_change_property(system.mXcbConnection, XCB_PROP_MODE_REPLACE,
-		system.mXcbWindow, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-		strlen(title), title);
+    xcb_change_property(system.mXcbConnection, XCB_PROP_MODE_REPLACE,
+        system.mXcbWindow, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+        strlen(title), title);
 }
 
 bool SYS_DoesWindowHaveFocus()

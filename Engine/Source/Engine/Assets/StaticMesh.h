@@ -33,7 +33,7 @@ public:
 
     // Asset Interface
     virtual void LoadStream(Stream& stream, Platform platform) override;
-	virtual void SaveStream(Stream& stream, Platform platform) override;
+    virtual void SaveStream(Stream& stream, Platform platform) override;
     virtual void Create() override;
     virtual void Destroy() override;
     virtual bool Import(const std::string& path, ImportOptions* options) override;

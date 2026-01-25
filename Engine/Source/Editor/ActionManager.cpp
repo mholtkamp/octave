@@ -321,15 +321,15 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     }
     else
     {
-		SYS_CopyDirectory("Engine/Scripts/", (packagedDir + "Engine/Scripts/").c_str());
-		SYS_CopyDirectory((projectDir + "Scripts/").c_str(), (packagedDir + projectName + "/Scripts/").c_str());
+        SYS_CopyDirectory("Engine/Scripts/", (packagedDir + "Engine/Scripts/").c_str());
+        SYS_CopyDirectory((projectDir + "Scripts/").c_str(), (packagedDir + projectName + "/Scripts/").c_str());
         //SYS_Exec(std::string("cp -R Engine/Scripts " + packagedDir + "Engine/Scripts").c_str());
         //SYS_Exec(std::string("cp -R " + projectDir + "Scripts " + packagedDir + projectName + "/Scripts").c_str());
 
         if (platform != Platform::Windows && platform != Platform::Linux)
         {
             // Remove LuaPanda on consoles (it's a 148 KB file)
-			SYS_RemoveFile((packagedDir + "Engine/Scripts" + "/LuaPanda.lua").c_str());
+            SYS_RemoveFile((packagedDir + "Engine/Scripts" + "/LuaPanda.lua").c_str());
             //SYS_Exec(std::string("rm " + packagedDir + "Engine/Scripts" + "/LuaPanda.lua").c_str());
         }
     }
@@ -349,11 +349,11 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     // Copy .octp and Config.ini
     {
-		SYS_CopyFile((projectDir + projectName + ".octp").c_str(), (packagedDir + projectName + ".octp").c_str());
+        SYS_CopyFile((projectDir + projectName + ".octp").c_str(), (packagedDir + projectName + ".octp").c_str());
         //std::string copyOctpCmd = "cp " + projectDir + projectName + ".octp " + packagedDir + projectName;
         //SYS_Exec(copyOctpCmd.c_str());
 
-		SYS_CopyFile((projectDir + "Config.ini").c_str(), (packagedDir + "Config.ini").c_str());
+        SYS_CopyFile((projectDir + "Config.ini").c_str(), (packagedDir + "Config.ini").c_str());
         //std::string copyConfigCmd = "cp " + projectDir + "Config.ini " + packagedDir;
         //SYS_Exec(copyConfigCmd.c_str());
     }
@@ -375,7 +375,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         CreateDir((packagedDir + "Engine/Shaders/").c_str());
         CreateDir((packagedDir + "Engine/Shaders/GLSL/").c_str());
 
-		SYS_CopyDirectory("Engine/Shaders/GLSL/bin/", (packagedDir + "Engine/Shaders/GLSL/bin/").c_str());
+        SYS_CopyDirectory("Engine/Shaders/GLSL/bin/", (packagedDir + "Engine/Shaders/GLSL/bin/").c_str());
         //SYS_Exec(std::string("cp -R Engine/Shaders/GLSL/bin " + packagedDir + "Engine/Shaders/GLSL/bin").c_str());
     }
 
@@ -391,8 +391,11 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     if (useRomfs)
     {
         LogDebug("Copying packaged data to Romfs staging directory.");
-		SYS_CopyDirectory(packagedDir.c_str(), romfsDir.c_str());
-        //SYS_Exec(std::string("cp -R " + packagedDir + "/* " + romfsDir).c_str());
+    #if PLATFORM_WINDOWS
+        SYS_CopyDirectoryRecursive(packagedDir.c_str(), romfsDir.c_str());
+    #else
+        SYS_Exec(std::string("cp -R " + packagedDir + "/* " + romfsDir).c_str());
+    #endif
     }
 
     // ( ) Run the makefile to compile the game.
@@ -448,7 +451,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             {
                 CreateDir(androidAssetsDir.c_str());
             }
-			SYS_CopyDirectory(packagedDir.c_str(), androidAssetsDir.c_str());
+            SYS_CopyDirectory(packagedDir.c_str(), androidAssetsDir.c_str());
             //SYS_Exec(std::string("cp -R " + packagedDir + "/* " + androidAssetsDir).c_str());
 
             // Invoke the gradle build
@@ -485,7 +488,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             std::string srcMakefile = buildProjDir + "/" + makefilePath;
             std::string tmpMakefile = buildProjDir + "/Makefile_TEMP";
             // Make a copy of the makefile so we can change the app name and things like that
-			SYS_CopyFile(srcMakefile.c_str(), tmpMakefile.c_str());
+            SYS_CopyFile(srcMakefile.c_str(), tmpMakefile.c_str());
             //SYS_Exec(std::string("cp " + srcMakefile + " " + tmpMakefile).c_str());
 
             // This is fragile, but we're going to modify the temp makefile to compile
@@ -502,11 +505,11 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             }
             SYS_CreateDirectory((buildProjDir + "Generated").c_str());
 
-			// Copy over Generated files, sometimes they may have been modified or deleted.
-			SYS_CopyFile(embeddedHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.h").c_str());
-			SYS_CopyFile(embeddedSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.cpp").c_str());
-			SYS_CopyFile(scriptHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.h").c_str());
-			SYS_CopyFile(scriptSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.cpp").c_str());
+            // Copy over Generated files, sometimes they may have been modified or deleted.
+            SYS_CopyFile(embeddedHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.h").c_str());
+            SYS_CopyFile(embeddedSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.cpp").c_str());
+            SYS_CopyFile(scriptHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.h").c_str());
+            SYS_CopyFile(scriptSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.cpp").c_str());
 
 
 
@@ -515,7 +518,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             SYS_Exec(makeCmd.c_str());
 
             // Delete the temp makefile
-			SYS_RemoveFile(tmpMakefile.c_str());
+            SYS_RemoveFile(tmpMakefile.c_str());
             //SYS_Exec(std::string("rm " + tmpMakefile).c_str());
 
             if (platform == Platform::Linux)
@@ -580,7 +583,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     }
 
 
-	SYS_CopyDirectory(exeSrc.c_str(), packagedDir.c_str());
+    SYS_CopyDirectory(exeSrc.c_str(), packagedDir.c_str());
 
     //std::string exeCopyCmd = std::string("cp ") + exeSrc + " " + packagedDir;
     //SYS_Exec(exeCopyCmd.c_str());
@@ -588,7 +591,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     if (standalone)
     {
         // Rename the executable to the project name
-		SYS_MoveFile((packagedDir + "Octave" + extension).c_str(), (packagedDir + projectName + extension).c_str());
+        SYS_MoveFile((packagedDir + "Octave" + extension).c_str(), (packagedDir + projectName + extension).c_str());
         //std::string renameCmd = std::string("mv ") + packagedDir + "Octave" + extension + " " + packagedDir + projectName + extension;
         //SYS_Exec(renameCmd.c_str());
     }
