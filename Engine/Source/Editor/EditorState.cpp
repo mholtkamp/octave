@@ -744,15 +744,24 @@ void EditorState::ApplyEditorCameraSettings()
 
 void EditorState::LoadStartupScene()
 {
+	Scene* scene = nullptr;
     std::string startupSceneName = GetEngineConfig()->mDefaultEditorScene;
-    if (startupSceneName != "")
+    if(startupSceneName == "")
     {
-        Scene* scene = LoadAsset<Scene>(startupSceneName);
-
-        if (scene != nullptr)
+        AssetStub* defaultScene = AssetManager::Get()->FindDefaultScene();
+        if(defaultScene != nullptr)
         {
-            ActionManager::Get()->OpenScene(scene);
-        }
+            scene = LoadAsset<Scene>(defaultScene->mName);
+		}
+	}
+    if (startupSceneName != "" && scene == nullptr)
+    {
+        scene = LoadAsset<Scene>(startupSceneName);
+
+    }
+    if (scene != nullptr)
+    {
+        ActionManager::Get()->OpenScene(scene);
     }
 }
 

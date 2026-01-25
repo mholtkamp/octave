@@ -50,6 +50,19 @@ void SYS_Initialize()
     osSetSpeedupEnable(true);
 }
 
+
+std::string SYS_GetFileName(const std::string& relativePath)
+{
+    char fileName[MAX_PATH_SIZE];
+    _splitpath_s(
+        relativePath.c_str(),
+        nullptr, 0,
+        nullptr, 0,
+        fileName, MAX_PATH_SIZE,
+        nullptr, 0);
+    return std::string(fileName);
+
+}
 void SYS_Shutdown()
 {
     gfxExit();

@@ -752,6 +752,19 @@ uint64_t SYS_GetTimeMicroseconds()
     return value.count();
 }
 
+
+std::string SYS_GetFileName(const std::string& relativePath)
+{
+    char fileName[MAX_PATH_SIZE];
+    _splitpath_s(
+        relativePath.c_str(),
+        nullptr, 0,
+        nullptr, 0,
+        fileName, MAX_PATH_SIZE,
+        nullptr, 0);
+    return std::string(fileName);
+
+}
 void SYS_CopyDirectory(const char* sourceDir, const char* destDir)
 {
     std::string cmd = std::string("cp -r \"") + sourceDir + "\" \"" + destDir + "\"";

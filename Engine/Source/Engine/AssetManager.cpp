@@ -725,6 +725,24 @@ Asset* AssetManager::GetAsset(const std::string& name)
     return asset;
 }
 
+// Pseudocode plan:
+// 1. The error is caused by assigning the result of mAssetMap.find(name) (an iterator) directly to an Asset*.
+// 2. Instead, check if the iterator is not mAssetMap.end(), then get the AssetStub* from iterator->second, then get the Asset* from stub->mAsset.
+// 3. Return nullptr if not found.
+
+AssetStub* AssetManager::GetSceneAsset(const std::string& name)
+{
+	AssetStub* it = mAssetMap[name];
+	if (it != nullptr && it->mType == Scene::GetStaticType())
+    {
+        return it;
+	}
+    
+    return nullptr;
+}
+
+
+
 Asset* AssetManager::LoadAsset(const std::string& name)
 {
     Asset* retAsset = nullptr;
@@ -1018,48 +1036,6 @@ bool AssetManager::RenameDirectory(AssetDir* dir, const std::string& newName)
     return success;
 }
 
-void AssetManager::GatherScriptFilesRecursive(const std::string& dirPath, const std::string& relativePath, std::vector<std::string>& scriptFiles)
-{
-    DirEntry dirEntry;
-    std::vector<std::string> subDirectories;
-
-    SYS_OpenDirectory(dirPath, dirEntry);
-
-    while (dirEntry.mValid)
-    {
-        if (dirEntry.mDirectory)
-        {
-            // Ignore this directory and parent directory
-            if (dirEntry.mFilename[0] != '.')
-            {
-                subDirectories.push_back(dirEntry.mFilename);
-            }
-        }
-        else
-        {
-            // Check for script files
-            if (EndsWith(dirEntry.mFilename, ".lua"))
-            {
-                // Build the relative path
-                std::string scriptPath = relativePath.empty() ? dirEntry.mFilename : relativePath + "/" + dirEntry.mFilename;
-                scriptFiles.push_back(scriptPath);
-            }
-        }
-
-        SYS_IterateDirectory(dirEntry);
-    }
-
-    SYS_CloseDirectory(dirEntry);
-
-    // Recursively search subdirectories
-    for (uint32_t i = 0; i < subDirectories.size(); ++i)
-    {
-        std::string subDirPath = dirPath + subDirectories[i] + "\\";
-        std::string subRelativePath = relativePath.empty() ? subDirectories[i] : relativePath + "/" + subDirectories[i];
-        GatherScriptFilesRecursive(subDirPath, subRelativePath, scriptFiles);
-    }
-}
-
 
 void AssetManager::GatherScriptFiles(const std::string& dir, std::vector<std::string>& outFiles)
 {
@@ -1108,6 +1084,60 @@ void AssetManager::GatherScriptFiles(const std::string& dir, std::vector<std::st
         };
 
     searchDirectory(dir);
+}
+
+AssetStub* AssetManager::FindDefaultScene() {
+    AssetStub* defaultScene = nullptr;
+
+	std::string defaultScenePath = FindDefaultScenePath();
+    if (defaultScenePath != "") {
+		// Get the file name from the path
+		std::string sceneName = SYS_GetFileName(defaultScenePath);
+        defaultScene = GetAssetStub(sceneName);
+
+	}
+    return defaultScene;
+}
+std::string AssetManager::FindDefaultScenePath() {
+    std::string defaultScenePath = "";
+    AssetDir* projectDir = FindProjectDirectory();
+
+    if (projectDir != nullptr) {
+        AssetDir* scenesDir = nullptr;
+        for (uint32_t i = 0; i < projectDir->mChildDirs.size(); ++i) {
+            if (projectDir->mChildDirs[i]->mName == "Scenes") {
+                scenesDir = projectDir->mChildDirs[i];
+                break;
+            }
+        }
+
+        if (scenesDir != nullptr) {
+            // Lambda function to recursively search for default scene in subdirectories
+            std::function<std::string(AssetDir*)> searchSceneDir = [&](AssetDir* dir) -> std::string {
+                // Check assets in current directory for SC_Default or SC_Main
+                for (uint32_t i = 0; i < dir->mAssetStubs.size(); ++i) {
+                    AssetStub* stub = dir->mAssetStubs[i];
+                    if (stub->mName == "SC_Default" || stub->mName == "SC_Main") {
+                        return stub->mPath;
+                    }
+                }
+
+                // Recursively search subdirectories
+                for (uint32_t i = 0; i < dir->mChildDirs.size(); ++i) {
+                    std::string found = searchSceneDir(dir->mChildDirs[i]);
+                    if (found != "") {
+                        return found;
+                    }
+                }
+
+                return "";
+                };
+
+            defaultScenePath = searchSceneDir(scenesDir);
+        }
+    }
+
+    return defaultScenePath;
 }
 
 

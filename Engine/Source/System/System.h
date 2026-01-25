@@ -33,6 +33,7 @@ bool SYS_Rename(const char* oldPath, const char* newPath);
 std::vector<std::string> SYS_OpenFileDialog();
 std::string SYS_SaveFileDialog();
 std::string SYS_SelectFolderDialog();
+std::string SYS_GetFileName(const std::string& path);
 
 // Threading
 ThreadObject* SYS_CreateThread(ThreadFuncFP func, void* arg);

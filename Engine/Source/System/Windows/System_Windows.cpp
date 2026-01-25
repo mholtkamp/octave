@@ -432,6 +432,20 @@ std::string SYS_GetAbsolutePath(const std::string& relativePath)
     return absPath;
 }
 
+
+std::string SYS_GetFileName(const std::string& path)
+{
+    char fileName[MAX_PATH_SIZE];
+    _splitpath_s(
+        path.c_str(),
+        nullptr, 0,
+        nullptr, 0,
+        fileName, MAX_PATH_SIZE,
+		nullptr, 0);
+	return std::string(fileName);
+    
+}
+
 void SYS_SetWorkingDirectory(const std::string& dirPath)
 {
     _chdir(dirPath.c_str());
