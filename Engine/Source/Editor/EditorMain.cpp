@@ -24,6 +24,7 @@
 
 #include "ActionManager.h"
 #include "InputManager.h"
+#include "Preferences/PreferencesManager.h"
 #include "Grid.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/Font.h"
@@ -51,6 +52,7 @@ void EditorMain(int32_t argc, char** argv)
 
     ActionManager::Create();
     InputManager::Create();
+    PreferencesManager::Create();
 
     InitializeGrid();
 
@@ -116,6 +118,7 @@ void EditorMain(int32_t argc, char** argv)
         }
     }
     
+    PreferencesManager::Destroy();
     GetEditorState()->Shutdown();
     Shutdown();
 }

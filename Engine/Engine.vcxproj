@@ -349,7 +349,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -501,7 +501,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
@@ -636,6 +636,15 @@
     <ClCompile Include="Source\Editor\PaintManager.cpp" />
     <ClCompile Include="Source\Editor\Viewport2d.cpp" />
     <ClCompile Include="Source\Editor\Viewport3d.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\JsonSettings.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\PreferencesManager.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\PreferencesModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\PreferencesWindow.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\General\GeneralModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Appearance\AppearanceModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\EditorTheme.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\ThemeModule.cpp" />
     <ClCompile Include="Source\Engine\Asset.cpp" />
     <ClCompile Include="Source\Engine\AssetDir.cpp" />
     <ClCompile Include="Source\Engine\AssetManager.cpp" />
@@ -873,6 +882,15 @@
     <ClInclude Include="Source\Editor\PaintManager.h" />
     <ClInclude Include="Source\Editor\Viewport2d.h" />
     <ClInclude Include="Source\Editor\Viewport3d.h" />
+    <ClInclude Include="Source\Editor\Preferences\JsonSettings.h" />
+    <ClInclude Include="Source\Editor\Preferences\PreferencesManager.h" />
+    <ClInclude Include="Source\Editor\Preferences\PreferencesModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\PreferencesWindow.h" />
+    <ClInclude Include="Source\Editor\Preferences\General\GeneralModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\Appearance\AppearanceModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\EditorTheme.h" />
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\ThemeModule.h" />
     <ClInclude Include="Source\Engine\Assertion.h" />
     <ClInclude Include="Source\Engine\Asset.h" />
     <ClInclude Include="Source\Engine\AssetDir.h" />

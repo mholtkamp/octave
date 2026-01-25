@@ -1086,6 +1086,56 @@ void AssetManager::GatherScriptFiles(const std::string& dir, std::vector<std::st
     searchDirectory(dir);
 }
 
+
+void AssetManager::GatherFontFiles(const std::string& dir, std::vector<std::string>& outFiles)
+{
+    // Recursively iterate through the Script directory and find .lua files.
+    std::function<void(std::string)> searchDirectory = [&](std::string dirPath)
+        {
+            std::vector<std::string> subDirectories;
+            DirEntry dirEntry = { };
+
+            SYS_OpenDirectory(dirPath, dirEntry);
+
+            while (dirEntry.mValid)
+            {
+                if (dirEntry.mDirectory)
+                {
+                    // Ignore this directory and parent directory.
+                    if (dirEntry.mFilename[0] != '.')
+                    {
+                        subDirectories.push_back(dirEntry.mFilename);
+                    }
+                }
+                else
+                {
+                    const char* extension = strrchr(dirEntry.mFilename, '.');
+
+                    if (strcmp(dirEntry.mFilename, "LuaPanda.lua") != 0 &&
+                        extension != nullptr &&
+                        strcmp(extension, ".ttf") == 0)
+                    {
+                        std::string path = dirPath + dirEntry.mFilename;
+                        outFiles.push_back(path);
+                    }
+                }
+
+                SYS_IterateDirectory(dirEntry);
+            }
+
+            SYS_CloseDirectory(dirEntry);
+
+            // Discover files of subdirectories.
+            for (uint32_t i = 0; i < subDirectories.size(); ++i)
+            {
+                std::string subDirPath = dirPath + subDirectories[i] + "/";
+                searchDirectory(subDirPath);
+            }
+        };
+
+    searchDirectory(dir);
+}
+
 AssetStub* AssetManager::FindDefaultScene() {
     AssetStub* defaultScene = nullptr;
 
@@ -1141,6 +1191,27 @@ std::string AssetManager::FindDefaultScenePath() {
 }
 
 
+std::vector<std::string> AssetManager::GetAvailableFontFiles()
+{
+    std::vector<std::string> scriptFiles;
+
+    GatherFontFiles("Engine/Assets/Fonts/", scriptFiles);
+
+    // Remove "Engine/Scripts/" from the front of each path
+    const std::string prefix = "Engine/Assets/Fonts/";
+    for (uint32_t i = 0; i < scriptFiles.size(); ++i)
+    {
+        if (scriptFiles[i].substr(0, prefix.length()) == prefix)
+        {
+            scriptFiles[i] = scriptFiles[i].substr(prefix.length());
+        }
+    }
+
+    return scriptFiles;
+}
+
+
+
 std::vector<std::string> AssetManager::GetAvailableScriptFiles()
 {
     std::vector<std::string> scriptFiles;
@@ -1159,6 +1230,9 @@ std::vector<std::string> AssetManager::GetAvailableScriptFiles()
 
     return scriptFiles;
 }
+
+
+
 AssetDir* AssetManager::FindProjectDirectory()
 {
     AssetDir* retDir = nullptr;

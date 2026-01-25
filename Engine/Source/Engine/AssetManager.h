@@ -106,11 +106,13 @@ public:
     bool RenameDirectory(AssetDir* dir, const std::string& newName);
     void GatherScriptFilesRecursive(const std::string& dirPath, const std::string& relativePath, std::vector<std::string>& scriptFiles);
     std::vector<std::string> GetAvailableScriptFiles();
+    std::vector<std::string> GetAvailableFontFiles();
     AssetDir* FindProjectDirectory();
     AssetDir* FindProjectRootDirectory();
     AssetDir* FindEngineDirectory();
     AssetDir* GetRootDirectory();
     void GatherScriptFiles(const std::string& dir, std::vector<std::string>& outFiles);
+    void GatherFontFiles(const std::string& dir, std::vector<std::string>& outFiles);
     AssetStub* FindDefaultScene();
     std::string FindDefaultScenePath();
     void UnloadProjectDirectory();

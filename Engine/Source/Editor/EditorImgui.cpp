@@ -35,6 +35,7 @@
 #include "Viewport2d.h"
 #include "ActionManager.h"
 #include "EditorState.h"
+#include "Preferences/PreferencesWindow.h"
 
 #include <functional>
 #include <algorithm>
@@ -4058,6 +4059,13 @@ static void DrawViewportPanel()
             ImGui::EndMenu();
         }
 
+        ImGui::Separator();
+
+        if (ImGui::Selectable("Preferences..."))
+        {
+            GetPreferencesWindow()->Open();
+        }
+
         ImGui::EndPopup();
     }
 
@@ -4907,6 +4915,8 @@ void EditorImguiDraw()
         DrawFileBrowser();
 
         DrawUnsavedCheck();
+
+        GetPreferencesWindow()->Draw();
     }
 
     ImGui::Render();
