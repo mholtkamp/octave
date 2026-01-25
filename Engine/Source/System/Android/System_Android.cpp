@@ -755,14 +755,16 @@ uint64_t SYS_GetTimeMicroseconds()
 
 std::string SYS_GetFileName(const std::string& relativePath)
 {
-    char fileName[MAX_PATH_SIZE];
-    _splitpath_s(
-        relativePath.c_str(),
-        nullptr, 0,
-        nullptr, 0,
-        fileName, MAX_PATH_SIZE,
-        nullptr, 0);
-    return std::string(fileName);
+ size_t slash = relativePath.find_last_of("/\\");
+    size_t start = (slash == std::string::npos) ? 0 : slash + 1;
+
+    // Strip extension (last '.' after the last slash)
+    size_t dot = relativePath.find_last_of('.');
+    if (dot == std::string::npos || dot < start) {
+        dot = relativePath.size(); // no extension
+    }
+
+    return relativePath.substr(start, dot - start);
 
 }
 void SYS_CopyDirectory(const char* sourceDir, const char* destDir)
