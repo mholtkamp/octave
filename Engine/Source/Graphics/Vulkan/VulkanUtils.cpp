@@ -57,7 +57,7 @@ VkFormat ConvertPixelFormat(PixelFormat pixelFormat, bool srgb)
     case PixelFormat::RGBA16F: format = VK_FORMAT_R16G16B16A16_SFLOAT; break;
 
     case PixelFormat::Depth24Stencil8: format = VK_FORMAT_D24_UNORM_S8_UINT; break;
-	case PixelFormat::Depth32FStencil8: format = VK_FORMAT_D32_SFLOAT_S8_UINT; break;
+    case PixelFormat::Depth32FStencil8: format = VK_FORMAT_D32_SFLOAT_S8_UINT; break;
     case PixelFormat::Depth16: format = VK_FORMAT_D16_UNORM; break;
     case PixelFormat::Depth32F: format = VK_FORMAT_D32_SFLOAT; break;
 
@@ -163,7 +163,7 @@ void TransitionImageLayout(
         barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
     }
     else if (format == VK_FORMAT_D24_UNORM_S8_UINT ||
-		format == VK_FORMAT_D32_SFLOAT_S8_UINT)
+        format == VK_FORMAT_D32_SFLOAT_S8_UINT)
     {
         barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
     }
@@ -426,7 +426,7 @@ uint32_t GetFormatPixelSize(VkFormat format)
 
     // Depth
     case VK_FORMAT_D24_UNORM_S8_UINT: size = 4; break;
-	case VK_FORMAT_D32_SFLOAT_S8_UINT: OCT_ASSERT(0); break; // Not sure how to handle this?
+    case VK_FORMAT_D32_SFLOAT_S8_UINT: OCT_ASSERT(0); break; // Not sure how to handle this?
     case VK_FORMAT_D16_UNORM: size = 2; break;
     case VK_FORMAT_D32_SFLOAT: size = 4; break;
 
@@ -482,7 +482,7 @@ VkImageAspectFlags GetFormatImageAspect(VkFormat format)
     switch (format)
     {
     case VK_FORMAT_D24_UNORM_S8_UINT:
-	case VK_FORMAT_D32_SFLOAT_S8_UINT:
+    case VK_FORMAT_D32_SFLOAT_S8_UINT:
         flags |= VK_IMAGE_ASPECT_STENCIL_BIT;
         // Intentional fallthrough
     case VK_FORMAT_D16_UNORM:
@@ -809,29 +809,29 @@ void SetDebugObjectName(VkObjectType objectType, uint64_t object, const char* na
 void BeginDebugLabel(const char* name, glm::vec4 color)
 {
 #if _DEBUG
-	if (GetVulkanContext()->IsValidationEnabled())
-	{
-		VkDebugUtilsLabelEXT label;
-		label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-		label.pNext = nullptr;
-		label.pLabelName = name;
-		label.color[0] = color.r;
-		label.color[1] = color.g;
-		label.color[2] = color.b;
-		label.color[3] = color.a;
+    if (GetVulkanContext()->IsValidationEnabled())
+    {
+        VkDebugUtilsLabelEXT label;
+        label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+        label.pNext = nullptr;
+        label.pLabelName = name;
+        label.color[0] = color.r;
+        label.color[1] = color.g;
+        label.color[2] = color.b;
+        label.color[3] = color.a;
 
-		CmdBeginDebugUtilsLabelEXT(GetCommandBuffer(), &label);
-	}
+        CmdBeginDebugUtilsLabelEXT(GetCommandBuffer(), &label);
+    }
 #endif
 }
 
 void EndDebugLabel()
 {
 #if _DEBUG
-	if (GetVulkanContext()->IsValidationEnabled())
-	{
-		CmdEndDebugUtilsLabelEXT(GetCommandBuffer());
-	}
+    if (GetVulkanContext()->IsValidationEnabled())
+    {
+        CmdEndDebugUtilsLabelEXT(GetCommandBuffer());
+    }
 #endif
 }
 
@@ -1225,8 +1225,8 @@ void BindForwardVertexType(VertexType vertType, Material* material, bool instanc
 void CreateMaterialResource(Material* material)
 {
     MaterialResource* resource = material->GetResource();
-	
-	if (!material->IsLite())
+    
+    if (!material->IsLite())
     {
         MaterialBase* base = material->IsBase() ? (MaterialBase*)material : nullptr;
 
