@@ -738,7 +738,14 @@ NodeId Node::GetNodeId() const
 
 void Node::EmitSignal(const std::string& name, const std::vector<Datum>& args)
 {
-    mSignalMap[name].Emit(args);
+    if (mSignalMap.size() > 0)
+    {
+        auto it = mSignalMap.find(name);
+        if (it != mSignalMap.end())
+        {
+            it->second.Emit(args);
+        }
+    }
 }
 
 void Node::ConnectSignal(const std::string& name, Node* listener, SignalHandlerFP func)
