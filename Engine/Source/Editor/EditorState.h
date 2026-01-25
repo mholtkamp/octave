@@ -9,7 +9,7 @@
 #include "Property.h"
 #include "Nodes/Widgets/Text.h"
 #include "imgui.h"
-#include "ImGuizmo/ImGuizmo.h"
+#include "./ImGuizmo/ImGuizmo.h"
 
 class Node;
 class Scene;

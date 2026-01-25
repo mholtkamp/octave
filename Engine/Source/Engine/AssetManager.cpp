@@ -1090,6 +1090,7 @@ AssetStub* AssetManager::FindDefaultScene() {
     AssetStub* defaultScene = nullptr;
 
 	std::string defaultScenePath = FindDefaultScenePath();
+
     if (defaultScenePath != "") {
 		// Get the file name from the path
 		std::string sceneName = SYS_GetFileName(defaultScenePath);
@@ -1102,42 +1103,69 @@ std::string AssetManager::FindDefaultScenePath() {
     std::string defaultScenePath = "";
     AssetDir* projectDir = FindProjectDirectory();
 
-    if (projectDir != nullptr) {
-        AssetDir* scenesDir = nullptr;
-        for (uint32_t i = 0; i < projectDir->mChildDirs.size(); ++i) {
-            if (projectDir->mChildDirs[i]->mName == "Scenes") {
-                scenesDir = projectDir->mChildDirs[i];
-                break;
+    if (projectDir == nullptr)
+    {
+        return defaultScenePath;
+    }
+
+    auto getStubName = [](AssetStub* stub) -> std::string
+    {
+        if (stub == nullptr)
+        {
+            return "";
+        }
+
+#if EDITOR
+        if (!stub->mName.empty())
+        {
+            return stub->mName;
+        }
+#endif
+
+        if (!stub->mPath.empty())
+        {
+            return Asset::GetNameFromPath(stub->mPath);
+        }
+
+        if (stub->mAsset != nullptr)
+        {
+            return stub->mAsset->GetName();
+        }
+
+        return "";
+    };
+
+    std::function<std::string(AssetDir*)> searchDir = [&](AssetDir* dir) -> std::string
+    {
+        if (dir == nullptr)
+        {
+            return std::string();
+        }
+
+        for (uint32_t i = 0; i < dir->mAssetStubs.size(); ++i)
+        {
+            AssetStub* stub = dir->mAssetStubs[i];
+            const std::string stubName = getStubName(stub);
+
+            if (stubName == "SC_Default" || stubName == "SC_Main")
+            {
+                return stub->mPath;
             }
         }
 
-        if (scenesDir != nullptr) {
-            // Lambda function to recursively search for default scene in subdirectories
-            std::function<std::string(AssetDir*)> searchSceneDir = [&](AssetDir* dir) -> std::string {
-                // Check assets in current directory for SC_Default or SC_Main
-                for (uint32_t i = 0; i < dir->mAssetStubs.size(); ++i) {
-                    AssetStub* stub = dir->mAssetStubs[i];
-                    if (stub->mName == "SC_Default" || stub->mName == "SC_Main") {
-                        return stub->mPath;
-                    }
-                }
-
-                // Recursively search subdirectories
-                for (uint32_t i = 0; i < dir->mChildDirs.size(); ++i) {
-                    std::string found = searchSceneDir(dir->mChildDirs[i]);
-                    if (found != "") {
-                        return found;
-                    }
-                }
-
-                return "";
-                };
-
-            defaultScenePath = searchSceneDir(scenesDir);
+        for (uint32_t i = 0; i < dir->mChildDirs.size(); ++i)
+        {
+            std::string found = searchDir(dir->mChildDirs[i]);
+            if (!found.empty())
+            {
+                return found;
+            }
         }
-    }
 
-    return defaultScenePath;
+        return std::string();
+    };
+
+    return searchDir(projectDir);
 }
 
 

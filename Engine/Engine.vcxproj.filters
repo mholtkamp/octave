@@ -608,7 +608,7 @@
     <ClCompile Include="..\External\Imgui\misc\cpp\imgui_stdlib.cpp">
       <Filter>Source Files\Editor\Imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\External\ImGuizmo\ImGuizmo.cpp">
+    <ClCompile Include="Source\Editor\ImGuizmo\ImGuizmo.cpp">
       <Filter>Source Files\Editor\ImGuizmo</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\CustomImgui.cpp">
@@ -834,7 +834,7 @@
     <ClInclude Include="Source\Editor\EditorState.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\External\ImGuizmo\ImGuizmo.h">
+    <ClInclude Include="Source\Editor\ImGuizmo\ImGuizmo.h">
       <Filter>Source Files\Editor\ImGuizmo</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\EditorTypes.h">
