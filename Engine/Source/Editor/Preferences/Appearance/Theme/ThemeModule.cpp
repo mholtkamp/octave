@@ -9,8 +9,37 @@
 #include "System/System.h"
 #include "Log.h"
 #include <AssetManager.h>
+#include <Engine.h>
 
 DEFINE_PREFERENCES_MODULE(ThemeModule, "Theme", "Appearance")
+
+std::string ThemeModule::GetSettingsFilePathStatic()
+{
+    return JsonSettings::GetPreferencesDirectory() + "/Appearance_Theme.json";
+}
+
+std::string ThemeModule::LoadSavedFontPreference()
+{
+    rapidjson::Document doc;
+    std::string settingsPath = GetSettingsFilePathStatic();
+
+    if (JsonSettings::LoadFromFile(settingsPath, doc))
+    {
+        std::string savedFont = JsonSettings::GetString(doc, "font", "Default");
+        if (!savedFont.empty())
+        {
+            return savedFont;
+        }
+    }
+
+    const std::string& configFont = GetEngineConfig()->mCurrentFont;
+    if (!configFont.empty())
+    {
+        return configFont;
+    }
+
+    return "Default";
+}
 
 ThemeModule::ThemeModule()
 {
@@ -24,8 +53,13 @@ ThemeModule::~ThemeModule()
 void ThemeModule::RefreshAvailableFonts()
 {
     mAvailableFonts.clear();
-    mAvailableFonts = AssetManager::Get()->GetAvailableFontFiles();
     mAvailableFonts.push_back("Default");
+
+    auto FoundAvailableFonts = AssetManager::Get()->GetAvailableFontFiles();
+    for (const auto& fontFile : FoundAvailableFonts)
+    {
+        mAvailableFonts.push_back(fontFile);
+    }
 
 
     // Scan for .ttf files in Engine/Assets/Fonts
@@ -126,7 +160,14 @@ void ThemeModule::LoadSettings(const rapidjson::Document& doc)
     mCurrentTheme = EditorTheme::GetThemeTypeFromName(themeName);
     mSelectedThemeIndex = static_cast<int>(mCurrentTheme);
 
-    mCurrentFont = JsonSettings::GetString(doc, "font", "Default");
+    std::string fallbackFont = GetEngineConfig()->mCurrentFont.empty() ? "Default" : GetEngineConfig()->mCurrentFont;
+    mCurrentFont = JsonSettings::GetString(doc, "font", fallbackFont);
+    if (mCurrentFont.empty())
+    {
+        mCurrentFont = "Default";
+    }
+
+    GetMutableEngineConfig()->mCurrentFont = mCurrentFont;
 
     // Refresh fonts and find the index
     RefreshAvailableFonts();
@@ -139,7 +180,13 @@ void ThemeModule::SaveSettings(rapidjson::Document& doc)
 {
     JsonSettings::SetString(doc, "theme", EditorTheme::GetThemeName(mCurrentTheme));
     JsonSettings::SetString(doc, "font", mCurrentFont);
-    LoadFont();
+
+    GetMutableEngineConfig()->mCurrentFont = mCurrentFont;
+
+    if (GetEngineState()->mProjectDirectory != "")
+    {
+        WriteEngineConfig();
+    }
 }
 
 #endif

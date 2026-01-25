@@ -36,6 +36,7 @@
 #include "ActionManager.h"
 #include "EditorState.h"
 #include "Preferences/PreferencesWindow.h"
+#include "Preferences/Appearance/Theme/ThemeModule.h"
 
 #include <functional>
 #include <algorithm>
@@ -4059,8 +4060,8 @@ static void DrawViewportPanel()
             ImGui::EndMenu();
         }
 
+        // TODO: Uncomment to show Preferences
         ImGui::Separator();
-
         if (ImGui::Selectable("Preferences..."))
         {
             GetPreferencesWindow()->Open();
@@ -4821,6 +4822,52 @@ static void DrawImGuizmo2D()
     wasUsing2D = isUsing;
 }
 
+static std::string GetDefaultEditorFontPath()
+{
+    return SYS_GetAbsolutePath("Engine/Assets/Fonts/F_InterRegular18.ttf");
+}
+
+static std::string ResolveEditorFontName()
+{
+    const EngineConfig* config = GetEngineConfig();
+    if (config != nullptr && !config->mCurrentFont.empty())
+    {
+        return config->mCurrentFont;
+    }
+
+    std::string savedFont = ThemeModule::LoadSavedFontPreference();
+    if (savedFont.empty())
+    {
+        savedFont = "Default";
+    }
+
+    GetMutableEngineConfig()->mCurrentFont = savedFont;
+    return savedFont;
+}
+
+static std::string ResolveEditorFontPath()
+{
+    const std::string defaultPath = GetDefaultEditorFontPath();
+    const std::string desiredFontName = ResolveEditorFontName();
+
+    if (desiredFontName.empty() || desiredFontName == "Default")
+    {
+        return defaultPath;
+    }
+
+    const std::string relativePath = "Engine/Assets/Fonts/" + desiredFontName;
+    const std::string absolutePath = SYS_GetAbsolutePath(relativePath.c_str());
+
+    if (!SYS_DoesFileExist(absolutePath.c_str(), false))
+    {
+        LogWarning("Editor font '%s' not found at %s. Falling back to default font.", desiredFontName.c_str(), absolutePath.c_str());
+        GetMutableEngineConfig()->mCurrentFont = "Default";
+        return defaultPath;
+    }
+
+    return absolutePath;
+}
+
 void EditorImguiInit()
 {
     IMGUI_CHECKVERSION();
@@ -4836,8 +4883,17 @@ void EditorImguiInit()
 
     // TODO: Unlock theming when you and the world is ready.
         // SetupImGuiStyle();
-        // std::string fontPath = SYS_GetAbsolutePath("Engine/Assets/Fonts/F_InterRegular18.ttf");
-        // ImFont* myFont = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 15.0f);
+        std::string fontPath = ResolveEditorFontPath();
+        ImFont* myFont = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 15.0f);
+        if (myFont == nullptr)
+        {
+            const std::string defaultFontPath = GetDefaultEditorFontPath();
+            myFont = io.Fonts->AddFontFromFileTTF(defaultFontPath.c_str(), 15.0f);
+            if (myFont == nullptr)
+            {
+                LogError("Failed to load editor font from %s", defaultFontPath.c_str());
+            }
+        }
 
 
     //ImGui::StyleColorsLight();

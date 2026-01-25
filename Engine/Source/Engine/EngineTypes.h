@@ -1,5 +1,5 @@
 #pragma once
-
+// Add this field to the EngineConfig struct/class definition
 #include <string>
 #include <string.h>
 #include <unordered_set>
@@ -267,7 +267,9 @@ struct EngineConfig
     bool mLqEnableMipMaps = true;
 
     std::string mProjectPath;
+    std::string mCurrentFont;
     std::string mWorkingDirectory;
+    std::string mEditorFont = "Default";
 
     struct EmbeddedFile* mEmbeddedAssets = nullptr;
     uint32_t mEmbeddedAssetCount = 0;

@@ -23,17 +23,20 @@ public:
     // Settings accessors
     EditorThemeType GetCurrentTheme() const { return mCurrentTheme; }
     const std::string& GetCurrentFont() const { return mCurrentFont; }
+    static std::string LoadSavedFontPreference();
+
+    std::string mCurrentFont = "Default";
 
 private:
     EditorThemeType mCurrentTheme = EditorThemeType::Dark;
     int mSelectedThemeIndex = 0;
 
-    std::string mCurrentFont = "Default";
     int mSelectedFontIndex = 0;
     std::vector<std::string> mAvailableFonts;
 
     void RefreshAvailableFonts();
     void LoadFont();
+    static std::string GetSettingsFilePathStatic();
 };
 
 #endif
