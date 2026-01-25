@@ -84,8 +84,8 @@ void AUD_Initialize()
     LogDebug("Significant bits for linear samples = %d",snd_pcm_hw_params_get_sbits(hw_params));
 
     snd_pcm_uframes_t periodFrames = 0;
-	snd_pcm_hw_params_get_period_size(hw_params, &periodFrames, 0);
-	LogDebug("Period Frames: %lu\n", periodFrames);
+    snd_pcm_hw_params_get_period_size(hw_params, &periodFrames, 0);
+    LogDebug("Period Frames: %lu\n", periodFrames);
 
     snd_pcm_hw_params_free(hw_params);
     err = snd_pcm_prepare(sSoundDevice);

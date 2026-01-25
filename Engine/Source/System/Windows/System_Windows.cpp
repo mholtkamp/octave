@@ -441,8 +441,8 @@ std::string SYS_GetFileName(const std::string& path)
         nullptr, 0,
         nullptr, 0,
         fileName, MAX_PATH_SIZE,
-		nullptr, 0);
-	return std::string(fileName);
+        nullptr, 0);
+    return std::string(fileName);
     
 }
 

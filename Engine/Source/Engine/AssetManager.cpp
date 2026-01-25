@@ -41,7 +41,7 @@ Asset* FetchAsset(const std::string& name)
 
 Asset* LoadAsset(const std::string& name)
 {
-	return AssetManager::Get()->LoadAsset(name);
+    return AssetManager::Get()->LoadAsset(name);
 }
 
 void UnloadAsset(const std::string& name)
@@ -732,11 +732,11 @@ Asset* AssetManager::GetAsset(const std::string& name)
 
 AssetStub* AssetManager::GetSceneAsset(const std::string& name)
 {
-	AssetStub* it = mAssetMap[name];
-	if (it != nullptr && it->mType == Scene::GetStaticType())
+    AssetStub* it = mAssetMap[name];
+    if (it != nullptr && it->mType == Scene::GetStaticType())
     {
         return it;
-	}
+    }
     
     return nullptr;
 }
@@ -937,7 +937,7 @@ bool AssetManager::UnloadAsset(AssetStub& stub)
 
 bool AssetManager::DoesAssetExist(const std::string& name)
 {
-	return mAssetMap.find(name) != mAssetMap.end();
+    return mAssetMap.find(name) != mAssetMap.end();
 }
 
 bool AssetManager::RenameAsset(Asset* asset, const std::string& newName)
@@ -1089,14 +1089,14 @@ void AssetManager::GatherScriptFiles(const std::string& dir, std::vector<std::st
 AssetStub* AssetManager::FindDefaultScene() {
     AssetStub* defaultScene = nullptr;
 
-	std::string defaultScenePath = FindDefaultScenePath();
+    std::string defaultScenePath = FindDefaultScenePath();
 
     if (defaultScenePath != "") {
-		// Get the file name from the path
-		std::string sceneName = SYS_GetFileName(defaultScenePath);
+        // Get the file name from the path
+        std::string sceneName = SYS_GetFileName(defaultScenePath);
         defaultScene = GetAssetStub(sceneName);
 
-	}
+    }
     return defaultScene;
 }
 std::string AssetManager::FindDefaultScenePath() {
