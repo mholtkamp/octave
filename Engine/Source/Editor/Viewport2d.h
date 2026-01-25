@@ -48,6 +48,9 @@ public:
 
     void ResetViewport();
 
+    float GetZoom() const { return mZoom; }
+    glm::vec2 GetRootOffset() const { return mRootOffset; }
+
 protected:
 
     void HandleDefaultControls();

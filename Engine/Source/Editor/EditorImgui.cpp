@@ -17,6 +17,10 @@
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/InstancedMesh3d.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
+#include "Nodes/3D/Camera3d.h"
+#include "World.h"
+
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Assets/Scene.h"
 #include "Assets/SoundWave.h"
@@ -41,6 +45,7 @@
 #include "Graphics/Vulkan/VulkanUtils.h"
 
 #include "CustomImgui.h"
+#include "./ImGuizmo/ImGuizmo.h"
 
 #if PLATFORM_WINDOWS
 #include "backends/imgui_impl_win32.cpp"
@@ -57,7 +62,7 @@ struct FileBrowserDirEntry
 };
 
 static const float kSidePaneWidth = 200.0f;
-static const float kViewportBarHeight = 32.0f;
+static const float kViewportBarHeight = 40.0f;
 static const ImGuiWindowFlags kPaneWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove;
 
 static const ImVec4 kSelectedColor = ImVec4(0.12f, 0.50f, 0.47f, 1.00f);
@@ -770,6 +775,97 @@ static void CreateNewAsset(TypeId assetType, const char* assetName)
     }
 }
 
+ static void SetupImGuiStyle()
+{
+	// Future Dark style by rewrking from ImThemes
+	ImGuiStyle& style = ImGui::GetStyle();
+	
+	style.Alpha = 1.0f;
+	style.DisabledAlpha = 1.0f;
+	style.WindowPadding = ImVec2(12.0f, 12.0f);
+	style.WindowRounding = 0.0f;
+	style.WindowBorderSize = 0.0f;
+	style.WindowMinSize = ImVec2(20.0f, 20.0f);
+	style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
+	style.WindowMenuButtonPosition = ImGuiDir_None;
+	style.ChildRounding = 0.0f;
+	style.ChildBorderSize = 1.0f;
+	style.PopupRounding = 0.0f;
+	style.PopupBorderSize = 1.0f;
+	style.FramePadding = ImVec2(6.0f, 6.0f);
+	style.FrameRounding = 0.0f;
+	style.FrameBorderSize = 0.0f;
+	style.ItemSpacing = ImVec2(12.0f, 6.0f);
+	style.ItemInnerSpacing = ImVec2(6.0f, 3.0f);
+	style.CellPadding = ImVec2(12.0f, 6.0f);
+	style.IndentSpacing = 20.0f;
+	style.ColumnsMinSpacing = 6.0f;
+	style.ScrollbarSize = 12.0f;
+	style.ScrollbarRounding = 0.0f;
+	style.GrabMinSize = 12.0f;
+	style.GrabRounding = 0.0f;
+	style.TabRounding = 0.0f;
+	style.TabBorderSize = 0.0f;
+	style.TabMinWidthForCloseButton = 0.0f;
+	style.ColorButtonPosition = ImGuiDir_Right;
+	style.ButtonTextAlign = ImVec2(0.5f, 0.5f);
+	style.SelectableTextAlign = ImVec2(0.0f, 0.0f);
+	
+	style.Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+	style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.27450982f, 0.31764707f, 0.4509804f, 1.0f);
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.078431375f, 0.08627451f, 0.101960786f, 1.0f);
+	style.Colors[ImGuiCol_ChildBg] = ImVec4(0.078431375f, 0.08627451f, 0.101960786f, 1.0f);
+	style.Colors[ImGuiCol_PopupBg] = ImVec4(0.078431375f, 0.08627451f, 0.101960786f, 1.0f);
+	style.Colors[ImGuiCol_Border] = ImVec4(0.15686275f, 0.16862746f, 0.19215687f, 1.0f);
+	style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.078431375f, 0.08627451f, 0.101960786f, 1.0f);
+	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.11764706f, 0.13333334f, 0.14901961f, 1.0f);
+	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.15686275f, 0.16862746f, 0.19215687f, 1.0f);
+	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.23529412f, 0.21568628f, 0.59607846f, 1.0f);
+	style.Colors[ImGuiCol_TitleBg] = ImVec4(0.047058824f, 0.05490196f, 0.07058824f, 1.0f);
+	style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.047058824f, 0.05490196f, 0.07058824f, 1.0f);
+	style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.078431375f, 0.08627451f, 0.101960786f, 1.0f);
+	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.09803922f, 0.105882354f, 0.12156863f, 1.0f);
+	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.047058824f, 0.05490196f, 0.07058824f, 1.0f);
+	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.11764706f, 0.13333334f, 0.14901961f, 1.0f);
+	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.15686275f, 0.16862746f, 0.19215687f, 1.0f);
+	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.11764706f, 0.13333334f, 0.14901961f, 1.0f);
+	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.49803922f, 0.5137255f, 1.0f, 1.0f);
+	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.49803922f, 0.5137255f, 1.0f, 1.0f);
+	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.5372549f, 0.5529412f, 1.0f, 1.0f);
+	style.Colors[ImGuiCol_Button] = ImVec4(0.11764706f, 0.13333334f, 0.14901961f, 1.0f);
+	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.19607843f, 0.1764706f, 0.54509807f, 1.0f);
+	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.23529412f, 0.21568628f, 0.59607846f, 1.0f);
+	style.Colors[ImGuiCol_Header] = ImVec4(0.11764706f, 0.13333334f, 0.14901961f, 1.0f);
+	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.19607843f, 0.1764706f, 0.54509807f, 1.0f);
+	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.23529412f, 0.21568628f, 0.59607846f, 1.0f);
+	style.Colors[ImGuiCol_Separator] = ImVec4(0.15686275f, 0.18431373f, 0.2509804f, 1.0f);
+	style.Colors[ImGuiCol_SeparatorHovered] = ImVec4(0.15686275f, 0.18431373f, 0.2509804f, 1.0f);
+	style.Colors[ImGuiCol_SeparatorActive] = ImVec4(0.15686275f, 0.18431373f, 0.2509804f, 1.0f);
+	style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.11764706f, 0.13333334f, 0.14901961f, 1.0f);
+	style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.19607843f, 0.1764706f, 0.54509807f, 1.0f);
+	style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.23529412f, 0.21568628f, 0.59607846f, 1.0f);
+	style.Colors[ImGuiCol_Tab] = ImVec4(0.047058824f, 0.05490196f, 0.07058824f, 1.0f);
+	style.Colors[ImGuiCol_TabHovered] = ImVec4(0.11764706f, 0.13333334f, 0.14901961f, 1.0f);
+	style.Colors[ImGuiCol_TabActive] = ImVec4(0.09803922f, 0.105882354f, 0.12156863f, 1.0f);
+	style.Colors[ImGuiCol_TabUnfocused] = ImVec4(0.047058824f, 0.05490196f, 0.07058824f, 1.0f);
+	style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.078431375f, 0.08627451f, 0.101960786f, 1.0f);
+	style.Colors[ImGuiCol_PlotLines] = ImVec4(0.52156866f, 0.6f, 0.7019608f, 1.0f);
+	style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.039215688f, 0.98039216f, 0.98039216f, 1.0f);
+	style.Colors[ImGuiCol_PlotHistogram] = ImVec4(1.0f, 0.2901961f, 0.59607846f, 1.0f);
+	style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.99607843f, 0.4745098f, 0.69803923f, 1.0f);
+	style.Colors[ImGuiCol_TableHeaderBg] = ImVec4(0.047058824f, 0.05490196f, 0.07058824f, 1.0f);
+	style.Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.047058824f, 0.05490196f, 0.07058824f, 1.0f);
+	style.Colors[ImGuiCol_TableBorderLight] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+	style.Colors[ImGuiCol_TableRowBg] = ImVec4(0.11764706f, 0.13333334f, 0.14901961f, 1.0f);
+	style.Colors[ImGuiCol_TableRowBgAlt] = ImVec4(0.09803922f, 0.105882354f, 0.12156863f, 1.0f);
+	style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.23529412f, 0.21568628f, 0.59607846f, 1.0f);
+	style.Colors[ImGuiCol_DragDropTarget] = ImVec4(0.49803922f, 0.5137255f, 1.0f, 1.0f);
+	style.Colors[ImGuiCol_NavHighlight] = ImVec4(0.49803922f, 0.5137255f, 1.0f, 1.0f);
+	style.Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(0.49803922f, 0.5137255f, 1.0f, 1.0f);
+	style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.19607843f, 0.1764706f, 0.54509807f, 0.5019608f);
+	style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.19607843f, 0.1764706f, 0.54509807f, 0.5019608f);
+}
+
 static void AssignAssetToProperty(Object* owner, PropertyOwnerType ownerType, Property& prop, uint32_t index, Asset* newAsset)
 {
     if (newAsset != nullptr &&
@@ -898,11 +994,15 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
     static bool dropdownActive = false;
     static std::string lastInputText = "";
     static std::vector<std::string> filteredItems;
-    
+    static bool selectionJustMade = false;
+
     // If forceActive is true, force the dropdown to show
-    if (forceActive) {
+    // But not if a selection was just made (prevents immediate reopen)
+    if (forceActive && !selectionJustMade) {
         dropdownActive = true;
     }
+    // Reset the flag after one frame
+    selectionJustMade = false;
     
     // Check if this is the active dropdown
     ImGuiID inputId = ImGui::GetItemID();
@@ -917,9 +1017,9 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
         dropdownActive = true; // Set to true to ensure dropdown shows
         selectedIndex = 0;
     }
-    // Only hide dropdown when input completely loses focus
-    // This prevents the dropdown from disappearing immediately when clicking on it
-    else if (!isInputActive && !isInputFocused && activeDropdownId == inputId)
+    // Only hide dropdown when input completely loses focus AND mouse is not over dropdown
+    // This prevents the dropdown from disappearing when clicking on it
+    else if (!isInputActive && !isInputFocused && activeDropdownId == inputId )
     {
         // Use a small delay to allow interaction with the dropdown itself
         static float hideTimer = 0.0f;
@@ -944,26 +1044,25 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
     
     // Only show dropdown when we have filtered items and the dropdown is active
     // Either the input should be active/focused OR we're in the process of selecting an item
-    if (!filteredItems.empty() && dropdownActive && (isInputActive || isInputFocused || activeDropdownId == inputId))
+    if (!filteredItems.empty() && dropdownActive && (isInputActive || isInputFocused || activeDropdownId == inputId ))
     {
         activeDropdownId = inputId; // Keep track of which dropdown is active
-        
+
         // Calculate popup position below the input field
         ImVec2 inputPos = ImGui::GetItemRectMin();
         ImVec2 inputSize = ImGui::GetItemRectSize();
         ImGui::SetNextWindowPos(ImVec2(inputPos.x, inputPos.y + inputSize.y));
-        
+
         // Set maximum height for 4 items plus a bit of padding
         const float itemHeight = ImGui::GetTextLineHeightWithSpacing();
         const float maxHeight = itemHeight * 4 + ImGui::GetStyle().WindowPadding.y * 2;
         ImGui::SetNextWindowSizeConstraints(ImVec2(inputSize.x, 0), ImVec2(inputSize.x, maxHeight));
-        
+
         // Make sure the dropdown appears above other elements
         ImGui::SetNextWindowBgAlpha(1.0f); // Fully opaque background
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f); // Add a border for better visibility
-        
+
         // Use flags to ensure the dropdown stays on top
-        // Disabling mouse control because there are some issues that I can't figure out.
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar |
             ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_NoMove |
@@ -975,6 +1074,9 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
         
         if (ImGui::Begin(dropdownId, nullptr, flags))
         {
+            // Track if mouse is hovering over this window
+            // mouseOverDropdown = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+
             // Get current key state
             bool upArrowPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow));
             bool downArrowPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow));
@@ -1021,7 +1123,7 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
             {
                 // Always hide dropdown when Enter is pressed
                 dropdownActive = false;
-                
+
                 if (hasSelection && selectedIndex < filteredItems.size())
                 {
                     inputText = filteredItems[selectedIndex];
@@ -1033,9 +1135,9 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
                     inputText = "null";
                     selectionMade = true;
                 }
-                
+
                 ImGui::CloseCurrentPopup();
-                
+
                 // Consume the event
                 ImGui::GetIO().KeysDown[ImGui::GetKeyIndex(ImGuiKey_Enter)] = false;
             }
@@ -1073,39 +1175,39 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
             for (size_t i = 0; i < filteredItems.size(); i++)
             {
                 bool isSelected = (hasSelection && i == selectedIndex);
-                
+
                 if (isSelected)
                     ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
-                
+
                 // Only make selection on click, don't autofill
                 bool clicked = ImGui::Selectable(filteredItems[i].c_str(), isSelected);
-                
+
+
                 if (isSelected)
                 {
                     ImGui::SetItemDefaultFocus(); // This also scrolls to make the item visible
                     ImGui::PopStyleColor();
                 }
-                
-                if (clicked)
-                {
-                    inputText = filteredItems[i];
-                    selectionMade = true;
-                    dropdownActive = false;
-                }
+
             }
         }
         ImGui::End();
         ImGui::PopStyleVar(); // Pop the window border style
     }
-    else if (filteredItems.empty() && isInputActive)
+    else
     {
-        // Only hide the dropdown if there are no filtered items AND the input is active
-        // This way we don't hide it when the user is trying to interact with it
-        dropdownActive = false;
+
+        if (filteredItems.empty() && isInputActive)
+        {
+            // Only hide the dropdown if there are no filtered items AND the input is active
+            // This way we don't hide it when the user is trying to interact with it
+            dropdownActive = false;
+        }
     }
-    
+
     return selectionMade;
 }
+
 
 void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOwnerType ownerType)
 {
@@ -1285,6 +1387,49 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
     {
         ImGui::PopStyleColor();
     }
+}
+
+static bool HandleScriptSelection( std::string sTempString,
+ std::string sOrigVal) {
+    // Get available script files
+    static std::vector<std::string> scriptSuggestions;
+    static double lastUpdateTime = 0.0;
+    double currentTime = ImGui::GetTime();
+
+
+
+    // Case-insensitive filter
+    auto scriptFilter = [](const std::string& suggestion, const std::string& input) {
+        if (input.empty()) return true;
+        std::string lowerSuggestion = suggestion, lowerInput = input;
+        std::transform(lowerSuggestion.begin(), lowerSuggestion.end(), lowerSuggestion.begin(), ::tolower);
+        std::transform(lowerInput.begin(), lowerInput.end(), lowerInput.begin(), ::tolower);
+        return lowerSuggestion.find(lowerInput) != std::string::npos;
+        };
+
+    // Draw the input field first
+    bool textActive = ImGui::InputText("##ScriptInput", &sTempString);
+
+    // Capture input state IMMEDIATELY after InputText
+    bool isInputFocused = ImGui::IsItemFocused();
+    bool isInputActivated = ImGui::IsItemActivated();
+
+    // Then draw the autocomplete dropdown with the correct state
+    bool selectionMade = DrawAutocompleteDropdown("ScriptAutocomplete", sTempString, scriptSuggestions, scriptFilter,
+        isInputActivated || textActive || isInputFocused);
+
+    // Capture activation for sOrigVal AFTER the dropdown
+    if (isInputActivated)
+    {
+        // Refresh script list every 2 seconds
+        if (scriptSuggestions.empty() || currentTime - lastUpdateTime > 2.0)
+        {
+            scriptSuggestions = AssetManager::Get()->GetAvailableScriptFiles();
+            lastUpdateTime = currentTime;
+        }
+        sOrigVal = sTempString;
+    }
+	return selectionMade;
 }
 
 static void DrawPropertyList(Object* owner, std::vector<Property>& props)
@@ -1490,18 +1635,75 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                 static std::string sOrigVal;
                 sTempString = prop.GetString(i);
 
-                ImGui::InputTextMultiline("", &sTempString, ImVec2(ImGui::CalcItemWidth(), 19.0f), ImGuiInputTextFlags_CtrlEnterForNewLine);
-
-                if (ImGui::IsItemActivated())
+                if (prop.mName == "Script")
                 {
-                    sOrigVal = sTempString;
-                }
+                    // Get available script files
+                    // Then draw the autocomplete dropdown with the correct state
+                  /*  bool selectionMade = HandleScriptSelection( sTempString,
+						sOrigVal);*/
 
-                if (ImGui::IsItemDeactivatedAfterEdit())
-                {
-                    if (sTempString != sOrigVal)
+                    static std::vector<std::string> scriptSuggestions;
+                    static double lastUpdateTime = 0.0;
+                    double currentTime = ImGui::GetTime();
+
+
+
+                    // Case-insensitive filter
+                    auto scriptFilter = [](const std::string& suggestion, const std::string& input) {
+                        if (input.empty()) return true;
+                        std::string lowerSuggestion = suggestion, lowerInput = input;
+                        std::transform(lowerSuggestion.begin(), lowerSuggestion.end(), lowerSuggestion.begin(), ::tolower);
+                        std::transform(lowerInput.begin(), lowerInput.end(), lowerInput.begin(), ::tolower);
+                        return lowerSuggestion.find(lowerInput) != std::string::npos;
+                        };
+
+                    // Draw the input field first
+                    bool textActive = ImGui::InputText("##ScriptInput", &sTempString);
+
+                    // Capture input state IMMEDIATELY after InputText
+                    bool isInputFocused = ImGui::IsItemFocused();
+                    bool isInputActivated = ImGui::IsItemActivated();
+
+                    // Then draw the autocomplete dropdown with the correct state
+                    bool selectionMade = DrawAutocompleteDropdown("ScriptAutocomplete", sTempString, scriptSuggestions, scriptFilter,
+                        isInputActivated || textActive || isInputFocused);
+
+                    // Capture activation for sOrigVal AFTER the dropdown
+                    if (isInputActivated)
                     {
-                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, sTempString);
+                        // Refresh script list every 2 seconds
+                        if (scriptSuggestions.empty() || currentTime - lastUpdateTime > 2.0)
+                        {
+                            scriptSuggestions = AssetManager::Get()->GetAvailableScriptFiles();
+                            lastUpdateTime = currentTime;
+                        }
+                        sOrigVal = sTempString;
+                    }
+
+                    if (selectionMade || ImGui::IsItemDeactivatedAfterEdit())
+                    {
+                        if (sTempString != sOrigVal)
+                        {
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, sTempString);
+                        }
+                    }
+                }
+                else
+                {
+
+                    ImGui::InputTextMultiline("", &sTempString, ImVec2(ImGui::CalcItemWidth(), 19.0f), ImGuiInputTextFlags_CtrlEnterForNewLine);
+
+                    if (ImGui::IsItemActivated())
+                    {
+                        sOrigVal = sTempString;
+                    }
+
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                    {
+                        if (sTempString != sOrigVal)
+                        {
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, sTempString);
+                        }
                     }
                 }
                 break;
@@ -2900,7 +3102,7 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
                 assetDispText = "*" + assetDispText;
             }
 
-            if (ImGui::Selectable(assetDispText.c_str(), isSelectedStub))
+            if (ImGui::Selectable(assetDispText.c_str(), isSelectedStub, ImGuiSelectableFlags_AllowDoubleClick))
             {
                 if (selStub != stub)
                 {
@@ -2916,6 +3118,24 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
                     stub->mAsset != nullptr)
                 {
                     GetEditorState()->InspectObject(stub->mAsset);
+                }
+
+                if (ImGui::IsMouseDoubleClicked(0))
+                {
+                    if (stub->mAsset == nullptr)
+                        AssetManager::Get()->LoadAsset(*stub);
+
+                    if (stub->mType == Scene::GetStaticType())
+                    {
+                        Scene* scene = stub->mAsset ? stub->mAsset->As<Scene>() : nullptr;
+                        if (scene)
+                            GetEditorState()->OpenEditScene(scene);
+                    }
+                    else
+                    {
+                        if (stub->mAsset)
+                            GetEditorState()->InspectObject(stub->mAsset);
+                    }
                 }
             }
 
@@ -3493,6 +3713,53 @@ static void DrawViewportPanel()
     GetEditorState()->SetEditorMode((EditorMode)curMode);
     GetEditorState()->SetPaintMode(paintMode);
 
+    // Gizmo Operation Buttons (Translate/Rotate/Scale)
+    ImGui::SameLine();
+    ImGui::Separator();
+    ImGui::SameLine();
+
+    EditorState* edState = GetEditorState();
+    ImGuizmo::OPERATION& gizmoOp = edState->mGizmoOperation;
+    ImGuizmo::MODE& gizmoMode = edState->mGizmoMode;
+
+    // Translate button
+    bool isTranslate = (gizmoOp == ImGuizmo::TRANSLATE);
+    if (isTranslate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
+    if (ImGui::Button("T##Translate"))
+        gizmoOp = ImGuizmo::TRANSLATE;
+    if (isTranslate) ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Translate (Space+G)");
+
+    // Rotate button
+    ImGui::SameLine();
+    bool isRotate = (gizmoOp == ImGuizmo::ROTATE);
+    if (isRotate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
+    if (ImGui::Button("R##Rotate"))
+        gizmoOp = ImGuizmo::ROTATE;
+    if (isRotate) ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Rotate (Space+R)");
+
+    // Scale button
+    ImGui::SameLine();
+    bool isScale = (gizmoOp == ImGuizmo::SCALE);
+    if (isScale) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
+    if (ImGui::Button("S##Scale"))
+        gizmoOp = ImGuizmo::SCALE;
+    if (isScale) ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Scale (Space+S)");
+
+    // Local/World mode toggle
+    ImGui::SameLine();
+    ImGui::Separator();
+    ImGui::SameLine();
+
+    bool isLocal = (gizmoMode == ImGuizmo::LOCAL);
+    if (isLocal) ImGui::PushStyleColor(ImGuiCol_Button, kToggledColor);
+    if (ImGui::Button(isLocal ? "Local" : "World"))
+        gizmoMode = isLocal ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+    if (isLocal) ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle Local/World (Ctrl+T)");
+
     bool openSaveSceneAsModal = false;
 
     if (ImGui::BeginPopup("FilePopup"))
@@ -3982,6 +4249,22 @@ static void DrawViewportPanel()
 
     ImGui::End();
 
+    // Set up ImGuizmo rect for the viewport area
+    // edState was already declared earlier in this function
+    // Account for interface scale - ImGui operates in scaled coordinates
+    float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
+    if (interfaceScale == 0.0f)
+    {
+        interfaceScale = 1.0f;
+    }
+    float invInterfaceScale = 1.0f / interfaceScale;
+
+    ImGuizmo::SetRect(
+        (float)edState->mViewportX * invInterfaceScale,
+        (float)edState->mViewportY * invInterfaceScale,
+        (float)edState->mViewportWidth * invInterfaceScale,
+        (float)edState->mViewportHeight * invInterfaceScale
+    );
 }
 
 static void DrawPaintColorsPanel()
@@ -4173,17 +4456,382 @@ static void DrawNodePropertySelectOverlay()
     ImGui::GetForegroundDrawList()->AddLine({ point2a.x, point2a.y }, { point2b.x, point2b.y }, IM_COL32(255, 0, 0, 200), lineWidth);
 }
 
+static void DrawImGuizmo()
+{
+    EditorState* edState = GetEditorState();
+
+    // Clear gizmo block when mouse is released
+    if (edState->mGizmoBlockedBySelection && !IsMouseButtonDown(MouseCode::MOUSE_LEFT))
+    {
+        edState->mGizmoBlockedBySelection = false;
+    }
+
+    // If gizmo is blocked by recent selection, disable interaction
+    if (edState->mGizmoBlockedBySelection)
+    {
+        ImGuizmo::Enable(false);
+    }
+    else
+    {
+        ImGuizmo::Enable(true);
+    }
+
+    // Only draw gizmos in 3D mode when not playing in editor
+    if (edState->GetEditorMode() != EditorMode::Scene3D &&
+        edState->GetEditorMode() != EditorMode::Scene)
+    {
+        return;
+    }
+
+    if (IsPlayingInEditor() && !edState->mEjected)
+    {
+        return;
+    }
+
+    // Get the selected node
+    Node* selectedNode = edState->GetSelectedNode();
+    if (selectedNode == nullptr || !selectedNode->IsNode3D())
+    {
+        return;
+    }
+
+    Node3D* node3d = static_cast<Node3D*>(selectedNode);
+
+    // Get the editor camera
+    Camera3D* camera = edState->GetEditorCamera();
+    if (camera == nullptr)
+    {
+        return;
+    }
+
+    // Get view and projection matrices
+    glm::mat4 viewMatrix = camera->GetViewMatrix();
+    glm::mat4 projMatrix = camera->GetProjectionMatrix();
+
+    // The engine's projection matrix has Y flipped for Vulkan (projMatrix[1][1] is negated).
+    // ImGuizmo expects OpenGL-style projection, so we need to un-flip Y.
+    glm::mat4 imguizmoProjMatrix = projMatrix;
+    imguizmoProjMatrix[1][1] *= -1.0f;
+
+    // Get the node's world transform
+    glm::mat4 modelMatrix = node3d->GetTransform();
+
+    // Set orthographic mode if needed
+    ImGuizmo::SetOrthographic(camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC);
+
+    // Track undo state: cache the original transform when manipulation starts
+    static bool wasUsing = false;
+    static glm::mat4 originalMatrix;
+    static Node3D* lastManipulatedNode = nullptr;
+
+    bool isUsing = ImGuizmo::IsUsing();
+
+    // Gizmo manipulation started - cache the original transform
+    if (isUsing && !wasUsing)
+    {
+        originalMatrix = node3d->GetTransform();
+        lastManipulatedNode = node3d;
+    }
+
+    // Store the delta matrix so we can apply incremental changes
+    glm::mat4 deltaMatrix = glm::mat4(1.0f);
+
+    // Call Manipulate with delta matrix
+    bool manipulated = ImGuizmo::Manipulate(
+        glm::value_ptr(viewMatrix),
+        glm::value_ptr(imguizmoProjMatrix),
+        edState->mGizmoOperation,
+        edState->mGizmoMode,
+        glm::value_ptr(modelMatrix),
+        glm::value_ptr(deltaMatrix),
+        nullptr   // snap
+    );
+
+    // If the gizmo was manipulated, apply the new transform using SetTransform
+    // which uses the engine's own decomposition logic
+    if (manipulated)
+    {
+        node3d->SetTransform(modelMatrix);
+    }
+
+    // Gizmo manipulation ended - commit to undo system
+    if (!isUsing && wasUsing && lastManipulatedNode != nullptr)
+    {
+        glm::mat4 newMatrix = lastManipulatedNode->GetTransform();
+        
+        // Only commit if the transform actually changed
+        if (originalMatrix != newMatrix)
+        {
+            // Temporarily restore original transform
+            lastManipulatedNode->SetTransform(originalMatrix);
+            lastManipulatedNode->UpdateTransform(false);
+            
+            // Commit the change through ActionManager for undo support
+            ActionManager::Get()->EXE_EditTransform(lastManipulatedNode, newMatrix);
+        }
+        
+        lastManipulatedNode = nullptr;
+    }
+
+    wasUsing = isUsing;
+}
+
+static void DrawImGuizmo2D()
+{
+    EditorState* edState = GetEditorState();
+
+    // Clear gizmo block when mouse is released
+    if (edState->mGizmoBlockedBySelection && !IsMouseButtonDown(MouseCode::MOUSE_LEFT))
+    {
+        edState->mGizmoBlockedBySelection = false;
+    }
+
+    // If gizmo is blocked by recent selection, disable interaction
+    if (edState->mGizmoBlockedBySelection)
+    {
+        ImGuizmo::Enable(false);
+    }
+    else
+    {
+        ImGuizmo::Enable(true);
+    }
+
+    // Only draw gizmos in 2D mode when not playing in editor
+    if (edState->GetEditorMode() != EditorMode::Scene2D)
+    {
+        return;
+    }
+
+    if (IsPlayingInEditor() && !edState->mEjected)
+    {
+        return;
+    }
+
+    // Get the selected widget
+    Widget* widget = edState->GetSelectedWidget();
+    if (widget == nullptr)
+    {
+        return;
+    }
+
+    // Get viewport info
+    Viewport2D* vp2d = edState->GetViewport2D();
+    float zoom = vp2d->GetZoom();
+
+    // Account for interface scale - ImGuizmo operates in scaled ImGui coordinates
+    float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
+    if (interfaceScale == 0.0f)
+    {
+        interfaceScale = 1.0f;
+    }
+    float invInterfaceScale = 1.0f / interfaceScale;
+
+    // Viewport dimensions in scaled coordinates (matching ImGuizmo::SetRect)
+    float vpWidth = (float)edState->mViewportWidth * invInterfaceScale;
+    float vpHeight = (float)edState->mViewportHeight * invInterfaceScale;
+
+    // Build orthographic projection matrix (Y down for screen coords)
+    glm::mat4 projMatrix = glm::ortho(0.0f, vpWidth, vpHeight, 0.0f, -1.0f, 1.0f);
+
+    // View matrix is identity since GetRect() already returns screen-space coordinates
+    // (zoom and rootOffset are already applied via the wrapper widget)
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+
+    // Get widget's rect (already in screen space after zoom/offset transform)
+    // Scale to match ImGuizmo's coordinate space
+    Rect rect = widget->GetRect();
+    rect.mX *= invInterfaceScale;
+    rect.mY *= invInterfaceScale;
+    rect.mWidth *= invInterfaceScale;
+    rect.mHeight *= invInterfaceScale;
+    glm::vec2 pivot = widget->GetPivot();
+
+    // Calculate pivot point in screen space (already scaled)
+    float pivotX = rect.mX + rect.mWidth * pivot.x;
+    float pivotY = rect.mY + rect.mHeight * pivot.y;
+
+    // For scale mode, include current size in the model matrix so ImGuizmo can scale it
+    // For translate/rotate, just use position and rotation
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(pivotX, pivotY, 0.0f));
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(widget->GetRotation()), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    // For scale, encode the widget's screen-space size into the matrix
+    if (edState->mGizmoOperation == ImGuizmo::SCALE)
+    {
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(rect.mWidth, rect.mHeight, 1.0f));
+    }
+
+    // Set orthographic mode
+    ImGuizmo::SetOrthographic(true);
+
+    // Track undo state: cache the original transform when manipulation starts
+    static bool wasUsing2D = false;
+    static glm::vec2 originalOffset;
+    static glm::vec2 originalSize;
+    static float originalRotation;
+    static glm::vec2 startSize;  // Size when gizmo manipulation started (for scale)
+    static Widget* lastManipulatedWidget = nullptr;
+
+    bool isUsing = ImGuizmo::IsUsing();
+
+    // Gizmo manipulation started - cache the original transform
+    if (isUsing && !wasUsing2D)
+    {
+        originalOffset = widget->GetOffset();
+        originalSize = widget->GetSize();
+        originalRotation = widget->GetRotation();
+        startSize = widget->GetSize();
+        lastManipulatedWidget = widget;
+    }
+
+    // Store the delta matrix
+    glm::mat4 deltaMatrix = glm::mat4(1.0f);
+
+    // Call Manipulate
+    bool manipulated = ImGuizmo::Manipulate(
+        glm::value_ptr(viewMatrix),
+        glm::value_ptr(projMatrix),
+        edState->mGizmoOperation,
+        ImGuizmo::LOCAL,  // Use local mode for 2D
+        glm::value_ptr(modelMatrix),
+        glm::value_ptr(deltaMatrix),
+        nullptr   // snap
+    );
+
+    // Apply transform changes
+    if (manipulated)
+    {
+        if (edState->mGizmoOperation == ImGuizmo::TRANSLATE)
+        {
+            // Extract translation delta from deltaMatrix (in scaled coordinates)
+            glm::vec3 deltaTrans(deltaMatrix[3]);
+
+            // Convert from scaled screen coordinates back to render target pixels,
+            // then to widget offset units (account for zoom)
+            glm::vec2 offsetDelta = glm::vec2(deltaTrans.x, deltaTrans.y) * interfaceScale / zoom;
+
+            // Handle stretch mode - convert to ratio if needed
+            if (widget->StretchX())
+            {
+                offsetDelta.x *= 0.002f;
+            }
+            if (widget->StretchY())
+            {
+                offsetDelta.y *= 0.002f;
+            }
+
+            glm::vec2 newOffset = widget->GetOffset() + offsetDelta;
+            widget->SetOffset(newOffset.x, newOffset.y);
+        }
+        else if (edState->mGizmoOperation == ImGuizmo::ROTATE)
+        {
+            // Extract rotation delta from deltaMatrix
+            // For 2D, we only care about Z rotation
+            glm::vec3 deltaScale, deltaTrans, deltaSkew;
+            glm::vec4 deltaPerspective;
+            glm::quat deltaRot;
+            glm::decompose(deltaMatrix, deltaScale, deltaRot, deltaTrans, deltaSkew, deltaPerspective);
+
+            // Convert quaternion to euler and extract Z rotation
+            // Negate because screen space Y is down, inverting rotation direction
+            glm::vec3 eulerDelta = glm::eulerAngles(deltaRot);
+            float deltaRotDeg = -glm::degrees(eulerDelta.z);
+
+            float newRotation = widget->GetRotation() + deltaRotDeg;
+            widget->SetRotation(newRotation);
+        }
+        else if (edState->mGizmoOperation == ImGuizmo::SCALE)
+        {
+            // Extract the new scale from the modified modelMatrix (in scaled coordinates)
+            glm::vec3 newScale, trans, skew;
+            glm::vec4 perspective;
+            glm::quat rot;
+            glm::decompose(modelMatrix, newScale, rot, trans, skew, perspective);
+
+            // The modelMatrix was initialized with (rect.mWidth, rect.mHeight, 1) in scaled coordinates
+            // After manipulation, newScale contains the scaled dimensions
+            // Convert from scaled coordinates back to render target pixels, then to widget size units
+            glm::vec2 newScreenSize(newScale.x * interfaceScale, newScale.y * interfaceScale);
+            glm::vec2 newSize = newScreenSize / zoom;
+
+            // Handle stretch mode
+            // Note: rect is in scaled coordinates, so convert newScale for comparison
+            if (widget->StretchX())
+            {
+                // For stretch, convert pixel change to ratio (in scaled coordinates)
+                float pixelChange = newScale.x - rect.mWidth;
+                newSize.x = widget->GetSize().x + pixelChange * interfaceScale * 0.00002f;
+            }
+            if (widget->StretchY())
+            {
+                float pixelChange = newScale.y - rect.mHeight;
+                newSize.y = widget->GetSize().y + pixelChange * interfaceScale * 0.00002f;
+            }
+
+            widget->SetSize(newSize.x, newSize.y);
+        }
+    }
+
+    // Gizmo manipulation ended - commit to undo system
+    if (!isUsing && wasUsing2D && lastManipulatedWidget != nullptr)
+    {
+        glm::vec2 newOffset = lastManipulatedWidget->GetOffset();
+        glm::vec2 newSize = lastManipulatedWidget->GetSize();
+        float newRotation = lastManipulatedWidget->GetRotation();
+
+        // Only commit if the transform actually changed
+        bool offsetChanged = (originalOffset != newOffset);
+        bool sizeChanged = (originalSize != newSize);
+        bool rotationChanged = (originalRotation != newRotation);
+
+        if (offsetChanged || sizeChanged || rotationChanged)
+        {
+            // Temporarily restore original transform
+            lastManipulatedWidget->SetOffset(originalOffset.x, originalOffset.y);
+            lastManipulatedWidget->SetSize(originalSize.x, originalSize.y);
+            lastManipulatedWidget->SetRotation(originalRotation);
+
+            // Commit changes through ActionManager for undo support
+            if (offsetChanged)
+            {
+                ActionManager::Get()->EXE_EditProperty(lastManipulatedWidget, PropertyOwnerType::Node, "Offset", 0, newOffset);
+            }
+            if (sizeChanged)
+            {
+                ActionManager::Get()->EXE_EditProperty(lastManipulatedWidget, PropertyOwnerType::Node, "Size", 0, newSize);
+            }
+            if (rotationChanged)
+            {
+                ActionManager::Get()->EXE_EditProperty(lastManipulatedWidget, PropertyOwnerType::Node, "Rotation", 0, newRotation);
+            }
+        }
+
+        lastManipulatedWidget = nullptr;
+    }
+
+    wasUsing2D = isUsing;
+}
+
 void EditorImguiInit()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     
     // Disabling keyboard controls because it interferes with Alt hotkeys.
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-    // Setup Dear ImGui style
+    // Setup Dear ImGui default style
     ImGui::StyleColorsDark();
+
+    // TODO: Unlock theming when you and the world is ready.
+        // SetupImGuiStyle();
+        // std::string fontPath = SYS_GetAbsolutePath("Engine/Assets/Fonts/F_InterRegular18.ttf");
+        // ImFont* myFont = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 15.0f);
+
+
     //ImGui::StyleColorsLight();
 
     // Override theme
@@ -4214,6 +4862,7 @@ void EditorImguiDraw()
     io.DisplayFramebufferScale = ImVec2(interfaceScale, interfaceScale);
 
     ImGui::NewFrame();
+    ImGuizmo::BeginFrame();
 
     if (EditorIsInterfaceVisible())
     {
@@ -4229,6 +4878,11 @@ void EditorImguiDraw()
         }
 
         DrawViewportPanel();
+
+        // Draw ImGuizmo gizmos for selected 3D nodes
+        DrawImGuizmo();
+        // Draw ImGuizmo gizmos for selected 2D widgets
+        DrawImGuizmo2D();
 
         PaintMode paintMode = GetEditorState()->GetPaintMode();
         if (paintMode == PaintMode::Color)

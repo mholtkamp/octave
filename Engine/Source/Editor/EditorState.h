@@ -8,6 +8,8 @@
 #include "SmartPointer.h"
 #include "Property.h"
 #include "Nodes/Widgets/Text.h"
+#include "imgui.h"
+#include "./ImGuizmo/ImGuizmo.h"
 
 class Node;
 class Scene;
@@ -140,6 +142,11 @@ struct EditorState
     std::string mPendingSceneImportPath = "";
     bool mShutdownUnsavedCheck = false;
     bool mDevMode = false;
+
+    // ImGuizmo state
+    ImGuizmo::OPERATION mGizmoOperation = ImGuizmo::TRANSLATE;
+    ImGuizmo::MODE mGizmoMode = ImGuizmo::WORLD;
+    bool mGizmoBlockedBySelection = false;
 
     // Methods
     void Init();

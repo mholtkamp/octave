@@ -36,6 +36,7 @@
 #include "System/System.h"
 
 #include "imgui.h"
+#include "./ImGuizmo/ImGuizmo.h"
 
 constexpr float sMaxCameraPitch = 89.99f;
 
@@ -83,15 +84,13 @@ void Viewport3D::Update(float deltaTime)
 
 bool Viewport3D::ShouldHandleInput() const
 {
-    bool imguiWantsKeyboard = ImGui::GetIO().WantCaptureKeyboard;
-    bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse;
     bool imguiWantsText = ImGui::GetIO().WantTextInput;
-    bool imguiAnyItemHovered = ImGui::IsAnyItemHovered();
     bool imguiAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
     bool imguiAnyPopupUp = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
-    
 
-    bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp && !imguiWantsMouse);
+    // Note: Don't check ImGuizmo::IsUsing() or WantCaptureMouse here - we want right/middle
+    // click to work even while the gizmo is active. Left-click is blocked separately via IsOver().
+    bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp);
     return handleInput;
 }
 
@@ -126,7 +125,7 @@ void Viewport3D::HandleDefaultControls()
             GetEditorState()->SetControlMode(ControlMode::Pilot);
         }
 
-        if (IsMouseButtonJustDown(MOUSE_LEFT))
+        if (IsMouseButtonJustDown(MOUSE_LEFT) && !ImGuizmo::IsOver())
         {
             int32_t mouseX = 0;
             int32_t mouseY = 0;
@@ -216,19 +215,34 @@ void Viewport3D::HandleDefaultControls()
         if (GetEditorState()->GetSelectedNode() != nullptr &&
             GetEditorState()->GetSelectedNode()->IsNode3D())
         {
-            if (!controlDown && !altDown && IsKeyJustDown(KEY_G))
+            // Space+G/R/S keys set the gizmo operation mode (Blender-style shortcuts)
+            const bool spaceDown = IsKeyDown(KEY_SPACE);
+
+            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(KEY_G))
             {
                 GetEditorState()->SetControlMode(ControlMode::Translate);
                 SavePreTransforms();
             }
+            if (!controlDown && !altDown && spaceDown && IsKeyJustDown(KEY_G))
+            {
+                GetEditorState()->mGizmoOperation = ImGuizmo::TRANSLATE;
+            }
+            if (!controlDown && !altDown && spaceDown && IsKeyJustDown(KEY_R))
+            {
+                GetEditorState()->mGizmoOperation = ImGuizmo::ROTATE;
+            }
+            if (!controlDown && !altDown && spaceDown && IsKeyJustDown(KEY_S))
+            {
+                GetEditorState()->mGizmoOperation = ImGuizmo::SCALE;
+            }
 
-            if (!controlDown && !altDown && IsKeyJustDown(KEY_R))
+            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(KEY_R))
             {
                 GetEditorState()->SetControlMode(ControlMode::Rotate);
                 SavePreTransforms();
             }
 
-            if (!controlDown && !altDown && IsKeyJustDown(KEY_S))
+            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(KEY_S))
             {
                 GetEditorState()->SetControlMode(ControlMode::Scale);
                 SavePreTransforms();
@@ -270,6 +284,9 @@ void Viewport3D::HandleDefaultControls()
         if (controlDown && IsKeyJustDown(KEY_T))
         {
             ToggleTransformMode();
+            // Also toggle the ImGuizmo mode to stay in sync
+            EditorState* edState = GetEditorState();
+            edState->mGizmoMode = (edState->mGizmoMode == ImGuizmo::LOCAL) ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
         }
 
         if (IsKeyJustDown(KEY_NUMPAD5))

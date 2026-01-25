@@ -355,6 +355,41 @@ uint64_t SYS_GetTimeMicroseconds()
     return microseconds;
 }
 
+
+std::string SYS_GetFileName(const std::string& relativePath)
+{
+ size_t slash = relativePath.find_last_of("/\\");
+    size_t start = (slash == std::string::npos) ? 0 : slash + 1;
+
+    // Strip extension (last '.' after the last slash)
+    size_t dot = relativePath.find_last_of('.');
+    if (dot == std::string::npos || dot < start) {
+        dot = relativePath.size(); // no extension
+    }
+
+    return relativePath.substr(start, dot - start);
+
+}
+void SYS_CopyDirectory(const char* sourceDir, const char* destDir)
+{
+
+}
+
+void SYS_CopyFile(const char* sourcePath, const char* destPath)
+{
+
+}
+
+void SYS_MoveDirectory(const char* sourceDir, const char* destDir)
+{
+
+}
+
+void SYS_MoveFile(const char* sourcePath, const char* destPath)
+{
+
+}
+
 // Process
 void SYS_Exec(const char* cmd, std::string* output)
 {

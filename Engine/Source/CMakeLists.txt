@@ -77,6 +77,7 @@ target_include_directories(${TARGET} PUBLIC
 target_link_libraries(${TARGET} PUBLIC
     ${COMMON_DEPS}
     assimp::assimp
+    imguizmo
 )
 target_compile_definitions(${TARGET} PUBLIC
     ${PLATFORM_DEFINITIONS}

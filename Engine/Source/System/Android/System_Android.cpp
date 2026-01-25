@@ -752,6 +752,45 @@ uint64_t SYS_GetTimeMicroseconds()
     return value.count();
 }
 
+
+std::string SYS_GetFileName(const std::string& relativePath)
+{
+ size_t slash = relativePath.find_last_of("/\\");
+    size_t start = (slash == std::string::npos) ? 0 : slash + 1;
+
+    // Strip extension (last '.' after the last slash)
+    size_t dot = relativePath.find_last_of('.');
+    if (dot == std::string::npos || dot < start) {
+        dot = relativePath.size(); // no extension
+    }
+
+    return relativePath.substr(start, dot - start);
+
+}
+void SYS_CopyDirectory(const char* sourceDir, const char* destDir)
+{
+    std::string cmd = std::string("cp -r \"") + sourceDir + "\" \"" + destDir + "\"";
+	SYS_Exec(cmd.c_str());
+}
+
+void SYS_CopyFile(const char* sourcePath, const char* destPath)
+{
+    std::string cmd = std::string("cp \"") + sourcePath + "\" \"" + destPath + "\"";
+    SYS_Exec(cmd.c_str());
+}
+
+void SYS_MoveDirectory(const char* sourceDir, const char* destDir)
+{
+    std::string cmd = std::string("mv \"") + sourceDir + "\" \"" + destDir + "\"";
+    SYS_Exec(cmd.c_str());
+}
+
+void SYS_MoveFile(const char* sourcePath, const char* destPath)
+{
+    std::string cmd = std::string("mv \"") + sourcePath + "\" \"" + destPath + "\"";
+    SYS_Exec(cmd.c_str());
+}
+
 // Process
 void SYS_Exec(const char* cmd, std::string* output)
 {

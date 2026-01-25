@@ -725,6 +725,24 @@ Asset* AssetManager::GetAsset(const std::string& name)
     return asset;
 }
 
+// Pseudocode plan:
+// 1. The error is caused by assigning the result of mAssetMap.find(name) (an iterator) directly to an Asset*.
+// 2. Instead, check if the iterator is not mAssetMap.end(), then get the AssetStub* from iterator->second, then get the Asset* from stub->mAsset.
+// 3. Return nullptr if not found.
+
+AssetStub* AssetManager::GetSceneAsset(const std::string& name)
+{
+	AssetStub* it = mAssetMap[name];
+	if (it != nullptr && it->mType == Scene::GetStaticType())
+    {
+        return it;
+	}
+    
+    return nullptr;
+}
+
+
+
 Asset* AssetManager::LoadAsset(const std::string& name)
 {
     Asset* retAsset = nullptr;
@@ -962,6 +980,26 @@ bool AssetManager::RenameAsset(Asset* asset, const std::string& newName)
 
     return success;
 }
+std::string AssetManager::GetParentDirectory(const std::string& path)
+{
+    std::string result = path;
+
+    // Remove trailing separators
+    while (result.size() > 0 && (result.back() == '/' || result.back() == '\\'))
+    {
+        result.pop_back();
+    }
+
+    // Find last separator (check for both / and \)
+    size_t lastSlash = result.find_last_of("/\\");
+
+    if (lastSlash != std::string::npos)
+    {
+        result = result.substr(0, lastSlash);
+    }
+
+    return result;
+}
 
 bool AssetManager::RenameDirectory(AssetDir* dir, const std::string& newName)
 {
@@ -998,6 +1036,157 @@ bool AssetManager::RenameDirectory(AssetDir* dir, const std::string& newName)
     return success;
 }
 
+
+void AssetManager::GatherScriptFiles(const std::string& dir, std::vector<std::string>& outFiles)
+{
+    // Recursively iterate through the Script directory and find .lua files.
+    std::function<void(std::string)> searchDirectory = [&](std::string dirPath)
+        {
+            std::vector<std::string> subDirectories;
+            DirEntry dirEntry = { };
+
+            SYS_OpenDirectory(dirPath, dirEntry);
+
+            while (dirEntry.mValid)
+            {
+                if (dirEntry.mDirectory)
+                {
+                    // Ignore this directory and parent directory.
+                    if (dirEntry.mFilename[0] != '.')
+                    {
+                        subDirectories.push_back(dirEntry.mFilename);
+                    }
+                }
+                else
+                {
+                    const char* extension = strrchr(dirEntry.mFilename, '.');
+
+                    if (strcmp(dirEntry.mFilename, "LuaPanda.lua") != 0 &&
+                        extension != nullptr &&
+                        strcmp(extension, ".lua") == 0)
+                    {
+                        std::string path = dirPath + dirEntry.mFilename;
+                        outFiles.push_back(path);
+                    }
+                }
+
+                SYS_IterateDirectory(dirEntry);
+            }
+
+            SYS_CloseDirectory(dirEntry);
+
+            // Discover files of subdirectories.
+            for (uint32_t i = 0; i < subDirectories.size(); ++i)
+            {
+                std::string subDirPath = dirPath + subDirectories[i] + "/";
+                searchDirectory(subDirPath);
+            }
+        };
+
+    searchDirectory(dir);
+}
+
+AssetStub* AssetManager::FindDefaultScene() {
+    AssetStub* defaultScene = nullptr;
+
+	std::string defaultScenePath = FindDefaultScenePath();
+
+    if (defaultScenePath != "") {
+		// Get the file name from the path
+		std::string sceneName = SYS_GetFileName(defaultScenePath);
+        defaultScene = GetAssetStub(sceneName);
+
+	}
+    return defaultScene;
+}
+std::string AssetManager::FindDefaultScenePath() {
+    std::string defaultScenePath = "";
+    AssetDir* projectDir = FindProjectDirectory();
+
+    if (projectDir == nullptr)
+    {
+        return defaultScenePath;
+    }
+
+    auto getStubName = [](AssetStub* stub) -> std::string
+    {
+        if (stub == nullptr)
+        {
+            return "";
+        }
+
+#if EDITOR
+        if (!stub->mName.empty())
+        {
+            return stub->mName;
+        }
+#endif
+
+        if (!stub->mPath.empty())
+        {
+            return Asset::GetNameFromPath(stub->mPath);
+        }
+
+        if (stub->mAsset != nullptr)
+        {
+            return stub->mAsset->GetName();
+        }
+
+        return "";
+    };
+
+    std::function<std::string(AssetDir*)> searchDir = [&](AssetDir* dir) -> std::string
+    {
+        if (dir == nullptr)
+        {
+            return std::string();
+        }
+
+        for (uint32_t i = 0; i < dir->mAssetStubs.size(); ++i)
+        {
+            AssetStub* stub = dir->mAssetStubs[i];
+            const std::string stubName = getStubName(stub);
+
+            if (stubName == "SC_Default" || stubName == "SC_Main")
+            {
+                return stub->mPath;
+            }
+        }
+
+        for (uint32_t i = 0; i < dir->mChildDirs.size(); ++i)
+        {
+            std::string found = searchDir(dir->mChildDirs[i]);
+            if (!found.empty())
+            {
+                return found;
+            }
+        }
+
+        return std::string();
+    };
+
+    return searchDir(projectDir);
+}
+
+
+std::vector<std::string> AssetManager::GetAvailableScriptFiles()
+{
+    std::vector<std::string> scriptFiles;
+
+    GatherScriptFiles("Engine/Scripts/", scriptFiles);
+
+    // Remove "Engine/Scripts/" from the front of each path
+    const std::string prefix = "Engine/Scripts/";
+    for (uint32_t i = 0; i < scriptFiles.size(); ++i)
+    {
+        if (scriptFiles[i].substr(0, prefix.length()) == prefix)
+        {
+            scriptFiles[i] = scriptFiles[i].substr(prefix.length());
+        }
+    }
+
+    return scriptFiles;
+}
 AssetDir* AssetManager::FindProjectDirectory()
 {
     AssetDir* retDir = nullptr;

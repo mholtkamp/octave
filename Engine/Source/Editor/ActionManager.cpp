@@ -321,13 +321,16 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     }
     else
     {
-        SYS_Exec(std::string("cp -R Engine/Scripts " + packagedDir + "Engine/Scripts").c_str());
-        SYS_Exec(std::string("cp -R " + projectDir + "Scripts " + packagedDir + projectName + "/Scripts").c_str());
+		SYS_CopyDirectory("Engine/Scripts/", (packagedDir + "Engine/Scripts/").c_str());
+		SYS_CopyDirectory((projectDir + "Scripts/").c_str(), (packagedDir + projectName + "/Scripts/").c_str());
+        //SYS_Exec(std::string("cp -R Engine/Scripts " + packagedDir + "Engine/Scripts").c_str());
+        //SYS_Exec(std::string("cp -R " + projectDir + "Scripts " + packagedDir + projectName + "/Scripts").c_str());
 
         if (platform != Platform::Windows && platform != Platform::Linux)
         {
             // Remove LuaPanda on consoles (it's a 148 KB file)
-            SYS_Exec(std::string("rm " + packagedDir + "Engine/Scripts" + "/LuaPanda.lua").c_str());
+			SYS_RemoveFile((packagedDir + "Engine/Scripts" + "/LuaPanda.lua").c_str());
+            //SYS_Exec(std::string("rm " + packagedDir + "Engine/Scripts" + "/LuaPanda.lua").c_str());
         }
     }
 
@@ -339,17 +342,20 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     if (standalone)
     {
-        std::string copyGeneratedFolder = "cp -R " + projectDir + "Generated " + "Standalone";
-        SYS_Exec(copyGeneratedFolder.c_str());
+        SYS_CopyDirectory((projectDir + "Generated").c_str(), "Standalone");
+        //std::string copyGeneratedFolder = "cp -R " + projectDir + "Generated " + "Standalone";
+        //SYS_Exec(copyGeneratedFolder.c_str());
     }
 
     // Copy .octp and Config.ini
     {
-        std::string copyOctpCmd = "cp " + projectDir + projectName + ".octp " + packagedDir + projectName;
-        SYS_Exec(copyOctpCmd.c_str());
+		SYS_CopyFile((projectDir + projectName + ".octp").c_str(), (packagedDir + projectName + ".octp").c_str());
+        //std::string copyOctpCmd = "cp " + projectDir + projectName + ".octp " + packagedDir + projectName;
+        //SYS_Exec(copyOctpCmd.c_str());
 
-        std::string copyConfigCmd = "cp " + projectDir + "Config.ini " + packagedDir;
-        SYS_Exec(copyConfigCmd.c_str());
+		SYS_CopyFile((projectDir + "Config.ini").c_str(), (packagedDir + "Config.ini").c_str());
+        //std::string copyConfigCmd = "cp " + projectDir + "Config.ini " + packagedDir;
+        //SYS_Exec(copyConfigCmd.c_str());
     }
 
     // Handle SpirV shaders on Vulkan platforms
@@ -369,7 +375,8 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         CreateDir((packagedDir + "Engine/Shaders/").c_str());
         CreateDir((packagedDir + "Engine/Shaders/GLSL/").c_str());
 
-        SYS_Exec(std::string("cp -R Engine/Shaders/GLSL/bin " + packagedDir + "Engine/Shaders/GLSL/bin").c_str());
+		SYS_CopyDirectory("Engine/Shaders/GLSL/bin/", (packagedDir + "Engine/Shaders/GLSL/bin/").c_str());
+        //SYS_Exec(std::string("cp -R Engine/Shaders/GLSL/bin " + packagedDir + "Engine/Shaders/GLSL/bin").c_str());
     }
 
     // If we are running a 3DS build, copy all the packaged data to the
@@ -384,7 +391,8 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     if (useRomfs)
     {
         LogDebug("Copying packaged data to Romfs staging directory.");
-        SYS_Exec(std::string("cp -R " + packagedDir + "/* " + romfsDir).c_str());
+		SYS_CopyDirectory(packagedDir.c_str(), romfsDir.c_str());
+        //SYS_Exec(std::string("cp -R " + packagedDir + "/* " + romfsDir).c_str());
     }
 
     // ( ) Run the makefile to compile the game.
@@ -440,8 +448,8 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             {
                 CreateDir(androidAssetsDir.c_str());
             }
-
-            SYS_Exec(std::string("cp -R " + packagedDir + "/* " + androidAssetsDir).c_str());
+			SYS_CopyDirectory(packagedDir.c_str(), androidAssetsDir.c_str());
+            //SYS_Exec(std::string("cp -R " + packagedDir + "/* " + androidAssetsDir).c_str());
 
             // Invoke the gradle build
             std::string gradleDir = buildProjDir + "Android/";
@@ -477,7 +485,8 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             std::string srcMakefile = buildProjDir + "/" + makefilePath;
             std::string tmpMakefile = buildProjDir + "/Makefile_TEMP";
             // Make a copy of the makefile so we can change the app name and things like that
-            SYS_Exec(std::string("cp " + srcMakefile + " " + tmpMakefile).c_str());
+			SYS_CopyFile(srcMakefile.c_str(), tmpMakefile.c_str());
+            //SYS_Exec(std::string("cp " + srcMakefile + " " + tmpMakefile).c_str());
 
             // This is fragile, but we're going to modify the temp makefile to compile
             // the way we need to for a given platform.
@@ -491,12 +500,23 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 //    ReplaceStringInFile(tmpMakefile, "ROMFS :=", "#ROMFS :=");
                 //}
             }
+            SYS_CreateDirectory((buildProjDir + "Generated").c_str());
+
+			// Copy over Generated files, sometimes they may have been modified or deleted.
+			SYS_CopyFile(embeddedHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.h").c_str());
+			SYS_CopyFile(embeddedSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.cpp").c_str());
+			SYS_CopyFile(scriptHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.h").c_str());
+			SYS_CopyFile(scriptSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.cpp").c_str());
+
+
+
 
             std::string makeCmd = std::string("make -C ") + (buildProjDir) + " -f Makefile_TEMP -j 12";
             SYS_Exec(makeCmd.c_str());
 
             // Delete the temp makefile
-            SYS_Exec(std::string("rm " + tmpMakefile).c_str());
+			SYS_RemoveFile(tmpMakefile.c_str());
+            //SYS_Exec(std::string("rm " + tmpMakefile).c_str());
 
             if (platform == Platform::Linux)
             {
@@ -559,21 +579,26 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         exeSrc = prebuiltExeName;
     }
 
-    std::string exeCopyCmd = std::string("cp ") + exeSrc + " " + packagedDir;
-    SYS_Exec(exeCopyCmd.c_str());
+
+	SYS_CopyDirectory(exeSrc.c_str(), packagedDir.c_str());
+
+    //std::string exeCopyCmd = std::string("cp ") + exeSrc + " " + packagedDir;
+    //SYS_Exec(exeCopyCmd.c_str());
 
     if (standalone)
     {
         // Rename the executable to the project name
-        std::string renameCmd = std::string("mv ") + packagedDir + "Octave" + extension + " " + packagedDir + projectName + extension;
-        SYS_Exec(renameCmd.c_str());
+		SYS_MoveFile((packagedDir + "Octave" + extension).c_str(), (packagedDir + projectName + extension).c_str());
+        //std::string renameCmd = std::string("mv ") + packagedDir + "Octave" + extension + " " + packagedDir + projectName + extension;
+        //SYS_Exec(renameCmd.c_str());
     }
 
     if (platform == Platform::Windows && useSteam)
     {
         // (1) Copy over redistributable DLL
-        std::string cpSteamDllCmd1 = std::string("cp ") + projectDir + (standalone ? "../" : "../Octave/") + "External/Steam/redistributable_bin/win64/steam_api64.dll " + packagedDir;
-        SYS_Exec(cpSteamDllCmd1.c_str());
+        SYS_CopyDirectory((projectDir + (standalone ? "../" : "../Octave/") + "External/Steam/redistributable_bin/win64/steam_api64.dll").c_str(), packagedDir.c_str());
+        //std::string cpSteamDllCmd1 = std::string("cp ") + projectDir + (standalone ? "../" : "../Octave/") + "External/Steam/redistributable_bin/win64/steam_api64.dll " + packagedDir;
+        //SYS_Exec(cpSteamDllCmd1.c_str());
 
         // (2) Create a steam_appid.txt with 480
         Stream idStream;

@@ -91,6 +91,7 @@ public:
 
     AssetStub* GetAssetStub(const std::string& name);
     Asset* GetAsset(const std::string& name);
+    AssetStub* GetSceneAsset(const std::string& name);
     Asset* LoadAsset(const std::string& name);
     Asset* LoadAsset(AssetStub& stub);
     void AsyncLoadAsset(const std::string& name, AssetRef* targetRef);
@@ -101,10 +102,17 @@ public:
 
     bool DoesAssetExist(const std::string& name);
     bool RenameAsset(Asset* asset, const std::string& newName);
+    std::string GetParentDirectory(const std::string& path);
     bool RenameDirectory(AssetDir* dir, const std::string& newName);
+    void GatherScriptFilesRecursive(const std::string& dirPath, const std::string& relativePath, std::vector<std::string>& scriptFiles);
+    std::vector<std::string> GetAvailableScriptFiles();
     AssetDir* FindProjectDirectory();
+    AssetDir* FindProjectRootDirectory();
     AssetDir* FindEngineDirectory();
     AssetDir* GetRootDirectory();
+    void GatherScriptFiles(const std::string& dir, std::vector<std::string>& outFiles);
+    AssetStub* FindDefaultScene();
+    std::string FindDefaultScenePath();
     void UnloadProjectDirectory();
     std::unordered_map<std::string, AssetStub*>& GetAssetMap();
     std::vector<AssetStub*> GatherDirtyAssets();

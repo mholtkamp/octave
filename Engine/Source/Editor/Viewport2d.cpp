@@ -10,6 +10,7 @@
 #include "Renderer.h"
 
 #include "imgui.h"
+#include "./ImGuizmo/ImGuizmo.h"
 
 Viewport2D::Viewport2D()
 {
@@ -73,7 +74,8 @@ bool Viewport2D::ShouldHandleInput() const
     bool imguiAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
     bool imguiAnyPopupUp = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
 
-
+    // Note: Don't check ImGuizmo::IsUsing() here - we want right/middle click to work
+    // even while the gizmo is active. Left-click is blocked separately via IsOver().
     bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp);
     return handleInput;
 }
@@ -175,7 +177,7 @@ void Viewport2D::HandleDefaultControls()
             SetWidgetControlMode(WidgetControlMode::Pan);
         }
 
-        if (IsMouseButtonJustDown(MOUSE_LEFT))
+        if (IsMouseButtonJustDown(MOUSE_LEFT) && !ImGuizmo::IsOver())
         {
             int32_t mouseX = 0;
             int32_t mouseY = 0;
@@ -184,7 +186,7 @@ void Viewport2D::HandleDefaultControls()
             mouseY -= Renderer::Get()->GetViewportY(0);
 
             Widget* hoveredWidget = nullptr;
-            
+
             uint32_t maxDepth = 0;
             hoveredWidget = FindHoveredWidget(GetWorld(0)->GetRootNode(), maxDepth, mouseX, mouseY);
 
@@ -231,24 +233,46 @@ void Viewport2D::HandleDefaultControls()
             }
         }
 
+        const bool spaceDown = IsKeyDown(KEY_SPACE);
+
         if (GetEditorState()->GetSelectedWidget() != nullptr)
         {
-            if (!controlDown && !altDown && IsKeyJustDown(KEY_G))
+            // Space+G/R/S for gizmo operation (matching 3D behavior)
+            if (spaceDown && !controlDown && !altDown)
             {
-                SetWidgetControlMode(WidgetControlMode::Translate);
-                SavePreTransforms();
+                if (IsKeyJustDown(KEY_G))
+                {
+                    GetEditorState()->mGizmoOperation = ImGuizmo::TRANSLATE;
+                }
+                if (IsKeyJustDown(KEY_R))
+                {
+                    GetEditorState()->mGizmoOperation = ImGuizmo::ROTATE;
+                }
+                if (IsKeyJustDown(KEY_S))
+                {
+                    GetEditorState()->mGizmoOperation = ImGuizmo::SCALE;
+                }
             }
-
-            if (!controlDown && !altDown && IsKeyJustDown(KEY_R))
+            // G/R/S without Space for legacy cursor-locked transform mode
+            else if (!controlDown && !altDown)
             {
-                SetWidgetControlMode(WidgetControlMode::Rotate);
-                SavePreTransforms();
-            }
+                if (IsKeyJustDown(KEY_G))
+                {
+                    SetWidgetControlMode(WidgetControlMode::Translate);
+                    SavePreTransforms();
+                }
 
-            if (!controlDown && !altDown && IsKeyJustDown(KEY_S))
-            {
-                SetWidgetControlMode(WidgetControlMode::Scale);
-                SavePreTransforms();
+                if (IsKeyJustDown(KEY_R))
+                {
+                    SetWidgetControlMode(WidgetControlMode::Rotate);
+                    SavePreTransforms();
+                }
+
+                if (IsKeyJustDown(KEY_S))
+                {
+                    SetWidgetControlMode(WidgetControlMode::Scale);
+                    SavePreTransforms();
+                }
             }
         }
 
@@ -336,15 +360,16 @@ void Viewport2D::HandleTransformControls()
 
     const bool shiftDown = IsShiftDown();
     const float shiftSpeedMult = 0.1f;
+    const float scaleAmount = 0.00002f;
 
     glm::vec2 stretchScale = { 1.0f, 1.0f };
     if (widget->StretchX())
     {
-        stretchScale.x = 0.002f;
+        stretchScale.x = scaleAmount;
     }
     if (widget->StretchY())
     {
-        stretchScale.y = 0.002f;
+        stretchScale.y =scaleAmount;
     }
 
     if (delta != glm::vec2(0.0f, 0.0f))

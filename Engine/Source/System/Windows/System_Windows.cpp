@@ -432,6 +432,20 @@ std::string SYS_GetAbsolutePath(const std::string& relativePath)
     return absPath;
 }
 
+
+std::string SYS_GetFileName(const std::string& path)
+{
+    char fileName[MAX_PATH_SIZE];
+    _splitpath_s(
+        path.c_str(),
+        nullptr, 0,
+        nullptr, 0,
+        fileName, MAX_PATH_SIZE,
+		nullptr, 0);
+	return std::string(fileName);
+    
+}
+
 void SYS_SetWorkingDirectory(const std::string& dirPath)
 {
     _chdir(dirPath.c_str());
@@ -730,6 +744,94 @@ MutexObject* SYS_CreateMutex()
     }
 
     return retMutex;
+}
+
+void SYS_CopyDirectory(const char* sourceDir, const char* destDir)
+{
+    std::string source = sourceDir;
+    std::string dest = destDir;
+    for (uint32_t i = 0; i < source.length(); ++i)
+    {
+        if (source[i] == '/')
+        {
+            source[i] = '\\';
+        }
+    }
+    for (uint32_t i = 0; i < dest.length(); ++i)
+    {
+        if (dest[i] == '/')
+        {
+            dest[i] = '\\';
+        }
+    }
+    std::string cmd = std::string("xcopy \"") + source + "\" \"" + dest + "\" /E /I /Y";
+    SYS_Exec(cmd.c_str());
+}
+
+void SYS_CopyFile(const char* sourcePath, const char* destPath)
+{
+    std::string source = sourcePath;
+    std::string dest = destPath;
+    for (uint32_t i = 0; i < source.length(); ++i)
+    {
+        if (source[i] == '/')
+        {
+            source[i] = '\\';
+        }
+    }
+    for (uint32_t i = 0; i < dest.length(); ++i)
+    {
+        if (dest[i] == '/')
+        {
+            dest[i] = '\\';
+        }
+    }
+    std::string cmd = std::string("copy \"") + source + "\" \"" + dest + "\" /Y";
+    SYS_Exec(cmd.c_str());
+}
+
+void SYS_MoveDirectory(const char* sourceDir, const char* destDir)
+{
+    std::string source = sourceDir;
+    std::string dest = destDir;
+    for (uint32_t i = 0; i < source.length(); ++i)
+    {
+        if (source[i] == '/')
+        {
+            source[i] = '\\';
+        }
+    }
+    for (uint32_t i = 0; i < dest.length(); ++i)
+    {
+        if (dest[i] == '/')
+        {
+            dest[i] = '\\';
+        }
+    }
+    std::string cmd = std::string("move \"") + source + "\" \"" + dest + "\"";
+    SYS_Exec(cmd.c_str());
+}
+
+void SYS_MoveFile(const char* sourcePath, const char* destPath)
+{
+    std::string source = sourcePath;
+    std::string dest = destPath;
+    for (uint32_t i = 0; i < source.length(); ++i)
+    {
+        if (source[i] == '/')
+        {
+            source[i] = '\\';
+        }
+    }
+    for (uint32_t i = 0; i < dest.length(); ++i)
+    {
+        if (dest[i] == '/')
+        {
+            dest[i] = '\\';
+        }
+    }
+    std::string cmd = std::string("move \"") + source + "\" \"" + dest + "\"";
+    SYS_Exec(cmd.c_str());
 }
 
 void SYS_LockMutex(MutexObject* mutex)
