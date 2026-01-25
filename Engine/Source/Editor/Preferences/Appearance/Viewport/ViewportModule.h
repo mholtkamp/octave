@@ -25,11 +25,20 @@ public:
     glm::vec4 GetGridColor() const { return mGridColor; }
     float GetGridSize() const { return mGridSize; }
 
+    static ViewportModule* Get();
+    static void HandleExternalGridToggle(bool enabled);
+
 private:
+    void ApplyBackgroundColorToRenderer() const;
+    void ApplyGridVisibility();
+
     glm::vec4 mBackgroundColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
     bool mShowGrid = true;
     glm::vec4 mGridColor = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
     float mGridSize = 1.0f;
+
+    static ViewportModule* sInstance;
+    static bool sSyncingGridState;
 };
 
 #endif

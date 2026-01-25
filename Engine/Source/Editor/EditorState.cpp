@@ -539,6 +539,9 @@ void EditorState::BeginPlayInEditor()
     if (mPlayInEditor)
         return;
 
+    mSavedEditorClearColor = Renderer::Get()->GetClearColor();
+    Renderer::Get()->SetClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
     SetSelectedNode(nullptr);
     SetSelectedAssetStub(nullptr);
     InspectObject(nullptr, true);
@@ -613,6 +616,7 @@ void EditorState::EndPlayInEditor()
 
     ShowEditorUi(true);
     Renderer::Get()->EnableProxyRendering(true);
+    Renderer::Get()->SetClearColor(mSavedEditorClearColor);
 
     mPlayInEditor = false;
     mEjected = false;

@@ -20,6 +20,7 @@ public:
 
     void LoadAllSettings();
     void SaveAllSettings();
+    void SaveModule(PreferencesModule* module);
     std::string GetPreferencesDirectory() const;
 
 protected:

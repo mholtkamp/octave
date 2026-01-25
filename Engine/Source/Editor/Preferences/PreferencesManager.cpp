@@ -120,6 +120,26 @@ void PreferencesManager::SaveAllSettings()
     }
 }
 
+void PreferencesManager::SaveModule(PreferencesModule* module)
+{
+    if (module == nullptr)
+    {
+        return;
+    }
+
+    rapidjson::Document doc;
+    doc.SetObject();
+
+    JsonSettings::SetInt(doc, "version", 1);
+
+    module->SaveSettings(doc);
+
+    std::string filePath = module->GetSettingsFilePath();
+    JsonSettings::SaveToFile(filePath, doc);
+
+    module->SetDirty(false);
+}
+
 void PreferencesManager::LoadModuleSettings(PreferencesModule* module)
 {
     rapidjson::Document doc;
@@ -141,18 +161,7 @@ void PreferencesManager::LoadModuleSettings(PreferencesModule* module)
 
 void PreferencesManager::SaveModuleSettings(PreferencesModule* module)
 {
-    rapidjson::Document doc;
-    doc.SetObject();
-
-    // Add version for future compatibility
-    JsonSettings::SetInt(doc, "version", 1);
-
-    module->SaveSettings(doc);
-
-    std::string filePath = module->GetSettingsFilePath();
-    JsonSettings::SaveToFile(filePath, doc);
-
-    module->SetDirty(false);
+    SaveModule(module);
 
     // Save sub-module settings
     for (PreferencesModule* sub : module->GetSubModules())
