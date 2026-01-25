@@ -391,8 +391,11 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     if (useRomfs)
     {
         LogDebug("Copying packaged data to Romfs staging directory.");
-        SYS_CopyDirectoryRecursive(packagedDir, romfsDir);
-        //SYS_CopyDirectory(packagedDir.c_str(), romfsDir.c_str());
+    #if PLATFORM_WINDOWS
+        SYS_CopyDirectoryRecursive(packagedDir.c_str(), romfsDir.c_str());
+    #else
+        SYS_Exec(std::string("cp -R " + packagedDir + "/* " + romfsDir).c_str());
+    #endif
     }
 
     // ( ) Run the makefile to compile the game.

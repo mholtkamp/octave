@@ -838,6 +838,7 @@ bool SYS_CopyDirectoryRecursive(const std::string& sourceDir,
     std::string("cp -R \"") + sourceDir + "/.\" \"" + destDir + "\"";
 
     SYS_Exec(cmd.c_str());
+    return true;
 }
 
 void SYS_CopyDirectory(const char* sourceDir, const char* destDir)
