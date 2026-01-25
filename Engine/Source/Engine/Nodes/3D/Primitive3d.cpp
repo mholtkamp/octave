@@ -419,16 +419,12 @@ void Primitive3D::SetMass(float mass)
 
 void Primitive3D::SetLinearDamping(float linearDamping)
 {
-    EnableRigidBody(false);
     if (mRigidBody) mRigidBody->setDamping(linearDamping, mRigidBody->getAngularDamping());
-    EnableRigidBody(true);
 }
 
 void Primitive3D::SetAngularDamping(float angularDamping)
 {
-    EnableRigidBody(false);
     if (mRigidBody) mRigidBody->setDamping(mRigidBody->getLinearDamping(), angularDamping);
-    EnableRigidBody(true);
 }
 
 void Primitive3D::SetRestitution(float restitution)
