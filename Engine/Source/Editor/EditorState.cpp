@@ -1,5 +1,5 @@
 #if EDITOR
-
+#include <vector>
 #include "EditorState.h"
 #include "EditorConstants.h"
 #include "ActionManager.h"
@@ -934,9 +934,16 @@ void EditorState::OpenEditScene(int32_t idx)
 
         const EditScene& editScene = mEditScenes[idx];
         mEditSceneIndex = idx;
-        GetWorld(0)->SetRootNode(editScene.mRootNode.Get()); // could be nullptr.
-        GetEditorCamera()->SetTransform(editScene.mCameraTransform);
+        std::vector<Camera3D*> cams;
 
+        GetWorld(0)->SetRootNode(editScene.mRootNode.Get()); // could be nullptr.
+		Camera3D* activeCam =  GetWorld(0)->GetMainCamera(); // Ensure active camera is valid.
+        if (activeCam) {
+            GetEditorCamera()->SetTransform(activeCam->GetTransform());
+        }
+        else {
+            GetEditorCamera()->SetTransform(editScene.mCameraTransform);
+        }
         auto findExistingNodeProps = [&](Node* node) -> bool
         {
             std::vector<Property> props;

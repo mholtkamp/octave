@@ -30,6 +30,8 @@ public:
 
     void Update(float deltaTime);
 
+    Camera3D* GetMainCamera();
+
     Camera3D* GetActiveCamera();
     Node3D* GetAudioReceiver();
 

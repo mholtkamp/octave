@@ -1723,6 +1723,20 @@ static void HandleImportSceneCallback(const std::vector<std::string>& filePaths)
     }
 }
 
+
+static void HandleImportCameraCallback(const std::vector<std::string>& filePaths)
+{
+    if (filePaths.size() > 1)
+    {
+        LogWarning("Can only import one scene at a time. Ignoring extra scenes.");
+    }
+
+    if (filePaths.size() >= 1)
+    {
+        GetEditorState()->mIOAssetPath = filePaths[0];
+    }
+}
+
 void ActionManager::ImportAsset()
 {
     if (GetEngineState()->mProjectPath != "")
@@ -1985,6 +1999,73 @@ static glm::mat4 GetNodeTransform(aiNode* node)
     return gMat;
 }
 
+void ActionManager::ImportCamera(const CameraImportOptions& options)
+{
+    if (GetEngineState()->mProjectPath == "")
+        return;
+    World* world = GetWorld(0);
+    std::string openPath = options.mFilePath;
+    // Display the Open dialog box. 
+    if (openPath != "")
+    {
+        std::string filename = openPath;
+        int32_t dotIndex = int32_t(filename.find_last_of('.'));
+        std::string extension = filename.substr(dotIndex, filename.size() - dotIndex);
+        if (extension == ".glb" ||
+            extension == ".gltf" ||
+            extension == ".dae")
+        {
+            LogDebug("Begin camera import...");
+            Assimp::Importer importer;
+            const aiScene* scene = importer.ReadFile(filename, aiProcess_FlipUVs);
+            if (scene == nullptr)
+            {
+                LogError("Failed to load scene file");
+                return;
+            }
+
+            for (uint32_t i = 0; i < scene->mNumCameras; ++i)
+            {
+                aiCamera* aCamera = scene->mCameras[i];
+				Node* rootNode = GetWorld(0)->GetRootNode();
+                if(rootNode == nullptr)
+                {
+                    LogError("Failed to get root node from world");
+					return;
+				}
+                Camera3D* newCamera = rootNode->CreateChild<Camera3D>();
+
+                glm::mat4 camTransform(1);
+                aiNode* camNode = scene->mRootNode->FindNode(aCamera->mName.C_Str());
+
+                if (camNode)
+                {
+                    camTransform = GetNodeTransform(camNode);
+                }
+                float vfov = 2.0f * atanf(tanf(aCamera->mHorizontalFOV * 0.5f) / aCamera->mAspect);
+
+                newCamera->SetFieldOfView(glm::degrees(vfov));
+                newCamera->SetNearZ(aCamera->mClipPlaneNear);
+                newCamera->SetFarZ(aCamera->mClipPlaneFar);
+                newCamera->SetAspectRatio(aCamera->mAspect);
+
+                newCamera->SetTransform(camTransform);
+                newCamera->UpdateTransform(true);
+                if (i == 0 && options.mIsMainCamera) {
+					newCamera->SetIsMainCamera(true);
+                }
+
+
+                newCamera->SetName(options.mOverrideCameraName ? options.mCameraName : aCamera->mName.C_Str());
+
+            }
+
+
+        }
+	}
+
+}
+
 void ActionManager::ImportScene(const SceneImportOptions& options)
 {
     if (GetEngineState()->mProjectPath == "")
@@ -2226,7 +2307,6 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                 meshList.push_back(meshToAddToList);
             }
-
             // Create Lights
             if (options.mImportLights)
             {
@@ -2268,8 +2348,43 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                         pointLight->SetName(aLight->mName.C_Str());
                     }
                 }
+                
+
+
             }
 
+            // Create Cameras
+            if (options.mImportCameras) {
+
+                uint32_t numCameras = scene->mNumCameras;
+
+                for (uint32_t i = 0; i < numCameras; ++i)
+                {
+                    aiCamera* aCamera = scene->mCameras[i];
+
+                    Camera3D* newCamera = rootNode->CreateChild<Camera3D>();
+
+                    glm::mat4 camTransform(1);
+                    aiNode* camNode = scene->mRootNode->FindNode(aCamera->mName.C_Str());
+
+                    if (camNode)
+                    {
+                        camTransform = GetNodeTransform(camNode);
+                    }
+                    float vfov = 2.0f * atanf(tanf(aCamera->mHorizontalFOV * 0.5f) / aCamera->mAspect);
+
+                    newCamera->SetFieldOfView(glm::degrees(vfov));
+                    newCamera->SetNearZ(aCamera->mClipPlaneNear);
+                    newCamera->SetFarZ(aCamera->mClipPlaneFar);
+                    newCamera->SetAspectRatio(aCamera->mAspect);
+
+                    newCamera->SetTransform(camTransform);
+                    newCamera->UpdateTransform(true);
+
+                    newCamera->SetName(aCamera->mName.C_Str());
+
+                }
+			}
             aiNode* node = scene->mRootNode;
             SpawnAiNode(node, rootNode.Get(), glm::mat4(1), meshList, options);
 
@@ -2313,6 +2428,24 @@ void ActionManager::BeginImportScene()
 
 }
 
+void ActionManager::BeginImportCamera()
+{
+	std::string  prevIOPath = GetEngineState()->mProjectPath;
+    if (prevIOPath != "")
+    {
+#if USE_IMGUI_FILE_BROWSER
+        EditorOpenFileBrowser(HandleImportCameraCallback, false);
+#else
+        std::vector<std::string> filePaths = SYS_OpenFileDialog();
+        HandleImportCameraCallback(filePaths);
+#endif
+    }
+    else
+    {
+        LogWarning("Cannot import scene. No project loaded.");
+    }
+
+}
 void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*, std::string> >& assets,
     const char* headerPath,
     const char* sourcePath)

@@ -118,6 +118,7 @@ struct EditorState
     bool mInspectLocked = false;
     Viewport3D* mViewport3D = nullptr;
     Viewport2D* mViewport2D = nullptr;
+    std::string mIOAssetPath;
     std::string mAssetFilterStr;
     std::vector<AssetStub*> mFilteredAssetStubs;
     bool mRequestSaveSceneAs = false;

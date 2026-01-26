@@ -108,8 +108,10 @@ public:
     void RunScript();
     void ImportAsset();
     Asset* ImportAsset(const std::string& path);
+    void ImportCamera(const CameraImportOptions& options);
     void ImportScene(const SceneImportOptions& options);
     void BeginImportScene();
+    void BeginImportCamera();
     void BuildData(Platform platform, bool embedded);
     void PrepareRelease();
     void ClearWorld();

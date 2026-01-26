@@ -95,6 +95,7 @@ static bool sFileBrowserNeedsRefresh = false;
 static bool sObjectTabOpen = false;
 
 static SceneImportOptions sSceneImportOptions;
+static CameraImportOptions sCameraImportOptions;
 
 static std::vector<AssetStub*> sUnsavedAssets;
 static std::vector<bool> sUnsavedAssetsSelected;
@@ -2092,6 +2093,17 @@ static void DrawAddNodeMenu(Node* node)
     }
 }
 
+static void DrawImportMenu(Node* node)
+{
+    ActionManager* am = ActionManager::Get();
+    if (ImGui::MenuItem("Camera"))
+    {
+        am->BeginImportCamera();
+
+    }
+
+}
+
 static void DrawSpawnBasic3dMenu(Node* node, bool setFocusPos)
 {
     ActionManager* am = ActionManager::Get();
@@ -2375,6 +2387,11 @@ static void DrawScenePanel()
                     ImGui::Selectable("Merge"))
                 {
                     LogDebug("TODO: Implement Merge for static meshes.");
+                }
+                if (!nodeSceneLinked && !inSubScene && ImGui::BeginMenu("Import"))
+                {
+                    DrawImportMenu(node);
+                    ImGui::EndMenu();
                 }
                 if (!nodeSceneLinked && !inSubScene && ImGui::BeginMenu("Add Node"))
                 {
@@ -3951,6 +3968,7 @@ static void DrawViewportPanel()
         ImGui::EndPopup();
     }
 
+
     if (!ImGui::IsPopupOpen("Import Scene") && GetEditorState()->mPendingSceneImportPath != "")
     {
         std::string sceneName = GetFileNameFromPath(GetEditorState()->mPendingSceneImportPath);
@@ -3975,6 +3993,7 @@ static void DrawViewportPanel()
         ImGui::Checkbox("Import Materials", &sSceneImportOptions.mImportMaterials);
         ImGui::Checkbox("Import Textures", &sSceneImportOptions.mImportTextures);
         ImGui::Checkbox("Import Lights", &sSceneImportOptions.mImportLights);
+        ImGui::Checkbox("Import Cameras", &sSceneImportOptions.mImportCameras);
         ImGui::Checkbox("Enable Collision", &sSceneImportOptions.mEnableCollision);
 
         int32_t shadingModelCount = int32_t(ShadingModel::Count);
@@ -3994,6 +4013,46 @@ static void DrawViewportPanel()
         if (ImGui::Button("Cancel"))
         {
             GetEditorState()->mPendingSceneImportPath = "";
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+
+    if (!ImGui::IsPopupOpen("Import Camera") && GetEditorState()->mIOAssetPath != "")
+    {
+        ImGui::OpenPopup("Import Camera");
+    }
+
+    if (ImGui::IsPopupOpen("Import Camera"))
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    }
+
+    if (ImGui::BeginPopupModal("Import Camera", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        // File path
+        sCameraImportOptions.mFilePath = GetEditorState()->mIOAssetPath;
+        ImGui::Text(GetEditorState()->mPendingSceneImportPath.c_str());
+        ImGui::Checkbox("Set As Main Camera", &sCameraImportOptions.mIsMainCamera);
+        ImGui::Checkbox("Override Camera Name", &sCameraImportOptions.mOverrideCameraName);
+        if (sCameraImportOptions.mOverrideCameraName) {
+            ImGui::InputText("Camera Name", &sCameraImportOptions.mCameraName);
+        }
+
+        if (ImGui::Button("Import"))
+        {
+            am->ImportCamera(sCameraImportOptions);
+            GetEditorState()->mIOAssetPath = "";
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+        {
+            GetEditorState()->mIOAssetPath = "";
             ImGui::CloseCurrentPopup();
         }
 

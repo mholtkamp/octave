@@ -299,6 +299,7 @@ struct EngineState
     uint32_t mVersion = 0;
     uint32_t mFrameNumber = 0;
     std::string mProjectPath;
+    std::string mIOAssetPath;
     std::string mProjectDirectory;
     std::string mProjectName;
     std::string mAssetDirectory;

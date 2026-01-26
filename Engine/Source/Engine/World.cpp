@@ -926,6 +926,27 @@ void World::Update(float deltaTime)
     }
 }
 
+Camera3D* World::GetMainCamera()
+{
+    std::vector<Camera3D*> cams;
+    FindNodes(cams);
+	Camera3D* matchCamera = nullptr;
+	Camera3D* highestPriority = nullptr;
+    for (Camera3D* cam : cams)
+    {
+		if (highestPriority == nullptr || cam->GetPriority() > highestPriority->GetPriority())
+        if (cam->GetIsMainCamera() && matchCamera == nullptr)
+        {
+            matchCamera = cam;
+        }
+    }
+    if (matchCamera != nullptr)
+    {
+        return matchCamera;
+	}
+	return highestPriority;
+}
+
 Camera3D* World::GetActiveCamera()
 {
 #if EDITOR
