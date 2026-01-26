@@ -375,6 +375,12 @@ void SYS_CopyDirectory(const char* sourceDir, const char* destDir)
 
 }
 
+bool SYS_CopyDirectoryRecursive(const std::string& sourceDir,
+                                const std::string& destDir)
+{
+    return false;
+}
+
 void SYS_CopyFile(const char* sourcePath, const char* destPath)
 {
 

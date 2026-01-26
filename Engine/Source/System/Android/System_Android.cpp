@@ -767,6 +767,12 @@ std::string SYS_GetFileName(const std::string& relativePath)
     return relativePath.substr(start, dot - start);
 
 }
+
+bool SYS_CopyDirectoryRecursive(const std::string& sourceDir,
+                                const std::string& destDir)
+{
+    return false;
+}
 void SYS_CopyDirectory(const char* sourceDir, const char* destDir)
 {
     std::string cmd = std::string("cp -r \"") + sourceDir + "\" \"" + destDir + "\"";

@@ -19,6 +19,9 @@
 #if EDITOR
 #include "imgui.h"
 #include "backends/imgui_impl_win32.h"
+#include <sys/stat.h>
+#include <string>
+#include <fstream>
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -745,6 +748,23 @@ MutexObject* SYS_CreateMutex()
 
     return retMutex;
 }
+
+bool SYS_CopyDirectoryRecursive(const std::string& sourceDir,
+                                const std::string& destDir)
+{
+    std::string source = sourceDir;
+    std::string dest = destDir;
+
+    for (char& c : source) if (c == '/') c = '\\';
+    for (char& c : dest)   if (c == '/') c = '\\';
+
+    std::string cmd =
+        "xcopy \"" + source + "\\*\" \"" + dest + "\\\" /E /I /Y /Q";
+
+    SYS_Exec(cmd.c_str());
+	return true;
+}
+
 
 void SYS_CopyDirectory(const char* sourceDir, const char* destDir)
 {
