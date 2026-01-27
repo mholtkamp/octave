@@ -111,7 +111,8 @@ public:
     AssetDir* FindProjectRootDirectory();
     AssetDir* FindEngineDirectory();
     AssetDir* GetRootDirectory();
-    void GatherScriptFiles(const std::string& dir, std::vector<std::string>& outFiles);
+    std::string GetOctaveDirectory();
+    void GatherScriptFiles(const std::string &dir, std::vector<std::string> &outFiles);
     void GatherFontFiles(const std::string& dir, std::vector<std::string>& outFiles);
     AssetStub* FindDefaultScene();
     std::string FindDefaultScenePath();

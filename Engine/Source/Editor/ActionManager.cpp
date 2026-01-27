@@ -1325,7 +1325,8 @@ void CopyFileAndReplaceString(const std::string& srcFile, const std::string& dst
 void CpyDirWithExclusions(const std::string& srcDir, const std::string& dstDir, const std::vector<std::string> exclusions)
 {
     DirEntry dirEntry;
-    SYS_OpenDirectory(srcDir, dirEntry);
+    std::string fullPath = SYS_GetAbsolutePath(srcDir);
+    SYS_OpenDirectory(fullPath, dirEntry);
 
     // Create dir if it doesn't exist.
     CreateDir(dstDir.c_str());
@@ -1434,6 +1435,10 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             octpFile = nullptr;
         }
 		std::string subProjFolder = ""; 
+        std::string octaveDirectory = SYS_GetCurrentDirectoryPath();
+        if(SYS_DoesFileExist((octaveDirectory + "Octave/imgui.ini").c_str(), false)){
+            octaveDirectory = octaveDirectory + "Octave/";
+            }
         if (cpp)
         {
             std::string standaloneDir = "Standalone/";
@@ -1492,10 +1497,11 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
 
 #if 0
             // Create a symlink to the Octave directory
-            CreateSymLink(standaloneDir + "../../Octave", newProjDir + "Octave");
+            CreateSymLink(octaveDirectory, newProjDir + "Octave");
 #else
+       
             // Copy Engine, External, to Proj folder (EXCLUDE Build and Intermediate folders)
-            CpyDirWithExclusions(standaloneDir + "../../Octave/", newProjDir + "Octave/", {"Build", "build", "Intermediate", ".gradle", ".cxx", ".vs", ".git", "imgui.ini"});
+            CpyDirWithExclusions(octaveDirectory, newProjDir + "Octave/", {"Build", "build", "Intermediate", ".gradle", ".cxx", ".vs", ".git", "imgui.ini"});
 #endif
 
             // Copy Octave.sln  - Replace "Standalone" with Proj Name

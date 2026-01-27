@@ -1298,6 +1298,14 @@ AssetDir* AssetManager::GetRootDirectory()
     return mRootDirectory;
 }
 
+std::string AssetManager::GetOctaveDirectory()
+{
+    // Get the App Working Directory
+    std::string wd = SYS_GetCurrentDirectoryPath();
+    return wd;
+
+}
+
 void AssetManager::UnloadProjectDirectory()
 {
     const std::string& projName = GetEngineState()->mProjectName;

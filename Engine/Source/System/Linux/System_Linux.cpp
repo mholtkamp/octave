@@ -13,8 +13,12 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <string>
+#include <sstream>
+#include <vector>
 #include <assert.h>
 #include <signal.h>
+#include <limits.h>
+#include <unistd.h>
 
 #if EDITOR
 #include "imgui.h"
@@ -579,6 +583,40 @@ std::string SYS_GetAbsolutePath(const std::string& relativePath)
     {
         absPath = resolvedPath;
         free(resolvedPath);
+    }
+    else
+    {
+        // realpath fails if path doesn't exist - resolve manually
+        char cwd[PATH_MAX];
+        if (getcwd(cwd, sizeof(cwd)) != nullptr)
+        {
+            std::string fullPath = relativePath;
+            if (relativePath[0] != '/')
+            {
+                fullPath = std::string(cwd) + "/" + relativePath;
+            }
+
+            // Normalize path by resolving . and ..
+            std::vector<std::string> parts;
+            std::stringstream ss(fullPath);
+            std::string part;
+            while (std::getline(ss, part, '/'))
+            {
+                if (part == ".." && !parts.empty() && parts.back() != "..")
+                {
+                    parts.pop_back();
+                }
+                else if (part != "." && part != "")
+                {
+                    parts.push_back(part);
+                }
+            }
+
+            for (const auto& p : parts)
+            {
+                absPath += "/" + p;
+            }
+        }
     }
 
     if (absPath != "" && DoesDirExist(absPath.c_str()))
