@@ -13,6 +13,7 @@
 #include "Script.h"
 #include "PaintManager.h"
 #include "NodePath.h"
+#include "FeatureFlags.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/InstancedMesh3d.h"
@@ -55,6 +56,7 @@
 #include "imgui_impl_xcb.h"
 #endif
 
+
 struct FileBrowserDirEntry
 {
     std::string mName;
@@ -76,6 +78,7 @@ constexpr const uint32_t kPopupInputBufferSize = 256;
 static char sPopupInputBuffer[kPopupInputBufferSize] = {};
 
 static bool sNodesDiscovered = false;
+static bool showTheming = false;
 static std::vector<std::string> sNode3dNames;
 static std::vector<std::string> sNodeWidgetNames;
 static std::vector<std::string> sNodeOtherNames;
@@ -4120,13 +4123,15 @@ static void DrawViewportPanel()
         }
 
         // TODO: Uncomment to show Preferences
-        ImGui::Separator();
-        if (ImGui::Selectable("Preferences..."))
-        {
-            GetPreferencesWindow()->Open();
+        if (GetFeatureFlagsEditor().mShowPreferences == true) {
+            ImGui::Separator();
+            if (ImGui::Selectable("Preferences..."))
+            {
+                GetPreferencesWindow()->Open();
+            }
         }
 
-        ImGui::EndPopup();
+            ImGui::EndPopup();
     }
 
     if (ImGui::BeginPopup("WorldPopup"))
@@ -4942,6 +4947,9 @@ void EditorImguiInit()
 
     // TODO: Unlock theming when you and the world is ready.
         // SetupImGuiStyle();
+    //h
+    if (GetFeatureFlagsEditor().mShowTheming == true) {
+       
         std::string fontPath = ResolveEditorFontPath();
         ImFont* myFont = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 15.0f);
         if (myFont == nullptr)
@@ -4952,6 +4960,7 @@ void EditorImguiInit()
             {
                 LogError("Failed to load editor font from %s", defaultFontPath.c_str());
             }
+        }
         }
 
 

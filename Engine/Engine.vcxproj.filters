@@ -785,6 +785,9 @@
     <ClCompile Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.cpp">
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClCompile>
+    <ClCompile Include="FeatureFlags.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1487,6 +1490,9 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.h">
       <Filter>Source Files\Editor\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="FeatureFlags.h">
+      <Filter>Source Files\Editor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

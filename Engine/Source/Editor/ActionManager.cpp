@@ -1306,12 +1306,14 @@ static void HandleNewProjectCallback(const std::vector<std::string>& folderPaths
 
 void CpyFile(const std::string& srcFile, const std::string& dstFile)
 {
-    SYS_Exec((std::string("cp ") + srcFile + " " + dstFile).c_str());
+	SYS_CopyFile(srcFile.c_str(), dstFile.c_str());
+    //SYS_Exec((std::string("cp ") + srcFile + " " + dstFile).c_str());
 }
 
 void CpyDir(const std::string& srcFile, const std::string& dstFile)
 {
-    SYS_Exec((std::string("cp -r ") + srcFile + " " + dstFile).c_str());
+	SYS_CopyDirectory(srcFile.c_str(), dstFile.c_str());
+    //SYS_Exec((std::string("cp -r ") + srcFile + " " + dstFile).c_str());
 }
 
 void CopyFileAndReplaceString(const std::string& srcFile, const std::string& dstFile, const std::string& srcString, const std::string& dstString)
@@ -1431,21 +1433,25 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             fclose(octpFile);
             octpFile = nullptr;
         }
-
+		std::string subProjFolder = ""; 
         if (cpp)
         {
             std::string standaloneDir = "Standalone/";
 
-            std::string subProjFolder = newProjDir + newProjName.c_str();
+            subProjFolder = newProjDir + newProjName.c_str();
             SYS_CreateDirectory(subProjFolder.c_str());
             subProjFolder += "/";
+			projectFile = subProjFolder + newProjName.c_str() + ".octp";
 
             // Copy .octp folder into the subfolder
-            SYS_Exec(("mv " + newProjDir + newProjName.c_str() + ".octp" + " " + subProjFolder + newProjName.c_str() + ".octp").c_str());
+			SYS_MoveFile((newProjDir + newProjName.c_str() + ".octp").c_str(), (subProjFolder + newProjName + ".octp").c_str());
+            //SYS_Exec(("mv " + newProjDir + newProjName.c_str() + ".octp" + " " + subProjFolder + newProjName.c_str() + ".octp").c_str());
 
             // Create Proj subfolder (Assets and Scripts folders will need to be moved in the subfolder)
-            SYS_Exec((std::string("mv ") + assetsFolder.c_str() + " " + subProjFolder + "Assets").c_str());
-            SYS_Exec((std::string("mv ") + scriptsFolder.c_str() + " " + subProjFolder + "Scripts").c_str());
+			SYS_MoveDirectory(assetsFolder.c_str(), (subProjFolder + "Assets").c_str());
+            //SYS_Exec((std::string("mv ") + assetsFolder.c_str() + " " + subProjFolder + "Assets").c_str());
+			SYS_MoveDirectory(scriptsFolder.c_str(), (subProjFolder + "Scripts").c_str());
+            //SYS_Exec((std::string("mv ") + scriptsFolder.c_str() + " " + subProjFolder + "Scripts").c_str());
             assetsFolder = subProjFolder + "Assets";
             scriptsFolder = subProjFolder + "Scripts";
 
@@ -1473,6 +1479,7 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "$(SolutionDir)Engine", "$(SolutionDir)Octave\\Engine");
             ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "$(SolutionDir)External", "$(SolutionDir)Octave\\External");
             ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "..\\Engine\\", "..\\Octave\\Engine\\");
+            ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "Standalone.rc", "$(SolutionDir)Octave\\Standalone\\Standalone.rc");
             CpyFile(standaloneDir + "Standalone.vcxproj.filters", subProjFolder + newProjName + ".vcxproj.filters");
 
             // Copy Source folder
@@ -1503,11 +1510,22 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             ReplaceStringInFile(newProjDir + ".vscode/tasks.json", "Standalone", newProjName);
             ReplaceStringInFile(newProjDir + ".vscode/launch.json", "Standalone", newProjName);
             ReplaceStringInFile(newProjDir + ".vscode/launch.json", "\"name\": \"Octave" , "\"name\": \"" + newProjName);
+
         }
 
         ResetEngineConfig();
         GetMutableEngineConfig()->mProjectName = newProjName;
-        WriteEngineConfig(newProjDir + "/Config.ini");
+
+        if (cpp) {
+            // correct path with subfolder if cpp
+            WriteEngineConfig(subProjFolder + "/Config.ini");
+
+        }
+        else {
+            // correct path with subfolder if cpp
+            WriteEngineConfig(newProjDir + +"/Config.ini");
+        }
+
 
         // Finally, open the project
         OpenProject(projectFile.c_str());

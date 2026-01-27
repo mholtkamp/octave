@@ -7,6 +7,7 @@
 #include "document.h"
 #include "imgui.h"
 #include "System/System.h"
+#include "../../../FeatureFlags.h"
 #include "Log.h"
 #include <AssetManager.h>
 #include <Engine.h>
@@ -43,7 +44,9 @@ std::string ThemeModule::LoadSavedFontPreference()
 
 ThemeModule::ThemeModule()
 {
+    if (GetFeatureFlagsEditor().mShowTheming) {
     RefreshAvailableFonts();
+}
 }
 
 ThemeModule::~ThemeModule()
@@ -156,6 +159,10 @@ void ThemeModule::Render()
 
 void ThemeModule::LoadSettings(const rapidjson::Document& doc)
 {
+    if (!GetFeatureFlagsEditor().mShowTheming) {
+        return;
+	}
+
     std::string themeName = JsonSettings::GetString(doc, "theme", "Dark");
     mCurrentTheme = EditorTheme::GetThemeTypeFromName(themeName);
     mSelectedThemeIndex = static_cast<int>(mCurrentTheme);
