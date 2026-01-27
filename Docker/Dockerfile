@@ -16,7 +16,7 @@
 #   Interactive:
 #     docker run -it --rm -v ./output:/game -v ./MyGame:/project octavegameengine bash
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -51,23 +51,26 @@ ENV LD_LIBRARY_PATH="${VULKAN_SDK}/lib"
 ENV VK_LAYER_PATH="${VULKAN_SDK}/share/vulkan/explicit_layer.d"
 
 # Install devkitPro (for 3DS, GameCube, Wii)
-# This may fail on some systems - console builds will be unavailable
 ENV DEVKITPRO=/opt/devkitpro
 ENV DEVKITPPC=${DEVKITPRO}/devkitPPC
 ENV DEVKITARM=${DEVKITPRO}/devkitARM
 ENV PATH="${DEVKITPRO}/tools/bin:${DEVKITPPC}/bin:${DEVKITARM}/bin:${PATH}"
 
+# Install devkitPro pacman (using their required User-Agent "dkp apt")
 RUN apt-get update && \
-    apt-get install -y gnupg && \
-    wget -O /tmp/devkitpro-pub.gpg https://apt.devkitpro.org/devkitpro-pub.gpg && \
-    gpg --dearmor -o /usr/share/keyrings/devkitpro-pub.gpg /tmp/devkitpro-pub.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" > /etc/apt/sources.list.d/devkitpro.list && \
+    apt-get install -y apt-transport-https && \
+    mkdir -p /usr/share/keyring/ && \
+    wget -U "dkp apt" -O /usr/share/keyring/devkitpro-pub.gpg https://apt.devkitpro.org/devkitpro-pub.gpg && \
+    echo "deb [signed-by=/usr/share/keyring/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" > /etc/apt/sources.list.d/devkitpro.list && \
     apt-get update && \
     apt-get install -y devkitpro-pacman && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install console development libraries
+# Create /etc/mtab symlink needed by pacman in Docker
+RUN ln -sf /proc/self/mounts /etc/mtab && \
     dkp-pacman -Syu --noconfirm && \
-    dkp-pacman -S --noconfirm gamecube-dev wii-dev 3ds-dev && \
-    rm -rf /var/lib/apt/lists/* /tmp/* || \
-    echo "WARNING: devkitPro installation failed - console builds will be unavailable"
+    dkp-pacman -S --noconfirm gamecube-dev wii-dev 3ds-dev
 
 # Create directories
 RUN mkdir -p /octave /game /project
