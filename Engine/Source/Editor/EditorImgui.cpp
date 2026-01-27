@@ -20,8 +20,6 @@
 #include "Nodes/3D/Camera3d.h"
 #include "World.h"
 
-#include <glm/gtc/type_ptr.hpp>
-
 #include "Assets/Scene.h"
 #include "Assets/SoundWave.h"
 #include "Assets/ParticleSystem.h"
