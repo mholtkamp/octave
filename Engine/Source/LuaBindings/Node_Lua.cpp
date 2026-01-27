@@ -646,8 +646,14 @@ int Node_Lua::Traverse(lua_State* L)
     auto callScriptFunc = [&](Node* node) -> bool
     {
         Datum args[1] = { node };
-        bool ret = scriptFunc.CallR(1, args);
-        return ret;
+        bool cont = true;
+        Datum retDatum = scriptFunc.CallR(1, args);
+        if (retDatum.GetType() == DatumType::Bool)
+        {
+            cont = retDatum.GetBool();
+        }
+
+        return cont;
     };
 
     node->Traverse(callScriptFunc, inverted);
@@ -667,8 +673,15 @@ int Node_Lua::ForEach(lua_State* L)
     auto callScriptFunc = [&](Node* node) -> bool
     {
         Datum args[1] = { node };
-        bool ret = scriptFunc.CallR(1, args);
-        return ret;
+        bool cont = true;
+        Datum retDatum = scriptFunc.CallR(1, args);
+
+        if (retDatum.GetType() == DatumType::Bool)
+        {
+            cont = retDatum.GetBool();
+        }
+
+        return cont;
     };
 
     bool ret = node->ForEach(callScriptFunc, inverted);
