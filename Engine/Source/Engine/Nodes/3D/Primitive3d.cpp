@@ -419,16 +419,12 @@ void Primitive3D::SetMass(float mass)
 
 void Primitive3D::SetLinearDamping(float linearDamping)
 {
-    EnableRigidBody(false);
     if (mRigidBody) mRigidBody->setDamping(linearDamping, mRigidBody->getAngularDamping());
-    EnableRigidBody(true);
 }
 
 void Primitive3D::SetAngularDamping(float angularDamping)
 {
-    EnableRigidBody(false);
     if (mRigidBody) mRigidBody->setDamping(mRigidBody->getLinearDamping(), angularDamping);
-    EnableRigidBody(true);
 }
 
 void Primitive3D::SetRestitution(float restitution)
@@ -488,6 +484,9 @@ void Primitive3D::SetCollisionMask(uint8_t mask)
 
 glm::vec3 Primitive3D::GetLinearVelocity() const
 {
+    if (mRigidBody == nullptr)
+        return glm::vec3(0.0f, 0.0f, 0.0f);
+
     btVector3 linearVelocity;
     linearVelocity = mRigidBody->getLinearVelocity();
     return { linearVelocity.x(), linearVelocity.y(), linearVelocity.z() };
@@ -495,6 +494,9 @@ glm::vec3 Primitive3D::GetLinearVelocity() const
 
 glm::vec3 Primitive3D::GetAngularVelocity() const
 {
+    if (mRigidBody == nullptr)
+        return glm::vec3(0.0f, 0.0f, 0.0f);
+
     btVector3 angularVelocity;
     angularVelocity = mRigidBody->getAngularVelocity();
     return { angularVelocity.x(), angularVelocity.y(), angularVelocity.z() };

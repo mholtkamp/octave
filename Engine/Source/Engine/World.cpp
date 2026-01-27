@@ -792,6 +792,9 @@ void World::Update(float deltaTime)
 
                 prim0->OnCollision(prim0, prim1, avgContactPoint0, avgNormal, manifold);
                 prim1->OnCollision(prim1, prim0, avgContactPoint1, -avgNormal, manifold);
+
+                prim0->EmitSignal("OnCollision", {prim0, prim1, avgContactPoint0, avgNormal});
+                prim1->EmitSignal("OnCollision", {prim1, prim0, avgContactPoint1, -avgNormal});
             }
 
             if (prim0->AreOverlapsEnabled() && prim1->AreOverlapsEnabled() &&
@@ -810,6 +813,7 @@ void World::Update(float deltaTime)
             if (beginOverlap)
             {
                 pair.mPrimitiveA->BeginOverlap(pair.mPrimitiveA, pair.mPrimitiveB);
+                pair.mPrimitiveA->EmitSignal("BeginOverlap", {pair.mPrimitiveA, pair.mPrimitiveB});
             }
         }
 
@@ -821,6 +825,7 @@ void World::Update(float deltaTime)
             if (endOverlap)
             {
                 pair.mPrimitiveA->EndOverlap(pair.mPrimitiveA, pair.mPrimitiveB);
+                pair.mPrimitiveA->EmitSignal("EndOverlap", {pair.mPrimitiveA, pair.mPrimitiveB});
             }
         }
     }
