@@ -820,4 +820,8 @@ bool SYS_IsFullscreen()
     return true;
 }
 
+void SYS_ExplorerOpenDirectory(const std::string& dirPath)
+{
+}
+
 #endif

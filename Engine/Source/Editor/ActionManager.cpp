@@ -560,6 +560,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 std::string stripCmd = std::string("strip --strip-debug ") + buildProjDir + "Build/Linux/" + exeName + ".elf";
                 SYS_Exec(stripCmd.c_str());
             }
+          
         }
     }
     else
@@ -641,6 +642,18 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         idStream.WriteBytes((uint8_t*)txtId, (uint32_t)strlen(txtId));
         idStream.WriteFile((packagedDir + "steam_appid.txt").c_str());
     }
+
+    // Verify that the executable exists in the packaged directory
+    if (!SYS_DoesFileExist((packagedDir + projectName + extension).c_str(), false))
+    {
+        LogError("Packaged executable not found: %s", (packagedDir + projectName + extension).c_str());
+        LogError("Packaging failed. Please check the log for errors.");
+        return;
+    }
+      if(!IsHeadless()){
+                // Show the build output directory
+                SYS_ExplorerOpenDirectory((packagedDir ).c_str());
+            }
 
     LogDebug("Finished packaging!");
 }

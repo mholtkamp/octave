@@ -1245,6 +1245,12 @@ void SYS_SetWindowRect(int32_t x, int32_t y, int32_t width, int32_t height)
     xcb_configure_window(system.mXcbConnection, system.mXcbWindow, XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values);
 }
 
+void SYS_ExplorerOpenDirectory(const std::string& dirPath)
+{
+    std::string cmd = "xdg-open \"" + dirPath + "\" &";
+    SYS_Exec(cmd.c_str());
+}
+
 void SYS_GetWindowRect(int32_t& outX, int32_t& outY, int32_t& outWidth, int32_t& outHeight)
 {
     SystemState& system = GetEngineState()->mSystem;
