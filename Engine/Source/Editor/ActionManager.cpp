@@ -1413,22 +1413,18 @@ static void CreateAndSaveDefaultScene(const std::string& scenePath)
     NodePtr root = Node::Construct(Node3D::GetStaticType());
     root->SetName("Root");
 
-    // Create a Camera3D as a child at position (0, 0, 10)
     NodePtr camera = Node::Construct(Camera3D::GetStaticType());
     camera->SetName("Camera");
     camera->As<Camera3D>()->SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
     root->AddChild(camera.Get());
 
-    // Create a Scene asset and capture the node hierarchy
     Scene scene;
     scene.Create();
     scene.SetName("SC_Default");
     scene.Capture(root.Get());
 
-    // Save the scene directly to file
     scene.SaveFile(scenePath.c_str(), Platform::Count);
 
-    // Nodes are automatically cleaned up when NodePtrs go out of scope
 }
 
 void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
