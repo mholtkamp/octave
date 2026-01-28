@@ -227,17 +227,21 @@ void MaterialLite::Create()
 {
     Material::Create();
 
-    Renderer* renderer = Renderer::Get();
-
-    for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
+    // Skip Renderer access and GPU resource creation in headless mode
+    if (!IsHeadless())
     {
-        if (mLiteParams.mTextures[i].Get() == nullptr)
-        {
-            mLiteParams.mTextures[i] = renderer->mWhiteTexture;
-        }
-    }
+        Renderer* renderer = Renderer::Get();
 
-    GFX_CreateMaterialResource(this);
+        for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
+        {
+            if (mLiteParams.mTextures[i].Get() == nullptr)
+            {
+                mLiteParams.mTextures[i] = renderer->mWhiteTexture;
+            }
+        }
+
+        GFX_CreateMaterialResource(this);
+    }
 }
 
 void MaterialLite::Destroy()

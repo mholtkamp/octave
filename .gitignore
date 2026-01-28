@@ -321,3 +321,4 @@ Octave.lib
 dist/
 dist/*
 dist/Editor/
+docs/*spec*

@@ -272,6 +272,13 @@ void SYS_Initialize()
     EngineState& engine = *GetEngineState();
     SystemState& system = engine.mSystem;
 
+    // Skip window creation in headless mode
+    if (IsHeadless())
+    {
+        LogDebug("SYS_Initialize: Headless mode, skipping XCB window creation");
+        return;
+    }
+
     // Create a window with XCB
     system.mXcbConnection = xcb_connect(NULL, NULL);
 
@@ -419,6 +426,13 @@ void SYS_Initialize()
 
 void SYS_Shutdown()
 {
+    // Skip in headless mode since we didn't create any XCB resources
+    if (IsHeadless())
+    {
+        LogDebug("SYS_Shutdown: Headless mode, skipping XCB cleanup");
+        return;
+    }
+
     SystemState& system = GetEngineState()->mSystem;
 
 #if EDITOR
@@ -431,7 +445,7 @@ void SYS_Shutdown()
     {
         xcb_destroy_window(system.mXcbConnection, system.mXcbWindow);
     }
-    
+
     if (system.mXcbConnection != nullptr)
     {
         xcb_disconnect(system.mXcbConnection);

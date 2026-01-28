@@ -1,5 +1,5 @@
 #pragma once
-// Add this field to the EngineConfig struct/class definition
+
 #include <string>
 #include <string.h>
 #include <unordered_set>
@@ -25,6 +25,19 @@ class Primitive3D;
 class Light3D;
 class Node3D;
 class Node;
+
+// Platform enum moved here for use in EngineConfig
+enum class Platform : int
+{
+    Windows,
+    Linux,
+    Android,
+    GameCube,
+    Wii,
+    N3DS,
+
+    Count
+};
 
 class StaticMesh;
 class Material;
@@ -280,6 +293,11 @@ struct EngineConfig
 
     float mEditorInterfaceScale = 1.0f;
     int32_t mColorScale = 2;
+
+    // Headless mode configuration
+    bool mHeadless = false;
+    Platform mBuildPlatform = Platform::Count;  // Count = no build requested
+    bool mBuildEmbedded = false;
 };
 
 enum class ConsoleMode
@@ -476,18 +494,6 @@ struct NetHostProfile
 
 typedef NetHostProfile NetClient;
 typedef NetHostProfile NetServer;
-
-enum class Platform
-{
-    Windows,
-    Linux,
-    Android,
-    GameCube,
-    Wii,
-    N3DS,
-
-    Count
-};
 
 struct FadingLight
 {

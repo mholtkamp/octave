@@ -4932,6 +4932,11 @@ static std::string ResolveEditorFontPath()
 
 void EditorImguiInit()
 {
+    if (IsHeadless())
+    {
+        return;
+    }
+
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
@@ -5046,11 +5051,21 @@ void EditorImguiDraw()
 
 void EditorImguiShutdown()
 {
+    if (IsHeadless())
+    {
+        return;
+    }
+
     ImGui::DestroyContext();
 }
 
 void EditorImguiPreShutdown()
 {
+    if (IsHeadless())
+    {
+        return;
+    }
+
     if (sInspectTexId != 0)
     {
         DeviceWaitIdle();

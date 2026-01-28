@@ -1,13 +1,16 @@
 # OctaveGameEngine - Universal Build Environment
 #
+# The editor is pre-compiled during image build and runs in headless mode
+# to cook/package assets for each target platform.
+#
 # Usage:
 #   Build image:
 #     docker build -t octavegameengine -f Docker/Dockerfile .
 #
-#   Build Editor (no project needed):
+#   Build Editor (copy pre-built editor to output):
 #     docker run --rm -v ./output:/game octavegameengine build-editor
 #
-#   Build Game (pass your project directory):
+#   Build Game (requires project with .octp file):
 #     docker run --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-linux
 #     docker run --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-3ds
 #     docker run --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-gcn
@@ -92,39 +95,36 @@ RUN chmod +x compile.sh && ./compile.sh
 WORKDIR /octave
 
 # ============================================================================
+# Pre-build Linux Editor (for headless asset cooking)
+# ============================================================================
+RUN cd /octave/Standalone && make -j$(nproc) -f Makefile_Linux_Editor
+RUN cp /octave/Standalone/Build/Linux/OctaveEditor.elf /octave/OctaveEditor.elf
+
+# ============================================================================
 # Build Commands
 # ============================================================================
 
-# build-editor: Build the Linux Editor
+# build-editor: Build the Linux Editor (and optionally copy to output)
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
-# Check for project (optional but recommended)\n\
-if [ ! -d "/project" ] || [ -z "$(ls -A /project 2>/dev/null)" ]; then\n\
-    echo "Warning: No project mounted at /project"\n\
-    echo "Usage: docker run --rm -v ./output:/game -v ./MyProject:/project octavegameengine build-editor"\n\
-    echo "Building editor without project..."\n\
-else\n\
-    OCT_FILE=$(find /project -maxdepth 1 -name "*.oct" -print -quit)\n\
+echo "Linux Editor already pre-built at /octave/OctaveEditor.elf"\n\
+\n\
+# Check for project (optional)\n\
+if [ -d "/project" ] && [ -n "$(ls -A /project 2>/dev/null)" ]; then\n\
+    OCTP_FILE=$(find /project -maxdepth 1 -name "*.octp" -print -quit)\n\
     echo "Project: /project"\n\
-    [ -n "$OCT_FILE" ] && echo "Project file: $OCT_FILE"\n\
-    echo "Copying project to /octave..."\n\
-    cp -r /project/* /octave/\n\
+    [ -n "$OCTP_FILE" ] && echo "Project file: $OCTP_FILE"\n\
 fi\n\
 \n\
-rm -rf /octave/dist || true\n\
-echo "Building Linux Editor..."\n\
-cd /octave/Standalone\n\
-make -j$(nproc) -f Makefile_Linux_Editor\n\
-\n\
-echo "Copying to /game..."\n\
-cp /octave/Standalone/Build/Linux/OctaveEditor.elf /octave/\n\
-cp -r /octave/* /game/\n\
+echo "Copying editor to /game..."\n\
+cp /octave/OctaveEditor.elf /game/\n\
+cp -r /octave/Engine /game/\n\
 \n\
 echo "Done! Editor at /game/OctaveEditor.elf"\n\
 ' > /usr/local/bin/build-editor && chmod +x /usr/local/bin/build-editor
 
-# build-linux: Build Linux Game
+# build-linux: Build Linux Game with embedded assets
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
@@ -134,11 +134,29 @@ if [ ! -d "/project" ] || [ -z "$(ls -A /project 2>/dev/null)" ]; then\n\
     exit 1\n\
 fi\n\
 \n\
-OCT_FILE=$(find /project -maxdepth 1 -name "*.oct" -print -quit)\n\
+OCTP_FILE=$(find /project -maxdepth 1 -name "*.octp" -print -quit)\n\
+if [ -z "$OCTP_FILE" ]; then\n\
+    echo "Error: No .octp project file found in /project"\n\
+    exit 1\n\
+fi\n\
+\n\
 echo "Building Linux Game..."\n\
 echo "Project: /project"\n\
-[ -n "$OCT_FILE" ] && echo "Project file: $OCT_FILE"\n\
+echo "Project file: $OCTP_FILE"\n\
 \n\
+# Copy project to octave directory (editor expects paths relative to working dir)\n\
+PROJECT_NAME=$(basename "$OCTP_FILE" .octp)\n\
+rm -rf /octave/Standalone 2>/dev/null || true\n\
+mkdir -p /octave/Standalone\n\
+cp -r /project/* /octave/Standalone/\n\
+\n\
+# Cook assets using headless editor\n\
+echo "Cooking assets for Linux (embedded)..."\n\
+cd /octave\n\
+./OctaveEditor.elf -headless -project "Standalone/${PROJECT_NAME}.octp" -build Linux embedded\n\
+\n\
+# Build the game executable\n\
+echo "Building game executable..."\n\
 cd /octave/Standalone\n\
 make -j$(nproc) -f Makefile_Linux_Game\n\
 \n\
@@ -148,7 +166,7 @@ cp /octave/Standalone/Build/Linux/* /game/\n\
 echo "Done! Output at /game/"\n\
 ' > /usr/local/bin/build-linux && chmod +x /usr/local/bin/build-linux
 
-# build-3ds: Build for Nintendo 3DS
+# build-3ds: Build for Nintendo 3DS with embedded assets
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
@@ -163,21 +181,39 @@ if [ ! -d "/project" ] || [ -z "$(ls -A /project 2>/dev/null)" ]; then\n\
     exit 1\n\
 fi\n\
 \n\
-OCT_FILE=$(find /project -maxdepth 1 -name "*.oct" -print -quit)\n\
+OCTP_FILE=$(find /project -maxdepth 1 -name "*.octp" -print -quit)\n\
+if [ -z "$OCTP_FILE" ]; then\n\
+    echo "Error: No .octp project file found in /project"\n\
+    exit 1\n\
+fi\n\
+\n\
 echo "Building for Nintendo 3DS..."\n\
 echo "Project: /project"\n\
-[ -n "$OCT_FILE" ] && echo "Project file: $OCT_FILE"\n\
+echo "Project file: $OCTP_FILE"\n\
 \n\
+# Copy project to octave directory\n\
+PROJECT_NAME=$(basename "$OCTP_FILE" .octp)\n\
+rm -rf /octave/Standalone 2>/dev/null || true\n\
+mkdir -p /octave/Standalone\n\
+cp -r /project/* /octave/Standalone/\n\
+\n\
+# Cook assets using headless editor\n\
+echo "Cooking assets for 3DS (embedded)..."\n\
+cd /octave\n\
+./OctaveEditor.elf -headless -project "Standalone/${PROJECT_NAME}.octp" -build 3DS embedded\n\
+\n\
+# Build the game executable\n\
+echo "Building 3DS executable..."\n\
 cd /octave/Standalone\n\
 make -j$(nproc) -f Makefile_3DS\n\
 \n\
-echo "Copying to /game..."\n\
+echo "Copying ROM to /game..."\n\
 cp /octave/Standalone/Build/3DS/* /game/\n\
 \n\
 echo "Done! 3DS build at /game/"\n\
 ' > /usr/local/bin/build-3ds && chmod +x /usr/local/bin/build-3ds
 
-# build-gcn: Build for Nintendo GameCube
+# build-gcn: Build for Nintendo GameCube with embedded assets
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
@@ -192,21 +228,39 @@ if [ ! -d "/project" ] || [ -z "$(ls -A /project 2>/dev/null)" ]; then\n\
     exit 1\n\
 fi\n\
 \n\
-OCT_FILE=$(find /project -maxdepth 1 -name "*.oct" -print -quit)\n\
+OCTP_FILE=$(find /project -maxdepth 1 -name "*.octp" -print -quit)\n\
+if [ -z "$OCTP_FILE" ]; then\n\
+    echo "Error: No .octp project file found in /project"\n\
+    exit 1\n\
+fi\n\
+\n\
 echo "Building for Nintendo GameCube..."\n\
 echo "Project: /project"\n\
-[ -n "$OCT_FILE" ] && echo "Project file: $OCT_FILE"\n\
+echo "Project file: $OCTP_FILE"\n\
 \n\
+# Copy project to octave directory\n\
+PROJECT_NAME=$(basename "$OCTP_FILE" .octp)\n\
+rm -rf /octave/Standalone 2>/dev/null || true\n\
+mkdir -p /octave/Standalone\n\
+cp -r /project/* /octave/Standalone/\n\
+\n\
+# Cook assets using headless editor\n\
+echo "Cooking assets for GameCube (embedded)..."\n\
+cd /octave\n\
+./OctaveEditor.elf -headless -project "Standalone/${PROJECT_NAME}.octp" -build GameCube embedded\n\
+\n\
+# Build the game executable\n\
+echo "Building GameCube executable..."\n\
 cd /octave/Standalone\n\
 make -j$(nproc) -f Makefile_GCN\n\
 \n\
-echo "Copying to /game..."\n\
+echo "Copying ROM to /game..."\n\
 cp /octave/Standalone/Build/GCN/* /game/\n\
 \n\
 echo "Done! GameCube build at /game/"\n\
 ' > /usr/local/bin/build-gcn && chmod +x /usr/local/bin/build-gcn
 
-# build-wii: Build for Nintendo Wii
+# build-wii: Build for Nintendo Wii with embedded assets
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
@@ -221,15 +275,33 @@ if [ ! -d "/project" ] || [ -z "$(ls -A /project 2>/dev/null)" ]; then\n\
     exit 1\n\
 fi\n\
 \n\
-OCT_FILE=$(find /project -maxdepth 1 -name "*.oct" -print -quit)\n\
+OCTP_FILE=$(find /project -maxdepth 1 -name "*.octp" -print -quit)\n\
+if [ -z "$OCTP_FILE" ]; then\n\
+    echo "Error: No .octp project file found in /project"\n\
+    exit 1\n\
+fi\n\
+\n\
 echo "Building for Nintendo Wii..."\n\
 echo "Project: /project"\n\
-[ -n "$OCT_FILE" ] && echo "Project file: $OCT_FILE"\n\
+echo "Project file: $OCTP_FILE"\n\
 \n\
+# Copy project to octave directory\n\
+PROJECT_NAME=$(basename "$OCTP_FILE" .octp)\n\
+rm -rf /octave/Standalone 2>/dev/null || true\n\
+mkdir -p /octave/Standalone\n\
+cp -r /project/* /octave/Standalone/\n\
+\n\
+# Cook assets using headless editor\n\
+echo "Cooking assets for Wii (embedded)..."\n\
+cd /octave\n\
+./OctaveEditor.elf -headless -project "Standalone/${PROJECT_NAME}.octp" -build Wii embedded\n\
+\n\
+# Build the game executable\n\
+echo "Building Wii executable..."\n\
 cd /octave/Standalone\n\
 make -j$(nproc) -f Makefile_Wii\n\
 \n\
-echo "Copying to /game..."\n\
+echo "Copying ROM to /game..."\n\
 cp /octave/Standalone/Build/Wii/* /game/\n\
 \n\
 echo "Done! Wii build at /game/"\n\
@@ -240,20 +312,23 @@ RUN echo '#!/bin/bash\n\
 echo "OctaveGameEngine Build Environment"\n\
 echo "==================================="\n\
 echo ""\n\
+echo "The editor is pre-built and uses headless mode to cook assets."\n\
+echo ""\n\
 echo "Commands:"\n\
-echo "  build-editor  - Build Linux Editor (project optional)"\n\
-echo "  build-linux   - Build Linux Game (project required)"\n\
-echo "  build-3ds     - Build for Nintendo 3DS (project required)"\n\
-echo "  build-gcn     - Build for Nintendo GameCube (project required)"\n\
-echo "  build-wii     - Build for Nintendo Wii (project required)"\n\
+echo "  build-editor  - Copy pre-built Linux Editor to output"\n\
+echo "  build-linux   - Build Linux Game with embedded assets"\n\
+echo "  build-3ds     - Build Nintendo 3DS with embedded assets"\n\
+echo "  build-gcn     - Build Nintendo GameCube with embedded assets"\n\
+echo "  build-wii     - Build Nintendo Wii with embedded assets"\n\
 echo ""\n\
 echo "Volumes:"\n\
 echo "  /game     - Output directory (mount with -v ./output:/game)"\n\
-echo "  /project  - Your game project (mount with -v ./MyGame:/project)"\n\
+echo "  /project  - Your game project with .octp file (mount with -v ./MyGame:/project)"\n\
 echo ""\n\
 echo "Examples:"\n\
 echo "  docker run --rm -v ./output:/game octavegameengine build-editor"\n\
 echo "  docker run --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-linux"\n\
+echo "  docker run --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-wii"\n\
 ' > /usr/local/bin/help && chmod +x /usr/local/bin/help
 
 VOLUME /game

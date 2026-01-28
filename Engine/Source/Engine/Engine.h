@@ -41,6 +41,8 @@ void ResizeWindow(uint32_t width, uint32_t height);
 bool IsPlayingInEditor();
 bool IsPlaying();
 
+bool IsHeadless();
+
 bool IsGameTickEnabled();
 
 void ReloadAllScripts(bool restartComponents = true);

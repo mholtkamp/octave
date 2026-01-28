@@ -1,6 +1,7 @@
 #if EDITOR
 
 #include <stdint.h>
+#include <stdio.h>
 
 #if PLATFORM_WINDOWS
 #include <Windows.h>
@@ -30,6 +31,7 @@
 #include "Assets/Font.h"
 #include "EditorState.h"
 #include "EditorImgui.h"
+#include "Utilities.h"
 
 void OctPreInitialize(EngineConfig& config);
 
@@ -37,6 +39,7 @@ void EditorMain(int32_t argc, char** argv)
 {
     GetEngineState()->mArgC = argc;
     GetEngineState()->mArgV = argv;
+
     ReadCommandLineArgs(argc, argv);
 
     {
@@ -48,6 +51,45 @@ void EditorMain(int32_t argc, char** argv)
 
     Initialize();
 
+    const EngineConfig* engineConfig = GetEngineConfig();
+
+    // Headless build mode - minimal initialization, run build, and exit
+    if (IsHeadless())
+    {
+        LogDebug("Headless mode: Starting");
+        LogDebug("Headless mode: Project path = %s", engineConfig->mProjectPath.c_str());
+        LogDebug("Headless mode: Build platform = %d", (int)engineConfig->mBuildPlatform);
+
+        ActionManager::Create();
+
+        // Load project directly without editor state
+        if (engineConfig->mProjectPath != "")
+        {
+            LoadProject(engineConfig->mProjectPath);
+        }
+
+        if (engineConfig->mBuildPlatform != Platform::Count)
+        {
+            LogDebug("Headless mode: Building for %s (embedded=%d)",
+                     GetPlatformString(engineConfig->mBuildPlatform),
+                     engineConfig->mBuildEmbedded ? 1 : 0);
+
+            ActionManager::Get()->BuildData(engineConfig->mBuildPlatform, engineConfig->mBuildEmbedded);
+
+            LogDebug("Headless mode: Build complete");
+        }
+        else
+        {
+            LogError("Headless mode: No build platform specified. Use -build <platform>");
+        }
+
+        // Cleanup and exit
+        ActionManager::Destroy();
+        Shutdown();
+        return;
+    }
+
+    // Normal editor initialization
     GetEditorState()->Init();
 
     ActionManager::Create();
@@ -56,7 +98,6 @@ void EditorMain(int32_t argc, char** argv)
 
     InitializeGrid();
 
-    const EngineConfig* engineConfig = GetEngineConfig();
     if (engineConfig->mProjectPath != "")
     {
         // Clear the project path so we don't overwrite the EditorProject.sav file with default data.
@@ -117,7 +158,7 @@ void EditorMain(int32_t argc, char** argv)
             OctPostUpdate();
         }
     }
-    
+
     PreferencesManager::Destroy();
     GetEditorState()->Shutdown();
     Shutdown();
