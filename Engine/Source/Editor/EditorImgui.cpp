@@ -5108,7 +5108,7 @@ void EditorImguiDraw()
 
         if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
         {
-            // DrawDesignBounds();
+            DrawDesignBounds();
             Draw2dSelections();
         }
 
