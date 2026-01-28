@@ -50,6 +50,7 @@
 #include "Nodes/3D/ShadowMesh3d.h"
 #include "Nodes/3D/InstancedMesh3d.h"
 #include "Nodes/3D/TextMesh3d.h"
+#include "Nodes/3D/Camera3d.h"
 
 #include "System/System.h"
 
@@ -1406,6 +1407,30 @@ static void CreateConfigIni(const std::string& projDir, const std::string projNa
     }
 }
 
+static void CreateAndSaveDefaultScene(const std::string& scenePath)
+{
+    // Create a root Node3D using proper construction
+    NodePtr root = Node::Construct(Node3D::GetStaticType());
+    root->SetName("Root");
+
+    // Create a Camera3D as a child at position (0, 0, 10)
+    NodePtr camera = Node::Construct(Camera3D::GetStaticType());
+    camera->SetName("Camera");
+    camera->As<Camera3D>()->SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
+    root->AddChild(camera.Get());
+
+    // Create a Scene asset and capture the node hierarchy
+    Scene scene;
+    scene.Create();
+    scene.SetName("SC_Default");
+    scene.Capture(root.Get());
+
+    // Save the scene directly to file
+    scene.SaveFile(scenePath.c_str(), Platform::Count);
+
+    // Nodes are automatically cleaned up when NodePtrs go out of scope
+}
+
 void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
 {
     std::string folderPathStr = folderPath ? folderPath : "";
@@ -1561,6 +1586,10 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             WriteEngineConfig(newProjDir + +"/Config.ini");
         }
 
+        // Create the Scenes folder and default scene for the new project
+        std::string scenesFolder = assetsFolder + "/Scenes/";
+        SYS_CreateDirectory(scenesFolder.c_str());
+        CreateAndSaveDefaultScene(scenesFolder + "SC_Default.oct");
 
         // Finally, open the project
         OpenProject(projectFile.c_str());

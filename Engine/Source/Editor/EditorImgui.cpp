@@ -223,13 +223,14 @@ static void DrawFileBrowserContextPopup(FileBrowserDirEntry* entry)
     if (entry && !isParentDir && ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
     {
         ImGui::OpenPopup("Rename File");
-        strncpy(sPopupInputBuffer, entry->mName.c_str(), kPopupInputBufferSize);
+        strncpy(sPopupInputBuffer, entry->mName.c_str(), kPopupInputBufferSize - 1);
+        sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
         setTextInputFocus = true;
     }
     if (ImGui::Selectable("New Folder", false, ImGuiSelectableFlags_DontClosePopups))
     {
         ImGui::OpenPopup("New Folder");
-        strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+        sPopupInputBuffer[0] = '\0';
         setTextInputFocus = true;
     }
     if (entry && !isParentDir && ImGui::Selectable("Delete"))
@@ -2352,7 +2353,8 @@ static void DrawScenePanel()
                 if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
                 {
                     ImGui::OpenPopup("Rename Node");
-                    strncpy(sPopupInputBuffer, node->GetName().c_str(), kPopupInputBufferSize);
+                    strncpy(sPopupInputBuffer, node->GetName().c_str(), kPopupInputBufferSize - 1);
+                    sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
                     setTextInputFocus = true;
                 }
                 if (!inSubScene && ImGui::Selectable("Duplicate"))
@@ -2614,7 +2616,8 @@ static void DrawScenePanel()
             else if (!ctrlDown && IsKeyJustDown(KEY_F2))
             {
                 ImGui::OpenPopup("Rename Node F2");
-                strncpy(sPopupInputBuffer, selNodes[0]->GetName().c_str(), kPopupInputBufferSize);
+                strncpy(sPopupInputBuffer, selNodes[0]->GetName().c_str(), kPopupInputBufferSize - 1);
+                sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
                 setKeyboardFocus = true;
             }
         }
@@ -2768,7 +2771,8 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
         {
             ImGui::OpenPopup("Rename Asset");
-            strncpy(sPopupInputBuffer, stub ? stub->mName.c_str() : dir->mName.c_str(), kPopupInputBufferSize);
+            strncpy(sPopupInputBuffer, stub ? stub->mName.c_str() : dir->mName.c_str(), kPopupInputBufferSize - 1);
+            sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
             setTextInputFocus = true;
         }
         if (ImGui::Selectable("Delete"))
@@ -2838,7 +2842,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             if (showPopup)
             {
                 ImGui::OpenPopup("New Asset Name");
-                strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+                sPopupInputBuffer[0] = '\0';
                 setTextInputFocus = true;
             }
         }
@@ -2846,7 +2850,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         if (ImGui::Selectable("New Folder", false, ImGuiSelectableFlags_DontClosePopups))
         {
             ImGui::OpenPopup("New Folder");
-            strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+            sPopupInputBuffer[0] = '\0';
             setTextInputFocus = true;
         }
 
@@ -2861,7 +2865,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             if (saveStub == nullptr)
             {
                 ImGui::OpenPopup("Capture To New Scene");
-                strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+                sPopupInputBuffer[0] = '\0';
                 setTextInputFocus = true;
             }
             else
@@ -3819,14 +3823,14 @@ static void DrawViewportPanel()
             {
                 // Need to request name and create asset.
                 openSaveSceneAsModal = true;
-                strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+                sPopupInputBuffer[0] = '\0';
             }
         }
         if (editScene && ImGui::Selectable("Save Scene As..."))
         {
             // Need to request name and create asset.
             openSaveSceneAsModal = true;
-            strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+            sPopupInputBuffer[0] = '\0';
         }
         if (ImGui::Selectable("Import Asset"))
             am->ImportAsset();
