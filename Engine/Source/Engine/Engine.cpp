@@ -534,11 +534,6 @@ bool Update()
 
     AssetManager::Get()->Update(realDeltaTime);
 
-    if (GetEditorState()->mEndPieAtEndOfFrame)
-    {
-        GetEditorState()->EndPlayInEditor();
-    }
-
     END_FRAME_STAT("Frame");
 
     GetProfiler()->EndFrame();
