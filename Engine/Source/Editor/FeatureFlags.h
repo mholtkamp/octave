@@ -9,6 +9,7 @@ struct FeatureFlagsEditor
 
     bool mShowTheming = false;
     bool mShowPreferences = false;
+    bool mShow2DBorder = false;
 };
 
 extern FeatureFlagsEditor gFeatureFlagsEditor;

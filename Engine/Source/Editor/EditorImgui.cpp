@@ -4408,6 +4408,9 @@ static void DrawPaintInstancesPanel()
 
 static void DrawDesignBounds()
 {
+    if(GetFeatureFlagsEditor().mShow2DBorder == false){
+        return;
+    }
     Viewport2D* viewport2d = GetEditorState()->GetViewport2D();
     if (viewport2d == nullptr)
         return;
