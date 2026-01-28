@@ -68,11 +68,12 @@ set(TARGET EngineEditorLib)
 add_library(${TARGET} STATIC
     ${SRC}
 )
-target_include_directories(${TARGET} PUBLIC 
+target_include_directories(${TARGET} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Editor
     ${CMAKE_CURRENT_SOURCE_DIR}/Engine
     ${BULLET_PHYSICS_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../External/Assimp/contrib/rapidjson
 )
 target_link_libraries(${TARGET} PUBLIC
     ${COMMON_DEPS}

@@ -21,11 +21,7 @@ static bool sActive = false;
 void NET_Initialize()
 {
     struct in_addr localIp, netMask, gateway;
-#if PLATFORM_WII
     int32_t result = if_configex(&localIp, &netMask, &gateway, true, 1);
-#else
-    int32_t result = if_configex(&localIp, &netMask, &gateway, true);
-#endif
 
     if (result >= 0)
     {

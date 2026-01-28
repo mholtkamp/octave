@@ -53,7 +53,7 @@ TARGET		:=	Octave
 BUILD		:=	Intermediate/Linux/Editor
 SOURCES		:=	Source \
 				Generated
-INCLUDES	:=	Source ../Engine/Source ../Engine/Source/Editor ../Engine/Source/Engine ../External ../External/Bullet $(VULKAN_SDK)/include \
+INCLUDES	:=	Source ../Engine/Source  ../Engine/Source/Editor ../Engine/Source/Engine ../External ../External/Bullet $(VULKAN_SDK)/include \
 				../External/Assimp ../External/IrrXML ../External/Zlib
 OUTPUT_DIR	:=	$(CURDIR)/Build/Linux
 
