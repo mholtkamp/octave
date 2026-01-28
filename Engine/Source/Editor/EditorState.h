@@ -142,6 +142,7 @@ struct EditorState
     std::string mPendingSceneImportPath = "";
     bool mShutdownUnsavedCheck = false;
     bool mDevMode = false;
+    bool mEndPieAtEndOfFrame = false;
 
     // ImGuizmo state
     ImGuizmo::OPERATION mGizmoOperation = ImGuizmo::TRANSLATE;

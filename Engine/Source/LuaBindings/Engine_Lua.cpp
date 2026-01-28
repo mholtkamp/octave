@@ -22,7 +22,7 @@ int Engine_Lua::Quit(lua_State* L)
     if (::IsPlayingInEditor())
     {
         // Calls to quit during PIE should just end PIE.
-        GetEditorState()->EndPlayInEditor();
+        GetEditorState()->mEndPieAtEndOfFrame = true;
         return 0;
     }
 #endif
