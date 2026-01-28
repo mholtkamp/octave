@@ -582,6 +582,31 @@ void SYS_ReleaseFileData(char* data)
     }
 }
 
+std::string SYS_GetOctavePath()
+{
+    std::string octaveDirectory = SYS_GetCurrentDirectoryPath();
+    if(SYS_DoesFileExist((octaveDirectory + "Octave/imgui.ini").c_str(), false)){
+        octaveDirectory = octaveDirectory + "Octave/";
+        }
+    if(!SYS_DoesFileExist((octaveDirectory + "Standalone/Standalone.rc").c_str(), false)){
+        std::string octaveEXE = SYS_GetExecutablePath();
+        size_t lastSlash = octaveEXE.find_last_of("/");
+        octaveDirectory = octaveEXE.substr(0, lastSlash + 1);
+    }
+    return octaveDirectory;
+}
+std::string SYS_GetExecutablePath()
+{
+    char path[MAX_PATH_SIZE] = {};
+    ssize_t len = readlink("/proc/self/exe", path, MAX_PATH_SIZE - 1);
+    if (len > 0)
+    {
+        path[len] = '\0';
+        return std::string(path);
+    }
+    return "";
+}
+
 std::string SYS_GetCurrentDirectoryPath()
 {
     char path[MAX_PATH_SIZE] = {};

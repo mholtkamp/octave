@@ -324,7 +324,14 @@ MutexObject* SYS_CreateMutex()
 
     return retMutex;
 }
-
+std::string SYS_GetOctavePath()
+{
+    return "";
+}
+std::string SYS_GetExecutablePath()
+{
+    return "";
+}
 void SYS_LockMutex(MutexObject* mutex)
 {
     LWP_MutexLock(*mutex);

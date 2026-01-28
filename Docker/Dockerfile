@@ -78,6 +78,9 @@ RUN ln -sf /proc/self/mounts /etc/mtab && \
     dkp-pacman -Syu --noconfirm && \
     dkp-pacman -S --noconfirm gamecube-dev wii-dev 3ds-dev
 
+# Create libogc2 symlink (project makefiles expect this path)
+RUN ln -sf ${DEVKITPPC} ${DEVKITPRO}/libogc2
+
 # Create directories
 RUN mkdir -p /octave /game /project
 WORKDIR /octave
@@ -172,7 +175,7 @@ cd /octave\n\
 ./OctaveEditor.elf -headless -project "$OCTP_FILE" -build Linux embedded\n\
 \n\
 echo "Copying to /game..."\n\
-cp /project/Build/Linux/* /game/\n\
+cp -r /project/Packaged/Linux/* /game/\n\
 \n\
 echo "Done! Output at /game/"\n\
 ' > /usr/local/bin/build-linux && chmod +x /usr/local/bin/build-linux
@@ -227,7 +230,7 @@ cd /octave\n\
 ./OctaveEditor.elf -headless -project "$OCTP_FILE" -build 3DS embedded\n\
 \n\
 echo "Copying ROM to /game..."\n\
-cp /project/Build/3DS/* /game/\n\
+cp /project/Packaged/3DS/*.3dsx /game/\n\
 \n\
 echo "Done! 3DS build at /game/"\n\
 ' > /usr/local/bin/build-3ds && chmod +x /usr/local/bin/build-3ds
@@ -282,7 +285,7 @@ cd /octave\n\
 ./OctaveEditor.elf -headless -project "$OCTP_FILE" -build GameCube embedded\n\
 \n\
 echo "Copying ROM to /game..."\n\
-cp /project/Build/GCN/* /game/\n\
+cp -r /project/Packaged/GCN/* /game/\n\
 \n\
 echo "Done! GameCube build at /game/"\n\
 ' > /usr/local/bin/build-gcn && chmod +x /usr/local/bin/build-gcn
@@ -337,7 +340,7 @@ cd /octave\n\
 ./OctaveEditor.elf -headless -project "$OCTP_FILE" -build Wii embedded\n\
 \n\
 echo "Copying ROM to /game..."\n\
-cp /project/Build/Wii/* /game/\n\
+cp -r /project/Packaged/Wii/* /game/\n\
 \n\
 echo "Done! Wii build at /game/"\n\
 ' > /usr/local/bin/build-wii && chmod +x /usr/local/bin/build-wii

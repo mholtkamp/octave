@@ -185,6 +185,7 @@ ifneq ($(ROMFS),)
 endif
 
 .PHONY: all clean CleanStaleDeps
+.DEFAULT_GOAL := all
 
 #---------------------------------------------------------------------------------
 # Clean stale dependency files if the build path has changed (e.g., host vs Docker)

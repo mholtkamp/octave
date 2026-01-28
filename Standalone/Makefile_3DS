@@ -168,7 +168,8 @@ ifneq ($(ROMFS),)
 	export _3DSXFLAGS += --romfs=$(CURDIR)/$(ROMFS)
 endif
 
-.PHONY: all clean CleanStaleDeps
+.PHONY: all clean CleanStaleDeps MakeEngine OutputDir
+.DEFAULT_GOAL := all
 
 #---------------------------------------------------------------------------------
 # Clean stale dependency files if the build path has changed (e.g., host vs Docker)

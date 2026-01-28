@@ -31,25 +31,20 @@ include $(DEVKITARM)/3ds_rules
 #     - icon.png
 #     - <libctru folder>/default_icon.png
 #---------------------------------------------------------------------------------
-TARGET		:=	$(notdir $(CURDIR))
+TARGET		:=	Octave
 BUILD		:=	Intermediate/3DS
-SOURCES		:=	BulletCollision/BroadphaseCollision \
-				BulletCollision/CollisionDispatch \
-				BulletCollision/CollisionShapes \
-				BulletCollision/Gimpact \
-				BulletCollision/NarrowPhaseCollision \
-				BulletDynamics/Character \
-				BulletDynamics/ConstraintSolver \
-				BulletDynamics/Dynamics \
-				BulletDynamics/Featherstone \
-				BulletDynamics/MLCPSolvers \
-				BulletDynamics/Vehicle \
-				LinearMath
+SOURCES		:=	Source \
+				Generated
 DATA		:=	Data
-INCLUDES	:=	./
+INCLUDES	:=	../Engine/Source ../Engine/Source/Engine ../External ../External/Bullet
 GRAPHICS	:=	Graphics
 GFXBUILD	:=	$(BUILD)
+#GFXBUILD	:=	$(ROMFS)/gfx
 OUTPUT_DIR	:=	$(CURDIR)/Build/3DS
+
+# Modified by packaging process
+ROMFS := Intermediate/Romfs
+APP_TITLE := FlappyBird
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -68,13 +63,15 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -lcitro3d -lctru -lm
+LIBS	:= -lEngine -lBullet -lcitro3d -lctru -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(CTRULIB)
+ENGINE_LIB_DIR := $(CURDIR)/../Engine/Build/3DS
+BULLET_LIB_DIR := $(CURDIR)/../External/Bullet/Build/3DS
+LIBDIRS	:= $(CTRULIB) $(ENGINE_LIB_DIR) $(BULLET_LIB_DIR)
 
 
 #---------------------------------------------------------------------------------
@@ -84,7 +81,9 @@ LIBDIRS	:= $(CTRULIB)
 ifneq ($(notdir $(BUILD)),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 
-export OUTPUT	:=	$(OUTPUT_DIR)/lib$(TARGET).a
+export ENGINE_LIB := $(ENGINE_LIB_DIR)/libEngine.a
+export BULLET_LIB := $(BULLET_LIB_DIR)/libBullet.a
+export OUTPUT	:=	$(OUTPUT_DIR)/$(TARGET)
 export TOPDIR	:=	$(CURDIR)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
@@ -134,7 +133,7 @@ export OFILES_BIN	:=	$(addsuffix .o,$(BINFILES)) \
 			$(PICAFILES:.v.pica=.shbin.o) $(SHLISTFILES:.shlist=.shbin.o) \
 			$(addsuffix .o,$(T3XFILES))
 
-export OFILES	:=	$(OFILES_BIN) $(OFILES_SOURCES)
+export OFILES := $(OFILES_BIN) $(OFILES_SOURCES)
 
 export HFILES	:=	$(PICAFILES:.v.pica=_shbin.h) $(SHLISTFILES:.shlist=_shbin.h) \
 			$(addsuffix .h,$(subst .,_,$(BINFILES))) \
@@ -144,7 +143,7 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 			-I$(CURDIR)/$(BUILD)
 
-export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
+export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) -L$(ENGINE_LIB_DIR) -L$(BULLET_LIB_DIR)
 
 export _3DSXDEPS	:=	$(if $(NO_SMDH),,$(OUTPUT).smdh)
 
@@ -162,14 +161,14 @@ else
 endif
 
 ifeq ($(strip $(NO_SMDH)),)
-	export _3DSXFLAGS += --smdh=$(CURDIR)/$(TARGET).smdh
+	export _3DSXFLAGS += --smdh=$(OUTPUT_DIR)/$(TARGET).smdh
 endif
 
 ifneq ($(ROMFS),)
 	export _3DSXFLAGS += --romfs=$(CURDIR)/$(ROMFS)
 endif
 
-.PHONY: all clean CleanStaleDeps
+.PHONY: all clean CleanStaleDeps MakeEngine OutputDir
 .DEFAULT_GOAL := all
 
 #---------------------------------------------------------------------------------
@@ -178,7 +177,7 @@ endif
 DEPS_MARKER := $(CURDIR)/$(BUILD)/.deps_path_marker
 
 CleanStaleDeps:
-	@if [ -d "$(CURDIR)/$(BUILD)" ]; then \
+	if [ -d "$(CURDIR)/$(BUILD)" ]; then \
 		if [ -f "$(DEPS_MARKER)" ]; then \
 			STORED_PATH=$$(cat "$(DEPS_MARKER)"); \
 			if [ "$$STORED_PATH" != "$(CURDIR)" ]; then \
@@ -194,34 +193,38 @@ CleanStaleDeps:
 
 #---------------------------------------------------------------------------------
 all: CleanStaleDeps $(BUILD) $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES)
+	$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile_TEMP
+
+MakeEngine:
+	$(MAKE) --no-print-directory -C $(CURDIR)/../Engine -f $(CURDIR)/../Engine/Makefile_3DS
 
 OutputDir:
-	@[ -d $(OUTPUT_DIR) ] || mkdir -p $(OUTPUT_DIR)
+	[ -d $(OUTPUT_DIR) ] || mkdir -p $(OUTPUT_DIR)
 
-$(BUILD): OutputDir
-	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile_3DS
+$(BUILD): MakeEngine OutputDir
+	mkdir -p $@
 
 ifneq ($(GFXBUILD),$(BUILD))
 $(GFXBUILD):
-	@mkdir -p $@
+	mkdir -p $@
 endif
 
 ifneq ($(DEPSDIR),$(BUILD))
 $(DEPSDIR):
-	@mkdir -p $@
+	mkdir -p $@
 endif
 
 #---------------------------------------------------------------------------------
 clean:
-	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(GFXBUILD) $(OUTPUT_DIR)
+	echo clean ...
+	rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(GFXBUILD)
+	$(MAKE) clean --no-print-directory -C $(CURDIR)/../Engine -f $(CURDIR)/../Engine/Makefile_3DS
 
 #---------------------------------------------------------------------------------
 $(GFXBUILD)/%.t3x	$(BUILD)/%.h	:	%.t3s
 #---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@tex3ds -i $< -H $(BUILD)/$*.h -d $(DEPSDIR)/$*.d -o $(GFXBUILD)/$*.t3x
+	echo $(notdir $<)
+	tex3ds -i $< -H $(BUILD)/$*.h -d $(DEPSDIR)/$*.d -o $(GFXBUILD)/$*.t3x
 
 #---------------------------------------------------------------------------------
 else
@@ -229,25 +232,29 @@ else
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
-$(OUTPUT) : $(OFILES)
+$(OUTPUT).3dsx	:	$(OUTPUT).elf $(_3DSXDEPS) $(ENGINE_LIB)
+
+$(ENGINE_LIB):
 
 $(OFILES_SOURCES) : $(HFILES)
+
+$(OUTPUT).elf	:	$(OFILES) $(ENGINE_LIB)
 
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data
 #---------------------------------------------------------------------------------
 %.bin.o	%_bin.h :	%.bin
 #---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@$(bin2o)
+	echo $(notdir $<)
+	$(bin2o)
 
 #---------------------------------------------------------------------------------
 .PRECIOUS	:	%.t3x
 #---------------------------------------------------------------------------------
 %.t3x.o	%_t3x.h :	%.t3x
 #---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@$(bin2o)
+	echo $(notdir $<)
+	$(bin2o)
 
 #---------------------------------------------------------------------------------
 # rules for assembling GPU shaders
@@ -264,22 +271,22 @@ define shader-as
 endef
 
 %.shbin.o %_shbin.h : %.v.pica %.g.pica
-	@echo $(notdir $^)
-	@$(call shader-as,$^)
+	echo $(notdir $^)
+	$(call shader-as,$^)
 
 %.shbin.o %_shbin.h : %.v.pica
-	@echo $(notdir $<)
-	@$(call shader-as,$<)
+	echo $(notdir $<)
+	$(call shader-as,$<)
 
 %.shbin.o %_shbin.h : %.shlist
-	@echo $(notdir $<)
-	@$(call shader-as,$(foreach file,$(shell cat $<),$(dir $<)$(file)))
+	echo $(notdir $<)
+	$(call shader-as,$(foreach file,$(shell cat $<),$(dir $<)$(file)))
 
 #---------------------------------------------------------------------------------
 %.t3x	%.h	:	%.t3s
 #---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@tex3ds -i $< -H $*.h -d $*.d -o $*.t3x
+	echo $(notdir $<)
+	tex3ds -i $< -H $*.h -d $*.d -o $*.t3x
 
 -include $(DEPSDIR)/*.d
 

@@ -152,6 +152,7 @@ void ReplaceStringInFile(const std::string& file, const std::string& srcString, 
 void ActionManager::BuildData(Platform platform, bool embedded)
 {
     LogDebug("Begin packaging...");
+    std::string octaveDirectory = SYS_GetOctavePath();
 
     const EngineState* engineState = GetEngineState();
     bool standalone = engineState->mStandalone;
@@ -316,12 +317,12 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     if (embedded && !useRomfs)
     {
-        GatherScriptFiles("Engine/Scripts/", scriptFiles);
-        GatherScriptFiles(projectDir + "/Scripts/", scriptFiles);
+        GatherScriptFiles((octaveDirectory + "Engine/Scripts/").c_str(), scriptFiles);
+        GatherScriptFiles((projectDir + "/Scripts/").c_str(), scriptFiles);
     }
     else
     {
-        SYS_CopyDirectory("Engine/Scripts/", (packagedDir + "Engine/Scripts/").c_str());
+        SYS_CopyDirectory((octaveDirectory + "Engine/Scripts/").c_str(), (packagedDir + "Engine/Scripts/").c_str());
         SYS_CopyDirectory((projectDir + "Scripts/").c_str(), (packagedDir + projectName + "/Scripts/").c_str());
         //SYS_Exec(std::string("cp -R Engine/Scripts " + packagedDir + "Engine/Scripts").c_str());
         //SYS_Exec(std::string("cp -R " + projectDir + "Scripts " + packagedDir + projectName + "/Scripts").c_str());
@@ -366,23 +367,23 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     {
         // Compile shaders
 #if PLATFORM_WINDOWS
-        SYS_Exec("cd Engine/Shaders/GLSL && \"./compile.bat\"");
+        SYS_Exec(("cd \"" + octaveDirectory + "Engine/Shaders/GLSL\" && \"./compile.bat\"").c_str());
 #else
-        SYS_Exec("cd Engine/Shaders/GLSL && \"./compile.sh\"");
+        SYS_Exec(("cd " + octaveDirectory + "Engine/Shaders/GLSL && \"./compile.sh\"").c_str());
 #endif
 
         // Then copy over the binaries.
         CreateDir((packagedDir + "Engine/Shaders/").c_str());
         CreateDir((packagedDir + "Engine/Shaders/GLSL/").c_str());
 
-        SYS_CopyDirectory("Engine/Shaders/GLSL/bin/", (packagedDir + "Engine/Shaders/GLSL/bin/").c_str());
+        SYS_CopyDirectory((octaveDirectory+"Engine/Shaders/GLSL/bin/").c_str(), (packagedDir + "Engine/Shaders/GLSL/bin/").c_str());
         //SYS_Exec(std::string("cp -R Engine/Shaders/GLSL/bin " + packagedDir + "Engine/Shaders/GLSL/bin").c_str());
     }
 
     // If we are running a 3DS build, copy all the packaged data to the
     // Intermediate/Romfs directory.
     // Clear existing Romfs directory first.
-    std::string intermediateDir = standalone ? "Standalone/Intermediate" : (projectDir + "/Intermediate");
+    std::string intermediateDir = standalone ? octaveDirectory+"Standalone/Intermediate" : (projectDir + "/Intermediate");
     std::string romfsDir = intermediateDir + "/Romfs";
     RemoveDir(romfsDir.c_str());
     CreateDir(intermediateDir.c_str());
@@ -390,7 +391,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     if (useRomfs)
     {
-        LogDebug("Copying packaged data to Romfs staging directory.");
     #if PLATFORM_WINDOWS
         SYS_CopyDirectoryRecursive(packagedDir.c_str(), romfsDir.c_str());
     #else
@@ -410,11 +410,10 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         needCompile = !SYS_DoesFileExist(prebuiltExeName.c_str(), false);
     }
 
-    // In headless mode, use the actual project directory instead of forcing Standalone
-    bool useStandalonePaths = standalone && !IsHeadless();
-    std::string buildProjName = useStandalonePaths ? "Standalone" : projectName;
-    std::string buildProjDir = useStandalonePaths ? "Standalone/" : projectDir;
-    std::string buildDstExeName = useStandalonePaths ? "Octave" : projectName;
+    std::string buildProjName = standalone ? "Standalone" : projectName;
+    std::string buildProjDir = standalone ? octaveDirectory+"Standalone/" : projectDir;
+    std::string buildDstExeName = standalone ? "Octave" : projectName;
+
     bool useSteam = GetEngineConfig()->mPackageForSteam;
 
     if (needCompile)
@@ -550,7 +549,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             SYS_Exec(makeCmd.c_str());
 
             // Delete the temp makefile
-            SYS_RemoveFile(tmpMakefile.c_str());
+            // SYS_RemoveFile(tmpMakefile.c_str());
             //SYS_Exec(std::string("rm " + tmpMakefile).c_str());
 
             if (platform == Platform::Linux)
@@ -1467,13 +1466,11 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             octpFile = nullptr;
         }
 		std::string subProjFolder = ""; 
-        std::string octaveDirectory = SYS_GetCurrentDirectoryPath();
-        if(SYS_DoesFileExist((octaveDirectory + "Octave/imgui.ini").c_str(), false)){
-            octaveDirectory = octaveDirectory + "Octave/";
-            }
+        std::string octaveDirectory = SYS_GetOctavePath();
+      
         if (cpp)
         {
-            std::string standaloneDir = "Standalone/";
+            std::string standaloneDir = octaveDirectory+ "Standalone/";
 
             subProjFolder = newProjDir + newProjName.c_str();
             SYS_CreateDirectory(subProjFolder.c_str());

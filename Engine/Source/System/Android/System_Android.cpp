@@ -439,6 +439,14 @@ bool SYS_DoesFileExist(const char* path, bool isAsset)
     return exists;
 }
 
+std::string SYS_GetOctavePath()
+{
+    return "";
+}
+std::string SYS_GetExecutablePath()
+{
+    return "";
+}
 void SYS_AcquireFileData(const char* path, bool isAsset, int32_t maxSize, char*& outData, uint32_t& outSize)
 {
     outData = nullptr;
