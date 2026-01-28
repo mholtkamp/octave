@@ -403,15 +403,18 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     std::string prebuiltExeName = (platform == Platform::Windows) ? "Octave.exe" : "Octave.elf";
 
     // If packaging for Windows or Linux in standalone editor, we can use the existing octave executables.
-    if (standalone &&
+    // But in headless mode, always compile since we're doing a full build.
+    if (standalone && !IsHeadless() &&
         (platform == Platform::Windows || platform == Platform::Linux))
     {
         needCompile = !SYS_DoesFileExist(prebuiltExeName.c_str(), false);
     }
 
-    std::string buildProjName = standalone ? "Standalone" : projectName;
-    std::string buildProjDir = standalone ? "Standalone/" : projectDir;
-    std::string buildDstExeName = standalone ? "Octave" : projectName;
+    // In headless mode, use the actual project directory instead of forcing Standalone
+    bool useStandalonePaths = standalone && !IsHeadless();
+    std::string buildProjName = useStandalonePaths ? "Standalone" : projectName;
+    std::string buildProjDir = useStandalonePaths ? "Standalone/" : projectDir;
+    std::string buildDstExeName = useStandalonePaths ? "Octave" : projectName;
     bool useSteam = GetEngineConfig()->mPackageForSteam;
 
     if (needCompile)
@@ -485,11 +488,27 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             default: OCT_ASSERT(0); break;
             }
 
-            std::string srcMakefile = buildProjDir + "/" + makefilePath;
-            std::string tmpMakefile = buildProjDir + "/Makefile_TEMP";
+            std::string srcMakefile = buildProjDir  + makefilePath;
+            std::string tmpMakefile = buildProjDir + "Makefile_TEMP";
+
+            // Check if makefile exists in project directory, otherwise fall back to Standalone
+            if (!SYS_DoesFileExist(srcMakefile.c_str(), false))
+            {
+                std::string standaloneMakefile = "Standalone/" + makefilePath;
+                if (SYS_DoesFileExist(standaloneMakefile.c_str(), false))
+                {
+                    LogDebug("Makefile not found in project, copying from Standalone: %s", standaloneMakefile.c_str());
+                    SYS_CopyFile(standaloneMakefile.c_str(), srcMakefile.c_str());
+                }
+                else
+                {
+                    LogError("Makefile not found: %s or %s", srcMakefile.c_str(), standaloneMakefile.c_str());
+                    return;
+                }
+            }
+
             // Make a copy of the makefile so we can change the app name and things like that
             SYS_CopyFile(srcMakefile.c_str(), tmpMakefile.c_str());
-            //SYS_Exec(std::string("cp " + srcMakefile + " " + tmpMakefile).c_str());
 
             // This is fragile, but we're going to modify the temp makefile to compile
             // the way we need to for a given platform.
@@ -503,6 +522,19 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 //    ReplaceStringInFile(tmpMakefile, "ROMFS :=", "#ROMFS :=");
                 //}
             }
+
+            // Copy Source folder from Standalone if it doesn't exist in project
+            std::string projSourceDir = buildProjDir + "Source";
+            if (!DoesDirExist(projSourceDir.c_str()))
+            {
+                std::string standaloneSourceDir = "Standalone/Source";
+                if (DoesDirExist(standaloneSourceDir.c_str()))
+                {
+                    LogDebug("Source folder not found in project, copying from Standalone");
+                    SYS_CopyDirectory(standaloneSourceDir.c_str(), projSourceDir.c_str());
+                }
+            }
+
             SYS_CreateDirectory((buildProjDir + "Generated").c_str());
 
             // Copy over Generated files, sometimes they may have been modified or deleted.

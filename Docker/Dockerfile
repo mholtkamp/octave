@@ -16,6 +16,9 @@
 #     docker run --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-gcn
 #     docker run --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-wii
 #
+#   Debug mode (drops to shell on failure):
+#     docker run -it --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-3ds --debug
+#
 #   Interactive:
 #     docker run -it --rm -v ./output:/game -v ./MyGame:/project octavegameengine bash
 
@@ -126,11 +129,29 @@ echo "Done! Editor at /game/OctaveEditor.elf"\n\
 
 # build-linux: Build Linux Game with embedded assets
 RUN echo '#!/bin/bash\n\
+\n\
+DEBUG=0\n\
+for arg in "$@"; do\n\
+    case $arg in\n\
+        --debug|-d) DEBUG=1 ;;\n\
+    esac\n\
+done\n\
+\n\
+handle_error() {\n\
+    echo ""\n\
+    echo "=== BUILD FAILED ==="\n\
+    if [ $DEBUG -eq 1 ]; then\n\
+        echo "Debug mode: dropping to shell. Type exit to quit."\n\
+        exec /bin/bash\n\
+    fi\n\
+    exit 1\n\
+}\n\
+trap handle_error ERR\n\
 set -e\n\
 \n\
 if [ ! -d "/project" ] || [ -z "$(ls -A /project 2>/dev/null)" ]; then\n\
     echo "Error: No project mounted at /project"\n\
-    echo "Usage: docker run --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-linux"\n\
+    echo "Usage: docker run -it --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-linux [--debug]"\n\
     exit 1\n\
 fi\n\
 \n\
@@ -140,34 +161,42 @@ if [ -z "$OCTP_FILE" ]; then\n\
     exit 1\n\
 fi\n\
 \n\
+PROJECT_NAME=$(basename "$OCTP_FILE" .octp)\n\
 echo "Building Linux Game..."\n\
 echo "Project: /project"\n\
 echo "Project file: $OCTP_FILE"\n\
+[ $DEBUG -eq 1 ] && echo "Debug mode: enabled"\n\
 \n\
-# Copy project to octave directory (editor expects paths relative to working dir)\n\
-PROJECT_NAME=$(basename "$OCTP_FILE" .octp)\n\
-rm -rf /octave/Standalone 2>/dev/null || true\n\
-mkdir -p /octave/Standalone\n\
-cp -r /project/* /octave/Standalone/\n\
-\n\
-# Cook assets using headless editor\n\
-echo "Cooking assets for Linux (embedded)..."\n\
+# Build using headless editor (cooks assets and compiles)\n\
 cd /octave\n\
-./OctaveEditor.elf -headless -project "Standalone/${PROJECT_NAME}.octp" -build Linux embedded\n\
-\n\
-# Build the game executable\n\
-echo "Building game executable..."\n\
-cd /octave/Standalone\n\
-make -j$(nproc) -f Makefile_Linux_Game\n\
+./OctaveEditor.elf -headless -project "$OCTP_FILE" -build Linux embedded\n\
 \n\
 echo "Copying to /game..."\n\
-cp /octave/Standalone/Build/Linux/* /game/\n\
+cp /project/Build/Linux/* /game/\n\
 \n\
 echo "Done! Output at /game/"\n\
 ' > /usr/local/bin/build-linux && chmod +x /usr/local/bin/build-linux
 
 # build-3ds: Build for Nintendo 3DS with embedded assets
 RUN echo '#!/bin/bash\n\
+\n\
+DEBUG=0\n\
+for arg in "$@"; do\n\
+    case $arg in\n\
+        --debug|-d) DEBUG=1 ;;\n\
+    esac\n\
+done\n\
+\n\
+handle_error() {\n\
+    echo ""\n\
+    echo "=== BUILD FAILED ==="\n\
+    if [ $DEBUG -eq 1 ]; then\n\
+        echo "Debug mode: dropping to shell. Type exit to quit."\n\
+        exec /bin/bash\n\
+    fi\n\
+    exit 1\n\
+}\n\
+trap handle_error ERR\n\
 set -e\n\
 \n\
 if ! command -v arm-none-eabi-gcc &> /dev/null; then\n\
@@ -177,7 +206,7 @@ fi\n\
 \n\
 if [ ! -d "/project" ] || [ -z "$(ls -A /project 2>/dev/null)" ]; then\n\
     echo "Error: No project mounted at /project"\n\
-    echo "Usage: docker run --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-3ds"\n\
+    echo "Usage: docker run -it --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-3ds [--debug]"\n\
     exit 1\n\
 fi\n\
 \n\
@@ -187,34 +216,42 @@ if [ -z "$OCTP_FILE" ]; then\n\
     exit 1\n\
 fi\n\
 \n\
+PROJECT_NAME=$(basename "$OCTP_FILE" .octp)\n\
 echo "Building for Nintendo 3DS..."\n\
 echo "Project: /project"\n\
 echo "Project file: $OCTP_FILE"\n\
+[ $DEBUG -eq 1 ] && echo "Debug mode: enabled"\n\
 \n\
-# Copy project to octave directory\n\
-PROJECT_NAME=$(basename "$OCTP_FILE" .octp)\n\
-rm -rf /octave/Standalone 2>/dev/null || true\n\
-mkdir -p /octave/Standalone\n\
-cp -r /project/* /octave/Standalone/\n\
-\n\
-# Cook assets using headless editor\n\
-echo "Cooking assets for 3DS (embedded)..."\n\
+# Build using headless editor (cooks assets and compiles)\n\
 cd /octave\n\
-./OctaveEditor.elf -headless -project "Standalone/${PROJECT_NAME}.octp" -build 3DS embedded\n\
-\n\
-# Build the game executable\n\
-echo "Building 3DS executable..."\n\
-cd /octave/Standalone\n\
-make -j$(nproc) -f Makefile_3DS\n\
+./OctaveEditor.elf -headless -project "$OCTP_FILE" -build 3DS embedded\n\
 \n\
 echo "Copying ROM to /game..."\n\
-cp /octave/Standalone/Build/3DS/* /game/\n\
+cp /project/Build/3DS/* /game/\n\
 \n\
 echo "Done! 3DS build at /game/"\n\
 ' > /usr/local/bin/build-3ds && chmod +x /usr/local/bin/build-3ds
 
 # build-gcn: Build for Nintendo GameCube with embedded assets
 RUN echo '#!/bin/bash\n\
+\n\
+DEBUG=0\n\
+for arg in "$@"; do\n\
+    case $arg in\n\
+        --debug|-d) DEBUG=1 ;;\n\
+    esac\n\
+done\n\
+\n\
+handle_error() {\n\
+    echo ""\n\
+    echo "=== BUILD FAILED ==="\n\
+    if [ $DEBUG -eq 1 ]; then\n\
+        echo "Debug mode: dropping to shell. Type exit to quit."\n\
+        exec /bin/bash\n\
+    fi\n\
+    exit 1\n\
+}\n\
+trap handle_error ERR\n\
 set -e\n\
 \n\
 if ! command -v powerpc-eabi-gcc &> /dev/null; then\n\
@@ -224,7 +261,7 @@ fi\n\
 \n\
 if [ ! -d "/project" ] || [ -z "$(ls -A /project 2>/dev/null)" ]; then\n\
     echo "Error: No project mounted at /project"\n\
-    echo "Usage: docker run --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-gcn"\n\
+    echo "Usage: docker run -it --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-gcn [--debug]"\n\
     exit 1\n\
 fi\n\
 \n\
@@ -234,34 +271,42 @@ if [ -z "$OCTP_FILE" ]; then\n\
     exit 1\n\
 fi\n\
 \n\
+PROJECT_NAME=$(basename "$OCTP_FILE" .octp)\n\
 echo "Building for Nintendo GameCube..."\n\
 echo "Project: /project"\n\
 echo "Project file: $OCTP_FILE"\n\
+[ $DEBUG -eq 1 ] && echo "Debug mode: enabled"\n\
 \n\
-# Copy project to octave directory\n\
-PROJECT_NAME=$(basename "$OCTP_FILE" .octp)\n\
-rm -rf /octave/Standalone 2>/dev/null || true\n\
-mkdir -p /octave/Standalone\n\
-cp -r /project/* /octave/Standalone/\n\
-\n\
-# Cook assets using headless editor\n\
-echo "Cooking assets for GameCube (embedded)..."\n\
+# Build using headless editor (cooks assets and compiles)\n\
 cd /octave\n\
-./OctaveEditor.elf -headless -project "Standalone/${PROJECT_NAME}.octp" -build GameCube embedded\n\
-\n\
-# Build the game executable\n\
-echo "Building GameCube executable..."\n\
-cd /octave/Standalone\n\
-make -j$(nproc) -f Makefile_GCN\n\
+./OctaveEditor.elf -headless -project "$OCTP_FILE" -build GameCube embedded\n\
 \n\
 echo "Copying ROM to /game..."\n\
-cp /octave/Standalone/Build/GCN/* /game/\n\
+cp /project/Build/GCN/* /game/\n\
 \n\
 echo "Done! GameCube build at /game/"\n\
 ' > /usr/local/bin/build-gcn && chmod +x /usr/local/bin/build-gcn
 
 # build-wii: Build for Nintendo Wii with embedded assets
 RUN echo '#!/bin/bash\n\
+\n\
+DEBUG=0\n\
+for arg in "$@"; do\n\
+    case $arg in\n\
+        --debug|-d) DEBUG=1 ;;\n\
+    esac\n\
+done\n\
+\n\
+handle_error() {\n\
+    echo ""\n\
+    echo "=== BUILD FAILED ==="\n\
+    if [ $DEBUG -eq 1 ]; then\n\
+        echo "Debug mode: dropping to shell. Type exit to quit."\n\
+        exec /bin/bash\n\
+    fi\n\
+    exit 1\n\
+}\n\
+trap handle_error ERR\n\
 set -e\n\
 \n\
 if ! command -v powerpc-eabi-gcc &> /dev/null; then\n\
@@ -271,7 +316,7 @@ fi\n\
 \n\
 if [ ! -d "/project" ] || [ -z "$(ls -A /project 2>/dev/null)" ]; then\n\
     echo "Error: No project mounted at /project"\n\
-    echo "Usage: docker run --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-wii"\n\
+    echo "Usage: docker run -it --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-wii [--debug]"\n\
     exit 1\n\
 fi\n\
 \n\
@@ -281,28 +326,18 @@ if [ -z "$OCTP_FILE" ]; then\n\
     exit 1\n\
 fi\n\
 \n\
+PROJECT_NAME=$(basename "$OCTP_FILE" .octp)\n\
 echo "Building for Nintendo Wii..."\n\
 echo "Project: /project"\n\
 echo "Project file: $OCTP_FILE"\n\
+[ $DEBUG -eq 1 ] && echo "Debug mode: enabled"\n\
 \n\
-# Copy project to octave directory\n\
-PROJECT_NAME=$(basename "$OCTP_FILE" .octp)\n\
-rm -rf /octave/Standalone 2>/dev/null || true\n\
-mkdir -p /octave/Standalone\n\
-cp -r /project/* /octave/Standalone/\n\
-\n\
-# Cook assets using headless editor\n\
-echo "Cooking assets for Wii (embedded)..."\n\
+# Build using headless editor (cooks assets and compiles)\n\
 cd /octave\n\
-./OctaveEditor.elf -headless -project "Standalone/${PROJECT_NAME}.octp" -build Wii embedded\n\
-\n\
-# Build the game executable\n\
-echo "Building Wii executable..."\n\
-cd /octave/Standalone\n\
-make -j$(nproc) -f Makefile_Wii\n\
+./OctaveEditor.elf -headless -project "$OCTP_FILE" -build Wii embedded\n\
 \n\
 echo "Copying ROM to /game..."\n\
-cp /octave/Standalone/Build/Wii/* /game/\n\
+cp /project/Build/Wii/* /game/\n\
 \n\
 echo "Done! Wii build at /game/"\n\
 ' > /usr/local/bin/build-wii && chmod +x /usr/local/bin/build-wii
@@ -321,6 +356,9 @@ echo "  build-3ds     - Build Nintendo 3DS with embedded assets"\n\
 echo "  build-gcn     - Build Nintendo GameCube with embedded assets"\n\
 echo "  build-wii     - Build Nintendo Wii with embedded assets"\n\
 echo ""\n\
+echo "Options:"\n\
+echo "  --debug, -d   - Drop to shell on build failure (requires -it)"\n\
+echo ""\n\
 echo "Volumes:"\n\
 echo "  /game     - Output directory (mount with -v ./output:/game)"\n\
 echo "  /project  - Your game project with .octp file (mount with -v ./MyGame:/project)"\n\
@@ -328,7 +366,7 @@ echo ""\n\
 echo "Examples:"\n\
 echo "  docker run --rm -v ./output:/game octavegameengine build-editor"\n\
 echo "  docker run --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-linux"\n\
-echo "  docker run --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-wii"\n\
+echo "  docker run -it --rm -v ./output:/game -v ./MyGame:/project octavegameengine build-3ds --debug"\n\
 ' > /usr/local/bin/help && chmod +x /usr/local/bin/help
 
 VOLUME /game
