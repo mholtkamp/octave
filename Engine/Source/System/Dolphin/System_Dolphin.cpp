@@ -70,8 +70,10 @@ void SYS_Initialize()
     VIDEO_WaitVSync();
     VIDEO_WaitVSync();
 #else
-    VIDEO_WaitForFlush();
-    engine.mAspectRatioScale = VIDEO_GetAspectRatio() / ((float)engine.mWindowWidth / engine.mWindowHeight);
+    VIDEO_WaitVSync();
+    VIDEO_WaitVSync();
+    // GameCube is always 4:3, so no aspect ratio adjustment needed
+    engine.mAspectRatioScale = 1.0f;
 #endif
 
 #if ENABLE_LIBOGC_CONSOLE
@@ -459,7 +461,7 @@ static void MountMemoryCard()
     if (!IsMemoryCardMounted())
     {
         LogDebug("Initializing CARD");
-        GetEngineState()->mSystem.mMemoryCardMountArea = SYS_AlignedMalloc(CARD_WORKAREA, 32);
+        GetEngineState()->mSystem.mMemoryCardMountArea = SYS_AlignedMalloc(CARD_WORKAREA_SIZE, 32);
         CARD_Init("OCTA","00");
         int errorSlotA = CARD_Mount(CARD_SLOTA, GetEngineState()->mSystem.mMemoryCardMountArea, UnmountMemoryCard);
         LogDebug("Memory card code: %d", errorSlotA);
@@ -724,7 +726,10 @@ void SYS_Log(LogSeverity severity, const char* format, va_list arg)
     SYS_Report(logBuffer);
     SYS_Report("\n");
 #else
-    SYS_Reportv(format, arg);
+    // SYS_Reportv doesn't exist in libogc, use buffer approach like Wii
+    char logBuffer[256];
+    vsnprintf(logBuffer, 255, format, arg);
+    SYS_Report(logBuffer);
     SYS_Report("\n");
 #endif
 

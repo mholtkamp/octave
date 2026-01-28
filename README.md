@@ -33,7 +33,7 @@ Instructions for building from source below.
 4. Switch to the DebugEditor solution configuration.
 5. Set the Standalone project as the Startup Project.
 6. In the debug settings for Standalone, change the working directory to $(SolutionDir).
-7. Build and run Standalone. This is the standalone level edtior if you were making a game with Lua script only.
+7. Build and run Standalone. This is the standalone level editor if you were making a game with Lua script only.
 
 ## Linux Compiling
 
@@ -100,6 +100,37 @@ CMake support is currently a work-in-progress, and only Linux support has been i
 - Install pkg-config `sudo apt install pkg-config`(debian/ubuntu), `
 - Install vorbis dev libraries `sudo apt install libvorbis-dev`
 
-## Special Thanks
+# Docker
+Octave includes a Docker build system for reproducible builds across all supported platforms. You can also use the Docker system to build Octave itself from source without installing any dependencies on your host machine. You can get more information about using the Docker build system at [Documentation/Docker.md](Documentation/Info/Docker.md).
+
+## Requirements
+- Install Docker from <https://docs.docker.com/get-docker/>
+
+## Build the Octave Docker Image
+From your terminal, run:
+```bash
+# Clone the Octave repository if you haven't already, or to get the latest version
+git clone https://github.com/mholtkamp/octave
+# Move into the octave directory
+cd octave
+# Build the Docker image
+./Docker/build.sh
+```
+
+## Packaging Games With Docker
+To package your game using the Docker build system, run the following command from the root of your project directory (where your .octp file is located):
+```bash
+docker run --rm -v ./dist/3DS:/game -v .:/project octavegameengine build-3ds
+```
+This command mounts your project directory to `/project` in the Docker container, and tells the system to export your file to `./dist/3DS`. You should create the `dist` directory beforehand just incase.
+
+### Available Docker Build Commands
+- `build-linux` - Build a Linux `.elf` executable
+- `build-gamecube` - Build a GameCube `.dol` file
+- `build-wii` - Build a Wii `.dol` file
+- `build-3ds` - Build a Nintendo `.3dsx` ROM
+
+
+# Special Thanks
 
 - Octave logo designed by overcookedchips.

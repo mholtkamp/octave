@@ -285,7 +285,7 @@ cd /octave\n\
 ./OctaveEditor.elf -headless -project "$OCTP_FILE" -build GameCube embedded\n\
 \n\
 echo "Copying ROM to /game..."\n\
-cp -r /project/Packaged/GCN/* /game/\n\
+cp -r /project/Packaged/GameCube/*.dol /game/\n\
 \n\
 echo "Done! GameCube build at /game/"\n\
 ' > /usr/local/bin/build-gcn && chmod +x /usr/local/bin/build-gcn
@@ -340,7 +340,7 @@ cd /octave\n\
 ./OctaveEditor.elf -headless -project "$OCTP_FILE" -build Wii embedded\n\
 \n\
 echo "Copying ROM to /game..."\n\
-cp -r /project/Packaged/Wii/* /game/\n\
+cp -r /project/Packaged/Wii/*.dol /game/\n\
 \n\
 echo "Done! Wii build at /game/"\n\
 ' > /usr/local/bin/build-wii && chmod +x /usr/local/bin/build-wii

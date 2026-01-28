@@ -98,3 +98,61 @@ These global hotkeys can be activated no matter where the mouse cursor is locate
 - `L` Lock the inspected object
 - `Mouse4` Inspect previous object
 - `Mouse5` Inspect next object
+
+# Headless Mode
+
+Headless mode allows the editor to run without a graphical interface for automated asset compilation and game building. This is useful for CI/CD pipelines and Docker-based build environments.
+
+## Requirements
+
+Headless mode requires both the `-headless` flag AND a `-project` path to be specified.
+
+## Command Line Arguments
+
+| Argument | Description | Example |
+|----------|-------------|---------|
+| `-headless` | Enables headless mode | `-headless` |
+| `-project` | Path to project file (.octp) | `-project MyGame/MyGame.octp` |
+| `-build` | Target platform for compilation | `-build Linux` |
+| `embedded` | Embed assets into the executable (optional, follows `-build`) | `-build Linux embedded` |
+
+## Supported Build Platforms
+
+- `Linux` - Builds a Linux executable (.elf)
+- `Windows` - Builds a Windows executable
+- `GameCube` - Builds a GameCube DOL file
+- `Wii` - Builds a Wii DOL file
+- `3DS` - Builds a Nintendo 3DS ROM
+- `Android` - Builds an Android APK
+
+## Usage Examples
+
+Build a Linux game with embedded assets:
+```bash
+./OctaveEditor.elf -headless -project "/path/to/MyGame.octp" -build Linux embedded
+```
+
+Build a GameCube game:
+```bash
+./OctaveEditor.elf -headless -project "/path/to/MyGame.octp" -build GameCube embedded
+```
+
+Build a 3DS ROM:
+```bash
+./OctaveEditor.elf -headless -project "/path/to/MyGame.octp" -build 3DS embedded
+```
+
+## Build Process
+
+When building in headless mode, the following steps are performed:
+
+1. **Asset Cooking** - All assets are converted to platform-specific formats (.oct files) and saved to a `Packaged/` directory
+2. **Asset Registry** - An `AssetRegistry.txt` is generated listing all packaged assets
+3. **Asset Embedding** - When using the `embedded` flag, assets are compiled into C++ source files (`EmbeddedAssets.h` and `EmbeddedAssets.cpp`)
+4. **Script Processing** - Lua scripts are either embedded as C++ code or copied to the output directory
+5. **Shader Compilation** - For Vulkan platforms, GLSL shaders are compiled to SPIR-V
+6. **Game Compilation** - The final executable/ROM is compiled using platform-specific toolchains
+
+## Docker Integration
+
+Headless mode is designed to work with Docker for reproducible builds. See [Docker.md](Docker.md) for information on using the Docker build system.

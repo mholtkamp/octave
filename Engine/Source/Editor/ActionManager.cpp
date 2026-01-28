@@ -549,7 +549,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             SYS_Exec(makeCmd.c_str());
 
             // Delete the temp makefile
-            // SYS_RemoveFile(tmpMakefile.c_str());
+            SYS_RemoveFile(tmpMakefile.c_str());
             //SYS_Exec(std::string("rm " + tmpMakefile).c_str());
 
             if (platform == Platform::Linux)
