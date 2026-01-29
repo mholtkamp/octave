@@ -20,6 +20,7 @@ std::string SYS_GetExecutablePath();
 std::string SYS_GetOctavePath();
 std::string SYS_GetCurrentDirectoryPath();
 std::string SYS_GetAbsolutePath(const std::string& relativePath);
+void SYS_ExplorerOpenDirectory(const std::string& dirPath);
 void SYS_SetWorkingDirectory(const std::string& dirPath);
 bool SYS_CreateDirectory(const char* dirPath);
 void SYS_RemoveDirectory(const char* dirPath);

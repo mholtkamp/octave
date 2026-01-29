@@ -4406,6 +4406,82 @@ static void DrawPaintInstancesPanel()
     ImGui::End();
 }
 
+static void DrawDesignBounds()
+{
+    if(GetFeatureFlagsEditor().mShow2DBorder == false){
+        return;
+    }
+    Viewport2D* viewport2d = GetEditorState()->GetViewport2D();
+    if (viewport2d == nullptr)
+        return;
+
+    ImDrawList* draw_list = ImGui::GetForegroundDrawList();
+    glm::vec4 vp = Renderer::Get()->GetViewport(0);
+
+    float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
+    if (interfaceScale == 0.0f)
+    {
+        interfaceScale = 1.0f;
+    }
+    float invInterfaceScale = 1.0f / interfaceScale;
+
+    // Get the design resolution from engine config
+    float designWidth = (float)GetEngineConfig()->mWindowWidth;
+    float designHeight = (float)GetEngineConfig()->mWindowHeight;
+
+    // Get zoom and pan from viewport
+    float zoom = viewport2d->GetZoom();
+    glm::vec2 rootOffset = viewport2d->GetRootOffset();
+
+    // Calculate the design bounds in screen space
+    // The design area starts at rootOffset (pan) and is scaled by zoom
+    float boundsX = rootOffset.x * zoom;
+    float boundsY = rootOffset.y * zoom;
+    float boundsW = designWidth * zoom;
+    float boundsH = designHeight * zoom;
+
+    // Convert to ImGui coordinates (accounting for viewport offset and interface scale)
+    float x = invInterfaceScale * (boundsX + vp.x);
+    float y = invInterfaceScale * (boundsY + vp.y);
+    float w = invInterfaceScale * boundsW;
+    float h = invInterfaceScale * boundsH;
+
+    // Draw outer darkened regions (like Unity's letterboxing)
+    ImColor dimColor(0.0f, 0.0f, 0.0f, 0.4f);
+    float vpLeft = invInterfaceScale * vp.x;
+    float vpTop = invInterfaceScale * vp.y;
+    float vpRight = invInterfaceScale * (vp.x + vp.z);
+    float vpBottom = invInterfaceScale * (vp.y + vp.w);
+
+    // Top region (above canvas)
+    if (y > vpTop)
+    {
+        draw_list->AddRectFilled(ImVec2(vpLeft, vpTop), ImVec2(vpRight, y), dimColor);
+    }
+    // Bottom region (below canvas)
+    if (y + h < vpBottom)
+    {
+        draw_list->AddRectFilled(ImVec2(vpLeft, y + h), ImVec2(vpRight, vpBottom), dimColor);
+    }
+    // Left region (left of canvas, between top and bottom regions)
+    float regionTop = glm::max(y, vpTop);
+    float regionBottom = glm::min(y + h, vpBottom);
+    if (x > vpLeft && regionTop < regionBottom)
+    {
+        draw_list->AddRectFilled(ImVec2(vpLeft, regionTop), ImVec2(x, regionBottom), dimColor);
+    }
+    // Right region (right of canvas, between top and bottom regions)
+    if (x + w < vpRight && regionTop < regionBottom)
+    {
+        draw_list->AddRectFilled(ImVec2(x + w, regionTop), ImVec2(vpRight, regionBottom), dimColor);
+    }
+
+    // Draw the design bounds border
+    ImColor boundsColor(1.0f, 0.6f, 0.0f, 0.8f);  // Orange color
+    float thickness = 2.0f;
+    draw_list->AddRect(ImVec2(x, y), ImVec2(x + w, y + h), boundsColor, 0.0f, ImDrawFlags_None, thickness);
+}
+
 static void Draw2dSelections()
 {
     const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
@@ -5035,6 +5111,7 @@ void EditorImguiDraw()
 
         if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
         {
+            DrawDesignBounds();
             Draw2dSelections();
         }
 

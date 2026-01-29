@@ -82,7 +82,7 @@ RUN ln -sf /proc/self/mounts /etc/mtab && \
 RUN ln -sf ${DEVKITPPC} ${DEVKITPRO}/libogc2
 
 # Create directories
-RUN mkdir -p /octave /game /project
+RUN mkdir -p /octave /game /project /intermediate
 WORKDIR /octave
 
 # Copy source
@@ -126,6 +126,7 @@ fi\n\
 echo "Copying editor to /game..."\n\
 cp /octave/OctaveEditor.elf /game/\n\
 cp -r /octave/Engine /game/\n\
+chmod -R 777 /game\n\
 \n\
 echo "Done! Editor at /game/OctaveEditor.elf"\n\
 ' > /usr/local/bin/build-editor && chmod +x /usr/local/bin/build-editor
@@ -170,12 +171,19 @@ echo "Project: /project"\n\
 echo "Project file: $OCTP_FILE"\n\
 [ $DEBUG -eq 1 ] && echo "Debug mode: enabled"\n\
 \n\
+# Copy project to intermediate directory to protect original\n\
+echo "Copying project to intermediate directory..."\n\
+rm -rf /intermediate/*\n\
+cp -r /project/* /intermediate/\n\
+OCTP_FILE="/intermediate/$(basename $OCTP_FILE)"\n\
+\n\
 # Build using headless editor (cooks assets and compiles)\n\
 cd /octave\n\
 ./OctaveEditor.elf -headless -project "$OCTP_FILE" -build Linux embedded\n\
 \n\
 echo "Copying to /game..."\n\
-cp -r /project/Packaged/Linux/* /game/\n\
+cp -r /intermediate/Packaged/Linux/* /game/\n\
+chmod -R 777 /game\n\
 \n\
 echo "Done! Output at /game/"\n\
 ' > /usr/local/bin/build-linux && chmod +x /usr/local/bin/build-linux
@@ -225,12 +233,19 @@ echo "Project: /project"\n\
 echo "Project file: $OCTP_FILE"\n\
 [ $DEBUG -eq 1 ] && echo "Debug mode: enabled"\n\
 \n\
+# Copy project to intermediate directory to protect original\n\
+echo "Copying project to intermediate directory..."\n\
+rm -rf /intermediate/*\n\
+cp -r /project/* /intermediate/\n\
+OCTP_FILE="/intermediate/$(basename $OCTP_FILE)"\n\
+\n\
 # Build using headless editor (cooks assets and compiles)\n\
 cd /octave\n\
 ./OctaveEditor.elf -headless -project "$OCTP_FILE" -build 3DS embedded\n\
 \n\
 echo "Copying ROM to /game..."\n\
-cp /project/Packaged/3DS/*.3dsx /game/\n\
+cp /intermediate/Packaged/3DS/*.3dsx /game/\n\
+chmod -R 777 /game\n\
 \n\
 echo "Done! 3DS build at /game/"\n\
 ' > /usr/local/bin/build-3ds && chmod +x /usr/local/bin/build-3ds
@@ -280,12 +295,19 @@ echo "Project: /project"\n\
 echo "Project file: $OCTP_FILE"\n\
 [ $DEBUG -eq 1 ] && echo "Debug mode: enabled"\n\
 \n\
+# Copy project to intermediate directory to protect original\n\
+echo "Copying project to intermediate directory..."\n\
+rm -rf /intermediate/*\n\
+cp -r /project/* /intermediate/\n\
+OCTP_FILE="/intermediate/$(basename $OCTP_FILE)"\n\
+\n\
 # Build using headless editor (cooks assets and compiles)\n\
 cd /octave\n\
 ./OctaveEditor.elf -headless -project "$OCTP_FILE" -build GameCube embedded\n\
 \n\
 echo "Copying ROM to /game..."\n\
-cp -r /project/Packaged/GameCube/*.dol /game/\n\
+cp -r /intermediate/Packaged/GameCube/*.dol /game/\n\
+chmod -R 777 /game\n\
 \n\
 echo "Done! GameCube build at /game/"\n\
 ' > /usr/local/bin/build-gcn && chmod +x /usr/local/bin/build-gcn
@@ -335,12 +357,19 @@ echo "Project: /project"\n\
 echo "Project file: $OCTP_FILE"\n\
 [ $DEBUG -eq 1 ] && echo "Debug mode: enabled"\n\
 \n\
+# Copy project to intermediate directory to protect original\n\
+echo "Copying project to intermediate directory..."\n\
+rm -rf /intermediate/*\n\
+cp -r /project/* /intermediate/\n\
+OCTP_FILE="/intermediate/$(basename $OCTP_FILE)"\n\
+\n\
 # Build using headless editor (cooks assets and compiles)\n\
 cd /octave\n\
 ./OctaveEditor.elf -headless -project "$OCTP_FILE" -build Wii embedded\n\
 \n\
 echo "Copying ROM to /game..."\n\
-cp -r /project/Packaged/Wii/*.dol /game/\n\
+cp -r /intermediate/Packaged/Wii/*.dol /game/\n\
+chmod -R 777 /game\n\
 \n\
 echo "Done! Wii build at /game/"\n\
 ' > /usr/local/bin/build-wii && chmod +x /usr/local/bin/build-wii
@@ -351,6 +380,7 @@ echo "OctaveGameEngine Build Environment"\n\
 echo "==================================="\n\
 echo ""\n\
 echo "The editor is pre-built and uses headless mode to cook assets."\n\
+echo "Your project is copied to /intermediate before building to protect the original."\n\
 echo ""\n\
 echo "Commands:"\n\
 echo "  build-editor  - Copy pre-built Linux Editor to output"\n\
@@ -363,8 +393,9 @@ echo "Options:"\n\
 echo "  --debug, -d   - Drop to shell on build failure (requires -it)"\n\
 echo ""\n\
 echo "Volumes:"\n\
-echo "  /game     - Output directory (mount with -v ./output:/game)"\n\
-echo "  /project  - Your game project with .octp file (mount with -v ./MyGame:/project)"\n\
+echo "  /game         - Output directory (mount with -v ./output:/game)"\n\
+echo "  /project      - Your game project with .octp file (mount with -v ./MyGame:/project)"\n\
+echo "  /intermediate - (internal) Build working directory, protects /project from modification"\n\
 echo ""\n\
 echo "Examples:"\n\
 echo "  docker run --rm -v ./output:/game octavegameengine build-editor"\n\

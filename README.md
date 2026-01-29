@@ -122,7 +122,8 @@ To package your game using the Docker build system, run the following command fr
 ```bash
 docker run --rm -v ./dist/3DS:/game -v .:/project octavegameengine build-3ds
 ```
-This command mounts your project directory to `/project` in the Docker container, and tells the system to export your file to `./dist/3DS`. You should create the `dist` directory beforehand just incase.
+This command mounts your project directory to `/project` in the Docker container, and tells the system to export your file to `./dist`. You should create the `dist` directory or whatever you want to export to beforehand or else the directory will be created by Docker and you will have to `sudo chmod -R 777 ./dist` to change permissions so you can access it.
+ or do a `sudo rm -rf ./dist` to delete the directory.
 
 ### Available Docker Build Commands
 - `build-linux` - Build a Linux `.elf` executable

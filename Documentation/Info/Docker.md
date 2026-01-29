@@ -83,16 +83,16 @@ Game builds require your project directory mounted at `/project`.
 
 ```bash
 # Linux
-docker run --rm -v ./dist/Linux:/game -v ./MyGame:/project octavegameengine build-linux
+docker run --rm -v ./dist:/game -v ./MyGame:/project octavegameengine build-linux
 
 # Nintendo 3DS
-docker run --rm -v ./dist/3DS:/game -v ./MyGame:/project octavegameengine build-3ds
+docker run --rm -v ./dist:/game -v ./MyGame:/project octavegameengine build-3ds
 
 # Nintendo GameCube
-docker run --rm -v ./dist/GCN:/game -v ./MyGame:/project octavegameengine build-gcn
+docker run --rm -v ./dist:/game -v ./MyGame:/project octavegameengine build-gcn
 
 # Nintendo Wii
-docker run --rm -v ./dist/Wii:/game -v ./MyGame:/project octavegameengine build-wii
+docker run --rm -v ./dist:/game -v ./MyGame:/project octavegameengine build-wii
 ```
 
 Output contains only the executable/ROM files:
@@ -124,14 +124,10 @@ docker run -it --rm -v ./output:/game -v ./MyGame:/project octavegameengine bash
 docker run --rm octavegameengine help
 ```
 
-## Cleaning Output Directory
+## Output Directory
 
-Files created by Docker are owned by root. To clean:
-
-```bash
-docker run --rm -v ./output:/game alpine rm -rf /game/*
-```
-
+You should create the `dist` directory or whatever you want to export to beforehand or else the directory will be created by Docker and you will have to `sudo chmod -R 777 ./dist` to change permissions so you can access it.
+ or do a `sudo rm -rf ./dist` to delete the directory.
 ## VS Code Integration
 
 Use the task "Docker Build Editor - Linux" from Command Palette (`Ctrl+Shift+P` → "Tasks: Run Task").

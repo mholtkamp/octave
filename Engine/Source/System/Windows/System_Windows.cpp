@@ -1251,4 +1251,9 @@ void SYS_GetWindowRect(int32_t& outX, int32_t& outY, int32_t& outWidth, int32_t&
     outHeight = winRect.bottom - winRect.top;
 }
 
+void SYS_ExplorerOpenDirectory(const std::string& dirPath)
+{
+    ShellExecute(NULL, "open", dirPath.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+}
+
 #endif
