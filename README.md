@@ -23,9 +23,9 @@ Instructions for building from source below.
 1. Download and Install:
    - Visual Studio Community 2022 (with C++ support)
    - Vulkan SDK version 1.3.275.0 (During install select "Shader Toolchain Debug Symbols - 64 bit" and deselect all other options)
-   - devkitPPC for GameCube/Wii development
-   - devkitARM for 3DS development
-   - instructions for installing the devkit tools can be found on the devkitpro wiki [here](https://devkitpro.org/wiki/Getting_Started)
+   - devkitPPC and libogc for Wii development, libogc2 for GameCube development
+   - devkitARM and libctru for 3DS development
+   - Instructions for installing the devkitPro toolchains can be found in the devkitPro wiki [here](https://devkitpro.org/wiki/Getting_Started)
 2. Build shaders by running compile.bat in `/Engine/Shaders/GLSL`.
 3. Open Octave.sln.
 4. Switch to the DebugEditor solution configuration.
@@ -62,12 +62,13 @@ Instructions for building from source below.
    - wget <https://apt.devkitpro.org/install-devkitpro-pacman>
    - chmod +x ./install-devkitpro-pacman
    - sudo ./install-devkitpro-pacman
-2. Install GameCube/Wii/3DS development libraries (Optional) (<https://devkitpro.org/wiki/Getting_Started>)
-   - sudo dkp-pacman -S gamecube-dev
+2. Install Wii/3DS development libraries (Optional) (<https://devkitpro.org/wiki/Getting_Started>)
    - sudo dkp-pacman -S wii-dev
    - sudo dkp-pacman -S 3ds-dev
    - Restart computer
-3. cd Engine/Shaders/GLSL/ then run ./compile.sh.
+3. Install GameCube development libraries (Optional) (<https://github.com/extremscorner/pacman-packages#readme>)
+   - sudo dkp-pacman -S gamecube-tools-git libogc2 libogc2-libdvm
+4. cd Engine/Shaders/GLSL/ then run ./compile.sh.
 
 ### Compiling (Visual Studio Code)
 
