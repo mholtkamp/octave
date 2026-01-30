@@ -84,6 +84,9 @@ public:
     glm::mat4 GetParentTransform();
     int32_t GetParentBoneIndex() const;
 
+    bool GetInheritTransform() const;
+    void SetInheritTransform(bool inheritTransform);
+
     virtual void Attach(Node* parent, bool keepWorldTransform = false, int32_t index = -1) override;
 
     static bool OnRep_RootPosition(Datum* datum, uint32_t index, const void* newValue);
@@ -97,11 +100,13 @@ protected:
     glm::vec3 mPosition;
     glm::vec3 mRotationEuler;
     glm::vec3 mScale;
-
+    
     glm::quat mRotationQuat;
-
+    
     glm::mat4 mTransform;
     int32_t mParentBoneIndex;
+    
+    bool mInheritTransform = true;
 
     bool mTransformDirty;
 };
