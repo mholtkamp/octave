@@ -345,6 +345,20 @@ int Input_Lua::GetGamepadAcceleration(lua_State* L)
     return Vector_Lua::Create(L, glm::vec3(x, y, z));
 }
 
+int Input_Lua::GetGamepadOrientation(lua_State* L)
+{
+    int index = lua_isinteger(L, 1) ? lua_tointeger(L, 1) - 1 : 0;
+
+    float pitch = 0.0f;
+    float yaw = 0.0f;
+    float roll = 0.0f;
+
+    INP_GetGamepadOrientation(pitch, yaw, roll, index);
+
+    // Create a Vector object with the acceleration data
+    return Vector_Lua::Create(L, glm::vec3(pitch, yaw, roll));
+}
+
 int Input_Lua::ShowCursor(lua_State* L)
 {
     bool show = CHECK_BOOLEAN(L, 1);
@@ -510,6 +524,8 @@ void Input_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, GetGamepadGyro);
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetGamepadAcceleration);
+
+    REGISTER_TABLE_FUNC(L, tableIdx, GetGamepadOrientation);
 
     REGISTER_TABLE_FUNC(L, tableIdx, ShowCursor);
     REGISTER_TABLE_FUNC(L, tableIdx, TrapCursor);

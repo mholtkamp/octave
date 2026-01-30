@@ -18,7 +18,7 @@ void INP_Initialize()
     WPAD_Init();
 
     WPAD_SetVRes(WPAD_CHAN_ALL, 640, 480);
-    
+
     for (uint32_t i = 0; i < INPUT_MAX_GAMEPADS; ++i)
     {
         WPAD_SetDataFormat(WPAD_CHAN_0 + i, WPAD_FMT_BTNS_ACC_IR);
@@ -148,6 +148,21 @@ void INP_Update()
             struct ir_t irData;
             WPAD_IR(i, &irData);
             INP_SetTouchPosition((int32_t)irData.x, (int32_t)irData.y, i);
+
+            // Orientation
+            orient_t orientation;
+            WPAD_Orientation(i, &orientation);
+            input.mGamepads[i].mOrientation[0] = orientation.pitch;
+            input.mGamepads[i].mOrientation[1] = -orientation.yaw;
+            input.mGamepads[i].mOrientation[2] = orientation.roll;
+
+            // Accelerometer
+            vec3w_t accel;
+            WPAD_Accel(i, &accel);
+            const float kAccelRange = 1.0f;
+            input.mGamepads[i].mAccel[0] = accel.x / kAccelRange;
+            input.mGamepads[i].mAccel[1] = accel.y / kAccelRange;
+            input.mGamepads[i].mAccel[2] = accel.z / kAccelRange;
         }
     }
 
@@ -202,7 +217,7 @@ void INP_Update()
 
 void INP_SetCursorPos(int32_t x, int32_t y)
 {
-    
+
 }
 
 void INP_ShowCursor(bool show)
