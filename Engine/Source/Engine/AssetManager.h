@@ -19,6 +19,7 @@ struct AsyncLoadRequest
 {
     std::string mName;
     std::string mPath;
+    uint64_t mUuid = 0;  // For UUID-based loading
     std::vector<AssetRef*> mTargetRefs;
     std::vector<AssetStub*> mDependentAssets;
     const EmbeddedFile* mEmbeddedData = nullptr;
@@ -27,11 +28,18 @@ struct AsyncLoadRequest
     int32_t mRequeueCount = 0;
 };
 
+// Name-based lookup (backward compatible)
 Asset* FetchAsset(const std::string& name);
 Asset* LoadAsset(const std::string& name);
 void UnloadAsset(const std::string& name);
 void AsyncLoadAsset(const std::string& name, AssetRef* targetRef = nullptr);
 AssetStub* FetchAssetStub(const std::string& name);
+
+// UUID-based lookup
+Asset* FetchAssetByUuid(uint64_t uuid);
+Asset* LoadAssetByUuid(uint64_t uuid);
+void AsyncLoadAssetByUuid(uint64_t uuid, AssetRef* targetRef = nullptr);
+AssetStub* FetchAssetStubByUuid(uint64_t uuid);
 
 template<typename T>
 T* FetchAsset(const std::string& name)
@@ -89,12 +97,23 @@ public:
     Asset* ImportEngineAsset(TypeId assetType, AssetDir* dir, const std::string& filename, ImportOptions* options = nullptr);
     void ImportEngineAssets();
 
+    // Name-based lookup (backward compatible)
     AssetStub* GetAssetStub(const std::string& name);
     Asset* GetAsset(const std::string& name);
     AssetStub* GetSceneAsset(const std::string& name);
     Asset* LoadAsset(const std::string& name);
     Asset* LoadAsset(AssetStub& stub);
     void AsyncLoadAsset(const std::string& name, AssetRef* targetRef);
+
+    // UUID-based lookup (primary)
+    AssetStub* GetAssetStubByUuid(uint64_t uuid);
+    Asset* GetAssetByUuid(uint64_t uuid);
+    Asset* LoadAssetByUuid(uint64_t uuid);
+    void AsyncLoadAssetByUuid(uint64_t uuid, AssetRef* targetRef);
+
+    // Path-based lookup (e.g., "Assets/Models/SM_Plane" or "Models/SM_Plane")
+    AssetStub* GetAssetStubByPath(const std::string& path);
+    Asset* LoadAssetByPath(const std::string& path);
     void SaveAsset(const std::string& name);
     void SaveAsset(AssetStub& stub);
     bool UnloadAsset(const std::string& name);
@@ -120,7 +139,7 @@ public:
     std::unordered_map<std::string, AssetStub*>& GetAssetMap();
     std::vector<AssetStub*> GatherDirtyAssets();
 
-    AssetStub* RegisterAsset(const std::string& filename, TypeId type, AssetDir* directory, EmbeddedFile* embeddedAsset, bool engineAsset);
+    AssetStub* RegisterAsset(const std::string& filename, TypeId type, AssetDir* directory, EmbeddedFile* embeddedAsset, bool engineAsset, uint64_t uuid = 0);
     AssetStub* CreateAndRegisterAsset(TypeId assetType, AssetDir* directory, const std::string& filename, bool engineAsset);
     AssetDir* GetAssetDirFromPath(const std::string& dirPath);
 
@@ -135,7 +154,9 @@ protected:
 
     void UpdateEndLoadQueue();
 
-    std::unordered_map<std::string, AssetStub*> mAssetMap;
+    std::unordered_map<std::string, AssetStub*> mAssetMap;      // Name-based lookup (first wins)
+    std::unordered_map<std::string, AssetStub*> mAssetPathMap;  // Path-based lookup (e.g., "Models/SM_Plane")
+    std::unordered_map<uint64_t, AssetStub*> mUuidMap;          // UUID-based lookup (primary)
     std::vector<Asset*> mTransientAssets;
     AssetDir* mRootDirectory = nullptr;
     bool mPurging = false;

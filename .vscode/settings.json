@@ -90,5 +90,5 @@
         "xtree": "cpp",
         "xutility": "cpp"
     },
-    "window.title": "${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}${separator}[Branch: preferences]"
+    "window.title": "${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}${separator}[Branch: dev]"
 }

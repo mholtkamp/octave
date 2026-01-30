@@ -19,6 +19,7 @@ Stream::Stream() :
     mSize(0),
     mCapacity(0),
     mPos(0),
+    mAssetVersion(ASSET_VERSION_CURRENT),
     mAsyncRequest(nullptr),
     mExternal(false)
 {
@@ -31,6 +32,7 @@ Stream::Stream(const char* externalData, uint32_t externalSize) :
     mSize(externalSize),
     mCapacity(externalSize),
     mPos(0),
+    mAssetVersion(ASSET_VERSION_CURRENT),
     mAsyncRequest(nullptr),
     mExternal(true)
 {
@@ -81,6 +83,7 @@ void Stream::Reset()
     mSize = 0;
     mCapacity = 0;
     mPos = 0;
+    mAssetVersion = ASSET_VERSION_CURRENT;
     mAsyncRequest = nullptr;
     mExternal = false;
 }
@@ -98,6 +101,16 @@ void Stream::SetExternalData(const char* externalData, uint32_t externalSize)
     mCapacity = externalSize;
     mPos = 0;
     mExternal = true;
+}
+
+void Stream::SetAssetVersion(uint32_t version)
+{
+    mAssetVersion = version;
+}
+
+uint32_t Stream::GetAssetVersion() const
+{
+    return mAssetVersion;
 }
 
 bool Stream::ReadFile(const char* path, bool isAsset, int32_t maxSize)
@@ -182,67 +195,188 @@ void Stream::SetAsyncRequest(AsyncLoadRequest* request)
 
 void Stream::ReadAsset(AssetRef& asset)
 {
-    // TODO: Resort to default asset if failed to load?
-    std::string assetName;
-    ReadString(assetName);
+    // Check asset version to determine format
+    // Version < 12: Old format (just string, no format byte)
+    // Version >= 12: New format (format byte + data)
 
-    if (assetName == "")
+    if (mAssetVersion < ASSET_VERSION_UUID_SUPPORT)
     {
-        asset = nullptr;
-    }
-    else if (mAsyncRequest != nullptr)
-    {
-        // If we are currently async loading, then we need to also async load this dependency.
-        Asset* reqAsset = FetchAsset(assetName);
+        // Legacy format: name-based reference (no format byte)
+        std::string assetName;
+        ReadString(assetName);
 
-        if (reqAsset != nullptr)
+        if (assetName == "")
         {
-            asset = reqAsset;
+            asset = nullptr;
         }
-        else
+        else if (mAsyncRequest != nullptr)
         {
-            AssetStub* stub = AssetManager::Get()->GetAssetStub(assetName);
-
-            if (stub != nullptr)
+            Asset* reqAsset = FetchAsset(assetName);
+            if (reqAsset != nullptr)
             {
-                // The asset does exist, so we need to load it.
-                AsyncLoadAsset(assetName, &asset);
-
-                // But also... we need to make sure that this dependency loads before the current async load asset.
-                // So we can add this asset stub to the list of dependent assets on the AsyncLoadRequest object
-                bool hasDependency = false;
-                for (uint32_t i = 0; i < mAsyncRequest->mDependentAssets.size(); ++i)
-                {
-                    if (mAsyncRequest->mDependentAssets[i] == stub)
-                    {
-                        hasDependency = true;
-                        break;
-                    }
-                }
-
-                if (!hasDependency)
-                {
-                    mAsyncRequest->mDependentAssets.push_back(stub);
-                }
-
+                asset = reqAsset;
             }
             else
             {
-                LogWarning("Could not find asset %s", assetName.c_str());
+                AssetStub* stub = AssetManager::Get()->GetAssetStub(assetName);
+                if (stub != nullptr)
+                {
+                    AsyncLoadAsset(assetName, &asset);
+                    bool hasDependency = false;
+                    for (uint32_t i = 0; i < mAsyncRequest->mDependentAssets.size(); ++i)
+                    {
+                        if (mAsyncRequest->mDependentAssets[i] == stub)
+                        {
+                            hasDependency = true;
+                            break;
+                        }
+                    }
+                    if (!hasDependency)
+                    {
+                        mAsyncRequest->mDependentAssets.push_back(stub);
+                    }
+                }
+                else
+                {
+                    LogWarning("Could not find asset %s", assetName.c_str());
+                }
             }
+        }
+        else
+        {
+            asset = LoadAsset(assetName);
         }
     }
     else
     {
-        asset = LoadAsset(assetName);
+        // New format: format byte + data
+        uint8_t format = ReadUint8();
+
+        if (format == 0)
+        {
+            // Name-based reference (legacy format in new container)
+            std::string assetName;
+            ReadString(assetName);
+
+            if (assetName == "")
+            {
+                asset = nullptr;
+            }
+            else if (mAsyncRequest != nullptr)
+            {
+                Asset* reqAsset = FetchAsset(assetName);
+                if (reqAsset != nullptr)
+                {
+                    asset = reqAsset;
+                }
+                else
+                {
+                    AssetStub* stub = AssetManager::Get()->GetAssetStub(assetName);
+                    if (stub != nullptr)
+                    {
+                        AsyncLoadAsset(assetName, &asset);
+                        bool hasDependency = false;
+                        for (uint32_t i = 0; i < mAsyncRequest->mDependentAssets.size(); ++i)
+                        {
+                            if (mAsyncRequest->mDependentAssets[i] == stub)
+                            {
+                                hasDependency = true;
+                                break;
+                            }
+                        }
+                        if (!hasDependency)
+                        {
+                            mAsyncRequest->mDependentAssets.push_back(stub);
+                        }
+                    }
+                    else
+                    {
+                        LogWarning("Could not find asset %s", assetName.c_str());
+                    }
+                }
+            }
+            else
+            {
+                asset = LoadAsset(assetName);
+            }
+        }
+        else if (format == 1)
+        {
+            // UUID-based reference
+            uint64_t uuid = ReadUint64();
+
+            if (uuid == 0)
+            {
+                asset = nullptr;
+            }
+            else if (mAsyncRequest != nullptr)
+            {
+                Asset* reqAsset = FetchAssetByUuid(uuid);
+                if (reqAsset != nullptr)
+                {
+                    asset = reqAsset;
+                }
+                else
+                {
+                    AssetStub* stub = AssetManager::Get()->GetAssetStubByUuid(uuid);
+                    if (stub != nullptr)
+                    {
+                        AsyncLoadAssetByUuid(uuid, &asset);
+                        bool hasDependency = false;
+                        for (uint32_t i = 0; i < mAsyncRequest->mDependentAssets.size(); ++i)
+                        {
+                            if (mAsyncRequest->mDependentAssets[i] == stub)
+                            {
+                                hasDependency = true;
+                                break;
+                            }
+                        }
+                        if (!hasDependency)
+                        {
+                            mAsyncRequest->mDependentAssets.push_back(stub);
+                        }
+                    }
+                    else
+                    {
+                        LogWarning("Could not find asset with UUID 0x%llx", (unsigned long long)uuid);
+                    }
+                }
+            }
+            else
+            {
+                asset = LoadAssetByUuid(uuid);
+            }
+        }
+        else
+        {
+            LogError("Unknown asset reference format: %d", format);
+            asset = nullptr;
+        }
     }
 }
 
 void Stream::WriteAsset(const AssetRef& asset)
 {
-    // Things like MaterialInstance shouldnt be saved since those are only temporary.
-    std::string assetName = (asset.Get() && !asset.Get()->IsTransient()) ? asset.Get()->GetName() : "";
-    WriteString(assetName);
+    Asset* assetPtr = asset.Get();
+
+    if (assetPtr != nullptr && !assetPtr->IsTransient() && assetPtr->GetUuid() != 0)
+    {
+        // New format: UUID-based
+        WriteUint8(1);  // Format indicator
+        WriteUint64(assetPtr->GetUuid());
+    }
+    else if (assetPtr != nullptr && !assetPtr->IsTransient())
+    {
+        // Legacy format fallback (asset has no UUID yet)
+        WriteUint8(0);
+        WriteString(assetPtr->GetName());
+    }
+    else
+    {
+        // Null reference - use UUID format with 0
+        WriteUint8(1);
+        WriteUint64(0);
+    }
 }
 
 void Stream::ReadString(std::string& dst)
@@ -339,6 +473,22 @@ uint32_t Stream::ReadUint32()
     uint32_t ret = 0;
     Read(ret);
     return ret;
+}
+
+int64_t Stream::ReadInt64()
+{
+    // Read as two 32-bit values to handle endianness properly
+    uint32_t low = ReadUint32();
+    uint32_t high = ReadUint32();
+    return (int64_t)(((uint64_t)high << 32) | low);
+}
+
+uint64_t Stream::ReadUint64()
+{
+    // Read as two 32-bit values to handle endianness properly
+    uint32_t low = ReadUint32();
+    uint32_t high = ReadUint32();
+    return ((uint64_t)high << 32) | low;
 }
 
 int16_t Stream::ReadInt16()
@@ -439,6 +589,20 @@ void Stream::WriteInt32(const int32_t& src)
 void Stream::WriteUint32(const uint32_t& src)
 {
     Write(src);
+}
+
+void Stream::WriteInt64(const int64_t& src)
+{
+    // Write as two 32-bit values to handle endianness properly
+    WriteUint32((uint32_t)(src & 0xFFFFFFFF));
+    WriteUint32((uint32_t)((uint64_t)src >> 32));
+}
+
+void Stream::WriteUint64(const uint64_t& src)
+{
+    // Write as two 32-bit values to handle endianness properly
+    WriteUint32((uint32_t)(src & 0xFFFFFFFF));
+    WriteUint32((uint32_t)(src >> 32));
 }
 
 void Stream::WriteInt16(const int16_t& src)

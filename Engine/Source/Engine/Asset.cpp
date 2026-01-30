@@ -225,6 +225,10 @@ void Asset::LoadStream(Stream& stream, Platform platform)
     mVersion = header.mVersion;
     mType = header.mType;
     mEmbedded = header.mEmbedded;
+    mUuid = header.mUuid;
+
+    // Set asset version on stream for format-aware serialization (e.g., ReadAsset)
+    stream.SetAssetVersion(header.mVersion);
 
     stream.ReadString(mName);
 }
@@ -272,6 +276,24 @@ void Asset::SetTransient(bool transient)
     mTransient = transient;
 }
 
+uint64_t Asset::GetUuid() const
+{
+    return mUuid;
+}
+
+void Asset::SetUuid(uint64_t uuid)
+{
+    mUuid = uuid;
+}
+
+void Asset::EnsureUuid()
+{
+    if (mUuid == 0)
+    {
+        mUuid = Maths::GenerateAssetUuid();
+    }
+}
+
 AssetHeader Asset::ReadHeader(Stream& stream)
 {
     AssetHeader header;
@@ -280,15 +302,28 @@ AssetHeader Asset::ReadHeader(Stream& stream)
     header.mType = TypeId(stream.ReadUint32());
     header.mEmbedded = stream.ReadUint8();
 
+    // Read UUID for version 12+
+    if (header.mVersion >= ASSET_VERSION_UUID_SUPPORT)
+    {
+        header.mUuid = stream.ReadUint64();
+    }
+    else
+    {
+        header.mUuid = 0;  // Legacy asset without UUID
+    }
+
     return header;
 }
 
 void Asset::WriteHeader(Stream& stream)
 {
+    EnsureUuid();  // Generate UUID if not already assigned
+
     stream.WriteUint32(ASSET_MAGIC_NUMBER);
     stream.WriteUint32(ASSET_VERSION_CURRENT);
     stream.WriteUint32(uint32_t(mType));
     stream.WriteUint8(mEmbedded);
+    stream.WriteUint64(mUuid);
 }
 
 
