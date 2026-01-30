@@ -451,7 +451,7 @@ glm::vec3 Node3D::GetWorldScale()
 
 void Node3D::SetWorldPosition(glm::vec3 position)
 {
-    if (mParent != nullptr)
+    if (mParent != nullptr && mInheritTransform)
     {
         glm::mat4 invParentTrans = glm::inverse(GetParentTransform());
         glm::vec4 position4 = glm::vec4(position, 1.0f);
@@ -475,7 +475,7 @@ void Node3D::SetWorldRotation(glm::quat rotation)
     glm::quat newRelativeRot = mRotationQuat;
 
     // Convert the world rotation to relative rotation
-    if (mParent != nullptr && mParent->IsNode3D())
+    if (mParent != nullptr && mParent->IsNode3D() && mInheritTransform)
     {
         Node3D* parent = static_cast<Node3D*>(mParent.Get());
         glm::quat parentWorldRot = parent->GetWorldRotationQuat();
@@ -500,7 +500,7 @@ void Node3D::SetWorldRotation(glm::quat rotation)
 
 void Node3D::SetWorldScale(glm::vec3 scale)
 {
-    if (mParent != nullptr && mParent->IsNode3D())
+    if (mParent != nullptr && mParent->IsNode3D() && mInheritTransform)
     {
 #if 0
         // Old code that was causing some problems.
