@@ -303,6 +303,26 @@ int Node3D_Lua::GetUpVector(lua_State* L)
     return 1;
 }
 
+int Node3D_Lua::GetInheritTransform(lua_State* L)
+{
+    Node3D* node = CHECK_NODE_3D(L, 1);
+
+    bool ret = node->GetInheritTransform();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int Node3D_Lua::SetInheritTransform(lua_State* L)
+{
+    Node3D* node = CHECK_NODE_3D(L, 1);
+    bool value = CHECK_BOOLEAN(L, 2);
+
+    node->SetInheritTransform(value);
+
+    return 0;
+}
+
 void Node3D_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -384,6 +404,9 @@ void Node3D_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, GetRightVector);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetUpVector);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, GetInheritTransform);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInheritTransform);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

@@ -81,6 +81,7 @@ Node3D::Node3D() :
     mRotationQuat({0, 0, 0}),
     mTransform(1.0f),
     mParentBoneIndex(-1),
+    mInheritTransform(true),
     mTransformDirty(true)
 {
     mName = "Transform";
@@ -128,6 +129,7 @@ void Node3D::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Vector, "Position", this, &mPosition, 1, HandleTransformPropChange));
     outProps.push_back(Property(DatumType::Vector, "Rotation", this, &mRotationEuler, 1, HandleTransformPropChange));
     outProps.push_back(Property(DatumType::Vector, "Scale", this, &mScale, 1, HandleTransformPropChange));
+    outProps.push_back(Property(DatumType::Bool, "Inherit Transform", this, &mInheritTransform));
 }
 
 void Node3D::GatherReplicatedData(std::vector<NetDatum>& outData)
@@ -225,7 +227,7 @@ void Node3D::UpdateTransform(bool updateChildren)
         mTransform *= glm::toMat4(mRotationQuat);
         mTransform = glm::scale(mTransform, scale);
 
-        if (parent != nullptr)
+        if (parent != nullptr && mInheritTransform)
         {
             // Concatenate parent transform with this transform
             mTransform = GetParentTransform() * mTransform;
@@ -304,6 +306,16 @@ void Node3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
     inoutDraws.push_back(debugDraw);
 
 #endif
+}
+
+bool Node3D::GetInheritTransform() const
+{
+    return mInheritTransform;
+}
+
+void Node3D::SetInheritTransform(bool inheritTransform)
+{
+    mInheritTransform = inheritTransform;
 }
 
 glm::vec3 Node3D::GetPosition() const
@@ -439,7 +451,7 @@ glm::vec3 Node3D::GetWorldScale()
 
 void Node3D::SetWorldPosition(glm::vec3 position)
 {
-    if (mParent != nullptr)
+    if (mParent != nullptr && mInheritTransform)
     {
         glm::mat4 invParentTrans = glm::inverse(GetParentTransform());
         glm::vec4 position4 = glm::vec4(position, 1.0f);
@@ -463,7 +475,7 @@ void Node3D::SetWorldRotation(glm::quat rotation)
     glm::quat newRelativeRot = mRotationQuat;
 
     // Convert the world rotation to relative rotation
-    if (mParent != nullptr && mParent->IsNode3D())
+    if (mParent != nullptr && mParent->IsNode3D() && mInheritTransform)
     {
         Node3D* parent = static_cast<Node3D*>(mParent.Get());
         glm::quat parentWorldRot = parent->GetWorldRotationQuat();
@@ -488,7 +500,7 @@ void Node3D::SetWorldRotation(glm::quat rotation)
 
 void Node3D::SetWorldScale(glm::vec3 scale)
 {
-    if (mParent != nullptr && mParent->IsNode3D())
+    if (mParent != nullptr && mParent->IsNode3D() && mInheritTransform)
     {
 #if 0
         // Old code that was causing some problems.

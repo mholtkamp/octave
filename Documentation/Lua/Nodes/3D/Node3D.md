@@ -157,6 +157,18 @@ Get this node's world space up vector.
 Sig: `up = Node3D:GetUpVector()`
  - Ret: `Vector up` The up vector in world space
 ---
+### GetInheritTransform
+Check if this node should inherit it's transforms from it's parents.
+
+Sig: `inheritTransform = Node:GetInheritTransform()`
+ - Ret: `boolean inheritTransform` Whether the node inherits it's transform
+---
+### SetInheritTransform
+Set if this node should inherit it's transforms from it's parents.
+
+Sig: `Node:SetInheritTransform(inheritTransform)`
+ - Arg: `boolean inheritTransform` Whether the node should inherit it's transform
+---
 ### AttachToBone
 Attach this node to a SkeletalMesh3D node at a specific bone.
 
