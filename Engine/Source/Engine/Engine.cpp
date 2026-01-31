@@ -51,6 +51,23 @@ static EngineConfig sEngineConfig;
 static std::vector<World*> sWorlds;
 static Clock sClock;
 
+// Default scene names to try when no explicit scene is specified
+static std::vector<std::string> sDefaultSceneNames = {
+    "SC_Default",
+    "SC_Main",
+    "SC_MainMenu"
+};
+
+const std::vector<std::string>& GetDefaultSceneNames()
+{
+    return sDefaultSceneNames;
+}
+
+void SetDefaultSceneNames(const std::vector<std::string>& names)
+{
+    sDefaultSceneNames = names;
+}
+
 // File watcher callback for script hot-reloading
 void OnScriptFileChanged(const FileChangeEvent& event)
 {
@@ -452,22 +469,31 @@ bool Initialize()
         }
     }
 
+    // If no explicit scene found, try each name in the default scene names list
     if (defaultScene == nullptr)
     {
-        LogDebug("Looking for default scene (\"SC_Main\" or \"SC_Default\")");
-    }
+        const std::vector<std::string>& defaultNames = GetDefaultSceneNames();
 
-    // If no explicit scene is provided, look for SC_Default first
-    if (defaultScene == nullptr)
-    {
-        defaultScene = LoadAsset<Scene>("SC_Default");
-    }
+        if (!defaultNames.empty())
+        {
+            std::string namesStr;
+            for (size_t i = 0; i < defaultNames.size(); ++i)
+            {
+                if (i > 0) namesStr += ", ";
+                namesStr += "\"" + defaultNames[i] + "\"";
+            }
+            LogDebug("Looking for default scene (%s)", namesStr.c_str());
+        }
 
-    // And then looks for SC_Main
-    // Both are used as default scenes for historical purposes.
-    if (defaultScene == nullptr)
-    {
-        defaultScene = LoadAsset<Scene>("SC_Main");
+        for (const std::string& sceneName : defaultNames)
+        {
+            defaultScene = LoadAsset<Scene>(sceneName.c_str());
+            if (defaultScene != nullptr)
+            {
+                LogDebug("Found default scene: %s", sceneName.c_str());
+                break;
+            }
+        }
     }
 
     // Then spawn it on world 0

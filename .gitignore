@@ -325,3 +325,5 @@ docs/*spec*
 doc/*.md
 Engine/Assets/**/*_Demo_*.oct
 Engine/Assets/Scenes/Blueprints/SC_Demo_*.oct
+Engine/Assets/Scenes/Blueprints/SC_*.oct
+Engine/Assets/Scenes/Levels/SC_Demo_FirstPerson.oct
