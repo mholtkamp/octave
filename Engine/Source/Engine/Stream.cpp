@@ -305,6 +305,13 @@ void Stream::ReadAsset(AssetRef& asset)
             // UUID-based reference
             uint64_t uuid = ReadUint64();
 
+            // Version 13+ includes name for fallback lookup
+            std::string assetName;
+            if (mAssetVersion >= ASSET_VERSION_UUID_WITH_NAME_FALLBACK)
+            {
+                ReadString(assetName);
+            }
+
             if (uuid == 0)
             {
                 asset = nullptr;
@@ -319,9 +326,25 @@ void Stream::ReadAsset(AssetRef& asset)
                 else
                 {
                     AssetStub* stub = AssetManager::Get()->GetAssetStubByUuid(uuid);
+                    if (stub == nullptr && !assetName.empty())
+                    {
+                        // Fallback to name-based lookup if UUID not found (version 13+)
+                        stub = AssetManager::Get()->GetAssetStub(assetName);
+                        if (stub != nullptr)
+                        {
+                            LogWarning("Asset UUID 0x%llx not found, falling back to name: %s", (unsigned long long)uuid, assetName.c_str());
+                        }
+                    }
                     if (stub != nullptr)
                     {
-                        AsyncLoadAssetByUuid(uuid, &asset);
+                        if (!assetName.empty())
+                        {
+                            AsyncLoadAsset(assetName, &asset);
+                        }
+                        else
+                        {
+                            AsyncLoadAssetByUuid(uuid, &asset);
+                        }
                         bool hasDependency = false;
                         for (uint32_t i = 0; i < mAsyncRequest->mDependentAssets.size(); ++i)
                         {
@@ -338,13 +361,24 @@ void Stream::ReadAsset(AssetRef& asset)
                     }
                     else
                     {
-                        LogWarning("Could not find asset with UUID 0x%llx", (unsigned long long)uuid);
+                        LogWarning("Could not find asset with UUID 0x%llx%s", (unsigned long long)uuid,
+                            assetName.empty() ? "" : (std::string(" or name '") + assetName + "'").c_str());
                     }
                 }
             }
             else
             {
                 asset = LoadAssetByUuid(uuid);
+                if (asset == nullptr && !assetName.empty())
+                {
+                    // Fallback to name-based lookup if UUID not found (version 13+)
+                    LogWarning("Asset UUID 0x%llx not found, falling back to name: %s", (unsigned long long)uuid, assetName.c_str());
+                    asset = LoadAsset(assetName);
+                }
+                else if (asset == nullptr)
+                {
+                    LogWarning("Could not find asset with UUID 0x%llx", (unsigned long long)uuid);
+                }
             }
         }
         else
@@ -361,9 +395,10 @@ void Stream::WriteAsset(const AssetRef& asset)
 
     if (assetPtr != nullptr && !assetPtr->IsTransient() && assetPtr->GetUuid() != 0)
     {
-        // New format: UUID-based
+        // New format: UUID-based with name fallback
         WriteUint8(1);  // Format indicator
         WriteUint64(assetPtr->GetUuid());
+        WriteString(assetPtr->GetName());  // Store name for fallback lookup
     }
     else if (assetPtr != nullptr && !assetPtr->IsTransient())
     {
@@ -376,6 +411,7 @@ void Stream::WriteAsset(const AssetRef& asset)
         // Null reference - use UUID format with 0
         WriteUint8(1);
         WriteUint64(0);
+        WriteString("");  // Empty name for null reference
     }
 }
 

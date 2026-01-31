@@ -197,7 +197,7 @@ AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type,
     stub->mAsset = nullptr;
     stub->mType = type;
     stub->mEmbeddedData = embeddedAsset;
-    stub->mEngineAsset = directory ? directory->mEngineDir : false;
+    stub->mEngineAsset = directory ? directory->mEngineDir : engineAsset;
     stub->mPath = path;
     stub->mUuid = uuid;
 
@@ -900,14 +900,37 @@ void AssetManager::AsyncLoadAssetByUuid(uint64_t uuid, AssetRef* targetRef)
         return;
     }
 
-    // Delegate to name-based async load using the stub's name
+    // Find the asset name by searching the asset map for this stub
+    std::string name;
 #if EDITOR
-    AsyncLoadAsset(stub->mName, targetRef);
+    name = stub->mName;
 #else
-    // In non-editor builds, we need to find the name from the path
-    std::string name = Asset::GetNameFromPath(stub->mPath);
-    AsyncLoadAsset(name, targetRef);
+    // In non-editor builds, find name by looking up stub in asset map
+    if (!stub->mPath.empty())
+    {
+        name = Asset::GetNameFromPath(stub->mPath);
+    }
+    else
+    {
+        // For embedded assets with no path, search the asset map
+        for (auto& pair : mAssetMap)
+        {
+            if (pair.second == stub)
+            {
+                name = pair.first;
+                break;
+            }
+        }
+    }
 #endif
+
+    if (name.empty())
+    {
+        LogError("AsyncLoadAssetByUuid failed, could not determine name for UUID 0x%llx", (unsigned long long)uuid);
+        return;
+    }
+
+    AsyncLoadAsset(name, targetRef);
 }
 
 // Path-based lookup methods (e.g., "Assets/Models/SM_Plane" or "Models/SM_Plane")
