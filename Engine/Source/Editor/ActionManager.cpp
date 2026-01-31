@@ -2245,7 +2245,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                 if (materialName.size() < 2 || (materialName.substr(0, 2) != "M_"))
                 {
-                    materialName = std::string("M_") + materialName;
+                    materialName = std::string("M_") + sceneName + std::string("_") + materialName;
                 }
 
                 AssetStub* materialStub = nullptr;
@@ -2289,12 +2289,14 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                             std::string assetName = EditorGetAssetNameFromPath(texturePath);
                             if (assetName.size() >= 2 && (strncmp(assetName.c_str(), "T_", 2) == 0))
                             {
-                                // Remove the T_ prefix, reapply later.
+                                // Remove the T_ prefix, reapply later with sceneName.
                                 assetName = assetName.substr(2);
                             }
 
                             assetName = options.mPrefix + assetName;
-                            assetName = GetFixedFilename(assetName.c_str(), "T_");
+
+                            // Add T_ and sceneName to texture name like we do for materials
+                            assetName = std::string("T_") + sceneName + std::string("_") + assetName;
 
                             AssetStub* existingStub = AssetManager::Get()->GetAssetStub(assetName);
                             if (existingStub && existingStub->mDirectory != sceneDir)
@@ -2350,7 +2352,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                 if (meshName.size() < 3 || (meshName.substr(0, 3) != "SM_"))
                 {
-                    meshName = std::string("SM_") + meshName;
+                    meshName = std::string("SM_") + sceneName + std::string("_") + meshName;
                 }
 
                 // Ensure unique name (this normally happens when model has multiple materials).
