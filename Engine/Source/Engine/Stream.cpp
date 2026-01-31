@@ -8,8 +8,12 @@
 #include <malloc.h>
 #include <stdio.h>
 #include <string.h>
+#include <unordered_set>
 
 #define ACQUIRE_FILE_DIRECTLY 1
+
+// Track UUIDs we've already warned about to reduce log spam
+static std::unordered_set<uint64_t> sWarnedUuids;
 
 #define MAX_FILE_SIZE (1024 * 1024 * 1024)
 #define MAX_STRING_SIZE (1024 * 16)
@@ -330,8 +334,9 @@ void Stream::ReadAsset(AssetRef& asset)
                     {
                         // Fallback to name-based lookup if UUID not found (version 13+)
                         stub = AssetManager::Get()->GetAssetStub(assetName);
-                        if (stub != nullptr)
+                        if (stub != nullptr && sWarnedUuids.find(uuid) == sWarnedUuids.end())
                         {
+                            sWarnedUuids.insert(uuid);
                             LogWarning("Asset UUID 0x%llx not found, falling back to name: %s", (unsigned long long)uuid, assetName.c_str());
                         }
                     }
@@ -359,8 +364,9 @@ void Stream::ReadAsset(AssetRef& asset)
                             mAsyncRequest->mDependentAssets.push_back(stub);
                         }
                     }
-                    else
+                    else if (sWarnedUuids.find(uuid) == sWarnedUuids.end())
                     {
+                        sWarnedUuids.insert(uuid);
                         LogWarning("Could not find asset with UUID 0x%llx%s", (unsigned long long)uuid,
                             assetName.empty() ? "" : (std::string(" or name '") + assetName + "'").c_str());
                     }
@@ -372,12 +378,23 @@ void Stream::ReadAsset(AssetRef& asset)
                 if (asset == nullptr && !assetName.empty())
                 {
                     // Fallback to name-based lookup if UUID not found (version 13+)
-                    LogWarning("Asset UUID 0x%llx not found, falling back to name: %s", (unsigned long long)uuid, assetName.c_str());
                     asset = LoadAsset(assetName);
+
+                    // Only warn once per UUID to reduce log spam
+                    if (sWarnedUuids.find(uuid) == sWarnedUuids.end())
+                    {
+                        sWarnedUuids.insert(uuid);
+                        LogWarning("Asset UUID 0x%llx not found, falling back to name: %s", (unsigned long long)uuid, assetName.c_str());
+                    }
                 }
                 else if (asset == nullptr)
                 {
-                    LogWarning("Could not find asset with UUID 0x%llx", (unsigned long long)uuid);
+                    // Only warn once per UUID
+                    if (sWarnedUuids.find(uuid) == sWarnedUuids.end())
+                    {
+                        sWarnedUuids.insert(uuid);
+                        LogWarning("Could not find asset with UUID 0x%llx", (unsigned long long)uuid);
+                    }
                 }
             }
         }

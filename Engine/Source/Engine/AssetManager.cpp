@@ -232,17 +232,44 @@ AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type,
 
 AssetStub* AssetManager::CreateAndRegisterAsset(TypeId type, AssetDir* directory, const std::string& filename, bool engineAsset)
 {
+    // Check if stub already exists (meaning .oct file was discovered)
+    // This preserves the UUID from the existing .oct file
+    std::string assetName = Asset::GetNameFromPath(filename);
+    AssetStub* existingStub = GetAssetStub(assetName);
+    if (existingStub != nullptr)
+    {
+        if (existingStub->mAsset == nullptr)
+        {
+            // Load from existing .oct file to preserve UUID
+            Asset* loadedAsset = LoadAsset(*existingStub);
+            if (loadedAsset != nullptr)
+            {
+                loadedAsset->SetEngineAsset(engineAsset);
+                return existingStub;
+            }
+        }
+        else
+        {
+            // Already loaded
+            return existingStub;
+        }
+    }
+
+    // No existing .oct file found, create new asset
     Asset* newAsset = Asset::CreateInstance(type);
     newAsset->Create();
     newAsset->SetEngineAsset(engineAsset);
 
     AssetStub* stub = RegisterAsset(filename, type, directory, nullptr, engineAsset);
-    
+
     if (stub != nullptr)
     {
         stub->mAsset = newAsset;
+        newAsset->SetUuid(stub->mUuid);
 #if EDITOR
         newAsset->SetName(stub->mName);
+        // Save immediately so the UUID is persisted for future sessions
+        SaveAsset(*stub);
 #else
         newAsset->SetName(Asset::GetNameFromPath(filename));
 #endif
@@ -649,6 +676,27 @@ void AssetManager::RegisterTransientAsset(Asset* asset)
 
 Asset* AssetManager::ImportEngineAsset(TypeId type, AssetDir* dir, const std::string& filename, ImportOptions* options)
 {
+    // Check if stub already exists (meaning .oct file was discovered)
+    // This preserves the UUID from the existing .oct file
+    AssetStub* existingStub = GetAssetStub(filename);
+    if (existingStub != nullptr && existingStub->mAsset == nullptr)
+    {
+        // Load from existing .oct file to preserve UUID
+        Asset* loadedAsset = LoadAsset(*existingStub);
+        if (loadedAsset != nullptr)
+        {
+            loadedAsset->SetEngineAsset(true);
+            return loadedAsset;
+        }
+        // If loading failed, fall through to import from source
+    }
+    else if (existingStub != nullptr && existingStub->mAsset != nullptr)
+    {
+        // Already loaded
+        return existingStub->mAsset;
+    }
+
+    // No existing .oct file found, import from source
     Asset* newAsset = Asset::CreateInstance(type);
     std::string importPath = dir->mPath + filename + newAsset->GetTypeImportExt();
     newAsset->Import(importPath, options);
@@ -664,15 +712,18 @@ Asset* AssetManager::ImportEngineAsset(TypeId type, AssetDir* dir, const std::st
     else
     {
         stub->mAsset = newAsset;
+        newAsset->SetUuid(stub->mUuid);
 
         if (type == StaticMesh::GetStaticType())
         {
             static_cast<StaticMesh*>(newAsset)->SetGenerateTriangleCollisionMesh(true);
         }
 
-        // Was saving right on startup but in Debug config this is very slow for some reason.
-        // Moving the call to SaveAsset into the Package code.
-        //AssetManager::Get()->SaveAsset(*stub);
+        // Save immediately so the UUID is persisted for future sessions
+        // This ensures stable UUIDs for engine assets
+#if EDITOR
+        SaveAsset(*stub);
+#endif
     }
 
     return newAsset;
@@ -698,6 +749,15 @@ void AssetManager::ImportEngineAssets()
         AssetDir* engineParticles = engineDir->CreateSubdirectory("Particles");
         AssetDir* engineFonts = engineDir->CreateSubdirectory("Fonts");
         AssetDir* engineScenes = engineDir->CreateSubdirectory("Scenes");
+
+        // Discover existing .oct files first to preserve UUIDs
+        // This must happen before ImportEngineAsset calls so we load from .oct
+        // instead of regenerating from source with new UUIDs
+        DiscoverDirectory(engineTextures, true);
+        DiscoverDirectory(engineMaterials, true);
+        DiscoverDirectory(engineMeshes, true);
+        DiscoverDirectory(engineParticles, true);
+        DiscoverDirectory(engineFonts, true);
 
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_White");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Black");
@@ -1052,11 +1112,20 @@ void AssetManager::SaveAsset(AssetStub& stub)
         std::string filename = Asset::GetNameFromPath(stub.mPath);
         if (stub.mAsset->GetName() != filename)
         {
-            remove(stub.mPath.c_str());
+            std::string oldPath = stub.mPath;
+            remove(oldPath.c_str());
 
             std::string newPath = stub.mDirectory ? stub.mDirectory->mPath : Asset::GetDirectoryFromPath(stub.mPath);
             newPath += stub.mAsset->GetName();
             newPath += ".oct";
+
+            // Update path map (remove old, add new)
+            auto oldPathItr = mAssetPathMap.find(oldPath);
+            if (oldPathItr != mAssetPathMap.end() && oldPathItr->second == &stub)
+            {
+                mAssetPathMap.erase(oldPath);
+            }
+            mAssetPathMap[newPath] = &stub;
 
             stub.mPath = newPath;
         }
@@ -1132,28 +1201,59 @@ bool AssetManager::RenameAsset(Asset* asset, const std::string& newName)
     if (asset != nullptr &&
         newName.size() > 0)
     {
-        auto oldItr = mAssetMap.find(asset->GetName());
-        auto newItr = mAssetMap.find(newName);
+        // Use UUID to find the correct stub (more reliable than name with UUID system)
+        AssetStub* stub = nullptr;
+        uint64_t uuid = asset->GetUuid();
 
-        if (newItr != mAssetMap.end())
+        if (uuid != 0)
         {
-            LogError("Failed to rename file. Another asset with the same name already exists.");
+            stub = GetAssetStubByUuid(uuid);
         }
-        else if (oldItr->second->mAsset != asset)
+
+        // Fallback to name lookup if UUID not available
+        if (stub == nullptr)
+        {
+            auto oldItr = mAssetMap.find(asset->GetName());
+            if (oldItr != mAssetMap.end() && oldItr->second->mAsset == asset)
+            {
+                stub = oldItr->second;
+            }
+        }
+
+        if (stub == nullptr)
+        {
+            LogError("Failed to find asset stub for rename. Asset: %s", asset->GetName().c_str());
+        }
+        else if (stub->mAsset != asset)
         {
             LogError("Pointer mismatch when attempting to rename asset. Is there a duplicate asset?");
         }
         else
         {
-            AssetStub* stub = mAssetMap[asset->GetName()];
-            mAssetMap.erase(asset->GetName());
+            std::string oldName = asset->GetName();
+
+            // Remove from name map if this stub was the one registered under old name
+            auto oldNameItr = mAssetMap.find(oldName);
+            if (oldNameItr != mAssetMap.end() && oldNameItr->second == stub)
+            {
+                mAssetMap.erase(oldName);
+            }
 
 #if EDITOR
             stub->mName = newName;
 #endif
             asset->SetName(newName);
-            
-            mAssetMap.insert(std::pair<std::string, AssetStub*>(newName, stub));
+
+            // Add to name map under new name (if not already taken)
+            auto newNameItr = mAssetMap.find(newName);
+            if (newNameItr == mAssetMap.end())
+            {
+                mAssetMap.insert(std::pair<std::string, AssetStub*>(newName, stub));
+            }
+            else
+            {
+                LogDebug("Asset renamed but name slot already taken by another asset: %s", newName.c_str());
+            }
 
             // Do not adjust mPath, as the asset still refers to an old file.
             // When saving the asset, the old file will be destroyed first before saving to the new location.
