@@ -584,6 +584,22 @@ void INP_GetGamepadAcceleration(float& x, float& y, float& z, int32_t gamepadInd
     }
 }
 
+void INP_GetGamepadOrientation(float& pitch, float& yaw, float& roll, int32_t gamepadIndex)
+{
+    if (gamepadIndex >= 0 && gamepadIndex < INPUT_MAX_GAMEPADS)
+    {
+        InputState& input = GetEngineState()->mInput;
+        pitch = input.mGamepads[gamepadIndex].mOrientation[0];
+        yaw = input.mGamepads[gamepadIndex].mOrientation[1];
+        roll = input.mGamepads[gamepadIndex].mOrientation[2];
+    }
+    else
+    {
+        pitch = yaw = roll = 0.0f;
+    }
+}
+
+
 bool INP_IsCursorLocked()
 {
     return GetEngineState()->mInput.mCursorLocked;

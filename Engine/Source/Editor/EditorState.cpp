@@ -621,6 +621,7 @@ void EditorState::EndPlayInEditor()
     mPlayInEditor = false;
     mEjected = false;
     mPaused = false;
+    mEndPieAtEndOfFrame = false;
 
     ScriptUtils::GarbageCollect();
 
