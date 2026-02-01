@@ -123,7 +123,8 @@ int World_Lua::GetRootNode(lua_State* L)
 int World_Lua::SetRootNode(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
-    Node* node = CHECK_NODE(L, 2);
+    Node* node = nullptr;
+    if (!lua_isnil(L, 2)) { node = CHECK_NODE(L, 2) };
 
     world->SetRootNode(node);
 
@@ -134,7 +135,12 @@ int World_Lua::DestroyRootNode(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
 
-    world->DestroyRootNode();
+    Node* node = world->GetRootNode();
+    if (node)
+    {
+        node->Doom();
+        world->SetRootNode(nullptr);
+    }
 
     return 0;
 }
