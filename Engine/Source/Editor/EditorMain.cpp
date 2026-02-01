@@ -66,6 +66,13 @@ void EditorMain(int32_t argc, char** argv)
         if (engineConfig->mProjectPath != "")
         {
             LoadProject(engineConfig->mProjectPath);
+
+            // Check and auto-upgrade assets to new UUID format
+            if (ActionManager::Get()->CheckProjectNeedsUpgrade())
+            {
+                LogDebug("Headless mode: Auto-upgrading assets to new UUID format...");
+                ActionManager::Get()->UpgradeProject();
+            }
         }
 
         if (engineConfig->mBuildPlatform != Platform::Count)

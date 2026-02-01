@@ -939,10 +939,11 @@ Camera3D* World::GetMainCamera()
 	Camera3D* highestPriority = nullptr;
     for (Camera3D* cam : cams)
     {
-		if (highestPriority == nullptr || cam->GetPriority() > highestPriority->GetPriority())
-        if (cam->GetIsMainCamera() && matchCamera == nullptr)
-        {
-            matchCamera = cam;
+        if (highestPriority == nullptr || cam->GetPriority() > highestPriority->GetPriority()) {
+            if (cam->GetIsMainCamera() && matchCamera == nullptr)
+            {
+                matchCamera = cam;
+            }
         }
     }
     if (matchCamera != nullptr)

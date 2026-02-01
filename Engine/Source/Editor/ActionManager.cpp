@@ -1643,6 +1643,9 @@ void ActionManager::OpenProject(const char* path)
         GetEditorState()->ClearAssetDirHistory();
         GetEditorState()->SetAssetDirectory(AssetManager::Get()->FindProjectDirectory(), true);
         GetEditorState()->SetSelectedAssetStub(nullptr);
+
+        // Check if project needs upgrade to new UUID format
+        CheckProjectNeedsUpgrade();
     }
 }
 
@@ -2242,7 +2245,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                 if (materialName.size() < 2 || (materialName.substr(0, 2) != "M_"))
                 {
-                    materialName = std::string("M_") + materialName;
+                    materialName = std::string("M_") + sceneName + std::string("_") + materialName;
                 }
 
                 AssetStub* materialStub = nullptr;
@@ -2286,12 +2289,14 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                             std::string assetName = EditorGetAssetNameFromPath(texturePath);
                             if (assetName.size() >= 2 && (strncmp(assetName.c_str(), "T_", 2) == 0))
                             {
-                                // Remove the T_ prefix, reapply later.
+                                // Remove the T_ prefix, reapply later with sceneName.
                                 assetName = assetName.substr(2);
                             }
 
                             assetName = options.mPrefix + assetName;
-                            assetName = GetFixedFilename(assetName.c_str(), "T_");
+
+                            // Add T_ and sceneName to texture name like we do for materials
+                            assetName = std::string("T_") + sceneName + std::string("_") + assetName;
 
                             AssetStub* existingStub = AssetManager::Get()->GetAssetStub(assetName);
                             if (existingStub && existingStub->mDirectory != sceneDir)
@@ -2347,7 +2352,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                 if (meshName.size() < 3 || (meshName.substr(0, 3) != "SM_"))
                 {
-                    meshName = std::string("SM_") + meshName;
+                    meshName = std::string("SM_") + sceneName + std::string("_") + meshName;
                 }
 
                 // Ensure unique name (this normally happens when model has multiple materials).
@@ -3675,6 +3680,127 @@ void ActionSetInstanceData::Reverse()
             mInstMesh->AddInstanceData(mPrevData[i], mStartIndex + i);
         }
     }
+}
+
+// Static storage for assets needing upgrade (used in both headless and editor modes)
+static std::vector<AssetStub*> sAssetsNeedingUpgrade;
+
+bool ActionManager::CheckProjectNeedsUpgrade()
+{
+    // Check if any assets in the project are using old versions that need upgrading
+    // Specifically, check for assets < ASSET_VERSION_UUID_WITH_NAME_FALLBACK (13)
+    // This ensures UUID references have name fallback for reliable loading
+
+    sAssetsNeedingUpgrade.clear();
+
+    std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
+
+    for (auto& pair : assetMap)
+    {
+        AssetStub* stub = pair.second;
+        if (stub == nullptr || stub->mEngineAsset)
+            continue;
+
+        // Read the asset header to check version
+        Stream stream;
+        if (stub->mPath.empty())
+            continue;
+
+        stream.ReadFile(stub->mPath.c_str(), true, sizeof(uint32_t) * 3 + sizeof(uint8_t) + sizeof(uint64_t));
+        if (stream.GetSize() == 0)
+            continue;
+
+        AssetHeader header = Asset::ReadHeader(stream);
+
+        // Check if asset needs upgrade (version < 13)
+        if (header.mVersion < ASSET_VERSION_UUID_WITH_NAME_FALLBACK)
+        {
+            sAssetsNeedingUpgrade.push_back(stub);
+        }
+    }
+
+    if (sAssetsNeedingUpgrade.size() > 0)
+    {
+        // Only show modal in non-headless mode (headless mode auto-upgrades)
+        if (!IsHeadless())
+        {
+            EditorState* editorState = GetEditorState();
+            editorState->mAssetsNeedingUpgrade = sAssetsNeedingUpgrade;
+            editorState->mShowProjectUpgradeModal = true;
+        }
+        LogWarning("Project has %d assets that need to be upgraded to the new UUID format.", (int)sAssetsNeedingUpgrade.size());
+        return true;
+    }
+
+    return false;
+}
+
+void ActionManager::UpgradeProject()
+{
+    // Use static storage in headless mode, EditorState in editor mode
+    std::vector<AssetStub*>& assetsToUpgrade = IsHeadless() ? sAssetsNeedingUpgrade : GetEditorState()->mAssetsNeedingUpgrade;
+
+    if (assetsToUpgrade.empty())
+    {
+        LogDebug("No assets need upgrading.");
+        if (!IsHeadless())
+        {
+            GetEditorState()->mProjectUpgradeInProgress = false;
+        }
+        return;
+    }
+
+    if (!IsHeadless())
+    {
+        GetEditorState()->mProjectUpgradeInProgress = true;
+    }
+
+    LogDebug("Upgrading %d assets to new format...", (int)assetsToUpgrade.size());
+
+    uint32_t upgradedCount = 0;
+    uint32_t failedCount = 0;
+
+    for (AssetStub* stub : assetsToUpgrade)
+    {
+        if (stub == nullptr)
+            continue;
+
+        // Load the asset if not already loaded
+        bool wasLoaded = (stub->mAsset != nullptr);
+        if (!wasLoaded)
+        {
+            AssetManager::Get()->LoadAsset(*stub);
+        }
+
+        if (stub->mAsset == nullptr)
+        {
+            LogError("Failed to load asset for upgrade: %s", stub->mPath.c_str());
+            failedCount++;
+            continue;
+        }
+
+        // Save the asset (this will write the new format with UUID + name fallback)
+        AssetManager::Get()->SaveAsset(*stub);
+        upgradedCount++;
+
+        LogDebug("Upgraded asset: %s", stub->mAsset->GetName().c_str());
+
+        // Unload if it wasn't loaded before
+        if (!wasLoaded)
+        {
+            AssetManager::Get()->UnloadAsset(*stub);
+        }
+    }
+
+    assetsToUpgrade.clear();
+    sAssetsNeedingUpgrade.clear();
+
+    if (!IsHeadless())
+    {
+        GetEditorState()->mProjectUpgradeInProgress = false;
+    }
+
+    LogDebug("Project upgrade complete. Upgraded: %d, Failed: %d", upgradedCount, failedCount);
 }
 
 #endif

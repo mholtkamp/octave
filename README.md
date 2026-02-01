@@ -28,12 +28,26 @@ Instructions for building from source below.
    - devkitPPC for GameCube/Wii development
    - devkitARM for 3DS development
    - instructions for installing the devkit tools can be found on the devkitpro wiki [here](https://devkitpro.org/wiki/Getting_Started)
-2. Build shaders by running compile.bat in `/Engine/Shaders/GLSL`.
-3. Open Octave.sln.
-4. Switch to the DebugEditor solution configuration.
-5. Set the Standalone project as the Startup Project.
-6. In the debug settings for Standalone, change the working directory to $(SolutionDir).
-7. Build and run Standalone. This is the standalone level editor if you were making a game with Lua script only.
+2. Gamecube and Wii packaging currently only works on Linux or Docker. We recommend building Gamecube and Wii games on Windows with Docker see instructions below. But if you want to try to get them to package on Windows:
+   - Open your Start menu and launch `devkitPro > MySys2`
+   - `pacman-key --recv-keys C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE --keyserver keyserver.ubuntu.com`
+   - `pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE`
+   - Put this entry in `/opt/devkitpro/pacman/etc/pacman.conf` above the `[dkp-libs]` entry: 
+   ```
+      [extremscorner-devkitpro]
+      Server = https://packages.extremscorner.org/devkitpro/macos/$arch
+   ```
+   - `pacman -Syuu`
+   - `pacman -S libogc2 libogc2-docs libogc2-examples`
+   - `pacman -S libogc2-cmake`
+      - Accept overwriting if asked.
+   - Restart computer if  you've opened Visual Studio prior to installing `libogc2` to make sure the environment variables are found.
+3. Build shaders by running compile.bat in `/Engine/Shaders/GLSL`.
+4. Open Octave.sln.
+5. Switch to the DebugEditor solution configuration.
+6. Set the Standalone project as the Startup Project.
+7. In the debug settings for Standalone, change the working directory to $(SolutionDir).
+8. Build and run Standalone. This is the standalone level editor if you were making a game with Lua script only.
 
 ## Linux Compiling
 
@@ -69,7 +83,20 @@ Instructions for building from source below.
    - sudo dkp-pacman -S wii-dev
    - sudo dkp-pacman -S 3ds-dev
    - Restart computer
-3. cd Engine/Shaders/GLSL/ then run ./compile.sh.
+3. If you want to package Wii and Gamecube, Install `libogc2`
+   - `sudo dkp-pacman-key --recv-keys C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE --keyserver keyserver.ubuntu.com`
+   - `sudo dkp-pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE`
+   - Put this entry in `/opt/devkitpro/pacman/etc/pacman.conf` above the `[dkp-libs]` entry: 
+   ```
+      [extremscorner-devkitpro]
+      Server = https://packages.extremscorner.org/devkitpro/macos/$arch
+   ```
+   - `sudo dkp-pacman -Syuu`
+   - `sudo dkp-pacman -S libogc2 libogc2-docs libogc2-examples`
+   - `sudo dkp-pacman -S libogc2-cmake`
+      - Accept overwriting if asked.
+
+4. cd Engine/Shaders/GLSL/ then run ./compile.sh.
 
 ### Compiling (Visual Studio Code)
 

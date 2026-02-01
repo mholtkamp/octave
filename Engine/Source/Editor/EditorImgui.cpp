@@ -694,6 +694,86 @@ static void DrawUnsavedCheck()
     }
 }
 
+static void DrawProjectUpgradeModal()
+{
+    EditorState* editorState = GetEditorState();
+
+    if (editorState->mShowProjectUpgradeModal)
+    {
+        ImGui::OpenPopup("Project Upgrade Required");
+    }
+
+    // Center the modal
+    if (ImGui::IsPopupOpen("Project Upgrade Required"))
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(500, 350));
+    }
+
+    if (ImGui::BeginPopupModal("Project Upgrade Required", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        ImGui::TextWrapped("This project contains assets that were created with an older version of the engine.");
+        ImGui::Spacing();
+        ImGui::TextWrapped("The new version includes improved asset reference handling with UUID + name fallback, which prevents broken references in packaged builds.");
+        ImGui::Spacing();
+        ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Assets needing upgrade: %d", (int)editorState->mAssetsNeedingUpgrade.size());
+        ImGui::Spacing();
+
+        // Show list of assets needing upgrade (scrollable)
+        if (ImGui::BeginListBox("##UpgradeAssetList", ImVec2(480, 150)))
+        {
+            for (uint32_t i = 0; i < editorState->mAssetsNeedingUpgrade.size(); ++i)
+            {
+                AssetStub* stub = editorState->mAssetsNeedingUpgrade[i];
+                if (stub == nullptr)
+                    continue;
+
+                glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor(stub->mType);
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
+                ImGui::Text("%s", stub->mName.c_str());
+                ImGui::PopStyleColor();
+            }
+            ImGui::EndListBox();
+        }
+
+        ImGui::Spacing();
+        ImGui::TextWrapped("Click 'Upgrade Now' to automatically resave all assets with the new format.");
+        ImGui::Spacing();
+
+        bool closePopup = false;
+
+        if (ImGui::Button("Upgrade Now", ImVec2(120, 0)))
+        {
+            closePopup = true;
+            ActionManager::Get()->UpgradeProject();
+            LogDebug("Project upgrade completed successfully!");
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Skip", ImVec2(120, 0)))
+        {
+            closePopup = true;
+            editorState->mAssetsNeedingUpgrade.clear();
+            LogWarning("Project upgrade skipped. Packaged builds may have issues with asset references.");
+        }
+
+        if (IsKeyJustDown(KEY_ESCAPE))
+        {
+            closePopup = true;
+            editorState->mAssetsNeedingUpgrade.clear();
+        }
+
+        if (closePopup)
+        {
+            editorState->mShowProjectUpgradeModal = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
 static void DiscoverNodeClasses()
 {
     sNode3dNames.clear();
@@ -5123,6 +5203,7 @@ void EditorImguiDraw()
         DrawFileBrowser();
 
         DrawUnsavedCheck();
+        DrawProjectUpgradeModal();
 
         GetPreferencesWindow()->Draw();
     }

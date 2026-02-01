@@ -122,6 +122,10 @@ public:
     void DeleteAssetDir(AssetDir* dir);
     bool DuplicateNodes(std::vector<Node*> nodes);
     void AttachSelectedNodes(Node* newParent, int32_t boneIdx);
+
+    // Project upgrade functions
+    bool CheckProjectNeedsUpgrade();
+    void UpgradeProject();
 };
 
 #define DECLARE_ACTION_INTERFACE(Name) \

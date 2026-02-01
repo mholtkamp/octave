@@ -37,6 +37,8 @@ public:
     bool WriteFile(const char* path);
 
     void SetAsyncRequest(AsyncLoadRequest* request);
+    void SetAssetVersion(uint32_t version);
+    uint32_t GetAssetVersion() const;
 
     void ReadAsset(AssetRef& asset);
     void WriteAsset(const AssetRef& asset);
@@ -51,6 +53,8 @@ public:
 
     int32_t ReadInt32();
     uint32_t ReadUint32();
+    int64_t ReadInt64();
+    uint64_t ReadUint64();
     int16_t ReadInt16();
     uint16_t ReadUint16();
     int8_t ReadInt8();
@@ -65,6 +69,8 @@ public:
 
     void WriteInt32(const int32_t& src);
     void WriteUint32(const uint32_t& src);
+    void WriteInt64(const int64_t& src);
+    void WriteUint64(const uint64_t& src);
     void WriteInt16(const int16_t& src);
     void WriteUint16(const uint16_t& src);
     void WriteInt8(const int8_t& src);
@@ -138,6 +144,7 @@ private:
     uint32_t mSize;
     uint32_t mCapacity;
     uint32_t mPos;
+    uint32_t mAssetVersion;  // Version of asset being read (for format compatibility)
     AsyncLoadRequest* mAsyncRequest;
     bool mExternal;
 };

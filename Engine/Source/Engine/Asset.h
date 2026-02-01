@@ -30,7 +30,9 @@ class AssetDir;
 #define ASSET_VERSION_MATERIAL_LITE_TEXTURE_COUNT 9
 #define ASSET_VERSION_STATIC_MESH_3D_HAS_BAKED_LIGHTING 10
 #define ASSET_VERSION_SCENE_SUBSCENE_INSTANCE_COLORS 11
-#define ASSET_VERSION_CURRENT 11
+#define ASSET_VERSION_UUID_SUPPORT 12
+#define ASSET_VERSION_UUID_WITH_NAME_FALLBACK 13
+#define ASSET_VERSION_CURRENT 13
 // ----------------------------------------------------
 
 #define DECLARE_ASSET(Base, Parent) DECLARE_FACTORY(Base, Asset); DECLARE_OBJECT(Base, Parent);
@@ -54,6 +56,7 @@ struct AssetHeader
     uint32_t mVersion = ASSET_VERSION_CURRENT;
     TypeId mType = INVALID_TYPE_ID;
     uint8_t mEmbedded = false;
+    uint64_t mUuid = 0;  // Added in ASSET_VERSION_UUID_SUPPORT (12)
 };
 
 struct AssetStub
@@ -63,6 +66,7 @@ struct AssetStub
     std::string mPath;
     TypeId mType = INVALID_TYPE_ID;
     bool mEngineAsset = false;
+    uint64_t mUuid = 0;  // Primary identifier
 
 #if EDITOR
     std::string mName;
@@ -127,6 +131,10 @@ public:
     bool IsTransient() const;
     void SetTransient(bool transient);
 
+    uint64_t GetUuid() const;
+    void SetUuid(uint64_t uuid);
+    void EnsureUuid();  // Generate UUID if not already assigned
+
     static AssetHeader ReadHeader(Stream& stream);
     void WriteHeader(Stream& stream);
 
@@ -140,6 +148,7 @@ protected:
 
     uint32_t mVersion = 0;
     TypeId mType = INVALID_TYPE_ID;
+    uint64_t mUuid = 0;
     bool mEmbedded = false;
     bool mLoaded = false;
     bool mEnableRefCount = true;
