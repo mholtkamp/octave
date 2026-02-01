@@ -169,10 +169,31 @@ ifneq ($(ROMFS),)
 	export _3DSXFLAGS += --romfs=$(CURDIR)/$(ROMFS)
 endif
 
-.PHONY: all clean
+.PHONY: all clean CleanStaleDeps
+.DEFAULT_GOAL := all
 
 #---------------------------------------------------------------------------------
-all: $(BUILD) $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES)
+# Clean stale dependency files if the build path has changed (e.g., host vs Docker)
+#---------------------------------------------------------------------------------
+DEPS_MARKER := $(CURDIR)/$(BUILD)/.deps_path_marker
+
+CleanStaleDeps:
+	@if [ -d "$(CURDIR)/$(BUILD)" ]; then \
+		if [ -f "$(DEPS_MARKER)" ]; then \
+			STORED_PATH=$$(cat "$(DEPS_MARKER)"); \
+			if [ "$$STORED_PATH" != "$(CURDIR)" ]; then \
+				echo "Build path changed, cleaning stale dependency files..."; \
+				rm -f $(CURDIR)/$(BUILD)/*.d $(CURDIR)/$(BUILD)/*.o; \
+			fi; \
+		elif ls $(CURDIR)/$(BUILD)/*.d >/dev/null 2>&1; then \
+			echo "No path marker found, cleaning potentially stale dependency files..."; \
+			rm -f $(CURDIR)/$(BUILD)/*.d $(CURDIR)/$(BUILD)/*.o; \
+		fi; \
+		echo "$(CURDIR)" > "$(DEPS_MARKER)"; \
+	fi
+
+#---------------------------------------------------------------------------------
+all: CleanStaleDeps $(BUILD) $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES)
 
 OutputDir:
 	@[ -d $(OUTPUT_DIR) ] || mkdir -p $(OUTPUT_DIR)

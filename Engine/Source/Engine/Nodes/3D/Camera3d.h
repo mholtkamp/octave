@@ -48,11 +48,17 @@ public:
 
     float GetNearWidth() const;
     float GetNearHeight() const;
+    float GetPriority() const;
+    bool GetIsMainCamera() const;
 
     void SetNearZ(float nearZ);
     void SetFarZ(float farZ);
+    void SetAspectRatio(float aspectRatio);
     void SetFieldOfView(float fovY);
     void SetOrthoWidth(float width);
+    void SetPriority(float priority);
+    void SetIsMainCamera(bool state);
+
 
     glm::vec3 WorldToScreenPosition(glm::vec3 worldPos);
     glm::vec3 ScreenToWorldPosition(int32_t x, int32_t y);
@@ -72,6 +78,8 @@ protected:
     float mFar = 4096.0f;
     float mFovY = 70.0f;
     float mOrthoWidth = 12.8f;
+    float mPriority = 0.0f;
+    bool mMainCamera = false;
 
     float mAspectRatio = 16.0f / 9.0f;
 };

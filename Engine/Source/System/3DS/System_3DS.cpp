@@ -276,6 +276,14 @@ void SYS_IterateDirectory(DirEntry& dirEntry)
     }
 }
 
+std::string SYS_GetOctavePath()
+{
+    return "";
+}
+std::string SYS_GetExecutablePath()
+{
+    return "";
+}
 void SYS_CloseDirectory(DirEntry& dirEntry)
 {
     closedir(dirEntry.mDir);
@@ -673,6 +681,10 @@ void SYS_SetFullscreen(bool fullscreen)
 bool SYS_IsFullscreen()
 {
     return true;
+}
+
+void SYS_ExplorerOpenDirectory(const std::string& dirPath)
+{
 }
 
 #endif

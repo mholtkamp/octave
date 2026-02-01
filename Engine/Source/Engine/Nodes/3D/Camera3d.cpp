@@ -50,6 +50,7 @@ void Camera3D::GatherProperties(std::vector<Property>& outProps)
 
     SCOPED_CATEGORY("Camera");
 
+    outProps.push_back(Property(DatumType::Bool, "Main Camera", this, &mMainCamera));
     outProps.push_back(Property(DatumType::Bool, "Perspective", this, &mProjectionMode));
     outProps.push_back(Property(DatumType::Float, "Near Plane", this, &mNear));
     outProps.push_back(Property(DatumType::Float, "Far Plane", this, &mFar));
@@ -281,6 +282,31 @@ float Camera3D::GetNearHeight() const
     return height;
 }
 
+float Camera3D::GetPriority() const
+{
+    return mPriority;
+}
+
+
+bool Camera3D::GetIsMainCamera() const
+{
+    return mMainCamera;
+}
+
+
+
+void Camera3D::SetPriority(float priority)
+{
+    mPriority = priority;
+}
+
+
+void Camera3D::SetIsMainCamera(bool state)
+{
+    mMainCamera = state;
+}
+
+
 void Camera3D::SetNearZ(float nearZ)
 {
     mNear = nearZ;
@@ -289,6 +315,10 @@ void Camera3D::SetNearZ(float nearZ)
 void Camera3D::SetFarZ(float farZ)
 {
     mFar = farZ;
+}
+void Camera3D::SetAspectRatio(float aspectRatio)
+{
+    mAspectRatio = aspectRatio;
 }
 
 void Camera3D::SetFieldOfView(float fovY)
@@ -300,6 +330,7 @@ void Camera3D::SetOrthoWidth(float width)
 {
     mOrthoWidth = width;
 }
+
 
 glm::vec3 Camera3D::WorldToScreenPosition(glm::vec3 worldPos)
 {
