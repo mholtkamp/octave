@@ -64,6 +64,20 @@ int Spline3D_Lua::GetTangentAt(lua_State* L)
     return 1;
 }
 
+int Spline3D_Lua::Play(lua_State* L)
+{
+    Spline3D* spline = CHECK_SPLINE_3D(L, 1);
+    spline->Play();
+    return 0;
+}
+
+int Spline3D_Lua::Stop(lua_State* L)
+{
+    Spline3D* spline = CHECK_SPLINE_3D(L, 1);
+    spline->StopPlayback();
+    return 0;
+}
+
 void Spline3D_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -81,6 +95,8 @@ void Spline3D_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetPoint);
     REGISTER_TABLE_FUNC(L, mtIndex, GetPositionAt);
     REGISTER_TABLE_FUNC(L, mtIndex, GetTangentAt);
+    REGISTER_TABLE_FUNC(L, mtIndex, Play);
+    REGISTER_TABLE_FUNC(L, mtIndex, Stop);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

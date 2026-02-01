@@ -77,6 +77,7 @@ void Spline3D::Start()
 {
     Node3D::Start();
     mTravel = 0.0f;
+    mPlaying = mAutoPlay;
 
     Node* root = GetWorld() ? GetWorld()->GetRootNode() : nullptr;
 
@@ -158,15 +159,26 @@ void Spline3D::Start()
 void Spline3D::Stop()
 {
     Node3D::Stop();
+    mPlaying = false;
 
     // Option A: do not touch editor nodes on Stop
+}
+
+void Spline3D::Play()
+{
+    mPlaying = true;
+}
+
+void Spline3D::StopPlayback()
+{
+    mPlaying = false;
 }
 
 void Spline3D::Tick(float deltaTime)
 {
     Node3D::Tick(deltaTime);
 
-    if (!IsPlaying())
+    if (!IsPlaying() || !mPlaying)
         return;
 
     Node* camNode = mAttachmentCamera.Get();
@@ -423,6 +435,7 @@ void Spline3D::GatherProperties(std::vector<Property>& props)
         props.push_back(Property(DatumType::Node, "Point Speed Target", this, &mPointSpeedTarget, 1, HandlePropChange));
         props.push_back(Property(DatumType::Float, "Point Speed", this, &mPointSpeedValue, 1, HandlePropChange));
         props.push_back(Property(DatumType::Float, "Global Speed", this, &mSpeed));
+        props.push_back(Property(DatumType::Bool, "Play", this, &mPlaying, 1, HandlePropChange));
         props.push_back(Property(DatumType::Bool, "Loop", this, &mLoop));
         props.push_back(Property(DatumType::Bool, "Close Spline", this, &mCloseLoop));
         props.push_back(Property(DatumType::Bool, "Smooth Curve", this, &mSmoothCurve));
@@ -704,6 +717,12 @@ bool Spline3D::HandlePropChange(Datum* datum, uint32_t index, const void* newVal
             }
         }
 
+        success = false;
+    }
+    else if (prop->mName == "Play")
+    {
+        bool value = *(bool*)newValue;
+        spline->mPlaying = value;
         success = false;
     }
 

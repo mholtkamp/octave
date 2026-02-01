@@ -32,6 +32,9 @@ public:
     static glm::vec3 CatmullRom(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, float t);
     static glm::vec3 CatmullRomTangent(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, float t);
 
+    void Play();
+    void StopPlayback();
+
 #if EDITOR
     virtual bool DrawCustomProperty(Property& prop) override;
 #endif
@@ -56,6 +59,8 @@ protected:
     glm::mat4 mOrigAudioTransform = glm::mat4(1.0f);
 
     float mSpeed = 2.0f;
+    bool mAutoPlay = true;
+    bool mPlaying = false;
     bool mLoop = true;
     bool mCloseLoop = false;
     bool mSmoothCurve = true;

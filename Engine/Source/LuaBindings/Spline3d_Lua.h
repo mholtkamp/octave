@@ -24,6 +24,8 @@ struct Spline3D_Lua
     static int SetPoint(lua_State* L);
     static int GetPositionAt(lua_State* L);
     static int GetTangentAt(lua_State* L);
+    static int Play(lua_State* L);
+    static int Stop(lua_State* L);
 
     static void Bind();
 };
