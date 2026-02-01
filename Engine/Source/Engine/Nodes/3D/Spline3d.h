@@ -59,7 +59,6 @@ protected:
     glm::mat4 mOrigAudioTransform = glm::mat4(1.0f);
 
     float mSpeed = 2.0f;
-    bool mAutoPlay = true;
     bool mPlaying = false;
     bool mLoop = true;
     bool mCloseLoop = false;

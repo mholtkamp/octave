@@ -77,7 +77,6 @@ void Spline3D::Start()
 {
     Node3D::Start();
     mTravel = 0.0f;
-    mPlaying = mAutoPlay;
 
     Node* root = GetWorld() ? GetWorld()->GetRootNode() : nullptr;
 
