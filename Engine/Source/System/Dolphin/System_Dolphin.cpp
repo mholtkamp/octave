@@ -461,7 +461,7 @@ static void MountMemoryCard()
     if (!IsMemoryCardMounted())
     {
         LogDebug("Initializing CARD");
-        GetEngineState()->mSystem.mMemoryCardMountArea = SYS_AlignedMalloc(CARD_WORKAREA_SIZE, 32);
+        GetEngineState()->mSystem.mMemoryCardMountArea = SYS_AlignedMalloc(CARD_WORKAREA, 32);
         CARD_Init("OCTA","00");
         int errorSlotA = CARD_Mount(CARD_SLOTA, GetEngineState()->mSystem.mMemoryCardMountArea, UnmountMemoryCard);
         LogDebug("Memory card code: %d", errorSlotA);
