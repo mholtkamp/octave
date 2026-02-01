@@ -30,6 +30,8 @@ struct MaterialLite_Lua
     static int SetUvScale(lua_State* L);
     static int GetColor(lua_State* L);
     static int SetColor(lua_State* L);
+    static int EnableFresnel(lua_State* L);
+    static int IsFresnelEnabled(lua_State* L);
     static int GetFresnelColor(lua_State* L);
     static int SetFresnelColor(lua_State* L);
     static int GetFresnelPower(lua_State* L);

@@ -143,6 +143,11 @@ void EditorMain(int32_t argc, char** argv)
 
         ret = Update();
 
+        if (GetEditorState()->mEndPieAtEndOfFrame)
+        {
+            GetEditorState()->EndPlayInEditor();
+        }
+
         // We are trying to quit, and haven't done the shutdown check yet
         if (!ret && !GetEditorState()->mShutdownUnsavedCheck)
         {

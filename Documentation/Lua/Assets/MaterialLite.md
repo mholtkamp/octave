@@ -11,7 +11,7 @@ Inheritance:
 Create a new MaterialLite instance. A source MaterialLite can be passed in to initialize the new material's parameters.
 
 Sig: `matLite = MaterialLite.Create(srcMat=nil)`
- - Arg: `MaterialLite srcMat` Optional source material 
+ - Arg: `MaterialLite srcMat` Optional source material
  - Ret: `MaterialLite matLite` Newly created material
 ---
 ### SetTexture
@@ -91,6 +91,18 @@ Set the material color.
 
 Sig: `MaterialLite:SetColor(color)`
  - Arg: `Vector color` Material color
+---
+### EnableFresnel
+Enable fresnel shading.
+
+Sig: `MaterialLite:EnableFresnel(enable)`
+ - Arg: `bool enable` Enable fresnel
+---
+### IsFresnelEnabled
+Check whether fresnel is enabled.
+
+Sig: `enabled = MaterialLite:IsFresnelEnabled()`
+ - Ret: `bool enabled` If fresnel is enabled
 ---
 ### GetFresnelColor
 Get the fresnel color.

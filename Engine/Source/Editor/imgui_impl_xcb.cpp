@@ -98,7 +98,7 @@ void    ImGui_ImplXcb_NewFrame()
     io.DisplaySize = ImVec2((float)GetEngineState()->mWindowWidth, (float)GetEngineState()->mWindowHeight);
 
     // Setup time step
-    io.DeltaTime = GetEngineState()->mRealDeltaTime;
+    io.DeltaTime = glm::max(GetEngineState()->mRealDeltaTime, 0.0001f);
 
     // Update OS mouse position
     ImGui_ImplXcb_UpdateMouseData();

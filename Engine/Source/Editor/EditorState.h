@@ -144,6 +144,7 @@ struct EditorState
     std::string mPendingSceneImportPath = "";
     bool mShutdownUnsavedCheck = false;
     bool mDevMode = false;
+    bool mEndPieAtEndOfFrame = false;
     bool mShowProjectUpgradeModal = false;
     bool mProjectUpgradeInProgress = false;
     std::vector<AssetStub*> mAssetsNeedingUpgrade;
