@@ -50,6 +50,7 @@ protected:
     NodePtrWeak mAttachmentParticle3D;
     NodePtrWeak mAttachmentPointLight;
     NodePtrWeak mAttachmentAudio3D;
+    NodePtrWeak mAttachmentNode3D;
 
     glm::mat4 mOrigCamTransform = glm::mat4(1.0f);
     glm::mat4 mOrigStaticTransform = glm::mat4(1.0f);
@@ -57,6 +58,7 @@ protected:
     glm::mat4 mOrigParticleTransform = glm::mat4(1.0f);
     glm::mat4 mOrigPointLightTransform = glm::mat4(1.0f);
     glm::mat4 mOrigAudioTransform = glm::mat4(1.0f);
+    glm::mat4 mOrigNodeTransform = glm::mat4(1.0f);
 
     float mSpeed = 2.0f;
     bool mPlaying = false;
@@ -64,6 +66,7 @@ protected:
     bool mCloseLoop = false;
     bool mSmoothCurve = true;
     bool mFaceTangent = false;
+    bool mReverseFaceTangent = false;
     float mTravel = 0.0f;
 
     struct PointSpeedEntry
