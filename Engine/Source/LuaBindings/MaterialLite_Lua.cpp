@@ -138,6 +138,26 @@ int MaterialLite_Lua::SetColor(lua_State* L)
     return 0;
 }
 
+int MaterialLite_Lua::EnableFresnel(lua_State* L)
+{
+    MaterialLite* mat = CHECK_MATERIAL_LITE(L, 1);
+    bool enable = CHECK_BOOLEAN(L, 2);
+
+    mat->SetFresnelEnabled(enable);
+
+    return 0;
+}
+
+int MaterialLite_Lua::IsFresnelEnabled(lua_State* L)
+{
+    MaterialLite* mat = CHECK_MATERIAL_LITE(L, 1);
+
+    bool enabled = mat->IsFresnelEnabled();
+
+    lua_pushboolean(L, enabled);
+    return 1;
+}
+
 int MaterialLite_Lua::GetFresnelColor(lua_State* L)
 {
     MaterialLite* mat = CHECK_MATERIAL_LITE(L, 1);
@@ -376,6 +396,10 @@ void MaterialLite_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, GetColor);
 
     REGISTER_TABLE_FUNC(L, mtIndex, SetColor);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableFresnel);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, IsFresnelEnabled);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetFresnelColor);
 

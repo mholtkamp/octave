@@ -1,5 +1,5 @@
 #if EDITOR
-
+#include <vector>
 #include "EditorState.h"
 #include "EditorConstants.h"
 #include "ActionManager.h"
@@ -539,6 +539,9 @@ void EditorState::BeginPlayInEditor()
     if (mPlayInEditor)
         return;
 
+    mSavedEditorClearColor = Renderer::Get()->GetClearColor();
+    Renderer::Get()->SetClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
     SetSelectedNode(nullptr);
     SetSelectedAssetStub(nullptr);
     InspectObject(nullptr, true);
@@ -613,6 +616,7 @@ void EditorState::EndPlayInEditor()
 
     ShowEditorUi(true);
     Renderer::Get()->EnableProxyRendering(true);
+    Renderer::Get()->SetClearColor(mSavedEditorClearColor);
 
     mPlayInEditor = false;
     mEjected = false;
@@ -968,9 +972,16 @@ void EditorState::OpenEditScene(int32_t idx)
 
         const EditScene& editScene = mEditScenes[idx];
         mEditSceneIndex = idx;
-        GetWorld(0)->SetRootNode(editScene.mRootNode.Get()); // could be nullptr.
-        GetEditorCamera()->SetTransform(editScene.mCameraTransform);
+        std::vector<Camera3D*> cams;
 
+        GetWorld(0)->SetRootNode(editScene.mRootNode.Get()); // could be nullptr.
+		Camera3D* activeCam =  GetWorld(0)->GetMainCamera(); // Ensure active camera is valid.
+        if (activeCam) {
+            GetEditorCamera()->SetTransform(activeCam->GetTransform());
+        }
+        else {
+            GetEditorCamera()->SetTransform(editScene.mCameraTransform);
+        }
         auto findExistingNodeProps = [&](Node* node) -> bool
         {
             std::vector<Property> props;

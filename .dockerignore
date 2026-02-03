@@ -1,0 +1,29 @@
+# Build outputs
+dist/
+Standalone/Build/
+Engine/Build/
+External/Assimp/Build/
+External/Bullet/Build/
+
+# Intermediate files
+Standalone/Intermediate/
+Engine/Intermediate/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+*.code-workspace
+
+# Docker (avoid recursive copy)
+Docker/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp

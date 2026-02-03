@@ -42,8 +42,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     switch (uMsg) {
     case WM_CLOSE:
-        PostQuitMessage(0);
-        break;
+        // Do not post quit message, we want the editor to handle the unsaved check.
+        // So simply set the quit flag.
+        //PostQuitMessage(0);
+        GetEngineState()->mQuit = true;
+        return 0;
+
     case WM_SIZE:
     {
         WORD width = LOWORD(lParam);
@@ -419,6 +423,26 @@ void SYS_ReleaseFileData(char* data)
     {
         free(data);
     }
+}
+std::string SYS_GetOctavePath()
+{
+    std::string octaveDirectory = SYS_GetCurrentDirectoryPath();
+    if(SYS_DoesFileExist((octaveDirectory + "Octave/imgui.ini").c_str(), false)){
+        octaveDirectory = octaveDirectory + "Octave/";
+        }
+    if(!SYS_DoesFileExist((octaveDirectory + "Standalone/Standalone.rc").c_str(), false)){
+        std::string octaveEXE = SYS_GetExecutablePath();
+        size_t lastSlash = octaveEXE.find_last_of("\\/");
+        octaveDirectory = octaveEXE.substr(0, lastSlash + 1);
+
+    }
+    return octaveDirectory;
+}
+std::string SYS_GetExecutablePath()
+{
+    char path[MAX_PATH_SIZE] = {};
+    GetModuleFileName(NULL, path, MAX_PATH_SIZE);
+    return std::string(path);
 }
 
 std::string SYS_GetCurrentDirectoryPath()
@@ -1229,6 +1253,11 @@ void SYS_GetWindowRect(int32_t& outX, int32_t& outY, int32_t& outWidth, int32_t&
     outY = winRect.top;
     outWidth = winRect.right - winRect.left;
     outHeight = winRect.bottom - winRect.top;
+}
+
+void SYS_ExplorerOpenDirectory(const std::string& dirPath)
+{
+    ShellExecute(NULL, "open", dirPath.c_str(), NULL, NULL, SW_SHOWDEFAULT);
 }
 
 #endif

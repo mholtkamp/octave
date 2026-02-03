@@ -50,6 +50,7 @@
 #include "Nodes/3D/ShadowMesh3d.h"
 #include "Nodes/3D/InstancedMesh3d.h"
 #include "Nodes/3D/TextMesh3d.h"
+#include "Nodes/3D/Camera3d.h"
 
 #include "System/System.h"
 
@@ -152,6 +153,7 @@ void ReplaceStringInFile(const std::string& file, const std::string& srcString, 
 void ActionManager::BuildData(Platform platform, bool embedded)
 {
     LogDebug("Begin packaging...");
+    std::string octaveDirectory = SYS_GetOctavePath();
 
     const EngineState* engineState = GetEngineState();
     bool standalone = engineState->mStandalone;
@@ -316,12 +318,12 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     if (embedded && !useRomfs)
     {
-        GatherScriptFiles("Engine/Scripts/", scriptFiles);
-        GatherScriptFiles(projectDir + "/Scripts/", scriptFiles);
+        GatherScriptFiles((octaveDirectory + "Engine/Scripts/").c_str(), scriptFiles);
+        GatherScriptFiles((projectDir + "/Scripts/").c_str(), scriptFiles);
     }
     else
     {
-        SYS_CopyDirectory("Engine/Scripts/", (packagedDir + "Engine/Scripts/").c_str());
+        SYS_CopyDirectory((octaveDirectory + "Engine/Scripts/").c_str(), (packagedDir + "Engine/Scripts/").c_str());
         SYS_CopyDirectory((projectDir + "Scripts/").c_str(), (packagedDir + projectName + "/Scripts/").c_str());
         //SYS_Exec(std::string("cp -R Engine/Scripts " + packagedDir + "Engine/Scripts").c_str());
         //SYS_Exec(std::string("cp -R " + projectDir + "Scripts " + packagedDir + projectName + "/Scripts").c_str());
@@ -366,23 +368,23 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     {
         // Compile shaders
 #if PLATFORM_WINDOWS
-        SYS_Exec("cd Engine/Shaders/GLSL && \"./compile.bat\"");
+        SYS_Exec(("cd \"" + octaveDirectory + "Engine/Shaders/GLSL\" && \"./compile.bat\"").c_str());
 #else
-        SYS_Exec("cd Engine/Shaders/GLSL && \"./compile.sh\"");
+        SYS_Exec(("cd " + octaveDirectory + "Engine/Shaders/GLSL && \"./compile.sh\"").c_str());
 #endif
 
         // Then copy over the binaries.
         CreateDir((packagedDir + "Engine/Shaders/").c_str());
         CreateDir((packagedDir + "Engine/Shaders/GLSL/").c_str());
 
-        SYS_CopyDirectory("Engine/Shaders/GLSL/bin/", (packagedDir + "Engine/Shaders/GLSL/bin/").c_str());
+        SYS_CopyDirectory((octaveDirectory+"Engine/Shaders/GLSL/bin/").c_str(), (packagedDir + "Engine/Shaders/GLSL/bin/").c_str());
         //SYS_Exec(std::string("cp -R Engine/Shaders/GLSL/bin " + packagedDir + "Engine/Shaders/GLSL/bin").c_str());
     }
 
     // If we are running a 3DS build, copy all the packaged data to the
     // Intermediate/Romfs directory.
     // Clear existing Romfs directory first.
-    std::string intermediateDir = standalone ? "Standalone/Intermediate" : (projectDir + "/Intermediate");
+    std::string intermediateDir = standalone ? octaveDirectory+"Standalone/Intermediate" : (projectDir + "/Intermediate");
     std::string romfsDir = intermediateDir + "/Romfs";
     RemoveDir(romfsDir.c_str());
     CreateDir(intermediateDir.c_str());
@@ -390,7 +392,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     if (useRomfs)
     {
-        LogDebug("Copying packaged data to Romfs staging directory.");
     #if PLATFORM_WINDOWS
         SYS_CopyDirectoryRecursive(packagedDir.c_str(), romfsDir.c_str());
     #else
@@ -403,15 +404,17 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     std::string prebuiltExeName = (platform == Platform::Windows) ? "Octave.exe" : "Octave.elf";
 
     // If packaging for Windows or Linux in standalone editor, we can use the existing octave executables.
-    if (standalone &&
+    // But in headless mode, always compile since we're doing a full build.
+    if (standalone && !IsHeadless() &&
         (platform == Platform::Windows || platform == Platform::Linux))
     {
         needCompile = !SYS_DoesFileExist(prebuiltExeName.c_str(), false);
     }
 
     std::string buildProjName = standalone ? "Standalone" : projectName;
-    std::string buildProjDir = standalone ? "Standalone/" : projectDir;
+    std::string buildProjDir = standalone ? octaveDirectory+"Standalone/" : projectDir;
     std::string buildDstExeName = standalone ? "Octave" : projectName;
+
     bool useSteam = GetEngineConfig()->mPackageForSteam;
 
     if (needCompile)
@@ -485,11 +488,27 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             default: OCT_ASSERT(0); break;
             }
 
-            std::string srcMakefile = buildProjDir + "/" + makefilePath;
-            std::string tmpMakefile = buildProjDir + "/Makefile_TEMP";
+            std::string srcMakefile = buildProjDir  + makefilePath;
+            std::string tmpMakefile = buildProjDir + "Makefile_TEMP";
+
+            // Check if makefile exists in project directory, otherwise fall back to Standalone
+            if (!SYS_DoesFileExist(srcMakefile.c_str(), false))
+            {
+                std::string standaloneMakefile = "Standalone/" + makefilePath;
+                if (SYS_DoesFileExist(standaloneMakefile.c_str(), false))
+                {
+                    LogDebug("Makefile not found in project, copying from Standalone: %s", standaloneMakefile.c_str());
+                    SYS_CopyFile(standaloneMakefile.c_str(), srcMakefile.c_str());
+                }
+                else
+                {
+                    LogError("Makefile not found: %s or %s", srcMakefile.c_str(), standaloneMakefile.c_str());
+                    return;
+                }
+            }
+
             // Make a copy of the makefile so we can change the app name and things like that
             SYS_CopyFile(srcMakefile.c_str(), tmpMakefile.c_str());
-            //SYS_Exec(std::string("cp " + srcMakefile + " " + tmpMakefile).c_str());
 
             // This is fragile, but we're going to modify the temp makefile to compile
             // the way we need to for a given platform.
@@ -503,6 +522,19 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 //    ReplaceStringInFile(tmpMakefile, "ROMFS :=", "#ROMFS :=");
                 //}
             }
+
+            // Copy Source folder from Standalone if it doesn't exist in project
+            std::string projSourceDir = buildProjDir + "Source";
+            if (!DoesDirExist(projSourceDir.c_str()))
+            {
+                std::string standaloneSourceDir = "Standalone/Source";
+                if (DoesDirExist(standaloneSourceDir.c_str()))
+                {
+                    LogDebug("Source folder not found in project, copying from Standalone");
+                    SYS_CopyDirectory(standaloneSourceDir.c_str(), projSourceDir.c_str());
+                }
+            }
+
             SYS_CreateDirectory((buildProjDir + "Generated").c_str());
 
             // Copy over Generated files, sometimes they may have been modified or deleted.
@@ -528,6 +560,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 std::string stripCmd = std::string("strip --strip-debug ") + buildProjDir + "Build/Linux/" + exeName + ".elf";
                 SYS_Exec(stripCmd.c_str());
             }
+          
         }
     }
     else
@@ -609,6 +642,18 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         idStream.WriteBytes((uint8_t*)txtId, (uint32_t)strlen(txtId));
         idStream.WriteFile((packagedDir + "steam_appid.txt").c_str());
     }
+
+    // Verify that the executable exists in the packaged directory
+    if (!SYS_DoesFileExist((packagedDir + projectName + extension).c_str(), false))
+    {
+        LogError("Packaged executable not found: %s", (packagedDir + projectName + extension).c_str());
+        LogError("Packaging failed. Please check the log for errors.");
+        return;
+    }
+      if(!IsHeadless()){
+                // Show the build output directory
+                SYS_ExplorerOpenDirectory((packagedDir ).c_str());
+            }
 
     LogDebug("Finished packaging!");
 }
@@ -1306,12 +1351,14 @@ static void HandleNewProjectCallback(const std::vector<std::string>& folderPaths
 
 void CpyFile(const std::string& srcFile, const std::string& dstFile)
 {
-    SYS_Exec((std::string("cp ") + srcFile + " " + dstFile).c_str());
+	SYS_CopyFile(srcFile.c_str(), dstFile.c_str());
+    //SYS_Exec((std::string("cp ") + srcFile + " " + dstFile).c_str());
 }
 
 void CpyDir(const std::string& srcFile, const std::string& dstFile)
 {
-    SYS_Exec((std::string("cp -r ") + srcFile + " " + dstFile).c_str());
+	SYS_CopyDirectory(srcFile.c_str(), dstFile.c_str());
+    //SYS_Exec((std::string("cp -r ") + srcFile + " " + dstFile).c_str());
 }
 
 void CopyFileAndReplaceString(const std::string& srcFile, const std::string& dstFile, const std::string& srcString, const std::string& dstString)
@@ -1323,7 +1370,8 @@ void CopyFileAndReplaceString(const std::string& srcFile, const std::string& dst
 void CpyDirWithExclusions(const std::string& srcDir, const std::string& dstDir, const std::vector<std::string> exclusions)
 {
     DirEntry dirEntry;
-    SYS_OpenDirectory(srcDir, dirEntry);
+    std::string fullPath = SYS_GetAbsolutePath(srcDir);
+    SYS_OpenDirectory(fullPath, dirEntry);
 
     // Create dir if it doesn't exist.
     CreateDir(dstDir.c_str());
@@ -1370,6 +1418,26 @@ static void CreateConfigIni(const std::string& projDir, const std::string projNa
         fclose(engineIni);
         engineIni = nullptr;
     }
+}
+
+static void CreateAndSaveDefaultScene(const std::string& scenePath)
+{
+    // Create a root Node3D using proper construction
+    NodePtr root = Node::Construct(Node3D::GetStaticType());
+    root->SetName("Root");
+
+    NodePtr camera = Node::Construct(Camera3D::GetStaticType());
+    camera->SetName("Camera");
+    camera->As<Camera3D>()->SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
+    root->AddChild(camera.Get());
+
+    Scene scene;
+    scene.Create();
+    scene.SetName("SC_Default");
+    scene.Capture(root.Get());
+
+    scene.SaveFile(scenePath.c_str(), Platform::Count);
+
 }
 
 void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
@@ -1431,21 +1499,27 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             fclose(octpFile);
             octpFile = nullptr;
         }
-
+		std::string subProjFolder = ""; 
+        std::string octaveDirectory = SYS_GetOctavePath();
+      
         if (cpp)
         {
-            std::string standaloneDir = "Standalone/";
+            std::string standaloneDir = octaveDirectory+ "Standalone/";
 
-            std::string subProjFolder = newProjDir + newProjName.c_str();
+            subProjFolder = newProjDir + newProjName.c_str();
             SYS_CreateDirectory(subProjFolder.c_str());
             subProjFolder += "/";
+			projectFile = subProjFolder + newProjName.c_str() + ".octp";
 
             // Copy .octp folder into the subfolder
-            SYS_Exec(("mv " + newProjDir + newProjName.c_str() + ".octp" + " " + subProjFolder + newProjName.c_str() + ".octp").c_str());
+			SYS_MoveFile((newProjDir + newProjName.c_str() + ".octp").c_str(), (subProjFolder + newProjName + ".octp").c_str());
+            //SYS_Exec(("mv " + newProjDir + newProjName.c_str() + ".octp" + " " + subProjFolder + newProjName.c_str() + ".octp").c_str());
 
             // Create Proj subfolder (Assets and Scripts folders will need to be moved in the subfolder)
-            SYS_Exec((std::string("mv ") + assetsFolder.c_str() + " " + subProjFolder + "Assets").c_str());
-            SYS_Exec((std::string("mv ") + scriptsFolder.c_str() + " " + subProjFolder + "Scripts").c_str());
+			SYS_MoveDirectory(assetsFolder.c_str(), (subProjFolder + "Assets").c_str());
+            //SYS_Exec((std::string("mv ") + assetsFolder.c_str() + " " + subProjFolder + "Assets").c_str());
+			SYS_MoveDirectory(scriptsFolder.c_str(), (subProjFolder + "Scripts").c_str());
+            //SYS_Exec((std::string("mv ") + scriptsFolder.c_str() + " " + subProjFolder + "Scripts").c_str());
             assetsFolder = subProjFolder + "Assets";
             scriptsFolder = subProjFolder + "Scripts";
 
@@ -1473,6 +1547,7 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "$(SolutionDir)Engine", "$(SolutionDir)Octave\\Engine");
             ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "$(SolutionDir)External", "$(SolutionDir)Octave\\External");
             ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "..\\Engine\\", "..\\Octave\\Engine\\");
+            ReplaceStringInFile(subProjFolder + newProjName + ".vcxproj", "Standalone.rc", "$(SolutionDir)Octave\\Standalone\\Standalone.rc");
             CpyFile(standaloneDir + "Standalone.vcxproj.filters", subProjFolder + newProjName + ".vcxproj.filters");
 
             // Copy Source folder
@@ -1485,10 +1560,11 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
 
 #if 0
             // Create a symlink to the Octave directory
-            CreateSymLink(standaloneDir + "../../Octave", newProjDir + "Octave");
+            CreateSymLink(octaveDirectory, newProjDir + "Octave");
 #else
+       
             // Copy Engine, External, to Proj folder (EXCLUDE Build and Intermediate folders)
-            CpyDirWithExclusions(standaloneDir + "../../Octave/", newProjDir + "Octave/", {"Build", "build", "Intermediate", ".gradle", ".cxx", ".vs", ".git", "imgui.ini"});
+            CpyDirWithExclusions(octaveDirectory, newProjDir + "Octave/", {"Build", "build", "Intermediate", ".gradle", ".cxx", ".vs", ".git", "imgui.ini"});
 #endif
 
             // Copy Octave.sln  - Replace "Standalone" with Proj Name
@@ -1503,11 +1579,26 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
             ReplaceStringInFile(newProjDir + ".vscode/tasks.json", "Standalone", newProjName);
             ReplaceStringInFile(newProjDir + ".vscode/launch.json", "Standalone", newProjName);
             ReplaceStringInFile(newProjDir + ".vscode/launch.json", "\"name\": \"Octave" , "\"name\": \"" + newProjName);
+
         }
 
         ResetEngineConfig();
         GetMutableEngineConfig()->mProjectName = newProjName;
-        WriteEngineConfig(newProjDir + "/Config.ini");
+
+        if (cpp) {
+            // correct path with subfolder if cpp
+            WriteEngineConfig(subProjFolder + "/Config.ini");
+
+        }
+        else {
+            // correct path with subfolder if cpp
+            WriteEngineConfig(newProjDir + +"/Config.ini");
+        }
+
+        // Create the Scenes folder and default scene for the new project
+        std::string scenesFolder = assetsFolder + "/Scenes/";
+        SYS_CreateDirectory(scenesFolder.c_str());
+        CreateAndSaveDefaultScene(scenesFolder + "SC_Default.oct");
 
         // Finally, open the project
         OpenProject(projectFile.c_str());
@@ -1552,6 +1643,9 @@ void ActionManager::OpenProject(const char* path)
         GetEditorState()->ClearAssetDirHistory();
         GetEditorState()->SetAssetDirectory(AssetManager::Get()->FindProjectDirectory(), true);
         GetEditorState()->SetSelectedAssetStub(nullptr);
+
+        // Check if project needs upgrade to new UUID format
+        CheckProjectNeedsUpgrade();
     }
 }
 
@@ -1720,6 +1814,20 @@ static void HandleImportSceneCallback(const std::vector<std::string>& filePaths)
     if (filePaths.size() >= 1)
     {
         GetEditorState()->mPendingSceneImportPath = filePaths[0];
+    }
+}
+
+
+static void HandleImportCameraCallback(const std::vector<std::string>& filePaths)
+{
+    if (filePaths.size() > 1)
+    {
+        LogWarning("Can only import one scene at a time. Ignoring extra scenes.");
+    }
+
+    if (filePaths.size() >= 1)
+    {
+        GetEditorState()->mIOAssetPath = filePaths[0];
     }
 }
 
@@ -1985,6 +2093,73 @@ static glm::mat4 GetNodeTransform(aiNode* node)
     return gMat;
 }
 
+void ActionManager::ImportCamera(const CameraImportOptions& options)
+{
+    if (GetEngineState()->mProjectPath == "")
+        return;
+    World* world = GetWorld(0);
+    std::string openPath = options.mFilePath;
+    // Display the Open dialog box. 
+    if (openPath != "")
+    {
+        std::string filename = openPath;
+        int32_t dotIndex = int32_t(filename.find_last_of('.'));
+        std::string extension = filename.substr(dotIndex, filename.size() - dotIndex);
+        if (extension == ".glb" ||
+            extension == ".gltf" ||
+            extension == ".dae")
+        {
+            LogDebug("Begin camera import...");
+            Assimp::Importer importer;
+            const aiScene* scene = importer.ReadFile(filename, aiProcess_FlipUVs);
+            if (scene == nullptr)
+            {
+                LogError("Failed to load scene file");
+                return;
+            }
+
+            for (uint32_t i = 0; i < scene->mNumCameras; ++i)
+            {
+                aiCamera* aCamera = scene->mCameras[i];
+				Node* rootNode = GetWorld(0)->GetRootNode();
+                if(rootNode == nullptr)
+                {
+                    LogError("Failed to get root node from world");
+					return;
+				}
+                Camera3D* newCamera = rootNode->CreateChild<Camera3D>();
+
+                glm::mat4 camTransform(1);
+                aiNode* camNode = scene->mRootNode->FindNode(aCamera->mName.C_Str());
+
+                if (camNode)
+                {
+                    camTransform = GetNodeTransform(camNode);
+                }
+                float vfov = 2.0f * atanf(tanf(aCamera->mHorizontalFOV * 0.5f) / aCamera->mAspect);
+
+                newCamera->SetFieldOfView(glm::degrees(vfov));
+                newCamera->SetNearZ(aCamera->mClipPlaneNear);
+                newCamera->SetFarZ(aCamera->mClipPlaneFar);
+                newCamera->SetAspectRatio(aCamera->mAspect);
+
+                newCamera->SetTransform(camTransform);
+                newCamera->UpdateTransform(true);
+                if (i == 0 && options.mIsMainCamera) {
+					newCamera->SetIsMainCamera(true);
+                }
+
+
+                newCamera->SetName(options.mOverrideCameraName ? options.mCameraName : aCamera->mName.C_Str());
+
+            }
+
+
+        }
+	}
+
+}
+
 void ActionManager::ImportScene(const SceneImportOptions& options)
 {
     if (GetEngineState()->mProjectPath == "")
@@ -2070,7 +2245,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                 if (materialName.size() < 2 || (materialName.substr(0, 2) != "M_"))
                 {
-                    materialName = std::string("M_") + materialName;
+                    materialName = std::string("M_") + sceneName + std::string("_") + materialName;
                 }
 
                 AssetStub* materialStub = nullptr;
@@ -2114,12 +2289,14 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                             std::string assetName = EditorGetAssetNameFromPath(texturePath);
                             if (assetName.size() >= 2 && (strncmp(assetName.c_str(), "T_", 2) == 0))
                             {
-                                // Remove the T_ prefix, reapply later.
+                                // Remove the T_ prefix, reapply later with sceneName.
                                 assetName = assetName.substr(2);
                             }
 
                             assetName = options.mPrefix + assetName;
-                            assetName = GetFixedFilename(assetName.c_str(), "T_");
+
+                            // Add T_ and sceneName to texture name like we do for materials
+                            assetName = std::string("T_") + sceneName + std::string("_") + assetName;
 
                             AssetStub* existingStub = AssetManager::Get()->GetAssetStub(assetName);
                             if (existingStub && existingStub->mDirectory != sceneDir)
@@ -2175,7 +2352,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                 if (meshName.size() < 3 || (meshName.substr(0, 3) != "SM_"))
                 {
-                    meshName = std::string("SM_") + meshName;
+                    meshName = std::string("SM_") + sceneName + std::string("_") + meshName;
                 }
 
                 // Ensure unique name (this normally happens when model has multiple materials).
@@ -2226,7 +2403,6 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                 meshList.push_back(meshToAddToList);
             }
-
             // Create Lights
             if (options.mImportLights)
             {
@@ -2268,8 +2444,43 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                         pointLight->SetName(aLight->mName.C_Str());
                     }
                 }
+                
+
+
             }
 
+            // Create Cameras
+            if (options.mImportCameras) {
+
+                uint32_t numCameras = scene->mNumCameras;
+
+                for (uint32_t i = 0; i < numCameras; ++i)
+                {
+                    aiCamera* aCamera = scene->mCameras[i];
+
+                    Camera3D* newCamera = rootNode->CreateChild<Camera3D>();
+
+                    glm::mat4 camTransform(1);
+                    aiNode* camNode = scene->mRootNode->FindNode(aCamera->mName.C_Str());
+
+                    if (camNode)
+                    {
+                        camTransform = GetNodeTransform(camNode);
+                    }
+                    float vfov = 2.0f * atanf(tanf(aCamera->mHorizontalFOV * 0.5f) / aCamera->mAspect);
+
+                    newCamera->SetFieldOfView(glm::degrees(vfov));
+                    newCamera->SetNearZ(aCamera->mClipPlaneNear);
+                    newCamera->SetFarZ(aCamera->mClipPlaneFar);
+                    newCamera->SetAspectRatio(aCamera->mAspect);
+
+                    newCamera->SetTransform(camTransform);
+                    newCamera->UpdateTransform(true);
+
+                    newCamera->SetName(aCamera->mName.C_Str());
+
+                }
+			}
             aiNode* node = scene->mRootNode;
             SpawnAiNode(node, rootNode.Get(), glm::mat4(1), meshList, options);
 
@@ -2313,6 +2524,24 @@ void ActionManager::BeginImportScene()
 
 }
 
+void ActionManager::BeginImportCamera()
+{
+	std::string  prevIOPath = GetEngineState()->mProjectPath;
+    if (prevIOPath != "")
+    {
+#if USE_IMGUI_FILE_BROWSER
+        EditorOpenFileBrowser(HandleImportCameraCallback, false);
+#else
+        std::vector<std::string> filePaths = SYS_OpenFileDialog();
+        HandleImportCameraCallback(filePaths);
+#endif
+    }
+    else
+    {
+        LogWarning("Cannot import scene. No project loaded.");
+    }
+
+}
 void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*, std::string> >& assets,
     const char* headerPath,
     const char* sourcePath)
@@ -3451,6 +3680,127 @@ void ActionSetInstanceData::Reverse()
             mInstMesh->AddInstanceData(mPrevData[i], mStartIndex + i);
         }
     }
+}
+
+// Static storage for assets needing upgrade (used in both headless and editor modes)
+static std::vector<AssetStub*> sAssetsNeedingUpgrade;
+
+bool ActionManager::CheckProjectNeedsUpgrade()
+{
+    // Check if any assets in the project are using old versions that need upgrading
+    // Specifically, check for assets < ASSET_VERSION_UUID_WITH_NAME_FALLBACK (13)
+    // This ensures UUID references have name fallback for reliable loading
+
+    sAssetsNeedingUpgrade.clear();
+
+    std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
+
+    for (auto& pair : assetMap)
+    {
+        AssetStub* stub = pair.second;
+        if (stub == nullptr || stub->mEngineAsset)
+            continue;
+
+        // Read the asset header to check version
+        Stream stream;
+        if (stub->mPath.empty())
+            continue;
+
+        stream.ReadFile(stub->mPath.c_str(), true, sizeof(uint32_t) * 3 + sizeof(uint8_t) + sizeof(uint64_t));
+        if (stream.GetSize() == 0)
+            continue;
+
+        AssetHeader header = Asset::ReadHeader(stream);
+
+        // Check if asset needs upgrade (version < 13)
+        if (header.mVersion < ASSET_VERSION_UUID_WITH_NAME_FALLBACK)
+        {
+            sAssetsNeedingUpgrade.push_back(stub);
+        }
+    }
+
+    if (sAssetsNeedingUpgrade.size() > 0)
+    {
+        // Only show modal in non-headless mode (headless mode auto-upgrades)
+        if (!IsHeadless())
+        {
+            EditorState* editorState = GetEditorState();
+            editorState->mAssetsNeedingUpgrade = sAssetsNeedingUpgrade;
+            editorState->mShowProjectUpgradeModal = true;
+        }
+        LogWarning("Project has %d assets that need to be upgraded to the new UUID format.", (int)sAssetsNeedingUpgrade.size());
+        return true;
+    }
+
+    return false;
+}
+
+void ActionManager::UpgradeProject()
+{
+    // Use static storage in headless mode, EditorState in editor mode
+    std::vector<AssetStub*>& assetsToUpgrade = IsHeadless() ? sAssetsNeedingUpgrade : GetEditorState()->mAssetsNeedingUpgrade;
+
+    if (assetsToUpgrade.empty())
+    {
+        LogDebug("No assets need upgrading.");
+        if (!IsHeadless())
+        {
+            GetEditorState()->mProjectUpgradeInProgress = false;
+        }
+        return;
+    }
+
+    if (!IsHeadless())
+    {
+        GetEditorState()->mProjectUpgradeInProgress = true;
+    }
+
+    LogDebug("Upgrading %d assets to new format...", (int)assetsToUpgrade.size());
+
+    uint32_t upgradedCount = 0;
+    uint32_t failedCount = 0;
+
+    for (AssetStub* stub : assetsToUpgrade)
+    {
+        if (stub == nullptr)
+            continue;
+
+        // Load the asset if not already loaded
+        bool wasLoaded = (stub->mAsset != nullptr);
+        if (!wasLoaded)
+        {
+            AssetManager::Get()->LoadAsset(*stub);
+        }
+
+        if (stub->mAsset == nullptr)
+        {
+            LogError("Failed to load asset for upgrade: %s", stub->mPath.c_str());
+            failedCount++;
+            continue;
+        }
+
+        // Save the asset (this will write the new format with UUID + name fallback)
+        AssetManager::Get()->SaveAsset(*stub);
+        upgradedCount++;
+
+        LogDebug("Upgraded asset: %s", stub->mAsset->GetName().c_str());
+
+        // Unload if it wasn't loaded before
+        if (!wasLoaded)
+        {
+            AssetManager::Get()->UnloadAsset(*stub);
+        }
+    }
+
+    assetsToUpgrade.clear();
+    sAssetsNeedingUpgrade.clear();
+
+    if (!IsHeadless())
+    {
+        GetEditorState()->mProjectUpgradeInProgress = false;
+    }
+
+    LogDebug("Project upgrade complete. Upgraded: %d, Failed: %d", upgradedCount, failedCount);
 }
 
 #endif

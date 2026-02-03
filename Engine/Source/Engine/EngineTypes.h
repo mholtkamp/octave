@@ -26,6 +26,19 @@ class Light3D;
 class Node3D;
 class Node;
 
+// Platform enum moved here for use in EngineConfig
+enum class Platform : int
+{
+    Windows,
+    Linux,
+    Android,
+    GameCube,
+    Wii,
+    N3DS,
+
+    Count
+};
+
 class StaticMesh;
 class Material;
 
@@ -267,7 +280,9 @@ struct EngineConfig
     bool mLqEnableMipMaps = true;
 
     std::string mProjectPath;
+    std::string mCurrentFont;
     std::string mWorkingDirectory;
+    std::string mEditorFont = "Default";
 
     struct EmbeddedFile* mEmbeddedAssets = nullptr;
     uint32_t mEmbeddedAssetCount = 0;
@@ -278,6 +293,11 @@ struct EngineConfig
 
     float mEditorInterfaceScale = 1.0f;
     int32_t mColorScale = 2;
+
+    // Headless mode configuration
+    bool mHeadless = false;
+    Platform mBuildPlatform = Platform::Count;  // Count = no build requested
+    bool mBuildEmbedded = false;
 };
 
 enum class ConsoleMode
@@ -297,6 +317,7 @@ struct EngineState
     uint32_t mVersion = 0;
     uint32_t mFrameNumber = 0;
     std::string mProjectPath;
+    std::string mIOAssetPath;
     std::string mProjectDirectory;
     std::string mProjectName;
     std::string mAssetDirectory;
@@ -473,18 +494,6 @@ struct NetHostProfile
 
 typedef NetHostProfile NetClient;
 typedef NetHostProfile NetServer;
-
-enum class Platform
-{
-    Windows,
-    Linux,
-    Android,
-    GameCube,
-    Wii,
-    N3DS,
-
-    Count
-};
 
 struct FadingLight
 {

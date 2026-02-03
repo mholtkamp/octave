@@ -89,6 +89,7 @@ struct GamepadState
     float mAxes[GAMEPAD_AXIS_COUNT] = { };
     float mAccel[3] = { }; // x, y, z accelerometer values
     float mGyro[3] = { };  // x, y, z gyroscope values
+    float mOrientation[3] = { };  // pitch, yaw, roll in degrees
     GamepadType mType = GamepadType::Standard;
     bool mConnected = false;
 };

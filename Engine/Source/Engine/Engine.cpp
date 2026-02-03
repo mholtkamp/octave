@@ -51,6 +51,23 @@ static EngineConfig sEngineConfig;
 static std::vector<World*> sWorlds;
 static Clock sClock;
 
+// Default scene names to try when no explicit scene is specified
+static std::vector<std::string> sDefaultSceneNames = {
+    "SC_Default",
+    "SC_Main",
+    "SC_MainMenu"
+};
+
+const std::vector<std::string>& GetDefaultSceneNames()
+{
+    return sDefaultSceneNames;
+}
+
+void SetDefaultSceneNames(const std::vector<std::string>& names)
+{
+    sDefaultSceneNames = names;
+}
+
 // File watcher callback for script hot-reloading
 void OnScriptFileChanged(const FileChangeEvent& event)
 {
@@ -167,6 +184,24 @@ void ForceLinkage()
     FORCE_LINK_CALL(Button);
 }
 
+Platform StringToPlatform(const char* str)
+{
+    if (strcmp(str, "Windows") == 0) return Platform::Windows;
+    if (strcmp(str, "Linux") == 0) return Platform::Linux;
+    if (strcmp(str, "Android") == 0) return Platform::Android;
+    if (strcmp(str, "GameCube") == 0) return Platform::GameCube;
+    if (strcmp(str, "Wii") == 0) return Platform::Wii;
+    if (strcmp(str, "3DS") == 0) return Platform::N3DS;
+    return Platform::Count;  // Invalid
+}
+
+// Effective headless mode requires BOTH -headless flag AND a project path.
+// This allows -headless without -project to fall back to normal editor.
+bool IsHeadless()
+{
+    return sEngineConfig.mHeadless && sEngineConfig.mProjectPath != "";
+}
+
 void ReadCommandLineArgs(int32_t argc, char** argv)
 {
     for (int32_t i = 0; i < argc; ++i)
@@ -217,6 +252,23 @@ void ReadCommandLineArgs(int32_t argc, char** argv)
             int32_t linear = atoi(argv[i + 1]);
             sEngineConfig.mLinearColorSpace = linear;
         }
+        else if (strcmp(argv[i], "-headless") == 0)
+        {
+            sEngineConfig.mHeadless = true;
+        }
+        else if (strcmp(argv[i], "-build") == 0)
+        {
+            OCT_ASSERT(i + 1 < argc);
+            sEngineConfig.mBuildPlatform = StringToPlatform(argv[i + 1]);
+            ++i;
+
+            // Check for optional "embedded" argument
+            if (i + 1 < argc && strcmp(argv[i + 1], "embedded") == 0)
+            {
+                sEngineConfig.mBuildEmbedded = true;
+                ++i;
+            }
+        }
     }
 }
 
@@ -236,7 +288,6 @@ bool Initialize()
 #endif
 
     Renderer* renderer = Renderer::Get();
-
     renderer->SetEngineState(&sEngineState);
 
     sEngineState.mWindowWidth = sEngineConfig.mWindowWidth;
@@ -305,30 +356,46 @@ bool Initialize()
     {
         AssetManager::Get()->Discover("Engine", "Engine/Assets/");
     }
+#else
+    // In headless mode, we need to discover engine assets for cooking
+    if (IsHeadless() && !sEngineConfig.mUseAssetRegistry)
+    {
+        AssetManager::Get()->Discover("Engine", "Engine/Assets/");
+    }
 #endif
 
+    if (!IsHeadless())
     {
-        SCOPED_STAT("GFX_Initialize");
-        GFX_Initialize();
+        {
+            SCOPED_STAT("GFX_Initialize");
+            GFX_Initialize();
+        }
+        {
+            SCOPED_STAT("INP_Initialize");
+            INP_Initialize();
+        }
+        {
+            SCOPED_STAT("AUD_Initialize");
+            AUD_Initialize();
+        }
     }
-    {
-        SCOPED_STAT("INP_Initialize");
-        INP_Initialize();
-    }
-    {
-        SCOPED_STAT("AUD_Initialize");
-        AUD_Initialize();
-    }
+
     {
         SCOPED_STAT("NET_Initialize");
         NET_Initialize();
     }
 
 #if EDITOR
-    AssetManager::Get()->ImportEngineAssets();
+    if (!IsHeadless())
+    {
+        AssetManager::Get()->ImportEngineAssets();
+    }
 #endif
 
-    renderer->Initialize();
+    if (!IsHeadless())
+    {
+        renderer->Initialize();
+    }
     NetworkManager::Get()->Initialize();
 
 #if EDITOR
@@ -402,22 +469,31 @@ bool Initialize()
         }
     }
 
+    // If no explicit scene found, try each name in the default scene names list
     if (defaultScene == nullptr)
     {
-        LogDebug("Looking for default scene (\"SC_Main\" or \"SC_Default\")");
-    }
+        const std::vector<std::string>& defaultNames = GetDefaultSceneNames();
 
-    // If no explicit scene is provided, look for SC_Default first
-    if (defaultScene == nullptr)
-    {
-        defaultScene = LoadAsset<Scene>("SC_Default");
-    }
+        if (!defaultNames.empty())
+        {
+            std::string namesStr;
+            for (size_t i = 0; i < defaultNames.size(); ++i)
+            {
+                if (i > 0) namesStr += ", ";
+                namesStr += "\"" + defaultNames[i] + "\"";
+            }
+            LogDebug("Looking for default scene (%s)", namesStr.c_str());
+        }
 
-    // And then looks for SC_Main
-    // Both are used as default scenes for historical purposes.
-    if (defaultScene == nullptr)
-    {
-        defaultScene = LoadAsset<Scene>("SC_Main");
+        for (const std::string& sceneName : defaultNames)
+        {
+            defaultScene = LoadAsset<Scene>(sceneName.c_str());
+            if (defaultScene != nullptr)
+            {
+                LogDebug("Found default scene: %s", sceneName.c_str());
+                break;
+            }
+        }
     }
 
     // Then spawn it on world 0
@@ -578,9 +654,12 @@ void Shutdown()
     AssetManager::Destroy();
 
     NET_Shutdown();
-    AUD_Shutdown();
-    INP_Shutdown();
-    GFX_Shutdown();
+    if (!IsHeadless())
+    {
+        AUD_Shutdown();
+        INP_Shutdown();
+        GFX_Shutdown();
+    }
     SYS_Shutdown();
 
 #if EDITOR
@@ -642,24 +721,32 @@ void LoadProject(const std::string& path, bool discoverAssets)
     SCOPED_STAT("LoadProject");
 
 #if EDITOR
-    GetEditorState()->EndPlayInEditor();
-    GetEditorState()->CloseAllEditScenes();
-
-    // Reset asset manager??
-    if (sEngineState.mProjectDirectory != "")
+    if (!IsHeadless())
     {
-        GetEditorState()->WriteEditorProjectSave();
-        AssetManager::Get()->Purge(false);
-        AssetManager::Get()->UnloadProjectDirectory();
+        GetEditorState()->EndPlayInEditor();
+        GetEditorState()->CloseAllEditScenes();
 
-        sEngineState.mProjectName = "";
-        sEngineState.mProjectPath = "";
-        sEngineState.mProjectDirectory = "";
+        // Reset asset manager??
+        if (sEngineState.mProjectDirectory != "")
+        {
+            GetEditorState()->WriteEditorProjectSave();
+            AssetManager::Get()->Purge(false);
+            AssetManager::Get()->UnloadProjectDirectory();
+
+            sEngineState.mProjectName = "";
+            sEngineState.mProjectPath = "";
+            sEngineState.mProjectDirectory = "";
+        }
+
+        ScriptUtils::UnloadAllScriptFiles();
     }
 #endif
 
 #if EDITOR
-    ResetEngineConfig();
+    if (!IsHeadless())
+    {
+        ResetEngineConfig();
+    }
 #endif
 
     sEngineState.mProjectPath = path;
@@ -699,9 +786,12 @@ void LoadProject(const std::string& path, bool discoverAssets)
         AssetManager::Get()->Discover(sEngineState.mProjectName.c_str(), (sEngineState.mProjectDirectory + "Assets/").c_str());
     }
 
-    char windowName[1024] = {};
-    sprintf(windowName, "%s", GetEngineState()->mProjectName.c_str());
-    SYS_SetWindowTitle(windowName);
+    if (!IsHeadless())
+    {
+        char windowName[1024] = {};
+        sprintf(windowName, "%s", GetEngineState()->mProjectName.c_str());
+        SYS_SetWindowTitle(windowName);
+    }
 
 #if LUA_ENABLED
     extern void UpdateLuaPath();
@@ -738,12 +828,15 @@ void LoadProject(const std::string& path, bool discoverAssets)
 #endif
 
 #if EDITOR
-    GetEditorState()->ReadEditorProjectSave();
-    GetEditorState()->LoadStartupScene();
-    if (sEngineState.mProjectPath != "")
+    if (!IsHeadless())
     {
-        GetEditorState()->AddRecentProject(sEngineState.mProjectPath);
-        GetEditorState()->WriteEditorProjectSave();
+        GetEditorState()->ReadEditorProjectSave();
+        GetEditorState()->LoadStartupScene();
+        if (sEngineState.mProjectPath != "")
+        {
+            GetEditorState()->AddRecentProject(sEngineState.mProjectPath);
+            GetEditorState()->WriteEditorProjectSave();
+        }
     }
 #endif
 }

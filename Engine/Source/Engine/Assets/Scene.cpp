@@ -153,25 +153,29 @@ void Scene::LoadStream(Stream& stream, Platform platform)
 void Scene::SaveStream(Stream& stream, Platform platform)
 {
 #if EDITOR
-    // When saving a scene in editor, first check to see if it is opened as an edit scene.
-    // If so, capture the current node first.
-    const std::vector<EditScene>& editScenes = GetEditorState()->mEditScenes;
-    EditScene* curEditScene = GetEditorState()->GetEditScene();
-
-    for (uint32_t i = 0; i < editScenes.size(); ++i)
+    // Skip editor state access in headless mode (EditorState not initialized)
+    if (!IsHeadless())
     {
-        if (editScenes[i].mSceneAsset == this)
+        // When saving a scene in editor, first check to see if it is opened as an edit scene.
+        // If so, capture the current node first.
+        const std::vector<EditScene>& editScenes = GetEditorState()->mEditScenes;
+        EditScene* curEditScene = GetEditorState()->GetEditScene();
+
+        for (uint32_t i = 0; i < editScenes.size(); ++i)
         {
-            Node* root = editScenes[i].mRootNode.Get();
-
-            if (curEditScene == &editScenes[i])
+            if (editScenes[i].mSceneAsset == this)
             {
-                // This is the currently edited scene, so the cached root node isn't up-to-date.
-                root = GetWorld(0)->GetRootNode();
-            }
+                Node* root = editScenes[i].mRootNode.Get();
 
-            Capture(root);
-            break;
+                if (curEditScene == &editScenes[i])
+                {
+                    // This is the currently edited scene, so the cached root node isn't up-to-date.
+                    root = GetWorld(0)->GetRootNode();
+                }
+
+                Capture(root);
+                break;
+            }
         }
     }
 #endif

@@ -939,7 +939,17 @@ void Primitive3D::EnableRigidBody(bool enable)
             SyncCollisionFlags();
             SyncRigidBodyTransform();
 
-            mRigidBody->activate(true);
+            // I noticed high Physics time when first loading level, even though most primitives had
+            // physics disabled. As an optimization, attempt to deactive all of the non-simulated primitives
+            // used for collision / overlaps only.
+            if (IsPhysicsEnabled())
+            {
+                mRigidBody->activate();
+            }
+            else
+            {
+                mRigidBody->setActivationState(WANTS_DEACTIVATION);
+            }
 
             btDynamicsWorld* dynamicsWorld = world->GetDynamicsWorld();
             dynamicsWorld->addRigidBody(mRigidBody, mCollisionGroup, mCollisionMask);

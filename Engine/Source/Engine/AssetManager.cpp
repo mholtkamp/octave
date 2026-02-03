@@ -59,6 +59,27 @@ AssetStub* FetchAssetStub(const std::string& name)
     return AssetManager::Get()->GetAssetStub(name);
 }
 
+// UUID-based global functions
+Asset* FetchAssetByUuid(uint64_t uuid)
+{
+    return AssetManager::Get()->GetAssetByUuid(uuid);
+}
+
+Asset* LoadAssetByUuid(uint64_t uuid)
+{
+    return AssetManager::Get()->LoadAssetByUuid(uuid);
+}
+
+void AsyncLoadAssetByUuid(uint64_t uuid, AssetRef* targetRef)
+{
+    AssetManager::Get()->AsyncLoadAssetByUuid(uuid, targetRef);
+}
+
+AssetStub* FetchAssetStubByUuid(uint64_t uuid)
+{
+    return AssetManager::Get()->GetAssetStubByUuid(uuid);
+}
+
 void AssetManager::Create()
 {
     Destroy();
@@ -116,7 +137,7 @@ void AssetManager::Update(float deltaTime)
     UpdateEndLoadQueue();
 }
 
-AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type, AssetDir* directory, EmbeddedFile* embeddedAsset, bool engineAsset)
+AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type, AssetDir* directory, EmbeddedFile* embeddedAsset, bool engineAsset, uint64_t uuid)
 {
     std::string fixedFilename = filename;
 
@@ -129,26 +150,44 @@ AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type,
     std::string name = Asset::GetNameFromPath(fixedFilename);
     std::string path = directory ? directory->mPath + fixedFilename : "";
 
-#if EDITOR || _DEBUG
-    auto foundAsset = mAssetMap.find(name);
-    if (foundAsset != mAssetMap.end())
+    // Calculate relative path for path-based lookup (strip project Assets/ prefix)
+    std::string relativePath = "";
+    if (directory != nullptr)
     {
-        // Asset with same name found. Asset names must be unique for now :[
-        // However, if the path is the same, then we may be rediscovering an asset.
-        if (foundAsset->second->mPath != path &&
-            foundAsset->second->mEmbeddedData == embeddedAsset)
+        // Get path relative to project/engine Assets folder
+        // e.g., "ProjectName/Assets/Models/SM_Plane.oct" -> "Models/SM_Plane"
+        std::string dirPath = directory->mPath;
+        size_t assetsPos = dirPath.find("/Assets/");
+        if (assetsPos != std::string::npos)
         {
-            LogError("Asset name conflict: %s", name.c_str());
-            OCT_ASSERT(false);
+            relativePath = dirPath.substr(assetsPos + 8) + name;  // +8 to skip "/Assets/"
         }
         else
         {
-            LogDebug("Register asset skipped. Asset already exists: %s", name.c_str());
+            relativePath = name;
         }
-
-        return nullptr;
     }
-#endif
+
+    // Check for existing asset with same path (rediscovery)
+    auto foundByPath = mAssetPathMap.find(relativePath);
+    if (foundByPath != mAssetPathMap.end())
+    {
+        LogDebug("Register asset skipped. Asset already exists at path: %s", relativePath.c_str());
+        return foundByPath->second;
+    }
+
+    // Generate UUID if not provided
+    if (uuid == 0)
+    {
+        uuid = Maths::GenerateAssetUuid();
+    }
+
+    // Check for UUID collision (should be extremely rare)
+    if (mUuidMap.find(uuid) != mUuidMap.end())
+    {
+        LogWarning("UUID collision detected for %s, regenerating", name.c_str());
+        uuid = Maths::GenerateAssetUuid();
+    }
 
     AssetStub* stub = new AssetStub();
 #if EDITOR
@@ -158,10 +197,30 @@ AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type,
     stub->mAsset = nullptr;
     stub->mType = type;
     stub->mEmbeddedData = embeddedAsset;
-    stub->mEngineAsset = directory ? directory->mEngineDir : false;
+    stub->mEngineAsset = directory ? directory->mEngineDir : engineAsset;
     stub->mPath = path;
+    stub->mUuid = uuid;
 
-    mAssetMap.insert(std::pair<std::string, AssetStub*>(name, stub));
+    // Populate name map (first registered wins for same name)
+    auto foundByName = mAssetMap.find(name);
+    if (foundByName == mAssetMap.end())
+    {
+        mAssetMap.insert(std::pair<std::string, AssetStub*>(name, stub));
+    }
+    else
+    {
+        // Same name exists - this is now allowed with UUIDs
+        LogDebug("Asset with same name already exists: %s (use path or UUID to disambiguate)", name.c_str());
+    }
+
+    // Populate path map
+    if (!relativePath.empty())
+    {
+        mAssetPathMap.insert(std::pair<std::string, AssetStub*>(relativePath, stub));
+    }
+
+    // Populate UUID map
+    mUuidMap.insert(std::pair<uint64_t, AssetStub*>(uuid, stub));
 
     if (directory != nullptr)
     {
@@ -173,17 +232,44 @@ AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type,
 
 AssetStub* AssetManager::CreateAndRegisterAsset(TypeId type, AssetDir* directory, const std::string& filename, bool engineAsset)
 {
+    // Check if stub already exists (meaning .oct file was discovered)
+    // This preserves the UUID from the existing .oct file
+    std::string assetName = Asset::GetNameFromPath(filename);
+    AssetStub* existingStub = GetAssetStub(assetName);
+    if (existingStub != nullptr)
+    {
+        if (existingStub->mAsset == nullptr)
+        {
+            // Load from existing .oct file to preserve UUID
+            Asset* loadedAsset = LoadAsset(*existingStub);
+            if (loadedAsset != nullptr)
+            {
+                loadedAsset->SetEngineAsset(engineAsset);
+                return existingStub;
+            }
+        }
+        else
+        {
+            // Already loaded
+            return existingStub;
+        }
+    }
+
+    // No existing .oct file found, create new asset
     Asset* newAsset = Asset::CreateInstance(type);
     newAsset->Create();
     newAsset->SetEngineAsset(engineAsset);
 
     AssetStub* stub = RegisterAsset(filename, type, directory, nullptr, engineAsset);
-    
+
     if (stub != nullptr)
     {
         stub->mAsset = newAsset;
+        newAsset->SetUuid(stub->mUuid);
 #if EDITOR
         newAsset->SetName(stub->mName);
+        // Save immediately so the UUID is persisted for future sessions
+        SaveAsset(*stub);
 #else
         newAsset->SetName(Asset::GetNameFromPath(filename));
 #endif
@@ -285,10 +371,13 @@ void AssetManager::DiscoverDirectory(AssetDir* directory, bool engineDir)
             {
                 Stream stream;
                 std::string path = directory->mPath + dirEntry.mFilename;
-                stream.ReadFile(path.c_str(), true, sizeof(AssetHeader));
+                // Read enough bytes for header with UUID (magic + version + type + embedded + uuid)
+                stream.ReadFile(path.c_str(), true, sizeof(uint32_t) * 3 + sizeof(uint8_t) + sizeof(uint64_t));
 
                 AssetHeader header = Asset::ReadHeader(stream);
-                RegisterAsset(dirEntry.mFilename, header.mType, directory, nullptr, engineDir);
+
+                // Pass UUID from header (may be 0 for legacy assets, RegisterAsset will generate one)
+                RegisterAsset(dirEntry.mFilename, header.mType, directory, nullptr, engineDir, header.mUuid);
             }
         }
 
@@ -384,14 +473,16 @@ void AssetManager::DiscoverEmbeddedAssets(EmbeddedFile* assets, uint32_t numAsse
         {
             EmbeddedFile* embeddedAsset = &assets[i];
 
-            Stream stream(embeddedAsset->mData, sizeof(AssetHeader));
+            // Read enough bytes for header with UUID
+            uint32_t headerSize = sizeof(uint32_t) * 3 + sizeof(uint8_t) + sizeof(uint64_t);
+            Stream stream(embeddedAsset->mData, glm::min((uint32_t)embeddedAsset->mSize, headerSize));
 
             AssetHeader header = Asset::ReadHeader(stream);
             AssetStub* stub = GetAssetStub(embeddedAsset->mName);
 
             if (stub == nullptr)
             {
-                stub = RegisterAsset(embeddedAsset->mName, header.mType, nullptr, embeddedAsset, embeddedAsset->mEngine);
+                stub = RegisterAsset(embeddedAsset->mName, header.mType, nullptr, embeddedAsset, embeddedAsset->mEngine, header.mUuid);
             }
         }
     }
@@ -413,6 +504,8 @@ void AssetManager::Purge(bool purgeEngineAssets)
         }
 
         mAssetMap.clear();
+        mUuidMap.clear();
+        mAssetPathMap.clear();
     }
     else
     {
@@ -456,6 +549,22 @@ bool AssetManager::PurgeAsset(const char* name)
         {
             AssetStub* delStub = it->second;
             mAssetMap.erase(it);
+
+            // Also remove from UUID and path maps
+            if (delStub->mUuid != 0)
+            {
+                mUuidMap.erase(delStub->mUuid);
+            }
+
+            // Find and remove from path map
+            for (auto pathIt = mAssetPathMap.begin(); pathIt != mAssetPathMap.end(); ++pathIt)
+            {
+                if (pathIt->second == delStub)
+                {
+                    mAssetPathMap.erase(pathIt);
+                    break;
+                }
+            }
 
 #if EDITOR
             if (delStub->mDirectory != nullptr)
@@ -567,6 +676,27 @@ void AssetManager::RegisterTransientAsset(Asset* asset)
 
 Asset* AssetManager::ImportEngineAsset(TypeId type, AssetDir* dir, const std::string& filename, ImportOptions* options)
 {
+    // Check if stub already exists (meaning .oct file was discovered)
+    // This preserves the UUID from the existing .oct file
+    AssetStub* existingStub = GetAssetStub(filename);
+    if (existingStub != nullptr && existingStub->mAsset == nullptr)
+    {
+        // Load from existing .oct file to preserve UUID
+        Asset* loadedAsset = LoadAsset(*existingStub);
+        if (loadedAsset != nullptr)
+        {
+            loadedAsset->SetEngineAsset(true);
+            return loadedAsset;
+        }
+        // If loading failed, fall through to import from source
+    }
+    else if (existingStub != nullptr && existingStub->mAsset != nullptr)
+    {
+        // Already loaded
+        return existingStub->mAsset;
+    }
+
+    // No existing .oct file found, import from source
     Asset* newAsset = Asset::CreateInstance(type);
     std::string importPath = dir->mPath + filename + newAsset->GetTypeImportExt();
     newAsset->Import(importPath, options);
@@ -582,15 +712,18 @@ Asset* AssetManager::ImportEngineAsset(TypeId type, AssetDir* dir, const std::st
     else
     {
         stub->mAsset = newAsset;
+        newAsset->SetUuid(stub->mUuid);
 
         if (type == StaticMesh::GetStaticType())
         {
             static_cast<StaticMesh*>(newAsset)->SetGenerateTriangleCollisionMesh(true);
         }
 
-        // Was saving right on startup but in Debug config this is very slow for some reason.
-        // Moving the call to SaveAsset into the Package code.
-        //AssetManager::Get()->SaveAsset(*stub);
+        // Save immediately so the UUID is persisted for future sessions
+        // This ensures stable UUIDs for engine assets
+#if EDITOR
+        SaveAsset(*stub);
+#endif
     }
 
     return newAsset;
@@ -616,6 +749,15 @@ void AssetManager::ImportEngineAssets()
         AssetDir* engineParticles = engineDir->CreateSubdirectory("Particles");
         AssetDir* engineFonts = engineDir->CreateSubdirectory("Fonts");
         AssetDir* engineScenes = engineDir->CreateSubdirectory("Scenes");
+
+        // Discover existing .oct files first to preserve UUIDs
+        // This must happen before ImportEngineAsset calls so we load from .oct
+        // instead of regenerating from source with new UUIDs
+        DiscoverDirectory(engineTextures, true);
+        DiscoverDirectory(engineMaterials, true);
+        DiscoverDirectory(engineMeshes, true);
+        DiscoverDirectory(engineParticles, true);
+        DiscoverDirectory(engineFonts, true);
 
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_White");
         ImportEngineAsset(Texture::GetStaticType(), engineTextures, "T_Black");
@@ -770,9 +912,110 @@ Asset* AssetManager::LoadAsset(AssetStub& stub)
         {
             stub.mAsset->LoadFile(stub.mPath.c_str());
         }
+
+        // Ensure stub has UUID after loading (for migration of legacy assets)
+        if (stub.mUuid == 0 && stub.mAsset != nullptr)
+        {
+            stub.mAsset->EnsureUuid();
+            stub.mUuid = stub.mAsset->GetUuid();
+        }
     }
 
     return stub.mAsset;
+}
+
+// UUID-based lookup methods
+AssetStub* AssetManager::GetAssetStubByUuid(uint64_t uuid)
+{
+    if (uuid == 0) return nullptr;
+
+    auto it = mUuidMap.find(uuid);
+    return (it != mUuidMap.end()) ? it->second : nullptr;
+}
+
+Asset* AssetManager::GetAssetByUuid(uint64_t uuid)
+{
+    AssetStub* stub = GetAssetStubByUuid(uuid);
+    return (stub != nullptr) ? stub->mAsset : nullptr;
+}
+
+Asset* AssetManager::LoadAssetByUuid(uint64_t uuid)
+{
+    AssetStub* stub = GetAssetStubByUuid(uuid);
+    if (stub != nullptr)
+    {
+        return LoadAsset(*stub);
+    }
+    return nullptr;
+}
+
+void AssetManager::AsyncLoadAssetByUuid(uint64_t uuid, AssetRef* targetRef)
+{
+    SCOPED_LOCK(mMutex);
+
+    AssetStub* stub = GetAssetStubByUuid(uuid);
+    if (stub == nullptr)
+    {
+        LogError("AsyncLoadAssetByUuid failed, UUID 0x%llx does not exist", (unsigned long long)uuid);
+        return;
+    }
+
+    // Find the asset name by searching the asset map for this stub
+    std::string name;
+#if EDITOR
+    name = stub->mName;
+#else
+    // In non-editor builds, find name by looking up stub in asset map
+    if (!stub->mPath.empty())
+    {
+        name = Asset::GetNameFromPath(stub->mPath);
+    }
+    else
+    {
+        // For embedded assets with no path, search the asset map
+        for (auto& pair : mAssetMap)
+        {
+            if (pair.second == stub)
+            {
+                name = pair.first;
+                break;
+            }
+        }
+    }
+#endif
+
+    if (name.empty())
+    {
+        LogError("AsyncLoadAssetByUuid failed, could not determine name for UUID 0x%llx", (unsigned long long)uuid);
+        return;
+    }
+
+    AsyncLoadAsset(name, targetRef);
+}
+
+// Path-based lookup methods (e.g., "Assets/Models/SM_Plane" or "Models/SM_Plane")
+AssetStub* AssetManager::GetAssetStubByPath(const std::string& path)
+{
+    std::string lookupPath = path;
+
+    // Strip "Assets/" prefix if present
+    if (path.length() > 7 && path.substr(0, 7) == "Assets/")
+    {
+        lookupPath = path.substr(7);
+    }
+
+    auto it = mAssetPathMap.find(lookupPath);
+    return (it != mAssetPathMap.end()) ? it->second : nullptr;
+}
+
+Asset* AssetManager::LoadAssetByPath(const std::string& path)
+{
+    AssetStub* stub = GetAssetStubByPath(path);
+    if (stub != nullptr)
+    {
+        return LoadAsset(*stub);
+    }
+    return nullptr;
 }
 
 void AssetManager::AsyncLoadAsset(const std::string& name, AssetRef* targetRef)
@@ -869,11 +1112,20 @@ void AssetManager::SaveAsset(AssetStub& stub)
         std::string filename = Asset::GetNameFromPath(stub.mPath);
         if (stub.mAsset->GetName() != filename)
         {
-            remove(stub.mPath.c_str());
+            std::string oldPath = stub.mPath;
+            remove(oldPath.c_str());
 
             std::string newPath = stub.mDirectory ? stub.mDirectory->mPath : Asset::GetDirectoryFromPath(stub.mPath);
             newPath += stub.mAsset->GetName();
             newPath += ".oct";
+
+            // Update path map (remove old, add new)
+            auto oldPathItr = mAssetPathMap.find(oldPath);
+            if (oldPathItr != mAssetPathMap.end() && oldPathItr->second == &stub)
+            {
+                mAssetPathMap.erase(oldPath);
+            }
+            mAssetPathMap[newPath] = &stub;
 
             stub.mPath = newPath;
         }
@@ -949,28 +1201,59 @@ bool AssetManager::RenameAsset(Asset* asset, const std::string& newName)
     if (asset != nullptr &&
         newName.size() > 0)
     {
-        auto oldItr = mAssetMap.find(asset->GetName());
-        auto newItr = mAssetMap.find(newName);
+        // Use UUID to find the correct stub (more reliable than name with UUID system)
+        AssetStub* stub = nullptr;
+        uint64_t uuid = asset->GetUuid();
 
-        if (newItr != mAssetMap.end())
+        if (uuid != 0)
         {
-            LogError("Failed to rename file. Another asset with the same name already exists.");
+            stub = GetAssetStubByUuid(uuid);
         }
-        else if (oldItr->second->mAsset != asset)
+
+        // Fallback to name lookup if UUID not available
+        if (stub == nullptr)
+        {
+            auto oldItr = mAssetMap.find(asset->GetName());
+            if (oldItr != mAssetMap.end() && oldItr->second->mAsset == asset)
+            {
+                stub = oldItr->second;
+            }
+        }
+
+        if (stub == nullptr)
+        {
+            LogError("Failed to find asset stub for rename. Asset: %s", asset->GetName().c_str());
+        }
+        else if (stub->mAsset != asset)
         {
             LogError("Pointer mismatch when attempting to rename asset. Is there a duplicate asset?");
         }
         else
         {
-            AssetStub* stub = mAssetMap[asset->GetName()];
-            mAssetMap.erase(asset->GetName());
+            std::string oldName = asset->GetName();
+
+            // Remove from name map if this stub was the one registered under old name
+            auto oldNameItr = mAssetMap.find(oldName);
+            if (oldNameItr != mAssetMap.end() && oldNameItr->second == stub)
+            {
+                mAssetMap.erase(oldName);
+            }
 
 #if EDITOR
             stub->mName = newName;
 #endif
             asset->SetName(newName);
-            
-            mAssetMap.insert(std::pair<std::string, AssetStub*>(newName, stub));
+
+            // Add to name map under new name (if not already taken)
+            auto newNameItr = mAssetMap.find(newName);
+            if (newNameItr == mAssetMap.end())
+            {
+                mAssetMap.insert(std::pair<std::string, AssetStub*>(newName, stub));
+            }
+            else
+            {
+                LogDebug("Asset renamed but name slot already taken by another asset: %s", newName.c_str());
+            }
 
             // Do not adjust mPath, as the asset still refers to an old file.
             // When saving the asset, the old file will be destroyed first before saving to the new location.
@@ -1086,6 +1369,54 @@ void AssetManager::GatherScriptFiles(const std::string& dir, std::vector<std::st
     searchDirectory(dir);
 }
 
+
+void AssetManager::GatherFontFiles(const std::string& dir, std::vector<std::string>& outFiles)
+{
+    // Recursively iterate through the Assets/Fonts directory and find .ttf files.
+    std::function<void(std::string)> searchDirectory = [&](std::string dirPath)
+        {
+            std::vector<std::string> subDirectories;
+            DirEntry dirEntry = { };
+
+            SYS_OpenDirectory(dirPath, dirEntry);
+
+            while (dirEntry.mValid)
+            {
+                if (dirEntry.mDirectory)
+                {
+                    // Ignore this directory and parent directory.
+                    if (dirEntry.mFilename[0] != '.')
+                    {
+                        subDirectories.push_back(dirEntry.mFilename);
+                    }
+                }
+                else
+                {
+                    const char* extension = strrchr(dirEntry.mFilename, '.');
+                    if (extension != nullptr && strcmp(extension, ".ttf") == 0)
+                    {
+                        std::string path = dirPath + dirEntry.mFilename;
+                        outFiles.push_back(path);
+                    }
+                }
+                
+
+                SYS_IterateDirectory(dirEntry);
+            }
+
+            SYS_CloseDirectory(dirEntry);
+
+            // Discover files of subdirectories.
+            for (uint32_t i = 0; i < subDirectories.size(); ++i)
+            {
+                std::string subDirPath = dirPath + subDirectories[i] + "/";
+                searchDirectory(subDirPath);
+            }
+        };
+
+    searchDirectory(dir);
+}
+
 AssetStub* AssetManager::FindDefaultScene() {
     AssetStub* defaultScene = nullptr;
 
@@ -1169,6 +1500,27 @@ std::string AssetManager::FindDefaultScenePath() {
 }
 
 
+std::vector<std::string> AssetManager::GetAvailableFontFiles()
+{
+    std::vector<std::string> fontFiles;
+
+    GatherFontFiles("Engine/Assets/Fonts/", fontFiles);
+
+    // Remove "Engine/Scripts/" from the front of each path
+    const std::string prefix = "Engine/Assets/Fonts/";
+    for (uint32_t i = 0; i < fontFiles.size(); ++i)
+    {
+        if (fontFiles[i].substr(0, prefix.length()) == prefix)
+        {
+            fontFiles[i] = fontFiles[i].substr(prefix.length());
+        }
+    }
+
+    return fontFiles;
+}
+
+
+
 std::vector<std::string> AssetManager::GetAvailableScriptFiles()
 {
     std::vector<std::string> scriptFiles;
@@ -1187,6 +1539,9 @@ std::vector<std::string> AssetManager::GetAvailableScriptFiles()
 
     return scriptFiles;
 }
+
+
+
 AssetDir* AssetManager::FindProjectDirectory()
 {
     AssetDir* retDir = nullptr;
@@ -1222,6 +1577,14 @@ AssetDir* AssetManager::FindEngineDirectory()
 AssetDir* AssetManager::GetRootDirectory()
 {
     return mRootDirectory;
+}
+
+std::string AssetManager::GetOctaveDirectory()
+{
+    // Get the App Working Directory
+    std::string wd = SYS_GetCurrentDirectoryPath();
+    return wd;
+
 }
 
 void AssetManager::UnloadProjectDirectory()
