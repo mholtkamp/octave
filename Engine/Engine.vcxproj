@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugEditor|Android-arm64-v8a">
@@ -691,6 +691,7 @@
     <ClCompile Include="Source\Engine\Nodes\3D\ShadowMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\SkeletalMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Sphere3d.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\Spline3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\StaticMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\TestSpinner.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\TextMesh3d.cpp" />
@@ -805,6 +806,7 @@
     <ClCompile Include="Source\LuaBindings\SkeletalMesh_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\SoundWave_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Sphere3d_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Spline3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\StaticMesh3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\StaticMesh_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Stream_Lua.cpp" />
@@ -944,6 +946,7 @@
     <ClInclude Include="Source\Engine\Nodes\3D\ShadowMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\SkeletalMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Sphere3d.h" />
+    <ClInclude Include="Source\Engine\Nodes\3D\Spline3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\StaticMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\TestSpinner.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\TextMesh3d.h" />
@@ -1059,6 +1062,7 @@
     <ClInclude Include="Source\LuaBindings\SkeletalMesh_Lua.h" />
     <ClInclude Include="Source\LuaBindings\SoundWave_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Sphere3d_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\Spline3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\StaticMesh3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\StaticMesh_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Stream_Lua.h" />

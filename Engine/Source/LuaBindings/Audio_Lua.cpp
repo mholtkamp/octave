@@ -83,6 +83,21 @@ int Audio_Lua::StopSounds(lua_State* L)
     return 0;
 }
 
+int Audio_Lua::UpdateSound(lua_State* L)
+{
+    SoundWave* soundWave = CHECK_SOUND_WAVE(L, 1);
+    float volume = CHECK_NUMBER(L, 2);
+    float pitch = 1.0f;
+    int32_t priority = 0;
+
+    if (!lua_isnoneornil(L, 3)) { pitch = CHECK_NUMBER(L, 3); }
+    if (!lua_isnoneornil(L, 4)) { priority = CHECK_INTEGER(L, 4); }
+
+    AudioManager::UpdateSound(soundWave, volume, pitch, priority);
+
+    return 0;
+}
+
 int Audio_Lua::StopAllSounds(lua_State* L)
 {
     AudioManager::StopAllSounds();
@@ -186,6 +201,8 @@ void Audio_Lua::Bind()
 
     REGISTER_TABLE_FUNC(L, tableIdx, StopSounds);
     REGISTER_TABLE_FUNC_EX(L, tableIdx, StopSounds, "StopSound");
+
+    REGISTER_TABLE_FUNC(L, tableIdx, UpdateSound);
 
     REGISTER_TABLE_FUNC(L, tableIdx, StopAllSounds);
 

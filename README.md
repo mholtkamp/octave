@@ -27,7 +27,7 @@ Instructions for building from source below.
    - Vulkan SDK version 1.3.275.0 (During install select "Shader Toolchain Debug Symbols - 64 bit" and deselect all other options)
    - devkitPPC for GameCube/Wii development
    - devkitARM for 3DS development
-   - instructions for installing the devkit tools can be found on the devkitpro wiki [here](https://devkitpro.org/wiki/Getting_Started)
+   - Instructions for installing the devkitPro toolchains can be found in the devkitPro wiki [here](https://devkitpro.org/wiki/Getting_Started)
 2. Gamecube and Wii packaging currently only works on Linux or Docker. We recommend building Gamecube and Wii games on Windows with Docker see instructions below. But if you want to try to get them to package on Windows:
    - Open your Start menu and launch `devkitPro > MySys2`
    - `pacman-key --recv-keys C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE --keyserver keyserver.ubuntu.com`
@@ -83,7 +83,7 @@ Instructions for building from source below.
    - sudo dkp-pacman -S wii-dev
    - sudo dkp-pacman -S 3ds-dev
    - Restart computer
-3. If you want to package Wii and Gamecube, Install `libogc2`
+3. If you want to package Wii and Gamecube, Install `libogc2` (<https://github.com/extremscorner/pacman-packages#readme>)
    - `sudo dkp-pacman-key --recv-keys C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE --keyserver keyserver.ubuntu.com`
    - `sudo dkp-pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE`
    - Put this entry in `/opt/devkitpro/pacman/etc/pacman.conf` above the `[dkp-libs]` entry: 

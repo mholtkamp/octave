@@ -12,6 +12,7 @@ struct Audio_Lua
     static int PlaySound2D(lua_State* L);
     static int PlaySound3D(lua_State* L);
     static int StopSounds(lua_State* L);
+    static int UpdateSound(lua_State* L);
     static int StopAllSounds(lua_State* L);
     static int IsSoundPlaying(lua_State* L);
 

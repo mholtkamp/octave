@@ -42,8 +42,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     switch (uMsg) {
     case WM_CLOSE:
-        PostQuitMessage(0);
-        break;
+        // Do not post quit message, we want the editor to handle the unsaved check.
+        // So simply set the quit flag.
+        //PostQuitMessage(0);
+        GetEngineState()->mQuit = true;
+        return 0;
+
     case WM_SIZE:
     {
         WORD width = LOWORD(lParam);
