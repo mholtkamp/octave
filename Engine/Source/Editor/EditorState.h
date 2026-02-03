@@ -104,6 +104,7 @@ struct EditorState
     bool mEjected = false;
     bool mPaused = false;
     bool mHasEjectedOnce = false;
+    glm::vec4 mSavedEditorClearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     int32_t mEditSceneIndex = -1;
     int32_t mPieEditSceneIdx = -1;
     AssetDir* mCurrentDir = nullptr;
@@ -117,6 +118,7 @@ struct EditorState
     bool mInspectLocked = false;
     Viewport3D* mViewport3D = nullptr;
     Viewport2D* mViewport2D = nullptr;
+    std::string mIOAssetPath;
     std::string mAssetFilterStr;
     std::vector<AssetStub*> mFilteredAssetStubs;
     bool mRequestSaveSceneAs = false;
@@ -143,6 +145,9 @@ struct EditorState
     bool mShutdownUnsavedCheck = false;
     bool mDevMode = false;
     bool mEndPieAtEndOfFrame = false;
+    bool mShowProjectUpgradeModal = false;
+    bool mProjectUpgradeInProgress = false;
+    std::vector<AssetStub*> mAssetsNeedingUpgrade;
 
     // ImGuizmo state
     ImGuizmo::OPERATION mGizmoOperation = ImGuizmo::TRANSLATE;

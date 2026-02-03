@@ -30,6 +30,12 @@ struct EngineConfig* GetMutableEngineConfig();
 
 const class Clock* GetAppClock();
 
+// Default scene names to search for when no explicit scene is specified
+// Developers can modify this list to add custom default scene names
+extern const std::vector<std::string>& GetDefaultSceneNames();
+void SetDefaultSceneNames(const std::vector<std::string>& names);
+
+
 bool IsShuttingDown();
 
 void LoadProject(const std::string& path, bool discoverAssets = true);
@@ -40,6 +46,8 @@ void ResizeWindow(uint32_t width, uint32_t height);
 
 bool IsPlayingInEditor();
 bool IsPlaying();
+
+bool IsHeadless();
 
 bool IsGameTickEnabled();
 

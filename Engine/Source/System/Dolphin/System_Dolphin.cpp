@@ -70,8 +70,10 @@ void SYS_Initialize()
     VIDEO_WaitVSync();
     VIDEO_WaitVSync();
 #else
-    VIDEO_WaitForFlush();
-    engine.mAspectRatioScale = VIDEO_GetAspectRatio() / ((float)engine.mWindowWidth / engine.mWindowHeight);
+    VIDEO_WaitVSync();
+    VIDEO_WaitVSync();
+    // GameCube is always 4:3, so no aspect ratio adjustment needed
+    engine.mAspectRatioScale = 1.0f;
 #endif
 
 #if ENABLE_LIBOGC_CONSOLE
@@ -324,7 +326,14 @@ MutexObject* SYS_CreateMutex()
 
     return retMutex;
 }
-
+std::string SYS_GetOctavePath()
+{
+    return "";
+}
+std::string SYS_GetExecutablePath()
+{
+    return "";
+}
 void SYS_LockMutex(MutexObject* mutex)
 {
     LWP_MutexLock(*mutex);
@@ -717,7 +726,10 @@ void SYS_Log(LogSeverity severity, const char* format, va_list arg)
     SYS_Report(logBuffer);
     SYS_Report("\n");
 #else
-    SYS_Reportv(format, arg);
+    // SYS_Reportv doesn't exist in libogc, use buffer approach like Wii
+    char logBuffer[256];
+    vsnprintf(logBuffer, 255, format, arg);
+    SYS_Report(logBuffer);
     SYS_Report("\n");
 #endif
 
@@ -806,6 +818,10 @@ void SYS_SetFullscreen(bool fullscreen)
 bool SYS_IsFullscreen()
 {
     return true;
+}
+
+void SYS_ExplorerOpenDirectory(const std::string& dirPath)
+{
 }
 
 #endif
