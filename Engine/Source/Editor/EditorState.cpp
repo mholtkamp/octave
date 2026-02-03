@@ -700,7 +700,44 @@ void EditorState::AssignNodePropertySelect(Node* targetNode)
 
     if (inspNode)
     {
-        ActionManager::Get()->EXE_EditProperty(inspNode, PropertyOwnerType::Node, targetName, targetIdx, targetNode);
+        std::vector<Property> props;
+        inspNode->GatherProperties(props);
+        Property* prop = nullptr;
+        for (uint32_t i = 0; i < props.size(); ++i)
+        {
+            if (props[i].mName == targetName)
+            {
+                prop = &props[i];
+                break;
+            }
+        }
+
+        bool valid = true;
+
+        if (inspNode && inspNode->Is("Spline3D") && targetNode != nullptr)
+        {
+            if (targetName == "Camera") valid = targetNode->Is("Camera3D");
+            else if (targetName == "Static Mesh") valid = targetNode->Is("StaticMesh3D");
+            else if (targetName == "Skeletal Mesh") valid = targetNode->Is("SkeletalMesh3D");
+            else if (targetName == "Particle") valid = targetNode->Is("Particle3D");
+            else if (targetName == "Point Light") valid = targetNode->Is("PointLight3D");
+            else if (targetName == "Audio") valid = targetNode->Is("Audio3D");
+            else if (targetName == "Point Speed Target") valid = targetNode->GetName().rfind("point", 0) == 0;
+        }
+
+        if (valid && prop && prop->mExtra && prop->mExtra->GetType() == DatumType::String)
+        {
+            const std::string& typeName = prop->mExtra->GetString();
+            if (!typeName.empty() && targetNode != nullptr)
+            {
+                valid = targetNode->Is(typeName.c_str());
+            }
+        }
+
+        if (valid)
+        {
+            ActionManager::Get()->EXE_EditProperty(inspNode, PropertyOwnerType::Node, targetName, targetIdx, targetNode);
+        }
     }
 
     GetEditorState()->ClearNodePropertySelect();

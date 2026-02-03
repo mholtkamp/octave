@@ -898,6 +898,35 @@ static void AssignAssetToProperty(Object* owner, PropertyOwnerType ownerType, Pr
     }
 }
 
+static bool NodeMatchesProperty(const Property& prop, Node* node, Object* owner)
+{
+    if (node == nullptr)
+        return true;
+
+    // Spline3D attachment filters
+    if (owner && owner->Is("Spline3D"))
+    {
+        if (prop.mName == "Camera") return node->Is("Camera3D");
+        if (prop.mName == "Static Mesh") return node->Is("StaticMesh3D");
+        if (prop.mName == "Skeletal Mesh") return node->Is("SkeletalMesh3D");
+        if (prop.mName == "Particle") return node->Is("Particle3D");
+        if (prop.mName == "Point Light") return node->Is("PointLight3D");
+        if (prop.mName == "Audio") return node->Is("Audio3D");
+        if (prop.mName == "Point Speed Target") return node->GetName().rfind("point", 0) == 0;
+    }
+
+    if (prop.mExtra && prop.mExtra->GetType() == DatumType::String)
+    {
+        const std::string& typeName = prop.mExtra->GetString();
+        if (!typeName.empty())
+        {
+            return node->Is(typeName.c_str());
+        }
+    }
+
+    return true;
+}
+
 static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, PropertyOwnerType ownerType)
 {
     Node* node = prop.GetNode(index).Get();
@@ -969,7 +998,10 @@ static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, Prop
         else
         {
             Node* newNode = ResolveNodePath(src, sTempString);
-            am->EXE_EditProperty(owner, ownerType, prop.mName, index, newNode);
+            if (NodeMatchesProperty(prop, newNode, owner))
+            {
+                am->EXE_EditProperty(owner, ownerType, prop.mName, index, newNode);
+            }
         }
     }
 }
