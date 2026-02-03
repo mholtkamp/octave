@@ -70,10 +70,8 @@ void SYS_Initialize()
     VIDEO_WaitVSync();
     VIDEO_WaitVSync();
 #else
-    VIDEO_WaitVSync();
-    VIDEO_WaitVSync();
-    // GameCube is always 4:3, so no aspect ratio adjustment needed
-    engine.mAspectRatioScale = 1.0f;
+    VIDEO_WaitForFlush();
+    engine.mAspectRatioScale = VIDEO_GetAspectRatio() / ((float)engine.mWindowWidth / engine.mWindowHeight);
 #endif
 
 #if ENABLE_LIBOGC_CONSOLE
@@ -726,10 +724,7 @@ void SYS_Log(LogSeverity severity, const char* format, va_list arg)
     SYS_Report(logBuffer);
     SYS_Report("\n");
 #else
-    // SYS_Reportv doesn't exist in libogc, use buffer approach like Wii
-    char logBuffer[256];
-    vsnprintf(logBuffer, 255, format, arg);
-    SYS_Report(logBuffer);
+    SYS_Reportv(format, arg);
     SYS_Report("\n");
 #endif
 

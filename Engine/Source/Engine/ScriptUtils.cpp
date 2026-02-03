@@ -134,6 +134,15 @@ void ScriptUtils::ReloadAllScriptFiles()
     // This doesn't re-gather the NetFuncs for this script file.
 }
 
+void ScriptUtils::UnloadAllScriptFiles()
+{
+    // TODO: Actually unload the files and tables. Or possibly recreate Lua engine.
+    // This just clears the list of loaded files so that when we switch projects for instance,
+    // and another project has a file of the same name, it will be able to load that file.
+    // Still not ideal to have another project's lua coded loaded.
+    sLoadedLuaFiles.clear();
+}
+
 void ScriptUtils::LoadAllScripts()
 {
     LoadScriptDirectory(".", true);

@@ -737,6 +737,8 @@ void LoadProject(const std::string& path, bool discoverAssets)
             sEngineState.mProjectPath = "";
             sEngineState.mProjectDirectory = "";
         }
+
+        ScriptUtils::UnloadAllScriptFiles();
     }
 #endif
 
