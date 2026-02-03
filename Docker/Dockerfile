@@ -75,11 +75,11 @@ RUN apt-get update && \
 # Install console development libraries
 # Create /etc/mtab symlink needed by pacman in Docker
 RUN ln -sf /proc/self/mounts /etc/mtab && \
-    dkp-pacman -Syu --noconfirm && \
-    dkp-pacman -S --noconfirm gamecube-dev wii-dev 3ds-dev
-
-# Create libogc2 symlink (project makefiles expect this path)
-RUN ln -sf ${DEVKITPPC} ${DEVKITPRO}/libogc2
+    wget -O - https://packages.extremscorner.org/devkitpro.gpg | dkp-pacman-key --add - && \
+    dkp-pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE && \
+    echo '[extremscorner-devkitpro]\nServer = https://packages.extremscorner.org/devkitpro/linux/$arch' >> /opt/devkitpro/pacman/etc/pacman.conf && \
+    dkp-pacman -Syyu --noconfirm 3ds-dev gamecube-dev wii-dev && \
+    yes | dkp-pacman -Scc
 
 # Create directories
 RUN mkdir -p /octave /game /project /intermediate
