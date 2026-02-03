@@ -755,6 +755,12 @@
     <ClCompile Include="Source\Engine\FileWatcher.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\3D\Spline3d.cpp">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Spline3d_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag">
@@ -1430,6 +1436,12 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\FileWatcher.h">
       <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\3D\Spline3d.h">
+      <Filter>Source Files\Engine\Nodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Spline3d_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

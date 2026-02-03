@@ -610,7 +610,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
     </ClCompile>
-  <ClCompile Include="Source\Editor\ImGuizmo\ImGuizmo.cpp">
+    <ClCompile Include="Source\Editor\ImGuizmo\ImGuizmo.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -681,6 +681,7 @@
     <ClCompile Include="Source\Engine\Nodes\3D\ShadowMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\SkeletalMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Sphere3d.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\Spline3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\StaticMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\TestSpinner.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\TextMesh3d.cpp" />
@@ -795,6 +796,7 @@
     <ClCompile Include="Source\LuaBindings\SkeletalMesh_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\SoundWave_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Sphere3d_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Spline3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\StaticMesh3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\StaticMesh_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Stream_Lua.cpp" />
@@ -865,7 +867,7 @@
     <ClInclude Include="Source\Editor\EditorConstants.h" />
     <ClInclude Include="Source\Editor\EditorImgui.h" />
     <ClInclude Include="Source\Editor\EditorState.h" />
-  <ClInclude Include="Source\Editor\ImGuizmo\ImGuizmo.h" />
+    <ClInclude Include="Source\Editor\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="Source\Editor\EditorTypes.h" />
     <ClInclude Include="Source\Editor\EditorUtils.h" />
     <ClInclude Include="Source\Editor\Grid.h" />
@@ -924,6 +926,7 @@
     <ClInclude Include="Source\Engine\Nodes\3D\ShadowMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\SkeletalMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Sphere3d.h" />
+    <ClInclude Include="Source\Engine\Nodes\3D\Spline3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\StaticMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\TestSpinner.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\TextMesh3d.h" />
@@ -1039,6 +1042,7 @@
     <ClInclude Include="Source\LuaBindings\SkeletalMesh_Lua.h" />
     <ClInclude Include="Source\LuaBindings\SoundWave_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Sphere3d_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\Spline3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\StaticMesh3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\StaticMesh_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Stream_Lua.h" />
