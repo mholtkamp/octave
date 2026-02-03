@@ -5,6 +5,7 @@
 #include "Graphics/Vulkan/VulkanUtils.h"
 
 #include "Maths.h"
+#include "Engine.h"
 
 extern VulkanContext* gVulkanContext;
 
@@ -264,56 +265,66 @@ void GFX_EndGpuTimestamp(const char* name)
 
 void GFX_CreateTextureResource(Texture* texture, std::vector<uint8_t>& data)
 {
+    if (IsHeadless()) return;
     CreateTextureResource(texture, data.data());
 }
 
 void GFX_DestroyTextureResource(Texture* texture)
 {
+    if (IsHeadless()) return;
     DestroyTextureResource(texture);
 }
 
 void GFX_CreateMaterialResource(Material* material)
 {
+    if (IsHeadless()) return;
     CreateMaterialResource(material);
 }
 
 void GFX_DestroyMaterialResource(Material* material)
 {
+    if (IsHeadless()) return;
     DestroyMaterialResource(material);
 }
 
 void GFX_CreateStaticMeshResource(StaticMesh* staticMesh, bool hasColor, uint32_t numVertices, void* vertices, uint32_t numIndices, IndexType* indices)
 {
+    if (IsHeadless()) return;
     CreateStaticMeshResource(staticMesh, hasColor, numVertices, vertices, numIndices, indices);
 }
 
 void GFX_DestroyStaticMeshResource(StaticMesh* staticMesh)
 {
+    if (IsHeadless()) return;
     DestroyStaticMeshResource(staticMesh);
 }
 
 void GFX_CreateSkeletalMeshResource(SkeletalMesh* skeletalMesh, uint32_t numVertices, VertexSkinned* vertices, uint32_t numIndices, uint32_t* indices)
 {
+    if (IsHeadless()) return;
     CreateSkeletalMeshResource(skeletalMesh, numVertices, vertices, numIndices, indices);
 }
 
 void GFX_DestroySkeletalMeshResource(SkeletalMesh* skeletalMesh)
 {
+    if (IsHeadless()) return;
     DestroySkeletalMeshResource(skeletalMesh);
 }
 
 void GFX_CreateStaticMeshCompResource(StaticMesh3D* staticMeshComp)
 {
-
+    if (IsHeadless()) return;
 }
 
 void GFX_DestroyStaticMeshCompResource(StaticMesh3D* staticMeshComp)
 {
+    if (IsHeadless()) return;
     DestroyStaticMeshCompResource(staticMeshComp);
 }
 
 void GFX_UpdateStaticMeshCompResourceColors(StaticMesh3D* staticMeshComp)
 {
+    if (IsHeadless()) return;
     UpdateStaticMeshCompResourceColors(staticMeshComp);
 }
 
@@ -324,21 +335,24 @@ void GFX_DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverri
 
 void GFX_CreateSkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp)
 {
-
+    if (IsHeadless()) return;
 }
 
 void GFX_DestroySkeletalMeshCompResource(SkeletalMesh3D* skeletalMeshComp)
 {
+    if (IsHeadless()) return;
     DestroySkeletalMeshCompResource(skeletalMeshComp);
 }
 
 void GFX_ReallocateSkeletalMeshCompVertexBuffer(SkeletalMesh3D* skeletalMeshComp, uint32_t numVertices)
 {
+    if (IsHeadless()) return;
     ReallocateSkeletalMeshCompVertexBuffer(skeletalMeshComp, numVertices);
 }
 
 void GFX_UpdateSkeletalMeshCompVertexBuffer(SkeletalMesh3D* skeletalMeshComp, const std::vector<Vertex>& skinnedVertices)
 {
+    if (IsHeadless()) return;
     UpdateSkeletalMeshCompVertexBuffer(skeletalMeshComp, skinnedVertices);
 }
 
@@ -364,16 +378,18 @@ void GFX_DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp)
 
 void GFX_CreateTextMeshCompResource(TextMesh3D* textMeshComp)
 {
-
+    if (IsHeadless()) return;
 }
 
 void GFX_DestroyTextMeshCompResource(TextMesh3D* textMeshComp)
 {
+    if (IsHeadless()) return;
     DestroyTextMeshCompResource(textMeshComp);
 }
 
 void GFX_UpdateTextMeshCompVertexBuffer(TextMesh3D* textMeshComp, const std::vector<Vertex>& vertices)
 {
+    if (IsHeadless()) return;
     UpdateTextMeshCompVertexBuffer(textMeshComp, vertices);
 }
 
@@ -384,16 +400,18 @@ void GFX_DrawTextMeshComp(TextMesh3D* textMeshComp)
 
 void GFX_CreateParticleCompResource(Particle3D* particleComp)
 {
-
+    if (IsHeadless()) return;
 }
 
 void GFX_DestroyParticleCompResource(Particle3D* particleComp)
 {
+    if (IsHeadless()) return;
     DestroyParticleCompResource(particleComp);
 }
 
 void GFX_UpdateParticleCompVertexBuffer(Particle3D* particleComp, const std::vector<VertexParticle>& vertices)
 {
+    if (IsHeadless()) return;
     UpdateParticleCompVertexBuffer(particleComp, vertices);
 }
 
@@ -404,16 +422,19 @@ void GFX_DrawParticleComp(Particle3D* particleComp)
 
 void GFX_CreateQuadResource(Quad* quad)
 {
+    if (IsHeadless()) return;
     CreateQuadResource(quad);
 }
 
 void GFX_DestroyQuadResource(Quad* quad)
 {
+    if (IsHeadless()) return;
     DestroyQuadResource(quad);
 }
 
 void GFX_UpdateQuadResourceVertexData(Quad* quad)
 {
+    if (IsHeadless()) return;
     UpdateQuadResourceVertexData(quad);
 }
 
@@ -424,16 +445,19 @@ void GFX_DrawQuad(Quad* quad)
 
 void GFX_CreateTextResource(Text* text)
 {
+    if (IsHeadless()) return;
     CreateTextResource(text);
 }
 
 void GFX_DestroyTextResource(Text* text)
 {
+    if (IsHeadless()) return;
     DestroyTextResource(text);
 }
 
 void GFX_UpdateTextResourceVertexData(Text* text)
 {
+    if (IsHeadless()) return;
     UpdateTextResourceVertexData(text);
 }
 
@@ -444,16 +468,19 @@ void GFX_DrawText(Text* text)
 
 void GFX_CreatePolyResource(Poly* poly)
 {
+    if (IsHeadless()) return;
     CreatePolyResource(poly);
 }
 
 void GFX_DestroyPolyResource(Poly* poly)
 {
+    if (IsHeadless()) return;
     DestroyPolyResource(poly);
 }
 
 void GFX_UpdatePolyResourceVertexData(Poly* poly)
 {
+    if (IsHeadless()) return;
     UpdatePolyResourceVertexData(poly);
 }
 

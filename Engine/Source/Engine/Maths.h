@@ -64,6 +64,11 @@ public:
 
     static bool IsPowerOfTwo(uint32_t number);
 
+    // UUID Generation
+    // Engine assets use reserved UUIDs: 0x0001000000000000 - 0x0001FFFFFFFFFFFF
+    static constexpr uint64_t ENGINE_UUID_BASE = 0x0001000000000000ULL;
+    static uint64_t GenerateAssetUuid();
+
     static glm::vec3 ExtractPosition(const glm::mat4& mat);
     static glm::quat ExtractRotation(const glm::mat4& mat);
     static glm::vec3 ExtractScale(const glm::mat4& mat);

@@ -51,6 +51,9 @@ struct Node3D_Lua
     static int GetRightVector(lua_State* L);
     static int GetUpVector(lua_State* L);
 
+    static int GetInheritTransform(lua_State* L);
+    static int SetInheritTransform(lua_State* L);
+
     static void Bind();
 };
 

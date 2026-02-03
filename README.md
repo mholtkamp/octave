@@ -10,6 +10,8 @@ A 3D Game Engine for GameCube, Wii, 3DS, Windows, Linux, and Android
 
 [Lua Documentation](Documentation/Lua/README.md)
 
+[Docker Documentation](Documentation/Docker/README.md)
+
 [Editor Hotkeys](Documentation/Info/Editor.md)
 
 **Check out the Releases page for precompiled standalone builds.**
@@ -25,13 +27,27 @@ Instructions for building from source below.
    - Vulkan SDK version 1.3.275.0 (During install select "Shader Toolchain Debug Symbols - 64 bit" and deselect all other options)
    - devkitPPC for GameCube/Wii development
    - devkitARM for 3DS development
-   - instructions for installing the devkit tools can be found on the devkitpro wiki [here](https://devkitpro.org/wiki/Getting_Started)
-2. Build shaders by running compile.bat in `/Engine/Shaders/GLSL`.
-3. Open Octave.sln.
-4. Switch to the DebugEditor solution configuration.
-5. Set the Standalone project as the Startup Project.
-6. In the debug settings for Standalone, change the working directory to $(SolutionDir).
-7. Build and run Standalone. This is the standalone level edtior if you were making a game with Lua script only.
+   - Instructions for installing the devkitPro toolchains can be found in the devkitPro wiki [here](https://devkitpro.org/wiki/Getting_Started)
+2. Gamecube and Wii packaging currently only works on Linux or Docker. We recommend building Gamecube and Wii games on Windows with Docker see instructions below. But if you want to try to get them to package on Windows:
+   - Open your Start menu and launch `devkitPro > MySys2`
+   - `pacman-key --recv-keys C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE --keyserver keyserver.ubuntu.com`
+   - `pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE`
+   - Put this entry in `/opt/devkitpro/pacman/etc/pacman.conf` above the `[dkp-libs]` entry: 
+   ```
+      [extremscorner-devkitpro]
+      Server = https://packages.extremscorner.org/devkitpro/macos/$arch
+   ```
+   - `pacman -Syuu`
+   - `pacman -S libogc2 libogc2-docs libogc2-examples`
+   - `pacman -S libogc2-cmake`
+      - Accept overwriting if asked.
+   - Restart computer if  you've opened Visual Studio prior to installing `libogc2` to make sure the environment variables are found.
+3. Build shaders by running compile.bat in `/Engine/Shaders/GLSL`.
+4. Open Octave.sln.
+5. Switch to the DebugEditor solution configuration.
+6. Set the Standalone project as the Startup Project.
+7. In the debug settings for Standalone, change the working directory to $(SolutionDir).
+8. Build and run Standalone. This is the standalone level editor if you were making a game with Lua script only.
 
 ## Linux Compiling
 
@@ -67,7 +83,20 @@ Instructions for building from source below.
    - sudo dkp-pacman -S wii-dev
    - sudo dkp-pacman -S 3ds-dev
    - Restart computer
-3. cd Engine/Shaders/GLSL/ then run ./compile.sh.
+3. If you want to package Wii and Gamecube, Install `libogc2` (<https://github.com/extremscorner/pacman-packages#readme>)
+   - `sudo dkp-pacman-key --recv-keys C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE --keyserver keyserver.ubuntu.com`
+   - `sudo dkp-pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE`
+   - Put this entry in `/opt/devkitpro/pacman/etc/pacman.conf` above the `[dkp-libs]` entry: 
+   ```
+      [extremscorner-devkitpro]
+      Server = https://packages.extremscorner.org/devkitpro/macos/$arch
+   ```
+   - `sudo dkp-pacman -Syuu`
+   - `sudo dkp-pacman -S libogc2 libogc2-docs libogc2-examples`
+   - `sudo dkp-pacman -S libogc2-cmake`
+      - Accept overwriting if asked.
+
+4. cd Engine/Shaders/GLSL/ then run ./compile.sh.
 
 ### Compiling (Visual Studio Code)
 
@@ -98,6 +127,38 @@ CMake support is currently a work-in-progress, and only Linux support has been i
 - Install pkg-config `sudo apt install pkg-config`(debian/ubuntu), `
 - Install vorbis dev libraries `sudo apt install libvorbis-dev`
 
-## Special Thanks
+# Docker
+Octave includes a Docker build system for reproducible builds across all supported platforms. You can also use the Docker system to build Octave itself from source without installing any dependencies on your host machine. You can get more information about using the Docker build system at [Documentation/Docker.md](Documentation/Info/Docker.md).
+
+## Requirements
+- Install Docker from <https://docs.docker.com/get-docker/>
+
+## Build the Octave Docker Image
+From your terminal, run:
+```bash
+# Clone the Octave repository if you haven't already, or to get the latest version
+git clone https://github.com/mholtkamp/octave
+# Move into the octave directory
+cd octave
+# Build the Docker image
+./Docker/build.sh
+```
+
+## Packaging Games With Docker
+To package your game using the Docker build system, run the following command from the root of your project directory (where your .octp file is located):
+```bash
+docker run --rm -v ./dist/3DS:/game -v .:/project octavegameengine build-3ds
+```
+This command mounts your project directory to `/project` in the Docker container, and tells the system to export your file to `./dist`. You should create the `dist` directory or whatever you want to export to beforehand or else the directory will be created by Docker and you will have to `sudo chmod -R 777 ./dist` to change permissions so you can access it.
+ or do a `sudo rm -rf ./dist` to delete the directory.
+
+### Available Docker Build Commands
+- `build-linux` - Build a Linux `.elf` executable
+- `build-gamecube` - Build a GameCube `.dol` file
+- `build-wii` - Build a Wii `.dol` file
+- `build-3ds` - Build a Nintendo `.3dsx` ROM
+
+
+# Special Thanks
 
 - Octave logo designed by overcookedchips.

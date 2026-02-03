@@ -444,3 +444,26 @@ glm::vec4 Maths::SrgbToLinear(glm::vec4 srgbColor)
     linearColor = glm::pow(linearColor, glm::vec3(2.2f));
     return glm::vec4(linearColor, srgbColor.a);
 }
+
+uint64_t Maths::GenerateAssetUuid()
+{
+    // Generate UUID by combining timestamp and random values
+    // Upper 32 bits: Unix timestamp (seconds) - provides uniqueness across time
+    // Lower 32 bits: Random value - provides uniqueness within same second
+    // Avoids reserved engine UUID range (0x0001000000000000 - 0x0001FFFFFFFFFFFF)
+
+    uint32_t timestamp = (uint32_t)time(nullptr);
+    uint32_t randomBits = (uint32_t)rand() ^ ((uint32_t)rand() << 16);
+
+    uint64_t uuid = ((uint64_t)timestamp << 32) | randomBits;
+
+    // Ensure we don't accidentally generate a reserved engine UUID
+    // or invalid UUID (0)
+    if (uuid == 0 || (uuid >= ENGINE_UUID_BASE && uuid <= (ENGINE_UUID_BASE + 0xFFFFFFFFFFFFULL)))
+    {
+        // Shift out of reserved range
+        uuid = (uuid & 0x0000FFFFFFFFFFFFULL) | 0x0002000000000000ULL;
+    }
+
+    return uuid;
+}

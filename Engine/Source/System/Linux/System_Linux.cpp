@@ -13,8 +13,12 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <string>
+#include <sstream>
+#include <vector>
 #include <assert.h>
 #include <signal.h>
+#include <limits.h>
+#include <unistd.h>
 
 #if EDITOR
 #include "imgui.h"
@@ -268,6 +272,13 @@ void SYS_Initialize()
     EngineState& engine = *GetEngineState();
     SystemState& system = engine.mSystem;
 
+    // Skip window creation in headless mode
+    if (IsHeadless())
+    {
+        LogDebug("SYS_Initialize: Headless mode, skipping XCB window creation");
+        return;
+    }
+
     // Create a window with XCB
     system.mXcbConnection = xcb_connect(NULL, NULL);
 
@@ -415,6 +426,13 @@ void SYS_Initialize()
 
 void SYS_Shutdown()
 {
+    // Skip in headless mode since we didn't create any XCB resources
+    if (IsHeadless())
+    {
+        LogDebug("SYS_Shutdown: Headless mode, skipping XCB cleanup");
+        return;
+    }
+
     SystemState& system = GetEngineState()->mSystem;
 
 #if EDITOR
@@ -427,7 +445,7 @@ void SYS_Shutdown()
     {
         xcb_destroy_window(system.mXcbConnection, system.mXcbWindow);
     }
-    
+
     if (system.mXcbConnection != nullptr)
     {
         xcb_disconnect(system.mXcbConnection);
@@ -564,6 +582,31 @@ void SYS_ReleaseFileData(char* data)
     }
 }
 
+std::string SYS_GetOctavePath()
+{
+    std::string octaveDirectory = SYS_GetCurrentDirectoryPath();
+    if(SYS_DoesFileExist((octaveDirectory + "Octave/imgui.ini").c_str(), false)){
+        octaveDirectory = octaveDirectory + "Octave/";
+        }
+    if(!SYS_DoesFileExist((octaveDirectory + "Standalone/Standalone.rc").c_str(), false)){
+        std::string octaveEXE = SYS_GetExecutablePath();
+        size_t lastSlash = octaveEXE.find_last_of("/");
+        octaveDirectory = octaveEXE.substr(0, lastSlash + 1);
+    }
+    return octaveDirectory;
+}
+std::string SYS_GetExecutablePath()
+{
+    char path[MAX_PATH_SIZE] = {};
+    ssize_t len = readlink("/proc/self/exe", path, MAX_PATH_SIZE - 1);
+    if (len > 0)
+    {
+        path[len] = '\0';
+        return std::string(path);
+    }
+    return "";
+}
+
 std::string SYS_GetCurrentDirectoryPath()
 {
     char path[MAX_PATH_SIZE] = {};
@@ -579,6 +622,40 @@ std::string SYS_GetAbsolutePath(const std::string& relativePath)
     {
         absPath = resolvedPath;
         free(resolvedPath);
+    }
+    else
+    {
+        // realpath fails if path doesn't exist - resolve manually
+        char cwd[PATH_MAX];
+        if (getcwd(cwd, sizeof(cwd)) != nullptr)
+        {
+            std::string fullPath = relativePath;
+            if (relativePath[0] != '/')
+            {
+                fullPath = std::string(cwd) + "/" + relativePath;
+            }
+
+            // Normalize path by resolving . and ..
+            std::vector<std::string> parts;
+            std::stringstream ss(fullPath);
+            std::string part;
+            while (std::getline(ss, part, '/'))
+            {
+                if (part == ".." && !parts.empty() && parts.back() != "..")
+                {
+                    parts.pop_back();
+                }
+                else if (part != "." && part != "")
+                {
+                    parts.push_back(part);
+                }
+            }
+
+            for (const auto& p : parts)
+            {
+                absPath += "/" + p;
+            }
+        }
     }
 
     if (absPath != "" && DoesDirExist(absPath.c_str()))
@@ -1166,6 +1243,12 @@ void SYS_SetWindowRect(int32_t x, int32_t y, int32_t width, int32_t height)
     SystemState& system = GetEngineState()->mSystem;
     uint32_t values[] = { (uint32_t)x, (uint32_t)y, (uint32_t)width, (uint32_t)height };
     xcb_configure_window(system.mXcbConnection, system.mXcbWindow, XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values);
+}
+
+void SYS_ExplorerOpenDirectory(const std::string& dirPath)
+{
+    std::string cmd = "xdg-open \"" + dirPath + "\" &";
+    SYS_Exec(cmd.c_str());
 }
 
 void SYS_GetWindowRect(int32_t& outX, int32_t& outY, int32_t& outWidth, int32_t& outHeight)

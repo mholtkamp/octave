@@ -108,8 +108,10 @@ public:
     void RunScript();
     void ImportAsset();
     Asset* ImportAsset(const std::string& path);
+    void ImportCamera(const CameraImportOptions& options);
     void ImportScene(const SceneImportOptions& options);
     void BeginImportScene();
+    void BeginImportCamera();
     void BuildData(Platform platform, bool embedded);
     void PrepareRelease();
     void ClearWorld();
@@ -120,6 +122,10 @@ public:
     void DeleteAssetDir(AssetDir* dir);
     bool DuplicateNodes(std::vector<Node*> nodes);
     void AttachSelectedNodes(Node* newParent, int32_t boneIdx);
+
+    // Project upgrade functions
+    bool CheckProjectNeedsUpgrade();
+    void UpgradeProject();
 };
 
 #define DECLARE_ACTION_INTERFACE(Name) \

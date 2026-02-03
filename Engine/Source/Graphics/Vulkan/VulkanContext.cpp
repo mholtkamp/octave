@@ -375,7 +375,8 @@ void VulkanContext::EndFrame()
 
     VkResult presentResult = vkQueuePresentKHR(mPresentQueue, &presentInfo);
 
-    if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
+    if (!IsShuttingDown() &&
+        (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR))
     {
         RecreateSwapchain(false);
     }

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugEditor|Android-arm64-v8a">
@@ -349,7 +349,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -501,7 +501,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
@@ -610,7 +610,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
     </ClCompile>
-  <ClCompile Include="Source\Editor\ImGuizmo\ImGuizmo.cpp">
+    <ClCompile Include="FeatureFlags.cpp" />
+    <ClCompile Include="Source\Editor\ImGuizmo\ImGuizmo.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -636,6 +637,15 @@
     <ClCompile Include="Source\Editor\PaintManager.cpp" />
     <ClCompile Include="Source\Editor\Viewport2d.cpp" />
     <ClCompile Include="Source\Editor\Viewport3d.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\JsonSettings.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\PreferencesManager.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\PreferencesModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\PreferencesWindow.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\General\GeneralModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Appearance\AppearanceModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\EditorTheme.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\ThemeModule.cpp" />
     <ClCompile Include="Source\Engine\Asset.cpp" />
     <ClCompile Include="Source\Engine\AssetDir.cpp" />
     <ClCompile Include="Source\Engine\AssetManager.cpp" />
@@ -681,6 +691,7 @@
     <ClCompile Include="Source\Engine\Nodes\3D\ShadowMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\SkeletalMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Sphere3d.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\Spline3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\StaticMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\TestSpinner.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\TextMesh3d.cpp" />
@@ -795,6 +806,7 @@
     <ClCompile Include="Source\LuaBindings\SkeletalMesh_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\SoundWave_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Sphere3d_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Spline3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\StaticMesh3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\StaticMesh_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Stream_Lua.cpp" />
@@ -857,6 +869,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FeatureFlags.h" />
     <ClInclude Include="Source\Audio\Audio.h" />
     <ClInclude Include="Source\Audio\AudioConstants.h" />
     <ClInclude Include="Source\Audio\AudioTypes.h" />
@@ -865,7 +878,7 @@
     <ClInclude Include="Source\Editor\EditorConstants.h" />
     <ClInclude Include="Source\Editor\EditorImgui.h" />
     <ClInclude Include="Source\Editor\EditorState.h" />
-  <ClInclude Include="Source\Editor\ImGuizmo\ImGuizmo.h" />
+    <ClInclude Include="Source\Editor\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="Source\Editor\EditorTypes.h" />
     <ClInclude Include="Source\Editor\EditorUtils.h" />
     <ClInclude Include="Source\Editor\Grid.h" />
@@ -873,6 +886,15 @@
     <ClInclude Include="Source\Editor\PaintManager.h" />
     <ClInclude Include="Source\Editor\Viewport2d.h" />
     <ClInclude Include="Source\Editor\Viewport3d.h" />
+    <ClInclude Include="Source\Editor\Preferences\JsonSettings.h" />
+    <ClInclude Include="Source\Editor\Preferences\PreferencesManager.h" />
+    <ClInclude Include="Source\Editor\Preferences\PreferencesModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\PreferencesWindow.h" />
+    <ClInclude Include="Source\Editor\Preferences\General\GeneralModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\Appearance\AppearanceModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\EditorTheme.h" />
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\ThemeModule.h" />
     <ClInclude Include="Source\Engine\Assertion.h" />
     <ClInclude Include="Source\Engine\Asset.h" />
     <ClInclude Include="Source\Engine\AssetDir.h" />
@@ -924,6 +946,7 @@
     <ClInclude Include="Source\Engine\Nodes\3D\ShadowMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\SkeletalMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Sphere3d.h" />
+    <ClInclude Include="Source\Engine\Nodes\3D\Spline3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\StaticMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\TestSpinner.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\TextMesh3d.h" />
@@ -1039,6 +1062,7 @@
     <ClInclude Include="Source\LuaBindings\SkeletalMesh_Lua.h" />
     <ClInclude Include="Source\LuaBindings\SoundWave_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Sphere3d_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\Spline3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\StaticMesh3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\StaticMesh_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Stream_Lua.h" />
