@@ -104,6 +104,7 @@ void Spline3D::Start()
     resolveAttachment(mAttachmentParticle3D);
     resolveAttachment(mAttachmentPointLight);
     resolveAttachment(mAttachmentAudio3D);
+    resolveAttachment(mAttachmentNode3D);
 
     std::vector<SplinePointNode> points;
     GatherSplinePointNodes(this, points);
@@ -152,6 +153,13 @@ void Spline3D::Start()
             mOrigAudioTransform = audioNode->As<Node3D>()->GetTransform();
             audioNode->As<Node3D>()->SetWorldPosition(startPos);
         }
+
+        Node* genericNode = mAttachmentNode3D.Get();
+        if (genericNode && genericNode->As<Node3D>())
+        {
+            mOrigNodeTransform = genericNode->As<Node3D>()->GetTransform();
+            genericNode->As<Node3D>()->SetWorldPosition(startPos);
+        }
     }
 }
 
@@ -186,6 +194,7 @@ void Spline3D::Tick(float deltaTime)
     Node* partNode = mAttachmentParticle3D.Get();
     Node* lightNode = mAttachmentPointLight.Get();
     Node* audioNode = mAttachmentAudio3D.Get();
+    Node* genericNode = mAttachmentNode3D.Get();
 
     bool hasCam = (camNode && camNode->As<Camera3D>());
     bool hasMesh = (meshNode && meshNode->As<StaticMesh3D>());
@@ -193,8 +202,9 @@ void Spline3D::Tick(float deltaTime)
     bool hasPart = (partNode && partNode->As<Particle3D>());
     bool hasLight = (lightNode && lightNode->As<PointLight3D>());
     bool hasAudio = (audioNode && audioNode->As<Audio3D>());
+    bool hasNode = (genericNode && genericNode->As<Node3D>());
 
-    if (!hasCam && !hasMesh && !hasSkel && !hasPart && !hasLight && !hasAudio)
+    if (!hasCam && !hasMesh && !hasSkel && !hasPart && !hasLight && !hasAudio && !hasNode)
         return;
 
     std::vector<SplinePointNode> points;
@@ -316,8 +326,11 @@ void Spline3D::Tick(float deltaTime)
     auto applyMove = [&](Node* node, bool face)
     {
         node->As<Node3D>()->SetWorldPosition(pos);
-        if (mFaceTangent && face)
-            node->As<Node3D>()->LookAt(pos + tangent, glm::vec3(0,1,0));
+        if (face && (mFaceTangent || mReverseFaceTangent))
+        {
+            glm::vec3 dir = mReverseFaceTangent ? -tangent : tangent;
+            node->As<Node3D>()->LookAt(pos + dir, glm::vec3(0,1,0));
+        }
     };
 
     if (hasCam) applyMove(camNode, true);
@@ -326,6 +339,7 @@ void Spline3D::Tick(float deltaTime)
     if (hasPart) applyMove(partNode, false);
     if (hasLight) applyMove(lightNode, false);
     if (hasAudio) applyMove(audioNode, false);
+    if (hasNode) applyMove(genericNode, true);
 }
 
 void Spline3D::Copy(Node* srcNode, bool recurse)
@@ -439,6 +453,7 @@ void Spline3D::GatherProperties(std::vector<Property>& props)
         props.push_back(Property(DatumType::Bool, "Close Spline", this, &mCloseLoop));
         props.push_back(Property(DatumType::Bool, "Smooth Curve", this, &mSmoothCurve));
         props.push_back(Property(DatumType::Bool, "Face Tangent", this, &mFaceTangent));
+        props.push_back(Property(DatumType::Bool, "Reverse Face Tangent", this, &mReverseFaceTangent));
     }
 
     {
@@ -449,6 +464,7 @@ void Spline3D::GatherProperties(std::vector<Property>& props)
         props.push_back(Property(DatumType::Node, "Particle", this, &mAttachmentParticle3D, 1, HandlePropChange));
         props.push_back(Property(DatumType::Node, "Point Light", this, &mAttachmentPointLight, 1, HandlePropChange));
         props.push_back(Property(DatumType::Node, "Audio", this, &mAttachmentAudio3D, 1, HandlePropChange));
+        props.push_back(Property(DatumType::Node, "Node3D", this, &mAttachmentNode3D, 1, HandlePropChange));
     }
 }
 
@@ -637,6 +653,32 @@ bool Spline3D::HandlePropChange(Datum* datum, uint32_t index, const void* newVal
         else if (node->As<Audio3D>())
         {
             spline->mAttachmentAudio3D = newNode;
+            std::vector<SplinePointNode> points;
+            GatherSplinePointNodes(spline, points);
+            if (!points.empty())
+            {
+                node->As<Node3D>()->SetWorldPosition(points[0].node->GetWorldPosition());
+            }
+            success = false;
+        }
+        else
+        {
+            success = true;
+        }
+    }
+    else if (prop->mName == "Node3D")
+    {
+        const WeakPtr<Node>& newNode = *(const WeakPtr<Node>*)newValue;
+        Node* node = newNode.Get();
+
+        if (node == nullptr)
+        {
+            spline->mAttachmentNode3D = WeakPtr<Node>();
+            success = false;
+        }
+        else if (node->As<Node3D>())
+        {
+            spline->mAttachmentNode3D = newNode;
             std::vector<SplinePointNode> points;
             GatherSplinePointNodes(spline, points);
             if (!points.empty())
