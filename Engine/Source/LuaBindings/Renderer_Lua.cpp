@@ -10,6 +10,7 @@
 #include "LuaBindings/Material_Lua.h"
 #include "LuaBindings/StaticMesh_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
+#include "Nodes/Widgets/StatsOverlay.h"
 
 
 #if LUA_ENABLED
@@ -17,8 +18,37 @@
 int Renderer_Lua::EnableStatsOverlay(lua_State* L)
 {
     bool value = CHECK_BOOLEAN(L, 1);
+    const char* mode = "Performance";
+
+    if (!lua_isnoneornil(L, 2))
+    {
+        mode = lua_tostring(L, 2);
+    }
 
     Renderer::Get()->EnableStatsOverlay(value);
+
+    StatsOverlay* overlay = Renderer::Get()->GetStatsWidget();
+
+    if (value && overlay)
+    {
+        StatDisplayMode dispMode = StatDisplayMode::AllStatText;
+        std::string modeStr = mode;
+
+        if (modeStr == "Performance")
+        {
+            dispMode = StatDisplayMode::AllStatText;
+        }
+        else if (modeStr == "Memory")
+        {
+            dispMode = StatDisplayMode::Memory;
+        }
+        else if (modeStr == "Network")
+        {
+            dispMode = StatDisplayMode::Network;
+        }
+
+        overlay->SetDisplayMode(dispMode);
+    }
 
     return 0;
 }
