@@ -34,6 +34,18 @@ public:
 
     void Play();
     void StopPlayback();
+    void SetPaused(bool paused);
+    bool IsPaused() const;
+    void SetFollowLinkEnabled(uint32_t index, bool enabled);
+    bool IsFollowLinkEnabled(uint32_t index) const;
+    bool IsNearLinkFrom(uint32_t index, float epsilon = 0.05f) const;
+    bool IsNearLinkTo(uint32_t index, float epsilon = 0.05f) const;
+    bool IsLinkDirectionForward(uint32_t index, float threshold = 0.0f) const;
+    bool TriggerLink(uint32_t index);
+    void CancelActiveLink();
+
+    static void SetSplineLinesVisible(bool visible);
+    static bool IsSplineLinesVisible();
 
 #if EDITOR
     virtual bool DrawCustomProperty(Property& prop) override;
@@ -52,6 +64,85 @@ protected:
     NodePtrWeak mAttachmentAudio3D;
     NodePtrWeak mAttachmentNode3D;
 
+    NodePtrWeak mLinkFrom;
+    NodePtrWeak mLinkTo;
+    NodePtrWeak mLinkFrom2;
+    NodePtrWeak mLinkTo2;
+    NodePtrWeak mLinkFrom3;
+    NodePtrWeak mLinkTo3;
+    NodePtrWeak mLinkFrom4;
+    NodePtrWeak mLinkTo4;
+    NodePtrWeak mLinkFrom5;
+    NodePtrWeak mLinkTo5;
+    NodePtrWeak mLinkFrom6;
+    NodePtrWeak mLinkTo6;
+    NodePtrWeak mLinkFrom7;
+    NodePtrWeak mLinkTo7;
+    NodePtrWeak mLinkFrom8;
+    NodePtrWeak mLinkTo8;
+    NodePtrWeak mLinkFrom9;
+    NodePtrWeak mLinkTo9;
+    NodePtrWeak mLinkFrom10;
+    NodePtrWeak mLinkTo10;
+    NodePtrWeak mLinkFrom11;
+    NodePtrWeak mLinkTo11;
+    bool mFollowLink1 = true;
+    bool mFollowLink2 = true;
+    bool mFollowLink3 = true;
+    bool mFollowLink4 = true;
+    bool mFollowLink5 = true;
+    bool mFollowLink6 = true;
+    bool mFollowLink7 = true;
+    bool mFollowLink8 = true;
+    bool mFollowLink9 = true;
+    bool mFollowLink10 = true;
+    bool mFollowLink11 = true;
+    bool mLinkTriggered1 = false;
+    bool mLinkTriggered2 = false;
+    bool mLinkTriggered3 = false;
+    bool mLinkTriggered4 = false;
+    bool mLinkTriggered5 = false;
+    bool mLinkTriggered6 = false;
+    bool mLinkTriggered7 = false;
+    bool mLinkTriggered8 = false;
+    bool mLinkTriggered9 = false;
+    bool mLinkTriggered10 = false;
+    bool mLinkTriggered11 = false;
+    bool mLinkActive = false;
+    bool mDisableBounce = false;
+    float mLinkSpeedModifier = 1.0f;
+    float mLinkSpeedModifier1 = 1.0f;
+    float mLinkSpeedModifier2 = 1.0f;
+    float mLinkSpeedModifier3 = 1.0f;
+    float mLinkSpeedModifier4 = 1.0f;
+    float mLinkSpeedModifier5 = 1.0f;
+    float mLinkSpeedModifier6 = 1.0f;
+    float mLinkSpeedModifier7 = 1.0f;
+    float mLinkSpeedModifier8 = 1.0f;
+    float mLinkSpeedModifier9 = 1.0f;
+    float mLinkSpeedModifier10 = 1.0f;
+    float mLinkSpeedModifier11 = 1.0f;
+    bool mEnableLink11 = false;
+
+    int32_t mGeneratedLinkCount = 10;
+    NodePtrWeak mLinkFromExtra[65];
+    NodePtrWeak mLinkToExtra[65];
+    bool mFollowLinkExtra[65] = {};
+    bool mLinkTriggeredExtra[65] = {};
+    float mLinkSpeedModifierExtra[65] = {};
+
+    float mActiveLinkSpeedModifier = 1.0f;
+    bool mLinkSmoothStep = false;
+    bool mLinkSmoothRotate = false;
+    float mLinkTravel = 0.0f;
+    float mLinkLen = 0.0f;
+    glm::vec3 mLinkStart = glm::vec3(0.0f);
+    glm::vec3 mLinkEnd = glm::vec3(0.0f);
+    NodePtrWeak mLinkTargetSpline;
+    float mLinkTargetStartDist = 0.0f;
+    float mLinkTargetPrevDist = 0.0f;
+    float mLinkTargetTotalLen = 0.0f;
+
     glm::mat4 mOrigCamTransform = glm::mat4(1.0f);
     glm::mat4 mOrigStaticTransform = glm::mat4(1.0f);
     glm::mat4 mOrigSkeletalTransform = glm::mat4(1.0f);
@@ -65,9 +156,14 @@ protected:
     bool mLoop = true;
     bool mCloseLoop = false;
     bool mSmoothCurve = true;
+    bool mPause = false;
     bool mFaceTangent = false;
     bool mReverseFaceTangent = false;
     float mTravel = 0.0f;
+
+    bool mHasTrackedPos = false;
+    glm::vec3 mPrevTrackedPos = glm::vec3(0.0f);
+    glm::vec3 mTrackedMoveDir = glm::vec3(0.0f);
 
     struct PointSpeedEntry
     {
