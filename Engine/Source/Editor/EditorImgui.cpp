@@ -13,6 +13,7 @@
 #include "Script.h"
 #include "PaintManager.h"
 #include "NodePath.h"
+#include "FeatureFlags.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/InstancedMesh3d.h"
@@ -34,6 +35,8 @@
 #include "Viewport2d.h"
 #include "ActionManager.h"
 #include "EditorState.h"
+#include "Preferences/PreferencesWindow.h"
+#include "Preferences/Appearance/Theme/ThemeModule.h"
 
 #include <functional>
 #include <algorithm>
@@ -51,6 +54,7 @@
 #elif PLATFORM_LINUX
 #include "imgui_impl_xcb.h"
 #endif
+
 
 struct FileBrowserDirEntry
 {
@@ -73,6 +77,7 @@ constexpr const uint32_t kPopupInputBufferSize = 256;
 static char sPopupInputBuffer[kPopupInputBufferSize] = {};
 
 static bool sNodesDiscovered = false;
+static bool showTheming = false;
 static std::vector<std::string> sNode3dNames;
 static std::vector<std::string> sNodeWidgetNames;
 static std::vector<std::string> sNodeOtherNames;
@@ -92,6 +97,7 @@ static bool sFileBrowserNeedsRefresh = false;
 static bool sObjectTabOpen = false;
 
 static SceneImportOptions sSceneImportOptions;
+static CameraImportOptions sCameraImportOptions;
 
 static std::vector<AssetStub*> sUnsavedAssets;
 static std::vector<bool> sUnsavedAssetsSelected;
@@ -218,13 +224,14 @@ static void DrawFileBrowserContextPopup(FileBrowserDirEntry* entry)
     if (entry && !isParentDir && ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
     {
         ImGui::OpenPopup("Rename File");
-        strncpy(sPopupInputBuffer, entry->mName.c_str(), kPopupInputBufferSize);
+        strncpy(sPopupInputBuffer, entry->mName.c_str(), kPopupInputBufferSize - 1);
+        sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
         setTextInputFocus = true;
     }
     if (ImGui::Selectable("New Folder", false, ImGuiSelectableFlags_DontClosePopups))
     {
         ImGui::OpenPopup("New Folder");
-        strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+        sPopupInputBuffer[0] = '\0';
         setTextInputFocus = true;
     }
     if (entry && !isParentDir && ImGui::Selectable("Delete"))
@@ -681,6 +688,86 @@ static void DrawUnsavedCheck()
         if (closePopup)
         {
             sUnsavedModalActive = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+static void DrawProjectUpgradeModal()
+{
+    EditorState* editorState = GetEditorState();
+
+    if (editorState->mShowProjectUpgradeModal)
+    {
+        ImGui::OpenPopup("Project Upgrade Required");
+    }
+
+    // Center the modal
+    if (ImGui::IsPopupOpen("Project Upgrade Required"))
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(500, 350));
+    }
+
+    if (ImGui::BeginPopupModal("Project Upgrade Required", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        ImGui::TextWrapped("This project contains assets that were created with an older version of the engine.");
+        ImGui::Spacing();
+        ImGui::TextWrapped("The new version includes improved asset reference handling with UUID + name fallback, which prevents broken references in packaged builds.");
+        ImGui::Spacing();
+        ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Assets needing upgrade: %d", (int)editorState->mAssetsNeedingUpgrade.size());
+        ImGui::Spacing();
+
+        // Show list of assets needing upgrade (scrollable)
+        if (ImGui::BeginListBox("##UpgradeAssetList", ImVec2(480, 150)))
+        {
+            for (uint32_t i = 0; i < editorState->mAssetsNeedingUpgrade.size(); ++i)
+            {
+                AssetStub* stub = editorState->mAssetsNeedingUpgrade[i];
+                if (stub == nullptr)
+                    continue;
+
+                glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor(stub->mType);
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
+                ImGui::Text("%s", stub->mName.c_str());
+                ImGui::PopStyleColor();
+            }
+            ImGui::EndListBox();
+        }
+
+        ImGui::Spacing();
+        ImGui::TextWrapped("Click 'Upgrade Now' to automatically resave all assets with the new format.");
+        ImGui::Spacing();
+
+        bool closePopup = false;
+
+        if (ImGui::Button("Upgrade Now", ImVec2(120, 0)))
+        {
+            closePopup = true;
+            ActionManager::Get()->UpgradeProject();
+            LogDebug("Project upgrade completed successfully!");
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Skip", ImVec2(120, 0)))
+        {
+            closePopup = true;
+            editorState->mAssetsNeedingUpgrade.clear();
+            LogWarning("Project upgrade skipped. Packaged builds may have issues with asset references.");
+        }
+
+        if (IsKeyJustDown(KEY_ESCAPE))
+        {
+            closePopup = true;
+            editorState->mAssetsNeedingUpgrade.clear();
+        }
+
+        if (closePopup)
+        {
+            editorState->mShowProjectUpgradeModal = false;
             ImGui::CloseCurrentPopup();
         }
 
@@ -2121,6 +2208,17 @@ static void DrawAddNodeMenu(Node* node)
     }
 }
 
+static void DrawImportMenu(Node* node)
+{
+    ActionManager* am = ActionManager::Get();
+    if (ImGui::MenuItem("Camera"))
+    {
+        am->BeginImportCamera();
+
+    }
+
+}
+
 static void DrawSpawnBasic3dMenu(Node* node, bool setFocusPos)
 {
     ActionManager* am = ActionManager::Get();
@@ -2368,7 +2466,8 @@ static void DrawScenePanel()
                 if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
                 {
                     ImGui::OpenPopup("Rename Node");
-                    strncpy(sPopupInputBuffer, node->GetName().c_str(), kPopupInputBufferSize);
+                    strncpy(sPopupInputBuffer, node->GetName().c_str(), kPopupInputBufferSize - 1);
+                    sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
                     setTextInputFocus = true;
                 }
                 if (!inSubScene && ImGui::Selectable("Duplicate"))
@@ -2404,6 +2503,11 @@ static void DrawScenePanel()
                     ImGui::Selectable("Merge"))
                 {
                     LogDebug("TODO: Implement Merge for static meshes.");
+                }
+                if (!nodeSceneLinked && !inSubScene && ImGui::BeginMenu("Import"))
+                {
+                    DrawImportMenu(node);
+                    ImGui::EndMenu();
                 }
                 if (!nodeSceneLinked && !inSubScene && ImGui::BeginMenu("Add Node"))
                 {
@@ -2625,7 +2729,8 @@ static void DrawScenePanel()
             else if (!ctrlDown && IsKeyJustDown(KEY_F2))
             {
                 ImGui::OpenPopup("Rename Node F2");
-                strncpy(sPopupInputBuffer, selNodes[0]->GetName().c_str(), kPopupInputBufferSize);
+                strncpy(sPopupInputBuffer, selNodes[0]->GetName().c_str(), kPopupInputBufferSize - 1);
+                sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
                 setKeyboardFocus = true;
             }
         }
@@ -2779,7 +2884,8 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         if (ImGui::Selectable("Rename", false, ImGuiSelectableFlags_DontClosePopups))
         {
             ImGui::OpenPopup("Rename Asset");
-            strncpy(sPopupInputBuffer, stub ? stub->mName.c_str() : dir->mName.c_str(), kPopupInputBufferSize);
+            strncpy(sPopupInputBuffer, stub ? stub->mName.c_str() : dir->mName.c_str(), kPopupInputBufferSize - 1);
+            sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
             setTextInputFocus = true;
         }
         if (ImGui::Selectable("Delete"))
@@ -2849,7 +2955,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             if (showPopup)
             {
                 ImGui::OpenPopup("New Asset Name");
-                strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+                sPopupInputBuffer[0] = '\0';
                 setTextInputFocus = true;
             }
         }
@@ -2857,7 +2963,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         if (ImGui::Selectable("New Folder", false, ImGuiSelectableFlags_DontClosePopups))
         {
             ImGui::OpenPopup("New Folder");
-            strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+            sPopupInputBuffer[0] = '\0';
             setTextInputFocus = true;
         }
 
@@ -2872,7 +2978,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             if (saveStub == nullptr)
             {
                 ImGui::OpenPopup("Capture To New Scene");
-                strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+                sPopupInputBuffer[0] = '\0';
                 setTextInputFocus = true;
             }
             else
@@ -3830,14 +3936,14 @@ static void DrawViewportPanel()
             {
                 // Need to request name and create asset.
                 openSaveSceneAsModal = true;
-                strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+                sPopupInputBuffer[0] = '\0';
             }
         }
         if (editScene && ImGui::Selectable("Save Scene As..."))
         {
             // Need to request name and create asset.
             openSaveSceneAsModal = true;
-            strncpy(sPopupInputBuffer, "", kPopupInputBufferSize);
+            sPopupInputBuffer[0] = '\0';
         }
         if (ImGui::Selectable("Import Asset"))
             am->ImportAsset();
@@ -3980,6 +4086,7 @@ static void DrawViewportPanel()
         ImGui::EndPopup();
     }
 
+
     if (!ImGui::IsPopupOpen("Import Scene") && GetEditorState()->mPendingSceneImportPath != "")
     {
         std::string sceneName = GetFileNameFromPath(GetEditorState()->mPendingSceneImportPath);
@@ -4004,6 +4111,7 @@ static void DrawViewportPanel()
         ImGui::Checkbox("Import Materials", &sSceneImportOptions.mImportMaterials);
         ImGui::Checkbox("Import Textures", &sSceneImportOptions.mImportTextures);
         ImGui::Checkbox("Import Lights", &sSceneImportOptions.mImportLights);
+        ImGui::Checkbox("Import Cameras", &sSceneImportOptions.mImportCameras);
         ImGui::Checkbox("Enable Collision", &sSceneImportOptions.mEnableCollision);
 
         int32_t shadingModelCount = int32_t(ShadingModel::Count);
@@ -4023,6 +4131,46 @@ static void DrawViewportPanel()
         if (ImGui::Button("Cancel"))
         {
             GetEditorState()->mPendingSceneImportPath = "";
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+
+    if (!ImGui::IsPopupOpen("Import Camera") && GetEditorState()->mIOAssetPath != "")
+    {
+        ImGui::OpenPopup("Import Camera");
+    }
+
+    if (ImGui::IsPopupOpen("Import Camera"))
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    }
+
+    if (ImGui::BeginPopupModal("Import Camera", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        // File path
+        sCameraImportOptions.mFilePath = GetEditorState()->mIOAssetPath;
+        ImGui::Text(GetEditorState()->mPendingSceneImportPath.c_str());
+        ImGui::Checkbox("Set As Main Camera", &sCameraImportOptions.mIsMainCamera);
+        ImGui::Checkbox("Override Camera Name", &sCameraImportOptions.mOverrideCameraName);
+        if (sCameraImportOptions.mOverrideCameraName) {
+            ImGui::InputText("Camera Name", &sCameraImportOptions.mCameraName);
+        }
+
+        if (ImGui::Button("Import"))
+        {
+            am->ImportCamera(sCameraImportOptions);
+            GetEditorState()->mIOAssetPath = "";
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+        {
+            GetEditorState()->mIOAssetPath = "";
             ImGui::CloseCurrentPopup();
         }
 
@@ -4091,7 +4239,16 @@ static void DrawViewportPanel()
             ImGui::EndMenu();
         }
 
-        ImGui::EndPopup();
+        // TODO: Uncomment to show Preferences
+        if (GetFeatureFlagsEditor().mShowPreferences == true) {
+            ImGui::Separator();
+            if (ImGui::Selectable("Preferences..."))
+            {
+                GetPreferencesWindow()->Open();
+            }
+        }
+
+            ImGui::EndPopup();
     }
 
     if (ImGui::BeginPopup("WorldPopup"))
@@ -4362,6 +4519,82 @@ static void DrawPaintInstancesPanel()
     ImGui::PopItemWidth();
 
     ImGui::End();
+}
+
+static void DrawDesignBounds()
+{
+    if(GetFeatureFlagsEditor().mShow2DBorder == false){
+        return;
+    }
+    Viewport2D* viewport2d = GetEditorState()->GetViewport2D();
+    if (viewport2d == nullptr)
+        return;
+
+    ImDrawList* draw_list = ImGui::GetForegroundDrawList();
+    glm::vec4 vp = Renderer::Get()->GetViewport(0);
+
+    float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
+    if (interfaceScale == 0.0f)
+    {
+        interfaceScale = 1.0f;
+    }
+    float invInterfaceScale = 1.0f / interfaceScale;
+
+    // Get the design resolution from engine config
+    float designWidth = (float)GetEngineConfig()->mWindowWidth;
+    float designHeight = (float)GetEngineConfig()->mWindowHeight;
+
+    // Get zoom and pan from viewport
+    float zoom = viewport2d->GetZoom();
+    glm::vec2 rootOffset = viewport2d->GetRootOffset();
+
+    // Calculate the design bounds in screen space
+    // The design area starts at rootOffset (pan) and is scaled by zoom
+    float boundsX = rootOffset.x * zoom;
+    float boundsY = rootOffset.y * zoom;
+    float boundsW = designWidth * zoom;
+    float boundsH = designHeight * zoom;
+
+    // Convert to ImGui coordinates (accounting for viewport offset and interface scale)
+    float x = invInterfaceScale * (boundsX + vp.x);
+    float y = invInterfaceScale * (boundsY + vp.y);
+    float w = invInterfaceScale * boundsW;
+    float h = invInterfaceScale * boundsH;
+
+    // Draw outer darkened regions (like Unity's letterboxing)
+    ImColor dimColor(0.0f, 0.0f, 0.0f, 0.4f);
+    float vpLeft = invInterfaceScale * vp.x;
+    float vpTop = invInterfaceScale * vp.y;
+    float vpRight = invInterfaceScale * (vp.x + vp.z);
+    float vpBottom = invInterfaceScale * (vp.y + vp.w);
+
+    // Top region (above canvas)
+    if (y > vpTop)
+    {
+        draw_list->AddRectFilled(ImVec2(vpLeft, vpTop), ImVec2(vpRight, y), dimColor);
+    }
+    // Bottom region (below canvas)
+    if (y + h < vpBottom)
+    {
+        draw_list->AddRectFilled(ImVec2(vpLeft, y + h), ImVec2(vpRight, vpBottom), dimColor);
+    }
+    // Left region (left of canvas, between top and bottom regions)
+    float regionTop = glm::max(y, vpTop);
+    float regionBottom = glm::min(y + h, vpBottom);
+    if (x > vpLeft && regionTop < regionBottom)
+    {
+        draw_list->AddRectFilled(ImVec2(vpLeft, regionTop), ImVec2(x, regionBottom), dimColor);
+    }
+    // Right region (right of canvas, between top and bottom regions)
+    if (x + w < vpRight && regionTop < regionBottom)
+    {
+        draw_list->AddRectFilled(ImVec2(x + w, regionTop), ImVec2(vpRight, regionBottom), dimColor);
+    }
+
+    // Draw the design bounds border
+    ImColor boundsColor(1.0f, 0.6f, 0.0f, 0.8f);  // Orange color
+    float thickness = 2.0f;
+    draw_list->AddRect(ImVec2(x, y), ImVec2(x + w, y + h), boundsColor, 0.0f, ImDrawFlags_None, thickness);
 }
 
 static void Draw2dSelections()
@@ -4846,8 +5079,59 @@ static void DrawImGuizmo2D()
     wasUsing2D = isUsing;
 }
 
+static std::string GetDefaultEditorFontPath()
+{
+    return SYS_GetAbsolutePath("Engine/Assets/Fonts/F_InterRegular18.ttf");
+}
+
+static std::string ResolveEditorFontName()
+{
+    const EngineConfig* config = GetEngineConfig();
+    if (config != nullptr && !config->mCurrentFont.empty())
+    {
+        return config->mCurrentFont;
+    }
+
+    std::string savedFont = ThemeModule::LoadSavedFontPreference();
+    if (savedFont.empty())
+    {
+        savedFont = "Default";
+    }
+
+    GetMutableEngineConfig()->mCurrentFont = savedFont;
+    return savedFont;
+}
+
+static std::string ResolveEditorFontPath()
+{
+    const std::string defaultPath = GetDefaultEditorFontPath();
+    const std::string desiredFontName = ResolveEditorFontName();
+
+    if (desiredFontName.empty() || desiredFontName == "Default")
+    {
+        return defaultPath;
+    }
+
+    const std::string relativePath = "Engine/Assets/Fonts/" + desiredFontName;
+    const std::string absolutePath = SYS_GetAbsolutePath(relativePath.c_str());
+
+    if (!SYS_DoesFileExist(absolutePath.c_str(), false))
+    {
+        LogWarning("Editor font '%s' not found at %s. Falling back to default font.", desiredFontName.c_str(), absolutePath.c_str());
+        GetMutableEngineConfig()->mCurrentFont = "Default";
+        return defaultPath;
+    }
+
+    return absolutePath;
+}
+
 void EditorImguiInit()
 {
+    if (IsHeadless())
+    {
+        return;
+    }
+
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
@@ -4861,8 +5145,21 @@ void EditorImguiInit()
 
     // TODO: Unlock theming when you and the world is ready.
         // SetupImGuiStyle();
-        // std::string fontPath = SYS_GetAbsolutePath("Engine/Assets/Fonts/F_InterRegular18.ttf");
-        // ImFont* myFont = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 15.0f);
+    //h
+    if (GetFeatureFlagsEditor().mShowTheming == true) {
+       
+        std::string fontPath = ResolveEditorFontPath();
+        ImFont* myFont = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 15.0f);
+        if (myFont == nullptr)
+        {
+            const std::string defaultFontPath = GetDefaultEditorFontPath();
+            myFont = io.Fonts->AddFontFromFileTTF(defaultFontPath.c_str(), 15.0f);
+            if (myFont == nullptr)
+            {
+                LogError("Failed to load editor font from %s", defaultFontPath.c_str());
+            }
+        }
+        }
 
 
     //ImGui::StyleColorsLight();
@@ -4929,6 +5226,7 @@ void EditorImguiDraw()
 
         if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
         {
+            DrawDesignBounds();
             Draw2dSelections();
         }
 
@@ -4940,6 +5238,9 @@ void EditorImguiDraw()
         DrawFileBrowser();
 
         DrawUnsavedCheck();
+        DrawProjectUpgradeModal();
+
+        GetPreferencesWindow()->Draw();
     }
 
     ImGui::Render();
@@ -4947,11 +5248,21 @@ void EditorImguiDraw()
 
 void EditorImguiShutdown()
 {
+    if (IsHeadless())
+    {
+        return;
+    }
+
     ImGui::DestroyContext();
 }
 
 void EditorImguiPreShutdown()
 {
+    if (IsHeadless())
+    {
+        return;
+    }
+
     if (sInspectTexId != 0)
     {
         DeviceWaitIdle();
