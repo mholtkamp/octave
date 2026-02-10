@@ -156,6 +156,7 @@ protected:
     bool mLoop = true;
     bool mCloseLoop = false;
     bool mSmoothCurve = true;
+    bool mSmoothRotate = false;
     bool mPause = false;
     bool mFaceTangent = false;
     bool mReverseFaceTangent = false;

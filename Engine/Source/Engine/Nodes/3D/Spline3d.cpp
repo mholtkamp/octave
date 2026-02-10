@@ -958,7 +958,17 @@ void Spline3D::Tick(float deltaTime)
         if (face && (mFaceTangent || mReverseFaceTangent))
         {
             glm::vec3 dir = mReverseFaceTangent ? -tangent : tangent;
-            node->As<Node3D>()->LookAt(pos + dir, glm::vec3(0,1,0));
+            if (!mSmoothCurve && mSmoothRotate)
+            {
+                glm::quat targetRot = Maths::VectorToQuat(dir);
+                glm::quat curRot = node->As<Node3D>()->GetWorldRotationQuat();
+                float s = glm::clamp(deltaTime * 6.0f, 0.0f, 1.0f);
+                node->As<Node3D>()->SetWorldRotation(glm::slerp(curRot, targetRot, s));
+            }
+            else
+            {
+                node->As<Node3D>()->LookAt(pos + dir, glm::vec3(0,1,0));
+            }
         }
     };
 
@@ -1220,6 +1230,7 @@ void Spline3D::GatherProperties(std::vector<Property>& props)
         props.push_back(Property(DatumType::Bool, "Loop", this, &mLoop));
         props.push_back(Property(DatumType::Bool, "Close Spline", this, &mCloseLoop));
         props.push_back(Property(DatumType::Bool, "Smooth Curve", this, &mSmoothCurve));
+        props.push_back(Property(DatumType::Bool, "Smooth Rotate", this, &mSmoothRotate));
         props.push_back(Property(DatumType::Bool, "Face Tangent", this, &mFaceTangent));
         props.push_back(Property(DatumType::Bool, "Reverse Face Tangent", this, &mReverseFaceTangent));
     }
