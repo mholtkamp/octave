@@ -68,12 +68,7 @@ void Spline3D::Create()
     Node3D::Create();
     SetName("Spline");
 
-    for (uint32_t i = 12; i <= 64; ++i)
-    {
-        mFollowLinkExtra[i] = true;
-        mLinkTriggeredExtra[i] = false;
-        mLinkSpeedModifierExtra[i] = 1.0f;
-    }
+    EnsureLinkSlots((uint32_t)glm::clamp(mGeneratedLinkCount, 1, 64));
 
     // Create initial point
     Box3D* p1 = CreateChild<Box3D>("point1");
@@ -89,12 +84,8 @@ void Spline3D::Start()
     Node3D::Start();
     mTravel = 0.0f;
 
-    if (mEnableLink11 && mGeneratedLinkCount < 11)
-    {
-        mGeneratedLinkCount = 11;
-    }
-    mGeneratedLinkCount = glm::clamp(mGeneratedLinkCount, 10, 64);
-    mEnableLink11 = (mGeneratedLinkCount >= 11);
+    mGeneratedLinkCount = glm::clamp(mGeneratedLinkCount, 1, 64);
+    EnsureLinkSlots((uint32_t)mGeneratedLinkCount);
 
     Node* root = GetWorld() ? GetWorld()->GetRootNode() : nullptr;
 
@@ -123,8 +114,11 @@ void Spline3D::Start()
     resolveAttachment(mAttachmentPointLight);
     resolveAttachment(mAttachmentAudio3D);
     resolveAttachment(mAttachmentNode3D);
-    resolveAttachment(mLinkFrom);
-    resolveAttachment(mLinkTo);
+    for (uint32_t li = 0; li < mLinks.size(); ++li)
+    {
+        resolveAttachment(mLinks[li].mLinkFrom);
+        resolveAttachment(mLinks[li].mLinkTo);
+    }
 
     std::vector<SplinePointNode> points;
     GatherSplinePointNodes(this, points);
@@ -221,76 +215,49 @@ bool Spline3D::IsPaused() const
     return mPause;
 }
 
+void Spline3D::EnsureLinkSlots(uint32_t count)
+{
+    count = glm::clamp(count, 1u, 64u);
+    mLinks.resize(count);
+    mGeneratedLinkCount = (int32_t)count;
+}
+
+Spline3D::SplineLink* Spline3D::GetLinkByIndex(uint32_t index)
+{
+    if (index == 0 || index > mLinks.size())
+        return nullptr;
+    return &mLinks[index - 1];
+}
+
+const Spline3D::SplineLink* Spline3D::GetLinkByIndex(uint32_t index) const
+{
+    if (index == 0 || index > mLinks.size())
+        return nullptr;
+    return &mLinks[index - 1];
+}
+
 void Spline3D::SetFollowLinkEnabled(uint32_t index, bool enabled)
 {
-    switch (index)
+    SplineLink* link = GetLinkByIndex(index);
+    if (link)
     {
-    case 1: mFollowLink1 = enabled; mLinkTriggered1 = false; break;
-    case 2: mFollowLink2 = enabled; mLinkTriggered2 = false; break;
-    case 3: mFollowLink3 = enabled; mLinkTriggered3 = false; break;
-    case 4: mFollowLink4 = enabled; mLinkTriggered4 = false; break;
-    case 5: mFollowLink5 = enabled; mLinkTriggered5 = false; break;
-    case 6: mFollowLink6 = enabled; mLinkTriggered6 = false; break;
-    case 7: mFollowLink7 = enabled; mLinkTriggered7 = false; break;
-    case 8: mFollowLink8 = enabled; mLinkTriggered8 = false; break;
-    case 9: mFollowLink9 = enabled; mLinkTriggered9 = false; break;
-    case 10: mFollowLink10 = enabled; mLinkTriggered10 = false; break;
-    case 11: mFollowLink11 = enabled; mLinkTriggered11 = false; break;
-    default:
-        if (index >= 12 && index <= 64)
-        {
-            mFollowLinkExtra[index] = enabled;
-            mLinkTriggeredExtra[index] = false;
-        }
-        break;
+        link->mFollow = enabled;
+        link->mTriggered = false;
     }
 }
 
 bool Spline3D::IsFollowLinkEnabled(uint32_t index) const
 {
-    switch (index)
-    {
-    case 1: return mFollowLink1;
-    case 2: return mFollowLink2;
-    case 3: return mFollowLink3;
-    case 4: return mFollowLink4;
-    case 5: return mFollowLink5;
-    case 6: return mFollowLink6;
-    case 7: return mFollowLink7;
-    case 8: return mFollowLink8;
-    case 9: return mFollowLink9;
-    case 10: return mFollowLink10;
-    case 11: return mFollowLink11;
-    default:
-        if (index >= 12 && index <= 64)
-        {
-            return mFollowLinkExtra[index];
-        }
-        return false;
-    }
+    const SplineLink* link = GetLinkByIndex(index);
+    return link ? link->mFollow : false;
 }
 
 bool Spline3D::IsNearLinkFrom(uint32_t index, float epsilon) const
 {
-    Node* fromNode = nullptr;
-    switch (index)
-    {
-    case 1: fromNode = mLinkFrom.Get(); break;
-    case 2: fromNode = mLinkFrom2.Get(); break;
-    case 3: fromNode = mLinkFrom3.Get(); break;
-    case 4: fromNode = mLinkFrom4.Get(); break;
-    case 5: fromNode = mLinkFrom5.Get(); break;
-    case 6: fromNode = mLinkFrom6.Get(); break;
-    case 7: fromNode = mLinkFrom7.Get(); break;
-    case 8: fromNode = mLinkFrom8.Get(); break;
-    case 9: fromNode = mLinkFrom9.Get(); break;
-    case 10: fromNode = mLinkFrom10.Get(); break;
-    case 11: fromNode = mLinkFrom11.Get(); break;
-    default:
-        if (index >= 12 && index <= 64) fromNode = mLinkFromExtra[index].Get();
-        else return false;
-        break;
-    }
+    const SplineLink* link = GetLinkByIndex(index);
+    Node* fromNode = link ? link->mLinkFrom.Get() : nullptr;
+    if (!fromNode)
+        return false;
 
     Node3D* from3d = fromNode ? fromNode->As<Node3D>() : nullptr;
     if (!from3d)
@@ -315,25 +282,10 @@ bool Spline3D::IsNearLinkFrom(uint32_t index, float epsilon) const
 
 bool Spline3D::IsNearLinkTo(uint32_t index, float epsilon) const
 {
-    Node* toNode = nullptr;
-    switch (index)
-    {
-    case 1: toNode = mLinkTo.Get(); break;
-    case 2: toNode = mLinkTo2.Get(); break;
-    case 3: toNode = mLinkTo3.Get(); break;
-    case 4: toNode = mLinkTo4.Get(); break;
-    case 5: toNode = mLinkTo5.Get(); break;
-    case 6: toNode = mLinkTo6.Get(); break;
-    case 7: toNode = mLinkTo7.Get(); break;
-    case 8: toNode = mLinkTo8.Get(); break;
-    case 9: toNode = mLinkTo9.Get(); break;
-    case 10: toNode = mLinkTo10.Get(); break;
-    case 11: toNode = mLinkTo11.Get(); break;
-    default:
-        if (index >= 12 && index <= 64) toNode = mLinkToExtra[index].Get();
-        else return false;
-        break;
-    }
+    const SplineLink* link = GetLinkByIndex(index);
+    Node* toNode = link ? link->mLinkTo.Get() : nullptr;
+    if (!toNode)
+        return false;
 
     Node3D* to3d = toNode ? toNode->As<Node3D>() : nullptr;
     if (!to3d)
@@ -358,30 +310,11 @@ bool Spline3D::IsNearLinkTo(uint32_t index, float epsilon) const
 
 bool Spline3D::IsLinkDirectionForward(uint32_t index, float threshold) const
 {
-    Node* fromNode = nullptr;
-    Node* toNode = nullptr;
-    switch (index)
-    {
-    case 1: fromNode = mLinkFrom.Get(); toNode = mLinkTo.Get(); break;
-    case 2: fromNode = mLinkFrom2.Get(); toNode = mLinkTo2.Get(); break;
-    case 3: fromNode = mLinkFrom3.Get(); toNode = mLinkTo3.Get(); break;
-    case 4: fromNode = mLinkFrom4.Get(); toNode = mLinkTo4.Get(); break;
-    case 5: fromNode = mLinkFrom5.Get(); toNode = mLinkTo5.Get(); break;
-    case 6: fromNode = mLinkFrom6.Get(); toNode = mLinkTo6.Get(); break;
-    case 7: fromNode = mLinkFrom7.Get(); toNode = mLinkTo7.Get(); break;
-    case 8: fromNode = mLinkFrom8.Get(); toNode = mLinkTo8.Get(); break;
-    case 9: fromNode = mLinkFrom9.Get(); toNode = mLinkTo9.Get(); break;
-    case 10: fromNode = mLinkFrom10.Get(); toNode = mLinkTo10.Get(); break;
-    case 11: fromNode = mLinkFrom11.Get(); toNode = mLinkTo11.Get(); break;
-    default:
-        if (index >= 12 && index <= 64)
-        {
-            fromNode = mLinkFromExtra[index].Get();
-            toNode = mLinkToExtra[index].Get();
-        }
-        else return false;
-        break;
-    }
+    const SplineLink* link = GetLinkByIndex(index);
+    Node* fromNode = link ? link->mLinkFrom.Get() : nullptr;
+    Node* toNode = link ? link->mLinkTo.Get() : nullptr;
+    if (!fromNode || !toNode)
+        return false;
 
     Node3D* from3d = fromNode ? fromNode->As<Node3D>() : nullptr;
     Node3D* to3d = toNode ? toNode->As<Node3D>() : nullptr;
@@ -495,50 +428,16 @@ void Spline3D::CancelActiveLink()
 
 bool Spline3D::TriggerLink(uint32_t index)
 {
-    Node* fromNode = nullptr;
-    Node* toNode = nullptr;
-    switch (index)
-    {
-    case 1: fromNode = mLinkFrom.Get(); toNode = mLinkTo.Get(); break;
-    case 2: fromNode = mLinkFrom2.Get(); toNode = mLinkTo2.Get(); break;
-    case 3: fromNode = mLinkFrom3.Get(); toNode = mLinkTo3.Get(); break;
-    case 4: fromNode = mLinkFrom4.Get(); toNode = mLinkTo4.Get(); break;
-    case 5: fromNode = mLinkFrom5.Get(); toNode = mLinkTo5.Get(); break;
-    case 6: fromNode = mLinkFrom6.Get(); toNode = mLinkTo6.Get(); break;
-    case 7: fromNode = mLinkFrom7.Get(); toNode = mLinkTo7.Get(); break;
-    case 8: fromNode = mLinkFrom8.Get(); toNode = mLinkTo8.Get(); break;
-    case 9: fromNode = mLinkFrom9.Get(); toNode = mLinkTo9.Get(); break;
-    case 10: fromNode = mLinkFrom10.Get(); toNode = mLinkTo10.Get(); break;
-    case 11: fromNode = mLinkFrom11.Get(); toNode = mLinkTo11.Get(); break;
-    default:
-        if (index >= 12 && index <= 64)
-        {
-            fromNode = mLinkFromExtra[index].Get();
-            toNode = mLinkToExtra[index].Get();
-        }
-        else return false;
-        break;
-    }
+    SplineLink* link = GetLinkByIndex(index);
+    if (!link)
+        return false;
 
-    float selectedLinkSpeedModifier = 1.0f;
-    switch (index)
-    {
-    case 1: selectedLinkSpeedModifier = mLinkSpeedModifier1; break;
-    case 2: selectedLinkSpeedModifier = mLinkSpeedModifier2; break;
-    case 3: selectedLinkSpeedModifier = mLinkSpeedModifier3; break;
-    case 4: selectedLinkSpeedModifier = mLinkSpeedModifier4; break;
-    case 5: selectedLinkSpeedModifier = mLinkSpeedModifier5; break;
-    case 6: selectedLinkSpeedModifier = mLinkSpeedModifier6; break;
-    case 7: selectedLinkSpeedModifier = mLinkSpeedModifier7; break;
-    case 8: selectedLinkSpeedModifier = mLinkSpeedModifier8; break;
-    case 9: selectedLinkSpeedModifier = mLinkSpeedModifier9; break;
-    case 10: selectedLinkSpeedModifier = mLinkSpeedModifier10; break;
-    case 11: selectedLinkSpeedModifier = mLinkSpeedModifier11; break;
-    default:
-        if (index >= 12 && index <= 64)
-            selectedLinkSpeedModifier = mLinkSpeedModifierExtra[index];
-        break;
-    }
+    Node* fromNode = link->mLinkFrom.Get();
+    Node* toNode = link->mLinkTo.Get();
+    if (!fromNode || !toNode)
+        return false;
+
+    float selectedLinkSpeedModifier = link->mSpeed;
 
     Node3D* from3d = fromNode ? fromNode->As<Node3D>() : nullptr;
     Node3D* to3d = toNode ? toNode->As<Node3D>() : nullptr;
@@ -773,21 +672,9 @@ void Spline3D::Tick(float deltaTime)
                 targetSpline->mTravel = mLinkTargetStartDist;
                 if (targetSpline->mDisableBounce)
                 {
-                    // Prevent immediate re-trigger at the arrival point (all slots)
-                    targetSpline->mLinkTriggered1 = true;
-                    targetSpline->mLinkTriggered2 = true;
-                    targetSpline->mLinkTriggered3 = true;
-                    targetSpline->mLinkTriggered4 = true;
-                    targetSpline->mLinkTriggered5 = true;
-                    targetSpline->mLinkTriggered6 = true;
-                    targetSpline->mLinkTriggered7 = true;
-                    targetSpline->mLinkTriggered8 = true;
-                    targetSpline->mLinkTriggered9 = true;
-                    targetSpline->mLinkTriggered10 = true;
-                    targetSpline->mLinkTriggered11 = true;
-                    for (uint32_t li = 12; li <= 64; ++li)
+                    for (uint32_t li = 0; li < targetSpline->mLinks.size(); ++li)
                     {
-                        targetSpline->mLinkTriggeredExtra[li] = true;
+                        targetSpline->mLinks[li].mTriggered = true;
                     }
                 }
                 targetSpline->mPlaying = true;
@@ -796,20 +683,9 @@ void Spline3D::Tick(float deltaTime)
             }
 
             mLinkActive = false;
-            mLinkTriggered1 = false;
-            mLinkTriggered2 = false;
-            mLinkTriggered3 = false;
-            mLinkTriggered4 = false;
-            mLinkTriggered5 = false;
-            mLinkTriggered6 = false;
-            mLinkTriggered7 = false;
-            mLinkTriggered8 = false;
-            mLinkTriggered9 = false;
-            mLinkTriggered10 = false;
-            mLinkTriggered11 = false;
-            for (uint32_t li = 12; li <= 64; ++li)
+            for (uint32_t li = 0; li < mLinks.size(); ++li)
             {
-                mLinkTriggeredExtra[li] = false;
+                mLinks[li].mTriggered = false;
             }
         }
 
@@ -980,12 +856,12 @@ void Spline3D::Tick(float deltaTime)
     if (hasAudio) applyMove(audioNode, false);
     if (hasNode) applyMove(genericNode, true);
 
-    if (mFollowLink1 || mFollowLink2 || mFollowLink3 || mFollowLink4 || mFollowLink5 || mFollowLink6 || mFollowLink7 || mFollowLink8 || mFollowLink9 || mFollowLink10 || (mGeneratedLinkCount >= 11 && mFollowLink11))
+    if (!mLinks.empty())
     {
-        auto tryLink = [&](NodePtrWeak& fromPtr, NodePtrWeak& toPtr, bool& linkTriggered, float linkSpeedModifier)
+        auto tryLink = [&](SplineLink& link)
         {
-            Node* fromNode = fromPtr.Get();
-            Node* toNode = toPtr.Get();
+            Node* fromNode = link.mLinkFrom.Get();
+            Node* toNode = link.mLinkTo.Get();
             if (!fromNode || !toNode) return false;
 
             Node3D* from3d = fromNode->As<Node3D>();
@@ -995,7 +871,7 @@ void Spline3D::Tick(float deltaTime)
             float distToFrom = glm::length(pos - from3d->GetWorldPosition());
             const float kLinkEpsilon = 0.05f;
 
-            if (!linkTriggered && distToFrom <= kLinkEpsilon)
+            if (!link.mTriggered && distToFrom <= kLinkEpsilon)
             {
                 Node* targetParent = to3d->GetParent();
                 Spline3D* targetSpline = targetParent ? targetParent->As<Spline3D>() : nullptr;
@@ -1036,10 +912,8 @@ void Spline3D::Tick(float deltaTime)
                     float len = glm::length(p1 - p0);
                     float mult = getPointSpeed(tpoints[i - 1].node->GetName());
                     float effLen = len / mult;
-                    if (i <= targetIndex)
-                        startDist += effLen;
-                    if (i <= targetIndex - 1)
-                        prevDist += effLen;
+                    if (i <= targetIndex) startDist += effLen;
+                    if (i <= targetIndex - 1) prevDist += effLen;
                     totalLen += effLen;
                 }
 
@@ -1084,34 +958,22 @@ void Spline3D::Tick(float deltaTime)
                 mLinkTargetStartDist = startDist;
                 mLinkTargetPrevDist = prevDist;
                 mLinkTargetTotalLen = totalLen;
-                mActiveLinkSpeedModifier = glm::max(0.001f, linkSpeedModifier);
+                mActiveLinkSpeedModifier = glm::max(0.001f, link.mSpeed);
 
-                linkTriggered = true;
+                link.mTriggered = true;
                 return true;
             }
-            else if (linkTriggered && distToFrom > kLinkEpsilon)
+            else if (link.mTriggered && distToFrom > kLinkEpsilon)
             {
-                linkTriggered = false;
+                link.mTriggered = false;
             }
 
             return false;
         };
 
-        if (mFollowLink1 && tryLink(mLinkFrom, mLinkTo, mLinkTriggered1, mLinkSpeedModifier1)) return;
-        if (mFollowLink2 && tryLink(mLinkFrom2, mLinkTo2, mLinkTriggered2, mLinkSpeedModifier2)) return;
-        if (mFollowLink3 && tryLink(mLinkFrom3, mLinkTo3, mLinkTriggered3, mLinkSpeedModifier3)) return;
-        if (mFollowLink4 && tryLink(mLinkFrom4, mLinkTo4, mLinkTriggered4, mLinkSpeedModifier4)) return;
-        if (mFollowLink5 && tryLink(mLinkFrom5, mLinkTo5, mLinkTriggered5, mLinkSpeedModifier5)) return;
-        if (mFollowLink6 && tryLink(mLinkFrom6, mLinkTo6, mLinkTriggered6, mLinkSpeedModifier6)) return;
-        if (mFollowLink7 && tryLink(mLinkFrom7, mLinkTo7, mLinkTriggered7, mLinkSpeedModifier7)) return;
-        if (mFollowLink8 && tryLink(mLinkFrom8, mLinkTo8, mLinkTriggered8, mLinkSpeedModifier8)) return;
-        if (mFollowLink9 && tryLink(mLinkFrom9, mLinkTo9, mLinkTriggered9, mLinkSpeedModifier9)) return;
-        if (mFollowLink10 && tryLink(mLinkFrom10, mLinkTo10, mLinkTriggered10, mLinkSpeedModifier10)) return;
-        if (mGeneratedLinkCount >= 11 && mFollowLink11 && tryLink(mLinkFrom11, mLinkTo11, mLinkTriggered11, mLinkSpeedModifier11)) return;
-
-        for (int32_t i = 12; i <= mGeneratedLinkCount && i <= 64; ++i)
+        for (uint32_t li = 0; li < mLinks.size(); ++li)
         {
-            if (mFollowLinkExtra[i] && tryLink(mLinkFromExtra[i], mLinkToExtra[i], mLinkTriggeredExtra[i], mLinkSpeedModifierExtra[i]))
+            if (mLinks[li].mFollow && tryLink(mLinks[li]))
                 return;
         }
     }
@@ -1187,6 +1049,23 @@ void Spline3D::SaveStream(Stream& stream, Platform platform)
         stream.WriteString(mPointSpeedEntries[i].name);
         stream.WriteFloat(mPointSpeedEntries[i].speed);
     }
+
+    // Link data (clean-break format)
+    stream.WriteUint32((uint32_t)mLinks.size());
+    Node* root = GetWorld() ? GetWorld()->GetRootNode() : this;
+    for (uint32_t i = 0; i < mLinks.size(); ++i)
+    {
+        std::string fromPath;
+        std::string toPath;
+        Node* fromNode = mLinks[i].mLinkFrom.Get();
+        Node* toNode = mLinks[i].mLinkTo.Get();
+        if (fromNode) fromPath = FindRelativeNodePath(root, fromNode);
+        if (toNode) toPath = FindRelativeNodePath(root, toNode);
+        stream.WriteString(fromPath);
+        stream.WriteString(toPath);
+        stream.WriteBool(mLinks[i].mFollow);
+        stream.WriteFloat(mLinks[i].mSpeed);
+    }
 }
 
 void Spline3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
@@ -1211,14 +1090,50 @@ void Spline3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
             mPointSpeedEntries[i].speed = stream.ReadFloat();
         }
     }
+
+    if (stream.GetPos() < stream.GetSize())
+    {
+        uint32_t linkCount = stream.ReadUint32();
+        linkCount = glm::clamp(linkCount, 1u, 64u);
+        mLinks.clear();
+        mLinks.resize(linkCount);
+        mGeneratedLinkCount = (int32_t)linkCount;
+
+        Node* root = GetWorld() ? GetWorld()->GetRootNode() : this;
+        for (uint32_t i = 0; i < linkCount; ++i)
+        {
+            std::string fromPath;
+            std::string toPath;
+            stream.ReadString(fromPath);
+            stream.ReadString(toPath);
+            mLinks[i].mFollow = stream.ReadBool();
+            mLinks[i].mSpeed = stream.ReadFloat();
+            mLinks[i].mTriggered = false;
+
+            if (!fromPath.empty() && root)
+            {
+                Node* n = ResolveNodePath(root, fromPath);
+                if (n) mLinks[i].mLinkFrom = ResolveWeakPtr(n);
+            }
+            if (!toPath.empty() && root)
+            {
+                Node* n = ResolveNodePath(root, toPath);
+                if (n) mLinks[i].mLinkTo = ResolveWeakPtr(n);
+            }
+        }
+    }
+    else
+    {
+        EnsureLinkSlots((uint32_t)glm::clamp(mGeneratedLinkCount, 1, 64));
+    }
 }
 
 void Spline3D::GatherProperties(std::vector<Property>& props)
 {
     Node3D::GatherProperties(props);
 
-    mGeneratedLinkCount = glm::clamp(mGeneratedLinkCount, 10, 64);
-    mEnableLink11 = (mGeneratedLinkCount >= 11);
+    mGeneratedLinkCount = glm::clamp(mGeneratedLinkCount, 1, 64);
+    EnsureLinkSlots((uint32_t)mGeneratedLinkCount);
 
     {
         SCOPED_CATEGORY("Spline");
@@ -1248,91 +1163,31 @@ void Spline3D::GatherProperties(std::vector<Property>& props)
 
     {
         SCOPED_CATEGORY("Spline Linking");
-        props.push_back(Property(DatumType::Node, "From 1", this, &mLinkFrom, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "To 1", this, &mLinkTo, 1, HandlePropChange));
-
-        props.push_back(Property(DatumType::Node, "From 2", this, &mLinkFrom2, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "To 2", this, &mLinkTo2, 1, HandlePropChange));
-
-        props.push_back(Property(DatumType::Node, "From 3", this, &mLinkFrom3, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "To 3", this, &mLinkTo3, 1, HandlePropChange));
-
-        props.push_back(Property(DatumType::Node, "From 4", this, &mLinkFrom4, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "To 4", this, &mLinkTo4, 1, HandlePropChange));
-
-        props.push_back(Property(DatumType::Node, "From 5", this, &mLinkFrom5, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "To 5", this, &mLinkTo5, 1, HandlePropChange));
-
-        props.push_back(Property(DatumType::Node, "From 6", this, &mLinkFrom6, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "To 6", this, &mLinkTo6, 1, HandlePropChange));
-
-        props.push_back(Property(DatumType::Node, "From 7", this, &mLinkFrom7, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "To 7", this, &mLinkTo7, 1, HandlePropChange));
-
-        props.push_back(Property(DatumType::Node, "From 8", this, &mLinkFrom8, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "To 8", this, &mLinkTo8, 1, HandlePropChange));
-
-        props.push_back(Property(DatumType::Node, "From 9", this, &mLinkFrom9, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "To 9", this, &mLinkTo9, 1, HandlePropChange));
-
-        props.push_back(Property(DatumType::Node, "From 10", this, &mLinkFrom10, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "To 10", this, &mLinkTo10, 1, HandlePropChange));
+        mGeneratedLinkCount = glm::clamp(mGeneratedLinkCount, 1, 64);
+        EnsureLinkSlots((uint32_t)mGeneratedLinkCount);
 
         props.push_back(Property(DatumType::Bool, "Generate Link", this, &sGenerateLink11));
         props.push_back(Property(DatumType::Integer, "Generated Link Slots", this, &mGeneratedLinkCount));
 
-        if (mGeneratedLinkCount >= 11)
+        // Keep old-style layout ordering: all From/To pairs first, then Follow, then Speed.
+        for (uint32_t i = 0; i < mLinks.size(); ++i)
         {
-            props.push_back(Property(DatumType::Node, "From 11", this, &mLinkFrom11, 1, HandlePropChange));
-            props.push_back(Property(DatumType::Node, "To 11", this, &mLinkTo11, 1, HandlePropChange));
+            std::string fromName = std::string("From ") + std::to_string(i + 1);
+            std::string toName = std::string("To ") + std::to_string(i + 1);
+            props.push_back(Property(DatumType::Node, fromName.c_str(), this, &mLinks[i].mLinkFrom, 1, HandlePropChange));
+            props.push_back(Property(DatumType::Node, toName.c_str(), this, &mLinks[i].mLinkTo, 1, HandlePropChange));
         }
 
-        for (int32_t i = 12; i <= mGeneratedLinkCount && i <= 64; ++i)
+        for (uint32_t i = 0; i < mLinks.size(); ++i)
         {
-            std::string fromName = std::string("From ") + std::to_string(i);
-            std::string toName = std::string("To ") + std::to_string(i);
-            props.push_back(Property(DatumType::Node, fromName.c_str(), this, &mLinkFromExtra[i], 1, HandlePropChange));
-            props.push_back(Property(DatumType::Node, toName.c_str(), this, &mLinkToExtra[i], 1, HandlePropChange));
+            std::string followName = std::string("Follow Link ") + std::to_string(i + 1);
+            props.push_back(Property(DatumType::Bool, followName.c_str(), this, &mLinks[i].mFollow));
         }
 
-        props.push_back(Property(DatumType::Bool, "Follow Link 1", this, &mFollowLink1));
-        props.push_back(Property(DatumType::Bool, "Follow Link 2", this, &mFollowLink2));
-        props.push_back(Property(DatumType::Bool, "Follow Link 3", this, &mFollowLink3));
-        props.push_back(Property(DatumType::Bool, "Follow Link 4", this, &mFollowLink4));
-        props.push_back(Property(DatumType::Bool, "Follow Link 5", this, &mFollowLink5));
-        props.push_back(Property(DatumType::Bool, "Follow Link 6", this, &mFollowLink6));
-        props.push_back(Property(DatumType::Bool, "Follow Link 7", this, &mFollowLink7));
-        props.push_back(Property(DatumType::Bool, "Follow Link 8", this, &mFollowLink8));
-        props.push_back(Property(DatumType::Bool, "Follow Link 9", this, &mFollowLink9));
-        props.push_back(Property(DatumType::Bool, "Follow Link 10", this, &mFollowLink10));
-        if (mGeneratedLinkCount >= 11)
+        for (uint32_t i = 0; i < mLinks.size(); ++i)
         {
-            props.push_back(Property(DatumType::Bool, "Follow Link 11", this, &mFollowLink11));
-        }
-        for (int32_t i = 12; i <= mGeneratedLinkCount && i <= 64; ++i)
-        {
-            std::string followName = std::string("Follow Link ") + std::to_string(i);
-            props.push_back(Property(DatumType::Bool, followName.c_str(), this, &mFollowLinkExtra[i]));
-        }
-
-        props.push_back(Property(DatumType::Float, "Link 1 Speed Modifier", this, &mLinkSpeedModifier1));
-        props.push_back(Property(DatumType::Float, "Link 2 Speed Modifier", this, &mLinkSpeedModifier2));
-        props.push_back(Property(DatumType::Float, "Link 3 Speed Modifier", this, &mLinkSpeedModifier3));
-        props.push_back(Property(DatumType::Float, "Link 4 Speed Modifier", this, &mLinkSpeedModifier4));
-        props.push_back(Property(DatumType::Float, "Link 5 Speed Modifier", this, &mLinkSpeedModifier5));
-        props.push_back(Property(DatumType::Float, "Link 6 Speed Modifier", this, &mLinkSpeedModifier6));
-        props.push_back(Property(DatumType::Float, "Link 7 Speed Modifier", this, &mLinkSpeedModifier7));
-        props.push_back(Property(DatumType::Float, "Link 8 Speed Modifier", this, &mLinkSpeedModifier8));
-        props.push_back(Property(DatumType::Float, "Link 9 Speed Modifier", this, &mLinkSpeedModifier9));
-        props.push_back(Property(DatumType::Float, "Link 10 Speed Modifier", this, &mLinkSpeedModifier10));
-        if (mGeneratedLinkCount >= 11)
-        {
-            props.push_back(Property(DatumType::Float, "Link 11 Speed Modifier", this, &mLinkSpeedModifier11));
-        }
-        for (int32_t i = 12; i <= mGeneratedLinkCount && i <= 64; ++i)
-        {
-            std::string speedName = std::string("Link ") + std::to_string(i) + " Speed Modifier";
-            props.push_back(Property(DatumType::Float, speedName.c_str(), this, &mLinkSpeedModifierExtra[i]));
+            std::string speedName = std::string("Link ") + std::to_string(i + 1) + " Speed Modifier";
+            props.push_back(Property(DatumType::Float, speedName.c_str(), this, &mLinks[i].mSpeed));
         }
 
         props.push_back(Property(DatumType::Bool, "Disable Ping-Pong", this, &mDisableBounce));
@@ -1426,23 +1281,9 @@ void Spline3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
             }
         };
 
-        drawLink(mLinkFrom, mLinkTo);
-        drawLink(mLinkFrom2, mLinkTo2);
-        drawLink(mLinkFrom3, mLinkTo3);
-        drawLink(mLinkFrom4, mLinkTo4);
-        drawLink(mLinkFrom5, mLinkTo5);
-        drawLink(mLinkFrom6, mLinkTo6);
-        drawLink(mLinkFrom7, mLinkTo7);
-        drawLink(mLinkFrom8, mLinkTo8);
-        drawLink(mLinkFrom9, mLinkTo9);
-        drawLink(mLinkFrom10, mLinkTo10);
-        if (mGeneratedLinkCount >= 11)
+        for (uint32_t i = 0; i < mLinks.size(); ++i)
         {
-            drawLink(mLinkFrom11, mLinkTo11);
-        }
-        for (int32_t i = 12; i <= mGeneratedLinkCount && i <= 64; ++i)
-        {
-            drawLink(mLinkFromExtra[i], mLinkToExtra[i]);
+            drawLink(mLinks[i].mLinkFrom, mLinks[i].mLinkTo);
         }
     }
 #endif
@@ -1644,39 +1485,26 @@ bool Spline3D::HandlePropChange(Datum* datum, uint32_t index, const void* newVal
             success = true;
         }
     }
-    else if (prop->mName == "From")
+    else if (prop->mName.rfind("From ", 0) == 0 || prop->mName.rfind("To ", 0) == 0)
     {
+        bool isFrom = (prop->mName.rfind("From ", 0) == 0);
+        int linkIndex = atoi(prop->mName.substr(isFrom ? 5 : 3).c_str());
+        SplineLink* link = spline->GetLinkByIndex((uint32_t)linkIndex);
+        if (!link)
+            return true;
+
         const WeakPtr<Node>& newNode = *(const WeakPtr<Node>*)newValue;
         Node* node = newNode.Get();
-
         if (node == nullptr)
         {
-            spline->mLinkFrom = WeakPtr<Node>();
+            if (isFrom) link->mLinkFrom = WeakPtr<Node>();
+            else link->mLinkTo = WeakPtr<Node>();
             success = false;
         }
         else if (node->GetName().rfind("point", 0) == 0)
         {
-            spline->mLinkFrom = newNode;
-            success = false;
-        }
-        else
-        {
-            success = true;
-        }
-    }
-    else if (prop->mName == "To")
-    {
-        const WeakPtr<Node>& newNode = *(const WeakPtr<Node>*)newValue;
-        Node* node = newNode.Get();
-
-        if (node == nullptr)
-        {
-            spline->mLinkTo = WeakPtr<Node>();
-            success = false;
-        }
-        else if (node->GetName().rfind("point", 0) == 0)
-        {
-            spline->mLinkTo = newNode;
+            if (isFrom) link->mLinkFrom = newNode;
+            else link->mLinkTo = newNode;
             success = false;
         }
         else
@@ -1779,10 +1607,7 @@ bool Spline3D::DrawCustomProperty(Property& prop)
         if (ImGui::Button("Generate Next Link") && mGeneratedLinkCount < 64)
         {
             ++mGeneratedLinkCount;
-            if (mGeneratedLinkCount == 11)
-            {
-                mEnableLink11 = true;
-            }
+            EnsureLinkSlots((uint32_t)mGeneratedLinkCount);
         }
         return true;
     }

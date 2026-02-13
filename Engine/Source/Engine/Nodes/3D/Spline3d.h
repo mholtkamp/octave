@@ -52,7 +52,11 @@ public:
 #endif
 
 protected:
+    struct SplineLink;
     void GeneratePoint();
+    SplineLink* GetLinkByIndex(uint32_t index);
+    const SplineLink* GetLinkByIndex(uint32_t index) const;
+    void EnsureLinkSlots(uint32_t count);
 
 protected:
     std::vector<glm::vec3> mPoints;
@@ -64,72 +68,20 @@ protected:
     NodePtrWeak mAttachmentAudio3D;
     NodePtrWeak mAttachmentNode3D;
 
-    NodePtrWeak mLinkFrom;
-    NodePtrWeak mLinkTo;
-    NodePtrWeak mLinkFrom2;
-    NodePtrWeak mLinkTo2;
-    NodePtrWeak mLinkFrom3;
-    NodePtrWeak mLinkTo3;
-    NodePtrWeak mLinkFrom4;
-    NodePtrWeak mLinkTo4;
-    NodePtrWeak mLinkFrom5;
-    NodePtrWeak mLinkTo5;
-    NodePtrWeak mLinkFrom6;
-    NodePtrWeak mLinkTo6;
-    NodePtrWeak mLinkFrom7;
-    NodePtrWeak mLinkTo7;
-    NodePtrWeak mLinkFrom8;
-    NodePtrWeak mLinkTo8;
-    NodePtrWeak mLinkFrom9;
-    NodePtrWeak mLinkTo9;
-    NodePtrWeak mLinkFrom10;
-    NodePtrWeak mLinkTo10;
-    NodePtrWeak mLinkFrom11;
-    NodePtrWeak mLinkTo11;
-    bool mFollowLink1 = true;
-    bool mFollowLink2 = true;
-    bool mFollowLink3 = true;
-    bool mFollowLink4 = true;
-    bool mFollowLink5 = true;
-    bool mFollowLink6 = true;
-    bool mFollowLink7 = true;
-    bool mFollowLink8 = true;
-    bool mFollowLink9 = true;
-    bool mFollowLink10 = true;
-    bool mFollowLink11 = true;
-    bool mLinkTriggered1 = false;
-    bool mLinkTriggered2 = false;
-    bool mLinkTriggered3 = false;
-    bool mLinkTriggered4 = false;
-    bool mLinkTriggered5 = false;
-    bool mLinkTriggered6 = false;
-    bool mLinkTriggered7 = false;
-    bool mLinkTriggered8 = false;
-    bool mLinkTriggered9 = false;
-    bool mLinkTriggered10 = false;
-    bool mLinkTriggered11 = false;
+    struct SplineLink
+    {
+        NodePtrWeak mLinkFrom;
+        NodePtrWeak mLinkTo;
+        bool mFollow = true;
+        bool mTriggered = false;
+        float mSpeed = 1.0f;
+    };
+
+    std::vector<SplineLink> mLinks;
     bool mLinkActive = false;
     bool mDisableBounce = false;
     float mLinkSpeedModifier = 1.0f;
-    float mLinkSpeedModifier1 = 1.0f;
-    float mLinkSpeedModifier2 = 1.0f;
-    float mLinkSpeedModifier3 = 1.0f;
-    float mLinkSpeedModifier4 = 1.0f;
-    float mLinkSpeedModifier5 = 1.0f;
-    float mLinkSpeedModifier6 = 1.0f;
-    float mLinkSpeedModifier7 = 1.0f;
-    float mLinkSpeedModifier8 = 1.0f;
-    float mLinkSpeedModifier9 = 1.0f;
-    float mLinkSpeedModifier10 = 1.0f;
-    float mLinkSpeedModifier11 = 1.0f;
-    bool mEnableLink11 = false;
-
     int32_t mGeneratedLinkCount = 10;
-    NodePtrWeak mLinkFromExtra[65];
-    NodePtrWeak mLinkToExtra[65];
-    bool mFollowLinkExtra[65] = {};
-    bool mLinkTriggeredExtra[65] = {};
-    float mLinkSpeedModifierExtra[65] = {};
 
     float mActiveLinkSpeedModifier = 1.0f;
     bool mLinkSmoothStep = false;
