@@ -16,14 +16,18 @@
 #include "NodePath.h"
 #include <algorithm>
 #include <cstdio>
+#include <cfloat>
 
 #if EDITOR
 #include "imgui.h"
+#include "EditorState.h"
 #endif
 
 DEFINE_NODE(Spline3D, Node3D);
 
 static bool sGeneratePoint = false;
+static bool sGenerateLink11 = false;
+static bool sSplineLinesVisible = true;
 
 struct SplinePointNode
 {
@@ -64,6 +68,8 @@ void Spline3D::Create()
     Node3D::Create();
     SetName("Spline");
 
+    EnsureLinkSlots((uint32_t)glm::clamp(mGeneratedLinkCount, 1, 64));
+
     // Create initial point
     Box3D* p1 = CreateChild<Box3D>("point1");
     if (p1)
@@ -77,6 +83,9 @@ void Spline3D::Start()
 {
     Node3D::Start();
     mTravel = 0.0f;
+
+    mGeneratedLinkCount = glm::clamp(mGeneratedLinkCount, 1, 64);
+    EnsureLinkSlots((uint32_t)mGeneratedLinkCount);
 
     Node* root = GetWorld() ? GetWorld()->GetRootNode() : nullptr;
 
@@ -105,6 +114,11 @@ void Spline3D::Start()
     resolveAttachment(mAttachmentPointLight);
     resolveAttachment(mAttachmentAudio3D);
     resolveAttachment(mAttachmentNode3D);
+    for (uint32_t li = 0; li < mLinks.size(); ++li)
+    {
+        resolveAttachment(mLinks[li].mLinkFrom);
+        resolveAttachment(mLinks[li].mLinkTo);
+    }
 
     std::vector<SplinePointNode> points;
     GatherSplinePointNodes(this, points);
@@ -181,12 +195,502 @@ void Spline3D::StopPlayback()
     mPlaying = false;
 }
 
+void Spline3D::SetPaused(bool paused)
+{
+    mPause = paused;
+}
+
+void Spline3D::SetSplineLinesVisible(bool visible)
+{
+    sSplineLinesVisible = visible;
+}
+
+bool Spline3D::IsSplineLinesVisible()
+{
+    return sSplineLinesVisible;
+}
+
+bool Spline3D::IsPaused() const
+{
+    return mPause;
+}
+
+void Spline3D::EnsureLinkSlots(uint32_t count)
+{
+    count = glm::clamp(count, 1u, 64u);
+    mLinks.resize(count);
+    mGeneratedLinkCount = (int32_t)count;
+}
+
+Spline3D::SplineLink* Spline3D::GetLinkByIndex(uint32_t index)
+{
+    if (index == 0 || index > mLinks.size())
+        return nullptr;
+    return &mLinks[index - 1];
+}
+
+const Spline3D::SplineLink* Spline3D::GetLinkByIndex(uint32_t index) const
+{
+    if (index == 0 || index > mLinks.size())
+        return nullptr;
+    return &mLinks[index - 1];
+}
+
+void Spline3D::SetFollowLinkEnabled(uint32_t index, bool enabled)
+{
+    SplineLink* link = GetLinkByIndex(index);
+    if (link)
+    {
+        link->mFollow = enabled;
+        link->mTriggered = false;
+    }
+}
+
+bool Spline3D::IsFollowLinkEnabled(uint32_t index) const
+{
+    const SplineLink* link = GetLinkByIndex(index);
+    return link ? link->mFollow : false;
+}
+
+bool Spline3D::IsNearLinkFrom(uint32_t index, float epsilon) const
+{
+    const SplineLink* link = GetLinkByIndex(index);
+    Node* fromNode = link ? link->mLinkFrom.Get() : nullptr;
+    if (!fromNode)
+        return false;
+
+    Node3D* from3d = fromNode ? fromNode->As<Node3D>() : nullptr;
+    if (!from3d)
+        return false;
+
+    Node* trackedNode = mAttachmentCamera.Get();
+    if (!trackedNode) trackedNode = mAttachmentStaticMesh.Get();
+    if (!trackedNode) trackedNode = mAttachmentSkeletalMesh.Get();
+    if (!trackedNode) trackedNode = mAttachmentParticle3D.Get();
+    if (!trackedNode) trackedNode = mAttachmentPointLight.Get();
+    if (!trackedNode) trackedNode = mAttachmentAudio3D.Get();
+    if (!trackedNode) trackedNode = mAttachmentNode3D.Get();
+
+    Node3D* tracked3d = trackedNode ? trackedNode->As<Node3D>() : nullptr;
+    if (!tracked3d)
+        return false;
+
+    float useEpsilon = glm::max(0.0001f, epsilon);
+    float dist = glm::length(tracked3d->GetWorldPosition() - from3d->GetWorldPosition());
+    return dist <= useEpsilon;
+}
+
+bool Spline3D::IsNearLinkTo(uint32_t index, float epsilon) const
+{
+    const SplineLink* link = GetLinkByIndex(index);
+    Node* toNode = link ? link->mLinkTo.Get() : nullptr;
+    if (!toNode)
+        return false;
+
+    Node3D* to3d = toNode ? toNode->As<Node3D>() : nullptr;
+    if (!to3d)
+        return false;
+
+    Node* trackedNode = mAttachmentCamera.Get();
+    if (!trackedNode) trackedNode = mAttachmentStaticMesh.Get();
+    if (!trackedNode) trackedNode = mAttachmentSkeletalMesh.Get();
+    if (!trackedNode) trackedNode = mAttachmentParticle3D.Get();
+    if (!trackedNode) trackedNode = mAttachmentPointLight.Get();
+    if (!trackedNode) trackedNode = mAttachmentAudio3D.Get();
+    if (!trackedNode) trackedNode = mAttachmentNode3D.Get();
+
+    Node3D* tracked3d = trackedNode ? trackedNode->As<Node3D>() : nullptr;
+    if (!tracked3d)
+        return false;
+
+    float useEpsilon = glm::max(0.0001f, epsilon);
+    float dist = glm::length(tracked3d->GetWorldPosition() - to3d->GetWorldPosition());
+    return dist <= useEpsilon;
+}
+
+bool Spline3D::IsLinkDirectionForward(uint32_t index, float threshold) const
+{
+    const SplineLink* link = GetLinkByIndex(index);
+    Node* fromNode = link ? link->mLinkFrom.Get() : nullptr;
+    Node* toNode = link ? link->mLinkTo.Get() : nullptr;
+    if (!fromNode || !toNode)
+        return false;
+
+    Node3D* from3d = fromNode ? fromNode->As<Node3D>() : nullptr;
+    Node3D* to3d = toNode ? toNode->As<Node3D>() : nullptr;
+    if (!from3d || !to3d)
+        return false;
+
+    glm::vec3 linkVec = to3d->GetWorldPosition() - from3d->GetWorldPosition();
+    float linkLen = glm::length(linkVec);
+    if (linkLen <= 0.0001f)
+        return false;
+    glm::vec3 linkDir = linkVec / linkLen;
+
+    std::vector<SplinePointNode> points;
+    GatherSplinePointNodes(const_cast<Spline3D*>(this), points);
+    if (points.size() < 2)
+        return false;
+
+    int fromIdx = -1;
+    for (uint32_t i = 0; i < points.size(); ++i)
+    {
+        if (points[i].node == from3d)
+        {
+            fromIdx = (int)i;
+            break;
+        }
+    }
+
+    glm::vec3 splineDir = glm::vec3(0.0f);
+
+    if (fromIdx >= 0)
+    {
+        auto getPos = [&](int idx)
+        {
+            if (mCloseLoop)
+            {
+                int count = (int)points.size();
+                int wrapped = (idx % count + count) % count;
+                return points[(uint32_t)wrapped].node->GetWorldPosition();
+            }
+
+            idx = glm::clamp(idx, 0, (int)points.size() - 1);
+            return points[(uint32_t)idx].node->GetWorldPosition();
+        };
+
+        glm::vec3 pPrev = getPos(fromIdx - 1);
+        glm::vec3 pHere = getPos(fromIdx);
+        glm::vec3 pNext = getPos(fromIdx + 1);
+
+        glm::vec3 forward = pNext - pHere;
+        glm::vec3 backward = pHere - pPrev;
+
+        if (glm::length(forward) > 0.0001f)
+        {
+            splineDir = Maths::SafeNormalize(forward);
+        }
+        else if (glm::length(backward) > 0.0001f)
+        {
+            splineDir = Maths::SafeNormalize(backward);
+        }
+    }
+
+    if (glm::length(splineDir) <= 0.0001f)
+    {
+        // Fallback: closest segment direction near the From node.
+        glm::vec3 pos = from3d->GetWorldPosition();
+        float bestDistSq = FLT_MAX;
+        glm::vec3 bestSegDir = glm::vec3(1.0f, 0.0f, 0.0f);
+
+        auto testSeg = [&](const glm::vec3& a, const glm::vec3& b)
+        {
+            glm::vec3 ab = b - a;
+            float abLenSq = glm::dot(ab, ab);
+            if (abLenSq <= 0.000001f)
+                return;
+
+            float t = glm::dot(pos - a, ab) / abLenSq;
+            t = glm::clamp(t, 0.0f, 1.0f);
+            glm::vec3 closest = a + ab * t;
+            float distSq = glm::dot(pos - closest, pos - closest);
+            if (distSq < bestDistSq)
+            {
+                bestDistSq = distSq;
+                bestSegDir = Maths::SafeNormalize(ab);
+            }
+        };
+
+        for (uint32_t i = 1; i < points.size(); ++i)
+        {
+            testSeg(points[i - 1].node->GetWorldPosition(), points[i].node->GetWorldPosition());
+        }
+
+        if (mCloseLoop && points.size() > 1)
+        {
+            testSeg(points.back().node->GetWorldPosition(), points.front().node->GetWorldPosition());
+        }
+
+        splineDir = bestSegDir;
+    }
+
+    float d = glm::dot(splineDir, linkDir);
+    return d >= threshold;
+}
+
+void Spline3D::CancelActiveLink()
+{
+    mLinkActive = false;
+    mLinkTravel = 0.0f;
+    mLinkLen = 0.0f;
+    mLinkTargetSpline = nullptr;
+}
+
+bool Spline3D::TriggerLink(uint32_t index)
+{
+    SplineLink* link = GetLinkByIndex(index);
+    if (!link)
+        return false;
+
+    Node* fromNode = link->mLinkFrom.Get();
+    Node* toNode = link->mLinkTo.Get();
+    if (!fromNode || !toNode)
+        return false;
+
+    float selectedLinkSpeedModifier = link->mSpeed;
+
+    Node3D* from3d = fromNode ? fromNode->As<Node3D>() : nullptr;
+    Node3D* to3d = toNode ? toNode->As<Node3D>() : nullptr;
+    if (!from3d || !to3d)
+        return false;
+
+    Node* targetParent = to3d->GetParent();
+    Spline3D* targetSpline = targetParent ? targetParent->As<Spline3D>() : nullptr;
+    if (!targetSpline)
+        return false;
+
+    std::vector<SplinePointNode> tpoints;
+    GatherSplinePointNodes(targetSpline, tpoints);
+
+    int targetIndex = -1;
+    for (uint32_t i = 0; i < tpoints.size(); ++i)
+    {
+        if (tpoints[i].node == to3d)
+        {
+            targetIndex = (int)i;
+            break;
+        }
+    }
+
+    if (targetIndex < 0)
+        return false;
+
+    auto getPointSpeed = [&](const std::string& pointName)
+    {
+        for (uint32_t i = 0; i < targetSpline->mPointSpeedEntries.size(); ++i)
+        {
+            if (targetSpline->mPointSpeedEntries[i].name == pointName)
+                return glm::max(0.001f, targetSpline->mPointSpeedEntries[i].speed);
+        }
+        return 1.0f;
+    };
+
+    float startDist = 0.0f;
+    float prevDist = 0.0f;
+    float totalLen = 0.0f;
+    for (int i = 1; i <= (int)tpoints.size() - 1; ++i)
+    {
+        glm::vec3 p0 = tpoints[i - 1].node->GetWorldPosition();
+        glm::vec3 p1 = tpoints[i].node->GetWorldPosition();
+        float len = glm::length(p1 - p0);
+        float mult = getPointSpeed(tpoints[i - 1].node->GetName());
+        float effLen = len / mult;
+        if (i <= targetIndex)
+            startDist += effLen;
+        if (i <= targetIndex - 1)
+            prevDist += effLen;
+        totalLen += effLen;
+    }
+
+    float closeSegLen = 0.0f;
+    if (targetSpline->mCloseLoop && tpoints.size() > 1)
+    {
+        glm::vec3 p0 = tpoints.back().node->GetWorldPosition();
+        glm::vec3 p1 = tpoints.front().node->GetWorldPosition();
+        float len = glm::length(p1 - p0);
+        float mult = getPointSpeed(tpoints.back().node->GetName());
+        float effLen = len / mult;
+        closeSegLen = effLen;
+        totalLen += effLen;
+    }
+
+    if (targetIndex == 0 && targetSpline->mCloseLoop && totalLen > 0.0001f)
+    {
+        prevDist = glm::max(0.0f, totalLen - closeSegLen);
+    }
+
+    if (!targetSpline->mLoop)
+    {
+        startDist = glm::clamp(startDist, 0.0f, totalLen);
+        prevDist = glm::clamp(prevDist, 0.0f, totalLen);
+    }
+    else if (totalLen > 0.0001f)
+    {
+        while (startDist >= totalLen) startDist -= totalLen;
+        while (startDist < 0.0f) startDist += totalLen;
+        while (prevDist >= totalLen) prevDist -= totalLen;
+        while (prevDist < 0.0f) prevDist += totalLen;
+    }
+
+    targetSpline->mPlaying = false;
+
+    mLinkActive = true;
+    mLinkTravel = 0.0f;
+    mLinkStart = from3d->GetWorldPosition();
+    mLinkEnd = to3d->GetWorldPosition();
+    mLinkLen = glm::length(mLinkEnd - mLinkStart);
+    mLinkTargetSpline = ResolveWeakPtr(targetSpline);
+    mLinkTargetStartDist = startDist;
+    mLinkTargetPrevDist = prevDist;
+    mLinkTargetTotalLen = totalLen;
+    mActiveLinkSpeedModifier = glm::max(0.001f, selectedLinkSpeedModifier);
+
+    return true;
+}
+
 void Spline3D::Tick(float deltaTime)
 {
     Node3D::Tick(deltaTime);
 
-    if (!IsPlaying() || !mPlaying)
+    Node* trackedNode = mAttachmentCamera.Get();
+    if (!trackedNode) trackedNode = mAttachmentStaticMesh.Get();
+    if (!trackedNode) trackedNode = mAttachmentSkeletalMesh.Get();
+    if (!trackedNode) trackedNode = mAttachmentParticle3D.Get();
+    if (!trackedNode) trackedNode = mAttachmentPointLight.Get();
+    if (!trackedNode) trackedNode = mAttachmentAudio3D.Get();
+    if (!trackedNode) trackedNode = mAttachmentNode3D.Get();
+
+    Node3D* tracked3d = trackedNode ? trackedNode->As<Node3D>() : nullptr;
+    if (tracked3d)
+    {
+        glm::vec3 pos = tracked3d->GetWorldPosition();
+        if (mHasTrackedPos)
+        {
+            glm::vec3 delta = pos - mPrevTrackedPos;
+            float lenSq = glm::dot(delta, delta);
+            if (lenSq > 0.000001f)
+            {
+                mTrackedMoveDir = Maths::SafeNormalize(delta);
+            }
+        }
+
+        mPrevTrackedPos = pos;
+        mHasTrackedPos = true;
+    }
+
+    if (!IsPlaying() || !mPlaying || mPause)
         return;
+
+    if (mLinkActive)
+    {
+        Node* camNode = mAttachmentCamera.Get();
+        Node* meshNode = mAttachmentStaticMesh.Get();
+        Node* skelNode = mAttachmentSkeletalMesh.Get();
+        Node* partNode = mAttachmentParticle3D.Get();
+        Node* lightNode = mAttachmentPointLight.Get();
+        Node* audioNode = mAttachmentAudio3D.Get();
+        Node* genericNode = mAttachmentNode3D.Get();
+
+        bool hasCam = (camNode && camNode->As<Camera3D>());
+        bool hasMesh = (meshNode && meshNode->As<StaticMesh3D>());
+        bool hasSkel = (skelNode && skelNode->As<SkeletalMesh3D>());
+        bool hasPart = (partNode && partNode->As<Particle3D>());
+        bool hasLight = (lightNode && lightNode->As<PointLight3D>());
+        bool hasAudio = (audioNode && audioNode->As<Audio3D>());
+        bool hasNode = (genericNode && genericNode->As<Node3D>());
+
+        if (!hasCam && !hasMesh && !hasSkel && !hasPart && !hasLight && !hasAudio && !hasNode)
+            return;
+
+        mLinkTravel += (mLinkSpeedModifier * mActiveLinkSpeedModifier) * deltaTime;
+        float t = (mLinkLen > 0.0001f) ? (mLinkTravel / mLinkLen) : 1.0f;
+        if (t > 1.0f) t = 1.0f;
+
+        float tt = t;
+        if (mLinkSmoothStep)
+        {
+            tt = tt * tt * (3.0f - 2.0f * tt);
+        }
+        glm::vec3 pos = glm::mix(mLinkStart, mLinkEnd, tt);
+        glm::vec3 tangent = Maths::SafeNormalize(mLinkEnd - mLinkStart);
+
+        auto applyMove = [&](Node* node, bool face)
+        {
+            node->As<Node3D>()->SetWorldPosition(pos);
+            if (face && (mFaceTangent || mReverseFaceTangent))
+            {
+                glm::vec3 dir = mReverseFaceTangent ? -tangent : tangent;
+                if (mLinkSmoothRotate)
+                {
+                    glm::quat targetRot = Maths::VectorToQuat(dir);
+                    glm::quat curRot = node->As<Node3D>()->GetWorldRotationQuat();
+                    float s = glm::clamp(deltaTime * 6.0f, 0.0f, 1.0f);
+                    node->As<Node3D>()->SetWorldRotation(glm::slerp(curRot, targetRot, s));
+                }
+                else
+                {
+                    node->As<Node3D>()->LookAt(pos + dir, glm::vec3(0,1,0));
+                }
+            }
+        };
+
+        if (hasCam) applyMove(camNode, true);
+        if (hasMesh) applyMove(meshNode, true);
+        if (hasSkel) applyMove(skelNode, true);
+        if (hasPart) applyMove(partNode, false);
+        if (hasLight) applyMove(lightNode, false);
+        if (hasAudio) applyMove(audioNode, false);
+        if (hasNode) applyMove(genericNode, true);
+
+        if (t >= 1.0f)
+        {
+            Spline3D* targetSpline = mLinkTargetSpline.Get() ? mLinkTargetSpline.Get()->As<Spline3D>() : nullptr;
+            if (targetSpline)
+            {
+                // Preserve target spline path settings
+                const bool targetLoop = targetSpline->mLoop;
+                const bool targetClose = targetSpline->mCloseLoop;
+                const bool targetSmooth = targetSpline->mSmoothCurve;
+
+                // Transfer attachments
+                targetSpline->mAttachmentCamera = mAttachmentCamera;
+                targetSpline->mAttachmentStaticMesh = mAttachmentStaticMesh;
+                targetSpline->mAttachmentSkeletalMesh = mAttachmentSkeletalMesh;
+                targetSpline->mAttachmentParticle3D = mAttachmentParticle3D;
+                targetSpline->mAttachmentPointLight = mAttachmentPointLight;
+                targetSpline->mAttachmentAudio3D = mAttachmentAudio3D;
+                targetSpline->mAttachmentNode3D = mAttachmentNode3D;
+
+                // Transfer facing options only
+                targetSpline->mFaceTangent = mFaceTangent;
+                targetSpline->mReverseFaceTangent = mReverseFaceTangent;
+
+                // Restore path settings (no inheritance)
+                targetSpline->mLoop = targetLoop;
+                targetSpline->mCloseLoop = targetClose;
+                targetSpline->mSmoothCurve = targetSmooth;
+
+                // Clear attachments on source
+                mAttachmentCamera = WeakPtr<Node>();
+                mAttachmentStaticMesh = WeakPtr<Node>();
+                mAttachmentSkeletalMesh = WeakPtr<Node>();
+                mAttachmentParticle3D = WeakPtr<Node>();
+                mAttachmentPointLight = WeakPtr<Node>();
+                mAttachmentAudio3D = WeakPtr<Node>();
+                mAttachmentNode3D = WeakPtr<Node>();
+
+                targetSpline->mTravel = mLinkTargetStartDist;
+                if (targetSpline->mDisableBounce)
+                {
+                    for (uint32_t li = 0; li < targetSpline->mLinks.size(); ++li)
+                    {
+                        targetSpline->mLinks[li].mTriggered = true;
+                    }
+                }
+                targetSpline->mPlaying = true;
+                targetSpline->Play();
+                mPlaying = false;
+            }
+
+            mLinkActive = false;
+            for (uint32_t li = 0; li < mLinks.size(); ++li)
+            {
+                mLinks[li].mTriggered = false;
+            }
+        }
+
+        return;
+    }
 
     Node* camNode = mAttachmentCamera.Get();
     Node* meshNode = mAttachmentStaticMesh.Get();
@@ -315,6 +819,7 @@ void Spline3D::Tick(float deltaTime)
         int p2 = (int)segIndex + 1;
         int p0 = p1 - 1;
         int p3 = p2 + 1;
+
         glm::vec3 cp0 = getPointPos(p0);
         glm::vec3 cp1 = getPointPos(p1);
         glm::vec3 cp2 = getPointPos(p2);
@@ -329,7 +834,17 @@ void Spline3D::Tick(float deltaTime)
         if (face && (mFaceTangent || mReverseFaceTangent))
         {
             glm::vec3 dir = mReverseFaceTangent ? -tangent : tangent;
-            node->As<Node3D>()->LookAt(pos + dir, glm::vec3(0,1,0));
+            if (!mSmoothCurve && mSmoothRotate)
+            {
+                glm::quat targetRot = Maths::VectorToQuat(dir);
+                glm::quat curRot = node->As<Node3D>()->GetWorldRotationQuat();
+                float s = glm::clamp(deltaTime * 6.0f, 0.0f, 1.0f);
+                node->As<Node3D>()->SetWorldRotation(glm::slerp(curRot, targetRot, s));
+            }
+            else
+            {
+                node->As<Node3D>()->LookAt(pos + dir, glm::vec3(0,1,0));
+            }
         }
     };
 
@@ -340,6 +855,128 @@ void Spline3D::Tick(float deltaTime)
     if (hasLight) applyMove(lightNode, false);
     if (hasAudio) applyMove(audioNode, false);
     if (hasNode) applyMove(genericNode, true);
+
+    if (!mLinks.empty())
+    {
+        auto tryLink = [&](SplineLink& link)
+        {
+            Node* fromNode = link.mLinkFrom.Get();
+            Node* toNode = link.mLinkTo.Get();
+            if (!fromNode || !toNode) return false;
+
+            Node3D* from3d = fromNode->As<Node3D>();
+            Node3D* to3d = toNode->As<Node3D>();
+            if (!from3d || !to3d) return false;
+
+            float distToFrom = glm::length(pos - from3d->GetWorldPosition());
+            const float kLinkEpsilon = 0.05f;
+
+            if (!link.mTriggered && distToFrom <= kLinkEpsilon)
+            {
+                Node* targetParent = to3d->GetParent();
+                Spline3D* targetSpline = targetParent ? targetParent->As<Spline3D>() : nullptr;
+                if (!targetSpline) return false;
+
+                std::vector<SplinePointNode> tpoints;
+                GatherSplinePointNodes(targetSpline, tpoints);
+
+                int targetIndex = -1;
+                for (uint32_t i = 0; i < tpoints.size(); ++i)
+                {
+                    if (tpoints[i].node == to3d)
+                    {
+                        targetIndex = (int)i;
+                        break;
+                    }
+                }
+
+                if (targetIndex < 0) return false;
+
+                auto getPointSpeed = [&](const std::string& pointName)
+                {
+                    for (uint32_t i = 0; i < targetSpline->mPointSpeedEntries.size(); ++i)
+                    {
+                        if (targetSpline->mPointSpeedEntries[i].name == pointName)
+                            return glm::max(0.001f, targetSpline->mPointSpeedEntries[i].speed);
+                    }
+                    return 1.0f;
+                };
+
+                float startDist = 0.0f;
+                float prevDist = 0.0f;
+                float totalLen = 0.0f;
+                for (int i = 1; i <= (int)tpoints.size() - 1; ++i)
+                {
+                    glm::vec3 p0 = tpoints[i - 1].node->GetWorldPosition();
+                    glm::vec3 p1 = tpoints[i].node->GetWorldPosition();
+                    float len = glm::length(p1 - p0);
+                    float mult = getPointSpeed(tpoints[i - 1].node->GetName());
+                    float effLen = len / mult;
+                    if (i <= targetIndex) startDist += effLen;
+                    if (i <= targetIndex - 1) prevDist += effLen;
+                    totalLen += effLen;
+                }
+
+                float closeSegLen = 0.0f;
+                if (targetSpline->mCloseLoop && tpoints.size() > 1)
+                {
+                    glm::vec3 p0 = tpoints.back().node->GetWorldPosition();
+                    glm::vec3 p1 = tpoints.front().node->GetWorldPosition();
+                    float len = glm::length(p1 - p0);
+                    float mult = getPointSpeed(tpoints.back().node->GetName());
+                    float effLen = len / mult;
+                    closeSegLen = effLen;
+                    totalLen += effLen;
+                }
+
+                if (targetIndex == 0 && targetSpline->mCloseLoop && totalLen > 0.0001f)
+                {
+                    prevDist = glm::max(0.0f, totalLen - closeSegLen);
+                }
+
+                if (!targetSpline->mLoop)
+                {
+                    startDist = glm::clamp(startDist, 0.0f, totalLen);
+                    prevDist = glm::clamp(prevDist, 0.0f, totalLen);
+                }
+                else if (totalLen > 0.0001f)
+                {
+                    while (startDist >= totalLen) startDist -= totalLen;
+                    while (startDist < 0.0f) startDist += totalLen;
+                    while (prevDist >= totalLen) prevDist -= totalLen;
+                    while (prevDist < 0.0f) prevDist += totalLen;
+                }
+
+                targetSpline->mPlaying = false;
+
+                mLinkActive = true;
+                mLinkTravel = 0.0f;
+                mLinkStart = from3d->GetWorldPosition();
+                mLinkEnd = to3d->GetWorldPosition();
+                mLinkLen = glm::length(mLinkEnd - mLinkStart);
+                mLinkTargetSpline = ResolveWeakPtr(targetSpline);
+                mLinkTargetStartDist = startDist;
+                mLinkTargetPrevDist = prevDist;
+                mLinkTargetTotalLen = totalLen;
+                mActiveLinkSpeedModifier = glm::max(0.001f, link.mSpeed);
+
+                link.mTriggered = true;
+                return true;
+            }
+            else if (link.mTriggered && distToFrom > kLinkEpsilon)
+            {
+                link.mTriggered = false;
+            }
+
+            return false;
+        };
+
+        for (uint32_t li = 0; li < mLinks.size(); ++li)
+        {
+            if (mLinks[li].mFollow && tryLink(mLinks[li]))
+                return;
+        }
+    }
 }
 
 void Spline3D::Copy(Node* srcNode, bool recurse)
@@ -412,6 +1049,23 @@ void Spline3D::SaveStream(Stream& stream, Platform platform)
         stream.WriteString(mPointSpeedEntries[i].name);
         stream.WriteFloat(mPointSpeedEntries[i].speed);
     }
+
+    // Link data (clean-break format)
+    stream.WriteUint32((uint32_t)mLinks.size());
+    Node* root = GetWorld() ? GetWorld()->GetRootNode() : this;
+    for (uint32_t i = 0; i < mLinks.size(); ++i)
+    {
+        std::string fromPath;
+        std::string toPath;
+        Node* fromNode = mLinks[i].mLinkFrom.Get();
+        Node* toNode = mLinks[i].mLinkTo.Get();
+        if (fromNode) fromPath = FindRelativeNodePath(root, fromNode);
+        if (toNode) toPath = FindRelativeNodePath(root, toNode);
+        stream.WriteString(fromPath);
+        stream.WriteString(toPath);
+        stream.WriteBool(mLinks[i].mFollow);
+        stream.WriteFloat(mLinks[i].mSpeed);
+    }
 }
 
 void Spline3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
@@ -436,11 +1090,50 @@ void Spline3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
             mPointSpeedEntries[i].speed = stream.ReadFloat();
         }
     }
+
+    if (stream.GetPos() < stream.GetSize())
+    {
+        uint32_t linkCount = stream.ReadUint32();
+        linkCount = glm::clamp(linkCount, 1u, 64u);
+        mLinks.clear();
+        mLinks.resize(linkCount);
+        mGeneratedLinkCount = (int32_t)linkCount;
+
+        Node* root = GetWorld() ? GetWorld()->GetRootNode() : this;
+        for (uint32_t i = 0; i < linkCount; ++i)
+        {
+            std::string fromPath;
+            std::string toPath;
+            stream.ReadString(fromPath);
+            stream.ReadString(toPath);
+            mLinks[i].mFollow = stream.ReadBool();
+            mLinks[i].mSpeed = stream.ReadFloat();
+            mLinks[i].mTriggered = false;
+
+            if (!fromPath.empty() && root)
+            {
+                Node* n = ResolveNodePath(root, fromPath);
+                if (n) mLinks[i].mLinkFrom = ResolveWeakPtr(n);
+            }
+            if (!toPath.empty() && root)
+            {
+                Node* n = ResolveNodePath(root, toPath);
+                if (n) mLinks[i].mLinkTo = ResolveWeakPtr(n);
+            }
+        }
+    }
+    else
+    {
+        EnsureLinkSlots((uint32_t)glm::clamp(mGeneratedLinkCount, 1, 64));
+    }
 }
 
 void Spline3D::GatherProperties(std::vector<Property>& props)
 {
     Node3D::GatherProperties(props);
+
+    mGeneratedLinkCount = glm::clamp(mGeneratedLinkCount, 1, 64);
+    EnsureLinkSlots((uint32_t)mGeneratedLinkCount);
 
     {
         SCOPED_CATEGORY("Spline");
@@ -452,6 +1145,7 @@ void Spline3D::GatherProperties(std::vector<Property>& props)
         props.push_back(Property(DatumType::Bool, "Loop", this, &mLoop));
         props.push_back(Property(DatumType::Bool, "Close Spline", this, &mCloseLoop));
         props.push_back(Property(DatumType::Bool, "Smooth Curve", this, &mSmoothCurve));
+        props.push_back(Property(DatumType::Bool, "Smooth Rotate", this, &mSmoothRotate));
         props.push_back(Property(DatumType::Bool, "Face Tangent", this, &mFaceTangent));
         props.push_back(Property(DatumType::Bool, "Reverse Face Tangent", this, &mReverseFaceTangent));
     }
@@ -466,6 +1160,42 @@ void Spline3D::GatherProperties(std::vector<Property>& props)
         props.push_back(Property(DatumType::Node, "Audio", this, &mAttachmentAudio3D, 1, HandlePropChange));
         props.push_back(Property(DatumType::Node, "Node3D", this, &mAttachmentNode3D, 1, HandlePropChange));
     }
+
+    {
+        SCOPED_CATEGORY("Spline Linking");
+        mGeneratedLinkCount = glm::clamp(mGeneratedLinkCount, 1, 64);
+        EnsureLinkSlots((uint32_t)mGeneratedLinkCount);
+
+        props.push_back(Property(DatumType::Bool, "Generate Link", this, &sGenerateLink11));
+        props.push_back(Property(DatumType::Integer, "Generated Link Slots", this, &mGeneratedLinkCount));
+
+        // Keep old-style layout ordering: all From/To pairs first, then Follow, then Speed.
+        for (uint32_t i = 0; i < mLinks.size(); ++i)
+        {
+            std::string fromName = std::string("From ") + std::to_string(i + 1);
+            std::string toName = std::string("To ") + std::to_string(i + 1);
+            props.push_back(Property(DatumType::Node, fromName.c_str(), this, &mLinks[i].mLinkFrom, 1, HandlePropChange));
+            props.push_back(Property(DatumType::Node, toName.c_str(), this, &mLinks[i].mLinkTo, 1, HandlePropChange));
+        }
+
+        for (uint32_t i = 0; i < mLinks.size(); ++i)
+        {
+            std::string followName = std::string("Follow Link ") + std::to_string(i + 1);
+            props.push_back(Property(DatumType::Bool, followName.c_str(), this, &mLinks[i].mFollow));
+        }
+
+        for (uint32_t i = 0; i < mLinks.size(); ++i)
+        {
+            std::string speedName = std::string("Link ") + std::to_string(i + 1) + " Speed Modifier";
+            props.push_back(Property(DatumType::Float, speedName.c_str(), this, &mLinks[i].mSpeed));
+        }
+
+        props.push_back(Property(DatumType::Bool, "Disable Ping-Pong", this, &mDisableBounce));
+        props.push_back(Property(DatumType::Bool, "Pause", this, &mPause));
+        props.push_back(Property(DatumType::Float, "Link Speed Modifier", this, &mLinkSpeedModifier));
+        props.push_back(Property(DatumType::Bool, "Link Smooth Step", this, &mLinkSmoothStep));
+        props.push_back(Property(DatumType::Bool, "Link Smooth Rotate", this, &mLinkSmoothRotate));
+    }
 }
 
 void Spline3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
@@ -473,6 +1203,19 @@ void Spline3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
     Node3D::GatherProxyDraws(inoutDraws);
 
 #if DEBUG_DRAW_ENABLED
+    bool showSplineLines = sSplineLinesVisible;
+
+#if EDITOR
+    // Always show spline lines while editing; toggle only affects PIE/runtime.
+    if (GetEditorState() != nullptr && !GetEditorState()->mPlayInEditor)
+    {
+        showSplineLines = true;
+    }
+#endif
+
+    if (!showSplineLines)
+        return;
+
     std::vector<SplinePointNode> points;
     GatherSplinePointNodes(this, points);
 
@@ -484,6 +1227,34 @@ void Spline3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
             glm::vec3 p0 = points[i - 1].node->GetWorldPosition();
             glm::vec3 p1 = points[i].node->GetWorldPosition();
             world->AddLine(Line(p0, p1, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), 0.01f));
+
+            // Arrow head to indicate direction (p0 -> p1)
+            glm::vec3 dir = Maths::SafeNormalize(p1 - p0);
+            glm::vec3 side = Maths::SafeNormalize(glm::cross(dir, glm::vec3(0,1,0)));
+            if (glm::length(side) < 0.0001f)
+                side = Maths::SafeNormalize(glm::cross(dir, glm::vec3(1,0,0)));
+            glm::vec3 up = Maths::SafeNormalize(glm::cross(side, dir));
+
+            float arrowLen = 0.3f;
+            float arrowWidth = 0.3f;
+            glm::vec3 head = p1;
+            glm::vec3 base = head - dir * arrowLen;
+            // White arrows
+            world->AddLine(Line(base + side * arrowWidth, head, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 0.01f));
+            world->AddLine(Line(base - side * arrowWidth, head, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 0.01f));
+            world->AddLine(Line(base + up * arrowWidth, head, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 0.01f));
+            world->AddLine(Line(base - up * arrowWidth, head, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 0.01f));
+
+            // Also add a small arrow near the start of the spline
+            if (i == 1)
+            {
+                glm::vec3 startHead = p0;
+                glm::vec3 sbase = startHead - dir * arrowLen;
+                world->AddLine(Line(sbase + side * arrowWidth, startHead, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 0.01f));
+                world->AddLine(Line(sbase - side * arrowWidth, startHead, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 0.01f));
+                world->AddLine(Line(sbase + up * arrowWidth, startHead, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 0.01f));
+                world->AddLine(Line(sbase - up * arrowWidth, startHead, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 0.01f));
+            }
         }
 
         if (mCloseLoop && points.size() > 2)
@@ -491,6 +1262,28 @@ void Spline3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
             glm::vec3 p0 = points.back().node->GetWorldPosition();
             glm::vec3 p1 = points.front().node->GetWorldPosition();
             world->AddLine(Line(p0, p1, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), 0.01f));
+        }
+
+        auto drawLink = [&](NodePtrWeak& fromPtr, NodePtrWeak& toPtr)
+        {
+            Node* from = fromPtr.Get();
+            Node* to = toPtr.Get();
+            if (from && to)
+            {
+                Node3D* from3d = from->As<Node3D>();
+                Node3D* to3d = to->As<Node3D>();
+                if (from3d && to3d)
+                {
+                    glm::vec3 p0 = from3d->GetWorldPosition();
+                    glm::vec3 p1 = to3d->GetWorldPosition();
+                    world->AddLine(Line(p0, p1, glm::vec4(0.2f, 1.0f, 1.0f, 1.0f), 0.01f));
+                }
+            }
+        };
+
+        for (uint32_t i = 0; i < mLinks.size(); ++i)
+        {
+            drawLink(mLinks[i].mLinkFrom, mLinks[i].mLinkTo);
         }
     }
 #endif
@@ -692,6 +1485,33 @@ bool Spline3D::HandlePropChange(Datum* datum, uint32_t index, const void* newVal
             success = true;
         }
     }
+    else if (prop->mName.rfind("From ", 0) == 0 || prop->mName.rfind("To ", 0) == 0)
+    {
+        bool isFrom = (prop->mName.rfind("From ", 0) == 0);
+        int linkIndex = atoi(prop->mName.substr(isFrom ? 5 : 3).c_str());
+        SplineLink* link = spline->GetLinkByIndex((uint32_t)linkIndex);
+        if (!link)
+            return true;
+
+        const WeakPtr<Node>& newNode = *(const WeakPtr<Node>*)newValue;
+        Node* node = newNode.Get();
+        if (node == nullptr)
+        {
+            if (isFrom) link->mLinkFrom = WeakPtr<Node>();
+            else link->mLinkTo = WeakPtr<Node>();
+            success = false;
+        }
+        else if (node->GetName().rfind("point", 0) == 0)
+        {
+            if (isFrom) link->mLinkFrom = newNode;
+            else link->mLinkTo = newNode;
+            success = false;
+        }
+        else
+        {
+            success = true;
+        }
+    }
     else if (prop->mName == "Point Speed Target")
     {
         const WeakPtr<Node>& newNode = *(const WeakPtr<Node>*)newValue;
@@ -778,6 +1598,16 @@ bool Spline3D::DrawCustomProperty(Property& prop)
         if (ImGui::Button("Generate Point"))
         {
             GeneratePoint();
+        }
+        return true;
+    }
+
+    if (prop.mName == "Generate Link")
+    {
+        if (ImGui::Button("Generate Next Link") && mGeneratedLinkCount < 64)
+        {
+            ++mGeneratedLinkCount;
+            EnsureLinkSlots((uint32_t)mGeneratedLinkCount);
         }
         return true;
     }
@@ -910,3 +1740,5 @@ glm::vec3 Spline3D::GetTangentAt(float t) const
         tan = glm::normalize(tan);
     return tan;
 }
+
+

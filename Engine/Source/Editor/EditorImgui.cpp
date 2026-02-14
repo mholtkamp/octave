@@ -19,6 +19,7 @@
 #include "Nodes/3D/InstancedMesh3d.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Nodes/3D/Camera3d.h"
+#include "Nodes/3D/Spline3d.h"
 #include "World.h"
 
 #include "Assets/Scene.h"
@@ -4201,6 +4202,8 @@ static void DrawViewportPanel()
             renderer->SetDebugMode(renderer->GetDebugMode() == DEBUG_COLLISION ? DEBUG_NONE : DEBUG_COLLISION);
         if (ImGui::Selectable("Proxy"))
             renderer->EnableProxyRendering(!renderer->IsProxyRenderingEnabled());
+        if (ImGui::Selectable("Spline Lines"))
+            Spline3D::SetSplineLinesVisible(!Spline3D::IsSplineLinesVisible());
         if (ImGui::Selectable("Bounds"))
         {
             uint32_t newMode = (uint32_t(renderer->GetBoundsDebugMode()) + 1) % uint32_t(BoundsDebugMode::Count);
