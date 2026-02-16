@@ -122,9 +122,15 @@ protected:
     {
         std::string name;
         float speed = 1.0f;
+        bool smoothIn = false;
+        bool smoothOut = false;
+        bool smoothCurve = false;
     };
 
     std::vector<PointSpeedEntry> mPointSpeedEntries;
     NodePtrWeak mPointSpeedTarget;
     float mPointSpeedValue = 1.0f;
+    bool mPointSmoothInValue = false;
+    bool mPointSmoothOutValue = false;
+    bool mPointSmoothCurveValue = false;
 };
