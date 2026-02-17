@@ -4975,7 +4975,7 @@ static void DrawDesignBounds()
     if (viewport2d == nullptr)
         return;
 
-    ImDrawList* draw_list = ImGui::GetForegroundDrawList();
+    ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
     glm::vec4 vp = Renderer::Get()->GetViewport(0);
 
     float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
@@ -5046,7 +5046,7 @@ static void Draw2dSelections()
 {
     const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
 
-    ImDrawList* draw_list = ImGui::GetForegroundDrawList();
+    ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
     ImColor mutliSelColor(0.7f, 1.0f, 0.0f, 1.0f);
     ImColor selColor(0.0f, 1.0f, 0.0f, 1.0f);
     ImColor hoverColor(0.0f, 1.0f, 1.0f, 1.0f);

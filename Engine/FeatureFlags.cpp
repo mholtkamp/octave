@@ -16,7 +16,7 @@ static FeatureFlagsEditor InitializeFeatureFlags()
 		// Enable all extra features
 		flags.mShowTheming = true;
 		flags.mShowPreferences = true;
-		flags.mShow2DBorder = true;
+		//flags.mShow2DBorder = true;
 	}
 
 	return flags;
