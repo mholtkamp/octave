@@ -17,3 +17,4 @@
 #define BASIC_TIMELINE_PLAYER "Timeline Player"
 
 #define DRAGDROP_NODE "DND_NODE"
+#define DRAGDROP_ASSET "DND_ASSET"

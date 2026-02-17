@@ -342,6 +342,14 @@ struct EditorUIHooks
     /** @brief Register callback for when an undo or redo operation is performed. */
     void (*RegisterOnUndoRedo)(HookId hookId, EventCallback cb, void* userData);
 
+    // ===== Drag-and-Drop Events =====
+
+    /** @brief Register callback for when an asset is dropped onto the scene hierarchy. Receives asset name. */
+    void (*RegisterOnAssetDropHierarchy)(HookId hookId, StringEventCallback cb, void* userData);
+
+    /** @brief Register callback for when an asset is dropped onto the viewport. Receives asset name. */
+    void (*RegisterOnAssetDropViewport)(HookId hookId, StringEventCallback cb, void* userData);
+
     // ===== Cleanup =====
 
     /**

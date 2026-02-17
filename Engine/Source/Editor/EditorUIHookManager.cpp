@@ -360,6 +360,20 @@ void EditorUIHookManager::InitializeHooks()
         if (mgr == nullptr) return;
         mgr->mOnUndoRedo.push_back({hookId, cb, userData});
     };
+
+    // ===== Drag-and-Drop Events =====
+
+    mHooks.RegisterOnAssetDropHierarchy = [](HookId hookId, StringEventCallback cb, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mOnAssetDropHierarchy.push_back({hookId, cb, userData});
+    };
+
+    mHooks.RegisterOnAssetDropViewport = [](HookId hookId, StringEventCallback cb, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mOnAssetDropViewport.push_back({hookId, cb, userData});
+    };
 }
 
 const std::vector<RegisteredMenuItem>& EditorUIHookManager::GetMenuItems(const std::string& menuPath) const
@@ -578,6 +592,8 @@ void EditorUIHookManager::RemoveAllHooks(HookId hookId)
     removeByHookId(mOnAssetDeleted);
     removeByHookId(mOnAssetSaved);
     removeByHookId(mOnUndoRedo);
+    removeByHookId(mOnAssetDropHierarchy);
+    removeByHookId(mOnAssetDropViewport);
 }
 
 // ===== Top-Level Menus and Toolbar Drawing =====
@@ -729,6 +745,22 @@ void EditorUIHookManager::FireOnUndoRedo()
     for (const auto& entry : mOnUndoRedo)
     {
         if (entry.mCallback) entry.mCallback(entry.mUserData);
+    }
+}
+
+void EditorUIHookManager::FireOnAssetDropHierarchy(const char* assetName)
+{
+    for (const auto& entry : mOnAssetDropHierarchy)
+    {
+        if (entry.mCallback) entry.mCallback(assetName, entry.mUserData);
+    }
+}
+
+void EditorUIHookManager::FireOnAssetDropViewport(const char* assetName)
+{
+    for (const auto& entry : mOnAssetDropViewport)
+    {
+        if (entry.mCallback) entry.mCallback(assetName, entry.mUserData);
     }
 }
 

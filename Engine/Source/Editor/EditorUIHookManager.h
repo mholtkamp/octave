@@ -254,6 +254,8 @@ public:
     void FireOnAssetDeleted(const char* assetPath);
     void FireOnAssetSaved(const char* assetPath);
     void FireOnUndoRedo();
+    void FireOnAssetDropHierarchy(const char* assetName);
+    void FireOnAssetDropViewport(const char* assetName);
 
     // ===== Cleanup =====
 
@@ -292,6 +294,8 @@ private:
     std::vector<RegisteredStringEventCallback> mOnAssetDeleted;
     std::vector<RegisteredStringEventCallback> mOnAssetSaved;
     std::vector<RegisteredEventCallback> mOnUndoRedo;
+    std::vector<RegisteredStringEventCallback> mOnAssetDropHierarchy;
+    std::vector<RegisteredStringEventCallback> mOnAssetDropViewport;
 
     // Empty vector for returning when menu not found
     std::vector<RegisteredMenuItem> mEmptyMenuItems;

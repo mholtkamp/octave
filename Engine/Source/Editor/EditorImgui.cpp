@@ -126,6 +126,14 @@ static int32_t sDevModeClicks = 0;
 static std::string sReplaceAssetInput;
 static std::vector<std::string> sReplaceAssetSuggestions;
 
+static AssetStub* sAssetDropStub = nullptr;
+static Node* sAssetDropParentNode = nullptr;
+static bool sAssetDropInViewport = false;
+static ImVec2 sAssetDropPopupPos = ImVec2(0.0f, 0.0f);
+static bool sAssetDropPopupPending = false;
+static int32_t sAssetDropScreenX = 0;
+static int32_t sAssetDropScreenY = 0;
+
 static bool IsBottomPaneVisible()
 {
     if (!GetEditorState()->mShowBottomPane) return false;
@@ -2477,6 +2485,24 @@ static void DrawScenePanel()
                 ImGui::EndDragDropSource();
             }
 
+            // Drop target for asset drag-and-drop (StaticMesh → hierarchy node)
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_ASSET))
+                {
+                    AssetStub* droppedStub = *(AssetStub**)payload->Data;
+                    if (droppedStub != nullptr && droppedStub->mType == StaticMesh::GetStaticType())
+                    {
+                        sAssetDropStub = droppedStub;
+                        sAssetDropParentNode = node;
+                        sAssetDropInViewport = false;
+                        sAssetDropPopupPos = ImGui::GetMousePos();
+                        sAssetDropPopupPending = true;
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+
             if (nodeSelected && GetEditorState()->mTrackSelectedNode)
             {
                 ImGui::SetScrollHereY(0.5f);
@@ -2834,6 +2860,29 @@ static void DrawScenePanel()
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 6.0f);
         drawTree(rootNode, nullptr);
         ImGui::PopStyleVar();
+    }
+
+    // Root-level drop target for asset drag-and-drop (empty space below tree)
+    ImVec2 avail = ImGui::GetContentRegionAvail();
+    if (avail.y > 0.0f)
+    {
+        ImGui::InvisibleButton("##SceneAssetDropTarget", ImVec2(avail.x, avail.y));
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_ASSET))
+            {
+                AssetStub* droppedStub = *(AssetStub**)payload->Data;
+                if (droppedStub != nullptr && droppedStub->mType == StaticMesh::GetStaticType())
+                {
+                    sAssetDropStub = droppedStub;
+                    sAssetDropParentNode = nullptr;
+                    sAssetDropInViewport = false;
+                    sAssetDropPopupPos = ImGui::GetMousePos();
+                    sAssetDropPopupPending = true;
+                }
+            }
+            ImGui::EndDragDropTarget();
+        }
     }
 
     bool setKeyboardFocus = false;
@@ -3467,6 +3516,15 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
                             GetEditorState()->InspectObject(stub->mAsset);
                     }
                 }
+            }
+
+            if (stub->mType == StaticMesh::GetStaticType() &&
+                ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+            {
+                AssetStub* dragStub = stub;
+                ImGui::SetDragDropPayload(DRAGDROP_ASSET, &dragStub, sizeof(AssetStub*));
+                ImGui::Text("%s", stub->mName.c_str());
+                ImGui::EndDragDropSource();
             }
 
             if (GetEditorState()->mTrackSelectedAsset &&
@@ -4885,7 +4943,172 @@ static void DrawViewportPanel()
         ImGui::EndPopup();
     }
 
+    // Asset drop mesh type selection popup
+    if (sAssetDropPopupPending)
+    {
+        ImGui::SetNextWindowPos(sAssetDropPopupPos);
+        ImGui::OpenPopup("AssetDropMeshType");
+        sAssetDropPopupPending = false;
+    }
+
+    if (ImGui::BeginPopup("AssetDropMeshType"))
+    {
+        // Determine spawn position: raycast for viewport drops, focal point otherwise
+        auto getAssetDropSpawnPos = [&]() -> glm::vec3
+        {
+            if (sAssetDropInViewport)
+            {
+                Camera3D* camera = GetEditorState()->GetEditorCamera();
+                if (camera != nullptr)
+                {
+                    // Try physics raycast first (works for nodes with collision enabled)
+                    RayTestResult rayResult;
+                    camera->TraceScreenToWorld(sAssetDropScreenX, sAssetDropScreenY, ColGroupAll, rayResult);
+                    if (rayResult.mHitNode != nullptr)
+                    {
+                        return rayResult.mHitPosition;
+                    }
+
+                    // Fallback: GPU hit-check picks up all visible nodes (e.g. InstancedMesh3D without collision)
+                    // Only accept Primitive3D nodes (actual geometry), skip plain Node3D containers/gizmos
+                    Node3D* hitNode = Renderer::Get()->ProcessHitCheck(GetWorld(0), sAssetDropScreenX, sAssetDropScreenY);
+                    if (hitNode != nullptr)
+                    {
+                        Primitive3D* prim = hitNode->As<Primitive3D>();
+                        if (prim != nullptr)
+                        {
+                            // Ray-sphere intersection to find where cursor ray hits the bounding sphere
+                            Bounds bounds = prim->GetBounds();
+                            glm::vec3 rayOrigin = camera->GetWorldPosition();
+                            glm::vec3 nearPoint = camera->ScreenToWorldPosition(sAssetDropScreenX, sAssetDropScreenY);
+                            glm::vec3 rayDir = Maths::SafeNormalize(nearPoint - rayOrigin);
+
+                            glm::vec3 oc = rayOrigin - bounds.mCenter;
+                            float b = 2.0f * glm::dot(oc, rayDir);
+                            float c = glm::dot(oc, oc) - bounds.mRadius * bounds.mRadius;
+                            float discriminant = b * b - 4.0f * c;
+
+                            if (discriminant >= 0.0f)
+                            {
+                                float t = (-b - sqrtf(discriminant)) / 2.0f;
+                                return rayOrigin + rayDir * t;
+                            }
+
+                            // Ray inside sphere or miss, use closest point on ray to center
+                            float t = -glm::dot(oc, rayDir);
+                            return rayOrigin + rayDir * glm::max(t, 0.0f);
+                        }
+                    }
+                }
+            }
+            return EditorGetFocusPosition();
+        };
+
+        if (ImGui::Selectable(BASIC_STATIC_MESH))
+        {
+            if (sAssetDropStub != nullptr)
+            {
+                if (sAssetDropStub->mAsset == nullptr)
+                    AssetManager::Get()->LoadAsset(*sAssetDropStub);
+                if (sAssetDropStub->mAsset != nullptr)
+                {
+                    glm::vec3 spawnPos = getAssetDropSpawnPos();
+                    ActionManager::Get()->SpawnBasicNode(BASIC_STATIC_MESH,
+                        sAssetDropParentNode, sAssetDropStub->mAsset, sAssetDropInViewport, spawnPos);
+
+                    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                    if (hookMgr)
+                    {
+                        if (sAssetDropInViewport)
+                            hookMgr->FireOnAssetDropViewport(sAssetDropStub->mName.c_str());
+                        else
+                            hookMgr->FireOnAssetDropHierarchy(sAssetDropStub->mName.c_str());
+                    }
+                }
+            }
+            sAssetDropStub = nullptr;
+        }
+        if (ImGui::Selectable(BASIC_INSTANCED_MESH))
+        {
+            if (sAssetDropStub != nullptr)
+            {
+                if (sAssetDropStub->mAsset == nullptr)
+                    AssetManager::Get()->LoadAsset(*sAssetDropStub);
+                if (sAssetDropStub->mAsset != nullptr)
+                {
+                    glm::vec3 spawnPos = getAssetDropSpawnPos();
+                    ActionManager::Get()->SpawnBasicNode(BASIC_INSTANCED_MESH,
+                        sAssetDropParentNode, sAssetDropStub->mAsset, sAssetDropInViewport, spawnPos);
+
+                    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                    if (hookMgr)
+                    {
+                        if (sAssetDropInViewport)
+                            hookMgr->FireOnAssetDropViewport(sAssetDropStub->mName.c_str());
+                        else
+                            hookMgr->FireOnAssetDropHierarchy(sAssetDropStub->mName.c_str());
+                    }
+                }
+            }
+            sAssetDropStub = nullptr;
+        }
+        ImGui::EndPopup();
+    }
+    else if (sAssetDropStub != nullptr && !sAssetDropPopupPending)
+    {
+        sAssetDropStub = nullptr;
+        sAssetDropParentNode = nullptr;
+    }
+
     ImGui::End();
+
+    // Viewport overlay drop target for asset drag-and-drop (only active during drag)
+    {
+        const ImGuiPayload* activePayload = ImGui::GetDragDropPayload();
+        if (activePayload != nullptr && activePayload->IsDataType(DRAGDROP_ASSET))
+        {
+            float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
+            if (interfaceScale == 0.0f) interfaceScale = 1.0f;
+            float invScale = 1.0f / interfaceScale;
+            EditorState* es = GetEditorState();
+
+            ImGui::SetNextWindowPos(ImVec2(es->mViewportX * invScale, es->mViewportY * invScale));
+            ImGui::SetNextWindowSize(ImVec2(es->mViewportWidth * invScale, es->mViewportHeight * invScale));
+
+            ImGuiWindowFlags overlayFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
+                ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground |
+                ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus;
+
+            ImGui::Begin("##ViewportAssetDropOverlay", nullptr, overlayFlags);
+            ImGui::InvisibleButton("##ViewportDropTarget", ImGui::GetContentRegionAvail());
+
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_ASSET))
+                {
+                    AssetStub* droppedStub = *(AssetStub**)payload->Data;
+                    if (droppedStub != nullptr && droppedStub->mType == StaticMesh::GetStaticType())
+                    {
+                        sAssetDropStub = droppedStub;
+                        sAssetDropParentNode = nullptr;
+                        sAssetDropInViewport = true;
+                        sAssetDropPopupPos = ImGui::GetMousePos();
+                        sAssetDropPopupPending = true;
+
+                        // Convert ImGui coords to screen coords for raycasting
+                        ImVec2 dropPos = ImGui::GetMousePos();
+                        float scale = GetEngineConfig()->mEditorInterfaceScale;
+                        if (scale == 0.0f) scale = 1.0f;
+                        sAssetDropScreenX = (int32_t)(dropPos.x * scale);
+                        sAssetDropScreenY = (int32_t)(dropPos.y * scale);
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+            ImGui::End();
+        }
+    }
 
     // Set up ImGuizmo rect for the viewport area
     // edState was already declared earlier in this function
