@@ -26,6 +26,15 @@ struct Spline3D_Lua
     static int GetTangentAt(lua_State* L);
     static int Play(lua_State* L);
     static int Stop(lua_State* L);
+    static int SetPaused(lua_State* L);
+    static int IsPaused(lua_State* L);
+    static int SetFollowLinkEnabled(lua_State* L);
+    static int IsFollowLinkEnabled(lua_State* L);
+    static int IsNearLinkFrom(lua_State* L);
+    static int IsNearLinkTo(lua_State* L);
+    static int IsLinkDirectionForward(lua_State* L);
+    static int TriggerLink(lua_State* L);
+    static int CancelActiveLink(lua_State* L);
 
     static void Bind();
 };

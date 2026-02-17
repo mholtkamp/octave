@@ -95,7 +95,7 @@ void SYS_Shutdown()
 
 void SYS_Update()
 {
-
+    GetEngineState()->mQuit = !SYS_MainLoop();
 }
 
 // Files

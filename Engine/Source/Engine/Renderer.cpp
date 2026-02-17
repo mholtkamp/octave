@@ -13,6 +13,7 @@
 #include "Nodes/3D/Particle3d.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Nodes/3D/ShadowMesh3d.h"
+#include "Nodes/3D/Spline3d.h"
 #include "Log.h"
 #include "Line.h"
 #include "Maths.h"
@@ -610,7 +611,10 @@ void Renderer::GatherDrawData(World* world)
 #if DEBUG_DRAW_ENABLED
             bool proxyActorEnabled = true;
 
-            if (mEnableProxyRendering &&
+            bool isSpline = node->Is("Spline3D");
+            bool drawSplineLines = isSpline && Spline3D::IsSplineLinesVisible();
+
+            if ((mEnableProxyRendering || drawSplineLines) &&
                 mDebugMode != DEBUG_COLLISION &&
                 node->IsNode3D() &&
                 proxyActorEnabled)
