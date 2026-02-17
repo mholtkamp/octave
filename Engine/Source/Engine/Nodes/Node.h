@@ -118,6 +118,10 @@ public:
 
     NodeId GetNodeId() const;
 
+    uint64_t GetPersistentUuid() const;
+    void SetPersistentUuid(uint64_t uuid);
+    void EnsurePersistentUuid();
+
     void EmitSignal(const std::string& name, const std::vector<Datum>& args);
     void ConnectSignal(const std::string& name, Node* listener, SignalHandlerFP func);
     void ConnectSignal(const std::string& name, Node* listener, const ScriptFunc& func);
@@ -465,6 +469,7 @@ protected:
     SceneRef mScene;
     std::vector<std::string> mTags;
     NodeId mNodeId = INVALID_NODE_ID;
+    uint64_t mPersistentUuid = 0;
 
     // Network Data
     // This is only about 44 bytes, so right now, we will keep this data as direct members of Node.

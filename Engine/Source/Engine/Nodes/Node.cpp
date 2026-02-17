@@ -736,6 +736,24 @@ NodeId Node::GetNodeId() const
     return mNodeId;
 }
 
+uint64_t Node::GetPersistentUuid() const
+{
+    return mPersistentUuid;
+}
+
+void Node::SetPersistentUuid(uint64_t uuid)
+{
+    mPersistentUuid = uuid;
+}
+
+void Node::EnsurePersistentUuid()
+{
+    if (mPersistentUuid == 0)
+    {
+        mPersistentUuid = Maths::GenerateAssetUuid();
+    }
+}
+
 void Node::EmitSignal(const std::string& name, const std::vector<Datum>& args)
 {
     if (mSignalMap.size() > 0)

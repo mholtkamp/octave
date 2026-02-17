@@ -39,6 +39,8 @@ SOURCES		:=	Source \
 				Source/Engine/Nodes/3D \
 				Source/Engine/Nodes/Widgets \
 				Source/Engine/Assets \
+				Source/Engine/Timeline \
+				Source/Engine/Timeline/Tracks \
 				Source/Plugins \
 				Source/System \
 				Source/System/3DS \

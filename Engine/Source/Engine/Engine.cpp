@@ -7,6 +7,22 @@
 #include "Log.h"
 #include "Script.h"
 #include "Assets/Scene.h"
+#include "Assets/Timeline.h"
+#include "Timeline/TimelineTrack.h"
+#include "Timeline/TimelineClip.h"
+#include "Timeline/Tracks/TransformTrack.h"
+#include "Timeline/Tracks/TransformClip.h"
+#include "Timeline/Tracks/AudioTrack.h"
+#include "Timeline/Tracks/AudioClip.h"
+#include "Timeline/Tracks/AnimationTrack.h"
+#include "Timeline/Tracks/AnimationClip.h"
+#include "Timeline/Tracks/ScriptValueTrack.h"
+#include "Timeline/Tracks/ScriptValueClip.h"
+#include "Timeline/Tracks/ActivateTrack.h"
+#include "Timeline/Tracks/ActivateClip.h"
+#include "Timeline/Tracks/FunctionCallTrack.h"
+#include "Timeline/Tracks/FunctionCallClip.h"
+#include "Nodes/TimelinePlayer.h"
 #include "AssetManager.h"
 #include "NetworkManager.h"
 #include "AudioManager.h"
@@ -157,6 +173,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(ShadowMesh3D);
     FORCE_LINK_CALL(TextMesh3D);
     FORCE_LINK_CALL(InstancedMesh3D);
+    FORCE_LINK_CALL(TimelinePlayer);
 
     // Asset Types
     FORCE_LINK_CALL(Scene);
@@ -171,6 +188,21 @@ void ForceLinkage()
     FORCE_LINK_CALL(StaticMesh);
     FORCE_LINK_CALL(Texture);
     FORCE_LINK_CALL(Font);
+    FORCE_LINK_CALL(Timeline);
+    FORCE_LINK_CALL(TimelineTrack);
+    FORCE_LINK_CALL(TimelineClip);
+    FORCE_LINK_CALL(TransformTrack);
+    FORCE_LINK_CALL(TransformClip);
+    FORCE_LINK_CALL(AudioTrack);
+    FORCE_LINK_CALL(AudioClip);
+    FORCE_LINK_CALL(AnimationTrack);
+    FORCE_LINK_CALL(AnimationClip);
+    FORCE_LINK_CALL(ScriptValueTrack);
+    FORCE_LINK_CALL(ScriptValueClip);
+    FORCE_LINK_CALL(ActivateTrack);
+    FORCE_LINK_CALL(ActivateClip);
+    FORCE_LINK_CALL(FunctionCallTrack);
+    FORCE_LINK_CALL(FunctionCallClip);
 
     // Widget Types
     FORCE_LINK_CALL(ArrayWidget);

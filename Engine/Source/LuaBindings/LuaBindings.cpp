@@ -45,6 +45,8 @@
 #include "LuaBindings/SkeletalMesh_Lua.h"
 #include "LuaBindings/Texture_Lua.h"
 #include "LuaBindings/Font_Lua.h"
+#include "LuaBindings/Timeline_Lua.h"
+#include "LuaBindings/TimelinePlayer_Lua.h"
 #include "LuaBindings/AssetManager_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
 #include "LuaBindings/Quad_Lua.h"
@@ -103,6 +105,7 @@ void BindLuaInterface()
     InstancedMesh3D_Lua::Bind();
     TextMesh3D_Lua::Bind();
     Sphere3D_Lua::Bind();
+    TimelinePlayer_Lua::Bind();
 
     // Assets need to be bound in hierarchy order.
     Asset_Lua::Bind();
@@ -117,6 +120,7 @@ void BindLuaInterface()
     SkeletalMesh_Lua::Bind();
     Texture_Lua::Bind();
     Font_Lua::Bind();
+    Timeline_Lua::Bind();
 
     // Widgets need to be bound in hierarchy order
     Widget_Lua::Bind();

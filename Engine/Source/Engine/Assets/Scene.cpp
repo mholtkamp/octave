@@ -81,6 +81,11 @@ void Scene::LoadStream(Stream& stream, Platform platform)
         def.mExposeVariable = stream.ReadBool();
         def.mParentBone = stream.ReadInt8();
 
+        if (mVersion >= ASSET_VERSION_NODE_PERSISTENT_UUID)
+        {
+            def.mPersistentUuid = stream.ReadUint64();
+        }
+
         uint32_t numProps = stream.ReadUint32();
         def.mProperties.resize(numProps);
         for (uint32_t p = 0; p < numProps; ++p)
@@ -226,6 +231,7 @@ void Scene::SaveStream(Stream& stream, Platform platform)
         stream.WriteString(def.mName);
         stream.WriteBool(def.mExposeVariable);
         stream.WriteInt8(def.mParentBone);
+        stream.WriteUint64(def.mPersistentUuid);
 
         stream.WriteUint32((uint32_t)def.mProperties.size());
         for (uint32_t p = 0; p < def.mProperties.size(); ++p)
@@ -450,6 +456,16 @@ NodePtr Scene::Instantiate()
                 mNodeDefs[i].mName != "")
             {
                 node->SetName(mNodeDefs[i].mName);
+            }
+
+            // Apply persistent UUID from scene data, or auto-generate if missing (pre-v14 scenes)
+            if (mNodeDefs[i].mPersistentUuid != 0)
+            {
+                node->SetPersistentUuid(mNodeDefs[i].mPersistentUuid);
+            }
+            else
+            {
+                node->EnsurePersistentUuid();
             }
 
             // Apply subscene overrides if they exist
@@ -687,6 +703,9 @@ void Scene::AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeLi
 
         nodeDef.mScene = scene;
         nodeDef.mName = node->GetName();
+
+        node->EnsurePersistentUuid();
+        nodeDef.mPersistentUuid = node->GetPersistentUuid();
 
         Stream extraDataStream;
         node->SaveStream(extraDataStream, platform);

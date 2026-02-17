@@ -14,6 +14,7 @@
 class Node3D;
 class Mesh3D;
 class InstancedMesh3D;
+class Timeline;
 struct ActionSetInstanceColorsData;
 struct MeshInstanceData;
 
@@ -88,6 +89,14 @@ public:
      * @param nodes The selected nodes to split.
      */
     void EXE_ReplaceWithStaticMesh(const std::vector<Node*>& nodes);
+
+    // Timeline actions
+    void EXE_TimelineAddTrack(Timeline* timeline, TypeId trackType);
+    void EXE_TimelineRemoveTrack(Timeline* timeline, int32_t trackIndex);
+    void EXE_TimelineAddClip(Timeline* timeline, int32_t trackIndex, TypeId clipType, float startTime, float duration);
+    void EXE_TimelineRemoveClip(Timeline* timeline, int32_t trackIndex, int32_t clipIndex);
+    void EXE_TimelineMoveClip(Timeline* timeline, int32_t trackIndex, int32_t clipIndex, float oldStartTime, float newStartTime);
+    void EXE_TimelineBindTrack(Timeline* timeline, int32_t trackIndex, uint64_t oldUuid, uint64_t newUuid, const std::string& oldName, const std::string& newName);
 
     void ClearActionHistory();
     void ClearActionFuture();

@@ -95,7 +95,7 @@ void ApplyFutureDarkTheme()
     style.DisabledAlpha = 1.0f;
     style.WindowPadding = ImVec2(12.0f, 12.0f);
     style.WindowRounding = 0.0f;
-    style.WindowBorderSize = 0.0f;
+    style.WindowBorderSize = 1.0f;
     style.WindowMinSize = ImVec2(20.0f, 20.0f);
     style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
     style.WindowMenuButtonPosition = ImGuiDir_None;

@@ -9,6 +9,7 @@
 #include "Viewport3d.h"
 #include "Viewport2d.h"
 #include "Assets/Scene.h"
+#include "Assets/Timeline.h"
 #include "AssetManager.h"
 
 #include "Input/Input.h"
@@ -134,6 +135,14 @@ void InputManager::UpdateHotkeys()
                 else
                 {
                     ActionManager::Get()->SaveScene(false);
+
+                    // Save the edited timeline if one is open
+                    Timeline* editedTimeline = GetEditorState()->mEditedTimelineRef.Get<Timeline>();
+                    if (editedTimeline != nullptr)
+                    {
+                        AssetManager::Get()->SaveAsset(editedTimeline->GetName());
+                    }
+
                     ClearControlDown();
                     ClearShiftDown();
                 }

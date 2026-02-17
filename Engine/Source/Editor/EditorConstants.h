@@ -14,3 +14,6 @@
 #define BASIC_CAMERA "Camera"
 #define BASIC_TEXT_MESH "Text Mesh"
 #define BASIC_INSTANCED_MESH "Instanced Mesh"
+#define BASIC_TIMELINE_PLAYER "Timeline Player"
+
+#define DRAGDROP_NODE "DND_NODE"

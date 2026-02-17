@@ -13,6 +13,8 @@
 
 class Node;
 class Scene;
+class Timeline;
+class TimelineInstance;
 class Widget;
 class Text;
 class Asset;
@@ -161,6 +163,19 @@ struct EditorState
     bool mProjectUpgradeInProgress = false;
     std::vector<AssetStub*> mAssetsNeedingUpgrade;
 
+    // Timeline Panel state
+    bool mShowTimelinePanel = false;
+    TimelineRef mEditedTimelineRef;
+    TimelineInstance* mTimelinePreviewInstance = nullptr;
+    float mTimelinePlayheadTime = 0.0f;
+    bool mTimelinePreviewing = false;
+    float mTimelineZoom = 100.0f;
+    float mTimelineScrollX = 0.0f;
+    float mTimelineSnapInterval = 0.1f;
+    int32_t mTimelineSelectedTrack = -1;
+    int32_t mTimelineSelectedClip = -1;
+    int32_t mTimelineSelectedKeyframe = -1;
+
     // ImGuizmo state
     ImGuizmo::OPERATION mGizmoOperation = ImGuizmo::TRANSLATE;
     ImGuizmo::MODE mGizmoMode = ImGuizmo::WORLD;
@@ -243,6 +258,7 @@ struct EditorState
     bool IsInspectLocked();
     void RecordInspectHistory();
     void ClearInspectHistory();
+    void RemoveFromInspectHistory(Object* obj);
     void ProgressInspectFuture();
     void RegressInspectPast();
     void ClearAssetDirHistory();

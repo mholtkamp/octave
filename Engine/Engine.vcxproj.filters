@@ -132,6 +132,15 @@
     <Filter Include="Source Files\Editor\DebugLog">
       <UniqueIdentifier>{d3a5c7b2-1f4e-4a8b-9c6d-e2f0b8a1d5c3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Editor\Timeline">
+      <UniqueIdentifier>{a7c3e1b5-9d2f-4e6a-8b0c-f1d4a6e8c2b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Timeline">
+      <UniqueIdentifier>{b8d4f2c6-0e3a-5f7b-9c1d-a2e5b7f9d3c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Timeline\Tracks">
+      <UniqueIdentifier>{c9e5a3d7-1f4b-6a8c-0d2e-b3f6c8a0e4d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Graphics\Vulkan\VulkanUtils.cpp">
@@ -296,6 +305,12 @@
     <ClCompile Include="Source\LuaBindings\World_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\TimelinePlayer_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Timeline_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
     <ClCompile Include="Source\LuaBindings\Input_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
@@ -357,6 +372,9 @@
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Assets\Texture.cpp">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Assets\Timeline.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\MaterialInstance_Lua.cpp">
@@ -472,6 +490,54 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\TimelinePlayer.cpp">
+      <Filter>Source Files\Engine\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\TimelineTrack.cpp">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\TimelineClip.cpp">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\TimelineInstance.cpp">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\TransformTrack.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\TransformClip.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\AudioTrack.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\AudioClip.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\AnimationTrack.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\AnimationClip.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\ScriptValueTrack.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\ScriptValueClip.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\ActivateTrack.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\ActivateClip.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\FunctionCallTrack.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\FunctionCallClip.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\3D\Audio3d.cpp">
       <Filter>Source Files\Engine\Nodes\3D</Filter>
@@ -845,6 +911,12 @@
     <ClCompile Include="Source\Editor\Preferences\Packaging\PackagingModule.cpp">
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\Timeline\TimelinePanel.cpp">
+      <Filter>Source Files\Editor\Timeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Timeline\TimelineActions.cpp">
+      <Filter>Source Files\Editor\Timeline</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Plugins\RuntimePluginManager.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -957,6 +1029,9 @@
     <ClInclude Include="Source\Engine\Assets\Texture.h">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\Timeline.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Engine\Assets\Font.h">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
@@ -983,6 +1058,57 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\Widget.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\TimelinePlayer.h">
+      <Filter>Source Files\Engine\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\TimelineTrack.h">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\TimelineClip.h">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\TimelineInstance.h">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\TimelineTypes.h">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\TransformTrack.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\TransformClip.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\AudioTrack.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\AudioClip.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\AnimationTrack.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\AnimationClip.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\ScriptValueTrack.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\ScriptValueClip.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\ActivateTrack.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\ActivateClip.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\FunctionCallTrack.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\FunctionCallClip.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\Canvas.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
@@ -1168,6 +1294,12 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\World_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\TimelinePlayer_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Timeline_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Asset_Lua.h">
@@ -1613,6 +1745,12 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\Preferences\Packaging\PackagingModule.h">
       <Filter>Source Files\Editor\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Timeline\TimelinePanel.h">
+      <Filter>Source Files\Editor\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Timeline\TimelineActions.h">
+      <Filter>Source Files\Editor\Timeline</Filter>
     </ClInclude>
     <ClInclude Include="Source\Plugins\EditorUIHooks.h">
       <Filter>Source Files\Engine</Filter>

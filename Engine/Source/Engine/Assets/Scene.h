@@ -29,6 +29,7 @@ struct SceneNodeDef
     std::vector<SubSceneOverride> mSubSceneOverrides;
     int8_t mParentBone = -1;
     bool mExposeVariable = false;
+    uint64_t mPersistentUuid = 0;
 };
 
 class Scene : public Asset

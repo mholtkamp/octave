@@ -625,6 +625,8 @@ void World::RegisterNode(Node* node, bool subRoot)
     {
         sNewlyRegisteredNodes.insert(ResolveWeakPtr(node));
     }
+
+    RegisterNodeUuid(node);
 }
 
 void World::UnregisterNode(Node* node, bool subRoot)
@@ -654,9 +656,47 @@ void World::UnregisterNode(Node* node, bool subRoot)
         SetActiveCamera(nullptr);
     }
 
+    UnregisterNodeUuid(node);
+
     if (subRoot)
     {
         sNewlyRegisteredNodes.erase(ResolveWeakPtr(node));
+    }
+}
+
+Node* World::FindNodeByUuid(uint64_t uuid)
+{
+    if (uuid == 0)
+        return nullptr;
+
+    auto it = mUuidMap.find(uuid);
+    if (it != mUuidMap.end())
+    {
+        return it->second;
+    }
+
+    return nullptr;
+}
+
+void World::RegisterNodeUuid(Node* node)
+{
+    uint64_t uuid = node->GetPersistentUuid();
+    if (uuid != 0)
+    {
+        mUuidMap[uuid] = node;
+    }
+}
+
+void World::UnregisterNodeUuid(Node* node)
+{
+    uint64_t uuid = node->GetPersistentUuid();
+    if (uuid != 0)
+    {
+        auto it = mUuidMap.find(uuid);
+        if (it != mUuidMap.end() && it->second == node)
+        {
+            mUuidMap.erase(it);
+        }
     }
 }
 

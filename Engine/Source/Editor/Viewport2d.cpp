@@ -37,7 +37,7 @@ void Viewport2D::Update(float deltaTime)
 
     Widget* selWidget = GetEditorState()->GetSelectedWidget();
     Widget* hoverWidget = nullptr;
-    if (mControlMode == WidgetControlMode::Default)
+    if (mControlMode == WidgetControlMode::Default && ShouldHandleInput())
     {
         int32_t mouseX = 0;
         int32_t mouseY = 0;

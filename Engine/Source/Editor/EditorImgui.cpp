@@ -29,6 +29,7 @@
 #include "Assets/MaterialBase.h"
 #include "Assets/MaterialInstance.h"
 #include "Assets/MaterialLite.h"
+#include "Assets/Timeline.h"
 
 #include "Viewport3d.h"
 #include "Viewport2d.h"
@@ -43,6 +44,7 @@
 #include "Addons/AddonsMenu.h"
 #include "EditorUIHookManager.h"
 #include "DebugLog/DebugLogWindow.h"
+#include "Timeline/TimelinePanel.h"
 #include "Preferences/General/GeneralModule.h"
 #include "Preferences/PreferencesManager.h"
 
@@ -931,13 +933,12 @@ static void AssignAssetToProperty(Object* owner, PropertyOwnerType ownerType, Pr
 
         if (matchingType)
         {
-            if (ownerType != PropertyOwnerType::Count)
+            if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
             {
                 ActionManager::Get()->EXE_EditProperty(owner, ownerType, prop.mName, index, newAsset);
             }
             else
             {
-                // Skip undo/redo (for shader parameters?)
                 prop.SetAsset(newAsset, index);
             }
         }
@@ -1326,7 +1327,7 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
             ImGui::IsItemHovered() &&
             IsKeyJustDown(KEY_DELETE))
         {
-            if (ownerType != PropertyOwnerType::Count)
+            if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
             {
                 am->EXE_EditProperty(owner, ownerType, prop.mName, index, (Asset*) nullptr);
             }
@@ -1644,7 +1645,14 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                 {
                     if (ImGui::Combo("", &propVal, prop.mEnumStrings, prop.mEnumCount))
                     {
-                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                        if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
+                        {
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                        }
+                        else
+                        {
+                            prop.SetInteger(propVal, i);
+                        }
                     }
                 }
                 else
@@ -1658,8 +1666,15 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                     if (ImGui::IsItemDeactivatedAfterEdit())
                     {
-                        prop.SetInteger(sOrigVal, i);
-                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                        if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
+                        {
+                            prop.SetInteger(sOrigVal, i);
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                        }
+                        else
+                        {
+                            prop.SetInteger(propVal, i);
+                        }
                     }
                     else if (propVal != preVal)
                     {
@@ -1683,8 +1698,15 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                 if (ImGui::IsItemDeactivatedAfterEdit())
                 {
-                    prop.SetFloat(sOrigVal, i);
-                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
+                    {
+                        prop.SetFloat(sOrigVal, i);
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    }
+                    else
+                    {
+                        prop.SetFloat(propVal, i);
+                    }
                 }
                 else if (propVal != preVal)
                 {
@@ -1697,7 +1719,14 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                 bool propVal = prop.GetBool(i);
                 if (ImGui::Checkbox("", &propVal))
                 {
-                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
+                    {
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    }
+                    else
+                    {
+                        prop.SetBool(propVal, i);
+                    }
                 }
 
                 ImGui::SameLine();
@@ -1778,7 +1807,14 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                     {
                         if (sTempString != sOrigVal)
                         {
-                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, sTempString);
+                            if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
+                            {
+                                am->EXE_EditProperty(owner, ownerType, prop.mName, i, sTempString);
+                            }
+                            else
+                            {
+                                prop.SetString(sTempString, i);
+                            }
                         }
                     }
                 }
@@ -1799,8 +1835,15 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                 if (ImGui::IsItemDeactivatedAfterEdit())
                 {
-                    prop.SetVector2D(sOrigVal, i);
-                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
+                    {
+                        prop.SetVector2D(sOrigVal, i);
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    }
+                    else
+                    {
+                        prop.SetVector2D(propVal, i);
+                    }
                 }
                 else if (propVal != preVal)
                 {
@@ -1828,15 +1871,22 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                 if (ImGui::IsItemDeactivatedAfterEdit())
                 {
-                    prop.SetVector(sOrigVal, i);
-
-                    // Handle edge case where Rotation property is reset so we need to recompute transform to update mRotationEuler.
-                    if (owner->As<Node3D>())
+                    if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
                     {
-                        owner->As<Node3D>()->UpdateTransform(false);
-                    }
+                        prop.SetVector(sOrigVal, i);
 
-                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                        // Handle edge case where Rotation property is reset so we need to recompute transform to update mRotationEuler.
+                        if (owner->As<Node3D>())
+                        {
+                            owner->As<Node3D>()->UpdateTransform(false);
+                        }
+
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    }
+                    else
+                    {
+                        prop.SetVector(propVal, i);
+                    }
                 }
                 else if (propVal != preVal)
                 {
@@ -1861,8 +1911,15 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                 if (ImGui::IsItemDeactivatedAfterEdit())
                 {
-                    prop.SetColor(sOrigVal, i);
-                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
+                    {
+                        prop.SetColor(sOrigVal, i);
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    }
+                    else
+                    {
+                        prop.SetColor(propVal, i);
+                    }
                 }
                 else if (propVal != preVal)
                 {
@@ -1890,7 +1947,14 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                 {
                     if (ImGui::Combo("", &propVal, prop.mEnumStrings, prop.mEnumCount))
                     {
-                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, (uint8_t)propVal);
+                        if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
+                        {
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, (uint8_t)propVal);
+                        }
+                        else
+                        {
+                            prop.SetByte((uint8_t)propVal, i);
+                        }
                     }
                 }
                 else if (prop.mExtra &&
@@ -1937,7 +2001,14 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                             propVal = newBitMask;
 
-                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, uint8_t(propVal));
+                            if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
+                            {
+                                am->EXE_EditProperty(owner, ownerType, prop.mName, i, uint8_t(propVal));
+                            }
+                            else
+                            {
+                                prop.SetByte((uint8_t)propVal, i);
+                            }
                         }
 
                         ImGui::PopStyleColor();
@@ -1958,8 +2029,15 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                     if (ImGui::IsItemDeactivatedAfterEdit())
                     {
-                        prop.SetByte((uint8_t)sOrigVal, i);
-                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, uint8_t(propVal));
+                        if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
+                        {
+                            prop.SetByte((uint8_t)sOrigVal, i);
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, uint8_t(propVal));
+                        }
+                        else
+                        {
+                            prop.SetByte((uint8_t)propVal, i);
+                        }
                     }
                     else if (propVal != preVal)
                     {
@@ -2387,6 +2465,15 @@ static void DrawScenePanel()
             if (inSubScene || nodeHasScene)
             {
                 ImGui::PopStyleColor();
+            }
+
+            // Drag source for node references (e.g. timeline track targets)
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+            {
+                Node* dragNode = node;
+                ImGui::SetDragDropPayload(DRAGDROP_NODE, &dragNode, sizeof(Node*));
+                ImGui::Text("%s", node->GetName().c_str());
+                ImGui::EndDragDropSource();
             }
 
             if (nodeSelected && GetEditorState()->mTrackSelectedNode)
@@ -3024,6 +3111,11 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
                 sNewAssetType = Scene::GetStaticType();
                 showPopup = true;
             }
+            if (ImGui::Selectable("Timeline", false, ImGuiSelectableFlags_DontClosePopups))
+            {
+                sNewAssetType = Timeline::GetStaticType();
+                showPopup = true;
+            }
 
             ImGui::EndMenu();
 
@@ -3182,6 +3274,8 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
                     assetName = "P_Particle";
                 else if (sNewAssetType == Scene::GetStaticType())
                     assetName = "SC_Scene";
+                else if (sNewAssetType == Timeline::GetStaticType())
+                    assetName = "TL_Timeline";
             }
 
             if (assetName != "" && sNewAssetType != INVALID_TYPE_ID)
@@ -3357,6 +3451,14 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
                         Scene* scene = stub->mAsset ? stub->mAsset->As<Scene>() : nullptr;
                         if (scene)
                             GetEditorState()->OpenEditScene(scene);
+                    }
+                    else if (stub->mType == Timeline::GetStaticType())
+                    {
+                        Timeline* timeline = stub->mAsset ? stub->mAsset->As<Timeline>() : nullptr;
+                        if (timeline)
+                        {
+                            OpenTimelineForEditing(timeline);
+                        }
                     }
                     else
                     {
@@ -4511,6 +4613,9 @@ static void DrawViewportPanel()
         if (ImGui::Selectable("Debug Log"))
             GetEditorState()->mShowBottomPane = !GetEditorState()->mShowBottomPane;
 
+        if (ImGui::Selectable("Timeline"))
+            GetEditorState()->mShowTimelinePanel = !GetEditorState()->mShowTimelinePanel;
+
         // Draw plugin menu items for View menu
         {
             EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
@@ -4870,7 +4975,7 @@ static void DrawDesignBounds()
     if (viewport2d == nullptr)
         return;
 
-    ImDrawList* draw_list = ImGui::GetForegroundDrawList();
+    ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
     glm::vec4 vp = Renderer::Get()->GetViewport(0);
 
     float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
@@ -4941,7 +5046,7 @@ static void Draw2dSelections()
 {
     const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
 
-    ImDrawList* draw_list = ImGui::GetForegroundDrawList();
+    ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
     ImColor mutliSelColor(0.7f, 1.0f, 0.0f, 1.0f);
     ImColor selColor(0.0f, 1.0f, 0.0f, 1.0f);
     ImColor hoverColor(0.0f, 1.0f, 1.0f, 1.0f);
@@ -5421,6 +5526,11 @@ static void DrawImGuizmo2D()
 
 static std::string GetDefaultEditorFontPath()
 {
+
+    if (!SYS_DoesFileExist("Engine/Assets/Fonts/F_InterRegular18.ttf", false)) {
+        return "";
+    }
+
     return SYS_GetAbsolutePath("Engine/Assets/Fonts/F_InterRegular18.ttf");
 }
 
@@ -5548,6 +5658,11 @@ void EditorImguiDraw()
 
         DrawViewportPanel();
         DrawDebugLogPanel();
+
+        if (GetEditorState()->mShowTimelinePanel)
+        {
+            DrawTimelinePanel();
+        }
 
         // Draw ImGuizmo gizmos for selected 3D nodes
         DrawImGuizmo();

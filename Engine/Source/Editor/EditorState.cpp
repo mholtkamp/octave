@@ -1,7 +1,9 @@
 #if EDITOR
 #include <vector>
+#include <algorithm>
 #include "EditorState.h"
 #include "EditorConstants.h"
+#include "Timeline/TimelineInstance.h"
 #include "ActionManager.h"
 #include "Nodes/Node.h"
 #include "Asset.h"
@@ -93,6 +95,12 @@ void EditorState::Shutdown()
 
     delete mPaintManager;
     mPaintManager = nullptr;
+
+    if (mTimelinePreviewInstance != nullptr)
+    {
+        delete mTimelinePreviewInstance;
+        mTimelinePreviewInstance = nullptr;
+    }
 
     mEditorCamera->SetWorld(nullptr, false);
     mEditorCamera->Destroy();
@@ -371,6 +379,8 @@ void EditorState::HandleNodeDestroy(Node* node)
         InspectObject(nullptr, true, false);
     }
 
+    RemoveFromInspectHistory(node);
+
     if (mPaintManager)
     {
         mPaintManager->HandleNodeDestroy(node);
@@ -536,6 +546,20 @@ void EditorState::SetControlMode(ControlMode newMode)
     SetTransformLock(TransformLock::None);
 }
 
+static void CopyPersistentUuids(Node* src, Node* dst)
+{
+    if (src == nullptr || dst == nullptr)
+        return;
+
+    dst->SetPersistentUuid(src->GetPersistentUuid());
+
+    uint32_t count = glm::min(src->GetNumChildren(), dst->GetNumChildren());
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        CopyPersistentUuids(src->GetChild(i), dst->GetChild(i));
+    }
+}
+
 void EditorState::BeginPlayInEditor()
 {
     if (mPlayInEditor)
@@ -576,6 +600,7 @@ void EditorState::BeginPlayInEditor()
         editScene->mRootNode != nullptr)
     {
         NodePtr clonedRoot = editScene->mRootNode->Clone(true, false, true);
+        CopyPersistentUuids(editScene->mRootNode.Get(), clonedRoot.Get());
         ResolveAllNodePathsRecursive(clonedRoot.Get());
         GetWorld(0)->SetRootNode(clonedRoot.Get());
     }
@@ -1480,6 +1505,25 @@ void EditorState::ClearInspectHistory()
     mInspectFuture.clear();
     mPrevInspectedObject = nullptr;
     mInspectedObject = nullptr;
+}
+
+void EditorState::RemoveFromInspectHistory(Object* obj)
+{
+    if (obj == nullptr)
+        return;
+
+    mInspectPast.erase(
+        std::remove(mInspectPast.begin(), mInspectPast.end(), obj),
+        mInspectPast.end());
+
+    mInspectFuture.erase(
+        std::remove(mInspectFuture.begin(), mInspectFuture.end(), obj),
+        mInspectFuture.end());
+
+    if (mPrevInspectedObject == obj)
+    {
+        mPrevInspectedObject = nullptr;
+    }
 }
 
 void EditorState::ProgressInspectFuture()

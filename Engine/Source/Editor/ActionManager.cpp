@@ -28,6 +28,7 @@
 #include "EditorUtils.h"
 #include "Assets/Scene.h"
 #include "Assets/Texture.h"
+#include "Assets/Timeline.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/SkeletalMesh.h"
 #include "Assets/SoundWave.h"
@@ -40,6 +41,7 @@
 #include "Utilities.h"
 #include "EditorUtils.h"
 #include "EditorImgui.h"
+#include "Timeline/TimelineActions.h"
 #include "Log.h"
 
 #include "Nodes/3D/Mesh3d.h"
@@ -698,21 +700,34 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     // ( ) Run the makefile to compile the game.
     bool needCompile = true;
-    std::string prebuiltExeName = (platform == Platform::Windows) ? "Octave.exe" : "Octave.elf";
-
-    // If packaging for Windows or Linux in standalone editor, we can use the existing octave executables.
-    // But in headless mode, always compile since we're doing a full build.
-    if (standalone && !IsHeadless() &&
-        (platform == Platform::Windows || platform == Platform::Linux))
-    {
-        needCompile = !SYS_DoesFileExist(prebuiltExeName.c_str(), false);
-    }
 
     std::string buildProjName = standalone ? "Standalone" : projectName;
     std::string buildProjDir = standalone ? octaveDirectory+"Standalone/" : projectDir;
     std::string buildDstExeName = standalone ? "Octave" : projectName;
 
     bool useSteam = GetEngineConfig()->mPackageForSteam;
+
+    // Build the full path to the prebuilt Release executable so we don't
+    // accidentally pick up the editor exe from the working directory.
+    std::string prebuiltExePath;
+    if (platform == Platform::Windows)
+    {
+        prebuiltExePath = buildProjDir + "Build/Windows/x64/"
+            + (useSteam ? "ReleaseSteam/" : "Release/")
+            + "Octave.exe";
+    }
+    else if (platform == Platform::Linux)
+    {
+        prebuiltExePath = buildProjDir + "Build/Linux/Octave.elf";
+    }
+
+    // If packaging for Windows or Linux in standalone editor, we can use the existing octave executables.
+    // But in headless mode, always compile since we're doing a full build.
+    if (standalone && !IsHeadless() &&
+        (platform == Platform::Windows || platform == Platform::Linux))
+    {
+        needCompile = !SYS_DoesFileExist(prebuiltExePath.c_str(), false);
+    }
 
     LogWarning("[BUILD] needCompile=%d plat=%d", needCompile ? 1 : 0, (int)platform);
     if (needCompile)
@@ -913,7 +928,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     if (!needCompile)
     {
         // Override exe path for uncompiled standalone builds
-        exeSrc = prebuiltExeName;
+        exeSrc = prebuiltExePath;
     }
 
 
@@ -3942,8 +3957,10 @@ void ActionManager::DeleteAsset(AssetStub* stub)
 
         if (GetEditorState()->GetInspectedObject() == stub->mAsset)
         {
-            GetEditorState()->InspectObject(nullptr);
+            GetEditorState()->InspectObject(nullptr, true);
         }
+
+        GetEditorState()->RemoveFromInspectHistory(stub->mAsset);
 
         std::string path = stub->mPath;
         std::string assetName = stub->mName;
@@ -5301,6 +5318,44 @@ void ActionManager::EXE_ReplaceWithStaticMesh(const std::vector<Node*>& nodes)
         return;
 
     ActionReplaceWithStaticMesh* action = new ActionReplaceWithStaticMesh(nodes);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+// ======= Timeline Actions =======
+
+void ActionManager::EXE_TimelineAddTrack(Timeline* timeline, TypeId trackType)
+{
+    ActionTimelineAddTrack* action = new ActionTimelineAddTrack(timeline, trackType);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_TimelineRemoveTrack(Timeline* timeline, int32_t trackIndex)
+{
+    ActionTimelineRemoveTrack* action = new ActionTimelineRemoveTrack(timeline, trackIndex);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_TimelineAddClip(Timeline* timeline, int32_t trackIndex, TypeId clipType, float startTime, float duration)
+{
+    ActionTimelineAddClip* action = new ActionTimelineAddClip(timeline, trackIndex, clipType, startTime, duration);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_TimelineRemoveClip(Timeline* timeline, int32_t trackIndex, int32_t clipIndex)
+{
+    ActionTimelineRemoveClip* action = new ActionTimelineRemoveClip(timeline, trackIndex, clipIndex);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_TimelineMoveClip(Timeline* timeline, int32_t trackIndex, int32_t clipIndex, float oldStartTime, float newStartTime)
+{
+    ActionTimelineMoveClip* action = new ActionTimelineMoveClip(timeline, trackIndex, clipIndex, oldStartTime, newStartTime);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_TimelineBindTrack(Timeline* timeline, int32_t trackIndex, uint64_t oldUuid, uint64_t newUuid, const std::string& oldName, const std::string& newName)
+{
+    ActionTimelineBindTrack* action = new ActionTimelineBindTrack(timeline, trackIndex, oldUuid, newUuid, oldName, newName);
     ActionManager::Get()->ExecuteAction(action);
 }
 

@@ -61,6 +61,10 @@ public:
     std::vector<Node*> GatherNodes();
     void GatherNodes(std::vector<Node*>& outNodes);
 
+    Node* FindNodeByUuid(uint64_t uuid);
+    void RegisterNodeUuid(Node* node);
+    void UnregisterNodeUuid(Node* node);
+
     void Clear();
 
     int32_t GetIndex() const;
@@ -221,4 +225,6 @@ private:
     std::vector<PrimitivePair> mCurrentOverlaps;
     std::vector<PrimitivePair> mPreviousOverlaps;
 
+    // Node UUID lookup
+    std::unordered_map<uint64_t, Node*> mUuidMap;
 };

@@ -1,5 +1,6 @@
 #include "Script.h"
 #include "Nodes/3D/Primitive3d.h"
+#include <algorithm>
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Constants.h"
 #include "Assets/SkeletalMesh.h"
@@ -1995,6 +1996,73 @@ bool Script::CheckIfFunctionExists(const char* funcName)
 #endif
 
     return exists;
+}
+
+void Script::GatherFunctionNames(std::vector<std::string>& outNames) const
+{
+#if LUA_ENABLED
+    if (!IsActive())
+        return;
+
+    lua_State* L = GetLua();
+    Node_Lua::Create(L, mOwner);
+
+    if (!lua_isuserdata(L, -1))
+    {
+        lua_pop(L, 1);
+        return;
+    }
+
+    int udIdx = lua_gettop(L);
+
+    // Iterate all fields on the instance
+    lua_pushnil(L);
+    while (lua_next(L, udIdx) != 0)
+    {
+        if (lua_isfunction(L, -1) && lua_isstring(L, -2))
+        {
+            const char* name = lua_tostring(L, -2);
+
+            // Filter out __-prefixed Lua internals
+            if (name[0] == '_' && name[1] == '_')
+            {
+                lua_pop(L, 1);
+                continue;
+            }
+
+            // Filter out known lifecycle/built-in functions
+            static const char* sBuiltinFunctions[] = {
+                "Tick", "Create", "Destroy", "BeginPlay", "EndPlay",
+                "BeginOverlap", "EndOverlap", "OnCollision", "GatherProperties",
+                "GatherReplicatedData", "GatherNetFuncs", "EditorTick"
+            };
+
+            bool isBuiltin = false;
+            for (uint32_t i = 0; i < sizeof(sBuiltinFunctions) / sizeof(sBuiltinFunctions[0]); ++i)
+            {
+                if (strcmp(name, sBuiltinFunctions[i]) == 0)
+                {
+                    isBuiltin = true;
+                    break;
+                }
+            }
+
+            if (!isBuiltin)
+            {
+                outNames.push_back(name);
+            }
+        }
+
+        // Pop value, keep key for next iteration
+        lua_pop(L, 1);
+    }
+
+    // Pop userdata
+    lua_pop(L, 1);
+
+    // Sort alphabetically
+    std::sort(outNames.begin(), outNames.end());
+#endif
 }
 
 
