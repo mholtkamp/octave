@@ -335,3 +335,4 @@ Engine/Assets/Scenes/Levels/SC_Demo_FirstPerson.oct
 .dev/DragAndDrop_Verify.md
 /Standalone/Embedded*.cpp
 /Standalone/EmbeddedAssets.cpp
+/Standalone/EmbeddedScripts.cpp
