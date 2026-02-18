@@ -177,6 +177,16 @@ std::string LaunchersModule::BuildLaunchCommand(Platform platform, const std::st
     ReplaceAll(cmd, "{output}", "\"" + outputPath + "\"");
     ReplaceAll(cmd, "{outputdir}", "\"" + outputDir + "\"");
 
+#if PLATFORM_WINDOWS
+    // start "" launches the command asynchronously so the editor doesn't freeze.
+    // The "" is the window title (required when the first real arg is quoted).
+    // No cmd /c wrapper needed — the "start" prefix prevents cmd.exe's quote-stripping.
+    cmd = "start \"\" " + cmd;
+#elif PLATFORM_LINUX
+    // Background the process so the editor doesn't freeze.
+    cmd += " &";
+#endif
+
     return cmd;
 }
 

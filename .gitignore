@@ -333,3 +333,5 @@ Engine/Assets/Scenes/Levels/SC_Demo_FirstPerson.oct
 **Makefile_TEMP**
 .dev/toImpliment.md
 .dev/DragAndDrop_Verify.md
+/Standalone/Embedded*.cpp
+/Standalone/EmbeddedAssets.cpp
