@@ -680,6 +680,9 @@
     <ClCompile Include="..\External\Imgui\imgui_widgets.cpp">
       <Filter>Source Files\Editor\Imgui</Filter>
     </ClCompile>
+    <ClCompile Include="..\External\Imgui\imgui_dock.cpp">
+      <Filter>Source Files\Editor\Imgui</Filter>
+    </ClCompile>
     <ClCompile Include="..\External\Imgui\misc\cpp\imgui_stdlib.cpp">
       <Filter>Source Files\Editor\Imgui</Filter>
     </ClCompile>

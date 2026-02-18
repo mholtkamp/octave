@@ -163,48 +163,24 @@ void DebugLogWindow::GoToPrevMatch()
     mNeedScrollToMatch = true;
 }
 
-float DebugLogWindow::DrawResizeHandle(float x, float y, float w, float currentH)
-{
-    const float handleHeight = 5.0f;
-    ImGui::SetNextWindowPos(ImVec2(x, y - handleHeight));
-    ImGui::SetNextWindowSize(ImVec2(w, handleHeight));
-    ImGui::Begin("##DebugLogResize", nullptr,
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground |
-        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-
-    ImGui::InvisibleButton("##ResizeGrip", ImVec2(w, handleHeight));
-
-    if (ImGui::IsItemHovered())
-    {
-        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
-    }
-
-    if (ImGui::IsItemActive())
-    {
-        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
-        float delta = ImGui::GetIO().MouseDelta.y;
-        currentH -= delta;
-
-        float maxH = ImGui::GetIO().DisplaySize.y * 0.5f;
-        currentH = glm::clamp(currentH, 80.0f, maxH);
-    }
-
-    ImGui::End();
-    return currentH;
-}
-
-void DebugLogWindow::Draw(float panelX, float panelY, float panelWidth, float panelHeight)
+void DebugLogWindow::Draw()
 {
     DrainPendingEntries();
 
-    static const ImGuiWindowFlags kLogWindowFlags =
-        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove;
+    const float dispWidth = ImGui::GetIO().DisplaySize.x;
+    const float dispHeight = ImGui::GetIO().DisplaySize.y;
 
-    ImGui::SetNextWindowPos(ImVec2(panelX, panelY));
-    ImGui::SetNextWindowSize(ImVec2(panelWidth, panelHeight));
+    ImGui::SetNextWindowPos(ImVec2(0.0f, dispHeight - 200.0f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(dispWidth, 200.0f), ImGuiCond_FirstUseEver);
 
-    ImGui::Begin("Debug Log", nullptr, kLogWindowFlags);
+    ImGui::Begin("Debug Log", nullptr, ImGuiWindowFlags_NoCollapse);
+    DrawContent();
+    ImGui::End();
+}
+
+void DebugLogWindow::DrawContent()
+{
+    DrainPendingEntries();
 
     // Toolbar row
     if (ImGui::Button("Clear"))
@@ -448,8 +424,6 @@ void DebugLogWindow::Draw(float panelX, float panelY, float panelWidth, float pa
     }
 
     ImGui::EndChild();
-
-    ImGui::End();
 }
 
 #endif

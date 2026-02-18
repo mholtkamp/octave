@@ -18,8 +18,8 @@ struct DebugLogEntry
 class DebugLogWindow
 {
 public:
-    void Draw(float panelX, float panelY, float panelWidth, float panelHeight);
-    float DrawResizeHandle(float x, float y, float w, float currentH);
+    void Draw();
+    void DrawContent();
     void Clear();
     static void LogCallback(LogSeverity severity, const char* message);
 
