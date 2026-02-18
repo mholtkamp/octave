@@ -155,6 +155,7 @@ static bool IsBottomPaneVisible()
 static bool sDockInitialized = false;
 static ImVec2 sViewportDockPos = ImVec2(0, 0);
 static ImVec2 sViewportDockSize = ImVec2(800, 600);
+static bool sViewportDockHovered = false;
 
 // Forward declarations for panel content functions (called from DrawDockspace)
 static void DrawScenePanel();
@@ -200,6 +201,11 @@ static void DrawDockspace()
     {
         sViewportDockPos = ImGui::GetWindowPos();
         sViewportDockSize = ImGui::GetWindowSize();
+        sViewportDockHovered = ImGui::IsWindowHovered();
+    }
+    else
+    {
+        sViewportDockHovered = false;
     }
     ImGui::EndDock();
     ImGui::PopStyleColor();
@@ -6050,6 +6056,11 @@ void EditorImguiGetViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t&
         width = uint32_t(ImGui::GetIO().DisplaySize.x + 0.5f);
         height = uint32_t(ImGui::GetIO().DisplaySize.y + 0.5f);
     }
+}
+
+bool EditorImguiIsViewportHovered()
+{
+    return sViewportDockHovered;
 }
 
 bool EditorIsInterfaceVisible()
