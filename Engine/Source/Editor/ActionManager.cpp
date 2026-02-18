@@ -937,6 +937,12 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     //std::string exeCopyCmd = std::string("cp ") + exeSrc + " " + packagedDir;
     //SYS_Exec(exeCopyCmd.c_str());
 
+    // Delete the built binary so a stale file isn't copied on a subsequent failed build.
+    if (needCompile)
+    {
+        SYS_RemoveFile(exeSrc.c_str());
+    }
+
     if (standalone)
     {
         // Rename the executable to the project name

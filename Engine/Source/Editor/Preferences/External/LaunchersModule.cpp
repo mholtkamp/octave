@@ -45,7 +45,7 @@ void LaunchersModule::Render()
     }
     if (ImGui::IsItemHovered())
     {
-        ImGui::SetTooltip("Command-line arguments. Default: {emulator} -e {output}");
+        ImGui::SetTooltip("Command-line arguments. Default: {emulator} --batch -e {output}");
     }
 
     ImGui::Spacing();
@@ -98,7 +98,7 @@ void LaunchersModule::Render()
 void LaunchersModule::LoadSettings(const rapidjson::Document& doc)
 {
     mDolphinPath = JsonSettings::GetString(doc, "dolphinPath", "");
-    mDolphinArgs = JsonSettings::GetString(doc, "dolphinArgs", "{emulator} -e {output}");
+    mDolphinArgs = JsonSettings::GetString(doc, "dolphinArgs", "{emulator} --batch -e {output}");
     mAzaharPath = JsonSettings::GetString(doc, "azaharPath", "");
     mAzaharArgs = JsonSettings::GetString(doc, "azaharArgs", "{emulator} {output}");
 }
@@ -151,7 +151,7 @@ std::string LaunchersModule::BuildLaunchCommand(Platform platform, const std::st
         case Platform::GameCube:
         case Platform::Wii:
             emulatorPath = mDolphinPath;
-            args = mDolphinArgs.empty() ? "{emulator} -e {output}" : mDolphinArgs;
+            args = mDolphinArgs.empty() ? "{emulator --batch -e {output}" : mDolphinArgs;
             break;
 
         case Platform::N3DS:

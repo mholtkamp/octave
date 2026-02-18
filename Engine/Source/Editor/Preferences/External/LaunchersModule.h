@@ -33,7 +33,7 @@ public:
     std::string mDolphinPath;
 
     /** @brief Command-line arguments for Dolphin. Supports placeholders: {emulator}, {output}, {outputdir} */
-    std::string mDolphinArgs = "{emulator} -e {output}";
+    std::string mDolphinArgs = "{emulator} --batch -e {output}";
 
     /** @brief Path to Azahar/Citra emulator executable (3DS) */
     std::string mAzaharPath;
