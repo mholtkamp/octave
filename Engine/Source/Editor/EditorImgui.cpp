@@ -182,7 +182,11 @@ static void DrawDockspace()
         ImGuiWindowFlags_NoBringToFrontOnFocus;
 
     ImGui::Begin("EditorDock", nullptr, dockHostFlags);
+
+    // Make dockspace child transparent so 3D render shows through Viewport area
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 0));
     ImGui::BeginDockspace();
+    ImGui::PopStyleColor();
 
     // Visibility bools synced with EditorState
     bool sceneOpen = GetEditorState()->mShowLeftPane;
@@ -190,13 +194,15 @@ static void DrawDockspace()
     bool propsOpen = GetEditorState()->mShowRightPane;
     bool debugLogOpen = IsBottomPaneVisible();
 
-    // --- Viewport dock (transparent, root) ---
+    // --- Viewport dock (transparent so 3D render shows through) ---
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 0));
     if (ImGui::BeginDock("Viewport", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
     {
         sViewportDockPos = ImGui::GetWindowPos();
         sViewportDockSize = ImGui::GetWindowSize();
     }
     ImGui::EndDock();
+    ImGui::PopStyleColor();
 
     // --- Assets dock ---
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));

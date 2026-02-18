@@ -1324,12 +1324,14 @@ void ImGui::UndockAll(const char* panel)
     {
         ctx.doUndock(*leaves[i]);
         leaves[i]->status = DockContext::Status_Float;
+        leaves[i]->active = true;
     }
 
     // Ensure first leaf is the docked root
     if (leaves.size() > 0)
     {
         leaves[0]->status = DockContext::Status_Docked;
+        leaves[0]->active = true;
         leaves[0]->setPosSize(ctx.m_workspace_pos, ctx.m_workspace_size);
     }
 
