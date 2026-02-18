@@ -2382,6 +2382,19 @@ static std::string GetFixedFilename(const char* name, const char* prefix)
     return nameStr;
 }
 
+static std::string SanitizeCppIdentifier(const std::string& name)
+{
+    std::string result = name;
+    for (char& c : result)
+    {
+        if (!isalnum(c) && c != '_')
+            c = '_';
+    }
+    if (!result.empty() && isdigit(result[0]))
+        result = "_" + result;
+    return result;
+}
+
 static void ConvertFileToByteString(
     const std::string& filePath,
     const std::string& name,
@@ -3692,7 +3705,7 @@ void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*,
         {
             AssetStub* stub = assets[i].first;
             const std::string& packPath = assets[i].second;
-            std::string dataVarName = stub->mName + "_Data";
+            std::string dataVarName = SanitizeCppIdentifier(stub->mName) + "_Data";
             uint32_t dataSize = 0;
 
             std::string sourceString;

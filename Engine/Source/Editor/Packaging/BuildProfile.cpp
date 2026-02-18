@@ -70,6 +70,7 @@ const char* GetPlatformOutputExtension(Platform platform)
 
 bool PlatformRequiresDockerOnWindows(Platform platform)
 {
+    return false;
     switch (platform)
     {
         case Platform::GameCube:
