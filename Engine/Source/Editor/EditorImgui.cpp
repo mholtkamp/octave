@@ -129,8 +129,9 @@ static float GetMainMenuBarHeight()
 static float GetToolbarHeight()
 {
     const ImGuiStyle& style = ImGui::GetStyle();
-    float buttonH = ImGui::GetFontSize() + style.FramePadding.y * 2.0f;
-    return buttonH + style.WindowPadding.y * 2.0f;
+    float buttonH = ImGui::GetFontSize();
+    //float buttonH = ImGui::GetFontSize() + style.FramePadding.y * 2.0f;
+    return buttonH + style.WindowPadding.y ;
 }
 static float GetTopBarHeight()
 {

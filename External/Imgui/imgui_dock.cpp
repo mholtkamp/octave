@@ -14,6 +14,9 @@
 
 using namespace ImGui;
 
+static float g_dock_tab_rounding_left = 0.0f;
+static float g_dock_tab_rounding_right = 0.0f;
+
 struct DockContext
 {
     enum EndAction_
@@ -652,7 +655,7 @@ struct DockContext
 
             while (dock_tab)
             {
-                SameLine(0, 15);
+                SameLine(0, ImMax(g_dock_tab_rounding_left, g_dock_tab_rounding_right));
 
                 const char* text_end = FindRenderedTextEnd(dock_tab->label);
                 ImVec2 sz(CalcTextSize(dock_tab->label, text_end).x, line_height);
@@ -683,15 +686,32 @@ struct DockContext
                         center + ImVec2(3.5f, -3.5f), center + ImVec2(-3.5f, 3.5f), text_color);
                 }
                 tab_base = pos.y;
+                float rL = g_dock_tab_rounding_left;
+                float rR = g_dock_tab_rounding_right;
                 draw_list->PathClear();
-                draw_list->PathLineTo(pos + ImVec2(-15, sz.y));
-                draw_list->PathBezierCubicCurveTo(
-                    pos + ImVec2(-10, sz.y), pos + ImVec2(-5, 0), pos + ImVec2(0, 0), 10);
-                draw_list->PathLineTo(pos + ImVec2(sz.x, 0));
-                draw_list->PathBezierCubicCurveTo(pos + ImVec2(sz.x + 5, 0),
-                    pos + ImVec2(sz.x + 10, sz.y),
-                    pos + ImVec2(sz.x + 15, sz.y),
-                    10);
+                if (rL > 0.0f)
+                {
+                    draw_list->PathLineTo(pos + ImVec2(-rL, sz.y));
+                    draw_list->PathBezierCubicCurveTo(
+                        pos + ImVec2(-rL * 0.67f, sz.y), pos + ImVec2(-rL * 0.33f, 0), pos + ImVec2(0, 0), 10);
+                }
+                else
+                {
+                    draw_list->PathLineTo(pos + ImVec2(0, sz.y));
+                    draw_list->PathLineTo(pos + ImVec2(0, 0));
+                }
+                if (rR > 0.0f)
+                {
+                    draw_list->PathLineTo(pos + ImVec2(sz.x, 0));
+                    draw_list->PathBezierCubicCurveTo(
+                        pos + ImVec2(sz.x + rR * 0.33f, 0), pos + ImVec2(sz.x + rR * 0.67f, sz.y),
+                        pos + ImVec2(sz.x + rR, sz.y), 10);
+                }
+                else
+                {
+                    draw_list->PathLineTo(pos + ImVec2(sz.x, 0));
+                    draw_list->PathLineTo(pos + ImVec2(sz.x, sz.y));
+                }
                 draw_list->PathFillConvex(
                     hovered ? color_hovered : (dock_tab->active ? color_active : color));
                 draw_list->AddText(pos + ImVec2(0, 1), text_color, dock_tab->label, text_end);
@@ -1451,6 +1471,18 @@ void ImGui::ClearDocks(const char* panel)
     ctx.m_docks.clear();
     ctx.m_current = nullptr;
     ctx.m_next_parent = nullptr;
+}
+
+void ImGui::SetDockTabRounding(float left, float right)
+{
+    g_dock_tab_rounding_left = left;
+    g_dock_tab_rounding_right = right;
+}
+
+void ImGui::GetDockTabRounding(float& left, float& right)
+{
+    left = g_dock_tab_rounding_left;
+    right = g_dock_tab_rounding_right;
 }
 
 void ImGui::InitDock()
