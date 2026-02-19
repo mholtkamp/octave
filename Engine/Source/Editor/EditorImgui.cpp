@@ -60,6 +60,7 @@
 #include "CustomImgui.h"
 #include "./ImGuizmo/ImGuizmo.h"
 #include "imgui_dock.h"
+#include "imgui_internal.h"
 
 #if PLATFORM_WINDOWS
 #include "backends/imgui_impl_win32.cpp"
@@ -155,7 +156,7 @@ static bool IsBottomPaneVisible()
 static bool sDockInitialized = false;
 static ImVec2 sViewportDockPos = ImVec2(0, 0);
 static ImVec2 sViewportDockSize = ImVec2(800, 600);
-static bool sViewportDockHovered = false;
+static ImGuiWindow* sViewportDockWindow = nullptr;
 
 // Forward declarations for panel content functions (called from DrawDockspace)
 static void DrawScenePanel();
@@ -201,11 +202,40 @@ static void DrawDockspace()
     {
         sViewportDockPos = ImGui::GetWindowPos();
         sViewportDockSize = ImGui::GetWindowSize();
-        sViewportDockHovered = ImGui::IsWindowHovered();
-    }
-    else
-    {
-        sViewportDockHovered = false;
+        sViewportDockWindow = ImGui::GetCurrentWindow();
+
+        // Drop target for asset drag-and-drop into the 3D viewport
+        const ImGuiPayload* activePayload = ImGui::GetDragDropPayload();
+        if (activePayload != nullptr && activePayload->IsDataType(DRAGDROP_ASSET))
+        {
+            ImVec2 avail = ImGui::GetContentRegionAvail();
+            if (avail.x > 0.0f && avail.y > 0.0f)
+            {
+                ImGui::InvisibleButton("##ViewportDropTarget", avail);
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_ASSET))
+                    {
+                        AssetStub* droppedStub = *(AssetStub**)payload->Data;
+                        if (droppedStub != nullptr && droppedStub->mType == StaticMesh::GetStaticType())
+                        {
+                            sAssetDropStub = droppedStub;
+                            sAssetDropParentNode = nullptr;
+                            sAssetDropInViewport = true;
+                            sAssetDropPopupPos = ImGui::GetMousePos();
+                            sAssetDropPopupPending = true;
+
+                            ImVec2 dropPos = ImGui::GetMousePos();
+                            float scale = GetEngineConfig()->mEditorInterfaceScale;
+                            if (scale == 0.0f) scale = 1.0f;
+                            sAssetDropScreenX = (int32_t)(dropPos.x * scale);
+                            sAssetDropScreenY = (int32_t)(dropPos.y * scale);
+                        }
+                    }
+                    ImGui::EndDragDropTarget();
+                }
+            }
+        }
     }
     ImGui::EndDock();
     ImGui::PopStyleColor();
@@ -5137,53 +5167,6 @@ static void DrawToolbar()
     ImGui::End();
     ImGui::PopStyleVar();
 
-    // Viewport overlay drop target for asset drag-and-drop (only active during drag)
-    {
-        const ImGuiPayload* activePayload = ImGui::GetDragDropPayload();
-        if (activePayload != nullptr && activePayload->IsDataType(DRAGDROP_ASSET))
-        {
-            float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
-            if (interfaceScale == 0.0f) interfaceScale = 1.0f;
-            float invScale = 1.0f / interfaceScale;
-            EditorState* es = GetEditorState();
-
-            ImGui::SetNextWindowPos(ImVec2(es->mViewportX * invScale, es->mViewportY * invScale));
-            ImGui::SetNextWindowSize(ImVec2(es->mViewportWidth * invScale, es->mViewportHeight * invScale));
-
-            ImGuiWindowFlags overlayFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
-                ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground |
-                ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus;
-
-            ImGui::Begin("##ViewportAssetDropOverlay", nullptr, overlayFlags);
-            ImGui::InvisibleButton("##ViewportDropTarget", ImGui::GetContentRegionAvail());
-
-            if (ImGui::BeginDragDropTarget())
-            {
-                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_ASSET))
-                {
-                    AssetStub* droppedStub = *(AssetStub**)payload->Data;
-                    if (droppedStub != nullptr && droppedStub->mType == StaticMesh::GetStaticType())
-                    {
-                        sAssetDropStub = droppedStub;
-                        sAssetDropParentNode = nullptr;
-                        sAssetDropInViewport = true;
-                        sAssetDropPopupPos = ImGui::GetMousePos();
-                        sAssetDropPopupPending = true;
-
-                        ImVec2 dropPos = ImGui::GetMousePos();
-                        float scale = GetEngineConfig()->mEditorInterfaceScale;
-                        if (scale == 0.0f) scale = 1.0f;
-                        sAssetDropScreenX = (int32_t)(dropPos.x * scale);
-                        sAssetDropScreenY = (int32_t)(dropPos.y * scale);
-                    }
-                }
-                ImGui::EndDragDropTarget();
-            }
-            ImGui::End();
-        }
-    }
-
     // Set up ImGuizmo rect for the viewport area
     float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
     if (interfaceScale == 0.0f)
@@ -5198,6 +5181,8 @@ static void DrawToolbar()
         (float)edState->mViewportWidth * invInterfaceScale,
         (float)edState->mViewportHeight * invInterfaceScale
     );
+
+    ImGuizmo::SetAlternativeWindow(sViewportDockWindow);
 }
 
 static void DrawPaintColorsPanel()
@@ -6060,7 +6045,11 @@ void EditorImguiGetViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t&
 
 bool EditorImguiIsViewportHovered()
 {
-    return sViewportDockHovered;
+    ImVec2 mp = ImGui::GetIO().MousePos;
+    return (mp.x >= sViewportDockPos.x &&
+            mp.x <  sViewportDockPos.x + sViewportDockSize.x &&
+            mp.y >= sViewportDockPos.y &&
+            mp.y <  sViewportDockPos.y + sViewportDockSize.y);
 }
 
 bool EditorIsInterfaceVisible()
