@@ -30,6 +30,8 @@ IMGUI_API void UndockAll(const char* panel);
 IMGUI_API void DockTo(const char* panel, const char* dockLabel, const char* destLabel, ImGuiDockSlot slot, float ratio = 0.5f);
 IMGUI_API void DockToRoot(const char* panel, const char* dockLabel, ImGuiDockSlot slot, float ratio = 0.5f);
 IMGUI_API bool HasDockLayout(const char* panel);
+IMGUI_API bool HasDock(const char* panel, const char* label);
+IMGUI_API void ClearDocks(const char* panel);
 IMGUI_API void InitDock();
 
 };

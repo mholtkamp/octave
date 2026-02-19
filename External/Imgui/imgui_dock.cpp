@@ -1133,6 +1133,12 @@ static void readLine(ImGuiContext* ctx, ImGuiSettingsHandler* handler, void* ent
             userdata->dock->label = ImStrdup(label);
             userdata->dock->id = ImHashStr(userdata->dock->label, 0);
         }
+        else if (strncmp(line_start, "label=", 6) == 0)
+        {
+            // Empty label (container docks) - sscanf %[] can't match empty strings
+            userdata->dock->label = ImStrdup("");
+            userdata->dock->id = ImHashStr(userdata->dock->label, 0);
+        }
         else if (sscanf(line_start, "x=%d", &x) == 1)
             userdata->dock->pos.x = (float)x;
         else if (sscanf(line_start, "y=%d", &y) == 1)
@@ -1410,6 +1416,41 @@ bool ImGui::HasDockLayout(const char* panel)
             return true;
     }
     return false;
+}
+
+bool ImGui::HasDock(const char* panel, const char* label)
+{
+    if (!panel || !label) return false;
+    auto it = g_docklist.find(panel);
+    if (it == g_docklist.end()) return false;
+    DockContext& ctx = it->second;
+
+    char full_label[256];
+    snprintf(full_label, sizeof(full_label), "%s##%s", label, panel);
+    ImU32 id = ImHashStr(full_label, 0);
+
+    for (int i = 0; i < ctx.m_docks.size(); ++i)
+    {
+        if (ctx.m_docks[i]->id == id) return true;
+    }
+    return false;
+}
+
+void ImGui::ClearDocks(const char* panel)
+{
+    if (!panel) return;
+    auto it = g_docklist.find(panel);
+    if (it == g_docklist.end()) return;
+    DockContext& ctx = it->second;
+
+    for (int i = 0; i < ctx.m_docks.size(); ++i)
+    {
+        ctx.m_docks[i]->~Dock();
+        MemFree(ctx.m_docks[i]);
+    }
+    ctx.m_docks.clear();
+    ctx.m_current = nullptr;
+    ctx.m_next_parent = nullptr;
 }
 
 void ImGui::InitDock()

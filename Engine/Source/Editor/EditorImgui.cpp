@@ -85,6 +85,35 @@
 #include <Nodes/Widgets/ArrayWidget.h>
 
 
+static const char* GetNodeIcon(Node* node)
+{
+    if (node->As<InstancedMesh3D>())          return ICON_INSTANCE_MESH;
+    if (node->As<ShadowMesh3D>())             return ICON_SHADOW;
+    if (node->As<SkeletalMesh3D>())           return ICON_SKELETON;
+    if (node->As<TextMesh3D>())               return ICON_TEXTMESH;
+    if (node->As<StaticMesh3D>())             return ICON_STATIC_MESH;
+    if (node->As<PointLight3D>())             return ICON_LIGHTBULB;
+    if (node->As<DirectionalLight3D>())       return ICON_SUN;
+    if (node->As<Camera3D>())                 return ICON_IX_VIDEO_CAMERA_FILLED;
+    if (node->As<Particle3D>())               return ICON_FIREWORK;
+    if (node->As<Audio3D>())                  return ICON_RIVET_ICONS_AUDIO_SOLID;
+    if (node->As<Sphere3D>())                 return ICON_PH_SPHERE;
+    if (node->As<Box3D>())                    return ICON_FLUENT_MDL2_CUBE_SHAPE;
+    if (node->As<Capsule3D>())                return ICON_CAPSULE;
+    if (node->As<Spline3D>())                 return ICON_IC_BASELINE_LINK;
+    if (node->As<Text>())                     return ICON_TEXTWIDGET;
+    if (node->As<Button>())                   return ICON_BUTTON;
+    if (node->As<Console>())                  return ICON_CONSOLE;
+    if (node->As<Canvas>())                   return ICON_CANVAS;
+    if (node->As<Quad>())                     return ICON_RECT;
+    if (node->As<ArrayWidget>())              return ICON_LAYERS;
+    if (node->As<TimelinePlayer>())           return ICON_CLAPPERBOARD_CLOSE;
+    if (node->IsSceneLinked())                return ICON_STREAMLINE_PLUMP_WORLD_REMIX;
+    if (node->IsNode3D())                     return ICON_PH_SPHERE;
+    if (node->IsWidget())                     return ICON_UIWIDGET;
+    return ICON_SCENE;
+}
+
 struct FileBrowserDirEntry
 {
     std::string mName;
@@ -175,6 +204,68 @@ static ImVec2 sViewportDockPos = ImVec2(0, 0);
 static ImVec2 sViewportDockSize = ImVec2(800, 600);
 static ImGuiWindow* sViewportDockWindow = nullptr;
 
+// A known dock label that must exist in a valid layout.
+// If imgui.ini has dock data but this label is missing, the layout is stale.
+// Update kDockLayoutVersion when dock panel names change to force a reset.
+static constexpr uint32_t kDockLayoutVersion = 1;
+
+static void ValidateDockLayoutIni()
+{
+    const char* iniPath = ImGui::GetIO().IniFilename;
+    if (!iniPath)
+        return;
+
+    FILE* f = fopen(iniPath, "rb");
+    if (!f)
+        return; // No INI yet — first launch, nothing to validate.
+
+    fseek(f, 0, SEEK_END);
+    long fileSize = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    if (fileSize <= 0 || fileSize > 1024 * 1024)
+    {
+        fclose(f);
+        return;
+    }
+
+    std::string contents(fileSize, '\0');
+    fread(&contents[0], 1, fileSize, f);
+    fclose(f);
+
+    // Check if the file has a dock section at all.
+    if (contents.find("[Dock]") == std::string::npos)
+        return; // No dock data saved — nothing to invalidate.
+
+    // Check for a version marker we embed: "##DockLayoutVersion=N"
+    char versionTag[64];
+    snprintf(versionTag, sizeof(versionTag), "##DockLayoutVersion=%u", kDockLayoutVersion);
+
+    if (contents.find(versionTag) != std::string::npos)
+        return; // Version matches — layout is current.
+
+    // Layout is stale (version missing or wrong). Delete the file so ImGui
+    // starts fresh.  The default layout will be built by DrawDockspace()
+    // and saved on shutdown.
+    LogDebug("Dock layout version mismatch -- resetting imgui.ini");
+    remove(iniPath);
+}
+
+// Append the dock layout version marker to imgui.ini after ImGui saves it.
+static void StampDockLayoutVersion()
+{
+    const char* iniPath = ImGui::GetIO().IniFilename;
+    if (!iniPath)
+        return;
+
+    FILE* f = fopen(iniPath, "a");
+    if (!f)
+        return;
+
+    fprintf(f, "\n##DockLayoutVersion=%u\n", kDockLayoutVersion);
+    fclose(f);
+}
+
 // Forward declarations for panel content functions (called from DrawDockspace)
 static void DrawScenePanel();
 static void DrawAssetsPanel();
@@ -215,7 +306,7 @@ static void DrawDockspace()
 
     // --- Viewport dock (transparent so 3D render shows through) ---
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 0));
-    if (ImGui::BeginDock("Viewport", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+    if (ImGui::BeginDock(ICON_VIEWPORT3D "  Viewport", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
     {
         sViewportDockPos = ImGui::GetWindowPos();
         sViewportDockSize = ImGui::GetWindowSize();
@@ -259,7 +350,7 @@ static void DrawDockspace()
 
     // --- Assets dock ---
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
-    if (ImGui::BeginDock("Assets", &assetsOpen))
+    if (ImGui::BeginDock(ICON_ASSETS "  Assets", &assetsOpen))
     {
         DrawAssetsPanel();
     }
@@ -268,7 +359,7 @@ static void DrawDockspace()
 
     // --- Scene dock ---
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
-    if (ImGui::BeginDock("Scene", &sceneOpen))
+    if (ImGui::BeginDock(ICON_HIERARCHY "  Scene", &sceneOpen))
     {
         DrawScenePanel();
     }
@@ -279,7 +370,7 @@ static void DrawDockspace()
     bool lockedProperties = sObjectTabOpen && GetEditorState()->IsInspectLocked();
     ImVec4 propsBg = lockedProperties ? ImVec4(0.4f, 0.0f, 0.0f, 1.0f) : ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
     ImGui::PushStyleColor(ImGuiCol_ChildBg, propsBg);
-    if (ImGui::BeginDock("Properties", &propsOpen))
+    if (ImGui::BeginDock(ICON_INFO "  Properties", &propsOpen))
     {
         DrawPropertiesPanel();
     }
@@ -288,7 +379,7 @@ static void DrawDockspace()
 
     // --- Debug Log dock ---
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
-    if (ImGui::BeginDock("Debug Log", &debugLogOpen, ImGuiWindowFlags_NoCollapse))
+    if (ImGui::BeginDock(ICON_STREAMLINE_LOG_SOLID "  Debug Log", &debugLogOpen, ImGuiWindowFlags_NoCollapse))
     {
         GetDebugLogWindow()->DrawContent();
     }
@@ -307,20 +398,18 @@ static void DrawDockspace()
 
         if (isReset || !ImGui::HasDockLayout("EditorDock"))
         {
-            // Build default layout:
-            //  ┌──────────┬────────────────┬──────────┐
-            //  │          │                │          │
-            //  │  Scene   │   Viewport     │Properties│
-            //  │          │   (3D render)  │          │
-            //  │          │                │          │
-            //  ├──────────┴────────────────┴──────────┤
-            //  │        Assets | Debug Log            │
-            //  └──────────────────────────────────────┘
             ImGui::UndockAll("EditorDock");
-            ImGui::DockToRoot("EditorDock", "Scene", ImGuiDockSlot_Left, 0.2f);
-            ImGui::DockToRoot("EditorDock", "Properties", ImGuiDockSlot_Right, 0.15f);
-            ImGui::DockToRoot("EditorDock", "Assets", ImGuiDockSlot_Bottom, 0.33f);
-            ImGui::DockTo("EditorDock", "Debug Log", "Assets", ImGuiDockSlot_Tab);
+            ImGui::DockToRoot("EditorDock", ICON_HIERARCHY "  Scene", ImGuiDockSlot_Left, 0.2f);
+            ImGui::DockToRoot("EditorDock", ICON_INFO "  Properties", ImGuiDockSlot_Right, 0.15f);
+            ImGui::DockToRoot("EditorDock",ICON_ASSETS "  Assets", ImGuiDockSlot_Bottom, 0.33f);
+            ImGui::DockTo("EditorDock", ICON_STREAMLINE_LOG_SOLID "  Debug Log", ICON_ASSETS "  Assets", ImGuiDockSlot_Tab);
+
+            // Persist the fresh layout immediately so a crash won't leave a stale INI.
+            if (ImGui::GetIO().IniFilename)
+            {
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+                StampDockLayoutVersion();
+            }
 
             if (isReset)
             {
@@ -351,11 +440,9 @@ static void PopulateFileBrowserDirs()
 
     if (!dirEntry.mValid)
     {
-        // Invalid directory. Renamed or no longer exists?
-        // Remove favorite in case it was favorited. Will do nothing if not favorited.
+
         GetEditorState()->RemoveFavoriteDir(sFileBrowserCurDir);
 
-        // Default to project directory.
         sFileBrowserCurDir = SYS_GetAbsolutePath(GetEngineState()->mProjectDirectory);
         SYS_OpenDirectory(sFileBrowserCurDir, dirEntry);
     }
@@ -373,7 +460,6 @@ static void PopulateFileBrowserDirs()
 
     SYS_CloseDirectory(dirEntry);
 
-    // Sort entries alphabetically. Perhaps add different sorting methods in the future.
     auto alphaComp = [&](const FileBrowserDirEntry& l, const FileBrowserDirEntry& r)
     {
         if (l.mName == "..")
@@ -2542,14 +2628,23 @@ static void DrawPackageMenu()
     //}
 }
 
-static void ItemRowsBackground(float lineHeight = -1.0f, const ImColor& color = ImColor(20, 20, 20, 64))
+static void ItemRowsBackground(float lineHeight = -1.0f)
 {
     auto* drawList = ImGui::GetWindowDrawList();
     const auto& style = ImGui::GetStyle();
 
+    // Derive row color from theme's WindowBg — slightly lighter or darker for contrast
+    ImVec4 windowBg = style.Colors[ImGuiCol_WindowBg];
+    float luminance = windowBg.x * 0.299f + windowBg.y * 0.587f + windowBg.z * 0.114f;
+    ImU32 rowColor;
+    if (luminance < 0.5f)
+        rowColor = ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 0.04f));
+    else
+        rowColor = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 0.0f, 0.0f, 0.06f));
+
     if (lineHeight < 0)
     {
-        lineHeight = ImGui::GetTextLineHeight();
+        lineHeight = ImGui::GetFrameHeight();
     }
     lineHeight += style.ItemSpacing.y;
 
@@ -2579,7 +2674,7 @@ static void ItemRowsBackground(float lineHeight = -1.0f, const ImColor& color = 
     {
         if (isOdd)
         {
-            drawList->AddRectFilled({ xMin, y - style.ItemSpacing.y }, { xMax, y + lineHeight }, color);
+            drawList->AddRectFilled({ xMin, y - style.ItemSpacing.y }, { xMax, y + lineHeight }, rowColor);
         }
     }
 
@@ -2596,7 +2691,7 @@ static void DrawScenePanel()
     static std::string sFilterStr;
     bool filterCleared = false;
 
-    if (ImGui::InputText("Filter", &sFilterStrTemp, ImGuiInputTextFlags_EnterReturnsTrue))
+    if (ImGui::InputText(ICON_FILTER, &sFilterStrTemp, ImGuiInputTextFlags_EnterReturnsTrue))
     {
         sFilterStr = sFilterStrTemp;
         if (sFilterStr == "")
@@ -2675,34 +2770,7 @@ static void DrawScenePanel()
                 ImGui::PushStyleColor(ImGuiCol_Text, sceneColorIm);
             }
 
-            const char* nodeIcon = ICON_SCENE;
-            if (node->As<InstancedMesh3D>())          nodeIcon = ICON_INSTANCE_MESH;
-            else if (node->As<ShadowMesh3D>())        nodeIcon = ICON_SHADOW;
-            else if (node->As<SkeletalMesh3D>())      nodeIcon = ICON_SKELETON;
-            else if (node->As<TextMesh3D>())          nodeIcon = ICON_TEXTMESH;
-            else if (node->As<StaticMesh3D>())        nodeIcon = ICON_STATIC_MESH;
-            else if (node->As<PointLight3D>())        nodeIcon = ICON_LIGHTBULB;
-            else if (node->As<DirectionalLight3D>())  nodeIcon = ICON_SUN;
-            else if (node->As<Camera3D>())            nodeIcon = ICON_IX_VIDEO_CAMERA_FILLED;
-            else if (node->As<Particle3D>())          nodeIcon = ICON_FIREWORK;
-            else if (node->As<Audio3D>())             nodeIcon = ICON_RIVET_ICONS_AUDIO_SOLID;
-            else if (node->As<Sphere3D>())            nodeIcon = ICON_PH_SPHERE;
-            else if (node->As<Box3D>())               nodeIcon = ICON_FLUENT_MDL2_CUBE_SHAPE;
-            else if (node->As<Capsule3D>())           nodeIcon = ICON_CAPSULE;
-            else if (node->As<Spline3D>())            nodeIcon = ICON_IC_BASELINE_LINK;
-            else if (node->As<Text>())            nodeIcon = ICON_TEXTWIDGET;
-            else if (node->As<Button>())            nodeIcon = ICON_BUTTON;
-            else if (node->As<Console>())            nodeIcon = ICON_CONSOLE;
-            else if (node->As<Canvas>())            nodeIcon = ICON_CANVAS;
-            else if (node->As<Quad>())            nodeIcon = ICON_RECT;
-            else if (node->As<ArrayWidget>())            nodeIcon = ICON_LAYERS;
-            else if (node->As<TimelinePlayer>())            nodeIcon = ICON_CLAPPERBOARD_CLOSE;
-
-            else if (node->IsSceneLinked())         nodeIcon = ICON_STREAMLINE_PLUMP_WORLD_REMIX;
-            else if (node->IsNode3D())                nodeIcon = ICON_PH_SPHERE;
-            else if (node->IsWidget())                nodeIcon = ICON_UIWIDGET;
-
-
+            const char* nodeIcon = GetNodeIcon(node);
             std::string nodeLabel = std::string(nodeIcon) + " " + node->GetName();
             bool nodeOpen = ImGui::TreeNodeEx(nodeLabel.c_str(), nodeFlags);
             bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
@@ -4064,7 +4132,7 @@ static void DrawPropertiesPanel()
 
     if (ImGui::BeginTabBar("PropertyModeTabs"))
     {
-        if (ImGui::BeginTabItem("Object"))
+        if (ImGui::BeginTabItem(ICON_FLUENT_MDL2_CUBE_SHAPE "  Object"))
         {
             sObjectTabOpen = true;
             Object* obj = GetEditorState()->GetInspectedObject();
@@ -4098,6 +4166,9 @@ static void DrawPropertiesPanel()
 
                 // Display object name (e.g. StaticMesh3D)
                 std::string objName = obj->RuntimeName();
+                Node* objNode = obj->As<Node>();
+                if (objNode)
+                    objName = std::string(GetNodeIcon(objNode)) + " " + objName;
                 ImVec2 sz = ImVec2(-FLT_MIN, 0.0f);
                 ImVec4 headerColor = kSelectedColor;
                 headerColor.w = 0.0f;
@@ -4186,7 +4257,7 @@ static void DrawPropertiesPanel()
 
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Scene"))
+        if (ImGui::BeginTabItem(ICON_SCENE "  Scene"))
         {
             EditScene* editScene = GetEditorState()->GetEditScene();
             Scene* scene = editScene ? editScene->mSceneAsset.Get<Scene>() : nullptr;
@@ -4201,7 +4272,7 @@ static void DrawPropertiesPanel()
 
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Global"))
+        if (ImGui::BeginTabItem(ICON_GLOBE "  Global"))
         {
             std::vector<Property> globalProps;
             GatherGlobalProperties(globalProps);
@@ -4981,7 +5052,7 @@ static void DrawToolbar()
     // Translate button
     bool isTranslate = (gizmoOp == ImGuizmo::TRANSLATE);
     if (isTranslate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
-    if (ImGui::Button("T##Translate"))
+    if (ImGui::Button(ICON_BX_MOVE))
         gizmoOp = ImGuizmo::TRANSLATE;
     if (isTranslate) ImGui::PopStyleColor();
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("Translate (Space+G)");
@@ -4990,7 +5061,7 @@ static void DrawToolbar()
     ImGui::SameLine();
     bool isRotate = (gizmoOp == ImGuizmo::ROTATE);
     if (isRotate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
-    if (ImGui::Button("R##Rotate"))
+    if (ImGui::Button(ICON_LUCIDE_ROTATE_3D))
         gizmoOp = ImGuizmo::ROTATE;
     if (isRotate) ImGui::PopStyleColor();
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("Rotate (Space+R)");
@@ -4999,7 +5070,7 @@ static void DrawToolbar()
     ImGui::SameLine();
     bool isScale = (gizmoOp == ImGuizmo::SCALE);
     if (isScale) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
-    if (ImGui::Button("S##Scale"))
+    if (ImGui::Button(ICON_MAGE_SCALE_UP))
         gizmoOp = ImGuizmo::SCALE;
     if (isScale) ImGui::PopStyleColor();
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("Scale (Space+S)");
@@ -5011,7 +5082,7 @@ static void DrawToolbar()
 
     bool isLocal = (gizmoMode == ImGuizmo::LOCAL);
     if (isLocal) ImGui::PushStyleColor(ImGuiCol_Button, kToggledColor);
-    if (ImGui::Button(isLocal ? "Local" : "World"))
+    if (ImGui::Button(isLocal ? ICON_MDI_AXIS_ARROW "  Local" : ICON_GLOBE "  World"))
         gizmoMode = isLocal ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
     if (isLocal) ImGui::PopStyleColor();
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle Local/World (Ctrl+T)");
@@ -6014,6 +6085,11 @@ void EditorImguiInit()
     RegisterLogCallback(DebugLogWindow::LogCallback);
 
     ImGui::InitDock();
+
+    // Check imgui.ini for stale dock layout BEFORE first NewFrame() loads it.
+    // If dock panel names changed (e.g. icons added), the saved layout won't
+    // match and causes crashes.  Delete the file so ImGui starts fresh.
+    ValidateDockLayoutIni();
 }
 
 void EditorImguiDraw()
@@ -6108,6 +6184,7 @@ void EditorImguiPreShutdown()
     if (ImGui::GetIO().IniFilename)
     {
         ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+        StampDockLayoutVersion();
         ImGui::GetIO().IniFilename = nullptr;
     }
     ImGui::ShutdownDock();
