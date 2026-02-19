@@ -37,6 +37,7 @@
 
 #include "imgui.h"
 #include "./ImGuizmo/ImGuizmo.h"
+#include "EditorImgui.h"
 
 constexpr float sMaxCameraPitch = 89.99f;
 
@@ -90,7 +91,8 @@ bool Viewport3D::ShouldHandleInput() const
 
     // Note: Don't check ImGuizmo::IsUsing() or WantCaptureMouse here - we want right/middle
     // click to work even while the gizmo is active. Left-click is blocked separately via IsOver().
-    bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp);
+    bool viewportHovered = EditorImguiIsViewportHovered();
+    bool handleInput = ((!imguiAnyWindowHovered || viewportHovered) && !imguiWantsText && !imguiAnyPopupUp);
     return handleInput;
 }
 

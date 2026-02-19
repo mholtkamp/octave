@@ -59,6 +59,8 @@
 
 #include "CustomImgui.h"
 #include "./ImGuizmo/ImGuizmo.h"
+#include "imgui_dock.h"
+#include "imgui_internal.h"
 
 #if PLATFORM_WINDOWS
 #include "backends/imgui_impl_win32.cpp"
@@ -75,15 +77,20 @@ struct FileBrowserDirEntry
     bool mSelected = false;
 };
 
-static const float kSidePaneWidth = 200.0f;
-static float GetViewportBarHeight()
+static float GetMainMenuBarHeight()
+{
+    return ImGui::GetFrameHeight();
+}
+static float GetToolbarHeight()
 {
     const ImGuiStyle& style = ImGui::GetStyle();
     float buttonH = ImGui::GetFontSize() + style.FramePadding.y * 2.0f;
     return buttonH + style.WindowPadding.y * 2.0f;
 }
-static const ImGuiWindowFlags kPaneWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove;
-
+static float GetTopBarHeight()
+{
+    return GetMainMenuBarHeight() + GetToolbarHeight();
+}
 static const ImVec4 kSelectedColor = ImVec4(0.12f, 0.50f, 0.47f, 1.00f);
 static const ImVec4 kBgInactive = ImVec4(0.20f, 0.20f, 0.68f, 1.00f);
 static const ImVec4 kBgHover = ImVec4(0.26f, 0.61f, 0.98f, 0.80f);
@@ -146,24 +153,165 @@ static bool IsBottomPaneVisible()
     return true;
 }
 
-static void DrawDebugLogPanel()
+static bool sDockInitialized = false;
+static ImVec2 sViewportDockPos = ImVec2(0, 0);
+static ImVec2 sViewportDockSize = ImVec2(800, 600);
+static ImGuiWindow* sViewportDockWindow = nullptr;
+
+// Forward declarations for panel content functions (called from DrawDockspace)
+static void DrawScenePanel();
+static void DrawAssetsPanel();
+static void DrawPropertiesPanel();
+
+static void DrawDockspace()
 {
-    if (!IsBottomPaneVisible()) return;
+    float topBarH = GetTopBarHeight();
+    float displayW = ImGui::GetIO().DisplaySize.x;
+    float displayH = ImGui::GetIO().DisplaySize.y;
 
-    EditorState* es = GetEditorState();
-    const float dispWidth = ImGui::GetIO().DisplaySize.x;
-    const float dispHeight = ImGui::GetIO().DisplaySize.y;
+    ImGui::SetNextWindowPos(ImVec2(0.0f, topBarH));
+    ImGui::SetNextWindowSize(ImVec2(displayW, displayH - topBarH));
 
-    float panelX = 0.0f;
-    float panelWidth = dispWidth;
+    ImGuiWindowFlags dockHostFlags =
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoScrollWithMouse |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoSavedSettings |
+        ImGuiWindowFlags_NoBackground |
+        ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-    float panelY = dispHeight - es->mBottomPaneHeight;
+    ImGui::Begin("EditorDock", nullptr, dockHostFlags);
 
-    // Resize handle
-    es->mBottomPaneHeight = GetDebugLogWindow()->DrawResizeHandle(panelX, panelY, panelWidth, es->mBottomPaneHeight);
-    panelY = dispHeight - es->mBottomPaneHeight;
+    // Make dockspace child transparent so 3D render shows through Viewport area
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 0));
+    ImGui::BeginDockspace();
+    ImGui::PopStyleColor();
 
-    GetDebugLogWindow()->Draw(panelX, panelY, panelWidth, es->mBottomPaneHeight);
+    // Visibility bools synced with EditorState
+    bool sceneOpen = GetEditorState()->mShowLeftPane;
+    bool assetsOpen = GetEditorState()->mShowLeftPane;
+    bool propsOpen = GetEditorState()->mShowRightPane;
+    bool debugLogOpen = IsBottomPaneVisible();
+
+    // --- Viewport dock (transparent so 3D render shows through) ---
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 0));
+    if (ImGui::BeginDock("Viewport", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+    {
+        sViewportDockPos = ImGui::GetWindowPos();
+        sViewportDockSize = ImGui::GetWindowSize();
+        sViewportDockWindow = ImGui::GetCurrentWindow();
+
+        // Drop target for asset drag-and-drop into the 3D viewport
+        const ImGuiPayload* activePayload = ImGui::GetDragDropPayload();
+        if (activePayload != nullptr && activePayload->IsDataType(DRAGDROP_ASSET))
+        {
+            ImVec2 avail = ImGui::GetContentRegionAvail();
+            if (avail.x > 0.0f && avail.y > 0.0f)
+            {
+                ImGui::InvisibleButton("##ViewportDropTarget", avail);
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_ASSET))
+                    {
+                        AssetStub* droppedStub = *(AssetStub**)payload->Data;
+                        if (droppedStub != nullptr && droppedStub->mType == StaticMesh::GetStaticType())
+                        {
+                            sAssetDropStub = droppedStub;
+                            sAssetDropParentNode = nullptr;
+                            sAssetDropInViewport = true;
+                            sAssetDropPopupPos = ImGui::GetMousePos();
+                            sAssetDropPopupPending = true;
+
+                            ImVec2 dropPos = ImGui::GetMousePos();
+                            float scale = GetEngineConfig()->mEditorInterfaceScale;
+                            if (scale == 0.0f) scale = 1.0f;
+                            sAssetDropScreenX = (int32_t)(dropPos.x * scale);
+                            sAssetDropScreenY = (int32_t)(dropPos.y * scale);
+                        }
+                    }
+                    ImGui::EndDragDropTarget();
+                }
+            }
+        }
+    }
+    ImGui::EndDock();
+    ImGui::PopStyleColor();
+
+    // --- Assets dock ---
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+    if (ImGui::BeginDock("Assets", &assetsOpen))
+    {
+        DrawAssetsPanel();
+    }
+    ImGui::EndDock();
+    ImGui::PopStyleColor();
+
+    // --- Scene dock ---
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+    if (ImGui::BeginDock("Scene", &sceneOpen))
+    {
+        DrawScenePanel();
+    }
+    ImGui::EndDock();
+    ImGui::PopStyleColor();
+
+    // --- Properties dock ---
+    bool lockedProperties = sObjectTabOpen && GetEditorState()->IsInspectLocked();
+    ImVec4 propsBg = lockedProperties ? ImVec4(0.4f, 0.0f, 0.0f, 1.0f) : ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, propsBg);
+    if (ImGui::BeginDock("Properties", &propsOpen))
+    {
+        DrawPropertiesPanel();
+    }
+    ImGui::EndDock();
+    ImGui::PopStyleColor();
+
+    // --- Debug Log dock ---
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+    if (ImGui::BeginDock("Debug Log", &debugLogOpen, ImGuiWindowFlags_NoCollapse))
+    {
+        GetDebugLogWindow()->DrawContent();
+    }
+    ImGui::EndDock();
+    ImGui::PopStyleColor();
+
+    ImGui::EndDockspace();
+    ImGui::End();
+
+    // Explicit layout setup on first frame — only if no saved layout from INI
+    if (!sDockInitialized)
+    {
+        sDockInitialized = true;
+
+        if (!ImGui::HasDockLayout("EditorDock"))
+        {
+            // No saved layout — build default:
+            //  ┌──────────┬────────────────┬──────────┐
+            //  │          │                │          │
+            //  │  Scene   │   Viewport     │Properties│
+            //  │          │   (3D render)  │          │
+            //  │          │                │          │
+            //  ├──────────┴────────────────┴──────────┤
+            //  │        Assets | Debug Log            │
+            //  └──────────────────────────────────────┘
+            ImGui::UndockAll("EditorDock");
+            ImGui::DockToRoot("EditorDock", "Scene", ImGuiDockSlot_Left, 0.2f);
+            ImGui::DockToRoot("EditorDock", "Properties", ImGuiDockSlot_Right, 0.15f);
+            ImGui::DockToRoot("EditorDock", "Assets", ImGuiDockSlot_Bottom, 0.33f);
+            ImGui::DockTo("EditorDock", "Debug Log", "Assets", ImGuiDockSlot_Tab);
+        }
+    }
+
+    // Sync visibility flags back from dock close buttons
+    if (!sceneOpen)
+        GetEditorState()->mShowLeftPane = false;
+    if (!propsOpen)
+        GetEditorState()->mShowRightPane = false;
+    if (!debugLogOpen)
+        GetEditorState()->mShowBottomPane = false;
 }
 
 static void PopulateFileBrowserDirs()
@@ -2368,19 +2516,55 @@ static void DrawPackageMenu()
     //}
 }
 
+static void ItemRowsBackground(float lineHeight = -1.0f, const ImColor& color = ImColor(20, 20, 20, 64))
+{
+    auto* drawList = ImGui::GetWindowDrawList();
+    const auto& style = ImGui::GetStyle();
+
+    if (lineHeight < 0)
+    {
+        lineHeight = ImGui::GetTextLineHeight();
+    }
+    lineHeight += style.ItemSpacing.y;
+
+    float scrollOffsetH = ImGui::GetScrollX();
+    float scrollOffsetV = ImGui::GetScrollY();
+    float scrolledOutLines = floorf(scrollOffsetV / lineHeight);
+    scrollOffsetV -= lineHeight * scrolledOutLines;
+
+    ImVec2 clipRectMin(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y);
+    ImVec2 clipRectMax(clipRectMin.x + ImGui::GetWindowWidth(), clipRectMin.y + ImGui::GetWindowHeight());
+
+    if (ImGui::GetScrollMaxX() > 0)
+    {
+        clipRectMax.y -= style.ScrollbarSize;
+    }
+
+    drawList->PushClipRect(clipRectMin, clipRectMax);
+
+    bool isOdd = (static_cast<int>(scrolledOutLines) % 2) == 0;
+
+    float yMin = clipRectMin.y - scrollOffsetV + ImGui::GetCursorPosY();
+    float yMax = clipRectMax.y - scrollOffsetV + lineHeight;
+    float xMin = clipRectMin.x + scrollOffsetH + ImGui::GetWindowContentRegionMin().x;
+    float xMax = clipRectMin.x + scrollOffsetH + ImGui::GetWindowContentRegionMax().x;
+
+    for (float y = yMin; y < yMax; y += lineHeight, isOdd = !isOdd)
+    {
+        if (isOdd)
+        {
+            drawList->AddRectFilled({ xMin, y - style.ItemSpacing.y }, { xMax, y + lineHeight }, color);
+        }
+    }
+
+    drawList->PopClipRect();
+}
+
 static void DrawScenePanel()
 {
     ActionManager* am = ActionManager::Get();
 
-    float totalHeight = ImGui::GetIO().DisplaySize.y;
-    if (IsBottomPaneVisible())
-        totalHeight -= GetEditorState()->mBottomPaneHeight;
-    const float halfHeight = totalHeight / 2.0f;
-
-    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-    ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, halfHeight));
-
-    ImGui::Begin("Scene", nullptr, kPaneWindowFlags);
+    ItemRowsBackground();
 
     static std::string sFilterStrTemp;
     static std::string sFilterStr;
@@ -2980,8 +3164,6 @@ static void DrawScenePanel()
 
         ImGui::EndPopup();
     }
-
-    ImGui::End();
 }
 
 static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
@@ -3632,16 +3814,6 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
 
 static void DrawAssetsPanel()
 {
-    float totalHeight = ImGui::GetIO().DisplaySize.y;
-    if (IsBottomPaneVisible())
-        totalHeight -= GetEditorState()->mBottomPaneHeight;
-    const float halfHeight = totalHeight / 2.0f;
-
-    ImGui::SetNextWindowPos(ImVec2(0.0f, halfHeight));
-    ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, halfHeight));
-
-    ImGui::Begin("Assets", nullptr, kPaneWindowFlags);
-
     if (ImGui::BeginTabBar("AssetBrowserTabs"))
     {
         if (ImGui::BeginTabItem("Project"))
@@ -3665,8 +3837,6 @@ static void DrawAssetsPanel()
         }
         ImGui::EndTabBar();
     }
-
-    ImGui::End();
 }
 
 static void DrawMaterialShaderParams(Material* mat)
@@ -3835,24 +4005,7 @@ static void DrawInstancedMeshExtra(InstancedMesh3D* instMesh)
 
 static void DrawPropertiesPanel()
 {
-    const float dispWidth = ImGui::GetIO().DisplaySize.x;
-    float dispHeight = ImGui::GetIO().DisplaySize.y;
-    if (IsBottomPaneVisible())
-        dispHeight -= GetEditorState()->mBottomPaneHeight;
-
-    ImGui::SetNextWindowPos(ImVec2(dispWidth - kSidePaneWidth, 0.0f));
-    ImGui::SetNextWindowSize(ImVec2(kSidePaneWidth, dispHeight));
-
-    // The locked BG color will be delayed by a frame.
-    bool lockedProperties = sObjectTabOpen && GetEditorState()->IsInspectLocked();
-    if (lockedProperties)
-    {
-        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.4f, 0.0f, 0.0f, 1.0f));
-    }
-
     sObjectTabOpen = false;
-
-    ImGui::Begin("Properties", nullptr, kPaneWindowFlags);
 
     if (ImGui::BeginTabBar("PropertyModeTabs"))
     {
@@ -4029,301 +4182,395 @@ static void DrawPropertiesPanel()
         }
     }
 
-    ImGui::End();
-
-    if (lockedProperties)
-    {
-        ImGui::PopStyleColor();
-    }
 }
 
-static void DrawViewportPanel()
+static void DrawMainMenuBar()
 {
     Renderer* renderer = Renderer::Get();
     ActionManager* am = ActionManager::Get();
 
-    float viewportBarX = GetEditorState()->mShowLeftPane ? kSidePaneWidth : 0.0f;
-    float viewportBarWidth = ImGui::GetIO().DisplaySize.x;
-    if (GetEditorState()->mShowLeftPane)
-        viewportBarWidth -= kSidePaneWidth;
-    if (GetEditorState()->mShowRightPane)
-        viewportBarWidth -= kSidePaneWidth;
-
-    const ImGuiWindowFlags kViewportWindowFlags =
-        ImGuiWindowFlags_NoTitleBar |
-        ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoScrollbar |
-        ImGuiWindowFlags_NoScrollWithMouse |
-        ImGuiWindowFlags_NoCollapse |
-        ImGuiWindowFlags_NoSavedSettings; /* | ImGuiWindowFlags_AlwaysAutoResize*/ /*| ImGuiWindowFlags_NoBackground*/;
-
-    ImGui::SetNextWindowPos(ImVec2(viewportBarX, 0.0f));
-    ImGui::SetNextWindowSize(ImVec2(viewportBarWidth, GetViewportBarHeight()));
-
-    ImGui::Begin("Viewport", nullptr, kViewportWindowFlags);
-
-    // (1) Draw File / View / World / Play buttons below
-    if (ImGui::Button("File"))
-        ImGui::OpenPopup("FilePopup");
-
-    ImGui::SameLine();
-    if (ImGui::Button("Edit"))
-        ImGui::OpenPopup("EditPopup");
-
-    ImGui::SameLine();
-    if (ImGui::Button("View"))
-        ImGui::OpenPopup("ViewPopup");
-
-    ImGui::SameLine();
-    if (ImGui::Button("World"))
-        ImGui::OpenPopup("WorldPopup");
-
-    ImGui::SameLine();
-    if (ImGui::Button("Developer"))
-        ImGui::OpenPopup("DeveloperPopup");
-
-    ImGui::SameLine();
-    if (ImGui::Button("Addons"))
-        ImGui::OpenPopup("AddonsPopup");
-
-    ImGui::SameLine();
-    if (ImGui::Button("Extra"))
-        ImGui::OpenPopup("ExtraPopup");
-
-    // Draw addon top-level menus
-    {
-        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
-        if (hookMgr != nullptr)
-        {
-            hookMgr->DrawTopLevelMenus();
-        }
-    }
-
-    ImGui::SameLine();
-    bool inPie = IsPlayingInEditor();
-    if (ImGui::Button(inPie ? "Stop" : "Play"))
-    {
-        if (inPie)
-        {
-            GetEditorState()->EndPlayInEditor();
-        }
-        else
-        {
-            GetEditorState()->BeginPlayInEditor();
-        }
-    }
-
-    // Draw addon toolbar items
-    {
-        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
-        if (hookMgr != nullptr)
-        {
-            hookMgr->DrawToolbarItems();
-        }
-    }
-
-    ImGui::SameLine();
-    int curMode = (int)GetEditorState()->mMode;
-    PaintMode paintMode = (GetEditorState()->mMode == EditorMode::Scene3D) ? GetEditorState()->mPaintMode : PaintMode::None;
-
-    if (paintMode != PaintMode::None && paintMode != PaintMode::Count)
-    {
-        curMode = int(EditorMode::Count) + int(paintMode) - 1;
-    }
-
-    const char* modeStrings[] = { "Scene", "2D", "3D", "Paint Colors", "Paint Instances"};
-    ImGui::SetNextItemWidth(70);
-    ImGui::Combo("##EditorMode", &curMode, modeStrings, 5);
-
-    if (curMode == 3)
-    {
-        curMode = (int)EditorMode::Scene3D;
-        paintMode = PaintMode::Color;
-    }
-    else if (curMode == 4)
-    {
-        curMode = (int)EditorMode::Scene3D;
-        paintMode = PaintMode::Instance;
-    }
-    else
-    {
-        paintMode = PaintMode::None;
-    }
-
-    GetEditorState()->SetEditorMode((EditorMode)curMode);
-    GetEditorState()->SetPaintMode(paintMode);
-
-    // Gizmo Operation Buttons (Translate/Rotate/Scale)
-    ImGui::SameLine();
-    ImGui::Separator();
-    ImGui::SameLine();
-
-    EditorState* edState = GetEditorState();
-    ImGuizmo::OPERATION& gizmoOp = edState->mGizmoOperation;
-    ImGuizmo::MODE& gizmoMode = edState->mGizmoMode;
-
-    // Translate button
-    bool isTranslate = (gizmoOp == ImGuizmo::TRANSLATE);
-    if (isTranslate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
-    if (ImGui::Button("T##Translate"))
-        gizmoOp = ImGuizmo::TRANSLATE;
-    if (isTranslate) ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Translate (Space+G)");
-
-    // Rotate button
-    ImGui::SameLine();
-    bool isRotate = (gizmoOp == ImGuizmo::ROTATE);
-    if (isRotate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
-    if (ImGui::Button("R##Rotate"))
-        gizmoOp = ImGuizmo::ROTATE;
-    if (isRotate) ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Rotate (Space+R)");
-
-    // Scale button
-    ImGui::SameLine();
-    bool isScale = (gizmoOp == ImGuizmo::SCALE);
-    if (isScale) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
-    if (ImGui::Button("S##Scale"))
-        gizmoOp = ImGuizmo::SCALE;
-    if (isScale) ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Scale (Space+S)");
-
-    // Local/World mode toggle
-    ImGui::SameLine();
-    ImGui::Separator();
-    ImGui::SameLine();
-
-    bool isLocal = (gizmoMode == ImGuizmo::LOCAL);
-    if (isLocal) ImGui::PushStyleColor(ImGuiCol_Button, kToggledColor);
-    if (ImGui::Button(isLocal ? "Local" : "World"))
-        gizmoMode = isLocal ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
-    if (isLocal) ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle Local/World (Ctrl+T)");
-
     bool openSaveSceneAsModal = false;
 
-    if (ImGui::BeginPopup("FilePopup"))
+    if (ImGui::BeginMainMenuBar())
     {
-        EditScene* editScene = GetEditorState()->GetEditScene();
-
-        if (ImGui::Selectable("Project Select..."))
-            GetProjectSelectWindow()->Open();
-        ImGui::Separator();
-        if (ImGui::Selectable("Open Project"))
-            am->OpenProject();
-        if (ImGui::BeginMenu("Open Recent Project"))
+        if (ImGui::BeginMenu("File"))
         {
-            const std::vector<std::string>& recentProjects = GetEditorState()->mRecentProjects;
-            for (uint32_t i = 0; i < recentProjects.size(); ++i)
+            EditScene* editScene = GetEditorState()->GetEditScene();
+
+            if (ImGui::MenuItem("Project Select..."))
+                GetProjectSelectWindow()->Open();
+            ImGui::Separator();
+            if (ImGui::MenuItem("Open Project"))
+                am->OpenProject();
+            if (ImGui::BeginMenu("Open Recent Project"))
             {
-                if (recentProjects[i] != "" &&
-                    ImGui::MenuItem(recentProjects[i].c_str()))
+                const std::vector<std::string>& recentProjects = GetEditorState()->mRecentProjects;
+                for (uint32_t i = 0; i < recentProjects.size(); ++i)
                 {
-                    am->OpenProject(recentProjects[i].c_str());
+                    if (recentProjects[i] != "" &&
+                        ImGui::MenuItem(recentProjects[i].c_str()))
+                    {
+                        am->OpenProject(recentProjects[i].c_str());
+                    }
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::MenuItem("New Project"))
+                am->CreateNewProject();
+            if (ImGui::MenuItem("New C++ Project"))
+                am->CreateNewProject(nullptr, true);
+            if (ImGui::MenuItem("New Scene"))
+                GetEditorState()->OpenEditScene(nullptr);
+            if (editScene && ImGui::MenuItem("Save Scene"))
+            {
+                Scene* scene = editScene->mSceneAsset.Get<Scene>();
+                AssetStub* sceneStub = scene ? AssetManager::Get()->GetAssetStub(scene->GetName()) : nullptr;
+                if (sceneStub != nullptr)
+                {
+                    GetEditorState()->CaptureAndSaveScene(sceneStub, nullptr);
+                }
+                else
+                {
+                    openSaveSceneAsModal = true;
+                    sPopupInputBuffer[0] = '\0';
                 }
             }
-            ImGui::EndMenu();
-        }
-        if (ImGui::Selectable("New Project"))
-            am->CreateNewProject();
-        if (ImGui::Selectable("New C++ Project"))
-            am->CreateNewProject(nullptr, true);
-        if (ImGui::Selectable("New Scene"))
-            GetEditorState()->OpenEditScene(nullptr);
-        if (editScene && ImGui::Selectable("Save Scene"))
-        {
-            Scene* scene = editScene->mSceneAsset.Get<Scene>();
-            AssetStub* sceneStub = scene ? AssetManager::Get()->GetAssetStub(scene->GetName()) : nullptr;
-            if (sceneStub != nullptr)
+            if (editScene && ImGui::MenuItem("Save Scene As..."))
             {
-                GetEditorState()->CaptureAndSaveScene(sceneStub, nullptr);
-            }
-            else
-            {
-                // Need to request name and create asset.
                 openSaveSceneAsModal = true;
                 sPopupInputBuffer[0] = '\0';
             }
-        }
-        if (editScene && ImGui::Selectable("Save Scene As..."))
-        {
-            // Need to request name and create asset.
-            openSaveSceneAsModal = true;
-            sPopupInputBuffer[0] = '\0';
-        }
-        if (ImGui::Selectable("Import Asset"))
-            am->ImportAsset();
-        if (ImGui::Selectable("Import Scene"))
-            am->BeginImportScene();
-        if (ImGui::Selectable("Run Script"))
-            am->RunScript();
-        if (ImGui::Selectable("Recapture All Scenes"))
-            am->RecaptureAndSaveAllScenes();
-        if (ImGui::Selectable("Resave All Assets"))
-            am->ResaveAllAssets();
-        if (ImGui::Selectable("Reload All Scripts"))
-        {
-            ReloadAllScripts();
-
-            // Also regenerate native addon dependencies and reload
-            NativeAddonManager* nam = NativeAddonManager::Get();
-            if (nam != nullptr)
+            if (ImGui::MenuItem("Import Asset"))
+                am->ImportAsset();
+            if (ImGui::MenuItem("Import Scene"))
+                am->BeginImportScene();
+            if (ImGui::MenuItem("Run Script"))
+                am->RunScript();
+            if (ImGui::MenuItem("Recapture All Scenes"))
+                am->RecaptureAndSaveAllScenes();
+            if (ImGui::MenuItem("Resave All Assets"))
+                am->ResaveAllAssets();
+            if (ImGui::MenuItem("Reload All Scripts"))
             {
-                // Regenerate IDE configs for all local packages
-                std::vector<std::string> localIds = nam->GetLocalPackageIds();
-                for (const std::string& id : localIds)
-                {
-                    std::string addonPath = nam->GetAddonSourcePath(id);
-                    if (!addonPath.empty())
-                    {
-                        nam->GenerateIDEConfig(addonPath);
-                    }
-                }
+                ReloadAllScripts();
 
-                // Reload all native addons
-                nam->ReloadAllNativeAddons();
-                LogDebug("Native addon dependencies regenerated and addons reloaded.");
+                NativeAddonManager* nam = NativeAddonManager::Get();
+                if (nam != nullptr)
+                {
+                    std::vector<std::string> localIds = nam->GetLocalPackageIds();
+                    for (const std::string& id : localIds)
+                    {
+                        std::string addonPath = nam->GetAddonSourcePath(id);
+                        if (!addonPath.empty())
+                        {
+                            nam->GenerateIDEConfig(addonPath);
+                        }
+                    }
+
+                    nam->ReloadAllNativeAddons();
+                    LogDebug("Native addon dependencies regenerated and addons reloaded.");
+                }
             }
-        }
-        
-        // Script Hot-Reload toggle
-        bool hotReloadEnabled = IsScriptHotReloadEnabled();
-        std::string hotReloadText = hotReloadEnabled ? "Disable Script Hot-Reload" : "Enable Script Hot-Reload";
-        if (ImGui::Selectable(hotReloadText.c_str()))
-        {
-            SetScriptHotReloadEnabled(!hotReloadEnabled);
-            WriteEngineConfig();
-        }
-        
-        if (ImGui::Selectable("Write Config"))
-            WriteEngineConfig();
-        //if (ImGui::Selectable("Import Scene"))
-        //    YYY;
-        if (ImGui::Selectable("Packaging..."))
-        {
-            GetPackagingWindow()->Open();
-        }
-        if (ImGui::BeginMenu("Package Project"))
-        {
-            DrawPackageMenu();
+
+            // Script Hot-Reload toggle
+            bool hotReloadEnabled = IsScriptHotReloadEnabled();
+            std::string hotReloadText = hotReloadEnabled ? "Disable Script Hot-Reload" : "Enable Script Hot-Reload";
+            if (ImGui::MenuItem(hotReloadText.c_str()))
+            {
+                SetScriptHotReloadEnabled(!hotReloadEnabled);
+                WriteEngineConfig();
+            }
+
+            if (ImGui::MenuItem("Write Config"))
+                WriteEngineConfig();
+            if (ImGui::MenuItem("Packaging..."))
+            {
+                GetPackagingWindow()->Open();
+            }
+            if (ImGui::BeginMenu("Package Project"))
+            {
+                DrawPackageMenu();
+                ImGui::EndMenu();
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Addons..."))
+            {
+                GetAddonsWindow()->Open();
+            }
+
+            // Draw plugin menu items for File menu
+            {
+                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                if (hookMgr != nullptr) hookMgr->DrawMenuItems("File");
+            }
+
             ImGui::EndMenu();
         }
-        ImGui::Separator();
-        if (ImGui::Selectable("Addons..."))
+
+        if (ImGui::BeginMenu("Edit"))
         {
-            GetAddonsWindow()->Open();
+            if (ImGui::MenuItem("Undo"))
+                am->Undo();
+            if (ImGui::MenuItem("Redo"))
+                am->Redo();
+
+            // Draw plugin menu items for Edit menu
+            {
+                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                if (hookMgr != nullptr) hookMgr->DrawMenuItems("Edit");
+            }
+
+            ImGui::EndMenu();
         }
 
-        // Draw plugin menu items for File menu
+        if (ImGui::BeginMenu("View"))
+        {
+            Camera3D* cam = GetEditorState()->GetEditorCamera();
+            ProjectionMode projMode = cam ? cam->GetProjectionMode() : ProjectionMode::PERSPECTIVE;
+            if ((projMode == ProjectionMode::PERSPECTIVE && ImGui::MenuItem("Orthographic")) ||
+                (projMode == ProjectionMode::ORTHOGRAPHIC && ImGui::MenuItem("Perspective")))
+            {
+                GetEditorState()->ToggleEditorCameraProjection();
+            }
+            if (ImGui::MenuItem("Wireframe"))
+                renderer->SetDebugMode(renderer->GetDebugMode() == DEBUG_WIREFRAME ? DEBUG_NONE : DEBUG_WIREFRAME);
+            if (ImGui::MenuItem("Collision"))
+                renderer->SetDebugMode(renderer->GetDebugMode() == DEBUG_COLLISION ? DEBUG_NONE : DEBUG_COLLISION);
+            if (ImGui::MenuItem("Proxy"))
+                renderer->EnableProxyRendering(!renderer->IsProxyRenderingEnabled());
+            if (ImGui::MenuItem("Spline Lines"))
+                Spline3D::SetSplineLinesVisible(!Spline3D::IsSplineLinesVisible());
+            if (ImGui::MenuItem("Bounds"))
+            {
+                uint32_t newMode = (uint32_t(renderer->GetBoundsDebugMode()) + 1) % uint32_t(BoundsDebugMode::Count);
+                renderer->SetBoundsDebugMode((BoundsDebugMode)newMode);
+            }
+            if (ImGui::MenuItem("Grid"))
+                ToggleGrid();
+            if (ImGui::MenuItem("Stats"))
+                renderer->EnableStatsOverlay(!renderer->IsStatsOverlayEnabled());
+            if (ImGui::MenuItem("Preview Lighting"))
+            {
+                GetEditorState()->mPreviewLighting = !GetEditorState()->mPreviewLighting;
+                LogDebug("Preview lighting %s", GetEditorState()->mPreviewLighting ? "enabled." : "disabled.");
+            }
+
+            if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
+            {
+                if (ImGui::MenuItem("Reset 2D Viewport"))
+                {
+                    GetEditorState()->GetViewport2D()->ResetViewport();
+                }
+            }
+
+            if (ImGui::BeginMenu("Interface Scale"))
+            {
+                static float sInterfaceScale = GetEngineConfig()->mEditorInterfaceScale;
+                ImGui::SliderFloat("IntScale", &sInterfaceScale, 0.5f, 3.0f);
+                if (ImGui::Button("Apply"))
+                {
+                    GetMutableEngineConfig()->mEditorInterfaceScale = sInterfaceScale;
+                    WriteEngineConfig();
+                }
+                ImGui::EndMenu();
+            }
+
+            // TODO: Uncomment to show Preferences
+            if (GetFeatureFlagsEditor().mShowPreferences == true) {
+                ImGui::Separator();
+                if (ImGui::MenuItem("Preferences..."))
+                {
+                    GetPreferencesWindow()->Open();
+                }
+            }
+
+            ImGui::Separator();
+            if (ImGui::MenuItem("Scene"))
+                GetEditorState()->mShowLeftPane = !GetEditorState()->mShowLeftPane;
+            if (ImGui::MenuItem("Assets"))
+                GetEditorState()->mShowLeftPane = !GetEditorState()->mShowLeftPane;
+            if (ImGui::MenuItem("Properties"))
+                GetEditorState()->mShowRightPane = !GetEditorState()->mShowRightPane;
+            if (ImGui::MenuItem("Debug Log"))
+                GetEditorState()->mShowBottomPane = !GetEditorState()->mShowBottomPane;
+
+            if (ImGui::MenuItem("Timeline"))
+                GetEditorState()->mShowTimelinePanel = !GetEditorState()->mShowTimelinePanel;
+
+            // Draw plugin menu items for View menu
+            {
+                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                if (hookMgr != nullptr) hookMgr->DrawMenuItems("View");
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("World"))
+        {
+            if (ImGui::BeginMenu("Spawn Node"))
+            {
+                DrawAddNodeMenu(nullptr);
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Spawn Basic 3D"))
+            {
+                DrawSpawnBasic3dMenu(nullptr, true);
+                ImGui::EndMenu();
+            }
+            if (ImGui::MenuItem("Clear World"))
+                am->DeleteAllNodes();
+            if (ImGui::MenuItem("Bake Lighting"))
+                renderer->BeginLightBake();
+            if (ImGui::MenuItem("Clear Baked Lighting"))
+            {
+                const std::vector<Node*>& nodes = GetWorld(0)->GatherNodes();
+                for (uint32_t a = 0; a < nodes.size(); ++a)
+                {
+                    StaticMesh3D* meshNode = nodes[a]->As<StaticMesh3D>();
+                    if (meshNode != nullptr && meshNode->GetBakeLighting())
+                    {
+                        meshNode->ClearInstanceColors();
+                    }
+                }
+            }
+            if (ImGui::MenuItem("Toggle Transform Mode"))
+                GetEditorState()->GetViewport3D()->ToggleTransformMode();
+
+            // Draw plugin menu items for World menu
+            {
+                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                if (hookMgr != nullptr) hookMgr->DrawMenuItems("World");
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Developer"))
+        {
+            if (ImGui::MenuItem("Reload Native Addons"))
+            {
+                NativeAddonManager* nam = NativeAddonManager::Get();
+                if (nam != nullptr)
+                {
+                    nam->ReloadAllNativeAddons();
+                    LogDebug("Native addons reloaded.");
+                }
+            }
+
+            if (ImGui::MenuItem("Discover Native Addons"))
+            {
+                NativeAddonManager* nam = NativeAddonManager::Get();
+                if (nam != nullptr)
+                {
+                    nam->DiscoverNativeAddons();
+                    LogDebug("Native addons discovered.");
+                }
+            }
+
+            if (ImGui::MenuItem("Regenerate Native Addon Dependencies"))
+            {
+                NativeAddonManager* nam = NativeAddonManager::Get();
+                if (nam != nullptr)
+                {
+                    std::vector<std::string> localIds = nam->GetLocalPackageIds();
+                    for (const std::string& id : localIds)
+                    {
+                        std::string addonPath = nam->GetAddonSourcePath(id);
+                        if (!addonPath.empty())
+                        {
+                            nam->GenerateIDEConfig(addonPath);
+                        }
+                    }
+                    LogDebug("Native addon dependencies regenerated for %d addon(s).", (int)localIds.size());
+                }
+            }
+
+            ImGui::Separator();
+
+            // Draw plugin menu items for Developer menu
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr)
+            {
+                hookMgr->DrawMenuItems("Developer");
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Addons"))
+        {
+            DrawAddonsPopupContent();
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Extra"))
+        {
+            char versionStr[32];
+            snprintf(versionStr, 31, "Version: %d", OCTAVE_VERSION);
+            ImGui::MenuItem(versionStr, nullptr, false, false);
+
+            if (ImGui::IsItemHovered() && IsMouseButtonJustUp(MOUSE_RIGHT))
+            {
+                sDevModeClicks++;
+                if (sDevModeClicks >= 5)
+                {
+                    GetEditorState()->mDevMode = true;
+                }
+            }
+
+            if (GetEditorState()->mDevMode &&
+                GetEngineState()->mStandalone &&
+                ImGui::MenuItem("Prepare Release"))
+            {
+                ActionManager::Get()->PrepareRelease();
+            }
+
+            // Draw plugin menu items for Extra menu
+            {
+                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                if (hookMgr != nullptr) hookMgr->DrawMenuItems("Extra");
+            }
+
+            ImGui::EndMenu();
+        }
+
+        // Draw addon top-level menus as main menu bar entries
         {
             EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
-            if (hookMgr != nullptr) hookMgr->DrawMenuItems("File");
+            if (hookMgr != nullptr)
+            {
+                hookMgr->DrawTopLevelMenus();
+            }
         }
 
-        ImGui::EndPopup();
+        // Play/Stop button in the menu bar
+        bool inPie = IsPlayingInEditor();
+        if (ImGui::Button(inPie ? "Stop" : "Play"))
+        {
+            if (inPie)
+            {
+                GetEditorState()->EndPlayInEditor();
+            }
+            else
+            {
+                GetEditorState()->BeginPlayInEditor();
+            }
+        }
+
+        // Draw addon toolbar items
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr)
+            {
+                hookMgr->DrawToolbarItems();
+            }
+        }
+
+        ImGui::EndMainMenuBar();
     }
 
+    // Modal dialogs - drawn outside menu bar scope
     if (GetEditorState()->mRequestSaveSceneAs)
     {
         openSaveSceneAsModal = true;
@@ -4446,7 +4693,6 @@ static void DrawViewportPanel()
 
     if (ImGui::BeginPopupModal("Import Scene", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
-        // File path
         sSceneImportOptions.mFilePath = GetEditorState()->mPendingSceneImportPath;
         ImGui::Text(GetEditorState()->mPendingSceneImportPath.c_str());
         ImGui::InputText("Scene Name", &sSceneImportOptions.mSceneName);
@@ -4526,7 +4772,6 @@ static void DrawViewportPanel()
         {
             if (reimportStub != nullptr)
             {
-                // Derive scene name from the stub name (strip SC_ prefix if present)
                 std::string sceneName = reimportStub->mName;
                 if (sceneName.size() > 3 && sceneName.substr(0, 3) == "SC_")
                 {
@@ -4567,7 +4812,6 @@ static void DrawViewportPanel()
 
     if (ImGui::BeginPopupModal("Import Camera", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
-        // File path
         sCameraImportOptions.mFilePath = GetEditorState()->mIOAssetPath;
         ImGui::Text(GetEditorState()->mPendingSceneImportPath.c_str());
         ImGui::Checkbox("Set As Main Camera", &sCameraImportOptions.mIsMainCamera);
@@ -4592,232 +4836,106 @@ static void DrawViewportPanel()
 
         ImGui::EndPopup();
     }
+}
 
-    if (ImGui::BeginPopup("EditPopup"))
+static void DrawToolbar()
+{
+    const ImGuiWindowFlags kToolbarWindowFlags =
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoScrollWithMouse |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoSavedSettings;
+
+    float toolbarY = GetMainMenuBarHeight();
+    float toolbarWidth = ImGui::GetIO().DisplaySize.x;
+
+    ImGui::SetNextWindowPos(ImVec2(0.0f, toolbarY));
+    ImGui::SetNextWindowSize(ImVec2(toolbarWidth, GetToolbarHeight()));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+
+    ImGui::Begin("##Toolbar", nullptr, kToolbarWindowFlags);
+
+    int curMode = (int)GetEditorState()->mMode;
+    PaintMode paintMode = (GetEditorState()->mMode == EditorMode::Scene3D) ? GetEditorState()->mPaintMode : PaintMode::None;
+
+    if (paintMode != PaintMode::None && paintMode != PaintMode::Count)
     {
-        if (ImGui::Selectable("Undo"))
-            am->Undo();
-        if (ImGui::Selectable("Redo"))
-            am->Redo();
-
-        // Draw plugin menu items for Edit menu
-        {
-            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
-            if (hookMgr != nullptr) hookMgr->DrawMenuItems("Edit");
-        }
-
-        ImGui::EndPopup();
+        curMode = int(EditorMode::Count) + int(paintMode) - 1;
     }
 
-    if (ImGui::BeginPopup("ViewPopup"))
+    const char* modeStrings[] = { "Scene", "2D", "3D", "Paint Colors", "Paint Instances"};
+    ImGui::SetNextItemWidth(70);
+    ImGui::Combo("##EditorMode", &curMode, modeStrings, 5);
+
+    if (curMode == 3)
     {
-        Camera3D* cam = GetEditorState()->GetEditorCamera();
-        ProjectionMode projMode = cam ? cam->GetProjectionMode() : ProjectionMode::PERSPECTIVE;
-        if ((projMode == ProjectionMode::PERSPECTIVE && ImGui::Selectable("Orthographic")) ||
-            (projMode == ProjectionMode::ORTHOGRAPHIC && ImGui::Selectable("Perspective")))
-        {
-            GetEditorState()->ToggleEditorCameraProjection();
-        }
-        if (ImGui::Selectable("Wireframe"))
-            renderer->SetDebugMode(renderer->GetDebugMode() == DEBUG_WIREFRAME ? DEBUG_NONE : DEBUG_WIREFRAME);
-        if (ImGui::Selectable("Collision"))
-            renderer->SetDebugMode(renderer->GetDebugMode() == DEBUG_COLLISION ? DEBUG_NONE : DEBUG_COLLISION);
-        if (ImGui::Selectable("Proxy"))
-            renderer->EnableProxyRendering(!renderer->IsProxyRenderingEnabled());
-        if (ImGui::Selectable("Spline Lines"))
-            Spline3D::SetSplineLinesVisible(!Spline3D::IsSplineLinesVisible());
-        if (ImGui::Selectable("Bounds"))
-        {
-            uint32_t newMode = (uint32_t(renderer->GetBoundsDebugMode()) + 1) % uint32_t(BoundsDebugMode::Count);
-            renderer->SetBoundsDebugMode((BoundsDebugMode)newMode);
-        }
-        if (ImGui::Selectable("Grid"))
-            ToggleGrid();
-        if (ImGui::Selectable("Stats"))
-            renderer->EnableStatsOverlay(!renderer->IsStatsOverlayEnabled());
-        if (ImGui::Selectable("Preview Lighting"))
-        {
-            GetEditorState()->mPreviewLighting = !GetEditorState()->mPreviewLighting;
-            LogDebug("Preview lighting %s", GetEditorState()->mPreviewLighting ? "enabled." : "disabled.");
-        }
-
-        if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
-        {
-            if (ImGui::Selectable("Reset 2D Viewport"))
-            {
-                GetEditorState()->GetViewport2D()->ResetViewport();
-            }
-        }
-
-        if (ImGui::BeginMenu("Interface Scale"))
-        {
-            static float sInterfaceScale = GetEngineConfig()->mEditorInterfaceScale;
-            ImGui::SliderFloat("IntScale", &sInterfaceScale, 0.5f, 3.0f);
-            if (ImGui::Button("Apply"))
-            {
-                GetMutableEngineConfig()->mEditorInterfaceScale = sInterfaceScale;
-                WriteEngineConfig();
-            }
-            ImGui::EndMenu();
-        }
-
-        // TODO: Uncomment to show Preferences
-        if (GetFeatureFlagsEditor().mShowPreferences == true) {
-            ImGui::Separator();
-            if (ImGui::Selectable("Preferences..."))
-            {
-                GetPreferencesWindow()->Open();
-            }
-        }
-
-        ImGui::Separator();
-        if (ImGui::Selectable("Debug Log"))
-            GetEditorState()->mShowBottomPane = !GetEditorState()->mShowBottomPane;
-
-        if (ImGui::Selectable("Timeline"))
-            GetEditorState()->mShowTimelinePanel = !GetEditorState()->mShowTimelinePanel;
-
-        // Draw plugin menu items for View menu
-        {
-            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
-            if (hookMgr != nullptr) hookMgr->DrawMenuItems("View");
-        }
-
-            ImGui::EndPopup();
+        curMode = (int)EditorMode::Scene3D;
+        paintMode = PaintMode::Color;
+    }
+    else if (curMode == 4)
+    {
+        curMode = (int)EditorMode::Scene3D;
+        paintMode = PaintMode::Instance;
+    }
+    else
+    {
+        paintMode = PaintMode::None;
     }
 
-    if (ImGui::BeginPopup("WorldPopup"))
-    {
-        if (ImGui::BeginMenu("Spawn Node"))
-        {
-            DrawAddNodeMenu(nullptr);
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Spawn Basic 3D"))
-        {
-            DrawSpawnBasic3dMenu(nullptr, true);
-            ImGui::EndMenu();
-        }
-        if (ImGui::Selectable("Clear World"))
-            am->DeleteAllNodes();
-        if (ImGui::Selectable("Bake Lighting"))
-            renderer->BeginLightBake();
-        if (ImGui::Selectable("Clear Baked Lighting"))
-        {
-            const std::vector<Node*>& nodes = GetWorld(0)->GatherNodes();
-            for (uint32_t a = 0; a < nodes.size(); ++a)
-            {
-                StaticMesh3D* meshNode = nodes[a]->As<StaticMesh3D>();
-                if (meshNode != nullptr && meshNode->GetBakeLighting())
-                {
-                    meshNode->ClearInstanceColors();
-                }
-            }
-        }
-        if (ImGui::Selectable("Toggle Transform Mode"))
-            GetEditorState()->GetViewport3D()->ToggleTransformMode();
+    GetEditorState()->SetEditorMode((EditorMode)curMode);
+    GetEditorState()->SetPaintMode(paintMode);
 
-        // Draw plugin menu items for World menu
-        {
-            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
-            if (hookMgr != nullptr) hookMgr->DrawMenuItems("World");
-        }
+    // Gizmo Operation Buttons (Translate/Rotate/Scale)
+    ImGui::SameLine();
+    ImGui::Separator();
+    ImGui::SameLine();
 
-        ImGui::EndPopup();
-    }
+    EditorState* edState = GetEditorState();
+    ImGuizmo::OPERATION& gizmoOp = edState->mGizmoOperation;
+    ImGuizmo::MODE& gizmoMode = edState->mGizmoMode;
 
-    if (ImGui::BeginPopup("DeveloperPopup"))
-    {
-        if (ImGui::Selectable("Reload Native Addons"))
-        {
-            NativeAddonManager* nam = NativeAddonManager::Get();
-            if (nam != nullptr)
-            {
-                nam->ReloadAllNativeAddons();
-                LogDebug("Native addons reloaded.");
-            }
-        }
+    // Translate button
+    bool isTranslate = (gizmoOp == ImGuizmo::TRANSLATE);
+    if (isTranslate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
+    if (ImGui::Button("T##Translate"))
+        gizmoOp = ImGuizmo::TRANSLATE;
+    if (isTranslate) ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Translate (Space+G)");
 
-        if (ImGui::Selectable("Discover Native Addons"))
-        {
-            NativeAddonManager* nam = NativeAddonManager::Get();
-            if (nam != nullptr)
-            {
-                nam->DiscoverNativeAddons();
-                LogDebug("Native addons discovered.");
-            }
-        }
+    // Rotate button
+    ImGui::SameLine();
+    bool isRotate = (gizmoOp == ImGuizmo::ROTATE);
+    if (isRotate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
+    if (ImGui::Button("R##Rotate"))
+        gizmoOp = ImGuizmo::ROTATE;
+    if (isRotate) ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Rotate (Space+R)");
 
-        if (ImGui::Selectable("Regenerate Native Addon Dependencies"))
-        {
-            NativeAddonManager* nam = NativeAddonManager::Get();
-            if (nam != nullptr)
-            {
-                // Regenerate IDE configs (.vcxproj, .vscode/c_cpp_properties.json) for all local packages
-                std::vector<std::string> localIds = nam->GetLocalPackageIds();
-                for (const std::string& id : localIds)
-                {
-                    std::string addonPath = nam->GetAddonSourcePath(id);
-                    if (!addonPath.empty())
-                    {
-                        nam->GenerateIDEConfig(addonPath);
-                    }
-                }
-                LogDebug("Native addon dependencies regenerated for %d addon(s).", (int)localIds.size());
-            }
-        }
+    // Scale button
+    ImGui::SameLine();
+    bool isScale = (gizmoOp == ImGuizmo::SCALE);
+    if (isScale) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
+    if (ImGui::Button("S##Scale"))
+        gizmoOp = ImGuizmo::SCALE;
+    if (isScale) ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Scale (Space+S)");
 
-        ImGui::Separator();
+    // Local/World mode toggle
+    ImGui::SameLine();
+    ImGui::Separator();
+    ImGui::SameLine();
 
-        // Draw plugin menu items for Developer menu
-        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
-        if (hookMgr != nullptr)
-        {
-            hookMgr->DrawMenuItems("Developer");
-        }
+    bool isLocal = (gizmoMode == ImGuizmo::LOCAL);
+    if (isLocal) ImGui::PushStyleColor(ImGuiCol_Button, kToggledColor);
+    if (ImGui::Button(isLocal ? "Local" : "World"))
+        gizmoMode = isLocal ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+    if (isLocal) ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle Local/World (Ctrl+T)");
 
-        ImGui::EndPopup();
-    }
-
-    if (ImGui::BeginPopup("AddonsPopup"))
-    {
-        DrawAddonsPopupContent();
-        ImGui::EndPopup();
-    }
-
-    if (ImGui::BeginPopup("ExtraPopup"))
-    {
-        char versionStr[32];
-        snprintf(versionStr, 31, "Version: %d", OCTAVE_VERSION);
-        ImGui::Selectable(versionStr);
-
-        if (ImGui::IsItemHovered() && IsMouseButtonJustUp(MOUSE_RIGHT))
-        {
-            sDevModeClicks++;
-            if (sDevModeClicks >= 5)
-            {
-                GetEditorState()->mDevMode = true;
-            }
-        }
-
-        if (GetEditorState()->mDevMode &&
-            GetEngineState()->mStandalone &&
-            ImGui::Selectable("Prepare Release"))
-        {
-            ActionManager::Get()->PrepareRelease();
-        }
-
-        // Draw plugin menu items for Extra menu
-        {
-            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
-            if (hookMgr != nullptr) hookMgr->DrawMenuItems("Extra");
-        }
-
-        ImGui::EndPopup();
-    }
-
-    // (2) Draw Scene tabs on top
-
+    // Scene tabs
     static int32_t sPrevActiveSceneIdx = 0;
     std::vector<EditScene>& scenes = GetEditorState()->mEditScenes;
     int32_t activeSceneIdx = GetEditorState()->mEditSceneIndex;
@@ -4833,7 +4951,6 @@ static void DrawViewportPanel()
 
         for (int32_t n = 0; n < scenes.size(); n++)
         {
-            // Push a unique ID in case we have scenes with duplicate names.
             ImGui::PushID(n);
 
             const EditScene& scene = scenes[n];
@@ -4878,8 +4995,7 @@ static void DrawViewportPanel()
             ImGui::PopID();
         }
 
-        // Did we switch tabs? 
-        if (!sceneJustChanged && 
+        if (!sceneJustChanged &&
             openedTab != activeSceneIdx)
         {
             GetEditorState()->OpenEditScene(openedTab);
@@ -4890,19 +5006,12 @@ static void DrawViewportPanel()
 
     sPrevActiveSceneIdx = activeSceneIdx;
 
-
-    // Draw 3D / 2D / Material combo box on top right corner.
-
-
     // Hotkey Menus
     if (GetEditorState()->GetViewport3D()->ShouldHandleInput())
     {
         const bool ctrlDown = IsControlDown();
         bool shiftDown = IsShiftDown();
         const bool altDown = IsAltDown();
-
-        //ImGuiIO& io = ImGui::GetIO();
-        //ImGui::SetNextWindowPos(io.MousePos);
 
         if (shiftDown && IsKeyJustDown(KEY_Q))
         {
@@ -4961,7 +5070,6 @@ static void DrawViewportPanel()
                 Camera3D* camera = GetEditorState()->GetEditorCamera();
                 if (camera != nullptr)
                 {
-                    // Try physics raycast first (works for nodes with collision enabled)
                     RayTestResult rayResult;
                     camera->TraceScreenToWorld(sAssetDropScreenX, sAssetDropScreenY, ColGroupAll, rayResult);
                     if (rayResult.mHitNode != nullptr)
@@ -4969,15 +5077,12 @@ static void DrawViewportPanel()
                         return rayResult.mHitPosition;
                     }
 
-                    // Fallback: GPU hit-check picks up all visible nodes (e.g. InstancedMesh3D without collision)
-                    // Only accept Primitive3D nodes (actual geometry), skip plain Node3D containers/gizmos
                     Node3D* hitNode = Renderer::Get()->ProcessHitCheck(GetWorld(0), sAssetDropScreenX, sAssetDropScreenY);
                     if (hitNode != nullptr)
                     {
                         Primitive3D* prim = hitNode->As<Primitive3D>();
                         if (prim != nullptr)
                         {
-                            // Ray-sphere intersection to find where cursor ray hits the bounding sphere
                             Bounds bounds = prim->GetBounds();
                             glm::vec3 rayOrigin = camera->GetWorldPosition();
                             glm::vec3 nearPoint = camera->ScreenToWorldPosition(sAssetDropScreenX, sAssetDropScreenY);
@@ -4994,7 +5099,6 @@ static void DrawViewportPanel()
                                 return rayOrigin + rayDir * t;
                             }
 
-                            // Ray inside sphere or miss, use closest point on ray to center
                             float t = -glm::dot(oc, rayDir);
                             return rayOrigin + rayDir * glm::max(t, 0.0f);
                         }
@@ -5061,58 +5165,9 @@ static void DrawViewportPanel()
     }
 
     ImGui::End();
-
-    // Viewport overlay drop target for asset drag-and-drop (only active during drag)
-    {
-        const ImGuiPayload* activePayload = ImGui::GetDragDropPayload();
-        if (activePayload != nullptr && activePayload->IsDataType(DRAGDROP_ASSET))
-        {
-            float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
-            if (interfaceScale == 0.0f) interfaceScale = 1.0f;
-            float invScale = 1.0f / interfaceScale;
-            EditorState* es = GetEditorState();
-
-            ImGui::SetNextWindowPos(ImVec2(es->mViewportX * invScale, es->mViewportY * invScale));
-            ImGui::SetNextWindowSize(ImVec2(es->mViewportWidth * invScale, es->mViewportHeight * invScale));
-
-            ImGuiWindowFlags overlayFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
-                ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground |
-                ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus;
-
-            ImGui::Begin("##ViewportAssetDropOverlay", nullptr, overlayFlags);
-            ImGui::InvisibleButton("##ViewportDropTarget", ImGui::GetContentRegionAvail());
-
-            if (ImGui::BeginDragDropTarget())
-            {
-                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_ASSET))
-                {
-                    AssetStub* droppedStub = *(AssetStub**)payload->Data;
-                    if (droppedStub != nullptr && droppedStub->mType == StaticMesh::GetStaticType())
-                    {
-                        sAssetDropStub = droppedStub;
-                        sAssetDropParentNode = nullptr;
-                        sAssetDropInViewport = true;
-                        sAssetDropPopupPos = ImGui::GetMousePos();
-                        sAssetDropPopupPending = true;
-
-                        // Convert ImGui coords to screen coords for raycasting
-                        ImVec2 dropPos = ImGui::GetMousePos();
-                        float scale = GetEngineConfig()->mEditorInterfaceScale;
-                        if (scale == 0.0f) scale = 1.0f;
-                        sAssetDropScreenX = (int32_t)(dropPos.x * scale);
-                        sAssetDropScreenY = (int32_t)(dropPos.y * scale);
-                    }
-                }
-                ImGui::EndDragDropTarget();
-            }
-            ImGui::End();
-        }
-    }
+    ImGui::PopStyleVar();
 
     // Set up ImGuizmo rect for the viewport area
-    // edState was already declared earlier in this function
-    // Account for interface scale - ImGui operates in scaled coordinates
     float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
     if (interfaceScale == 0.0f)
     {
@@ -5126,6 +5181,8 @@ static void DrawViewportPanel()
         (float)edState->mViewportWidth * invInterfaceScale,
         (float)edState->mViewportHeight * invInterfaceScale
     );
+
+    ImGuizmo::SetAlternativeWindow(sViewportDockWindow);
 }
 
 static void DrawPaintColorsPanel()
@@ -5133,7 +5190,7 @@ static void DrawPaintColorsPanel()
     const float dispWidth = ImGui::GetIO().DisplaySize.x;
     const float dispHeight = ImGui::GetIO().DisplaySize.y;
 
-    ImGui::SetNextWindowPos(ImVec2(kSidePaneWidth + 10.0f, GetViewportBarHeight()));
+    ImGui::SetNextWindowPos(ImVec2(210.0f, GetTopBarHeight()));
     ImGui::SetNextWindowSize(ImVec2(250.0f, 170.0f));
 
     ImGui::Begin("Paint Colors", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
@@ -5159,7 +5216,7 @@ static void DrawPaintInstancesPanel()
     const float dispWidth = ImGui::GetIO().DisplaySize.x;
     const float dispHeight = ImGui::GetIO().DisplaySize.y;
 
-    ImGui::SetNextWindowPos(ImVec2(kSidePaneWidth + 10.0f, GetViewportBarHeight()));
+    ImGui::SetNextWindowPos(ImVec2(210.0f, GetTopBarHeight()));
     ImGui::SetNextWindowSize(ImVec2(250.0f, 210.0f));
 
     ImGui::Begin("Paint Instances", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
@@ -5849,6 +5906,8 @@ void EditorImguiInit()
     colors[ImGuiCol_TitleBg] = colors[ImGuiCol_TitleBgActive];
 
     RegisterLogCallback(DebugLogWindow::LogCallback);
+
+    ImGui::InitDock();
 }
 
 void EditorImguiDraw()
@@ -5871,19 +5930,9 @@ void EditorImguiDraw()
 
     if (EditorIsInterfaceVisible())
     {
-        if (GetEditorState()->mShowLeftPane)
-        {
-            DrawScenePanel();
-            DrawAssetsPanel();
-        }
-
-        if (GetEditorState()->mShowRightPane)
-        {
-            DrawPropertiesPanel();
-        }
-
-        DrawViewportPanel();
-        DrawDebugLogPanel();
+        DrawMainMenuBar();
+        DrawToolbar();
+        DrawDockspace();
 
         if (GetEditorState()->mShowTimelinePanel)
         {
@@ -5948,6 +5997,14 @@ void EditorImguiPreShutdown()
         return;
     }
 
+    // Save INI before clearing dock data, then disable auto-save so DestroyContext
+    // doesn't overwrite our save with empty dock state.
+    if (ImGui::GetIO().IniFilename)
+    {
+        ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+        ImGui::GetIO().IniFilename = nullptr;
+    }
+    ImGui::ShutdownDock();
     UnregisterLogCallback(DebugLogWindow::LogCallback);
 
     if (sInspectTexId != 0)
@@ -5962,39 +6019,20 @@ void EditorImguiGetViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t&
 {
     if (EditorIsInterfaceVisible())
     {
-        ImGuiIO& io = ImGui::GetIO();
-
-        float scale = io.OctaveInterfaceScale;
+        float scale = ImGui::GetIO().OctaveInterfaceScale;
         if (scale == 0.0f)
         {
             scale = 1.0f;
         }
-        float invScale = 1.0f / scale;
 
-        x = 0;
-        y = uint32_t(GetViewportBarHeight() * scale + 0.5f);
-        int32_t iWidth = (int32_t)io.DisplaySize.x;
-        int32_t iHeight = int32_t(io.DisplaySize.y - GetViewportBarHeight() * scale + 0.5f);
-
-        if (GetEditorState()->mShowLeftPane)
-        {
-            x = int32_t(kSidePaneWidth * scale + 0.5f);
-            iWidth -= int32_t(kSidePaneWidth * scale + 0.5f);
-        }
-        if (GetEditorState()->mShowRightPane)
-        {
-            iWidth -= int32_t(kSidePaneWidth * scale + 0.5f);
-        }
-        if (IsBottomPaneVisible())
-        {
-            iHeight -= int32_t(GetEditorState()->mBottomPaneHeight * scale + 0.5f);
-        }
-
-        iWidth = glm::clamp<int32_t>(iWidth, 100, int32_t(ImGui::GetIO().DisplaySize.x + 0.5f));
-        iHeight = glm::clamp<int32_t>(iHeight, 100, int32_t(ImGui::GetIO().DisplaySize.y + 0.5f));
-
-        width = uint32_t(iWidth);
-        height = uint32_t(iHeight);
+        x = uint32_t(sViewportDockPos.x * scale + 0.5f);
+        y = uint32_t(sViewportDockPos.y * scale + 0.5f);
+        int32_t iW = int32_t(sViewportDockSize.x * scale + 0.5f);
+        int32_t iH = int32_t(sViewportDockSize.y * scale + 0.5f);
+        iW = glm::clamp<int32_t>(iW, 100, int32_t(ImGui::GetIO().DisplaySize.x + 0.5f));
+        iH = glm::clamp<int32_t>(iH, 100, int32_t(ImGui::GetIO().DisplaySize.y + 0.5f));
+        width = uint32_t(iW);
+        height = uint32_t(iH);
     }
     else
     {
@@ -6003,6 +6041,15 @@ void EditorImguiGetViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t&
         width = uint32_t(ImGui::GetIO().DisplaySize.x + 0.5f);
         height = uint32_t(ImGui::GetIO().DisplaySize.y + 0.5f);
     }
+}
+
+bool EditorImguiIsViewportHovered()
+{
+    ImVec2 mp = ImGui::GetIO().MousePos;
+    return (mp.x >= sViewportDockPos.x &&
+            mp.x <  sViewportDockPos.x + sViewportDockSize.x &&
+            mp.y >= sViewportDockPos.y &&
+            mp.y <  sViewportDockPos.y + sViewportDockSize.y);
 }
 
 bool EditorIsInterfaceVisible()

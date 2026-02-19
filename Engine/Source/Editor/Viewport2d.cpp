@@ -11,6 +11,7 @@
 
 #include "imgui.h"
 #include "./ImGuizmo/ImGuizmo.h"
+#include "EditorImgui.h"
 
 Viewport2D::Viewport2D()
 {
@@ -76,7 +77,8 @@ bool Viewport2D::ShouldHandleInput() const
 
     // Note: Don't check ImGuizmo::IsUsing() here - we want right/middle click to work
     // even while the gizmo is active. Left-click is blocked separately via IsOver().
-    bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp);
+    bool viewportHovered = EditorImguiIsViewportHovered();
+    bool handleInput = ((!imguiAnyWindowHovered || viewportHovered) && !imguiWantsText && !imguiAnyPopupUp);
     return handleInput;
 }
 
