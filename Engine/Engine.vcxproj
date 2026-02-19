@@ -675,6 +675,8 @@
     <ClCompile Include="Source\Editor\Preferences\Packaging\PackagingModule.cpp" />
     <ClCompile Include="Source\Editor\Timeline\TimelinePanel.cpp" />
     <ClCompile Include="Source\Editor\Timeline\TimelineActions.cpp" />
+    <ClCompile Include="Source\Editor\ThemeEditor\ThemeEditorWindow.cpp" />
+    <ClCompile Include="Source\Editor\ThemeEditor\CssGenerator.cpp" />
     <ClCompile Include="Source\Plugins\RuntimePluginManager.cpp" />
     <ClCompile Include="Source\Engine\Asset.cpp" />
     <ClCompile Include="Source\Engine\AssetDir.cpp" />
@@ -967,6 +969,8 @@
     <ClInclude Include="Source\Editor\Preferences\Packaging\PackagingModule.h" />
     <ClInclude Include="Source\Editor\Timeline\TimelinePanel.h" />
     <ClInclude Include="Source\Editor\Timeline\TimelineActions.h" />
+    <ClInclude Include="Source\Editor\ThemeEditor\ThemeEditorWindow.h" />
+    <ClInclude Include="Source\Editor\ThemeEditor\CssGenerator.h" />
     <ClInclude Include="Source\Plugins\EditorUIHooks.h" />
     <ClInclude Include="Source\Plugins\OctaveEngineAPI.h" />
     <ClInclude Include="Source\Plugins\OctavePluginAPI.h" />

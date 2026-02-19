@@ -58,13 +58,6 @@ static std::string StripComments(const std::string& css)
 
 // ---- Selector->ImGuiCol Mapping ----
 
-struct SelectorMapping
-{
-    const char* selector;
-    const char* property;
-    int imguiCol;
-};
-
 static const SelectorMapping sSelectorMappings[] =
 {
     { "window",                 "background",            ImGuiCol_WindowBg },
@@ -412,6 +405,36 @@ static void ParseSelectorBlock(const std::string& selector, const std::string& b
             continue;
         }
 
+        // Panel background overrides
+        if (prop == "background")
+        {
+            ImVec4 color;
+            if (sel == "panel-assets" && ResolveColor(val, variables, color))
+            {
+                theme.PanelAssetsBg = color;
+                theme.hasPanelAssetsBg = true;
+                continue;
+            }
+            else if (sel == "panel-scene" && ResolveColor(val, variables, color))
+            {
+                theme.PanelSceneBg = color;
+                theme.hasPanelSceneBg = true;
+                continue;
+            }
+            else if (sel == "panel-properties" && ResolveColor(val, variables, color))
+            {
+                theme.PanelPropertiesBg = color;
+                theme.hasPanelPropertiesBg = true;
+                continue;
+            }
+            else if (sel == "panel-debug-log" && ResolveColor(val, variables, color))
+            {
+                theme.PanelDebugLogBg = color;
+                theme.hasPanelDebugLogBg = true;
+                continue;
+            }
+        }
+
         // Find matching selector+property in our mappings
         for (int i = 0; i < sSelectorMappingCount; ++i)
         {
@@ -432,6 +455,17 @@ static void ParseSelectorBlock(const std::string& selector, const std::string& b
         }
     }
 }
+
+// ---- Global Panel Color Storage ----
+
+static ImVec4 sPanelAssetsBg;
+static ImVec4 sPanelSceneBg;
+static ImVec4 sPanelPropertiesBg;
+static ImVec4 sPanelDebugLogBg;
+static bool sHasPanelAssetsBg = false;
+static bool sHasPanelSceneBg = false;
+static bool sHasPanelPropertiesBg = false;
+static bool sHasPanelDebugLogBg = false;
 
 // ---- Public API ----
 
@@ -558,6 +592,62 @@ void ApplyTheme(const CssThemeData& themeData)
     {
         ImGui::SetDockTabTextColor(ImGui::ColorConvertFloat4ToU32(themeData.DockTabTextColor));
     }
+
+    // Panel background overrides
+    sPanelAssetsBg = themeData.PanelAssetsBg;         sHasPanelAssetsBg = themeData.hasPanelAssetsBg;
+    sPanelSceneBg = themeData.PanelSceneBg;           sHasPanelSceneBg = themeData.hasPanelSceneBg;
+    sPanelPropertiesBg = themeData.PanelPropertiesBg; sHasPanelPropertiesBg = themeData.hasPanelPropertiesBg;
+    sPanelDebugLogBg = themeData.PanelDebugLogBg;     sHasPanelDebugLogBg = themeData.hasPanelDebugLogBg;
+}
+
+const SelectorMapping* GetSelectorMappings()
+{
+    return sSelectorMappings;
+}
+
+int GetSelectorMappingCount()
+{
+    return sSelectorMappingCount;
+}
+
+bool GetPanelAssetsBg(ImVec4& outColor)
+{
+    if (sHasPanelAssetsBg) { outColor = sPanelAssetsBg; return true; }
+    return false;
+}
+
+bool GetPanelSceneBg(ImVec4& outColor)
+{
+    if (sHasPanelSceneBg) { outColor = sPanelSceneBg; return true; }
+    return false;
+}
+
+bool GetPanelPropertiesBg(ImVec4& outColor)
+{
+    if (sHasPanelPropertiesBg) { outColor = sPanelPropertiesBg; return true; }
+    return false;
+}
+
+bool GetPanelDebugLogBg(ImVec4& outColor)
+{
+    if (sHasPanelDebugLogBg) { outColor = sPanelDebugLogBg; return true; }
+    return false;
+}
+
+void SetPanelColors(const CssThemeData& data)
+{
+    sPanelAssetsBg = data.PanelAssetsBg;         sHasPanelAssetsBg = data.hasPanelAssetsBg;
+    sPanelSceneBg = data.PanelSceneBg;           sHasPanelSceneBg = data.hasPanelSceneBg;
+    sPanelPropertiesBg = data.PanelPropertiesBg; sHasPanelPropertiesBg = data.hasPanelPropertiesBg;
+    sPanelDebugLogBg = data.PanelDebugLogBg;     sHasPanelDebugLogBg = data.hasPanelDebugLogBg;
+}
+
+void ClearPanelColors()
+{
+    sHasPanelAssetsBg = false;
+    sHasPanelSceneBg = false;
+    sHasPanelPropertiesBg = false;
+    sHasPanelDebugLogBg = false;
 }
 
 } // namespace CssThemeParser

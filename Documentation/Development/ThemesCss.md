@@ -130,6 +130,10 @@ button:active { background: #5E81AC; }
 | `nav` | `windowing-highlight` | NavWindowingHighlight |
 | `nav` | `windowing-dim` | NavWindowingDimBg |
 | `modal` | `dim-background` | ModalWindowDimBg |
+| `panel-assets` | `background` | Assets panel background |
+| `panel-scene` | `background` | Scene hierarchy background |
+| `panel-properties` | `background` | Properties panel background |
+| `panel-debug-log` | `background` | Debug Log panel background |
 
 ## Example: Nord Theme
 
@@ -198,6 +202,22 @@ checkbox { checkmark: var(--frost0); }
 slider { grab: var(--frost2); }
 slider:active { grab: var(--frost1); }
 ```
+
+## Example: Per-Panel Backgrounds
+
+Each editor panel can have its own background color, independent of the global window background:
+
+```css
+/* Dark base with distinct panel tints */
+window { background: #1E1E2E; }
+
+panel-assets { background: #1E2030; }
+panel-scene { background: #1E2E1E; }
+panel-properties { background: #2E1E2E; }
+panel-debug-log { background: #1E1E1E; }
+```
+
+Panel backgrounds are optional. When unset, panels fall back to the `window { background }` color.
 
 ## Example: Minimal Colors Only
 

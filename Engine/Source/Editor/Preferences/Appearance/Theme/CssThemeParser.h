@@ -41,6 +41,19 @@ struct CssThemeData
 
     // Dock tab text color (separate from ImGuiCol_Text)
     ImVec4 DockTabTextColor;               bool hasDockTabTextColor = false;
+
+    // Per-panel background overrides
+    ImVec4 PanelAssetsBg;                  bool hasPanelAssetsBg = false;
+    ImVec4 PanelSceneBg;                   bool hasPanelSceneBg = false;
+    ImVec4 PanelPropertiesBg;              bool hasPanelPropertiesBg = false;
+    ImVec4 PanelDebugLogBg;                bool hasPanelDebugLogBg = false;
+};
+
+struct SelectorMapping
+{
+    const char* selector;
+    const char* property;
+    int imguiCol;
 };
 
 namespace CssThemeParser
@@ -59,6 +72,18 @@ namespace CssThemeParser
     bool ParseRgbColor(const std::string& rgb, ImVec4& outColor);
     bool ParseRgbaColor(const std::string& rgba, ImVec4& outColor);
     float ParsePxValue(const std::string& value);
+
+    // Selector mapping accessors (for Theme Editor reverse-lookup)
+    const SelectorMapping* GetSelectorMappings();
+    int GetSelectorMappingCount();
+
+    // Panel background color accessors
+    bool GetPanelAssetsBg(ImVec4& outColor);
+    bool GetPanelSceneBg(ImVec4& outColor);
+    bool GetPanelPropertiesBg(ImVec4& outColor);
+    bool GetPanelDebugLogBg(ImVec4& outColor);
+    void SetPanelColors(const CssThemeData& data);
+    void ClearPanelColors();
 }
 
 #endif

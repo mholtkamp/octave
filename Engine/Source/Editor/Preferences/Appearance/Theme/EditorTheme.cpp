@@ -2,6 +2,7 @@
 
 #include "EditorTheme.h"
 #include "CssThemeManager.h"
+#include "CssThemeParser.h"
 #include "imgui.h"
 #include "imgui_dock.h"
 
@@ -83,9 +84,10 @@ EditorThemeType GetThemeTypeFromName(const std::string& name)
 
 void ApplyTheme(EditorThemeType type)
 {
-    // Clear custom dock tab text color before applying any theme.
-    // Custom CSS themes will re-set it if they specify tab { color }.
+    // Clear custom dock tab text color and panel colors before applying any theme.
+    // Custom CSS themes will re-set them if specified.
     ImGui::ClearDockTabTextColor();
+    CssThemeParser::ClearPanelColors();
 
     if (IsCustomTheme(type))
     {

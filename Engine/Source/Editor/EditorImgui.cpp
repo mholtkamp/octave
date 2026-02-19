@@ -56,6 +56,8 @@
 #include "Addons/AddonsMenu.h"
 #include "EditorUIHookManager.h"
 #include "DebugLog/DebugLogWindow.h"
+#include "ThemeEditor/ThemeEditorWindow.h"
+#include "Preferences/Appearance/Theme/CssThemeParser.h"
 #include "Timeline/TimelinePanel.h"
 #include "Preferences/General/GeneralModule.h"
 #include "Preferences/PreferencesManager.h"
@@ -369,7 +371,11 @@ static void DrawDockspace()
     ImGui::PopStyleColor();
 
     // --- Assets dock ---
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+    {
+        ImVec4 assetsBg;
+        ImVec4 bg = CssThemeParser::GetPanelAssetsBg(assetsBg) ? assetsBg : ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, bg);
+    }
     if (ImGui::BeginDock(ICON_ASSETS "  Assets", &assetsOpen))
     {
         DrawAssetsPanel();
@@ -378,7 +384,11 @@ static void DrawDockspace()
     ImGui::PopStyleColor();
 
     // --- Scene dock ---
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+    {
+        ImVec4 sceneBg;
+        ImVec4 bg = CssThemeParser::GetPanelSceneBg(sceneBg) ? sceneBg : ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, bg);
+    }
     if (ImGui::BeginDock(ICON_HIERARCHY "  Scene", &sceneOpen))
     {
         DrawScenePanel();
@@ -387,9 +397,13 @@ static void DrawDockspace()
     ImGui::PopStyleColor();
 
     // --- Properties dock ---
-    bool lockedProperties = sObjectTabOpen && GetEditorState()->IsInspectLocked();
-    ImVec4 propsBg = lockedProperties ? ImVec4(0.4f, 0.0f, 0.0f, 1.0f) : ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, propsBg);
+    {
+        bool lockedProperties = sObjectTabOpen && GetEditorState()->IsInspectLocked();
+        ImVec4 propsPanelBg;
+        ImVec4 propsBg = lockedProperties ? ImVec4(0.4f, 0.0f, 0.0f, 1.0f)
+            : (CssThemeParser::GetPanelPropertiesBg(propsPanelBg) ? propsPanelBg : ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, propsBg);
+    }
     if (ImGui::BeginDock(ICON_INFO "  Properties", &propsOpen))
     {
         DrawPropertiesPanel();
@@ -398,7 +412,11 @@ static void DrawDockspace()
     ImGui::PopStyleColor();
 
     // --- Debug Log dock ---
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+    {
+        ImVec4 debugBg;
+        ImVec4 bg = CssThemeParser::GetPanelDebugLogBg(debugBg) ? debugBg : ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, bg);
+    }
     if (ImGui::BeginDock(ICON_STREAMLINE_LOG_SOLID "  Debug Log", &debugLogOpen, ImGuiWindowFlags_NoCollapse))
     {
         GetDebugLogWindow()->DrawContent();
@@ -4541,6 +4559,13 @@ static void DrawMainMenuBar()
                 }
             }
 
+            if (GetFeatureFlagsEditor().mShowTheming == true) {
+                if (ImGui::MenuItem("Theme Editor..."))
+                {
+                    GetThemeEditorWindow()->Open();
+                }
+            }
+
             ImGui::Separator();
             if (ImGui::MenuItem("Scene"))
                 GetEditorState()->mShowLeftPane = !GetEditorState()->mShowLeftPane;
@@ -6188,6 +6213,12 @@ void EditorImguiDraw()
         GetPackagingWindow()->Draw();
         GetProjectSelectWindow()->Draw();
         GetAddonsWindow()->Draw();
+        GetThemeEditorWindow()->Draw();
+
+        if (GetThemeEditorWindow()->IsInspectModeActive())
+        {
+            GetThemeEditorWindow()->DrawInspectOverlay();
+        }
     }
 
     ImGui::Render();

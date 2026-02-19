@@ -135,6 +135,9 @@
     <Filter Include="Source Files\Editor\Timeline">
       <UniqueIdentifier>{a7c3e1b5-9d2f-4e6a-8b0c-f1d4a6e8c2b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Editor\ThemeEditor">
+      <UniqueIdentifier>{e4b2a8c6-3f1d-5e7a-9b0c-d2f5a7c9e1b3}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\Engine\Timeline">
       <UniqueIdentifier>{b8d4f2c6-0e3a-5f7b-9c1d-a2e5b7f9d3c8}</UniqueIdentifier>
     </Filter>
@@ -925,6 +928,12 @@
     </ClCompile>
     <ClCompile Include="Source\Editor\Timeline\TimelineActions.cpp">
       <Filter>Source Files\Editor\Timeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ThemeEditor\ThemeEditorWindow.cpp">
+      <Filter>Source Files\Editor\ThemeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ThemeEditor\CssGenerator.cpp">
+      <Filter>Source Files\Editor\ThemeEditor</Filter>
     </ClCompile>
     <ClCompile Include="Source\Plugins\RuntimePluginManager.cpp">
       <Filter>Source Files\Engine</Filter>
@@ -1766,6 +1775,12 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\Timeline\TimelineActions.h">
       <Filter>Source Files\Editor\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ThemeEditor\ThemeEditorWindow.h">
+      <Filter>Source Files\Editor\ThemeEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ThemeEditor\CssGenerator.h">
+      <Filter>Source Files\Editor\ThemeEditor</Filter>
     </ClInclude>
     <ClInclude Include="Source\Plugins\EditorUIHooks.h">
       <Filter>Source Files\Engine</Filter>
