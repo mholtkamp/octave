@@ -16,6 +16,8 @@ using namespace ImGui;
 
 static float g_dock_tab_rounding_left = 0.0f;
 static float g_dock_tab_rounding_right = 0.0f;
+static ImU32 g_dock_tab_text_color = 0;
+static bool g_dock_tab_text_color_set = false;
 
 struct DockContext
 {
@@ -619,8 +621,8 @@ struct DockContext
         ImVec2 min = GetItemRectMin();
         ImVec2 max = GetItemRectMax();
         ImVec2 center = (min + max) * 0.5f;
-        ImU32 text_color = GetColorU32(ImGuiCol_Text);
-        ImU32 color_active = GetColorU32(ImGuiCol_FrameBgActive);
+        ImU32 text_color = g_dock_tab_text_color_set ? g_dock_tab_text_color : GetColorU32(ImGuiCol_Text);
+        ImU32 color_active = GetColorU32(ImGuiCol_TabActive);
         draw_list->AddRectFilled(ImVec2(center.x - 4, min.y + 3),
             ImVec2(center.x + 4, min.y + 5),
             hovered ? color_active : text_color);
@@ -644,10 +646,10 @@ struct DockContext
             Dock* dock_tab = &dock;
 
             ImDrawList* draw_list = GetWindowDrawList();
-            ImU32 color = GetColorU32(ImGuiCol_FrameBg);
-            ImU32 color_active = GetColorU32(ImGuiCol_FrameBgActive);
-            ImU32 color_hovered = GetColorU32(ImGuiCol_FrameBgHovered);
-            ImU32 text_color = GetColorU32(ImGuiCol_Text);
+            ImU32 color = GetColorU32(ImGuiCol_Tab);
+            ImU32 color_active = GetColorU32(ImGuiCol_TabActive);
+            ImU32 color_hovered = GetColorU32(ImGuiCol_TabHovered);
+            ImU32 text_color = g_dock_tab_text_color_set ? g_dock_tab_text_color : GetColorU32(ImGuiCol_Text);
             float line_height = GetTextLineHeightWithSpacing();
             float tab_base;
 
@@ -1488,6 +1490,18 @@ void ImGui::GetDockTabRounding(float& left, float& right)
 {
     left = g_dock_tab_rounding_left;
     right = g_dock_tab_rounding_right;
+}
+
+void ImGui::SetDockTabTextColor(ImU32 color)
+{
+    g_dock_tab_text_color = color;
+    g_dock_tab_text_color_set = true;
+}
+
+void ImGui::ClearDockTabTextColor()
+{
+    g_dock_tab_text_color = 0;
+    g_dock_tab_text_color_set = false;
 }
 
 void ImGui::InitDock()

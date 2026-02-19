@@ -34,6 +34,8 @@ IMGUI_API bool HasDock(const char* panel, const char* label);
 IMGUI_API void ClearDocks(const char* panel);
 IMGUI_API void SetDockTabRounding(float left, float right);
 IMGUI_API void GetDockTabRounding(float& left, float& right);
+IMGUI_API void SetDockTabTextColor(ImU32 color);
+IMGUI_API void ClearDockTabTextColor();
 IMGUI_API void InitDock();
 
 };

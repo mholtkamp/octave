@@ -1,0 +1,83 @@
+/* Chaos theme for Octave Editor */
+/* Converted from GitHub Dark Themes */
+
+:root {
+    --bg: #161616;
+    --surface1: #232323;
+    --surface2: #313131;
+    --surface3: #3F3F3F;
+    --text: #E6E1DC;
+    --text-dim: #555555;
+    --accent: #00698F;
+    --accent-hover: #267F9F;
+    --accent-dark: #005472;
+    --secondary: #997744;
+    --border: #1F1F1F;
+    --scrollbar: #494949;
+    --scrollbar-hover: #606060;
+}
+
+style {
+    window-rounding: 4px;
+    frame-rounding: 2px;
+    frame-padding: 6px 4px;
+    item-spacing: 8px 4px;
+    scrollbar-size: 12px;
+    scrollbar-rounding: 2px;
+    tab-rounding: 2px;
+    grab-rounding: 2px;
+}
+
+window { background: var(--bg); child-background: transparent; }
+popup { background: var(--surface2); }
+text { color: var(--text); disabled: var(--text-dim); selected-background: var(--accent-dark); }
+border { color: var(--border); shadow: transparent; }
+
+frame { background: var(--surface1); }
+frame:hover { background: var(--surface2); }
+frame:active { background: var(--accent); }
+
+title { background: var(--surface1); }
+title:active { background: var(--surface2); }
+title:collapsed { background: var(--surface1); }
+
+menubar { background: var(--bg); }
+
+button { background: var(--surface2); }
+button:hover { background: var(--surface3); }
+button:active { background: var(--accent); }
+
+header { background: var(--surface1); }
+header:hover { background: var(--surface2); }
+header:active { background: var(--accent); }
+
+tab { color: var(--text); background: var(--surface1); }
+tab:hover { background: var(--surface2); }
+tab:active { background: var(--bg); }
+tab:unfocused { background: var(--bg); }
+tab:unfocused-active { background: var(--surface1); }
+
+scrollbar { background: var(--bg); grab: var(--scrollbar); }
+scrollbar:hover { grab: var(--scrollbar-hover); }
+scrollbar:active { grab: var(--accent); }
+
+separator { color: var(--border); }
+separator:hover { color: var(--accent); }
+separator:active { color: var(--accent-dark); }
+
+checkbox { checkmark: var(--secondary); }
+slider { grab: var(--accent); }
+slider:active { grab: var(--accent-hover); }
+
+resize-grip { background: transparent; }
+resize-grip:hover { background: var(--accent); }
+resize-grip:active { background: var(--accent-dark); }
+
+table { header-background: var(--surface1); border-strong: var(--border); border-light: var(--surface1); row-background: transparent; row-background-alt: rgba(35, 35, 35, 0.5); }
+
+drag-drop { target: rgba(0, 105, 143, 0.5); }
+nav { highlight: var(--accent); windowing-highlight: rgba(230, 225, 220, 0.7); windowing-dim: rgba(22, 22, 22, 0.7); }
+modal { dim-background: rgba(22, 22, 22, 0.6); }
+
+plot { lines: var(--secondary); histogram: var(--accent); }
+plot:hover { lines: var(--accent-hover); histogram: var(--accent-hover); }

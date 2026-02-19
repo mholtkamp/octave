@@ -866,6 +866,12 @@
     <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\ThemeModule.cpp">
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\CssThemeParser.cpp">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\CssThemeManager.cpp">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.cpp">
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClCompile>
@@ -1696,6 +1702,12 @@
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\ThemeModule.h">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\CssThemeParser.h">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\CssThemeManager.h">
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.h">

@@ -656,6 +656,8 @@
     <ClCompile Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.cpp" />
     <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\EditorTheme.cpp" />
     <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\ThemeModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\CssThemeParser.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\CssThemeManager.cpp" />
     <ClCompile Include="Source\Editor\EditorUIHookManager.cpp" />
     <ClCompile Include="Source\Editor\Addons\AddonCreator.cpp" />
     <ClCompile Include="Source\Editor\Addons\AddonManager.cpp" />
@@ -945,6 +947,8 @@
     <ClInclude Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.h" />
     <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\EditorTheme.h" />
     <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\ThemeModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\CssThemeParser.h" />
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\CssThemeManager.h" />
     <ClInclude Include="Source\Editor\EditorUIHookManager.h" />
     <ClInclude Include="Source\Editor\Addons\AddonCreator.h" />
     <ClInclude Include="Source\Editor\Addons\AddonManager.h" />
