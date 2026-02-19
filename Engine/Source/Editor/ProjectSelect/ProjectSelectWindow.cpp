@@ -194,7 +194,7 @@ void ProjectSelectWindow::DrawRecentProjects()
             ImGui::SameLine(ImGui::GetWindowWidth() - 80);
             //ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
             //ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-            if (ImGui::Button(ICON_TRASH, ImVec2(0,25) ))
+            if (ImGui::Button(ICON_ZONDICONS_TRASH, ImVec2(0,25) ))
             {
 
                 mProjectsToRemove.push_back(path);

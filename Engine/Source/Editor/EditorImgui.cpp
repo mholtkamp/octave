@@ -21,6 +21,15 @@
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Nodes/3D/Camera3d.h"
 #include "Nodes/3D/Spline3d.h"
+#include "Nodes/3D/PointLight3d.h"
+#include "Nodes/3D/DirectionalLight3d.h"
+#include "Nodes/3D/Particle3d.h"
+#include "Nodes/3D/Audio3d.h"
+#include "Nodes/3D/Box3d.h"
+#include "Nodes/3D/Sphere3d.h"
+#include "Nodes/3D/Capsule3d.h"
+#include "Nodes/3D/ShadowMesh3d.h"
+#include "Nodes/3D/TextMesh3d.h"
 #include "World.h"
 
 #include "Assets/Scene.h"
@@ -68,6 +77,12 @@
 #elif PLATFORM_LINUX
 #include "imgui_impl_xcb.h"
 #endif
+#include <Nodes/TimelinePlayer.h>
+#include <Nodes/Widgets/Button.h>
+#include <Nodes/Widgets/Quad.h>
+#include <Nodes/Widgets/Canvas.h>
+#include <Nodes/Widgets/Console.h>
+#include <Nodes/Widgets/ArrayWidget.h>
 
 
 struct FileBrowserDirEntry
@@ -2660,7 +2675,36 @@ static void DrawScenePanel()
                 ImGui::PushStyleColor(ImGuiCol_Text, sceneColorIm);
             }
 
-            bool nodeOpen = ImGui::TreeNodeEx(node->GetName().c_str(), nodeFlags);
+            const char* nodeIcon = ICON_SCENE;
+            if (node->As<InstancedMesh3D>())          nodeIcon = ICON_INSTANCE_MESH;
+            else if (node->As<ShadowMesh3D>())        nodeIcon = ICON_SHADOW;
+            else if (node->As<SkeletalMesh3D>())      nodeIcon = ICON_SKELETON;
+            else if (node->As<TextMesh3D>())          nodeIcon = ICON_TEXTMESH;
+            else if (node->As<StaticMesh3D>())        nodeIcon = ICON_STATIC_MESH;
+            else if (node->As<PointLight3D>())        nodeIcon = ICON_LIGHTBULB;
+            else if (node->As<DirectionalLight3D>())  nodeIcon = ICON_SUN;
+            else if (node->As<Camera3D>())            nodeIcon = ICON_IX_VIDEO_CAMERA_FILLED;
+            else if (node->As<Particle3D>())          nodeIcon = ICON_FIREWORK;
+            else if (node->As<Audio3D>())             nodeIcon = ICON_RIVET_ICONS_AUDIO_SOLID;
+            else if (node->As<Sphere3D>())            nodeIcon = ICON_PH_SPHERE;
+            else if (node->As<Box3D>())               nodeIcon = ICON_FLUENT_MDL2_CUBE_SHAPE;
+            else if (node->As<Capsule3D>())           nodeIcon = ICON_CAPSULE;
+            else if (node->As<Spline3D>())            nodeIcon = ICON_IC_BASELINE_LINK;
+            else if (node->As<Text>())            nodeIcon = ICON_TEXTWIDGET;
+            else if (node->As<Button>())            nodeIcon = ICON_BUTTON;
+            else if (node->As<Console>())            nodeIcon = ICON_CONSOLE;
+            else if (node->As<Canvas>())            nodeIcon = ICON_CANVAS;
+            else if (node->As<Quad>())            nodeIcon = ICON_RECT;
+            else if (node->As<ArrayWidget>())            nodeIcon = ICON_LAYERS;
+            else if (node->As<TimelinePlayer>())            nodeIcon = ICON_CLAPPERBOARD_CLOSE;
+
+            else if (node->IsSceneLinked())         nodeIcon = ICON_STREAMLINE_PLUMP_WORLD_REMIX;
+            else if (node->IsNode3D())                nodeIcon = ICON_PH_SPHERE;
+            else if (node->IsWidget())                nodeIcon = ICON_UIWIDGET;
+
+
+            std::string nodeLabel = std::string(nodeIcon) + " " + node->GetName();
+            bool nodeOpen = ImGui::TreeNodeEx(nodeLabel.c_str(), nodeFlags);
             bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
             bool nodeMiddleClicked = ImGui::IsItemClicked(ImGuiMouseButton_Middle);
             bool expandChildren = trackingNode || (nodeMiddleClicked && IsControlDown());
@@ -4559,9 +4603,31 @@ static void DrawMainMenuBar()
             }
         }
 
+        if (ImGui::Button(ICON_ION_HAMMER_SHARP))
+        {
+            ReloadAllScripts();
+            NativeAddonManager* nam = NativeAddonManager::Get();
+            if (nam != nullptr)
+            {
+                std::vector<std::string> localIds = nam->GetLocalPackageIds();
+                for (const std::string& id : localIds)
+                {
+                    std::string addonPath = nam->GetAddonSourcePath(id);
+                    if (!addonPath.empty())
+                    {
+                        nam->GenerateIDEConfig(addonPath);
+                    }
+                }
+
+                nam->ReloadAllNativeAddons();
+                LogDebug("Native addon dependencies regenerated and addons reloaded.");
+            }
+        }
+
+
         // Play/Stop button in the menu bar
         bool inPie = IsPlayingInEditor();
-        if (ImGui::Button(inPie ? ICON_BASELINE_STOP : ICON_PLAY))
+        if (ImGui::Button(inPie ? ICON_IC_BASELINE_STOP : ICON_MDI_PLAY))
         {
             if (inPie)
             {
@@ -5930,7 +5996,7 @@ void EditorImguiInit()
         }
 
 
-    MergeOctaveIcons(io.Fonts, 16.0f,  ResolveEditorIconFontPath().c_str());
+    MergeOctaveIcons(io.Fonts, 14.0f,  ResolveEditorIconFontPath().c_str());
 
     //ImGui::StyleColorsLight();
 
