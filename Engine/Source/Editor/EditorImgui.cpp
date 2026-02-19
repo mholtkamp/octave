@@ -56,16 +56,20 @@
 #include "Addons/AddonsMenu.h"
 #include "EditorUIHookManager.h"
 #include "DebugLog/DebugLogWindow.h"
+#include "ScriptEditor/ScriptEditorWindow.h"
 #include "ThemeEditor/ThemeEditorWindow.h"
 #include "Preferences/Appearance/Theme/CssThemeParser.h"
 #include "Timeline/TimelinePanel.h"
 #include "Preferences/General/GeneralModule.h"
 #include "Preferences/PreferencesManager.h"
 #include "Preferences/External/LaunchersModule.h"
+#include "Preferences/External/EditorsModule.h"
 #include "Packaging/PackagingSettings.h"
+#include "ScriptCreator/ScriptCreatorDialog.h"
 
 #include <functional>
 #include <algorithm>
+#include <map>
 
 // TODO: If we ever support an OpenGL backend, gotta change this.
 #include "backends/imgui_impl_vulkan.cpp"
@@ -222,7 +226,7 @@ static ImGuiWindow* sViewportDockWindow = nullptr;
 // A known dock label that must exist in a valid layout.
 // If imgui.ini has dock data but this label is missing, the layout is stale.
 // Update kDockLayoutVersion when dock panel names change to force a reset.
-static constexpr uint32_t kDockLayoutVersion = 1;
+static constexpr uint32_t kDockLayoutVersion = 3;
 
 static void ValidateDockLayoutIni()
 {
@@ -285,6 +289,7 @@ static void StampDockLayoutVersion()
 static void DrawScenePanel();
 static void DrawAssetsPanel();
 static void DrawPropertiesPanel();
+static void DrawScriptsPanel();
 
 static void DrawDockspace()
 {
@@ -419,6 +424,30 @@ static void DrawDockspace()
     ImGui::EndDock();
     ImGui::PopStyleColor();
 
+    // --- Scripts dock ---
+    {
+        ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, bg);
+    }
+    if (ImGui::BeginDock(ICON_IX_CODE "  Scripts", nullptr))
+    {
+        DrawScriptsPanel();
+    }
+    ImGui::EndDock();
+    ImGui::PopStyleColor();
+
+    // --- Script Editor dock ---
+    {
+        ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, bg);
+    }
+    if (ImGui::BeginDock(ICON_IX_CODE "  Script Editor", nullptr))
+    {
+        GetScriptEditorWindow()->DrawContent();
+    }
+    ImGui::EndDock();
+    ImGui::PopStyleColor();
+
     // Draw plugin/addon dockable windows
     EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
     if (hookMgr)
@@ -442,7 +471,9 @@ static void DrawDockspace()
             ImGui::DockToRoot("EditorDock", ICON_HIERARCHY "  Scene", ImGuiDockSlot_Left, 0.2f);
             ImGui::DockToRoot("EditorDock", ICON_INFO "  Properties", ImGuiDockSlot_Right, 0.15f);
             ImGui::DockToRoot("EditorDock",ICON_ASSETS "  Assets", ImGuiDockSlot_Bottom, 0.33f);
+            ImGui::DockTo("EditorDock", ICON_IX_CODE "  Scripts", ICON_ASSETS "  Assets", ImGuiDockSlot_Tab);
             ImGui::DockTo("EditorDock", ICON_STREAMLINE_LOG_SOLID "  Debug Log", ICON_ASSETS "  Assets", ImGuiDockSlot_Tab);
+            ImGui::DockTo("EditorDock", ICON_IX_CODE "  Script Editor", ICON_ASSETS "  Assets", ImGuiDockSlot_Tab);
 
             // Persist the fresh layout immediately so a crash won't leave a stale INI.
             if (ImGui::GetIO().IniFilename)
@@ -1822,12 +1853,14 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 {
     ActionManager* am = ActionManager::Get();
     const float kIndentWidth = 0.0f;
+    const float kCategoryIndentWidth = 8.0f;
     const bool ctrlDown = IsControlDown();
     const bool altDown = IsAltDown();
     const bool shiftDown = IsShiftDown();
 
     const char* curCategory = "";
     bool catOpen = true;
+    bool catIndented = false;
 
     PropertyOwnerType ownerType = PropertyOwnerType::Global;
     if (owner != nullptr)
@@ -1849,11 +1882,23 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
         if (strcmp(curCategory, prop.mCategory) != 0)
         {
+            if (catIndented)
+            {
+                ImGui::Unindent(kCategoryIndentWidth);
+                catIndented = false;
+            }
+
             curCategory = prop.mCategory;
 
             if (strcmp(prop.mCategory, "") != 0)
             {
                 catOpen = ImGui::CollapsingHeader(curCategory, ImGuiTreeNodeFlags_DefaultOpen);
+
+                if (catOpen)
+                {
+                    ImGui::Indent(kCategoryIndentWidth);
+                    catIndented = true;
+                }
             }
         }
 
@@ -2404,6 +2449,11 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
         }
 
         ImGui::PopID();
+    }
+
+    if (catIndented)
+    {
+        ImGui::Unindent(kCategoryIndentWidth);
     }
 }
 
@@ -3981,13 +4031,17 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
 
 static void DrawAssetsPanel()
 {
+    const float kAssetPanelIndent = 4.0f;
+
     if (ImGui::BeginTabBar("AssetBrowserTabs"))
     {
         if (ImGui::BeginTabItem("Project"))
         {
             if (GetEditorState()->mActiveAssetTab != AssetBrowserTab::Project)
                 GetEditorState()->mActiveAssetTab = AssetBrowserTab::Project;
+            ImGui::Indent(kAssetPanelIndent);
             DrawAssetBrowser(true, true);
+            ImGui::Unindent(kAssetPanelIndent);
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Addons"))
@@ -3999,7 +4053,9 @@ static void DrawAssetsPanel()
                 if (GetEditorState()->mTabCurrentDir[(int)AssetBrowserTab::Addons] == nullptr)
                     GetEditorState()->mTabCurrentDir[(int)AssetBrowserTab::Addons] = AssetManager::Get()->FindPackagesDirectory();
             }
+            ImGui::Indent(kAssetPanelIndent);
             DrawAssetBrowser(true, true);
+            ImGui::Unindent(kAssetPanelIndent);
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();
@@ -4352,6 +4408,515 @@ static void DrawPropertiesPanel()
         }
     }
 
+}
+
+// ===== Scripts Panel =====
+
+struct ScriptFileEntry
+{
+    std::string mDisplayName; // relative name for display (e.g. "MyDir/Script.lua")
+    std::string mFullPath;   // full path for opening
+    std::string mOrigin;     // "Engine", "Project", or package name
+};
+
+struct CppAddonEntry
+{
+    std::string mAddonId;
+    std::string mAddonName;
+    std::string mSourcePath;
+    std::string mVcxprojPath;
+    std::vector<std::string> mSourceFiles; // full paths
+};
+
+static void GatherCppSourceFiles(const std::string& dir, std::vector<std::string>& outFiles)
+{
+    DirEntry dirEntry;
+    SYS_OpenDirectory(dir, dirEntry);
+    if (!dirEntry.mValid)
+        return;
+
+    std::vector<std::string> subDirs;
+    while (dirEntry.mValid)
+    {
+        if (strcmp(dirEntry.mFilename, ".") != 0 && strcmp(dirEntry.mFilename, "..") != 0)
+        {
+            std::string path = dir + dirEntry.mFilename;
+            if (dirEntry.mDirectory)
+            {
+                subDirs.push_back(path + "/");
+            }
+            else
+            {
+                const char* ext = strrchr(dirEntry.mFilename, '.');
+                if (ext != nullptr &&
+                    (strcmp(ext, ".cpp") == 0 || strcmp(ext, ".c") == 0 ||
+                     strcmp(ext, ".h") == 0 || strcmp(ext, ".hpp") == 0))
+                {
+                    outFiles.push_back(path);
+                }
+            }
+        }
+        SYS_IterateDirectory(dirEntry);
+    }
+    SYS_CloseDirectory(dirEntry);
+
+    for (const std::string& sub : subDirs)
+    {
+        GatherCppSourceFiles(sub, outFiles);
+    }
+}
+
+static void DrawScriptsPanel()
+{
+    // --- Cached Lua scripts ---
+    static std::vector<ScriptFileEntry> sLuaScripts;
+    static double sLuaLastUpdate = 0.0;
+
+    // --- Cached C++ addons ---
+    static std::vector<CppAddonEntry> sCppAddons;
+    static double sCppLastUpdate = 0.0;
+
+    // --- Search filter ---
+    static char sSearchBuffer[256] = "";
+
+    double currentTime = ImGui::GetTime();
+
+    // Search bar at top
+    ImGui::SetNextItemWidth(-1);
+    ImGui::InputTextWithHint("##ScriptsSearch", "Search scripts...", sSearchBuffer, sizeof(sSearchBuffer));
+    std::string filterLower;
+    if (sSearchBuffer[0] != '\0')
+    {
+        filterLower = sSearchBuffer;
+        std::transform(filterLower.begin(), filterLower.end(), filterLower.begin(), ::tolower);
+    }
+
+    ImGui::Spacing();
+
+    if (ImGui::BeginTabBar("ScriptBrowserTabs"))
+    {
+        // ===== Lua Scripts Tab =====
+        if (ImGui::BeginTabItem("Lua Scripts"))
+        {
+            // Toolbar buttons
+            {
+                bool hasProject = !GetEngineState()->mProjectDirectory.empty();
+                PreferencesModule* mod = PreferencesManager::Get()->FindModule("External/Editors");
+                EditorsModule* editors = static_cast<EditorsModule*>(mod);
+
+                if (!hasProject) ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
+                if (ImGui::Button(ICON_STREAMLINE_SHARP_NEW_FILE_REMIX "##NewScript"))
+                {
+                    if (hasProject)
+                        OpenCreateScriptDialog();
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("New Script");
+
+                ImGui::SameLine();
+                bool editorConfigured = editors && editors->IsLuaEditorConfigured();
+                if (!editorConfigured) ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
+                if (ImGui::Button(ICON_IX_CODE "##OpenLuaEditor"))
+                {
+                    if (hasProject && editorConfigured)
+                        editors->OpenLuaScript(GetEngineState()->mProjectDirectory + "Scripts/");
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("Open in Editor");
+                if (!editorConfigured) ImGui::PopStyleVar();
+
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_MATERIAL_SYMBOLS_FOLDER_OPEN_SHARP "##OpenLuaExplorer"))
+                {
+                    if (hasProject)
+                    {
+                        std::string scriptsDir = GetEngineState()->mProjectDirectory + "Scripts/";
+                        SYS_CreateDirectory(scriptsDir.c_str());
+#if PLATFORM_WINDOWS
+                        SYS_Exec(("start \"\" \"" + scriptsDir + "\"").c_str());
+#elif PLATFORM_LINUX
+                        SYS_Exec(("xdg-open \"" + scriptsDir + "\" &").c_str());
+#endif
+                    }
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("Open in Explorer");
+                if (!hasProject) ImGui::PopStyleVar();
+
+                ImGui::Spacing();
+            }
+
+            // Refresh every 2 seconds
+            if (sLuaScripts.empty() || currentTime - sLuaLastUpdate > 2.0)
+            {
+                sLuaScripts.clear();
+                const std::string& projectDir = GetEngineState()->mProjectDirectory;
+
+                // Engine scripts
+                {
+                    std::vector<std::string> files;
+                    AssetManager::Get()->GatherScriptFiles("Engine/Scripts/", files);
+                    const std::string prefix = "Engine/Scripts/";
+                    for (const std::string& f : files)
+                    {
+                        ScriptFileEntry entry;
+                        entry.mFullPath = f;
+                        entry.mOrigin = "Engine";
+                        entry.mDisplayName = (f.length() > prefix.length() && f.substr(0, prefix.length()) == prefix)
+                            ? f.substr(prefix.length()) : f;
+                        sLuaScripts.push_back(entry);
+                    }
+                }
+
+                // Project scripts
+                if (!projectDir.empty())
+                {
+                    std::string projScriptsDir = projectDir + "Scripts/";
+                    std::vector<std::string> files;
+                    AssetManager::Get()->GatherScriptFiles(projScriptsDir, files);
+                    for (const std::string& f : files)
+                    {
+                        ScriptFileEntry entry;
+                        entry.mFullPath = f;
+                        entry.mOrigin = "Project";
+                        entry.mDisplayName = (f.length() > projScriptsDir.length() && f.substr(0, projScriptsDir.length()) == projScriptsDir)
+                            ? f.substr(projScriptsDir.length()) : f;
+                        sLuaScripts.push_back(entry);
+                    }
+
+                    // Package scripts
+                    std::string packagesDir = projectDir + "Packages/";
+                    DirEntry pkgDirEntry;
+                    SYS_OpenDirectory(packagesDir, pkgDirEntry);
+                    while (pkgDirEntry.mValid)
+                    {
+                        if (pkgDirEntry.mDirectory &&
+                            strcmp(pkgDirEntry.mFilename, ".") != 0 &&
+                            strcmp(pkgDirEntry.mFilename, "..") != 0)
+                        {
+                            std::string pkgName = pkgDirEntry.mFilename;
+                            std::string pkgScriptsDir = packagesDir + pkgName + "/Scripts/";
+                            std::vector<std::string> pkgFiles;
+                            AssetManager::Get()->GatherScriptFiles(pkgScriptsDir, pkgFiles);
+                            for (const std::string& f : pkgFiles)
+                            {
+                                ScriptFileEntry entry;
+                                entry.mFullPath = f;
+                                entry.mOrigin = pkgName;
+                                entry.mDisplayName = (f.length() > pkgScriptsDir.length() && f.substr(0, pkgScriptsDir.length()) == pkgScriptsDir)
+                                    ? "Packages/" + pkgName + "/" + f.substr(pkgScriptsDir.length()) : f;
+                                sLuaScripts.push_back(entry);
+                            }
+                        }
+                        SYS_IterateDirectory(pkgDirEntry);
+                    }
+                    SYS_CloseDirectory(pkgDirEntry);
+                }
+
+                sLuaLastUpdate = currentTime;
+            }
+
+            // Build directory tree
+            // Map: directory path -> list of entries
+            struct TreeNode
+            {
+                std::string name;
+                std::map<std::string, TreeNode> children;
+                std::vector<const ScriptFileEntry*> files;
+            };
+
+            TreeNode root;
+            bool hasFilter = !filterLower.empty();
+
+            for (const ScriptFileEntry& entry : sLuaScripts)
+            {
+                // Filter check
+                if (hasFilter)
+                {
+                    std::string nameLower = entry.mDisplayName;
+                    std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
+                    if (nameLower.find(filterLower) == std::string::npos)
+                        continue;
+                }
+
+                // Split path into components
+                std::string path = entry.mDisplayName;
+                TreeNode* current = &root;
+                size_t pos = 0;
+                size_t slash;
+                while ((slash = path.find('/', pos)) != std::string::npos)
+                {
+                    std::string dir = path.substr(pos, slash - pos);
+                    if (!dir.empty())
+                    {
+                        current = &current->children[dir];
+                        current->name = dir;
+                    }
+                    pos = slash + 1;
+                }
+                // Remaining part is the file name
+                current->files.push_back(&entry);
+            }
+
+            // Recursive draw function
+            std::function<void(const TreeNode&)> drawTree;
+            drawTree = [&](const TreeNode& node)
+            {
+                // Draw subdirectories
+                for (auto& pair : node.children)
+                {
+                    ImGuiTreeNodeFlags dirFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+                    if (hasFilter)
+                        dirFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+                    if (ImGui::TreeNodeEx(pair.first.c_str(), dirFlags))
+                    {
+                        drawTree(pair.second);
+                        ImGui::TreePop();
+                    }
+                }
+
+                // Draw files
+                for (const ScriptFileEntry* entry : node.files)
+                {
+                    // Extract just the filename
+                    std::string fileName = entry->mDisplayName;
+                    size_t lastSlash = fileName.find_last_of('/');
+                    if (lastSlash != std::string::npos)
+                        fileName = fileName.substr(lastSlash + 1);
+
+                    ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                    ImGui::TreeNodeEx(fileName.c_str(), leafFlags);
+
+                    if (ImGui::IsItemHovered())
+                    {
+                        ImGui::SetTooltip("%s\n(%s)", entry->mDisplayName.c_str(), entry->mOrigin.c_str());
+                    }
+
+                    if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+                    {
+                        PreferencesModule* mod = PreferencesManager::Get()->FindModule("External/Editors");
+                        EditorsModule* editors = static_cast<EditorsModule*>(mod);
+                        if (editors)
+                        {
+                            editors->OpenLuaScript(entry->mFullPath);
+                        }
+                    }
+                }
+            };
+
+            ImGui::BeginChild("##LuaScriptsList", ImVec2(0, 0), false);
+            drawTree(root);
+            ImGui::EndChild();
+
+            ImGui::EndTabItem();
+        }
+
+        // ===== C++ Addons Tab =====
+        if (ImGui::BeginTabItem("C++ Addons"))
+        {
+            NativeAddonManager* nam = NativeAddonManager::Get();
+
+            // Toolbar buttons
+            {
+                bool hasProject = !GetEngineState()->mProjectDirectory.empty();
+                bool hasAddons = nam && !nam->GetDiscoveredAddonIds().empty();
+                PreferencesModule* mod = PreferencesManager::Get()->FindModule("External/Editors");
+                EditorsModule* editors = static_cast<EditorsModule*>(mod);
+
+                if (!hasProject) ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
+                if (ImGui::Button(ICON_IC_SHARP_EXTENSION "##NewNativeAddon"))
+                {
+                    if (hasProject)
+                        OpenCreateNativeAddonDialog();
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("New Native Addon");
+
+                ImGui::SameLine();
+                if (!hasAddons) ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
+                if (ImGui::Button(ICON_STREAMLINE_SHARP_NEW_FILE_REMIX "##NewCppFile"))
+                {
+                    if (hasProject && hasAddons)
+                        OpenCreateCppFileDialog();
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("New C++ File");
+                if (!hasAddons) ImGui::PopStyleVar();
+
+                ImGui::SameLine();
+                bool cppConfigured = editors && editors->IsCppEditorConfigured();
+                if (!cppConfigured || !hasAddons) ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
+                if (ImGui::Button(ICON_IX_CODE "##OpenCppEditor"))
+                {
+                    if (hasProject && hasAddons && cppConfigured)
+                    {
+                        // Open first addon's source in IDE
+                        std::vector<std::string> addonIds = nam->GetDiscoveredAddonIds();
+                        for (const std::string& id : addonIds)
+                        {
+                            const NativeAddonState* state = nam->GetState(id);
+                            if (state && state->mNativeMetadata.mHasNative)
+                            {
+                                std::string sourceDir = state->mSourcePath + state->mNativeMetadata.mSourceDir + "/";
+                                std::string binaryName = state->mNativeMetadata.mBinaryName.empty() ? id : state->mNativeMetadata.mBinaryName;
+                                std::string vcxproj = state->mSourcePath + binaryName + ".vcxproj";
+                                editors->OpenCppFile(sourceDir, vcxproj);
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("Open in IDE");
+                if (!cppConfigured || !hasAddons) ImGui::PopStyleVar();
+
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_MATERIAL_SYMBOLS_FOLDER_OPEN_SHARP "##OpenCppExplorer"))
+                {
+                    if (hasProject)
+                    {
+                        std::string packagesDir = GetEngineState()->mProjectDirectory + "Packages/";
+#if PLATFORM_WINDOWS
+                        SYS_Exec(("start \"\" \"" + packagesDir + "\"").c_str());
+#elif PLATFORM_LINUX
+                        SYS_Exec(("xdg-open \"" + packagesDir + "\" &").c_str());
+#endif
+                    }
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("Open in Explorer");
+                if (!hasProject) ImGui::PopStyleVar();
+
+                ImGui::Spacing();
+            }
+
+            // Refresh every 2 seconds
+            if (nam && (sCppAddons.empty() || currentTime - sCppLastUpdate > 2.0))
+            {
+                sCppAddons.clear();
+                std::vector<std::string> addonIds = nam->GetDiscoveredAddonIds();
+
+                for (const std::string& id : addonIds)
+                {
+                    const NativeAddonState* state = nam->GetState(id);
+                    if (!state || !state->mNativeMetadata.mHasNative)
+                        continue;
+
+                    CppAddonEntry addon;
+                    addon.mAddonId = id;
+                    addon.mAddonName = state->mNativeMetadata.mBinaryName.empty() ? id : state->mNativeMetadata.mBinaryName;
+                    addon.mSourcePath = state->mSourcePath;
+                    addon.mVcxprojPath = state->mSourcePath + addon.mAddonName + ".vcxproj";
+
+                    // Gather source files
+                    std::string sourceDir = state->mSourcePath + state->mNativeMetadata.mSourceDir + "/";
+                    GatherCppSourceFiles(sourceDir, addon.mSourceFiles);
+                    std::sort(addon.mSourceFiles.begin(), addon.mSourceFiles.end());
+
+                    sCppAddons.push_back(addon);
+                }
+
+                sCppLastUpdate = currentTime;
+            }
+
+            ImGui::BeginChild("##CppAddonsList", ImVec2(0, 0), false);
+
+            if (!nam)
+            {
+                ImGui::TextDisabled("Native addon manager not available.");
+            }
+            else if (sCppAddons.empty())
+            {
+                ImGui::TextDisabled("No native addons discovered.");
+            }
+            else
+            {
+                for (const CppAddonEntry& addon : sCppAddons)
+                {
+                    ImGuiTreeNodeFlags addonFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+
+                    bool addonVisible = true;
+                    if (!filterLower.empty())
+                    {
+                        // Check if addon name or any source file matches
+                        addonVisible = false;
+                        std::string nameLower = addon.mAddonName;
+                        std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
+                        if (nameLower.find(filterLower) != std::string::npos)
+                        {
+                            addonVisible = true;
+                        }
+                        else
+                        {
+                            for (const std::string& sf : addon.mSourceFiles)
+                            {
+                                std::string sfLower = sf;
+                                std::transform(sfLower.begin(), sfLower.end(), sfLower.begin(), ::tolower);
+                                if (sfLower.find(filterLower) != std::string::npos)
+                                {
+                                    addonVisible = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!addonVisible)
+                        continue;
+
+                    if (!filterLower.empty())
+                        addonFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+                    if (ImGui::TreeNodeEx(addon.mAddonId.c_str(), addonFlags, "%s", addon.mAddonName.c_str()))
+                    {
+                        for (const std::string& srcFile : addon.mSourceFiles)
+                        {
+                            // Extract just the filename
+                            std::string fileName = srcFile;
+                            size_t lastSlash = fileName.find_last_of("/\\");
+                            if (lastSlash != std::string::npos)
+                                fileName = fileName.substr(lastSlash + 1);
+
+                            // Filter individual files
+                            if (!filterLower.empty())
+                            {
+                                std::string fileLower = fileName;
+                                std::transform(fileLower.begin(), fileLower.end(), fileLower.begin(), ::tolower);
+                                if (fileLower.find(filterLower) == std::string::npos)
+                                    continue;
+                            }
+
+                            ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                            ImGui::TreeNodeEx(srcFile.c_str(), leafFlags, "%s", fileName.c_str());
+
+                            if (ImGui::IsItemHovered())
+                            {
+                                ImGui::SetTooltip("%s", srcFile.c_str());
+                            }
+
+                            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+                            {
+                                PreferencesModule* mod = PreferencesManager::Get()->FindModule("External/Editors");
+                                EditorsModule* editors = static_cast<EditorsModule*>(mod);
+                                if (editors)
+                                {
+                                    editors->OpenCppFile(srcFile, addon.mVcxprojPath);
+                                }
+                            }
+                        }
+                        ImGui::TreePop();
+                    }
+                }
+            }
+
+            ImGui::EndChild();
+
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
+    }
 }
 
 static void DrawMainMenuBar()
@@ -6264,6 +6829,8 @@ void EditorImguiInit()
 
     RegisterLogCallback(DebugLogWindow::LogCallback);
 
+    GetScriptEditorWindow()->Init();
+
     ImGui::InitDock();
 
     // Check imgui.ini for stale dock layout BEFORE first NewFrame() loads it.
@@ -6331,6 +6898,7 @@ void EditorImguiDraw()
         DrawUnsavedCheck();
         DrawProjectUpgradeModal();
         DrawAddonsDialogs();
+        DrawScriptCreatorDialogs();
 
         GetPreferencesWindow()->Draw();
         GetPackagingWindow()->Draw();
@@ -6372,6 +6940,7 @@ void EditorImguiPreShutdown()
         StampDockLayoutVersion();
         ImGui::GetIO().IniFilename = nullptr;
     }
+    GetScriptEditorWindow()->Shutdown();
     ImGui::ShutdownDock();
     UnregisterLogCallback(DebugLogWindow::LogCallback);
 

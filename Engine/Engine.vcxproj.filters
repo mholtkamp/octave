@@ -144,6 +144,9 @@
     <Filter Include="Source Files\Engine\Timeline\Tracks">
       <UniqueIdentifier>{c9e5a3d7-1f4b-6a8c-0d2e-b3f6c8a0e4d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Editor\ScriptEditor">
+      <UniqueIdentifier>{f5a3b7d9-2c4e-6a8f-0b1d-c3e6f8a2d4b9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Graphics\Vulkan\VulkanUtils.cpp">
@@ -896,6 +899,12 @@
     <ClCompile Include="Source\Editor\Addons\NativeAddonManager.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\ScriptCreator\ScriptCreatorDialog.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ScriptEditor\ScriptEditorWindow.cpp">
+      <Filter>Source Files\Editor\ScriptEditor</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Editor\Packaging\BuildProfile.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
@@ -915,6 +924,9 @@
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\Preferences\External\LaunchersModule.cpp">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Preferences\External\EditorsModule.cpp">
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\Preferences\Packaging\DockerModule.cpp">
@@ -1740,6 +1752,12 @@
     <ClInclude Include="Source\Editor\Addons\NativeAddonManager.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Editor\ScriptCreator\ScriptCreatorDialog.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ScriptEditor\ScriptEditorWindow.h">
+      <Filter>Source Files\Editor\ScriptEditor</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Editor\Packaging\BuildProfile.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
@@ -1762,6 +1780,9 @@
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\Preferences\External\LaunchersModule.h">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Preferences\External\EditorsModule.h">
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\Preferences\Packaging\DockerModule.h">

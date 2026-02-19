@@ -1486,4 +1486,9 @@ void DrawAddonsDialogs()
     DrawEditPackageJsonDialog();
 }
 
+void OpenCreateNativeAddonDialog()
+{
+    ResetCreateNativeDialog(false);
+}
+
 #endif // EDITOR

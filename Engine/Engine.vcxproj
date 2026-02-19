@@ -349,13 +349,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/;$(ProjectDir)../External/zep/include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>vulkan-1.lib;assimpd.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -501,9 +502,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/;$(ProjectDir)../External/zep/include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -664,6 +666,8 @@
     <ClCompile Include="Source\Editor\Addons\AddonsMenu.cpp" />
     <ClCompile Include="Source\Editor\Addons\AddonsWindow.cpp" />
     <ClCompile Include="Source\Editor\Addons\NativeAddonManager.cpp" />
+    <ClCompile Include="Source\Editor\ScriptCreator\ScriptCreatorDialog.cpp" />
+    <ClCompile Include="Source\Editor\ScriptEditor\ScriptEditorWindow.cpp" />
     <ClCompile Include="Source\Editor\Packaging\BuildProfile.cpp" />
     <ClCompile Include="Source\Editor\Packaging\PackagingSettings.cpp" />
     <ClCompile Include="Source\Editor\Packaging\PackagingWindow.cpp" />
@@ -671,6 +675,7 @@
     <ClCompile Include="Source\Editor\ProjectSelect\TemplateManager.cpp" />
     <ClCompile Include="Source\Editor\Preferences\External\ExternalModule.cpp" />
     <ClCompile Include="Source\Editor\Preferences\External\LaunchersModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\External\EditorsModule.cpp" />
     <ClCompile Include="Source\Editor\Preferences\Packaging\DockerModule.cpp" />
     <ClCompile Include="Source\Editor\Preferences\Packaging\PackagingModule.cpp" />
     <ClCompile Include="Source\Editor\Timeline\TimelinePanel.cpp" />
@@ -957,6 +962,8 @@
     <ClInclude Include="Source\Editor\Addons\AddonsMenu.h" />
     <ClInclude Include="Source\Editor\Addons\AddonsWindow.h" />
     <ClInclude Include="Source\Editor\Addons\NativeAddonManager.h" />
+    <ClInclude Include="Source\Editor\ScriptCreator\ScriptCreatorDialog.h" />
+    <ClInclude Include="Source\Editor\ScriptEditor\ScriptEditorWindow.h" />
     <ClInclude Include="Source\Editor\Packaging\BuildProfile.h" />
     <ClInclude Include="Source\Editor\Packaging\PackagingSettings.h" />
     <ClInclude Include="Source\Editor\Packaging\PackagingWindow.h" />
@@ -965,6 +972,7 @@
     <ClInclude Include="Source\Editor\ProjectSelect\TemplateManager.h" />
     <ClInclude Include="Source\Editor\Preferences\External\ExternalModule.h" />
     <ClInclude Include="Source\Editor\Preferences\External\LaunchersModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\External\EditorsModule.h" />
     <ClInclude Include="Source\Editor\Preferences\Packaging\DockerModule.h" />
     <ClInclude Include="Source\Editor\Preferences\Packaging\PackagingModule.h" />
     <ClInclude Include="Source\Editor\Timeline\TimelinePanel.h" />

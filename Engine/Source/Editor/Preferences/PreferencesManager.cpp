@@ -15,6 +15,7 @@
 #include "Appearance/Theme/ThemeModule.h"
 #include "External/ExternalModule.h"
 #include "External/LaunchersModule.h"
+#include "External/EditorsModule.h"
 #include "Packaging/PackagingModule.h"
 #include "Packaging/DockerModule.h"
 
@@ -38,6 +39,7 @@ void PreferencesManager::Create()
     // External module with sub-modules
     ExternalModule* external = new ExternalModule();
     external->AddSubModule(new LaunchersModule());
+    external->AddSubModule(new EditorsModule());
     sInstance->RegisterModule(external);
 
     // Packaging module with sub-modules

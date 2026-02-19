@@ -20,3 +20,8 @@ add_subdirectory(Imgui)
 add_subdirectory(ImGuizmo)
 
 add_subdirectory(IrrXML)
+
+set(ZEP_FEATURE_CPP_FILE_SYSTEM ON)
+set(BUILD_TESTS OFF)
+set(BUILD_DEMOS OFF)
+add_subdirectory(zep)

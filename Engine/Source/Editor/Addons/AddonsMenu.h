@@ -34,4 +34,7 @@ void DrawAddonsCreateItems_ProjectSelect();
  */
 void DrawAddonsDialogs();
 
+/** @brief Opens the Create Native Addon dialog (resets state). */
+void OpenCreateNativeAddonDialog();
+
 #endif // EDITOR

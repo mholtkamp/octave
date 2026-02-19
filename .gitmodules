@@ -7,3 +7,6 @@
 [submodule "Plugins/Blender/octave-gameengine-connect"]
 	path = Plugins/Blender/octave-gameengine-connect
 	url = https://github.com/vltmedia/Octave-Game-Engine-Connect-Blender-Addon
+[submodule "External/zep"]
+	path = External/zep
+	url = https://github.com/Rezonality/zep.git
