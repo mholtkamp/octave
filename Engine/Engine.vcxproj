@@ -925,6 +925,7 @@
     <ClInclude Include="Source\Editor\CustomImgui.h" />
     <ClInclude Include="Source\Editor\DebugLog\DebugLogWindow.h" />
     <ClInclude Include="Source\Editor\EditorConstants.h" />
+    <ClInclude Include="Source\Editor\EditorIcons.h" />
     <ClInclude Include="Source\Editor\EditorImgui.h" />
     <ClInclude Include="Source\Editor\EditorState.h" />
     <ClInclude Include="Source\Editor\ImGuizmo\ImGuizmo.h" />

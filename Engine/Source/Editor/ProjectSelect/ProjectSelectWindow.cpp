@@ -4,7 +4,7 @@
 #include "TemplateManager.h"
 #include "TemplateData.h"
 #include "../Addons/AddonsMenu.h"
-
+#include "../EditorIcons.h"
 #include "EditorState.h"
 #include "ActionManager.h"
 #include "Engine.h"
@@ -172,7 +172,7 @@ void ProjectSelectWindow::DrawRecentProjects()
             ImGui::PushID(i);
 
             bool isSelected = (selectedIndex == i);
-            if (ImGui::Selectable(("##Project" + std::to_string(i)).c_str(), isSelected, ImGuiSelectableFlags_AllowDoubleClick, ImVec2(0, 40)))
+            if (ImGui::Selectable(("##Project" + std::to_string(i)).c_str(), isSelected, ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0, 40)))
             {
                 selectedIndex = i;
                 if (ImGui::IsMouseDoubleClicked(0))
@@ -189,15 +189,21 @@ void ProjectSelectWindow::DrawRecentProjects()
             ImGui::EndGroup();
 
             // Remove button on the right
+			// take background color out to make the button more visible
+
             ImGui::SameLine(ImGui::GetWindowWidth() - 80);
-            if (ImGui::SmallButton("Remove"))
+            //ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+            //ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+            if (ImGui::Button(ICON_TRASH, ImVec2(0,25) ))
             {
+
                 mProjectsToRemove.push_back(path);
                 if (selectedIndex == i)
                 {
                     selectedIndex = -1;
                 }
             }
+            //ImGui::PopStyleColor(2);
 
             ImGui::PopID();
         }

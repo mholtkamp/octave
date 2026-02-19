@@ -14,6 +14,7 @@
 #include "PaintManager.h"
 #include "NodePath.h"
 #include "FeatureFlags.h"
+#include "EditorIcons.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/InstancedMesh3d.h"
@@ -154,6 +155,7 @@ static bool IsBottomPaneVisible()
 }
 
 static bool sDockInitialized = false;
+static bool sDockResetRequested = false;
 static ImVec2 sViewportDockPos = ImVec2(0, 0);
 static ImVec2 sViewportDockSize = ImVec2(800, 600);
 static ImGuiWindow* sViewportDockWindow = nullptr;
@@ -281,14 +283,16 @@ static void DrawDockspace()
     ImGui::EndDockspace();
     ImGui::End();
 
-    // Explicit layout setup on first frame — only if no saved layout from INI
-    if (!sDockInitialized)
+    // Explicit layout setup on first frame or when reset is requested
+    if (!sDockInitialized || sDockResetRequested)
     {
+        bool isReset = sDockResetRequested;
         sDockInitialized = true;
+        sDockResetRequested = false;
 
-        if (!ImGui::HasDockLayout("EditorDock"))
+        if (isReset || !ImGui::HasDockLayout("EditorDock"))
         {
-            // No saved layout — build default:
+            // Build default layout:
             //  ┌──────────┬────────────────┬──────────┐
             //  │          │                │          │
             //  │  Scene   │   Viewport     │Properties│
@@ -302,6 +306,13 @@ static void DrawDockspace()
             ImGui::DockToRoot("EditorDock", "Properties", ImGuiDockSlot_Right, 0.15f);
             ImGui::DockToRoot("EditorDock", "Assets", ImGuiDockSlot_Bottom, 0.33f);
             ImGui::DockTo("EditorDock", "Debug Log", "Assets", ImGuiDockSlot_Tab);
+
+            if (isReset)
+            {
+                GetEditorState()->mShowLeftPane = true;
+                GetEditorState()->mShowRightPane = true;
+                GetEditorState()->mShowBottomPane = true;
+            }
         }
     }
 
@@ -4397,6 +4408,10 @@ static void DrawMainMenuBar()
             if (ImGui::MenuItem("Timeline"))
                 GetEditorState()->mShowTimelinePanel = !GetEditorState()->mShowTimelinePanel;
 
+            ImGui::Separator();
+            if (ImGui::MenuItem("Reset Layout"))
+                sDockResetRequested = true;
+
             // Draw plugin menu items for View menu
             {
                 EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
@@ -4546,7 +4561,7 @@ static void DrawMainMenuBar()
 
         // Play/Stop button in the menu bar
         bool inPie = IsPlayingInEditor();
-        if (ImGui::Button(inPie ? "Stop" : "Play"))
+        if (ImGui::Button(inPie ? ICON_BASELINE_STOP : ICON_PLAY))
         {
             if (inPie)
             {
@@ -5858,6 +5873,29 @@ static std::string ResolveEditorFontPath()
     return absolutePath;
 }
 
+static std::string ResolveEditorIconFontPath()
+{
+    const std::string defaultPath = GetDefaultEditorFontPath();
+    const std::string desiredFontName = ResolveEditorFontName();
+
+    if (desiredFontName.empty() || desiredFontName == "Default")
+    {
+        return defaultPath;
+    }
+
+    const std::string relativePath = "Engine/Assets/Fonts/OctaveEngineIcons.ttf" ;
+    const std::string absolutePath = SYS_GetAbsolutePath(relativePath.c_str());
+
+    if (!SYS_DoesFileExist(absolutePath.c_str(), false))
+    {
+        LogWarning("Editor Icon font '%s' not found at %s. Falling back to default font.", desiredFontName.c_str(), absolutePath.c_str());
+        GetMutableEngineConfig()->mCurrentFont = "Default";
+        return defaultPath;
+    }
+
+    return absolutePath;
+}
+
 void EditorImguiInit()
 {
     if (IsHeadless())
@@ -5891,6 +5929,8 @@ void EditorImguiInit()
         }
         }
 
+
+    MergeOctaveIcons(io.Fonts, 16.0f,  ResolveEditorIconFontPath().c_str());
 
     //ImGui::StyleColorsLight();
 
