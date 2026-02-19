@@ -1492,6 +1492,26 @@ glm::vec4 Renderer::GetClearColor() const
     return mClearColor;
 }
 
+void Renderer::SetSelectedColor(const glm::vec4& color)
+{
+    mSelectedColor = color;
+}
+
+glm::vec4 Renderer::GetSelectedColor() const
+{
+    return mSelectedColor;
+}
+
+void Renderer::SetSelectedCheckerSize(float size)
+{
+    mSelectedCheckerSize = size;
+}
+
+float Renderer::GetSelectedCheckerSize() const
+{
+    return mSelectedCheckerSize;
+}
+
 void Renderer::BeginLightBake()
 {
     GFX_BeginLightBake();

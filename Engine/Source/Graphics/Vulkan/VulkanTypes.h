@@ -154,6 +154,12 @@ struct GlobalUniformData
     int32_t mLinearColorSpace;
     float mColorScale;
 
+    glm::vec4 mSelectedColor;
+    float mSelectedCheckerSize;
+    float mSelectedPad0;
+    float mSelectedPad1;
+    float mSelectedPad2;
+
     LightUniformData mLights[MAX_LIGHTS_PER_FRAME];
 };
 

@@ -1655,6 +1655,7 @@ void DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverride)
 
         BindForwardVertexType(vertexType, material);
         BindMaterialResource(material);
+
         GetVulkanContext()->CommitPipeline();
 
         BindGeometryDescriptorSet(staticMeshComp);
@@ -1971,8 +1972,7 @@ void DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp)
         }
         else if (context->GetCurrentRenderPassId() == RenderPassId::Selected)
         {
-            Shader* instancedSelectedFragShader = context->GetGlobalShader("SelectedInstanced.frag");
-            context->SetFragmentShader(instancedSelectedFragShader);
+            context->SetFragmentShader(context->GetGlobalShader("SelectedInstanced.frag"));
         }
 #endif
 
@@ -1989,7 +1989,7 @@ void DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp)
             0);
 
 #if EDITOR
-        if (context->GetCurrentRenderPassId() == RenderPassId::HitCheck || 
+        if (context->GetCurrentRenderPassId() == RenderPassId::HitCheck ||
             context->GetCurrentRenderPassId() == RenderPassId::Selected)
         {
             context->SetFragmentShader(prevFragShader);
@@ -2551,6 +2551,7 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
         BindForwardVertexType(vertType, material);
 
         BindMaterialResource(material);
+
         GetVulkanContext()->CommitPipeline();
 
         DescriptorSet::Begin("Free Mesh DS")

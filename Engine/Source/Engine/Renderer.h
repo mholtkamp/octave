@@ -120,6 +120,11 @@ public:
     float GetColorScale() const;
     float GetColorScaleInverse() const;
 
+    void SetSelectedColor(const glm::vec4& color);
+    glm::vec4 GetSelectedColor() const;
+    void SetSelectedCheckerSize(float size);
+    float GetSelectedCheckerSize() const;
+
     bool IsPostProcessPassEnabled(PostProcessPassId passId) const;
     void EnablePostProcessPass(PostProcessPassId passId, bool enable);
 
@@ -233,6 +238,8 @@ private:
     float mLightFadeSpeed = 1.0f;
     glm::vec4 mClearColor = {};
     float mColorScale = 1.0f;
+    glm::vec4 mSelectedColor = { 0.2f, 0.1f, 1.0f, 0.6f };
+    float mSelectedCheckerSize = 8.0f;
 
     // Path tracing
     uint32_t mRaysPerPixel = 4;

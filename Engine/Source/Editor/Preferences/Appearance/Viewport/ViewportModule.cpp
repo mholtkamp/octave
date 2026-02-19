@@ -72,6 +72,27 @@ void ViewportModule::Render()
     }
     ImGui::EndDisabled();
 
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    ImGui::Text("Selected Color");
+    if (ImGui::ColorEdit4("##SelectedColor", &mSelectedColor.x, ImGuiColorEditFlags_AlphaBar))
+    {
+        changed = true;
+        ApplySelectedOverlay();
+    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Set the selection overlay color and opacity.");
+
+    ImGui::Spacing();
+
+    ImGui::Text("Checker Size");
+    if (ImGui::SliderFloat("##SelectedCheckerSize", &mSelectedCheckerSize, 1.0f, 32.0f, "%.0f px"))
+    {
+        changed = true;
+        ApplySelectedOverlay();
+    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Set the size of the selection checker pattern in pixels.");
+
     if (changed)
     {
         SetDirty(true);
@@ -84,10 +105,13 @@ void ViewportModule::LoadSettings(const rapidjson::Document& doc)
     mShowGrid = JsonSettings::GetBool(doc, "showGrid", true);
     mGridColor = JsonSettings::GetVec4(doc, "gridColor", glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
     mGridSize = JsonSettings::GetFloat(doc, "gridSize", 1.0f);
+    mSelectedColor = JsonSettings::GetVec4(doc, "selectedColor", glm::vec4(0.2f, 0.1f, 1.0f, 0.6f));
+    mSelectedCheckerSize = JsonSettings::GetFloat(doc, "selectedCheckerSize", 8.0f);
 
     ApplyBackgroundColorToRenderer();
     SetGridColor(mGridColor);
     ApplyGridVisibility();
+    ApplySelectedOverlay();
 }
 
 void ViewportModule::SaveSettings(rapidjson::Document& doc)
@@ -96,6 +120,8 @@ void ViewportModule::SaveSettings(rapidjson::Document& doc)
     JsonSettings::SetBool(doc, "showGrid", mShowGrid);
     JsonSettings::SetVec4(doc, "gridColor", mGridColor);
     JsonSettings::SetFloat(doc, "gridSize", mGridSize);
+    JsonSettings::SetVec4(doc, "selectedColor", mSelectedColor);
+    JsonSettings::SetFloat(doc, "selectedCheckerSize", mSelectedCheckerSize);
 }
 
 void ViewportModule::ApplyBackgroundColorToRenderer() const
@@ -135,6 +161,12 @@ void ViewportModule::HandleExternalGridToggle(bool enabled)
             prefs->SaveModule(instance);
         }
     }
+}
+
+void ViewportModule::ApplySelectedOverlay() const
+{
+    Renderer::Get()->SetSelectedColor(mSelectedColor);
+    Renderer::Get()->SetSelectedCheckerSize(mSelectedCheckerSize);
 }
 
 void ViewportModule::ApplyGridVisibility()
