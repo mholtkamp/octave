@@ -657,8 +657,11 @@ struct DockContext
             {
                 SameLine(0, ImMax(g_dock_tab_rounding_left, g_dock_tab_rounding_right));
 
+                const float kTabPadLeft = 10.0f;
+                const float kTabPadRight = 10.0f;
+                const float kTabPadTop = 4.0f;
                 const char* text_end = FindRenderedTextEnd(dock_tab->label);
-                ImVec2 sz(CalcTextSize(dock_tab->label, text_end).x, line_height);
+                ImVec2 sz(kTabPadLeft + CalcTextSize(dock_tab->label, text_end).x + kTabPadRight, line_height + kTabPadTop);
                 if (InvisibleButton(dock_tab->label, sz))
                 {
                     dock_tab->setActive();
@@ -714,7 +717,7 @@ struct DockContext
                 }
                 draw_list->PathFillConvex(
                     hovered ? color_hovered : (dock_tab->active ? color_active : color));
-                draw_list->AddText(pos + ImVec2(0, 1), text_color, dock_tab->label, text_end);
+                draw_list->AddText(pos + ImVec2(kTabPadLeft, kTabPadTop), text_color, dock_tab->label, text_end);
 
                 dock_tab = dock_tab->next_tab;
             }
@@ -989,7 +992,7 @@ struct DockContext
         splits();
 
         PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, 0));
-        float tabbar_height = GetTextLineHeightWithSpacing();
+        float tabbar_height = GetTextLineHeightWithSpacing() + 4.0f; // kTabPadTop
         if (tabbar(dock.getFirstTab(), opened != nullptr))
         {
             fillLocation(dock);
@@ -1005,7 +1008,7 @@ struct DockContext
                                  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
                                  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus |
                                  extra_flags;
-        bool ret = BeginChild(label, size, true, flags);
+        bool ret = BeginChild(label, size, false, flags);
         PopStyleColor();
 
         return ret;

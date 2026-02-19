@@ -292,7 +292,9 @@ static void DrawDockspace()
         ImGuiWindowFlags_NoBackground |
         ImGuiWindowFlags_NoBringToFrontOnFocus;
 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::Begin("EditorDock", nullptr, dockHostFlags);
+    ImGui::PopStyleVar();
 
     // Make dockspace child transparent so 3D render shows through Viewport area
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 0));
@@ -2686,7 +2688,6 @@ static void DrawScenePanel()
 {
     ActionManager* am = ActionManager::Get();
 
-    ItemRowsBackground();
 
     static std::string sFilterStrTemp;
     static std::string sFilterStr;
