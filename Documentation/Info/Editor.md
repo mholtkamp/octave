@@ -17,6 +17,7 @@ These global hotkeys can be activated no matter where the mouse cursor is locate
 - `Shift + S` Save selected asset
 - `Ctrl + O` Open scene
 - `Ctrl + I` Import asset
+- `Ctrl + R` Refresh & Compile All Scripts
 - `Ctrl + Shift + Z` Redo action
 - `Ctrl + Z` Undo action
 - `Alt + R` or `Ctrl + R` Reload all scripts (Note: If not working, this hotkey may conflict with AMD/Nvidia overlays.)

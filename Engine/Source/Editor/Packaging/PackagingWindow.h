@@ -76,6 +76,18 @@ public:
      */
     bool IsOpen() const { return mIsOpen; }
 
+    /**
+     * @brief Triggers a build+run for a given platform without requiring a saved profile.
+     *
+     * If a matching profile exists in PackagingSettings, it will be used.
+     * Otherwise a temporary embedded profile is created.
+     *
+     * @param platform Target platform to build for
+     * @param embedded Whether to embed assets into the executable
+     * @param runOnDevice If true, uses 3dslink instead of emulator (3DS only)
+     */
+    void BuildAndRunWithProfile(Platform platform, bool embedded, bool runOnDevice = false);
+
 private:
     /**
      * @brief Draws the left panel with profile list.

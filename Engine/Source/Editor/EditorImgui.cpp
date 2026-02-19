@@ -61,6 +61,8 @@
 #include "Timeline/TimelinePanel.h"
 #include "Preferences/General/GeneralModule.h"
 #include "Preferences/PreferencesManager.h"
+#include "Preferences/External/LaunchersModule.h"
+#include "Packaging/PackagingSettings.h"
 
 #include <functional>
 #include <algorithm>
@@ -145,16 +147,9 @@ static float GetMainMenuBarHeight()
 {
     return ImGui::GetFrameHeight();
 }
-static float GetToolbarHeight()
-{
-    const ImGuiStyle& style = ImGui::GetStyle();
-    float buttonH = ImGui::GetFontSize();
-    //float buttonH = ImGui::GetFontSize() + style.FramePadding.y * 2.0f;
-    return buttonH + style.WindowPadding.y ;
-}
 static float GetTopBarHeight()
 {
-    return GetMainMenuBarHeight() + GetToolbarHeight();
+    return GetMainMenuBarHeight();
 }
 static const ImVec4 kSelectedColor = ImVec4(0.12f, 0.50f, 0.47f, 1.00f);
 static const ImVec4 kBgInactive = ImVec4(0.20f, 0.20f, 0.68f, 1.00f);
@@ -4730,39 +4725,316 @@ static void DrawMainMenuBar()
             }
         }
 
-        if (ImGui::Button(ICON_ION_HAMMER_SHARP))
+        // -- Toolbar items (merged into menu bar) --
+        ImGui::SameLine(0.0f, 20.0f);
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine(0.0f, 20.0f);
+
+        // Editor mode combo
+        int curMode = (int)GetEditorState()->mMode;
+        PaintMode paintMode = (GetEditorState()->mMode == EditorMode::Scene3D) ? GetEditorState()->mPaintMode : PaintMode::None;
+
+        if (paintMode != PaintMode::None && paintMode != PaintMode::Count)
         {
-            ReloadAllScripts();
-            NativeAddonManager* nam = NativeAddonManager::Get();
-            if (nam != nullptr)
+            curMode = int(EditorMode::Count) + int(paintMode) - 1;
+        }
+
+        const char* modeStrings[] = { "Scene", "2D", "3D", "Paint Colors", "Paint Instances"};
+        ImGui::SetNextItemWidth(70);
+        ImGui::Combo("##EditorMode", &curMode, modeStrings, 5);
+
+        if (curMode == 3)
+        {
+            curMode = (int)EditorMode::Scene3D;
+            paintMode = PaintMode::Color;
+        }
+        else if (curMode == 4)
+        {
+            curMode = (int)EditorMode::Scene3D;
+            paintMode = PaintMode::Instance;
+        }
+        else
+        {
+            paintMode = PaintMode::None;
+        }
+
+        GetEditorState()->SetEditorMode((EditorMode)curMode);
+        GetEditorState()->SetPaintMode(paintMode);
+
+        // Gizmo Operation Buttons (Translate/Rotate/Scale)
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+
+        EditorState* edState = GetEditorState();
+        ImGuizmo::OPERATION& gizmoOp = edState->mGizmoOperation;
+        ImGuizmo::MODE& gizmoMode = edState->mGizmoMode;
+
+        // Translate button
+        bool isTranslate = (gizmoOp == ImGuizmo::TRANSLATE);
+        if (isTranslate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
+        if (ImGui::Button(ICON_BX_MOVE))
+            gizmoOp = ImGuizmo::TRANSLATE;
+        if (isTranslate) ImGui::PopStyleColor();
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Translate (Space+G)");
+
+        // Rotate button
+        ImGui::SameLine();
+        bool isRotate = (gizmoOp == ImGuizmo::ROTATE);
+        if (isRotate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
+        if (ImGui::Button(ICON_LUCIDE_ROTATE_3D))
+            gizmoOp = ImGuizmo::ROTATE;
+        if (isRotate) ImGui::PopStyleColor();
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Rotate (Space+R)");
+
+        // Scale button
+        ImGui::SameLine();
+        bool isScale = (gizmoOp == ImGuizmo::SCALE);
+        if (isScale) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
+        if (ImGui::Button(ICON_MAGE_SCALE_UP))
+            gizmoOp = ImGuizmo::SCALE;
+        if (isScale) ImGui::PopStyleColor();
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Scale (Space+S)");
+
+        // Local/World mode toggle
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+
+        bool isLocal = (gizmoMode == ImGuizmo::LOCAL);
+        if (isLocal) ImGui::PushStyleColor(ImGuiCol_Button, kToggledColor);
+        if (ImGui::Button(isLocal ? ICON_MDI_AXIS_ARROW "  Local" : ICON_GLOBE "  World"))
+            gizmoMode = isLocal ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+        if (isLocal) ImGui::PopStyleColor();
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle Local/World (Ctrl+T)");
+
+        // Scene tabs
+        static int32_t sPrevActiveSceneIdx = 0;
+        std::vector<EditScene>& scenes = GetEditorState()->mEditScenes;
+        int32_t activeSceneIdx = GetEditorState()->mEditSceneIndex;
+        bool sceneJustChanged = sPrevActiveSceneIdx != activeSceneIdx;
+
+        const ImGuiTabBarFlags kSceneTabBarFlags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyScroll;
+        ImGui::SameLine(0.0f, 20.0f);
+
+        if (scenes.size() > 0 &&
+            ImGui::BeginTabBar("SceneTabBar", kSceneTabBarFlags))
+        {
+            int32_t openedTab = activeSceneIdx;
+
+            for (int32_t n = 0; n < (int32_t)scenes.size(); n++)
             {
-                std::vector<std::string> localIds = nam->GetLocalPackageIds();
-                for (const std::string& id : localIds)
+                ImGui::PushID(n);
+
+                const EditScene& scene = scenes[n];
+
+                bool opened = true;
+                std::string sceneName = "*New";
+
+                if (scene.mSceneAsset != nullptr)
                 {
-                    std::string addonPath = nam->GetAddonSourcePath(id);
-                    if (!addonPath.empty())
+                    Scene* sceneAsset = scene.mSceneAsset.Get<Scene>();
+                    sceneName = sceneAsset->GetName();
+                    if (sceneAsset->GetDirtyFlag())
                     {
-                        nam->GenerateIDEConfig(addonPath);
+                        sceneName = "*" + sceneName;
                     }
                 }
 
-                nam->ReloadAllNativeAddons();
-                LogDebug("Native addon dependencies regenerated and addons reloaded.");
+                static char sTabId[128];
+                snprintf(sTabId, 127, "%s###%d", sceneName.c_str(), n);
+
+                ImGuiTabItemFlags tabFlags = ImGuiTabItemFlags_None;
+                if (sceneJustChanged && n == activeSceneIdx)
+                {
+                    tabFlags = ImGuiTabItemFlags_SetSelected;
+                }
+
+                if (ImGui::BeginTabItem(sTabId, &opened, tabFlags))
+                {
+                    if (n != activeSceneIdx)
+                    {
+                        openedTab = n;
+                    }
+
+                    ImGui::EndTabItem();
+                }
+
+                if (!opened)
+                {
+                    GetEditorState()->CloseEditScene(n);
+                }
+
+                ImGui::PopID();
             }
+
+            if (!sceneJustChanged &&
+                openedTab != activeSceneIdx)
+            {
+                GetEditorState()->OpenEditScene(openedTab);
+            }
+
+            ImGui::EndTabBar();
         }
 
+        sPrevActiveSceneIdx = activeSceneIdx;
 
-        // Play/Stop button in the menu bar
-        bool inPie = IsPlayingInEditor();
-        if (ImGui::Button(inPie ? ICON_IC_BASELINE_STOP : ICON_MDI_PLAY))
+        // -- Right-aligned buttons: [Addon Toolbar Items] [Hammer] [Play ▾] --
         {
-            if (inPie)
+            enum class PlayTarget { PlayInEditor, Dolphin, Azahar, Standalone, Send3dsLink, Count };
+            static PlayTarget sPlayTarget = PlayTarget::PlayInEditor;
+
+            const char* playTargetLabels[] = {
+                "Play In Editor",
+                "Play on Dolphin",
+                "Play on Azahar",
+                "Play Standalone",
+                "Send 3dsLink",
+            };
+
+            const ImGuiStyle& style = ImGui::GetStyle();
+            float buttonSize = ImGui::GetFrameHeight();
+            float spacing = style.ItemSpacing.x;
+            bool inPie = IsPlayingInEditor();
+
+            // Build the play button label: "icon TargetName"
+            const char* targetLabel = playTargetLabels[(int)sPlayTarget];
+            char playBtnLabel[128];
+            snprintf(playBtnLabel, sizeof(playBtnLabel), "%s %s", inPie ? ICON_IC_BASELINE_STOP : ICON_MDI_PLAY, inPie ? "Stop" : targetLabel);
+
+            float playBtnWidth = ImGui::CalcTextSize(playBtnLabel).x + style.FramePadding.x * 2.0f;
+            float arrowBtnWidth = ImGui::CalcTextSize(ICON_DASHICONS_ARROW_DOWN).x + style.FramePadding.x * 2.0f;
+            float playGroupWidth = inPie ? playBtnWidth : (playBtnWidth + arrowBtnWidth);
+            float rightGroupWidth = buttonSize + spacing + playGroupWidth + 20.0f;
+            float targetX = ImGui::GetWindowWidth() - rightGroupWidth;
+            float cursorX = ImGui::GetCursorPosX();
+            if (targetX > cursorX)
+                ImGui::SameLine(targetX);
+
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+
+            // Hammer button
+            if (ImGui::Button(ICON_ION_HAMMER_SHARP))
             {
-                GetEditorState()->EndPlayInEditor();
+                ReloadAllScripts();
+                NativeAddonManager* nam = NativeAddonManager::Get();
+                if (nam != nullptr)
+                {
+                    std::vector<std::string> localIds = nam->GetLocalPackageIds();
+                    for (const std::string& id : localIds)
+                    {
+                        std::string addonPath = nam->GetAddonSourcePath(id);
+                        if (!addonPath.empty())
+                        {
+                            nam->GenerateIDEConfig(addonPath);
+                        }
+                    }
+
+                    nam->ReloadAllNativeAddons();
+                    LogDebug("Native addon dependencies regenerated and addons reloaded.");
+                }
             }
-            else
+            if (ImGui::IsItemHovered())
             {
-                GetEditorState()->BeginPlayInEditor();
+                ImGui::SetTooltip("Refresh Scripts (Ctrl+R)");
+            }
+
+            // Play/Stop button with target label
+            ImGui::SameLine();
+            if (ImGui::Button(playBtnLabel))
+            {
+                if (inPie)
+                {
+                    GetEditorState()->EndPlayInEditor();
+                }
+                else
+                {
+                    switch (sPlayTarget)
+                    {
+                    case PlayTarget::PlayInEditor:
+                        GetEditorState()->BeginPlayInEditor();
+                        break;
+                    case PlayTarget::Dolphin:
+                        GetPackagingWindow()->BuildAndRunWithProfile(Platform::GameCube, true, false);
+                        break;
+                    case PlayTarget::Azahar:
+                        GetPackagingWindow()->BuildAndRunWithProfile(Platform::N3DS, true, false);
+                        break;
+                    case PlayTarget::Standalone:
+                        GetPackagingWindow()->BuildAndRunWithProfile(Platform::Windows, false, false);
+                        break;
+                    case PlayTarget::Send3dsLink:
+                        GetPackagingWindow()->BuildAndRunWithProfile(Platform::N3DS, true, true);
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
+
+            // Dropdown arrow button (hidden during PIE since stop is the only action)
+            if (!inPie)
+            {
+                ImGui::SameLine(0, 0);
+                if (ImGui::Button(ICON_DASHICONS_ARROW_DOWN "##PlayDropdown", ImVec2(arrowBtnWidth, 0)))
+                {
+                    ImGui::OpenPopup("PlayTargetPopup");
+                }
+            }
+
+            ImGui::PopStyleColor();
+
+            // Play target dropdown popup
+            if (ImGui::BeginPopup("PlayTargetPopup"))
+            {
+                LaunchersModule* launchers = nullptr;
+                PreferencesManager* prefsMgr = PreferencesManager::Get();
+                if (prefsMgr != nullptr)
+                {
+                    launchers = static_cast<LaunchersModule*>(prefsMgr->FindModule("External/Launchers"));
+                }
+
+                bool dolphinOk = launchers && launchers->IsEmulatorConfigured(Platform::GameCube);
+                bool azaharOk = launchers && launchers->IsEmulatorConfigured(Platform::N3DS);
+                bool threeDsLinkOk = launchers && launchers->Is3dsLinkConfigured();
+
+                struct PlayTargetInfo
+                {
+                    PlayTarget target;
+                    const char* label;
+                    bool enabled;
+                    const char* disabledTooltip;
+                };
+
+                PlayTargetInfo items[] = {
+                    { PlayTarget::PlayInEditor, "Play In Editor",  true,          nullptr },
+                    { PlayTarget::Dolphin,      "Play on Dolphin", dolphinOk,     "Configure Dolphin path in Preferences > External > Launchers" },
+                    { PlayTarget::Azahar,       "Play on Azahar",  azaharOk,      "Configure Azahar path in Preferences > External > Launchers" },
+                    { PlayTarget::Standalone,   "Play Standalone",  true,          nullptr },
+                    { PlayTarget::Send3dsLink,  "Send 3dsLink",    threeDsLinkOk, "Configure 3dslink in Preferences > External > Launchers" },
+                };
+
+                for (const PlayTargetInfo& item : items)
+                {
+                    bool isSelected = (sPlayTarget == item.target);
+
+                    if (!item.enabled)
+                    {
+                        ImGui::BeginDisabled();
+                    }
+
+                    if (ImGui::Selectable(item.label, isSelected))
+                    {
+                        sPlayTarget = item.target;
+                    }
+
+                    if (!item.enabled)
+                    {
+                        ImGui::EndDisabled();
+                        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && item.disabledTooltip)
+                        {
+                            ImGui::SetTooltip("%s", item.disabledTooltip);
+                        }
+                    }
+                }
+
+                ImGui::EndPopup();
             }
         }
 
@@ -4775,7 +5047,206 @@ static void DrawMainMenuBar()
             }
         }
 
+        // Hotkey Menus
+        if (GetEditorState()->GetViewport3D()->ShouldHandleInput())
+        {
+            const bool ctrlDown = IsControlDown();
+            bool shiftDown = IsShiftDown();
+            const bool altDown = IsAltDown();
+
+            if (shiftDown && IsKeyJustDown(KEY_Q))
+            {
+                ImGui::OpenPopup("Spawn Basic 3D");
+            }
+
+            if (shiftDown && IsKeyJustDown(KEY_W))
+            {
+                ImGui::OpenPopup("Spawn Basic Widget");
+            }
+
+            if (shiftDown && IsKeyJustDown(KEY_A))
+            {
+                ImGui::OpenPopup("Spawn Node");
+            }
+
+            if (ctrlDown && IsKeyJustDown(KEY_N))
+            {
+                GetEditorState()->OpenEditScene(nullptr);
+            }
+
+            if (ctrlDown && IsKeyJustDown(KEY_R))
+            {
+                ReloadAllScripts();
+                NativeAddonManager* nam = NativeAddonManager::Get();
+                if (nam != nullptr)
+                {
+                    std::vector<std::string> localIds = nam->GetLocalPackageIds();
+                    for (const std::string& id : localIds)
+                    {
+                        std::string addonPath = nam->GetAddonSourcePath(id);
+                        if (!addonPath.empty())
+                        {
+                            nam->GenerateIDEConfig(addonPath);
+                        }
+                    }
+
+                    nam->ReloadAllNativeAddons();
+                    LogDebug("Native addon dependencies regenerated and addons reloaded.");
+                }
+            }
+        }
+
+        if (ImGui::BeginPopup("Spawn Basic 3D"))
+        {
+            DrawSpawnBasic3dMenu(nullptr, true);
+            ImGui::EndPopup();
+        }
+
+        if (ImGui::BeginPopup("Spawn Basic Widget"))
+        {
+            DrawSpawnBasicWidgetMenu(GetEditorState()->GetSelectedWidget());
+            ImGui::EndPopup();
+        }
+
+        if (ImGui::BeginPopup("Spawn Node"))
+        {
+            DrawAddNodeMenu(nullptr);
+            ImGui::EndPopup();
+        }
+
+        // Asset drop mesh type selection popup
+        if (sAssetDropPopupPending)
+        {
+            ImGui::SetNextWindowPos(sAssetDropPopupPos);
+            ImGui::OpenPopup("AssetDropMeshType");
+            sAssetDropPopupPending = false;
+        }
+
+        if (ImGui::BeginPopup("AssetDropMeshType"))
+        {
+            // Determine spawn position: raycast for viewport drops, focal point otherwise
+            auto getAssetDropSpawnPos = [&]() -> glm::vec3
+            {
+                if (sAssetDropInViewport)
+                {
+                    Camera3D* camera = GetEditorState()->GetEditorCamera();
+                    if (camera != nullptr)
+                    {
+                        RayTestResult rayResult;
+                        camera->TraceScreenToWorld(sAssetDropScreenX, sAssetDropScreenY, ColGroupAll, rayResult);
+                        if (rayResult.mHitNode != nullptr)
+                        {
+                            return rayResult.mHitPosition;
+                        }
+
+                        Node3D* hitNode = Renderer::Get()->ProcessHitCheck(GetWorld(0), sAssetDropScreenX, sAssetDropScreenY);
+                        if (hitNode != nullptr)
+                        {
+                            Primitive3D* prim = hitNode->As<Primitive3D>();
+                            if (prim != nullptr)
+                            {
+                                Bounds bounds = prim->GetBounds();
+                                glm::vec3 rayOrigin = camera->GetWorldPosition();
+                                glm::vec3 nearPoint = camera->ScreenToWorldPosition(sAssetDropScreenX, sAssetDropScreenY);
+                                glm::vec3 rayDir = Maths::SafeNormalize(nearPoint - rayOrigin);
+
+                                glm::vec3 oc = rayOrigin - bounds.mCenter;
+                                float b = 2.0f * glm::dot(oc, rayDir);
+                                float c = glm::dot(oc, oc) - bounds.mRadius * bounds.mRadius;
+                                float discriminant = b * b - 4.0f * c;
+
+                                if (discriminant >= 0.0f)
+                                {
+                                    float t = (-b - sqrtf(discriminant)) / 2.0f;
+                                    return rayOrigin + rayDir * t;
+                                }
+
+                                float t = -glm::dot(oc, rayDir);
+                                return rayOrigin + rayDir * glm::max(t, 0.0f);
+                            }
+                        }
+                    }
+                }
+                return EditorGetFocusPosition();
+            };
+
+            if (ImGui::Selectable(BASIC_STATIC_MESH))
+            {
+                if (sAssetDropStub != nullptr)
+                {
+                    if (sAssetDropStub->mAsset == nullptr)
+                        AssetManager::Get()->LoadAsset(*sAssetDropStub);
+                    if (sAssetDropStub->mAsset != nullptr)
+                    {
+                        glm::vec3 spawnPos = getAssetDropSpawnPos();
+                        ActionManager::Get()->SpawnBasicNode(BASIC_STATIC_MESH,
+                            sAssetDropParentNode, sAssetDropStub->mAsset, sAssetDropInViewport, spawnPos);
+
+                        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                        if (hookMgr)
+                        {
+                            if (sAssetDropInViewport)
+                                hookMgr->FireOnAssetDropViewport(sAssetDropStub->mName.c_str());
+                            else
+                                hookMgr->FireOnAssetDropHierarchy(sAssetDropStub->mName.c_str());
+                        }
+                    }
+                }
+                sAssetDropStub = nullptr;
+            }
+            if (ImGui::Selectable(BASIC_INSTANCED_MESH))
+            {
+                if (sAssetDropStub != nullptr)
+                {
+                    if (sAssetDropStub->mAsset == nullptr)
+                        AssetManager::Get()->LoadAsset(*sAssetDropStub);
+                    if (sAssetDropStub->mAsset != nullptr)
+                    {
+                        glm::vec3 spawnPos = getAssetDropSpawnPos();
+                        ActionManager::Get()->SpawnBasicNode(BASIC_INSTANCED_MESH,
+                            sAssetDropParentNode, sAssetDropStub->mAsset, sAssetDropInViewport, spawnPos);
+
+                        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                        if (hookMgr)
+                        {
+                            if (sAssetDropInViewport)
+                                hookMgr->FireOnAssetDropViewport(sAssetDropStub->mName.c_str());
+                            else
+                                hookMgr->FireOnAssetDropHierarchy(sAssetDropStub->mName.c_str());
+                        }
+                    }
+                }
+                sAssetDropStub = nullptr;
+            }
+            ImGui::EndPopup();
+        }
+        else if (sAssetDropStub != nullptr && !sAssetDropPopupPending)
+        {
+            sAssetDropStub = nullptr;
+            sAssetDropParentNode = nullptr;
+        }
+
         ImGui::EndMainMenuBar();
+    }
+
+    // Set up ImGuizmo rect for the viewport area
+    {
+        EditorState* edState = GetEditorState();
+        float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
+        if (interfaceScale == 0.0f)
+        {
+            interfaceScale = 1.0f;
+        }
+        float invInterfaceScale = 1.0f / interfaceScale;
+
+        ImGuizmo::SetRect(
+            (float)edState->mViewportX * invInterfaceScale,
+            (float)edState->mViewportY * invInterfaceScale,
+            (float)edState->mViewportWidth * invInterfaceScale,
+            (float)edState->mViewportHeight * invInterfaceScale
+        );
+
+        ImGuizmo::SetAlternativeWindow(sViewportDockWindow);
     }
 
     // Modal dialogs - drawn outside menu bar scope
@@ -5044,353 +5515,6 @@ static void DrawMainMenuBar()
 
         ImGui::EndPopup();
     }
-}
-
-static void DrawToolbar()
-{
-    const ImGuiWindowFlags kToolbarWindowFlags =
-        ImGuiWindowFlags_NoTitleBar |
-        ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoScrollbar |
-        ImGuiWindowFlags_NoScrollWithMouse |
-        ImGuiWindowFlags_NoCollapse |
-        ImGuiWindowFlags_NoSavedSettings;
-
-    float toolbarY = GetMainMenuBarHeight();
-    float toolbarWidth = ImGui::GetIO().DisplaySize.x;
-
-    ImGui::SetNextWindowPos(ImVec2(0.0f, toolbarY));
-    ImGui::SetNextWindowSize(ImVec2(toolbarWidth, GetToolbarHeight()));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-
-    ImGui::Begin("##Toolbar", nullptr, kToolbarWindowFlags);
-
-    int curMode = (int)GetEditorState()->mMode;
-    PaintMode paintMode = (GetEditorState()->mMode == EditorMode::Scene3D) ? GetEditorState()->mPaintMode : PaintMode::None;
-
-    if (paintMode != PaintMode::None && paintMode != PaintMode::Count)
-    {
-        curMode = int(EditorMode::Count) + int(paintMode) - 1;
-    }
-
-    const char* modeStrings[] = { "Scene", "2D", "3D", "Paint Colors", "Paint Instances"};
-    ImGui::SetNextItemWidth(70);
-    ImGui::Combo("##EditorMode", &curMode, modeStrings, 5);
-
-    if (curMode == 3)
-    {
-        curMode = (int)EditorMode::Scene3D;
-        paintMode = PaintMode::Color;
-    }
-    else if (curMode == 4)
-    {
-        curMode = (int)EditorMode::Scene3D;
-        paintMode = PaintMode::Instance;
-    }
-    else
-    {
-        paintMode = PaintMode::None;
-    }
-
-    GetEditorState()->SetEditorMode((EditorMode)curMode);
-    GetEditorState()->SetPaintMode(paintMode);
-
-    // Gizmo Operation Buttons (Translate/Rotate/Scale)
-    ImGui::SameLine();
-    ImGui::Separator();
-    ImGui::SameLine();
-
-    EditorState* edState = GetEditorState();
-    ImGuizmo::OPERATION& gizmoOp = edState->mGizmoOperation;
-    ImGuizmo::MODE& gizmoMode = edState->mGizmoMode;
-
-    // Translate button
-    bool isTranslate = (gizmoOp == ImGuizmo::TRANSLATE);
-    if (isTranslate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
-    if (ImGui::Button(ICON_BX_MOVE))
-        gizmoOp = ImGuizmo::TRANSLATE;
-    if (isTranslate) ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Translate (Space+G)");
-
-    // Rotate button
-    ImGui::SameLine();
-    bool isRotate = (gizmoOp == ImGuizmo::ROTATE);
-    if (isRotate) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
-    if (ImGui::Button(ICON_LUCIDE_ROTATE_3D))
-        gizmoOp = ImGuizmo::ROTATE;
-    if (isRotate) ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Rotate (Space+R)");
-
-    // Scale button
-    ImGui::SameLine();
-    bool isScale = (gizmoOp == ImGuizmo::SCALE);
-    if (isScale) ImGui::PushStyleColor(ImGuiCol_Button, kSelectedColor);
-    if (ImGui::Button(ICON_MAGE_SCALE_UP))
-        gizmoOp = ImGuizmo::SCALE;
-    if (isScale) ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Scale (Space+S)");
-
-    // Local/World mode toggle
-    ImGui::SameLine();
-    ImGui::Separator();
-    ImGui::SameLine();
-
-    bool isLocal = (gizmoMode == ImGuizmo::LOCAL);
-    if (isLocal) ImGui::PushStyleColor(ImGuiCol_Button, kToggledColor);
-    if (ImGui::Button(isLocal ? ICON_MDI_AXIS_ARROW "  Local" : ICON_GLOBE "  World"))
-        gizmoMode = isLocal ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
-    if (isLocal) ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle Local/World (Ctrl+T)");
-
-    // Scene tabs
-    static int32_t sPrevActiveSceneIdx = 0;
-    std::vector<EditScene>& scenes = GetEditorState()->mEditScenes;
-    int32_t activeSceneIdx = GetEditorState()->mEditSceneIndex;
-    bool sceneJustChanged = sPrevActiveSceneIdx != activeSceneIdx;
-
-    const ImGuiTabBarFlags kSceneTabBarFlags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyScroll;
-    ImGui::SameLine(0.0f, 20.0f);
-
-    if (scenes.size() > 0 &&
-        ImGui::BeginTabBar("SceneTabBar", kSceneTabBarFlags))
-    {
-        int32_t openedTab = activeSceneIdx;
-
-        for (int32_t n = 0; n < scenes.size(); n++)
-        {
-            ImGui::PushID(n);
-
-            const EditScene& scene = scenes[n];
-
-            bool opened = true;
-            std::string sceneName = "*New";
-
-            if (scene.mSceneAsset != nullptr)
-            {
-                Scene* sceneAsset = scene.mSceneAsset.Get<Scene>();
-                sceneName = sceneAsset->GetName();
-                if (sceneAsset->GetDirtyFlag())
-                {
-                    sceneName = "*" + sceneName;
-                }
-            }
-
-            static char sTabId[128];
-            snprintf(sTabId, 127, "%s###%d", sceneName.c_str(), n);
-
-            ImGuiTabItemFlags tabFlags = ImGuiTabItemFlags_None;
-            if (sceneJustChanged && n == activeSceneIdx)
-            {
-                tabFlags = ImGuiTabItemFlags_SetSelected;
-            }
-
-            if (ImGui::BeginTabItem(sTabId, &opened, tabFlags))
-            {
-                if (n != activeSceneIdx)
-                {
-                    openedTab = n;
-                }
-
-                ImGui::EndTabItem();
-            }
-
-            if (!opened)
-            {
-                GetEditorState()->CloseEditScene(n);
-            }
-
-            ImGui::PopID();
-        }
-
-        if (!sceneJustChanged &&
-            openedTab != activeSceneIdx)
-        {
-            GetEditorState()->OpenEditScene(openedTab);
-        }
-
-        ImGui::EndTabBar();
-    }
-
-    sPrevActiveSceneIdx = activeSceneIdx;
-
-    // Hotkey Menus
-    if (GetEditorState()->GetViewport3D()->ShouldHandleInput())
-    {
-        const bool ctrlDown = IsControlDown();
-        bool shiftDown = IsShiftDown();
-        const bool altDown = IsAltDown();
-
-        if (shiftDown && IsKeyJustDown(KEY_Q))
-        {
-            ImGui::OpenPopup("Spawn Basic 3D");
-        }
-
-        if (shiftDown && IsKeyJustDown(KEY_W))
-        {
-            ImGui::OpenPopup("Spawn Basic Widget");
-        }
-
-        if (shiftDown && IsKeyJustDown(KEY_A))
-        {
-            ImGui::OpenPopup("Spawn Node");
-        }
-
-        if (ctrlDown && IsKeyJustDown(KEY_N))
-        {
-            GetEditorState()->OpenEditScene(nullptr);
-        }
-    }
-
-    if (ImGui::BeginPopup("Spawn Basic 3D"))
-    {
-        DrawSpawnBasic3dMenu(nullptr, true);
-        ImGui::EndPopup();
-    }
-
-    if (ImGui::BeginPopup("Spawn Basic Widget"))
-    {
-        DrawSpawnBasicWidgetMenu(GetEditorState()->GetSelectedWidget());
-        ImGui::EndPopup();
-    }
-
-    if (ImGui::BeginPopup("Spawn Node"))
-    {
-        DrawAddNodeMenu(nullptr);
-        ImGui::EndPopup();
-    }
-
-    // Asset drop mesh type selection popup
-    if (sAssetDropPopupPending)
-    {
-        ImGui::SetNextWindowPos(sAssetDropPopupPos);
-        ImGui::OpenPopup("AssetDropMeshType");
-        sAssetDropPopupPending = false;
-    }
-
-    if (ImGui::BeginPopup("AssetDropMeshType"))
-    {
-        // Determine spawn position: raycast for viewport drops, focal point otherwise
-        auto getAssetDropSpawnPos = [&]() -> glm::vec3
-        {
-            if (sAssetDropInViewport)
-            {
-                Camera3D* camera = GetEditorState()->GetEditorCamera();
-                if (camera != nullptr)
-                {
-                    RayTestResult rayResult;
-                    camera->TraceScreenToWorld(sAssetDropScreenX, sAssetDropScreenY, ColGroupAll, rayResult);
-                    if (rayResult.mHitNode != nullptr)
-                    {
-                        return rayResult.mHitPosition;
-                    }
-
-                    Node3D* hitNode = Renderer::Get()->ProcessHitCheck(GetWorld(0), sAssetDropScreenX, sAssetDropScreenY);
-                    if (hitNode != nullptr)
-                    {
-                        Primitive3D* prim = hitNode->As<Primitive3D>();
-                        if (prim != nullptr)
-                        {
-                            Bounds bounds = prim->GetBounds();
-                            glm::vec3 rayOrigin = camera->GetWorldPosition();
-                            glm::vec3 nearPoint = camera->ScreenToWorldPosition(sAssetDropScreenX, sAssetDropScreenY);
-                            glm::vec3 rayDir = Maths::SafeNormalize(nearPoint - rayOrigin);
-
-                            glm::vec3 oc = rayOrigin - bounds.mCenter;
-                            float b = 2.0f * glm::dot(oc, rayDir);
-                            float c = glm::dot(oc, oc) - bounds.mRadius * bounds.mRadius;
-                            float discriminant = b * b - 4.0f * c;
-
-                            if (discriminant >= 0.0f)
-                            {
-                                float t = (-b - sqrtf(discriminant)) / 2.0f;
-                                return rayOrigin + rayDir * t;
-                            }
-
-                            float t = -glm::dot(oc, rayDir);
-                            return rayOrigin + rayDir * glm::max(t, 0.0f);
-                        }
-                    }
-                }
-            }
-            return EditorGetFocusPosition();
-        };
-
-        if (ImGui::Selectable(BASIC_STATIC_MESH))
-        {
-            if (sAssetDropStub != nullptr)
-            {
-                if (sAssetDropStub->mAsset == nullptr)
-                    AssetManager::Get()->LoadAsset(*sAssetDropStub);
-                if (sAssetDropStub->mAsset != nullptr)
-                {
-                    glm::vec3 spawnPos = getAssetDropSpawnPos();
-                    ActionManager::Get()->SpawnBasicNode(BASIC_STATIC_MESH,
-                        sAssetDropParentNode, sAssetDropStub->mAsset, sAssetDropInViewport, spawnPos);
-
-                    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
-                    if (hookMgr)
-                    {
-                        if (sAssetDropInViewport)
-                            hookMgr->FireOnAssetDropViewport(sAssetDropStub->mName.c_str());
-                        else
-                            hookMgr->FireOnAssetDropHierarchy(sAssetDropStub->mName.c_str());
-                    }
-                }
-            }
-            sAssetDropStub = nullptr;
-        }
-        if (ImGui::Selectable(BASIC_INSTANCED_MESH))
-        {
-            if (sAssetDropStub != nullptr)
-            {
-                if (sAssetDropStub->mAsset == nullptr)
-                    AssetManager::Get()->LoadAsset(*sAssetDropStub);
-                if (sAssetDropStub->mAsset != nullptr)
-                {
-                    glm::vec3 spawnPos = getAssetDropSpawnPos();
-                    ActionManager::Get()->SpawnBasicNode(BASIC_INSTANCED_MESH,
-                        sAssetDropParentNode, sAssetDropStub->mAsset, sAssetDropInViewport, spawnPos);
-
-                    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
-                    if (hookMgr)
-                    {
-                        if (sAssetDropInViewport)
-                            hookMgr->FireOnAssetDropViewport(sAssetDropStub->mName.c_str());
-                        else
-                            hookMgr->FireOnAssetDropHierarchy(sAssetDropStub->mName.c_str());
-                    }
-                }
-            }
-            sAssetDropStub = nullptr;
-        }
-        ImGui::EndPopup();
-    }
-    else if (sAssetDropStub != nullptr && !sAssetDropPopupPending)
-    {
-        sAssetDropStub = nullptr;
-        sAssetDropParentNode = nullptr;
-    }
-
-    ImGui::End();
-    ImGui::PopStyleVar();
-
-    // Set up ImGuizmo rect for the viewport area
-    float interfaceScale = GetEngineConfig()->mEditorInterfaceScale;
-    if (interfaceScale == 0.0f)
-    {
-        interfaceScale = 1.0f;
-    }
-    float invInterfaceScale = 1.0f / interfaceScale;
-
-    ImGuizmo::SetRect(
-        (float)edState->mViewportX * invInterfaceScale,
-        (float)edState->mViewportY * invInterfaceScale,
-        (float)edState->mViewportWidth * invInterfaceScale,
-        (float)edState->mViewportHeight * invInterfaceScale
-    );
-
-    ImGuizmo::SetAlternativeWindow(sViewportDockWindow);
 }
 
 static void DrawPaintColorsPanel()
@@ -6169,7 +6293,6 @@ void EditorImguiDraw()
     if (EditorIsInterfaceVisible())
     {
         DrawMainMenuBar();
-        DrawToolbar();
         DrawDockspace();
 
         if (GetEditorState()->mShowTimelinePanel)

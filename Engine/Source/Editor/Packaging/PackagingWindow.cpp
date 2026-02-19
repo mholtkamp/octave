@@ -585,6 +585,60 @@ void PackagingWindow::ExecuteBuild(bool runAfterBuild, bool runOnDevice)
     }
 }
 
+void PackagingWindow::BuildAndRunWithProfile(Platform platform, bool embedded, bool runOnDevice)
+{
+    // Try to find an existing profile for this platform
+    PackagingSettings* settings = PackagingSettings::Get();
+    BuildProfile* existingProfile = nullptr;
+
+    if (settings != nullptr)
+    {
+        std::vector<BuildProfile>& profiles = settings->GetProfiles();
+        for (BuildProfile& p : profiles)
+        {
+            if (p.mTargetPlatform == platform)
+            {
+                existingProfile = &p;
+                break;
+            }
+        }
+    }
+
+    BuildProfile tempProfile;
+    const BuildProfile& profile = existingProfile ? *existingProfile : tempProfile;
+
+    if (!existingProfile)
+    {
+        tempProfile.mName = "Quick Play";
+        tempProfile.mTargetPlatform = platform;
+        tempProfile.mEmbedded = embedded;
+        tempProfile.mOpenDirectoryOnFinish = false;
+    }
+
+    bool useDocker = profile.mUseDocker;
+
+#if PLATFORM_WINDOWS
+    if (PlatformRequiresDockerOnWindows(platform))
+    {
+        useDocker = true;
+    }
+#endif
+
+    if (useDocker)
+    {
+        if (!CheckDockerAvailable())
+        {
+            mShowDockerWarning = true;
+            return;
+        }
+        ExecuteDockerBuild(profile, true, runOnDevice);
+    }
+    else
+    {
+        ExecuteLocalBuild(profile, true, runOnDevice);
+    }
+}
+
 void PackagingWindow::ExecuteDockerBuild(const BuildProfile& profile, bool runAfterBuild, bool runOnDevice)
 {
     LogDebug("Starting Docker build for platform: %s", GetPlatformString(profile.mTargetPlatform));
