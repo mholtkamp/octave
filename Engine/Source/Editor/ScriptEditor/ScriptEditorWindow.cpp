@@ -102,22 +102,21 @@ void ScriptEditorWindow::EnsureEditor()
         fs::path(prefsDir),
         NVec2f(1.0f, 1.0f));
 
-    // Register built-in syntax providers (C++, GLSL, etc.)
-    RegisterSyntaxProviders(*zep);
-
-    // Register Lua syntax for .lua files
+    // Note: ZepEditor constructor already calls RegisterSyntaxProviders() internally.
+    // Just register Lua syntax for .lua files (not included by default).
     zep->RegisterSyntaxFactory(
         { ".lua" },
         SyntaxProvider{ "lua", tSyntaxFactory([](ZepBuffer* pBuffer) {
             return std::make_shared<ZepSyntax>(*pBuffer, sLuaKeywords, sLuaIdentifiers);
         }) });
 
-    // Start in standard (non-vim) mode
-    zep->SetGlobalMode(ZepMode_Standard::StaticName());
+    // Don't call SetGlobalMode here — the constructor defaults to Vim mode,
+    // and calling it before any windows exist triggers an assertion.
+    // We switch to Standard mode after the first file/buffer creates a window.
 
     mEditor = zep;
 
-    LogDebug("Script Editor initialized.");
+    LogDebug("Script Editor created.");
 }
 
 // ---------------------------------------------------------------------------
@@ -272,9 +271,12 @@ void ScriptEditorWindow::OpenFile(const std::string& filePath)
     ZepEditor_ImGui* zep = AsZep(mEditor);
 
     // If this is the first file, use InitWithFileOrDir to set up tab window properly
-    if (!zep->GetActiveTabWindow())
+    bool firstFile = (zep->GetActiveTabWindow() == nullptr);
+    if (firstFile)
     {
         zep->InitWithFileOrDir(filePath);
+        // Now that windows exist, switch from default Vim to Standard mode
+        zep->SetGlobalMode(ZepMode_Standard::StaticName());
     }
     else
     {
@@ -318,6 +320,7 @@ void ScriptEditorWindow::DoNew()
     if (!zep->GetActiveTabWindow())
     {
         zep->InitWithText(name, "");
+        zep->SetGlobalMode(ZepMode_Standard::StaticName());
     }
     else
     {
