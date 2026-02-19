@@ -50,6 +50,14 @@ private:
     ImVec4 mDockTabTextColor = ImVec4(1, 1, 1, 1);
     bool mHasDockTabTextColor = false;
 
+    // Dock splitter / tab bar overrides
+    ImVec4 mDockSplitterColor = ImVec4(0.3f, 0.3f, 0.3f, 1.0f);
+    bool mHasDockSplitterColor = false;
+    ImVec4 mDockSplitterHoverColor = ImVec4(0.5f, 0.5f, 0.8f, 1.0f);
+    bool mHasDockSplitterHoverColor = false;
+    ImVec4 mDockTabBarBg = ImVec4(0.1f, 0.1f, 0.15f, 1.0f);
+    bool mHasDockTabBarBg = false;
+
     // Panel background overrides
     ImVec4 mPanelAssetsBg;        bool mHasPanelAssetsBg = false;
     ImVec4 mPanelSceneBg;         bool mHasPanelSceneBg = false;

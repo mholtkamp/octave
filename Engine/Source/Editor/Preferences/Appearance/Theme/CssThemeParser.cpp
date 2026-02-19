@@ -405,6 +405,40 @@ static void ParseSelectorBlock(const std::string& selector, const std::string& b
             continue;
         }
 
+        // Dock splitter colors
+        if (sel == "panel-border" && prop == "color")
+        {
+            ImVec4 color;
+            if (ResolveColor(val, variables, color))
+            {
+                theme.DockSplitterColor = color;
+                theme.hasDockSplitterColor = true;
+            }
+            continue;
+        }
+        if (sel == "panel-border:hover" && prop == "color")
+        {
+            ImVec4 color;
+            if (ResolveColor(val, variables, color))
+            {
+                theme.DockSplitterHoverColor = color;
+                theme.hasDockSplitterHoverColor = true;
+            }
+            continue;
+        }
+
+        // Dock tab bar background
+        if (sel == "dock-tabbar" && prop == "background")
+        {
+            ImVec4 color;
+            if (ResolveColor(val, variables, color))
+            {
+                theme.DockTabBarBg = color;
+                theme.hasDockTabBarBg = true;
+            }
+            continue;
+        }
+
         // Panel background overrides
         if (prop == "background")
         {
@@ -588,10 +622,21 @@ void ApplyTheme(const CssThemeData& themeData)
     }
 
     // Dock tab text color
+    ImGui::ClearDockTabTextColor();
     if (themeData.hasDockTabTextColor)
     {
         ImGui::SetDockTabTextColor(ImGui::ColorConvertFloat4ToU32(themeData.DockTabTextColor));
     }
+
+    // Dock splitter and tab bar colors
+    ImGui::ClearDockSplitterColors();
+    ImGui::ClearDockTabBarBg();
+    if (themeData.hasDockSplitterColor)
+        ImGui::SetDockSplitterColor(ImGui::ColorConvertFloat4ToU32(themeData.DockSplitterColor));
+    if (themeData.hasDockSplitterHoverColor)
+        ImGui::SetDockSplitterHoverColor(ImGui::ColorConvertFloat4ToU32(themeData.DockSplitterHoverColor));
+    if (themeData.hasDockTabBarBg)
+        ImGui::SetDockTabBarBg(ImGui::ColorConvertFloat4ToU32(themeData.DockTabBarBg));
 
     // Panel background overrides
     sPanelAssetsBg = themeData.PanelAssetsBg;         sHasPanelAssetsBg = themeData.hasPanelAssetsBg;

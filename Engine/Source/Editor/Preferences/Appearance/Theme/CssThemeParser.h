@@ -42,6 +42,11 @@ struct CssThemeData
     // Dock tab text color (separate from ImGuiCol_Text)
     ImVec4 DockTabTextColor;               bool hasDockTabTextColor = false;
 
+    // Dock splitter / tab bar overrides
+    ImVec4 DockSplitterColor;              bool hasDockSplitterColor = false;
+    ImVec4 DockSplitterHoverColor;         bool hasDockSplitterHoverColor = false;
+    ImVec4 DockTabBarBg;                   bool hasDockTabBarBg = false;
+
     // Per-panel background overrides
     ImVec4 PanelAssetsBg;                  bool hasPanelAssetsBg = false;
     ImVec4 PanelSceneBg;                   bool hasPanelSceneBg = false;

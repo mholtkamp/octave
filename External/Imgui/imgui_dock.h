@@ -36,6 +36,11 @@ IMGUI_API void SetDockTabRounding(float left, float right);
 IMGUI_API void GetDockTabRounding(float& left, float& right);
 IMGUI_API void SetDockTabTextColor(ImU32 color);
 IMGUI_API void ClearDockTabTextColor();
+IMGUI_API void SetDockSplitterColor(ImU32 color);
+IMGUI_API void SetDockSplitterHoverColor(ImU32 color);
+IMGUI_API void ClearDockSplitterColors();
+IMGUI_API void SetDockTabBarBg(ImU32 color);
+IMGUI_API void ClearDockTabBarBg();
 IMGUI_API void InitDock();
 
 };

@@ -18,6 +18,12 @@ static float g_dock_tab_rounding_left = 0.0f;
 static float g_dock_tab_rounding_right = 0.0f;
 static ImU32 g_dock_tab_text_color = 0;
 static bool g_dock_tab_text_color_set = false;
+static ImU32 g_dock_splitter_color = 0;
+static bool  g_dock_splitter_color_set = false;
+static ImU32 g_dock_splitter_hover_color = 0;
+static bool  g_dock_splitter_hover_color_set = false;
+static ImU32 g_dock_tabbar_bg_color = 0;
+static bool  g_dock_tabbar_bg_color_set = false;
 
 struct DockContext
 {
@@ -265,8 +271,8 @@ struct DockContext
             }
         }
 
-        ImU32 color = GetColorU32(ImGuiCol_Button);
-        ImU32 color_hovered = GetColorU32(ImGuiCol_ButtonHovered);
+        ImU32 color = g_dock_splitter_color_set ? g_dock_splitter_color : GetColorU32(ImGuiCol_Button);
+        ImU32 color_hovered = g_dock_splitter_hover_color_set ? g_dock_splitter_hover_color : GetColorU32(ImGuiCol_ButtonHovered);
         ImDrawList* draw_list = GetWindowDrawList();
         ImGuiIO& io = GetIO();
         for (int i = 0; i < m_docks.size(); ++i)
@@ -641,6 +647,8 @@ struct DockContext
         SetCursorScreenPos(dock.pos);
         char tmp[20];
         ImFormatString(tmp, IM_ARRAYSIZE(tmp), "tabs%d", (int)dock.id);
+        if (g_dock_tabbar_bg_color_set)
+            PushStyleColor(ImGuiCol_ChildBg, g_dock_tabbar_bg_color);
         if (BeginChild(tmp, size, true))
         {
             Dock* dock_tab = &dock;
@@ -727,6 +735,8 @@ struct DockContext
             draw_list->AddLine(cp, cp + ImVec2(dock.size.x, 0), color);
         }
         EndChild();
+        if (g_dock_tabbar_bg_color_set)
+            PopStyleColor();
         return tab_closed;
     }
 
@@ -1502,6 +1512,38 @@ void ImGui::ClearDockTabTextColor()
 {
     g_dock_tab_text_color = 0;
     g_dock_tab_text_color_set = false;
+}
+
+void ImGui::SetDockSplitterColor(ImU32 color)
+{
+    g_dock_splitter_color = color;
+    g_dock_splitter_color_set = true;
+}
+
+void ImGui::SetDockSplitterHoverColor(ImU32 color)
+{
+    g_dock_splitter_hover_color = color;
+    g_dock_splitter_hover_color_set = true;
+}
+
+void ImGui::ClearDockSplitterColors()
+{
+    g_dock_splitter_color = 0;
+    g_dock_splitter_color_set = false;
+    g_dock_splitter_hover_color = 0;
+    g_dock_splitter_hover_color_set = false;
+}
+
+void ImGui::SetDockTabBarBg(ImU32 color)
+{
+    g_dock_tabbar_bg_color = color;
+    g_dock_tabbar_bg_color_set = true;
+}
+
+void ImGui::ClearDockTabBarBg()
+{
+    g_dock_tabbar_bg_color = 0;
+    g_dock_tabbar_bg_color_set = false;
 }
 
 void ImGui::InitDock()

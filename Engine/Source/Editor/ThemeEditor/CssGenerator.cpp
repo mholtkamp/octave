@@ -232,6 +232,14 @@ std::string GenerateCss(
             out << "panel-properties { background: " << FormatColor(panelOverrides->PanelPropertiesBg) << "; }\n";
         if (panelOverrides->hasPanelDebugLogBg)
             out << "panel-debug-log { background: " << FormatColor(panelOverrides->PanelDebugLogBg) << "; }\n";
+
+        // Dock splitter and tab bar overrides
+        if (panelOverrides->hasDockSplitterColor)
+            out << "panel-border { color: " << FormatColor(panelOverrides->DockSplitterColor) << "; }\n";
+        if (panelOverrides->hasDockSplitterHoverColor)
+            out << "panel-border:hover { color: " << FormatColor(panelOverrides->DockSplitterHoverColor) << "; }\n";
+        if (panelOverrides->hasDockTabBarBg)
+            out << "dock-tabbar { background: " << FormatColor(panelOverrides->DockTabBarBg) << "; }\n";
     }
 
     return out.str();

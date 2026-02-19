@@ -63,6 +63,8 @@ void ThemeEditorWindow::Close()
     // Revert to base style and clear panel color overrides
     ImGui::GetStyle() = mBaseStyle;
     CssThemeParser::ClearPanelColors();
+    ImGui::ClearDockSplitterColors();
+    ImGui::ClearDockTabBarBg();
 }
 
 // ---- Draw ----
@@ -124,6 +126,9 @@ void ThemeEditorWindow::Draw()
                 themeData.hasPanelSceneBg = mHasPanelSceneBg;      themeData.PanelSceneBg = mPanelSceneBg;
                 themeData.hasPanelPropertiesBg = mHasPanelPropertiesBg; themeData.PanelPropertiesBg = mPanelPropertiesBg;
                 themeData.hasPanelDebugLogBg = mHasPanelDebugLogBg; themeData.PanelDebugLogBg = mPanelDebugLogBg;
+                themeData.hasDockSplitterColor = mHasDockSplitterColor;       themeData.DockSplitterColor = mDockSplitterColor;
+                themeData.hasDockSplitterHoverColor = mHasDockSplitterHoverColor; themeData.DockSplitterHoverColor = mDockSplitterHoverColor;
+                themeData.hasDockTabBarBg = mHasDockTabBarBg;                 themeData.DockTabBarBg = mDockTabBarBg;
 
                 std::string css = CssGenerator::GenerateCss(
                     mWorkingStyle, mHasDockTabTextColor, mDockTabTextColor, &themeData);
@@ -181,6 +186,11 @@ void ThemeEditorWindow::DrawHeader()
         EditorTheme::ApplyTheme(type);
         mWorkingStyle = ImGui::GetStyle();
         mHasDockTabTextColor = false;
+        mHasDockSplitterColor = false;
+        mHasDockSplitterHoverColor = false;
+        mHasDockTabBarBg = false;
+        ImGui::ClearDockSplitterColors();
+        ImGui::ClearDockTabBarBg();
         CssThemeParser::ClearPanelColors();
         mHasPanelAssetsBg = false;
         mHasPanelSceneBg = false;
@@ -383,6 +393,67 @@ void ThemeEditorWindow::DrawColorsTab()
             {
                 ImGui::GetStyle().Colors[col] = mWorkingStyle.Colors[col];
             }
+        }
+
+        ImGui::Unindent(8.0f);
+    }
+    // Dock (splitter + tab bar)
+    if (ImGui::CollapsingHeader("Dock"))
+    {
+        ImGui::Indent(8.0f);
+
+        // Splitter color
+        ImGui::Checkbox("Override Splitter Color", &mHasDockSplitterColor);
+        if (mHasDockSplitterColor)
+        {
+            ImGui::SameLine();
+            if (ImGui::ColorEdit4("Splitter (panel-border { color })##DockSplitter", &mDockSplitterColor.x,
+                ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf))
+            {
+                ImGui::SetDockSplitterColor(ImGui::ColorConvertFloat4ToU32(mDockSplitterColor));
+            }
+        }
+        else
+        {
+            ImGui::ClearDockSplitterColors();
+            // Re-apply hover if still enabled
+            if (mHasDockSplitterHoverColor)
+                ImGui::SetDockSplitterHoverColor(ImGui::ColorConvertFloat4ToU32(mDockSplitterHoverColor));
+        }
+
+        // Splitter hover color
+        ImGui::Checkbox("Override Splitter Hover Color", &mHasDockSplitterHoverColor);
+        if (mHasDockSplitterHoverColor)
+        {
+            ImGui::SameLine();
+            if (ImGui::ColorEdit4("Splitter Hover (panel-border:hover { color })##DockSplitterHover", &mDockSplitterHoverColor.x,
+                ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf))
+            {
+                ImGui::SetDockSplitterHoverColor(ImGui::ColorConvertFloat4ToU32(mDockSplitterHoverColor));
+            }
+        }
+        else
+        {
+            // Clear just the hover; re-apply base if still enabled
+            ImGui::ClearDockSplitterColors();
+            if (mHasDockSplitterColor)
+                ImGui::SetDockSplitterColor(ImGui::ColorConvertFloat4ToU32(mDockSplitterColor));
+        }
+
+        // Tab bar background
+        ImGui::Checkbox("Override Tab Bar Background", &mHasDockTabBarBg);
+        if (mHasDockTabBarBg)
+        {
+            ImGui::SameLine();
+            if (ImGui::ColorEdit4("Tab Bar Bg (dock-tabbar { background })##DockTabBarBg", &mDockTabBarBg.x,
+                ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf))
+            {
+                ImGui::SetDockTabBarBg(ImGui::ColorConvertFloat4ToU32(mDockTabBarBg));
+            }
+        }
+        else
+        {
+            ImGui::ClearDockTabBarBg();
         }
 
         ImGui::Unindent(8.0f);
@@ -592,6 +663,9 @@ void ThemeEditorWindow::DoSave()
         panelData.hasPanelSceneBg = mHasPanelSceneBg;      panelData.PanelSceneBg = mPanelSceneBg;
         panelData.hasPanelPropertiesBg = mHasPanelPropertiesBg; panelData.PanelPropertiesBg = mPanelPropertiesBg;
         panelData.hasPanelDebugLogBg = mHasPanelDebugLogBg; panelData.PanelDebugLogBg = mPanelDebugLogBg;
+        panelData.hasDockSplitterColor = mHasDockSplitterColor;       panelData.DockSplitterColor = mDockSplitterColor;
+        panelData.hasDockSplitterHoverColor = mHasDockSplitterHoverColor; panelData.DockSplitterHoverColor = mDockSplitterHoverColor;
+        panelData.hasDockTabBarBg = mHasDockTabBarBg;                 panelData.DockTabBarBg = mDockTabBarBg;
 
         std::string css = CssGenerator::GenerateCss(
             mWorkingStyle, mHasDockTabTextColor, mDockTabTextColor, &panelData);
@@ -638,6 +712,9 @@ void ThemeEditorWindow::DoExportCss()
     panelData.hasPanelSceneBg = mHasPanelSceneBg;      panelData.PanelSceneBg = mPanelSceneBg;
     panelData.hasPanelPropertiesBg = mHasPanelPropertiesBg; panelData.PanelPropertiesBg = mPanelPropertiesBg;
     panelData.hasPanelDebugLogBg = mHasPanelDebugLogBg; panelData.PanelDebugLogBg = mPanelDebugLogBg;
+    panelData.hasDockSplitterColor = mHasDockSplitterColor;       panelData.DockSplitterColor = mDockSplitterColor;
+    panelData.hasDockSplitterHoverColor = mHasDockSplitterHoverColor; panelData.DockSplitterHoverColor = mDockSplitterHoverColor;
+    panelData.hasDockTabBarBg = mHasDockTabBarBg;                 panelData.DockTabBarBg = mDockTabBarBg;
 
     std::string css = CssGenerator::GenerateCss(
         mWorkingStyle, mHasDockTabTextColor, mDockTabTextColor, &panelData);
