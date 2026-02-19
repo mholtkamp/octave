@@ -42,5 +42,6 @@ IMGUI_API void ClearDockSplitterColors();
 IMGUI_API void SetDockTabBarBg(ImU32 color);
 IMGUI_API void ClearDockTabBarBg();
 IMGUI_API void InitDock();
+IMGUI_API void SetDockActive(const char* panel, const char* label);
 
 };

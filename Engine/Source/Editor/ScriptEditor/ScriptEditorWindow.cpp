@@ -20,6 +20,8 @@
 #include "System/System.h"
 
 #include "imgui.h"
+#include "imgui_dock.h"
+#include "EditorIcons.h"
 #include "document.h"
 #include "writer.h"
 #include "stringbuffer.h"
@@ -254,6 +256,11 @@ void ScriptEditorWindow::DrawContent()
         if (ImGui::IsItemActive() || ImGui::IsItemHovered())
         {
             zep->HandleInput();
+
+            // Tell ImGui that text input is active so editor hotkeys
+            // (viewport controls, spawn menus, etc.) don't fire while typing.
+            ImGui::GetIO().WantTextInput = true;
+            ImGui::GetIO().WantCaptureKeyboard = true;
         }
     }
 }
@@ -280,10 +287,18 @@ void ScriptEditorWindow::OpenFile(const std::string& filePath)
     }
     else
     {
-        zep->GetFileBuffer(fs::path(filePath));
+        ZepBuffer* buf = zep->GetFileBuffer(fs::path(filePath));
+        // Switch the active window to show the newly opened buffer
+        if (buf && zep->GetActiveTabWindow() && zep->GetActiveTabWindow()->GetActiveWindow())
+        {
+            zep->GetActiveTabWindow()->GetActiveWindow()->SetBuffer(buf);
+        }
     }
 
     AddRecentFile(filePath);
+
+    // Auto-focus the Script Editor dock tab
+    ImGui::SetDockActive("EditorDock", ICON_IX_CODE "  Script Editor");
 
     LogDebug("Script Editor opened: %s", filePath.c_str());
 }

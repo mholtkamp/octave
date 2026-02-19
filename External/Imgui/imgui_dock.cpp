@@ -1546,6 +1546,27 @@ void ImGui::ClearDockTabBarBg()
     g_dock_tabbar_bg_color_set = false;
 }
 
+void ImGui::SetDockActive(const char* panel, const char* label)
+{
+    if (!panel || !label) return;
+    auto it = g_docklist.find(panel);
+    if (it == g_docklist.end()) return;
+    DockContext& ctx = it->second;
+
+    char full_label[256];
+    snprintf(full_label, sizeof(full_label), "%s##%s", label, panel);
+    ImU32 id = ImHashStr(full_label, 0);
+
+    for (int i = 0; i < ctx.m_docks.size(); ++i)
+    {
+        if (ctx.m_docks[i]->id == id)
+        {
+            ctx.m_docks[i]->setActive();
+            return;
+        }
+    }
+}
+
 void ImGui::InitDock()
 {
     ImGuiContext& g = *GImGui;

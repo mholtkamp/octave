@@ -219,6 +219,7 @@ static bool IsBottomPaneVisible()
 
 static bool sDockInitialized = false;
 static bool sDockResetRequested = false;
+static int  sDockActivateViewportFrames = 0;
 static ImVec2 sViewportDockPos = ImVec2(0, 0);
 static ImVec2 sViewportDockSize = ImVec2(800, 600);
 static ImGuiWindow* sViewportDockWindow = nullptr;
@@ -226,7 +227,7 @@ static ImGuiWindow* sViewportDockWindow = nullptr;
 // A known dock label that must exist in a valid layout.
 // If imgui.ini has dock data but this label is missing, the layout is stale.
 // Update kDockLayoutVersion when dock panel names change to force a reset.
-static constexpr uint32_t kDockLayoutVersion = 3;
+static constexpr uint32_t kDockLayoutVersion = 4;
 
 static void ValidateDockLayoutIni()
 {
@@ -473,7 +474,12 @@ static void DrawDockspace()
             ImGui::DockToRoot("EditorDock",ICON_ASSETS "  Assets", ImGuiDockSlot_Bottom, 0.33f);
             ImGui::DockTo("EditorDock", ICON_IX_CODE "  Scripts", ICON_ASSETS "  Assets", ImGuiDockSlot_Tab);
             ImGui::DockTo("EditorDock", ICON_STREAMLINE_LOG_SOLID "  Debug Log", ICON_ASSETS "  Assets", ImGuiDockSlot_Tab);
-            ImGui::DockTo("EditorDock", ICON_IX_CODE "  Script Editor", ICON_ASSETS "  Assets", ImGuiDockSlot_Tab);
+            ImGui::DockTo("EditorDock", ICON_IX_CODE "  Script Editor", ICON_VIEWPORT3D "  Viewport", ImGuiDockSlot_Tab);
+
+            // Defer activating the Viewport tab — docks call setActive() on their
+            // first BeginDock frame, so we need to wait a couple frames for all
+            // docks to finish their first-time setup before overriding.
+            sDockActivateViewportFrames = 3;
 
             // Persist the fresh layout immediately so a crash won't leave a stale INI.
             if (ImGui::GetIO().IniFilename)
@@ -488,6 +494,17 @@ static void DrawDockspace()
                 GetEditorState()->mShowRightPane = true;
                 GetEditorState()->mShowBottomPane = true;
             }
+        }
+    }
+
+    // After layout reset, wait for all docks to finish first-frame setup,
+    // then force the Viewport as the active tab in its group.
+    if (sDockActivateViewportFrames > 0)
+    {
+        --sDockActivateViewportFrames;
+        if (sDockActivateViewportFrames == 0)
+        {
+            ImGui::SetDockActive("EditorDock", ICON_VIEWPORT3D "  Viewport");
         }
     }
 
